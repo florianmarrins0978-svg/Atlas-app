@@ -37,6 +37,16 @@ cas « hook joué pour de vrai » dépendaient du diff réel avec `origin/main`,
 sur `main`. Elle écrit désormais son propre fichier d'outillage le temps de
 jouer.
 
+### La note vocale passe à plat, du vert des boutons, cerclée d'or clair
+
+Sa demande du 14 (*« sans ses contours, de la même couleur que les boutons
+verts, le signe au milieu blanc »*), puis son choix du 16 devant six bords
+côte à côte (`appli/note-vocale-cercle-dore.html`) : *« un cercle, l'or clair
+de l'appli »*. `.atlas-micro` et `.atlas-envoyer` perdent la tasse du
+2 septembre — anneaux, porcelaine, reflet tournant, ondulation — pour un disque
+`--atlas-plein` et un filet d'`orClair`, l'or que la charte réserve aux cercles
+posés sur le vert. Ce qui n'est plus rendu est parti de la feuille de style.
+
 ### Le bouton « Payée » s'appelle « J'ai reçu le paiement » — un adjectif se lisait comme un état
 
 **Sa demande, capture à l'appui :** *« Il trouve que le bouton Payée les induit

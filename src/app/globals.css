@@ -1167,16 +1167,13 @@ body:not(:has(.atlas-nav-basse)) .atlas-contenu {
  * la même mesure, et le fond vient de la page (posé `transparent` dans le
  * composant) : c'est ce qu'il a demandé, et c'est ce qui tient sur les sept
  * chartes sans qu'aucun beige soit écrit en dur. */
-/* **LA FLÈCHE EST UNE TASSE AUSSI — son choix du 2 septembre 2026.** Elle
- * passe de 44 à 46 px : un objet à trois anneaux a besoin d'un peu plus de
- * place qu'un cercle nu, sinon les filets se touchent.
- *
- * Les épaisseurs ne sont PAS mises à l'échelle (1,0 et 1,4 au lieu de 1,1 et
- * 1,9) : voir `.atlas-micro` ci-dessus — sous un pixel, un anneau disparaît.
+/* **LA FLÈCHE, COMME LE MICRO — sa demande du 14 septembre 2026 :** *« et
+ * quand on appuie, la touche d'envoi à droite »* traitée de même. Le même
+ * disque plein, à 46 px, le signe blanc, et son cercle d'or clair — un peu
+ * plus fin, à proportion (`appli/note-vocale-cercle-dore.html`).
  *
  * **La poubelle, elle, reste un simple trait, et c'est délibéré.** Elle jette ;
- * ce n'est pas le geste qu'on veut donner envie de faire. Deux objets précieux
- * côte à côte, et l'on ne saurait plus lequel est l'action. */
+ * ce n'est pas le geste qu'on veut donner envie de faire. */
 .atlas-envoyer {
   display: flex;
   align-items: center;
@@ -1186,35 +1183,17 @@ body:not(:has(.atlas-nav-basse)) .atlas-contenu {
   height: 46px;
   border-radius: 99px;
   -webkit-tap-highlight-color: transparent;
-  /* Blanc, comme le micro : c'est le même objet à deux tailles. */
   color: #ffffff;
-  background: radial-gradient(
-    circle at 34% 26%,
-    var(--atlas-sageLight, #9fbd82) 0%,
-    var(--atlas-sage, #7d9a6d) 50%,
-    var(--atlas-rustDeep, #4f5f4c) 100%
-  );
-  box-shadow:
-    inset 0 0 0 1px var(--atlas-or, #B98B47),
-    inset 0 0 0 2.4px #f3efe6,
-    inset 0 0 0 3.2px var(--atlas-or, #B98B47),
-    inset 0 5px 8px -5px rgba(47, 59, 47, 0.42),
-    0 6px 14px -5px rgba(79, 95, 76, 0.36);
-  transition: transform 0.18s cubic-bezier(0.22, 0.61, 0.36, 1), box-shadow 0.2s;
+  background: var(--atlas-plein, #7d9a6d);
+  box-shadow: inset 0 0 0 1.5px var(--atlas-orClair, #C9A15E);
+  transition: transform 0.18s cubic-bezier(0.22, 0.61, 0.36, 1);
 }
-/* **0,975 — le geste « discret », sa décision du 31 août** (`.atlas-plein` plus
- * bas, posé le même jour par la session voisine). La touche d'envoi ne porte
- * PAS `atlas-plein` : il a été clair — *« surtout pas ceux qui sont creux »* —,
- * et depuis ce soir celle-ci est creuse. Elle prend donc le geste seul, à la
- * même force que les pleins : deux forces dans le même écran se sentiraient. */
+/* **0,96 — le geste « discret », sa décision du 31 août.** La touche d'envoi
+ * ne porte pas `atlas-plein` (elle n'est pas un bouton à texte) : elle prend
+ * le geste seul, à la même force que les pleins — deux forces dans le même
+ * écran se sentiraient. */
 .atlas-envoyer:active {
   transform: scale(0.96);
-  box-shadow:
-    inset 0 0 0 1px var(--atlas-or, #B98B47),
-    inset 0 0 0 2.4px #f3efe6,
-    inset 0 0 0 3.2px var(--atlas-or, #B98B47),
-    inset 0 7px 11px -5px rgba(47, 59, 47, 0.52),
-    0 3px 8px -5px rgba(79, 95, 76, 0.46);
 }
 
 /* L'OBJET — un disque plein, son micro, ses deux souffles. Il ne change jamais
@@ -1227,35 +1206,29 @@ body:not(:has(.atlas-nav-basse)) .atlas-contenu {
   justify-content: center;
   flex: 0 0 auto;
 }
-/* ═══ « EN TASSE », VERT CLAIR — son choix du 2 septembre 2026 ═════════════
+/* ═══ LE MICRO, À PLAT, UN CERCLE D'OR CLAIR — son choix du 16 septembre 2026 ═══
  *
- * Planche `appli/note-vocale-tasse-et-envoi.html`, matière 6 et flèche « en
- * tasse ». Ce qui remplace l'aplat vert pin plat du 30 août, et pourquoi :
- * sa plainte du matin — *« je n'aime pas la grosse note vocale verte »* — ne
- * visait pas la COULEUR mais l'aplat. Le même vert, éclairé et cerclé, lui
- * convient ; c'est ce que la planche a permis de trancher, en posant côte à
- * côte le brun et le vert dans la même matière.
+ * Le 14 : *« le gros bouton de la note vocale sans ses contours, de la même
+ * couleur que les boutons verts, le signe au milieu blanc »*
+ * (`appli/note-vocale-a-plat.html`). Le 16, devant six bords côte à côte
+ * (`appli/note-vocale-cercle-dore.html`) : *« code-moi un cercle, l'or clair
+ * de l'appli »*. Un seul filet, dans `orClair` — l'or que la charte réserve
+ * justement aux traits et cercles posés sur le vert (`design-tokens.ts`).
  *
- * TROIS ANNEAUX, ET LEURS ÉPAISSEURS SONT RETENUES, PAS DÉRIVÉES. Le filet
- * d'or au bord, la porcelaine, un second filet d'or, puis le liquide. Sur la
- * flèche (46 px) les mêmes anneaux à proportion tomberaient à 1,1 et 0,63 px :
- * sous un pixel, un anneau ne s'affiche plus — il devient une teinte pâle, et
- * la tasse disparaît. On garde donc la LISIBILITÉ du trait avant sa
- * proportion.
+ * Ce qui part avec ce choix, et pourquoi on ne le garde pas « au cas où » :
+ * la tasse du 2 septembre — trois anneaux, porcelaine, liquide éclairé, reflet
+ * qui tournait en huit secondes, ondulation sous le doigt. Une feuille de
+ * style qui garde ce que plus rien ne rend se recopie ensuite sans qu'on
+ * sache ce qu'elle décorait (§ « LES DEUX SOUFFLES » plus bas). L'historique
+ * git la garde ; `appli/note-vocale-tasse-et-envoi.html` la montre encore.
  *
- * CE QUI SUIT LA CHARTE ET CE QUI NE LA SUIT PAS :
- *   · l'or du filet — il vaut déjà la même valeur sur les huit chartes
- *     (`OR_ORIGINE`), donc rien à faire ;
- *   · les deux verts — `sage` et `sageLight` sont FIXES par construction
- *     (`design-tokens.ts`), au même titre qu'`alert` : ils ne changent pas
- *     d'un thème à l'autre, ce qui en fait justement une matière ;
- *   · la porcelaine reste claire sur les huit. Une porcelaine qui suivrait le
- *     fond deviendrait sombre sur Nuit et Sylve — l'anneau disparaîtrait, et
- *     avec lui l'objet. C'est le même arbitrage que pour `sage`.
- *
- * L'ANIMATION EST LENTE À DESSEIN : huit secondes par tour. On ne doit pas la
- * voir tourner, on doit sentir que ce n'est pas figé. Elle s'arrête sous
- * `prefers-reduced-motion`. */
+ * **Le vert est celui des boutons qu'on appuie** — `--atlas-plein`, le même
+ * que « Enregistrer » —, donc il suit la charte comme eux : c'est justement
+ * ce qu'il a demandé (« de la même couleur que les boutons verts »). **Le
+ * signe est BLANC, et sa couleur vit ICI, pas dans l'écran** : l'écrire en
+ * style en ligne reviendrait à poser une couleur en clair dans un `.tsx`.
+ * Sur les deux chartes sombres, `plein` est le vert clair et le blanc y
+ * tient encore (`test-chartes-lisibles`). */
 .atlas-micro {
   position: relative;
   z-index: 2;
@@ -1266,67 +1239,15 @@ body:not(:has(.atlas-nav-basse)) .atlas-contenu {
   align-items: center;
   justify-content: center;
   -webkit-tap-highlight-color: transparent;
-  /* **Le signe est BLANC, et sa couleur vit ICI, pas dans l'écran.** La
-   * matière est fixe sur les huit chartes ; son pictogramme l'est donc aussi.
-   * L'écrire en style en ligne reviendrait à poser une couleur en clair dans
-   * un `.tsx`, ce que le dépôt refuse. Mesuré : le blanc tient 3,2 de
-   * contraste sur ce vert — au-dessus du seuil de 3 pour un pictogramme. */
   color: #ffffff;
-  background: radial-gradient(
-    circle at 34% 26%,
-    var(--atlas-sageLight, #9fbd82) 0%,
-    var(--atlas-sage, #7d9a6d) 50%,
-    var(--atlas-rustDeep, #4f5f4c) 100%
-  );
-  /* Le creux sous le bord dit que le liquide est DANS la tasse ; l'ombre
-   * portée la décolle du papier, et c'est ce qui désigne LE geste de l'écran. */
-  box-shadow:
-    inset 0 0 0 1.1px var(--atlas-or, #B98B47),
-    inset 0 0 0 3px #f3efe6,
-    inset 0 0 0 4.1px var(--atlas-or, #B98B47),
-    inset 0 8px 12px -6px rgba(47, 59, 47, 0.42),
-    0 10px 22px -6px rgba(79, 95, 76, 0.36);
-  transition: transform 0.2s cubic-bezier(0.22, 0.61, 0.36, 1), box-shadow 0.22s;
-}
-/* La surface qui tourne, et l'ondulation de la tension de surface à l'appui :
- * deux pseudo-éléments plutôt qu'un, parce que l'un tourne en permanence et
- * l'autre ne vit qu'un demi-tiers de seconde sous le doigt. */
-.atlas-micro::before {
-  content: "";
-  position: absolute;
-  inset: 5px;
-  border-radius: 99px;
-  pointer-events: none;
-  background: radial-gradient(circle at 68% 74%, rgba(255, 255, 255, 0.34), transparent 58%);
-  animation: atlas-tourner 8s linear infinite;
-}
-.atlas-micro::after {
-  content: "";
-  position: absolute;
-  inset: 6px;
-  border-radius: 99px;
-  pointer-events: none;
-  opacity: 0;
-  box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.55);
+  background: var(--atlas-plein, #7d9a6d);
+  box-shadow: inset 0 0 0 2px var(--atlas-orClair, #C9A15E);
+  transition: transform 0.2s cubic-bezier(0.22, 0.61, 0.36, 1);
 }
 .atlas-micro:active {
   transform: scale(0.97);
-  box-shadow:
-    inset 0 0 0 1.1px var(--atlas-or, #B98B47),
-    inset 0 0 0 3px #f3efe6,
-    inset 0 0 0 4.1px var(--atlas-or, #B98B47),
-    inset 0 10px 16px -6px rgba(47, 59, 47, 0.52),
-    0 4px 12px -6px rgba(79, 95, 76, 0.46);
 }
-.atlas-micro:active::after { animation: atlas-onduler 0.5s ease-out; }
-@keyframes atlas-tourner { to { transform: rotate(360deg); } }
-@keyframes atlas-onduler {
-  from { opacity: 0.8; box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.55); }
-  to { opacity: 0; box-shadow: 0 0 0 16px rgba(255, 255, 255, 0); }
-}
-@media (prefers-reduced-motion: reduce) {
-  .atlas-micro::before { animation: none; }
-}
+
 /* LES DEUX SOUFFLES SONT PARTIS — sa demande du 5 septembre 2026 : *« supprime
  * moi les traits jaunes de chaque côté de la note vocale »*. Il les avait
  * demandés le 30 août (« le micro, mais avec des petites ondes de chaque

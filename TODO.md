@@ -291,7 +291,12 @@ connexion, l'enregistrement d'un devis, celui d'une facture.
 
 ---
 
-## ⏳ UNE PLANCHE À REGARDER — LA NOTE VOCALE À PLAT, SUR LA FICHE CLIENT (14 septembre 2026, soir)
+## ~~UNE PLANCHE À REGARDER — LA NOTE VOCALE À PLAT, SUR LA FICHE CLIENT~~ — CHOISI ET CODÉ LE 16 SEPTEMBRE 2026 (« code-moi un cercle, l'or clair de l'appli »)
+
+**Codé :** `.atlas-micro` et `.atlas-envoyer` dans `globals.css` — le disque
+à plat en `--atlas-plein`, le signe blanc, un cercle d'`orClair` (2 px sur le
+micro, 1,5 px sur la touche d'envoi) ; la tasse, ses reflets et ses ondes sont
+partis avec le dessin. Écran regardé au repos et en dictée.
 
 Sa demande : *« le gros bouton de la note vocale sans ses contours, de la même
 couleur que les boutons verts, le signe au milieu blanc ; et quand on appuie,
@@ -308,10 +313,10 @@ déjà »* — `appli/note-vocale-cercle-dore.html` : le disque à plat, et le b
 au choix, un filet d'or, l'or-porcelaine-or d'aujourd'hui, ou — sa demande
 suivante, *« mais le doré de l'appli »* — un filet d'`orClair`, l'or que la
 charte réserve aux cercles posés sur le vert — et les deux cercles dans ce même
-or clair. **Il n'a pas
-encore choisi entre à plat, un cercle et deux** ; rien dans `src/` (le 16 au
-soir, le code avait été posé avant son choix — retiré le soir même, c'était
-une faute de §3 bis).
+or clair, avec du blanc entre eux. **Il a choisi « un cercle, l'or clair de
+l'appli »**, codé le soir même. Le 16 au soir, le code
+avait été posé une première fois avant son choix — retiré aussitôt, c'était
+une faute de §3 bis ; il a choisi ensuite, et le code est revenu avec le cercle.
 
 ## ~~UNE PLANCHE À REGARDER — MAIN D’ŒUVRE ET RÈGLEMENTS SUR LA FACTURE~~ — CODÉE LE 14 SEPTEMBRE 2026 (« PARFAIT ! Code exactement cette planche »)
 
