@@ -6,6 +6,35 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+### Le garde-fou de `main` compare au `main` mesuré : un rouge nouveau bloque, un rouge déjà là ne bloque plus
+
+**Sa règle :** *« état de référence connu + nouveau lot → aucun nouveau rouge
+autorisé. Un test qui était vert avant et devient rouge doit bloquer. Un
+nouveau test rouge doit bloquer. Un rouge préexistant identique ne doit pas
+empêcher éternellement toutes les futures fusions. »* Et deux refus : pas de
+contournement, pas d'exception codée pour les seize suites d'outillage qui
+rougissent sur son PC (`bash`, `ps -o`, `gh`, `npx.cmd`).
+
+Ce qui a été construit : la batterie **nomme** ses suites rouges dans son
+verdict (`_bilan-suites.mjs`, `_jouer-etape.ts` — la sortie des moteurs est
+gardée en plus d'être affichée) ; jouée sur un arbre propre qui est
+`origin/main`, elle enregistre l'**état de référence** dans le `.git` commun de
+la machine (`_reference-batterie.mjs`) ; le garde-fou compare
+(`rougesToleres`) et **dit** ce qu'il tolère. Amorce :
+`reference-depuis-journal.ts`, même lecteur. Suites :
+`test-bilan-suites`, `test-reference-batterie`, `test-garde-fusion-main`
+(+ 11 cas, dont deux sur le vrai hook), `test-dernier-verdict`.
+
+Ce que la mesure a dit ce soir-là (`ARCHITECTURE.md` §369) : sur `main`
+b953a6d7, 13 suites base et 6 navigateur rouges ; sur le lot, 11 et 6, toutes
+comprises dans les premières — **aucun rouge nouveau**. La fusion est passée
+par le chemin protégé.
+
+Au passage, `test-garde-fusion-main` rougissait sur tout `main` propre : ses
+cas « hook joué pour de vrai » dépendaient du diff réel avec `origin/main`, vide
+sur `main`. Elle écrit désormais son propre fichier d'outillage le temps de
+jouer.
+
 ## 2026-09-15
 
 ### « 2,50 » tapé sur une ligne de facture s'enregistre — la virgule se lit UNE fois, côté dépôt

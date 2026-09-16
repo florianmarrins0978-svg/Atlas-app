@@ -4,6 +4,7 @@ import { spawnSync, spawn } from "node:child_process";
 import path from "node:path";
 import Redis from "ioredis";
 import { SUITES_SERVEUR } from "./_suites-serveur";
+import { phraseDEchec, phraseDeCompte } from "./_bilan-suites.mjs";
 
 const DOSSIER = path.join(__dirname);
 const NODE = process.execPath;
@@ -626,17 +627,17 @@ async function main() {
     });
     if (resultat.error) {
       echecs++;
-      console.error(`❌ ${fichier} a échoué (spawn error: ${resultat.error.message})`);
+      console.error(phraseDEchec(fichier, `spawn error: ${resultat.error.message}`));
       continue;
     }
     if (resultat.signal) {
       echecs++;
-      console.error(`❌ ${fichier} a échoué (signal: ${resultat.signal})`);
+      console.error(phraseDEchec(fichier, `signal: ${resultat.signal}`));
       continue;
     }
     if (resultat.status !== 0) {
       echecs++;
-      console.error(`❌ ${fichier} a échoué (code: ${resultat.status})`);
+      console.error(phraseDEchec(fichier, `code: ${resultat.status}`));
     }
   }
 
@@ -647,7 +648,7 @@ async function main() {
   } catch {
     // Déjà parti — rien à faire, et surtout rien à cacher.
   }
-  console.log(`\n${fichiers.length - echecs}/${fichiers.length} suites réussies.`);
+  console.log(`\n${phraseDeCompte(fichiers.length - echecs, fichiers.length)}`);
   if (echecs > 0) process.exit(1);
 }
 

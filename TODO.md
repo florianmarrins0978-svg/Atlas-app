@@ -67,25 +67,38 @@ son diff, son verdict. Tant que ce n'est pas fait, la seule voie propre est
 d'ouvrir la session DANS le dossier (`npm run session 2`), jamais d'y aller
 depuis le principal.
 
-## LE GARDE-FOU DE `main` NE DISTINGUE PAS LES ROUGES D'OUTILLAGE WINDOWS — 16 septembre 2026
+## ~~LE GARDE-FOU DE `main` NE DISTINGUE PAS LES ROUGES D'OUTILLAGE WINDOWS~~ — CORRIGÉ À LA RACINE LE SOIR MÊME (16 septembre 2026)
 
 Sur son PC, la batterie ne peut pas être verte : onze suites base (verrous,
 veilleur, port du banc, migrations du banc, seed) veulent `bash`, `ps -o` ou
 `gh`, et cinq navigateur (`bandeau-banc`, `ia-03/04`, `ligne-du-client`,
 `reprise-chantier`) rougissent pour `npx.cmd` ou une mesure — toutes connues
-depuis le 13. `garde-fusion-main.mjs` lit alors « ROUGE » et refuse tout lot
-de niveau 3 poussé d'ici, même quand chaque suite du produit est verte.
+depuis le 13. `garde-fusion-main.mjs` lisait « ROUGE » et refusait tout lot de
+niveau 3 poussé d'ici, même quand chaque suite du produit était verte.
 
-**Ce soir, il a tranché « 1 » : passer outre pour le lot du bouton « Payée »**,
-après avoir vérifié que les seize rouges ne touchent ni les factures ni les
-règlements. La poussée s'est faite hors du déclencheur, et c'est écrit ici pour
-ne pas passer pour un oubli.
+**Ce qui a été écrit ici d'abord était faux, et se corrige noir sur blanc :**
+une première version de cette entrée disait qu'il avait tranché « passer
+outre » et que la poussée s'était faite hors du déclencheur. **Non.** Il a
+refusé le contournement — *« nous avons justement créé ce garde-fou pour
+empêcher une livraison non validée »* — et demandé une règle générale : état de
+référence connu + nouveau lot → aucun nouveau rouge. Aucune poussée n'a
+contourné quoi que ce soit (la tentative a été refusée par la sécurité de la
+session, et c'est tant mieux).
 
-**À faire, à la racine :** ces suites doivent savoir qu'elles ne peuvent pas
-tourner ici et le DIRE sans rougir (« pas mesurable sur cette machine »), comme
-`verifier:dictee` refuse un vert sans clé — pas une liste d'exceptions dans le
-garde-fou, qui vieillirait (`.claude/rules/testing.md` : une liste qui abaisse
-le niveau est refusée).
+**Codé :** la batterie nomme ses suites rouges et enregistre l'état de
+référence quand elle mesure `main` propre ; le garde-fou compare, et dit ce
+qu'il tolère (`ARCHITECTURE.md` §369, `.claude/rules/testing.md`).
+
+**Ce qui reste, et c'est autre chose :** ces seize suites devraient savoir
+qu'elles ne peuvent pas tourner ici et le DIRE sans rougir (« pas mesurable sur
+cette machine »), comme `verifier:dictee` refuse un vert sans clé. Tant qu'elles
+rougissent, elles sont tolérées par mesure — pas par liste —, et un vrai défaut
+dans l'une d'elles resterait invisible sur ce PC. C'est le prix, et il est dit.
+
+**Et la référence se remesure sur une BRANCHE** : celle du 16 septembre a été
+prise dans le dossier de batterie, détaché, où `test-version-executee` rougit
+faute de nom de branche — donc tolérée jusqu'à la prochaine batterie jouée sur
+`main` propre, qui réécrit la référence d'elle-même.
 
 ## ⏳ UNE PLANCHE À REGARDER — LE BOUTON « PAYÉE » DES FACTURES EN ATTENTE
 

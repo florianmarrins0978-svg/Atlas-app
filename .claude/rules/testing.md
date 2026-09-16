@@ -103,6 +103,37 @@ La batterie entière, inchangée. Obligatoire dès que le plancher, la gravité 
 un rayon de dix points d'entrée est atteint. **Le prévenir avant de la
 lancer** — ses sessions partagent son dossier (`CLAUDE.md` §5).
 
+## Un rouge déjà rouge sur `main` ne ferme pas la porte — un rouge NOUVEAU, si
+
+**Sa règle du 16 septembre 2026 :** *« état de référence connu + nouveau lot →
+aucun nouveau rouge autorisé. Un test qui était vert avant et devient rouge
+doit bloquer. Un nouveau test rouge doit bloquer. Un rouge préexistant
+identique ne doit pas empêcher éternellement toutes les futures fusions. »*
+
+Sur son PC, seize suites d'outillage rougissent depuis toujours (`bash`,
+`ps -o`, `gh`, `npx.cmd`). Le garde-fou ne voyait qu'un verdict ROUGE et
+refusait tout lot d'argent, pour toujours — et il a refusé une liste
+d'exceptions pour ces seize : **une liste qui abaisse le niveau vieillit**.
+
+Ce qui la remplace est une MESURE :
+
+| | |
+|---|---|
+| la batterie **nomme** ses suites rouges dans son verdict | `rouges`, lues dans ce que les moteurs écrivent (`_bilan-suites.mjs`) |
+| jouée sur un arbre propre **qui est `origin/main`**, elle enregistre l'**état de référence** | dans le `.git` commun, propre à la machine (`_reference-batterie.mjs`) |
+| le garde-fou compare | `rougesToleres` : chaque rouge du lot doit déjà être rouge dans la référence, **et la référence doit être dans l'histoire du lot** |
+
+**Ce qui ferme toujours la porte** : une suite verte sur `main` devenue rouge,
+une suite nouvelle et rouge, une étape hors suites tombée (types, lint,
+construction, connexion), un bilan dont le compte ne tombe pas juste, un verdict
+sans la liste de ses suites, une référence absente. Et ce qui est toléré se
+**dit** à la poussée — un rouge qui passe en silence redeviendrait invisible.
+
+Premier tour d'une machine, ou `main` d'avant le 16 septembre : la référence
+s'amorce depuis le journal d'une batterie jouée sur `main` propre, avec le même
+lecteur — `npx tsx scripts/reference-depuis-journal.ts <journal> --commit <sha>`.
+Ensuite, toute batterie jouée sur `main` propre la remet à jour d'elle-même.
+
 ## Une régression découverte donne TOUJOURS un test
 
 Dans cet ordre, sans raccourci :

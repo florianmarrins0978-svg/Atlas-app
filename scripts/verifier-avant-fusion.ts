@@ -1,7 +1,9 @@
-import { spawnSync } from "node:child_process";
 import path from "node:path";
 import { empreinteDesSources } from "./_batterie-solitaire";
 import { ecrireDernierVerdict } from "./_dernier-verdict";
+import { jouerEnGardantLaSortie } from "./_jouer-etape";
+import { bilanDuJournal } from "./_bilan-suites.mjs";
+import { commitCourant } from "./_reference-batterie.mjs";
 import { cheminsDuLot, evaluerLeLot } from "./_niveau-de-risque.mjs";
 import { suitesDesRoutes } from "./_suites-ciblees.mjs";
 import { prendreUnAtelierSync } from "./_atelier";
@@ -67,6 +69,12 @@ type Etape = {
   env?: Record<string, string>;
   /** Variables à RETIRER — une clé présente par accident change le comportement. */
   envSupprime?: string[];
+  /**
+   * Un moteur de suites : sa sortie nomme chaque suite tombée, et c'est ce qui
+   * permet de comparer un verdict à l'état connu de `main`. Les autres étapes
+   * n'ont pas de « rouge connu » — chez elles, un rouge est toujours nouveau.
+   */
+  suites?: true;
 };
 
 const ETAPES: Etape[] = [
@@ -85,6 +93,7 @@ const ETAPES: Etape[] = [
     // mentir le 16 septembre 2026.
     env: { DATABASE_URL: APP, DATABASE_ADMIN_URL: OWNER, ...AUTH, ...IA_COUPEE },
     envSupprime: ["REDIS_URL", ...SANS_CLES_IA],
+    suites: true,
   },
 ];
 
@@ -101,6 +110,7 @@ if (suitesCiblees.length) {
     // c'est le produit qu'on accuse — payé le 16 septembre 2026, en direct.
     env: { DATABASE_URL: SUPER, ...AUTH, ...CRON, ...REDIS, ...IA_COUPEE },
     envSupprime: SANS_CLES_IA,
+    suites: true,
   });
 }
 
@@ -110,44 +120,71 @@ console.log(
 );
 
 const echecs: string[] = [];
+// **Les suites rouges se NOMMENT — 16 septembre 2026.** Même ici : un verdict
+// de niveau 2 rouge pour les seules suites déjà rouges sur `main` (l'outillage
+// Windows) doit pouvoir ouvrir la fusion, comme la batterie entière.
+const rouges: string[] = [];
+const rougesHorsSuites: string[] = [];
 
-for (const etape of ETAPES) {
-  console.log(`\n\x1b[1m→ ${etape.titre}\x1b[0m`);
-  const [programme, ...args] = etape.commande;
-  const env = { ...process.env, ...(etape.env ?? {}) };
-  for (const clef of etape.envSupprime ?? []) delete env[clef];
-  const issue = spawnSync(programme, args, { cwd: RACINE, stdio: "inherit", env });
-  if (issue.status === 0) {
-    console.log(`   ✅ ${etape.titre}`);
-  } else {
-    echecs.push(etape.titre);
-    console.log(`   ❌ ${etape.titre}`);
+async function jouerLesControles(): Promise<void> {
+  for (const etape of ETAPES) {
+    console.log(`\n\x1b[1m→ ${etape.titre}\x1b[0m`);
+    const [programme, ...args] = etape.commande;
+    const env = { ...process.env, ...(etape.env ?? {}) };
+    for (const clef of etape.envSupprime ?? []) delete env[clef];
+    const issue = await jouerEnGardantLaSortie(programme, args, {
+      cwd: RACINE,
+      env,
+      shell: process.platform === "win32",
+    });
+    if (issue.status === 0) {
+      console.log(`   ✅ ${etape.titre}`);
+    } else {
+      echecs.push(etape.titre);
+      console.log(`   ❌ ${etape.titre}`);
+      const bilan = etape.suites ? bilanDuJournal(issue.sortie) : null;
+      if (etape.suites && bilan && bilan.complet) rouges.push(...bilan.rouges);
+      else rougesHorsSuites.push(etape.suites ? `${etape.titre} (bilan incomplet)` : etape.titre);
+    }
   }
+
+  // **Le MÊME témoin que la batterie**, avec son niveau — jamais un second
+  // fichier à côté. Deux façons de dire « voilà ce qui a été mesuré, et sur quel
+  // arbre » finiraient par se contredire (`CLAUDE.md` §3). Déposé vert OU
+  // rouge : un rouge sans témoin ne peut pas être comparé à l'état connu de
+  // `main`, et le garde-fou refuserait pour toujours les rouges d'outillage.
+  ecrireDernierVerdict(RACINE, {
+    quand: Date.now(),
+    vert: echecs.length === 0,
+    verdict:
+      echecs.length === 0
+        ? `✅ Niveau 2 au vert (types, lint, mémoire, suites du dépôt${suitesCiblees.length ? `, ${suitesCiblees.length} suite(s) navigateur` : ""}).`
+        : `❌ Niveau 2 : ${echecs.length} étape(s) en échec : ${echecs.join(", ")}`,
+    empreinte: empreinteDesSources(RACINE),
+    niveau: 2,
+    rouges,
+    rougesHorsSuites,
+    commit: commitCourant(RACINE) ?? undefined,
+  });
+
+  console.log("\n─────────────────────────────────────────────────────────────");
+
+  if (echecs.length > 0) {
+    console.log(`❌ ${echecs.length} étape(s) en échec :\n`);
+    for (const titre of echecs) {
+      const etape = ETAPES.find((e) => e.titre === titre);
+      console.log(`   • ${titre}\n     ce qu'elle attrape : ${etape?.quoi}`);
+    }
+    console.log("\n   Rien ne part sur « main » tant que ce n'est pas vert — sauf si chaque");
+    console.log("   rouge est déjà rouge sur main (le garde-fou compare, et il le dit).");
+    process.exit(1);
+  }
+
+  console.log("✅ Niveau 2 au vert — la fusion de ce lot est ouverte.");
+  console.log("   (Le niveau se recalcule à chaque poussée : un fichier de plus peut le changer.)");
 }
 
-console.log("\n─────────────────────────────────────────────────────────────");
-
-if (echecs.length > 0) {
-  // **Aucun témoin n'est déposé.** Le garde-fou refusera donc la fusion, et
-  // c'est exactement ce qu'on veut : un rouge ne se contourne pas en oubliant.
-  console.log(`❌ ${echecs.length} étape(s) en échec :\n`);
-  for (const titre of echecs) {
-    const etape = ETAPES.find((e) => e.titre === titre);
-    console.log(`   • ${titre}\n     ce qu'elle attrape : ${etape?.quoi}`);
-  }
-  console.log("\n   Rien ne part sur « main » tant que ce n'est pas vert.");
+jouerLesControles().catch((erreur) => {
+  console.error(erreur);
   process.exit(1);
-}
-
-// **Le MÊME témoin que la batterie**, avec son niveau — jamais un second
-// fichier à côté. Deux façons de dire « voilà ce qui a été mesuré, et sur quel
-// arbre » finiraient par se contredire (`CLAUDE.md` §3).
-ecrireDernierVerdict(RACINE, {
-  quand: Date.now(),
-  vert: true,
-  verdict: `✅ Niveau 2 au vert (types, lint, mémoire, suites du dépôt${suitesCiblees.length ? `, ${suitesCiblees.length} suite(s) navigateur` : ""}).`,
-  empreinte: empreinteDesSources(RACINE),
-  niveau: 2,
 });
-console.log("✅ Niveau 2 au vert — la fusion de ce lot est ouverte.");
-console.log("   (Le niveau se recalcule à chaque poussée : un fichier de plus peut le changer.)");

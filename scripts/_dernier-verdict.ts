@@ -48,7 +48,28 @@ export type DernierVerdict = {
    * niveau 0, donc insuffisante. On remesure, ce qui est le repli sûr.
    */
   niveau?: 2 | 3;
+  /**
+   * **QUELLES suites ont rougi — 16 septembre 2026.** Sans elles, un verdict
+   * rouge ne dit que « rouge », et le garde-fou de `main` ne peut pas le
+   * comparer à l'état connu de `main` (`_reference-batterie.mjs`) : il refuse
+   * tout, pour toujours, dès qu'une machine porte un rouge d'outillage.
+   *
+   * Absent sur une trace d'avant ce champ : rien n'est comparable, on remesure.
+   */
+  rouges?: string[];
+  /**
+   * Les étapes tombées qui ne sont PAS des suites — types, lint, construction,
+   * connexion —, ou dont le bilan ne tombe pas juste. Celles-là n'ont pas de
+   * « rouge connu » : une seule suffit à fermer la fusion.
+   */
+  rougesHorsSuites?: string[];
+  /** Le commit mesuré, pour dire de quoi on parle. */
+  commit?: string;
 };
+
+function listeDeMots(x: unknown): string[] | undefined {
+  return Array.isArray(x) && x.every((m) => typeof m === "string") ? [...(x as string[])] : undefined;
+}
 
 const NOM = ".atlas-dernier-verdict.json";
 
@@ -66,6 +87,9 @@ export function lireDernierVerdict(racine: string): DernierVerdict | null {
       vert?: unknown;
       niveau?: unknown;
       empreinte?: unknown;
+      rouges?: unknown;
+      rougesHorsSuites?: unknown;
+      commit?: unknown;
     };
     if (typeof brut.quand !== "number" || typeof brut.verdict !== "string") return null;
     if (!Array.isArray(brut.empreinte)) return null;
@@ -75,6 +99,9 @@ export function lireDernierVerdict(racine: string): DernierVerdict | null {
       vert: brut.vert === true,
       niveau: brut.niveau === 3 ? 3 : brut.niveau === 2 ? 2 : undefined,
       empreinte: new Map(brut.empreinte as [string, { date: number; empreinte: string }][]),
+      rouges: listeDeMots(brut.rouges),
+      rougesHorsSuites: listeDeMots(brut.rougesHorsSuites),
+      commit: typeof brut.commit === "string" ? brut.commit : undefined,
     };
   } catch {
     // Un fichier illisible n'est pas une faute : on repart pour une mesure
@@ -87,7 +114,16 @@ export function ecrireDernierVerdict(racine: string, v: DernierVerdict): void {
   try {
     writeFileSync(
       cheminDuVerdict(racine),
-      JSON.stringify({ quand: v.quand, verdict: v.verdict, vert: v.vert, niveau: v.niveau, empreinte: [...v.empreinte] })
+      JSON.stringify({
+        quand: v.quand,
+        verdict: v.verdict,
+        vert: v.vert,
+        niveau: v.niveau,
+        empreinte: [...v.empreinte],
+        rouges: v.rouges,
+        rougesHorsSuites: v.rougesHorsSuites,
+        commit: v.commit,
+      })
     );
   } catch {
     // Ne pas pouvoir noter le verdict ne doit pas faire échouer une batterie

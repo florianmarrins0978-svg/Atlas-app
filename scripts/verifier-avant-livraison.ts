@@ -1,4 +1,3 @@
-import { spawnSync } from "node:child_process";
 import { rmSync } from "node:fs";
 import path from "node:path";
 import {
@@ -19,6 +18,9 @@ import {
 import { prendreLeVerrou } from "./verrou-batterie.mjs";
 import { porteeDuLot, phraseDuRefusDePortee } from "./_portee-batterie";
 import { lireDernierVerdict, ecrireDernierVerdict, ilYA } from "./_dernier-verdict";
+import { jouerEnGardantLaSortie } from "./_jouer-etape";
+import { bilanDuJournal } from "./_bilan-suites.mjs";
+import { commitCourant, ecrireReference, estSurMain } from "./_reference-batterie.mjs";
 
 // La batterie complète, à jouer AVANT de demander au patron d'essayer quoi que
 // ce soit.
@@ -42,6 +44,13 @@ type Etape = {
   nom: string;
   commande: string;
   args: string[];
+  /**
+   * Un moteur de suites : sa sortie nomme chaque suite tombée, et c'est ce
+   * qui permet de comparer un verdict à l'état connu de `main`. Les autres
+   * étapes n'ont pas de « rouge connu » — chez elles, un rouge est toujours
+   * nouveau.
+   */
+  suites?: true;
   /** Variables propres à l'étape ; le reste de l'environnement est repris. */
   env?: Record<string, string>;
   /**
@@ -181,6 +190,7 @@ const ETAPES: Etape[] = [
     nom: "Suites base de données",
     commande: "npm",
     args: ["test"],
+    suites: true,
     env: { DATABASE_URL: APP, DATABASE_ADMIN_URL: OWNER, ...AUTH, ...IA_COUPEE },
     // REDIS_URL retiré, et ce n'est pas un détail de configuration : avec
     // cette variable, la suite des propositions IA ouvre une connexion Redis
@@ -205,6 +215,7 @@ const ETAPES: Etape[] = [
     nom: "Suites navigateur",
     commande: "npm",
     args: ["run", "test:e2e"],
+    suites: true,
     // Redis ici, comme en CI : la limitation de débit doit être remise à zéro
     // entre deux suites, ce que la mémoire du serveur ne permet pas.
     env: { DATABASE_URL: SUPER, ...AUTH, ...CRON, ...REDIS, ...IA_COUPEE },
@@ -224,6 +235,8 @@ const ETAPES: Etape[] = [
 ];
 
 const echecs: Etape[] = [];
+/** Ce que chaque moteur de suites tombé a écrit — pour nommer ses rouges. */
+const bilans = new Map<string, ReturnType<typeof bilanDuJournal>>();
 
 /**
  * Le dossier de la construction, effacé AVANT de commencer.
@@ -340,6 +353,7 @@ process.on("exit", verrou.rendre);
 
 rmSync(DIST_VERIFICATION, { recursive: true, force: true });
 
+async function jouerLaBatterie(): Promise<never> {
 for (const etape of ETAPES) {
   // **Le verrou se signe ICI, entre deux étapes** — jamais par une minuterie.
   // Ce fil est bloqué par `spawnSync` du début à la fin : un `setInterval` n'y
@@ -363,9 +377,9 @@ for (const etape of ETAPES) {
   // changerait le comportement d'étapes qui marchent depuis des mois, pour
   // corriger un défaut qui ne s'y produit pas. Les arguments passés ici sont de
   // simples jetons sans espace — la condition tient tant que cela reste vrai.
-  const r = spawnSync(etape.commande, etape.args, {
-    stdio: "inherit",
+  const r = await jouerEnGardantLaSortie(etape.commande, etape.args, {
     env,
+    cwd: RACINE,
     shell: process.platform === "win32",
   });
   if (r.status === 0) {
@@ -373,6 +387,7 @@ for (const etape of ETAPES) {
   } else {
     console.error(`   ❌ ${etape.nom}`);
     echecs.push(etape);
+    if (etape.suites) bilans.set(etape.nom, bilanDuJournal(r.sortie));
   }
 }
 
@@ -390,6 +405,20 @@ if (remues.length > 0) {
 // **Le verdict se NOTE, sinon le refus du prochain tour n'a rien à comparer.**
 // Écrit ici, après le contrôle d'empreinte : un verdict caduc n'est pas un
 // verdict, et le retenir ferait refuser la batterie qui devait le remplacer.
+//
+// **Et il NOMME ses rouges — 16 septembre 2026.** « Deux étapes en échec » ne
+// se compare à rien ; « ces onze suites » se compare à ce que `main` donnait
+// déjà sur cette machine. Une étape tombée sans bilan qui tombe juste — types,
+// construction, ou un moteur dont le compte ne correspond pas aux noms — va
+// dans `rougesHorsSuites`, et une seule y suffit à fermer la fusion.
+const rouges: string[] = [];
+const rougesHorsSuites: string[] = [];
+for (const e of echecs) {
+  const bilan = e.suites ? bilans.get(e.nom) : null;
+  if (e.suites && bilan && bilan.complet) rouges.push(...bilan.rouges);
+  else rougesHorsSuites.push(e.suites ? `${e.nom} (bilan incomplet)` : e.nom);
+}
+const commit = commitCourant(RACINE) ?? undefined;
 ecrireDernierVerdict(RACINE, {
   quand: Date.now(),
   vert: echecs.length === 0,
@@ -399,7 +428,25 @@ ecrireDernierVerdict(RACINE, {
       : `❌ ${echecs.length} étape(s) en échec : ${echecs.map((e) => e.nom).join(", ")}`,
   empreinte: empreinteAvant,
   niveau: 3,
+  rouges,
+  rougesHorsSuites,
+  commit,
 });
+
+// **L'ÉTAT DE RÉFÉRENCE — mesuré, jamais écrit à la main** (sa règle du
+// 16 septembre 2026, `_reference-batterie.mjs`). Seulement sur un arbre propre
+// qui EST `origin/main` : une batterie jouée sur un lot ne devient jamais la
+// référence, sinon le lot s'absoudrait lui-même. Et jamais quand une étape
+// hors suites est tombée : un `main` qui ne se construit pas n'est pas un état
+// de référence, c'est une panne.
+if (rougesHorsSuites.length === 0 && commit && estSurMain(RACINE)) {
+  const notee = ecrireReference(RACINE, { quand: Date.now(), commit, rouges, niveau: 3 });
+  console.log(
+    notee
+      ? `→ État de référence de main ${commit.slice(0, 8)} enregistré : ${rouges.length} suite(s) rouge(s)${rouges.length ? ` — ${rouges.join(", ")}` : ""}.`
+      : "→ L'état de référence n'a pas pu être enregistré (le .git commun n'est pas accessible en écriture)."
+  );
+}
 
 if (echecs.length === 0) {
   console.log("✅ Batterie complète au vert.");
@@ -415,3 +462,9 @@ for (const e of echecs) {
 }
 console.error("\n   Ne rien donner au patron avant que tout soit vert.");
 process.exit(1);
+}
+
+jouerLaBatterie().catch((erreur) => {
+  console.error(erreur);
+  process.exit(1);
+});

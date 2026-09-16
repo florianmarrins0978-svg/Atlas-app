@@ -30849,3 +30849,56 @@ Les deux dernières suites ne font pas double emploi : celle du PDF injecte les
 champs à la main et serait verte même si la création du devis ne les recopiait
 pas. C'est la faute du 28 août 2026 — éprouver la moitié qu'on vient d'écrire,
 jamais le chemin du patron (`CLAUDE.md` §5 quater).
+
+## §369 — Le garde-fou de `main` compare à l'état MESURÉ de `main` : un rouge nouveau bloque, un rouge déjà là ne bloque plus
+
+**Le soir du 16 septembre 2026, un lot d'argent prêt, éprouvé, regardé — et
+infusionnable.** `garde-fusion-main.mjs` (§365) exigeait un verdict VERT ; or
+sur son PC la batterie ne l'est jamais : onze suites base veulent `bash`,
+`ps -o` ou `gh`, cinq navigateur veulent `npx.cmd` ou une mesure de largeur —
+toutes rouges depuis le 13, toutes sans rapport avec les factures. Sa réponse,
+devant la proposition de contourner : *« Ne me demande pas de contourner le
+garde-fou. Nous avons justement créé ce garde-fou pour empêcher une livraison
+non validée. »* Puis la règle :
+
+> état de référence connu + nouveau lot → aucun nouveau rouge autorisé.
+> Un test qui était vert avant et devient rouge doit bloquer. Un nouveau test
+> rouge doit bloquer. Un rouge préexistant identique ne doit pas empêcher
+> éternellement toutes les futures fusions. Pas d'exception codée pour ces
+> seize tests.
+
+### Ce que la mesure a dit, avant de coder
+
+La batterie a été jouée sur `origin/main` (b953a6d7) dans le dossier de
+batterie, et comparée à celle du lot :
+
+| | `main` | le lot |
+|---|---|---|
+| suites base rouges | 13 | 11 — les 11 sont dans les 13 |
+| suites navigateur rouges | 6 | 6 — les mêmes |
+| rouges du lot absents de `main` | | **aucun** |
+
+Les deux rouges de `main` absents du lot tiennent au dossier détaché où
+`main` a été mesuré : `test-version-executee` veut un nom de branche, et
+`test-garde-fusion-main` dépendait du diff réel — vide sur `main` (corrigé
+dans ce lot : elle écrit son propre fichier d'outillage le temps de jouer).
+
+### Le mécanisme, et pourquoi chaque pièce est là
+
+| | |
+|---|---|
+| `_bilan-suites.mjs` | la phrase « ❌ x.ts a échoué » et la ligne de compte, écrites par les moteurs et relues par la batterie — **une seule définition**, sinon un rouge mal orthographié devient invisible, donc toléré. Un compte qui ne tombe pas juste rend un bilan **incomplet**, qui ne tolère rien |
+| `_jouer-etape.ts` | la sortie d'une étape est affichée ET gardée ; un `spawnSync` capturé aurait rendu la batterie muette cinquante minutes |
+| `_dernier-verdict.ts` | le verdict porte `rouges`, `rougesHorsSuites`, `commit` — absents sur une trace d'avant : rien n'est comparable, on remesure |
+| `_reference-batterie.mjs` | l'état de référence, écrit **seulement** sur un arbre propre qui est `origin/main`, dans le `.git` commun : propre à la machine, jamais versionné, partagé par tous les dossiers de session (`git worktree`), et hors de l'empreinte de la batterie |
+| `rougesToleres` (`_niveau-de-risque.mjs`) | la règle, pure : verdict sans liste → refus ; étape hors suites → refus ; pas de référence, ou référence hors de l'histoire du lot → refus ; un rouge absent de la référence → refus **nommé** ; sinon, tolérés, et **dits** à la poussée |
+| `reference-depuis-journal.ts` | l'amorce : le journal d'une batterie jouée sur `main` propre, relu avec le même lecteur, sur un commit qui doit être sur `origin/main`. Sert au premier tour d'une machine, ou tant que le `main` mesuré ne sait pas encore nommer ses rouges |
+
+**Ce que la référence ne fait jamais** : se mettre à jour depuis un lot (il
+s'absoudrait lui-même), tolérer une étape hors suites (un `main` qui ne se
+construit pas est une panne, pas une référence), ou parler sans être dans
+l'histoire du lot (`git merge-base --is-ancestor`).
+
+**Ce que cela ne relâche pas** : le niveau exigé, l'empreinte de l'arbre, et la
+règle « un rouge connu qui redevient vert se rejoue deux fois ». Une référence
+absente ramène exactement à la règle d'avant : le verdict doit être vert.

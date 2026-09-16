@@ -2,6 +2,9 @@ import { readdirSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import path from "node:path";
 import { SUITES_SERVEUR } from "./_suites-serveur";
+// Les phrases d'échec et de compte viennent d'un seul endroit : la batterie
+// les relit pour nommer les rouges, et une copie divergente en cacherait un.
+import { phraseDEchec, phraseDeBlocage, phraseDeCompte } from "./_bilan-suites.mjs";
 
 const DOSSIER = path.join(__dirname);
 const NODE = process.execPath;
@@ -57,7 +60,7 @@ for (const fichier of fichiers) {
   if (bloquee) {
     echecs++;
     console.error(
-      `❌ ${fichier} n'a pas rendu la main en ${DELAI_PAR_SUITE_MS / 60000} minutes — tué.\n` +
+      `${phraseDeBlocage(fichier, DELAI_PAR_SUITE_MS / 60000)}\n` +
         "   Ses tests ont peut-être tous réussi : le processus, lui, ne s'arrête pas.\n" +
         "   Cause habituelle : une connexion restée ouverte (Redis via le limiteur\n" +
         "   de débit, un pool PostgreSQL). Fermer en fin de suite — voir\n" +
@@ -68,19 +71,19 @@ for (const fichier of fichiers) {
 
   if (resultat.error) {
     echecs++;
-    console.error(`❌ ${fichier} a échoué (spawn error: ${resultat.error.message})`);
+    console.error(phraseDEchec(fichier, `spawn error: ${resultat.error.message}`));
     continue;
   }
   if (resultat.signal) {
     echecs++;
-    console.error(`❌ ${fichier} a échoué (signal: ${resultat.signal})`);
+    console.error(phraseDEchec(fichier, `signal: ${resultat.signal}`));
     continue;
   }
   if (resultat.status !== 0) {
     echecs++;
-    console.error(`❌ ${fichier} a échoué (code: ${resultat.status})`);
+    console.error(phraseDEchec(fichier, `code: ${resultat.status}`));
   }
 }
 
-console.log(`\n${fichiers.length - echecs}/${fichiers.length} suites réussies.`);
+console.log(`\n${phraseDeCompte(fichiers.length - echecs, fichiers.length)}`);
 if (echecs > 0) process.exit(1);
