@@ -67,6 +67,26 @@ son diff, son verdict. Tant que ce n'est pas fait, la seule voie propre est
 d'ouvrir la session DANS le dossier (`npm run session 2`), jamais d'y aller
 depuis le principal.
 
+## LE GARDE-FOU DE `main` NE DISTINGUE PAS LES ROUGES D'OUTILLAGE WINDOWS — 16 septembre 2026
+
+Sur son PC, la batterie ne peut pas être verte : onze suites base (verrous,
+veilleur, port du banc, migrations du banc, seed) veulent `bash`, `ps -o` ou
+`gh`, et cinq navigateur (`bandeau-banc`, `ia-03/04`, `ligne-du-client`,
+`reprise-chantier`) rougissent pour `npx.cmd` ou une mesure — toutes connues
+depuis le 13. `garde-fusion-main.mjs` lit alors « ROUGE » et refuse tout lot
+de niveau 3 poussé d'ici, même quand chaque suite du produit est verte.
+
+**Ce soir, il a tranché « 1 » : passer outre pour le lot du bouton « Payée »**,
+après avoir vérifié que les seize rouges ne touchent ni les factures ni les
+règlements. La poussée s'est faite hors du déclencheur, et c'est écrit ici pour
+ne pas passer pour un oubli.
+
+**À faire, à la racine :** ces suites doivent savoir qu'elles ne peuvent pas
+tourner ici et le DIRE sans rougir (« pas mesurable sur cette machine »), comme
+`verifier:dictee` refuse un vert sans clé — pas une liste d'exceptions dans le
+garde-fou, qui vieillirait (`.claude/rules/testing.md` : une liste qui abaisse
+le niveau est refusée).
+
 ## ⏳ UNE PLANCHE À REGARDER — LE BOUTON « PAYÉE » DES FACTURES EN ATTENTE
 
 **Sa demande du 16 septembre 2026, capture de « Terminés › Factures en attente »
