@@ -53,10 +53,17 @@ if (git("merge-base", "--is-ancestor", sha, "origin/main") === null) {
 
 const journal = readFileSync(journalChemin, "utf8");
 
-/** Les étapes de la batterie, découpées à leurs en-têtes « → Nom ». */
+/**
+ * Les étapes de la batterie, découpées à leurs en-têtes « → Nom ».
+ *
+ * L'en-tête est reconnu à son GRAS (`\x1b[1m`), que la batterie écrit toujours,
+ * TTY ou non : une suite peut écrire « → Base d'essai reconnue » en début de
+ * ligne, et sans le gras, l'étape « Suites navigateur » se coupait avant son
+ * compte — d'où un refus qui accusait le journal.
+ */
 function etapesDuJournal(texte: string): Map<string, string> {
   const etapes = new Map<string, string>();
-  const entete = /^(?:\x1b\[1m)?→ ([^\x1b\n]+?)(?:\x1b\[0m)?\r?$/gm;
+  const entete = /^\x1b\[1m→ ([^\x1b\n]+?)\x1b\[0m\r?$/gm;
   const positions: { nom: string; debut: number }[] = [];
   for (const m of texte.matchAll(entete)) positions.push({ nom: m[1].trim(), debut: m.index! + m[0].length });
   positions.forEach((p, i) => {
