@@ -32,8 +32,17 @@ async function tenter(navigateur: Awaited<ReturnType<typeof lancerNavigateur>>, 
   await page.fill('input[name="email"]', "demo@atlas.local");
   await page.fill('input[name="password"]', motDePasse);
   await page.click('button[type="submit"]');
-  await page.waitForTimeout(1200);
-  const entre = new URL(page.url()).pathname === "/";
+  // **On attend ce qu'on affirme, pas une durée — 16 septembre 2026.** Une
+  // attente fixe de 1,2 s laissait la page sur /login sous charge, et la
+  // suite accusait alors le limiteur — « un visiteur en bloque un autre » —
+  // sur du code juste, au milieu d'une batterie qui devenait rouge pour rien.
+  // La porte s'ouvre (l'adresse quitte /login) ou le refus s'écrit ; on attend
+  // l'un des deux, jamais l'horloge.
+  await Promise.race([
+    page.waitForURL((url) => url.pathname !== "/login", { timeout: 30_000 }),
+    page.locator("text=/trop de tentatives|incorrect/i").first().waitFor({ timeout: 30_000 }),
+  ]).catch(() => {});
+  const entre = new URL(page.url()).pathname !== "/login";
   const message = entre ? "" : await page.locator("body").innerText();
   await contexte.close();
   return { entre, message };
