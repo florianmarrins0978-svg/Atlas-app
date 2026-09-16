@@ -414,12 +414,12 @@ export default function IdentiteClient({
           onChange={(v) => ecrire("mediateurNom", v)}
           onFini={(duChamp) => enregistrer({ mediateurNom: duChamp })}
           manquant={valeurs.mediateurNom.trim() === ""}
-          empeche="Un client particulier doit pouvoir le saisir : son nom figure sur le devis."
+          empeche="Un client particulier doit pouvoir le saisir. Si vous n'adhérez à aucun médiateur, il faut le faire : c'est obligatoire."
         />
         <Champ
           etiquette="Adresse ou site"
           valeur={valeurs.mediateurCoordonnees}
-          placeholder="49 rue de Ponthieu, 75008 Paris · cm2c.net"
+          placeholder="Son adresse ou son site"
           onChange={(v) => ecrire("mediateurCoordonnees", v)}
           onFini={(duChamp) => enregistrer({ mediateurCoordonnees: duChamp })}
         />

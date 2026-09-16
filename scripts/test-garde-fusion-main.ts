@@ -2,7 +2,15 @@ import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync, renameSync, rmSync, writeFileSync } from "node:fs";
 import path from "node:path";
-import { FICHIER_VERDICT, commandeDuNiveau, evaluerLeLot, poussseVersMain, verdictSuffit } from "./_niveau-de-risque.mjs";
+import {
+  FICHIER_VERDICT,
+  cheminsDuDiff,
+  cheminsDuStatut,
+  commandeDuNiveau,
+  evaluerLeLot,
+  poussseVersMain,
+  verdictSuffit,
+} from "./_niveau-de-risque.mjs";
 import { construireLeGraphe, routeDeLEcran } from "./_rayon-impact.mjs";
 import { suitesDesRoutes } from "./_suites-ciblees.mjs";
 
@@ -208,6 +216,46 @@ cas("les suites d'un écran se DÉRIVENT de ce qu'elles ouvrent", () => {
   const suites = suitesDesRoutes(RACINE, ["/clients"]);
   assert.ok(suites.includes("fiche-client"), `« /clients » ne rend pas fiche-client : ${suites.join(", ")}`);
   assert.equal(suitesDesRoutes(RACINE, ["/une-adresse-qui-n-existe-pas"]).length, 0);
+});
+
+console.log("\n=== Le diff se LIT sans perdre une lettre ===");
+
+cas("un fichier modifié NON INDEXÉ garde son chemin entier", () => {
+  // **Le défaut du 16 septembre 2026.** `git status --porcelain` rend
+  // « ␣M src/… » : deux caractères d'état, une espace, le chemin. La sortie
+  // entière était « trimée », ce qui mangeait l'espace de la PREMIÈRE ligne —
+  // et le `slice(3)` emportait alors la première lettre : « rc/app/… ».
+  // Le fichier n'était plus reconnu, et un lot de niveau 2 s'annonçait
+  // niveau 1. Un garde-fou qui se trompe vers le BAS ne retient plus rien.
+  assert.deepEqual(cheminsDuStatut(" M src/app/reglages/identite/IdentiteClient.tsx\n"), [
+    "src/app/reglages/identite/IdentiteClient.tsx",
+  ]);
+});
+
+cas("les quatre états du statut rendent le même chemin", () => {
+  assert.deepEqual(
+    cheminsDuStatut([" M src/a.ts", "M  src/b.ts", "?? src/c.ts", "A  src/d.ts", ""].join("\n")),
+    ["src/a.ts", "src/b.ts", "src/c.ts", "src/d.ts"]
+  );
+});
+
+cas("un RENOMMAGE rend le nouveau chemin, pas l'ancien", () => {
+  // L'ancien n'existe plus dans l'arbre qu'on mesure : le graphe ne le
+  // connaîtrait pas, et le lot passerait « indéterminable » sans raison.
+  assert.deepEqual(cheminsDuStatut("R  drizzle/0093_x.sql -> drizzle/0094_x.sql\n"), [
+    "drizzle/0094_x.sql",
+  ]);
+});
+
+cas("le diff commité se lit ligne à ligne", () => {
+  assert.deepEqual(cheminsDuDiff("src/a.ts\nsrc/b.ts\n"), ["src/a.ts", "src/b.ts"]);
+  assert.deepEqual(cheminsDuDiff(""), []);
+});
+
+cas("un lot NON INDEXÉ sur un écran vaut bien 2, jamais 1", () => {
+  // Le bout par lequel le défaut se voyait : c'est ce niveau-là qui décidait.
+  const lot = evaluerLeLot(cheminsDuStatut(" M src/app/clients/[id]/page.tsx\n"), { racine: RACINE });
+  assert.equal(lot.niveau, 2, `attendu 2, obtenu ${lot.niveau} — ${lot.raison}`);
 });
 
 console.log("\n=== Ce qui est visé, et ce qui ne l'est pas ===");

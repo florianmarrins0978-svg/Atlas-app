@@ -85,6 +85,30 @@ client, nouvelle préparation.
 
 ## 2026-09-16
 
+### Le calcul du niveau perdait une lettre, et se trompait vers le BAS
+
+`git status --porcelain` rend « ␣M src/… » : deux caractères d'état, une
+espace, le chemin. La sortie entière était nettoyée d'un `trim`, ce qui mangeait
+l'espace de la première ligne — et le découpage qui suit emportait alors la
+première lettre du chemin : « rc/app/… ». Ce fichier-là n'était plus reconnu.
+
+**Ce que ça coûtait :** un lot qui touche un écran s'annonçait niveau 1, « rien
+qui s'exécute ». Un garde-fou qui se trompe vers le bas ne retient plus rien, et
+rien ne le dit. Vu en direct en mesurant un lot d'une seule ligne.
+
+Le découpage est désormais une fonction pure, éprouvée sur les quatre états du
+statut et sur un renommage — celui-ci rend le NOUVEAU chemin, l'ancien n'existe
+plus dans l'arbre qu'on mesure.
+
+### Un exemple de médiateur qui se recopiait
+
+Le champ « Adresse ou site » du médiateur portait en gris l'adresse réelle d'un
+organisme de médiation. En gris, un exemple se lit comme une valeur déjà posée :
+un artisan qui n'adhère à personne l'aurait imprimée sur un devis que son client
+garde — une mention fausse promet un recours qui n'existe pas. L'exemple est
+devenu générique, et la phrase sous le champ dit quoi faire : si vous n'adhérez
+à aucun médiateur, il faut le faire.
+
 ### La décennale et le médiateur : deux champs, plus deux crochets
 
 Il a demandé de colorer en rouge les crochets des conditions générales pour les

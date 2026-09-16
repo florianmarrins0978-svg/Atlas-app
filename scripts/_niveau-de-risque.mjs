@@ -44,15 +44,49 @@ import { routesSansSuite } from "./_suites-ciblees.mjs";
 export function cheminsDuLot(racine) {
   const git = (...args) => {
     try {
-      return execFileSync("git", ["-C", racine, ...args], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }).trim();
+      // **Aucun `trim` sur la sortie entière**, et c'est tout le défaut du
+      // 16 septembre 2026 : `git status --porcelain` rend « ␣M src/… », deux
+      // caractères d'état puis une espace. Trimer le bloc mangeait l'espace de
+      // la PREMIÈRE ligne, et le `slice(3)` qui suit emportait alors la
+      // première lettre du chemin — « rc/app/… ». Ce fichier-là n'était plus
+      // reconnu, et un lot de niveau 2 s'annonçait niveau 1.
+      //
+      // Le pire n'est pas la faute : c'est son SENS. Un garde-fou qui se
+      // trompe vers le BAS laisse passer ce qu'il existe pour retenir, et rien
+      // ne le dit.
+      return execFileSync("git", ["-C", racine, ...args], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] });
     } catch {
       return null;
     }
   };
-  const base = git("merge-base", "origin/main", "HEAD") ?? "origin/main";
-  const commités = git("diff", "--name-only", `${base}...HEAD`) ?? "";
-  const enCours = git("status", "--porcelain") ?? "";
-  return [...commités.split("\n"), ...enCours.split("\n").map((l) => l.slice(3))].filter(Boolean);
+  const base = (git("merge-base", "origin/main", "HEAD") ?? "origin/main").trim();
+  return [
+    ...cheminsDuDiff(git("diff", "--name-only", `${base}...HEAD`) ?? ""),
+    ...cheminsDuStatut(git("status", "--porcelain") ?? ""),
+  ];
+}
+
+/** Les chemins d'un `git diff --name-only` : une ligne, un chemin. */
+export function cheminsDuDiff(sortie) {
+  return sortie.split("\n").map((l) => l.trim()).filter(Boolean);
+}
+
+/**
+ * Les chemins d'un `git status --porcelain` — deux caractères d'état, une
+ * espace, puis le chemin. Les lignes se découpent AVANT tout nettoyage : c'est
+ * l'espace de tête qui porte l'information « modifié, pas indexé ».
+ *
+ * Un renommage s'écrit « R␣␣ancien -> nouveau » : c'est le NOUVEAU chemin qui
+ * compte, l'ancien n'existe plus dans l'arbre qu'on mesure.
+ */
+export function cheminsDuStatut(sortie) {
+  return sortie
+    .split("\n")
+    .filter((l) => l.length > 3)
+    .map((l) => l.slice(3))
+    .map((c) => (c.includes(" -> ") ? c.split(" -> ")[1] : c))
+    .map((c) => c.replace(/^"|"$/g, "").trim())
+    .filter(Boolean);
 }
 
 /** Le témoin que les deux vérifications laissent — celui du dépôt, pas un second. */

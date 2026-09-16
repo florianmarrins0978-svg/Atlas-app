@@ -54,44 +54,13 @@ type Etape = {
   ceQueCaAttrape: string;
 };
 
-const AUTH = { AUTH_SECRET: "ci-secret-not-a-real-production-value-000000000000" };
-const CRON = { CRON_SECRET: "ci-placeholder-cron-secret-0000000000" };
+// **Les adresses et les rôles vivent dans `_bases-essai.ts`** depuis le
+// 16 septembre 2026 : le niveau 2 en a besoin des mêmes, et deux copies de la
+// même vérité finissent par diverger (`CLAUDE.md` §3).
+import { AUTH, CRON, IA_COUPEE, SANS_CLES_IA, basesDeLAtelier } from "./_bases-essai";
 
-// **Aucune suite ne doit appeler un vrai fournisseur d'IA.** Depuis que poser
-// une clé suffit à brancher l'IA, une batterie lancée dans l'espace de travail
-// du patron — où ses clés vivent — enverrait les dictées d'essai chez Anthropic
-// et OpenAI, et les lui ferait payer. Retirées de toute étape qui exécute le
-// produit ; l'étape « Fournisseurs d'IA », elle, les garde : c'est justement sa
-// configuration à lui qu'elle vérifie.
-const SANS_CLES_IA = ["ANTHROPIC_API_KEY", "OPENAI_API_KEY", "GEMINI_API_KEY", "DEEPGRAM_API_KEY", "GOOGLE_API_KEY"];
 
-// Retirer les clés de l'environnement ne suffit PAS : Next.js charge de
-// lui-même `.env.local`, où le patron est justement invité à coller les
-// siennes. Une variable réelle l'emporte sur ce fichier — d'où ce réglage
-// explicite, qui garantit le mode déterministe quoi qu'il y ait sur le disque.
-const IA_COUPEE = { LLM_PROVIDER: "dev", TRANSCRIPTION_PROVIDER: "dev" };
 
-/**
- * Les trois adresses de la base d'essai — celles de la CI par défaut, et
- * SURCHARGEABLES par l'environnement.
- *
- * **Pourquoi elles ne sont plus écrites en dur — 4 septembre 2026.** Sur le
- * poste du patron (Windows, base dans Docker), le rôle `postgres` répond à
- * `postgres_dev_pw`, jamais à `postgres_ci_pw`. Les trois dernières étapes
- * tombaient donc TOUJOURS, quel que soit le code — « Données de démonstration »
- * sur un `auth_failed`, puis les suites navigateur et la connexion faute de jeu
- * de démonstration. Et l'écran de connexion accusait alors le produit : *« un
- * service d'Atlas ne répond pas »*.
- *
- * Une batterie qui ne peut pas être verte est pire qu'absente : on s'habitue à
- * son rouge, et le jour où il dit vrai, personne ne le lit. Trois sessions ont
- * rejoué ces étapes à la main ce jour-là.
- *
- * **Le défaut ne bouge pas d'un caractère** : la CI ne pose aucune de ces
- * variables et retombe exactement sur ce qu'elle avait. Ce qui change, c'est
- * qu'une machine dont les mots de passe diffèrent peut enfin les dire.
- */
-const adresse = (nom: string, defaut: string) => process.env[nom]?.trim() || defaut;
 
 /**
  * **L'ATELIER DE CETTE BATTERIE — sa demande du 8 septembre 2026.**
@@ -120,15 +89,11 @@ if (ATELIER.rang !== 0) {
   );
 }
 
-/** Le limiteur de connexion, dans le coin de Redis de cet atelier. */
-const REDIS = { REDIS_URL: redisDeLAtelier("redis://localhost:6379", ATELIER) };
+const { APP, OWNER, SUPER, REDIS } = basesDeLAtelier(ATELIER);
 
 /** Le dossier bâti par l'étape « Construction », propre à cet atelier. */
 const DIST_VERIFICATION = `.next-verification${SUFFIXE}`;
 
-const APP = baseDeLAtelier(adresse("ATLAS_BASE_APP", "postgresql://atlas_app:atlas_app_ci_pw@localhost:5432/atlas_test"), ATELIER);
-const OWNER = baseDeLAtelier(adresse("ATLAS_BASE_OWNER", "postgresql://atlas_owner:atlas_owner_ci_pw@localhost:5432/atlas_test"), ATELIER);
-const SUPER = baseDeLAtelier(adresse("ATLAS_BASE_SUPER", "postgresql://postgres:postgres_ci_pw@localhost:5432/atlas_test"), ATELIER);
 
 const ETAPES: Etape[] = [
   {

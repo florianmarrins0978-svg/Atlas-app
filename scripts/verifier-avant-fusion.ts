@@ -4,6 +4,8 @@ import { empreinteDesSources } from "./_batterie-solitaire";
 import { ecrireDernierVerdict } from "./_dernier-verdict";
 import { cheminsDuLot, evaluerLeLot } from "./_niveau-de-risque.mjs";
 import { suitesDesRoutes } from "./_suites-ciblees.mjs";
+import { prendreUnAtelierSync } from "./_atelier";
+import { AUTH, CRON, IA_COUPEE, SANS_CLES_IA, basesDeLAtelier } from "./_bases-essai";
 
 /**
  * NIVEAU 2 — ce qu'on joue avant de fusionner un lot à impact BORNÉ.
@@ -50,13 +52,40 @@ if (lot.niveau >= 3) {
 
 const suitesCiblees = suitesDesRoutes(RACINE, lot.routes);
 
-type Etape = { titre: string; quoi: string; commande: string[] };
+// **Son atelier à elle**, comme la batterie : port, base et coin de Redis
+// propres, pour que deux sessions puissent vérifier en même temps.
+const ATELIER = prendreUnAtelierSync();
+process.env.ATLAS_ADRESSE = ATELIER.adresse;
+const { APP, OWNER, SUPER, REDIS } = basesDeLAtelier(ATELIER);
+if (ATELIER.rang !== 0) console.log(`Atelier n° ${ATELIER.rang} : port ${ATELIER.port}, base et Redis à part.`);
+
+type Etape = {
+  titre: string;
+  quoi: string;
+  commande: string[];
+  /** Variables propres à l'étape ; le reste de l'environnement est repris. */
+  env?: Record<string, string>;
+  /** Variables à RETIRER — une clé présente par accident change le comportement. */
+  envSupprime?: string[];
+};
 
 const ETAPES: Etape[] = [
   { titre: "Types", quoi: "un appel qui ne correspond plus à sa signature", commande: ["npm", "run", "typecheck"] },
   { titre: "Lint", quoi: "les pièges connus de React et de Next", commande: ["npm", "run", "lint"] },
   { titre: "Mémoire du dépôt", quoi: "une documentation qui décrit une version disparue", commande: ["npm", "run", "verifier:memoire"] },
-  { titre: "Suites du dépôt", quoi: "les règles métier, l'isolation, et les garde-fous", commande: ["npm", "test"] },
+  {
+    titre: "Suites du dépôt",
+    quoi: "les règles métier, l'isolation, et les garde-fous",
+    commande: ["npm", "test"],
+    // **Exactement l'environnement de la batterie**, et `REDIS_URL` retirée
+    // avec : la laisser fait qu'une suite garde une connexion ouverte, que le
+    // processus ne se termine plus, et qu'un mot de passe changé par une suite
+    // voisine fait rougir une autre sur du code juste. La batterie le savait
+    // depuis longtemps ; ce contrôle-ci l'ignorait, et c'est ce qui l'a fait
+    // mentir le 16 septembre 2026.
+    env: { DATABASE_URL: APP, DATABASE_ADMIN_URL: OWNER, ...AUTH, ...IA_COUPEE },
+    envSupprime: ["REDIS_URL", ...SANS_CLES_IA],
+  },
 ];
 
 // **Les écrans atteints, regardés pour de bon.** Sans cette étape, un niveau 2
@@ -66,6 +95,12 @@ if (suitesCiblees.length) {
     titre: `Écrans atteints (${lot.routes.join(", ")})`,
     quoi: "un écran qui ne s'ouvre plus, une action serveur refusée",
     commande: ["npm", "run", "test:e2e", "--", "--seulement", suitesCiblees.join(",")],
+    // **Le rôle qui TRAVERSE la RLS**, comme dans la batterie : ces suites
+    // amorcent la base et l'inspectent pour vérifier ce qu'elles affirment.
+    // Hériter du rôle du produit les fait tomber sur « permission denied », et
+    // c'est le produit qu'on accuse — payé le 16 septembre 2026, en direct.
+    env: { DATABASE_URL: SUPER, ...AUTH, ...CRON, ...REDIS, ...IA_COUPEE },
+    envSupprime: SANS_CLES_IA,
   });
 }
 
@@ -79,7 +114,9 @@ const echecs: string[] = [];
 for (const etape of ETAPES) {
   console.log(`\n\x1b[1m→ ${etape.titre}\x1b[0m`);
   const [programme, ...args] = etape.commande;
-  const issue = spawnSync(programme, args, { cwd: RACINE, stdio: "inherit", env: process.env });
+  const env = { ...process.env, ...(etape.env ?? {}) };
+  for (const clef of etape.envSupprime ?? []) delete env[clef];
+  const issue = spawnSync(programme, args, { cwd: RACINE, stdio: "inherit", env });
   if (issue.status === 0) {
     console.log(`   ✅ ${etape.titre}`);
   } else {
