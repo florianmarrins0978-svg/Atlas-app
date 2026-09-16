@@ -45,6 +45,18 @@ Au passage, `test-garde-fusion-main` rougissait sur tout `main` propre : ses
 cas « hook joué pour de vrai » dépendaient du diff réel avec `origin/main`, vide
 sur `main`. Elle écrit désormais son propre fichier d'outillage le temps de
 jouer.
+### Le bouton « Payée » s'appelle « J'ai reçu le paiement » — un adjectif se lisait comme un état
+
+**Sa demande, capture à l'appui :** *« Il trouve que le bouton Payée les induit
+en erreur. »* « Payée » dans une pastille verte a la forme d'une étiquette
+d'état : on lisait « cette facture est payée » au lieu d'un geste à faire. Il a
+choisi la planche B de `appli/le-bouton-payee.html` : « J'ai reçu le paiement »
+et « J'ai reçu une partie », à la première personne — ses mots du 14 août. Le
+rappel « Facture impayée » emploie les mêmes (`Notifications.tsx`). La ligne
+du client passe de « Ouverte 11/09 » à « Ouverte le 11/09 », ici et dans le
+dossier du client (`reception-facture.ts`). Aucune ligne n'a bougé de place.
+Les suites visent désormais `data-atlas="solder-la-facture"` et
+`"noter-un-reglement"`, plus jamais le libellé.
 
 ## 2026-09-15
 

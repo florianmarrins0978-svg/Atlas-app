@@ -172,7 +172,7 @@ async function main() {
   await cas("son geste mène là où l'on solde, pas à la facture figée", async () => {
     // Ouvrir la facture ne servirait à rien : elle est immuable. Le geste
     // attendu — noter le règlement — se fait dans l'endroit en attente.
-    const geste = carte.getByRole("link", { name: /Marquer payée|Noter un règlement/ });
+    const geste = carte.getByRole("link", { name: /J'ai reçu le paiement|J'ai reçu une partie/ });
     if ((await geste.count()) === 0) throw new Error("le geste manque sur la carte");
     await geste.click();
     await page.waitForURL(/\/termines\/tva/, { timeout: 30_000 });

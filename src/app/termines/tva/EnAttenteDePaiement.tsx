@@ -30,11 +30,20 @@ export type FactureAttendue = {
  * paiement, je retourne sur l'endroit en attente, je clique sur valider, et
  * boum, la facture va directement dans le relevé. »*
  *
- * **Deux portes, et il les a demandées toutes les deux :** « Payée » solde en
- * un doigt — c'est le cas de cinquante factures par an —, et « Noter un
- * règlement » ouvre la date et le montant pour un acompte. La seconde ne
- * remplace pas la première : une saisie en deux champs pour un geste qu'on fait
- * cinquante fois serait un impôt sur le temps.
+ * **Deux portes, et il les a demandées toutes les deux :** « J'ai reçu le
+ * paiement » solde en un doigt — c'est le cas de cinquante factures par an —,
+ * et « J'ai reçu une partie » ouvre la date et le montant pour un acompte. La
+ * seconde ne remplace pas la première : une saisie en deux champs pour un geste
+ * qu'on fait cinquante fois serait un impôt sur le temps.
+ *
+ * **LES DEUX SE DISENT À LA PREMIÈRE PERSONNE — sa planche du 16 septembre
+ * 2026 (`appli/le-bouton-payee.html`, « la B »).** Le premier s'appelait
+ * « Payée » : un adjectif dans une pastille verte, c'est la forme d'une
+ * étiquette d'état, et les utilisateurs lisaient « cette facture est payée »
+ * au lieu d'un geste à faire — *« le bouton Payée les induit en erreur »*. Un
+ * bouton qui commence par « J'ai » ne peut plus se lire comme un état. Les mots
+ * sont les siens, du 14 août : *« lorsque j'ai reçu le paiement, je retourne
+ * sur l'endroit en attente, je clique »*.
  *
  * **Ce qui n'y figure pas est aussi important :** aucune facture soldée. Cet
  * écran est une file d'attente, pas un journal — ce qui est réglé a rejoint le
@@ -111,7 +120,7 @@ export default function EnAttenteDePaiement({
       </div>
       {/* **Plus de phrase sous le titre — sa planche du 12 septembre 2026.**
           Elle disait « elles entreront au relevé quand vous appuierez sur
-          Payée » ; le bouton « Payée » est juste dessous et dit la même chose.
+          Payée » ; le bouton qui solde est juste dessous et dit la même chose.
           Un écran n'explique pas son propre fonctionnement (`CLAUDE.md` §3). */}
 
       {erreur && (
@@ -204,23 +213,27 @@ export default function EnAttenteDePaiement({
               <CeQueLeClientEnAFait reception={receptions[f.id]} />
 
               <div className="mt-2.5 flex flex-wrap items-center gap-2">
+                {/* Les suites visent les repères, jamais les mots : c'est le
+                    libellé qui vient de changer, et il changera encore. */}
                 <button
                   type="button"
+                  data-atlas="solder-la-facture"
                   disabled={enCours === f.id}
                   onClick={() => solder(f.id)}
                   className="atlas-plein min-h-[40px] rounded-full px-5 py-2 text-[14px] font-medium disabled:opacity-40"
                   style={{ backgroundColor: colors.plein, color: colors.card }}
                 >
-                  {enCours === f.id ? "…" : "Payée"}
+                  {enCours === f.id ? "…" : "J'ai reçu le paiement"}
                 </button>
                 <button
                   type="button"
+                  data-atlas="noter-un-reglement"
                   onClick={() => setOuverte(ouverte === f.id ? null : f.id)}
                   aria-expanded={ouverte === f.id}
                   className="min-h-[40px] px-2 py-2 text-[14px]"
                   style={{ color: colors.muted }}
                 >
-                  Noter un règlement
+                  J&apos;ai reçu une partie
                 </button>
               </div>
 
@@ -334,7 +347,7 @@ function SaisieDuReglement({
   // **La case part VIDE — sa demande du 11 septembre 2026 :** *« le montant doit
   // être le chiffre qu'on a écrit »*. Elle arrivait remplie du solde entier, si
   // bien qu'il lisait un chiffre qu'il n'avait pas tapé. Solder d'un doigt reste
-  // possible : c'est « Payée », juste au-dessus.
+  // possible : c'est « J'ai reçu le paiement », juste au-dessus.
   const [montant, setMontant] = useState("");
   const [enCours, setEnCours] = useState(false);
   // La virgule du clavier français compte autant que le point.
@@ -447,7 +460,7 @@ function SaisieDuReglement({
 /**
  * La trace de réception, sous la ligne de la facture.
  *
- * **Aucune décision ici :** la phrase entière — « Ouverte 11/09 », « Réception
+ * **Aucune décision ici :** la phrase entière — « Ouverte le 11/09 », « Réception
  * confirmée le 11/09 », « Pas encore ouverte. » — se décide dans
  * `src/lib/reception-facture.ts`, parce que le dossier du client la montre
  * aussi et que deux copies finissent toujours par diverger (`CLAUDE.md` §3).

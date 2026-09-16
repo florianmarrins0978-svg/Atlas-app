@@ -56,8 +56,12 @@ export function receptionEnMots(
   if (reception.accuseLe) {
     return { avant: "Réception confirmée le ", date: jourCourt(jourIso(reception.accuseLe), aujourdHui) };
   }
+  // **« Ouverte LE 11/09 » — sa réponse du 16 septembre 2026** (planche
+  // `appli/le-bouton-payee.html`). Sans le « le », « Ouverte 11/09 » posé
+  // au-dessus d'un bouton de paiement se lisait comme l'état de la facture —
+  // ouverte, donc impayée — alors que c'est le client qui l'a ouverte.
   if (reception.ouverteLe) {
-    return { avant: "Ouverte ", date: jourCourt(jourIso(reception.ouverteLe), aujourdHui) };
+    return { avant: "Ouverte le ", date: jourCourt(jourIso(reception.ouverteLe), aujourdHui) };
   }
   // **« Pas encore ouverte » S'ÉCRIT.** Ne rien afficher ferait lire l'absence
   // de trace comme une absence de fonctionnalité — et c'est justement ce qu'il

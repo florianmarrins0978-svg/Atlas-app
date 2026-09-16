@@ -38,11 +38,11 @@ test("rien d'ouvert, rien de confirmé : la ligne le dit, et n'a pas de date", (
   assert.equal(r.date, null);
 });
 
-test("ouverte sans case cochée : « Ouverte 11/09 », et AUCUNE heure", () => {
+test("ouverte sans case cochée : « Ouverte le 11/09 », et AUCUNE heure", () => {
   // Sa demande du 11 septembre 2026 : *« l'heure tu supprimes »*. Elle prenait
   // la largeur d'une ligne de téléphone pour un repère qu'il survole.
   const r = receptionEnMots({ ouverteLe: new Date("2026-09-11T15:57:00Z"), accuseLe: null }, "2026-09-11");
-  assert.equal(r.avant, "Ouverte ");
+  assert.equal(r.avant, "Ouverte le ");
   assert.equal(r.date, "11/09");
   assert.ok(!/ h /.test(r.avant + r.date), "l'heure est revenue dans la ligne");
 });
