@@ -307,7 +307,8 @@ première :** *« fais-moi la même planche avec un cercle doré et deux comme o
 déjà »* — `appli/note-vocale-cercle-dore.html` : le disque à plat, et le bord
 au choix, un filet d'or, l'or-porcelaine-or d'aujourd'hui, ou — sa demande
 suivante, *« mais le doré de l'appli »* — un filet d'`orClair`, l'or que la
-charte réserve aux cercles posés sur le vert. **Il n'a pas
+charte réserve aux cercles posés sur le vert — et les deux cercles dans ce même
+or clair. **Il n'a pas
 encore choisi entre à plat, un cercle et deux** ; rien dans `src/` (le 16 au
 soir, le code avait été posé avant son choix — retiré le soir même, c'était
 une faute de §3 bis).

@@ -96,6 +96,8 @@
   .tel[data-cercle="un"] .envoyer{box-shadow:inset 0 0 0 1.5px var(--or)}
   .tel[data-cercle="clair"] .micro{box-shadow:inset 0 0 0 2px var(--orClair)}
   .tel[data-cercle="clair"] .envoyer{box-shadow:inset 0 0 0 1.5px var(--orClair)}
+  .tel[data-cercle="deux-clair"] .micro{box-shadow:inset 0 0 0 1.1px var(--orClair),inset 0 0 0 3px #f3efe6,inset 0 0 0 4.1px var(--orClair)}
+  .tel[data-cercle="deux-clair"] .envoyer{box-shadow:inset 0 0 0 1px var(--orClair),inset 0 0 0 2.4px #f3efe6,inset 0 0 0 3.2px var(--orClair)}
   .tel[data-cercle="deux"] .micro{box-shadow:inset 0 0 0 1.1px var(--or),inset 0 0 0 3px #f3efe6,inset 0 0 0 4.1px var(--or)}
   .tel[data-cercle="deux"] .envoyer{box-shadow:inset 0 0 0 1px var(--or),inset 0 0 0 2.4px #f3efe6,inset 0 0 0 3.2px var(--or)}
   .micro:active{transform:scale(.975)}
@@ -139,6 +141,8 @@
   .un-envoyer{width:46px;height:46px;border-radius:99px;background:var(--plein);color:#fff;display:flex;align-items:center;justify-content:center;box-shadow:inset 0 0 0 1.5px var(--or)}
   .clair-micro{width:80px;height:80px;border-radius:99px;background:var(--plein);color:#fff;display:flex;align-items:center;justify-content:center;box-shadow:inset 0 0 0 2px var(--orClair)}
   .clair-envoyer{width:46px;height:46px;border-radius:99px;background:var(--plein);color:#fff;display:flex;align-items:center;justify-content:center;box-shadow:inset 0 0 0 1.5px var(--orClair)}
+  .deux-clair-micro{width:80px;height:80px;border-radius:99px;background:var(--plein);color:#fff;display:flex;align-items:center;justify-content:center;box-shadow:inset 0 0 0 1.1px var(--orClair),inset 0 0 0 3px #f3efe6,inset 0 0 0 4.1px var(--orClair)}
+  .deux-clair-envoyer{width:46px;height:46px;border-radius:99px;background:var(--plein);color:#fff;display:flex;align-items:center;justify-content:center;box-shadow:inset 0 0 0 1px var(--orClair),inset 0 0 0 2.4px #f3efe6,inset 0 0 0 3.2px var(--orClair)}
   .deux-micro{width:80px;height:80px;border-radius:99px;background:var(--plein);color:#fff;display:flex;align-items:center;justify-content:center;box-shadow:inset 0 0 0 1.1px var(--or),inset 0 0 0 3px #f3efe6,inset 0 0 0 4.1px var(--or)}
   .deux-envoyer{width:46px;height:46px;border-radius:99px;background:var(--plein);color:#fff;display:flex;align-items:center;justify-content:center;box-shadow:inset 0 0 0 1px var(--or),inset 0 0 0 2.4px #f3efe6,inset 0 0 0 3.2px var(--or)}
   .compare .et{margin-bottom:10px}
@@ -169,6 +173,7 @@
   <button type="button" data-cercle="un" aria-pressed="true">Un cercle doré</button>
   <button type="button" data-cercle="deux" aria-pressed="false">Deux, comme aujourd’hui</button>
   <button type="button" data-cercle="clair" aria-pressed="false">Un cercle, l’or clair de l’appli</button>
+  <button type="button" data-cercle="deux-clair" aria-pressed="false">Deux, l’or clair de l’appli</button>
   <button type="button" data-etat="repos" aria-pressed="true">Au repos</button>
   <button type="button" data-etat="dicte" aria-pressed="false">En dictée</button>
 </div>
@@ -247,6 +252,10 @@
     <p class="et">Un cercle, l’or clair</p>
     <div class="rangs"><span class="clair-micro"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0" stroke-linecap="round"/><path d="M12 18v3" stroke-linecap="round"/></svg></span><span class="clair-envoyer"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 3.5 10.6 13.4"/><path d="M20.5 3.5 14.2 21a.6.6 0 0 1-1.1.05l-3-6.6-6.6-3a.6.6 0 0 1 .05-1.1z"/></svg></span></div>
   </div>
+  <div>
+    <p class="et">Deux, l’or clair</p>
+    <div class="rangs"><span class="deux-clair-micro"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0" stroke-linecap="round"/><path d="M12 18v3" stroke-linecap="round"/></svg></span><span class="deux-clair-envoyer"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 3.5 10.6 13.4"/><path d="M20.5 3.5 14.2 21a.6.6 0 0 1-1.1.05l-3-6.6-6.6-3a.6.6 0 0 1 .05-1.1z"/></svg></span></div>
+  </div>
 </div>
 
 <div class="note">
@@ -255,6 +264,7 @@
   <p><b>Un cercle doré</b> — un seul filet d’or au bord du disque, et le même sur la touche d’envoi.</p>
   <p><b>Deux, comme aujourd’hui</b> — l’or, la porcelaine, l’or : les mêmes épaisseurs que la tasse actuelle, posées sur le disque plat.</p>
   <p><b>Un cercle, l’or clair de l’appli</b> — le même filet, dans l’or que l’appli pose déjà sur le vert (ses traits et cercles sur les boutons).</p>
+  <p><b>Deux, l’or clair de l’appli</b> — l’or-porcelaine-or d’aujourd’hui, dans ce même or clair.</p>
   <p><b>Dites lequel</b> — ou « à plat », si vous préférez celui du 14. Rien n’est codé tant que vous n’avez pas choisi.</p>
   <p><b>Les autres écrans</b> qui portent ce micro (la fiche du chantier, la fiche neuve) suivraient : c’est le même objet.</p>
 </div>
