@@ -219,8 +219,66 @@ async function main() {
     }
   });
 
+  await cas("« Annuler » referme « Déplacer » sans rien rendre", async () => {
+    /*
+     * ─── SON SIGNALEMENT DU 16 SEPTEMBRE 2026 ─────────────────────────────
+     * *« Si je clique sur déplacer j'ai aucun moyen d'annuler mon choix si je
+     * veux plus déplacer. »*
+     *
+     * L'interrupteur REMPLACE « Déplacer » et « Retirer » : une fois ouvert,
+     * les deux seules issues écrivaient en base — rendre le matin, ou rendre
+     * l'après-midi. Un appui de trop enfermait donc dans un geste dont il ne
+     * voulait plus, et il fallait rendre une demi-journée pour en sortir, puis
+     * la reprendre au tiroir et la reposer.
+     *
+     * **Sa règle existait déjà ailleurs sur cet écran** — *« Annuler ramène
+     * aux deux voies, à chaque étape »* (10 septembre 2026) : « Ajouter » la
+     * tient à ses trois temps, « Déplacer » était le seul à ne pas l'avoir.
+     *
+     * **On mesure les deux moitiés** : l'écran revient à ses deux gestes, ET
+     * la base n'a pas bougé. Un « Annuler » qui rendrait quand même une
+     * demi-journée serait pire que pas de bouton du tout.
+     */
+    const carte = await allerAuJour(jourA);
+    const bloc = carte.locator('[data-atlas="bloc-chantier"]').first();
+    await bloc.locator('[data-atlas="deplacer"]').click();
+    await page.waitForTimeout(300);
+
+    const annuler = bloc.locator('[data-atlas="annuler-deplacer"]');
+    if ((await annuler.count()) !== 1) {
+      throw new Error(
+        "aucun « Annuler » à côté de l'interrupteur : ouvert, le geste n'a plus de sortie " +
+          "qui n'écrive pas en base"
+      );
+    }
+    await annuler.click();
+    await page.waitForTimeout(300);
+
+    if ((await bloc.locator('[data-atlas="bascule-demi"]').count()) !== 0) {
+      throw new Error("l'interrupteur est resté ouvert après « Annuler »");
+    }
+    if ((await bloc.locator('[data-atlas="deplacer"]').count()) !== 1) {
+      throw new Error("« Déplacer » n'est pas revenu : le geste ne se rouvre plus");
+    }
+
+    // **On laisse au serveur le temps d'écrire ce qu'il n'aurait pas dû.** Lire
+    // aussitôt rendrait un vert même si « Annuler » avait lancé une action —
+    // un contrôle qui mesure avant que le défaut puisse paraître ne mesure rien.
+    await page.waitForTimeout(1200);
+    const poses = await creneauxEnBase(chantierId);
+    if (poses.join(" | ") !== attendus([`${jourA} matin`, `${jourA} apres_midi`])) {
+      throw new Error(
+        `« Annuler » a touché la base : elle porte « ${poses.join(" | ") || "rien"} » ` +
+          `au lieu des deux moitiés du ${jourA}`
+      );
+    }
+  });
+
   await cas("un appui rend le matin, et le serveur l'écrit", async () => {
     const bloc = page.locator(`[data-atlas="carte-jour"][data-jour="${jourA}"] [data-atlas="bloc-chantier"]`).first();
+    // **On rouvre l'interrupteur** : le cas d'avant vient de le refermer.
+    await bloc.locator('[data-atlas="deplacer"]').click();
+    await page.waitForTimeout(300);
     await bloc.locator('[data-atlas="bascule-demi"] button[data-vers="matin"]').click();
     await page.waitForTimeout(1600);
     const poses = await creneauxEnBase(chantierId);

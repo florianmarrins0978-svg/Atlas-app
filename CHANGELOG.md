@@ -8,6 +8,23 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-16
 
+### « Déplacer » a enfin une sortie : un « Annuler » à côté de l'interrupteur
+
+**Son signalement, capture à l'appui :** *« si je clique sur déplacer j'ai
+aucun moyen d'annuler mon choix si je veux plus déplacer »*. L'interrupteur
+matin/après-midi **remplace** « Déplacer » et « Retirer » : une fois ouvert,
+les deux seules issues écrivaient en base. Sortir d'un appui de trop
+demandait donc de rendre une demi-journée pour de bon, d'aller la reprendre
+dans le tiroir du bas, et de la reposer là où elle était.
+
+Sa règle existait déjà à trois lignes de là — *« Annuler ramène aux deux
+voies, à chaque étape »* (10 septembre) : les trois temps d'« Ajouter » la
+tiennent, « Déplacer » était le seul geste de cet écran à ne pas l'avoir. Le
+bouton reprend la place de « Retirer », à droite de l'interrupteur : la rangée
+garde ses deux boutons au même endroit. `test-liberer-une-demi-journee-e2e`
+tient les deux moitiés — l'écran revient à ses deux gestes, **et la base n'a
+pas bougé**.
+
 ### Le garde-fou mesure le dossier que `git -C` vise — et une tâche = un lot isolé
 
 **Sa règle du 17 septembre 2026 :** *« le garde-fou lui-même doit fonctionner
