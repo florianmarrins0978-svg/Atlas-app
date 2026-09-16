@@ -44,6 +44,12 @@ type Identite = {
   /** Migration 0071 — n'a de sens que pour une société (`formeADuCapital`). */
   capitalSocial: string;
   villeRcs: string;
+  /** La décennale et le médiateur (migration 0093) — voir `src/lib/mentions-obligatoires.ts`. */
+  assureurDecennale: string;
+  contratDecennale: string;
+  couvertureDecennale: string;
+  mediateurNom: string;
+  mediateurCoordonnees: string;
   mentionsLegalesPosition: PositionMentionsLegales;
 };
 
@@ -361,6 +367,62 @@ export default function IdentiteClient({
             l'endroit de la cause. L'alerte reste tant qu'il n'a pas prévenu —
             elle ne dépend d'aucun écran ouvert une fois. */}
         <AlerteAncienIban factures={aSignaler} onPrevenir={prevenirAction} onMaj={setASignaler} />
+      </Bloc>
+
+      {/* **LA DÉCENNALE ET LE MÉDIATEUR — son accord du 14 septembre 2026**
+          (`appli/decennale-et-mediateur.html`), après « Pour être payé » comme
+          la planche le montre.
+
+          **Ce que ces deux blocs remplacent :** deux crochets à retaper à la
+          main dans le texte des conditions générales. Une information
+          d'entreprise se saisit une fois, comme le SIRET — la retaper dans un
+          texte, c'est la voir diverger au premier changement d'assureur.
+
+          **Le nom porte l'alerte, les autres non** : sans lui rien ne
+          s'imprime, avec lui la mention tient déjà debout. */}
+      <Bloc titre="Assurance décennale">
+        <Champ
+          etiquette="Assureur"
+          valeur={valeurs.assureurDecennale}
+          placeholder="AXA, Groupama, MMA…"
+          onChange={(v) => ecrire("assureurDecennale", v)}
+          onFini={(duChamp) => enregistrer({ assureurDecennale: duChamp })}
+          manquant={valeurs.assureurDecennale.trim() === ""}
+          empeche="Sans elle, vos devis partent sans une mention que la loi y attend."
+        />
+        <Champ
+          etiquette="N° de contrat"
+          valeur={valeurs.contratDecennale}
+          placeholder="Sur votre attestation"
+          onChange={(v) => ecrire("contratDecennale", v)}
+          onFini={(duChamp) => enregistrer({ contratDecennale: duChamp })}
+        />
+        <Champ
+          etiquette="Couverture géographique"
+          valeur={valeurs.couvertureDecennale}
+          placeholder="France métropolitaine"
+          onChange={(v) => ecrire("couvertureDecennale", v)}
+          onFini={(duChamp) => enregistrer({ couvertureDecennale: duChamp })}
+        />
+      </Bloc>
+
+      <Bloc titre="Médiateur de la consommation">
+        <Champ
+          etiquette="Nom"
+          valeur={valeurs.mediateurNom}
+          placeholder="Celui auquel vous adhérez"
+          onChange={(v) => ecrire("mediateurNom", v)}
+          onFini={(duChamp) => enregistrer({ mediateurNom: duChamp })}
+          manquant={valeurs.mediateurNom.trim() === ""}
+          empeche="Un client particulier doit pouvoir le saisir : son nom figure sur le devis."
+        />
+        <Champ
+          etiquette="Adresse ou site"
+          valeur={valeurs.mediateurCoordonnees}
+          placeholder="49 rue de Ponthieu, 75008 Paris · cm2c.net"
+          onChange={(v) => ecrire("mediateurCoordonnees", v)}
+          onFini={(duChamp) => enregistrer({ mediateurCoordonnees: duChamp })}
+        />
       </Bloc>
 
       {/* **La pièce partagée attend un OUI ou NON, pas un compte.** Les trois

@@ -20,7 +20,20 @@
  * fichier ; le texte d'origine n'est recopié nulle part ailleurs.
  */
 
+import { contenuDecennale, contenuMediateur, type DonneesMentionsObligatoires } from "./mentions-obligatoires";
+
 export const TITRE_CONDITIONS_GENERALES = "CONDITIONS GÉNÉRALES DE VENTE ET DE RÈGLEMENT";
+
+/**
+ * LES DEUX CROCHETS, ÉCRITS UNE SEULE FOIS.
+ *
+ * Ils étaient jusqu'au 16 septembre 2026 noyés dans le texte ci-dessous, et
+ * `conditionsGeneralesRemplies` aurait dû les y recopier pour les remplacer :
+ * deux écritures de la même chaîne, dont l'une aurait vieilli en silence à la
+ * première virgule corrigée (`CLAUDE.md` §3). Le texte les compose désormais.
+ */
+export const CROCHET_DECENNALE = "[assureur, n° de contrat, couverture géographique]";
+export const CROCHET_MEDIATEUR = "[nom et coordonnées]";
 
 export const TEXTE_ORIGINE_CONDITIONS_GENERALES = [
   "L’acceptation de nos devis implique l’adhésion aux conditions générales de vente et de règlement ci-après, qui prévalent sur toute autre condition, sauf dérogation écrite et expresse de notre part.",
@@ -32,9 +45,9 @@ export const TEXTE_ORIGINE_CONDITIONS_GENERALES = [
   "6. Réception. La réception des travaux est faite par le client, ou son représentant, à la fin du chantier et en présence de l’entreprise. Les réserves sont formulées par écrit à ce moment ; aucune réclamation sur l’aspect des travaux n’est admise ultérieurement.",
   "7. Végétaux. Les végétaux fournis sont garantis à la plantation. Leur reprise dépend de l’arrosage et de l’entretien assurés par le client après réception. La garantie légale des vices cachés (art. 1641 et suivants du code civil) s’applique aux fournitures.",
   "8. Réserve de propriété. Les fournitures et végétaux restent la propriété de l’entreprise jusqu’au paiement intégral, en principal et intérêts. Nonobstant les articles 551 et 552 du code civil, l’entreprise demeure propriétaire de l’ouvrage exécuté jusqu’à complet paiement.",
-  "9. Assurances. L’entreprise est titulaire d’une assurance responsabilité civile professionnelle et, pour les travaux qui y sont soumis, d’une assurance décennale : [assureur, n° de contrat, couverture géographique].",
+  "9. Assurances. L’entreprise est titulaire d’une assurance responsabilité civile professionnelle et, pour les travaux qui y sont soumis, d’une assurance décennale : " + CROCHET_DECENNALE + ".",
   "10. Rétractation. Pour un devis signé hors de l’établissement de l’entreprise, le client particulier dispose d’un délai de rétractation de 14 jours (art. L221-18 du code de la consommation). Les travaux commencés avant ce terme le sont à sa demande écrite.",
-  "11. Médiation et litiges. En cas de litige, le client particulier peut saisir gratuitement le médiateur de la consommation : [nom et coordonnées]. À défaut d’accord, les tribunaux compétents sont ceux désignés par le code de procédure civile.",
+  "11. Médiation et litiges. En cas de litige, le client particulier peut saisir gratuitement le médiateur de la consommation : " + CROCHET_MEDIATEUR + ". À défaut d’accord, les tribunaux compétents sont ceux désignés par le code de procédure civile.",
 ].join("\n\n");
 
 /**
@@ -61,4 +74,37 @@ export function paragraphesConditionsGenerales(texte: string | null | undefined)
 export function crochetsRestants(texte: string | null | undefined): number {
   if (!texte) return 0;
   return (texte.match(/\[[^\]]*\]/g) ?? []).length;
+}
+
+/**
+ * Le texte, ses deux crochets remplis par ce que « Mon entreprise » sait.
+ *
+ * **Son accord du 14 septembre 2026** (`appli/decennale-et-mediateur.html`) :
+ * l'assureur et le médiateur ne se ressaisissent plus ici. Ils sont saisis une
+ * fois, et les articles 9 et 11 se remplissent tout seuls — comme le SIRET, qui
+ * ne se retape pas sur chaque devis.
+ *
+ * **Un crochet dont la valeur manque RESTE un crochet**, et c'est délibéré :
+ * l'écran des réglages le compte (`crochetsRestants`) et le dit tant qu'il y en
+ * a. Le faire disparaître à vide laisserait partir « d'une assurance
+ * décennale : . » chez un client, c'est-à-dire une phrase fausse à la place
+ * d'un manque visible (`docs/AGENT.md` §3).
+ *
+ * **Elle s'applique à l'impression, jamais à ce qu'il a tapé.** Ce qui est
+ * rangé en base reste SON texte, crochets compris : sinon changer d'assureur
+ * ne changerait plus rien aux devis suivants, l'ancien nom étant déjà figé
+ * dans la case.
+ */
+export function conditionsGeneralesRemplies(
+  texte: string | null | undefined,
+  mentions: DonneesMentionsObligatoires
+): string {
+  if (!texte) return "";
+  const decennale = contenuDecennale(mentions);
+  const mediateur = contenuMediateur(mentions);
+  return texte
+    .split(CROCHET_DECENNALE)
+    .join(decennale ?? CROCHET_DECENNALE)
+    .split(CROCHET_MEDIATEUR)
+    .join(mediateur ?? CROCHET_MEDIATEUR);
 }

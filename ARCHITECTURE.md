@@ -30665,3 +30665,62 @@ allers-retours avec les voyants au vert.
 Le seuil de dix points d'entrée est une **valeur de départ**
 (`RAYON_MAXIMAL_DU_NIVEAU_2`) : à ce niveau, 189 fichiers sur 697 valent la
 batterie entière. Il se règle sur des mesures, jamais lot par lot.
+
+## §366 — La décennale et le médiateur : deux champs, plus deux crochets
+
+**Son accord du 14 septembre 2026** (`appli/decennale-et-mediateur.html`), codé
+le 16 sur son « oui ».
+
+**Ce qui l'a déclenché, et pourquoi la demande a été refusée telle quelle.** Il
+a demandé de **colorer les crochets en rouge** dans le texte des conditions
+générales, pour les retrouver. Deux raisons de ne pas le faire :
+
+1. **C'est impossible** — la case est un `<textarea>`, qui n'affiche que du
+   texte nu. Un calque coloré posé derrière aurait été exactement le pansement
+   que `CLAUDE.md` §4 quater refuse : trois couches, et plus personne ne sait
+   laquelle décide ;
+2. **cela aurait traité le symptôme.** Le vrai défaut est qu'une information
+   d'entreprise — celle qui ne change qu'une fois par an — se retapait **dans un
+   texte**. Donc se recopiait. Donc divergeait au premier changement d'assureur.
+
+**Ce qui a été fait à la place :** cinq colonnes sur `entreprises` (migration
+0093), deux blocs dans « Mon entreprise » après « Pour être payé », et les
+articles 9 et 11 se remplissent tout seuls. Les crochets disparaissent au lieu
+d'être signalés.
+
+### Figées sur le document, comme le SIRET
+
+Les cinq valeurs sont **recopiées sur le devis et sur la facture** à leur
+création. Un devis dit ce qui était vrai le jour où il est parti — et pour
+l'assurance cela compte plus qu'ailleurs : c'est cette pièce qui prouve la
+couverture **au moment du chantier**. Les lire en direct réécrirait le passé.
+
+### Le nom commande, dans les deux cas
+
+Sans l'assureur, rien ne s'imprime — un numéro de contrat seul ne désigne
+aucune compagnie, ne prouve rien et ne se vérifie pas. Même règle pour le
+médiateur.
+
+**Et un crochet dont la valeur manque RESTE un crochet.** Le faire disparaître
+à vide laisserait partir « d'une assurance décennale : . » chez un client :
+une phrase fausse à la place d'un manque visible (`docs/AGENT.md` §3). L'écran
+des réglages compte désormais ce qui reste **après remplissage**, et renvoie
+vers Mon entreprise plutôt que vers le texte.
+
+### Les pièces
+
+| | |
+|---|---|
+| `src/lib/mentions-obligatoires.ts` | les deux phrases, et ce qui remplace chaque crochet |
+| `src/lib/conditions-generales.ts` | les crochets écrits **une seule fois**, et la substitution |
+| `drizzle/0093_decennale_et_mediateur.sql` | cinq colonnes × trois tables, toutes *nullable* (expand seul) |
+| `src/server/pdf/document-commun.ts` | le pied, **partagé** par le devis et la facture |
+| `src/app/reglages/identite/IdentiteClient.tsx` | les deux blocs |
+| `scripts/test-mentions-obligatoires.ts` | la règle pure |
+| `scripts/test-devis-pdf-decennale-mediateur.ts` | le trajet jusqu'au papier |
+| `scripts/test-decennale-mediateur-db.ts` | le figé : changer d'assureur ne réécrit pas un devis parti |
+
+Les deux dernières suites ne font pas double emploi : celle du PDF injecte les
+champs à la main et serait verte même si la création du devis ne les recopiait
+pas. C'est la faute du 28 août 2026 — éprouver la moitié qu'on vient d'écrire,
+jamais le chemin du patron (`CLAUDE.md` §5 quater).

@@ -8,6 +8,13 @@ sert.
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## Les crochets des conditions générales ne se remplissent plus à la main
+
+Depuis le 16 septembre 2026, l'assureur décennale et le médiateur se saisissent
+dans « Mon entreprise » et remplissent tout seuls les articles 9 et 11
+(`src/lib/mentions-obligatoires.ts`). Un crochet dont la valeur manque RESTE un
+crochet : c'est ce qui le rend visible. `ARCHITECTURE.md` §366.
+
 ## Avant de pousser : `npm run niveau`
 
 Depuis le 14 septembre 2026, le niveau d'épreuve se calcule sur le diff —

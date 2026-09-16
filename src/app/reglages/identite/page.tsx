@@ -77,6 +77,11 @@ export default async function IdentitePage() {
           // et réécrit sans qu'on l'ait touché — « 1000 » se retrouve.
           capitalSocial: e?.capitalSocial ? String(Number(e.capitalSocial)) : "",
           villeRcs: e?.villeRcs ?? "",
+          assureurDecennale: e?.assureurDecennale ?? "",
+          contratDecennale: e?.contratDecennale ?? "",
+          couvertureDecennale: e?.couvertureDecennale ?? "",
+          mediateurNom: e?.mediateurNom ?? "",
+          mediateurCoordonnees: e?.mediateurCoordonnees ?? "",
           mentionsLegalesPosition: e?.mentionsLegalesPosition ?? "aucune",
         }}
         aPrevenir={aPrevenir}

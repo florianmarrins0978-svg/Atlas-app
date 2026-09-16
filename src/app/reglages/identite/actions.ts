@@ -51,6 +51,12 @@ export async function majIdentiteAction(data: {
   capitalSocial?: string;
   villeRcs?: string;
   mentionsLegalesPosition?: "sous_nom" | "bas" | "aucune";
+  /** Migration 0093 — voir `src/lib/mentions-obligatoires.ts`. */
+  assureurDecennale?: string;
+  contratDecennale?: string;
+  couvertureDecennale?: string;
+  mediateurNom?: string;
+  mediateurCoordonnees?: string;
 }): Promise<ResultatIdentite> {
   const ctx = await getCurrentCtx();
   try {

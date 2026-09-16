@@ -171,6 +171,16 @@ export async function mettreAJourEntreprise(
      */
     capitalSocial?: string | null;
     villeRcs?: string | null;
+    /**
+     * La décennale et le médiateur (migration 0093) — saisis une fois, comme le
+     * SIRET. Ils remplissent les articles 9 et 11 des conditions générales et
+     * s'impriment en bas des documents (`src/lib/mentions-obligatoires.ts`).
+     */
+    assureurDecennale?: string | null;
+    contratDecennale?: string | null;
+    couvertureDecennale?: string | null;
+    mediateurNom?: string | null;
+    mediateurCoordonnees?: string | null;
     /** Où — ou si — les trois mentions s'impriment. Par défaut « aucune ». */
     mentionsLegalesPosition?: "sous_nom" | "bas" | "aucune";
     /**
@@ -226,6 +236,8 @@ export async function mettreAJourEntreprise(
     for (const champ of [
       "adresse", "siret", "telephone", "email", "iban",
       "formeJuridique", "numeroTva", "titulaireCompte", "villeRcs",
+      "assureurDecennale", "contratDecennale", "couvertureDecennale",
+      "mediateurNom", "mediateurCoordonnees",
     ] as const) {
       // Une chaîne vide vaut « effacé », pas « inchangé » : le patron doit
       // pouvoir retirer un SIRET saisi de travers.

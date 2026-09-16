@@ -121,6 +121,20 @@ export const entreprises = pgTable("entreprises", {
   capitalSocial: numeric("capital_social", { precision: 12, scale: 2 }),
   villeRcs: text("ville_rcs"),
   /**
+   * LA DÉCENNALE ET LE MÉDIATEUR (migration 0093) — son accord du 14 septembre
+   * 2026. Saisis une fois, comme le SIRET : les articles 9 et 11 des conditions
+   * générales s'en remplissent, et le bas du devis comme celui de la facture
+   * les portent. Avant, c'étaient deux crochets à retaper dans le texte.
+   *
+   * Le NOM commande, dans les deux cas : un numéro de contrat sans compagnie ne
+   * prouve rien (`src/lib/mentions-obligatoires.ts`).
+   */
+  assureurDecennale: text("assureur_decennale"),
+  contratDecennale: text("contrat_decennale"),
+  couvertureDecennale: text("couverture_decennale"),
+  mediateurNom: text("mediateur_nom"),
+  mediateurCoordonnees: text("mediateur_coordonnees"),
+  /**
    * Où — ou si — la forme juridique, le capital et le RCS s'impriment
    * (migration 0072). Par défaut « aucune » : ces champs existaient déjà
    * (`formeJuridique`, migration 0039) sans jamais s'imprimer nulle part —
@@ -1142,6 +1156,20 @@ export const devis = pgTable(
     entrepriseMentionsLegalesPosition: text("entreprise_mentions_legales_position", {
       enum: ["sous_nom", "bas", "aucune"],
     }),
+    /**
+     * La décennale et le médiateur AU JOUR DU DOCUMENT (migration 0093).
+     *
+     * Figés comme le SIRET, et pour une raison qui compte davantage : un numéro
+     * de contrat d'assurance change, et c'est cette pièce-là qui prouve la
+     * couverture au moment du chantier. Les lire en direct réécrirait le passé.
+     *
+     * Nuls sur tout ce qui existait avant : rien de plus ne s'imprime.
+     */
+    entrepriseAssureurDecennale: text("entreprise_assureur_decennale"),
+    entrepriseContratDecennale: text("entreprise_contrat_decennale"),
+    entrepriseCouvertureDecennale: text("entreprise_couverture_decennale"),
+    entrepriseMediateurNom: text("entreprise_mediateur_nom"),
+    entrepriseMediateurCoordonnees: text("entreprise_mediateur_coordonnees"),
 
     clientNom: text("client_nom"),
     // Recopiée comme le nom : un document dit comment on s'adressait à son
@@ -1904,6 +1932,20 @@ export const factures = pgTable(
     entrepriseMentionsLegalesPosition: text("entreprise_mentions_legales_position", {
       enum: ["sous_nom", "bas", "aucune"],
     }),
+    /**
+     * La décennale et le médiateur AU JOUR DU DOCUMENT (migration 0093).
+     *
+     * Figés comme le SIRET, et pour une raison qui compte davantage : un numéro
+     * de contrat d'assurance change, et c'est cette pièce-là qui prouve la
+     * couverture au moment du chantier. Les lire en direct réécrirait le passé.
+     *
+     * Nuls sur tout ce qui existait avant : rien de plus ne s'imprime.
+     */
+    entrepriseAssureurDecennale: text("entreprise_assureur_decennale"),
+    entrepriseContratDecennale: text("entreprise_contrat_decennale"),
+    entrepriseCouvertureDecennale: text("entreprise_couverture_decennale"),
+    entrepriseMediateurNom: text("entreprise_mediateur_nom"),
+    entrepriseMediateurCoordonnees: text("entreprise_mediateur_coordonnees"),
 
     clientNom: text("client_nom"),
     // Recopiée comme le nom : un document dit comment on s'adressait à son

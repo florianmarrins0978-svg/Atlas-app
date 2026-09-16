@@ -15,7 +15,11 @@ import {
 } from "@/lib/conditions-documents";
 import type { Allure } from "@/lib/allure-documents";
 import { LIBELLE_MAIN_DOEUVRE } from "@/lib/main-doeuvre-devis";
-import { TITRE_CONDITIONS_GENERALES, paragraphesConditionsGenerales } from "@/lib/conditions-generales";
+import {
+  TITRE_CONDITIONS_GENERALES,
+  conditionsGeneralesRemplies,
+  paragraphesConditionsGenerales,
+} from "@/lib/conditions-generales";
 import {
   echeancierDevis,
   libelleLigneAcompte,
@@ -179,7 +183,20 @@ function annexeConditionsGenerales(data: DevisPdfData, sansPrix: boolean) {
   // Un devis d'avant la 0064 n'a pas de conditions figées du tout : il sort
   // identique à lui-même, sans annexe — la règle de `conditionsReglees`.
   if (sansPrix || !data.conditionsReglees) return null;
-  const paragraphes = paragraphesConditionsGenerales(lireConditions(data.conditionsReglees).conditionsGenerales);
+  // **Les articles 9 et 11 se remplissent ici** (migration 0093) : l'assureur et
+  // le médiateur sont saisis une fois dans Mon entreprise, et ce sont ceux
+  // FIGÉS sur ce devis — pas ceux d'aujourd'hui. Un crochet dont la valeur
+  // manque reste un crochet : il vaut mieux qu'il se voie sur le papier plutôt
+  // qu'une phrase s'achève sur un deux-points vide.
+  const paragraphes = paragraphesConditionsGenerales(
+    conditionsGeneralesRemplies(lireConditions(data.conditionsReglees).conditionsGenerales, {
+      assureurDecennale: data.entrepriseAssureurDecennale,
+      contratDecennale: data.entrepriseContratDecennale,
+      couvertureDecennale: data.entrepriseCouvertureDecennale,
+      mediateurNom: data.entrepriseMediateurNom,
+      mediateurCoordonnees: data.entrepriseMediateurCoordonnees,
+    })
+  );
   return paragraphes.length ? { titre: TITRE_CONDITIONS_GENERALES, paragraphes } : null;
 }
 

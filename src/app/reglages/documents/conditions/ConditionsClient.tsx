@@ -9,7 +9,12 @@ import {
   type Conditions,
 } from "@/lib/conditions-documents";
 import { majConditionsAction } from "../actions";
-import { TEXTE_ORIGINE_CONDITIONS_GENERALES, crochetsRestants } from "@/lib/conditions-generales";
+import {
+  TEXTE_ORIGINE_CONDITIONS_GENERALES,
+  conditionsGeneralesRemplies,
+  crochetsRestants,
+} from "@/lib/conditions-generales";
+import type { DonneesMentionsObligatoires } from "@/lib/mentions-obligatoires";
 import BarreEnregistrer from "@/components/atlas/BarreEnregistrer";
 import { Bloc, Chiffre, Libre, Reglage } from "../pieces";
 
@@ -35,8 +40,24 @@ import { Bloc, Chiffre, Libre, Reglage } from "../pieces";
  * contrôles éprouvaient la RÈGLE — les bonnes phrases pour les bons réglages —,
  * jamais le CHEMIN entre le réglage et le papier.
  */
-export default function ConditionsClient({ initial }: { initial: Conditions }) {
+export default function ConditionsClient({
+  initial,
+  mentions,
+}: {
+  initial: Conditions;
+  /**
+   * Ce que « Mon entreprise » sait déjà (migration 0093). Les articles 9 et 11
+   * s'en remplissent à l'impression : un crochet couvert par ces champs n'est
+   * plus un crochet à remplir, et l'annoncer serait envoyer le patron chercher
+   * un travail qu'il a déjà fait.
+   */
+  mentions: DonneesMentionsObligatoires;
+}) {
   const [c, setC] = useState<Conditions>(initial);
+  // **Ce qui RESTE après remplissage**, jamais ce que le texte porte : depuis
+  // la migration 0093, l'assureur et le médiateur viennent de Mon entreprise.
+  // Compter les crochets bruts annoncerait du travail déjà fait.
+  const restants = crochetsRestants(conditionsGeneralesRemplies(c.conditionsGenerales, mentions));
   const [refus, setRefus] = useState<string | null>(null);
   const [enCours, demarrer] = useTransition();
   const [aEcrire, setAEcrire] = useState(false);
@@ -193,9 +214,9 @@ export default function ConditionsClient({ initial }: { initial: Conditions }) {
             onEcrire={(t) => poser({ conditionsGenerales: t })}
             onFini={(t) => enregistrer({ conditionsGenerales: t })}
           />
-          {crochetsRestants(c.conditionsGenerales) > 0 && (
+          {restants > 0 && (
             <p className={`mt-2 ${texteSituation}`} style={{ color: colors.alert }} data-atlas="crochets-a-remplir">
-              {crochetsRestants(c.conditionsGenerales)} crochet{crochetsRestants(c.conditionsGenerales) > 1 ? "s" : ""} à remplir avant d’envoyer un devis.
+              {restants} crochet{restants > 1 ? "s" : ""} à remplir dans Mon entreprise.
             </p>
           )}
         </Reglage>

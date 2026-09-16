@@ -272,6 +272,14 @@ export async function getOuCreerDevisBrouillon(ctx: Ctx, chantierId: string) {
       entrepriseFormeJuridique: entreprise.formeJuridique,
       entrepriseCapitalSocial: entreprise.capitalSocial,
       entrepriseVilleRcs: entreprise.villeRcs,
+      // Figées au jour du devis, comme le SIRET (migration 0093) : un numéro de
+      // contrat d'assurance change, et c'est cette pièce qui prouve la
+      // couverture au moment du chantier.
+      entrepriseAssureurDecennale: entreprise.assureurDecennale,
+      entrepriseContratDecennale: entreprise.contratDecennale,
+      entrepriseCouvertureDecennale: entreprise.couvertureDecennale,
+      entrepriseMediateurNom: entreprise.mediateurNom,
+      entrepriseMediateurCoordonnees: entreprise.mediateurCoordonnees,
       entrepriseMentionsLegalesPosition: entreprise.mentionsLegalesPosition,
       clientNom: client?.nom,
       // Recopiée comme le nom : le document dit comment on s'adressait à son
@@ -540,6 +548,13 @@ function donneesPdfDuDevis(
     entrepriseFormeJuridique: d.entrepriseFormeJuridique,
     entrepriseCapitalSocial: d.entrepriseCapitalSocial,
     entrepriseVilleRcs: d.entrepriseVilleRcs,
+    // Relues sur le DOCUMENT, pas sur l'entreprise (migration 0093) : c'est ce
+    // qui était vrai le jour où il est parti.
+    entrepriseAssureurDecennale: d.entrepriseAssureurDecennale,
+    entrepriseContratDecennale: d.entrepriseContratDecennale,
+    entrepriseCouvertureDecennale: d.entrepriseCouvertureDecennale,
+    entrepriseMediateurNom: d.entrepriseMediateurNom,
+    entrepriseMediateurCoordonnees: d.entrepriseMediateurCoordonnees,
     entrepriseMentionsLegalesPosition: d.entrepriseMentionsLegalesPosition,
     clientNom: d.clientNom,
     clientCivilite: d.clientCivilite,

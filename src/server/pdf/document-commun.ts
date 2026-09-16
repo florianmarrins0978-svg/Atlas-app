@@ -25,6 +25,7 @@ import {
   TITRE_TRAVAUX_SUPPLEMENTAIRES,
 } from "@/lib/reduction-devis";
 import { lignesMentionsLegales, type PositionMentionsLegales } from "@/lib/mentions-legales";
+import { lignesMentionsObligatoires } from "@/lib/mentions-obligatoires";
 import { lignesDuPapier, quantiteLisible, tauxCourt } from "@/lib/lignes-du-papier";
 import { protegerContreModification } from "./proteger-pdf";
 import { annoncerLaLongueurDesPolices } from "./polices-embarquees";
@@ -479,6 +480,19 @@ export type DonneesDocument = {
   entrepriseFormeJuridique?: string | null;
   entrepriseCapitalSocial?: string | null;
   entrepriseVilleRcs?: string | null;
+  /**
+   * LA DÉCENNALE ET LE MÉDIATEUR (migration 0093), figés sur le document.
+   *
+   * Écrits sous la mention légale, au pied — sur le devis comme sur la facture,
+   * par une SEULE fonction : deux façons de composer le même engagement
+   * finiraient par ne plus dire la même chose au client (`CLAUDE.md` §3).
+   * Absents ou vides : rien ne s'imprime, jamais une phrase à trou.
+   */
+  entrepriseAssureurDecennale?: string | null;
+  entrepriseContratDecennale?: string | null;
+  entrepriseCouvertureDecennale?: string | null;
+  entrepriseMediateurNom?: string | null;
+  entrepriseMediateurCoordonnees?: string | null;
   entrepriseMentionsLegalesPosition?: PositionMentionsLegales | null;
   clientNom?: string | null;
   /** Recopiée sur le document au moment où il est établi (migration 0038). */
@@ -1281,10 +1295,24 @@ export async function composerDocument(
 
   // Mot pour mot la mention du modèle du patron : c'est celle qu'il a déjà
   // envoyée à ses clients, et Atlas ne doit pas en dire autre chose.
-  const mention = options.mentionLegale(data);
-  enLignes(mention, ctx.sans, 7.8, 290).forEach((l, i) =>
-    ecrire(ctx, l, MARGE, yPied - i * 10, { taille: 7.8, couleur: ctx.teintes.legal })
-  );
+  // **La décennale et le médiateur s'ajoutent ICI, et nulle part ailleurs**
+  // (migration 0093) : le devis et la facture traversent tous deux ce pied, et
+  // les composer chacun de son côté aurait fini par en donner deux versions.
+  // Chaque mention prend sa propre ligne : collées à la phrase des pénalités,
+  // elles s'y perdraient — or elles se cherchent du regard.
+  const paragraphes = [
+    options.mentionLegale(data),
+    ...lignesMentionsObligatoires({
+      assureurDecennale: data.entrepriseAssureurDecennale,
+      contratDecennale: data.entrepriseContratDecennale,
+      couvertureDecennale: data.entrepriseCouvertureDecennale,
+      mediateurNom: data.entrepriseMediateurNom,
+      mediateurCoordonnees: data.entrepriseMediateurCoordonnees,
+    }),
+  ];
+  paragraphes
+    .flatMap((p) => enLignes(p, ctx.sans, 7.8, 290))
+    .forEach((l, i) => ecrire(ctx, l, MARGE, yPied - i * 10, { taille: 7.8, couleur: ctx.teintes.legal }));
 
   // Le cadre de signature n'appartient qu'au devis : une facture ne se signe
   // pas, elle se règle. En mettre un inviterait le client à un geste qui n'a

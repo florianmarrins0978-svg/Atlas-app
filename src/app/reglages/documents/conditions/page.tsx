@@ -42,7 +42,19 @@ export default async function ConditionsPage() {
         titre="Ce qui s'imprime"
         retour={{ href: "/reglages/documents", libelle: "Retour à Devis & factures" }}
       />
-      <ConditionsClient initial={conditionsDepuisEntreprise(entreprise)} />
+      {/* Les cinq champs de « Mon entreprise » (migration 0093) : ce sont eux
+          qui remplissent les articles 9 et 11, donc eux qui décident s'il reste
+          un crochet à voir. */}
+      <ConditionsClient
+        initial={conditionsDepuisEntreprise(entreprise)}
+        mentions={{
+          assureurDecennale: entreprise?.assureurDecennale,
+          contratDecennale: entreprise?.contratDecennale,
+          couvertureDecennale: entreprise?.couvertureDecennale,
+          mediateurNom: entreprise?.mediateurNom,
+          mediateurCoordonnees: entreprise?.mediateurCoordonnees,
+        }}
+      />
     </div>
   );
 }

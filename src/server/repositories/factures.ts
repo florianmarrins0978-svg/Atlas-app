@@ -226,6 +226,11 @@ type EntreprisePourFacture = Pick<
   | "formeJuridique"
   | "capitalSocial"
   | "villeRcs"
+  | "assureurDecennale"
+  | "contratDecennale"
+  | "couvertureDecennale"
+  | "mediateurNom"
+  | "mediateurCoordonnees"
   | "mentionsLegalesPosition"
   | "regimeTva"
 >;
@@ -241,6 +246,11 @@ const COLONNES_EMETTEUR = {
   formeJuridique: entreprises.formeJuridique,
   capitalSocial: entreprises.capitalSocial,
   villeRcs: entreprises.villeRcs,
+  assureurDecennale: entreprises.assureurDecennale,
+  contratDecennale: entreprises.contratDecennale,
+  couvertureDecennale: entreprises.couvertureDecennale,
+  mediateurNom: entreprises.mediateurNom,
+  mediateurCoordonnees: entreprises.mediateurCoordonnees,
   mentionsLegalesPosition: entreprises.mentionsLegalesPosition,
   regimeTva: entreprises.regimeTva,
 } as const;
@@ -262,6 +272,12 @@ function identiteDeLEmetteur(e: EntreprisePourFacture | undefined) {
     entrepriseFormeJuridique: e?.formeJuridique ?? null,
     entrepriseCapitalSocial: e?.capitalSocial ?? null,
     entrepriseVilleRcs: e?.villeRcs ?? null,
+    // Figées au jour de l'émission, comme le SIRET (migration 0093).
+    entrepriseAssureurDecennale: e?.assureurDecennale ?? null,
+    entrepriseContratDecennale: e?.contratDecennale ?? null,
+    entrepriseCouvertureDecennale: e?.couvertureDecennale ?? null,
+    entrepriseMediateurNom: e?.mediateurNom ?? null,
+    entrepriseMediateurCoordonnees: e?.mediateurCoordonnees ?? null,
     entrepriseMentionsLegalesPosition: e?.mentionsLegalesPosition ?? null,
     // Le régime au jour de l'émission (migration 0039) : il était déjà lu ici,
     // et il rejoint simplement le reste de l'identité.
@@ -1244,6 +1260,13 @@ function donneesFacture(
     entrepriseFormeJuridique: f.entrepriseFormeJuridique,
     entrepriseCapitalSocial: f.entrepriseCapitalSocial,
     entrepriseVilleRcs: f.entrepriseVilleRcs,
+    // Relues sur le DOCUMENT, pas sur l'entreprise (migration 0093) : c'est ce
+    // qui était vrai le jour où il est parti.
+    entrepriseAssureurDecennale: f.entrepriseAssureurDecennale,
+    entrepriseContratDecennale: f.entrepriseContratDecennale,
+    entrepriseCouvertureDecennale: f.entrepriseCouvertureDecennale,
+    entrepriseMediateurNom: f.entrepriseMediateurNom,
+    entrepriseMediateurCoordonnees: f.entrepriseMediateurCoordonnees,
     entrepriseMentionsLegalesPosition: f.entrepriseMentionsLegalesPosition,
     clientNom: f.clientNom,
     clientCivilite: f.clientCivilite,

@@ -5,6 +5,13 @@
 
 ---
 
+## La décennale et le médiateur (16 septembre 2026)
+
+Cinq champs dans « Mon entreprise » (migration 0093), figés sur chaque devis et
+chaque facture, imprimés en bas des deux, et qui remplissent les articles 9 et
+11 des conditions générales. Les deux crochets du texte d'origine disparaissent
+dès que Mon entreprise est rempli. Détail : `ARCHITECTURE.md` §366.
+
 ## Le niveau d'épreuve, calculé (14 septembre 2026)
 
 `niveau = MAX(plancher, rayon d'impact, gravité)` — `scripts/_niveau-de-risque.mjs`.

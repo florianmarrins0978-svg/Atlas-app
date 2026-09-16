@@ -6,6 +6,29 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-09-16
+
+### La décennale et le médiateur : deux champs, plus deux crochets
+
+Il a demandé de colorer en rouge les crochets des conditions générales pour les
+retrouver. Impossible — la case est un champ de saisie, elle n'affiche que du
+texte nu — et surtout, cela aurait traité le symptôme : une information
+d'entreprise se retapait dans un texte, donc se recopiait, donc divergeait au
+premier changement d'assureur.
+
+**Deux blocs dans Mon entreprise**, après « Pour être payé » : assureur, n° de
+contrat, couverture ; nom et adresse du médiateur. Remplis une fois comme le
+SIRET. Les articles 9 et 11 se remplissent tout seuls, et les deux mentions
+s'impriment en bas du devis **et** de la facture.
+
+**Ce que ça évite.** Un devis parti sans la mention d'assurance que la loi y
+attend, et un numéro de contrat périmé recopié de devis en devis. Les valeurs
+sont figées sur chaque document : changer d'assureur ne réécrit pas une pièce
+déjà partie — c'est elle qui prouve la couverture au moment du chantier.
+
+Un crochet dont la valeur manque reste un crochet : mieux vaut un manque
+visible qu'une phrase qui s'achève sur un deux-points. Migration 0093.
+
 ## 2026-09-14
 
 ### Deux suites comptaient les jours en UTC, et rougissaient deux heures par nuit
