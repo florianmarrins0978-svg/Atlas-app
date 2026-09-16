@@ -1,0 +1,552 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Le bouton « Payée » — Atlas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/*
+  ═══════════════════════════════════════════════════════════════════════════
+  LE BOUTON « PAYÉE » — la planche, 16 septembre 2026
+  ═══════════════════════════════════════════════════════════════════════════
+
+  CE QU'IL A DIT, capture de « Terminés › Factures en attente » à l'appui :
+
+    « Il faut rendre cette page plus compréhensible pour les utilisateurs.
+      Il trouve que le bouton Payée les induit en erreur. »
+
+  CE QUI TROMPE, et ce n'est pas la place du bouton — c'est le mot.
+
+    « Payée » est un adjectif, posé dans une pastille verte pleine. C'est
+    exactement la forme d'une ÉTIQUETTE D'ÉTAT : on lit « cette facture est
+    payée », pas « appuyez ici quand elle l'est ». Un bouton doit dire ce qui
+    va se passer quand on l'appuie (`CLAUDE.md` §3 : un écran ne s'explique
+    pas, il se montre — et un bouton se montre par son verbe).
+
+    Et la ligne juste au-dessus, « Ouverte 14/09 », aggrave la lecture : elle
+    parle du CLIENT qui a ouvert l'e-mail, mais sur une facture elle se lit
+    « facture ouverte » — c'est-à-dire impayée. « Ouverte » puis « Payée » sur
+    la même ligne : deux états qui se contredisent, et aucun geste visible.
+
+  CE QUI NE BOUGE PAS — sa règle du 11 septembre 2026, « il fallait laisser
+  les phrases où elles étaient, juste les modifier » : aucune ligne ne change
+  de place, aucune ne s'ajoute. Seuls les mots des deux boutons changent, et
+  — à part, sur un interrupteur — le mot de la ligne du client.
+
+  LES TROIS PLANCHES — même écran, trois paires de mots :
+
+    1. Marquer payée         · le mot que l'application emploie DÉJÀ dans le
+                               rappel « Facture impayée » (Notifications.tsx) :
+                               deux endroits, un seul mot, comme le §3 l'exige.
+    2. J'ai reçu le paiement · SA phrase du 14 août 2026 (« lorsque j'ai reçu
+                               le paiement, je retourne sur l'endroit en
+                               attente, je clique »). À la première personne,
+                               un bouton ne peut plus se lire comme un état.
+                               Le second geste lui répond : « J'ai reçu une
+                               partie ».
+    3. Confirmer le paiement · un verbe du métier, et le second geste inchangé.
+
+  L'INTERRUPTEUR « LA LIGNE DU CLIENT » est un choix à part : « Ouverte 14/09 »
+  ou « Le client l'a ouverte le 14/09 ». Il vaut pour les trois planches, et
+  pour le dossier du client aussi (la phrase vit dans
+  `src/lib/reception-facture.ts`, une seule fois).
+
+  LES BOUTONS SONT VRAIS : appuyer sur le premier fait sortir la facture de la
+  file — c'est ce qui se passe dans l'application, elle rejoint le relevé
+  juste au-dessus. Le second ouvre les deux cases choisies le 11 septembre.
+  Rien ne part nulle part.
+
+  AUCUNE LIGNE DE L'APPLICATION N'A BOUGÉ. `CLAUDE.md` §3 bis : une demande
+  d'apparence se dessine, se montre, et ne touche `src/` qu'une fois choisie.
+
+  Les couleurs viennent de `src/lib/design-tokens.ts`, au caractère près.
+*/
+:root{
+  --fond:#f5f3ee; --carte:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
+  --gris:#8a8578; --pin:#2f3b2f; --papier:#ece9e1; --plein:#7d9a6d;
+  --or:#B98B47; --trait:rgba(28,28,26,.12); --filet:rgba(28,28,26,.08);
+  --creme:#f0eee7; --scene:#e6e3dc;
+  --serif:"Playfair Display",ui-serif,Georgia,serif;
+  --sans:"Inter",ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+body.nuit{
+  --fond:#101210; --carte:#1a1d19; --encre:#e9e8de; --encre-douce:#c1c2b6;
+  --gris:#84887b; --pin:#8fae86; --papier:#20241f; --plein:#8fae86;
+  --or:#c6a15b; --trait:rgba(233,232,222,.12); --filet:rgba(233,232,222,.08);
+  --creme:#20241f; --scene:#070908;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--scene)}
+body{font:16px/1.5 var(--sans);color:var(--encre);-webkit-text-size-adjust:100%;padding:0 0 64px}
+::selection{background:var(--or);color:#faf9f5}
+button:focus-visible,a:focus-visible{outline:2px solid var(--or);outline-offset:3px}
+
+.bandeau{background:var(--encre);color:var(--fond);padding:18px 20px;font-size:14px;line-height:1.6}
+body.nuit .bandeau{background:#000;color:var(--encre)}
+.bandeau b{color:#fff}
+body.nuit .bandeau b{color:var(--encre)}
+.bandeau .dedans{max-width:1240px;margin:0 auto}
+
+.etats{position:sticky;top:0;z-index:20;background:var(--scene);
+       border-bottom:1px solid var(--trait);padding:12px 16px 13px}
+.etats .quoi{max-width:1240px;margin:0 auto 9px;font:600 10px/1 var(--sans);
+             letter-spacing:.2em;text-transform:uppercase;color:var(--gris)}
+.etats .rangee{max-width:1240px;margin:0 auto;display:flex;flex-wrap:wrap;gap:7px}
+.etats button{border:1px solid var(--trait);background:var(--carte);color:var(--encre-douce);
+              border-radius:999px;padding:10px 14px;font:400 13px/1 var(--sans);cursor:pointer;
+              min-height:44px;-webkit-tap-highlight-color:transparent}
+.etats button[aria-pressed="true"]{background:var(--pin);border-color:var(--pin);color:#faf9f5}
+body.nuit .etats button[aria-pressed="true"]{color:#101210}
+
+.planches{display:flex;flex-wrap:wrap;gap:34px;justify-content:center;
+          max-width:1280px;margin:30px auto 0;padding:0 20px}
+.planche{width:390px;max-width:100%}
+.planche .nom{margin:0 0 4px;font:500 19px/1.2 var(--serif)}
+.planche .idee{margin:0 0 12px;font-size:13.5px;line-height:1.5;color:var(--encre-douce);min-height:80px}
+.planche .idee b{color:var(--encre)}
+.tel{width:390px;max-width:100%;border-radius:26px;overflow:hidden;
+     box-shadow:0 16px 44px rgba(20,18,14,.22);background:var(--fond);padding:0 0 18px}
+/* Sur SON téléphone (390 de large), l'écran dessiné prend toute la largeur :
+   à 350, les deux boutons de la planche 2 passaient sur deux lignes alors
+   qu'ils tiennent côte à côte dans l'application. Ce qu'il regarde doit être
+   ce qu'il aurait. */
+@media (max-width:430px){
+  .planches{padding:0;gap:26px}
+  .planche .nom,.planche .idee{padding:0 20px}
+  .tel{border-radius:0}
+}
+
+/* ── L'écran, recopié de src/app/termines/tva/EnAttenteDePaiement.tsx ── */
+.bloc{padding:22px 24px 0}
+.haut{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+.haut h2{margin:0;font:400 17px/1.25 var(--serif)}
+.haut .compte{font-size:12px;color:var(--gris);font-variant-numeric:tabular-nums}
+
+.facture{margin-top:14px;padding-top:14px;border-top:1px solid var(--filet)}
+/* Sortie nette, sans fondu : dans l'application la page se recharge et la
+   facture n'y est plus — la planche fait pareil. */
+.facture.partie{display:none}
+.ligne{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+.cli{font-size:14.5px}
+.meta{display:block;font-size:11.5px;line-height:1.45;color:var(--gris)}
+.droite{text-align:right;flex:0 0 auto}
+.solde{font:400 15.5px/1.2 var(--serif);font-variant-numeric:tabular-nums}
+.trace{margin:8px 0 0;font-size:11.5px;line-height:1.5;color:var(--gris)}
+.trace b{color:var(--encre-douce)}
+/* Les deux façons d'écrire la ligne du client : l'interrupteur choisit. */
+body[data-ligne="ouverte"] .trace .client{display:none}
+body[data-ligne="client"] .trace .brut{display:none}
+
+.gestes{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-top:10px}
+.plein{border:0;border-radius:999px;background:var(--plein);color:var(--carte);
+       padding:10px 20px;font:500 14px/1 var(--sans);min-height:40px;cursor:pointer}
+body.nuit .plein{color:#101210}
+.second{border:0;background:none;color:var(--gris);font:400 14px/1 var(--sans);
+        padding:10px 8px;min-height:40px;cursor:pointer}
+.second[aria-expanded="true"]{color:var(--encre)}
+
+/* La saisie choisie le 11 septembre — planche n° 1 de « Noter un règlement ». */
+.saisie{margin-top:10px;display:none;flex-direction:column;gap:8px}
+.saisie.ouverte{display:flex}
+.cases{display:flex;gap:10px;align-items:flex-end}
+.case{display:flex;flex-direction:column;gap:5px;min-width:0}
+.case .nom-case{font:500 10px/1 var(--sans);letter-spacing:.14em;
+                text-transform:uppercase;color:var(--gris)}
+.saisie input{border:0;border-radius:4px;background:var(--creme);color:var(--encre);
+              font:400 16px/1.2 var(--sans);padding:11px 12px;min-width:0;width:100%}
+.saisie input::placeholder{color:var(--gris)}
+.case.jour{flex:1 1 auto}
+.case.montant{flex:0 0 132px}
+.case.montant input{text-align:right}
+.euro{padding-bottom:12px;font-size:13px;color:var(--gris)}
+.enregistrer{align-self:flex-start;border:0;border-radius:999px;background:var(--plein);
+             color:var(--carte);padding:12px 22px;font:500 14px/1 var(--sans);
+             min-height:44px;cursor:pointer}
+body.nuit .enregistrer{color:#101210}
+.sous{margin:0;font-size:12px;line-height:1.35;color:var(--gris)}
+
+.voir{display:block;margin-top:8px;border:0;background:none;color:var(--or);
+      font:400 14px/1.3 var(--sans);padding:8px 0;min-height:44px;text-align:left;cursor:pointer}
+
+/* Ce que le doigt vient de faire : la facture a rejoint le relevé. */
+.sortie{margin:10px 0 0;font-size:12px;line-height:1.5;color:var(--gris);display:none}
+.sortie.visible{display:block}
+.sortie b{color:var(--encre-douce)}
+.sortie button{border:0;background:none;color:var(--or);font:400 12px/1 var(--sans);
+               padding:6px 0 6px 6px;cursor:pointer}
+
+.note{max-width:1240px;margin:34px auto 0;padding:0 20px;font-size:13.5px;
+      line-height:1.6;color:var(--encre-douce)}
+.note .t{display:block;font:500 15px/1.3 var(--serif);color:var(--encre);margin-bottom:6px}
+.note b{color:var(--encre)}
+.note + .note{margin-top:22px}
+</style>
+</head>
+<body data-ligne="ouverte">
+
+<div class="bandeau"><div class="dedans">
+  <b>Le même écran, trois paires de mots sur les boutons.</b> Appuyez dessus,
+  ils font ce que l'application fait. Rien ne part nulle part : l'application
+  n'a pas bougé.
+</div></div>
+
+<div class="etats">
+  <p class="quoi">La ligne du client</p>
+  <div class="rangee">
+    <button type="button" data-ligne="ouverte" aria-pressed="true">Ouverte 14/09</button>
+    <button type="button" data-ligne="client" aria-pressed="false">Le client l'a ouverte le 14/09</button>
+    <button type="button" id="jourNuit" aria-pressed="false">Mode nuit</button>
+    <button type="button" id="remettre">Remettre les factures</button>
+  </div>
+</div>
+
+<div class="planches">
+
+  <!-- ═══ 1 ═══ -->
+  <section class="planche" data-planche="1">
+    <p class="nom">1 · Marquer payée</p>
+    <p class="idee">Un verbe devant le mot. C'est déjà celui du rappel
+      <b>« Facture impayée »</b> : l'application dirait la même chose aux deux
+      endroits. Le second geste ne change pas.</p>
+    <div class="tel"><div class="bloc">
+      <div class="haut"><h2>Factures en attente</h2><span class="compte">4 factures</span></div>
+
+      <div class="facture">
+        <div class="ligne">
+          <span><span class="cli">Amelie</span>
+            <span class="meta">F2026-000011 · émise le 14/09</span></span>
+          <span class="droite"><span class="solde">1 392,00 €</span></span>
+        </div>
+        <p class="trace"><span class="brut">Ouverte </span><span class="client">Le client l'a ouverte le </span><b>14/09</b></p>
+        <div class="gestes">
+          <button type="button" class="plein" data-solder>Marquer payée</button>
+          <button type="button" class="second" data-noter aria-expanded="false">Noter un règlement</button>
+        </div>
+        <div class="saisie">
+          <div class="cases">
+            <label class="case jour"><span class="nom-case">Payé le</span>
+              <input type="date" value="2026-09-16"></label>
+            <label class="case montant"><span class="nom-case">Montant reçu</span>
+              <input inputmode="decimal" placeholder="0,00"></label>
+            <span class="euro">€</span>
+          </div>
+          <button type="button" class="enregistrer">Enregistrer ce règlement</button>
+          <p class="sous">Seule la part reçue entre au relevé.</p>
+        </div>
+      </div>
+      <p class="sortie" data-sortie="Amelie">Amelie · 1 392,00 € — entrée au relevé.</p>
+
+      <div class="facture">
+        <div class="ligne">
+          <span><span class="cli">Frédéric</span>
+            <span class="meta">F2026-000008 · émise le 11/09</span></span>
+          <span class="droite"><span class="solde">300,00 €</span></span>
+        </div>
+        <p class="trace"><span class="brut">Ouverte </span><span class="client">Le client l'a ouverte le </span><b>11/09</b></p>
+        <div class="gestes">
+          <button type="button" class="plein" data-solder>Marquer payée</button>
+          <button type="button" class="second" data-noter aria-expanded="false">Noter un règlement</button>
+        </div>
+        <div class="saisie">
+          <div class="cases">
+            <label class="case jour"><span class="nom-case">Payé le</span>
+              <input type="date" value="2026-09-16"></label>
+            <label class="case montant"><span class="nom-case">Montant reçu</span>
+              <input inputmode="decimal" placeholder="0,00"></label>
+            <span class="euro">€</span>
+          </div>
+          <button type="button" class="enregistrer">Enregistrer ce règlement</button>
+          <p class="sous">Seule la part reçue entre au relevé.</p>
+        </div>
+      </div>
+      <p class="sortie" data-sortie="Frédéric">Frédéric · 300,00 € — entrée au relevé.</p>
+
+      <div class="facture">
+        <div class="ligne">
+          <span><span class="cli">Frédéric</span>
+            <span class="meta">F2026-000007 · émise le 11/09</span></span>
+          <span class="droite"><span class="solde">300,00 €</span></span>
+        </div>
+        <p class="trace">Réception confirmée le <b>11/09</b></p>
+        <div class="gestes">
+          <button type="button" class="plein" data-solder>Marquer payée</button>
+          <button type="button" class="second" data-noter aria-expanded="false">Noter un règlement</button>
+        </div>
+        <div class="saisie">
+          <div class="cases">
+            <label class="case jour"><span class="nom-case">Payé le</span>
+              <input type="date" value="2026-09-16"></label>
+            <label class="case montant"><span class="nom-case">Montant reçu</span>
+              <input inputmode="decimal" placeholder="0,00"></label>
+            <span class="euro">€</span>
+          </div>
+          <button type="button" class="enregistrer">Enregistrer ce règlement</button>
+          <p class="sous">Seule la part reçue entre au relevé.</p>
+        </div>
+      </div>
+      <p class="sortie" data-sortie="Frédéric">Frédéric · 300,00 € — entrée au relevé.</p>
+
+      <button type="button" class="voir">Voir toutes les factures en attente (<span class="n">4</span>)</button>
+    </div></div>
+  </section>
+
+  <!-- ═══ 2 ═══ -->
+  <section class="planche" data-planche="2">
+    <p class="nom">2 · J'ai reçu le paiement</p>
+    <p class="idee"><b>Vos mots</b> : « lorsque j'ai reçu le paiement, je
+      retourne sur l'endroit en attente, je clique ». À la première personne,
+      un bouton ne peut plus se lire comme un état. Le second geste répond au
+      premier : « J'ai reçu une partie ».</p>
+    <div class="tel"><div class="bloc">
+      <div class="haut"><h2>Factures en attente</h2><span class="compte">4 factures</span></div>
+
+      <div class="facture">
+        <div class="ligne">
+          <span><span class="cli">Amelie</span>
+            <span class="meta">F2026-000011 · émise le 14/09</span></span>
+          <span class="droite"><span class="solde">1 392,00 €</span></span>
+        </div>
+        <p class="trace"><span class="brut">Ouverte </span><span class="client">Le client l'a ouverte le </span><b>14/09</b></p>
+        <div class="gestes">
+          <button type="button" class="plein" data-solder>J'ai reçu le paiement</button>
+          <button type="button" class="second" data-noter aria-expanded="false">J'ai reçu une partie</button>
+        </div>
+        <div class="saisie">
+          <div class="cases">
+            <label class="case jour"><span class="nom-case">Payé le</span>
+              <input type="date" value="2026-09-16"></label>
+            <label class="case montant"><span class="nom-case">Montant reçu</span>
+              <input inputmode="decimal" placeholder="0,00"></label>
+            <span class="euro">€</span>
+          </div>
+          <button type="button" class="enregistrer">Enregistrer ce règlement</button>
+          <p class="sous">Seule la part reçue entre au relevé.</p>
+        </div>
+      </div>
+      <p class="sortie" data-sortie="Amelie">Amelie · 1 392,00 € — entrée au relevé.</p>
+
+      <div class="facture">
+        <div class="ligne">
+          <span><span class="cli">Frédéric</span>
+            <span class="meta">F2026-000008 · émise le 11/09</span></span>
+          <span class="droite"><span class="solde">300,00 €</span></span>
+        </div>
+        <p class="trace"><span class="brut">Ouverte </span><span class="client">Le client l'a ouverte le </span><b>11/09</b></p>
+        <div class="gestes">
+          <button type="button" class="plein" data-solder>J'ai reçu le paiement</button>
+          <button type="button" class="second" data-noter aria-expanded="false">J'ai reçu une partie</button>
+        </div>
+        <div class="saisie">
+          <div class="cases">
+            <label class="case jour"><span class="nom-case">Payé le</span>
+              <input type="date" value="2026-09-16"></label>
+            <label class="case montant"><span class="nom-case">Montant reçu</span>
+              <input inputmode="decimal" placeholder="0,00"></label>
+            <span class="euro">€</span>
+          </div>
+          <button type="button" class="enregistrer">Enregistrer ce règlement</button>
+          <p class="sous">Seule la part reçue entre au relevé.</p>
+        </div>
+      </div>
+      <p class="sortie" data-sortie="Frédéric">Frédéric · 300,00 € — entrée au relevé.</p>
+
+      <div class="facture">
+        <div class="ligne">
+          <span><span class="cli">Frédéric</span>
+            <span class="meta">F2026-000007 · émise le 11/09</span></span>
+          <span class="droite"><span class="solde">300,00 €</span></span>
+        </div>
+        <p class="trace">Réception confirmée le <b>11/09</b></p>
+        <div class="gestes">
+          <button type="button" class="plein" data-solder>J'ai reçu le paiement</button>
+          <button type="button" class="second" data-noter aria-expanded="false">J'ai reçu une partie</button>
+        </div>
+        <div class="saisie">
+          <div class="cases">
+            <label class="case jour"><span class="nom-case">Payé le</span>
+              <input type="date" value="2026-09-16"></label>
+            <label class="case montant"><span class="nom-case">Montant reçu</span>
+              <input inputmode="decimal" placeholder="0,00"></label>
+            <span class="euro">€</span>
+          </div>
+          <button type="button" class="enregistrer">Enregistrer ce règlement</button>
+          <p class="sous">Seule la part reçue entre au relevé.</p>
+        </div>
+      </div>
+      <p class="sortie" data-sortie="Frédéric">Frédéric · 300,00 € — entrée au relevé.</p>
+
+      <button type="button" class="voir">Voir toutes les factures en attente (<span class="n">4</span>)</button>
+    </div></div>
+  </section>
+
+  <!-- ═══ 3 ═══ -->
+  <section class="planche" data-planche="3">
+    <p class="nom">3 · Confirmer le paiement</p>
+    <p class="idee">Un verbe du métier, et rien d'autre ne change. « Confirmer »
+      dit qu'on <b>constate</b> quelque chose qui s'est passé — le virement est
+      là — et qu'on le fait entrer au relevé.</p>
+    <div class="tel"><div class="bloc">
+      <div class="haut"><h2>Factures en attente</h2><span class="compte">4 factures</span></div>
+
+      <div class="facture">
+        <div class="ligne">
+          <span><span class="cli">Amelie</span>
+            <span class="meta">F2026-000011 · émise le 14/09</span></span>
+          <span class="droite"><span class="solde">1 392,00 €</span></span>
+        </div>
+        <p class="trace"><span class="brut">Ouverte </span><span class="client">Le client l'a ouverte le </span><b>14/09</b></p>
+        <div class="gestes">
+          <button type="button" class="plein" data-solder>Confirmer le paiement</button>
+          <button type="button" class="second" data-noter aria-expanded="false">Noter un règlement</button>
+        </div>
+        <div class="saisie">
+          <div class="cases">
+            <label class="case jour"><span class="nom-case">Payé le</span>
+              <input type="date" value="2026-09-16"></label>
+            <label class="case montant"><span class="nom-case">Montant reçu</span>
+              <input inputmode="decimal" placeholder="0,00"></label>
+            <span class="euro">€</span>
+          </div>
+          <button type="button" class="enregistrer">Enregistrer ce règlement</button>
+          <p class="sous">Seule la part reçue entre au relevé.</p>
+        </div>
+      </div>
+      <p class="sortie" data-sortie="Amelie">Amelie · 1 392,00 € — entrée au relevé.</p>
+
+      <div class="facture">
+        <div class="ligne">
+          <span><span class="cli">Frédéric</span>
+            <span class="meta">F2026-000008 · émise le 11/09</span></span>
+          <span class="droite"><span class="solde">300,00 €</span></span>
+        </div>
+        <p class="trace"><span class="brut">Ouverte </span><span class="client">Le client l'a ouverte le </span><b>11/09</b></p>
+        <div class="gestes">
+          <button type="button" class="plein" data-solder>Confirmer le paiement</button>
+          <button type="button" class="second" data-noter aria-expanded="false">Noter un règlement</button>
+        </div>
+        <div class="saisie">
+          <div class="cases">
+            <label class="case jour"><span class="nom-case">Payé le</span>
+              <input type="date" value="2026-09-16"></label>
+            <label class="case montant"><span class="nom-case">Montant reçu</span>
+              <input inputmode="decimal" placeholder="0,00"></label>
+            <span class="euro">€</span>
+          </div>
+          <button type="button" class="enregistrer">Enregistrer ce règlement</button>
+          <p class="sous">Seule la part reçue entre au relevé.</p>
+        </div>
+      </div>
+      <p class="sortie" data-sortie="Frédéric">Frédéric · 300,00 € — entrée au relevé.</p>
+
+      <div class="facture">
+        <div class="ligne">
+          <span><span class="cli">Frédéric</span>
+            <span class="meta">F2026-000007 · émise le 11/09</span></span>
+          <span class="droite"><span class="solde">300,00 €</span></span>
+        </div>
+        <p class="trace">Réception confirmée le <b>11/09</b></p>
+        <div class="gestes">
+          <button type="button" class="plein" data-solder>Confirmer le paiement</button>
+          <button type="button" class="second" data-noter aria-expanded="false">Noter un règlement</button>
+        </div>
+        <div class="saisie">
+          <div class="cases">
+            <label class="case jour"><span class="nom-case">Payé le</span>
+              <input type="date" value="2026-09-16"></label>
+            <label class="case montant"><span class="nom-case">Montant reçu</span>
+              <input inputmode="decimal" placeholder="0,00"></label>
+            <span class="euro">€</span>
+          </div>
+          <button type="button" class="enregistrer">Enregistrer ce règlement</button>
+          <p class="sous">Seule la part reçue entre au relevé.</p>
+        </div>
+      </div>
+      <p class="sortie" data-sortie="Frédéric">Frédéric · 300,00 € — entrée au relevé.</p>
+
+      <button type="button" class="voir">Voir toutes les factures en attente (<span class="n">4</span>)</button>
+    </div></div>
+  </section>
+
+</div>
+
+<div class="note"><span class="t">Ce qui trompait</span>
+  <b>« Payée » est un adjectif dans une pastille verte</b> : c'est la forme
+  d'une étiquette d'état. On lit « cette facture est payée », pas « appuyez
+  ici quand elle l'est ». Un bouton dit ce qui va se passer quand on l'appuie —
+  il lui faut un verbe.
+  <br><br>
+  Et juste au-dessus, <b>« Ouverte 14/09 »</b> parle du client qui a ouvert
+  l'e-mail — mais sur une facture, « ouverte » se lit « pas encore payée ».
+  « Ouverte » puis « Payée » sur la même ligne, ce sont deux états qui se
+  contredisent. L'interrupteur en haut montre l'autre façon de l'écrire ; ce
+  choix-là vaut aussi pour le dossier du client, où la même ligne apparaît.
+</div>
+
+<div class="note"><span class="t">Ce qui ne change pas</span>
+  Aucune ligne ne bouge de place, aucune ne s'ajoute. Le premier bouton solde
+  toujours en un doigt, le second ouvre toujours les deux cases du 11
+  septembre.
+  <br><br>
+  <b>Dites le numéro</b>, et pour la ligne du client, laquelle des deux. Rien
+  n'est codé tant que vous n'avez pas choisi.
+</div>
+
+<script>
+(function(){
+  var corps = document.body;
+
+  // L'interrupteur de la ligne du client.
+  var lignes = document.querySelectorAll(".etats button[data-ligne]");
+  lignes.forEach(function(b){
+    b.addEventListener("click", function(){
+      corps.dataset.ligne = b.dataset.ligne;
+      lignes.forEach(function(a){ a.setAttribute("aria-pressed", a === b ? "true" : "false"); });
+    });
+  });
+
+  var nuit = document.getElementById("jourNuit");
+  nuit.addEventListener("click", function(){
+    var sombre = corps.classList.toggle("nuit");
+    nuit.setAttribute("aria-pressed", sombre ? "true" : "false");
+    nuit.textContent = sombre ? "Mode clair" : "Mode nuit";
+  });
+
+  // Le premier bouton : la facture sort de la file, comme dans l'application.
+  function recompter(planche){
+    var restantes = planche.querySelectorAll(".facture:not(.partie)").length;
+    var total = 4 - (3 - restantes);
+    planche.querySelector(".compte").textContent = total + " facture" + (total > 1 ? "s" : "");
+    planche.querySelector(".voir .n").textContent = total;
+  }
+  document.querySelectorAll("[data-solder]").forEach(function(b){
+    b.addEventListener("click", function(){
+      var facture = b.closest(".facture");
+      var planche = b.closest(".planche");
+      facture.classList.add("partie");
+      facture.nextElementSibling.classList.add("visible");
+      recompter(planche);
+    });
+  });
+
+  // Le second : les deux cases s'ouvrent sous la facture.
+  document.querySelectorAll("[data-noter]").forEach(function(b){
+    b.addEventListener("click", function(){
+      var saisie = b.closest(".facture").querySelector(".saisie");
+      var ouverte = saisie.classList.toggle("ouverte");
+      b.setAttribute("aria-expanded", ouverte ? "true" : "false");
+    });
+  });
+
+  document.getElementById("remettre").addEventListener("click", function(){
+    document.querySelectorAll(".facture.partie").forEach(function(f){ f.classList.remove("partie"); });
+    document.querySelectorAll(".sortie.visible").forEach(function(s){ s.classList.remove("visible"); });
+    document.querySelectorAll(".planche").forEach(recompter);
+  });
+})();
+</script>
+
+</body>
+</html>

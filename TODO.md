@@ -30,6 +30,33 @@ son diff, son verdict. Tant que ce n'est pas fait, la seule voie propre est
 d'ouvrir la session DANS le dossier (`npm run session 2`), jamais d'y aller
 depuis le principal.
 
+## ⏳ UNE PLANCHE À REGARDER — LE BOUTON « PAYÉE » DES FACTURES EN ATTENTE
+
+**Sa demande du 16 septembre 2026, capture de « Terminés › Factures en attente »
+à l'appui :** *« Il faut rendre cette page plus compréhensible pour les
+utilisateurs. Il trouve que le bouton Payée les induit en erreur. »*
+
+**Ce qui trompe :** « Payée » est un adjectif dans une pastille verte pleine —
+la forme d'une étiquette d'état. On lit « cette facture est payée », pas
+« appuyez ici quand elle l'est ». Et « Ouverte 14/09 » juste au-dessus (le
+client a ouvert l'e-mail) se lit « facture ouverte », donc impayée : deux états
+contradictoires sur la même ligne.
+
+**Planche :** `appli/le-bouton-payee.html` — mêmes places, seuls les mots
+changent (sa règle du 11 septembre). 1 : « Marquer payée » (le mot déjà employé
+par le rappel « Facture impayée », `Notifications.tsx`) ; 2 : « J'ai reçu le
+paiement » / « J'ai reçu une partie » (sa phrase du 14 août, première
+personne) ; 3 : « Confirmer le paiement ». Interrupteur à part : « Ouverte
+14/09 » ou « Le client l'a ouverte le 14/09 » — cette phrase vit dans
+`src/lib/reception-facture.ts` et sert aussi au dossier du client.
+Mon avis, donné : la 2, et la ligne du client en toutes lettres.
+
+**Rien dans `src/` tant qu'il n'a pas choisi** (`CLAUDE.md` §3 bis). Le jour où
+il choisit : `EnAttenteDePaiement.tsx` (les deux `<button>`), et pour la ligne
+du client `receptionEnMots` avec sa suite `test-reception-facture`. La planche 2
+tient sur une ligne à 390 px de large, de justesse (328 px sur 342) : à
+remesurer sur l'écran, pas seulement dans la planche.
+
 ## ⏳ UNE PLANCHE À REGARDER — LE PDF SANS LES PRIX AU PLANNING
 
 **Sa question du 14 septembre 2026, capture à l'appui :** *« maintenant qu'on a les
