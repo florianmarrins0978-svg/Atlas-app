@@ -6,6 +6,22 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+### Le micro de la fiche client descend de douze pixels : il touchait le bord
+
+**Sa remarque du 16 septembre 2026, capture à l'appui :** *« la note vocale en
+haut à droite, il faut la descendre légèrement, elle est trop haute, limite
+coupée »*. Mesuré avant de toucher : le rond de 44 px commençait au pixel
+**zéro** de la feuille, dont le coin est arrondi de 26 px — il passait sous la
+courbe ; en page sur un iPhone SE, il tombait à 1 px du haut de la fenêtre, le
+centrage automatique ne rendant rien quand il n'y a plus de place libre.
+
+La réserve est posée sur la LIGNE d'en-tête, pas sur la feuille : le défaut
+vivait dans les deux visages de cet écran, et la feuille n'en aurait réparé
+qu'un. Toute la ligne descend — ses trois pièces sont alignées sur le même
+centre depuis le 16 août. `test-micro-fiche-client-degage-e2e` mesure l'air
+au-dessus du rond dans les deux visages, et refuse de conclure sur une boîte de
+zéro pixel.
+
 ### Le garde-fou mesure le dossier que `git -C` vise — et une tâche = un lot isolé
 
 **Sa règle du 17 septembre 2026 :** *« le garde-fou lui-même doit fonctionner
