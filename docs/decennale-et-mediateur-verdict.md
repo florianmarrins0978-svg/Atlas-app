@@ -72,7 +72,25 @@ que les deux blocs sont remplis. Vérifié à l'écran, dans les deux sens.
 
 Les trois suites ont été **mises en rouge exprès** avant d'être crues.
 
-## 7. Ce qui reste ouvert
+## 7. Corrigé après votre question du 16 septembre
+
+*« Tu as mis AXA, et une adresse pour la médiation — les utilisateurs n'auront
+sûrement pas ça. »*
+
+**Rien n'était en dur**, et c'était vérifiable : « AXA » et « CM2C » n'existent
+que comme **exemples en gris** dans les cases, et comme données d'essai dans les
+suites. Le devis que vous avez vu portait AXA parce que je l'avais saisi pour
+faire la capture.
+
+**Mais l'exemple du médiateur était mauvais**, et votre question l'a sorti :
+il montrait l'adresse **réelle** d'un organisme de médiation. En gris, un
+exemple se lit comme une valeur déjà posée — un artisan qui n'adhère à personne
+l'aurait recopiée sur un devis que son client garde, promettant un recours qui
+n'existe pas. L'exemple est devenu générique (« Son adresse ou son site »), et
+la phrase sous la case dit quoi faire : *si vous n'adhérez à aucun médiateur,
+il faut le faire : c'est obligatoire*.
+
+## 8. Ce qui reste ouvert
 
 **Le contenu de vos deux champs.** Atlas n'invente ni un nom d'assureur ni un
 médiateur : tant que vous ne les saisissez pas, vos devis partent sans ces deux
