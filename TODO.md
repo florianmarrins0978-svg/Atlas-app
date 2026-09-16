@@ -94,7 +94,6 @@ du client `receptionEnMots` avec sa suite `test-reception-facture`. La planche 2
 tient sur une ligne à 390 px de large, de justesse (328 px sur 342) : à
 remesurer sur l'écran, pas seulement dans la planche.
 
-
 ## ~~UNE PLANCHE À REGARDER — LE PDF SANS LES PRIX AU PLANNING~~ — CHOISIE ET CODÉE LE 15 SEPTEMBRE 2026 (« la A, mais on garde la phrase existante, en gras doré »)
 
 **Codé :** le lien `pdf-sans-prix` de `FeuilleChantier` (`PlanningClient.tsx`)
