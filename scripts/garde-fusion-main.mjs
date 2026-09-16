@@ -17,9 +17,17 @@
  *
  *   1. il calcule le niveau EXIGÉ par le lot, sur les chemins qui diffèrent de
  *      `main` — MAX(plancher, rayon, gravité), `_niveau-de-risque.mjs` ;
- *   2. il lit le témoin laissé par la dernière vérification verte ;
+ *   2. il lit le témoin laissé par la dernière vérification ;
  *   3. il refuse si ce témoin manque, s'il est d'un niveau trop bas, ou s'il
- *      décrit un arbre qui n'est plus celui-ci.
+ *      décrit un arbre qui n'est plus celui-ci ;
+ *   4. **un témoin ROUGE n'ouvre la porte que s'il ne porte AUCUN rouge
+ *      nouveau par rapport à l'état mesuré sur `main`** — sa règle du
+ *      16 septembre 2026, `rougesToleres` dans `_niveau-de-risque.mjs`. Sur
+ *      son PC, seize suites d'outillage rougissent depuis toujours (`bash`,
+ *      `gh`, `npx.cmd`) : sans cela, plus aucun lot d'argent ne pouvait être
+ *      fusionné d'ici, et la seule issue était de contourner — ce qu'il a
+ *      refusé. Il a aussi refusé une liste d'exceptions pour ces seize : la
+ *      référence est une MESURE (`_reference-batterie.mjs`), pas une liste.
  *
  * **Ce qu'il ne fait PAS**, et c'est délibéré : il ne dit rien des poussées sur
  * une branche de session — on y pousse pour mettre à l'abri, et gêner ce
@@ -40,6 +48,7 @@ import {
   verdictSuffit,
 } from "./_niveau-de-risque.mjs";
 import { suitesDesRoutes } from "./_suites-ciblees.mjs";
+import { estAncetre, lireReference } from "./_reference-batterie.mjs";
 
 const RACINE = process.env.CLAUDE_PROJECT_DIR || process.cwd();
 
@@ -108,11 +117,23 @@ process.stdin.on("end", () => {
   const lot = evaluerLeLot(cheminsDuLot(RACINE), { racine: RACINE });
   if (lot.niveau === 1) process.exit(0); // documents seuls : rien à éprouver.
 
-  const { suffit, raison } = verdictSuffit(lireVerdict(), {
+  const reference = lireReference(RACINE);
+  const { suffit, raison, toleres } = verdictSuffit(lireVerdict(), {
     niveau: lot.niveau,
     derniereEcriture: derniereEcriture(),
+    reference,
+    referenceEstAncetre: reference ? estAncetre(RACINE, reference.commit) : false,
   });
-  if (suffit) process.exit(0);
+  if (suffit) {
+    // Ce qu'on tolère se DIT : un rouge qui passe en silence redeviendrait
+    // invisible, et c'est exactement la faute qu'on reproche à une liste.
+    if (toleres.length > 0) {
+      console.log(
+        `Fusion ouverte avec ${toleres.length} rouge(s) déjà rouge(s) sur main ${reference.commit.slice(0, 8)}, aucun nouveau : ${toleres.join(", ")}`
+      );
+    }
+    process.exit(0);
+  }
 
   // **LA LIGNE QU'IL DEMANDE AVANT CHAQUE FUSION — 14 septembre 2026.** Elle
   // est ÉCRITE ICI, à partir du diff, et non recopiée par la session : une

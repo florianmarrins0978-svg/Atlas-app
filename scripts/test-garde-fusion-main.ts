@@ -2,7 +2,15 @@ import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync, renameSync, rmSync, writeFileSync } from "node:fs";
 import path from "node:path";
-import { FICHIER_VERDICT, commandeDuNiveau, evaluerLeLot, poussseVersMain, verdictSuffit } from "./_niveau-de-risque.mjs";
+import {
+  FICHIER_VERDICT,
+  commandeDuNiveau,
+  evaluerLeLot,
+  poussseVersMain,
+  rougesToleres,
+  verdictSuffit,
+} from "./_niveau-de-risque.mjs";
+import { cheminDeLaReference, commitCourant, ecrireReference } from "./_reference-batterie.mjs";
 import { construireLeGraphe, routeDeLEcran } from "./_rayon-impact.mjs";
 import { suitesDesRoutes } from "./_suites-ciblees.mjs";
 
@@ -35,13 +43,14 @@ function cas(nom: string, verifier: () => void) {
 /** Joue le hook avec une commande, et rend ce qu'il a décidé. */
 function jouer(commande: string): { refuse: boolean; message: string } {
   try {
-    execFileSync("node", [HOOK], {
+    // Ce qu'il DIT en laissant passer compte aussi : un rouge toléré s'annonce.
+    const sortie = execFileSync("node", [HOOK], {
       input: JSON.stringify({ tool_name: "Bash", tool_input: { command: commande } }),
       encoding: "utf8",
       env: { ...process.env, CLAUDE_PROJECT_DIR: RACINE },
       stdio: ["pipe", "pipe", "pipe"],
     });
-    return { refuse: false, message: "" };
+    return { refuse: false, message: sortie };
   } catch (e) {
     const erreur = e as { status?: number; stderr?: string };
     return { refuse: erreur.status === 2, message: erreur.stderr ?? "" };
@@ -275,12 +284,100 @@ cas("le bon niveau sur un arbre inchangé passe", () => {
   assert.equal(verdictSuffit(VERT_3, { niveau: 2, derniereEcriture: 1_000 }).suffit, true);
 });
 
+console.log("\n=== Un ROUGE n'ouvre la porte que s'il n'a AUCUN rouge nouveau par rapport à main ===");
+// Sa règle du 16 septembre 2026 : « état de référence connu + nouveau lot →
+// aucun nouveau rouge autorisé. Un test qui était vert avant et devient rouge
+// doit bloquer. Un nouveau test rouge doit bloquer. Un rouge préexistant
+// identique ne doit pas empêcher éternellement toutes les futures fusions. »
+
+const REFERENCE = { quand: 1_500, commit: "abcdef0123456789", rouges: ["test-outil-a.ts", "test-outil-b.ts"], niveau: 3 };
+const ROUGE_CONNU = { quand: 2_000, vert: false, niveau: 3, rouges: ["test-outil-a.ts", "test-outil-b.ts"], rougesHorsSuites: [] };
+
+cas("les MÊMES rouges que main, et rien d'autre : la fusion s'ouvre, et dit ce qu'elle tolère", () => {
+  const r = verdictSuffit(ROUGE_CONNU, { niveau: 3, derniereEcriture: 1_000, reference: REFERENCE, referenceEstAncetre: true });
+  assert.equal(r.suffit, true, r.raison);
+  assert.deepEqual(r.toleres, ["test-outil-a.ts", "test-outil-b.ts"]);
+});
+
+cas("un sous-ensemble des rouges de main passe aussi — un rouge réparé n'est pas un rouge nouveau", () => {
+  const r = rougesToleres({ ...ROUGE_CONNU, rouges: ["test-outil-b.ts"] }, REFERENCE, true);
+  assert.equal(r.ok, true);
+});
+
+cas("une suite VERTE SUR MAIN devenue rouge : refus, et elle est NOMMÉE", () => {
+  const r = rougesToleres({ ...ROUGE_CONNU, rouges: ["test-outil-a.ts", "test-facture-e2e.ts"] }, REFERENCE, true);
+  assert.equal(r.ok, false);
+  assert.match(r.raison, /1 nouveau\(x\) rouge\(s\)/);
+  assert.match(r.raison, /test-facture-e2e\.ts/);
+  assert.doesNotMatch(r.raison, /test-outil-a/, "un rouge connu a été présenté comme nouveau");
+});
+
+cas("une suite NOUVELLE et rouge : refus — elle n'existait pas sur main, donc elle n'y était pas rouge", () => {
+  const r = rougesToleres({ ...ROUGE_CONNU, rouges: ["test-outil-a.ts", "test-toute-neuve.ts"] }, REFERENCE, true);
+  assert.equal(r.ok, false);
+  assert.match(r.raison, /test-toute-neuve\.ts/);
+});
+
+cas("une étape HORS SUITES tombée (types, construction, connexion) : refus, quoi que dise la référence", () => {
+  const r = rougesToleres({ ...ROUGE_CONNU, rougesHorsSuites: ["Construction"] }, REFERENCE, true);
+  assert.equal(r.ok, false);
+  assert.match(r.raison, /hors des suites : Construction/);
+});
+
+cas("un bilan INCOMPLET (le serveur est mort au milieu) : refus — un rouge sans nom est un rouge nouveau", () => {
+  const r = rougesToleres({ ...ROUGE_CONNU, rougesHorsSuites: ["Suites navigateur (bilan incomplet)"] }, REFERENCE, true);
+  assert.equal(r.ok, false);
+});
+
+cas("un verdict d'AVANT le champ « rouges » : refus, on rejoue", () => {
+  const r = rougesToleres({ quand: 2_000, vert: false, niveau: 3 }, REFERENCE, true);
+  assert.equal(r.ok, false);
+  assert.match(r.raison, /sans la liste/);
+});
+
+cas("SANS référence mesurée sur main : la règle d'avant — un rouge ne passe pas", () => {
+  const r = rougesToleres(ROUGE_CONNU, null, false);
+  assert.equal(r.ok, false);
+  assert.match(r.raison, /aucun état de référence/);
+});
+
+cas("une référence qui n'est PAS dans l'histoire du lot ne dit rien de lui : refus", () => {
+  const r = rougesToleres(ROUGE_CONNU, REFERENCE, false);
+  assert.equal(r.ok, false);
+  assert.match(r.raison, /n'est pas dans l'histoire/);
+});
+
+cas("tolérer un rouge connu ne dispense ni du niveau ni de l'arbre inchangé", () => {
+  assert.equal(
+    verdictSuffit({ ...ROUGE_CONNU, niveau: 2 }, { niveau: 3, derniereEcriture: 1_000, reference: REFERENCE, referenceEstAncetre: true }).suffit,
+    false
+  );
+  assert.equal(
+    verdictSuffit(ROUGE_CONNU, { niveau: 3, derniereEcriture: 9_000, reference: REFERENCE, referenceEstAncetre: true }).suffit,
+    false
+  );
+});
+
 console.log("\n=== Le hook, joué pour de vrai ===");
 
 const TEMOIN = path.join(RACINE, FICHIER_VERDICT);
 const SAUVEGARDE = `${TEMOIN}.epreuve`;
 const avaitUnVerdict = existsSync(TEMOIN);
 if (avaitUnVerdict) renameSync(TEMOIN, SAUVEGARDE);
+// La référence de la machine est mise de côté de la même façon : ces cas en
+// écrivent une à eux, et celle qui existait doit revenir intacte.
+const REFERENCE_MACHINE = cheminDeLaReference(RACINE)!;
+const REFERENCE_SAUVEE = `${REFERENCE_MACHINE}.epreuve`;
+const avaitUneReference = existsSync(REFERENCE_MACHINE);
+if (avaitUneReference) renameSync(REFERENCE_MACHINE, REFERENCE_SAUVEE);
+// **Un lot à éprouver, quel que soit l'arbre du jour — 16 septembre 2026.** Ces
+// cas jouent le hook sur le VRAI diff avec origin/main. Sur un main propre —
+// exactement l'état où l'on mesure la référence — ce diff est vide, le lot vaut
+// niveau 1, et le hook laisse tout passer : la suite rougissait donc sur main,
+// et un rouge sur main devient un rouge « connu ». Un fichier d'outillage en
+// attente suffit à faire un lot de niveau 2, et il part avec la suite.
+const LOT_D_EPREUVE = path.join(__dirname, "_epreuve-garde-fusion-en-cours.mjs");
+writeFileSync(LOT_D_EPREUVE, "// écrit par test-garde-fusion-main.ts, effacé par elle\n");
 
 try {
   cas("sans verdict, une poussée sur main est REFUSÉE, et le refus dit quoi faire", () => {
@@ -305,6 +402,37 @@ try {
     assert.equal(jouer("git push origin claude/mon-lot:main").refuse, false);
   });
 
+  cas("un verdict ROUGE dont chaque rouge est déjà rouge sur main OUVRE la fusion, en le disant", () => {
+    // La référence est écrite dans le .git commun de CE dépôt, sur le commit
+    // courant — donc forcément un ancêtre. Sauvegardée et rendue plus bas.
+    ecrireReference(RACINE, { quand: 1_000, commit: commitCourant(RACINE)!, rouges: ["test-outil-windows.ts"], niveau: 3 });
+    writeFileSync(
+      TEMOIN,
+      JSON.stringify({ quand: Date.now() + 60_000, vert: false, niveau: 3, empreinte: [], rouges: ["test-outil-windows.ts"], rougesHorsSuites: [] })
+    );
+    const { refuse, message } = jouer("git push origin claude/mon-lot:main");
+    assert.equal(refuse, false, `refusé : ${message}`);
+    assert.match(message, /Fusion ouverte avec 1 rouge\(s\)/, "ce qui est toléré doit être DIT");
+    assert.match(message, /test-outil-windows\.ts/);
+  });
+
+  cas("le même verdict avec UN rouge de plus est refusé, et le refus nomme le nouveau", () => {
+    writeFileSync(
+      TEMOIN,
+      JSON.stringify({
+        quand: Date.now() + 60_000,
+        vert: false,
+        niveau: 3,
+        empreinte: [],
+        rouges: ["test-outil-windows.ts", "test-facture-e2e.ts"],
+        rougesHorsSuites: [],
+      })
+    );
+    const { refuse, message } = jouer("git push origin claude/mon-lot:main");
+    assert.ok(refuse, "un rouge nouveau a ouvert la fusion");
+    assert.match(message, /test-facture-e2e\.ts/);
+  });
+
   cas("un verdict d'un autre arbre ne suffit plus", () => {
     // Le même, mais rendu AVANT le dernier fichier écrit : l'arbre a bougé.
     writeFileSync(TEMOIN, JSON.stringify({ quand: 1_000, vert: true, niveau: 3, empreinte: [] }));
@@ -326,8 +454,11 @@ try {
     }
   });
 } finally {
+  rmSync(LOT_D_EPREUVE, { force: true });
   rmSync(TEMOIN, { force: true });
   if (avaitUnVerdict) renameSync(SAUVEGARDE, TEMOIN);
+  rmSync(REFERENCE_MACHINE, { force: true });
+  if (avaitUneReference) renameSync(REFERENCE_SAUVEE, REFERENCE_MACHINE);
 }
 
 console.log(`\n${echecs === 0 ? "✅" : "❌"} Le garde-fou de la fusion — ${echecs} échec(s).`);

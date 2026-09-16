@@ -49,6 +49,35 @@ test("ce qu'on écrit se relit à l'identique — empreinte comprise", () => {
   assert.deepEqual([...relu.empreinte], [["src/a.ts", { date: 12, empreinte: "abc" }]]);
 });
 
+test("les suites ROUGES, les étapes hors suites et le commit se relisent aussi — 16 septembre 2026", () => {
+  // Sans eux, un verdict rouge ne se compare à rien : le garde-fou de main ne
+  // saurait pas dire si un rouge est nouveau ou déjà connu sur main.
+  ecrireDernierVerdict(bac, {
+    quand: 1,
+    verdict: "❌ rouge",
+    vert: false,
+    empreinte: new Map(),
+    niveau: 3,
+    rouges: ["test-b.ts", "test-a.ts"],
+    rougesHorsSuites: ["Construction"],
+    commit: "abcdef0123456789",
+  });
+  const relu = lireDernierVerdict(bac);
+  assert.deepEqual(relu?.rouges, ["test-b.ts", "test-a.ts"]);
+  assert.deepEqual(relu?.rougesHorsSuites, ["Construction"]);
+  assert.equal(relu?.commit, "abcdef0123456789");
+});
+
+test("une trace d'AVANT ces champs se relit sans eux — et sans planter", () => {
+  writeFileSync(cheminDuVerdict(bac), JSON.stringify({ quand: 1, verdict: "❌", vert: false, niveau: 3, empreinte: [] }));
+  const relu = lireDernierVerdict(bac);
+  assert.ok(relu);
+  assert.equal(relu.rouges, undefined, "une liste absente ne doit pas devenir une liste vide : vide voudrait dire « aucun rouge »");
+  assert.equal(relu.commit, undefined);
+  writeFileSync(cheminDuVerdict(bac), JSON.stringify({ quand: 1, verdict: "❌", vert: false, niveau: 3, empreinte: [], rouges: [1, 2] }));
+  assert.equal(lireDernierVerdict(bac)?.rouges, undefined, "une liste qui n'est pas de noms ne se lit pas");
+});
+
 // ─── LES TROIS PANNES, ET ELLES DOIVENT TOUTES MENER À LA MESURE ───────────
 
 test("PAS DE TRACE : on mesure — celui qui arrive n'est pas bloqué", () => {

@@ -234,14 +234,84 @@ export function poussseVersMain(commande, brancheCourante) {
  * d'avant ne dit rien de celui d'après — « le verrou EMPÊCHE, l'empreinte
  * DIT » (`CLAUDE.md` §5).
  */
-export function verdictSuffit(verdict, { niveau, derniereEcriture }) {
-  if (!verdict) return { suffit: false, raison: "aucune vérification n'a été jouée" };
-  if (verdict.vert !== true) return { suffit: false, raison: "la dernière vérification était ROUGE" };
+/**
+ * @typedef {{ commit: string, rouges: string[], quand?: number, niveau?: number }} Reference
+ * @param {{ quand: number, vert?: boolean, niveau?: number, rouges?: string[], rougesHorsSuites?: string[] } | null} verdict
+ * @param {{ niveau: number, derniereEcriture: number, reference?: Reference | null, referenceEstAncetre?: boolean }} options
+ */
+export function verdictSuffit(verdict, { niveau, derniereEcriture, reference = null, referenceEstAncetre = false }) {
+  if (!verdict) return { suffit: false, raison: "aucune vérification n'a été jouée", toleres: [] };
+  let toleres = [];
+  if (verdict.vert !== true) {
+    const rouge = rougesToleres(verdict, reference, referenceEstAncetre);
+    if (!rouge.ok) return { suffit: false, raison: rouge.raison, toleres: [] };
+    toleres = rouge.toleres;
+  }
   if ((verdict.niveau ?? 0) < niveau) {
-    return { suffit: false, raison: `la vérification jouée était de niveau ${verdict.niveau ?? "?"}` };
+    return { suffit: false, raison: `la vérification jouée était de niveau ${verdict.niveau ?? "?"}`, toleres: [] };
   }
   if (derniereEcriture > verdict.quand) {
-    return { suffit: false, raison: "l'arbre a changé depuis la dernière vérification" };
+    return { suffit: false, raison: "l'arbre a changé depuis la dernière vérification", toleres: [] };
   }
-  return { suffit: true, raison: "" };
+  return { suffit: true, raison: "", toleres };
+}
+
+/**
+ * UN VERDICT ROUGE PEUT-IL QUAND MÊME OUVRIR LA FUSION ? — sa règle du
+ * 16 septembre 2026 :
+ *
+ *   « état de référence connu + nouveau lot → aucun nouveau rouge autorisé.
+ *     Un test qui était vert avant et devient rouge doit bloquer.
+ *     Un nouveau test rouge doit bloquer.
+ *     Un rouge préexistant identique ne doit pas empêcher éternellement
+ *     toutes les futures fusions. »
+ *
+ * La référence est ce que la batterie a MESURÉ sur `main`, sur cette machine
+ * (`_reference-batterie.mjs`) — jamais une liste écrite à la main : il l'a
+ * refusée, et à raison, une liste qui abaisse le niveau vieillit sans le dire.
+ *
+ * Tout ce qui n'est pas exactement « les mêmes suites rouges que `main`, et
+ * rien d'autre » ferme la porte :
+ *   · un verdict d'avant le champ `rouges` — rien à comparer ;
+ *   · une étape hors suites (types, construction, connexion…) ou un bilan qui
+ *     ne tombe pas juste — un rouge sans nom est un rouge nouveau ;
+ *   · pas de référence, ou une référence qui n'est pas dans l'histoire de ce
+ *     lot — on ne compare pas à un `main` que le lot ne connaît pas ;
+ *   · une suite rouge absente de la référence — verte avant, ou nouvelle.
+ */
+/**
+ * @param {{ rouges?: string[], rougesHorsSuites?: string[], [autre: string]: unknown }} verdict
+ * @param {Reference | null} reference
+ * @param {boolean} referenceEstAncetre
+ */
+export function rougesToleres(verdict, reference, referenceEstAncetre) {
+  const rouges = verdict.rouges;
+  if (!Array.isArray(rouges)) {
+    return { ok: false, raison: "la dernière vérification était ROUGE, sans la liste de ses suites (à rejouer)" };
+  }
+  const horsSuites = verdict.rougesHorsSuites ?? [];
+  if (horsSuites.length > 0) {
+    return { ok: false, raison: `la dernière vérification était ROUGE hors des suites : ${horsSuites.join(", ")}` };
+  }
+  if (!reference) {
+    return {
+      ok: false,
+      raison: "la dernière vérification était ROUGE, et aucun état de référence n'a été mesuré sur main",
+    };
+  }
+  if (!referenceEstAncetre) {
+    return {
+      ok: false,
+      raison: `la dernière vérification était ROUGE, et la référence (main ${reference.commit.slice(0, 8)}) n'est pas dans l'histoire de ce lot`,
+    };
+  }
+  const connus = new Set(reference.rouges);
+  const nouveaux = rouges.filter((r) => !connus.has(r));
+  if (nouveaux.length > 0) {
+    return {
+      ok: false,
+      raison: `${nouveaux.length} nouveau(x) rouge(s) par rapport à main ${reference.commit.slice(0, 8)} : ${nouveaux.join(", ")}`,
+    };
+  }
+  return { ok: true, raison: "", toleres: [...rouges] };
 }

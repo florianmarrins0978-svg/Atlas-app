@@ -55,7 +55,11 @@ jamais.*
 
 **Ce qui ne dépend pas de la bonne volonté** : `scripts/garde-fusion-main.mjs`
 calcule le niveau de risque sur le diff et refuse une poussée vers `main` dont
-le contrôle n'a pas été joué au vert sur cet état de l'arbre.
+le contrôle n'a pas été joué au vert sur cet état de l'arbre — **ou dont un
+rouge est NOUVEAU par rapport à l'état mesuré sur `main`** (16 septembre 2026 :
+un rouge déjà rouge sur `main` ne ferme pas la porte pour toujours, un rouge
+nouveau la ferme ; `.claude/rules/testing.md`). Et il ne se contourne pas :
+c'est lui qui a été corrigé, à la racine, le jour où il bloquait à tort.
 
 ---
 
