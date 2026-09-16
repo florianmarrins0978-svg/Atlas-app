@@ -80,6 +80,13 @@ export default function EnAttenteDePaiement({
   regime: "encaissements" | "debits";
 }) {
   const [erreur, setErreur] = useState<string | null>(null);
+  // **CE QUE LE DOIGT VIENT DE FAIRE S'ÉCRIT — sa demande du 16 septembre
+  // 2026 :** *« je veux plutôt avoir cliqué sur payer : Amélie 1392 est
+  // rentrée au relevé »*. La facture quitte la liste à la seconde où elle est
+  // soldée, et rien ne disait qu'elle était partie AU BON ENDROIT — le relevé
+  // est au-dessus, hors de l'écran. La ligne reste tant que la page est
+  // ouverte : c'est un état du téléphone, pas de la base.
+  const [rentrees, setRentrees] = useState<{ id: string; nom: string; montant: string }[]>([]);
   const [ouverte, setOuverte] = useState<string | null>(null);
   const [enCours, setEnCours] = useState<string | null>(null);
   // **Quelques factures d'abord, toutes sur demande** — sa planche du
@@ -100,7 +107,11 @@ export default function EnAttenteDePaiement({
     try {
       const r = await soldeFactureAction(id, aujourdHui);
       if (!r.ok) setErreur(r.raison);
-      else router.refresh();
+      else {
+        const f = factures.find((x) => x.id === id);
+        if (f) setRentrees((r) => [...r, { id: f.id, nom: f.clientNom ?? "Client", montant: f.reste }]);
+        router.refresh();
+      }
     } catch {
       setErreur("Ce règlement n'a pas pu être enregistré. Réessayez.");
     } finally {
@@ -128,6 +139,15 @@ export default function EnAttenteDePaiement({
           {erreur}
         </p>
       )}
+
+      {rentrees.map((r) => (
+        /* Ses mots, et pas de tiret : *« à la place du tiret »*. Le montant est
+           celui qui vient d'entrer au relevé — le reste dû, pas le total. */
+        <p key={r.id} data-atlas="rentree-au-releve" className="mt-3 text-[12px] leading-[1.5]" style={{ color: colors.muted }}>
+          {r.nom} · <span className="tabular-nums" style={{ color: colors.inkSoft }}>{euros(r.montant)}</span> est rentrée au
+          relevé.
+        </p>
+      ))}
 
       {factures.length === 0 ? (
         <p className="mt-4 text-center text-[13px]" style={{ color: colors.inkSoft }}>

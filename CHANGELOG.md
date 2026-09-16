@@ -21,6 +21,12 @@ dossier du client (`reception-facture.ts`). Aucune ligne n'a bougé de place.
 Les suites visent désormais `data-atlas="solder-la-facture"` et
 `"noter-un-reglement"`, plus jamais le libellé.
 
+Et l'écran dit où la facture est partie — sa demande dans la foulée : *« je
+veux plutôt avoir cliqué sur payer : Amélie 1392 est rentrée au relevé »*.
+Une ligne « Amelie · 1 392,00 € est rentrée au relevé. » reste sous le titre
+tant que la page est ouverte ; avant, la facture disparaissait sans un mot, et
+rien ne disait si elle avait été soldée ou perdue.
+
 ## 2026-09-15
 
 ### « 2,50 » tapé sur une ligne de facture s'enregistre — la virgule se lit UNE fois, côté dépôt
