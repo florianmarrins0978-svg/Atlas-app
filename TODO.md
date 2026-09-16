@@ -296,6 +296,14 @@ dans `globals.css` (le fond devient `--atlas-plein`, les ombres et le reflet
 tournant partent), et `test-boutons-pleins` à relire — le micro y est nommé
 comme l’objet qui garde sa matière.
 
+**Et une seconde planche, le 16 septembre 2026, à sa demande devant la
+première :** *« fais-moi la même planche avec un cercle doré et deux comme on a
+déjà »* — `appli/note-vocale-cercle-dore.html` : le disque à plat, et le bord
+au choix, un filet d'or ou l'or-porcelaine-or d'aujourd'hui. **Il n'a pas
+encore choisi entre à plat, un cercle et deux** ; rien dans `src/` (le 16 au
+soir, le code avait été posé avant son choix — retiré le soir même, c'était
+une faute de §3 bis).
+
 ## ~~UNE PLANCHE À REGARDER — MAIN D’ŒUVRE ET RÈGLEMENTS SUR LA FACTURE~~ — CODÉE LE 14 SEPTEMBRE 2026 (« PARFAIT ! Code exactement cette planche »)
 
 **Codé :** migration 0092, `src/lib/lignes-du-papier.ts`,
