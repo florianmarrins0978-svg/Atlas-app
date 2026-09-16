@@ -18,7 +18,7 @@ import { ADRESSE, ACCUEIL_EXACT } from "./_adresse";
 //   · **la facture arrêtée ne dit plus qu'elle figure au relevé.** Elle le
 //     disait, et c'était faux depuis ce lot : il aurait cherché dans son relevé
 //     un montant qui n'y est pas, et douté de l'application ;
-//   · **l'endroit en attente existe, et porte le geste** — « Payée », d'un
+//   · **l'endroit en attente existe, et porte le geste** — solder, d'un
 //     doigt, exactement ce qu'il a décrit ;
 //   · **le relevé bouge du bon montant** quand il valide, et pas avant.
 
@@ -217,7 +217,7 @@ async function main() {
 
     await page.goto(`${BASE}/termines/tva`, { waitUntil: "networkidle" });
     const ligne = page.locator("li").filter({ hasText: numero });
-    await ligne.getByRole("button", { name: "Payée" }).click();
+    await ligne.locator('[data-atlas="solder-la-facture"]').click();
 
     // Le relevé bouge du bon montant : 1 000 € HT à 20 % font 200 € de TVA.
     await page.waitForFunction(
@@ -249,7 +249,7 @@ async function main() {
 
     await page.goto(`${BASE}/termines/tva`, { waitUntil: "networkidle" });
     const ligne = page.locator("li").filter({ hasText: numero });
-    await ligne.getByRole("button", { name: "Noter un règlement" }).click();
+    await ligne.locator('[data-atlas="noter-un-reglement"]').click();
 
     // **LA DATE S'ÉCRIT À LA FRANÇAISE, ET C'EST NOUS QUI L'ÉCRIVONS.**
     // Sa capture du 11 septembre 2026 montrait « 09/11/2026 » pour un
@@ -320,7 +320,7 @@ async function main() {
 
     await page.goto(`${BASE}/termines/tva`, { waitUntil: "networkidle" });
     const ligne = page.locator("li").filter({ hasText: numero });
-    await ligne.getByRole("button", { name: "Noter un règlement" }).click();
+    await ligne.locator('[data-atlas="noter-un-reglement"]').click();
     await ligne.getByLabel("Montant reçu, en euros").fill("5000");
     await ligne.getByRole("button", { name: "Enregistrer ce règlement" }).click();
 
