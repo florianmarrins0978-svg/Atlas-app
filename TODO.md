@@ -100,7 +100,13 @@ prise dans le dossier de batterie, détaché, où `test-version-executee` rougit
 faute de nom de branche — donc tolérée jusqu'à la prochaine batterie jouée sur
 `main` propre, qui réécrit la référence d'elle-même.
 
-## ⏳ UNE PLANCHE À REGARDER — LE BOUTON « PAYÉE » DES FACTURES EN ATTENTE
+## ~~UNE PLANCHE À REGARDER — LE BOUTON « PAYÉE » DES FACTURES EN ATTENTE~~ — CHOISIE ET CODÉE LE JOUR MÊME (16 septembre 2026, « La B avec ouverte le »)
+
+**Codé :** « J'ai reçu le paiement » / « J'ai reçu une partie » dans
+`EnAttenteDePaiement.tsx` et sur la carte « Facture impayée » ; « Ouverte le
+11/09 » dans `receptionEnMots`. La phrase « entrée au relevé » de la maquette
+n'a pas été portée : elle ne servait qu'à montrer le geste, et il n'a pas dit
+la vouloir — dans l'appli la facture quitte la liste, comme avant.
 
 **Sa demande du 16 septembre 2026, capture de « Terminés › Factures en attente »
 à l'appui :** *« Il faut rendre cette page plus compréhensible pour les
@@ -119,7 +125,7 @@ paiement » / « J'ai reçu une partie » (sa phrase du 14 août, première
 personne) ; 3 : « Confirmer le paiement ». Interrupteur à part : « Ouverte
 14/09 » ou « Le client l'a ouverte le 14/09 » — cette phrase vit dans
 `src/lib/reception-facture.ts` et sert aussi au dossier du client.
-Mon avis, donné : la 2, et la ligne du client en toutes lettres.
+Mon avis, donné : la 2, et la ligne du client en toutes lettres. Il a pris la 2 et « Ouverte le ».
 
 **Rien dans `src/` tant qu'il n'a pas choisi** (`CLAUDE.md` §3 bis). Le jour où
 il choisit : `EnAttenteDePaiement.tsx` (les deux `<button>`), et pour la ligne

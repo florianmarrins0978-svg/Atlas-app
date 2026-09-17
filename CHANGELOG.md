@@ -6,6 +6,66 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-09-16
+
+### « En cours 19 » reste à l'écran quand il descend dans ses chantiers
+
+**Sa demande, capture à l'appui :** *« quand je descends, le "en cours"
+disparaît ; il doit rester visible tant qu'il y a des chantiers »*.
+
+La rubrique vit dans le fil qui défile depuis le 6 septembre — collée à ce
+qu'elle compte —, et elle partait donc par le haut au premier geste : passé
+trois chantiers, il ne restait qu'une suite de dates sans dire combien il en a.
+Elle est désormais clouée au haut du fil (`sticky`), fond crème, jusqu'au
+dernier chantier.
+
+**Ce que la capture a montré et qu'aucune mesure n'aurait dit** : les 10 px de
+marge intérieure du cadre qui défile rétrécissent la zone où `sticky` peut
+clouer. La rubrique se collait 10 px sous le bord, et les chantiers défilaient
+dans la bande laissée libre au-dessus d'elle. L'air est passé du cadre au
+contenu — c'est déjà la règle de la marge du bas (`.atlas-tige`).
+
+La position au repos ne bouge pas d'un pixel : mesurée avant et après, 312,5 px
+du bord du fil, 25 px entre la rubrique et le premier chantier.
+
+`scripts/test-accueil-en-cours-colle-e2e.ts` mesure les trois choses après
+défilement — encore dans le cadre, sous le fondu de 18 px donc lisible, et
+devant les chantiers qui passent dessous —, et refuse de conclure si le fil ne
+défile pas.
+
+### Le micro de la fiche client descend de douze pixels : il touchait le bord
+
+**Sa remarque du 16 septembre 2026, capture à l'appui :** *« la note vocale en
+haut à droite, il faut la descendre légèrement, elle est trop haute, limite
+coupée »*. Mesuré avant de toucher : le rond de 44 px commençait au pixel
+**zéro** de la feuille, dont le coin est arrondi de 26 px — il passait sous la
+courbe ; en page sur un iPhone SE, il tombait à 1 px du haut de la fenêtre, le
+centrage automatique ne rendant rien quand il n'y a plus de place libre.
+
+La réserve est posée sur la LIGNE d'en-tête, pas sur la feuille : le défaut
+vivait dans les deux visages de cet écran, et la feuille n'en aurait réparé
+qu'un. Toute la ligne descend — ses trois pièces sont alignées sur le même
+centre depuis le 16 août. `test-micro-fiche-client-degage-e2e` mesure l'air
+au-dessus du rond dans les deux visages, et refuse de conclure sur une boîte de
+zéro pixel.
+
+### « Déplacer » a enfin une sortie : un « Annuler » à côté de l'interrupteur
+
+**Son signalement, capture à l'appui :** *« si je clique sur déplacer j'ai
+aucun moyen d'annuler mon choix si je veux plus déplacer »*. L'interrupteur
+matin/après-midi **remplace** « Déplacer » et « Retirer » : une fois ouvert,
+les deux seules issues écrivaient en base. Sortir d'un appui de trop
+demandait donc de rendre une demi-journée pour de bon, d'aller la reprendre
+dans le tiroir du bas, et de la reposer là où elle était.
+
+Sa règle existait déjà à trois lignes de là — *« Annuler ramène aux deux
+voies, à chaque étape »* (10 septembre) : les trois temps d'« Ajouter » la
+tiennent, « Déplacer » était le seul geste de cet écran à ne pas l'avoir. Le
+bouton reprend la place de « Retirer », à droite de l'interrupteur : la rangée
+garde ses deux boutons au même endroit. `test-liberer-une-demi-journee-e2e`
+tient les deux moitiés — l'écran revient à ses deux gestes, **et la base n'a
+pas bougé**.
+
 ### Le garde-fou mesure le dossier que `git -C` vise — et une tâche = un lot isolé
 
 **Sa règle du 17 septembre 2026 :** *« le garde-fou lui-même doit fonctionner
@@ -45,6 +105,69 @@ Au passage, `test-garde-fusion-main` rougissait sur tout `main` propre : ses
 cas « hook joué pour de vrai » dépendaient du diff réel avec `origin/main`, vide
 sur `main`. Elle écrit désormais son propre fichier d'outillage le temps de
 jouer.
+### Le bouton « Payée » s'appelle « J'ai reçu le paiement » — un adjectif se lisait comme un état
+
+**Sa demande, capture à l'appui :** *« Il trouve que le bouton Payée les induit
+en erreur. »* « Payée » dans une pastille verte a la forme d'une étiquette
+d'état : on lisait « cette facture est payée » au lieu d'un geste à faire. Il a
+choisi la planche B de `appli/le-bouton-payee.html` : « J'ai reçu le paiement »
+et « J'ai reçu une partie », à la première personne — ses mots du 14 août. Le
+rappel « Facture impayée » emploie les mêmes (`Notifications.tsx`). La ligne
+du client passe de « Ouverte 11/09 » à « Ouverte le 11/09 », ici et dans le
+dossier du client (`reception-facture.ts`). Aucune ligne n'a bougé de place.
+Les suites visent désormais `data-atlas="solder-la-facture"` et
+`"noter-un-reglement"`, plus jamais le libellé.
+
+Et l'écran dit où la facture est partie — sa demande dans la foulée : *« je
+veux plutôt avoir cliqué sur payer : Amélie 1392 est rentrée au relevé »*.
+Une ligne « Amelie · 1 392,00 € est rentrée au relevé. » reste sous le titre
+tant que la page est ouverte ; avant, la facture disparaissait sans un mot, et
+rien ne disait si elle avait été soldée ou perdue.
+
+### Le calcul du niveau perdait une lettre, et se trompait vers le BAS
+
+`git status --porcelain` rend « ␣M src/… » : deux caractères d'état, une
+espace, le chemin. La sortie entière était nettoyée d'un `trim`, ce qui mangeait
+l'espace de la première ligne — et le découpage qui suit emportait alors la
+première lettre du chemin : « rc/app/… ». Ce fichier-là n'était plus reconnu.
+
+**Ce que ça coûtait :** un lot qui touche un écran s'annonçait niveau 1, « rien
+qui s'exécute ». Un garde-fou qui se trompe vers le bas ne retient plus rien, et
+rien ne le dit. Vu en direct en mesurant un lot d'une seule ligne.
+
+Le découpage est désormais une fonction pure, éprouvée sur les quatre états du
+statut et sur un renommage — celui-ci rend le NOUVEAU chemin, l'ancien n'existe
+plus dans l'arbre qu'on mesure.
+
+### Un exemple de médiateur qui se recopiait
+
+Le champ « Adresse ou site » du médiateur portait en gris l'adresse réelle d'un
+organisme de médiation. En gris, un exemple se lit comme une valeur déjà posée :
+un artisan qui n'adhère à personne l'aurait imprimée sur un devis que son client
+garde — une mention fausse promet un recours qui n'existe pas. L'exemple est
+devenu générique, et la phrase sous le champ dit quoi faire : si vous n'adhérez
+à aucun médiateur, il faut le faire.
+
+### La décennale et le médiateur : deux champs, plus deux crochets
+
+Il a demandé de colorer en rouge les crochets des conditions générales pour les
+retrouver. Impossible — la case est un champ de saisie, elle n'affiche que du
+texte nu — et surtout, cela aurait traité le symptôme : une information
+d'entreprise se retapait dans un texte, donc se recopiait, donc divergeait au
+premier changement d'assureur.
+
+**Deux blocs dans Mon entreprise**, après « Pour être payé » : assureur, n° de
+contrat, couverture ; nom et adresse du médiateur. Remplis une fois comme le
+SIRET. Les articles 9 et 11 se remplissent tout seuls, et les deux mentions
+s'impriment en bas du devis **et** de la facture.
+
+**Ce que ça évite.** Un devis parti sans la mention d'assurance que la loi y
+attend, et un numéro de contrat périmé recopié de devis en devis. Les valeurs
+sont figées sur chaque document : changer d'assureur ne réécrit pas une pièce
+déjà partie — c'est elle qui prouve la couverture au moment du chantier.
+
+Un crochet dont la valeur manque reste un crochet : mieux vaut un manque
+visible qu'une phrase qui s'achève sur un deux-points. Migration 0093.
 
 ## 2026-09-15
 
@@ -123,77 +246,6 @@ client, nouvelle préparation.
 
 ---
 
-## 2026-09-16
-
-### « En cours 19 » reste à l'écran quand il descend dans ses chantiers
-
-**Sa demande, capture à l'appui :** *« quand je descends, le "en cours"
-disparaît ; il doit rester visible tant qu'il y a des chantiers »*.
-
-La rubrique vit dans le fil qui défile depuis le 6 septembre — collée à ce
-qu'elle compte —, et elle partait donc par le haut au premier geste : passé
-trois chantiers, il ne restait qu'une suite de dates sans dire combien il en a.
-Elle est désormais clouée au haut du fil (`sticky`), fond crème, jusqu'au
-dernier chantier.
-
-**Ce que la capture a montré et qu'aucune mesure n'aurait dit** : les 10 px de
-marge intérieure du cadre qui défile rétrécissent la zone où `sticky` peut
-clouer. La rubrique se collait 10 px sous le bord, et les chantiers défilaient
-dans la bande laissée libre au-dessus d'elle. L'air est passé du cadre au
-contenu — c'est déjà la règle de la marge du bas (`.atlas-tige`).
-
-La position au repos ne bouge pas d'un pixel : mesurée avant et après, 312,5 px
-du bord du fil, 25 px entre la rubrique et le premier chantier.
-
-`scripts/test-accueil-en-cours-colle-e2e.ts` mesure les trois choses après
-défilement — encore dans le cadre, sous le fondu de 18 px donc lisible, et
-devant les chantiers qui passent dessous —, et refuse de conclure si le fil ne
-défile pas.
-
-### Le calcul du niveau perdait une lettre, et se trompait vers le BAS
-
-`git status --porcelain` rend « ␣M src/… » : deux caractères d'état, une
-espace, le chemin. La sortie entière était nettoyée d'un `trim`, ce qui mangeait
-l'espace de la première ligne — et le découpage qui suit emportait alors la
-première lettre du chemin : « rc/app/… ». Ce fichier-là n'était plus reconnu.
-
-**Ce que ça coûtait :** un lot qui touche un écran s'annonçait niveau 1, « rien
-qui s'exécute ». Un garde-fou qui se trompe vers le bas ne retient plus rien, et
-rien ne le dit. Vu en direct en mesurant un lot d'une seule ligne.
-
-Le découpage est désormais une fonction pure, éprouvée sur les quatre états du
-statut et sur un renommage — celui-ci rend le NOUVEAU chemin, l'ancien n'existe
-plus dans l'arbre qu'on mesure.
-
-### Un exemple de médiateur qui se recopiait
-
-Le champ « Adresse ou site » du médiateur portait en gris l'adresse réelle d'un
-organisme de médiation. En gris, un exemple se lit comme une valeur déjà posée :
-un artisan qui n'adhère à personne l'aurait imprimée sur un devis que son client
-garde — une mention fausse promet un recours qui n'existe pas. L'exemple est
-devenu générique, et la phrase sous le champ dit quoi faire : si vous n'adhérez
-à aucun médiateur, il faut le faire.
-
-### La décennale et le médiateur : deux champs, plus deux crochets
-
-Il a demandé de colorer en rouge les crochets des conditions générales pour les
-retrouver. Impossible — la case est un champ de saisie, elle n'affiche que du
-texte nu — et surtout, cela aurait traité le symptôme : une information
-d'entreprise se retapait dans un texte, donc se recopiait, donc divergeait au
-premier changement d'assureur.
-
-**Deux blocs dans Mon entreprise**, après « Pour être payé » : assureur, n° de
-contrat, couverture ; nom et adresse du médiateur. Remplis une fois comme le
-SIRET. Les articles 9 et 11 se remplissent tout seuls, et les deux mentions
-s'impriment en bas du devis **et** de la facture.
-
-**Ce que ça évite.** Un devis parti sans la mention d'assurance que la loi y
-attend, et un numéro de contrat périmé recopié de devis en devis. Les valeurs
-sont figées sur chaque document : changer d'assureur ne réécrit pas une pièce
-déjà partie — c'est elle qui prouve la couverture au moment du chantier.
-
-Un crochet dont la valeur manque reste un crochet : mieux vaut un manque
-visible qu'une phrase qui s'achève sur un deux-points. Migration 0093.
 ## 2026-09-14
 
 ### Deux suites comptaient les jours en UTC, et rougissaient deux heures par nuit

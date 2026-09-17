@@ -166,7 +166,7 @@ async function main() {
     // la migration 0045, une facture arrêtée n'entre au relevé qu'une fois
     // ENCAISSÉE — c'est le défaut légal d'une prestation de services
     // (`ARCHITECTURE.md` §110). Le parcours compte donc un geste de plus, et
-    // c'est celui que le patron a demandé : « Payée ».
+    // c'est celui que le patron a demandé : solder, d'un doigt.
     const { chantierId } = await chantierRealise(page, "emettre");
     await page.goto(`${BASE}/chantiers/${chantierId}/facture`, { waitUntil: "networkidle" });
     await page.click("text=Créer la facture");
@@ -189,12 +189,17 @@ async function main() {
     // Arrêtée mais pas encaissée : elle ATTEND, et l'écran le dit.
     await page.goto(`${BASE}/termines/tva`, { waitUntil: "networkidle" });
     const enAttente = page.locator("li").filter({ hasText: rows[0].numero_commercial as string });
-    await enAttente.getByRole("button", { name: "Payée" }).waitFor({ state: "visible", timeout: 15000 });
+    await enAttente.locator('[data-atlas="solder-la-facture"]').waitFor({ state: "visible", timeout: 15000 });
 
     // Le relevé n'est pas une table : il se recalcule à chaque affichage, et
     // doit donc porter cette facture dès que son règlement est noté — sans
     // qu'aucune écriture ne l'ait mise dans un relevé.
-    await enAttente.getByRole("button", { name: "Payée" }).click();
+    await enAttente.locator('[data-atlas="solder-la-facture"]').click();
+    // **Et l'écran dit où elle est partie — sa demande du 16 septembre 2026 :**
+    // « Amélie 1392 est rentrée au relevé ». Sans cette ligne, une facture qui
+    // disparaît à l'appui ne dit pas si elle a été soldée ou perdue.
+    await page.locator('[data-atlas="rentree-au-releve"]').filter({ hasText: "est rentrée au relevé" })
+      .waitFor({ state: "visible", timeout: 15000 });
     await page.waitForFunction(
       (numero) => !document.body.innerText.includes(numero),
       rows[0].numero_commercial as string,
