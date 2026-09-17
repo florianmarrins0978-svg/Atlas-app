@@ -189,6 +189,32 @@ async function main() {
     assert.equal(lignes, 3, `l'écran n'en montre que ${lignes} après les avoir remis`);
   });
 
+  // **Le double appui — 17 septembre 2026.** Sa relecture : *« j'ai tout
+  // supprimé et ça a marché lorsque j'ai remis, c'était peut-être un bug,
+  // vérifie quand même »*. Un geste qui ne répond pas se presse deux fois : ce
+  // que l'écran montre doit alors rester ce que la base porte, et pas un
+  // quatrième acompte ni une ligne fantôme.
+  await cas("deux appuis coup sur coup ne posent pas deux acomptes de plus", async () => {
+    for (const _ of [1, 2, 3]) {
+      await page.locator('button[data-atlas="retirer-acompte"]').last().click();
+      await page.waitForTimeout(700);
+    }
+    assert.deepEqual(await quandLaBasePorte(0), [], "le retrait n'a pas tout enlevé");
+
+    const bouton = boutonAcompte();
+    await bouton.click();
+    await bouton.click();
+    await page.waitForTimeout(1500);
+    const enBase2 = await enBase();
+    const aLEcran = await page.locator('input[data-atlas="taux-acompte"]').count();
+    assert.equal(
+      aLEcran,
+      enBase2.length,
+      `l'écran montre ${aLEcran} acompte(s) et la base en porte ${enBase2.length} : ils ont divergé`
+    );
+    assert.ok(enBase2.length <= 3, `${enBase2.length} acomptes en base : le maximum est trois`);
+  });
+
   await pool.query(`UPDATE entreprises SET acompte_pourcent = $2 WHERE id = $1`, [entrepriseId, avant[0]?.acompte_pourcent ?? null]);
   await contexte.close();
   await navigateur.close();
