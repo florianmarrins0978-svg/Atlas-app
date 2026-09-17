@@ -84,6 +84,11 @@ attend sa réponse. Trois façons, même geste dessous :
 | **B** | le **nom s'écrit en or**, souligné d'un filet — il se lit comme un lien |
 | **C** | le **contour du « Poser » passe autour du nom** — sa phrase, mot pour mot |
 
+**Quatre clients en attente** — sa demande du même soir : *« montre-moi ce que
+ça donnerait avec 4 chantiers en attente »*. C'est le cas qui départage : à un
+seul nom, les trois se valent. La planche porte donc quatre lignes, dont une au
+nom long, et la vraie hauteur maximale du tiroir (352 px) avec son défilement.
+
 **Ce que je défends : C.** L'application a déjà ce contour creux partout
 (`Petit`, `PlanningClient.tsx`) : on déplace une forme qu'il connaît au lieu de
 lui en apprendre une. A fait quatre pavés quand quatre clients attendent ;

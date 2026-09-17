@@ -22,6 +22,10 @@ jour se touche d'abord, et celle que trois suites cherchent. Regardé à l'écra
 les deux états (`CLAUDE.md` §10) : la poignée dit « À poser sur mardi
 1 septembre » en or, et plus rien en noir sous le trait.
 
+La planche montre **quatre clients en attente**, sa demande du même soir : à un
+seul nom les trois façons se valent, c'est à quatre qu'elles se départagent. Le
+quatrième porte un nom long, et le tiroir garde sa hauteur maximale réelle.
+
 **Ce qui n'est PAS codé, et attend son choix :** poser le client en appuyant
 sur son nom plutôt que sur « Poser ». Sa demande est une demande d'apparence,
 donc une planche — `appli/poser-en-cliquant-sur-le-nom.html`, trois façons au
