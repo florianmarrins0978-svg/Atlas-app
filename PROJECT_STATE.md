@@ -14,9 +14,17 @@ entrées légitimes mettaient la sixième dehors avec le bon mot de passe.
 
 Un seuil sait désormais **rendre** ce qu'un geste réussi lui a pris
 (`rendreLimite`), et le message ne dit plus « depuis cet appareil » — ce n'était
-pas son appareil. Trois contrôles, vus rouges d'abord. `ARCHITECTURE.md` §382.
+pas son appareil. Trois contrôles, vus rouges d'abord. `ARCHITECTURE.md` §384.
 
 **Reste ouvert :** le même libellé trompeur à la création de compte (`TODO.md`).
+
+## FAIT : LA GRAVITÉ DE `main` NE FAIT PLUS REPAYER SES VOISINES (18 septembre 2026)
+
+Une session repartait pour quarante-cinq minutes parce que `main` avait apporté
+du code d'argent — déjà éprouvé par celui qui l'a écrit. La rencontre se partage
+désormais entre ce que le lot apporte (gravité pleine) et ce que `main` apporte
+(seul son plancher refait la batterie). `ARCHITECTURE.md` §382.
+
 
 ## FAIT : CORRIGER UN ROUGE NE COÛTE PLUS LA BATTERIE ENTIÈRE (17 septembre 2026)
 

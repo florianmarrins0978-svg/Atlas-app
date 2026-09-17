@@ -4813,22 +4813,36 @@ function TiroirDuBas({
                 2026 : la poignée dit déjà « 1 client sans date » deux
                 centimètres plus haut ; la pastille le redisait en dessous.
                 Le mot en trop part, et la consigne remonte sous le trait. */}
-            <p
-              data-atlas="ou-poser"
-              // **Juste sous le trait, à gauche, en noir** — *« qu'on la voie
-              // bien »*. C'est la seule ligne qui dit quoi faire de la liste ;
-              // en gris, elle se lisait comme une note, et il touchait les noms.
-              className="mx-[18px] mt-3 text-[12.5px]"
-              style={{ color: colors.ink }}
-            >
-              {/* **Un samedi touché est un jour comme un autre** — sa règle
-                  du 23 août 2026. La condition écartait le week-end : il
-                  touchait son samedi, et l'écran continuait de lui dire de
-                  toucher un jour. */}
-              {jourTouche
-                ? `À poser sur ${jourLisibleCourt(jourTouche).toLowerCase()}`
-                : "Touchez d’abord un jour du calendrier"}
-            </p>
+            {/* ─── LE JOUR NE S'ÉCRIT PLUS DEUX FOIS — 17 septembre 2026 ────
+                **Sa demande, capture à l'appui :** *« il y a écrit deux fois
+                "à poser sur le mardi 22 septembre" : garde celle en doré,
+                supprime en noir »*.
+
+                La phrase est montée dans la poignée le 11 septembre, en or, à
+                l'endroit du geste (`docs/planning-verdict.md`). Celle d'ici
+                n'avait jamais été retirée : elle redisait mot pour mot la
+                ligne dorée deux centimètres plus haut.
+
+                **CE QUI RESTE, et ce n'est pas le doublon :** sans jour
+                touché, la poignée ne dit que « 1 client sans date ». Rien
+                n'apprend alors qu'il faut d'abord toucher un jour — et un
+                « Poser » qui refuse sans dire pourquoi se lit comme une
+                panne. Cette ligne-là est la seule qui l'explique, et c'est
+                elle que trois suites cherchent
+                (`test-planning-e2e`, `test-poser-une-date-e2e`,
+                `test-salarie-planning-lecture-seule-e2e`). */}
+            {!jourTouche && (
+              <p
+                data-atlas="ou-poser"
+                // **Juste sous le trait, à gauche, en noir** — *« qu'on la voie
+                // bien »*. C'est la seule ligne qui dit quoi faire de la liste ;
+                // en gris, elle se lisait comme une note, et il touchait les noms.
+                className="mx-[18px] mt-3 text-[12.5px]"
+                style={{ color: colors.ink }}
+              >
+                Touchez d’abord un jour du calendrier
+              </p>
+            )}
             <div className="mx-[18px] mt-3">
               {sansDate.map((c, i) => (
                 <LigneRetirable

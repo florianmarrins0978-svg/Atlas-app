@@ -24747,7 +24747,7 @@ Bout à bout : **aucune sortie**. Il fallait fermer l'onglet ou passer par la
 barre du bas.
 
 **Ce qui est gardé est la moitié qui compte.** « Le chemin se referme » vaut pour
-l'**enregistrement** (`apresLesCoordonnees`), et c'est là qu'il a du sens : il
+l'**enregistrement** (`apresLesCoordonnees` — retiré le 17 septembre 2026, §383 : le bouton mène au devis d'où qu'on vienne), et c'est là qu'il a du sens : il
 remplit ce qui manquait, il enregistre, il revient à son devis complété. Ce qui
 change n'est que la **flèche** — elle sert à renoncer, pas à revenir avec
 quelque chose. Renoncer, c'est sortir ; sortir, c'est la liste.
@@ -26711,7 +26711,7 @@ avec la correction (`CLAUDE.md` §4 quater).
 **Les règles `?de=` restent, comme REPLI et pour l'après-enregistrement.** Elles
 répondent maintenant à une autre question que la flèche : où sortir quand il n'y
 a pas de page d'avant (signet, notification à froid), et où aller une fois un
-formulaire enregistré (`apresLesCoordonnees`). Leur moitié « devine d'où il
+formulaire enregistré (`apresLesCoordonnees` — retiré le 17 septembre 2026, §383). Leur moitié « devine d'où il
 vient » est en revanche devenue redondante avec le journal ; sa retraite est
 nommée dans `TODO.md`, et elle n'a pas été faite dans ce lot — six écrans et six
 suites en dépendent, et un lot qui les réécrit la même nuit se livre rouge.
@@ -31529,12 +31529,107 @@ première poussée d'un lot (`CLAUDE.md` §5) ; le rattrapage ne dépose jamais 
 niveau qu'il n'a pas mesuré, et refuse dès que ce qui a bougé atteint le
 niveau 3.
 
+**ET LA BATTERIE REFUSE ELLE-MÊME DE REPARTIR POUR RIEN.** Sa question, dans
+la foulée : *« mais là les autres sessions ont déjà l'info, ou je dois leur dire
+à chaque fois ? »* Elles ne l'avaient pas, et c'était le trou restant : le
+garde-fou nomme le rattrapage dans ses refus, mais **une session qui relance la
+batterie ne passe par aucun refus** — elle décide seule, au bout de trois
+heures, que son verdict ne vaut plus. C'est le mode de défaillance que ce dépôt
+connaît par cœur (`CLAUDE.md` §1 bis).
+
+`verifier-avant-livraison.ts` interroge donc `refusApresUnRouge` avant de poser
+son verrou : un verdict précédent ROUGE, et ce qui a bougé depuis en dessous du
+niveau 3, et elle **refuse** en donnant la commande. `--forcer` reste, pour la
+fois où l'on veut vraiment tout remesurer. Personne n'a plus besoin d'être au
+courant.
+
 **Mesuré, pas supposé** : joué sur ce lot même, il a ramené **130 suites rouges
 à une** en rejouant quatre étapes — et la dernière, `test-verrou-construction`,
 était une vraie régression de ce lot (elle cherchait la table des étapes dans
 son ancien fichier). C'est le contrôle qui l'a dit, pas la relecture.
 
-## §382 — Un seuil anti-martèlement compte des essais qui RATENT : une connexion réussie rend sa place
+## §382 — La gravité de `main` a déjà été éprouvée par `main`
+
+**Sa capture du 18 septembre 2026, à 00 h 27 :** *« ça continue »*. Une session,
+quarante minutes après la correction du §381 :
+
+> *« `main` a apporté 30 commits, dont du code qui touche l'argent (devis,
+> acomptes). La rencontre atteint le niveau 3 → batterie entière. Je la
+> lance. »*
+
+Elle appliquait la règle à la lettre, et la règle était fausse.
+
+**L'erreur était une erreur de CATÉGORIE.** `evaluerLeLot` répond à une seule
+question : *quel risque ce lot INTRODUIT-il ?* Le rattrapage la posait sur
+**tous** les fichiers de la rencontre — donc aussi sur ceux que `main` apporte.
+Or chacun de ces commits est **déjà** passé par son propre garde-fou, au niveau
+que sa gravité exigeait : une session voisine a payé la batterie complète pour
+son lot d'acomptes. La redemander ici, c'est faire repayer à un lot la mesure
+d'un autre — et à trois sessions actives, chacune paie pour les deux autres.
+
+**Ce qui décide désormais**, et la rencontre se partage en deux :
+
+| Ce qui a bougé | Ce que ça vaut |
+|---|---|
+| **le LOT** — ce que cette session a écrit | sa gravité pleine : argent, sécurité, plancher, rayon. Niveau 3 → batterie |
+| **`main`**, sur son PLANCHER — `drizzle/`, gabarit racine, `globals.css`, `src/server/db/`, configuration | **batterie** : ceux-là changent le SOL sous toutes les suites, et aucune suite ciblée ne le mesure |
+| **`main`**, sur sa gravité — argent, sécurité | **les suites du fond** (`npm test`) : c'est là que vivent les règles métier, l'isolation et la RLS |
+| **`main`**, le reste | les suites des écrans que la rencontre atteint |
+
+La deuxième ligne n'est pas une concession : c'est exactement ce que le dépôt
+écrivait déjà depuis le §375 — *« une migration arrivée de `main` sous un lot
+qui touche la base »*. Elle est devenue une **règle du code** au lieu d'un
+exemple en prose (`estUnPlancher`, `batterieDue`).
+
+**Ce que cela ne relâche PAS.** La gravité de `main` n'est pas ignorée : elle
+force `npm test`, c'est-à-dire les quatre cents suites qui éprouvent l'argent et
+l'isolation. Elle change **ce qu'on rejoue**, pas **si l'on rejoue**. Et le lot,
+lui, garde sa gravité entière : un lot qui touche un devis paie sa batterie,
+comme avant.
+
+**Le signe qui aurait dû alerter plus tôt** : trois corrections dans la même
+soirée sur le même mécanisme, et à chaque fois la même forme — une question
+posée au mauvais objet. Le §380 comparait des dates au lieu des contenus ; le
+§381 demandait « le lot a-t-il bougé » au lieu de « que peut casser ce qui a
+bougé » ; celui-ci demandait « ce fichier est-il dangereux » au lieu de « **qui**
+doit le prouver ».
+## §383 — La fiche client ROUVERTE porte le même bouton que la fiche neuve : « Je rédige à la main »
+
+**Son signalement du 17 septembre 2026**, l'écran sous les yeux : *« j'ai fait
+nouveau devis, ensuite retour, puis j'ai cliqué sur le client en attente dans
+la page d'accueil. Sauf que la fiche client a changé : normalement il y a la
+note vocale et en dessous il propose d'écrire le devis à la main, et là y'a
+marqué Enregistrer. Il faut remettre la proposition du devis à la main ! »*
+
+**Ce qu'il restait de l'écart entre créer et rouvrir.** Le 31 août, tout
+l'écart avait été supprimé à sa demande — photos, anneau, chaîne du devis —
+sauf un bouton : « Enregistrer », gardé sur la fiche rouverte pour que ce
+qu'il TAPE sur un chantier existant parte quelque part, et qui ramenait à la
+liste (§254). Devant l'écran, ce bouton est une DIFFÉRENCE : il reconnaît sa
+fiche par ce qu'elle propose, et une fiche qui ne propose plus le devis n'est
+plus la sienne.
+
+**Ce qui change, et ce qui ne se perd pas.** La fiche rouverte porte le bouton
+de la fiche neuve — secondaire, 66 %, effacé pendant qu'on dicte —, et il
+fait les deux choses : `creerPuisAller("devis")`, sur le chemin `reprise`,
+**enregistre ce qui est tapé** (`reprendreChantierAction`) puis ouvre le
+devis. Rien de ce que « Enregistrer » faisait n'est perdu ; seule la sortie
+change — le devis, au lieu de la liste. La liste reste à une flèche
+(`retourDesCoordonnees`, inchangé).
+
+**Ce qui est retiré, parce que plus rien ne l'appelle** (`CLAUDE.md`
+§4 quinquies) : la destination `fiche` de `FormulaireNouveauChantier`, et
+`apresLesCoordonnees` dans `retour-du-devis.ts` avec ses cas dans
+`test-retour-du-devis.ts` et `test-retour-au-planning.ts`. La provenance ne
+décide plus que de la flèche.
+
+**Ce qui le tient :** `test-coordonnees-depuis-accueil-e2e.ts` (venu de
+l'accueil, le bouton propose le devis à la main, enregistre ce qui est tapé,
+et ouvre le devis) et `test-devis-sans-client-e2e.ts` (venu d'un devis sans
+client, même bouton, et le devis retrouvé porte son client). Les deux refusent
+le retour d'« Enregistrer ».
+
+## §384 — Un seuil anti-martèlement compte des essais qui RATENT : une connexion réussie rend sa place
 
 **Sa remarque du 17 septembre 2026 :** *« un ami s'était connecté à mon appli
 via son tél, et sur le sien ça n'a pas marché »*.

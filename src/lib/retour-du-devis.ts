@@ -197,15 +197,15 @@ export function libelleRetourDuDevis(clientId: string | null): string {
  * ─── CE QUI EST GARDÉ, ET C'EST LA MOITIÉ QUI COMPTE ──────────────────────
  *
  * « Le chemin se referme » n'est pas abandonné : il vaut pour
- * l'ENREGISTREMENT (`apresLesCoordonnees`), et c'est là qu'il a du sens. Il
- * remplit ce qui manquait, il enregistre, il revient à son devis complété.
+ * l'ENREGISTREMENT, et c'est là qu'il a du sens. Il remplit ce qui manquait,
+ * il touche « Je rédige à la main », et il retrouve son devis complété —
+ * depuis le 17 septembre 2026, ce bouton mène TOUJOURS au devis, d'où qu'on
+ * vienne (`FormulaireNouveauChantier`, `creerPuisAller`) : la provenance ne
+ * décide plus de la sortie, seulement de la flèche.
  *
  * Ce qui change n'est que la FLÈCHE : elle sert à renoncer, pas à revenir
  * avec quelque chose. Renoncer, c'est sortir — et sortir, c'est la liste.
  *
- * **La provenance reste dans la signature** : l'enregistrement s'en sert
- * toujours, et l'ôter d'ici obligerait à la reconstruire le jour où une
- * troisième porte s'ouvrira sur cet écran.
  * **Et la provenance reste dans la signature alors qu'elle ne décide plus de
  * rien.** Ce n'est pas un oubli : c'est elle qui permet à
  * `test-retour-du-devis.ts` d'écrire la règle telle qu'elle se dit —
@@ -246,30 +246,4 @@ export function libelleRetourDesCoordonnees(
   if (provenance === null) return "Retour à la liste des chantiers";
   if (provenance === devisDuChantier(chantierId)) return "Retour à la liste des chantiers";
   return LIBELLE_RETOUR_PLANNING;
-}
-
-/**
- * Où l'on va une fois la fiche client enregistrée.
- *
- * Venu du devis, on y retourne : c'est le document qu'il était en train de
- * lire, et il porte désormais le client qui lui manquait.
- *
- * **SANS PROVENANCE, C'EST LA LISTE — et ce n'est pas un choix de goût.** Cette
- * fonction rendait la fiche du chantier, comme depuis le 17 août 2026. Cette
- * fiche est retirée le 4 septembre (`ARCHITECTURE.md` §254) et son adresse
- * redirige désormais vers l'écran où le travail s'est arrêté — c'est-à-dire,
- * pour un chantier sans dictée, **la fiche client elle-même**. L'y renvoyer
- * après l'avoir enregistrée l'aurait fait tourner en rond sur le formulaire
- * qu'il venait de quitter.
- *
- * La liste est la bonne réponse, et elle en accorde deux qui se contredisaient
- * déjà : la flèche de cet écran y va (`retourDesCoordonnees`), l'enregistrement
- * partait ailleurs. Il est entré depuis la liste ; il y retourne.
- *
- * Le paramètre reste dans la signature : il nomme le chantier concerné, et
- * l'ôter obligerait à retoucher chaque appel le jour où la destination
- * redevient propre au chantier.
- */
-export function apresLesCoordonnees(_chantierId: string, provenance: Provenance): string {
-  return provenance ?? "/";
 }

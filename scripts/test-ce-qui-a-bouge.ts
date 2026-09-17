@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { aRejouer, ceQuiABouge, horsSuitesApres } from "./_ce-qui-a-bouge.mjs";
+import { aRejouer, batterieDue, ceQuiABouge, horsSuitesApres, partagerLaRencontre } from "./_ce-qui-a-bouge.mjs";
 
 /**
  * **SA BOUCLE DU 17 SEPTEMBRE 2026, À 23 H.**
@@ -109,6 +109,44 @@ cas("une étape rejouée et tombée reste rouge, sans doublon", () => {
     horsSuitesApres({ horsSuitesAvant: ["Mémoire du dépôt"], etapesRejouees: ["Mémoire du dépôt"], tombees: ["Mémoire du dépôt"] }),
     ["Mémoire du dépôt"]
   );
+});
+
+
+// ─── SA CAPTURE DU 18 SEPTEMBRE 2026, À 00 h 27 ────────────────────────────
+//
+// *« Ça continue »* — une session : « main a apporté 30 commits, dont du code
+// qui touche l'argent. La rencontre atteint le niveau 3 → batterie entière. »
+// C'était une erreur de catégorie : la gravité de `main` a déjà été éprouvée
+// par `main`. Ce qui n'a jamais été mesuré, c'est la rencontre.
+
+cas("SON CAS : l'argent apporté par main ne réclame PAS la batterie entière", () => {
+  const { duLot, venuDeMain } = partagerLaRencontre({
+    fichiers: ["src/server/repositories/devis-repo.ts", "src/app/planning/PlanningClient.tsx"],
+    fichiersDuLot: ["src/app/planning/PlanningClient.tsx"],
+  });
+  assert.deepEqual(duLot, ["src/app/planning/PlanningClient.tsx"]);
+  assert.deepEqual(venuDeMain, ["src/server/repositories/devis-repo.ts"]);
+  assert.equal(
+    batterieDue({ niveauDuLot: 2, plancherVenuDeMain: [] }),
+    null,
+    "CINQUANTE MINUTES parce qu'une session voisine a touché aux devis : c'est la boucle du 18 septembre"
+  );
+});
+
+cas("une MIGRATION apportée par main fait repartir la batterie — le sol a bougé", () => {
+  const raison = batterieDue({ niveauDuLot: 2, plancherVenuDeMain: ["drizzle/0099_x.sql"] });
+  assert.ok(raison, "une migration arrivée sous le lot a été rattrapée au lieu d'être remesurée");
+  assert.match(raison!, /drizzle/);
+});
+
+cas("le lot, LUI, garde toute sa gravité : niveau 3 = batterie", () => {
+  assert.ok(batterieDue({ niveauDuLot: 3, plancherVenuDeMain: [] }));
+});
+
+cas("la gravité venue de main force les suites du fond, pas la batterie", () => {
+  const { etapes } = aRejouer({ bouge: ["src/app/devis/page.tsx"], graviteVenueDeMain: true });
+  assert.ok(etapes.includes("Suites base de données"), "les règles d'argent et l'isolation vivent là");
+  assert.ok(!etapes.includes("Construction"));
 });
 
 console.log(`\n${echecs === 0 ? "✅" : "❌"} Ce qui a bougé depuis le verdict — ${echecs} échec(s).`);

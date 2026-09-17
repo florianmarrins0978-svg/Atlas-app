@@ -117,12 +117,16 @@ niveau 3 voisin. Le détail est dans `CLAUDE.md` §6.
 
 **Sa règle du 17 septembre 2026 : *« Rejoue juste ce qui a bougé ! »*.**
 `npx tsx scripts/verifier-ce-qui-a-bouge.ts`, dans le dossier du lot une fois reposé sur
-`main`. Il vaut la batterie si **le lot est identique à la ligne près** à ce
-qu'elle a mesuré, si son verdict ne portait aucun rouge nouveau, et si la
-rencontre rejouée est verte : suites base, écrans du lot, écrans touchés par
-`main`, suites apportées par `main`. Le verdict déposé garde le niveau du
-verdict d'avant ; le garde-fou le relit comme n'importe quel autre. Un lot qui
-a changé, un verdict d'avant ce mécanisme, un rouge nouveau : batterie.
+`main`. Il vaut la batterie si **ce qui a bougé depuis le verdict n'atteint pas
+le niveau 3**, et si la rencontre rejouée est verte : suites base, écrans du
+lot, écrans touchés par `main`, suites apportées par `main`. Le verdict déposé
+garde le niveau du verdict d'avant ; le garde-fou le relit comme n'importe quel
+autre.
+
+**Le lot a le droit d'avoir changé.** La première version exigeait qu'il soit
+identique à la ligne près — donc elle refusait juste après une correction, au
+moment même où l'on en avait besoin (`ARCHITECTURE.md` §381). Un verdict
+d'avant ce mécanisme, ou un niveau 3 atteint : batterie.
 
 ## Le garde-fou compare des CONTENUS, jamais des dates — 17 septembre 2026
 
@@ -157,7 +161,17 @@ npx tsx scripts/verifier-ce-qui-a-bouge.ts
 | ce qui a bougé | par le CONTENU : l'empreinte du verdict, et git pour ce qu'elle n'indexe pas (`.md`, `docs/`, `.claude/`) |
 | ce qu'on rejoue | ce qui était rouge, plus ce que ce qui a bougé peut casser (la rencontre) |
 | ce qu'on ne rejoue pas | garde son rouge — ne pas savoir n'est jamais vert |
-| ce qui renvoie à la batterie | ce qui a bougé atteint le niveau 3 |
+| ce qui renvoie à la batterie | **le LOT** atteint le niveau 3, ou `main` a apporté un PLANCHER (migration, gabarit racine, accès à la base, configuration) |
+
+**La gravité de `main` ne renvoie PAS à la batterie** (18 septembre 2026,
+00 h 27) : ces commits sont déjà passés par leur propre garde-fou. Elle force
+les suites du fond (`npm test`), là où vivent les règles d'argent et
+l'isolation. `ARCHITECTURE.md` §382.
+
+**Et l'on n'a pas à s'en souvenir** : la batterie elle-même refuse de repartir
+quand le verdict précédent était rouge et que ce qui a bougé reste borné
+(`refusApresUnRouge`). `--forcer` ouvre la porte quand on veut vraiment tout
+remesurer.
 
 `ARCHITECTURE.md` §381.
 

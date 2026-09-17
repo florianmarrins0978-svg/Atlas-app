@@ -25,7 +25,21 @@ appareil, c'était l'adresse partagée, et il cherchait du côté de son télép
 
 La protection ne bouge pas : un attaquant ne rend rien, ses essais ratent.
 
-Détail : `ARCHITECTURE.md` §382.
+Détail : `ARCHITECTURE.md` §384.
+
+### La gravité de `main` faisait repayer la batterie à ses voisines
+
+*« Ça continue »*, à 00 h 27 : une session repartait pour quarante-cinq minutes
+parce que `main` avait apporté trente commits dont du code d'argent. Erreur de
+catégorie — `evaluerLeLot` répond à « quel risque ce LOT introduit-il », et on
+la posait sur les fichiers de `main`, dont la gravité avait déjà été éprouvée
+par `main`.
+
+La rencontre se partage désormais : le lot garde sa gravité entière ; de `main`,
+seul le PLANCHER (migration, gabarit racine, accès à la base, configuration)
+refait partir la batterie — sa gravité, elle, force les suites du fond, là où
+vivent les règles d'argent et l'isolation. Voir `ARCHITECTURE.md` §382.
+
 
 ### Corriger un rouge coûtait cinquante minutes — plus maintenant
 
@@ -45,7 +59,91 @@ question : ce qui a bougé depuis la mesure, et ce que cela peut casser. Il
 rejoue les étapes et les suites concernées, garde le rouge de ce qu'il n'a pas
 remesuré, et refuse quand ce qui a bougé atteint le niveau 3.
 `verifier-apres-fusion.ts` disparaît — il n'en était qu'un cas particulier.
-Voir `ARCHITECTURE.md` §381.
+
+Et sa question suivante — *« les autres sessions ont déjà l'info, ou je dois
+leur dire à chaque fois ? »* — a fermé le dernier trou : une session qui relance
+la batterie ne passe par aucun garde-fou. La batterie refuse donc elle-même de
+repartir quand le verdict précédent était rouge et que ce qui a bougé reste
+borné. Voir `ARCHITECTURE.md` §381.
+
+### Ses trois réponses réunies sur une seule planche, avant de coder
+
+**Sa consigne :** *« toutes les réponses que je vais te donner, tu vas mettre
+les modifs dans une seule planche, comme ça à la fin tu coderas la planche
+finale avec toutes les modifs dedans »*. Trois planches séparées auraient donné
+trois lots, trois batteries et trois occasions de se contredire à trois
+centimètres d'écart, dans la même carte.
+
+`appli/planning-tout-ensemble.html` porte donc ses trois choix ensemble : les
+voies d'ajout qui gardent leurs mots et se referment par le « ＋ Ajouter » ;
+« Annuler » à droite de l'interrupteur de l'absence ; le nom du client entouré,
+sans « ＋ » et sans « › », sous la date en or. Rien n'est codé.
+
+**Ce que son troisième choix enlève est dit, pas tu** : le « › » est le seul
+chemin, depuis cette liste, vers la fiche du chantier. Une demande qui supprime
+un geste mérite qu'on nomme le geste.
+
+### Une planche pour ranger les quatre voies d'« Ajouter » sur une seule ligne
+
+**Sa demande du 17 septembre :** *« je veux que les 4 rentrent sur la même
+ligne, et peut-être de la même taille »*. Mesuré plutôt qu'estimé : à quatre
+pastilles égales il reste **50 px pour le mot**, et « Un chantier en attente »
+en réclame 135. Quatre sur une ligne à taille égale oblige donc à raccourcir —
+c'est un échange, pas un réglage, et `appli/quatre-sur-une-ligne.html` l'écrit
+sous la carte, pastille par pastille.
+
+Trois façons y attendent son choix, dont une qui ENLÈVE le bouton au lieu d'en
+ajouter un quatrième : le « ＋ Ajouter » qui a ouvert les voies reste à sa place
+et referme, comme « + Salarié absent ? » le fait déjà deux centimètres plus
+haut. Rien n'est codé.
+
+**Deux façons de mesurer une largeur se sont révélées fausses en chemin**, et
+c'est la leçon réutilisable : `scrollWidth` contre `clientWidth` ne voit pas un
+texte qui se replie, et un `Range` sur le contenu rend la largeur de sa ligne
+la plus longue — 41 px pour un mot qui en réclame 62. La mesure juste pose le
+mot dans un jumeau invisible qu'on empêche de se replier, et compte les lignes
+peintes.
+
+### Une planche pour annuler une absence sans repasser par « + Salarié absent ? »
+
+**Sa demande du 17 septembre :** *« rajoute-moi un "Annuler" à côté de
+"Journée" si je veux annuler la requête »*. Aujourd'hui, défaire une absence
+qu'on vient de poser demande de rouvrir « + Salarié absent ? » puis de toucher
+le nom — son chemin du 10 septembre, qui reste juste pour une absence posée
+hier, mais qui est ailleurs au moment où l'interrupteur est sous ses yeux.
+
+Rien n'est codé : `appli/annuler-l-absence.html` porte deux placements, parce
+que la largeur tranche — « Annuler » à droite reprend de la place à
+« Après-midi ». **Mesuré aux deux largeurs :** à 390 pt ça tient, à 320 pt le
+mot passe sous la case verte. Le premier contrôle écrit pour le dire
+(`scrollWidth` contre `clientWidth`) a répondu « rien n'est coupé » alors que
+la capture montrait le contraire — c'est l'image qui a tranché, une fois de
+plus (`CLAUDE.md` §5).
+
+### Le jour à poser s'écrivait DEUX FOIS dans le tiroir du planning
+
+**Sa capture du 17 septembre :** *« il y a écrit deux fois "à poser sur le
+mardi 22 septembre" : garde celle en doré, supprime en noir »*. Il a raison, et
+c'était un oubli du 11 septembre : la phrase est montée ce jour-là dans la
+poignée du tiroir, en or, à l'endroit du geste (`docs/planning-verdict.md`) —
+celle qui vivait sous le trait n'a jamais été retirée.
+
+Elle l'est. **Sauf sans jour touché** : là elle ne redit rien, elle dit
+« Touchez d'abord un jour du calendrier » — la seule ligne qui apprenne qu'un
+jour se touche d'abord, et celle que trois suites cherchent. Regardé à l'écran,
+les deux états (`CLAUDE.md` §10) : la poignée dit « À poser sur mardi
+1 septembre » en or, et plus rien en noir sous le trait.
+
+La planche montre **quatre clients en attente**, sa demande du même soir : à un
+seul nom les trois façons se valent, c'est à quatre qu'elles se départagent. Le
+quatrième porte un nom long, et le tiroir garde sa hauteur maximale réelle.
+
+**Ce qui n'est PAS codé, et attend son choix :** poser le client en appuyant
+sur son nom plutôt que sur « Poser ». Sa demande est une demande d'apparence,
+donc une planche — `appli/poser-en-cliquant-sur-le-nom.html`, trois façons au
+choix, et le point à trancher : le chevron « › » de la même ligne ouvre déjà le
+chantier.
+
 
 ### Le garde-fou de `main` réclamait une batterie dès qu'une autre session fusionnait
 
@@ -311,7 +409,10 @@ liste, en noir ; « Votre client peut proposer une autre date » au lieu de
 (`PrimaryButton` : vert `plein`, crème, à la largeur de son texte) au lieu
 d'un bouton pin en pleine largeur. La planche s'ouvre sur 4 jours, à sa
 demande, pour qu'il l'essaye. Et l'interrupteur s'appelle « Vous proposez
-deux dates », son libellé.
+deux dates », son libellé. Sous « Votre client peut proposer une autre
+date », la phrase devient « Il ne verra que vos jours libres. » — choisie
+par lui le 18 septembre parmi trois, à la place de « Un calendrier de vos
+jours libres s'ouvrira sous vos dates. »
 
 ### « Ce règlement n'a pas pu être enregistré » : la base était en cause, et rien ne le disait
 
@@ -357,6 +458,21 @@ Trois autres choses avec :
 de son espace. Elle se remet d'aplomb en rallumant l'espace depuis
 github.com/codespaces ; si la migration refuse encore de passer, c'est
 désormais l'écran qui le dira, au lieu d'un « Réessayez ».
+
+### La fiche client rouverte propose de nouveau « Je rédige à la main »
+
+*« Normalement il y a la note vocale et en dessous il propose d'écrire le
+devis à la main, et là y'a marqué Enregistrer. Il faut remettre la proposition
+du devis à la main ! »* — son signalement du 17 septembre, l'écran sous les
+yeux, après « nouveau devis → retour → le client en attente sur l'accueil ».
+
+« Enregistrer » était le dernier écart entre créer et rouvrir une fiche (31
+août). Il part : la fiche rouverte porte le bouton de la fiche neuve, qui
+enregistre AUSSI ce qui est tapé, puis ouvre le devis — d'où qu'on vienne. La
+liste reste à une flèche. Ce que plus rien n'appelle est retiré
+(`apresLesCoordonnees`, la destination `fiche`). `ARCHITECTURE.md` §383 ;
+`test-coordonnees-depuis-accueil-e2e.ts` et `test-devis-sans-client-e2e.ts`
+refusent le retour d'« Enregistrer ».
 
 ### La publication des planches rougissait depuis la note vocale à plat
 

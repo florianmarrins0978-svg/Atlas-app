@@ -26,7 +26,17 @@ Ce qu'il faut savoir avant de toucher à `src/server/rate-limit/` :
 
 Le compteur d'échecs en base (`src/server/repositories/tentatives-connexion.ts`) faisait
 déjà la bonne chose ; les deux disent enfin la même chose. Détail et pièges :
-`ARCHITECTURE.md` §382.
+`ARCHITECTURE.md` §384.
+
+## CE QUE `main` APPORTE NE FAIT PLUS REPAYER LA BATTERIE
+
+Depuis le 18 septembre 2026 : la gravité de ce que `main` apporte — devis,
+acomptes, sécurité — a **déjà** été éprouvée par la session qui l'a écrite.
+Seul son PLANCHER (migration, gabarit racine, accès à la base, configuration)
+fait repartir la batterie entière ; sa gravité, elle, force `npm test`.
+Le lot, lui, garde sa gravité pleine. `ARCHITECTURE.md` §382.
+
+---
 
 ## UN ROUGE SE REJOUE SEUL — LA BATTERIE N'EST PLUS LE SEUL CHEMIN
 
@@ -1434,7 +1444,9 @@ repli. `scripts/_arriver-a-froid.ts` vide le journal de l'onglet et recharge —
 c'est l'état d'un signet, sans ouvrir un contexte ni se reconnecter.
 
 **Ce qui reste des règles `?de=` :** elles servent de repli, et décident encore
-où l'on va après avoir ENREGISTRÉ un formulaire (`apresLesCoordonnees`). Leur
+où l'on va après avoir ENREGISTRÉ un formulaire (`apresLesCoordonnees` — retiré le
+17 septembre 2026, `ARCHITECTURE.md` §383 : « Je rédige à la main » mène au devis
+d'où qu'on vienne). Leur
 moitié « devine d'où il vient » est redondante avec le journal — sa retraite est
 dans `TODO.md`, délibérément pas faite dans ce lot.
 
