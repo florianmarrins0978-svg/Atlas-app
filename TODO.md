@@ -117,7 +117,7 @@ finale avec toutes les modifs dedans »*.
 |---|---|
 | *« le C, pas d'Annuler »* | les trois voies d'ajout gardent leurs mots ; le « ＋ Ajouter » reste à sa place et devient « ✕ Fermer » — la pastille « Annuler » disparaît |
 | *« A, à côté »* | « Annuler » à droite de l'interrupteur Matin · Après-midi · Journée, et il s'efface avec lui dès qu'un moment est choisi |
-| *« le C, sans le + et sans les chevrons, mais conserve la date en doré »* | le nom entouré pose le client ; plus de « ＋ » dans la pastille, plus de « › » à droite ; la poignée garde « À poser sur jeudi 17 septembre » en or |
+| *« le C, sans le + et sans les chevrons, mais conserve la date en doré »*, puis *« laisse juste le nom du client et retire le contour doré »* | le NOM SEUL pose le client : ni contour, ni « ＋ », ni « › ». Un filet sépare deux noms, et ne souligne pas le dernier. La poignée garde « À poser sur jeudi 17 septembre » en or, et c'est elle — seule — qui dit ce que l'appui fait |
 
 **CE QUE SON TROISIÈME CHOIX EMPORTE, et il doit le savoir avant qu'on code :**
 le « › » est le seul chemin, DEPUIS CETTE LISTE, vers la fiche du chantier
@@ -202,7 +202,7 @@ qui montrait le contraire (`CLAUDE.md` §5). C'est l'image qui a tranché.
 l'interrupteur — « Matin · Après-midi · Journée · Annuler » se lirait comme un
 quatrième moment.
 
-## ⏳ SA RÉPONSE EST DONNÉE — LE NOM : « LE C, SANS LE + ET SANS LES CHEVRONS » (17 septembre 2026)
+## ⏳ SA RÉPONSE EST DONNÉE — LE NOM SEUL, SANS CONTOUR (17 septembre 2026)
 
 **Sa demande, capture à l'appui :** *« au lieu du "Poser" entouré, pour poser
 le client le mieux serait qu'on clique sur Mr. Linotte — donc trouve un moyen

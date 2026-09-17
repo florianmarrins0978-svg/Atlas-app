@@ -56,8 +56,9 @@ centimètres d'écart, dans la même carte.
 
 `appli/planning-tout-ensemble.html` porte donc ses trois choix ensemble : les
 voies d'ajout qui gardent leurs mots et se referment par le « ＋ Ajouter » ;
-« Annuler » à droite de l'interrupteur de l'absence ; le nom du client entouré,
-sans « ＋ » et sans « › », sous la date en or. Rien n'est codé.
+« Annuler » à droite de l'interrupteur de l'absence ; le nom du client SEUL —
+sa retouche du soir même, *« laisse juste le nom du client et retire le contour
+doré »* —, sous la date en or. Rien n'est codé.
 
 **Ce que son troisième choix enlève est dit, pas tu** : le « › » est le seul
 chemin, depuis cette liste, vers la fiche du chantier. Une demande qui supprime
