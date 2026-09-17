@@ -125,10 +125,20 @@ le « › » est le seul chemin, DEPUIS CETTE LISTE, vers la fiche du chantier
 plus qu'une chose — poser — et le chantier s'ouvre depuis l'onglet Chantiers.
 C'est écrit sur la planche et dans le message qui l'accompagne.
 
-**Ce que le lot devra toucher, quand il viendra** : `AjoutAuJour` (les voies et
-le « ＋ »), `PasLaCeJour` + `BasculeDuMoment` (l'« Annuler » de l'absence), et
-la liste « Sans date » du tiroir (`Petit` « Poser » → le nom entouré,
-`ChevronDesPortes` retiré). Niveau à recalculer sur le diff — `npm run niveau`.
+**LE CAHIER DES CHARGES VIT SUR LA PLANCHE ELLE-MÊME**, visible à son adresse,
+pas dans le commentaire du fichier — sa demande : *« tout ce que j'ai choisi est
+bien expliqué sur la planche ? parce que je vais la donner à une autre session,
+qu'elle ne se trompe pas »*. Le bloc « Pour la session qui codera » porte les
+trois changements fichier par fichier, ce qui NE bouge pas, ce qui a été écarté,
+les suites qui regardent les repères touchés, et le point non tranché
+(l'« Annuler » de la branche `ajout-qui` reste tel quel : ce n'est pas le même
+geste, et il n'a pas été montré). **La planche fait foi : ce qui n'y est pas
+écrit ne se code pas.**
+
+**Ce que le lot devra toucher** : `AjoutAuJour` (les voies et le « ＋ »),
+`PasLaCeJour` + `BasculeDuMoment` (l'« Annuler » de l'absence), et la liste
+« Sans date » du tiroir (`Petit` « Poser » → le nom seul, `ChevronDesPortes`
+retiré). Niveau à recalculer sur le diff — `npm run niveau`.
 
 ## ⏳ SA RÉPONSE EST DONNÉE — LES QUATRE VOIES : « LE C, PAS D'ANNULER » (17 septembre 2026)
 

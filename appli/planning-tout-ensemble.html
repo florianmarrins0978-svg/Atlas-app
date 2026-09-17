@@ -175,6 +175,25 @@
   .rejouer{display:block;margin:16px auto 0;border:1px solid var(--trait);background:transparent;
            border-radius:99px;padding:10px 18px;font:600 12px/1 inherit;color:var(--gris)}
 
+  /* ─── LE CAHIER DE REPRISE ────────────────────────────────────────────
+     Sa demande du 17 septembre : *« tout ce que j'ai choisi est bien expliqué
+     sur la planche ? parce que je vais la donner à une autre session, qu'elle
+     ne se trompe pas »*. Le détail vivait dans le commentaire du fichier —
+     invisible à qui ouvre l'adresse. Il est donc SUR la page, dans un bloc à
+     part : lui le saute, la session qui code le lit. */
+  .cahier{max-width:430px;width:calc(100% - 44px);margin:24px auto 0;padding:16px 18px;background:var(--carte);
+          border-radius:14px;box-shadow:inset 0 0 0 1px var(--trait);
+          font-size:12.5px;line-height:1.65;color:var(--encre-douce)}
+  .cahier h2{margin:0 0 4px;font:600 10px/1 ui-sans-serif,sans-serif;letter-spacing:.22em;
+             text-transform:uppercase;color:var(--or)}
+  .cahier h3{margin:16px 0 4px;font:600 12.5px/1.4 inherit;color:var(--encre)}
+  .cahier p{margin:0 0 8px}
+  .cahier ul{margin:0 0 8px;padding-left:18px}
+  .cahier li{margin:0 0 5px}
+  .cahier code{font:500 11.5px/1 ui-monospace,SFMono-Regular,Menlo,monospace;
+               background:var(--papier);border-radius:4px;padding:2px 5px}
+  .cahier b{color:var(--encre)}
+
   .note{max-width:430px;margin:20px auto 0;padding:0 22px;font-size:13.5px;
         line-height:1.6;color:var(--encre-douce)}
   .note b{color:var(--encre)}
@@ -260,6 +279,91 @@
   choisi ; « + Salarié absent ? » reste le chemin pour défaire une absence
   posée hier.</p>
   <p><b>Rien n’est codé.</b> Dites oui et je code exactement cet écran.</p>
+</div>
+
+<div class="cahier">
+  <h2>Pour la session qui codera</h2>
+  <p>Ce bloc est le cahier des charges de cette planche. <b>Elle fait foi :</b> ce
+  qui n’y est pas écrit ne se code pas. Tout vient de ses réponses du
+  17 septembre 2026, citées mot pour mot.</p>
+
+  <h3>1 · Les voies d’ajout — « le C, pas d’Annuler »</h3>
+  <p><code>AjoutAuJour</code>, <code>src/app/planning/PlanningClient.tsx</code>,
+  branche <code>ici === "ajout-voies"</code>.</p>
+  <ul>
+    <li>Les trois <code>VoieDAjout</code> gardent leurs libellés actuels
+      (<code>voie-chantier</code>, <code>voie-client</code>, <code>voie-temps</code>).</li>
+    <li><b>Supprimer</b> le bloc <code>&lt;Petit data-atlas="annuler-ajout"&gt;</code>
+      de CETTE branche, et lui seul.</li>
+    <li><b>Garder</b> la ligne « ＋ Ajouter » (<code>data-atlas="ajouter"</code>) SOUS
+      les voies, à sa place : le rond passe de « ＋ » à « ✕ », le mot d’« Ajouter »
+      à « Fermer », et il repose <code>setOuvert(null)</code>. Même rond de 34 px,
+      même cerne d’or.</li>
+    <li><b>NON TRANCHÉ, donc inchangé :</b> l’« Annuler » de la branche
+      <code>ici === "ajout-qui"</code> (la liste des chantiers en attente) reste
+      tel quel. Il ne ferme pas, il revient aux voies — ce n’est pas le même geste,
+      et il n’a pas été montré sur la planche.</li>
+  </ul>
+
+  <h3>2 · L’absence — « A, à côté »</h3>
+  <p><code>PasLaCeJour</code> et <code>BasculeDuMoment</code>, même fichier.</p>
+  <ul>
+    <li>« Annuler » <b>à droite de l’interrupteur, sur la même ligne</b> : texte de
+      13 px en <code>colors.muted</code>, sans contour. L’interrupteur garde ses
+      44 px et prend la largeur restante.</li>
+    <li>Il fait exactement ce que fait déjà <code>rouvrir(absence.id)</code>, puis
+      <code>setQuiManque(null)</code>.</li>
+    <li>Il ne vit que tant que l’interrupteur vit : les deux s’effacent ensemble
+      dès qu’un moment est choisi (sa règle du 10 septembre). <b>Ne pas</b> le poser
+      sous chaque ligne d’absence.</li>
+    <li><b>Écarté explicitement :</b> une quatrième case « Annuler » DANS
+      l’interrupteur — elle se lirait comme un quatrième moment.</li>
+    <li>« + Salarié absent ? » reste le chemin pour défaire une absence posée
+      hier. Rien n’y change.</li>
+  </ul>
+
+  <h3>3 · Le tiroir « Sans date » — le nom seul</h3>
+  <p>Même fichier, liste <code>sansDate.map(...)</code> du tiroir du bas.</p>
+  <ul>
+    <li><b>Supprimer</b> le bouton <code>&lt;Petit data-poser="1"&gt;Poser&lt;/Petit&gt;</code> :
+      c’est le NOM qui pose, et le nom porte alors <code>data-poser="1"</code>.</li>
+    <li><b>Supprimer</b> <code>ChevronDesPortes</code> de cette liste.</li>
+    <li><b>Aucun contour, aucun fond, aucun « ＋ »</b> — sa retouche : « laisse juste
+      le nom du client et retire le contour doré ». Le nom garde sa serif de 19 px.</li>
+    <li>Un filet <code>colors.line</code> sépare deux noms et <b>ne souligne pas le
+      dernier</b> — c’est déjà la règle de cette liste (26 août).</li>
+    <li><b>Sans jour touché, rien ne s’appuie :</b> la ligne reste ce qu’elle est
+      aujourd’hui (le nom, et « en attente d’un jour » à droite), et
+      <code>data-poser</code> n’existe pas. <code>test-poser-une-date-e2e</code> le
+      vérifie : <code>[data-poser]</code> doit rendre 0 tant qu’aucun jour n’est
+      touché.</li>
+    <li>La poignée garde « À poser sur &lt;jour&gt; » <b>en or</b> : c’est la seule
+      chose qui dit ce que l’appui fait.</li>
+  </ul>
+
+  <h3>Déjà codé le 17 septembre — ne pas refaire</h3>
+  <p>Le « À poser sur … » écrit en NOIR sous le trait est supprimé ; il ne reste
+  que lorsqu’aucun jour n’est touché, où il dit « Touchez d’abord un jour du
+  calendrier ». Trois suites cherchent ce repère
+  (<code>data-atlas="ou-poser"</code>) : <code>test-planning-e2e</code>,
+  <code>test-poser-une-date-e2e</code>,
+  <code>test-salarie-planning-lecture-seule-e2e</code>.</p>
+
+  <h3>Ce que ce lot ENLÈVE, et qu’il faut assumer</h3>
+  <p>Le « › » était le seul chemin, depuis la liste « Sans date », vers la fiche
+  du chantier. Il part : la ligne ne fait plus qu’une chose — poser — et le
+  chantier s’ouvre depuis l’onglet Chantiers. C’est voulu, et il le sait.</p>
+
+  <h3>Les règles du dépôt qui s’appliquent</h3>
+  <ul>
+    <li>Une suite qui rougit après un retrait qu’il a demandé <b>s’adapte</b> ; on
+      ne remet pas le libellé (<code>CLAUDE.md</code> §5 bis).</li>
+    <li>Le niveau se CALCULE sur le diff : <code>npm run niveau</code>, puis le
+      contrôle qu’il annonce. Ne pas le déclarer.</li>
+    <li>Les écrans touchés se REGARDENT avant de conclure :
+      <code>npm run voir -- /planning</code> (<code>CLAUDE.md</code> §10).</li>
+    <li>Rien hors périmètre : ce cahier, et rien d’autre.</li>
+  </ul>
 </div>
 
 <script>
