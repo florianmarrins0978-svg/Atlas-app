@@ -255,7 +255,7 @@
 
 <p class="bandeau">
   <b>Un appui pose le premier jour, le chantier se remplit d’affilée. Un appui sur un jour l’efface, un autre le remet où vous voulez.</b><br>
-  Le 18 et le 22 : touchez le 18, effacez le 21, touchez le 22. <b>Rien n’est codé.</b>
+  Un chantier de 4 jours, à essayer. <b>Rien n’est codé.</b>
 </p>
 
 <nav class="choix" aria-label="Les deux peintures du jour">
@@ -269,7 +269,7 @@
   </div>
 
   <div class="duree">
-    <span class="combien" id="combien">2 jours</span>
+    <span class="combien" id="combien">4 jours</span>
     <button class="changer" type="button" data-changer>changer</button>
   </div>
 
@@ -314,7 +314,7 @@
    ═══════════════════════════════════════════════════════════════════════════ */
 
 const EQUIPES = 2;                  /* ses réglages : deux chantiers par jour */
-const DUREES = [1, 2, 3, 8];        /* « changer » y passe — 8, c'est son exemple */
+const DUREES = [1, 2, 3, 4, 8];     /* « changer » y passe — 4 et 8, ses exemples */
 const JOURS_COURTS = ["L","M","M","J","V","S","D"];
 const MOIS_LONGS = ["janvier","février","mars","avril","mai","juin","juillet","août",
                     "septembre","octobre","novembre","décembre"];
@@ -344,15 +344,15 @@ function jourOuvreApres(j){
 }
 
 /* ── L'état de l'écran ──────────────────────────────────────────────────── */
-let joursDuChantier = 2;            /* « 2 jours » — sa capture du 17 septembre */
+let joursDuChantier = 4;            /* « mets-moi un chantier de 4 jours que j'essaye » */
 /* Le premier jour proposable : demain, comme « le 18 » de sa question. */
 const PREMIER = ouvre(1);
 
 /* Une PROPOSITION, c'est la liste des jours du chantier. Le premier appui la
    remplit d'affilée ; un appui sur un de ses jours l'efface, et l'appui
    suivant sur un jour libre le remet là. Deux au plus — « une ou deux,
-   jamais plus », la règle d'aujourd'hui. Au départ : le 18 et le 22. */
-let propositions = [[PREMIER, ouvre(5)]];
+   jamais plus », la règle d'aujourd'hui. Au départ : 4 jours d'affilée depuis le 18. */
+let propositions = [];
 /* L'interrupteur allumé sans premier jour : le prochain appui le pose. */
 let secondeVoulue = false;
 /* Celle qu'un appui hors du chantier déplace : la dernière touchée. */
@@ -590,6 +590,7 @@ document.addEventListener("click", (e) => {
   if (j) toucher(j.dataset.jour);
 });
 
+propositions = [blocDepuis(PREMIER, new Set())];
 tout();
 </script>
 </body>
