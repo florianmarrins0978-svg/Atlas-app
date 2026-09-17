@@ -69,6 +69,42 @@ de la hauteur, il la veut à 33 %. Le réglage des deux ressorts ne la déplace
 pas — essayé, mesuré, rendu. La racine est ailleurs.
 
 
+## ⏳ UNE PLANCHE À REGARDER — LA CONSIGNE DE DÉPLACEMENT (17 septembre 2026)
+
+**Sa capture :** *« il dit toucher le jour au-dessus mais le planning apparaît
+en-dessous. »* Il a raison, et c'est mesuré : sur son écran du 18 septembre,
+**dix jours du mois** sont dessinés SOUS la consigne qui l'envoie regarder en
+haut — dont le 24.
+
+**La racine.** `BandeauDeplacement` est écrit une fois et monté à deux places
+(`PlanningClient.tsx`) : dans la fiche du jour, et en repli sous le calendrier
+quand le mois tourné a emporté la fiche. « Au-dessus » avait été écrit pour la
+seconde, où c'est vrai. Dans la fiche c'est faux — le volet s'insère SOUS LA
+SEMAINE du jour ouvert (`MoisCharge`, prop `volet`, ligne 305). **Aucune
+direction ne peut être juste aux deux endroits.**
+
+**RIEN N'EST CODÉ** — la planche `appli/deplacer-la-consigne.html` attend sa
+réponse. Le correctif avait été écrit, puis **défait à sa demande** (*« fait
+une planche ! code rien »*) : commits `5b177d9` puis `aa3f198` sur
+`claude/problem-investigation-qn7qor`. Il reste repêchable quand il aura
+tranché ; seule la formulation change.
+
+Deux réponses attendues, une lettre et un chiffre :
+
+| | |
+|---|---|
+| **A** | « Touchez son nouveau jour » |
+| **B** | « Touchez le jour d'arrivée » |
+| **C** | « Quel jour ? » |
+| **D** | celle d'aujourd'hui, pour comparer |
+| **1** | sans son nom — il est déjà en titre trois lignes plus haut |
+| **2** | avec « Mr. Linotte · » devant, comme aujourd'hui |
+
+**Le second point est une redite qu'il a sous les yeux** : sur sa capture,
+« Mr. Linotte » est écrit deux fois dans la même carte, à quatre lignes
+d'écart. Sous le calendrier il doit rester — la fiche n'y est plus pour le
+dire.
+
 ## ⏳ UNE PLANCHE À REGARDER — DEUX JOURS QUI NE SE TOUCHENT PAS (17 septembre 2026)
 
 **Sa question, capture à l'appui :** *« là j'ai un chantier de deux jours mais
