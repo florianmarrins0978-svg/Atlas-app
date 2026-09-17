@@ -13,39 +13,33 @@
   là je veux lui proposer le premier jour le 18 et on vient finir le chantier
   le 22 vu qu'il est sur 2 jours comment je fais ??? »*
 
-  ─── La première version de cette planche, et pourquoi elle est partie ────
+  ─── Trois versions le même soir, et c'est la troisième qui est la sienne ──
 
-  Elle comparait TROIS états (aujourd'hui, A, B), avec un second interrupteur
-  dans la vue B, deux cartes sous le téléphone et trois notes. Sa réponse le
-  jour même : *« je comprends rien, l'idée c'est que ce soit simple et joli »*.
-  Puis sa règle, en clair : *« quand je propose une date à un client et que le
-  chantier dure deux jours, je dois pouvoir lui proposer deux jours séparés —
-  le 18 et le 22 — en lui disant : on viendra un jour le 18 et le deuxième le
-  22. »*
+  1. Trois états à comparer, un interrupteur dans la vue B, trois notes.
+     *« Je comprends rien, l'idée c'est que ce soit simple et joli. »*
+  2. « Un appui = un jour du chantier », puis une 2e possibilité en or.
+     *« Je comprends pas comment ça marche. »*
+  3. CELLE-CI, dictée par lui :
 
-  ─── Ce que cette planche montre, et rien d'autre ─────────────────────────
+     *« Je dois cliquer sur un jour pour proposer la première date, puis sur
+     le deuxième pour proposer la deuxième date, et il faut un bouton on/off
+     pour si on souhaite faire une deuxième proposition. Néanmoins il faut
+     par défaut que si on a un chantier de 8 jours, si je clique sur le 23,
+     qu'ils mettent les 8 d'affilée — et ensuite si je décide que non, en
+     fait, le 25, je l'enlève : je clique dessus pour l'enlever. »*
 
-  UN écran, UNE idée : **un appui = un jour du chantier.** Il touche le 18 et
-  le 22, sa cliente lit « nous venons le 18 et le 22 ». Collés ou non, c'est
-  lui qui décide.
+  ─── Donc, et rien d'autre ───────────────────────────────────────────────
 
-  Et le cas de tous les jours ne change pas d'un geste : il touche le 18 seul,
-  le 19 se pose à côté tout seul (c'est ce que fait déjà `creneauxDuChantier`).
-  Il le veut ailleurs ? Il touche un autre jour, et le 19 s'efface.
-
-  ─── Sa deuxième réponse, le même soir : « fais les deux » ─────────────────
-
-  *« Sur les chantiers de deux jours ou plus il faut quand même pouvoir
-  proposer plus d'un jour au client. »* La première version de cette idée lui
-  faisait perdre les deux dates au choix dès que le chantier dépassait une
-  journée. Donc : une POSSIBILITÉ, c'est les jours du chantier ; et il peut en
-  proposer DEUX, la cliente choisit. Une seule règle pour toutes les durées —
-  sur une journée, deux possibilités d'un jour, c'est exactement les deux
-  dates au choix d'aujourd'hui. « Une ou deux, jamais plus » ne bouge pas.
-
-  La 2e possibilité se dessine en or, la 1re en vert pin — on voit d'un coup
-  d'œil laquelle est laquelle, sans lire. « changer » sur la ligne de durée
-  passe de 1 à 2 à 3 jours, pour voir que la règle tient.
+  · UN appui pose le PREMIER jour ; le chantier se remplit d'affilée derrière,
+    comme aujourd'hui (`creneauxDuChantier`). Rien ne change pour le cas de
+    tous les jours.
+  · Un appui sur un jour DU chantier l'ENLÈVE : le chantier se décale d'un
+    jour au bout. C'est ainsi que le 18 et le 22 se proposent — il touche le
+    18, puis il enlève le 21 (sa question du 17 septembre, un geste de plus).
+  · Un INTERRUPTEUR « Deuxième proposition » : allumé, le prochain appui pose
+    le premier jour de la 2e proposition, en or ; la cliente choisit entre les
+    deux. Éteint, elle disparaît. « Une ou deux, jamais plus » ne bouge pas.
+  · « changer » sur la durée passe par 1, 2, 3 et 8 jours — son exemple.
 
   ─── Ce que le code fait AUJOURD'HUI, lu dans le code ─────────────────────
 
@@ -54,7 +48,7 @@
      (`src/app/devis/[jeton]/formulaire.tsx`).
   2. La date retenue devient un bloc d'un seul tenant : `creneauxDuChantier`
      étale la durée sur des demi-journées qui se suivent
-     (`src/server/repositories/envois-devis.ts`).
+     (`src/server/repositories/envois-devis.ts`). Rien n'en retire un jour.
   3. À deux jours, l'écran ne le dit pas : `aideDuree` ne parle qu'au-delà de
      trois (`EnvoiAuClient.tsx`).
 
@@ -101,6 +95,7 @@
 
   .bloc{margin:18px 18px 0}
   .bloc > .caps{display:block;margin-bottom:8px;text-align:center}
+  .bloc > .caps.p2{color:var(--or)}
   .cadre{border-radius:10px;background:var(--plage);padding:12px}
 
   /* ── Le calendrier de son écran (`MoisCharge`), recopié de
@@ -128,16 +123,11 @@
   .case.aujourdhui .n{color:var(--or);font-weight:600}
   .case.passe .n{color:rgba(28,28,26,.3)}
 
-  /* Un jour du chantier qu'il a touché : plein. */
+  /* Un jour du chantier : plein. La 1re proposition en vert pin, la 2e en or
+     avec le chiffre en encre — le blanc sur l'or ne tient pas le contraste. */
   .case.retenu{background:var(--papier)}
   .case.retenu .n{background:var(--pin);color:#faf9f5}
   .case.retenu.p2 .n{background:var(--or);color:var(--encre)}
-
-  /* Le jour qui s'est posé à côté tout seul : creux — on voit qu'il n'a pas
-     été touché, et qu'il bougera si l'on touche ailleurs. */
-  .case.a-cote{background:var(--papier)}
-  .case.a-cote .n{box-shadow:inset 0 0 0 1.5px var(--pin)}
-  .case.a-cote.p2 .n{box-shadow:inset 0 0 0 1.5px var(--or)}
 
   .marqueA{width:24px;display:flex;flex-direction:column;gap:2.5px}
   .marqueA i{height:6px;border-radius:2px;background:var(--plage);
@@ -152,14 +142,14 @@
   .legende > span{display:flex;align-items:center;gap:5px;white-space:nowrap}
   .legende .rond{width:11px;height:11px;border-radius:99px;display:block;flex-shrink:0;background:var(--pin)}
   .legende .rond.p2{background:var(--or)}
-  .legende .rond.creux{background:transparent;box-shadow:inset 0 0 0 1.5px var(--pin)}
 
   .retour-aujourdhui{margin:12px auto 0;display:block;border:0;background:transparent;cursor:pointer;
                      font:600 11px/1 ui-sans-serif,sans-serif;letter-spacing:.18em;text-transform:uppercase;
                      color:var(--or)}
   .retour-aujourdhui[hidden]{display:none}
 
-  /* Ce qu'il s'apprête à envoyer, en toutes lettres — la liste de son écran. */
+  /* Ce qu'il s'apprête à envoyer, en toutes lettres — la liste de son écran.
+     Chaque ligne s'enlève d'un appui, comme la case du calendrier. */
   .liste{margin:16px 18px 0;display:flex;flex-direction:column;gap:6px}
   .liste .groupe{display:block;margin:10px 0 2px;text-align:center}
   .liste .groupe:first-child{margin-top:0}
@@ -169,17 +159,25 @@
                 font:15px/1.2 inherit;cursor:pointer;text-align:left}
   .liste button .dit{font-size:13px;font-weight:500;color:var(--pin);flex-shrink:0}
   .liste button.p2 .dit{color:var(--or)}
-  .liste button.a-cote{background:transparent;box-shadow:inset 0 0 0 1.5px var(--papier)}
-  .liste button.a-cote .dit{color:var(--gris);font-weight:400}
-
-  /* La porte de la 2e possibilité : un mot, pas un bouton plein — le geste
-     principal reste « Envoyer le devis ». Elle disparaît une fois ouverte. */
-  .autre-possibilite{margin:14px auto 0;display:block;border:0;background:transparent;cursor:pointer;
-                     padding:8px 12px;font:500 14px/1 inherit;color:var(--or)}
-  .autre-possibilite[hidden]{display:none}
+  .liste .vide{padding:13px 16px;border-radius:99px;box-shadow:inset 0 0 0 1.5px var(--papier);
+               font-size:14px;color:var(--gris);text-align:center}
 
   .conseil{margin:10px 18px 0;text-align:center;font-size:13px;line-height:1.5;color:var(--gris)}
   .conseil[hidden]{display:none}
+
+  /* L'interrupteur de la deuxième proposition — sa demande : « un bouton
+     on/off pour si on souhaite faire une deuxième proposition ». */
+  .interrupteur{margin:18px 18px 0;padding:14px 0 0;border:0;border-top:1px solid var(--trait-doux);
+                display:flex;align-items:center;justify-content:space-between;gap:12px;
+                background:transparent;width:calc(100% - 36px);
+                cursor:pointer;font:15px/1.2 inherit;color:var(--encre);text-align:left}
+  .interrupteur .bouton{width:46px;height:28px;border-radius:99px;background:rgba(28,28,26,.16);position:relative;
+                        flex-shrink:0;transition:background .18s cubic-bezier(.22,1,.36,1)}
+  .interrupteur .bouton::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:99px;
+                               background:#fff;box-shadow:0 1px 3px rgba(20,18,14,.25);
+                               transition:transform .18s cubic-bezier(.22,1,.36,1)}
+  .interrupteur[aria-checked="true"] .bouton{background:var(--or)}
+  .interrupteur[aria-checked="true"] .bouton::after{transform:translateX(18px)}
 
   .principal{margin:18px 18px 26px;width:calc(100% - 36px);border:0;border-radius:99px;
              background:var(--pin);color:#fff;padding:16px 20px;font-family:ui-serif,Georgia,serif;
@@ -204,8 +202,8 @@
 <body>
 
 <p class="bandeau">
-  <b>Un chantier de 2 jours : le 18 et le 22, pas forcément collés</b> — et une 2e possibilité, au choix de la cliente.<br>
-  Touchez les jours. <b>Rien n’est codé.</b>
+  <b>Un appui pose le premier jour, le chantier se remplit d’affilée. Un appui sur un jour l’enlève.</b><br>
+  Le 18 et le 22 : touchez le 18, enlevez le 21. <b>Rien n’est codé.</b>
 </p>
 
 <div class="tel">
@@ -219,13 +217,17 @@
   </div>
 
   <div class="bloc">
-    <span class="caps" id="consigne">Posez les 2 jours du chantier</span>
+    <span class="caps" id="consigne">Touchez le premier jour</span>
     <div class="cadre" id="calendrier"></div>
   </div>
 
   <div class="liste" id="liste"></div>
   <p class="conseil" id="conseil" hidden></p>
-  <button class="autre-possibilite" type="button" id="autre-possibilite" data-ouvrir hidden>Proposer aussi une autre possibilité</button>
+
+  <button class="interrupteur" type="button" role="switch" aria-checked="false" id="seconde">
+    <span>Deuxième proposition</span>
+    <span class="bouton" aria-hidden="true"></span>
+  </button>
 
   <button class="principal" type="button">Envoyer le devis</button>
 </div>
@@ -233,9 +235,9 @@
 <div class="client" id="client"></div>
 
 <p class="note">
-  <b>Un appui, un jour du chantier.</b> Collés ou non, c’est vous qui décidez.
-  Une deuxième possibilité, et c’est la cliente qui choisit&nbsp;— sur une journée
-  comme sur trois.
+  <b>Un appui, le premier jour</b>&nbsp;: le chantier se pose d’affilée. <b>Un appui
+  sur un jour du chantier l’enlève</b>, et le chantier se décale d’un jour au bout.
+  Allumez la deuxième proposition, touchez son premier jour&nbsp;: la cliente choisit.
 </p>
 
 <script>
@@ -250,11 +252,11 @@
    ═══════════════════════════════════════════════════════════════════════════ */
 
 const EQUIPES = 2;                  /* ses réglages : deux chantiers par jour */
+const DUREES = [1, 2, 3, 8];        /* « changer » y passe — 8, c'est son exemple */
 const JOURS_COURTS = ["L","M","M","J","V","S","D"];
 const MOIS_LONGS = ["janvier","février","mars","avril","mai","juin","juillet","août",
                     "septembre","octobre","novembre","décembre"];
 const JOURS_LONGS = ["lundi","mardi","mercredi","jeudi","vendredi","samedi","dimanche"];
-const RANGS = ["1er jour","2e jour","3e jour"];
 
 const $ = (s) => document.querySelector(s);
 const iso = (d) => d.toISOString().slice(0,10);
@@ -281,20 +283,22 @@ function jourOuvreApres(j){
 
 /* ── L'état de l'écran ──────────────────────────────────────────────────── */
 let joursDuChantier = 2;            /* « 2 jours » — sa capture du 17 septembre */
-/* Le premier jour proposable : demain, comme « le 18 » de sa question ; et le
-   second quatre jours ouvrés plus loin, comme « le 22 ». Dans l'ordre où il
-   les a touchés : au-delà du compte, c'est le DERNIER touché qui bouge. */
+/* Le premier jour proposable : demain, comme « le 18 » de sa question. */
 const PREMIER = ouvre(1);
-/* Une POSSIBILITÉ est la liste des jours qu'il a touchés, dans l'ordre. Il
-   peut en proposer deux — « une ou deux, jamais plus », la règle
-   d'aujourd'hui —, et la cliente choisit. */
-let possibilites = [[PREMIER, ouvre(5)], [ouvre(6), ouvre(9)]];
-/* Celle que le prochain appui remplit : la dernière ouverte, ou touchée. */
-let active = 1;
+
+/* Une PROPOSITION, c'est un premier jour et les jours qu'il a enlevés : le
+   chantier se remplit d'affilée derrière le premier, en sautant ce qu'il a
+   enlevé. Deux au plus — « une ou deux, jamais plus », la règle d'aujourd'hui.
+   Au départ : le 18, sans le jour d'après — donc le 18 et le 22, sa question. */
+let propositions = [{ debut: PREMIER, enleves: new Set([jourOuvreApres(PREMIER)]) }];
+/* L'interrupteur allumé sans premier jour : le prochain appui le pose. */
+let secondeVoulue = false;
+/* Celle qu'un appui hors du chantier déplace : la dernière touchée. */
+let active = 0;
 
 /* Ses chantiers déjà posés : sans eux, aucune barre de charge à lire. Ils se
-   posent APRÈS les jours de la démonstration, jamais dessus. */
-const CHARGE_A = jourOuvreApres(jourOuvreApres(ouvre(5)));
+   posent loin des jours de la démonstration. */
+const CHARGE_A = ouvre(11);
 const CHARGE_B = jourOuvreApres(CHARGE_A);
 const POSES = [
   { jour: CHARGE_A, demis:["matin","apres_midi"] },
@@ -314,41 +318,29 @@ function jourLisible(j){
   const d = enDate(j);
   return JOURS_LONGS[(d.getUTCDay()+6)%7] + " " + d.getUTCDate() + " " + MOIS_LONGS[d.getUTCMonth()];
 }
+const rang = (i) => (i + 1) + (i ? "e" : "er") + " jour";
 
 const dPremier = enDate(PREMIER);
 let curseur = { annee: dPremier.getUTCFullYear(), mois: dPremier.getUTCMonth() };
 
-const tousTouches = () => possibilites.flat();
-
-/* Les jours qui se posent À CÔTÉ tout seuls : après le dernier jour touché
-   de la possibilité, jusqu'à ce que le compte y soit — sans marcher sur
-   l'autre possibilité. C'est ce que fait déjà l'application quand il ne
-   touche qu'un jour — ici, on le montre au lieu de le taire. */
-function joursACote(p){
-  /* Les possibilités se posent dans l'ordre : ce que la première a déjà
-     pris — touché ou posé à côté — n'est plus libre pour la seconde. */
-  const pris = new Set(tousTouches());
-  for (let q = 0; q <= p; q++) {
-    const touches = possibilites[q];
-    const suite = [];
-    let j = [...touches].sort().pop();
-    while (touches.length + suite.length < joursDuChantier) {
-      j = jourOuvreApres(j);
-      if (!pris.has(j)) { suite.push(j); pris.add(j); }
-    }
-    if (q === p) return suite;
+/* Les jours d'une proposition : d'affilée depuis le premier, en sautant les
+   jours enlevés et ceux que l'autre proposition tient déjà — la première se
+   pose d'abord, la seconde s'écarte d'elle. */
+function joursDe(p){
+  const autres = new Set(p === 1 ? joursDe(0) : []);
+  const prop = propositions[p];
+  if (!prop) return [];
+  const jours = [];
+  let j = prop.debut;
+  while (jours.length < joursDuChantier) {
+    if (!prop.enleves.has(j) && !autres.has(j)) jours.push(j);
+    j = jourOuvreApres(j);
   }
-  return [];
+  return jours;
 }
-/* Tout ce que prend une possibilité, dans l'ordre du calendrier. */
-const joursDuPlan = (p) => [...possibilites[p], ...joursACote(p)].sort();
-/* Où est un jour : touché ou posé à côté, et pour quelle possibilité. */
 function ouEst(j){
-  for (let p = 0; p < possibilites.length; p++) {
-    if (possibilites[p].includes(j)) return { p, aCote:false };
-    if (joursACote(p).includes(j)) return { p, aCote:true };
-  }
-  return null;
+  for (let p = 0; p < propositions.length; p++) if (joursDe(p).includes(j)) return p;
+  return -1;
 }
 
 function barre(o){
@@ -388,49 +380,40 @@ function dessinerCalendrier(){
         if (estWeekEnd(d)) classes.push("we");
         if (j === AUJOURDHUI) classes.push("aujourdhui");
         if (j < AUJOURDHUI) classes.push("passe");
-        const ou = ouEst(j);
-        if (ou) { classes.push(ou.aCote ? "a-cote" : "retenu"); if (ou.p === 1) classes.push("p2"); }
+        const p = ouEst(j);
+        if (p >= 0) { classes.push("retenu"); if (p === 1) classes.push("p2"); }
         return '<button type="button" class="' + classes.join(" ") + '" data-jour="' + j + '"'
-             + ' aria-pressed="' + (ou !== null && !ou.aCote) + '"'
+             + ' aria-pressed="' + (p >= 0) + '"'
              + ' aria-label="' + jourLisible(j)
-             + (!ou ? '' : (ou.aCote ? ' — posé à côté' : ' — jour du chantier')
-                + (possibilites.length > 1 ? ', ' + (ou.p + 1) + (ou.p ? 'e' : 're') + ' possibilité' : '')) + '">'
+             + (p < 0 ? '' : ' — jour du chantier' + (propositions.length > 1 ? ', ' + (p ? '2e' : '1re') + ' proposition' : '')) + '">'
              + '<span class="n">' + d.getUTCDate() + '</span>' + marque(j) + '</button>';
       }).join("") + '</div>'
     + '<button class="retour-aujourdhui" type="button" data-retour' + (surLeMois ? " hidden" : "") + '>‹ Aujourd’hui</button>'
-    + legende();
-}
-
-function legende(){
-  const avecACote = possibilites.some((_, p) => joursACote(p).length > 0);
-  return '<div class="legende">'
-    + (possibilites.length > 1
-        ? '<span><i class="rond"></i> 1re possibilité</span><span><i class="rond p2"></i> 2e possibilité</span>'
+    + '<div class="legende">'
+    + (propositions.length > 1
+        ? '<span><i class="rond"></i> 1re proposition</span><span><i class="rond p2"></i> 2e proposition</span>'
         : '<span><i class="rond"></i> jour du chantier</span>')
-    + (avecACote ? '<span><i class="rond creux"></i> posé à côté</span>' : '')
     + '</div>';
 }
 
 function dessinerListe(){
-  let html = "", unACote = false;
-  possibilites.forEach((_, p) => {
-    const aCote = new Set(joursACote(p));
-    if (aCote.size) unACote = true;
-    if (possibilites.length > 1)
-      html += '<span class="caps groupe' + (p ? ' p2' : '') + '">' + (p + 1) + (p ? 'e' : 're') + ' possibilité</span>';
-    html += joursDuPlan(p).map((j, i) =>
-      '<button type="button" class="' + (aCote.has(j) ? 'a-cote' : '') + (p ? ' p2' : '') + '" data-jour="' + j + '">'
+  const deux = propositions.length > 1 || secondeVoulue;
+  let html = "";
+  for (let p = 0; p < (deux ? 2 : 1); p++) {
+    if (deux) html += '<span class="caps groupe' + (p ? ' p2' : '') + '">' + (p ? '2e' : '1re') + ' proposition</span>';
+    if (!propositions[p]) { html += '<span class="vide">Touchez son premier jour</span>'; continue; }
+    html += joursDe(p).map((j, i) =>
+      '<button type="button" class="' + (p ? 'p2' : '') + '" data-jour="' + j + '">'
       + '<span>' + jourLisible(j) + '</span>'
-      + '<span class="dit">' + (joursDuChantier === 1 ? 'proposée' : aCote.has(j) ? RANGS[i] + ' · posé à côté' : RANGS[i]) + '</span>'
+      + '<span class="dit">' + (joursDuChantier === 1 ? 'proposée' : rang(i)) + '</span>'
       + '</button>').join("");
-  });
+  }
   $("#liste").innerHTML = html;
-  /* La seule phrase de l'écran, et seulement quand un jour s'est posé seul :
-     sans elle, il ne saurait pas qu'il peut le mettre ailleurs. */
+  /* La seule phrase de l'écran, et seulement quand le chantier dépasse un
+     jour : sans elle, il ne saurait pas qu'un jour s'enlève. */
   const c = $("#conseil");
-  c.hidden = !unACote;
-  c.textContent = "Touchez un autre jour pour l’y poser à la place.";
-  $("#autre-possibilite").hidden = possibilites.length > 1;
+  c.hidden = joursDuChantier === 1;
+  c.textContent = "Touchez un jour du chantier pour l’enlever : le chantier se décale d’un jour.";
 }
 
 /* Ce que sa cliente lit — des jours, jamais des demi-journées. */
@@ -441,15 +424,15 @@ function enToutesLettres(jours){
 }
 function dessinerClient(){
   let html = '<span class="caps">Ce que Linotte lit</span>';
-  if (possibilites.length > 1) {
+  if (propositions.length > 1) {
     html += '<h3>' + (joursDuChantier === 1 ? 'Quelle date vous arrange&nbsp;?' : 'Quels jours vous arrangent&nbsp;?') + '</h3>'
       + '<div style="margin-top:8px">'
-      + possibilites.map((_, p) => '<div class="ligne"><span class="radio'
-          + (p === 0 ? " coche" : "") + '"></span><span>' + enToutesLettres(joursDuPlan(p)) + '</span></div>').join("")
+      + propositions.map((_, p) => '<div class="ligne"><span class="radio'
+          + (p === 0 ? " coche" : "") + '"></span><span>' + enToutesLettres(joursDe(p)) + '</span></div>').join("")
       + '</div>'
       + '<div class="issues"><span class="oui">Je confirme</span><span class="autre">Une autre date</span></div>';
   } else {
-    const jours = joursDuPlan(0);
+    const jours = joursDe(0);
     html += '<h3>Nous venons ' + enToutesLettres(jours) + '.</h3>'
       + '<div class="issues"><span class="oui">' + (jours.length > 1 ? 'Ces jours me vont' : 'Ça me va')
       + '</span><span class="autre">Une autre date</span></div>';
@@ -459,51 +442,50 @@ function dessinerClient(){
 
 function tout(){
   $("#combien").textContent = joursDuChantier + (joursDuChantier > 1 ? " jours" : " jour");
-  $("#consigne").textContent = joursDuChantier === 1
-    ? "Proposez une ou deux dates"
-    : "Posez les " + joursDuChantier + " jours du chantier";
+  const attendLaSeconde = secondeVoulue && propositions.length < 2;
+  const consigne = $("#consigne");
+  consigne.textContent = attendLaSeconde
+    ? "Touchez le premier jour de la 2e proposition"
+    : joursDuChantier === 1 ? "Proposez une date" : "Touchez le premier jour";
+  consigne.classList.toggle("p2", attendLaSeconde);
+  $("#seconde").setAttribute("aria-checked", String(secondeVoulue));
   dessinerCalendrier(); dessinerListe(); dessinerClient();
 }
 
-/* Toucher un jour le retient ou le retire — sa demande du 25 août 2026 :
-   « je dois pouvoir sélectionner les jours juste en les touchant ». Au-delà du
-   compte, le dernier touché bouge, plutôt que de refuser le geste. */
+/* Un appui sur un jour du chantier l'enlève ; un appui ailleurs pose un
+   premier jour — celui de la 2e proposition si elle l'attend, sinon il
+   déplace la dernière touchée. */
 function toucher(jour){
   if (jour < PREMIER) return;
-  const p = possibilites.findIndex((t) => t.includes(jour));
+  const p = ouEst(jour);
   if (p >= 0) {
-    /* Retirer le dernier jour d'une possibilité la ferme ; la première, elle,
-       garde toujours un jour — un envoi sans date n'existe pas. */
-    possibilites[p].splice(possibilites[p].indexOf(jour), 1);
-    if (possibilites[p].length === 0) {
-      if (p === 0) possibilites[0].push(jour); else possibilites.pop();
-    }
-    active = Math.min(p, possibilites.length - 1);
+    active = p;
+    if (joursDuChantier === 1) {
+      /* Sur une journée, enlever la seule date de la 2e proposition la
+         ferme ; la 1re garde la sienne — un envoi sans date n'existe pas. */
+      if (p === 1) { propositions.pop(); secondeVoulue = false; }
+    } else propositions[p].enleves.add(jour);
+  } else if (secondeVoulue && propositions.length < 2) {
+    propositions.push({ debut: jour, enleves: new Set() });
+    active = 1;
   } else {
-    const t = possibilites[active];
-    if (t.length >= joursDuChantier) t.pop();
-    t.push(jour);
+    propositions[active] = { debut: jour, enleves: new Set() };
   }
-  tout();
-}
-
-/* Ouvrir la 2e possibilité : un jour, posé après tout ce qui est déjà pris —
-   le reste se pose à côté tout seul, et il déplace ce qu'il veut. */
-function ouvrirAutrePossibilite(){
-  if (possibilites.length > 1) return;
-  possibilites.push([jourOuvreApres([...joursDuPlan(0)].pop())]);
-  active = 1;
   tout();
 }
 
 document.addEventListener("click", (e) => {
   if (e.target.closest("[data-changer]")) {
-    joursDuChantier = joursDuChantier % 3 + 1;
-    possibilites.forEach((t) => { while (t.length > joursDuChantier) t.pop(); });
+    joursDuChantier = DUREES[(DUREES.indexOf(joursDuChantier) + 1) % DUREES.length];
     tout();
     return;
   }
-  if (e.target.closest("[data-ouvrir]")) { ouvrirAutrePossibilite(); return; }
+  if (e.target.closest("#seconde")) {
+    secondeVoulue = !secondeVoulue;
+    if (!secondeVoulue) { propositions.length = 1; active = 0; }
+    tout();
+    return;
+  }
   const mois = e.target.closest("[data-mois]");
   if (mois) {
     let m = curseur.mois + Number(mois.dataset.mois), a = curseur.annee;

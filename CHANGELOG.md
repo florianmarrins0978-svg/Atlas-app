@@ -203,6 +203,22 @@ choix d'aujourd'hui. Les jours posés à côté d'une possibilité ne marchent
 jamais sur l'autre : la seconde se pose après ce que la première a pris.
 Rejouée en navigateur : retirer la 2e la ferme et rouvre la porte, 1 et
 3 jours, sans débordement ni erreur.
+
+**Troisième version, dictée par lui** — *« je comprends pas comment ça
+marche »*, puis le geste exact : *« je clique sur un jour pour proposer la
+première date, puis sur le deuxième pour la deuxième, avec un bouton on/off
+pour la deuxième proposition ; et par défaut, sur un chantier de 8 jours, si
+je clique sur le 23 ils mettent les 8 d'affilée, et si je décide que non le
+25, je clique dessus pour l'enlever »*. C'est la version en ligne : un appui
+pose le premier jour et le chantier se remplit d'affilée (le geste
+d'aujourd'hui, inchangé) ; un appui sur un jour du chantier l'enlève et le
+chantier se décale d'un jour au bout — le 18 et le 22, c'est toucher le 18 et
+enlever le 21 ; un interrupteur « Deuxième proposition » sous la liste, et le
+prochain appui pose son premier jour, en or. « changer » passe par 1, 2, 3 et
+8 jours. « Un appui = un jour du chantier » et la porte « Proposer aussi une
+autre possibilité » sont partis. Rejouée en navigateur : 8 jours posés d'un
+appui, un jour enlevé et le bloc décalé, la 2e proposition posée, un de ses
+jours enlevé, l'interrupteur éteint — sans débordement ni erreur.
 ### La publication des planches rougissait depuis la note vocale à plat
 
 Le flux `pages.yml` est tombé sur `test:boutons-verts` dès la poussée du

@@ -67,14 +67,22 @@ trois notes sont partis. Ce qu'elle montre maintenant, et rien d'autre :
 pose tout seul, en creux, et bouge dès qu'il touche ailleurs — le geste de
 tous les jours ne change pas.
 
-**Puis « fais les deux », le même soir** — *« sur les chantiers de deux jours
-ou plus il faut quand même pouvoir proposer plus d'un jour au client »*. Une
-**possibilité** est les jours du chantier ; il peut en proposer **deux**
-(« Proposer aussi une autre possibilité », sous la liste), et la cliente
-choisit — « Quels jours vous arrangent ? », un bouton radio par possibilité.
-Une seule règle pour toutes les durées : sur une journée, deux possibilités
-d'un jour sont exactement les deux dates au choix d'aujourd'hui. « Une ou
-deux, jamais plus » ne bouge pas. La 2e se dessine en or, la 1re en vert pin.
+**Puis « fais les deux »**, puis *« je comprends pas comment ça marche »* —
+et il a dicté le geste, qui est la version en ligne (la troisième du soir) :
+
+| | |
+|---|---|
+| un appui sur un jour libre | pose le **premier jour** ; le chantier se remplit **d'affilée** derrière (8 jours, le 23 : les 8 se posent) |
+| un appui sur un jour **du chantier** | l'**enlève** ; le chantier se décale d'un jour au bout — le 18 et le 22, c'est toucher le 18 et enlever le 21 |
+| l'interrupteur « Deuxième proposition » | allumé, le prochain appui pose le premier jour de la 2e, en or ; éteint, elle disparaît |
+| la cliente | « Quels jours vous arrangent ? », un bouton radio par proposition ; une seule : « Nous venons le … et le … » |
+
+Une seule règle pour toutes les durées : sur une journée, deux propositions
+d'un jour sont les deux dates au choix d'aujourd'hui. « Une ou deux, jamais
+plus » ne bouge pas. **Ce que le lot devra ranger, s'il tranche :** par
+proposition, un premier jour ET la liste des jours enlevés (ou la liste des
+jours, calculée) ; la réponse de la cliente désigne une proposition ; et
+`creneauxDuChantier` doit savoir sauter des jours.
 
 **Ce que le code fait aujourd'hui**, et il faut le savoir avant d'ouvrir le lot :
 
@@ -94,9 +102,9 @@ alors sur l'écran — « Posez les 2 jours du chantier » / « Proposez une ou 
 dates », et « 1er jour · 2e jour » / « proposée » sur chaque ligne —, et la
 carte « ce que Linotte lit » le montre. Ce que cette version lui faisait
 perdre — deux dates au choix sur plusieurs jours —, il l'a vu et refusé le
-soir même : d'où la seconde possibilité. **Ce que le lot coûtera de plus,
-s'il tranche :** `envois_devis` doit porter deux LISTES de jours au lieu de
-deux dates, et la réponse de la cliente désigner une liste.
+soir même ; et « un appui = un jour » ne lui parlait pas non plus. Sa
+version à lui garde le geste d'aujourd'hui (un appui, un bloc d'affilée) et
+n'y ajoute qu'un retrait — c'est la moins étrangère à ce qu'il fait déjà.
 
 **Ce que sa règle interdit toujours :** montrer une demi-journée au client
 (`scripts/test-creneaux-planning.ts`). Les deux issues ne montrent que des
