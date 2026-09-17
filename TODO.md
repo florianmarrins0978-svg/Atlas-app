@@ -9,7 +9,7 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
-## ⏳ « LA TVA À 10 N'APPARAÎT PAS SUR L'APERÇU PDF » — NON REPRODUIT (17 septembre 2026)
+## ~~« LA TVA À 10 N'APPARAÎT PAS SUR L'APERÇU PDF »~~ — SANS OBJET (17 septembre 2026)
 
 **Sa remarque :** *« lorsque je rajoute une tva à 10 par exemple sur le devis et
 que je regarde l'aperçu en pdf elle n'apparaît pas ; vérifie qu'on n'a pas ce
@@ -35,10 +35,15 @@ taux portent tous les trois le bon taux. Son espace sert `2442ee2` : le même
 code que celui qui a été mesuré — les six versions qui lui manquent ne touchent
 que l'outillage.
 
-**Ce qui reste à savoir, et lui seul l'a :** par quel geste il ajoute sa TVA, et
-ce que son PDF montre vraiment (une capture). Sans cela, corriger serait
-réparer une panne imaginée (`AGENTS.md`). **Ne pas clore ce point sur le
-silence.**
+**~~CLOS PAR SA CAPTURE, le 17 septembre 2026 au soir :~~** *« Ah mais si je
+crois qu'elle y est »*. Son devis 2026-000038 porte bien les deux taux — 20 %
+sur 58,00 € (11,60 €), 10 % sur 580,00 € (58,00 €), et les deux bases en bas à
+gauche. **Aucune correction : il n'y avait pas de défaut.**
+
+**Ce que ce point laisse quand même au dépôt.** Huit gestes du parcours TVA ont
+été joués et relus dans le PDF, devis ET facture ; aucune suite ne les couvrait
+tous. Si une régression arrive un jour sur ce chemin, c'est ce tableau qui dit
+ce qui marchait le 17 septembre 2026.
 
 
 ## ⏳ `test-accueil-vide-porte-e2e` dépend de l'état que la base a gardé
