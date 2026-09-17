@@ -4,10 +4,31 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-09-17 · `main` — l'accueil vide (la porte au tiers haut) est fusionné
+**Point de reprise :** 2026-09-17 · `main` — le menu du bas après un devis envoyé, et l'accueil qui se relit tout seul
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## Le décor d'un écran se décide au NAVIGATEUR, pas au serveur
+
+Depuis le 17 septembre 2026, ce qui entoure un écran — la barre du bas, le cadre
+`atlas-contenu`, le panneau de l'assistant — est choisi par `CadreApplication`,
+un composant client qui lit `usePathname()`. **Ne pas le remonter dans
+`layout.tsx`** : la mise en page racine ne se rejoue pas sur une navigation de
+lien, et le décor du premier écran de l'onglet vaudrait alors pour tous les
+suivants. C'est ce qui faisait disparaître son menu du bas après un envoi de
+devis. Les chemins publics, eux, restent tranchés au serveur — il n'y a pas de
+session à y lire. `ARCHITECTURE.md` §373.
+
+## L'accueil se relit tout seul, et ce n'est pas une notification
+
+`VeilleDesNouvelles` relit l'accueil dès que la page redevient visible, et
+toutes les trente secondes tant qu'elle l'est. C'est ce qui fait arriver la
+réponse d'un client sans qu'il recharge. Atlas FERMÉ, rien ne sonne : la
+notification poussée n'existe pas (`TODO.md`, en tête) — ne pas la présenter
+comme faite.
+
+---
+
 ## L'accueil vide : la porte du devis est au TIERS HAUT, poussée par deux ressorts
 
 Depuis le 17 septembre 2026, quand aucun chantier n'est en cours, « Créer un

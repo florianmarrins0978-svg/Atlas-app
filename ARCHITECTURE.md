@@ -31065,3 +31065,82 @@ hors de l'écran (mesuré).
 « Créer une facture », sous celui du devis et collé au bord gauche. Il attend la
 migration qui rend `factures.devis_id` facultatif. Quand il arrivera, le rapport
 des ressorts se **remesure** — deux anneaux au lieu d'un déplacent le centre.
+
+---
+
+## §373 — Le cadre de l'application décide AU NAVIGATEUR, et l'accueil se relit tout seul
+
+**Deux défauts d'un même soir — le 17 septembre 2026 —, signalés sur la même
+capture : l'accueil atteint après l'envoi d'un devis, sans barre du bas, et une
+réponse de client qui n'y arrivait qu'au rechargement.**
+
+### 1. La barre du bas : un choix serveur qui survivait à la navigation
+
+La mise en page racine tranchait, au SERVEUR, entre trois décors : le devis
+seul (sans onglets ni cadre), les écrans sans navigation, et l'application
+entière. **Next.js ne rejoue pas la mise en page racine sur une navigation de
+lien** — il ne redemande que le segment qui change. Le décor choisi au premier
+rendu de l'onglet valait donc pour tout ce qui suivait.
+
+| Le parcours | Ce qui se passait |
+|---|---|
+| accueil → devis (par un lien) → accueil | la barre revenait : le cadre était déjà là |
+| **devis atteint à son ADRESSE** → accueil | **plus de barre, plus de cadre**, jusqu'au rechargement |
+
+Le second est le sien : l'application rouverte sur ce devis, la page rechargée,
+l'adresse suivie depuis un message — puis l'envoi, qui ramène à l'accueil par
+`router.push("/")` (`DevisCompletClient`).
+
+**Le dépôt avait déjà payé l'autre moitié de ce défaut**, le 5 septembre 2026 :
+la barre d'un écran précédent RESTAIT sur le devis atteint par un lien, et
+couvrait son bouton d'envoi. On avait alors appris à la barre à se retirer
+d'elle-même d'après le chemin courant (`ecrans-sans-navigation.ts`). Ce
+rattrapage ne pouvait rien pour ce sens-ci : **une barre jamais rendue n'a rien
+à retirer**.
+
+**La correction est à la racine** : le choix quitte le serveur pour
+`CadreApplication`, un composant client qui lit `usePathname()` et se refait à
+chaque navigation. Sans clignotement — `usePathname` rend déjà le bon chemin au
+rendu du serveur, donc une page de devis n'est jamais peinte avec une barre
+qu'on lui retirerait ensuite.
+
+**Et la couche qui compensait s'en va** (`CLAUDE.md` §4 quater) : la barre ne se
+garde plus elle-même. Deux endroits qui décident de la même chose finissent par
+diverger, et c'est exactement ce que ces deux mesures contradictoires ont coûté.
+
+**Ce qui reste décidé au serveur, et doit le rester :** les chemins publics. Le
+rôle n'y est pas lisible — il n'y a pas de session —, et le demander sur
+`/login` renverrait vers `/api/session-perimee` l'écran qui sert justement à se
+reconnecter. Ailleurs, le rôle se lit désormais **toujours** : le sauter sur les
+écrans sans navigation reviendrait à refaire au serveur le choix qui vient d'en
+partir. La lecture ne coûte rien — `GardeAcces` l'a déjà faite, et `cache()` la
+rend une seule fois par requête.
+
+### 2. L'accueil : il n'y avait aucun mécanisme, pas un mécanisme en panne
+
+L'accueil est rendu au serveur : il lit les réponses, les rappels et les
+réceptions **une fois**, au moment où il est demandé. La réponse du client,
+elle, arrive plus tard et **ailleurs** — sur le téléphone du client, par la page
+publique du devis. Rien, dans le navigateur du patron, ne pouvait l'apprendre.
+
+`VeilleDesNouvelles` est ce mécanisme, et il ne recouvre rien :
+
+| Quand | Ce qu'il fait |
+|---|---|
+| il revient à Atlas (messagerie, appel, écran verrouillé) | l'accueil se relit **immédiatement** |
+| pendant qu'il regarde l'écran | toutes les trente secondes |
+| page cachée | rien — et les navigateurs endorment de toute façon les minuteurs d'un onglet caché, si bien qu'un battement aveugle rendrait un rythme qu'on croit tenir et qu'on ne tient pas |
+
+**Trente secondes est un arbitrage**, pas une valeur trouvée : plus court, on
+interroge la base pour rien pendant qu'il travaille ; plus long, la nouvelle
+qu'il attend dort sous ses yeux.
+
+**Ce que cela ne remplace pas** : une notification poussée, qui sonnerait Atlas
+fermé. Elle n'existe pas, elle est dans `TODO.md`, et ce n'était pas une raison
+pour laisser une réponse de client dormir sous ses yeux.
+
+**Les deux suites fixent la PROMESSE, pas le montage** : la barre revient quand
+on quitte le devis par un vrai geste, et la carte arrive sans qu'il recharge.
+Aucune ne compte les trente secondes — un contrôle qui les compterait se
+contredirait au premier réglage et ne défendrait rien de ce qu'il voit, lui
+(`CLAUDE.md` §5 bis). Toutes deux ont été vues rouges sur le code d'avant.

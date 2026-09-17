@@ -5,6 +5,25 @@
 
 ---
 
+## FAIT : LE MENU DU BAS, ET LA RÉPONSE DU CLIENT QUI N'ARRIVAIT PAS (17 septembre 2026)
+
+Deux défauts sur une même capture, la sienne, juste après l'envoi d'un devis.
+
+**La barre du bas avait disparu.** Le décor de l'écran — barre, cadre,
+rembourrage du bas — se choisissait dans la mise en page RACINE, au serveur, et
+Next.js ne rejoue pas cette mise en page sur une navigation de lien : le décor
+du devis (aucun) survivait à l'accueil, et pour toute la durée de l'onglet. Le
+choix vit désormais dans `CadreApplication`, un composant client qui lit le
+chemin courant. La barre ne se garde plus elle-même — la couche du 5 septembre
+qui compensait s'en va avec la racine corrigée.
+
+**La réponse du client n'arrivait qu'au rechargement.** Il n'y avait aucun
+mécanisme : l'accueil lit les réponses une fois, la réponse arrive plus tard et
+sur le téléphone du client. `VeilleDesNouvelles` relit l'accueil dès qu'il
+revient à Atlas, et toutes les trente secondes pendant qu'il le regarde.
+**Ce n'est pas une notification poussée** — Atlas fermé, rien ne sonne encore
+(`TODO.md`, en tête). `ARCHITECTURE.md` §373.
+
 ## FAIT : L'ACCUEIL SANS CHANTIER — LA PORTE DU DEVIS AU TIERS HAUT (17 septembre 2026)
 
 Sa place : *« découpe l'écran en 3 parts égales ! En partant du bas, le mets en

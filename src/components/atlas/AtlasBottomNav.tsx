@@ -5,7 +5,6 @@ import { useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 import { colors } from "@/lib/design-tokens";
 import { cheminAutorise, type Role } from "@/lib/acces-roles";
-import { estEcranSansNavigation } from "@/lib/ecrans-sans-navigation";
 
 // Le bandeau du bas, refait le 10 août 2026 d'après la version retenue.
 //
@@ -128,18 +127,19 @@ export default function AtlasBottomNav({ role = null }: { role?: Role | null }) 
     };
   }, [pathname, role]);
 
-  // **Le second garde, et c'est le seul qui tienne quand on navigue en
-  // appuyant — 5 septembre 2026.** La mise en page racine décide déjà de ne pas
-  // rendre cette barre sur le devis seul (`estEcranSansNavigation`, appelée au
-  // serveur), mais Next.js ne rejoue pas cette mise en page sur une navigation
-  // de lien : il ne redemande que le segment qui change. Le devis ouvert à son
-  // adresse n'avait donc pas de barre, et le même devis atteint depuis la fiche
-  // client gardait celle de l'écran d'avant — qui couvrait son bouton d'envoi.
+  // **CETTE BARRE NE SE GARDE PLUS ELLE-MÊME — 17 septembre 2026.** Elle
+  // portait, depuis le 5 septembre, un `if (estEcranSansNavigation(pathname))
+  // return null` : un rattrapage posé parce que la mise en page racine, elle,
+  // décidait au SERVEUR et ne se rejouait pas sur une navigation de lien. Il
+  // réparait un sens — la barre d'un écran précédent qui restait sur le devis —
+  // et ne pouvait rien pour l'autre : une barre jamais rendue n'a rien à
+  // retirer, et c'est ce que le patron a vu en revenant à l'accueil après un
+  // envoi (*« le menu du bas disparaît »*).
   //
-  // La MÊME fonction sert des deux côtés : deux copies de cette liste ont déjà
-  // divergé une fois (`CLAUDE.md` §3, le 12 août 2026).
-
-  if (estEcranSansNavigation(pathname)) return null;
+  // Le choix vit désormais dans `CadreApplication`, qui lit le même chemin
+  // courant et ne monte cette barre que là où elle doit être. Le refaire ici
+  // serait la seconde copie que `CLAUDE.md` §3 interdit — et la couche qui
+  // compensait s'en va avec la racine corrigée (§4 quater).
   const onglets = role === null ? ONGLETS : ONGLETS.filter((o) => cheminAutorise(role, o.href));
   const indexActif = onglets.reduce(
     (trouve, t, i) => (estActif(pathname, t.href) ? i : trouve),

@@ -8,6 +8,40 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-17
 
+### Le menu du bas disparaissait après un devis envoyé
+
+Sa capture : l'accueil, juste après l'envoi, **sans barre d'onglets**. Il ne
+pouvait plus changer d'écran sans recharger.
+
+Le devis vit seul sur sa page, sans onglets ni cadre. Ce choix se faisait dans
+la mise en page RACINE, au serveur — et Next.js ne rejoue pas cette mise en page
+sur une navigation de lien. Le choix fait pour le devis survivait donc à
+l'accueil, et pour toute la durée de l'onglet : plus de barre, plus de
+rembourrage du bas. Le dépôt avait déjà réparé **l'autre sens** le 5 septembre
+(la barre d'un écran précédent qui restait sur le devis, et couvrait son bouton
+d'envoi) ; ce rattrapage-là ne pouvait rien ici — une barre jamais rendue n'a
+rien à retirer.
+
+À la racine : le choix quitte le serveur pour `CadreApplication`, un composant
+client qui lit le chemin COURANT et se refait à chaque navigation. La barre,
+elle, ne se garde plus elle-même — la couche qui compensait s'en va avec la
+racine corrigée (`CLAUDE.md` §4 quater). Mesuré dans les deux sens, et la suite
+sait rougir : `scripts/test-barre-du-bas-apres-devis-e2e.ts`.
+
+### La réponse du client n'arrivait qu'au rechargement
+
+*« Mon client vient d'accepter mon devis, sauf que j'ai l'impression qu'il
+n'apparaîtra dans mes notifications que si je réactualise la page. »* Il avait
+raison, et ce n'était pas un mécanisme en panne : il n'y en avait **aucun**.
+L'accueil lit les réponses une fois, au moment où il est demandé ; la réponse,
+elle, arrive plus tard et sur le téléphone du client.
+
+`VeilleDesNouvelles` est ce mécanisme : l'accueil se relit **immédiatement**
+quand il revient à Atlas (de sa messagerie, d'un appel, de l'écran verrouillé),
+et toutes les trente secondes pendant qu'il le regarde — jamais quand la page
+est cachée. Ce n'est pas une notification poussée, qui sonnerait Atlas fermé :
+celle-là reste à faire (`TODO.md`).
+
 ### La publication des planches rougissait depuis la note vocale à plat
 
 Le flux `pages.yml` est tombé sur `test:boutons-verts` dès la poussée du

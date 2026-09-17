@@ -9,6 +9,29 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## LA NOTIFICATION POUSSÉE — ATLAS FERMÉ, RIEN NE SONNE
+
+**Née de sa remarque du 17 septembre 2026** : *« mon client vient d'accepter mon
+devis, sauf que j'ai l'impression qu'il n'apparaîtra dans mes notifications que
+si je réactualise la page »*.
+
+**Ce qui est fait depuis ce jour** : l'accueil se relit tout seul —
+immédiatement quand il revient à Atlas, et toutes les trente secondes pendant
+qu'il le regarde (`VeilleDesNouvelles`, `ARCHITECTURE.md` §373).
+
+**Ce qui reste, et que cela ne remplace pas** : quand Atlas est FERMÉ, rien ne
+le prévient. Un client qui accepte à 19 h se lit le lendemain matin. Une vraie
+notification poussée demande un service worker, l'abonnement `Web Push` du
+navigateur, ses clés VAPID et un endroit où les ranger par personne — et, sur
+iPhone, l'application ajoutée à l'écran d'accueil. Rien de tout cela n'est
+commencé.
+
+**À trancher avec lui avant de coder** : ce qui a le droit de sonner. Une
+réponse de client, oui ; un rappel de devis qui dort, probablement pas — une
+alerte qui parle à tort s'apprend à être ignorée (`CLAUDE.md` §4 ter).
+
+---
+
 ## LE SECOND ANNEAU DE L'ACCUEIL — « Créer une facture » — RESTE À FAIRE
 
 **Sa décision du 10 septembre 2026**, planche `appli/facturer-sans-devis.html` :
