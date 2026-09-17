@@ -345,10 +345,16 @@ async function main() {
     if (moments === 0) {
       throw new Error("le geste s'est ouvert sans aucune sortie");
     }
-    const accueil = grille.find(
-      (j): j is string => !!j && ouvrable4(j) && j > jour
-    );
-    if (!accueil) throw new Error("aucun second jour ouvrable au calendrier");
+    // **Assez loin pour que le chantier ne s'y trouve pas déjà.** Quatre
+    // demi-journées posées « matin » à partir du jour occupent CE jour et LE
+    // SUIVANT : viser le lendemain ferait refuser le geste à juste titre — le
+    // chantier y est —, et le contrôle accuserait « Déplacer » de son propre
+    // montage.
+    const troisJoursApres = new Date(`${jour}T12:00:00Z`);
+    troisJoursApres.setUTCDate(troisJoursApres.getUTCDate() + 3);
+    const plancher = troisJoursApres.toISOString().slice(0, 10);
+    const accueil = grille.find((j): j is string => !!j && ouvrable4(j) && j >= plancher);
+    if (!accueil) throw new Error("aucun jour d'accueil ouvrable au calendrier");
     await page.click(`[data-atlas="grille-mois"] [data-jour="${accueil}"]`);
     await page.waitForTimeout(400);
     const mots = await page.locator('[data-atlas^="vers-"]').allInnerTexts();
@@ -376,10 +382,20 @@ async function main() {
       );
       return rows[0];
     };
+    // **On attend que l'ÉCRITURE arrive, pas que le départ se vide.** Ce
+    // chantier n'a aucune ligne au départ — il vaut le bloc que ses colonnes
+    // décrivent —, si bien que « plus rien sur le jour de départ » est vrai
+    // AVANT même que le geste ait écrit. Mesurer là, c'est lire zéro et
+    // accuser le produit d'avoir tout effacé.
     let etat = await lu();
-    for (let i = 0; i < 60 && Number(etat.encore) > 0; i++) {
+    for (let i = 0; i < 60 && Number(etat.total) !== 4; i++) {
       await page.waitForTimeout(250);
       etat = await lu();
+    }
+    if (Number(etat.total) !== 4) {
+      throw new Error(
+        `le chantier occupe ${etat.total} demi-journée(s) au lieu de 4 : le geste n'a pas écrit`
+      );
     }
     if (Number(etat.encore) > 0) {
       throw new Error("le jour de départ porte encore le chantier : rien n'a été déplacé");
@@ -390,9 +406,6 @@ async function main() {
     // revenir par ce chemin-ci.
     if (etat.duree !== 4) {
       throw new Error(`deux jours valent 4 demi-journées, pas ${etat.duree}`);
-    }
-    if (Number(etat.total) !== 4) {
-      throw new Error(`le chantier occupe ${etat.total} demi-journée(s) au lieu de 4`);
     }
   });
 
