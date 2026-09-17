@@ -60,6 +60,7 @@ export default function MoisCharge({
   occupationDe,
   jourRetenu,
   jourRetenus,
+  jourRetenusSeconde,
   semaineLue,
   volet,
   reperePrefixe = "",
@@ -83,7 +84,16 @@ export default function MoisCharge({
    * cela n'a aucun sens.
    */
   jourRetenu?: JourIso | null;
+  /**
+   * Les jours du chantier proposés au client — peints « le chiffre entouré »,
+   * son choix du 17 septembre 2026 (planche `appli/deux-jours-pas-colles.html`,
+   * « je choisis la B ») : la case reste papier, le chiffre est dans un cercle
+   * plein. `jourRetenu`, lui, garde la case entière : c'est le jour visé au
+   * planning, et il ne l'a pas fait changer.
+   */
   jourRetenus?: readonly JourIso[];
+  /** La seconde proposition, dans l'or de l'application — la cliente choisit entre les deux. */
+  jourRetenusSeconde?: readonly JourIso[];
   /**
    * LE LUNDI DE LA SEMAINE QUE LIT LA LISTE DU BAS — teintée dans le mois.
    *
@@ -115,8 +125,17 @@ export default function MoisCharge({
   reperePrefixe?: string;
 }) {
   const retenus = useMemo(
-    () => new Set([...(jourRetenus ?? []), ...(jourRetenu ? [jourRetenu] : [])]),
-    [jourRetenus, jourRetenu]
+    () => new Set([...(jourRetenus ?? []), ...(jourRetenusSeconde ?? []), ...(jourRetenu ? [jourRetenu] : [])]),
+    [jourRetenus, jourRetenusSeconde, jourRetenu]
+  );
+  // Ce qui se peint en cercle plutôt qu'en case entière, et de quelle couleur.
+  const entoures = useMemo(
+    () =>
+      new Map<string, "premiere" | "seconde">([
+        ...(jourRetenus ?? []).map((j) => [j, "premiere"] as const),
+        ...(jourRetenusSeconde ?? []).map((j) => [j, "seconde"] as const),
+      ]),
+    [jourRetenus, jourRetenusSeconde]
   );
 
   const dAujourdHui = new Date(`${aujourdHui}T12:00:00Z`);
@@ -285,6 +304,7 @@ export default function MoisCharge({
                     {semaine.map((c) =>
                       caseDuJour(c, cur.mois, milieu, {
                         retenus,
+                        entoures,
                         jourTouche,
                         aujourdHui,
                         occupationDe,
@@ -316,6 +336,7 @@ export default function MoisCharge({
       semaineLue,
       volet,
       retenus,
+      entoures,
       aujourdHui,
       occupationDe,
       onToucherJour,
@@ -441,13 +462,20 @@ function caseDuJour(
   milieu: boolean,
   lu: {
     retenus: ReadonlySet<string>;
+    entoures: ReadonlyMap<string, "premiere" | "seconde">;
     jourTouche: JourIso | null;
     aujourdHui: JourIso;
     occupationDe: (jour: JourIso, demi: "matin" | "apres_midi") => OccupationLue;
     onToucherJour: (jour: JourIso) => void;
   }
 ) {
-  const { retenus, jourTouche, aujourdHui, occupationDe, onToucherJour } = lu;
+  const { retenus, entoures, jourTouche, aujourdHui, occupationDe, onToucherJour } = lu;
+  // « La B » : la case reste papier, le chiffre est entouré. Vert pin pour la
+  // première proposition ; pour la seconde, l'or DE TEXTE de la charte
+  // (`orTexte`, détaché à 4,5 de la plage sur les huit chartes) — l'or nu ne
+  // tient pas le contraste avec le crème, ni avec l'encre sur Nuit et Sylve.
+  const entoure = entoures.get(c.jour) ?? null;
+  const caseEntiere = retenus.has(c.jour) && !entoure;
     return c.horsMois ? (
       <span key={c.jour} data-atlas={milieu ? "creux" : undefined} style={{ aspectRatio: "1 / 1.06" }} />
     ) : (
@@ -490,9 +518,11 @@ function caseDuJour(
               className="flex flex-col items-center justify-center gap-1 rounded-[10px] border-0 p-0"
               style={{
                 aspectRatio: "1 / 1.06",
-                background: retenus.has(c.jour)
+                background: caseEntiere
                   ? colors.rust
-                  : c.jour === jourTouche
+                  : entoure
+                    ? colors.rustTint
+                    : c.jour === jourTouche
                     ? colors.rustTint
                     : c.weekEnd
                       ? voile(colors.ink, 0.035)
@@ -508,9 +538,23 @@ function caseDuJour(
             >
               <span
                 className="text-[17px] leading-none"
+                data-entoure={entoure ?? undefined}
                 style={{
                   fontFamily: font.display,
-                  color: retenus.has(c.jour)
+                  ...(entoure
+                    ? {
+                        width: 25,
+                        height: 25,
+                        borderRadius: 999,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        background: entoure === "seconde" ? colors.orTexte : colors.rust,
+                      }
+                    : null),
+                  color: entoure
+                    ? surPlein
+                    : caseEntiere
                     ? surPlein
                     : c.jour === aujourdHui
                       ? colors.or
@@ -526,7 +570,7 @@ function caseDuJour(
                 matin={occupationDe(c.jour, "matin")}
                 apres={occupationDe(c.jour, "apres_midi")}
                 cache={c.weekEnd}
-                surFondPlein={retenus.has(c.jour)}
+                surFondPlein={caseEntiere}
               />
             </button>
     );

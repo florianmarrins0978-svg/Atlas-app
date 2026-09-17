@@ -313,7 +313,8 @@ function estWeekEnd(jour: JourIso): boolean {
   return j === 0 || j === 6;
 }
 
-function jourSuivantOuvre(jour: JourIso): JourIso {
+/** Le jour ouvré qui suit — les samedis et dimanches sautés, comme partout ici. */
+export function jourSuivantOuvre(jour: JourIso): JourIso {
   let suivant = versJourIso(ajouterJours(new Date(`${jour}T12:00:00Z`), 1));
   while (estWeekEnd(suivant)) {
     suivant = versJourIso(ajouterJours(new Date(`${suivant}T12:00:00Z`), 1));
@@ -522,6 +523,95 @@ export function jourRetenable(
   // tombaient un samedi. Le contrôle qui l'a vu n'était pas celui qui visait ce
   // comportement — raison de plus pour l'écrire noir sur blanc.
   return departPossible(jour, dureeDemiJournees, occupation, nombreEquipes) !== null;
+}
+
+/**
+ * COMBIEN DE JOURS un chantier occupe : une demi-journée entamée compte pour
+ * un jour — c'est ce que le calendrier lui demande de poser, et ce que sa
+ * cliente lit.
+ */
+export function joursDuChantier(dureeDemiJournees: number): number {
+  return Math.ceil(Math.max(1, Math.trunc(dureeDemiJournees)) / 2);
+}
+
+/**
+ * LES JOURS D'UN BLOC D'AFFILÉE depuis un premier jour — ce que pose un seul
+ * appui sur l'écran d'envoi, et ce que `creneauxDuChantier` étale depuis
+ * toujours : les mêmes jours, dérivés du même enchaînement, pour qu'un jour
+ * posé à l'écran soit un jour réservé à l'acceptation.
+ */
+export function joursDuBloc(premier: JourIso, dureeDemiJournees: number): JourIso[] {
+  const jours: JourIso[] = [];
+  for (const c of creneauxDuChantier({ jour: premier, moment: "matin" }, dureeDemiJournees)) {
+    if (jours[jours.length - 1] !== c.jour) jours.push(c.jour);
+  }
+  return jours;
+}
+
+/**
+ * Les jours qu'il a posés sont-ils exactement le bloc d'affilée ?
+ *
+ * Si oui, rien ne change pour l'acceptation : `departPossible` garde le droit
+ * de commencer l'après-midi quand le matin est pris, comme avant le
+ * 18 septembre 2026. Ce n'est que lorsqu'il a EFFACÉ un jour et posé le
+ * suivant ailleurs que les créneaux s'écrivent jour par jour.
+ */
+export function estUnBlocDAffilee(jours: readonly JourIso[], dureeDemiJournees: number): boolean {
+  if (jours.length === 0) return false;
+  const tries = [...jours].sort();
+  const bloc = joursDuBloc(tries[0], dureeDemiJournees);
+  return tries.length === bloc.length && tries.every((j, i) => j === bloc[i]);
+}
+
+/**
+ * LES CRÉNEAUX D'UN CHANTIER POSÉ SUR DES JOURS CHOISIS — sa règle du
+ * 17 septembre 2026 : *« un chantier de deux jours, je veux lui proposer le
+ * premier jour le 18 et on vient finir le chantier le 22 »*.
+ *
+ * Chaque jour donne son matin puis son après-midi, jusqu'à la durée ; une
+ * durée impaire s'arrête au matin du dernier jour. Des jours en trop sont
+ * ignorés, des jours en moins laissent des demi-journées sans place — c'est
+ * `demiJourneesAPoser` qui le dira, pas cette fonction.
+ */
+export function creneauxSurLesJours(
+  jours: readonly JourIso[],
+  dureeDemiJournees: number
+): Creneau[] {
+  const total = Math.max(1, Math.trunc(dureeDemiJournees));
+  const creneaux: Creneau[] = [];
+  for (const jour of [...new Set(jours)].sort()) {
+    for (const moment of MOMENTS) {
+      if (creneaux.length >= total) return creneaux;
+      creneaux.push({ jour, moment });
+    }
+  }
+  return creneaux;
+}
+
+/**
+ * Une proposition — les jours d'un chantier — tient-elle dans le planning ?
+ *
+ * Un bloc d'affilée se juge comme avant (`jourRetenable`, qui sait partir
+ * l'après-midi). Des jours choisis un à un se jugent demi-journée par
+ * demi-journée : chacune doit avoir une équipe de libre, et chaque jour être
+ * dans la fenêtre.
+ */
+export function propositionRetenable(
+  jours: readonly JourIso[],
+  dureeDemiJournees: number,
+  occupation: ReadonlyMap<string, number>,
+  nombreEquipes: number,
+  fenetre: FenetreProposition
+): boolean {
+  if (jours.length === 0) return false;
+  if (jours.some((j) => j < fenetre.debut || j > fenetre.fin)) return false;
+  if (estUnBlocDAffilee(jours, dureeDemiJournees)) {
+    return jourRetenable([...jours].sort()[0], dureeDemiJournees, occupation, nombreEquipes, fenetre);
+  }
+  const equipes = Math.max(1, Math.trunc(nombreEquipes));
+  return creneauxSurLesJours(jours, dureeDemiJournees).every(
+    (c) => (occupation.get(cleCreneau(c)) ?? 0) < equipes
+  );
 }
 
 /**

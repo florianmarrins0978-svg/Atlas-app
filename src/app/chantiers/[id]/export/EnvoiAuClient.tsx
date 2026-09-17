@@ -12,7 +12,15 @@ import MoisCharge from "@/components/atlas/MoisCharge";
 import { useOccupation } from "@/components/atlas/useOccupation";
 import { ditCeQuiResteCeJour, equipesLibresCeJour } from "@/lib/planning-jour";
 import JourneeRegardee from "./JourneeRegardee";
-import { basculerJour } from "@/lib/calendrier";
+import {
+  basculerLaSeconde,
+  blocEnEvitant,
+  gesteSurUnJour,
+  joursManquants,
+  toucherUnJour,
+  type EtatDesPropositions,
+} from "@/lib/propositions-de-jours";
+import { DUREE_PAR_DEFAUT_DEMI_JOURNEES, joursDuChantier } from "@/lib/disponibilites";
 import { MOTIF_DEVIS_VIDE } from "@/lib/devis-envoyable";
 // La même règle que la flèche du devis : une seule adresse pour la fiche client.
 import { coordonneesDepuisLeDevis, libelleRetourDuDevis } from "@/lib/retour-du-devis";
@@ -65,14 +73,11 @@ const MESSAGES_BLOCAGE: Record<string, string> = {
   devis_vide: MOTIF_DEVIS_VIDE,
 };
 
-/**
- * Une date, ou deux — jamais trois (`docs/AGENT.md` §2.2).
- *
- * Le nombre vit ici et la RÈGLE dans `src/lib/calendrier.ts` : au-delà du
- * maximum, c'est le plus ancien choix qui cède la place, plutôt qu'un bouton
- * qui ne répond pas — ce qui se lit comme une panne.
- */
-const DATES_AU_MAXIMUM = 2;
+/** Le rang d'un jour dans sa proposition — « 1er jour », « 2e jour ». */
+const rangDuJour = (i: number) => `${i + 1}${i === 0 ? "er" : "e"} jour`;
+
+/** Un état sans rien : ce que porte l'écran avant que la préparation réponde. */
+const AUCUNE_PROPOSITION: EtatDesPropositions = { propositions: [], secondeVoulue: false, active: 0 };
 
 /**
  * Le retrait bas de la feuille de la maison — `pb-9` dans `BottomSheet`.
@@ -148,7 +153,19 @@ function Contenu({
   // lui qui peint les journées (`preparerEnvoiAction`).
   const [preparation, setPreparation] =
     useState<Awaited<ReturnType<typeof preparerEnvoiAction>> | null>(null);
-  const [selection, setSelection] = useState<string[]>([]);
+  /**
+   * LES JOURS QU'IL PROPOSE — sa règle du 17 septembre 2026, planche
+   * `appli/deux-jours-pas-colles.html` : un appui pose le premier jour et le
+   * chantier se remplit d'affilée ; un appui sur un jour du chantier l'efface,
+   * rien ne bouge, et l'appui suivant le remet où il veut ; l'interrupteur
+   * « Vous proposez deux dates » ouvre la seconde. La règle vit dans
+   * `src/lib/propositions-de-jours.ts` ; l'écran ne décide de rien.
+   */
+  const [etat, setEtat] = useState<EtatDesPropositions>(AUCUNE_PROPOSITION);
+  const selection = etat.propositions.flat();
+  const dureeEnCours = preparation?.dureeDemiJournees ?? DUREE_PAR_DEFAUT_DEMI_JOURNEES;
+  const joursParProposition = joursDuChantier(dureeEnCours);
+  const attendLaSeconde = etat.secondeVoulue && etat.propositions.length < 2;
   /**
    * Le client peut-il proposer une AUTRE date ? Sa demande du 17 août 2026.
    *
@@ -244,7 +261,13 @@ function Contenu({
         // celui que le patron retiendra, et il reste libre de le décocher.
         // Recalculée à chaque changement de durée : garder une date qui ne tient
         // plus l'aurait fait refuser à l'envoi, sans qu'il comprenne pourquoi.
-        setSelection(p.joursLibres.slice(0, 1));
+        // Le premier jour libre, et le bloc d'affilée derrière lui : ce que
+        // l'écran proposait déjà, écrit maintenant jour par jour.
+        setEtat(
+          p.joursLibres[0]
+            ? { ...AUCUNE_PROPOSITION, propositions: [blocEnEvitant(p.joursLibres[0], p.dureeDemiJournees, new Set())] }
+            : AUCUNE_PROPOSITION
+        );
       })
       .catch(() => {
         if (!annule) setErreur("Impossible de préparer l'envoi pour l'instant.");
@@ -290,9 +313,6 @@ function Contenu({
    * copies d'une même règle finissent toujours par diverger, et l'écart se voit
    * chez le client.
    */
-  function basculer(jour: string) {
-    setSelection((actuelle) => basculerJour(actuelle, jour, DATES_AU_MAXIMUM));
-  }
 
   /**
    * Un jour TOUCHÉ au calendrier : il s'ouvre, et il se propose du même geste.
@@ -320,19 +340,27 @@ function Contenu({
    *    et la réponse de la première reviendrait cocher un jour qu'il a quitté.
    */
   async function toucherLeJour(jour: string) {
-    const retirer = selection.includes(jour);
+    const duree = preparation?.dureeDemiJournees ?? DUREE_PAR_DEFAUT_DEMI_JOURNEES;
+    const geste = gesteSurUnJour(etat, jour, duree);
+    const retirer = geste.geste === "effacer";
     dernierTouche.current = jour;
     setJourInterroge(jour);
     setVerdict(null);
     setVerification(true);
-    if (retirer) basculer(jour);
+    if (retirer) setEtat((e) => toucherUnJour(e, jour, duree));
     try {
-      const rendu = await verifierJourProposeAction(chantierId, jour, preparation?.dureeDemiJournees);
+      // Combler un jour qui manque n'engage que ce jour-là ; poser un bloc
+      // engage toute la durée — le serveur vérifie ce que le geste réserve.
+      const rendu = await verifierJourProposeAction(
+        chantierId,
+        jour,
+        geste.geste === "ajouter" ? Math.min(2, duree) : preparation?.dureeDemiJournees
+      );
       if (dernierTouche.current !== jour) return;
       setVerdict(rendu);
       // Un jour refusé se REGARDE quand même : la fiche dit pourquoi, la case
       // reste éteinte. C'est ce qui reste du geste en deux temps.
-      if (!retirer && rendu.retenable) basculer(jour);
+      if (!retirer && rendu.retenable) setEtat((e) => toucherUnJour(e, jour, duree));
     } catch {
       if (dernierTouche.current !== jour) return;
       setVerdict({
@@ -351,15 +379,26 @@ function Contenu({
       setErreur("Proposez au moins une date d'intervention.");
       return;
     }
+    const duree = preparation?.dureeDemiJournees ?? DUREE_PAR_DEFAUT_DEMI_JOURNEES;
+    if (etat.propositions.some((p) => joursManquants(p, duree) > 0)) {
+      setErreur("Il manque un jour au chantier : touchez celui que vous voulez.");
+      return;
+    }
+    if (etat.secondeVoulue && etat.propositions.length < 2) {
+      setErreur("Touchez le premier jour de la deuxième proposition, ou éteignez-la.");
+      return;
+    }
     setEnCours(true);
     setErreur(null);
     try {
+      const propositions = etat.propositions.map((p) => [...p].sort());
       const r = await envoyerAuClientAction(
         chantierId,
         devisId,
-        [...selection].sort(),
+        propositions.map((p) => p[0]),
         preparation?.dureeDemiJournees,
-        autreDateAutorisee
+        autreDateAutorisee,
+        propositions
       );
       if (!r.succes) {
         setErreur(r.erreur);
@@ -393,10 +432,10 @@ function Contenu({
    * chantier, pas de la molette. Sans elle, il s'étonnerait de ne plus rien
    * pouvoir proposer pendant un mois.
    */
-  const aideDuree =
-    preparation && preparation.dureeDemiJournees > 6
-      ? `${preparation.dureeDemiJournees / 2} jours ouvrés d'affilée seront réservés à partir de la date retenue.`
-      : "";
+  // La phrase « … jours ouvrés d'affilée seront réservés » est partie le
+  // 18 septembre 2026 : les jours du chantier sont désormais LISTÉS sous le
+  // calendrier, un par ligne, et il en efface ce qu'il veut.
+  const aideDuree = "";
 
   const blocage = preparation?.blocage ? MESSAGES_BLOCAGE[preparation.blocage] : null;
   // Deux des trois blocages se lèvent d'une saisie ici même. `devis_absent`,
@@ -731,7 +770,11 @@ function Contenu({
               className={smallCaps}
               style={{ color: colors.muted, marginBottom: 6 }}
             >
-              Proposez une ou deux dates
+              {attendLaSeconde
+                ? "Touchez le premier jour de la 2e proposition"
+                : joursParProposition === 1
+                  ? "Proposez une ou deux dates"
+                  : "Touchez le premier jour"}
             </p>
             {/* **LE CALENDRIER DU PLANNING, et plus un calendrier nu** — sa
                 demande du 22 août 2026, validée sur planche 91 : *« on devrait
@@ -766,7 +809,8 @@ function Contenu({
                   jourTouche={jourInterroge || null}
                   onToucherJour={toucherLeJour}
                   occupationDe={occupationDe}
-                  jourRetenus={selection}
+                  jourRetenus={etat.propositions[0] ?? []}
+                  jourRetenusSeconde={etat.propositions[1] ?? []}
                   reperePrefixe="envoi-"
                 />
               )}
@@ -817,45 +861,43 @@ function Contenu({
               devis en ayant compté des cases n'est pas la même chose que
               l'envoyer en ayant lu « vendredi 28 août ».
 
-              Chaque ligne se retouche : c'est aussi le moyen de retirer une date
-              sans repartir chercher sa case dans le mois. */}
+              Chaque ligne se retouche : c'est aussi le moyen d'effacer un jour
+              sans repartir chercher sa case dans le mois.
+
+              **Depuis le 18 septembre 2026, ce sont les JOURS DU CHANTIER**, un
+              par ligne et par proposition — « 1er jour », « 2e jour » — et non
+              plus la seule date de départ : sa cliente lira exactement ceux-là.
+              La phrase juste au-dessus est la seule de l'écran, et il l'a
+              voulue là, sous le calendrier et en noir : sans elle il ne saurait
+              pas qu'un jour s'efface. */}
+          {joursParProposition > 1 && (
+            <p className="mb-3 text-center text-[13px] leading-[1.5]" style={{ color: colors.ink }}>
+              Touchez un jour du chantier pour l’effacer, puis le jour que vous voulez à la place.
+            </p>
+          )}
           {selection.length > 0 && (
             <div className="mb-4 flex flex-col gap-1.5">
-              {[...selection]
-                .sort()
-                .map((jour) => (
+              {etat.propositions.map((proposition, p) => {
+                const seconde = p === 1;
+                const teinte = seconde ? colors.orTexte : colors.rust;
+                return (
+                  <div key={p} className="flex flex-col gap-1.5" data-atlas={`proposition-${p + 1}`}>
+                    {(etat.propositions.length > 1 || attendLaSeconde) && (
+                      <p className={`${smallCaps} text-center`} style={{ color: seconde ? colors.orTexte : colors.muted, marginTop: p ? 6 : 0 }}>
+                        {seconde ? "2e proposition" : "1re proposition"}
+                      </p>
+                    )}
+                    {[...proposition].sort().map((jour, i) => (
                   <button
                     key={jour}
                     type="button"
-                    onClick={() => basculer(jour)}
+                    onClick={() => toucherLeJour(jour)}
                     aria-pressed
                     className="flex items-center justify-between rounded-full px-4 py-3 text-[15px]"
                     style={{ backgroundColor: colors.rustTint, color: colors.ink }}
                   >
                     <span className="min-w-0 flex-1 text-left">
                       <span className="block">{jourLisible(jour)}</span>
-                      {/* **CE QUI RESTE D'ÉQUIPES CE JOUR-LÀ — sa réponse B du
-                          25 août 2026** (planche 88).
-
-                          Sa colère du 22 août : *« je peux proposer le 24 alors
-                          qu'un client a validé le 24 »*. Le défaut de code a été
-                          réparé le jour même ; ce qui restait n'en était pas un
-                          — avec deux équipes, un jour à moitié pris reste
-                          proposable, et c'est voulu. Mais rien ne le disait.
-
-                          **Et le libellé n'est pas celui de la planche.** Elle
-                          proposait « 1 chantier sur 2 équipes » ; il a répondu
-                          *« on ne comprend pas très bien »*, et il a raison :
-                          cela compte ce qui est PRIS quand ce qu'il décide
-                          dépend de ce qui RESTE. La règle vit dans
-                          `planning-jour.ts` — une phrase écrite ici serait une
-                          seconde rédaction, invérifiable sans navigateur
-                          (`CLAUDE.md` §3).
-
-                          **Ici, et pas sur la case du calendrier.** C'est la
-                          liste de ce qu'il s'apprête à ENVOYER : c'est le
-                          dernier endroit où il peut retirer une date, et le seul
-                          qu'il relit avant de partir. */}
                       {(() => {
                         const reste = ditCeQuiResteCeJour(
                           equipesLibresCeJour(
@@ -876,13 +918,79 @@ function Contenu({
                         ) : null;
                       })()}
                     </span>
-                    <span className="ml-3 shrink-0 text-[13px] font-medium" style={{ color: colors.rust }}>
-                      proposée
+                    <span className="ml-3 shrink-0 text-[13px] font-medium" style={{ color: teinte }}>
+                      {joursParProposition === 1 ? "proposée" : rangDuJour(i)}
                     </span>
                   </button>
-                ))}
+                    ))}
+                    {/* Ce qui manque, dit là où il le lit — jamais un bouton
+                        éteint sans raison (`CLAUDE.md` §3). */}
+                    {joursManquants(proposition, dureeEnCours) > 0 && (
+                      <p
+                        data-atlas="il-manque-un-jour"
+                        className="rounded-full px-4 py-3 text-center text-[14px]"
+                        style={{ color: colors.muted, boxShadow: `inset 0 0 0 1.5px ${colors.rustTint}` }}
+                      >
+                        {joursManquants(proposition, dureeEnCours) === 1
+                          ? "Il manque un jour — touchez celui que vous voulez"
+                          : `Il manque ${joursManquants(proposition, dureeEnCours)} jours — touchez ceux que vous voulez`}
+                      </p>
+                    )}
+                  </div>
+                );
+              })}
+              {attendLaSeconde && (
+                <p
+                  className="rounded-full px-4 py-3 text-center text-[14px]"
+                  style={{ color: colors.muted, boxShadow: `inset 0 0 0 1.5px ${colors.rustTint}` }}
+                >
+                  Touchez son premier jour
+                </p>
+              )}
             </div>
           )}
+
+          {/* **« Vous proposez deux dates » — l'interrupteur qu'il a demandé le
+              17 septembre 2026** : *« il faut un bouton on/off pour si on
+              souhaite faire une deuxième proposition »*. Allumé, le prochain
+              appui pose le premier jour de la seconde ; éteint, elle disparaît.
+              La même tuile que celui d'en dessous, pour qu'il la reconnaisse. */}
+          <div
+            className="mb-3 flex items-start gap-3 rounded-2xl px-4 py-3"
+            style={{ backgroundColor: colors.card, border: `1px solid ${colors.lineSoft}` }}
+          >
+            <span className="min-w-0 flex-1">
+              <span className="block text-[15px]" style={{ color: colors.ink }}>
+                Vous proposez deux dates
+              </span>
+              <span className="mt-0.5 block text-[12px] leading-[1.45]" style={{ color: colors.inkSoft }}>
+                {!etat.secondeVoulue
+                  ? "Une seule proposition."
+                  : attendLaSeconde
+                    ? "Touchez son premier jour."
+                    : "Votre client choisit entre les deux."}
+              </span>
+            </span>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={etat.secondeVoulue}
+              aria-label="Vous proposez deux dates"
+              data-atlas="deux-propositions"
+              onClick={() => setEtat((e) => basculerLaSeconde(e))}
+              className="relative mt-0.5 h-[28px] w-[48px] flex-none rounded-full transition-colors"
+              style={{
+                backgroundColor: etat.secondeVoulue ? colors.rust : colors.line,
+                boxShadow: etat.secondeVoulue ? "none" : `inset 0 0 0 1px ${colors.line}`,
+              }}
+            >
+              <span
+                aria-hidden="true"
+                className="absolute top-[3px] h-[22px] w-[22px] rounded-full transition-all"
+                style={{ backgroundColor: colors.card, left: etat.secondeVoulue ? 23 : 3 }}
+              />
+            </button>
+          </div>
 
           {/* **Sa demande du 17 août 2026 :** *« il faut que l'utilisateur
               puisse choisir avant d'envoyer s'il autorise ou non le client à
@@ -900,11 +1008,11 @@ function Contenu({
           >
             <span className="min-w-0 flex-1">
               <span className="block text-[15px]" style={{ color: colors.ink }}>
-                Il peut proposer une autre date
+                Votre client peut proposer une autre date
               </span>
               <span className="mt-0.5 block text-[12px] leading-[1.45]" style={{ color: colors.inkSoft }}>
                 {autreDateAutorisee
-                  ? "Un calendrier de vos jours libres s'ouvrira sous vos dates."
+                  ? "Il ne verra que vos jours libres."
                   : "Il choisira uniquement parmi vos dates, ou demandera une correction."}
               </span>
             </span>
@@ -912,7 +1020,7 @@ function Contenu({
               type="button"
               role="switch"
               aria-checked={autreDateAutorisee}
-              aria-label="Il peut proposer une autre date"
+              aria-label="Votre client peut proposer une autre date"
               onClick={() => setAutreDateAutorisee((ouvert) => !ouvert)}
               // 28 × 48, comme partout ailleurs : la pièce se reconnaît d'un
               // écran à l'autre, et le pouce la trouve sans regarder.

@@ -1,0 +1,20 @@
+-- LES JOURS DE CHAQUE PROPOSITION DE DATE — sa question du 17 septembre 2026,
+-- capture à l'appui : « un chantier de deux jours, je veux lui proposer le
+-- premier jour le 18 et on vient finir le chantier le 22 — comment je fais ? »
+-- Planche `appli/deux-jours-pas-colles.html`, geste dicté par lui le soir même.
+--
+-- ════════════════════════════════════════════════════════════════════════════
+-- ÉTENDRE, SANS RIEN RETIRER (expand/contract, `.claude/rules/deployment-safety.md`).
+--
+-- `dates_proposees` reste ce qu'elle est : une ou deux dates, et le client
+-- répond par l'une d'elles. Ce qui s'ajoute, c'est la LISTE DES JOURS derrière
+-- chaque date — `[["2026-09-18","2026-09-22"],["2026-09-23","2026-09-24"]]`,
+-- dans le même ordre, chaque date de `dates_proposees` étant le premier jour
+-- de sa liste. Le code d'avant, servi sur cette base, lit toujours ses dates ;
+-- le code neuf, servi sur une base sans la colonne, tomberait — c'est pourquoi
+-- la colonne arrive AVANT lui, nullable, sans toucher aux lignes existantes.
+--
+-- NULL sur un envoi d'avant : le chantier prend le bloc d'affilée depuis la
+-- date retenue, comme depuis toujours (`creneauxDuChantier`). Aucune ligne
+-- n'est réécrite : il n'y a rien à convertir, et rien ne s'invente.
+ALTER TABLE "envois_devis" ADD COLUMN IF NOT EXISTS "jours_proposes" jsonb;

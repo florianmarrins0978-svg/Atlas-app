@@ -1793,6 +1793,19 @@ export const envoisDevis = pgTable(
      */
     datesForcees: date("dates_forcees").array().notNull().default([]),
     /**
+     * LES JOURS DE CHAQUE PROPOSITION — sa règle du 17 septembre 2026 : *« un
+     * chantier de deux jours, je veux lui proposer le premier jour le 18 et on
+     * vient finir le chantier le 22 »*. Une liste par proposition, dans
+     * l'ordre de `dates_proposees`, dont chaque entrée reste le PREMIER jour
+     * de sa liste : le client répond toujours par ce premier jour, et le code
+     * d'avant continue de lire des dates là où il en lisait.
+     *
+     * Absente (envois d'avant la migration 0095) : le chantier prend le bloc
+     * d'affilée depuis la date retenue, comme toujours. Expand/contract —
+     * `.claude/rules/deployment-safety.md`.
+     */
+    joursProposes: jsonb("jours_proposes").$type<string[][]>(),
+    /**
      * Le client peut-il proposer une autre date que celles offertes ?
      *
      * Décidé par le patron **avant l'envoi** (17 août 2026), puis FIGÉ ici :

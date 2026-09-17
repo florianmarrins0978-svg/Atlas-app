@@ -6,6 +6,49 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-09-18
+
+### Deux jours qui ne se touchent pas : CODÉ — un appui pose le bloc, un appui efface, la cliente lit les jours
+
+Sa question du 17 septembre (« le 18 et le 22 — comment je fais ? »), sa
+planche tranchée le soir même (`appli/deux-jours-pas-colles.html`, « la B »),
+et son « tu peux coder ça » du 18. Ce qui est dans l'application :
+
+- **l'écran d'envoi** : un appui pose le premier jour et le chantier se
+  remplit d'affilée ; un appui sur un jour du chantier l'efface, rien ne bouge,
+  « Il manque un jour — touchez celui que vous voulez », et l'appui suivant le
+  remet où il veut. Les jours sont LISTÉS sous le calendrier — « 1er jour »,
+  « 2e jour » —, la phrase du geste au-dessus, en noir. L'interrupteur « Vous
+  proposez deux dates » ouvre la seconde proposition (chiffre entouré d'or) ;
+  la tuile du client dit « Votre client peut proposer une autre date » et
+  « Il ne verra que vos jours libres. ». Sur une journée, deux appuis restent
+  deux dates au choix, comme avant — l'interrupteur s'allume tout seul ;
+- **le calendrier** (`MoisCharge`) peint les jours proposés « le chiffre
+  entouré » — son choix — et garde la case entière pour le jour visé au
+  planning, qu'il n'a pas fait changer ;
+- **la page de la cliente** : « Quels jours vous arrangent ? », et chaque
+  proposition en toutes lettres — « le vendredi 18 septembre, le lundi 21, le
+  mardi 22 et le mercredi 23 septembre » (sa règle du 18 septembre : le mois
+  au premier et au dernier jour seulement, sauf à cheval sur deux mois). Elle
+  répond toujours par le premier jour ; la valeur du bouton n'a pas bougé ;
+- **la base** : `envois_devis.jours_proposes` (migration 0095, jsonb,
+  nullable — étendre sans rien retirer) porte les jours de chaque proposition ;
+  `dates_proposees` reste ce qu'elle est, chaque date étant le premier jour de
+  sa liste. Un envoi d'avant (NULL) se pose comme toujours ;
+- **l'acceptation** écrit LES jours de la liste choisie (`creneauxSurLesJours`,
+  matin puis après-midi, une durée impaire s'arrête au matin du dernier jour) ;
+  un bloc d'affilée se juge et s'écrit comme avant (`departPossible` garde le
+  droit de partir l'après-midi). Le serveur refuse une liste qui ne compte pas
+  les jours de la durée, ou dont le premier jour n'est pas la date.
+
+La règle du geste vit dans `src/lib/propositions-de-jours.ts` (pure, dix-huit
+cas dans `test-propositions-de-jours.ts`) ; la base dans
+`test-envoi-jours-pas-colles-db.ts` (six cas, rouges avant le code, verts
+après). `basculerJour` est parti avec le geste d'avant. Ce qui n'a PAS été
+joué ici, à sa demande (« ne lance aucune batterie ») : les suites navigateur
+de l'écran d'envoi et la batterie — `TODO.md`. `ARCHITECTURE.md` §382.
+
+---
 ## 2026-09-17
 
 ### Corriger un rouge coûtait cinquante minutes — plus maintenant

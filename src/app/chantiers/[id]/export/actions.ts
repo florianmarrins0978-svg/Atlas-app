@@ -166,7 +166,13 @@ export async function envoyerAuClientAction(
    * paramètre est en dernier et facultatif pour que rien d'existant ne change
    * de comportement en silence.
    */
-  autreDateAutorisee?: boolean
+  autreDateAutorisee?: boolean,
+  /**
+   * Les jours derrière chaque date, dans le même ordre — sa règle du
+   * 17 septembre 2026 (« le 18 et le 22 »). Le serveur les revérifie contre la
+   * durée ; l'écran ne décide de rien.
+   */
+  joursProposes?: string[][]
 ): Promise<ResultatEnvoiClient> {
   const ctx = await getCurrentCtx();
   await exigerGestionDevis(ctx, "envoyer le devis au client");
@@ -281,6 +287,7 @@ export async function envoyerAuClientAction(
       devisId: devisAEnvoyer,
       canal: preparation.canal,
       datesProposees,
+      joursProposes,
       autreDateAutorisee: autreDateAutorisee ?? true,
       contenuDevis: `${devisEnvoye.numeroCommercial}|${devisEnvoye.numeroVersion}|${devisEnvoye.totalTtc}`,
       // La durée réellement retenue, telle que l'écran l'a affichée : c'est sur

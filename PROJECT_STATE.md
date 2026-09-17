@@ -5,6 +5,15 @@
 
 ---
 
+## EN COURS : DEUX JOURS QUI NE SE TOUCHENT PAS — CODÉ, PAS ENCORE SUR `main` (18 septembre 2026)
+
+Un appui pose le premier jour et le bloc d'affilée ; un appui sur un jour du
+chantier l'efface, l'appui suivant le remet où il veut ; « Vous proposez deux
+dates » ouvre la seconde ; la cliente lit les jours en toutes lettres et
+choisit. `envois_devis.jours_proposes` (0095), `propositions-de-jours.ts`,
+`creneauxSurLesJours`. Suites base et pures vertes ; suites navigateur et
+batterie NON jouées à sa demande — `TODO.md`. `ARCHITECTURE.md` §382.
+
 ## FAIT : CORRIGER UN ROUGE NE COÛTE PLUS LA BATTERIE ENTIÈRE (17 septembre 2026)
 
 Une étape qui n'est pas une suite — Types, Lint, Mémoire du dépôt, Construction

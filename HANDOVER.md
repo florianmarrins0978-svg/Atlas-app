@@ -99,8 +99,10 @@ impossible avant l'acceptation : les deux dates du calendrier d'envoi sont deux
 d'un seul tenant (`creneauxDuChantier`, `envois-devis.ts`). Le morcellement
 n'existe qu'**après**, au planning — et le client n'en sait rien.
 
-**Rien n'est codé** : la planche `appli/deux-jours-pas-colles.html` (119)
-attend sa réponse. Refaite le soir même — *« je comprends rien, l'idée c'est
+**Codé le 18 septembre 2026** (`ARCHITECTURE.md` §382) — sans les suites
+navigateur ni la batterie, à sa demande : `TODO.md` en tête dit ce qui reste
+à jouer avant `main`. La planche `appli/deux-jours-pas-colles.html` (119)
+raconte le chemin. Refaite le soir même — *« je comprends rien, l'idée c'est
 que ce soit simple et joli »* — sur une seule idée : **un appui, un jour du
 chantier**, puis refaite une troisième fois **sur le geste qu'il a dicté** :
 un appui pose le premier jour et le chantier se remplit d'affilée, un appui

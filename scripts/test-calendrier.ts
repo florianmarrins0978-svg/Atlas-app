@@ -1,6 +1,5 @@
 import assert from "node:assert/strict";
 import {
-  basculerJour,
   etatDuJour,
   grilleDuMois,
   libelleMois,
@@ -151,34 +150,9 @@ cas("les bornes de la fenêtre sont DANS la fenêtre", () => {
   assert.equal(etatDuJour("2026-09-11", { ...FENETRE, occupes: [], retenus: [] }), "hors_fenetre");
 });
 
-console.log("\n=== Une ou deux dates, jamais trois ===");
-
-cas("un premier appui retient, un second sur le même relâche", () => {
-  assert.deepEqual(basculerJour([], "2026-08-12", 2), ["2026-08-12"]);
-  assert.deepEqual(basculerJour(["2026-08-12"], "2026-08-12", 2), []);
-});
-
-cas("deux dates tiennent ensemble", () => {
-  assert.deepEqual(basculerJour(["2026-08-12"], "2026-08-14", 2), ["2026-08-12", "2026-08-14"]);
-});
-
-cas("la troisième chasse la PLUS ANCIENNE, elle n'est pas refusée en silence", () => {
-  // Un bouton qui ne répond pas se lit comme une panne : le patron appuierait
-  // trois fois avant de comprendre.
-  assert.deepEqual(
-    basculerJour(["2026-08-12", "2026-08-14"], "2026-08-17", 2),
-    ["2026-08-14", "2026-08-17"]
-  );
-});
-
-cas("chez le client, une seule date à la fois", () => {
-  // Il choisit SA date : la seconde remplace la première.
-  assert.deepEqual(basculerJour(["2026-08-12"], "2026-08-14", 1), ["2026-08-14"]);
-});
-
-cas("un maximum absurde ne fait rien retenir", () => {
-  assert.deepEqual(basculerJour([], "2026-08-12", 0), []);
-});
+// « Une ou deux dates, jamais trois » vit désormais dans
+// `test-propositions-de-jours.ts` : le geste a changé le 18 septembre 2026
+// (un appui pose les jours du chantier), et `basculerJour` est parti avec lui.
 
 console.log(`\n${echecs === 0 ? "✅ Toutes les vérifications passent." : `❌ ${echecs} échec(s).`}`);
 process.exit(echecs === 0 ? 0 : 1);

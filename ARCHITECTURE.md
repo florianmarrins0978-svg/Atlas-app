@@ -31547,3 +31547,51 @@ courant.
 à une** en rejouant quatre étapes — et la dernière, `test-verrou-construction`,
 était une vraie régression de ce lot (elle cherchait la table des étapes dans
 son ancien fichier). C'est le contrôle qui l'a dit, pas la relecture.
+
+## §382 — Une proposition de date, ce sont LES JOURS du chantier — pas une date de départ
+
+**Sa question du 17 septembre 2026, capture à l'appui :** *« un chantier de deux
+jours, je veux lui proposer le premier jour le 18 et on vient finir le chantier
+le 22 — comment je fais ? »* Impossible : les deux dates du calendrier étaient
+deux choix, et la date retenue devenait un bloc d'un seul tenant
+(`creneauxDuChantier`). Le 19 était pris sans qu'on l'ait proposé, le 22 jamais.
+
+**Le geste, dicté par lui après trois planches dans la même soirée**
+(`appli/deux-jours-pas-colles.html`) : un appui pose le premier jour et le
+chantier se remplit d'affilée — le cas de tous les jours ne change pas d'un
+geste ; un appui sur un jour du chantier l'efface, *« il ne doit pas se décaler
+d'une case »*, et l'appui suivant le remet où il veut ; un interrupteur « Vous
+proposez deux dates » ouvre une seconde proposition, et la cliente choisit.
+
+**Ce que ça change dans les données, et pourquoi de cette façon.** Une
+proposition n'est plus une date mais une LISTE de jours. Plutôt que de changer
+la forme de `dates_proposees` — lue par la page du client, par le planning des
+attentes, par sept suites —, on ÉTEND : `jours_proposes` (jsonb, 0095) porte une
+liste par proposition, dans le même ordre, **et chaque date de
+`dates_proposees` reste le premier jour de sa liste**. Le client répond
+toujours par ce premier jour ; c'est par lui que le serveur retrouve la liste.
+Le code d'avant lit ses dates là où il les lisait ; un envoi d'avant (NULL) se
+pose comme toujours. Expand/contract : rien n'est retiré, et rien ne le sera
+tant qu'un envoi sans liste peut encore être accepté.
+
+**Un bloc d'affilée se juge et s'écrit comme avant.** `estUnBlocDAffilee`
+reconnaît la liste qui est exactement le bloc depuis son premier jour : elle
+passe par `jourRetenable` et `creneauxDuChantier`, où `departPossible` garde
+le droit de commencer l'après-midi quand le matin est pris. Seule une liste
+TROUÉE passe par `propositionRetenable` (chaque demi-journée a une équipe de
+libre) et `creneauxSurLesJours` (matin puis après-midi par jour, une durée
+impaire s'arrête au matin du dernier). Sans cette distinction, un chantier
+d'une journée proposé sur un matin pris aurait été refusé là où il tenait la
+veille.
+
+**La règle du geste est pure** (`src/lib/propositions-de-jours.ts`) et dit
+AVANT l'appui ce qu'il fera (`gesteSurUnJour`) : l'écran demande alors au
+serveur si le jour tient avec la bonne durée — un jour seul quand on comble,
+le bloc entier quand on le pose. `basculerJour` est parti avec le geste
+d'avant ; ses cas vivent dans `test-propositions-de-jours.ts`.
+
+**Ce qui ne bouge pas :** « une ou deux, jamais plus » ; le client ne voit
+jamais une demi-journée (`test-creneaux-planning.ts`) ; sur une journée, deux
+appuis restent deux dates au choix. **Ce qui change pour la cliente :** elle lit
+les jours du chantier en toutes lettres — sa règle du 18 septembre pour les
+mois, `joursEnToutesLettres` — là où elle ne lisait qu'une date de départ.

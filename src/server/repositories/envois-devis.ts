@@ -31,6 +31,10 @@ import {
   DUREE_PAR_DEFAUT_DEMI_JOURNEES,
   versJourIso,
   creneauxDuChantier,
+  creneauxSurLesJours,
+  estUnBlocDAffilee,
+  joursDuChantier,
+  propositionRetenable,
   type ChantierPlanifie,
   type FenetreProposition,
   type JourIso,
@@ -222,6 +226,13 @@ export type CreationEnvoi = {
   /** Une ou deux dates — la forme est tranchée par le patron à la validation. */
   datesProposees: JourIso[];
   /**
+   * LES JOURS DE CHAQUE PROPOSITION, dans l'ordre de `datesProposees` — sa règle
+   * du 17 septembre 2026 (« le 18 et le 22 »). Chaque liste compte les jours de
+   * la durée, et commence par sa date proposée : le client répond toujours par
+   * ce premier jour. Absente, chaque date vaut un bloc d'affilée, comme avant.
+   */
+  joursProposes?: JourIso[][];
+  /**
    * Le client peut-il proposer une AUTRE date ? Sa demande du 17 août 2026.
    *
    * Absent : `true`, c'est-à-dire ce que faisait l'application depuis toujours.
@@ -322,14 +333,43 @@ export async function creerEnvoi(
     const motifs = datesHorsFenetre(creation.datesProposees, horizon);
     if (motifs.length > 0) throw new DatesProposeesInvalidesError(motifs);
 
+    // **Les listes disent ce que dit la durée, ou elles ne passent pas.** Une
+    // liste venue de l'écran qui compterait un jour de trop réserverait ce
+    // jour chez le client sans que la durée le porte ; un jour de moins
+    // laisserait une demi-journée sans place. Et son premier jour EST la date
+    // proposée : c'est par elle que le client répond.
+    const joursProposes = creation.joursProposes?.map((jours) => [...new Set(jours)].sort()) ?? null;
+    if (joursProposes) {
+      if (joursProposes.length !== creation.datesProposees.length) {
+        throw new Error("Chaque date proposée doit porter ses jours de chantier.");
+      }
+      const attendus = joursDuChantier(duree);
+      joursProposes.forEach((jours, i) => {
+        if (jours.length !== attendus) {
+          throw new Error(
+            `Une proposition doit compter ${attendus} jour(s) de chantier ; celle du ${creation.datesProposees[i]} en porte ${jours.length}.`
+          );
+        }
+        if (jours[0] !== creation.datesProposees[i]) {
+          throw new Error("Le premier jour d'une proposition doit être sa date proposée.");
+        }
+        const horsFenetre = datesHorsFenetre(jours, horizon);
+        if (horsFenetre.length > 0) throw new DatesProposeesInvalidesError(horsFenetre);
+      });
+    }
+
     // **Ce qu'il a forcé, retenu ici et nulle part ailleurs.** Calculé au
     // serveur, à l'instant de l'envoi : l'écran l'a prévenu (« ce jour est
     // complet »), et c'est cette photographie-là qui autorisera son client à
     // prendre la date. Une valeur venue du navigateur ferait de cette colonne
-    // un moyen de forcer n'importe quel jour.
-    const datesForcees = creation.datesProposees.filter(
-      (date) => !jourRetenable(date, duree, occupation, nombreEquipes, horizon)
-    );
+    // un moyen de forcer n'importe quel jour. Une liste de jours se juge
+    // demi-journée par demi-journée ; une date seule, comme avant.
+    const datesForcees = creation.datesProposees.filter((date, i) => {
+      const jours = joursProposes?.[i];
+      return jours
+        ? !propositionRetenable(jours, duree, occupation, nombreEquipes, horizon)
+        : !jourRetenable(date, duree, occupation, nombreEquipes, horizon);
+    });
 
     const expireAt = new Date(maintenant.getTime() + VALIDITE_LIEN_JOURS * 86400_000);
     const [envoi] = await tx
@@ -350,6 +390,7 @@ export async function creerEnvoi(
         envoyeAt: maintenant,
         canal: creation.canal,
         datesProposees: creation.datesProposees,
+        joursProposes,
         autreDateAutorisee: creation.autreDateAutorisee ?? true,
         empreinteDevis: empreinteDevis(creation.contenuDevis),
       })
@@ -383,6 +424,8 @@ export type EnvoiPourClient = {
   devisId: string;
   chantierId: string;
   datesProposees: JourIso[];
+  /** Les jours derrière chaque date, dans le même ordre ; `null` sur un envoi d'avant la migration 0095. */
+  joursProposes: JourIso[][] | null;
   /** Le calendrier « une autre date » n'est offert que si le patron l'a permis. */
   autreDateAutorisee: boolean;
   /**
@@ -583,6 +626,7 @@ export async function lireParJeton(
       devisId: envoi.devisId,
       chantierId: envoi.chantierId,
       datesProposees: envoi.datesProposees,
+      joursProposes: envoi.joursProposes ?? null,
       autreDateAutorisee: envoi.autreDateAutorisee,
       joursOccupes: joursSansPlace,
       fenetre,
@@ -791,8 +835,20 @@ export async function enregistrerReponse(
     // fait refuser « date indisponible » — au client qui accepte la date que le
     // patron vient de lui proposer. Le devis se serait perdu là, sans que
     // personne comprenne pourquoi.
+    // **Les jours qu'il a posés derrière la date choisie** — sa règle du
+    // 17 septembre 2026. Une contre-proposition n'en a pas : elle vaut un bloc
+    // d'affilée depuis le jour du client, comme toujours. Et un bloc d'affilée
+    // posé à l'écran se juge et s'écrit comme avant, pour que `departPossible`
+    // garde le droit de commencer l'après-midi quand le matin est pris.
+    const joursChoisis = contreProposee
+      ? null
+      : (envoi.joursProposes?.[envoi.datesProposees.indexOf(date)] ?? null);
+
     await tx.execute(sql`SELECT set_config('app.entreprise_id', ${envoi.entrepriseId}, true)`);
-    const fenetre = fenetrePourDates(envoi.envoyeAt, envoi.datesProposees);
+    const fenetre = fenetrePourDates(envoi.envoyeAt, [
+      ...envoi.datesProposees,
+      ...(envoi.joursProposes?.flat() ?? []),
+    ]);
     const { occupation, nombreEquipes } = await contrainteDuPlanning(
       tx,
       envoi.entrepriseId,
@@ -833,15 +889,23 @@ export async function enregistrerReponse(
     // Ce qui autorise, c'est `dates_forcees` : la photographie prise à l'envoi
     // de ce qui était déjà plein ce jour-là. Elle distingue « il a choisi » de
     // « le planning a bougé depuis ».
+    const surDesJoursChoisis = joursChoisis !== null && !estUnBlocDAffilee(joursChoisis, duree);
     const forcee = envoi.datesForcees.includes(date);
-    if (!forcee && !jourRetenable(date, duree, occupation, nombreEquipes, fenetre)) {
+    const tient = surDesJoursChoisis
+      ? propositionRetenable(joursChoisis, duree, occupation, nombreEquipes, fenetre)
+      : jourRetenable(date, duree, occupation, nombreEquipes, fenetre);
+    if (!forcee && !tient) {
       return { succes: false, motif: "date_indisponible" as const };
     }
 
     // Le créneau est décidé ici, jamais par le client : il choisit un jour, le
     // planning choisit la demi-journée. C'est la consigne du patron — « mon
-    // client ne doit pas être informé de la demi-journée ».
+    // client ne doit pas être informé de la demi-journée ». Sur des jours
+    // choisis un à un, chaque jour se prend entier, matin puis après-midi.
     const moment: Moment = departPossible(date, duree, occupation, nombreEquipes) ?? "matin";
+    const creneaux = surDesJoursChoisis
+      ? creneauxSurLesJours(joursChoisis, duree)
+      : creneauxDuChantier({ jour: date as JourIso, moment }, duree);
 
     await tx
       .update(envoisDevis)
@@ -876,12 +940,7 @@ export async function enregistrerReponse(
     // **Un bloc d'un seul tenant, et c'est juste ici** : le client accepte un
     // jour, pas un morcellement. Ce que le patron rendra ensuite depuis son
     // planning se réécrira par la même fonction.
-    await ecrireLesCreneaux(
-      tx,
-      { entrepriseId: envoi.entrepriseId },
-      envoi.chantierId,
-      creneauxDuChantier({ jour: date as JourIso, moment }, duree)
-    );
+    await ecrireLesCreneaux(tx, { entrepriseId: envoi.entrepriseId }, envoi.chantierId, creneaux);
 
     return { succes: true as const, dateRetenue: date, contreProposee };
   });

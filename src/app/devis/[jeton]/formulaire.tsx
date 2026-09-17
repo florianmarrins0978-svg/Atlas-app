@@ -3,7 +3,7 @@
 import { useActionState, useRef, useState } from "react";
 import { repondreAction } from "./actions";
 import type { EnvoiPourClient } from "@/server/repositories/envois-devis";
-import { jourLisible, dansDelaiRetractation } from "@/lib/jour";
+import { jourLisible, joursEnToutesLettres, dansDelaiRetractation } from "@/lib/jour";
 import { libelleAutreDate } from "@/lib/libelle-dates";
 import Calendrier from "@/components/atlas/Calendrier";
 import BottomSheet from "@/components/atlas/BottomSheet";
@@ -109,6 +109,10 @@ export default function FormulaireReponse({
   const devalider = (valeur: string) => {
     if (choixDate === valeur) setChoixDate("");
   };
+  const joursDe = (d: string) => envoi.joursProposes?.[envoi.datesProposees.indexOf(d)] ?? [d];
+  const plusieursJours = envoi.datesProposees.some((d) => joursDe(d).length > 1);
+  const libelleProposition = (d: string) =>
+    joursDe(d).length > 1 ? joursEnToutesLettres(joursDe(d)) : jourLisible(d);
   const montrerRetractation = dateEffective !== "" && dansDelaiRetractation(dateEffective, aujourdHui);
 
   if (etat && "succes" in etat) {
@@ -155,8 +159,15 @@ export default function FormulaireReponse({
           border: `1px solid ${colors.line}`,
           boxShadow: "0 4px 14px rgba(20,18,14,0.06)",
         }}>
+        {/* **Des JOURS, jamais des demi-journées** — sa consigne, tenue par
+            `test-creneaux-planning.ts`. Depuis le 18 septembre 2026, chaque
+            proposition porte ses jours (« le vendredi 18 septembre et le mardi
+            22 septembre ») : le client lit où l'artisan viendra, et choisit
+            entre les deux si deux lui sont offertes. Sa règle du même jour pour
+            les mois : `joursEnToutesLettres`. La valeur du bouton reste le
+            PREMIER jour — c'est par lui que le serveur retrouve la liste. */}
         <h2 className="text-[16px]" style={{ fontFamily: font.display, color: colors.ink }}>
-          Quelle date vous arrange&nbsp;?
+          {plusieursJours ? <>Quels jours vous arrangent&nbsp;?</> : <>Quelle date vous arrange&nbsp;?</>}
         </h2>
 
         <div className="mt-1.5 flex flex-col gap-0.5">
@@ -190,7 +201,7 @@ export default function FormulaireReponse({
                 onClick={() => devalider(d)}
                 className="h-5 w-5"
               />
-              <span>{jourLisible(d)}</span>
+              <span>{libelleProposition(d)}</span>
             </label>
           ))}
 

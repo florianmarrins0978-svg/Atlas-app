@@ -46,6 +46,29 @@ export function jourLisible(iso: string, aujourdHui: Date = new Date()): string 
  * Même précaution que `jourLisible` : aucun `new Date(iso)`, qui décalerait le
  * jour selon le fuseau du lecteur.
  */
+/**
+ * LES JOURS D'UN CHANTIER EN TOUTES LETTRES, pour la cliente — sa règle du
+ * 18 septembre 2026 : *« si tous les jours sont en septembre, conserve le mot
+ * septembre pour le premier et le dernier jour, ça suffira pour qu'il
+ * comprenne ; si certains jours sont à cheval sur deux mois, c'est mieux de le
+ * préciser pour chaque jour »*.
+ *
+ *   « le vendredi 18 septembre, le lundi 21, le mardi 22 et le mercredi 23 septembre »
+ *   « le mardi 29 septembre et le jeudi 1er octobre »
+ */
+export function joursEnToutesLettres(jours: readonly string[], aujourdHui: Date = new Date()): string {
+  const tries = [...new Set(jours)].sort();
+  if (tries.length === 0) return "";
+  const memeMois = tries.every((j) => j.slice(0, 7) === tries[0].slice(0, 7));
+  const lisibles = tries.map((j, i) => {
+    const entier = jourLisible(j, aujourdHui);
+    const extremite = i === 0 || i === tries.length - 1;
+    return "le " + (memeMois && !extremite ? entier.split(" ").slice(0, 2).join(" ") : entier);
+  });
+  if (lisibles.length === 1) return lisibles[0];
+  return lisibles.slice(0, -1).join(", ") + " et " + lisibles[lisibles.length - 1];
+}
+
 export function jourNumerique(iso: string): string {
   const [a, m, j] = iso.split("-");
   if (!a || !m || !j) return iso;

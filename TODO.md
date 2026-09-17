@@ -105,7 +105,28 @@ Deux réponses attendues, une lettre et un chiffre :
 d'écart. Sous le calendrier il doit rester — la fiche n'y est plus pour le
 dire.
 
-## ⏳ UNE PLANCHE À REGARDER — DEUX JOURS QUI NE SE TOUCHENT PAS (17 septembre 2026)
+## CODÉ LE 18 SEPTEMBRE 2026 — DEUX JOURS QUI NE SE TOUCHENT PAS (planche du 17, « la B »)
+
+**Ce qui reste, et ce n'est pas rien :** à sa demande — *« tu peux coder ça, ne
+lance pas de batterie »* —, ce lot est parti sans les suites navigateur ni la
+batterie. Vert ici : types, lint, mémoire, `test-propositions-de-jours`,
+`test-envoi-jours-pas-colles-db`, `test-creneaux-planning`,
+`test-envois-devis`, `test-preparation-envoi`, `test-etat-envoi`,
+`test-calendrier`, les garde-fous. **Pas joué :** `envoi-client`,
+`deux-dates-calendrier`, `reste-equipes`, `feuille-envoi-lisible`,
+`date-lointaine`, `devis-client` — les écrans que le lot touche — et
+`npm run voir` sur l'écran d'envoi et la page du client. Le garde-fou de
+`main` les réclamera (niveau 3 : `drizzle/`, devis). À jouer AVANT de
+pousser, avec son accord pour le port.
+
+**Les libellés que les suites visent n'ont pas bougé** : `invite-dates`,
+`text=proposée` (gardé sur une journée) et `reste-equipes`. Ce qui a changé
+de nom — « Votre client peut proposer une autre date », « Il ne verra que vos
+jours libres. » — n'était visé par aucune.
+
+---
+
+## ~~⏳ UNE PLANCHE À REGARDER — DEUX JOURS QUI NE SE TOUCHENT PAS (17 septembre 2026)~~ — codée le 18
 
 **Sa question, capture à l'appui :** *« là j'ai un chantier de deux jours mais
 si je fais une proposition de date à mon client ça va automatiquement mettre
@@ -113,8 +134,9 @@ les deux jours consécutifs, or si là je veux lui proposer le premier jour le 1
 et on vient finir le chantier le 22 vu qu'il est sur 2 jours comment je
 fais ??? »*
 
-**RIEN N'EST CODÉ** — la planche `appli/deux-jours-pas-colles.html` (119)
-attend sa réponse.
+~~**RIEN N'EST CODÉ** — la planche `appli/deux-jours-pas-colles.html` (119)
+attend sa réponse.~~ **Codé le 18 septembre 2026** sur son « tu peux coder
+ça » — `CHANGELOG.md` du jour, `ARCHITECTURE.md` §382.
 
 **Refaite le soir même, après sa réponse à la première version** : *« je
 comprends rien, l'idée c'est que ce soit simple et joli »*, puis sa règle en
