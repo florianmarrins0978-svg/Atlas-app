@@ -69,6 +69,38 @@ de la hauteur, il la veut à 33 %. Le réglage des deux ressorts ne la déplace
 pas — essayé, mesuré, rendu. La racine est ailleurs.
 
 
+## ⏳ UNE PLANCHE À REGARDER — POSER EN CLIQUANT SUR LE NOM (17 septembre 2026)
+
+**Sa demande, capture à l'appui :** *« au lieu du "Poser" entouré, pour poser
+le client le mieux serait qu'on clique sur Mr. Linotte — donc trouve un moyen
+stylé pour qu'on ait envie de cliquer sur Mr. Linotte »*.
+
+**RIEN N'EST CODÉ DE CE CÔTÉ** — la planche `appli/poser-en-cliquant-sur-le-nom.html`
+attend sa réponse. Trois façons, même geste dessous :
+
+| | |
+|---|---|
+| **A** | la ligne devient une **tuile** de papier, filet d'or à gauche |
+| **B** | le **nom s'écrit en or**, souligné d'un filet — il se lit comme un lien |
+| **C** | le **contour du « Poser » passe autour du nom** — sa phrase, mot pour mot |
+
+**Ce que je défends : C.** L'application a déjà ce contour creux partout
+(`Petit`, `PlanningClient.tsx`) : on déplace une forme qu'il connaît au lieu de
+lui en apprendre une. A fait quatre pavés quand quatre clients attendent ;
+B se rate au soleil, sur un chantier.
+
+**CE QUI DOIT ÊTRE TRANCHÉ AVEC LUI, et ce n'est pas décoratif.** Sur cette
+ligne, le chevron « › » ouvre DÉJÀ le chantier (`ChevronDesPortes`). Le nom
+qui pose et le chevron qui ouvre font **deux gestes sur une même ligne** : les
+trois versions écartent le chevron du nom, mais c'est lui qui dira si c'est
+tenable — ou si le chevron doit partir d'ici.
+
+**Ce qui EST codé de sa demande, et livré avec la planche :** le
+« À poser sur mardi 22 septembre » écrit en NOIR sous le trait a disparu — il
+redisait mot pour mot la ligne dorée deux centimètres plus haut. Il reste dans
+le seul cas où il ne redit rien : sans jour touché, il dit « Touchez d'abord un
+jour du calendrier », et c'est la seule ligne qui l'explique.
+
 ## ⏳ UNE PLANCHE À REGARDER — DEUX JOURS QUI NE SE TOUCHENT PAS (17 septembre 2026)
 
 **Sa question, capture à l'appui :** *« là j'ai un chantier de deux jours mais

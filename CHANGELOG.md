@@ -8,6 +8,27 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-17
 
+### Le jour à poser s'écrivait DEUX FOIS dans le tiroir du planning
+
+**Sa capture du 17 septembre :** *« il y a écrit deux fois "à poser sur le
+mardi 22 septembre" : garde celle en doré, supprime en noir »*. Il a raison, et
+c'était un oubli du 11 septembre : la phrase est montée ce jour-là dans la
+poignée du tiroir, en or, à l'endroit du geste (`docs/planning-verdict.md`) —
+celle qui vivait sous le trait n'a jamais été retirée.
+
+Elle l'est. **Sauf sans jour touché** : là elle ne redit rien, elle dit
+« Touchez d'abord un jour du calendrier » — la seule ligne qui apprenne qu'un
+jour se touche d'abord, et celle que trois suites cherchent. Regardé à l'écran,
+les deux états (`CLAUDE.md` §10) : la poignée dit « À poser sur mardi
+1 septembre » en or, et plus rien en noir sous le trait.
+
+**Ce qui n'est PAS codé, et attend son choix :** poser le client en appuyant
+sur son nom plutôt que sur « Poser ». Sa demande est une demande d'apparence,
+donc une planche — `appli/poser-en-cliquant-sur-le-nom.html`, trois façons au
+choix, et le point à trancher : le chevron « › » de la même ligne ouvre déjà le
+chantier.
+
+
 ### Le garde-fou de `main` réclamait une batterie dès qu'une autre session fusionnait
 
 Sa colère : *« les sessions rejouent des batteries en boucle juste parce qu'une
