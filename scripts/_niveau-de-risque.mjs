@@ -316,7 +316,7 @@ export function dossierDeLaCommande(commande, defaut) {
  *   · **seul ce que `main` a apporté** a changé — chacun de ces commits est
  *     passé par SON propre garde-fou ; ce qui n'a jamais été mesuré, c'est la
  *     RENCONTRE des deux. Elle se joue en une minute
- *     (`verifier-apres-fusion.ts`), et le plus souvent elle est vide. **Jamais
+ *     (`verifier-ce-qui-a-bouge.ts`), et le plus souvent elle est vide. **Jamais
  *     la batterie entière** : c'est sa règle du 17 septembre, *« le fait que
  *     main change […] ne doit jamais, à lui seul, provoquer une nouvelle
  *     batterie complète »*.

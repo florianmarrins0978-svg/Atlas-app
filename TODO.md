@@ -34,7 +34,7 @@ compilations par batterie.
 deux fois sous un lot déjà éprouvé ; chaque fusion a forcé à renuméroter son
 paragraphe d'`ARCHITECTURE.md` (§373 → §377 → §379) et à replacer ses entrées
 de journal — c'est la règle du §6 B, et elle est juste. Mais
-`verifier-apres-fusion.ts` compare le **diff entier**, `.md` compris, et refuse
+`verifier-ce-qui-a-bouge.ts` compare le **diff entier**, `.md` compris, et refuse
 alors : *« le lot lui-même a changé — ce n'est plus le même lot »*, en renvoyant
 vers cinquante minutes de batterie.
 
@@ -68,6 +68,42 @@ chaque batterie et le garde-fou doit la départager à chaque fusion.
 de la hauteur, il la veut à 33 %. Le réglage des deux ressorts ne la déplace
 pas — essayé, mesuré, rendu. La racine est ailleurs.
 
+
+## ⏳ UNE PLANCHE À REGARDER — LA CONSIGNE DE DÉPLACEMENT (17 septembre 2026)
+
+**Sa capture :** *« il dit toucher le jour au-dessus mais le planning apparaît
+en-dessous. »* Il a raison, et c'est mesuré : sur son écran du 18 septembre,
+**dix jours du mois** sont dessinés SOUS la consigne qui l'envoie regarder en
+haut — dont le 24.
+
+**La racine.** `BandeauDeplacement` est écrit une fois et monté à deux places
+(`PlanningClient.tsx`) : dans la fiche du jour, et en repli sous le calendrier
+quand le mois tourné a emporté la fiche. « Au-dessus » avait été écrit pour la
+seconde, où c'est vrai. Dans la fiche c'est faux — le volet s'insère SOUS LA
+SEMAINE du jour ouvert (`MoisCharge`, prop `volet`, ligne 305). **Aucune
+direction ne peut être juste aux deux endroits.**
+
+**RIEN N'EST CODÉ** — la planche `appli/deplacer-la-consigne.html` attend sa
+réponse. Le correctif avait été écrit, puis **défait à sa demande** (*« fait
+une planche ! code rien »*) : commits `5b177d9` puis `aa3f198` sur
+`claude/problem-investigation-qn7qor`. Il reste repêchable quand il aura
+tranché ; seule la formulation change.
+
+Deux réponses attendues, une lettre et un chiffre :
+
+| | |
+|---|---|
+| **A** | « Touchez son nouveau jour » |
+| **B** | « Touchez le jour d'arrivée » |
+| **C** | « Quel jour ? » |
+| **D** | celle d'aujourd'hui, pour comparer |
+| **1** | sans son nom — il est déjà en titre trois lignes plus haut |
+| **2** | avec « Mr. Linotte · » devant, comme aujourd'hui |
+
+**Le second point est une redite qu'il a sous les yeux** : sur sa capture,
+« Mr. Linotte » est écrit deux fois dans la même carte, à quatre lignes
+d'écart. Sous le calendrier il doit rester — la fiche n'y est plus pour le
+dire.
 
 ## ⏳ UNE PLANCHE À REGARDER — LES QUATRE VOIES SUR UNE LIGNE (17 septembre 2026)
 
@@ -207,14 +243,20 @@ et il a dicté le geste, qui est la version en ligne (la troisième du soir) :
 |---|---|
 | un appui sur un jour libre | pose le **premier jour** ; le chantier se remplit **d'affilée** derrière (8 jours, le 23 : les 8 se posent) |
 | un appui sur un jour **du chantier** | l'**efface**, et rien ne bouge : « Il manque un jour — touchez celui que vous voulez », et l'appui suivant sur un jour libre le remet là. Le 18 et le 22, c'est toucher le 18, effacer le 21, toucher le 22. *(Sa correction devant la version qui décalait le bloc : « il ne doit pas se décaler d'une case, il doit s'effacer, et on clique sur le jour qu'on souhaite pour le remettre ! »)* |
-| l'interrupteur « Deuxième proposition » | allumé, le prochain appui pose le premier jour de la 2e, en or ; éteint, elle disparaît |
+| l'interrupteur « Vous proposez deux dates » (son libellé, 18 septembre) | allumé, le prochain appui pose le premier jour de la 2e, en or ; éteint, elle disparaît |
 | la cliente | « Quels jours vous arrangent ? », un bouton radio par proposition ; une seule : « Nous venons le … et le … » |
 
 **Deux peintures du jour à comparer, en haut de la planche** — sa demande :
 *« garde cette présentation et mets celle de tout à l'heure à côté, avec le
 numéro qui était entouré, que je compare les deux »*. **A** la case entière
 (son écran d'aujourd'hui, `MoisCharge`) ; **B** le chiffre entouré (la
-planche du 31 août). Même geste dessous ; il n'a pas encore choisi.
+planche du 31 août). **Il a choisi la B** (17 septembre 2026, le soir) — la A
+est partie de la planche. Avec trois retouches, faites : la phrase du geste
+sous le calendrier et au-dessus de la liste, en noir ; « Votre client peut
+proposer une autre date », et dessous « Il ne verra que vos jours libres. »
+(l'écran dit encore « Il peut… » et « Un calendrier de vos jours libres
+s'ouvrira sous vos dates. » — les deux à changer quand le lot se code) ; le bouton « Envoyer le devis » dans la
+capsule de l'application.
 
 Une seule règle pour toutes les durées : sur une journée, deux propositions
 d'un jour sont les deux dates au choix d'aujourd'hui. « Une ou deux, jamais

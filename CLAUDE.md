@@ -1541,6 +1541,23 @@ reste ce qui autorise une livraison (§5 ci-dessus, et §6 pour `main`). Rejouer
 les rouges sert à SAVOIR, pas à livrer. Le script le dit lui-même à chaque
 filtre : *« Ce n'est PAS la batterie »*.
 
+**ET UN ROUGE CORRIGÉ NE COÛTE PLUS LA MESURE ENTIÈRE — sa colère du
+17 septembre 2026, à 23 h :** *« ça recommence et c'est ça à chaque fois ! »*
+Une batterie à 158 suites vertes sur 159, un rouge de documentation corrigé en
+trois secondes, et cinquante minutes à repayer — dont le produit était le rouge
+suivant.
+
+```bash
+npx tsx scripts/verifier-ce-qui-a-bouge.ts   # ce qui était rouge, plus ce que la correction peut casser
+```
+
+Il répond à une seule question : *qu'est-ce qui a bougé depuis la mesure, et que
+peut-il casser ?* Il rejoue les étapes et les suites concernées, **garde le
+rouge de ce qu'il n'a pas remesuré**, et refuse dès que ce qui a bougé atteint
+le niveau 3. Il remplace `verifier-apres-fusion.ts`, qui refusait justement
+quand le lot avait changé — c'est-à-dire quand on venait de corriger
+(`ARCHITECTURE.md` §381).
+
 **Et un rouge connu qui redevient vert ne se croit pas sur parole :** il se
 rejoue deux fois. Trois sessions ont classé `test-reduction-devis-e2e`
 « capricieuse » parce qu'elle tombait une fois sur deux, alors que le produit
@@ -1892,7 +1909,7 @@ batterie a rendu son verdict sans rouge nouveau, et que `main` a dépassé
 pendant qu'elle mesurait, ne repart pas pour cinquante minutes :
 
 ```bash
-npx tsx scripts/verifier-apres-fusion.ts     # dans le dossier du lot, une fois reposé sur main
+npx tsx scripts/verifier-ce-qui-a-bouge.ts     # dans le dossier du lot, une fois reposé sur main
 ```
 
 Il tient la place de la batterie **à trois conditions**, et refuse sinon en
@@ -2053,7 +2070,7 @@ change parce qu'une autre session a fusionné ne doit jamais, à lui seul,
 provoquer une nouvelle batterie complète. »*
 
 ```bash
-npx tsx scripts/verifier-apres-fusion.ts   # il mesure, et dit ce qu'il rejoue
+npx tsx scripts/verifier-ce-qui-a-bouge.ts   # il mesure, et dit ce qu'il rejoue
 ```
 
 | ce que `main` a apporté | ce qu'on joue |
