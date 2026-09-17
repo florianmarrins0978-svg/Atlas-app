@@ -25,6 +25,20 @@ lit dans les deux sens, un écran non. `ARCHITECTURE.md` §372 ; le second annea
 
 ---
 
+## Une proposition de date est une date de DÉPART, et le chantier colle les jours
+
+Sa question du 17 septembre 2026 : *« un chantier de deux jours, je veux lui
+proposer le 18 et venir finir le 22 — comment je fais ? »* Aujourd'hui,
+impossible avant l'acceptation : les deux dates du calendrier d'envoi sont deux
+**choix** (boutons radio chez le client), et la date retenue devient un bloc
+d'un seul tenant (`creneauxDuChantier`, `envois-devis.ts`). Le morcellement
+n'existe qu'**après**, au planning — et le client n'en sait rien.
+
+**Rien n'est codé** : la planche `appli/deux-jours-pas-colles.html` (119) pose
+les deux issues et attend sa réponse. `TODO.md`, en tête.
+
+---
+
 ## Où un chantier est POSÉ se repeint en ENTIER après chaque geste
 
 Depuis la migration 0085, `date_planifiee` + `creneau_debut` + la durée ne

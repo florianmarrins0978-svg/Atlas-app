@@ -8,6 +8,37 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-17
 
+### Deux jours qui ne se touchent pas : une planche, et ce que le code fait vraiment
+
+*« Là j'ai un chantier de deux jours mais si je fais une proposition de date à
+mon client ça va automatiquement mettre les deux jours consécutifs, or si là je
+veux lui proposer le premier jour le 18 et on vient finir le chantier le 22 vu
+qu'il est sur 2 jours comment je fais ??? »*
+
+Relevé dans le code, et rien n'est codé (`CLAUDE.md` §3 bis — une demande de
+geste se dessine d'abord) :
+
+- les deux dates du calendrier d'envoi sont deux **choix**, rendus chez le
+  client en boutons radio sous « Quelle date vous arrange ? »
+  (`src/app/devis/[jeton]/formulaire.tsx`) ;
+- la date retenue devient un **bloc d'un seul tenant** : `creneauxDuChantier`
+  étale la durée sur des demi-journées qui se suivent
+  (`src/server/repositories/envois-devis.ts`) ;
+- **l'écran ne le dit pas** à deux jours : la phrase « … jours ouvrés d'affilée
+  seront réservés » n'apparaît qu'au-delà de trois jours (`aideDuree`,
+  `EnvoiAuClient.tsx`). C'est ce qui rend la surprise possible ;
+- le morcellement existe, mais **après** l'acceptation, au planning
+  (`libererDemiJourneeAction` / `reposerDemiJourneeAction`, depuis le
+  10 septembre) — quatre gestes, et le client n'en sait rien.
+
+Ce dernier point rouvre ce que `TODO.md` gardait ouvert depuis le
+10 septembre : « un chantier ne se pose toujours pas en deux morceaux d'un seul
+geste ; à rouvrir s'il le signale ». Il le signale.
+
+La planche `appli/deux-jours-pas-colles.html` (119) compare trois états, et
+montre sous chacun **ce que le client lit** et **ce qui se pose au planning** —
+c'est là que les trois diffèrent, pas dans le calendrier.
+
 ### La publication des planches rougissait depuis la note vocale à plat
 
 Le flux `pages.yml` est tombé sur `test:boutons-verts` dès la poussée du
