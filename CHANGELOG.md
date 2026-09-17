@@ -8,6 +8,40 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-17
 
+### « Déplacer » déplace pour de bon : le calendrier, puis le moment — sept appuis deviennent trois
+
+**Sa demande :** *« lorsque je clique sur déplacer ça me fait apparaître le
+planning et je sélectionne un jour et le matin ou l'aprem ou journée pour
+réellement déplacer mon client, parce que là c'est trop de clics à faire »*.
+Puis, devant `appli/deplacer-sur-le-calendrier.html` : *« je choisis la deux, le
+planning au-dessus, et la A »*.
+
+Avant : Déplacer, la moitié à rendre, ouvrir le tiroir, toucher le morceau,
+refermer, ouvrir le jour d'accueil, Poser ici. Maintenant : **Déplacer, le jour,
+le moment**. Et une seule écriture au lieu de deux — entre les deux anciens
+appels, la demi-journée n'était nulle part.
+
+**« La A »** : seul ce que le chantier occupe LE jour de départ bouge. Ses
+autres jours ne se replient pas.
+
+**Le mot désigne la moitié, aux deux bouts** : « Matin » emmène le matin et
+laisse l'après-midi sur place, « Journée » emmène tout. Sa correction : *« un
+chantier d'une journée, si je veux je dois pouvoir déplacer soit le matin, soit
+l'aprem quand même ! »*. Ce qui reste refusé, c'est d'inventer une moitié — une
+demi-journée ne devient pas une journée —, et d'arriver sur une demi-journée
+déjà sienne, qui ferait rétrécir le chantier en silence.
+
+**Les mots sont en gras, sans contour**, et « + Salarié absent ? » passe au
+milieu : une pastille à contour a la forme des pastilles d'équipe juste
+au-dessus, qui ouvrent une liste. La question du moment se dessine **dans la
+fiche**, sous les demi-journées, comme sur la planche ; elle se replie sous le
+calendrier quand le mois tourné a emporté la fiche — un seul bloc, deux
+montages.
+
+Parti avec : `BasculeDemi`, `liberer`, `libererDemiJourneeAction`,
+`libererDemiJournee`, `sansLaDemi` — plus aucun appelant (`CLAUDE.md` §4
+quinquies). `ARCHITECTURE.md` §373.
+
 ### Deux jours qui ne se touchent pas : une planche, et ce que le code fait vraiment
 
 *« Là j'ai un chantier de deux jours mais si je fais une proposition de date à
@@ -38,6 +72,7 @@ geste ; à rouvrir s'il le signale ». Il le signale.
 La planche `appli/deux-jours-pas-colles.html` (119) compare trois états, et
 montre sous chacun **ce que le client lit** et **ce qui se pose au planning** —
 c'est là que les trois diffèrent, pas dans le calendrier.
+
 
 ### La publication des planches rougissait depuis la note vocale à plat
 
@@ -76,6 +111,7 @@ la font remonter plutôt que de sortir quoi que ce soit de l'écran.
 chantier **et sans ruban d'essai** — l'écran qu'il a, lui — et dit le
 pourcentage à chaque passage. `ARCHITECTURE.md` §372.
 
+
 ### `main` a avancé sous un lot éprouvé : `verifier-apres-fusion` rejoue la rencontre, pas la batterie
 
 **Sa règle :** *« Rejoue juste ce qui a bougé ! »* — devant une troisième
@@ -90,6 +126,7 @@ batterie. Suite : `test-apres-fusion`. Corrigé au premier complément joué : l
 numéros de ligne des hunks glissent quand `main` ajoute des lignes plus haut
 dans le même fichier — ils s'effacent de l'empreinte, le contexte reste comparé.
 
+---
 ## 2026-09-16
 
 ### « En cours 19 » reste à l'écran quand il descend dans ses chantiers
@@ -146,7 +183,7 @@ Sa règle existait déjà à trois lignes de là — *« Annuler ramène aux deu
 voies, à chaque étape »* (10 septembre) : les trois temps d'« Ajouter » la
 tiennent, « Déplacer » était le seul geste de cet écran à ne pas l'avoir. Le
 bouton reprend la place de « Retirer », à droite de l'interrupteur : la rangée
-garde ses deux boutons au même endroit. `test-liberer-une-demi-journee-e2e`
+garde ses deux boutons au même endroit. `test-deplacer-sur-le-calendrier-e2e`
 tient les deux moitiés — l'écran revient à ses deux gestes, **et la base n'a
 pas bougé**.
 
@@ -1367,7 +1404,7 @@ l'épaisseur du bord et remonte le voile d'autant. Aucune couche ajoutée.
 | « Touchez d'abord un jour du calendrier », gris, sous la pastille | juste sous le trait, en noir |
 
 Les suites qui lisaient le titre ou le compte suivent
-(`test-planning-e2e`, `test-liberer-une-demi-journee-e2e`,
+(`test-planning-e2e`, `test-deplacer-sur-le-calendrier-e2e`,
 `test-salarie-planning-lecture-seule-e2e`) : elles visent l'attribut, pas le
 mot, et refusent de conclure sur zéro pastille.
 
@@ -2280,7 +2317,7 @@ pour une demi-journée rendue seule — le morceau n'existait alors nulle part.
 
 Les deux premiers viennent d'une **capture regardée**, le troisième de la suite
 navigateur qui rejoue son geste en entier
-(`scripts/test-liberer-une-demi-journee-e2e.ts`, 8 contrôles). Le pourquoi de
+(`scripts/test-deplacer-sur-le-calendrier-e2e.ts` (renommée le 17 septembre 2026), 8 contrôles). Le pourquoi de
 chaque choix est dans `ARCHITECTURE.md` §322.
 
 ### Planche — facturer sans passer par la case devis
