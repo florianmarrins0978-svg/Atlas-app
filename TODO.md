@@ -37,6 +37,18 @@ fais ??? »*
 **RIEN N'EST CODÉ** — la planche `appli/deux-jours-pas-colles.html` (119)
 attend sa réponse.
 
+**Refaite le soir même, après sa réponse à la première version** : *« je
+comprends rien, l'idée c'est que ce soit simple et joli »*, puis sa règle en
+clair — *« quand je propose une date à un client et que le chantier dure deux
+jours, je dois pouvoir lui proposer le 18 et le 22 en lui disant : on viendra
+un jour le 18 et le deuxième le 22 »*. Les trois états, l'interrupteur et les
+trois notes sont partis. Ce qu'elle montre maintenant, et rien d'autre :
+**un appui = un jour du chantier**. Il touche le 18 et le 22 ; sa cliente lit
+« nous venons le 18 et le 22 ». S'il ne touche que le 18, le jour d'à côté se
+pose tout seul, en creux, et bouge dès qu'il touche ailleurs — le geste de
+tous les jours ne change pas. Sur un chantier d'une journée : une date, ou
+deux au choix, comme aujourd'hui (« changer » sur la durée le montre).
+
 **Ce que le code fait aujourd'hui**, et il faut le savoir avant d'ouvrir le lot :
 
 | | |
@@ -46,16 +58,16 @@ attend sa réponse.
 | ce que l'écran en dit | **rien** à deux jours : `aideDuree` ne parle qu'au-delà de trois jours (`EnvoiAuClient.tsx`) |
 | le morcellement | il existe, mais **après** l'acceptation, au planning — et le client n'en sait rien |
 
-**Les deux issues dessinées.** **A** — le calendrier demande les jours du
-chantier, et non une date de départ ; il perd les deux dates au choix. **B** —
-un interrupteur, visible seulement au-delà d'une journée, et c'est lui qui dit
-lequel des deux sens. Le mien : **B**, parce que A lui retire sans un mot une
-chose qu'il emploie.
-
-**Ce qui est écarté, et qu'il ne faut pas ressortir :** poser d'office la
-deuxième date comme « fin de chantier » dès que la durée dépasse une journée.
-Le même geste voudrait dire deux choix sur un chantier d'un jour et deux jours
-sur un chantier de deux.
+**Ce que la première version craignait, et ce que la seconde en fait.** Elle
+refusait qu'un appui veuille dire « un choix » sur un chantier d'un jour et
+« un jour du chantier » sur un chantier de deux, et proposait un interrupteur.
+Il n'a pas compris l'interrupteur, et sa règle tranche : sur plusieurs jours,
+les jours qu'il touche SONT les jours du chantier. Le sens de l'appui s'écrit
+alors sur l'écran — « Posez les 2 jours du chantier » / « Proposez une ou deux
+dates », et « 1er jour · 2e jour » / « proposée » sur chaque ligne —, et la
+carte « ce que Linotte lit » le montre. **Ce qu'il perd, et qu'il faut lui
+dire s'il tranche :** proposer deux dates AU CHOIX sur un chantier de
+plusieurs jours. « Une autre date » reste offert à la cliente.
 
 **Ce que sa règle interdit toujours :** montrer une demi-journée au client
 (`scripts/test-creneaux-planning.ts`). Les deux issues ne montrent que des
