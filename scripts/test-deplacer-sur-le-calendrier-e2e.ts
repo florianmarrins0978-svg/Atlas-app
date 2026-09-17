@@ -187,7 +187,9 @@ async function main() {
      * été vu À L'ÉCRAN, jamais par un test (`CLAUDE.md` §5).
      */
     const carte = await allerAuJour(jourA);
-    await carte.locator('[data-atlas="deplacer"]').click();
+    await carte
+      .locator(`[data-atlas="bloc-chantier"][data-chantier="${chantierId}"] [data-atlas="deplacer"]`)
+      .click();
     await page.waitForTimeout(300);
     const bandeau = page.locator('[data-atlas="deplacement-en-cours"]');
     if ((await bandeau.count()) !== 1) {
@@ -252,7 +254,9 @@ async function main() {
      */
     const carte = await allerAuJour(jourA);
     let appuis = 0;
-    await carte.locator('[data-atlas="deplacer"]').click();
+    await carte
+      .locator(`[data-atlas="bloc-chantier"][data-chantier="${chantierId}"] [data-atlas="deplacer"]`)
+      .click();
     appuis++;
     await page.waitForTimeout(300);
     await page.click(`[data-atlas="grille-mois"] [data-jour="${jourB}"]`);

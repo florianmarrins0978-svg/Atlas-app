@@ -335,7 +335,13 @@ async function main() {
     await page.click(`[data-atlas="grille-mois"] [data-jour="${jour}"]`);
     await page.waitForTimeout(800);
     const carte = page.locator(`[data-atlas="carte-jour"][data-jour="${jour}"]`);
-    await carte.locator('[data-atlas="deplacer"]').first().click();
+    // **SON bloc, pas le premier de la carte.** Joué seul, ce jour ne porte que
+    // ce chantier et `.first()` tombait juste ; dans la batterie, soixante
+    // suites ont déjà posé du monde, et l'on déplaçait le chantier du voisin —
+    // celui-ci ne bougeait pas, et le contrôle l'accusait d'avoir tout effacé.
+    await carte
+      .locator(`[data-atlas="bloc-chantier"][data-chantier="${chantierId}"] [data-atlas="deplacer"]`)
+      .click();
     await page.waitForTimeout(500);
 
     // **Ce jour-là, le chantier occupe la journée entière** : quatre
