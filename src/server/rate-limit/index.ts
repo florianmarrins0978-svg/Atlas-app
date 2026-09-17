@@ -42,6 +42,54 @@ export type ResultatVerificationLimite =
 // Point d'appel unique pour toute action à protéger. `cle` doit déjà
 // combiner l'identité pertinente (utilisateur, entreprise, IP) — voir les
 // points d'appel pour la construction de clé propre à chaque usage.
+/**
+ * REND À UN SEUIL CE QU'UN GESTE RÉUSSI LUI AVAIT PRIS.
+ *
+ * ───────────────────────────────────────────────────────────────────────────
+ * **Le défaut du 17 septembre 2026, dans ses mots :** *« un ami s'était
+ * connecté à mon appli via son tél, et sur le sien ça n'a pas marché »*.
+ *
+ * Six connexions d'affilée avec le BON mot de passe, même compte, même wifi :
+ * la sixième lisait *« Trop de tentatives. Réessayez dans 15 minutes. »* Le
+ * compteur monte avant qu'on sache si la porte s'ouvre — il le faut, c'est ce
+ * qui le rend atomique —, et **plus rien ne le redescendait quand elle
+ * s'ouvrait**. Cinq entrées légitimes suffisaient donc à fermer la maison.
+ *
+ * **C'est la panne du 6 août 2026 par l'autre bord.** Ce jour-là ses parents
+ * lisaient « mot de passe incorrect » avec le bon mot de passe, parce que le
+ * compteur était tenu par e-mail seul ; la correction a séparé les visiteurs
+ * par adresse — elle ne pouvait rien pour deux visiteurs qui PARTAGENT
+ * l'adresse, et elle n'a jamais cessé de compter les réussites.
+ *
+ * **Le compteur d'échecs en base faisait déjà la bonne chose** — `noterEchec`
+ * ne compte que les refus, `oublierEchecs` efface à la réussite
+ * (`repositories/tentatives-connexion.ts`). Deux mécanismes pour une même
+ * question, dont un seul était juste : c'est ce que `CLAUDE.md` §3 refuse.
+ *
+ * **Ce que cela n'affaiblit pas.** Un seuil anti-martèlement compte des essais
+ * qui RATENT — un attaquant ne rend jamais rien, par définition. Ce qui change,
+ * c'est qu'entrer chez soi ne coûte plus un jeton.
+ *
+ * **Jamais d'exception vers l'appelant.** Cet appel arrive après une connexion
+ * RÉUSSIE : la faire échouer parce qu'un compteur n'a pas pu redescendre
+ * remettrait dehors quelqu'un qui vient d'entrer. On journalise et l'on
+ * continue — le seuil se videra tout seul à la fin de sa fenêtre.
+ */
+export async function rendreLimite(cle: string): Promise<void> {
+  try {
+    await getMagasin().rendre(cle);
+  } catch (erreur) {
+    try {
+      await getSecours().rendre(cle);
+    } catch {
+      console.error(
+        "[limite] impossible de rendre le jeton d'un geste réussi — le seuil se videra à la fin de sa fenêtre.",
+        { cle, erreur }
+      );
+    }
+  }
+}
+
 export async function verifierLimite(
   cle: string,
   limite: { max: number; fenetreMs: number }

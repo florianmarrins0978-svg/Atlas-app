@@ -46,7 +46,20 @@ tous. Si une régression arrive un jour sur ce chemin, c'est ce tableau qui dit
 ce qui marchait le 17 septembre 2026.
 
 
-## ⏳ CINQ CONNEXIONS RÉUSSIES ET LE SIXIÈME EST DEHORS — 17 septembre 2026
+## ⏳ « Trop d'essais depuis cet appareil » ment encore à la CRÉATION DE COMPTE
+
+Corrigé sur la connexion le 17 septembre 2026 (`ARCHITECTURE.md` §377) ;
+`src/app/creer-un-compte/actions.ts` porte encore le même libellé, sur un seuil
+tenu par **adresse seule**. Deux personnes sur un même wifi partagent donc les
+cinq essais, et celle qui est refusée cherche du côté de son téléphone.
+
+**Hors périmètre du lot de la connexion, et c'est délibéré** (`CLAUDE.md` §5) :
+créer des comptes en rafale est précisément ce qu'un tel seuil doit borner, donc
+la question « faut-il rendre la place d'une création réussie ? » ne se tranche
+pas de la même façon. Le libellé, lui, est faux dans les deux cas.
+
+
+## ~~CINQ CONNEXIONS RÉUSSIES ET LE SIXIÈME EST DEHORS~~ — CORRIGÉ LE 17 SEPTEMBRE 2026
 
 **Sa remarque :** *« un ami s'était connecté à mon appli via son tél, et sur le
 sien ça n'a pas marché »*.
@@ -86,19 +99,18 @@ elle n'a jamais cessé de compter les réussites.
 l'adresse qu'il partage. Un message qui accuse le mauvais coupable coûte plus
 cher que pas de message du tout (`AGENTS.md`).
 
-**Ce qu'il faut faire — à la racine, et à lui de dire quand :**
+**~~CE QUI A ÉTÉ FAIT, le soir même~~** (`ARCHITECTURE.md` §377) : un seuil sait
+désormais **rendre** ce qu'un geste réussi lui avait pris, et la connexion rend
+ses deux jetons là où elle efface déjà ses échecs. Le compteur reste incrémenté
+avant `signIn` — c'est ce qui le rend atomique ; « regarder puis consommer »
+aurait ouvert entre les deux la fenêtre par laquelle un martèlement passe.
 
-1. **ne compter que les ÉCHECS** sur ce seuil. Un seuil anti-martèlement existe
-   contre des tentatives qui ratent ; une connexion réussie n'a rien à
-   consommer. Le compteur d'échecs CONSÉCUTIFS existe déjà en base
-   (`repositories/tentatives-connexion.ts`, migration 0062) et s'efface à la
-   réussite — c'est le même raisonnement, et il est déjà écrit ;
-2. cela demande de scinder `verifierEtIncrementer` en « regarder » puis
-   « consommer », et de ne consommer qu'après un `signIn` refusé ;
-3. **corriger le message** : il ne parle plus d'appareil.
+Le message ne dit plus « depuis cet appareil ».
 
-**Niveau 3** — authentification (`.claude/rules/testing.md`) : batterie entière,
-et il faut le prévenir avant de la lancer (`CLAUDE.md` §5).
+Trois contrôles le tiennent, et les trois ont été **vus rouges** avant :
+`test-connexion-limite-e2e` (six entrées réussies d'affilée),
+`test-rate-limit-redis-real` (la clé absente, le plancher à zéro),
+`test-limite-magasin-en-panne` (rendre ne lève jamais).
 
 
 ## ⏳ `test-accueil-vide-porte-e2e` dépend de l'état que la base a gardé

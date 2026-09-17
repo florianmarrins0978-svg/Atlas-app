@@ -8,6 +8,26 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-17
 
+### Cinq connexions réussies ne ferment plus la porte au sixième
+
+*« Un ami s'était connecté à mon appli via son tél, et sur le sien ça n'a pas
+marché. »* Le seuil de connexion montait avant `signIn`, donc même quand la
+porte s'ouvrait. Deux téléphones sur un même wifi n'ayant qu'une adresse, cinq
+entrées légitimes mettaient la sixième dehors — avec le bon mot de passe.
+
+C'est la panne du 6 août 2026 par l'autre bord : la correction d'alors séparait
+les visiteurs par adresse, elle ne pouvait rien pour ceux qui la partagent.
+
+Une connexion réussie **rend** désormais ce qu'elle avait pris, là où elle
+efface déjà son compteur d'échecs — les deux mécanismes disent enfin la même
+chose. Le message ne dit plus « depuis cet appareil » : ce n'était pas son
+appareil, c'était l'adresse partagée, et il cherchait du côté de son téléphone.
+
+La protection ne bouge pas : un attaquant ne rend rien, ses essais ratent.
+
+Détail : `ARCHITECTURE.md` §377.
+
+
 ### La comparaison d'un rouge se fait DES DEUX CÔTÉS, dans le même état
 
 Le mécanisme de la veille rejouait la suite rouge sur `main` seul : verte

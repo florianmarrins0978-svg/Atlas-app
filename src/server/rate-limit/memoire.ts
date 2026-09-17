@@ -26,6 +26,14 @@ export class MagasinLimiteMemoire implements MagasinLimite {
     return { autorise: true };
   }
 
+  async rendre(cle: string): Promise<void> {
+    const existant = this.compteurs.get(cle);
+    // Une fenêtre déjà expirée ne se rouvre pas : la rendre ici recréerait un
+    // compteur que plus rien n'effacerait.
+    if (!existant || existant.expireA <= Date.now()) return;
+    existant.count = Math.max(0, existant.count - 1);
+  }
+
   // Réservé aux tests : vide l'état entre les cas de test.
   _reinitialiser(): void {
     this.compteurs.clear();

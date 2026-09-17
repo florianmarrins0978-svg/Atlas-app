@@ -8,6 +8,27 @@ sert.
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## UN SEUIL DE CONNEXION NE COMPTE QUE CE QUI RATE — et il sait rendre
+
+**Le défaut du 17 septembre 2026, dans ses mots :** *« un ami s'était connecté à
+mon appli via son tél, et sur le sien ça n'a pas marché »*. Cinq entrées
+RÉUSSIES depuis un même wifi, et la sixième était mise dehors quinze minutes,
+avec le bon mot de passe — le compteur montait avant `signIn` et ne redescendait
+jamais.
+
+Ce qu'il faut savoir avant de toucher à `src/server/rate-limit/` :
+
+| | |
+|---|---|
+| le compteur monte **avant** le geste | c'est ce qui le rend atomique — ne pas le déplacer |
+| un geste **réussi** appelle `rendreLimite(cle)` | il n'a rien à consommer : un seuil compte des essais qui RATENT |
+| `DECR` nu est un piège | sur une clé absente il la crée à −1 **sans TTL** : un compteur immortel |
+
+Le compteur d'échecs en base (`repositories/tentatives-connexion.ts`) faisait
+déjà la bonne chose ; les deux disent enfin la même chose. Détail et pièges :
+`ARCHITECTURE.md` §377.
+
+---
 ## L'accueil vide : la porte du devis est au TIERS HAUT, poussée par deux ressorts
 
 Depuis le 17 septembre 2026, quand aucun chantier n'est en cours, « Créer un

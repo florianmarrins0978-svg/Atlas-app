@@ -5,6 +5,20 @@
 
 ---
 
+## FAIT : CINQ CONNEXIONS RÉUSSIES NE FERMENT PLUS LA PORTE AU SIXIÈME (17 septembre 2026)
+
+*« Un ami s'était connecté à mon appli via son tél, et sur le sien ça n'a pas
+marché. »* Le seuil de connexion montait avant `signIn`, donc même quand la
+porte s'ouvrait ; deux téléphones sur un même wifi n'ayant qu'une adresse, cinq
+entrées légitimes mettaient la sixième dehors avec le bon mot de passe.
+
+Un seuil sait désormais **rendre** ce qu'un geste réussi lui a pris
+(`rendreLimite`), et le message ne dit plus « depuis cet appareil » — ce n'était
+pas son appareil. Trois contrôles, vus rouges d'abord. `ARCHITECTURE.md` §377.
+
+**Reste ouvert :** le même libellé trompeur à la création de compte (`TODO.md`).
+
+
 ## FAIT : L'ACCUEIL SANS CHANTIER — LA PORTE DU DEVIS AU TIERS HAUT (17 septembre 2026)
 
 Sa place : *« découpe l'écran en 3 parts égales ! En partant du bas, le mets en

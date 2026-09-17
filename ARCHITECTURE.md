@@ -31275,3 +31275,65 @@ copie de `main`, puis sur le lot, l'une derrière l'autre, dans la même base.
 soit saine. Celle-ci suppose une base vierge, et rougira dans chaque batterie
 tant que son montage ne créera pas son propre état.
 
+
+## §377 — Un seuil anti-martèlement compte des essais qui RATENT : une connexion réussie rend sa place
+
+**Sa remarque du 17 septembre 2026 :** *« un ami s'était connecté à mon appli
+via son tél, et sur le sien ça n'a pas marché »*.
+
+**Ce qui se passait.** Le seuil de connexion (`LIMITES.connexion` : cinq par
+quart d'heure) est tenu sur la clé `connexion:<email>:<source>` — le compte ET
+l'adresse. Il est incrémenté **avant** `signIn`, parce que c'est là qu'il est
+atomique. Rien ne le redescendait ensuite, **même quand la porte s'ouvrait**.
+
+Deux téléphones sur un même wifi n'ont qu'une adresse. Un soir où il fait
+essayer l'application, cinq entrées légitimes suffisaient donc à mettre le
+sixième dehors — avec le bon mot de passe, et un message qui accusait *« cet
+appareil »*, c'est-à-dire un téléphone qui s'y connectait pour la première fois.
+
+**Reproduit avant de corriger** : six connexions d'affilée, bon mot de passe,
+même compte, même adresse — les cinq premières entrent, la sixième lit *« Trop
+de tentatives. Réessayez dans 15 minutes. »*
+
+**C'EST LA PANNE DU 6 AOÛT 2026 PAR L'AUTRE BORD.** Ce jour-là, ses parents
+lisaient « mot de passe incorrect » avec les bons identifiants : le compteur
+était tenu par e-mail seul. La correction d'alors a séparé les visiteurs **par
+adresse** — elle ne pouvait rien pour deux visiteurs qui *partagent* l'adresse,
+et elle n'a jamais cessé de compter les réussites.
+
+**Et la bonne réponse était déjà écrite dans le dépôt, à côté.** Le compteur
+d'échecs en base (`repositories/tentatives-connexion.ts`, migration 0062) ne
+compte que les refus — `noterEchec` à l'échec, `oublierEchecs` à la réussite.
+Deux mécanismes pour une même question, dont un seul était juste : exactement
+ce que `CLAUDE.md` §3 refuse.
+
+**Ce qui a été fait :** `MagasinLimite` sait désormais **rendre**
+(`rendreLimite`), et la connexion rend ses deux jetons là où elle efface déjà
+ses échecs. Rendre plutôt que « regarder puis consommer » : la seconde forme
+ouvre une fenêtre entre la lecture et l'écriture, et c'est par là qu'un
+martèlement passerait.
+
+| Le piège | Ce qui le tient |
+|---|---|
+| `DECR` sur une clé absente la crée à −1 **sans expiration** — un compteur immortel | le script Lua ne touche qu'une clé qui EXISTE, et garde son TTL |
+| rendre plus qu'on n'a pris creuse un crédit | plancher à zéro, des deux côtés |
+| une panne du magasin remettrait dehors quelqu'un qui vient d'entrer | `rendreLimite` ne lève jamais : elle journalise et la fenêtre se vide seule |
+
+Les deux premiers ont été **vus rouges** contre un `DECR` nu
+(`test-rate-limit-redis-real.ts`), le troisième contre un magasin couché
+(`test-limite-magasin-en-panne.ts`). Le parcours, lui, est tenu par un
+troisième cas de `test-connexion-limite-e2e.ts` : six entrées réussies d'affilée
+depuis une même adresse.
+
+**Ce que cela n'affaiblit pas.** Un attaquant ne rend jamais rien : ses essais
+ratent, par définition, et les six mauvais mots de passe du premier cas de la
+suite ferment toujours la porte. Ce qui change, c'est qu'entrer chez soi ne
+coûte plus un jeton.
+
+**Et le message ne ment plus** : « Trop de tentatives de connexion récentes »
+plutôt que « depuis cet appareil ». Une erreur qui envoie chercher au mauvais
+endroit coûte plus cher que pas d'erreur du tout (`AGENTS.md`).
+
+**Ce qui reste ouvert, et qui n'est pas de ce lot** : `creer-un-compte` porte le
+même libellé trompeur sur un seuil tenu par adresse seule. Inscrit dans
+`TODO.md`.
