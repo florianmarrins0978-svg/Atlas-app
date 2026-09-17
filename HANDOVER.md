@@ -4,8 +4,26 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-09-17 · `claude/devis-positioning-no-project-wofsfp` — acomptes d'une version corrigée + papier à l'encre, batterie à jouer
+**Point de reprise :** 2026-09-17 · `claude/sessions-batterie-loop-pzcl4q` — le garde-fou de `main` compare des contenus, plus des dates
 (l'historique fait foi : `git log --oneline -20`)
+
+---
+## `main` QUI AVANCE NE COÛTE PLUS UNE BATTERIE
+
+Depuis le 17 septembre 2026, `garde-fusion-main.mjs` ne regarde plus la **date**
+de la dernière écriture — une fusion réécrit ce qu'elle apporte, et cela périmait
+le verdict de tout lot vert dès qu'une session voisine fusionnait. Il compare des
+CONTENUS, avec la fonction de la batterie (`scripts/_empreinte-des-sources.mjs`).
+
+**Devant un refus de poussée, lire lequel des trois il annonce :**
+
+| Ce qu'il dit | Ce qu'on joue |
+|---|---|
+| « le lot a changé depuis sa vérification » | le contrôle de son niveau (`npm run niveau` le dit) |
+| « main a apporté N fichier(s) » | `npx tsx scripts/verifier-apres-fusion.ts` — une minute, souvent rien |
+| rien : la poussée passe | rien |
+
+`ARCHITECTURE.md` §379.
 
 ---
 ## Les acomptes d'un devis SUIVENT sa correction — et le papier est tout noir

@@ -8,6 +8,23 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-17
 
+### Le garde-fou de `main` réclamait une batterie dès qu'une autre session fusionnait
+
+Sa colère : *« les sessions rejouent des batteries en boucle juste parce qu'une
+a touché un fichier »*. Le garde-fou comparait la **date** de la dernière
+écriture dans l'arbre à l'instant du verdict — or une fusion réécrit ce qu'elle
+apporte, et parfois à l'identique. Tout lot vert perdait donc son verdict dès
+que `main` avançait, à l'autre bout du produit, et le seul remède annoncé était
+la batterie entière : cinquante minutes, à repayer à chaque fois.
+
+La date est supprimée. Le garde-fou compare des CONTENUS, avec la fonction que
+la batterie emploie déjà depuis le 9 septembre — une seule façon de dire « ce
+fichier a changé », désormais partagée (`scripts/_empreinte-des-sources.mjs`).
+Et ce qui a bougé ne se vaut plus : un fichier du lot fait remesurer au niveau
+du lot ; ce que `main` a apporté renvoie au complément d'une minute
+(`verifier-apres-fusion.ts`), que le refus nomme lui-même — il ne l'avait
+jamais fait. Voir `ARCHITECTURE.md` §379.
+
 ### Le complément après fusion ne jouait RIEN, et rendait un ✅
 
 Trouvé en l'utilisant, pas en le lisant : `verifier-apres-fusion` importait une

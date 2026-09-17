@@ -62,7 +62,7 @@ function estUneSuite(chemin: string): boolean {
 /**
  * Ce qui a bougé depuis le dernier verdict décide de ce qu'on rejoue.
  *
- * `remues` vient de `fichiersRemues` (`_batterie-solitaire.ts`) : les mêmes
+ * `remues` vient de `fichiersRemues` (`_empreinte-des-sources.mjs`) : les mêmes
  * chemins, la même façon de les comparer. **Une seconde façon de dire « ce
  * fichier a changé » finirait par diverger** (`CLAUDE.md` §3).
  */

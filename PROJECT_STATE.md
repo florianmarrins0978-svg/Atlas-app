@@ -5,6 +5,15 @@
 
 ---
 
+## FAIT : LE GARDE-FOU DE `main` NE RÉCLAME PLUS DE BATTERIE POUR RIEN (17 septembre 2026)
+
+Il comparait des **dates** d'écriture : une fusion réécrit ce qu'elle apporte,
+donc tout lot vert perdait son verdict dès qu'une session voisine fusionnait —
+et le refus n'annonçait que la batterie entière. Il compare désormais des
+CONTENUS (`scripts/_empreinte-des-sources.mjs`, partagé avec la batterie), et
+quand seul ce que `main` a apporté a bougé, il renvoie au complément d'une
+minute qu'il nomme lui-même. `ARCHITECTURE.md` §379.
+
 ## FAIT : LES ACOMPTES SUIVENT LA CORRECTION DU DEVIS (17 septembre 2026)
 
 Sa panne : un devis rouvert pour correction ne gardait que l'acompte des

@@ -1,8 +1,7 @@
 import { rmSync } from "node:fs";
 import path from "node:path";
+import { empreinteDesSources, fichiersRemues } from "./_empreinte-des-sources.mjs";
 import {
-  empreinteDesSources,
-  fichiersRemues,
   phraseDuRefus,
   phraseDuVerdictCaduc,
   processusDeLaMachine,

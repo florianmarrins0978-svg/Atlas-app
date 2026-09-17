@@ -1,6 +1,6 @@
 import { execFileSync } from "node:child_process";
 import path from "node:path";
-import { empreinteDesSources } from "./_batterie-solitaire";
+import { empreinteDesSources } from "./_empreinte-des-sources.mjs";
 import { ecrireDernierVerdict, lireDernierVerdict, ilYA } from "./_dernier-verdict";
 import { jouerEnGardantLaSortie } from "./_jouer-etape";
 import { bilanDuJournal } from "./_bilan-suites.mjs";

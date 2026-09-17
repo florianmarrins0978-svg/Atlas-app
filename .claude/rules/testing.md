@@ -124,6 +124,23 @@ rencontre rejouée est verte : suites base, écrans du lot, écrans touchés par
 verdict d'avant ; le garde-fou le relit comme n'importe quel autre. Un lot qui
 a changé, un verdict d'avant ce mécanisme, un rouge nouveau : batterie.
 
+## Le garde-fou compare des CONTENUS, jamais des dates — 17 septembre 2026
+
+**Sa colère :** *« les sessions rejouent des batteries en boucle juste parce
+qu'une a touché un fichier »*. Le garde-fou de `main` mesurait la date de la
+dernière écriture : une fusion réécrit ce qu'elle apporte, donc tout lot vert
+perdait son verdict dès que `main` avançait — et le refus n'annonçait que la
+batterie entière.
+
+| Ce qui a bougé depuis le verdict | Ce qu'il faut jouer |
+|---|---|
+| rien, au contenu près | **rien** — la fusion s'ouvre, même après une fusion |
+| un fichier **du lot** | le contrôle de son niveau |
+| **seulement** ce que `main` a apporté | `npx tsx scripts/verifier-apres-fusion.ts` |
+
+Le garde-fou nomme lui-même le complément dans son refus : il n'y a plus à s'en
+souvenir au bout de trois heures. `ARCHITECTURE.md` §379.
+
 ## Un rouge venu d'AILLEURS ne ferme pas la porte — une régression NOUVELLE, si
 
 **Sa règle du 17 septembre 2026**, après une journée entière perdue : *« Je ne

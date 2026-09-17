@@ -60,7 +60,12 @@ une régression NOUVELLE** (17 septembre 2026). Un rouge venu d'ailleurs ne
 ferme plus la porte : chaque suite rouge est rejouée **sur la base de `main`,
 elle seule** — `npx tsx scripts/verifier-rouge-prealable.ts` —, et déjà rouge là-bas, elle
 ne vient pas de ce lot. Plus aucun état global, plus aucune batterie sur `main`
-pour comparer ; le commit git suffit (`.claude/rules/testing.md`). Et il ne se
+pour comparer ; le commit git suffit (`.claude/rules/testing.md`). **Et il
+compare des CONTENUS, jamais des dates** (17 septembre 2026) : une fusion
+réécrit ce qu'elle apporte, et cela périmait le verdict de tout lot vert dès
+qu'une session voisine fusionnait — cinquante minutes pour rien, en boucle.
+Quand seul ce que `main` a apporté a bougé, il renvoie au complément d'une
+minute, jamais à la batterie (`ARCHITECTURE.md` §379). Et il ne se
 contourne pas : c'est lui qui a été corrigé, à la racine, les deux fois où il
 bloquait à tort.
 

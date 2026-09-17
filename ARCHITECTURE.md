@@ -31337,3 +31337,61 @@ sept allures comme pour le crème d'origine.
 gris de la palette pendant que la page se peignait à l'encre — la faute exacte
 que l'en-tête de ce fichier raconte pour le fond vert. Elle lit désormais
 `ctx.teintes`.
+
+## §379 — Le garde-fou de `main` comparait des DATES : c'est le CONTENU qui décide
+
+**Sa colère du 17 septembre 2026 :** *« maintenant les sessions rejouent des
+batteries en boucle juste parce qu'une a touché un fichier »*.
+
+`garde-fusion-main.mjs` gardait sa propre façon de dire « l'arbre a bougé » :
+`derniereEcriture()`, la date d'écriture la plus récente des fichiers
+surveillés, comparée à l'instant du verdict. Deux conséquences, et les deux se
+sont payées la même soirée :
+
+| Ce qui arrivait | Ce que le garde-fou en faisait |
+|---|---|
+| une fusion réécrit ce qu'elle apporte | toutes ces dates deviennent neuves |
+| un `git checkout`, un `git merge` réécrivent parfois à l'identique | **rien n'a changé, et le verdict est déclaré caduc** |
+| le refus n'annonçait qu'un remède | `npm run verifier:avant-livraison` — cinquante minutes |
+
+Donc : chaque fois qu'une session voisine fusionnait sur `main`, un lot vert
+perdait son verdict et repartait pour une batterie entière — à l'autre bout du
+produit, sur du code que rien ne touchait. Trois sessions côte à côte se la
+renvoyaient sans fin.
+
+**La batterie, elle, avait déjà appris la leçon le 9 septembre 2026**
+(`_batterie-solitaire.ts`) : elle relève un contenu (sha1) et non une date,
+précisément parce qu'une session voisine avait fait jeter un verdict entier en
+réécrivant deux fichiers à l'identique. Le garde-fou ne l'avait jamais apprise,
+parce qu'il ne pouvait pas : un hook s'exécute en `node` nu, et cette
+fonction-là vivait dans un `.ts`. **Deux façons de dire « ce fichier a changé »
+finissent toujours par diverger** (`CLAUDE.md` §3) ; celles-ci ont divergé.
+
+**Ce qui remplace la date, et ce n'est pas une couche de plus.**
+`derniereEcriture()` est SUPPRIMÉE. Le relevé déménage dans
+`scripts/_empreinte-des-sources.mjs` — un `.mjs`, pour cette seule raison —, et
+la batterie comme le garde-fou l'appellent. 1 406 fichiers en 65 ms : un hook
+peut se le permettre.
+
+**Et ce qui a bougé ne se vaut pas.** Le garde-fou sait déjà, pour calculer le
+niveau, ce que le lot ajoute à `main` (`cheminsDuLot`). Un fichier remué qui
+n'y figure pas n'a donc pas été écrit ici : il est arrivé par la fusion.
+
+| Ce qui a bougé depuis le verdict | Ce que le garde-fou annonce |
+|---|---|
+| rien (contenu identique) | la fusion s'ouvre |
+| un fichier **du lot** | `verifier:avant-fusion` / `avant-livraison`, selon le niveau |
+| **seulement** ce que `main` a apporté | `npx tsx scripts/verifier-apres-fusion.ts` — jamais la batterie |
+| une empreinte illisible ou absente | le niveau du lot : ne pas savoir n'est jamais « rien n'a bougé » |
+
+La troisième ligne est la règle du 17 septembre appliquée là où elle manquait :
+*« le fait que main change […] ne doit jamais, à lui seul, provoquer une
+nouvelle batterie complète »* (§375). Le complément existait déjà ; **le
+garde-fou ne l'a jamais nommé**, et c'est une session qui devait y penser au
+bout de trois heures. Il le nomme désormais lui-même, dans son refus.
+
+**Ce qui tient tout ça** : `scripts/test-garde-fusion-main.ts` rejoue la soirée
+dans un dépôt d'essai à part — un lot vert, `main` qui avance dessous, la
+fusion —, et refuse que le refus contienne `verifier:avant-livraison`. Confronté
+au code d'avant, six de ses cas rougissent : c'est ce qui prouve qu'il mesure
+quelque chose.
