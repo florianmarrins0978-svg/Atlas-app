@@ -8,6 +8,23 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-17
 
+### La publication des planches rougissait depuis la note vocale à plat
+
+Le flux `pages.yml` est tombé sur `test:boutons-verts` dès la poussée du
+16 septembre au soir (course 35206572979) : la suite de la planche des boutons
+verts relisait les **trois verts et les deux anneaux** de `.atlas-micro` dans
+`globals.css` — et la note vocale n'en a plus, par son choix (un aplat, un seul
+cercle d'or clair). `enRgb(undefined)` plantait avant même de mesurer.
+
+Ce qui change, et pourquoi (`CLAUDE.md` §5 bis : une suite qui rougit après un
+retrait qu'il a demandé s'adapte, elle ne remet pas ce qu'il a enlevé) : la
+planche est **tranchée** depuis le 3 septembre (la D) ; ses trois verts et son
+or vif sont désormais relus **dans la planche elle-même** — c'est la tasse
+d'alors, recopiée le jour même. Ce qui reste comparé à l'application, c'est ce
+qui doit encore être vrai : **la D est le vert que `.atlas-micro` paie
+aujourd'hui**. Éprouvé dans les deux sens : vert sur `main`, rouge quand on
+change le vert de la note vocale.
+
 ### L'accueil sans chantier : « Créer un devis » descend au tiers haut
 
 *« Découpe l'écran en 3 parts égales ! En partant du bas, le mets en haut de la
