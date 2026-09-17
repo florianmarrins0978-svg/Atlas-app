@@ -28,14 +28,20 @@
      qu'ils mettent les 8 d'affilée — et ensuite si je décide que non, en
      fait, le 25, je l'enlève : je clique dessus pour l'enlever. »*
 
+     Et sa correction, devant le bloc qui se décalait : *« quand on touche
+     le deuxième ou le premier jour il ne doit pas se décaler d'une case, il
+     doit s'effacer, et on clique sur le jour que l'on souhaite pour le
+     remettre ! »*
+
   ─── Donc, et rien d'autre ───────────────────────────────────────────────
 
   · UN appui pose le PREMIER jour ; le chantier se remplit d'affilée derrière,
     comme aujourd'hui (`creneauxDuChantier`). Rien ne change pour le cas de
     tous les jours.
-  · Un appui sur un jour DU chantier l'ENLÈVE : le chantier se décale d'un
-    jour au bout. C'est ainsi que le 18 et le 22 se proposent — il touche le
-    18, puis il enlève le 21 (sa question du 17 septembre, un geste de plus).
+  · Un appui sur un jour DU chantier l'EFFACE, et rien ne bouge : il manque
+    un jour, l'écran le dit, et l'appui suivant sur un jour libre le remet là.
+    C'est ainsi que le 18 et le 22 se proposent — il touche le 18, efface le
+    21, touche le 22 (sa question du 17 septembre, deux gestes de plus).
   · Un INTERRUPTEUR « Deuxième proposition » : allumé, le prochain appui pose
     le premier jour de la 2e proposition, en or ; la cliente choisit entre les
     deux. Éteint, elle disparaît. « Une ou deux, jamais plus » ne bouge pas.
@@ -161,6 +167,7 @@
   .liste button.p2 .dit{color:var(--or)}
   .liste .vide{padding:13px 16px;border-radius:99px;box-shadow:inset 0 0 0 1.5px var(--papier);
                font-size:14px;color:var(--gris);text-align:center}
+  .liste .vide.p2{box-shadow:inset 0 0 0 1.5px rgba(185,139,71,.35)}
 
   .conseil{margin:10px 18px 0;text-align:center;font-size:13px;line-height:1.5;color:var(--gris)}
   .conseil[hidden]{display:none}
@@ -202,8 +209,8 @@
 <body>
 
 <p class="bandeau">
-  <b>Un appui pose le premier jour, le chantier se remplit d’affilée. Un appui sur un jour l’enlève.</b><br>
-  Le 18 et le 22 : touchez le 18, enlevez le 21. <b>Rien n’est codé.</b>
+  <b>Un appui pose le premier jour, le chantier se remplit d’affilée. Un appui sur un jour l’efface, un autre le remet où vous voulez.</b><br>
+  Le 18 et le 22 : touchez le 18, effacez le 21, touchez le 22. <b>Rien n’est codé.</b>
 </p>
 
 <div class="tel">
@@ -236,8 +243,9 @@
 
 <p class="note">
   <b>Un appui, le premier jour</b>&nbsp;: le chantier se pose d’affilée. <b>Un appui
-  sur un jour du chantier l’enlève</b>, et le chantier se décale d’un jour au bout.
-  Allumez la deuxième proposition, touchez son premier jour&nbsp;: la cliente choisit.
+  sur un jour du chantier l’efface</b>, rien ne bouge, et vous touchez le jour que
+  vous voulez à la place. Allumez la deuxième proposition, touchez son premier
+  jour&nbsp;: la cliente choisit.
 </p>
 
 <script>
@@ -286,11 +294,11 @@ let joursDuChantier = 2;            /* « 2 jours » — sa capture du 17 septem
 /* Le premier jour proposable : demain, comme « le 18 » de sa question. */
 const PREMIER = ouvre(1);
 
-/* Une PROPOSITION, c'est un premier jour et les jours qu'il a enlevés : le
-   chantier se remplit d'affilée derrière le premier, en sautant ce qu'il a
-   enlevé. Deux au plus — « une ou deux, jamais plus », la règle d'aujourd'hui.
-   Au départ : le 18, sans le jour d'après — donc le 18 et le 22, sa question. */
-let propositions = [{ debut: PREMIER, enleves: new Set([jourOuvreApres(PREMIER)]) }];
+/* Une PROPOSITION, c'est la liste des jours du chantier. Le premier appui la
+   remplit d'affilée ; un appui sur un de ses jours l'efface, et l'appui
+   suivant sur un jour libre le remet là. Deux au plus — « une ou deux,
+   jamais plus », la règle d'aujourd'hui. Au départ : le 18 et le 22. */
+let propositions = [[PREMIER, ouvre(5)]];
 /* L'interrupteur allumé sans premier jour : le prochain appui le pose. */
 let secondeVoulue = false;
 /* Celle qu'un appui hors du chantier déplace : la dernière touchée. */
@@ -323,24 +331,21 @@ const rang = (i) => (i + 1) + (i ? "e" : "er") + " jour";
 const dPremier = enDate(PREMIER);
 let curseur = { annee: dPremier.getUTCFullYear(), mois: dPremier.getUTCMonth() };
 
-/* Les jours d'une proposition : d'affilée depuis le premier, en sautant les
-   jours enlevés et ceux que l'autre proposition tient déjà — la première se
-   pose d'abord, la seconde s'écarte d'elle. */
-function joursDe(p){
-  const autres = new Set(p === 1 ? joursDe(0) : []);
-  const prop = propositions[p];
-  if (!prop) return [];
+const joursDe = (p) => (propositions[p] || []).slice().sort();
+function ouEst(j){
+  for (let p = 0; p < propositions.length; p++) if (propositions[p].includes(j)) return p;
+  return -1;
+}
+/* Le bloc d'affilée depuis un premier jour, en sautant ce que l'autre
+   proposition tient déjà. */
+function blocDepuis(debut, pris){
   const jours = [];
-  let j = prop.debut;
+  let j = debut;
   while (jours.length < joursDuChantier) {
-    if (!prop.enleves.has(j) && !autres.has(j)) jours.push(j);
+    if (!pris.has(j)) jours.push(j);
     j = jourOuvreApres(j);
   }
   return jours;
-}
-function ouEst(j){
-  for (let p = 0; p < propositions.length; p++) if (joursDe(p).includes(j)) return p;
-  return -1;
 }
 
 function barre(o){
@@ -407,13 +412,16 @@ function dessinerListe(){
       + '<span>' + jourLisible(j) + '</span>'
       + '<span class="dit">' + (joursDuChantier === 1 ? 'proposée' : rang(i)) + '</span>'
       + '</button>').join("");
+    /* Ce qui manque, dit là où il le lit — jamais un bouton éteint sans raison. */
+    const reste = joursDuChantier - propositions[p].length;
+    if (reste > 0) html += '<span class="vide' + (p ? ' p2' : '') + '">Il manque ' + (reste === 1 ? 'un jour' : reste + ' jours') + ' — touchez celui que vous voulez</span>';
   }
   $("#liste").innerHTML = html;
   /* La seule phrase de l'écran, et seulement quand le chantier dépasse un
-     jour : sans elle, il ne saurait pas qu'un jour s'enlève. */
+     jour : sans elle, il ne saurait pas qu'un jour s'efface. */
   const c = $("#conseil");
   c.hidden = joursDuChantier === 1;
-  c.textContent = "Touchez un jour du chantier pour l’enlever : le chantier se décale d’un jour.";
+  c.textContent = "Touchez un jour du chantier pour l’effacer, puis le jour que vous voulez à la place.";
 }
 
 /* Ce que sa cliente lit — des jours, jamais des demi-journées. */
@@ -452,24 +460,35 @@ function tout(){
   dessinerCalendrier(); dessinerListe(); dessinerClient();
 }
 
-/* Un appui sur un jour du chantier l'enlève ; un appui ailleurs pose un
-   premier jour — celui de la 2e proposition si elle l'attend, sinon il
-   déplace la dernière touchée. */
+/* Un appui sur un jour du chantier l'efface — rien ne bouge. Un appui sur un
+   jour libre : il remplit ce qui manque ; s'il ne manque rien, il pose un
+   nouveau premier jour, et le bloc se refait d'affilée derrière lui. La 2e
+   proposition, si elle attend son premier jour, passe avant tout. */
 function toucher(jour){
   if (jour < PREMIER) return;
   const p = ouEst(jour);
   if (p >= 0) {
     active = p;
-    if (joursDuChantier === 1) {
-      /* Sur une journée, enlever la seule date de la 2e proposition la
-         ferme ; la 1re garde la sienne — un envoi sans date n'existe pas. */
-      if (p === 1) { propositions.pop(); secondeVoulue = false; }
-    } else propositions[p].enleves.add(jour);
-  } else if (secondeVoulue && propositions.length < 2) {
-    propositions.push({ debut: jour, enleves: new Set() });
+    propositions[p].splice(propositions[p].indexOf(jour), 1);
+    /* Effacer la seule date d'une journée : la 2e proposition se ferme ; la
+       1re la garde — un envoi sans date n'existe pas. */
+    if (propositions[p].length === 0 && joursDuChantier === 1) {
+      if (p === 1) { propositions.pop(); secondeVoulue = false; } else propositions[0].push(jour);
+    }
+    tout();
+    return;
+  }
+  const pris = (autre) => new Set(propositions[autre] || []);
+  if (secondeVoulue && propositions.length < 2) {
+    propositions.push(blocDepuis(jour, pris(0)));
     active = 1;
   } else {
-    propositions[active] = { debut: jour, enleves: new Set() };
+    /* Celle à qui il manque un jour reçoit l'appui ; sinon la dernière touchée. */
+    const manque = propositions.findIndex((t) => t.length < joursDuChantier);
+    const cible = manque >= 0 ? manque : active;
+    active = cible;
+    if (propositions[cible].length < joursDuChantier) propositions[cible].push(jour);
+    else propositions[cible] = blocDepuis(jour, pris(1 - cible));
   }
   tout();
 }
@@ -477,6 +496,10 @@ function toucher(jour){
 document.addEventListener("click", (e) => {
   if (e.target.closest("[data-changer]")) {
     joursDuChantier = DUREES[(DUREES.indexOf(joursDuChantier) + 1) % DUREES.length];
+    /* La durée change : chaque proposition se refait d'affilée depuis son
+       premier jour, comme le fait son écran quand il tourne la molette. */
+    propositions[0] = blocDepuis(joursDe(0)[0], new Set());
+    if (propositions[1]) propositions[1] = blocDepuis(joursDe(1)[0], new Set(propositions[0]));
     tout();
     return;
   }

@@ -237,6 +237,16 @@ autre possibilité » sont partis. Rejouée en navigateur : 8 jours posés d'un
 appui, un jour enlevé et le bloc décalé, la 2e proposition posée, un de ses
 jours enlevé, l'interrupteur éteint — sans débordement ni erreur.
 
+**Et sa correction, dans la foulée :** *« quand on touche le deuxième ou le
+premier jour il ne doit pas se décaler d'une case, il doit s'effacer, et on
+clique sur le jour qu'on souhaite pour le remettre ! »* Le bloc ne se décale
+donc plus : un appui efface le jour, la liste dit « Il manque un jour —
+touchez celui que vous voulez », et l'appui suivant sur un jour libre le remet
+là. Une proposition est désormais la simple liste de ses jours ; le bloc
+d'affilée n'est que ce que pose le premier appui. Rejouée en navigateur : sur
+8 jours, effacer le 22 laisse sept jours et un manque, toucher le 30 le
+comble ; sur 2 jours, effacer le 21 puis toucher le 22 donne le 18 et le 22 ;
+même chose dans la 2e proposition.
 
 ### « Ce règlement n'a pas pu être enregistré » : la base était en cause, et rien ne le disait
 
