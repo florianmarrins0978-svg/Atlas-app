@@ -453,12 +453,30 @@ async function main() {
     const hautDe = async (id: string) =>
       await rangeeDe(id).evaluate((r) => r.getBoundingClientRect().top);
 
+    // **QUI EST AU-DESSUS SE LIT, IL NE SE SUPPOSE PAS — 17 septembre 2026.**
+    //
+    // Ce montage nommait `journee` la fiche du haut et `longue` le client du
+    // bas. Joué seul, l'ordre tombait juste ; dans la batterie, ce que les
+    // suites d'avant ont laissé dans la semaine le retourne, et le contrôle
+    // refusait alors de conclure — *« la première fiche n'est pas AU-DESSUS du
+    // second client »*, sur du code juste, deux batteries de suite.
+    //
+    // **Lequel des deux joue quel rôle est une commodité de mesure** : ce qu'il
+    // défend, c'est la SÉQUENCE — une fiche ouverte au-dessus, qui se referme,
+    // et un client touché en dessous. On lit donc l'ordre à l'écran.
+    const ordre = await Promise.all(
+      [journee.id, longue.id].map(async (id) => ({ id, haut: await hautDe(id) }))
+    );
+    ordre.sort((a, b) => a.haut - b.haut);
+    const enHaut = ordre[0].id;
+    const enBas = ordre[1].id;
+
     // 1. Une première fiche est ouverte PLUS HAUT dans la page — c'est elle qui
     //    se refermera, et sa hauteur qui manquera d'un coup.
-    await rangeeDe(journee.id).locator('[data-atlas="nom-planifie"]').click();
+    await rangeeDe(enHaut).locator('[data-atlas="nom-planifie"]').click();
     await page.waitForTimeout(400);
 
-    const hauteurCarte = await rangeeDe(journee.id).evaluate(
+    const hauteurCarte = await rangeeDe(enHaut).evaluate(
       (r) => r.getBoundingClientRect().height
     );
     if (hauteurCarte < 120) {
@@ -478,7 +496,7 @@ async function main() {
         ) as HTMLElement;
         window.scrollBy({ top: r.getBoundingClientRect().top - (vise as number), behavior: "instant" as ScrollBehavior });
       },
-      [longue.id, HAUT_VOULU] as [string, number]
+      [enBas, HAUT_VOULU] as [string, number]
     );
     await page.waitForTimeout(200);
 
@@ -493,13 +511,13 @@ async function main() {
     // **Ce qui compte n'est pas la hauteur, c'est la SÉQUENCE** : une fiche
     // ouverte AU-DESSUS, qui se referme, et un client qu'on touche en dessous.
     // C'est cela qu'on exige désormais — le reste était une commodité de mesure.
-    let avant = await hautDe(longue.id);
+    let avant = await hautDe(enBas);
     if (avant > 260) {
       await page.evaluate(() => window.scrollTo({ top: document.body.scrollHeight, behavior: "instant" as ScrollBehavior }));
       await page.waitForTimeout(200);
-      avant = await hautDe(longue.id);
+      avant = await hautDe(enBas);
     }
-    const hautPremier = await hautDe(journee.id);
+    const hautPremier = await hautDe(enHaut);
     if (!(hautPremier < avant)) {
       throw new Error(
         `La première fiche n'est pas AU-DESSUS du second client (${Math.round(hautPremier)} px ` +
@@ -516,10 +534,10 @@ async function main() {
     }
 
     // 3. Son geste : il touche le nom.
-    await rangeeDe(longue.id).locator('[data-atlas="nom-planifie"]').click();
+    await rangeeDe(enBas).locator('[data-atlas="nom-planifie"]').click();
     await page.waitForTimeout(400);
 
-    const apres = await hautDe(longue.id);
+    const apres = await hautDe(enBas);
     const saut = avant - apres;
 
     // **La ligne touchée reste sous le doigt.** Deux pixels de tolérance : le
@@ -536,7 +554,7 @@ async function main() {
     );
 
     // La fiche, elle, s'est bien ouverte — SOUS lui.
-    const hauteurApres = await rangeeDe(longue.id).evaluate(
+    const hauteurApres = await rangeeDe(enBas).evaluate(
       (r) => r.getBoundingClientRect().height
     );
     assert.ok(

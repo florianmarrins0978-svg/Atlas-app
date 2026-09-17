@@ -3,6 +3,9 @@
 // Sa remarque du 9 septembre 2026 : *« regarde réellement ce qui se passe quand
 // on clique sur déplacer, j'ai l'impression que c'est inversé »*. Aucun test ne
 // répond à ça : ils vérifient ce que la base reçoit, jamais ce que l'œil lit.
+//
+// **Depuis le 17 septembre 2026, le geste ouvre le calendrier** : on touche un
+// jour d'accueil, puis le moment. Les trois images suivent ces trois temps.
 import { lancerNavigateur } from "./e2e-browser";
 import { devices } from "playwright";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
@@ -56,31 +59,21 @@ async function main() {
   await page.waitForTimeout(700);
   await page.screenshot({ path: `${OU}/2-deplacer-ouvert.png`, fullPage: true });
 
-  // Ce que l'écran ALLUME, et ce que la base DIT — mis côte à côte.
-  const boutons = await carte.locator("[data-vers]").evaluateAll((els) =>
-    els.map((e) => ({
-      vers: e.getAttribute("data-vers"),
-      mot: (e.textContent ?? "").trim(),
-      fond: getComputedStyle(e).backgroundColor,
-      bord: getComputedStyle(e).borderColor,
-    }))
-  );
+  // Ce que le bandeau DIT, et ce que la base porte — mis côte à côte.
+  const bandeau = page.locator('[data-atlas="deplacement-en-cours"]');
+  console.log("BANDEAU :", (await bandeau.innerText()).replace(/\s+/g, " "));
   const { rows } = await pool.query(
     `SELECT creneau_debut, duree_demi_journees FROM chantiers WHERE id = $1`,
     [id]
   );
   console.log("EN BASE  :", rows[0]);
-  console.log("À L'ÉCRAN:", JSON.stringify(boutons, null, 2));
 
-  // Puis on appuie sur « Matin » et on regarde où le chantier atterrit.
-  await carte.locator('[data-vers="matin"]').click();
-  await page.waitForTimeout(1600);
-  await page.screenshot({ path: `${OU}/3-apres-appui-matin.png`, fullPage: true });
-  const apres = await pool.query(
-    `SELECT creneau_debut, duree_demi_journees FROM chantiers WHERE id = $1`,
-    [id]
-  );
-  console.log("APRÈS « Matin » :", apres.rows[0]);
+  // Puis on touche un jour d'accueil, et l'on regarde les mots offerts.
+  const accueil = new Date(Date.now() + 10 * 86400000).toISOString().slice(0, 10);
+  await page.click(`[data-atlas="grille-mois"] [data-jour="${accueil}"]`);
+  await page.waitForTimeout(600);
+  await page.screenshot({ path: `${OU}/3-le-jour-touche.png`, fullPage: true });
+  console.log("MOTS OFFERTS :", await page.locator('[data-atlas^="vers-"]').allInnerTexts());
 
   await navigateur.close();
   await pool.end();

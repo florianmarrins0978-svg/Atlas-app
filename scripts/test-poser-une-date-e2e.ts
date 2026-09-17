@@ -302,9 +302,8 @@ async function main() {
   // prennent forcément le matin ET l'après-midi.
   //
   // **La pose ne demande plus rien** depuis le soir même : la durée du devis
-  // décide seule. Restait « Déplacer », où « Journée » écrivait le même état
-  // que « Matin » — et le 10 septembre, « Déplacer » a cessé de déplacer : il
-  // **libère** la demi-journée qu'on touche (`ARCHITECTURE.md` §322).
+  // décide seule. Et depuis le 17 septembre, « Déplacer » déplace pour de bon —
+  // le jour d'accueil se touche au calendrier, puis le moment.
   //
   // **Ce que ce contrôle défend n'a pas changé pour autant**, et c'est pour ça
   // qu'il reste ici plutôt que d'être jeté : aucun geste du planning ne
@@ -336,20 +335,43 @@ async function main() {
     await page.click(`[data-atlas="grille-mois"] [data-jour="${jour}"]`);
     await page.waitForTimeout(800);
     const carte = page.locator(`[data-atlas="carte-jour"][data-jour="${jour}"]`);
-    await carte.locator('[data-atlas="deplacer"]').first().click();
+    // **SON bloc, pas le premier de la carte.** Joué seul, ce jour ne porte que
+    // ce chantier et `.first()` tombait juste ; dans la batterie, soixante
+    // suites ont déjà posé du monde, et l'on déplaçait le chantier du voisin —
+    // celui-ci ne bougeait pas, et le contrôle l'accusait d'avoir tout effacé.
+    await carte
+      .locator(`[data-atlas="bloc-chantier"][data-chantier="${chantierId}"] [data-atlas="deplacer"]`)
+      .click();
     await page.waitForTimeout(500);
 
-    const moments = await carte.locator("[data-vers]").allInnerTexts();
-    if (moments.length !== 2) {
+    // **Ce jour-là, le chantier occupe la journée entière** : quatre
+    // demi-journées sur deux jours prennent forcément matin ET après-midi. Un
+    // seul mot doit donc être offert — « Matin » perdrait l'autre moitié.
+    const moments = await page.locator('[data-atlas^="vers-"], [data-atlas="annuler-deplacer"]').count();
+    if (moments === 0) {
+      throw new Error("le geste s'est ouvert sans aucune sortie");
+    }
+    // **Assez loin pour que le chantier ne s'y trouve pas déjà.** Quatre
+    // demi-journées posées « matin » à partir du jour occupent CE jour et LE
+    // SUIVANT : viser le lendemain ferait refuser le geste à juste titre — le
+    // chantier y est —, et le contrôle accuserait « Déplacer » de son propre
+    // montage.
+    const troisJoursApres = new Date(`${jour}T12:00:00Z`);
+    troisJoursApres.setUTCDate(troisJoursApres.getUTCDate() + 3);
+    const plancher = troisJoursApres.toISOString().slice(0, 10);
+    const accueil = grille.find((j): j is string => !!j && ouvrable4(j) && j >= plancher);
+    if (!accueil) throw new Error("aucun jour d'accueil ouvrable au calendrier");
+    await page.click(`[data-atlas="grille-mois"] [data-jour="${accueil}"]`);
+    await page.waitForTimeout(400);
+    const mots = await page.locator('[data-atlas^="vers-"]').allInnerTexts();
+    if (mots.join("|") !== "Matin|Après-midi|Journée") {
       throw new Error(
-        `un chantier de deux jours offre ${moments.length} moment(s) : ${JSON.stringify(moments)}`
+        `les mots offerts sont « ${mots.join(", ")} » : il ne peut plus choisir la moitié qui part`
       );
     }
-    if (moments.some((m) => m.includes("Journée"))) {
-      throw new Error("« Journée » n'est pas un départ : elle réécrivait la durée du chantier");
-    }
-
-    await carte.locator('[data-vers="apres_midi"]').click();
+    // **« Journée » emmène tout ce que le jour porte** — c'est le cas qui doit
+    // garder les quatre demi-journées du chantier.
+    await page.locator('[data-atlas="vers-journee"]').click();
 
     // **ATTENDRE QUE LA BASE LE DISE, JAMAIS UN DÉLAI FIXE.** Ce contrôle
     // patientait 1,5 s puis lisait : joué seul il passait, mais dans la
@@ -360,23 +382,36 @@ async function main() {
       const { rows } = await pool.query(
         `SELECT c.duree_demi_journees AS duree,
                 (SELECT count(*) FROM creneaux_chantier k
-                  WHERE k.chantier_id = c.id AND k.jour = $2 AND k.demi = 'apres_midi') AS encore
+                  WHERE k.chantier_id = c.id AND k.jour = $2) AS encore,
+                (SELECT count(*) FROM creneaux_chantier k
+                  WHERE k.chantier_id = c.id) AS total
            FROM chantiers c WHERE c.id = $1`,
         [chantierId, jour]
       );
       return rows[0];
     };
+    // **On attend que l'ÉCRITURE arrive, pas que le départ se vide.** Ce
+    // chantier n'a aucune ligne au départ — il vaut le bloc que ses colonnes
+    // décrivent —, si bien que « plus rien sur le jour de départ » est vrai
+    // AVANT même que le geste ait écrit. Mesurer là, c'est lire zéro et
+    // accuser le produit d'avoir tout effacé.
     let etat = await lu();
-    for (let i = 0; i < 60 && Number(etat.encore) > 0; i++) {
+    for (let i = 0; i < 60 && Number(etat.total) !== 4; i++) {
       await page.waitForTimeout(250);
       etat = await lu();
     }
-    if (Number(etat.encore) > 0) {
-      throw new Error("l'après-midi touché n'a pas été rendu : il occupe toujours la journée");
+    if (Number(etat.total) !== 4) {
+      throw new Error(
+        `le chantier occupe ${etat.total} demi-journée(s) au lieu de 4 : le geste n'a pas écrit`
+      );
     }
-    // **LE POINT** : la moitié est rendue, la durée vendue ne bouge pas — c'est
-    // l'écart entre les deux qui attend une place, et le raccourcissement
-    // silencieux qu'il a signalé le 9 septembre ne peut plus revenir.
+    if (Number(etat.encore) > 0) {
+      throw new Error("le jour de départ porte encore le chantier : rien n'a été déplacé");
+    }
+    // **LE POINT** : la journée a changé de place, la durée vendue ne bouge
+    // pas, et AUCUNE demi-journée ne s'est perdue en route — le
+    // raccourcissement silencieux qu'il a signalé le 9 septembre ne peut pas
+    // revenir par ce chemin-ci.
     if (etat.duree !== 4) {
       throw new Error(`deux jours valent 4 demi-journées, pas ${etat.duree}`);
     }

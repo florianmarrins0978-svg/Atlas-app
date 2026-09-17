@@ -28,6 +28,66 @@ mesurer, plutôt que de rendre un vert sur rien.
 qui n'inspectent pas la base. À peser — deux serveurs, c'est deux ports et deux
 compilations par batterie.
 
+## ⏳ `test-accueil-vide-porte-e2e` dépend de l'état que la base a gardé
+
+**Mesuré le 17 septembre 2026, des deux côtés.** Jouée seule, elle passe ; jouée
+en fin de batterie, elle rougit sur son PREMIER cas — *« ce compte porte des
+chantiers », `'4' !== '0'`* — alors qu'elle vient de créer un compte neuf. Le
+même écart se reproduit **sur `main` sans aucun lot** : ce n'est pas un diff,
+c'est un montage qui suppose une base vierge.
+
+Ce qu'elle doit faire à la place : ne rien supposer de ce que les suites d'avant
+ont laissé (`CLAUDE.md` §5 bis). Tant que ce n'est pas fait, elle rougit dans
+chaque batterie et le garde-fou doit la départager à chaque fusion.
+
+**Et son second cas est un vrai désaccord** : la porte du devis se pose à 26 %
+de la hauteur, il la veut à 33 %. Le réglage des deux ressorts ne la déplace
+pas — essayé, mesuré, rendu. La racine est ailleurs.
+
+
+## ⏳ UNE PLANCHE À REGARDER — DEUX JOURS QUI NE SE TOUCHENT PAS (17 septembre 2026)
+
+**Sa question, capture à l'appui :** *« là j'ai un chantier de deux jours mais
+si je fais une proposition de date à mon client ça va automatiquement mettre
+les deux jours consécutifs, or si là je veux lui proposer le premier jour le 18
+et on vient finir le chantier le 22 vu qu'il est sur 2 jours comment je
+fais ??? »*
+
+**RIEN N'EST CODÉ** — la planche `appli/deux-jours-pas-colles.html` (119)
+attend sa réponse.
+
+**Ce que le code fait aujourd'hui**, et il faut le savoir avant d'ouvrir le lot :
+
+| | |
+|---|---|
+| les deux dates du calendrier | deux **choix**, pas un début et une fin — boutons radio chez le client (`src/app/devis/[jeton]/formulaire.tsx`) |
+| la date retenue | un **bloc d'un seul tenant** : `creneauxDuChantier` étale la durée sur des demi-journées qui se suivent (`src/server/repositories/envois-devis.ts`) |
+| ce que l'écran en dit | **rien** à deux jours : `aideDuree` ne parle qu'au-delà de trois jours (`EnvoiAuClient.tsx`) |
+| le morcellement | il existe, mais **après** l'acceptation, au planning — et le client n'en sait rien |
+
+**Les deux issues dessinées.** **A** — le calendrier demande les jours du
+chantier, et non une date de départ ; il perd les deux dates au choix. **B** —
+un interrupteur, visible seulement au-delà d'une journée, et c'est lui qui dit
+lequel des deux sens. Le mien : **B**, parce que A lui retire sans un mot une
+chose qu'il emploie.
+
+**Ce qui est écarté, et qu'il ne faut pas ressortir :** poser d'office la
+deuxième date comme « fin de chantier » dès que la durée dépasse une journée.
+Le même geste voudrait dire deux choix sur un chantier d'un jour et deux jours
+sur un chantier de deux.
+
+**Ce que sa règle interdit toujours :** montrer une demi-journée au client
+(`scripts/test-creneaux-planning.ts`). Les deux issues ne montrent que des
+JOURS — elle n'est pas touchée.
+
+**Ce que le lot coûtera, le jour où il tranche :** `envois_devis` ne porte
+qu'une liste de dates proposées et une `date_retenue`. Il faut y ranger, en
+plus, **quels jours** le chantier prend quand ils ne se suivent pas — donc une
+migration, et une acceptation qui écrit les créneaux tels quels au lieu de les
+étaler. Expand/contract (`.claude/rules/deployment-safety.md`).
+
+---
+
 ## LE SECOND ANNEAU DE L'ACCUEIL — « Créer une facture » — RESTE À FAIRE
 
 **Sa décision du 10 septembre 2026**, planche `appli/facturer-sans-devis.html` :
@@ -1525,8 +1585,12 @@ vendu (`ARCHITECTURE.md` §322).
 
 **Ce qui reste ouvert, et qui est un vrai manque :** un chantier ne se pose
 toujours pas en deux morceaux **d'un seul geste**. Il faut le poser entier, puis
-rendre ce qui ne va pas. Suffisant pour ce qu'il décrivait ; à rouvrir s'il le
-signale.
+rendre ce qui ne va pas.
+
+**ROUVERT LE 17 SEPTEMBRE 2026 — il l'a signalé**, et par un chemin que cette
+note n'avait pas vu : ce n'est pas au planning que ça manque, c'est **avant**,
+quand il propose ses dates. Son client accepte « le 18 » et découvre le 22.
+Voir la planche 119 en tête de ce fichier.
 
 ## ⏳ RETIRER LA MOITIÉ DEVENUE REDONDANTE DES RÈGLES `?de=` (9 septembre 2026)
 

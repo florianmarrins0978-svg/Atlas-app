@@ -116,23 +116,6 @@ export function comparerCreneaux(a: Creneau, b: Creneau): number {
 }
 
 /**
- * RETIRER UNE DEMI-JOURNÉE, et rendre ce qui reste.
- *
- * **On part de ce qui est réellement occupé**, repli compris : libérer le
- * vendredi matin d'un chantier qui n'a encore aucune ligne doit écrire les
- * trois autres demi-journées, sinon le chantier perdrait tout ce que ses
- * colonnes disaient.
- */
-export function sansLaDemi(
-  chantier: ChantierPose,
-  poses: readonly Creneau[],
-  cible: Creneau
-): Creneau[] {
-  const clef = cleDuCreneau(cible);
-  return creneauxOccupes(chantier, poses).filter((c) => cleDuCreneau(c) !== clef);
-}
-
-/**
  * AJOUTER UNE DEMI-JOURNÉE là où il la repose.
  *
  * **Deux fois la même n'ajoute rien** : un double appui ou un onglet resté
@@ -148,4 +131,128 @@ export function avecLaDemi(
   const clef = cleDuCreneau(cible);
   if (actuels.some((c) => cleDuCreneau(c) === clef)) return actuels;
   return [...actuels, cible].sort(comparerCreneaux);
+}
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * DÉPLACER CE QUE LE JOUR PORTE — sa décision du 17 septembre 2026
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * **Sa demande :** *« lorsque je clique sur déplacer ça me fait apparaître le
+ * planning et je sélectionne un jour et le matin ou l'aprem ou journée pour
+ * réellement déplacer mon client, parce que là c'est trop de clics à faire »*.
+ * Puis, devant la planche `appli/deplacer-sur-le-calendrier.html` : *« je
+ * choisis la deux, le planning au-dessus, et la A : on déplace que la
+ * demi-journée du jour sélectionné »*.
+ *
+ * **CE QUE « LA A » VEUT DIRE, et c'est la moitié qui compte.** Mr. Julien dure
+ * huit jours ; déplacer depuis le 30 septembre n'emmène QUE ce que le chantier
+ * occupe LE 30. Les sept autres jours ne bougent pas — un chantier ne se
+ * replie pas parce qu'on a corrigé une journée.
+ *
+ * **Ce qui part commande ce qui peut arriver.** Une demi-journée ne peut pas
+ * devenir une journée : elle occuperait une place que le devis ne vend pas, et
+ * le calendrier compterait une charge que personne ne fait. Une journée ne peut
+ * pas devenir une demi-journée : l'autre moitié serait perdue sans que rien ne
+ * le dise. `momentsOfferts` ne propose donc que ce qui tient, et la règle le
+ * refuse à nouveau en dessous — l'écran peut changer, la règle non.
+ */
+
+/** Où le chantier ARRIVE : le moment touché sur le jour d'accueil. */
+export type MomentDArrivee = Moment | "journee";
+
+/**
+ * LES MOMENTS QU'ON A LE DROIT DE LUI MONTRER, selon ce qui part.
+ *
+ * **Un bouton qui n'écrit rien est pire qu'un bouton absent** : il se touche,
+ * il ne répond pas, et l'on croit l'application en panne. Ce qui ne peut pas
+ * aboutir ne s'affiche pas.
+ */
+export function momentsOfferts(combienPartent: number): MomentDArrivee[] {
+  // **Une journée entière garde ses trois mots — sa correction du 17 septembre
+  // 2026 :** *« un chantier d'une journée, si je veux je dois pouvoir déplacer
+  // soit le matin, soit l'aprem quand même ! »*. La première version n'offrait
+  // que « Journée », de peur de perdre une moitié : elle lui retirait un geste
+  // qu'il fait pour de bon — ne déplacer qu'une demi-journée et garder l'autre.
+  // **Ce qui reste refusé, c'est d'INVENTER une moitié** : une demi-journée
+  // seule ne devient pas une journée entière, le devis ne la vend pas.
+  if (combienPartent === 1) return ["matin", "apres_midi"];
+  if (combienPartent >= 2) return ["matin", "apres_midi", "journee"];
+  return [];
+}
+
+/** Ce que le chantier occupe CE jour-là — ce qui partira, et rien d'autre. */
+export function ceQueLeJourPorte(
+  chantier: ChantierPose,
+  poses: readonly Creneau[],
+  jour: JourIso
+): Creneau[] {
+  return creneauxOccupes(chantier, poses)
+    .filter((c) => c.jour === jour)
+    .sort(comparerCreneaux);
+}
+
+/**
+ * LE DÉPLACEMENT LUI-MÊME — rendu en créneaux, ou refusé AVEC SA PHRASE.
+ *
+ * **Un refus se rend, il ne se lève pas** : l'appelant finit dans un écran, et
+ * le message d'une exception d'action serveur n'arrive jamais jusqu'au patron
+ * (`AGENTS.md`). Et chaque refus porte SA phrase — un « réessayez » pour trois
+ * causes envoie chercher au mauvais endroit.
+ */
+export function deplacerCeQueLeJourPorte(
+  chantier: ChantierPose,
+  poses: readonly Creneau[],
+  jourSource: JourIso,
+  vers: { jour: JourIso; moment: MomentDArrivee }
+): { creneaux: Creneau[] } | { refus: string } {
+  const occupes = creneauxOccupes(chantier, poses);
+  const partants = occupes.filter((c) => c.jour === jourSource);
+  if (partants.length === 0) {
+    return { refus: "Ce chantier n'occupe rien ce jour-là." };
+  }
+  if (!momentsOfferts(partants.length).includes(vers.moment)) {
+    return {
+      refus: "Une demi-journée se repose sur une demi-journée, pas sur une journée entière.",
+    };
+  }
+
+  // ─── CE QUI PART, ET CE QUI RESTE SUR PLACE ──────────────────────────────
+  //
+  // **Le mot désigne la MOITIÉ, aux deux bouts.** « Matin » emmène le matin du
+  // jour de départ et le pose sur le matin du jour d'accueil ; « Journée »
+  // emmène tout ce que le jour porte. C'est ce qu'il a demandé le 17 septembre :
+  // sur un chantier d'une journée, pouvoir ne déplacer que la matinée.
+  //
+  // **Un chantier qui n'occupe qu'une moitié suit le mot quand même** : posé
+  // l'après-midi, « Matin » l'emmène au matin du jour d'accueil. Sans cela, la
+  // seule demi-journée qu'il tient ne pourrait jamais changer de moment.
+  const partantsRetenus: Creneau[] =
+    vers.moment === "journee"
+      ? partants
+      : partants.length === 1
+        ? partants
+        : partants.filter((c) => c.moment === vers.moment);
+
+  const arrivants: Creneau[] =
+    vers.moment === "journee"
+      ? [
+          { jour: vers.jour, moment: "matin" } as Creneau,
+          { jour: vers.jour, moment: "apres_midi" } as Creneau,
+        ]
+      : [{ jour: vers.jour, moment: vers.moment } as Creneau];
+
+  const partis = new Set(partantsRetenus.map(cleDuCreneau));
+  const restants = occupes.filter((c) => !partis.has(cleDuCreneau(c)));
+  const dejaPris = restants.filter((c) =>
+    arrivants.some((a) => cleDuCreneau(a) === cleDuCreneau(c))
+  );
+  // **Sans ce refus, le chantier RÉTRÉCIT en silence** : deux demi-journées
+  // partent, une seule arrive parce que l'autre place était déjà la sienne, et
+  // c'est le jour du chantier qu'on découvre qu'il manque une moitié.
+  if (dejaPris.length > 0) {
+    return { refus: "Ce chantier occupe déjà ce moment-là." };
+  }
+
+  return { creneaux: [...restants, ...arrivants].sort(comparerCreneaux) };
 }

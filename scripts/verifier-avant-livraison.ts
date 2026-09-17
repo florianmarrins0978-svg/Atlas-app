@@ -20,7 +20,7 @@ import { porteeDuLot, phraseDuRefusDePortee } from "./_portee-batterie";
 import { lireDernierVerdict, ecrireDernierVerdict, ilYA } from "./_dernier-verdict";
 import { jouerEnGardantLaSortie } from "./_jouer-etape";
 import { bilanDuJournal } from "./_bilan-suites.mjs";
-import { commitCourant, ecrireReference, estSurMain } from "./_reference-batterie.mjs";
+import { commitCourant } from "./_temoin-de-main.mjs";
 
 // La batterie complète, à jouer AVANT de demander au patron d'essayer quoi que
 // ce soit.
@@ -433,20 +433,6 @@ ecrireDernierVerdict(RACINE, {
   commit,
 });
 
-// **L'ÉTAT DE RÉFÉRENCE — mesuré, jamais écrit à la main** (sa règle du
-// 16 septembre 2026, `_reference-batterie.mjs`). Seulement sur un arbre propre
-// qui EST `origin/main` : une batterie jouée sur un lot ne devient jamais la
-// référence, sinon le lot s'absoudrait lui-même. Et jamais quand une étape
-// hors suites est tombée : un `main` qui ne se construit pas n'est pas un état
-// de référence, c'est une panne.
-if (rougesHorsSuites.length === 0 && commit && estSurMain(RACINE)) {
-  const notee = ecrireReference(RACINE, { quand: Date.now(), commit, rouges, niveau: 3 });
-  console.log(
-    notee
-      ? `→ État de référence de main ${commit.slice(0, 8)} enregistré : ${rouges.length} suite(s) rouge(s)${rouges.length ? ` — ${rouges.join(", ")}` : ""}.`
-      : "→ L'état de référence n'a pas pu être enregistré (le .git commun n'est pas accessible en écriture)."
-  );
-}
 
 if (echecs.length === 0) {
   console.log("✅ Batterie complète au vert.");

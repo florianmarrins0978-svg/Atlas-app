@@ -55,11 +55,14 @@ jamais.*
 
 **Ce qui ne dépend pas de la bonne volonté** : `scripts/garde-fusion-main.mjs`
 calcule le niveau de risque sur le diff et refuse une poussée vers `main` dont
-le contrôle n'a pas été joué au vert sur cet état de l'arbre — **ou dont un
-rouge est NOUVEAU par rapport à l'état mesuré sur `main`** (16 septembre 2026 :
-un rouge déjà rouge sur `main` ne ferme pas la porte pour toujours, un rouge
-nouveau la ferme ; `.claude/rules/testing.md`). Et il ne se contourne pas :
-c'est lui qui a été corrigé, à la racine, le jour où il bloquait à tort.
+le contrôle n'a pas été joué au vert sur cet état de l'arbre — **ou qui porte
+une régression NOUVELLE** (17 septembre 2026). Un rouge venu d'ailleurs ne
+ferme plus la porte : chaque suite rouge est rejouée **sur la base de `main`,
+elle seule** — `npx tsx scripts/verifier-rouge-prealable.ts` —, et déjà rouge là-bas, elle
+ne vient pas de ce lot. Plus aucun état global, plus aucune batterie sur `main`
+pour comparer ; le commit git suffit (`.claude/rules/testing.md`). Et il ne se
+contourne pas : c'est lui qui a été corrigé, à la racine, les deux fois où il
+bloquait à tort.
 
 ---
 
@@ -2039,15 +2042,27 @@ que la fusion suivante périmait aussitôt. Rejouer soixante suites pour du code
 qui touche une autre partie de l'application, c'est payer dix minutes pour ne
 rien apprendre — et faire attendre le patron pour rien.
 
-**Ce qui compte comme « ça touche », et la liste n'est pas au jugé :**
+**CE QUI DÉCIDE N'EST PLUS UNE LISTE, C'EST LA RENCONTRE — 17 septembre 2026.**
+Sa règle : *« Chaque lot doit prouver SON propre travail. Le fait que main
+change parce qu'une autre session a fusionné ne doit jamais, à lui seul,
+provoquer une nouvelle batterie complète. »*
 
-| Le code arrivé… | Alors |
+```bash
+npx tsx scripts/verifier-apres-fusion.ts   # il mesure, et dit ce qu'il rejoue
+```
+
+| ce que `main` a apporté | ce qu'on joue |
 |---|---|
-| touche un fichier que ce lot modifie aussi | **batterie complète** |
-| ajoute une **migration** (`drizzle/*.sql`) | **batterie complète**, et l'appliquer d'abord — sans quoi elle rend des dizaines de rouges qui n'accusent que la base (payé le 13 août : 160 rouges d'un coup) |
-| touche une **pièce partagée** — `design-tokens.ts`, `PrimaryButton`, `EnTeteEcran`, `globals.css`, `layout.tsx`, `middleware.ts` | **batterie complète** : ces fichiers-là touchent tous les écrans |
-| touche les suites ou l'outillage que ce lot emploie | **batterie complète** |
-| ne touche rien de tout cela | `typecheck`, `lint`, `verifier:memoire`, **plus les suites du domaine concerné** — et l'on pousse |
+| rien qui croise le lot — ni ce qu'il emploie, ni ce qui l'emploie | **rien** : le verdict du lot est reposé tel quel |
+| une dépendance que le lot emploie, ou un de ses appelants | **seulement** les suites de ces fichiers-là |
+| une migration, un réglage de construction, de l'outillage | ils entrent toujours dans la rencontre — le graphe ne les lit pas, et c'est le côté sûr |
+| une rencontre qui atteint elle-même le niveau 3 | la batterie entière |
+
+**La liste d'avant — « une pièce partagée, donc la batterie » — a été
+supprimée** : `globals.css` ou `layout.tsx` touchés par une autre session
+faisaient repartir cinquante minutes sans qu'on ait jamais demandé si le lot les
+employait. Le graphe d'imports le dit, dans les deux sens (`ARCHITECTURE.md`
+§375).
 
 **Ce que cela ne relâche PAS.** La batterie complète reste obligatoire **avant
 la première poussée d'un lot**, sur son propre code : c'est la règle du §5, et
