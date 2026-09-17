@@ -31548,12 +31548,60 @@ courant.
 était une vraie régression de ce lot (elle cherchait la table des étapes dans
 son ancien fichier). C'est le contrôle qui l'a dit, pas la relecture.
 
+## §382 — La gravité de `main` a déjà été éprouvée par `main`
+
+**Sa capture du 18 septembre 2026, à 00 h 27 :** *« ça continue »*. Une session,
+quarante minutes après la correction du §381 :
+
+> *« `main` a apporté 30 commits, dont du code qui touche l'argent (devis,
+> acomptes). La rencontre atteint le niveau 3 → batterie entière. Je la
+> lance. »*
+
+Elle appliquait la règle à la lettre, et la règle était fausse.
+
+**L'erreur était une erreur de CATÉGORIE.** `evaluerLeLot` répond à une seule
+question : *quel risque ce lot INTRODUIT-il ?* Le rattrapage la posait sur
+**tous** les fichiers de la rencontre — donc aussi sur ceux que `main` apporte.
+Or chacun de ces commits est **déjà** passé par son propre garde-fou, au niveau
+que sa gravité exigeait : une session voisine a payé la batterie complète pour
+son lot d'acomptes. La redemander ici, c'est faire repayer à un lot la mesure
+d'un autre — et à trois sessions actives, chacune paie pour les deux autres.
+
+**Ce qui décide désormais**, et la rencontre se partage en deux :
+
+| Ce qui a bougé | Ce que ça vaut |
+|---|---|
+| **le LOT** — ce que cette session a écrit | sa gravité pleine : argent, sécurité, plancher, rayon. Niveau 3 → batterie |
+| **`main`**, sur son PLANCHER — `drizzle/`, gabarit racine, `globals.css`, `src/server/db/`, configuration | **batterie** : ceux-là changent le SOL sous toutes les suites, et aucune suite ciblée ne le mesure |
+| **`main`**, sur sa gravité — argent, sécurité | **les suites du fond** (`npm test`) : c'est là que vivent les règles métier, l'isolation et la RLS |
+| **`main`**, le reste | les suites des écrans que la rencontre atteint |
+
+La deuxième ligne n'est pas une concession : c'est exactement ce que le dépôt
+écrivait déjà depuis le §375 — *« une migration arrivée de `main` sous un lot
+qui touche la base »*. Elle est devenue une **règle du code** au lieu d'un
+exemple en prose (`estUnPlancher`, `batterieDue`).
+
+**Ce que cela ne relâche PAS.** La gravité de `main` n'est pas ignorée : elle
+force `npm test`, c'est-à-dire les quatre cents suites qui éprouvent l'argent et
+l'isolation. Elle change **ce qu'on rejoue**, pas **si l'on rejoue**. Et le lot,
+lui, garde sa gravité entière : un lot qui touche un devis paie sa batterie,
+comme avant.
+
+**Le signe qui aurait dû alerter plus tôt** : trois corrections dans la même
+soirée sur le même mécanisme, et à chaque fois la même forme — une question
+posée au mauvais objet. Le §380 comparait des dates au lieu des contenus ; le
+§381 demandait « le lot a-t-il bougé » au lieu de « que peut casser ce qui a
+bougé » ; celui-ci demandait « ce fichier est-il dangereux » au lieu de « **qui**
+doit le prouver ».
+
+---
+
 ---
 
 ---
 ---
 
-## §382 — Le cadre de l'application décide AU NAVIGATEUR, et l'accueil se relit tout seul
+## §383 — Le cadre de l'application décide AU NAVIGATEUR, et l'accueil se relit tout seul
 
 **Deux défauts d'un même soir — le 17 septembre 2026 —, signalés sur la même
 capture : l'accueil atteint après l'envoi d'un devis, sans barre du bas, et une

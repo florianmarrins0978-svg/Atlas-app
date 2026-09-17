@@ -1,0 +1,363 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Poser en cliquant sur le nom</title>
+<!--
+  ════════════════════════════════════════════════════════════════════════════
+  SA DEMANDE DU 17 SEPTEMBRE 2026, capture à l'appui.
+
+  *« Il y a écrit deux fois "à poser sur le mardi 22 septembre" : garde celle
+  en doré, supprime en noir. Et au lieu du "Poser" entouré, pour poser le
+  client le mieux serait qu'on clique sur Mr. Linotte — donc trouve un moyen
+  stylé pour qu'on ait envie de cliquer sur Mr. Linotte. »*
+
+  ─── Le doublon : il a raison, et c'était un oubli ────────────────────────
+
+  Le 11 septembre, la phrase « À poser sur … » est montée dans la poignée du
+  tiroir, en or (`docs/planning-verdict.md` : « la phrase que l'écran écrivait
+  déjà sous Sans date, rendue à l'endroit du geste »). Celle du dessous n'a
+  jamais été retirée. Elle l'est — SAUF quand aucun jour n'est touché : là,
+  elle ne redit rien, elle dit « Touchez d'abord un jour du calendrier », et
+  c'est la seule ligne qui l'explique.
+
+  ─── Le nom qui se touche : ce que cette planche demande de trancher ───────
+
+  Trois façons de rendre le nom appuyable, le MÊME geste dessous. Toutes les
+  trois retirent le bouton « Poser ».
+
+    A — LA TUILE. La ligne entière devient une tuile de papier, un filet d'or
+        à gauche. C'est la plus évidente de loin ; c'est aussi la plus lourde
+        quand quatre clients attendent.
+    B — LE NOM EN OR. Le nom s'écrit dans l'or du tiroir, souligné d'un filet.
+        La plus légère ; elle se lit comme un lien, pas comme un bouton.
+    C — LE NOM ENTOURÉ. Le contour du bouton « Poser » passe autour du NOM.
+        C'est son geste, mot pour mot : le « Poser » entouré ne disparaît pas,
+        il vient se mettre autour de Mr. Linotte.
+
+  **CE QUE JE DÉFENDS : C.** L'application a déjà ce contour creux partout
+  (`Petit`, `src/app/planning/PlanningClient.tsx`) : on ne lui apprend pas une
+  nouvelle forme, on déplace celle qu'il connaît. B est joli et se rate au
+  soleil, sur un chantier ; A fait quatre pavés là où il y a quatre clients.
+
+  ─── QUATRE CLIENTS EN ATTENTE — sa demande du même soir ─────────────────
+
+  *« Montre-moi ce que ça donnerait avec 4 chantiers en attente. »* C'est le
+  cas qui départage les trois : à un seul nom, les trois se valent. Le tiroir
+  porte donc sa vraie hauteur maximale (352 px, `PlanningClient.tsx`) et son
+  défilement — un quatrième nom qui déborderait hors de l'écran ne se verrait
+  pas sur une planche qui s'allonge à l'infini.
+
+  Le quatrième nom est LONG, délibérément : c'est lui qui dit si la ligne
+  tient, et c'est ce qu'une planche à deux noms courts ne montrait pas.
+
+  ─── LE POINT À TRANCHER AVEC LUI, et il n'est pas décoratif ──────────────
+
+  Sur cette ligne, le chevron « › » ouvre DÉJÀ le chantier. Deux gestes sur
+  une même ligne : toucher le nom pose, toucher le « › » ouvre. Les trois
+  versions écartent le chevron du nom et lui laissent sa propre place, mais
+  c'est lui qui dira si c'est tenable — ou s'il préfère que le chevron parte
+  d'ici.
+
+  ─── Les couleurs ────────────────────────────────────────────────────────
+
+  Relevées dans `src/lib/design-tokens.ts`, pas approchées à l'œil : or
+  #B98B47, carte #faf9f5, encre #1c1c1a, papier #ece9e1, gris #8a8578,
+  trait rgba(28,28,26,.12). Le bord doré du tiroir fait 2 px, angles 14 px —
+  sa version C du 11 septembre (`appli/tiroir-en-or.html`).
+
+  AUCUN CODE N'EST ÉCRIT POUR LE NOM QUI SE TOUCHE. Seul le doublon est
+  supprimé dans l'application.
+  ════════════════════════════════════════════════════════════════════════════
+-->
+<style>
+  :root{
+    --fond:#f5f3ee; --carte:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
+    --gris:#8a8578; --papier:#ece9e1; --or:#B98B47; --pin:#2f3b2f;
+    --trait:rgba(28,28,26,.12); --trait-doux:rgba(28,28,26,.07);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;background:#e6e3dc}
+  body{font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       color:var(--encre);-webkit-text-size-adjust:100%;padding:0 0 48px}
+  button{font-family:inherit}
+  button:focus-visible{outline:2px solid var(--or);outline-offset:2px}
+
+  .bandeau{background:var(--encre);color:#f2efe8;padding:14px 18px;text-align:center;
+           font-size:13.5px;line-height:1.55}
+  .bandeau b{color:#fff}
+
+  .choix{position:sticky;top:0;z-index:9;display:flex;gap:7px;justify-content:center;
+         padding:10px;background:#e6e3dc;border-bottom:1px solid var(--trait)}
+  .choix button{border:1px solid var(--trait);background:transparent;border-radius:99px;
+                padding:9px 14px;font:600 12px/1 inherit;color:var(--gris);cursor:pointer}
+  .choix button[aria-pressed="true"]{background:var(--papier);border-color:var(--or);color:var(--encre)}
+
+  .tel{max-width:430px;margin:18px auto 0;background:var(--fond);border-radius:26px;
+       overflow:hidden;box-shadow:0 18px 46px rgba(20,18,14,.18);
+       display:flex;flex-direction:column;min-height:540px}
+
+  /* ─── Le haut : un bout de calendrier, juste pour situer le tiroir ────── */
+  .mois{padding:18px 16px 10px;flex:1}
+  .caps{font:500 9.5px/1 ui-sans-serif,sans-serif;letter-spacing:.28em;
+        text-transform:uppercase;color:var(--gris)}
+  .grille{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin-top:14px}
+  .jour{aspect-ratio:1/1.05;border:0;background:transparent;border-radius:11px;
+        display:flex;flex-direction:column;align-items:center;justify-content:center;
+        gap:5px;cursor:pointer;color:var(--encre);font:400 17px/1 ui-serif,Georgia,serif}
+  .jour .barres{display:flex;flex-direction:column;gap:2px;width:26px}
+  .jour .barres i{display:block;height:4px;border-radius:2px;background:var(--papier)}
+  .jour[aria-pressed="true"]{box-shadow:inset 0 0 0 1.5px var(--or);color:var(--or)}
+  .aide{margin:14px 2px 0;font-size:12.5px;color:var(--gris);line-height:1.5}
+
+  /* ─── LE TIROIR — sa version C du 11 septembre : 2 px d'or, angles levés ── */
+  .tiroir{background:var(--carte);border-top:2px solid var(--or);
+          border-radius:14px 14px 0 0;box-shadow:0 -14px 34px rgba(28,28,26,.18)}
+  .poignee{display:flex;width:100%;align-items:center;gap:12px;border:0;background:none;
+           padding:15px 18px;text-align:left;cursor:default}
+  .poignee .resume{flex:1;min-width:0;font:600 13px/1.3 inherit;color:var(--or);
+                   overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .poignee .resume.neutre{color:var(--encre)}
+  .poignee svg{flex:none}
+  .dedans{border-top:1px solid var(--trait);padding:0 18px 18px;
+          max-height:352px;overflow-y:auto}
+
+  /* La consigne ne reste QUE lorsqu'aucun jour n'est touché. */
+  .consigne{margin:12px 0 0;font-size:12.5px;color:var(--encre)}
+
+  .liste{margin-top:12px}
+  .nom{font:400 19px/1.2 ui-serif,Georgia,serif}
+  .rangee{display:flex;align-items:center;gap:10px}
+  .chev{flex:none;border:0;background:none;color:var(--gris);font-size:19px;
+        padding:6px 4px;cursor:pointer;line-height:1}
+
+  /* ─── A — LA TUILE ───────────────────────────────────────────────────── */
+  .a .poser{flex:1;min-width:0;display:flex;align-items:center;gap:11px;
+            border:1px solid var(--trait);border-left:3px solid var(--or);
+            background:var(--papier);border-radius:12px;padding:12px 14px;
+            text-align:left;cursor:pointer;color:var(--encre)}
+  .a .poser .nom{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .a .poser .fin{font:600 10px/1 inherit;letter-spacing:.16em;text-transform:uppercase;color:var(--or)}
+  .a .rangee{margin-bottom:9px}
+  .a .rangee:last-child{margin-bottom:0}
+  .a .poser:active{background:#e4e0d6}
+
+  /* ─── B — LE NOM EN OR ───────────────────────────────────────────────── */
+  .b .poser{flex:1;min-width:0;border:0;background:none;padding:12px 0;text-align:left;
+            cursor:pointer}
+  .b .poser .nom{color:var(--or);border-bottom:1px solid rgba(185,139,71,.5);
+                 padding-bottom:3px;display:inline-block;max-width:100%;
+                 overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:bottom}
+  .b .rangee{border-bottom:1px solid var(--trait-doux)}
+  .b .rangee:last-child{border-bottom:0}
+  .b .poser:active .nom{color:#8f6a32;border-bottom-color:#8f6a32}
+
+  /* ─── C — LE NOM ENTOURÉ (le contour du « Poser », autour du nom) ─────── */
+  .c .poser{flex:1;min-width:0;display:flex;align-items:center;gap:10px;
+            border:1px solid var(--or);background:transparent;border-radius:99px;
+            padding:9px 16px;text-align:left;cursor:pointer;color:var(--encre)}
+  .c .poser .nom{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .c .poser .pouce{flex:none;color:var(--or);font-size:15px;line-height:1}
+  .c .rangee{margin-bottom:10px}
+  .c .rangee:last-child{margin-bottom:0}
+  .c .poser:active{background:rgba(185,139,71,.12)}
+
+  /* Ce qui vient d'être posé quitte la liste, et l'écran le dit une seconde. */
+  .rangee.partie{opacity:0;max-height:0;margin:0;overflow:hidden;
+                 transition:opacity .18s linear,max-height .32s cubic-bezier(.16,1,.3,1),margin .32s}
+  .rangee{max-height:90px;transition:opacity .18s linear,max-height .32s cubic-bezier(.16,1,.3,1)}
+  .fait{margin:12px 0 0;font-size:12.5px;color:var(--pin);min-height:19px}
+
+  .vide{margin:16px 0 0;font-size:13px;color:var(--gris)}
+
+  .note{max-width:430px;margin:20px auto 0;padding:0 22px;font-size:13.5px;
+        line-height:1.6;color:var(--encre-douce)}
+  .note b{color:var(--encre)}
+  .note p{margin:0 0 11px}
+</style>
+</head>
+<body>
+
+<div class="bandeau">
+  <b>Le doublon part, et le nom se touche.</b> <b>Quatre clients attendent un jour</b> —
+  c’est le cas qui départage. Choisissez A, B ou C, touchez le 22, puis le nom.
+</div>
+
+<div class="choix" role="group" aria-label="Trois façons de rendre le nom appuyable">
+  <button type="button" data-style="a" aria-pressed="false">A — la tuile</button>
+  <button type="button" data-style="b" aria-pressed="false">B — le nom en or</button>
+  <button type="button" data-style="c" aria-pressed="true">C — le nom entouré</button>
+</div>
+
+<div class="tel" id="tel">
+  <div class="mois">
+    <p class="caps">Septembre</p>
+    <div class="grille" id="grille"></div>
+    <p class="aide" id="aide">Touchez le 22 : la poignée du tiroir passe en or et annonce le jour.</p>
+  </div>
+
+  <div class="tiroir">
+    <button class="poignee" type="button" aria-hidden="true" tabindex="-1">
+      <span class="resume" id="resume">4 clients sans date</span>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8a8578"
+           stroke-width="2.2" style="transform:rotate(180deg)">
+        <path d="M5 15l7-7 7 7" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+    <div class="dedans" id="dedans">
+      <p class="consigne" id="consigne">Touchez d’abord un jour du calendrier</p>
+      <div class="liste c" id="liste"></div>
+      <p class="fait" id="fait"></p>
+    </div>
+  </div>
+</div>
+
+<div class="note">
+  <p><b>Ce qui change, dans les trois :</b> le bouton « Poser » disparaît, et
+  c’est le nom qu’on appuie. La phrase noire « À poser sur mardi 22 septembre »
+  disparaît aussi — elle redisait la ligne dorée juste au-dessus.</p>
+  <p><b>Elle ne disparaît pas quand aucun jour n’est touché :</b> là, elle dit
+  « Touchez d’abord un jour du calendrier », et c’est la seule ligne qui
+  l’explique. Touchez à nouveau le 22 pour le voir.</p>
+  <p><b>Un point à trancher :</b> le « › » à droite du nom ouvre le chantier.
+  Si le nom pose et que le « › » ouvre, deux gestes cohabitent sur la même
+  ligne. Dites-moi si vous préférez que le « › » parte d’ici.</p>
+  <p><b>À quatre, ce qui change :</b> <b>A</b> empile quatre pavés et remplit le
+  tiroir ; <b>B</b> tient dans la hauteur mais quatre noms en or se ressemblent ;
+  <b>C</b> garde quatre lignes espacées, chacune close. Le quatrième nom est
+  volontairement long — c’est lui qui dit si la ligne tient.</p>
+  <p><b>Ce que je défends : C.</b> C’est votre phrase — le contour du « Poser »
+  vient se mettre autour du nom, et l’application a déjà cette forme partout.</p>
+  <p><b>Rien n’est codé</b>, sauf la phrase noire en double, qui est supprimée.</p>
+</div>
+
+<script>
+/*
+  Aucune règle ici : la planche ne calcule rien. Les jours sont posés autour
+  du 22 pour reproduire exactement sa capture — une planche qui montre un mois
+  inventé se lit comme une planche fausse.
+*/
+const JOURS = [21, 22, 23, 24, 25];
+const CLIENTS = [
+  { id: 1, nom: "Mr. Linotte" },
+  { id: 2, nom: "Jean-Louis" },
+  { id: 3, nom: "Mme Delaunay" },
+  // Un nom LONG parmi les quatre : c'est celui qui dit si la ligne tient.
+  { id: 4, nom: "Mr. Beauchamp-Lavallée" },
+];
+const NOM_DU_JOUR = { 21: "lundi 21 septembre", 22: "mardi 22 septembre",
+                      23: "mercredi 23 septembre", 24: "jeudi 24 septembre",
+                      25: "vendredi 25 septembre" };
+
+let jourTouche = null;
+let style = "c";
+let restants = CLIENTS.map((c) => c.id);
+
+const grille = document.getElementById("grille");
+const resume = document.getElementById("resume");
+const consigne = document.getElementById("consigne");
+const liste = document.getElementById("liste");
+const fait = document.getElementById("fait");
+const aide = document.getElementById("aide");
+
+function dessinerLeMois() {
+  grille.innerHTML = "";
+  for (const j of JOURS) {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "jour";
+    b.setAttribute("aria-pressed", String(jourTouche === j));
+    b.innerHTML = `<span>${j}</span><span class="barres"><i></i><i></i></span>`;
+    b.onclick = () => {
+      jourTouche = jourTouche === j ? null : j;
+      fait.textContent = "";
+      dessiner();
+    };
+    grille.appendChild(b);
+  }
+}
+
+function dessiner() {
+  dessinerLeMois();
+
+  // LA POIGNÉE, et elle seule, porte « À poser sur … » — en or.
+  if (jourTouche && restants.length > 0) {
+    resume.textContent = "À poser sur " + NOM_DU_JOUR[jourTouche];
+    resume.classList.remove("neutre");
+  } else {
+    const n = restants.length;
+    resume.textContent = n === 0 ? "Aucun client sans date"
+                                 : n + " client" + (n > 1 ? "s" : "") + " sans date";
+    resume.classList.add("neutre");
+  }
+
+  // La consigne noire NE SUBSISTE QUE sans jour touché : sinon elle redit l'or.
+  consigne.style.display = jourTouche || restants.length === 0 ? "none" : "block";
+  aide.textContent = jourTouche
+    ? "Maintenant, touchez le nom du client."
+    : "Touchez le 22 : la poignée du tiroir passe en or et annonce le jour.";
+
+  liste.className = "liste " + style;
+  liste.innerHTML = "";
+  if (restants.length === 0) {
+    const p = document.createElement("p");
+    p.className = "vide";
+    p.textContent = "Plus personne n’attend de jour. Rechargez la page pour recommencer.";
+    liste.appendChild(p);
+    return;
+  }
+  for (const id of restants) {
+    const c = CLIENTS.find((x) => x.id === id);
+    const rangee = document.createElement("div");
+    rangee.className = "rangee";
+
+    const poser = document.createElement("button");
+    poser.type = "button";
+    poser.className = "poser";
+    poser.setAttribute("aria-label",
+      jourTouche ? `Poser ${c.nom} sur ${NOM_DU_JOUR[jourTouche]}` : `${c.nom} — en attente d’un jour`);
+    poser.innerHTML =
+      `<span class="nom">${c.nom}</span>` +
+      (style === "a" ? `<span class="fin">${jourTouche ? "poser" : "sans date"}</span>` : "") +
+      (style === "c" ? `<span class="pouce" aria-hidden="true">＋</span>` : "");
+    poser.onclick = () => {
+      if (!jourTouche) {
+        fait.textContent = "Touchez d’abord un jour du calendrier.";
+        return;
+      }
+      rangee.classList.add("partie");
+      fait.textContent = `${c.nom} est posé sur ${NOM_DU_JOUR[jourTouche]}.`;
+      setTimeout(() => {
+        restants = restants.filter((x) => x !== id);
+        dessiner();
+      }, 320);
+    };
+
+    const chev = document.createElement("button");
+    chev.type = "button";
+    chev.className = "chev";
+    chev.setAttribute("aria-label", "Ouvrir le chantier — " + c.nom);
+    chev.textContent = "›";
+    chev.onclick = () => { fait.textContent = "Le « › » ouvre le chantier — il ne pose rien."; };
+
+    rangee.appendChild(poser);
+    rangee.appendChild(chev);
+    liste.appendChild(rangee);
+  }
+}
+
+for (const b of document.querySelectorAll(".choix button")) {
+  b.onclick = () => {
+    style = b.dataset.style;
+    for (const autre of document.querySelectorAll(".choix button"))
+      autre.setAttribute("aria-pressed", String(autre === b));
+    fait.textContent = "";
+    dessiner();
+  };
+}
+
+dessiner();
+</script>
+</body>
+</html>

@@ -8,6 +8,19 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-17
 
+### La gravité de `main` faisait repayer la batterie à ses voisines
+
+*« Ça continue »*, à 00 h 27 : une session repartait pour quarante-cinq minutes
+parce que `main` avait apporté trente commits dont du code d'argent. Erreur de
+catégorie — `evaluerLeLot` répond à « quel risque ce LOT introduit-il », et on
+la posait sur les fichiers de `main`, dont la gravité avait déjà été éprouvée
+par `main`.
+
+La rencontre se partage désormais : le lot garde sa gravité entière ; de `main`,
+seul le PLANCHER (migration, gabarit racine, accès à la base, configuration)
+refait partir la batterie — sa gravité, elle, force les suites du fond, là où
+vivent les règles d'argent et l'isolation. Voir `ARCHITECTURE.md` §382.
+
 ### Corriger un rouge coûtait cinquante minutes — plus maintenant
 
 Sa colère à 23 h : *« ça recommence et c'est ça à chaque fois ! »*. Une batterie
@@ -32,6 +45,68 @@ leur dire à chaque fois ? »* — a fermé le dernier trou : une session qui re
 la batterie ne passe par aucun garde-fou. La batterie refuse donc elle-même de
 repartir quand le verdict précédent était rouge et que ce qui a bougé reste
 borné. Voir `ARCHITECTURE.md` §381.
+
+### Une planche pour ranger les quatre voies d'« Ajouter » sur une seule ligne
+
+**Sa demande du 17 septembre :** *« je veux que les 4 rentrent sur la même
+ligne, et peut-être de la même taille »*. Mesuré plutôt qu'estimé : à quatre
+pastilles égales il reste **50 px pour le mot**, et « Un chantier en attente »
+en réclame 135. Quatre sur une ligne à taille égale oblige donc à raccourcir —
+c'est un échange, pas un réglage, et `appli/quatre-sur-une-ligne.html` l'écrit
+sous la carte, pastille par pastille.
+
+Trois façons y attendent son choix, dont une qui ENLÈVE le bouton au lieu d'en
+ajouter un quatrième : le « ＋ Ajouter » qui a ouvert les voies reste à sa place
+et referme, comme « + Salarié absent ? » le fait déjà deux centimètres plus
+haut. Rien n'est codé.
+
+**Deux façons de mesurer une largeur se sont révélées fausses en chemin**, et
+c'est la leçon réutilisable : `scrollWidth` contre `clientWidth` ne voit pas un
+texte qui se replie, et un `Range` sur le contenu rend la largeur de sa ligne
+la plus longue — 41 px pour un mot qui en réclame 62. La mesure juste pose le
+mot dans un jumeau invisible qu'on empêche de se replier, et compte les lignes
+peintes.
+
+### Une planche pour annuler une absence sans repasser par « + Salarié absent ? »
+
+**Sa demande du 17 septembre :** *« rajoute-moi un "Annuler" à côté de
+"Journée" si je veux annuler la requête »*. Aujourd'hui, défaire une absence
+qu'on vient de poser demande de rouvrir « + Salarié absent ? » puis de toucher
+le nom — son chemin du 10 septembre, qui reste juste pour une absence posée
+hier, mais qui est ailleurs au moment où l'interrupteur est sous ses yeux.
+
+Rien n'est codé : `appli/annuler-l-absence.html` porte deux placements, parce
+que la largeur tranche — « Annuler » à droite reprend de la place à
+« Après-midi ». **Mesuré aux deux largeurs :** à 390 pt ça tient, à 320 pt le
+mot passe sous la case verte. Le premier contrôle écrit pour le dire
+(`scrollWidth` contre `clientWidth`) a répondu « rien n'est coupé » alors que
+la capture montrait le contraire — c'est l'image qui a tranché, une fois de
+plus (`CLAUDE.md` §5).
+
+### Le jour à poser s'écrivait DEUX FOIS dans le tiroir du planning
+
+**Sa capture du 17 septembre :** *« il y a écrit deux fois "à poser sur le
+mardi 22 septembre" : garde celle en doré, supprime en noir »*. Il a raison, et
+c'était un oubli du 11 septembre : la phrase est montée ce jour-là dans la
+poignée du tiroir, en or, à l'endroit du geste (`docs/planning-verdict.md`) —
+celle qui vivait sous le trait n'a jamais été retirée.
+
+Elle l'est. **Sauf sans jour touché** : là elle ne redit rien, elle dit
+« Touchez d'abord un jour du calendrier » — la seule ligne qui apprenne qu'un
+jour se touche d'abord, et celle que trois suites cherchent. Regardé à l'écran,
+les deux états (`CLAUDE.md` §10) : la poignée dit « À poser sur mardi
+1 septembre » en or, et plus rien en noir sous le trait.
+
+La planche montre **quatre clients en attente**, sa demande du même soir : à un
+seul nom les trois façons se valent, c'est à quatre qu'elles se départagent. Le
+quatrième porte un nom long, et le tiroir garde sa hauteur maximale réelle.
+
+**Ce qui n'est PAS codé, et attend son choix :** poser le client en appuyant
+sur son nom plutôt que sur « Poser ». Sa demande est une demande d'apparence,
+donc une planche — `appli/poser-en-cliquant-sur-le-nom.html`, trois façons au
+choix, et le point à trancher : le chevron « › » de la même ligne ouvre déjà le
+chantier.
+
 
 ### Le garde-fou de `main` réclamait une batterie dès qu'une autre session fusionnait
 

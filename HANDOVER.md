@@ -8,6 +8,15 @@ sert.
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## CE QUE `main` APPORTE NE FAIT PLUS REPAYER LA BATTERIE
+
+Depuis le 18 septembre 2026 : la gravité de ce que `main` apporte — devis,
+acomptes, sécurité — a **déjà** été éprouvée par la session qui l'a écrite.
+Seul son PLANCHER (migration, gabarit racine, accès à la base, configuration)
+fait repartir la batterie entière ; sa gravité, elle, force `npm test`.
+Le lot, lui, garde sa gravité pleine. `ARCHITECTURE.md` §382.
+
+---
 ## UN ROUGE SE REJOUE SEUL — LA BATTERIE N'EST PLUS LE SEUL CHEMIN
 
 Depuis le 17 septembre 2026 au soir : après une batterie rouge, on corrige, puis
@@ -87,7 +96,7 @@ un composant client qui lit `usePathname()`. **Ne pas le remonter dans
 lien, et le décor du premier écran de l'onglet vaudrait alors pour tous les
 suivants. C'est ce qui faisait disparaître son menu du bas après un envoi de
 devis. Les chemins publics, eux, restent tranchés au serveur — il n'y a pas de
-session à y lire. `ARCHITECTURE.md` §382.
+session à y lire. `ARCHITECTURE.md` §383.
 
 ## L'accueil se relit tout seul, et ce n'est pas une notification
 

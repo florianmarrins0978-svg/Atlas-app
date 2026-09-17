@@ -148,6 +148,31 @@ const ARGENT = [
 const teste = (motifs, chemin) => motifs.some((m) => (Array.isArray(m) ? m[0] : m).test(chemin));
 
 /**
+ * CE CHEMIN CHANGE-T-IL LE SOL SOUS TOUT LE MONDE ?
+ *
+ * **Exporté le 17 septembre 2026, à minuit passé**, pour une raison précise :
+ * quand `main` avance sous un lot, ce qu'il apporte a DÉJÀ passé son propre
+ * garde-fou. Sa gravité — l'argent, la sécurité — a donc déjà été éprouvée par
+ * celui qui l'a écrite. Ce qui n'a jamais été mesuré, c'est la RENCONTRE, et
+ * elle se rejoue par des suites, pas par une batterie entière.
+ *
+ * **Le plancher, lui, garde son pouvoir** : une migration change les DONNÉES
+ * sous les suites, un gabarit racine porte tous les écrans, l'accès à la base
+ * porte toutes les requêtes. Ceux-là ne se mesurent pas par une suite ciblée —
+ * c'est déjà ce que dit `PLANCHER`, et c'est le seul cas où `main` doit faire
+ * repartir la mesure entière (`ARCHITECTURE.md` §382).
+ */
+export function estUnPlancher(chemin) {
+  return PLANCHER.some(([motif]) => motif.test(String(chemin).replace(/\\/g, "/")));
+}
+
+/** La gravité d'un chemin — l'argent ou la sécurité — sans rien décider avec. */
+export function porteUneGravite(chemin) {
+  const c = String(chemin).replace(/\\/g, "/");
+  return teste(SÉCURITÉ, c) || teste(ARGENT, c);
+}
+
+/**
  * L'impact de ce chemin est-il impossible à établir de façon fiable ?
  *
  * Trois cas, et chacun a coûté quelque chose ailleurs :

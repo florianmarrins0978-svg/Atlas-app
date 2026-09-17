@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Les voies d’ajout sur une ligne</title>
+<!--
+  ════════════════════════════════════════════════════════════════════════════
+  SA DEMANDE DU 17 SEPTEMBRE 2026, capture à l'appui.
+
+  *« Je veux que les 4 rentrent sur la même ligne, et peut-être de la même
+  taille, ça sera plus joli ? Ou le "Annuler" d'une autre manière, je sais pas,
+  propose. »*
+
+  ─── Ce que l'écran fait AUJOURD'HUI (`AjoutAuJour`, PlanningClient.tsx) ──
+
+  Trois voies sur une ligne qui se replie — « Un chantier en attente » y tient
+  sur deux lignes de texte —, puis « Annuler » seul, collé à droite, sur une
+  ligne à lui. Quatre pastilles, trois tailles, deux lignes.
+
+  ─── LE CHIFFRE QUI DÉCIDE, ET IL EST MESURÉ ─────────────────────────────
+
+  La carte offre environ 354 px (c'est la mesure du 8 septembre, dans ce même
+  écran). Quatre pastilles à parts égales, 8 px entre elles :
+      (354 − 3 × 8) ÷ 4 = 82 px par pastille, moins 24 px de retrait
+      → **58 px pour le mot**.
+
+  Mesuré dans le navigateur, à 390 pt : « Un chantier en attente » réclame
+  environ 135 px, « Autre chose » 72, « En attente » 62, « Un client » 53,
+  « Chantier » 51. **Donc : quatre sur une ligne à taille égale EXIGE de
+  raccourcir les mots — ce n'est pas un réglage, c'est un échange.** La planche
+  le montre plutôt que de l'affirmer : elle écrit sous la carte, pour chaque
+  pastille, ce que le mot réclame et ce qu'il a.
+
+  ─── Les trois propositions ──────────────────────────────────────────────
+
+  A — QUATRE PASTILLES ÉGALES, mots courts : Chantier · Client · Autre ·
+      Annuler. Sa demande, mot pour mot. Ce qu'elle coûte : « en attente »
+      disparaît du libellé, et c'est lui qui disait ce qu'on allait trouver
+      derrière.
+
+  B — TROIS VOIES ÉGALES + UNE CROIX. « Annuler » devient un rond « ✕ » de
+      34 px en fin de ligne — la forme de « Ajouter », à l'envers. Une ligne,
+      mais la quatrième n'a pas la taille des autres : ce n'est pas un choix,
+      c'est une sortie. Le rond mange quand même de la place : « Autre chose »
+      y redevient « Autre ».
+
+  C — PLUS D'« ANNULER » DU TOUT. Le « ＋ Ajouter » qui a ouvert les voies
+      reste à SA place, sous elles, et devient « ✕ Fermer » : on referme par où
+      l'on est entré. C'est déjà ce que fait « + Salarié absent ? » deux
+      centimètres plus haut, dans la même carte — on ne lui apprend aucun geste.
+
+  **CE QUE JE DÉFENDS : C.** Elle ENLÈVE un bouton au lieu d'en ajouter un
+  quatrième, elle laisse aux trois voies leurs mots, et elle reprend un geste
+  de cet écran-là. A tient sa phrase mais paie en clarté ; B est un compromis
+  honnête si les mots comptent plus que la symétrie.
+
+  ─── Les couleurs et les mesures ─────────────────────────────────────────
+
+  Relevées dans `src/lib/design-tokens.ts` et dans le code des voies
+  (`VoieDAjout` : 48 px de haut, 13,5 px, `rounded-full`, filet intérieur) :
+  or #B98B47, carte #faf9f5, encre #1c1c1a, gris #8a8578, trait
+  rgba(28,28,26,.12). Le rond de « Ajouter » fait 34 px, cerné d'or.
+
+  RIEN N'EST CODÉ.
+  ════════════════════════════════════════════════════════════════════════════
+-->
+<style>
+  :root{
+    --fond:#f5f3ee; --carte:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
+    --gris:#8a8578; --papier:#ece9e1; --or:#B98B47; --vert:#7d9a6d;
+    --trait:rgba(28,28,26,.12);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;background:#e6e3dc}
+  body{font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       color:var(--encre);-webkit-text-size-adjust:100%;padding:0 0 48px}
+  button{font-family:inherit}
+  button:focus-visible{outline:2px solid var(--or);outline-offset:2px}
+
+  .bandeau{background:var(--encre);color:#f2efe8;padding:14px 18px;text-align:center;
+           font-size:13.5px;line-height:1.55}
+  .bandeau b{color:#fff}
+
+  .choix{position:sticky;top:0;z-index:9;display:flex;gap:7px;justify-content:center;
+         flex-wrap:wrap;padding:10px;background:#e6e3dc;border-bottom:1px solid var(--trait)}
+  .choix button{border:1px solid var(--trait);background:transparent;border-radius:99px;
+                padding:9px 13px;font:600 12px/1 inherit;color:var(--gris);cursor:pointer}
+  .choix button[aria-pressed="true"]{background:var(--papier);border-color:var(--or);color:var(--encre)}
+
+  /* **AUCUNE ANIMATION SUR LA LARGEUR** : la mesure se prend à l'instant du
+     clic, et une largeur qui glisse pendant 200 ms rend un chiffre qui n'est
+     celui de rien — le défaut du 15 août, en plus discret (CLAUDE.md §5). */
+  .tel{max-width:390px;margin:18px auto 0;padding:0 18px}
+  .tel.etroit{max-width:320px}
+
+  .fiche{background:var(--carte);border-radius:16px;padding:16px 18px 18px;
+         box-shadow:0 10px 30px rgba(20,18,14,.10)}
+  .demi{display:flex;align-items:center;justify-content:space-between;gap:12px;
+        padding:10px 0;font:600 11px/1 ui-sans-serif,sans-serif;letter-spacing:.16em;
+        text-transform:uppercase;color:var(--encre)}
+  .demi .libre{font:400 13px/1.5 ui-sans-serif,sans-serif;letter-spacing:0;
+               text-transform:none;color:var(--gris)}
+  .case{width:16px;height:16px;border-radius:4px;box-shadow:inset 0 0 0 1px var(--trait);flex:none}
+
+  /* LES VOIES — 48 px, 13,5 px, rounded-full, filet intérieur (VoieDAjout). */
+  .voies{display:flex;gap:8px;margin-top:14px}
+  .voie{flex:1;min-width:0;min-height:48px;border:0;border-radius:99px;padding:0 12px;
+        background:var(--carte);box-shadow:inset 0 0 0 1px var(--trait);color:var(--encre);
+        font-size:13.5px;cursor:pointer;line-height:1.2}
+  .voie:active{background:var(--papier)}
+
+  /* B — la sortie n'est pas un choix : un rond, pas une pastille.
+     **34 px, comme le rond de « Ajouter »** — et c'est une mesure, pas un
+     goût : à 48 px, il reprenait assez de place pour renvoyer « En attente »
+     sur deux lignes, c'est-à-dire pour refaire exactement le défaut qu'on
+     vient de corriger. */
+  .croix{flex:none;align-self:center;width:34px;height:34px;border-radius:99px;border:0;padding:0;
+         background:transparent;box-shadow:inset 0 0 0 1px var(--trait);
+         color:var(--gris);font-size:15px;line-height:1;cursor:pointer}
+
+  /* C — on referme par où l'on est entré : le « ＋ Ajouter » reste à sa place. */
+  .ajouter{display:flex;align-items:center;justify-content:center;gap:10px;
+           margin-top:14px;font-size:12.5px;color:var(--encre-douce)}
+  .ajouter button{width:34px;height:34px;border-radius:99px;border:1px solid var(--or);
+                  background:transparent;color:var(--or);font-size:19px;line-height:1;cursor:pointer}
+
+  .fait{margin:14px 0 0;min-height:20px;font-size:12.5px;color:var(--vert)}
+  .mesure{max-width:430px;margin:14px auto 0;padding:0 22px;font-size:12px;color:var(--gris);
+          line-height:1.6}
+  .mesure b{color:var(--encre-douce)}
+
+  .note{max-width:430px;margin:20px auto 0;padding:0 22px;font-size:13.5px;
+        line-height:1.6;color:var(--encre-douce)}
+  .note b{color:var(--encre)}
+  .note p{margin:0 0 11px}
+</style>
+</head>
+<body>
+
+<div class="bandeau">
+  <b>Les quatre sur une ligne.</b> Trois façons — touchez-les. La mesure sous la
+  carte dit si le mot tient vraiment dans sa pastille.
+</div>
+
+<div class="choix" role="group" aria-label="Trois façons de ranger les voies">
+  <button type="button" data-v="a" aria-pressed="false">A — quatre égales</button>
+  <button type="button" data-v="b" aria-pressed="false">B — trois + une croix</button>
+  <button type="button" data-v="c" aria-pressed="true">C — pas d’Annuler</button>
+  <button type="button" id="largeur" aria-pressed="false">Écran étroit</button>
+</div>
+
+<div class="tel" id="tel">
+  <div class="fiche">
+    <div class="demi">
+      <span style="display:flex;align-items:center;gap:12px">
+        <span class="case"></span>Après-midi
+      </span>
+      <span class="libre">libre</span>
+    </div>
+    <div id="bloc"></div>
+    <p class="fait" id="fait"></p>
+  </div>
+</div>
+
+<p class="mesure" id="mesure"></p>
+
+<div class="note">
+  <p><b>Le chiffre qui décide :</b> à quatre pastilles égales, il reste
+  <b>50 px pour le mot</b>. « Un chantier en attente » en réclame 135,
+  « Autre chose » 72, « En attente » 62, « Chantier » 51. <b>Quatre sur une
+  ligne à taille égale oblige donc à raccourcir</b> — ce n’est pas un réglage,
+  c’est un échange. La ligne grise sous la carte le dit pour chaque pastille.</p>
+  <p><b>A</b> — votre demande, mot pour mot. Ce qu’elle coûte : « en attente »
+  disparaît, et c’est lui qui disait ce qu’on trouve derrière.</p>
+  <p><b>B</b> — « Annuler » devient une croix de 34 px, la forme de
+  « Ajouter » à l’envers. Une ligne, mais la quatrième n’a pas la taille des
+  autres : ce n’est pas un choix, c’est une sortie. Le rond prend quand même de
+  la place — « Autre chose » y redevient « Autre ».</p>
+  <p><b>C</b> — plus d’« Annuler ». Le « ＋ Ajouter » qui a ouvert les voies
+  reste à sa place et devient « ✕ Fermer » : on referme par où l’on est entré.
+  <b>C’est déjà ce que fait « + Salarié absent ? »</b> deux centimètres plus
+  haut, dans la même carte.</p>
+  <p><b>Ce que je défends : C.</b> Elle enlève un bouton au lieu d’en ajouter un
+  quatrième, et laisse aux trois voies leurs mots.</p>
+  <p><b>Rien n’est codé.</b></p>
+</div>
+
+<script>
+const bloc = document.getElementById("bloc");
+const fait = document.getElementById("fait");
+const mesure = document.getElementById("mesure");
+const tel = document.getElementById("tel");
+let variante = "c";
+
+const DESSINS = {
+  // A — quatre pastilles égales. Les mots sont RACCOURCIS, sinon rien ne tient.
+  a: `<div class="voies">
+        <button class="voie">Chantier</button>
+        <button class="voie">Client</button>
+        <button class="voie">Autre</button>
+        <button class="voie" data-sortie="1">Annuler</button>
+      </div>`,
+  // B — trois voies égales, et la sortie en rond : elle ne se compte pas
+  // parmi les choix.
+  b: `<div class="voies">
+        <button class="voie">En attente</button>
+        <button class="voie">Un client</button>
+        <button class="voie">Autre</button>
+        <button class="croix" data-sortie="1" aria-label="Annuler">✕</button>
+      </div>`,
+  // C — aucune sortie dans la ligne : on referme par le « ＋ » qui a ouvert.
+  c: `<div class="voies">
+        <button class="voie">En attente</button>
+        <button class="voie">Un client</button>
+        <button class="voie">Autre chose</button>
+      </div>
+      <div class="ajouter">
+        <button type="button" data-sortie="1" aria-label="Fermer">✕</button><span>Fermer</span>
+      </div>`,
+};
+
+/*
+  LA MESURE JUSTE — et il a fallu s'y reprendre à deux fois.
+
+  Première version : `scrollWidth` contre `clientWidth`. Elle a répondu « rien
+  n'est coupé » sur une capture qui montrait le contraire (CLAUDE.md §5).
+  Deuxième : un `Range` sur le contenu — mais un texte qui se REPLIE rend la
+  largeur de sa ligne la plus longue, pas celle qu'il lui faudrait : « En
+  attente » sur deux lignes mesurait 41 px et se déclarait à l'aise.
+
+  Celle-ci pose le mot dans un jumeau invisible qu'on empêche de se replier :
+  c'est la largeur qu'il RÉCLAME. On la compare à la place qu'il a, et l'on
+  compte les lignes réellement peintes — deux lignes dans une pastille, c'est
+  exactement ce qu'il veut faire disparaître.
+*/
+const reglet = document.createElement("span");
+reglet.style.cssText = "position:absolute;visibility:hidden;white-space:nowrap;left:-9999px";
+document.body.appendChild(reglet);
+
+function mesurer() {
+  const lignes = [];
+  for (const b of bloc.querySelectorAll(".voie")) {
+    const st = getComputedStyle(b);
+    reglet.style.font = st.font;
+    reglet.textContent = b.textContent;
+    const veut = reglet.getBoundingClientRect().width;
+    const dedans = b.getBoundingClientRect().width - parseFloat(st.paddingLeft) - parseFloat(st.paddingRight);
+    const r = document.createRange();
+    r.selectNodeContents(b);
+    const replie = r.getClientRects().length > 1;
+    lignes.push(
+      `« ${b.textContent} » ${Math.round(veut)} px pour ${Math.round(dedans)} px` +
+      // **Trois réponses, pas deux.** « Chantier » réclame 51 px pour 50 : à
+      // l'œil, rien ne dépasse — mais c'est un pixel, et le prochain mot un peu
+      // plus long sortira. Le dire « tout juste » avertit sans crier au défaut.
+      (replie
+        ? " — <b>sur deux lignes</b>"
+        : veut > dedans + 3
+          ? " — <b>ça déborde</b>"
+          : veut > dedans - 3
+            ? " — <b>tout juste</b>"
+            : " — ça tient")
+    );
+  }
+  mesure.innerHTML = lignes.join(" · ");
+}
+
+function dessiner() {
+  bloc.innerHTML = DESSINS[variante];
+  fait.textContent = "";
+  for (const b of bloc.querySelectorAll("button")) {
+    b.onclick = () => {
+      fait.textContent = b.dataset.sortie
+        ? "Refermé — on revient au « ＋ Ajouter »."
+        : "« " + b.textContent.trim() + " » ouvre la suite.";
+    };
+  }
+  mesurer();
+}
+
+for (const b of document.querySelectorAll(".choix button[data-v]")) {
+  b.onclick = () => {
+    variante = b.dataset.v;
+    for (const a of document.querySelectorAll(".choix button[data-v]"))
+      a.setAttribute("aria-pressed", String(a === b));
+    dessiner();
+  };
+}
+const large = document.getElementById("largeur");
+large.onclick = () => {
+  const etroit = large.getAttribute("aria-pressed") !== "true";
+  large.setAttribute("aria-pressed", String(etroit));
+  large.textContent = etroit ? "Écran large" : "Écran étroit";
+  tel.classList.toggle("etroit", etroit);
+  mesurer();
+};
+
+dessiner();
+</script>
+</body>
+</html>

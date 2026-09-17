@@ -5,6 +5,13 @@
 
 ---
 
+## FAIT : LA GRAVITÉ DE `main` NE FAIT PLUS REPAYER SES VOISINES (18 septembre 2026)
+
+Une session repartait pour quarante-cinq minutes parce que `main` avait apporté
+du code d'argent — déjà éprouvé par celui qui l'a écrit. La rencontre se partage
+désormais entre ce que le lot apporte (gravité pleine) et ce que `main` apporte
+(seul son plancher refait la batterie). `ARCHITECTURE.md` §382.
+
 ## FAIT : CORRIGER UN ROUGE NE COÛTE PLUS LA BATTERIE ENTIÈRE (17 septembre 2026)
 
 Une étape qui n'est pas une suite — Types, Lint, Mémoire du dépôt, Construction
@@ -64,7 +71,7 @@ mécanisme : l'accueil lit les réponses une fois, la réponse arrive plus tard 
 sur le téléphone du client. `VeilleDesNouvelles` relit l'accueil dès qu'il
 revient à Atlas, et toutes les trente secondes pendant qu'il le regarde.
 **Ce n'est pas une notification poussée** — Atlas fermé, rien ne sonne encore
-(`TODO.md`, en tête). `ARCHITECTURE.md` §382.
+(`TODO.md`, en tête). `ARCHITECTURE.md` §383.
 
 ## FAIT : L'ACCUEIL SANS CHANTIER — LA PORTE DU DEVIS AU TIERS HAUT (17 septembre 2026)
 
