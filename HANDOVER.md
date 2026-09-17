@@ -51,8 +51,9 @@ n'existe qu'**après**, au planning — et le client n'en sait rien.
 **Rien n'est codé** : la planche `appli/deux-jours-pas-colles.html` (119)
 attend sa réponse. Refaite le soir même — *« je comprends rien, l'idée c'est
 que ce soit simple et joli »* — sur une seule idée : **un appui, un jour du
-chantier**, le jour d'à côté posé tout seul quand il n'en touche qu'un.
-`TODO.md`, en tête.
+chantier**, le jour d'à côté posé tout seul quand il n'en touche qu'un — et,
+à sa demande du même soir (*« fais les deux »*), une **2e possibilité** au
+choix de la cliente, même sur plusieurs jours. `TODO.md`, en tête.
 
 ---
 

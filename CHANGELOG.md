@@ -189,6 +189,20 @@ une date, ou deux au choix, comme aujourd'hui. Ce qu'il perdrait s'il
 tranche — deux dates au choix sur un chantier de plusieurs jours — est écrit
 dans `TODO.md`, pas tu. Parcourue à 390 px dans un vrai navigateur, les six
 gestes joués, sans débordement ni erreur.
+
+**Puis « fais les deux », une heure plus tard** — *« sur les chantiers de deux
+jours ou plus il faut quand même pouvoir proposer plus d'un jour au
+client »*. Il a vu ce que la version simple lui faisait perdre, et il n'en
+veut pas. Donc une **possibilité** est les jours du chantier, et il peut en
+proposer deux : « Proposer aussi une autre possibilité » sous la liste, la 2e
+dessinée en or (le chiffre en encre, pas en blanc : le blanc sur l'or ne
+tenait pas le contraste), et la cliente lit « Quels jours vous arrangent ? »
+avec un bouton radio par possibilité. Une seule règle pour toutes les
+durées — sur une journée, deux possibilités d'un jour SONT les deux dates au
+choix d'aujourd'hui. Les jours posés à côté d'une possibilité ne marchent
+jamais sur l'autre : la seconde se pose après ce que la première a pris.
+Rejouée en navigateur : retirer la 2e la ferme et rouvre la porte, 1 et
+3 jours, sans débordement ni erreur.
 ### La publication des planches rougissait depuis la note vocale à plat
 
 Le flux `pages.yml` est tombé sur `test:boutons-verts` dès la poussée du
