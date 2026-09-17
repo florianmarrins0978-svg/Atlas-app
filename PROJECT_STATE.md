@@ -5,6 +5,40 @@
 
 ---
 
+## FAIT : LE GARDE-FOU DE `main` NE RÉCLAME PLUS DE BATTERIE POUR RIEN (17 septembre 2026)
+
+Il comparait des **dates** d'écriture : une fusion réécrit ce qu'elle apporte,
+donc tout lot vert perdait son verdict dès qu'une session voisine fusionnait —
+et le refus n'annonçait que la batterie entière. Il compare désormais des
+CONTENUS (`scripts/_empreinte-des-sources.mjs`, partagé avec la batterie), et
+quand seul ce que `main` a apporté a bougé, il renvoie au complément d'une
+minute qu'il nomme lui-même. `ARCHITECTURE.md` §380.
+
+## FAIT : LES ACOMPTES SUIVENT LA CORRECTION DU DEVIS (17 septembre 2026)
+
+Sa panne : un devis rouvert pour correction ne gardait que l'acompte des
+Réglages. Une nouvelle version recopie désormais l'échéancier posé (30/50/75),
+ou aucun s'il les avait retirés ; le réglage ne sert plus qu'au premier devis
+d'un chantier. Et « + Ajouter un acompte » dit pourquoi il refuse.
+`ARCHITECTURE.md` §377.
+
+## FAIT : LE PAPIER S'ÉCRIT EN NOIR (17 septembre 2026)
+
+Plus aucun gris sur le PDF : étiquettes de colonnes, coordonnées et mentions
+légales passent à l'encre, la ligne « DÉSIGNATION … TOTAL TTC » et « BASE HT ·
+TAUX · TVA » se lisent en gras noir. `ARCHITECTURE.md` §378.
+
+## FAIT : UNE PANNE DE BASE SE DIT SUR LES RÈGLEMENTS (17 septembre 2026)
+
+Sa capture de 15 h 57 : « Ce règlement n'a pas pu être enregistré. Réessayez. »
+sur 495,00 € dus au centime. Le produit était juste — sa base ne répondait plus,
+et les trois actions de règlement laissaient l'exception sortir : rien à l'écran,
+rien au journal. Elles rendent désormais la panne en valeur, avec le code de la
+base et le geste sûr (`ARCHITECTURE.md` §379).
+
+**Sa base à lui n'est pas réparée par ce lot** : elle se remet d'aplomb en
+rallumant l'espace.
+
 ## FAIT : LE MENU DU BAS, ET LA RÉPONSE DU CLIENT QUI N'ARRIVAIT PAS (17 septembre 2026)
 
 Deux défauts sur une même capture, la sienne, juste après l'envoi d'un devis.
@@ -22,7 +56,7 @@ mécanisme : l'accueil lit les réponses une fois, la réponse arrive plus tard 
 sur le téléphone du client. `VeilleDesNouvelles` relit l'accueil dès qu'il
 revient à Atlas, et toutes les trente secondes pendant qu'il le regarde.
 **Ce n'est pas une notification poussée** — Atlas fermé, rien ne sonne encore
-(`TODO.md`, en tête). `ARCHITECTURE.md` §373.
+(`TODO.md`, en tête). `ARCHITECTURE.md` §381.
 
 ## FAIT : L'ACCUEIL SANS CHANTIER — LA PORTE DU DEVIS AU TIERS HAUT (17 septembre 2026)
 
@@ -503,16 +537,40 @@ Détail : `ARCHITECTURE.md` §323.
 
 ---
 
+## FAIT : « DÉPLACER » DÉPLACE POUR DE BON — 17 septembre 2026
+
+Sa demande : *« lorsque je clique sur déplacer ça me fait apparaître le planning
+et je sélectionne un jour et le matin ou l'aprem ou journée pour réellement
+déplacer mon client, parce que là c'est trop de clics à faire. »* Sa planche
+retenue : `appli/deplacer-sur-le-calendrier.html`, la **2** — le calendrier du
+haut s'allume — et la **A** — seul ce que le chantier occupe LE jour de départ
+bouge.
+
+**Sept appuis sont devenus trois** : Déplacer, le jour, le moment. Et une seule
+écriture au lieu de deux : entre l'ancien « libérer » et l'ancien « reposer », la
+demi-journée n'était nulle part.
+
+**Ce qui part commande ce qui peut arriver.** Une demi-journée ne devient pas
+une journée, une journée ne tient pas sur une demi-journée, et arriver sur une
+demi-journée déjà sienne est refusé — sinon le chantier rétrécit en silence, et
+cela se découvre le matin du chantier.
+
+L'ancien chemin est parti avec : `BasculeDemi`, `liberer`,
+`libererDemiJourneeAction`, `libererDemiJournee`, `sansLaDemi`.
+
+Détail : `ARCHITECTURE.md` §373.
+
+---
+
 ## FAIT : UNE DEMI-JOURNÉE SE LIBÈRE, ATTEND, ET SE REPOSE — 10 septembre 2026
 
 Sa planche retenue (`appli/liberer-une-demi-journee.html`) : *« je clique sur le
 matin, il devient vert et le matin du vendredi devient libre, et une demi-journée
 de Mr Julien sort ; la demi-journée retirée peut être replacée. »*
 
-**« Déplacer » ne déplace plus rien** — il libère la demi-journée qu'on regarde,
-avec un interrupteur dont les **deux positions sont éteintes** : ce n'est pas un
-état à lire, c'est une question. Le morceau rendu attend dans le tiroir du bas,
-sous « Sans date », et se repose sur n'importe quelle demi-journée libre.
+**Ce geste-là n'existe plus depuis le 17 septembre 2026** (voir ci-dessus) :
+« Déplacer » déplace, et l'interrupteur matin / après-midi est parti. Ce qui
+reste de ce lot, c'est la base — et elle porte tout le reste.
 
 **Ce que ça a demandé en base :** un chantier posé n'était qu'un bloc d'un seul
 tenant. La table `creneaux_chantier` (migration **0085**) porte désormais où

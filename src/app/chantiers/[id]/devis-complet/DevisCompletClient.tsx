@@ -341,9 +341,21 @@ export default function DevisCompletClient(props: Props) {
   const [acomptes, setAcomptes] = useState<AcompteDevis[]>(props.acomptesInitiaux);
   const acompteAProposer = acompteSuivantPropose(acomptes, props.acompteReglage);
 
+  /**
+   * **Un appui sans effet et sans un mot se lit comme une panne — 17 septembre
+   * 2026.** Sa phrase : *« je n'arrive pas à les remettre »*. Le serveur
+   * refusait (devis parti, trois acomptes déjà, 100 % atteint) et l'écran ne
+   * disait rien. Le refus s'affiche désormais sous le geste, avec ce qu'il
+   * doit faire.
+   */
+  const [refusAcompte, setRefusAcompte] = useState<string | null>(null);
+
   async function ajouterUnAcompte() {
-    const retenus = await aLaSuite(() => ajouterAcompteAction(props.devisId));
-    if (retenus) setAcomptes(retenus);
+    setRefusAcompte(null);
+    const pose = await aLaSuite(() => ajouterAcompteAction(props.devisId));
+    if (!pose) return;
+    if (pose.ok) setAcomptes(pose.acomptes);
+    else setRefusAcompte(pose.raison);
   }
 
   async function changerAcompte(rang: number, tauxDuChamp: string) {
@@ -1438,6 +1450,19 @@ export default function DevisCompletClient(props: Props) {
             >
               + Ajouter un acompte
             </button>
+          )}
+          {/* **Le refus du serveur, sous le geste** — 17 septembre 2026. Un
+              appui sans effet et sans un mot se lit comme une panne, et il
+              rappuie. */}
+          {refusAcompte && (
+            <p
+              role="alert"
+              data-atlas="refus-acompte"
+              className="mt-1 text-[13px] leading-[1.45]"
+              style={{ color: colors.alert }}
+            >
+              {refusAcompte}
+            </p>
           )}
 
           {/* Discret, et seulement quand il n'y en a pas : un devis qui porte

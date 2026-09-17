@@ -98,7 +98,7 @@ export async function creerSonCompte(saisie: SaisieCompte): Promise<ResultatCrea
       codeSql,
       erreur: messageSansLesValeurs(erreur instanceof Error ? erreur.message : String(erreur)),
     });
-    return { ok: false, refus: phraseDeLaPanne(cause, estBancDEssai(), codeSql) };
+    return { ok: false, refus: phraseDeLaPanne(cause, estBancDEssai(), codeSql, "Votre compte n’a pas pu être créé") };
   }
 }
 

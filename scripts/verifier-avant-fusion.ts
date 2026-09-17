@@ -1,9 +1,9 @@
 import path from "node:path";
-import { empreinteDesSources } from "./_batterie-solitaire";
+import { empreinteDesSources } from "./_empreinte-des-sources.mjs";
 import { ecrireDernierVerdict } from "./_dernier-verdict";
 import { jouerEnGardantLaSortie } from "./_jouer-etape";
 import { bilanDuJournal } from "./_bilan-suites.mjs";
-import { commitCourant } from "./_reference-batterie.mjs";
+import { commitCourant } from "./_temoin-de-main.mjs";
 import { cheminsDuLot, evaluerLeLot } from "./_niveau-de-risque.mjs";
 import { suitesDesRoutes } from "./_suites-ciblees.mjs";
 import { prendreUnAtelierSync } from "./_atelier";

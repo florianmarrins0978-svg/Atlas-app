@@ -4,6 +4,62 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
+**Point de reprise :** 2026-09-17 · `claude/sessions-batterie-loop-pzcl4q` — le garde-fou de `main` compare des contenus, plus des dates
+(l'historique fait foi : `git log --oneline -20`)
+
+---
+## `main` QUI AVANCE NE COÛTE PLUS UNE BATTERIE
+
+Depuis le 17 septembre 2026, `garde-fusion-main.mjs` ne regarde plus la **date**
+de la dernière écriture — une fusion réécrit ce qu'elle apporte, et cela périmait
+le verdict de tout lot vert dès qu'une session voisine fusionnait. Il compare des
+CONTENUS, avec la fonction de la batterie (`scripts/_empreinte-des-sources.mjs`).
+
+**Devant un refus de poussée, lire lequel des trois il annonce :**
+
+| Ce qu'il dit | Ce qu'on joue |
+|---|---|
+| « le lot a changé depuis sa vérification » | le contrôle de son niveau (`npm run niveau` le dit) |
+| « main a apporté N fichier(s) » | `npx tsx scripts/verifier-apres-fusion.ts` — une minute, souvent rien |
+| rien : la poussée passe | rien |
+
+`ARCHITECTURE.md` §380.
+
+---
+## Les acomptes d'un devis SUIVENT sa correction — et le papier est tout noir
+
+Depuis le 17 septembre 2026 : rouvrir un devis parti crée une nouvelle version,
+et elle **garde l'échéancier posé** (30/50/75) au lieu de reposer le seul
+acompte des Réglages — c'est la panne qu'il a vue. Le réglage ne vaut plus que
+pour le tout premier devis d'un chantier ; un devis dont il a tout retiré n'en
+reprend aucun. Et « + Ajouter un acompte » ne refuse plus en silence : la raison
+s'affiche. `ARCHITECTURE.md` §377.
+
+Le papier (PDF devis et facture) : toutes les écritures à l'encre, la ligne
+d'en-tête du tableau et « BASE HT · TAUX · TVA » en gras noir. La teinte se
+décide dans `teintesDe` et nulle part ailleurs. `ARCHITECTURE.md` §378.
+
+## Une panne de base ne se lit plus « Réessayez » sur les règlements
+
+Depuis le 17 septembre 2026, les trois gestes de règlement de `/termines/tva`
+(« J'ai reçu le paiement », « Enregistrer ce règlement », la croix qui retire)
+ne laissent plus une exception sortir de l'action : elle est journalisée avec
+son code `SQLSTATE` et revient **en valeur**, avec la phrase de
+`src/lib/panne-de-base.ts` — qui nomme la base et donne le geste sûr, rallumer
+l'espace (`ARCHITECTURE.md` §379).
+
+**Ce qui l'a provoqué :** sa capture du 17 septembre à 15 h 57, « Ce règlement
+n'a pas pu être enregistré. Réessayez. » sur 495,00 € parfaitement dus. Le
+produit était juste ; c'est sa base qui ne répondait plus, et rien ne le disait.
+
+**Le réflexe qui aurait fait gagner l'heure**, et il vaut pour toute plainte de
+ce genre : lire la fiche que son espace publie tout seul — la question GitHub
+n° 47, « État du banc d'essai ». Elle porte le commit servi, l'état de la base
+et ce que la migration refuse. « Serveur : répond sur le port 3000 » **ne dit
+rien** d'une base morte : `/api/health/live` ne la touche jamais.
+
+---
+
 **Point de reprise :** 2026-09-17 · `main` — le menu du bas après un devis envoyé, et l'accueil qui se relit tout seul
 (l'historique fait foi : `git log --oneline -20`)
 
@@ -17,7 +73,7 @@ un composant client qui lit `usePathname()`. **Ne pas le remonter dans
 lien, et le décor du premier écran de l'onglet vaudrait alors pour tous les
 suivants. C'est ce qui faisait disparaître son menu du bas après un envoi de
 devis. Les chemins publics, eux, restent tranchés au serveur — il n'y a pas de
-session à y lire. `ARCHITECTURE.md` §373.
+session à y lire. `ARCHITECTURE.md` §381.
 
 ## L'accueil se relit tout seul, et ce n'est pas une notification
 
@@ -28,7 +84,6 @@ notification poussée n'existe pas (`TODO.md`, en tête) — ne pas la présente
 comme faite.
 
 ---
-
 ## L'accueil vide : la porte du devis est au TIERS HAUT, poussée par deux ressorts
 
 Depuis le 17 septembre 2026, quand aucun chantier n'est en cours, « Créer un
@@ -43,6 +98,26 @@ l'écran qu'il a), jamais le rapport.
 et c'est LUI qui a vu la capture — *« il est trop bas là ! »*. Une fraction se
 lit dans les deux sens, un écran non. `ARCHITECTURE.md` §372 ; le second anneau
 « Créer une facture » de la même planche reste à faire (`TODO.md`, en tête).
+
+---
+
+## Une proposition de date est une date de DÉPART, et le chantier colle les jours
+
+Sa question du 17 septembre 2026 : *« un chantier de deux jours, je veux lui
+proposer le 18 et venir finir le 22 — comment je fais ? »* Aujourd'hui,
+impossible avant l'acceptation : les deux dates du calendrier d'envoi sont deux
+**choix** (boutons radio chez le client), et la date retenue devient un bloc
+d'un seul tenant (`creneauxDuChantier`, `envois-devis.ts`). Le morcellement
+n'existe qu'**après**, au planning — et le client n'en sait rien.
+
+**Rien n'est codé** : la planche `appli/deux-jours-pas-colles.html` (119)
+attend sa réponse. Refaite le soir même — *« je comprends rien, l'idée c'est
+que ce soit simple et joli »* — sur une seule idée : **un appui, un jour du
+chantier**, puis refaite une troisième fois **sur le geste qu'il a dicté** :
+un appui pose le premier jour et le chantier se remplit d'affilée, un appui
+sur un jour du chantier l'enlève (le chantier se décale d'un jour), et un
+interrupteur « Deuxième proposition » pour que la cliente choisisse.
+`TODO.md`, en tête.
 
 ---
 
@@ -1007,7 +1082,32 @@ un écran qui a l'air en retard sur sa maquette. Toute clé neuve s'ajoute donc 
 `completer-env-local.sh`, pas seulement à `src/server/env.ts`.
 
 ---
+## Lot du 17 septembre 2026 — « DÉPLACER » DÉPLACE POUR DE BON
+
+| | |
+|---|---|
+| sa demande | *« lorsque je clique sur déplacer ça me fait apparaître le planning et je sélectionne un jour et le matin ou l'aprem ou journée pour réellement déplacer mon client — là c'est trop de clics »* |
+| sa planche | `appli/deplacer-sur-le-calendrier.html`, la **2** (calendrier du haut) et la **A** (seul le jour choisi bouge) |
+| le compte | sept appuis avant, **trois** depuis |
+| la règle | `ceQueLeJourPorte`, `momentsOfferts`, `deplacerCeQueLeJourPorte` (`src/lib/creneaux-chantier.ts`) — sans base, sans écran |
+| une seule écriture | `deplacerCeQueLeJourPorteEnBase` : l'ancien chemin en faisait deux, et entre les deux la demi-journée n'était nulle part |
+| où vit le geste | **sous le calendrier** (`data-atlas="deplacement-en-cours"`), jamais dans la fiche : elle disparaît au premier mois tourné |
+| retiré avec | `BasculeDemi`, `liberer`, `libererDemiJourneeAction`, `libererDemiJournee`, `sansLaDemi` |
+| les suites | `test-creneaux-chantier.ts` (8 cas neufs), `test-deplacer-sur-le-calendrier-e2e.ts` |
+| le détail | `ARCHITECTURE.md` §373 |
+
+**LE PIÈGE À NE PAS REFABRIQUER.** Ce qui part commande ce qui peut arriver :
+une demi-journée ne devient pas une journée, une journée ne tient pas sur une
+demi-journée, et arriver sur une demi-journée déjà sienne rétrécit le chantier
+**sans que rien ne le dise**. Les trois sont refusés, dans `lib` — pas dans
+l'écran, qui peut changer.
+
+---
 ## Lot précédent — UNE DEMI-JOURNÉE SE LIBÈRE ET SE REPOSE (10 septembre 2026)
+
+**Remplacé le 17 septembre 2026** par le lot ci-dessus : « Déplacer » ne libère
+plus, il déplace. Ce qui suit reste vrai de `creneaux_chantier` et de la règle
+du repli ; l'interrupteur matin / après-midi, lui, n'existe plus.
 
 
 | | |
@@ -1017,7 +1117,7 @@ un écran qui a l'air en retard sur sa maquette. Toute clé neuve s'ajoute donc 
 | la table | `creneaux_chantier` (migration 0085) — une ligne par demi-journée occupée |
 | la règle | `duree_demi_journees` = ce qu'il **demande** · les créneaux = où il est **posé** · l'écart = ce qui **attend** en bas |
 | retiré | `deplacerChantierAction` — plus personne ne l'appelait |
-| les suites | `test-creneaux-chantier.ts` (12 cas), `test-liberer-une-demi-journee-e2e.ts` (8, **son geste de bout en bout**) |
+| les suites | `test-creneaux-chantier.ts` (12 cas), `test-deplacer-sur-le-calendrier-e2e.ts` (8, **son geste de bout en bout**) |
 | le détail | `ARCHITECTURE.md` §322 |
 
 **LES DEUX PIÈGES À NE PAS REFABRIQUER.**

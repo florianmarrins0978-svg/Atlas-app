@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — Le garde-fou qui relançait des batteries pour rien</title>
+<style>
+  :root{
+    --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
+    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
+    --accent:#2f3b2f; --alert:#b5562a; --line:rgba(28,28,26,0.13);
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#161815; --surface:#1d201c; --raised:#252924;
+      --ink:#eae7df; --ink-soft:#c2bdb1; --muted:#948f83;
+      --accent:#9fbd82; --alert:#e0885a; --line:rgba(234,231,223,0.17);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.65;}
+  main{max-width:44rem;margin:0 auto;padding:2.5rem 1.2rem 5rem;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.2;
+    text-wrap:balance;margin:2rem 0 0.6rem;scroll-margin-top:1rem;}
+  h1{font-size:2rem;margin-top:0;}
+  h2{font-size:1.5rem;padding-top:1.2rem;border-top:1px solid var(--line);}
+  h3{font-size:1.12rem;}
+  h4{font-size:1rem;}
+  p{margin:0 0 0.9rem;}
+  a{color:var(--accent);text-underline-offset:3px;}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px;}
+  ul,ol{margin:0 0 1rem;padding-left:1.3rem;}
+  li{margin-bottom:0.4rem;}
+  li::marker{color:var(--muted);}
+  /* Le sommaire : des cibles larges, confortables au doigt sur téléphone. */
+  ol li a{display:inline-block;padding:0.15rem 0;}
+  blockquote{margin:1rem 0;padding:0.85rem 1.05rem;background:var(--raised);
+    border-left:3px solid var(--accent);border-radius:0 10px 10px 0;color:var(--ink-soft);}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.87em;
+    background:var(--raised);padding:0.1rem 0.35rem;border-radius:5px;}
+  hr{border:0;border-top:1px solid var(--line);margin:2rem 0;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;
+    background:var(--surface);margin:0 0 1.2rem;}
+  table{border-collapse:collapse;width:100%;font-size:0.92rem;min-width:22rem;}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--line);
+    vertical-align:top;}
+  th{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--muted);white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .retour{display:inline-block;font-size:0.76rem;color:var(--muted);
+    text-decoration:none;margin:-0.3rem 0 1rem;}
+  .retour:hover{color:var(--accent);text-decoration:underline;}
+</style>
+</head>
+<body>
+<main>
+<h1 id="le-garde-fou-qui-relançait-des-batteries-pour-rien">Le garde-fou qui relançait des batteries pour rien</h1>
+<p><strong>17 septembre 2026.</strong> Ce qui suit est le retour sur le garde-fou de fusion — celui qui a été mis en place avec ChatGPT, et qui s'est mis à bloquer plus qu'il ne protégeait.</p>
+<h2 id="ce-qui-nallait-pas">Ce qui n'allait pas</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Le garde-fou vérifie qu'un lot a bien été éprouvé avant de partir sur <code>main</code>. Pour savoir si l'arbre a bougé depuis la vérification, il comparait <strong>la date de la dernière écriture</strong> des fichiers.</p>
+<p>Or une fusion <strong>réécrit</strong> les fichiers qu'elle apporte, et parfois à l'identique. Donc :</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Ce qui se passait</th>
+<th>Ce que le garde-fou en concluait</th>
+</tr></thead><tbody>
+<tr>
+<td>une session voisine fusionne sur <code>main</code></td>
+<td>(rien qui concerne mon lot)</td>
+</tr>
+<tr>
+<td>je refusionne <code>main</code> sous mon lot</td>
+<td>toutes les dates sont neuves</td>
+</tr>
+<tr>
+<td>mon lot était vert depuis dix minutes</td>
+<td><strong>« l'arbre a changé », verdict perdu</strong></td>
+</tr>
+<tr>
+<td>le refus n'annonçait qu'un remède</td>
+<td>la batterie entière — cinquante minutes</td>
+</tr>
+</tbody></table></div>
+<p>À trois ou quatre sessions, chacune faisait perdre son verdict aux autres en fusionnant. C'est la boucle.</p>
+<h2 id="ce-qui-a-été-corrigé-à-la-racine">Ce qui a été corrigé, à la racine</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>La date est supprimée.</strong> Rien ne la recouvre : elle est retirée du code, pas contournée.</p>
+<p>Ce qui décide est désormais le <strong>contenu</strong> du fichier. La batterie le faisait déjà depuis le 9 septembre — un fichier réécrit à l'identique n'a pas bougé — mais le garde-fou ne pouvait pas s'en servir : c'est un déclencheur, il tourne sans l'outillage TypeScript. Il gardait donc sa propre façon de dire « ce fichier a changé », et les deux ont fini par se contredire. Il n'y en a plus qu'une, et les deux la prennent au même endroit.</p>
+<p><strong>Et ce qui a bougé ne se vaut plus.</strong> Le garde-fou sait déjà ce que le lot ajoute à <code>main</code> : ce qui n'y figure pas n'a pas été écrit ici, c'est arrivé par la fusion.</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Ce qui a bougé depuis la vérification</th>
+<th>Ce qu'il demande maintenant</th>
+</tr></thead><tbody>
+<tr>
+<td>rien (contenu identique)</td>
+<td><strong>rien</strong> : la poussée passe</td>
+</tr>
+<tr>
+<td>un fichier <strong>du lot</strong></td>
+<td>le contrôle de son niveau</td>
+</tr>
+<tr>
+<td><strong>seulement</strong> ce que <code>main</code> a apporté</td>
+<td><code>npx tsx scripts/verifier-apres-fusion.ts</code> — une minute, souvent rien à jouer</td>
+</tr>
+<tr>
+<td>une empreinte illisible</td>
+<td>le contrôle du niveau — ne pas savoir n'est jamais « rien n'a bougé »</td>
+</tr>
+</tbody></table></div>
+<p>Le complément existait déjà depuis ce matin. <strong>Le garde-fou ne le nommait jamais</strong> : il fallait y penser soi-même au bout de trois heures. Il le nomme désormais dans son refus.</p>
+<h2 id="ce-qui-a-été-refusé">Ce qui a été refusé</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Laisser passer une fusion sans rien mesurer</strong> quand <code>main</code> a avancé. Ce que <code>main</code> apporte est passé par son propre contrôle ; ce qui n'a jamais été mesuré, c'est <strong>la rencontre des deux</strong>. Elle coûte une minute — et le plus souvent zéro, quand les deux lots ne se croisent nulle part. La supprimer aurait échangé une boucle de batteries contre un trou.</p>
+<h2 id="ce-qui-prouve-que-ça-tient">Ce qui prouve que ça tient</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><code>scripts/test-garde-fusion-main.ts</code> rejoue la soirée dans un dépôt d'essai à part : un lot vert, <code>main</code> qui avance dessous, la fusion. Il <strong>refuse</strong> que le message de refus contienne « verifier:avant-livraison ».</p>
+<p>Confronté au code d'avant, six de ses cas rougissent. C'est ce qui prouve qu'il mesure quelque chose.</p>
+<h2 id="chiffres-de-ce-lot">Chiffres de ce lot</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td>niveau calculé</td>
+<td><strong>2</strong> (outillage) — <code>npm run verifier:avant-fusion</code></td>
+</tr>
+<tr>
+<td>types (<code>tsc --noEmit</code>)</td>
+<td>0 erreur</td>
+</tr>
+<tr>
+<td>style (<code>lint</code>)</td>
+<td>0 erreur (41 avertissements, tous antérieurs)</td>
+</tr>
+<tr>
+<td>suites jouées</td>
+<td>garde-fusion, batterie-solitaire, portée-batterie, après-fusion, dernier-verdict, code-mort, couches, pansement, scripts-d'entrée — <strong>toutes vertes</strong></td>
+</tr>
+<tr>
+<td>batterie complète</td>
+<td><strong>non jouée</strong> — demandé de n'en lancer aucune</td>
+</tr>
+</tbody></table></div>
+<h2 id="ce-qui-reste-ouvert">Ce qui reste ouvert</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Le lot est sur sa branche, pas sur <code>main</code>. Pour qu'il arrive sur ton espace, il faut jouer <code>npm run verifier:avant-fusion</code> (quelques minutes, pas cinquante) et pousser.</p>
+</main>
+</body>
+</html>

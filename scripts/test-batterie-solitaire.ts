@@ -2,9 +2,8 @@ import assert from "node:assert/strict";
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync, utimesSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
+import { empreinteDesSources, fichiersRemues } from "./_empreinte-des-sources.mjs";
 import {
-  empreinteDesSources,
-  fichiersRemues,
   phraseDuRefus,
   phraseDuVerdictCaduc,
   restesDeBatterie,

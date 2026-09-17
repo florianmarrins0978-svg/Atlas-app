@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { existsSync, mkdtempSync, readFileSync, renameSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, renameSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import {
@@ -14,7 +14,9 @@ import {
   rougesToleres,
   verdictSuffit,
 } from "./_niveau-de-risque.mjs";
-import { cheminDeLaReference, commitCourant, ecrireReference } from "./_reference-batterie.mjs";
+import { empreinteDesSources, fichiersRemues } from "./_empreinte-des-sources.mjs";
+import { SUR_MAIN } from "./_rouge-prealable.mjs";
+import { baseDuLot, cheminDuTemoin } from "./_temoin-de-main.mjs";
 import { construireLeGraphe, routeDeLEcran } from "./_rayon-impact.mjs";
 import { suitesDesRoutes } from "./_suites-ciblees.mjs";
 
@@ -315,7 +317,7 @@ console.log("\n=== Le verdict doit être VERT, au bon niveau, sur CET arbre ==="
 const VERT_3 = { quand: 2_000, vert: true, niveau: 3 };
 
 cas("aucune vérification jouée : refus", () => {
-  const { suffit, raison } = verdictSuffit(null, { niveau: 3, derniereEcriture: 1_000 });
+  const { suffit, raison } = verdictSuffit(null, { niveau: 3 });
   assert.equal(suffit, false);
   assert.match(raison, /aucune vérification/);
 });
@@ -323,31 +325,84 @@ cas("aucune vérification jouée : refus", () => {
 cas("une vérification ROUGE ne vaut pas une vérification", () => {
   // Un rouge qu'on laisse derrière soi ne doit pas ouvrir la fusion : c'est
   // exactement ce que le patron a demandé le 13 septembre.
-  const { suffit, raison } = verdictSuffit({ ...VERT_3, vert: false }, { niveau: 3, derniereEcriture: 1_000 });
+  const { suffit, raison } = verdictSuffit({ ...VERT_3, vert: false }, { niveau: 3 });
   assert.equal(suffit, false);
   assert.match(raison, /ROUGE/);
 });
 
-cas("un fichier touché APRÈS le verdict : refus", () => {
-  const { suffit, raison } = verdictSuffit(VERT_3, { niveau: 3, derniereEcriture: 9_000 });
+cas("un fichier DU LOT réécrit après le verdict : refus, et l'on remesure", () => {
+  const { suffit, raison, remede } = verdictSuffit(VERT_3, {
+    niveau: 3,
+    remues: ["src/lib/mien.ts"],
+    fichiersDuLot: ["src/lib/mien.ts"],
+  });
   assert.equal(suffit, false);
-  assert.match(raison, /l'arbre a changé/);
+  assert.match(raison, /le lot a changé/);
+  assert.equal(remede, "niveau");
+});
+
+// ─── SA COLÈRE DU 17 SEPTEMBRE 2026 ────────────────────────────────────────
+//
+// *« Les sessions rejouent des batteries en boucle juste parce qu'une a touché
+// un fichier. »* Le garde-fou comparait des DATES : une fusion réécrit ce
+// qu'elle apporte, donc toute avancée de `main` périmait le verdict d'un lot
+// vert et réclamait cinquante minutes. Ces trois cas-là tiennent la règle.
+
+cas("un fichier réécrit À L'IDENTIQUE ne périme rien — c'est le contenu qui décide", () => {
+  // `fichiersRemues` compare des contenus : une fusion, un changement de
+  // branche ou un `git checkout` qui réécrit sans rien changer ne remue rien.
+  const avant = new Map([["src/lib/mien.ts", { date: 1_000, empreinte: "aaa" }]]);
+  const apres = new Map([["src/lib/mien.ts", { date: 9_999, empreinte: "aaa" }]]);
+  assert.deepEqual(fichiersRemues(avant, apres), []);
+  assert.equal(verdictSuffit(VERT_3, { niveau: 3, remues: [], fichiersDuLot: ["src/lib/mien.ts"] }).suffit, true);
+});
+
+cas("ce que « main » a apporté renvoie au COMPLÉMENT, jamais à la batterie", () => {
+  const { suffit, raison, remede } = verdictSuffit(VERT_3, {
+    niveau: 3,
+    remues: ["src/lib/venu-de-main.ts"],
+    fichiersDuLot: ["src/lib/mien.ts"],
+  });
+  assert.equal(suffit, false, "ce qui vient de main n'a jamais été mesuré AVEC le lot");
+  assert.match(raison, /main/);
+  assert.equal(remede, "complement", "une avancée de main a réclamé la batterie entière");
+});
+
+cas("un fichier remué hors du lot alors que main n'a pas bougé : on remesure, sans renvoyer au complément", () => {
+  // Le complément ne sait compléter qu'un lot que `main` a dépassé. Sans cette
+  // question, le refus renverrait vers un refus — la boucle qu'on retire.
+  const { suffit, remede } = verdictSuffit(VERT_3, {
+    niveau: 3,
+    remues: ["src/lib/engendre.js"],
+    fichiersDuLot: ["src/lib/mien.ts"],
+    mainABouge: false,
+  });
+  assert.equal(suffit, false);
+  assert.equal(remede, "niveau");
+});
+
+cas("un verdict sans empreinte ne s'absout pas : on remesure", () => {
+  // Ne pas savoir n'est jamais « rien n'a bougé » — le garde-fou passe alors
+  // `fichiersDuLot: null`, et le remède redevient le niveau du lot.
+  const { suffit, remede } = verdictSuffit(VERT_3, { niveau: 3, remues: ["inconnu"], fichiersDuLot: null });
+  assert.equal(suffit, false);
+  assert.equal(remede, "niveau");
 });
 
 cas("un niveau 2 ne suffit pas pour un lot de niveau 3", () => {
-  const { suffit, raison } = verdictSuffit({ ...VERT_3, niveau: 2 }, { niveau: 3, derniereEcriture: 1_000 });
+  const { suffit, raison } = verdictSuffit({ ...VERT_3, niveau: 2 }, { niveau: 3 });
   assert.equal(suffit, false);
   assert.match(raison, /niveau 2/);
 });
 
 cas("une trace d'AVANT le champ « niveau » ne suffit pas non plus", () => {
-  const { suffit } = verdictSuffit({ quand: 2_000, vert: true }, { niveau: 2, derniereEcriture: 1_000 });
+  const { suffit } = verdictSuffit({ quand: 2_000, vert: true }, { niveau: 2 });
   assert.equal(suffit, false, "un verdict sans niveau a été pris pour suffisant");
 });
 
 cas("le bon niveau sur un arbre inchangé passe", () => {
-  assert.equal(verdictSuffit(VERT_3, { niveau: 3, derniereEcriture: 1_000 }).suffit, true);
-  assert.equal(verdictSuffit(VERT_3, { niveau: 2, derniereEcriture: 1_000 }).suffit, true);
+  assert.equal(verdictSuffit(VERT_3, { niveau: 3 }).suffit, true);
+  assert.equal(verdictSuffit(VERT_3, { niveau: 2 }).suffit, true);
 });
 
 console.log("\n=== Un ROUGE n'ouvre la porte que s'il n'a AUCUN rouge nouveau par rapport à main ===");
@@ -356,70 +411,166 @@ console.log("\n=== Un ROUGE n'ouvre la porte que s'il n'a AUCUN rouge nouveau pa
 // doit bloquer. Un nouveau test rouge doit bloquer. Un rouge préexistant
 // identique ne doit pas empêcher éternellement toutes les futures fusions. »
 
-const REFERENCE = { quand: 1_500, commit: "abcdef0123456789", rouges: ["test-outil-a.ts", "test-outil-b.ts"], niveau: 3 };
+const BASE = "abcdef0123456789";
+// Ce que la comparaison ciblée a rendu : ces deux-là sont rouges sur la base
+// de `main` elle-même — elles n'ont pas été cassées par le lot.
+const SUR_LA_BASE = {
+  base: BASE,
+  suites: { "test-outil-a.ts": SUR_MAIN.PAREIL, "test-outil-b.ts": SUR_MAIN.PAREIL },
+};
 const ROUGE_CONNU = { quand: 2_000, vert: false, niveau: 3, rouges: ["test-outil-a.ts", "test-outil-b.ts"], rougesHorsSuites: [] };
 
 cas("les MÊMES rouges que main, et rien d'autre : la fusion s'ouvre, et dit ce qu'elle tolère", () => {
-  const r = verdictSuffit(ROUGE_CONNU, { niveau: 3, derniereEcriture: 1_000, reference: REFERENCE, referenceEstAncetre: true });
+  const r = verdictSuffit(ROUGE_CONNU, { niveau: 3, reponses: SUR_LA_BASE, base: BASE });
   assert.equal(r.suffit, true, r.raison);
   assert.deepEqual(r.toleres, ["test-outil-a.ts", "test-outil-b.ts"]);
 });
 
 cas("un sous-ensemble des rouges de main passe aussi — un rouge réparé n'est pas un rouge nouveau", () => {
-  const r = rougesToleres({ ...ROUGE_CONNU, rouges: ["test-outil-b.ts"] }, REFERENCE, true);
+  const r = rougesToleres({ ...ROUGE_CONNU, rouges: ["test-outil-b.ts"] }, SUR_LA_BASE, BASE);
   assert.equal(r.ok, true);
 });
 
 cas("une suite VERTE SUR MAIN devenue rouge : refus, et elle est NOMMÉE", () => {
-  const r = rougesToleres({ ...ROUGE_CONNU, rouges: ["test-outil-a.ts", "test-facture-e2e.ts"] }, REFERENCE, true);
+  const r = rougesToleres(
+    { ...ROUGE_CONNU, rouges: ["test-outil-a.ts", "test-facture-e2e.ts"] },
+    { base: BASE, suites: { ...SUR_LA_BASE.suites, "test-facture-e2e.ts": SUR_MAIN.CASSE_PAR_LE_LOT } },
+    BASE
+  );
   assert.equal(r.ok, false);
-  assert.match(r.raison, /1 nouveau\(x\) rouge\(s\)/);
+  assert.match(r.raison, /1 régression\(s\) NOUVELLE\(s\)/);
   assert.match(r.raison, /test-facture-e2e\.ts/);
   assert.doesNotMatch(r.raison, /test-outil-a/, "un rouge connu a été présenté comme nouveau");
 });
 
 cas("une suite NOUVELLE et rouge : refus — elle n'existait pas sur main, donc elle n'y était pas rouge", () => {
-  const r = rougesToleres({ ...ROUGE_CONNU, rouges: ["test-outil-a.ts", "test-toute-neuve.ts"] }, REFERENCE, true);
+  const r = rougesToleres(
+    { ...ROUGE_CONNU, rouges: ["test-outil-a.ts", "test-toute-neuve.ts"] },
+    { base: BASE, suites: { ...SUR_LA_BASE.suites, "test-toute-neuve.ts": SUR_MAIN.CASSE_PAR_LE_LOT } },
+    BASE
+  );
   assert.equal(r.ok, false);
   assert.match(r.raison, /test-toute-neuve\.ts/);
 });
 
 cas("une étape HORS SUITES tombée (types, construction, connexion) : refus, quoi que dise la référence", () => {
-  const r = rougesToleres({ ...ROUGE_CONNU, rougesHorsSuites: ["Construction"] }, REFERENCE, true);
+  const r = rougesToleres({ ...ROUGE_CONNU, rougesHorsSuites: ["Construction"] }, SUR_LA_BASE, BASE);
   assert.equal(r.ok, false);
   assert.match(r.raison, /hors des suites : Construction/);
 });
 
 cas("un bilan INCOMPLET (le serveur est mort au milieu) : refus — un rouge sans nom est un rouge nouveau", () => {
-  const r = rougesToleres({ ...ROUGE_CONNU, rougesHorsSuites: ["Suites navigateur (bilan incomplet)"] }, REFERENCE, true);
+  const r = rougesToleres({ ...ROUGE_CONNU, rougesHorsSuites: ["Suites navigateur (bilan incomplet)"] }, SUR_LA_BASE, BASE);
   assert.equal(r.ok, false);
 });
 
 cas("un verdict d'AVANT le champ « rouges » : refus, on rejoue", () => {
-  const r = rougesToleres({ quand: 2_000, vert: false, niveau: 3 }, REFERENCE, true);
+  const r = rougesToleres({ quand: 2_000, vert: false, niveau: 3 }, SUR_LA_BASE, BASE);
   assert.equal(r.ok, false);
   assert.match(r.raison, /sans la liste/);
 });
 
-cas("SANS référence mesurée sur main : la règle d'avant — un rouge ne passe pas", () => {
-  const r = rougesToleres(ROUGE_CONNU, null, false);
+cas("SANS comparaison jouée : on ne sait pas, donc on bloque — jamais « c'était déjà rouge »", () => {
+  const r = rougesToleres(ROUGE_CONNU, null, BASE);
   assert.equal(r.ok, false);
-  assert.match(r.raison, /aucun état de référence/);
+  assert.match(r.raison, /dont on ne sait pas/);
 });
 
-cas("une référence qui n'est PAS dans l'histoire du lot ne dit rien de lui : refus", () => {
-  const r = rougesToleres(ROUGE_CONNU, REFERENCE, false);
+// **Une réponse mesurée sur une AUTRE base ne dit rien de celle-ci** : entre
+// deux commits de `main`, quelqu'un a pu casser ou réparer la suite.
+cas("une comparaison faite sur une autre base de main ne vaut pas pour ce lot", () => {
+  const r = rougesToleres(ROUGE_CONNU, { ...SUR_LA_BASE, base: "0000000000000000" }, BASE);
   assert.equal(r.ok, false);
-  assert.match(r.raison, /n'est pas dans l'histoire/);
+  assert.match(r.raison, /dont on ne sait pas/);
+});
+
+cas("une suite dont la comparaison n'a rien pu conclure bloque, elle seule", () => {
+  const r = rougesToleres(
+    { ...ROUGE_CONNU, rouges: ["test-outil-a.ts", "test-brumeuse.ts"] },
+    { base: BASE, suites: { ...SUR_LA_BASE.suites, "test-brumeuse.ts": SUR_MAIN.INDETERMINE } },
+    BASE
+  );
+  assert.equal(r.ok, false);
+  assert.match(r.raison, /test-brumeuse\.ts/);
+  assert.doesNotMatch(r.raison, /test-outil-a/, "un rouge tranché a été présenté comme douteux");
+});
+
+// ─── SES CAS À PROUVER — 17 septembre 2026 ─────────────────────────────────
+
+cas("A · main rouge, lot sans rapport toujours rouge : fusion autorisée, sans batterie sur main", () => {
+  const r = rougesToleres(
+    { rouges: ["test-accueil-vide-porte-e2e.ts"], rougesHorsSuites: [] },
+    { base: BASE, suites: { "test-accueil-vide-porte-e2e.ts": SUR_MAIN.PAREIL } },
+    BASE
+  );
+  assert.equal(r.ok, true, r.raison);
+  assert.deepEqual(r.toleres, ["test-accueil-vide-porte-e2e.ts"]);
+});
+
+cas("B · main vert, lot rouge à conditions égales : fusion refusée", () => {
+  const r = rougesToleres(
+    { rouges: ["test-planning-e2e.ts"], rougesHorsSuites: [] },
+    { base: BASE, suites: { "test-planning-e2e.ts": SUR_MAIN.CASSE_PAR_LE_LOT } },
+    BASE
+  );
+  assert.equal(r.ok, false);
+  assert.match(r.raison, /régression\(s\) NOUVELLE\(s\)/);
+});
+
+cas("C · un lot de niveau 2 avec un rouge préexistant ailleurs RESTE de niveau 2", () => {
+  // Le niveau se calcule sur le diff du lot, jamais sur l'état de `main` : un
+  // rouge d'une autre zone du produit n'entre dans aucune des trois
+  // composantes — plancher, rayon, gravité.
+  const lot = evaluerLeLot(["src/components/atlas/MoisCharge.tsx"], { racine: RACINE });
+  assert.equal(lot.niveau, 2, `niveau ${lot.niveau} : ${lot.raison}`);
+  const r = verdictSuffit(
+    { quand: 2_000, vert: false, niveau: 2, rouges: ["test-outil-a.ts"], rougesHorsSuites: [] },
+    {
+      niveau: lot.niveau,
+            reponses: { base: BASE, suites: { "test-outil-a.ts": SUR_MAIN.PAREIL } },
+      base: BASE,
+    }
+  );
+  assert.equal(r.suffit, true, r.raison);
+});
+
+cas("D · un lot de niveau 3 exige toujours la batterie entière, pour SON propre risque", () => {
+  const lot = evaluerLeLot(["drizzle/0099_une_migration.sql"], { racine: RACINE });
+  assert.equal(lot.niveau, 3, lot.raison);
+  const r = verdictSuffit(
+    { quand: 2_000, vert: true, niveau: 2 },
+    { niveau: lot.niveau, reponses: null, base: BASE }
+  );
+  assert.equal(r.suffit, false, "un verdict de niveau 2 a ouvert un lot de niveau 3");
+});
+
+cas("E · le rouge d'une session n'en bloque pas une autre s'il ne vient pas de son diff", () => {
+  // Deux lots sans rapport, la même suite rouge venue d'ailleurs : les deux
+  // passent, chacun de son côté, sans rien attendre de l'autre.
+  const venuDAilleurs = { base: BASE, suites: { "test-accueil-vide-porte-e2e.ts": SUR_MAIN.PAREIL } };
+  for (const lot of [["src/app/planning/PlanningClient.tsx"], ["src/components/atlas/MoisCharge.tsx"]]) {
+    const niveau = evaluerLeLot(lot, { racine: RACINE }).niveau;
+    const r = verdictSuffit(
+      { quand: 2_000, vert: false, niveau, rouges: ["test-accueil-vide-porte-e2e.ts"], rougesHorsSuites: [] },
+      { niveau, reponses: venuDAilleurs, base: BASE }
+    );
+    assert.equal(r.suffit, true, `${lot[0]} : ${r.raison}`);
+  }
 });
 
 cas("tolérer un rouge connu ne dispense ni du niveau ni de l'arbre inchangé", () => {
   assert.equal(
-    verdictSuffit({ ...ROUGE_CONNU, niveau: 2 }, { niveau: 3, derniereEcriture: 1_000, reference: REFERENCE, referenceEstAncetre: true }).suffit,
+    verdictSuffit({ ...ROUGE_CONNU, niveau: 2 }, { niveau: 3, reponses: SUR_LA_BASE, base: BASE }).suffit,
     false
   );
   assert.equal(
-    verdictSuffit(ROUGE_CONNU, { niveau: 3, derniereEcriture: 9_000, reference: REFERENCE, referenceEstAncetre: true }).suffit,
+    verdictSuffit(ROUGE_CONNU, {
+      niveau: 3,
+      remues: ["src/lib/mien.ts"],
+      fichiersDuLot: ["src/lib/mien.ts"],
+      reponses: SUR_LA_BASE,
+      base: BASE,
+    }).suffit,
     false
   );
 });
@@ -432,10 +583,12 @@ const avaitUnVerdict = existsSync(TEMOIN);
 if (avaitUnVerdict) renameSync(TEMOIN, SAUVEGARDE);
 // La référence de la machine est mise de côté de la même façon : ces cas en
 // écrivent une à eux, et celle qui existait doit revenir intacte.
-const REFERENCE_MACHINE = cheminDeLaReference(RACINE)!;
-const REFERENCE_SAUVEE = `${REFERENCE_MACHINE}.epreuve`;
-const avaitUneReference = existsSync(REFERENCE_MACHINE);
-if (avaitUneReference) renameSync(REFERENCE_MACHINE, REFERENCE_SAUVEE);
+// La comparaison ciblée vit dans le `.git` commun : on met de côté celle de la
+// machine le temps de l'épreuve, et on la rend à la fin.
+const REPONSES_MACHINE = path.join(path.dirname(cheminDuTemoin(RACINE)!), "atlas-rouges-prealables.json");
+const REPONSES_SAUVEES = `${REPONSES_MACHINE}.epreuve`;
+const avaitDesReponses = existsSync(REPONSES_MACHINE);
+if (avaitDesReponses) renameSync(REPONSES_MACHINE, REPONSES_SAUVEES);
 // **Un lot à éprouver, quel que soit l'arbre du jour — 16 septembre 2026.** Ces
 // cas jouent le hook sur le VRAI diff avec origin/main. Sur un main propre —
 // exactement l'état où l'on mesure la référence — ce diff est vide, le lot vaut
@@ -464,17 +617,21 @@ try {
 
   cas("avec le verdict de CET arbre au bon niveau, la fusion passe", () => {
     // Un verdict vert de niveau 3, postérieur à tout ce que l'arbre porte.
-    writeFileSync(TEMOIN, JSON.stringify({ quand: Date.now() + 60_000, vert: true, niveau: 3, empreinte: [] }));
+    writeFileSync(TEMOIN, JSON.stringify({ quand: Date.now(), vert: true, niveau: 3, empreinte: [...empreinteDesSources(RACINE)] }));
     assert.equal(jouer("git push origin claude/mon-lot:main").refuse, false);
   });
 
   cas("un verdict ROUGE dont chaque rouge est déjà rouge sur main OUVRE la fusion, en le disant", () => {
-    // La référence est écrite dans le .git commun de CE dépôt, sur le commit
-    // courant — donc forcément un ancêtre. Sauvegardée et rendue plus bas.
-    ecrireReference(RACINE, { quand: 1_000, commit: commitCourant(RACINE)!, rouges: ["test-outil-windows.ts"], niveau: 3 });
+
+    // Ce que la comparaison ciblée a rendu sur la base de CE lot : la suite y
+    // est déjà rouge, elle ne vient donc pas d'ici.
+    writeFileSync(
+      REPONSES_MACHINE,
+      JSON.stringify({ base: baseDuLot(RACINE), suites: { "test-outil-windows.ts": SUR_MAIN.PAREIL } })
+    );
     writeFileSync(
       TEMOIN,
-      JSON.stringify({ quand: Date.now() + 60_000, vert: false, niveau: 3, empreinte: [], rouges: ["test-outil-windows.ts"], rougesHorsSuites: [] })
+      JSON.stringify({ quand: Date.now(), vert: false, niveau: 3, empreinte: [...empreinteDesSources(RACINE)], rouges: ["test-outil-windows.ts"], rougesHorsSuites: [] })
     );
     const { refuse, message } = jouer("git push origin claude/mon-lot:main");
     assert.equal(refuse, false, `refusé : ${message}`);
@@ -486,10 +643,10 @@ try {
     writeFileSync(
       TEMOIN,
       JSON.stringify({
-        quand: Date.now() + 60_000,
+        quand: Date.now(),
         vert: false,
         niveau: 3,
-        empreinte: [],
+        empreinte: [...empreinteDesSources(RACINE)],
         rouges: ["test-outil-windows.ts", "test-facture-e2e.ts"],
         rougesHorsSuites: [],
       })
@@ -510,7 +667,7 @@ try {
       // Un lot de niveau 2 là-bas — un fichier d'outillage en attente —, pour
       // que le hook ait quelque chose à juger.
       writeFileSync(path.join(session, "scripts", "_epreuve-garde-fusion-session.mjs"), "// éphémère\n");
-      writeFileSync(path.join(session, FICHIER_VERDICT), JSON.stringify({ quand: Date.now() + 60_000, vert: true, niveau: 3, empreinte: [] }));
+      writeFileSync(path.join(session, FICHIER_VERDICT), JSON.stringify({ quand: Date.now(), vert: true, niveau: 3, empreinte: [...empreinteDesSources(session)] }));
       assert.equal(jouer(`git -C "${session}" push origin HEAD:main`).refuse, false, "le verdict vert du dossier visé n'a pas été lu");
       rmSync(path.join(session, FICHIER_VERDICT), { force: true });
       assert.equal(jouer(`git -C "${session}" push origin HEAD:main`).refuse, true, "sans verdict là-bas, la poussée devait être refusée");
@@ -519,12 +676,93 @@ try {
     }
   });
 
-  cas("un verdict d'un autre arbre ne suffit plus", () => {
-    // Le même, mais rendu AVANT le dernier fichier écrit : l'arbre a bougé.
-    writeFileSync(TEMOIN, JSON.stringify({ quand: 1_000, vert: true, niveau: 3, empreinte: [] }));
+  cas("un verdict qui ne connaît pas un fichier DU LOT ne suffit pas", () => {
+    // L'empreinte de la vérification, moins le fichier que le lot ajoute : ce
+    // fichier-là n'a donc jamais été mesuré, et c'est bien le lot qui a bougé.
+    const empreinte = empreinteDesSources(RACINE);
+    empreinte.delete(path.relative(RACINE, LOT_D_EPREUVE));
+    writeFileSync(TEMOIN, JSON.stringify({ quand: Date.now(), vert: true, niveau: 3, empreinte: [...empreinte] }));
     const { refuse, message } = jouer("git push origin claude/mon-lot:main");
     assert.ok(refuse, "un verdict périmé a été accepté");
-    assert.match(message, /l'arbre a changé/);
+    assert.match(message, /le lot a changé/);
+    assert.match(message, /verifier:avant-(fusion|livraison)/, "le refus ne dit pas quoi rejouer");
+  });
+
+  // ─── LA SOIRÉE DU 17 SEPTEMBRE 2026, REJOUÉE EN ENTIER ───────────────────
+  //
+  // *« Les sessions rejouent des batteries en boucle juste parce qu'une a
+  // touché un fichier. »* Le scénario exact, dans un dépôt à part : un lot
+  // vert, `main` qui avance dessous, la fusion — et ce que le garde-fou
+  // annonce alors. Un dépôt d'essai, et non celui-ci, parce qu'il faut faire
+  // bouger `main` pour de bon, ce qu'on ne fait pas dans l'arbre d'une session
+  // voisine (`CLAUDE.md` §1.0).
+  cas("main qui avance sous un lot vert ne redemande JAMAIS la batterie", () => {
+    const d = mkdtempSync(path.join(tmpdir(), "atlas-fusion-"));
+    const g = (...a: string[]) => execFileSync("git", ["-C", d, ...a], { stdio: "ignore" });
+    // **Le verdict porte le commit mesuré**, comme celui que déposent les deux
+    // commandes de vérification : c'est lui qui dit si `main` a avancé depuis.
+    const verdictDe = (racine: string) =>
+      writeFileSync(
+        path.join(racine, FICHIER_VERDICT),
+        JSON.stringify({
+          quand: Date.now(),
+          vert: true,
+          niveau: 3,
+          empreinte: [...empreinteDesSources(racine)],
+          commit: execFileSync("git", ["-C", racine, "rev-parse", "HEAD"], { encoding: "utf8" }).trim(),
+        })
+      );
+    try {
+      g("init", "-q", "-b", "main");
+      g("config", "user.email", "essai@atlas.test");
+      g("config", "user.name", "Épreuve");
+      mkdirSync(path.join(d, "src", "lib"), { recursive: true });
+      mkdirSync(path.join(d, "scripts"), { recursive: true });
+      writeFileSync(path.join(d, "src/lib/commun.ts"), "export const commun = 1;\n");
+      writeFileSync(path.join(d, "src/lib/mien.ts"), "export const mien = 1;\n");
+      g("add", "-A");
+      g("commit", "-qm", "socle");
+      g("update-ref", "refs/remotes/origin/main", "HEAD");
+
+      // Le lot : un fichier à soi, éprouvé au vert.
+      g("checkout", "-q", "-b", "lot");
+      writeFileSync(path.join(d, "src/lib/mien.ts"), "export const mien = 2;\n");
+      g("add", "-A");
+      g("commit", "-qm", "le lot");
+      verdictDe(d);
+      assert.equal(jouer(`git -C "${d}" push origin HEAD:main`).refuse, false, "un lot vert et intact a été refusé");
+
+      // Une session voisine fusionne ; on refusionne, comme le dépôt l'exige.
+      g("checkout", "-q", "main");
+      writeFileSync(path.join(d, "src/lib/commun.ts"), "export const commun = 2;\n");
+      g("add", "-A");
+      g("commit", "-qm", "le lot d'a côté");
+      g("update-ref", "refs/remotes/origin/main", "HEAD");
+      g("checkout", "-q", "lot");
+      g("merge", "-q", "--no-edit", "main");
+
+      const apresFusion = jouer(`git -C "${d}" push origin HEAD:main`);
+      assert.ok(apresFusion.refuse, "la rencontre avec main n'avait jamais été mesurée");
+      assert.match(apresFusion.message, /verifier-apres-fusion/, "le remède annoncé n'est pas le complément");
+      assert.doesNotMatch(
+        apresFusion.message,
+        /verifier:avant-livraison/,
+        "CINQUANTE MINUTES réclamées parce qu'une autre session a fusionné : c'est la boucle du 17 septembre"
+      );
+
+      // Et un fichier réécrit à l'identique ne change rien de plus.
+      writeFileSync(path.join(d, "src/lib/mien.ts"), "export const mien = 2;\n");
+      const reecrit = jouer(`git -C "${d}" push origin HEAD:main`);
+      assert.doesNotMatch(reecrit.message, /le lot a changé/, "une réécriture à l'identique a été prise pour un changement");
+
+      // Le lot, lui, ne s'absout pas : s'il bouge, on remesure.
+      writeFileSync(path.join(d, "src/lib/mien.ts"), "export const mien = 3;\n");
+      const change = jouer(`git -C "${d}" push origin HEAD:main`);
+      assert.ok(change.refuse);
+      assert.match(change.message, /le lot a changé/, "un lot modifié après son verdict est passé");
+    } finally {
+      rmSync(d, { recursive: true, force: true });
+    }
   });
 
   cas("un verdict de NIVEAU 2 ne retient pas la batterie complète", () => {
@@ -558,8 +796,8 @@ try {
   rmSync(LOT_D_EPREUVE, { force: true });
   rmSync(TEMOIN, { force: true });
   if (avaitUnVerdict) renameSync(SAUVEGARDE, TEMOIN);
-  rmSync(REFERENCE_MACHINE, { force: true });
-  if (avaitUneReference) renameSync(REFERENCE_SAUVEE, REFERENCE_MACHINE);
+  rmSync(REPONSES_MACHINE, { force: true });
+  if (avaitDesReponses) renameSync(REPONSES_SAUVEES, REPONSES_MACHINE);
 }
 
 console.log(`\n${echecs === 0 ? "✅" : "❌"} Le garde-fou de la fusion — ${echecs} échec(s).`);

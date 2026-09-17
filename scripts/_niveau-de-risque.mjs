@@ -29,6 +29,7 @@
  * l'accorder.
  * ═══════════════════════════════════════════════════════════════════════════
  */
+import { decisionSurLesRouges, surMainPourCetteBase } from "./_rouge-prealable.mjs";
 import { execFileSync } from "node:child_process";
 import path from "node:path";
 import { construireLeGraphe, routeDeLEcran } from "./_rayon-impact.mjs";
@@ -289,61 +290,150 @@ export function dossierDeLaCommande(commande, defaut) {
 /**
  * Le verdict lu est-il celui de CET arbre, et d'un niveau suffisant ?
  *
- * L'empreinte compte autant que le niveau : une vérification verte sur l'état
- * d'avant ne dit rien de celui d'après — « le verrou EMPÊCHE, l'empreinte
- * DIT » (`CLAUDE.md` §5).
+ * ═══════════════════════════════════════════════════════════════════════════
+ * **CE QUI A CHANGÉ LE 17 SEPTEMBRE 2026, ET CE QUE ÇA A COÛTÉ.**
+ *
+ * Sa colère : *« maintenant les sessions rejouent des batteries en boucle juste
+ * parce qu'une a touché un fichier »*.
+ *
+ * Ce garde-fou comparait **la date de la dernière écriture** dans l'arbre à
+ * l'instant du verdict. Or une fusion RÉÉCRIT les fichiers qu'elle apporte —
+ * et, selon le geste git, jusqu'à ceux dont le contenu ne bouge pas. Toute
+ * avancée de `main`, même à l'autre bout du produit, périmait donc le verdict
+ * d'un lot vert, et le refus n'annonçait qu'une chose : la batterie entière,
+ * cinquante minutes. Trois sessions côte à côte se la renvoyaient sans fin.
+ *
+ * **La date est morte, et rien ne la remplace en double** : ce qui décide est
+ * le CONTENU, relevé par la seule fonction qui sache le dire dans ce dépôt
+ * (`_empreinte-des-sources.mjs`, partagée avec la batterie). Un fichier réécrit
+ * à l'identique n'a pas bougé — c'est déjà la leçon du 9 septembre, que ce
+ * garde-fou-ci n'avait jamais apprise.
+ *
+ * **Et ce qui a bougé ne se vaut pas.** Deux cas, deux remèdes :
+ *
+ *   · **le LOT a changé** depuis sa vérification — ce n'est plus ce qui a été
+ *     mesuré : on remesure, au niveau du lot ;
+ *   · **seul ce que `main` a apporté** a changé — chacun de ces commits est
+ *     passé par SON propre garde-fou ; ce qui n'a jamais été mesuré, c'est la
+ *     RENCONTRE des deux. Elle se joue en une minute
+ *     (`verifier-apres-fusion.ts`), et le plus souvent elle est vide. **Jamais
+ *     la batterie entière** : c'est sa règle du 17 septembre, *« le fait que
+ *     main change […] ne doit jamais, à lui seul, provoquer une nouvelle
+ *     batterie complète »*.
+ *
+ * Le remède se rend à l'appelant (`remede`) plutôt que d'être deviné par lui :
+ * c'est cette phrase-là que la session lit, et elle décidait de cinquante
+ * minutes.
+ * ═══════════════════════════════════════════════════════════════════════════
  */
 /**
- * @typedef {{ commit: string, rouges: string[], quand?: number, niveau?: number }} Reference
+ * @typedef {{ base?: string, suites?: Record<string, string> }} ReponsesSurMain
  * @param {{ quand: number, vert?: boolean, niveau?: number, rouges?: string[], rougesHorsSuites?: string[] } | null} verdict
- * @param {{ niveau: number, derniereEcriture: number, reference?: Reference | null, referenceEstAncetre?: boolean }} options
+ * @param {{ niveau: number, remues?: string[], fichiersDuLot?: string[] | null, mainABouge?: boolean, reponses?: ReponsesSurMain | null, base?: string | null }} options
  */
-export function verdictSuffit(verdict, { niveau, derniereEcriture, reference = null, referenceEstAncetre = false }) {
-  if (!verdict) return { suffit: false, raison: "aucune vérification n'a été jouée", toleres: [] };
+export function verdictSuffit(verdict, { niveau, remues = [], fichiersDuLot = null, mainABouge = true, reponses = null, base = null }) {
+  if (!verdict) return { suffit: false, raison: "aucune vérification n'a été jouée", toleres: [], remede: "niveau" };
   let toleres = [];
   if (verdict.vert !== true) {
-    const rouge = rougesToleres(verdict, reference, referenceEstAncetre);
-    if (!rouge.ok) return { suffit: false, raison: rouge.raison, toleres: [] };
+    const rouge = rougesToleres(verdict, reponses, base);
+    if (!rouge.ok) return { suffit: false, raison: rouge.raison, toleres: [], remede: "niveau" };
     toleres = rouge.toleres;
   }
   if ((verdict.niveau ?? 0) < niveau) {
-    return { suffit: false, raison: `la vérification jouée était de niveau ${verdict.niveau ?? "?"}`, toleres: [] };
+    return { suffit: false, raison: `la vérification jouée était de niveau ${verdict.niveau ?? "?"}`, toleres: [], remede: "niveau" };
   }
-  if (derniereEcriture > verdict.quand) {
-    return { suffit: false, raison: "l'arbre a changé depuis la dernière vérification", toleres: [] };
+  const bouge = quiABouge(remues, fichiersDuLot, mainABouge);
+  if (bouge) return { ...bouge, toleres: [] };
+  return { suffit: true, raison: "", toleres, remede: null };
+}
+
+/** Le même chemin écrit d'une seule façon — une empreinte de Windows rend des « \ ». */
+const meme = (chemin) => String(chemin).split("\\").join("/");
+
+/**
+ * CE QUI A BOUGÉ DEPUIS LE VERDICT, ET À QUI C'EST.
+ *
+ * `fichiersDuLot` est la liste que le garde-fou mesure déjà pour calculer le
+ * niveau (`cheminsDuLot`) : ce que le lot ajoute à `main`, commité ou non. Un
+ * fichier remué qui n'y figure pas n'a donc pas été écrit ici — il est arrivé
+ * par la fusion.
+ *
+ * **`null` veut dire « on n'a pas su lire le lot »**, et cela ne s'absout pas :
+ * on remesure au niveau du lot. Ne pas savoir n'est jamais « ça vient
+ * d'ailleurs » (`.claude/rules/testing.md`).
+ *
+ * **`mainABouge` ferme un refus en cascade.** Le complément ne sait compléter
+ * qu'un lot que `main` a dépassé : lui envoyer quelqu'un dont `main` n'a pas
+ * bougé, c'est un refus qui renvoie à un refus qui renvoie à la batterie —
+ * exactement la boucle qu'on vient de retirer. Ce cas-là existe : un fichier
+ * ignoré de git, écrit sous `src/`, est remué sans appartenir au lot.
+ *
+ * @param {string[]} remues
+ * @param {string[] | null} fichiersDuLot
+ * @param {boolean} mainABouge
+ */
+function quiABouge(remues, fichiersDuLot, mainABouge) {
+  if (remues.length === 0) return null;
+  const trois = (l) => l.slice(0, 3).join(", ") + (l.length > 3 ? `, et ${l.length - 3} autre(s)` : "");
+  if (!fichiersDuLot) {
+    return { suffit: false, raison: `l'arbre a changé depuis la vérification (${trois(remues.map(meme))})`, remede: "niveau" };
   }
-  return { suffit: true, raison: "", toleres };
+  const duLot = new Set(fichiersDuLot.map(meme));
+  const ecritsIci = remues.map(meme).filter((f) => duLot.has(f));
+  if (ecritsIci.length > 0) {
+    return { suffit: false, raison: `le lot a changé depuis sa vérification (${trois(ecritsIci)})`, remede: "niveau" };
+  }
+  if (!mainABouge) {
+    return {
+      suffit: false,
+      raison: `l'arbre a changé hors du lot, et « main » n'a pas bougé (${trois(remues.map(meme))})`,
+      remede: "niveau",
+    };
+  }
+  return {
+    suffit: false,
+    raison:
+      `le lot n'a pas bougé, mais « main » a apporté ${remues.length} fichier(s) depuis la vérification ` +
+      `(${trois(remues.map(meme))})`,
+    remede: "complement",
+  };
 }
 
 /**
  * UN VERDICT ROUGE PEUT-IL QUAND MÊME OUVRIR LA FUSION ? — sa règle du
- * 16 septembre 2026 :
+ * 17 septembre 2026, qui remplace celle du 16 :
  *
- *   « état de référence connu + nouveau lot → aucun nouveau rouge autorisé.
- *     Un test qui était vert avant et devient rouge doit bloquer.
- *     Un nouveau test rouge doit bloquer.
- *     Un rouge préexistant identique ne doit pas empêcher éternellement
- *     toutes les futures fusions. »
+ *   « Le garde doit répondre à une seule question : ce lot introduit-il une
+ *     NOUVELLE régression ? […] Ne pas lancer toute la batterie sur main. Pour
+ *     chaque contrôle rouge uniquement : rejouer CE contrôle sur une copie
+ *     propre du commit de référence de main. »
  *
- * La référence est ce que la batterie a MESURÉ sur `main`, sur cette machine
- * (`_reference-batterie.mjs`) — jamais une liste écrite à la main : il l'a
- * refusée, et à raison, une liste qui abaisse le niveau vieillit sans le dire.
+ * **CE QUI A ÉTÉ SUPPRIMÉ, et pourquoi.** La version du 16 septembre comparait
+ * à un **état global de `main`** — les suites rouges relevées par une batterie
+ * entière jouée sur un arbre propre. Tant que cette mesure n'existait pas, un
+ * verdict rouge fermait la porte, même sur un rouge d'une autre zone du
+ * produit : le seul remède coûtait trente à cinquante minutes, à repayer à
+ * chaque `main` qui avance. Le 17 septembre, un lot du planning prêt depuis le
+ * matin est resté bloqué par la porte du devis de l'accueil, cassée ailleurs.
  *
- * Tout ce qui n'est pas exactement « les mêmes suites rouges que `main`, et
- * rien d'autre » ferme la porte :
+ * **Ce qui le remplace : la comparaison CIBLÉE** — chaque suite rouge rejouée
+ * sur la base de `main`, elle seule (`_rouge-prealable.mjs`,
+ * `verifier-rouge-prealable.ts`). Le commit git suffit ; aucun état global.
+ *
+ * **Ce qui ferme toujours la porte** :
  *   · un verdict d'avant le champ `rouges` — rien à comparer ;
- *   · une étape hors suites (types, construction, connexion…) ou un bilan qui
- *     ne tombe pas juste — un rouge sans nom est un rouge nouveau ;
- *   · pas de référence, ou une référence qui n'est pas dans l'histoire de ce
- *     lot — on ne compare pas à un `main` que le lot ne connaît pas ;
- *   · une suite rouge absente de la référence — verte avant, ou nouvelle.
+ *   · une étape hors suites (types, lint, construction, connexion) ou un bilan
+ *     qui ne tombe pas juste — un rouge sans nom est un rouge nouveau ;
+ *   · une suite VERTE sur la base de `main` et rouge ici — la régression ;
+ *   · une suite dont la réponse manque ou ne se détermine pas — bloquée sur ce
+ *     cas-là seulement, jamais absoute.
  */
 /**
  * @param {{ rouges?: string[], rougesHorsSuites?: string[], [autre: string]: unknown }} verdict
- * @param {Reference | null} reference
- * @param {boolean} referenceEstAncetre
+ * @param {{ base?: string, suites?: Record<string, string> } | null} reponses
+ * @param {string | null} base  le commit de `main` d'où part le lot
  */
-export function rougesToleres(verdict, reference, referenceEstAncetre) {
+export function rougesToleres(verdict, reponses, base) {
   const rouges = verdict.rouges;
   if (!Array.isArray(rouges)) {
     return { ok: false, raison: "la dernière vérification était ROUGE, sans la liste de ses suites (à rejouer)" };
@@ -352,25 +442,10 @@ export function rougesToleres(verdict, reference, referenceEstAncetre) {
   if (horsSuites.length > 0) {
     return { ok: false, raison: `la dernière vérification était ROUGE hors des suites : ${horsSuites.join(", ")}` };
   }
-  if (!reference) {
-    return {
-      ok: false,
-      raison: "la dernière vérification était ROUGE, et aucun état de référence n'a été mesuré sur main",
-    };
+  if (!base) {
+    return { ok: false, raison: "la base de ce lot sur main ne se lit pas : rien ne peut être comparé" };
   }
-  if (!referenceEstAncetre) {
-    return {
-      ok: false,
-      raison: `la dernière vérification était ROUGE, et la référence (main ${reference.commit.slice(0, 8)}) n'est pas dans l'histoire de ce lot`,
-    };
-  }
-  const connus = new Set(reference.rouges);
-  const nouveaux = rouges.filter((r) => !connus.has(r));
-  if (nouveaux.length > 0) {
-    return {
-      ok: false,
-      raison: `${nouveaux.length} nouveau(x) rouge(s) par rapport à main ${reference.commit.slice(0, 8)} : ${nouveaux.join(", ")}`,
-    };
-  }
-  return { ok: true, raison: "", toleres: [...rouges] };
+  const decision = decisionSurLesRouges(rouges, surMainPourCetteBase(reponses, base));
+  if (!decision.ok) return { ok: false, raison: decision.raison };
+  return { ok: true, raison: "", toleres: decision.toleres };
 }

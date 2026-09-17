@@ -1,6 +1,6 @@
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
-import type { Empreinte } from "./_batterie-solitaire";
+import type { Empreinte } from "./_empreinte-des-sources.mjs";
 
 /**
  * CE QUE LA BATTERIE A DIT LA DERNIÈRE FOIS, ET SUR QUEL ARBRE.
@@ -51,7 +51,7 @@ export type DernierVerdict = {
   /**
    * **QUELLES suites ont rougi — 16 septembre 2026.** Sans elles, un verdict
    * rouge ne dit que « rouge », et le garde-fou de `main` ne peut pas le
-   * comparer à l'état connu de `main` (`_reference-batterie.mjs`) : il refuse
+   * comparer les seuls rouges à la base de `main` (`_rouge-prealable.mjs`) : il refuse
    * tout, pour toujours, dès qu'une machine porte un rouge d'outillage.
    *
    * Absent sur une trace d'avant ce champ : rien n'est comparable, on remesure.

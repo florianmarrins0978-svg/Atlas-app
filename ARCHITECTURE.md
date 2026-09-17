@@ -27575,7 +27575,7 @@ n'existait plus nulle part.
 | l'écrivain unique | `ecrireLesCreneaux` — `src/server/repositories/creneaux-poses.ts`, partagé par le planning et l'acceptation du client |
 | le dépôt | `libererDemiJournee`, `reposerDemiJournee` — `src/server/repositories/chantiers.ts` |
 | l'écran | `BasculeDemi`, `LigneLibre`, `TiroirDuBas` — `src/app/planning/PlanningClient.tsx` |
-| les contrôles | `scripts/test-creneaux-chantier.ts` (les règles), `scripts/test-liberer-une-demi-journee-e2e.ts` (**son geste**, de bout en bout) |
+| les contrôles | `scripts/test-creneaux-chantier.ts` (les règles), `scripts/test-deplacer-sur-le-calendrier-e2e.ts` (renommée le 17 septembre 2026) (**son geste**, de bout en bout) |
 
 
 
@@ -31066,9 +31066,422 @@ hors de l'écran (mesuré).
 migration qui rend `factures.devis_id` facultatif. Quand il arrivera, le rapport
 des ressorts se **remesure** — deux anneaux au lieu d'un déplacent le centre.
 
+
 ---
 
-## §373 — Le cadre de l'application décide AU NAVIGATEUR, et l'accueil se relit tout seul
+## §373 — « Déplacer » déplace pour de bon : le calendrier, puis le moment
+
+**Sa demande du 17 septembre 2026 :** *« lorsque je clique sur déplacer ça me
+fait apparaître le planning et je sélectionne un jour et le matin ou l'aprem ou
+journée pour réellement déplacer mon client, parce que là c'est trop de clics à
+faire »*. Puis, devant `appli/deplacer-sur-le-calendrier.html` : *« je choisis
+la deux, le planning au-dessus, et la A : on déplace que la demi-journée du
+jour sélectionné »*.
+
+**Sept appuis sont devenus trois.**
+
+| | |
+|---|---|
+| avant | Déplacer · la moitié à rendre · ouvrir le tiroir · toucher le morceau · refermer · ouvrir le jour d'accueil · Poser ici |
+| depuis | Déplacer · le jour · le moment |
+
+**« LA A » : SEUL LE JOUR CHOISI BOUGE.** Mr. Julien dure huit jours ; corriger
+le 30 septembre n'emmène que ce que le chantier occupe LE 30. Un chantier ne se
+replie pas ailleurs parce qu'on a rectifié une journée.
+
+**LE MOT DÉSIGNE LA MOITIÉ, AUX DEUX BOUTS.** « Matin » emmène le matin du jour
+de départ et le pose sur le matin du jour d'accueil ; l'après-midi reste sur
+place. « Journée » emmène tout ce que le jour porte. Et une demi-journée seule
+suit le mot quand même — posée l'après-midi, « Matin » l'emmène au matin —,
+sinon elle ne pourrait jamais changer de moment.
+
+**Sa correction du 17 septembre 2026 :** *« un chantier d'une journée, si je
+veux je dois pouvoir déplacer soit le matin, soit l'aprem quand même ! »*. La
+première version n'offrait que « Journée » sur une journée entière, de peur de
+perdre une moitié : elle lui retirait un geste qu'il fait pour de bon.
+
+**CE QUI RESTE REFUSÉ : inventer une moitié.** Une demi-journée ne devient pas
+une journée entière — elle occuperait une place que le devis ne vend pas.
+`momentsOfferts` n'offre donc que ce qui tient, et `deplacerCeQueLeJourPorte` le
+refuse à nouveau derrière : l'écran peut changer, la règle non.
+
+Un troisième cas rétrécit en silence, et il n'est pas évident : la place
+d'accueil est **déjà la sienne**. Deux demi-journées partent, une seule arrive.
+Refusé avec sa phrase.
+
+| | |
+|---|---|
+| la règle, sans base ni écran | `src/lib/creneaux-chantier.ts` — `ceQueLeJourPorte`, `momentsOfferts`, `deplacerCeQueLeJourPorte` |
+| une seule écriture, une seule transaction | `deplacerCeQueLeJourPorteEnBase` (`chantiers.ts`) — l'ancien chemin en faisait deux, et entre les deux la demi-journée n'était nulle part |
+| l'action | `deplacerCeQueLeJourPorteAction` — rend le refus en valeur, jamais en exception (`AGENTS.md`) |
+| les contrôles | `test-creneaux-chantier.ts` (8 cas neufs), `test-deplacer-sur-le-calendrier-e2e.ts` (**son geste, de bout en bout, et le compte des appuis**) |
+
+**LE GESTE VIT DANS LA FICHE, ET SE REPLIE SOUS LE CALENDRIER.** Sa place est
+dans la fiche, sous les demi-journées — c'est la planche qu'il a retenue, et il
+a repris la première version qui la posait ailleurs : *« ça n'a rien à voir avec
+la maquette »*. Mais la fiche est rendue **dans la semaine du jour ouvert**
+(`MoisCharge`, prop `volet`) et disparaît au premier mois tourné, or tourner le
+mois est exactement ce qu'il fait pour atteindre son jour d'accueil : la question
+partirait au milieu du geste. Le bloc est donc **écrit une fois et monté à deux
+endroits** — dans la fiche tant qu'elle est là, sous le calendrier sinon —,
+comme `LigneLibre` et la fiche elle-même. Deux ÉCRITURES d'un même geste
+finiraient par se contredire (`CLAUDE.md` §3) ; deux montages, non.
+
+**CE QUI A ÉTÉ SUPPRIMÉ AVEC**, parce qu'un chemin remplacé devient du code mort
+(`CLAUDE.md` §4 quinquies) : `BasculeDemi`, `liberer`, `libererDemiJourneeAction`,
+`libererDemiJournee` et la règle pure `sansLaDemi` — plus aucun appelant. Les
+deux contrôles qui ne tenaient qu'elle sont partis aussi ; ce qu'ils défendaient
+— le repli d'un chantier sans ligne — est tenu par les cas du déplacement.
+
+**Un défaut trouvé À L'ÉCRAN, pas par un test** (la cinquième fois dans ce
+dépôt) : au second temps du geste, « Déplacer » et « Retirer » revenaient dans
+la carte pendant que le bandeau attendait encore le moment. La condition ne
+regardait que le premier temps.
+
+**L'APPARENCE, ses mots du 17 septembre :** *« mets des mots en gras plutôt que
+des boutons pour déplacer retirer »*, et *« la touche salarié absent au milieu
+en gras »*. Une pastille à contour a la forme des pastilles d'équipe posées
+juste au-dessus — celles-là ouvrent une liste, celles-ci font un geste : même
+forme, deux natures. `MotDuGeste` porte les cinq mots du geste (les deux de la
+rangée, les trois du moment, et « Annuler » en gris) ; ils gardent leur place, à
+droite. La touche d'absence garde la sienne — sous la date, au-dessus du nom —,
+seuls son poids et son axe changent.
+
+---
+
+## §374 — Un rouge venu d'ailleurs ne bloque plus : on rejoue les SEULS rouges sur la base de `main`
+
+**Sa règle du 17 septembre 2026**, après une journée entière perdue sur un lot
+prêt depuis le matin : *« Je ne veux plus qu'un lot soit bloqué par un rouge
+provenant d'une autre session, ni qu'une batterie complète soit relancée sur
+main uniquement pour établir un état de référence. Le garde doit répondre à une
+seule question : ce lot introduit-il une NOUVELLE régression ? »*
+
+**CE QUI A ÉTÉ SUPPRIMÉ.** L'état global de `main` (§369, 16 septembre) : la
+liste des suites rouges relevée par une batterie entière jouée sur un arbre
+propre. Il répondait bien à la question posée ce jour-là — seize suites
+d'outillage rouges pour toujours sur son PC — mais il coûtait une batterie
+complète, et il fallait la repayer à chaque `main` qui avance. Le 17 septembre,
+un lot du planning est resté bloqué une journée par la porte du devis de
+l'accueil, cassée par une autre session : les sessions se bloquaient entre
+elles. Sont partis avec : `_reference-batterie.mjs`, `reference-depuis-journal.ts`,
+`test-reference-batterie.ts`, et l'écriture de la référence en fin de batterie.
+
+**CE QUI LE REMPLACE : la comparaison ciblée.**
+
+| | |
+|---|---|
+| le niveau | se calcule sur le diff du lot, et sur lui seul — un rouge d'ailleurs ne le fait jamais monter |
+| tout vert | la fusion est ouverte |
+| un ou plusieurs rouges | **chaque suite rouge, elle seule**, rejouée sur une copie propre du commit de `main` d'où le lot part |
+
+Trois réponses : rouge de la même façon → préexistant, il ne bloque pas ; vert
+→ régression nouvelle, refus ; indéterminé ou pas mesuré → bloqué **sur ce cas
+précis seulement**. Ne pas savoir n'est jamais « c'était déjà rouge ».
+
+| | |
+|---|---|
+| la décision, sans git ni navigateur | `scripts/_rouge-prealable.mjs` |
+| la copie propre | `scripts/_temoin-de-main.mjs` — un `git worktree` dans le `.git` commun |
+| la mesure | `scripts/verifier-rouge-prealable.ts` (`npx tsx scripts/verifier-rouge-prealable.ts`) |
+| les cinq cas qu'il a demandés | `scripts/test-garde-fusion-main.ts`, A à E |
+
+**DEUX PIÈGES MESURÉS, pas supposés.**
+
+**Le `node_modules` ne se prête pas par un lien.** La construction refuse un
+`node_modules` qui sort de la racine du projet — *« Symlink
+[project]/node_modules is invalid, it points out of the filesystem root »*. Il
+se lie donc fichier à fichier (`cp -al`) : aucun octet recopié, et le dossier
+reste clos sur lui-même.
+
+**La copie prend son PROPRE atelier.** Lui passer le port et la base de
+l'appelant faisait mesurer les deux dossiers dans la même base : le seed de l'un
+vidait celle de l'autre, et les deux rougissaient sur du code juste. On retire
+donc `ATLAS_ADRESSE`, `DATABASE_URL`, `DATABASE_ADMIN_URL` et `REDIS_URL` de
+l'environnement transmis — `prendreUnAtelier` donne à la copie son rang, son
+port, sa base et son coin de Redis (`CLAUDE.md` §5).
+
+**Ce qui n'a pas bougé** : la batterie entière reste exigée par un lot de
+niveau 3 pour SON propre risque ; une étape hors suites, un bilan incomplet ou
+un verdict sans la liste de ses suites ferment toujours la porte ; et un test
+vert sur `main` devenu rouge avec le lot bloque la fusion.
+
+---
+
+## §375 — `main` qui avance ne refait pas la batterie : la rencontre se mesure
+
+**Sa règle du 17 septembre 2026 :** *« Chaque lot doit prouver SON propre
+travail. Le fait que main change parce qu'une autre session a fusionné ne doit
+jamais, à lui seul, provoquer une nouvelle batterie complète. […] Si les
+changements arrivés de main sont sans rapport avec le lot : aucun nouveau test
+lourd. S'ils touchent réellement une dépendance utilisée par le lot : rejoue
+uniquement les tests ciblés concernés. »*
+
+**CE QUI A ÉTÉ RETIRÉ.** Le complément du 17 septembre au matin (§370) rejouait,
+à chaque avancée de `main` : **toutes** les suites du dépôt, les écrans du lot,
+les écrans touchés par `main`, et les suites apportées par `main` — sans jamais
+demander si les deux se rencontraient. Deux sessions dans le même grand domaine
+se relançaient l'une l'autre indéfiniment, et le §6 de `CLAUDE.md` demandait
+même la batterie entière dès qu'une pièce partagée bougeait.
+
+**CE QUI LE REMPLACE : `rencontreReelle`.** Le graphe d'imports sait désormais
+dire les deux sens — ce que le lot emploie (`socle`, neuf) et ce qui l'emploie
+(`cône`, qui servait déjà au rayon). La rencontre est l'intersection entre ce
+que `main` a apporté et cet entourage. Vide : le verdict du lot vaut tel quel,
+et le complément le repose sur l'arbre courant sans rien jouer. Non vide : les
+suites de CES fichiers-là, et elles seules — les suites du dépôt seulement si la
+rencontre touche `src/lib` ou `src/server`, puisque ce sont les règles et
+l'isolation qu'elles éprouvent.
+
+**Ce qui ne se lit pas dans le graphe entre toujours** : une migration, un
+réglage de construction, un fichier d'outillage n'ont pas d'arête. C'est le côté
+sûr, et c'est déjà ce que le PLANCHER dit du niveau. Les documents, eux, ne
+s'exécutent pas : ils ne rencontrent rien.
+
+**Ce qui reste une batterie entière** : un lot de niveau 3 pour son propre
+risque, ou une rencontre qui atteint elle-même le niveau 3. Jamais parce que
+`main` a bougé.
+
+Son exemple, éprouvé tel quel dans `scripts/test-apres-fusion.ts` : la session A
+tient sa fiche client, la session B fusionne un plan d'arrosage — A ne
+recommence rien ; B modifie `civilite.ts`, que la fiche client emploie — A
+rejoue les seules suites client.
+
+---
+
+## §376 — La comparaison se fait DES DEUX CÔTÉS, dans le même état
+
+**Payé le 17 septembre 2026, et le mécanisme du §374 s'est trompé avant d'être
+corrigé.** Il rejouait la suite rouge sur `main` seul : verte là-bas, rouge
+ici, il concluait à la régression. Or la copie de `main` venait d'amorcer sa
+base, quand le lot mesurait après cent cinquante suites — deux conditions
+différentes, donc une comparaison qui ne disait rien du diff.
+
+**La preuve, mesurée à la main :** rejouée sur `main` DANS L'ÉTAT laissé par la
+batterie, `test-accueil-vide-porte-e2e` tombait à l'identique, aux mêmes deux
+cas et aux mêmes messages. Le rouge n'avait jamais été celui du lot.
+
+**Ce qui le remplace : les deux côtés, dos à dos.** La suite est rejouée sur la
+copie de `main`, puis sur le lot, l'une derrière l'autre, dans la même base.
+
+| à conditions égales | ce que ça vaut |
+|---|---|
+| le même sort des deux côtés | **pas causé par ce lot** — le diff est la seule différence entre les deux arbres |
+| verte sur `main`, rouge ici | la **régression**, et la fusion est refusée |
+| rouge sur `main`, verte ici | le lot la **répare** — il ne peut pas en être la cause |
+| l'un des deux illisible | **bloqué, sur ce cas-là seulement** |
+
+**Ce que cela ne prouve pas**, et qui est inscrit dans `TODO.md` : que la suite
+soit saine. Celle-ci suppose une base vierge, et rougira dans chaque batterie
+tant que son montage ne créera pas son propre état.
+
+## §377 — Une NOUVELLE VERSION d'un devis garde l'échéancier qu'il a posé
+
+**Sa panne du 17 septembre 2026, capture à l'appui :** *« lorsque j'ai la remise
+et la main d'œuvre de sélectionnées, ça prend qu'un seul acompte, ça m'a
+supprimé mes 2 autres et je n'arrive pas à les remettre »*. Le PDF de 15 h 40
+portait 30 / 50 / 75 ; l'écran de 15 h 43 n'en portait plus qu'un, à 30 % — le
+taux de ses Réglages.
+
+**Ni la remise ni la main d'œuvre n'y étaient pour rien**, et c'est une suite
+qui l'a établi avant toute correction (`test-acomptes-remise-main-doeuvre-e2e` :
+remise, main d'œuvre, seconde TVA, ligne ajoutée — les trois acomptes tiennent).
+La racine est ailleurs : **rouvrir un devis parti crée une NOUVELLE VERSION**
+(« Corriger le devis » de la carte de réponse, `corrigerDevisAction` →
+`getOuCreerDevisBrouillon`), et cette version reposait l'acompte des Réglages,
+seul. Ses deux autres n'étaient supprimés par aucun geste : ils n'étaient jamais
+recopiés.
+
+| | Avant | Depuis le 17 septembre |
+|---|---|---|
+| version corrigée d'un devis qui portait 30/50/75 | **30** (le réglage) | **30 / 50 / 75** |
+| version corrigée d'un devis dont il avait tout retiré | **30** (le réglage revenait) | **aucun** |
+| devis tout neuf | le réglage, d'office | inchangé |
+
+**Le dépôt en faisait une décision** — *« elle repart des Réglages, comme le
+taux de TVA et la remise »* — et elle était fausse : un échéancier n'est pas un
+réglage d'entreprise, c'est ce qu'il a promis à CE client. Corriger une virgule
+ne renégocie pas les acomptes. Le réglage ne vaut donc plus que pour la
+naissance du tout premier devis d'un chantier.
+
+**Et un refus ne se tait plus.** « + Ajouter un acompte » rendait `null` dans
+trois cas (devis parti, trois acomptes déjà, 100 % atteint) et l'écran ne
+faisait rien : un appui sans effet et sans un mot se lit comme une panne, et
+c'est la seconde moitié de sa phrase (*« je n'arrive pas à les remettre »*).
+`poserAcompteSuivant` rend désormais `{ ok: false, raison }`, et la raison
+s'affiche sous le geste (`AGENTS.md`, « rendre le défaut bavard »).
+
+Contrôles : `test-acomptes-nouvelle-version` (suite base, les cinq cas, rouge
+d'abord sur la vraie perte) et `test-acomptes-remise-main-doeuvre-e2e` (sa
+séquence, dans un vrai navigateur).
+
+## §378 — Le papier s'écrit en ENCRE, et la ligne d'en-tête en gras
+
+**Ses deux demandes du 17 septembre 2026**, capture du PDF à l'appui : *« toute
+la ligne désignation jusqu'à total ttc, tu la mets en gras »*, *« mets toutes
+les écritures en noir, rien en gris »*, *« en bas à gauche, base ht et les deux
+autres en gras aussi »*.
+
+Les en-têtes étaient **déjà** en gras — c'est le gris qui les faisait paraître
+maigres. Ce qui change est donc la TEINTE, et elle se décide en un seul endroit
+(`teintesDe`, `document-commun.ts`) : ce qui s'écrit prend l'encre, pour les
+sept allures comme pour le crème d'origine.
+
+| | |
+|---|---|
+| étiquettes de colonnes, coordonnées, mentions légales | **l'encre** — les trois gris sont retirés de la palette, pas « mis au noir » : une valeur que plus rien ne lit se recopie un jour par erreur |
+| le trait clair | **inchangé** : c'est un filet, pas une écriture — l'encre y ferait un tableau noir |
+| l'accent (« CLIENT », « LIEU DES TRAVAUX ») | **inchangé** : c'est SA couleur, pas un gris |
+
+**Et la trace dit la teinte posée.** Le numéro de page se consignait avec le
+gris de la palette pendant que la page se peignait à l'encre — la faute exacte
+que l'en-tête de ce fichier raconte pour le fond vert. Elle lit désormais
+`ctx.teintes`.
+---
+
+## §379 — Une panne de base est un REFUS comme un autre : elle revient en valeur, avec ses mots
+
+**Sa capture du 17 septembre 2026, à 15 h 57.** Facture Martins, 745,00 € TTC
+dont 250,00 € déjà reçus ; il tape le solde, 495,00 €, au 17/09. L'écran répond
+« Ce règlement n'a pas pu être enregistré. Réessayez. »
+
+**Le produit n'avait aucun défaut.** 250 + 495 = 745 au centime : le parcours
+entier rejoué sur une base à jour passe (`scripts/test-reglement-panne-de-base.ts`).
+Ce qui avait lâché, c'est sa BASE — la fiche que son espace publie de lui-même,
+écrite trois minutes avant la capture, portait :
+
+```
+Base           : état inconnu — la base n'a pas répondu
+La base refuse : échec d'une forme non reconnue
+```
+
+et, en même temps, « Serveur : répond sur le port 3000 ». Les deux vont
+ensemble : `/api/health/live` ne touche délibérément JAMAIS la base
+(§ « liveness »), donc un serveur vert ne dit rien d'une base morte. C'est
+exactement le piège du 13 septembre, vu d'un autre écran.
+
+### Ce qui nous revenait, et c'est la seule moitié que du code répare
+
+Les trois actions de règlement laissaient l'exception **sortir**. Or Next.js
+remplace en production le message d'une exception d'action serveur par un
+identifiant opaque (`AGENTS.md`) : l'écran retombait donc sur sa phrase de
+dernier recours, et **rien n'était journalisé de notre côté**. La prochaine
+session aurait cherché dans le produit, où il n'y avait rien.
+
+Pire, le conseil rendu était le mauvais. « Réessayez » sur une base qui ne
+répond pas ne donne rien, et il a réappuyé.
+
+### Le mécanisme existait depuis quatre jours, et n'était pas branché
+
+`src/lib/panne-de-base.ts` est né le 13 septembre de sa panne « Une erreur ·
+Référence : 3285538552 » : il lit le `SQLSTATE` sous les enveloppes de Drizzle,
+dit si c'est un décalage code/base, et rend la phrase — dont le geste SÛR,
+rallumer l'espace, qui ne touche à aucune donnée (`CLAUDE.md` §4 septies). Il ne
+servait qu'à la création de compte.
+
+| | |
+|---|---|
+| l'enveloppe | `sansPanneMuette` dans `src/app/termines/tva/actions.ts` — journalise la panne entière avec son code, rend le refus en valeur |
+| la phrase | `phraseDeLaPanne(cause, surLeBanc, codeSql, echec)` |
+| ce qui reste au `catch` du navigateur | l'appel qui n'est **jamais revenu**, et rien d'autre |
+
+**`echec` n'a PAS de valeur par défaut, et c'est délibéré.** La phrase portait
+« Votre compte n'a pas pu être créé » en dur : branchée telle quelle sur les
+règlements, elle aurait annoncé au patron que son COMPTE n'avait pas pu être
+créé alors qu'il notait un paiement. Un défaut par défaut se recopie sans qu'on
+le voie ; l'exiger oblige chaque écran à dire de quoi il parle.
+
+### Deux corrections voisines, du même geste
+
+- **Le retrait rendait `void`.** Un échec ne montrait RIEN : la ligne restait à
+  l'écran et il réappuyait sur une croix qui ne faisait rien. C'est pire que
+  « Réessayez » — un défaut muet se cherche dans le produit, où il n'est pas.
+- **`revalidatePath` ne part plus qu'en cas de succès, et hors de l'enveloppe.**
+  Rafraîchir après un refus ne sert à rien ; et une panne du rafraîchissement
+  attrapée par l'enveloppe annoncerait « non enregistré » sur un règlement qui,
+  lui, est bien en base.
+
+### Ce que la suite fabrique, plutôt que d'imiter
+
+`scripts/test-reglement-panne-de-base.ts` **retire vraiment** la colonne
+`paiements_facture.numero` (migration 0092) — l'état exact d'un espace qui n'a
+pas rejoué ses migrations, `42703` — puis vraiment le droit `DELETE` pour le
+retrait, `42501`. Une erreur inventée ne dirait rien du chemin réel.
+
+Ses DDL sont **idempotents et rejoués à l'arrivée** : une suite tuée au délai
+(huit minutes, `run-all-tests.ts`) n'exécute aucun `finally`, et laisserait la
+base amputée pour les soixante suites suivantes — qui accuseraient alors le
+produit (la demi-heure du 26 août 2026).
+
+### Ce que ce lot ne répare PAS
+
+La base de son espace. Elle se remet d'aplomb en rallumant l'espace ; si une
+migration refuse encore de passer, c'est désormais l'ÉCRAN qui le dira — au lieu
+d'un « Réessayez » qui envoie chercher dans le produit.
+
+
+## §380 — Le garde-fou de `main` comparait des DATES : c'est le CONTENU qui décide
+
+**Sa colère du 17 septembre 2026 :** *« maintenant les sessions rejouent des
+batteries en boucle juste parce qu'une a touché un fichier »*.
+
+`garde-fusion-main.mjs` gardait sa propre façon de dire « l'arbre a bougé » :
+`derniereEcriture()`, la date d'écriture la plus récente des fichiers
+surveillés, comparée à l'instant du verdict. Deux conséquences, et les deux se
+sont payées la même soirée :
+
+| Ce qui arrivait | Ce que le garde-fou en faisait |
+|---|---|
+| une fusion réécrit ce qu'elle apporte | toutes ces dates deviennent neuves |
+| un `git checkout`, un `git merge` réécrivent parfois à l'identique | **rien n'a changé, et le verdict est déclaré caduc** |
+| le refus n'annonçait qu'un remède | `npm run verifier:avant-livraison` — cinquante minutes |
+
+Donc : chaque fois qu'une session voisine fusionnait sur `main`, un lot vert
+perdait son verdict et repartait pour une batterie entière — à l'autre bout du
+produit, sur du code que rien ne touchait. Trois sessions côte à côte se la
+renvoyaient sans fin.
+
+**La batterie, elle, avait déjà appris la leçon le 9 septembre 2026**
+(`_batterie-solitaire.ts`) : elle relève un contenu (sha1) et non une date,
+précisément parce qu'une session voisine avait fait jeter un verdict entier en
+réécrivant deux fichiers à l'identique. Le garde-fou ne l'avait jamais apprise,
+parce qu'il ne pouvait pas : un hook s'exécute en `node` nu, et cette
+fonction-là vivait dans un `.ts`. **Deux façons de dire « ce fichier a changé »
+finissent toujours par diverger** (`CLAUDE.md` §3) ; celles-ci ont divergé.
+
+**Ce qui remplace la date, et ce n'est pas une couche de plus.**
+`derniereEcriture()` est SUPPRIMÉE. Le relevé déménage dans
+`scripts/_empreinte-des-sources.mjs` — un `.mjs`, pour cette seule raison —, et
+la batterie comme le garde-fou l'appellent. 1 406 fichiers en 65 ms : un hook
+peut se le permettre.
+
+**Et ce qui a bougé ne se vaut pas.** Le garde-fou sait déjà, pour calculer le
+niveau, ce que le lot ajoute à `main` (`cheminsDuLot`). Un fichier remué qui
+n'y figure pas n'a donc pas été écrit ici : il est arrivé par la fusion.
+
+| Ce qui a bougé depuis le verdict | Ce que le garde-fou annonce |
+|---|---|
+| rien (contenu identique) | la fusion s'ouvre |
+| un fichier **du lot** | `verifier:avant-fusion` / `avant-livraison`, selon le niveau |
+| **seulement** ce que `main` a apporté | `npx tsx scripts/verifier-apres-fusion.ts` — jamais la batterie |
+| une empreinte illisible ou absente | le niveau du lot : ne pas savoir n'est jamais « rien n'a bougé » |
+
+La troisième ligne est la règle du 17 septembre appliquée là où elle manquait :
+*« le fait que main change […] ne doit jamais, à lui seul, provoquer une
+nouvelle batterie complète »* (§375). Le complément existait déjà ; **le
+garde-fou ne l'a jamais nommé**, et c'est une session qui devait y penser au
+bout de trois heures. Il le nomme désormais lui-même, dans son refus.
+
+**Ce qui tient tout ça** : `scripts/test-garde-fusion-main.ts` rejoue la soirée
+dans un dépôt d'essai à part — un lot vert, `main` qui avance dessous, la
+fusion —, et refuse que le refus contienne `verifier:avant-livraison`. Confronté
+au code d'avant, six de ses cas rougissent : c'est ce qui prouve qu'il mesure
+quelque chose.
+
+---
+---
+
+## §381 — Le cadre de l'application décide AU NAVIGATEUR, et l'accueil se relit tout seul
 
 **Deux défauts d'un même soir — le 17 septembre 2026 —, signalés sur la même
 capture : l'accueil atteint après l'envoi d'un devis, sans barre du bas, et une
@@ -31144,3 +31557,4 @@ on quitte le devis par un vrai geste, et la carte arrive sans qu'il recharge.
 Aucune ne compte les trente secondes — un contrôle qui les compterait se
 contredirait au premier réglage et ne défendrait rien de ce qu'il voit, lui
 (`CLAUDE.md` §5 bis). Toutes deux ont été vues rouges sur le code d'avant.
+

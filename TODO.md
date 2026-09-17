@@ -9,6 +9,156 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## LES SUITES NAVIGATEUR TRAVERSENT LA RLS — ce qu'elles ne peuvent pas mesurer
+
+**Trouvé le 17 septembre 2026**, par une suite verte à la main et rouge dans la
+batterie : le serveur des suites navigateur tourne sous le rôle `postgres`
+(`verifier-avant-livraison.ts`, `DATABASE_URL: SUPER`), parce qu'elles
+inspectent la base pour vérifier ce qu'elles affirment. Un compte NEUF y voit
+donc les chantiers du jeu de démonstration — son accueil n'est jamais vide.
+
+**Conséquence, et elle vaut au-delà de ce lot :** tout ce qui se mesure sur un
+écran VIDE (l'accueil sans chantier, une liste sans ligne) ne peut pas l'être
+dans la batterie. La place de la porte du devis se mesure donc à la main, sous
+le rôle du produit : `npx tsx scripts/mesurer-porte-accueil-vide.mts`, serveur
+lancé par `npm run dev`. La suite de la batterie le DIT quand elle ne peut pas
+mesurer, plutôt que de rendre un vert sur rien.
+
+**Ce qui le réglerait** : un second serveur, sous `atlas_app`, pour les suites
+qui n'inspectent pas la base. À peser — deux serveurs, c'est deux ports et deux
+compilations par batterie.
+
+## LE COMPLÉMENT COMPTE UNE RENUMÉROTATION DE `.md` COMME « UN AUTRE LOT »
+
+**Payé le 17 septembre 2026, deux fois dans la même soirée.** `main` a bougé
+deux fois sous un lot déjà éprouvé ; chaque fusion a forcé à renuméroter son
+paragraphe d'`ARCHITECTURE.md` (§373 → §377 → §379) et à replacer ses entrées
+de journal — c'est la règle du §6 B, et elle est juste. Mais
+`verifier-apres-fusion.ts` compare le **diff entier**, `.md` compris, et refuse
+alors : *« le lot lui-même a changé — ce n'est plus le même lot »*, en renvoyant
+vers cinquante minutes de batterie.
+
+Or le code était identique **au bit près**, et le dépôt le sait déjà : le
+niveau d'un `.md` vaut 1 (« ce qui ne s'exécute pas »), et l'empreinte que le
+garde-fou signe ne couvre que `.ts/.tsx/.js/.mjs/.mts/.sql/.css`
+(`_batterie-solitaire.ts`). Deux mesures du même arbre, qui ne répondent pas la
+même chose.
+
+Ce qu'il faudrait : que `lotInchange` compare ce que l'empreinte couvre, et
+rien d'autre. Un lot dont seule la documentation a été replacée par une fusion
+n'est pas un autre lot — et la règle « une tâche = un lot » condamne sinon tout
+lot qui croise deux fusions à repayer la batterie pour un numéro de paragraphe.
+
+Non fait ici : c'est le lot d'une autre session (`CLAUDE.md` §5, hors
+périmètre).
+
+## ⏳ `test-accueil-vide-porte-e2e` dépend de l'état que la base a gardé
+
+**Mesuré le 17 septembre 2026, des deux côtés.** Jouée seule, elle passe ; jouée
+en fin de batterie, elle rougit sur son PREMIER cas — *« ce compte porte des
+chantiers », `'4' !== '0'`* — alors qu'elle vient de créer un compte neuf. Le
+même écart se reproduit **sur `main` sans aucun lot** : ce n'est pas un diff,
+c'est un montage qui suppose une base vierge.
+
+Ce qu'elle doit faire à la place : ne rien supposer de ce que les suites d'avant
+ont laissé (`CLAUDE.md` §5 bis). Tant que ce n'est pas fait, elle rougit dans
+chaque batterie et le garde-fou doit la départager à chaque fusion.
+
+**Et son second cas est un vrai désaccord** : la porte du devis se pose à 26 %
+de la hauteur, il la veut à 33 %. Le réglage des deux ressorts ne la déplace
+pas — essayé, mesuré, rendu. La racine est ailleurs.
+
+
+## ⏳ UNE PLANCHE À REGARDER — DEUX JOURS QUI NE SE TOUCHENT PAS (17 septembre 2026)
+
+**Sa question, capture à l'appui :** *« là j'ai un chantier de deux jours mais
+si je fais une proposition de date à mon client ça va automatiquement mettre
+les deux jours consécutifs, or si là je veux lui proposer le premier jour le 18
+et on vient finir le chantier le 22 vu qu'il est sur 2 jours comment je
+fais ??? »*
+
+**RIEN N'EST CODÉ** — la planche `appli/deux-jours-pas-colles.html` (119)
+attend sa réponse.
+
+**Refaite le soir même, après sa réponse à la première version** : *« je
+comprends rien, l'idée c'est que ce soit simple et joli »*, puis sa règle en
+clair — *« quand je propose une date à un client et que le chantier dure deux
+jours, je dois pouvoir lui proposer le 18 et le 22 en lui disant : on viendra
+un jour le 18 et le deuxième le 22 »*. Les trois états, l'interrupteur et les
+trois notes sont partis. Ce qu'elle montre maintenant, et rien d'autre :
+**un appui = un jour du chantier**. Il touche le 18 et le 22 ; sa cliente lit
+« nous venons le 18 et le 22 ». S'il ne touche que le 18, le jour d'à côté se
+pose tout seul, en creux, et bouge dès qu'il touche ailleurs — le geste de
+tous les jours ne change pas.
+
+**Puis « fais les deux »**, puis *« je comprends pas comment ça marche »* —
+et il a dicté le geste, qui est la version en ligne (la troisième du soir) :
+
+| | |
+|---|---|
+| un appui sur un jour libre | pose le **premier jour** ; le chantier se remplit **d'affilée** derrière (8 jours, le 23 : les 8 se posent) |
+| un appui sur un jour **du chantier** | l'**enlève** ; le chantier se décale d'un jour au bout — le 18 et le 22, c'est toucher le 18 et enlever le 21 |
+| l'interrupteur « Deuxième proposition » | allumé, le prochain appui pose le premier jour de la 2e, en or ; éteint, elle disparaît |
+| la cliente | « Quels jours vous arrangent ? », un bouton radio par proposition ; une seule : « Nous venons le … et le … » |
+
+Une seule règle pour toutes les durées : sur une journée, deux propositions
+d'un jour sont les deux dates au choix d'aujourd'hui. « Une ou deux, jamais
+plus » ne bouge pas. **Ce que le lot devra ranger, s'il tranche :** par
+proposition, un premier jour ET la liste des jours enlevés (ou la liste des
+jours, calculée) ; la réponse de la cliente désigne une proposition ; et
+`creneauxDuChantier` doit savoir sauter des jours.
+
+**Ce que le code fait aujourd'hui**, et il faut le savoir avant d'ouvrir le lot :
+
+| | |
+|---|---|
+| les deux dates du calendrier | deux **choix**, pas un début et une fin — boutons radio chez le client (`src/app/devis/[jeton]/formulaire.tsx`) |
+| la date retenue | un **bloc d'un seul tenant** : `creneauxDuChantier` étale la durée sur des demi-journées qui se suivent (`src/server/repositories/envois-devis.ts`) |
+| ce que l'écran en dit | **rien** à deux jours : `aideDuree` ne parle qu'au-delà de trois jours (`EnvoiAuClient.tsx`) |
+| le morcellement | il existe, mais **après** l'acceptation, au planning — et le client n'en sait rien |
+
+**Ce que la première version craignait, et ce que la seconde en fait.** Elle
+refusait qu'un appui veuille dire « un choix » sur un chantier d'un jour et
+« un jour du chantier » sur un chantier de deux, et proposait un interrupteur.
+Il n'a pas compris l'interrupteur, et sa règle tranche : sur plusieurs jours,
+les jours qu'il touche SONT les jours du chantier. Le sens de l'appui s'écrit
+alors sur l'écran — « Posez les 2 jours du chantier » / « Proposez une ou deux
+dates », et « 1er jour · 2e jour » / « proposée » sur chaque ligne —, et la
+carte « ce que Linotte lit » le montre. Ce que cette version lui faisait
+perdre — deux dates au choix sur plusieurs jours —, il l'a vu et refusé le
+soir même ; et « un appui = un jour » ne lui parlait pas non plus. Sa
+version à lui garde le geste d'aujourd'hui (un appui, un bloc d'affilée) et
+n'y ajoute qu'un retrait — c'est la moins étrangère à ce qu'il fait déjà.
+
+**Ce que sa règle interdit toujours :** montrer une demi-journée au client
+(`scripts/test-creneaux-planning.ts`). Les deux issues ne montrent que des
+JOURS — elle n'est pas touchée.
+
+**Ce que le lot coûtera, le jour où il tranche :** `envois_devis` ne porte
+qu'une liste de dates proposées et une `date_retenue`. Il faut y ranger, en
+plus, **quels jours** le chantier prend quand ils ne se suivent pas — donc une
+migration, et une acceptation qui écrit les créneaux tels quels au lieu de les
+étaler. Expand/contract (`.claude/rules/deployment-safety.md`).
+
+---
+
+## LES AUTRES ÉCRANS D'ARGENT N'ONT PAS ENCORE L'ENVELOPPE DE LA PANNE DE BASE
+
+**Fait le 17 septembre 2026 :** les trois gestes de règlement de `/termines/tva`
+rendent la panne de base en valeur, journalisée, avec le geste sûr
+(`ARCHITECTURE.md` §379).
+
+**Ce qui reste, et ce n'est pas urgent :** les autres actions qui écrivent de
+l'argent laissent encore l'exception sortir — émission d'une facture, envoi d'un
+devis, avoirs. Elles tomberont sur le même écran muet le jour où sa base
+flanchera pendant l'un de ces gestes. Les acomptes du brouillon
+(`src/app/chantiers/[id]/facture/actions.ts`) journalisent déjà, mais rendent
+une phrase générique sans nommer la base.
+
+Le patron seul peut dire si cela vaut un lot ; ce n'est pas à refaire à l'aveugle
+partout, parce qu'une enveloppe posée sans discernement finirait par avaler des
+refus métier.
+
 ## LA NOTIFICATION POUSSÉE — ATLAS FERMÉ, RIEN NE SONNE
 
 **Née de sa remarque du 17 septembre 2026** : *« mon client vient d'accepter mon
@@ -17,7 +167,7 @@ si je réactualise la page »*.
 
 **Ce qui est fait depuis ce jour** : l'accueil se relit tout seul —
 immédiatement quand il revient à Atlas, et toutes les trente secondes pendant
-qu'il le regarde (`VeilleDesNouvelles`, `ARCHITECTURE.md` §373).
+qu'il le regarde (`VeilleDesNouvelles`, `ARCHITECTURE.md` §381).
 
 **Ce qui reste, et que cela ne remplace pas** : quand Atlas est FERMÉ, rien ne
 le prévient. Un client qui accepte à 19 h se lit le lendemain matin. Une vraie
@@ -31,7 +181,6 @@ réponse de client, oui ; un rappel de devis qui dort, probablement pas — une
 alerte qui parle à tort s'apprend à être ignorée (`CLAUDE.md` §4 ter).
 
 ---
-
 ## LE SECOND ANNEAU DE L'ACCUEIL — « Créer une facture » — RESTE À FAIRE
 
 **Sa décision du 10 septembre 2026**, planche `appli/facturer-sans-devis.html` :
@@ -1529,8 +1678,12 @@ vendu (`ARCHITECTURE.md` §322).
 
 **Ce qui reste ouvert, et qui est un vrai manque :** un chantier ne se pose
 toujours pas en deux morceaux **d'un seul geste**. Il faut le poser entier, puis
-rendre ce qui ne va pas. Suffisant pour ce qu'il décrivait ; à rouvrir s'il le
-signale.
+rendre ce qui ne va pas.
+
+**ROUVERT LE 17 SEPTEMBRE 2026 — il l'a signalé**, et par un chemin que cette
+note n'avait pas vu : ce n'est pas au planning que ça manque, c'est **avant**,
+quand il propose ses dates. Son client accepte « le 18 » et découvre le 22.
+Voir la planche 119 en tête de ce fichier.
 
 ## ⏳ RETIRER LA MOITIÉ DEVENUE REDONDANTE DES RÈGLES `?de=` (9 septembre 2026)
 
