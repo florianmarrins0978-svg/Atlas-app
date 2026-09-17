@@ -11,7 +11,7 @@ import { bilanDuJournal } from "./_bilan-suites.mjs";
  * REJOUER LES SEULS ROUGES SUR LA BASE DE `main` — sa règle du 17 sept. 2026
  * ═══════════════════════════════════════════════════════════════════════════
  *
- *   npm run verifier:rouge-prealable
+ *   npx tsx scripts/verifier-rouge-prealable.ts
  *
  * *« Ne pas lancer toute la batterie sur main. Pour chaque contrôle rouge
  * uniquement : rejouer CE contrôle sur une copie propre du commit de référence

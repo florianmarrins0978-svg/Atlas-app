@@ -147,7 +147,7 @@ bloquaient entre elles.
 | le niveau | se calcule sur le diff du lot, et sur lui seul — un rouge d'ailleurs ne le fait JAMAIS monter |
 | les contrôles | ceux de son niveau, rien de plus |
 | tout vert | la fusion est ouverte |
-| un ou plusieurs rouges | **chaque suite rouge**, elle seule, est rejouée sur une copie propre du commit de `main` d'où le lot part (`npm run verifier:rouge-prealable`) |
+| un ou plusieurs rouges | **chaque suite rouge**, elle seule, est rejouée sur une copie propre du commit de `main` d'où le lot part (`npx tsx scripts/verifier-rouge-prealable.ts`) |
 
 Trois réponses, et trois seulement :
 
@@ -183,7 +183,7 @@ jamais, à lui seul, provoquer une nouvelle batterie complète. »*
 | ce qui arrive | ce qu'on joue |
 |---|---|
 | le lot a passé les contrôles de son niveau | ils **restent valables** tant que le lot ne change pas |
-| `main` avance, sans rapport avec le lot | **rien** — `npm run verifier:apres-fusion` le constate et repose le verdict |
+| `main` avance, sans rapport avec le lot | **rien** — `npx tsx scripts/verifier-apres-fusion.ts` le constate et repose le verdict |
 | `main` touche une dépendance que le lot emploie, ou un appelant du lot | **seulement** les suites de ces fichiers-là |
 | un conflit git | on le résout, et l'on rejoue ce que la résolution touche — c'est la même rencontre |
 | le lot lui-même a changé | son niveau décide à nouveau, depuis zéro |

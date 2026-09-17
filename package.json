@@ -44,7 +44,6 @@
     "rapporter:espace": "node scripts/rapporter-espace.mjs",
     "mesurer:poids-planning": "node scripts/mesurer-poids-planning.mjs",
     "verifier:avant-fusion": "tsx scripts/verifier-avant-fusion.ts",
-    "verifier:rouge-prealable": "tsx scripts/verifier-rouge-prealable.ts",
     "niveau": "node scripts/dire-le-niveau.mjs",
     "voir": "tsx scripts/voir-un-ecran.mts"
   },

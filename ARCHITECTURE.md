@@ -31183,7 +31183,7 @@ précis seulement**. Ne pas savoir n'est jamais « c'était déjà rouge ».
 |---|---|
 | la décision, sans git ni navigateur | `scripts/_rouge-prealable.mjs` |
 | la copie propre | `scripts/_temoin-de-main.mjs` — un `git worktree` dans le `.git` commun |
-| la mesure | `scripts/verifier-rouge-prealable.ts` (`npm run verifier:rouge-prealable`) |
+| la mesure | `scripts/verifier-rouge-prealable.ts` (`npx tsx scripts/verifier-rouge-prealable.ts`) |
 | les cinq cas qu'il a demandés | `scripts/test-garde-fusion-main.ts`, A à E |
 
 **DEUX PIÈGES MESURÉS, pas supposés.**

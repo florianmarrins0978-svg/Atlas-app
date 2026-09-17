@@ -210,7 +210,7 @@ process.stdin.on("end", () => {
             "Et si ce rouge vient d'ailleurs — d'une autre session, d'un autre lot —,",
             "il se compare sans rejouer la batterie de main :",
             "",
-            "    npm run verifier:rouge-prealable",
+            "    npx tsx scripts/verifier-rouge-prealable.ts",
             "",
           ]
         : []),

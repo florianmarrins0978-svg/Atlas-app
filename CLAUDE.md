@@ -58,7 +58,7 @@ calcule le niveau de risque sur le diff et refuse une poussée vers `main` dont
 le contrôle n'a pas été joué au vert sur cet état de l'arbre — **ou qui porte
 une régression NOUVELLE** (17 septembre 2026). Un rouge venu d'ailleurs ne
 ferme plus la porte : chaque suite rouge est rejouée **sur la base de `main`,
-elle seule** — `npm run verifier:rouge-prealable` —, et déjà rouge là-bas, elle
+elle seule** — `npx tsx scripts/verifier-rouge-prealable.ts` —, et déjà rouge là-bas, elle
 ne vient pas de ce lot. Plus aucun état global, plus aucune batterie sur `main`
 pour comparer ; le commit git suffit (`.claude/rules/testing.md`). Et il ne se
 contourne pas : c'est lui qui a été corrigé, à la racine, les deux fois où il
@@ -2048,7 +2048,7 @@ change parce qu'une autre session a fusionné ne doit jamais, à lui seul,
 provoquer une nouvelle batterie complète. »*
 
 ```bash
-npm run verifier:apres-fusion    # il mesure, et dit ce qu'il rejoue
+npx tsx scripts/verifier-apres-fusion.ts   # il mesure, et dit ce qu'il rejoue
 ```
 
 | ce que `main` a apporté | ce qu'on joue |
