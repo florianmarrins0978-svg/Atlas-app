@@ -63,7 +63,7 @@ export type ResultatVerificationLimite =
  *
  * **Le compteur d'échecs en base faisait déjà la bonne chose** — `noterEchec`
  * ne compte que les refus, `oublierEchecs` efface à la réussite
- * (`repositories/tentatives-connexion.ts`). Deux mécanismes pour une même
+ * (`src/server/repositories/tentatives-connexion.ts`). Deux mécanismes pour une même
  * question, dont un seul était juste : c'est ce que `CLAUDE.md` §3 refuse.
  *
  * **Ce que cela n'affaiblit pas.** Un seuil anti-martèlement compte des essais
@@ -123,7 +123,7 @@ export async function verifierLimite(
     //
     // **Ce que cela ne suffit PAS à protéger, et qui compte :** la connexion.
     // Elle ne dépend plus de ce magasin — son compteur d'échecs vit en base
-    // (`repositories/tentatives-connexion.ts`, migration 0062), précisément
+    // (`src/server/repositories/tentatives-connexion.ts`, migration 0062), précisément
     // pour survivre à ce genre de soirée.
     //
     // Le journal reste bruyant : c'est la seule trace qui dise pourquoi les

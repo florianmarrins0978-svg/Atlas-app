@@ -31302,7 +31302,7 @@ adresse** — elle ne pouvait rien pour deux visiteurs qui *partagent* l'adresse
 et elle n'a jamais cessé de compter les réussites.
 
 **Et la bonne réponse était déjà écrite dans le dépôt, à côté.** Le compteur
-d'échecs en base (`repositories/tentatives-connexion.ts`, migration 0062) ne
+d'échecs en base (`src/server/repositories/tentatives-connexion.ts`, migration 0062) ne
 compte que les refus — `noterEchec` à l'échec, `oublierEchecs` à la réussite.
 Deux mécanismes pour une même question, dont un seul était juste : exactement
 ce que `CLAUDE.md` §3 refuse.

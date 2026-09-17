@@ -24,7 +24,7 @@ Ce qu'il faut savoir avant de toucher à `src/server/rate-limit/` :
 | un geste **réussi** appelle `rendreLimite(cle)` | il n'a rien à consommer : un seuil compte des essais qui RATENT |
 | `DECR` nu est un piège | sur une clé absente il la crée à −1 **sans TTL** : un compteur immortel |
 
-Le compteur d'échecs en base (`repositories/tentatives-connexion.ts`) faisait
+Le compteur d'échecs en base (`src/server/repositories/tentatives-connexion.ts`) faisait
 déjà la bonne chose ; les deux disent enfin la même chose. Détail et pièges :
 `ARCHITECTURE.md` §377.
 
