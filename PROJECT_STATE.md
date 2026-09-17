@@ -5,13 +5,27 @@
 
 ---
 
+## FAIT : LES ACOMPTES SUIVENT LA CORRECTION DU DEVIS (17 septembre 2026)
+
+Sa panne : un devis rouvert pour correction ne gardait que l'acompte des
+Réglages. Une nouvelle version recopie désormais l'échéancier posé (30/50/75),
+ou aucun s'il les avait retirés ; le réglage ne sert plus qu'au premier devis
+d'un chantier. Et « + Ajouter un acompte » dit pourquoi il refuse.
+`ARCHITECTURE.md` §377.
+
+## FAIT : LE PAPIER S'ÉCRIT EN NOIR (17 septembre 2026)
+
+Plus aucun gris sur le PDF : étiquettes de colonnes, coordonnées et mentions
+légales passent à l'encre, la ligne « DÉSIGNATION … TOTAL TTC » et « BASE HT ·
+TAUX · TVA » se lisent en gras noir. `ARCHITECTURE.md` §378.
+
 ## FAIT : UNE PANNE DE BASE SE DIT SUR LES RÈGLEMENTS (17 septembre 2026)
 
 Sa capture de 15 h 57 : « Ce règlement n'a pas pu être enregistré. Réessayez. »
 sur 495,00 € dus au centime. Le produit était juste — sa base ne répondait plus,
 et les trois actions de règlement laissaient l'exception sortir : rien à l'écran,
 rien au journal. Elles rendent désormais la panne en valeur, avec le code de la
-base et le geste sûr (`ARCHITECTURE.md` §377).
+base et le geste sûr (`ARCHITECTURE.md` §379).
 
 **Sa base à lui n'est pas réparée par ce lot** : elle se remet d'aplomb en
 rallumant l'espace.

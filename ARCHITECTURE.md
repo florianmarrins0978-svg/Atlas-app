@@ -31275,9 +31275,71 @@ copie de `main`, puis sur le lot, l'une derrière l'autre, dans la même base.
 soit saine. Celle-ci suppose une base vierge, et rougira dans chaque batterie
 tant que son montage ne créera pas son propre état.
 
+## §377 — Une NOUVELLE VERSION d'un devis garde l'échéancier qu'il a posé
+
+**Sa panne du 17 septembre 2026, capture à l'appui :** *« lorsque j'ai la remise
+et la main d'œuvre de sélectionnées, ça prend qu'un seul acompte, ça m'a
+supprimé mes 2 autres et je n'arrive pas à les remettre »*. Le PDF de 15 h 40
+portait 30 / 50 / 75 ; l'écran de 15 h 43 n'en portait plus qu'un, à 30 % — le
+taux de ses Réglages.
+
+**Ni la remise ni la main d'œuvre n'y étaient pour rien**, et c'est une suite
+qui l'a établi avant toute correction (`test-acomptes-remise-main-doeuvre-e2e` :
+remise, main d'œuvre, seconde TVA, ligne ajoutée — les trois acomptes tiennent).
+La racine est ailleurs : **rouvrir un devis parti crée une NOUVELLE VERSION**
+(« Corriger le devis » de la carte de réponse, `corrigerDevisAction` →
+`getOuCreerDevisBrouillon`), et cette version reposait l'acompte des Réglages,
+seul. Ses deux autres n'étaient supprimés par aucun geste : ils n'étaient jamais
+recopiés.
+
+| | Avant | Depuis le 17 septembre |
+|---|---|---|
+| version corrigée d'un devis qui portait 30/50/75 | **30** (le réglage) | **30 / 50 / 75** |
+| version corrigée d'un devis dont il avait tout retiré | **30** (le réglage revenait) | **aucun** |
+| devis tout neuf | le réglage, d'office | inchangé |
+
+**Le dépôt en faisait une décision** — *« elle repart des Réglages, comme le
+taux de TVA et la remise »* — et elle était fausse : un échéancier n'est pas un
+réglage d'entreprise, c'est ce qu'il a promis à CE client. Corriger une virgule
+ne renégocie pas les acomptes. Le réglage ne vaut donc plus que pour la
+naissance du tout premier devis d'un chantier.
+
+**Et un refus ne se tait plus.** « + Ajouter un acompte » rendait `null` dans
+trois cas (devis parti, trois acomptes déjà, 100 % atteint) et l'écran ne
+faisait rien : un appui sans effet et sans un mot se lit comme une panne, et
+c'est la seconde moitié de sa phrase (*« je n'arrive pas à les remettre »*).
+`poserAcompteSuivant` rend désormais `{ ok: false, raison }`, et la raison
+s'affiche sous le geste (`AGENTS.md`, « rendre le défaut bavard »).
+
+Contrôles : `test-acomptes-nouvelle-version` (suite base, les cinq cas, rouge
+d'abord sur la vraie perte) et `test-acomptes-remise-main-doeuvre-e2e` (sa
+séquence, dans un vrai navigateur).
+
+## §378 — Le papier s'écrit en ENCRE, et la ligne d'en-tête en gras
+
+**Ses deux demandes du 17 septembre 2026**, capture du PDF à l'appui : *« toute
+la ligne désignation jusqu'à total ttc, tu la mets en gras »*, *« mets toutes
+les écritures en noir, rien en gris »*, *« en bas à gauche, base ht et les deux
+autres en gras aussi »*.
+
+Les en-têtes étaient **déjà** en gras — c'est le gris qui les faisait paraître
+maigres. Ce qui change est donc la TEINTE, et elle se décide en un seul endroit
+(`teintesDe`, `document-commun.ts`) : ce qui s'écrit prend l'encre, pour les
+sept allures comme pour le crème d'origine.
+
+| | |
+|---|---|
+| étiquettes de colonnes, coordonnées, mentions légales | **l'encre** — les trois gris sont retirés de la palette, pas « mis au noir » : une valeur que plus rien ne lit se recopie un jour par erreur |
+| le trait clair | **inchangé** : c'est un filet, pas une écriture — l'encre y ferait un tableau noir |
+| l'accent (« CLIENT », « LIEU DES TRAVAUX ») | **inchangé** : c'est SA couleur, pas un gris |
+
+**Et la trace dit la teinte posée.** Le numéro de page se consignait avec le
+gris de la palette pendant que la page se peignait à l'encre — la faute exacte
+que l'en-tête de ce fichier raconte pour le fond vert. Elle lit désormais
+`ctx.teintes`.
 ---
 
-## §377 — Une panne de base est un REFUS comme un autre : elle revient en valeur, avec ses mots
+## §379 — Une panne de base est un REFUS comme un autre : elle revient en valeur, avec ses mots
 
 **Sa capture du 17 septembre 2026, à 15 h 57.** Facture Martins, 745,00 € TTC
 dont 250,00 € déjà reçus ; il tape le solde, 495,00 €, au 17/09. L'écran répond

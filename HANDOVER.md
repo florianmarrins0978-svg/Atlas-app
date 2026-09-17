@@ -4,10 +4,23 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-09-17 · `main` — l'accueil vide (la porte au tiers haut) est fusionné
+**Point de reprise :** 2026-09-17 · `claude/devis-positioning-no-project-wofsfp` — acomptes d'une version corrigée + papier à l'encre, batterie à jouer
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## Les acomptes d'un devis SUIVENT sa correction — et le papier est tout noir
+
+Depuis le 17 septembre 2026 : rouvrir un devis parti crée une nouvelle version,
+et elle **garde l'échéancier posé** (30/50/75) au lieu de reposer le seul
+acompte des Réglages — c'est la panne qu'il a vue. Le réglage ne vaut plus que
+pour le tout premier devis d'un chantier ; un devis dont il a tout retiré n'en
+reprend aucun. Et « + Ajouter un acompte » ne refuse plus en silence : la raison
+s'affiche. `ARCHITECTURE.md` §377.
+
+Le papier (PDF devis et facture) : toutes les écritures à l'encre, la ligne
+d'en-tête du tableau et « BASE HT · TAUX · TVA » en gras noir. La teinte se
+décide dans `teintesDe` et nulle part ailleurs. `ARCHITECTURE.md` §378.
+
 ## Une panne de base ne se lit plus « Réessayez » sur les règlements
 
 Depuis le 17 septembre 2026, les trois gestes de règlement de `/termines/tva`
@@ -15,7 +28,7 @@ Depuis le 17 septembre 2026, les trois gestes de règlement de `/termines/tva`
 ne laissent plus une exception sortir de l'action : elle est journalisée avec
 son code `SQLSTATE` et revient **en valeur**, avec la phrase de
 `src/lib/panne-de-base.ts` — qui nomme la base et donne le geste sûr, rallumer
-l'espace (`ARCHITECTURE.md` §377).
+l'espace (`ARCHITECTURE.md` §379).
 
 **Ce qui l'a provoqué :** sa capture du 17 septembre à 15 h 57, « Ce règlement
 n'a pas pu être enregistré. Réessayez. » sur 495,00 € parfaitement dus. Le

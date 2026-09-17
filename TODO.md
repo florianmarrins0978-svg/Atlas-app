@@ -9,6 +9,25 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## LES SUITES NAVIGATEUR TRAVERSENT LA RLS — ce qu'elles ne peuvent pas mesurer
+
+**Trouvé le 17 septembre 2026**, par une suite verte à la main et rouge dans la
+batterie : le serveur des suites navigateur tourne sous le rôle `postgres`
+(`verifier-avant-livraison.ts`, `DATABASE_URL: SUPER`), parce qu'elles
+inspectent la base pour vérifier ce qu'elles affirment. Un compte NEUF y voit
+donc les chantiers du jeu de démonstration — son accueil n'est jamais vide.
+
+**Conséquence, et elle vaut au-delà de ce lot :** tout ce qui se mesure sur un
+écran VIDE (l'accueil sans chantier, une liste sans ligne) ne peut pas l'être
+dans la batterie. La place de la porte du devis se mesure donc à la main, sous
+le rôle du produit : `npx tsx scripts/mesurer-porte-accueil-vide.mts`, serveur
+lancé par `npm run dev`. La suite de la batterie le DIT quand elle ne peut pas
+mesurer, plutôt que de rendre un vert sur rien.
+
+**Ce qui le réglerait** : un second serveur, sous `atlas_app`, pour les suites
+qui n'inspectent pas la base. À peser — deux serveurs, c'est deux ports et deux
+compilations par batterie.
+
 ## ⏳ `test-accueil-vide-porte-e2e` dépend de l'état que la base a gardé
 
 **Mesuré le 17 septembre 2026, des deux côtés.** Jouée seule, elle passe ; jouée
@@ -85,7 +104,7 @@ migration, et une acceptation qui écrit les créneaux tels quels au lieu de les
 
 **Fait le 17 septembre 2026 :** les trois gestes de règlement de `/termines/tva`
 rendent la panne de base en valeur, journalisée, avec le geste sûr
-(`ARCHITECTURE.md` §377).
+(`ARCHITECTURE.md` §379).
 
 **Ce qui reste, et ce n'est pas urgent :** les autres actions qui écrivent de
 l'argent laissent encore l'exception sortir — émission d'une facture, envoi d'un

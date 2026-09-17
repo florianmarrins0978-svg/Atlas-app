@@ -8,6 +8,48 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-17
 
+### Le complément après fusion ne jouait RIEN, et rendait un ✅
+
+Trouvé en l'utilisant, pas en le lisant : `verifier-apres-fusion` importait une
+fonction de `verifier-rouge-prealable`, **un script d'entrée** — l'import
+exécutait son `main()`, qui écrivait « aucune suite rouge : rien à comparer »
+puis sortait. Le complément n'a donc jamais joué une ligne de son propre
+travail, et son vert pouvait passer pour un verdict de fusion. C'est le pire
+des défauts d'outillage : il n'échoue pas, il approuve.
+
+La lecture partagée vit désormais dans `_temoin-de-main.mjs`, qui ne fait rien
+tout seul ; les deux scripts d'entrée l'y prennent. Et
+`test-scripts-entree-non-importes` refuse qu'un script de `scripts/` importe un
+script qui s'exécute au chargement — il sait échouer sur un couple fabriqué, et
+il ne compte pas un `main()` gardé par `import.meta.url` (deux scripts du dépôt
+en ont un, légitimement).
+
+### Ses trois acomptes suivent la correction du devis — et un refus le DIT
+
+Sa panne, capture à l'appui : *« ça prend qu'un seul acompte, ça m'a supprimé
+mes 2 autres et je n'arrive pas à les remettre »*. Ni la remise ni la main
+d'œuvre n'y étaient pour rien — une suite l'a établi avant toute correction.
+**Rouvrir un devis parti crée une nouvelle version**, et celle-ci reposait
+l'acompte des Réglages, seul : les deux autres n'étaient jamais recopiés. Une
+version corrigée garde désormais l'échéancier qu'il avait posé — et n'en
+réinvente aucun s'il les avait tous retirés. Le réglage ne vaut plus que pour le
+tout premier devis d'un chantier.
+
+Second grief, même cause de silence : « + Ajouter un acompte » refusait sans un
+mot (devis parti, trois acomptes déjà, 100 % atteint). Le refus porte sa raison
+et s'affiche sous le geste. `ARCHITECTURE.md` §377 ;
+`test-acomptes-nouvelle-version`, `test-acomptes-remise-main-doeuvre-e2e`.
+
+### Le papier du devis s'écrit en noir, et sa ligne d'en-tête en gras
+
+*« Toute la ligne désignation jusqu'à total ttc, tu la mets en gras »*, *« mets
+toutes les écritures en noir, rien en gris »*, *« en bas à gauche, base ht et
+les deux autres en gras aussi »*. Les en-têtes étaient déjà gras : c'est le gris
+qui les faisait paraître maigres. Les trois gris (étiquettes, coordonnées,
+mentions légales) passent à l'encre, en un seul endroit et pour les sept
+allures. Le trait clair reste dilué — c'est un filet, pas une écriture — et
+l'accent reste sa couleur. `ARCHITECTURE.md` §378.
+
 ### La comparaison d'un rouge se fait DES DEUX CÔTÉS, dans le même état
 
 Le mécanisme de la veille rejouait la suite rouge sur `main` seul : verte
@@ -126,6 +168,8 @@ La planche `appli/deux-jours-pas-colles.html` (119) compare trois états, et
 montre sous chacun **ce que le client lit** et **ce qui se pose au planning** —
 c'est là que les trois diffèrent, pas dans le calendrier.
 
+
+
 ### La même planche, refaite simple le soir même
 
 Sa réponse à la première version : *« je comprends rien, l'idée c'est que ce
@@ -145,6 +189,7 @@ une date, ou deux au choix, comme aujourd'hui. Ce qu'il perdrait s'il
 tranche — deux dates au choix sur un chantier de plusieurs jours — est écrit
 dans `TODO.md`, pas tu. Parcourue à 390 px dans un vrai navigateur, les six
 gestes joués, sans débordement ni erreur.
+
 
 ### « Ce règlement n'a pas pu être enregistré » : la base était en cause, et rien ne le disait
 

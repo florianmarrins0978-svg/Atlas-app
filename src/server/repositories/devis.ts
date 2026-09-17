@@ -8,6 +8,7 @@ import { montantMainDoeuvreValide } from "@/lib/main-doeuvre-devis";
 import type { DbOrTx } from "../db/client";
 import { devis, lignesDevis, lignesPrix, chantiers, clients, entreprises, acomptesDevis } from "../db/schema";
 import {
+  ACOMPTES_MAX,
   acompteDOffice,
   acompteSuivantPropose,
   tauxCumuleValide,
@@ -398,14 +399,31 @@ export async function getOuCreerDevisBrouillon(ctx: Ctx, chantierId: string) {
       );
     }
 
-    // **L'acompte des Réglages est POSÉ D'OFFICE sur la ligne des totaux** —
-    // sa décision du 12 septembre 2026 (*« il doit être marqué d'office »*).
-    // Seulement à la naissance d'une version : un brouillon régénéré garde ce
-    // qu'il porte, y compris le retrait qu'il a fait du doigt. Un devis parti
-    // avec un acompte n'en donne pas à la version suivante : elle repart des
-    // Réglages, comme le taux de TVA et la remise juste au-dessus.
+    // ── L'ÉCHÉANCIER D'UNE NOUVELLE VERSION — 17 septembre 2026 ────────────
+    //
+    // **Ce qu'il a posé à la main SUIT sa correction.** Sa panne, capture à
+    // l'appui : *« ça prend qu'un seul acompte, ça m'a supprimé mes 2 autres et
+    // je n'arrive pas à les remettre »*. Son devis portait 30 / 50 / 75 ;
+    // rouvert pour correction (« Corriger le devis » crée une version), il n'en
+    // portait plus qu'un — celui des Réglages.
+    //
+    // Les deux autres n'étaient supprimés par aucun geste : ils n'étaient
+    // jamais RECOPIÉS. Le dépôt en faisait une décision — *« elle repart des
+    // Réglages, comme le taux de TVA et la remise »* —, et elle était fausse :
+    // un échéancier n'est pas un réglage d'entreprise, c'est ce qu'il a promis
+    // à CE client. Corriger une virgule du devis ne le renégocie pas.
+    //
+    // **Le premier acompte des Réglages ne vaut donc que pour un devis qui
+    // n'en a jamais eu** — la naissance du tout premier. Et « aucun acompte »
+    // se recopie aussi fidèlement que trois : un devis dont il a retiré la
+    // ligne du doigt ne la voit pas revenir à la version suivante.
+    const repris = dernier ? await lireAcomptes(tx, dernier.id) : [];
     const dOffice = acompteDOffice(conditions.acomptePourcent);
-    if (dOffice) await ecrireAcomptes(tx, ctx.entrepriseId, d.id, [dOffice]);
+    if (dernier) {
+      if (repris.length > 0) await ecrireAcomptes(tx, ctx.entrepriseId, d.id, repris);
+    } else if (dOffice) {
+      await ecrireAcomptes(tx, ctx.entrepriseId, d.id, [dOffice]);
+    }
 
     if (!chantier.devisGenereAt) {
       await tx.update(chantiers).set({ devisGenereAt: new Date() }).where(eq(chantiers.id, chantierId));
@@ -459,17 +477,41 @@ export async function getAcomptesDevis(ctx: Ctx, devisId: string): Promise<Acomp
 
 /**
  * « + Ajouter un acompte » : le rang suivant, à sa valeur d'office (les
- * Réglages, puis 50, puis 75 — cumulés). `null` : plus rien à poser — un devis
- * envoyé, trois acomptes déjà, ou un devis déjà réglé à 100 %.
+ * Réglages, puis 50, puis 75 — cumulés).
+ *
+ * **Un refus se DIT, il ne se tait pas — 17 septembre 2026.** Sa phrase :
+ * *« je n'arrive pas à les remettre »*. Ce geste rendait `null` dans trois cas
+ * — devis parti, trois acomptes déjà, devis réglé à 100 % — et l'écran ne
+ * faisait rien du tout : un appui sans effet et sans un mot se lit comme une
+ * application cassée, et il rappuie (`AGENTS.md`, « rendre le défaut bavard »).
+ * Chaque refus porte donc sa raison, et c'est elle qui s'affiche.
  */
-export async function poserAcompteSuivant(ctx: Ctx, devisId: string): Promise<AcompteDevis[] | null> {
+export type PoseAcompte =
+  | { ok: true; acomptes: AcompteDevis[] }
+  | { ok: false; raison: string };
+
+export async function poserAcompteSuivant(ctx: Ctx, devisId: string): Promise<PoseAcompte> {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const [d] = await tx.select().from(devis).where(eq(devis.id, devisId)).limit(1);
-    if (!d || d.statut === "envoye") return null;
+    if (!d) return { ok: false, raison: "Ce devis est introuvable. Rechargez l'écran." };
+    if (d.statut === "envoye") {
+      return {
+        ok: false,
+        raison: "Ce devis est parti chez votre client : son échéancier ne se corrige plus. Rechargez l'écran.",
+      };
+    }
     const actuels = await lireAcomptes(tx, devisId);
     const suivant = acompteSuivantPropose(actuels, d.acomptePourcent);
-    if (!suivant) return null;
-    return ecrireAcomptes(tx, ctx.entrepriseId, devisId, [...actuels, suivant]);
+    if (!suivant) {
+      return {
+        ok: false,
+        raison:
+          actuels.length >= ACOMPTES_MAX
+            ? "Trois acomptes au maximum : à la signature, à mi-parcours, à l'avancement."
+            : "Les acomptes posés règlent déjà la totalité du devis.",
+      };
+    }
+    return { ok: true, acomptes: await ecrireAcomptes(tx, ctx.entrepriseId, devisId, [...actuels, suivant]) };
   });
 }
 
