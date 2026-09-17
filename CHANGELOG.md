@@ -33,6 +33,23 @@ la batterie ne passe par aucun garde-fou. La batterie refuse donc elle-même de
 repartir quand le verdict précédent était rouge et que ce qui a bougé reste
 borné. Voir `ARCHITECTURE.md` §381.
 
+### Ses trois réponses réunies sur une seule planche, avant de coder
+
+**Sa consigne :** *« toutes les réponses que je vais te donner, tu vas mettre
+les modifs dans une seule planche, comme ça à la fin tu coderas la planche
+finale avec toutes les modifs dedans »*. Trois planches séparées auraient donné
+trois lots, trois batteries et trois occasions de se contredire à trois
+centimètres d'écart, dans la même carte.
+
+`appli/planning-tout-ensemble.html` porte donc ses trois choix ensemble : les
+voies d'ajout qui gardent leurs mots et se referment par le « ＋ Ajouter » ;
+« Annuler » à droite de l'interrupteur de l'absence ; le nom du client entouré,
+sans « ＋ » et sans « › », sous la date en or. Rien n'est codé.
+
+**Ce que son troisième choix enlève est dit, pas tu** : le « › » est le seul
+chemin, depuis cette liste, vers la fiche du chantier. Une demande qui supprime
+un geste mérite qu'on nomme le geste.
+
 ### Une planche pour ranger les quatre voies d'« Ajouter » sur une seule ligne
 
 **Sa demande du 17 septembre :** *« je veux que les 4 rentrent sur la même
