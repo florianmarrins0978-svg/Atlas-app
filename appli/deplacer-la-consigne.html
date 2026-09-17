@@ -3,33 +3,36 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Atlas — Déplacer : ce que dit la consigne</title>
+<title>Atlas — Déplacer : le mois entier au-dessus</title>
 </head>
 <body>
 <style>
   /*
     ————————————————————————————————————————————————————————————————
-    DÉPLACER : CE QUE DIT LA CONSIGNE — maquette ESSAYABLE
+    DÉPLACER : LE MOIS ENTIER AU-DESSUS — maquette ESSAYABLE
     ————————————————————————————————————————————————————————————————
 
-    Sa capture du 17 septembre 2026 : « il dit toucher le jour au-dessus mais
-    le planning apparaît en-dessous ».
+    SA DEMANDE, 17 septembre 2026 : « ce que je voulais c'était pas changer la
+    phrase mais faire en sorte que le planning apparaisse entier au-dessus de
+    Mr Linotte pour choisir un jour facilement ».
 
-    CE QUI SE PASSE VRAIMENT. La phrase s'affiche à DEUX endroits, parce que le
-    bloc est écrit une seule fois :
-      · dans la fiche du jour — et la fiche s'insère DANS le calendrier, juste
-        sous la semaine du jour ouvert. Les semaines suivantes sont dessous.
-      · en repli sous tout le calendrier, quand le mois tourné a emporté la
-        fiche. Là, « au-dessus » est vrai.
+    LA PREMIÈRE VERSION DE CETTE PLANCHE POSAIT LA MAUVAISE QUESTION. Elle lui
+    proposait de réécrire « touchez le jour au-dessus ». Il ne veut pas d'une
+    autre phrase : il veut que la phrase DEVIENNE VRAIE. Écrit ici parce que
+    c'est le genre d'erreur qui se refait (CLAUDE.md §2 bis).
 
-    Sur son écran du 18 septembre : DIX jours du mois étaient sous la phrase
-    qui l'envoyait regarder en haut — dont le 24.
+    CE QUI SE PASSE AUJOURD'HUI. La fiche du jour s'insère DANS le calendrier,
+    juste sous la semaine du jour ouvert. Les semaines suivantes se dessinent
+    dessous : sur son écran du 18 septembre, dix jours du mois — dont le 24 —
+    étaient sous la phrase qui l'envoyait regarder en haut.
 
-    RIEN N'EST CODÉ. Le correctif a été écrit puis défait à sa demande
-    (« fait une planche ! code rien »), conformément à CLAUDE.md §3 bis.
+    CE QUE SA SOLUTION APPORTE EN PLUS, et qui n'avait pas été vu :
+      · la phrase redevient vraie sans changer un mot ;
+      · la fiche ne disparaît plus quand il tourne le mois — donc le second
+        montage, le repli sous le calendrier, n'a plus de raison d'être ;
+      · il voit ses 30 jours d'un coup pour choisir.
 
-    AUCUNE PHRASE PRÉ-ÉCRITE N'EST PROPOSÉE AILLEURS QUE DANS CETTE PLANCHE :
-    ce sont les propositions à trancher, pas des libellés de l'application.
+    RIEN N'EST CODÉ.
   */
   :root{
     --fond:#f5f3ee; --plage:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
@@ -48,17 +51,15 @@
   .note{max-width:430px;margin:10px auto 0;padding:0 28px;font-size:12.5px;line-height:1.6;color:var(--encre-douce)}
   .note b{color:var(--encre)}
 
-  /* ── Les choix, en lettres : c'est ainsi qu'il répond (« la A ») ────── */
-  .choix{max-width:430px;margin:12px auto 0;padding:0 28px;display:flex;gap:9px;flex-wrap:wrap}
-  .choix button{flex:1 1 0;min-width:96px;border:1px solid var(--trait);background:var(--plage);
+  .choix{max-width:430px;margin:12px auto 0;padding:0 28px;display:flex;gap:9px}
+  .choix button{flex:1 1 0;border:1px solid var(--trait);background:var(--plage);
                 border-radius:13px;padding:11px 8px;cursor:pointer;color:var(--encre);
-                font:400 13px/1.3 ui-sans-serif,sans-serif}
+                font:400 13px/1.35 ui-sans-serif,sans-serif}
   .choix button b{display:block;font:700 15px/1 ui-sans-serif,sans-serif;margin-bottom:5px;color:var(--or)}
   .choix button[aria-pressed="true"]{border-color:var(--or);background:#fff;box-shadow:inset 0 0 0 1px var(--or)}
 
-  /* ── Le téléphone ───────────────────────────────────────────────────── */
   .tel{max-width:430px;margin:14px auto 0;background:var(--fond);
-       border-radius:26px;overflow:hidden;box-shadow:0 18px 46px rgba(20,18,14,.18);padding-bottom:16px}
+       border-radius:26px;overflow:hidden;box-shadow:0 18px 46px rgba(20,18,14,.18);padding-bottom:18px}
 
   .mois{margin:16px 14px 0;padding:0 4px}
   .nom-du-mois{text-align:center;font:700 14px/1 ui-sans-serif,sans-serif;padding:6px 0 10px}
@@ -76,12 +77,19 @@
   .jour.vide{visibility:hidden}
   .jour.aujourdhui{border-color:var(--or);color:var(--or)}
   .jour.ouvert{border-color:var(--encre)}
+  .jour.retenu{border-color:var(--or);color:var(--or);background:#fff}
 
-  /* CE QUE LA PHRASE DÉMENT — allumé par l'interrupteur, éteint par défaut :
-     un repère permanent deviendrait du décor. */
-  body[data-montrer="1"] .jour.dessous{border-color:var(--bordeaux);background:rgba(122,47,58,.07)}
+  /* PENDANT LE GESTE, LE CALENDRIER SE TOUCHE — et il le dit : sans ce cerne,
+     rien ne distingue un mois qu'on lit d'un mois où l'on choisit. */
+  body[data-geste="1"] .jour:not(.repos):not(.vide){cursor:pointer;border-color:var(--trait)}
+  body[data-geste="1"] .jour.ouvert{border-color:var(--encre)}
+  body[data-geste="1"] .jour.retenu{border-color:var(--or)}
 
   .fiche{margin:14px 14px 0;background:var(--plage);border-radius:18px;padding:16px 16px 14px;position:relative}
+  /* La pointe rattache la fiche à SA case — sa règle du 4 septembre 2026. Au
+     repos elle touche la semaine juste au-dessus. Pendant le geste, la fiche
+     est descendue sous le mois entier : la pointe garde la COLONNE du jour,
+     elle ne peut plus toucher sa case, et c'est le cerne noir qui la dit. */
   .pointe{position:absolute;top:-7px;left:64.3%;width:13px;height:13px;background:var(--plage);
           transform:translateX(-50%) rotate(45deg)}
   .entete-jour{text-align:center;font:700 12px/1.2 ui-sans-serif,sans-serif;letter-spacing:.16em;
@@ -97,12 +105,13 @@
              text-transform:uppercase;flex:0 0 92px}
   .qui{border:1px dashed var(--or);border-radius:999px;padding:6px 15px;font-size:12.5px;color:var(--or);background:transparent}
 
-  /* LA CONSIGNE GARDE SA PLACE — sa règle du 11 septembre 2026 : « il fallait
-     laisser les phrases où elles étaient, juste les modifier ». Seul le TEXTE
-     change d'un choix à l'autre ; la ligne ne bouge pas d'un pixel. */
   .consigne{margin-top:12px;font-size:12.5px;color:var(--or);min-height:19px}
-  .mots{display:flex;align-items:center;gap:18px;margin-top:13px}
-  .mots span{font:700 13.5px/1.2 ui-sans-serif,sans-serif;color:var(--gris)}
+  .mots{display:flex;align-items:center;gap:18px;margin-top:13px;flex-wrap:wrap;justify-content:flex-end}
+  .mots.gauche{justify-content:flex-start}
+  .mots button{border:0;background:transparent;padding:6px 0;cursor:pointer;
+               font:700 13.5px/1.2 ui-sans-serif,sans-serif;color:var(--encre)}
+  .mots button.pale{color:var(--gris)}
+  .mots button:active{opacity:.55}
 
   .ajouter{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:22px;
            font-size:14px;color:var(--encre-douce)}
@@ -113,65 +122,46 @@
            font-size:10.5px;color:var(--gris);flex-wrap:wrap}
   .legende i{display:inline-block;width:14px;height:5px;border-radius:2px;vertical-align:middle;margin-right:4px}
 
-  /* ── L'interrupteur du repère ───────────────────────────────────────── */
-  .interrupteur{max-width:430px;margin:14px auto 0;padding:0 28px;display:flex;align-items:center;gap:12px}
-  .interrupteur button{border:1px solid var(--trait);background:var(--plage);border-radius:999px;
-                       padding:9px 17px;cursor:pointer;color:var(--encre);
-                       font:700 12.5px/1 ui-sans-serif,sans-serif}
-  .interrupteur button[aria-pressed="true"]{border-color:var(--bordeaux);color:var(--bordeaux);background:#fff}
-  .interrupteur em{font-style:normal;font-size:12.5px;color:var(--encre-douce)}
+  .fait{max-width:430px;margin:14px auto 0;padding:0 28px;font-size:13px;line-height:1.6;color:var(--encre-douce)}
+  .fait b{color:var(--encre)}
 
   .tranche{max-width:430px;margin:30px auto 0;padding:16px 20px;background:#fff;border:1px solid var(--trait);
            border-radius:16px;font-size:13px;line-height:1.6;color:var(--encre-douce)}
   .tranche b{color:var(--encre)}
   .tranche p{margin:0 0 10px}
   .tranche p:last-child{margin:0}
+
+  [hidden]{display:none !important}
 </style>
 
 <div class="bandeau">
-  Ta capture : <b>« il dit toucher le jour au-dessus mais le planning apparaît en-dessous »</b><br>
-  Rien n'est codé. Choisis, et je code.
+  <b>« Faire en sorte que le planning apparaisse entier au-dessus de Mr Linotte,<br>
+  pour choisir un jour facilement »</b><br>
+  Essayez : touchez <b>Déplacer</b>. Rien n'est codé.
 </div>
 
-<h2>Question 1 — la phrase</h2>
-<p class="note">Elle reste <b>exactement à sa place</b>. Seuls les mots changent.</p>
+<h2>Ce que ça change</h2>
+<p class="note">Au repos, la fiche est <b>coincée dans la semaine du 18</b> : le 21 au 30 sont dessous. Pendant le déplacement, elle <b>descend sous le mois entier</b> — vos 30 jours d'un coup, et la phrase dit enfin vrai.</p>
 
-<div class="choix" id="choix-phrase">
-  <button data-phrase="A" aria-pressed="true"><b>A</b>Touchez son nouveau jour</button>
-  <button data-phrase="B" aria-pressed="false"><b>B</b>Touchez le jour d'arrivée</button>
-  <button data-phrase="C" aria-pressed="false"><b>C</b>Quel jour&nbsp;?</button>
-  <button data-phrase="D" aria-pressed="false"><b>D</b>Touchez le jour au-dessus <em>(celle d'aujourd'hui)</em></button>
-</div>
+<h2>La seule question</h2>
+<p class="note">Pendant que vous choisissez le jour, la fiche descend. <b>Entière, ou juste de quoi savoir qui vous déplacez&nbsp;?</b></p>
 
-<h2>Question 2 — son nom</h2>
-<p class="note">Il est déjà écrit trois lignes plus haut, en titre. Sur ta capture, tu l'avais <b>deux fois</b>.</p>
-
-<div class="choix" id="choix-nom">
-  <button data-nom="0" aria-pressed="true"><b>1</b>Sans le nom</button>
-  <button data-nom="1" aria-pressed="false"><b>2</b>Avec « Mr. Linotte · » devant</button>
+<div class="choix" id="choix">
+  <button data-fiche="entiere" aria-pressed="true"><b>A</b>Entière — les demi-journées et « Ajouter » restent</button>
+  <button data-fiche="courte" aria-pressed="false"><b>B</b>Juste le nom, le lieu et la question</button>
 </div>
 
 <div class="tel">
   <div class="mois">
     <div class="nom-du-mois">septembre 2026</div>
-    <div class="grille" id="grille"></div>
+    <div class="grille" id="grille-haut"></div>
   </div>
 
-  <div class="fiche">
-    <div class="pointe"></div>
-    <div class="entete-jour">Vendredi 18 septembre</div>
-    <div class="absent">+&nbsp; Salarié absent&nbsp;?</div>
-    <p class="nom">Mr. Linotte</p>
-    <p class="duree">2 jours</p>
-    <p class="lieu">Jouy-Mauvoisin</p>
-    <div class="demi"><i class="carre"></i><span class="mot">Matin</span><span class="qui">Qui&nbsp;?</span></div>
-    <div class="demi"><i class="carre"></i><span class="mot">Après-midi</span><span class="qui">Qui&nbsp;?</span></div>
-    <p class="consigne" id="consigne">Touchez son nouveau jour</p>
-    <div class="mots"><span>Annuler</span></div>
-    <div class="ajouter"><i>+</i>Ajouter</div>
-  </div>
+  <div id="place-repos"></div>
 
   <div class="grille" id="grille-bas" style="margin:10px 18px 0"></div>
+
+  <div id="place-geste"></div>
 
   <div class="legende">
     <span><i style="background:var(--papier)"></i>rien</span>
@@ -181,101 +171,144 @@
   </div>
 </div>
 
-<div class="interrupteur">
-  <button id="montrer" aria-pressed="false">Montrer</button>
-  <em><b id="compte">10</b> jours du mois sont dessinés <b>sous</b> la phrase.</em>
-</div>
+<p class="fait" id="fait" hidden></p>
 
 <div class="tranche">
-  <p><b>Pourquoi la phrase dit « au-dessus ».</b> Elle est écrite une seule fois et
-  s'affiche à deux endroits : ici, dans la fiche — où le calendrier continue en
-  dessous — et en repli sous tout le calendrier, quand le mois tourné a emporté
-  la fiche. Là, « au-dessus » est vrai.</p>
-  <p><b>Donc aucune direction ne peut être juste aux deux endroits.</b> C'est
-  pour ça que A, B et C n'en disent aucune.</p>
-  <p><b>Réponds par une lettre et un chiffre</b> — « la A et la 1 », par exemple.</p>
+  <p><b>Ce que votre idée règle, et que la mienne ratait.</b> Je proposais de
+  réécrire la phrase. Vous, vous rendez la phrase vraie — et du même coup la
+  fiche ne disparaît plus quand vous tournez le mois pour atteindre votre jour.
+  Aujourd'hui elle disparaît, et il a fallu écrire <b>un second affichage</b>
+  sous le calendrier rien que pour ça. Avec votre solution, il n'a plus lieu
+  d'être : <b>une seule place, une seule phrase</b>.</p>
+  <p><b>Ce que j'ai tranché seul, dites-le si c'est mal :</b> la petite pointe
+  qui rattache la fiche à sa case disparaît pendant le geste. Descendue sous le
+  mois entier, elle ne touchait plus rien et désignait la case d'à côté. C'est
+  le <b>cerne noir du 18</b> qui dit le jour ouvert — il ne ment pas sur la
+  distance.</p>
+  <p><b>Répondez par une lettre</b> — A ou B.</p>
 </div>
 
 <script>
-  /* Les semaines de septembre 2026. Les barres sont celles de SA capture :
-     une planche qui invente ses données ne montre pas son écran. */
-  var SEMAINES = [
-    [null,[1,'',''],[2,'',''],[3,'',''],[4,'',''],[5,'repos'],[6,'repos']],
-    [[7,'',''],[8,'','pleine','moitie'],[9,'','','moitie'],[10,'','','moitie'],[11,'','pleine','moitie'],[12,'repos'],[13,'repos']],
-    [[14,'',''],[15,'',''],[16,'','moitie','pleine'],[17,'aujourdhui','moitie',''],[18,'ouvert','moitie','moitie'],[19,'repos'],[20,'repos']]
-  ];
-  var SEMAINES_BAS = [
-    [[21,'','moitie','pleine'],[22,'',''],[23,'','moitie',''],[24,'','trop','trop'],[25,'','trop','trop'],[26,'repos'],[27,'repos']],
-    [[28,'','pleine','pleine'],[29,'','pleine','pleine'],[30,'','pleine','pleine'],null,null,null,null]
-  ];
+  /* Les barres sont celles de SA capture du 17 septembre : une planche qui
+     invente ses données ne montre pas son écran. */
+  var EN_TETE = ['LUN','MAR','MER','JEU','VEN','SAM','DIM'];
+  var S1 = [null,[1,'',''],[2,'',''],[3,'',''],[4,'',''],[5,'repos'],[6,'repos']];
+  var S2 = [[7,'',''],[8,'','pleine','moitie'],[9,'','','moitie'],[10,'','','moitie'],[11,'','pleine','moitie'],[12,'repos'],[13,'repos']];
+  var S3 = [[14,'',''],[15,'',''],[16,'','moitie','pleine'],[17,'aujourdhui','moitie',''],[18,'ouvert','moitie','moitie'],[19,'repos'],[20,'repos']];
+  var S4 = [[21,'','moitie','pleine'],[22,'',''],[23,'','moitie',''],[24,'','trop','trop'],[25,'','trop','trop'],[26,'repos'],[27,'repos']];
+  var S5 = [[28,'','pleine','pleine'],[29,'','pleine','pleine'],[30,'','pleine','pleine'],null,null,null,null];
 
-  function caseDuJour(j, dessous){
+  var retenu = null;   // le jour d'accueil touché
+  var geste = false;   // le déplacement est-il ouvert ?
+  var fiche = 'entiere';
+
+  /* LE NOM DU JOUR SE DÉDUIT DE SA COLONNE — jamais écrit en dur.
+     La première version disait « ven. 24 » : le 24 est un jeudi. Une maquette
+     qui se trompe sur une date fait douter de tout ce qu'elle montre. */
+  var ABREGE = ['lun.','mar.','mer.','jeu.','ven.','sam.','dim.'];
+  function jourAbrege(n){
+    var rang = null;
+    [S1,S2,S3,S4,S5].forEach(function(s){
+      s.forEach(function(j, colonne){ if (j && j[0] === n) rang = colonne; });
+    });
+    return rang === null ? '' : ABREGE[rang];
+  }
+
+  function caseDuJour(j){
     if (!j) return '<div class="jour vide"></div>';
-    var classes = 'jour ' + (j[1] || '') + (dessous ? ' dessous' : '');
+    var c = 'jour ' + (j[1] || '');
+    if (retenu === j[0]) c += ' retenu';
     var haut = j[2] ? ' class="' + j[2] + '"' : '';
     var bas  = j[3] ? ' class="' + j[3] + '"' : '';
-    return '<div class="' + classes + '">' + j[0] +
+    return '<div class="' + c + '" data-jour="' + j[0] + '">' + j[0] +
            '<div class="barres"><span' + haut + '></span><span' + bas + '></span></div></div>';
   }
 
-  function peindre(cible, semaines, dessous, avecEnTete){
+  function semaines(liste, enTete){
     var h = '';
-    if (avecEnTete) {
-      ['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'].forEach(function(n){
-        h += '<div class="en-tete">' + n.toUpperCase() + '</div>';
-      });
-    }
-    semaines.forEach(function(s){ s.forEach(function(j){ h += caseDuJour(j, dessous); }); });
-    document.getElementById(cible).innerHTML = h;
+    if (enTete) EN_TETE.forEach(function(n){ h += '<div class="en-tete">' + n + '</div>'; });
+    liste.forEach(function(s){ s.forEach(function(j){ h += caseDuJour(j); }); });
+    return h;
   }
 
-  peindre('grille', SEMAINES, false, true);
-  peindre('grille-bas', SEMAINES_BAS, true, false);
-
-  var PHRASES = {
-    A: 'Touchez son nouveau jour',
-    B: "Touchez le jour d'arrivée",
-    C: 'Quel jour ?',
-    D: 'touchez le jour au-dessus'
-  };
-  var phrase = 'A', nom = false;
-
-  function ecrire(){
-    var t = PHRASES[phrase];
-    document.getElementById('consigne').textContent = nom ? 'Mr. Linotte · ' + t : t;
+  /* LA FICHE EST ÉCRITE UNE FOIS et posée à l'une ou l'autre place — jamais
+     deux fois : deux écritures d'une même fiche finiraient par diverger
+     (CLAUDE.md §3). */
+  function laFiche(){
+    var court = (fiche === 'courte') && geste;
+    return '<div class="fiche">' +
+      (geste ? '' : '<div class="pointe"></div>') +
+      '<div class="entete-jour">Vendredi 18 septembre</div>' +
+      (court ? '' : '<div class="absent">+&nbsp; Salarié absent&nbsp;?</div>') +
+      '<p class="nom">Mr. Linotte</p>' +
+      '<p class="duree">2 jours</p>' +
+      '<p class="lieu">Jouy-Mauvoisin</p>' +
+      (court ? '' :
+        '<div class="demi"><i class="carre"></i><span class="mot">Matin</span><span class="qui">Qui&nbsp;?</span></div>' +
+        '<div class="demi"><i class="carre"></i><span class="mot">Après-midi</span><span class="qui">Qui&nbsp;?</span></div>') +
+      (geste
+        ? '<p class="consigne">' + (retenu
+              ? jourAbrege(retenu) + ' ' + retenu + ' septembre. Quel moment ?'
+              : 'Touchez le jour au-dessus') + '</p>' +
+          '<div class="mots gauche">' +
+            (retenu ? '<button data-moment="Matin">Matin</button>' +
+                      '<button data-moment="Après-midi">Après-midi</button>' +
+                      '<button data-moment="Journée">Journée</button>' : '') +
+            '<button class="pale" data-annuler="1">Annuler</button>' +
+          '</div>'
+        : '<div class="mots"><button data-deplacer="1">Déplacer</button>' +
+          '<button data-deplacer="0">Retirer</button></div>') +
+      (court ? '' : '<div class="ajouter"><i>+</i>Ajouter</div>') +
+      '</div>';
   }
 
-  function brancher(id, attribut, quand){
-    var zone = document.getElementById(id);
-    zone.addEventListener('click', function(e){
-      var b = e.target.closest('button');
-      if (!b) return;
-      [].forEach.call(zone.querySelectorAll('button'), function(x){
+  function peindre(){
+    document.body.setAttribute('data-geste', geste ? '1' : '0');
+    /* AU REPOS : le mois est coupé en deux, la fiche entre les deux.
+       PENDANT LE GESTE : le mois est entier, la fiche dessous. */
+    document.getElementById('grille-haut').innerHTML =
+      semaines(geste ? [S1,S2,S3,S4,S5] : [S1,S2,S3], true);
+    document.getElementById('grille-bas').innerHTML =
+      geste ? '' : semaines([S4,S5], false);
+    document.getElementById('place-repos').innerHTML = geste ? '' : laFiche();
+    document.getElementById('place-geste').innerHTML = geste ? laFiche() : '';
+  }
+
+  document.addEventListener('click', function(e){
+    var b = e.target.closest('button');
+    var j = e.target.closest('.jour');
+
+    if (b && b.hasAttribute('data-fiche')) {
+      [].forEach.call(document.querySelectorAll('#choix button'), function(x){
         x.setAttribute('aria-pressed', String(x === b));
       });
-      quand(b.getAttribute(attribut));
-      ecrire();
-    });
-  }
-
-  brancher('choix-phrase', 'data-phrase', function(v){ phrase = v; });
-  brancher('choix-nom', 'data-nom', function(v){ nom = (v === '1'); });
-
-  /* Le compte n'est pas écrit à la main : il se compte sur le dessin, sinon il
-     mentira le jour où une semaine bouge (CLAUDE.md — « un récapitulatif se
-     RECALCULE, il ne se recopie pas »). */
-  var jours = document.querySelectorAll('#grille-bas .jour:not(.vide)');
-  document.getElementById('compte').textContent = jours.length;
-
-  var bouton = document.getElementById('montrer');
-  bouton.addEventListener('click', function(){
-    var allume = document.body.getAttribute('data-montrer') === '1';
-    document.body.setAttribute('data-montrer', allume ? '0' : '1');
-    bouton.setAttribute('aria-pressed', String(!allume));
-    bouton.textContent = allume ? 'Montrer' : 'Cacher';
+      fiche = b.getAttribute('data-fiche');
+      return peindre();
+    }
+    if (b && b.getAttribute('data-deplacer') === '1') {
+      geste = true; retenu = null;
+      document.getElementById('fait').hidden = true;
+      return peindre();
+    }
+    if (b && b.hasAttribute('data-annuler')) {
+      geste = false; retenu = null;
+      return peindre();
+    }
+    if (b && b.hasAttribute('data-moment')) {
+      var f = document.getElementById('fait');
+      f.innerHTML = '<b>Mr. Linotte</b> part au <b>' + jourAbrege(retenu) + ' ' + retenu + ' septembre</b>, ' +
+                    b.getAttribute('data-moment').toLowerCase() + '. Trois appuis.';
+      f.hidden = false;
+      geste = false; retenu = null;
+      return peindre();
+    }
+    if (geste && j && !j.classList.contains('repos') && !j.classList.contains('vide')) {
+      retenu = Number(j.getAttribute('data-jour'));
+      return peindre();
+    }
   });
 
-  ecrire();
+  peindre();
 </script>
 </body>
 </html>

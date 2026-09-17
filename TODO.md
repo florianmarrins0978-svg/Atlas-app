@@ -69,41 +69,149 @@ de la hauteur, il la veut à 33 %. Le réglage des deux ressorts ne la déplace
 pas — essayé, mesuré, rendu. La racine est ailleurs.
 
 
-## ⏳ UNE PLANCHE À REGARDER — LA CONSIGNE DE DÉPLACEMENT (17 septembre 2026)
+## ⏳ UNE PLANCHE À REGARDER — LE MOIS ENTIER AU-DESSUS PENDANT UN DÉPLACEMENT (17 septembre 2026)
 
 **Sa capture :** *« il dit toucher le jour au-dessus mais le planning apparaît
-en-dessous. »* Il a raison, et c'est mesuré : sur son écran du 18 septembre,
-**dix jours du mois** sont dessinés SOUS la consigne qui l'envoie regarder en
-haut — dont le 24.
+en-dessous. »* Mesuré : sur son écran du 18 septembre, **dix jours du mois**
+sont dessinés SOUS la consigne — dont le 24.
 
-**La racine.** `BandeauDeplacement` est écrit une fois et monté à deux places
-(`PlanningClient.tsx`) : dans la fiche du jour, et en repli sous le calendrier
-quand le mois tourné a emporté la fiche. « Au-dessus » avait été écrit pour la
-seconde, où c'est vrai. Dans la fiche c'est faux — le volet s'insère SOUS LA
-SEMAINE du jour ouvert (`MoisCharge`, prop `volet`, ligne 305). **Aucune
-direction ne peut être juste aux deux endroits.**
+**LA PREMIÈRE LECTURE ÉTAIT FAUSSE, ET C'EST LUI QUI L'A REDRESSÉE :** *« ce
+que je voulais c'était pas changer la phrase mais faire en sorte que le
+planning apparaisse entier au-dessus de Mr Linotte pour choisir un jour
+facilement »*. On lui avait proposé trois formulations ; il n'en veut aucune.
+Il veut que la phrase **devienne vraie**.
 
-**RIEN N'EST CODÉ** — la planche `appli/deplacer-la-consigne.html` attend sa
-réponse. Le correctif avait été écrit, puis **défait à sa demande** (*« fait
-une planche ! code rien »*) : commits `5b177d9` puis `aa3f198` sur
-`claude/problem-investigation-qn7qor`. Il reste repêchable quand il aura
-tranché ; seule la formulation change.
+**Sa solution est meilleure, et pour une raison qui n'avait pas été vue.**
+Aujourd'hui la fiche s'insère DANS la grille, sous la semaine du jour ouvert
+(`MoisCharge`, prop `volet`) — donc elle **disparaît au premier mois tourné**,
+et c'est pour ça qu'il a fallu écrire un SECOND montage de
+`BandeauDeplacement`, en repli sous le calendrier. Si la fiche descend sous le
+mois entier pendant le geste, elle survit au changement de mois : **le second
+montage devient du code mort** (`CLAUDE.md` §4 quinquies), et la consigne n'a
+plus besoin de redire le nom du chantier.
 
-Deux réponses attendues, une lettre et un chiffre :
+**RIEN N'EST CODÉ POUR LA PLACE** — la planche `appli/deplacer-la-consigne.html`
+attend sa lettre. Une seule question : pendant qu'il choisit le jour, la fiche
+descend **entière** (A) ou réduite au nom, au lieu et à la question (B).
+
+**Ce qui EST codé, et qui attend avec :** sa réponse « 1 sans le nom » — le nom
+du chantier n'est plus redit dans la fiche, où il est déjà en titre trois
+lignes plus haut (commit `b04ec34` sur `claude/problem-investigation-qn7qor`,
+suite `test-deplacer-sur-le-calendrier-e2e.ts`). Non poussé sur `main` : il
+touche la même ligne que la place, et les deux partiront ensemble.
+
+**Tranché sans lui demander, à dire si c'est mal :** la pointe qui rattache la
+fiche à sa case disparaît pendant le geste — descendue sous le mois entier,
+elle désignait la case d'à côté. Le cerne noir du jour ouvert la remplace.
+
+## ⏳ UNE PLANCHE À REGARDER — LES QUATRE VOIES SUR UNE LIGNE (17 septembre 2026)
+
+**Sa demande, capture à l'appui :** *« je veux que les 4 rentrent sur la même
+ligne, et peut-être de la même taille, ça sera plus joli ? Ou le "Annuler"
+d'une autre manière, je sais pas, propose »*.
+
+**RIEN N'EST CODÉ** — la planche `appli/quatre-sur-une-ligne.html` attend sa
+réponse.
+
+**Ce que l'écran fait aujourd'hui** (`AjoutAuJour`) : trois voies sur une ligne
+qui se replie — « Un chantier en attente » y tient sur deux lignes de texte —,
+puis « Annuler » seul, collé à droite, sur une ligne à lui.
+
+**LE CHIFFRE QUI DÉCIDE, et il est mesuré dans le navigateur à 390 pt :** à
+quatre pastilles égales il reste **50 px pour le mot**. « Un chantier en
+attente » en réclame 135, « Autre chose » 72, « En attente » 62, « Chantier »
+51. **Quatre sur une ligne à taille égale oblige donc à raccourcir les mots.**
+Ce n'est pas un réglage, c'est un échange — et c'est ce que la planche montre,
+en écrivant sous la carte ce que chaque mot réclame et ce qu'il a.
 
 | | |
 |---|---|
-| **A** | « Touchez son nouveau jour » |
-| **B** | « Touchez le jour d'arrivée » |
-| **C** | « Quel jour ? » |
-| **D** | celle d'aujourd'hui, pour comparer |
-| **1** | sans son nom — il est déjà en titre trois lignes plus haut |
-| **2** | avec « Mr. Linotte · » devant, comme aujourd'hui |
+| **A** | quatre pastilles égales, mots courts : Chantier · Client · Autre · Annuler — sa demande, mot pour mot |
+| **B** | trois voies égales + « Annuler » en croix de 34 px (la forme de « Ajouter », à l'envers) ; le rond prend de la place, « Autre chose » y redevient « Autre » |
+| **C** | plus d'« Annuler » : le « ＋ Ajouter » qui a ouvert les voies reste à sa place et devient « ✕ Fermer » |
 
-**Le second point est une redite qu'il a sous les yeux** : sur sa capture,
-« Mr. Linotte » est écrit deux fois dans la même carte, à quatre lignes
-d'écart. Sous le calendrier il doit rester — la fiche n'y est plus pour le
-dire.
+**Ce que je défends : C.** Elle ENLÈVE un bouton au lieu d'en ajouter un
+quatrième (`CLAUDE.md` §4 quater : un correctif qui n'enlève rien doit
+alerter), elle laisse aux trois voies leurs mots, et elle reprend un geste qui
+vit déjà dans la même carte — « + Salarié absent ? » referme ce qu'il a ouvert.
+
+**Deux mesures fausses corrigées en chemin**, et elles valent d'être sues :
+`scrollWidth` contre `clientWidth` ne voit pas un texte qui se replie ; un
+`Range` sur le contenu rend la ligne la plus longue, donc **41 px pour un mot
+qui en réclame 62**. La planche mesure désormais dans un jumeau invisible qu'on
+empêche de se replier, et compte les lignes réellement peintes. Et l'animation
+de largeur a été retirée : la mesure se prenait pendant la transition, donc sur
+une largeur qui n'était celle de rien (`CLAUDE.md` §5).
+
+## ⏳ UNE PLANCHE À REGARDER — « ANNULER » À CÔTÉ DE « JOURNÉE » (17 septembre 2026)
+
+**Sa demande, capture à l'appui :** *« rajoute-moi un "Annuler" à côté de
+"Journée" si je veux annuler la requête »*.
+
+**RIEN N'EST CODÉ** — la planche `appli/annuler-l-absence.html` attend sa
+réponse.
+
+**Ce qui manque aujourd'hui**, lu dans `PlanningClient.tsx` : il touche
+« + Salarié absent ? » puis un nom, l'absence est posée sur la journée et
+`BasculeDuMoment` s'ouvre pour la restreindre. Pour la défaire, un seul
+chemin — retoucher « + Salarié absent ? », ouvrir la liste, toucher le nom qui
+porte alors « Annuler ». C'est SON chemin du 10 septembre, et il ne se
+supprime pas ; mais au moment où il vient de se tromper, l'interrupteur est
+sous ses yeux et la sortie est ailleurs, en deux appuis non écrits.
+
+**Deux placements sur la planche**, parce que la largeur tranche et qu'elle a
+déjà coûté une fois (`PlanningClient.tsx`, 8 septembre — 440 px pour 354) :
+
+| | |
+|---|---|
+| **A** | « Annuler » **à droite de l'interrupteur** — sa phrase, mot pour mot |
+| **B** | « Annuler » **sous l'interrupteur**, à droite — indépendant de la largeur |
+
+**Mesuré aux deux largeurs, pas supposé.** À 390 pt, A tient. **À 320 pt,
+« Après-midi » passe SOUS la case verte** — et un contrôle qui comparait
+`scrollWidth` à `clientWidth` a répondu « rien n'est coupé » sur une capture
+qui montrait le contraire (`CLAUDE.md` §5). C'est l'image qui a tranché.
+
+**Écarté, et c'est le seul arbitrage :** « Annuler » en quatrième case DANS
+l'interrupteur — « Matin · Après-midi · Journée · Annuler » se lirait comme un
+quatrième moment.
+
+## ⏳ UNE PLANCHE À REGARDER — POSER EN CLIQUANT SUR LE NOM (17 septembre 2026)
+
+**Sa demande, capture à l'appui :** *« au lieu du "Poser" entouré, pour poser
+le client le mieux serait qu'on clique sur Mr. Linotte — donc trouve un moyen
+stylé pour qu'on ait envie de cliquer sur Mr. Linotte »*.
+
+**RIEN N'EST CODÉ DE CE CÔTÉ** — la planche `appli/poser-en-cliquant-sur-le-nom.html`
+attend sa réponse. Trois façons, même geste dessous :
+
+| | |
+|---|---|
+| **A** | la ligne devient une **tuile** de papier, filet d'or à gauche |
+| **B** | le **nom s'écrit en or**, souligné d'un filet — il se lit comme un lien |
+| **C** | le **contour du « Poser » passe autour du nom** — sa phrase, mot pour mot |
+
+**Quatre clients en attente** — sa demande du même soir : *« montre-moi ce que
+ça donnerait avec 4 chantiers en attente »*. C'est le cas qui départage : à un
+seul nom, les trois se valent. La planche porte donc quatre lignes, dont une au
+nom long, et la vraie hauteur maximale du tiroir (352 px) avec son défilement.
+
+**Ce que je défends : C.** L'application a déjà ce contour creux partout
+(`Petit`, `PlanningClient.tsx`) : on déplace une forme qu'il connaît au lieu de
+lui en apprendre une. A fait quatre pavés quand quatre clients attendent ;
+B se rate au soleil, sur un chantier.
+
+**CE QUI DOIT ÊTRE TRANCHÉ AVEC LUI, et ce n'est pas décoratif.** Sur cette
+ligne, le chevron « › » ouvre DÉJÀ le chantier (`ChevronDesPortes`). Le nom
+qui pose et le chevron qui ouvre font **deux gestes sur une même ligne** : les
+trois versions écartent le chevron du nom, mais c'est lui qui dira si c'est
+tenable — ou si le chevron doit partir d'ici.
+
+**Ce qui EST codé de sa demande, et livré avec la planche :** le
+« À poser sur mardi 22 septembre » écrit en NOIR sous le trait a disparu — il
+redisait mot pour mot la ligne dorée deux centimètres plus haut. Il reste dans
+le seul cas où il ne redit rien : sans jour touché, il dit « Touchez d'abord un
+jour du calendrier », et c'est la seule ligne qui l'explique.
 
 ## ⏳ UNE PLANCHE À REGARDER — DEUX JOURS QUI NE SE TOUCHENT PAS (17 septembre 2026)
 
