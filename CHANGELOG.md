@@ -8,6 +8,27 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-17
 
+### Une planche pour ranger les quatre voies d'« Ajouter » sur une seule ligne
+
+**Sa demande du 17 septembre :** *« je veux que les 4 rentrent sur la même
+ligne, et peut-être de la même taille »*. Mesuré plutôt qu'estimé : à quatre
+pastilles égales il reste **50 px pour le mot**, et « Un chantier en attente »
+en réclame 135. Quatre sur une ligne à taille égale oblige donc à raccourcir —
+c'est un échange, pas un réglage, et `appli/quatre-sur-une-ligne.html` l'écrit
+sous la carte, pastille par pastille.
+
+Trois façons y attendent son choix, dont une qui ENLÈVE le bouton au lieu d'en
+ajouter un quatrième : le « ＋ Ajouter » qui a ouvert les voies reste à sa place
+et referme, comme « + Salarié absent ? » le fait déjà deux centimètres plus
+haut. Rien n'est codé.
+
+**Deux façons de mesurer une largeur se sont révélées fausses en chemin**, et
+c'est la leçon réutilisable : `scrollWidth` contre `clientWidth` ne voit pas un
+texte qui se replie, et un `Range` sur le contenu rend la largeur de sa ligne
+la plus longue — 41 px pour un mot qui en réclame 62. La mesure juste pose le
+mot dans un jumeau invisible qu'on empêche de se replier, et compte les lignes
+peintes.
+
 ### Une planche pour annuler une absence sans repasser par « + Salarié absent ? »
 
 **Sa demande du 17 septembre :** *« rajoute-moi un "Annuler" à côté de
