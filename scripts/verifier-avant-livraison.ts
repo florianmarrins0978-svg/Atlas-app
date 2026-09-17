@@ -15,11 +15,12 @@ import {
   suffixeDeLAtelier,
 } from "./_atelier";
 import { prendreLeVerrou } from "./verrou-batterie.mjs";
-import { porteeDuLot, phraseDuRefusDePortee } from "./_portee-batterie";
+import { porteeDuLot, phraseDuRefusDePortee, refusApresUnRouge } from "./_portee-batterie";
 import { lireDernierVerdict, ecrireDernierVerdict, ilYA } from "./_dernier-verdict";
 import { jouerEnGardantLaSortie } from "./_jouer-etape";
 import { bilanDuJournal } from "./_bilan-suites.mjs";
 import { commitCourant } from "./_temoin-de-main.mjs";
+import { evaluerLeLot } from "./_niveau-de-risque.mjs";
 
 // La batterie complète, à jouer AVANT de demander au patron d'essayer quoi que
 // ce soit.
@@ -190,6 +191,27 @@ const precedent = lireDernierVerdict(RACINE);
 // refuser la seule mesure qui manquait. Ce raccourci n'a de sens qu'entre deux
 // batteries complètes.
 const precedentComplet = precedent?.niveau === 3 ? precedent : null;
+
+// **UN VERDICT ROUGE NE SE REMESURE PAS EN ENTIER — 17 septembre 2026, 23 h.**
+//
+// Sa question, après la correction du soir : *« les autres sessions ont déjà
+// l'info, ou je dois leur dire à chaque fois ? »* — elles ne l'ont pas, et
+// c'est bien le problème : **une session qui relance la batterie ne passe par
+// aucun garde-fou**. Elle décide toute seule, au bout de trois heures, que son
+// verdict ne vaut plus. Le refus vit donc ICI, où le geste se fait.
+if (!forcer && precedentComplet && !precedentComplet.vert) {
+  const bougeDepuis = fichiersRemues(precedentComplet.empreinte, empreinteAvant);
+  const refus = refusApresUnRouge({
+    rouges: precedentComplet.rouges,
+    rougesHorsSuites: precedentComplet.rougesHorsSuites,
+    niveauDeCeQuiABouge: evaluerLeLot(bougeDepuis, { racine: RACINE }).niveau,
+  });
+  if (refus) {
+    console.error(refus);
+    process.exit(2);
+  }
+}
+
 if (!forcer && precedentComplet?.vert) {
   const portee = porteeDuLot(fichiersRemues(precedentComplet.empreinte, empreinteAvant));
   if (portee.quoi !== "complete") {

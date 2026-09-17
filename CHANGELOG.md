@@ -26,7 +26,12 @@ question : ce qui a bougé depuis la mesure, et ce que cela peut casser. Il
 rejoue les étapes et les suites concernées, garde le rouge de ce qu'il n'a pas
 remesuré, et refuse quand ce qui a bougé atteint le niveau 3.
 `verifier-apres-fusion.ts` disparaît — il n'en était qu'un cas particulier.
-Voir `ARCHITECTURE.md` §381.
+
+Et sa question suivante — *« les autres sessions ont déjà l'info, ou je dois
+leur dire à chaque fois ? »* — a fermé le dernier trou : une session qui relance
+la batterie ne passe par aucun garde-fou. La batterie refuse donc elle-même de
+repartir quand le verdict précédent était rouge et que ce qui a bougé reste
+borné. Voir `ARCHITECTURE.md` §381.
 
 ### Le garde-fou de `main` réclamait une batterie dès qu'une autre session fusionnait
 
@@ -282,6 +287,19 @@ existe. La 2e proposition prend `colors.or`, chiffre en encre.
 tout à l'heure à côté, avec le numéro qui était entouré »*. Deux boutons en
 haut de la planche : **A** la case entière, **B** le chiffre entouré d'un
 cercle. Le geste ne change pas, seule la peinture du jour ; il tranchera.
+
+**Il a tranché : la B**, le chiffre entouré. La A et les deux boutons du haut
+sont partis de la planche. Trois retouches avec, toutes les trois de son
+message : la phrase du geste passe SOUS le calendrier et AU-DESSUS de la
+liste, en noir ; « Votre client peut proposer une autre date » au lieu de
+« Il peut… » ; et « Envoyer le devis » prend la capsule de l'application
+(`PrimaryButton` : vert `plein`, crème, à la largeur de son texte) au lieu
+d'un bouton pin en pleine largeur. La planche s'ouvre sur 4 jours, à sa
+demande, pour qu'il l'essaye. Et l'interrupteur s'appelle « Vous proposez
+deux dates », son libellé. Sous « Votre client peut proposer une autre
+date », la phrase devient « Il ne verra que vos jours libres. » — choisie
+par lui le 18 septembre parmi trois, à la place de « Un calendrier de vos
+jours libres s'ouvrira sous vos dates. »
 
 ### « Ce règlement n'a pas pu être enregistré » : la base était en cause, et rien ne le disait
 
