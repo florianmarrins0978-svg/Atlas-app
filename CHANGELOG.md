@@ -37,7 +37,7 @@ le mois est exactement ce qu'il fait pour atteindre son jour d'accueil.
 
 Parti avec : `BasculeDemi`, `liberer`, `libererDemiJourneeAction`,
 `libererDemiJournee`, `sansLaDemi` — plus aucun appelant (`CLAUDE.md` §4
-quinquies). `ARCHITECTURE.md` §371.
+quinquies). `ARCHITECTURE.md` §372.
 
 ### `main` a avancé sous un lot éprouvé : `verifier-apres-fusion` rejoue la rencontre, pas la batterie
 
@@ -113,6 +113,41 @@ bouton reprend la place de « Retirer », à droite de l'interrupteur : la rang�
 garde ses deux boutons au même endroit. `test-deplacer-sur-le-calendrier-e2e`
 tient les deux moitiés — l'écran revient à ses deux gestes, **et la base n'a
 pas bougé**.
+
+### Une demi-journée rendue se remet AU MÊME ENDROIT : la moitié sous le nom du chantier offre « Poser ici »
+
+**Sa seconde capture du 16 septembre 2026**, mercredi 30, « Mr. Julien » :
+*« je l'ai enlevée puis j'ai essayé de la remettre au même endroit, ça a
+bugué »*. Le matin rendu, l'après-midi gardé : la moitié libre se range sous le
+nom du chantier (`libresAvant`), et ce montage-là de `LigneLibre` ne recevait
+pas le geste. Il tenait le morceau, et il n'y avait rien à toucher.
+
+**Ce que ça évite :** rendre une demi-journée et ne plus pouvoir la remettre
+d'où elle vient — le cas le plus courant, puisqu'un chantier garde presque
+toujours son autre moitié. La condition vit maintenant une fois (`poserIci`),
+et les deux montages la reçoivent. `ARCHITECTURE.md` §371. Rouge d'abord :
+« rendue, elle se remet AU MÊME ENDROIT — sous le nom du chantier ».
+
+### « La demi-journée retirée de Mr Julien ne se repose pas » — l'écran gardait les créneaux d'avant
+
+**Sa panne, capture à l'appui :** *« j'ai essayé de poser la demi-journée
+retirée de Mr Julien mais impossible ? »*, sur un vendredi annoncé libre matin
+et après-midi, avec « Cette demi-journée n'a pas pu être reposée. »
+
+Sa séquence, sans rechargement : rendre une demi-journée, « Retirer », reposer
+le chantier ailleurs. `retirerDuJour` n'effaçait que la date et `poser` ne
+rendait que trois colonnes ; l'écran gardait donc les demi-journées d'avant
+alors que la base venait de les réécrire en entier (migration 0085). Il peignait
+le chantier sur son ancien jour, et comptait une moitié en attente d'une place
+qui n'existait qu'à l'écran — le serveur refusait, à juste titre.
+
+**Ce que ça évite :** un chantier posé qui s'affiche ailleurs, un jour annoncé
+libre qui est pris, et un geste qui échoue sans qu'on puisse comprendre pourquoi.
+`EtatPose` porte désormais les créneaux, comme les deux actions de demi-journée
+(`ARCHITECTURE.md` §371). Rouge d'abord, sur le message même de sa capture :
+`test-liberer-une-demi-journee-e2e.ts`, cas « rendu, RETIRÉ, puis reposé
+ailleurs ».
+
 
 ### Le garde-fou mesure le dossier que `git -C` vise — et une tâche = un lot isolé
 

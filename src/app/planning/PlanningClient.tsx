@@ -1210,6 +1210,14 @@ export default function PlanningClient({
    *
    * Effacé, il serait à ressaisir ; là, il redescend dans la liste d'attente,
    * d'où on le repose ailleurs.
+   *
+   * **ET SES CRÉNEAUX PARTENT AVEC SA DATE** — sa panne du 16 septembre 2026.
+   * `deplanifierChantier` les efface tous, sans condition ; ne retirer que la
+   * date laissait l'écran avec les demi-journées d'avant, et le geste suivant
+   * — reposer le chantier ailleurs — les gardait. Le chantier se peignait alors
+   * sur son ancien jour, et une moitié semblait attendre une place qui n'existe
+   * qu'à l'écran. Un état à moitié repeint est la divergence que `CLAUDE.md` §3
+   * interdit.
    */
   function retirerDuJour(chantierId: string) {
     setOuvert(null);
@@ -1217,7 +1225,7 @@ export default function PlanningClient({
     enTransition(async () => {
       await deplanifierChantierAction(chantierId);
       setChantiers((liste) =>
-        liste.map((c) => (c.id === chantierId ? { ...c, datePlanifiee: null } : c))
+        liste.map((c) => (c.id === chantierId ? { ...c, datePlanifiee: null, creneaux: [] } : c))
       );
     });
   }
@@ -3502,6 +3510,24 @@ function CarteDuJour({
     (b) => !seulement || b.type === "libre" || b.chantier.id === seulement
   );
 
+  /**
+   * OÙ REPOSER LE MORCEAU — la règle, pour TOUTE moitié libre de ce jour.
+   *
+   * **Sa seconde capture du 16 septembre 2026 :** *« je l'ai enlevée puis j'ai
+   * essayé de la remettre au même endroit, ça a bugué »* — le matin rendu,
+   * l'après-midi gardé par le chantier, et rien à toucher sur le matin.
+   *
+   * `LigneLibre` est écrite une fois et montée à DEUX endroits : en queue de
+   * journée, et sous le nom du chantier qu'elle précède (`libresAvant`, sa
+   * précision du 10 septembre). Seul le premier recevait le geste — donc la
+   * moitié rendue, qui tombe dans le second dès que le chantier garde l'autre
+   * moitié, ne se reposait jamais là. Deux montages d'une même ligne dont un
+   * seul porte le geste, c'est la divergence que `CLAUDE.md` §3 interdit : la
+   * condition vit désormais ICI, une fois, et les deux la reçoivent.
+   */
+  const poserIci = (demi: Demi) =>
+    ecriture && morceauEnMain ? () => reposer(morceauEnMain, jour, demi) : undefined;
+
   // ─── LA FICHE SE COLLE SOUS SON CHANTIER — sa correction du 10 septembre
   // 2026. La règle, et ce qu'elle concilie, vivent dans `rangDeLaFiche` : elle
   // s'éprouve sans navigateur, là où le défaut, lui, ne se voyait qu'à deux
@@ -3644,11 +3670,7 @@ function CarteDuJour({
                   demi={bloc.demi}
                   occupation={occupationDe(jour, bloc.demi)}
                   marge={rang === 0 ? 8 : 16}
-                  onPoser={
-                    ecriture && morceauEnMain
-                      ? () => reposer(morceauEnMain, jour, bloc.demi)
-                      : undefined
-                  }
+                  onPoser={poserIci(bloc.demi)}
                 />
                 {suite}
               </Fragment>
@@ -3725,7 +3747,12 @@ function CarteDuJour({
                   lisait ce qui manque avant de savoir de qui il s'agit. Ici,
                   l'ordre du jour est tenu ET le nom reste en tête. */}
               {bloc.libresAvant.map((demi) => (
-                <LigneLibre key={`avant-${demi}`} demi={demi} occupation={occupationDe(jour, demi)} />
+                <LigneLibre
+                  key={`avant-${demi}`}
+                  demi={demi}
+                  occupation={occupationDe(jour, demi)}
+                  onPoser={poserIci(demi)}
+                />
               ))}
 
               {bloc.demis.map((demi) => {

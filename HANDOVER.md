@@ -8,6 +8,22 @@ sert.
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## Où un chantier est POSÉ se repeint en ENTIER après chaque geste
+
+Depuis la migration 0085, `date_planifiee` + `creneau_debut` + la durée ne
+disent plus où un chantier est : `creneaux_chantier` le dit, une ligne par
+demi-journée, et les trois colonnes en sont dérivées. Un geste de l'écran qui
+ne repeint que ces colonnes laisse donc une liste périmée — c'est la panne du
+16 septembre 2026 (« la demi-journée retirée de Mr Julien ne se repose pas »),
+où le chantier se peignait sur son ancien jour et réclamait une moitié qui
+n'existait qu'à l'écran. Toute action qui pose, retire ou déplace rend
+désormais ses créneaux. `ARCHITECTURE.md` §371.
+
+Et une moitié libre se dessine à deux endroits — en queue de journée, ou sous
+le nom du chantier qu'elle précède (`libresAvant`). Les deux montages doivent
+porter les mêmes gestes : le second n'offrait pas « Poser ici », et la moitié
+rendue ne pouvait pas se remettre d'où elle venait (même §).
+
 ## Les crochets des conditions générales ne se remplissent plus à la main
 
 Depuis le 16 septembre 2026, l'assureur décennale et le médiateur se saisissent
@@ -965,7 +981,7 @@ un écran qui a l'air en retard sur sa maquette. Toute clé neuve s'ajoute donc 
 | où vit le geste | **sous le calendrier** (`data-atlas="deplacement-en-cours"`), jamais dans la fiche : elle disparaît au premier mois tourné |
 | retiré avec | `BasculeDemi`, `liberer`, `libererDemiJourneeAction`, `libererDemiJournee`, `sansLaDemi` |
 | les suites | `test-creneaux-chantier.ts` (8 cas neufs), `test-deplacer-sur-le-calendrier-e2e.ts` |
-| le détail | `ARCHITECTURE.md` §371 |
+| le détail | `ARCHITECTURE.md` §372 |
 
 **LE PIÈGE À NE PAS REFABRIQUER.** Ce qui part commande ce qui peut arriver :
 une demi-journée ne devient pas une journée, une journée ne tient pas sur une

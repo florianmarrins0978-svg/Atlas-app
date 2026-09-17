@@ -30933,10 +30933,87 @@ sait pas » n'est jamais « vert ».
 (d'avant le 16 septembre), un verdict qui portait un rouge nouveau, un lot
 dont le niveau exigé a monté. Le complément REFUSE alors, et dit quoi jouer.
 
+---
+
+## §371 — Où un chantier est POSÉ se repeint en entier après chaque geste : trois colonnes ne le disent plus
+
+**Sa panne du 16 septembre 2026, capture à l'appui :** *« j'ai essayé de poser
+la demi-journée retirée de Mr Julien mais impossible ? »* — et l'écran
+répondait « Cette demi-journée n'a pas pu être reposée. » sur un vendredi qui
+s'annonçait libre le matin ET l'après-midi.
+
+### Ce qui se passait
+
+La séquence est la sienne, et aucun des trois gestes n'est fautif pris seul :
+rendre une demi-journée (« Déplacer » → matin), « Retirer » le chantier, puis
+le reposer ailleurs — **sans recharger**, ce qu'il ne fait jamais.
+
+Depuis la migration 0085 (§322), où un chantier est posé se lit dans
+`creneaux_chantier`, une ligne par demi-journée ; `date_planifiee`,
+`creneau_debut` et `duree_demi_journees` en sont **dérivées**. Or deux gestes
+de l'écran ne repeignaient que ces colonnes-là :
+
+| | ce qu'il rendait | ce que la base venait d'écrire |
+|---|---|---|
+| `retirerDuJour` | `datePlanifiee: null` | **tous** les créneaux effacés |
+| `poser` | les trois colonnes (`EtatPose`) | les créneaux du bloc entier, réécrits |
+
+L'écran gardait donc les demi-journées d'avant. Deux conséquences, et la
+seconde est celle qu'il a photographiée :
+
+1. il peignait le chantier sur son **ancien jour** — d'où un vendredi annoncé
+   libre alors que le chantier y était ;
+2. `demiJourneesAPoser` comparait la durée demandée à une liste périmée et
+   trouvait une moitié en attente. Ce morceau n'existait **qu'à l'écran** : en
+   base tout était posé, et `reposerDemiJournee` refusait — à juste titre.
+
+Le refus était donc le bon comportement du serveur sur un écran qui mentait.
+C'est la divergence que `CLAUDE.md` §3 interdit, ici entre l'écran et la table.
+
+### La correction, à la racine
+
+`EtatPose` porte désormais `creneaux` : ce qu'une action de pose rend décrit
+**où le chantier est**, comme le font déjà `libererDemiJourneeAction` et
+`reposerDemiJourneeAction` (`creneauxApres`). Le type l'exige — un geste
+ajouté demain ne peut plus l'oublier en silence. Et `retirerDuJour` vide la
+liste avec la date, puisque `deplanifierChantier` efface tous les créneaux sans
+condition.
+
+### Pourquoi aucun contrôle ne le voyait
+
+`test-liberer-une-demi-journee-e2e.ts` recharge la page entre ses gestes — ce
+qui efface précisément l'état faux. Le cas ajouté (« rendu, RETIRÉ, puis
+reposé ailleurs ») ne recharge pas une seule fois : il rejoue SA séquence
+(`CLAUDE.md` §5 quater). Vu rouge sur le message même de sa capture, puis vert.
+
+### Le second volet : la moitié rendue ne se remettait pas AU MÊME ENDROIT
+
+**Sa seconde capture du même jour**, mercredi 30 septembre, « Mr. Julien » :
+*« je l'ai enlevée puis j'ai essayé de la remettre au même endroit, ça a
+bugué »* — le matin rendu, l'après-midi gardé par le chantier, le morceau au
+doigt, et rien à toucher sur le matin.
+
+`blocsDeLaJournee` range une moitié libre **qui précède un chantier** sous le
+nom de ce chantier (`libresAvant`, sa précision du 10 septembre : *« le nom doit
+rester en premier, ensuite matin et ensuite aprèm »*). `LigneLibre` est donc
+montée à deux endroits — en queue de journée, et là — et **seul le montage de
+queue recevait `onPoser`**. La moitié rendue tombe dans le second dès que le
+chantier garde l'autre moitié, c'est-à-dire dans le cas le plus courant : elle
+ne pouvait jamais se reposer là où elle venait d'être prise.
+
+Deux montages d'une même ligne dont un seul porte le geste, c'est la divergence
+que `CLAUDE.md` §3 interdit. La condition vit désormais **une fois**, dans
+`poserIci(demi)`, et les deux montages la reçoivent — la condition écrite en
+ligne dans le premier a disparu.
+
+Cas ajouté : « rendue, elle se remet AU MÊME ENDROIT — sous le nom du
+chantier ». Les cas d'avant reposaient sur un AUTRE jour, entièrement libre,
+où les deux moitiés sont des blocs de queue : ils ne pouvaient pas le voir.
+
 
 ---
 
-## §371 — « Déplacer » déplace pour de bon : le calendrier, puis le moment
+## §372 — « Déplacer » déplace pour de bon : le calendrier, puis le moment
 
 **Sa demande du 17 septembre 2026 :** *« lorsque je clique sur déplacer ça me
 fait apparaître le planning et je sélectionne un jour et le matin ou l'aprem ou

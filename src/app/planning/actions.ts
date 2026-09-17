@@ -71,6 +71,25 @@ export type EtatPose = {
   datePlanifiee: string | null;
   creneauDebut: string | null;
   dureeDemiJournees: number | null;
+  /**
+   * OÙ il est posé, demi-journée par demi-journée — **et sans ce champ, poser
+   * laissait l'écran sur les créneaux d'AVANT.**
+   *
+   * Sa panne du 16 septembre 2026, capture à l'appui : *« j'ai essayé de poser
+   * la demi-journée retirée de Mr Julien, mais impossible »*, sur un vendredi
+   * qui s'annonçait libre matin et après-midi. La séquence : rendre une
+   * demi-journée, « Retirer », reposer le chantier ailleurs. `planifierChantier`
+   * réécrit les créneaux entiers ; l'état rendu ici ne les portait pas, l'écran
+   * gardait sa liste d'avant — il peignait donc le chantier sur son ANCIEN jour,
+   * et croyait qu'une moitié attendait encore une place. Le morceau existait à
+   * l'écran et nulle part en base : le serveur refusait, à juste titre.
+   *
+   * Trois colonnes ne suffisent plus à dire où un chantier est depuis la
+   * migration 0085 (`ARCHITECTURE.md` §322). L'état rendu après un geste porte
+   * donc la même vérité que la table, et le type l'exige — un prochain geste ne
+   * peut plus l'oublier en silence.
+   */
+  creneaux: { jour: string; moment: Moment }[];
 };
 
 export type ResultatPose =
@@ -116,6 +135,7 @@ export async function planifierChantierAction(
       datePlanifiee: row?.datePlanifiee ?? null,
       creneauDebut: row?.creneauDebut ?? null,
       dureeDemiJournees: row?.dureeDemiJournees ?? null,
+      creneaux: await creneauxApres(ctx, chantierId),
     },
   };
 }

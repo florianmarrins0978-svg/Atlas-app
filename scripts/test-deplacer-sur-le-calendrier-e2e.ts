@@ -301,6 +301,148 @@ async function main() {
     }
   });
 
+  // ═════════════════════════════════════════════════════════════════════════
+  // SES DEUX PANNES DU 16 SEPTEMBRE 2026 — reprises ici, par un autre chemin
+  // ═════════════════════════════════════════════════════════════════════════
+  //
+  // **Elles ont été trouvées et corrigées par la session voisine**, avec leurs
+  // contrôles, dans la suite qui portait l'ancien geste. Celui-ci a disparu le
+  // 17 septembre — « Déplacer » ne libère plus, il déplace — et ses deux cas
+  // entraient par l'interrupteur matin / après-midi, qui n'existe plus.
+  //
+  // **Ce qu'ils défendent, lui, existe toujours** : un chantier qui DEMANDE
+  // plus qu'il n'occupe laisse une demi-journée dans le tiroir du bas, et elle
+  // se repose. Les deux pannes vivent là, pas dans le geste qui les produisait.
+  // On monte donc l'état en base — la seule chose qu'on ne peut plus faire à
+  // l'écran — et l'on rejoue SA séquence à partir de là.
+  //
+  // Les jeter aurait été le vrai coût du lot : un correctif dont le contrôle
+  // part avec le geste qui l'a révélé revient au premier remaniement.
+
+  /** Poser ce chantier sur une seule moitié, alors qu'il en demande deux. */
+  const posePartielle = async (jour: string, demi: string) => {
+    await pool.query("DELETE FROM creneaux_chantier WHERE chantier_id = $1", [chantierId]);
+    await pool.query(
+      `INSERT INTO creneaux_chantier (chantier_id, entreprise_id, jour, demi)
+       SELECT $1, entreprise_id, $2::date, $3::creneau_demi FROM chantiers WHERE id = $1`,
+      [chantierId, jour, demi]
+    );
+    await pool.query(
+      `UPDATE chantiers SET date_planifiee = $2, creneau_debut = $3, duree_demi_journees = 2
+        WHERE id = $1`,
+      [chantierId, jour, demi]
+    );
+  };
+
+  await cas("RETIRÉ puis reposé ailleurs, sans recharger : aucun morceau fantôme", async () => {
+    /*
+     * *« J'ai essayé de poser la demi-journée retirée de Mr Julien mais
+     * impossible ? »* — et l'écran répondait « Cette demi-journée n'a pas pu
+     * être reposée. » sur un jour qui s'annonçait libre matin ET après-midi.
+     *
+     * **Aucun geste n'est en cause pris seul — c'est leur SUITE**, sans
+     * rechargement : `poser` ne rendait que trois colonnes, l'écran gardait ses
+     * demi-journées d'avant, peignait le chantier sur son ancien jour, et
+     * comptait une moitié en attente d'une place qui n'existait qu'à l'écran.
+     * Le serveur refusait, à juste titre.
+     *
+     * **Ce cas ne recharge pas une seule fois**, et c'est tout son objet : les
+     * autres rechargent, ce qui efface justement l'état faux qu'on cherche
+     * (`CLAUDE.md` §5 quater — on éprouve SA séquence, pas notre geste).
+     */
+    await posePartielle(jourA, "matin");
+    await page.goto(`${BASE}/planning`, { waitUntil: "networkidle" });
+    await page.waitForTimeout(700);
+    await fermerLeTiroirDuPlanning(page);
+
+    const carte = await allerAuJour(jourA);
+    const bloc = carte.locator(`[data-atlas="bloc-chantier"][data-chantier="${chantierId}"]`);
+    if ((await bloc.count()) === 0) {
+      throw new Error(`le chantier n'est pas sur le ${jourA} : le montage de ce cas est faux`);
+    }
+    await bloc.locator('[data-atlas="retirer"]').click();
+    await page.waitForTimeout(1600);
+
+    // On le repose depuis le tiroir, SANS recharger.
+    await ouvrirLeTiroirDuPlanning(page);
+    const ligne = page.locator('[data-atlas="sans-date"]').filter({ hasText: NOM });
+    if ((await ligne.count()) === 0) {
+      throw new Error("le chantier retiré n'apparaît pas dans « Sans date » : il est perdu pour lui");
+    }
+    await ligne.locator('[data-poser="1"]').first().click();
+    await page.waitForTimeout(1800);
+
+    // **Ce que l'écran en dit, sans rechargement.** Un morceau qui reste ici
+    // n'existe qu'à l'écran : le reposer sera REFUSÉ, et c'est exactement le
+    // message qu'il a photographié.
+    const morceau = page.locator(`[data-atlas="morceau-a-poser"][data-chantier="${chantierId}"]`);
+    if ((await morceau.count()) !== 0) {
+      throw new Error(
+        "le tiroir réclame encore une demi-journée alors que la base a tout posé : " +
+          "c'est le morceau fantôme du 16 septembre, et le serveur refusera de le poser"
+      );
+    }
+  });
+
+  await cas("la moitié rendue se remet AU MÊME ENDROIT, sous le nom du chantier", async () => {
+    /*
+     * *« Je l'ai enlevée puis j'ai essayé de la remettre au même endroit, ça a
+     * bugué. »* Le matin libre, l'après-midi gardé par le chantier : il reprend
+     * le morceau, touche le matin — et il n'y a rien à toucher.
+     *
+     * **Une moitié libre QUI PRÉCÈDE un chantier se dessine sous son nom**
+     * (`libresAvant`, sa précision du 10 septembre : *« le nom doit rester en
+     * premier, ensuite matin et ensuite aprèm »*). `LigneLibre` est écrite une
+     * fois et montée à deux endroits ; seul le montage de queue recevait
+     * « Poser ici ». La moitié attendue tombait donc dans le montage muet dès
+     * que le chantier garde son après-midi — le cas le plus courant.
+     */
+    await posePartielle(jourB, "apres_midi");
+    await page.goto(`${BASE}/planning`, { waitUntil: "networkidle" });
+    await page.waitForTimeout(700);
+
+    await ouvrirLeTiroirDuPlanning(page);
+    const morceau = page.locator(`[data-atlas="morceau-a-poser"][data-chantier="${chantierId}"]`);
+    if ((await morceau.count()) !== 1) {
+      throw new Error("la demi-journée qui manque n'attend nulle part : elle est perdue pour lui");
+    }
+    await morceau.click();
+    await page.waitForTimeout(300);
+    if ((await morceau.getAttribute("aria-pressed")) !== "true") {
+      throw new Error("le morceau touché ne s'annonce pas tenu : la prise n'a pas eu lieu");
+    }
+    await fermerLeTiroirDuPlanning(page);
+
+    await page.click(`[data-atlas="grille-mois"] [data-jour="${jourB}"]`);
+    await page.waitForSelector(`[data-atlas="carte-jour"][data-jour="${jourB}"]`, { timeout: 15_000 });
+    await page.waitForTimeout(400);
+
+    // **LA LIGNE QU'IL VEUT REMPLIR, ET AUCUNE AUTRE** : elle est dessinée sous
+    // le nom du chantier, pas en queue de journée.
+    const ligneMatin = page.locator(
+      `[data-atlas="carte-jour"][data-jour="${jourB}"] [data-atlas="demi"][data-bloc="matin"][data-sans-chantier="1"]`
+    );
+    if ((await ligneMatin.count()) === 0) {
+      throw new Error(`le matin du ${jourB} n'est pas annoncé libre : la carte ne montre pas ce qui manque`);
+    }
+    const poser = ligneMatin.locator('[data-atlas="poser-le-morceau"]');
+    if ((await poser.count()) === 0) {
+      throw new Error(
+        "aucun « Poser ici » sur la demi-journée libre sous le nom du chantier, alors qu'il tient " +
+          "le morceau : elle ne peut pas se remettre au même endroit"
+      );
+    }
+    await poser.first().click();
+    await page.waitForTimeout(1600);
+
+    const poses = await creneauxEnBase(chantierId);
+    if (poses.join(" | ") !== attendus([`${jourB} matin`, `${jourB} apres_midi`])) {
+      throw new Error(
+        `la base porte « ${poses.join(" | ") || "rien"} » au lieu des deux moitiés du ${jourB}`
+      );
+    }
+  });
+
   // **On rend la base comme on l'a trouvée** : les jours retenus ici sont ceux
   // que les autres suites cherchent libres, et une suite qui salit la base
   // accuse la suivante (`CLAUDE.md` §5).
