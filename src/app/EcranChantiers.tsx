@@ -135,18 +135,24 @@ export default function EcranChantiers({
   const restants = chantiers.filter((c) => !retraits.estRetire(c.id));
   const compte = restants.filter((c) => c.enCours).length;
 
-  // ── QUAND IL N'A AUCUN CHANTIER, LA PORTE DESCEND — 16 septembre 2026 ────
+  // ── QUAND IL N'A AUCUN CHANTIER, LA PORTE DESCEND D'UN CRAN ──────────────
   //
-  // **Sa décision du 10 septembre**, sur la planche qu'il a retenue
+  // **Sa décision du 10 septembre 2026**, sur la planche qu'il a retenue
   // (`appli/facturer-sans-devis.html`) : *« liste vide : les deux gestes
   // descendent · liste pleine : ils remontent, et "créer un devis" retrouve
-  // exactement la place qu'il a aujourd'hui »*. Puis sa mesure du 16 septembre,
-  // capture à l'appui : *« lorsqu'il n'y a pas de chantier, le créer le devis
-  // doit se trouver au 2/3 haut du téléphone »*.
+  // exactement la place qu'il a aujourd'hui »*.
   //
-  // Sur un écran vide, la porte était à 32 % de la hauteur : tout le bas de
-  // l'écran restait blanc, et le seul geste de cet écran vivait là où le pouce
-  // ne va pas.
+  // **Et sa place, donnée deux fois le 17 septembre — la première lecture
+  // était fausse, et c'est la leçon à garder :**
+  //
+  //   · *« au 2/3 haut du téléphone »* a été lu « aux deux tiers en partant du
+  //     haut », donc à 66 %. Devant la capture : ***« il est trop bas là ! »*** ;
+  //   · *« découpe l'écran en 3 parts égales ! En partant du bas, le mets en
+  //     haut de la deuxième part »* — le tiers du bas, puis celui du milieu,
+  //     dont le haut tombe à **un tiers** de la hauteur en partant du haut.
+  //
+  // Une fraction s'énonce dans les deux sens ; un écran, non. La capture
+  // tranche, et elle se regarde AVANT de livrer (`CLAUDE.md` §10).
   const vide = restants.length === 0;
 
   // ── « En cours 4 », COLLÉ À LA LISTE — 6 septembre 2026 ──────────────────
@@ -396,20 +402,20 @@ export default function EcranChantiers({
             nouvel onglet, elle mène à l'écran entier. Le clic ordinaire est
             détourné pour jouer le geste puis faire monter la feuille — la route
             ne disparaît pas, elle change de porte. */}
-        {/* **Les deux ressorts qui posent la porte aux deux tiers.** Le bloc
-            ne change pas de place dans le marquage — il est poussé. Une place
-            écrite en dur (un `top: 66%`) l'aurait sorti du fil : les bandeaux
+        {/* **Les deux ressorts qui posent la porte au tiers haut.** Le bloc ne
+            change pas de place dans le marquage — il est poussé. Une place
+            écrite en dur (un `top: 33%`) l'aurait sorti du fil : les bandeaux
             de ses clients seraient passés dessous, et un écran plus court
             l'aurait fait chevaucher le compteur.
 
-            **Le rapport 5 contre 2 n'est pas un chiffre rond, il est MESURÉ**
-            (`scripts/test-accueil-vide-porte-e2e.ts`) : l'en-tête au-dessus et
-            « En cours 0 » en dessous ne tombent pas dans le calcul des deux
-            tiers, et c'est ce rapport-là qui pose le centre de l'anneau aux
-            deux tiers de SON téléphone. La suite mesure la place, jamais le
-            rapport — le jour où l'en-tête change de hauteur, c'est elle qui le
-            dira. */}
-        {vide && <div aria-hidden className="flex-[5]" />}
+            **Le rapport 2 contre 13 n'est pas un chiffre choisi, il est
+            MESURÉ** (`scripts/test-accueil-vide-porte-e2e.ts`, deux points et
+            une droite) : l'en-tête au-dessus et « En cours 0 » en dessous ne
+            tombent pas dans le tiers, et c'est ce rapport-là qui pose le centre
+            de l'anneau à 33,4 % de SON téléphone. La suite mesure la PLACE,
+            jamais le rapport — le jour où l'en-tête change de hauteur, c'est
+            elle qui le dira. */}
+        {vide && <div aria-hidden className="flex-[2]" />}
         <div className="flex flex-col items-center px-[26px] pb-0.5 pt-[22px]">
           <Link
             href="/chantiers/nouveau"
@@ -512,7 +518,7 @@ export default function EcranChantiers({
               {bandeaux}
               {rubriqueEnCours}
             </div>
-            <div aria-hidden className="flex-[2]" />
+            <div aria-hidden className="flex-[13]" />
           </>
         ) : (
           <div className="atlas-fil-defile pb-3 pt-2.5">

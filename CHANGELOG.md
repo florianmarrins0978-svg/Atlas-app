@@ -7,24 +7,25 @@ Format : le plus récent en tête.
 
 ---
 
-### L'accueil sans chantier : « Créer un devis » descend aux deux tiers
+### L'accueil sans chantier : « Créer un devis » descend au tiers haut
 
-*« Lorsqu'il n'y a pas de chantier, le créer le devis doit se trouver au 2/3
-haut du téléphone »* — sa mesure du 16 septembre, capture à l'appui, et la suite
-de sa décision du 10 septembre sur `appli/facturer-sans-devis.html` (*« liste
-vide : les deux gestes descendent »*), qui n'avait jamais été codée.
+*« Découpe l'écran en 3 parts égales ! En partant du bas, le mets en haut de la
+deuxième part »* — sa place, donnée le 17 septembre après une première livraison
+**à côté** : sa phrase d'avant, *« au 2/3 haut du téléphone »*, avait été lue
+« aux deux tiers en partant du haut ». Posée à 66 %, il a répondu *« il est trop
+bas là ! »*. C'est lui qui a regardé la capture à ma place — elle aurait tranché
+avant la livraison (`CLAUDE.md` §10).
 
-Mesuré avant : la porte était à **32 %** de la hauteur, et les deux tiers bas de
-l'écran restaient blancs — le seul geste de cet écran hors de portée du pouce.
-Mesuré après : **66,5 %**. Avec des chantiers, rien ne bouge : elle reste à
-26 %, exactement où elle était.
+Mesuré avant : **26 %** de la hauteur, la porte collée au titre et les trois
+quarts du bas laissés blancs. Mesuré après : **33,4 %**. Avec des chantiers,
+rien ne bouge : elle reste à 26 %, exactement où elle était.
 
-Deux ressorts (5 contre 2) poussent le bloc au lieu de le déplacer : les
+Deux ressorts (2 contre 13) poussent le bloc au lieu de le déplacer : les
 réponses de ses clients restent sous la porte, et trois d'entre elles empilées
 la font remonter plutôt que de sortir quoi que ce soit de l'écran.
-`scripts/test-accueil-vide-porte-e2e.ts` mesure la place sur un compte neuf —
-sans chantier, comme le sien — et dit le pourcentage à chaque passage.
-`ARCHITECTURE.md` §370.
+`scripts/test-accueil-vide-porte-e2e.ts` mesure la place sur un compte neuf sans
+chantier **et sans ruban d'essai** — l'écran qu'il a, lui — et dit le
+pourcentage à chaque passage. `ARCHITECTURE.md` §370.
 
 ### Le garde-fou mesure le dossier que `git -C` vise — et une tâche = un lot isolé
 

@@ -4,20 +4,24 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-09-17 · `claude/devis-positioning-no-project-wofsfp` (l'accueil vide) — niveau 2, à rejouer au vert sur cet arbre avant `main` (son accord d'abord)
+**Point de reprise :** 2026-09-17 · `claude/devis-positioning-no-project-wofsfp` (l'accueil vide, la porte au tiers haut) — niveau 2 à rejouer au vert sur cet arbre avant `main` (son accord d'abord)
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
-## L'accueil vide : la porte du devis est aux DEUX TIERS, poussée par deux ressorts
+## L'accueil vide : la porte du devis est au TIERS HAUT, poussée par deux ressorts
 
-Depuis le 16 septembre 2026, quand aucun chantier n'est en cours, « Créer un
-devis » descend aux deux tiers de la hauteur du téléphone — sa mesure, après sa
-décision du 10 septembre (*« liste vide : les deux gestes descendent »*). Avec
-des chantiers, rien ne bouge. Ce n'est pas une place écrite en dur : deux
-ressorts (5 contre 2) poussent le bloc, et **c'est la PLACE qui se mesure**
-(`scripts/test-accueil-vide-porte-e2e.ts`), jamais le rapport. `ARCHITECTURE.md`
-§370 ; le second anneau « Créer une facture » de la même planche reste à faire
-(`TODO.md`, en tête).
+Depuis le 17 septembre 2026, quand aucun chantier n'est en cours, « Créer un
+devis » descend au **tiers haut** (33,4 % mesuré) — *« découpe l'écran en 3 parts
+égales, en partant du bas mets-le en haut de la deuxième »*. Avec des chantiers,
+rien ne bouge (26 %). Ce n'est pas une place écrite en dur : deux ressorts
+(2 contre 13) poussent le bloc, et **c'est la PLACE qui se mesure**
+(`scripts/test-accueil-vide-porte-e2e.ts`, sur un compte sans ruban d'essai —
+l'écran qu'il a), jamais le rapport.
+
+**La leçon du lot :** « 2/3 haut » avait d'abord été lu « à 66 % », livré ainsi,
+et c'est LUI qui a vu la capture — *« il est trop bas là ! »*. Une fraction se
+lit dans les deux sens, un écran non. `ARCHITECTURE.md` §370 ; le second anneau
+« Créer une facture » de la même planche reste à faire (`TODO.md`, en tête).
 
 ---
 ## Les crochets des conditions générales ne se remplissent plus à la main

@@ -6,15 +6,26 @@ import { documentsAAccepter, enregistrerAcceptations } from "../src/server/repos
 import { ADRESSE } from "./_adresse";
 
 // ═══════════════════════════════════════════════════════════════════════════
-// L'ACCUEIL SANS AUCUN CHANTIER : LA PORTE DU DEVIS DESCEND AUX DEUX TIERS
+// L'ACCUEIL SANS AUCUN CHANTIER : LA PORTE DU DEVIS DESCEND AU TIERS HAUT
 // ═══════════════════════════════════════════════════════════════════════════
 //
 // **Sa demande du 10 septembre 2026**, sur la planche qu'il a retenue
 // (`appli/facturer-sans-devis.html`) : *« liste vide : les deux gestes
 // descendent · liste pleine : ils remontent, et "créer un devis" retrouve
-// exactement la place qu'il a aujourd'hui »*. Puis, le 16 septembre, capture à
-// l'appui, la mesure : *« lorsqu'il n'y a pas de chantier, le créer le devis
-// doit se trouver au 2/3 haut du téléphone »*.
+// exactement la place qu'il a aujourd'hui »*. Puis sa mesure du 17 septembre,
+// donnée deux fois parce que la première lecture était fausse :
+//
+//   · *« le créer le devis doit se trouver au 2/3 haut du téléphone »* — lu
+//     comme « aux deux tiers EN PARTANT DU HAUT », donc à 66 %. Sa réponse
+//     devant la capture : ***« il est trop bas là ! »*** ;
+//   · *« découpe l'écran en 3 parts égales ! En partant du bas, le mets en
+//     haut de la deuxième part »* — et celle-là ne se lit que d'une façon :
+//     le tiers du bas, puis le tiers du milieu, dont le HAUT est à **un
+//     tiers** de la hauteur en partant du haut.
+//
+// **Ce que cette erreur a coûté, et ce qui l'aurait évitée :** une capture
+// AVANT de livrer. Les deux tiers se lisaient dans les deux sens ; l'écran,
+// lui, ne se lit que dans un seul.
 //
 // **Pourquoi une suite plutôt qu'une relecture.** Une place ne se lit pas dans
 // le code : elle se MESURE à l'écran. Le bloc n'a pas bougé de place dans le
@@ -35,11 +46,12 @@ const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 const BASE = ADRESSE;
 const MOT_DE_PASSE = "trois-mots-tres-courts";
 
-/** Les deux tiers, et ce qu'on tolère autour. La place se règle par des
- *  ressorts, pas au pixel : la marge absorbe une police un peu plus haute ou
- *  un bandeau d'essai, elle n'absorbe pas un retour au quart de l'écran. */
-const CIBLE = 2 / 3;
-const MARGE = 0.05;
+/** Le haut du tiers du milieu, et ce qu'on tolère autour. La place se règle
+ *  par des ressorts, pas au pixel : la marge absorbe une police un peu plus
+ *  haute, elle n'absorbe ni le quart de l'écran (sa place d'avant) ni les deux
+ *  tiers (la lecture fausse du 17 septembre). */
+const CIBLE = 1 / 3;
+const MARGE = 0.04;
 
 let echecs = 0;
 async function cas(nom: string, fn: () => Promise<void>) {
@@ -83,6 +95,12 @@ async function main() {
 
   // Un compte neuf est renvoyé aux conditions générales tant qu'il ne les a
   // pas acceptées : sans cela cette suite mesurerait l'écran des documents.
+  // **Son Atlas à LUI n'a pas de ruban d'essai** (`abonnementDeLEntreprise`
+  // rend `null`), et le ruban vaut quarante pixels en haut de l'écran : mesurer
+  // avec lui, c'est mesurer un écran que le patron n'a pas. On retire donc
+  // l'abonnement que la porte pose à tout compte neuf.
+  await pool.query(`DELETE FROM abonnements WHERE entreprise_id = $1`, [compte.entrepriseId]);
+
   const aAccepter = await documentsAAccepter(compte.utilisateurId);
   if (aAccepter.length > 0) {
     await enregistrerAcceptations(
@@ -110,7 +128,7 @@ async function main() {
       assert.equal(await page.locator(".atlas-ligne").count(), 0, "des lignes de chantier s'affichent");
     });
 
-    await cas("la porte du devis se pose aux deux tiers de la hauteur", async () => {
+    await cas("la porte du devis se pose au tiers haut de l'écran", async () => {
       const place = await placeDeLaPorte(page);
       // La mesure se DIT, verte ou rouge : un contrôle qui ne rend que « ✓ »
       // ne permet pas de voir la place dériver d'un lot à l'autre.
@@ -119,7 +137,7 @@ async function main() {
         Math.abs(place - CIBLE) <= MARGE,
         `la porte est à ${(place * 100).toFixed(1)} % de la hauteur, ` +
           `il la veut à ${(CIBLE * 100).toFixed(0)} % (± ${(MARGE * 100).toFixed(0)}) — ` +
-          `sa demande du 16 septembre 2026`
+          `« en partant du bas, en haut de la deuxième part » — 17 septembre 2026`
       );
     });
 
