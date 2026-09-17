@@ -159,6 +159,11 @@ npx tsx scripts/verifier-ce-qui-a-bouge.ts
 | ce qu'on ne rejoue pas | garde son rouge — ne pas savoir n'est jamais vert |
 | ce qui renvoie à la batterie | ce qui a bougé atteint le niveau 3 |
 
+**Et l'on n'a pas à s'en souvenir** : la batterie elle-même refuse de repartir
+quand le verdict précédent était rouge et que ce qui a bougé reste borné
+(`refusApresUnRouge`). `--forcer` ouvre la porte quand on veut vraiment tout
+remesurer.
+
 `ARCHITECTURE.md` §381.
 
 ## Un rouge venu d'AILLEURS ne ferme pas la porte — une régression NOUVELLE, si

@@ -26,7 +26,12 @@ question : ce qui a bougé depuis la mesure, et ce que cela peut casser. Il
 rejoue les étapes et les suites concernées, garde le rouge de ce qu'il n'a pas
 remesuré, et refuse quand ce qui a bougé atteint le niveau 3.
 `verifier-apres-fusion.ts` disparaît — il n'en était qu'un cas particulier.
-Voir `ARCHITECTURE.md` §381.
+
+Et sa question suivante — *« les autres sessions ont déjà l'info, ou je dois
+leur dire à chaque fois ? »* — a fermé le dernier trou : une session qui relance
+la batterie ne passe par aucun garde-fou. La batterie refuse donc elle-même de
+repartir quand le verdict précédent était rouge et que ce qui a bougé reste
+borné. Voir `ARCHITECTURE.md` §381.
 
 ### Le garde-fou de `main` réclamait une batterie dès qu'une autre session fusionnait
 

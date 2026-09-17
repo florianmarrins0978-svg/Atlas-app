@@ -125,3 +125,60 @@ export function phraseDuRefusDePortee(portee: Portee, verdictPrecedent: string, 
     "    vingt minutes pour trois fichiers de suites — voir _portee-batterie.ts)",
   ].join("\n");
 }
+
+/**
+ * UN VERDICT ROUGE + UNE CORRECTION BORNÉE : le rattrapage, jamais la batterie.
+ *
+ * ─────────────────────────────────────────────────────────────────────────────
+ * **Sa question du 17 septembre 2026, après la correction du soir :** *« mais
+ * là les autres sessions ont déjà l'info, ou je dois leur dire à chaque
+ * fois ? »*
+ *
+ * Il a raison de la poser. `verifier-ce-qui-a-bouge.ts` existait depuis une
+ * heure, le garde-fou le nommait dans ses refus — mais **une session qui
+ * relance la batterie ne passe par aucun refus** : elle décide toute seule, au
+ * bout de trois heures de conversation, que son verdict ne vaut plus. C'est
+ * exactement le mode de défaillance que ce dépôt connaît par cœur
+ * (`CLAUDE.md` §1 bis) : une consigne en prose s'oublie, et rien ne la rappelle
+ * au moment où elle compte.
+ *
+ * Elle ne dépend donc plus de ce qu'une session a lu : **la batterie refuse
+ * elle-même** de repartir pour cinquante minutes quand le verdict précédent
+ * portait un rouge et que ce qui a bougé depuis reste borné. `--forcer` ouvre
+ * toujours la porte, pour la seule fois où l'on veut vraiment tout remesurer.
+ * ─────────────────────────────────────────────────────────────────────────────
+ *
+ * @param p.rouges            les suites rouges du verdict précédent
+ * @param p.rougesHorsSuites  les étapes rouges du verdict précédent
+ * @param p.niveauDeCeQuiABouge  le niveau de ce qui a bougé depuis — 3 laisse partir
+ */
+export function refusApresUnRouge({
+  rouges = [],
+  rougesHorsSuites = [],
+  niveauDeCeQuiABouge,
+}: {
+  rouges?: string[];
+  rougesHorsSuites?: string[];
+  niveauDeCeQuiABouge: number;
+}): string | null {
+  const tous = [...rougesHorsSuites, ...rouges];
+  if (tous.length === 0) return null;
+  // Ce qui a bougé remet en jeu ce que la batterie seule sait mesurer : elle
+  // part, et c'est le côté sûr.
+  if (niveauDeCeQuiABouge >= 3) return null;
+  return [
+    "⛔ LE VERDICT PRÉCÉDENT ÉTAIT ROUGE — on rejoue ses rouges, pas les 484 autres.",
+    `   ${tous.length} rouge(s) à remesurer : ${tous.slice(0, 4).join(", ")}${tous.length > 4 ? `, et ${tous.length - 4} autre(s)` : ""}.`,
+    "   Ce qui a bougé depuis reste borné : la batterie entière ne dirait rien de plus.",
+    "",
+    "   Ce qu'il y a à jouer :",
+    "",
+    "     npx tsx scripts/verifier-ce-qui-a-bouge.ts",
+    "",
+    "   Il rejoue ce qui était rouge et ce que la correction peut casser, garde le",
+    "   rouge de ce qu'il ne remesure pas, et renvoie ICI si ce qui a bougé est trop large.",
+    "",
+    "   Pour tout remesurer quand même : npm run verifier:avant-livraison -- --forcer",
+    "   (sa colère du 17 septembre 2026 : « ça recommence et c'est ça à chaque fois ! »)",
+  ].join("\n");
+}

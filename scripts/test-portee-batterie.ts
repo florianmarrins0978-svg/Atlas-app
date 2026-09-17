@@ -11,7 +11,7 @@
  * Un garde-fou qui laisse passer une régression est pire qu'aucun garde-fou.
  */
 import assert from "node:assert/strict";
-import { porteeDuLot, phraseDuRefusDePortee } from "./_portee-batterie";
+import { porteeDuLot, phraseDuRefusDePortee, refusApresUnRouge } from "./_portee-batterie";
 
 let reussis = 0;
 let echoues = 0;
@@ -125,6 +125,38 @@ test("le refus donne la commande exacte à jouer, jamais « rejoue ce qu'il faut
   assert.match(phrase, /--forcer/, "sans porte de sortie, le garde-fou se fera contourner");
   assert.match(phrase, /il y a 4 minutes/, "sans la date, on ne sait pas de quel verdict on parle");
   assert.match(phrase, /Batterie complète au vert/, "le verdict précédent doit être relu, pas résumé");
+});
+
+
+// ─── SA QUESTION DU 17 SEPTEMBRE 2026 ──────────────────────────────────────
+//
+// *« Les autres sessions ont déjà l'info, ou je dois leur dire à chaque
+// fois ? »* — non : la batterie refuse elle-même. Une session qui relance ne
+// passe par aucun garde-fou, et une consigne en prose s'oublie au bout de trois
+// heures (`CLAUDE.md` §1 bis).
+
+test("un verdict ROUGE et une correction bornée : on renvoie au rattrapage", () => {
+  const refus = refusApresUnRouge({ rougesHorsSuites: ["Mémoire du dépôt"], niveauDeCeQuiABouge: 1 });
+  assert.ok(refus, "CINQUANTE MINUTES pour une ligne de documentation : c'est la boucle du 17 septembre");
+  assert.match(refus!, /verifier-ce-qui-a-bouge/);
+  assert.match(refus!, /Mémoire du dépôt/);
+  assert.match(refus!, /--forcer/, "le refus n'offre aucune porte de sortie");
+});
+
+test("une suite rouge compte autant qu'une étape rouge", () => {
+  assert.ok(refusApresUnRouge({ rouges: ["test-planning-e2e.ts"], niveauDeCeQuiABouge: 2 }));
+});
+
+test("un verdict VERT ne renvoie nulle part — ce n'est pas son cas", () => {
+  assert.equal(refusApresUnRouge({ niveauDeCeQuiABouge: 1 }), null);
+});
+
+test("ce qui a bougé atteint le NIVEAU 3 : la batterie part, et c'est le côté sûr", () => {
+  assert.equal(
+    refusApresUnRouge({ rougesHorsSuites: ["Construction"], niveauDeCeQuiABouge: 3 }),
+    null,
+    "une migration arrivée sous un verdict rouge doit faire repartir la batterie"
+  );
 });
 
 console.log(`\n${reussis} réussis, ${echoues} échoués`);

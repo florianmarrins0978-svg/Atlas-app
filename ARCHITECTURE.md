@@ -31529,6 +31529,20 @@ première poussée d'un lot (`CLAUDE.md` §5) ; le rattrapage ne dépose jamais 
 niveau qu'il n'a pas mesuré, et refuse dès que ce qui a bougé atteint le
 niveau 3.
 
+**ET LA BATTERIE REFUSE ELLE-MÊME DE REPARTIR POUR RIEN.** Sa question, dans
+la foulée : *« mais là les autres sessions ont déjà l'info, ou je dois leur dire
+à chaque fois ? »* Elles ne l'avaient pas, et c'était le trou restant : le
+garde-fou nomme le rattrapage dans ses refus, mais **une session qui relance la
+batterie ne passe par aucun refus** — elle décide seule, au bout de trois
+heures, que son verdict ne vaut plus. C'est le mode de défaillance que ce dépôt
+connaît par cœur (`CLAUDE.md` §1 bis).
+
+`verifier-avant-livraison.ts` interroge donc `refusApresUnRouge` avant de poser
+son verrou : un verdict précédent ROUGE, et ce qui a bougé depuis en dessous du
+niveau 3, et elle **refuse** en donnant la commande. `--forcer` reste, pour la
+fois où l'on veut vraiment tout remesurer. Personne n'a plus besoin d'être au
+courant.
+
 **Mesuré, pas supposé** : joué sur ce lot même, il a ramené **130 suites rouges
 à une** en rejouant quatre étapes — et la dernière, `test-verrou-construction`,
 était une vraie régression de ce lot (elle cherchait la table des étapes dans
