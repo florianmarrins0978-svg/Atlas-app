@@ -69,6 +69,39 @@ de la hauteur, il la veut à 33 %. Le réglage des deux ressorts ne la déplace
 pas — essayé, mesuré, rendu. La racine est ailleurs.
 
 
+## ⏳ UNE PLANCHE À REGARDER — « ANNULER » À CÔTÉ DE « JOURNÉE » (17 septembre 2026)
+
+**Sa demande, capture à l'appui :** *« rajoute-moi un "Annuler" à côté de
+"Journée" si je veux annuler la requête »*.
+
+**RIEN N'EST CODÉ** — la planche `appli/annuler-l-absence.html` attend sa
+réponse.
+
+**Ce qui manque aujourd'hui**, lu dans `PlanningClient.tsx` : il touche
+« + Salarié absent ? » puis un nom, l'absence est posée sur la journée et
+`BasculeDuMoment` s'ouvre pour la restreindre. Pour la défaire, un seul
+chemin — retoucher « + Salarié absent ? », ouvrir la liste, toucher le nom qui
+porte alors « Annuler ». C'est SON chemin du 10 septembre, et il ne se
+supprime pas ; mais au moment où il vient de se tromper, l'interrupteur est
+sous ses yeux et la sortie est ailleurs, en deux appuis non écrits.
+
+**Deux placements sur la planche**, parce que la largeur tranche et qu'elle a
+déjà coûté une fois (`PlanningClient.tsx`, 8 septembre — 440 px pour 354) :
+
+| | |
+|---|---|
+| **A** | « Annuler » **à droite de l'interrupteur** — sa phrase, mot pour mot |
+| **B** | « Annuler » **sous l'interrupteur**, à droite — indépendant de la largeur |
+
+**Mesuré aux deux largeurs, pas supposé.** À 390 pt, A tient. **À 320 pt,
+« Après-midi » passe SOUS la case verte** — et un contrôle qui comparait
+`scrollWidth` à `clientWidth` a répondu « rien n'est coupé » sur une capture
+qui montrait le contraire (`CLAUDE.md` §5). C'est l'image qui a tranché.
+
+**Écarté, et c'est le seul arbitrage :** « Annuler » en quatrième case DANS
+l'interrupteur — « Matin · Après-midi · Journée · Annuler » se lirait comme un
+quatrième moment.
+
 ## ⏳ UNE PLANCHE À REGARDER — POSER EN CLIQUANT SUR LE NOM (17 septembre 2026)
 
 **Sa demande, capture à l'appui :** *« au lieu du "Poser" entouré, pour poser

@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Annuler une absence</title>
+<!--
+  ════════════════════════════════════════════════════════════════════════════
+  SA DEMANDE DU 17 SEPTEMBRE 2026, capture à l'appui.
+
+  *« Rajoute-moi un "Annuler" à côté de "Journée" si je veux annuler la
+  requête. »*
+
+  ─── Ce que le code fait AUJOURD'HUI, lu dans `PlanningClient.tsx` ────────
+
+  Il touche « + Salarié absent ? », puis un nom : l'absence est posée sur la
+  JOURNÉE entière, tout de suite, et l'interrupteur Matin / Après-midi /
+  Journée apparaît pour la restreindre (`BasculeDuMoment`, son choix D2 du
+  8 septembre).
+
+  Pour l'annuler, il n'existe qu'un chemin : retoucher « + Salarié absent ? »,
+  la liste s'ouvre, toucher le nom, qui porte alors « Annuler ». C'est SON
+  chemin, décidé le 10 septembre — *« si on veut annuler on reclique sur +
+  salarié absent, et on verrait Julien / Annuler »*. Il n'est pas supprimé.
+
+  **Ce qui manque, et c'est sa demande :** au moment précis où il vient de
+  poser l'absence par erreur, l'interrupteur est sous ses yeux et la sortie est
+  ailleurs. Deux appuis, et le second n'est écrit nulle part.
+
+  ─── Ce que la planche propose ───────────────────────────────────────────
+
+  A — « Annuler » À DROITE DE L'INTERRUPTEUR, sur la même ligne : sa phrase,
+      mot pour mot.
+  B — « Annuler » SOUS L'INTERRUPTEUR, à droite : le même geste, qui ne
+      dépend d'aucune largeur d'écran.
+
+  Dans les deux, il ne vit que tant que l'interrupteur vit : dès qu'il a choisi
+  un moment, les deux s'effacent ensemble, et la ligne « Julien absent ·
+  journée » reste seule, comme aujourd'hui.
+
+  **UNE QUATRIÈME CASE DANS L'INTERRUPTEUR A ÉTÉ ÉCARTÉE**, et c'est le seul
+  arbitrage de cette planche : « Matin · Après-midi · Journée · Annuler » se
+  lirait comme un quatrième MOMENT. On ne met pas une sortie dans la liste des
+  choix.
+
+  **LA LARGEUR EST LE VRAI SUJET, et elle a déjà coûté une fois.** Le
+  8 septembre, trois pastilles plus le mot « Quand » faisaient 440 px pour 354
+  disponibles, et la ligne se repliait — c'est mesuré, pas supposé
+  (`PlanningClient.tsx`). « Annuler » à droite reprend de la place aux trois
+  cases.
+
+  **ET C'EST MESURÉ ICI AUSSI, aux deux largeurs — la planche n'affirme rien
+  qu'elle n'ait regardé.** À 390 pt (iPhone 13), « Après-midi » tient sans
+  serrer. **À 320 pt (iPhone SE), il déborde sur « Journée »** : le mot passe
+  SOUS la case verte, et cela ne se voit qu'à l'image — un contrôle qui
+  comparait `scrollWidth` à `clientWidth` a répondu « rien n'est coupé » alors
+  que la capture montrait le contraire (`CLAUDE.md` §5, « un contrôle qui
+  mesure zéro ne mesure rien »).
+
+  **D'où les DEUX placements, et le bouton « écran étroit » pour les voir.**
+  A est sa phrase, mot pour mot ; B met « Annuler » sous l'interrupteur et ne
+  dépend d'aucune largeur. C'est à lui de trancher, avec les deux sous les
+  yeux — pas à une session de choisir en silence.
+
+  ─── Les couleurs et les mesures ─────────────────────────────────────────
+
+  Relevées dans `src/lib/design-tokens.ts` et dans le code de l'écran, pas
+  approchées à l'œil : vert des boutons pleins #7d9a6d, encre #1c1c1a, gris
+  #8a8578, carte #faf9f5, or #B98B47. L'interrupteur fait 44 px de haut
+  (« il se touche sur un chantier, avec des gants »), 12,5 px de texte ;
+  « Annuler » est en 13 px gris, comme partout ailleurs dans cette carte.
+
+  RIEN N'EST CODÉ.
+  ════════════════════════════════════════════════════════════════════════════
+-->
+<style>
+  :root{
+    --fond:#f5f3ee; --carte:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
+    --gris:#8a8578; --papier:#ece9e1; --or:#B98B47; --vert:#7d9a6d;
+    --trait:rgba(28,28,26,.12); --trait-doux:rgba(28,28,26,.07);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;background:#e6e3dc}
+  body{font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       color:var(--encre);-webkit-text-size-adjust:100%;padding:0 0 48px}
+  button{font-family:inherit}
+  button:focus-visible{outline:2px solid var(--or);outline-offset:2px}
+
+  .bandeau{background:var(--encre);color:#f2efe8;padding:14px 18px;text-align:center;
+           font-size:13.5px;line-height:1.55}
+  .bandeau b{color:#fff}
+
+  .choix{position:sticky;top:0;z-index:9;display:flex;gap:7px;justify-content:center;
+         flex-wrap:wrap;padding:10px;background:#e6e3dc;border-bottom:1px solid var(--trait)}
+  .choix button{border:1px solid var(--trait);background:transparent;border-radius:99px;
+                padding:9px 14px;font:600 12px/1 inherit;color:var(--gris);cursor:pointer}
+  .choix button[aria-pressed="true"]{background:var(--papier);border-color:var(--or);color:var(--encre)}
+
+  /* À LA LARGEUR DE SON TÉLÉPHONE : c'est la largeur qui décide ici. */
+  .tel{max-width:390px;margin:18px auto 0;padding:0 18px;transition:max-width .2s}
+  .tel.etroit{max-width:320px}
+
+  .fiche{background:var(--carte);border-radius:16px;padding:16px 18px 18px;
+         box-shadow:0 10px 30px rgba(20,18,14,.10)}
+  .titre{margin:0;text-align:center;font:600 12.5px/1 ui-sans-serif,sans-serif;
+         letter-spacing:.2em;text-transform:uppercase;color:var(--encre)}
+  .filet{margin:14px 0 0;border:0;border-top:1px solid var(--trait)}
+
+  .geste{display:flex;width:100%;min-height:44px;align-items:center;justify-content:center;
+         gap:10px;border:0;background:none;padding:9px 0;cursor:pointer;
+         font:700 14.5px/1 inherit;color:var(--encre)}
+  .geste span.plus{font-size:19px;line-height:1;margin-top:-2px}
+
+  .ligne{display:flex;min-height:48px;width:100%;align-items:center;justify-content:space-between;
+         gap:12px;padding:11px 0;text-align:left}
+  .ligne .qui{flex:1;min-width:0;font-size:14.5px;color:var(--encre)}
+  .ligne .quand{flex:none;font-size:13px;line-height:1.5;color:var(--gris)}
+
+  /* L'INTERRUPTEUR — 44 px, recopié du code de l'écran. */
+  .rangee-bascule{display:flex;align-items:center;gap:12px;margin-top:8px}
+  .bascule{display:flex;flex:1;min-width:0;overflow:hidden;border-radius:99px;
+           background:var(--carte);box-shadow:inset 0 0 0 1px var(--trait)}
+  .bascule button{flex:1;min-width:0;min-height:44px;border:0;background:transparent;
+                  font-size:12.5px;color:var(--encre-douce);cursor:pointer;
+                  white-space:nowrap;padding:0 4px}
+  .bascule button[aria-pressed="true"]{background:var(--vert);color:#f7f5ef}
+  .annuler{flex:none;border:0;background:none;padding:6px 0;font-size:13px;line-height:1.5;
+           color:var(--gris);cursor:pointer}
+  .annuler:active{color:var(--encre)}
+
+  /* B — « Annuler » SOUS l'interrupteur : il ne dépend plus d'aucune largeur. */
+  .dessous .rangee-bascule{display:block}
+  .dessous .bascule{width:100%}
+  .dessous .annuler{display:block;margin:10px 0 0 auto;padding:8px 0}
+
+  .fait{margin:14px 0 0;min-height:20px;font-size:12.5px;color:var(--vert)}
+  .rejouer{display:block;margin:16px auto 0;border:1px solid var(--trait);background:transparent;
+           border-radius:99px;padding:10px 18px;font:600 12px/1 inherit;color:var(--gris);cursor:pointer}
+
+  .note{max-width:430px;margin:22px auto 0;padding:0 22px;font-size:13.5px;
+        line-height:1.6;color:var(--encre-douce)}
+  .note b{color:var(--encre)}
+  .note p{margin:0 0 11px}
+</style>
+</head>
+<body>
+
+<div class="bandeau">
+  <b>« Annuler » pour défaire l’absence.</b> Touchez-le : celle de Julien
+  s’efface. Touchez un moment : les deux s’effacent, et la ligne reste.
+</div>
+
+<div class="choix" role="group" aria-label="Où poser « Annuler », et à quelle largeur">
+  <button type="button" data-ou="cote" aria-pressed="true">A — à côté</button>
+  <button type="button" data-ou="dessous" aria-pressed="false">B — en dessous</button>
+  <button type="button" id="largeur" aria-pressed="false">Écran étroit</button>
+</div>
+
+<div class="tel" id="tel">
+  <div class="fiche">
+    <p class="titre">Jeudi 17 septembre</p>
+    <hr class="filet">
+
+    <button class="geste" type="button" id="geste">
+      <span class="plus" aria-hidden="true">+</span><span>Salarié absent ?</span>
+    </button>
+
+    <div id="pose">
+      <div class="ligne">
+        <span class="qui">Julien absent</span>
+        <span class="quand" id="quand">journée</span>
+      </div>
+
+      <div class="rangee-bascule" id="rangee">
+        <div class="bascule" role="group" aria-label="Quand Julien est absent">
+          <button type="button" data-quand="matin" aria-pressed="false">Matin</button>
+          <button type="button" data-quand="apres_midi" aria-pressed="false">Après-midi</button>
+          <button type="button" data-quand="journee" aria-pressed="true">Journée</button>
+        </div>
+        <button class="annuler" type="button" id="annuler">Annuler</button>
+      </div>
+    </div>
+
+    <p class="fait" id="fait"></p>
+  </div>
+
+  <button class="rejouer" type="button" id="rejouer">Recommencer</button>
+</div>
+
+<div class="note">
+  <p><b>Ce qui change :</b> tant que l’interrupteur est là, « Annuler » est
+  avec lui. Il efface l’absence que vous venez de poser, en un seul appui — au
+  lieu de rouvrir « + Salarié absent ? » puis de toucher le nom.</p>
+  <p><b>Ce qui ne change pas :</b> ce second chemin reste. C’est le vôtre, du
+  10 septembre — pour annuler une absence posée hier, l’interrupteur n’est plus
+  là, et c’est par « + Salarié absent ? » qu’on y revient.</p>
+  <p><b>Ce qui a été écarté :</b> mettre « Annuler » comme quatrième case DANS
+  l’interrupteur. « Matin · Après-midi · Journée · Annuler » se lirait comme un
+  quatrième moment.</p>
+  <p><b>Pourquoi deux placements, et pas un seul :</b> « Annuler » à côté
+  reprend de la place à « Après-midi ». Sur un écran large, ça tient. <b>Sur un
+  écran étroit, « Après-midi » passe sous la case verte</b> — touchez
+  « Écran étroit » pour le voir. <b>B</b> ne dépend d’aucune largeur.</p>
+  <p><b>Ce que je défends : A si vous gardez votre téléphone</b>, c’est votre
+  phrase et ça tient chez vous. <b>B si l’appli doit tenir chez n’importe qui</b>
+  — et elle le doit.</p>
+  <p><b>Rien n’est codé.</b></p>
+</div>
+
+<script>
+const MOTS = { matin: "matin", apres_midi: "après-midi", journee: "journée" };
+const pose = document.getElementById("pose");
+const quand = document.getElementById("quand");
+const rangee = document.getElementById("rangee");
+const fait = document.getElementById("fait");
+
+function recommencer() {
+  pose.style.display = "block";
+  // **Vider le style en ligne, ne pas imposer « flex »** : c'est la feuille
+  // qui décide — B pose l'interrupteur en bloc, et un « flex » écrit ici
+  // l'écraserait sans qu'on voie pourquoi.
+  rangee.style.display = "";
+  quand.textContent = "journée";
+  for (const b of document.querySelectorAll(".bascule button"))
+    b.setAttribute("aria-pressed", String(b.dataset.quand === "journee"));
+  fait.textContent = "";
+}
+
+for (const b of document.querySelectorAll(".bascule button")) {
+  b.onclick = () => {
+    for (const a of document.querySelectorAll(".bascule button"))
+      a.setAttribute("aria-pressed", String(a === b));
+    quand.textContent = MOTS[b.dataset.quand];
+    // **L'interrupteur s'efface une fois choisi**, et « Annuler » avec lui :
+    // c'est ce que fait déjà l'écran (sa demande du 10 septembre).
+    rangee.style.display = "none";
+    fait.textContent = "Julien est absent " + MOTS[b.dataset.quand] + ".";
+  };
+}
+
+document.getElementById("annuler").onclick = () => {
+  pose.style.display = "none";
+  fait.textContent = "L’absence de Julien est annulée.";
+};
+
+document.getElementById("geste").onclick = () => {
+  fait.textContent = "C’est par ici qu’on annule une absence posée hier — inchangé.";
+};
+
+document.getElementById("rejouer").onclick = recommencer;
+
+const tel = document.getElementById("tel");
+for (const b of document.querySelectorAll(".choix button[data-ou]")) {
+  b.onclick = () => {
+    for (const a of document.querySelectorAll(".choix button[data-ou]"))
+      a.setAttribute("aria-pressed", String(a === b));
+    tel.classList.toggle("dessous", b.dataset.ou === "dessous");
+    recommencer();
+  };
+}
+const large = document.getElementById("largeur");
+large.onclick = () => {
+  const etroit = large.getAttribute("aria-pressed") !== "true";
+  large.setAttribute("aria-pressed", String(etroit));
+  large.textContent = etroit ? "Écran large" : "Écran étroit";
+  tel.classList.toggle("etroit", etroit);
+};
+
+recommencer();
+</script>
+</body>
+</html>

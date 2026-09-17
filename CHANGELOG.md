@@ -8,6 +8,22 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-17
 
+### Une planche pour annuler une absence sans repasser par « + Salarié absent ? »
+
+**Sa demande du 17 septembre :** *« rajoute-moi un "Annuler" à côté de
+"Journée" si je veux annuler la requête »*. Aujourd'hui, défaire une absence
+qu'on vient de poser demande de rouvrir « + Salarié absent ? » puis de toucher
+le nom — son chemin du 10 septembre, qui reste juste pour une absence posée
+hier, mais qui est ailleurs au moment où l'interrupteur est sous ses yeux.
+
+Rien n'est codé : `appli/annuler-l-absence.html` porte deux placements, parce
+que la largeur tranche — « Annuler » à droite reprend de la place à
+« Après-midi ». **Mesuré aux deux largeurs :** à 390 pt ça tient, à 320 pt le
+mot passe sous la case verte. Le premier contrôle écrit pour le dire
+(`scrollWidth` contre `clientWidth`) a répondu « rien n'est coupé » alors que
+la capture montrait le contraire — c'est l'image qui a tranché, une fois de
+plus (`CLAUDE.md` §5).
+
 ### Le jour à poser s'écrivait DEUX FOIS dans le tiroir du planning
 
 **Sa capture du 17 septembre :** *« il y a écrit deux fois "à poser sur le
