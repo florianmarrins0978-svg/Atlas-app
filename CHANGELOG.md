@@ -283,6 +283,15 @@ tout à l'heure à côté, avec le numéro qui était entouré »*. Deux boutons
 haut de la planche : **A** la case entière, **B** le chiffre entouré d'un
 cercle. Le geste ne change pas, seule la peinture du jour ; il tranchera.
 
+**Il a tranché : la B**, le chiffre entouré. La A et les deux boutons du haut
+sont partis de la planche. Trois retouches avec, toutes les trois de son
+message : la phrase du geste passe SOUS le calendrier et AU-DESSUS de la
+liste, en noir ; « Votre client peut proposer une autre date » au lieu de
+« Il peut… » ; et « Envoyer le devis » prend la capsule de l'application
+(`PrimaryButton` : vert `plein`, crème, à la largeur de son texte) au lieu
+d'un bouton pin en pleine largeur. La planche s'ouvre sur 4 jours, à sa
+demande, pour qu'il l'essaye.
+
 ### « Ce règlement n'a pas pu être enregistré » : la base était en cause, et rien ne le disait
 
 Sa capture du 17 septembre, à 15 h 57 : facture Martins, 745,00 € TTC dont

@@ -62,10 +62,14 @@
   l'application (`colors.or`), chiffre en encre pour tenir le contraste.
 
   Puis : *« garde cette présentation et mets celle de tout à l'heure à côté,
-  avec le numéro qui était entouré »*. Les deux se choisissent en haut de la
-  page, même geste, seule la peinture du jour change :
-    · A — la case entière, comme son écran d'aujourd'hui ;
-    · B — le chiffre entouré d'un cercle, comme la planche du 31 août.
+  avec le numéro qui était entouré, que je compare les deux »* — A la case
+  entière (son écran d'aujourd'hui), B le chiffre entouré (la planche du
+  31 août). **Il a choisi la B.** La A est partie de la planche ; elle reste
+  dans l'historique. Et ses trois retouches du même message : la phrase qui
+  explique le geste SOUS le calendrier et AU-DESSUS de la liste, en noir ;
+  « Votre client peut proposer une autre date » ; le bouton « Envoyer le
+  devis » dans la capsule de l'application (`PrimaryButton` : vert
+  `colors.plein`, crème, à la largeur de son texte).
 
   ─── Ce que le code fait AUJOURD'HUI, lu dans le code ─────────────────────
 
@@ -93,6 +97,7 @@
     --fond:#f5f3ee; --plage:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
     --gris:#8a8578; --pin:#2f3b2f; --pale:#b9c6b4; --papier:#ece9e1;
     --or:#B98B47; --trait:rgba(28,28,26,.12); --trait-doux:rgba(28,28,26,.07);
+    --plein:#7d9a6d;
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   html,body{margin:0;background:#e6e3dc}
@@ -105,12 +110,6 @@
   .bandeau{background:var(--encre);color:#f2efe8;padding:14px 18px;text-align:center;font-size:13.5px;line-height:1.55}
   .bandeau b{color:#fff}
 
-  /* Les deux peintures du jour retenu, à choisir — même geste dessous. */
-  .choix{position:sticky;top:0;z-index:9;display:flex;gap:7px;justify-content:center;
-         padding:10px;background:#e6e3dc;border-bottom:1px solid var(--trait)}
-  .choix button{border:1px solid var(--trait);background:transparent;border-radius:99px;
-                padding:9px 14px;font:600 12px/1 inherit;color:var(--gris);cursor:pointer}
-  .choix button[aria-pressed="true"]{background:var(--papier);border-color:var(--or);color:var(--encre)}
 
   .tel{max-width:430px;margin:18px auto 0;background:var(--fond);
        border-radius:26px;overflow:hidden;box-shadow:0 18px 46px rgba(20,18,14,.18)}
@@ -149,33 +148,20 @@
         transition:background .18s cubic-bezier(.22,1,.36,1)}
   .case.we{background:rgba(28,28,26,.035)}
   .case.aujourdhui{box-shadow:inset 0 0 0 1.5px var(--or)}
-  .case .n{font:400 17px/1 ui-serif,Georgia,serif;color:var(--encre);
-           transition:color .18s cubic-bezier(.22,1,.36,1)}
+  .case .n{font:400 17px/1 ui-serif,Georgia,serif;color:var(--encre);width:25px;height:25px;
+           display:flex;align-items:center;justify-content:center;border-radius:99px;
+           transition:background .18s cubic-bezier(.22,1,.36,1),color .18s cubic-bezier(.22,1,.36,1)}
   .case.we .n{color:rgba(28,28,26,.42)}
   .case.aujourdhui .n{color:var(--or);font-weight:600}
   .case.passe .n{color:rgba(28,28,26,.3)}
 
-  /* Un jour du chantier : LA CASE ENTIÈRE en vert pin, le chiffre en crème,
-     les barres éclaircies — exactement `MoisCharge` (jour retenu). La 2e
-     proposition prend l'or de l'application, chiffre en encre : le crème sur
-     l'or ne tient pas le contraste. */
-  .case.retenu{background:var(--pin)}
-  .case.retenu .n{color:var(--plage)}
-  .case.retenu .marqueA i{background:rgba(250,249,245,.22);box-shadow:none}
-  .case.retenu.p2{background:var(--or)}
-  .case.retenu.p2 .n{color:var(--encre)}
-  .case.retenu.p2 .marqueA i{background:rgba(28,28,26,.14)}
-
-  /* B — le chiffre entouré : la case reste papier, seul le chiffre est peint,
-     dans un cercle. C'est la planche du 31 août. */
-  body[data-style="b"] .case .n{width:25px;height:25px;display:flex;align-items:center;justify-content:center;border-radius:99px}
-  body[data-style="b"] .case.retenu{background:var(--papier)}
-  body[data-style="b"] .case.retenu .n{background:var(--pin);color:var(--plage)}
-  body[data-style="b"] .case.retenu .marqueA i{background:var(--plage);box-shadow:inset 0 0 0 1px var(--trait)}
-  body[data-style="b"] .case.retenu.p2{background:var(--papier)}
-  body[data-style="b"] .case.retenu.p2 .n{background:var(--or);color:var(--encre)}
-  body[data-style="b"] .case.retenu.p2 .marqueA i{background:var(--plage);box-shadow:inset 0 0 0 1px var(--trait)}
-  body[data-style="b"] .legende .rond{border-radius:99px}
+  /* Un jour du chantier — « la B », son choix : la case reste papier, le
+     chiffre est entouré d'un cercle plein. Vert pin pour la 1re proposition ;
+     l'or de l'application pour la 2e, chiffre en encre (le crème sur l'or ne
+     tient pas le contraste). */
+  .case.retenu{background:var(--papier)}
+  .case.retenu .n{background:var(--pin);color:var(--plage)}
+  .case.retenu.p2 .n{background:var(--or);color:var(--encre)}
 
   .marqueA{width:24px;display:flex;flex-direction:column;gap:2.5px}
   .marqueA i{height:6px;border-radius:2px;background:var(--plage);
@@ -188,7 +174,7 @@
   .legende{margin:14px 6px 0;display:flex;flex-wrap:wrap;gap:5px 12px;justify-content:center;
            font-size:10px;color:var(--gris)}
   .legende > span{display:flex;align-items:center;gap:5px;white-space:nowrap}
-  .legende .rond{width:12px;height:12px;border-radius:3px;display:block;flex-shrink:0;background:var(--pin)}
+  .legende .rond{width:11px;height:11px;border-radius:99px;display:block;flex-shrink:0;background:var(--pin)}
   .legende .rond.p2{background:var(--or)}
 
   .retour-aujourdhui{margin:12px auto 0;display:block;border:0;background:transparent;cursor:pointer;
@@ -211,7 +197,7 @@
                font-size:14px;color:var(--gris);text-align:center}
   .liste .vide.p2{box-shadow:inset 0 0 0 1.5px rgba(185,139,71,.35)}
 
-  .conseil{margin:10px 18px 0;text-align:center;font-size:13px;line-height:1.5;color:var(--gris)}
+  .conseil{margin:12px 18px 0;text-align:center;font-size:13px;line-height:1.5;color:var(--encre)}
   .conseil[hidden]{display:none}
 
   /* Les interrupteurs : la tuile de « Il peut proposer une autre date » sur
@@ -231,9 +217,12 @@
   .interrupteur[aria-checked="true"]{background:var(--pin);box-shadow:none}
   .interrupteur[aria-checked="true"]::after{left:23px}
 
-  .principal{margin:18px 18px 26px;width:calc(100% - 36px);border:0;border-radius:99px;
-             background:var(--pin);color:#fff;padding:16px 20px;font-family:ui-serif,Georgia,serif;
-             font-size:17px;cursor:pointer}
+  /* La capsule de l'application (`PrimaryButton`) : vert `plein`, crème, à
+     la largeur de son texte, centrée — pas le vert pin en pleine largeur. */
+  .principal{display:block;margin:18px auto 26px;width:max-content;border:0;border-radius:9999px;
+             background:var(--plein);color:var(--plage);padding:13px 36px;font-family:ui-serif,Georgia,serif;
+             font-size:17px;line-height:1.5;cursor:pointer;transition:transform .19s cubic-bezier(.22,.8,.3,1)}
+  .principal:active{transform:scale(.975)}
 
   /* ── Ce que sa cliente lit, sous le téléphone ──────────────────────────── */
   .client{max-width:430px;margin:18px auto 0;background:var(--fond);border-radius:18px;padding:16px 18px}
@@ -251,17 +240,13 @@
   .note b{color:#2b2820}
 </style>
 </head>
-<body data-style="a">
+<body>
 
 <p class="bandeau">
   <b>Un appui pose le premier jour, le chantier se remplit d’affilée. Un appui sur un jour l’efface, un autre le remet où vous voulez.</b><br>
   Un chantier de 4 jours, à essayer. <b>Rien n’est codé.</b>
 </p>
 
-<nav class="choix" aria-label="Les deux peintures du jour">
-  <button type="button" data-style="a" aria-pressed="true">A. La case entière</button>
-  <button type="button" data-style="b" aria-pressed="false">B. Le chiffre entouré</button>
-</nav>
 
 <div class="tel">
   <div class="feuille-tete">
@@ -278,16 +263,16 @@
     <div class="cadre" id="calendrier"></div>
   </div>
 
-  <div class="liste" id="liste"></div>
   <p class="conseil" id="conseil" hidden></p>
+  <div class="liste" id="liste"></div>
 
   <div class="tuile">
     <span class="texte"><b>Deuxième proposition</b><span id="seconde-dit">Une seule proposition.</span></span>
     <button class="interrupteur" type="button" role="switch" aria-checked="false" aria-label="Deuxième proposition" id="seconde"></button>
   </div>
   <div class="tuile">
-    <span class="texte"><b>Il peut proposer une autre date</b><span>Un calendrier de vos jours libres s’ouvrira sous vos dates.</span></span>
-    <button class="interrupteur" type="button" role="switch" aria-checked="true" aria-label="Il peut proposer une autre date"></button>
+    <span class="texte"><b>Votre client peut proposer une autre date</b><span>Un calendrier de vos jours libres s’ouvrira sous vos dates.</span></span>
+    <button class="interrupteur" type="button" role="switch" aria-checked="true" aria-label="Votre client peut proposer une autre date"></button>
   </div>
 
   <button class="principal" type="button">Envoyer le devis</button>
@@ -550,13 +535,6 @@ function toucher(jour){
 }
 
 document.addEventListener("click", (e) => {
-  const style = e.target.closest(".choix [data-style]");
-  if (style) {
-    document.body.dataset.style = style.dataset.style;
-    document.querySelectorAll(".choix button").forEach((b) =>
-      b.setAttribute("aria-pressed", String(b === style)));
-    return;
-  }
   if (e.target.closest("[data-changer]")) {
     joursDuChantier = DUREES[(DUREES.indexOf(joursDuChantier) + 1) % DUREES.length];
     /* La durée change : chaque proposition se refait d'affilée depuis son

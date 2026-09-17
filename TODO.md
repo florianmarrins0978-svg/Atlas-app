@@ -105,7 +105,12 @@ et il a dicté le geste, qui est la version en ligne (la troisième du soir) :
 *« garde cette présentation et mets celle de tout à l'heure à côté, avec le
 numéro qui était entouré, que je compare les deux »*. **A** la case entière
 (son écran d'aujourd'hui, `MoisCharge`) ; **B** le chiffre entouré (la
-planche du 31 août). Même geste dessous ; il n'a pas encore choisi.
+planche du 31 août). **Il a choisi la B** (17 septembre 2026, le soir) — la A
+est partie de la planche. Avec trois retouches, faites : la phrase du geste
+sous le calendrier et au-dessus de la liste, en noir ; « Votre client peut
+proposer une autre date » (le libellé de l'écran dit encore « Il peut… » —
+à changer quand le lot se code) ; le bouton « Envoyer le devis » dans la
+capsule de l'application.
 
 Une seule règle pour toutes les durées : sur une journée, deux propositions
 d'un jour sont les deux dates au choix d'aujourd'hui. « Une ou deux, jamais
