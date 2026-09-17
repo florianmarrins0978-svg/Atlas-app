@@ -18,7 +18,9 @@ complément (`scripts/verifier-apres-fusion.ts`, règles pures dans
 verdict ne portait aucun rouge nouveau, puis rejoue suites base, écrans du lot,
 écrans touchés par `main` et suites apportées par `main` ; il dépose le
 verdict au niveau d'avant, sur l'arbre courant. Tout le reste reste une
-batterie. Suite : `test-apres-fusion`.
+batterie. Suite : `test-apres-fusion`. Corrigé au premier complément joué : les
+numéros de ligne des hunks glissent quand `main` ajoute des lignes plus haut
+dans le même fichier — ils s'effacent de l'empreinte, le contexte reste comparé.
 
 ## 2026-09-16
 

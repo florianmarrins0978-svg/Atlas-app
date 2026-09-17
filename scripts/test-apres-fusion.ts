@@ -44,10 +44,15 @@ cas("un fichier de plus dans le lot : changé", () => {
   assert.equal(lotInchange(DIFF, DIFF + DIFF.replace(/a\.ts/g, "b.ts")), false);
 });
 
-cas("un contexte qui bouge (main a changé une ligne voisine) : changé — on ne parie pas sur une rencontre", () => {
-  // Le diff porte le contexte ; si main a touché les lignes autour, le diff
-  // n'est plus le même, et le complément refuse. Une batterie tranchera.
-  assert.equal(lotInchange(DIFF, DIFF.replace("@@ -1,2 +1,2 @@", "@@ -3,2 +3,2 @@")), false);
+cas("des numéros de ligne qui glissent (main a ajouté des lignes plus haut) : inchangé", () => {
+  // Une entrée de CHANGELOG ajoutée par main au-dessus de la nôtre déplace le
+  // hunk sans rien changer au lot — trouvé au premier complément joué.
+  assert.equal(lotInchange(DIFF, DIFF.replace("@@ -1,2 +1,2 @@", "@@ -57,2 +57,2 @@")), true);
+});
+
+cas("une ligne de CONTEXTE qui change (main a touché une ligne voisine) : changé — on ne parie pas sur une rencontre", () => {
+  const voisin = DIFF.replace("@@ -1,2 +1,2 @@\n-const x = 1;", "@@ -1,3 +1,3 @@\n const y = 0;\n-const x = 1;");
+  assert.equal(lotInchange(DIFF, voisin), false);
 });
 
 console.log("\n=== Ce qu'on rejoue ===");

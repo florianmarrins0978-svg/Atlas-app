@@ -30,9 +30,14 @@ export function empreinteDuDiff(diff) {
   return String(diff ?? "")
     .split("\n")
     // `index abc..def` porte les identifiants d'objets : ils changent avec la
-    // base, pas avec le contenu. Tout le reste — fichiers, contexte, lignes
-    // ajoutées et retirées — doit être identique.
+    // base, pas avec le contenu.
     .filter((l) => !/^index [0-9a-f]+\.\.[0-9a-f]+/.test(l))
+    // Les NUMÉROS de ligne d'un hunk glissent dès que main ajoute des lignes
+    // plus haut dans le même fichier — une entrée de CHANGELOG suffit — sans
+    // que le lot change. Ils s'effacent ; le texte de l'en-tête et les lignes
+    // de contexte, eux, restent comparés : une ligne voisine qui change fait
+    // encore refuser (17 septembre 2026, trouvé au premier complément joué).
+    .map((l) => l.replace(/^@@ -\d+(?:,\d+)? \+\d+(?:,\d+)? @@/, "@@ @@"))
     .join("\n");
 }
 
