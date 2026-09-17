@@ -4,8 +4,22 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-09-17 · `main` — l'accueil vide (la porte au tiers haut) est fusionné
+**Point de reprise :** 2026-09-17 · `claude/devis-positioning-no-project-wofsfp` — acomptes d'une version corrigée + papier à l'encre, batterie à jouer
 (l'historique fait foi : `git log --oneline -20`)
+
+---
+## Les acomptes d'un devis SUIVENT sa correction — et le papier est tout noir
+
+Depuis le 17 septembre 2026 : rouvrir un devis parti crée une nouvelle version,
+et elle **garde l'échéancier posé** (30/50/75) au lieu de reposer le seul
+acompte des Réglages — c'est la panne qu'il a vue. Le réglage ne vaut plus que
+pour le tout premier devis d'un chantier ; un devis dont il a tout retiré n'en
+reprend aucun. Et « + Ajouter un acompte » ne refuse plus en silence : la raison
+s'affiche. `ARCHITECTURE.md` §373.
+
+Le papier (PDF devis et facture) : toutes les écritures à l'encre, la ligne
+d'en-tête du tableau et « BASE HT · TAUX · TVA » en gras noir. La teinte se
+décide dans `teintesDe` et nulle part ailleurs. `ARCHITECTURE.md` §374.
 
 ---
 ## L'accueil vide : la porte du devis est au TIERS HAUT, poussée par deux ressorts

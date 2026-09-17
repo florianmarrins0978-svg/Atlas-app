@@ -8,6 +8,32 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-17
 
+### Ses trois acomptes suivent la correction du devis — et un refus le DIT
+
+Sa panne, capture à l'appui : *« ça prend qu'un seul acompte, ça m'a supprimé
+mes 2 autres et je n'arrive pas à les remettre »*. Ni la remise ni la main
+d'œuvre n'y étaient pour rien — une suite l'a établi avant toute correction.
+**Rouvrir un devis parti crée une nouvelle version**, et celle-ci reposait
+l'acompte des Réglages, seul : les deux autres n'étaient jamais recopiés. Une
+version corrigée garde désormais l'échéancier qu'il avait posé — et n'en
+réinvente aucun s'il les avait tous retirés. Le réglage ne vaut plus que pour le
+tout premier devis d'un chantier.
+
+Second grief, même cause de silence : « + Ajouter un acompte » refusait sans un
+mot (devis parti, trois acomptes déjà, 100 % atteint). Le refus porte sa raison
+et s'affiche sous le geste. `ARCHITECTURE.md` §373 ;
+`test-acomptes-nouvelle-version`, `test-acomptes-remise-main-doeuvre-e2e`.
+
+### Le papier du devis s'écrit en noir, et sa ligne d'en-tête en gras
+
+*« Toute la ligne désignation jusqu'à total ttc, tu la mets en gras »*, *« mets
+toutes les écritures en noir, rien en gris »*, *« en bas à gauche, base ht et
+les deux autres en gras aussi »*. Les en-têtes étaient déjà gras : c'est le gris
+qui les faisait paraître maigres. Les trois gris (étiquettes, coordonnées,
+mentions légales) passent à l'encre, en un seul endroit et pour les sept
+allures. Le trait clair reste dilué — c'est un filet, pas une écriture — et
+l'accent reste sa couleur. `ARCHITECTURE.md` §374.
+
 ### La publication des planches rougissait depuis la note vocale à plat
 
 Le flux `pages.yml` est tombé sur `test:boutons-verts` dès la poussée du

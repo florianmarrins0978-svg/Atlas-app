@@ -5,6 +5,20 @@
 
 ---
 
+## FAIT : LES ACOMPTES SUIVENT LA CORRECTION DU DEVIS (17 septembre 2026)
+
+Sa panne : un devis rouvert pour correction ne gardait que l'acompte des
+Réglages. Une nouvelle version recopie désormais l'échéancier posé (30/50/75),
+ou aucun s'il les avait retirés ; le réglage ne sert plus qu'au premier devis
+d'un chantier. Et « + Ajouter un acompte » dit pourquoi il refuse.
+`ARCHITECTURE.md` §373.
+
+## FAIT : LE PAPIER S'ÉCRIT EN NOIR (17 septembre 2026)
+
+Plus aucun gris sur le PDF : étiquettes de colonnes, coordonnées et mentions
+légales passent à l'encre, la ligne « DÉSIGNATION … TOTAL TTC » et « BASE HT ·
+TAUX · TVA » se lisent en gras noir. `ARCHITECTURE.md` §374.
+
 ## FAIT : L'ACCUEIL SANS CHANTIER — LA PORTE DU DEVIS AU TIERS HAUT (17 septembre 2026)
 
 Sa place : *« découpe l'écran en 3 parts égales ! En partant du bas, le mets en
