@@ -8,6 +8,17 @@ sert.
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## Où un chantier est POSÉ se repeint en ENTIER après chaque geste
+
+Depuis la migration 0085, `date_planifiee` + `creneau_debut` + la durée ne
+disent plus où un chantier est : `creneaux_chantier` le dit, une ligne par
+demi-journée, et les trois colonnes en sont dérivées. Un geste de l'écran qui
+ne repeint que ces colonnes laisse donc une liste périmée — c'est la panne du
+16 septembre 2026 (« la demi-journée retirée de Mr Julien ne se repose pas »),
+où le chantier se peignait sur son ancien jour et réclamait une moitié qui
+n'existait qu'à l'écran. Toute action qui pose, retire ou déplace rend
+désormais ses créneaux. `ARCHITECTURE.md` §370.
+
 ## Les crochets des conditions générales ne se remplissent plus à la main
 
 Depuis le 16 septembre 2026, l'assureur décennale et le médiateur se saisissent

@@ -361,6 +361,105 @@ async function main() {
     }
   });
 
+  await cas("rendu, RETIRÉ, puis reposé ailleurs : plus rien n'attend", async () => {
+    /*
+     * ═══════════════════════════════════════════════════════════════════════
+     * SA PANNE DU 16 SEPTEMBRE 2026 — capture à l'appui
+     * ═══════════════════════════════════════════════════════════════════════
+     *
+     * *« J'ai essayé de poser la demi-journée retirée de Mr Julien mais
+     * impossible ? »* — et l'écran répondait « Cette demi-journée n'a pas pu
+     * être reposée. » sur un vendredi qui s'annonçait libre matin ET après-midi.
+     *
+     * **La séquence qui le fabrique**, et c'est la sienne : rendre une
+     * demi-journée, « Retirer » le chantier, le reposer ailleurs. Aucun des
+     * trois gestes n'est en cause pris seul — c'est leur SUITE, sans
+     * rechargement, qui casse. `retirerDuJour` n'effaçait que la date, `poser`
+     * ne rendait que trois colonnes : l'écran gardait les demi-journées d'avant
+     * alors que `planifierChantier` venait de les réécrire en entier. Il
+     * peignait donc le chantier sur son ancien jour, et comptait une moitié en
+     * attente d'une place qui n'existait qu'à l'écran. Le serveur refusait, à
+     * juste titre : en base, tout était posé.
+     *
+     * **Pourquoi aucun contrôle ne le voyait.** Les cas ci-dessus rechargent
+     * entre les gestes — ce qui efface précisément l'état faux qu'on cherche.
+     * Celui-ci ne recharge pas une seule fois, et c'est tout son objet
+     * (`CLAUDE.md` §5 quater : on éprouve SA séquence, pas notre geste).
+     */
+    await page.goto(`${BASE}/planning`, { waitUntil: "networkidle" });
+    await page.waitForTimeout(700);
+
+    // ① Rendre la demi-journée qu'il occupe encore sur le premier jour.
+    await fermerLeTiroirDuPlanning(page);
+    const carteA = await allerAuJour(jourA);
+    const bloc = carteA.locator(`[data-atlas="bloc-chantier"][data-chantier="${chantierId}"]`);
+    if ((await bloc.count()) === 0) {
+      throw new Error(`le chantier n'est plus sur le ${jourA} : le montage de ce cas est faux`);
+    }
+    await bloc.locator('[data-atlas="deplacer"]').click();
+    await page.waitForTimeout(300);
+    // **La position offerte, jamais celle qu'on croit** : le chantier n'occupe
+    // qu'une moitié de ce jour, et laquelle dépend du cas précédent.
+    await bloc.locator('[data-atlas="bascule-demi"] button').first().click();
+    await page.waitForTimeout(1600);
+
+    // ② « Retirer » — le chantier redescend dans « Sans date ».
+    const carteB = await page.locator(`[data-atlas="carte-jour"][data-jour="${jourB}"]`);
+    if ((await carteB.count()) === 0) {
+      await page.click(`[data-atlas="grille-mois"] [data-jour="${jourB}"]`);
+      await page.waitForSelector(`[data-atlas="carte-jour"][data-jour="${jourB}"]`, { timeout: 15_000 });
+      await page.waitForTimeout(400);
+    }
+    const blocB = page
+      .locator(`[data-atlas="carte-jour"][data-jour="${jourB}"] [data-atlas="bloc-chantier"][data-chantier="${chantierId}"]`);
+    if ((await blocB.count()) === 0) {
+      throw new Error(`le chantier n'est pas sur le ${jourB} : le montage de ce cas est faux`);
+    }
+    await blocB.locator('[data-atlas="retirer"]').click();
+    await page.waitForTimeout(1600);
+
+    // ③ Le reposer sur ce même jour, depuis le tiroir — SANS recharger.
+    await ouvrirLeTiroirDuPlanning(page);
+    const ligne = page.locator('[data-atlas="sans-date"]').filter({ hasText: NOM });
+    if ((await ligne.count()) === 0) {
+      throw new Error("le chantier retiré n'apparaît pas dans « Sans date » : il est perdu pour lui");
+    }
+    await ligne.locator('[data-poser="1"]').first().click();
+    await page.waitForTimeout(1800);
+
+    // **Ce que la base porte** — la vérité, et elle est entière.
+    const poses = await creneauxEnBase(chantierId);
+    if (poses.join(" | ") !== attendus([`${jourB} matin`, `${jourB} apres_midi`])) {
+      throw new Error(
+        `la base porte « ${poses.join(" | ") || "rien"} » au lieu des deux moitiés du ${jourB}`
+      );
+    }
+
+    // **Ce que l'écran en dit, sans rechargement.** Un morceau qui reste ici
+    // est un morceau qui n'existe qu'à l'écran : le reposer sera REFUSÉ, et
+    // c'est exactement le message qu'il a photographié.
+    const morceau = page.locator(`[data-atlas="morceau-a-poser"][data-chantier="${chantierId}"]`);
+    if ((await morceau.count()) !== 0) {
+      throw new Error(
+        "le tiroir réclame encore une demi-journée alors que la base a tout posé : " +
+          "c'est le morceau fantôme du 16 septembre, et le serveur refusera de le poser"
+      );
+    }
+
+    // **Et il se peint là où il EST.** Un chantier resté sur son ancien jour se
+    // lit comme une journée libre — matin et après-midi — sur celui où il est.
+    await fermerLeTiroirDuPlanning(page);
+    const demis = page.locator(
+      `[data-atlas="carte-jour"][data-jour="${jourB}"] [data-atlas="bloc-chantier"][data-chantier="${chantierId}"] [data-atlas="demi"]`
+    );
+    if ((await demis.count()) !== 2) {
+      throw new Error(
+        `la carte du ${jourB} ne montre ${await demis.count()} demi-journée(s) de ce chantier au lieu de deux : ` +
+          "l'écran le peint ailleurs qu'où la base l'a posé"
+      );
+    }
+  });
+
   // **On rend la base comme on l'a trouvée** : les jours retenus ici sont ceux
   // que les autres suites cherchent libres, et une suite qui salit la base
   // accuse la suivante (`CLAUDE.md` §5).

@@ -1159,6 +1159,14 @@ export default function PlanningClient({
    *
    * Effacé, il serait à ressaisir ; là, il redescend dans la liste d'attente,
    * d'où on le repose ailleurs.
+   *
+   * **ET SES CRÉNEAUX PARTENT AVEC SA DATE** — sa panne du 16 septembre 2026.
+   * `deplanifierChantier` les efface tous, sans condition ; ne retirer que la
+   * date laissait l'écran avec les demi-journées d'avant, et le geste suivant
+   * — reposer le chantier ailleurs — les gardait. Le chantier se peignait alors
+   * sur son ancien jour, et une moitié semblait attendre une place qui n'existe
+   * qu'à l'écran. Un état à moitié repeint est la divergence que `CLAUDE.md` §3
+   * interdit.
    */
   function retirerDuJour(chantierId: string) {
     setOuvert(null);
@@ -1166,7 +1174,7 @@ export default function PlanningClient({
     enTransition(async () => {
       await deplanifierChantierAction(chantierId);
       setChantiers((liste) =>
-        liste.map((c) => (c.id === chantierId ? { ...c, datePlanifiee: null } : c))
+        liste.map((c) => (c.id === chantierId ? { ...c, datePlanifiee: null, creneaux: [] } : c))
       );
     });
   }

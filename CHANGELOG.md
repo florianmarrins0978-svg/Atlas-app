@@ -8,6 +8,26 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-16
 
+### « La demi-journée retirée de Mr Julien ne se repose pas » — l'écran gardait les créneaux d'avant
+
+**Sa panne, capture à l'appui :** *« j'ai essayé de poser la demi-journée
+retirée de Mr Julien mais impossible ? »*, sur un vendredi annoncé libre matin
+et après-midi, avec « Cette demi-journée n'a pas pu être reposée. »
+
+Sa séquence, sans rechargement : rendre une demi-journée, « Retirer », reposer
+le chantier ailleurs. `retirerDuJour` n'effaçait que la date et `poser` ne
+rendait que trois colonnes ; l'écran gardait donc les demi-journées d'avant
+alors que la base venait de les réécrire en entier (migration 0085). Il peignait
+le chantier sur son ancien jour, et comptait une moitié en attente d'une place
+qui n'existait qu'à l'écran — le serveur refusait, à juste titre.
+
+**Ce que ça évite :** un chantier posé qui s'affiche ailleurs, un jour annoncé
+libre qui est pris, et un geste qui échoue sans qu'on puisse comprendre pourquoi.
+`EtatPose` porte désormais les créneaux, comme les deux actions de demi-journée
+(`ARCHITECTURE.md` §370). Rouge d'abord, sur le message même de sa capture :
+`test-liberer-une-demi-journee-e2e.ts`, cas « rendu, RETIRÉ, puis reposé
+ailleurs ».
+
 ### Le garde-fou mesure le dossier que `git -C` vise — et une tâche = un lot isolé
 
 **Sa règle du 17 septembre 2026 :** *« le garde-fou lui-même doit fonctionner

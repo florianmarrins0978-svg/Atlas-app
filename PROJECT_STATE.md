@@ -1,9 +1,17 @@
 # État du projet
 
-**Dernière mise à jour :** 2026-09-15 · `main`
+**Dernière mise à jour :** 2026-09-16 · `main`
 · dernière migration `drizzle/0093_equipes_par_jour.sql`
 
 ---
+
+## FAIT : « LA DEMI-JOURNÉE RETIRÉE NE SE REPOSE PAS » (16 septembre 2026)
+
+Sa panne, capture à l'appui. Séquence sans rechargement — rendre une
+demi-journée, « Retirer », reposer ailleurs : l'écran gardait les créneaux
+d'avant, peignait le chantier sur son ancien jour et réclamait une moitié qui
+n'existait qu'à l'écran. `EtatPose` porte désormais les créneaux, et
+`retirerDuJour` les vide avec la date. `ARCHITECTURE.md` §370.
 
 ## La décennale et le médiateur (16 septembre 2026)
 
