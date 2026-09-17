@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — Déplacer : le jour, puis le moment</title>
+</head>
+<body>
+<style>
+  /*
+    ————————————————————————————————————————————————————————————————
+    DÉPLACER : LE JOUR, PUIS LE MOMENT — maquette ESSAYABLE
+    ————————————————————————————————————————————————————————————————
+
+    Sa demande du 17 septembre 2026 : « lorsque je clique sur déplacer ça me
+    fait apparaître le planning et je sélectionne un jour et le matin ou
+    l'aprem ou journée pour réellement déplacer mon client, parce que là c'est
+    trop de clics à faire ».
+
+    CE QU'IL FAUT FAIRE AUJOURD'HUI, et il a raison de compter :
+    Déplacer · la moitié à rendre · ouvrir le tiroir · toucher le morceau ·
+    refermer · ouvrir le jour d'accueil · Poser ici. SEPT appuis.
+
+    ICI : Déplacer · le jour · le moment. TROIS.
+
+    Deux façons, et la seule différence est L'ENDROIT du calendrier.
+    Rien n'est codé dans l'application : cette page est une maquette.
+  */
+  :root{
+    --fond:#f5f3ee; --plage:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
+    --gris:#8a8578; --pin:#2f3b2f; --pale:#b9c6b4; --papier:#ece9e1;
+    --or:#B98B47; --trait:rgba(28,28,26,.12); --vert:#7D9A6D; --bordeaux:#7A2F3A;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;background:#e6e3dc}
+  body{font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--encre);
+       -webkit-text-size-adjust:100%;padding:0 0 52px}
+
+  .bandeau{background:var(--encre);color:#f2efe8;padding:14px 18px;text-align:center;font-size:13px;line-height:1.55}
+  .bandeau b{color:#fff}
+  .compte{display:flex;justify-content:center;gap:26px;margin-top:12px;font-size:12.5px}
+  .compte b{display:block;font:400 26px/1 ui-serif,Georgia,serif;color:#fff}
+
+  h2{max-width:430px;margin:34px auto 0;padding:0 28px;font:400 22px/1.2 ui-serif,Georgia,serif}
+
+  .tel{max-width:430px;margin:14px auto 0;background:var(--fond);
+       border-radius:26px;overflow:hidden;box-shadow:0 18px 46px rgba(20,18,14,.18);padding-bottom:16px}
+  .titre{padding:18px 22px 0}
+  .titre p{margin:0;font-size:13.5px;line-height:1.5;color:var(--encre-douce)}
+
+  /* ── Le calendrier du mois ────────────────────────────────────────── */
+  .mois{margin:14px 14px 0;padding:0 4px}
+  .mois .nom-du-mois{text-align:center;font:700 14px/1 ui-sans-serif,sans-serif;padding:6px 0 10px}
+  .grille{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+  .grille .en-tete{font:700 9.5px/1 ui-sans-serif,sans-serif;letter-spacing:.1em;color:var(--gris);
+                   text-align:center;padding-bottom:4px}
+  .jour{border:1px solid transparent;border-radius:10px;background:transparent;padding:5px 0 6px;
+        text-align:center;cursor:default;font:400 15px/1.1 ui-serif,Georgia,serif;color:var(--encre)}
+  /* Pas de flex ici : deux traits centrés, hauteur fixe. Un conteneur flex en
+     colonne étirait le premier trait sur toute la case — mesuré à 38 px. */
+  .jour .barres{margin-top:3px;line-height:0}
+  .jour .barres span{display:block;width:20px;height:4px;margin:0 auto 2px;border-radius:2px;
+                     background:var(--papier)}
+  .jour .barres span.pleine{background:var(--pin)}
+  /* « demi » est DÉJÀ pris par les lignes de la fiche — `.demi{min-height:38px}` —
+     et le trait du calendrier y gagnait 38 px de haut. Mesuré, pas supposé. */
+  .jour .barres span.moitie{background:var(--pale)}
+  .jour.repos{color:var(--gris);background:rgba(28,28,26,.035)}
+  .jour.vide{visibility:hidden}
+
+  /* Le calendrier ne devient choisissable QUE pendant le geste. */
+  .mois[data-choisir] .jour:not(.repos):not(.vide){cursor:pointer;border-color:var(--trait)}
+  /* Le jour retenu garde son cerne APRÈS le choix : le calendrier cesse d'être
+     touchable, mais il doit encore dire lequel a été touché. */
+  .mois .jour.retenu{border-color:var(--or);color:var(--or)}
+
+  .fiche{margin:14px 14px 0;background:var(--plage);border-radius:18px;padding:16px 16px 14px}
+  .entete-jour{text-align:center;font:700 12px/1.2 ui-sans-serif,sans-serif;letter-spacing:.16em;
+        text-transform:uppercase;padding-bottom:12px;border-bottom:1px solid var(--trait)}
+  .nom{margin:12px 0 0;font:400 21px/1.15 ui-serif,Georgia,serif}
+  .duree{margin:3px 0 0;font-size:12.5px;color:var(--or)}
+  .lieu{margin:2px 0 0;font-size:11.5px;color:var(--gris)}
+
+  .demi{display:flex;align-items:center;gap:10px;margin-top:11px;min-height:38px}
+  .demi .carre{width:13px;height:13px;border-radius:3px;flex:0 0 auto;
+               border:1px solid var(--trait);background:transparent}
+  .demi.prise .carre{background:var(--pin);border-color:var(--pin)}
+  .demi .mot{font:700 11.5px/1.2 ui-sans-serif,sans-serif;letter-spacing:.13em;
+             text-transform:uppercase;flex:0 0 84px}
+  .equipe{border-radius:999px;padding:6px 13px;font-size:12.5px;background:var(--vert);color:#fff}
+  .libre{margin-left:auto;font-size:12.5px;color:var(--gris)}
+
+  .mots{display:flex;align-items:center;gap:18px;margin-top:13px;flex-wrap:wrap}
+  .mots.droite{justify-content:flex-end}
+  .mots button{border:0;background:transparent;padding:6px 0;cursor:pointer;
+               font:700 13.5px/1.2 ui-sans-serif,sans-serif;color:var(--encre)}
+  .mots button.pale{color:var(--gris)}
+  .mots button:active{opacity:.55}
+  [data-repos][hidden],[data-quand][hidden],[data-fait][hidden],[data-dans-la-fiche][hidden]{display:none}
+
+  .consigne{margin-top:12px;font-size:12.5px;color:var(--or)}
+  .fait{margin-top:12px;font-size:13.5px;color:var(--encre-douce)}
+  .fait b{color:var(--encre)}
+
+  .note{max-width:430px;margin:12px auto 0;padding:0 28px;font-size:12.5px;line-height:1.6;color:var(--encre-douce)}
+  .note b{color:var(--encre)}
+  .tranche{max-width:430px;margin:30px auto 0;padding:16px 20px;background:#fff;border:1px solid var(--trait);
+           border-radius:16px;font-size:13px;line-height:1.6;color:var(--encre-douce)}
+  .tranche b{color:var(--encre)}
+  .tranche p{margin:0 0 10px}
+  .tranche p:last-child{margin:0}
+</style>
+
+<div class="bandeau">
+  <b>Déplacer, puis le jour, puis le moment.</b> Le calendrier sert au geste,
+  et le chantier part pour de bon.
+  <div class="compte">
+    <span>aujourd'hui<b>7</b>appuis</span>
+    <span>ici<b>3</b>appuis</span>
+  </div>
+</div>
+
+<h2>1 · Le calendrier s'ouvre dans la fiche</h2>
+<div class="tel">
+  <div class="titre"><p>Il apparaît sous la journée, et repart une fois le jour touché.</p></div>
+  <div class="fiche" data-planche="1">
+    <div class="entete-jour">Mercredi 30 septembre</div>
+    <div class="nom">Mr. Julien</div>
+    <div class="duree">8 jours</div>
+    <div class="lieu">Fontenay-Mauvoisin</div>
+    <div class="demi"><span class="carre"></span><span class="mot">Matin</span><span class="libre">libre</span></div>
+    <div class="demi prise"><span class="carre"></span><span class="mot">Après-midi</span><span class="equipe">Julien / Antoine ＋</span></div>
+
+    <div class="mots droite" data-repos>
+      <button data-ouvrir>Déplacer</button>
+      <button>Retirer</button>
+    </div>
+
+    <div data-dans-la-fiche hidden>
+      <div class="consigne">Quel jour ?</div>
+      <div class="mois" data-calendrier data-choisir></div>
+      <div class="mots droite"><button class="pale" data-fermer>Annuler</button></div>
+    </div>
+
+    <div data-quand hidden>
+      <div class="consigne" data-quel-jour></div>
+      <div class="mots">
+        <button data-moment>Matin</button>
+        <button data-moment>Après-midi</button>
+        <button data-moment>Journée</button>
+        <button class="pale" data-fermer>Annuler</button>
+      </div>
+    </div>
+
+    <div class="fait" data-fait hidden></div>
+  </div>
+</div>
+
+<h2>2 · Le calendrier du haut s'allume</h2>
+<div class="tel">
+  <div class="titre"><p>Celui qui est déjà là. Les jours deviennent touchables, le reste s'efface.</p></div>
+  <div class="mois" data-calendrier-haut>
+    <div class="nom-du-mois">octobre 2026</div>
+  </div>
+  <div class="fiche" data-planche="2" data-haut>
+    <div class="entete-jour">Mercredi 30 septembre</div>
+    <div class="nom">Mr. Julien</div>
+    <div class="duree">8 jours</div>
+    <div class="lieu">Fontenay-Mauvoisin</div>
+    <div class="demi"><span class="carre"></span><span class="mot">Matin</span><span class="libre">libre</span></div>
+    <div class="demi prise"><span class="carre"></span><span class="mot">Après-midi</span><span class="equipe">Julien / Antoine ＋</span></div>
+
+    <div class="mots droite" data-repos>
+      <button data-ouvrir>Déplacer</button>
+      <button>Retirer</button>
+    </div>
+
+    <div data-dans-la-fiche hidden>
+      <div class="consigne">Touchez le jour, en haut.</div>
+      <div class="mots droite"><button class="pale" data-fermer>Annuler</button></div>
+    </div>
+
+    <div data-quand hidden>
+      <div class="consigne" data-quel-jour></div>
+      <div class="mots">
+        <button data-moment>Matin</button>
+        <button data-moment>Après-midi</button>
+        <button data-moment>Journée</button>
+        <button class="pale" data-fermer>Annuler</button>
+      </div>
+    </div>
+
+    <div class="fait" data-fait hidden></div>
+  </div>
+</div>
+
+<div class="tranche">
+  <p><b>Une chose reste à trancher, et elle change le résultat.</b></p>
+  <p>Mr. Julien dure <b>8 jours</b>. « Déplacer » emmène-t-il&nbsp;:</p>
+  <p><b>A</b> — la demi-journée du 30, et elle seule. Les sept autres ne bougent pas.</p>
+  <p><b>B</b> — le chantier entier. Ses 8 jours repartent du jour choisi.</p>
+  <p>Les maquettes ci-dessus montrent <b>A</b>. Dites-moi si c'est <b>B</b>.</p>
+</div>
+
+<p class="note">
+  <b>Ce que « Journée » veut dire ici :</b> le matin ET l'après-midi du jour choisi.
+  Elle avait été retirée le 10 septembre parce qu'elle réécrivait la durée du chantier —
+  elle ne le fait plus : elle pose deux moitiés au lieu d'une.
+</p>
+
+<script>
+  /* Le mois d'octobre 2026 : il commence un jeudi, et il a 31 jours. */
+  const MOIS = "octobre 2026";
+  const PREMIER_JOUR = 4;           // jeudi, dans une semaine qui commence lundi
+  const COMBIEN = 31;
+  const NOMS = ["lundi","mardi","mercredi","jeudi","vendredi","samedi","dimanche"];
+
+  function dessinerLeMois(ou, avecTitre) {
+    const titre = avecTitre ? '<div class="nom-du-mois">' + MOIS + "</div>" : "";
+    let cases = "";
+    for (const j of ["Lun","Mar","Mer","Jeu","Ven","Sam","Dim"]) cases += '<div class="en-tete">' + j + "</div>";
+    for (let i = 1; i < PREMIER_JOUR; i++) cases += '<div class="jour vide"></div>';
+    for (let n = 1; n <= COMBIEN; n++) {
+      const rang = (PREMIER_JOUR - 1 + n - 1) % 7;          // 0 = lundi
+      const repos = rang >= 5;
+      // Deux barres par jour : le matin en haut, l'après-midi en bas.
+      const pris = [2, 3, 8, 14, 15, 21].includes(n);
+      const barres = '<div class="barres"><span class="' + (pris ? "moitie" : "") + '"></span><span class="' +
+                     (pris ? "pleine" : "") + '"></span></div>';
+      cases += '<div class="jour' + (repos ? " repos" : "") + '" data-n="' + n +
+               '" data-nom="' + NOMS[rang] + '">' + n + barres + "</div>";
+    }
+    ou.innerHTML = titre + '<div class="grille">' + cases + "</div>";
+  }
+
+  for (const fiche of document.querySelectorAll("[data-planche]")) {
+    const repos = fiche.querySelector("[data-repos]");
+    const etapeJour = fiche.querySelector("[data-dans-la-fiche]");
+    const etapeQuand = fiche.querySelector("[data-quand]");
+    const fait = fiche.querySelector("[data-fait]");
+    // La planche 2 emprunte le calendrier posé au-dessus d'elle.
+    const mois = fiche.hasAttribute("data-haut")
+      ? fiche.parentElement.querySelector("[data-calendrier-haut]")
+      : fiche.querySelector("[data-calendrier]");
+    dessinerLeMois(mois, fiche.hasAttribute("data-haut") ? false : true);
+    if (fiche.hasAttribute("data-haut")) {
+      mois.insertAdjacentHTML("afterbegin", '<div class="nom-du-mois">' + MOIS + "</div>");
+    }
+
+    let jourRetenu = null;
+    const etape = (quoi) => {
+      repos.hidden = quoi !== "repos";
+      etapeJour.hidden = quoi !== "jour";
+      etapeQuand.hidden = quoi !== "quand";
+      fait.hidden = quoi !== "fait";
+      if (quoi === "jour") mois.setAttribute("data-choisir", "");
+      else if (fiche.hasAttribute("data-haut")) mois.removeAttribute("data-choisir");
+    };
+    etape("repos");
+    if (fiche.hasAttribute("data-haut")) mois.removeAttribute("data-choisir");
+
+    fiche.querySelector("[data-ouvrir]").addEventListener("click", () => etape("jour"));
+    for (const b of fiche.querySelectorAll("[data-fermer]")) {
+      b.addEventListener("click", () => {
+        if (jourRetenu) jourRetenu.classList.remove("retenu");
+        jourRetenu = null;
+        etape("repos");
+      });
+    }
+
+    mois.addEventListener("click", (e) => {
+      if (!mois.hasAttribute("data-choisir")) return;
+      const j = e.target.closest(".jour");
+      if (!j || j.classList.contains("repos") || j.classList.contains("vide")) return;
+      if (jourRetenu) jourRetenu.classList.remove("retenu");
+      jourRetenu = j;
+      j.classList.add("retenu");
+      fiche.querySelector("[data-quel-jour]").textContent =
+        j.dataset.nom + " " + j.dataset.n + " octobre. Quel moment ?";
+      etape("quand");
+    });
+
+    for (const m of fiche.querySelectorAll("[data-moment]")) {
+      m.addEventListener("click", () => {
+        fait.innerHTML = "Mr. Julien part au <b>" + jourRetenu.dataset.nom + " " +
+          jourRetenu.dataset.n + " octobre</b>, " + m.textContent.toLowerCase() + ".";
+        if (fiche.hasAttribute("data-haut")) mois.removeAttribute("data-choisir");
+        etape("fait");
+      });
+    }
+  }
+</script>
+</body>
+</html>
