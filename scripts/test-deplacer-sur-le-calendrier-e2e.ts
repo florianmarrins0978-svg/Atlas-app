@@ -324,7 +324,7 @@ async function main() {
     await pool.query("DELETE FROM creneaux_chantier WHERE chantier_id = $1", [chantierId]);
     await pool.query(
       `INSERT INTO creneaux_chantier (chantier_id, entreprise_id, jour, demi)
-       SELECT $1, entreprise_id, $2::date, $3::creneau_demi FROM chantiers WHERE id = $1`,
+       SELECT $1, entreprise_id, $2::date, $3::text FROM chantiers WHERE id = $1`,
       [chantierId, jour, demi]
     );
     await pool.query(
