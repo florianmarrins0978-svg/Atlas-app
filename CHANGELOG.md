@@ -8,6 +8,22 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-17
 
+### Le complément après fusion ne jouait RIEN, et rendait un ✅
+
+Trouvé en l'utilisant, pas en le lisant : `verifier-apres-fusion` importait une
+fonction de `verifier-rouge-prealable`, **un script d'entrée** — l'import
+exécutait son `main()`, qui écrivait « aucune suite rouge : rien à comparer »
+puis sortait. Le complément n'a donc jamais joué une ligne de son propre
+travail, et son vert pouvait passer pour un verdict de fusion. C'est le pire
+des défauts d'outillage : il n'échoue pas, il approuve.
+
+La lecture partagée vit désormais dans `_temoin-de-main.mjs`, qui ne fait rien
+tout seul ; les deux scripts d'entrée l'y prennent. Et
+`test-scripts-entree-non-importes` refuse qu'un script de `scripts/` importe un
+script qui s'exécute au chargement — il sait échouer sur un couple fabriqué, et
+il ne compte pas un `main()` gardé par `import.meta.url` (deux scripts du dépôt
+en ont un, légitimement).
+
 ### Ses trois acomptes suivent la correction du devis — et un refus le DIT
 
 Sa panne, capture à l'appui : *« ça prend qu'un seul acompte, ça m'a supprimé

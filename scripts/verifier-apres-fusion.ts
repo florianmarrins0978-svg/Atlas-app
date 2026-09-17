@@ -5,7 +5,10 @@ import { ecrireDernierVerdict, lireDernierVerdict, ilYA } from "./_dernier-verdi
 import { jouerEnGardantLaSortie } from "./_jouer-etape";
 import { bilanDuJournal } from "./_bilan-suites.mjs";
 import { baseDuLot, commitCourant } from "./_temoin-de-main.mjs";
-import { lireLesReponses } from "./verifier-rouge-prealable";
+// **Jamais depuis `verifier-rouge-prealable` : c'est un script d'ENTRÉE.**
+// L'importer exécutait son `main()`, qui écrivait un ✅ et sortait — ce
+// complément n'a jamais joué une ligne (17 septembre 2026).
+import { lireLesReponses } from "./_temoin-de-main.mjs";
 import { cheminsDuLot, evaluerLeLot, rougesToleres } from "./_niveau-de-risque.mjs";
 import { suitesDesRoutes } from "./_suites-ciblees.mjs";
 import { construireLeGraphe } from "./_rayon-impact.mjs";

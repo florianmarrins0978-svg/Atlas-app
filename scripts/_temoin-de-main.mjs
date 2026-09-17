@@ -27,7 +27,7 @@
  * dossiers de travail.
  */
 import { execFileSync } from "node:child_process";
-import { existsSync, rmSync } from "node:fs";
+import { existsSync, readFileSync, rmSync } from "node:fs";
 import path from "node:path";
 
 const NOM = "atlas-temoin-de-main";
@@ -100,4 +100,34 @@ export function preparerLeTemoin(racine, commit) {
     }
   }
   return ou;
+}
+
+/** Le nom du fichier où les réponses « était-ce déjà rouge sur main ? » vivent. */
+export const FICHIER_REPONSES = "atlas-rouges-prealables.json";
+
+/**
+ * Les réponses déjà mesurées, ou `null`.
+ *
+ * **Elle vit ICI depuis le 17 septembre 2026, et c'est une correction de
+ * racine.** Elle était exportée par `verifier-rouge-prealable.ts`, un script
+ * d'ENTRÉE : il appelle `main()` à la dernière ligne. `verifier-apres-fusion`
+ * l'important pour cette seule fonction, l'import exécutait ce `main()`, qui
+ * écrivait « aucune suite rouge : rien à comparer » puis `process.exit(0)` —
+ * le complément n'a jamais joué une seule ligne de son propre travail, et il
+ * rendait un ✅ qu'on pouvait prendre pour un verdict. Un script d'entrée ne
+ * s'importe pas ; ce qui se partage vit dans un module qui ne fait rien tout
+ * seul.
+ */
+export function lireLesReponses(racine) {
+  const temoin = cheminDuTemoin(racine);
+  if (!temoin) return null;
+  const chemin = path.join(path.dirname(temoin), FICHIER_REPONSES);
+  if (!existsSync(chemin)) return null;
+  try {
+    const brut = JSON.parse(readFileSync(chemin, "utf8"));
+    if (typeof brut.base !== "string" || typeof brut.suites !== "object") return null;
+    return { base: brut.base, suites: brut.suites };
+  } catch {
+    return null;
+  }
 }
