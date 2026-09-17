@@ -5,6 +5,17 @@
 
 ---
 
+## FAIT : UNE PANNE DE BASE SE DIT SUR LES RÈGLEMENTS (17 septembre 2026)
+
+Sa capture de 15 h 57 : « Ce règlement n'a pas pu être enregistré. Réessayez. »
+sur 495,00 € dus au centime. Le produit était juste — sa base ne répondait plus,
+et les trois actions de règlement laissaient l'exception sortir : rien à l'écran,
+rien au journal. Elles rendent désormais la panne en valeur, avec le code de la
+base et le geste sûr (`ARCHITECTURE.md` §373).
+
+**Sa base à lui n'est pas réparée par ce lot** : elle se remet d'aplomb en
+rallumant l'espace.
+
 ## FAIT : L'ACCUEIL SANS CHANTIER — LA PORTE DU DEVIS AU TIERS HAUT (17 septembre 2026)
 
 Sa place : *« découpe l'écran en 3 parts égales ! En partant du bas, le mets en

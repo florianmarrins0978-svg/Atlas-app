@@ -8,6 +8,26 @@ sert.
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## Une panne de base ne se lit plus « Réessayez » sur les règlements
+
+Depuis le 17 septembre 2026, les trois gestes de règlement de `/termines/tva`
+(« J'ai reçu le paiement », « Enregistrer ce règlement », la croix qui retire)
+ne laissent plus une exception sortir de l'action : elle est journalisée avec
+son code `SQLSTATE` et revient **en valeur**, avec la phrase de
+`src/lib/panne-de-base.ts` — qui nomme la base et donne le geste sûr, rallumer
+l'espace (`ARCHITECTURE.md` §373).
+
+**Ce qui l'a provoqué :** sa capture du 17 septembre à 15 h 57, « Ce règlement
+n'a pas pu être enregistré. Réessayez. » sur 495,00 € parfaitement dus. Le
+produit était juste ; c'est sa base qui ne répondait plus, et rien ne le disait.
+
+**Le réflexe qui aurait fait gagner l'heure**, et il vaut pour toute plainte de
+ce genre : lire la fiche que son espace publie tout seul — la question GitHub
+n° 47, « État du banc d'essai ». Elle porte le commit servi, l'état de la base
+et ce que la migration refuse. « Serveur : répond sur le port 3000 » **ne dit
+rien** d'une base morte : `/api/health/live` ne la touche jamais.
+
+---
 ## L'accueil vide : la porte du devis est au TIERS HAUT, poussée par deux ressorts
 
 Depuis le 17 septembre 2026, quand aucun chantier n'est en cours, « Créer un

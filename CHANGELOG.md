@@ -8,6 +8,51 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-17
 
+### « Ce règlement n'a pas pu être enregistré » : la base était en cause, et rien ne le disait
+
+Sa capture du 17 septembre, à 15 h 57 : facture Martins, 745,00 € TTC dont
+250,00 € reçus, et le solde de 495,00 € refusé par « Ce règlement n'a pas pu
+être enregistré. Réessayez. »
+
+**La règle, elle, acceptait le montant** — 250 + 495 = 745 au centime, rejoué
+sur une base à jour (`scripts/test-reglement-panne-de-base.ts`). Ce qui avait
+lâché, c'est sa BASE : la fiche que son espace publie tout seul, écrite trois
+minutes plus tôt, portait « Base : état inconnu — la base n'a pas répondu » et
+« La base refuse : échec d'une forme non reconnue ».
+
+**Ce qui est corrigé ici, et c'est la moitié qui nous revient : la panne était
+MUETTE.** `soldeFactureAction`, `noterPaiementAction` et `retirerPaiementAction`
+laissaient l'exception sortir — Next.js la remplace par un identifiant opaque
+(`AGENTS.md`), l'écran retombait sur sa phrase de dernier recours, et **rien
+n'était écrit nulle part**. Le conseil rendu était même le mauvais : réessayer
+sur une base qui ne répond pas ne donne rien.
+
+Le mécanisme existait depuis le 13 septembre (`src/lib/panne-de-base.ts`, né de
+sa panne « Une erreur · Référence : 3285538552 ») ; il n'avait jamais été
+branché sur l'écran des règlements. Il l'est. Une panne de base y revient
+désormais **en valeur**, journalisée avec son code `SQLSTATE`, et ce qui
+s'affiche nomme la base et le geste SÛR — rallumer l'espace, qui ne touche à
+aucune de ses données (`CLAUDE.md` §4 septies).
+
+Trois autres choses avec :
+
+- **`phraseDeLaPanne` ne porte plus « Votre compte n'a pas pu être créé » en
+  dur.** Branchée telle quelle, elle aurait annoncé au patron que son COMPTE
+  n'avait pas pu être créé alors qu'il notait un paiement. Chaque écran dit
+  désormais ce qui a échoué chez lui, et le paramètre n'a **pas** de valeur par
+  défaut : un défaut se recopie sans qu'on le voie.
+- **Le retrait d'un règlement rendait `void`** : un échec ne montrait rien du
+  tout, la ligne restait, et il réappuyait sur une croix qui ne faisait rien.
+  Il rend un résultat, et l'écran l'affiche.
+- **`revalidatePath` ne part plus qu'en cas de succès**, et hors de
+  l'enveloppe : une panne de rafraîchissement annoncerait « non enregistré » sur
+  un règlement bien en base.
+
+**Ce qui n'est PAS réparé par ce lot, et il faut le lire comme tel** : la base
+de son espace. Elle se remet d'aplomb en rallumant l'espace depuis
+github.com/codespaces ; si la migration refuse encore de passer, c'est
+désormais l'écran qui le dira, au lieu d'un « Réessayez ».
+
 ### La publication des planches rougissait depuis la note vocale à plat
 
 Le flux `pages.yml` est tombé sur `test:boutons-verts` dès la poussée du

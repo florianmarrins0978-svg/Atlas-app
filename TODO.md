@@ -9,6 +9,23 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## LES AUTRES ÉCRANS D'ARGENT N'ONT PAS ENCORE L'ENVELOPPE DE LA PANNE DE BASE
+
+**Fait le 17 septembre 2026 :** les trois gestes de règlement de `/termines/tva`
+rendent la panne de base en valeur, journalisée, avec le geste sûr
+(`ARCHITECTURE.md` §373).
+
+**Ce qui reste, et ce n'est pas urgent :** les autres actions qui écrivent de
+l'argent laissent encore l'exception sortir — émission d'une facture, envoi d'un
+devis, avoirs. Elles tomberont sur le même écran muet le jour où sa base
+flanchera pendant l'un de ces gestes. Les acomptes du brouillon
+(`src/app/chantiers/[id]/facture/actions.ts`) journalisent déjà, mais rendent
+une phrase générique sans nommer la base.
+
+Le patron seul peut dire si cela vaut un lot ; ce n'est pas à refaire à l'aveugle
+partout, parce qu'une enveloppe posée sans discernement finirait par avaler des
+refus métier.
+
 ## LE SECOND ANNEAU DE L'ACCUEIL — « Créer une facture » — RESTE À FAIRE
 
 **Sa décision du 10 septembre 2026**, planche `appli/facturer-sans-devis.html` :

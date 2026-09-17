@@ -85,11 +85,12 @@ for (const f of FORMES_JURIDIQUES) {
 }
 
 /** Les phrases que rend une panne de base : aucune ne doit sortir d'ici. */
+const ECHEC_COMPTE = "Votre compte n’a pas pu être créé";
 const PHRASES_DE_PANNE = [
-  phraseDeLaPanne("decalage-code-base", true),
-  phraseDeLaPanne("decalage-code-base", false),
-  phraseDeLaPanne("inconnue", true),
-  phraseDeLaPanne("inconnue", false),
+  phraseDeLaPanne("decalage-code-base", true, null, ECHEC_COMPTE),
+  phraseDeLaPanne("decalage-code-base", false, null, ECHEC_COMPTE),
+  phraseDeLaPanne("inconnue", true, null, ECHEC_COMPTE),
+  phraseDeLaPanne("inconnue", false, null, ECHEC_COMPTE),
 ].map((p) => p.replace(/\s*\(base : .*\)$/, ""));
 
 let echecs = 0;
