@@ -295,7 +295,8 @@ liste, en noir ; « Votre client peut proposer une autre date » au lieu de
 « Il peut… » ; et « Envoyer le devis » prend la capsule de l'application
 (`PrimaryButton` : vert `plein`, crème, à la largeur de son texte) au lieu
 d'un bouton pin en pleine largeur. La planche s'ouvre sur 4 jours, à sa
-demande, pour qu'il l'essaye.
+demande, pour qu'il l'essaye. Et l'interrupteur s'appelle « Vous proposez
+deux dates », son libellé.
 
 ### « Ce règlement n'a pas pu être enregistré » : la base était en cause, et rien ne le disait
 
