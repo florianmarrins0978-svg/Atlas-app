@@ -101,6 +101,12 @@ et il a dicté le geste, qui est la version en ligne (la troisième du soir) :
 | l'interrupteur « Deuxième proposition » | allumé, le prochain appui pose le premier jour de la 2e, en or ; éteint, elle disparaît |
 | la cliente | « Quels jours vous arrangent ? », un bouton radio par proposition ; une seule : « Nous venons le … et le … » |
 
+**Deux peintures du jour à comparer, en haut de la planche** — sa demande :
+*« garde cette présentation et mets celle de tout à l'heure à côté, avec le
+numéro qui était entouré, que je compare les deux »*. **A** la case entière
+(son écran d'aujourd'hui, `MoisCharge`) ; **B** le chiffre entouré (la
+planche du 31 août). Même geste dessous ; il n'a pas encore choisi.
+
 Une seule règle pour toutes les durées : sur une journée, deux propositions
 d'un jour sont les deux dates au choix d'aujourd'hui. « Une ou deux, jamais
 plus » ne bouge pas. **Ce que le lot devra ranger, s'il tranche :** par

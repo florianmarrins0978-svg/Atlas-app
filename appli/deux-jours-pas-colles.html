@@ -61,6 +61,12 @@
   deux composants, avec les mêmes valeurs. La 2e proposition prend l'or de
   l'application (`colors.or`), chiffre en encre pour tenir le contraste.
 
+  Puis : *« garde cette présentation et mets celle de tout à l'heure à côté,
+  avec le numéro qui était entouré »*. Les deux se choisissent en haut de la
+  page, même geste, seule la peinture du jour change :
+    · A — la case entière, comme son écran d'aujourd'hui ;
+    · B — le chiffre entouré d'un cercle, comme la planche du 31 août.
+
   ─── Ce que le code fait AUJOURD'HUI, lu dans le code ─────────────────────
 
   1. Les deux dates du calendrier sont deux CHOIX, rendus chez le client en
@@ -98,6 +104,13 @@
 
   .bandeau{background:var(--encre);color:#f2efe8;padding:14px 18px;text-align:center;font-size:13.5px;line-height:1.55}
   .bandeau b{color:#fff}
+
+  /* Les deux peintures du jour retenu, à choisir — même geste dessous. */
+  .choix{position:sticky;top:0;z-index:9;display:flex;gap:7px;justify-content:center;
+         padding:10px;background:#e6e3dc;border-bottom:1px solid var(--trait)}
+  .choix button{border:1px solid var(--trait);background:transparent;border-radius:99px;
+                padding:9px 14px;font:600 12px/1 inherit;color:var(--gris);cursor:pointer}
+  .choix button[aria-pressed="true"]{background:var(--papier);border-color:var(--or);color:var(--encre)}
 
   .tel{max-width:430px;margin:18px auto 0;background:var(--fond);
        border-radius:26px;overflow:hidden;box-shadow:0 18px 46px rgba(20,18,14,.18)}
@@ -152,6 +165,17 @@
   .case.retenu.p2{background:var(--or)}
   .case.retenu.p2 .n{color:var(--encre)}
   .case.retenu.p2 .marqueA i{background:rgba(28,28,26,.14)}
+
+  /* B — le chiffre entouré : la case reste papier, seul le chiffre est peint,
+     dans un cercle. C'est la planche du 31 août. */
+  body[data-style="b"] .case .n{width:25px;height:25px;display:flex;align-items:center;justify-content:center;border-radius:99px}
+  body[data-style="b"] .case.retenu{background:var(--papier)}
+  body[data-style="b"] .case.retenu .n{background:var(--pin);color:var(--plage)}
+  body[data-style="b"] .case.retenu .marqueA i{background:var(--plage);box-shadow:inset 0 0 0 1px var(--trait)}
+  body[data-style="b"] .case.retenu.p2{background:var(--papier)}
+  body[data-style="b"] .case.retenu.p2 .n{background:var(--or);color:var(--encre)}
+  body[data-style="b"] .case.retenu.p2 .marqueA i{background:var(--plage);box-shadow:inset 0 0 0 1px var(--trait)}
+  body[data-style="b"] .legende .rond{border-radius:99px}
 
   .marqueA{width:24px;display:flex;flex-direction:column;gap:2.5px}
   .marqueA i{height:6px;border-radius:2px;background:var(--plage);
@@ -227,12 +251,17 @@
   .note b{color:#2b2820}
 </style>
 </head>
-<body>
+<body data-style="a">
 
 <p class="bandeau">
   <b>Un appui pose le premier jour, le chantier se remplit d’affilée. Un appui sur un jour l’efface, un autre le remet où vous voulez.</b><br>
   Le 18 et le 22 : touchez le 18, effacez le 21, touchez le 22. <b>Rien n’est codé.</b>
 </p>
+
+<nav class="choix" aria-label="Les deux peintures du jour">
+  <button type="button" data-style="a" aria-pressed="true">A. La case entière</button>
+  <button type="button" data-style="b" aria-pressed="false">B. Le chiffre entouré</button>
+</nav>
 
 <div class="tel">
   <div class="feuille-tete">
@@ -521,6 +550,13 @@ function toucher(jour){
 }
 
 document.addEventListener("click", (e) => {
+  const style = e.target.closest(".choix [data-style]");
+  if (style) {
+    document.body.dataset.style = style.dataset.style;
+    document.querySelectorAll(".choix button").forEach((b) =>
+      b.setAttribute("aria-pressed", String(b === style)));
+    return;
+  }
   if (e.target.closest("[data-changer]")) {
     joursDuChantier = DUREES[(DUREES.indexOf(joursDuChantier) + 1) % DUREES.length];
     /* La durée change : chaque proposition se refait d'affilée depuis son

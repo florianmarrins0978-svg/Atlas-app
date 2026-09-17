@@ -258,6 +258,11 @@ sur papier, et l'interrupteur dans la tuile de « Il peut proposer une autre
 date » (48 × 28, vert allumé) — lequel figure aussi sur la planche, tel qu'il
 existe. La 2e proposition prend `colors.or`, chiffre en encre.
 
+**Puis les deux à comparer** — *« garde cette présentation et mets celle de
+tout à l'heure à côté, avec le numéro qui était entouré »*. Deux boutons en
+haut de la planche : **A** la case entière, **B** le chiffre entouré d'un
+cercle. Le geste ne change pas, seule la peinture du jour ; il tranchera.
+
 ### « Ce règlement n'a pas pu être enregistré » : la base était en cause, et rien ne le disait
 
 Sa capture du 17 septembre, à 15 h 57 : facture Martins, 745,00 € TTC dont
