@@ -37,7 +37,45 @@ le mois est exactement ce qu'il fait pour atteindre son jour d'accueil.
 
 Parti avec : `BasculeDemi`, `liberer`, `libererDemiJourneeAction`,
 `libererDemiJournee`, `sansLaDemi` — plus aucun appelant (`CLAUDE.md` §4
-quinquies). `ARCHITECTURE.md` §372.
+quinquies). `ARCHITECTURE.md` §373.
+
+### La publication des planches rougissait depuis la note vocale à plat
+
+Le flux `pages.yml` est tombé sur `test:boutons-verts` dès la poussée du
+16 septembre au soir (course 35206572979) : la suite de la planche des boutons
+verts relisait les **trois verts et les deux anneaux** de `.atlas-micro` dans
+`globals.css` — et la note vocale n'en a plus, par son choix (un aplat, un seul
+cercle d'or clair). `enRgb(undefined)` plantait avant même de mesurer.
+
+Ce qui change, et pourquoi (`CLAUDE.md` §5 bis : une suite qui rougit après un
+retrait qu'il a demandé s'adapte, elle ne remet pas ce qu'il a enlevé) : la
+planche est **tranchée** depuis le 3 septembre (la D) ; ses trois verts et son
+or vif sont désormais relus **dans la planche elle-même** — c'est la tasse
+d'alors, recopiée le jour même. Ce qui reste comparé à l'application, c'est ce
+qui doit encore être vrai : **la D est le vert que `.atlas-micro` paie
+aujourd'hui**. Éprouvé dans les deux sens : vert sur `main`, rouge quand on
+change le vert de la note vocale.
+
+### L'accueil sans chantier : « Créer un devis » descend au tiers haut
+
+*« Découpe l'écran en 3 parts égales ! En partant du bas, le mets en haut de la
+deuxième part »* — sa place, donnée le 17 septembre après une première livraison
+**à côté** : sa phrase d'avant, *« au 2/3 haut du téléphone »*, avait été lue
+« aux deux tiers en partant du haut ». Posée à 66 %, il a répondu *« il est trop
+bas là ! »*. C'est lui qui a regardé la capture à ma place — elle aurait tranché
+avant la livraison (`CLAUDE.md` §10).
+
+Mesuré avant : **26 %** de la hauteur, la porte collée au titre et les trois
+quarts du bas laissés blancs. Mesuré après : **33,4 %**. Avec des chantiers,
+rien ne bouge : elle reste à 26 %, exactement où elle était.
+
+Deux ressorts (2 contre 13) poussent le bloc au lieu de le déplacer : les
+réponses de ses clients restent sous la porte, et trois d'entre elles empilées
+la font remonter plutôt que de sortir quoi que ce soit de l'écran.
+`scripts/test-accueil-vide-porte-e2e.ts` mesure la place sur un compte neuf sans
+chantier **et sans ruban d'essai** — l'écran qu'il a, lui — et dit le
+pourcentage à chaque passage. `ARCHITECTURE.md` §372.
+
 
 ### `main` a avancé sous un lot éprouvé : `verifier-apres-fusion` rejoue la rencontre, pas la batterie
 

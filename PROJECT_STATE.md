@@ -1,9 +1,20 @@
 # État du projet
 
-**Dernière mise à jour :** 2026-09-16 · `main`
+**Dernière mise à jour :** 2026-09-17 · `main`
 · dernière migration `drizzle/0093_equipes_par_jour.sql`
 
 ---
+
+## FAIT : L'ACCUEIL SANS CHANTIER — LA PORTE DU DEVIS AU TIERS HAUT (17 septembre 2026)
+
+Sa place : *« découpe l'écran en 3 parts égales ! En partant du bas, le mets en
+haut de la deuxième part »*. Mesurée à 26 % avant, **33,4 %** après ; avec des
+chantiers, elle ne bouge pas (26 %). Deux ressorts poussent le bloc, la place se
+mesure dans un navigateur (`scripts/test-accueil-vide-porte-e2e.ts`).
+**Une première version l'avait posée à 66 %** — « 2/3 haut » lu à l'envers, et
+c'est lui qui l'a vu. `ARCHITECTURE.md` §372. **Reste** le second anneau
+« Créer une facture » de la même planche — il attend une migration (`TODO.md`,
+en tête).
 
 ## « En cours » reste à l'écran quand il descend (16 septembre 2026)
 
@@ -28,7 +39,6 @@ Second volet du même jour : la moitié libre rangée **sous le nom du chantier*
 (`libresAvant`) n'offrait pas « Poser ici » — une demi-journée rendue ne se
 remettait donc jamais au même endroit. Condition unique `poserIci`, mêmes
 gestes aux deux montages de `LigneLibre`.
-
 
 ## La décennale et le médiateur (16 septembre 2026)
 
@@ -495,7 +505,7 @@ cela se découvre le matin du chantier.
 L'ancien chemin est parti avec : `BasculeDemi`, `liberer`,
 `libererDemiJourneeAction`, `libererDemiJournee`, `sansLaDemi`.
 
-Détail : `ARCHITECTURE.md` §372.
+Détail : `ARCHITECTURE.md` §373.
 
 ---
 

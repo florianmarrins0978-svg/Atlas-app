@@ -10,10 +10,16 @@
  * **CE QU'ELLE GARDE VRAIMENT, et c'est le cœur.** La planche affirme deux
  * choses, et une seule des deux se voit à l'œil :
  *
- *   1. que sa matière est celle de l'application, RECOPIÉE et non approchée —
- *      la suite relit donc `src/app/globals.css` et compare les verts et l'or
- *      du bouton à ceux de `.atlas-micro`, la tasse de la note vocale. Le jour
- *      où l'application change de matière, la planche rougit au lieu de mentir ;
+ *   1. que sa matière est celle de la note vocale du 3 septembre, RECOPIÉE et
+ *      non approchée — les trois verts et l'or sont ceux de la tasse d'alors.
+ *      **La tasse n'existe plus dans l'application — 16 septembre 2026.** Il a
+ *      choisi la note vocale à plat, sur le vert de ses boutons, avec un seul
+ *      cercle d'or clair (`appli/note-vocale-cercle-dore.html`). La planche
+ *      est TRANCHÉE (la D, codée le 3 septembre) : elle raconte le chemin, et
+ *      ce qu'elle doit encore dire vrai, c'est que la D est le vert que
+ *      l'application paie AUJOURD'HUI — lu dans `src/app/globals.css`, sur
+ *      `.atlas-micro`. Les trois verts du dégradé et l'or vif sont relus dans
+ *      la planche elle-même : un bord unique, jamais la porcelaine ;
  *   2. que la lumière en POUR CENT s'étale et efface le mot, et que la même
  *      lumière gardée à sa taille ne l'efface pas. Ce sont des chiffres, et la
  *      suite les relit à l'écran plutôt que de croire le texte à côté.
@@ -48,18 +54,24 @@ const nombre = (t) => Number(String(t).replace(",", "."));
 const enRgb = (hex) =>
   "rgb(" + [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16)).join(", ") + ")";
 
-// ─── Ce que l'APPLICATION dit de sa matière ──────────────────────────────────
+// ─── Ce que l'APPLICATION paie aujourd'hui, et ce que la planche a recopié ──
 //
-// Lu dans le fichier, pas récité. `.atlas-micro` — la tasse de la note vocale,
-// celle qu'il a retenue — porte ses trois verts dans son `background`, et l'or
-// puis la porcelaine dans son `box-shadow`.
+// Lu dans les fichiers, pas récité. `.atlas-micro` — la note vocale — est à
+// plat depuis le 16 septembre 2026 : UN vert dans son `background`. C'est
+// celui que la D doit porter, sinon la planche ment sur ce qu'il a retenu.
+const hexes = (t) => t.match(/#[0-9a-fA-F]{6}/g) || [];
 const GLOBALS = readFileSync(join(ICI, "..", "..", "src", "app", "globals.css"), "utf8");
 const bloc = GLOBALS.slice(GLOBALS.indexOf(".atlas-micro {"));
 const micro = bloc.slice(0, bloc.indexOf("\n}"));
-const hexes = (t) => t.match(/#[0-9a-fA-F]{6}/g) || [];
-const VERTS = hexes(micro.slice(micro.indexOf("background:"), micro.indexOf("box-shadow:")));
-// L'or et la porcelaine, dans l'ordre où la tasse les pose.
-const [OR, PORCELAINE] = [...new Set(hexes(micro.slice(micro.indexOf("box-shadow:"))))];
+const [PLEIN] = hexes(micro.slice(micro.indexOf("background:")));
+// Les trois verts du dégradé et l'or vif viennent de la planche : c'est la
+// tasse du 3 septembre, recopiée le jour même, et l'application n'en a plus.
+const PLANCHE = readFileSync(join(ICI, "..", "boutons-verts.html"), "utf8");
+const banc = PLANCHE.slice(PLANCHE.indexOf(".banc{"));
+const jeton = (nom) => (banc.match(new RegExp(`--${nom}:(#[0-9a-fA-F]{6})`)) || [])[1];
+const VERTS = [jeton("sage-clair"), jeton("sage"), jeton("pin-clair")].filter(Boolean);
+const OR = jeton("or-vif");
+const PORCELAINE = jeton("creme-anneau");
 
 const nav = await chromium.launch();
 const page = await nav.newPage({ viewport: { width: 390, height: 844 } });
@@ -72,10 +84,11 @@ page.on("response", (r) => {
 
 await page.goto(`${BASE}/boutons-verts.html`, { waitUntil: "networkidle" });
 
-// 0. La matière relevée dans le code est bien celle du dépôt : sans cela, les
-//    comparaisons plus bas ne diraient rien de l'application.
-dire(VERTS.length >= 3, `\`.atlas-micro\` donne ses verts : ${VERTS.join(", ") || "aucun"}`);
-dire(!!OR && !!PORCELAINE, `\`.atlas-micro\` donne ses anneaux : ${OR}, ${PORCELAINE}`);
+// 0. La matière est relevée pour de bon : sans cela, les comparaisons plus
+//    bas ne diraient rien — ni de l'application, ni de la planche.
+dire(!!PLEIN, `\`.atlas-micro\` donne le vert de l'application : ${PLEIN || "aucun"}`);
+dire(VERTS.length === 3, `la planche donne ses trois verts : ${VERTS.join(", ") || "aucun"}`);
+dire(!!OR && !!PORCELAINE, `la planche donne son or et sa porcelaine : ${OR}, ${PORCELAINE}`);
 
 // ─── 1. Les six déclinaisons s'affichent, et l'écran a de la matière ────────
 for (const [cle, nom] of [
@@ -103,7 +116,7 @@ for (const [cle, nom] of [
     `${nom} — les ${chiffres.length} chiffres sont calculés et écrits`);
 }
 
-// ─── 2. La matière est celle de l'application, au caractère près ─────────────
+// ─── 2. La matière est celle qu'elle annonce, au caractère près ──────────────
 // **400 ms, et ce n'est pas une marge de confort.** `.bouton` porte
 // `transition: box-shadow 220ms` : lu à 200 ms, le filet d'or est encore une
 // couleur INTERMÉDIAIRE, et le contrôle rougit sur un bouton juste. Attrapé en
@@ -128,7 +141,7 @@ const compter = (texte, motif) => texte.split(motif).length - 1;
 const peintureA = await peindre("a");
 for (const vert of VERTS) {
   dire(peintureA.fond.includes(enRgb(vert)),
-    `A — le dégradé porte ${vert} (${enRgb(vert)}), comme \`.atlas-micro\``);
+    `A — le dégradé porte ${vert} (${enRgb(vert)}), comme la tasse du 3 septembre`);
 }
 
 // **LA COULEUR SEULE — sa demande du 3 septembre au soir :** *« mets juste la
@@ -151,12 +164,18 @@ dire(peintureB.fond === peintureA.fond,
 
 // **LES APLATS SONT PRIS DANS L'ÉCHELLE DE LA TASSE, pas approchés à l'œil.**
 // « Sans l'effet brillant » ne veut pas dire « un vert qui ressemble » : D et E
-// doivent être deux des trois verts que `.atlas-micro` pose vraiment.
-for (const [cle, rang] of [["d", 1], ["e", 2]]) {
-  const p = await peindre(cle);
-  dire(p.fond === "none" && p.aplat === enRgb(VERTS[rang]),
-    `${cle.toUpperCase()} — un aplat, et c'est ${VERTS[rang]} de la note vocale (${p.aplat})`);
-}
+// sont deux des trois verts de la tasse. **Et la D est ce qu'il a retenu** —
+// c'est elle qui est devenue `colors.plein`, puis la note vocale elle-même :
+// si `.atlas-micro` change de vert, la planche cesse de dire vrai, et c'est
+// ici qu'elle doit rougir.
+const platD = await peindre("d");
+dire(platD.fond === "none" && platD.aplat === enRgb(VERTS[1]),
+  `D — un aplat, et c'est ${VERTS[1]}, le vert du milieu de la tasse (${platD.aplat})`);
+dire(platD.aplat === enRgb(PLEIN),
+  `D — et c'est le vert que l'application paie aujourd'hui, ${PLEIN} (\`.atlas-micro\`)`);
+const platE = await peindre("e");
+dire(platE.fond === "none" && platE.aplat === enRgb(VERTS[2]),
+  `E — un aplat, et c'est ${VERTS[2]}, le vert du bord de la tasse (${platE.aplat})`);
 
 // **Le halo qu'il a fait retirer ne revient pas** — sa demande du 3 septembre.
 // Un retrait sans garde se refait tout seul au lot suivant.

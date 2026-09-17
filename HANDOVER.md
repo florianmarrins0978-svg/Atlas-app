@@ -4,10 +4,27 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-09-14 (soir) · `claude/devis-main-doeuvre-cgv`, à fusionner sur `main` après la batterie
+**Point de reprise :** 2026-09-17 · `main` — l'accueil vide (la porte au tiers haut) est fusionné
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## L'accueil vide : la porte du devis est au TIERS HAUT, poussée par deux ressorts
+
+Depuis le 17 septembre 2026, quand aucun chantier n'est en cours, « Créer un
+devis » descend au **tiers haut** (33,4 % mesuré) — *« découpe l'écran en 3 parts
+égales, en partant du bas mets-le en haut de la deuxième »*. Avec des chantiers,
+rien ne bouge (26 %). Ce n'est pas une place écrite en dur : deux ressorts
+(2 contre 13) poussent le bloc, et **c'est la PLACE qui se mesure**
+(`scripts/test-accueil-vide-porte-e2e.ts`, sur un compte sans ruban d'essai —
+l'écran qu'il a), jamais le rapport.
+
+**La leçon du lot :** « 2/3 haut » avait d'abord été lu « à 66 % », livré ainsi,
+et c'est LUI qui a vu la capture — *« il est trop bas là ! »*. Une fraction se
+lit dans les deux sens, un écran non. `ARCHITECTURE.md` §372 ; le second anneau
+« Créer une facture » de la même planche reste à faire (`TODO.md`, en tête).
+
+---
+
 ## Où un chantier est POSÉ se repeint en ENTIER après chaque geste
 
 Depuis la migration 0085, `date_planifiee` + `creneau_debut` + la durée ne
@@ -981,7 +998,7 @@ un écran qui a l'air en retard sur sa maquette. Toute clé neuve s'ajoute donc 
 | où vit le geste | **sous le calendrier** (`data-atlas="deplacement-en-cours"`), jamais dans la fiche : elle disparaît au premier mois tourné |
 | retiré avec | `BasculeDemi`, `liberer`, `libererDemiJourneeAction`, `libererDemiJournee`, `sansLaDemi` |
 | les suites | `test-creneaux-chantier.ts` (8 cas neufs), `test-deplacer-sur-le-calendrier-e2e.ts` |
-| le détail | `ARCHITECTURE.md` §372 |
+| le détail | `ARCHITECTURE.md` §373 |
 
 **LE PIÈGE À NE PAS REFABRIQUER.** Ce qui part commande ce qui peut arriver :
 une demi-journée ne devient pas une journée, une journée ne tient pas sur une

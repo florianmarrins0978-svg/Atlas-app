@@ -31010,10 +31010,66 @@ Cas ajouté : « rendue, elle se remet AU MÊME ENDROIT — sous le nom du
 chantier ». Les cas d'avant reposaient sur un AUTRE jour, entièrement libre,
 où les deux moitiés sont des blocs de queue : ils ne pouvaient pas le voir.
 
+## §372 — L'accueil SANS CHANTIER : la porte du devis descend au TIERS HAUT
+
+**Sa décision du 10 septembre 2026**, sur la planche qu'il a retenue
+(`appli/facturer-sans-devis.html`) : *« liste vide : les deux gestes descendent
+· liste pleine : ils remontent, et "créer un devis" retrouve exactement la place
+qu'il a aujourd'hui »*.
+
+**Sa place, donnée DEUX FOIS le 17 septembre — et la première lecture était
+fausse :**
+
+| Ce qu'il a écrit | Ce qui en a été fait |
+|---|---|
+| *« au 2/3 haut du téléphone »* | lu « aux deux tiers en partant du haut », donc **66 %** — et livré ainsi |
+| ***« il est trop bas là ! »*** | la capture, qu'il a regardée à ma place |
+| *« découpe l'écran en 3 parts égales ! En partant du bas, le mets en haut de la deuxième part »* | le tiers du bas, puis celui du milieu : son haut est à **un tiers** de la hauteur en partant du haut |
+
+**La leçon vaut plus que le correctif.** Une fraction s'énonce dans les deux
+sens — « 2/3 haut » se lit « aux deux tiers » comme « aux deux tiers EN
+MONTANT » —, un écran non. La capture tranche en une seconde, et elle se regarde
+**avant** de livrer, pas après (`CLAUDE.md` §10). Il a fait le test à ma place.
+
+Avant ce lot, la porte était à **26 %** : le seul geste de l'écran vivait collé
+au titre, et les trois quarts du bas restaient blancs.
+
+**Ce qui la pose, et pourquoi ce n'est pas une place écrite en dur.** Deux
+ressorts, de part et d'autre du bloc, dans le rapport **2 contre 13**
+(`EcranChantiers.tsx`). Le bloc ne bouge pas dans le marquage : il est POUSSÉ.
+
+| L'autre solution | Ce qu'elle coûtait |
+|---|---|
+| `position: absolute; top: 33 %` | la porte sort du fil : les réponses de ses clients passent dessous, et un écran plus court la fait chevaucher « En cours » |
+| une marge en pixels | juste sur un écran, fausse sur les deux autres — et refaite à chaque changement d'en-tête |
+
+**Le rapport 2:13 est MESURÉ, jamais déduit** — deux points et une droite, la
+place étant affine en la part du haut : l'en-tête au-dessus et « En cours 0 » en
+dessous ne tombent pas dans le tiers. Il pose le centre de l'anneau à **33,4 %**
+de son téléphone (390 × 664). `scripts/test-accueil-vide-porte-e2e.ts` mesure la
+PLACE, jamais le rapport : le jour où l'en-tête change de hauteur, c'est la place
+qui dérive, et c'est elle qu'il faut rattraper.
+
+**Et la suite mesure l'écran QU'IL A** : le compte neuf qu'elle crée porte un
+ruban d'essai de quarante pixels que son Atlas à lui n'a pas — elle retire donc
+l'abonnement avant de mesurer. Mesurer avec le ruban, c'est mesurer un écran que
+le patron ne voit jamais, et les quarante pixels déplacent le verdict.
+
+**Et le fil ne réclame plus tout l'espace** quand il est vide (`flex: 0 1 auto`)
+— sans quoi les deux ressorts n'auraient rien à se partager. Il garde son
+défilement : trois réponses de clients empilées font remonter la porte à sa
+place d'avant et le fil se met à défiler, plutôt que de pousser quoi que ce soit
+hors de l'écran (mesuré).
+
+**Ce qui n'est PAS fait**, et qui vient de la même planche : le second anneau
+« Créer une facture », sous celui du devis et collé au bord gauche. Il attend la
+migration qui rend `factures.devis_id` facultatif. Quand il arrivera, le rapport
+des ressorts se **remesure** — deux anneaux au lieu d'un déplacent le centre.
+
 
 ---
 
-## §372 — « Déplacer » déplace pour de bon : le calendrier, puis le moment
+## §373 — « Déplacer » déplace pour de bon : le calendrier, puis le moment
 
 **Sa demande du 17 septembre 2026 :** *« lorsque je clique sur déplacer ça me
 fait apparaître le planning et je sélectionne un jour et le matin ou l'aprem ou

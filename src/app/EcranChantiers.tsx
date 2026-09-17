@@ -135,6 +135,26 @@ export default function EcranChantiers({
   const restants = chantiers.filter((c) => !retraits.estRetire(c.id));
   const compte = restants.filter((c) => c.enCours).length;
 
+  // ── QUAND IL N'A AUCUN CHANTIER, LA PORTE DESCEND D'UN CRAN ──────────────
+  //
+  // **Sa décision du 10 septembre 2026**, sur la planche qu'il a retenue
+  // (`appli/facturer-sans-devis.html`) : *« liste vide : les deux gestes
+  // descendent · liste pleine : ils remontent, et "créer un devis" retrouve
+  // exactement la place qu'il a aujourd'hui »*.
+  //
+  // **Et sa place, donnée deux fois le 17 septembre — la première lecture
+  // était fausse, et c'est la leçon à garder :**
+  //
+  //   · *« au 2/3 haut du téléphone »* a été lu « aux deux tiers en partant du
+  //     haut », donc à 66 %. Devant la capture : ***« il est trop bas là ! »*** ;
+  //   · *« découpe l'écran en 3 parts égales ! En partant du bas, le mets en
+  //     haut de la deuxième part »* — le tiers du bas, puis celui du milieu,
+  //     dont le haut tombe à **un tiers** de la hauteur en partant du haut.
+  //
+  // Une fraction s'énonce dans les deux sens ; un écran, non. La capture
+  // tranche, et elle se regarde AVANT de livrer (`CLAUDE.md` §10).
+  const vide = restants.length === 0;
+
   // ── « En cours 4 », COLLÉ À LA LISTE — 6 septembre 2026 ──────────────────
   //
   // **Sa remarque, deux fois de suite :** *« mets En cours au-dessus du
@@ -405,6 +425,20 @@ export default function EcranChantiers({
             nouvel onglet, elle mène à l'écran entier. Le clic ordinaire est
             détourné pour jouer le geste puis faire monter la feuille — la route
             ne disparaît pas, elle change de porte. */}
+        {/* **Les deux ressorts qui posent la porte au tiers haut.** Le bloc ne
+            change pas de place dans le marquage — il est poussé. Une place
+            écrite en dur (un `top: 33%`) l'aurait sorti du fil : les bandeaux
+            de ses clients seraient passés dessous, et un écran plus court
+            l'aurait fait chevaucher le compteur.
+
+            **Le rapport 2 contre 13 n'est pas un chiffre choisi, il est
+            MESURÉ** (`scripts/test-accueil-vide-porte-e2e.ts`, deux points et
+            une droite) : l'en-tête au-dessus et « En cours 0 » en dessous ne
+            tombent pas dans le tiers, et c'est ce rapport-là qui pose le centre
+            de l'anneau à 33,4 % de SON téléphone. La suite mesure la PLACE,
+            jamais le rapport — le jour où l'en-tête change de hauteur, c'est
+            elle qui le dira. */}
+        {vide && <div aria-hidden className="flex-[2]" />}
         <div className="flex flex-col items-center px-[26px] pb-0.5 pt-[22px]">
           <Link
             href="/chantiers/nouveau"
@@ -485,7 +519,7 @@ export default function EcranChantiers({
                plus dans les sept chartes. Jamais une valeur écrite en clair
                ici : elle serait juste sur « Origine » et fausse sur les deux
                chartes sombres. */}
-        {restants.length === 0 ? (
+        {vide ? (
           /* **AUCUNE PHRASE QUAND LA LISTE EST VIDE** — sa demande du 25 août
              2026 : *« supprime la phrase "aucun chantier pour l'instant" »*.
 
@@ -497,10 +531,18 @@ export default function EcranChantiers({
 
              Les bandeaux restent : ce sont les réponses de ses clients, et
              elles arrivent justement quand plus aucun chantier n'est en cours. */
-          <div className="atlas-fil-defile pt-4">
-            {bandeaux}
-            {rubriqueEnCours}
-          </div>
+          <>
+            {/* `flex: 0 1 auto` écrit ici plutôt que dans `globals.css` : le
+                fil garde son défilement et son fondu pour le jour où les
+                réponses de ses clients s'empilent, mais il cesse de réclamer
+                tout l'espace libre — sans quoi les deux ressorts n'en auraient
+                aucun à se partager. */}
+            <div className="atlas-fil-defile pt-4" style={{ flex: "0 1 auto" }}>
+              {bandeaux}
+              {rubriqueEnCours}
+            </div>
+            <div aria-hidden className="flex-[13]" />
+          </>
         ) : (
           <div className="atlas-fil-defile pb-3">
             {/* **Les bandeaux défilent AVEC la liste, ils ne la repoussent

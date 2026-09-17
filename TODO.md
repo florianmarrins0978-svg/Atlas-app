@@ -9,6 +9,28 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## LE SECOND ANNEAU DE L'ACCUEIL — « Créer une facture » — RESTE À FAIRE
+
+**Sa décision du 10 septembre 2026**, planche `appli/facturer-sans-devis.html` :
+deux anneaux sur l'accueil, *« exactement le même style »*, « Créer une
+facture » sous le devis et **collé au bord gauche**, « En cours 0 » dessous.
+
+**Ce qui est fait depuis le 17 septembre** : la moitié « liste vide, les gestes
+descendent » — la porte du devis se pose au tiers haut de l'écran quand il n'a
+aucun chantier (`ARCHITECTURE.md` §372). Rien d'autre de cette planche.
+
+**Ce qui bloque le second anneau, et c'est en base** : `factures.devis_id` est
+`NOT NULL` (`schema.ts`). Une facture sans devis est impossible tant qu'une
+migration ne l'a pas rendu facultatif — expand/contract
+(`.claude/rules/deployment-safety.md`). Le faux devis caché reste écarté : il
+ferait apparaître des numéros inexistants dans les listes et le relevé de TVA.
+
+**Et le jour où il arrive, le rapport des ressorts se REMESURE** : deux anneaux
+au lieu d'un déplacent le centre du bloc, et le tiers ne tomberait plus au même
+endroit (`scripts/test-accueil-vide-porte-e2e.ts` le dira).
+
+---
+
 ## ~~LA FACTURE : « 2,50 », L'UNITÉ, « REM. % », « u » PAR DÉFAUT~~ — CODÉ ET ÉPROUVÉ LE 15 SEPTEMBRE 2026
 
 **Ses captures du 15 septembre :** *« Unité n'apparaît pas lorsque je crée
