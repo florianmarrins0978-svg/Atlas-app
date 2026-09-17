@@ -69,41 +69,40 @@ de la hauteur, il la veut à 33 %. Le réglage des deux ressorts ne la déplace
 pas — essayé, mesuré, rendu. La racine est ailleurs.
 
 
-## ⏳ UNE PLANCHE À REGARDER — LA CONSIGNE DE DÉPLACEMENT (17 septembre 2026)
+## ⏳ UNE PLANCHE À REGARDER — LE MOIS ENTIER AU-DESSUS PENDANT UN DÉPLACEMENT (17 septembre 2026)
 
 **Sa capture :** *« il dit toucher le jour au-dessus mais le planning apparaît
-en-dessous. »* Il a raison, et c'est mesuré : sur son écran du 18 septembre,
-**dix jours du mois** sont dessinés SOUS la consigne qui l'envoie regarder en
-haut — dont le 24.
+en-dessous. »* Mesuré : sur son écran du 18 septembre, **dix jours du mois**
+sont dessinés SOUS la consigne — dont le 24.
 
-**La racine.** `BandeauDeplacement` est écrit une fois et monté à deux places
-(`PlanningClient.tsx`) : dans la fiche du jour, et en repli sous le calendrier
-quand le mois tourné a emporté la fiche. « Au-dessus » avait été écrit pour la
-seconde, où c'est vrai. Dans la fiche c'est faux — le volet s'insère SOUS LA
-SEMAINE du jour ouvert (`MoisCharge`, prop `volet`, ligne 305). **Aucune
-direction ne peut être juste aux deux endroits.**
+**LA PREMIÈRE LECTURE ÉTAIT FAUSSE, ET C'EST LUI QUI L'A REDRESSÉE :** *« ce
+que je voulais c'était pas changer la phrase mais faire en sorte que le
+planning apparaisse entier au-dessus de Mr Linotte pour choisir un jour
+facilement »*. On lui avait proposé trois formulations ; il n'en veut aucune.
+Il veut que la phrase **devienne vraie**.
 
-**RIEN N'EST CODÉ** — la planche `appli/deplacer-la-consigne.html` attend sa
-réponse. Le correctif avait été écrit, puis **défait à sa demande** (*« fait
-une planche ! code rien »*) : commits `5b177d9` puis `aa3f198` sur
-`claude/problem-investigation-qn7qor`. Il reste repêchable quand il aura
-tranché ; seule la formulation change.
+**Sa solution est meilleure, et pour une raison qui n'avait pas été vue.**
+Aujourd'hui la fiche s'insère DANS la grille, sous la semaine du jour ouvert
+(`MoisCharge`, prop `volet`) — donc elle **disparaît au premier mois tourné**,
+et c'est pour ça qu'il a fallu écrire un SECOND montage de
+`BandeauDeplacement`, en repli sous le calendrier. Si la fiche descend sous le
+mois entier pendant le geste, elle survit au changement de mois : **le second
+montage devient du code mort** (`CLAUDE.md` §4 quinquies), et la consigne n'a
+plus besoin de redire le nom du chantier.
 
-Deux réponses attendues, une lettre et un chiffre :
+**RIEN N'EST CODÉ POUR LA PLACE** — la planche `appli/deplacer-la-consigne.html`
+attend sa lettre. Une seule question : pendant qu'il choisit le jour, la fiche
+descend **entière** (A) ou réduite au nom, au lieu et à la question (B).
 
-| | |
-|---|---|
-| **A** | « Touchez son nouveau jour » |
-| **B** | « Touchez le jour d'arrivée » |
-| **C** | « Quel jour ? » |
-| **D** | celle d'aujourd'hui, pour comparer |
-| **1** | sans son nom — il est déjà en titre trois lignes plus haut |
-| **2** | avec « Mr. Linotte · » devant, comme aujourd'hui |
+**Ce qui EST codé, et qui attend avec :** sa réponse « 1 sans le nom » — le nom
+du chantier n'est plus redit dans la fiche, où il est déjà en titre trois
+lignes plus haut (commit `b04ec34` sur `claude/problem-investigation-qn7qor`,
+suite `test-deplacer-sur-le-calendrier-e2e.ts`). Non poussé sur `main` : il
+touche la même ligne que la place, et les deux partiront ensemble.
 
-**Le second point est une redite qu'il a sous les yeux** : sur sa capture,
-« Mr. Linotte » est écrit deux fois dans la même carte, à quatre lignes
-d'écart. Sous le calendrier il doit rester — la fiche n'y est plus pour le
-dire.
+**Tranché sans lui demander, à dire si c'est mal :** la pointe qui rattache la
+fiche à sa case disparaît pendant le geste — descendue sous le mois entier,
+elle désignait la case d'à côté. Le cerne noir du jour ouvert la remplace.
 
 ## ⏳ LA PLANCHE D'ENSEMBLE ATTEND SON OUI — PUIS ON CODE (17 septembre 2026)
 

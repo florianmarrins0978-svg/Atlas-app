@@ -71,3 +71,54 @@ livrerait sur une supposition, ce qui est pire que cinquante minutes.
 
 La batterie entière reste obligatoire **avant la première poussée d'un lot**.
 Ce qui change, c'est qu'un rouge corrigé ne la fait plus recommencer.
+
+---
+
+# Suite — 18 septembre 2026, 00 h 27 : « ça continue »
+
+Quarante minutes après la correction ci-dessus, une session repartait pour
+quarante-cinq minutes. Sa raison :
+
+> *« `main` a apporté 30 commits, dont du code qui touche l'argent (devis,
+> acomptes). La rencontre atteint le niveau 3 → batterie entière. »*
+
+Elle appliquait la règle correctement. **La règle était fausse.**
+
+## L'erreur, et elle était à moi
+
+Le calcul de risque répond à **une** question : *quel danger ce lot
+introduit-il ?* Je la posais aussi sur les fichiers que `main` apporte. Or ces
+commits-là **ont déjà payé leur batterie** — la session qui a écrit les acomptes
+a joué la mesure complète pour eux.
+
+Résultat : à trois sessions, **chacune repayait la mesure des deux autres**.
+C'est la même boucle, par une autre porte.
+
+## Ce qui a été corrigé
+
+La rencontre se partage en deux, et chaque moitié ne doit pas la même chose :
+
+| Ce qui a bougé | Ce que ça coûte |
+|---|---|
+| **ton lot** — ce que cette session a écrit | gravité pleine : argent, sécurité → batterie, comme avant |
+| **`main`**, une migration ou la configuration | **batterie** : ça change le sol sous toutes les mesures |
+| **`main`**, du code d'argent ou de sécurité | les suites du fond (~5 min) — là où vivent les règles et l'isolation |
+| **`main`**, le reste | les écrans concernés, et rien d'autre |
+
+La troisième ligne est le cœur : la gravité de `main` **change ce qu'on rejoue,
+pas si l'on rejoue tout**.
+
+## Ce qui a été refusé
+
+**Ignorer complètement ce que `main` apporte.** Ce serait plus rapide encore, et
+faux : la rencontre entre ton lot et le code voisin n'a jamais été mesurée par
+personne. Elle se rejoue — en minutes, pas en heure.
+
+## Chiffres
+
+| | |
+|---|---|
+| niveau | **2** — `npm run verifier:avant-fusion` |
+| résultat | **395 suites sur 395 vertes** |
+| le rattrapage, joué sur ce lot après une avancée de `main` | **Types + Lint**, une minute |
+| batterie complète | **non jouée** |

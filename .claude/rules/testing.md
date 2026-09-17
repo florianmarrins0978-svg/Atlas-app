@@ -161,7 +161,12 @@ npx tsx scripts/verifier-ce-qui-a-bouge.ts
 | ce qui a bougé | par le CONTENU : l'empreinte du verdict, et git pour ce qu'elle n'indexe pas (`.md`, `docs/`, `.claude/`) |
 | ce qu'on rejoue | ce qui était rouge, plus ce que ce qui a bougé peut casser (la rencontre) |
 | ce qu'on ne rejoue pas | garde son rouge — ne pas savoir n'est jamais vert |
-| ce qui renvoie à la batterie | ce qui a bougé atteint le niveau 3 |
+| ce qui renvoie à la batterie | **le LOT** atteint le niveau 3, ou `main` a apporté un PLANCHER (migration, gabarit racine, accès à la base, configuration) |
+
+**La gravité de `main` ne renvoie PAS à la batterie** (18 septembre 2026,
+00 h 27) : ces commits sont déjà passés par leur propre garde-fou. Elle force
+les suites du fond (`npm test`), là où vivent les règles d'argent et
+l'isolation. `ARCHITECTURE.md` §382.
 
 **Et l'on n'a pas à s'en souvenir** : la batterie elle-même refuse de repartir
 quand le verdict précédent était rouge et que ce qui a bougé reste borné

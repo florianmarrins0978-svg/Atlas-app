@@ -8,6 +8,15 @@ sert.
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## CE QUE `main` APPORTE NE FAIT PLUS REPAYER LA BATTERIE
+
+Depuis le 18 septembre 2026 : la gravité de ce que `main` apporte — devis,
+acomptes, sécurité — a **déjà** été éprouvée par la session qui l'a écrite.
+Seul son PLANCHER (migration, gabarit racine, accès à la base, configuration)
+fait repartir la batterie entière ; sa gravité, elle, force `npm test`.
+Le lot, lui, garde sa gravité pleine. `ARCHITECTURE.md` §382.
+
+---
 ## UN ROUGE SE REJOUE SEUL — LA BATTERIE N'EST PLUS LE SEUL CHEMIN
 
 Depuis le 17 septembre 2026 au soir : après une batterie rouge, on corrige, puis

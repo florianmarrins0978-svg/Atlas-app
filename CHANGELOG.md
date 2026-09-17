@@ -8,6 +8,19 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-17
 
+### La gravité de `main` faisait repayer la batterie à ses voisines
+
+*« Ça continue »*, à 00 h 27 : une session repartait pour quarante-cinq minutes
+parce que `main` avait apporté trente commits dont du code d'argent. Erreur de
+catégorie — `evaluerLeLot` répond à « quel risque ce LOT introduit-il », et on
+la posait sur les fichiers de `main`, dont la gravité avait déjà été éprouvée
+par `main`.
+
+La rencontre se partage désormais : le lot garde sa gravité entière ; de `main`,
+seul le PLANCHER (migration, gabarit racine, accès à la base, configuration)
+refait partir la batterie — sa gravité, elle, force les suites du fond, là où
+vivent les règles d'argent et l'isolation. Voir `ARCHITECTURE.md` §382.
+
 ### Corriger un rouge coûtait cinquante minutes — plus maintenant
 
 Sa colère à 23 h : *« ça recommence et c'est ça à chaque fois ! »*. Une batterie
