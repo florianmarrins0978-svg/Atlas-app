@@ -135,6 +135,20 @@ export default function EcranChantiers({
   const restants = chantiers.filter((c) => !retraits.estRetire(c.id));
   const compte = restants.filter((c) => c.enCours).length;
 
+  // ── QUAND IL N'A AUCUN CHANTIER, LA PORTE DESCEND — 16 septembre 2026 ────
+  //
+  // **Sa décision du 10 septembre**, sur la planche qu'il a retenue
+  // (`appli/facturer-sans-devis.html`) : *« liste vide : les deux gestes
+  // descendent · liste pleine : ils remontent, et "créer un devis" retrouve
+  // exactement la place qu'il a aujourd'hui »*. Puis sa mesure du 16 septembre,
+  // capture à l'appui : *« lorsqu'il n'y a pas de chantier, le créer le devis
+  // doit se trouver au 2/3 haut du téléphone »*.
+  //
+  // Sur un écran vide, la porte était à 32 % de la hauteur : tout le bas de
+  // l'écran restait blanc, et le seul geste de cet écran vivait là où le pouce
+  // ne va pas.
+  const vide = restants.length === 0;
+
   // ── « En cours 4 », COLLÉ À LA LISTE — 6 septembre 2026 ──────────────────
   //
   // **Sa remarque, deux fois de suite :** *« mets En cours au-dessus du
@@ -382,6 +396,20 @@ export default function EcranChantiers({
             nouvel onglet, elle mène à l'écran entier. Le clic ordinaire est
             détourné pour jouer le geste puis faire monter la feuille — la route
             ne disparaît pas, elle change de porte. */}
+        {/* **Les deux ressorts qui posent la porte aux deux tiers.** Le bloc
+            ne change pas de place dans le marquage — il est poussé. Une place
+            écrite en dur (un `top: 66%`) l'aurait sorti du fil : les bandeaux
+            de ses clients seraient passés dessous, et un écran plus court
+            l'aurait fait chevaucher le compteur.
+
+            **Le rapport 5 contre 2 n'est pas un chiffre rond, il est MESURÉ**
+            (`scripts/test-accueil-vide-porte-e2e.ts`) : l'en-tête au-dessus et
+            « En cours 0 » en dessous ne tombent pas dans le calcul des deux
+            tiers, et c'est ce rapport-là qui pose le centre de l'anneau aux
+            deux tiers de SON téléphone. La suite mesure la place, jamais le
+            rapport — le jour où l'en-tête change de hauteur, c'est elle qui le
+            dira. */}
+        {vide && <div aria-hidden className="flex-[5]" />}
         <div className="flex flex-col items-center px-[26px] pb-0.5 pt-[22px]">
           <Link
             href="/chantiers/nouveau"
@@ -462,7 +490,7 @@ export default function EcranChantiers({
                plus dans les sept chartes. Jamais une valeur écrite en clair
                ici : elle serait juste sur « Origine » et fausse sur les deux
                chartes sombres. */}
-        {restants.length === 0 ? (
+        {vide ? (
           /* **AUCUNE PHRASE QUAND LA LISTE EST VIDE** — sa demande du 25 août
              2026 : *« supprime la phrase "aucun chantier pour l'instant" »*.
 
@@ -474,10 +502,18 @@ export default function EcranChantiers({
 
              Les bandeaux restent : ce sont les réponses de ses clients, et
              elles arrivent justement quand plus aucun chantier n'est en cours. */
-          <div className="atlas-fil-defile pt-4">
-            {bandeaux}
-            {rubriqueEnCours}
-          </div>
+          <>
+            {/* `flex: 0 1 auto` écrit ici plutôt que dans `globals.css` : le
+                fil garde son défilement et son fondu pour le jour où les
+                réponses de ses clients s'empilent, mais il cesse de réclamer
+                tout l'espace libre — sans quoi les deux ressorts n'en auraient
+                aucun à se partager. */}
+            <div className="atlas-fil-defile pt-4" style={{ flex: "0 1 auto" }}>
+              {bandeaux}
+              {rubriqueEnCours}
+            </div>
+            <div aria-hidden className="flex-[2]" />
+          </>
         ) : (
           <div className="atlas-fil-defile pb-3 pt-2.5">
             {/* **Les bandeaux défilent AVEC la liste, ils ne la repoussent

@@ -4,8 +4,20 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-09-14 (soir) · `claude/devis-main-doeuvre-cgv`, à fusionner sur `main` après la batterie
+**Point de reprise :** 2026-09-17 · `claude/devis-positioning-no-project-wofsfp` (l'accueil vide) — niveau 2, à rejouer au vert sur cet arbre avant `main` (son accord d'abord)
 (l'historique fait foi : `git log --oneline -20`)
+
+---
+## L'accueil vide : la porte du devis est aux DEUX TIERS, poussée par deux ressorts
+
+Depuis le 16 septembre 2026, quand aucun chantier n'est en cours, « Créer un
+devis » descend aux deux tiers de la hauteur du téléphone — sa mesure, après sa
+décision du 10 septembre (*« liste vide : les deux gestes descendent »*). Avec
+des chantiers, rien ne bouge. Ce n'est pas une place écrite en dur : deux
+ressorts (5 contre 2) poussent le bloc, et **c'est la PLACE qui se mesure**
+(`scripts/test-accueil-vide-porte-e2e.ts`), jamais le rapport. `ARCHITECTURE.md`
+§370 ; le second anneau « Créer une facture » de la même planche reste à faire
+(`TODO.md`, en tête).
 
 ---
 ## Les crochets des conditions générales ne se remplissent plus à la main

@@ -1,9 +1,19 @@
 # État du projet
 
-**Dernière mise à jour :** 2026-09-15 · `main`
+**Dernière mise à jour :** 2026-09-16 · `claude/devis-positioning-no-project-wofsfp`
 · dernière migration `drizzle/0093_equipes_par_jour.sql`
 
 ---
+
+## FAIT : L'ACCUEIL SANS CHANTIER — LA PORTE DU DEVIS AUX DEUX TIERS (16 septembre 2026)
+
+Sa mesure : *« lorsqu'il n'y a pas de chantier, le créer le devis doit se
+trouver au 2/3 haut du téléphone »*. Mesurée à 32 % avant, 66,5 % après ; avec
+des chantiers, elle ne bouge pas (26 %). Deux ressorts poussent le bloc, la
+place se mesure dans un navigateur
+(`scripts/test-accueil-vide-porte-e2e.ts`). `ARCHITECTURE.md` §370. **Reste** le
+second anneau « Créer une facture » de la même planche — il attend une migration
+(`TODO.md`, en tête).
 
 ## La décennale et le médiateur (16 septembre 2026)
 

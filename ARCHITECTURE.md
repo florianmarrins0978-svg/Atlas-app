@@ -30902,3 +30902,42 @@ l'histoire du lot (`git merge-base --is-ancestor`).
 **Ce que cela ne relâche pas** : le niveau exigé, l'empreinte de l'arbre, et la
 règle « un rouge connu qui redevient vert se rejoue deux fois ». Une référence
 absente ramène exactement à la règle d'avant : le verdict doit être vert.
+## §370 — L'accueil SANS CHANTIER : la porte du devis descend aux deux tiers
+
+**Sa décision du 10 septembre 2026**, sur la planche qu'il a retenue
+(`appli/facturer-sans-devis.html`) : *« liste vide : les deux gestes descendent
+· liste pleine : ils remontent, et "créer un devis" retrouve exactement la place
+qu'il a aujourd'hui »*. Puis sa mesure du 16 septembre, capture à l'appui :
+*« lorsqu'il n'y a pas de chantier, le créer le devis doit se trouver au 2/3
+haut du téléphone »*.
+
+Sur un écran vide, la porte était mesurée à **32 %** de la hauteur : le seul
+geste de cet écran vivait sous le titre, et les deux tiers bas restaient blancs
+— là où le pouce tombe.
+
+**Ce qui la pose, et pourquoi ce n'est pas une place écrite en dur.** Deux
+ressorts, de part et d'autre du bloc, dans le rapport **5 contre 2**
+(`EcranChantiers.tsx`). Le bloc ne bouge pas dans le marquage : il est POUSSÉ.
+
+| L'autre solution | Ce qu'elle coûtait |
+|---|---|
+| `position: absolute; top: 66 %` | la porte sort du fil : les réponses de ses clients passent dessous, et un écran plus court la fait chevaucher « En cours » |
+| une marge en pixels | juste sur un écran, fausse sur les deux autres — et refaite à chaque changement d'en-tête |
+
+**Le rapport 5:2 est MESURÉ, jamais déduit** : l'en-tête au-dessus et « En
+cours 0 » en dessous ne tombent pas dans le calcul des deux tiers, et c'est ce
+rapport-là qui pose le centre de l'anneau à **66,5 %** de son téléphone
+(390 × 664). `scripts/test-accueil-vide-porte-e2e.ts` mesure la PLACE, jamais le
+rapport : le jour où l'en-tête change de hauteur, c'est la place qui dérive, et
+c'est elle qu'il faut rattraper.
+
+**Et le fil ne réclame plus tout l'espace** quand il est vide (`flex: 0 1 auto`)
+— sans quoi les deux ressorts n'auraient rien à se partager. Il garde son
+défilement : trois réponses de clients empilées font remonter la porte à sa
+place d'avant et le fil se met à défiler, plutôt que de pousser quoi que ce soit
+hors de l'écran (mesuré).
+
+**Ce qui n'est PAS fait**, et qui vient de la même planche : le second anneau
+« Créer une facture », sous celui du devis et collé au bord gauche. Il attend la
+migration qui rend `factures.devis_id` facultatif. Quand il arrivera, le rapport
+des ressorts se **remesure** — deux anneaux au lieu d'un déplacent le centre.
