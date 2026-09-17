@@ -1422,7 +1422,9 @@ repli. `scripts/_arriver-a-froid.ts` vide le journal de l'onglet et recharge —
 c'est l'état d'un signet, sans ouvrir un contexte ni se reconnecter.
 
 **Ce qui reste des règles `?de=` :** elles servent de repli, et décident encore
-où l'on va après avoir ENREGISTRÉ un formulaire (`apresLesCoordonnees`). Leur
+où l'on va après avoir ENREGISTRÉ un formulaire (`apresLesCoordonnees` — retiré le
+17 septembre 2026, `ARCHITECTURE.md` §383 : « Je rédige à la main » mène au devis
+d'où qu'on vienne). Leur
 moitié « devine d'où il vient » est redondante avec le journal — sa retraite est
 dans `TODO.md`, délibérément pas faite dans ce lot.
 

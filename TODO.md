@@ -1854,7 +1854,7 @@ les règles de provenance répondent à **deux** questions au lieu d'une :
 | ce qu'elles font | son sort |
 |---|---|
 | dire où sortir quand il n'y a PAS de page d'avant | **à garder** : c'est le repli, et il sert pour de bon |
-| dire où l'on va après avoir ENREGISTRÉ un formulaire (`apresLesCoordonnees`) | **à garder** : ce n'est pas un retour |
+| dire où l'on va après avoir ENREGISTRÉ un formulaire (`apresLesCoordonnees`) | ~~à garder~~ **retiré le 17 septembre 2026** (`ARCHITECTURE.md` §383) : « Je rédige à la main » mène au devis, d'où qu'on vienne |
 | **deviner d'où l'on vient** pour la flèche | **à retirer** : le journal le sait, et deux réponses à la même question finissent par diverger (`CLAUDE.md` §3) |
 
 Ce qui tombe alors, nommément : `retourDepuisLePlanning` (deux écrans —

@@ -23,7 +23,6 @@ import type { ClientReconnu } from "@/server/repositories/clients";
 import { reprendreChantierAction } from "../[id]/coordonnees/actions";
 import { oublierCetEcran } from "@/components/atlas/journal-navigateur";
 import {
-  apresLesCoordonnees,
   libelleRetourDesCoordonnees,
   retourDesCoordonnees,
   type Provenance,
@@ -59,12 +58,16 @@ import { espacerNumero, numeroEnregistre } from "@/lib/numero-telephone";
  * Où l'on va en sortant de cet écran — et ce n'est plus un « choix » à faire
  * avant d'agir : depuis le 18 août 2026, chaque bouton porte sa destination.
  *
- * `fiche` mène à la fiche du chantier, là où l'on dicte. `devis` mène au devis
- * entier, à remplir soi-même. `facture` mène droit à la facture, sans devis —
- * sa demande du 10 septembre 2026. Toutes passent par la MÊME création : voir
- * `creerPuisAller`.
+ * `devis` mène au devis entier, à remplir soi-même. `facture` mène droit à la
+ * facture, sans devis — sa demande du 10 septembre 2026. Toutes passent par la
+ * MÊME création : voir `creerPuisAller`.
+ *
+ * **`fiche` n'existe plus — 17 septembre 2026.** Elle ne servait qu'au bouton
+ * « Enregistrer » d'une fiche rouverte, et il l'a refusé : *« normalement il y
+ * a la note vocale et en dessous il propose d'écrire le devis à la main »*.
+ * Une fiche rouverte va donc au devis, comme une fiche neuve.
  */
-type Destination = "fiche" | "devis" | "facture";
+type Destination = "devis" | "facture";
 
 /**
  * Un chantier DÉJÀ LÀ, que cet écran rouvre au lieu d'en créer un.
@@ -553,14 +556,14 @@ export default function FormulaireNouveauChantier({
         setEnCoursVers(null);
         return;
       }
-      // **Enregistré, on repart d'où l'on venait** — 31 août 2026. Entré
-      // depuis un devis sans client, il retrouve son devis, qui porte
-      // désormais la fiche qui lui manquait ; entré depuis l'accueil, la fiche
-      // du chantier, comme depuis le 17 août.
-      const destination =
-        vers === "devis"
-          ? `/chantiers/${reprise.id}/devis-complet`
-          : apresLesCoordonnees(reprise.id, reprise.provenance);
+      // **Enregistré, on va AU DEVIS — 17 septembre 2026**, comme une fiche
+      // neuve : c'est le bouton « Je rédige à la main » qui enregistre ce
+      // qu'il vient de taper, et il dit où il mène. Entré depuis un devis sans
+      // client, il retrouve donc son devis, qui porte désormais la fiche qui
+      // lui manquait ; entré depuis l'accueil, il ouvre le devis du chantier
+      // qu'il vient de rouvrir. (« Enregistrer », qui ramenait à la liste, a
+      // été retiré : voir `Destination`.)
+      const destination = `/chantiers/${reprise.id}/devis-complet`;
       // **REVENIR D'OÙ L'ON VIENT SE DÉCLARE — 9 septembre 2026.** Cet
       // enregistrement ne va pas « quelque part » : il RETOURNE à l'écran qui
       // l'a envoyé ici. Le journal de navigation ne peut pas le deviner — un
@@ -614,12 +617,8 @@ export default function FormulaireNouveauChantier({
         return;
       }
 
-      // **UN CHANTIER NEUF VA TOUJOURS AU DEVIS**, et le ternaire qui
-      // envoyait vers la fiche du chantier était déjà mort : depuis le
-      // 21 août 2026, la création ne porte plus qu'un bouton, et il vaut
-      // « devis » (`creerPuisAller("fiche")` ne s'appelle que sur un écran
-      // ROUVERT, qui repart plus haut). Le laisser aurait fait croire à un
-      // chemin vers un écran retiré le 4 septembre (`ARCHITECTURE.md` §254).
+      // **UN CHANTIER NEUF VA TOUJOURS AU DEVIS** : depuis le 21 août 2026,
+      // la création ne porte plus qu'un bouton, et il vaut « devis ».
       router.push(`/chantiers/${id}/devis-complet`);
     } catch {
       setErreur("Impossible de créer le chantier pour l'instant. Réessayez.");
@@ -1053,13 +1052,15 @@ export default function FormulaireNouveauChantier({
               « je sais déjà que je l'écrirai moi-même » ; là-bas, « j'ai
               commencé, finalement je l'écris ».
 
-              **En reprise, « Enregistrer » — et c'est la SEULE différence qui
-              reste.** Le 31 août 2026, tout le reste de l'écart a été supprimé à
-              sa demande : la reprise porte désormais les photos, l'anneau et la
-              chaîne du devis, comme la création. Ce bouton-ci subsiste parce
-              qu'il répond à un besoin que la création n'a pas — enregistrer ce
-              qu'il vient de TAPER, sur un chantier qui existe déjà. Sans lui,
-              une adresse corrigée au clavier ne partirait nulle part. */}
+              **En reprise, PLUS AUCUNE différence — 17 septembre 2026.** Le
+              31 août, tout l'écart avait été supprimé à sa demande sauf un
+              bouton « Enregistrer », gardé pour que ce qu'il TAPE sur un
+              chantier existant parte quelque part. Il l'a refusé devant
+              l'écran : *« normalement il y a la note vocale et en dessous il
+              propose d'écrire le devis à la main, et là y'a marqué
+              enregistrer »*. « Je rédige à la main » enregistre AUSSI ce qui
+              est tapé (`creerPuisAller`, chemin `reprise`) : rien n'est perdu,
+              et il n'y a plus qu'une fiche client. */}
           {/* **Le canal d'envoi vit SOUS l'adresse depuis le 21 août 2026** —
               sa place, choisie par lui : *« comment lui envoyer son devis, tu
               le mets sous l'adresse »*. Il n'apparaît toujours qu'une fois une
@@ -1355,14 +1356,6 @@ export default function FormulaireNouveauChantier({
               >
                 {enCoursVers === "facture" ? "Préparation…" : "Faire la facture"}
               </PrimaryButton>
-            ) : reprise ? (
-              <PrimaryButton
-                disabled={!peutCreer}
-                onClick={() => creerPuisAller("fiche")}
-                repere="action-creation"
-              >
-                {enCours ? "Enregistrement…" : "Enregistrer"}
-              </PrimaryButton>
             ) : (
               /* **UN SEUL bouton — sa demande du 21 août 2026** : *« garde un
                  seul bouton, garde je rédige mon devis »*.
@@ -1396,7 +1389,7 @@ export default function FormulaireNouveauChantier({
                   secondaire
                   part="66%"
                 >
-                  {enCoursVers === "devis" ? "Création…" : "Je rédige à la main"}
+                  {enCoursVers === "devis" ? (reprise ? "Enregistrement…" : "Création…") : "Je rédige à la main"}
                 </PrimaryButton>
               )
             )}

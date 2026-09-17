@@ -439,6 +439,21 @@ de son espace. Elle se remet d'aplomb en rallumant l'espace depuis
 github.com/codespaces ; si la migration refuse encore de passer, c'est
 désormais l'écran qui le dira, au lieu d'un « Réessayez ».
 
+### La fiche client rouverte propose de nouveau « Je rédige à la main »
+
+*« Normalement il y a la note vocale et en dessous il propose d'écrire le
+devis à la main, et là y'a marqué Enregistrer. Il faut remettre la proposition
+du devis à la main ! »* — son signalement du 17 septembre, l'écran sous les
+yeux, après « nouveau devis → retour → le client en attente sur l'accueil ».
+
+« Enregistrer » était le dernier écart entre créer et rouvrir une fiche (31
+août). Il part : la fiche rouverte porte le bouton de la fiche neuve, qui
+enregistre AUSSI ce qui est tapé, puis ouvre le devis — d'où qu'on vienne. La
+liste reste à une flèche. Ce que plus rien n'appelle est retiré
+(`apresLesCoordonnees`, la destination `fiche`). `ARCHITECTURE.md` §383 ;
+`test-coordonnees-depuis-accueil-e2e.ts` et `test-devis-sans-client-e2e.ts`
+refusent le retour d'« Enregistrer ».
+
 ### La publication des planches rougissait depuis la note vocale à plat
 
 Le flux `pages.yml` est tombé sur `test:boutons-verts` dès la poussée du
