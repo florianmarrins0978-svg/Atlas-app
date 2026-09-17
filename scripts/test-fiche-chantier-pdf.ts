@@ -88,8 +88,21 @@ const dire = (bon: boolean, quoi: string) => {
 // Les trois lignes de ce document n'ont aucune unité : elles s'impriment
 // désormais « u » (`unite-de-ligne.ts`). Rendu regardé — « u » sur les deux
 // lignes sans unité, « ml » gardé sur celle qui en a une.
-const EMPREINTE_FACTURE = "ffb15b461f9cbeadded3efb26f0b37e5f8d6af6044172168655fbad244eb25b8";
-const EMPREINTE_DEVIS = "9ec45be6610b699304039dafc8c3a519c0151833b15bdab28d807f96dc8759c9";
+//
+// **RELEVÉES DE NOUVEAU LE 17 SEPTEMBRE 2026**, après ses trois demandes sur le
+// papier : *« toute la ligne désignation jusqu'à total ttc, tu la mets en
+// gras »*, *« mets toutes les écritures en noir, rien en gris »*, *« en bas à
+// gauche, base ht et les deux autres en gras aussi »*. Ce qui change dans la
+// trace : la TEINTE des étiquettes de colonnes, des coordonnées et des
+// mentions légales — du gris à l'encre — et rien d'autre : ni abscisse, ni
+// texte, ni fonte (`ARCHITECTURE.md` §374).
+//
+// **CE QUI A AUTORISÉ CE RELEVÉ** : le PDF du devis rendu par pdf.js dans la
+// visionneuse de l'application, en grand, et REGARDÉ — en-tête de tableau noir
+// et gras d'un bout à l'autre, « BASE HT · TAUX · TVA » de même, coordonnées et
+// mentions légales à l'encre, filets du tableau inchangés.
+const EMPREINTE_FACTURE = "930faf494840c0075cb50da535e3b03e60813fe1409b9947fce0b0541eba9ae6";
+const EMPREINTE_DEVIS = "d88db55813f3d31b5d5b97bf55d1b5bc5ff1ba23200391a8f4b5c57a28fca5b6";
 
 const DOCUMENT: FacturePdfData = {
   numeroCommercial: "F-2026-0004",
