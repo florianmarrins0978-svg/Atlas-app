@@ -6,6 +6,20 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-09-17
+
+### `main` a avancé sous un lot éprouvé : `verifier-apres-fusion` rejoue la rencontre, pas la batterie
+
+**Sa règle :** *« Rejoue juste ce qui a bougé ! »* — devant une troisième
+batterie pour un lot dont la deuxième venait de rendre un verdict sans rouge
+nouveau, `main` l'ayant dépassé de neuf commits pendant la mesure. Le
+complément (`scripts/verifier-apres-fusion.ts`, règles pures dans
+`_apres-fusion.mjs`) vérifie que le lot n'a pas changé d'une ligne, que son
+verdict ne portait aucun rouge nouveau, puis rejoue suites base, écrans du lot,
+écrans touchés par `main` et suites apportées par `main` ; il dépose le
+verdict au niveau d'avant, sur l'arbre courant. Tout le reste reste une
+batterie. Suite : `test-apres-fusion`.
+
 ## 2026-09-16
 
 ### « En cours 19 » reste à l'écran quand il descend dans ses chantiers

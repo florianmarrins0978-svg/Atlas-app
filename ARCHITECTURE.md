@@ -30902,3 +30902,33 @@ l'histoire du lot (`git merge-base --is-ancestor`).
 **Ce que cela ne relâche pas** : le niveau exigé, l'empreinte de l'arbre, et la
 règle « un rouge connu qui redevient vert se rejoue deux fois ». Une référence
 absente ramène exactement à la règle d'avant : le verdict doit être vert.
+
+## §370 — `main` a avancé sous un lot éprouvé : on rejoue la rencontre, pas la batterie
+
+**Le 17 septembre 2026, le lot du micro à plat avait sa batterie** — 379/391 en
+base, 151/156 au navigateur, aucun rouge nouveau, proxy vert — et `main`
+l'avait dépassé de neuf commits pendant qu'elle mesurait, dont deux sur ses
+propres fichiers (`globals.css`, `AnneauNoteVocale.tsx`). La règle du §6
+(« touche un fichier que ce lot modifie → batterie complète ») demandait
+cinquante minutes de plus, et la batterie suivante aurait pu être dépassée de
+la même façon. Sa réponse : *« Ne rejoue pas toute la batterie ! Rejoue juste
+ce qui a bougé ! »*, puis, devant les deux issues, le choix de changer la
+règle plutôt que d'attendre une heure creuse.
+
+### Pourquoi c'est sûr, et à quelles conditions seulement
+
+| condition | ce qu'elle garantit |
+|---|---|
+| le lot est **identique à la ligne près** (`lotInchange`, diff contre sa base, index git ignoré) | ce que la batterie a mesuré est bien ce qu'on pousse ; un contexte qui bouge suffit à refuser |
+| le verdict d'avant **ne portait aucun rouge nouveau** (`rougesToleres`) | on ne complète pas un rouge, on ne le fait pas passer par la fenêtre |
+| on rejoue **la rencontre** : suites base, écrans du lot, écrans que `main` a touchés, suites que `main` a apportées (`suitesDuComplement`) | ce que `main` a apporté a déjà passé son garde-fou ; ce qui n'a jamais été mesuré, c'est les deux ensemble |
+| le verdict déposé garde le **niveau d'avant** et refuse si le lot en exige plus aujourd'hui | le garde-fou ne voit pas la différence avec une batterie, et n'a pas à la voir |
+
+Les rouges du verdict complété : ceux d'avant moins les suites rejouées (leur
+sort vient d'être remesuré), plus ceux mesurés maintenant
+(`rougesApresComplement`). Une suite non rejouée garde son rouge — « on ne
+sait pas » n'est jamais « vert ».
+
+**Ce qui reste une batterie** : un lot qui a changé, un verdict sans commit
+(d'avant le 16 septembre), un verdict qui portait un rouge nouveau, un lot
+dont le niveau exigé a monté. Le complément REFUSE alors, et dit quoi jouer.
