@@ -124,36 +124,81 @@ rencontre rejouée est verte : suites base, écrans du lot, écrans touchés par
 verdict d'avant ; le garde-fou le relit comme n'importe quel autre. Un lot qui
 a changé, un verdict d'avant ce mécanisme, un rouge nouveau : batterie.
 
-## Un rouge déjà rouge sur `main` ne ferme pas la porte — un rouge NOUVEAU, si
+## Un rouge venu d'AILLEURS ne ferme pas la porte — une régression NOUVELLE, si
 
-**Sa règle du 16 septembre 2026 :** *« état de référence connu + nouveau lot →
-aucun nouveau rouge autorisé. Un test qui était vert avant et devient rouge
-doit bloquer. Un nouveau test rouge doit bloquer. Un rouge préexistant
-identique ne doit pas empêcher éternellement toutes les futures fusions. »*
+**Sa règle du 17 septembre 2026**, après une journée entière perdue : *« Je ne
+veux plus qu'un lot soit bloqué par un rouge provenant d'une autre session, ni
+qu'une batterie complète soit relancée sur main uniquement pour établir un état
+de référence. Le garde doit répondre à une seule question : ce lot
+introduit-il une NOUVELLE régression ? »*
 
-Sur son PC, seize suites d'outillage rougissent depuis toujours (`bash`,
-`ps -o`, `gh`, `npx.cmd`). Le garde-fou ne voyait qu'un verdict ROUGE et
-refusait tout lot d'argent, pour toujours — et il a refusé une liste
-d'exceptions pour ces seize : **une liste qui abaisse le niveau vieillit**.
+**Ce qui a été supprimé, et pourquoi c'était contre-productif.** La version du
+16 septembre comparait le verdict d'un lot à un **état global de `main`**,
+relevé par une batterie entière jouée sur un arbre propre. Tant que cette mesure
+n'existait pas sur la machine, le moindre rouge fermait la porte — même dans une
+zone du produit que le lot ne touche pas —, et le seul remède coûtait trente à
+cinquante minutes, à repayer à chaque `main` qui avance. Les sessions se
+bloquaient entre elles.
 
-Ce qui la remplace est une MESURE :
+**Ce qui le remplace : la comparaison CIBLÉE des seuls rouges.**
 
 | | |
 |---|---|
-| la batterie **nomme** ses suites rouges dans son verdict | `rouges`, lues dans ce que les moteurs écrivent (`_bilan-suites.mjs`) |
-| jouée sur un arbre propre **qui est `origin/main`**, elle enregistre l'**état de référence** | dans le `.git` commun, propre à la machine (`_reference-batterie.mjs`) |
-| le garde-fou compare | `rougesToleres` : chaque rouge du lot doit déjà être rouge dans la référence, **et la référence doit être dans l'histoire du lot** |
+| le niveau | se calcule sur le diff du lot, et sur lui seul — un rouge d'ailleurs ne le fait JAMAIS monter |
+| les contrôles | ceux de son niveau, rien de plus |
+| tout vert | la fusion est ouverte |
+| un ou plusieurs rouges | **chaque suite rouge**, elle seule, est rejouée sur une copie propre du commit de `main` d'où le lot part (`npx tsx scripts/verifier-rouge-prealable.ts`) |
 
-**Ce qui ferme toujours la porte** : une suite verte sur `main` devenue rouge,
-une suite nouvelle et rouge, une étape hors suites tombée (types, lint,
-construction, connexion), un bilan dont le compte ne tombe pas juste, un verdict
-sans la liste de ses suites, une référence absente. Et ce qui est toléré se
-**dit** à la poussée — un rouge qui passe en silence redeviendrait invisible.
+Trois réponses, et trois seulement :
 
-Premier tour d'une machine, ou `main` d'avant le 16 septembre : la référence
-s'amorce depuis le journal d'une batterie jouée sur `main` propre, avec le même
-lecteur — `npx tsx scripts/reference-depuis-journal.ts <journal> --commit <sha>`.
-Ensuite, toute batterie jouée sur `main` propre la remet à jour d'elle-même.
+| sur la base de `main` | ce que ça vaut |
+|---|---|
+| rouge de la même façon | **préexistant** — il ne bloque pas ce lot |
+| vert | **régression nouvelle** — la fusion est refusée |
+| indéterminé, ou pas mesuré | **bloqué, sur ce cas-là seulement** — ne pas savoir n'est jamais « c'était déjà rouge » |
+
+**Le commit git suffit** : plus aucun état global, plus aucune batterie sur
+`main`. La copie propre est un `git worktree` posé dans le `.git` commun, ses
+dépendances liées fichier à fichier, et **elle prend son propre atelier** — sans
+quoi les deux dossiers mesureraient la même base et se videraient l'un l'autre.
+
+**Ce qui ferme toujours la porte** : une étape hors suites (types, lint,
+construction, connexion) — celles-là n'ont pas de rouge connu ; un bilan dont le
+compte ne tombe pas juste ; un verdict sans la liste de ses suites ; une réponse
+mesurée sur une AUTRE base de `main`, qui ne dit rien de celle-ci.
+
+**La batterie entière reste réservée aux lots de niveau 3 pour LEUR propre
+risque** — jamais parce que `main` porte un rouge par ailleurs.
+
+Les cinq cas qu'il a demandés sont éprouvés dans `scripts/test-garde-fusion-main.ts`
+(A à E), et la décision elle-même vit dans `scripts/_rouge-prealable.mjs`, sans
+git ni navigateur.
+
+## `main` qui avance ne refait pas la batterie : on mesure la RENCONTRE
+
+**Sa règle du 17 septembre 2026 :** *« Chaque lot doit prouver SON propre
+travail. Le fait que main change parce qu'une autre session a fusionné ne doit
+jamais, à lui seul, provoquer une nouvelle batterie complète. »*
+
+| ce qui arrive | ce qu'on joue |
+|---|---|
+| le lot a passé les contrôles de son niveau | ils **restent valables** tant que le lot ne change pas |
+| `main` avance, sans rapport avec le lot | **rien** — `npx tsx scripts/verifier-apres-fusion.ts` le constate et repose le verdict |
+| `main` touche une dépendance que le lot emploie, ou un appelant du lot | **seulement** les suites de ces fichiers-là |
+| un conflit git | on le résout, et l'on rejoue ce que la résolution touche — c'est la même rencontre |
+| le lot lui-même a changé | son niveau décide à nouveau, depuis zéro |
+
+**La rencontre se MESURE** (`_apres-fusion.mjs`, `rencontreReelle`) : le graphe
+d'imports dit, dans les deux sens, ce que le lot emploie et ce qui l'emploie.
+Ce qui n'est dans aucun des deux ne se rejoue pas. Ce que le graphe ne sait pas
+lire — une migration, un réglage de construction, un fichier d'outillage — entre
+toujours dans la rencontre : c'est le côté sûr.
+
+**La batterie entière reste réservée** à un lot de niveau 3 pour SON propre
+risque, ou à une rencontre qui atteint elle-même le niveau 3 — une migration
+arrivée de `main` sous un lot qui touche la base. Jamais parce que `main` a
+bougé, qu'une autre session a fusionné, qu'elle avait un rouge, ou que deux lots
+travaillent dans le même grand domaine.
 
 ## Une régression découverte donne TOUJOURS un test
 

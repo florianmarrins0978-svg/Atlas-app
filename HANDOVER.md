@@ -15,7 +15,7 @@ Depuis le 17 septembre 2026, les trois gestes de règlement de `/termines/tva`
 ne laissent plus une exception sortir de l'action : elle est journalisée avec
 son code `SQLSTATE` et revient **en valeur**, avec la phrase de
 `src/lib/panne-de-base.ts` — qui nomme la base et donne le geste sûr, rallumer
-l'espace (`ARCHITECTURE.md` §373).
+l'espace (`ARCHITECTURE.md` §377).
 
 **Ce qui l'a provoqué :** sa capture du 17 septembre à 15 h 57, « Ce règlement
 n'a pas pu être enregistré. Réessayez. » sur 495,00 € parfaitement dus. Le
@@ -42,6 +42,23 @@ l'écran qu'il a), jamais le rapport.
 et c'est LUI qui a vu la capture — *« il est trop bas là ! »*. Une fraction se
 lit dans les deux sens, un écran non. `ARCHITECTURE.md` §372 ; le second anneau
 « Créer une facture » de la même planche reste à faire (`TODO.md`, en tête).
+
+---
+
+## Une proposition de date est une date de DÉPART, et le chantier colle les jours
+
+Sa question du 17 septembre 2026 : *« un chantier de deux jours, je veux lui
+proposer le 18 et venir finir le 22 — comment je fais ? »* Aujourd'hui,
+impossible avant l'acceptation : les deux dates du calendrier d'envoi sont deux
+**choix** (boutons radio chez le client), et la date retenue devient un bloc
+d'un seul tenant (`creneauxDuChantier`, `envois-devis.ts`). Le morcellement
+n'existe qu'**après**, au planning — et le client n'en sait rien.
+
+**Rien n'est codé** : la planche `appli/deux-jours-pas-colles.html` (119)
+attend sa réponse. Refaite le soir même — *« je comprends rien, l'idée c'est
+que ce soit simple et joli »* — sur une seule idée : **un appui, un jour du
+chantier**, le jour d'à côté posé tout seul quand il n'en touche qu'un.
+`TODO.md`, en tête.
 
 ---
 
@@ -1006,7 +1023,32 @@ un écran qui a l'air en retard sur sa maquette. Toute clé neuve s'ajoute donc 
 `completer-env-local.sh`, pas seulement à `src/server/env.ts`.
 
 ---
+## Lot du 17 septembre 2026 — « DÉPLACER » DÉPLACE POUR DE BON
+
+| | |
+|---|---|
+| sa demande | *« lorsque je clique sur déplacer ça me fait apparaître le planning et je sélectionne un jour et le matin ou l'aprem ou journée pour réellement déplacer mon client — là c'est trop de clics »* |
+| sa planche | `appli/deplacer-sur-le-calendrier.html`, la **2** (calendrier du haut) et la **A** (seul le jour choisi bouge) |
+| le compte | sept appuis avant, **trois** depuis |
+| la règle | `ceQueLeJourPorte`, `momentsOfferts`, `deplacerCeQueLeJourPorte` (`src/lib/creneaux-chantier.ts`) — sans base, sans écran |
+| une seule écriture | `deplacerCeQueLeJourPorteEnBase` : l'ancien chemin en faisait deux, et entre les deux la demi-journée n'était nulle part |
+| où vit le geste | **sous le calendrier** (`data-atlas="deplacement-en-cours"`), jamais dans la fiche : elle disparaît au premier mois tourné |
+| retiré avec | `BasculeDemi`, `liberer`, `libererDemiJourneeAction`, `libererDemiJournee`, `sansLaDemi` |
+| les suites | `test-creneaux-chantier.ts` (8 cas neufs), `test-deplacer-sur-le-calendrier-e2e.ts` |
+| le détail | `ARCHITECTURE.md` §373 |
+
+**LE PIÈGE À NE PAS REFABRIQUER.** Ce qui part commande ce qui peut arriver :
+une demi-journée ne devient pas une journée, une journée ne tient pas sur une
+demi-journée, et arriver sur une demi-journée déjà sienne rétrécit le chantier
+**sans que rien ne le dise**. Les trois sont refusés, dans `lib` — pas dans
+l'écran, qui peut changer.
+
+---
 ## Lot précédent — UNE DEMI-JOURNÉE SE LIBÈRE ET SE REPOSE (10 septembre 2026)
+
+**Remplacé le 17 septembre 2026** par le lot ci-dessus : « Déplacer » ne libère
+plus, il déplace. Ce qui suit reste vrai de `creneaux_chantier` et de la règle
+du repli ; l'interrupteur matin / après-midi, lui, n'existe plus.
 
 
 | | |
@@ -1016,7 +1058,7 @@ un écran qui a l'air en retard sur sa maquette. Toute clé neuve s'ajoute donc 
 | la table | `creneaux_chantier` (migration 0085) — une ligne par demi-journée occupée |
 | la règle | `duree_demi_journees` = ce qu'il **demande** · les créneaux = où il est **posé** · l'écart = ce qui **attend** en bas |
 | retiré | `deplacerChantierAction` — plus personne ne l'appelait |
-| les suites | `test-creneaux-chantier.ts` (12 cas), `test-liberer-une-demi-journee-e2e.ts` (8, **son geste de bout en bout**) |
+| les suites | `test-creneaux-chantier.ts` (12 cas), `test-deplacer-sur-le-calendrier-e2e.ts` (8, **son geste de bout en bout**) |
 | le détail | `ARCHITECTURE.md` §322 |
 
 **LES DEUX PIÈGES À NE PAS REFABRIQUER.**

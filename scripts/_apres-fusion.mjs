@@ -1,28 +1,39 @@
 /**
  * UN LOT DÉJÀ ÉPROUVÉ, REPOSÉ SUR UN `main` QUI A AVANCÉ — ce qu'on rejoue.
  *
- * **Sa règle du 17 septembre 2026 :** *« Rejoue juste ce qui a bougé ! »* —
- * devant une troisième batterie de cinquante minutes pour un lot dont la
- * deuxième venait de rendre un verdict sans rouge nouveau, et que `main` avait
- * seulement dépassé de neuf commits pendant qu'elle mesurait.
+ * **Sa règle du 17 septembre 2026 :** *« Chaque lot doit prouver SON propre
+ * travail. Le fait que main change parce qu'une autre session a fusionné ne
+ * doit jamais, à lui seul, provoquer une nouvelle batterie complète. […] Si
+ * les changements arrivés de main sont sans rapport avec le lot : aucun
+ * nouveau test lourd. S'ils touchent réellement une dépendance utilisée par le
+ * lot : rejoue uniquement les tests ciblés concernés. »*
  *
  * Ce qui rend la règle SÛRE, et pourquoi chaque condition est là :
  *
  *   1. **le lot n'a pas changé d'une ligne** — son diff contre sa base est
- *      identique à celui que la batterie a mesuré. Sinon ce n'est plus le
- *      même lot, et rien de ce qui a été mesuré ne vaut ;
+ *      identique à celui que le contrôle a mesuré. Sinon ce n'est plus le même
+ *      lot, et rien de ce qui a été mesuré ne vaut ;
  *   2. **ce que `main` a apporté a déjà passé SON garde-fou** — chaque commit
- *      arrivé sur `main` y est entré par une batterie ou un niveau 2 ; ce qui
- *      n'a jamais été mesuré, c'est la RENCONTRE des deux ;
- *   3. **la rencontre se rejoue là où elle a lieu** : les suites base (elles
- *      sont rapides et voient une règle qui bouge), les suites navigateur des
- *      écrans du lot et des écrans que `main` a touchés, et les suites que
- *      `main` a ajoutées ou modifiées — celles-là n'existaient pas quand le
- *      lot a été mesuré.
+ *      arrivé sur `main` y est entré par son propre contrôle ; ce qui n'a
+ *      jamais été mesuré, c'est la RENCONTRE des deux ;
+ *   3. **la rencontre se MESURE, elle ne se suppose pas** (`rencontreReelle`).
+ *      Elle n'a lieu que là où ce que `main` a touché croise ce que le lot
+ *      touche, emploie, ou ce qui l'emploie — le graphe d'imports le dit, dans
+ *      les deux sens. Vide : rien à rejouer, le verdict vaut tel quel. Non
+ *      vide : les suites de CES fichiers-là, et elles seules.
+ *
+ * **CE QUI A ÉTÉ RETIRÉ, parce que c'était la cascade qu'il refuse.** La
+ * première version rejouait, à chaque avancée de `main` : toutes les suites du
+ * dépôt, les écrans du lot, les écrans touchés par `main`, et les suites
+ * apportées par `main` — sans jamais demander si les deux se rencontraient.
+ * Deux sessions dans le même grand domaine se relançaient l'une l'autre
+ * indéfiniment.
  *
  * **Ce qui reste une batterie entière** : un lot qui a changé, un verdict
- * d'avant ce mécanisme (sans commit), un verdict qui portait un rouge nouveau.
- * Le complément ne SAIT rejouer que ce qui se nomme.
+ * d'avant ce mécanisme (sans commit), un verdict qui portait un rouge nouveau,
+ * et une rencontre qui atteint elle-même le niveau 3 — une migration arrivée
+ * de `main` sous un lot qui touche la base, par exemple. Le complément ne SAIT
+ * rejouer que ce qui se nomme.
  */
 
 /** Le diff d'un lot, débarrassé de ce qui change sans que le lot change. */
@@ -46,17 +57,48 @@ export function lotInchange(diffAvant, diffApres) {
 }
 
 /**
- * Les suites navigateur à rejouer : celles des écrans du lot, celles des
- * écrans que `main` a touchés, et les suites que `main` a apportées.
+ * LA RENCONTRE RÉELLE entre ce que `main` a apporté et ce que le lot occupe.
  *
- * @param {{ suitesDuLot: string[], suitesDuDelta: string[], fichiersDuDelta: string[] }} p
+ * **Ce n'est pas « main a bougé »**, c'est « main a bougé LÀ OÙ le lot vit ».
+ * Le graphe d'imports le dit dans les deux sens : ce que le lot emploie — une
+ * règle qui change sous lui — et ce qui l'emploie — un appelant dont la
+ * signature ne correspond plus.
+ *
+ * **Ce qui n'est dans aucun des deux sens ne se rejoue pas.** Une fiche client
+ * et un plan d'arrosage ne se rencontrent nulle part : les faire s'attendre,
+ * c'est la cascade de batteries qu'il a fait supprimer.
+ *
+ * **Hors de `src/`, on ne conclut pas à la légère** : une migration, un
+ * réglage de construction, un fichier d'outillage n'ont pas d'arête dans le
+ * graphe. Ils entrent donc dans la rencontre dès qu'ils arrivent — c'est le
+ * côté sûr, et c'est exactement ce que le PLANCHER dit déjà du niveau.
+ *
+ * @param {{ fichiersDuLot: string[], fichiersDuDelta: string[], graphe: { entourage: (f: string[]) => Set<string> } }} p
+ * @returns {{ fichiers: string[], sansRapport: boolean }}
  */
-export function suitesDuComplement({ suitesDuLot, suitesDuDelta, fichiersDuDelta }) {
-  const apportees = fichiersDuDelta
+export function rencontreReelle({ fichiersDuLot, fichiersDuDelta, graphe }) {
+  const entourage = graphe.entourage(fichiersDuLot);
+  const fichiers = fichiersDuDelta.filter((f) => {
+    const chemin = f.replace(/\\/g, "/");
+    // Ce que le graphe ne sait pas lire ne se déclare jamais « sans rapport ».
+    if (!/^src\/.*\.(ts|tsx)$/.test(chemin)) return !chemin.startsWith("docs/") && !chemin.startsWith("appli/") && !chemin.endsWith(".md");
+    return entourage.has(chemin);
+  });
+  return { fichiers: [...new Set(fichiers)].sort(), sansRapport: fichiers.length === 0 };
+}
+
+/**
+ * Les suites navigateur à rejouer : celles des écrans que la RENCONTRE touche,
+ * et les suites que `main` a apportées si elles y tombent.
+ *
+ * @param {{ suitesDeLaRencontre: string[], fichiersDeLaRencontre: string[] }} p
+ */
+export function suitesDuComplement({ suitesDeLaRencontre, fichiersDeLaRencontre }) {
+  const apportees = fichiersDeLaRencontre
     .map((f) => f.replace(/\\/g, "/"))
     .filter((f) => /^scripts\/test-.*-e2e\.ts$/.test(f))
     .map((f) => f.slice("scripts/".length));
-  return [...new Set([...suitesDuLot, ...suitesDuDelta, ...apportees])].sort();
+  return [...new Set([...suitesDeLaRencontre, ...apportees])].sort();
 }
 
 /**

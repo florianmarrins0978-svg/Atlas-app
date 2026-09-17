@@ -9,11 +9,83 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## ⏳ `test-accueil-vide-porte-e2e` dépend de l'état que la base a gardé
+
+**Mesuré le 17 septembre 2026, des deux côtés.** Jouée seule, elle passe ; jouée
+en fin de batterie, elle rougit sur son PREMIER cas — *« ce compte porte des
+chantiers », `'4' !== '0'`* — alors qu'elle vient de créer un compte neuf. Le
+même écart se reproduit **sur `main` sans aucun lot** : ce n'est pas un diff,
+c'est un montage qui suppose une base vierge.
+
+Ce qu'elle doit faire à la place : ne rien supposer de ce que les suites d'avant
+ont laissé (`CLAUDE.md` §5 bis). Tant que ce n'est pas fait, elle rougit dans
+chaque batterie et le garde-fou doit la départager à chaque fusion.
+
+**Et son second cas est un vrai désaccord** : la porte du devis se pose à 26 %
+de la hauteur, il la veut à 33 %. Le réglage des deux ressorts ne la déplace
+pas — essayé, mesuré, rendu. La racine est ailleurs.
+
+
+## ⏳ UNE PLANCHE À REGARDER — DEUX JOURS QUI NE SE TOUCHENT PAS (17 septembre 2026)
+
+**Sa question, capture à l'appui :** *« là j'ai un chantier de deux jours mais
+si je fais une proposition de date à mon client ça va automatiquement mettre
+les deux jours consécutifs, or si là je veux lui proposer le premier jour le 18
+et on vient finir le chantier le 22 vu qu'il est sur 2 jours comment je
+fais ??? »*
+
+**RIEN N'EST CODÉ** — la planche `appli/deux-jours-pas-colles.html` (119)
+attend sa réponse.
+
+**Refaite le soir même, après sa réponse à la première version** : *« je
+comprends rien, l'idée c'est que ce soit simple et joli »*, puis sa règle en
+clair — *« quand je propose une date à un client et que le chantier dure deux
+jours, je dois pouvoir lui proposer le 18 et le 22 en lui disant : on viendra
+un jour le 18 et le deuxième le 22 »*. Les trois états, l'interrupteur et les
+trois notes sont partis. Ce qu'elle montre maintenant, et rien d'autre :
+**un appui = un jour du chantier**. Il touche le 18 et le 22 ; sa cliente lit
+« nous venons le 18 et le 22 ». S'il ne touche que le 18, le jour d'à côté se
+pose tout seul, en creux, et bouge dès qu'il touche ailleurs — le geste de
+tous les jours ne change pas. Sur un chantier d'une journée : une date, ou
+deux au choix, comme aujourd'hui (« changer » sur la durée le montre).
+
+**Ce que le code fait aujourd'hui**, et il faut le savoir avant d'ouvrir le lot :
+
+| | |
+|---|---|
+| les deux dates du calendrier | deux **choix**, pas un début et une fin — boutons radio chez le client (`src/app/devis/[jeton]/formulaire.tsx`) |
+| la date retenue | un **bloc d'un seul tenant** : `creneauxDuChantier` étale la durée sur des demi-journées qui se suivent (`src/server/repositories/envois-devis.ts`) |
+| ce que l'écran en dit | **rien** à deux jours : `aideDuree` ne parle qu'au-delà de trois jours (`EnvoiAuClient.tsx`) |
+| le morcellement | il existe, mais **après** l'acceptation, au planning — et le client n'en sait rien |
+
+**Ce que la première version craignait, et ce que la seconde en fait.** Elle
+refusait qu'un appui veuille dire « un choix » sur un chantier d'un jour et
+« un jour du chantier » sur un chantier de deux, et proposait un interrupteur.
+Il n'a pas compris l'interrupteur, et sa règle tranche : sur plusieurs jours,
+les jours qu'il touche SONT les jours du chantier. Le sens de l'appui s'écrit
+alors sur l'écran — « Posez les 2 jours du chantier » / « Proposez une ou deux
+dates », et « 1er jour · 2e jour » / « proposée » sur chaque ligne —, et la
+carte « ce que Linotte lit » le montre. **Ce qu'il perd, et qu'il faut lui
+dire s'il tranche :** proposer deux dates AU CHOIX sur un chantier de
+plusieurs jours. « Une autre date » reste offert à la cliente.
+
+**Ce que sa règle interdit toujours :** montrer une demi-journée au client
+(`scripts/test-creneaux-planning.ts`). Les deux issues ne montrent que des
+JOURS — elle n'est pas touchée.
+
+**Ce que le lot coûtera, le jour où il tranche :** `envois_devis` ne porte
+qu'une liste de dates proposées et une `date_retenue`. Il faut y ranger, en
+plus, **quels jours** le chantier prend quand ils ne se suivent pas — donc une
+migration, et une acceptation qui écrit les créneaux tels quels au lieu de les
+étaler. Expand/contract (`.claude/rules/deployment-safety.md`).
+
+---
+
 ## LES AUTRES ÉCRANS D'ARGENT N'ONT PAS ENCORE L'ENVELOPPE DE LA PANNE DE BASE
 
 **Fait le 17 septembre 2026 :** les trois gestes de règlement de `/termines/tva`
 rendent la panne de base en valeur, journalisée, avec le geste sûr
-(`ARCHITECTURE.md` §373).
+(`ARCHITECTURE.md` §377).
 
 **Ce qui reste, et ce n'est pas urgent :** les autres actions qui écrivent de
 l'argent laissent encore l'exception sortir — émission d'une facture, envoi d'un
@@ -1523,8 +1595,12 @@ vendu (`ARCHITECTURE.md` §322).
 
 **Ce qui reste ouvert, et qui est un vrai manque :** un chantier ne se pose
 toujours pas en deux morceaux **d'un seul geste**. Il faut le poser entier, puis
-rendre ce qui ne va pas. Suffisant pour ce qu'il décrivait ; à rouvrir s'il le
-signale.
+rendre ce qui ne va pas.
+
+**ROUVERT LE 17 SEPTEMBRE 2026 — il l'a signalé**, et par un chemin que cette
+note n'avait pas vu : ce n'est pas au planning que ça manque, c'est **avant**,
+quand il propose ses dates. Son client accepte « le 18 » et découvre le 22.
+Voir la planche 119 en tête de ce fichier.
 
 ## ⏳ RETIRER LA MOITIÉ DEVENUE REDONDANTE DES RÈGLES `?de=` (9 septembre 2026)
 

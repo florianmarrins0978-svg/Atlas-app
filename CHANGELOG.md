@@ -8,6 +8,144 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-17
 
+### La comparaison d'un rouge se fait DES DEUX CÔTÉS, dans le même état
+
+Le mécanisme de la veille rejouait la suite rouge sur `main` seul : verte
+là-bas, rouge ici, il concluait à la régression. Mais la copie de `main` venait
+d'amorcer sa base, quand le lot mesurait après cent cinquante suites — deux
+conditions différentes, donc une comparaison muette sur le diff. Rejouée sur
+`main` dans l'état laissé par la batterie, la suite tombait à l'identique.
+
+Elle est donc rejouée **sur la copie de `main`, puis sur le lot, dos à dos**.
+Même sort des deux côtés : ce lot n'en est pas la cause — le diff est la seule
+différence entre les deux arbres. Verte sur `main` et rouge ici : la régression.
+Rouge sur `main` et verte ici : le lot la répare. L'un des deux illisible : on ne
+conclut pas. `ARCHITECTURE.md` §376.
+
+### `main` qui avance ne refait plus la batterie : on mesure la rencontre, pas la coïncidence
+
+**Sa règle :** *« Chaque lot doit prouver SON propre travail. Le fait que main
+change parce qu'une autre session a fusionné ne doit jamais, à lui seul,
+provoquer une nouvelle batterie complète. »*
+
+Le complément rejouait jusque-là toutes les suites du dépôt et tous les écrans
+touchés de part et d'autre, sans demander si les deux se croisaient : deux
+sessions dans le même domaine se relançaient l'une l'autre sans fin. Le graphe
+d'imports sait maintenant dire les **deux sens** — ce que le lot emploie, et ce
+qui l'emploie —, et la rencontre est l'intersection avec ce que `main` a
+apporté. Vide : rien n'est rejoué, le verdict du lot est reposé sur l'arbre
+courant. Non vide : les suites de ces fichiers-là, et elles seules.
+
+Ce que le graphe ne lit pas — migration, outillage, réglage de construction —
+entre toujours dans la rencontre, côté sûr. La batterie entière reste réservée à
+un lot de niveau 3 pour son propre risque, ou à une rencontre qui l'atteint.
+Son exemple est éprouvé tel quel. `ARCHITECTURE.md` §375.
+
+### Un rouge venu d'ailleurs ne bloque plus un lot : on rejoue les seuls rouges sur la base de `main`
+
+**Sa règle**, après une journée perdue sur un lot prêt depuis le matin : *« Je
+ne veux plus qu'un lot soit bloqué par un rouge provenant d'une autre session,
+ni qu'une batterie complète soit relancée sur main uniquement pour établir un
+état de référence. Le garde doit répondre à une seule question : ce lot
+introduit-il une NOUVELLE régression ? »*
+
+L'état global de `main` est **supprimé** — il coûtait une batterie entière, à
+repayer à chaque `main` qui avance. À la place : quand un contrôle est rouge,
+**cette suite-là seule** est rejouée sur une copie propre du commit de `main`
+d'où le lot part. Déjà rouge là-bas : elle ne vient pas de ce lot. Verte
+là-bas : c'est la régression, et la porte reste fermée. Indéterminée : bloquée
+sur ce cas précis, jamais absoute.
+
+Le commit git suffit. Le niveau se calcule toujours sur le seul diff du lot —
+un rouge d'ailleurs ne le fait pas monter —, et la batterie entière reste
+réservée aux lots de niveau 3 pour leur propre risque. Ses cinq cas (A à E) sont
+éprouvés dans `test-garde-fusion-main`. `ARCHITECTURE.md` §374.
+
+### « Déplacer » déplace pour de bon : le calendrier, puis le moment — sept appuis deviennent trois
+
+**Sa demande :** *« lorsque je clique sur déplacer ça me fait apparaître le
+planning et je sélectionne un jour et le matin ou l'aprem ou journée pour
+réellement déplacer mon client, parce que là c'est trop de clics à faire »*.
+Puis, devant `appli/deplacer-sur-le-calendrier.html` : *« je choisis la deux, le
+planning au-dessus, et la A »*.
+
+Avant : Déplacer, la moitié à rendre, ouvrir le tiroir, toucher le morceau,
+refermer, ouvrir le jour d'accueil, Poser ici. Maintenant : **Déplacer, le jour,
+le moment**. Et une seule écriture au lieu de deux — entre les deux anciens
+appels, la demi-journée n'était nulle part.
+
+**« La A »** : seul ce que le chantier occupe LE jour de départ bouge. Ses
+autres jours ne se replient pas.
+
+**Le mot désigne la moitié, aux deux bouts** : « Matin » emmène le matin et
+laisse l'après-midi sur place, « Journée » emmène tout. Sa correction : *« un
+chantier d'une journée, si je veux je dois pouvoir déplacer soit le matin, soit
+l'aprem quand même ! »*. Ce qui reste refusé, c'est d'inventer une moitié — une
+demi-journée ne devient pas une journée —, et d'arriver sur une demi-journée
+déjà sienne, qui ferait rétrécir le chantier en silence.
+
+**Les mots sont en gras, sans contour**, et « + Salarié absent ? » passe au
+milieu : une pastille à contour a la forme des pastilles d'équipe juste
+au-dessus, qui ouvrent une liste. La question du moment se dessine **dans la
+fiche**, sous les demi-journées, comme sur la planche ; elle se replie sous le
+calendrier quand le mois tourné a emporté la fiche — un seul bloc, deux
+montages.
+
+Parti avec : `BasculeDemi`, `liberer`, `libererDemiJourneeAction`,
+`libererDemiJournee`, `sansLaDemi` — plus aucun appelant (`CLAUDE.md` §4
+quinquies). `ARCHITECTURE.md` §373.
+
+### Deux jours qui ne se touchent pas : une planche, et ce que le code fait vraiment
+
+*« Là j'ai un chantier de deux jours mais si je fais une proposition de date à
+mon client ça va automatiquement mettre les deux jours consécutifs, or si là je
+veux lui proposer le premier jour le 18 et on vient finir le chantier le 22 vu
+qu'il est sur 2 jours comment je fais ??? »*
+
+Relevé dans le code, et rien n'est codé (`CLAUDE.md` §3 bis — une demande de
+geste se dessine d'abord) :
+
+- les deux dates du calendrier d'envoi sont deux **choix**, rendus chez le
+  client en boutons radio sous « Quelle date vous arrange ? »
+  (`src/app/devis/[jeton]/formulaire.tsx`) ;
+- la date retenue devient un **bloc d'un seul tenant** : `creneauxDuChantier`
+  étale la durée sur des demi-journées qui se suivent
+  (`src/server/repositories/envois-devis.ts`) ;
+- **l'écran ne le dit pas** à deux jours : la phrase « … jours ouvrés d'affilée
+  seront réservés » n'apparaît qu'au-delà de trois jours (`aideDuree`,
+  `EnvoiAuClient.tsx`). C'est ce qui rend la surprise possible ;
+- le morcellement existe, mais **après** l'acceptation, au planning
+  (`libererDemiJourneeAction` / `reposerDemiJourneeAction`, depuis le
+  10 septembre) — quatre gestes, et le client n'en sait rien.
+
+Ce dernier point rouvre ce que `TODO.md` gardait ouvert depuis le
+10 septembre : « un chantier ne se pose toujours pas en deux morceaux d'un seul
+geste ; à rouvrir s'il le signale ». Il le signale.
+
+La planche `appli/deux-jours-pas-colles.html` (119) compare trois états, et
+montre sous chacun **ce que le client lit** et **ce qui se pose au planning** —
+c'est là que les trois diffèrent, pas dans le calendrier.
+
+### La même planche, refaite simple le soir même
+
+Sa réponse à la première version : *« je comprends rien, l'idée c'est que ce
+soit simple et joli »*, puis sa règle en clair : *« quand je propose une date
+à un client et que le chantier dure deux jours, je dois pouvoir lui proposer
+le 18 et le 22 en lui disant : on viendra un jour le 18 et le deuxième le
+22 »*.
+
+Partis : les trois états, l'interrupteur de la vue B, la carte du planning et
+les trois notes. Reste **un écran, une idée** — un appui, un jour du chantier.
+Il touche le 18 et le 22, la carte du dessous montre ce que Linotte lit :
+« Nous venons le vendredi 18 septembre et le mardi 22 septembre ». S'il ne
+touche que le 18, le jour d'à côté se pose tout seul, dessiné en creux, avec
+la seule phrase de l'écran — « Touchez un autre jour pour l'y poser à la
+place » ; le geste de tous les jours ne change donc pas. Sur une journée :
+une date, ou deux au choix, comme aujourd'hui. Ce qu'il perdrait s'il
+tranche — deux dates au choix sur un chantier de plusieurs jours — est écrit
+dans `TODO.md`, pas tu. Parcourue à 390 px dans un vrai navigateur, les six
+gestes joués, sans débordement ni erreur.
+
 ### « Ce règlement n'a pas pu être enregistré » : la base était en cause, et rien ne le disait
 
 Sa capture du 17 septembre, à 15 h 57 : facture Martins, 745,00 € TTC dont
@@ -90,6 +228,7 @@ la font remonter plutôt que de sortir quoi que ce soit de l'écran.
 chantier **et sans ruban d'essai** — l'écran qu'il a, lui — et dit le
 pourcentage à chaque passage. `ARCHITECTURE.md` §372.
 
+
 ### `main` a avancé sous un lot éprouvé : `verifier-apres-fusion` rejoue la rencontre, pas la batterie
 
 **Sa règle :** *« Rejoue juste ce qui a bougé ! »* — devant une troisième
@@ -104,6 +243,7 @@ batterie. Suite : `test-apres-fusion`. Corrigé au premier complément joué : l
 numéros de ligne des hunks glissent quand `main` ajoute des lignes plus haut
 dans le même fichier — ils s'effacent de l'empreinte, le contexte reste comparé.
 
+---
 ## 2026-09-16
 
 ### « En cours 19 » reste à l'écran quand il descend dans ses chantiers
@@ -160,7 +300,7 @@ Sa règle existait déjà à trois lignes de là — *« Annuler ramène aux deu
 voies, à chaque étape »* (10 septembre) : les trois temps d'« Ajouter » la
 tiennent, « Déplacer » était le seul geste de cet écran à ne pas l'avoir. Le
 bouton reprend la place de « Retirer », à droite de l'interrupteur : la rangée
-garde ses deux boutons au même endroit. `test-liberer-une-demi-journee-e2e`
+garde ses deux boutons au même endroit. `test-deplacer-sur-le-calendrier-e2e`
 tient les deux moitiés — l'écran revient à ses deux gestes, **et la base n'a
 pas bougé**.
 
@@ -1381,7 +1521,7 @@ l'épaisseur du bord et remonte le voile d'autant. Aucune couche ajoutée.
 | « Touchez d'abord un jour du calendrier », gris, sous la pastille | juste sous le trait, en noir |
 
 Les suites qui lisaient le titre ou le compte suivent
-(`test-planning-e2e`, `test-liberer-une-demi-journee-e2e`,
+(`test-planning-e2e`, `test-deplacer-sur-le-calendrier-e2e`,
 `test-salarie-planning-lecture-seule-e2e`) : elles visent l'attribut, pas le
 mot, et refusent de conclure sur zéro pastille.
 
@@ -2294,7 +2434,7 @@ pour une demi-journée rendue seule — le morceau n'existait alors nulle part.
 
 Les deux premiers viennent d'une **capture regardée**, le troisième de la suite
 navigateur qui rejoue son geste en entier
-(`scripts/test-liberer-une-demi-journee-e2e.ts`, 8 contrôles). Le pourquoi de
+(`scripts/test-deplacer-sur-le-calendrier-e2e.ts` (renommée le 17 septembre 2026), 8 contrôles). Le pourquoi de
 chaque choix est dans `ARCHITECTURE.md` §322.
 
 ### Planche — facturer sans passer par la case devis
