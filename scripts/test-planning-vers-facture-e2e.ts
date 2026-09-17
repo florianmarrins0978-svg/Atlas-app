@@ -442,7 +442,7 @@ async function main() {
     // d'attente porte le geste (`ARCHITECTURE.md` §110).
     await page.goto(`${BASE}/termines/tva`, { waitUntil: "networkidle" });
     const ligne = page.locator("li").filter({ hasText: rows[0].numero_commercial as string });
-    await ligne.getByRole("button", { name: "Payée" }).click();
+    await ligne.locator('[data-atlas="solder-la-facture"]').click();
     await page.waitForFunction(
       (numero) => !document.body.innerText.includes(numero),
       rows[0].numero_commercial as string,

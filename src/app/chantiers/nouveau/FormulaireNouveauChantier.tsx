@@ -692,7 +692,30 @@ export default function FormulaireNouveauChantier({
             bloc de gauche n'a plus qu'une ligne : le micro aligné par le haut
             se posait au-dessus du titre au lieu d'en face. Mesuré à l'écran —
             les deux centres tombent maintenant sur le même pixel. */}
-        <div className="flex items-center justify-between gap-3 px-6">
+        {/* **UNE RÉSERVE AU-DESSUS DE LA LIGNE — sa remarque du 16 septembre
+            2026, capture à l'appui :** *« la note vocale en haut à droite, il
+            faut la descendre légèrement, elle est trop haute, limite
+            coupée »*.
+
+            **Mesuré avant de toucher** : le rond du micro (44 px) commençait
+            au pixel ZÉRO de la feuille, dont le coin est arrondi de 26 px — il
+            passait donc réellement sous la courbe. En page, sur un iPhone SE,
+            il tombait à 1 px du haut de la fenêtre : le centrage
+            (`my-auto`) ne rend rien quand il n'y a plus de place libre, et la
+            ligne se recolle alors au bord.
+
+            **La réserve est posée ICI, sur la ligne, et pas sur la feuille** :
+            le défaut vivait dans les DEUX visages de cet écran — la feuille de
+            l'accueil et la page du retour du devis —, et une réserve mise sur
+            la feuille n'en aurait réparé qu'un. Une seule règle, un seul
+            endroit (`CLAUDE.md` §4 sexies).
+
+            **Toute la ligne descend, pas le seul micro** : ses trois pièces
+            sont alignées sur le même centre depuis le 16 août, et ne bouger
+            que le rond les désalignerait. Douze pixels — il a demandé
+            « légèrement », et c'est ce qu'il faut pour dégager la courbe du
+            coin. `test-micro-fiche-client-degage-e2e` les tient. */}
+        <div className="flex items-center justify-between gap-3 px-6 pt-3">
           {/* **Le retour est SUR la ligne du titre, et c'est un chevron nu** —
               22 août 2026, sa maquette codée trait pour trait (`.entete` dans
               `appli/fiche-client-vocale.html`). Il occupait auparavant une

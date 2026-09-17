@@ -17,7 +17,7 @@ facture » sous le devis et **collé au bord gauche**, « En cours 0 » dessous.
 
 **Ce qui est fait depuis le 17 septembre** : la moitié « liste vide, les gestes
 descendent » — la porte du devis se pose au tiers haut de l'écran quand il n'a
-aucun chantier (`ARCHITECTURE.md` §370). Rien d'autre de cette planche.
+aucun chantier (`ARCHITECTURE.md` §372). Rien d'autre de cette planche.
 
 **Ce qui bloque le second anneau, et c'est en base** : `factures.devis_id` est
 `NOT NULL` (`schema.ts`). Une facture sans devis est impossible tant qu'une
@@ -122,7 +122,13 @@ prise dans le dossier de batterie, détaché, où `test-version-executee` rougit
 faute de nom de branche — donc tolérée jusqu'à la prochaine batterie jouée sur
 `main` propre, qui réécrit la référence d'elle-même.
 
-## ⏳ UNE PLANCHE À REGARDER — LE BOUTON « PAYÉE » DES FACTURES EN ATTENTE
+## ~~UNE PLANCHE À REGARDER — LE BOUTON « PAYÉE » DES FACTURES EN ATTENTE~~ — CHOISIE ET CODÉE LE JOUR MÊME (16 septembre 2026, « La B avec ouverte le »)
+
+**Codé :** « J'ai reçu le paiement » / « J'ai reçu une partie » dans
+`EnAttenteDePaiement.tsx` et sur la carte « Facture impayée » ; « Ouverte le
+11/09 » dans `receptionEnMots`. La phrase « entrée au relevé » de la maquette
+n'a pas été portée : elle ne servait qu'à montrer le geste, et il n'a pas dit
+la vouloir — dans l'appli la facture quitte la liste, comme avant.
 
 **Sa demande du 16 septembre 2026, capture de « Terminés › Factures en attente »
 à l'appui :** *« Il faut rendre cette page plus compréhensible pour les
@@ -141,7 +147,7 @@ paiement » / « J'ai reçu une partie » (sa phrase du 14 août, première
 personne) ; 3 : « Confirmer le paiement ». Interrupteur à part : « Ouverte
 14/09 » ou « Le client l'a ouverte le 14/09 » — cette phrase vit dans
 `src/lib/reception-facture.ts` et sert aussi au dossier du client.
-Mon avis, donné : la 2, et la ligne du client en toutes lettres.
+Mon avis, donné : la 2, et la ligne du client en toutes lettres. Il a pris la 2 et « Ouverte le ».
 
 **Rien dans `src/` tant qu'il n'a pas choisi** (`CLAUDE.md` §3 bis). Le jour où
 il choisit : `EnAttenteDePaiement.tsx` (les deux `<button>`), et pour la ligne
@@ -307,7 +313,12 @@ connexion, l'enregistrement d'un devis, celui d'une facture.
 
 ---
 
-## ⏳ UNE PLANCHE À REGARDER — LA NOTE VOCALE À PLAT, SUR LA FICHE CLIENT (14 septembre 2026, soir)
+## ~~UNE PLANCHE À REGARDER — LA NOTE VOCALE À PLAT, SUR LA FICHE CLIENT~~ — CHOISI ET CODÉ LE 16 SEPTEMBRE 2026 (« code-moi un cercle, l'or clair de l'appli »)
+
+**Codé :** `.atlas-micro` et `.atlas-envoyer` dans `globals.css` — le disque
+à plat en `--atlas-plein`, le signe blanc, un cercle d'`orClair` (2 px sur le
+micro, 1,5 px sur la touche d'envoi) ; la tasse, ses reflets et ses ondes sont
+partis avec le dessin. Écran regardé au repos et en dictée.
 
 Sa demande : *« le gros bouton de la note vocale sans ses contours, de la même
 couleur que les boutons verts, le signe au milieu blanc ; et quand on appuie,
@@ -324,10 +335,10 @@ déjà »* — `appli/note-vocale-cercle-dore.html` : le disque à plat, et le b
 au choix, un filet d'or, l'or-porcelaine-or d'aujourd'hui, ou — sa demande
 suivante, *« mais le doré de l'appli »* — un filet d'`orClair`, l'or que la
 charte réserve aux cercles posés sur le vert — et les deux cercles dans ce même
-or clair. **Il n'a pas
-encore choisi entre à plat, un cercle et deux** ; rien dans `src/` (le 16 au
-soir, le code avait été posé avant son choix — retiré le soir même, c'était
-une faute de §3 bis).
+or clair, avec du blanc entre eux. **Il a choisi « un cercle, l'or clair de
+l'appli »**, codé le soir même. Le 16 au soir, le code
+avait été posé une première fois avant son choix — retiré aussitôt, c'était
+une faute de §3 bis ; il a choisi ensuite, et le code est revenu avec le cercle.
 
 ## ~~UNE PLANCHE À REGARDER — MAIN D’ŒUVRE ET RÈGLEMENTS SUR LA FACTURE~~ — CODÉE LE 14 SEPTEMBRE 2026 (« PARFAIT ! Code exactement cette planche »)
 

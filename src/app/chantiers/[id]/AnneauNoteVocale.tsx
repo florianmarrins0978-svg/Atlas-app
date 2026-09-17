@@ -386,18 +386,13 @@ export default function AnneauNoteVocale({
               // parle plus que de commencer : la pause a été retirée le 31 août
               // 2026, et l'objet lui-même s'efface dès qu'on parle.
               aria-label="Dicter une note vocale"
-              // `atlas-plein` vient de la session voisine, le même jour : le
-              // vert #29382F d'Origine et le geste « discret » sous le doigt.
-              // Le micro EST un aplat plein — il la porte donc.
-              // **Plus d'`atlas-plein`, et ce n'est pas un oubli.** Cette classe
-              // pose un voile blanc en `overflow: hidden` : il rognerait les
-              // trois anneaux de la tasse. La matière porte désormais son propre
-              // appui — l'enfoncement et l'ondulation vivent dans `.atlas-micro`.
-              //
-              // **Et plus d'aplat de charte non plus.** Le fond est la matière
-              // qu'il a choisie le 2 septembre 2026, écrite dans la feuille de
-              // style : `sage` et `sageLight` sont fixes sur les huit chartes,
-              // comme `alert`. Un fond posé ici en style en ligne l'écraserait.
+              // **À plat, du vert des boutons, le signe blanc, un cercle d'or
+              // clair — son choix du 16 septembre 2026**
+              // (`appli/note-vocale-cercle-dore.html`). Le fond, le signe et le
+              // cercle vivent dans `.atlas-micro` (`globals.css`) : posés ici
+              // en style en ligne, ce seraient des couleurs en clair dans un
+              // `.tsx`. Pas d'`atlas-plein` non plus : cette classe est faite
+              // pour un bouton à texte, et l'appui du micro vit avec lui.
               className="atlas-micro"
             >
               <IconeMicro />

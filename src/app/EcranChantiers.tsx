@@ -176,12 +176,35 @@ export default function EcranChantiers({
   //
   // **11 px et non 9,5** : la consigne du 5 septembre n'avait pas atteint cet
   // écran, qui écrit ses tailles à la main plutôt que par le jeton commun.
+  //
+  // ── ELLE RESTE À L'ÉCRAN QUAND IL DESCEND — 16 septembre 2026 ────────────
+  //
+  // **Sa demande, capture à l'appui :** *« quand je descends, le "en cours"
+  // disparaît ; il doit rester visible tant qu'il y a des chantiers »*.
+  //
+  // Elle vit dans le fil depuis le 6 septembre — collée à ce qu'elle compte —,
+  // et elle partait donc par le haut au premier geste : passé trois chantiers,
+  // il ne restait qu'une suite de dates sans dire combien il en a. `sticky` la
+  // cloue au haut du fil, et son point d'ancrage étant le fil entier, elle y
+  // reste jusqu'au dernier chantier.
+  //
+  // **Trois choses qu'elle ne pouvait pas faire sans changer :**
+  //
+  //   · la marge horizontale devient une MARGE INTÉRIEURE : une bande de
+  //     26 px plus étroite laisserait les chantiers passer par ses deux bords ;
+  //   · le fond crème est ce qui les masque quand ils passent dessous. Jamais
+  //     une couleur en clair — `colors.cream` s'inverse avec les chartes ;
+  //   · la marge du haut devient une MARGE INTÉRIEURE elle aussi, et c'est ce
+  //     qui la sort du fondu de 18 px du fil (`globals.css`, `.atlas-fil-defile`).
+  //     Clouée à `top: 0` sans cela, elle se lirait à demi effacée — présente
+  //     pour une mesure, illisible pour lui. Sa place ne bouge pas d'un pixel :
+  //     le fond ajouté est celui de l'écran.
   const rubriqueEnCours = (
     <div
       data-atlas="compteur"
       data-compte={compte}
-      className="mx-[26px] mb-1 mt-[18px] flex items-baseline gap-[10px] text-[11px] font-medium uppercase"
-      style={{ color: colors.inkSoft, letterSpacing: "0.28em" }}
+      className="sticky top-0 z-[2] mb-1 flex items-baseline gap-[10px] px-[26px] pt-[18px] text-[11px] font-medium uppercase"
+      style={{ color: colors.inkSoft, letterSpacing: "0.28em", backgroundColor: colors.cream }}
     >
       <span>En cours</span>
       <span
@@ -521,7 +544,7 @@ export default function EcranChantiers({
             <div aria-hidden className="flex-[13]" />
           </>
         ) : (
-          <div className="atlas-fil-defile pb-3 pt-2.5">
+          <div className="atlas-fil-defile pb-3">
             {/* **Les bandeaux défilent AVEC la liste, ils ne la repoussent
                 pas.** Posés dans l'en-tête, une notification de trois lignes
                 mangeait deux cents pixels : la liste se réduisait à une bande,
@@ -529,7 +552,16 @@ export default function EcranChantiers({
                 visible que sur une capture — la structure semblait juste, et
                 les suites étaient vertes. C'est le même défaut qu'en juillet,
                 à un autre endroit. */}
-            {bandeaux}
+            {/* **LES 10 PX DU HAUT SONT PASSÉS DU CADRE AU CONTENU — 16
+                septembre 2026.** Une marge intérieure sur le cadre qui défile
+                rétrécit la zone où `sticky` peut clouer : « En cours » se
+                collait 10 px plus bas que le bord, et les chantiers défilaient
+                dans la bande ainsi laissée libre — un fil et des bouts de date
+                au-dessus d'un titre censé les couvrir. Mesuré, pas supposé.
+                L'air reste le même, il est seulement porté par le contenu :
+                c'est déjà la règle de la marge du BAS (`.atlas-tige`,
+                `globals.css`), pour exactement la même raison. */}
+            <div className="pt-2.5">{bandeaux}</div>
             {rubriqueEnCours}
             <ListeChantiers
               chantiers={chantiers}

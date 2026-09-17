@@ -4,7 +4,7 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-09-17 · `claude/devis-positioning-no-project-wofsfp` (l'accueil vide, la porte au tiers haut) — niveau 2 à rejouer au vert sur cet arbre avant `main` (son accord d'abord)
+**Point de reprise :** 2026-09-17 · `main` — l'accueil vide (la porte au tiers haut) est fusionné
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
@@ -20,16 +20,42 @@ l'écran qu'il a), jamais le rapport.
 
 **La leçon du lot :** « 2/3 haut » avait d'abord été lu « à 66 % », livré ainsi,
 et c'est LUI qui a vu la capture — *« il est trop bas là ! »*. Une fraction se
-lit dans les deux sens, un écran non. `ARCHITECTURE.md` §370 ; le second anneau
+lit dans les deux sens, un écran non. `ARCHITECTURE.md` §372 ; le second anneau
 « Créer une facture » de la même planche reste à faire (`TODO.md`, en tête).
 
 ---
+
+## Où un chantier est POSÉ se repeint en ENTIER après chaque geste
+
+Depuis la migration 0085, `date_planifiee` + `creneau_debut` + la durée ne
+disent plus où un chantier est : `creneaux_chantier` le dit, une ligne par
+demi-journée, et les trois colonnes en sont dérivées. Un geste de l'écran qui
+ne repeint que ces colonnes laisse donc une liste périmée — c'est la panne du
+16 septembre 2026 (« la demi-journée retirée de Mr Julien ne se repose pas »),
+où le chantier se peignait sur son ancien jour et réclamait une moitié qui
+n'existait qu'à l'écran. Toute action qui pose, retire ou déplace rend
+désormais ses créneaux. `ARCHITECTURE.md` §371.
+
+Et une moitié libre se dessine à deux endroits — en queue de journée, ou sous
+le nom du chantier qu'elle précède (`libresAvant`). Les deux montages doivent
+porter les mêmes gestes : le second n'offrait pas « Poser ici », et la moitié
+rendue ne pouvait pas se remettre d'où elle venait (même §).
+
 ## Les crochets des conditions générales ne se remplissent plus à la main
 
 Depuis le 16 septembre 2026, l'assureur décennale et le médiateur se saisissent
 dans « Mon entreprise » et remplissent tout seuls les articles 9 et 11
 (`src/lib/mentions-obligatoires.ts`). Un crochet dont la valeur manque RESTE un
 crochet : c'est ce qui le rend visible. `ARCHITECTURE.md` §368.
+
+## « En cours » est clouée en haut du fil de l'accueil
+
+Sa demande du 16 septembre 2026 : *« quand je descends, le "en cours" disparaît ;
+il doit rester visible tant qu'il y a des chantiers »*. La rubrique est en
+`sticky` dans le fil (`EcranChantiers.tsx`). **Les 10 px du haut sont portés par
+le contenu du fil, jamais par le cadre qui défile** : une marge intérieure sur le
+cadre rétrécit la zone où `sticky` peut clouer, et les chantiers repassent
+au-dessus d'elle. Mesuré : `scripts/test-accueil-en-cours-colle-e2e.ts`.
 
 ## Avant de pousser : `npm run niveau`
 
