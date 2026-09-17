@@ -183,4 +183,15 @@ function main() {
   process.exit(1);
 }
 
-main();
+// **NE JOUE RIEN À L'IMPORT — 17 septembre 2026.** `verifier-apres-fusion.ts`
+// importe `lireLesReponses` ci-dessus : sans ce garde, l'import JOUAIT ce
+// contrôle, et son `process.exit(0)` terminait l'appelant avant qu'il ait
+// mesuré une seule ligne. Le complément rendait alors le journal de CE
+// script-ci, code de sortie 0 — un vert qui n'a rien mesuré, le pire état que
+// ce dépôt connaisse (`CLAUDE.md` §5).
+//
+// `process.argv[1]` porte le fichier LANCÉ, jamais celui qu'on importe. Même
+// garde, même raison, que `verifier-chaine-dictee.mts`.
+if (process.argv[1] && process.argv[1].includes("verifier-rouge-prealable")) {
+  main();
+}

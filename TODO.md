@@ -9,6 +9,18 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## `lireLesReponses` existe en DEUX exemplaires
+
+**Vu le 17 septembre 2026**, en corrigeant le garde de point d'entrée : la
+lecture de `atlas-rouges-prealables.json` est écrite deux fois, à l'identique —
+dans `verifier-rouge-prealable.ts` et dans `garde-fusion-main.mjs`. C'est le §3
+(« jamais de règle dupliquée ») : le jour où le format du fichier bouge, l'une
+des deux dira autre chose que l'autre, et c'est le garde-fou qui décidera.
+
+Sa place est `_rouge-prealable.mjs`, qui tient déjà la décision sur les rouges.
+Non fait ici : ce lot corrigeait l'import, pas la structure — et cette lecture
+appartient au lot d'une autre session (`CLAUDE.md` §5, hors périmètre).
+
 ## ⏳ `test-accueil-vide-porte-e2e` dépend de l'état que la base a gardé
 
 **Mesuré le 17 septembre 2026, des deux côtés.** Jouée seule, elle passe ; jouée
