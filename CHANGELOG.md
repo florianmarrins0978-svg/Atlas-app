@@ -248,6 +248,16 @@ d'affilée n'est que ce que pose le premier appui. Rejouée en navigateur : sur
 comble ; sur 2 jours, effacer le 21 puis toucher le 22 donne le 18 et le 22 ;
 même chose dans la 2e proposition.
 
+**Et le style est celui de SON écran** — *« reprends le style déjà existant
+pour proposer les jours au client, et aux couleurs de l'appli ! »*. Les
+versions précédentes recopiaient le calendrier de la planche du 31 août (un
+petit cercle vert sur le jour retenu) ; `MoisCharge` peint aujourd'hui la
+case entière en vert pin, le chiffre en crème, les barres éclaircies. Recopié
+d'après le code et `design-tokens.ts` : la case entière, les lignes de dates
+sur papier, et l'interrupteur dans la tuile de « Il peut proposer une autre
+date » (48 × 28, vert allumé) — lequel figure aussi sur la planche, tel qu'il
+existe. La 2e proposition prend `colors.or`, chiffre en encre.
+
 ### « Ce règlement n'a pas pu être enregistré » : la base était en cause, et rien ne le disait
 
 Sa capture du 17 septembre, à 15 h 57 : facture Martins, 745,00 € TTC dont

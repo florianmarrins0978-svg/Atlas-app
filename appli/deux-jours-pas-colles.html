@@ -47,6 +47,20 @@
     deux. Éteint, elle disparaît. « Une ou deux, jamais plus » ne bouge pas.
   · « changer » sur la durée passe par 1, 2, 3 et 8 jours — son exemple.
 
+  ─── Le style est celui de SON écran, pas celui d'une vieille planche ──────
+
+  Sa remarque : *« reprends le style déjà existant pour proposer les jours au
+  client, et aux couleurs de l'appli ! »*. Les premières versions recopiaient
+  le calendrier d'`appli/jour-propose-pas-complet.html` (31 août), où le jour
+  retenu était un petit cercle vert. Son écran d'aujourd'hui (`MoisCharge`,
+  `EnvoiAuClient`) peint la CASE ENTIÈRE en vert pin, le chiffre en crème,
+  les barres éclaircies ; les dates retenues sont des lignes sur papier
+  (`rustTint`) ; l'interrupteur est celui de « Il peut proposer une autre
+  date » — 48 × 28, vert quand il est allumé, dans une tuile à bord doux.
+  Tout cela est recopié d'après `src/lib/design-tokens.ts` et le code des
+  deux composants, avec les mêmes valeurs. La 2e proposition prend l'or de
+  l'application (`colors.or`), chiffre en encre pour tenir le contraste.
+
   ─── Ce que le code fait AUJOURD'HUI, lu dans le code ─────────────────────
 
   1. Les deux dates du calendrier sont deux CHOIX, rendus chez le client en
@@ -122,18 +136,22 @@
         transition:background .18s cubic-bezier(.22,1,.36,1)}
   .case.we{background:rgba(28,28,26,.035)}
   .case.aujourdhui{box-shadow:inset 0 0 0 1.5px var(--or)}
-  .case .n{font:400 17px/1 ui-serif,Georgia,serif;color:var(--encre);width:25px;height:25px;
-           display:flex;align-items:center;justify-content:center;border-radius:99px;
-           transition:background .18s cubic-bezier(.22,1,.36,1),color .18s cubic-bezier(.22,1,.36,1)}
+  .case .n{font:400 17px/1 ui-serif,Georgia,serif;color:var(--encre);
+           transition:color .18s cubic-bezier(.22,1,.36,1)}
   .case.we .n{color:rgba(28,28,26,.42)}
   .case.aujourdhui .n{color:var(--or);font-weight:600}
   .case.passe .n{color:rgba(28,28,26,.3)}
 
-  /* Un jour du chantier : plein. La 1re proposition en vert pin, la 2e en or
-     avec le chiffre en encre — le blanc sur l'or ne tient pas le contraste. */
-  .case.retenu{background:var(--papier)}
-  .case.retenu .n{background:var(--pin);color:#faf9f5}
-  .case.retenu.p2 .n{background:var(--or);color:var(--encre)}
+  /* Un jour du chantier : LA CASE ENTIÈRE en vert pin, le chiffre en crème,
+     les barres éclaircies — exactement `MoisCharge` (jour retenu). La 2e
+     proposition prend l'or de l'application, chiffre en encre : le crème sur
+     l'or ne tient pas le contraste. */
+  .case.retenu{background:var(--pin)}
+  .case.retenu .n{color:var(--plage)}
+  .case.retenu .marqueA i{background:rgba(250,249,245,.22);box-shadow:none}
+  .case.retenu.p2{background:var(--or)}
+  .case.retenu.p2 .n{color:var(--encre)}
+  .case.retenu.p2 .marqueA i{background:rgba(28,28,26,.14)}
 
   .marqueA{width:24px;display:flex;flex-direction:column;gap:2.5px}
   .marqueA i{height:6px;border-radius:2px;background:var(--plage);
@@ -146,7 +164,7 @@
   .legende{margin:14px 6px 0;display:flex;flex-wrap:wrap;gap:5px 12px;justify-content:center;
            font-size:10px;color:var(--gris)}
   .legende > span{display:flex;align-items:center;gap:5px;white-space:nowrap}
-  .legende .rond{width:11px;height:11px;border-radius:99px;display:block;flex-shrink:0;background:var(--pin)}
+  .legende .rond{width:12px;height:12px;border-radius:3px;display:block;flex-shrink:0;background:var(--pin)}
   .legende .rond.p2{background:var(--or)}
 
   .retour-aujourdhui{margin:12px auto 0;display:block;border:0;background:transparent;cursor:pointer;
@@ -172,19 +190,22 @@
   .conseil{margin:10px 18px 0;text-align:center;font-size:13px;line-height:1.5;color:var(--gris)}
   .conseil[hidden]{display:none}
 
-  /* L'interrupteur de la deuxième proposition — sa demande : « un bouton
-     on/off pour si on souhaite faire une deuxième proposition ». */
-  .interrupteur{margin:18px 18px 0;padding:14px 0 0;border:0;border-top:1px solid var(--trait-doux);
-                display:flex;align-items:center;justify-content:space-between;gap:12px;
-                background:transparent;width:calc(100% - 36px);
-                cursor:pointer;font:15px/1.2 inherit;color:var(--encre);text-align:left}
-  .interrupteur .bouton{width:46px;height:28px;border-radius:99px;background:rgba(28,28,26,.16);position:relative;
-                        flex-shrink:0;transition:background .18s cubic-bezier(.22,1,.36,1)}
-  .interrupteur .bouton::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:99px;
-                               background:#fff;box-shadow:0 1px 3px rgba(20,18,14,.25);
-                               transition:transform .18s cubic-bezier(.22,1,.36,1)}
-  .interrupteur[aria-checked="true"] .bouton{background:var(--or)}
-  .interrupteur[aria-checked="true"] .bouton::after{transform:translateX(18px)}
+  /* Les interrupteurs : la tuile de « Il peut proposer une autre date » sur
+     son écran, recopiée — 48 × 28, vert pin allumé, bord doux. Le second est
+     celui qui existe déjà ; le premier est la demande du 17 septembre. */
+  .tuile{margin:18px 18px 0;display:flex;align-items:flex-start;gap:12px;border-radius:16px;
+         padding:12px 16px;background:var(--plage);border:1px solid var(--trait-doux)}
+  .tuile + .tuile{margin-top:12px}
+  .tuile .texte{flex:1;min-width:0}
+  .tuile .texte b{display:block;font-weight:400;font-size:15px;color:var(--encre)}
+  .tuile .texte span{display:block;margin-top:2px;font-size:12px;line-height:1.45;color:var(--encre-douce)}
+  .interrupteur{position:relative;flex:none;margin-top:2px;width:48px;height:28px;border:0;border-radius:99px;
+                background:var(--trait);box-shadow:inset 0 0 0 1px var(--trait);cursor:pointer;
+                transition:background .18s cubic-bezier(.22,1,.36,1)}
+  .interrupteur::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:99px;
+                       background:var(--plage);transition:left .18s cubic-bezier(.22,1,.36,1)}
+  .interrupteur[aria-checked="true"]{background:var(--pin);box-shadow:none}
+  .interrupteur[aria-checked="true"]::after{left:23px}
 
   .principal{margin:18px 18px 26px;width:calc(100% - 36px);border:0;border-radius:99px;
              background:var(--pin);color:#fff;padding:16px 20px;font-family:ui-serif,Georgia,serif;
@@ -231,10 +252,14 @@
   <div class="liste" id="liste"></div>
   <p class="conseil" id="conseil" hidden></p>
 
-  <button class="interrupteur" type="button" role="switch" aria-checked="false" id="seconde">
-    <span>Deuxième proposition</span>
-    <span class="bouton" aria-hidden="true"></span>
-  </button>
+  <div class="tuile">
+    <span class="texte"><b>Deuxième proposition</b><span id="seconde-dit">Une seule proposition.</span></span>
+    <button class="interrupteur" type="button" role="switch" aria-checked="false" aria-label="Deuxième proposition" id="seconde"></button>
+  </div>
+  <div class="tuile">
+    <span class="texte"><b>Il peut proposer une autre date</b><span>Un calendrier de vos jours libres s’ouvrira sous vos dates.</span></span>
+    <button class="interrupteur" type="button" role="switch" aria-checked="true" aria-label="Il peut proposer une autre date"></button>
+  </div>
 
   <button class="principal" type="button">Envoyer le devis</button>
 </div>
@@ -457,6 +482,8 @@ function tout(){
     : joursDuChantier === 1 ? "Proposez une date" : "Touchez le premier jour";
   consigne.classList.toggle("p2", attendLaSeconde);
   $("#seconde").setAttribute("aria-checked", String(secondeVoulue));
+  $("#seconde-dit").textContent = !secondeVoulue ? "Une seule proposition."
+    : attendLaSeconde ? "Touchez son premier jour." : "La cliente choisit entre les deux.";
   dessinerCalendrier(); dessinerListe(); dessinerClient();
 }
 
