@@ -46,6 +46,61 @@ tous. Si une régression arrive un jour sur ce chemin, c'est ce tableau qui dit
 ce qui marchait le 17 septembre 2026.
 
 
+## ⏳ CINQ CONNEXIONS RÉUSSIES ET LE SIXIÈME EST DEHORS — 17 septembre 2026
+
+**Sa remarque :** *« un ami s'était connecté à mon appli via son tél, et sur le
+sien ça n'a pas marché »*.
+
+**REPRODUIT ICI, et c'est un vrai défaut.** Six connexions d'affilée avec le
+BON mot de passe, même compte, même adresse, deux téléphones différents :
+
+```
+essai 1 (iPhone)  → entré      essai 4 (Android) → entré
+essai 2 (Android) → entré      essai 5 (iPhone)  → entré
+essai 3 (iPhone)  → entré      essai 6 (Android) → REFUSÉ
+                       « Trop de tentatives depuis cet appareil.
+                         Réessayez dans 15 minutes. »
+```
+
+**La racine, et elle tient en une ligne.** `verifierLimite` appelle
+`verifierEtIncrementer` **avant** `signIn` : le compteur monte à CHAQUE
+tentative, réussie ou non. Cinq par quart d'heure (`LIMITES.connexion`), sur la
+clé `connexion:<email>:<source>`. Or :
+
+| | |
+|---|---|
+| la **source** | l'adresse IP publique — deux téléphones sur le MÊME wifi n'en font qu'une |
+| le **compte** | le sien, que ses proches essaient |
+| le **compteur** | monte même quand la connexion RÉUSSIT |
+
+Donc : lui plus quatre connexions de la soirée, et l'ami qui arrive sur son wifi
+avec le bon mot de passe lit qu'il a trop essayé.
+
+**C'EST LA PANNE DU 6 AOÛT 2026, SOUS UNE AUTRE FORME.** Ce jour-là ses parents
+lisaient « Email ou mot de passe incorrect » avec les bons identifiants ; le
+compteur était tenu par e-mail seul. La correction a séparé les visiteurs **par
+adresse** — elle ne pouvait rien pour deux visiteurs qui PARTAGENT l'adresse, et
+elle n'a jamais cessé de compter les réussites.
+
+**Et le message ment.** « depuis cet appareil » : ce n'est pas son appareil, c'est
+l'adresse qu'il partage. Un message qui accuse le mauvais coupable coûte plus
+cher que pas de message du tout (`AGENTS.md`).
+
+**Ce qu'il faut faire — à la racine, et à lui de dire quand :**
+
+1. **ne compter que les ÉCHECS** sur ce seuil. Un seuil anti-martèlement existe
+   contre des tentatives qui ratent ; une connexion réussie n'a rien à
+   consommer. Le compteur d'échecs CONSÉCUTIFS existe déjà en base
+   (`repositories/tentatives-connexion.ts`, migration 0062) et s'efface à la
+   réussite — c'est le même raisonnement, et il est déjà écrit ;
+2. cela demande de scinder `verifierEtIncrementer` en « regarder » puis
+   « consommer », et de ne consommer qu'après un `signIn` refusé ;
+3. **corriger le message** : il ne parle plus d'appareil.
+
+**Niveau 3** — authentification (`.claude/rules/testing.md`) : batterie entière,
+et il faut le prévenir avant de la lancer (`CLAUDE.md` §5).
+
+
 ## ⏳ `test-accueil-vide-porte-e2e` dépend de l'état que la base a gardé
 
 **Mesuré le 17 septembre 2026, des deux côtés.** Jouée seule, elle passe ; jouée
