@@ -15,6 +15,15 @@ dans « Mon entreprise » et remplissent tout seuls les articles 9 et 11
 (`src/lib/mentions-obligatoires.ts`). Un crochet dont la valeur manque RESTE un
 crochet : c'est ce qui le rend visible. `ARCHITECTURE.md` §368.
 
+## « En cours » est clouée en haut du fil de l'accueil
+
+Sa demande du 16 septembre 2026 : *« quand je descends, le "en cours" disparaît ;
+il doit rester visible tant qu'il y a des chantiers »*. La rubrique est en
+`sticky` dans le fil (`EcranChantiers.tsx`). **Les 10 px du haut sont portés par
+le contenu du fil, jamais par le cadre qui défile** : une marge intérieure sur le
+cadre rétrécit la zone où `sticky` peut clouer, et les chantiers repassent
+au-dessus d'elle. Mesuré : `scripts/test-accueil-en-cours-colle-e2e.ts`.
+
 ## Avant de pousser : `npm run niveau`
 
 Depuis le 14 septembre 2026, le niveau d'épreuve se calcule sur le diff —
@@ -956,7 +965,7 @@ un écran qui a l'air en retard sur sa maquette. Toute clé neuve s'ajoute donc 
 | où vit le geste | **sous le calendrier** (`data-atlas="deplacement-en-cours"`), jamais dans la fiche : elle disparaît au premier mois tourné |
 | retiré avec | `BasculeDemi`, `liberer`, `libererDemiJourneeAction`, `libererDemiJournee`, `sansLaDemi` |
 | les suites | `test-creneaux-chantier.ts` (8 cas neufs), `test-deplacer-sur-le-calendrier-e2e.ts` |
-| le détail | `ARCHITECTURE.md` §370 |
+| le détail | `ARCHITECTURE.md` §371 |
 
 **LE PIÈGE À NE PAS REFABRIQUER.** Ce qui part commande ce qui peut arriver :
 une demi-journée ne devient pas une journée, une journée ne tient pas sur une

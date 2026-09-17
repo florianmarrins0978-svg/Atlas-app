@@ -5,6 +5,17 @@
 
 ---
 
+## « En cours » reste à l'écran quand il descend (16 septembre 2026)
+
+Sa demande : *« quand je descends, le "en cours" disparaît ; il doit rester
+visible tant qu'il y a des chantiers »*. La rubrique est clouée au haut du fil
+de l'accueil (`sticky`, fond crème, `EcranChantiers.tsx`).
+
+**À ne pas défaire :** les 10 px du haut sont portés par le CONTENU du fil, pas
+par le cadre qui défile — une marge intérieure sur le cadre rétrécit la zone où
+`sticky` peut clouer, et les chantiers repassent au-dessus de la rubrique.
+`scripts/test-accueil-en-cours-colle-e2e.ts` le mesure.
+
 ## La décennale et le médiateur (16 septembre 2026)
 
 Cinq champs dans « Mon entreprise » (migration 0094), figés sur chaque devis et
@@ -470,7 +481,7 @@ cela se découvre le matin du chantier.
 L'ancien chemin est parti avec : `BasculeDemi`, `liberer`,
 `libererDemiJourneeAction`, `libererDemiJournee`, `sansLaDemi`.
 
-Détail : `ARCHITECTURE.md` §370.
+Détail : `ARCHITECTURE.md` §371.
 
 ---
 

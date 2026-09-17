@@ -1878,6 +1878,24 @@ Trois règles qui en découlent, et qui ne se négocient pas :
 qu'on vient de faire.** Sa décision du 13 août 2026 : *« seulement quand le code
 touche »*.
 
+**ET MÊME QUAND ÇA TOUCHE, ON NE REJOUE QUE LA RENCONTRE — sa règle du
+17 septembre 2026 : *« Rejoue juste ce qui a bougé ! »*.** Un lot dont la
+batterie a rendu son verdict sans rouge nouveau, et que `main` a dépassé
+pendant qu'elle mesurait, ne repart pas pour cinquante minutes :
+
+```bash
+npx tsx scripts/verifier-apres-fusion.ts     # dans le dossier du lot, une fois reposé sur main
+```
+
+Il tient la place de la batterie **à trois conditions**, et refuse sinon en
+disant quoi jouer : le lot n'a pas changé d'une ligne (son diff contre sa base
+est celui que la batterie a mesuré) ; son verdict d'avant ne portait aucun
+rouge nouveau ; et l'on rejoue vert **la rencontre** — suites base, écrans du
+lot, écrans que `main` a touchés, suites que `main` a apportées. Ce que
+`main` a apporté a déjà passé son propre garde-fou ; ce qui n'a jamais été
+mesuré, c'est les deux ensemble, et c'est cela qu'on rejoue
+(`scripts/_apres-fusion.mjs`, `ARCHITECTURE.md` §370).
+
 **Et depuis le 13 septembre 2026, la batterie le tient elle-même** pour les
 deux cas qui ne se discutent pas : rien n'a bougé depuis son dernier vert, ou
 seules des suites ont bougé — elle refuse et donne les `npx tsx` à jouer

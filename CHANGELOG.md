@@ -37,10 +37,49 @@ le mois est exactement ce qu'il fait pour atteindre son jour d'accueil.
 
 Parti avec : `BasculeDemi`, `liberer`, `libererDemiJourneeAction`,
 `libererDemiJournee`, `sansLaDemi` — plus aucun appelant (`CLAUDE.md` §4
-quinquies). `ARCHITECTURE.md` §370.
+quinquies). `ARCHITECTURE.md` §371.
+
+### `main` a avancé sous un lot éprouvé : `verifier-apres-fusion` rejoue la rencontre, pas la batterie
+
+**Sa règle :** *« Rejoue juste ce qui a bougé ! »* — devant une troisième
+batterie pour un lot dont la deuxième venait de rendre un verdict sans rouge
+nouveau, `main` l'ayant dépassé de neuf commits pendant la mesure. Le
+complément (`scripts/verifier-apres-fusion.ts`, règles pures dans
+`_apres-fusion.mjs`) vérifie que le lot n'a pas changé d'une ligne, que son
+verdict ne portait aucun rouge nouveau, puis rejoue suites base, écrans du lot,
+écrans touchés par `main` et suites apportées par `main` ; il dépose le
+verdict au niveau d'avant, sur l'arbre courant. Tout le reste reste une
+batterie. Suite : `test-apres-fusion`. Corrigé au premier complément joué : les
+numéros de ligne des hunks glissent quand `main` ajoute des lignes plus haut
+dans le même fichier — ils s'effacent de l'empreinte, le contexte reste comparé.
 
 ---
 ## 2026-09-16
+
+### « En cours 19 » reste à l'écran quand il descend dans ses chantiers
+
+**Sa demande, capture à l'appui :** *« quand je descends, le "en cours"
+disparaît ; il doit rester visible tant qu'il y a des chantiers »*.
+
+La rubrique vit dans le fil qui défile depuis le 6 septembre — collée à ce
+qu'elle compte —, et elle partait donc par le haut au premier geste : passé
+trois chantiers, il ne restait qu'une suite de dates sans dire combien il en a.
+Elle est désormais clouée au haut du fil (`sticky`), fond crème, jusqu'au
+dernier chantier.
+
+**Ce que la capture a montré et qu'aucune mesure n'aurait dit** : les 10 px de
+marge intérieure du cadre qui défile rétrécissent la zone où `sticky` peut
+clouer. La rubrique se collait 10 px sous le bord, et les chantiers défilaient
+dans la bande laissée libre au-dessus d'elle. L'air est passé du cadre au
+contenu — c'est déjà la règle de la marge du bas (`.atlas-tige`).
+
+La position au repos ne bouge pas d'un pixel : mesurée avant et après, 312,5 px
+du bord du fil, 25 px entre la rubrique et le premier chantier.
+
+`scripts/test-accueil-en-cours-colle-e2e.ts` mesure les trois choses après
+défilement — encore dans le cadre, sous le fondu de 18 px donc lisible, et
+devant les chantiers qui passent dessous —, et refuse de conclure si le fil ne
+défile pas.
 
 ### Le micro de la fiche client descend de douze pixels : il touchait le bord
 
@@ -114,6 +153,16 @@ Au passage, `test-garde-fusion-main` rougissait sur tout `main` propre : ses
 cas « hook joué pour de vrai » dépendaient du diff réel avec `origin/main`, vide
 sur `main`. Elle écrit désormais son propre fichier d'outillage le temps de
 jouer.
+### La note vocale passe à plat, du vert des boutons, cerclée d'or clair
+
+Sa demande du 14 (*« sans ses contours, de la même couleur que les boutons
+verts, le signe au milieu blanc »*), puis son choix du 16 devant six bords
+côte à côte (`appli/note-vocale-cercle-dore.html`) : *« un cercle, l'or clair
+de l'appli »*. `.atlas-micro` et `.atlas-envoyer` perdent la tasse du
+2 septembre — anneaux, porcelaine, reflet tournant, ondulation — pour un disque
+`--atlas-plein` et un filet d'`orClair`, l'or que la charte réserve aux cercles
+posés sur le vert. Ce qui n'est plus rendu est parti de la feuille de style.
+
 ### Le bouton « Payée » s'appelle « J'ai reçu le paiement » — un adjectif se lisait comme un état
 
 **Sa demande, capture à l'appui :** *« Il trouve que le bouton Payée les induit
