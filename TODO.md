@@ -28,6 +28,30 @@ mesurer, plutôt que de rendre un vert sur rien.
 qui n'inspectent pas la base. À peser — deux serveurs, c'est deux ports et deux
 compilations par batterie.
 
+## LE COMPLÉMENT COMPTE UNE RENUMÉROTATION DE `.md` COMME « UN AUTRE LOT »
+
+**Payé le 17 septembre 2026, deux fois dans la même soirée.** `main` a bougé
+deux fois sous un lot déjà éprouvé ; chaque fusion a forcé à renuméroter son
+paragraphe d'`ARCHITECTURE.md` (§373 → §377 → §379) et à replacer ses entrées
+de journal — c'est la règle du §6 B, et elle est juste. Mais
+`verifier-apres-fusion.ts` compare le **diff entier**, `.md` compris, et refuse
+alors : *« le lot lui-même a changé — ce n'est plus le même lot »*, en renvoyant
+vers cinquante minutes de batterie.
+
+Or le code était identique **au bit près**, et le dépôt le sait déjà : le
+niveau d'un `.md` vaut 1 (« ce qui ne s'exécute pas »), et l'empreinte que le
+garde-fou signe ne couvre que `.ts/.tsx/.js/.mjs/.mts/.sql/.css`
+(`_batterie-solitaire.ts`). Deux mesures du même arbre, qui ne répondent pas la
+même chose.
+
+Ce qu'il faudrait : que `lotInchange` compare ce que l'empreinte couvre, et
+rien d'autre. Un lot dont seule la documentation a été replacée par une fusion
+n'est pas un autre lot — et la règle « une tâche = un lot » condamne sinon tout
+lot qui croise deux fusions à repayer la batterie pour un numéro de paragraphe.
+
+Non fait ici : c'est le lot d'une autre session (`CLAUDE.md` §5, hors
+périmètre).
+
 ## ⏳ `test-accueil-vide-porte-e2e` dépend de l'état que la base a gardé
 
 **Mesuré le 17 septembre 2026, des deux côtés.** Jouée seule, elle passe ; jouée
@@ -65,8 +89,24 @@ trois notes sont partis. Ce qu'elle montre maintenant, et rien d'autre :
 **un appui = un jour du chantier**. Il touche le 18 et le 22 ; sa cliente lit
 « nous venons le 18 et le 22 ». S'il ne touche que le 18, le jour d'à côté se
 pose tout seul, en creux, et bouge dès qu'il touche ailleurs — le geste de
-tous les jours ne change pas. Sur un chantier d'une journée : une date, ou
-deux au choix, comme aujourd'hui (« changer » sur la durée le montre).
+tous les jours ne change pas.
+
+**Puis « fais les deux »**, puis *« je comprends pas comment ça marche »* —
+et il a dicté le geste, qui est la version en ligne (la troisième du soir) :
+
+| | |
+|---|---|
+| un appui sur un jour libre | pose le **premier jour** ; le chantier se remplit **d'affilée** derrière (8 jours, le 23 : les 8 se posent) |
+| un appui sur un jour **du chantier** | l'**enlève** ; le chantier se décale d'un jour au bout — le 18 et le 22, c'est toucher le 18 et enlever le 21 |
+| l'interrupteur « Deuxième proposition » | allumé, le prochain appui pose le premier jour de la 2e, en or ; éteint, elle disparaît |
+| la cliente | « Quels jours vous arrangent ? », un bouton radio par proposition ; une seule : « Nous venons le … et le … » |
+
+Une seule règle pour toutes les durées : sur une journée, deux propositions
+d'un jour sont les deux dates au choix d'aujourd'hui. « Une ou deux, jamais
+plus » ne bouge pas. **Ce que le lot devra ranger, s'il tranche :** par
+proposition, un premier jour ET la liste des jours enlevés (ou la liste des
+jours, calculée) ; la réponse de la cliente désigne une proposition ; et
+`creneauxDuChantier` doit savoir sauter des jours.
 
 **Ce que le code fait aujourd'hui**, et il faut le savoir avant d'ouvrir le lot :
 
@@ -84,9 +124,11 @@ Il n'a pas compris l'interrupteur, et sa règle tranche : sur plusieurs jours,
 les jours qu'il touche SONT les jours du chantier. Le sens de l'appui s'écrit
 alors sur l'écran — « Posez les 2 jours du chantier » / « Proposez une ou deux
 dates », et « 1er jour · 2e jour » / « proposée » sur chaque ligne —, et la
-carte « ce que Linotte lit » le montre. **Ce qu'il perd, et qu'il faut lui
-dire s'il tranche :** proposer deux dates AU CHOIX sur un chantier de
-plusieurs jours. « Une autre date » reste offert à la cliente.
+carte « ce que Linotte lit » le montre. Ce que cette version lui faisait
+perdre — deux dates au choix sur plusieurs jours —, il l'a vu et refusé le
+soir même ; et « un appui = un jour » ne lui parlait pas non plus. Sa
+version à lui garde le geste d'aujourd'hui (un appui, un bloc d'affilée) et
+n'y ajoute qu'un retrait — c'est la moins étrangère à ce qu'il fait déjà.
 
 **Ce que sa règle interdit toujours :** montrer une demi-journée au client
 (`scripts/test-creneaux-planning.ts`). Les deux issues ne montrent que des
@@ -99,6 +141,23 @@ migration, et une acceptation qui écrit les créneaux tels quels au lieu de les
 étaler. Expand/contract (`.claude/rules/deployment-safety.md`).
 
 ---
+
+## LES AUTRES ÉCRANS D'ARGENT N'ONT PAS ENCORE L'ENVELOPPE DE LA PANNE DE BASE
+
+**Fait le 17 septembre 2026 :** les trois gestes de règlement de `/termines/tva`
+rendent la panne de base en valeur, journalisée, avec le geste sûr
+(`ARCHITECTURE.md` §379).
+
+**Ce qui reste, et ce n'est pas urgent :** les autres actions qui écrivent de
+l'argent laissent encore l'exception sortir — émission d'une facture, envoi d'un
+devis, avoirs. Elles tomberont sur le même écran muet le jour où sa base
+flanchera pendant l'un de ces gestes. Les acomptes du brouillon
+(`src/app/chantiers/[id]/facture/actions.ts`) journalisent déjà, mais rendent
+une phrase générique sans nommer la base.
+
+Le patron seul peut dire si cela vaut un lot ; ce n'est pas à refaire à l'aveugle
+partout, parce qu'une enveloppe posée sans discernement finirait par avaler des
+refus métier.
 
 ## LE SECOND ANNEAU DE L'ACCUEIL — « Créer une facture » — RESTE À FAIRE
 

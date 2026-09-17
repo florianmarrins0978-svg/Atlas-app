@@ -31337,8 +31337,90 @@ sept allures comme pour le crème d'origine.
 gris de la palette pendant que la page se peignait à l'encre — la faute exacte
 que l'en-tête de ce fichier raconte pour le fond vert. Elle lit désormais
 `ctx.teintes`.
+---
 
-## §379 — Le garde-fou de `main` comparait des DATES : c'est le CONTENU qui décide
+## §379 — Une panne de base est un REFUS comme un autre : elle revient en valeur, avec ses mots
+
+**Sa capture du 17 septembre 2026, à 15 h 57.** Facture Martins, 745,00 € TTC
+dont 250,00 € déjà reçus ; il tape le solde, 495,00 €, au 17/09. L'écran répond
+« Ce règlement n'a pas pu être enregistré. Réessayez. »
+
+**Le produit n'avait aucun défaut.** 250 + 495 = 745 au centime : le parcours
+entier rejoué sur une base à jour passe (`scripts/test-reglement-panne-de-base.ts`).
+Ce qui avait lâché, c'est sa BASE — la fiche que son espace publie de lui-même,
+écrite trois minutes avant la capture, portait :
+
+```
+Base           : état inconnu — la base n'a pas répondu
+La base refuse : échec d'une forme non reconnue
+```
+
+et, en même temps, « Serveur : répond sur le port 3000 ». Les deux vont
+ensemble : `/api/health/live` ne touche délibérément JAMAIS la base
+(§ « liveness »), donc un serveur vert ne dit rien d'une base morte. C'est
+exactement le piège du 13 septembre, vu d'un autre écran.
+
+### Ce qui nous revenait, et c'est la seule moitié que du code répare
+
+Les trois actions de règlement laissaient l'exception **sortir**. Or Next.js
+remplace en production le message d'une exception d'action serveur par un
+identifiant opaque (`AGENTS.md`) : l'écran retombait donc sur sa phrase de
+dernier recours, et **rien n'était journalisé de notre côté**. La prochaine
+session aurait cherché dans le produit, où il n'y avait rien.
+
+Pire, le conseil rendu était le mauvais. « Réessayez » sur une base qui ne
+répond pas ne donne rien, et il a réappuyé.
+
+### Le mécanisme existait depuis quatre jours, et n'était pas branché
+
+`src/lib/panne-de-base.ts` est né le 13 septembre de sa panne « Une erreur ·
+Référence : 3285538552 » : il lit le `SQLSTATE` sous les enveloppes de Drizzle,
+dit si c'est un décalage code/base, et rend la phrase — dont le geste SÛR,
+rallumer l'espace, qui ne touche à aucune donnée (`CLAUDE.md` §4 septies). Il ne
+servait qu'à la création de compte.
+
+| | |
+|---|---|
+| l'enveloppe | `sansPanneMuette` dans `src/app/termines/tva/actions.ts` — journalise la panne entière avec son code, rend le refus en valeur |
+| la phrase | `phraseDeLaPanne(cause, surLeBanc, codeSql, echec)` |
+| ce qui reste au `catch` du navigateur | l'appel qui n'est **jamais revenu**, et rien d'autre |
+
+**`echec` n'a PAS de valeur par défaut, et c'est délibéré.** La phrase portait
+« Votre compte n'a pas pu être créé » en dur : branchée telle quelle sur les
+règlements, elle aurait annoncé au patron que son COMPTE n'avait pas pu être
+créé alors qu'il notait un paiement. Un défaut par défaut se recopie sans qu'on
+le voie ; l'exiger oblige chaque écran à dire de quoi il parle.
+
+### Deux corrections voisines, du même geste
+
+- **Le retrait rendait `void`.** Un échec ne montrait RIEN : la ligne restait à
+  l'écran et il réappuyait sur une croix qui ne faisait rien. C'est pire que
+  « Réessayez » — un défaut muet se cherche dans le produit, où il n'est pas.
+- **`revalidatePath` ne part plus qu'en cas de succès, et hors de l'enveloppe.**
+  Rafraîchir après un refus ne sert à rien ; et une panne du rafraîchissement
+  attrapée par l'enveloppe annoncerait « non enregistré » sur un règlement qui,
+  lui, est bien en base.
+
+### Ce que la suite fabrique, plutôt que d'imiter
+
+`scripts/test-reglement-panne-de-base.ts` **retire vraiment** la colonne
+`paiements_facture.numero` (migration 0092) — l'état exact d'un espace qui n'a
+pas rejoué ses migrations, `42703` — puis vraiment le droit `DELETE` pour le
+retrait, `42501`. Une erreur inventée ne dirait rien du chemin réel.
+
+Ses DDL sont **idempotents et rejoués à l'arrivée** : une suite tuée au délai
+(huit minutes, `run-all-tests.ts`) n'exécute aucun `finally`, et laisserait la
+base amputée pour les soixante suites suivantes — qui accuseraient alors le
+produit (la demi-heure du 26 août 2026).
+
+### Ce que ce lot ne répare PAS
+
+La base de son espace. Elle se remet d'aplomb en rallumant l'espace ; si une
+migration refuse encore de passer, c'est désormais l'ÉCRAN qui le dira — au lieu
+d'un « Réessayez » qui envoie chercher dans le produit.
+
+
+## §380 — Le garde-fou de `main` comparait des DATES : c'est le CONTENU qui décide
 
 **Sa colère du 17 septembre 2026 :** *« maintenant les sessions rejouent des
 batteries en boucle juste parce qu'une a touché un fichier »*.

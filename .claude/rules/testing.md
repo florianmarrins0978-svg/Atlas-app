@@ -139,7 +139,7 @@ batterie entière.
 | **seulement** ce que `main` a apporté | `npx tsx scripts/verifier-apres-fusion.ts` |
 
 Le garde-fou nomme lui-même le complément dans son refus : il n'y a plus à s'en
-souvenir au bout de trois heures. `ARCHITECTURE.md` §379.
+souvenir au bout de trois heures. `ARCHITECTURE.md` §380.
 
 ## Un rouge venu d'AILLEURS ne ferme pas la porte — une régression NOUVELLE, si
 

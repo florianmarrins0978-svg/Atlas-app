@@ -65,7 +65,7 @@ compare des CONTENUS, jamais des dates** (17 septembre 2026) : une fusion
 réécrit ce qu'elle apporte, et cela périmait le verdict de tout lot vert dès
 qu'une session voisine fusionnait — cinquante minutes pour rien, en boucle.
 Quand seul ce que `main` a apporté a bougé, il renvoie au complément d'une
-minute, jamais à la batterie (`ARCHITECTURE.md` §379). Et il ne se
+minute, jamais à la batterie (`ARCHITECTURE.md` §380). Et il ne se
 contourne pas : c'est lui qui a été corrigé, à la racine, les deux fois où il
 bloquait à tort.
 

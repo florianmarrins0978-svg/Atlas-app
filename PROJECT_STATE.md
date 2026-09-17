@@ -12,7 +12,7 @@ donc tout lot vert perdait son verdict dès qu'une session voisine fusionnait �
 et le refus n'annonçait que la batterie entière. Il compare désormais des
 CONTENUS (`scripts/_empreinte-des-sources.mjs`, partagé avec la batterie), et
 quand seul ce que `main` a apporté a bougé, il renvoie au complément d'une
-minute qu'il nomme lui-même. `ARCHITECTURE.md` §379.
+minute qu'il nomme lui-même. `ARCHITECTURE.md` §380.
 
 ## FAIT : LES ACOMPTES SUIVENT LA CORRECTION DU DEVIS (17 septembre 2026)
 
@@ -27,6 +27,17 @@ d'un chantier. Et « + Ajouter un acompte » dit pourquoi il refuse.
 Plus aucun gris sur le PDF : étiquettes de colonnes, coordonnées et mentions
 légales passent à l'encre, la ligne « DÉSIGNATION … TOTAL TTC » et « BASE HT ·
 TAUX · TVA » se lisent en gras noir. `ARCHITECTURE.md` §378.
+
+## FAIT : UNE PANNE DE BASE SE DIT SUR LES RÈGLEMENTS (17 septembre 2026)
+
+Sa capture de 15 h 57 : « Ce règlement n'a pas pu être enregistré. Réessayez. »
+sur 495,00 € dus au centime. Le produit était juste — sa base ne répondait plus,
+et les trois actions de règlement laissaient l'exception sortir : rien à l'écran,
+rien au journal. Elles rendent désormais la panne en valeur, avec le code de la
+base et le geste sûr (`ARCHITECTURE.md` §379).
+
+**Sa base à lui n'est pas réparée par ce lot** : elle se remet d'aplomb en
+rallumant l'espace.
 
 ## FAIT : L'ACCUEIL SANS CHANTIER — LA PORTE DU DEVIS AU TIERS HAUT (17 septembre 2026)
 

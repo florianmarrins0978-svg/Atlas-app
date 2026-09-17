@@ -23,7 +23,7 @@ fichier a changé », désormais partagée (`scripts/_empreinte-des-sources.mjs`
 Et ce qui a bougé ne se vaut plus : un fichier du lot fait remesurer au niveau
 du lot ; ce que `main` a apporté renvoie au complément d'une minute
 (`verifier-apres-fusion.ts`), que le refus nomme lui-même — il ne l'avait
-jamais fait. Voir `ARCHITECTURE.md` §379.
+jamais fait. Voir `ARCHITECTURE.md` §380.
 
 ### Le complément après fusion ne jouait RIEN, et rendait un ✅
 
@@ -206,6 +206,83 @@ une date, ou deux au choix, comme aujourd'hui. Ce qu'il perdrait s'il
 tranche — deux dates au choix sur un chantier de plusieurs jours — est écrit
 dans `TODO.md`, pas tu. Parcourue à 390 px dans un vrai navigateur, les six
 gestes joués, sans débordement ni erreur.
+
+**Puis « fais les deux », une heure plus tard** — *« sur les chantiers de deux
+jours ou plus il faut quand même pouvoir proposer plus d'un jour au
+client »*. Il a vu ce que la version simple lui faisait perdre, et il n'en
+veut pas. Donc une **possibilité** est les jours du chantier, et il peut en
+proposer deux : « Proposer aussi une autre possibilité » sous la liste, la 2e
+dessinée en or (le chiffre en encre, pas en blanc : le blanc sur l'or ne
+tenait pas le contraste), et la cliente lit « Quels jours vous arrangent ? »
+avec un bouton radio par possibilité. Une seule règle pour toutes les
+durées — sur une journée, deux possibilités d'un jour SONT les deux dates au
+choix d'aujourd'hui. Les jours posés à côté d'une possibilité ne marchent
+jamais sur l'autre : la seconde se pose après ce que la première a pris.
+Rejouée en navigateur : retirer la 2e la ferme et rouvre la porte, 1 et
+3 jours, sans débordement ni erreur.
+
+**Troisième version, dictée par lui** — *« je comprends pas comment ça
+marche »*, puis le geste exact : *« je clique sur un jour pour proposer la
+première date, puis sur le deuxième pour la deuxième, avec un bouton on/off
+pour la deuxième proposition ; et par défaut, sur un chantier de 8 jours, si
+je clique sur le 23 ils mettent les 8 d'affilée, et si je décide que non le
+25, je clique dessus pour l'enlever »*. C'est la version en ligne : un appui
+pose le premier jour et le chantier se remplit d'affilée (le geste
+d'aujourd'hui, inchangé) ; un appui sur un jour du chantier l'enlève et le
+chantier se décale d'un jour au bout — le 18 et le 22, c'est toucher le 18 et
+enlever le 21 ; un interrupteur « Deuxième proposition » sous la liste, et le
+prochain appui pose son premier jour, en or. « changer » passe par 1, 2, 3 et
+8 jours. « Un appui = un jour du chantier » et la porte « Proposer aussi une
+autre possibilité » sont partis. Rejouée en navigateur : 8 jours posés d'un
+appui, un jour enlevé et le bloc décalé, la 2e proposition posée, un de ses
+jours enlevé, l'interrupteur éteint — sans débordement ni erreur.
+
+
+### « Ce règlement n'a pas pu être enregistré » : la base était en cause, et rien ne le disait
+
+Sa capture du 17 septembre, à 15 h 57 : facture Martins, 745,00 € TTC dont
+250,00 € reçus, et le solde de 495,00 € refusé par « Ce règlement n'a pas pu
+être enregistré. Réessayez. »
+
+**La règle, elle, acceptait le montant** — 250 + 495 = 745 au centime, rejoué
+sur une base à jour (`scripts/test-reglement-panne-de-base.ts`). Ce qui avait
+lâché, c'est sa BASE : la fiche que son espace publie tout seul, écrite trois
+minutes plus tôt, portait « Base : état inconnu — la base n'a pas répondu » et
+« La base refuse : échec d'une forme non reconnue ».
+
+**Ce qui est corrigé ici, et c'est la moitié qui nous revient : la panne était
+MUETTE.** `soldeFactureAction`, `noterPaiementAction` et `retirerPaiementAction`
+laissaient l'exception sortir — Next.js la remplace par un identifiant opaque
+(`AGENTS.md`), l'écran retombait sur sa phrase de dernier recours, et **rien
+n'était écrit nulle part**. Le conseil rendu était même le mauvais : réessayer
+sur une base qui ne répond pas ne donne rien.
+
+Le mécanisme existait depuis le 13 septembre (`src/lib/panne-de-base.ts`, né de
+sa panne « Une erreur · Référence : 3285538552 ») ; il n'avait jamais été
+branché sur l'écran des règlements. Il l'est. Une panne de base y revient
+désormais **en valeur**, journalisée avec son code `SQLSTATE`, et ce qui
+s'affiche nomme la base et le geste SÛR — rallumer l'espace, qui ne touche à
+aucune de ses données (`CLAUDE.md` §4 septies).
+
+Trois autres choses avec :
+
+- **`phraseDeLaPanne` ne porte plus « Votre compte n'a pas pu être créé » en
+  dur.** Branchée telle quelle, elle aurait annoncé au patron que son COMPTE
+  n'avait pas pu être créé alors qu'il notait un paiement. Chaque écran dit
+  désormais ce qui a échoué chez lui, et le paramètre n'a **pas** de valeur par
+  défaut : un défaut se recopie sans qu'on le voie.
+- **Le retrait d'un règlement rendait `void`** : un échec ne montrait rien du
+  tout, la ligne restait, et il réappuyait sur une croix qui ne faisait rien.
+  Il rend un résultat, et l'écran l'affiche.
+- **`revalidatePath` ne part plus qu'en cas de succès**, et hors de
+  l'enveloppe : une panne de rafraîchissement annoncerait « non enregistré » sur
+  un règlement bien en base.
+
+**Ce qui n'est PAS réparé par ce lot, et il faut le lire comme tel** : la base
+de son espace. Elle se remet d'aplomb en rallumant l'espace depuis
+github.com/codespaces ; si la migration refuse encore de passer, c'est
+désormais l'écran qui le dira, au lieu d'un « Réessayez ».
+
 ### La publication des planches rougissait depuis la note vocale à plat
 
 Le flux `pages.yml` est tombé sur `test:boutons-verts` dès la poussée du

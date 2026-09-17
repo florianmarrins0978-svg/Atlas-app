@@ -146,7 +146,7 @@ export function phraseDuRefus(restes: Reste[]): string {
  * fichier-ci. Il gardait donc SA façon de dire « ce fichier a changé » — par
  * date d'écriture —, et elle a fini par contredire celle-ci : une fusion
  * périmait le verdict de tout lot vert (`CLAUDE.md` §3, `ARCHITECTURE.md`
- * §379). Il n'y en a plus qu'une, et elle ne se réexporte pas d'ici : chacun la
+ * §380). Il n'y en a plus qu'une, et elle ne se réexporte pas d'ici : chacun la
  * prend là où elle vit.
  */
 

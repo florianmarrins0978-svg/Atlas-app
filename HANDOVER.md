@@ -23,7 +23,7 @@ CONTENUS, avec la fonction de la batterie (`scripts/_empreinte-des-sources.mjs`)
 | « main a apporté N fichier(s) » | `npx tsx scripts/verifier-apres-fusion.ts` — une minute, souvent rien |
 | rien : la poussée passe | rien |
 
-`ARCHITECTURE.md` §379.
+`ARCHITECTURE.md` §380.
 
 ---
 ## Les acomptes d'un devis SUIVENT sa correction — et le papier est tout noir
@@ -38,6 +38,25 @@ s'affiche. `ARCHITECTURE.md` §377.
 Le papier (PDF devis et facture) : toutes les écritures à l'encre, la ligne
 d'en-tête du tableau et « BASE HT · TAUX · TVA » en gras noir. La teinte se
 décide dans `teintesDe` et nulle part ailleurs. `ARCHITECTURE.md` §378.
+
+## Une panne de base ne se lit plus « Réessayez » sur les règlements
+
+Depuis le 17 septembre 2026, les trois gestes de règlement de `/termines/tva`
+(« J'ai reçu le paiement », « Enregistrer ce règlement », la croix qui retire)
+ne laissent plus une exception sortir de l'action : elle est journalisée avec
+son code `SQLSTATE` et revient **en valeur**, avec la phrase de
+`src/lib/panne-de-base.ts` — qui nomme la base et donne le geste sûr, rallumer
+l'espace (`ARCHITECTURE.md` §379).
+
+**Ce qui l'a provoqué :** sa capture du 17 septembre à 15 h 57, « Ce règlement
+n'a pas pu être enregistré. Réessayez. » sur 495,00 € parfaitement dus. Le
+produit était juste ; c'est sa base qui ne répondait plus, et rien ne le disait.
+
+**Le réflexe qui aurait fait gagner l'heure**, et il vaut pour toute plainte de
+ce genre : lire la fiche que son espace publie tout seul — la question GitHub
+n° 47, « État du banc d'essai ». Elle porte le commit servi, l'état de la base
+et ce que la migration refuse. « Serveur : répond sur le port 3000 » **ne dit
+rien** d'une base morte : `/api/health/live` ne la touche jamais.
 
 ---
 ## L'accueil vide : la porte du devis est au TIERS HAUT, poussée par deux ressorts
@@ -69,7 +88,10 @@ n'existe qu'**après**, au planning — et le client n'en sait rien.
 **Rien n'est codé** : la planche `appli/deux-jours-pas-colles.html` (119)
 attend sa réponse. Refaite le soir même — *« je comprends rien, l'idée c'est
 que ce soit simple et joli »* — sur une seule idée : **un appui, un jour du
-chantier**, le jour d'à côté posé tout seul quand il n'en touche qu'un.
+chantier**, puis refaite une troisième fois **sur le geste qu'il a dicté** :
+un appui pose le premier jour et le chantier se remplit d'affilée, un appui
+sur un jour du chantier l'enlève (le chantier se décale d'un jour), et un
+interrupteur « Deuxième proposition » pour que la cliente choisisse.
 `TODO.md`, en tête.
 
 ---
