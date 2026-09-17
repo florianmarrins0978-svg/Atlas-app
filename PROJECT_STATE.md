@@ -5,18 +5,30 @@
 
 ---
 
+## « En cours » reste à l'écran quand il descend (16 septembre 2026)
+
+Sa demande : *« quand je descends, le "en cours" disparaît ; il doit rester
+visible tant qu'il y a des chantiers »*. La rubrique est clouée au haut du fil
+de l'accueil (`sticky`, fond crème, `EcranChantiers.tsx`).
+
+**À ne pas défaire :** les 10 px du haut sont portés par le CONTENU du fil, pas
+par le cadre qui défile — une marge intérieure sur le cadre rétrécit la zone où
+`sticky` peut clouer, et les chantiers repassent au-dessus de la rubrique.
+`scripts/test-accueil-en-cours-colle-e2e.ts` le mesure.
+
 ## FAIT : « LA DEMI-JOURNÉE RETIRÉE NE SE REPOSE PAS » (16 septembre 2026)
 
 Sa panne, capture à l'appui. Séquence sans rechargement — rendre une
 demi-journée, « Retirer », reposer ailleurs : l'écran gardait les créneaux
 d'avant, peignait le chantier sur son ancien jour et réclamait une moitié qui
 n'existait qu'à l'écran. `EtatPose` porte désormais les créneaux, et
-`retirerDuJour` les vide avec la date. `ARCHITECTURE.md` §370.
+`retirerDuJour` les vide avec la date. `ARCHITECTURE.md` §371.
 
 Second volet du même jour : la moitié libre rangée **sous le nom du chantier**
 (`libresAvant`) n'offrait pas « Poser ici » — une demi-journée rendue ne se
 remettait donc jamais au même endroit. Condition unique `poserIci`, mêmes
 gestes aux deux montages de `LigneLibre`.
+
 
 ## La décennale et le médiateur (16 septembre 2026)
 

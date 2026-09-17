@@ -113,6 +113,17 @@ HEAD:main`). Le garde-fou mesure **le dossier que la commande vise**
 (`dossierDeLaCommande`) — un lot de niveau 2 n'attend jamais un lot de
 niveau 3 voisin. Le détail est dans `CLAUDE.md` §6.
 
+## `main` a avancé sous un lot éprouvé : on rejoue la rencontre, pas la batterie
+
+**Sa règle du 17 septembre 2026 : *« Rejoue juste ce qui a bougé ! »*.**
+`npx tsx scripts/verifier-apres-fusion.ts`, dans le dossier du lot une fois reposé sur
+`main`. Il vaut la batterie si **le lot est identique à la ligne près** à ce
+qu'elle a mesuré, si son verdict ne portait aucun rouge nouveau, et si la
+rencontre rejouée est verte : suites base, écrans du lot, écrans touchés par
+`main`, suites apportées par `main`. Le verdict déposé garde le niveau du
+verdict d'avant ; le garde-fou le relit comme n'importe quel autre. Un lot qui
+a changé, un verdict d'avant ce mécanisme, un rouge nouveau : batterie.
+
 ## Un rouge déjà rouge sur `main` ne ferme pas la porte — un rouge NOUVEAU, si
 
 **Sa règle du 16 septembre 2026 :** *« état de référence connu + nouveau lot →

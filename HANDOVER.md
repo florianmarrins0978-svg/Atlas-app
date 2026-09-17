@@ -17,7 +17,7 @@ ne repeint que ces colonnes laisse donc une liste périmée — c'est la panne d
 16 septembre 2026 (« la demi-journée retirée de Mr Julien ne se repose pas »),
 où le chantier se peignait sur son ancien jour et réclamait une moitié qui
 n'existait qu'à l'écran. Toute action qui pose, retire ou déplace rend
-désormais ses créneaux. `ARCHITECTURE.md` §370.
+désormais ses créneaux. `ARCHITECTURE.md` §371.
 
 Et une moitié libre se dessine à deux endroits — en queue de journée, ou sous
 le nom du chantier qu'elle précède (`libresAvant`). Les deux montages doivent
@@ -30,6 +30,15 @@ Depuis le 16 septembre 2026, l'assureur décennale et le médiateur se saisissen
 dans « Mon entreprise » et remplissent tout seuls les articles 9 et 11
 (`src/lib/mentions-obligatoires.ts`). Un crochet dont la valeur manque RESTE un
 crochet : c'est ce qui le rend visible. `ARCHITECTURE.md` §368.
+
+## « En cours » est clouée en haut du fil de l'accueil
+
+Sa demande du 16 septembre 2026 : *« quand je descends, le "en cours" disparaît ;
+il doit rester visible tant qu'il y a des chantiers »*. La rubrique est en
+`sticky` dans le fil (`EcranChantiers.tsx`). **Les 10 px du haut sont portés par
+le contenu du fil, jamais par le cadre qui défile** : une marge intérieure sur le
+cadre rétrécit la zone où `sticky` peut clouer, et les chantiers repassent
+au-dessus d'elle. Mesuré : `scripts/test-accueil-en-cours-colle-e2e.ts`.
 
 ## Avant de pousser : `npm run niveau`
 

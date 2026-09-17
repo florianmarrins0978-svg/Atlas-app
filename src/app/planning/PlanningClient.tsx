@@ -3760,11 +3760,38 @@ function CarteDuJour({
                        **Seules SES demi-journées de CE jour sont offertes.**
                        Un chantier qui n'occupe que le matin n'a pas d'après-midi
                        à rendre, et l'offrir ferait un bouton qui n'écrit rien. */
-                    <BasculeDemi
-                      depart={null}
-                      demis={demisDeCeJour}
-                      onChoisir={(demi) => liberer(c.id, jour, demi)}
-                    />
+                    <>
+                      <BasculeDemi
+                        depart={null}
+                        demis={demisDeCeJour}
+                        onChoisir={(demi) => liberer(c.id, jour, demi)}
+                      />
+                      {/* ─── LA SORTIE DU GESTE — 16 septembre 2026 ─────────
+                          *« Si je clique sur déplacer j'ai aucun moyen
+                          d'annuler mon choix si je veux plus déplacer. »*
+
+                          **L'interrupteur REMPLACE « Déplacer » et
+                          « Retirer »** : une fois ouvert, les deux seules
+                          issues écrivaient en base — rendre le matin, ou
+                          rendre l'après-midi. Sortir d'un appui de trop
+                          demandait donc de rendre une demi-journée pour de
+                          bon, d'aller la reprendre dans le tiroir du bas, et
+                          de la reposer là où elle était.
+
+                          **Sa règle existait déjà à trois lignes d'ici** :
+                          *« Annuler ramène aux deux voies, à chaque étape »*
+                          (10 septembre 2026, les trois temps d'« Ajouter »).
+                          « Déplacer » était le seul geste de cet écran à ne
+                          pas l'avoir — un oubli, pas une décision.
+
+                          **Il reprend la place de « Retirer »**, à droite de
+                          l'interrupteur : la rangée garde ses deux boutons au
+                          même endroit, et rien ne se cherche
+                          (`CLAUDE.md` §3). */}
+                      <Petit data-atlas="annuler-deplacer" onClick={() => setOuvert(null)}>
+                        Annuler
+                      </Petit>
+                    </>
                   ) : (
                     <>
                       <Petit
