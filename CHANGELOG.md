@@ -8,25 +8,6 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-17
 
-### Le complément d'après-fusion ne s'exécutait jamais : un vert qui ne mesurait rien
-
-`verifier-apres-fusion.ts` importait `lireLesReponses` depuis
-`verifier-rouge-prealable.ts`. Or ce fichier appelait `main()` au niveau du
-module : **l'import le jouait**, et son `process.exit(0)` terminait le
-processus avant que le complément ait exécuté une seule ligne. Son journal
-était mot pour mot celui de l'autre script, et le code de sortie valait 0.
-
-Un contrôle qui rend vert sans avoir mesuré est le pire état que ce dépôt
-connaisse (`CLAUDE.md` §5) — et celui-ci l'aurait rendu à chaque lot suivant,
-sans que personne le voie. Trouvé en lisant son journal : il ne portait aucune
-des phrases que le complément écrit.
-
-La réponse existait déjà dans le dépôt, avec sa raison : `verifier-chaine-dictee.mts`
-porte ce garde depuis qu'une suite qui l'importait déclenchait un appel de
-modèle. Même garde, même forme. Et `scripts/test-controle-importe-ne-joue-rien.ts`
-l'exige désormais de **tout** exécutable de `scripts/` qu'un autre script
-importe — les aides en « _ », elles, n'exécutent rien.
-
 ### La comparaison d'un rouge se fait DES DEUX CÔTÉS, dans le même état
 
 Le mécanisme de la veille rejouait la suite rouge sur `main` seul : verte
