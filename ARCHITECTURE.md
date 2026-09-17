@@ -31206,3 +31206,44 @@ niveau 3 pour SON propre risque ; une étape hors suites, un bilan incomplet ou
 un verdict sans la liste de ses suites ferment toujours la porte ; et un test
 vert sur `main` devenu rouge avec le lot bloque la fusion.
 
+---
+
+## §375 — `main` qui avance ne refait pas la batterie : la rencontre se mesure
+
+**Sa règle du 17 septembre 2026 :** *« Chaque lot doit prouver SON propre
+travail. Le fait que main change parce qu'une autre session a fusionné ne doit
+jamais, à lui seul, provoquer une nouvelle batterie complète. […] Si les
+changements arrivés de main sont sans rapport avec le lot : aucun nouveau test
+lourd. S'ils touchent réellement une dépendance utilisée par le lot : rejoue
+uniquement les tests ciblés concernés. »*
+
+**CE QUI A ÉTÉ RETIRÉ.** Le complément du 17 septembre au matin (§370) rejouait,
+à chaque avancée de `main` : **toutes** les suites du dépôt, les écrans du lot,
+les écrans touchés par `main`, et les suites apportées par `main` — sans jamais
+demander si les deux se rencontraient. Deux sessions dans le même grand domaine
+se relançaient l'une l'autre indéfiniment, et le §6 de `CLAUDE.md` demandait
+même la batterie entière dès qu'une pièce partagée bougeait.
+
+**CE QUI LE REMPLACE : `rencontreReelle`.** Le graphe d'imports sait désormais
+dire les deux sens — ce que le lot emploie (`socle`, neuf) et ce qui l'emploie
+(`cône`, qui servait déjà au rayon). La rencontre est l'intersection entre ce
+que `main` a apporté et cet entourage. Vide : le verdict du lot vaut tel quel,
+et le complément le repose sur l'arbre courant sans rien jouer. Non vide : les
+suites de CES fichiers-là, et elles seules — les suites du dépôt seulement si la
+rencontre touche `src/lib` ou `src/server`, puisque ce sont les règles et
+l'isolation qu'elles éprouvent.
+
+**Ce qui ne se lit pas dans le graphe entre toujours** : une migration, un
+réglage de construction, un fichier d'outillage n'ont pas d'arête. C'est le côté
+sûr, et c'est déjà ce que le PLANCHER dit du niveau. Les documents, eux, ne
+s'exécutent pas : ils ne rencontrent rien.
+
+**Ce qui reste une batterie entière** : un lot de niveau 3 pour son propre
+risque, ou une rencontre qui atteint elle-même le niveau 3. Jamais parce que
+`main` a bougé.
+
+Son exemple, éprouvé tel quel dans `scripts/test-apres-fusion.ts` : la session A
+tient sa fiche client, la session B fusionne un plan d'arrosage — A ne
+recommence rien ; B modifie `civilite.ts`, que la fiche client emploie — A
+rejoue les seules suites client.
+

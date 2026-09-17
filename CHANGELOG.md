@@ -8,6 +8,25 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-17
 
+### `main` qui avance ne refait plus la batterie : on mesure la rencontre, pas la coïncidence
+
+**Sa règle :** *« Chaque lot doit prouver SON propre travail. Le fait que main
+change parce qu'une autre session a fusionné ne doit jamais, à lui seul,
+provoquer une nouvelle batterie complète. »*
+
+Le complément rejouait jusque-là toutes les suites du dépôt et tous les écrans
+touchés de part et d'autre, sans demander si les deux se croisaient : deux
+sessions dans le même domaine se relançaient l'une l'autre sans fin. Le graphe
+d'imports sait maintenant dire les **deux sens** — ce que le lot emploie, et ce
+qui l'emploie —, et la rencontre est l'intersection avec ce que `main` a
+apporté. Vide : rien n'est rejoué, le verdict du lot est reposé sur l'arbre
+courant. Non vide : les suites de ces fichiers-là, et elles seules.
+
+Ce que le graphe ne lit pas — migration, outillage, réglage de construction —
+entre toujours dans la rencontre, côté sûr. La batterie entière reste réservée à
+un lot de niveau 3 pour son propre risque, ou à une rencontre qui l'atteint.
+Son exemple est éprouvé tel quel. `ARCHITECTURE.md` §375.
+
 ### Un rouge venu d'ailleurs ne bloque plus un lot : on rejoue les seuls rouges sur la base de `main`
 
 **Sa règle**, après une journée perdue sur un lot prêt depuis le matin : *« Je

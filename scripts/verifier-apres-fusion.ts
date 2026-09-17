@@ -8,7 +8,8 @@ import { baseDuLot, commitCourant } from "./_temoin-de-main.mjs";
 import { lireLesReponses } from "./verifier-rouge-prealable";
 import { cheminsDuLot, evaluerLeLot, rougesToleres } from "./_niveau-de-risque.mjs";
 import { suitesDesRoutes } from "./_suites-ciblees.mjs";
-import { lotInchange, rougesApresComplement, suitesDuComplement } from "./_apres-fusion.mjs";
+import { construireLeGraphe } from "./_rayon-impact.mjs";
+import { lotInchange, rencontreReelle, rougesApresComplement, suitesDuComplement } from "./_apres-fusion.mjs";
 import { prendreUnAtelierSync } from "./_atelier";
 import { AUTH, CRON, IA_COUPEE, SANS_CLES_IA, basesDeLAtelier } from "./_bases-essai";
 
@@ -82,39 +83,86 @@ if ((precedent.niveau ?? 0) < lot.niveau) {
   refuser(`le verdict d'avant est de niveau ${precedent.niveau ?? "?"}, le lot exige ${lot.niveau}`, lot.niveau >= 3 ? "npm run verifier:avant-livraison" : "npm run verifier:avant-fusion");
 }
 
-// **Ce que main a apporté entre les deux bases.**
+// **Ce que main a apporté entre les deux bases — et ce qui RENCONTRE le lot.**
 const fichiersDuDelta = (git("diff", "--name-only", baseAvant, baseApres) ?? "").split("\n").filter(Boolean);
-const delta = evaluerLeLot(fichiersDuDelta, { racine: RACINE });
-const suites = suitesDuComplement({
-  suitesDuLot: suitesDesRoutes(RACINE, lot.routes),
-  suitesDuDelta: suitesDesRoutes(RACINE, delta.routes),
+const graphe = construireLeGraphe(RACINE);
+const rencontre = rencontreReelle({
+  fichiersDuLot: cheminsDuLot(RACINE),
   fichiersDuDelta,
+  graphe,
 });
+const zone = evaluerLeLot(rencontre.fichiers, { racine: RACINE, graphe });
+const suites = rencontre.sansRapport
+  ? []
+  : suitesDuComplement({
+      suitesDeLaRencontre: suitesDesRoutes(RACINE, zone.routes),
+      fichiersDeLaRencontre: rencontre.fichiers,
+    });
 
 console.log(`\x1b[1mComplément après fusion\x1b[0m — verdict d'avant : ${precedent.verdict} (${ilYA(precedent.quand)}, niveau ${precedent.niveau})`);
-console.log(`main a avancé de ${baseAvant.slice(0, 8)} à ${baseApres.slice(0, 8)} : ${fichiersDuDelta.length} fichier(s), écrans ${delta.routes.join(", ") || "—"}`);
-console.log(`Le lot est inchangé (${lot.raison}) ; écrans du lot : ${lot.routes.join(", ") || "—"}`);
+console.log(`main a avancé de ${baseAvant.slice(0, 8)} à ${baseApres.slice(0, 8)} : ${fichiersDuDelta.length} fichier(s)`);
+console.log(`Le lot est inchangé (${lot.raison})`);
+
+// ─── SANS RAPPORT : RIEN À REJOUER — sa règle du 17 septembre 2026 ─────────
+//
+// *« Si les changements arrivés de main sont sans rapport avec le lot : aucun
+// nouveau test lourd. »* Le verdict du lot portait sur SON travail ; ce que
+// `main` a apporté ne le croise nulle part, ni par ce que le lot emploie, ni
+// par ce qui l'emploie. Le faire attendre serait la cascade qu'il a supprimée.
+if (rencontre.sansRapport) {
+  console.log("\nCe que main a apporté ne rencontre pas ce lot : rien à rejouer.\n");
+  ecrireDernierVerdict(RACINE, {
+    quand: Date.now(),
+    vert: precedent.vert,
+    verdict: `${precedent.verdict} — reposé sur main ${baseApres.slice(0, 8)}, sans rencontre`,
+    empreinte: empreinteDesSources(RACINE),
+    niveau: precedent.niveau ?? 3,
+    rouges: precedent.rouges ?? [],
+    rougesHorsSuites: precedent.rougesHorsSuites ?? [],
+    commit: tete,
+  });
+  console.log("✅ Le verdict du lot vaut sur cet arbre. La fusion est ouverte.\n");
+  process.exit(0);
+}
+
+console.log(
+  `La rencontre porte sur ${rencontre.fichiers.length} fichier(s) : ${rencontre.fichiers.slice(0, 6).join(", ")}` +
+    (rencontre.fichiers.length > 6 ? ` (+${rencontre.fichiers.length - 6})` : "")
+);
 console.log(`Suites navigateur à rejouer (${suites.length}) : ${suites.join(", ") || "aucune"}`);
+
+// **Une rencontre qui atteint elle-même le niveau 3 se rejoue en entier** —
+// une migration arrivée de main sous un lot qui touche la base, par exemple.
+if (zone.niveau >= 3) {
+  refuser(`la rencontre atteint le niveau 3 (${zone.raison})`, "npm run verifier:avant-livraison");
+}
 
 const ATELIER = prendreUnAtelierSync();
 process.env.ATLAS_ADRESSE = ATELIER.adresse;
 const { APP, OWNER, SUPER, REDIS } = basesDeLAtelier(ATELIER);
 
 type Etape = { titre: string; commande: string[]; env?: Record<string, string>; envSupprime?: string[]; suites?: true };
+// **Les types et le style, toujours** : ils sont rapides, et c'est là que la
+// rencontre de deux signatures se voit d'abord.
 const ETAPES: Etape[] = [
   { titre: "Types", commande: ["npm", "run", "typecheck"] },
   { titre: "Lint", commande: ["npm", "run", "lint"] },
-  {
+];
+// **Les suites du dépôt seulement si la rencontre les regarde** : elles
+// éprouvent les règles et l'isolation, donc ce qui vit sous `src/lib` et
+// `src/server`. Une rencontre qui ne touche que des écrans ne les concerne pas.
+if (rencontre.fichiers.some((f) => /^src\/(lib|server)\//.test(f.replace(/\\/g, "/")))) {
+  ETAPES.push({
     titre: "Suites du dépôt",
     commande: ["npm", "test"],
     env: { DATABASE_URL: APP, DATABASE_ADMIN_URL: OWNER, ...AUTH, ...IA_COUPEE },
     envSupprime: ["REDIS_URL", ...SANS_CLES_IA],
     suites: true,
-  },
-];
+  });
+}
 if (suites.length) {
   ETAPES.push({
-    titre: "Écrans du lot et de ce que main a touché",
+    titre: "Les écrans où le lot et main se rencontrent",
     commande: ["npm", "run", "test:e2e", "--", "--seulement", suites.join(",")],
     env: { DATABASE_URL: SUPER, ...AUTH, ...CRON, ...REDIS, ...IA_COUPEE },
     envSupprime: SANS_CLES_IA,
@@ -122,7 +170,7 @@ if (suites.length) {
   });
 }
 
-/** Les suites base, toutes rejouées : leur sort d'avant ne compte plus. */
+/** Les suites base, rejouées seulement quand la rencontre les regarde. */
 function suitesBase(): string[] {
   try {
     return execFileSync(process.execPath, [path.join(RACINE, "node_modules", "tsx", "dist", "cli.mjs"), path.join(__dirname, "run-all-tests.ts"), "--list"], {

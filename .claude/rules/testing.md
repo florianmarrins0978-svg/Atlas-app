@@ -174,6 +174,32 @@ Les cinq cas qu'il a demandés sont éprouvés dans `scripts/test-garde-fusion-m
 (A à E), et la décision elle-même vit dans `scripts/_rouge-prealable.mjs`, sans
 git ni navigateur.
 
+## `main` qui avance ne refait pas la batterie : on mesure la RENCONTRE
+
+**Sa règle du 17 septembre 2026 :** *« Chaque lot doit prouver SON propre
+travail. Le fait que main change parce qu'une autre session a fusionné ne doit
+jamais, à lui seul, provoquer une nouvelle batterie complète. »*
+
+| ce qui arrive | ce qu'on joue |
+|---|---|
+| le lot a passé les contrôles de son niveau | ils **restent valables** tant que le lot ne change pas |
+| `main` avance, sans rapport avec le lot | **rien** — `npm run verifier:apres-fusion` le constate et repose le verdict |
+| `main` touche une dépendance que le lot emploie, ou un appelant du lot | **seulement** les suites de ces fichiers-là |
+| un conflit git | on le résout, et l'on rejoue ce que la résolution touche — c'est la même rencontre |
+| le lot lui-même a changé | son niveau décide à nouveau, depuis zéro |
+
+**La rencontre se MESURE** (`_apres-fusion.mjs`, `rencontreReelle`) : le graphe
+d'imports dit, dans les deux sens, ce que le lot emploie et ce qui l'emploie.
+Ce qui n'est dans aucun des deux ne se rejoue pas. Ce que le graphe ne sait pas
+lire — une migration, un réglage de construction, un fichier d'outillage — entre
+toujours dans la rencontre : c'est le côté sûr.
+
+**La batterie entière reste réservée** à un lot de niveau 3 pour SON propre
+risque, ou à une rencontre qui atteint elle-même le niveau 3 — une migration
+arrivée de `main` sous un lot qui touche la base. Jamais parce que `main` a
+bougé, qu'une autre session a fusionné, qu'elle avait un rouge, ou que deux lots
+travaillent dans le même grand domaine.
+
 ## Une régression découverte donne TOUJOURS un test
 
 Dans cet ordre, sans raccourci :

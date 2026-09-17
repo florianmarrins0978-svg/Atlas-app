@@ -82,6 +82,11 @@ export function construireLeGraphe(racine) {
   const fichiers = fichiersDeSrc(racine);
   const existe = new Set(fichiers);
   const importéPar = new Map();
+  // **Le sens DESCENDANT, et il manquait.** « Qui dépend de ce fichier »
+  // décidait du rayon ; « de quoi ce fichier dépend » décide d'autre chose —
+  // si ce que `main` vient d'apporter touche vraiment ce que le lot emploie
+  // (sa règle du 17 septembre 2026, `_apres-fusion.mjs`).
+  const importe = new Map();
 
   for (const f of fichiers) {
     let source;
@@ -95,6 +100,8 @@ export function construireLeGraphe(racine) {
       if (!cible) continue;
       if (!importéPar.has(cible)) importéPar.set(cible, new Set());
       importéPar.get(cible).add(f);
+      if (!importe.has(f)) importe.set(f, new Set());
+      importe.get(f).add(cible);
     }
   }
 
@@ -115,8 +122,39 @@ export function construireLeGraphe(racine) {
     return vus;
   };
 
+  /** Tout ce dont ce fichier dépend, de proche en proche — lui compris. */
+  const socle = (départ) => {
+    const vus = new Set([départ]);
+    const pile = [départ];
+    while (pile.length) {
+      for (const cible of importe.get(pile.pop()) ?? []) {
+        if (!vus.has(cible)) {
+          vus.add(cible);
+          pile.push(cible);
+        }
+      }
+    }
+    return vus;
+  };
+
   return {
     connaît: (f) => existe.has(f),
+    /**
+     * CE QUE CES FICHIERS TOUCHENT OU EMPLOIENT, ET CE QUI LES EMPLOIE.
+     *
+     * Les deux sens, et c'est délibéré : un lot casse par ce qu'il emploie —
+     * une règle qui change sous lui — comme par ce qui l'emploie — un appelant
+     * dont la signature ne correspond plus. La rencontre a lieu aux deux bouts.
+     */
+    entourage: (fichiers) => {
+      const tout = new Set();
+      for (const f of fichiers) {
+        if (!existe.has(f)) continue;
+        for (const x of socle(f)) tout.add(x);
+        for (const x of cône(f)) tout.add(x);
+      }
+      return tout;
+    },
     estPointDentrée,
     /** Les points d'entrée qu'un fichier peut atteindre — lui compris s'il en est un. */
     pointsAtteints: (f) => (existe.has(f) ? [...cône(f)].filter(estPointDentrée) : []),
