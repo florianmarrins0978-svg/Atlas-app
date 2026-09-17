@@ -1,0 +1,440 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Le planning, ses trois choix réunis</title>
+<!--
+  ════════════════════════════════════════════════════════════════════════════
+  SES TROIS RÉPONSES DU 17 SEPTEMBRE 2026, RÉUNIES SUR UN SEUL ÉCRAN.
+
+  *« Toutes les réponses que je vais te donner, tu vas mettre les modifs dans
+  une seule planche, comme ça à la fin tu coderas la planche finale avec toutes
+  les modifs dedans. »*
+
+  | Sa réponse | La planche d'origine | Ce qui est retenu |
+  |---|---|---|
+  | *« le C, pas d'Annuler »* | `quatre-sur-une-ligne` | les trois voies gardent leurs mots ; le « ＋ Ajouter » reste à sa place et devient « ✕ Fermer » |
+  | *« A, à côté »* | `annuler-l-absence` | « Annuler » à droite de l'interrupteur Matin · Après-midi · Journée |
+  | *« le C sans le + et sans les chevrons, mais conserve la date en doré »*, puis *« laisse juste le nom du client et retire le contour doré »* | `poser-en-cliquant-sur-le-nom` | le NOM SEUL pose le client : ni contour, ni « ＋ », ni « › » ; la poignée garde « À poser sur jeudi 17 septembre » en or |
+
+  ─── CE QUE SON TROISIÈME CHOIX EMPORTE, ET QU'IL FAUT QU'IL SACHE ────────
+
+  Le « › » qu'il fait retirer n'est pas un ornement : c'est le seul chemin, DE
+  CETTE LISTE, vers la fiche du chantier (`ChevronDesPortes`,
+  `PlanningClient.tsx`). Une fois parti, la ligne ne fait plus qu'une chose —
+  poser — et le chantier s'ouvre depuis l'onglet Chantiers.
+
+  **C'est un gain, pas une perte, et c'est pour ça que je ne le discute pas :**
+  une ligne qui pose ET qui ouvre demandait de viser à trois millimètres près,
+  et c'est exactement ce que sa demande supprime. Mais cela se dit, plutôt que
+  de disparaître en silence.
+
+  ─── Ce que la planche NE change pas ─────────────────────────────────────
+
+  · sans jour touché, la poignée dit « 4 clients sans date » en noir, et la
+    ligne « Touchez d'abord un jour du calendrier » reste — c'est la seule qui
+    l'apprend (déjà codé le 17 septembre) ;
+  · l'interrupteur et son « Annuler » s'effacent ensemble dès qu'un moment est
+    choisi (sa règle du 10 septembre) ;
+  · « + Salarié absent ? » reste le chemin pour défaire une absence posée hier.
+
+  ─── Les couleurs et les mesures ─────────────────────────────────────────
+
+  Relevées dans `src/lib/design-tokens.ts` et dans le code de l'écran : or
+  #B98B47, carte #faf9f5, encre #1c1c1a, gris #8a8578, papier #ece9e1, vert des
+  boutons pleins #7d9a6d. Le tiroir porte 2 px d'or et des angles de 14 px (sa
+  version C du 11 septembre) ; l'interrupteur et les voies font 48 px de haut ;
+  le rond de « Ajouter » 34 px, cerné d'or.
+
+  RIEN N'EST CODÉ — c'est la planche à valider avant de coder.
+  ════════════════════════════════════════════════════════════════════════════
+-->
+<style>
+  :root{
+    --fond:#f5f3ee; --carte:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
+    --gris:#8a8578; --papier:#ece9e1; --or:#B98B47; --vert:#7d9a6d;
+    --pale:#b9c6b4; --pin:#2f3b2f;
+    --trait:rgba(28,28,26,.12); --trait-doux:rgba(28,28,26,.07);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;background:#e6e3dc}
+  body{font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       color:var(--encre);-webkit-text-size-adjust:100%;padding:0 0 40px}
+  button{font-family:inherit;cursor:pointer}
+  button:focus-visible{outline:2px solid var(--or);outline-offset:2px}
+
+  .bandeau{background:var(--encre);color:#f2efe8;padding:14px 18px;text-align:center;
+           font-size:13.5px;line-height:1.55}
+  .bandeau b{color:#fff}
+
+  .tel{max-width:390px;margin:18px auto 0;background:var(--fond);border-radius:26px;
+       overflow:hidden;box-shadow:0 18px 46px rgba(20,18,14,.18);
+       display:flex;flex-direction:column}
+
+  /* ─── LE MOIS ──────────────────────────────────────────────────────────── */
+  .mois{padding:16px 14px 0}
+  .caps{font:500 9.5px/1 ui-sans-serif,sans-serif;letter-spacing:.28em;
+        text-transform:uppercase;color:var(--gris)}
+  .grille{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:12px}
+  .jour{aspect-ratio:1/1.05;border:0;background:transparent;border-radius:11px;
+        display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;
+        color:var(--encre);font:400 17px/1 ui-serif,Georgia,serif}
+  .jour .barres{display:flex;flex-direction:column;gap:2px;width:26px}
+  .jour .barres i{display:block;height:4px;border-radius:2px;background:var(--papier)}
+  .jour[aria-pressed="true"]{box-shadow:inset 0 0 0 1.5px var(--or);color:var(--or)}
+
+  /* ─── LA FICHE DU JOUR ─────────────────────────────────────────────────── */
+  .fiche{margin:12px 12px 0;background:var(--carte);border-radius:16px;padding:14px 16px 16px;
+         box-shadow:0 8px 24px rgba(20,18,14,.08)}
+  .titre{margin:0;text-align:center;font:600 12.5px/1 ui-sans-serif,sans-serif;
+         letter-spacing:.2em;text-transform:uppercase;color:var(--encre)}
+  .filet{margin:12px 0 0;border:0;border-top:1px solid var(--trait)}
+
+  .geste{display:flex;width:100%;min-height:44px;align-items:center;justify-content:center;
+         gap:10px;border:0;background:none;padding:8px 0;font:700 14.5px/1 inherit;color:var(--encre)}
+  .geste .plus{font-size:19px;line-height:1;margin-top:-2px}
+
+  .ligne{display:flex;min-height:46px;width:100%;align-items:center;justify-content:space-between;
+         gap:12px;padding:10px 0;text-align:left;border:0;background:none}
+  .ligne .qui{flex:1;min-width:0;font-size:14.5px;color:var(--encre)}
+  .ligne .quand{flex:none;font-size:13px;line-height:1.5;color:var(--gris)}
+
+  /* SON CHOIX 2 — « Annuler » À CÔTÉ de l'interrupteur. */
+  .rangee-bascule{display:flex;align-items:center;gap:12px;margin-top:6px}
+  .bascule{display:flex;flex:1;min-width:0;overflow:hidden;border-radius:99px;
+           background:var(--carte);box-shadow:inset 0 0 0 1px var(--trait)}
+  .bascule button{flex:1;min-width:0;min-height:44px;border:0;background:transparent;
+                  font-size:12.5px;color:var(--encre-douce);padding:0 4px}
+  .bascule button[aria-pressed="true"]{background:var(--vert);color:#f7f5ef}
+  .annuler{flex:none;border:0;background:none;padding:6px 0;font-size:13px;line-height:1.5;
+           color:var(--gris)}
+
+  /* ─── UN CHANTIER POSÉ ─────────────────────────────────────────────────── */
+  .chantier{margin-top:12px}
+  .chantier .nom{font:400 21px/1.15 ui-serif,Georgia,serif}
+  .chantier .duree{margin:3px 0 0;font-size:13.5px;color:var(--or)}
+  .chantier .ou{margin:2px 0 0;font-size:13.5px;color:var(--gris)}
+
+  .demi{display:flex;align-items:center;justify-content:space-between;gap:12px;
+        padding:12px 0 0;font:600 11px/1 ui-sans-serif,sans-serif;letter-spacing:.16em;
+        text-transform:uppercase;color:var(--encre)}
+  .demi .libre{font:400 13px/1.5 ui-sans-serif,sans-serif;letter-spacing:0;
+               text-transform:none;color:var(--gris)}
+  .pastille{width:16px;height:16px;border-radius:4px;flex:none}
+  .pastille.pleine{background:var(--pin)}
+  .pastille.vide{box-shadow:inset 0 0 0 1px var(--trait)}
+  .equipe{display:inline-flex;align-items:center;gap:7px;border:0;border-radius:99px;
+          background:var(--vert);color:#f7f5ef;padding:9px 16px;font-size:13.5px;
+          /* La pastille d'équipe porte un PRÉNOM : elle n'hérite pas des
+             capitales de « MATIN », sinon on lit « ANTOINE » là où sa capture
+             montre « Antoine ». */
+          text-transform:none;letter-spacing:0;font-weight:400}
+
+  /* SON CHOIX 1 — les trois voies gardent leurs mots ; on referme par le
+     « ＋ Ajouter », qui reste à sa place et devient « ✕ Fermer ». */
+  .voies{display:flex;gap:8px;margin-top:12px}
+  .voie{flex:1;min-width:0;min-height:48px;border:0;border-radius:99px;padding:0 12px;
+        background:var(--carte);box-shadow:inset 0 0 0 1px var(--trait);color:var(--encre);
+        font-size:13.5px;line-height:1.2}
+  .voie:active{background:var(--papier)}
+  .ajouter{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:12px;
+           font-size:12.5px;color:var(--encre-douce)}
+  .ajouter button{width:34px;height:34px;border-radius:99px;border:1px solid var(--or);
+                  background:transparent;color:var(--or);font-size:19px;line-height:1}
+
+  /* ─── LE TIROIR DU BAS ─────────────────────────────────────────────────── */
+  .tiroir{margin-top:14px;background:var(--carte);border-top:2px solid var(--or);
+          border-radius:14px 14px 0 0;box-shadow:0 -14px 34px rgba(28,28,26,.14)}
+  .poignee{display:flex;width:100%;align-items:center;gap:12px;border:0;background:none;
+           padding:15px 18px;text-align:left}
+  .poignee .resume{flex:1;min-width:0;font:600 13px/1.3 inherit;color:var(--or);
+                   overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .poignee .resume.neutre{color:var(--encre)}
+  .dedans{border-top:1px solid var(--trait);padding:0 18px 18px;max-height:352px;overflow-y:auto}
+  .consigne{margin:12px 0 0;font-size:12.5px;color:var(--encre)}
+
+  /* ─── SON CHOIX 3, RETOUCHÉ LE SOIR MÊME ────────────────────────────────
+     *« En fait laisse juste le nom du client, et retire le contour doré autour
+     du client. »* Le nom, et rien autour : ni pastille, ni « ＋ », ni « › ».
+
+     **Ce qui dit alors que ça s'appuie, c'est la ligne dorée au-dessus** —
+     « À poser sur jeudi 17 septembre » —, et elle seule. Le filet entre deux
+     noms SÉPARE, il ne souligne pas le dernier : c'est la règle du 26 août,
+     déjà tenue par cette liste (« supprime le trait sous Jean Louis »). */
+  .liste{margin-top:12px}
+  .poser{display:flex;width:100%;align-items:center;border:0;background:transparent;
+         padding:13px 0;text-align:left;color:var(--encre);
+         border-bottom:1px solid var(--trait-doux)}
+  .poser:last-child{border-bottom:0}
+  .poser .nom{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+              font:400 19px/1.2 ui-serif,Georgia,serif}
+  .poser:active .nom{color:var(--or)}
+
+  .fait{margin:12px 0 0;min-height:19px;font-size:12.5px;color:var(--pin);padding:0 16px}
+  .rejouer{display:block;margin:16px auto 0;border:1px solid var(--trait);background:transparent;
+           border-radius:99px;padding:10px 18px;font:600 12px/1 inherit;color:var(--gris)}
+
+  .note{max-width:430px;margin:20px auto 0;padding:0 22px;font-size:13.5px;
+        line-height:1.6;color:var(--encre-douce)}
+  .note b{color:var(--encre)}
+  .note p{margin:0 0 11px}
+</style>
+</head>
+<body>
+
+<div class="bandeau">
+  <b>Vos trois réponses, sur un seul écran.</b> Touchez le 17, l’absence, le
+  « ＋ Ajouter », puis un nom dans le tiroir. C’est ce que je code si vous dites oui.
+</div>
+
+<div class="tel">
+  <div class="mois">
+    <p class="caps">Septembre</p>
+    <div class="grille" id="grille"></div>
+  </div>
+
+  <div class="fiche">
+    <p class="titre" id="titre-jour">Jeudi 17 septembre</p>
+    <hr class="filet">
+
+    <button class="geste" type="button" id="geste-absent">
+      <span class="plus" aria-hidden="true">+</span><span>Salarié absent ?</span>
+    </button>
+    <div id="absence"></div>
+
+    <div class="chantier">
+      <p class="nom">Mr. Frédéric</p>
+      <p class="duree">une journée</p>
+      <p class="ou">Mantes-la-Jolie</p>
+      <div class="demi">
+        <span style="display:flex;align-items:center;gap:12px">
+          <span class="pastille pleine"></span>Matin
+        </span>
+        <span class="equipe">Antoine <span aria-hidden="true">+</span></span>
+      </div>
+      <div class="demi">
+        <span style="display:flex;align-items:center;gap:12px">
+          <span class="pastille vide"></span>Après-midi
+        </span>
+        <span class="libre">libre</span>
+      </div>
+    </div>
+
+    <div id="ajout"></div>
+    <p class="fait" id="fait" style="padding:0"></p>
+  </div>
+
+  <div class="tiroir">
+    <button class="poignee" type="button" id="poignee">
+      <span class="resume" id="resume"></span>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8a8578"
+           stroke-width="2.2" id="chev" style="flex:none">
+        <path d="M5 15l7-7 7 7" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+    <div class="dedans" id="dedans"></div>
+  </div>
+</div>
+
+<button class="rejouer" type="button" id="rejouer">Recommencer</button>
+
+<div class="note">
+  <p><b>Ce que vous avez choisi, et qui est là :</b> les trois voies d’ajout
+  gardent leurs mots, et l’on referme par le « ＋ Ajouter » devenu « ✕ Fermer » ;
+  « Annuler » est à droite de l’interrupteur de l’absence ; et <b>le nom du
+  client, seul</b>, pose le client — sans contour, sans « ＋ », sans « › ».</p>
+  <p><b>Une chose à peser :</b> le nom nu ne dit plus tout seul qu’il s’appuie.
+  Ce qui le dit, c’est la ligne dorée juste au-dessus — « À poser sur jeudi
+  17 septembre ». <b>C’est suffisant tant que vous avez touché un jour</b> ;
+  sans jour touché, la liste garde sa consigne. Le 7 septembre, un geste écrit
+  en texte nu vous avait échappé une journée entière — c’est la seule raison
+  pour laquelle je le signale.</p>
+  <p><b>Ce que le « › » emportait :</b> c’était le seul chemin, depuis cette
+  liste, vers la fiche du chantier. Il part, la ligne ne fait plus qu’une chose
+  — poser —, et le chantier s’ouvre depuis l’onglet Chantiers. <b>Dites-le si ça
+  vous manque</b>, c’est la seule chose que votre demande enlève.</p>
+  <p><b>Ce qui ne bouge pas :</b> sans jour touché, la poignée reste noire et
+  la ligne « Touchez d’abord un jour du calendrier » explique quoi faire ;
+  l’interrupteur et son « Annuler » s’effacent ensemble dès qu’un moment est
+  choisi ; « + Salarié absent ? » reste le chemin pour défaire une absence
+  posée hier.</p>
+  <p><b>Rien n’est codé.</b> Dites oui et je code exactement cet écran.</p>
+</div>
+
+<script>
+/* Aucune règle ici : la planche ne calcule rien. Les jours reproduisent sa
+   capture du 17 septembre — une planche qui montre un mois inventé se lit
+   comme une planche fausse. */
+const JOURS = [14, 15, 16, 17, 18];
+const NOM_DU_JOUR = { 14:"lundi 14 septembre", 15:"mardi 15 septembre",
+                      16:"mercredi 16 septembre", 17:"jeudi 17 septembre",
+                      18:"vendredi 18 septembre" };
+const MOMENTS = [["matin","Matin","matin"],["apres_midi","Après-midi","après-midi"],
+                 ["journee","Journée","journée"]];
+const CLIENTS = [
+  { id:1, nom:"Mr. Linotte" }, { id:2, nom:"Jean-Louis" },
+  { id:3, nom:"Mme Delaunay" }, { id:4, nom:"Mr. Beauchamp-Lavallée" },
+];
+
+let jourTouche = 17;
+let restants = CLIENTS.map((c) => c.id);
+let absence = null;        // { moment } — l'absence de Julien, si posée
+let bascule = false;       // l'interrupteur est-il sous les yeux ?
+let voies = false;         // les trois voies d'ajout sont-elles ouvertes ?
+let ouvert = true;         // le tiroir du bas
+
+const $ = (id) => document.getElementById(id);
+const fait = $("fait");
+
+function dire(m) { fait.textContent = m; }
+
+function dessinerMois() {
+  const g = $("grille"); g.innerHTML = "";
+  for (const j of JOURS) {
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "jour";
+    b.setAttribute("aria-pressed", String(jourTouche === j));
+    b.innerHTML = `<span>${j}</span><span class="barres"><i></i><i></i></span>`;
+    b.onclick = () => { jourTouche = jourTouche === j ? null : j; dire(""); tout(); };
+    g.appendChild(b);
+  }
+  $("titre-jour").textContent = jourTouche
+    ? NOM_DU_JOUR[jourTouche].replace(/^./, (c) => c.toUpperCase())
+    : "Aucun jour touché";
+}
+
+function dessinerAbsence() {
+  const n = $("absence"); n.innerHTML = "";
+  if (!absence) return;
+  const l = document.createElement("div");
+  l.className = "ligne";
+  l.innerHTML = `<span class="qui">Julien absent</span>
+                 <span class="quand">${MOMENTS.find((m) => m[0] === absence.moment)[2]}</span>`;
+  n.appendChild(l);
+  if (!bascule) return;
+
+  // SON CHOIX 2 — « Annuler » à droite de l'interrupteur, sur la même ligne.
+  const r = document.createElement("div");
+  r.className = "rangee-bascule";
+  const b = document.createElement("div");
+  b.className = "bascule"; b.setAttribute("role", "group");
+  b.setAttribute("aria-label", "Quand Julien est absent");
+  for (const [cle, mot] of MOMENTS) {
+    const x = document.createElement("button");
+    x.type = "button"; x.textContent = mot;
+    x.setAttribute("aria-pressed", String(cle === absence.moment));
+    x.onclick = () => {
+      absence = { moment: cle };
+      // L'interrupteur s'efface une fois choisi, et « Annuler » avec lui.
+      bascule = false;
+      dire("Julien est absent " + MOMENTS.find((m) => m[0] === cle)[2] + ".");
+      tout();
+    };
+    b.appendChild(x);
+  }
+  const a = document.createElement("button");
+  a.type = "button"; a.className = "annuler"; a.textContent = "Annuler";
+  a.onclick = () => { absence = null; bascule = false; dire("L’absence de Julien est annulée."); tout(); };
+  r.appendChild(b); r.appendChild(a);
+  n.appendChild(r);
+}
+
+function dessinerAjout() {
+  const n = $("ajout"); n.innerHTML = "";
+  if (!voies) {
+    const d = document.createElement("div");
+    d.className = "ajouter";
+    d.innerHTML = `<button type="button" aria-label="Ajouter">+</button><span>Ajouter</span>`;
+    d.querySelector("button").onclick = () => { voies = true; dire(""); tout(); };
+    n.appendChild(d);
+    return;
+  }
+  // SON CHOIX 1 — les trois voies gardent leurs mots ; aucune pastille
+  // « Annuler » dans la ligne.
+  const v = document.createElement("div");
+  v.className = "voies";
+  for (const mot of ["En attente", "Un client", "Autre chose"]) {
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "voie"; b.textContent = mot;
+    b.onclick = () => dire("« " + mot + " » ouvre la suite.");
+    v.appendChild(b);
+  }
+  n.appendChild(v);
+  // On referme par où l'on est entré : le « ＋ Ajouter » reste à SA place.
+  const d = document.createElement("div");
+  d.className = "ajouter";
+  d.innerHTML = `<button type="button" aria-label="Fermer">✕</button><span>Fermer</span>`;
+  d.querySelector("button").onclick = () => { voies = false; dire(""); tout(); };
+  n.appendChild(d);
+}
+
+function dessinerTiroir() {
+  const r = $("resume");
+  const aPoser = jourTouche !== null && restants.length > 0;
+  if (aPoser) {
+    r.textContent = "À poser sur " + NOM_DU_JOUR[jourTouche];
+    r.classList.remove("neutre");
+  } else {
+    const n = restants.length;
+    r.textContent = n === 0 ? "Aucun client sans date"
+                            : n + " client" + (n > 1 ? "s" : "") + " sans date";
+    r.classList.add("neutre");
+  }
+  $("poignee").setAttribute("aria-expanded", String(ouvert));
+  $("chev").style.transform = ouvert ? "rotate(180deg)" : "none";
+
+  const d = $("dedans");
+  d.style.display = ouvert ? "block" : "none";
+  d.innerHTML = "";
+  if (!ouvert) return;
+
+  if (!jourTouche && restants.length > 0) {
+    const p = document.createElement("p");
+    p.className = "consigne";
+    p.textContent = "Touchez d’abord un jour du calendrier";
+    d.appendChild(p);
+  }
+  const l = document.createElement("div");
+  l.className = "liste";
+  if (restants.length === 0) {
+    l.innerHTML = `<p class="consigne">Plus personne n’attend de jour.</p>`;
+  }
+  for (const id of restants) {
+    const c = CLIENTS.find((x) => x.id === id);
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "poser";
+    b.setAttribute("aria-label", jourTouche
+      ? `Poser ${c.nom} sur ${NOM_DU_JOUR[jourTouche]}`
+      : `${c.nom} — en attente d’un jour`);
+    // SON CHOIX 3 — le nom seul, entouré. Ni « ＋ », ni « › ».
+    b.innerHTML = `<span class="nom">${c.nom}</span>`;
+    b.onclick = () => {
+      if (!jourTouche) { dire("Touchez d’abord un jour du calendrier."); return; }
+      restants = restants.filter((x) => x !== id);
+      dire(`${c.nom} est posé sur ${NOM_DU_JOUR[jourTouche]}.`);
+      tout();
+    };
+    l.appendChild(b);
+  }
+  d.appendChild(l);
+}
+
+function tout() { dessinerMois(); dessinerAbsence(); dessinerAjout(); dessinerTiroir(); }
+
+$("geste-absent").onclick = () => {
+  if (absence) { absence = null; bascule = false; dire("L’absence de Julien est annulée."); }
+  else { absence = { moment: "journee" }; bascule = true; dire(""); }
+  tout();
+};
+$("poignee").onclick = () => { ouvert = !ouvert; tout(); };
+$("rejouer").onclick = () => {
+  jourTouche = 17; restants = CLIENTS.map((c) => c.id);
+  absence = null; bascule = false; voies = false; ouvert = true;
+  dire(""); tout();
+};
+
+tout();
+</script>
+</body>
+</html>

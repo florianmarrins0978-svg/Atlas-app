@@ -96,7 +96,7 @@ un composant client qui lit `usePathname()`. **Ne pas le remonter dans
 lien, et le décor du premier écran de l'onglet vaudrait alors pour tous les
 suivants. C'est ce qui faisait disparaître son menu du bas après un envoi de
 devis. Les chemins publics, eux, restent tranchés au serveur — il n'y a pas de
-session à y lire. `ARCHITECTURE.md` §383.
+session à y lire. `ARCHITECTURE.md` §384.
 
 ## L'accueil se relit tout seul, et ce n'est pas une notification
 
@@ -1447,7 +1447,9 @@ repli. `scripts/_arriver-a-froid.ts` vide le journal de l'onglet et recharge —
 c'est l'état d'un signet, sans ouvrir un contexte ni se reconnecter.
 
 **Ce qui reste des règles `?de=` :** elles servent de repli, et décident encore
-où l'on va après avoir ENREGISTRÉ un formulaire (`apresLesCoordonnees`). Leur
+où l'on va après avoir ENREGISTRÉ un formulaire (`apresLesCoordonnees` — retiré le
+17 septembre 2026, `ARCHITECTURE.md` §383 : « Je rédige à la main » mène au devis
+d'où qu'on vienne). Leur
 moitié « devine d'où il vient » est redondante avec le journal — sa retraite est
 dans `TODO.md`, délibérément pas faite dans ce lot.
 

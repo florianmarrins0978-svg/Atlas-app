@@ -24747,7 +24747,7 @@ Bout à bout : **aucune sortie**. Il fallait fermer l'onglet ou passer par la
 barre du bas.
 
 **Ce qui est gardé est la moitié qui compte.** « Le chemin se referme » vaut pour
-l'**enregistrement** (`apresLesCoordonnees`), et c'est là qu'il a du sens : il
+l'**enregistrement** (`apresLesCoordonnees` — retiré le 17 septembre 2026, §383 : le bouton mène au devis d'où qu'on vienne), et c'est là qu'il a du sens : il
 remplit ce qui manquait, il enregistre, il revient à son devis complété. Ce qui
 change n'est que la **flèche** — elle sert à renoncer, pas à revenir avec
 quelque chose. Renoncer, c'est sortir ; sortir, c'est la liste.
@@ -26711,7 +26711,7 @@ avec la correction (`CLAUDE.md` §4 quater).
 **Les règles `?de=` restent, comme REPLI et pour l'après-enregistrement.** Elles
 répondent maintenant à une autre question que la flèche : où sortir quand il n'y
 a pas de page d'avant (signet, notification à froid), et où aller une fois un
-formulaire enregistré (`apresLesCoordonnees`). Leur moitié « devine d'où il
+formulaire enregistré (`apresLesCoordonnees` — retiré le 17 septembre 2026, §383). Leur moitié « devine d'où il
 vient » est en revanche devenue redondante avec le journal ; sa retraite est
 nommée dans `TODO.md`, et elle n'a pas été faite dans ce lot — six écrans et six
 suites en dépendent, et un lot qui les réécrit la même nuit se livre rouge.
@@ -31593,15 +31593,52 @@ posée au mauvais objet. Le §380 comparait des dates au lieu des contenus ; le
 §381 demandait « le lot a-t-il bougé » au lieu de « que peut casser ce qui a
 bougé » ; celui-ci demandait « ce fichier est-il dangereux » au lieu de « **qui**
 doit le prouver ».
+## §383 — La fiche client ROUVERTE porte le même bouton que la fiche neuve : « Je rédige à la main »
+
+**Son signalement du 17 septembre 2026**, l'écran sous les yeux : *« j'ai fait
+nouveau devis, ensuite retour, puis j'ai cliqué sur le client en attente dans
+la page d'accueil. Sauf que la fiche client a changé : normalement il y a la
+note vocale et en dessous il propose d'écrire le devis à la main, et là y'a
+marqué Enregistrer. Il faut remettre la proposition du devis à la main ! »*
+
+**Ce qu'il restait de l'écart entre créer et rouvrir.** Le 31 août, tout
+l'écart avait été supprimé à sa demande — photos, anneau, chaîne du devis —
+sauf un bouton : « Enregistrer », gardé sur la fiche rouverte pour que ce
+qu'il TAPE sur un chantier existant parte quelque part, et qui ramenait à la
+liste (§254). Devant l'écran, ce bouton est une DIFFÉRENCE : il reconnaît sa
+fiche par ce qu'elle propose, et une fiche qui ne propose plus le devis n'est
+plus la sienne.
+
+**Ce qui change, et ce qui ne se perd pas.** La fiche rouverte porte le bouton
+de la fiche neuve — secondaire, 66 %, effacé pendant qu'on dicte —, et il
+fait les deux choses : `creerPuisAller("devis")`, sur le chemin `reprise`,
+**enregistre ce qui est tapé** (`reprendreChantierAction`) puis ouvre le
+devis. Rien de ce que « Enregistrer » faisait n'est perdu ; seule la sortie
+change — le devis, au lieu de la liste. La liste reste à une flèche
+(`retourDesCoordonnees`, inchangé).
+
+**Ce qui est retiré, parce que plus rien ne l'appelle** (`CLAUDE.md`
+§4 quinquies) : la destination `fiche` de `FormulaireNouveauChantier`, et
+`apresLesCoordonnees` dans `retour-du-devis.ts` avec ses cas dans
+`test-retour-du-devis.ts` et `test-retour-au-planning.ts`. La provenance ne
+décide plus que de la flèche.
+
+**Ce qui le tient :** `test-coordonnees-depuis-accueil-e2e.ts` (venu de
+l'accueil, le bouton propose le devis à la main, enregistre ce qui est tapé,
+et ouvre le devis) et `test-devis-sans-client-e2e.ts` (venu d'un devis sans
+client, même bouton, et le devis retrouvé porte son client). Les deux refusent
+le retour d'« Enregistrer ».
 
 ---
 
 ---
 
 ---
+
+---
 ---
 
-## §383 — Le cadre de l'application décide AU NAVIGATEUR, et l'accueil se relit tout seul
+## §384 — Le cadre de l'application décide AU NAVIGATEUR, et l'accueil se relit tout seul
 
 **Deux défauts d'un même soir — le 17 septembre 2026 —, signalés sur la même
 capture : l'accueil atteint après l'envoi d'un devis, sans barre du bas, et une

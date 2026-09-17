@@ -71,7 +71,7 @@ mécanisme : l'accueil lit les réponses une fois, la réponse arrive plus tard 
 sur le téléphone du client. `VeilleDesNouvelles` relit l'accueil dès qu'il
 revient à Atlas, et toutes les trente secondes pendant qu'il le regarde.
 **Ce n'est pas une notification poussée** — Atlas fermé, rien ne sonne encore
-(`TODO.md`, en tête). `ARCHITECTURE.md` §383.
+(`TODO.md`, en tête). `ARCHITECTURE.md` §384.
 
 ## FAIT : L'ACCUEIL SANS CHANTIER — LA PORTE DU DEVIS AU TIERS HAUT (17 septembre 2026)
 

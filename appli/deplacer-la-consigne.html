@@ -106,6 +106,28 @@
   .qui{border:1px dashed var(--or);border-radius:999px;padding:6px 15px;font-size:12.5px;color:var(--or);background:transparent}
 
   .consigne{margin-top:12px;font-size:12.5px;color:var(--or);min-height:19px}
+
+  /* SA RETOUCHE DU 17 SEPTEMBRE 2026 : « le Annuler tu le mets en noir gras à
+     droite de "touchez le jour au-dessus", genre 2 cm sur sa droite ».
+
+     2 cm RÉELS, pas 2 cm CSS : l'unité `cm` de la feuille de style vaut
+     96 dpi nominaux — sur son iPhone elle rendrait 1,25 cm sous la règle.
+     Son écran fait 390 pt pour 6,4 cm, soit ~61 pt/cm : 2 cm = 122 px. */
+  .ligne-du-geste{display:flex;align-items:baseline;margin-top:12px}
+  .ligne-du-geste .consigne{margin-top:0}
+  /* L'écart se COMPRIME plutôt que de pousser « Annuler » dehors. Mesuré sur
+     un iPhone SE (320 pt) : à 122 px fixes, le bouton finissait pile sur le
+     bord de la fiche — zéro marge, et un mot de plus le faisait sortir.
+     `flex: 0 1 122px` lui donne ses 2 cm quand la place existe, et les rend
+     quand elle manque. */
+  .ligne-du-geste .ecart{flex:0 1 122px;min-width:18px}
+  .ligne-du-geste button{flex:0 0 auto}
+  /* Noir gras — la même encre que « Déplacer » et « Retirer », qu'il remplace
+     le temps du geste. Il était gris pâle : on le cherchait. */
+  .ligne-du-geste button{border:0;background:transparent;padding:0;cursor:pointer;white-space:nowrap;
+                         font:700 13.5px/1.2 ui-sans-serif,sans-serif;color:var(--encre)}
+  .ligne-du-geste button:active{opacity:.55}
+
   .mots{display:flex;align-items:center;gap:18px;margin-top:13px;flex-wrap:wrap;justify-content:flex-end}
   .mots.gauche{justify-content:flex-start}
   .mots button{border:0;background:transparent;padding:6px 0;cursor:pointer;
@@ -143,8 +165,8 @@
 <h2>Ce que ça change</h2>
 <p class="note">Au repos, la fiche est <b>coincée dans la semaine du 18</b> : le 21 au 30 sont dessous. Pendant le déplacement, elle <b>descend sous le mois entier</b> — vos 30 jours d'un coup, et la phrase dit enfin vrai.</p>
 
-<h2>La seule question</h2>
-<p class="note">Pendant que vous choisissez le jour, la fiche descend. <b>Entière, ou juste de quoi savoir qui vous déplacez&nbsp;?</b></p>
+<h2>Vous avez dit la A</h2>
+<p class="note">La fiche descend <b>entière</b>. Et « Annuler » est passé <b>en noir gras, à droite de la phrase</b>, comme vous l’avez demandé. La B reste là pour comparer.</p>
 
 <div class="choix" id="choix">
   <button data-fiche="entiere" aria-pressed="true"><b>A</b>Entière — les demi-journées et « Ajouter » restent</button>
@@ -247,15 +269,20 @@
         '<div class="demi"><i class="carre"></i><span class="mot">Matin</span><span class="qui">Qui&nbsp;?</span></div>' +
         '<div class="demi"><i class="carre"></i><span class="mot">Après-midi</span><span class="qui">Qui&nbsp;?</span></div>') +
       (geste
-        ? '<p class="consigne">' + (retenu
-              ? jourAbrege(retenu) + ' ' + retenu + ' septembre. Quel moment ?'
-              : 'Touchez le jour au-dessus') + '</p>' +
-          '<div class="mots gauche">' +
-            (retenu ? '<button data-moment="Matin">Matin</button>' +
-                      '<button data-moment="Après-midi">Après-midi</button>' +
-                      '<button data-moment="Journée">Journée</button>' : '') +
-            '<button class="pale" data-annuler="1">Annuler</button>' +
-          '</div>'
+        ? (retenu
+            ? '<p class="consigne">' + jourAbrege(retenu) + ' ' + retenu +
+              ' septembre. Quel moment ?</p>' +
+              '<div class="mots gauche">' +
+                '<button data-moment="Matin">Matin</button>' +
+                '<button data-moment="Après-midi">Après-midi</button>' +
+                '<button data-moment="Journée">Journée</button>' +
+                '<button data-annuler="1">Annuler</button>' +
+              '</div>'
+            : '<div class="ligne-du-geste">' +
+                '<p class="consigne">Touchez le jour au-dessus</p>' +
+                '<span class="ecart"></span>' +
+                '<button data-annuler="1">Annuler</button>' +
+              '</div>')
         : '<div class="mots"><button data-deplacer="1">Déplacer</button>' +
           '<button data-deplacer="0">Retirer</button></div>') +
       (court ? '' : '<div class="ajouter"><i>+</i>Ajouter</div>') +

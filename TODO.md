@@ -104,7 +104,33 @@ touche la même ligne que la place, et les deux partiront ensemble.
 fiche à sa case disparaît pendant le geste — descendue sous le mois entier,
 elle désignait la case d'à côté. Le cerne noir du jour ouvert la remplace.
 
-## ⏳ UNE PLANCHE À REGARDER — LES QUATRE VOIES SUR UNE LIGNE (17 septembre 2026)
+## ⏳ LA PLANCHE D'ENSEMBLE ATTEND SON OUI — PUIS ON CODE (17 septembre 2026)
+
+**Sa consigne :** *« toutes les réponses que je vais te donner, tu vas mettre
+les modifs dans une seule planche, comme ça à la fin tu coderas la planche
+finale avec toutes les modifs dedans »*.
+
+`appli/planning-tout-ensemble.html` réunit ses trois réponses sur un seul
+écran. **C'est elle qu'on code, et rien d'autre**, dès qu'il dit oui :
+
+| Sa réponse | Ce qui est retenu |
+|---|---|
+| *« le C, pas d'Annuler »* | les trois voies d'ajout gardent leurs mots ; le « ＋ Ajouter » reste à sa place et devient « ✕ Fermer » — la pastille « Annuler » disparaît |
+| *« A, à côté »* | « Annuler » à droite de l'interrupteur Matin · Après-midi · Journée, et il s'efface avec lui dès qu'un moment est choisi |
+| *« le C, sans le + et sans les chevrons, mais conserve la date en doré »*, puis *« laisse juste le nom du client et retire le contour doré »* | le NOM SEUL pose le client : ni contour, ni « ＋ », ni « › ». Un filet sépare deux noms, et ne souligne pas le dernier. La poignée garde « À poser sur jeudi 17 septembre » en or, et c'est elle — seule — qui dit ce que l'appui fait |
+
+**CE QUE SON TROISIÈME CHOIX EMPORTE, et il doit le savoir avant qu'on code :**
+le « › » est le seul chemin, DEPUIS CETTE LISTE, vers la fiche du chantier
+(`ChevronDesPortes`, `PlanningClient.tsx`). Une fois parti, la ligne ne fait
+plus qu'une chose — poser — et le chantier s'ouvre depuis l'onglet Chantiers.
+C'est écrit sur la planche et dans le message qui l'accompagne.
+
+**Ce que le lot devra toucher, quand il viendra** : `AjoutAuJour` (les voies et
+le « ＋ »), `PasLaCeJour` + `BasculeDuMoment` (l'« Annuler » de l'absence), et
+la liste « Sans date » du tiroir (`Petit` « Poser » → le nom entouré,
+`ChevronDesPortes` retiré). Niveau à recalculer sur le diff — `npm run niveau`.
+
+## ⏳ SA RÉPONSE EST DONNÉE — LES QUATRE VOIES : « LE C, PAS D'ANNULER » (17 septembre 2026)
 
 **Sa demande, capture à l'appui :** *« je veux que les 4 rentrent sur la même
 ligne, et peut-être de la même taille, ça sera plus joli ? Ou le "Annuler"
@@ -143,7 +169,7 @@ empêche de se replier, et compte les lignes réellement peintes. Et l'animation
 de largeur a été retirée : la mesure se prenait pendant la transition, donc sur
 une largeur qui n'était celle de rien (`CLAUDE.md` §5).
 
-## ⏳ UNE PLANCHE À REGARDER — « ANNULER » À CÔTÉ DE « JOURNÉE » (17 septembre 2026)
+## ⏳ SA RÉPONSE EST DONNÉE — L'ABSENCE : « A, À CÔTÉ » (17 septembre 2026)
 
 **Sa demande, capture à l'appui :** *« rajoute-moi un "Annuler" à côté de
 "Journée" si je veux annuler la requête »*.
@@ -176,7 +202,7 @@ qui montrait le contraire (`CLAUDE.md` §5). C'est l'image qui a tranché.
 l'interrupteur — « Matin · Après-midi · Journée · Annuler » se lirait comme un
 quatrième moment.
 
-## ⏳ UNE PLANCHE À REGARDER — POSER EN CLIQUANT SUR LE NOM (17 septembre 2026)
+## ⏳ SA RÉPONSE EST DONNÉE — LE NOM SEUL, SANS CONTOUR (17 septembre 2026)
 
 **Sa demande, capture à l'appui :** *« au lieu du "Poser" entouré, pour poser
 le client le mieux serait qu'on clique sur Mr. Linotte — donc trouve un moyen
@@ -324,7 +350,7 @@ si je réactualise la page »*.
 
 **Ce qui est fait depuis ce jour** : l'accueil se relit tout seul —
 immédiatement quand il revient à Atlas, et toutes les trente secondes pendant
-qu'il le regarde (`VeilleDesNouvelles`, `ARCHITECTURE.md` §383).
+qu'il le regarde (`VeilleDesNouvelles`, `ARCHITECTURE.md` §384).
 
 **Ce qui reste, et que cela ne remplace pas** : quand Atlas est FERMÉ, rien ne
 le prévient. Un client qui accepte à 19 h se lit le lendemain matin. Une vraie
@@ -1850,7 +1876,7 @@ les règles de provenance répondent à **deux** questions au lieu d'une :
 | ce qu'elles font | son sort |
 |---|---|
 | dire où sortir quand il n'y a PAS de page d'avant | **à garder** : c'est le repli, et il sert pour de bon |
-| dire où l'on va après avoir ENREGISTRÉ un formulaire (`apresLesCoordonnees`) | **à garder** : ce n'est pas un retour |
+| dire où l'on va après avoir ENREGISTRÉ un formulaire (`apresLesCoordonnees`) | ~~à garder~~ **retiré le 17 septembre 2026** (`ARCHITECTURE.md` §383) : « Je rédige à la main » mène au devis, d'où qu'on vienne |
 | **deviner d'où l'on vient** pour la flèche | **à retirer** : le journal le sait, et deux réponses à la même question finissent par diverger (`CLAUDE.md` §3) |
 
 Ce qui tombe alors, nommément : `retourDepuisLePlanning` (deux écrans —
