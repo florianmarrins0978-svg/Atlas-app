@@ -31247,3 +31247,31 @@ tient sa fiche client, la session B fusionne un plan d'arrosage — A ne
 recommence rien ; B modifie `civilite.ts`, que la fiche client emploie — A
 rejoue les seules suites client.
 
+---
+
+## §376 — La comparaison se fait DES DEUX CÔTÉS, dans le même état
+
+**Payé le 17 septembre 2026, et le mécanisme du §374 s'est trompé avant d'être
+corrigé.** Il rejouait la suite rouge sur `main` seul : verte là-bas, rouge
+ici, il concluait à la régression. Or la copie de `main` venait d'amorcer sa
+base, quand le lot mesurait après cent cinquante suites — deux conditions
+différentes, donc une comparaison qui ne disait rien du diff.
+
+**La preuve, mesurée à la main :** rejouée sur `main` DANS L'ÉTAT laissé par la
+batterie, `test-accueil-vide-porte-e2e` tombait à l'identique, aux mêmes deux
+cas et aux mêmes messages. Le rouge n'avait jamais été celui du lot.
+
+**Ce qui le remplace : les deux côtés, dos à dos.** La suite est rejouée sur la
+copie de `main`, puis sur le lot, l'une derrière l'autre, dans la même base.
+
+| à conditions égales | ce que ça vaut |
+|---|---|
+| le même sort des deux côtés | **pas causé par ce lot** — le diff est la seule différence entre les deux arbres |
+| verte sur `main`, rouge ici | la **régression**, et la fusion est refusée |
+| rouge sur `main`, verte ici | le lot la **répare** — il ne peut pas en être la cause |
+| l'un des deux illisible | **bloqué, sur ce cas-là seulement** |
+
+**Ce que cela ne prouve pas**, et qui est inscrit dans `TODO.md` : que la suite
+soit saine. Celle-ci suppose une base vierge, et rougira dans chaque batterie
+tant que son montage ne créera pas son propre état.
+

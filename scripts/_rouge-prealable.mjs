@@ -25,11 +25,11 @@
  * seules —, on la rejoue sur une copie propre du commit de `main` qui sert de
  * base au lot. Trois réponses, et trois seulement :
  *
- * | sur `main` | ce que ça vaut |
+ * | les deux côtés, à conditions égales | ce que ça vaut |
  * |---|---|
- * | rouge de la même façon | **préexistant** — il ne bloque pas ce lot |
- * | vert | **nouvelle régression** — la fusion est refusée |
- * | indéterminé | **bloqué, sur ce cas-là seulement** |
+ * | le même sort | **pas causé par ce lot** — il ne le bloque pas |
+ * | verte sur `main`, rouge ici | **nouvelle régression** — la fusion est refusée |
+ * | l'un des deux illisible | **bloqué, sur ce cas-là seulement** |
  *
  * **Ce que ce fichier ne fait pas, et c'est délibéré :** il ne lance rien, ne
  * lit aucun dépôt, ne touche pas au disque. Il ne porte que la décision, pour
@@ -37,10 +37,27 @@
  * basse (`CLAUDE.md` §4 sexies).
  */
 
-/** Les trois réponses possibles d'une suite rejouée sur la base de `main`. */
+/**
+ * CE QUE LA COMPARAISON REND, une fois la suite rejouée DES DEUX CÔTÉS.
+ *
+ * **Les deux côtés, dos à dos, et c'est ce qui manquait.** Mesurer `main` seul
+ * ne dit rien : une suite peut rougir chez l'un et passer chez l'autre pour une
+ * raison qui n'est dans aucun des deux diffs — l'état que la base a gardé du
+ * contrôle précédent. Le 17 septembre 2026, `test-accueil-vide-porte-e2e` a été
+ * déclarée « verte sur main, donc cassée par ce lot » parce que la copie venait
+ * d'amorcer sa base, quand le lot mesurait après cent cinquante suites. Rejouée
+ * sur `main` dans le MÊME état, elle tombait à l'identique.
+ *
+ * **La question ne porte que sur le DIFF**, et le diff est la seule différence
+ * entre les deux arbres : à conditions égales, un résultat identique des deux
+ * côtés n'est pas causé par lui.
+ */
 export const SUR_MAIN = {
-  ROUGE: "rouge",
-  VERT: "vert",
+  /** Le même sort des deux côtés : ce n'est pas ce lot qui le cause. */
+  PAREIL: "pareil",
+  /** Verte sur main, rouge ici : la régression. */
+  CASSE_PAR_LE_LOT: "casse-par-le-lot",
+  /** L'un des deux n'a rien rendu de lisible. */
   INDETERMINE: "indetermine",
 };
 
@@ -55,8 +72,8 @@ export function decisionSurLesRouges(rouges, surMain = {}) {
   const listes = { toleres: [], bloquants: [], manquants: [] };
   for (const suite of rouges) {
     const dit = surMain[suite];
-    if (dit === SUR_MAIN.ROUGE) listes.toleres.push(suite);
-    else if (dit === SUR_MAIN.VERT) listes.bloquants.push(suite);
+    if (dit === SUR_MAIN.PAREIL) listes.toleres.push(suite);
+    else if (dit === SUR_MAIN.CASSE_PAR_LE_LOT) listes.bloquants.push(suite);
     // **Une réponse absente vaut « indéterminé »**, et se bloque comme lui :
     // ne pas savoir n'est jamais « c'était déjà rouge » (`CLAUDE.md` §5).
     else listes.manquants.push(suite);
@@ -67,7 +84,7 @@ export function decisionSurLesRouges(rouges, surMain = {}) {
       ok: false,
       raison:
         `${listes.bloquants.length} régression(s) NOUVELLE(s) — verte(s) sur main, ` +
-        `rouge(s) avec ce lot : ${listes.bloquants.join(", ")}`,
+        `rouge(s) avec ce lot, à conditions égales : ${listes.bloquants.join(", ")}`,
       ...listes,
     };
   }
@@ -97,7 +114,7 @@ export function decisionSurLesRouges(rouges, surMain = {}) {
 export function resteARejouer(rouges, connues, base) {
   if (!connues || connues.base !== base) return [...rouges];
   const su = connues.suites ?? {};
-  return rouges.filter((s) => su[s] !== SUR_MAIN.ROUGE && su[s] !== SUR_MAIN.VERT);
+  return rouges.filter((s) => su[s] !== SUR_MAIN.PAREIL && su[s] !== SUR_MAIN.CASSE_PAR_LE_LOT);
 }
 
 /**

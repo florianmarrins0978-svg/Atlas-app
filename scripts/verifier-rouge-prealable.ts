@@ -62,16 +62,22 @@ export function lireLesReponses(racine: string): { base?: string; suites?: Recor
  */
 function rejouer(dossier: string, suite: string): string {
   const estNavigateur = /-e2e\.ts$/.test(suite);
-  // **LA COPIE PREND SON PROPRE ATELIER.** Lui passer le port et la base de
-  // l'appelant, c'est faire mesurer les deux dossiers dans la MÊME base : le
-  // seed de l'un vide celle de l'autre, et les deux rougissent sur du code
-  // juste (`CLAUDE.md` §5). On retire donc ce que l'atelier décide lui-même —
-  // `prendreUnAtelier` lui donnera un rang libre, donc son port, sa base et
-  // son coin de Redis.
+  // **LA COPIE PREND SON PROPRE PORT, PAS SA PROPRE BASE.** On retire
+  // `ATLAS_ADRESSE` — sans quoi la copie servirait sur le port de l'appelant,
+  // et Next.js refuse un second serveur au même endroit ; `prendreUnAtelier`
+  // lui donne alors un rang libre, donc un port à elle et son coin de Redis.
+  //
+  // **Le reste de l'environnement passe tel quel**, et c'est mesuré, pas
+  // supposé : le moteur refuse de démarrer sans `REDIS_URL` — *« le limiteur
+  // bloque au bout de 5 connexions par quart d'heure »* — et sans
+  // `DATABASE_URL` il n'a aucune base d'essai. Les rangs d'atelier nomment des
+  // bases (`atlas_test_a1`…) que la machine n'a pas forcément créées ; les
+  // inventer ici rendrait « indéterminé » à chaque comparaison.
+  //
+  // **Les deux dossiers ne mesurent jamais EN MÊME TEMPS** : le verrou de
+  // batterie tient le dossier, et cette comparaison est séquentielle.
   const env = { ...process.env };
-  for (const clef of ["ATLAS_ADRESSE", "DATABASE_URL", "DATABASE_ADMIN_URL", "REDIS_URL"]) {
-    delete env[clef];
-  }
+  delete env.ATLAS_ADRESSE;
   const motif = suite.replace(/^test-/, "").replace(/\.ts$/, "");
   try {
     const sortie = execFileSync(
@@ -86,18 +92,18 @@ function rejouer(dossier: string, suite: string): string {
     if (estNavigateur) {
       const bilan = bilanDuJournal(sortie);
       if (!bilan) return SUR_MAIN.INDETERMINE;
-      return bilan.rouges.includes(suite) ? SUR_MAIN.ROUGE : SUR_MAIN.VERT;
+      return bilan.rouges.includes(suite) ? "rouge" : "vert";
     }
-    return SUR_MAIN.VERT;
+    return "vert";
   } catch (e) {
     const err = e as { stdout?: string; status?: number | null };
-    if (err.status === null || err.status === undefined) return SUR_MAIN.INDETERMINE; // tué, ou jamais lancé
+    if (err.status === null || err.status === undefined) return "indetermine"; // tué, ou jamais lancé
     if (estNavigateur) {
       const bilan = bilanDuJournal(err.stdout ?? "");
-      if (!bilan) return SUR_MAIN.INDETERMINE;
-      return bilan.rouges.includes(suite) ? SUR_MAIN.ROUGE : SUR_MAIN.VERT;
+      if (!bilan) return "indetermine";
+      return bilan.rouges.includes(suite) ? "rouge" : "vert";
     }
-    return SUR_MAIN.ROUGE;
+    return "rouge";
   }
 }
 
@@ -138,16 +144,29 @@ function main() {
     }
     console.log(`Copie propre : ${temoin}\n`);
     for (const suite of aJouer) {
+      // ─── LES DEUX CÔTÉS, DOS À DOS, DANS LE MÊME ÉTAT ───────────────────
+      //
+      // Voir `_rouge-prealable.mjs` : mesurer `main` seul ne dit rien du diff.
       process.stdout.write(`→ ${suite} sur main… `);
-      const dit = rejouer(temoin, suite);
-      surMain[suite] = dit;
-      console.log(
-        dit === SUR_MAIN.ROUGE
-          ? "déjà rouge sur main"
-          : dit === SUR_MAIN.VERT
-            ? "VERTE sur main — ce lot la casse"
-            : "indéterminé"
-      );
+      const surLaBase = rejouer(temoin, suite);
+      console.log(surLaBase === "rouge" ? "rouge" : surLaBase === "vert" ? "verte" : "illisible");
+      process.stdout.write(`  et sur ce lot, juste après… `);
+      const surLeLot = rejouer(RACINE, suite);
+      console.log(surLeLot === "rouge" ? "rouge" : surLeLot === "vert" ? "verte" : "illisible");
+
+      if (surLaBase === "indetermine" || surLeLot === "indetermine") {
+        surMain[suite] = SUR_MAIN.INDETERMINE;
+        console.log("  → rien de lisible d'un côté : on ne conclut pas.");
+      } else if (surLaBase === surLeLot) {
+        surMain[suite] = SUR_MAIN.PAREIL;
+        console.log("  → le même sort des deux côtés : ce lot n'en est pas la cause.");
+      } else if (surLaBase === "vert") {
+        surMain[suite] = SUR_MAIN.CASSE_PAR_LE_LOT;
+        console.log("  → verte sur main, rouge ici : c'est ce lot.");
+      } else {
+        surMain[suite] = SUR_MAIN.PAREIL;
+        console.log("  → rouge sur main, verte ici : ce lot la répare.");
+      }
     }
     const chemin = ou();
     if (chemin) writeFileSync(chemin, JSON.stringify({ base, suites: surMain }));
@@ -156,7 +175,7 @@ function main() {
   const decision = decisionSurLesRouges(rouges, surMain);
   console.log("");
   if (decision.ok) {
-    console.log(`✅ Aucune régression nouvelle. Déjà rouge(s) sur main : ${decision.toleres.join(", ")}`);
+    console.log(`✅ Aucune régression nouvelle. Même sort des deux côtés : ${decision.toleres.join(", ")}`);
     console.log("   La fusion de ce lot est ouverte.\n");
     process.exit(0);
   }

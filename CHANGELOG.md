@@ -8,6 +8,20 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-17
 
+### La comparaison d'un rouge se fait DES DEUX CÔTÉS, dans le même état
+
+Le mécanisme de la veille rejouait la suite rouge sur `main` seul : verte
+là-bas, rouge ici, il concluait à la régression. Mais la copie de `main` venait
+d'amorcer sa base, quand le lot mesurait après cent cinquante suites — deux
+conditions différentes, donc une comparaison muette sur le diff. Rejouée sur
+`main` dans l'état laissé par la batterie, la suite tombait à l'identique.
+
+Elle est donc rejouée **sur la copie de `main`, puis sur le lot, dos à dos**.
+Même sort des deux côtés : ce lot n'en est pas la cause — le diff est la seule
+différence entre les deux arbres. Verte sur `main` et rouge ici : la régression.
+Rouge sur `main` et verte ici : le lot la répare. L'un des deux illisible : on ne
+conclut pas. `ARCHITECTURE.md` §376.
+
 ### `main` qui avance ne refait plus la batterie : on mesure la rencontre, pas la coïncidence
 
 **Sa règle :** *« Chaque lot doit prouver SON propre travail. Le fait que main

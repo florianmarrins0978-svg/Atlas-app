@@ -362,7 +362,7 @@ const BASE = "abcdef0123456789";
 // de `main` elle-même — elles n'ont pas été cassées par le lot.
 const SUR_LA_BASE = {
   base: BASE,
-  suites: { "test-outil-a.ts": SUR_MAIN.ROUGE, "test-outil-b.ts": SUR_MAIN.ROUGE },
+  suites: { "test-outil-a.ts": SUR_MAIN.PAREIL, "test-outil-b.ts": SUR_MAIN.PAREIL },
 };
 const ROUGE_CONNU = { quand: 2_000, vert: false, niveau: 3, rouges: ["test-outil-a.ts", "test-outil-b.ts"], rougesHorsSuites: [] };
 
@@ -380,7 +380,7 @@ cas("un sous-ensemble des rouges de main passe aussi — un rouge réparé n'est
 cas("une suite VERTE SUR MAIN devenue rouge : refus, et elle est NOMMÉE", () => {
   const r = rougesToleres(
     { ...ROUGE_CONNU, rouges: ["test-outil-a.ts", "test-facture-e2e.ts"] },
-    { base: BASE, suites: { ...SUR_LA_BASE.suites, "test-facture-e2e.ts": SUR_MAIN.VERT } },
+    { base: BASE, suites: { ...SUR_LA_BASE.suites, "test-facture-e2e.ts": SUR_MAIN.CASSE_PAR_LE_LOT } },
     BASE
   );
   assert.equal(r.ok, false);
@@ -392,7 +392,7 @@ cas("une suite VERTE SUR MAIN devenue rouge : refus, et elle est NOMMÉE", () =>
 cas("une suite NOUVELLE et rouge : refus — elle n'existait pas sur main, donc elle n'y était pas rouge", () => {
   const r = rougesToleres(
     { ...ROUGE_CONNU, rouges: ["test-outil-a.ts", "test-toute-neuve.ts"] },
-    { base: BASE, suites: { ...SUR_LA_BASE.suites, "test-toute-neuve.ts": SUR_MAIN.VERT } },
+    { base: BASE, suites: { ...SUR_LA_BASE.suites, "test-toute-neuve.ts": SUR_MAIN.CASSE_PAR_LE_LOT } },
     BASE
   );
   assert.equal(r.ok, false);
@@ -446,17 +446,17 @@ cas("une suite dont la comparaison n'a rien pu conclure bloque, elle seule", () 
 cas("A · main rouge, lot sans rapport toujours rouge : fusion autorisée, sans batterie sur main", () => {
   const r = rougesToleres(
     { rouges: ["test-accueil-vide-porte-e2e.ts"], rougesHorsSuites: [] },
-    { base: BASE, suites: { "test-accueil-vide-porte-e2e.ts": SUR_MAIN.ROUGE } },
+    { base: BASE, suites: { "test-accueil-vide-porte-e2e.ts": SUR_MAIN.PAREIL } },
     BASE
   );
   assert.equal(r.ok, true, r.raison);
   assert.deepEqual(r.toleres, ["test-accueil-vide-porte-e2e.ts"]);
 });
 
-cas("B · main vert, lot rouge : fusion refusée", () => {
+cas("B · main vert, lot rouge à conditions égales : fusion refusée", () => {
   const r = rougesToleres(
     { rouges: ["test-planning-e2e.ts"], rougesHorsSuites: [] },
-    { base: BASE, suites: { "test-planning-e2e.ts": SUR_MAIN.VERT } },
+    { base: BASE, suites: { "test-planning-e2e.ts": SUR_MAIN.CASSE_PAR_LE_LOT } },
     BASE
   );
   assert.equal(r.ok, false);
@@ -474,7 +474,7 @@ cas("C · un lot de niveau 2 avec un rouge préexistant ailleurs RESTE de niveau
     {
       niveau: lot.niveau,
       derniereEcriture: 1_000,
-      reponses: { base: BASE, suites: { "test-outil-a.ts": SUR_MAIN.ROUGE } },
+      reponses: { base: BASE, suites: { "test-outil-a.ts": SUR_MAIN.PAREIL } },
       base: BASE,
     }
   );
@@ -494,7 +494,7 @@ cas("D · un lot de niveau 3 exige toujours la batterie entière, pour SON propr
 cas("E · le rouge d'une session n'en bloque pas une autre s'il ne vient pas de son diff", () => {
   // Deux lots sans rapport, la même suite rouge venue d'ailleurs : les deux
   // passent, chacun de son côté, sans rien attendre de l'autre.
-  const venuDAilleurs = { base: BASE, suites: { "test-accueil-vide-porte-e2e.ts": SUR_MAIN.ROUGE } };
+  const venuDAilleurs = { base: BASE, suites: { "test-accueil-vide-porte-e2e.ts": SUR_MAIN.PAREIL } };
   for (const lot of [["src/app/planning/PlanningClient.tsx"], ["src/components/atlas/MoisCharge.tsx"]]) {
     const niveau = evaluerLeLot(lot, { racine: RACINE }).niveau;
     const r = verdictSuffit(
@@ -568,7 +568,7 @@ try {
     // est déjà rouge, elle ne vient donc pas d'ici.
     writeFileSync(
       REPONSES_MACHINE,
-      JSON.stringify({ base: baseDuLot(RACINE), suites: { "test-outil-windows.ts": SUR_MAIN.ROUGE } })
+      JSON.stringify({ base: baseDuLot(RACINE), suites: { "test-outil-windows.ts": SUR_MAIN.PAREIL } })
     );
     writeFileSync(
       TEMOIN,

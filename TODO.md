@@ -9,6 +9,23 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## ⏳ `test-accueil-vide-porte-e2e` dépend de l'état que la base a gardé
+
+**Mesuré le 17 septembre 2026, des deux côtés.** Jouée seule, elle passe ; jouée
+en fin de batterie, elle rougit sur son PREMIER cas — *« ce compte porte des
+chantiers », `'4' !== '0'`* — alors qu'elle vient de créer un compte neuf. Le
+même écart se reproduit **sur `main` sans aucun lot** : ce n'est pas un diff,
+c'est un montage qui suppose une base vierge.
+
+Ce qu'elle doit faire à la place : ne rien supposer de ce que les suites d'avant
+ont laissé (`CLAUDE.md` §5 bis). Tant que ce n'est pas fait, elle rougit dans
+chaque batterie et le garde-fou doit la départager à chaque fusion.
+
+**Et son second cas est un vrai désaccord** : la porte du devis se pose à 26 %
+de la hauteur, il la veut à 33 %. Le réglage des deux ressorts ne la déplace
+pas — essayé, mesuré, rendu. La racine est ailleurs.
+
+
 ## ⏳ UNE PLANCHE À REGARDER — DEUX JOURS QUI NE SE TOUCHENT PAS (17 septembre 2026)
 
 **Sa question, capture à l'appui :** *« là j'ai un chantier de deux jours mais
