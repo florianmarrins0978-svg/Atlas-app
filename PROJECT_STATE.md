@@ -5,6 +5,13 @@
 
 ---
 
+## FAIT : LA GRAVITÉ DE `main` NE FAIT PLUS REPAYER SES VOISINES (18 septembre 2026)
+
+Une session repartait pour quarante-cinq minutes parce que `main` avait apporté
+du code d'argent — déjà éprouvé par celui qui l'a écrit. La rencontre se partage
+désormais entre ce que le lot apporte (gravité pleine) et ce que `main` apporte
+(seul son plancher refait la batterie). `ARCHITECTURE.md` §382.
+
 ## FAIT : CORRIGER UN ROUGE NE COÛTE PLUS LA BATTERIE ENTIÈRE (17 septembre 2026)
 
 Une étape qui n'est pas une suite — Types, Lint, Mémoire du dépôt, Construction
