@@ -89,8 +89,24 @@ trois notes sont partis. Ce qu'elle montre maintenant, et rien d'autre :
 **un appui = un jour du chantier**. Il touche le 18 et le 22 ; sa cliente lit
 « nous venons le 18 et le 22 ». S'il ne touche que le 18, le jour d'à côté se
 pose tout seul, en creux, et bouge dès qu'il touche ailleurs — le geste de
-tous les jours ne change pas. Sur un chantier d'une journée : une date, ou
-deux au choix, comme aujourd'hui (« changer » sur la durée le montre).
+tous les jours ne change pas.
+
+**Puis « fais les deux »**, puis *« je comprends pas comment ça marche »* —
+et il a dicté le geste, qui est la version en ligne (la troisième du soir) :
+
+| | |
+|---|---|
+| un appui sur un jour libre | pose le **premier jour** ; le chantier se remplit **d'affilée** derrière (8 jours, le 23 : les 8 se posent) |
+| un appui sur un jour **du chantier** | l'**enlève** ; le chantier se décale d'un jour au bout — le 18 et le 22, c'est toucher le 18 et enlever le 21 |
+| l'interrupteur « Deuxième proposition » | allumé, le prochain appui pose le premier jour de la 2e, en or ; éteint, elle disparaît |
+| la cliente | « Quels jours vous arrangent ? », un bouton radio par proposition ; une seule : « Nous venons le … et le … » |
+
+Une seule règle pour toutes les durées : sur une journée, deux propositions
+d'un jour sont les deux dates au choix d'aujourd'hui. « Une ou deux, jamais
+plus » ne bouge pas. **Ce que le lot devra ranger, s'il tranche :** par
+proposition, un premier jour ET la liste des jours enlevés (ou la liste des
+jours, calculée) ; la réponse de la cliente désigne une proposition ; et
+`creneauxDuChantier` doit savoir sauter des jours.
 
 **Ce que le code fait aujourd'hui**, et il faut le savoir avant d'ouvrir le lot :
 
@@ -108,9 +124,11 @@ Il n'a pas compris l'interrupteur, et sa règle tranche : sur plusieurs jours,
 les jours qu'il touche SONT les jours du chantier. Le sens de l'appui s'écrit
 alors sur l'écran — « Posez les 2 jours du chantier » / « Proposez une ou deux
 dates », et « 1er jour · 2e jour » / « proposée » sur chaque ligne —, et la
-carte « ce que Linotte lit » le montre. **Ce qu'il perd, et qu'il faut lui
-dire s'il tranche :** proposer deux dates AU CHOIX sur un chantier de
-plusieurs jours. « Une autre date » reste offert à la cliente.
+carte « ce que Linotte lit » le montre. Ce que cette version lui faisait
+perdre — deux dates au choix sur plusieurs jours —, il l'a vu et refusé le
+soir même ; et « un appui = un jour » ne lui parlait pas non plus. Sa
+version à lui garde le geste d'aujourd'hui (un appui, un bloc d'affilée) et
+n'y ajoute qu'un retrait — c'est la moins étrangère à ce qu'il fait déjà.
 
 **Ce que sa règle interdit toujours :** montrer une demi-journée au client
 (`scripts/test-creneaux-planning.ts`). Les deux issues ne montrent que des

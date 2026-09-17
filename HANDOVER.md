@@ -70,7 +70,10 @@ n'existe qu'**après**, au planning — et le client n'en sait rien.
 **Rien n'est codé** : la planche `appli/deux-jours-pas-colles.html` (119)
 attend sa réponse. Refaite le soir même — *« je comprends rien, l'idée c'est
 que ce soit simple et joli »* — sur une seule idée : **un appui, un jour du
-chantier**, le jour d'à côté posé tout seul quand il n'en touche qu'un.
+chantier**, puis refaite une troisième fois **sur le geste qu'il a dicté** :
+un appui pose le premier jour et le chantier se remplit d'affilée, un appui
+sur un jour du chantier l'enlève (le chantier se décale d'un jour), et un
+interrupteur « Deuxième proposition » pour que la cliente choisisse.
 `TODO.md`, en tête.
 
 ---

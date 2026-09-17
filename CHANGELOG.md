@@ -190,6 +190,36 @@ tranche — deux dates au choix sur un chantier de plusieurs jours — est écri
 dans `TODO.md`, pas tu. Parcourue à 390 px dans un vrai navigateur, les six
 gestes joués, sans débordement ni erreur.
 
+**Puis « fais les deux », une heure plus tard** — *« sur les chantiers de deux
+jours ou plus il faut quand même pouvoir proposer plus d'un jour au
+client »*. Il a vu ce que la version simple lui faisait perdre, et il n'en
+veut pas. Donc une **possibilité** est les jours du chantier, et il peut en
+proposer deux : « Proposer aussi une autre possibilité » sous la liste, la 2e
+dessinée en or (le chiffre en encre, pas en blanc : le blanc sur l'or ne
+tenait pas le contraste), et la cliente lit « Quels jours vous arrangent ? »
+avec un bouton radio par possibilité. Une seule règle pour toutes les
+durées — sur une journée, deux possibilités d'un jour SONT les deux dates au
+choix d'aujourd'hui. Les jours posés à côté d'une possibilité ne marchent
+jamais sur l'autre : la seconde se pose après ce que la première a pris.
+Rejouée en navigateur : retirer la 2e la ferme et rouvre la porte, 1 et
+3 jours, sans débordement ni erreur.
+
+**Troisième version, dictée par lui** — *« je comprends pas comment ça
+marche »*, puis le geste exact : *« je clique sur un jour pour proposer la
+première date, puis sur le deuxième pour la deuxième, avec un bouton on/off
+pour la deuxième proposition ; et par défaut, sur un chantier de 8 jours, si
+je clique sur le 23 ils mettent les 8 d'affilée, et si je décide que non le
+25, je clique dessus pour l'enlever »*. C'est la version en ligne : un appui
+pose le premier jour et le chantier se remplit d'affilée (le geste
+d'aujourd'hui, inchangé) ; un appui sur un jour du chantier l'enlève et le
+chantier se décale d'un jour au bout — le 18 et le 22, c'est toucher le 18 et
+enlever le 21 ; un interrupteur « Deuxième proposition » sous la liste, et le
+prochain appui pose son premier jour, en or. « changer » passe par 1, 2, 3 et
+8 jours. « Un appui = un jour du chantier » et la porte « Proposer aussi une
+autre possibilité » sont partis. Rejouée en navigateur : 8 jours posés d'un
+appui, un jour enlevé et le bloc décalé, la 2e proposition posée, un de ses
+jours enlevé, l'interrupteur éteint — sans débordement ni erreur.
+
 
 ### « Ce règlement n'a pas pu être enregistré » : la base était en cause, et rien ne le disait
 
