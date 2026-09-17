@@ -6,6 +6,40 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-09-17
+
+### « Déplacer » déplace pour de bon : le calendrier, puis le moment — sept appuis deviennent trois
+
+**Sa demande :** *« lorsque je clique sur déplacer ça me fait apparaître le
+planning et je sélectionne un jour et le matin ou l'aprem ou journée pour
+réellement déplacer mon client, parce que là c'est trop de clics à faire »*.
+Puis, devant `appli/deplacer-sur-le-calendrier.html` : *« je choisis la deux, le
+planning au-dessus, et la A »*.
+
+Avant : Déplacer, la moitié à rendre, ouvrir le tiroir, toucher le morceau,
+refermer, ouvrir le jour d'accueil, Poser ici. Maintenant : **Déplacer, le jour,
+le moment**. Et une seule écriture au lieu de deux — entre les deux anciens
+appels, la demi-journée n'était nulle part.
+
+**« La A »** : seul ce que le chantier occupe LE jour de départ bouge. Ses
+autres jours ne se replient pas.
+
+**Ce qui part commande ce qui peut arriver**, et c'est la moitié dangereuse : une
+demi-journée ne devient pas une journée (une place que le devis ne vend pas),
+une journée ne tient pas sur une demi-journée (l'autre moitié serait perdue en
+silence), et arriver sur une demi-journée déjà sienne est refusé — deux partent,
+une seule arriverait. La règle vit dans `creneaux-chantier.ts`, l'écran n'offre
+que ce qu'elle autorise, et elle refuse à nouveau derrière.
+
+Le geste vit **sous le calendrier** et non dans la fiche : la fiche est rendue
+dans la semaine du jour ouvert et disparaît au premier mois tourné — or tourner
+le mois est exactement ce qu'il fait pour atteindre son jour d'accueil.
+
+Parti avec : `BasculeDemi`, `liberer`, `libererDemiJourneeAction`,
+`libererDemiJournee`, `sansLaDemi` — plus aucun appelant (`CLAUDE.md` §4
+quinquies). `ARCHITECTURE.md` §370.
+
+---
 ## 2026-09-16
 
 ### Le micro de la fiche client descend de douze pixels : il touchait le bord
@@ -37,7 +71,7 @@ Sa règle existait déjà à trois lignes de là — *« Annuler ramène aux deu
 voies, à chaque étape »* (10 septembre) : les trois temps d'« Ajouter » la
 tiennent, « Déplacer » était le seul geste de cet écran à ne pas l'avoir. Le
 bouton reprend la place de « Retirer », à droite de l'interrupteur : la rangée
-garde ses deux boutons au même endroit. `test-liberer-une-demi-journee-e2e`
+garde ses deux boutons au même endroit. `test-deplacer-sur-le-calendrier-e2e`
 tient les deux moitiés — l'écran revient à ses deux gestes, **et la base n'a
 pas bougé**.
 
@@ -1213,7 +1247,7 @@ l'épaisseur du bord et remonte le voile d'autant. Aucune couche ajoutée.
 | « Touchez d'abord un jour du calendrier », gris, sous la pastille | juste sous le trait, en noir |
 
 Les suites qui lisaient le titre ou le compte suivent
-(`test-planning-e2e`, `test-liberer-une-demi-journee-e2e`,
+(`test-planning-e2e`, `test-deplacer-sur-le-calendrier-e2e`,
 `test-salarie-planning-lecture-seule-e2e`) : elles visent l'attribut, pas le
 mot, et refusent de conclure sur zéro pastille.
 
@@ -2126,7 +2160,7 @@ pour une demi-journée rendue seule — le morceau n'existait alors nulle part.
 
 Les deux premiers viennent d'une **capture regardée**, le troisième de la suite
 navigateur qui rejoue son geste en entier
-(`scripts/test-liberer-une-demi-journee-e2e.ts`, 8 contrôles). Le pourquoi de
+(`scripts/test-deplacer-sur-le-calendrier-e2e.ts` (renommée le 17 septembre 2026), 8 contrôles). Le pourquoi de
 chaque choix est dans `ARCHITECTURE.md` §322.
 
 ### Planche — facturer sans passer par la case devis

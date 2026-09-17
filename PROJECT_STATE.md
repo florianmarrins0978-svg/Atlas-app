@@ -449,16 +449,40 @@ Détail : `ARCHITECTURE.md` §323.
 
 ---
 
+## FAIT : « DÉPLACER » DÉPLACE POUR DE BON — 17 septembre 2026
+
+Sa demande : *« lorsque je clique sur déplacer ça me fait apparaître le planning
+et je sélectionne un jour et le matin ou l'aprem ou journée pour réellement
+déplacer mon client, parce que là c'est trop de clics à faire. »* Sa planche
+retenue : `appli/deplacer-sur-le-calendrier.html`, la **2** — le calendrier du
+haut s'allume — et la **A** — seul ce que le chantier occupe LE jour de départ
+bouge.
+
+**Sept appuis sont devenus trois** : Déplacer, le jour, le moment. Et une seule
+écriture au lieu de deux : entre l'ancien « libérer » et l'ancien « reposer », la
+demi-journée n'était nulle part.
+
+**Ce qui part commande ce qui peut arriver.** Une demi-journée ne devient pas
+une journée, une journée ne tient pas sur une demi-journée, et arriver sur une
+demi-journée déjà sienne est refusé — sinon le chantier rétrécit en silence, et
+cela se découvre le matin du chantier.
+
+L'ancien chemin est parti avec : `BasculeDemi`, `liberer`,
+`libererDemiJourneeAction`, `libererDemiJournee`, `sansLaDemi`.
+
+Détail : `ARCHITECTURE.md` §370.
+
+---
+
 ## FAIT : UNE DEMI-JOURNÉE SE LIBÈRE, ATTEND, ET SE REPOSE — 10 septembre 2026
 
 Sa planche retenue (`appli/liberer-une-demi-journee.html`) : *« je clique sur le
 matin, il devient vert et le matin du vendredi devient libre, et une demi-journée
 de Mr Julien sort ; la demi-journée retirée peut être replacée. »*
 
-**« Déplacer » ne déplace plus rien** — il libère la demi-journée qu'on regarde,
-avec un interrupteur dont les **deux positions sont éteintes** : ce n'est pas un
-état à lire, c'est une question. Le morceau rendu attend dans le tiroir du bas,
-sous « Sans date », et se repose sur n'importe quelle demi-journée libre.
+**Ce geste-là n'existe plus depuis le 17 septembre 2026** (voir ci-dessus) :
+« Déplacer » déplace, et l'interrupteur matin / après-midi est parti. Ce qui
+reste de ce lot, c'est la base — et elle porte tout le reste.
 
 **Ce que ça a demandé en base :** un chantier posé n'était qu'un bloc d'un seul
 tenant. La table `creneaux_chantier` (migration **0085**) porte désormais où

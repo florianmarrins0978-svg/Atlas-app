@@ -11,11 +11,12 @@ import {
   supprimerChantier,
   SuppressionChantierRefusee,
   basculerEquipeDuChantier,
-  libererDemiJournee,
   reposerDemiJournee,
+  deplacerCeQueLeJourPorteEnBase,
   creneauxDunChantier,
 } from "@/server/repositories/chantiers";
 import type { JourIso, Moment } from "@/lib/disponibilites";
+import type { MomentDArrivee } from "@/lib/creneaux-chantier";
 import type { EquipesDuChantier } from "@/lib/equipes-par-jour";
 import { estUnJourValide } from "@/lib/planning-jour";
 // (le départ se dit avec le vocabulaire de la base : `Moment`)
@@ -164,28 +165,6 @@ async function creneauxApres(ctx: Awaited<ReturnType<typeof getCurrentCtx>>, cha
 }
 
 /**
- * LIBÉRER UNE DEMI-JOURNÉE — sa demande du 10 septembre 2026.
- *
- * *« Je clique sur le matin, il devient vert et le matin du vendredi devient
- * libre, et une demi-journée de Mr Julien sort. »* Le chantier garde sa durée :
- * il annonce aussitôt qu'il lui manque une demi-journée, et elle se repose où
- * il veut.
- */
-export async function libererDemiJourneeAction(
-  chantierId: string,
-  jour: string,
-  demi: Moment
-): Promise<ResultatCreneaux> {
-  const ctx = await getCurrentCtx();
-  await exigerEcritureSurLePlanning(ctx, "libérer une demi-journée");
-  await exigerChantierDansSaPortee(ctx, chantierId, "libérer une demi-journée");
-  const r = await libererDemiJournee(ctx, chantierId, jour as JourIso, demi);
-  if (!r) return { succes: false, erreur: "Cette demi-journée n'est pas celle de ce chantier." };
-  await porterChantierDansAgenda(ctx, chantierId);
-  return { succes: true, creneaux: await creneauxApres(ctx, chantierId) };
-}
-
-/**
  * REPOSER LA DEMI-JOURNÉE qui attendait une place.
  *
  * *« La demi-journée de Mr Julien qui a été retirée peut être replacée. »* Elle
@@ -201,6 +180,49 @@ export async function reposerDemiJourneeAction(
   await exigerChantierDansSaPortee(ctx, chantierId, "reposer une demi-journée");
   const r = await reposerDemiJournee(ctx, chantierId, jour as JourIso, demi);
   if (!r) return { succes: false, erreur: "Ce chantier n'attend plus de demi-journée." };
+  await porterChantierDansAgenda(ctx, chantierId);
+  return { succes: true, creneaux: await creneauxApres(ctx, chantierId) };
+}
+
+/**
+ * DÉPLACER CE QUE LE JOUR PORTE — le jour d'accueil, puis le moment.
+ *
+ * **Sa demande du 17 septembre 2026 :** *« trop de clics »*. Le geste d'avant
+ * en demandait sept — libérer, ouvrir le tiroir, prendre le morceau, refermer,
+ * ouvrir le jour d'accueil, poser. Celui-ci en demande trois, et **n'écrit
+ * qu'une fois** : entre les deux anciens appels, la demi-journée n'était nulle
+ * part.
+ *
+ * **« La A »** : seule la demi-journée du jour choisi part. Un chantier de huit
+ * jours corrigé sur un jour ne se replie pas ailleurs.
+ *
+ * **Le jour se valide comme partout ailleurs** : une date qui vient de l'écran
+ * n'est pas une date tant que personne ne l'a regardée.
+ */
+export async function deplacerCeQueLeJourPorteAction(
+  chantierId: string,
+  jourSource: string,
+  versJour: string,
+  versMoment: MomentDArrivee
+): Promise<ResultatCreneaux> {
+  const ctx = await getCurrentCtx();
+  await exigerEcritureSurLePlanning(ctx, "déplacer une demi-journée");
+  await exigerChantierDansSaPortee(ctx, chantierId, "déplacer une demi-journée");
+  if (!estUnJourValide(jourSource) || !estUnJourValide(versJour)) {
+    return { succes: false, erreur: "Ce jour n'est pas une date." };
+  }
+  if (!["matin", "apres_midi", "journee"].includes(versMoment)) {
+    return { succes: false, erreur: "Ce moment n'existe pas." };
+  }
+  const r = await deplacerCeQueLeJourPorteEnBase(
+    ctx,
+    chantierId,
+    jourSource as JourIso,
+    { jour: versJour as JourIso, moment: versMoment }
+  );
+  // **Chaque refus porte SA phrase** — un « réessayez » pour trois causes
+  // envoie chercher au mauvais endroit (`AGENTS.md`).
+  if ("refus" in r) return { succes: false, erreur: r.refus };
   await porterChantierDansAgenda(ctx, chantierId);
   return { succes: true, creneaux: await creneauxApres(ctx, chantierId) };
 }

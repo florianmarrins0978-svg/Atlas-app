@@ -302,9 +302,8 @@ async function main() {
   // prennent forcément le matin ET l'après-midi.
   //
   // **La pose ne demande plus rien** depuis le soir même : la durée du devis
-  // décide seule. Restait « Déplacer », où « Journée » écrivait le même état
-  // que « Matin » — et le 10 septembre, « Déplacer » a cessé de déplacer : il
-  // **libère** la demi-journée qu'on touche (`ARCHITECTURE.md` §322).
+  // décide seule. Et depuis le 17 septembre, « Déplacer » déplace pour de bon —
+  // le jour d'accueil se touche au calendrier, puis le moment.
   //
   // **Ce que ce contrôle défend n'a pas changé pour autant**, et c'est pour ça
   // qu'il reste ici plutôt que d'être jeté : aucun geste du planning ne
@@ -339,17 +338,26 @@ async function main() {
     await carte.locator('[data-atlas="deplacer"]').first().click();
     await page.waitForTimeout(500);
 
-    const moments = await carte.locator("[data-vers]").allInnerTexts();
-    if (moments.length !== 2) {
+    // **Ce jour-là, le chantier occupe la journée entière** : quatre
+    // demi-journées sur deux jours prennent forcément matin ET après-midi. Un
+    // seul mot doit donc être offert — « Matin » perdrait l'autre moitié.
+    const moments = await page.locator('[data-atlas^="vers-"], [data-atlas="annuler-deplacer"]').count();
+    if (moments === 0) {
+      throw new Error("le geste s'est ouvert sans aucune sortie");
+    }
+    const accueil = grille.find(
+      (j): j is string => !!j && ouvrable4(j) && j > jour
+    );
+    if (!accueil) throw new Error("aucun second jour ouvrable au calendrier");
+    await page.click(`[data-atlas="grille-mois"] [data-jour="${accueil}"]`);
+    await page.waitForTimeout(400);
+    const mots = await page.locator('[data-atlas^="vers-"]').allInnerTexts();
+    if (mots.join("|") !== "Journée") {
       throw new Error(
-        `un chantier de deux jours offre ${moments.length} moment(s) : ${JSON.stringify(moments)}`
+        `une journée entière peut arriver sur « ${mots.join(", ")} » : une moitié se perdrait`
       );
     }
-    if (moments.some((m) => m.includes("Journée"))) {
-      throw new Error("« Journée » n'est pas un départ : elle réécrivait la durée du chantier");
-    }
-
-    await carte.locator('[data-vers="apres_midi"]').click();
+    await page.locator('[data-atlas="vers-journee"]').click();
 
     // **ATTENDRE QUE LA BASE LE DISE, JAMAIS UN DÉLAI FIXE.** Ce contrôle
     // patientait 1,5 s puis lisait : joué seul il passait, mais dans la
@@ -360,7 +368,9 @@ async function main() {
       const { rows } = await pool.query(
         `SELECT c.duree_demi_journees AS duree,
                 (SELECT count(*) FROM creneaux_chantier k
-                  WHERE k.chantier_id = c.id AND k.jour = $2 AND k.demi = 'apres_midi') AS encore
+                  WHERE k.chantier_id = c.id AND k.jour = $2) AS encore,
+                (SELECT count(*) FROM creneaux_chantier k
+                  WHERE k.chantier_id = c.id) AS total
            FROM chantiers c WHERE c.id = $1`,
         [chantierId, jour]
       );
@@ -372,13 +382,17 @@ async function main() {
       etat = await lu();
     }
     if (Number(etat.encore) > 0) {
-      throw new Error("l'après-midi touché n'a pas été rendu : il occupe toujours la journée");
+      throw new Error("le jour de départ porte encore le chantier : rien n'a été déplacé");
     }
-    // **LE POINT** : la moitié est rendue, la durée vendue ne bouge pas — c'est
-    // l'écart entre les deux qui attend une place, et le raccourcissement
-    // silencieux qu'il a signalé le 9 septembre ne peut plus revenir.
+    // **LE POINT** : la journée a changé de place, la durée vendue ne bouge
+    // pas, et AUCUNE demi-journée ne s'est perdue en route — le
+    // raccourcissement silencieux qu'il a signalé le 9 septembre ne peut pas
+    // revenir par ce chemin-ci.
     if (etat.duree !== 4) {
       throw new Error(`deux jours valent 4 demi-journées, pas ${etat.duree}`);
+    }
+    if (Number(etat.total) !== 4) {
+      throw new Error(`le chantier occupe ${etat.total} demi-journée(s) au lieu de 4`);
     }
   });
 

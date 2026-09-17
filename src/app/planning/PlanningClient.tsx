@@ -92,9 +92,14 @@ import { NOTE_MAX } from "@/lib/note-chantier";
 // de l'écran (`scripts/test-actions-serveur-sans-export-de-type.ts`).
 import type { ClientProposé, QuandPoser } from "./actions";
 import {
+  ceQueLeJourPorte,
+  momentsOfferts,
+  type MomentDArrivee,
+} from "@/lib/creneaux-chantier";
+import {
   basculerEquipeAction,
-  libererDemiJourneeAction,
   reposerDemiJourneeAction,
+  deplacerCeQueLeJourPorteAction,
   chercherDesClientsAction,
   poserUnClientAction,
   poserDuTempsAction,
@@ -259,7 +264,24 @@ export type OuvertDansLaCarte =
   // une perte.** Il n'existait que pour empêcher la liste des trois moments de
   // s'ouvrir dans les DEUX lignes d'un chantier à la journée — six boutons pour
   // un seul geste.
-  | { quoi: "deplacer"; cle: string; chantierId: string }
+  // ─── LES DEUX TEMPS DE « DÉPLACER » — 17 septembre 2026 ─────────────────
+  //
+  // **Sa demande :** *« lorsque je clique sur déplacer ça me fait apparaître le
+  // planning et je sélectionne un jour et le matin ou l'aprem ou journée pour
+  // réellement déplacer mon client, parce que là c'est trop de clics à faire »*.
+  // Puis, sur la planche : *« je choisis la deux, le planning au-dessus, et la
+  // A : on déplace que la demi-journée du jour sélectionné »*.
+  //
+  // `jourSource` est porté par l'état, pas relu de la carte : pendant le geste
+  // il change de mois, et la carte du jour de départ n'est plus à l'écran.
+  | { quoi: "deplacer"; cle: string; chantierId: string; jourSource: JourIso }
+  | {
+      quoi: "deplacer-quand";
+      cle: string;
+      chantierId: string;
+      jourSource: JourIso;
+      vers: JourIso;
+    }
   // **« ajout-quand » a disparu le 9 septembre 2026** : un second temps qui
   // demandait « Matin, Après-midi ou Journée » après avoir touché le nom du
   // chantier. La durée étant déjà en base, la question n'ajoutait rien et
@@ -995,6 +1017,25 @@ export default function PlanningClient({
   }
 
   function toucherLeJour(jour: JourIso) {
+    // ─── PENDANT UN DÉPLACEMENT, LE JOUR TOUCHÉ EST LA DESTINATION ─────────
+    //
+    // **Sa demande du 17 septembre 2026 :** *« ça me fait apparaître le
+    // planning et je sélectionne un jour »*. Sans cette dérivation, le
+    // calendrier ferait ce qu'il fait toujours — ouvrir la fiche de ce jour —
+    // et le geste serait perdu au premier appui.
+    //
+    // **Et l'on ne touche NI au jour ouvert, NI à la fenêtre du bas** : la
+    // fiche du chantier qui part doit rester où elle est, sinon il regarde
+    // déjà autre chose au moment de choisir le moment.
+    if (ouvert?.quoi === "deplacer") {
+      setOuvert({ ...ouvert, quoi: "deplacer-quand", vers: jour });
+      return;
+    }
+    if (ouvert?.quoi === "deplacer-quand") {
+      // Il se ravise sur le jour : on garde le geste, on change la cible.
+      setOuvert({ ...ouvert, vers: jour });
+      return;
+    }
     setOuvert(null);
     setFeuille(null);
     setCarteListe(null);
@@ -1098,33 +1139,43 @@ export default function PlanningClient({
   const PAGE_VIEILLIE = "Rien n'est parti. Rechargez la page.";
 
   /**
-   * LIBÉRER UNE DEMI-JOURNÉE — et repeindre avec ce que la base rend.
+   * DÉPLACER CE QUE LE JOUR PORTE — trois appuis au lieu de sept.
    *
-   * **Sa demande du 10 septembre 2026**, planche retenue : la demi-journée sort
-   * du chantier, le jour se libère, et le morceau attend une place en bas.
+   * **Sa demande du 17 septembre 2026 :** *« trop de clics à faire »*. Le geste
+   * d'avant rendait la demi-journée au tiroir du bas, d'où il fallait aller la
+   * reprendre et la reposer. Ici elle part et arrive en une écriture.
    *
-   * **La durée du chantier ne bouge pas**, et c'est ce qui rend le morceau
-   * visible : le chantier demande toujours autant, il est simplement posé sur
-   * moins. L'écart s'affiche dans « Sans date ».
+   * **« La A »** : seule la demi-journée du jour de départ bouge. Les autres
+   * jours du chantier restent où ils sont.
    */
-  function liberer(chantierId: string, jour: JourIso, demi: Demi) {
+  function deplacerLeJour(
+    chantierId: string,
+    jourSource: JourIso,
+    vers: JourIso,
+    moment: MomentDArrivee
+  ) {
     setOuvert(null);
     setRefus(null);
     enTransition(async () => {
-      const r = await libererDemiJourneeAction(chantierId, jour, demi).catch((e) => {
-        console.error("Libération partie dans le vide", e);
-        setRefus(PAGE_VIEILLIE);
-        return null;
-      });
+      const r = await deplacerCeQueLeJourPorteAction(chantierId, jourSource, vers, moment).catch(
+        (e) => {
+          console.error("Déplacement parti dans le vide", e);
+          setRefus(PAGE_VIEILLIE);
+          return null;
+        }
+      );
       if (!r) return;
       if (!r.succes) {
-        setRefus("Cette demi-journée n'a pas pu être rendue.");
-        // Un refus avalé est un défaut muet (`AGENTS.md`) : le message d'une
-        // action serveur n'arrive jamais jusqu'à lui, on le journalise donc.
-        console.error("Libération refusée", { chantierId, jour, demi, erreur: r.erreur });
+        // **Le refus du serveur EST la phrase montrée.** Chacun dit sa cause —
+        // une demi-journée posée sur une journée entière, une place déjà prise —
+        // et les recopier ici ferait deux écritures d'une même règle.
+        setRefus(r.erreur);
+        console.error("Déplacement refusé", { chantierId, jourSource, vers, moment, erreur: r.erreur });
         return;
       }
-      setChantiers((liste) => liste.map((c) => (c.id === chantierId ? { ...c, ...etatDesCreneaux(r.creneaux) } : c)));
+      setChantiers((liste) =>
+        liste.map((c) => (c.id === chantierId ? { ...c, ...etatDesCreneaux(r.creneaux) } : c))
+      );
     });
   }
 
@@ -1296,7 +1347,6 @@ export default function PlanningClient({
     occupationDe,
     chantiersDuJour,
     basculerEquipe,
-    liberer,
     reposer,
     morceauEnMain,
     retirerDuJour,
@@ -1405,8 +1455,36 @@ export default function PlanningClient({
                 ecriture={gestesCarte.ecriture && jour >= aujourdHui}
               />
             )}
+            // ─── LE JOUR D'ACCUEIL, PEINT PENDANT LE GESTE ────────────────
+            //
+            // **Sa demande du 17 septembre 2026 :** *« je choisis la deux, le
+            // planning au-dessus »*. Le jour touché reste marqué le temps qu'il
+            // choisisse le moment — sans quoi il ne sait plus lequel il a pris,
+            // et le calendrier ne répond pas à son doigt.
+            jourRetenu={ouvert?.quoi === "deplacer-quand" ? ouvert.vers : null}
           />
         </div>
+
+        {/* ─── LE GESTE DE DÉPLACEMENT, SOUS LE CALENDRIER ─────────────────
+            **Il est ICI et nulle part ailleurs**, et ce n'est pas un choix
+            d'apparence : la fiche du jour est rendue DANS la semaine du jour
+            ouvert (`MoisCharge`, prop `volet`). Elle disparaît au premier mois
+            tourné — or tourner le mois est exactement ce qu'il fait pour aller
+            chercher son jour d'accueil. La question « quel moment ? » serait
+            partie au milieu du geste. */}
+        {gestesCarte.ecriture &&
+          (ouvert?.quoi === "deplacer" || ouvert?.quoi === "deplacer-quand") && (
+            <BandeauDeplacement
+              chantier={chantiers.find((c) => c.id === ouvert.chantierId)}
+              jourSource={ouvert.jourSource}
+              vers={ouvert.quoi === "deplacer-quand" ? ouvert.vers : null}
+              onChoisir={(moment) =>
+                ouvert.quoi === "deplacer-quand" &&
+                deplacerLeJour(ouvert.chantierId, ouvert.jourSource, ouvert.vers, moment)
+              }
+              onAnnuler={() => setOuvert(null)}
+            />
+          )}
 
         {/* ─── LA JOURNÉE, OU LES SEPT JOURS ───────────────────────────────
             **Le mot « Planifiés » est parti le 9 septembre 2026, à sa demande.**
@@ -2193,7 +2271,6 @@ type GestesCarte = {
   chantiersDuJour: (jour: JourIso) => ChantierPlanning[];
   basculerEquipe: (chantierId: string, jour: JourIso, demi: Demi, rang: number) => void;
   /** Rendre une demi-journée que ce chantier occupait (10 septembre 2026). */
-  liberer: (chantierId: string, jour: JourIso, demi: Demi) => void;
   /** Reposer le morceau tenu au doigt sur la demi-journée touchée. */
   reposer: (chantierId: string, jour: JourIso, demi: Demi) => void;
   retirerDuJour: (chantierId: string) => void;
@@ -2282,58 +2359,126 @@ function LigneLibre({
  * durée du chantier (`deplacerChantier`).
  * ───────────────────────────────────────────────────────────────────────────
  */
-function BasculeDemi({
-  depart,
-  demis = DEMIS,
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * DÉPLACER : LE JOUR, PUIS LE MOMENT — sa demande du 17 septembre 2026
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * *« Lorsque je clique sur déplacer ça me fait apparaître le planning et je
+ * sélectionne un jour et le matin ou l'aprem ou journée pour réellement
+ * déplacer mon client, parce que là c'est trop de clics à faire. »* Puis,
+ * devant `appli/deplacer-sur-le-calendrier.html` : *« je choisis la deux, le
+ * planning au-dessus, et la A : on déplace que la demi-journée du jour
+ * sélectionné »*.
+ *
+ * **Sept appuis sont devenus trois.** Avant : Déplacer, la moitié à rendre,
+ * ouvrir le tiroir, toucher le morceau, refermer, ouvrir le jour d'accueil,
+ * Poser ici. Maintenant : Déplacer, le jour, le moment.
+ *
+ * **Pourquoi il vit sous le calendrier et pas dans la fiche**, alors que la
+ * planche le montrait dans la fiche : la fiche est rendue DANS la semaine du
+ * jour ouvert, et elle disparaît au premier mois tourné — or tourner le mois
+ * est précisément ce qu'il fait pour atteindre son jour d'accueil. La question
+ * serait partie au milieu du geste.
+ *
+ * **Les mots sont en gras, sans contour** — sa règle du 17 septembre : une
+ * pastille à contour a la forme des pastilles d'équipe, qui ouvrent une liste ;
+ * ici ce sont des gestes.
+ */
+function BandeauDeplacement({
+  chantier,
+  jourSource,
+  vers,
   onChoisir,
+  onAnnuler,
 }: {
-  /**
-   * La position tenue, ou `null` quand la question n'a pas encore de réponse.
-   *
-   * **`null` est le cas de « libérer » — sa demande du 10 septembre 2026 :**
-   * *« le bouton matin/aprem apparaît mais les deux sont vides, blancs. Je
-   * clique sur le matin, il devient vert et le matin du vendredi devient
-   * libre. »* Un interrupteur allumé dirait où le chantier EST ; ici on ne
-   * décrit pas un état, on pose une question — quelle demi-journée je rends ?
-   */
-  depart: Demi | null;
-  /** Les demi-journées à offrir — celles que le chantier occupe ce jour-là. */
-  demis?: readonly Demi[];
-  onChoisir: (demi: Demi) => void;
+  chantier: ChantierPlanning | undefined;
+  jourSource: JourIso;
+  /** Le jour d'accueil touché, ou `null` tant qu'il n'a pas choisi. */
+  vers: JourIso | null;
+  onChoisir: (moment: MomentDArrivee) => void;
+  onAnnuler: () => void;
 }) {
+  if (!chantier) return null;
+  // **Ce qui part commande ce qui peut arriver**, et la règle est dans `lib` :
+  // une demi-journée ne devient pas une journée, une journée ne tient pas sur
+  // une demi-journée. L'écran ne fait que montrer ce qu'elle autorise.
+  const partants = ceQueLeJourPorte(
+    {
+      jour: chantier.datePlanifiee as JourIso | null,
+      moment: chantier.creneauDebut,
+      dureeDemiJournees: chantier.dureeDemiJournees,
+    },
+    (chantier.creneaux ?? []) as readonly Creneau[],
+    jourSource
+  );
+  const moments = momentsOfferts(partants.length);
+
   return (
-    <span
-      data-atlas="bascule-demi"
-      className="flex overflow-hidden rounded-full"
-      style={{ border: `1px solid ${colors.line}`, background: colors.card }}
+    <div
+      data-atlas="deplacement-en-cours"
+      data-vers={vers ?? undefined}
+      className="mx-[26px] mt-3 rounded-[14px] px-3.5 py-3"
+      style={{ background: colors.card, boxShadow: `inset 0 0 0 1px ${colors.or}` }}
     >
-      {demis.map((d) => {
-        const tenue = d === depart;
-        return (
-          <button
-            key={d}
-            type="button"
-            data-vers={d}
-            aria-pressed={tenue}
-            onClick={() => onChoisir(d)}
-            className="cursor-pointer px-3.5 py-[7px] text-[12px]"
-            style={{
-              border: 0,
-              // L'aplat porte la position tenue ; `surPlein` donne l'encre qui
-              // s'y lit, sur les sept chartes — dont les deux sombres, où les
-              // pôles s'inversent (`CLAUDE.md` §3).
-              // `colors.plein` et `surPlein` : le même couple que les pastilles
-              // retenues de cet écran. Une couleur écrite en clair serait juste
-              // cinq chartes sur sept, et illisible sur les deux sombres.
-              background: tenue ? colors.plein : "transparent",
-              color: tenue ? surPlein : colors.inkSoft,
-            }}
-          >
-            {MOT_DEMI[d]}
-          </button>
-        );
-      })}
-    </span>
+      <span className="block text-[12.5px]" style={{ color: colors.or }}>
+        {vers
+          ? `${chantier.nom} · ${jourLisibleCourt(vers).toLowerCase()}`
+          : `${chantier.nom} · touchez le jour au-dessus`}
+      </span>
+      <div className="mt-2 flex flex-wrap items-center gap-x-[18px] gap-y-1">
+        {vers &&
+          moments.map((m) => (
+            <MotDuGeste key={m} data-atlas={`vers-${m}`} onClick={() => onChoisir(m)}>
+              {MOT_ARRIVEE[m]}
+            </MotDuGeste>
+          ))}
+        <MotDuGeste data-atlas="annuler-deplacer" pale onClick={onAnnuler}>
+          Annuler
+        </MotDuGeste>
+      </div>
+    </div>
+  );
+}
+
+/** Les trois mots d'arrivée, écrits une fois. */
+const MOT_ARRIVEE: Record<MomentDArrivee, string> = {
+  matin: "Matin",
+  apres_midi: "Après-midi",
+  journee: "Journée",
+};
+
+/**
+ * UN MOT QUI FAIT UN GESTE — en gras, sans contour.
+ *
+ * **Sa règle du 17 septembre 2026** : *« mets des mots en gras plutôt que des
+ * boutons »*. Une pastille à contour a exactement la forme des pastilles
+ * d'équipe posées juste au-dessus — or celles-là ouvrent une liste, tandis que
+ * celles-ci font un geste. Même forme, deux natures.
+ *
+ * **Il se vise quand même** : le remplissage lui donne 40 px de haut, parce
+ * qu'un mot nu n'offre rien au pouce.
+ */
+function MotDuGeste({
+  children,
+  onClick,
+  pale,
+  ...reste
+}: {
+  children: React.ReactNode;
+  onClick: () => void;
+  pale?: boolean;
+} & Record<string, unknown>) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      {...reste}
+      className="flex-shrink-0 cursor-pointer border-0 bg-transparent px-0 py-[11px] text-[13.5px] font-bold"
+      style={{ color: pale ? colors.muted : colors.ink, WebkitTapHighlightColor: "transparent" }}
+    >
+      {children}
+    </button>
   );
 }
 
@@ -3252,7 +3397,6 @@ function CarteDuJour({
   occupationDe,
   chantiersDuJour,
   basculerEquipe,
-  liberer,
   reposer,
   morceauEnMain,
   retirerDuJour,
@@ -3516,10 +3660,14 @@ function CarteDuJour({
           // départ et une durée sur le chantier entier : le rattacher à une
           // moitié de journée n'avait de sens que tant que le bouton vivait sur
           // sa ligne, et il en ouvrait alors deux à la fois.
+          // **Les DEUX temps du geste**, pas seulement le premier : sans le
+          // second, « Déplacer » et « Retirer » revenaient dès qu'il avait
+          // touché son jour d'accueil — deux gestes offerts pendant qu'un
+          // troisième attend sa réponse. Vu à l'écran, jamais par un test.
           const choixDeplacer =
-            ouvert?.quoi === "deplacer" && ouvert.cle === cle && ouvert.chantierId === c.id;
-          /** Ce que CE chantier occupe CE jour-là : le reste ne se rend pas. */
-          const demisDeCeJour = bloc.demis;
+            (ouvert?.quoi === "deplacer" || ouvert?.quoi === "deplacer-quand") &&
+            ouvert.cle === cle &&
+            ouvert.chantierId === c.id;
 
           return (
             <Fragment key={c.id}>
@@ -3718,58 +3866,31 @@ function CarteDuJour({
                   className="mt-2.5 flex flex-wrap items-center justify-end gap-1.5"
                 >
                   {choixDeplacer ? (
-                    /* ─── LIBÉRER, ET NON DÉPLACER — 10 septembre 2026 ─────
-                       *« Je clique sur le matin, il devient vert et le matin
-                       du vendredi devient libre, et une demi-journée de
-                       Mr Julien sort ; à la place on ajoute un chantier comme
-                       d'habitude, et la demi-journée retirée peut être
-                       replacée. »* (planche `appli/liberer-une-demi-journee`,
-                       essayée puis retenue.)
+                    /* ─── PENDANT LE GESTE, LA RANGÉE SE TAIT — 17 sept. 2026 ─
+                       Le geste vit désormais SOUS LE CALENDRIER, en un seul
+                       endroit (`BandeauDeplacement`). Il y monte parce que le
+                       patron change de mois pour choisir son jour d'accueil :
+                       cette carte-ci est rendue DANS la semaine du jour ouvert
+                       (`MoisCharge`, prop `volet`) et disparaît au premier mois
+                       tourné — la question « quel moment ? » serait partie avec
+                       elle, au milieu du geste.
 
-                       **Rien n'est allumé, et ce n'est pas un oubli** : les
-                       deux positions posent une question — quelle demi-journée
-                       je rends — au lieu de décrire où le chantier est.
-
-                       **Seules SES demi-journées de CE jour sont offertes.**
-                       Un chantier qui n'occupe que le matin n'a pas d'après-midi
-                       à rendre, et l'offrir ferait un bouton qui n'écrit rien. */
-                    <>
-                      <BasculeDemi
-                        depart={null}
-                        demis={demisDeCeJour}
-                        onChoisir={(demi) => liberer(c.id, jour, demi)}
-                      />
-                      {/* ─── LA SORTIE DU GESTE — 16 septembre 2026 ─────────
-                          *« Si je clique sur déplacer j'ai aucun moyen
-                          d'annuler mon choix si je veux plus déplacer. »*
-
-                          **L'interrupteur REMPLACE « Déplacer » et
-                          « Retirer »** : une fois ouvert, les deux seules
-                          issues écrivaient en base — rendre le matin, ou
-                          rendre l'après-midi. Sortir d'un appui de trop
-                          demandait donc de rendre une demi-journée pour de
-                          bon, d'aller la reprendre dans le tiroir du bas, et
-                          de la reposer là où elle était.
-
-                          **Sa règle existait déjà à trois lignes d'ici** :
-                          *« Annuler ramène aux deux voies, à chaque étape »*
-                          (10 septembre 2026, les trois temps d'« Ajouter »).
-                          « Déplacer » était le seul geste de cet écran à ne
-                          pas l'avoir — un oubli, pas une décision.
-
-                          **Il reprend la place de « Retirer »**, à droite de
-                          l'interrupteur : la rangée garde ses deux boutons au
-                          même endroit, et rien ne se cherche
-                          (`CLAUDE.md` §3). */}
-                      <Petit data-atlas="annuler-deplacer" onClick={() => setOuvert(null)}>
-                        Annuler
-                      </Petit>
-                    </>
+                       **Rien n'est recopié ici**, et c'est la règle : deux
+                       endroits pour un même geste finissent par se contredire
+                       (`CLAUDE.md` §3). La rangée se tait, simplement. */
+                    null
                   ) : (
                     <>
                       <Petit
                         data-atlas="deplacer"
-                        onClick={() => setOuvert({ quoi: "deplacer", cle, chantierId: c.id })}
+                        onClick={() =>
+                          setOuvert({
+                            quoi: "deplacer",
+                            cle,
+                            chantierId: c.id,
+                            jourSource: jour,
+                          })
+                        }
                       >
                         Déplacer
                       </Petit>

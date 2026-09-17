@@ -38,7 +38,8 @@ import { seuilMemoireCalendrier } from "../../lib/onglet-chantier";
 import {
   avecLaDemi,
   creneauxOccupes,
-  sansLaDemi,
+  deplacerCeQueLeJourPorte,
+  type MomentDArrivee,
 } from "../../lib/creneaux-chantier";
 import type { Ctx } from "./context";
 
@@ -658,37 +659,6 @@ export async function creneauxDunChantier(ctx: Ctx, chantierId: string): Promise
 }
 
 /**
- * LIBÉRER UNE DEMI-JOURNÉE — sa demande du 10 septembre 2026.
- *
- * *« Je clique sur le matin, il devient vert et le matin du vendredi devient
- * libre, et une demi-journée de Mr Julien sort. »* Elle ne disparaît pas : la
- * durée demandée ne bouge pas, si bien que le chantier annonce aussitôt qu'il
- * lui manque une demi-journée, et le patron la repose où il veut.
- *
- * **Rend `null` quand il n'y a rien à libérer** plutôt que de lever : l'appelant
- * est un écran, et une exception d'action serveur n'arrive jamais jusqu'à lui
- * (`AGENTS.md`).
- */
-export async function libererDemiJournee(
-  ctx: Ctx,
-  chantierId: string,
-  jour: JourIso,
-  demi: Moment
-) {
-  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
-    const pose = await lirePose(tx, ctx, chantierId);
-    if (!pose) return null;
-    const actuels = await lireLesCreneaux(tx, chantierId);
-    const occupes = creneauxOccupes(pose, actuels);
-    const restants = sansLaDemi(pose, actuels, { jour, moment: demi } as Creneau);
-    // Rien n'a bougé : la demi-journée demandée n'était pas la sienne.
-    if (restants.length === occupes.length) return null;
-    await ecrireLesCreneaux(tx, ctx, chantierId, restants);
-    return { restants: restants.length };
-  });
-}
-
-/**
  * REPOSER UNE DEMI-JOURNÉE qui attendait une place.
  *
  * *« La demi-journée de Mr Julien qui a été retirée peut être replacée. »* Elle
@@ -716,6 +686,47 @@ export async function reposerDemiJournee(
     if (suivants.length === occupes.length) return null; // déjà là
     await ecrireLesCreneaux(tx, ctx, chantierId, suivants);
     return { poses: suivants.length };
+  });
+}
+
+/**
+ * DÉPLACER CE QUE LE JOUR PORTE — sa demande du 17 septembre 2026.
+ *
+ * *« Lorsque je clique sur déplacer ça me fait apparaître le planning et je
+ * sélectionne un jour et le matin ou l'aprem ou journée pour réellement
+ * déplacer mon client. »* Et « la A » : **seule la demi-journée du jour choisi
+ * part** ; les autres jours du chantier ne bougent pas.
+ *
+ * **Un seul aller-retour, une seule écriture.** Le geste d'avant passait par le
+ * tiroir : libérer, puis reposer — deux actions, donc un instant où la
+ * demi-journée n'est nulle part. Si le second appel échouait, elle y restait.
+ * Ici la liste part entière, en une transaction.
+ *
+ * **La règle vit dans `creneaux-chantier.ts`, pas ici** : elle s'éprouve sans
+ * base, et l'écran s'en sert pour n'offrir que ce qui peut aboutir
+ * (`CLAUDE.md` §3 — jamais deux écritures d'une même règle).
+ *
+ * **Rend le refus, ne lève pas** : l'appelant finit dans un écran, où une
+ * exception d'action serveur n'arrive jamais jusqu'au patron (`AGENTS.md`).
+ */
+export async function deplacerCeQueLeJourPorteEnBase(
+  ctx: Ctx,
+  chantierId: string,
+  jourSource: JourIso,
+  vers: { jour: JourIso; moment: MomentDArrivee }
+): Promise<{ refus: string } | { creneaux: Creneau[] }> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const pose = await lirePose(tx, ctx, chantierId);
+    if (!pose) return { refus: "Ce chantier n'existe plus." };
+    const decision = deplacerCeQueLeJourPorte(
+      pose,
+      await lireLesCreneaux(tx, chantierId),
+      jourSource,
+      vers
+    );
+    if ("refus" in decision) return decision;
+    await ecrireLesCreneaux(tx, ctx, chantierId, decision.creneaux);
+    return decision;
   });
 }
 

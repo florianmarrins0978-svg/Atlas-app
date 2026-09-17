@@ -1,10 +1,12 @@
 import assert from "node:assert/strict";
 import {
   avecLaDemi,
+  ceQueLeJourPorte,
   creneauxOccupes,
   demiJourneesAPoser,
+  deplacerCeQueLeJourPorte,
+  momentsOfferts,
   resumeDesCreneaux,
-  sansLaDemi,
 } from "../src/lib/creneaux-chantier";
 import type { Creneau } from "../src/lib/disponibilites";
 
@@ -84,20 +86,6 @@ essai("posé plus longtemps que demandé n'attend pas « moins un »", () => {
 
 // ─── LIBÉRER, PUIS REPOSER — son geste ─────────────────────────────────────
 
-essai("libérer une demi-journée laisse les autres en place", () => {
-  const pose = { jour: "2026-09-11", moment: "matin", dureeDemiJournees: 4 };
-  const restants = sansLaDemi(pose, [], c("2026-09-11", "matin"));
-  assert.deepEqual(
-    restants.map((x) => `${x.jour} ${x.moment}`),
-    ["2026-09-11 apres_midi", "2026-09-14 matin", "2026-09-14 apres_midi"]
-  );
-});
-
-essai("libérer une demi-journée qu'il n'occupe pas ne retire rien", () => {
-  const pose = { jour: "2026-09-11", moment: "matin", dureeDemiJournees: 2 };
-  assert.equal(sansLaDemi(pose, [], c("2026-09-30", "matin")).length, 2);
-});
-
 essai("reposer un morceau l'ajoute à sa place dans le temps", () => {
   const pose = { jour: "2026-09-14", moment: "matin", dureeDemiJournees: 3 };
   const lignes = [c("2026-09-14", "matin"), c("2026-09-14", "apres_midi")];
@@ -127,6 +115,111 @@ essai("le résumé rend le PREMIER créneau, dans l'ordre du temps", () => {
 
 essai("plus aucun créneau : le chantier n'est plus posé", () => {
   assert.deepEqual(resumeDesCreneaux([]), { jour: null, moment: null, nombre: 0 });
+});
+
+// ─── DÉPLACER CE QUE LE JOUR PORTE — « la A », 17 septembre 2026 ───────────
+//
+// *« On déplace que la demi-journée du jour sélectionné. »* Un chantier de huit
+// jours corrigé sur un seul jour ne doit pas se replier ailleurs.
+
+essai("seule la demi-journée du jour choisi part — les autres jours ne bougent pas", () => {
+  const pose = { jour: "2026-09-28", moment: "matin", dureeDemiJournees: 4 };
+  const lignes = [
+    c("2026-09-28", "matin"),
+    c("2026-09-29", "matin"),
+    c("2026-09-30", "apres_midi"),
+    c("2026-10-01", "matin"),
+  ];
+  const r = deplacerCeQueLeJourPorte(pose, lignes, "2026-09-30", {
+    jour: "2026-10-06",
+    moment: "apres_midi",
+  });
+  assert.ok("creneaux" in r, "refusé alors que le geste est légitime");
+  assert.deepEqual(
+    r.creneaux.map((x) => `${x.jour} ${x.moment}`),
+    [
+      "2026-09-28 matin",
+      "2026-09-29 matin",
+      "2026-10-01 matin",
+      "2026-10-06 apres_midi",
+    ]
+  );
+});
+
+essai("une journée entière part d'un bloc, et arrive entière", () => {
+  const pose = { jour: "2026-09-30", moment: "matin", dureeDemiJournees: 2 };
+  const r = deplacerCeQueLeJourPorte(pose, [], "2026-09-30", {
+    jour: "2026-10-06",
+    moment: "journee",
+  });
+  assert.ok("creneaux" in r);
+  assert.deepEqual(
+    r.creneaux.map((x) => `${x.jour} ${x.moment}`),
+    ["2026-10-06 matin", "2026-10-06 apres_midi"]
+  );
+});
+
+// **Le chantier ne GRANDIT pas** : une demi-journée posée sur une journée
+// entière occuperait une place que le devis ne vend pas.
+essai("une demi-journée ne devient pas une journée", () => {
+  const pose = { jour: "2026-09-30", moment: "apres_midi", dureeDemiJournees: 1 };
+  const r = deplacerCeQueLeJourPorte(pose, [], "2026-09-30", {
+    jour: "2026-10-06",
+    moment: "journee",
+  });
+  assert.ok("refus" in r, "une demi-journée a été posée sur une journée entière");
+});
+
+// **Et il ne RÉTRÉCIT pas** : l'autre moitié serait perdue sans que rien ne le
+// dise, et on le découvrirait le jour du chantier.
+essai("une journée entière ne tient pas sur une demi-journée", () => {
+  const pose = { jour: "2026-09-30", moment: "matin", dureeDemiJournees: 2 };
+  const r = deplacerCeQueLeJourPorte(pose, [], "2026-09-30", {
+    jour: "2026-10-06",
+    moment: "matin",
+  });
+  assert.ok("refus" in r, "une moitié de journée a disparu en silence");
+});
+
+essai("un jour où le chantier n'est pas n'a rien à déplacer", () => {
+  const pose = { jour: "2026-09-30", moment: "matin", dureeDemiJournees: 2 };
+  const r = deplacerCeQueLeJourPorte(pose, [], "2026-10-15", {
+    jour: "2026-10-06",
+    moment: "journee",
+  });
+  assert.ok("refus" in r);
+});
+
+// **Le cas qui rétrécit sans rien dire** : la place d'accueil est déjà la
+// sienne, deux demi-journées partent et une seule arrive.
+essai("arriver sur une demi-journée qu'il occupe déjà est refusé", () => {
+  const pose = { jour: "2026-09-28", moment: "matin", dureeDemiJournees: 3 };
+  const lignes = [
+    c("2026-09-28", "matin"),
+    c("2026-09-30", "apres_midi"),
+    c("2026-10-06", "apres_midi"),
+  ];
+  const r = deplacerCeQueLeJourPorte(pose, lignes, "2026-09-30", {
+    jour: "2026-10-06",
+    moment: "apres_midi",
+  });
+  assert.ok("refus" in r, "la demi-journée s'est écrasée sur elle-même");
+});
+
+// **Le repli vaut ici comme ailleurs** : un chantier sans aucune ligne vaut
+// encore le bloc que ses trois colonnes décrivent.
+essai("un chantier sans ligne se déplace quand même, par son repli", () => {
+  const pose = { jour: "2026-09-30", moment: "apres_midi", dureeDemiJournees: 1 };
+  assert.deepEqual(
+    ceQueLeJourPorte(pose, [], "2026-09-30").map((x) => x.moment),
+    ["apres_midi"]
+  );
+});
+
+essai("on ne propose que ce qui peut aboutir", () => {
+  assert.deepEqual(momentsOfferts(1), ["matin", "apres_midi"]);
+  assert.deepEqual(momentsOfferts(2), ["journee"]);
+  assert.deepEqual(momentsOfferts(0), []);
 });
 
 console.log(`\n${echecs === 0 ? "✅" : "❌"} Où un chantier est posé — ${echecs} échec(s).`);

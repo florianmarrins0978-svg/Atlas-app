@@ -551,49 +551,38 @@ async function main() {
     }
   });
 
-  // ─── « DÉPLACER » LIBÈRE, IL NE DÉPLACE PLUS — 10 septembre 2026 ────────
+  // ─── « DÉPLACER » OUVRE LE CALENDRIER — 17 septembre 2026 ──────────────
   //
   // **Ce contrôle défendait le geste d'avant**, et il aurait réclamé ce que le
-  // patron venait de faire retirer (`CLAUDE.md` §5 bis) : « Déplacer » écrivait
-  // un DÉPART, donc faisait glisser le bloc entier. Sa planche
-  // `appli/liberer-une-demi-journee.html`, retenue, dit autre chose — *« je
-  // clique sur le matin, il devient vert et le matin du vendredi devient
-  // libre »*.
+  // patron vient de faire retirer (`CLAUDE.md` §5 bis) : l'interrupteur
+  // matin / après-midi rendait une demi-journée au tiroir du bas, d'où il
+  // fallait aller la reprendre. Sa demande : *« c'est trop de clics à faire »*.
   //
   // **Ce qu'il tient ici, c'est la place du geste dans le parcours** : il
-  // s'ouvre, il rend, il se referme. Ce que la base écrit alors est tenu par
-  // `test-liberer-une-demi-journee-e2e.ts`, qui parcourt le geste en entier —
-  // le redire ici en ferait deux écritures d'une même règle.
-  await essai("« Déplacer » ouvre l'interrupteur ÉTEINT, et rend la moitié touchée", async () => {
+  // s'ouvre, il fait taire les deux autres, il se referme. Ce que la base écrit
+  // alors est tenu par `test-deplacer-sur-le-calendrier-e2e.ts`, qui parcourt le
+  // geste en entier — le redire ici en ferait deux écritures d'une même règle.
+  await essai("« Déplacer » ouvre le geste, et les deux autres se taisent", async () => {
     const carte = page.locator(`[data-atlas="carte-jour"][data-jour="${JOUR}"]`);
     await carte.locator('[data-atlas="bloc-chantier"] [data-atlas="deplacer"]').first().click();
-    // **Les deux moitiés du chantier, et rien d'allumé** : ce n'est pas un
-    // état à lire, c'est une question — quelle demi-journée je rends ?
-    const moments = await carte.locator("[data-vers]").allInnerTexts();
-    assert.deepEqual(moments, ["Matin", "Après-midi"], `lu : ${JSON.stringify(moments)}`);
-    const allumes = await carte.locator('[data-vers][aria-pressed="true"]').count();
-    assert.equal(allumes, 0, "une position est allumée : l'interrupteur décrit un état");
+    const bandeau = page.locator('[data-atlas="deplacement-en-cours"]');
+    await attendre("le bandeau s'ouvre", async () => (await bandeau.count()) === 1);
+    // **Les deux gestes de la carte se taisent** : les laisser offerts pendant
+    // qu'un troisième attend sa réponse, c'est inviter à l'erreur.
+    assert.equal(await page.locator('[data-atlas="deplacer"]').count(), 0);
+    assert.equal(await page.locator('[data-atlas="retirer"]').count(), 0);
+    // **Aucun moment tant qu'aucun jour n'est touché** : la question ne se pose
+    // pas avant d'avoir sa destination.
+    assert.equal(await page.locator('[data-atlas^="vers-"]').count(), 0);
 
-    const avantDuree = (await enBase()).duree_demi_journees;
-    await carte.locator('[data-vers="matin"]').click();
-    await attendre("le matin est rendu", async () => (await enBase()).creneau_debut === "apres_midi");
-    // **La durée ne bouge pas** : elle vient du devis, et c'est l'écart entre
-    // ce que le chantier demande et ce qu'il occupe qui attend une place.
-    assert.equal((await enBase()).duree_demi_journees, avantDuree);
-    // **Et le geste se referme** : *« le bouton déplacer réapparaît »*.
+    // **Et le geste se referme sans rien écrire**, sa règle du 16 septembre.
+    const avant = (await enBase()).creneau_debut;
+    await page.locator('[data-atlas="annuler-deplacer"]').click();
     await attendre("« Déplacer » est revenu", async () =>
       (await carte.locator('[data-atlas="deplacer"]').count()) > 0
     );
-    assert.equal(await carte.locator("[data-vers]").count(), 0, "l'interrupteur est resté ouvert");
-  });
-
-  await essai("le matin rendu, la journée le montre LIBRE", async () => {
-    await allerAuPlanning();
-    await toucherLeJour(JOUR);
-    const carte = page.locator(`[data-atlas="carte-jour"][data-jour="${JOUR}"]`);
-    const libres = carte.locator('[data-sans-chantier="1"]');
-    assert.equal(await libres.count(), 1, "une seule demi-journée devrait être libre");
-    assert.equal(await libres.first().getAttribute("data-bloc"), "matin");
+    assert.equal(await page.locator('[data-atlas="deplacement-en-cours"]').count(), 0);
+    assert.equal((await enBase()).creneau_debut, avant, "« Annuler » a touché la base");
   });
 
   // **LA JOURNÉE SE LIT DANS SON ORDRE — matin, puis après-midi.** Sa décision

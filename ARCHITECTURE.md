@@ -27575,7 +27575,7 @@ n'existait plus nulle part.
 | l'écrivain unique | `ecrireLesCreneaux` — `src/server/repositories/creneaux-poses.ts`, partagé par le planning et l'acceptation du client |
 | le dépôt | `libererDemiJournee`, `reposerDemiJournee` — `src/server/repositories/chantiers.ts` |
 | l'écran | `BasculeDemi`, `LigneLibre`, `TiroirDuBas` — `src/app/planning/PlanningClient.tsx` |
-| les contrôles | `scripts/test-creneaux-chantier.ts` (les règles), `scripts/test-liberer-une-demi-journee-e2e.ts` (**son geste**, de bout en bout) |
+| les contrôles | `scripts/test-creneaux-chantier.ts` (les règles), `scripts/test-deplacer-sur-le-calendrier-e2e.ts` (renommée le 17 septembre 2026) (**son geste**, de bout en bout) |
 
 
 
@@ -30902,3 +30902,64 @@ l'histoire du lot (`git merge-base --is-ancestor`).
 **Ce que cela ne relâche pas** : le niveau exigé, l'empreinte de l'arbre, et la
 règle « un rouge connu qui redevient vert se rejoue deux fois ». Une référence
 absente ramène exactement à la règle d'avant : le verdict doit être vert.
+
+---
+
+## §370 — « Déplacer » déplace pour de bon : le calendrier, puis le moment
+
+**Sa demande du 17 septembre 2026 :** *« lorsque je clique sur déplacer ça me
+fait apparaître le planning et je sélectionne un jour et le matin ou l'aprem ou
+journée pour réellement déplacer mon client, parce que là c'est trop de clics à
+faire »*. Puis, devant `appli/deplacer-sur-le-calendrier.html` : *« je choisis
+la deux, le planning au-dessus, et la A : on déplace que la demi-journée du
+jour sélectionné »*.
+
+**Sept appuis sont devenus trois.**
+
+| | |
+|---|---|
+| avant | Déplacer · la moitié à rendre · ouvrir le tiroir · toucher le morceau · refermer · ouvrir le jour d'accueil · Poser ici |
+| depuis | Déplacer · le jour · le moment |
+
+**« LA A » : SEUL LE JOUR CHOISI BOUGE.** Mr. Julien dure huit jours ; corriger
+le 30 septembre n'emmène que ce que le chantier occupe LE 30. Un chantier ne se
+replie pas ailleurs parce qu'on a rectifié une journée.
+
+**CE QUI PART COMMANDE CE QUI PEUT ARRIVER**, et c'est la moitié dangereuse du
+lot. Une demi-journée ne peut pas devenir une journée — elle occuperait une
+place que le devis ne vend pas ; une journée ne peut pas tenir sur une
+demi-journée — l'autre moitié serait perdue **sans que rien ne le dise**, et on
+le découvrirait le matin du chantier. `momentsOfferts` n'offre donc que ce qui
+tient, et `deplacerCeQueLeJourPorte` le refuse à nouveau derrière : l'écran peut
+changer, la règle non.
+
+Un troisième cas rétrécit en silence, et il n'est pas évident : la place
+d'accueil est **déjà la sienne**. Deux demi-journées partent, une seule arrive.
+Refusé avec sa phrase.
+
+| | |
+|---|---|
+| la règle, sans base ni écran | `src/lib/creneaux-chantier.ts` — `ceQueLeJourPorte`, `momentsOfferts`, `deplacerCeQueLeJourPorte` |
+| une seule écriture, une seule transaction | `deplacerCeQueLeJourPorteEnBase` (`chantiers.ts`) — l'ancien chemin en faisait deux, et entre les deux la demi-journée n'était nulle part |
+| l'action | `deplacerCeQueLeJourPorteAction` — rend le refus en valeur, jamais en exception (`AGENTS.md`) |
+| les contrôles | `test-creneaux-chantier.ts` (8 cas neufs), `test-deplacer-sur-le-calendrier-e2e.ts` (**son geste, de bout en bout, et le compte des appuis**) |
+
+**POURQUOI LE GESTE VIT SOUS LE CALENDRIER ET NON DANS LA FICHE**, alors que la
+planche le montrait dans la fiche. La fiche du jour est rendue **dans la semaine
+du jour ouvert** (`MoisCharge`, prop `volet`, §… la fiche rattachée à la case) :
+elle disparaît au premier mois tourné — or tourner le mois est exactement ce
+qu'il fait pour atteindre son jour d'accueil. La question « quel moment ? »
+serait partie au milieu du geste. Le bandeau `deplacement-en-cours` est donc
+posé sous la grille, **et il n'est recopié nulle part** : deux endroits pour un
+même geste finissent par se contredire (`CLAUDE.md` §3).
+
+**CE QUI A ÉTÉ SUPPRIMÉ AVEC**, parce qu'un chemin remplacé devient du code mort
+(`CLAUDE.md` §4 quinquies) : `BasculeDemi`, `liberer`, `libererDemiJourneeAction`,
+`libererDemiJournee` et la règle pure `sansLaDemi` — plus aucun appelant. Les
+deux contrôles qui ne tenaient qu'elle sont partis aussi ; ce qu'ils défendaient
+— le repli d'un chantier sans ligne — est tenu par les cas du déplacement.
+
+**Un défaut trouvé À L'ÉCRAN, pas par un test** (la cinquième fois dans ce
+dépôt) : au second temps du geste, « Déplacer » et « Retirer » revenaient dans
+la carte pendant que le bandeau attendait encore le moment. La condition ne
+regardait que le premier temps.
