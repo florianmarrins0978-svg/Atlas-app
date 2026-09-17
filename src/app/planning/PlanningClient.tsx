@@ -1017,17 +1017,17 @@ export default function PlanningClient({
   }
 
   /**
-   * LA FICHE DU JOUR EST-ELLE ENCORE À L'ÉCRAN ?
+   * LE DÉPLACEMENT EST-IL EN COURS ?
    *
-   * Elle est rendue dans la semaine du jour ouvert, à l'intérieur du mois
-   * affiché : dès qu'il tourne le mois, elle n'est plus nulle part. C'est ce
-   * qui décide où le geste de déplacement se dessine.
+   * Il décide d'une seule chose, et c'est sa demande du 17 septembre 2026 : le
+   * mois passe alors ENTIER au-dessus, la fiche descendant dessous.
+   *
+   * **Il a remplacé `ficheDuJourVisible`**, qui répondait à « la fiche est-elle
+   * encore là après le mois tourné ? » — une question qui ne se pose plus :
+   * détachée de la semaine, elle y survit.
    */
-  const ficheDuJourVisible = (() => {
-    if (!jourTouche) return false;
-    const d = enDate(jourTouche);
-    return d.getUTCFullYear() === curseur.annee && d.getUTCMonth() === curseur.mois;
-  })();
+  const enDeplacement =
+    ouvert?.quoi === "deplacer" || ouvert?.quoi === "deplacer-quand";
 
   function toucherLeJour(jour: JourIso) {
     // ─── PENDANT UN DÉPLACEMENT, LE JOUR TOUCHÉ EST LA DESTINATION ─────────
@@ -1464,8 +1464,11 @@ export default function PlanningClient({
                 cle="jour"
                 jour={jour}
                 // La pointe vise le CENTRE de la case touchée : c'est le
-                // calendrier qui donne la colonne, lui seul la connaît.
-                attache={{ colonne }}
+                // calendrier qui donne la colonne, lui seul la connaît. Il ne
+                // la donne PAS quand la fiche est descendue sous le mois
+                // entier — là, elle ne toucherait plus sa case et désignerait
+                // la voisine. C'est le cerne du jour ouvert qui le dit.
+                attache={colonne === null ? undefined : { colonne }}
                 {...gestesCarte}
                 // **Un jour passé se lit, il ne s'écrit pas** (planche 98). Ce
                 // n'est pas une précaution de style : cocher un salarié ou
@@ -1484,34 +1487,17 @@ export default function PlanningClient({
             // choisisse le moment — sans quoi il ne sait plus lequel il a pris,
             // et le calendrier ne répond pas à son doigt.
             jourRetenu={ouvert?.quoi === "deplacer-quand" ? ouvert.vers : null}
+            // ─── LE MOIS ENTIER AU-DESSUS PENDANT LE GESTE ────────────────
+            //
+            // **Sa demande du 17 septembre 2026**, planche 120 « la A » :
+            // *« faire en sorte que le planning apparaisse entier au-dessus de
+            // Mr Linotte pour choisir un jour facilement »*. Au repos la fiche
+            // s'ouvre entre deux semaines, rattachée à sa case (sa règle du
+            // 4 septembre) ; le temps qu'il choisisse un jour d'accueil, elle
+            // descend sous le mois pour ne plus rien lui cacher.
+            voletDetache={enDeplacement}
           />
         </div>
-
-        {/* ─── LE MÊME GESTE, EN REPLI SOUS LE CALENDRIER ──────────────────
-            **Sa place est dans la fiche** (planche retenue le 17 septembre) —
-            et c'est là qu'il se dessine tant qu'elle est à l'écran. Mais la
-            fiche vit DANS la semaine du jour ouvert (`MoisCharge`, prop
-            `volet`) : elle disparaît au premier mois tourné, or tourner le mois
-            est exactement ce qu'il fait pour atteindre son jour d'accueil. Sans
-            ce second montage, la question partirait au milieu du geste.
-
-            **Le bloc est écrit UNE fois** et monté aux deux endroits, comme
-            `LigneLibre` et la fiche elle-même : deux écritures d'un même geste
-            finiraient par se contredire (`CLAUDE.md` §3). */}
-        {gestesCarte.ecriture &&
-          !ficheDuJourVisible &&
-          (ouvert?.quoi === "deplacer" || ouvert?.quoi === "deplacer-quand") && (
-            <BandeauDeplacement
-              chantier={chantiers.find((c) => c.id === ouvert.chantierId)}
-              jourSource={ouvert.jourSource}
-              vers={ouvert.quoi === "deplacer-quand" ? ouvert.vers : null}
-              onChoisir={(moment) =>
-                ouvert.quoi === "deplacer-quand" &&
-                deplacerLeJour(ouvert.chantierId, ouvert.jourSource, ouvert.vers, moment)
-              }
-              onAnnuler={() => setOuvert(null)}
-            />
-          )}
 
         {/* ─── LA JOURNÉE, OU LES SEPT JOURS ───────────────────────────────
             **Le mot « Planifiés » est parti le 9 septembre 2026, à sa demande.**
@@ -2414,11 +2400,12 @@ function LigneLibre({
  * ouvrir le tiroir, toucher le morceau, refermer, ouvrir le jour d'accueil,
  * Poser ici. Maintenant : Déplacer, le jour, le moment.
  *
- * **Pourquoi il vit sous le calendrier et pas dans la fiche**, alors que la
- * planche le montrait dans la fiche : la fiche est rendue DANS la semaine du
- * jour ouvert, et elle disparaît au premier mois tourné — or tourner le mois
- * est précisément ce qu'il fait pour atteindre son jour d'accueil. La question
- * serait partie au milieu du geste.
+ * **Il vit DANS LA FICHE, et nulle part ailleurs** — la planche le montrait
+ * ainsi, et c'est enfin tenable depuis le 17 septembre 2026 : pendant le
+ * geste, le mois passe entier au-dessus et la fiche descend dessous
+ * (`voletDetache`). Elle ne disparaît donc plus quand il tourne le mois pour
+ * atteindre son jour d'accueil, et le repli qu'il avait fallu écrire sous le
+ * calendrier pour ce seul cas est parti avec.
  *
  * **Les mots sont en gras, sans contour** — sa règle du 17 septembre : une
  * pastille à contour a la forme des pastilles d'équipe, qui ouvrent une liste ;
@@ -2428,7 +2415,6 @@ function BandeauDeplacement({
   chantier,
   jourSource,
   vers,
-  dansLaFiche,
   onChoisir,
   onAnnuler,
 }: {
@@ -2437,16 +2423,19 @@ function BandeauDeplacement({
   /** Le jour d'accueil touché, ou `null` tant qu'il n'a pas choisi. */
   vers: JourIso | null;
   /**
-   * **ÉCRIT UNE FOIS, MONTÉ À DEUX ENDROITS** — comme `LigneLibre` et la fiche
-   * du jour elle-même. Sa place normale est DANS la fiche, sous les
-   * demi-journées : c'est ce qu'il a retenu le 17 septembre 2026, planche
-   * `appli/deplacer-sur-le-calendrier.html`. Mais la fiche est rendue dans la
-   * semaine du jour ouvert (`MoisCharge`, prop `volet`) et disparaît au premier
-   * mois tourné — or tourner le mois est exactement ce qu'il fait pour
-   * atteindre son jour d'accueil. Le second montage, sous le calendrier, ne
-   * sert qu'à ce cas-là : le geste ne peut plus se perdre en route.
+   * **IL N'Y A PLUS QU'UNE PLACE — 17 septembre 2026.**
+   *
+   * Ce bloc était monté à deux endroits : dans la fiche du jour, et en repli
+   * sous le calendrier. Le second n'existait que parce que la fiche vivait
+   * DANS la semaine du jour ouvert et disparaissait au premier mois tourné —
+   * or tourner le mois est exactement ce qu'il fait pour atteindre son jour.
+   *
+   * Depuis que le mois passe entier au-dessus pendant le geste (`voletDetache`
+   * de `MoisCharge`), la fiche survit au mois tourné : le repli est devenu du
+   * code mort, et il est parti avec sa prop (`CLAUDE.md` §4 quinquies). Une
+   * seule place, une seule phrase — et le nom du chantier n'a plus à être
+   * redit, puisqu'il est toujours en titre trois lignes plus haut.
    */
-  dansLaFiche?: boolean;
   onChoisir: (moment: MomentDArrivee) => void;
   onAnnuler: () => void;
 }) {
@@ -2466,49 +2455,54 @@ function BandeauDeplacement({
   const moments = momentsOfferts(partants.length);
 
   return (
-    <div
-      data-atlas="deplacement-en-cours"
-      data-vers={vers ?? undefined}
-      // **Pas de cadre — la planche n'en a pas.** Dans la fiche, il se pose
-      // sous les demi-journées, sans marge ni fond : c'est la ligne en or qui
-      // le distingue, pas un contour de plus. Hors de la fiche — quand le mois
-      // tourné l'a emportée — il reprend les marges de l'écran.
-      className={dansLaFiche ? "mt-2.5" : "mx-[26px] mt-3"}
-    >
-      <span className="block text-[12.5px]" style={{ color: colors.or }}>
-        {/* ─── LE NOM NE SE REDIT QUE LÀ OÙ IL MANQUE ──────────────────────
-            **Sa réponse du 17 septembre 2026 — « 1 sans le nom »**, planche
-            `appli/deplacer-la-consigne.html`, après sa capture où
-            « Mr. Linotte » était écrit DEUX FOIS dans la même carte, à quatre
-            lignes d'écart.
-
-            Ce bloc est écrit une fois et monté à deux places. Dans la fiche,
-            le nom est déjà au-dessus, en titre du chantier : le répéter est du
-            bruit (`CLAUDE.md` §3, « le moins de mots possible »). Sous le
-            calendrier — quand le mois tourné a emporté la fiche — il est la
-            SEULE chose qui dise ce qu'on déplace : il y reste.
-
-            **La phrase elle-même n'est pas encore tranchée.** Il a répondu au
-            nom, pas à la formulation ; « au-dessus » est faux dans la fiche
-            (le volet s'insère sous la semaine du jour ouvert, et les semaines
-            suivantes se dessinent dessous) et attend sa lettre — `TODO.md`. */}
-        {vers
-          ? `${jourLisibleCourt(vers).toLowerCase()}. Quel moment ?`
-          : dansLaFiche
-            ? "Touchez le jour au-dessus"
-            : `${chantier.nom} · touchez le jour au-dessus`}
-      </span>
-      <div className="mt-1 flex flex-wrap items-center gap-x-[18px] gap-y-1">
-        {vers &&
-          moments.map((m) => (
-            <MotDuGeste key={m} data-atlas={`vers-${m}`} onClick={() => onChoisir(m)}>
-              {MOT_ARRIVEE[m]}
+    <div data-atlas="deplacement-en-cours" data-vers={vers ?? undefined} className="mt-2.5">
+      {vers ? (
+        <>
+          <span className="block text-[12.5px]" style={{ color: colors.or }}>
+            {`${jourLisibleCourt(vers).toLowerCase()}. Quel moment ?`}
+          </span>
+          <div className="mt-1 flex flex-wrap items-center gap-x-[18px] gap-y-1">
+            {moments.map((m) => (
+              <MotDuGeste key={m} data-atlas={`vers-${m}`} onClick={() => onChoisir(m)}>
+                {MOT_ARRIVEE[m]}
+              </MotDuGeste>
+            ))}
+            <MotDuGeste data-atlas="annuler-deplacer" onClick={onAnnuler}>
+              Annuler
             </MotDuGeste>
-          ))}
-        <MotDuGeste data-atlas="annuler-deplacer" pale onClick={onAnnuler}>
-          Annuler
-        </MotDuGeste>
-      </div>
+          </div>
+        </>
+      ) : (
+        /* ─── « ANNULER » SUR LA LIGNE DE LA CONSIGNE ────────────────────
+           **Sa retouche du 17 septembre 2026 :** *« le Annuler tu le mets en
+           noir gras à droite de "touchez le jour au-dessus", genre 2 cm sur sa
+           droite »*. Il était gris pâle, sur la ligne du dessous : on le
+           cherchait. Il prend l'encre des deux gestes qu'il remplace le temps
+           du déplacement.
+
+           **2 cm RÉELS, et c'est pourquoi ce n'est pas `2cm`** : l'unité `cm`
+           d'une feuille de style vaut 96 dpi nominaux, soit 1,25 cm sous la
+           règle sur son téléphone. Son écran fait ~61 px par centimètre.
+
+           **L'écart se COMPRIME plutôt que de pousser le bouton dehors.**
+           Mesuré sur 320 px de large : à 122 px fixes, « Annuler » finissait
+           pile sur le bord, zéro marge — un nom plus long et il sortait.
+
+           **La ligne ne vaut que pour le choix du JOUR** : au moment suivant,
+           trois mots s'ajoutent et ne tiennent pas à côté de la phrase. */
+        <div className="flex items-baseline">
+          {/* La phrase ne se coupe PAS : elle est ce qu'il lit, et l'écart est
+              ce qui doit céder. Sans cela elle rendait « Touchez le jour au- /
+              dessus » sur deux lignes — vu à l'écran, jamais par un test. */}
+          <span className="whitespace-nowrap text-[12.5px]" style={{ color: colors.or }}>
+            Touchez le jour au-dessus
+          </span>
+          <span aria-hidden className="min-w-[18px] flex-[0_1_122px]" />
+          <MotDuGeste data-atlas="annuler-deplacer" onClick={onAnnuler}>
+            Annuler
+          </MotDuGeste>
+        </div>
+      )}
     </div>
   );
 }
@@ -2534,12 +2528,10 @@ const MOT_ARRIVEE: Record<MomentDArrivee, string> = {
 function MotDuGeste({
   children,
   onClick,
-  pale,
   ...reste
 }: {
   children: React.ReactNode;
   onClick: () => void;
-  pale?: boolean;
 } & Record<string, unknown>) {
   return (
     <button
@@ -2547,7 +2539,7 @@ function MotDuGeste({
       onClick={onClick}
       {...reste}
       className="flex-shrink-0 cursor-pointer border-0 bg-transparent px-0 py-[11px] text-[13.5px] font-bold"
-      style={{ color: pale ? colors.muted : colors.ink, WebkitTapHighlightColor: "transparent" }}
+      style={{ color: colors.ink, WebkitTapHighlightColor: "transparent" }}
     >
       {children}
     </button>
@@ -3973,7 +3965,6 @@ function CarteDuJour({
                         chantier={c}
                         jourSource={ouvert.jourSource}
                         vers={ouvert.quoi === "deplacer-quand" ? ouvert.vers : null}
-                        dansLaFiche
                         onChoisir={(moment) =>
                           ouvert.quoi === "deplacer-quand" &&
                           deplacerLeJour(c.id, ouvert.jourSource, ouvert.vers, moment)

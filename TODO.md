@@ -69,40 +69,23 @@ de la hauteur, il la veut à 33 %. Le réglage des deux ressorts ne la déplace
 pas — essayé, mesuré, rendu. La racine est ailleurs.
 
 
-## ⏳ UNE PLANCHE À REGARDER — LE MOIS ENTIER AU-DESSUS PENDANT UN DÉPLACEMENT (17 septembre 2026)
+## ~~UNE PLANCHE À REGARDER — LE MOIS ENTIER AU-DESSUS PENDANT UN DÉPLACEMENT~~ — CHOISIE ET CODÉE LE JOUR MÊME (17 septembre 2026, « la A » + « 1 sans le nom »)
 
 **Sa capture :** *« il dit toucher le jour au-dessus mais le planning apparaît
-en-dessous. »* Mesuré : sur son écran du 18 septembre, **dix jours du mois**
-sont dessinés SOUS la consigne — dont le 24.
+en-dessous. »* Mesuré : dix jours du mois étaient sous la consigne, dont le 24.
 
-**LA PREMIÈRE LECTURE ÉTAIT FAUSSE, ET C'EST LUI QUI L'A REDRESSÉE :** *« ce
-que je voulais c'était pas changer la phrase mais faire en sorte que le
-planning apparaisse entier au-dessus de Mr Linotte pour choisir un jour
-facilement »*. On lui avait proposé trois formulations ; il n'en veut aucune.
-Il veut que la phrase **devienne vraie**.
+**On lui a d'abord proposé la mauvaise chose** — trois formulations de
+rechange. Il a redressé : *« ce que je voulais c'était pas changer la phrase
+mais faire en sorte que le planning apparaisse entier au-dessus de Mr Linotte
+pour choisir un jour facilement »*. Le code déjà écrit a été défait
+(`5b177d9`, `aa3f198`) avant la planche, à sa demande — *« fait une planche !
+code rien »*.
 
-**Sa solution est meilleure, et pour une raison qui n'avait pas été vue.**
-Aujourd'hui la fiche s'insère DANS la grille, sous la semaine du jour ouvert
-(`MoisCharge`, prop `volet`) — donc elle **disparaît au premier mois tourné**,
-et c'est pour ça qu'il a fallu écrire un SECOND montage de
-`BandeauDeplacement`, en repli sous le calendrier. Si la fiche descend sous le
-mois entier pendant le geste, elle survit au changement de mois : **le second
-montage devient du code mort** (`CLAUDE.md` §4 quinquies), et la consigne n'a
-plus besoin de redire le nom du chantier.
-
-**RIEN N'EST CODÉ POUR LA PLACE** — la planche `appli/deplacer-la-consigne.html`
-attend sa lettre. Une seule question : pendant qu'il choisit le jour, la fiche
-descend **entière** (A) ou réduite au nom, au lieu et à la question (B).
-
-**Ce qui EST codé, et qui attend avec :** sa réponse « 1 sans le nom » — le nom
-du chantier n'est plus redit dans la fiche, où il est déjà en titre trois
-lignes plus haut (commit `b04ec34` sur `claude/problem-investigation-qn7qor`,
-suite `test-deplacer-sur-le-calendrier-e2e.ts`). Non poussé sur `main` : il
-touche la même ligne que la place, et les deux partiront ensemble.
-
-**Tranché sans lui demander, à dire si c'est mal :** la pointe qui rattache la
-fiche à sa case disparaît pendant le geste — descendue sous le mois entier,
-elle désignait la case d'à côté. Le cerne noir du jour ouvert la remplace.
+**CODÉ**, planche `appli/deplacer-la-consigne.html` : la fiche descend sous le
+mois entier pendant le geste (`voletDetache`), aucun mot n'a changé à l'écran,
+le second affichage du geste sous le calendrier est supprimé, le nom ne se
+redit plus, et « Annuler » est passé en noir gras à 2 cm à droite de la
+consigne. `ARCHITECTURE.md` §381.
 
 ## ⏳ UNE PLANCHE À REGARDER — DEUX JOURS QUI NE SE TOUCHENT PAS (17 septembre 2026)
 

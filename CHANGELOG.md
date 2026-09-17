@@ -8,6 +8,32 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-17
 
+### « Touchez le jour au-dessus » : c'est le PLANNING qui est passé au-dessus
+
+Sa capture : dix jours du mois, dont celui qu'il visait, étaient dessinés SOUS
+la consigne qui l'envoyait regarder en haut. On lui a d'abord proposé de
+réécrire la phrase — il a refusé les trois formulations : *« ce que je voulais
+c'était pas changer la phrase mais faire en sorte que le planning apparaisse
+entier au-dessus de Mr Linotte pour choisir un jour facilement »*.
+
+Sa solution règle plus que la nôtre. La fiche vivait dans la semaine du jour
+ouvert, donc elle disparaissait au premier mois tourné — or tourner le mois est
+exactement ce qu'il fait pour atteindre son jour d'accueil, et il avait fallu
+écrire un SECOND affichage du geste sous le calendrier rien que pour ça.
+Descendue sous le mois entier, la fiche y survit : ce second affichage est
+supprimé, avec sa prop et le gris pâle qui n'en dépendait plus. Une seule
+place, une seule phrase, et le nom du chantier ne se redit plus.
+
+Aucun mot n'a été changé à l'écran. « Annuler » est passé en noir gras sur la
+ligne de la consigne, à 2 cm à droite — sa retouche, mesurée en pixels réels et
+non en `cm` CSS, qui en aurait rendu 1,25 sous la règle.
+
+Deux défauts vus à l'écran et par aucun test : 56 px de blanc entre le 30 et la
+fiche (la fenêtre du carrousel prend la hauteur du plus grand des trois mois —
+la fiche est donc rendue DANS le panneau du mois, qu'elle regonfle), et la
+consigne coupée en « Touchez le jour au- / dessus ». Les deux ont leur mesure
+dans la suite maintenant. `ARCHITECTURE.md` §381.
+
 ### Le garde-fou de `main` réclamait une batterie dès qu'une autre session fusionnait
 
 Sa colère : *« les sessions rejouent des batteries en boucle juste parce qu'une

@@ -31477,3 +31477,63 @@ dans un dépôt d'essai à part — un lot vert, `main` qui avance dessous, la
 fusion —, et refuse que le refus contienne `verifier:avant-livraison`. Confronté
 au code d'avant, six de ses cas rougissent : c'est ce qui prouve qu'il mesure
 quelque chose.
+
+---
+
+## §381 — Pendant un déplacement, le mois passe ENTIER au-dessus de la fiche
+
+**Sa capture du 17 septembre 2026, puis sa correction.** L'écran lui disait
+« touchez le jour au-dessus » alors que dix jours du mois — dont celui qu'il
+visait — étaient dessinés SOUS la consigne. On lui a d'abord proposé de
+réécrire la phrase ; il a redressé : *« ce que je voulais c'était pas changer
+la phrase mais faire en sorte que le planning apparaisse entier au-dessus de
+Mr Linotte pour choisir un jour facilement »*. Planche
+`appli/deplacer-la-consigne.html`, réponse « la A ».
+
+**Pourquoi la fiche vivait DANS la grille.** Sa correction du 4 septembre 2026
+— *« lorsque je clique sur un jour, le client doit être rattaché »* — a fait
+rendre la fiche entre la semaine du jour ouvert et la suivante, l'encoche
+pointant la case (`MoisCharge`, prop `volet`). C'est ce qui a supprimé un
+`scrollIntoView`. Au repos c'est juste, et cela ne bouge pas.
+
+**Ce que le geste change.** `voletDetache` déplace la fiche sous la DERNIÈRE
+semaine le temps qu'il choisisse un jour d'accueil. Trois conséquences, et la
+deuxième n'avait pas été vue :
+
+| | |
+|---|---|
+| la consigne | « au-dessus » redevient vraie — aucun mot n'a été changé |
+| la fiche | ne dépend plus de la semaine affichée, donc elle **survit au mois tourné** |
+| le repli sous le calendrier | n'existait que pour ce cas : **supprimé**, avec sa prop `dansLaFiche` et le `pale` de `MotDuGeste` |
+
+**Le nom du chantier ne se redit plus** (sa réponse « 1 sans le nom ») : une
+seule place, et il y est déjà en titre trois lignes plus haut. Sur sa capture
+il était écrit deux fois, à quatre lignes d'écart.
+
+**Elle est rendue DANS le panneau du milieu, pas après le carrousel** — et
+c'est une mesure, pas un goût. La fenêtre prend la hauteur du plus GRAND des
+trois mois affichés : un mois de six semaines à côté d'un mois de cinq
+laissait **56 px de blanc** entre le 30 et la fiche. Rendue à l'intérieur, elle
+regonfle le mois courant, qui redevient le plus grand — le vide retombe à
+20 px. Sur le milieu seulement : les voisins portent `pointerEvents: none`, et
+il en toucherait une qui ne répond pas.
+
+**La pointe de rattachement disparaît pendant le geste**, `volet` recevant
+`null` pour la colonne : descendue sous le mois, elle désignerait la case d'à
+côté. C'est le cerne du jour ouvert qui le dit, et il ne ment pas sur la
+distance.
+
+**« Annuler » a rejoint la ligne de la consigne**, en noir gras, à 2 cm sur sa
+droite — sa retouche du même jour. Ce ne sont pas `2cm` CSS : cette unité vaut
+96 dpi nominaux, soit 1,25 cm sous la règle sur son téléphone, dont l'écran
+fait ~61 px par centimètre. L'écart se **comprime** plutôt que de pousser le
+bouton dehors — mesuré sur 320 px de large, où il finissait pile sur le bord.
+La ligne ne vaut que pour le choix du JOUR : au moment suivant, trois mots
+s'ajoutent et ne tiennent pas à côté.
+
+**Ce que les tests tiennent** (`test-deplacer-sur-le-calendrier-e2e.ts`) : aucun
+jour du mois sous la fiche, la fiche posée après la dernière semaine, elle
+survit au mois tourné avec un seul bandeau, « Annuler » sur la ligne de la
+consigne et en encre pleine, et la consigne sur UNE ligne — celui-là est né
+d'une capture regardée, où elle rendait « Touchez le jour au- / dessus ».
+

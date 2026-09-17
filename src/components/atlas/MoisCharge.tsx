@@ -62,6 +62,7 @@ export default function MoisCharge({
   jourRetenus,
   semaineLue,
   volet,
+  voletDetache = false,
   reperePrefixe = "",
 }: {
   curseur: Curseur;
@@ -110,7 +111,26 @@ export default function MoisCharge({
    * dit quel jour. Ce qu'on y écrit reste à l'écran qui l'emploie, sans quoi ce
    * composant partagé se mettrait à connaître les chantiers.
    */
-  volet?: (jour: JourIso, colonne: string) => ReactNode;
+  volet?: (jour: JourIso, colonne: string | null) => ReactNode;
+  /**
+   * LE VOLET PASSE SOUS LE MOIS ENTIER — sa demande du 17 septembre 2026.
+   *
+   * *« Faire en sorte que le planning apparaisse entier au-dessus de
+   * Mr Linotte pour choisir un jour facilement. »* Pendant qu'il choisit un
+   * jour d'accueil, la fiche coincée entre deux semaines lui cachait la
+   * moitié du mois — sur sa capture, dix jours étaient SOUS elle, dont celui
+   * qu'il visait.
+   *
+   * **Deux effets, et le second n'avait pas été vu :** le volet ne dépend plus
+   * de la semaine affichée, donc il SURVIT au mois tourné — or tourner le mois
+   * est exactement ce qu'il fait pour atteindre son jour. Le repli qu'il avait
+   * fallu écrire sous le calendrier pour ce seul cas n'a plus lieu d'être.
+   *
+   * **Il n'y a alors plus de colonne à viser** : `volet` reçoit `null`, et
+   * c'est la fiche qui décide de ne pas dessiner sa pointe — descendue sous le
+   * mois, elle désignerait la case d'à côté.
+   */
+  voletDetache?: boolean;
   /** Préfixe des repères `data-atlas`, quand deux mois cohabitent sur un écran. */
   reperePrefixe?: string;
 }) {
@@ -302,11 +322,28 @@ export default function MoisCharge({
                       sous une ligne des planifiés, où ce composant n’existe pas.
                       Deux pointes écrites à deux endroits auraient divergé au
                       premier ajustement (`CLAUDE.md` §3). */}
-                  {volet && rang >= 0 && jourTouche &&
+                  {volet && !voletDetache && rang >= 0 && jourTouche &&
                     volet(jourTouche, `${((rang + 0.5) / 7) * 100}%`)}
                 </div>
               );
             })}
+
+            {/* ─── LE VOLET DÉTACHÉ, SOUS LA DERNIÈRE SEMAINE ──────────────
+                **Sur le panneau du MILIEU seulement** : les trois mois
+                cohabitent côte à côte, et la fiche s'y dessinerait trois fois
+                — celles des voisins portant `pointerEvents: none`, il en
+                toucherait une qui ne répond pas.
+
+                **Dedans et non après le carrousel**, mesuré sur son écran : la
+                fenêtre prend la hauteur du plus GRAND des trois mois, et un
+                mois de six semaines à côté d'un mois de cinq laissait 56 px de
+                blanc entre le 30 et la fiche. Rendue à l'intérieur, elle
+                regonfle le mois courant, qui redevient le plus grand.
+
+                **Et elle survit au mois tourné** : le glissement recentre,
+                `jourTouche` ne bouge pas, donc elle est redessinée dans le
+                nouveau panneau du milieu. C'est tout l'objet du détachement. */}
+            {volet && voletDetache && milieu && jourTouche && volet(jourTouche, null)}
           </div>
         );
       }),
@@ -315,6 +352,7 @@ export default function MoisCharge({
       jourTouche,
       semaineLue,
       volet,
+      voletDetache,
       retenus,
       aujourdHui,
       occupationDe,
