@@ -168,6 +168,27 @@ La planche `appli/deux-jours-pas-colles.html` (119) compare trois états, et
 montre sous chacun **ce que le client lit** et **ce qui se pose au planning** —
 c'est là que les trois diffèrent, pas dans le calendrier.
 
+
+
+### La même planche, refaite simple le soir même
+
+Sa réponse à la première version : *« je comprends rien, l'idée c'est que ce
+soit simple et joli »*, puis sa règle en clair : *« quand je propose une date
+à un client et que le chantier dure deux jours, je dois pouvoir lui proposer
+le 18 et le 22 en lui disant : on viendra un jour le 18 et le deuxième le
+22 »*.
+
+Partis : les trois états, l'interrupteur de la vue B, la carte du planning et
+les trois notes. Reste **un écran, une idée** — un appui, un jour du chantier.
+Il touche le 18 et le 22, la carte du dessous montre ce que Linotte lit :
+« Nous venons le vendredi 18 septembre et le mardi 22 septembre ». S'il ne
+touche que le 18, le jour d'à côté se pose tout seul, dessiné en creux, avec
+la seule phrase de l'écran — « Touchez un autre jour pour l'y poser à la
+place » ; le geste de tous les jours ne change donc pas. Sur une journée :
+une date, ou deux au choix, comme aujourd'hui. Ce qu'il perdrait s'il
+tranche — deux dates au choix sur un chantier de plusieurs jours — est écrit
+dans `TODO.md`, pas tu. Parcourue à 390 px dans un vrai navigateur, les six
+gestes joués, sans débordement ni erreur.
 ### La publication des planches rougissait depuis la note vocale à plat
 
 Le flux `pages.yml` est tombé sur `test:boutons-verts` dès la poussée du
