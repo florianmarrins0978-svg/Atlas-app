@@ -116,7 +116,7 @@ niveau 3 voisin. Le détail est dans `CLAUDE.md` §6.
 ## `main` a avancé sous un lot éprouvé : on rejoue la rencontre, pas la batterie
 
 **Sa règle du 17 septembre 2026 : *« Rejoue juste ce qui a bougé ! »*.**
-`npx tsx scripts/verifier-apres-fusion.ts`, dans le dossier du lot une fois reposé sur
+`npx tsx scripts/verifier-ce-qui-a-bouge.ts`, dans le dossier du lot une fois reposé sur
 `main`. Il vaut la batterie si **le lot est identique à la ligne près** à ce
 qu'elle a mesuré, si son verdict ne portait aucun rouge nouveau, et si la
 rencontre rejouée est verte : suites base, écrans du lot, écrans touchés par
@@ -136,10 +136,30 @@ batterie entière.
 |---|---|
 | rien, au contenu près | **rien** — la fusion s'ouvre, même après une fusion |
 | un fichier **du lot** | le contrôle de son niveau |
-| **seulement** ce que `main` a apporté | `npx tsx scripts/verifier-apres-fusion.ts` |
+| **seulement** ce que `main` a apporté | `npx tsx scripts/verifier-ce-qui-a-bouge.ts` |
 
 Le garde-fou nomme lui-même le complément dans son refus : il n'y a plus à s'en
 souvenir au bout de trois heures. `ARCHITECTURE.md` §380.
+
+## Un rouge CORRIGÉ se rejoue seul — 17 septembre 2026, 23 h
+
+**Sa colère :** *« ça recommence et c'est ça à chaque fois ! »*. Une étape hors
+suites — Types, Lint, Mémoire du dépôt, Construction — n'avait aucun moyen de
+redevenir verte sans les cinquante minutes, et corriger un rouge faisait
+refuser le complément d'après-fusion.
+
+```bash
+npx tsx scripts/verifier-ce-qui-a-bouge.ts
+```
+
+| | |
+|---|---|
+| ce qui a bougé | par le CONTENU : l'empreinte du verdict, et git pour ce qu'elle n'indexe pas (`.md`, `docs/`, `.claude/`) |
+| ce qu'on rejoue | ce qui était rouge, plus ce que ce qui a bougé peut casser (la rencontre) |
+| ce qu'on ne rejoue pas | garde son rouge — ne pas savoir n'est jamais vert |
+| ce qui renvoie à la batterie | ce qui a bougé atteint le niveau 3 |
+
+`ARCHITECTURE.md` §381.
 
 ## Un rouge venu d'AILLEURS ne ferme pas la porte — une régression NOUVELLE, si
 
@@ -200,7 +220,7 @@ jamais, à lui seul, provoquer une nouvelle batterie complète. »*
 | ce qui arrive | ce qu'on joue |
 |---|---|
 | le lot a passé les contrôles de son niveau | ils **restent valables** tant que le lot ne change pas |
-| `main` avance, sans rapport avec le lot | **rien** — `npx tsx scripts/verifier-apres-fusion.ts` le constate et repose le verdict |
+| `main` avance, sans rapport avec le lot | **rien** — `npx tsx scripts/verifier-ce-qui-a-bouge.ts` le constate et repose le verdict |
 | `main` touche une dépendance que le lot emploie, ou un appelant du lot | **seulement** les suites de ces fichiers-là |
 | un conflit git | on le résout, et l'on rejoue ce que la résolution touche — c'est la même rencontre |
 | le lot lui-même a changé | son niveau décide à nouveau, depuis zéro |

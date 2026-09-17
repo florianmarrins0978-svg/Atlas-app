@@ -43,7 +43,7 @@ la fusion.
 |---|---|
 | rien (contenu identique) | **rien** : la poussée passe |
 | un fichier **du lot** | le contrôle de son niveau |
-| **seulement** ce que `main` a apporté | `npx tsx scripts/verifier-apres-fusion.ts` — une minute, souvent rien à jouer |
+| **seulement** ce que `main` a apporté | `npx tsx scripts/verifier-ce-qui-a-bouge.ts` — une minute, souvent rien à jouer |
 | une empreinte illisible | le contrôle du niveau — ne pas savoir n'est jamais « rien n'a bougé » |
 
 Le complément existait déjà depuis ce matin. **Le garde-fou ne le nommait

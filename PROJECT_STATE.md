@@ -5,6 +5,14 @@
 
 ---
 
+## FAIT : CORRIGER UN ROUGE NE COÛTE PLUS LA BATTERIE ENTIÈRE (17 septembre 2026)
+
+Une étape qui n'est pas une suite — Types, Lint, Mémoire du dépôt, Construction
+— n'avait aucun moyen de redevenir verte seule : la table des étapes vivait
+dans le script de la batterie. `npx tsx scripts/verifier-ce-qui-a-bouge.ts`
+rejoue ce qui était rouge et ce que la correction peut casser, et remplace
+`verifier-apres-fusion.ts`. `ARCHITECTURE.md` §381.
+
 ## FAIT : LE GARDE-FOU DE `main` NE RÉCLAME PLUS DE BATTERIE POUR RIEN (17 septembre 2026)
 
 Il comparait des **dates** d'écriture : une fusion réécrit ce qu'elle apporte,
@@ -56,7 +64,7 @@ mécanisme : l'accueil lit les réponses une fois, la réponse arrive plus tard 
 sur le téléphone du client. `VeilleDesNouvelles` relit l'accueil dès qu'il
 revient à Atlas, et toutes les trente secondes pendant qu'il le regarde.
 **Ce n'est pas une notification poussée** — Atlas fermé, rien ne sonne encore
-(`TODO.md`, en tête). `ARCHITECTURE.md` §381.
+(`TODO.md`, en tête). `ARCHITECTURE.md` §382.
 
 ## FAIT : L'ACCUEIL SANS CHANTIER — LA PORTE DU DEVIS AU TIERS HAUT (17 septembre 2026)
 

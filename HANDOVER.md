@@ -8,6 +8,20 @@ sert.
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## UN ROUGE SE REJOUE SEUL — LA BATTERIE N'EST PLUS LE SEUL CHEMIN
+
+Depuis le 17 septembre 2026 au soir : après une batterie rouge, on corrige, puis
+
+```bash
+npx tsx scripts/verifier-ce-qui-a-bouge.ts
+```
+
+Il rejoue ce qui était rouge et ce que la correction peut casser — quelques
+minutes —, garde le rouge de ce qu'il n'a pas remesuré, et renvoie à la
+batterie seulement si ce qui a bougé atteint le niveau 3. Il remplace
+`verifier-apres-fusion.ts`. `ARCHITECTURE.md` §381.
+
+---
 ## `main` QUI AVANCE NE COÛTE PLUS UNE BATTERIE
 
 Depuis le 17 septembre 2026, `garde-fusion-main.mjs` ne regarde plus la **date**
@@ -20,7 +34,7 @@ CONTENUS, avec la fonction de la batterie (`scripts/_empreinte-des-sources.mjs`)
 | Ce qu'il dit | Ce qu'on joue |
 |---|---|
 | « le lot a changé depuis sa vérification » | le contrôle de son niveau (`npm run niveau` le dit) |
-| « main a apporté N fichier(s) » | `npx tsx scripts/verifier-apres-fusion.ts` — une minute, souvent rien |
+| « main a apporté N fichier(s) » | `npx tsx scripts/verifier-ce-qui-a-bouge.ts` — une minute, souvent rien |
 | rien : la poussée passe | rien |
 
 `ARCHITECTURE.md` §380.
@@ -73,7 +87,7 @@ un composant client qui lit `usePathname()`. **Ne pas le remonter dans
 lien, et le décor du premier écran de l'onglet vaudrait alors pour tous les
 suivants. C'est ce qui faisait disparaître son menu du bas après un envoi de
 devis. Les chemins publics, eux, restent tranchés au serveur — il n'y a pas de
-session à y lire. `ARCHITECTURE.md` §381.
+session à y lire. `ARCHITECTURE.md` §382.
 
 ## L'accueil se relit tout seul, et ce n'est pas une notification
 
@@ -115,8 +129,9 @@ attend sa réponse. Refaite le soir même — *« je comprends rien, l'idée c'e
 que ce soit simple et joli »* — sur une seule idée : **un appui, un jour du
 chantier**, puis refaite une troisième fois **sur le geste qu'il a dicté** :
 un appui pose le premier jour et le chantier se remplit d'affilée, un appui
-sur un jour du chantier l'enlève (le chantier se décale d'un jour), et un
-interrupteur « Deuxième proposition » pour que la cliente choisisse.
+sur un jour du chantier l'efface sans rien décaler — l'appui suivant le remet
+où il veut —, et un interrupteur « Deuxième proposition » pour que la cliente
+choisisse.
 `TODO.md`, en tête.
 
 ---

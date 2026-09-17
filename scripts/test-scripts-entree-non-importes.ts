@@ -7,7 +7,7 @@ import path from "node:path";
  * ─── UN SCRIPT D'ENTRÉE NE S'IMPORTE PAS ────────────────────────────────────
  *
  * **La panne du 17 septembre 2026, trouvée en jouant l'outil, pas en le
- * lisant.** `verifier-apres-fusion.ts` importait une fonction de
+ * lisant.** `verifier-ce-qui-a-bouge.ts` importait une fonction de
  * `verifier-rouge-prealable.ts` — un script d'ENTRÉE, qui appelle `main()` à sa
  * dernière ligne. L'import exécutait donc ce `main()`, qui écrivait
  * « ✅ aucune suite rouge : rien à comparer » puis `process.exit(0)` : le

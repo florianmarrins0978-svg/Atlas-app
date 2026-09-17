@@ -98,7 +98,11 @@ verifier("la sortie reste VISIBLE en plus d'être retenue", () => {
 });
 
 verifier("la batterie BÂTIT — c'est ce qui manquait le 16 août", () => {
-  const batterie = readFileSync(BATTERIE, "utf8");
+  // **La table des étapes a déménagé le 17 septembre 2026** dans
+  // `_etapes-batterie.ts`, pour qu'on puisse en rejouer UNE au lieu des
+  // cinquante minutes. Le contrôle suit la règle là où elle vit — il ne
+  // réclame pas le fichier d'avant (`CLAUDE.md` §5 bis).
+  const batterie = readFileSync(path.join(__dirname, "_etapes-batterie.ts"), "utf8");
   assert.match(
     batterie,
     /nom: "Construction"/,

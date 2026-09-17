@@ -34,7 +34,7 @@ compilations par batterie.
 deux fois sous un lot déjà éprouvé ; chaque fusion a forcé à renuméroter son
 paragraphe d'`ARCHITECTURE.md` (§373 → §377 → §379) et à replacer ses entrées
 de journal — c'est la règle du §6 B, et elle est juste. Mais
-`verifier-apres-fusion.ts` compare le **diff entier**, `.md` compris, et refuse
+`verifier-ce-qui-a-bouge.ts` compare le **diff entier**, `.md` compris, et refuse
 alors : *« le lot lui-même a changé — ce n'est plus le même lot »*, en renvoyant
 vers cinquante minutes de batterie.
 
@@ -97,16 +97,23 @@ et il a dicté le geste, qui est la version en ligne (la troisième du soir) :
 | | |
 |---|---|
 | un appui sur un jour libre | pose le **premier jour** ; le chantier se remplit **d'affilée** derrière (8 jours, le 23 : les 8 se posent) |
-| un appui sur un jour **du chantier** | l'**enlève** ; le chantier se décale d'un jour au bout — le 18 et le 22, c'est toucher le 18 et enlever le 21 |
+| un appui sur un jour **du chantier** | l'**efface**, et rien ne bouge : « Il manque un jour — touchez celui que vous voulez », et l'appui suivant sur un jour libre le remet là. Le 18 et le 22, c'est toucher le 18, effacer le 21, toucher le 22. *(Sa correction devant la version qui décalait le bloc : « il ne doit pas se décaler d'une case, il doit s'effacer, et on clique sur le jour qu'on souhaite pour le remettre ! »)* |
 | l'interrupteur « Deuxième proposition » | allumé, le prochain appui pose le premier jour de la 2e, en or ; éteint, elle disparaît |
 | la cliente | « Quels jours vous arrangent ? », un bouton radio par proposition ; une seule : « Nous venons le … et le … » |
+
+**Deux peintures du jour à comparer, en haut de la planche** — sa demande :
+*« garde cette présentation et mets celle de tout à l'heure à côté, avec le
+numéro qui était entouré, que je compare les deux »*. **A** la case entière
+(son écran d'aujourd'hui, `MoisCharge`) ; **B** le chiffre entouré (la
+planche du 31 août). Même geste dessous ; il n'a pas encore choisi.
 
 Une seule règle pour toutes les durées : sur une journée, deux propositions
 d'un jour sont les deux dates au choix d'aujourd'hui. « Une ou deux, jamais
 plus » ne bouge pas. **Ce que le lot devra ranger, s'il tranche :** par
-proposition, un premier jour ET la liste des jours enlevés (ou la liste des
-jours, calculée) ; la réponse de la cliente désigne une proposition ; et
-`creneauxDuChantier` doit savoir sauter des jours.
+proposition, la **liste de ses jours** (le bloc d'affilée n'est que le
+remplissage du premier appui) ; la réponse de la cliente désigne une
+proposition ; et l'acceptation écrit les créneaux tels quels au lieu de les
+étaler.
 
 **Ce que le code fait aujourd'hui**, et il faut le savoir avant d'ouvrir le lot :
 
@@ -167,7 +174,7 @@ si je réactualise la page »*.
 
 **Ce qui est fait depuis ce jour** : l'accueil se relit tout seul —
 immédiatement quand il revient à Atlas, et toutes les trente secondes pendant
-qu'il le regarde (`VeilleDesNouvelles`, `ARCHITECTURE.md` §381).
+qu'il le regarde (`VeilleDesNouvelles`, `ARCHITECTURE.md` §382).
 
 **Ce qui reste, et que cela ne remplace pas** : quand Atlas est FERMÉ, rien ne
 le prévient. Un client qui accepte à 19 h se lit le lendemain matin. Une vraie

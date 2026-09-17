@@ -8,6 +8,26 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-17
 
+### Corriger un rouge coûtait cinquante minutes — plus maintenant
+
+Sa colère à 23 h : *« ça recommence et c'est ça à chaque fois ! »*. Une batterie
+à 158 suites vertes sur 159, un rouge de documentation corrigé en trois
+secondes — et la mesure entière à repayer, dont le produit était le rouge
+suivant.
+
+Deux murs : une étape qui n'est pas une suite (Types, Lint, Mémoire du dépôt,
+Construction) n'avait aucun moyen de redevenir verte seule, parce que la table
+des étapes vivait dans le script de la batterie ; et le complément
+d'après-fusion refusait dès que le lot avait changé, c'est-à-dire dès qu'on
+corrigeait.
+
+`npx tsx scripts/verifier-ce-qui-a-bouge.ts` répond désormais à une seule
+question : ce qui a bougé depuis la mesure, et ce que cela peut casser. Il
+rejoue les étapes et les suites concernées, garde le rouge de ce qu'il n'a pas
+remesuré, et refuse quand ce qui a bougé atteint le niveau 3.
+`verifier-apres-fusion.ts` disparaît — il n'en était qu'un cas particulier.
+Voir `ARCHITECTURE.md` §381.
+
 ### Le garde-fou de `main` réclamait une batterie dès qu'une autre session fusionnait
 
 Sa colère : *« les sessions rejouent des batteries en boucle juste parce qu'une
@@ -22,12 +42,12 @@ la batterie emploie déjà depuis le 9 septembre — une seule façon de dire «
 fichier a changé », désormais partagée (`scripts/_empreinte-des-sources.mjs`).
 Et ce qui a bougé ne se vaut plus : un fichier du lot fait remesurer au niveau
 du lot ; ce que `main` a apporté renvoie au complément d'une minute
-(`verifier-apres-fusion.ts`), que le refus nomme lui-même — il ne l'avait
+(`verifier-ce-qui-a-bouge.ts`), que le refus nomme lui-même — il ne l'avait
 jamais fait. Voir `ARCHITECTURE.md` §380.
 
 ### Le complément après fusion ne jouait RIEN, et rendait un ✅
 
-Trouvé en l'utilisant, pas en le lisant : `verifier-apres-fusion` importait une
+Trouvé en l'utilisant, pas en le lisant : `verifier-ce-qui-a-bouge` importait une
 fonction de `verifier-rouge-prealable`, **un script d'entrée** — l'import
 exécutait son `main()`, qui écrivait « aucune suite rouge : rien à comparer »
 puis sortait. Le complément n'a donc jamais joué une ligne de son propre
@@ -237,6 +257,31 @@ autre possibilité » sont partis. Rejouée en navigateur : 8 jours posés d'un
 appui, un jour enlevé et le bloc décalé, la 2e proposition posée, un de ses
 jours enlevé, l'interrupteur éteint — sans débordement ni erreur.
 
+**Et sa correction, dans la foulée :** *« quand on touche le deuxième ou le
+premier jour il ne doit pas se décaler d'une case, il doit s'effacer, et on
+clique sur le jour qu'on souhaite pour le remettre ! »* Le bloc ne se décale
+donc plus : un appui efface le jour, la liste dit « Il manque un jour —
+touchez celui que vous voulez », et l'appui suivant sur un jour libre le remet
+là. Une proposition est désormais la simple liste de ses jours ; le bloc
+d'affilée n'est que ce que pose le premier appui. Rejouée en navigateur : sur
+8 jours, effacer le 22 laisse sept jours et un manque, toucher le 30 le
+comble ; sur 2 jours, effacer le 21 puis toucher le 22 donne le 18 et le 22 ;
+même chose dans la 2e proposition.
+
+**Et le style est celui de SON écran** — *« reprends le style déjà existant
+pour proposer les jours au client, et aux couleurs de l'appli ! »*. Les
+versions précédentes recopiaient le calendrier de la planche du 31 août (un
+petit cercle vert sur le jour retenu) ; `MoisCharge` peint aujourd'hui la
+case entière en vert pin, le chiffre en crème, les barres éclaircies. Recopié
+d'après le code et `design-tokens.ts` : la case entière, les lignes de dates
+sur papier, et l'interrupteur dans la tuile de « Il peut proposer une autre
+date » (48 × 28, vert allumé) — lequel figure aussi sur la planche, tel qu'il
+existe. La 2e proposition prend `colors.or`, chiffre en encre.
+
+**Puis les deux à comparer** — *« garde cette présentation et mets celle de
+tout à l'heure à côté, avec le numéro qui était entouré »*. Deux boutons en
+haut de la planche : **A** la case entière, **B** le chiffre entouré d'un
+cercle. Le geste ne change pas, seule la peinture du jour ; il tranchera.
 
 ### « Ce règlement n'a pas pu être enregistré » : la base était en cause, et rien ne le disait
 
@@ -355,12 +400,12 @@ chantier **et sans ruban d'essai** — l'écran qu'il a, lui — et dit le
 pourcentage à chaque passage. `ARCHITECTURE.md` §372.
 
 
-### `main` a avancé sous un lot éprouvé : `verifier-apres-fusion` rejoue la rencontre, pas la batterie
+### `main` a avancé sous un lot éprouvé : `verifier-ce-qui-a-bouge` rejoue la rencontre, pas la batterie
 
 **Sa règle :** *« Rejoue juste ce qui a bougé ! »* — devant une troisième
 batterie pour un lot dont la deuxième venait de rendre un verdict sans rouge
 nouveau, `main` l'ayant dépassé de neuf commits pendant la mesure. Le
-complément (`scripts/verifier-apres-fusion.ts`, règles pures dans
+complément (`scripts/verifier-ce-qui-a-bouge.ts`, règles pures dans
 `_apres-fusion.mjs`) vérifie que le lot n'a pas changé d'une ligne, que son
 verdict ne portait aucun rouge nouveau, puis rejoue suites base, écrans du lot,
 écrans touchés par `main` et suites apportées par `main` ; il dépose le
