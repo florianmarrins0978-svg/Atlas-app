@@ -290,30 +290,113 @@ export function dossierDeLaCommande(commande, defaut) {
 /**
  * Le verdict lu est-il celui de CET arbre, et d'un niveau suffisant ?
  *
- * L'empreinte compte autant que le niveau : une vérification verte sur l'état
- * d'avant ne dit rien de celui d'après — « le verrou EMPÊCHE, l'empreinte
- * DIT » (`CLAUDE.md` §5).
+ * ═══════════════════════════════════════════════════════════════════════════
+ * **CE QUI A CHANGÉ LE 17 SEPTEMBRE 2026, ET CE QUE ÇA A COÛTÉ.**
+ *
+ * Sa colère : *« maintenant les sessions rejouent des batteries en boucle juste
+ * parce qu'une a touché un fichier »*.
+ *
+ * Ce garde-fou comparait **la date de la dernière écriture** dans l'arbre à
+ * l'instant du verdict. Or une fusion RÉÉCRIT les fichiers qu'elle apporte —
+ * et, selon le geste git, jusqu'à ceux dont le contenu ne bouge pas. Toute
+ * avancée de `main`, même à l'autre bout du produit, périmait donc le verdict
+ * d'un lot vert, et le refus n'annonçait qu'une chose : la batterie entière,
+ * cinquante minutes. Trois sessions côte à côte se la renvoyaient sans fin.
+ *
+ * **La date est morte, et rien ne la remplace en double** : ce qui décide est
+ * le CONTENU, relevé par la seule fonction qui sache le dire dans ce dépôt
+ * (`_empreinte-des-sources.mjs`, partagée avec la batterie). Un fichier réécrit
+ * à l'identique n'a pas bougé — c'est déjà la leçon du 9 septembre, que ce
+ * garde-fou-ci n'avait jamais apprise.
+ *
+ * **Et ce qui a bougé ne se vaut pas.** Deux cas, deux remèdes :
+ *
+ *   · **le LOT a changé** depuis sa vérification — ce n'est plus ce qui a été
+ *     mesuré : on remesure, au niveau du lot ;
+ *   · **seul ce que `main` a apporté** a changé — chacun de ces commits est
+ *     passé par SON propre garde-fou ; ce qui n'a jamais été mesuré, c'est la
+ *     RENCONTRE des deux. Elle se joue en une minute
+ *     (`verifier-ce-qui-a-bouge.ts`), et le plus souvent elle est vide. **Jamais
+ *     la batterie entière** : c'est sa règle du 17 septembre, *« le fait que
+ *     main change […] ne doit jamais, à lui seul, provoquer une nouvelle
+ *     batterie complète »*.
+ *
+ * Le remède se rend à l'appelant (`remede`) plutôt que d'être deviné par lui :
+ * c'est cette phrase-là que la session lit, et elle décidait de cinquante
+ * minutes.
+ * ═══════════════════════════════════════════════════════════════════════════
  */
 /**
  * @typedef {{ base?: string, suites?: Record<string, string> }} ReponsesSurMain
  * @param {{ quand: number, vert?: boolean, niveau?: number, rouges?: string[], rougesHorsSuites?: string[] } | null} verdict
- * @param {{ niveau: number, derniereEcriture: number, reponses?: ReponsesSurMain | null, base?: string | null }} options
+ * @param {{ niveau: number, remues?: string[], fichiersDuLot?: string[] | null, mainABouge?: boolean, reponses?: ReponsesSurMain | null, base?: string | null }} options
  */
-export function verdictSuffit(verdict, { niveau, derniereEcriture, reponses = null, base = null }) {
-  if (!verdict) return { suffit: false, raison: "aucune vérification n'a été jouée", toleres: [] };
+export function verdictSuffit(verdict, { niveau, remues = [], fichiersDuLot = null, mainABouge = true, reponses = null, base = null }) {
+  if (!verdict) return { suffit: false, raison: "aucune vérification n'a été jouée", toleres: [], remede: "niveau" };
   let toleres = [];
   if (verdict.vert !== true) {
     const rouge = rougesToleres(verdict, reponses, base);
-    if (!rouge.ok) return { suffit: false, raison: rouge.raison, toleres: [] };
+    if (!rouge.ok) return { suffit: false, raison: rouge.raison, toleres: [], remede: "niveau" };
     toleres = rouge.toleres;
   }
   if ((verdict.niveau ?? 0) < niveau) {
-    return { suffit: false, raison: `la vérification jouée était de niveau ${verdict.niveau ?? "?"}`, toleres: [] };
+    return { suffit: false, raison: `la vérification jouée était de niveau ${verdict.niveau ?? "?"}`, toleres: [], remede: "niveau" };
   }
-  if (derniereEcriture > verdict.quand) {
-    return { suffit: false, raison: "l'arbre a changé depuis la dernière vérification", toleres: [] };
+  const bouge = quiABouge(remues, fichiersDuLot, mainABouge);
+  if (bouge) return { ...bouge, toleres: [] };
+  return { suffit: true, raison: "", toleres, remede: null };
+}
+
+/** Le même chemin écrit d'une seule façon — une empreinte de Windows rend des « \ ». */
+const meme = (chemin) => String(chemin).split("\\").join("/");
+
+/**
+ * CE QUI A BOUGÉ DEPUIS LE VERDICT, ET À QUI C'EST.
+ *
+ * `fichiersDuLot` est la liste que le garde-fou mesure déjà pour calculer le
+ * niveau (`cheminsDuLot`) : ce que le lot ajoute à `main`, commité ou non. Un
+ * fichier remué qui n'y figure pas n'a donc pas été écrit ici — il est arrivé
+ * par la fusion.
+ *
+ * **`null` veut dire « on n'a pas su lire le lot »**, et cela ne s'absout pas :
+ * on remesure au niveau du lot. Ne pas savoir n'est jamais « ça vient
+ * d'ailleurs » (`.claude/rules/testing.md`).
+ *
+ * **`mainABouge` ferme un refus en cascade.** Le complément ne sait compléter
+ * qu'un lot que `main` a dépassé : lui envoyer quelqu'un dont `main` n'a pas
+ * bougé, c'est un refus qui renvoie à un refus qui renvoie à la batterie —
+ * exactement la boucle qu'on vient de retirer. Ce cas-là existe : un fichier
+ * ignoré de git, écrit sous `src/`, est remué sans appartenir au lot.
+ *
+ * @param {string[]} remues
+ * @param {string[] | null} fichiersDuLot
+ * @param {boolean} mainABouge
+ */
+function quiABouge(remues, fichiersDuLot, mainABouge) {
+  if (remues.length === 0) return null;
+  const trois = (l) => l.slice(0, 3).join(", ") + (l.length > 3 ? `, et ${l.length - 3} autre(s)` : "");
+  if (!fichiersDuLot) {
+    return { suffit: false, raison: `l'arbre a changé depuis la vérification (${trois(remues.map(meme))})`, remede: "niveau" };
   }
-  return { suffit: true, raison: "", toleres };
+  const duLot = new Set(fichiersDuLot.map(meme));
+  const ecritsIci = remues.map(meme).filter((f) => duLot.has(f));
+  if (ecritsIci.length > 0) {
+    return { suffit: false, raison: `le lot a changé depuis sa vérification (${trois(ecritsIci)})`, remede: "niveau" };
+  }
+  if (!mainABouge) {
+    return {
+      suffit: false,
+      raison: `l'arbre a changé hors du lot, et « main » n'a pas bougé (${trois(remues.map(meme))})`,
+      remede: "niveau",
+    };
+  }
+  return {
+    suffit: false,
+    raison:
+      `le lot n'a pas bougé, mais « main » a apporté ${remues.length} fichier(s) depuis la vérification ` +
+      `(${trois(remues.map(meme))})`,
+    remede: "complement",
+  };
 }
 
 /**

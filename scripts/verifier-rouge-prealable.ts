@@ -3,7 +3,7 @@ import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { lireDernierVerdict } from "./_dernier-verdict";
 import { SUR_MAIN, decisionSurLesRouges, resteARejouer, surMainPourCetteBase } from "./_rouge-prealable.mjs";
-import { baseDuLot, cheminDuTemoin, preparerLeTemoin } from "./_temoin-de-main.mjs";
+import { FICHIER_REPONSES, baseDuLot, cheminDuTemoin, lireLesReponses, preparerLeTemoin } from "./_temoin-de-main.mjs";
 import { bilanDuJournal } from "./_bilan-suites.mjs";
 
 /**
@@ -32,26 +32,12 @@ import { bilanDuJournal } from "./_bilan-suites.mjs";
  */
 
 const RACINE = path.join(__dirname, "..");
-const FICHIER = "atlas-rouges-prealables.json";
 
 function ou(): string | null {
   const temoin = cheminDuTemoin(RACINE);
-  return temoin ? path.join(path.dirname(temoin), FICHIER) : null;
+  return temoin ? path.join(path.dirname(temoin), FICHIER_REPONSES) : null;
 }
 
-export function lireLesReponses(racine: string): { base?: string; suites?: Record<string, string> } | null {
-  const temoin = cheminDuTemoin(racine);
-  if (!temoin) return null;
-  const chemin = path.join(path.dirname(temoin), FICHIER);
-  if (!existsSync(chemin)) return null;
-  try {
-    const brut = JSON.parse(readFileSync(chemin, "utf8"));
-    if (typeof brut.base !== "string" || typeof brut.suites !== "object") return null;
-    return { base: brut.base, suites: brut.suites };
-  } catch {
-    return null;
-  }
-}
 
 /**
  * REJOUER UNE SUITE, LÀ OÙ ELLE EST.

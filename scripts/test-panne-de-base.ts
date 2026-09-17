@@ -10,6 +10,9 @@ import { causeDeLaPanne, codeSqlDe, messageSansLesValeurs, phraseDeLaPanne } fro
  * devait élargir — `23514`, le tout premier cas ci-dessous.
  */
 
+/** Ce que l'écran de création de compte annonce — le premier appelant. */
+const COMPTE = "Votre compte n’a pas pu être créé";
+
 let echecs = 0;
 function cas(nom: string, fn: () => void) {
   try {
@@ -65,7 +68,7 @@ cas("une chaîne d'enveloppes sans fin ne fait pas tourner la lecture en rond", 
 });
 
 cas("SUR SON BANC, LE GESTE EST SÛR — jamais reconstruire, jamais supprimer", () => {
-  const phrase = phraseDeLaPanne("decalage-code-base", true);
+  const phrase = phraseDeLaPanne("decalage-code-base", true, null, COMPTE);
   // `CLAUDE.md` §4 septies : on ne lui propose JAMAIS un geste qui peut effacer
   // ses chantiers. Rallumer un espace ne touche à aucune donnée.
   for (const interdit of ["reconstru", "supprim", "rebuild", "seed", "amorc", "efface", "vider"]) {
@@ -75,13 +78,13 @@ cas("SUR SON BANC, LE GESTE EST SÛR — jamais reconstruire, jamais supprimer",
 });
 
 cas("hors du banc, on n'envoie chercher aucun remède qui n'existe pas", () => {
-  const phrase = phraseDeLaPanne("decalage-code-base", false);
+  const phrase = phraseDeLaPanne("decalage-code-base", false, null, COMPTE);
   assert.ok(!/codespaces/i.test(phrase), `on parle du banc à quelqu'un qui n'en a pas : ${phrase}`);
   assert.ok(phrase.length > 0);
 });
 
 cas("une panne inconnue ne promet pas une mise à jour qu'on n'a pas constatée", () => {
-  const phrase = phraseDeLaPanne("inconnue", true);
+  const phrase = phraseDeLaPanne("inconnue", true, null, COMPTE);
   assert.ok(!/pas à jour/.test(phrase), `on affirme un retard qu'on ignore : ${phrase}`);
   assert.ok(/Réessayez/.test(phrase));
 });
@@ -90,12 +93,25 @@ cas("SUR LE BANC, LE CODE DE LA BASE SE LIT SUR LA CAPTURE", () => {
   // Ce qui a coûté la soirée du 13 septembre : sa capture ne portait qu'un
   // numéro qui ne menait à rien, et le journal est sur SA machine. Celui-ci
   // nomme ce que la base a refusé — et il ne sort jamais du banc.
-  assert.ok(phraseDeLaPanne("decalage-code-base", true, "23514").includes("(base : 23514)"));
-  assert.ok(phraseDeLaPanne("inconnue", true, "57P01").includes("(base : 57P01)"));
-  assert.ok(!phraseDeLaPanne("decalage-code-base", false, "23514").includes("23514"), "un client n'a que faire d'un code SQL");
-  assert.ok(!phraseDeLaPanne("inconnue", false, "23514").includes("23514"));
+  assert.ok(phraseDeLaPanne("decalage-code-base", true, "23514", COMPTE).includes("(base : 23514)"));
+  assert.ok(phraseDeLaPanne("inconnue", true, "57P01", COMPTE).includes("(base : 57P01)"));
+  assert.ok(!phraseDeLaPanne("decalage-code-base", false, "23514", COMPTE).includes("23514"), "un client n'a que faire d'un code SQL");
+  assert.ok(!phraseDeLaPanne("inconnue", false, "23514", COMPTE).includes("23514"));
   // Sans code, aucune parenthèse vide ne traîne à l'écran.
-  assert.ok(!phraseDeLaPanne("inconnue", true, null).includes("(base"));
+  assert.ok(!phraseDeLaPanne("inconnue", true, null, COMPTE).includes("(base"));
+});
+
+cas("CHAQUE ÉCRAN DIT CE QUI A ÉCHOUÉ CHEZ LUI — 17 septembre 2026", () => {
+  // La phrase portait « Votre compte n'a pas pu être créé » en dur. Branchée
+  // telle quelle sur les règlements, elle aurait annoncé au patron que son
+  // COMPTE n'avait pas pu être créé alors qu'il notait un paiement de 495,00 €.
+  const reglement = "Ce règlement n’a pas pu être enregistré";
+  assert.ok(phraseDeLaPanne("inconnue", false, null, reglement).startsWith(reglement));
+  assert.ok(!/compte/i.test(phraseDeLaPanne("inconnue", false, null, reglement)));
+  assert.ok(!/compte/i.test(phraseDeLaPanne("decalage-code-base", false, null, reglement)));
+  // Sur le banc, le décalage se dit de la même façon pour tout le monde : c'est
+  // l'espace qui est en retard, pas le geste qu'on vient de faire.
+  assert.ok(/rallumez/i.test(phraseDeLaPanne("decalage-code-base", true, null, reglement)));
 });
 
 cas("LA SAISIE NE PART PAS DANS LE JOURNAL — Drizzle recopie tout ce qu'il envoie", () => {

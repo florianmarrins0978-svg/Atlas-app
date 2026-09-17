@@ -113,7 +113,12 @@ export default function EnAttenteDePaiement({
         router.refresh();
       }
     } catch {
-      setErreur("Ce règlement n'a pas pu être enregistré. Réessayez.");
+      // **Ce qui reste ici, c'est l'appel qui n'est jamais revenu** — et rien
+      // d'autre depuis le 17 septembre 2026 : une panne de base revient
+      // désormais en VALEUR, avec ses mots (`actions.ts`). Cette phrase-là
+      // disait « Réessayez » pour tout, y compris pour une base qui ne
+      // répondait plus, où réessayer ne donne rien.
+      setErreur("Votre espace n’a pas répondu. Réessayez.");
     } finally {
       setEnCours(null);
     }
@@ -310,8 +315,17 @@ export default function EnAttenteDePaiement({
                       <button
                         type="button"
                         aria-label={`Retirer le règlement de ${euros(p.montant)} du ${enClair(p.date)}`}
+                        // **Le refus se MONTRE — 17 septembre 2026.** Il partait
+                        // dans le vide : la ligne restait, rien n'apparaissait,
+                        // et il réappuyait sur une croix qui ne faisait rien.
                         onClick={async () => {
-                          await retirerPaiementAction(p.id);
+                          setErreur(null);
+                          try {
+                            const r = await retirerPaiementAction(p.id);
+                            if (!r.ok) return setErreur(r.raison);
+                          } catch {
+                            return setErreur("Votre espace n’a pas répondu. Réessayez.");
+                          }
                           router.refresh();
                         }}
                         // 36 px : une cible isolée dans un rang serré, visée du pouce.
@@ -454,7 +468,8 @@ function SaisieDuReglement({
             if (!r.ok) onErreur(r.raison);
             else onFini();
           } catch {
-            onErreur("Ce règlement n'a pas pu être enregistré. Réessayez.");
+            // Voir `solder` plus haut : la panne de base revient en valeur.
+            onErreur("Votre espace n’a pas répondu. Réessayez.");
           } finally {
             setEnCours(false);
           }

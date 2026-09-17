@@ -44,7 +44,7 @@
  * ═══════════════════════════════════════════════════════════════════════════
  */
 import { execFileSync } from "node:child_process";
-import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import {
   FICHIER_VERDICT,
@@ -55,6 +55,7 @@ import {
   poussseVersMain,
   verdictSuffit,
 } from "./_niveau-de-risque.mjs";
+import { empreinteDesSources, fichiersRemues } from "./_empreinte-des-sources.mjs";
 import { suitesDesRoutes } from "./_suites-ciblees.mjs";
 import { baseDuLot, cheminDuTemoin } from "./_temoin-de-main.mjs";
 
@@ -104,33 +105,27 @@ function lireVerdict() {
 }
 
 /**
- * L'instant du fichier surveillé le plus récemment écrit.
+ * CE QUI A BOUGÉ DANS L'ARBRE DEPUIS LE VERDICT — par le CONTENU, jamais par la date.
  *
- * C'est ce qui dit « l'arbre a bougé depuis le verdict », sans recalculer une
- * empreinte : un hook doit rendre la main tout de suite, et une seconde façon
- * de comparer des fichiers finirait par diverger de `empreinteDesSources`.
+ * **C'est la correction du 17 septembre 2026** (`_niveau-de-risque.mjs`,
+ * `verdictSuffit`). Ce qui vivait ici relevait la date d'écriture la plus
+ * récente : une fusion réécrit ce qu'elle apporte, donc toute avancée de `main`
+ * périmait le verdict d'un lot vert et réclamait cinquante minutes de batterie.
+ *
+ * Le relevé est celui de la batterie, et il n'y en a qu'un — 1 406 fichiers en
+ * 65 ms, mesuré : un hook peut se le permettre, et deux façons de dire « ce
+ * fichier a changé » finiraient par se contredire (`CLAUDE.md` §3).
+ *
+ * **Un verdict sans empreinte ne se compare pas** : on rend `null`, et
+ * `verdictSuffit` remesure. Ne pas savoir n'est jamais « rien n'a bougé ».
  */
-function derniereEcriture() {
-  let plusRecent = 0;
-  const parcourir = (dossier) => {
-    let entrees;
-    try {
-      entrees = readdirSync(dossier, { withFileTypes: true });
-    } catch {
-      return; // un dépôt peut vivre sans `.devcontainer`
-    }
-    for (const entree of entrees) {
-      if (["node_modules", ".git", ".next", "dist", "coverage"].includes(entree.name)) continue;
-      const chemin = path.join(dossier, entree.name);
-      if (entree.isDirectory()) {
-        parcourir(chemin);
-      } else if (/\.(ts|tsx|js|mjs|mts|sql|css|json|md)$/.test(entree.name)) {
-        plusRecent = Math.max(plusRecent, statSync(chemin).mtimeMs);
-      }
-    }
-  };
-  for (const d of ["src", "scripts", "drizzle", ".claude", ".devcontainer"]) parcourir(path.join(RACINE, d));
-  return plusRecent;
+function cequiABouge(verdict) {
+  if (!Array.isArray(verdict?.empreinte)) return null;
+  try {
+    return fichiersRemues(new Map(verdict.empreinte), empreinteDesSources(RACINE));
+  } catch {
+    return null;
+  }
 }
 
 let entree = "";
@@ -147,13 +142,28 @@ process.stdin.on("end", () => {
   const branche = git("rev-parse", "--abbrev-ref", "HEAD");
   if (!poussseVersMain(commande, branche)) process.exit(0);
 
-  const lot = evaluerLeLot(cheminsDuLot(RACINE), { racine: RACINE });
+  const fichiersDuLot = cheminsDuLot(RACINE);
+  const lot = evaluerLeLot(fichiersDuLot, { racine: RACINE });
   if (lot.niveau === 1) process.exit(0); // documents seuls : rien à éprouver.
 
   const base = baseDuLot(RACINE);
-  const { suffit, raison, toleres } = verdictSuffit(lireVerdict(), {
+  const verdict = lireVerdict();
+  // **`main` a-t-il vraiment avancé depuis la mesure ?** Sans cette question,
+  // un fichier remué qui n'appartient pas au lot — un fichier ignoré de git,
+  // par exemple — serait mis sur le dos de la fusion, et l'on renverrait vers
+  // un complément qui refuserait à son tour. Un refus qui renvoie à un refus
+  // est la boucle qu'on vient de retirer.
+  const mainABouge = Boolean(
+    verdict?.commit && base && git("merge-base", "origin/main", verdict.commit) !== base
+  );
+  const remues = cequiABouge(verdict);
+  const { suffit, raison, toleres, remede } = verdictSuffit(verdict, {
     niveau: lot.niveau,
-    derniereEcriture: derniereEcriture(),
+    // `null` — un verdict d'avant l'empreinte — vaut « on ne sait pas » : le
+    // lot passe alors pour inconnu, et l'on remesure. Jamais l'inverse.
+    remues: remues ?? ["l'empreinte de la vérification manque"],
+    fichiersDuLot: remues ? fichiersDuLot : null,
+    mainABouge,
     reponses: lireLesReponses(),
     base,
   });
@@ -177,6 +187,34 @@ process.stdin.on("end", () => {
     `Niveau requis : ${lot.niveau}`,
     `Raison : ${lot.raison}`,
   ];
+  // ─── `main` A AVANCÉ SOUS UN LOT DÉJÀ VERT : CE N'EST PAS UNE BATTERIE ────
+  //
+  // **Sa colère du 17 septembre 2026 :** *« les sessions rejouent des batteries
+  // en boucle juste parce qu'une a touché un fichier »*. Le lot n'a pas bougé
+  // d'une ligne ; ce qui a bougé est arrivé de `main`, et chacun de ces commits
+  // est passé par son propre garde-fou. Ce qui n'a jamais été mesuré, c'est la
+  // RENCONTRE des deux — elle se joue en une minute, et le plus souvent elle
+  // est vide. Annoncer la batterie ici, c'était cinquante minutes pour rien, à
+  // repayer à chaque fois qu'une session voisine fusionne.
+  if (remede === "complement") {
+    console.error(
+      [
+        `Poussée sur « main » refusée : ${raison}.`,
+        "",
+        ...annonce,
+        "",
+        "Le lot garde son verdict : il n'y a PAS de batterie à rejouer.",
+        "Ce qui n'a jamais été mesuré, c'est la rencontre entre ce lot et ce que",
+        "« main » a apporté. Elle se joue en une minute, et se repose toute seule :",
+        "",
+        "    npx tsx scripts/verifier-ce-qui-a-bouge.ts",
+        "",
+        "Sans rencontre, il repose le verdict tel quel et la fusion s'ouvre.",
+        "Avec rencontre, il rejoue CES fichiers-là, et rien d'autre.",
+      ].join("\n")
+    );
+    process.exit(2);
+  }
   if (lot.niveau === 2) {
     const suites = suitesDesRoutes(RACINE, lot.routes);
     annonce.push(
@@ -205,8 +243,17 @@ process.stdin.on("end", () => {
       // **Un rouge qui vient d'ailleurs ne se corrige pas en rejouant tout.**
       // Sa règle du 17 septembre : on rejoue les SEULS rouges sur la base de
       // `main`, et un rouge déjà là n'est pas de ce lot.
+      // **UN ROUGE NE COÛTE PLUS LA MESURE ENTIÈRE — 17 septembre 2026, 23 h.**
+      // Sa colère : *« ça recommence et c'est ça à chaque fois ! »*, devant une
+      // session qui repartait pour cinquante minutes après avoir corrigé une
+      // ligne de documentation. Une étape hors suites — Types, Lint, Mémoire du
+      // dépôt — n'avait aucun moyen de redevenir verte autrement.
       ...(/ROUGE/.test(raison)
         ? [
+            "Un rouge se rejoue SEUL, avec ce que la correction peut casser :",
+            "",
+            "    npx tsx scripts/verifier-ce-qui-a-bouge.ts",
+            "",
             "Et si ce rouge vient d'ailleurs — d'une autre session, d'un autre lot —,",
             "il se compare sans rejouer la batterie de main :",
             "",

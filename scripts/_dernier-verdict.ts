@@ -1,6 +1,6 @@
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
-import type { Empreinte } from "./_batterie-solitaire";
+import type { Empreinte } from "./_empreinte-des-sources.mjs";
 
 /**
  * CE QUE LA BATTERIE A DIT LA DERNIÈRE FOIS, ET SUR QUEL ARBRE.

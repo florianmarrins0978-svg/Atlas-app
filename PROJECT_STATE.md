@@ -14,9 +14,51 @@ entrées légitimes mettaient la sixième dehors avec le bon mot de passe.
 
 Un seuil sait désormais **rendre** ce qu'un geste réussi lui a pris
 (`rendreLimite`), et le message ne dit plus « depuis cet appareil » — ce n'était
-pas son appareil. Trois contrôles, vus rouges d'abord. `ARCHITECTURE.md` §377.
+pas son appareil. Trois contrôles, vus rouges d'abord. `ARCHITECTURE.md` §382.
 
 **Reste ouvert :** le même libellé trompeur à la création de compte (`TODO.md`).
+
+## FAIT : CORRIGER UN ROUGE NE COÛTE PLUS LA BATTERIE ENTIÈRE (17 septembre 2026)
+
+Une étape qui n'est pas une suite — Types, Lint, Mémoire du dépôt, Construction
+— n'avait aucun moyen de redevenir verte seule : la table des étapes vivait
+dans le script de la batterie. `npx tsx scripts/verifier-ce-qui-a-bouge.ts`
+rejoue ce qui était rouge et ce que la correction peut casser, et remplace
+`verifier-apres-fusion.ts`. `ARCHITECTURE.md` §381.
+
+## FAIT : LE GARDE-FOU DE `main` NE RÉCLAME PLUS DE BATTERIE POUR RIEN (17 septembre 2026)
+
+Il comparait des **dates** d'écriture : une fusion réécrit ce qu'elle apporte,
+donc tout lot vert perdait son verdict dès qu'une session voisine fusionnait —
+et le refus n'annonçait que la batterie entière. Il compare désormais des
+CONTENUS (`scripts/_empreinte-des-sources.mjs`, partagé avec la batterie), et
+quand seul ce que `main` a apporté a bougé, il renvoie au complément d'une
+minute qu'il nomme lui-même. `ARCHITECTURE.md` §380.
+
+## FAIT : LES ACOMPTES SUIVENT LA CORRECTION DU DEVIS (17 septembre 2026)
+
+Sa panne : un devis rouvert pour correction ne gardait que l'acompte des
+Réglages. Une nouvelle version recopie désormais l'échéancier posé (30/50/75),
+ou aucun s'il les avait retirés ; le réglage ne sert plus qu'au premier devis
+d'un chantier. Et « + Ajouter un acompte » dit pourquoi il refuse.
+`ARCHITECTURE.md` §377.
+
+## FAIT : LE PAPIER S'ÉCRIT EN NOIR (17 septembre 2026)
+
+Plus aucun gris sur le PDF : étiquettes de colonnes, coordonnées et mentions
+légales passent à l'encre, la ligne « DÉSIGNATION … TOTAL TTC » et « BASE HT ·
+TAUX · TVA » se lisent en gras noir. `ARCHITECTURE.md` §378.
+
+## FAIT : UNE PANNE DE BASE SE DIT SUR LES RÈGLEMENTS (17 septembre 2026)
+
+Sa capture de 15 h 57 : « Ce règlement n'a pas pu être enregistré. Réessayez. »
+sur 495,00 € dus au centime. Le produit était juste — sa base ne répondait plus,
+et les trois actions de règlement laissaient l'exception sortir : rien à l'écran,
+rien au journal. Elles rendent désormais la panne en valeur, avec le code de la
+base et le geste sûr (`ARCHITECTURE.md` §379).
+
+**Sa base à lui n'est pas réparée par ce lot** : elle se remet d'aplomb en
+rallumant l'espace.
 
 
 ## FAIT : L'ACCUEIL SANS CHANTIER — LA PORTE DU DEVIS AU TIERS HAUT (17 septembre 2026)

@@ -25,7 +25,86 @@ appareil, c'était l'adresse partagée, et il cherchait du côté de son télép
 
 La protection ne bouge pas : un attaquant ne rend rien, ses essais ratent.
 
-Détail : `ARCHITECTURE.md` §377.
+Détail : `ARCHITECTURE.md` §382.
+
+### Corriger un rouge coûtait cinquante minutes — plus maintenant
+
+Sa colère à 23 h : *« ça recommence et c'est ça à chaque fois ! »*. Une batterie
+à 158 suites vertes sur 159, un rouge de documentation corrigé en trois
+secondes — et la mesure entière à repayer, dont le produit était le rouge
+suivant.
+
+Deux murs : une étape qui n'est pas une suite (Types, Lint, Mémoire du dépôt,
+Construction) n'avait aucun moyen de redevenir verte seule, parce que la table
+des étapes vivait dans le script de la batterie ; et le complément
+d'après-fusion refusait dès que le lot avait changé, c'est-à-dire dès qu'on
+corrigeait.
+
+`npx tsx scripts/verifier-ce-qui-a-bouge.ts` répond désormais à une seule
+question : ce qui a bougé depuis la mesure, et ce que cela peut casser. Il
+rejoue les étapes et les suites concernées, garde le rouge de ce qu'il n'a pas
+remesuré, et refuse quand ce qui a bougé atteint le niveau 3.
+`verifier-apres-fusion.ts` disparaît — il n'en était qu'un cas particulier.
+Voir `ARCHITECTURE.md` §381.
+
+### Le garde-fou de `main` réclamait une batterie dès qu'une autre session fusionnait
+
+Sa colère : *« les sessions rejouent des batteries en boucle juste parce qu'une
+a touché un fichier »*. Le garde-fou comparait la **date** de la dernière
+écriture dans l'arbre à l'instant du verdict — or une fusion réécrit ce qu'elle
+apporte, et parfois à l'identique. Tout lot vert perdait donc son verdict dès
+que `main` avançait, à l'autre bout du produit, et le seul remède annoncé était
+la batterie entière : cinquante minutes, à repayer à chaque fois.
+
+La date est supprimée. Le garde-fou compare des CONTENUS, avec la fonction que
+la batterie emploie déjà depuis le 9 septembre — une seule façon de dire « ce
+fichier a changé », désormais partagée (`scripts/_empreinte-des-sources.mjs`).
+Et ce qui a bougé ne se vaut plus : un fichier du lot fait remesurer au niveau
+du lot ; ce que `main` a apporté renvoie au complément d'une minute
+(`verifier-ce-qui-a-bouge.ts`), que le refus nomme lui-même — il ne l'avait
+jamais fait. Voir `ARCHITECTURE.md` §380.
+
+### Le complément après fusion ne jouait RIEN, et rendait un ✅
+
+Trouvé en l'utilisant, pas en le lisant : `verifier-ce-qui-a-bouge` importait une
+fonction de `verifier-rouge-prealable`, **un script d'entrée** — l'import
+exécutait son `main()`, qui écrivait « aucune suite rouge : rien à comparer »
+puis sortait. Le complément n'a donc jamais joué une ligne de son propre
+travail, et son vert pouvait passer pour un verdict de fusion. C'est le pire
+des défauts d'outillage : il n'échoue pas, il approuve.
+
+La lecture partagée vit désormais dans `_temoin-de-main.mjs`, qui ne fait rien
+tout seul ; les deux scripts d'entrée l'y prennent. Et
+`test-scripts-entree-non-importes` refuse qu'un script de `scripts/` importe un
+script qui s'exécute au chargement — il sait échouer sur un couple fabriqué, et
+il ne compte pas un `main()` gardé par `import.meta.url` (deux scripts du dépôt
+en ont un, légitimement).
+
+### Ses trois acomptes suivent la correction du devis — et un refus le DIT
+
+Sa panne, capture à l'appui : *« ça prend qu'un seul acompte, ça m'a supprimé
+mes 2 autres et je n'arrive pas à les remettre »*. Ni la remise ni la main
+d'œuvre n'y étaient pour rien — une suite l'a établi avant toute correction.
+**Rouvrir un devis parti crée une nouvelle version**, et celle-ci reposait
+l'acompte des Réglages, seul : les deux autres n'étaient jamais recopiés. Une
+version corrigée garde désormais l'échéancier qu'il avait posé — et n'en
+réinvente aucun s'il les avait tous retirés. Le réglage ne vaut plus que pour le
+tout premier devis d'un chantier.
+
+Second grief, même cause de silence : « + Ajouter un acompte » refusait sans un
+mot (devis parti, trois acomptes déjà, 100 % atteint). Le refus porte sa raison
+et s'affiche sous le geste. `ARCHITECTURE.md` §377 ;
+`test-acomptes-nouvelle-version`, `test-acomptes-remise-main-doeuvre-e2e`.
+
+### Le papier du devis s'écrit en noir, et sa ligne d'en-tête en gras
+
+*« Toute la ligne désignation jusqu'à total ttc, tu la mets en gras »*, *« mets
+toutes les écritures en noir, rien en gris »*, *« en bas à gauche, base ht et
+les deux autres en gras aussi »*. Les en-têtes étaient déjà gras : c'est le gris
+qui les faisait paraître maigres. Les trois gris (étiquettes, coordonnées,
+mentions légales) passent à l'encre, en un seul endroit et pour les sept
+allures. Le trait clair reste dilué — c'est un filet, pas une écriture — et
+l'accent reste sa couleur. `ARCHITECTURE.md` §378.
 
 
 ### La comparaison d'un rouge se fait DES DEUX CÔTÉS, dans le même état
@@ -147,6 +226,138 @@ montre sous chacun **ce que le client lit** et **ce qui se pose au planning** �
 c'est là que les trois diffèrent, pas dans le calendrier.
 
 
+
+### La même planche, refaite simple le soir même
+
+Sa réponse à la première version : *« je comprends rien, l'idée c'est que ce
+soit simple et joli »*, puis sa règle en clair : *« quand je propose une date
+à un client et que le chantier dure deux jours, je dois pouvoir lui proposer
+le 18 et le 22 en lui disant : on viendra un jour le 18 et le deuxième le
+22 »*.
+
+Partis : les trois états, l'interrupteur de la vue B, la carte du planning et
+les trois notes. Reste **un écran, une idée** — un appui, un jour du chantier.
+Il touche le 18 et le 22, la carte du dessous montre ce que Linotte lit :
+« Nous venons le vendredi 18 septembre et le mardi 22 septembre ». S'il ne
+touche que le 18, le jour d'à côté se pose tout seul, dessiné en creux, avec
+la seule phrase de l'écran — « Touchez un autre jour pour l'y poser à la
+place » ; le geste de tous les jours ne change donc pas. Sur une journée :
+une date, ou deux au choix, comme aujourd'hui. Ce qu'il perdrait s'il
+tranche — deux dates au choix sur un chantier de plusieurs jours — est écrit
+dans `TODO.md`, pas tu. Parcourue à 390 px dans un vrai navigateur, les six
+gestes joués, sans débordement ni erreur.
+
+**Puis « fais les deux », une heure plus tard** — *« sur les chantiers de deux
+jours ou plus il faut quand même pouvoir proposer plus d'un jour au
+client »*. Il a vu ce que la version simple lui faisait perdre, et il n'en
+veut pas. Donc une **possibilité** est les jours du chantier, et il peut en
+proposer deux : « Proposer aussi une autre possibilité » sous la liste, la 2e
+dessinée en or (le chiffre en encre, pas en blanc : le blanc sur l'or ne
+tenait pas le contraste), et la cliente lit « Quels jours vous arrangent ? »
+avec un bouton radio par possibilité. Une seule règle pour toutes les
+durées — sur une journée, deux possibilités d'un jour SONT les deux dates au
+choix d'aujourd'hui. Les jours posés à côté d'une possibilité ne marchent
+jamais sur l'autre : la seconde se pose après ce que la première a pris.
+Rejouée en navigateur : retirer la 2e la ferme et rouvre la porte, 1 et
+3 jours, sans débordement ni erreur.
+
+**Troisième version, dictée par lui** — *« je comprends pas comment ça
+marche »*, puis le geste exact : *« je clique sur un jour pour proposer la
+première date, puis sur le deuxième pour la deuxième, avec un bouton on/off
+pour la deuxième proposition ; et par défaut, sur un chantier de 8 jours, si
+je clique sur le 23 ils mettent les 8 d'affilée, et si je décide que non le
+25, je clique dessus pour l'enlever »*. C'est la version en ligne : un appui
+pose le premier jour et le chantier se remplit d'affilée (le geste
+d'aujourd'hui, inchangé) ; un appui sur un jour du chantier l'enlève et le
+chantier se décale d'un jour au bout — le 18 et le 22, c'est toucher le 18 et
+enlever le 21 ; un interrupteur « Deuxième proposition » sous la liste, et le
+prochain appui pose son premier jour, en or. « changer » passe par 1, 2, 3 et
+8 jours. « Un appui = un jour du chantier » et la porte « Proposer aussi une
+autre possibilité » sont partis. Rejouée en navigateur : 8 jours posés d'un
+appui, un jour enlevé et le bloc décalé, la 2e proposition posée, un de ses
+jours enlevé, l'interrupteur éteint — sans débordement ni erreur.
+
+**Et sa correction, dans la foulée :** *« quand on touche le deuxième ou le
+premier jour il ne doit pas se décaler d'une case, il doit s'effacer, et on
+clique sur le jour qu'on souhaite pour le remettre ! »* Le bloc ne se décale
+donc plus : un appui efface le jour, la liste dit « Il manque un jour —
+touchez celui que vous voulez », et l'appui suivant sur un jour libre le remet
+là. Une proposition est désormais la simple liste de ses jours ; le bloc
+d'affilée n'est que ce que pose le premier appui. Rejouée en navigateur : sur
+8 jours, effacer le 22 laisse sept jours et un manque, toucher le 30 le
+comble ; sur 2 jours, effacer le 21 puis toucher le 22 donne le 18 et le 22 ;
+même chose dans la 2e proposition.
+
+**Et le style est celui de SON écran** — *« reprends le style déjà existant
+pour proposer les jours au client, et aux couleurs de l'appli ! »*. Les
+versions précédentes recopiaient le calendrier de la planche du 31 août (un
+petit cercle vert sur le jour retenu) ; `MoisCharge` peint aujourd'hui la
+case entière en vert pin, le chiffre en crème, les barres éclaircies. Recopié
+d'après le code et `design-tokens.ts` : la case entière, les lignes de dates
+sur papier, et l'interrupteur dans la tuile de « Il peut proposer une autre
+date » (48 × 28, vert allumé) — lequel figure aussi sur la planche, tel qu'il
+existe. La 2e proposition prend `colors.or`, chiffre en encre.
+
+**Puis les deux à comparer** — *« garde cette présentation et mets celle de
+tout à l'heure à côté, avec le numéro qui était entouré »*. Deux boutons en
+haut de la planche : **A** la case entière, **B** le chiffre entouré d'un
+cercle. Le geste ne change pas, seule la peinture du jour ; il tranchera.
+
+**Il a tranché : la B**, le chiffre entouré. La A et les deux boutons du haut
+sont partis de la planche. Trois retouches avec, toutes les trois de son
+message : la phrase du geste passe SOUS le calendrier et AU-DESSUS de la
+liste, en noir ; « Votre client peut proposer une autre date » au lieu de
+« Il peut… » ; et « Envoyer le devis » prend la capsule de l'application
+(`PrimaryButton` : vert `plein`, crème, à la largeur de son texte) au lieu
+d'un bouton pin en pleine largeur. La planche s'ouvre sur 4 jours, à sa
+demande, pour qu'il l'essaye. Et l'interrupteur s'appelle « Vous proposez
+deux dates », son libellé.
+
+### « Ce règlement n'a pas pu être enregistré » : la base était en cause, et rien ne le disait
+
+Sa capture du 17 septembre, à 15 h 57 : facture Martins, 745,00 € TTC dont
+250,00 € reçus, et le solde de 495,00 € refusé par « Ce règlement n'a pas pu
+être enregistré. Réessayez. »
+
+**La règle, elle, acceptait le montant** — 250 + 495 = 745 au centime, rejoué
+sur une base à jour (`scripts/test-reglement-panne-de-base.ts`). Ce qui avait
+lâché, c'est sa BASE : la fiche que son espace publie tout seul, écrite trois
+minutes plus tôt, portait « Base : état inconnu — la base n'a pas répondu » et
+« La base refuse : échec d'une forme non reconnue ».
+
+**Ce qui est corrigé ici, et c'est la moitié qui nous revient : la panne était
+MUETTE.** `soldeFactureAction`, `noterPaiementAction` et `retirerPaiementAction`
+laissaient l'exception sortir — Next.js la remplace par un identifiant opaque
+(`AGENTS.md`), l'écran retombait sur sa phrase de dernier recours, et **rien
+n'était écrit nulle part**. Le conseil rendu était même le mauvais : réessayer
+sur une base qui ne répond pas ne donne rien.
+
+Le mécanisme existait depuis le 13 septembre (`src/lib/panne-de-base.ts`, né de
+sa panne « Une erreur · Référence : 3285538552 ») ; il n'avait jamais été
+branché sur l'écran des règlements. Il l'est. Une panne de base y revient
+désormais **en valeur**, journalisée avec son code `SQLSTATE`, et ce qui
+s'affiche nomme la base et le geste SÛR — rallumer l'espace, qui ne touche à
+aucune de ses données (`CLAUDE.md` §4 septies).
+
+Trois autres choses avec :
+
+- **`phraseDeLaPanne` ne porte plus « Votre compte n'a pas pu être créé » en
+  dur.** Branchée telle quelle, elle aurait annoncé au patron que son COMPTE
+  n'avait pas pu être créé alors qu'il notait un paiement. Chaque écran dit
+  désormais ce qui a échoué chez lui, et le paramètre n'a **pas** de valeur par
+  défaut : un défaut se recopie sans qu'on le voie.
+- **Le retrait d'un règlement rendait `void`** : un échec ne montrait rien du
+  tout, la ligne restait, et il réappuyait sur une croix qui ne faisait rien.
+  Il rend un résultat, et l'écran l'affiche.
+- **`revalidatePath` ne part plus qu'en cas de succès**, et hors de
+  l'enveloppe : une panne de rafraîchissement annoncerait « non enregistré » sur
+  un règlement bien en base.
+
+**Ce qui n'est PAS réparé par ce lot, et il faut le lire comme tel** : la base
+de son espace. Elle se remet d'aplomb en rallumant l'espace depuis
+github.com/codespaces ; si la migration refuse encore de passer, c'est
+désormais l'écran qui le dira, au lieu d'un « Réessayez ».
+
 ### La publication des planches rougissait depuis la note vocale à plat
 
 Le flux `pages.yml` est tombé sur `test:boutons-verts` dès la poussée du
@@ -185,12 +396,12 @@ chantier **et sans ruban d'essai** — l'écran qu'il a, lui — et dit le
 pourcentage à chaque passage. `ARCHITECTURE.md` §372.
 
 
-### `main` a avancé sous un lot éprouvé : `verifier-apres-fusion` rejoue la rencontre, pas la batterie
+### `main` a avancé sous un lot éprouvé : `verifier-ce-qui-a-bouge` rejoue la rencontre, pas la batterie
 
 **Sa règle :** *« Rejoue juste ce qui a bougé ! »* — devant une troisième
 batterie pour un lot dont la deuxième venait de rendre un verdict sans rouge
 nouveau, `main` l'ayant dépassé de neuf commits pendant la mesure. Le
-complément (`scripts/verifier-apres-fusion.ts`, règles pures dans
+complément (`scripts/verifier-ce-qui-a-bouge.ts`, règles pures dans
 `_apres-fusion.mjs`) vérifie que le lot n'a pas changé d'une ligne, que son
 verdict ne portait aucun rouge nouveau, puis rejoue suites base, écrans du lot,
 écrans touchés par `main` et suites apportées par `main` ; il dépose le

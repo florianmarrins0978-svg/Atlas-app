@@ -92,19 +92,28 @@ export function causeDeLaPanne(erreur: unknown): CauseDeLaPanne {
  * journal, lui, est sur sa machine et personne n'ira l'y lire — c'est
  * exactement ce qui a coûté la soirée du 13 septembre. Un banc d'essai est là
  * pour éprouver ; un client, lui, n'a que faire d'un `23514`.
+ *
+ * **`echec` DIT CE QUI N'A PAS ABOUTI, et il n'a pas de valeur par défaut —
+ * 17 septembre 2026.** Cette phrase est née pour l'écran « Créer mon compte »
+ * et portait ses mots en dur ; branchée telle quelle sur les règlements, elle
+ * annonçait au patron que son COMPTE n'avait pas pu être créé alors qu'il
+ * notait un paiement. Un défaut par défaut se recopie sans qu'on le voie : le
+ * rendre obligatoire oblige chaque écran à dire de quoi il parle.
  */
 export function phraseDeLaPanne(
   cause: CauseDeLaPanne,
   surLeBanc: boolean,
-  codeSql: string | null = null
+  codeSql: string | null,
+  /** Sans point final ni majuscule de suite : « Ce règlement n’a pas pu être enregistré ». */
+  echec: string
 ): string {
   const repere = surLeBanc && codeSql ? ` (base : ${codeSql})` : "";
   if (cause === "decalage-code-base") {
     return surLeBanc
       ? `Votre espace n’est pas à jour avec sa base. Rallumez-le depuis github.com/codespaces.${repere}`
-      : "Votre compte n’a pas pu être créé : le service est en cours de mise à jour.";
+      : `${echec} : le service est en cours de mise à jour.`;
   }
-  return `Votre compte n’a pas pu être créé. Réessayez dans un instant.${repere}`;
+  return `${echec}. Réessayez dans un instant.${repere}`;
 }
 
 /**
