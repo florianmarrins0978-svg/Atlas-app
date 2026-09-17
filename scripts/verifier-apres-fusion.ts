@@ -4,7 +4,8 @@ import { empreinteDesSources } from "./_batterie-solitaire";
 import { ecrireDernierVerdict, lireDernierVerdict, ilYA } from "./_dernier-verdict";
 import { jouerEnGardantLaSortie } from "./_jouer-etape";
 import { bilanDuJournal } from "./_bilan-suites.mjs";
-import { commitCourant, estAncetre, lireReference } from "./_reference-batterie.mjs";
+import { baseDuLot, commitCourant } from "./_temoin-de-main.mjs";
+import { lireLesReponses } from "./verifier-rouge-prealable";
 import { cheminsDuLot, evaluerLeLot, rougesToleres } from "./_niveau-de-risque.mjs";
 import { suitesDesRoutes } from "./_suites-ciblees.mjs";
 import { lotInchange, rougesApresComplement, suitesDuComplement } from "./_apres-fusion.mjs";
@@ -54,9 +55,9 @@ if (git("cat-file", "-e", `${precedent.commit}^{commit}`) === null) {
 
 // **Le verdict d'avant ne doit pas porter un rouge nouveau** : compléter un
 // rouge nouveau reviendrait à le faire passer par la fenêtre.
-const reference = lireReference(RACINE);
+const baseSurMain = baseDuLot(RACINE);
 if (!precedent.vert) {
-  const t = rougesToleres(precedent, reference, reference ? estAncetre(RACINE, reference.commit) : false);
+  const t = rougesToleres(precedent, lireLesReponses(RACINE), baseSurMain);
   if (!t.ok) refuser(`le verdict d'avant : ${t.raison}`, "npm run verifier:avant-livraison");
 }
 
@@ -181,7 +182,9 @@ async function jouer(): Promise<void> {
     console.log(`❌ Hors suites : ${rougesHorsSuites.join(", ")} — le garde-fou refusera.`);
     process.exit(1);
   }
-  const t = rouges.length ? rougesToleres({ rouges, rougesHorsSuites }, reference, reference ? estAncetre(RACINE, reference.commit) : false) : { ok: true, raison: "" };
+  const t = rouges.length
+    ? rougesToleres({ rouges, rougesHorsSuites }, lireLesReponses(RACINE), baseSurMain)
+    : { ok: true, raison: "" };
   if (!t.ok) {
     console.log(`❌ ${t.raison} — le garde-fou refusera.`);
     process.exit(1);

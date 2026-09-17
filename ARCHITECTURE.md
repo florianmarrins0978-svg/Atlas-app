@@ -31146,3 +31146,63 @@ forme, deux natures. `MotDuGeste` porte les cinq mots du geste (les deux de la
 rangée, les trois du moment, et « Annuler » en gris) ; ils gardent leur place, à
 droite. La touche d'absence garde la sienne — sous la date, au-dessus du nom —,
 seuls son poids et son axe changent.
+
+---
+
+## §374 — Un rouge venu d'ailleurs ne bloque plus : on rejoue les SEULS rouges sur la base de `main`
+
+**Sa règle du 17 septembre 2026**, après une journée entière perdue sur un lot
+prêt depuis le matin : *« Je ne veux plus qu'un lot soit bloqué par un rouge
+provenant d'une autre session, ni qu'une batterie complète soit relancée sur
+main uniquement pour établir un état de référence. Le garde doit répondre à une
+seule question : ce lot introduit-il une NOUVELLE régression ? »*
+
+**CE QUI A ÉTÉ SUPPRIMÉ.** L'état global de `main` (§369, 16 septembre) : la
+liste des suites rouges relevée par une batterie entière jouée sur un arbre
+propre. Il répondait bien à la question posée ce jour-là — seize suites
+d'outillage rouges pour toujours sur son PC — mais il coûtait une batterie
+complète, et il fallait la repayer à chaque `main` qui avance. Le 17 septembre,
+un lot du planning est resté bloqué une journée par la porte du devis de
+l'accueil, cassée par une autre session : les sessions se bloquaient entre
+elles. Sont partis avec : `_reference-batterie.mjs`, `reference-depuis-journal.ts`,
+`test-reference-batterie.ts`, et l'écriture de la référence en fin de batterie.
+
+**CE QUI LE REMPLACE : la comparaison ciblée.**
+
+| | |
+|---|---|
+| le niveau | se calcule sur le diff du lot, et sur lui seul — un rouge d'ailleurs ne le fait jamais monter |
+| tout vert | la fusion est ouverte |
+| un ou plusieurs rouges | **chaque suite rouge, elle seule**, rejouée sur une copie propre du commit de `main` d'où le lot part |
+
+Trois réponses : rouge de la même façon → préexistant, il ne bloque pas ; vert
+→ régression nouvelle, refus ; indéterminé ou pas mesuré → bloqué **sur ce cas
+précis seulement**. Ne pas savoir n'est jamais « c'était déjà rouge ».
+
+| | |
+|---|---|
+| la décision, sans git ni navigateur | `scripts/_rouge-prealable.mjs` |
+| la copie propre | `scripts/_temoin-de-main.mjs` — un `git worktree` dans le `.git` commun |
+| la mesure | `scripts/verifier-rouge-prealable.ts` (`npm run verifier:rouge-prealable`) |
+| les cinq cas qu'il a demandés | `scripts/test-garde-fusion-main.ts`, A à E |
+
+**DEUX PIÈGES MESURÉS, pas supposés.**
+
+**Le `node_modules` ne se prête pas par un lien.** La construction refuse un
+`node_modules` qui sort de la racine du projet — *« Symlink
+[project]/node_modules is invalid, it points out of the filesystem root »*. Il
+se lie donc fichier à fichier (`cp -al`) : aucun octet recopié, et le dossier
+reste clos sur lui-même.
+
+**La copie prend son PROPRE atelier.** Lui passer le port et la base de
+l'appelant faisait mesurer les deux dossiers dans la même base : le seed de l'un
+vidait celle de l'autre, et les deux rougissaient sur du code juste. On retire
+donc `ATLAS_ADRESSE`, `DATABASE_URL`, `DATABASE_ADMIN_URL` et `REDIS_URL` de
+l'environnement transmis — `prendreUnAtelier` donne à la copie son rang, son
+port, sa base et son coin de Redis (`CLAUDE.md` §5).
+
+**Ce qui n'a pas bougé** : la batterie entière reste exigée par un lot de
+niveau 3 pour SON propre risque ; une étape hors suites, un bilan incomplet ou
+un verdict sans la liste de ses suites ferment toujours la porte ; et un test
+vert sur `main` devenu rouge avec le lot bloque la fusion.
+

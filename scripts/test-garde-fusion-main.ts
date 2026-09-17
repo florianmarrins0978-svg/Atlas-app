@@ -14,7 +14,8 @@ import {
   rougesToleres,
   verdictSuffit,
 } from "./_niveau-de-risque.mjs";
-import { cheminDeLaReference, commitCourant, ecrireReference } from "./_reference-batterie.mjs";
+import { SUR_MAIN } from "./_rouge-prealable.mjs";
+import { baseDuLot, cheminDuTemoin } from "./_temoin-de-main.mjs";
 import { construireLeGraphe, routeDeLEcran } from "./_rayon-impact.mjs";
 import { suitesDesRoutes } from "./_suites-ciblees.mjs";
 
@@ -356,70 +357,161 @@ console.log("\n=== Un ROUGE n'ouvre la porte que s'il n'a AUCUN rouge nouveau pa
 // doit bloquer. Un nouveau test rouge doit bloquer. Un rouge préexistant
 // identique ne doit pas empêcher éternellement toutes les futures fusions. »
 
-const REFERENCE = { quand: 1_500, commit: "abcdef0123456789", rouges: ["test-outil-a.ts", "test-outil-b.ts"], niveau: 3 };
+const BASE = "abcdef0123456789";
+// Ce que la comparaison ciblée a rendu : ces deux-là sont rouges sur la base
+// de `main` elle-même — elles n'ont pas été cassées par le lot.
+const SUR_LA_BASE = {
+  base: BASE,
+  suites: { "test-outil-a.ts": SUR_MAIN.ROUGE, "test-outil-b.ts": SUR_MAIN.ROUGE },
+};
 const ROUGE_CONNU = { quand: 2_000, vert: false, niveau: 3, rouges: ["test-outil-a.ts", "test-outil-b.ts"], rougesHorsSuites: [] };
 
 cas("les MÊMES rouges que main, et rien d'autre : la fusion s'ouvre, et dit ce qu'elle tolère", () => {
-  const r = verdictSuffit(ROUGE_CONNU, { niveau: 3, derniereEcriture: 1_000, reference: REFERENCE, referenceEstAncetre: true });
+  const r = verdictSuffit(ROUGE_CONNU, { niveau: 3, derniereEcriture: 1_000, reponses: SUR_LA_BASE, base: BASE });
   assert.equal(r.suffit, true, r.raison);
   assert.deepEqual(r.toleres, ["test-outil-a.ts", "test-outil-b.ts"]);
 });
 
 cas("un sous-ensemble des rouges de main passe aussi — un rouge réparé n'est pas un rouge nouveau", () => {
-  const r = rougesToleres({ ...ROUGE_CONNU, rouges: ["test-outil-b.ts"] }, REFERENCE, true);
+  const r = rougesToleres({ ...ROUGE_CONNU, rouges: ["test-outil-b.ts"] }, SUR_LA_BASE, BASE);
   assert.equal(r.ok, true);
 });
 
 cas("une suite VERTE SUR MAIN devenue rouge : refus, et elle est NOMMÉE", () => {
-  const r = rougesToleres({ ...ROUGE_CONNU, rouges: ["test-outil-a.ts", "test-facture-e2e.ts"] }, REFERENCE, true);
+  const r = rougesToleres(
+    { ...ROUGE_CONNU, rouges: ["test-outil-a.ts", "test-facture-e2e.ts"] },
+    { base: BASE, suites: { ...SUR_LA_BASE.suites, "test-facture-e2e.ts": SUR_MAIN.VERT } },
+    BASE
+  );
   assert.equal(r.ok, false);
-  assert.match(r.raison, /1 nouveau\(x\) rouge\(s\)/);
+  assert.match(r.raison, /1 régression\(s\) NOUVELLE\(s\)/);
   assert.match(r.raison, /test-facture-e2e\.ts/);
   assert.doesNotMatch(r.raison, /test-outil-a/, "un rouge connu a été présenté comme nouveau");
 });
 
 cas("une suite NOUVELLE et rouge : refus — elle n'existait pas sur main, donc elle n'y était pas rouge", () => {
-  const r = rougesToleres({ ...ROUGE_CONNU, rouges: ["test-outil-a.ts", "test-toute-neuve.ts"] }, REFERENCE, true);
+  const r = rougesToleres(
+    { ...ROUGE_CONNU, rouges: ["test-outil-a.ts", "test-toute-neuve.ts"] },
+    { base: BASE, suites: { ...SUR_LA_BASE.suites, "test-toute-neuve.ts": SUR_MAIN.VERT } },
+    BASE
+  );
   assert.equal(r.ok, false);
   assert.match(r.raison, /test-toute-neuve\.ts/);
 });
 
 cas("une étape HORS SUITES tombée (types, construction, connexion) : refus, quoi que dise la référence", () => {
-  const r = rougesToleres({ ...ROUGE_CONNU, rougesHorsSuites: ["Construction"] }, REFERENCE, true);
+  const r = rougesToleres({ ...ROUGE_CONNU, rougesHorsSuites: ["Construction"] }, SUR_LA_BASE, BASE);
   assert.equal(r.ok, false);
   assert.match(r.raison, /hors des suites : Construction/);
 });
 
 cas("un bilan INCOMPLET (le serveur est mort au milieu) : refus — un rouge sans nom est un rouge nouveau", () => {
-  const r = rougesToleres({ ...ROUGE_CONNU, rougesHorsSuites: ["Suites navigateur (bilan incomplet)"] }, REFERENCE, true);
+  const r = rougesToleres({ ...ROUGE_CONNU, rougesHorsSuites: ["Suites navigateur (bilan incomplet)"] }, SUR_LA_BASE, BASE);
   assert.equal(r.ok, false);
 });
 
 cas("un verdict d'AVANT le champ « rouges » : refus, on rejoue", () => {
-  const r = rougesToleres({ quand: 2_000, vert: false, niveau: 3 }, REFERENCE, true);
+  const r = rougesToleres({ quand: 2_000, vert: false, niveau: 3 }, SUR_LA_BASE, BASE);
   assert.equal(r.ok, false);
   assert.match(r.raison, /sans la liste/);
 });
 
-cas("SANS référence mesurée sur main : la règle d'avant — un rouge ne passe pas", () => {
-  const r = rougesToleres(ROUGE_CONNU, null, false);
+cas("SANS comparaison jouée : on ne sait pas, donc on bloque — jamais « c'était déjà rouge »", () => {
+  const r = rougesToleres(ROUGE_CONNU, null, BASE);
   assert.equal(r.ok, false);
-  assert.match(r.raison, /aucun état de référence/);
+  assert.match(r.raison, /dont on ne sait pas/);
 });
 
-cas("une référence qui n'est PAS dans l'histoire du lot ne dit rien de lui : refus", () => {
-  const r = rougesToleres(ROUGE_CONNU, REFERENCE, false);
+// **Une réponse mesurée sur une AUTRE base ne dit rien de celle-ci** : entre
+// deux commits de `main`, quelqu'un a pu casser ou réparer la suite.
+cas("une comparaison faite sur une autre base de main ne vaut pas pour ce lot", () => {
+  const r = rougesToleres(ROUGE_CONNU, { ...SUR_LA_BASE, base: "0000000000000000" }, BASE);
   assert.equal(r.ok, false);
-  assert.match(r.raison, /n'est pas dans l'histoire/);
+  assert.match(r.raison, /dont on ne sait pas/);
+});
+
+cas("une suite dont la comparaison n'a rien pu conclure bloque, elle seule", () => {
+  const r = rougesToleres(
+    { ...ROUGE_CONNU, rouges: ["test-outil-a.ts", "test-brumeuse.ts"] },
+    { base: BASE, suites: { ...SUR_LA_BASE.suites, "test-brumeuse.ts": SUR_MAIN.INDETERMINE } },
+    BASE
+  );
+  assert.equal(r.ok, false);
+  assert.match(r.raison, /test-brumeuse\.ts/);
+  assert.doesNotMatch(r.raison, /test-outil-a/, "un rouge tranché a été présenté comme douteux");
+});
+
+// ─── SES CAS À PROUVER — 17 septembre 2026 ─────────────────────────────────
+
+cas("A · main rouge, lot sans rapport toujours rouge : fusion autorisée, sans batterie sur main", () => {
+  const r = rougesToleres(
+    { rouges: ["test-accueil-vide-porte-e2e.ts"], rougesHorsSuites: [] },
+    { base: BASE, suites: { "test-accueil-vide-porte-e2e.ts": SUR_MAIN.ROUGE } },
+    BASE
+  );
+  assert.equal(r.ok, true, r.raison);
+  assert.deepEqual(r.toleres, ["test-accueil-vide-porte-e2e.ts"]);
+});
+
+cas("B · main vert, lot rouge : fusion refusée", () => {
+  const r = rougesToleres(
+    { rouges: ["test-planning-e2e.ts"], rougesHorsSuites: [] },
+    { base: BASE, suites: { "test-planning-e2e.ts": SUR_MAIN.VERT } },
+    BASE
+  );
+  assert.equal(r.ok, false);
+  assert.match(r.raison, /régression\(s\) NOUVELLE\(s\)/);
+});
+
+cas("C · un lot de niveau 2 avec un rouge préexistant ailleurs RESTE de niveau 2", () => {
+  // Le niveau se calcule sur le diff du lot, jamais sur l'état de `main` : un
+  // rouge d'une autre zone du produit n'entre dans aucune des trois
+  // composantes — plancher, rayon, gravité.
+  const lot = evaluerLeLot(["src/components/atlas/MoisCharge.tsx"], { racine: RACINE });
+  assert.equal(lot.niveau, 2, `niveau ${lot.niveau} : ${lot.raison}`);
+  const r = verdictSuffit(
+    { quand: 2_000, vert: false, niveau: 2, rouges: ["test-outil-a.ts"], rougesHorsSuites: [] },
+    {
+      niveau: lot.niveau,
+      derniereEcriture: 1_000,
+      reponses: { base: BASE, suites: { "test-outil-a.ts": SUR_MAIN.ROUGE } },
+      base: BASE,
+    }
+  );
+  assert.equal(r.suffit, true, r.raison);
+});
+
+cas("D · un lot de niveau 3 exige toujours la batterie entière, pour SON propre risque", () => {
+  const lot = evaluerLeLot(["drizzle/0099_une_migration.sql"], { racine: RACINE });
+  assert.equal(lot.niveau, 3, lot.raison);
+  const r = verdictSuffit(
+    { quand: 2_000, vert: true, niveau: 2 },
+    { niveau: lot.niveau, derniereEcriture: 1_000, reponses: null, base: BASE }
+  );
+  assert.equal(r.suffit, false, "un verdict de niveau 2 a ouvert un lot de niveau 3");
+});
+
+cas("E · le rouge d'une session n'en bloque pas une autre s'il ne vient pas de son diff", () => {
+  // Deux lots sans rapport, la même suite rouge venue d'ailleurs : les deux
+  // passent, chacun de son côté, sans rien attendre de l'autre.
+  const venuDAilleurs = { base: BASE, suites: { "test-accueil-vide-porte-e2e.ts": SUR_MAIN.ROUGE } };
+  for (const lot of [["src/app/planning/PlanningClient.tsx"], ["src/components/atlas/MoisCharge.tsx"]]) {
+    const niveau = evaluerLeLot(lot, { racine: RACINE }).niveau;
+    const r = verdictSuffit(
+      { quand: 2_000, vert: false, niveau, rouges: ["test-accueil-vide-porte-e2e.ts"], rougesHorsSuites: [] },
+      { niveau, derniereEcriture: 1_000, reponses: venuDAilleurs, base: BASE }
+    );
+    assert.equal(r.suffit, true, `${lot[0]} : ${r.raison}`);
+  }
 });
 
 cas("tolérer un rouge connu ne dispense ni du niveau ni de l'arbre inchangé", () => {
   assert.equal(
-    verdictSuffit({ ...ROUGE_CONNU, niveau: 2 }, { niveau: 3, derniereEcriture: 1_000, reference: REFERENCE, referenceEstAncetre: true }).suffit,
+    verdictSuffit({ ...ROUGE_CONNU, niveau: 2 }, { niveau: 3, derniereEcriture: 1_000, reponses: SUR_LA_BASE, base: BASE }).suffit,
     false
   );
   assert.equal(
-    verdictSuffit(ROUGE_CONNU, { niveau: 3, derniereEcriture: 9_000, reference: REFERENCE, referenceEstAncetre: true }).suffit,
+    verdictSuffit(ROUGE_CONNU, { niveau: 3, derniereEcriture: 9_000, reponses: SUR_LA_BASE, base: BASE }).suffit,
     false
   );
 });
@@ -432,10 +524,12 @@ const avaitUnVerdict = existsSync(TEMOIN);
 if (avaitUnVerdict) renameSync(TEMOIN, SAUVEGARDE);
 // La référence de la machine est mise de côté de la même façon : ces cas en
 // écrivent une à eux, et celle qui existait doit revenir intacte.
-const REFERENCE_MACHINE = cheminDeLaReference(RACINE)!;
-const REFERENCE_SAUVEE = `${REFERENCE_MACHINE}.epreuve`;
-const avaitUneReference = existsSync(REFERENCE_MACHINE);
-if (avaitUneReference) renameSync(REFERENCE_MACHINE, REFERENCE_SAUVEE);
+// La comparaison ciblée vit dans le `.git` commun : on met de côté celle de la
+// machine le temps de l'épreuve, et on la rend à la fin.
+const REPONSES_MACHINE = path.join(path.dirname(cheminDuTemoin(RACINE)!), "atlas-rouges-prealables.json");
+const REPONSES_SAUVEES = `${REPONSES_MACHINE}.epreuve`;
+const avaitDesReponses = existsSync(REPONSES_MACHINE);
+if (avaitDesReponses) renameSync(REPONSES_MACHINE, REPONSES_SAUVEES);
 // **Un lot à éprouver, quel que soit l'arbre du jour — 16 septembre 2026.** Ces
 // cas jouent le hook sur le VRAI diff avec origin/main. Sur un main propre —
 // exactement l'état où l'on mesure la référence — ce diff est vide, le lot vaut
@@ -469,9 +563,13 @@ try {
   });
 
   cas("un verdict ROUGE dont chaque rouge est déjà rouge sur main OUVRE la fusion, en le disant", () => {
-    // La référence est écrite dans le .git commun de CE dépôt, sur le commit
-    // courant — donc forcément un ancêtre. Sauvegardée et rendue plus bas.
-    ecrireReference(RACINE, { quand: 1_000, commit: commitCourant(RACINE)!, rouges: ["test-outil-windows.ts"], niveau: 3 });
+
+    // Ce que la comparaison ciblée a rendu sur la base de CE lot : la suite y
+    // est déjà rouge, elle ne vient donc pas d'ici.
+    writeFileSync(
+      REPONSES_MACHINE,
+      JSON.stringify({ base: baseDuLot(RACINE), suites: { "test-outil-windows.ts": SUR_MAIN.ROUGE } })
+    );
     writeFileSync(
       TEMOIN,
       JSON.stringify({ quand: Date.now() + 60_000, vert: false, niveau: 3, empreinte: [], rouges: ["test-outil-windows.ts"], rougesHorsSuites: [] })
@@ -558,8 +656,8 @@ try {
   rmSync(LOT_D_EPREUVE, { force: true });
   rmSync(TEMOIN, { force: true });
   if (avaitUnVerdict) renameSync(SAUVEGARDE, TEMOIN);
-  rmSync(REFERENCE_MACHINE, { force: true });
-  if (avaitUneReference) renameSync(REFERENCE_SAUVEE, REFERENCE_MACHINE);
+  rmSync(REPONSES_MACHINE, { force: true });
+  if (avaitDesReponses) renameSync(REPONSES_SAUVEES, REPONSES_MACHINE);
 }
 
 console.log(`\n${echecs === 0 ? "✅" : "❌"} Le garde-fou de la fusion — ${echecs} échec(s).`);

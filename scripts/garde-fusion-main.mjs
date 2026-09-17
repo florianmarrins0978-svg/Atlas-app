@@ -20,14 +20,21 @@
  *   2. il lit le témoin laissé par la dernière vérification ;
  *   3. il refuse si ce témoin manque, s'il est d'un niveau trop bas, ou s'il
  *      décrit un arbre qui n'est plus celui-ci ;
- *   4. **un témoin ROUGE n'ouvre la porte que s'il ne porte AUCUN rouge
- *      nouveau par rapport à l'état mesuré sur `main`** — sa règle du
- *      16 septembre 2026, `rougesToleres` dans `_niveau-de-risque.mjs`. Sur
- *      son PC, seize suites d'outillage rougissent depuis toujours (`bash`,
- *      `gh`, `npx.cmd`) : sans cela, plus aucun lot d'argent ne pouvait être
- *      fusionné d'ici, et la seule issue était de contourner — ce qu'il a
- *      refusé. Il a aussi refusé une liste d'exceptions pour ces seize : la
- *      référence est une MESURE (`_reference-batterie.mjs`), pas une liste.
+ *   4. **un témoin ROUGE n'ouvre la porte que si AUCUN de ses rouges n'est une
+ *      régression nouvelle** — sa règle du 17 septembre 2026. La question est
+ *      une seule : *ce lot introduit-il une nouvelle régression ?* Chaque suite
+ *      rouge est rejouée sur une copie propre du commit de `main` d'où le lot
+ *      part — celle-là seule, jamais la batterie entière
+ *      (`verifier-rouge-prealable.ts`, `_rouge-prealable.mjs`). Déjà rouge
+ *      là-bas : elle ne vient pas de ce lot, elle ne le bloque pas. Verte
+ *      là-bas : c'est la régression, et la porte reste fermée.
+ *
+ *      **Ce qui a été retiré avec, et qui bloquait tout le monde :** l'état
+ *      global de `main`, mesuré par une batterie entière sur un arbre propre.
+ *      Tant qu'il manquait, le moindre rouge d'une autre session fermait la
+ *      porte, et le seul remède coûtait trente à cinquante minutes — à
+ *      repayer à chaque `main` qui avance. Une session n'attend plus qu'une
+ *      autre répare son lot pour fusionner un changement sans rapport.
  *
  * **Ce qu'il ne fait PAS**, et c'est délibéré : il ne dit rien des poussées sur
  * une branche de session — on y pousse pour mettre à l'abri, et gêner ce
@@ -49,7 +56,7 @@ import {
   verdictSuffit,
 } from "./_niveau-de-risque.mjs";
 import { suitesDesRoutes } from "./_suites-ciblees.mjs";
-import { estAncetre, lireReference } from "./_reference-batterie.mjs";
+import { baseDuLot, cheminDuTemoin } from "./_temoin-de-main.mjs";
 
 // **Le dossier se décide par la commande, pas par la session** (sa règle du
 // 17 septembre 2026, `dossierDeLaCommande`) : `git -C <dossier> push …` fait
@@ -60,6 +67,26 @@ let RACINE = process.env.CLAUDE_PROJECT_DIR || process.cwd();
 function git(...args) {
   try {
     return execFileSync("git", ["-C", RACINE, ...args], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }).trim();
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * CE QUE LA COMPARAISON CIBLÉE A DIT — suite par suite, pour CETTE base.
+ *
+ * Elle est écrite par `verifier-rouge-prealable.ts`, dans le `.git` commun :
+ * elle décrit une machine, pas le dépôt. Absente, elle ne tolère rien.
+ */
+function lireLesReponses() {
+  const temoin = cheminDuTemoin(RACINE);
+  if (!temoin) return null;
+  const chemin = path.join(path.dirname(temoin), "atlas-rouges-prealables.json");
+  if (!existsSync(chemin)) return null;
+  try {
+    const brut = JSON.parse(readFileSync(chemin, "utf8"));
+    if (typeof brut.base !== "string" || typeof brut.suites !== "object") return null;
+    return { base: brut.base, suites: brut.suites };
   } catch {
     return null;
   }
@@ -123,19 +150,20 @@ process.stdin.on("end", () => {
   const lot = evaluerLeLot(cheminsDuLot(RACINE), { racine: RACINE });
   if (lot.niveau === 1) process.exit(0); // documents seuls : rien à éprouver.
 
-  const reference = lireReference(RACINE);
+  const base = baseDuLot(RACINE);
   const { suffit, raison, toleres } = verdictSuffit(lireVerdict(), {
     niveau: lot.niveau,
     derniereEcriture: derniereEcriture(),
-    reference,
-    referenceEstAncetre: reference ? estAncetre(RACINE, reference.commit) : false,
+    reponses: lireLesReponses(),
+    base,
   });
   if (suffit) {
     // Ce qu'on tolère se DIT : un rouge qui passe en silence redeviendrait
     // invisible, et c'est exactement la faute qu'on reproche à une liste.
     if (toleres.length > 0) {
       console.log(
-        `Fusion ouverte avec ${toleres.length} rouge(s) déjà rouge(s) sur main ${reference.commit.slice(0, 8)}, aucun nouveau : ${toleres.join(", ")}`
+        `Fusion ouverte avec ${toleres.length} rouge(s) déjà rouge(s) sur la base main ` +
+          `${String(base).slice(0, 8)}, aucune régression nouvelle : ${toleres.join(", ")}`
       );
     }
     process.exit(0);
@@ -174,6 +202,18 @@ process.stdin.on("end", () => {
       "",
       `    ${commandeDuNiveau(lot.niveau)}`,
       "",
+      // **Un rouge qui vient d'ailleurs ne se corrige pas en rejouant tout.**
+      // Sa règle du 17 septembre : on rejoue les SEULS rouges sur la base de
+      // `main`, et un rouge déjà là n'est pas de ce lot.
+      ...(/ROUGE/.test(raison)
+        ? [
+            "Et si ce rouge vient d'ailleurs — d'une autre session, d'un autre lot —,",
+            "il se compare sans rejouer la batterie de main :",
+            "",
+            "    npm run verifier:rouge-prealable",
+            "",
+          ]
+        : []),
       "Le niveau se CALCULE sur le diff — plancher, rayon d'impact, gravité —,",
       "jamais sur ce qu'on en pense (.claude/rules/testing.md). Pousser sur la",
       "branche de session reste libre : c'est la fusion vers « main » qui attend.",

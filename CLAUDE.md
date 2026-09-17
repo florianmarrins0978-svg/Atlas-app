@@ -55,11 +55,14 @@ jamais.*
 
 **Ce qui ne dépend pas de la bonne volonté** : `scripts/garde-fusion-main.mjs`
 calcule le niveau de risque sur le diff et refuse une poussée vers `main` dont
-le contrôle n'a pas été joué au vert sur cet état de l'arbre — **ou dont un
-rouge est NOUVEAU par rapport à l'état mesuré sur `main`** (16 septembre 2026 :
-un rouge déjà rouge sur `main` ne ferme pas la porte pour toujours, un rouge
-nouveau la ferme ; `.claude/rules/testing.md`). Et il ne se contourne pas :
-c'est lui qui a été corrigé, à la racine, le jour où il bloquait à tort.
+le contrôle n'a pas été joué au vert sur cet état de l'arbre — **ou qui porte
+une régression NOUVELLE** (17 septembre 2026). Un rouge venu d'ailleurs ne
+ferme plus la porte : chaque suite rouge est rejouée **sur la base de `main`,
+elle seule** — `npm run verifier:rouge-prealable` —, et déjà rouge là-bas, elle
+ne vient pas de ce lot. Plus aucun état global, plus aucune batterie sur `main`
+pour comparer ; le commit git suffit (`.claude/rules/testing.md`). Et il ne se
+contourne pas : c'est lui qui a été corrigé, à la racine, les deux fois où il
+bloquait à tort.
 
 ---
 

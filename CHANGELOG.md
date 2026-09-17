@@ -8,6 +8,26 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-17
 
+### Un rouge venu d'ailleurs ne bloque plus un lot : on rejoue les seuls rouges sur la base de `main`
+
+**Sa règle**, après une journée perdue sur un lot prêt depuis le matin : *« Je
+ne veux plus qu'un lot soit bloqué par un rouge provenant d'une autre session,
+ni qu'une batterie complète soit relancée sur main uniquement pour établir un
+état de référence. Le garde doit répondre à une seule question : ce lot
+introduit-il une NOUVELLE régression ? »*
+
+L'état global de `main` est **supprimé** — il coûtait une batterie entière, à
+repayer à chaque `main` qui avance. À la place : quand un contrôle est rouge,
+**cette suite-là seule** est rejouée sur une copie propre du commit de `main`
+d'où le lot part. Déjà rouge là-bas : elle ne vient pas de ce lot. Verte
+là-bas : c'est la régression, et la porte reste fermée. Indéterminée : bloquée
+sur ce cas précis, jamais absoute.
+
+Le commit git suffit. Le niveau se calcule toujours sur le seul diff du lot —
+un rouge d'ailleurs ne le fait pas monter —, et la batterie entière reste
+réservée aux lots de niveau 3 pour leur propre risque. Ses cinq cas (A à E) sont
+éprouvés dans `test-garde-fusion-main`. `ARCHITECTURE.md` §374.
+
 ### « Déplacer » déplace pour de bon : le calendrier, puis le moment — sept appuis deviennent trois
 
 **Sa demande :** *« lorsque je clique sur déplacer ça me fait apparaître le
