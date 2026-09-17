@@ -60,6 +60,13 @@ voies d'ajout qui gardent leurs mots et se referment par le « ＋ Ajouter » ;
 sa retouche du soir même, *« laisse juste le nom du client et retire le contour
 doré »* —, sous la date en or. Rien n'est codé.
 
+**Le cahier des charges vit SUR la planche**, pas dans le commentaire du
+fichier : *« je vais la donner à une autre session, qu'elle ne se trompe pas »*.
+Un commentaire HTML est invisible à qui ouvre l'adresse — et c'est l'adresse
+qu'il transmet. Le bloc « Pour la session qui codera » porte les trois
+changements fichier par fichier, ce qui ne bouge pas, ce qui a été écarté, les
+suites qui regardent les repères touchés, et le point non tranché.
+
 **Ce que son troisième choix enlève est dit, pas tu** : le « › » est le seul
 chemin, depuis cette liste, vers la fiche du chantier. Une demande qui supprime
 un geste mérite qu'on nomme le geste.
