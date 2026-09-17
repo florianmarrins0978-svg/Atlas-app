@@ -6,6 +6,30 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-09-18
+
+### Une seconde planche pour la journée du planning, à comparer à la première
+
+**Sa demande :** *« va regarder la planche planning tout ensemble qu'une autre
+session a réalisée et essaie de me proposer mieux : plus joli et facile
+d'utilisation »*.
+
+`appli/planning-tout-ensemble-en-mieux.html` garde ses trois réponses du 17 à
+la lettre — le nom seul, sans contour, compris — et montre ce que la première
+ne montrait pas : la fiche attachée au jour par sa pointe (déjà dans
+l'application), des barres qui disent vrai et qui bougent, le client posé qui
+arrive DANS la journée avec son « Qui ? » et un « Annuler » qui le ramène, une
+seule grammaire (ligne · interrupteur · « Annuler » à droite) pour l'absence,
+la demi-journée à poser et le défaire, le tiroir tenu au bas de l'écran, la
+question « qui ? » à deux salariés, et « Voir sur Nuit ».
+
+**Ce qu'elle coûte est écrit sous l'écran**, pas seulement ici : un appui de
+plus pour l'absence à deux salariés, le moment demandé pour une demi-journée,
+une fiche qui s'allonge à chaque client posé. La durée à droite du nom est un
+ajout, signalé comme tel. Rien n'est codé : les deux planches attendent qu'il
+dise laquelle, ou ce qu'il prend de chacune.
+
+---
 ## 2026-09-17
 
 ### La gravité de `main` faisait repayer la batterie à ses voisines

@@ -106,6 +106,14 @@ elle désignait la case d'à côté. Le cerne noir du jour ouvert la remplace.
 
 ## ⏳ LA PLANCHE D'ENSEMBLE ATTEND SON OUI — PUIS ON CODE (17 septembre 2026)
 
+**DEUX PLANCHES DEPUIS LE 18 SEPTEMBRE, PAS UNE.** Sa demande du 18 : *« propose
+mieux : plus joli et facile d'utilisation »*. `appli/planning-tout-ensemble-en-mieux.html`
+garde ses trois réponses à la lettre et ajoute la pointe vers le jour, les
+barres vraies, le client posé qui arrive dans la fiche avec « Annuler », une
+seule grammaire ligne · interrupteur · « Annuler », le tiroir au bas, « qui ? »
+à deux salariés, Nuit. **Ce qu'on code, c'est celle qu'il désigne — ou un
+mélange qu'il nomme.** Ne pas coder avant.
+
 **Sa consigne :** *« toutes les réponses que je vais te donner, tu vas mettre
 les modifs dans une seule planche, comme ça à la fin tu coderas la planche
 finale avec toutes les modifs dedans »*.
