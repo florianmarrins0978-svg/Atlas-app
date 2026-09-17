@@ -140,6 +140,66 @@
 <h2 id="ce-qui-reste-vrai">Ce qui reste vrai</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
 <p>La batterie entière reste obligatoire <strong>avant la première poussée d'un lot</strong>. Ce qui change, c'est qu'un rouge corrigé ne la fait plus recommencer.</p>
+<hr>
+<h1 id="suite--18-septembre-2026-00-h-27---ça-continue-">Suite — 18 septembre 2026, 00 h 27 : « ça continue »</h1>
+<p>Quarante minutes après la correction ci-dessus, une session repartait pour quarante-cinq minutes. Sa raison :</p>
+<blockquote><em>« <code>main</code> a apporté 30 commits, dont du code qui touche l'argent (devis, acomptes). La rencontre atteint le niveau 3 → batterie entière. »</em></blockquote>
+<p>Elle appliquait la règle correctement. <strong>La règle était fausse.</strong></p>
+<h2 id="lerreur-et-elle-était-à-moi">L'erreur, et elle était à moi</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Le calcul de risque répond à <strong>une</strong> question : <em>quel danger ce lot introduit-il ?</em> Je la posais aussi sur les fichiers que <code>main</code> apporte. Or ces commits-là <strong>ont déjà payé leur batterie</strong> — la session qui a écrit les acomptes a joué la mesure complète pour eux.</p>
+<p>Résultat : à trois sessions, <strong>chacune repayait la mesure des deux autres</strong>. C'est la même boucle, par une autre porte.</p>
+<h2 id="ce-qui-a-été-corrigé">Ce qui a été corrigé</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>La rencontre se partage en deux, et chaque moitié ne doit pas la même chose :</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Ce qui a bougé</th>
+<th>Ce que ça coûte</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>ton lot</strong> — ce que cette session a écrit</td>
+<td>gravité pleine : argent, sécurité → batterie, comme avant</td>
+</tr>
+<tr>
+<td><strong><code>main</code></strong>, une migration ou la configuration</td>
+<td><strong>batterie</strong> : ça change le sol sous toutes les mesures</td>
+</tr>
+<tr>
+<td><strong><code>main</code></strong>, du code d'argent ou de sécurité</td>
+<td>les suites du fond (~5 min) — là où vivent les règles et l'isolation</td>
+</tr>
+<tr>
+<td><strong><code>main</code></strong>, le reste</td>
+<td>les écrans concernés, et rien d'autre</td>
+</tr>
+</tbody></table></div>
+<p>La troisième ligne est le cœur : la gravité de <code>main</code> <strong>change ce qu'on rejoue, pas si l'on rejoue tout</strong>.</p>
+<h2 id="ce-qui-a-été-refusé">Ce qui a été refusé</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Ignorer complètement ce que <code>main</code> apporte.</strong> Ce serait plus rapide encore, et faux : la rencontre entre ton lot et le code voisin n'a jamais été mesurée par personne. Elle se rejoue — en minutes, pas en heure.</p>
+<h2 id="chiffres">Chiffres</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td>niveau</td>
+<td><strong>2</strong> — <code>npm run verifier:avant-fusion</code></td>
+</tr>
+<tr>
+<td>résultat</td>
+<td><strong>395 suites sur 395 vertes</strong></td>
+</tr>
+<tr>
+<td>le rattrapage, joué sur ce lot après une avancée de <code>main</code></td>
+<td><strong>Types + Lint</strong>, une minute</td>
+</tr>
+<tr>
+<td>batterie complète</td>
+<td><strong>non jouée</strong></td>
+</tr>
+</tbody></table></div>
 </main>
 </body>
 </html>
