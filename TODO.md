@@ -34,7 +34,7 @@ compilations par batterie.
 deux fois sous un lot déjà éprouvé ; chaque fusion a forcé à renuméroter son
 paragraphe d'`ARCHITECTURE.md` (§373 → §377 → §379) et à replacer ses entrées
 de journal — c'est la règle du §6 B, et elle est juste. Mais
-`verifier-apres-fusion.ts` compare le **diff entier**, `.md` compris, et refuse
+`verifier-ce-qui-a-bouge.ts` compare le **diff entier**, `.md` compris, et refuse
 alors : *« le lot lui-même a changé — ce n'est plus le même lot »*, en renvoyant
 vers cinquante minutes de batterie.
 

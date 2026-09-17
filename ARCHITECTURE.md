@@ -31463,7 +31463,7 @@ n'y figure pas n'a donc pas été écrit ici : il est arrivé par la fusion.
 |---|---|
 | rien (contenu identique) | la fusion s'ouvre |
 | un fichier **du lot** | `verifier:avant-fusion` / `avant-livraison`, selon le niveau |
-| **seulement** ce que `main` a apporté | `npx tsx scripts/verifier-apres-fusion.ts` — jamais la batterie |
+| **seulement** ce que `main` a apporté | `npx tsx scripts/verifier-ce-qui-a-bouge.ts` — jamais la batterie |
 | une empreinte illisible ou absente | le niveau du lot : ne pas savoir n'est jamais « rien n'a bougé » |
 
 La troisième ligne est la règle du 17 septembre appliquée là où elle manquait :
@@ -31477,3 +31477,59 @@ dans un dépôt d'essai à part — un lot vert, `main` qui avance dessous, la
 fusion —, et refuse que le refus contienne `verifier:avant-livraison`. Confronté
 au code d'avant, six de ses cas rougissent : c'est ce qui prouve qu'il mesure
 quelque chose.
+
+## §381 — Un rouge ne coûte plus la mesure entière : on rejoue l'étape, pas la batterie
+
+**Sa colère du 17 septembre 2026, à 23 h :** *« ça recommence et c'est ça à
+chaque fois ! »*
+
+Ce qu'il montrait : une batterie finie, **158 suites sur 159 vertes**, deux
+rouges — une ligne de documentation à corriger en trois secondes, et un rouge
+venu de `main`. La session corrige la documentation, et repart pour **cinquante
+minutes**. À la fin de ces cinquante minutes, un autre rouge, et la boucle
+recommence.
+
+**Deux murs la produisaient, et aucun n'était visible depuis la conversation.**
+
+| Le mur | Ce qu'il imposait |
+|---|---|
+| une étape qui n'est pas un moteur de suites — Types, Lint, **Mémoire du dépôt**, Construction — tombe dans `rougesHorsSuites`, et une seule ferme la fusion | or **rien ne savait la rejouer seule** : la table des étapes vivait à l'intérieur de `verifier-avant-livraison.ts`, qui ne sait faire que tout |
+| le complément d'après-fusion **refusait dès que le lot avait changé** (`lotInchange`) | or corriger un rouge, c'est changer le lot : il ne servait jamais au moment où l'on en avait besoin |
+
+Le seul chemin restant était donc la batterie complète, dont le produit est…
+le rouge suivant.
+
+**Ce qui les remplace, et c'est une seule question :** *qu'est-ce qui a bougé
+depuis la mesure, et que peut-il casser ?*
+
+```bash
+npx tsx scripts/verifier-ce-qui-a-bouge.ts
+```
+
+| | |
+|---|---|
+| **ce qui a bougé** | par le CONTENU — l'empreinte du verdict pour le code, git pour ce qu'elle n'indexe pas (un `.md`, `docs/`, `.claude/`). C'est là que vivait son rouge de documentation |
+| **ce que cela peut casser** | la RENCONTRE (§375) puis `evaluerLeLot` sur elle seule. Niveau 3 — une migration, le gabarit racine — : on refuse, et c'est la batterie |
+| **ce qui était rouge** | rejoué, étape ou suite, qu'il ait bougé ou non |
+| **ce qui n'a pas été rejoué** | garde son rouge. Ne pas savoir n'est jamais vert |
+
+**La table des étapes vit désormais dans `_etapes-batterie.ts`**, et deux
+commandes la lisent : la batterie, qui les joue toutes, et le rattrapage, qui
+en joue une. Une seule table — deux copies de la même vérité finissent par
+diverger (`CLAUDE.md` §3).
+
+**Ce qui a été SUPPRIMÉ avec, et non recouvert** : `verifier-apres-fusion.ts`,
+`lotInchange` et `empreinteDuDiff`. Le complément d'après-fusion n'était qu'un
+cas particulier de cette question — « ce qui a bougé vient de `main` » —, et
+sa condition d'entrée était le mur. Un lot corrigé est le cas le plus fréquent,
+et c'était exactement celui qu'il refusait.
+
+**Ce que cela ne relâche PAS.** La batterie complète reste ce qui autorise la
+première poussée d'un lot (`CLAUDE.md` §5) ; le rattrapage ne dépose jamais un
+niveau qu'il n'a pas mesuré, et refuse dès que ce qui a bougé atteint le
+niveau 3.
+
+**Mesuré, pas supposé** : joué sur ce lot même, il a ramené **130 suites rouges
+à une** en rejouant quatre étapes — et la dernière, `test-verrou-construction`,
+était une vraie régression de ce lot (elle cherchait la table des étapes dans
+son ancien fichier). C'est le contrôle qui l'a dit, pas la relecture.

@@ -110,7 +110,7 @@ export const FICHIER_REPONSES = "atlas-rouges-prealables.json";
  *
  * **Elle vit ICI depuis le 17 septembre 2026, et c'est une correction de
  * racine.** Elle était exportée par `verifier-rouge-prealable.ts`, un script
- * d'ENTRÉE : il appelle `main()` à la dernière ligne. `verifier-apres-fusion`
+ * d'ENTRÉE : il appelle `main()` à la dernière ligne. `verifier-ce-qui-a-bouge`
  * l'important pour cette seule fonction, l'import exécutait ce `main()`, qui
  * écrivait « aucune suite rouge : rien à comparer » puis `process.exit(0)` —
  * le complément n'a jamais joué une seule ligne de son propre travail, et il

@@ -8,6 +8,20 @@ sert.
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## UN ROUGE SE REJOUE SEUL — LA BATTERIE N'EST PLUS LE SEUL CHEMIN
+
+Depuis le 17 septembre 2026 au soir : après une batterie rouge, on corrige, puis
+
+```bash
+npx tsx scripts/verifier-ce-qui-a-bouge.ts
+```
+
+Il rejoue ce qui était rouge et ce que la correction peut casser — quelques
+minutes —, garde le rouge de ce qu'il n'a pas remesuré, et renvoie à la
+batterie seulement si ce qui a bougé atteint le niveau 3. Il remplace
+`verifier-apres-fusion.ts`. `ARCHITECTURE.md` §381.
+
+---
 ## `main` QUI AVANCE NE COÛTE PLUS UNE BATTERIE
 
 Depuis le 17 septembre 2026, `garde-fusion-main.mjs` ne regarde plus la **date**
@@ -20,7 +34,7 @@ CONTENUS, avec la fonction de la batterie (`scripts/_empreinte-des-sources.mjs`)
 | Ce qu'il dit | Ce qu'on joue |
 |---|---|
 | « le lot a changé depuis sa vérification » | le contrôle de son niveau (`npm run niveau` le dit) |
-| « main a apporté N fichier(s) » | `npx tsx scripts/verifier-apres-fusion.ts` — une minute, souvent rien |
+| « main a apporté N fichier(s) » | `npx tsx scripts/verifier-ce-qui-a-bouge.ts` — une minute, souvent rien |
 | rien : la poussée passe | rien |
 
 `ARCHITECTURE.md` §380.
