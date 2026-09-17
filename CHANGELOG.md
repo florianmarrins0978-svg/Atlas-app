@@ -296,7 +296,10 @@ liste, en noir ; « Votre client peut proposer une autre date » au lieu de
 (`PrimaryButton` : vert `plein`, crème, à la largeur de son texte) au lieu
 d'un bouton pin en pleine largeur. La planche s'ouvre sur 4 jours, à sa
 demande, pour qu'il l'essaye. Et l'interrupteur s'appelle « Vous proposez
-deux dates », son libellé.
+deux dates », son libellé. Sous « Votre client peut proposer une autre
+date », la phrase devient « Il ne verra que vos jours libres. » — choisie
+par lui le 18 septembre parmi trois, à la place de « Un calendrier de vos
+jours libres s'ouvrira sous vos dates. »
 
 ### « Ce règlement n'a pas pu être enregistré » : la base était en cause, et rien ne le disait
 

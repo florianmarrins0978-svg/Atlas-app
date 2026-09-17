@@ -144,8 +144,9 @@ numéro qui était entouré, que je compare les deux »*. **A** la case entière
 planche du 31 août). **Il a choisi la B** (17 septembre 2026, le soir) — la A
 est partie de la planche. Avec trois retouches, faites : la phrase du geste
 sous le calendrier et au-dessus de la liste, en noir ; « Votre client peut
-proposer une autre date » (le libellé de l'écran dit encore « Il peut… » —
-à changer quand le lot se code) ; le bouton « Envoyer le devis » dans la
+proposer une autre date », et dessous « Il ne verra que vos jours libres. »
+(l'écran dit encore « Il peut… » et « Un calendrier de vos jours libres
+s'ouvrira sous vos dates. » — les deux à changer quand le lot se code) ; le bouton « Envoyer le devis » dans la
 capsule de l'application.
 
 Une seule règle pour toutes les durées : sur une journée, deux propositions
