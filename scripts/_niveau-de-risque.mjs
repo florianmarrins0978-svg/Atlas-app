@@ -309,7 +309,23 @@ export function poussseVersMain(commande, brancheCourante) {
 export function dossierDeLaCommande(commande, defaut) {
   const m = String(commande ?? "").match(/\bgit\s+-C\s+(?:"([^"]+)"|'([^']+)'|(\S+))/);
   const dossier = m && (m[1] ?? m[2] ?? m[3]);
-  return dossier ? path.resolve(defaut, dossier) : defaut;
+  return dossier ? path.resolve(defaut, cheminNatif(dossier)) : defaut;
+}
+
+/**
+ * Un chemin écrit à la façon de Git Bash — `/c/Users/…` — redevient `C:\Users\…`.
+ *
+ * **Payé le 18 septembre 2026, et c'est un lot de niveau 3 qui est passé sous
+ * le garde-fou.** La commande disait `git -C /c/Users/…/atlas-batterie push
+ * origin HEAD:main` ; `path.resolve` sous Windows en a fait `C:\c\Users\…`, un
+ * dossier qui n'existe pas. Rien à y mesurer, donc un lot « de niveau 1 », et
+ * la porte s'est ouverte en silence. Sous Linux, un tel chemin est déjà natif
+ * et ne bouge pas.
+ */
+function cheminNatif(dossier) {
+  if (process.platform !== "win32") return dossier;
+  const m = dossier.match(/^\/(?:cygdrive\/)?([a-zA-Z])(\/.*)?$/);
+  return m ? `${m[1].toUpperCase()}:${(m[2] ?? "/").replace(/\//g, "\\")}` : dossier;
 }
 
 /**

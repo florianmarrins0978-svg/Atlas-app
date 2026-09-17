@@ -142,6 +142,26 @@ process.stdin.on("end", () => {
   const branche = git("rev-parse", "--abbrev-ref", "HEAD");
   if (!poussseVersMain(commande, branche)) process.exit(0);
 
+  // **UN DOSSIER QU'ON NE SAIT PAS LIRE FERME LA PORTE — 18 septembre 2026.**
+  // Un lot de niveau 3 est passé parce que le dossier visé n'existait pas
+  // (`/c/Users/…` lu comme `C:\c\Users\…`) : sans dépôt, rien à mesurer, et
+  // « rien » se lisait « niveau 1 ». Ne pas savoir ce qu'on pousse n'est
+  // jamais une raison d'ouvrir (`CLAUDE.md` §5 : un contrôle qui mesure zéro
+  // ne mesure rien).
+  if (git("rev-parse", "--show-toplevel") === null) {
+    console.error(
+      [
+        `❌ Poussée vers « main » refusée : le dossier visé n'est pas un dépôt lisible.`,
+        `   ${RACINE}`,
+        "",
+        "Le garde-fou mesure le dossier que la commande désigne (`git -C <dossier>`),",
+        "et il ne peut rien mesurer là. Sous Windows, écrire le chemin en natif :",
+        '    git -C "C:/Users/…/le-dossier" push origin HEAD:main',
+      ].join("\n")
+    );
+    process.exit(2);
+  }
+
   const fichiersDuLot = cheminsDuLot(RACINE);
   const lot = evaluerLeLot(fichiersDuLot, { racine: RACINE });
   if (lot.niveau === 1) process.exit(0); // documents seuls : rien à éprouver.
