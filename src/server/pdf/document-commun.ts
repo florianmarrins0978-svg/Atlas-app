@@ -55,13 +55,16 @@ function couleurHexa(hexa: string): RGB {
 // la facture gardent la terre cuite. Les tenir au même endroit rendait le devis
 // solidaire d'un changement d'écran — c'est exactement ce qui vient d'arriver,
 // et c'est le contrôle des couleurs qui l'a arrêté.
+// **Les trois gris ont disparu le 17 septembre 2026** — étiquettes de colonnes,
+// coordonnées, mentions légales : *« mets toutes les écritures en noir, rien en
+// gris »*. Ils ne sont pas « mis à l'encre » ici, ils sont retirés : une valeur
+// que plus rien ne lit se recopie un jour par erreur (`CLAUDE.md` §4 quinquies).
+// Ce qui décide de la teinte d'une écriture vit désormais dans `teintesDe`,
+// et là seulement.
 const PALETTE = {
   encre: couleursDocument.encre,
-  etiquette: couleursDocument.etiquette, // en-têtes de colonnes, intertitres de bloc
   titrePartie: couleursDocument.accent, // « ÉMETTEUR » / « CLIENT »
-  coordonnees: "#5a5a4c", // .brand-tagline
-  traitClair: "#e2ded3", // --paper-warm
-  legal: "#7a7a6a",
+  traitClair: "#e2ded3", // --paper-warm — un filet, pas une écriture
   papier: couleursDocument.papier, // le devis n'est pas sur du blanc
 } as const;
 
@@ -119,11 +122,19 @@ function teintesDe(brut: Allure | null | undefined): Teintes {
   if (!allure || estLAllureParDefaut(allure)) {
     return {
       encre: couleurHexa(PALETTE.encre),
-      etiquette: couleurHexa(PALETTE.etiquette),
+      // **TOUT CE QUI S'ÉCRIT EST EN ENCRE — sa demande du 17 septembre 2026 :**
+      // *« mets toutes les écritures en noir, rien en gris »*. Les en-têtes de
+      // colonnes, les coordonnées et les mentions légales passaient en gris
+      // doux ; sur un papier imprimé, puis photographié, ce gris se lit mal.
+      // Les trois teintes restent NOMMÉES — elles disent ce qu'elles habillent,
+      // et le jour où il veut de nouveau une nuance, elle se repose ici, en un
+      // endroit. Le trait clair, lui, n'est pas une écriture : il reste dilué,
+      // sans quoi le tableau se referme sur des filets noirs.
+      etiquette: couleurHexa(PALETTE.encre),
       titrePartie: couleurHexa(PALETTE.titrePartie),
-      coordonnees: couleurHexa(PALETTE.coordonnees),
+      coordonnees: couleurHexa(PALETTE.encre),
       traitClair: couleurHexa(PALETTE.traitClair),
-      legal: couleurHexa(PALETTE.legal),
+      legal: couleurHexa(PALETTE.encre),
       papier: couleurHexa(PALETTE.papier),
       papierEcrit: PALETTE.papier,
     };
@@ -131,15 +142,17 @@ function teintesDe(brut: Allure | null | undefined): Teintes {
   const { encre, encreDouce } = encreSurFond(allure.fond);
   return {
     encre: couleurHexa(encre),
-    etiquette: couleurHexa(encreDouce),
+    // Comme ci-dessus : ce qui s'écrit prend l'encre, quelle que soit l'allure
+    // choisie — sur un fond sombre comme sur le crème.
+    etiquette: couleurHexa(encre),
     // L'accent tient les titres de parties et le trait sous le titre : c'est
     // là qu'il se voit, et c'est ce que la planche lui a montré.
     titrePartie: couleurHexa(allure.accent),
-    coordonnees: couleurHexa(encreDouce),
+    coordonnees: couleurHexa(encre),
     // Le trait clair est l'encre très diluée : le calculer plutôt que de le
     // fixer évite un filet noir sur un fond sombre.
     traitClair: couleurHexa(encreDouce),
-    legal: couleurHexa(encreDouce),
+    legal: couleurHexa(encre),
     papier: couleurHexa(allure.fond),
     papierEcrit: allure.fond,
   };
@@ -960,9 +973,12 @@ export async function composerDocument(
     ecrireEspace(ctx, contenu, centre - largeur / 2, yy, APPROCHE_ETIQUETTE, style);
   };
 
-  const enTeteColonne: Style = { taille: 7, police: ctx.sansGras, couleur: ctx.teintes.etiquette };
-  // « Total TTC » en tête comme dans sa colonne : en gras, en encre.
-  const enTeteForte: Style = { taille: 7, police: ctx.sansGras, couleur: ctx.teintes.encre };
+  // **La ligne d'en-tête ENTIÈRE, en gras et en encre — sa demande du
+  // 17 septembre 2026** : *« toute la ligne désignation jusqu'à total ttc, tu
+  // la mets en gras, et mets toutes les écritures en noir, rien en gris »*.
+  // « Total TTC » avait déjà son style à lui ; les sept autres colonnes le
+  // rejoignent, et il n'y a donc plus qu'un style pour la ligne.
+  const enTeteColonne: Style = { taille: 7, police: ctx.sansGras, couleur: ctx.teintes.encre };
   const enTeteTableau = () => {
     ecrireEspace(ctx, options.enTeteLignes ?? "DÉSIGNATION", MARGE, y, APPROCHE_ETIQUETTE, enTeteColonne);
     if (!options.sansChiffrage) {
@@ -972,7 +988,7 @@ export async function composerDocument(
       if (remiseCourte) ecrireEspaceCentre("REM. %", xRem, y, enTeteColonne);
       ecrireEspaceADroite(ctx, "TOTAL HT", xNet, y, APPROCHE_ETIQUETTE, enTeteColonne);
       ecrireEspaceCentre("TVA %", xTaux, y, enTeteColonne);
-      ecrireEspaceADroite(ctx, "TOTAL TTC", xTtc, y, APPROCHE_ETIQUETTE, enTeteForte);
+      ecrireEspaceADroite(ctx, "TOTAL TTC", xTtc, y, APPROCHE_ETIQUETTE, enTeteColonne);
     }
     y -= 9;
     trait(ctx, y, 1.2, ctx.teintes.encre);
@@ -1396,7 +1412,11 @@ export async function composerDocument(
         y: MARGE,
         taille: 7.5,
         page: i + 1,
-        couleur: PALETTE.legal,
+        // La teinte POSÉE, jamais celle de la palette : c'est la faute que
+        // l'en-tête de ce fichier raconte (« la trace disait #ece9e1 pendant
+        // que la page se peignait en vert »), et les mentions sont passées à
+        // l'encre le 17 septembre 2026.
+        couleur: enHexa(ctx.teintes.legal),
         gras: false,
       });
     });
