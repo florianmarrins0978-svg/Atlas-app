@@ -8,6 +8,20 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-16
 
+### Une demi-journée rendue se remet AU MÊME ENDROIT : la moitié sous le nom du chantier offre « Poser ici »
+
+**Sa seconde capture du 16 septembre 2026**, mercredi 30, « Mr. Julien » :
+*« je l'ai enlevée puis j'ai essayé de la remettre au même endroit, ça a
+bugué »*. Le matin rendu, l'après-midi gardé : la moitié libre se range sous le
+nom du chantier (`libresAvant`), et ce montage-là de `LigneLibre` ne recevait
+pas le geste. Il tenait le morceau, et il n'y avait rien à toucher.
+
+**Ce que ça évite :** rendre une demi-journée et ne plus pouvoir la remettre
+d'où elle vient — le cas le plus courant, puisqu'un chantier garde presque
+toujours son autre moitié. La condition vit maintenant une fois (`poserIci`),
+et les deux montages la reçoivent. `ARCHITECTURE.md` §370. Rouge d'abord :
+« rendue, elle se remet AU MÊME ENDROIT — sous le nom du chantier ».
+
 ### « La demi-journée retirée de Mr Julien ne se repose pas » — l'écran gardait les créneaux d'avant
 
 **Sa panne, capture à l'appui :** *« j'ai essayé de poser la demi-journée

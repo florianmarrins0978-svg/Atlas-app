@@ -13,6 +13,11 @@ d'avant, peignait le chantier sur son ancien jour et réclamait une moitié qui
 n'existait qu'à l'écran. `EtatPose` porte désormais les créneaux, et
 `retirerDuJour` les vide avec la date. `ARCHITECTURE.md` §370.
 
+Second volet du même jour : la moitié libre rangée **sous le nom du chantier**
+(`libresAvant`) n'offrait pas « Poser ici » — une demi-journée rendue ne se
+remettait donc jamais au même endroit. Condition unique `poserIci`, mêmes
+gestes aux deux montages de `LigneLibre`.
+
 ## La décennale et le médiateur (16 septembre 2026)
 
 Cinq champs dans « Mon entreprise » (migration 0094), figés sur chaque devis et

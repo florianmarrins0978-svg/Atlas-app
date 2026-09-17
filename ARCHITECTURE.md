@@ -30955,3 +30955,27 @@ condition.
 qui efface précisément l'état faux. Le cas ajouté (« rendu, RETIRÉ, puis
 reposé ailleurs ») ne recharge pas une seule fois : il rejoue SA séquence
 (`CLAUDE.md` §5 quater). Vu rouge sur le message même de sa capture, puis vert.
+
+### Le second volet : la moitié rendue ne se remettait pas AU MÊME ENDROIT
+
+**Sa seconde capture du même jour**, mercredi 30 septembre, « Mr. Julien » :
+*« je l'ai enlevée puis j'ai essayé de la remettre au même endroit, ça a
+bugué »* — le matin rendu, l'après-midi gardé par le chantier, le morceau au
+doigt, et rien à toucher sur le matin.
+
+`blocsDeLaJournee` range une moitié libre **qui précède un chantier** sous le
+nom de ce chantier (`libresAvant`, sa précision du 10 septembre : *« le nom doit
+rester en premier, ensuite matin et ensuite aprèm »*). `LigneLibre` est donc
+montée à deux endroits — en queue de journée, et là — et **seul le montage de
+queue recevait `onPoser`**. La moitié rendue tombe dans le second dès que le
+chantier garde l'autre moitié, c'est-à-dire dans le cas le plus courant : elle
+ne pouvait jamais se reposer là où elle venait d'être prise.
+
+Deux montages d'une même ligne dont un seul porte le geste, c'est la divergence
+que `CLAUDE.md` §3 interdit. La condition vit désormais **une fois**, dans
+`poserIci(demi)`, et les deux montages la reçoivent — la condition écrite en
+ligne dans le premier a disparu.
+
+Cas ajouté : « rendue, elle se remet AU MÊME ENDROIT — sous le nom du
+chantier ». Les cas d'avant reposaient sur un AUTRE jour, entièrement libre,
+où les deux moitiés sont des blocs de queue : ils ne pouvaient pas le voir.

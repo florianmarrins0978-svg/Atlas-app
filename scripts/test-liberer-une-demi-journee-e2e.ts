@@ -460,6 +460,89 @@ async function main() {
     }
   });
 
+  await cas("rendue, elle se remet AU MÊME ENDROIT — sous le nom du chantier", async () => {
+    /*
+     * ═══════════════════════════════════════════════════════════════════════
+     * SA SECONDE CAPTURE DU 16 SEPTEMBRE 2026 — mercredi 30, « Mr. Julien »
+     * ═══════════════════════════════════════════════════════════════════════
+     *
+     * *« Et la regarde, je l'ai enlevée puis j'ai essayé de la remettre au même
+     * endroit, ça a bugué. »* Le matin rendu, l'après-midi gardé par le
+     * chantier : il reprend le morceau, touche le matin — et il n'y a rien à
+     * toucher.
+     *
+     * **Une moitié libre QUI PRÉCÈDE un chantier se dessine sous son nom**
+     * (`libresAvant`, sa précision du 10 septembre : *« le nom doit rester en
+     * premier, ensuite matin et ensuite aprèm »*). `LigneLibre` est écrite une
+     * fois et montée à deux endroits ; seul le montage de queue recevait
+     * « Poser ici ». La moitié rendue tombait donc dans le montage muet **à
+     * chaque fois qu'on rend le matin d'un chantier qui garde son après-midi**,
+     * c'est-à-dire dans le cas le plus courant.
+     *
+     * **Pourquoi les cas ci-dessus ne le voyaient pas** : ils reposent la
+     * moitié sur un AUTRE jour, entièrement libre — là, les deux moitiés sont
+     * des blocs de queue, et ceux-là portaient le geste.
+     */
+    await page.goto(`${BASE}/planning`, { waitUntil: "networkidle" });
+    await page.waitForTimeout(700);
+    await fermerLeTiroirDuPlanning(page);
+
+    const carte = await allerAuJour(jourB);
+    const bloc = carte.locator(`[data-atlas="bloc-chantier"][data-chantier="${chantierId}"]`);
+    if ((await bloc.count()) === 0) {
+      throw new Error(`le chantier n'occupe pas le ${jourB} : le montage de ce cas est faux`);
+    }
+    await bloc.locator('[data-atlas="deplacer"]').click();
+    await page.waitForTimeout(300);
+    await bloc.locator('[data-atlas="bascule-demi"] button[data-vers="matin"]').click();
+    await page.waitForTimeout(1600);
+    const apresLeRetrait = await creneauxEnBase(chantierId);
+    if (apresLeRetrait.join(" | ") !== `${jourB} apres_midi`) {
+      throw new Error(
+        `la base porte « ${apresLeRetrait.join(" | ") || "rien"} » : le matin du ${jourB} n'a pas été rendu`
+      );
+    }
+
+    // Le morceau se reprend au doigt, comme partout ailleurs.
+    await ouvrirLeTiroirDuPlanning(page);
+    const morceau = page.locator(`[data-atlas="morceau-a-poser"][data-chantier="${chantierId}"]`);
+    if ((await morceau.count()) !== 1) {
+      throw new Error("la demi-journée rendue n'attend nulle part : elle est perdue pour lui");
+    }
+    await morceau.click();
+    await page.waitForTimeout(300);
+    if ((await morceau.getAttribute("aria-pressed")) !== "true") {
+      throw new Error("le morceau touché ne s'annonce pas tenu : la prise n'a pas eu lieu");
+    }
+    await fermerLeTiroirDuPlanning(page);
+
+    // **LA LIGNE QU'IL VIENT DE VIDER, ET AUCUNE AUTRE.** Elle est dessinée
+    // sous le nom du chantier, pas en queue de journée : c'est le montage qui
+    // ne recevait pas le geste.
+    const ligneMatin = page.locator(
+      `[data-atlas="carte-jour"][data-jour="${jourB}"] [data-atlas="demi"][data-bloc="matin"][data-sans-chantier="1"]`
+    );
+    if ((await ligneMatin.count()) === 0) {
+      throw new Error(`le matin du ${jourB} n'est pas annoncé libre : la carte ne montre pas ce qu'il a rendu`);
+    }
+    const poser = ligneMatin.locator('[data-atlas="poser-le-morceau"]');
+    if ((await poser.count()) === 0) {
+      throw new Error(
+        "aucun « Poser ici » sur la demi-journée qu'il vient de rendre, alors qu'il tient le morceau : " +
+          "elle ne peut pas se remettre au même endroit"
+      );
+    }
+    await poser.first().click();
+    await page.waitForTimeout(1600);
+
+    const poses = await creneauxEnBase(chantierId);
+    if (poses.join(" | ") !== attendus([`${jourB} matin`, `${jourB} apres_midi`])) {
+      throw new Error(
+        `la base porte « ${poses.join(" | ") || "rien"} » au lieu des deux moitiés du ${jourB}`
+      );
+    }
+  });
+
   // **On rend la base comme on l'a trouvée** : les jours retenus ici sont ceux
   // que les autres suites cherchent libres, et une suite qui salit la base
   // accuse la suivante (`CLAUDE.md` §5).

@@ -19,6 +19,11 @@ où le chantier se peignait sur son ancien jour et réclamait une moitié qui
 n'existait qu'à l'écran. Toute action qui pose, retire ou déplace rend
 désormais ses créneaux. `ARCHITECTURE.md` §370.
 
+Et une moitié libre se dessine à deux endroits — en queue de journée, ou sous
+le nom du chantier qu'elle précède (`libresAvant`). Les deux montages doivent
+porter les mêmes gestes : le second n'offrait pas « Poser ici », et la moitié
+rendue ne pouvait pas se remettre d'où elle venait (même §).
+
 ## Les crochets des conditions générales ne se remplissent plus à la main
 
 Depuis le 16 septembre 2026, l'assureur décennale et le médiateur se saisissent
