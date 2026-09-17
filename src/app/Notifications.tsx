@@ -305,7 +305,9 @@ function rappelVersCarte(r: RappelAffiche): Carte {
       suite: {
         href: `/termines/tva`,
         // Le geste attendu est de SOLDER, et il se fait à l'endroit en attente.
-        libelle: r.facture.partielle ? "Noter un règlement" : "Marquer payée",
+        // Les mêmes mots que les deux boutons de cet endroit (16 septembre
+        // 2026) : un même geste ne s'appelle pas autrement sur la carte.
+        libelle: r.facture.partielle ? "J'ai reçu une partie" : "J'ai reçu le paiement",
         reprendreAvant: false,
       },
     };

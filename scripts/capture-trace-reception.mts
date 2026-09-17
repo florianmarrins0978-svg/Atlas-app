@@ -123,7 +123,7 @@ await page.screenshot({ path: `${dossier}/accueil.png`, fullPage: true });
 // « Terminés › TVA », où la trace se range.
 await page.goto(`${BASE}/termines/tva`, { waitUntil: "networkidle" });
 await page.waitForTimeout(800);
-const lignes = await page.locator("text=/Ouverte \\d|Réception confirmée le|Pas encore ouverte/").allTextContents();
+const lignes = await page.locator("text=/Ouverte le \\d|Réception confirmée le|Pas encore ouverte/").allTextContents();
 console.log("lignes de trace lues :", lignes);
 // Un contrôle qui mesure zéro ne mesure rien : sans ces trois lignes, la
 // capture ne montrerait rien de ce qu'on vient de coder.
@@ -137,7 +137,7 @@ await page.screenshot({ path: `${dossier}/impayes.png`, fullPage: true });
 // **LE FORMULAIRE OUVERT, et il ne se voit pas autrement.** Les deux chiffres
 // qu'il a demandés le 11 septembre 2026 n'existent que là : une capture de
 // l'écran au repos ne montrerait pas ce qu'on vient d'écrire.
-const noter = page.locator("text=Noter un règlement").first();
+const noter = page.locator('[data-atlas="noter-un-reglement"]').first();
 await noter.click();
 await page.waitForTimeout(500);
 const reste = await page.locator("text=/Reste à payer/").first().textContent();
