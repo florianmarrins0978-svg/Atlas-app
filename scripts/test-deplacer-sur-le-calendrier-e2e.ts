@@ -211,6 +211,53 @@ async function main() {
     }
   });
 
+  await cas("le nom du chantier n'est écrit QU'UNE FOIS dans la carte", async () => {
+    /*
+     * ─── SA CAPTURE DU 17 SEPTEMBRE 2026, ET SA RÉPONSE « la 1 » ──────────
+     * Sur son écran, « Mr. Linotte » était écrit deux fois dans la même
+     * carte, à quatre lignes d'écart : en titre du chantier, puis devant la
+     * consigne de déplacement. Planche `appli/deplacer-la-consigne.html`,
+     * question 2 — il a retenu « sans le nom ».
+     *
+     * **La racine.** `BandeauDeplacement` est écrit une fois et monté à deux
+     * places. Sous le calendrier — quand le mois tourné a emporté la fiche —
+     * le nom est la seule chose qui dise ce qu'on déplace : il y reste. Dans
+     * la fiche il est déjà au-dessus, et c'est une redite (`CLAUDE.md` §3,
+     * « le moins de mots possible »).
+     *
+     * **On compte sur le TEXTE RENDU, pas sur un repère** : c'est ce que son
+     * œil lit, et cela survit à tout remaniement de la carte.
+     */
+    const carte = page.locator(`[data-atlas="carte-jour"][data-jour="${jourA}"]`);
+    const lu = await carte.innerText();
+    const fois = lu.split(NOM).length - 1;
+    if (fois !== 1) {
+      throw new Error(
+        `« ${NOM} » est écrit ${fois} fois dans la carte du ${jourA} : ` +
+          "le nom se redit là où il est déjà en titre"
+      );
+    }
+
+    // ET IL RESTE SOUS LE CALENDRIER, où la fiche n'est plus là pour le dire.
+    // Sans cette moitié, le contrôle laisserait passer un retrait des DEUX
+    // montages — et il ne saurait plus ce qu'il déplace après avoir tourné le
+    // mois (`CLAUDE.md` §5 bis : viser la règle, pas le libellé).
+    await page.click('button[aria-label="Mois suivant"]');
+    await page.waitForTimeout(400);
+    const repli = page.locator('[data-atlas="deplacement-en-cours"]');
+    if ((await repli.count()) !== 1) {
+      throw new Error("le geste s'est perdu en tournant le mois");
+    }
+    if (!(await repli.innerText()).includes(NOM)) {
+      throw new Error(
+        "sous le calendrier, le bandeau ne dit plus QUEL chantier il déplace — " +
+          `lu : « ${await repli.innerText()} »`
+      );
+    }
+    await page.click('button[aria-label="Mois précédent"]');
+    await page.waitForTimeout(400);
+  });
+
   await cas("le jour se touche DANS LE CALENDRIER, et les moments s'offrent", async () => {
     // **Le calendrier ne fait plus ce qu'il fait d'habitude** : toucher un jour
     // ouvrait sa fiche, ce qui aurait emporté le geste au premier appui.

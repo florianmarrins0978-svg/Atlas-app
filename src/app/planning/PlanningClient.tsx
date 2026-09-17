@@ -2476,9 +2476,27 @@ function BandeauDeplacement({
       className={dansLaFiche ? "mt-2.5" : "mx-[26px] mt-3"}
     >
       <span className="block text-[12.5px]" style={{ color: colors.or }}>
+        {/* ─── LE NOM NE SE REDIT QUE LÀ OÙ IL MANQUE ──────────────────────
+            **Sa réponse du 17 septembre 2026 — « 1 sans le nom »**, planche
+            `appli/deplacer-la-consigne.html`, après sa capture où
+            « Mr. Linotte » était écrit DEUX FOIS dans la même carte, à quatre
+            lignes d'écart.
+
+            Ce bloc est écrit une fois et monté à deux places. Dans la fiche,
+            le nom est déjà au-dessus, en titre du chantier : le répéter est du
+            bruit (`CLAUDE.md` §3, « le moins de mots possible »). Sous le
+            calendrier — quand le mois tourné a emporté la fiche — il est la
+            SEULE chose qui dise ce qu'on déplace : il y reste.
+
+            **La phrase elle-même n'est pas encore tranchée.** Il a répondu au
+            nom, pas à la formulation ; « au-dessus » est faux dans la fiche
+            (le volet s'insère sous la semaine du jour ouvert, et les semaines
+            suivantes se dessinent dessous) et attend sa lettre — `TODO.md`. */}
         {vers
           ? `${jourLisibleCourt(vers).toLowerCase()}. Quel moment ?`
-          : `${chantier.nom} · touchez le jour au-dessus`}
+          : dansLaFiche
+            ? "Touchez le jour au-dessus"
+            : `${chantier.nom} · touchez le jour au-dessus`}
       </span>
       <div className="mt-1 flex flex-wrap items-center gap-x-[18px] gap-y-1">
         {vers &&
