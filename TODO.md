@@ -28,6 +28,30 @@ mesurer, plutôt que de rendre un vert sur rien.
 qui n'inspectent pas la base. À peser — deux serveurs, c'est deux ports et deux
 compilations par batterie.
 
+## LE COMPLÉMENT COMPTE UNE RENUMÉROTATION DE `.md` COMME « UN AUTRE LOT »
+
+**Payé le 17 septembre 2026, deux fois dans la même soirée.** `main` a bougé
+deux fois sous un lot déjà éprouvé ; chaque fusion a forcé à renuméroter son
+paragraphe d'`ARCHITECTURE.md` (§373 → §377 → §379) et à replacer ses entrées
+de journal — c'est la règle du §6 B, et elle est juste. Mais
+`verifier-apres-fusion.ts` compare le **diff entier**, `.md` compris, et refuse
+alors : *« le lot lui-même a changé — ce n'est plus le même lot »*, en renvoyant
+vers cinquante minutes de batterie.
+
+Or le code était identique **au bit près**, et le dépôt le sait déjà : le
+niveau d'un `.md` vaut 1 (« ce qui ne s'exécute pas »), et l'empreinte que le
+garde-fou signe ne couvre que `.ts/.tsx/.js/.mjs/.mts/.sql/.css`
+(`_batterie-solitaire.ts`). Deux mesures du même arbre, qui ne répondent pas la
+même chose.
+
+Ce qu'il faudrait : que `lotInchange` compare ce que l'empreinte couvre, et
+rien d'autre. Un lot dont seule la documentation a été replacée par une fusion
+n'est pas un autre lot — et la règle « une tâche = un lot » condamne sinon tout
+lot qui croise deux fusions à repayer la batterie pour un numéro de paragraphe.
+
+Non fait ici : c'est le lot d'une autre session (`CLAUDE.md` §5, hors
+périmètre).
+
 ## ⏳ `test-accueil-vide-porte-e2e` dépend de l'état que la base a gardé
 
 **Mesuré le 17 septembre 2026, des deux côtés.** Jouée seule, elle passe ; jouée
