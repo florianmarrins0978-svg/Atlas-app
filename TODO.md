@@ -9,6 +9,38 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## ⏳ « LA TVA À 10 N'APPARAÎT PAS SUR L'APERÇU PDF » — NON REPRODUIT (17 septembre 2026)
+
+**Sa remarque :** *« lorsque je rajoute une tva à 10 par exemple sur le devis et
+que je regarde l'aperçu en pdf elle n'apparaît pas ; vérifie qu'on n'a pas ce
+problème là aussi pour la facturation »*.
+
+**Cherché des deux côtés, et le défaut ne se reproduit pas ICI.** Ce qui a été
+joué sur la vraie base et sur le vrai écran, PDF ouvert et relu page par page
+(`pdfjs`), jamais un `grep` :
+
+| Le geste | Ce que l'aperçu écrit |
+|---|---|
+| « + Ajouter une TVA », sa ligne encore vide | `TVA 20 %` · `TVA 10 %` |
+| une ligne déplacée vers la TVA à 10 (appui long) | `TVA 20 %` · `TVA 10 %` |
+| le taux d'une catégorie corrigé en 5,5 % | `TVA 20 %` · `TVA 5,5 %` |
+| le taux tapé puis « Aperçu du PDF » touché aussitôt | `TVA 10 %` — le verrou du brouillon sérialise, pas de course |
+| une v2 ouverte APRÈS l'envoi de la v1 | `TVA 20 %` · `TVA 10 %` |
+| **facture** reprise du devis | `TVA 20 %` · `TVA 10 %` |
+| **facture** + un supplément à 5,5 % | `TVA 20 %` · `TVA 10 %` · `TVA 5,5 %` |
+| **facture** émise (totaux figés) | idem, et les totaux suivent |
+
+La colonne « TVA % » du tableau, les lignes de totaux et le bloc des bases par
+taux portent tous les trois le bon taux. Son espace sert `2442ee2` : le même
+code que celui qui a été mesuré — les six versions qui lui manquent ne touchent
+que l'outillage.
+
+**Ce qui reste à savoir, et lui seul l'a :** par quel geste il ajoute sa TVA, et
+ce que son PDF montre vraiment (une capture). Sans cela, corriger serait
+réparer une panne imaginée (`AGENTS.md`). **Ne pas clore ce point sur le
+silence.**
+
+
 ## ⏳ `test-accueil-vide-porte-e2e` dépend de l'état que la base a gardé
 
 **Mesuré le 17 septembre 2026, des deux côtés.** Jouée seule, elle passe ; jouée
