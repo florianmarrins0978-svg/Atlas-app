@@ -77,6 +77,16 @@
   .fiche{margin:14px 14px 0;background:var(--plage);border-radius:18px;padding:16px 16px 14px}
   .entete-jour{text-align:center;font:700 12px/1.2 ui-sans-serif,sans-serif;letter-spacing:.16em;
         text-transform:uppercase;padding-bottom:12px;border-bottom:1px solid var(--trait)}
+  /* LA TOUCHE « SALARIÉ ABSENT ? » — au milieu, en gras (sa demande du
+     17 septembre 2026). Elle était collée à gauche, en gris, à la taille du
+     texte courant : au-dessus du nom du client, on la lisait comme une ligne
+     de la fiche et non comme un geste. Elle garde sa PLACE — sous la date,
+     au-dessus du nom —, seuls son poids et son axe changent. */
+  .absent{display:block;width:100%;margin:6px 0 0;padding:11px 0;border:0;background:transparent;
+          text-align:center;cursor:pointer;
+          font:700 13.5px/1.2 ui-sans-serif,sans-serif;color:var(--encre)}
+  .absent:active{opacity:.55}
+
   .nom{margin:12px 0 0;font:400 21px/1.15 ui-serif,Georgia,serif}
   .duree{margin:3px 0 0;font-size:12.5px;color:var(--or)}
   .lieu{margin:2px 0 0;font-size:11.5px;color:var(--gris)}
@@ -120,11 +130,12 @@
   </div>
 </div>
 
-<h2>1 · Le calendrier s'ouvre dans la fiche</h2>
+<h2>1 · Le calendrier s'ouvre dans la fiche — retenue</h2>
 <div class="tel">
   <div class="titre"><p>Il apparaît sous la journée, et repart une fois le jour touché.</p></div>
   <div class="fiche" data-planche="1">
     <div class="entete-jour">Mercredi 30 septembre</div>
+    <button class="absent" type="button">＋ Salarié absent ?</button>
     <div class="nom">Mr. Julien</div>
     <div class="duree">8 jours</div>
     <div class="lieu">Fontenay-Mauvoisin</div>
@@ -164,6 +175,7 @@
   </div>
   <div class="fiche" data-planche="2" data-haut>
     <div class="entete-jour">Mercredi 30 septembre</div>
+    <button class="absent" type="button">＋ Salarié absent ?</button>
     <div class="nom">Mr. Julien</div>
     <div class="duree">8 jours</div>
     <div class="lieu">Fontenay-Mauvoisin</div>
