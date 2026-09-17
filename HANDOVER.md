@@ -104,8 +104,9 @@ attend sa réponse. Refaite le soir même — *« je comprends rien, l'idée c'e
 que ce soit simple et joli »* — sur une seule idée : **un appui, un jour du
 chantier**, puis refaite une troisième fois **sur le geste qu'il a dicté** :
 un appui pose le premier jour et le chantier se remplit d'affilée, un appui
-sur un jour du chantier l'enlève (le chantier se décale d'un jour), et un
-interrupteur « Deuxième proposition » pour que la cliente choisisse.
+sur un jour du chantier l'efface sans rien décaler — l'appui suivant le remet
+où il veut —, et un interrupteur « Deuxième proposition » pour que la cliente
+choisisse.
 `TODO.md`, en tête.
 
 ---
