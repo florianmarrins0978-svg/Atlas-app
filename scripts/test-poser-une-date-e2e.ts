@@ -364,11 +364,13 @@ async function main() {
     await page.click(`[data-atlas="grille-mois"] [data-jour="${accueil}"]`);
     await page.waitForTimeout(400);
     const mots = await page.locator('[data-atlas^="vers-"]').allInnerTexts();
-    if (mots.join("|") !== "Journée") {
+    if (mots.join("|") !== "Matin|Après-midi|Journée") {
       throw new Error(
-        `une journée entière peut arriver sur « ${mots.join(", ")} » : une moitié se perdrait`
+        `les mots offerts sont « ${mots.join(", ")} » : il ne peut plus choisir la moitié qui part`
       );
     }
+    // **« Journée » emmène tout ce que le jour porte** — c'est le cas qui doit
+    // garder les quatre demi-journées du chantier.
     await page.locator('[data-atlas="vers-journee"]').click();
 
     // **ATTENDRE QUE LA BASE LE DISE, JAMAIS UN DÉLAI FIXE.** Ce contrôle

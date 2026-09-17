@@ -31089,13 +31089,21 @@ jour sélectionné »*.
 le 30 septembre n'emmène que ce que le chantier occupe LE 30. Un chantier ne se
 replie pas ailleurs parce qu'on a rectifié une journée.
 
-**CE QUI PART COMMANDE CE QUI PEUT ARRIVER**, et c'est la moitié dangereuse du
-lot. Une demi-journée ne peut pas devenir une journée — elle occuperait une
-place que le devis ne vend pas ; une journée ne peut pas tenir sur une
-demi-journée — l'autre moitié serait perdue **sans que rien ne le dise**, et on
-le découvrirait le matin du chantier. `momentsOfferts` n'offre donc que ce qui
-tient, et `deplacerCeQueLeJourPorte` le refuse à nouveau derrière : l'écran peut
-changer, la règle non.
+**LE MOT DÉSIGNE LA MOITIÉ, AUX DEUX BOUTS.** « Matin » emmène le matin du jour
+de départ et le pose sur le matin du jour d'accueil ; l'après-midi reste sur
+place. « Journée » emmène tout ce que le jour porte. Et une demi-journée seule
+suit le mot quand même — posée l'après-midi, « Matin » l'emmène au matin —,
+sinon elle ne pourrait jamais changer de moment.
+
+**Sa correction du 17 septembre 2026 :** *« un chantier d'une journée, si je
+veux je dois pouvoir déplacer soit le matin, soit l'aprem quand même ! »*. La
+première version n'offrait que « Journée » sur une journée entière, de peur de
+perdre une moitié : elle lui retirait un geste qu'il fait pour de bon.
+
+**CE QUI RESTE REFUSÉ : inventer une moitié.** Une demi-journée ne devient pas
+une journée entière — elle occuperait une place que le devis ne vend pas.
+`momentsOfferts` n'offre donc que ce qui tient, et `deplacerCeQueLeJourPorte` le
+refuse à nouveau derrière : l'écran peut changer, la règle non.
 
 Un troisième cas rétrécit en silence, et il n'est pas évident : la place
 d'accueil est **déjà la sienne**. Deux demi-journées partent, une seule arrive.
@@ -31108,14 +31116,16 @@ Refusé avec sa phrase.
 | l'action | `deplacerCeQueLeJourPorteAction` — rend le refus en valeur, jamais en exception (`AGENTS.md`) |
 | les contrôles | `test-creneaux-chantier.ts` (8 cas neufs), `test-deplacer-sur-le-calendrier-e2e.ts` (**son geste, de bout en bout, et le compte des appuis**) |
 
-**POURQUOI LE GESTE VIT SOUS LE CALENDRIER ET NON DANS LA FICHE**, alors que la
-planche le montrait dans la fiche. La fiche du jour est rendue **dans la semaine
-du jour ouvert** (`MoisCharge`, prop `volet`, §… la fiche rattachée à la case) :
-elle disparaît au premier mois tourné — or tourner le mois est exactement ce
-qu'il fait pour atteindre son jour d'accueil. La question « quel moment ? »
-serait partie au milieu du geste. Le bandeau `deplacement-en-cours` est donc
-posé sous la grille, **et il n'est recopié nulle part** : deux endroits pour un
-même geste finissent par se contredire (`CLAUDE.md` §3).
+**LE GESTE VIT DANS LA FICHE, ET SE REPLIE SOUS LE CALENDRIER.** Sa place est
+dans la fiche, sous les demi-journées — c'est la planche qu'il a retenue, et il
+a repris la première version qui la posait ailleurs : *« ça n'a rien à voir avec
+la maquette »*. Mais la fiche est rendue **dans la semaine du jour ouvert**
+(`MoisCharge`, prop `volet`) et disparaît au premier mois tourné, or tourner le
+mois est exactement ce qu'il fait pour atteindre son jour d'accueil : la question
+partirait au milieu du geste. Le bloc est donc **écrit une fois et monté à deux
+endroits** — dans la fiche tant qu'elle est là, sous le calendrier sinon —,
+comme `LigneLibre` et la fiche elle-même. Deux ÉCRITURES d'un même geste
+finiraient par se contredire (`CLAUDE.md` §3) ; deux montages, non.
 
 **CE QUI A ÉTÉ SUPPRIMÉ AVEC**, parce qu'un chemin remplacé devient du code mort
 (`CLAUDE.md` §4 quinquies) : `BasculeDemi`, `liberer`, `libererDemiJourneeAction`,
@@ -31127,3 +31137,12 @@ deux contrôles qui ne tenaient qu'elle sont partis aussi ; ce qu'ils défendaie
 dépôt) : au second temps du geste, « Déplacer » et « Retirer » revenaient dans
 la carte pendant que le bandeau attendait encore le moment. La condition ne
 regardait que le premier temps.
+
+**L'APPARENCE, ses mots du 17 septembre :** *« mets des mots en gras plutôt que
+des boutons pour déplacer retirer »*, et *« la touche salarié absent au milieu
+en gras »*. Une pastille à contour a la forme des pastilles d'équipe posées
+juste au-dessus — celles-là ouvrent une liste, celles-ci font un geste : même
+forme, deux natures. `MotDuGeste` porte les cinq mots du geste (les deux de la
+rangée, les trois du moment, et « Annuler » en gris) ; ils gardent leur place, à
+droite. La touche d'absence garde la sienne — sous la date, au-dessus du nom —,
+seuls son poids et son axe changent.

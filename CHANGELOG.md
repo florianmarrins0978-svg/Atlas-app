@@ -24,16 +24,19 @@ appels, la demi-journée n'était nulle part.
 **« La A »** : seul ce que le chantier occupe LE jour de départ bouge. Ses
 autres jours ne se replient pas.
 
-**Ce qui part commande ce qui peut arriver**, et c'est la moitié dangereuse : une
-demi-journée ne devient pas une journée (une place que le devis ne vend pas),
-une journée ne tient pas sur une demi-journée (l'autre moitié serait perdue en
-silence), et arriver sur une demi-journée déjà sienne est refusé — deux partent,
-une seule arriverait. La règle vit dans `creneaux-chantier.ts`, l'écran n'offre
-que ce qu'elle autorise, et elle refuse à nouveau derrière.
+**Le mot désigne la moitié, aux deux bouts** : « Matin » emmène le matin et
+laisse l'après-midi sur place, « Journée » emmène tout. Sa correction : *« un
+chantier d'une journée, si je veux je dois pouvoir déplacer soit le matin, soit
+l'aprem quand même ! »*. Ce qui reste refusé, c'est d'inventer une moitié — une
+demi-journée ne devient pas une journée —, et d'arriver sur une demi-journée
+déjà sienne, qui ferait rétrécir le chantier en silence.
 
-Le geste vit **sous le calendrier** et non dans la fiche : la fiche est rendue
-dans la semaine du jour ouvert et disparaît au premier mois tourné — or tourner
-le mois est exactement ce qu'il fait pour atteindre son jour d'accueil.
+**Les mots sont en gras, sans contour**, et « + Salarié absent ? » passe au
+milieu : une pastille à contour a la forme des pastilles d'équipe juste
+au-dessus, qui ouvrent une liste. La question du moment se dessine **dans la
+fiche**, sous les demi-journées, comme sur la planche ; elle se replie sous le
+calendrier quand le mois tourné a emporté la fiche — un seul bloc, deux
+montages.
 
 Parti avec : `BasculeDemi`, `liberer`, `libererDemiJourneeAction`,
 `libererDemiJournee`, `sansLaDemi` — plus aucun appelant (`CLAUDE.md` §4

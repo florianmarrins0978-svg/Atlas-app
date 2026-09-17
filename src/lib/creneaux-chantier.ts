@@ -169,8 +169,15 @@ export type MomentDArrivee = Moment | "journee";
  * aboutir ne s'affiche pas.
  */
 export function momentsOfferts(combienPartent: number): MomentDArrivee[] {
+  // **Une journée entière garde ses trois mots — sa correction du 17 septembre
+  // 2026 :** *« un chantier d'une journée, si je veux je dois pouvoir déplacer
+  // soit le matin, soit l'aprem quand même ! »*. La première version n'offrait
+  // que « Journée », de peur de perdre une moitié : elle lui retirait un geste
+  // qu'il fait pour de bon — ne déplacer qu'une demi-journée et garder l'autre.
+  // **Ce qui reste refusé, c'est d'INVENTER une moitié** : une demi-journée
+  // seule ne devient pas une journée entière, le devis ne la vend pas.
   if (combienPartent === 1) return ["matin", "apres_midi"];
-  if (combienPartent >= 2) return ["journee"];
+  if (combienPartent >= 2) return ["matin", "apres_midi", "journee"];
   return [];
 }
 
@@ -206,12 +213,26 @@ export function deplacerCeQueLeJourPorte(
   }
   if (!momentsOfferts(partants.length).includes(vers.moment)) {
     return {
-      refus:
-        partants.length === 1
-          ? "Une demi-journée se repose sur une demi-journée, pas sur une journée entière."
-          : "Une journée entière ne tient pas sur une demi-journée : l'autre moitié serait perdue.",
+      refus: "Une demi-journée se repose sur une demi-journée, pas sur une journée entière.",
     };
   }
+
+  // ─── CE QUI PART, ET CE QUI RESTE SUR PLACE ──────────────────────────────
+  //
+  // **Le mot désigne la MOITIÉ, aux deux bouts.** « Matin » emmène le matin du
+  // jour de départ et le pose sur le matin du jour d'accueil ; « Journée »
+  // emmène tout ce que le jour porte. C'est ce qu'il a demandé le 17 septembre :
+  // sur un chantier d'une journée, pouvoir ne déplacer que la matinée.
+  //
+  // **Un chantier qui n'occupe qu'une moitié suit le mot quand même** : posé
+  // l'après-midi, « Matin » l'emmène au matin du jour d'accueil. Sans cela, la
+  // seule demi-journée qu'il tient ne pourrait jamais changer de moment.
+  const partantsRetenus: Creneau[] =
+    vers.moment === "journee"
+      ? partants
+      : partants.length === 1
+        ? partants
+        : partants.filter((c) => c.moment === vers.moment);
 
   const arrivants: Creneau[] =
     vers.moment === "journee"
@@ -221,7 +242,8 @@ export function deplacerCeQueLeJourPorte(
         ]
       : [{ jour: vers.jour, moment: vers.moment } as Creneau];
 
-  const restants = occupes.filter((c) => c.jour !== jourSource);
+  const partis = new Set(partantsRetenus.map(cleDuCreneau));
+  const restants = occupes.filter((c) => !partis.has(cleDuCreneau(c)));
   const dejaPris = restants.filter((c) =>
     arrivants.some((a) => cleDuCreneau(a) === cleDuCreneau(c))
   );

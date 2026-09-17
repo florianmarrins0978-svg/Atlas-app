@@ -170,15 +170,48 @@ essai("une demi-journée ne devient pas une journée", () => {
   assert.ok("refus" in r, "une demi-journée a été posée sur une journée entière");
 });
 
-// **Et il ne RÉTRÉCIT pas** : l'autre moitié serait perdue sans que rien ne le
-// dise, et on le découvrirait le jour du chantier.
-essai("une journée entière ne tient pas sur une demi-journée", () => {
+// **SA CORRECTION DU 17 SEPTEMBRE 2026 :** *« un chantier d'une journée, si je
+// veux je dois pouvoir déplacer soit le matin, soit l'aprem quand même ! »*
+// La première version refusait, de peur de perdre une moitié — elle lui retirait
+// un geste qu'il fait pour de bon. Le mot désigne la MOITIÉ, aux deux bouts :
+// elle part, l'autre reste sur place.
+essai("d'une journée entière, le matin seul peut partir — l'après-midi reste", () => {
   const pose = { jour: "2026-09-30", moment: "matin", dureeDemiJournees: 2 };
   const r = deplacerCeQueLeJourPorte(pose, [], "2026-09-30", {
     jour: "2026-10-06",
     moment: "matin",
   });
-  assert.ok("refus" in r, "une moitié de journée a disparu en silence");
+  assert.ok("creneaux" in r, "le matin seul a été refusé");
+  assert.deepEqual(
+    r.creneaux.map((x) => `${x.jour} ${x.moment}`),
+    ["2026-09-30 apres_midi", "2026-10-06 matin"]
+  );
+});
+
+essai("et l'après-midi seul aussi — le matin reste où il est", () => {
+  const pose = { jour: "2026-09-30", moment: "matin", dureeDemiJournees: 2 };
+  const r = deplacerCeQueLeJourPorte(pose, [], "2026-09-30", {
+    jour: "2026-10-06",
+    moment: "apres_midi",
+  });
+  assert.ok("creneaux" in r);
+  assert.deepEqual(
+    r.creneaux.map((x) => `${x.jour} ${x.moment}`),
+    ["2026-09-30 matin", "2026-10-06 apres_midi"]
+  );
+});
+
+// **Une moitié suit le mot, même seule** : posée l'après-midi, « Matin »
+// l'emmène au matin du jour d'accueil — sinon elle ne pourrait jamais changer
+// de moment.
+essai("une demi-journée posée l'après-midi peut arriver le matin", () => {
+  const pose = { jour: "2026-09-30", moment: "apres_midi", dureeDemiJournees: 1 };
+  const r = deplacerCeQueLeJourPorte(pose, [], "2026-09-30", {
+    jour: "2026-10-06",
+    moment: "matin",
+  });
+  assert.ok("creneaux" in r);
+  assert.deepEqual(r.creneaux.map((x) => `${x.jour} ${x.moment}`), ["2026-10-06 matin"]);
 });
 
 essai("un jour où le chantier n'est pas n'a rien à déplacer", () => {
@@ -217,8 +250,10 @@ essai("un chantier sans ligne se déplace quand même, par son repli", () => {
 });
 
 essai("on ne propose que ce qui peut aboutir", () => {
+  // Une journée entière garde ses trois mots ; une demi-journée n'en invente pas
+  // une seconde.
   assert.deepEqual(momentsOfferts(1), ["matin", "apres_midi"]);
-  assert.deepEqual(momentsOfferts(2), ["journee"]);
+  assert.deepEqual(momentsOfferts(2), ["matin", "apres_midi", "journee"]);
   assert.deepEqual(momentsOfferts(0), []);
 });
 

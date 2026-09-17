@@ -195,6 +195,11 @@ async function main() {
     if ((await bandeau.count()) !== 1) {
       throw new Error("aucun bandeau de déplacement : le geste ne s'ouvre pas");
     }
+    // **DANS LA FICHE, sa planche du 17 septembre 2026.** Posé ailleurs, il se
+    // cherche : le doigt vient de toucher « Déplacer » ici même.
+    if ((await carte.locator('[data-atlas="deplacement-en-cours"]').count()) !== 1) {
+      throw new Error("le geste ne se dessine pas dans la fiche du jour");
+    }
     if (!/touchez le jour/i.test(await bandeau.innerText())) {
       throw new Error(`le bandeau ne demande pas le jour — lu : « ${await bandeau.innerText()} »`);
     }
@@ -218,12 +223,14 @@ async function main() {
           "le jour touché n'est pas devenu la destination"
       );
     }
-    // **Une journée entière ne peut arriver que sur une journée entière** :
-    // offrir « Matin » perdrait l'autre moitié sans que rien ne le dise.
+    // **LES TROIS MOTS, sur une journée entière — sa correction du 17 septembre
+    // 2026 :** *« un chantier d'une journée, si je veux je dois pouvoir déplacer
+    // soit le matin, soit l'aprem quand même ! »*. Le mot désigne la moitié qui
+    // part ; l'autre reste sur place.
     const mots = await page.locator('[data-atlas^="vers-"]').allInnerTexts();
-    if (mots.join("|") !== "Journée") {
+    if (mots.join("|") !== "Matin|Après-midi|Journée") {
       throw new Error(
-        `les mots offerts sont « ${mots.join(", ")} » : une moitié de journée peut se perdre`
+        `les mots offerts sont « ${mots.join(", ")} » : il ne peut plus déplacer une seule moitié`
       );
     }
   });
