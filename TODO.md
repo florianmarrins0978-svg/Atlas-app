@@ -1414,19 +1414,18 @@ d'occupation ; s'il le signale, c'est là qu'il faudra regarder
 
 ---
 
-## ⏳ « DÉPLACER » N'A PAS D'ANNULER — à lui de dire (10 septembre 2026)
+## ~~« DÉPLACER » N'A PAS D'ANNULER~~ — CODÉ LE 17 SEPTEMBRE 2026
 
-Une fois l'interrupteur ouvert, « Déplacer » et « Retirer » s'effacent : il n'y
-a **aucun geste pour refermer sans choisir**. On sort en fermant la carte du
-jour, ce que rien n'indique.
+Sa demande, capture à l'appui : *« si je clique sur déplacer j'ai aucun moyen
+d'annuler mon choix si je veux plus déplacer »*. Le geste ouvre désormais le
+calendrier, et le bandeau porte son « Annuler » à chaque étape
+(`data-atlas="annuler-deplacer"`, `BandeauDeplacement`). Il n'y a plus de
+question à lui poser : **il l'a posée lui-même, et elle est répondue**.
 
-**Sa planche 1 ne montre pas d'Annuler**, et il l'a validée telle quelle — on
-n'ajoute donc rien de son propre chef. Deux choses rendent l'attente tenable :
-libérer se **défait** (le morceau se repose depuis le tiroir), et il a demandé
-un « Annuler » à chaque étape sur une AUTRE planche
-(`appli/bloquer-sans-devis.html`), donc la question l'intéresse.
-
-**À lui poser quand il rouvrira cet écran.** Ne pas coder avant.
+**Le titre est resté sept jours au-dessus d'un corps qui attendait une réponse
+déjà donnée** — c'est exactement le piège du 11 septembre (`CLAUDE.md` §1) :
+une planche présentée comme en attente alors qu'elle était codée. Le geste qui
+l'attrape coûte trente secondes, et il est écrit là-bas.
 
 ---
 
