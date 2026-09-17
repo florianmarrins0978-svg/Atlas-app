@@ -200,7 +200,7 @@ async function main() {
     if ((await carte.locator('[data-atlas="deplacement-en-cours"]').count()) !== 1) {
       throw new Error("le geste ne se dessine pas dans la fiche du jour");
     }
-    if (!/touchez le jour/i.test(await bandeau.innerText())) {
+    if (!/touchez[^.]*jour/i.test(await bandeau.innerText())) {
       throw new Error(`le bandeau ne demande pas le jour — lu : « ${await bandeau.innerText()} »`);
     }
     if ((await page.locator('[data-atlas="deplacer"]').count()) !== 0) {
@@ -208,6 +208,47 @@ async function main() {
     }
     if ((await page.locator('[data-atlas="retirer"]').count()) !== 0) {
       throw new Error("« Retirer » est resté offert pendant le déplacement");
+    }
+  });
+
+  await cas("la consigne ne promet aucune direction que la grille dément", async () => {
+    /*
+     * ─── SA CAPTURE DU 17 SEPTEMBRE 2026 ──────────────────────────────────
+     * *« Il dit toucher le jour au-dessus mais le planning apparaît
+     * en-dessous. »*
+     *
+     * La phrase avait été écrite pour l'AUTRE montage — le repli sous le
+     * calendrier, où tout le mois est effectivement au-dessus. Dans la fiche
+     * elle est fausse : le volet s'insère SOUS LA SEMAINE du jour ouvert
+     * (`MoisCharge`, prop `volet`, ligne 305), et les semaines suivantes se
+     * dessinent dessous. Un chantier du 18 qui part au 24 descend.
+     *
+     * **Ce qui est fixé ici n'est pas un libellé, c'est une règle** : un bloc
+     * écrit une fois et monté à deux places ne peut promettre une direction —
+     * il y en aurait une vraie et une fausse. Le contrôle survit donc à toute
+     * réécriture de la phrase (`CLAUDE.md` §5 bis).
+     */
+    const bandeau = page.locator('[data-atlas="deplacement-en-cours"]');
+    const lu = (await bandeau.innerText()).replace(/\s+/g, " ").trim();
+
+    // Ce que la grille dément, MESURÉ : les jours rendus après le bandeau.
+    const joursDessous = await page.evaluate(() => {
+      const b = document.querySelector('[data-atlas="deplacement-en-cours"]');
+      if (!b) return -1;
+      return [...document.querySelectorAll('[data-atlas="grille-mois"] [data-jour]')].filter(
+        (j) => b.compareDocumentPosition(j) & Node.DOCUMENT_POSITION_FOLLOWING
+      ).length;
+    });
+    if (joursDessous < 0) {
+      throw new Error("bandeau introuvable dans la page : rien n'a pu être mesuré");
+    }
+
+    if (/dessus|dessous/i.test(lu)) {
+      throw new Error(
+        `la consigne promet une direction — lue : « ${lu} ». Le même bloc est monté dans la ` +
+          `fiche, où ${joursDessous} jour(s) du mois se dessinent SOUS elle, et en repli sous ` +
+          "le calendrier, où tout est au-dessus. Une seule des deux places peut avoir raison"
+      );
     }
   });
 

@@ -8,6 +8,31 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-17
 
+### « Touchez le jour au-dessus » envoyait regarder en haut un calendrier qui continue en bas
+
+Sa capture : *« il dit toucher le jour au-dessus mais le planning apparaît
+en-dessous »*. Le bandeau de déplacement est écrit une fois et monté à deux
+places — dans la fiche du jour, et en repli sous le calendrier quand le mois
+tourné a emporté la fiche. La phrase avait été écrite pour la seconde, où tout
+le mois est effectivement au-dessus. Dans la fiche elle est fausse : le volet
+s'insère SOUS LA SEMAINE du jour ouvert (`MoisCharge`, prop `volet`), et les
+semaines suivantes se dessinent dessous. Sur son écran, dix jours du mois
+étaient sous la consigne qui l'envoyait chercher en haut — dont le 24, où il
+voulait poser son chantier.
+
+La direction est retirée plutôt que corrigée : un bloc monté à deux places ne
+peut en promettre une sans se tromper à l'une des deux. La consigne dit
+désormais « Touchez son nouveau jour », vraie partout. **Et le nom du chantier
+ne se redit plus dans la fiche**, où il est déjà écrit trois lignes plus haut —
+sa capture le portait deux fois ; sous le calendrier il reste, puisque la fiche
+n'y est plus pour le dire.
+
+Le contrôle qui le tient ne réclame aucun libellé : il refuse toute direction
+dans la consigne, et MESURE combien de jours du mois sont rendus sous elle
+(`test-deplacer-sur-le-calendrier-e2e.ts`, cas « la consigne ne promet aucune
+direction que la grille dément »). Rouge avant la correction, avec le compte à
+dix.
+
 ### Le garde-fou de `main` réclamait une batterie dès qu'une autre session fusionnait
 
 Sa colère : *« les sessions rejouent des batteries en boucle juste parce qu'une

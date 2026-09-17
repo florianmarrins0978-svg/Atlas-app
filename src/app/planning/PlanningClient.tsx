@@ -2476,9 +2476,29 @@ function BandeauDeplacement({
       className={dansLaFiche ? "mt-2.5" : "mx-[26px] mt-3"}
     >
       <span className="block text-[12.5px]" style={{ color: colors.or }}>
+        {/* ─── AUCUNE DIRECTION, PARCE QU'IL Y EN A DEUX ───────────────────
+            **Sa capture du 17 septembre 2026 :** *« il dit toucher le jour
+            au-dessus mais le planning apparaît en-dessous »*.
+
+            La phrase disait « au-dessus ». Elle était vraie du repli sous le
+            calendrier — d'où elle vient — et fausse dans la fiche : le volet
+            s'insère SOUS LA SEMAINE du jour ouvert (`MoisCharge`, prop
+            `volet`), et les semaines suivantes se dessinent dessous. Sur son
+            écran, dix jours du mois étaient sous la consigne qui l'envoyait
+            regarder en haut.
+
+            **Un bloc écrit une fois et monté à deux places ne promet pas une
+            direction** : il y en aurait une vraie et une fausse.
+
+            **Et le nom ne se redit que là où il manque.** Dans la fiche il est
+            écrit trois lignes plus haut, en titre du chantier — sa capture le
+            portait deux fois. Sous le calendrier, la fiche a été emportée par
+            le mois tourné : sans le nom, il ne sait plus ce qu'il déplace. */}
         {vers
           ? `${jourLisibleCourt(vers).toLowerCase()}. Quel moment ?`
-          : `${chantier.nom} · touchez le jour au-dessus`}
+          : dansLaFiche
+            ? "Touchez son nouveau jour"
+            : `${chantier.nom} · touchez son nouveau jour`}
       </span>
       <div className="mt-1 flex flex-wrap items-center gap-x-[18px] gap-y-1">
         {vers &&
