@@ -29,7 +29,7 @@ export type EtatDesPropositions = {
   propositions: Propositions;
   /** L'interrupteur « Vous proposez deux dates ». Allumé sans seconde liste : le prochain appui la commence. */
   secondeVoulue: boolean;
-  /** Celle qu'un appui hors du chantier remplace quand rien ne manque : la dernière touchée. */
+  /** La dernière touchée. Quand rien ne manque, c'est L'AUTRE — la plus ancienne — qu'un appui remplace. */
   active: number;
 };
 
@@ -57,6 +57,9 @@ export function gesteSurUnJour(etat: EtatDesPropositions, jour: JourIso, dureeDe
   }
   const attendus = joursDuChantier(dureeDemiJournees);
   const manque = etat.propositions.findIndex((p) => p.length < attendus);
+  // Une proposition vidée jusqu'au dernier jour repart comme au premier appui :
+  // le bloc d'affilée, pas un jour seul.
+  if (manque >= 0 && etat.propositions[manque].length === 0) return { geste: "poser_le_bloc", proposition: manque };
   if (manque >= 0) return { geste: "ajouter", proposition: manque };
   // Sur une journée, un second appui est une seconde date AU CHOIX — le geste
   // d'avant le 18 septembre 2026, gardé tel quel : « Proposez une ou deux
@@ -64,13 +67,16 @@ export function gesteSurUnJour(etat: EtatDesPropositions, jour: JourIso, dureeDe
   if (attendus === 1 && etat.propositions.length < PROPOSITIONS_AU_MAXIMUM) {
     return { geste: "poser_le_bloc", proposition: etat.propositions.length };
   }
-  return { geste: "poser_le_bloc", proposition: Math.min(etat.active, Math.max(0, etat.propositions.length - 1)) };
+  // Au-delà de deux, le plus ancien choix cède la place — la règle d'avant,
+  // « une ou deux dates, jamais trois », plutôt qu'un bouton qui ne répond pas.
+  const derniere = Math.min(etat.active, Math.max(0, etat.propositions.length - 1));
+  return { geste: "poser_le_bloc", proposition: etat.propositions.length > 1 ? 1 - derniere : derniere };
 }
 
 /**
- * L'état après l'appui. Sur une journée, effacer la seule date de la seconde
- * proposition la ferme ; la première garde la sienne — un envoi sans date
- * n'existe pas, et un bouton qui ne répond pas se lit comme une panne.
+ * L'état après l'appui. Effacer le dernier jour de la seconde proposition la
+ * ferme et éteint l'interrupteur ; la première, vidée, reste là et dit ce qui
+ * manque — c'est l'envoi qui refuse de partir sans date, pas le geste.
  */
 export function toucherUnJour(
   etat: EtatDesPropositions,
@@ -83,12 +89,9 @@ export function toucherUnJour(
     const p = propositions[g.proposition];
     p.splice(p.indexOf(jour), 1);
     let secondeVoulue = etat.secondeVoulue;
-    if (p.length === 0 && joursDuChantier(dureeDemiJournees) === 1) {
-      if (g.proposition === 0) p.push(jour);
-      else {
-        propositions.splice(g.proposition, 1);
-        secondeVoulue = false;
-      }
+    if (p.length === 0 && g.proposition === 1) {
+      propositions.splice(g.proposition, 1);
+      secondeVoulue = false;
     }
     return { propositions, secondeVoulue, active: Math.min(g.proposition, propositions.length - 1) };
   }

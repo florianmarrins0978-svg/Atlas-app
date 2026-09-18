@@ -122,11 +122,13 @@ cas("effacer un jour de la seconde : c'est elle qui manque, et c'est elle que l'
 
 console.log("\n=== Une ou deux dates, jamais trois — le geste d'avant, sur une journée ===");
 
-cas("un premier appui retient, un second sur le même relâche… sauf la seule date, qui reste", () => {
+cas("un premier appui retient, un second sur le même relâche — et l'appui suivant repose un bloc", () => {
   const e = toucherUnJour(VIDE, "2026-08-12", 2);
   assert.deepEqual(e.propositions, [["2026-08-12"]]);
-  // Un envoi sans date n'existe pas : la première garde la sienne.
-  assert.deepEqual(toucherUnJour(e, "2026-08-12", 2).propositions, [["2026-08-12"]]);
+  const vide = toucherUnJour(e, "2026-08-12", 2);
+  assert.deepEqual(vide.propositions, [[]]);
+  assert.deepEqual(gesteSurUnJour(vide, "2026-08-14", DEUX_JOURS), { geste: "poser_le_bloc", proposition: 0 });
+  assert.deepEqual(toucherUnJour(vide, "2026-08-14", DEUX_JOURS).propositions, [["2026-08-14", "2026-08-17"]]);
 });
 
 cas("deux dates tiennent ensemble, et l'interrupteur s'allume tout seul", () => {
@@ -135,10 +137,20 @@ cas("deux dates tiennent ensemble, et l'interrupteur s'allume tout seul", () => 
   assert.equal(e.secondeVoulue, true);
 });
 
-cas("la troisième remplace la dernière touchée, elle n'est pas refusée en silence", () => {
+cas("la troisième chasse la PLUS ANCIENNE, elle n'est pas refusée en silence", () => {
   // Un bouton qui ne répond pas se lit comme une panne : le patron appuierait
   // trois fois avant de comprendre.
   const e = toucherUnJour(toucherUnJour(toucherUnJour(VIDE, "2026-08-12", 2), "2026-08-14", 2), "2026-08-17", 2);
+  assert.deepEqual(e.propositions, [["2026-08-17"], ["2026-08-14"]]);
+});
+
+cas("retirer puis remettre une date la rend la plus récente : c'est l'autre qui cède ensuite", () => {
+  let e = toucherUnJour(toucherUnJour(VIDE, "2026-08-12", 2), "2026-08-14", 2);
+  e = toucherUnJour(e, "2026-08-12", 2);       // retirée : sa place reste, vide
+  assert.deepEqual(e.propositions, [[], ["2026-08-14"]]);
+  e = toucherUnJour(e, "2026-08-12", 2);       // remise à sa place, dernière touchée
+  assert.deepEqual(e.propositions, [["2026-08-12"], ["2026-08-14"]]);
+  e = toucherUnJour(e, "2026-08-17", 2);       // la 14, plus ancienne, cède
   assert.deepEqual(e.propositions, [["2026-08-12"], ["2026-08-17"]]);
 });
 

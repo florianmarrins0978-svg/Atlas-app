@@ -875,7 +875,7 @@ function Contenu({
               Touchez un jour du chantier pour l’effacer, puis le jour que vous voulez à la place.
             </p>
           )}
-          {selection.length > 0 && (
+          {etat.propositions.length > 0 && (
             <div className="mb-4 flex flex-col gap-1.5">
               {etat.propositions.map((proposition, p) => {
                 const seconde = p === 1;

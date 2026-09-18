@@ -44,9 +44,12 @@ et son « tu peux coder ça » du 18. Ce qui est dans l'application :
 La règle du geste vit dans `src/lib/propositions-de-jours.ts` (pure, dix-huit
 cas dans `test-propositions-de-jours.ts`) ; la base dans
 `test-envoi-jours-pas-colles-db.ts` (six cas, rouges avant le code, verts
-après). `basculerJour` est parti avec le geste d'avant. Ce qui n'a PAS été
-joué ici, à sa demande (« ne lance aucune batterie ») : les suites navigateur
-de l'écran d'envoi et la batterie — `TODO.md`. `ARCHITECTURE.md` §382.
+après). `basculerJour` est parti avec le geste d'avant. Les six suites
+navigateur des écrans touchés sont vertes, et l'écran a été regardé dans la
+version bâtie, jusqu'à la page de la cliente. Elles ont redressé deux choses :
+effacer la seule date d'une journée la laisse vide — c'est l'envoi qui refuse,
+pas le geste —, et au-delà de deux propositions c'est la plus ancienne qui
+cède, comme avant. `ARCHITECTURE.md` §382.
 
 ---
 ## 2026-09-17

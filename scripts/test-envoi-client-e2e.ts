@@ -420,8 +420,11 @@ async function main() {
     const pageClient = await contexteClient.newPage();
     await pageClient.goto(`${BASE}${chemin}`, { waitUntil: "networkidle" });
 
+    // « Quelle date vous arrange ? » sur une journée, « Quels jours vous
+    // arrangent ? » dès que le chantier en prend plusieurs — sa planche du
+    // 17 septembre 2026 : la cliente lit les JOURS, pas une date de départ.
     assert.ok(
-      await pageClient.locator("text=Quelle date vous arrange").isVisible(),
+      await pageClient.locator("text=/Quel(le)?s? (date|jours) vous arrange(nt)?/").isVisible(),
       "la page du client ne présente pas le choix de date"
     );
     assert.strictEqual(

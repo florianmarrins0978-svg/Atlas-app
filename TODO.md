@@ -112,12 +112,16 @@ lance pas de batterie »* —, ce lot est parti sans les suites navigateur ni la
 batterie. Vert ici : types, lint, mémoire, `test-propositions-de-jours`,
 `test-envoi-jours-pas-colles-db`, `test-creneaux-planning`,
 `test-envois-devis`, `test-preparation-envoi`, `test-etat-envoi`,
-`test-calendrier`, les garde-fous. **Pas joué :** `envoi-client`,
+`test-calendrier`, les garde-fous. **Puis, sur son « vas-y » :** les six
+suites navigateur des écrans touchés — `envoi-client`,
 `deux-dates-calendrier`, `reste-equipes`, `feuille-envoi-lisible`,
-`date-lointaine`, `devis-client` — les écrans que le lot touche — et
-`npm run voir` sur l'écran d'envoi et la page du client. Le garde-fou de
-`main` les réclamera (niveau 3 : `drizzle/`, devis). À jouer AVANT de
-pousser, avec son accord pour le port.
+`date-lointaine`, `devis-client` — vertes sur l'atelier 2, et l'écran
+REGARDÉ dans la version bâtie : un chantier de 2 jours, le 22 effacé, le 23
+posé, une seconde proposition, l'envoi, et la page de la cliente (« Quels
+jours vous arrangent ? » avec les deux listes). Deux choses ont été redressées
+par ces suites : effacer la seule date d'une journée la laisse vide (c'est
+l'envoi qui refuse, pas le geste), et au-delà de deux, c'est LA PLUS ANCIENNE
+qui cède — la règle d'avant. Reste la batterie, niveau 3 (`drizzle/`, devis).
 
 **Les libellés que les suites visent n'ont pas bougé** : `invite-dates`,
 `text=proposée` (gardé sur une journée) et `reste-equipes`. Ce qui a changé
