@@ -743,7 +743,7 @@ try {
 
       const apresFusion = jouer(`git -C "${d}" push origin HEAD:main`);
       assert.ok(apresFusion.refuse, "la rencontre avec main n'avait jamais été mesurée");
-      assert.match(apresFusion.message, /verifier-apres-fusion/, "le remède annoncé n'est pas le complément");
+      assert.match(apresFusion.message, /verifier-ce-qui-a-bouge/, "le remède annoncé n'est pas le rattrapage");
       assert.doesNotMatch(
         apresFusion.message,
         /verifier:avant-livraison/,

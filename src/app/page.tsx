@@ -20,6 +20,7 @@ import { PHRASE_LECTURE_SEULE, etatDeLEssai } from "@/lib/abonnements";
 import RubanEssai from "@/components/atlas/RubanEssai";
 import AnnonceTransmission from "@/components/atlas/AnnonceTransmission";
 import EcranChantiers from "./EcranChantiers";
+import VeilleDesNouvelles from "@/components/atlas/VeilleDesNouvelles";
 import type { BrinChantier } from "./ListeChantiers";
 
 // Données réelles, propres à l'entreprise courante : jamais de pré-rendu statique.
@@ -135,6 +136,12 @@ export default async function ChantiersPage() {
       lectureSeule={essai?.statut === "termine" ? PHRASE_LECTURE_SEULE : null}
       bandeaux={
         <>
+          {/* **L'accueil se relit tout seul** : une réponse de client arrive
+              pendant qu'il regarde l'écran, et rien dans son navigateur ne
+              pouvait l'apprendre (`VeilleDesNouvelles`, 17 septembre 2026). Il
+              ne dessine rien — sa place ici ne tient qu'à ce qu'il veille sur
+              ce qui suit. */}
+          <VeilleDesNouvelles />
           {/* Le mot qui accueille le patron au retour de sa messagerie. Placé
               AVANT les notifications : c'est la conséquence du geste qu'il
               vient de faire, pas une information de fond. */}

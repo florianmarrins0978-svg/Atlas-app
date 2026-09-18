@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — Corriger un rouge coûtait cinquante minutes</title>
+<style>
+  :root{
+    --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
+    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
+    --accent:#2f3b2f; --alert:#b5562a; --line:rgba(28,28,26,0.13);
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#161815; --surface:#1d201c; --raised:#252924;
+      --ink:#eae7df; --ink-soft:#c2bdb1; --muted:#948f83;
+      --accent:#9fbd82; --alert:#e0885a; --line:rgba(234,231,223,0.17);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.65;}
+  main{max-width:44rem;margin:0 auto;padding:2.5rem 1.2rem 5rem;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.2;
+    text-wrap:balance;margin:2rem 0 0.6rem;scroll-margin-top:1rem;}
+  h1{font-size:2rem;margin-top:0;}
+  h2{font-size:1.5rem;padding-top:1.2rem;border-top:1px solid var(--line);}
+  h3{font-size:1.12rem;}
+  h4{font-size:1rem;}
+  p{margin:0 0 0.9rem;}
+  a{color:var(--accent);text-underline-offset:3px;}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px;}
+  ul,ol{margin:0 0 1rem;padding-left:1.3rem;}
+  li{margin-bottom:0.4rem;}
+  li::marker{color:var(--muted);}
+  /* Le sommaire : des cibles larges, confortables au doigt sur téléphone. */
+  ol li a{display:inline-block;padding:0.15rem 0;}
+  blockquote{margin:1rem 0;padding:0.85rem 1.05rem;background:var(--raised);
+    border-left:3px solid var(--accent);border-radius:0 10px 10px 0;color:var(--ink-soft);}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.87em;
+    background:var(--raised);padding:0.1rem 0.35rem;border-radius:5px;}
+  hr{border:0;border-top:1px solid var(--line);margin:2rem 0;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;
+    background:var(--surface);margin:0 0 1.2rem;}
+  table{border-collapse:collapse;width:100%;font-size:0.92rem;min-width:22rem;}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--line);
+    vertical-align:top;}
+  th{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--muted);white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .retour{display:inline-block;font-size:0.76rem;color:var(--muted);
+    text-decoration:none;margin:-0.3rem 0 1rem;}
+  .retour:hover{color:var(--accent);text-decoration:underline;}
+</style>
+</head>
+<body>
+<main>
+<h1 id="corriger-un-rouge-coûtait-cinquante-minutes">Corriger un rouge coûtait cinquante minutes</h1>
+<p><strong>17 septembre 2026, 23 h.</strong> Ta phrase : <em>« ça recommence et c'est ça à chaque fois ! »</em>, devant une session qui repartait pour une batterie entière après avoir corrigé <strong>une ligne de documentation</strong>.</p>
+<h2 id="ce-que-tu-as-vu-et-pourquoi-ça-bouclait">Ce que tu as vu, et pourquoi ça bouclait</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>La batterie finit : <strong>158 suites vertes sur 159</strong>. Deux rouges seulement — un rouge de documentation (à corriger en trois secondes) et un rouge venu de <code>main</code>. La session corrige la documentation. Et elle repart pour cinquante minutes.</p>
+<p><strong>Deux murs, et aucun ne se voyait depuis la conversation :</strong></p>
+<div class="tablewrap"><table><thead><tr>
+<th>Le mur</th>
+<th>Ce qu'il imposait</th>
+</tr></thead><tbody>
+<tr>
+<td>une étape qui n'est <strong>pas</strong> une suite — Types, Lint, <strong>Mémoire du dépôt</strong>, Construction — ferme la fusion à elle seule</td>
+<td>et <strong>rien ne savait la rejouer seule</strong> : la liste des étapes vivait à l'intérieur du script de la batterie, qui ne sait faire que tout</td>
+</tr>
+<tr>
+<td>le rattrapage d'après-fusion refusait <strong>dès que le lot avait changé</strong></td>
+<td>or corriger un rouge, c'est changer le lot : il ne servait jamais au moment où il fallait</td>
+</tr>
+</tbody></table></div>
+<p>Le seul chemin restant était donc la batterie complète — dont le produit est le rouge suivant. C'est la boucle, et elle était mécanique.</p>
+<h2 id="ce-qui-a-été-corrigé-à-la-racine">Ce qui a été corrigé, à la racine</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>La liste des étapes est sortie du script de la batterie.</strong> Elle vit maintenant à part, et deux commandes la lisent : la batterie, qui les joue toutes, et le rattrapage, qui en joue <strong>une</strong>.</p>
+<p>``<code>bash npx tsx scripts/verifier-ce-qui-a-bouge.ts </code>``</p>
+<p>Il répond à une seule question : <strong>qu'est-ce qui a bougé depuis la mesure, et que peut-il casser ?</strong></p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td>ce qui a bougé</td>
+<td>lu par le <strong>contenu</strong> — y compris un <code>.md</code>, que l'empreinte n'indexait pas. C'est exactement là que vivait ton rouge</td>
+</tr>
+<tr>
+<td>ce qu'on rejoue</td>
+<td>ce qui était rouge, <strong>plus</strong> ce que la correction peut casser</td>
+</tr>
+<tr>
+<td>ce qu'on ne rejoue pas</td>
+<td><strong>garde son rouge</strong> — ne pas savoir n'est jamais vert</td>
+</tr>
+<tr>
+<td>quand il refuse</td>
+<td>quand ce qui a bougé est trop large (migration, configuration) : là, c'est la batterie, et c'est justifié</td>
+</tr>
+</tbody></table></div>
+<p>Ton cas — un rouge « Mémoire du dépôt » corrigé dans un document — rejoue désormais <strong>trois étapes</strong> : Types, Lint, Mémoire du dépôt. Quelques minutes.</p>
+<h2 id="ce-qui-a-été-supprimé-et-non-recouvert">Ce qui a été supprimé, et non recouvert</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><code>verifier-apres-fusion.ts</code> disparaît, avec deux de ses fonctions. Il n'était qu'un cas particulier de la même question (« ce qui a bougé vient de <code>main</code> »), et sa condition d'entrée était précisément le mur. Un correctif qui n'enlève rien est un pansement ; celui-ci enlève.</p>
+<h2 id="ce-qui-a-été-refusé">Ce qui a été refusé</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Laisser un rouge s'effacer tout seul.</strong> Un rouge qui n'est pas remesuré garde son rouge — même après une correction qui « devrait » l'avoir réglé. Sinon on livrerait sur une supposition, ce qui est pire que cinquante minutes.</p>
+<h2 id="chiffres-de-ce-lot">Chiffres de ce lot</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td>niveau calculé</td>
+<td><strong>2</strong> — <code>npm run verifier:avant-fusion</code></td>
+</tr>
+<tr>
+<td>résultat</td>
+<td><strong>395 suites sur 395 vertes</strong>, types et lint à zéro erreur</td>
+</tr>
+<tr>
+<td>le rattrapage, joué pour de vrai</td>
+<td><strong>130 suites rouges ramenées à 1</strong> en quatre étapes</td>
+</tr>
+<tr>
+<td>ce que ce 1 était</td>
+<td>une <strong>vraie régression de ce lot</strong> — un contrôle qui cherchait la liste des étapes dans son ancien fichier. C'est le rattrapage qui l'a trouvée, pas la relecture</td>
+</tr>
+<tr>
+<td>batterie complète</td>
+<td><strong>non jouée</strong></td>
+</tr>
+</tbody></table></div>
+<h2 id="ce-qui-reste-vrai">Ce qui reste vrai</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>La batterie entière reste obligatoire <strong>avant la première poussée d'un lot</strong>. Ce qui change, c'est qu'un rouge corrigé ne la fait plus recommencer.</p>
+<hr>
+<h1 id="suite--18-septembre-2026-00-h-27---ça-continue-">Suite — 18 septembre 2026, 00 h 27 : « ça continue »</h1>
+<p>Quarante minutes après la correction ci-dessus, une session repartait pour quarante-cinq minutes. Sa raison :</p>
+<blockquote><em>« <code>main</code> a apporté 30 commits, dont du code qui touche l'argent (devis, acomptes). La rencontre atteint le niveau 3 → batterie entière. »</em></blockquote>
+<p>Elle appliquait la règle correctement. <strong>La règle était fausse.</strong></p>
+<h2 id="lerreur-et-elle-était-à-moi">L'erreur, et elle était à moi</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Le calcul de risque répond à <strong>une</strong> question : <em>quel danger ce lot introduit-il ?</em> Je la posais aussi sur les fichiers que <code>main</code> apporte. Or ces commits-là <strong>ont déjà payé leur batterie</strong> — la session qui a écrit les acomptes a joué la mesure complète pour eux.</p>
+<p>Résultat : à trois sessions, <strong>chacune repayait la mesure des deux autres</strong>. C'est la même boucle, par une autre porte.</p>
+<h2 id="ce-qui-a-été-corrigé">Ce qui a été corrigé</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>La rencontre se partage en deux, et chaque moitié ne doit pas la même chose :</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Ce qui a bougé</th>
+<th>Ce que ça coûte</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>ton lot</strong> — ce que cette session a écrit</td>
+<td>gravité pleine : argent, sécurité → batterie, comme avant</td>
+</tr>
+<tr>
+<td><strong><code>main</code></strong>, une migration ou la configuration</td>
+<td><strong>batterie</strong> : ça change le sol sous toutes les mesures</td>
+</tr>
+<tr>
+<td><strong><code>main</code></strong>, du code d'argent ou de sécurité</td>
+<td>les suites du fond (~5 min) — là où vivent les règles et l'isolation</td>
+</tr>
+<tr>
+<td><strong><code>main</code></strong>, le reste</td>
+<td>les écrans concernés, et rien d'autre</td>
+</tr>
+</tbody></table></div>
+<p>La troisième ligne est le cœur : la gravité de <code>main</code> <strong>change ce qu'on rejoue, pas si l'on rejoue tout</strong>.</p>
+<h2 id="ce-qui-a-été-refusé">Ce qui a été refusé</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Ignorer complètement ce que <code>main</code> apporte.</strong> Ce serait plus rapide encore, et faux : la rencontre entre ton lot et le code voisin n'a jamais été mesurée par personne. Elle se rejoue — en minutes, pas en heure.</p>
+<h2 id="chiffres">Chiffres</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td>niveau</td>
+<td><strong>2</strong> — <code>npm run verifier:avant-fusion</code></td>
+</tr>
+<tr>
+<td>résultat</td>
+<td><strong>395 suites sur 395 vertes</strong></td>
+</tr>
+<tr>
+<td>le rattrapage, joué sur ce lot après une avancée de <code>main</code></td>
+<td><strong>Types + Lint</strong>, une minute</td>
+</tr>
+<tr>
+<td>batterie complète</td>
+<td><strong>non jouée</strong></td>
+</tr>
+</tbody></table></div>
+</main>
+</body>
+</html>

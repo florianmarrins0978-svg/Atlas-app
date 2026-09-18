@@ -24747,7 +24747,7 @@ Bout à bout : **aucune sortie**. Il fallait fermer l'onglet ou passer par la
 barre du bas.
 
 **Ce qui est gardé est la moitié qui compte.** « Le chemin se referme » vaut pour
-l'**enregistrement** (`apresLesCoordonnees`), et c'est là qu'il a du sens : il
+l'**enregistrement** (`apresLesCoordonnees` — retiré le 17 septembre 2026, §383 : le bouton mène au devis d'où qu'on vienne), et c'est là qu'il a du sens : il
 remplit ce qui manquait, il enregistre, il revient à son devis complété. Ce qui
 change n'est que la **flèche** — elle sert à renoncer, pas à revenir avec
 quelque chose. Renoncer, c'est sortir ; sortir, c'est la liste.
@@ -26711,7 +26711,7 @@ avec la correction (`CLAUDE.md` §4 quater).
 **Les règles `?de=` restent, comme REPLI et pour l'après-enregistrement.** Elles
 répondent maintenant à une autre question que la flèche : où sortir quand il n'y
 a pas de page d'avant (signet, notification à froid), et où aller une fois un
-formulaire enregistré (`apresLesCoordonnees`). Leur moitié « devine d'où il
+formulaire enregistré (`apresLesCoordonnees` — retiré le 17 septembre 2026, §383). Leur moitié « devine d'où il
 vient » est en revanche devenue redondante avec le journal ; sa retraite est
 nommée dans `TODO.md`, et elle n'a pas été faite dans ce lot — six écrans et six
 suites en dépendent, et un lot qui les réécrit la même nuit se livre rouge.
@@ -31463,7 +31463,7 @@ n'y figure pas n'a donc pas été écrit ici : il est arrivé par la fusion.
 |---|---|
 | rien (contenu identique) | la fusion s'ouvre |
 | un fichier **du lot** | `verifier:avant-fusion` / `avant-livraison`, selon le niveau |
-| **seulement** ce que `main` a apporté | `npx tsx scripts/verifier-apres-fusion.ts` — jamais la batterie |
+| **seulement** ce que `main` a apporté | `npx tsx scripts/verifier-ce-qui-a-bouge.ts` — jamais la batterie |
 | une empreinte illisible ou absente | le niveau du lot : ne pas savoir n'est jamais « rien n'a bougé » |
 
 La troisième ligne est la règle du 17 septembre appliquée là où elle manquait :
@@ -31478,9 +31478,248 @@ fusion —, et refuse que le refus contienne `verifier:avant-livraison`. Confron
 au code d'avant, six de ses cas rougissent : c'est ce qui prouve qu'il mesure
 quelque chose.
 
+## §381 — Un rouge ne coûte plus la mesure entière : on rejoue l'étape, pas la batterie
+
+**Sa colère du 17 septembre 2026, à 23 h :** *« ça recommence et c'est ça à
+chaque fois ! »*
+
+Ce qu'il montrait : une batterie finie, **158 suites sur 159 vertes**, deux
+rouges — une ligne de documentation à corriger en trois secondes, et un rouge
+venu de `main`. La session corrige la documentation, et repart pour **cinquante
+minutes**. À la fin de ces cinquante minutes, un autre rouge, et la boucle
+recommence.
+
+**Deux murs la produisaient, et aucun n'était visible depuis la conversation.**
+
+| Le mur | Ce qu'il imposait |
+|---|---|
+| une étape qui n'est pas un moteur de suites — Types, Lint, **Mémoire du dépôt**, Construction — tombe dans `rougesHorsSuites`, et une seule ferme la fusion | or **rien ne savait la rejouer seule** : la table des étapes vivait à l'intérieur de `verifier-avant-livraison.ts`, qui ne sait faire que tout |
+| le complément d'après-fusion **refusait dès que le lot avait changé** (`lotInchange`) | or corriger un rouge, c'est changer le lot : il ne servait jamais au moment où l'on en avait besoin |
+
+Le seul chemin restant était donc la batterie complète, dont le produit est…
+le rouge suivant.
+
+**Ce qui les remplace, et c'est une seule question :** *qu'est-ce qui a bougé
+depuis la mesure, et que peut-il casser ?*
+
+```bash
+npx tsx scripts/verifier-ce-qui-a-bouge.ts
+```
+
+| | |
+|---|---|
+| **ce qui a bougé** | par le CONTENU — l'empreinte du verdict pour le code, git pour ce qu'elle n'indexe pas (un `.md`, `docs/`, `.claude/`). C'est là que vivait son rouge de documentation |
+| **ce que cela peut casser** | la RENCONTRE (§375) puis `evaluerLeLot` sur elle seule. Niveau 3 — une migration, le gabarit racine — : on refuse, et c'est la batterie |
+| **ce qui était rouge** | rejoué, étape ou suite, qu'il ait bougé ou non |
+| **ce qui n'a pas été rejoué** | garde son rouge. Ne pas savoir n'est jamais vert |
+
+**La table des étapes vit désormais dans `_etapes-batterie.ts`**, et deux
+commandes la lisent : la batterie, qui les joue toutes, et le rattrapage, qui
+en joue une. Une seule table — deux copies de la même vérité finissent par
+diverger (`CLAUDE.md` §3).
+
+**Ce qui a été SUPPRIMÉ avec, et non recouvert** : `verifier-apres-fusion.ts`,
+`lotInchange` et `empreinteDuDiff`. Le complément d'après-fusion n'était qu'un
+cas particulier de cette question — « ce qui a bougé vient de `main` » —, et
+sa condition d'entrée était le mur. Un lot corrigé est le cas le plus fréquent,
+et c'était exactement celui qu'il refusait.
+
+**Ce que cela ne relâche PAS.** La batterie complète reste ce qui autorise la
+première poussée d'un lot (`CLAUDE.md` §5) ; le rattrapage ne dépose jamais un
+niveau qu'il n'a pas mesuré, et refuse dès que ce qui a bougé atteint le
+niveau 3.
+
+**ET LA BATTERIE REFUSE ELLE-MÊME DE REPARTIR POUR RIEN.** Sa question, dans
+la foulée : *« mais là les autres sessions ont déjà l'info, ou je dois leur dire
+à chaque fois ? »* Elles ne l'avaient pas, et c'était le trou restant : le
+garde-fou nomme le rattrapage dans ses refus, mais **une session qui relance la
+batterie ne passe par aucun refus** — elle décide seule, au bout de trois
+heures, que son verdict ne vaut plus. C'est le mode de défaillance que ce dépôt
+connaît par cœur (`CLAUDE.md` §1 bis).
+
+`verifier-avant-livraison.ts` interroge donc `refusApresUnRouge` avant de poser
+son verrou : un verdict précédent ROUGE, et ce qui a bougé depuis en dessous du
+niveau 3, et elle **refuse** en donnant la commande. `--forcer` reste, pour la
+fois où l'on veut vraiment tout remesurer. Personne n'a plus besoin d'être au
+courant.
+
+**Mesuré, pas supposé** : joué sur ce lot même, il a ramené **130 suites rouges
+à une** en rejouant quatre étapes — et la dernière, `test-verrou-construction`,
+était une vraie régression de ce lot (elle cherchait la table des étapes dans
+son ancien fichier). C'est le contrôle qui l'a dit, pas la relecture.
+
+## §382 — La gravité de `main` a déjà été éprouvée par `main`
+
+**Sa capture du 18 septembre 2026, à 00 h 27 :** *« ça continue »*. Une session,
+quarante minutes après la correction du §381 :
+
+> *« `main` a apporté 30 commits, dont du code qui touche l'argent (devis,
+> acomptes). La rencontre atteint le niveau 3 → batterie entière. Je la
+> lance. »*
+
+Elle appliquait la règle à la lettre, et la règle était fausse.
+
+**L'erreur était une erreur de CATÉGORIE.** `evaluerLeLot` répond à une seule
+question : *quel risque ce lot INTRODUIT-il ?* Le rattrapage la posait sur
+**tous** les fichiers de la rencontre — donc aussi sur ceux que `main` apporte.
+Or chacun de ces commits est **déjà** passé par son propre garde-fou, au niveau
+que sa gravité exigeait : une session voisine a payé la batterie complète pour
+son lot d'acomptes. La redemander ici, c'est faire repayer à un lot la mesure
+d'un autre — et à trois sessions actives, chacune paie pour les deux autres.
+
+**Ce qui décide désormais**, et la rencontre se partage en deux :
+
+| Ce qui a bougé | Ce que ça vaut |
+|---|---|
+| **le LOT** — ce que cette session a écrit | sa gravité pleine : argent, sécurité, plancher, rayon. Niveau 3 → batterie |
+| **`main`**, sur son PLANCHER — `drizzle/`, gabarit racine, `globals.css`, `src/server/db/`, configuration | **batterie** : ceux-là changent le SOL sous toutes les suites, et aucune suite ciblée ne le mesure |
+| **`main`**, sur sa gravité — argent, sécurité | **les suites du fond** (`npm test`) : c'est là que vivent les règles métier, l'isolation et la RLS |
+| **`main`**, le reste | les suites des écrans que la rencontre atteint |
+
+La deuxième ligne n'est pas une concession : c'est exactement ce que le dépôt
+écrivait déjà depuis le §375 — *« une migration arrivée de `main` sous un lot
+qui touche la base »*. Elle est devenue une **règle du code** au lieu d'un
+exemple en prose (`estUnPlancher`, `batterieDue`).
+
+**Ce que cela ne relâche PAS.** La gravité de `main` n'est pas ignorée : elle
+force `npm test`, c'est-à-dire les quatre cents suites qui éprouvent l'argent et
+l'isolation. Elle change **ce qu'on rejoue**, pas **si l'on rejoue**. Et le lot,
+lui, garde sa gravité entière : un lot qui touche un devis paie sa batterie,
+comme avant.
+
+**Le signe qui aurait dû alerter plus tôt** : trois corrections dans la même
+soirée sur le même mécanisme, et à chaque fois la même forme — une question
+posée au mauvais objet. Le §380 comparait des dates au lieu des contenus ; le
+§381 demandait « le lot a-t-il bougé » au lieu de « que peut casser ce qui a
+bougé » ; celui-ci demandait « ce fichier est-il dangereux » au lieu de « **qui**
+doit le prouver ».
+## §383 — La fiche client ROUVERTE porte le même bouton que la fiche neuve : « Je rédige à la main »
+
+**Son signalement du 17 septembre 2026**, l'écran sous les yeux : *« j'ai fait
+nouveau devis, ensuite retour, puis j'ai cliqué sur le client en attente dans
+la page d'accueil. Sauf que la fiche client a changé : normalement il y a la
+note vocale et en dessous il propose d'écrire le devis à la main, et là y'a
+marqué Enregistrer. Il faut remettre la proposition du devis à la main ! »*
+
+**Ce qu'il restait de l'écart entre créer et rouvrir.** Le 31 août, tout
+l'écart avait été supprimé à sa demande — photos, anneau, chaîne du devis —
+sauf un bouton : « Enregistrer », gardé sur la fiche rouverte pour que ce
+qu'il TAPE sur un chantier existant parte quelque part, et qui ramenait à la
+liste (§254). Devant l'écran, ce bouton est une DIFFÉRENCE : il reconnaît sa
+fiche par ce qu'elle propose, et une fiche qui ne propose plus le devis n'est
+plus la sienne.
+
+**Ce qui change, et ce qui ne se perd pas.** La fiche rouverte porte le bouton
+de la fiche neuve — secondaire, 66 %, effacé pendant qu'on dicte —, et il
+fait les deux choses : `creerPuisAller("devis")`, sur le chemin `reprise`,
+**enregistre ce qui est tapé** (`reprendreChantierAction`) puis ouvre le
+devis. Rien de ce que « Enregistrer » faisait n'est perdu ; seule la sortie
+change — le devis, au lieu de la liste. La liste reste à une flèche
+(`retourDesCoordonnees`, inchangé).
+
+**Ce qui est retiré, parce que plus rien ne l'appelle** (`CLAUDE.md`
+§4 quinquies) : la destination `fiche` de `FormulaireNouveauChantier`, et
+`apresLesCoordonnees` dans `retour-du-devis.ts` avec ses cas dans
+`test-retour-du-devis.ts` et `test-retour-au-planning.ts`. La provenance ne
+décide plus que de la flèche.
+
+**Ce qui le tient :** `test-coordonnees-depuis-accueil-e2e.ts` (venu de
+l'accueil, le bouton propose le devis à la main, enregistre ce qui est tapé,
+et ouvre le devis) et `test-devis-sans-client-e2e.ts` (venu d'un devis sans
+client, même bouton, et le devis retrouvé porte son client). Les deux refusent
+le retour d'« Enregistrer ».
+
 ---
 
-## §381 — Pendant un déplacement, le mois passe ENTIER au-dessus de la fiche
+---
+
+---
+
+---
+---
+
+## §384 — Le cadre de l'application décide AU NAVIGATEUR, et l'accueil se relit tout seul
+
+**Deux défauts d'un même soir — le 17 septembre 2026 —, signalés sur la même
+capture : l'accueil atteint après l'envoi d'un devis, sans barre du bas, et une
+réponse de client qui n'y arrivait qu'au rechargement.**
+
+### 1. La barre du bas : un choix serveur qui survivait à la navigation
+
+La mise en page racine tranchait, au SERVEUR, entre trois décors : le devis
+seul (sans onglets ni cadre), les écrans sans navigation, et l'application
+entière. **Next.js ne rejoue pas la mise en page racine sur une navigation de
+lien** — il ne redemande que le segment qui change. Le décor choisi au premier
+rendu de l'onglet valait donc pour tout ce qui suivait.
+
+| Le parcours | Ce qui se passait |
+|---|---|
+| accueil → devis (par un lien) → accueil | la barre revenait : le cadre était déjà là |
+| **devis atteint à son ADRESSE** → accueil | **plus de barre, plus de cadre**, jusqu'au rechargement |
+
+Le second est le sien : l'application rouverte sur ce devis, la page rechargée,
+l'adresse suivie depuis un message — puis l'envoi, qui ramène à l'accueil par
+`router.push("/")` (`DevisCompletClient`).
+
+**Le dépôt avait déjà payé l'autre moitié de ce défaut**, le 5 septembre 2026 :
+la barre d'un écran précédent RESTAIT sur le devis atteint par un lien, et
+couvrait son bouton d'envoi. On avait alors appris à la barre à se retirer
+d'elle-même d'après le chemin courant (`ecrans-sans-navigation.ts`). Ce
+rattrapage ne pouvait rien pour ce sens-ci : **une barre jamais rendue n'a rien
+à retirer**.
+
+**La correction est à la racine** : le choix quitte le serveur pour
+`CadreApplication`, un composant client qui lit `usePathname()` et se refait à
+chaque navigation. Sans clignotement — `usePathname` rend déjà le bon chemin au
+rendu du serveur, donc une page de devis n'est jamais peinte avec une barre
+qu'on lui retirerait ensuite.
+
+**Et la couche qui compensait s'en va** (`CLAUDE.md` §4 quater) : la barre ne se
+garde plus elle-même. Deux endroits qui décident de la même chose finissent par
+diverger, et c'est exactement ce que ces deux mesures contradictoires ont coûté.
+
+**Ce qui reste décidé au serveur, et doit le rester :** les chemins publics. Le
+rôle n'y est pas lisible — il n'y a pas de session —, et le demander sur
+`/login` renverrait vers `/api/session-perimee` l'écran qui sert justement à se
+reconnecter. Ailleurs, le rôle se lit désormais **toujours** : le sauter sur les
+écrans sans navigation reviendrait à refaire au serveur le choix qui vient d'en
+partir. La lecture ne coûte rien — `GardeAcces` l'a déjà faite, et `cache()` la
+rend une seule fois par requête.
+
+### 2. L'accueil : il n'y avait aucun mécanisme, pas un mécanisme en panne
+
+L'accueil est rendu au serveur : il lit les réponses, les rappels et les
+réceptions **une fois**, au moment où il est demandé. La réponse du client,
+elle, arrive plus tard et **ailleurs** — sur le téléphone du client, par la page
+publique du devis. Rien, dans le navigateur du patron, ne pouvait l'apprendre.
+
+`VeilleDesNouvelles` est ce mécanisme, et il ne recouvre rien :
+
+| Quand | Ce qu'il fait |
+|---|---|
+| il revient à Atlas (messagerie, appel, écran verrouillé) | l'accueil se relit **immédiatement** |
+| pendant qu'il regarde l'écran | toutes les trente secondes |
+| page cachée | rien — et les navigateurs endorment de toute façon les minuteurs d'un onglet caché, si bien qu'un battement aveugle rendrait un rythme qu'on croit tenir et qu'on ne tient pas |
+
+**Trente secondes est un arbitrage**, pas une valeur trouvée : plus court, on
+interroge la base pour rien pendant qu'il travaille ; plus long, la nouvelle
+qu'il attend dort sous ses yeux.
+
+**Ce que cela ne remplace pas** : une notification poussée, qui sonnerait Atlas
+fermé. Elle n'existe pas, elle est dans `TODO.md`, et ce n'était pas une raison
+pour laisser une réponse de client dormir sous ses yeux.
+
+**Les deux suites fixent la PROMESSE, pas le montage** : la barre revient quand
+on quitte le devis par un vrai geste, et la carte arrive sans qu'il recharge.
+Aucune ne compte les trente secondes — un contrôle qui les compterait se
+contredirait au premier réglage et ne défendrait rien de ce qu'il voit, lui
+(`CLAUDE.md` §5 bis). Toutes deux ont été vues rouges sur le code d'avant.
+
+---
+
+---
+
+## §385 — Pendant un déplacement, le mois passe ENTIER au-dessus de la fiche
 
 **Sa capture du 17 septembre 2026, puis sa correction.** L'écran lui disait
 « touchez le jour au-dessus » alors que dix jours du mois — dont celui qu'il
@@ -31536,4 +31775,3 @@ jour du mois sous la fiche, la fiche posée après la dernière semaine, elle
 survit au mois tourné avec un seul bandeau, « Annuler » sur la ligne de la
 consigne et en encre pleine, et la consigne sur UNE ligne — celui-là est né
 d'une capture regardée, où elle rendait « Touchez le jour au- / dessus ».
-

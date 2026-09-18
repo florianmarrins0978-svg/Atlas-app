@@ -126,16 +126,18 @@ async function main() {
       (await anneau.count()) > 0,
       "la fiche rouverte n'a pas son anneau : c'est l'écran amputé qu'il a refusé"
     );
-    // Et le bouton qui la distingue encore : sans lui, ce qu'il TAPE ne part
-    // nulle part sur un chantier qui existe déjà.
-    assert.equal(await page.locator('[data-atlas="action-creation"]').count(), 1);
+    // Et le même bouton qu'à la création — 17 septembre 2026, « Enregistrer »
+    // retiré à sa demande : c'est « Je rédige à la main » qui enregistre ce
+    // qu'il TAPE sur un chantier qui existe déjà, et qui mène au devis.
+    assert.equal(await page.locator('[data-atlas="action-ecrire"]').count(), 1);
+    assert.equal(await page.locator('[data-atlas="action-creation"]').count(), 0, "« Enregistrer » est revenu");
   });
 
   const NOM = `Luk ${Date.now()}`;
 
   await cas("enregistrée, la fiche RAMÈNE au devis — le chemin se referme", async () => {
     await page.fill('input[placeholder="Bernard"]', NOM);
-    await page.click('[data-atlas="action-creation"]');
+    await page.click('[data-atlas="action-ecrire"]');
     await page.waitForURL(new RegExp(`/chantiers/${chantierId}/devis-complet`), { timeout: 30_000 });
   });
 

@@ -207,7 +207,7 @@ process.stdin.on("end", () => {
         "Ce qui n'a jamais été mesuré, c'est la rencontre entre ce lot et ce que",
         "« main » a apporté. Elle se joue en une minute, et se repose toute seule :",
         "",
-        "    npx tsx scripts/verifier-apres-fusion.ts",
+        "    npx tsx scripts/verifier-ce-qui-a-bouge.ts",
         "",
         "Sans rencontre, il repose le verdict tel quel et la fusion s'ouvre.",
         "Avec rencontre, il rejoue CES fichiers-là, et rien d'autre.",
@@ -243,8 +243,17 @@ process.stdin.on("end", () => {
       // **Un rouge qui vient d'ailleurs ne se corrige pas en rejouant tout.**
       // Sa règle du 17 septembre : on rejoue les SEULS rouges sur la base de
       // `main`, et un rouge déjà là n'est pas de ce lot.
+      // **UN ROUGE NE COÛTE PLUS LA MESURE ENTIÈRE — 17 septembre 2026, 23 h.**
+      // Sa colère : *« ça recommence et c'est ça à chaque fois ! »*, devant une
+      // session qui repartait pour cinquante minutes après avoir corrigé une
+      // ligne de documentation. Une étape hors suites — Types, Lint, Mémoire du
+      // dépôt — n'avait aucun moyen de redevenir verte autrement.
       ...(/ROUGE/.test(raison)
         ? [
+            "Un rouge se rejoue SEUL, avec ce que la correction peut casser :",
+            "",
+            "    npx tsx scripts/verifier-ce-qui-a-bouge.ts",
+            "",
             "Et si ce rouge vient d'ailleurs — d'une autre session, d'un autre lot —,",
             "il se compare sans rejouer la batterie de main :",
             "",

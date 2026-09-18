@@ -12,7 +12,6 @@ import {
   libelleRetourDesCoordonnees,
   provenanceDesCoordonnees,
   retourDesCoordonnees,
-  apresLesCoordonnees,
   coordonneesDepuisLeDevis,
   retourDuDevis,
 } from "../src/lib/retour-du-devis";
@@ -190,14 +189,14 @@ cas("sa flèche ANNONCE la bonne destination, et non « le devis » pour tout", 
   assert.equal(libelleRetourDesCoordonnees(ID, null), "Retour à la liste des chantiers");
 });
 
-cas("enregistrée depuis le planning, la fiche client y repart", () => {
-  // Il est venu du planning pour remplir ce qui manquait : il y retourne, et
-  // c'est la même règle que pour le devis depuis le 31 août.
+cas("venue du planning, la flèche de la fiche client y repart", () => {
+  // Il est venu du planning pour remplir ce qui manquait : la flèche l'y
+  // ramène, et c'est la même règle que pour le devis depuis le 31 août.
+  // (L'ENREGISTREMENT, lui, mène au devis depuis le 17 septembre 2026 —
+  // « Je rédige à la main », quelle que soit la provenance.)
   assert.equal(retourDesCoordonnees(ID, PLANNING), PLANNING);
   // Et la borne qui va avec : le devis, lui, ne se reçoit plus en retour.
   assert.equal(retourDesCoordonnees(ID, `/chantiers/${ID}/devis-complet`), "/");
-  assert.equal(apresLesCoordonnees(ID, PLANNING), PLANNING);
-  assert.equal(apresLesCoordonnees(ID, null), "/");
 });
 
 // ── Le contrôle sait-il rougir ? ────────────────────────────────────────────

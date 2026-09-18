@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { lotInchange, rencontreReelle, rougesApresComplement, suitesDuComplement } from "./_apres-fusion.mjs";
+import { rencontreReelle, rougesApresComplement, suitesDuComplement } from "./_apres-fusion.mjs";
 
 /**
  * LE COMPLÉMENT NE TIENT QUE POUR LE MÊME LOT, ET NE REJOUE QUE LA RENCONTRE.
@@ -18,42 +18,6 @@ function cas(nom: string, verifier: () => void) {
     console.error(`  ✗ ${nom}\n    ${(e as Error).message}`);
   }
 }
-
-console.log("=== Le lot est-il le même ? ===");
-
-const DIFF = `diff --git a/src/a.ts b/src/a.ts
-index 1111111..2222222 100644
---- a/src/a.ts
-+++ b/src/a.ts
-@@ -1,2 +1,2 @@
--const x = 1;
-+const x = 2;
-`;
-
-cas("le même diff, reposé sur une autre base (index différent) : inchangé", () => {
-  const rebase = DIFF.replace("index 1111111..2222222", "index 3333333..4444444");
-  assert.equal(lotInchange(DIFF, rebase), true);
-});
-
-cas("une ligne de plus dans le lot : changé", () => {
-  assert.equal(lotInchange(DIFF, DIFF.replace("+const x = 2;", "+const x = 3;")), false);
-  assert.equal(lotInchange(DIFF, DIFF + "+// une ligne\n"), false);
-});
-
-cas("un fichier de plus dans le lot : changé", () => {
-  assert.equal(lotInchange(DIFF, DIFF + DIFF.replace(/a\.ts/g, "b.ts")), false);
-});
-
-cas("des numéros de ligne qui glissent (main a ajouté des lignes plus haut) : inchangé", () => {
-  // Une entrée de CHANGELOG ajoutée par main au-dessus de la nôtre déplace le
-  // hunk sans rien changer au lot — trouvé au premier complément joué.
-  assert.equal(lotInchange(DIFF, DIFF.replace("@@ -1,2 +1,2 @@", "@@ -57,2 +57,2 @@")), true);
-});
-
-cas("une ligne de CONTEXTE qui change (main a touché une ligne voisine) : changé — on ne parie pas sur une rencontre", () => {
-  const voisin = DIFF.replace("@@ -1,2 +1,2 @@\n-const x = 1;", "@@ -1,3 +1,3 @@\n const y = 0;\n-const x = 1;");
-  assert.equal(lotInchange(DIFF, voisin), false);
-});
 
 console.log("\n=== Ce qu'on rejoue ===");
 

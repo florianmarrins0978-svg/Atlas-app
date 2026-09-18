@@ -5,6 +5,21 @@
 
 ---
 
+## FAIT : LA GRAVITÉ DE `main` NE FAIT PLUS REPAYER SES VOISINES (18 septembre 2026)
+
+Une session repartait pour quarante-cinq minutes parce que `main` avait apporté
+du code d'argent — déjà éprouvé par celui qui l'a écrit. La rencontre se partage
+désormais entre ce que le lot apporte (gravité pleine) et ce que `main` apporte
+(seul son plancher refait la batterie). `ARCHITECTURE.md` §382.
+
+## FAIT : CORRIGER UN ROUGE NE COÛTE PLUS LA BATTERIE ENTIÈRE (17 septembre 2026)
+
+Une étape qui n'est pas une suite — Types, Lint, Mémoire du dépôt, Construction
+— n'avait aucun moyen de redevenir verte seule : la table des étapes vivait
+dans le script de la batterie. `npx tsx scripts/verifier-ce-qui-a-bouge.ts`
+rejoue ce qui était rouge et ce que la correction peut casser, et remplace
+`verifier-apres-fusion.ts`. `ARCHITECTURE.md` §381.
+
 ## FAIT : LE GARDE-FOU DE `main` NE RÉCLAME PLUS DE BATTERIE POUR RIEN (17 septembre 2026)
 
 Il comparait des **dates** d'écriture : une fusion réécrit ce qu'elle apporte,
@@ -38,6 +53,25 @@ base et le geste sûr (`ARCHITECTURE.md` §379).
 
 **Sa base à lui n'est pas réparée par ce lot** : elle se remet d'aplomb en
 rallumant l'espace.
+
+## FAIT : LE MENU DU BAS, ET LA RÉPONSE DU CLIENT QUI N'ARRIVAIT PAS (17 septembre 2026)
+
+Deux défauts sur une même capture, la sienne, juste après l'envoi d'un devis.
+
+**La barre du bas avait disparu.** Le décor de l'écran — barre, cadre,
+rembourrage du bas — se choisissait dans la mise en page RACINE, au serveur, et
+Next.js ne rejoue pas cette mise en page sur une navigation de lien : le décor
+du devis (aucun) survivait à l'accueil, et pour toute la durée de l'onglet. Le
+choix vit désormais dans `CadreApplication`, un composant client qui lit le
+chemin courant. La barre ne se garde plus elle-même — la couche du 5 septembre
+qui compensait s'en va avec la racine corrigée.
+
+**La réponse du client n'arrivait qu'au rechargement.** Il n'y avait aucun
+mécanisme : l'accueil lit les réponses une fois, la réponse arrive plus tard et
+sur le téléphone du client. `VeilleDesNouvelles` relit l'accueil dès qu'il
+revient à Atlas, et toutes les trente secondes pendant qu'il le regarde.
+**Ce n'est pas une notification poussée** — Atlas fermé, rien ne sonne encore
+(`TODO.md`, en tête). `ARCHITECTURE.md` §384.
 
 ## FAIT : L'ACCUEIL SANS CHANTIER — LA PORTE DU DEVIS AU TIERS HAUT (17 septembre 2026)
 

@@ -231,12 +231,16 @@ async function main() {
     if (/\bNOUVEAU\b/.test(ecran)) {
       throw new Error("l'écran dit encore « Nouveau » sur un chantier qui existe");
     }
-    const bouton = page.locator('[data-atlas="action-creation"]');
+    const bouton = page.locator('[data-atlas="action-ecrire"]');
     const dit = (await bouton.innerText()).replace(/\s+/g, " ").trim();
     if (/Créer le chantier/i.test(dit)) {
       throw new Error(`le bouton dit « ${dit} » : il ne créerait rien`);
     }
-    if (!/Enregistrer/i.test(dit)) throw new Error(`le bouton dit « ${dit} » au lieu d'enregistrer`);
+    // **Le même bouton qu'à la création — 17 septembre 2026.** « Enregistrer »
+    // ramenait à la liste ; il l'a refusé devant l'écran : *« normalement il y
+    // a la note vocale et en dessous il propose d'écrire le devis à la main »*.
+    if (/^Enregistrer$/i.test(dit)) throw new Error(`le bouton dit « ${dit} » : c'est celui qu'il a fait retirer`);
+    if (!/à la main/i.test(dit)) throw new Error(`le bouton dit « ${dit} » au lieu de proposer le devis à la main`);
   });
 
   const CLIENT = `Martins ${Date.now()}`;
@@ -244,13 +248,11 @@ async function main() {
     await page.locator('input[placeholder="Bernard"]').fill(CLIENT);
     await page.locator('input[placeholder="06 12 34 56 78"]').fill("0679984514");
     await page.locator('input[placeholder="12 rue des Lilas, Nantes"]').fill("10 rue des Lilas, Nantes");
-    await page.getByRole("button", { name: /Enregistrer/ }).click();
-    // **On repart À LA LISTE, et plus sur la fiche du chantier** (4 septembre
-    // 2026, `ARCHITECTURE.md` §254). Il est entré depuis l'accueil, par la
-    // mention « Adresse non renseignée » : il y retourne. L'y renvoyer sur
-    // l'adresse retirée l'aurait ramené ICI par redirection — sur le
-    // formulaire qu'il vient d'enregistrer.
-    await page.waitForURL(`${BASE}/`, { timeout: 30_000 });
+    await page.getByRole("button", { name: /à la main/ }).click();
+    // **On arrive AU DEVIS, ce qu'il a tapé enregistré** — 17 septembre 2026.
+    // Le bouton dit où il mène, et c'est le même chemin qu'une fiche neuve ;
+    // la liste reste à une flèche (`retourDesCoordonnees`).
+    await page.waitForURL(new RegExp(`/chantiers/${chantierId}/devis-complet`), { timeout: 30_000 });
 
     // **Le nom recalculé est ce qui fait disparaître la ligne fautive.** Sans
     // lui, la base porterait le bon client et l'accueil dirait encore

@@ -10,9 +10,11 @@
  *
  * Ce qui rend la règle SÛRE, et pourquoi chaque condition est là :
  *
- *   1. **le lot n'a pas changé d'une ligne** — son diff contre sa base est
- *      identique à celui que le contrôle a mesuré. Sinon ce n'est plus le même
- *      lot, et rien de ce qui a été mesuré ne vaut ;
+ *   1. **ce qui a bougé se lit par le CONTENU** — l'empreinte du verdict, et
+ *      git pour ce qu'elle n'indexe pas (`_ce-qui-a-bouge.mjs`). Comparer des
+ *      diffs texte, comme le faisait la première version, refusait dès qu'une
+ *      ligne voisine bougeait — donc au moment même où l'on corrigeait un
+ *      rouge, et c'est la boucle du 17 septembre 2026 au soir ;
  *   2. **ce que `main` a apporté a déjà passé SON garde-fou** — chaque commit
  *      arrivé sur `main` y est entré par son propre contrôle ; ce qui n'a
  *      jamais été mesuré, c'est la RENCONTRE des deux ;
@@ -35,26 +37,6 @@
  * de `main` sous un lot qui touche la base, par exemple. Le complément ne SAIT
  * rejouer que ce qui se nomme.
  */
-
-/** Le diff d'un lot, débarrassé de ce qui change sans que le lot change. */
-export function empreinteDuDiff(diff) {
-  return String(diff ?? "")
-    .split("\n")
-    // `index abc..def` porte les identifiants d'objets : ils changent avec la
-    // base, pas avec le contenu.
-    .filter((l) => !/^index [0-9a-f]+\.\.[0-9a-f]+/.test(l))
-    // Les NUMÉROS de ligne d'un hunk glissent dès que main ajoute des lignes
-    // plus haut dans le même fichier — une entrée de CHANGELOG suffit — sans
-    // que le lot change. Ils s'effacent ; le texte de l'en-tête et les lignes
-    // de contexte, eux, restent comparés : une ligne voisine qui change fait
-    // encore refuser (17 septembre 2026, trouvé au premier complément joué).
-    .map((l) => l.replace(/^@@ -\d+(?:,\d+)? \+\d+(?:,\d+)? @@/, "@@ @@"))
-    .join("\n");
-}
-
-export function lotInchange(diffAvant, diffApres) {
-  return empreinteDuDiff(diffAvant) === empreinteDuDiff(diffApres);
-}
 
 /**
  * LA RENCONTRE RÉELLE entre ce que `main` a apporté et ce que le lot occupe.

@@ -2,7 +2,6 @@ import assert from "node:assert/strict";
 import { lienVersLeChantierAuPlanning } from "../src/lib/lien-planning";
 import { LIBELLE_RETOUR_PLANNING } from "../src/lib/retour-au-planning";
 import {
-  apresLesCoordonnees,
   coordonneesDepuisLeDevis,
   libelleRetourDuDevis,
   provenanceDesCoordonnees,
@@ -14,11 +13,15 @@ import {
 // page fiche client »** — le patron, 31 août 2026 au soir, après avoir vu le
 // matin même la moitié du chemin corrigée (un devis SANS client).
 //
-// Cette suite tient les deux moitiés du chemin : l'aller (le retour du devis
-// mène à la fiche client, avec ou sans client) et le retour (la fiche ramène au
-// devis). Elle sait échouer : rendre `/chantiers/${id}` dans l'un OU l'autre cas
-// rougit les deux premiers, et oublier la provenance dans `apresLesCoordonnees`
-// rougit le cinquième.
+// Cette suite tient l'aller du chemin : le retour du devis mène à la fiche
+// client, avec ou sans client. Elle sait échouer : rendre `/chantiers/${id}`
+// rougit les deux premiers cas.
+//
+// **Le retour (la fiche ramène au devis) ne se calcule plus — 17 septembre
+// 2026.** « Enregistrer » a été retiré de la fiche rouverte à sa demande ; le
+// bouton « Je rédige à la main » enregistre et mène au devis, d'où qu'on
+// vienne. Il n'y a donc plus de provenance à relire à l'enregistrement, et
+// `test-devis-sans-client-e2e.ts` éprouve ce chemin dans un vrai navigateur.
 //
 // **Et depuis le 8 septembre 2026, la moitié qui manquait** : venu du planning,
 // le devis y ramène (quatre cas en fin de fichier). Sa règle du 31 août n'est
@@ -87,12 +90,6 @@ cas("l'adresse de la fiche porte sa provenance, et elle se relit", () => {
   assert.equal(provenanceDesCoordonnees(CHANTIER, de ?? undefined), SON_DEVIS);
 });
 
-cas("venu du devis, ENREGISTRER la fiche ramène au devis", () => {
-  // Sans cela, le document qu'il était en train de lire serait à retrouver
-  // seul — un chemin qui s'ouvre et ne se referme pas.
-  assert.equal(apresLesCoordonnees(CHANTIER, SON_DEVIS), SON_DEVIS);
-});
-
 // **CE CAS A CHANGÉ DE SENS LE 7 SEPTEMBRE 2026, et c'est lui qui l'a
 // provoqué :** *« j'appuie une fois sur le retour du devis, j'arrive sur la
 // fiche client, et si je refais retour arrière je retourne sur le devis et non
@@ -120,31 +117,16 @@ cas("aller au devis puis revenir ne peut plus tourner en rond", () => {
   );
 });
 
-cas("SANS provenance, la flèche et l'enregistrement disent LA MÊME CHOSE", () => {
+cas("SANS provenance, la flèche sort vers la liste", () => {
   // « Adresse non renseignée » sur l'accueil entre par cette porte, depuis le
-  // 17 août 2026 : il vient de la liste, il y retourne.
+  // 17 août 2026 : il vient de la liste, la flèche l'y ramène.
   //
-  // **L'ENREGISTREMENT RENDAIT LA FICHE DU CHANTIER, ET IL NE LE PEUT PLUS.**
-  // Cette fiche est retirée le 4 septembre (`ARCHITECTURE.md` §254) et son
-  // adresse ne rend qu'une redirection — laquelle, sur un chantier sans dictée,
-  // ramène ICI, sur le formulaire qu'il vient d'enregistrer. Le chemin tournait
-  // en rond.
-  //
-  // Les deux gestes s'accordent donc, ce qu'ils ne faisaient pas : la flèche
-  // rendait déjà la liste.
+  // **Elle ne rend JAMAIS la fiche du chantier**, retirée le 4 septembre
+  // (`ARCHITECTURE.md` §254) : son adresse ne rend qu'une redirection —
+  // laquelle, sur un chantier sans dictée, ramène ICI, sur le formulaire qu'il
+  // vient de quitter. Le chemin tournerait en rond.
   assert.equal(retourDesCoordonnees(CHANTIER, null), "/");
-  assert.equal(apresLesCoordonnees(CHANTIER, null), "/");
-});
-
-cas("l'enregistrement ne renvoie JAMAIS sur la fiche retirée", () => {
-  // Le contrôle qui empêche la boucle de renaître, dans les deux cas.
-  for (const provenance of [null, SON_DEVIS]) {
-    assert.notEqual(
-      apresLesCoordonnees(CHANTIER, provenance),
-      `/chantiers/${CHANTIER}`,
-      "enregistrer la fiche client la rouvre par redirection : le chemin tourne en rond"
-    );
-  }
+  assert.notEqual(retourDesCoordonnees(CHANTIER, null), `/chantiers/${CHANTIER}`);
 });
 
 cas("UNE PROVENANCE ÉTRANGÈRE NE FAIT PAS SORTIR D'ATLAS", () => {
