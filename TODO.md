@@ -292,11 +292,15 @@ consigne. `ARCHITECTURE.md` §381.
 **Sa demande du 19 :** *« conserve celle-là [la deuxième] et essaye de m'en
 créer une troisième en partant de la base de la deuxième et en l'améliorant »*.
 Planche `appli/fiche-intervention-troisieme.html`, les deux côte à côte. La
-troisième : les quatre gestes sur UNE barre (dessin au-dessus du mot) ; « Fin
-de chantier » en BANDEAU DÉPLIANT — une barre blanche, le compte à droite
-(« 4 lignes » puis « 2 sur 4 »), un chevron or ; touchée, elle s'ouvre en
-glissant sur les lignes à cocher, les photos, « À signaler » et le seul bouton
-vert « C'est fini ». **Sa réponse du 19 : *« j'aime bien l'idée de la
+troisième : les quatre gestes sur UNE barre (dessin dans un disque de couleur
+au-dessus du mot) ; « TRAVAUX À FAIRE » en BANDEAU DÉPLIANT — une barre vert
+pâle, le compte à droite (« 4 lignes », « 2 sur 4 faits », « tout est fait »),
+un chevron ; touchée, elle s'ouvre en glissant sur les lignes à cocher, les
+photos, « À signaler » et le seul bouton vert « C'est fini ». Il s'appelait
+« Fin de chantier » ; sa remarque du 19 : *« ce qu'il y a à l'intérieur c'est
+pas fin de chantier, ça veut rien dire »*. Et de la couleur (*« elle est trop
+sobre »*) : vert pour ce qu'on fait, or pour ce qui se lit — la note sur un
+papier doré. **Sa réponse du 19 : *« j'aime bien l'idée de la
 troisième, garde les deux pour l'instant »*** — puis, devant une première
 version qui montrait les lignes tout le temps : *« un devis de trois pages, ça
 va faire trop long sur le planning ; quelque chose de joli, élégant, où on

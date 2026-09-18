@@ -14,10 +14,13 @@ Format : le plus récent en tête.
 troisième en partant de la base de la deuxième et en l'améliorant — plus belle
 et simple à utiliser et compréhensible »*. `appli/fiche-intervention-troisieme.html`
 pose les deux téléphones l'un sous l'autre, chacun avec son état : la troisième
-met les quatre gestes sur une seule barre, et fait de « Fin de chantier » un
-bandeau qui se déplie — une barre blanche avec le compte, touchée elle s'ouvre
-en glissant sur les lignes à cocher, les photos, « À signaler » et le seul
-bouton vert. Une première version montrait les lignes tout le temps ; sa
+met les quatre gestes sur une seule barre, et fait de « Travaux à faire » un
+bandeau qui se déplie — une barre vert pâle avec le compte, touchée elle
+s'ouvre en glissant sur les lignes à cocher, les photos, « À signaler » et le
+seul bouton vert. Il s'appelait « Fin de chantier » ; *« ce qu'il y a à
+l'intérieur c'est pas fin de chantier, ça veut rien dire »*. Puis de la couleur,
+la sienne — *« elle est trop sobre »* : vert pour ce qu'on fait, or pour ce qui
+se lit. Une première version montrait les lignes tout le temps ; sa
 réponse : *« un devis de trois pages, ça va faire trop long sur le planning »*,
 et *« j'aime bien l'idée de la troisième »*. **Sa consigne du même jour**, *« je veux pas de point entre
 Terminés et Retour d'intervention »*, est portée sur les deux planches (un

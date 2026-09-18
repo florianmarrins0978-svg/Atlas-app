@@ -24,9 +24,12 @@
      quatre gestes et un seul geste à faire — y aller, ou appeler. Les cibles
      sont plus hautes (64 px), donc plus faciles avec des gants.
 
-  2. « FIN DE CHANTIER » EST UN BANDEAU QUI SE DÉPLIE. Une barre blanche,
-     le mot en serif, le compte à droite (« 4 lignes », puis « 2 sur 4 ») et
-     un chevron or. On la touche : elle s'ouvre, en glissant, sur les lignes
+  2. « TRAVAUX À FAIRE » EST UN BANDEAU QUI SE DÉPLIE. Une barre vert pâle,
+     le mot en serif, le compte à droite (« 4 lignes », « 2 sur 4 faits »,
+     « tout est fait ») et un chevron. Il s'appelait « Fin de chantier » ;
+     sa remarque du 19 : *« ce qu'il y a à l'intérieur c'est pas fin de
+     chantier, ça veut rien dire »* — le bandeau porte le nom de ce qu'il
+     contient, et « C'est fini » reste le geste, dedans. On la touche : elle s'ouvre, en glissant, sur les lignes
      du devis à cocher, les photos, « À signaler » et le seul bouton vert,
      « C'est fini ».
 
@@ -40,6 +43,13 @@
 
   3. CE QUI MANQUE SE DIT SOUS LE BOUTON, avant l'appui, comme sur la
      deuxième — la règle de `retour-intervention.ts`.
+
+  4. DE LA COULEUR — sa remarque du 19 : *« essaye de me mettre un peu de
+     couleur dans la planche, elle est trop sobre »*. Les couleurs de
+     l'application, et chacune dit quelque chose : VERT pour ce qu'on fait
+     (y aller, appeler, cocher, finir), OR pour ce qui se lit et se copie
+     (l'adresse, la note sur un papier doré). Un disque sous chaque dessin,
+     le bandeau sur un vert pâle, la note sur un voile d'or.
 
   ─── CE QUI NE BOUGE PAS ──────────────────────────────────────────────────
 
@@ -144,7 +154,7 @@
            border-left:1px solid var(--trait-doux);transition:background .15s}
   .cellule:first-child{border-left:0}
   .cellule svg{color:var(--or);flex:none}
-  .cellule span{display:flex;align-items:center;min-height:2.3em}
+  .cellule > span:not(.disque){display:flex;align-items:center;min-height:2.3em}
   .cellule:active{background:var(--or-voile)}
 
   .note-cadre{display:block;width:100%;min-height:78px;padding:10px 12px;border:0;border-radius:10px;
@@ -193,6 +203,41 @@
   .bandeau .cases{padding-top:6px}
   .bandeau .vert{margin-top:14px}
   @media (prefers-reduced-motion:reduce){.pli,.tete .chev{transition:none}}
+
+  /* ─── TROISIÈME : DE LA COULEUR — sa remarque du 19, « elle est trop sobre » ───
+     Les couleurs de l'application, et chacune dit quelque chose :
+       VERT  (vert pâle #b9c6b4 · vert pin #2f3b2f · vert plein #7d9a6d)
+             = on y va, on fait, c'est fait
+       OR    (#B98B47 · voile d'or)  = ce qui se lit et se copie : la note, l'adresse
+     Rien n'est peint pour décorer : un disque sous chaque dessin, la note sur
+     un papier doré, le bandeau des travaux sur un vert pâle. */
+  :root{--vert-pale:#b9c6b4; --vert-voile:rgba(125,154,109,.16); --or-papier:rgba(185,139,71,.13)}
+  body.nuit{--vert-pale:#4f5f4c; --vert-voile:rgba(185,198,180,.12); --or-papier:rgba(201,160,94,.16)}
+  .v3 .feuille{background:var(--carte);box-shadow:0 0 0 1px var(--trait-doux), 0 2px 10px var(--ombre)}
+  .v3 .barre-gestes{background:transparent;box-shadow:none;gap:6px;overflow:visible}
+  .v3 .cellule{border-left:0;border-radius:12px;background:var(--teinte);box-shadow:inset 0 0 0 1px var(--trait-doux);
+               min-height:82px;gap:7px;font-size:11.5px}
+  .v3 .cellule:active{background:var(--or-voile)}
+  .v3 .disque{display:grid;place-items:center;width:36px;height:36px;border-radius:50%;flex:none}
+  .v3 .disque.d-vert{background:var(--vert-pale);color:var(--pin)}
+  .v3 .disque.d-or{background:var(--or-papier);color:var(--or-texte)}
+  .v3 .disque svg{color:inherit}
+  .v3 .part{border-top-color:var(--trait-doux)}
+  .v3 .etiquette{color:var(--or-texte)}
+  .v3 .note-cadre{background:var(--or-papier);box-shadow:inset 0 0 0 1px rgba(185,139,71,.22)}
+  .v3 .note-cadre:focus{box-shadow:inset 0 0 0 1.5px var(--or)}
+  .v3 .bandeau{background:var(--carte);box-shadow:inset 0 0 0 1px var(--trait)}
+  .v3 .tete{background:var(--vert-voile)}
+  .v3 .tete .tete-mot{color:var(--pin)}
+  .v3 .tete .tete-compte{color:var(--pin);font-weight:600}
+  .v3 .tete .chev{color:var(--pin)}
+  .v3 .bandeau.ouvert .pli .dedans{border-top:0}
+  .v3 .bandeau .cases{padding-top:10px}
+  .v3 .case .rond{background:var(--carte);box-shadow:inset 0 0 0 1.5px var(--vert-pale)}
+  .v3 .case[aria-pressed="true"] .rond{background:var(--plein)}
+  .v3 .photos .ajouter{background:var(--vert-voile);color:var(--pin);box-shadow:inset 0 0 0 1px var(--vert-pale)}
+  .v3 .parti{background:var(--vert-voile);box-shadow:inset 0 0 0 1px var(--vert-pale)}
+  .v3 .parti .mot{color:var(--pin)}
   .photos{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:8px}
   .photos .etiquette{margin:0 4px 0 0}
   .photos .vignette,.photos .ajouter{width:46px;height:46px;border-radius:9px;flex:none;
@@ -243,11 +288,12 @@
   <h2>Ce que la troisième change</h2>
   <table>
     <tr><td>Les quatre gestes</td><td>une seule barre, le dessin au-dessus du mot — on voit d’un coup qu’il y a quatre gestes, et les cibles sont plus grandes</td></tr>
-    <tr><td>Fin de chantier</td><td>une barre blanche qu’on touche, et qui se déplie avec les lignes du devis à cocher, la photo et « À signaler » — un devis de trois pages ne s’étale plus sur le planning. Fermée, elle dit où on en est : « 2 sur 4 »</td></tr>
+    <tr><td>Travaux à faire</td><td>le bandeau porte le nom de ce qu’il contient — votre remarque du 19, <i>« Fin de chantier, ça veut rien dire »</i>. Fermé, il dit où on en est : « 4 lignes », « 2 sur 4 faits », « tout est fait ». On le touche : il se déplie sur les lignes à cocher, la photo, « À signaler » et « C’est fini »</td></tr>
+    <tr><td>De la couleur</td><td>celle de l’appli, et chacune dit quelque chose : <b>vert</b> pour ce qu’on fait — y aller, appeler, cocher, finir ; <b>or</b> pour ce qui se lit et se copie — l’adresse, la note sur son papier doré</td></tr>
     <tr><td>Le point</td><td>parti, sur les deux : « Terminés — Retour d’intervention »</td></tr>
   </table>
   <p><b>Ce qui ne bouge pas</b> : la carte, « Fiche d’intervention », le nom, les quatre mots, « Ma note », le vert, le PDF en gras.</p>
-  <p><b>Essayez les deux</b> : sur la troisième, touchez « Fin de chantier », cochez, « + », « C’est fini ». La deuxième reste ici : <a href="fiche-intervention-en-mieux.html">fiche-intervention-en-mieux.html</a>.</p>
+  <p><b>Essayez les deux</b> : sur la troisième, touchez « Travaux à faire », cochez, « + », « C’est fini ». La deuxième reste ici : <a href="fiche-intervention-en-mieux.html">fiche-intervention-en-mieux.html</a>.</p>
   <p><b>Rien n’est codé.</b> Dites 2 ou 3, ou ce qui reste à changer.</p>
 </div>
 
@@ -278,6 +324,7 @@ function telephone(racine, variante) {
     return m;
   };
 
+  racine.classList.toggle("v3", variante === 3);
   racine.innerHTML = `<div class="ecran"><div class="fiche">
       <p class="titre">Vendredi 18 septembre</p><hr class="filet">
       <div class="chantier"><p class="nom">Pagnol</p><p class="ou">Mantes-la-Jolie</p><p class="duree">une journée</p>
@@ -334,10 +381,11 @@ function telephone(racine, variante) {
     } else {
       // TROISIÈME : une barre, quatre cellules, le dessin au-dessus du mot
       const g = el("div", "barre-gestes");
-      g.appendChild(bouton(`${T(DESSIN.maps, 20)}<span>Maps</span>`, () => {}, "cellule"));
-      g.appendChild(bouton(`${T(DESSIN.waze, 20)}<span>Waze</span>`, () => {}, "cellule"));
-      g.appendChild(bouton(`${T(DESSIN.copier, 20)}<span>${motCopie}</span>`, copier, "cellule"));
-      g.appendChild(bouton(`${T(DESSIN.appeler, 20)}<span>Appeler le client</span>`, () => {}, "cellule"));
+      const disque = (d, teinte) => `<span class="disque ${teinte}" aria-hidden="true">${T(d, 18)}</span>`;
+      g.appendChild(bouton(`${disque(DESSIN.maps, "d-vert")}<span>Maps</span>`, () => {}, "cellule"));
+      g.appendChild(bouton(`${disque(DESSIN.waze, "d-vert")}<span>Waze</span>`, () => {}, "cellule"));
+      g.appendChild(bouton(`${disque(DESSIN.copier, "d-or")}<span>${motCopie}</span>`, copier, "cellule"));
+      g.appendChild(bouton(`${disque(DESSIN.appeler, "d-vert")}<span>Appeler le client</span>`, () => {}, "cellule"));
       f.appendChild(g);
     }
 
@@ -371,8 +419,8 @@ function telephone(racine, variante) {
         const faites = etat.faites.filter(Boolean).length, total = TACHES.length;
         const b = el("div", "bandeau" + (etat.finOuverte ? " ouvert" : ""));
         const tete = bouton(
-          `<span class="tete-mot">Fin de chantier</span>
-           <span class="tete-compte">${faites === 0 ? `${total} lignes` : `${faites} sur ${total}`}</span>
+          `<span class="tete-mot">Travaux à faire</span>
+           <span class="tete-compte">${faites === 0 ? `${total} lignes` : faites === total ? "tout est fait" : `${faites} sur ${total} faits`}</span>
            <svg class="chev" width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5 8l5 5 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
           () => { etat.finOuverte = !etat.finOuverte; dessiner(); }, "tete");
         tete.setAttribute("aria-expanded", String(etat.finOuverte));
