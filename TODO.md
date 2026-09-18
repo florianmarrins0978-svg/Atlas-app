@@ -244,6 +244,8 @@ Puis ses cinq retouches du soir (« Client en attente », le point, le « + »,
 « Déplacer  Retirer » tels quels, la croix de l'absence) et le geste d'équipe
 par prénom : portés le 18. **Si oui, le lot code cette planche-ci, retouches
 comprises.**
+Puis : « Déplacer  Retirer » sous l'après-midi, au-dessus d'« Ajouter » ; et
+« Qui ? » → « + Salarié » (son choix). Portés le 18.
 
 **Sa consigne :** *« toutes les réponses que je vais te donner, tu vas mettre
 les modifs dans une seule planche, comme ça à la fin tu coderas la planche

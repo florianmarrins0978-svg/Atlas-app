@@ -157,6 +157,7 @@
            font:700 14.5px/1 inherit}
   .actions button{min-height:44px;color:var(--encre)}
   .demi .b .plus{color:var(--or);margin-left:6px}
+  .demi .b .geste .plus:first-child{margin:0 6px 0 0}
   .mots.equipe{padding-left:46px}
   /* la petite croix noire qui supprime l'absence — sa demande du 18 au soir */
   .croix{flex:none;min-width:44px;min-height:44px;display:inline-flex;align-items:center;
@@ -307,8 +308,8 @@
   </div>
   <p>Aucun bouton, aucun cadre, aucun aplat. Vos trois réponses du 17 sont là : les trois voies gardent leurs mots et « Ajouter » devient « Fermer » ; « Annuler » à droite de Matin · Après-midi · Journée ; le nom seul pose le client, la date en or au-dessus.</p>
   <p><b>Une chose change par rapport au 17 :</b> « Salarié absent ? » n’est plus en gras, il est en or — comme tout ce qui s’appuie. Le gras et l’or ensemble crieraient.</p>
-  <p><b>Vos quatre retouches du 18 sont là</b> : « Client en attente » derrière « Ajouter », plus de point entre l’adresse et la durée, le « + » devant « Salarié absent ? », et « Déplacer  Retirer » en bas à droite, tels quels.</p>
-  <p><b>Ajouter ou retirer un salarié sur un chantier</b> : touchez « Qui ? » ou le « + » à côté du nom, sur la ligne Matin ou Après-midi — les prénoms s’affichent, touchez-en un pour l’ajouter ou le retirer. C’est le geste d’aujourd’hui, sans la pastille.</p>
+  <p><b>Vos quatre retouches du 18 sont là</b> : « Client en attente » derrière « Ajouter », plus de point entre l’adresse et la durée, le « + » devant « Salarié absent ? », et « Déplacer  Retirer » en bas à droite, sous l’après-midi et au-dessus d’« Ajouter ».</p>
+  <p><b>Ajouter ou retirer un salarié sur un chantier</b> : touchez « + Salarié » ou le « + » à côté du nom, sur la ligne Matin ou Après-midi — les prénoms s’affichent, touchez-en un pour l’ajouter ou le retirer. C’est le geste d’aujourd’hui, sans la pastille.</p>
   <p><b>Un salarié absent</b> : une petite croix noire à droite de la durée le supprime.</p>
   <p><b>Matin et après-midi restent comme aujourd’hui</b> — la pastille et le mot en capitales.</p>
   <p><b>« Aujourd’hui »</b>, en haut, est une photo de votre application, prise ce soir sur le 18 septembre, pour comparer.</p>
@@ -434,6 +435,7 @@ function dessinerFiche() {
 
   // ce que le jour porte : chaque chantier, puis SES demi-journées ; une moitié vide garde sa ligne
   const liste = jours[jourTouche];
+  let actionsDuDernier = null;
   const demi = (cle, droite) => el("div", "demi",
     `<span class="a"><span class="pastille ${etat(occupation(jourTouche, cle))}"></span>${motDe(cle)}</span><span class="b">${droite}</span>`);
   for (const c of liste) {
@@ -444,8 +446,10 @@ function dessinerFiche() {
     for (const cle of c.demis) {
       // qui part, par moitié : les noms, et un « + » en or pour en ajouter ou en retirer
       const noms = (c.equipe && c.equipe[cle]) || [];
-      const mot = noms.length === 0 ? "Qui ?" : noms.length <= 2 ? noms.join(" / ") : `${noms[0]} +${noms.length - 1}`;
-      const b = geste(noms.length === 0 ? mot : `${mot}<span class="plus" aria-hidden="true">+</span>`,
+      // « + Salarié » quand personne n'est posé — sa réponse du 18 au soir, à la
+      // place de « Qui ? » : le même mot et le même « + » que la ligne du dessus
+      const mot = noms.length <= 2 ? noms.join(" / ") : `${noms[0]} +${noms.length - 1}`;
+      const b = geste(noms.length === 0 ? `<span class="plus" aria-hidden="true">+</span>Salarié` : `${mot}<span class="plus" aria-hidden="true">+</span>`,
         () => { equipeOuverte = equipeOuverte && equipeOuverte.id === c.id && equipeOuverte.cle === cle ? null : { id: c.id, cle }; tout(); },
         noms.length === 0 ? "geste" : "");
       const r = demi(cle, ""); r.querySelector(".b").appendChild(b); d.appendChild(r);
@@ -462,15 +466,19 @@ function dessinerFiche() {
         d.appendChild(m);
       }
     }
+    // « Déplacer  Retirer » en bas à droite, SOUS l'après-midi et AU-DESSUS
+    // d'« Ajouter » — sa consigne du 18 au soir. Pour le dernier chantier du
+    // jour, la ligne passe donc après la moitié restée libre.
     const a = el("div", "actions");
     a.appendChild(geste("Déplacer", () => {}, "")); a.appendChild(geste("Retirer", () => {}, ""));
-    d.appendChild(a);
+    if (c === liste[liste.length - 1]) actionsDuDernier = a; else d.appendChild(a);
     corps.appendChild(d);
   }
   for (const [cle] of MOMENTS.slice(0, 2)) {
     if (occupation(jourTouche, cle) === 0)
       corps.appendChild(el("div", "chantier vide", "")).appendChild(demi(cle, `<span class="libre">libre</span>`));
   }
+  if (actionsDuDernier) corps.appendChild(actionsDuDernier);
 
   // ajouter — trois mots, et l'on referme par où l'on est entré
   if (voies) {

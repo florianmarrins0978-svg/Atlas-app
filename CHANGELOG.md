@@ -57,6 +57,12 @@ planche : « Qui ? » ou le « + » de la ligne Matin / Après-midi ouvre les
 prénoms, et l'on touche pour ajouter ou retirer, comme aujourd'hui sans la
 pastille.
 
+**Deux réponses de plus, le même soir :** « Déplacer  Retirer » se pose SOUS
+l'après-midi et AU-DESSUS d'« Ajouter » — pour le dernier chantier du jour, la
+ligne passe donc après la moitié restée libre ; et « Qui ? » devient
+**« + Salarié »**, sur ma proposition qu'il a retenue : le même mot et le même
+« + » que « + Salarié absent ? » juste au-dessus, un seul geste à apprendre.
+
 ---
 ## 2026-09-17
 
