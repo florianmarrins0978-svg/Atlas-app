@@ -46,6 +46,17 @@ un port à part, base `atlas_test_a1`, le 18 septembre ouvert), et les
 demi-journées reprennent la pastille carrée et le mot en capitales de l'écran
 actuel, la pastille portant l'état de la moitié comme dans le mois.
 
+**Ses cinq retouches du 18 au soir, portées sur la planche :** « Client en
+attente » derrière « Ajouter » ; plus de point entre l'adresse et la durée (la
+durée repasse en or sous l'adresse, comme le « 2 jours » d'aujourd'hui) ; le
+« + » devant « Salarié absent ? » ; « Déplacer  Retirer » en bas à droite de
+chaque chantier, *« exactement comme c'est déjà »* ; une petite croix noire à
+droite de la durée d'une absence, qui la supprime. Et sa question — *« pour
+ajouter ou supprimer un salarié, comment on fait ? »* — a une réponse sur la
+planche : « Qui ? » ou le « + » de la ligne Matin / Après-midi ouvre les
+prénoms, et l'on touche pour ajouter ou retirer, comme aujourd'hui sans la
+pastille.
+
 ---
 ## 2026-09-17
 

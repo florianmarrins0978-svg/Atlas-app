@@ -240,6 +240,10 @@ pastille d'équipe et `GesteAbsence` (gras → or) : niveau à recalculer.
 demandes, faites : la page d'aujourd'hui à côté (photo), et matin / après-midi
 comme aujourd'hui (pastille + capitales). C'est cette planche-là qui attend son
 oui.
+Puis ses cinq retouches du soir (« Client en attente », le point, le « + »,
+« Déplacer  Retirer » tels quels, la croix de l'absence) et le geste d'équipe
+par prénom : portés le 18. **Si oui, le lot code cette planche-ci, retouches
+comprises.**
 
 **Sa consigne :** *« toutes les réponses que je vais te donner, tu vas mettre
 les modifs dans une seule planche, comme ça à la fin tu coderas la planche

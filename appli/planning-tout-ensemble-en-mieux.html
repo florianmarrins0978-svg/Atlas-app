@@ -148,8 +148,19 @@
   .geste:active{color:var(--encre)}
   .doux{color:var(--gris)}
 
-  .centre{display:flex;width:100%;min-height:44px;align-items:center;justify-content:center;
+  .centre{display:flex;width:100%;min-height:44px;align-items:center;justify-content:center;gap:10px;
           font-size:14px;color:var(--or)}
+  .centre .plus{font-size:19px;line-height:1;margin-top:-2px}
+  /* « Déplacer  Retirer » en bas à droite — sa consigne du 18 : « ça a déjà été
+     modifié, tu touches à rien, tu laisses exactement comme c'est déjà » */
+  .actions{display:flex;justify-content:flex-end;gap:14px;min-height:44px;align-items:center;
+           font:700 14.5px/1 inherit}
+  .actions button{min-height:44px;color:var(--encre)}
+  .demi .b .plus{color:var(--or);margin-left:6px}
+  .mots.equipe{padding-left:46px}
+  /* la petite croix noire qui supprime l'absence — sa demande du 18 au soir */
+  .croix{flex:none;min-width:44px;min-height:44px;display:inline-flex;align-items:center;
+         justify-content:flex-end;font-size:15px;color:var(--encre)}
 
   .ligne{display:flex;min-height:44px;align-items:center;gap:14px;font-size:14.5px}
   .ligne .a{flex:none;width:86px;color:var(--gris);font-size:13px}
@@ -168,7 +179,8 @@
                   30%{opacity:1;transform:none}100%{background:transparent}}
   .chantier.vide{padding-top:0;padding-bottom:0}
   .chantier .nom{margin:0;font:400 20px/1.2 ui-serif,Georgia,serif}
-  .chantier .ou{margin:1px 0 4px;font-size:13px;color:var(--gris)}
+  .chantier .ou{margin:1px 0 0;font-size:13px;color:var(--gris)}
+  .chantier .duree{margin:1px 0 4px;font-size:13.5px;color:var(--or)}
   /* SA DEMANDE DU 18 AU SOIR — « garder le matin / après-midi comme c'est
      aujourd'hui » : la pastille carrée et le mot en capitales, tels que
      l'application les peint (`data-atlas="demi"`, PlanningClient.tsx). */
@@ -295,7 +307,10 @@
   </div>
   <p>Aucun bouton, aucun cadre, aucun aplat. Vos trois réponses du 17 sont là : les trois voies gardent leurs mots et « Ajouter » devient « Fermer » ; « Annuler » à droite de Matin · Après-midi · Journée ; le nom seul pose le client, la date en or au-dessus.</p>
   <p><b>Une chose change par rapport au 17 :</b> « Salarié absent ? » n’est plus en gras, il est en or — comme tout ce qui s’appuie. Le gras et l’or ensemble crieraient.</p>
-  <p><b>Matin et après-midi restent comme aujourd’hui</b> — la pastille et le mot en capitales —, c’est votre demande du 18.</p>
+  <p><b>Vos quatre retouches du 18 sont là</b> : « Client en attente » derrière « Ajouter », plus de point entre l’adresse et la durée, le « + » devant « Salarié absent ? », et « Déplacer  Retirer » en bas à droite, tels quels.</p>
+  <p><b>Ajouter ou retirer un salarié sur un chantier</b> : touchez « Qui ? » ou le « + » à côté du nom, sur la ligne Matin ou Après-midi — les prénoms s’affichent, touchez-en un pour l’ajouter ou le retirer. C’est le geste d’aujourd’hui, sans la pastille.</p>
+  <p><b>Un salarié absent</b> : une petite croix noire à droite de la durée le supprime.</p>
+  <p><b>Matin et après-midi restent comme aujourd’hui</b> — la pastille et le mot en capitales.</p>
   <p><b>« Aujourd’hui »</b>, en haut, est une photo de votre application, prise ce soir sur le 18 septembre, pour comparer.</p>
   <p><b>Touchez</b> un nom dans le tiroir, « Ajouter », « Salarié absent ? », un jour.</p>
   <p><b>L’autre planche</b> : <a href="planning-tout-ensemble.html">planning-tout-ensemble.html</a>. <b>Rien n’est codé.</b></p>
@@ -320,15 +335,15 @@ const CLIENTS = [
   { id:4, nom:"Mr. Beauchamp-Lavallée", duree:"une journée",      ou:"Mantes-la-Ville", demis:["matin","apres_midi"] },
 ];
 
-let jours, jourTouche, restants, absence, quiDemande, choixMoment, voies, ouvert, derniere, demande;
+let jours, jourTouche, restants, absence, quiDemande, choixMoment, voies, ouvert, derniere, demande, equipeOuverte;
 function depart() {
   jours = { 14:[], 15:[], 16:[],
     17:[{ id:0, nom:"Mr. Frédéric", duree:"une demi-journée", ou:"Mantes-la-Jolie",
-          demis:["matin"], equipe:{ matin:"Antoine" } }],
+          demis:["matin"], equipe:{ matin:["Antoine"] } }],
     18:[], 19:[], 20:[] };
   jourTouche = 17; restants = CLIENTS.map((c) => c.id);
   absence = null; quiDemande = false; choixMoment = false; voies = false; ouvert = true;
-  derniere = null; demande = null;
+  derniere = null; demande = null; equipeOuverte = null;
 }
 
 const $ = (id) => document.getElementById(id);
@@ -386,7 +401,8 @@ function dessinerFiche() {
   if (!s) { corps.appendChild(el("p", "consigne", "Touchez un jour")); return; }
 
   // « Salarié absent ? » — sous la date, au milieu ; en or, comme tout ce qui s'appuie
-  corps.appendChild(geste(quiDemande ? "Fermer" : "Salarié absent ?",
+  // le « + » reste devant — sa consigne du 18 : « garde le + avant Salarié absent ? »
+  corps.appendChild(geste(`<span class="plus" aria-hidden="true">${quiDemande ? "✕" : "+"}</span><span>${quiDemande ? "Fermer" : "Salarié absent ?"}</span>`,
     () => { quiDemande = !quiDemande; choixMoment = false; tout(); }, "centre"));
 
   if (quiDemande) {
@@ -402,8 +418,12 @@ function dessinerFiche() {
     corps.appendChild(r);
   }
   if (absence) {
-    corps.appendChild(el("div", "ligne absent",
-      `<span class="a">Absent</span><span class="b">${absence.qui}</span>` + (choixMoment ? "" : `<span class="c doux">${motDe(absence.moment).toLowerCase()}</span>`)));
+    const la = el("div", "ligne absent",
+      `<span class="a">Absent</span><span class="b">${absence.qui}</span>` + (choixMoment ? "" : `<span class="c doux">${motDe(absence.moment).toLowerCase()}</span>`));
+    // une petite croix noire, à droite de la durée, pour supprimer l'absence
+    const x = geste("✕", () => { absence = null; choixMoment = false; tout(); }, "croix");
+    x.setAttribute("aria-label", `Supprimer l’absence de ${absence.qui}`); la.appendChild(x);
+    corps.appendChild(la);
     if (choixMoment) {
       // SA RÉPONSE A — « Annuler » à droite ; le choix et lui s'effacent ensemble
       corps.appendChild(mots(MOMENTS, absence.moment,
@@ -420,12 +440,31 @@ function dessinerFiche() {
     const neuf = derniere && derniere.client === c.id && derniere.neuf;
     if (neuf) derniere.neuf = false;
     const d = el("div", "chantier" + (neuf ? " neuf" : ""),
-      `<p class="nom">${c.nom}</p><p class="ou">${c.ou} · ${c.duree}</p>`);
-    c.demis.forEach((cle, rang) => {
-      const e = c.equipe && c.equipe[cle];
-      // « Qui ? » se dit une fois par chantier — c'est un geste, donc en or
-      d.appendChild(demi(cle, e ? e : rang === 0 ? `<span class="geste">Qui ?</span>` : ""));
-    });
+      `<p class="nom">${c.nom}</p><p class="ou">${c.ou}</p><p class="duree">${c.duree}</p>`);
+    for (const cle of c.demis) {
+      // qui part, par moitié : les noms, et un « + » en or pour en ajouter ou en retirer
+      const noms = (c.equipe && c.equipe[cle]) || [];
+      const mot = noms.length === 0 ? "Qui ?" : noms.length <= 2 ? noms.join(" / ") : `${noms[0]} +${noms.length - 1}`;
+      const b = geste(noms.length === 0 ? mot : `${mot}<span class="plus" aria-hidden="true">+</span>`,
+        () => { equipeOuverte = equipeOuverte && equipeOuverte.id === c.id && equipeOuverte.cle === cle ? null : { id: c.id, cle }; tout(); },
+        noms.length === 0 ? "geste" : "");
+      const r = demi(cle, ""); r.querySelector(".b").appendChild(b); d.appendChild(r);
+      if (equipeOuverte && equipeOuverte.id === c.id && equipeOuverte.cle === cle) {
+        const m = el("div", "mots equipe"); m.setAttribute("role", "group"); m.setAttribute("aria-label", `Qui part ${motDe(cle).toLowerCase()}`);
+        for (const nom of SALARIES) {
+          const x = geste(nom, () => {
+            const suite = noms.includes(nom) ? noms.filter((n) => n !== nom) : [...noms, nom];
+            c.equipe = { ...(c.equipe || {}), [cle]: suite }; tout();
+          });
+          x.setAttribute("aria-pressed", String(noms.includes(nom))); m.appendChild(x);
+        }
+        m.appendChild(geste("Fermer", () => { equipeOuverte = null; tout(); }, "annuler"));
+        d.appendChild(m);
+      }
+    }
+    const a = el("div", "actions");
+    a.appendChild(geste("Déplacer", () => {}, "")); a.appendChild(geste("Retirer", () => {}, ""));
+    d.appendChild(a);
     corps.appendChild(d);
   }
   for (const [cle] of MOMENTS.slice(0, 2)) {
@@ -436,8 +475,9 @@ function dessinerFiche() {
   // ajouter — trois mots, et l'on referme par où l'on est entré
   if (voies) {
     const r = el("div", "mots");
-    for (const mot of ["En attente", "Un client", "Autre chose"])
-      r.appendChild(geste(mot, () => { if (mot === "En attente") { ouvert = true; voies = false; tout(); } }));
+    // « Client en attente » — sa consigne du 18
+    for (const mot of ["Client en attente", "Un client", "Autre chose"])
+      r.appendChild(geste(mot, () => { if (mot === "Client en attente") { ouvert = true; voies = false; tout(); } }));
     corps.appendChild(r);
   }
   corps.appendChild(geste(voies ? "Fermer" : "Ajouter", () => { voies = !voies; tout(); }, "centre"));
