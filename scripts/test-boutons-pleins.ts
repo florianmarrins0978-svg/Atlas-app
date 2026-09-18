@@ -125,6 +125,18 @@ const APLATS_DECLARES: { fichier: string; motif: RegExp; pourquoi: string }[] = 
     pourquoi: "un interrupteur : il dit un état, on ne le presse pas pour agir",
   },
   {
+    fichier: "src/app/chantiers/[id]/export/EnvoiAuClient.tsx",
+    motif: /etat\.secondeVoulue \? colors\.rust/,
+    pourquoi:
+      "l'interrupteur « Vous proposez deux dates » (18 septembre 2026) : un état, pas un bouton — le même que celui du dessus, pour la seconde proposition",
+  },
+  {
+    fichier: "src/components/atlas/MoisCharge.tsx",
+    motif: /entoure === "seconde" \? colors\.orTexte : colors\.rust/,
+    pourquoi:
+      "le chiffre ENTOURÉ d'un jour proposé — « la B », sa planche du 17 septembre 2026 : une marque sur le calendrier, on ne l'appuie pas",
+  },
+  {
     fichier: "src/app/chantiers/[id]/facture/ReglementsRecus.tsx",
     motif: /acquittee \? colors\.rust/,
     pourquoi: "l'interrupteur « Facture acquittée » (sa planche du 14 septembre 2026) : un état, pas un bouton",

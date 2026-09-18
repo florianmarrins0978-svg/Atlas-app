@@ -1,18 +1,18 @@
 # État du projet
 
-**Dernière mise à jour :** 2026-09-17 · `main`
-· dernière migration `drizzle/0093_equipes_par_jour.sql`
+**Dernière mise à jour :** 2026-09-18 · `main`
+· dernière migration `drizzle/0095_jours_proposes.sql`
 
 ---
 
-## EN COURS : DEUX JOURS QUI NE SE TOUCHENT PAS — CODÉ, PAS ENCORE SUR `main` (18 septembre 2026)
+## FAIT : DEUX JOURS QUI NE SE TOUCHENT PAS (18 septembre 2026)
 
 Un appui pose le premier jour et le bloc d'affilée ; un appui sur un jour du
 chantier l'efface, l'appui suivant le remet où il veut ; « Vous proposez deux
 dates » ouvre la seconde ; la cliente lit les jours en toutes lettres et
 choisit. `envois_devis.jours_proposes` (0095), `propositions-de-jours.ts`,
-`creneauxSurLesJours`. Suites base et pures vertes ; suites navigateur et
-batterie NON jouées à sa demande — `TODO.md`. `ARCHITECTURE.md` §388.
+`creneauxSurLesJours`. Batterie entière au vert, niveau 3.
+`ARCHITECTURE.md` §388.
 
 ## FAIT : CINQ CONNEXIONS RÉUSSIES NE FERMENT PLUS LA PORTE AU SIXIÈME (17 septembre 2026)
 

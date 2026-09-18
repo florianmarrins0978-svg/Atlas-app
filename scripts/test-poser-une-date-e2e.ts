@@ -5,6 +5,8 @@ import { pool } from "../src/server/db/client";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
 import { jourDuPatron } from "./_jour-e2e";
 import { ADRESSE } from "./_adresse";
+import { joursDuBloc } from "../src/lib/disponibilites";
+import type { JourIso } from "../src/lib/disponibilites";
 
 // **« Je peux toujours pas poser de date sur les chantiers test. »**
 //
@@ -351,15 +353,25 @@ async function main() {
     if (moments === 0) {
       throw new Error("le geste s'est ouvert sans aucune sortie");
     }
-    // **Assez loin pour que le chantier ne s'y trouve pas déjà.** Quatre
-    // demi-journées posées « matin » à partir du jour occupent CE jour et LE
-    // SUIVANT : viser le lendemain ferait refuser le geste à juste titre — le
-    // chantier y est —, et le contrôle accuserait « Déplacer » de son propre
-    // montage.
-    const troisJoursApres = new Date(`${jour}T12:00:00Z`);
-    troisJoursApres.setUTCDate(troisJoursApres.getUTCDate() + 3);
-    const plancher = troisJoursApres.toISOString().slice(0, 10);
-    const accueil = grille.find((j): j is string => !!j && ouvrable4(j) && j >= plancher);
+    // **UN JOUR D'ACCUEIL QUE LE CHANTIER N'OCCUPE PAS — demandé au produit,
+    // pas compté à la main.** Viser un jour qu'il occupe déjà fait refuser le
+    // geste À JUSTE TITRE (« Ce chantier occupe déjà ce moment-là. »), et le
+    // contrôle accuse alors « Déplacer » de son propre montage.
+    //
+    // **C'est ce qui est arrivé le 18 septembre 2026, et seulement ce jour-là.**
+    // Le montage sautait « trois jours CALENDAIRES ». Parti d'un vendredi, le
+    // bloc de quatre demi-journées occupe le vendredi ET le lundi — que ces
+    // trois jours désignent exactement. Le contrôle déplaçait donc le chantier
+    // sur lui-même. Vert du mardi au jeudi, rouge le vendredi : une batterie
+    // sur deux accusait du code juste.
+    //
+    // `joursDuBloc` est la règle du produit elle-même : le décor n'a plus sa
+    // façon de compter les jours ouvrés, donc plus rien à faire diverger
+    // (`CLAUDE.md` §3).
+    const occupesParLeChantier = new Set<string>(joursDuBloc(jour as JourIso, 4));
+    const accueil = grille.find(
+      (j): j is string => !!j && ouvrable4(j) && j > jour && !occupesParLeChantier.has(j)
+    );
     if (!accueil) throw new Error("aucun jour d'accueil ouvrable au calendrier");
     await page.click(`[data-atlas="grille-mois"] [data-jour="${accueil}"]`);
     await page.waitForTimeout(400);

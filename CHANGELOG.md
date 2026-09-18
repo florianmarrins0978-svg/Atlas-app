@@ -8,6 +8,21 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-18
 
+### Un contrôle du planning ne compte plus les jours ouvrés à sa façon
+
+`test-poser-une-date-e2e` cherchait son jour d'accueil à **trois jours
+calendaires** du jour de départ. Parti d'un vendredi, le bloc de quatre
+demi-journées occupe le vendredi ET le lundi — que ces trois jours désignent
+exactement : le contrôle déplaçait le chantier sur lui-même, le serveur
+refusait à juste titre (« Ce chantier occupe déjà ce moment-là. »), et
+l'échec accusait « Déplacer ».
+
+**Vert du mardi au jeudi, rouge le vendredi.** Découvert le 18 septembre 2026
+— un vendredi — par la batterie du lot des deux jours, qui n'y était pour
+rien. Le montage demande désormais les jours au produit lui-même
+(`joursDuBloc`), et ne les compte plus à côté (`CLAUDE.md` §3).
+
+
 ### Deux jours qui ne se touchent pas : CODÉ — un appui pose le bloc, un appui efface, la cliente lit les jours
 
 Sa question du 17 septembre (« le 18 et le 22 — comment je fais ? »), sa

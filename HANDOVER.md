@@ -166,9 +166,9 @@ impossible avant l'acceptation : les deux dates du calendrier d'envoi sont deux
 d'un seul tenant (`creneauxDuChantier`, `envois-devis.ts`). Le morcellement
 n'existe qu'**après**, au planning — et le client n'en sait rien.
 
-**Codé le 18 septembre 2026** (`ARCHITECTURE.md` §388) — sans les suites
-navigateur ni la batterie, à sa demande : `TODO.md` en tête dit ce qui reste
-à jouer avant `main`. La planche `appli/deux-jours-pas-colles.html` (119)
+**Codé le 18 septembre 2026** (`ARCHITECTURE.md` §388), et **sur `main`** :
+la batterie entière est passée au vert sur ce lot, niveau 3 — c'est sa
+migration `0095`, son schéma et le devis qui l'y portent. La planche `appli/deux-jours-pas-colles.html` (119)
 raconte le chemin. Refaite le soir même — *« je comprends rien, l'idée c'est
 que ce soit simple et joli »* — sur une seule idée : **un appui, un jour du
 chantier**, puis refaite une troisième fois **sur le geste qu'il a dicté** :
