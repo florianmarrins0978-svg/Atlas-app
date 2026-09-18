@@ -59,7 +59,17 @@ refusait à raison. Il compte désormais en jours ouvrables.
 
 ## Les chiffres
 
-*(remplis à la fin de la batterie)*
+Batterie complète jouée le 18 septembre 2026 au soir, dans le dossier du lot (`npm run verifier:avant-livraison`), puis les rouges rejoués seuls (`verifier-ce-qui-a-bouge`) et comparés à `main` (`verifier-rouge-prealable`).
+
+| Étape | Résultat |
+|---|---|
+| Types, lint, mémoire du dépôt, construction, données de démonstration | verts |
+| Suites base | 382/395, puis 381/395 au rejeu |
+| Suites navigateur | 154/162 ; au rejeu des 8 rouges, 3 redeviennent vertes (anneau-vers-devis, pages-publiques-sans-navigation, tva-au-paiement) |
+| Connexion derrière un proxy | rouge une fois (page restée sur « Chargement… »), verte au rejeu |
+| Les 9 suites du planning | vertes, en batterie et jouées seules |
+
+**Aucun rouge ne touche le planning.** Les quatorze rouges base sont les suites d'outillage qui rougissent déjà sur `main` sur ce poste Windows (verrou de construction, port du banc, ouverture de session, seed, version exécutée…) plus `test-reception-facture-db` ; les cinq rouges navigateur qui restaient en batterie (bandeau-banc, ia-03, ia-04, ligne-du-client, reprise-chantier) ouvrent des écrans que ce lot ne modifie pas, et **redeviennent tous verts joués seuls**, sur le lot comme sur une copie propre de `main` : des suites sensibles à la charge, pas un défaut du lot. Chaque rouge a été rejoué sur la base de `main` elle seule : même sort des deux côtés.
 
 ## Ce qui reste ouvert, et qui est à toi
 

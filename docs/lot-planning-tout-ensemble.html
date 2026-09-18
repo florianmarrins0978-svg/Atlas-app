@@ -170,7 +170,33 @@
 <p><strong>Et un rouge qui n'était pas à moi, corrigé quand même :</strong> <code>test-poser-une-date-e2e</code> rougissait <strong>tous les vendredis</strong> — son jour d'accueil tombait sur le lundi que le chantier occupe déjà, et le serveur refusait à raison. Il compte désormais en jours ouvrables.</p>
 <h2 id="les-chiffres">Les chiffres</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
-<p><em>(remplis à la fin de la batterie)</em></p>
+<p>Batterie complète jouée le 18 septembre 2026 au soir, dans le dossier du lot (<code>npm run verifier:avant-livraison</code>), puis les rouges rejoués seuls (<code>verifier-ce-qui-a-bouge</code>) et comparés à <code>main</code> (<code>verifier-rouge-prealable</code>).</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Étape</th>
+<th>Résultat</th>
+</tr></thead><tbody>
+<tr>
+<td>Types, lint, mémoire du dépôt, construction, données de démonstration</td>
+<td>verts</td>
+</tr>
+<tr>
+<td>Suites base</td>
+<td>382/395, puis 381/395 au rejeu</td>
+</tr>
+<tr>
+<td>Suites navigateur</td>
+<td>154/162 ; au rejeu des 8 rouges, 3 redeviennent vertes (anneau-vers-devis, pages-publiques-sans-navigation, tva-au-paiement)</td>
+</tr>
+<tr>
+<td>Connexion derrière un proxy</td>
+<td>rouge une fois (page restée sur « Chargement… »), verte au rejeu</td>
+</tr>
+<tr>
+<td>Les 9 suites du planning</td>
+<td>vertes, en batterie et jouées seules</td>
+</tr>
+</tbody></table></div>
+<p><strong>Aucun rouge ne touche le planning.</strong> Les quatorze rouges base sont les suites d'outillage qui rougissent déjà sur <code>main</code> sur ce poste Windows (verrou de construction, port du banc, ouverture de session, seed, version exécutée…) plus <code>test-reception-facture-db</code> ; les cinq rouges navigateur qui restaient en batterie (bandeau-banc, ia-03, ia-04, ligne-du-client, reprise-chantier) ouvrent des écrans que ce lot ne modifie pas, et <strong>redeviennent tous verts joués seuls</strong>, sur le lot comme sur une copie propre de <code>main</code> : des suites sensibles à la charge, pas un défaut du lot. Chaque rouge a été rejoué sur la base de <code>main</code> elle seule : même sort des deux côtés.</p>
 <h2 id="ce-qui-reste-ouvert-et-qui-est-à-toi">Ce qui reste ouvert, et qui est à toi</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
 <ul>
