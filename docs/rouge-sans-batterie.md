@@ -122,3 +122,64 @@ personne. Elle se rejoue — en minutes, pas en heure.
 | résultat | **395 suites sur 395 vertes** |
 | le rattrapage, joué sur ce lot après une avancée de `main` | **Types + Lint**, une minute |
 | batterie complète | **non jouée** |
+
+---
+
+# Suite — 18 septembre 2026 : le quatrième et dernier mur
+
+Ta phrase : *« ça commence vraiment à me soûler ! »*. Tu avais raison, et
+c'était le même défaut, d'un cran plus profond.
+
+Le document de l'autre lot le disait au chiffre près : *« `main` avait avancé de
+53 commits, dont le gabarit racine. Le garde-fou exige la batterie. »*
+Quarante-cinq minutes, pour du code qu'une session voisine avait **déjà** prouvé.
+
+## La règle, désormais
+
+**La batterie entière prouve un LOT, jamais une rencontre.** Il ne reste qu'une
+seule cause pour les cinquante minutes : **le risque de ton lot à lui**.
+
+Ce que `main` apporte a déjà été prouvé par celui qui l'a écrit. Ce qui n'avait
+jamais été mesuré, c'est **ton lot sur ce nouveau sol** — et ça se nomme :
+
+| Ce que `main` apporte | Ce qu'on remesure |
+|---|---|
+| une migration | les suites du fond (la base a changé sous les règles) |
+| la configuration | la **construction** — l'erreur qui condamne l'appli au mode lent |
+| le gabarit, le style global | **tes écrans**, et la **connexion** (le défaut d'août, une minute) |
+| du code d'argent | les suites du fond |
+
+## Ce que j'ai corrigé de ma propre main
+
+Le paragraphe écrit **quarante minutes plus tôt** gardait encore le gabarit
+racine comme cause de batterie, et un contrôle l'affirmait. C'était la même
+erreur. Le contrôle a été réécrit **avec sa raison**, pas effacé.
+
+## Les quatre murs de la soirée — tous la même forme
+
+| | La question posée | Celle qu'il fallait poser |
+|---|---|---|
+| 1 | ce fichier a-t-il une date neuve ? | son **contenu** a-t-il changé ? |
+| 2 | le lot a-t-il bougé ? | que peut **casser** ce qui a bougé ? |
+| 3 | ce fichier est-il grave ? | **qui** a déjà prouvé sa gravité ? |
+| 4 | ce fichier est-il un plancher ? | que reste-t-il à mesurer **sous** le lot ? |
+
+## Ce qui reste, et qui ne peut pas se faire d'ici
+
+Les **dix-neuf suites d'outillage rouges sur ton PC Windows** coûtent encore
+~30 min de comparaison par lot. Elles ne mesurent rien chez toi — elles
+cherchent `bash`, `ps`, `gh`. Une suite qui ne peut pas mesurer doit **refuser
+de conclure**, pas rougir : un « non applicable » n'entre pas dans les rouges et
+ne déclenche aucune comparaison.
+
+**Ça se corrige sur TA machine, pas ici** — ce poste est sous Linux, je ne verrais
+pas ce qu'elles rendent chez toi. C'est écrit dans `TODO.md` avec la marche à
+suivre. Lance `claude` dans ton espace Windows et demande-lui ce point-là.
+
+## Chiffres
+
+| | |
+|---|---|
+| niveau | **2** — `npm run verifier:avant-fusion` |
+| résultat | **vert** |
+| batterie complète | **non jouée** |
