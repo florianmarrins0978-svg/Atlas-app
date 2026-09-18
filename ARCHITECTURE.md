@@ -24747,7 +24747,7 @@ Bout à bout : **aucune sortie**. Il fallait fermer l'onglet ou passer par la
 barre du bas.
 
 **Ce qui est gardé est la moitié qui compte.** « Le chemin se referme » vaut pour
-l'**enregistrement** (`apresLesCoordonnees`), et c'est là qu'il a du sens : il
+l'**enregistrement** (`apresLesCoordonnees` — retiré le 17 septembre 2026, §383 : le bouton mène au devis d'où qu'on vienne), et c'est là qu'il a du sens : il
 remplit ce qui manquait, il enregistre, il revient à son devis complété. Ce qui
 change n'est que la **flèche** — elle sert à renoncer, pas à revenir avec
 quelque chose. Renoncer, c'est sortir ; sortir, c'est la liste.
@@ -26711,7 +26711,7 @@ avec la correction (`CLAUDE.md` §4 quater).
 **Les règles `?de=` restent, comme REPLI et pour l'après-enregistrement.** Elles
 répondent maintenant à une autre question que la flèche : où sortir quand il n'y
 a pas de page d'avant (signet, notification à froid), et où aller une fois un
-formulaire enregistré (`apresLesCoordonnees`). Leur moitié « devine d'où il
+formulaire enregistré (`apresLesCoordonnees` — retiré le 17 septembre 2026, §383). Leur moitié « devine d'où il
 vient » est en revanche devenue redondante avec le journal ; sa retraite est
 nommée dans `TODO.md`, et elle n'a pas été faite dans ce lot — six écrans et six
 suites en dépendent, et un lot qui les réécrit la même nuit se livre rouge.
@@ -31548,7 +31548,354 @@ courant.
 était une vraie régression de ce lot (elle cherchait la table des étapes dans
 son ancien fichier). C'est le contrôle qui l'a dit, pas la relecture.
 
-## §382 — Une proposition de date, ce sont LES JOURS du chantier — pas une date de départ
+## §382 — La gravité de `main` a déjà été éprouvée par `main`
+
+**Sa capture du 18 septembre 2026, à 00 h 27 :** *« ça continue »*. Une session,
+quarante minutes après la correction du §381 :
+
+> *« `main` a apporté 30 commits, dont du code qui touche l'argent (devis,
+> acomptes). La rencontre atteint le niveau 3 → batterie entière. Je la
+> lance. »*
+
+Elle appliquait la règle à la lettre, et la règle était fausse.
+
+**L'erreur était une erreur de CATÉGORIE.** `evaluerLeLot` répond à une seule
+question : *quel risque ce lot INTRODUIT-il ?* Le rattrapage la posait sur
+**tous** les fichiers de la rencontre — donc aussi sur ceux que `main` apporte.
+Or chacun de ces commits est **déjà** passé par son propre garde-fou, au niveau
+que sa gravité exigeait : une session voisine a payé la batterie complète pour
+son lot d'acomptes. La redemander ici, c'est faire repayer à un lot la mesure
+d'un autre — et à trois sessions actives, chacune paie pour les deux autres.
+
+**Ce qui décide désormais**, et la rencontre se partage en deux :
+
+| Ce qui a bougé | Ce que ça vaut |
+|---|---|
+| **le LOT** — ce que cette session a écrit | sa gravité pleine : argent, sécurité, plancher, rayon. Niveau 3 → batterie |
+| **`main`**, sur son PLANCHER — `drizzle/`, gabarit racine, `globals.css`, `src/server/db/`, configuration | **batterie** : ceux-là changent le SOL sous toutes les suites, et aucune suite ciblée ne le mesure |
+| **`main`**, sur sa gravité — argent, sécurité | **les suites du fond** (`npm test`) : c'est là que vivent les règles métier, l'isolation et la RLS |
+| **`main`**, le reste | les suites des écrans que la rencontre atteint |
+
+La deuxième ligne n'est pas une concession : c'est exactement ce que le dépôt
+écrivait déjà depuis le §375 — *« une migration arrivée de `main` sous un lot
+qui touche la base »*. Elle est devenue une **règle du code** au lieu d'un
+exemple en prose (`estUnPlancher`, `batterieDue`).
+
+**Ce que cela ne relâche PAS.** La gravité de `main` n'est pas ignorée : elle
+force `npm test`, c'est-à-dire les quatre cents suites qui éprouvent l'argent et
+l'isolation. Elle change **ce qu'on rejoue**, pas **si l'on rejoue**. Et le lot,
+lui, garde sa gravité entière : un lot qui touche un devis paie sa batterie,
+comme avant.
+
+**Le signe qui aurait dû alerter plus tôt** : trois corrections dans la même
+soirée sur le même mécanisme, et à chaque fois la même forme — une question
+posée au mauvais objet. Le §380 comparait des dates au lieu des contenus ; le
+§381 demandait « le lot a-t-il bougé » au lieu de « que peut casser ce qui a
+bougé » ; celui-ci demandait « ce fichier est-il dangereux » au lieu de « **qui**
+doit le prouver ».
+## §383 — La fiche client ROUVERTE porte le même bouton que la fiche neuve : « Je rédige à la main »
+
+**Son signalement du 17 septembre 2026**, l'écran sous les yeux : *« j'ai fait
+nouveau devis, ensuite retour, puis j'ai cliqué sur le client en attente dans
+la page d'accueil. Sauf que la fiche client a changé : normalement il y a la
+note vocale et en dessous il propose d'écrire le devis à la main, et là y'a
+marqué Enregistrer. Il faut remettre la proposition du devis à la main ! »*
+
+**Ce qu'il restait de l'écart entre créer et rouvrir.** Le 31 août, tout
+l'écart avait été supprimé à sa demande — photos, anneau, chaîne du devis —
+sauf un bouton : « Enregistrer », gardé sur la fiche rouverte pour que ce
+qu'il TAPE sur un chantier existant parte quelque part, et qui ramenait à la
+liste (§254). Devant l'écran, ce bouton est une DIFFÉRENCE : il reconnaît sa
+fiche par ce qu'elle propose, et une fiche qui ne propose plus le devis n'est
+plus la sienne.
+
+**Ce qui change, et ce qui ne se perd pas.** La fiche rouverte porte le bouton
+de la fiche neuve — secondaire, 66 %, effacé pendant qu'on dicte —, et il
+fait les deux choses : `creerPuisAller("devis")`, sur le chemin `reprise`,
+**enregistre ce qui est tapé** (`reprendreChantierAction`) puis ouvre le
+devis. Rien de ce que « Enregistrer » faisait n'est perdu ; seule la sortie
+change — le devis, au lieu de la liste. La liste reste à une flèche
+(`retourDesCoordonnees`, inchangé).
+
+**Ce qui est retiré, parce que plus rien ne l'appelle** (`CLAUDE.md`
+§4 quinquies) : la destination `fiche` de `FormulaireNouveauChantier`, et
+`apresLesCoordonnees` dans `retour-du-devis.ts` avec ses cas dans
+`test-retour-du-devis.ts` et `test-retour-au-planning.ts`. La provenance ne
+décide plus que de la flèche.
+
+**Ce qui le tient :** `test-coordonnees-depuis-accueil-e2e.ts` (venu de
+l'accueil, le bouton propose le devis à la main, enregistre ce qui est tapé,
+et ouvre le devis) et `test-devis-sans-client-e2e.ts` (venu d'un devis sans
+client, même bouton, et le devis retrouvé porte son client). Les deux refusent
+le retour d'« Enregistrer ».
+
+---
+
+---
+
+---
+
+---
+---
+
+## §384 — Le cadre de l'application décide AU NAVIGATEUR, et l'accueil se relit tout seul
+
+**Deux défauts d'un même soir — le 17 septembre 2026 —, signalés sur la même
+capture : l'accueil atteint après l'envoi d'un devis, sans barre du bas, et une
+réponse de client qui n'y arrivait qu'au rechargement.**
+
+### 1. La barre du bas : un choix serveur qui survivait à la navigation
+
+La mise en page racine tranchait, au SERVEUR, entre trois décors : le devis
+seul (sans onglets ni cadre), les écrans sans navigation, et l'application
+entière. **Next.js ne rejoue pas la mise en page racine sur une navigation de
+lien** — il ne redemande que le segment qui change. Le décor choisi au premier
+rendu de l'onglet valait donc pour tout ce qui suivait.
+
+| Le parcours | Ce qui se passait |
+|---|---|
+| accueil → devis (par un lien) → accueil | la barre revenait : le cadre était déjà là |
+| **devis atteint à son ADRESSE** → accueil | **plus de barre, plus de cadre**, jusqu'au rechargement |
+
+Le second est le sien : l'application rouverte sur ce devis, la page rechargée,
+l'adresse suivie depuis un message — puis l'envoi, qui ramène à l'accueil par
+`router.push("/")` (`DevisCompletClient`).
+
+**Le dépôt avait déjà payé l'autre moitié de ce défaut**, le 5 septembre 2026 :
+la barre d'un écran précédent RESTAIT sur le devis atteint par un lien, et
+couvrait son bouton d'envoi. On avait alors appris à la barre à se retirer
+d'elle-même d'après le chemin courant (`ecrans-sans-navigation.ts`). Ce
+rattrapage ne pouvait rien pour ce sens-ci : **une barre jamais rendue n'a rien
+à retirer**.
+
+**La correction est à la racine** : le choix quitte le serveur pour
+`CadreApplication`, un composant client qui lit `usePathname()` et se refait à
+chaque navigation. Sans clignotement — `usePathname` rend déjà le bon chemin au
+rendu du serveur, donc une page de devis n'est jamais peinte avec une barre
+qu'on lui retirerait ensuite.
+
+**Et la couche qui compensait s'en va** (`CLAUDE.md` §4 quater) : la barre ne se
+garde plus elle-même. Deux endroits qui décident de la même chose finissent par
+diverger, et c'est exactement ce que ces deux mesures contradictoires ont coûté.
+
+**Ce qui reste décidé au serveur, et doit le rester :** les chemins publics. Le
+rôle n'y est pas lisible — il n'y a pas de session —, et le demander sur
+`/login` renverrait vers `/api/session-perimee` l'écran qui sert justement à se
+reconnecter. Ailleurs, le rôle se lit désormais **toujours** : le sauter sur les
+écrans sans navigation reviendrait à refaire au serveur le choix qui vient d'en
+partir. La lecture ne coûte rien — `GardeAcces` l'a déjà faite, et `cache()` la
+rend une seule fois par requête.
+
+### 2. L'accueil : il n'y avait aucun mécanisme, pas un mécanisme en panne
+
+L'accueil est rendu au serveur : il lit les réponses, les rappels et les
+réceptions **une fois**, au moment où il est demandé. La réponse du client,
+elle, arrive plus tard et **ailleurs** — sur le téléphone du client, par la page
+publique du devis. Rien, dans le navigateur du patron, ne pouvait l'apprendre.
+
+`VeilleDesNouvelles` est ce mécanisme, et il ne recouvre rien :
+
+| Quand | Ce qu'il fait |
+|---|---|
+| il revient à Atlas (messagerie, appel, écran verrouillé) | l'accueil se relit **immédiatement** |
+| pendant qu'il regarde l'écran | toutes les trente secondes |
+| page cachée | rien — et les navigateurs endorment de toute façon les minuteurs d'un onglet caché, si bien qu'un battement aveugle rendrait un rythme qu'on croit tenir et qu'on ne tient pas |
+
+**Trente secondes est un arbitrage**, pas une valeur trouvée : plus court, on
+interroge la base pour rien pendant qu'il travaille ; plus long, la nouvelle
+qu'il attend dort sous ses yeux.
+
+**Ce que cela ne remplace pas** : une notification poussée, qui sonnerait Atlas
+fermé. Elle n'existe pas, elle est dans `TODO.md`, et ce n'était pas une raison
+pour laisser une réponse de client dormir sous ses yeux.
+
+**Les deux suites fixent la PROMESSE, pas le montage** : la barre revient quand
+on quitte le devis par un vrai geste, et la carte arrive sans qu'il recharge.
+Aucune ne compte les trente secondes — un contrôle qui les compterait se
+contredirait au premier réglage et ne défendrait rien de ce qu'il voit, lui
+(`CLAUDE.md` §5 bis). Toutes deux ont été vues rouges sur le code d'avant.
+
+---
+
+---
+
+## §385 — Pendant un déplacement, le mois passe ENTIER au-dessus de la fiche
+
+**Sa capture du 17 septembre 2026, puis sa correction.** L'écran lui disait
+« touchez le jour au-dessus » alors que dix jours du mois — dont celui qu'il
+visait — étaient dessinés SOUS la consigne. On lui a d'abord proposé de
+réécrire la phrase ; il a redressé : *« ce que je voulais c'était pas changer
+la phrase mais faire en sorte que le planning apparaisse entier au-dessus de
+Mr Linotte pour choisir un jour facilement »*. Planche
+`appli/deplacer-la-consigne.html`, réponse « la A ».
+
+**Pourquoi la fiche vivait DANS la grille.** Sa correction du 4 septembre 2026
+— *« lorsque je clique sur un jour, le client doit être rattaché »* — a fait
+rendre la fiche entre la semaine du jour ouvert et la suivante, l'encoche
+pointant la case (`MoisCharge`, prop `volet`). C'est ce qui a supprimé un
+`scrollIntoView`. Au repos c'est juste, et cela ne bouge pas.
+
+**Ce que le geste change.** `voletDetache` déplace la fiche sous la DERNIÈRE
+semaine le temps qu'il choisisse un jour d'accueil. Trois conséquences, et la
+deuxième n'avait pas été vue :
+
+| | |
+|---|---|
+| la consigne | « au-dessus » redevient vraie — aucun mot n'a été changé |
+| la fiche | ne dépend plus de la semaine affichée, donc elle **survit au mois tourné** |
+| le repli sous le calendrier | n'existait que pour ce cas : **supprimé**, avec sa prop `dansLaFiche` et le `pale` de `MotDuGeste` |
+
+**Le nom du chantier ne se redit plus** (sa réponse « 1 sans le nom ») : une
+seule place, et il y est déjà en titre trois lignes plus haut. Sur sa capture
+il était écrit deux fois, à quatre lignes d'écart.
+
+**Elle est rendue DANS le panneau du milieu, pas après le carrousel** — et
+c'est une mesure, pas un goût. La fenêtre prend la hauteur du plus GRAND des
+trois mois affichés : un mois de six semaines à côté d'un mois de cinq
+laissait **56 px de blanc** entre le 30 et la fiche. Rendue à l'intérieur, elle
+regonfle le mois courant, qui redevient le plus grand — le vide retombe à
+20 px. Sur le milieu seulement : les voisins portent `pointerEvents: none`, et
+il en toucherait une qui ne répond pas.
+
+**La pointe de rattachement disparaît pendant le geste**, `volet` recevant
+`null` pour la colonne : descendue sous le mois, elle désignerait la case d'à
+côté. C'est le cerne du jour ouvert qui le dit, et il ne ment pas sur la
+distance.
+
+**« Annuler » a rejoint la ligne de la consigne**, en noir gras, à 2 cm sur sa
+droite — sa retouche du même jour. Ce ne sont pas `2cm` CSS : cette unité vaut
+96 dpi nominaux, soit 1,25 cm sous la règle sur son téléphone, dont l'écran
+fait ~61 px par centimètre. L'écart se **comprime** plutôt que de pousser le
+bouton dehors — mesuré sur 320 px de large, où il finissait pile sur le bord.
+La ligne ne vaut que pour le choix du JOUR : au moment suivant, trois mots
+s'ajoutent et ne tiennent pas à côté.
+
+**Ce que les tests tiennent** (`test-deplacer-sur-le-calendrier-e2e.ts`) : aucun
+jour du mois sous la fiche, la fiche posée après la dernière semaine, elle
+survit au mois tourné avec un seul bandeau, « Annuler » sur la ligne de la
+consigne et en encre pleine, et la consigne sur UNE ligne — celui-là est né
+d'une capture regardée, où elle rendait « Touchez le jour au- / dessus ».
+
+## §386 — Un seuil anti-martèlement compte des essais qui RATENT : une connexion réussie rend sa place
+
+**Sa remarque du 17 septembre 2026 :** *« un ami s'était connecté à mon appli
+via son tél, et sur le sien ça n'a pas marché »*.
+
+**Ce qui se passait.** Le seuil de connexion (`LIMITES.connexion` : cinq par
+quart d'heure) est tenu sur la clé `connexion:<email>:<source>` — le compte ET
+l'adresse. Il est incrémenté **avant** `signIn`, parce que c'est là qu'il est
+atomique. Rien ne le redescendait ensuite, **même quand la porte s'ouvrait**.
+
+Deux téléphones sur un même wifi n'ont qu'une adresse. Un soir où il fait
+essayer l'application, cinq entrées légitimes suffisaient donc à mettre le
+sixième dehors — avec le bon mot de passe, et un message qui accusait *« cet
+appareil »*, c'est-à-dire un téléphone qui s'y connectait pour la première fois.
+
+**Reproduit avant de corriger** : six connexions d'affilée, bon mot de passe,
+même compte, même adresse — les cinq premières entrent, la sixième lit *« Trop
+de tentatives. Réessayez dans 15 minutes. »*
+
+**C'EST LA PANNE DU 6 AOÛT 2026 PAR L'AUTRE BORD.** Ce jour-là, ses parents
+lisaient « mot de passe incorrect » avec les bons identifiants : le compteur
+était tenu par e-mail seul. La correction d'alors a séparé les visiteurs **par
+adresse** — elle ne pouvait rien pour deux visiteurs qui *partagent* l'adresse,
+et elle n'a jamais cessé de compter les réussites.
+
+**Et la bonne réponse était déjà écrite dans le dépôt, à côté.** Le compteur
+d'échecs en base (`src/server/repositories/tentatives-connexion.ts`, migration 0062) ne
+compte que les refus — `noterEchec` à l'échec, `oublierEchecs` à la réussite.
+Deux mécanismes pour une même question, dont un seul était juste : exactement
+ce que `CLAUDE.md` §3 refuse.
+
+**Ce qui a été fait :** `MagasinLimite` sait désormais **rendre**
+(`rendreLimite`), et la connexion rend ses deux jetons là où elle efface déjà
+ses échecs. Rendre plutôt que « regarder puis consommer » : la seconde forme
+ouvre une fenêtre entre la lecture et l'écriture, et c'est par là qu'un
+martèlement passerait.
+
+| Le piège | Ce qui le tient |
+|---|---|
+| `DECR` sur une clé absente la crée à −1 **sans expiration** — un compteur immortel | le script Lua ne touche qu'une clé qui EXISTE, et garde son TTL |
+| rendre plus qu'on n'a pris creuse un crédit | plancher à zéro, des deux côtés |
+| une panne du magasin remettrait dehors quelqu'un qui vient d'entrer | `rendreLimite` ne lève jamais : elle journalise et la fenêtre se vide seule |
+
+Les deux premiers ont été **vus rouges** contre un `DECR` nu
+(`test-rate-limit-redis-real.ts`), le troisième contre un magasin couché
+(`test-limite-magasin-en-panne.ts`). Le parcours, lui, est tenu par un
+troisième cas de `test-connexion-limite-e2e.ts` : six entrées réussies d'affilée
+depuis une même adresse.
+
+**Ce que cela n'affaiblit pas.** Un attaquant ne rend jamais rien : ses essais
+ratent, par définition, et les six mauvais mots de passe du premier cas de la
+suite ferment toujours la porte. Ce qui change, c'est qu'entrer chez soi ne
+coûte plus un jeton.
+
+**Et le message ne ment plus** : « Trop de tentatives de connexion récentes »
+plutôt que « depuis cet appareil ». Une erreur qui envoie chercher au mauvais
+endroit coûte plus cher que pas d'erreur du tout (`AGENTS.md`).
+
+**Ce qui reste ouvert, et qui n'est pas de ce lot** : `creer-un-compte` porte le
+même libellé trompeur sur un seuil tenu par adresse seule. Inscrit dans
+`TODO.md`.
+
+
+
+## §387 — La batterie entière prouve un LOT, jamais une rencontre
+
+**Sa colère du 18 septembre 2026 :** *« ça commence vraiment à me soûler ! Tu
+vas me régler ce problème une bonne fois pour toutes ! »* — quatrième mur de la
+même soirée, et le dernier de cette forme.
+
+Le document d'un autre lot le montrait au chiffre près : *« `main` avait avancé
+de 53 commits pendant tout ça, dont le gabarit racine et le calendrier que je
+touche. Le garde-fou exige la batterie sur cet état. »* Quarante-cinq minutes,
+pour du code qu'une session voisine avait déjà prouvé.
+
+**Le raisonnement, et il vaut pour les quatre murs de la soirée.** Chaque commit
+de `main` est passé par son propre garde-fou, **au niveau que son risque
+exigeait** — plancher compris : la session qui pose une migration paie la
+batterie entière pour elle. Ce que `main` apporte est donc prouvé **contre
+l'application telle qu'elle est sans ce lot**. Et le lot, lui, a été prouvé
+contre `main` à sa base.
+
+**Ce que personne n'a mesuré, c'est le lot SUR CE NOUVEAU SOL.** Et cela se
+nomme :
+
+| Ce que `main` apporte | Ce qu'on remesure |
+|---|---|
+| une **migration**, `src/server/db/` | les suites du fond — la base a changé sous les règles et la RLS |
+| un réglage de **bâti** — `package.json`, `next.config`, `tsconfig` | la **Construction** : une erreur qui n'existe qu'à la construction ne se voit nulle part ailleurs (`CLAUDE.md` §5, le mode lent du 16 août) |
+| **tout** plancher — gabarit racine, `globals.css`, middleware | les **écrans DU LOT**, et la **connexion derrière un proxy** |
+| sa **gravité** — argent, sécurité (§382) | les suites du fond |
+
+Les écrans du lot s'ajoutent **explicitement**, et c'est le point technique :
+un gabarit racine n'a aucune arête d'import vers eux, donc la rencontre ne les
+voit pas — alors que c'est exactement sur lui qu'ils tournent désormais.
+
+La connexion derrière un proxy revient **à chaque plancher**, et c'est délibéré :
+c'est le défaut qui a coûté vingt allers-retours au patron en août, il est
+invisible partout ailleurs, et il coûte une minute.
+
+**Il ne reste donc qu'UNE cause à la batterie entière : le risque propre du
+lot** (`batterieDue`). C'est la règle du §5, et elle n'a pas bougé d'un pouce.
+
+**CE QUI A ÉTÉ CORRIGÉ DE MA PROPRE MAIN, NOIR SUR BLANC.** Le §382, écrit
+quarante minutes plus tôt, gardait le plancher de `main` comme cause de
+batterie, et un contrôle l'affirmait. C'était la même erreur de catégorie, d'un
+cran plus profond : *« ce fichier est-il dangereux »* au lieu de *« **qui** doit
+le prouver, et **quoi** reste-t-il à mesurer »*. Le contrôle a été réécrit avec
+sa raison, pas effacé.
+
+**Les quatre murs de la soirée, et ils avaient tous la même forme :**
+
+| | La question posée | Celle qu'il fallait poser |
+|---|---|---|
+| §380 | ce fichier a-t-il une date neuve ? | son contenu a-t-il changé ? |
+| §381 | le lot a-t-il bougé ? | que peut casser ce qui a bougé ? |
+| §382 | ce fichier est-il grave ? | qui a déjà prouvé sa gravité ? |
+| §387 | ce fichier est-il un plancher ? | que reste-t-il à mesurer SOUS le lot ? |
+
+## §388 — Une proposition de date, ce sont LES JOURS du chantier — pas une date de départ
 
 **Sa question du 17 septembre 2026, capture à l'appui :** *« un chantier de deux
 jours, je veux lui proposer le premier jour le 18 et on vient finir le chantier

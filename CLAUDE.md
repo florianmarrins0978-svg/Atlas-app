@@ -1912,14 +1912,20 @@ pendant qu'elle mesurait, ne repart pas pour cinquante minutes :
 npx tsx scripts/verifier-ce-qui-a-bouge.ts     # dans le dossier du lot, une fois reposé sur main
 ```
 
-Il tient la place de la batterie **à trois conditions**, et refuse sinon en
-disant quoi jouer : le lot n'a pas changé d'une ligne (son diff contre sa base
-est celui que la batterie a mesuré) ; son verdict d'avant ne portait aucun
-rouge nouveau ; et l'on rejoue vert **la rencontre** — suites base, écrans du
-lot, écrans que `main` a touchés, suites que `main` a apportées. Ce que
-`main` a apporté a déjà passé son propre garde-fou ; ce qui n'a jamais été
-mesuré, c'est les deux ensemble, et c'est cela qu'on rejoue
-(`scripts/_apres-fusion.mjs`, `ARCHITECTURE.md` §370).
+Il tient la place de la batterie **à deux conditions**, et refuse sinon en
+disant quoi jouer : ce qui a bougé depuis le verdict n'atteint pas le niveau 3,
+et l'on rejoue vert **la rencontre** — suites base, écrans du lot, écrans que
+`main` a touchés, suites que `main` a apportées. Ce que `main` a apporté a déjà
+passé son propre garde-fou ; ce qui n'a jamais été mesuré, c'est les deux
+ensemble, et c'est cela qu'on rejoue (`scripts/_apres-fusion.mjs`,
+`ARCHITECTURE.md` §370).
+
+**Le lot a le DROIT d'avoir changé — 17 septembre 2026, 23 h.** La première
+version exigeait qu'il soit identique à la ligne près, et refusait donc
+exactement quand on venait de corriger un rouge : c'est ce mur qui coûtait
+cinquante minutes à chaque correction (`ARCHITECTURE.md` §381). Ce qui décide
+n'est plus « le lot a-t-il bougé » mais « **ce qui a bougé peut-il casser
+quelque chose** ».
 
 **Et depuis le 13 septembre 2026, la batterie le tient elle-même** pour les
 deux cas qui ne se discutent pas : rien n'a bougé depuis son dernier vert, ou
@@ -2078,7 +2084,7 @@ npx tsx scripts/verifier-ce-qui-a-bouge.ts   # il mesure, et dit ce qu'il rejoue
 | rien qui croise le lot — ni ce qu'il emploie, ni ce qui l'emploie | **rien** : le verdict du lot est reposé tel quel |
 | une dépendance que le lot emploie, ou un de ses appelants | **seulement** les suites de ces fichiers-là |
 | une migration, un réglage de construction, de l'outillage | ils entrent toujours dans la rencontre — le graphe ne les lit pas, et c'est le côté sûr |
-| une rencontre qui atteint elle-même le niveau 3 | la batterie entière |
+| un PLANCHER — migration, gabarit racine, `globals.css`, configuration | **le lot sur ce nouveau sol** : ses écrans, les suites du fond, la construction, la connexion. **Jamais la batterie entière** (§387) |
 
 **La liste d'avant — « une pièce partagée, donc la batterie » — a été
 supprimée** : `globals.css` ou `layout.tsx` touchés par une autre session

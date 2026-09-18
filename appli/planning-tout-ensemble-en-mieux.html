@@ -1,0 +1,562 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Le planning, tout ensemble — en mieux</title>
+<!--
+  ════════════════════════════════════════════════════════════════════════════
+  SA DEMANDE DU 18 SEPTEMBRE 2026, EN DEUX TEMPS.
+
+  D'abord : *« va regarder la planche planning tout ensemble qu'une autre
+  session a réalisée et essaie de me proposer mieux : plus joli et facile
+  d'utilisation »*.
+
+  Puis, devant la première version de cette planche : *« C'est pire qu'avant,
+  j'en ai marre des gros boutons ! Je veux une page élégante et minimaliste
+  qu'on comprend direct — là on comprend rien. »*
+
+  ─── CE QUE LA PREMIÈRE VERSION AVAIT DE TROP, ET QUI EST PARTI ──────────
+
+  Elle empilait cinq formes pour dire « ça s'appuie » : une pastille verte
+  pleine (Antoine), une pastille en pointillé (Qui ?), un interrupteur à trois
+  cases, trois voies en capsules, un rond cerné d'or. Cinq dessins, une seule
+  idée — et l'œil devait apprendre chacun.
+
+  ─── LA RÈGLE, ET IL N'Y EN A QU'UNE ─────────────────────────────────────
+
+      NOIR  = un fait      (un nom, un lieu, « libre »)
+      OR    = un geste     (un mot qu'on touche)
+      GRIS  = le reste     (une heure, une durée, « Annuler »)
+
+  Rien n'est encadré, rien n'est rempli. Une ligne est une ligne. Un geste est
+  un mot en or, jamais un bouton. C'est ce que `MotDuGeste` fait déjà dans
+  l'application pour déplacer un chantier (`PlanningClient.tsx`) : on ne lui
+  apprend pas une forme, on garde la seule qui ne se voit pas.
+
+  ─── SES TROIS RÉPONSES DU 17, TOUJOURS LÀ ──────────────────────────────
+
+  · les trois voies gardent leurs mots ; on referme par « Ajouter » devenu
+    « Fermer », à la même place ;
+  · « Annuler » à droite du choix Matin · Après-midi · Journée ;
+  · le nom seul pose le client, sans contour, sans « ＋ », sans « › », la date
+    en or au-dessus.
+
+  Ce qui change par rapport à ce qu'il a validé les 9 et 17 septembre, et qui
+  se dit : « Salarié absent ? » n'est plus en gras — il est en or. Le gras
+  servait à dire « ceci s'appuie » ; l'or le dit pour tout l'écran, et un mot
+  en or ET en gras crierait. Il garde sa place, sous la date, au milieu.
+
+  ─── CE QUI RESTE DE LA PREMIÈRE VERSION, parce que c'est l'aisance ────────
+
+  · la fiche attachée au jour par sa pointe (déjà dans l'application) ;
+  · les barres qui disent vrai, et qui bougent quand on pose ;
+  · le client posé qui arrive dans la journée, et « Annuler » qui le ramène ;
+  · le tiroir tenu au bas de l'écran ; « Voir sur Nuit ».
+
+  ─── LES COULEURS ET LES MESURES ─────────────────────────────────────────
+
+  `src/lib/design-tokens.ts`, `src/lib/chartes.ts` : or #B98B47, carte
+  #faf9f5, encre #1c1c1a, gris #8a8578, vert pin #2f3b2f et vert pâle #b9c6b4
+  pour les barres seulement. Nuit : fond #101210, plage #1a1d19, encre
+  #e9e8de, gris #84887b. Aucun aplat, aucun contour de bouton. Toutes les
+  cibles font 44 px de haut — l'encre rétrécit, la cible non.
+
+  RIEN N'EST CODÉ.
+  ════════════════════════════════════════════════════════════════════════════
+-->
+<style>
+  :root{
+    --scene:#e6e3dc; --fond:#f5f3ee; --carte:#faf9f5; --encre:#1c1c1a;
+    --encre-douce:#4a4a44; --gris:#8a8578; --or:#B98B47; --pin:#2f3b2f; --pale:#b9c6b4;
+    --trait:rgba(28,28,26,.12); --trait-doux:rgba(28,28,26,.07);
+    --ombre:rgba(28,28,26,.07); --ombre-forte:rgba(20,18,14,.18); --or-voile:rgba(185,139,71,.10);
+  }
+  body.nuit{
+    --scene:#070908; --fond:#101210; --carte:#1a1d19; --encre:#e9e8de;
+    --encre-douce:#c1c2b6; --gris:#84887b; --or:#C9A05E; --pin:#e9e8de; --pale:#4f5f4c;
+    --trait:rgba(233,232,222,.14); --trait-doux:rgba(233,232,222,.08);
+    --ombre:rgba(0,0,0,.35); --ombre-forte:rgba(0,0,0,.6); --or-voile:rgba(201,160,94,.14);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;background:var(--scene)}
+  body{font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--encre);
+       -webkit-text-size-adjust:100%;padding:0 0 48px;font-variant-numeric:tabular-nums}
+  ::selection{background:var(--or-voile);color:var(--encre)}
+  button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;text-align:left}
+  button:focus-visible{outline:2px solid var(--or);outline-offset:3px;border-radius:4px}
+
+  .commandes{display:flex;justify-content:center;gap:22px;padding:16px 16px 0;font-size:13px;flex-wrap:wrap}
+  .commandes button{min-height:40px;color:var(--gris)}
+  .commandes button[aria-pressed="true"]{color:var(--encre);text-decoration:underline;
+                                        text-decoration-color:var(--or);text-underline-offset:6px}
+  .commandes .sep{width:1px;height:18px;background:var(--trait);align-self:center}
+
+  /* ─── deux téléphones : le sien d'aujourd'hui, et la proposition ─── */
+  .deux{display:flex;justify-content:center;gap:28px;align-items:flex-start;padding:0 12px}
+  .cote{flex:none;max-width:100%}
+  .cote .quel{margin:0 0 8px;text-align:center;font:600 11px/1 inherit;letter-spacing:.14em;
+              text-transform:uppercase;color:var(--gris)}
+  .cote.ojd .tel{display:block;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--trait) transparent}
+  .cote.ojd img{display:block;width:100%;height:auto}
+  @media (max-width:839px){
+    .deux{display:block;padding:0}
+    .cote{margin:0 auto}
+    body[data-vue="ojd"] .cote.prop{display:none}
+    body[data-vue="prop"] .cote.ojd{display:none}
+  }
+  @media (min-width:840px){.commandes .vue,.commandes .sep{display:none}}
+
+  /* ─── le téléphone : l'écran défile, le tiroir et la barre tiennent le bas ─── */
+  .tel{width:390px;height:760px;max-width:100%;margin:14px auto 0;background:var(--fond);
+       border-radius:30px;overflow:hidden;box-shadow:0 18px 46px var(--ombre-forte);
+       display:flex;flex-direction:column}
+  .ecran{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;padding:20px 18px 24px;
+         scrollbar-width:thin;scrollbar-color:var(--trait) transparent}
+
+  /* ─── la semaine ─── */
+  .mois{margin:0;text-align:center;font:600 12px/1 inherit;letter-spacing:.14em;text-transform:uppercase}
+  .lettres,.grille{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+  .lettres{margin-top:14px;text-align:center;font:500 10px/1 inherit;letter-spacing:.1em;
+           text-transform:uppercase;color:var(--gris)}
+  .grille{margin-top:4px}
+  .jour{height:56px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+        gap:7px;font:400 17px/1 ui-serif,Georgia,serif;border-radius:10px;
+        transition:color .18s}
+  .jour.repos{color:var(--gris)}
+  .jour[aria-pressed="true"]{color:var(--or);box-shadow:inset 0 0 0 1px var(--or)}
+  .marque{display:flex;flex-direction:column;gap:2px;width:22px}
+  .marque i{display:block;height:4px;border-radius:2px;overflow:hidden;background:var(--trait-doux)}
+  .marque i b{display:block;height:100%;width:100%;transform-origin:left;
+              transition:transform .35s cubic-bezier(.2,.7,.2,1)}
+  .marque i[data-etat="dispo"] b{background:var(--pale)}
+  .marque i[data-etat="plein"] b{background:var(--pin)}
+
+  /* ─── la fiche, attachée au jour ─── */
+  .attache{position:relative;margin-top:16px}
+  .pointe{position:absolute;bottom:100%;width:10px;height:10px;z-index:2;
+          transform:translate(-50%,8px) rotate(45deg);background:var(--carte);
+          border-left:1px solid var(--trait-doux);border-top:1px solid var(--trait-doux);
+          transition:left .22s cubic-bezier(.2,.7,.2,1)}
+  .fiche{background:var(--carte);border-radius:14px;border:1px solid var(--trait-doux);
+         box-shadow:0 6px 20px var(--ombre);padding:16px 18px 6px}
+  .titre{margin:0;text-align:center;font:600 12px/1 inherit;letter-spacing:.14em;text-transform:uppercase}
+  .filet{margin:14px 0 2px;border:0;border-top:1px solid var(--trait)}
+
+  /* LA RÈGLE : noir un fait, or un geste, gris le reste. */
+  .geste{color:var(--or)}
+  .geste:active{color:var(--encre)}
+  .doux{color:var(--gris)}
+
+  .centre{display:flex;width:100%;min-height:44px;align-items:center;justify-content:center;gap:10px;
+          font-size:14px;color:var(--or)}
+  .centre .plus{font-size:19px;line-height:1;margin-top:-2px}
+  /* « Déplacer  Retirer » en bas à droite — sa consigne du 18 : « ça a déjà été
+     modifié, tu touches à rien, tu laisses exactement comme c'est déjà » */
+  .actions{display:flex;justify-content:flex-end;gap:14px;min-height:44px;align-items:center;
+           font:700 14.5px/1 inherit}
+  .actions button{min-height:44px;color:var(--encre)}
+  .demi .b .plus{color:var(--or);margin-left:6px}
+  .demi .b .geste .plus:first-child{margin:0 6px 0 0}
+  .mots.equipe{padding-left:46px}
+  /* la petite croix noire qui supprime l'absence — sa demande du 18 au soir */
+  .croix{flex:none;min-width:44px;min-height:44px;display:inline-flex;align-items:center;
+         justify-content:flex-end;font-size:15px;color:var(--encre)}
+
+  .ligne{display:flex;min-height:44px;align-items:center;gap:14px;font-size:14.5px}
+  .ligne .a{flex:none;width:86px;color:var(--gris);font-size:13px}
+  .ligne .b{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .ligne .c{flex:none;min-height:44px;display:inline-flex;align-items:center;font-size:14px}
+  .mots{display:flex;gap:18px;align-items:center;min-height:44px;flex-wrap:wrap}
+  .mots button{min-height:44px;font-size:14px;color:var(--or)}
+  .mots button[aria-pressed="true"]{color:var(--encre);text-decoration:underline;
+                                    text-decoration-color:var(--or);text-underline-offset:6px;
+                                    text-decoration-thickness:1.5px}
+  .mots .annuler{margin-left:auto;color:var(--gris)}
+
+  .chantier{padding:8px 0 6px;border-radius:8px;margin:0 -8px;padding-left:8px;padding-right:8px}
+  .chantier.neuf{animation:pose 1.4s cubic-bezier(.16,1,.3,1) both}
+  @keyframes pose{0%{background:var(--or-voile);opacity:.3;transform:translateY(-3px)}
+                  30%{opacity:1;transform:none}100%{background:transparent}}
+  .chantier.vide{padding-top:0;padding-bottom:0}
+  .chantier .nom{margin:0;font:400 20px/1.2 ui-serif,Georgia,serif}
+  .chantier .ou{margin:1px 0 0;font-size:13px;color:var(--gris)}
+  .chantier .duree{margin:1px 0 4px;font-size:13.5px;color:var(--or)}
+  /* SA DEMANDE DU 18 AU SOIR — « garder le matin / après-midi comme c'est
+     aujourd'hui » : la pastille carrée et le mot en capitales, tels que
+     l'application les peint (`data-atlas="demi"`, PlanningClient.tsx). */
+  .demi{display:flex;min-height:44px;align-items:center;gap:18px;
+        font:600 11px/1 inherit;letter-spacing:.16em;text-transform:uppercase}
+  .demi .a{display:flex;align-items:center;gap:12px;min-width:112px}
+  .demi .b{font:400 14.5px/1.4 inherit;letter-spacing:0;text-transform:none}
+  .demi .libre{color:var(--gris);font-size:13px}
+  /* la pastille porte l'état de la demi-journée, comme dans le mois : pâle
+     quand il reste de la place, pin quand c'est complet, vide quand rien */
+  .pastille{width:16px;height:16px;border-radius:4px;flex:none}
+  .pastille.dispo{background:var(--pale)}
+  .pastille.plein{background:var(--pin)}
+  .pastille.libre{box-shadow:inset 0 0 0 1px var(--trait)}
+
+  .absent{margin:2px 0 0}
+
+  /* ─── le tiroir ─── */
+  .tiroir{flex:none;background:var(--carte);border-top:2px solid var(--or);
+          border-radius:14px 14px 0 0;box-shadow:0 -14px 34px var(--ombre);z-index:3}
+  .poignee{display:flex;width:100%;align-items:center;gap:12px;padding:15px 18px;min-height:52px}
+  .poignee .resume{flex:1;min-width:0;font:600 13px/1.3 inherit;color:var(--or);
+                   overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .poignee .resume.neutre{color:var(--encre)}
+  .poignee svg{flex:none;color:var(--gris);transition:transform .22s cubic-bezier(.2,.7,.2,1)}
+  .dedans{border-top:1px solid var(--trait);padding:2px 18px 12px;max-height:250px;overflow-y:auto;
+          scrollbar-width:thin;scrollbar-color:var(--trait) transparent}
+  .consigne{margin:12px 0 4px;font-size:13px;color:var(--gris)}
+  .poser{display:flex;width:100%;align-items:center;gap:12px;min-height:50px;
+         border-bottom:1px solid var(--trait-doux)}
+  .poser:last-child{border-bottom:0}
+  .poser .nom{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+              font:400 19px/1.25 ui-serif,Georgia,serif}
+  .poser .duree{flex:none;font-size:12.5px;color:var(--gris)}
+  .poser:active .nom{color:var(--or)}
+  .poser[aria-disabled="true"]{opacity:.5}
+  .demander{padding:8px 0 4px;border-bottom:1px solid var(--trait-doux)}
+  .demander:last-child{border-bottom:0}
+  .demander .nom{margin:0;font:400 19px/1.25 ui-serif,Georgia,serif}
+  .fait{display:flex;align-items:center;gap:12px;min-height:44px;font-size:14px}
+  .fait .quoi{flex:1;min-width:0}
+  .fait .annuler{color:var(--gris);min-height:44px}
+
+  /* ─── la barre du bas ─── */
+  .barre{flex:none;display:grid;grid-template-columns:repeat(5,1fr);height:64px;
+         background:var(--carte);border-top:1px solid var(--trait);padding-bottom:6px}
+  .barre span{display:flex;align-items:end;justify-content:center;padding-bottom:12px;
+              font-size:11px;color:var(--gris)}
+  .barre span.actif{color:var(--encre);font-weight:600}
+
+  .note{max-width:430px;margin:26px auto 0;padding:0 22px;font-size:13.5px;line-height:1.6;
+        color:var(--encre-douce)}
+  .note h2{font:400 19px/1.2 ui-serif,Georgia,serif;color:var(--encre);margin:20px 0 8px}
+  .note p{margin:0 0 10px}
+  .note b{color:var(--encre)}
+  .note a{color:var(--or)}
+  .note .regle{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;margin:0 0 12px}
+  .note .regle b{font-weight:600}
+
+  @media (max-width:420px){.tel{border-radius:0;margin-top:10px}}
+</style>
+</head>
+<body>
+
+<div class="commandes">
+  <button type="button" class="vue" data-vue="ojd" aria-pressed="false">Aujourd’hui</button>
+  <button type="button" class="vue" data-vue="prop" aria-pressed="true">La proposition</button>
+  <span class="sep" aria-hidden="true"></span>
+  <button type="button" id="nuit" aria-pressed="false">Voir sur Nuit</button>
+  <button type="button" id="rejouer">Recommencer</button>
+</div>
+
+<div class="deux">
+<div class="cote ojd">
+  <p class="quel">Aujourd’hui — votre application</p>
+  <div class="tel">
+    <img src="images/planning-aujourdhui.png" width="390" height="760"
+         alt="Le planning tel qu'il est aujourd'hui dans l'application">
+  </div>
+</div>
+<div class="cote prop">
+<p class="quel">La proposition</p>
+<div class="tel">
+  <div class="ecran" id="ecran">
+    <p class="mois">Septembre</p>
+    <div class="lettres" aria-hidden="true">
+      <span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span><span>D</span>
+    </div>
+    <div class="grille" id="grille"></div>
+
+    <div class="attache" id="attache">
+      <span class="pointe" id="pointe" aria-hidden="true"></span>
+      <div class="fiche">
+        <p class="titre" id="titre-jour"></p>
+        <hr class="filet">
+        <div id="corps"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tiroir">
+    <button class="poignee" type="button" id="poignee">
+      <span class="resume" id="resume"></span>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2" id="chev"><path d="M5 15l7-7 7 7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <div class="dedans" id="dedans"></div>
+  </div>
+
+  <div class="barre" aria-hidden="true">
+    <span>Chantiers</span><span class="actif">Planning</span><span>Terminés</span>
+    <span>Paysage</span><span>Réglages</span>
+  </div>
+</div>
+</div>
+</div>
+
+<div class="note">
+  <h2>Une seule règle</h2>
+  <div class="regle">
+    <b>Noir</b><span>un fait — un nom, un lieu, « libre »</span>
+    <b style="color:#B98B47">Or</b><span>un geste — un mot qu’on touche</span>
+    <b style="color:#8a8578">Gris</b><span>le reste — une heure, une durée, « Annuler »</span>
+  </div>
+  <p>Aucun bouton, aucun cadre, aucun aplat. Vos trois réponses du 17 sont là : les trois voies gardent leurs mots et « Ajouter » devient « Fermer » ; Matin · Après-midi · Journée sans « Annuler » — la croix le remplace, sa réponse du 19 ; le nom seul pose le client, la date en or au-dessus.</p>
+  <p><b>Une chose change par rapport au 17 :</b> « Salarié absent ? » n’est plus en gras, il est en or — comme tout ce qui s’appuie. Le gras et l’or ensemble crieraient.</p>
+  <p><b>Vos quatre retouches du 18 sont là</b> : « Client en attente » derrière « Ajouter », plus de point entre l’adresse et la durée, le « + » devant « Salarié absent ? », et « Déplacer  Retirer » en bas à droite, sous l’après-midi et au-dessus d’« Ajouter ».</p>
+  <p><b>Ajouter ou retirer un salarié sur un chantier</b> : touchez « + Salarié » ou le « + » à côté du nom, sur la ligne Matin ou Après-midi — les prénoms s’affichent, touchez-en un pour l’ajouter ou le retirer. C’est le geste d’aujourd’hui, sans la pastille.</p>
+  <p><b>Un salarié absent</b> : une petite croix noire à droite de la durée le supprime.</p>
+  <p><b>Matin et après-midi restent comme aujourd’hui</b> — la pastille et le mot en capitales.</p>
+  <p><b>« Aujourd’hui »</b>, en haut, est une photo de votre application, prise ce soir sur le 18 septembre, pour comparer.</p>
+  <p><b>Touchez</b> un nom dans le tiroir, « Ajouter », « Salarié absent ? », un jour.</p>
+  <p><b>L’autre planche</b> : <a href="planning-tout-ensemble.html">planning-tout-ensemble.html</a>. <b>Rien n’est codé.</b></p>
+</div>
+
+<script>
+/* La planche ne calcule aucune règle : deux équipes, Antoine et Julien, et une
+   barre qui se remplit à la proportion des équipes prises (une sur deux = la moitié). */
+const SEMAINE = [
+  { j:14, nom:"lundi 14 septembre" },   { j:15, nom:"mardi 15 septembre" },
+  { j:16, nom:"mercredi 16 septembre" },{ j:17, nom:"jeudi 17 septembre" },
+  { j:18, nom:"vendredi 18 septembre" },{ j:19, nom:"samedi 19 septembre", repos:true },
+  { j:20, nom:"dimanche 20 septembre", repos:true },
+];
+const EQUIPES = 2;
+const SALARIES = ["Antoine", "Julien"];
+const MOMENTS = [["matin","Matin"],["apres_midi","Après-midi"],["journee","Journée"]];
+const CLIENTS = [
+  { id:1, nom:"Mr. Linotte",            duree:"une journée",      ou:"Vernouillet",     demis:["matin","apres_midi"] },
+  { id:2, nom:"Jean-Louis",             duree:"une journée",      ou:"Les Mureaux",     demis:["matin","apres_midi"] },
+  { id:3, nom:"Mme Delaunay",           duree:"une demi-journée", ou:"Meulan",          demis:null },
+  { id:4, nom:"Mr. Beauchamp-Lavallée", duree:"une journée",      ou:"Mantes-la-Ville", demis:["matin","apres_midi"] },
+];
+
+let jours, jourTouche, restants, absence, quiDemande, choixMoment, voies, ouvert, derniere, demande, equipeOuverte;
+function depart() {
+  jours = { 14:[], 15:[], 16:[],
+    17:[{ id:0, nom:"Mr. Frédéric", duree:"une demi-journée", ou:"Mantes-la-Jolie",
+          demis:["matin"], equipe:{ matin:["Antoine"] } }],
+    18:[], 19:[], 20:[] };
+  jourTouche = 17; restants = CLIENTS.map((c) => c.id);
+  absence = null; quiDemande = false; choixMoment = false; voies = false; ouvert = true;
+  derniere = null; demande = null; equipeOuverte = null;
+}
+
+const $ = (id) => document.getElementById(id);
+const majuscule = (s) => s.replace(/^./, (c) => c.toUpperCase());
+const motDe = (cle) => MOMENTS.find((m) => m[0] === cle)[1];
+const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
+const geste = (texte, onClick, cls = "geste") => { const b = el("button", cls, texte); b.type = "button"; b.onclick = onClick; return b; };
+
+function occupation(j, demi) { return jours[j].filter((c) => c.demis.includes(demi)).length / EQUIPES; }
+function etat(part) { return part <= 0 ? "libre" : part >= 1 ? "plein" : "dispo"; }
+
+/* ─── la semaine ─── */
+function dessinerSemaine() {
+  const g = $("grille"); g.innerHTML = "";
+  for (const s of SEMAINE) {
+    const b = el("button", "jour" + (s.repos ? " repos" : ""));
+    b.type = "button"; b.dataset.jour = s.j;
+    b.setAttribute("aria-pressed", String(jourTouche === s.j));
+    b.setAttribute("aria-label", majuscule(s.nom));
+    const m = occupation(s.j, "matin"), a = occupation(s.j, "apres_midi");
+    b.innerHTML = `<span>${s.j}</span><span class="marque" aria-hidden="true">
+      <i data-etat="${etat(m)}"><b style="transform:scaleX(${m})"></b></i>
+      <i data-etat="${etat(a)}"><b style="transform:scaleX(${a})"></b></i></span>`;
+    b.onclick = () => {
+      jourTouche = jourTouche === s.j ? null : s.j;
+      derniere = null; demande = null; voies = false; choixMoment = false; quiDemande = false; tout();
+    };
+    g.appendChild(b);
+  }
+}
+function poserLaPointe() {
+  const p = $("pointe"), b = document.querySelector(`.jour[data-jour="${jourTouche}"]`);
+  if (!b) { p.style.display = "none"; return; }
+  p.style.display = "block";
+  p.style.left = (b.getBoundingClientRect().left + b.offsetWidth / 2 - $("attache").getBoundingClientRect().left) + "px";
+}
+
+/* des mots à choisir, et « Annuler » à droite — la seule forme d'un choix sur cet écran */
+function mots(choix, actif, onChoisir, onAnnuler, libelle) {
+  const r = el("div", "mots"); r.setAttribute("role", "group"); r.setAttribute("aria-label", libelle);
+  for (const [cle, mot] of choix) {
+    const b = geste(mot, () => onChoisir(cle));
+    b.setAttribute("aria-pressed", String(cle === actif));
+    r.appendChild(b);
+  }
+  // « Annuler » ne se pose que si on le demande : pour l'absence, la croix
+  // noire de la ligne le remplace (sa réponse du 19 septembre au matin)
+  if (onAnnuler) r.appendChild(geste("Annuler", onAnnuler, "annuler"));
+  return r;
+}
+
+/* ─── la fiche ─── */
+function dessinerFiche() {
+  const corps = $("corps"); corps.innerHTML = "";
+  const s = SEMAINE.find((x) => x.j === jourTouche);
+  $("titre-jour").textContent = s ? majuscule(s.nom) : "Aucun jour touché";
+  if (!s) { corps.appendChild(el("p", "consigne", "Touchez un jour")); return; }
+
+  // « Salarié absent ? » — sous la date, au milieu ; en or, comme tout ce qui s'appuie
+  // le « + » reste devant — sa consigne du 18 : « garde le + avant Salarié absent ? »
+  corps.appendChild(geste(`<span class="plus" aria-hidden="true">${quiDemande ? "✕" : "+"}</span><span>${quiDemande ? "Fermer" : "Salarié absent ?"}</span>`,
+    () => { quiDemande = !quiDemande; choixMoment = false; tout(); }, "centre"));
+
+  if (quiDemande) {
+    const r = el("div", "mots");
+    for (const nom of SALARIES) {
+      const deja = absence && absence.qui === nom;
+      r.appendChild(geste(deja ? `${nom} · annuler` : nom, () => {
+        if (deja) { absence = null; choixMoment = false; }
+        else { absence = { qui: nom, moment: "journee" }; choixMoment = true; }
+        quiDemande = false; tout();
+      }));
+    }
+    corps.appendChild(r);
+  }
+  if (absence) {
+    const la = el("div", "ligne absent",
+      `<span class="a">Absent</span><span class="b">${absence.qui}</span>` + (choixMoment ? "" : `<span class="c doux">${motDe(absence.moment).toLowerCase()}</span>`));
+    // une petite croix noire, à droite de la durée, pour supprimer l'absence
+    const x = geste("✕", () => { absence = null; choixMoment = false; tout(); }, "croix");
+    x.setAttribute("aria-label", `Supprimer l’absence de ${absence.qui}`); la.appendChild(x);
+    corps.appendChild(la);
+    if (choixMoment) {
+      // SA RÉPONSE A — « Annuler » à droite ; le choix et lui s'effacent ensemble
+      corps.appendChild(mots(MOMENTS, absence.moment,
+        (cle) => { absence = { ...absence, moment: cle }; choixMoment = false; tout(); },
+        null, `Quand ${absence.qui} est absent`));
+    }
+  }
+
+  // ce que le jour porte : chaque chantier, puis SES demi-journées ; une moitié vide garde sa ligne
+  const liste = jours[jourTouche];
+  let actionsDuDernier = null;
+  const demi = (cle, droite) => el("div", "demi",
+    `<span class="a"><span class="pastille ${etat(occupation(jourTouche, cle))}"></span>${motDe(cle)}</span><span class="b">${droite}</span>`);
+  for (const c of liste) {
+    const neuf = derniere && derniere.client === c.id && derniere.neuf;
+    if (neuf) derniere.neuf = false;
+    const d = el("div", "chantier" + (neuf ? " neuf" : ""),
+      `<p class="nom">${c.nom}</p><p class="ou">${c.ou}</p><p class="duree">${c.duree}</p>`);
+    for (const cle of c.demis) {
+      // qui part, par moitié : les noms, et un « + » en or pour en ajouter ou en retirer
+      const noms = (c.equipe && c.equipe[cle]) || [];
+      // « + Salarié » quand personne n'est posé — sa réponse du 18 au soir, à la
+      // place de « Qui ? » : le même mot et le même « + » que la ligne du dessus
+      const mot = noms.length <= 2 ? noms.join(" / ") : `${noms[0]} +${noms.length - 1}`;
+      const b = geste(noms.length === 0 ? `<span class="plus" aria-hidden="true">+</span>Salarié` : `${mot}<span class="plus" aria-hidden="true">+</span>`,
+        () => { equipeOuverte = equipeOuverte && equipeOuverte.id === c.id && equipeOuverte.cle === cle ? null : { id: c.id, cle }; tout(); },
+        noms.length === 0 ? "geste" : "");
+      const r = demi(cle, ""); r.querySelector(".b").appendChild(b); d.appendChild(r);
+      if (equipeOuverte && equipeOuverte.id === c.id && equipeOuverte.cle === cle) {
+        const m = el("div", "mots equipe"); m.setAttribute("role", "group"); m.setAttribute("aria-label", `Qui part ${motDe(cle).toLowerCase()}`);
+        for (const nom of SALARIES) {
+          const x = geste(nom, () => {
+            const suite = noms.includes(nom) ? noms.filter((n) => n !== nom) : [...noms, nom];
+            c.equipe = { ...(c.equipe || {}), [cle]: suite }; tout();
+          });
+          x.setAttribute("aria-pressed", String(noms.includes(nom))); m.appendChild(x);
+        }
+        m.appendChild(geste("Fermer", () => { equipeOuverte = null; tout(); }, "annuler"));
+        d.appendChild(m);
+      }
+    }
+    // « Déplacer  Retirer » en bas à droite, SOUS l'après-midi et AU-DESSUS
+    // d'« Ajouter » — sa consigne du 18 au soir. Pour le dernier chantier du
+    // jour, la ligne passe donc après la moitié restée libre.
+    const a = el("div", "actions");
+    a.appendChild(geste("Déplacer", () => {}, "")); a.appendChild(geste("Retirer", () => {}, ""));
+    if (c === liste[liste.length - 1]) actionsDuDernier = a; else d.appendChild(a);
+    corps.appendChild(d);
+  }
+  for (const [cle] of MOMENTS.slice(0, 2)) {
+    if (occupation(jourTouche, cle) === 0)
+      corps.appendChild(el("div", "chantier vide", "")).appendChild(demi(cle, `<span class="libre">libre</span>`));
+  }
+  if (actionsDuDernier) corps.appendChild(actionsDuDernier);
+
+  // ajouter — trois mots, et l'on referme par où l'on est entré
+  if (voies) {
+    const r = el("div", "mots");
+    // « Client en attente » — sa consigne du 18
+    for (const mot of ["Client en attente", "Un client", "Autre chose"])
+      r.appendChild(geste(mot, () => { if (mot === "Client en attente") { ouvert = true; voies = false; tout(); } }));
+    corps.appendChild(r);
+  }
+  corps.appendChild(geste(voies ? "Fermer" : "Ajouter", () => { voies = !voies; tout(); }, "centre"));
+}
+
+/* ─── le tiroir ─── */
+function poser(c, demis) {
+  jours[jourTouche].push({ ...c, demis, equipe: null });
+  restants = restants.filter((x) => x !== c.id);
+  derniere = { client: c.id, jour: jourTouche, neuf: true }; demande = null;
+  tout();
+  const bloc = document.querySelector(".chantier.neuf");
+  if (bloc) bloc.scrollIntoView({ block: "nearest", behavior: "smooth" });
+}
+function defaire() {
+  if (!derniere) return;
+  jours[derniere.jour] = jours[derniere.jour].filter((c) => c.id !== derniere.client);
+  restants = CLIENTS.filter((c) => restants.includes(c.id) || c.id === derniere.client).map((c) => c.id);
+  derniere = null; tout();
+}
+function dessinerTiroir() {
+  const r = $("resume"), s = SEMAINE.find((x) => x.j === jourTouche), n = restants.length;
+  if (s && n > 0) { r.textContent = "À poser sur " + s.nom; r.classList.remove("neutre"); }
+  else { r.textContent = n === 0 ? "Aucun client sans date" : `${n} client${n > 1 ? "s" : ""} sans date`; r.classList.add("neutre"); }
+  $("poignee").setAttribute("aria-expanded", String(ouvert));
+  $("chev").style.transform = ouvert ? "rotate(180deg)" : "none";
+  const d = $("dedans"); d.style.display = ouvert ? "block" : "none"; d.innerHTML = "";
+  if (!ouvert) return;
+
+  if (derniere) {
+    const c = CLIENTS.find((x) => x.id === derniere.client);
+    const l = el("div", "fait", `<span class="quoi">${c.nom} est sur le ${derniere.jour}</span>`);
+    l.appendChild(geste("Annuler", defaire, "annuler")); d.appendChild(l);
+  }
+  if (!s && n > 0) d.appendChild(el("p", "consigne", "Touchez d’abord un jour du calendrier"));
+  if (n === 0 && !derniere) d.appendChild(el("p", "consigne", "Plus personne n’attend de jour."));
+
+  for (const id of restants) {
+    const c = CLIENTS.find((x) => x.id === id);
+    if (demande && demande.client === id) {
+      // une demi-journée demande son moment : les mêmes mots, le même « Annuler »
+      const bloc = el("div", "demander", `<p class="nom">${c.nom}</p>`);
+      bloc.appendChild(mots(MOMENTS.slice(0, 2), null, (cle) => poser(c, [cle]),
+        () => { demande = null; tout(); }, `Quand poser ${c.nom}`));
+      d.appendChild(bloc); continue;
+    }
+    // SA RÉPONSE C, retouchée le soir — le nom seul, rien autour
+    const b = el("button", "poser", `<span class="nom">${c.nom}</span><span class="duree">${c.duree}</span>`);
+    b.type = "button"; b.setAttribute("aria-disabled", String(!s));
+    b.setAttribute("aria-label", s ? `Poser ${c.nom} sur ${s.nom}` : `${c.nom} — en attente d’un jour`);
+    b.onclick = () => {
+      if (!s) return;
+      if (c.demis) poser(c, c.demis); else { demande = { client: id }; derniere = null; tout(); }
+    };
+    d.appendChild(b);
+  }
+}
+
+function tout() { dessinerSemaine(); dessinerFiche(); dessinerTiroir(); poserLaPointe(); }
+$("poignee").onclick = () => { ouvert = !ouvert; tout(); };
+$("rejouer").onclick = () => { depart(); tout(); $("ecran").scrollTo({ top: 0 }); };
+for (const b of document.querySelectorAll(".commandes .vue")) b.onclick = () => {
+  document.body.dataset.vue = b.dataset.vue;
+  for (const x of document.querySelectorAll(".commandes .vue")) x.setAttribute("aria-pressed", String(x === b));
+};
+document.body.dataset.vue = "prop";
+$("nuit").onclick = () => { const on = document.body.classList.toggle("nuit"); $("nuit").setAttribute("aria-pressed", String(on)); };
+window.addEventListener("resize", poserLaPointe);
+depart(); tout();
+</script>
+</body>
+</html>

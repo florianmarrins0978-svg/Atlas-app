@@ -12,7 +12,35 @@ chantier l'efface, l'appui suivant le remet où il veut ; « Vous proposez deux
 dates » ouvre la seconde ; la cliente lit les jours en toutes lettres et
 choisit. `envois_devis.jours_proposes` (0095), `propositions-de-jours.ts`,
 `creneauxSurLesJours`. Suites base et pures vertes ; suites navigateur et
-batterie NON jouées à sa demande — `TODO.md`. `ARCHITECTURE.md` §382.
+batterie NON jouées à sa demande — `TODO.md`. `ARCHITECTURE.md` §388.
+
+## FAIT : CINQ CONNEXIONS RÉUSSIES NE FERMENT PLUS LA PORTE AU SIXIÈME (17 septembre 2026)
+
+*« Un ami s'était connecté à mon appli via son tél, et sur le sien ça n'a pas
+marché. »* Le seuil de connexion montait avant `signIn`, donc même quand la
+porte s'ouvrait ; deux téléphones sur un même wifi n'ayant qu'une adresse, cinq
+entrées légitimes mettaient la sixième dehors avec le bon mot de passe.
+
+Un seuil sait désormais **rendre** ce qu'un geste réussi lui a pris
+(`rendreLimite`), et le message ne dit plus « depuis cet appareil » — ce n'était
+pas son appareil. Trois contrôles, vus rouges d'abord. `ARCHITECTURE.md` §386.
+
+**Reste ouvert :** le même libellé trompeur à la création de compte (`TODO.md`).
+
+## FAIT : LA BATTERIE NE PROUVE QUE LE LOT (18 septembre 2026)
+
+Le plancher apporté par `main` — gabarit racine, migration, configuration — ne
+fait plus repartir la batterie entière : il fait remesurer le lot sur ce nouveau
+sol. Une seule cause reste : le niveau 3 sur le diff du lot.
+`ARCHITECTURE.md` §387.
+
+## FAIT : LA GRAVITÉ DE `main` NE FAIT PLUS REPAYER SES VOISINES (18 septembre 2026)
+
+Une session repartait pour quarante-cinq minutes parce que `main` avait apporté
+du code d'argent — déjà éprouvé par celui qui l'a écrit. La rencontre se partage
+désormais entre ce que le lot apporte (gravité pleine) et ce que `main` apporte
+(seul son plancher refait la batterie). `ARCHITECTURE.md` §382.
+
 
 ## FAIT : CORRIGER UN ROUGE NE COÛTE PLUS LA BATTERIE ENTIÈRE (17 septembre 2026)
 
@@ -55,6 +83,25 @@ base et le geste sûr (`ARCHITECTURE.md` §379).
 
 **Sa base à lui n'est pas réparée par ce lot** : elle se remet d'aplomb en
 rallumant l'espace.
+
+## FAIT : LE MENU DU BAS, ET LA RÉPONSE DU CLIENT QUI N'ARRIVAIT PAS (17 septembre 2026)
+
+Deux défauts sur une même capture, la sienne, juste après l'envoi d'un devis.
+
+**La barre du bas avait disparu.** Le décor de l'écran — barre, cadre,
+rembourrage du bas — se choisissait dans la mise en page RACINE, au serveur, et
+Next.js ne rejoue pas cette mise en page sur une navigation de lien : le décor
+du devis (aucun) survivait à l'accueil, et pour toute la durée de l'onglet. Le
+choix vit désormais dans `CadreApplication`, un composant client qui lit le
+chemin courant. La barre ne se garde plus elle-même — la couche du 5 septembre
+qui compensait s'en va avec la racine corrigée.
+
+**La réponse du client n'arrivait qu'au rechargement.** Il n'y avait aucun
+mécanisme : l'accueil lit les réponses une fois, la réponse arrive plus tard et
+sur le téléphone du client. `VeilleDesNouvelles` relit l'accueil dès qu'il
+revient à Atlas, et toutes les trente secondes pendant qu'il le regarde.
+**Ce n'est pas une notification poussée** — Atlas fermé, rien ne sonne encore
+(`TODO.md`, en tête). `ARCHITECTURE.md` §384.
 
 ## FAIT : L'ACCUEIL SANS CHANTIER — LA PORTE DU DEVIS AU TIERS HAUT (17 septembre 2026)
 

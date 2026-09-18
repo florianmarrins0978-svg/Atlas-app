@@ -49,10 +49,113 @@ navigateur des écrans touchés sont vertes, et l'écran a été regardé dans l
 version bâtie, jusqu'à la page de la cliente. Elles ont redressé deux choses :
 effacer la seule date d'une journée la laisse vide — c'est l'envoi qui refuse,
 pas le geste —, et au-delà de deux propositions c'est la plus ancienne qui
-cède, comme avant. `ARCHITECTURE.md` §382.
+cède, comme avant. `ARCHITECTURE.md` §388.
+
+### Une seconde planche pour la journée du planning, à comparer à la première
+
+**Sa demande :** *« va regarder la planche planning tout ensemble qu'une autre
+session a réalisée et essaie de me proposer mieux : plus joli et facile
+d'utilisation »*.
+
+`appli/planning-tout-ensemble-en-mieux.html` garde ses trois réponses du 17 à
+la lettre — le nom seul, sans contour, compris — et montre ce que la première
+ne montrait pas : la fiche attachée au jour par sa pointe (déjà dans
+l'application), des barres qui disent vrai et qui bougent, le client posé qui
+arrive DANS la journée avec son « Qui ? » et un « Annuler » qui le ramène, une
+seule grammaire (ligne · interrupteur · « Annuler » à droite) pour l'absence,
+la demi-journée à poser et le défaire, le tiroir tenu au bas de l'écran, la
+question « qui ? » à deux salariés, et « Voir sur Nuit ».
+
+**Ce qu'elle coûte est écrit sous l'écran**, pas seulement ici : un appui de
+plus pour l'absence à deux salariés, le moment demandé pour une demi-journée,
+une fiche qui s'allonge à chaque client posé. La durée à droite du nom est un
+ajout, signalé comme tel. Rien n'est codé : les deux planches attendent qu'il
+dise laquelle, ou ce qu'il prend de chacune.
+
+**Refaite le soir même, sur sa réponse :** *« c'est pire qu'avant, j'en ai
+marre des gros boutons ! Je veux une page élégante et minimaliste qu'on
+comprend direct »*. La première version empilait cinq formes pour dire « ça
+s'appuie » — pastille verte, pointillé, interrupteur, capsules, rond cerné.
+Tout est parti pour une seule règle : **noir un fait, or un geste, gris le
+reste**, sans un cadre ni un aplat — la forme de `MotDuGeste`, déjà dans
+l'application. Ce qui s'écarte du 17 est dit sur la planche : « Salarié
+absent ? » passe du gras à l'or.
+
+**Puis, sur sa réponse — *« j'aime bien cette planche, mais je veux que dessus
+apparaisse la page d'aujourd'hui qu'on puisse comparer, et garder le matin /
+après-midi comme c'est aujourd'hui »*** : la planche montre désormais, à côté
+de la proposition, une **photo de l'application** (dev server sur un dossier et
+un port à part, base `atlas_test_a1`, le 18 septembre ouvert), et les
+demi-journées reprennent la pastille carrée et le mot en capitales de l'écran
+actuel, la pastille portant l'état de la moitié comme dans le mois.
+
+**Ses cinq retouches du 18 au soir, portées sur la planche :** « Client en
+attente » derrière « Ajouter » ; plus de point entre l'adresse et la durée (la
+durée repasse en or sous l'adresse, comme le « 2 jours » d'aujourd'hui) ; le
+« + » devant « Salarié absent ? » ; « Déplacer  Retirer » en bas à droite de
+chaque chantier, *« exactement comme c'est déjà »* ; une petite croix noire à
+droite de la durée d'une absence, qui la supprime. Et sa question — *« pour
+ajouter ou supprimer un salarié, comment on fait ? »* — a une réponse sur la
+planche : « Qui ? » ou le « + » de la ligne Matin / Après-midi ouvre les
+prénoms, et l'on touche pour ajouter ou retirer, comme aujourd'hui sans la
+pastille.
+
+**Deux réponses de plus, le même soir :** « Déplacer  Retirer » se pose SOUS
+l'après-midi et AU-DESSUS d'« Ajouter » — pour le dernier chantier du jour, la
+ligne passe donc après la moitié restée libre ; et « Qui ? » devient
+**« + Salarié »**, sur ma proposition qu'il a retenue : le même mot et le même
+« + » que « + Salarié absent ? » juste au-dessus, un seul geste à apprendre.
 
 ---
+
+### La batterie entière ne prouve plus que le lot — le plancher de `main` se remesure
+
+*« Ça commence vraiment à me soûler »* : quatrième mur de la même soirée. Un lot
+repartait pour quarante-cinq minutes parce que `main` avait apporté le gabarit
+racine — déjà prouvé par la session qui l'a écrit.
+
+Ce qui n'avait jamais été mesuré, c'est le lot SUR ce nouveau sol : ses écrans,
+les suites du fond si la base a bougé, la construction si le bâti a bougé, et la
+connexion derrière un proxy — une minute, le défaut d'août. Il ne reste qu'une
+cause à la batterie entière : le risque propre du lot.
+
+**Corrigé de ma propre main :** le §382, écrit quarante minutes plus tôt,
+gardait le plancher de `main` comme cause de batterie, et un contrôle
+l'affirmait. Le contrôle a été réécrit avec sa raison. `ARCHITECTURE.md` §387.
 ## 2026-09-17
+
+### Cinq connexions réussies ne ferment plus la porte au sixième
+
+*« Un ami s'était connecté à mon appli via son tél, et sur le sien ça n'a pas
+marché. »* Le seuil de connexion montait avant `signIn`, donc même quand la
+porte s'ouvrait. Deux téléphones sur un même wifi n'ayant qu'une adresse, cinq
+entrées légitimes mettaient la sixième dehors — avec le bon mot de passe.
+
+C'est la panne du 6 août 2026 par l'autre bord : la correction d'alors séparait
+les visiteurs par adresse, elle ne pouvait rien pour ceux qui la partagent.
+
+Une connexion réussie **rend** désormais ce qu'elle avait pris, là où elle
+efface déjà son compteur d'échecs — les deux mécanismes disent enfin la même
+chose. Le message ne dit plus « depuis cet appareil » : ce n'était pas son
+appareil, c'était l'adresse partagée, et il cherchait du côté de son téléphone.
+
+La protection ne bouge pas : un attaquant ne rend rien, ses essais ratent.
+
+Détail : `ARCHITECTURE.md` §386.
+
+### La gravité de `main` faisait repayer la batterie à ses voisines
+
+*« Ça continue »*, à 00 h 27 : une session repartait pour quarante-cinq minutes
+parce que `main` avait apporté trente commits dont du code d'argent. Erreur de
+catégorie — `evaluerLeLot` répond à « quel risque ce LOT introduit-il », et on
+la posait sur les fichiers de `main`, dont la gravité avait déjà été éprouvée
+par `main`.
+
+La rencontre se partage désormais : le lot garde sa gravité entière ; de `main`,
+seul le PLANCHER (migration, gabarit racine, accès à la base, configuration)
+refait partir la batterie — sa gravité, elle, force les suites du fond, là où
+vivent les règles d'argent et l'isolation. Voir `ARCHITECTURE.md` §382.
+
 
 ### Corriger un rouge coûtait cinquante minutes — plus maintenant
 
@@ -78,6 +181,117 @@ leur dire à chaque fois ? »* — a fermé le dernier trou : une session qui re
 la batterie ne passe par aucun garde-fou. La batterie refuse donc elle-même de
 repartir quand le verdict précédent était rouge et que ce qui a bougé reste
 borné. Voir `ARCHITECTURE.md` §381.
+
+### Ses trois réponses réunies sur une seule planche, avant de coder
+
+**Sa consigne :** *« toutes les réponses que je vais te donner, tu vas mettre
+les modifs dans une seule planche, comme ça à la fin tu coderas la planche
+finale avec toutes les modifs dedans »*. Trois planches séparées auraient donné
+trois lots, trois batteries et trois occasions de se contredire à trois
+centimètres d'écart, dans la même carte.
+
+`appli/planning-tout-ensemble.html` porte donc ses trois choix ensemble : les
+voies d'ajout qui gardent leurs mots et se referment par le « ＋ Ajouter » ;
+« Annuler » à droite de l'interrupteur de l'absence ; le nom du client SEUL —
+sa retouche du soir même, *« laisse juste le nom du client et retire le contour
+doré »* —, sous la date en or. Rien n'est codé.
+
+**Le cahier des charges vit SUR la planche**, pas dans le commentaire du
+fichier : *« je vais la donner à une autre session, qu'elle ne se trompe pas »*.
+Un commentaire HTML est invisible à qui ouvre l'adresse — et c'est l'adresse
+qu'il transmet. Le bloc « Pour la session qui codera » porte les trois
+changements fichier par fichier, ce qui ne bouge pas, ce qui a été écarté, les
+suites qui regardent les repères touchés, et le point non tranché.
+
+**Ce que son troisième choix enlève est dit, pas tu** : le « › » est le seul
+chemin, depuis cette liste, vers la fiche du chantier. Une demande qui supprime
+un geste mérite qu'on nomme le geste.
+
+### Une planche pour ranger les quatre voies d'« Ajouter » sur une seule ligne
+
+**Sa demande du 17 septembre :** *« je veux que les 4 rentrent sur la même
+ligne, et peut-être de la même taille »*. Mesuré plutôt qu'estimé : à quatre
+pastilles égales il reste **50 px pour le mot**, et « Un chantier en attente »
+en réclame 135. Quatre sur une ligne à taille égale oblige donc à raccourcir —
+c'est un échange, pas un réglage, et `appli/quatre-sur-une-ligne.html` l'écrit
+sous la carte, pastille par pastille.
+
+Trois façons y attendent son choix, dont une qui ENLÈVE le bouton au lieu d'en
+ajouter un quatrième : le « ＋ Ajouter » qui a ouvert les voies reste à sa place
+et referme, comme « + Salarié absent ? » le fait déjà deux centimètres plus
+haut. Rien n'est codé.
+
+**Deux façons de mesurer une largeur se sont révélées fausses en chemin**, et
+c'est la leçon réutilisable : `scrollWidth` contre `clientWidth` ne voit pas un
+texte qui se replie, et un `Range` sur le contenu rend la largeur de sa ligne
+la plus longue — 41 px pour un mot qui en réclame 62. La mesure juste pose le
+mot dans un jumeau invisible qu'on empêche de se replier, et compte les lignes
+peintes.
+
+### Une planche pour annuler une absence sans repasser par « + Salarié absent ? »
+
+**Sa demande du 17 septembre :** *« rajoute-moi un "Annuler" à côté de
+"Journée" si je veux annuler la requête »*. Aujourd'hui, défaire une absence
+qu'on vient de poser demande de rouvrir « + Salarié absent ? » puis de toucher
+le nom — son chemin du 10 septembre, qui reste juste pour une absence posée
+hier, mais qui est ailleurs au moment où l'interrupteur est sous ses yeux.
+
+Rien n'est codé : `appli/annuler-l-absence.html` porte deux placements, parce
+que la largeur tranche — « Annuler » à droite reprend de la place à
+« Après-midi ». **Mesuré aux deux largeurs :** à 390 pt ça tient, à 320 pt le
+mot passe sous la case verte. Le premier contrôle écrit pour le dire
+(`scrollWidth` contre `clientWidth`) a répondu « rien n'est coupé » alors que
+la capture montrait le contraire — c'est l'image qui a tranché, une fois de
+plus (`CLAUDE.md` §5).
+
+### Le jour à poser s'écrivait DEUX FOIS dans le tiroir du planning
+
+**Sa capture du 17 septembre :** *« il y a écrit deux fois "à poser sur le
+mardi 22 septembre" : garde celle en doré, supprime en noir »*. Il a raison, et
+c'était un oubli du 11 septembre : la phrase est montée ce jour-là dans la
+poignée du tiroir, en or, à l'endroit du geste (`docs/planning-verdict.md`) —
+celle qui vivait sous le trait n'a jamais été retirée.
+
+Elle l'est. **Sauf sans jour touché** : là elle ne redit rien, elle dit
+« Touchez d'abord un jour du calendrier » — la seule ligne qui apprenne qu'un
+jour se touche d'abord, et celle que trois suites cherchent. Regardé à l'écran,
+les deux états (`CLAUDE.md` §10) : la poignée dit « À poser sur mardi
+1 septembre » en or, et plus rien en noir sous le trait.
+
+La planche montre **quatre clients en attente**, sa demande du même soir : à un
+seul nom les trois façons se valent, c'est à quatre qu'elles se départagent. Le
+quatrième porte un nom long, et le tiroir garde sa hauteur maximale réelle.
+
+**Ce qui n'est PAS codé, et attend son choix :** poser le client en appuyant
+sur son nom plutôt que sur « Poser ». Sa demande est une demande d'apparence,
+donc une planche — `appli/poser-en-cliquant-sur-le-nom.html`, trois façons au
+choix, et le point à trancher : le chevron « › » de la même ligne ouvre déjà le
+chantier.
+### « Touchez le jour au-dessus » : c'est le PLANNING qui est passé au-dessus
+
+Sa capture : dix jours du mois, dont celui qu'il visait, étaient dessinés SOUS
+la consigne qui l'envoyait regarder en haut. On lui a d'abord proposé de
+réécrire la phrase — il a refusé les trois formulations : *« ce que je voulais
+c'était pas changer la phrase mais faire en sorte que le planning apparaisse
+entier au-dessus de Mr Linotte pour choisir un jour facilement »*.
+
+Sa solution règle plus que la nôtre. La fiche vivait dans la semaine du jour
+ouvert, donc elle disparaissait au premier mois tourné — or tourner le mois est
+exactement ce qu'il fait pour atteindre son jour d'accueil, et il avait fallu
+écrire un SECOND affichage du geste sous le calendrier rien que pour ça.
+Descendue sous le mois entier, la fiche y survit : ce second affichage est
+supprimé, avec sa prop et le gris pâle qui n'en dépendait plus. Une seule
+place, une seule phrase, et le nom du chantier ne se redit plus.
+
+Aucun mot n'a été changé à l'écran. « Annuler » est passé en noir gras sur la
+ligne de la consigne, à 2 cm à droite — sa retouche, mesurée en pixels réels et
+non en `cm` CSS, qui en aurait rendu 1,25 sous la règle.
+
+Deux défauts vus à l'écran et par aucun test : 56 px de blanc entre le 30 et la
+fiche (la fenêtre du carrousel prend la hauteur du plus grand des trois mois —
+la fiche est donc rendue DANS le panneau du mois, qu'elle regonfle), et la
+consigne coupée en « Touchez le jour au- / dessus ». Les deux ont leur mesure
+dans la suite maintenant. `ARCHITECTURE.md` §381.
 
 ### Le garde-fou de `main` réclamait une batterie dès qu'une autre session fusionnait
 
@@ -137,6 +351,7 @@ qui les faisait paraître maigres. Les trois gris (étiquettes, coordonnées,
 mentions légales) passent à l'encre, en un seul endroit et pour les sept
 allures. Le trait clair reste dilué — c'est un filet, pas une écriture — et
 l'accent reste sa couleur. `ARCHITECTURE.md` §378.
+
 
 ### La comparaison d'un rouge se fait DES DEUX CÔTÉS, dans le même état
 
@@ -391,6 +606,55 @@ Trois autres choses avec :
 de son espace. Elle se remet d'aplomb en rallumant l'espace depuis
 github.com/codespaces ; si la migration refuse encore de passer, c'est
 désormais l'écran qui le dira, au lieu d'un « Réessayez ».
+
+### La fiche client rouverte propose de nouveau « Je rédige à la main »
+
+*« Normalement il y a la note vocale et en dessous il propose d'écrire le
+devis à la main, et là y'a marqué Enregistrer. Il faut remettre la proposition
+du devis à la main ! »* — son signalement du 17 septembre, l'écran sous les
+yeux, après « nouveau devis → retour → le client en attente sur l'accueil ».
+
+« Enregistrer » était le dernier écart entre créer et rouvrir une fiche (31
+août). Il part : la fiche rouverte porte le bouton de la fiche neuve, qui
+enregistre AUSSI ce qui est tapé, puis ouvre le devis — d'où qu'on vienne. La
+liste reste à une flèche. Ce que plus rien n'appelle est retiré
+(`apresLesCoordonnees`, la destination `fiche`). `ARCHITECTURE.md` §383 ;
+`test-coordonnees-depuis-accueil-e2e.ts` et `test-devis-sans-client-e2e.ts`
+refusent le retour d'« Enregistrer ».
+
+### Le menu du bas disparaissait après un devis envoyé
+
+Sa capture : l'accueil, juste après l'envoi, **sans barre d'onglets**. Il ne
+pouvait plus changer d'écran sans recharger.
+
+Le devis vit seul sur sa page, sans onglets ni cadre. Ce choix se faisait dans
+la mise en page RACINE, au serveur — et Next.js ne rejoue pas cette mise en page
+sur une navigation de lien. Le choix fait pour le devis survivait donc à
+l'accueil, et pour toute la durée de l'onglet : plus de barre, plus de
+rembourrage du bas. Le dépôt avait déjà réparé **l'autre sens** le 5 septembre
+(la barre d'un écran précédent qui restait sur le devis, et couvrait son bouton
+d'envoi) ; ce rattrapage-là ne pouvait rien ici — une barre jamais rendue n'a
+rien à retirer.
+
+À la racine : le choix quitte le serveur pour `CadreApplication`, un composant
+client qui lit le chemin COURANT et se refait à chaque navigation. La barre,
+elle, ne se garde plus elle-même — la couche qui compensait s'en va avec la
+racine corrigée (`CLAUDE.md` §4 quater). Mesuré dans les deux sens, et la suite
+sait rougir : `scripts/test-barre-du-bas-apres-devis-e2e.ts`.
+
+### La réponse du client n'arrivait qu'au rechargement
+
+*« Mon client vient d'accepter mon devis, sauf que j'ai l'impression qu'il
+n'apparaîtra dans mes notifications que si je réactualise la page. »* Il avait
+raison, et ce n'était pas un mécanisme en panne : il n'y en avait **aucun**.
+L'accueil lit les réponses une fois, au moment où il est demandé ; la réponse,
+elle, arrive plus tard et sur le téléphone du client.
+
+`VeilleDesNouvelles` est ce mécanisme : l'accueil se relit **immédiatement**
+quand il revient à Atlas (de sa messagerie, d'un appel, de l'écran verrouillé),
+et toutes les trente secondes pendant qu'il le regarde — jamais quand la page
+est cachée. Ce n'est pas une notification poussée, qui sonnerait Atlas fermé :
+celle-là reste à faire (`TODO.md`).
 
 ### La publication des planches rougissait depuis la note vocale à plat
 

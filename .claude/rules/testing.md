@@ -117,12 +117,16 @@ niveau 3 voisin. Le détail est dans `CLAUDE.md` §6.
 
 **Sa règle du 17 septembre 2026 : *« Rejoue juste ce qui a bougé ! »*.**
 `npx tsx scripts/verifier-ce-qui-a-bouge.ts`, dans le dossier du lot une fois reposé sur
-`main`. Il vaut la batterie si **le lot est identique à la ligne près** à ce
-qu'elle a mesuré, si son verdict ne portait aucun rouge nouveau, et si la
-rencontre rejouée est verte : suites base, écrans du lot, écrans touchés par
-`main`, suites apportées par `main`. Le verdict déposé garde le niveau du
-verdict d'avant ; le garde-fou le relit comme n'importe quel autre. Un lot qui
-a changé, un verdict d'avant ce mécanisme, un rouge nouveau : batterie.
+`main`. Il vaut la batterie si **ce qui a bougé depuis le verdict n'atteint pas
+le niveau 3**, et si la rencontre rejouée est verte : suites base, écrans du
+lot, écrans touchés par `main`, suites apportées par `main`. Le verdict déposé
+garde le niveau du verdict d'avant ; le garde-fou le relit comme n'importe quel
+autre.
+
+**Le lot a le droit d'avoir changé.** La première version exigeait qu'il soit
+identique à la ligne près — donc elle refusait juste après une correction, au
+moment même où l'on en avait besoin (`ARCHITECTURE.md` §381). Un verdict
+d'avant ce mécanisme, ou un niveau 3 atteint : batterie.
 
 ## Le garde-fou compare des CONTENUS, jamais des dates — 17 septembre 2026
 
@@ -157,7 +161,21 @@ npx tsx scripts/verifier-ce-qui-a-bouge.ts
 | ce qui a bougé | par le CONTENU : l'empreinte du verdict, et git pour ce qu'elle n'indexe pas (`.md`, `docs/`, `.claude/`) |
 | ce qu'on rejoue | ce qui était rouge, plus ce que ce qui a bougé peut casser (la rencontre) |
 | ce qu'on ne rejoue pas | garde son rouge — ne pas savoir n'est jamais vert |
-| ce qui renvoie à la batterie | ce qui a bougé atteint le niveau 3 |
+| ce qui renvoie à la batterie | **le LOT** atteint le niveau 3 — et rien d'autre |
+
+**LA BATTERIE ENTIÈRE PROUVE UN LOT, JAMAIS UNE RENCONTRE** (18 septembre
+2026). Ce que `main` apporte est déjà passé par son propre garde-fou, au niveau
+que son risque exigeait, plancher compris. Ce qui n'a jamais été mesuré, c'est
+**le lot sur ce nouveau sol** — et cela se remesure :
+
+| Ce que `main` apporte | Ce qu'on rejoue |
+|---|---|
+| une migration, `src/server/db/` | les suites du fond |
+| `package.json`, `next.config`, `tsconfig` | la **Construction** |
+| tout plancher — gabarit racine, `globals.css`, middleware | les **écrans du lot**, et la **connexion derrière un proxy** |
+| sa gravité — argent, sécurité | les suites du fond |
+
+`ARCHITECTURE.md` §382 et §387.
 
 **Et l'on n'a pas à s'en souvenir** : la batterie elle-même refuse de repartir
 quand le verdict précédent était rouge et que ce qui a bougé reste borné
@@ -236,11 +254,12 @@ Ce qui n'est dans aucun des deux ne se rejoue pas. Ce que le graphe ne sait pas
 lire — une migration, un réglage de construction, un fichier d'outillage — entre
 toujours dans la rencontre : c'est le côté sûr.
 
-**La batterie entière reste réservée** à un lot de niveau 3 pour SON propre
-risque, ou à une rencontre qui atteint elle-même le niveau 3 — une migration
-arrivée de `main` sous un lot qui touche la base. Jamais parce que `main` a
-bougé, qu'une autre session a fusionné, qu'elle avait un rouge, ou que deux lots
-travaillent dans le même grand domaine.
+**La batterie entière reste réservée à un lot de niveau 3 pour SON propre
+risque — et à rien d'autre** (18 septembre 2026, `ARCHITECTURE.md` §387). Une
+migration arrivée de `main` sous le lot ne la déclenche plus : elle fait
+remesurer le lot sur cette nouvelle base — les suites du fond, ses écrans, la
+connexion. Jamais parce que `main` a bougé, qu'une autre session a fusionné,
+qu'elle avait un rouge, ou que deux lots travaillent dans le même grand domaine.
 
 ## Une régression découverte donne TOUJOURS un test
 

@@ -211,6 +211,191 @@ async function main() {
     }
   });
 
+  await cas("LE MOIS ENTIER PASSE AU-DESSUS : la fiche sort de la grille", async () => {
+    /*
+     * ─── SA DEMANDE DU 17 SEPTEMBRE 2026, planche 120 « la A » ────────────
+     * *« Ce que je voulais c'était pas changer la phrase mais faire en sorte
+     * que le planning apparaisse entier au-dessus de Mr Linotte pour choisir
+     * un jour facilement. »*
+     *
+     * Au repos, la fiche s'insère DANS la grille, sous la semaine du jour
+     * ouvert (`MoisCharge`, prop `volet`) : les semaines suivantes se
+     * dessinent dessous, et sur sa capture dix jours du mois — dont le 24 —
+     * étaient sous la consigne qui l'envoyait regarder en haut.
+     *
+     * **On mesure la PLACE, pas des pixels** : la carte du jour est-elle
+     * encore un descendant de la grille du mois ? Au repos oui, pendant le
+     * geste non. Cela ne dépend d'aucun libellé ni d'aucune semaine du
+     * calendrier — donc la mesure vaut quel que soit le jour tiré.
+     */
+    /*
+     * **CE QUI SE MESURE EST « AUCUN JOUR SOUS ELLE », PAS « HORS DE LA
+     * GRILLE ».** La première version de ce cas exigeait que la fiche ne soit
+     * plus un descendant de `grille-mois` — c'était viser le mécanisme et non
+     * la règle. Elle y est restée, posée APRÈS la dernière semaine : rendue
+     * hors du carrousel, elle laissait 56 px de blanc, la fenêtre prenant la
+     * hauteur du plus grand des trois mois affichés.
+     */
+    if ((await page.locator('[data-atlas="carte-jour"]').count()) !== 1) {
+      throw new Error("la fiche du jour a disparu pendant le geste");
+    }
+    const sous = await page.evaluate(() => {
+      const f = document.querySelector('[data-atlas="carte-jour"]');
+      if (!f) return -1;
+      return [...document.querySelectorAll('[data-atlas="grille-mois"] [data-jour]')].filter(
+        (j) => f.compareDocumentPosition(j) & Node.DOCUMENT_POSITION_FOLLOWING
+      ).length;
+    });
+    if (sous !== 0) {
+      throw new Error(
+        `${sous} jour(s) du mois se dessinent SOUS la fiche : le planning ne lui est ` +
+          "pas rendu entier au-dessus"
+      );
+    }
+    // Et elle vient bien après la DERNIÈRE semaine — sans quoi « zéro jour
+    // dessous » serait vrai par accident sur un jour de fin de mois.
+    const apresLaDerniere = await page.evaluate(() => {
+      const semaines = [...document.querySelectorAll('[data-atlas="semaine-du-mois"]')];
+      const derniere = semaines[semaines.length - 1];
+      const fiche = document.querySelector('[data-atlas="carte-jour"]');
+      if (!derniere || !fiche) return false;
+      return !!(fiche.compareDocumentPosition(derniere) & Node.DOCUMENT_POSITION_PRECEDING);
+    });
+    if (!apresLaDerniere) {
+      throw new Error("la fiche n'est pas posée après la dernière semaine du mois");
+    }
+  });
+
+  await cas("la fiche SURVIT au mois tourné — plus besoin d'un second bandeau", async () => {
+    /*
+     * C'est ce que sa solution apporte en plus, et qui n'avait pas été vu.
+     * Tant que la fiche vivait dans la semaine du jour ouvert, elle
+     * disparaissait au premier mois tourné — or tourner le mois est
+     * exactement ce qu'il fait pour atteindre son jour d'accueil. Il avait
+     * donc fallu écrire un SECOND montage de `BandeauDeplacement` en repli
+     * sous le calendrier. Sortie de la grille, la fiche reste : ce second
+     * montage n'a plus lieu d'être (`CLAUDE.md` §4 quinquies).
+     */
+    await page.click('button[aria-label="Mois suivant"]');
+    await page.waitForTimeout(400);
+    // LE MOIS SE REMET EN PLACE MÊME EN CAS D'ÉCHEC : les cas qui suivent
+    // cherchent leur jour dans le mois courant, et un rouge ici les faisait
+    // tomber en cascade — cinq échecs annoncés pour un seul défaut.
+    try {
+      if ((await page.locator('[data-atlas="carte-jour"]').count()) !== 1) {
+        throw new Error("la fiche s'est perdue en tournant le mois : le geste part avec elle");
+      }
+      if ((await page.locator('[data-atlas="deplacement-en-cours"]').count()) !== 1) {
+        throw new Error(
+          "le geste est dessiné deux fois, ou zéro : une seule place, une seule phrase"
+        );
+      }
+    } finally {
+      await page.click('button[aria-label="Mois précédent"]');
+      await page.waitForTimeout(400);
+    }
+  });
+
+  await cas("« Annuler » est à DROITE de la consigne, sur sa ligne, en noir gras", async () => {
+    /*
+     * ─── SA RETOUCHE DU 17 SEPTEMBRE 2026 ─────────────────────────────────
+     * *« Le Annuler tu le mets en noir gras à droite de "touchez le jour
+     * au-dessus", genre 2 cm sur sa droite. »*
+     *
+     * Il était gris pâle, sur la ligne du dessous : on le cherchait. Il prend
+     * l'encre des gestes qu'il remplace le temps du déplacement.
+     *
+     * **Ce qui est fixé est la RÈGLE, pas le pixel** : même ligne, nettement
+     * détaché sur la droite, dans l'encre pleine. Un seuil exact se
+     * périmerait au premier ajustement de la fiche (`CLAUDE.md` §5 bis).
+     */
+    const m = await page.evaluate(() => {
+      const zone = document.querySelector('[data-atlas="deplacement-en-cours"]');
+      const bouton = zone?.querySelector('[data-atlas="annuler-deplacer"]') as HTMLElement | null;
+      const texte = zone?.querySelector("span") as HTMLElement | null;
+      if (!zone || !bouton || !texte) return null;
+      const rb = bouton.getBoundingClientRect();
+      const rt = texte.getBoundingClientRect();
+      return {
+        ecart: Math.round(rb.left - rt.right),
+        // MÊME LIGNE = les deux boîtes se CHEVAUCHENT verticalement. Comparer
+        // leurs bords hauts mentirait : le bouton porte 11 px de remplissage
+        // que la phrase n'a pas, et « sur la même ligne » resterait vrai.
+        chevauchement: Math.round(
+          Math.min(rb.bottom, rt.bottom) - Math.max(rb.top, rt.top)
+        ),
+        couleur: getComputedStyle(bouton).color,
+        graisse: getComputedStyle(bouton).fontWeight,
+        consigne: texte.textContent ?? "",
+        // LA PHRASE TIENT-ELLE SUR UNE LIGNE ? L'écart de 2 cm la comprimait
+        // et rendait « Touchez le jour au- / dessus ». Vu à l'écran, invisible
+        // aux mesures d'alignement : elles ne regardaient que les bords.
+        lignes: Math.round(rt.height / parseFloat(getComputedStyle(texte).lineHeight || "19")),
+      };
+    });
+    if (!m) throw new Error("le bandeau ou son « Annuler » est introuvable : rien n'a été mesuré");
+    if (m.lignes > 1) {
+      throw new Error(
+        `« ${m.consigne} » est rendue sur ${m.lignes} lignes : l'écart la comprime ` +
+          "au lieu de céder"
+      );
+    }
+    if (m.chevauchement < 8) {
+      throw new Error(
+        `« Annuler » ne croise la ligne de « ${m.consigne} » que sur ` +
+          `${m.chevauchement} px : il n'est pas sur sa ligne`
+      );
+    }
+    if (m.ecart < 60) {
+      throw new Error(`« Annuler » n'est qu'à ${m.ecart} px de la consigne : il lui est collé`);
+    }
+    if (m.graisse !== "700" && m.graisse !== "bold") {
+      throw new Error(`« Annuler » pèse ${m.graisse} au lieu d'être en gras`);
+    }
+    // Le gris pâle qu'il a fait retirer : ~rgb(138,133,120). L'encre est sombre.
+    const [r, v, b] = (m.couleur.match(/\d+/g) ?? ["255", "255", "255"]).map(Number);
+    if ((r + v + b) / 3 > 90) {
+      throw new Error(`« Annuler » est encore pâle (${m.couleur}) : il le veut en noir`);
+    }
+  });
+
+  await cas("le nom du chantier n'est écrit QU'UNE FOIS dans la carte", async () => {
+    /*
+     * ─── SA CAPTURE DU 17 SEPTEMBRE 2026, ET SA RÉPONSE « la 1 » ──────────
+     * Sur son écran, « Mr. Linotte » était écrit deux fois dans la même
+     * carte, à quatre lignes d'écart : en titre du chantier, puis devant la
+     * consigne de déplacement. Planche `appli/deplacer-la-consigne.html`,
+     * question 2 — il a retenu « sans le nom ».
+     *
+     * **La racine.** `BandeauDeplacement` est écrit une fois et monté à deux
+     * places. Sous le calendrier — quand le mois tourné a emporté la fiche —
+     * le nom est la seule chose qui dise ce qu'on déplace : il y reste. Dans
+     * la fiche il est déjà au-dessus, et c'est une redite (`CLAUDE.md` §3,
+     * « le moins de mots possible »).
+     *
+     * **On compte sur le TEXTE RENDU, pas sur un repère** : c'est ce que son
+     * œil lit, et cela survit à tout remaniement de la carte.
+     */
+    const carte = page.locator(`[data-atlas="carte-jour"][data-jour="${jourA}"]`);
+    const lu = await carte.innerText();
+    const fois = lu.split(NOM).length - 1;
+    if (fois !== 1) {
+      throw new Error(
+        `« ${NOM} » est écrit ${fois} fois dans la carte du ${jourA} : ` +
+          "le nom se redit là où il est déjà en titre"
+      );
+    }
+
+    // **LA SECONDE MOITIÉ DE CE CAS EST PARTIE LE 17 SEPTEMBRE 2026.** Elle
+    // exigeait que le nom reste affiché sous le calendrier après le mois
+    // tourné — ce qui défendait le SECOND montage de `BandeauDeplacement`.
+    // Depuis que le mois passe entier au-dessus et que la fiche descend
+    // dessous, celle-ci survit au mois tourné : ce second montage a été
+    // supprimé, et ce qui le tenait en vie s'en va avec lui (`CLAUDE.md`
+    // §4 quinquies). Le cas « la fiche SURVIT au mois tourné » couvre
+    // désormais ce que celui-ci protégeait vraiment.
+  });
+
   await cas("le jour se touche DANS LE CALENDRIER, et les moments s'offrent", async () => {
     // **Le calendrier ne fait plus ce qu'il fait d'habitude** : toucher un jour
     // ouvrait sa fiche, ce qui aurait emporté le geste au premier appui.

@@ -9,6 +9,134 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## ~~« LA TVA À 10 N'APPARAÎT PAS SUR L'APERÇU PDF »~~ — SANS OBJET (17 septembre 2026)
+
+**Sa remarque :** *« lorsque je rajoute une tva à 10 par exemple sur le devis et
+que je regarde l'aperçu en pdf elle n'apparaît pas ; vérifie qu'on n'a pas ce
+problème là aussi pour la facturation »*.
+
+**Cherché des deux côtés, et le défaut ne se reproduit pas ICI.** Ce qui a été
+joué sur la vraie base et sur le vrai écran, PDF ouvert et relu page par page
+(`pdfjs`), jamais un `grep` :
+
+| Le geste | Ce que l'aperçu écrit |
+|---|---|
+| « + Ajouter une TVA », sa ligne encore vide | `TVA 20 %` · `TVA 10 %` |
+| une ligne déplacée vers la TVA à 10 (appui long) | `TVA 20 %` · `TVA 10 %` |
+| le taux d'une catégorie corrigé en 5,5 % | `TVA 20 %` · `TVA 5,5 %` |
+| le taux tapé puis « Aperçu du PDF » touché aussitôt | `TVA 10 %` — le verrou du brouillon sérialise, pas de course |
+| une v2 ouverte APRÈS l'envoi de la v1 | `TVA 20 %` · `TVA 10 %` |
+| **facture** reprise du devis | `TVA 20 %` · `TVA 10 %` |
+| **facture** + un supplément à 5,5 % | `TVA 20 %` · `TVA 10 %` · `TVA 5,5 %` |
+| **facture** émise (totaux figés) | idem, et les totaux suivent |
+
+La colonne « TVA % » du tableau, les lignes de totaux et le bloc des bases par
+taux portent tous les trois le bon taux. Son espace sert `2442ee2` : le même
+code que celui qui a été mesuré — les six versions qui lui manquent ne touchent
+que l'outillage.
+
+**~~CLOS PAR SA CAPTURE, le 17 septembre 2026 au soir :~~** *« Ah mais si je
+crois qu'elle y est »*. Son devis 2026-000038 porte bien les deux taux — 20 %
+sur 58,00 € (11,60 €), 10 % sur 580,00 € (58,00 €), et les deux bases en bas à
+gauche. **Aucune correction : il n'y avait pas de défaut.**
+
+**Ce que ce point laisse quand même au dépôt.** Huit gestes du parcours TVA ont
+été joués et relus dans le PDF, devis ET facture ; aucune suite ne les couvrait
+tous. Si une régression arrive un jour sur ce chemin, c'est ce tableau qui dit
+ce qui marchait le 17 septembre 2026.
+
+
+## ⏳ « Trop d'essais depuis cet appareil » ment encore à la CRÉATION DE COMPTE
+
+Corrigé sur la connexion le 17 septembre 2026 (`ARCHITECTURE.md` §386) ;
+`src/app/creer-un-compte/actions.ts` porte encore le même libellé, sur un seuil
+tenu par **adresse seule**. Deux personnes sur un même wifi partagent donc les
+cinq essais, et celle qui est refusée cherche du côté de son téléphone.
+
+**Hors périmètre du lot de la connexion, et c'est délibéré** (`CLAUDE.md` §5) :
+créer des comptes en rafale est précisément ce qu'un tel seuil doit borner, donc
+la question « faut-il rendre la place d'une création réussie ? » ne se tranche
+pas de la même façon. Le libellé, lui, est faux dans les deux cas.
+
+
+## ~~CINQ CONNEXIONS RÉUSSIES ET LE SIXIÈME EST DEHORS~~ — CORRIGÉ LE 17 SEPTEMBRE 2026
+
+**Sa remarque :** *« un ami s'était connecté à mon appli via son tél, et sur le
+sien ça n'a pas marché »*.
+
+**REPRODUIT ICI, et c'est un vrai défaut.** Six connexions d'affilée avec le
+BON mot de passe, même compte, même adresse, deux téléphones différents :
+
+```
+essai 1 (iPhone)  → entré      essai 4 (Android) → entré
+essai 2 (Android) → entré      essai 5 (iPhone)  → entré
+essai 3 (iPhone)  → entré      essai 6 (Android) → REFUSÉ
+                       « Trop de tentatives depuis cet appareil.
+                         Réessayez dans 15 minutes. »
+```
+
+**La racine, et elle tient en une ligne.** `verifierLimite` appelle
+`verifierEtIncrementer` **avant** `signIn` : le compteur monte à CHAQUE
+tentative, réussie ou non. Cinq par quart d'heure (`LIMITES.connexion`), sur la
+clé `connexion:<email>:<source>`. Or :
+
+| | |
+|---|---|
+| la **source** | l'adresse IP publique — deux téléphones sur le MÊME wifi n'en font qu'une |
+| le **compte** | le sien, que ses proches essaient |
+| le **compteur** | monte même quand la connexion RÉUSSIT |
+
+Donc : lui plus quatre connexions de la soirée, et l'ami qui arrive sur son wifi
+avec le bon mot de passe lit qu'il a trop essayé.
+
+**C'EST LA PANNE DU 6 AOÛT 2026, SOUS UNE AUTRE FORME.** Ce jour-là ses parents
+lisaient « Email ou mot de passe incorrect » avec les bons identifiants ; le
+compteur était tenu par e-mail seul. La correction a séparé les visiteurs **par
+adresse** — elle ne pouvait rien pour deux visiteurs qui PARTAGENT l'adresse, et
+elle n'a jamais cessé de compter les réussites.
+
+**Et le message ment.** « depuis cet appareil » : ce n'est pas son appareil, c'est
+l'adresse qu'il partage. Un message qui accuse le mauvais coupable coûte plus
+cher que pas de message du tout (`AGENTS.md`).
+
+**~~CE QUI A ÉTÉ FAIT, le soir même~~** (`ARCHITECTURE.md` §386) : un seuil sait
+désormais **rendre** ce qu'un geste réussi lui avait pris, et la connexion rend
+ses deux jetons là où elle efface déjà ses échecs. Le compteur reste incrémenté
+avant `signIn` — c'est ce qui le rend atomique ; « regarder puis consommer »
+aurait ouvert entre les deux la fenêtre par laquelle un martèlement passe.
+
+Le message ne dit plus « depuis cet appareil ».
+
+Trois contrôles le tiennent, et les trois ont été **vus rouges** avant :
+`test-connexion-limite-e2e` (six entrées réussies d'affilée),
+`test-rate-limit-redis-real` (la clé absente, le plancher à zéro),
+`test-limite-magasin-en-panne` (rendre ne lève jamais).
+
+## LES SUITES D'OUTILLAGE SONT ROUGES SUR SON PC — 30 MIN DE COMPARAISON PAR LOT
+
+**Relevé le 18 septembre 2026**, dans le document du lot « deux jours qui ne se
+touchent pas » : dix-neuf suites d'outillage (`batterie-solitaire`,
+`ouvrir-session`, `migrations-banc`, `verrou-construction`, `port-remesure`…)
+rougissent sur son PC **Windows** — `bash`, `ps -o`, `gh`, des ports d'essai.
+Elles sont rouges sur `main` aussi, avec ou sans lot.
+
+Conséquence : chaque lot paie ~30 min de `verifier-rouge-prealable` pour
+réapprendre ce qu'on sait déjà.
+
+**Ce qui est REFUSÉ** : une liste « ces suites-là ne comptent pas ». Une liste
+qui abaisse une exigence oublie un jour un fichier, et du danger part sans que
+rien ne le dise (`.claude/rules/testing.md`).
+
+**Ce qu'il faut faire à la racine :** une suite qui ne peut pas MESURER ici doit
+**refuser de conclure** — « non applicable sur cette machine » — au lieu de
+rougir. C'est déjà la doctrine du dépôt (« un contrôle qui mesure ZÉRO ne mesure
+rien »), et un « non applicable » n'entre pas dans les rouges, donc ne déclenche
+aucune comparaison.
+
+**Ce qui bloque :** cela se vérifie sur SON PC, pas ici — ce poste est sous
+Linux. À faire dans une session lancée depuis son espace Windows, suite par
+suite, en confrontant chacune au vrai message qu'elle rend là-bas.
+
 ## LES SUITES NAVIGATEUR TRAVERSENT LA RLS — ce qu'elles ne peuvent pas mesurer
 
 **Trouvé le 17 septembre 2026**, par une suite verte à la main et rouge dans la
@@ -52,6 +180,7 @@ lot qui croise deux fusions à repayer la batterie pour un numéro de paragraphe
 Non fait ici : c'est le lot d'une autre session (`CLAUDE.md` §5, hors
 périmètre).
 
+
 ## ⏳ `test-accueil-vide-porte-e2e` dépend de l'état que la base a gardé
 
 **Mesuré le 17 septembre 2026, des deux côtés.** Jouée seule, elle passe ; jouée
@@ -69,41 +198,224 @@ de la hauteur, il la veut à 33 %. Le réglage des deux ressorts ne la déplace
 pas — essayé, mesuré, rendu. La racine est ailleurs.
 
 
-## ⏳ UNE PLANCHE À REGARDER — LA CONSIGNE DE DÉPLACEMENT (17 septembre 2026)
+## 🔧 `DATABASE_APP_URL` N'EST POSÉE PAR PERSONNE — une suite rougit hors du rang 0 (17 septembre 2026)
+
+**Trouvé en livrant le déplacement**, et ce n'est pas ce lot :
+`scripts/test-secret-authentification-db.ts` est **le seul fichier du dépôt qui
+lit `DATABASE_APP_URL`** — et rien ne la pose. Elle retombe donc sur son défaut
+écrit en dur, `…@localhost:5432/atlas_test`, tandis que son rôle propriétaire
+suit `DATABASE_ADMIN_URL`, que l'atelier suffixe.
+
+| l'atelier | ce qui se passe |
+|---|---|
+| rang 0 (`atlas_test`) | les deux tombent sur la même base : **verte, par coïncidence** |
+| rang 1 et au-delà (`atlas_test_a1`…) | le propriétaire écrit dans une base, le rôle applicatif lit l'autre — **cinq rouges**, dont « le bon mot de passe n'ouvre plus » |
+
+**Ce que ça coûte :** toute session qui n'a pas le rang 0 voit cinq rouges sur
+l'authentification, et croit à une régression. Trois batteries y sont passées
+le 17 septembre avant que la cause soit trouvée. Le garde-fou, lui, fait son
+travail : `verifier-rouge-prealable.ts` répond « même sort des deux côtés ».
+
+**La correction, et elle est à la racine :** la suite doit prendre ses deux
+connexions par `scripts/_bases-essai.ts`, qui compose déjà `APP`, `OWNER` et
+`SUPER` en appliquant le suffixe de l'atelier. Une valeur en dur dans un test
+est un rang 0 supposé.
+
+**À vérifier dans la foulée** : aucun autre fichier ne lit une variable que
+personne ne pose — `grep -rn "process.env.DATABASE" scripts/ src/`.
+
+**Et sur cette machine**, la base `atlas_test_a1` a dû être créée à la main :
+`scripts/monter-base-locale.sh` n'en monte qu'une, et son
+`bootstrap-postgres-ci.sql` porte `ALTER DATABASE atlas_test OWNER` **en dur** —
+appliqué ailleurs, il agit sur la mauvaise base. Le port 3000 répondant sans
+que rien n'écoute dans un conteneur d'agent, le rang 0 y est rarement libre.
+
+## ~~UNE PLANCHE À REGARDER — LE MOIS ENTIER AU-DESSUS PENDANT UN DÉPLACEMENT~~ — CHOISIE ET CODÉE LE JOUR MÊME (17 septembre 2026, « la A » + « 1 sans le nom »)
 
 **Sa capture :** *« il dit toucher le jour au-dessus mais le planning apparaît
-en-dessous. »* Il a raison, et c'est mesuré : sur son écran du 18 septembre,
-**dix jours du mois** sont dessinés SOUS la consigne qui l'envoie regarder en
-haut — dont le 24.
+en-dessous. »* Mesuré : dix jours du mois étaient sous la consigne, dont le 24.
 
-**La racine.** `BandeauDeplacement` est écrit une fois et monté à deux places
-(`PlanningClient.tsx`) : dans la fiche du jour, et en repli sous le calendrier
-quand le mois tourné a emporté la fiche. « Au-dessus » avait été écrit pour la
-seconde, où c'est vrai. Dans la fiche c'est faux — le volet s'insère SOUS LA
-SEMAINE du jour ouvert (`MoisCharge`, prop `volet`, ligne 305). **Aucune
-direction ne peut être juste aux deux endroits.**
+**On lui a d'abord proposé la mauvaise chose** — trois formulations de
+rechange. Il a redressé : *« ce que je voulais c'était pas changer la phrase
+mais faire en sorte que le planning apparaisse entier au-dessus de Mr Linotte
+pour choisir un jour facilement »*. Le code déjà écrit a été défait
+(`5b177d9`, `aa3f198`) avant la planche, à sa demande — *« fait une planche !
+code rien »*.
 
-**RIEN N'EST CODÉ** — la planche `appli/deplacer-la-consigne.html` attend sa
-réponse. Le correctif avait été écrit, puis **défait à sa demande** (*« fait
-une planche ! code rien »*) : commits `5b177d9` puis `aa3f198` sur
-`claude/problem-investigation-qn7qor`. Il reste repêchable quand il aura
-tranché ; seule la formulation change.
+**CODÉ**, planche `appli/deplacer-la-consigne.html` : la fiche descend sous le
+mois entier pendant le geste (`voletDetache`), aucun mot n'a changé à l'écran,
+le second affichage du geste sous le calendrier est supprimé, le nom ne se
+redit plus, et « Annuler » est passé en noir gras à 2 cm à droite de la
+consigne. `ARCHITECTURE.md` §381.
 
-Deux réponses attendues, une lettre et un chiffre :
+## ⏳ LA PLANCHE D'ENSEMBLE ATTEND SON OUI — PUIS ON CODE (17 septembre 2026)
+
+**DEUX PLANCHES DEPUIS LE 18 SEPTEMBRE, PAS UNE.** Sa demande du 18 : *« propose
+mieux : plus joli et facile d'utilisation »*. `appli/planning-tout-ensemble-en-mieux.html`
+garde ses trois réponses à la lettre et ajoute la pointe vers le jour, les
+barres vraies, le client posé qui arrive dans la fiche avec « Annuler », une
+seule grammaire ligne · interrupteur · « Annuler », le tiroir au bas, « qui ? »
+à deux salariés, Nuit. **Ce qu'on code, c'est celle qu'il désigne — ou un
+mélange qu'il nomme.** Ne pas coder avant.
+**Refaite le soir même** après *« j'en ai marre des gros boutons »* : plus une
+pastille, plus un cadre — noir un fait, or un geste, gris le reste. Si c'est
+elle qu'il choisit, le lot touche aussi `VoieDAjout`, `BasculeDuMoment`, la
+pastille d'équipe et `GesteAbsence` (gras → or) : niveau à recalculer.
+**Sa réponse du 18 au soir : *« j'aime bien cette planche »*** — avec deux
+demandes, faites : la page d'aujourd'hui à côté (photo), et matin / après-midi
+comme aujourd'hui (pastille + capitales). C'est cette planche-là qui attend son
+oui.
+Puis ses cinq retouches du soir (« Client en attente », le point, le « + »,
+« Déplacer  Retirer » tels quels, la croix de l'absence) et le geste d'équipe
+par prénom : portés le 18. **Si oui, le lot code cette planche-ci, retouches
+comprises.**
+Puis : « Déplacer  Retirer » sous l'après-midi, au-dessus d'« Ajouter » ; et
+« Qui ? » → « + Salarié » (son choix). Portés le 18.
+
+**SON OUI, LE 19 SEPTEMBRE AU MATIN** — *« enlève le Annuler à côté de Journée, ensuite c'est bon tu peux coder »*. Le lot de code part de cette planche-ci, exactement.
+
+**Sa consigne :** *« toutes les réponses que je vais te donner, tu vas mettre
+les modifs dans une seule planche, comme ça à la fin tu coderas la planche
+finale avec toutes les modifs dedans »*.
+
+`appli/planning-tout-ensemble.html` réunit ses trois réponses sur un seul
+écran. **C'est elle qu'on code, et rien d'autre**, dès qu'il dit oui :
+
+| Sa réponse | Ce qui est retenu |
+|---|---|
+| *« le C, pas d'Annuler »* | les trois voies d'ajout gardent leurs mots ; le « ＋ Ajouter » reste à sa place et devient « ✕ Fermer » — la pastille « Annuler » disparaît |
+| *« A, à côté »* | « Annuler » à droite de l'interrupteur Matin · Après-midi · Journée, et il s'efface avec lui dès qu'un moment est choisi |
+| *« le C, sans le + et sans les chevrons, mais conserve la date en doré »*, puis *« laisse juste le nom du client et retire le contour doré »* | le NOM SEUL pose le client : ni contour, ni « ＋ », ni « › ». Un filet sépare deux noms, et ne souligne pas le dernier. La poignée garde « À poser sur jeudi 17 septembre » en or, et c'est elle — seule — qui dit ce que l'appui fait |
+
+**CE QUE SON TROISIÈME CHOIX EMPORTE, et il doit le savoir avant qu'on code :**
+le « › » est le seul chemin, DEPUIS CETTE LISTE, vers la fiche du chantier
+(`ChevronDesPortes`, `PlanningClient.tsx`). Une fois parti, la ligne ne fait
+plus qu'une chose — poser — et le chantier s'ouvre depuis l'onglet Chantiers.
+C'est écrit sur la planche et dans le message qui l'accompagne.
+
+**LE CAHIER DES CHARGES VIT SUR LA PLANCHE ELLE-MÊME**, visible à son adresse,
+pas dans le commentaire du fichier — sa demande : *« tout ce que j'ai choisi est
+bien expliqué sur la planche ? parce que je vais la donner à une autre session,
+qu'elle ne se trompe pas »*. Le bloc « Pour la session qui codera » porte les
+trois changements fichier par fichier, ce qui NE bouge pas, ce qui a été écarté,
+les suites qui regardent les repères touchés, et le point non tranché
+(l'« Annuler » de la branche `ajout-qui` reste tel quel : ce n'est pas le même
+geste, et il n'a pas été montré). **La planche fait foi : ce qui n'y est pas
+écrit ne se code pas.**
+
+**Ce que le lot devra toucher** : `AjoutAuJour` (les voies et le « ＋ »),
+`PasLaCeJour` + `BasculeDuMoment` (l'« Annuler » de l'absence), et la liste
+« Sans date » du tiroir (`Petit` « Poser » → le nom seul, `ChevronDesPortes`
+retiré). Niveau à recalculer sur le diff — `npm run niveau`.
+
+## ⏳ SA RÉPONSE EST DONNÉE — LES QUATRE VOIES : « LE C, PAS D'ANNULER » (17 septembre 2026)
+
+**Sa demande, capture à l'appui :** *« je veux que les 4 rentrent sur la même
+ligne, et peut-être de la même taille, ça sera plus joli ? Ou le "Annuler"
+d'une autre manière, je sais pas, propose »*.
+
+**RIEN N'EST CODÉ** — la planche `appli/quatre-sur-une-ligne.html` attend sa
+réponse.
+
+**Ce que l'écran fait aujourd'hui** (`AjoutAuJour`) : trois voies sur une ligne
+qui se replie — « Un chantier en attente » y tient sur deux lignes de texte —,
+puis « Annuler » seul, collé à droite, sur une ligne à lui.
+
+**LE CHIFFRE QUI DÉCIDE, et il est mesuré dans le navigateur à 390 pt :** à
+quatre pastilles égales il reste **50 px pour le mot**. « Un chantier en
+attente » en réclame 135, « Autre chose » 72, « En attente » 62, « Chantier »
+51. **Quatre sur une ligne à taille égale oblige donc à raccourcir les mots.**
+Ce n'est pas un réglage, c'est un échange — et c'est ce que la planche montre,
+en écrivant sous la carte ce que chaque mot réclame et ce qu'il a.
 
 | | |
 |---|---|
-| **A** | « Touchez son nouveau jour » |
-| **B** | « Touchez le jour d'arrivée » |
-| **C** | « Quel jour ? » |
-| **D** | celle d'aujourd'hui, pour comparer |
-| **1** | sans son nom — il est déjà en titre trois lignes plus haut |
-| **2** | avec « Mr. Linotte · » devant, comme aujourd'hui |
+| **A** | quatre pastilles égales, mots courts : Chantier · Client · Autre · Annuler — sa demande, mot pour mot |
+| **B** | trois voies égales + « Annuler » en croix de 34 px (la forme de « Ajouter », à l'envers) ; le rond prend de la place, « Autre chose » y redevient « Autre » |
+| **C** | plus d'« Annuler » : le « ＋ Ajouter » qui a ouvert les voies reste à sa place et devient « ✕ Fermer » |
 
-**Le second point est une redite qu'il a sous les yeux** : sur sa capture,
-« Mr. Linotte » est écrit deux fois dans la même carte, à quatre lignes
-d'écart. Sous le calendrier il doit rester — la fiche n'y est plus pour le
-dire.
+**Ce que je défends : C.** Elle ENLÈVE un bouton au lieu d'en ajouter un
+quatrième (`CLAUDE.md` §4 quater : un correctif qui n'enlève rien doit
+alerter), elle laisse aux trois voies leurs mots, et elle reprend un geste qui
+vit déjà dans la même carte — « + Salarié absent ? » referme ce qu'il a ouvert.
+
+**Deux mesures fausses corrigées en chemin**, et elles valent d'être sues :
+`scrollWidth` contre `clientWidth` ne voit pas un texte qui se replie ; un
+`Range` sur le contenu rend la ligne la plus longue, donc **41 px pour un mot
+qui en réclame 62**. La planche mesure désormais dans un jumeau invisible qu'on
+empêche de se replier, et compte les lignes réellement peintes. Et l'animation
+de largeur a été retirée : la mesure se prenait pendant la transition, donc sur
+une largeur qui n'était celle de rien (`CLAUDE.md` §5).
+
+## ⏳ SA RÉPONSE EST DONNÉE — L'ABSENCE : « A, À CÔTÉ » (17 septembre 2026)
+
+**Sa demande, capture à l'appui :** *« rajoute-moi un "Annuler" à côté de
+"Journée" si je veux annuler la requête »*.
+
+**RIEN N'EST CODÉ** — la planche `appli/annuler-l-absence.html` attend sa
+réponse.
+
+**Ce qui manque aujourd'hui**, lu dans `PlanningClient.tsx` : il touche
+« + Salarié absent ? » puis un nom, l'absence est posée sur la journée et
+`BasculeDuMoment` s'ouvre pour la restreindre. Pour la défaire, un seul
+chemin — retoucher « + Salarié absent ? », ouvrir la liste, toucher le nom qui
+porte alors « Annuler ». C'est SON chemin du 10 septembre, et il ne se
+supprime pas ; mais au moment où il vient de se tromper, l'interrupteur est
+sous ses yeux et la sortie est ailleurs, en deux appuis non écrits.
+
+**Deux placements sur la planche**, parce que la largeur tranche et qu'elle a
+déjà coûté une fois (`PlanningClient.tsx`, 8 septembre — 440 px pour 354) :
+
+| | |
+|---|---|
+| **A** | « Annuler » **à droite de l'interrupteur** — sa phrase, mot pour mot |
+| **B** | « Annuler » **sous l'interrupteur**, à droite — indépendant de la largeur |
+
+**Mesuré aux deux largeurs, pas supposé.** À 390 pt, A tient. **À 320 pt,
+« Après-midi » passe SOUS la case verte** — et un contrôle qui comparait
+`scrollWidth` à `clientWidth` a répondu « rien n'est coupé » sur une capture
+qui montrait le contraire (`CLAUDE.md` §5). C'est l'image qui a tranché.
+
+**Écarté, et c'est le seul arbitrage :** « Annuler » en quatrième case DANS
+l'interrupteur — « Matin · Après-midi · Journée · Annuler » se lirait comme un
+quatrième moment.
+
+## ⏳ SA RÉPONSE EST DONNÉE — LE NOM SEUL, SANS CONTOUR (17 septembre 2026)
+
+**Sa demande, capture à l'appui :** *« au lieu du "Poser" entouré, pour poser
+le client le mieux serait qu'on clique sur Mr. Linotte — donc trouve un moyen
+stylé pour qu'on ait envie de cliquer sur Mr. Linotte »*.
+
+**RIEN N'EST CODÉ DE CE CÔTÉ** — la planche `appli/poser-en-cliquant-sur-le-nom.html`
+attend sa réponse. Trois façons, même geste dessous :
+
+| | |
+|---|---|
+| **A** | la ligne devient une **tuile** de papier, filet d'or à gauche |
+| **B** | le **nom s'écrit en or**, souligné d'un filet — il se lit comme un lien |
+| **C** | le **contour du « Poser » passe autour du nom** — sa phrase, mot pour mot |
+
+**Quatre clients en attente** — sa demande du même soir : *« montre-moi ce que
+ça donnerait avec 4 chantiers en attente »*. C'est le cas qui départage : à un
+seul nom, les trois se valent. La planche porte donc quatre lignes, dont une au
+nom long, et la vraie hauteur maximale du tiroir (352 px) avec son défilement.
+
+**Ce que je défends : C.** L'application a déjà ce contour creux partout
+(`Petit`, `PlanningClient.tsx`) : on déplace une forme qu'il connaît au lieu de
+lui en apprendre une. A fait quatre pavés quand quatre clients attendent ;
+B se rate au soleil, sur un chantier.
+
+**CE QUI DOIT ÊTRE TRANCHÉ AVEC LUI, et ce n'est pas décoratif.** Sur cette
+ligne, le chevron « › » ouvre DÉJÀ le chantier (`ChevronDesPortes`). Le nom
+qui pose et le chevron qui ouvre font **deux gestes sur une même ligne** : les
+trois versions écartent le chevron du nom, mais c'est lui qui dira si c'est
+tenable — ou si le chevron doit partir d'ici.
+
+**Ce qui EST codé de sa demande, et livré avec la planche :** le
+« À poser sur mardi 22 septembre » écrit en NOIR sous le trait a disparu — il
+redisait mot pour mot la ligne dorée deux centimètres plus haut. Il reste dans
+le seul cas où il ne redit rien : sans jour touché, il dit « Touchez d'abord un
+jour du calendrier », et c'est la seule ligne qui l'explique.
 
 ## CODÉ LE 18 SEPTEMBRE 2026 — DEUX JOURS QUI NE SE TOUCHENT PAS (planche du 17, « la B »)
 
@@ -140,7 +452,7 @@ fais ??? »*
 
 ~~**RIEN N'EST CODÉ** — la planche `appli/deux-jours-pas-colles.html` (119)
 attend sa réponse.~~ **Codé le 18 septembre 2026** sur son « tu peux coder
-ça » — `CHANGELOG.md` du jour, `ARCHITECTURE.md` §382.
+ça » — `CHANGELOG.md` du jour, `ARCHITECTURE.md` §388.
 
 **Refaite le soir même, après sa réponse à la première version** : *« je
 comprends rien, l'idée c'est que ce soit simple et joli »*, puis sa règle en
@@ -234,6 +546,28 @@ Le patron seul peut dire si cela vaut un lot ; ce n'est pas à refaire à l'aveu
 partout, parce qu'une enveloppe posée sans discernement finirait par avaler des
 refus métier.
 
+## LA NOTIFICATION POUSSÉE — ATLAS FERMÉ, RIEN NE SONNE
+
+**Née de sa remarque du 17 septembre 2026** : *« mon client vient d'accepter mon
+devis, sauf que j'ai l'impression qu'il n'apparaîtra dans mes notifications que
+si je réactualise la page »*.
+
+**Ce qui est fait depuis ce jour** : l'accueil se relit tout seul —
+immédiatement quand il revient à Atlas, et toutes les trente secondes pendant
+qu'il le regarde (`VeilleDesNouvelles`, `ARCHITECTURE.md` §384).
+
+**Ce qui reste, et que cela ne remplace pas** : quand Atlas est FERMÉ, rien ne
+le prévient. Un client qui accepte à 19 h se lit le lendemain matin. Une vraie
+notification poussée demande un service worker, l'abonnement `Web Push` du
+navigateur, ses clés VAPID et un endroit où les ranger par personne — et, sur
+iPhone, l'application ajoutée à l'écran d'accueil. Rien de tout cela n'est
+commencé.
+
+**À trancher avec lui avant de coder** : ce qui a le droit de sonner. Une
+réponse de client, oui ; un rappel de devis qui dort, probablement pas — une
+alerte qui parle à tort s'apprend à être ignorée (`CLAUDE.md` §4 ter).
+
+---
 ## LE SECOND ANNEAU DE L'ACCUEIL — « Créer une facture » — RESTE À FAIRE
 
 **Sa décision du 10 septembre 2026**, planche `appli/facturer-sans-devis.html` :
@@ -1542,19 +1876,18 @@ d'occupation ; s'il le signale, c'est là qu'il faudra regarder
 
 ---
 
-## ⏳ « DÉPLACER » N'A PAS D'ANNULER — à lui de dire (10 septembre 2026)
+## ~~« DÉPLACER » N'A PAS D'ANNULER~~ — CODÉ LE 17 SEPTEMBRE 2026
 
-Une fois l'interrupteur ouvert, « Déplacer » et « Retirer » s'effacent : il n'y
-a **aucun geste pour refermer sans choisir**. On sort en fermant la carte du
-jour, ce que rien n'indique.
+Sa demande, capture à l'appui : *« si je clique sur déplacer j'ai aucun moyen
+d'annuler mon choix si je veux plus déplacer »*. Le geste ouvre désormais le
+calendrier, et le bandeau porte son « Annuler » à chaque étape
+(`data-atlas="annuler-deplacer"`, `BandeauDeplacement`). Il n'y a plus de
+question à lui poser : **il l'a posée lui-même, et elle est répondue**.
 
-**Sa planche 1 ne montre pas d'Annuler**, et il l'a validée telle quelle — on
-n'ajoute donc rien de son propre chef. Deux choses rendent l'attente tenable :
-libérer se **défait** (le morceau se repose depuis le tiroir), et il a demandé
-un « Annuler » à chaque étape sur une AUTRE planche
-(`appli/bloquer-sans-devis.html`), donc la question l'intéresse.
-
-**À lui poser quand il rouvrira cet écran.** Ne pas coder avant.
+**Le titre est resté sept jours au-dessus d'un corps qui attendait une réponse
+déjà donnée** — c'est exactement le piège du 11 septembre (`CLAUDE.md` §1) :
+une planche présentée comme en attente alors qu'elle était codée. Le geste qui
+l'attrape coûte trente secondes, et il est écrit là-bas.
 
 ---
 
@@ -1746,7 +2079,7 @@ les règles de provenance répondent à **deux** questions au lieu d'une :
 | ce qu'elles font | son sort |
 |---|---|
 | dire où sortir quand il n'y a PAS de page d'avant | **à garder** : c'est le repli, et il sert pour de bon |
-| dire où l'on va après avoir ENREGISTRÉ un formulaire (`apresLesCoordonnees`) | **à garder** : ce n'est pas un retour |
+| dire où l'on va après avoir ENREGISTRÉ un formulaire (`apresLesCoordonnees`) | ~~à garder~~ **retiré le 17 septembre 2026** (`ARCHITECTURE.md` §383) : « Je rédige à la main » mène au devis, d'où qu'on vienne |
 | **deviner d'où l'on vient** pour la flèche | **à retirer** : le journal le sait, et deux réponses à la même question finissent par diverger (`CLAUDE.md` §3) |
 
 Ce qui tombe alors, nommément : `retourDepuisLePlanning` (deux écrans —

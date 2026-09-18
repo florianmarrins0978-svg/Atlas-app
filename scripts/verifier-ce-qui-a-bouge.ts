@@ -5,11 +5,11 @@ import { ecrireDernierVerdict, lireDernierVerdict, ilYA } from "./_dernier-verdi
 import { jouerEnGardantLaSortie } from "./_jouer-etape";
 import { bilanDuJournal } from "./_bilan-suites.mjs";
 import { commitCourant, baseDuLot, lireLesReponses } from "./_temoin-de-main.mjs";
-import { cheminsDuLot, evaluerLeLot, rougesToleres } from "./_niveau-de-risque.mjs";
+import { cheminsDuLot, estUnPlancher, evaluerLeLot, porteUneGravite, rougesToleres } from "./_niveau-de-risque.mjs";
 import { suitesDesRoutes } from "./_suites-ciblees.mjs";
 import { construireLeGraphe } from "./_rayon-impact.mjs";
 import { rencontreReelle, rougesApresComplement, suitesDuComplement } from "./_apres-fusion.mjs";
-import { aRejouer, ceQuiABouge, horsSuitesApres } from "./_ce-qui-a-bouge.mjs";
+import { aRejouer, batterieDue, ceQuiABouge, horsSuitesApres, partagerLaRencontre } from "./_ce-qui-a-bouge.mjs";
 import { etapesDeLaBatterie, type Etape } from "./_etapes-batterie";
 import { prendreUnAtelierSync, suffixeDeLAtelier } from "./_atelier";
 import { basesDeLAtelier } from "./_bases-essai";
@@ -103,8 +103,16 @@ const graphe = construireLeGraphe(RACINE);
 // 17 septembre 2026 (`_apres-fusion.mjs`) : le graphe dit, dans les deux sens,
 // ce que le lot emploie et ce qui l'emploie. Une correction, elle, touche par
 // construction un fichier du lot : elle y tombe toujours.
-const rencontre = rencontreReelle({ fichiersDuLot: cheminsDuLot(RACINE), fichiersDuDelta: bouge, graphe });
+const fichiersDuLot = cheminsDuLot(RACINE);
+const rencontre = rencontreReelle({ fichiersDuLot, fichiersDuDelta: bouge, graphe });
+// **Ce que le lot apporte et ce que `main` apporte ne se doivent pas la même
+// chose** (`_ce-qui-a-bouge.mjs`, `ARCHITECTURE.md` §382) : la gravité de
+// `main` a déjà été éprouvée par `main`. Seul son PLANCHER refait le sol.
+const part = partagerLaRencontre({ fichiers: rencontre.fichiers, fichiersDuLot });
 const zone = evaluerLeLot(rencontre.fichiers, { racine: RACINE, graphe });
+const niveauDuLot = evaluerLeLot(part.duLot, { racine: RACINE, graphe }).niveau;
+const plancherVenuDeMain = part.venuDeMain.filter(estUnPlancher);
+const graviteVenueDeMain = part.venuDeMain.some(porteUneGravite);
 const rougesAvant = precedent.rouges ?? [];
 const horsSuitesAvant = precedent.rougesHorsSuites ?? [];
 
@@ -122,9 +130,8 @@ if (bouge.length === 0 && rougesAvant.length === 0 && horsSuitesAvant.length ===
 // **Une correction qui atteint elle-même le niveau 3 ne se rattrape pas.**
 // Toucher une migration, le gabarit racine ou l'accès à la base remet en jeu ce
 // que la batterie seule sait mesurer — et le doute tranche vers elle.
-if (zone.niveau >= 3) {
-  refuser(`ce qui a bougé atteint le niveau 3 (${zone.raison})`, "npm run verifier:avant-livraison");
-}
+const due = batterieDue({ niveauDuLot });
+if (due) refuser(due, "npm run verifier:avant-livraison");
 
 const ATELIER = prendreUnAtelierSync();
 process.env.ATLAS_ADRESSE = ATELIER.adresse;
@@ -143,6 +150,12 @@ const plan = aRejouer({
   bouge: rencontre.fichiers,
   rougesAvant,
   horsSuitesAvant,
+  graviteVenueDeMain,
+  plancherVenuDeMain,
+  // **Les écrans DU LOT, pas ceux de la rencontre** : un gabarit racine ou une
+  // migration n'ont aucune arête d'import vers eux, et c'est pourtant sur ce
+  // sol-là qu'ils tournent désormais (`ARCHITECTURE.md` §387).
+  routesDuLot: suitesDesRoutes(RACINE, evaluerLeLot(fichiersDuLot, { racine: RACINE, graphe }).routes),
   suitesDesEcrans: suitesDuComplement({
     suitesDeLaRencontre: suitesDesRoutes(RACINE, zone.routes),
     fichiersDeLaRencontre: rencontre.fichiers,
