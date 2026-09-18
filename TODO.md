@@ -69,6 +69,38 @@ de la hauteur, il la veut à 33 %. Le réglage des deux ressorts ne la déplace
 pas — essayé, mesuré, rendu. La racine est ailleurs.
 
 
+## 🔧 `DATABASE_APP_URL` N'EST POSÉE PAR PERSONNE — une suite rougit hors du rang 0 (17 septembre 2026)
+
+**Trouvé en livrant le déplacement**, et ce n'est pas ce lot :
+`scripts/test-secret-authentification-db.ts` est **le seul fichier du dépôt qui
+lit `DATABASE_APP_URL`** — et rien ne la pose. Elle retombe donc sur son défaut
+écrit en dur, `…@localhost:5432/atlas_test`, tandis que son rôle propriétaire
+suit `DATABASE_ADMIN_URL`, que l'atelier suffixe.
+
+| l'atelier | ce qui se passe |
+|---|---|
+| rang 0 (`atlas_test`) | les deux tombent sur la même base : **verte, par coïncidence** |
+| rang 1 et au-delà (`atlas_test_a1`…) | le propriétaire écrit dans une base, le rôle applicatif lit l'autre — **cinq rouges**, dont « le bon mot de passe n'ouvre plus » |
+
+**Ce que ça coûte :** toute session qui n'a pas le rang 0 voit cinq rouges sur
+l'authentification, et croit à une régression. Trois batteries y sont passées
+le 17 septembre avant que la cause soit trouvée. Le garde-fou, lui, fait son
+travail : `verifier-rouge-prealable.ts` répond « même sort des deux côtés ».
+
+**La correction, et elle est à la racine :** la suite doit prendre ses deux
+connexions par `scripts/_bases-essai.ts`, qui compose déjà `APP`, `OWNER` et
+`SUPER` en appliquant le suffixe de l'atelier. Une valeur en dur dans un test
+est un rang 0 supposé.
+
+**À vérifier dans la foulée** : aucun autre fichier ne lit une variable que
+personne ne pose — `grep -rn "process.env.DATABASE" scripts/ src/`.
+
+**Et sur cette machine**, la base `atlas_test_a1` a dû être créée à la main :
+`scripts/monter-base-locale.sh` n'en monte qu'une, et son
+`bootstrap-postgres-ci.sql` porte `ALTER DATABASE atlas_test OWNER` **en dur** —
+appliqué ailleurs, il agit sur la mauvaise base. Le port 3000 répondant sans
+que rien n'écoute dans un conteneur d'agent, le rang 0 y est rarement libre.
+
 ## ~~UNE PLANCHE À REGARDER — LE MOIS ENTIER AU-DESSUS PENDANT UN DÉPLACEMENT~~ — CHOISIE ET CODÉE LE JOUR MÊME (17 septembre 2026, « la A » + « 1 sans le nom »)
 
 **Sa capture :** *« il dit toucher le jour au-dessus mais le planning apparaît
