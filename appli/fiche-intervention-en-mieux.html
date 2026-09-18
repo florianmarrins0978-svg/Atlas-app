@@ -339,7 +339,7 @@ function dessiner() {
   if (rendu) {
     p.appendChild(el("ul", "taches", TACHES.map((x) => `<li>${x}</li>`).join("")));
     p.appendChild(el("div", "parti",
-      `<span class="rond" aria-hidden="true">${COCHE}</span><span><span class="mot">C’est parti</span><span class="ou">Terminés · Retour d’intervention</span></span>`));
+      `<span class="rond" aria-hidden="true">${COCHE}</span><span><span class="mot">C’est parti</span><span class="ou">Terminés — Retour d’intervention</span></span>`));
   } else if (!finOuverte) {
     p.appendChild(el("ul", "taches", TACHES.map((x) => `<li>${x}</li>`).join("")));
     const v = bouton(`${COCHE_VERT}<span>Fin de chantier</span>`, () => { finOuverte = true; dessiner(); }, "vert");

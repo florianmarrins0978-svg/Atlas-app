@@ -287,6 +287,24 @@ le second affichage du geste sous le calendrier est supprimé, le nom ne se
 redit plus, et « Annuler » est passé en noir gras à 2 cm à droite de la
 consigne. `ARCHITECTURE.md` §381.
 
+## ⏳ LA FICHE D'INTERVENTION : LA DEUXIÈME OU LA TROISIÈME (19 septembre 2026)
+
+**Sa demande du 19 :** *« conserve celle-là [la deuxième] et essaye de m'en
+créer une troisième en partant de la base de la deuxième et en l'améliorant »*.
+Planche `appli/fiche-intervention-troisieme.html`, les deux côte à côte. La
+troisième : les quatre gestes sur UNE barre (dessin au-dessus du mot) ; plus
+d'étape « Fin de chantier » à ouvrir — les lignes du devis sont les cases tout
+le temps, photos et « À signaler » toujours visibles, un seul bouton vert
+« C'est fini », « Fin de chantier » en titre de partie. Si c'est la troisième,
+sa décision du 8 septembre (le bandeau déroulant) et sa proposition A du 9 (les
+lignes s'effacent à l'ouverture) sont remplacées, et `FinDeChantier.tsx` perd
+son état ouvert/replié. **Ne pas coder avant qu'il dise 2 ou 3.**
+
+**Sa consigne du même jour, à porter dans l'application avec le lot choisi :**
+*« je veux pas de point entre Terminés et Retour d'intervention »* —
+`src/app/planning/FinDeChantier.tsx` porte encore « Terminés · Retour
+d'intervention » ; les deux planches ont déjà le tiret.
+
 ## ⏳ LA FICHE D'INTERVENTION EMBELLIE ATTEND SON OUI (18 septembre 2026, refaite le 19)
 
 **Sa demande, capture à l'appui :** *« embellir cette page comme on l'a fait pour

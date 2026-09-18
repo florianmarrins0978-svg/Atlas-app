@@ -8,6 +8,18 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-18
 
+### Une troisième fiche d'intervention, à côté de la deuxième
+
+**Sa demande du 19 :** *« conserve celle-là et essaye de m'en créer une
+troisième en partant de la base de la deuxième et en l'améliorant — plus belle
+et simple à utiliser et compréhensible »*. `appli/fiche-intervention-troisieme.html`
+pose les deux téléphones l'un sous l'autre, chacun avec son état : la troisième
+met les quatre gestes sur une seule barre, et supprime l'étape « Fin de
+chantier » à ouvrir — les lignes du devis sont les cases tout le temps, un seul
+bouton vert reste. **Sa consigne du même jour**, *« je veux pas de point entre
+Terminés et Retour d'intervention »*, est portée sur les deux planches (un
+tiret) et notée dans `TODO.md` pour l'application. Rien n'est codé.
+
 ### La fiche d'intervention, la même en plus belle — planche refaite le 19
 
 **Sa demande, le 18 au soir, capture à l'appui :** *« embellir cette page comme
