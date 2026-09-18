@@ -9,16 +9,19 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
-## ⏳ UNE PLANCHE À REGARDER — LES MOYENS DE PAIEMENT SE CHOISISSENT DU DOIGT (18 septembre 2026)
+## ~~UNE PLANCHE À REGARDER — LES MOYENS DE PAIEMENT SE CHOISISSENT DU DOIGT~~ — CHOISIE ET CODÉE LE JOUR MÊME (18 septembre 2026, « pas besoin de planche, je choisis celle-là »)
 
 **Sa demande :** *« au moment de créer son compte on a une case qui demande nos
 moyens de paiement, aujourd'hui il faut écrire ; il faudrait plutôt proposer
 des choix pré-écrits et qu'il ait qu'à cliquer — par défaut virement et chèque,
 virement seul, et virement, chèque, espèces »*.
 
-**RIEN N'EST CODÉ** — la planche `appli/moyens-de-paiement-a-choisir.html`
-attend sa réponse. La seizième question de `src/lib/creation-compte.ts`
-(`id: "moyens"`) reste un champ libre.
+**CODÉ**, planche `appli/moyens-de-paiement-a-choisir.html` : la liste vit
+dans `MOYENS_ACCEPTES` (`modalites-paiement.ts`) et sert la porte, le dépôt
+et Réglages → Documents → Conditions. Ses deux exigences — enregistré dans les
+réglages, inscrit tout seul sur devis et factures — tiennent parce que la
+valeur choisie EST le texte que les documents imprimaient déjà
+(`CHANGELOG.md`, 18 septembre).
 
 **Ce que la planche propose** : trois pastilles à l'allure de la `liste` de la
 TVA, la première déjà entourée (anneau or de 2 px, celui de la civilité), et
@@ -26,9 +29,9 @@ TVA, la première déjà entourée (anneau or de 2 px, celui de la civilité), e
 textes que les factures portent déjà (`virement, chèque` / `virement` /
 `virement, chèque, espèces`).
 
-**Trois questions posées au bas de la planche** : avance automatique ou bouton ;
-« Passer » disparaît ; les mêmes trois choix dans Réglages → Documents →
-Conditions, où la case est encore libre (`ConditionsClient.tsx`).
+**Les trois questions de la planche, tranchées par son « je choisis celle-là »** :
+le bouton reste (pas d'avance automatique), « Passer » disparaît, et les mêmes
+trois choix dans les réglages.
 
 ## ~~« LA TVA À 10 N'APPARAÎT PAS SUR L'APERÇU PDF »~~ — SANS OBJET (17 septembre 2026)
 

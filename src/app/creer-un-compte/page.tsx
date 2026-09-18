@@ -272,35 +272,46 @@ export default function CreerUnComptePage() {
               </div>
             ))}
 
-            {/* Deux grands choix qui remplissent la question : la TVA. */}
+            {/* De grands choix qui remplissent la question : la TVA, les
+                moyens de paiement. Une liste qui PROPOSE (les moyens) reste
+                sur l'écran et entoure le choix, comme la civilité ; l'autre
+                avance au premier appui (`avanceToutSeul`). */}
             {question.liste && (
               <div className="flex flex-col gap-[10px]">
-                {question.liste.map((o) => (
-                  <button
-                    key={o.valeur}
-                    type="button"
-                    aria-pressed={vues[question.id] === o.valeur}
-                    onClick={() => {
-                      const avec = { ...reponses, [question.id]: o.valeur };
-                      setReponses(avec);
-                      suivante(avec);
-                    }}
-                    // **`rounded-full` et non le rectangle arrondi de la
-                    // planche** : sa règle du 12 août 2026 — la même forme
-                    // partout —, et `test-boutons-arrondis.ts` la tient. Le
-                    // rembourrage passe à 26 px, sinon le texte entre dans la
-                    // courbe sur une carte de deux lignes.
-                    className="rounded-full px-[26px] py-[15px] text-left"
-                    style={{ background: NUIT.card, boxShadow: `inset 0 0 0 1px ${NUIT.line}` }}
-                  >
-                    <span className="block text-[16px]" style={{ color: NUIT.ink }}>
-                      {o.titre}
-                    </span>
-                    <span className="mt-1 block text-[13px]" style={{ color: NUIT.muted }}>
-                      {o.note}
-                    </span>
-                  </button>
-                ))}
+                {question.liste.map((o) => {
+                  const choisi = vues[question.id] === o.valeur;
+                  return (
+                    <button
+                      key={o.valeur}
+                      type="button"
+                      aria-pressed={choisi}
+                      onClick={() => {
+                        const avec = { ...reponses, [question.id]: o.valeur };
+                        setReponses(avec);
+                        if (avanceToutSeul(question)) suivante(avec);
+                      }}
+                      // **`rounded-full` et non le rectangle arrondi de la
+                      // planche** : sa règle du 12 août 2026 — la même forme
+                      // partout —, et `test-boutons-arrondis.ts` la tient. Le
+                      // rembourrage passe à 26 px, sinon le texte entre dans la
+                      // courbe sur une carte de deux lignes.
+                      className="rounded-full px-[26px] py-[15px] text-left"
+                      style={{
+                        background: NUIT.card,
+                        boxShadow: choisi ? `inset 0 0 0 2px ${NUIT.or}` : `inset 0 0 0 1px ${NUIT.line}`,
+                      }}
+                    >
+                      <span className="block text-[16px]" style={{ color: NUIT.ink }}>
+                        {o.titre}
+                      </span>
+                      {o.note && (
+                        <span className="mt-1 block text-[13px]" style={{ color: NUIT.muted }}>
+                          {o.note}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
               </div>
             )}
 

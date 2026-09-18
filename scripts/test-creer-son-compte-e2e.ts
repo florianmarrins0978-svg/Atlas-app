@@ -56,7 +56,6 @@ const REPONSES: Record<string, string> = {
   "FR…": "FR12345678901",
   "IBAN": "FR7630001007941234567890185",
   "Titulaire du compte": "Perret Paysage",
-  "Virement, chèque…": "Virement, chèque",
 };
 
 let echecs = 0;

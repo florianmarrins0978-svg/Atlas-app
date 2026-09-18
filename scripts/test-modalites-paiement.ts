@@ -16,6 +16,9 @@
 import assert from "node:assert/strict";
 import {
   LIBELLE_APRES,
+  MOYENS_ACCEPTES,
+  MOYENS_PROPOSES,
+  estUnMoyenAccepte,
   messageNouvelIban,
   porteUnAutreIban,
   LIBELLE_AVANT,
@@ -256,6 +259,23 @@ essai("le message n'explique PAS pourquoi l'IBAN a changé", () => {
   for (const mot of ["banque", "erreur", "désolé", "excuse"]) {
     assert.equal(m.toLowerCase().includes(mot), false, `le message se justifie : « ${mot} »`);
   }
+});
+
+essai("les moyens de paiement sont trois choix fermés, et le premier est proposé d'office", () => {
+  // **Sa décision du 18 septembre 2026** sur la planche
+  // `appli/moyens-de-paiement-a-choisir.html` : plus de champ libre à la
+  // porte — virement et chèque proposé, virement seul, virement chèque espèces.
+  assert.deepEqual(
+    MOYENS_ACCEPTES.map((m) => m.valeur),
+    ["virement, chèque", "virement", "virement, chèque, espèces"]
+  );
+  assert.equal(MOYENS_PROPOSES, "virement, chèque");
+  // Ce qui s'écrit en base est ce que la facture imprime déjà : en minuscules,
+  // séparé par des virgules — « Moyens de paiement acceptés : virement, chèque. »
+  for (const m of MOYENS_ACCEPTES) assert.equal(m.valeur, m.valeur.toLowerCase());
+  assert.equal(estUnMoyenAccepte("virement"), true);
+  assert.equal(estUnMoyenAccepte("Virement, chèque"), false, "la valeur se compare telle quelle : l'écran n'envoie que la liste");
+  assert.equal(estUnMoyenAccepte(""), false);
 });
 
 console.log("");

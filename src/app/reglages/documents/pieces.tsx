@@ -131,11 +131,17 @@ export function Chiffre({
   );
 }
 
-/** Un texte libre, court ou long. */
+/**
+ * Un texte libre, sur plusieurs lignes.
+ *
+ * **Il n'a plus de forme courte depuis le 18 septembre 2026** : la seule case
+ * d'une ligne — les moyens de paiement — est devenue trois pastilles
+ * (`MOYENS_ACCEPTES`), et une branche que plus rien n'emprunte ne reste pas
+ * (`CLAUDE.md` §4 quinquies).
+ */
 export function Libre({
   valeur,
   exemple,
-  long,
   lignes = 2,
   aria,
   onEcrire,
@@ -143,26 +149,24 @@ export function Libre({
 }: {
   valeur: string;
   exemple: string;
-  long?: boolean;
-  /** Hauteur du champ long, en lignes. Deux pour un texte de pied ; bien plus pour des conditions générales. */
+  /** Hauteur du champ, en lignes. Deux pour un texte de pied ; bien plus pour des conditions générales. */
   lignes?: number;
   /** Le nom du champ pour qui ne le voit pas. Sans lui, celui du réglage historique. */
   aria?: string;
   onEcrire: (t: string) => void;
   onFini: (t: string) => void;
 }) {
-  const commun = {
-    value: valeur,
-    placeholder: exemple,
-    onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => onEcrire(e.target.value),
-    onBlur: (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => onFini(e.target.value),
-    className: "block w-full rounded-[4px] border-0 px-[15px] py-3 outline-none",
-    style: { backgroundColor: colors.card, color: colors.ink, fontSize: 16, lineHeight: 1.5 },
-  } as const;
-  return long ? (
-    <textarea {...commun} rows={lignes} aria-label={aria ?? "Texte ajouté en bas de chaque document"} className={`${commun.className} resize-none`} />
-  ) : (
-    <input {...commun} type="text" aria-label={aria ?? "Moyens de paiement acceptés"} autoComplete="off" />
+  return (
+    <textarea
+      value={valeur}
+      placeholder={exemple}
+      rows={lignes}
+      aria-label={aria ?? "Texte ajouté en bas de chaque document"}
+      onChange={(e) => onEcrire(e.target.value)}
+      onBlur={(e) => onFini(e.target.value)}
+      className="block w-full resize-none rounded-[4px] border-0 px-[15px] py-3 outline-none"
+      style={{ backgroundColor: colors.card, color: colors.ink, fontSize: 16, lineHeight: 1.5 }}
+    />
   );
 }
 

@@ -37,6 +37,47 @@
  * différentes au même client, sur deux pièces du même envoi (`CLAUDE.md` §3).
  */
 
+/**
+ * LES MOYENS DE PAIEMENT QU'IL ACCEPTE — trois choix, jamais un champ libre.
+ *
+ * **Sa décision du 18 septembre 2026**, devant la planche
+ * `appli/moyens-de-paiement-a-choisir.html` : *« pas besoin de planche, je
+ * choisis celle-là »*. La seizième question de la porte demandait d'ÉCRIRE, et
+ * la case des réglages aussi ; il voulait *« des choix pré-écrits, qu'il ait
+ * qu'à cliquer »* — virement et chèque proposé d'office, virement seul,
+ * virement chèque espèces.
+ *
+ * **Une seule liste pour la porte ET les réglages.** Deux listes finiraient par
+ * diverger, et c'est lui qui verrait deux réponses à la même question à deux
+ * écrans d'intervalle (`CLAUDE.md` §3). Elle vit ici, à côté de l'IBAN et de
+ * l'ordre du chèque : c'est le même sujet — comment le client nous règle.
+ *
+ * **La `valeur` est le texte que la facture imprime déjà**, en minuscules et
+ * séparé par des virgules : « Moyens de paiement acceptés : virement, chèque. »
+ * (`conditions-documents.ts`). Ce que la porte enregistre s'inscrit donc sur
+ * les devis et les factures sans rien traduire — la colonne
+ * `entreprises.moyens_paiement` ne change pas, seul le geste qui la remplit
+ * change. Le `titre`, lui, est ce qu'on lit en grand sur la pastille.
+ */
+export const MOYENS_ACCEPTES = [
+  { valeur: "virement, chèque", titre: "Virement et chèque" },
+  { valeur: "virement", titre: "Virement seulement" },
+  { valeur: "virement, chèque, espèces", titre: "Virement, chèque, espèces" },
+] as const;
+
+export type MoyenAccepte = (typeof MOYENS_ACCEPTES)[number]["valeur"];
+
+/** Ce qui est entouré avant qu'il touche quoi que ce soit. */
+export const MOYENS_PROPOSES: MoyenAccepte = "virement, chèque";
+
+/**
+ * La même liste revalide ce que l'écran renvoie — une valeur qui n'en vient
+ * pas ne vient pas de la porte (`CLAUDE.md` §3, jamais deux règles).
+ */
+export function estUnMoyenAccepte(valeur: string): valeur is MoyenAccepte {
+  return MOYENS_ACCEPTES.some((m) => m.valeur === valeur);
+}
+
 export type IdentiteDePaiement = {
   /** L'IBAN (Réglages → Identité), ou celui figé sur la facture. */
   iban: string | null;

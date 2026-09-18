@@ -6,6 +6,7 @@ import { FORMULE_DE_LESSAI, finDeLEssai } from "@/lib/abonnements";
 import { adresseNormalisee } from "@/lib/donner-un-acces";
 import { formeADuCapital } from "@/lib/formes-juridiques";
 import { capitalEnBase } from "@/lib/mentions-legales";
+import { estUnMoyenAccepte } from "@/lib/modalites-paiement";
 import { messageRefus, verifierNouveauMotDePasse } from "@/lib/mot-de-passe";
 import { causeDeLaPanne, codeSqlDe, messageSansLesValeurs, phraseDeLaPanne } from "@/lib/panne-de-base";
 import { estBancDEssai } from "@/profil-banc";
@@ -118,6 +119,13 @@ async function ecrireLeCompte(saisie: SaisieCompte): Promise<ResultatCreation> {
   // habituel : un bouton qui s'allume sur une saisie que le serveur refuse.
   const refusMdp = verifierNouveauMotDePasse(saisie.motDePasse, saisie.motDePasse);
   if (refusMdp) return { ok: false, refus: messageRefus(refusMdp) };
+
+  // Même liste que la porte (`MOYENS_ACCEPTES`) : depuis le 18 septembre 2026
+  // elle ne propose plus un champ libre, et ce qui n'en vient pas n'en vient pas.
+  const moyens = propre(saisie.moyens);
+  if (moyens !== undefined && !estUnMoyenAccepte(moyens)) {
+    return { ok: false, refus: "Choisissez un moyen de paiement dans la liste." };
+  }
   if (vide(saisie.entreprise)) return { ok: false, refus: "Le nom de l’entreprise est nécessaire." };
 
   // Coût 10 : celui d'`authorize`, du changement de mot de passe, de
@@ -152,7 +160,7 @@ async function ecrireLeCompte(saisie: SaisieCompte): Promise<ResultatCreation> {
         regimeTva: saisie.tva,
         numeroTva: saisie.tva === "assujettie" ? propre(saisie.numeroTva) : null,
         titulaireCompte: propre(saisie.titulaire),
-        moyensPaiement: propre(saisie.moyens),
+        moyensPaiement: moyens,
       })
       .returning({ id: entreprises.id });
 

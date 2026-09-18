@@ -15,6 +15,7 @@ import {
   crochetsRestants,
 } from "@/lib/conditions-generales";
 import type { DonneesMentionsObligatoires } from "@/lib/mentions-obligatoires";
+import { MOYENS_ACCEPTES, MOYENS_PROPOSES, estUnMoyenAccepte } from "@/lib/modalites-paiement";
 import BarreEnregistrer from "@/components/atlas/BarreEnregistrer";
 import { Bloc, Chiffre, Libre, Reglage } from "../pieces";
 
@@ -159,18 +160,45 @@ export default function ConditionsClient({
           />
         </Reglage>
 
+        {/* **Trois pastilles, plus de champ libre — sa décision du 18 septembre
+            2026**, la même liste qu'à la porte (`MOYENS_ACCEPTES`). Ce qui a été
+            écrit AVANT — à la main, par l'assistant, ou lu sur la photo d'un
+            devis — n'est pas de la liste : on le montre tel quel, entouré, et
+            il part dès qu'une pastille est touchée. Rien ne se réécrit à son
+            insu, rien ne se cache. */}
         <Reglage
           nom="Moyens de paiement acceptés"
           dit="Listés sous vos coordonnées bancaires"
           allume={c.moyensPaiement !== null}
-          onBascule={(v) => enregistrer({ moyensPaiement: v ? "virement, chèque" : null })}
+          onBascule={(v) => enregistrer({ moyensPaiement: v ? MOYENS_PROPOSES : null })}
         >
-          <Libre
-            valeur={c.moyensPaiement ?? ""}
-            exemple="virement, chèque, espèces"
-            onEcrire={(t) => poser({ moyensPaiement: t })}
-            onFini={(t) => enregistrer({ moyensPaiement: t })}
-          />
+          <div className="flex flex-col gap-2" role="group" aria-label="Moyens de paiement acceptés">
+            {[
+              ...MOYENS_ACCEPTES,
+              ...(c.moyensPaiement && !estUnMoyenAccepte(c.moyensPaiement)
+                ? [{ valeur: c.moyensPaiement, titre: c.moyensPaiement }]
+                : []),
+            ].map((m) => {
+              const choisi = c.moyensPaiement === m.valeur;
+              return (
+                <button
+                  key={m.valeur}
+                  type="button"
+                  data-atlas={`moyens-${m.valeur}`}
+                  aria-pressed={choisi}
+                  onClick={() => enregistrer({ moyensPaiement: m.valeur })}
+                  className="min-h-[50px] rounded-full px-5 py-2.5 text-left text-[15px]"
+                  style={{
+                    color: colors.ink,
+                    backgroundColor: choisi ? colors.card : "transparent",
+                    boxShadow: `inset 0 0 0 1px ${choisi ? colors.or : colors.line}`,
+                  }}
+                >
+                  {m.titre}
+                </button>
+              );
+            })}
+          </div>
         </Reglage>
 
         <Reglage
@@ -189,7 +217,6 @@ export default function ConditionsClient({
           <Libre
             valeur={c.textePied ?? ""}
             exemple="Sous réserve d'accès au chantier."
-            long
             onEcrire={(t) => poser({ textePied: t })}
             onFini={(t) => enregistrer({ textePied: t })}
           />
@@ -208,7 +235,6 @@ export default function ConditionsClient({
           <Libre
             valeur={c.conditionsGenerales}
             exemple=""
-            long
             lignes={14}
             aria="Conditions générales de vente et de règlement"
             onEcrire={(t) => poser({ conditionsGenerales: t })}

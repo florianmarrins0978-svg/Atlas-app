@@ -69,7 +69,7 @@ const SOCIETE: Record<string, string> = {
   numTva: "FR12345678901",
   iban: "FR7612345678901234567890123",
   titulaire: "Amiot Paysage",
-  moyens: "Virement, chèque",
+  moyens: "virement, chèque",
 };
 
 test("seize questions, cinq chapitres, et on parle de LUI avant sa société", () => {
@@ -241,6 +241,30 @@ test("une liste de deux avance toute seule, les autres non", () => {
   assert.equal(avanceToutSeul(q("tva")), true);
   assert.equal(avanceToutSeul(q("identite")), false);
   assert.equal(avanceToutSeul(q("forme")), false);
+});
+
+test("les moyens de paiement se choisissent, et « virement et chèque » est déjà entouré", () => {
+  // **Sa décision du 18 septembre 2026**, planche
+  // `appli/moyens-de-paiement-a-choisir.html` : trois choix, plus de champ
+  // libre, et il n'a rien à taper — le premier est proposé d'office.
+  const moyens = q("moyens");
+  assert.deepEqual(
+    moyens.liste?.map((o) => o.valeur),
+    ["virement, chèque", "virement", "virement, chèque, espèces"]
+  );
+  assert.equal(moyens.placeholder, undefined, "un champ libre est resté à côté des choix");
+  assert.equal(reponsesProposees({}).moyens, "virement, chèque");
+  // Un choix qu'on a déjà fait à sa place ne s'efface pas d'un doigt posé
+  // ailleurs : c'est une réponse, elle part en base telle quelle.
+  assert.equal(reponsesProposees({ moyens: "virement" }).moyens, "virement");
+  // Une liste qui PROPOSE n'avance pas toute seule : il doit voir ce qui est
+  // entouré avant « Créer mon compte ».
+  assert.equal(avanceToutSeul(moyens), false);
+  // Proposée d'office, la réponse existe toujours : rien à passer, rien à
+  // réclamer dans les réglages.
+  assert.equal(moyens.requis, true);
+  assert.equal(refusDe(moyens, reponsesProposees({})), null);
+  assert.ok(!resteAFaire({}).includes("les moyens de paiement"));
 });
 
 test("l'espace insécable colle le « ? » à son dernier mot", () => {

@@ -32,6 +32,7 @@
  */
 import { FORMES_JURIDIQUES, formeADuCapital } from "@/lib/formes-juridiques";
 import { capitalEnBase } from "@/lib/mentions-legales";
+import { MOYENS_ACCEPTES, MOYENS_PROPOSES } from "@/lib/modalites-paiement";
 import { messageRefus, verifierNouveauMotDePasse } from "@/lib/mot-de-passe";
 
 /** Le chapitre est ce qui s'affiche en haut : « Vous », « Votre entreprise »… */
@@ -66,11 +67,13 @@ export type Question = {
   /** Deux cases qu'on touche, côte à côte, DANS un groupe : la civilité. */
   choix?: { valeur: string; titre: string }[];
   /**
-   * Deux grands choix qui remplissent la question à eux seuls : la TVA.
+   * De grands choix qui remplissent la question à eux seuls : la TVA, les
+   * moyens de paiement.
    *
-   * **Une liste avance toute seule** — voir `avanceToutSeul`.
+   * **Une liste avance toute seule** — sauf quand une réponse est déjà
+   * proposée : voir `avanceToutSeul`.
    */
-  liste?: { valeur: string; titre: string; note: string }[];
+  liste?: readonly { valeur: string; titre: string; note?: string }[];
   /** Le bandeau déroulant dessiné par l'application : la forme juridique. */
   deroulant?: { valeur: string; titre: string; note: string }[];
   /** Ne se pose que si l'entreprise a un capital (donc un RCS). */
@@ -79,6 +82,14 @@ export type Question = {
   siAssujettie?: true;
   /** Propose la réponse d'une question précédente, à corriger d'un doigt. */
   repriseDe?: string;
+  /**
+   * Propose une réponse TOUTE FAITE, déjà entourée : les moyens de paiement.
+   *
+   * **Sa décision du 18 septembre 2026** : *« proposer par défaut virement et
+   * chèque, et qu'il ait qu'à cliquer »*. Il regarde, et il appuie sur « Créer
+   * mon compte » ; s'il encaisse autrement, il touche un autre choix.
+   */
+  propose?: string;
 };
 
 /**
@@ -281,10 +292,13 @@ export const QUESTIONS: readonly Question[] = [
     id: "moyens",
     chapitre: "Être payé",
     question: "Les moyens de paiement que vous acceptez ?",
-    placeholder: "Virement, chèque…",
-    type: "text",
-    autocomplete: "off",
-    reste: "les moyens de paiement",
+    // **Plus de champ libre — sa décision du 18 septembre 2026.** La liste et
+    // ce qu'elle propose vivent dans `modalites-paiement.ts`, avec les
+    // réglages qui montrent les mêmes trois pastilles. Proposée d'office, la
+    // réponse existe toujours : rien à passer, rien à réclamer à la fin.
+    requis: true,
+    liste: MOYENS_ACCEPTES,
+    propose: MOYENS_PROPOSES,
   },
 ] as const;
 
@@ -329,7 +343,8 @@ export function totalAnnonce(reponses: Record<string, string>): number {
  *
  * **Deux réponses se devinent de ce qu'il vient de dire** — l'e-mail des devis,
  * le titulaire du compte —, et se corrigent d'un doigt : les retaper serait lui
- * faire écrire deux fois la même chose.
+ * faire écrire deux fois la même chose. **Une troisième est proposée toute
+ * faite** — les moyens de paiement (`propose`) — et se change d'un doigt aussi.
  *
  * **UNE SEULE FONCTION POUR L'ÉCRAN ET POUR L'ENVOI**, et c'est tout l'objet de
  * celle-ci : la proposition affichée est exactement celle qui part en base. La
@@ -342,7 +357,9 @@ export function totalAnnonce(reponses: Record<string, string>): number {
 export function reponsesProposees(reponses: Record<string, string>): Record<string, string> {
   const complet = { ...reponses };
   for (const q of questionsApplicables(reponses)) {
-    if (!q.repriseDe || complet[q.id] !== undefined) continue;
+    if (complet[q.id] !== undefined) continue;
+    if (q.propose) complet[q.id] = q.propose;
+    if (!q.repriseDe) continue;
     const source = (reponses[q.repriseDe] ?? "").trim();
     if (source) complet[q.id] = source;
   }
@@ -400,11 +417,16 @@ export function refusDe(question: Question, reponses: Record<string, string>): s
 }
 
 /**
- * Une liste de deux avance toute seule : demander « Continuer » après un appui
- * sans ambiguïté, c'est un geste pour rien.
+ * Une liste avance toute seule : demander « Continuer » après un appui sans
+ * ambiguïté, c'est un geste pour rien.
+ *
+ * **Sauf quand une réponse est déjà proposée.** Là, il n'appuie sur rien pour
+ * répondre : il regarde ce qui est entouré, et c'est le bouton qui confirme.
+ * Avancer au premier appui lui ferait quitter l'écran en voulant seulement
+ * changer de choix.
  */
 export function avanceToutSeul(question: Question): boolean {
-  return Boolean(question.liste);
+  return Boolean(question.liste) && !question.propose;
 }
 
 /** Ce qui reste à remplir dans les réglages, écrit comme on le dit. */

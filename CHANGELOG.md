@@ -8,6 +8,45 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-18
 
+### Les moyens de paiement se choisissent du doigt — à la porte et dans les réglages
+
+**Sa demande, le matin** : la seizième question de la création de compte
+demandait d'écrire ses moyens de paiement ; il voulait *« des choix pré-écrits,
+qu'il ait qu'à cliquer »*. La planche `appli/moyens-de-paiement-a-choisir.html`
+lui a été montrée ; sa réponse : *« pas besoin de planche, je choisis
+celle-là »*, avec deux exigences — que ça s'enregistre dans les réglages, et que
+ça s'inscrive tout seul sur les devis et les factures.
+
+**Une seule liste** (`MOYENS_ACCEPTES`, `src/lib/modalites-paiement.ts`) :
+« Virement et chèque » proposé d'office, « Virement seulement », « Virement,
+chèque, espèces ». Elle sert la porte (`creation-compte.ts`, question
+`moyens` — `liste` + `propose`, plus de champ libre, plus de « Passer »), le
+dépôt qui revalide ce que l'écran renvoie, et Réglages → Documents →
+Conditions, où le champ libre est devenu les mêmes trois pastilles.
+
+**Ce qui n'a pas eu à changer, et c'est le point** : la `valeur` de chaque
+choix est le texte que `lignesConditionsDevis` / `lignesConditionsFacture`
+impriment déjà (« Moyens de paiement acceptés : virement, chèque. »). La colonne
+`entreprises.moyens_paiement` ne bouge pas ; seul le geste qui la remplit
+change. Le devis fige la valeur à sa création, la facture la relit à la sienne
+(§ modalités du 8 septembre) — comme avant.
+
+**Ce qui a été écrit avant** — à la main, par l'assistant, ou lu sur la photo
+d'un devis — reste en base et se montre tel quel dans les réglages, entouré,
+comme une quatrième pastille ; il part dès qu'une des trois est touchée. Rien
+ne se réécrit à son insu.
+
+**Retiré** : la forme courte de `Libre` (`pieces.tsx`), qui ne servait qu'à
+cette case (§4 quinquies).
+
+**Éprouvé** : `test-creation-compte` (nouveau cas), `test-modalites-paiement`
+(nouveau cas), `test-porte-aucune-saisie-ne-tombe-db` sur `atlas_test`,
+`test-conditions-documents`, code mort, couches, pansements, couleurs,
+boutons arrondis, types, lint — et les deux écrans regardés dans un vrai
+navigateur (porte : la pastille entourée, aucun « Passer » ; réglages : le
+choix s'enregistre et l'aperçu « Ce que votre devis dira » suit). **Pas de
+batterie**, à sa demande — d'autres sessions tournaient.
+
 ### Un contrôle du planning ne compte plus les jours ouvrés à sa façon
 
 `test-poser-une-date-e2e` cherchait son jour d'accueil à **trois jours
