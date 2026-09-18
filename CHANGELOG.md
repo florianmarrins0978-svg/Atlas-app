@@ -6,6 +6,30 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-09-18
+
+### Une seconde planche pour la journée du planning, à comparer à la première
+
+**Sa demande :** *« va regarder la planche planning tout ensemble qu'une autre
+session a réalisée et essaie de me proposer mieux : plus joli et facile
+d'utilisation »*.
+
+`appli/planning-tout-ensemble-en-mieux.html` garde ses trois réponses du 17 à
+la lettre — le nom seul, sans contour, compris — et montre ce que la première
+ne montrait pas : la fiche attachée au jour par sa pointe (déjà dans
+l'application), des barres qui disent vrai et qui bougent, le client posé qui
+arrive DANS la journée avec son « Qui ? » et un « Annuler » qui le ramène, une
+seule grammaire (ligne · interrupteur · « Annuler » à droite) pour l'absence,
+la demi-journée à poser et le défaire, le tiroir tenu au bas de l'écran, la
+question « qui ? » à deux salariés, et « Voir sur Nuit ».
+
+**Ce qu'elle coûte est écrit sous l'écran**, pas seulement ici : un appui de
+plus pour l'absence à deux salariés, le moment demandé pour une demi-journée,
+une fiche qui s'allonge à chaque client posé. La durée à droite du nom est un
+ajout, signalé comme tel. Rien n'est codé : les deux planches attendent qu'il
+dise laquelle, ou ce qu'il prend de chacune.
+
+---
 ## 2026-09-17
 
 ### Cinq connexions réussies ne ferment plus la porte au sixième
@@ -25,7 +49,7 @@ appareil, c'était l'adresse partagée, et il cherchait du côté de son télép
 
 La protection ne bouge pas : un attaquant ne rend rien, ses essais ratent.
 
-Détail : `ARCHITECTURE.md` §384.
+Détail : `ARCHITECTURE.md` §386.
 
 ### La gravité de `main` faisait repayer la batterie à ses voisines
 
@@ -76,8 +100,16 @@ centimètres d'écart, dans la même carte.
 
 `appli/planning-tout-ensemble.html` porte donc ses trois choix ensemble : les
 voies d'ajout qui gardent leurs mots et se referment par le « ＋ Ajouter » ;
-« Annuler » à droite de l'interrupteur de l'absence ; le nom du client entouré,
-sans « ＋ » et sans « › », sous la date en or. Rien n'est codé.
+« Annuler » à droite de l'interrupteur de l'absence ; le nom du client SEUL —
+sa retouche du soir même, *« laisse juste le nom du client et retire le contour
+doré »* —, sous la date en or. Rien n'est codé.
+
+**Le cahier des charges vit SUR la planche**, pas dans le commentaire du
+fichier : *« je vais la donner à une autre session, qu'elle ne se trompe pas »*.
+Un commentaire HTML est invisible à qui ouvre l'adresse — et c'est l'adresse
+qu'il transmet. Le bloc « Pour la session qui codera » porte les trois
+changements fichier par fichier, ce qui ne bouge pas, ce qui a été écarté, les
+suites qui regardent les repères touchés, et le point non tranché.
 
 **Ce que son troisième choix enlève est dit, pas tu** : le « › » est le seul
 chemin, depuis cette liste, vers la fiche du chantier. Une demande qui supprime
@@ -143,7 +175,31 @@ sur son nom plutôt que sur « Poser ». Sa demande est une demande d'apparence,
 donc une planche — `appli/poser-en-cliquant-sur-le-nom.html`, trois façons au
 choix, et le point à trancher : le chevron « › » de la même ligne ouvre déjà le
 chantier.
+### « Touchez le jour au-dessus » : c'est le PLANNING qui est passé au-dessus
 
+Sa capture : dix jours du mois, dont celui qu'il visait, étaient dessinés SOUS
+la consigne qui l'envoyait regarder en haut. On lui a d'abord proposé de
+réécrire la phrase — il a refusé les trois formulations : *« ce que je voulais
+c'était pas changer la phrase mais faire en sorte que le planning apparaisse
+entier au-dessus de Mr Linotte pour choisir un jour facilement »*.
+
+Sa solution règle plus que la nôtre. La fiche vivait dans la semaine du jour
+ouvert, donc elle disparaissait au premier mois tourné — or tourner le mois est
+exactement ce qu'il fait pour atteindre son jour d'accueil, et il avait fallu
+écrire un SECOND affichage du geste sous le calendrier rien que pour ça.
+Descendue sous le mois entier, la fiche y survit : ce second affichage est
+supprimé, avec sa prop et le gris pâle qui n'en dépendait plus. Une seule
+place, une seule phrase, et le nom du chantier ne se redit plus.
+
+Aucun mot n'a été changé à l'écran. « Annuler » est passé en noir gras sur la
+ligne de la consigne, à 2 cm à droite — sa retouche, mesurée en pixels réels et
+non en `cm` CSS, qui en aurait rendu 1,25 sous la règle.
+
+Deux défauts vus à l'écran et par aucun test : 56 px de blanc entre le 30 et la
+fiche (la fenêtre du carrousel prend la hauteur du plus grand des trois mois —
+la fiche est donc rendue DANS le panneau du mois, qu'elle regonfle), et la
+consigne coupée en « Touchez le jour au- / dessus ». Les deux ont leur mesure
+dans la suite maintenant. `ARCHITECTURE.md` §381.
 
 ### Le garde-fou de `main` réclamait une batterie dès qu'une autre session fusionnait
 
@@ -473,6 +529,40 @@ liste reste à une flèche. Ce que plus rien n'appelle est retiré
 (`apresLesCoordonnees`, la destination `fiche`). `ARCHITECTURE.md` §383 ;
 `test-coordonnees-depuis-accueil-e2e.ts` et `test-devis-sans-client-e2e.ts`
 refusent le retour d'« Enregistrer ».
+
+### Le menu du bas disparaissait après un devis envoyé
+
+Sa capture : l'accueil, juste après l'envoi, **sans barre d'onglets**. Il ne
+pouvait plus changer d'écran sans recharger.
+
+Le devis vit seul sur sa page, sans onglets ni cadre. Ce choix se faisait dans
+la mise en page RACINE, au serveur — et Next.js ne rejoue pas cette mise en page
+sur une navigation de lien. Le choix fait pour le devis survivait donc à
+l'accueil, et pour toute la durée de l'onglet : plus de barre, plus de
+rembourrage du bas. Le dépôt avait déjà réparé **l'autre sens** le 5 septembre
+(la barre d'un écran précédent qui restait sur le devis, et couvrait son bouton
+d'envoi) ; ce rattrapage-là ne pouvait rien ici — une barre jamais rendue n'a
+rien à retirer.
+
+À la racine : le choix quitte le serveur pour `CadreApplication`, un composant
+client qui lit le chemin COURANT et se refait à chaque navigation. La barre,
+elle, ne se garde plus elle-même — la couche qui compensait s'en va avec la
+racine corrigée (`CLAUDE.md` §4 quater). Mesuré dans les deux sens, et la suite
+sait rougir : `scripts/test-barre-du-bas-apres-devis-e2e.ts`.
+
+### La réponse du client n'arrivait qu'au rechargement
+
+*« Mon client vient d'accepter mon devis, sauf que j'ai l'impression qu'il
+n'apparaîtra dans mes notifications que si je réactualise la page. »* Il avait
+raison, et ce n'était pas un mécanisme en panne : il n'y en avait **aucun**.
+L'accueil lit les réponses une fois, au moment où il est demandé ; la réponse,
+elle, arrive plus tard et sur le téléphone du client.
+
+`VeilleDesNouvelles` est ce mécanisme : l'accueil se relit **immédiatement**
+quand il revient à Atlas (de sa messagerie, d'un appel, de l'écran verrouillé),
+et toutes les trente secondes pendant qu'il le regarde — jamais quand la page
+est cachée. Ce n'est pas une notification poussée, qui sonnerait Atlas fermé :
+celle-là reste à faire (`TODO.md`).
 
 ### La publication des planches rougissait depuis la note vocale à plat
 

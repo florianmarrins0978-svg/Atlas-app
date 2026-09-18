@@ -48,7 +48,7 @@ ce qui marchait le 17 septembre 2026.
 
 ## ⏳ « Trop d'essais depuis cet appareil » ment encore à la CRÉATION DE COMPTE
 
-Corrigé sur la connexion le 17 septembre 2026 (`ARCHITECTURE.md` §384) ;
+Corrigé sur la connexion le 17 septembre 2026 (`ARCHITECTURE.md` §386) ;
 `src/app/creer-un-compte/actions.ts` porte encore le même libellé, sur un seuil
 tenu par **adresse seule**. Deux personnes sur un même wifi partagent donc les
 cinq essais, et celle qui est refusée cherche du côté de son téléphone.
@@ -99,7 +99,7 @@ elle n'a jamais cessé de compter les réussites.
 l'adresse qu'il partage. Un message qui accuse le mauvais coupable coûte plus
 cher que pas de message du tout (`AGENTS.md`).
 
-**~~CE QUI A ÉTÉ FAIT, le soir même~~** (`ARCHITECTURE.md` §384) : un seuil sait
+**~~CE QUI A ÉTÉ FAIT, le soir même~~** (`ARCHITECTURE.md` §386) : un seuil sait
 désormais **rendre** ce qu'un geste réussi lui avait pris, et la connexion rend
 ses deux jetons là où elle efface déjà ses échecs. Le compteur reste incrémenté
 avant `signIn` — c'est ce qui le rend atomique ; « regarder puis consommer »
@@ -173,42 +173,65 @@ de la hauteur, il la veut à 33 %. Le réglage des deux ressorts ne la déplace
 pas — essayé, mesuré, rendu. La racine est ailleurs.
 
 
-## ⏳ UNE PLANCHE À REGARDER — LE MOIS ENTIER AU-DESSUS PENDANT UN DÉPLACEMENT (17 septembre 2026)
+## 🔧 `DATABASE_APP_URL` N'EST POSÉE PAR PERSONNE — une suite rougit hors du rang 0 (17 septembre 2026)
+
+**Trouvé en livrant le déplacement**, et ce n'est pas ce lot :
+`scripts/test-secret-authentification-db.ts` est **le seul fichier du dépôt qui
+lit `DATABASE_APP_URL`** — et rien ne la pose. Elle retombe donc sur son défaut
+écrit en dur, `…@localhost:5432/atlas_test`, tandis que son rôle propriétaire
+suit `DATABASE_ADMIN_URL`, que l'atelier suffixe.
+
+| l'atelier | ce qui se passe |
+|---|---|
+| rang 0 (`atlas_test`) | les deux tombent sur la même base : **verte, par coïncidence** |
+| rang 1 et au-delà (`atlas_test_a1`…) | le propriétaire écrit dans une base, le rôle applicatif lit l'autre — **cinq rouges**, dont « le bon mot de passe n'ouvre plus » |
+
+**Ce que ça coûte :** toute session qui n'a pas le rang 0 voit cinq rouges sur
+l'authentification, et croit à une régression. Trois batteries y sont passées
+le 17 septembre avant que la cause soit trouvée. Le garde-fou, lui, fait son
+travail : `verifier-rouge-prealable.ts` répond « même sort des deux côtés ».
+
+**La correction, et elle est à la racine :** la suite doit prendre ses deux
+connexions par `scripts/_bases-essai.ts`, qui compose déjà `APP`, `OWNER` et
+`SUPER` en appliquant le suffixe de l'atelier. Une valeur en dur dans un test
+est un rang 0 supposé.
+
+**À vérifier dans la foulée** : aucun autre fichier ne lit une variable que
+personne ne pose — `grep -rn "process.env.DATABASE" scripts/ src/`.
+
+**Et sur cette machine**, la base `atlas_test_a1` a dû être créée à la main :
+`scripts/monter-base-locale.sh` n'en monte qu'une, et son
+`bootstrap-postgres-ci.sql` porte `ALTER DATABASE atlas_test OWNER` **en dur** —
+appliqué ailleurs, il agit sur la mauvaise base. Le port 3000 répondant sans
+que rien n'écoute dans un conteneur d'agent, le rang 0 y est rarement libre.
+
+## ~~UNE PLANCHE À REGARDER — LE MOIS ENTIER AU-DESSUS PENDANT UN DÉPLACEMENT~~ — CHOISIE ET CODÉE LE JOUR MÊME (17 septembre 2026, « la A » + « 1 sans le nom »)
 
 **Sa capture :** *« il dit toucher le jour au-dessus mais le planning apparaît
-en-dessous. »* Mesuré : sur son écran du 18 septembre, **dix jours du mois**
-sont dessinés SOUS la consigne — dont le 24.
+en-dessous. »* Mesuré : dix jours du mois étaient sous la consigne, dont le 24.
 
-**LA PREMIÈRE LECTURE ÉTAIT FAUSSE, ET C'EST LUI QUI L'A REDRESSÉE :** *« ce
-que je voulais c'était pas changer la phrase mais faire en sorte que le
-planning apparaisse entier au-dessus de Mr Linotte pour choisir un jour
-facilement »*. On lui avait proposé trois formulations ; il n'en veut aucune.
-Il veut que la phrase **devienne vraie**.
+**On lui a d'abord proposé la mauvaise chose** — trois formulations de
+rechange. Il a redressé : *« ce que je voulais c'était pas changer la phrase
+mais faire en sorte que le planning apparaisse entier au-dessus de Mr Linotte
+pour choisir un jour facilement »*. Le code déjà écrit a été défait
+(`5b177d9`, `aa3f198`) avant la planche, à sa demande — *« fait une planche !
+code rien »*.
 
-**Sa solution est meilleure, et pour une raison qui n'avait pas été vue.**
-Aujourd'hui la fiche s'insère DANS la grille, sous la semaine du jour ouvert
-(`MoisCharge`, prop `volet`) — donc elle **disparaît au premier mois tourné**,
-et c'est pour ça qu'il a fallu écrire un SECOND montage de
-`BandeauDeplacement`, en repli sous le calendrier. Si la fiche descend sous le
-mois entier pendant le geste, elle survit au changement de mois : **le second
-montage devient du code mort** (`CLAUDE.md` §4 quinquies), et la consigne n'a
-plus besoin de redire le nom du chantier.
-
-**RIEN N'EST CODÉ POUR LA PLACE** — la planche `appli/deplacer-la-consigne.html`
-attend sa lettre. Une seule question : pendant qu'il choisit le jour, la fiche
-descend **entière** (A) ou réduite au nom, au lieu et à la question (B).
-
-**Ce qui EST codé, et qui attend avec :** sa réponse « 1 sans le nom » — le nom
-du chantier n'est plus redit dans la fiche, où il est déjà en titre trois
-lignes plus haut (commit `b04ec34` sur `claude/problem-investigation-qn7qor`,
-suite `test-deplacer-sur-le-calendrier-e2e.ts`). Non poussé sur `main` : il
-touche la même ligne que la place, et les deux partiront ensemble.
-
-**Tranché sans lui demander, à dire si c'est mal :** la pointe qui rattache la
-fiche à sa case disparaît pendant le geste — descendue sous le mois entier,
-elle désignait la case d'à côté. Le cerne noir du jour ouvert la remplace.
+**CODÉ**, planche `appli/deplacer-la-consigne.html` : la fiche descend sous le
+mois entier pendant le geste (`voletDetache`), aucun mot n'a changé à l'écran,
+le second affichage du geste sous le calendrier est supprimé, le nom ne se
+redit plus, et « Annuler » est passé en noir gras à 2 cm à droite de la
+consigne. `ARCHITECTURE.md` §381.
 
 ## ⏳ LA PLANCHE D'ENSEMBLE ATTEND SON OUI — PUIS ON CODE (17 septembre 2026)
+
+**DEUX PLANCHES DEPUIS LE 18 SEPTEMBRE, PAS UNE.** Sa demande du 18 : *« propose
+mieux : plus joli et facile d'utilisation »*. `appli/planning-tout-ensemble-en-mieux.html`
+garde ses trois réponses à la lettre et ajoute la pointe vers le jour, les
+barres vraies, le client posé qui arrive dans la fiche avec « Annuler », une
+seule grammaire ligne · interrupteur · « Annuler », le tiroir au bas, « qui ? »
+à deux salariés, Nuit. **Ce qu'on code, c'est celle qu'il désigne — ou un
+mélange qu'il nomme.** Ne pas coder avant.
 
 **Sa consigne :** *« toutes les réponses que je vais te donner, tu vas mettre
 les modifs dans une seule planche, comme ça à la fin tu coderas la planche
@@ -221,7 +244,7 @@ finale avec toutes les modifs dedans »*.
 |---|---|
 | *« le C, pas d'Annuler »* | les trois voies d'ajout gardent leurs mots ; le « ＋ Ajouter » reste à sa place et devient « ✕ Fermer » — la pastille « Annuler » disparaît |
 | *« A, à côté »* | « Annuler » à droite de l'interrupteur Matin · Après-midi · Journée, et il s'efface avec lui dès qu'un moment est choisi |
-| *« le C, sans le + et sans les chevrons, mais conserve la date en doré »* | le nom entouré pose le client ; plus de « ＋ » dans la pastille, plus de « › » à droite ; la poignée garde « À poser sur jeudi 17 septembre » en or |
+| *« le C, sans le + et sans les chevrons, mais conserve la date en doré »*, puis *« laisse juste le nom du client et retire le contour doré »* | le NOM SEUL pose le client : ni contour, ni « ＋ », ni « › ». Un filet sépare deux noms, et ne souligne pas le dernier. La poignée garde « À poser sur jeudi 17 septembre » en or, et c'est elle — seule — qui dit ce que l'appui fait |
 
 **CE QUE SON TROISIÈME CHOIX EMPORTE, et il doit le savoir avant qu'on code :**
 le « › » est le seul chemin, DEPUIS CETTE LISTE, vers la fiche du chantier
@@ -229,10 +252,20 @@ le « › » est le seul chemin, DEPUIS CETTE LISTE, vers la fiche du chantier
 plus qu'une chose — poser — et le chantier s'ouvre depuis l'onglet Chantiers.
 C'est écrit sur la planche et dans le message qui l'accompagne.
 
-**Ce que le lot devra toucher, quand il viendra** : `AjoutAuJour` (les voies et
-le « ＋ »), `PasLaCeJour` + `BasculeDuMoment` (l'« Annuler » de l'absence), et
-la liste « Sans date » du tiroir (`Petit` « Poser » → le nom entouré,
-`ChevronDesPortes` retiré). Niveau à recalculer sur le diff — `npm run niveau`.
+**LE CAHIER DES CHARGES VIT SUR LA PLANCHE ELLE-MÊME**, visible à son adresse,
+pas dans le commentaire du fichier — sa demande : *« tout ce que j'ai choisi est
+bien expliqué sur la planche ? parce que je vais la donner à une autre session,
+qu'elle ne se trompe pas »*. Le bloc « Pour la session qui codera » porte les
+trois changements fichier par fichier, ce qui NE bouge pas, ce qui a été écarté,
+les suites qui regardent les repères touchés, et le point non tranché
+(l'« Annuler » de la branche `ajout-qui` reste tel quel : ce n'est pas le même
+geste, et il n'a pas été montré). **La planche fait foi : ce qui n'y est pas
+écrit ne se code pas.**
+
+**Ce que le lot devra toucher** : `AjoutAuJour` (les voies et le « ＋ »),
+`PasLaCeJour` + `BasculeDuMoment` (l'« Annuler » de l'absence), et la liste
+« Sans date » du tiroir (`Petit` « Poser » → le nom seul, `ChevronDesPortes`
+retiré). Niveau à recalculer sur le diff — `npm run niveau`.
 
 ## ⏳ SA RÉPONSE EST DONNÉE — LES QUATRE VOIES : « LE C, PAS D'ANNULER » (17 septembre 2026)
 
@@ -306,7 +339,7 @@ qui montrait le contraire (`CLAUDE.md` §5). C'est l'image qui a tranché.
 l'interrupteur — « Matin · Après-midi · Journée · Annuler » se lirait comme un
 quatrième moment.
 
-## ⏳ SA RÉPONSE EST DONNÉE — LE NOM : « LE C, SANS LE + ET SANS LES CHEVRONS » (17 septembre 2026)
+## ⏳ SA RÉPONSE EST DONNÉE — LE NOM SEUL, SANS CONTOUR (17 septembre 2026)
 
 **Sa demande, capture à l'appui :** *« au lieu du "Poser" entouré, pour poser
 le client le mieux serait qu'on clique sur Mr. Linotte — donc trouve un moyen
@@ -446,6 +479,28 @@ Le patron seul peut dire si cela vaut un lot ; ce n'est pas à refaire à l'aveu
 partout, parce qu'une enveloppe posée sans discernement finirait par avaler des
 refus métier.
 
+## LA NOTIFICATION POUSSÉE — ATLAS FERMÉ, RIEN NE SONNE
+
+**Née de sa remarque du 17 septembre 2026** : *« mon client vient d'accepter mon
+devis, sauf que j'ai l'impression qu'il n'apparaîtra dans mes notifications que
+si je réactualise la page »*.
+
+**Ce qui est fait depuis ce jour** : l'accueil se relit tout seul —
+immédiatement quand il revient à Atlas, et toutes les trente secondes pendant
+qu'il le regarde (`VeilleDesNouvelles`, `ARCHITECTURE.md` §384).
+
+**Ce qui reste, et que cela ne remplace pas** : quand Atlas est FERMÉ, rien ne
+le prévient. Un client qui accepte à 19 h se lit le lendemain matin. Une vraie
+notification poussée demande un service worker, l'abonnement `Web Push` du
+navigateur, ses clés VAPID et un endroit où les ranger par personne — et, sur
+iPhone, l'application ajoutée à l'écran d'accueil. Rien de tout cela n'est
+commencé.
+
+**À trancher avec lui avant de coder** : ce qui a le droit de sonner. Une
+réponse de client, oui ; un rappel de devis qui dort, probablement pas — une
+alerte qui parle à tort s'apprend à être ignorée (`CLAUDE.md` §4 ter).
+
+---
 ## LE SECOND ANNEAU DE L'ACCUEIL — « Créer une facture » — RESTE À FAIRE
 
 **Sa décision du 10 septembre 2026**, planche `appli/facturer-sans-devis.html` :
