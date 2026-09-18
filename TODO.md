@@ -287,20 +287,22 @@ le second affichage du geste sous le calendrier est supprimé, le nom ne se
 redit plus, et « Annuler » est passé en noir gras à 2 cm à droite de la
 consigne. `ARCHITECTURE.md` §381.
 
-## ⏳ LA FICHE D'INTERVENTION SANS UN BOUTON ATTEND SON OUI (18 septembre 2026, au soir)
+## ⏳ LA FICHE D'INTERVENTION EMBELLIE ATTEND SON OUI (18 septembre 2026, refaite le 19)
 
 **Sa demande, capture à l'appui :** *« embellir cette page comme on l'a fait pour
 la partie juste au-dessus — joli, facilement compréhensible, minimaliste, sans
-gros bouton tout moche »*. Planche `appli/fiche-intervention-en-mieux.html` :
-la règle du planning (noir un fait, or un geste, gris le reste) appliquée à
-`FeuilleChantier` et `FinDeChantier` — plus de carte dans la carte du jour,
-plus de cases Maps / Waze / Copier / Appeler (deux lignes « Adresse », « Client »),
-plus de cadre autour de la note (une ligne fine dessous), « Fin de chantier »
-et « C'est fini » en mots or, « Ouvrir le PDF sans les prix » sans son gras
-du 15 septembre. Tous ses mots à leur place ; les lignes deviennent les cases ;
-le rond vert coché reste. **Ne pas coder avant son oui.** Si oui, le lot
-touche `PlanningClient.tsx` (`FeuilleChantier`, `NoteDuChantier`, `Geste`)
-et `FinDeChantier.tsx`, et la suite `test-boutons-arrondis.ts` est à relire.
+gros bouton tout moche »*. Une première planche appliquait la règle du planning
+à la lettre (plus un cadre, plus un bouton) ; **sa réponse du 19 au matin :**
+*« garde l'esprit de la page d'avant quand même, juste essaye de l'embellir, et
+mets les deux côte à côte »*. **Ne pas rouvrir la version sans bouton.**
+Planche `appli/fiche-intervention-en-mieux.html`, refaite : la même fiche —
+carte teintée, quatre cases, note cadrée, puces or, bouton vert, PDF en gras —,
+embellie : cases de 46 px serrées à 6 px avec un dessin SVG devant chaque mot,
+note dans le même blanc que les cases, curseur or, **bouton vert de 46 px arrêté
+au mot** (même dessin que « C'est fini »), filets égaux. **Ne pas coder avant
+son oui.** Si oui, le lot touche `PlanningClient.tsx` (`FeuilleChantier`,
+`NoteDuChantier`, `Geste`) et `FinDeChantier.tsx` ; aucun mot, aucune place
+ne change.
 
 ## ⏳ LA PLANCHE D'ENSEMBLE ATTEND SON OUI — PUIS ON CODE (17 septembre 2026)
 

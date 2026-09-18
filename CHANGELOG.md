@@ -8,20 +8,23 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-18
 
-### La fiche d'intervention dessinée sans un bouton, à la règle du planning
+### La fiche d'intervention, la même en plus belle — planche refaite le 19
 
-**Sa demande, le soir, capture à l'appui :** *« embellir cette page comme on l'a
-fait pour la partie juste au-dessus — joli, facilement compréhensible,
-minimaliste, sans gros bouton tout moche »*.
+**Sa demande, le 18 au soir, capture à l'appui :** *« embellir cette page comme
+on l'a fait pour la partie juste au-dessus — joli, facilement compréhensible,
+minimaliste, sans gros bouton tout moche »*. Une première planche appliquait la
+règle du planning à la lettre — plus un cadre, plus un bouton, des mots en or.
+**Sa réponse du 19 au matin :** *« non, garde l'esprit de la page d'avant quand
+même, juste essaye de l'embellir, et mets les deux côte à côte »*.
 
-`appli/fiche-intervention-en-mieux.html` pose sa capture à côté de la
-proposition et applique la seule règle de la planche du planning à la fiche :
-plus de carte dans la carte du jour, plus de cases blanches, plus de cadre
-autour de la note, plus de bouton vert — des mots en or, ce qu'ils touchent en
-gris devant. **Tous ses mots restent à leur place** (sa règle du 11 septembre) ;
-ce qui change et se dit : le gras du « Ouvrir le PDF sans les prix » du
-15 septembre part, parce qu'il n'a plus de bouton vert à qui disputer la place.
-Rien n'est codé : la planche attend son oui (`TODO.md`).
+`appli/fiche-intervention-en-mieux.html`, refaite : la même fiche — carte
+teintée, quatre cases, note cadrée, puces or, bouton vert, PDF en gras —,
+embellie sans qu'un mot ni une place ne change : cases moins hautes et serrées
+avec un dessin devant chaque mot, note dans le même blanc, bouton vert moins
+haut et arrêté au mot comme « C'est fini », filets égaux. Sa capture est posée
+à côté ; sur le téléphone, on glisse de l'une à l'autre au lieu de basculer par
+un bouton. **Ce qu'il faut retenir pour la suite** : il veut SA page, en plus
+belle — pas une autre. Rien n'est codé : la planche attend son oui (`TODO.md`).
 
 ### Les moyens de paiement se choisissent du doigt — à la porte et dans les réglages
 

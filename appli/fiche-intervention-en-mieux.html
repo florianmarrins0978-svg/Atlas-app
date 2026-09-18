@@ -9,78 +9,74 @@
   SA DEMANDE DU 18 SEPTEMBRE 2026, AU SOIR, capture à l'appui :
 
   *« Je veux embellir cette page comme on l'a fait pour la partie juste au
-  dessus aujourd'hui avec salarié absent. L'idée c'est que ça soit joli,
-  facilement compréhensible et minimaliste, aux couleurs et au style de
-  l'appli, sans gros bouton tout moche. »*
+  dessus. L'idée c'est que ça soit joli, facilement compréhensible et
+  minimaliste, aux couleurs et au style de l'appli, sans gros bouton tout
+  moche. »*
 
-  La « partie juste au-dessus », c'est `planning-tout-ensemble-en-mieux.html`
-  et sa seule règle. Cette planche l'applique à la fiche d'intervention, qui
-  vit dans la même carte du jour, entre deux chantiers.
+  PUIS, DEVANT LA PREMIÈRE VERSION DE CETTE PLANCHE (le 19 au matin) :
 
-  ─── LA RÈGLE, LA MÊME ────────────────────────────────────────────────────
+  *« Non, garde l'esprit de la page d'avant quand même, juste essaye de
+  l'embellir. Et mets les deux planches côte à côte, aujourd'hui et ta
+  proposition. »*
 
-      NOIR  = un fait      (le nom, une ligne du devis, « C'est parti »)
-      OR    = un geste     (un mot qu'on touche)
-      GRIS  = le reste     (« Adresse », « Ma note », ce qui manque)
+  ─── CE QUE LA PREMIÈRE VERSION AVAIT DE TROP ────────────────────────────
 
-  ─── CE QUI PART, ET POURQUOI ─────────────────────────────────────────────
+  Elle appliquait la règle du planning à la lettre — plus un cadre, plus un
+  bouton, des mots en or — et la fiche ne se reconnaissait plus. Il ne
+  voulait pas une autre fiche : la sienne, en plus belle.
 
-  · le cadre beige de la fiche : une carte dans la carte du jour. La fiche
-    est une SECTION du jour, séparée par le même filet que Matin et
-    Après-midi ;
-  · les quatre cases blanches Maps / Waze / Copier / Appeler : quatre mots
-    en or sur deux lignes, avec ce qu'ils touchent en gris devant —
-    « Adresse » et « Client » — exactement la ligne « Absent  Julien » ;
-  · le cadre de la note : la note s'écrit à même la fiche, comme sur un
-    papier ; l'exemple en gris dit où poser le doigt, et la ligne fine en
-    dessous tient la place. Sa réponse du 23 août (*« B, y'a rien ? Je vois
-    rien »*) est respectée : il y a quelque chose à voir ;
-  · le gros bouton vert « Fin de chantier » : un mot en or, au centre, comme
-    « Ajouter » et « + Salarié absent ? » trois centimètres plus haut ;
-  · le bouton vert « C'est fini » : un mot en or, et ce qui manque en gris
-    dessous, AVANT l'appui — la règle de `retour-intervention.ts` ;
-  · le gras du « Ouvrir le PDF sans les prix » (sa réponse du 15 septembre).
-    Il crierait à côté d'un « Fin de chantier » en or, et il n'y a plus de
-    bouton vert pour lui disputer la place. Même mot, même place, plus petit.
+  ─── CE QUI EST GARDÉ, PARCE QUE C'EST L'ESPRIT ──────────────────────────
 
-  ─── CE QUI NE BOUGE PAS ──────────────────────────────────────────────────
+  · la fiche est une carte teintée DANS la carte du jour ;
+  · « Fiche d'intervention » en petites capitales or, le nom en serif ;
+  · les quatre gestes en quatre cases, deux par ligne : Maps · Waze,
+    Copier l'adresse · Appeler le client ;
+  · « Ma note » et son cadre ouvert (sa réponse du 23 août : *« B, y'a
+    rien ? Je vois rien »*) ;
+  · les lignes du devis à puces or (sa correction du 9 septembre) ;
+  · le bouton vert « Fin de chantier », et les lignes qui deviennent les
+    cases quand il s'ouvre (sa proposition A du 9 septembre) ;
+  · « Ouvrir le PDF sans les prix » en gras or (sa réponse du 15 septembre).
 
-  · tous les mots : « Fiche d'intervention », Maps, Waze, Copier l'adresse,
-    Appeler le client, Ma note, l'exemple de la note, « Fin de chantier »,
-    « C'est fini », « Ouvrir le PDF sans les prix » ;
-  · leur ORDRE et leur PLACE — sa règle du 11 septembre ;
-  · les puces or devant les lignes du devis (sa correction du 9 septembre) ;
-  · les lignes qui DEVIENNENT les cases quand la fin de chantier s'ouvre
-    (sa proposition A, tranchée le 9 septembre) ;
-  · la case cochée : le seul rond du produit, rempli de vert pin quand c'est
-    fait — c'est le seul aplat de l'écran, et c'est un fait ;
-  · la note enregistrée en sortant du cadre, jamais par un bouton.
+  ─── CE QUI EST EMBELLI, ET COMMENT ──────────────────────────────────────
+
+  · la carte : un filet plus fin, un peu d'ombre douce, des marges égales ;
+  · les quatre cases : plus basses (46 px au lieu de 62), une seule ligne
+    fine au lieu d'un contour dur, et un DESSIN devant chaque mot — le
+    repère, la flèche, les deux feuilles, le combiné — pour que l'œil
+    trouve le geste sans lire ;
+  · les cases sont serrées entre elles (6 px) pour se lire comme UN groupe ;
+  · le cadre de la note : même blanc que les cases, même ligne fine, le
+    curseur en or ;
+  · le bouton vert : moins haut (46 px au lieu de 62), arrêté au mot au lieu
+    de barrer la fiche, le mot en serif — le même dessin que « C'est fini » ;
+  · les puces : un point or de 5 px, aligné sur la première ligne ;
+  · les filets entre les parties sont tous les mêmes, à la même distance.
+
+  Aucun mot ne change, aucune place ne change — sa règle du 11 septembre.
 
   ─── LES COULEURS ET LES MESURES ─────────────────────────────────────────
 
-  `src/lib/design-tokens.ts`, `src/lib/chartes.ts` : or #B98B47, carte
-  #faf9f5, encre #1c1c1a, gris #8a8578, vert pin #2f3b2f. Nuit : fond
-  #101210, plage #1a1d19, encre #e9e8de, gris #84887b. Cinq tailles de
-  texte, pas huit : 11 (capitales), 13 (gris), 14.5 (le texte), 20 et 22
-  (les noms). Toutes les cibles font 44 px de haut.
+  `src/lib/design-tokens.ts`, `src/lib/chartes.ts` : or #B98B47, teinte
+  #ece9e1, carte #faf9f5, encre #1c1c1a, gris #8a8578, vert plein #7d9a6d.
+  Nuit : fond #101210, plage #1a1d19, encre #e9e8de, gris #84887b, et
+  l'accent plein devient CLAIR. Toutes les cibles font 44 px de haut.
 
   RIEN N'EST CODÉ.
   ════════════════════════════════════════════════════════════════════════════
 -->
 <style>
   :root{
-    --scene:#e6e3dc; --fond:#f5f3ee; --carte:#faf9f5; --encre:#1c1c1a;
-    --encre-douce:#4a4a44; --gris:#8a8578; --or:#B98B47; --pin:#2f3b2f; --pale:#b9c6b4;
-    --trait:rgba(28,28,26,.12); --trait-doux:rgba(28,28,26,.07);
+    --scene:#e6e3dc; --fond:#f5f3ee; --carte:#faf9f5; --teinte:#ece9e1; --encre:#1c1c1a;
+    --encre-douce:#4a4a44; --gris:#8a8578; --or:#B98B47; --or-texte:#8b6835; --plein:#7d9a6d; --sur-plein:#faf9f5;
+    --pin:#2f3b2f; --trait:rgba(28,28,26,.12); --trait-doux:rgba(28,28,26,.07);
     --ombre:rgba(28,28,26,.07); --ombre-forte:rgba(20,18,14,.18); --or-voile:rgba(185,139,71,.10);
-    --sur-pin:#faf9f5;
   }
   body.nuit{
-    --scene:#070908; --fond:#101210; --carte:#1a1d19; --encre:#e9e8de;
-    --encre-douce:#c1c2b6; --gris:#84887b; --or:#C9A05E; --pin:#b9c6b4; --pale:#4f5f4c;
-    --trait:rgba(233,232,222,.14); --trait-doux:rgba(233,232,222,.08);
+    --scene:#070908; --fond:#101210; --carte:#1a1d19; --teinte:#151814; --encre:#e9e8de;
+    --encre-douce:#c1c2b6; --gris:#84887b; --or:#C9A05E; --or-texte:#d9b676; --plein:#e9e8de; --sur-plein:#101210;
+    --pin:#b9c6b4; --trait:rgba(233,232,222,.14); --trait-doux:rgba(233,232,222,.08);
     --ombre:rgba(0,0,0,.35); --ombre-forte:rgba(0,0,0,.6); --or-voile:rgba(201,160,94,.14);
-    --sur-pin:#101210;
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   html,body{margin:0;background:var(--scene)}
@@ -94,50 +90,38 @@
   .commandes button{min-height:40px;color:var(--gris)}
   .commandes button[aria-pressed="true"]{color:var(--encre);text-decoration:underline;
                                         text-decoration-color:var(--or);text-underline-offset:6px}
-  .commandes .sep{width:1px;height:18px;background:var(--trait);align-self:center}
 
-  /* ─── deux téléphones : le sien de ce soir, et la proposition ─── */
-  .deux{display:flex;justify-content:center;gap:28px;align-items:flex-start;padding:0 12px}
-  .cote{flex:none;max-width:100%}
+  /* ─── deux téléphones CÔTE À CÔTE, sur l'ordinateur comme sur le téléphone ───
+     Sa demande du 19 : « mets les deux planches côte à côte ». Sur un téléphone,
+     les deux ne tiennent pas de front : on glisse de l'un à l'autre, et le bord
+     du second reste visible pour dire qu'il est là. */
+  .deux{display:flex;gap:16px;align-items:flex-start;padding:0 16px;overflow-x:auto;
+        scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+  .deux::-webkit-scrollbar{display:none}
+  .cote{flex:none;width:min(390px,100vw - 40px);scroll-snap-align:center}
   .cote .quel{margin:0 0 8px;text-align:center;font:600 11px/1 inherit;letter-spacing:.14em;
               text-transform:uppercase;color:var(--gris)}
   .cote.ojd .tel{display:block;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--trait) transparent}
   .cote.ojd img{display:block;width:100%;height:auto}
-  @media (max-width:839px){
-    .deux{display:block;padding:0}
-    .cote{margin:0 auto}
-    body[data-vue="ojd"] .cote.prop{display:none}
-    body[data-vue="prop"] .cote.ojd{display:none}
-  }
-  @media (min-width:840px){.commandes .vue,.commandes .sep{display:none}}
+  @media (min-width:840px){.deux{justify-content:center;overflow:visible;gap:28px}.cote{width:390px}}
+  .glisser{margin:10px 0 0;text-align:center;font-size:12px;color:var(--gris)}
+  @media (min-width:840px){.glisser{display:none}}
 
-  .tel{width:390px;height:760px;max-width:100%;margin:14px auto 0;background:var(--fond);
+  .tel{width:100%;height:760px;margin:14px auto 0;background:var(--fond);
        border-radius:30px;overflow:hidden;box-shadow:0 18px 46px var(--ombre-forte);
        display:flex;flex-direction:column}
-  .ecran{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;padding:20px 18px 24px;
+  .ecran{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;padding:20px 16px 24px;
          scrollbar-width:thin;scrollbar-color:var(--trait) transparent}
 
-  /* ─── la carte du jour — celle de la planche du planning, telle quelle ─── */
+  /* ─── la carte du jour — comme aujourd'hui ─── */
   .fiche{background:var(--carte);border-radius:14px;border:1px solid var(--trait-doux);
-         box-shadow:0 6px 20px var(--ombre);padding:16px 18px 6px}
+         box-shadow:0 6px 20px var(--ombre);padding:16px 16px 8px}
   .titre{margin:0;text-align:center;font:600 11px/1 inherit;letter-spacing:.14em;text-transform:uppercase}
   .filet{margin:14px 0 2px;border:0;border-top:1px solid var(--trait)}
-
-  /* LA RÈGLE : noir un fait, or un geste, gris le reste. */
-  .geste{color:var(--or)}
-  .geste:active{color:var(--encre)}
-  .doux{color:var(--gris)}
-
-  .centre{display:flex;width:100%;min-height:44px;align-items:center;justify-content:center;gap:9px;
-          font-size:14.5px;color:var(--or)}
-  .centre svg{flex:none}
-  .centre.petit{font-size:13px;min-height:40px}
-  .centre.doux{color:var(--gris)}
   .actions{display:flex;justify-content:flex-end;gap:14px;min-height:44px;align-items:center;
            font:700 14.5px/1 inherit}
   .actions button{min-height:44px;color:var(--encre)}
-
-  .chantier{padding:8px 0 6px}
+  .chantier{padding:8px 0 2px}
   .chantier .nom{margin:0;font:400 20px/1.2 ui-serif,Georgia,serif}
   .chantier .ou{margin:1px 0 0;font-size:13px;color:var(--gris)}
   .chantier .duree{margin:1px 0 4px;font-size:13px;color:var(--or)}
@@ -146,54 +130,69 @@
   .demi .a{display:flex;align-items:center;gap:12px;min-width:112px}
   .demi .b{font:400 14.5px/1.4 inherit;letter-spacing:0;text-transform:none}
   .demi .b .plus{color:var(--or);margin-left:6px}
-  .pastille{width:16px;height:16px;border-radius:4px;flex:none}
-  .pastille.plein{background:var(--pin)}
+  .pastille{width:16px;height:16px;border-radius:4px;flex:none;background:var(--pin)}
 
-  /* ─── LA FICHE D'INTERVENTION — une section du jour, pas une carte ─── */
-  .feuille .sur{margin:12px 0 0;text-align:center;font:600 11px/1 inherit;letter-spacing:.16em;
-                text-transform:uppercase;color:var(--gris)}
-  .feuille .qui{margin:8px 0 6px;text-align:center;font:400 22px/1.15 ui-serif,Georgia,serif}
+  /* ─── LA FICHE D'INTERVENTION — la carte teintée, embellie ─── */
+  .feuille{margin:10px 0 6px;padding:18px 14px 16px;border-radius:14px;background:var(--teinte);
+           box-shadow:inset 0 0 0 1px var(--trait-doux), 0 1px 2px var(--ombre)}
+  .feuille .sur{margin:0;text-align:center;font:700 10.5px/1 inherit;letter-spacing:.22em;
+                text-transform:uppercase;color:var(--or)}
+  .feuille .qui{margin:10px 0 0;text-align:center;font:400 22px/1.15 ui-serif,Georgia,serif}
+  .feuille .part{margin:14px 0 0;padding-top:14px;border-top:1px solid var(--trait)}
+  .feuille .etiquette{margin:0 0 8px;font:600 10px/1 inherit;letter-spacing:.16em;text-transform:uppercase;color:var(--gris)}
 
-  /* « Adresse  Maps  Waze  Copier » : la ligne « Absent  Julien  journée » */
-  .ligne{display:flex;min-height:44px;align-items:center;gap:14px;font-size:14.5px}
-  .ligne .a{flex:none;width:72px;color:var(--gris);font-size:13px}
-  .ligne .b{flex:1;min-width:0;display:flex;align-items:center;gap:18px;flex-wrap:wrap}
-  .ligne .b button{min-height:44px;font-size:14.5px;color:var(--or)}
-  .ligne .b .fait{color:var(--encre)}
+  /* les quatre gestes : deux par ligne, serrés, un dessin devant le mot */
+  .gestes{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:6px;margin-top:14px}
+  .geste{display:flex;min-width:0;align-items:center;justify-content:center;gap:8px;min-height:46px;padding:0 6px;
+         border-radius:10px;background:var(--carte);box-shadow:inset 0 0 0 1px var(--trait);
+         font-size:13.5px;color:var(--encre);transition:background .15s,box-shadow .15s}
+  .geste svg{flex:none;color:var(--or)}
+  .geste:active{background:var(--or-voile);box-shadow:inset 0 0 0 1px var(--or)}
+  .geste .mot{white-space:nowrap}
 
-  /* la note s'écrit à même la fiche : pas de cadre, une ligne fine dessous */
-  .etiquette{margin:12px 0 0;font:600 11px/1 inherit;letter-spacing:.16em;text-transform:uppercase;color:var(--gris)}
-  .ecrit{display:block;width:100%;margin:6px 0 0;padding:6px 0 8px;border:0;border-bottom:1px solid var(--trait);
-         border-radius:0;background:transparent;color:var(--encre);resize:none;overflow:hidden;
-         font-family:inherit;font-size:16px;line-height:1.45;caret-color:var(--or);transition:border-color .18s}
-  .ecrit::placeholder{color:var(--gris);opacity:1}
-  .ecrit:focus{outline:0;border-bottom-color:var(--or)}
-  .etat{margin:4px 0 0;min-height:17px;font-size:13px;color:var(--or)}
+  .note-cadre{display:block;width:100%;min-height:78px;padding:10px 12px;border:0;border-radius:10px;
+              background:var(--carte);box-shadow:inset 0 0 0 1px var(--trait);color:var(--encre);resize:none;
+              font-family:inherit;font-size:16px;line-height:1.45;caret-color:var(--or);transition:box-shadow .15s}
+  .note-cadre::placeholder{color:var(--gris);opacity:1}
+  .note-cadre:focus{outline:0;box-shadow:inset 0 0 0 1px var(--or)}
+  .etat{margin:6px 0 0;min-height:17px;font-size:12.5px;color:var(--or-texte)}
 
-  /* les lignes du devis : la puce or, ou le rond à cocher quand la fin s'ouvre */
-  .taches{margin:8px 0 2px;padding:0;list-style:none}
+  .taches{margin:0;padding:0;list-style:none}
   .taches li{position:relative;margin:0;padding:0 0 9px 14px;font-size:14.5px;line-height:1.45}
+  .taches li:last-child{padding-bottom:0}
   .taches li::before{content:"";position:absolute;left:0;top:8px;width:5px;height:5px;border-radius:50%;background:var(--or)}
-  .cases{margin:2px 0 2px}
+
+  /* le bouton vert, moins haut, le mot en serif — et le même dans les deux sens */
+  /* le bouton vert garde sa couleur et sa forme, mais plus sa largeur : il
+     s'arrête au mot, comme « C'est fini » — un seul dessin pour les deux */
+  .vert{display:flex;width:max-content;max-width:100%;min-height:46px;margin:16px auto 0;padding:0 26px;
+        align-items:center;justify-content:center;gap:9px;border-radius:999px;background:var(--plein);
+        color:var(--sur-plein);font:400 15.5px/1 ui-serif,Georgia,serif;transition:filter .15s}
+  .vert:active{filter:brightness(.94)}
+  .vert.doux{opacity:.45}
+  .pdf{display:block;width:max-content;margin:10px auto 0;padding:8px 12px 2px;font-size:14px;font-weight:700;color:var(--or)}
+
   .case{display:flex;width:100%;align-items:flex-start;gap:12px;min-height:44px;padding:7px 0;font-size:14.5px;line-height:1.45}
-  .case .rond{flex:none;width:24px;height:24px;border-radius:50%;box-shadow:inset 0 0 0 1.5px var(--trait);
-              display:grid;place-items:center;color:transparent;margin-top:-1px;
+  .case .rond{flex:none;width:24px;height:24px;border-radius:50%;background:var(--carte);
+              box-shadow:inset 0 0 0 1.5px var(--trait);display:grid;place-items:center;color:transparent;margin-top:-1px;
               transition:background .18s,box-shadow .18s}
-  .case[aria-pressed="true"] .rond{background:var(--pin);box-shadow:none;color:var(--sur-pin)}
+  .case[aria-pressed="true"] .rond{background:var(--plein);box-shadow:none;color:var(--sur-plein)}
   .case[aria-pressed="true"] .quoi{color:var(--gris)}
   .case .quoi{flex:1;min-width:0}
-
-  .photos{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-  .photos .vignette{width:46px;height:46px;border-radius:9px;background:var(--pale);flex:none;
+  .photos{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:8px}
+  .photos .etiquette{margin:0 4px 0 0}
+  .photos .vignette,.photos .ajouter{width:46px;height:46px;border-radius:9px;flex:none;
                     box-shadow:inset 0 0 0 1px var(--trait)}
-  .manque{margin:-4px 0 4px;text-align:center;font-size:13px;color:var(--gris)}
+  .photos .vignette{background:var(--pin);opacity:.55}
+  .photos .ajouter{display:grid;place-items:center;background:var(--carte);color:var(--or-texte)}
+  .manque{margin:8px 0 0;text-align:center;font-size:12.5px;color:var(--gris)}
 
-  /* le retour posé : un fait, en noir, à la place du geste */
-  .parti{display:flex;align-items:center;justify-content:center;gap:12px;min-height:52px;margin-top:6px}
-  .parti .rond{width:19px;height:19px;border-radius:50%;background:var(--pin);color:var(--sur-pin);
+  .parti{display:flex;align-items:center;gap:12px;min-height:52px;margin-top:14px;padding:0 16px;
+         border-radius:999px;background:var(--carte);box-shadow:inset 0 0 0 1px var(--trait)}
+  .parti .rond{width:19px;height:19px;border-radius:50%;background:var(--plein);color:var(--sur-plein);
                display:grid;place-items:center;flex:none}
-  .parti .mot{font:400 16px/1.15 ui-serif,Georgia,serif}
-  .parti .ou{margin:1px 0 0;font-size:13px;color:var(--gris)}
+  .parti .mot{display:block;font:400 15px/1.15 ui-serif,Georgia,serif;color:var(--encre-douce)}
+  .parti .ou{display:block;margin-top:1px;font-size:11.5px;color:var(--gris)}
 
   .barre{flex:none;display:grid;grid-template-columns:repeat(5,1fr);height:64px;
          background:var(--carte);border-top:1px solid var(--trait);padding-bottom:6px}
@@ -207,23 +206,21 @@
   .note p{margin:0 0 10px}
   .note b{color:var(--encre)}
   .note a{color:var(--or)}
-  .note .regle{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;margin:0 0 12px}
-  .note .regle b{font-weight:600}
+  .note table{border-collapse:collapse;width:100%;margin:0 0 12px}
+  .note td{padding:5px 8px 5px 0;vertical-align:top;border-top:1px solid var(--trait-doux)}
+  .note td:first-child{color:var(--encre);width:42%}
 
-  @media (max-width:420px){.tel{border-radius:0;margin-top:10px}}
+  @media (max-width:420px){.tel{border-radius:22px;margin-top:10px}}
 </style>
 </head>
 <body>
 
 <div class="commandes">
-  <button type="button" class="vue" data-vue="ojd" aria-pressed="false">Aujourd’hui</button>
-  <button type="button" class="vue" data-vue="prop" aria-pressed="true">La proposition</button>
-  <span class="sep" aria-hidden="true"></span>
   <button type="button" id="nuit" aria-pressed="false">Voir sur Nuit</button>
   <button type="button" id="rejouer">Recommencer</button>
 </div>
 
-<div class="deux">
+<div class="deux" id="deux">
 <div class="cote ojd">
   <p class="quel">Aujourd’hui — votre application</p>
   <div class="tel">
@@ -243,16 +240,14 @@
         <p class="nom">Pagnol</p>
         <p class="ou">Mantes-la-Jolie</p>
         <p class="duree">une journée</p>
-        <div class="demi"><span class="a"><span class="pastille plein"></span>Matin</span>
+        <div class="demi"><span class="a"><span class="pastille"></span>Matin</span>
           <span class="b">Antoine / Julien<span class="plus" aria-hidden="true">+</span></span></div>
-        <div class="demi"><span class="a"><span class="pastille plein"></span>Après-midi</span>
+        <div class="demi"><span class="a"><span class="pastille"></span>Après-midi</span>
           <span class="b">Antoine / Julien<span class="plus" aria-hidden="true">+</span></span></div>
         <div class="actions"><button type="button">Déplacer</button><button type="button">Retirer</button></div>
       </div>
 
-      <hr class="filet">
       <section class="feuille" id="feuille" aria-label="Fiche d’intervention"></section>
-      <hr class="filet">
 
       <div class="chantier">
         <p class="nom">Mr. Julien</p>
@@ -269,21 +264,20 @@
 </div>
 </div>
 </div>
+<p class="glisser">Glissez vers la gauche pour voir la proposition</p>
 
 <div class="note">
-  <h2>La même règle que le planning</h2>
-  <div class="regle">
-    <b>Noir</b><span>un fait — le nom, une ligne du devis, « C’est parti »</span>
-    <b style="color:#B98B47">Or</b><span>un geste — un mot qu’on touche</span>
-    <b style="color:#8a8578">Gris</b><span>le reste — « Adresse », « Ma note », ce qui manque</span>
-  </div>
-  <p><b>Tous les mots sont les vôtres, à leur place.</b> Ce qui part : le cadre beige, les quatre cases blanches, le cadre de la note, les deux boutons verts.</p>
-  <p><b>Maps, Waze, Copier, Appeler</b> : quatre mots en or, avec ce qu’ils touchent en gris devant.</p>
-  <p><b>Ma note</b> s’écrit à même la fiche ; la ligne fine dessous devient or quand vous écrivez, et « Enregistré. » se dit en sortant.</p>
-  <p><b>Fin de chantier</b> : touchez le mot. Les lignes deviennent les cases, comme aujourd’hui ; ce qui manque se dit en gris avant « C’est fini ». Touchez « C’est fini » : « C’est parti » prend la place, en noir.</p>
-  <p><b>Une chose change par rapport au 15 :</b> « Ouvrir le PDF sans les prix » n’est plus en gras — en or, plus petit, sous « Fin de chantier ». Il n’a plus de bouton vert à qui disputer la place.</p>
-  <p><b>« Aujourd’hui »</b>, en haut, est votre capture de ce soir, pour comparer.</p>
-  <p><b>La planche du planning</b> : <a href="planning-tout-ensemble-en-mieux.html">planning-tout-ensemble-en-mieux.html</a>. <b>Rien n’est codé.</b></p>
+  <h2>La même fiche, en plus belle</h2>
+  <p><b>Rien ne bouge, rien ne change de nom.</b> La carte, les quatre cases, la note, les puces, le bouton vert, le PDF en gras : tout est là, à sa place.</p>
+  <table>
+    <tr><td>Les quatre cases</td><td>moins hautes, serrées entre elles, une ligne fine au lieu d’un contour — et un petit dessin devant chaque mot</td></tr>
+    <tr><td>Ma note</td><td>le même blanc que les cases, le curseur en or</td></tr>
+    <tr><td>Fin de chantier</td><td>toujours le bouton vert, mais moins haut et arrêté au mot, comme « C’est fini »</td></tr>
+    <tr><td>Les filets</td><td>tous les mêmes, à la même distance</td></tr>
+  </table>
+  <p><b>Touchez « Fin de chantier »</b> : les lignes deviennent les cases, comme aujourd’hui ; ce qui manque se dit avant « C’est fini ».</p>
+  <p><b>La première version de cette planche</b> — sans un cadre, sans un bouton — est écartée : vous vouliez votre fiche, pas une autre.</p>
+  <p><b>Rien n’est codé.</b></p>
 </div>
 
 <script>
@@ -291,8 +285,16 @@
    celui de `retour-intervention.ts` — cocher au moins une ligne, et une photo
    quand l'entreprise l'exige (ici, elle l'exige). */
 const TACHES = ["Taille de haie de thuya", "Tonte de pelouse — 500", "Forfait désherbage", "Erigeron — 10"];
+const T = (d) => `<svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+const ICONE = {
+  maps: T(`<path d="M10 17.5s-5.5-5-5.5-9a5.5 5.5 0 0 1 11 0c0 4-5.5 9-5.5 9z"/><circle cx="10" cy="8.5" r="2"/>`),
+  waze: T(`<path d="M16.5 3.5 3.5 9l6 1.5 1.5 6z"/>`),
+  copier: T(`<rect x="7" y="7" width="9.5" height="9.5" rx="2"/><path d="M13 7V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/>`),
+  appeler: T(`<path d="M4 3.5h3l1.5 3.5-2 1.2a9 9 0 0 0 5.3 5.3l1.2-2 3.5 1.5v3a1.5 1.5 0 0 1-1.6 1.5A13 13 0 0 1 2.5 5.1 1.5 1.5 0 0 1 4 3.5z"/>`),
+};
 const COCHE = `<svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.4 6.3 11.7 13 5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
-const COCHE_MOT = `<svg width="15" height="15" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4 10.4 8.2 14.6 16 5.8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+const COCHE_VERT = `<svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4 10.4 8.2 14.6 16 5.8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+const PLUS = `<svg width="17" height="17" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 4v12M4 10h12" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>`;
 
 let note, copie, finOuverte, faites, photos, aSignaler, rendu, noteEtat;
 function depart() {
@@ -302,20 +304,7 @@ function depart() {
 
 const $ = (id) => document.getElementById(id);
 const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
-const geste = (html, onClick, cls = "geste") => { const b = el("button", cls, html); b.type = "button"; b.onclick = onClick; return b; };
-function ligne(quoi, ...gestes) {
-  const l = el("div", "ligne", `<span class="a">${quoi}</span><span class="b"></span>`);
-  for (const g of gestes) l.querySelector(".b").appendChild(g);
-  return l;
-}
-function ecrit(valeur, placeholder, onInput, onBlur) {
-  const t = el("textarea", "ecrit"); t.rows = 1; t.placeholder = placeholder; t.value = valeur;
-  const hauteur = () => { t.style.height = "auto"; t.style.height = t.scrollHeight + "px"; };
-  t.oninput = () => { onInput(t.value); hauteur(); };
-  t.onblur = () => onBlur && onBlur(t.value);
-  requestAnimationFrame(hauteur);
-  return t;
-}
+const bouton = (html, onClick, cls) => { const b = el("button", cls, html); b.type = "button"; b.onclick = onClick; return b; };
 function ceQuiManque() {
   const m = [];
   if (faites.every((f) => !f)) m.push("cochez ce que vous avez fait");
@@ -328,63 +317,67 @@ function dessiner() {
   f.appendChild(el("p", "sur", "Fiche d’intervention"));
   f.appendChild(el("p", "qui", "Pagnol"));
 
-  // « Adresse  Maps  Waze  Copier » — « Copiée » en noir le temps de le lire : un fait
-  const copier = geste(copie === "faite" ? "Copiée" : "Copier", () => {
+  // les quatre gestes — les mêmes mots, dans le même ordre, avec un dessin devant
+  const g = el("div", "gestes");
+  g.appendChild(bouton(`${ICONE.maps}<span class="mot">Maps</span>`, () => {}, "geste"));
+  g.appendChild(bouton(`${ICONE.waze}<span class="mot">Waze</span>`, () => {}, "geste"));
+  const motCopie = copie === "faite" ? "Adresse copiée" : "Copier l’adresse";
+  g.appendChild(bouton(`${ICONE.copier}<span class="mot">${motCopie}</span>`, () => {
     copie = "faite"; dessiner(); setTimeout(() => { copie = "non"; dessiner(); }, 1800);
-  }, copie === "faite" ? "fait" : "geste");
-  f.appendChild(ligne("Adresse", geste("Maps", () => {}), geste("Waze", () => {}), copier));
-  f.appendChild(ligne("Client", geste("Appeler", () => {})));
+  }, "geste"));
+  g.appendChild(bouton(`${ICONE.appeler}<span class="mot">Appeler le client</span>`, () => {}, "geste"));
+  f.appendChild(g);
 
-  f.appendChild(el("hr", "filet"));
-  f.appendChild(el("p", "etiquette", "Ma note"));
-  f.appendChild(ecrit(note, "Penser à prendre le broyeur. Client dispo à partir de 9 h.",
-    (v) => { note = v; noteEtat = ""; },
-    (v) => { if (v.trim() !== "") { noteEtat = "Enregistré."; $("note-etat").textContent = noteEtat; } }));
-  const e = el("p", "etat", noteEtat); e.id = "note-etat"; f.appendChild(e);
+  // « Ma note » : le cadre ouvert, enregistré en sortant
+  const n = el("div", "part", `<p class="etiquette">Ma note</p>`);
+  const t = el("textarea", "note-cadre"); t.rows = 3; t.value = note;
+  t.placeholder = "Penser à prendre le broyeur. Client dispo à partir de 9 h.";
+  t.oninput = () => { note = t.value; noteEtat = ""; $("note-etat").textContent = ""; };
+  t.onblur = () => { if (t.value.trim() !== "") { noteEtat = "Enregistré."; $("note-etat").textContent = noteEtat; } };
+  n.appendChild(t);
+  const e = el("p", "etat", noteEtat); e.id = "note-etat"; n.appendChild(e);
+  f.appendChild(n);
 
+  const p = el("div", "part");
   if (rendu) {
-    // le retour est posé : un fait, en noir, à la place du geste
-    f.appendChild(el("ul", "taches", TACHES.map((t) => `<li>${t}</li>`).join("")));
-    f.appendChild(el("div", "parti",
-      `<span class="rond" aria-hidden="true">${COCHE}</span><span><span class="mot">C’est parti</span><p class="ou">Terminés · Retour d’intervention</p></span>`));
+    p.appendChild(el("ul", "taches", TACHES.map((x) => `<li>${x}</li>`).join("")));
+    p.appendChild(el("div", "parti",
+      `<span class="rond" aria-hidden="true">${COCHE}</span><span><span class="mot">C’est parti</span><span class="ou">Terminés · Retour d’intervention</span></span>`));
   } else if (!finOuverte) {
-    f.appendChild(el("ul", "taches", TACHES.map((t) => `<li>${t}</li>`).join("")));
-    f.appendChild(geste(`${COCHE_MOT}<span>Fin de chantier</span>`, () => { finOuverte = true; dessiner(); }, "centre"));
+    p.appendChild(el("ul", "taches", TACHES.map((x) => `<li>${x}</li>`).join("")));
+    const v = bouton(`${COCHE_VERT}<span>Fin de chantier</span>`, () => { finOuverte = true; dessiner(); }, "vert");
+    p.appendChild(v);
   } else {
-    // le même mot, à la même place : « Fin de chantier » devient « Replier »
-    f.appendChild(geste(`${COCHE_MOT}<span>Replier</span>`, () => { finOuverte = false; dessiner(); }, "centre"));
+    // le même bouton, à la même place : « Fin de chantier » devient « Replier »
+    const r = bouton(`${COCHE_VERT}<span>Replier</span>`, () => { finOuverte = false; dessiner(); }, "vert"); r.style.marginTop = "0"; p.appendChild(r);
     // les lignes DEVIENNENT les cases — sa proposition A du 9 septembre
-    const c = el("div", "cases");
-    TACHES.forEach((t, i) => {
-      const b = geste(`<span class="rond" aria-hidden="true">${COCHE}</span><span class="quoi">${t}</span>`,
+    const c = el("div", "cases"); c.style.marginTop = "10px";
+    TACHES.forEach((x, i) => {
+      const b = bouton(`<span class="rond" aria-hidden="true">${COCHE}</span><span class="quoi">${x}</span>`,
         () => { faites[i] = !faites[i]; dessiner(); }, "case");
       b.setAttribute("aria-pressed", String(faites[i])); c.appendChild(b);
     });
-    f.appendChild(c);
+    p.appendChild(c);
 
-    const p = el("div", "photos");
-    for (let i = 0; i < photos; i++) p.appendChild(el("span", "vignette"));
-    p.appendChild(geste(`<span style="font-size:19px;line-height:1;margin-top:-2px" aria-hidden="true">+</span> Photo`,
-      () => { photos++; dessiner(); }));
-    const lp = el("div", "ligne", `<span class="a">Photos</span>`); lp.appendChild(p); f.appendChild(lp);
+    const ph = el("div", "photos", `<span class="etiquette">Photos</span>`);
+    for (let i = 0; i < photos; i++) ph.appendChild(el("span", "vignette"));
+    const aj = bouton(PLUS, () => { photos++; dessiner(); }, "ajouter"); aj.setAttribute("aria-label", "Ajouter une photo");
+    ph.appendChild(aj); p.appendChild(ph);
 
-    f.appendChild(ecrit(aSignaler, "À signaler", (v) => { aSignaler = v; }));
+    const s = el("textarea", "note-cadre"); s.rows = 2; s.value = aSignaler; s.placeholder = "À signaler — facultatif";
+    s.style.marginTop = "10px"; s.style.minHeight = "58px"; s.style.fontSize = "14.5px";
+    s.oninput = () => { aSignaler = s.value; }; p.appendChild(s);
 
     const manque = ceQuiManque();
-    f.appendChild(geste("C’est fini", () => { if (manque.length === 0) { rendu = true; finOuverte = false; dessiner(); } },
-      "centre" + (manque.length ? " doux" : "")));
-    if (manque.length) f.appendChild(el("p", "manque", manque.join(" et ")));
+    p.appendChild(bouton("C’est fini", () => { if (manque.length === 0) { rendu = true; finOuverte = false; dessiner(); } },
+      "vert" + (manque.length ? " doux" : "")));
+    if (manque.length) p.appendChild(el("p", "manque", manque.join(" et ")));
   }
-
-  f.appendChild(geste("Ouvrir le PDF sans les prix", () => {}, "centre petit"));
+  f.appendChild(p);
+  f.appendChild(bouton("Ouvrir le PDF sans les prix", () => {}, "pdf"));
 }
 
 $("rejouer").onclick = () => { depart(); dessiner(); $("ecran").scrollTo({ top: 0 }); };
-for (const b of document.querySelectorAll(".commandes .vue")) b.onclick = () => {
-  document.body.dataset.vue = b.dataset.vue;
-  for (const x of document.querySelectorAll(".commandes .vue")) x.setAttribute("aria-pressed", String(x === b));
-};
-document.body.dataset.vue = "prop";
 $("nuit").onclick = () => { const on = document.body.classList.toggle("nuit"); $("nuit").setAttribute("aria-pressed", String(on)); };
 depart(); dessiner();
 </script>
