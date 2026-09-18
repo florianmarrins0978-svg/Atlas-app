@@ -154,7 +154,7 @@ const plan = aRejouer({
   plancherVenuDeMain,
   // **Les écrans DU LOT, pas ceux de la rencontre** : un gabarit racine ou une
   // migration n'ont aucune arête d'import vers eux, et c'est pourtant sur ce
-  // sol-là qu'ils tournent désormais (`ARCHITECTURE.md` §383).
+  // sol-là qu'ils tournent désormais (`ARCHITECTURE.md` §387).
   routesDuLot: suitesDesRoutes(RACINE, evaluerLeLot(fichiersDuLot, { racine: RACINE, graphe }).routes),
   suitesDesEcrans: suitesDuComplement({
     suitesDeLaRencontre: suitesDesRoutes(RACINE, zone.routes),

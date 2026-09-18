@@ -31593,63 +31593,6 @@ posée au mauvais objet. Le §380 comparait des dates au lieu des contenus ; le
 §381 demandait « le lot a-t-il bougé » au lieu de « que peut casser ce qui a
 bougé » ; celui-ci demandait « ce fichier est-il dangereux » au lieu de « **qui**
 doit le prouver ».
-<<<<<<< HEAD
-
-## §383 — La batterie entière prouve un LOT, jamais une rencontre
-
-**Sa colère du 18 septembre 2026 :** *« ça commence vraiment à me soûler ! Tu
-vas me régler ce problème une bonne fois pour toutes ! »* — quatrième mur de la
-même soirée, et le dernier de cette forme.
-
-Le document d'un autre lot le montrait au chiffre près : *« `main` avait avancé
-de 53 commits pendant tout ça, dont le gabarit racine et le calendrier que je
-touche. Le garde-fou exige la batterie sur cet état. »* Quarante-cinq minutes,
-pour du code qu'une session voisine avait déjà prouvé.
-
-**Le raisonnement, et il vaut pour les quatre murs de la soirée.** Chaque commit
-de `main` est passé par son propre garde-fou, **au niveau que son risque
-exigeait** — plancher compris : la session qui pose une migration paie la
-batterie entière pour elle. Ce que `main` apporte est donc prouvé **contre
-l'application telle qu'elle est sans ce lot**. Et le lot, lui, a été prouvé
-contre `main` à sa base.
-
-**Ce que personne n'a mesuré, c'est le lot SUR CE NOUVEAU SOL.** Et cela se
-nomme :
-
-| Ce que `main` apporte | Ce qu'on remesure |
-|---|---|
-| une **migration**, `src/server/db/` | les suites du fond — la base a changé sous les règles et la RLS |
-| un réglage de **bâti** — `package.json`, `next.config`, `tsconfig` | la **Construction** : une erreur qui n'existe qu'à la construction ne se voit nulle part ailleurs (`CLAUDE.md` §5, le mode lent du 16 août) |
-| **tout** plancher — gabarit racine, `globals.css`, middleware | les **écrans DU LOT**, et la **connexion derrière un proxy** |
-| sa **gravité** — argent, sécurité (§382) | les suites du fond |
-
-Les écrans du lot s'ajoutent **explicitement**, et c'est le point technique :
-un gabarit racine n'a aucune arête d'import vers eux, donc la rencontre ne les
-voit pas — alors que c'est exactement sur lui qu'ils tournent désormais.
-
-La connexion derrière un proxy revient **à chaque plancher**, et c'est délibéré :
-c'est le défaut qui a coûté vingt allers-retours au patron en août, il est
-invisible partout ailleurs, et il coûte une minute.
-
-**Il ne reste donc qu'UNE cause à la batterie entière : le risque propre du
-lot** (`batterieDue`). C'est la règle du §5, et elle n'a pas bougé d'un pouce.
-
-**CE QUI A ÉTÉ CORRIGÉ DE MA PROPRE MAIN, NOIR SUR BLANC.** Le §382, écrit
-quarante minutes plus tôt, gardait le plancher de `main` comme cause de
-batterie, et un contrôle l'affirmait. C'était la même erreur de catégorie, d'un
-cran plus profond : *« ce fichier est-il dangereux »* au lieu de *« **qui** doit
-le prouver, et **quoi** reste-t-il à mesurer »*. Le contrôle a été réécrit avec
-sa raison, pas effacé.
-
-**Les quatre murs de la soirée, et ils avaient tous la même forme :**
-
-| | La question posée | Celle qu'il fallait poser |
-|---|---|---|
-| §380 | ce fichier a-t-il une date neuve ? | son contenu a-t-il changé ? |
-| §381 | le lot a-t-il bougé ? | que peut casser ce qui a bougé ? |
-| §382 | ce fichier est-il grave ? | qui a déjà prouvé sa gravité ? |
-| §383 | ce fichier est-il un plancher ? | que reste-t-il à mesurer SOUS le lot ? |
-=======
 ## §383 — La fiche client ROUVERTE porte le même bouton que la fiche neuve : « Je rédige à la main »
 
 **Son signalement du 17 septembre 2026**, l'écran sous les yeux : *« j'ai fait
@@ -31895,4 +31838,59 @@ endroit coûte plus cher que pas d'erreur du tout (`AGENTS.md`).
 même libellé trompeur sur un seuil tenu par adresse seule. Inscrit dans
 `TODO.md`.
 
->>>>>>> origin/main
+
+
+## §387 — La batterie entière prouve un LOT, jamais une rencontre
+
+**Sa colère du 18 septembre 2026 :** *« ça commence vraiment à me soûler ! Tu
+vas me régler ce problème une bonne fois pour toutes ! »* — quatrième mur de la
+même soirée, et le dernier de cette forme.
+
+Le document d'un autre lot le montrait au chiffre près : *« `main` avait avancé
+de 53 commits pendant tout ça, dont le gabarit racine et le calendrier que je
+touche. Le garde-fou exige la batterie sur cet état. »* Quarante-cinq minutes,
+pour du code qu'une session voisine avait déjà prouvé.
+
+**Le raisonnement, et il vaut pour les quatre murs de la soirée.** Chaque commit
+de `main` est passé par son propre garde-fou, **au niveau que son risque
+exigeait** — plancher compris : la session qui pose une migration paie la
+batterie entière pour elle. Ce que `main` apporte est donc prouvé **contre
+l'application telle qu'elle est sans ce lot**. Et le lot, lui, a été prouvé
+contre `main` à sa base.
+
+**Ce que personne n'a mesuré, c'est le lot SUR CE NOUVEAU SOL.** Et cela se
+nomme :
+
+| Ce que `main` apporte | Ce qu'on remesure |
+|---|---|
+| une **migration**, `src/server/db/` | les suites du fond — la base a changé sous les règles et la RLS |
+| un réglage de **bâti** — `package.json`, `next.config`, `tsconfig` | la **Construction** : une erreur qui n'existe qu'à la construction ne se voit nulle part ailleurs (`CLAUDE.md` §5, le mode lent du 16 août) |
+| **tout** plancher — gabarit racine, `globals.css`, middleware | les **écrans DU LOT**, et la **connexion derrière un proxy** |
+| sa **gravité** — argent, sécurité (§382) | les suites du fond |
+
+Les écrans du lot s'ajoutent **explicitement**, et c'est le point technique :
+un gabarit racine n'a aucune arête d'import vers eux, donc la rencontre ne les
+voit pas — alors que c'est exactement sur lui qu'ils tournent désormais.
+
+La connexion derrière un proxy revient **à chaque plancher**, et c'est délibéré :
+c'est le défaut qui a coûté vingt allers-retours au patron en août, il est
+invisible partout ailleurs, et il coûte une minute.
+
+**Il ne reste donc qu'UNE cause à la batterie entière : le risque propre du
+lot** (`batterieDue`). C'est la règle du §5, et elle n'a pas bougé d'un pouce.
+
+**CE QUI A ÉTÉ CORRIGÉ DE MA PROPRE MAIN, NOIR SUR BLANC.** Le §382, écrit
+quarante minutes plus tôt, gardait le plancher de `main` comme cause de
+batterie, et un contrôle l'affirmait. C'était la même erreur de catégorie, d'un
+cran plus profond : *« ce fichier est-il dangereux »* au lieu de *« **qui** doit
+le prouver, et **quoi** reste-t-il à mesurer »*. Le contrôle a été réécrit avec
+sa raison, pas effacé.
+
+**Les quatre murs de la soirée, et ils avaient tous la même forme :**
+
+| | La question posée | Celle qu'il fallait poser |
+|---|---|---|
+| §380 | ce fichier a-t-il une date neuve ? | son contenu a-t-il changé ? |
+| §381 | le lot a-t-il bougé ? | que peut casser ce qui a bougé ? |
+| §382 | ce fichier est-il grave ? | qui a déjà prouvé sa gravité ? |
+| §387 | ce fichier est-il un plancher ? | que reste-t-il à mesurer SOUS le lot ? |

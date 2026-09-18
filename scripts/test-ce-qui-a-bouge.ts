@@ -138,7 +138,7 @@ cas("SON CAS : l'argent apporté par main ne réclame PAS la batterie entière",
 // prouvée contre toute l'application ; ce qui n'a jamais été mesuré, c'est le
 // LOT sur cette nouvelle base — et cela se rejoue : les suites du fond, les
 // écrans du lot, la connexion. Corrigé le 18 septembre 2026, noir sur blanc
-// (`ARCHITECTURE.md` §383).
+// (`ARCHITECTURE.md` §387).
 cas("une MIGRATION apportée par main remesure le FOND, pas toute l'application", () => {
   assert.equal(batterieDue({ niveauDuLot: 2 }), null);
   const { etapes } = aRejouer({ bouge: ["drizzle/0099_x.sql"], plancherVenuDeMain: ["drizzle/0099_x.sql"] });

@@ -175,7 +175,7 @@ que son risque exigeait, plancher compris. Ce qui n'a jamais été mesuré, c'es
 | tout plancher — gabarit racine, `globals.css`, middleware | les **écrans du lot**, et la **connexion derrière un proxy** |
 | sa gravité — argent, sécurité | les suites du fond |
 
-`ARCHITECTURE.md` §382 et §383.
+`ARCHITECTURE.md` §382 et §387.
 
 **Et l'on n'a pas à s'en souvenir** : la batterie elle-même refuse de repartir
 quand le verdict précédent était rouge et que ce qui a bougé reste borné

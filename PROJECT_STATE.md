@@ -5,14 +5,6 @@
 
 ---
 
-<<<<<<< HEAD
-## FAIT : LA BATTERIE NE PROUVE QUE LE LOT (18 septembre 2026)
-
-Le plancher apporté par `main` — gabarit racine, migration, configuration — ne
-fait plus repartir la batterie entière : il fait remesurer le lot sur ce nouveau
-sol. Une seule cause reste : le niveau 3 sur le diff du lot.
-`ARCHITECTURE.md` §383.
-=======
 ## FAIT : CINQ CONNEXIONS RÉUSSIES NE FERMENT PLUS LA PORTE AU SIXIÈME (17 septembre 2026)
 
 *« Un ami s'était connecté à mon appli via son tél, et sur le sien ça n'a pas
@@ -25,7 +17,13 @@ Un seuil sait désormais **rendre** ce qu'un geste réussi lui a pris
 pas son appareil. Trois contrôles, vus rouges d'abord. `ARCHITECTURE.md` §386.
 
 **Reste ouvert :** le même libellé trompeur à la création de compte (`TODO.md`).
->>>>>>> origin/main
+
+## FAIT : LA BATTERIE NE PROUVE QUE LE LOT (18 septembre 2026)
+
+Le plancher apporté par `main` — gabarit racine, migration, configuration — ne
+fait plus repartir la batterie entière : il fait remesurer le lot sur ce nouveau
+sol. Une seule cause reste : le niveau 3 sur le diff du lot.
+`ARCHITECTURE.md` §387.
 
 ## FAIT : LA GRAVITÉ DE `main` NE FAIT PLUS REPAYER SES VOISINES (18 septembre 2026)
 

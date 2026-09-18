@@ -8,23 +8,6 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-18
 
-<<<<<<< HEAD
-### La batterie entière ne prouve plus que le lot — le plancher de `main` se remesure
-
-*« Ça commence vraiment à me soûler »* : quatrième mur de la même soirée. Un lot
-repartait pour quarante-cinq minutes parce que `main` avait apporté le gabarit
-racine — déjà prouvé par la session qui l'a écrit.
-
-Ce qui n'avait jamais été mesuré, c'est le lot SUR ce nouveau sol : ses écrans,
-les suites du fond si la base a bougé, la construction si le bâti a bougé, et la
-connexion derrière un proxy — une minute, le défaut d'août. Il ne reste qu'une
-cause à la batterie entière : le risque propre du lot.
-
-**Corrigé de ma propre main :** le §382, écrit quarante minutes plus tôt,
-gardait le plancher de `main` comme cause de batterie, et un contrôle
-l'affirmait. Le contrôle a été réécrit avec sa raison. `ARCHITECTURE.md` §383.
-
-=======
 ### Une seconde planche pour la journée du planning, à comparer à la première
 
 **Sa demande :** *« va regarder la planche planning tout ensemble qu'une autre
@@ -81,7 +64,22 @@ ligne passe donc après la moitié restée libre ; et « Qui ? » devient
 « + » que « + Salarié absent ? » juste au-dessus, un seul geste à apprendre.
 
 ---
->>>>>>> origin/main
+
+### La batterie entière ne prouve plus que le lot — le plancher de `main` se remesure
+
+*« Ça commence vraiment à me soûler »* : quatrième mur de la même soirée. Un lot
+repartait pour quarante-cinq minutes parce que `main` avait apporté le gabarit
+racine — déjà prouvé par la session qui l'a écrit.
+
+Ce qui n'avait jamais été mesuré, c'est le lot SUR ce nouveau sol : ses écrans,
+les suites du fond si la base a bougé, la construction si le bâti a bougé, et la
+connexion derrière un proxy — une minute, le défaut d'août. Il ne reste qu'une
+cause à la batterie entière : le risque propre du lot.
+
+**Corrigé de ma propre main :** le §382, écrit quarante minutes plus tôt,
+gardait le plancher de `main` comme cause de batterie, et un contrôle
+l'affirmait. Le contrôle a été réécrit avec sa raison. `ARCHITECTURE.md` §387.
+
 ## 2026-09-17
 
 ### Cinq connexions réussies ne ferment plus la porte au sixième

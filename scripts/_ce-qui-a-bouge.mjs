@@ -69,7 +69,7 @@ const EST_E2E = /-e2e\.ts$/;
  * configuration : ce que `main` apporte et qui change le SOL. Il ne fait pas
  * repartir la batterie (`main` l'a déjà prouvé contre toute l'application) ; il
  * fait remesurer **le lot sur ce nouveau sol** — ses écrans, ses règles, la
- * construction, la connexion (`ARCHITECTURE.md` §383).
+ * construction, la connexion (`ARCHITECTURE.md` §387).
  *
  * @param {{ bouge: string[], rougesAvant?: string[], horsSuitesAvant?: string[], suitesDesEcrans?: string[], graviteVenueDeMain?: boolean, plancherVenuDeMain?: string[], routesDuLot?: string[] }} p
  * @returns {{ etapes: string[], navigateur: string[] }}
