@@ -9,6 +9,21 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## 🔧 UNE PLANCHE NOMMÉE « PAIEMENT » EXIGE LA BATTERIE ENTIÈRE (18 septembre 2026)
+
+`scripts/_niveau-de-risque.mjs` applique la gravité « argent » (`ARGENT`) à
+TOUT chemin, y compris `appli/` et `docs/` : la planche
+`appli/moyens-de-paiement-a-choisir.html` est sortie en niveau 3 alors que
+`.claude/rules/testing.md` la range en niveau 1 — *ce qui ne s'exécute pas*.
+Un lot d'une seule planche aurait coûté cinquante minutes.
+
+Ce soir, la planche a été livrée avec le code (niveau 3 de toute façon), donc
+rien n'a été payé. **La correction est à la racine** : la gravité ne regarde
+que ce qui s'exécute — `src/`, `drizzle/`, `scripts/` —, avec cette planche
+comme cas dans le contrôle du niveau. Une liste qui REMONTE le niveau a le
+droit de se tromper vers le haut (`testing.md`), mais pas sur un fichier qui
+ne s'exécute jamais.
+
 ## ~~UNE PLANCHE À REGARDER — LES MOYENS DE PAIEMENT SE CHOISISSENT DU DOIGT~~ — CHOISIE ET CODÉE LE JOUR MÊME (18 septembre 2026, « pas besoin de planche, je choisis celle-là »)
 
 **Sa demande :** *« au moment de créer son compte on a une case qui demande nos
