@@ -299,8 +299,22 @@ un chevron ; touchée, elle s'ouvre en glissant sur les lignes à cocher, les
 photos, « À signaler » et le seul bouton vert « C'est fini ». Il s'appelait
 « Fin de chantier » ; sa remarque du 19 : *« ce qu'il y a à l'intérieur c'est
 pas fin de chantier, ça veut rien dire »*. Et de la couleur (*« elle est trop
-sobre »*) : vert pour ce qu'on fait, or pour ce qui se lit — la note sur un
-papier doré. **Sa réponse du 19 : *« j'aime bien l'idée de la
+sobre »*) : vert pour ce qu'on fait, or pour ce qui se lit — le contour de la
+fiche en or, les dessins colorés sans rond, la note sur un papier doré.
+
+**Ses retouches du 19 au soir, et l'une change une RÈGLE :** *« il faut qu'on
+puisse l'envoyer même si on ne met pas de photo ou si tout n'est pas coché,
+parce qu'un chantier de 8 jours, il faut pouvoir faire plusieurs retours
+d'intervention jour après jour »*. Sur la planche : « Envoyer le retour du
+jour » part toujours ; ce qui est coché reste coché ; photos et « À signaler »
+repartent vides ; « C'est parti » devient « Retour du jour envoyé — À retrouver
+dans Terminés, Retour d'intervention ». **Si c'est cette planche qu'il choisit,
+le lot n'est plus qu'un lot d'écran** : `retour-intervention.ts`
+(`ceQuiManque` : « cochez… », « ajoutez une photo ») et le verrou « déjà
+rendu » de `FinDeChantier.tsx` / `dejaRendu` doivent admettre PLUSIEURS
+retours par chantier, et le serveur (`poserLeRetourAction`) aussi — niveau à
+recalculer, et une question à lui poser avant : un chantier avec un retour
+part-il toujours dans « Terminés », alors qu'il n'est pas fini ? **Sa réponse du 19 : *« j'aime bien l'idée de la
 troisième, garde les deux pour l'instant »*** — puis, devant une première
 version qui montrait les lignes tout le temps : *« un devis de trois pages, ça
 va faire trop long sur le planning ; quelque chose de joli, élégant, où on

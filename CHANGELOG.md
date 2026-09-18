@@ -20,7 +20,11 @@ s'ouvre en glissant sur les lignes à cocher, les photos, « À signaler » et l
 seul bouton vert. Il s'appelait « Fin de chantier » ; *« ce qu'il y a à
 l'intérieur c'est pas fin de chantier, ça veut rien dire »*. Puis de la couleur,
 la sienne — *« elle est trop sobre »* : vert pour ce qu'on fait, or pour ce qui
-se lit. Une première version montrait les lignes tout le temps ; sa
+se lit. Le soir, ses retouches : le contour de la fiche en or, les dessins sans
+rond, et **une règle qui change** — le retour part toujours, même sans photo ni
+tout coché, parce qu'un chantier de huit jours en envoie un chaque soir ;
+« C'est parti » devient « Retour du jour envoyé, à retrouver dans Terminés,
+Retour d'intervention ». Ce que cela demande au code est écrit dans `TODO.md`. Une première version montrait les lignes tout le temps ; sa
 réponse : *« un devis de trois pages, ça va faire trop long sur le planning »*,
 et *« j'aime bien l'idée de la troisième »*. **Sa consigne du même jour**, *« je veux pas de point entre
 Terminés et Retour d'intervention »*, est portée sur les deux planches (un

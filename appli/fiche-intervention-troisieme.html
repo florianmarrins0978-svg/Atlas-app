@@ -44,7 +44,23 @@
   3. CE QUI MANQUE SE DIT SOUS LE BOUTON, avant l'appui, comme sur la
      deuxième — la règle de `retour-intervention.ts`.
 
-  4. DE LA COULEUR — sa remarque du 19 : *« essaye de me mettre un peu de
+  4. ON ENVOIE CHAQUE JOUR, MÊME INCOMPLET. Sa règle du 19 : *« il faut
+     qu'on puisse l'envoyer même si on ne met pas de photo ou si tout n'est
+     pas coché, parce qu'un chantier de 8 jours, il faut pouvoir faire
+     plusieurs retours d'intervention jour après jour »*. Le bouton
+     « Envoyer le retour du jour » part toujours ; ce qui est coché reste
+     coché ; les photos et « À signaler » repartent vides pour le lendemain.
+     À la place de « C'est parti » : « Retour du jour envoyé — À retrouver
+     dans Terminés, Retour d'intervention ». SI C'EST CETTE PLANCHE :
+     `retour-intervention.ts` (« cochez… », « ajoutez une photo ») et le
+     verrou « déjà rendu » de `FinDeChantier.tsx` changent de règle — un
+     chantier peut porter plusieurs retours.
+
+  5. LE CONTOUR EN OR, PLUS DE DISQUES. Sa demande du 19 : le contour de la
+     fiche en or, celui de l'application ; les dessins gardent leur couleur
+     (vert pin pour y aller et appeler, or pour copier) mais sans rond.
+
+  6. DE LA COULEUR — sa remarque du 19 : *« essaye de me mettre un peu de
      couleur dans la planche, elle est trop sobre »*. Les couleurs de
      l'application, et chacune dit quelque chose : VERT pour ce qu'on fait
      (y aller, appeler, cocher, finir), OR pour ce qui se lit et se copie
@@ -213,14 +229,17 @@
      un papier doré, le bandeau des travaux sur un vert pâle. */
   :root{--vert-pale:#b9c6b4; --vert-voile:rgba(125,154,109,.16); --or-papier:rgba(185,139,71,.13)}
   body.nuit{--vert-pale:#4f5f4c; --vert-voile:rgba(185,198,180,.12); --or-papier:rgba(201,160,94,.16)}
-  .v3 .feuille{background:var(--carte);box-shadow:0 0 0 1px var(--trait-doux), 0 2px 10px var(--ombre)}
+  /* le contour de la fiche en or — le sien, celui de l'application — sa demande du 19 */
+  .v3 .feuille{background:var(--carte);box-shadow:inset 0 0 0 1.5px var(--or), 0 2px 10px var(--ombre)}
   .v3 .barre-gestes{background:transparent;box-shadow:none;gap:6px;overflow:visible}
   .v3 .cellule{border-left:0;border-radius:12px;background:var(--teinte);box-shadow:inset 0 0 0 1px var(--trait-doux);
-               min-height:82px;gap:7px;font-size:11.5px}
+               min-height:78px;gap:5px;font-size:11.5px}
   .v3 .cellule:active{background:var(--or-voile)}
-  .v3 .disque{display:grid;place-items:center;width:36px;height:36px;border-radius:50%;flex:none}
-  .v3 .disque.d-vert{background:var(--vert-pale);color:var(--pin)}
-  .v3 .disque.d-or{background:var(--or-papier);color:var(--or-texte)}
+  /* plus de disque autour des dessins — sa demande du 19 — mais le dessin garde
+     sa couleur : vert pin pour y aller et appeler, or pour copier l'adresse */
+  .v3 .disque{display:grid;place-items:center;height:30px;flex:none}
+  .v3 .disque.d-vert{color:var(--pin)}
+  .v3 .disque.d-or{color:var(--or)}
   .v3 .disque svg{color:inherit}
   .v3 .part{border-top-color:var(--trait-doux)}
   .v3 .etiquette{color:var(--or-texte)}
@@ -236,7 +255,8 @@
   .v3 .case .rond{background:var(--carte);box-shadow:inset 0 0 0 1.5px var(--vert-pale)}
   .v3 .case[aria-pressed="true"] .rond{background:var(--plein)}
   .v3 .photos .ajouter{background:var(--vert-voile);color:var(--pin);box-shadow:inset 0 0 0 1px var(--vert-pale)}
-  .v3 .parti{background:var(--vert-voile);box-shadow:inset 0 0 0 1px var(--vert-pale)}
+  .v3 .parti{background:var(--vert-voile);box-shadow:inset 0 0 0 1px var(--vert-pale);border-radius:12px;padding:10px 16px;min-height:0}
+  .v3 .parti .ou{white-space:normal;line-height:1.35}
   .v3 .parti .mot{color:var(--pin)}
   .photos{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:8px}
   .photos .etiquette{margin:0 4px 0 0}
@@ -289,11 +309,13 @@
   <table>
     <tr><td>Les quatre gestes</td><td>une seule barre, le dessin au-dessus du mot — on voit d’un coup qu’il y a quatre gestes, et les cibles sont plus grandes</td></tr>
     <tr><td>Travaux à faire</td><td>le bandeau porte le nom de ce qu’il contient — votre remarque du 19, <i>« Fin de chantier, ça veut rien dire »</i>. Fermé, il dit où on en est : « 4 lignes », « 2 sur 4 faits », « tout est fait ». On le touche : il se déplie sur les lignes à cocher, la photo, « À signaler » et « C’est fini »</td></tr>
+    <tr><td>Envoyer</td><td>« Envoyer le retour du jour » part toujours — sans photo, sans tout cocher. Un chantier de huit jours envoie un retour chaque soir ; ce qui est coché reste coché le lendemain. Une fois parti : « Retour du jour envoyé — à retrouver dans Terminés, Retour d’intervention »</td></tr>
+    <tr><td>Le contour, les dessins</td><td>le contour de la fiche en or, celui de l’appli ; plus de rond derrière les dessins — vert pour y aller et appeler, or pour copier l’adresse</td></tr>
     <tr><td>De la couleur</td><td>celle de l’appli, et chacune dit quelque chose : <b>vert</b> pour ce qu’on fait — y aller, appeler, cocher, finir ; <b>or</b> pour ce qui se lit et se copie — l’adresse, la note sur son papier doré</td></tr>
     <tr><td>Le point</td><td>parti, sur les deux : « Terminés — Retour d’intervention »</td></tr>
   </table>
   <p><b>Ce qui ne bouge pas</b> : la carte, « Fiche d’intervention », le nom, les quatre mots, « Ma note », le vert, le PDF en gras.</p>
-  <p><b>Essayez les deux</b> : sur la troisième, touchez « Travaux à faire », cochez, « + », « C’est fini ». La deuxième reste ici : <a href="fiche-intervention-en-mieux.html">fiche-intervention-en-mieux.html</a>.</p>
+  <p><b>Essayez les deux</b> : sur la troisième, touchez « Travaux à faire », cochez, « + », « Envoyer le retour du jour » — puis rouvrez, et envoyez encore. La deuxième reste ici : <a href="fiche-intervention-en-mieux.html">fiche-intervention-en-mieux.html</a>.</p>
   <p><b>Rien n’est codé.</b> Dites 2 ou 3, ou ce qui reste à changer.</p>
 </div>
 
@@ -316,7 +338,7 @@ const bouton = (html, onClick, cls) => { const b = el("button", cls, html); b.ty
 /* Un téléphone = une variante (2 ou 3) et son propre état. */
 function telephone(racine, variante) {
   let etat;
-  const depart = () => { etat = { note: "", copie: "non", finOuverte: false, faites: TACHES.map(() => false), photos: 0, aSignaler: "", rendu: false, noteEtat: "" }; };
+  const depart = () => { etat = { note: "", copie: "non", finOuverte: false, faites: TACHES.map(() => false), photos: 0, aSignaler: "", rendu: false, noteEtat: "", envoyes: 0 }; };
   const manques = () => {
     const m = [];
     if (etat.faites.every((f) => !f)) m.push("cochez ce que vous avez fait");
@@ -381,7 +403,7 @@ function telephone(racine, variante) {
     } else {
       // TROISIÈME : une barre, quatre cellules, le dessin au-dessus du mot
       const g = el("div", "barre-gestes");
-      const disque = (d, teinte) => `<span class="disque ${teinte}" aria-hidden="true">${T(d, 18)}</span>`;
+      const disque = (d, teinte) => `<span class="disque ${teinte}" aria-hidden="true">${T(d, 22)}</span>`;
       g.appendChild(bouton(`${disque(DESSIN.maps, "d-vert")}<span>Maps</span>`, () => {}, "cellule"));
       g.appendChild(bouton(`${disque(DESSIN.waze, "d-vert")}<span>Waze</span>`, () => {}, "cellule"));
       g.appendChild(bouton(`${disque(DESSIN.copier, "d-or")}<span>${motCopie}</span>`, copier, "cellule"));
@@ -413,9 +435,7 @@ function telephone(racine, variante) {
     } else {
       // TROISIÈME : un bandeau qui se déplie — sa demande du 19 : « si on a un
       // devis qui fait 3 pages ça va faire trop long sur la page planning »
-      if (etat.rendu) {
-        p.appendChild(parti());
-      } else {
+      {
         const faites = etat.faites.filter(Boolean).length, total = TACHES.length;
         const b = el("div", "bandeau" + (etat.finOuverte ? " ouvert" : ""));
         const tete = bouton(
@@ -426,8 +446,21 @@ function telephone(racine, variante) {
         tete.setAttribute("aria-expanded", String(etat.finOuverte));
         b.appendChild(tete);
         const pli = el("div", "pli"); const dedans = el("div", "dedans"); pli.appendChild(dedans); b.appendChild(pli);
-        dedans.appendChild(cases(true)); photosEtSignaler(dedans); fini(dedans);
+        dedans.appendChild(cases(true)); photosEtSignaler(dedans);
+        // ON ENVOIE MÊME SANS PHOTO, MÊME SANS TOUT COCHER — sa règle du 19 :
+        // « un chantier de 8 jours, il faut pouvoir faire plusieurs retours
+        // d'intervention jour après jour ». Le bouton est toujours actif, et
+        // rien ne manque : ce qui est coché part, le reste attend demain.
+        dedans.appendChild(bouton("Envoyer le retour du jour", () => {
+          etat.envoyes++; etat.photos = 0; etat.aSignaler = ""; etat.finOuverte = false; dessiner();
+        }, "vert"));
         p.appendChild(b);
+        if (etat.envoyes > 0) {
+          // à la place de « C'est parti » : on dit OÙ le retrouver
+          const n = etat.envoyes;
+          p.appendChild(el("div", "parti",
+            `<span class="rond" aria-hidden="true">${COCHE}</span><span><span class="mot">${n === 1 ? "Retour du jour envoyé" : `${n} retours envoyés`}</span><span class="ou">À retrouver dans Terminés, Retour d’intervention</span></span>`));
+        }
       }
     }
     f.appendChild(p);
