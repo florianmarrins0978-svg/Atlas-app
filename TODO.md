@@ -247,6 +247,8 @@ comprises.**
 Puis : « Déplacer  Retirer » sous l'après-midi, au-dessus d'« Ajouter » ; et
 « Qui ? » → « + Salarié » (son choix). Portés le 18.
 
+**SON OUI, LE 19 SEPTEMBRE AU MATIN** — *« enlève le Annuler à côté de Journée, ensuite c'est bon tu peux coder »*. Le lot de code part de cette planche-ci, exactement.
+
 **Sa consigne :** *« toutes les réponses que je vais te donner, tu vas mettre
 les modifs dans une seule planche, comme ça à la fin tu coderas la planche
 finale avec toutes les modifs dedans »*.

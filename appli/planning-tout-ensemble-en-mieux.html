@@ -306,7 +306,7 @@
     <b style="color:#B98B47">Or</b><span>un geste — un mot qu’on touche</span>
     <b style="color:#8a8578">Gris</b><span>le reste — une heure, une durée, « Annuler »</span>
   </div>
-  <p>Aucun bouton, aucun cadre, aucun aplat. Vos trois réponses du 17 sont là : les trois voies gardent leurs mots et « Ajouter » devient « Fermer » ; « Annuler » à droite de Matin · Après-midi · Journée ; le nom seul pose le client, la date en or au-dessus.</p>
+  <p>Aucun bouton, aucun cadre, aucun aplat. Vos trois réponses du 17 sont là : les trois voies gardent leurs mots et « Ajouter » devient « Fermer » ; Matin · Après-midi · Journée sans « Annuler » — la croix le remplace, sa réponse du 19 ; le nom seul pose le client, la date en or au-dessus.</p>
   <p><b>Une chose change par rapport au 17 :</b> « Salarié absent ? » n’est plus en gras, il est en or — comme tout ce qui s’appuie. Le gras et l’or ensemble crieraient.</p>
   <p><b>Vos quatre retouches du 18 sont là</b> : « Client en attente » derrière « Ajouter », plus de point entre l’adresse et la durée, le « + » devant « Salarié absent ? », et « Déplacer  Retirer » en bas à droite, sous l’après-midi et au-dessus d’« Ajouter ».</p>
   <p><b>Ajouter ou retirer un salarié sur un chantier</b> : touchez « + Salarié » ou le « + » à côté du nom, sur la ligne Matin ou Après-midi — les prénoms s’affichent, touchez-en un pour l’ajouter ou le retirer. C’est le geste d’aujourd’hui, sans la pastille.</p>
@@ -390,7 +390,9 @@ function mots(choix, actif, onChoisir, onAnnuler, libelle) {
     b.setAttribute("aria-pressed", String(cle === actif));
     r.appendChild(b);
   }
-  r.appendChild(geste("Annuler", onAnnuler, "annuler"));
+  // « Annuler » ne se pose que si on le demande : pour l'absence, la croix
+  // noire de la ligne le remplace (sa réponse du 19 septembre au matin)
+  if (onAnnuler) r.appendChild(geste("Annuler", onAnnuler, "annuler"));
   return r;
 }
 
@@ -429,7 +431,7 @@ function dessinerFiche() {
       // SA RÉPONSE A — « Annuler » à droite ; le choix et lui s'effacent ensemble
       corps.appendChild(mots(MOMENTS, absence.moment,
         (cle) => { absence = { ...absence, moment: cle }; choixMoment = false; tout(); },
-        () => { absence = null; choixMoment = false; tout(); }, `Quand ${absence.qui} est absent`));
+        null, `Quand ${absence.qui} est absent`));
     }
   }
 
