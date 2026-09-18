@@ -24,18 +24,19 @@
      quatre gestes et un seul geste à faire — y aller, ou appeler. Les cibles
      sont plus hautes (64 px), donc plus faciles avec des gants.
 
-  2. PLUS D'ÉTAPE « FIN DE CHANTIER » À OUVRIR. Sur la deuxième, il faut
-     appuyer sur le bouton vert POUR VOIR les cases, puis cocher, puis appuyer
-     sur « C'est fini » : trois temps. Ici les lignes du devis SONT les cases,
-     tout le temps — on coche au fil de la journée, le broyeur sorti, la haie
-     faite. Photos et « À signaler » sont déjà là, et un seul bouton vert
-     reste : « C'est fini ». « Fin de chantier » ne disparaît pas : c'est le
-     titre de cette partie, en petites capitales, comme « Ma note ».
+  2. « FIN DE CHANTIER » EST UN BANDEAU QUI SE DÉPLIE. Une barre blanche,
+     le mot en serif, le compte à droite (« 4 lignes », puis « 2 sur 4 ») et
+     un chevron or. On la touche : elle s'ouvre, en glissant, sur les lignes
+     du devis à cocher, les photos, « À signaler » et le seul bouton vert,
+     « C'est fini ».
 
-     Ce que ça enlève : un bouton, un état ouvert/replié, et le doute « où
-     sont passées les lignes ? » (sa proposition A du 9 septembre les faisait
-     disparaître à l'ouverture, parce qu'elles se lisaient deux fois — ici il
-     n'y a plus qu'une liste, donc plus de doublon à cacher).
+     La première version de cette troisième planche montrait les lignes tout
+     le temps. Sa réponse du 19 : *« si on a un devis qui fait 3 pages ça va
+     faire trop long sur la page planning si c'est visible tout le temps. Il
+     faut quelque chose de joli, élégant, où on appuie et ça déplie avec les
+     infos dedans »*. D'où le bandeau — et il rejoint sa décision du
+     8 septembre (le bandeau déroulant) sans le gros bouton vert pour
+     l'ouvrir : la barre EST la poignée. Fermée, elle dit où on en est.
 
   3. CE QUI MANQUE SE DIT SOUS LE BOUTON, avant l'appui, comme sur la
      deuxième — la règle de `retour-intervention.ts`.
@@ -173,8 +174,25 @@
   .case[aria-pressed="true"] .quoi{color:var(--gris)}
   .case .quoi{flex:1;min-width:0}
   /* troisième : la liste à cocher est la première chose sous le titre, et la case est plus grande */
-  .cases.serree{margin-top:-4px}
   .cases.serree .case{padding:6px 0}
+  .feuille .part.sans-filet{border-top:0;padding-top:0}
+
+  /* TROISIÈME : le bandeau — une barre blanche qu'on touche, et qui se déplie.
+     La hauteur se transitionne par une grille 0fr → 1fr : rien à mesurer. */
+  .bandeau{border-radius:12px;background:var(--carte);box-shadow:inset 0 0 0 1px var(--trait);overflow:hidden}
+  .tete{display:flex;width:100%;align-items:center;gap:10px;min-height:54px;padding:0 14px 0 16px}
+  .tete .tete-mot{flex:1;min-width:0;font:400 16px/1.2 ui-serif,Georgia,serif}
+  .tete .tete-compte{flex:none;font-size:12.5px;color:var(--gris)}
+  .tete .chev{flex:none;color:var(--or);transition:transform .28s cubic-bezier(.2,.7,.2,1)}
+  .bandeau.ouvert .tete .chev{transform:rotate(180deg)}
+  .bandeau:active .tete{background:var(--or-voile)}
+  .pli{display:grid;grid-template-rows:0fr;transition:grid-template-rows .3s cubic-bezier(.2,.7,.2,1)}
+  .bandeau.ouvert .pli{grid-template-rows:1fr}
+  .pli .dedans{min-height:0;overflow:hidden;padding:0 14px}
+  .bandeau.ouvert .pli .dedans{padding-bottom:14px;border-top:1px solid var(--trait-doux)}
+  .bandeau .cases{padding-top:6px}
+  .bandeau .vert{margin-top:14px}
+  @media (prefers-reduced-motion:reduce){.pli,.tete .chev{transition:none}}
   .photos{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:8px}
   .photos .etiquette{margin:0 4px 0 0}
   .photos .vignette,.photos .ajouter{width:46px;height:46px;border-radius:9px;flex:none;
@@ -225,11 +243,11 @@
   <h2>Ce que la troisième change</h2>
   <table>
     <tr><td>Les quatre gestes</td><td>une seule barre, le dessin au-dessus du mot — on voit d’un coup qu’il y a quatre gestes, et les cibles sont plus grandes</td></tr>
-    <tr><td>Fin de chantier</td><td>plus rien à ouvrir : les lignes du devis sont les cases, tout le temps. On coche au fil de la journée, on met la photo, et un seul bouton vert reste : « C’est fini »</td></tr>
+    <tr><td>Fin de chantier</td><td>une barre blanche qu’on touche, et qui se déplie avec les lignes du devis à cocher, la photo et « À signaler » — un devis de trois pages ne s’étale plus sur le planning. Fermée, elle dit où on en est : « 2 sur 4 »</td></tr>
     <tr><td>Le point</td><td>parti, sur les deux : « Terminés — Retour d’intervention »</td></tr>
   </table>
   <p><b>Ce qui ne bouge pas</b> : la carte, « Fiche d’intervention », le nom, les quatre mots, « Ma note », le vert, le PDF en gras.</p>
-  <p><b>Essayez les deux</b> : cochez, « + », « C’est fini ». La deuxième reste ici : <a href="fiche-intervention-en-mieux.html">fiche-intervention-en-mieux.html</a>.</p>
+  <p><b>Essayez les deux</b> : sur la troisième, touchez « Fin de chantier », cochez, « + », « C’est fini ». La deuxième reste ici : <a href="fiche-intervention-en-mieux.html">fiche-intervention-en-mieux.html</a>.</p>
   <p><b>Rien n’est codé.</b> Dites 2 ou 3, ou ce qui reste à changer.</p>
 </div>
 
@@ -331,7 +349,7 @@ function telephone(racine, variante) {
     t.onblur = () => { if (t.value.trim() !== "") { etat.noteEtat = "Enregistré."; e.textContent = etat.noteEtat; } };
     n.appendChild(t); n.appendChild(e); f.appendChild(n);
 
-    const p = el("div", "part");
+    const p = el("div", variante === 2 ? "part" : "part sans-filet");
     if (variante === 2) {
       if (etat.rendu) {
         p.appendChild(el("ul", "taches", TACHES.map((x) => `<li>${x}</li>`).join("")));
@@ -345,13 +363,23 @@ function telephone(racine, variante) {
         photosEtSignaler(p); fini(p);
       }
     } else {
-      // TROISIÈME : « Fin de chantier » est le titre ; les lignes sont les cases, tout le temps
-      p.appendChild(el("p", "etiquette", "Fin de chantier"));
+      // TROISIÈME : un bandeau qui se déplie — sa demande du 19 : « si on a un
+      // devis qui fait 3 pages ça va faire trop long sur la page planning »
       if (etat.rendu) {
-        const c = cases(true); for (const b of c.querySelectorAll(".case")) { b.disabled = true; b.style.cursor = "default"; }
-        p.appendChild(c); p.appendChild(parti());
+        p.appendChild(parti());
       } else {
-        p.appendChild(cases(true)); photosEtSignaler(p); fini(p);
+        const faites = etat.faites.filter(Boolean).length, total = TACHES.length;
+        const b = el("div", "bandeau" + (etat.finOuverte ? " ouvert" : ""));
+        const tete = bouton(
+          `<span class="tete-mot">Fin de chantier</span>
+           <span class="tete-compte">${faites === 0 ? `${total} lignes` : `${faites} sur ${total}`}</span>
+           <svg class="chev" width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5 8l5 5 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+          () => { etat.finOuverte = !etat.finOuverte; dessiner(); }, "tete");
+        tete.setAttribute("aria-expanded", String(etat.finOuverte));
+        b.appendChild(tete);
+        const pli = el("div", "pli"); const dedans = el("div", "dedans"); pli.appendChild(dedans); b.appendChild(pli);
+        dedans.appendChild(cases(true)); photosEtSignaler(dedans); fini(dedans);
+        p.appendChild(b);
       }
     }
     f.appendChild(p);

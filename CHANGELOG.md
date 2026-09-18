@@ -14,9 +14,12 @@ Format : le plus récent en tête.
 troisième en partant de la base de la deuxième et en l'améliorant — plus belle
 et simple à utiliser et compréhensible »*. `appli/fiche-intervention-troisieme.html`
 pose les deux téléphones l'un sous l'autre, chacun avec son état : la troisième
-met les quatre gestes sur une seule barre, et supprime l'étape « Fin de
-chantier » à ouvrir — les lignes du devis sont les cases tout le temps, un seul
-bouton vert reste. **Sa consigne du même jour**, *« je veux pas de point entre
+met les quatre gestes sur une seule barre, et fait de « Fin de chantier » un
+bandeau qui se déplie — une barre blanche avec le compte, touchée elle s'ouvre
+en glissant sur les lignes à cocher, les photos, « À signaler » et le seul
+bouton vert. Une première version montrait les lignes tout le temps ; sa
+réponse : *« un devis de trois pages, ça va faire trop long sur le planning »*,
+et *« j'aime bien l'idée de la troisième »*. **Sa consigne du même jour**, *« je veux pas de point entre
 Terminés et Retour d'intervention »*, est portée sur les deux planches (un
 tiret) et notée dans `TODO.md` pour l'application. Rien n'est codé.
 

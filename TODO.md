@@ -292,13 +292,19 @@ consigne. `ARCHITECTURE.md` §381.
 **Sa demande du 19 :** *« conserve celle-là [la deuxième] et essaye de m'en
 créer une troisième en partant de la base de la deuxième et en l'améliorant »*.
 Planche `appli/fiche-intervention-troisieme.html`, les deux côte à côte. La
-troisième : les quatre gestes sur UNE barre (dessin au-dessus du mot) ; plus
-d'étape « Fin de chantier » à ouvrir — les lignes du devis sont les cases tout
-le temps, photos et « À signaler » toujours visibles, un seul bouton vert
-« C'est fini », « Fin de chantier » en titre de partie. Si c'est la troisième,
-sa décision du 8 septembre (le bandeau déroulant) et sa proposition A du 9 (les
-lignes s'effacent à l'ouverture) sont remplacées, et `FinDeChantier.tsx` perd
-son état ouvert/replié. **Ne pas coder avant qu'il dise 2 ou 3.**
+troisième : les quatre gestes sur UNE barre (dessin au-dessus du mot) ; « Fin
+de chantier » en BANDEAU DÉPLIANT — une barre blanche, le compte à droite
+(« 4 lignes » puis « 2 sur 4 »), un chevron or ; touchée, elle s'ouvre en
+glissant sur les lignes à cocher, les photos, « À signaler » et le seul bouton
+vert « C'est fini ». **Sa réponse du 19 : *« j'aime bien l'idée de la
+troisième, garde les deux pour l'instant »*** — puis, devant une première
+version qui montrait les lignes tout le temps : *« un devis de trois pages, ça
+va faire trop long sur le planning ; quelque chose de joli, élégant, où on
+appuie et ça déplie »*. Le bandeau rejoint sa décision du 8 septembre sans le
+gros bouton vert pour l'ouvrir : la barre est la poignée. **Ne pas coder avant
+son oui définitif.** Si c'est la troisième, `FinDeChantier.tsx` garde son
+état ouvert/replié mais perd le bouton vert de 52 px ; la liste à puces de
+`FeuilleChantier` disparaît (les lignes vivent dans le bandeau).
 
 **Sa consigne du même jour, à porter dans l'application avec le lot choisi :**
 *« je veux pas de point entre Terminés et Retour d'intervention »* —
