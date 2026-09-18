@@ -91,21 +91,19 @@
   .commandes button[aria-pressed="true"]{color:var(--encre);text-decoration:underline;
                                         text-decoration-color:var(--or);text-underline-offset:6px}
 
-  /* ─── deux téléphones CÔTE À CÔTE, sur l'ordinateur comme sur le téléphone ───
-     Sa demande du 19 : « mets les deux planches côte à côte ». Sur un téléphone,
-     les deux ne tiennent pas de front : on glisse de l'un à l'autre, et le bord
-     du second reste visible pour dire qu'il est là. */
-  .deux{display:flex;gap:16px;align-items:flex-start;padding:0 16px;overflow-x:auto;
-        scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch}
-  .deux::-webkit-scrollbar{display:none}
-  .cote{flex:none;width:min(390px,100vw - 40px);scroll-snap-align:center}
+  /* ─── deux téléphones : le sien, puis la proposition ───
+     Sa demande du 19 : « mets les deux côte à côte ». Sur l'ordinateur, de front.
+     Sur le téléphone, deux écrans de 390 px ne tiennent pas de front : ils sont
+     l'un SOUS l'autre, tous les deux entiers — la première version les mettait
+     côte à côte avec un glissement, et il n'a vu que le premier (« j'ai que
+     aujourd'hui, j'ai pas ta proposition »). */
+  .deux{display:flex;flex-direction:column;align-items:center;gap:26px;padding:0 16px}
+  .cote{flex:none;width:100%;max-width:390px}
   .cote .quel{margin:0 0 8px;text-align:center;font:600 11px/1 inherit;letter-spacing:.14em;
               text-transform:uppercase;color:var(--gris)}
   .cote.ojd .tel{display:block;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--trait) transparent}
   .cote.ojd img{display:block;width:100%;height:auto}
-  @media (min-width:840px){.deux{justify-content:center;overflow:visible;gap:28px}.cote{width:390px}}
-  .glisser{margin:10px 0 0;text-align:center;font-size:12px;color:var(--gris)}
-  @media (min-width:840px){.glisser{display:none}}
+  @media (min-width:840px){.deux{flex-direction:row;justify-content:center;align-items:flex-start;gap:28px}.cote{width:390px}}
 
   .tel{width:100%;height:760px;margin:14px auto 0;background:var(--fond);
        border-radius:30px;overflow:hidden;box-shadow:0 18px 46px var(--ombre-forte);
@@ -264,11 +262,10 @@
 </div>
 </div>
 </div>
-<p class="glisser">Glissez vers la gauche pour voir la proposition</p>
 
 <div class="note">
   <h2>La même fiche, en plus belle</h2>
-  <p><b>Rien ne bouge, rien ne change de nom.</b> La carte, les quatre cases, la note, les puces, le bouton vert, le PDF en gras : tout est là, à sa place.</p>
+  <p><b>Votre page d’abord, la proposition juste en dessous.</b> <b>Rien ne bouge, rien ne change de nom.</b> La carte, les quatre cases, la note, les puces, le bouton vert, le PDF en gras : tout est là, à sa place.</p>
   <table>
     <tr><td>Les quatre cases</td><td>moins hautes, serrées entre elles, une ligne fine au lieu d’un contour — et un petit dessin devant chaque mot</td></tr>
     <tr><td>Ma note</td><td>le même blanc que les cases, le curseur en or</td></tr>
