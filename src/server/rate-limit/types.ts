@@ -148,6 +148,24 @@ export interface MagasinLimite {
   // résultat. Implémentations : mémoire (dev/test) et Redis (production).
   verifierEtIncrementer(cle: string, max: number, fenetreMs: number): Promise<ResultatLimite>;
 
+  /**
+   * REND ce qu'un appel vient de consommer — sans jamais descendre sous zéro,
+   * ni ressusciter une clé expirée.
+   *
+   * **Pourquoi un seuil doit pouvoir rendre (17 septembre 2026).** Le compteur
+   * monte AVANT qu'on sache si le geste réussit : c'est ce qui le rend atomique,
+   * et il faut que ça le reste. Mais un geste qui aboutit n'a rien à consommer —
+   * un seuil anti-martèlement compte des essais qui RATENT. Sans ce retour,
+   * cinq connexions RÉUSSIES depuis un même wifi mettaient la sixième dehors,
+   * avec le bon mot de passe : *« un ami s'était connecté à mon appli via son
+   * tél, et sur le sien ça n'a pas marché »*.
+   *
+   * Rendre plutôt que « regarder puis consommer » : la seconde forme ouvre une
+   * fenêtre entre la lecture et l'écriture, et c'est par là qu'un martèlement
+   * passerait.
+   */
+  rendre(cle: string): Promise<void>;
+
   // Libère ce qui doit l'être. Facultatif : l'adaptateur mémoire n'a rien à
   // fermer. L'adaptateur Redis, lui, tient une connexion ouverte — et une
   // connexion oubliée empêche un processus de rendre la main (voir

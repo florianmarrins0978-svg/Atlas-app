@@ -3,14 +3,9 @@ import { headers } from "next/headers";
 import { charte, variablesCharte, type Charte } from "@/lib/chartes";
 import { lireCharte } from "@/server/repositories/charte-personne";
 import "./globals.css";
-import AtlasBottomNav from "@/components/atlas/AtlasBottomNav";
-import { estPageDuClient } from "@/lib/chemins-publics";
-// La règle vit dans `src/lib` depuis le 5 septembre 2026 : la barre elle-même
-// s'en sert, la mise en page racine n'étant pas rejouée à chaque navigation.
-import { estEcranSansNavigation } from "@/lib/ecrans-sans-navigation";
+import CadreApplication from "@/components/atlas/CadreApplication";
+import { estCheminPublic, estPageDuClient } from "@/lib/chemins-publics";
 import VeilleReponseServeur from "@/components/atlas/VeilleReponseServeur";
-import AssistantSidebar from "@/components/atlas/AssistantSidebar";
-import { FournisseurAssistant } from "@/components/atlas/assistant-contexte";
 import GardeDocumentsLegaux from "@/components/atlas/GardeDocumentsLegaux";
 import GardeVerificationEmail from "@/components/atlas/GardeVerificationEmail";
 import GardeAcces from "@/components/atlas/GardeAcces";
@@ -18,7 +13,6 @@ import JournalDeNavigation from "@/components/atlas/JournalDeNavigation";
 import BandeauBanc from "@/components/atlas/BandeauBanc";
 import { leBandeauDoitParler } from "@/server/etat-banc";
 import { roleDeLaSession } from "@/server/autorisation";
-import { peutUtiliserLAssistant } from "@/lib/acces-roles";
 
 // **Plus aucune police n'est téléchargée depuis le 10 août 2026.** L'écran que
 // le patron a retenu était une maquette autonome : elle ne pouvait charger
@@ -135,13 +129,6 @@ export default async function RootLayout({
   // Chemin courant transmis par le middleware (voir src/middleware.ts) : une
   // page ne peut pas le connaître autrement.
   const chemin = (await headers()).get("x-atlas-pathname");
-  const sansNavigation = estEcranSansNavigation(chemin);
-  // **La seule exception au sans-navigation : le devis seul garde l'assistant.**
-  // Sa demande du 30 août 2026, depuis cette page même : « j'aimerais avoir
-  // accès à l'assistant sur cette page ». Elle reste sans onglets ni titre —
-  // ça, c'est resté un choix délibéré du 5 août — mais elle n'est pas publique
-  // et le patron qui la remplit à la main a le même besoin d'assistant qu'ailleurs.
-  const estDevisSeul = chemin?.endsWith("/devis-complet") ?? false;
   // Le veilleur parle du banc, des mises à jour et d'Atlas : c'est la langue du
   // patron. Sur les deux pages que son client reçoit, elle n'a rien à faire.
   const pageDuClient = estPageDuClient(chemin);
@@ -192,8 +179,22 @@ export default async function RootLayout({
    * l'envoyer au navigateur et le croire. Il est donc résolu ici, à chaque
    * requête, à partir de la seule session — et il ne sert qu'à DESSINER : ce qui
    * refuse une adresse, c'est `GardeAcces` juste au-dessus.
+   *
+   * **Il ne se saute plus sur les écrans sans navigation — 17 septembre 2026.**
+   * C'est le cadre, désormais, qui sait s'il y a une barre, et il ne le sait
+   * qu'au navigateur (`CadreApplication`) : décider ici de ne pas lire le rôle
+   * reviendrait à refaire au serveur le choix qui vient d'en partir, et
+   * l'accueil atteint depuis le devis n'aurait plus d'onglets. La lecture ne
+   * coûte rien de plus : `GardeAcces`, juste au-dessus, l'a déjà faite, et
+   * `cache()` la rend une seule fois par requête (`src/server/autorisation.ts`).
+   *
+   * **Ce qui s'atteint SANS COMPTE reste hors de cette lecture** : la question
+   * n'a pas de sens là où il n'y a pas de session, et la poser sur `/login`
+   * pourrait renvoyer vers `/api/session-perimee` l'écran qui sert justement à
+   * se reconnecter. C'est la même liste que le contrôle d'accès, jamais une
+   * seconde (`chemins-publics.ts`).
    */
-  const role = sansNavigation && !estDevisSeul ? null : await roleDeLaSession();
+  const role = chemin && estCheminPublic(chemin) ? null : await roleDeLaSession();
 
   return (
     // **Les variables sont posées sur `<html>`, pas sur `<body>`.**
@@ -234,55 +235,14 @@ export default async function RootLayout({
             dépôt viennent d'éléments flottants qui cachaient un geste
             (`scripts/test-rien-de-recouvert-e2e.ts`). */}
         {banc && <BandeauBanc />}
-        {sansNavigation ? (
-          estDevisSeul ? (
-            // **Le devis seul garde le panneau, sans le reste du décor.**
-            // Aucune barre d'onglets, aucun cadre `atlas-contenu` — seule la
-            // page elle-même dessine son bouton, dans son en-tête (voir
-            // `DevisCompletClient.tsx`). Le panneau, lui, doit couvrir tout
-            // l'écran, donc rester ici comme sur les écrans avec navigation.
-            <FournisseurAssistant disponible={!!role && peutUtiliserLAssistant(role)}>
-              <main>{children}</main>
-              {role !== "salarie" && <AssistantSidebar />}
-            </FournisseurAssistant>
-          ) : (
-            <main>{children}</main>
-          )
-        ) : (
-          // Le fournisseur entoure le contenu ET le panneau : depuis le
-          // 13 août 2026, le bouton de l'assistant vit dans l'en-tête de chaque
-          // écran, donc DANS `children`, tandis que le panneau reste ici pour
-          // couvrir tout le reste. Les deux se parlent par ce contexte — voir
-          // `assistant-contexte.tsx`.
-          //
-          // Il n'entoure QUE le cadre, sans en changer la hauteur : celle-ci
-          // tient compte du bandeau du banc (`minHeight` ci-dessous), et un
-          // fournisseur ne rend aucun élément.
-          // L'assistant reconstitue au serveur les chantiers, les clients et
-          // les prix, et sait lire le devis de n'importe quel client : il est au
-          // patron seul (`peutUtiliserLAssistant`, sa demande du 25 août). Le
-          // refus est dans l'action (`poserQuestionAction`) ; ici, on ne lui
-          // montre pas un bouton qui ne répondrait pas.
-          <FournisseurAssistant disponible={!!role && peutUtiliserLAssistant(role)}>
-            <div
-              className="mx-auto flex max-w-md flex-col bg-paper"
-              // **Plus aucun nombre écrit à la main ici — 31 août 2026.**
-              // C'était `calc(100dvh - 40px)` pour un bandeau qui en mesure 48,
-              // et qui grandit encore avec sa barre de progression. Le bandeau
-              // publie désormais sa hauteur (`--atlas-bandeau`, remise à zéro
-              // quand il s'efface) : une seule source, et elle suit ce qui est
-              // vraiment à l'écran.
-              style={{ minHeight: "calc(100dvh - var(--atlas-bandeau))" }}
-            >
-            {/* `atlas-contenu` réserve la hauteur de la barre, indicateur
-                d'accueil compris (voir globals.css) : sans navigation, cette
-                marge laisserait un vide en bas de page. */}
-            <main className="atlas-contenu flex-1">{children}</main>
-            <AtlasBottomNav role={role} />
-            {role !== "salarie" && <AssistantSidebar />}
-          </div>
-          </FournisseurAssistant>
-        )}
+        {/* **LE CADRE DÉCIDE, ET IL DÉCIDE AU NAVIGATEUR — 17 septembre 2026.**
+            Sa capture : *« le menu du bas disparaît »*, sur l'accueil atteint
+            juste après l'envoi d'un devis. Ce choix se faisait ici, au serveur,
+            et Next.js ne rejoue pas cette mise en page sur une navigation de
+            lien : celui fait pour la page du devis — pas de barre, pas de cadre
+            — survivait à l'accueil, et pour toute la durée de l'onglet. Le
+            détail est dans `CadreApplication`. */}
+        <CadreApplication role={role}>{children}</CadreApplication>
 
         {/* **HORS du choix ci-dessus, et c'est un correctif.** Quand la réponse
             du serveur n'a pas pu être lue, une phrase en français plutôt qu'un

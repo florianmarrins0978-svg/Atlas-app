@@ -8,6 +8,7 @@ sert.
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+<<<<<<< HEAD
 ## LA BATTERIE ENTIÈRE NE PROUVE QUE LE LOT
 
 Depuis le 18 septembre 2026 : **une seule cause** fait repartir les cinquante
@@ -18,6 +19,28 @@ suites du fond si la base a bougé, la construction si le bâti a bougé, la
 connexion derrière un proxy. `ARCHITECTURE.md` §383.
 
 ---
+=======
+## UN SEUIL DE CONNEXION NE COMPTE QUE CE QUI RATE — et il sait rendre
+
+**Le défaut du 17 septembre 2026, dans ses mots :** *« un ami s'était connecté à
+mon appli via son tél, et sur le sien ça n'a pas marché »*. Cinq entrées
+RÉUSSIES depuis un même wifi, et la sixième était mise dehors quinze minutes,
+avec le bon mot de passe — le compteur montait avant `signIn` et ne redescendait
+jamais.
+
+Ce qu'il faut savoir avant de toucher à `src/server/rate-limit/` :
+
+| | |
+|---|---|
+| le compteur monte **avant** le geste | c'est ce qui le rend atomique — ne pas le déplacer |
+| un geste **réussi** appelle `rendreLimite(cle)` | il n'a rien à consommer : un seuil compte des essais qui RATENT |
+| `DECR` nu est un piège | sur une clé absente il la crée à −1 **sans TTL** : un compteur immortel |
+
+Le compteur d'échecs en base (`src/server/repositories/tentatives-connexion.ts`) faisait
+déjà la bonne chose ; les deux disent enfin la même chose. Détail et pièges :
+`ARCHITECTURE.md` §386.
+
+>>>>>>> origin/main
 ## CE QUE `main` APPORTE NE FAIT PLUS REPAYER LA BATTERIE
 
 Depuis le 18 septembre 2026 : la gravité de ce que `main` apporte — devis,
@@ -27,6 +50,7 @@ fait repartir la batterie entière ; sa gravité, elle, force `npm test`.
 Le lot, lui, garde sa gravité pleine. `ARCHITECTURE.md` §382.
 
 ---
+
 ## UN ROUGE SE REJOUE SEUL — LA BATTERIE N'EST PLUS LE SEUL CHEMIN
 
 Depuis le 17 septembre 2026 au soir : après une batterie rouge, on corrige, puis
@@ -90,6 +114,32 @@ ce genre : lire la fiche que son espace publie tout seul — la question GitHub
 n° 47, « État du banc d'essai ». Elle porte le commit servi, l'état de la base
 et ce que la migration refuse. « Serveur : répond sur le port 3000 » **ne dit
 rien** d'une base morte : `/api/health/live` ne la touche jamais.
+
+
+---
+
+**Point de reprise :** 2026-09-17 · `main` — le menu du bas après un devis envoyé, et l'accueil qui se relit tout seul
+(l'historique fait foi : `git log --oneline -20`)
+
+---
+## Le décor d'un écran se décide au NAVIGATEUR, pas au serveur
+
+Depuis le 17 septembre 2026, ce qui entoure un écran — la barre du bas, le cadre
+`atlas-contenu`, le panneau de l'assistant — est choisi par `CadreApplication`,
+un composant client qui lit `usePathname()`. **Ne pas le remonter dans
+`layout.tsx`** : la mise en page racine ne se rejoue pas sur une navigation de
+lien, et le décor du premier écran de l'onglet vaudrait alors pour tous les
+suivants. C'est ce qui faisait disparaître son menu du bas après un envoi de
+devis. Les chemins publics, eux, restent tranchés au serveur — il n'y a pas de
+session à y lire. `ARCHITECTURE.md` §384.
+
+## L'accueil se relit tout seul, et ce n'est pas une notification
+
+`VeilleDesNouvelles` relit l'accueil dès que la page redevient visible, et
+toutes les trente secondes tant qu'elle l'est. C'est ce qui fait arriver la
+réponse d'un client sans qu'il recharge. Atlas FERMÉ, rien ne sonne : la
+notification poussée n'existe pas (`TODO.md`, en tête) — ne pas la présenter
+comme faite.
 
 ---
 ## L'accueil vide : la porte du devis est au TIERS HAUT, poussée par deux ressorts
@@ -1432,7 +1482,9 @@ repli. `scripts/_arriver-a-froid.ts` vide le journal de l'onglet et recharge —
 c'est l'état d'un signet, sans ouvrir un contexte ni se reconnecter.
 
 **Ce qui reste des règles `?de=` :** elles servent de repli, et décident encore
-où l'on va après avoir ENREGISTRÉ un formulaire (`apresLesCoordonnees`). Leur
+où l'on va après avoir ENREGISTRÉ un formulaire (`apresLesCoordonnees` — retiré le
+17 septembre 2026, `ARCHITECTURE.md` §383 : « Je rédige à la main » mène au devis
+d'où qu'on vienne). Leur
 moitié « devine d'où il vient » est redondante avec le journal — sa retraite est
 dans `TODO.md`, délibérément pas faite dans ce lot.
 

@@ -4,7 +4,7 @@ import { signIn, signOut } from "@/auth";
 import { accueilPourCleAppareil, accueilPourEmail } from "@/server/accueil-apres-connexion";
 import { AuthError } from "next-auth";
 import { redirect } from "next/navigation";
-import { verifierLimite, LIMITES } from "@/server/rate-limit";
+import { verifierLimite, rendreLimite, LIMITES } from "@/server/rate-limit";
 import { logger } from "@/server/logger";
 import { messageAttente as messageTemporisation, porteeTemporisation } from "@/lib/tentatives-connexion";
 import { horsProductionReelle, sourceDuVisiteur } from "@/server/source-visiteur";
@@ -63,9 +63,22 @@ const MESSAGE_SERVICE_INDISPONIBLE =
  *    sait déjà) payée d'un prix total : l'utilisateur légitime n'a aucun moyen
  *    de comprendre, et conclut que l'application est cassée.
  */
+/**
+ * **« depuis cet appareil » ACCUSAIT LE MAUVAIS COUPABLE — 17 septembre 2026.**
+ *
+ * Le seuil est tenu par compte ET par adresse : deux téléphones sur un même
+ * wifi n'en font qu'une. L'ami à qui il fait essayer l'application lisait donc
+ * que SON appareil avait trop essayé, alors qu'il s'y connectait pour la
+ * première fois — et il cherchait du côté de son téléphone, où il n'y avait
+ * rien. Une erreur qui envoie chercher au mauvais endroit coûte plus cher que
+ * pas d'erreur du tout (`AGENTS.md`).
+ *
+ * Le message dit désormais ce qui est vrai et rien de plus : il y a eu trop
+ * d'essais récents, et voici combien de temps attendre.
+ */
 function messageAttente(secondes: number): string {
   const minutes = Math.max(1, Math.ceil(secondes / 60));
-  return `Trop de tentatives depuis cet appareil. Réessayez dans ${minutes} minute${minutes > 1 ? "s" : ""}.`;
+  return `Trop de tentatives de connexion récentes. Réessayez dans ${minutes} minute${minutes > 1 ? "s" : ""}.`;
 }
 
 // **D'où vient une requête** — la fonction, et le raisonnement qui la
@@ -181,6 +194,22 @@ export async function connexionAction(
   // à un doigt de la temporisation pendant l'heure qui suit. Posé avant
   // `redirect()`, qui lève et ne rend jamais la main.
   await oublierEchecs(portee);
+
+  // **ET LES DEUX SEUILS RENDENT CE QU'ILS VIENNENT DE PRENDRE.**
+  //
+  // Ils ont été incrémentés en haut de cette fonction, avant qu'on sache si la
+  // porte s'ouvrirait. Elle s'est ouverte : cette tentative n'était pas un
+  // essai raté, elle n'a donc rien à consommer. Sans ce retour, cinq entrées
+  // légitimes depuis un même wifi mettaient la sixième dehors — *« un ami
+  // s'était connecté à mon appli via son tél, et sur le sien ça n'a pas
+  // marché »* (17 septembre 2026).
+  //
+  // Au même endroit que `oublierEchecs`, et pour la même raison : le compteur
+  // en base ne comptait déjà que les échecs. Les deux disent enfin la même
+  // chose (`CLAUDE.md` §3).
+  await rendreLimite(`connexion:${email}:${source}`);
+  await rendreLimite(`connexion:compte:${email}`);
+
   redirect(await accueilPourEmail(email));
 }
 

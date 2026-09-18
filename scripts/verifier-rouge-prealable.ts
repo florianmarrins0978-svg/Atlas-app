@@ -71,7 +71,11 @@ function rejouer(dossier: string, suite: string): string {
       estNavigateur
         ? ["run", "test:e2e", "--", "--seulement", motif]
         : ["exec", "--", "tsx", path.join("scripts", suite)],
-      { cwd: dossier, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"], env, timeout: 20 * 60_000 }
+      // **`npm` est `npm.cmd` sous Windows** : sans interpréteur, le lancement
+      // rend ENOENT — un statut absent —, donc « indéterminé » des DEUX côtés,
+      // et rien ne se compare jamais (payé le 18 septembre 2026, sur douze
+      // rouges d'outillage). Même geste que `_jouer-etape.ts`.
+      { cwd: dossier, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"], env, timeout: 20 * 60_000, shell: process.platform === "win32" }
     );
     // **Un moteur qui rend 0 mais n'a joué AUCUNE suite ne prouve rien** : un
     // motif trop étroit ne mesure pas, il se tait (`CLAUDE.md` §5).

@@ -306,6 +306,17 @@ cas("sans -C, le dossier reste celui de la session", () => {
   assert.equal(dossierDeLaCommande("git push origin main", RACINE), RACINE);
 });
 
+cas("un chemin à la façon de Git Bash désigne le dossier NATIF, jamais un dossier fantôme", () => {
+  // Payé le 18 septembre 2026 : `/c/Users/…` résolu en `C:\c\Users\…`, un
+  // dossier vide de tout dépôt — donc « rien à mesurer », donc porte ouverte
+  // sur un lot de niveau 3. Sous Linux le chemin est déjà natif.
+  const attendu = process.platform === "win32" ? "C:\\Users\\x\\Temp\\atlas-batterie" : path.resolve("/c/Users/x/Temp/atlas-batterie");
+  assert.equal(dossierDeLaCommande("git -C /c/Users/x/Temp/atlas-batterie push origin HEAD:main", RACINE), attendu);
+  if (process.platform === "win32") {
+    assert.equal(dossierDeLaCommande("git -C /cygdrive/d/lot push origin HEAD:main", RACINE), "D:\\lot");
+  }
+});
+
 cas("git -C <dossier> désigne CE dossier — relatif, absolu, ou entre guillemets", () => {
   assert.equal(dossierDeLaCommande("git -C ../atlas-app-s2 push origin HEAD:main", RACINE), path.resolve(RACINE, "../atlas-app-s2"));
   assert.equal(dossierDeLaCommande('git -C "C:/Users/x/Temp/atlas batterie" push origin main', RACINE), path.resolve("C:/Users/x/Temp/atlas batterie"));
@@ -674,6 +685,16 @@ try {
     } finally {
       execFileSync("git", ["-C", RACINE, "worktree", "remove", "--force", session]);
     }
+  });
+
+  cas("un dossier visé qui n'existe pas FERME la porte, il ne l'ouvre pas en silence", () => {
+    // C'est exactement ce qui est arrivé le 18 septembre 2026 : sans dépôt à
+    // lire, le lot valait « niveau 1 » et la poussée passait. Ne pas savoir
+    // n'est jamais vert.
+    const fantome = path.join(tmpdir(), `atlas-fantome-${Date.now()}`);
+    const { refuse, message } = jouer(`git -C "${fantome}" push origin HEAD:main`);
+    assert.equal(refuse, true, "un dossier inexistant a ouvert la fusion");
+    assert.match(message, /dépôt lisible/);
   });
 
   cas("un verdict qui ne connaît pas un fichier DU LOT ne suffit pas", () => {
