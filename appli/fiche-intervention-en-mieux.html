@@ -1,0 +1,392 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>La fiche d’intervention — en mieux</title>
+<!--
+  ════════════════════════════════════════════════════════════════════════════
+  SA DEMANDE DU 18 SEPTEMBRE 2026, AU SOIR, capture à l'appui :
+
+  *« Je veux embellir cette page comme on l'a fait pour la partie juste au
+  dessus aujourd'hui avec salarié absent. L'idée c'est que ça soit joli,
+  facilement compréhensible et minimaliste, aux couleurs et au style de
+  l'appli, sans gros bouton tout moche. »*
+
+  La « partie juste au-dessus », c'est `planning-tout-ensemble-en-mieux.html`
+  et sa seule règle. Cette planche l'applique à la fiche d'intervention, qui
+  vit dans la même carte du jour, entre deux chantiers.
+
+  ─── LA RÈGLE, LA MÊME ────────────────────────────────────────────────────
+
+      NOIR  = un fait      (le nom, une ligne du devis, « C'est parti »)
+      OR    = un geste     (un mot qu'on touche)
+      GRIS  = le reste     (« Adresse », « Ma note », ce qui manque)
+
+  ─── CE QUI PART, ET POURQUOI ─────────────────────────────────────────────
+
+  · le cadre beige de la fiche : une carte dans la carte du jour. La fiche
+    est une SECTION du jour, séparée par le même filet que Matin et
+    Après-midi ;
+  · les quatre cases blanches Maps / Waze / Copier / Appeler : quatre mots
+    en or sur deux lignes, avec ce qu'ils touchent en gris devant —
+    « Adresse » et « Client » — exactement la ligne « Absent  Julien » ;
+  · le cadre de la note : la note s'écrit à même la fiche, comme sur un
+    papier ; l'exemple en gris dit où poser le doigt, et la ligne fine en
+    dessous tient la place. Sa réponse du 23 août (*« B, y'a rien ? Je vois
+    rien »*) est respectée : il y a quelque chose à voir ;
+  · le gros bouton vert « Fin de chantier » : un mot en or, au centre, comme
+    « Ajouter » et « + Salarié absent ? » trois centimètres plus haut ;
+  · le bouton vert « C'est fini » : un mot en or, et ce qui manque en gris
+    dessous, AVANT l'appui — la règle de `retour-intervention.ts` ;
+  · le gras du « Ouvrir le PDF sans les prix » (sa réponse du 15 septembre).
+    Il crierait à côté d'un « Fin de chantier » en or, et il n'y a plus de
+    bouton vert pour lui disputer la place. Même mot, même place, plus petit.
+
+  ─── CE QUI NE BOUGE PAS ──────────────────────────────────────────────────
+
+  · tous les mots : « Fiche d'intervention », Maps, Waze, Copier l'adresse,
+    Appeler le client, Ma note, l'exemple de la note, « Fin de chantier »,
+    « C'est fini », « Ouvrir le PDF sans les prix » ;
+  · leur ORDRE et leur PLACE — sa règle du 11 septembre ;
+  · les puces or devant les lignes du devis (sa correction du 9 septembre) ;
+  · les lignes qui DEVIENNENT les cases quand la fin de chantier s'ouvre
+    (sa proposition A, tranchée le 9 septembre) ;
+  · la case cochée : le seul rond du produit, rempli de vert pin quand c'est
+    fait — c'est le seul aplat de l'écran, et c'est un fait ;
+  · la note enregistrée en sortant du cadre, jamais par un bouton.
+
+  ─── LES COULEURS ET LES MESURES ─────────────────────────────────────────
+
+  `src/lib/design-tokens.ts`, `src/lib/chartes.ts` : or #B98B47, carte
+  #faf9f5, encre #1c1c1a, gris #8a8578, vert pin #2f3b2f. Nuit : fond
+  #101210, plage #1a1d19, encre #e9e8de, gris #84887b. Cinq tailles de
+  texte, pas huit : 11 (capitales), 13 (gris), 14.5 (le texte), 20 et 22
+  (les noms). Toutes les cibles font 44 px de haut.
+
+  RIEN N'EST CODÉ.
+  ════════════════════════════════════════════════════════════════════════════
+-->
+<style>
+  :root{
+    --scene:#e6e3dc; --fond:#f5f3ee; --carte:#faf9f5; --encre:#1c1c1a;
+    --encre-douce:#4a4a44; --gris:#8a8578; --or:#B98B47; --pin:#2f3b2f; --pale:#b9c6b4;
+    --trait:rgba(28,28,26,.12); --trait-doux:rgba(28,28,26,.07);
+    --ombre:rgba(28,28,26,.07); --ombre-forte:rgba(20,18,14,.18); --or-voile:rgba(185,139,71,.10);
+    --sur-pin:#faf9f5;
+  }
+  body.nuit{
+    --scene:#070908; --fond:#101210; --carte:#1a1d19; --encre:#e9e8de;
+    --encre-douce:#c1c2b6; --gris:#84887b; --or:#C9A05E; --pin:#b9c6b4; --pale:#4f5f4c;
+    --trait:rgba(233,232,222,.14); --trait-doux:rgba(233,232,222,.08);
+    --ombre:rgba(0,0,0,.35); --ombre-forte:rgba(0,0,0,.6); --or-voile:rgba(201,160,94,.14);
+    --sur-pin:#101210;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;background:var(--scene)}
+  body{font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--encre);
+       -webkit-text-size-adjust:100%;padding:0 0 48px;font-variant-numeric:tabular-nums}
+  ::selection{background:var(--or-voile);color:var(--encre)}
+  button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;text-align:left}
+  button:focus-visible,textarea:focus-visible{outline:2px solid var(--or);outline-offset:3px;border-radius:4px}
+
+  .commandes{display:flex;justify-content:center;gap:22px;padding:16px 16px 0;font-size:13px;flex-wrap:wrap}
+  .commandes button{min-height:40px;color:var(--gris)}
+  .commandes button[aria-pressed="true"]{color:var(--encre);text-decoration:underline;
+                                        text-decoration-color:var(--or);text-underline-offset:6px}
+  .commandes .sep{width:1px;height:18px;background:var(--trait);align-self:center}
+
+  /* ─── deux téléphones : le sien de ce soir, et la proposition ─── */
+  .deux{display:flex;justify-content:center;gap:28px;align-items:flex-start;padding:0 12px}
+  .cote{flex:none;max-width:100%}
+  .cote .quel{margin:0 0 8px;text-align:center;font:600 11px/1 inherit;letter-spacing:.14em;
+              text-transform:uppercase;color:var(--gris)}
+  .cote.ojd .tel{display:block;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--trait) transparent}
+  .cote.ojd img{display:block;width:100%;height:auto}
+  @media (max-width:839px){
+    .deux{display:block;padding:0}
+    .cote{margin:0 auto}
+    body[data-vue="ojd"] .cote.prop{display:none}
+    body[data-vue="prop"] .cote.ojd{display:none}
+  }
+  @media (min-width:840px){.commandes .vue,.commandes .sep{display:none}}
+
+  .tel{width:390px;height:760px;max-width:100%;margin:14px auto 0;background:var(--fond);
+       border-radius:30px;overflow:hidden;box-shadow:0 18px 46px var(--ombre-forte);
+       display:flex;flex-direction:column}
+  .ecran{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;padding:20px 18px 24px;
+         scrollbar-width:thin;scrollbar-color:var(--trait) transparent}
+
+  /* ─── la carte du jour — celle de la planche du planning, telle quelle ─── */
+  .fiche{background:var(--carte);border-radius:14px;border:1px solid var(--trait-doux);
+         box-shadow:0 6px 20px var(--ombre);padding:16px 18px 6px}
+  .titre{margin:0;text-align:center;font:600 11px/1 inherit;letter-spacing:.14em;text-transform:uppercase}
+  .filet{margin:14px 0 2px;border:0;border-top:1px solid var(--trait)}
+
+  /* LA RÈGLE : noir un fait, or un geste, gris le reste. */
+  .geste{color:var(--or)}
+  .geste:active{color:var(--encre)}
+  .doux{color:var(--gris)}
+
+  .centre{display:flex;width:100%;min-height:44px;align-items:center;justify-content:center;gap:9px;
+          font-size:14.5px;color:var(--or)}
+  .centre svg{flex:none}
+  .centre.petit{font-size:13px;min-height:40px}
+  .centre.doux{color:var(--gris)}
+  .actions{display:flex;justify-content:flex-end;gap:14px;min-height:44px;align-items:center;
+           font:700 14.5px/1 inherit}
+  .actions button{min-height:44px;color:var(--encre)}
+
+  .chantier{padding:8px 0 6px}
+  .chantier .nom{margin:0;font:400 20px/1.2 ui-serif,Georgia,serif}
+  .chantier .ou{margin:1px 0 0;font-size:13px;color:var(--gris)}
+  .chantier .duree{margin:1px 0 4px;font-size:13px;color:var(--or)}
+  .demi{display:flex;min-height:44px;align-items:center;gap:18px;
+        font:600 11px/1 inherit;letter-spacing:.16em;text-transform:uppercase}
+  .demi .a{display:flex;align-items:center;gap:12px;min-width:112px}
+  .demi .b{font:400 14.5px/1.4 inherit;letter-spacing:0;text-transform:none}
+  .demi .b .plus{color:var(--or);margin-left:6px}
+  .pastille{width:16px;height:16px;border-radius:4px;flex:none}
+  .pastille.plein{background:var(--pin)}
+
+  /* ─── LA FICHE D'INTERVENTION — une section du jour, pas une carte ─── */
+  .feuille .sur{margin:12px 0 0;text-align:center;font:600 11px/1 inherit;letter-spacing:.16em;
+                text-transform:uppercase;color:var(--gris)}
+  .feuille .qui{margin:8px 0 6px;text-align:center;font:400 22px/1.15 ui-serif,Georgia,serif}
+
+  /* « Adresse  Maps  Waze  Copier » : la ligne « Absent  Julien  journée » */
+  .ligne{display:flex;min-height:44px;align-items:center;gap:14px;font-size:14.5px}
+  .ligne .a{flex:none;width:72px;color:var(--gris);font-size:13px}
+  .ligne .b{flex:1;min-width:0;display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+  .ligne .b button{min-height:44px;font-size:14.5px;color:var(--or)}
+  .ligne .b .fait{color:var(--encre)}
+
+  /* la note s'écrit à même la fiche : pas de cadre, une ligne fine dessous */
+  .etiquette{margin:12px 0 0;font:600 11px/1 inherit;letter-spacing:.16em;text-transform:uppercase;color:var(--gris)}
+  .ecrit{display:block;width:100%;margin:6px 0 0;padding:6px 0 8px;border:0;border-bottom:1px solid var(--trait);
+         border-radius:0;background:transparent;color:var(--encre);resize:none;overflow:hidden;
+         font-family:inherit;font-size:16px;line-height:1.45;caret-color:var(--or);transition:border-color .18s}
+  .ecrit::placeholder{color:var(--gris);opacity:1}
+  .ecrit:focus{outline:0;border-bottom-color:var(--or)}
+  .etat{margin:4px 0 0;min-height:17px;font-size:13px;color:var(--or)}
+
+  /* les lignes du devis : la puce or, ou le rond à cocher quand la fin s'ouvre */
+  .taches{margin:8px 0 2px;padding:0;list-style:none}
+  .taches li{position:relative;margin:0;padding:0 0 9px 14px;font-size:14.5px;line-height:1.45}
+  .taches li::before{content:"";position:absolute;left:0;top:8px;width:5px;height:5px;border-radius:50%;background:var(--or)}
+  .cases{margin:2px 0 2px}
+  .case{display:flex;width:100%;align-items:flex-start;gap:12px;min-height:44px;padding:7px 0;font-size:14.5px;line-height:1.45}
+  .case .rond{flex:none;width:24px;height:24px;border-radius:50%;box-shadow:inset 0 0 0 1.5px var(--trait);
+              display:grid;place-items:center;color:transparent;margin-top:-1px;
+              transition:background .18s,box-shadow .18s}
+  .case[aria-pressed="true"] .rond{background:var(--pin);box-shadow:none;color:var(--sur-pin)}
+  .case[aria-pressed="true"] .quoi{color:var(--gris)}
+  .case .quoi{flex:1;min-width:0}
+
+  .photos{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .photos .vignette{width:46px;height:46px;border-radius:9px;background:var(--pale);flex:none;
+                    box-shadow:inset 0 0 0 1px var(--trait)}
+  .manque{margin:-4px 0 4px;text-align:center;font-size:13px;color:var(--gris)}
+
+  /* le retour posé : un fait, en noir, à la place du geste */
+  .parti{display:flex;align-items:center;justify-content:center;gap:12px;min-height:52px;margin-top:6px}
+  .parti .rond{width:19px;height:19px;border-radius:50%;background:var(--pin);color:var(--sur-pin);
+               display:grid;place-items:center;flex:none}
+  .parti .mot{font:400 16px/1.15 ui-serif,Georgia,serif}
+  .parti .ou{margin:1px 0 0;font-size:13px;color:var(--gris)}
+
+  .barre{flex:none;display:grid;grid-template-columns:repeat(5,1fr);height:64px;
+         background:var(--carte);border-top:1px solid var(--trait);padding-bottom:6px}
+  .barre span{display:flex;align-items:end;justify-content:center;padding-bottom:12px;
+              font-size:11px;color:var(--gris)}
+  .barre span.actif{color:var(--encre);font-weight:600}
+
+  .note{max-width:430px;margin:26px auto 0;padding:0 22px;font-size:13px;line-height:1.6;
+        color:var(--encre-douce)}
+  .note h2{font:400 20px/1.2 ui-serif,Georgia,serif;color:var(--encre);margin:20px 0 8px}
+  .note p{margin:0 0 10px}
+  .note b{color:var(--encre)}
+  .note a{color:var(--or)}
+  .note .regle{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;margin:0 0 12px}
+  .note .regle b{font-weight:600}
+
+  @media (max-width:420px){.tel{border-radius:0;margin-top:10px}}
+</style>
+</head>
+<body>
+
+<div class="commandes">
+  <button type="button" class="vue" data-vue="ojd" aria-pressed="false">Aujourd’hui</button>
+  <button type="button" class="vue" data-vue="prop" aria-pressed="true">La proposition</button>
+  <span class="sep" aria-hidden="true"></span>
+  <button type="button" id="nuit" aria-pressed="false">Voir sur Nuit</button>
+  <button type="button" id="rejouer">Recommencer</button>
+</div>
+
+<div class="deux">
+<div class="cote ojd">
+  <p class="quel">Aujourd’hui — votre application</p>
+  <div class="tel">
+    <img src="images/fiche-intervention-aujourdhui.png" width="390" height="845"
+         alt="La fiche d'intervention telle qu'elle est aujourd'hui dans l'application">
+  </div>
+</div>
+<div class="cote prop">
+<p class="quel">La proposition</p>
+<div class="tel">
+  <div class="ecran" id="ecran">
+    <div class="fiche">
+      <p class="titre">Vendredi 18 septembre</p>
+      <hr class="filet">
+
+      <div class="chantier">
+        <p class="nom">Pagnol</p>
+        <p class="ou">Mantes-la-Jolie</p>
+        <p class="duree">une journée</p>
+        <div class="demi"><span class="a"><span class="pastille plein"></span>Matin</span>
+          <span class="b">Antoine / Julien<span class="plus" aria-hidden="true">+</span></span></div>
+        <div class="demi"><span class="a"><span class="pastille plein"></span>Après-midi</span>
+          <span class="b">Antoine / Julien<span class="plus" aria-hidden="true">+</span></span></div>
+        <div class="actions"><button type="button">Déplacer</button><button type="button">Retirer</button></div>
+      </div>
+
+      <hr class="filet">
+      <section class="feuille" id="feuille" aria-label="Fiche d’intervention"></section>
+      <hr class="filet">
+
+      <div class="chantier">
+        <p class="nom">Mr. Julien</p>
+        <p class="ou">Vernouillet</p>
+        <p class="duree">8 jours</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="barre" aria-hidden="true">
+    <span>Chantiers</span><span class="actif">Planning</span><span>Terminés</span>
+    <span>Paysage</span><span>Réglages</span>
+  </div>
+</div>
+</div>
+</div>
+
+<div class="note">
+  <h2>La même règle que le planning</h2>
+  <div class="regle">
+    <b>Noir</b><span>un fait — le nom, une ligne du devis, « C’est parti »</span>
+    <b style="color:#B98B47">Or</b><span>un geste — un mot qu’on touche</span>
+    <b style="color:#8a8578">Gris</b><span>le reste — « Adresse », « Ma note », ce qui manque</span>
+  </div>
+  <p><b>Tous les mots sont les vôtres, à leur place.</b> Ce qui part : le cadre beige, les quatre cases blanches, le cadre de la note, les deux boutons verts.</p>
+  <p><b>Maps, Waze, Copier, Appeler</b> : quatre mots en or, avec ce qu’ils touchent en gris devant.</p>
+  <p><b>Ma note</b> s’écrit à même la fiche ; la ligne fine dessous devient or quand vous écrivez, et « Enregistré. » se dit en sortant.</p>
+  <p><b>Fin de chantier</b> : touchez le mot. Les lignes deviennent les cases, comme aujourd’hui ; ce qui manque se dit en gris avant « C’est fini ». Touchez « C’est fini » : « C’est parti » prend la place, en noir.</p>
+  <p><b>Une chose change par rapport au 15 :</b> « Ouvrir le PDF sans les prix » n’est plus en gras — en or, plus petit, sous « Fin de chantier ». Il n’a plus de bouton vert à qui disputer la place.</p>
+  <p><b>« Aujourd’hui »</b>, en haut, est votre capture de ce soir, pour comparer.</p>
+  <p><b>La planche du planning</b> : <a href="planning-tout-ensemble-en-mieux.html">planning-tout-ensemble-en-mieux.html</a>. <b>Rien n’est codé.</b></p>
+</div>
+
+<script>
+/* La planche ne calcule aucune règle : ce qui manque avant « C'est fini » est
+   celui de `retour-intervention.ts` — cocher au moins une ligne, et une photo
+   quand l'entreprise l'exige (ici, elle l'exige). */
+const TACHES = ["Taille de haie de thuya", "Tonte de pelouse — 500", "Forfait désherbage", "Erigeron — 10"];
+const COCHE = `<svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.4 6.3 11.7 13 5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+const COCHE_MOT = `<svg width="15" height="15" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4 10.4 8.2 14.6 16 5.8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+
+let note, copie, finOuverte, faites, photos, aSignaler, rendu, noteEtat;
+function depart() {
+  note = ""; copie = "non"; finOuverte = false; faites = TACHES.map(() => false);
+  photos = 0; aSignaler = ""; rendu = false; noteEtat = "";
+}
+
+const $ = (id) => document.getElementById(id);
+const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
+const geste = (html, onClick, cls = "geste") => { const b = el("button", cls, html); b.type = "button"; b.onclick = onClick; return b; };
+function ligne(quoi, ...gestes) {
+  const l = el("div", "ligne", `<span class="a">${quoi}</span><span class="b"></span>`);
+  for (const g of gestes) l.querySelector(".b").appendChild(g);
+  return l;
+}
+function ecrit(valeur, placeholder, onInput, onBlur) {
+  const t = el("textarea", "ecrit"); t.rows = 1; t.placeholder = placeholder; t.value = valeur;
+  const hauteur = () => { t.style.height = "auto"; t.style.height = t.scrollHeight + "px"; };
+  t.oninput = () => { onInput(t.value); hauteur(); };
+  t.onblur = () => onBlur && onBlur(t.value);
+  requestAnimationFrame(hauteur);
+  return t;
+}
+function ceQuiManque() {
+  const m = [];
+  if (faites.every((f) => !f)) m.push("cochez ce que vous avez fait");
+  if (photos === 0) m.push("ajoutez une photo");
+  return m;
+}
+
+function dessiner() {
+  const f = $("feuille"); f.innerHTML = "";
+  f.appendChild(el("p", "sur", "Fiche d’intervention"));
+  f.appendChild(el("p", "qui", "Pagnol"));
+
+  // « Adresse  Maps  Waze  Copier » — « Copiée » en noir le temps de le lire : un fait
+  const copier = geste(copie === "faite" ? "Copiée" : "Copier", () => {
+    copie = "faite"; dessiner(); setTimeout(() => { copie = "non"; dessiner(); }, 1800);
+  }, copie === "faite" ? "fait" : "geste");
+  f.appendChild(ligne("Adresse", geste("Maps", () => {}), geste("Waze", () => {}), copier));
+  f.appendChild(ligne("Client", geste("Appeler", () => {})));
+
+  f.appendChild(el("hr", "filet"));
+  f.appendChild(el("p", "etiquette", "Ma note"));
+  f.appendChild(ecrit(note, "Penser à prendre le broyeur. Client dispo à partir de 9 h.",
+    (v) => { note = v; noteEtat = ""; },
+    (v) => { if (v.trim() !== "") { noteEtat = "Enregistré."; $("note-etat").textContent = noteEtat; } }));
+  const e = el("p", "etat", noteEtat); e.id = "note-etat"; f.appendChild(e);
+
+  if (rendu) {
+    // le retour est posé : un fait, en noir, à la place du geste
+    f.appendChild(el("ul", "taches", TACHES.map((t) => `<li>${t}</li>`).join("")));
+    f.appendChild(el("div", "parti",
+      `<span class="rond" aria-hidden="true">${COCHE}</span><span><span class="mot">C’est parti</span><p class="ou">Terminés · Retour d’intervention</p></span>`));
+  } else if (!finOuverte) {
+    f.appendChild(el("ul", "taches", TACHES.map((t) => `<li>${t}</li>`).join("")));
+    f.appendChild(geste(`${COCHE_MOT}<span>Fin de chantier</span>`, () => { finOuverte = true; dessiner(); }, "centre"));
+  } else {
+    // le même mot, à la même place : « Fin de chantier » devient « Replier »
+    f.appendChild(geste(`${COCHE_MOT}<span>Replier</span>`, () => { finOuverte = false; dessiner(); }, "centre"));
+    // les lignes DEVIENNENT les cases — sa proposition A du 9 septembre
+    const c = el("div", "cases");
+    TACHES.forEach((t, i) => {
+      const b = geste(`<span class="rond" aria-hidden="true">${COCHE}</span><span class="quoi">${t}</span>`,
+        () => { faites[i] = !faites[i]; dessiner(); }, "case");
+      b.setAttribute("aria-pressed", String(faites[i])); c.appendChild(b);
+    });
+    f.appendChild(c);
+
+    const p = el("div", "photos");
+    for (let i = 0; i < photos; i++) p.appendChild(el("span", "vignette"));
+    p.appendChild(geste(`<span style="font-size:19px;line-height:1;margin-top:-2px" aria-hidden="true">+</span> Photo`,
+      () => { photos++; dessiner(); }));
+    const lp = el("div", "ligne", `<span class="a">Photos</span>`); lp.appendChild(p); f.appendChild(lp);
+
+    f.appendChild(ecrit(aSignaler, "À signaler", (v) => { aSignaler = v; }));
+
+    const manque = ceQuiManque();
+    f.appendChild(geste("C’est fini", () => { if (manque.length === 0) { rendu = true; finOuverte = false; dessiner(); } },
+      "centre" + (manque.length ? " doux" : "")));
+    if (manque.length) f.appendChild(el("p", "manque", manque.join(" et ")));
+  }
+
+  f.appendChild(geste("Ouvrir le PDF sans les prix", () => {}, "centre petit"));
+}
+
+$("rejouer").onclick = () => { depart(); dessiner(); $("ecran").scrollTo({ top: 0 }); };
+for (const b of document.querySelectorAll(".commandes .vue")) b.onclick = () => {
+  document.body.dataset.vue = b.dataset.vue;
+  for (const x of document.querySelectorAll(".commandes .vue")) x.setAttribute("aria-pressed", String(x === b));
+};
+document.body.dataset.vue = "prop";
+$("nuit").onclick = () => { const on = document.body.classList.toggle("nuit"); $("nuit").setAttribute("aria-pressed", String(on)); };
+depart(); dessiner();
+</script>
+</body>
+</html>

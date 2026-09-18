@@ -49,6 +49,11 @@
 
   <p class="famille">Tout d’un coup</p>
 
+  <a class="item" href="../../appli/fiche-intervention-en-mieux.html">
+    <span class="no">121</span><span class="titre">La fiche d’intervention, en mieux — ESSAYABLE</span>
+    <span class="quoi">Sa demande du 18 septembre 2026, capture à l’appui : <b>« embellir cette page comme on l’a fait pour la partie juste au-dessus — joli, facilement compréhensible, minimaliste, sans gros bouton tout moche »</b>. La règle de la planche du planning appliquée à la fiche : <b>noir un fait, or un geste, gris le reste</b>. Ce qui part : le cadre beige (une carte dans la carte du jour), les quatre cases blanches, le cadre de la note, les deux boutons verts, le gras du PDF. <b>Ce qui reste : tous ses mots, à leur place</b>, les puces or, les lignes qui deviennent les cases, le rond vert coché, la note enregistrée en sortant. <b>Rien n’est codé.</b></span>
+  </a>
+
   <a class="item" href="../../appli/deplacer-la-consigne.html">
     <span class="no">120</span><span class="titre">Déplacer — le mois entier au-dessus — ESSAYABLE</span>
     <span class="quoi">Sa capture du 17 septembre 2026 : <b>« il dit toucher le jour au-dessus mais le planning apparaît en-dessous »</b>. Mesuré : dix jours du mois étaient sous la consigne, dont le 24. <b>La première version de cette planche posait la MAUVAISE question</b> — elle lui proposait trois formulations ; il les a toutes refusées : <b>« ce que je voulais c’était pas changer la phrase mais faire en sorte que le planning apparaisse entier au-dessus de Mr Linotte »</b>. <b>Sa solution est meilleure, et pour une raison qui n’avait pas été vue</b> : la fiche s’insère dans la grille sous la semaine du jour ouvert (<code>src/components/atlas/MoisCharge.tsx</code>, prop <code>volet</code>), donc elle disparaît au premier mois tourné — d’où un SECOND montage de <code>BandeauDeplacement</code> en repli sous le calendrier. Descendue sous le mois entier, la fiche survit au changement de mois : <b>le second montage devient du code mort</b>, et la consigne n’a plus besoin de redire le nom. <b>Une seule question</b> : la fiche descend entière (A) ou réduite au nom, au lieu et à la question (B). <b>Rien n’est codé pour la place ; sa réponse « 1 sans le nom » l’est, et attend avec.</b></span>
