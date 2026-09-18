@@ -86,9 +86,26 @@
   button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;text-align:left}
   button:focus-visible{outline:2px solid var(--or);outline-offset:3px;border-radius:4px}
 
-  .commandes{display:flex;justify-content:center;gap:22px;padding:16px 16px 0;font-size:13px}
+  .commandes{display:flex;justify-content:center;gap:22px;padding:16px 16px 0;font-size:13px;flex-wrap:wrap}
   .commandes button{min-height:40px;color:var(--gris)}
-  .commandes button[aria-pressed="true"]{color:var(--encre)}
+  .commandes button[aria-pressed="true"]{color:var(--encre);text-decoration:underline;
+                                        text-decoration-color:var(--or);text-underline-offset:6px}
+  .commandes .sep{width:1px;height:18px;background:var(--trait);align-self:center}
+
+  /* ─── deux téléphones : le sien d'aujourd'hui, et la proposition ─── */
+  .deux{display:flex;justify-content:center;gap:28px;align-items:flex-start;padding:0 12px}
+  .cote{flex:none;max-width:100%}
+  .cote .quel{margin:0 0 8px;text-align:center;font:600 11px/1 inherit;letter-spacing:.14em;
+              text-transform:uppercase;color:var(--gris)}
+  .cote.ojd .tel{display:block;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--trait) transparent}
+  .cote.ojd img{display:block;width:100%;height:auto}
+  @media (max-width:839px){
+    .deux{display:block;padding:0}
+    .cote{margin:0 auto}
+    body[data-vue="ojd"] .cote.prop{display:none}
+    body[data-vue="prop"] .cote.ojd{display:none}
+  }
+  @media (min-width:840px){.commandes .vue,.commandes .sep{display:none}}
 
   /* ─── le téléphone : l'écran défile, le tiroir et la barre tiennent le bas ─── */
   .tel{width:390px;height:760px;max-width:100%;margin:14px auto 0;background:var(--fond);
@@ -152,10 +169,20 @@
   .chantier.vide{padding-top:0;padding-bottom:0}
   .chantier .nom{margin:0;font:400 20px/1.2 ui-serif,Georgia,serif}
   .chantier .ou{margin:1px 0 4px;font-size:13px;color:var(--gris)}
-  .demi{display:flex;min-height:40px;align-items:center;gap:14px;font-size:14.5px}
-  .demi .a{flex:none;width:86px;color:var(--gris);font-size:13px}
-  .demi .b{flex:1;min-width:0}
-  .demi .libre{color:var(--encre)}
+  /* SA DEMANDE DU 18 AU SOIR — « garder le matin / après-midi comme c'est
+     aujourd'hui » : la pastille carrée et le mot en capitales, tels que
+     l'application les peint (`data-atlas="demi"`, PlanningClient.tsx). */
+  .demi{display:flex;min-height:44px;align-items:center;gap:18px;
+        font:600 11px/1 inherit;letter-spacing:.16em;text-transform:uppercase}
+  .demi .a{display:flex;align-items:center;gap:12px;min-width:112px}
+  .demi .b{font:400 14.5px/1.4 inherit;letter-spacing:0;text-transform:none}
+  .demi .libre{color:var(--gris);font-size:13px}
+  /* la pastille porte l'état de la demi-journée, comme dans le mois : pâle
+     quand il reste de la place, pin quand c'est complet, vide quand rien */
+  .pastille{width:16px;height:16px;border-radius:4px;flex:none}
+  .pastille.dispo{background:var(--pale)}
+  .pastille.plein{background:var(--pin)}
+  .pastille.libre{box-shadow:inset 0 0 0 1px var(--trait)}
 
   .absent{margin:2px 0 0}
 
@@ -207,10 +234,23 @@
 <body>
 
 <div class="commandes">
+  <button type="button" class="vue" data-vue="ojd" aria-pressed="false">Aujourd’hui</button>
+  <button type="button" class="vue" data-vue="prop" aria-pressed="true">La proposition</button>
+  <span class="sep" aria-hidden="true"></span>
   <button type="button" id="nuit" aria-pressed="false">Voir sur Nuit</button>
   <button type="button" id="rejouer">Recommencer</button>
 </div>
 
+<div class="deux">
+<div class="cote ojd">
+  <p class="quel">Aujourd’hui — votre application</p>
+  <div class="tel">
+    <img src="images/planning-aujourdhui.png" width="390" height="760"
+         alt="Le planning tel qu'il est aujourd'hui dans l'application">
+  </div>
+</div>
+<div class="cote prop">
+<p class="quel">La proposition</p>
 <div class="tel">
   <div class="ecran" id="ecran">
     <p class="mois">Septembre</p>
@@ -243,6 +283,8 @@
     <span>Paysage</span><span>Réglages</span>
   </div>
 </div>
+</div>
+</div>
 
 <div class="note">
   <h2>Une seule règle</h2>
@@ -253,6 +295,8 @@
   </div>
   <p>Aucun bouton, aucun cadre, aucun aplat. Vos trois réponses du 17 sont là : les trois voies gardent leurs mots et « Ajouter » devient « Fermer » ; « Annuler » à droite de Matin · Après-midi · Journée ; le nom seul pose le client, la date en or au-dessus.</p>
   <p><b>Une chose change par rapport au 17 :</b> « Salarié absent ? » n’est plus en gras, il est en or — comme tout ce qui s’appuie. Le gras et l’or ensemble crieraient.</p>
+  <p><b>Matin et après-midi restent comme aujourd’hui</b> — la pastille et le mot en capitales —, c’est votre demande du 18.</p>
+  <p><b>« Aujourd’hui »</b>, en haut, est une photo de votre application, prise ce soir sur le 18 septembre, pour comparer.</p>
   <p><b>Touchez</b> un nom dans le tiroir, « Ajouter », « Salarié absent ? », un jour.</p>
   <p><b>L’autre planche</b> : <a href="planning-tout-ensemble.html">planning-tout-ensemble.html</a>. <b>Rien n’est codé.</b></p>
 </div>
@@ -370,7 +414,8 @@ function dessinerFiche() {
 
   // ce que le jour porte : chaque chantier, puis SES demi-journées ; une moitié vide garde sa ligne
   const liste = jours[jourTouche];
-  const demi = (cle, droite) => el("div", "demi", `<span class="a">${motDe(cle)}</span><span class="b">${droite}</span>`);
+  const demi = (cle, droite) => el("div", "demi",
+    `<span class="a"><span class="pastille ${etat(occupation(jourTouche, cle))}"></span>${motDe(cle)}</span><span class="b">${droite}</span>`);
   for (const c of liste) {
     const neuf = derniere && derniere.client === c.id && derniere.neuf;
     if (neuf) derniere.neuf = false;
@@ -454,6 +499,11 @@ function dessinerTiroir() {
 function tout() { dessinerSemaine(); dessinerFiche(); dessinerTiroir(); poserLaPointe(); }
 $("poignee").onclick = () => { ouvert = !ouvert; tout(); };
 $("rejouer").onclick = () => { depart(); tout(); $("ecran").scrollTo({ top: 0 }); };
+for (const b of document.querySelectorAll(".commandes .vue")) b.onclick = () => {
+  document.body.dataset.vue = b.dataset.vue;
+  for (const x of document.querySelectorAll(".commandes .vue")) x.setAttribute("aria-pressed", String(x === b));
+};
+document.body.dataset.vue = "prop";
 $("nuit").onclick = () => { const on = document.body.classList.toggle("nuit"); $("nuit").setAttribute("aria-pressed", String(on)); };
 window.addEventListener("resize", poserLaPointe);
 depart(); tout();

@@ -38,6 +38,14 @@ reste**, sans un cadre ni un aplat — la forme de `MotDuGeste`, déjà dans
 l'application. Ce qui s'écarte du 17 est dit sur la planche : « Salarié
 absent ? » passe du gras à l'or.
 
+**Puis, sur sa réponse — *« j'aime bien cette planche, mais je veux que dessus
+apparaisse la page d'aujourd'hui qu'on puisse comparer, et garder le matin /
+après-midi comme c'est aujourd'hui »*** : la planche montre désormais, à côté
+de la proposition, une **photo de l'application** (dev server sur un dossier et
+un port à part, base `atlas_test_a1`, le 18 septembre ouvert), et les
+demi-journées reprennent la pastille carrée et le mot en capitales de l'écran
+actuel, la pastille portant l'état de la moitié comme dans le mois.
+
 ---
 ## 2026-09-17
 

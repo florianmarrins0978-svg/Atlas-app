@@ -236,6 +236,10 @@ mélange qu'il nomme.** Ne pas coder avant.
 pastille, plus un cadre — noir un fait, or un geste, gris le reste. Si c'est
 elle qu'il choisit, le lot touche aussi `VoieDAjout`, `BasculeDuMoment`, la
 pastille d'équipe et `GesteAbsence` (gras → or) : niveau à recalculer.
+**Sa réponse du 18 au soir : *« j'aime bien cette planche »*** — avec deux
+demandes, faites : la page d'aujourd'hui à côté (photo), et matin / après-midi
+comme aujourd'hui (pastille + capitales). C'est cette planche-là qui attend son
+oui.
 
 **Sa consigne :** *« toutes les réponses que je vais te donner, tu vas mettre
 les modifs dans une seule planche, comme ça à la fin tu coderas la planche
