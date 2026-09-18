@@ -497,7 +497,8 @@ async function main() {
     const carte = page.locator(`[data-atlas="carte-jour"][data-jour="${JOUR}"]`);
     const pastille = carte.locator('[data-bloc="apres_midi"] [data-atlas="equipe"]');
     assert.equal(await pastille.getAttribute("data-vide"), "1");
-    assert.equal((await pastille.innerText()).trim(), "Qui ?");
+    // « + Salarié » — son choix du 18 septembre 2026 à la place de « Qui ? ».
+    assert.match((await pastille.innerText()).replace(/\s+/g, " ").trim(), /^\+\s*Salarié$/);
   });
 
   // ─── DÉPLACER ───────────────────────────────────────────────────────────
@@ -520,10 +521,15 @@ async function main() {
       const carte = document.querySelector(`[data-atlas="carte-jour"][data-jour="${jour}"]`);
       if (!carte) return null;
       return [...carte.querySelectorAll('[data-atlas="demi"]')].map((d) => {
+        // **Le CENTRE de chaque boîte, pas son bord haut.** Depuis le
+        // 19 septembre 2026, le geste d'équipe est un mot de 44 px de haut à
+        // côté d'une pastille de 11 : alignés sur la même ligne, leurs hauts
+        // diffèrent de 16 px sans qu'aucun repli n'ait eu lieu. Un repli, lui,
+        // décale les centres d'une ligne entière — c'est cela qu'on mesure.
         const hauts = [...d.children]
           .map((e) => e.getBoundingClientRect())
           .filter((b) => b.width > 0 && b.height > 0)
-          .map((b) => Math.round(b.top));
+          .map((b) => Math.round(b.top + b.height / 2));
         const larg = [...d.children]
           .map((e) => e.getBoundingClientRect())
           .filter((b) => b.width > 0)
@@ -900,13 +906,14 @@ async function main() {
       assert.equal(
         await page.locator('[data-atlas="voie-chantier"]').count(),
         0,
-        "« Un chantier en attente » s'offre alors qu'aucun n'attend : un cul-de-sac de plus"
+        "« Client en attente » s'offre alors qu'aucun n'attend : un cul-de-sac de plus"
       );
       assert.ok(
         (await page.locator('[data-atlas="voie-client"]').count()) >= 1,
         "« Un client » manque : le geste ne mène alors nulle part, et devrait disparaître"
       );
-      await page.locator('[data-atlas="annuler-ajout"]').first().click();
+      // On referme par « Ajouter » devenu « Fermer » — sa réponse C du 17 septembre.
+      await page.locator('[data-atlas="ajouter"]').first().click();
       await page.waitForTimeout(300);
 
       // ─── ET LA SECTION ELLE-MÊME S'EFFACE ─────────────────────────────

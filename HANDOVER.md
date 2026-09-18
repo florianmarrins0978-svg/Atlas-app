@@ -4,8 +4,21 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-09-17 · `claude/sessions-batterie-loop-pzcl4q` — le garde-fou de `main` compare des contenus, plus des dates
+**Point de reprise :** 2026-09-19 · la fiche du jour du planning sans un bouton (`docs/lot-planning-tout-ensemble.md`)
 (l'historique fait foi : `git log --oneline -20`)
+
+---
+## LA FICHE DU JOUR DU PLANNING N'A PLUS UN BOUTON — noir un fait, or un geste
+
+Sa planche du 18 septembre 2026, codée le 19 (`appli/planning-tout-ensemble-en-mieux.html`,
+`docs/lot-planning-tout-ensemble.md`). Deux dessins portent tous les gestes de
+la fiche : `MotEnOr` (un mot en or qu'on touche) et `MotAChoisir` (un mot parmi
+d'autres, le retenu en noir souligné d'or) — `PlanningClient.tsx`. **Avant d'y
+poser une capsule, un aplat ou un cadre, relire la planche** : c'est exactement
+ce qu'il a fait retirer (*« j'en ai marre des gros boutons »*). Ce qui garde
+l'ancienne forme, parce que la planche ne le dessinait pas : la liste derrière
+« Client en attente », les formulaires « Un client » / « Autre chose », le
+bandeau de « Déplacer ».
 
 ---
 ## UN SEUIL DE CONNEXION NE COMPTE QUE CE QUI RATE — et il sait rendre

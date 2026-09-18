@@ -6,6 +6,34 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-09-19
+
+### La fiche du jour du planning, sans un bouton — sa planche codée
+
+**Son oui du 19 au matin :** *« enlève le Annuler à côté de Journée, ensuite
+c'est bon tu peux coder »*, sur `appli/planning-tout-ensemble-en-mieux.html`.
+
+Une seule règle sur la fiche du jour, et deux dessins qui la tiennent
+(`MotEnOr`, `MotAChoisir` dans `PlanningClient.tsx`) : **noir un fait, or un
+geste, gris le reste**. La pastille verte d'équipe, le pointillé « Qui ? »,
+l'interrupteur à trois cases, les capsules des voies et le rond cerné d'or
+sont partis. Ce qu'il a tranché est là, à la lettre : « + Salarié absent ? »
+en or avec son « + » ; les prénoms en mots ; « Absent · Julien · journée » avec
+une croix noire qui supprime ; Matin · Après-midi · Journée en mots, sans
+« Annuler » ; « + Salarié » à la place de « Qui ? » ; « Déplacer  Retirer »
+sous l'après-midi, au-dessus d'« Ajouter » ; « Ajouter » qui devient
+« Fermer », « Client en attente » ; et dans le tiroir, le nom seul qui pose, la
+durée en gris, et « … est sur jeudi 17 septembre · Annuler » pour défaire.
+
+**Matin / Après-midi ne bougent pas** — la pastille et le mot en capitales,
+sa demande du 18. Les repères des suites n'ont pas bougé non plus ; trois
+assertions ont été adaptées à ce qu'il a demandé (`docs/lot-planning-tout-ensemble.md`).
+
+**Un rouge du vendredi, corrigé au passage** : `test-poser-une-date-e2e`
+visait un jour d'accueil que le chantier occupait déjà quand le jour de départ
+est un vendredi. Il compte en jours ouvrables.
+
+---
 ## 2026-09-18
 
 ### La sixième fiche d'intervention — la quatrième, corrigée sur trois points

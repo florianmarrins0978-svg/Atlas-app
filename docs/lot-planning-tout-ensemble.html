@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — La fiche du jour, sans un bouton — 19 septembre 2026</title>
+<style>
+  :root{
+    --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
+    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
+    --accent:#2f3b2f; --alert:#b5562a; --line:rgba(28,28,26,0.13);
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#161815; --surface:#1d201c; --raised:#252924;
+      --ink:#eae7df; --ink-soft:#c2bdb1; --muted:#948f83;
+      --accent:#9fbd82; --alert:#e0885a; --line:rgba(234,231,223,0.17);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.65;}
+  main{max-width:44rem;margin:0 auto;padding:2.5rem 1.2rem 5rem;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.2;
+    text-wrap:balance;margin:2rem 0 0.6rem;scroll-margin-top:1rem;}
+  h1{font-size:2rem;margin-top:0;}
+  h2{font-size:1.5rem;padding-top:1.2rem;border-top:1px solid var(--line);}
+  h3{font-size:1.12rem;}
+  h4{font-size:1rem;}
+  p{margin:0 0 0.9rem;}
+  a{color:var(--accent);text-underline-offset:3px;}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px;}
+  ul,ol{margin:0 0 1rem;padding-left:1.3rem;}
+  li{margin-bottom:0.4rem;}
+  li::marker{color:var(--muted);}
+  /* Le sommaire : des cibles larges, confortables au doigt sur téléphone. */
+  ol li a{display:inline-block;padding:0.15rem 0;}
+  blockquote{margin:1rem 0;padding:0.85rem 1.05rem;background:var(--raised);
+    border-left:3px solid var(--accent);border-radius:0 10px 10px 0;color:var(--ink-soft);}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.87em;
+    background:var(--raised);padding:0.1rem 0.35rem;border-radius:5px;}
+  hr{border:0;border-top:1px solid var(--line);margin:2rem 0;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;
+    background:var(--surface);margin:0 0 1.2rem;}
+  table{border-collapse:collapse;width:100%;font-size:0.92rem;min-width:22rem;}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--line);
+    vertical-align:top;}
+  th{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--muted);white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .retour{display:inline-block;font-size:0.76rem;color:var(--muted);
+    text-decoration:none;margin:-0.3rem 0 1rem;}
+  .retour:hover{color:var(--accent);text-decoration:underline;}
+</style>
+</head>
+<body>
+<main>
+<h1 id="la-fiche-du-jour-sans-un-bouton--19-septembre-2026">La fiche du jour, sans un bouton — 19 septembre 2026</h1>
+<p><strong>Ta planche :</strong> <code>appli/planning-tout-ensemble-en-mieux.html</code>, et ton oui du 19 au matin : <em>« enlève le Annuler à côté de Journée, ensuite c'est bon tu peux coder »</em>.</p>
+<p><strong>C'est codé, à la lettre.</strong> Une seule règle sur la fiche du jour : noir un fait, or un geste, gris le reste. Plus une pastille, plus un cadre, plus un aplat.</p>
+<hr>
+<h2 id="point-par-point">Point par point</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Ce que la planche montrait</th>
+<th>Dans l'application</th>
+<th>Où</th>
+</tr></thead><tbody>
+<tr>
+<td>« + Salarié absent ? » en or, au milieu, avec le « + »</td>
+<td>fait</td>
+<td><code>GesteAbsence</code></td>
+</tr>
+<tr>
+<td>les prénoms en or sur une ligne, « · annuler » sur celui qui manque</td>
+<td>fait</td>
+<td><code>PasLaCeJour</code></td>
+</tr>
+<tr>
+<td>« Absent · Julien · journée » et la <strong>croix noire</strong> à droite qui supprime</td>
+<td>fait</td>
+<td><code>PasLaCeJour</code>, repère <code>retirer-absence</code></td>
+</tr>
+<tr>
+<td>Matin · Après-midi · Journée en mots, le retenu souligné d'or, <strong>sans Annuler</strong></td>
+<td>fait</td>
+<td><code>BasculeDuMoment</code></td>
+</tr>
+<tr>
+<td>Matin / Après-midi <strong>comme aujourd'hui</strong> : la pastille et le mot en capitales</td>
+<td>inchangé</td>
+<td>—</td>
+</tr>
+<tr>
+<td>« + Salarié » en or à la place de « Qui ? » ; les prénoms en noir avec un « + » en or</td>
+<td>fait</td>
+<td><code>PastilleEquipe</code></td>
+</tr>
+<tr>
+<td>toucher « + Salarié » : les prénoms en mots, le retenu souligné, « Fermer » à droite</td>
+<td>fait</td>
+<td><code>MotAChoisir</code>, <code>Choisir mots</code></td>
+</tr>
+<tr>
+<td>« Déplacer  Retirer » en bas à droite, <strong>sous l'après-midi, au-dessus d'Ajouter</strong></td>
+<td>fait</td>
+<td><code>CarteDuJour</code>, <code>libresApres</code></td>
+</tr>
+<tr>
+<td>« Ajouter » en or, qui devient « Fermer » ; les trois voies en mots</td>
+<td>fait</td>
+<td><code>GesteAjouter</code>, <code>VoieDAjout</code></td>
+</tr>
+<tr>
+<td>« <strong>Client en attente</strong> » derrière Ajouter</td>
+<td>fait</td>
+<td><code>AjoutAuJour</code></td>
+</tr>
+<tr>
+<td>dans le tiroir, <strong>le nom seul pose</strong> le client, la durée en gris à droite</td>
+<td>fait</td>
+<td><code>TiroirDuBas</code>, <code>data-poser</code> sur le nom</td>
+</tr>
+<tr>
+<td>« Mr. Linotte est sur jeudi 17 septembre · Annuler » après la pose</td>
+<td>fait</td>
+<td><code>TiroirDuBas</code>, repère <code>pose-a-defaire</code></td>
+</tr>
+</tbody></table></div>
+<h2 id="ce-que-le-lot-enlève-et-que-tu-sais">Ce que le lot enlève, et que tu sais</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<ul>
+<li>le bouton « Poser » et le chevron « › » de la liste « Sans date » : le nom pose, et le chantier s'ouvre depuis l'onglet Chantiers (ta réponse du 17) ;</li>
+<li>la pastille « Annuler » sous les trois voies (ta réponse C du 17) ;</li>
+<li>l'« Annuler » à côté de Journée (ta réponse du 19) : la croix suffit.</li>
+</ul>
+<h2 id="ce-qui-na-pas-été-touché-parce-que-la-planche-ne-le-montrait-pas">Ce qui n'a PAS été touché, parce que la planche ne le montrait pas</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<ul>
+<li>la liste des chantiers en attente qui s'ouvre derrière « Client en attente » (des petites capsules, avec « Annuler ») ;</li>
+<li>les deux formulaires « Un client » et « Autre chose » ;</li>
+<li>« Déplacer » : le bandeau « Touchez le jour au-dessus · Annuler », tel que tu l'as réglé le 17.</li>
+</ul>
+<p>Dis-le si tu les veux dans la même grammaire.</p>
+<h2 id="trois-contrôles-ont-été-adaptés-et-pourquoi-ce-nest-pas-de-la-triche">Trois contrôles ont été adaptés, et pourquoi ce n'est pas de la triche</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Suite</th>
+<th>Ce qu'elle réclamait</th>
+<th>Ce qu'elle défend désormais</th>
+</tr></thead><tbody>
+<tr>
+<td><code>test-planning-e2e</code></td>
+<td>le mot « Qui ? »</td>
+<td>« + Salarié » — ton choix du 18</td>
+</tr>
+<tr>
+<td><code>test-planning-e2e</code></td>
+<td>des bords hauts alignés sur la ligne Matin</td>
+<td>des <strong>centres</strong> alignés : un mot de 44 px à côté d'une pastille de 11 n'est pas un repli</td>
+</tr>
+<tr>
+<td><code>test-bloquer-sans-devis-e2e</code>, <code>test-planning-e2e</code></td>
+<td>une pastille « Annuler » sous les voies</td>
+<td>« Ajouter » devenu « Fermer » referme — ta réponse C</td>
+</tr>
+</tbody></table></div>
+<p><strong>Et un rouge qui n'était pas à moi, corrigé quand même :</strong> <code>test-poser-une-date-e2e</code> rougissait <strong>tous les vendredis</strong> — son jour d'accueil tombait sur le lundi que le chantier occupe déjà, et le serveur refusait à raison. Il compte désormais en jours ouvrables.</p>
+<h2 id="les-chiffres">Les chiffres</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><em>(remplis à la fin de la batterie)</em></p>
+<h2 id="ce-qui-reste-ouvert-et-qui-est-à-toi">Ce qui reste ouvert, et qui est à toi</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<ul>
+<li>les trois endroits ci-dessus qui gardent l'ancienne forme ;</li>
+<li>« Un client » et « Autre chose » : la planche ne les a pas dessinés.</li>
+</ul>
+</main>
+</body>
+</html>

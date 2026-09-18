@@ -115,7 +115,10 @@ async function main() {
   const jourB = await jourLibre(jour);
   console.log(`  · second jour : ${jourB}`);
 
-  await cas("« + Ajouter » propose ses voies, et « Annuler » les referme", async () => {
+  // **On referme par où l'on est entré** — sa réponse C du 17 septembre 2026
+  // (*« le C, pas d'Annuler »*) : plus de pastille « Annuler » sous les voies,
+  // c'est « Ajouter » devenu « Fermer », au même endroit, qui referme.
+  await cas("« Ajouter » propose ses voies, et le même mot devenu « Fermer » les referme", async () => {
     const carte = await ouvrirLeJour(jour);
     await carte.locator('[data-atlas="ajouter"]').click();
     await page.waitForTimeout(300);
@@ -123,14 +126,19 @@ async function main() {
       (await carte.locator('[data-atlas="voie-client"]').count()) >= 1,
       "« Un client » manque : la seconde voie n'existe pas"
     );
-    await carte.locator('[data-atlas="annuler-ajout"]').first().click();
+    assert.equal(
+      await carte.locator('[data-atlas="annuler-ajout"]').count(),
+      0,
+      "une pastille « Annuler » traîne sous les voies : il l'a fait retirer le 17 septembre"
+    );
+    await carte.locator('[data-atlas="ajouter"]').first().click();
     await page.waitForTimeout(300);
     assert.equal(
       await carte.locator('[data-atlas="voie-client"]').count(),
       0,
-      "« Annuler » ne referme pas le geste"
+      "« Fermer » ne referme pas le geste"
     );
-    assert.ok((await carte.locator('[data-atlas="ajouter"]').count()) >= 1, "le + n'est pas revenu");
+    assert.ok((await carte.locator('[data-atlas="ajouter"]').count()) >= 1, "« Ajouter » n'est pas revenu");
   });
 
   await cas("« Annuler » RAMÈNE AUX DEUX VOIES depuis le client — sa demande", async () => {
