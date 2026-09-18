@@ -9,6 +9,27 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## ⏳ UNE PLANCHE À REGARDER — LES MOYENS DE PAIEMENT SE CHOISISSENT DU DOIGT (18 septembre 2026)
+
+**Sa demande :** *« au moment de créer son compte on a une case qui demande nos
+moyens de paiement, aujourd'hui il faut écrire ; il faudrait plutôt proposer
+des choix pré-écrits et qu'il ait qu'à cliquer — par défaut virement et chèque,
+virement seul, et virement, chèque, espèces »*.
+
+**RIEN N'EST CODÉ** — la planche `appli/moyens-de-paiement-a-choisir.html`
+attend sa réponse. La seizième question de `src/lib/creation-compte.ts`
+(`id: "moyens"`) reste un champ libre.
+
+**Ce que la planche propose** : trois pastilles à l'allure de la `liste` de la
+TVA, la première déjà entourée (anneau or de 2 px, celui de la civilité), et
+« Créer mon compte » gardé — pas d'avance automatique. Valeurs en base : les
+textes que les factures portent déjà (`virement, chèque` / `virement` /
+`virement, chèque, espèces`).
+
+**Trois questions posées au bas de la planche** : avance automatique ou bouton ;
+« Passer » disparaît ; les mêmes trois choix dans Réglages → Documents →
+Conditions, où la case est encore libre (`ConditionsClient.tsx`).
+
 ## ~~« LA TVA À 10 N'APPARAÎT PAS SUR L'APERÇU PDF »~~ — SANS OBJET (17 septembre 2026)
 
 **Sa remarque :** *« lorsque je rajoute une tva à 10 par exemple sur le devis et

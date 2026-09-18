@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Les moyens de paiement, à choisir du doigt</title>
+<style>
+  /*
+    LES MOYENS DE PAIEMENT SE CHOISISSENT, ILS NE S'ÉCRIVENT PLUS.
+
+    Sa demande du 18 septembre 2026 : « au moment de créer son compte on a une
+    case qui demande nos moyens de paiement ; aujourd'hui il faut écrire, mais
+    je pense qu'il faudrait plutôt proposer des choix pré-écrits et qu'il ait
+    qu'à cliquer — proposer par défaut virement et chèque, virement seul, et
+    virement, chèque, espèces ».
+
+    ─────────────────────────────────────────────────────────────────────────
+    CE QUI EXISTE AUJOURD'HUI, et il faut le dire : la seizième question de
+    `src/lib/creation-compte.ts` (« Les moyens de paiement que vous
+    acceptez ? ») est un champ LIBRE, avec « Virement, chèque… » en exemple.
+    Ce qu'on y tape part tel quel en base (`entreprises.moyens_paiement`) et
+    s'imprime sous les coordonnées bancaires de chaque facture.
+
+    Le même champ libre vit une seconde fois dans Réglages → Documents →
+    Conditions (« Moyens de paiement acceptés »), où le bouton l'allume avec
+    « virement, chèque » d'office.
+
+    ─────────────────────────────────────────────────────────────────────────
+    CE QUE LA PLANCHE PROPOSE : trois grands choix, à l'allure de la question
+    de la TVA (`liste`), et le premier DÉJÀ ENTOURÉ — « Virement et chèque ».
+    Il n'a rien à taper : il regarde, et il appuie sur « Créer mon compte ».
+    S'il encaisse autrement, il touche un autre choix.
+
+    Ce qui s'écrit en base est le texte en minuscules que les factures portent
+    déjà : « virement, chèque » / « virement » / « virement, chèque, espèces ».
+
+    ─────────────────────────────────────────────────────────────────────────
+    CE QUI N'EST PAS TRANCHÉ ICI, et qui lui revient — trois questions au bas
+    de la planche.
+
+    AUCUNE COULEUR INVENTÉE. L'écran sombre recopie la charte « Nuit », comme
+    `la-porte-en-plein-air.html` dont cet écran est tiré.
+    AUCUNE PHRASE PRÉ-ÉCRITE dans un champ : ici ce sont des CHOIX fermés,
+    pas des suggestions de texte.
+  */
+  :root{
+    --fond:#f5f3ee; --plage:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
+    --gris:#8a8578; --pin:#2f3b2f; --papier:#ece9e1; --or:#B98B47;
+    --n-fond:#101210; --n-plage:#1a1d19; --n-encre:#e9e8de; --n-gris:#84887b;
+    --n-ligne:rgba(233,232,222,.12); --n-or:#B98B47;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;background:#e6e3dc}
+  body{font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--encre);
+       -webkit-text-size-adjust:100%;padding:0 0 56px}
+  ::selection{background:rgba(185,139,71,.28)}
+
+  .bandeau{background:#1c1c1a;color:#f5f3ee;padding:16px 20px;font-size:14px;line-height:1.55}
+  .bandeau b{color:#fff}
+
+  .bloc{max-width:430px;margin:26px auto 0;padding:0 20px}
+  .bloc h2{margin:0 0 6px;font:400 22px/1.15 ui-serif,Georgia,serif}
+  .bloc p{margin:0 0 10px;font-size:14.5px;line-height:1.55;color:var(--encre-douce)}
+  .bloc p b{color:var(--encre)}
+
+  .deux{display:flex;flex-wrap:wrap;justify-content:center;gap:22px 34px;padding:0 16px}
+  .colonne{width:318px}
+  .colonne .etiquette{margin:0 0 -4px;text-align:center;font:500 14px/1.3 ui-sans-serif,sans-serif;
+                      color:var(--encre-douce)}
+
+  /* ── Le téléphone ────────────────────────────────────────────────────── */
+  .tel{width:318px;margin:14px auto 0;border-radius:42px;padding:10px;
+       background:#0e0e0d;box-shadow:0 18px 44px rgba(20,18,14,.30)}
+  .ecran{border-radius:33px;overflow:hidden;position:relative;height:604px;
+         display:flex;flex-direction:column}
+  .ecran[hidden]{display:none}
+  .heure{padding:14px 6px 0;font:600 13px/1 -apple-system,ui-sans-serif,sans-serif;opacity:.85;
+         flex-shrink:0}
+
+  /* ── L'écran : la charte « Nuit », recopiée ───────────────────────────── */
+  .nuit{background:radial-gradient(120% 62% at 8% 4%, #3d3523 0%, var(--n-plage) 40%, var(--n-fond) 78%);
+        background:radial-gradient(120% 62% at 8% 4%, color-mix(in srgb, var(--n-or) 22%, var(--n-plage)) 0%, var(--n-plage) 40%, var(--n-fond) 78%);
+        color:var(--n-encre);padding:0 22px 20px}
+  .retour{align-self:flex-start;display:flex;align-items:center;gap:6px;margin-top:10px;
+          border:0;background:transparent;color:var(--n-gris);cursor:pointer;
+          font:400 14px/1 ui-sans-serif,sans-serif;padding:8px 10px 8px 0;flex-shrink:0}
+  .chapitre{margin-top:8px;display:flex;align-items:baseline;justify-content:space-between;
+            font-size:12.5px;color:var(--n-gris);flex-shrink:0}
+  .chapitre b{color:var(--n-encre);font-weight:500}
+  .jauge{display:flex;gap:5px;margin-top:10px;flex-shrink:0}
+  .jauge span{flex:1;height:3px;border-radius:999px;background:var(--n-ligne);overflow:hidden}
+  .jauge span::after{content:"";display:block;height:100%;border-radius:999px;background:var(--n-or);
+                     width:var(--w,0)}
+
+  .milieu{flex:1;display:flex;flex-direction:column;justify-content:center;padding:24px 0}
+  .titre{margin:0 0 16px;font:400 30px/1.1 ui-serif,Georgia,serif;letter-spacing:-.01em}
+
+  .champ{width:100%;border:0;border-radius:999px;padding:15px 20px;
+         font:400 16px/1.2 ui-sans-serif,-apple-system,sans-serif;
+         background:var(--n-plage);color:var(--n-encre);box-shadow:inset 0 0 0 1px var(--n-ligne)}
+  .champ::placeholder{color:var(--n-gris)}
+  .champ:focus{outline:none;box-shadow:inset 0 0 0 1.4px #c6a15b}
+
+  .choix{display:flex;flex-direction:column;gap:10px}
+  .choix button{display:flex;align-items:center;gap:10px;width:100%;border:0;text-align:left;
+                border-radius:999px;padding:15px 26px;cursor:pointer;
+                background:var(--n-plage);color:var(--n-encre);
+                box-shadow:inset 0 0 0 1px var(--n-ligne);
+                transition:box-shadow .16s cubic-bezier(.2,.8,.2,1)}
+  .choix button:active{transform:scale(.985)}
+  .choix button[aria-pressed="true"]{box-shadow:inset 0 0 0 2px var(--n-or)}
+  .choix button:focus-visible{outline:2px solid var(--n-or);outline-offset:2px}
+  .choix .mot{flex:1;font-size:16px;line-height:1.25}
+
+  .refus{margin:12px 0 0;min-height:19px;font-size:13px;line-height:19px}
+
+  .bas{flex-shrink:0}
+  .principal{width:100%;border:0;border-radius:999px;padding:16px;
+             font:400 17px/1 ui-serif,Georgia,serif;cursor:pointer;
+             background:var(--n-encre);color:var(--n-fond)}
+  .principal:active{transform:scale(.985)}
+  .passer{width:100%;border:0;background:transparent;padding:13px 0 4px;color:var(--n-gris);
+          font:400 14.5px/1 ui-sans-serif,sans-serif;cursor:pointer}
+
+  .fini h3{margin:0 0 12px;font:400 30px/1.1 ui-serif,Georgia,serif}
+  .fini p{margin:0 0 24px;font-size:14.5px;line-height:1.6;color:var(--n-gris)}
+  .fini p b{color:var(--n-encre);font-weight:500}
+
+  /* Ce que la facture écrira — sous le téléphone, pas dedans. */
+  .facture{margin:16px auto 0;width:318px;padding:12px 16px;border-radius:14px;
+           background:var(--plage);box-shadow:0 1px 0 rgba(28,28,26,.06), 0 6px 18px rgba(28,28,26,.07);
+           font-size:13.5px;line-height:1.5;color:var(--encre-douce)}
+  .facture b{color:var(--encre);font-weight:500}
+  .facture .ligne{font:400 14px/1.5 ui-serif,Georgia,serif;color:var(--encre)}
+
+  .questions{max-width:430px;margin:34px auto 0;padding:0 20px}
+  .questions h2{margin:0 0 10px;font:400 22px/1.15 ui-serif,Georgia,serif}
+  .questions ol{margin:0;padding-left:22px}
+  .questions li{margin:0 0 10px;font-size:14.5px;line-height:1.55;color:var(--encre-douce)}
+  .questions li b{color:var(--encre)}
+
+  .pied{max-width:430px;margin:26px auto 0;padding:0 20px;font-size:13px;color:var(--gris)}
+  .pied a{color:var(--pin)}
+
+  @media (max-width:420px){
+    .tel{width:100%;max-width:318px}
+  }
+</style>
+</head>
+<body>
+
+<div class="bandeau">
+  <b>Rien n’est codé.</b> Deux téléphones : le vôtre d’aujourd’hui, et la proposition. Elle se touche.
+</div>
+
+<div class="bloc">
+  <h2>Les moyens de paiement, à choisir du doigt</h2>
+  <p>La seizième question de la création de compte demande d’<b>écrire</b>. Proposition : <b>trois choix</b>, et le premier déjà entouré. Rien à taper.</p>
+</div>
+
+<div class="deux">
+
+  <!-- ── AUJOURD'HUI ─────────────────────────────────────────────────────── -->
+  <div class="colonne">
+    <p class="etiquette">Aujourd’hui</p>
+    <div class="tel">
+      <div class="ecran nuit">
+        <div class="heure">9:41</div>
+        <button class="retour" type="button">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5 8 12l7 7"/></svg>
+          Retour
+        </button>
+        <div class="chapitre"><b>Être payé</b><span>16 sur 16</span></div>
+        <div class="jauge" aria-hidden="true">
+          <span style="--w:100%"></span><span style="--w:100%"></span><span style="--w:100%"></span><span style="--w:100%"></span><span style="--w:50%"></span>
+        </div>
+        <div class="milieu">
+          <h1 class="titre">Les moyens de paiement que vous acceptez ?</h1>
+          <input class="champ" type="text" placeholder="Virement, chèque…" aria-label="Les moyens de paiement que vous acceptez">
+          <p class="refus"></p>
+        </div>
+        <div class="bas">
+          <button class="principal" type="button">Créer mon compte</button>
+          <button class="passer" type="button">Passer</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── PROPOSÉ ─────────────────────────────────────────────────────────── -->
+  <div class="colonne">
+    <p class="etiquette">Proposé</p>
+    <div class="tel" id="propose">
+      <div class="ecran nuit" data-ecran="question">
+        <div class="heure">9:41</div>
+        <button class="retour" type="button">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5 8 12l7 7"/></svg>
+          Retour
+        </button>
+        <div class="chapitre"><b>Être payé</b><span>16 sur 16</span></div>
+        <div class="jauge" aria-hidden="true">
+          <span style="--w:100%"></span><span style="--w:100%"></span><span style="--w:100%"></span><span style="--w:100%"></span><span style="--w:50%"></span>
+        </div>
+        <div class="milieu">
+          <h1 class="titre">Les moyens de paiement que vous acceptez ?</h1>
+          <div class="choix" role="group" aria-label="Les moyens de paiement que vous acceptez">
+            <button type="button" aria-pressed="true" data-valeur="virement, chèque">
+              <span class="mot">Virement et chèque</span>
+            </button>
+            <button type="button" aria-pressed="false" data-valeur="virement">
+              <span class="mot">Virement seulement</span>
+            </button>
+            <button type="button" aria-pressed="false" data-valeur="virement, chèque, espèces">
+              <span class="mot">Virement, chèque, espèces</span>
+            </button>
+          </div>
+          <p class="refus"></p>
+        </div>
+        <div class="bas">
+          <button class="principal" type="button" data-creer>Créer mon compte</button>
+        </div>
+      </div>
+
+      <div class="ecran nuit fini" data-ecran="fini" hidden>
+        <div class="heure">9:41</div>
+        <div class="milieu">
+          <h3>Tout est prêt.</h3>
+          <p>Vos réglages sont remplis. Votre premier devis peut partir.</p>
+          <button class="principal" type="button" data-entrer>Entrer dans Atlas</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="facture">
+      Sous vos coordonnées bancaires, sur chaque facture :<br>
+      <span class="ligne">Moyens de paiement acceptés : <b data-ligne>virement, chèque</b></span>
+    </div>
+  </div>
+
+</div>
+
+<div class="questions">
+  <h2>Ce qui vous revient</h2>
+  <ol>
+    <li><b>Le doigt sur un choix avance-t-il tout seul</b>, comme pour la TVA, ou garde-t-on « Créer mon compte » pour qu’il voie ce qui est entouré avant de partir ? La planche garde le bouton.</li>
+    <li><b>« Passer » disparaît</b> : un choix est déjà proposé, il n’y a plus rien à passer. D’accord ?</li>
+    <li><b>Les mêmes trois choix dans Réglages, sous Documents puis Conditions</b>, où la case reste à écrire aujourd’hui ? Sinon deux façons de dire la même chose.</li>
+  </ol>
+</div>
+
+<p class="pied"><a href="essais.html">Toutes les maquettes</a></p>
+
+<script>
+  // Un seul choix entouré à la fois, et la ligne de facture le suit.
+  (function(){
+    const tel = document.getElementById("propose");
+    const boutons = tel.querySelectorAll(".choix button");
+    const ligne = document.querySelector("[data-ligne]");
+    boutons.forEach((b) => b.addEventListener("click", () => {
+      boutons.forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+      ligne.textContent = b.dataset.valeur;
+    }));
+    const montrer = (nom) => tel.querySelectorAll("[data-ecran]").forEach((e) => { e.hidden = e.dataset.ecran !== nom; });
+    tel.querySelector("[data-creer]").addEventListener("click", () => montrer("fini"));
+    tel.querySelector("[data-entrer]").addEventListener("click", () => montrer("question"));
+  })();
+</script>
+</body>
+</html>
