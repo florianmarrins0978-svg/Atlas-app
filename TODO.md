@@ -232,6 +232,10 @@ barres vraies, le client posé qui arrive dans la fiche avec « Annuler », une
 seule grammaire ligne · interrupteur · « Annuler », le tiroir au bas, « qui ? »
 à deux salariés, Nuit. **Ce qu'on code, c'est celle qu'il désigne — ou un
 mélange qu'il nomme.** Ne pas coder avant.
+**Refaite le soir même** après *« j'en ai marre des gros boutons »* : plus une
+pastille, plus un cadre — noir un fait, or un geste, gris le reste. Si c'est
+elle qu'il choisit, le lot touche aussi `VoieDAjout`, `BasculeDuMoment`, la
+pastille d'équipe et `GesteAbsence` (gras → or) : niveau à recalculer.
 
 **Sa consigne :** *« toutes les réponses que je vais te donner, tu vas mettre
 les modifs dans une seule planche, comme ça à la fin tu coderas la planche

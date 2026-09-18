@@ -29,6 +29,15 @@ une fiche qui s'allonge à chaque client posé. La durée à droite du nom est u
 ajout, signalé comme tel. Rien n'est codé : les deux planches attendent qu'il
 dise laquelle, ou ce qu'il prend de chacune.
 
+**Refaite le soir même, sur sa réponse :** *« c'est pire qu'avant, j'en ai
+marre des gros boutons ! Je veux une page élégante et minimaliste qu'on
+comprend direct »*. La première version empilait cinq formes pour dire « ça
+s'appuie » — pastille verte, pointillé, interrupteur, capsules, rond cerné.
+Tout est parti pour une seule règle : **noir un fait, or un geste, gris le
+reste**, sans un cadre ni un aplat — la forme de `MotDuGeste`, déjà dans
+l'application. Ce qui s'écarte du 17 est dit sur la planche : « Salarié
+absent ? » passe du gras à l'or.
+
 ---
 ## 2026-09-17
 
