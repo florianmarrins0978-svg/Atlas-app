@@ -9,6 +9,31 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## LES SUITES D'OUTILLAGE SONT ROUGES SUR SON PC — 30 MIN DE COMPARAISON PAR LOT
+
+**Relevé le 18 septembre 2026**, dans le document du lot « deux jours qui ne se
+touchent pas » : dix-neuf suites d'outillage (`batterie-solitaire`,
+`ouvrir-session`, `migrations-banc`, `verrou-construction`, `port-remesure`…)
+rougissent sur son PC **Windows** — `bash`, `ps -o`, `gh`, des ports d'essai.
+Elles sont rouges sur `main` aussi, avec ou sans lot.
+
+Conséquence : chaque lot paie ~30 min de `verifier-rouge-prealable` pour
+réapprendre ce qu'on sait déjà.
+
+**Ce qui est REFUSÉ** : une liste « ces suites-là ne comptent pas ». Une liste
+qui abaisse une exigence oublie un jour un fichier, et du danger part sans que
+rien ne le dise (`.claude/rules/testing.md`).
+
+**Ce qu'il faut faire à la racine :** une suite qui ne peut pas MESURER ici doit
+**refuser de conclure** — « non applicable sur cette machine » — au lieu de
+rougir. C'est déjà la doctrine du dépôt (« un contrôle qui mesure ZÉRO ne mesure
+rien »), et un « non applicable » n'entre pas dans les rouges, donc ne déclenche
+aucune comparaison.
+
+**Ce qui bloque :** cela se vérifie sur SON PC, pas ici — ce poste est sous
+Linux. À faire dans une session lancée depuis son espace Windows, suite par
+suite, en confrontant chacune au vrai message qu'elle rend là-bas.
+
 ## LES SUITES NAVIGATEUR TRAVERSENT LA RLS — ce qu'elles ne peuvent pas mesurer
 
 **Trouvé le 17 septembre 2026**, par une suite verte à la main et rouge dans la

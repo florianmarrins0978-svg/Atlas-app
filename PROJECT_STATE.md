@@ -5,6 +5,13 @@
 
 ---
 
+## FAIT : LA BATTERIE NE PROUVE QUE LE LOT (18 septembre 2026)
+
+Le plancher apporté par `main` — gabarit racine, migration, configuration — ne
+fait plus repartir la batterie entière : il fait remesurer le lot sur ce nouveau
+sol. Une seule cause reste : le niveau 3 sur le diff du lot.
+`ARCHITECTURE.md` §383.
+
 ## FAIT : LA GRAVITÉ DE `main` NE FAIT PLUS REPAYER SES VOISINES (18 septembre 2026)
 
 Une session repartait pour quarante-cinq minutes parce que `main` avait apporté

@@ -130,7 +130,7 @@ if (bouge.length === 0 && rougesAvant.length === 0 && horsSuitesAvant.length ===
 // **Une correction qui atteint elle-même le niveau 3 ne se rattrape pas.**
 // Toucher une migration, le gabarit racine ou l'accès à la base remet en jeu ce
 // que la batterie seule sait mesurer — et le doute tranche vers elle.
-const due = batterieDue({ niveauDuLot, plancherVenuDeMain });
+const due = batterieDue({ niveauDuLot });
 if (due) refuser(due, "npm run verifier:avant-livraison");
 
 const ATELIER = prendreUnAtelierSync();
@@ -151,6 +151,11 @@ const plan = aRejouer({
   rougesAvant,
   horsSuitesAvant,
   graviteVenueDeMain,
+  plancherVenuDeMain,
+  // **Les écrans DU LOT, pas ceux de la rencontre** : un gabarit racine ou une
+  // migration n'ont aucune arête d'import vers eux, et c'est pourtant sur ce
+  // sol-là qu'ils tournent désormais (`ARCHITECTURE.md` §383).
+  routesDuLot: suitesDesRoutes(RACINE, evaluerLeLot(fichiersDuLot, { racine: RACINE, graphe }).routes),
   suitesDesEcrans: suitesDuComplement({
     suitesDeLaRencontre: suitesDesRoutes(RACINE, zone.routes),
     fichiersDeLaRencontre: rencontre.fichiers,

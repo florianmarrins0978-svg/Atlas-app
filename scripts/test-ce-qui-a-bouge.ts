@@ -127,26 +127,86 @@ cas("SON CAS : l'argent apporté par main ne réclame PAS la batterie entière",
   assert.deepEqual(duLot, ["src/app/planning/PlanningClient.tsx"]);
   assert.deepEqual(venuDeMain, ["src/server/repositories/devis-repo.ts"]);
   assert.equal(
-    batterieDue({ niveauDuLot: 2, plancherVenuDeMain: [] }),
+    batterieDue({ niveauDuLot: 2 }),
     null,
     "CINQUANTE MINUTES parce qu'une session voisine a touché aux devis : c'est la boucle du 18 septembre"
   );
 });
 
-cas("une MIGRATION apportée par main fait repartir la batterie — le sol a bougé", () => {
-  const raison = batterieDue({ niveauDuLot: 2, plancherVenuDeMain: ["drizzle/0099_x.sql"] });
-  assert.ok(raison, "une migration arrivée sous le lot a été rattrapée au lieu d'être remesurée");
-  assert.match(raison!, /drizzle/);
+// **CE CAS DISAIT L'INVERSE À 00 h 40, ET IL AVAIT TORT.** Il exigeait la
+// batterie entière pour une migration venue de `main`. Or `main` l'a déjà
+// prouvée contre toute l'application ; ce qui n'a jamais été mesuré, c'est le
+// LOT sur cette nouvelle base — et cela se rejoue : les suites du fond, les
+// écrans du lot, la connexion. Corrigé le 18 septembre 2026, noir sur blanc
+// (`ARCHITECTURE.md` §383).
+cas("une MIGRATION apportée par main remesure le FOND, pas toute l'application", () => {
+  assert.equal(batterieDue({ niveauDuLot: 2 }), null);
+  const { etapes } = aRejouer({ bouge: ["drizzle/0099_x.sql"], plancherVenuDeMain: ["drizzle/0099_x.sql"] });
+  assert.ok(etapes.includes("Suites base de données"), "la base a changé sous les règles : elles se rejouent");
+  assert.ok(etapes.includes("Connexion derrière un proxy"));
 });
 
 cas("le lot, LUI, garde toute sa gravité : niveau 3 = batterie", () => {
-  assert.ok(batterieDue({ niveauDuLot: 3, plancherVenuDeMain: [] }));
+  assert.ok(batterieDue({ niveauDuLot: 3 }));
 });
 
 cas("la gravité venue de main force les suites du fond, pas la batterie", () => {
   const { etapes } = aRejouer({ bouge: ["src/app/devis/page.tsx"], graviteVenueDeMain: true });
   assert.ok(etapes.includes("Suites base de données"), "les règles d'argent et l'isolation vivent là");
   assert.ok(!etapes.includes("Construction"));
+});
+
+
+// ─── « ÇA COMMENCE VRAIMENT À ME SOÛLER » — 18 septembre 2026 ───────────────
+//
+// Le quatrième mur, et le dernier de la même forme. `main` apporte le gabarit
+// racine, une migration, la configuration — le PLANCHER —, et le lot repartait
+// pour quarante-cinq minutes. Or `main` l'a DÉJÀ prouvé contre toute
+// l'application. Ce qui n'a jamais été mesuré, c'est **le lot sur ce
+// nouveau sol** : ses écrans, ses règles, la construction, la connexion.
+//
+// **La batterie entière prouve un LOT, jamais une rencontre.**
+
+cas("LA BATTERIE PROUVE UN LOT, JAMAIS UNE RENCONTRE — une seule cause, et c'est le lot", () => {
+  // Quel que soit ce que `main` apporte — gabarit racine, migration,
+  // configuration —, la batterie entière ne se déclenche que sur le risque
+  // PROPRE du lot. Le reste se remesure (voir les cas suivants).
+  assert.equal(
+    batterieDue({ niveauDuLot: 2 }),
+    null,
+    "QUARANTE-CINQ MINUTES parce qu'une voisine a touché le gabarit racine : c'est le mur du 18 septembre"
+  );
+  assert.ok(batterieDue({ niveauDuLot: 3 }), "un lot de niveau 3 garde sa batterie");
+});
+
+cas("mais le nouveau sol se mesure SOUS le lot — ses écrans, et la connexion", () => {
+  const { etapes, navigateur } = aRejouer({
+    bouge: ["src/app/layout.tsx"],
+    plancherVenuDeMain: ["src/app/layout.tsx"],
+    routesDuLot: ["test-planning-e2e.ts"],
+  });
+  assert.ok(navigateur.includes("test-planning-e2e.ts"), "les écrans du lot n'ont pas été rejoués sur le nouveau gabarit");
+  assert.ok(
+    etapes.includes("Connexion derrière un proxy"),
+    "le défaut qui a coûté vingt allers-retours en août ne se remesure pas — et il coûte une minute"
+  );
+});
+
+cas("une MIGRATION venue de main rejoue les suites du fond — la base a changé sous les règles", () => {
+  const { etapes } = aRejouer({ bouge: ["drizzle/0099_x.sql"], plancherVenuDeMain: ["drizzle/0099_x.sql"] });
+  assert.ok(etapes.includes("Atelier"));
+  assert.ok(etapes.includes("Suites base de données"));
+});
+
+cas("une CONFIGURATION venue de main rejoue la construction — elle seule peut casser le bâti", () => {
+  const { etapes } = aRejouer({ bouge: ["next.config.ts"], plancherVenuDeMain: ["next.config.ts"] });
+  assert.ok(etapes.includes("Construction"), "une erreur qui n'existe qu'à la construction passerait au vert");
+});
+
+cas("sans plancher venu de main, rien de tout cela ne s'ajoute", () => {
+  const { etapes } = aRejouer({ bouge: ["src/components/atlas/MoisCharge.tsx"], routesDuLot: ["test-planning-e2e.ts"] });
+  assert.ok(!etapes.includes("Construction"));
+  assert.ok(!etapes.includes("Connexion derrière un proxy"));
 });
 
 console.log(`\n${echecs === 0 ? "✅" : "❌"} Ce qui a bougé depuis le verdict — ${echecs} échec(s).`);

@@ -161,12 +161,21 @@ npx tsx scripts/verifier-ce-qui-a-bouge.ts
 | ce qui a bougé | par le CONTENU : l'empreinte du verdict, et git pour ce qu'elle n'indexe pas (`.md`, `docs/`, `.claude/`) |
 | ce qu'on rejoue | ce qui était rouge, plus ce que ce qui a bougé peut casser (la rencontre) |
 | ce qu'on ne rejoue pas | garde son rouge — ne pas savoir n'est jamais vert |
-| ce qui renvoie à la batterie | **le LOT** atteint le niveau 3, ou `main` a apporté un PLANCHER (migration, gabarit racine, accès à la base, configuration) |
+| ce qui renvoie à la batterie | **le LOT** atteint le niveau 3 — et rien d'autre |
 
-**La gravité de `main` ne renvoie PAS à la batterie** (18 septembre 2026,
-00 h 27) : ces commits sont déjà passés par leur propre garde-fou. Elle force
-les suites du fond (`npm test`), là où vivent les règles d'argent et
-l'isolation. `ARCHITECTURE.md` §382.
+**LA BATTERIE ENTIÈRE PROUVE UN LOT, JAMAIS UNE RENCONTRE** (18 septembre
+2026). Ce que `main` apporte est déjà passé par son propre garde-fou, au niveau
+que son risque exigeait, plancher compris. Ce qui n'a jamais été mesuré, c'est
+**le lot sur ce nouveau sol** — et cela se remesure :
+
+| Ce que `main` apporte | Ce qu'on rejoue |
+|---|---|
+| une migration, `src/server/db/` | les suites du fond |
+| `package.json`, `next.config`, `tsconfig` | la **Construction** |
+| tout plancher — gabarit racine, `globals.css`, middleware | les **écrans du lot**, et la **connexion derrière un proxy** |
+| sa gravité — argent, sécurité | les suites du fond |
+
+`ARCHITECTURE.md` §382 et §383.
 
 **Et l'on n'a pas à s'en souvenir** : la batterie elle-même refuse de repartir
 quand le verdict précédent était rouge et que ce qui a bougé reste borné

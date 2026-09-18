@@ -8,6 +8,16 @@ sert.
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## LA BATTERIE ENTIÈRE NE PROUVE QUE LE LOT
+
+Depuis le 18 septembre 2026 : **une seule cause** fait repartir les cinquante
+minutes — le risque propre du lot (niveau 3 sur SON diff). Ce que `main`
+apporte, plancher compris, a déjà été prouvé par la session qui l'a écrit ; ce
+qui reste à mesurer, c'est le lot **sur ce nouveau sol** — ses écrans, les
+suites du fond si la base a bougé, la construction si le bâti a bougé, la
+connexion derrière un proxy. `ARCHITECTURE.md` §383.
+
+---
 ## CE QUE `main` APPORTE NE FAIT PLUS REPAYER LA BATTERIE
 
 Depuis le 18 septembre 2026 : la gravité de ce que `main` apporte — devis,
