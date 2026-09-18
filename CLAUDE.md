@@ -2084,7 +2084,7 @@ npx tsx scripts/verifier-ce-qui-a-bouge.ts   # il mesure, et dit ce qu'il rejoue
 | rien qui croise le lot — ni ce qu'il emploie, ni ce qui l'emploie | **rien** : le verdict du lot est reposé tel quel |
 | une dépendance que le lot emploie, ou un de ses appelants | **seulement** les suites de ces fichiers-là |
 | une migration, un réglage de construction, de l'outillage | ils entrent toujours dans la rencontre — le graphe ne les lit pas, et c'est le côté sûr |
-| une rencontre qui atteint elle-même le niveau 3 | la batterie entière |
+| un PLANCHER — migration, gabarit racine, `globals.css`, configuration | **le lot sur ce nouveau sol** : ses écrans, les suites du fond, la construction, la connexion. **Jamais la batterie entière** (§387) |
 
 **La liste d'avant — « une pièce partagée, donc la batterie » — a été
 supprimée** : `globals.css` ou `layout.tsx` touchés par une autre session

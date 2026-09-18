@@ -254,11 +254,12 @@ Ce qui n'est dans aucun des deux ne se rejoue pas. Ce que le graphe ne sait pas
 lire — une migration, un réglage de construction, un fichier d'outillage — entre
 toujours dans la rencontre : c'est le côté sûr.
 
-**La batterie entière reste réservée** à un lot de niveau 3 pour SON propre
-risque, ou à une rencontre qui atteint elle-même le niveau 3 — une migration
-arrivée de `main` sous un lot qui touche la base. Jamais parce que `main` a
-bougé, qu'une autre session a fusionné, qu'elle avait un rouge, ou que deux lots
-travaillent dans le même grand domaine.
+**La batterie entière reste réservée à un lot de niveau 3 pour SON propre
+risque — et à rien d'autre** (18 septembre 2026, `ARCHITECTURE.md` §387). Une
+migration arrivée de `main` sous le lot ne la déclenche plus : elle fait
+remesurer le lot sur cette nouvelle base — les suites du fond, ses écrans, la
+connexion. Jamais parce que `main` a bougé, qu'une autre session a fusionné,
+qu'elle avait un rouge, ou que deux lots travaillent dans le même grand domaine.
 
 ## Une régression découverte donne TOUJOURS un test
 
