@@ -8,6 +8,21 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-18
 
+### La fiche d'intervention dessinée sans un bouton, à la règle du planning
+
+**Sa demande, le soir, capture à l'appui :** *« embellir cette page comme on l'a
+fait pour la partie juste au-dessus — joli, facilement compréhensible,
+minimaliste, sans gros bouton tout moche »*.
+
+`appli/fiche-intervention-en-mieux.html` pose sa capture à côté de la
+proposition et applique la seule règle de la planche du planning à la fiche :
+plus de carte dans la carte du jour, plus de cases blanches, plus de cadre
+autour de la note, plus de bouton vert — des mots en or, ce qu'ils touchent en
+gris devant. **Tous ses mots restent à leur place** (sa règle du 11 septembre) ;
+ce qui change et se dit : le gras du « Ouvrir le PDF sans les prix » du
+15 septembre part, parce qu'il n'a plus de bouton vert à qui disputer la place.
+Rien n'est codé : la planche attend son oui (`TODO.md`).
+
 ### Les moyens de paiement se choisissent du doigt — à la porte et dans les réglages
 
 **Sa demande, le matin** : la seizième question de la création de compte
