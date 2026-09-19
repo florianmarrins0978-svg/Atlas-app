@@ -295,7 +295,13 @@ la troisième avec le contour de la fiche à 2 px (il demandait si c'était le
 même doré que « une journée » : oui, #B98B47, un trait de 1,5 px paraît
 seulement plus pâle) ; la **cinquième** est la quatrième avec Maps, Waze,
 Copier l'adresse, Appeler le client dans leurs quatre cases d'origine, deux
-par ligne, le dessin coloré (vert / or). **Il choisit entre 4 et 5.**
+par ligne, le dessin coloré (vert / or). **Sa réponse, le 20 à 2 h : la
+quatrième**, avec trois remarques portées sur une **sixième**
+(`appli/fiche-intervention-sixieme.html`) : « Ouvrir le PDF sans les prix »
+en noir gras (ton sur ton avec le contour), « Ma note » en noir, et les coins —
+le contour en `box-shadow: inset` s'épaississait dans l'angle, c'est une vraie
+`border` désormais. **La sixième attend son oui.** À retenir pour le code : un
+contour de carte se fait en `border`, jamais en ombrage intérieur.
 
 **Sa demande du 19 :** *« conserve celle-là [la deuxième] et essaye de m'en
 créer une troisième en partant de la base de la deuxième et en l'améliorant »*.

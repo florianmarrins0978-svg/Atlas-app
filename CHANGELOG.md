@@ -8,6 +8,15 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-18
 
+### La sixième fiche d'intervention — la quatrième, corrigée sur trois points
+
+**Sa réponse du 20 à 2 h** : il garde la quatrième ; « Ouvrir le PDF sans les
+prix » fait ton sur ton avec le contour doré, « Ma note » lui déplaît en or, et
+les coins sont mal arrondis (photo). `appli/fiche-intervention-sixieme.html` :
+le PDF en noir gras comme « Déplacer  Retirer », les capitales en noir comme
+« Matin », et le contour en vraie bordure — l'ombrage intérieur s'épaississait
+dans l'angle au lieu de suivre le rayon. Rien n'est codé.
+
 ### Une quatrième et une cinquième fiche d'intervention, toutes gardées
 
 **Sa demande du 19 au soir** : la quatrième est la troisième avec le contour de
