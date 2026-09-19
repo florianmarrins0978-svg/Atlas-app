@@ -57,14 +57,15 @@ async function main() {
   console.log("=== Travaux à faire — le bandeau, et le retour du jour ===\n");
 
   // Un chantier de la journée, sans retour : c'est l'état du matin.
-  const { rows } = await pool.query<{ id: string }>(
-    `SELECT c.id FROM chantiers c
+  const { rows } = await pool.query<{ id: string; nom: string }>(
+    `SELECT c.id, c.nom FROM chantiers c
        JOIN devis d ON d.chantier_id = c.id AND d.statut = 'envoye'
       WHERE c.deleted_at IS NULL AND c.termine_at IS NULL
       ORDER BY c.created_at DESC LIMIT 1`
   );
   assert.ok(rows.length === 1, "aucun chantier avec un devis envoyé dans le jeu de démonstration");
   const chantierId = rows[0].id;
+  const chantierNom = rows[0].nom;
   // **LE JOUR DU PATRON, PAS CELUI DE POSTGRESQL** (`_jour-e2e.ts`) : entre
   // minuit et deux heures chez lui, `CURRENT_DATE` est encore la veille.
   await pool.query(`UPDATE chantiers SET date_planifiee = $2 WHERE id = $1`, [
@@ -101,9 +102,13 @@ async function main() {
   await page.waitForURL(`${BASE}/`, { timeout: 30_000 });
 
   async function ouvrirLaFiche() {
-    await page.goto(`${BASE}/planning`, { waitUntil: "networkidle" });
-    await page.locator(LIGNE).first().waitFor({ state: "visible", timeout: 20_000 });
-    await page.locator(LIGNE).first().click();
+    // **SA ligne, pas la première du jour.** D'autres suites posent leurs
+    // chantiers sur le même jour ; cliquer la première ligne ouvrait parfois la
+    // fiche d'un voisin, et le retour partait sur lui — rouge sans défaut.
+    await page.goto(`${BASE}/planning?chantier=${chantierId}`, { waitUntil: "networkidle" });
+    const ligne = page.locator(`${LIGNE}:has-text("${chantierNom}")`).first();
+    await ligne.waitFor({ state: "visible", timeout: 20_000 });
+    await ligne.click();
     await page.locator(FEUILLE).first().waitFor({ state: "visible", timeout: 20_000 });
     await page.locator(OUVRIR).waitFor({ state: "visible", timeout: 20_000 });
   }
