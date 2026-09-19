@@ -183,7 +183,10 @@ async function main() {
       { timeout: 10_000 }
     );
     const compte = (await page.locator(COMPTE).innerText()).trim();
-    assert.match(compte, /^1 sur \d+ fait/, `le compte dit « ${compte} » et non « 1 sur N fait »`);
+    // Un devis d'une seule ligne cochée, c'est « tout est fait » — le jeu de
+    // démonstration en porte selon les suites jouées avant celle-ci.
+    const attendu = nombreDeLignes === 1 ? /^tout est fait$/ : /^1 sur \d+ fait$/;
+    assert.match(compte, attendu, `le compte dit « ${compte} » et non ${attendu}`);
     await page.locator(ENVOYER).click();
     await page.waitForFunction(
       (s) => /2 retours envoyés/.test(document.querySelector(s)?.textContent ?? ""),

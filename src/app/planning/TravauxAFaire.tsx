@@ -316,7 +316,6 @@ export default function TravauxAFaire({
                             : `inset 0 0 0 1px ${colors.line}`,
                         }}
                       >
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
                           src={`/api/fichiers/${p.storageKey}`}
                           alt=""
