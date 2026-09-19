@@ -8,6 +8,14 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-18
 
+### Une quatrième et une cinquième fiche d'intervention, toutes gardées
+
+**Sa demande du 19 au soir** : la quatrième est la troisième avec le contour de
+la fiche à 2 px — même or (#B98B47) que « une journée », qu'un trait fin
+faisait paraître plus pâle ; la cinquième reprend la disposition d'origine des
+quatre gestes (deux cases par ligne) avec le dessin coloré de la troisième.
+`appli/fiche-intervention-quatrieme-et-cinquieme.html`. Rien n'est codé.
+
 ### Une troisième fiche d'intervention, à côté de la deuxième
 
 **Sa demande du 19 :** *« conserve celle-là et essaye de m'en créer une

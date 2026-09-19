@@ -289,6 +289,14 @@ consigne. `ARCHITECTURE.md` §381.
 
 ## ⏳ LA FICHE D'INTERVENTION : LA DEUXIÈME OU LA TROISIÈME (19 septembre 2026)
 
+**Le soir, deux planches de plus, toutes gardées** —
+`appli/fiche-intervention-quatrieme-et-cinquieme.html` : la **quatrième** est
+la troisième avec le contour de la fiche à 2 px (il demandait si c'était le
+même doré que « une journée » : oui, #B98B47, un trait de 1,5 px paraît
+seulement plus pâle) ; la **cinquième** est la quatrième avec Maps, Waze,
+Copier l'adresse, Appeler le client dans leurs quatre cases d'origine, deux
+par ligne, le dessin coloré (vert / or). **Il choisit entre 4 et 5.**
+
 **Sa demande du 19 :** *« conserve celle-là [la deuxième] et essaye de m'en
 créer une troisième en partant de la base de la deuxième et en l'améliorant »*.
 Planche `appli/fiche-intervention-troisieme.html`, les deux côte à côte. La
