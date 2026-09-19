@@ -108,7 +108,10 @@ async function main() {
     // **SA ligne, pas la première du jour.** D'autres suites posent leurs
     // chantiers sur le même jour ; cliquer la première ligne ouvrait parfois la
     // fiche d'un voisin, et le retour partait sur lui — rouge sans défaut.
-    await page.goto(`${BASE}/planning?chantier=${chantierId}`, { waitUntil: "networkidle" });
+    // Sans `?chantier=` : ce paramètre ouvre un tiroir par-dessus la journée,
+    // qui intercepte le clic. Le chantier est posé sur AUJOURD'HUI, et c'est
+    // là que le planning s'ouvre.
+    await page.goto(`${BASE}/planning`, { waitUntil: "networkidle" });
     const ligne = page.locator(`${LIGNE}:has-text("${chantierNom}")`).first();
     await ligne.waitFor({ state: "visible", timeout: 20_000 });
     await ligne.click();
