@@ -115,8 +115,10 @@ const serveur = spawn(process.execPath, ["scripts/banc.mjs"], {
   ...OPTIONS_SERVEUR,
   // **`shell` est retiré ici, et c'est tout le correctif.** `OPTIONS_SERVEUR`
   // le pose pour ceux qui lancent un `.cmd` ; nous lançons un script Node.
-  // `detached`, lui, reste : le banc lance son propre serveur, et tuer le seul
-  // parent laisserait le port pris.
+  // `detached`, lui, suit `OPTIONS_SERVEUR` : sous Unix il permet de tuer
+  // l'arbre entier (le banc lance son propre serveur) ; sous Windows il est
+  // FAUX depuis le 19 septembre 2026, parce qu'un banc sans console faisait
+  // suspendre son `git rev-parse` — voir `_processus.ts`.
   shell: false,
 });
 

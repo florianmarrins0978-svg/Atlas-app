@@ -8,6 +8,17 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-19
 
+### Sous Windows, le serveur d'essai n'est plus « detached » : il figeait sur `git rev-parse`
+
+L'étape « Connexion derrière un proxy » rendait « le serveur n'a pas répondu
+en dix minutes » avec un journal du banc à zéro octet. Mesuré sur son PC le
+19 septembre 2026 : `banc.mjs`, lancé `detached`, n'a plus de console, et son
+`git rev-parse HEAD` — comme n'importe quel `cmd` — devait s'en faire ouvrir
+une par Windows, ce qui restait suspendu (`git.exe` figé à 0 %). `OPTIONS_SERVEUR`
+(`scripts/_processus.ts`) ne pose plus le drapeau sous Windows : `taskkill /T`
+tue déjà l'arbre, le drapeau n'y servait à rien et coûtait l'étape. Rien ne
+change sous Unix.
+
 ### La fiche du jour du planning, sans un bouton — sa planche codée
 
 **Son oui du 19 au matin :** *« enlève le Annuler à côté de Journée, ensuite
