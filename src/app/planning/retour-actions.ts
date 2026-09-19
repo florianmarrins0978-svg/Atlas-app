@@ -9,12 +9,16 @@ import { getEntreprise } from "@/server/repositories/entreprises";
 import { abonnementDeLEntreprise } from "@/server/repositories/abonnements";
 import { fonctionOuverte } from "@/lib/abonnements";
 import { listerPhotos, ajouterPhoto } from "@/server/repositories/photos";
-import { poserLeRetour, retourDuChantier } from "@/server/repositories/retours-intervention";
+import {
+  dernierRetourDuChantier,
+  nombreDeRetoursDuChantier,
+  poserLeRetour,
+} from "@/server/repositories/retours-intervention";
 import { tachesDuChantier } from "@/server/repositories/devis";
 import { preparerPhotoEntrante } from "@/server/photo-entrante";
 import { enregistrerObjet } from "@/server/storage";
 import { verifierLimite, LIMITES } from "@/server/rate-limit";
-import { peutPoserLeRetour, phraseDeCeQuiManque, type TacheDuRetour } from "@/lib/retour-intervention";
+import type { TacheDuRetour } from "@/lib/retour-intervention";
 
 /**
  * LE RETOUR D'INTERVENTION — les gestes du salarié, depuis le planning.
@@ -88,10 +92,11 @@ async function reglesDuRetour(ctx: Awaited<ReturnType<typeof garder>>) {
 export async function etatDuRetourAction(chantierId: string) {
   const ctx = await garder(chantierId, "lire le retour d'intervention");
 
-  const [regles, feuille, retour, sesPhotos] = await Promise.all([
+  const [regles, feuille, retour, envoyes, sesPhotos] = await Promise.all([
     reglesDuRetour(ctx),
     tachesDuChantier(ctx, chantierId),
-    retourDuChantier(ctx, chantierId),
+    dernierRetourDuChantier(ctx, chantierId),
+    nombreDeRetoursDuChantier(ctx, chantierId),
     listerPhotos(ctx, chantierId),
   ]);
 
@@ -100,19 +105,19 @@ export async function etatDuRetourAction(chantierId: string) {
     // Ce qu'il y a à faire vient du DEVIS, sans un prix — c'est déjà ce que la
     // feuille de chantier affiche, et une seconde source divergerait.
     aFaire: feuille?.taches ?? [],
+    // Le DERNIER retour : ses cases pré-cochent la fiche du lendemain.
     retour,
+    envoyes,
     photos: sesPhotos.map((p) => ({ id: p.id, storageKey: p.storageKey })),
   };
 }
 
 /**
- * Poser « C'est fini ».
+ * Poser le retour du jour — « Envoyer le retour du jour », sur la fiche.
  *
- * **Le refus est REJOUÉ ici**, alors que l'écran l'a déjà empêché : un appel
- * direct ne passe pas par l'écran, et la règle qui décide est la même des deux
- * côtés (`peutPoserLeRetour`, fonction pure). Deux rédactions du même refus
- * finiraient par se contredire, et c'est celle qu'il lit sur son téléphone qui
- * paraîtrait fausse.
+ * Un retour par envoi, plusieurs par chantier : ce que le salarié a coché ce
+ * soir, avec les photos de ce soir. Le lendemain, la fiche repart de ses cases
+ * (`etatDuRetourAction`, le dernier retour) et il envoie la suite.
  */
 export async function poserLeRetourAction(
   chantierId: string,
@@ -120,12 +125,11 @@ export async function poserLeRetourAction(
 ): Promise<{ ok: true } | Refus> {
   const ctx = await garder(chantierId, "poser un retour d'intervention");
 
-  const regles = await reglesDuRetour(ctx);
-  const pose = { taches: quoi.taches, photos: quoi.photoIds.length };
-  if (!peutPoserLeRetour(pose, regles)) {
-    return { ok: false, raison: phraseDeCeQuiManque(pose, regles) };
-  }
-
+  // **Aucun refus sur ce qui manque — sa règle du 19 septembre 2026.** Le
+  // retour du jour part avec ce qu'il a : sans photo, sans tout cocher. Ce que
+  // le patron attend encore se lit sur la fiche (`ceQuiManque`), il ne ferme
+  // plus la porte. Les gardes qui restent sont celles qui comptent : le rôle,
+  // la portée du chantier, l'entreprise.
   await poserLeRetour(ctx, chantierId, {
     taches: quoi.taches,
     photoIds: quoi.photoIds,

@@ -9,7 +9,6 @@ import assert from "node:assert/strict";
 import {
   ceQuiManque,
   phraseDeCeQuiManque,
-  peutPoserLeRetour,
   compteDesTaches,
   nomCherche,
   rangerLesRetours,
@@ -48,10 +47,14 @@ function retour(p: Partial<RetourEnListe> & { clientNom: string; poseLe: string 
 
 console.log("=== Le retour d'intervention ===\n");
 
-// ── Ce que le patron exige, et rien de plus ────────────────────────────
-essai("le patron n'exige rien : le geste est libre", () => {
+// ── Ce que le patron attend, et rien de plus ───────────────────────────
+//
+// **Un RAPPEL, plus un verrou — sa règle du 19 septembre 2026 :** *« il faut
+// qu'on puisse l'envoyer même si on ne met pas de photo ou si tout n'est pas
+// coché »*. `ceQuiManque` dit ce qu'il attend ; rien ici ne décide si le
+// retour part — il part toujours (`poserLeRetourAction`, sans refus).
+essai("le patron n'exige rien : rien n'est rappelé", () => {
   assert.deepEqual(ceQuiManque({ taches: [], photos: 0 }, RIEN_EXIGE), []);
-  assert.equal(peutPoserLeRetour({ taches: [], photos: 0 }, RIEN_EXIGE), true);
 });
 
 essai("preuve demandée, rien de coché : on le dit avant l'appui", () => {
@@ -62,15 +65,15 @@ essai("preuve demandée, rien de coché : on le dit avant l'appui", () => {
   assert.deepEqual(manque, ["cochez ce que vous avez fait"]);
 });
 
-essai("une seule case cochée suffit", () => {
+essai("une seule case cochée suffit à taire le rappel", () => {
   const pose = { taches: [{ libelle: "Taille", faite: true }, { libelle: "Tonte", faite: false }], photos: 0 };
-  assert.equal(peutPoserLeRetour(pose, PREUVE), true);
+  assert.deepEqual(ceQuiManque(pose, PREUVE), []);
 });
 
-essai("la photo n'est exigée que si le patron l'a allumée", () => {
+essai("la photo n'est rappelée que si le patron l'a allumée", () => {
   const pose = { taches: [{ libelle: "Taille", faite: true }], photos: 0 };
-  assert.equal(peutPoserLeRetour(pose, PREUVE), true);
-  assert.equal(peutPoserLeRetour(pose, PREUVE_ET_PHOTO), false);
+  assert.deepEqual(ceQuiManque(pose, PREUVE), []);
+  assert.deepEqual(ceQuiManque(pose, PREUVE_ET_PHOTO), ["ajoutez une photo"]);
 });
 
 essai("les deux manques se disent ensemble, pas l'un après l'autre", () => {
@@ -80,7 +83,7 @@ essai("les deux manques se disent ensemble, pas l'un après l'autre", () => {
 
 // **Le piège du zèle.** Exiger une photo alors que le patron n'a même pas
 // demandé de preuve bloquerait un salarié pour un réglage qu'il n'a jamais vu.
-essai("photo exigée mais preuve non demandée : rien n'est bloqué", () => {
+essai("photo exigée mais preuve non demandée : rien n'est rappelé", () => {
   assert.deepEqual(ceQuiManque({ taches: [], photos: 0 }, { demande: false, photoExigee: true }), []);
 });
 

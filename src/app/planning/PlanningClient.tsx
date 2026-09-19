@@ -64,7 +64,7 @@ import {
   type EtatDemi,
 } from "@/lib/planning-jour";
 import { equipesMobilisees, libelleSalarie, salariesAffiches } from "@/lib/equipes";
-import FinDeChantier from "./FinDeChantier";
+import TravauxAFaire from "./TravauxAFaire";
 import LigneRetirable from "@/components/atlas/LigneRetirable";
 import PortesDuChantier from "./PortesDuChantier";
 import { chantierDemandeAuPlanning, PARAM_CHANTIER_PLANNING } from "@/lib/lien-planning";
@@ -74,14 +74,14 @@ import { lienAppel, liensItineraire } from "@/lib/itineraire";
 import type { FeuilleDuChantier } from "@/server/repositories/devis";
 
 /**
- * La feuille d’un chantier, et si son retour a déjà été posé.
+ * La feuille d’un chantier, et combien de retours il a déjà envoyés.
  *
- * **Les deux voyagent ensemble**, parce que le bouton de fin de chantier doit
- * être figé DÈS L’OUVERTURE de la fiche — pas seulement dans la session où
- * l’on a appuyé. Sa demande du 9 septembre 2026.
+ * **Les deux voyagent ensemble** : la fiche dit « 2 retours envoyés » sous le
+ * bandeau fermé, dès l’ouverture — pas seulement dans la session où l’on a
+ * appuyé. Un chantier de huit jours en envoie un chaque soir (19 septembre 2026).
  */
 type FeuilleEtRetour = FeuilleDuChantier & {
-  retourPose: boolean;
+  retours: number;
   /** Ce qu’il a photographié du chantier — vu AVANT le travail, pas après. */
   photos: { id: string; storageKey: string }[];
 };
@@ -4098,10 +4098,10 @@ function NoteDuChantier({
     const ecrite = (chantier.note ?? "").trim();
     if (ecrite === "") return null;
     return (
-      <div className="mt-3.5 pt-3" style={{ borderTop: `1px solid ${colors.line}` }}>
+      <div className="mt-3.5 pt-3" style={{ borderTop: `1px solid ${colors.lineSoft}` }}>
         <p
           className="m-0 mb-2 text-[10px] font-semibold uppercase leading-none"
-          style={{ letterSpacing: "0.16em", color: colors.muted }}
+          style={{ letterSpacing: "0.16em", color: colors.ink }}
         >
           La note
         </p>
@@ -4117,10 +4117,13 @@ function NoteDuChantier({
   }
 
   return (
-    <div className="mt-3.5 pt-3" style={{ borderTop: `1px solid ${colors.line}` }}>
+    <div className="mt-3.5 pt-3" style={{ borderTop: `1px solid ${colors.lineSoft}` }}>
+      {/* **En NOIR, comme « Matin » et « Après-midi »** — sa remarque du
+          20 septembre 2026 : en or, *« j'aime pas sa couleur »*. Ce sont les
+          mêmes capitales que la carte du jour. */}
       <p
         className="m-0 mb-2 text-[10px] font-semibold uppercase leading-none"
-        style={{ letterSpacing: "0.16em", color: colors.muted }}
+        style={{ letterSpacing: "0.16em", color: colors.ink }}
       >
         Ma note
       </p>
@@ -4136,11 +4139,15 @@ function NoteDuChantier({
         onBlur={(e) => enregistrer(e.currentTarget.value)}
         placeholder="Penser à prendre le broyeur. Client dispo à partir de 9 h."
         rows={3}
-        className="w-full resize-none rounded-[9px] px-3 py-2.5"
+        className="w-full resize-none rounded-[10px] px-3 py-2.5 outline-none"
+        // **Un papier doré** — sa planche du 19 septembre 2026 : la note est ce
+        // qui se LIT, et l'or est la couleur de ce qui se lit sur cette fiche.
+        // Le curseur aussi ; à la mise au point, le liseré se fonce.
         style={{
-          border: `1px solid ${colors.line}`,
-          background: colors.card,
+          boxShadow: `inset 0 0 0 1px ${voile(colors.or, 0.22)}`,
+          background: voile(colors.or, 0.13),
           color: colors.ink,
+          caretColor: colors.or,
           // **16 px au moins.** En dessous, iOS grossit la page à la mise au
           // point et l'écran saute sous le doigt — un piège déjà payé ici.
           fontSize: 16,
@@ -4201,16 +4208,6 @@ function FeuilleChantier({
   // remettre à la main — un effet qui appelle `setState` fait un rendu de plus
   // pour rien.
   const [copie, setCopie] = useState<"non" | "faite" | "refusee">("non");
-  /**
-   * La fin de chantier est dépliée : les lignes du devis cèdent la place.
-   *
-   * **Ce n'est qu'un écho**, jamais la source : c'est `FinDeChantier` qui
-   * décide d'être ouvert ou non, parce que c'est lui qui charge son état à
-   * l'ouverture. En tenir une seconde copie ici, c'est deux vérités pour une
-   * question (`CLAUDE.md` §3) — et le jour où elles divergent, l'écran perd
-   * ses lignes sur un bandeau replié.
-   */
-  const [finOuverte, setFinOuverte] = useState(false);
 
   if (!chantier) return null;
   const adresse = chantier.adresseChantier?.trim() || null;
@@ -4223,24 +4220,32 @@ function FeuilleChantier({
   const tel = lienAppel(chantier.clientTelephone);
 
   // **Aucune marge à elle** : elle vit DANS la carte du jour, entre les
-  // chantiers, et c'est le retrait de la carte qui l'aligne. Le drapeau
-  // `dansLeMois` qui posait `mx-[18px]` est parti avec la seule place où il
-  // aurait servi — les deux appelants passent `attache`, il était déjà mort.
+  // chantiers, et c'est le retrait de la carte qui l'aligne.
+  //
+  // **SA PLANCHE DU 19 SEPTEMBRE 2026 — la sixième de la fiche**
+  // (`appli/fiche-intervention-sixieme.html`) : *« tu peux coder exactement
+  // cette planche »*. La carte est blanche, cernée d'or à 2 px — le sien,
+  // `colors.or`, celui de « une journée » —, en VRAIE bordure : un ombrage
+  // intérieur s'épaississait dans l'angle au lieu de suivre le rayon, et c'est
+  // lui qui l'a vu, photo à l'appui (*« les bords, je les trouve mal
+  // arrondis »*).
   return (
     <div
       data-atlas="feuille"
-      className="mt-3 rounded-[10px] px-4 pb-[18px] pt-4"
-      style={{ background: colors.rustTint, boxShadow: `inset 0 0 0 1px ${colors.line}` }}
+      className="mt-3 rounded-[14px] px-3 pb-3.5 pt-4"
+      style={{
+        background: colors.card,
+        border: `2px solid ${colors.or}`,
+        boxShadow: `0 2px 10px ${voile(colors.ink, 0.07)}`,
+      }}
     >
       <p
         className="m-0 text-center text-[10.5px] font-bold uppercase leading-none"
-        style={{ letterSpacing: "0.24em", color: colors.or }}
+        style={{ letterSpacing: "0.22em", color: colors.or }}
       >
         {/* **« Fiche d'intervention » depuis le 8 septembre 2026** — sa demande,
             capture à l'appui : *« qui d'ailleurs devrait s'appeler fiche
-            d'intervention, change le nom »*. Le mot a changé le jour où la
-            feuille a cessé d'être un document à lire pour devenir ce que le
-            salarié REMPLIT. */}
+            d'intervention, change le nom »*. */}
         Fiche d&apos;intervention
       </p>
       <p
@@ -4250,12 +4255,22 @@ function FeuilleChantier({
         {chantier.clientNom ?? chantier.nom}
       </p>
 
-      <div className="mt-2.5 flex gap-1.5">
-        <Geste href={liens?.google ?? null}>Maps</Geste>
-        <Geste href={liens?.waze ?? null}>Waze</Geste>
-      </div>
-      <div className="mt-1.5 flex gap-1.5">
+      {/* **LES QUATRE GESTES SUR UNE SEULE LIGNE — sa planche du 19.** Quatre
+          cases en deux rangées se lisaient comme deux choix à faire ; une seule
+          rangée, le dessin au-dessus du mot, dit d'un coup d'œil qu'il y a
+          quatre gestes. Le dessin garde sa couleur, sans rond derrière (sa
+          retouche du soir) : vert pin pour y aller et appeler, or pour copier
+          l'adresse — ce qui se fait, et ce qui se lit. */}
+      <div className="mt-3.5 grid grid-cols-4 gap-1.5">
+        <Geste href={liens?.google ?? null} dessin="maps" teinte={colors.rust}>
+          Maps
+        </Geste>
+        <Geste href={liens?.waze ?? null} dessin="waze" teinte={colors.rust}>
+          Waze
+        </Geste>
         <Geste
+          dessin="copier"
+          teinte={colors.or}
           onClick={
             adresse
               ? async () => {
@@ -4275,7 +4290,9 @@ function FeuilleChantier({
               ? "Copie refusée"
               : "Copier l’adresse"}
         </Geste>
-        <Geste href={tel}>Appeler le client</Geste>
+        <Geste href={tel} dessin="appeler" teinte={colors.rust}>
+          Appeler le client
+        </Geste>
       </div>
 
       <NoteDuChantier chantier={chantier} ecriture={ecriture} />
@@ -4284,20 +4301,10 @@ function FeuilleChantier({
           **Sa remarque du 9 septembre 2026 :** *« j'ai joint des photos lorsque
           j'ai créé la fiche client de Julien, mais elles n'apparaissent nulle
           part »*, puis : *« elles devraient être au-dessus de Désherbage
-          gravier »*.
-
-          **Elles existaient**, et c'est le pire des cas : on ne les voyait que
-          dans le tiroir « Fin de chantier », parmi les preuves à cocher —
-          c'est-à-dire APRÈS le travail, dans un endroit qu'on n'ouvre qu'en
-          partant. Or il les joint pour montrer le chantier à celui qui s'y
-          rend : leur place est AVANT, avec la note et les lignes du devis.
-
-          **Elles ne se cachent pas quand la fin de chantier s'ouvre.** La liste
-          du devis, elle, disparaît parce qu'elle DEVIENT les cases à cocher ;
-          les photos, non — elles restent ce qu'il faut regarder pendant qu'on
-          coche. */}
+          gravier »*. Leur place est AVANT le travail, avec la note — pas dans
+          le tiroir qu'on n'ouvre qu'en partant. */}
       {(feuille?.photos ?? []).length > 0 && (
-        <div className="mt-3.5 pt-3" style={{ borderTop: `1px solid ${colors.line}` }}>
+        <div className="mt-3.5 pt-3" style={{ borderTop: `1px solid ${colors.lineSoft}` }}>
           <div className="flex flex-wrap gap-2">
             {(feuille?.photos ?? []).map((photo) => (
               <a
@@ -4322,84 +4329,47 @@ function FeuilleChantier({
         </div>
       )}
 
-      {/* ─── LES LIGNES DU DEVIS — ce qu'il y a à faire ────────────────────
-          **Elles s'effacent quand la fin de chantier s'ouvre — sa proposition
-          A, tranchée le 9 septembre 2026** (`appli/fiche-sans-doublon.html`).
+      {/* ─── LES TRAVAUX À FAIRE — le bandeau qui se déplie ─────────────────
+          Les lignes du devis vivent DEDANS, et nulle part ailleurs : *« un
+          devis de trois pages, ça va faire trop long sur le planning si c'est
+          visible tout le temps »* (19 septembre 2026). Fermé, il tient une
+          ligne et dit où on en est. Un chantier sans devis y lit « aucune
+          ligne » et peut quand même poser une photo et un mot. */}
+      {feuille === undefined ? (
+        <p className="mb-0 mt-3.5 text-[13.5px]" style={{ color: colors.muted }}>
+          Lecture du devis…
+        </p>
+      ) : (
+        <TravauxAFaire
+          chantierId={chantier.id}
+          lignes={feuille.taches}
+          retoursEnvoyes={feuille.retours}
+        />
+      )}
 
-          Vu sur une capture, par aucun test : les mêmes quatre lignes se
-          lisaient deux fois sur le même écran, en liste ici puis en cases à
-          cocher trois centimètres plus bas. Il fallait les comparer une à une,
-          avec des gants, pour comprendre que c'étaient les mêmes.
-
-          Elles ne sont pas perdues : elles SONT devenues les cases, et elles
-          reviennent dès qu'il replie. */}
-      <div
-        className="mt-3.5 pt-3"
-        style={{ borderTop: `1px solid ${colors.line}` }}
-        hidden={finOuverte}
-      >
-        {(feuille?.taches ?? []).length === 0 ? (
-          <p className="m-0 text-[14.5px] leading-[1.45]" style={{ color: colors.muted }}>
-            {feuille === undefined ? "Lecture du devis…" : "Aucune ligne sur le devis."}
-          </p>
-        ) : (
-          (feuille?.taches ?? []).map((t, i) => (
-            <p
-              key={`${t}-${i}`}
-              className="relative mb-[9px] pl-3.5 text-[14.5px] leading-[1.45]"
-            >
-              <span
-                aria-hidden="true"
-                className="absolute left-0 top-2 h-[5px] w-[5px] rounded-full"
-                style={{ background: colors.or }}
-              />
-              {t}
-            </p>
-          ))
-        )}
-      </div>
-
-      {/* **LA FIN DE CHANTIER — sa décision du 8 septembre 2026.** Le bandeau
-          se déplie ICI, sous les lignes du devis : il garde sous les yeux ce
-          qu'il y avait à faire pendant qu'il coche. Une feuille qui monte
-          l'aurait recouverte, et il aurait coché de mémoire. */}
-      <FinDeChantier
-        chantierId={chantier.id}
-        dejaRendu={feuille?.retourPose ?? false}
-        onOuvert={setFinOuverte}
-      />
-
-      {/* **Le bouton n'existe QUE s'il y a un devis à imprimer.** Sans devis, la
-          route répond 404 : un bouton qui ouvre une erreur est pire qu'un bouton
-          absent — il fait douter de l'application entière. Le cas ne devrait pas
-          se présenter (le planning ne liste que des chantiers dont le devis est
-          PARTI), mais « ne devrait pas » n'est pas « ne peut pas ». */}
+      {/* **Le lien n'existe QUE s'il y a un devis à imprimer.** Sans devis, la
+          route répond 404 : un lien qui ouvre une erreur est pire qu'un lien
+          absent — il fait douter de l'application entière. */}
       {feuille?.avecDevis && (
         /* **Dans l'application, pas dans un onglet de Safari — 13 septembre
-           2026.** Ce lien-ci avait été oublié par le lot de la visionneuse
-           (11 septembre) : il remettait encore la feuille au navigateur, donc
-           sans en-tête ni flèche — *« j'ai pas de touche retour »*, sur le
-           seul écran qu'il ouvre au milieu d'un chantier.
+           2026** : sans en-tête ni flèche, *« j'ai pas de touche retour »*.
 
-           **Un mot en or, plus un second bouton vert — sa réponse du
-           15 septembre 2026** à `appli/le-pdf-sans-les-prix.html` : *« la A,
-           mais on garde la phrase existante et tu mets en gras doré le doré
-           de l'appli »*. Depuis que les lignes du devis sont sur la fiche, le
-           PDF n'est plus le seul document de l'équipe : c'est le papier de
-           secours, et il se disputait la place avec « Fin de chantier », qui
-           est LE geste de cet écran. Même place, même phrase — seule l'allure
-           change. Et `or`, pas `orTexte` : c'est celui du surtitre et des
-           puces trois lignes plus haut (sa correction du 9 septembre). */
+           **En NOIR gras, comme « Déplacer  Retirer » — sa remarque du
+           20 septembre 2026 à 2 h** : en or, il faisait *« ton sur ton avec le
+           contour doré de la fiche »*. Et « le devis », pas « le PDF » — son
+           mot, le même jour : *« change PDF sans les prix par : ouvrir le
+           devis sans les prix »*. C'est bien le devis, expurgé de ses prix, que
+           l'équipe emporte (sa décision du 21 août). */
         <Link
           data-atlas="pdf-sans-prix"
           href={adresseDeLaVisionneuse(`/api/chantiers/${chantier.id}/feuille/pdf`, {
             surtitre: "Feuille de chantier",
             titre: chantier.nom,
           })}
-          className="mx-auto mt-4 block w-max px-3 py-2 text-[14px] font-bold"
-          style={{ color: colors.or }}
+          className="mx-auto mt-3 block w-max px-3 py-2 text-[14px] font-bold"
+          style={{ color: colors.ink }}
         >
-          Ouvrir le PDF sans les prix
+          Ouvrir le devis sans les prix
         </Link>
       )}
     </div>
@@ -4407,47 +4377,112 @@ function FeuilleChantier({
 }
 
 /**
- * Un des quatre gestes de la feuille.
+ * Un des quatre gestes de la fiche — une case, le dessin au-dessus du mot.
  *
  * **Éteint plutôt qu'absent quand la donnée manque** : un bouton qui disparaît
  * fait chercher où il est passé ; éteint, il dit que c'est l'adresse qui
  * manque, et non l'application qui a changé.
+ *
+ * **Les dessins sont tracés ici, d'un même trait** (`stroke-width` 1,6) : le
+ * repère, la flèche de navigation, les deux feuilles, le combiné. Aucun glyphe
+ * de police, aucune image — un dessin de police change de forme d'un téléphone
+ * à l'autre.
  */
+const DESSINS_DES_GESTES = {
+  maps: (
+    <>
+      <path d="M10 17.5s-5.5-5-5.5-9a5.5 5.5 0 0 1 11 0c0 4-5.5 9-5.5 9z" />
+      <circle cx="10" cy="8.5" r="2" />
+    </>
+  ),
+  waze: <path d="M16.5 3.5 3.5 9l6 1.5 1.5 6z" />,
+  copier: (
+    <>
+      <rect x="7" y="7" width="9.5" height="9.5" rx="2" />
+      <path d="M13 7V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2" />
+    </>
+  ),
+  appeler: (
+    <path d="M4 3.5h3l1.5 3.5-2 1.2a9 9 0 0 0 5.3 5.3l1.2-2 3.5 1.5v3a1.5 1.5 0 0 1-1.6 1.5A13 13 0 0 1 2.5 5.1 1.5 1.5 0 0 1 4 3.5z" />
+  ),
+} as const;
+
 function Geste({
   href,
   onClick,
+  dessin,
+  teinte,
   children,
 }: {
   href?: string | null;
   onClick?: (() => void) | null;
+  dessin: keyof typeof DESSINS_DES_GESTES;
+  /** La couleur du dessin : vert pin pour ce qu'on fait, or pour ce qui se lit. */
+  teinte: string;
   children: React.ReactNode;
 }) {
+  const actif = Boolean(href || onClick);
   const style = {
-    border: `1px solid ${colors.line}`,
-    background: colors.card,
-    color: href || onClick ? colors.ink : colors.muted,
-    opacity: href || onClick ? 1 : 0.45,
+    background: colors.rustTint,
+    boxShadow: `inset 0 0 0 1px ${colors.lineSoft}`,
+    color: actif ? colors.ink : colors.muted,
+    opacity: actif ? 1 : 0.45,
   } as const;
+  // Une CASE, pas une capsule : c'est la forme de sa planche du 19 septembre
+  // 2026, déclarée comme telle dans `test-boutons-arrondis.ts`.
   const classe =
-    "block flex-1 rounded-lg px-1.5 py-[11px] text-center text-[13px] no-underline";
+    "flex min-h-[78px] min-w-0 flex-col items-center justify-center gap-1.5 rounded-[12px] px-1 py-2 text-center text-[11.5px] leading-[1.15] no-underline";
+  const dedans = (
+    <>
+      <svg
+        width="22"
+        height="22"
+        viewBox="0 0 20 20"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+        className="flex-none"
+        style={{ color: actif ? teinte : colors.muted }}
+      >
+        {DESSINS_DES_GESTES[dessin]}
+      </svg>
+      <span className="flex min-h-[2.3em] items-center">{children}</span>
+    </>
+  );
 
   if (href) {
     return (
-      <a className={classe} style={style} href={href} target="_blank" rel="noreferrer">
-        {children}
+      <a
+        data-atlas="geste-de-la-fiche"
+        className={classe}
+        style={style}
+        href={href}
+        target="_blank"
+        rel="noreferrer"
+      >
+        {dedans}
       </a>
     );
   }
   if (onClick) {
     return (
-      <button type="button" className={classe} style={style} onClick={onClick}>
-        {children}
+      <button
+        type="button"
+        data-atlas="geste-de-la-fiche"
+        className={classe}
+        style={style}
+        onClick={onClick}
+      >
+        {dedans}
       </button>
     );
   }
   return (
-    <span className={classe} style={style}>
-      {children}
+    <span data-atlas="geste-de-la-fiche" className={classe} style={style}>
+      {dedans}
     </span>
   );
 }

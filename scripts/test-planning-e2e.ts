@@ -676,6 +676,17 @@ async function main() {
     await attendre("la feuille a fini de lire le devis", async () =>
       !(await page.locator('[data-atlas="feuille"]').innerText()).includes("Lecture du devis")
     );
+    // **Les lignes vivent DANS le bandeau « Travaux à faire », fermé par
+    // défaut** — sa règle du 19 septembre 2026 : *« un devis de trois pages, ça
+    // va faire trop long sur le planning si c'est visible tout le temps »*.
+    // Fermé, il dit combien ; on l'ouvre pour lire quoi.
+    const ferme = await page.locator('[data-atlas="feuille"]').innerText();
+    assert.ok(
+      !ferme.includes("Taille de haie de laurier"),
+      `les lignes du devis s'étalent sur le planning avant qu'on ouvre les travaux : « ${ferme} »`
+    );
+    await page.locator('[data-atlas="ouvrir-travaux"]').click();
+    await page.locator('[data-atlas="tache-du-retour"]').first().waitFor({ state: "visible", timeout: 15_000 });
     const dit = await page.locator('[data-atlas="feuille"]').innerText();
     assert.ok(dit.trim().length > 0, "la feuille est vide : il n'y a rien à mesurer");
     assert.ok(
@@ -705,7 +716,7 @@ async function main() {
     assert.equal(
       fichier,
       `/api/chantiers/${chantierId}/feuille/pdf`,
-      `« Ouvrir le PDF sans les prix » ne mène pas à la visionneuse de l'application : ${href}`
+      `« Ouvrir le devis sans les prix » ne mène pas à la visionneuse de l'application : ${href}`
     );
     assert.equal(await lien.getAttribute("target"), null, "la feuille repart dans un onglet : pas de flèche de retour");
     const reponse = await page.request.get(`${BASE}${fichier}`);

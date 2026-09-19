@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, inArray } from "drizzle-orm";
+import { and, asc, count, desc, eq, inArray } from "drizzle-orm";
 import { withEntreprise } from "../db/with-entreprise";
 import {
   chantiers,
@@ -33,16 +33,22 @@ export type RetourAPoser = {
 };
 
 /**
- * Poser — ou reposer — le retour d'un chantier.
+ * Poser le retour du jour.
  *
- * **Un seul retour par chantier** (`retours_intervention_chantier_uk`) : un
- * second appui met à jour le premier plutôt que d'en créer un deuxième. Deux
- * versions du même travail laisseraient le patron sans savoir laquelle fait foi.
+ * **UN RETOUR PAR ENVOI, PLUSIEURS PAR CHANTIER — sa règle du 19 septembre
+ * 2026 :** *« un chantier de 8 jours, il faut pouvoir faire plusieurs retours
+ * d'intervention jour après jour »*. Jusqu'à la migration 0096, un second
+ * envoi mettait le premier à jour (`ON CONFLICT`) — juste pour un chantier
+ * d'un jour, faux pour un chantier de huit : le retour du soir 3 effaçait
+ * celui du soir 2. Chaque envoi est désormais une ligne, horodatée, signée.
  *
- * **Les tâches et les photos sont REMPLACÉES, pas ajoutées.** Il décoche une
- * case, il repose : ce qu'il vient de dire doit être ce qui reste. Les ajouter
- * ferait grossir la liste à chaque correction, et « 5 sur 3 faites » n'aurait
- * plus de sens.
+ * **Ce que ça change pour le double appui.** L'index unique tenait aussi le
+ * double « c'est fini » d'un réseau lent ; c'est l'écran qui le tient
+ * maintenant (le bouton se ferme le temps de l'envoi, `TravauxAFaire.tsx`).
+ *
+ * **Chaque retour porte SES tâches et SES photos** : ce qu'il a coché ce
+ * soir-là, avec les photos de ce soir-là — un retour est une preuve datée, et
+ * une preuve ne se réécrit pas (sa décision du 8 septembre).
  */
 export async function poserLeRetour(
   ctx: Ctx,
@@ -58,20 +64,8 @@ export async function poserLeRetour(
         posePar: ctx.utilisateurId,
         aSignaler: quoi.aSignaler?.trim() || null,
       })
-      .onConflictDoUpdate({
-        target: retoursIntervention.chantierId,
-        set: {
-          posePar: ctx.utilisateurId,
-          poseLe: new Date(),
-          aSignaler: quoi.aSignaler?.trim() || null,
-          updatedAt: new Date(),
-        },
-      })
       .returning();
 
-    await tx
-      .delete(retoursInterventionTaches)
-      .where(eq(retoursInterventionTaches.retourId, retour.id));
     if (quoi.taches.length > 0) {
       await tx.insert(retoursInterventionTaches).values(
         quoi.taches.map((t, ordre) => ({
@@ -84,9 +78,6 @@ export async function poserLeRetour(
       );
     }
 
-    await tx
-      .delete(retoursInterventionPhotos)
-      .where(eq(retoursInterventionPhotos.retourId, retour.id));
     if (quoi.photoIds.length > 0) {
       // **Les photos sont relues, jamais crues sur parole** : une liste
       // d'identifiants qui voyage est une liste qu'on peut changer en chemin, et
@@ -112,8 +103,13 @@ export async function poserLeRetour(
   });
 }
 
-/** Le retour d'UN chantier — ce que la fiche affiche une fois qu'il est posé. */
-export async function retourDuChantier(ctx: Ctx, chantierId: string) {
+/**
+ * Le DERNIER retour d'un chantier — celui qui pré-coche la fiche le lendemain.
+ *
+ * Le plus récent par `pose_le`, jamais « le » retour : depuis la migration
+ * 0096, un chantier en porte autant que de soirs.
+ */
+export async function dernierRetourDuChantier(ctx: Ctx, chantierId: string) {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const [retour] = await tx
       .select({
@@ -126,6 +122,7 @@ export async function retourDuChantier(ctx: Ctx, chantierId: string) {
       .from(retoursIntervention)
       .leftJoin(users, eq(retoursIntervention.posePar, users.id))
       .where(eq(retoursIntervention.chantierId, chantierId))
+      .orderBy(desc(retoursIntervention.poseLe))
       .limit(1);
     if (!retour) return null;
 
@@ -256,6 +253,20 @@ export async function listerLesRetours(ctx: Ctx, maximum = 2000): Promise<Retour
       aSignaler: l.aSignaler,
       vu: dejaLus.has(l.id),
     }));
+  });
+}
+
+/**
+ * Combien de retours ce chantier a déjà envoyés — « 2 retours envoyés » sur la
+ * fiche, et ce qui dit au salarié que le geste d'hier est bien parti.
+ */
+export async function nombreDeRetoursDuChantier(ctx: Ctx, chantierId: string): Promise<number> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const [ligne] = await tx
+      .select({ n: count() })
+      .from(retoursIntervention)
+      .where(eq(retoursIntervention.chantierId, chantierId));
+    return Number(ligne?.n ?? 0);
   });
 }
 

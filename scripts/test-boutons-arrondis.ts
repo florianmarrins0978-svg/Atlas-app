@@ -210,9 +210,16 @@ const HORS_CHARTE: Array<{
     // rougissait donc sur `main` pour tout le monde. Le motif vise la LIGNE :
     // un vrai bouton rectangulaire écrit demain dans cet écran serait toujours
     // dénoncé.
+    // **ET LES QUATRE CASES DE LA FICHE D'INTERVENTION — sa planche du
+    // 19 septembre 2026** (`appli/fiche-intervention-sixieme.html`, codée sur
+    // son « tu peux coder exactement cette planche ») : Maps, Waze, Copier
+    // l'adresse, Appeler le client sont quatre CASES sur une ligne, le dessin
+    // au-dessus du mot. Il a choisi cette forme planche en main, contre une
+    // version en capsules qu'il avait sous les yeux la veille (la deuxième).
+    // Le motif vise leur repère, pas le fichier.
     motif: /^src[/\\]app[/\\]planning[/\\]PlanningClient\.tsx$/,
-    seulement: /h-\[74px\] w-\[74px\]/,
-    pourquoi: "vignette d'une photo de retour : un cercle rognerait l'image",
+    seulement: /h-\[74px\] w-\[74px\]|data-atlas="geste-de-la-fiche"/,
+    pourquoi: "vignette d'une photo de retour, et les quatre cases de sa fiche d'intervention",
   },
   {
     // **UNE VIGNETTE DE PHOTO, PAS UN BOUTON** — exactement la même raison que
@@ -227,7 +234,7 @@ const HORS_CHARTE: Array<{
     //
     // Le motif vise la LIGNE — la vignette —, pas le fichier : un vrai bouton
     // rectangulaire écrit demain dans cet écran serait toujours dénoncé.
-    motif: /^src[/\\]app[/\\]planning[/\\]FinDeChantier\.tsx$/,
+    motif: /^src[/\\]app[/\\]planning[/\\]TravauxAFaire\.tsx$/,
     seulement: /h-\[46px\] w-\[46px\]/,
     pourquoi: "vignette d'une photo du retour : un cercle rognerait l'image",
   },

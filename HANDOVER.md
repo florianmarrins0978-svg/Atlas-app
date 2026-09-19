@@ -4,8 +4,30 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-09-17 · `claude/sessions-batterie-loop-pzcl4q` — le garde-fou de `main` compare des contenus, plus des dates
+**Point de reprise :** 2026-09-20 · `main` — la fiche d'intervention de sa sixième planche est codée
 (l'historique fait foi : `git log --oneline -20`)
+
+---
+
+## LA FICHE D'INTERVENTION EST CELLE DE SA SIXIÈME PLANCHE — 20 septembre 2026
+
+Six planches en une journée (`appli/fiche-intervention-*.html`), la sixième
+codée sur son *« tu peux coder exactement cette planche »*. Ce qu'une session
+doit savoir avant de toucher `FeuilleChantier` (`PlanningClient.tsx`) ou
+`TravauxAFaire.tsx` :
+
+- **les lignes du devis vivent dans le bandeau « Travaux à faire », fermé** —
+  *« un devis de trois pages, ça va faire trop long sur le planning »*. Ne pas
+  les remettre sur la fiche ;
+- **le retour part toujours** — sans photo, sans tout cocher —, et **un
+  chantier en porte plusieurs** (migration 0096, plus d'index unique). Les deux
+  réglages de `/reglages/equipe` sont des RAPPELS, plus des verrous ;
+- **le contour de la fiche est une `border`**, jamais un `box-shadow: inset`
+  (les coins, sa photo du 20) ; « Ouvrir le devis sans les prix » est en noir
+  gras ; « Ma note » en noir ;
+- **« Terminés, Retour d'intervention »** — sans point.
+
+`ARCHITECTURE.md` §389. Les planches 2 à 5 restent en ligne, écartées.
 
 ---
 ## UN SEUIL DE CONNEXION NE COMPTE QUE CE QUI RATE — et il sait rendre

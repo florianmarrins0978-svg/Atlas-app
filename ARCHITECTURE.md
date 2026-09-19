@@ -31942,3 +31942,67 @@ jamais une demi-journée (`test-creneaux-planning.ts`) ; sur une journée, deux
 appuis restent deux dates au choix. **Ce qui change pour la cliente :** elle lit
 les jours du chantier en toutes lettres — sa règle du 18 septembre pour les
 mois, `joursEnToutesLettres` — là où elle ne lisait qu'une date de départ.
+
+## §389 — La fiche d'intervention : les travaux dans un bandeau, et un retour qui part chaque soir
+
+**Sa demande du 18 septembre 2026, capture à l'appui :** *« embellir cette page
+comme on l'a fait pour la partie juste au-dessus — joli, facilement
+compréhensible, minimaliste, sans gros bouton tout moche »*. Six planches en
+une journée (`appli/fiche-intervention-*.html`), et la sixième codée sur son
+*« tu peux coder exactement cette planche »* (20 septembre, 2 h).
+
+**Ce que la fiche montre, et pourquoi.** Une carte blanche cernée d'or à 2 px
+— le sien, `colors.or`, celui de « une journée » ; en VRAIE bordure, parce
+qu'un ombrage intérieur s'épaissit dans l'angle au lieu de suivre le rayon, et
+c'est lui qui l'a vu, photo à l'appui. Les quatre gestes sur UNE ligne, le
+dessin au-dessus du mot, sans rond : vert pin pour ce qu'on fait (Maps, Waze,
+Appeler), or pour ce qui se lit (Copier l'adresse) — la seule règle de couleur
+de cette fiche. « Ma note » en noir, sur un papier doré. « Ouvrir le devis sans
+les prix » en noir gras, comme « Déplacer  Retirer » : en or, il faisait ton sur
+ton avec le contour.
+
+**Les lignes du devis vivent dans un bandeau, fermé par défaut.** *« Un devis
+de trois pages, ça va faire trop long sur le planning si c'est visible tout le
+temps. »* « Travaux à faire » — pas « Fin de chantier » : *« ce qu'il y a à
+l'intérieur c'est pas ça, ça veut rien dire »* — porte le compte (« 4 lignes »,
+« 2 sur 4 faits », « tout est fait ») et s'ouvre en glissant sur les lignes à
+cocher, les photos, « À signaler » et le bouton. Sa proposition A du
+9 septembre (la liste s'efface à l'ouverture parce qu'elle devient les cases)
+n'a plus d'objet : il n'y a plus qu'une liste. `TravauxAFaire.tsx` remplace
+`FinDeChantier.tsx`.
+
+**Le retour part TOUJOURS, et un chantier en porte plusieurs.** *« Il faut
+qu'on puisse l'envoyer même si on ne met pas de photo ou si tout n'est pas
+coché, parce qu'un chantier de 8 jours, il faut pouvoir faire plusieurs retours
+d'intervention jour après jour. »* Trois choses changent, et une seule est un
+choix d'architecture :
+
+| | avant (8 septembre) | depuis le 20 septembre |
+|---|---|---|
+| l'envoi | refusé tant qu'il manque une case ou une photo (`peutPoserLeRetour`, écran et serveur) | « Envoyer le retour du jour » part avec ce qu'il a ; `ceQuiManque` reste un RAPPEL sous le bouton |
+| les retours d'un chantier | un seul, mis à jour (`ON CONFLICT`, index unique 0080) | un par envoi, horodaté (`0096` retire l'index unique) ; le DERNIER pré-coche la fiche du lendemain |
+| les réglages « Demander une preuve » / « Au moins une photo » | des verrous | des rappels — ils gardent leur sens (dire à l'équipe ce qu'il attend), ils perdent leur porte |
+
+**Pourquoi les réglages restent.** Les retirer aurait effacé sa décision du
+8 septembre (*« ça sera au patron de décider »*) ; les garder verrouillés
+aurait contredit sa planche. Un interrupteur qui ne fait plus rien serait un
+mensonge : ceux-là écrivent encore ce qui manque, sous le bouton.
+
+**La fenêtre de la migration 0096, et elle se dit.** Le code d'avant écrit le
+retour avec `ON CONFLICT (chantier_id)`, qui exige l'index unique : entre le
+passage de la migration et la bascule de la version neuve — le temps de la
+construction sur son espace —, un « C'est fini » de l'ancien écran échoue. Rien
+d'autre ne casse ; le code neuf marche avec ou sans l'index. Le double appui
+d'un réseau lent, que l'index unique absorbait, est tenu par l'écran (le bouton
+se ferme le temps de l'envoi).
+
+**Ce qu'un retour ne fait toujours pas** : il ne termine pas le chantier, ne
+crée pas de facture (§285, décision C). Il est *« à retrouver dans Terminés,
+Retour d'intervention »* — sans point entre les deux, sa remarque du 19.
+
+**Ce qui le tient :** `test-retour-intervention.ts` (le rappel),
+`test-retour-intervention-db.ts` (plusieurs retours, le dernier, le vide qui
+part), `test-travaux-a-faire-e2e.ts` (le bandeau fermé, le contour mesuré du
+même or que « une journée », l'envoi sans rien, le second retour, le
+rechargement), `test-planning-e2e.ts` (les lignes ne s'étalent plus),
+`test-boutons-arrondis.ts` (les quatre cases, déclarées comme des cases).

@@ -1,9 +1,18 @@
 # État du projet
 
-**Dernière mise à jour :** 2026-09-18 · `main`
-· dernière migration `drizzle/0095_jours_proposes.sql`
+**Dernière mise à jour :** 2026-09-20 · `main`
+· dernière migration `drizzle/0096_plusieurs_retours_par_chantier.sql`
 
 ---
+
+## FAIT : LA FICHE D'INTERVENTION DE SA SIXIÈME PLANCHE (20 septembre 2026)
+
+Carte cernée d'or (2 px, vraie bordure), quatre gestes sur une ligne avec le
+dessin coloré, « Ma note » en noir sur papier doré, « Travaux à faire » en
+bandeau dépliant (le compte fermé, les lignes à cocher dedans), « Envoyer le
+retour du jour » qui part toujours, plusieurs retours par chantier (0096),
+« Ouvrir le devis sans les prix » en noir. `TravauxAFaire.tsx` remplace
+`FinDeChantier.tsx`. Batterie entière, niveau 3. `ARCHITECTURE.md` §389.
 
 ## FAIT : DEUX JOURS QUI NE SE TOUCHENT PAS (18 septembre 2026)
 

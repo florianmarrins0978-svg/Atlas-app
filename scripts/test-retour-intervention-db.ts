@@ -9,7 +9,9 @@
 // · un retour d'une AUTRE entreprise remontait dans la liste — la RLS ne
 //   s'éprouve pas sans base, et un retour porte le nom d'un client et des
 //   photos de sa propriété ;
-// · deux « c'est fini » créaient deux retours pour un seul chantier ;
+// · un second envoi ÉCRASAIT le premier — un chantier de huit jours envoie
+//   un retour chaque soir, et le soir 3 ne doit pas effacer le soir 2
+//   (sa règle du 19 septembre 2026, migration 0096) ;
 // · **la photo d'un retour partait à la purge** — le piège du 8 septembre 2026,
 //   écrit dans `TODO.md` avant d'être codé : le fichier disparaîtrait des mois
 //   plus tard, sur un écran que personne ne regardait ce jour-là.
@@ -27,7 +29,8 @@ import * as chantiersRepo from "../src/server/repositories/chantiers";
 import * as photosRepo from "../src/server/repositories/photos";
 import {
   poserLeRetour,
-  retourDuChantier,
+  dernierRetourDuChantier,
+  nombreDeRetoursDuChantier,
   listerLesRetours,
   compterLesRetours,
   photoTenueParUnRetour,
@@ -83,7 +86,7 @@ async function main() {
       photoIds: [],
       aSignaler: "  la haie attendra  ",
     });
-    const r = await retourDuChantier(ctxA, chantierA.id);
+    const r = await dernierRetourDuChantier(ctxA, chantierA.id);
     assert.ok(r, "le retour n'a pas été posé");
     assert.equal(r.taches.length, 2);
     // Ce qui n'a PAS été fait reste : c'est ce qui empêche de facturer un
@@ -93,7 +96,7 @@ async function main() {
     assert.equal(r.aSignaler, "la haie attendra");
   });
 
-  await essai("un second « c'est fini » MET À JOUR, il n'en crée pas un deuxième", async () => {
+  await essai("un second envoi est un SECOND retour — jour après jour, sans écraser le premier", async () => {
     await poserLeRetour(ctxA, chantierA.id, {
       taches: [
         { libelle: "Débroussaillage", faite: true },
@@ -102,11 +105,23 @@ async function main() {
       photoIds: [],
       aSignaler: null,
     });
-    assert.equal(await compterLesRetours(ctxA), 1, "deux retours pour un seul chantier");
-    const r = await retourDuChantier(ctxA, chantierA.id);
-    assert.deepEqual(r?.taches.map((t) => t.faite), [true, true], "les tâches n'ont pas été remplacées");
+    assert.equal(await nombreDeRetoursDuChantier(ctxA, chantierA.id), 2, "le second envoi a écrasé le premier");
+    assert.equal(await compterLesRetours(ctxA), 2);
+    // Le DERNIER pré-coche la fiche du lendemain : c'est bien le second.
+    const r = await dernierRetourDuChantier(ctxA, chantierA.id);
+    assert.deepEqual(r?.taches.map((t) => t.faite), [true, true], "le dernier retour n'est pas le plus récent");
     // Une chaîne vide devient NULL : sinon l'écran afficherait une case
     // « À signaler » vide, qui se lit comme un mot perdu.
+    assert.equal(r?.aSignaler, null);
+  });
+
+  // **Un retour vide part quand même** — sa règle du 19 septembre : ni photo,
+  // ni case ; c'est le serveur qui ne refuse plus, la base n'a jamais refusé.
+  await essai("un retour sans rien de coché ni de photo se pose", async () => {
+    await poserLeRetour(ctxA, chantierA.id, { taches: [{ libelle: "Débroussaillage", faite: false }], photoIds: [], aSignaler: "  " });
+    assert.equal(await nombreDeRetoursDuChantier(ctxA, chantierA.id), 3);
+    const r = await dernierRetourDuChantier(ctxA, chantierA.id);
+    assert.deepEqual(r?.taches.map((t) => t.faite), [false]);
     assert.equal(r?.aSignaler, null);
   });
 
@@ -118,12 +133,14 @@ async function main() {
     });
     const chezA = await listerLesRetours(ctxA);
     const chezB = await listerLesRetours(ctxB);
-    assert.equal(chezA.length, 1, `A voit ${chezA.length} retours`);
+    // Les trois de A — ses trois soirs —, et rien de B.
+    assert.equal(chezA.length, 3, `A voit ${chezA.length} retours`);
     assert.equal(chezB.length, 1, `B voit ${chezB.length} retours`);
     assert.ok(!chezA.some((r) => r.chantierNom === "Tonte Bernard"), "A voit le chantier de B");
     // Et le retour de B est INTROUVABLE depuis A, pas seulement absent de la
     // liste : c'est la différence entre un filtre et une isolation.
-    assert.equal(await retourDuChantier(ctxA, chantierB.id), null);
+    assert.equal(await dernierRetourDuChantier(ctxA, chantierB.id), null);
+    assert.equal(await nombreDeRetoursDuChantier(ctxA, chantierB.id), 0);
   });
 
   // ═════════════════════════════════════════════════════════════════════════
@@ -150,7 +167,7 @@ async function main() {
       "la clé d'une photo de retour a été mise en file de purge"
     );
     // Le retour la montre toujours : c'est le fichier qu'on protégeait.
-    const r = await retourDuChantier(ctxA, chantierA.id);
+    const r = await dernierRetourDuChantier(ctxA, chantierA.id);
     assert.equal(r?.photos.length, 1, "le retour a perdu sa photo");
   });
 

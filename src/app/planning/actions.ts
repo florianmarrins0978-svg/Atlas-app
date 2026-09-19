@@ -22,7 +22,7 @@ import { estUnJourValide } from "@/lib/planning-jour";
 // (le départ se dit avec le vocabulaire de la base : `Moment`)
 import { porterChantierDansAgenda } from "@/server/repositories/agenda-apple";
 import { tachesDuChantier, type FeuilleDuChantier } from "@/server/repositories/devis";
-import { retourDuChantier } from "@/server/repositories/retours-intervention";
+import { nombreDeRetoursDuChantier } from "@/server/repositories/retours-intervention";
 import { listerPhotos } from "@/server/repositories/photos";
 import { listerClients, trouverOuCreerClient } from "@/server/repositories/clients";
 import { filtrerClientsParNom } from "@/lib/recherche-client";
@@ -326,19 +326,14 @@ export async function supprimerChantierAction(chantierId: string): Promise<Resul
 export async function tachesDuChantierAction(
   chantierId: string
 ): Promise<
-  FeuilleDuChantier & { retourPose: boolean; photos: { id: string; storageKey: string }[] }
+  FeuilleDuChantier & { retours: number; photos: { id: string; storageKey: string }[] }
 > {
   const ctx = await getCurrentCtx();
   await exigerChantierDansSaPortee(ctx, chantierId, "ouvrir la feuille de ce chantier");
-  // **Le retour se demande ICI, avec la feuille — pas à l’ouverture du bandeau.**
-  //
-  // Sa demande du 9 septembre : une fois posé, le bouton se fige. Or le bandeau
-  // ne chargeait son état qu’à l’OUVERTURE : en rouvrant la fiche le lendemain,
-  // il aurait retrouvé un bouton vert et pressable sur un chantier déjà rendu.
-  // Le verrou qu’il demande n’aurait tenu que le temps d’une session.
-  //
-  // C’est une requête de plus sur une lecture qui se fait déjà, jamais une
-  // requête de plus tout court.
+  // **Le compte des retours se demande ICI, avec la feuille — pas à
+  // l’ouverture du bandeau.** La fiche dit « 2 retours envoyés » sous le
+  // bandeau fermé, avant qu’on l’ouvre ; c’est une requête de plus sur une
+  // lecture qui se fait déjà, jamais une requête de plus tout court.
   // **Et les PHOTOS du chantier, celles qu’il a jointes en créant la fiche.**
   //
   // Sa remarque du 9 septembre 2026 : *« j’ai joint des photos lorsque j’ai
@@ -347,14 +342,14 @@ export async function tachesDuChantierAction(
   // salarié coche ses preuves — c’est-à-dire APRÈS le travail, dans un tiroir
   // qu’il n’ouvre qu’en partant. Or elles sont là pour être vues AVANT : c’est
   // ce qu’il montre du chantier à celui qui s’y rend.
-  const [feuille, retour, sesPhotos] = await Promise.all([
+  const [feuille, retours, sesPhotos] = await Promise.all([
     tachesDuChantier(ctx, chantierId),
-    retourDuChantier(ctx, chantierId),
+    nombreDeRetoursDuChantier(ctx, chantierId),
     listerPhotos(ctx, chantierId),
   ]);
   return {
     ...feuille,
-    retourPose: retour !== null,
+    retours,
     photos: sesPhotos.map((p) => ({ id: p.id, storageKey: p.storageKey })),
   };
 }

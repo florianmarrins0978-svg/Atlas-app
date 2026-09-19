@@ -15,6 +15,16 @@ import { reglerLaFinDeChantierAction } from "./actions";
  * tranche, entreprise par entreprise.
  *
  * ───────────────────────────────────────────────────────────────────────────
+ * **ILS RAPPELLENT, ILS NE BLOQUENT PLUS — sa règle du 19 septembre 2026 :**
+ * *« il faut qu'on puisse l'envoyer même si on ne met pas de photo ou si tout
+ * n'est pas coché, parce qu'un chantier de 8 jours, il faut pouvoir faire
+ * plusieurs retours d'intervention jour après jour »*. Allumés, ils écrivent
+ * sous « Envoyer le retour du jour » ce qui manque encore ; le retour part
+ * quand même. Un réglage qui aurait gardé son verrou aurait contredit sa
+ * planche ; un réglage retiré aurait effacé sa décision du 8 septembre. Il
+ * garde donc son sens — dire à l'équipe ce qu'il attend — et perd sa porte.
+ *
+ * ───────────────────────────────────────────────────────────────────────────
  * **LES DEUX PARTENT ÉTEINTS**, et ce n'est pas une timidité. Les allumer
  * d'office bloquerait, dès la mise à jour, un salarié dont le téléphone est
  * mort à 18 h — sur un chantier, sans personne à qui demander. Il les allume
@@ -65,7 +75,7 @@ export default function FinDeChantierReglage({
 
       <Bascule
         titre="Demander une preuve"
-        dit="Ce qui a été fait, avant « C'est fini »"
+        dit="Rappelle de cocher ce qui a été fait avant d'envoyer le retour"
         actif={demande}
         enCours={enCours}
         repere="retour-demande"
@@ -75,7 +85,7 @@ export default function FinDeChantierReglage({
       {demande && (
         <Bascule
           titre="Au moins une photo"
-          dit="Sinon il ne peut pas terminer"
+          dit="Rappelée aussi, avant l'envoi"
           actif={photoExigee}
           enCours={enCours}
           repere="retour-photo"

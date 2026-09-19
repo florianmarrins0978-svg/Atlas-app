@@ -13,12 +13,20 @@
  * ─────────────────────────────────────────────────────────────────────────
  * **POURQUOI CES RÈGLES SONT PURES, ET POURQUOI ELLES SONT SEULES.**
  *
- * Les mêmes décisions servent à trois endroits : l'écran du salarié, qui grise
- * ou allume « C'est fini » ; l'action serveur, qui doit REFUSER un appel direct
- * que l'écran n'aurait pas laissé passer ; et la page du patron, qui compte et
- * range. Trois rédactions divergeraient au premier réglage ajouté — et la
- * divergence porterait ici un nom : un retour posé sans rien, ou un geste
- * refusé sans raison sur un chantier fini.
+ * Les mêmes décisions servent à deux endroits : l'écran du salarié, qui dit
+ * sous le bouton ce que le patron attend encore ; et la page du patron, qui
+ * compte et range. Deux rédactions divergeraient au premier réglage ajouté.
+ *
+ * ─────────────────────────────────────────────────────────────────────────
+ * **CE QUI MANQUE NE BLOQUE PLUS L'ENVOI — sa règle du 19 septembre 2026 :**
+ * *« il faut qu'on puisse l'envoyer même si on ne met pas de photo ou si tout
+ * n'est pas coché, parce qu'un chantier de 8 jours, il faut pouvoir faire
+ * plusieurs retours d'intervention jour après jour »*. Jusque-là, l'écran
+ * grisait « C'est fini » et le serveur refusait tant qu'il manquait une case
+ * ou une photo — juste pour un chantier d'un jour, faux pour un chantier de
+ * huit, où le retour du soir 2 est forcément incomplet. `ceQuiManque` reste :
+ * il dit ce que le patron attend, il ne l'impose plus. `peutPoserLeRetour`,
+ * qui verrouillait, est parti avec le verrou (`CLAUDE.md` §4 quinquies).
  *
  * Ni base, ni réseau, ni date.
  */
@@ -45,17 +53,15 @@ export type CeQuIlAPose = {
 };
 
 /**
- * Ce qui manque avant de pouvoir poser « C'est fini » — **en toutes lettres, et
- * AVANT l'appui**.
+ * Ce que le patron attend encore sur ce retour — **en toutes lettres, sous le
+ * bouton, AVANT l'appui**. Un rappel, pas un verrou : le retour du jour part
+ * quand même (sa règle du 19 septembre 2026, en tête de ce fichier).
  *
- * **Le tableau est vide quand rien ne manque**, et c'est ce que l'écran lit
- * pour allumer son bouton. Un bouton actif qui refuse au moment du geste se lit
- * comme une panne, et sur un chantier il n'a personne à qui demander
- * (`AGENTS.md`, le défaut muet du 11 août 2026).
+ * **Le tableau est vide quand rien ne manque**, et l'écran n'écrit alors rien.
  *
- * **Rien n'est exigé quand le patron n'a rien demandé.** C'est sa décision :
- * le salarié « remplira ou non ». Sans réglage allumé, le geste est libre — il
- * peut poser un retour vide, qui dit seulement « c'est fini ».
+ * **Rien n'est attendu quand le patron n'a rien demandé.** C'est sa décision du
+ * 8 septembre : le salarié « remplira ou non ». Sans réglage allumé, un retour
+ * vide dit seulement « je suis passé ».
  */
 export function ceQuiManque(
   pose: CeQuIlAPose,
@@ -81,11 +87,6 @@ export function phraseDeCeQuiManque(
   regles: ReglesDuRetour
 ): string {
   return ceQuiManque(pose, regles).join(" et ");
-}
-
-/** Le geste est-il possible ? Le contraire de « il manque quelque chose ». */
-export function peutPoserLeRetour(pose: CeQuIlAPose, regles: ReglesDuRetour): boolean {
-  return ceQuiManque(pose, regles).length === 0;
 }
 
 /**

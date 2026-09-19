@@ -167,7 +167,7 @@ async function main() {
     );
   });
 
-  await cas("il est entre « Copier l'adresse » et « Ouvrir le PDF »", async () => {
+  await cas("il est entre « Copier l'adresse » et « Ouvrir le devis »", async () => {
     const boite = async (s: string, quoi: string) => {
       const b = await page.locator(s).first().boundingBox();
       assert.ok(b, `${quoi} n'a aucune boîte.`);
@@ -175,12 +175,12 @@ async function main() {
     };
     const adresse = await boite("text=Copier l’adresse", "« Copier l'adresse »");
     const note = await boite('[data-atlas="note-etat"]', "Le cadre de la note");
-    const pdf = await boite('[data-atlas="pdf-sans-prix"]', "« Ouvrir le PDF sans les prix »");
+    const pdf = await boite('[data-atlas="pdf-sans-prix"]', "« Ouvrir le devis sans les prix »");
     assert.ok(
       adresse < note && note < pdf,
       `Le cadre n'est plus à la place qu'il a nommée (adresse y=${Math.round(adresse)}, ` +
         `note y=${Math.round(note)}, PDF y=${Math.round(pdf)}). Sa demande était « ENTRE ` +
-        `Copier l'adresse et Ouvrir le PDF ».`
+        `Copier l'adresse et Ouvrir le devis ».`
     );
   });
 

@@ -287,7 +287,17 @@ le second affichage du geste sous le calendrier est supprimé, le nom ne se
 redit plus, et « Annuler » est passé en noir gras à 2 cm à droite de la
 consigne. `ARCHITECTURE.md` §381.
 
-## ⏳ LA FICHE D'INTERVENTION : LA DEUXIÈME OU LA TROISIÈME (19 septembre 2026)
+## ~~⏳ LA FICHE D'INTERVENTION : LA DEUXIÈME OU LA TROISIÈME~~ — CODÉ LE 20 SEPTEMBRE 2026
+
+**Sa réponse du 20 à 2 h : *« Change PDF sans les prix par : ouvrir le devis
+sans les prix, et tu peux coder exactement cette planche »*** — la sixième.
+Codée : `TravauxAFaire.tsx` remplace `FinDeChantier.tsx`, migration 0096
+(plusieurs retours par chantier), le retour part toujours, les réglages
+deviennent des rappels, le point est parti. `ARCHITECTURE.md` §389. **Sa
+question « un chantier avec un retour part-il dans Terminés ? » n'a pas été
+posée** : la planche dit « à retrouver dans Terminés, Retour d'intervention »,
+et c'est déjà là que la liste des retours vit — le chantier, lui, reste au
+planning tant qu'il n'est pas terminé. Ce qui suit est l'histoire des planches.
 
 **Le soir, deux planches de plus, toutes gardées** —
 `appli/fiche-intervention-quatrieme-et-cinquieme.html` : la **quatrième** est
@@ -340,8 +350,8 @@ son oui définitif.** Si c'est la troisième, `FinDeChantier.tsx` garde son
 
 **Sa consigne du même jour, à porter dans l'application avec le lot choisi :**
 *« je veux pas de point entre Terminés et Retour d'intervention »* —
-`src/app/planning/FinDeChantier.tsx` porte encore « Terminés · Retour
-d'intervention » ; les deux planches ont déjà le tiret.
+l'ancien bandeau portait « Terminés · Retour d'intervention » ; **fait le
+20 septembre** (`TravauxAFaire.tsx`), sans point.
 
 ## ⏳ LA FICHE D'INTERVENTION EMBELLIE ATTEND SON OUI (18 septembre 2026, refaite le 19)
 

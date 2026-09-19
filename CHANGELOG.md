@@ -6,6 +6,36 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-09-20
+
+### La fiche d'intervention est codée — sa sixième planche, exactement
+
+**Son « tu peux coder exactement cette planche », à 2 h**, avec un dernier mot :
+« Ouvrir le **devis** sans les prix », plus « PDF ». Puis : *« une fois codé,
+joue la batterie et fusionne, tu es autonome »*.
+
+**Ce que ça change à l'écran** (`PlanningClient.tsx`, `TravauxAFaire.tsx`) :
+la carte blanche cernée d'or à 2 px en vraie bordure ; Maps, Waze, Copier
+l'adresse, Appeler le client sur une ligne, le dessin coloré au-dessus du mot ;
+« Ma note » en noir, sur un papier doré ; les lignes du devis dans le bandeau
+« Travaux à faire », fermé, avec son compte ; « Envoyer le retour du jour »
+toujours actif ; « Retour du jour envoyé — À retrouver dans Terminés, Retour
+d'intervention » ; le lien du devis en noir gras.
+
+**Ce que ça change dans les règles**, et c'est le point à retenir : **le retour
+part sans photo ni tout coché, et un chantier en porte plusieurs** — *« un
+chantier de 8 jours, il faut pouvoir faire plusieurs retours d'intervention
+jour après jour »*. La migration `0096` retire l'index unique par chantier ;
+`peutPoserLeRetour` est parti avec le verrou ; les deux réglages « Demander une
+preuve » et « Au moins une photo » deviennent des rappels sous le bouton. **La
+fenêtre entre la migration et la version servie** : un « C'est fini » de
+l'ancien écran échoue le temps de la construction, rien d'autre
+(`ARCHITECTURE.md` §389).
+
+**Ce qu'il faut savoir** : le premier retour d'un chantier existant reste ce
+qu'il était ; les suivants s'ajoutent. Un retour ne termine toujours pas le
+chantier.
+
 ## 2026-09-18
 
 ### La sixième fiche d'intervention — la quatrième, corrigée sur trois points
