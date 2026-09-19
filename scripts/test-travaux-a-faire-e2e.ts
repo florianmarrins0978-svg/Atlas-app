@@ -56,11 +56,14 @@ async function cas(nom: string, fn: () => Promise<void>) {
 async function main() {
   console.log("=== Travaux à faire — le bandeau, et le retour du jour ===\n");
 
-  // Un chantier de la journée, sans retour : c'est l'état du matin.
+  // Un chantier de la journée, sans retour : c'est l'état du matin. **Avec
+  // un devis qui a des lignes** : selon les suites jouées avant, le chantier
+  // le plus récent en porte un vide, et il n'y aurait rien à cocher.
   const { rows } = await pool.query<{ id: string; nom: string }>(
     `SELECT c.id, c.nom FROM chantiers c
        JOIN devis d ON d.chantier_id = c.id AND d.statut = 'envoye'
       WHERE c.deleted_at IS NULL AND c.termine_at IS NULL
+        AND EXISTS (SELECT 1 FROM lignes_devis l WHERE l.devis_id = d.id)
       ORDER BY c.created_at DESC LIMIT 1`
   );
   assert.ok(rows.length === 1, "aucun chantier avec un devis envoyé dans le jeu de démonstration");
