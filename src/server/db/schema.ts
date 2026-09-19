@@ -3129,9 +3129,11 @@ export const retoursIntervention = pgTable(
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [
-    // Un seul retour par chantier : deux « c'est fini » donneraient deux
-    // versions du même travail, et rien ne dirait laquelle fait foi.
-    unique("retours_intervention_chantier_uk").on(t.chantierId),
+    // PLUSIEURS retours par chantier — un par soir (migration 0096, sa règle
+    // du 19 septembre 2026 : « un chantier de 8 jours, il faut pouvoir faire
+    // plusieurs retours d'intervention jour après jour »). L'index unique de
+    // 0080 est tombé ; celui-ci sert à lire le DERNIER retour d'un chantier.
+    index("retours_intervention_par_chantier_idx").on(t.chantierId, t.poseLe),
     index("retours_intervention_recents_idx").on(t.entrepriseId, t.poseLe),
   ]
 );

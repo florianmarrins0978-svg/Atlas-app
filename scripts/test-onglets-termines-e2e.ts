@@ -100,10 +100,12 @@ async function main() {
     [chantierId]
   );
   await pool.query(`UPDATE chantiers SET termine_at = now() WHERE id = $1`, [chantierId]);
+  // Un chantier porte plusieurs retours depuis la migration 0096 : plus
+  // d'`ON CONFLICT` possible, on repart d'un chantier sans retour.
+  await pool.query(`DELETE FROM retours_intervention WHERE chantier_id = $1`, [chantierId]);
   const { rows: pose } = await pool.query<{ id: string }>(
     `INSERT INTO retours_intervention (entreprise_id, chantier_id, pose_le, a_signaler)
      VALUES ($1, $2, now(), 'Chantier fini')
-     ON CONFLICT (chantier_id) DO UPDATE SET a_signaler = EXCLUDED.a_signaler
      RETURNING id`,
     [entrepriseId, chantierId]
   );
