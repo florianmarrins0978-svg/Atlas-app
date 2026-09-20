@@ -48,7 +48,26 @@ la place, en quatre points :
 | le choix des jours | le geste de SON écran d'envoi, à la lettre : `propositions-de-jours.ts` — un appui pose le bloc d'affilée, un appui sur un jour du bloc l'efface **sans rien décaler**, un appui ailleurs le repose |
 | le compte | « Les travaux sont prévus sur N jours », **au-dessus du bouton** de validation — et le bouton passe au pluriel avec |
 
-**Deux choses que la planche a trouvées et qu'il faudra porter dans le code :**
+**LES TROIS GESTES, et il a fallu qu'il le signale :** *« on peut pas
+désélectionner un jour sur les 4 et le mettre ailleurs en recliquant
+ailleurs »*. La planche n'en connaissait que deux — effacer, et reposer le
+bloc —, si bien qu'un appui ailleurs remplaçait tout. `gesteSurUnJour` en
+compte **trois**, et c'est exactement pour ce cas :
+
+| ce jour | ce que l'appui fait |
+|---|---|
+| déjà posé | il s'efface, et **rien ne se décale** |
+| il en manque | il **comble** — ce jour-là seul, le reste ne bouge pas |
+| rien ne manque | il repose le **bloc entier** ailleurs |
+
+**Ce que cela commande sur le barrage** : ce qui barre dépend de ce que l'appui
+ferait. Un jour qui COMBLE n'a qu'à être libre lui-même ; seul celui qui POSE
+le bloc doit pouvoir l'accueillir en entier. C'est déjà ce que fait son écran
+d'envoi, qui interroge le serveur sur un jour seul quand on comble
+(`verifierJourProposeAction`, `Math.min(2, duree)`).
+
+**Trois autres choses que la planche a trouvées et qu'il faudra porter dans le
+code :**
 
 1. le bloc posé sur un jour d'où le chantier ne tient pas d'affilée recouvrait
    des jours pris. Le calendrier du client doit donc **barrer ce qui ne peut
@@ -57,7 +76,11 @@ la place, en quatre points :
    il reçoit `dureeDemiJournees={null}` ;
 2. un jour du bloc pouvait être **barré en même temps qu'allumé**, donc
    impossible à retirer — le geste même qu'il demande. Un jour posé reste
-   touchable, toujours.
+   touchable, toujours ;
+3. trois jours retenus pour un chantier de quatre **partaient sans rien dire**.
+   Le bouton ne s'éteint pas — il répond « Il manque 1 jour », comme le reste
+   de cet écran. À tenir aussi côté serveur : `enregistrerReponse` ne reçoit
+   aujourd'hui qu'une seule date.
 
 **Ce que cela ne coûte PAS, et il faut le tenir :** le compte se déduit de
 `joursProposes`, déjà envoyé à la page. Ni « durée » ni « créneau » ne doivent

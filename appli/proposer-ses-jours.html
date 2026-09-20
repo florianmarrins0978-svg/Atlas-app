@@ -186,13 +186,14 @@
       <tr><th>Votre demande</th><th>Avant</th><th>Ici</th></tr>
       <tr><td>1 date proposée</td><td>Cette date ne me convient pas — je propose :</td><td><b>Cette date ne me convient pas&nbsp;? Je propose</b></td></tr>
       <tr><td>plusieurs dates</td><td>la même phrase au singulier</td><td><b>Ces dates ne me conviennent pas&nbsp;? Je propose</b></td></tr>
-      <tr><td>le choix des jours</td><td>un seul jour, et elle ne peut pas le défaire</td><td>les <b>4 jours d'affilée</b>, un appui les efface, un appui ailleurs les déplace</td></tr>
+      <tr><td>le choix des jours</td><td>un seul jour, et elle ne peut pas le défaire</td><td>les <b>4 jours d'affilée</b> ; un appui sur un jour l'efface, et l'appui suivant le remet <b>où elle veut</b></td></tr>
       <tr><td>le nombre de jours</td><td>nulle part</td><td><b>Les travaux sont prévus sur 4 jours</b>, juste au-dessus du bouton</td></tr>
     </table>
     <p style="margin-top:14px"><b>Le pluriel se décide sur les JOURS, pas sur le nombre de lignes.</b> Votre capture en est la raison : votre client lit « <i>le jeudi 8 octobre, le vendredi 9, le lundi 12 et le mardi 13</i> » — quatre dates — et juste en dessous « <i>cette date</i> », au singulier. C'est ce cas-là qui passe au pluriel ici.</p>
     <p><b>Le bouton se met au pluriel aussi</b> : « Retenir ces jours » quand il y en a plusieurs, « Retenir cette date » quand il n'y en a qu'un. Sans ça, il resterait au singulier sous quatre jours allumés.</p>
     <p><b>Et ça ne dit rien de votre planning.</b> Le compte vient des jours que VOUS avez proposés — ils sont déjà écrits sur sa page. Ni la durée en demi-journées, ni le matin ou l'après-midi ne descendent jusqu'à elle, et le contrôle qui le garde reste vert.</p>
     <p><b>Un défaut trouvé en essayant la planche, et il comptait.</b> Poser les quatre jours depuis le 19 allumait le 20 et le 21 — <b>deux jours déjà pris</b>. Elle vous aurait proposé des jours que l'acceptation aurait refusés ensuite, sans qu'elle comprenne pourquoi. Un jour se barre donc désormais <b>quand le chantier n'y tient pas d'affilée</b>, pas seulement quand il est pris : c'est exactement ce que fait déjà VOTRE calendrier. Touchez le 19 dans la planche, il ne répond plus.</p>
+    <p><b>Le défaut que vous avez trouvé, et il était au cœur du geste.</b> <i>« On peut pas désélectionner un jour sur les 4 et le mettre ailleurs. »</i> Exact : un appui ailleurs reposait <b>tout le bloc</b> au lieu de combler le jour qui manquait. Votre règle du 17 septembre en compte trois — effacer, combler, poser — et il n'y en avait que deux. Désormais : effacez le 14, touchez le 22, et vous avez le 12, le 13, le 15 et le 22.</p>
     <p><b>Et un second, dans la foulée.</b> Le 15 faisait partie des quatre jours posés depuis le 12, et il était <b>barré en même temps qu'allumé</b> — parce qu'un chantier de quatre jours ne <i>commence</i> pas le 15. Votre cliente voyait un jour vert barré, et ne pouvait plus l'enlever : exactement le geste que vous avez demandé. Un jour déjà posé reste touchable, toujours.</p>
     <p><b>Un point où j'ai tranché pour vous, dites-le si c'est non :</b> j'ai mis la phrase du nombre de jours <b>juste au-dessus du bouton</b>. Sous le titre, elle prévient avant qu'elle touche ; au-dessus du bouton, elle est sous les yeux au moment de valider. C'est une ligne à déplacer.</p>
   </div>
@@ -237,10 +238,26 @@ function blocLibre(premier){
   return blocDepuis(premier).every(function(j){ return OCCUPES.indexOf(j) === -1; });
 }
 
-/* Le geste du patron, à la lettre : dans le bloc → on EFFACE et rien ne bouge ;
-   ailleurs → on repose le bloc entier. */
+/* **LE GESTE DU PATRON, À LA LETTRE — `gesteSurUnJour`.** Trois cas, et le
+   troisième manquait : il ne voyait que « dans le bloc » et « ailleurs », si
+   bien qu'un appui ailleurs REPOSAIT tout le bloc. C'est ce qu'il a signalé :
+   *« on peut pas désélectionner un jour sur les 4 et le mettre ailleurs »*.
+
+   | ce jour | ce que l'appui fait |
+   |---|---|
+   | déjà posé | il s'efface, et RIEN ne se décale |
+   | il en manque | il COMBLE — ce jour-là seul, le reste ne bouge pas |
+   | rien ne manque | il repose le bloc entier ailleurs | */
+function gesteSurUnJour(j){
+  if (jours.indexOf(j) !== -1) return "effacer";
+  if (jours.length > 0 && jours.length < duree) return "ajouter";
+  return "poser";
+}
+
 function toucherUnJour(j){
-  if (jours.indexOf(j) !== -1) jours = jours.filter(function(x){ return x !== j; });
+  const geste = gesteSurUnJour(j);
+  if (geste === "effacer") jours = jours.filter(function(x){ return x !== j; });
+  else if (geste === "ajouter") jours = jours.concat([j]).sort();
   else jours = blocDepuis(j);
   refus = "";
 }
@@ -341,15 +358,19 @@ function calendrier(){
        (`jours-barres.ts`). Sans cela, poser les quatre jours depuis le 19
        allumait le 20 et le 21, qui sont pris : elle proposerait des jours que
        l'acceptation refuserait ensuite, sans qu'elle comprenne pourquoi. */
-    /* **UN JOUR DÉJÀ POSÉ RESTE TOUCHABLE, toujours.** Trouvé en essayant :
-       le 15 faisait partie du bloc posé depuis le 12, et il était barré en
-       même temps qu'allumé — parce qu'un chantier de quatre jours ne PART pas
-       du 15. Elle voyait un jour vert barré, et ne pouvait plus l'enlever,
-       c'est-à-dire exactement le geste qu'il a demandé. Barré veut dire « on
-       ne COMMENCE pas là » ; cela n'a jamais voulu dire « on ne peut pas le
-       retirer ». */
-    const pose = jours.indexOf(j) !== -1;
-    const pris = !pose && (!estOuvre(d) || !blocLibre(j));
+    /* **CE QUI BARRE DÉPEND DE CE QUE L'APPUI FERAIT** — comme sur son écran
+       d'envoi, où le serveur est interrogé sur un jour seul quand on comble,
+       et sur le bloc entier quand on le pose.
+
+       Un jour déjà posé reste touchable, toujours : barré veut dire « on ne
+       COMMENCE pas là », jamais « on ne peut pas le retirer ». Et un jour qui
+       vient COMBLER n'a qu'à être libre lui-même — exiger qu'un chantier
+       entier y tienne barrait presque tout le mois, et c'est ce qui
+       l'empêchait de déplacer son quatrième jour. */
+    const geste = gesteSurUnJour(j);
+    const pose = geste === "effacer";
+    const libre = estOuvre(d) && OCCUPES.indexOf(j) === -1;
+    const pris = !pose && (!libre || (geste === "poser" && !blocLibre(j)));
     cases.push('<button type="button" data-jour="' + j + '"' + (pris ? " disabled" : "") +
       ' aria-pressed="' + pose + '" aria-label="' + n + ' octobre">' + n + '</button>');
   }
@@ -419,6 +440,16 @@ document.querySelector(".tel").addEventListener("click", function(e){
     /* Le bouton ne s’éteint pas faute de jour : il répond, et c’est sa réponse
        qui dit ce qui manque — la règle de cet écran. */
     if (!jours.length){ refus = "Touchez d’abord un jour dans le calendrier."; peindre(); return; }
+    /* **ELLE NE PEUT PAS RETENIR MOINS DE JOURS QUE LE CHANTIER N'EN PREND.**
+       Trouvé en parcourant la planche : trois jours retenus pour un chantier
+       de quatre partaient sans rien dire, et l'artisan n'aurait pas eu de quoi
+       faire le travail. Le bouton ne s'éteint pas pour autant — il répond, et
+       c'est sa réponse qui dit ce qui manque (la règle de cet écran). */
+    if (jours.length < duree){
+      const manque = duree - jours.length;
+      refus = "Il manque " + manque + (manque > 1 ? " jours." : " jour.");
+      peindre(); return;
+    }
     feuilleOuverte = false; choix = "autre";
   } else if (c.classList.contains("voile")){
     /* Refermer sans avoir choisi défait le choix : sinon elle reste sur « je
