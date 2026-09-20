@@ -1381,24 +1381,30 @@ puis rallumer l'espace. **À barrer dès qu'il confirme que sa version a avancé
 
 ## LE PORT QUE LE RELAIS PERD — UNE HYPOTHÈSE À TRANCHER À LA RÉCIDIVE (13 septembre 2026)
 
-**20 SEPTEMBRE 2026, 22 h 23 — CE N'ÉTAIT PAS UNE PERTE DE PORT : L'ESPACE
-ÉTAIT ARRÊTÉ.** Il signale un téléchargement proposé à la place d'Atlas
-(`…-3000.app.github.dev`, sur `about:blank`) — exactement la signature du refus
-nu du relais, celle du 31 août. **Ce qui a tranché avant toute hypothèse, c'est
-la DATE de la fiche** : dernière publication 20:08:26 UTC, puis rien à 20:23 ni
-à 20:28, alors que le veilleur la réécrit au quart d'heure. Plus de vingt
-minutes sans réécriture, l'espace est arrêté (`CLAUDE.md` §1 bis).
+**20 SEPTEMBRE 2026, 22 h 23 — L'ESPACE ÉTAIT ARRÊTÉ, ET C'EST LUI QUI L'A
+ÉTEINT ; L'ORDRE RESTE INCONNU.** Il signale un téléchargement proposé à la
+place d'Atlas (`…-3000.app.github.dev`, sur `about:blank`) — exactement la
+signature du refus nu du relais, celle du 31 août. Sa fiche : dernière
+publication 20:08:26 UTC, puis rien à 20:23 ni à 20:28, alors que le veilleur la
+réécrit au quart d'heure — l'espace ne tournait plus (`CLAUDE.md` §1 bis). Puis
+lui : *« je l'ai éteint »*.
 
-Et ce que cette fiche de 20:08 portait : serveur debout, *« Port 3000 : ouvert —
-Atlas répond bien à l'adresse publique (vérifié) »*. Le port allait bien quinze
-minutes avant qu'il clique.
+**CE QUI N'EST PAS TRANCHÉ, et cette entrée a d'abord affirmé le contraire :**
+a-t-il éteint son espace AVANT le téléchargement de 22 h 23, ou APRÈS, pour
+tenter de le réparer ?
 
-**Donc cette soirée NE COMPTE PAS comme la récidive attendue ci-dessous.** Un
-relais qui n'a personne derrière refuse de la même façon qu'un relais qui a
-perdu le port : depuis son téléphone, les deux sont indiscernables. Une session
-qui lirait « téléchargement au lieu d'Atlas » sans regarder la date de la fiche
-rouvrirait l'enquête sur la mauvaise piste, et conclurait à tort que
-l'hypothèse du port *détecté* tient encore.
+| | |
+|---|---|
+| éteint **avant** | aucune perte de port ce soir-là : un relais sans personne derrière refuse exactement pareil |
+| éteint **après** | la perte a bien eu lieu, et c'est la récidive attendue ci-dessous |
+
+Ce que la fiche de 20:08 portait, dans les deux cas : serveur debout, *« Port
+3000 : ouvert — Atlas répond bien à l'adresse publique (vérifié) »*. Le port
+allait bien quinze minutes avant qu'il clique.
+
+**La leçon qui tient, elle :** « téléchargement au lieu d'Atlas » ne désigne
+jamais le port à lui seul. La DATE de la fiche se regarde d'abord — et un espace
+arrêté, par veille ou par sa main, produit le même écran qu'un port perdu.
 
 **Geste rendu :** rallumer l'espace depuis github.com/codespaces — il ne détruit
 rien, et il reprend au passage la version de retard que la fiche signalait.
