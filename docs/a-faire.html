@@ -84,6 +84,7 @@
 <li><a href="#13-choisir-le-prestataire-qui-lit-vos-virements">Choisir le prestataire qui lit vos virements</a></li>
 <li><a href="#14-demander-à-votre-comptable--ce-que-vaut-laccusé-de-réception-dune-facture">Demander à votre comptable : ce que vaut l’accusé de réception d’une facture</a></li>
 <li><a href="#15-créer-le-compte-brevo-pour-que-le-code-de-vérification-parte">Créer le compte Brevo, pour que le code de vérification parte</a></li>
+<li><a href="#16-prendre-un-nom-de-domaine-pour-que-le-devis-parte-datlas-avec-un-lien-cliquable">Prendre un nom de domaine, pour que le devis parte d’Atlas avec un lien cliquable</a></li>
 </ol>
 <hr>
 <h2 id="1-choisir-les-fournisseurs-dia-définitifs">1. Choisir les fournisseurs d'IA définitifs</h2>
@@ -734,7 +735,7 @@
 <hr>
 <h2 id="15-créer-le-compte-brevo-pour-que-le-code-de-vérification-parte">15. Créer le compte Brevo, pour que le code de vérification parte</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
-<p><strong>Depuis le 14 septembre 2026, un compte neuf ne peut pas entrer sans avoir recopié le code reçu à son adresse</strong> — c'est ce que vous avez demandé après être entré avec une adresse inventée. Ce code part par <strong>Brevo</strong>, que vous avez choisi : français, serveurs en France, gratuit jusqu'à 300 e-mails par jour, et une adresse vérifiée suffit — pas de nom de domaine nécessaire.</p>
+<p><strong>Depuis le 14 septembre 2026, un compte neuf ne peut pas entrer sans avoir recopié le code reçu à son adresse</strong> — c'est ce que vous avez demandé après être entré avec une adresse inventée. Ce code part par <strong>Brevo</strong>, que vous avez choisi : français, serveurs en France, gratuit jusqu'à 300 e-mails par jour, et une adresse vérifiée suffit — ~~pas de nom de domaine nécessaire~~ (faux, voir plus bas : il en faut un, et il sert aussi au point 16).</p>
 <h3 id="pourquoi-cest-bloquant">Pourquoi c'est bloquant</h3>
 <p>Tant que le compte Brevo n'est pas branché, <strong>personne ne peut créer de compte</strong> : le code ne part pas, et la porte reste fermée. Vos comptes actuels ne sont pas concernés — ils entrent comme avant.</p>
 <h3 id="ce-que-vous-faites-une-seule-fois-un-quart-dheure">Ce que vous faites, une seule fois (un quart d'heure)</h3>
@@ -754,6 +755,23 @@
 <li><strong>Un nom de domaine à vous est NÉCESSAIRE — constaté le 14 septembre 2026, le soir même.</strong> Le compte Brevo a été créé, l'adresse laposte.net vérifiée, la clé posée : Atlas a envoyé le code, Brevo l'a transmis, et iCloud l'a refusé — <em>« 554 5.7.1 rejected due to laposte.net's DMARC policy »</em>. La Poste interdit à tout autre serveur d'envoyer en son nom, et les grandes messageries appliquent la règle ; il en ira de même avec gmail, icloud ou orange en expéditeur. Il faut donc un domaine (~10 €/an, <code>.fr</code>), déclaré dans Brevo (<em>Domaines</em> → trois lignes à copier chez le vendeur), puis une adresse <code>contact@votre-domaine.fr</code> en expéditeur et dans <code>COURRIEL_EXPEDITEUR</code>. Rien à changer dans l'application. Ce domaine servira aussi au point 8.</li>
 </ul>
 <p>Le détail de ce qui a été fait : <a href="verification-email.md" target="_blank" rel="noopener"><code>verification-email.md</code></a>.</p>
+<hr>
+<h2 id="16-prendre-un-nom-de-domaine-pour-que-le-devis-parte-datlas-avec-un-lien-cliquable">16. Prendre un nom de domaine, pour que le devis parte d’Atlas avec un lien cliquable</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Constaté le 20 septembre 2026, capture à l’appui.</strong> Le devis envoyé par e-mail depuis votre téléphone (Outlook) arrive chez le client avec l’adresse de la page <strong>en texte, pas en lien</strong> : il doit la copier. Ce n’est pas le message — le lien y est seul sur sa ligne, propre — c’est le canal : un <code>mailto:</code> ne transporte que du texte, et Outlook ne transforme pas en lien un texte qu’il n’a pas vu taper. Le client sous Gmail ou Mail d’Apple, lui, voit un lien ; sous Outlook, non. Aucune façon d’écrire le message n’y change rien.</p>
+<h3 id="ce-qui-règle-le-problème-et-pourquoi-cest-bloquant">Ce qui règle le problème, et pourquoi c’est bloquant</h3>
+<p><strong>Que le devis parte d’Atlas lui-même</strong>, par Brevo, avec un vrai bouton dans le mail. C’est ce qui a été décidé le 20 septembre. Mais Brevo n’expédie qu’avec une adresse <strong>sur un nom de domaine à vous</strong> (point 15 : laposte.net, gmail, orange sont refusés par les messageries) — et vous n’en avez pas encore. Tant qu’elle n’existe pas, <strong>rien ne part d’Atlas</strong> : ni le code de vérification, ni le devis. Coder l’envoi avant serait livrer quelque chose que personne ne peut essayer.</p>
+<h3 id="ce-que-vous-faites-vous-seul-le-pouvez">Ce que vous faites (vous seul le pouvez)</h3>
+<ol>
+<li>Acheter un nom de domaine (~10 €/an, un <code>.fr</code> chez OVH, Gandi, Ionos…).</li>
+<li>Chez Brevo, <em>Domaines</em> → l’ajouter → copier les trois lignes chez le vendeur du domaine. Puis <em>Expéditeurs</em> → <code>contact@votre-domaine.fr</code>, vérifiée.</li>
+<li>Poser cette adresse dans <code>COURRIEL_EXPEDITEUR</code> de votre espace (à côté de <code>BREVO_API_KEY</code>), et rallumer l’espace.</li>
+<li>Me dire « l’adresse est là ».</li>
+</ol>
+<h3 id="ce-que-je-fais-ensuite-et-ce-qui-a-été-pensé-pour-votre-adresse-à-venir">Ce que je fais ensuite, et ce qui a été pensé pour votre adresse à venir</h3>
+<p>L’envoi du devis par Atlas : votre message actuel mot pour mot, le lien en bouton, <strong>votre nom d’entreprise</strong> en expéditeur, <strong>les réponses vers votre adresse</strong> telle qu’elle est en base. L’adresse expéditrice reste un réglage de l’espace, jamais écrite dans le code : le jour où elle change, seul le réglage change. Le SMS ne bouge pas.</p>
+<h3 id="en-attendant">En attendant</h3>
+<p>Par <strong>SMS</strong>, le lien arrive cliquable. Par e-mail, le client copie l’adresse.</p>
 </main>
 </body>
 </html>
