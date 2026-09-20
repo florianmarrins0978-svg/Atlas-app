@@ -32052,3 +32052,72 @@ fichier, pas à la machine.
 sous Linux. Que les dix-neuf se taisent vraiment sur son PC se vérifie
 là-bas — `bash` livré avec Git y est parfois sur le chemin, auquel cas la
 suite tourne et peut tomber pour une autre raison.
+
+---
+
+## §391 — Une écriture déclare ce qu'elle change, sinon le RETOUR rejoue l'écran d'avant
+
+**Sa remarque du 20 septembre 2026, capture à l'appui :** *« j'ai créé un
+chantier puis j'ai fait retour. Problème ! J'ai dû recharger la page pour qu'il
+arrive dans mes chantiers en cours ! »*
+
+Le chantier était en base, et son accueil ne le montrait pas. Ce n'était pas la
+lecture qui échouait : c'est que l'accueil n'a jamais été relu.
+
+### Ce qu'un retour fait vraiment
+
+| Le geste | Ce que Next.js sert |
+|---|---|
+| un lien vers un écran | l'écran est redemandé au serveur — `staleTimes.dynamic` vaut 0 |
+| **un RETOUR** (la flèche, le geste du navigateur) | **la page telle qu'elle a été rendue**, sortie du cache du navigateur |
+
+C'est écrit noir sur blanc dans la documentation livrée avec le cadre
+(`node_modules/next/dist/docs/01-app/04-glossary.md`, « Client Cache ») :
+*pages are not cached by default **but are reused during browser back/forward
+navigation*** — et `staleTimes` le répète : *this doesn't change back/forward
+caching behavior*. Aucun délai n'en sort donc ; il n'y a qu'une façon de vider
+ce cache-là, et c'est qu'une écriture le DISE (`revalidatePath`, qui appelle
+`invalidateBfCache()` côté navigateur).
+
+Son parcours, exactement : l'accueil, la feuille qui monte, le chantier créé,
+`router.push` vers le devis — puis la flèche, qui recule sur un accueil peint
+avant la création. Le seul remède était le sien : recharger.
+
+### La racine : la seule écriture qui ne déclarait rien était celle qui CRÉE
+
+Sept écritures touchant l'accueil l'annonçaient déjà — `marquerReponseVueAction`,
+`marquerReceptionVueAction`, `corrigerDevisAction` (`src/app/actions.ts`),
+`repartirDeCeClient` (`src/app/clients/[id]/actions.ts`), qui déclare même les
+deux écrans qu'elle change. `creerChantierAction` se taisait, et c'est elle qui
+pose la ligne qu'il cherchait.
+
+La correction est là, et nulle part ailleurs : trois lignes dans l'action, au
+moment où le chantier vient de naître.
+
+| L'écran | Pourquoi il change |
+|---|---|
+| `/` | la ligne du chantier, et le compte « En cours » |
+| `/clients` | une fiche neuve y apparaît, ou la date du dernier chantier bouge |
+| `/clients/<id>` | le chantier s'ajoute à SA fiche (« Autre chantier ») |
+
+**Les trois, et pas seulement le sien.** Un retour est un retour : depuis la
+fiche d'un client, le même geste aurait rendu la même fiche d'avant, et il
+l'aurait signalé au lot suivant.
+
+### Ce qui n'était PAS la racine, et qu'on n'a pas touché
+
+`VeilleDesNouvelles` (§384) relit l'accueil toutes les trente secondes : le
+chantier finissait donc par apparaître, et c'est précisément ce qui rend ce
+défaut trompeur — il se répare tout seul juste après qu'on a renoncé. Un
+`router.refresh()` posé au retour de l'écran du devis aurait recouvert le défaut
+sans le corriger, et le laissait entier partout ailleurs (`CLAUDE.md`
+§4 quater).
+
+**La suite fixe la promesse, pas le montage** (`scripts/test-chantier-neuf-au-retour-e2e.ts`) :
+le chantier est là au retour, et le compte a suivi. Elle passe par SA porte — la
+feuille de l'accueil, puis la flèche du devis —, sa patience est de **huit
+secondes** pour rester sous le battement des trente (sans quoi le battement
+rendrait vert le défaut qu'elle éprouve), et elle recharge avant d'accuser, pour
+ne pas reprocher à la création un défaut qui est dans l'affichage. **Vue rouge
+sur le code d'avant** : *« L'accueil est revenu sans « Retour 196714 » : il a
+fallu recharger pour le voir (au rechargement, 1 ligne(s) le portent). »*
