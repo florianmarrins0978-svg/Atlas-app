@@ -9,6 +9,22 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## 🔧 `test-repartir-du-client-e2e` TOMBE DANS LA BATTERIE, JAMAIS SEULE (20 septembre 2026)
+
+Elle rougit sur `le chantier n'a aucun devis à envoyer` — l'`UPDATE devis`
+touche zéro ligne, donc la page du devis n'avait pas encore écrit son
+brouillon quand la suite a interrogé la base.
+
+**Ce n'est pas le lot de la ligne ouverte** : `verifier-rouge-prealable.ts` l'a
+rejouée dos à dos, **verte sur la base de `main` comme sur le lot**. Elle ne
+tombe que dans la batterie entière, où le serveur est chargé.
+
+**La piste** : `creerPuisFiche` attend l'ADRESSE (`waitForURL`), pas l'écran.
+Next rend la main dès que la navigation est validée, et le devis brouillon naît
+pendant le rendu du serveur (`getOuCreerDevisBrouillon`). Sous charge, la suite
+lit la base avant. Le remède est du côté de la suite — attendre un repère de
+l'écran du devis —, jamais un délai.
+
 ## ⏳ UNE PLANCHE À REGARDER — LA SÉCURITÉ AVANT « JE NE DONNE PAS SUITE » (20 septembre 2026)
 
 **Son message, capture à l'appui :** *« j'ai sans faire exprès cliqué sur je ne
