@@ -22,6 +22,10 @@ const MESSAGES: Record<string, string> = {
   date_indisponible:
     "Cette date vient d'être retenue par ailleurs. Choisissez-en une autre — votre accord sur le devis reste valable.",
   date_manquante: "Choisissez une date d'intervention avant de valider.",
+  // Elle a posé moins de jours que le chantier n'en prend. L'écran le dit déjà
+  // avant d'envoyer ; cette phrase-ci ne sert qu'au formulaire rejoué.
+  jours_incomplets:
+    "Il manque des jours : retenez-en autant que le chantier en demande.",
   // Le patron n'a pas ouvert le calendrier sur cet envoi : la phrase le dit
   // sans accuser le client, et le renvoie vers ce qu'il peut faire.
   autre_date_refusee:
@@ -144,12 +148,31 @@ export async function repondreAction(
   // calendrier. On ne devine jamais l'intention : sans choix explicite, on
   // redemande.
   const choix = String(formData.get("choixDate") ?? "");
-  const dateRetenue = choix === "autre" ? String(formData.get("dateAutre") ?? "") : choix;
+  /**
+   * **SES JOURS, et non plus une date** — sa demande du 20 septembre 2026.
+   *
+   * Séparés par des virgules, comme le champ caché les écrit. Rien n'est cru
+   * sur parole : le serveur revérifie chaque jour contre la fenêtre de l'envoi
+   * et le planning (`enregistrerReponse`), et refuse une liste plus courte que
+   * le chantier.
+   *
+   * Le PREMIER jour reste `dateRetenue` : c'est par lui que le planning, la
+   * notification et l'écran de retour désignent cette réponse.
+   */
+  const joursAutres = choix === "autre"
+    ? String(formData.get("joursAutres") ?? "")
+        .split(",")
+        .map((j) => j.trim())
+        .filter((j) => /^\d{4}-\d{2}-\d{2}$/.test(j))
+        .sort()
+    : [];
+  const dateRetenue = choix === "autre" ? (joursAutres[0] ?? "") : choix;
   if (!dateRetenue) return { erreur: MESSAGES.date_manquante };
 
   const r = await enregistrerReponse(jeton, {
     decision: "accepte" as const,
     dateRetenue,
+    joursRetenus: joursAutres.length > 0 ? joursAutres : undefined,
     precision,
     demarrageAnticipe: formData.get("demarrageAnticipe") === "oui",
     ...preuve,

@@ -1,9 +1,21 @@
 # État du projet
 
 **Dernière mise à jour :** 2026-09-20 · `main`
-· dernière migration `drizzle/0096_plusieurs_retours_par_chantier.sql`
+· dernière migration `drizzle/0097_jours_retenus_par_le_client.sql`
 
 ---
+
+## FAIT : L'ÉCRAN DU CLIENT — CONFIRMATION DU REFUS, ET SES JOURS (20 septembre 2026)
+
+*« J'ai sans faire exprès cliqué sur je ne donne pas suite, aucun moyen
+d'annuler. »* « Je ne donne pas suite » ouvre désormais une feuille de
+confirmation (sa réponse « la A »), qui ne coûte aucun pixel à une page qui n'en
+a plus. Dans le même lot, à sa demande — *« tu coderas tout d'un coup »* : le
+libellé « Cette date ne me convient pas ? Je propose », son pluriel décidé sur
+les JOURS, le geste de l'écran d'envoi repris dans le calendrier de la cliente
+(`toucherUnJourDuClient`), et « Les travaux sont prévus sur N jours » sous la
+question. Le serveur accepte sa LISTE de jours (migration 0097,
+`jours_retenus`). Batterie entière, niveau 3. `ARCHITECTURE.md` §392.
 
 ## FAIT : UN CHANTIER CRÉÉ EST LÀ AU RETOUR (20 septembre 2026)
 

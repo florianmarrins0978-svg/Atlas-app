@@ -8,6 +8,40 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-20
 
+### L'écran du client : on ne ferme plus un devis d'un seul doigt
+
+Sa sécurité du 20 septembre, réponse « la A » : « Je ne donne pas suite »
+n'envoie plus rien par lui-même — il ouvre la feuille de la maison, qui demande
+« Vous ne donnez pas suite ? » et offre de revenir. Des trois issues, c'était la
+seule à la fois irrattrapable et coûteuse : la correction ne part déjà pas sans
+un mot, et une acceptation laisse le téléphone.
+
+Trois autres demandes du même soir sont dans le même lot, à sa demande — *« tu
+coderas tout d'un coup »* :
+
+- le libellé devient « Cette date ne me convient pas ? Je propose », et passe au
+  pluriel **sur le nombre de JOURS**, pas de propositions : sa capture listait
+  quatre dates au-dessus d'un « cette date » au singulier ;
+- sa cliente pose désormais SES jours au calendrier, avec le geste de l'écran
+  d'envoi — un appui pose le bloc d'affilée, un appui sur un jour l'efface sans
+  rien décaler, l'appui suivant le remet où elle veut. La règle n'est pas
+  réécrite : c'est `toucherUnJour` avec une seule proposition autorisée ;
+- « Les travaux sont prévus sur N jours » se lit sous la question, sur la page.
+
+**Ce que le serveur a dû apprendre.** Il ne recevait qu'une date et étalait un
+bloc derrière elle : le chantier tombait sur des jours qu'elle n'avait jamais
+vus. Il accepte maintenant sa liste (migration 0097, `jours_retenus`), refuse
+une liste plus courte que le chantier, et **décide de la contre-proposition sur
+les jours** — en gardant le premier et en poussant le quatrième, sa liste aurait
+été jetée au profit de celle du patron sans qu'un mot le dise.
+
+**Deux défauts trouvés en éprouvant, et notés parce qu'ils apprennent quelque
+chose** : sans liste (un envoi d'avant la migration 0095), un jour seul faisait
+poser un chantier de deux jours sur une journée ; et la suite qui garde « tout
+tient dans un écran » mesurait ZÉRO depuis que le bouton du refus n'envoie plus
+rien — un vert qui ne mesure rien, la faute du 15 août 2026. Un repère
+`data-atlas` a remplacé le `value` qu'elle visait.
+
 ### Un chantier créé est là quand il revient — plus de rechargement
 
 *« J'ai créé un chantier puis j'ai fait retour. Problème ! J'ai dû recharger la

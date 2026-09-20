@@ -32121,3 +32121,94 @@ rendrait vert le défaut qu'elle éprouve), et elle recharge avant d'accuser, po
 ne pas reprocher à la création un défaut qui est dans l'affichage. **Vue rouge
 sur le code d'avant** : *« L'accueil est revenu sans « Retour 196714 » : il a
 fallu recharger pour le voir (au rechargement, 1 ligne(s) le portent). »*
+
+## §392 — La cliente pose SES jours, et un doigt ne ferme plus un devis
+
+**Sa soirée du 20 septembre 2026, capture à l'appui :** *« j'ai sans faire
+exprès cliqué sur je ne donne pas suite, aucun moyen d'annuler, il faut mettre
+une sécurité avant l'envoi »*. Puis, planche après planche, trois demandes de
+plus sur le même écran — et l'ordre de **tout coder d'un coup**.
+
+### La sécurité : une feuille, pas un second bouton
+
+Des trois issues de l'écran du client, « Je ne donne pas suite » était la seule
+à la fois **irrattrapable** et **coûteuse**. La correction ne part déjà pas sans
+un mot (`message_manquant`) ; une acceptation laisse le téléphone. Un refus, lui,
+ferme le devis : `enregistrerReponse` rejette toute seconde réponse
+(`deja_repondu`), et la page ne rend plus qu'un cadre « Réponse enregistrée ».
+
+Trois formes lui ont été soumises (`appli/le-refus-par-erreur.html`), toutes
+mesurées à **0 px** sur 390 × 664 — sa règle du 31 août ne laisse plus un pixel.
+Il a retenu **la A** : la feuille de la maison. Le bouton de la page n'envoie
+plus rien ; le `submit value="refuse"` vit dans la feuille, à l'intérieur du
+même `<form>` (`BottomSheet` ne déplace rien dans le document).
+
+**Ce que ce déplacement a cassé, et qu'aucun œil n'aurait vu :** la suite qui
+garde « tout tient dans un écran » visait `button[value="refuse"]` pour mesurer
+le dernier geste. Le `value` parti, elle mesurait **zéro** — et « 0 ≤ 664 »
+serait passé au vert si le dépôt n'avait pas, depuis le 15 août 2026, un
+garde-fou contre les mesures nulles (`CLAUDE.md` §5). Le repère
+`data-atlas="ne-pas-donner-suite"` a remplacé le `value` : il survit à la
+prochaine réécriture du bouton.
+
+### Le pluriel se décide sur les JOURS, pas sur les propositions
+
+Sa règle : *« quand il y a une date c'est : cette date ne me convient pas ? Je
+propose »*, et *« quand il y a plusieurs dates de proposées, mets la phrase au
+pluriel »*. Le patron propose une ou deux DATES (arrêt 1, `docs/AGENT.md`), mais
+chacune porte plusieurs JOURS depuis sa règle du 17 septembre. Sa capture montre
+exactement l'écart : une seule proposition listait « le jeudi 8 octobre, le
+vendredi 9, le lundi 12 et le mardi 13 octobre » — quatre dates — sous un
+« cette date » au singulier. Compter les propositions aurait redonné ce
+singulier-là ; `libelleAutreDate` compte donc les jours.
+
+### Le geste des jours : un paramètre, jamais une seconde règle
+
+Sa demande : *« il faut mettre le même système que nous »*. Le geste existe —
+`propositions-de-jours.ts`, sa règle du 17 septembre : un appui pose le bloc
+d'affilée, un appui sur un jour du bloc l'efface **sans rien décaler**, l'appui
+suivant le remet où il veut.
+
+Une seule chose diffère chez la cliente : elle propose **une** liste, pas deux
+au choix. `gesteSurUnJour` et `toucherUnJour` prennent donc un `maximum`, et
+`toucherUnJourDuClient` les appelle avec 1. Sans ce paramètre, un chantier d'un
+seul jour ouvrait une SECONDE proposition au deuxième appui — la branche « une
+ou deux dates au choix », qui n'a aucun sens de son côté à elle. Réécrire la
+règle pour cet écran aurait donné deux façons de poser un bloc, qui divergeront
+(`CLAUDE.md` §3).
+
+**Et il l'a éprouvé lui-même avant le code** : la planche ne connaissait que
+deux gestes — effacer, reposer —, et il a trouvé le trou : *« on peut pas
+désélectionner un jour sur les 4 et le mettre ailleurs en recliquant
+ailleurs »*. Le troisième geste, **combler**, est celui qui rend le geste
+utilisable.
+
+### Ce que le serveur a dû apprendre — migration 0097
+
+Il ne recevait qu'une DATE et étalait un bloc d'affilée derrière elle : sur un
+chantier de quatre jours, la cliente engageait des jours qu'elle n'avait jamais
+vus. Il reçoit maintenant sa liste, la revérifie (fenêtre de l'envoi, planning,
+demi-journée par demi-journée via `propositionRetenable`), et l'écrit dans
+`jours_retenus` — la MÉMOIRE de la réponse, le planning restant celui
+qu'`ecrireLesCreneaux` pose.
+
+**Deux pièges, tous deux attrapés par des suites plutôt que par l'œil :**
+
+| le piège | ce qu'il produisait |
+|---|---|
+| décider de la contre-proposition sur le PREMIER jour | garder le premier et pousser le quatrième rendait `contreProposee = false`, et sa liste était jetée au profit de celle du patron, en silence |
+| rendre `[date]` au lieu de `null` quand `jours_proposes` est absent | un envoi d'avant la migration 0095 posait un chantier de deux jours sur une seule journée |
+
+Le premier a été prévu en écrivant la suite ; le second a rougi
+`test-envoi-jours-pas-colles-db` et `test-creneaux-planning` à la première
+mesure.
+
+### Ce qui n'a PAS été fait, et qui attend sa décision
+
+La page ne reçoit qu'une liste de jours barrés : ceux où le chantier **ne peut
+pas commencer**. Quand la cliente cherche où remettre son quatrième jour, un
+jour parfaitement libre pour une journée seule reste donc barré. C'est le côté
+sûr — elle ne propose jamais un jour que l'acceptation refuserait —, et c'est
+plus restrictif que nécessaire. Lui envoyer une seconde liste apprendrait
+quelque chose de plus du planning de son artisan : cela se demande à lui
+(`TODO.md`).

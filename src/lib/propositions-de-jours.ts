@@ -49,10 +49,29 @@ export const PROPOSITIONS_AU_MAXIMUM = 2;
  * avec la bonne durée : un jour seul quand on comble, le bloc entier quand on
  * le pose.
  */
-export function gesteSurUnJour(etat: EtatDesPropositions, jour: JourIso, dureeDemiJournees: number): GesteSurUnJour {
+export function gesteSurUnJour(
+  etat: EtatDesPropositions,
+  jour: JourIso,
+  dureeDemiJournees: number,
+  /**
+   * Combien de propositions cet écran autorise.
+   *
+   * **Deux chez le patron, UNE chez son client** — sa demande du 20 septembre
+   * 2026 : *« lorsqu'elle clique sur proposer des jours, il faut mettre le même
+   * système que nous »*. Le geste est le même, le nombre de propositions ne
+   * l'est pas : elle propose SES jours, pas deux jeux au choix.
+   *
+   * C'est un paramètre et non une seconde fonction : réécrire la règle pour
+   * l'écran du client, c'est se donner deux façons de poser un bloc, qui
+   * divergeront (`CLAUDE.md` §3). Sans lui, un chantier d'un seul jour ouvrait
+   * une SECONDE proposition au deuxième appui — la branche « une ou deux dates
+   * au choix » ci-dessous —, ce qui n'a aucun sens de son côté à elle.
+   */
+  maximum: number = PROPOSITIONS_AU_MAXIMUM
+): GesteSurUnJour {
   const dans = etat.propositions.findIndex((p) => p.includes(jour));
   if (dans >= 0) return { geste: "effacer", proposition: dans };
-  if (etat.secondeVoulue && etat.propositions.length < PROPOSITIONS_AU_MAXIMUM) {
+  if (etat.secondeVoulue && etat.propositions.length < maximum) {
     return { geste: "poser_le_bloc", proposition: etat.propositions.length };
   }
   const attendus = joursDuChantier(dureeDemiJournees);
@@ -64,7 +83,7 @@ export function gesteSurUnJour(etat: EtatDesPropositions, jour: JourIso, dureeDe
   // Sur une journée, un second appui est une seconde date AU CHOIX — le geste
   // d'avant le 18 septembre 2026, gardé tel quel : « Proposez une ou deux
   // dates ». L'interrupteur s'allume tout seul.
-  if (attendus === 1 && etat.propositions.length < PROPOSITIONS_AU_MAXIMUM) {
+  if (attendus === 1 && etat.propositions.length < maximum) {
     return { geste: "poser_le_bloc", proposition: etat.propositions.length };
   }
   // Au-delà de deux, le plus ancien choix cède la place — la règle d'avant,
@@ -81,10 +100,12 @@ export function gesteSurUnJour(etat: EtatDesPropositions, jour: JourIso, dureeDe
 export function toucherUnJour(
   etat: EtatDesPropositions,
   jour: JourIso,
-  dureeDemiJournees: number
+  dureeDemiJournees: number,
+  /** Voir `gesteSurUnJour` : une seule proposition sur l'écran du client. */
+  maximum: number = PROPOSITIONS_AU_MAXIMUM
 ): EtatDesPropositions {
   const propositions = etat.propositions.map((p) => [...p]);
-  const g = gesteSurUnJour(etat, jour, dureeDemiJournees);
+  const g = gesteSurUnJour(etat, jour, dureeDemiJournees, maximum);
   if (g.geste === "effacer") {
     const p = propositions[g.proposition];
     p.splice(p.indexOf(jour), 1);
@@ -141,4 +162,44 @@ export function basculerLaSeconde(etat: EtatDesPropositions): EtatDesProposition
 /** Ce qui manque à une proposition, en jours ; zéro quand elle est complète. */
 export function joursManquants(proposition: readonly JourIso[], dureeDemiJournees: number): number {
   return Math.max(0, joursDuChantier(dureeDemiJournees) - proposition.length);
+}
+
+/**
+ * LE MÊME GESTE, SUR LA SEULE LISTE DU CLIENT — sa demande du 20 septembre
+ * 2026 : *« lorsqu'elle clique sur proposer des jours, s'il y a plusieurs jours
+ * il faut mettre le même système que nous : les 4 dates s'affichent, elle
+ * clique sur un jour sélectionné pour le désélectionner et reclique ailleurs
+ * pour le déplacer »*.
+ *
+ * **Trois gestes, et le troisième est celui qu'il a fallu qu'il réclame :**
+ * effacer un jour posé, COMBLER celui qui manque, ou reposer le bloc entier.
+ * Sans « combler », un appui ailleurs remplaçait toute la sélection — donc
+ * impossible de déplacer un seul jour sur quatre.
+ *
+ * Elle passe par `toucherUnJour` avec **une seule proposition autorisée** : la
+ * règle reste écrite une fois, ici comme sur son écran d'envoi.
+ */
+export function toucherUnJourDuClient(
+  jours: readonly JourIso[],
+  jour: JourIso,
+  /**
+   * **DES JOURS, jamais des demi-journées** — et ce n'est pas une commodité.
+   *
+   * Le client n'apprend rien du découpage du planning de son artisan : ni
+   * créneau, ni durée (`test-creneaux-planning.ts` le vérifie sur ce qui part
+   * jusqu'à sa page). Il ne reçoit que la liste des jours que le patron lui a
+   * proposés, et leur nombre suffit à poser le même bloc : `joursDuChantier`
+   * ne lit de la durée que son compte de jours.
+   */
+  nombreDeJours: number
+): JourIso[] {
+  const etat: EtatDesPropositions = {
+    propositions: [[...jours]],
+    secondeVoulue: false,
+    active: 0,
+  };
+  // Deux demi-journées par jour : la seule conversion, et elle rend exactement
+  // `nombreDeJours` (`joursDuChantier` arrondit au jour supérieur).
+  const apres = toucherUnJour(etat, jour, Math.max(1, nombreDeJours) * 2, 1);
+  return [...(apres.propositions[0] ?? [])].sort();
 }

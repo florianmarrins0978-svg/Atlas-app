@@ -25,25 +25,29 @@ Devant « je dois recharger pour voir », la question n'est donc pas « la lectu
 est-elle juste » mais « **quelle écriture ne déclare pas cet écran** ».
 `ARCHITECTURE.md` §391.
 
-## L'ÉCRAN DE SON CLIENT ATTEND UN LOT GROUPÉ — 20 septembre 2026
+## L'ÉCRAN DE SON CLIENT A CHANGÉ — 20 septembre 2026
 
-Il a touché « Je ne donne pas suite » par erreur sur le lien d'un de ses devis,
-et il n'existe aucun retour : `enregistrerReponse` rejette toute seconde
-réponse (`deja_repondu`). **Sa décision, devant
-`appli/le-refus-par-erreur.html` : la A** — une feuille de confirmation
-(`BottomSheet`, celle qui porte déjà le calendrier de cet écran).
+Quatre demandes en une soirée, codées **en un seul lot** à sa demande. Ce qu'une
+session doit savoir avant de toucher `src/app/devis/[jeton]/` :
 
-**Ne pas coder cette feuille seule.** Sa consigne du même soir : *« avant de
-coder j'ai encore des modif à faire sur cette page, tu coderas tout d'un
-coup »*. Tout ce qui touche `src/app/devis/[jeton]/` attend ses autres
-demandes et part en un seul lot.
+- **« Je ne donne pas suite » n'envoie plus rien par lui-même** : il ouvre une
+  feuille de confirmation, sa réponse « la A ». Il avait fermé un de ses devis
+  par erreur, et il n'y a AUCUN retour (`deja_repondu`). Le `submit` vit DANS la
+  feuille, à l'intérieur du `<form>` — l'en sortir enverrait un formulaire vide ;
+- **le repère `data-atlas="ne-pas-donner-suite"` n'est pas décoratif** : la
+  suite qui garde « tout tient dans un écran » mesurait zéro sans lui ;
+- **la cliente pose SES jours**, avec le geste de l'écran d'envoi
+  (`toucherUnJourDuClient` = `toucherUnJour` avec une seule proposition). Ne pas
+  réécrire cette règle ailleurs ;
+- **le pluriel se décide sur les JOURS**, jamais sur le nombre de propositions ;
+- **le serveur accepte une liste** (migration 0097, `jours_retenus`) et décide
+  de la contre-proposition sur les JOURS, pas sur le premier d'entre eux ;
+- **rien de la durée ni des créneaux ne descend jusqu'à elle** : le compte de
+  jours se lit sur `joursProposes`, déjà envoyés. `test-creneaux-planning.ts`
+  inspecte la charge sérialisée et doit rester vert.
 
-**Et ne pas lui redemander son choix** : il est donné, il est dans `TODO.md`.
-
-**Le lot s'étoffe au fil de la soirée** : la feuille de confirmation, puis le
-libellé « je propose » et son pluriel, et le calendrier du client qui reprend
-le geste de l'écran d'envoi (`appli/proposer-ses-jours.html`). Le détail, et
-les deux défauts que les planches ont trouvés, sont dans `TODO.md`.
+`ARCHITECTURE.md` §392. Les planches restent en ligne :
+`appli/le-refus-par-erreur.html`, `appli/proposer-ses-jours.html`.
 
 ---
 
