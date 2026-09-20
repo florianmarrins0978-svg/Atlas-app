@@ -21,7 +21,10 @@
 // porte `FORCE ROW LEVEL SECURITY`, et le propriétaire y est soumis aussi.
 
 import assert from "node:assert/strict";
+import { randomUUID } from "node:crypto";
 import { Client } from "pg";
+import { PHOTOS_MAX_PAR_RETOUR } from "../src/lib/photos-plafonds";
+import { poserLeRetourAction } from "../src/app/planning/retour-actions";
 import { nettoyerBase } from "./_test-db";
 import { pool } from "../src/server/db/client";
 import * as entreprisesRepo from "../src/server/repositories/entreprises";
@@ -146,12 +149,14 @@ async function main() {
   // ═════════════════════════════════════════════════════════════════════════
   // LA PHOTO QUI SURVIT — le piège écrit dans `TODO.md` avant d'être codé.
   await essai("la photo d'un retour NE PART PAS à la purge", async () => {
-    const photo = await photosRepo.ajouterPhoto(ctxA, chantierA.id, {
+    const ajout = await photosRepo.ajouterPhoto(ctxA, chantierA.id, {
       storageKey: `chantiers/${chantierA.id}/photos/tenue.jpg`,
       mimeType: "image/jpeg",
       tailleOctets: 10,
       checksum: "x".repeat(64),
     });
+    assert.ok(ajout.ok, "la photo du décor a été refusée");
+    const photo = ajout.photo;
     await poserLeRetour(ctxA, chantierA.id, {
       taches: [{ libelle: "Débroussaillage", faite: true }],
       photoIds: [photo.id],
@@ -175,12 +180,14 @@ async function main() {
   // purge — sans ce cas, la garde pourrait tout retenir et personne ne le
   // verrait avant que le rangement soit plein.
   await essai("une photo ordinaire part bien à la purge", async () => {
-    const photo = await photosRepo.ajouterPhoto(ctxA, chantierA.id, {
+    const ajout = await photosRepo.ajouterPhoto(ctxA, chantierA.id, {
       storageKey: `chantiers/${chantierA.id}/photos/ordinaire.jpg`,
       mimeType: "image/jpeg",
       tailleOctets: 10,
       checksum: "y".repeat(64),
     });
+    assert.ok(ajout.ok, "la photo du décor a été refusée");
+    const photo = ajout.photo;
     const avant = await combienEnPurge();
     await photosRepo.supprimerPhoto(ctxA, photo.id);
     assert.equal(
@@ -195,6 +202,26 @@ async function main() {
     // Le chantier a été créé sans fiche client : la liste retombe donc sur son
     // nom plutôt que d'inventer « Sans client ».
     assert.equal(liste[0].clientNom, "Haie Rialland");
+  });
+
+  // ═══ LE PLAFOND DU RETOUR — sa décision du 20 septembre 2026 ══════════════
+  //
+  // **Par l'ACTION, pas le dépôt** : c'est elle qui tient la borne, parce que
+  // l'écran n'est pas la seule porte. Le refus est rendu AVANT toute écriture
+  // et avant `revalidatePath`, ce qui permet de le jouer d'ici. Un seul plafond
+  // sur le retour, et c'est celui-là : tout le reste part tel quel (sa règle
+  // du 19 septembre).
+  await essai(`un retour à ${PHOTOS_MAX_PAR_RETOUR + 1} photos est refusé par l'action, à ${PHOTOS_MAX_PAR_RETOUR} le dépôt l'accepte`, async () => {
+    process.env.AUTH_TEST_UTILISATEUR_ID = A.utilisateurId;
+    const trop = Array.from({ length: PHOTOS_MAX_PAR_RETOUR + 1 }, () => randomUUID());
+    const r = await poserLeRetourAction(chantierA.id, { taches: [], photoIds: trop, aSignaler: null });
+    assert.equal(r.ok, false, "onze photos sont passées");
+    assert.match(r.ok ? "" : r.raison, /10 photos au plus par retour/);
+    // Et le contrôle sait le contraire : dix, le dépôt les prend (des
+    // identifiants inconnus ne sont simplement pas retenus).
+    const avant = await nombreDeRetoursDuChantier(ctxA, chantierA.id);
+    await poserLeRetour(ctxA, chantierA.id, { taches: [], photoIds: trop.slice(0, PHOTOS_MAX_PAR_RETOUR), aSignaler: null });
+    assert.equal(await nombreDeRetoursDuChantier(ctxA, chantierA.id), avant + 1);
   });
 
   await admin.end();

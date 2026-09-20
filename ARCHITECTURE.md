@@ -32052,3 +32052,46 @@ fichier, pas à la machine.
 sous Linux. Que les dix-neuf se taisent vraiment sur son PC se vérifie
 là-bas — `bash` livré avec Git y est parfois sur le chemin, auquel cas la
 suite tourne et peut tomber pour une autre raison.
+
+## §392 — Plusieurs photos d'un coup, et trois plafonds
+
+**Sa demande du 20 septembre 2026 :** *« pouvoir ajouter plusieurs photos en
+même temps : j'ouvre la photothèque et j'en sélectionne plusieurs — par contre
+il faut mettre un nombre de photos max »*, puis *« faut mettre un max dans tous
+les cas »*, et, devant l'inventaire, *« très bien, fais ça »*.
+
+**Ce que l'inventaire a montré.** La pellicule (fiche client, création de
+chantier, tiroir) acceptait déjà plusieurs photos, sans aucune borne ; le retour
+du jour n'en prenait qu'une. Les autres entrées — ticket de caisse, croquis
+d'arrosage, diagnostic végétal, assistant, logo — prennent UNE photo par
+nature (une photo = une lecture par l'IA) : leur maximum est 1, et il le
+reste.
+
+**Et ce qui a changé la réponse :** les photos du retour du jour SONT les
+photos du chantier — le retour en « reprend » certaines. Un plafond de 15 par
+chantier, sa première idée, aurait bloqué le deuxième jour d'un chantier de
+trois. D'où trois chiffres (`src/lib/photos-plafonds.ts`) :
+
+| | | tenu par |
+|---|---|---|
+| une sélection sur la pellicule | 15 | l'écran, avant le premier octet |
+| une sélection sur le retour, et les photos cochées d'un retour | 10 | l'écran, et `poserLeRetourAction` |
+| un chantier entier | 30 | **le dépôt** (`ajouterPhoto`), dans la transaction qui compte et insère |
+
+**Pourquoi le chantier se tient au dépôt et non à l'écran** : une sélection se
+recommence, et deux écrans ajoutent au même chantier. Une photo refusée là a
+déjà ses octets rangés : ils partent en file de purge dans la même
+transaction, comme une photo effacée — pas d'orphelin.
+
+**Ce que le lot a réparé en passant, et qui était muet.** `ajouterPhotoAction`
+LEVAIT ses refus, et la pellicule, qui ajoute plusieurs photos d'affilée,
+avalait l'exception dans un `catch` vide pour ne pas interrompre les autres :
+un plafond de téléversement atteint, une photo trop lourde, se perdaient sans
+un mot. Le plafond du chantier arrivant par le même chemin, le chemin parle
+désormais — un refus est une valeur de retour (`HANDOVER.md`, piège 0 ter), et
+la pellicule l'affiche.
+
+Éprouvé : `test-photos-plafonds.ts` (la règle pure, ses chiffres),
+`test-photos-repo.ts` (la 31e refusée, ses octets en purge),
+`test-retour-intervention-db.ts` (onze photos refusées par l'action),
+`test-travaux-a-faire-e2e.ts` (trois photos d'un coup, cochées, « 3/10 »).

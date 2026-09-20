@@ -8,6 +8,16 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-20
 
+### Plusieurs photos d'un coup depuis la photothèque, sous trois plafonds
+
+Sa demande du jour. Le retour du jour prend désormais plusieurs photos à la
+fois (la pellicule le faisait déjà), et tout ce qui ajoute des photos a un
+maximum : 15 par sélection sur la pellicule, 10 sur le retour et par retour, 30
+par chantier — ce dernier tenu par le dépôt, pas par l'écran. Les entrées à une
+seule photo (ticket, croquis, diagnostic, assistant, logo) restent à une. En
+passant : un refus d'ajout de photo sur la pellicule s'affiche, au lieu de se
+perdre dans un `catch` muet. `ARCHITECTURE.md` §392.
+
 ### Un refus par erreur n'a aucune issue — la planche, pas encore le code
 
 Sa capture du 20 septembre : *« j'ai sans faire exprès cliqué sur je ne donne

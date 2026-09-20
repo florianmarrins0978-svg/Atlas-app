@@ -9,6 +9,7 @@ import TiroirDesRetires from "@/components/atlas/TiroirDesRetires";
 import { useRetraits } from "@/components/atlas/useRetraits";
 import { ajouterPhotoAction, supprimerPhotoAction } from "./photos-actions";
 import { ACCEPT_PHOTOS } from "@/lib/exif";
+import { PHOTOS_MAX_PAR_CHANTIER, PHOTOS_PAR_SELECTION, limiterLaSelection, placesRestantes } from "@/lib/photos-plafonds";
 
 export type VignettePhoto = { id: string; storageKey: string };
 
@@ -68,6 +69,10 @@ export default function Pellicule({
   const [photos, setPhotos] = useState<VignettePhoto[]>(initiales);
   const [ouverte, setOuverte] = useState<string | null>(null);
   const [enCours, setEnCours] = useState(false);
+  // **Le refus s'affiche.** Un plafond atteint, une photo trop lourde, le
+  // téléversement borné : jusqu'au 20 septembre 2026 tout cela se perdait dans
+  // un `catch` muet, et il rouvrait la photothèque en croyant à un réseau lent.
+  const [refus, setRefus] = useState<string | null>(null);
   const champ = useRef<HTMLInputElement>(null);
 
   // **Le retrait reste réversible, et l'écriture attend la fermeture du
@@ -91,21 +96,41 @@ export default function Pellicule({
   const visibles = photos.filter((p) => !retraits.estRetire(p.id));
 
   async function onFichiersChoisis(e: ChangeEvent<HTMLInputElement>) {
-    const fichiers = Array.from(e.target.files ?? []);
+    const choisies = Array.from(e.target.files ?? []);
     e.target.value = ""; // permet de resélectionner le même fichier ensuite
-    if (fichiers.length === 0) return;
+    if (choisies.length === 0) return;
+    // **Les bornes, avant le premier octet** (`photos-plafonds.ts`, sa décision
+    // du 20 septembre 2026) : 15 par ouverture de la photothèque, et jamais
+    // au-delà de ce qu'il reste sur le chantier. Le serveur retient le plafond
+    // du chantier de son côté ; ici on évite d'envoyer ce qu'il refusera.
+    const { retenues, raison } = limiterLaSelection(choisies, {
+      parSelection: PHOTOS_PAR_SELECTION.pellicule,
+      restantesSurLeChantier: placesRestantes(visibles.length, PHOTOS_MAX_PAR_CHANTIER),
+    });
+    setRefus(raison);
     setEnCours(true);
-    for (const fichier of fichiers) {
+    for (const fichier of retenues) {
       const fd = new FormData();
       fd.set("fichier", fichier);
+      // Sur la fiche client, la première photo CRÉE le chantier ; si la
+      // création tombe, on le dit et on s'arrête — les suivantes n'auraient
+      // nulle part où aller.
+      let cible: string | undefined;
       try {
-        const cible = chantierId ?? (await assurerChantier?.());
-        if (!cible) break;
-        const { id, storageKey } = await ajouterPhotoAction(cible, fd);
-        setPhotos((p) => [...p, { id, storageKey }]);
+        cible = chantierId ?? (await assurerChantier?.());
       } catch {
-        // Une photo en échec parmi plusieurs n'interrompt pas les autres.
+        setRefus("Le chantier n'a pas pu être créé. Réessayez.");
+        break;
       }
+      if (!cible) break;
+      const ajout = await ajouterPhotoAction(cible, fd);
+      // Une photo refusée parmi plusieurs n'interrompt pas les autres — mais
+      // elle le dit, et c'est la dernière raison qui reste à l'écran.
+      if (!ajout.ok) {
+        setRefus(ajout.raison);
+        continue;
+      }
+      setPhotos((p) => [...p, { id: ajout.id, storageKey: ajout.storageKey }]);
     }
     setEnCours(false);
     // Le statut du chantier et l'étape suivante se déduisent du nombre de
@@ -203,6 +228,12 @@ export default function Pellicule({
           </button>
         ))}
       </div>
+
+      {refus && (
+        <p data-atlas="refus-photos" className="mb-2 text-[13px]" style={{ color: colors.rust }}>
+          {refus}
+        </p>
+      )}
 
       {/* Le tiroir des retirés pousse les étapes vers le bas plutôt que de les
           recouvrir — même règle que partout ailleurs. */}

@@ -97,24 +97,20 @@ async function main() {
     const formData = new FormData();
     formData.set("fichier", photoDeTaille(500 * 1024, "photo-normale.jpg"));
     const photo = await ajouterPhotoAction(chantier.id, formData);
-    assert.ok(photo);
+    assert.ok(photo.ok, "une photo ordinaire a été refusée");
     const liste = await photosRepo.listerPhotos({ entrepriseId: entreprise.id, utilisateurId }, chantier.id);
     assert.ok(liste.some((p) => p.id === photo.id));
   });
 
-  await test("Upload photo : un fichier surdimensionné est rejeté par l'action réelle, message utilisateur propre", async () => {
+  // **Un refus RENDU, plus levé — comme la note vocale ci-dessous, depuis le
+  // 20 septembre 2026.** La pellicule ajoute plusieurs photos d'affilée et
+  // avalait l'exception : le message n'atteignait jamais l'écran.
+  await test("Upload photo : un fichier surdimensionné est refusé par l'action réelle, message utilisateur propre", async () => {
     const formData = new FormData();
     formData.set("fichier", photoDeTaille(LIMITE_TELEVERSEMENT_OCTETS + 1024, "photo-trop-grosse.jpg"));
-    let leve = false;
-    let message = "";
-    try {
-      await ajouterPhotoAction(chantier.id, formData);
-    } catch (err) {
-      leve = true;
-      message = err instanceof Error ? err.message : String(err);
-    }
-    assert.ok(leve, "Un fichier surdimensionné doit être rejeté");
-    assert.equal(message, MESSAGE_FICHIER_TROP_VOLUMINEUX);
+    const r = await ajouterPhotoAction(chantier.id, formData);
+    assert.equal(r.ok, false, "Un fichier surdimensionné doit être refusé");
+    assert.equal(r.ok === false ? r.raison : "", MESSAGE_FICHIER_TROP_VOLUMINEUX);
   });
 
   await test("Régression : un enregistrement vocal normal (sous la limite) est toujours accepté", async () => {
