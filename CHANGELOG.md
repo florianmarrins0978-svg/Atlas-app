@@ -22,9 +22,14 @@ aurait ressuscité sa panne du 7 août 2026 (« le devis ne comporte aucune lign
 gros bug »). Elle naît donc au premier mot : un champ traversé n'écrit rien.
 Et aucune ligne ne s'ouvre pendant qu'une dictée attend d'être reprise.
 
-Un piège trouvé et fermé avant livraison : appuyer sur « + Ajouter une ligne »
-sans avoir écrit faisait **se croiser** les deux lignes au rechargement — le
-rang en base se décide à l'écriture. Vu rouge, puis corrigé.
+Deux pièges trouvés et fermés avant livraison. **Le prix se perdait** : la
+rangée changeait d'identifiant au moment où la ligne s'écrivait, React la
+remontait, et le champ où le doigt écrivait disparaissait sans jamais rendre sa
+valeur — devis à 0,00 €, facture au bouton éteint. L'identifiant de base vit
+désormais à côté, et les écritures d'une ligne passent à la suite. Et appuyer
+sur « + Ajouter une ligne » sans avoir écrit faisait **se croiser** les deux
+lignes au rechargement — le rang en base se décide à l'écriture. Les deux vus
+rouges d'abord.
 
 `src/lib/ligne-ouverte-devis.ts`, `test-ligne-ouverte-devis(-e2e)`.
 `ARCHITECTURE.md` §391.

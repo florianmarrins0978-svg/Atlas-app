@@ -32098,6 +32098,28 @@ navigateur ; le parcours l'est avec (`test-ligne-ouverte-devis-e2e.ts`), et il
 regarde **la base** — c'est là, et nulle part à l'écran, que se verrait la
 ligne vide qu'on refuse d'écrire.
 
+### LE PRIX QU'ELLE A FAILLI FAIRE PERDRE — l'identité de la rangée
+
+**Trouvé par la batterie, avant livraison.** La première version remplaçait
+`ligne-ouverte` par l'identifiant que la base venait de rendre. La CLÉ de la
+rangée changeait donc sous React, qui démonte alors la rangée et en monte une
+neuve : **le champ où le doigt écrit disparaît**, sa sortie n'a jamais lieu, et
+ce qu'il vient de taper ne part nulle part.
+
+Le geste ordinaire — écrire la description, passer au prix, quitter — laissait
+donc le devis à 0,00 €. Trois suites sont tombées, dont deux sur une facture au
+bouton « Envoyer » éteint, trois écrans plus loin.
+
+**C'est le contrôle rendu bavard qui l'a nommé en une ligne** (`AGENTS.md`) :
+une seule requête partie, celle de la description, avec `"prixUnitaire":"0"`.
+La suite garde cette trace — sans elle, le rouge accuse la facture.
+
+| | |
+|---|---|
+| l'identifiant à l'écran | `ligne-ouverte`, **il ne change jamais** |
+| l'identifiant en base | une référence à côté, rendue par `idEnBase()` |
+| les écritures d'une ligne | **à la suite** (`file-d-ecritures.ts`), comme l'en-tête et les acomptes : deux sorties de champ rapprochées envoient chacune la ligne entière, et celle de la description reposerait un prix à zéro |
+
 ### Le piège que cette ligne ouvre, et qui ne se voit qu'au rechargement
 
 **Son rang en base se décide à l'ÉCRITURE.** S'il appuie sur « + Ajouter une

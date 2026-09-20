@@ -21,6 +21,9 @@ Ce qu'une session doit savoir avant de toucher `DevisCompletClient.tsx` :
   panne du 7 août 2026 revient (`ARCHITECTURE.md` §391) ;
 - **tout appel serveur qui prend l'identifiant d'une ligne passe par
   `idEnBase()`** — il l'écrit si besoin, une seule fois ;
+- **l'identifiant de la rangée ne change JAMAIS à l'écran.** Le remplacer par
+  celui de la base démonte la rangée sous React, et le champ où il écrit
+  disparaît sans rendre sa valeur : c'est le prix perdu du 20 septembre ;
 - **les suites n'appuient plus sur « + Ajouter une ligne » pour la première
   ligne** de cet écran. Celles de l'écran Prix, si.
 

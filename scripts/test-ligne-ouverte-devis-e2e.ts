@@ -38,6 +38,18 @@ async function main() {
   const contexte = await navigateur.newContext();
   const page = await contexte.newPage();
 
+  // **Ce que le navigateur ENVOIE, et pas seulement ce que la base garde.**
+  // Un prix qui n'arrive pas a deux causes possibles — la requête n'est pas
+  // partie, ou elle est partie avec l'ancienne valeur — et le rouge doit dire
+  // laquelle. Six enquêtes ont été payées faute de cette ligne
+  // (`DevisCompletClient.tsx`, 30 août 2026).
+  const envois: string[] = [];
+  page.on("request", (r) => {
+    if (r.method() !== "POST") return;
+    const corps = r.postData() ?? "";
+    if (corps.includes("prixUnitaire")) envois.push(corps.slice(0, 160));
+  });
+
   await page.goto(`${BASE}/login`, { waitUntil: "networkidle" });
   await page.fill('input[name="email"]', "demo@atlas.local");
   await page.fill('input[name="password"]', "demo1234");
@@ -119,6 +131,37 @@ async function main() {
     "Une case vide s'ajoute sous son travail : la ligne ouverte revient sur un devis déjà rempli."
   );
   console.log("  ✓ un devis qui porte déjà une ligne n'en ouvre pas une de plus");
+
+  // --- 4 bis. Deux champs enchaînés : le prix ne se fait pas écraser -------
+  //
+  // **Son geste réel, et c'est lui qui perdait l'argent.** Il écrit la
+  // description, passe au prix, tape 850, quitte : deux sorties de champ
+  // rapprochées, qui envoient chacune la ligne ENTIÈRE. Parties ensemble,
+  // elles arrivent dans l'ordre du réseau — et celle de la description repose
+  // un prix à zéro par-dessus les 850 €. La facture partait alors à 0,00 €,
+  // bouton « Envoyer » éteint.
+  await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
+  await page.fill('input[placeholder="Bernard"]', `M. Deux champs ${Date.now()}`);
+  await page.fill('input[placeholder="06 12 34 56 78"]', "0612345678");
+  const chantierPrix = await creerPuisFiche(page);
+  await page.waitForSelector("text=Choisir la date", { timeout: 15000 });
+
+  // Sans attente entre les deux : c'est l'enchaînement qui fabrique la course.
+  await page.getByLabel("Description 1").fill("Taille d'une haie de laurier");
+  await page.getByLabel("Prix unitaire 1").fill("850");
+  await page.getByLabel("Description 1").click();
+
+  const prixEcrit = await attendreEnBase(
+    () => pool.query(`SELECT montant FROM lignes_prix WHERE chantier_id = $1`, [chantierPrix]),
+    (r) => r.rows[0]?.montant === "850.00"
+  );
+  assert.equal(
+    prixEcrit.rows[0]?.montant,
+    "850.00",
+    `Le prix tapé n'est pas arrivé : la base porte « ${prixEcrit.rows[0]?.montant} ».\n` +
+      `Ce que le navigateur a envoyé :\n  ${envois.join("\n  ") || "(aucune écriture de ligne)"}`
+  );
+  console.log("  ✓ la description puis le prix, enchaînés : le prix tient");
 
   // --- 5. L'ordre qu'il voit est l'ordre que son client lira ---------------
   //
