@@ -5,6 +5,15 @@
 
 ---
 
+## FAIT : UN CHANTIER CRÉÉ EST LÀ AU RETOUR (20 septembre 2026)
+
+*« J'ai dû recharger la page pour qu'il arrive dans mes chantiers en cours. »*
+Un retour rejoue la page telle qu'elle a été rendue (cache du navigateur, que
+`staleTimes` ne touche pas) : `creerChantierAction` était la seule écriture de
+l'accueil à ne pas déclarer ce qu'elle change. Elle déclare désormais l'accueil,
+la liste des clients et la fiche du client. Niveau 2.
+`ARCHITECTURE.md` §391.
+
 ## FAIT : LE PRÉNOM SEUL PROPOSE LE CLIENT (20 septembre 2026)
 
 Il tapait « Julien » dans la fiche client et Atlas ne reconnaissait rien : la
@@ -12,7 +21,7 @@ reconnaissance compare des noms ENTIERS. Un nom commencé ouvre désormais une
 liste sous la case — nom entier, ville, chantiers —, on la touche, les cases
 vides se remplissent, et le chantier va sur SA fiche. La reconnaissance
 automatique, elle, n'a pas bougé : elle ne pose toujours rien tant que ce n'est
-pas certain. `ARCHITECTURE.md` §391.
+pas certain. `ARCHITECTURE.md` §392.
 
 ## FAIT : LA FICHE D'INTERVENTION DE SA SIXIÈME PLANCHE (20 septembre 2026)
 

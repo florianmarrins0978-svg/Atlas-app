@@ -8,6 +8,63 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-20
 
+### Un chantier créé est là quand il revient — plus de rechargement
+
+*« J'ai créé un chantier puis j'ai fait retour. Problème ! J'ai dû recharger la
+page pour qu'il arrive dans mes chantiers en cours ! »*
+
+Un RETOUR rejoue la page telle qu'elle a été rendue — c'est le cache du
+navigateur, et aucun délai n'en sort (`staleTimes` ne le touche pas). L'accueil
+revenait donc tel qu'il l'avait quitté. Racine : `creerChantierAction` était la
+seule écriture de l'accueil à ne pas déclarer ce qu'elle change, là où les sept
+autres le font déjà. Elle déclare désormais les trois écrans qu'elle touche —
+l'accueil, la liste des clients, la fiche du client.
+
+Ce que ça évite : croire qu'un chantier n'a pas été enregistré, et le recréer.
+Suite `test-chantier-neuf-au-retour-e2e.ts`, vue rouge sur le code d'avant.
+`ARCHITECTURE.md` §391.
+
+### « Je propose » : la phrase, son pluriel, et le choix des jours
+
+Quatre demandes le même soir, après qu'il a écarté sa propre idée de la veille
+— un dessin de planning sur la ligne : *« non c'est nul, on garde l'existant »*.
+`appli/proposer-ses-jours.html` les met ensemble : le libellé « Cette date ne
+me convient pas ? Je propose », son pluriel décidé **sur les jours** et non sur
+le nombre de propositions, le geste de son écran d'envoi repris à la lettre
+dans le calendrier du client (`propositions-de-jours.ts`), et le compte « Les
+travaux sont prévus sur N jours » au-dessus du bouton.
+
+**Deux défauts trouvés en la parcourant**, tous deux dans le geste qu'il
+demande : le bloc posé depuis un jour d'où le chantier ne tient pas d'affilée
+recouvrait des jours pris, et un jour du bloc pouvait être barré en même temps
+qu'allumé — donc impossible à retirer. Les deux sont corrigés dans la planche
+et notés dans `TODO.md` pour le codage.
+
+**Rien n'est codé** : l'écran de son client part en un seul lot, à sa demande.
+
+### Un refus par erreur n'a aucune issue — la planche, pas encore le code
+
+Sa capture du 20 septembre : *« j'ai sans faire exprès cliqué sur je ne donne
+pas suite, aucun moyen d'annuler »*. Le constat est dans le code :
+`enregistrerReponse` refuse toute seconde réponse (`envoi.reponse !== null` →
+`deja_repondu`), et la page rend alors le cadre « Réponse enregistrée ». Des
+trois issues, c'est la seule à la fois irrattrapable et coûteuse — « Une
+correction » ne part pas sans un mot (`message_manquant`), et « J'accepte »
+laisse le téléphone.
+
+`appli/le-refus-par-erreur.html` compare trois sécurités, toutes mesurées à
+**0 px** sur 390 × 664 : la feuille de la maison, le dédoublement sur place, et
+le retour depuis l'écran d'après.
+
+**Il a retenu la A le soir même** — la feuille. Et il a demandé de ne pas coder
+tout de suite : *« j'ai encore des modif à faire sur cette page, tu coderas
+tout d'un coup »*. L'écran de son client attend donc le reste de ses demandes,
+et partira en un seul lot (`TODO.md`).
+
+Son cas d'aujourd'hui, lui, se répare sans code : le chantier est passé à
+`retourne`, et un nouvel envoi rouvre un lien neuf (`creerEnvoi` ne refuse
+rien).
+
 ### Le prénom seul propose le client — et le remplit d'un doigt
 
 Il tapait « Julien » dans la fiche client : rien. La reconnaissance compare des
@@ -22,7 +79,7 @@ vides se remplissent, et le chantier va sur SA fiche — plus de fiche en double
 **La reconnaissance automatique n'a pas bougé d'un pouce** : elle continue de
 ne rien poser tant que ce n'est pas certain. Proposer n'est pas poser — l'une
 écrit à sa place, l'autre lui rend le choix. C'est ce qui permet à la liste de
-montrer ses quatre Martins là où la pose se tait. `ARCHITECTURE.md` §391.
+montrer ses quatre Martins là où la pose se tait. `ARCHITECTURE.md` §392.
 
 
 ### Une suite qui ne peut rien mesurer ici se tait, au lieu de rougir

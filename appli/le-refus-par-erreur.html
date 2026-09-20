@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — le refus par erreur</title>
+<style>
+  /*
+    LE REFUS PAR ERREUR — trois sécurités possibles, à essayer.
+
+    Le patron, le 20 septembre 2026 : « j'ai sans faire exprès cliqué sur je ne
+    donne pas suite, aucun moyen d'annuler, il faut mettre une sécurité avant
+    l'envoi ».
+
+    Ce qui est en jeu : des trois issues de cet écran, « Je ne donne pas suite »
+    est la seule qui soit à la fois IRRATTRAPABLE par le client et COÛTEUSE —
+    elle ferme le devis, et le client qui revient sur son lien ne trouve plus
+    qu'un cadre « Réponse enregistrée ». La correction, elle, est déjà protégée :
+    sans un mot écrit, elle ne part pas. L'acceptation, elle, ne perd rien : il
+    reste le téléphone.
+
+    Aucune des trois formes ci-dessous n'ajoute un pixel à la page — c'est
+    mesuré sous le téléphone, sa règle du 31 août tient.
+
+    RIEN N'EST CODÉ. Cette page ne touche ni aux données ni à l'application.
+  */
+  :root{
+    --bone:#f5f3ee; --cream:#faf9f5; --paper:#ece9e1;
+    --charcoal:#1c1c1a; --charcoal-soft:#4a4a44; --muted:#8a8578;
+    --pine:#2f3b2f; --or:#B98B47; --line:rgba(28,28,26,.12);
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --bone:#171613; --cream:#1e1c18; --paper:#262420; --charcoal:#e9e5dc;
+           --charcoal-soft:#c9c4b8; --muted:#8a867c; --or:#C9A15E;
+           --line:rgba(233,229,220,.16); }
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html{ scrollbar-color:var(--muted) transparent }
+  ::selection{ background:var(--or); color:var(--cream) }
+  body{margin:0;background:var(--bone);color:var(--charcoal);
+       font:16px/1.55 -apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:34px 0 70px;-webkit-text-size-adjust:100%}
+  .page{max-width:460px;margin:0 auto;padding:0 22px}
+  h1{font:600 25px/1.2 ui-serif,Georgia,serif;margin:0 0 6px;letter-spacing:-.01em}
+  .sous{color:var(--charcoal-soft);margin:0 0 22px;font-size:14.5px}
+  .quoi{margin:0 0 26px;padding-left:12px;border-left:2px solid var(--or);
+        font-size:14px;color:var(--charcoal-soft)}
+
+  .choix{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:16px}
+  .choix button{flex:1 1 auto;min-width:118px;border:1px solid var(--line);
+    background:var(--cream);color:var(--charcoal);border-radius:999px;
+    padding:9px 13px;font:500 13.5px/1 inherit;cursor:pointer;
+    transition:background .22s cubic-bezier(.16,1,.3,1),color .22s,border-color .22s}
+  .choix button:hover{border-color:var(--or)}
+  .choix button[aria-pressed="true"]{background:var(--charcoal);color:var(--cream);
+    border-color:var(--charcoal)}
+  .choix button:focus-visible{outline:2px solid var(--or);outline-offset:2px}
+
+  .tel{width:390px;max-width:100%;height:664px;margin:0 auto;position:relative;
+       border-radius:22px;overflow:hidden;border:1px solid var(--line);
+       box-shadow:0 18px 46px rgba(28,28,26,.16)}
+  .ecran{position:absolute;inset:0;overflow-y:auto;overflow-x:hidden}
+  @media (max-width:433px){
+    .tel{width:100vw;max-width:none;margin-left:calc(50% - 50vw);
+         border-radius:0;border-left:0;border-right:0}
+    .mesure{max-width:none;padding:0 4px}
+  }
+  .mesure{max-width:390px;margin:12px auto 0;font-size:12.5px;
+          display:flex;justify-content:space-between;gap:10px;color:var(--muted)}
+  .mesure b{font-variant-numeric:tabular-nums;font-weight:600}
+  .tient{color:var(--pine)} .deborde{color:#B5502F}
+  @media (prefers-color-scheme: dark){ .tient{color:#8fae8f} .deborde{color:#e08a6a} }
+
+  /* ─── L'écran de son client, tel qu'il est vraiment ───────────────────── */
+  .c{ --fond:#F4EFE8; --carte:#ffffff; --encre:#1c1c1a; --doux:rgba(28,28,26,.62);
+      --pale:rgba(28,28,26,.45); --trait:rgba(0,0,0,.10);
+      --plein:#7E9A6B; --surPlein:#ffffff; --signal:#B5502F;
+      min-height:100%;background:var(--fond);color:var(--encre);
+      padding:8px 16px;font:15px/1.5 -apple-system,"Segoe UI",Roboto,sans-serif}
+  .c .carte{background:var(--carte);border-radius:16px;padding:12px;
+            box-shadow:0 1px 2px rgba(28,28,26,.06);margin-bottom:4px}
+  .c .actions{margin-top:12px}
+  .c .tete{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:0 12px}
+  .c h2{font:600 19px/1.25 ui-serif,Georgia,serif;margin:0}
+  .c .ent{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--pale);flex:none;margin:0}
+  .c .pour{margin:2px 0 0;font-size:14px;color:var(--doux)}
+  .c dl{margin:8px 0 0;padding-top:6px;border-top:1px solid var(--trait);font-size:14px}
+  .c .l{display:flex;justify-content:space-between;color:var(--doux)}
+  .c .l dt,.c .l dd{margin:0}
+  .c .l dd{font-variant-numeric:tabular-nums}
+  .c .ttc{color:var(--encre);font-size:16px;font-weight:600;font-family:ui-serif,Georgia,serif}
+  .c h3{font:600 16px/1.3 ui-serif,Georgia,serif;margin:0}
+  .c .lignes{margin-top:6px;display:flex;flex-direction:column;gap:2px}
+  .c .lignes label{display:flex;gap:12px;align-items:flex-start;font-size:15px;cursor:pointer}
+  .c .lignes input{width:20px;height:20px;margin:1px 0 0;flex:none;accent-color:var(--plein)}
+  .c .mot{margin-top:10px;font-size:13px;font-weight:500;color:var(--doux);display:block}
+  .c textarea{margin-top:6px;width:100%;height:40px;resize:none;border-radius:12px;
+              border:1px solid var(--trait);background:var(--carte);color:var(--encre);
+              padding:8px 12px;font:15px/1.4 inherit}
+  .c .actions{display:flex;flex-direction:column;gap:6px}
+  .c .b1{border:0;border-radius:999px;background:var(--plein);color:var(--surPlein);
+         padding:13px;font:500 16px/1 ui-serif,Georgia,serif;cursor:pointer;width:100%}
+  .c .b2,.c .b3{border-radius:999px;background:transparent;padding:11px;
+         font:500 14px/1 inherit;cursor:pointer;color:var(--encre);
+         border:1px solid var(--trait);width:100%}
+  .c .b2{border-color:color-mix(in srgb,var(--signal) 34%,transparent);color:var(--signal)}
+  .c .b3{color:var(--doux)}
+  /* Le geste sûr porte l'encre pleine : c'est lui qu'on doit trouver du premier coup d'œil. */
+  .c .b4{border-radius:999px;background:transparent;padding:11px;width:100%;cursor:pointer;
+         font:600 15px/1 inherit;color:var(--encre);
+         border:1px solid color-mix(in srgb,var(--encre) 45%,transparent)}
+  .c .preuve{text-align:center;font-size:11px;color:var(--pale);margin:6px 0 0;line-height:1.35}
+  .c .pdf{border:0;border-radius:999px;background:var(--plein);color:var(--surPlein);
+          padding:12px;font:500 15px/1 inherit;cursor:pointer;width:100%;margin-top:10px}
+
+  /* Le cadre de retour — « Réponse enregistrée ». */
+  .c .fin{background:var(--carte);border-radius:16px;padding:22px 16px;text-align:center;
+          box-shadow:0 1px 2px rgba(28,28,26,.06)}
+  .c .fin h3{font:600 17px/1.35 ui-serif,Georgia,serif;margin:0}
+  .c .fin p{margin:8px 0 0;font-size:14px;color:var(--doux)}
+  .c .revenir{margin-top:14px;border:0;background:transparent;font:inherit;font-size:14px;
+     font-weight:500;color:var(--signal);text-decoration:underline;text-underline-offset:4px;cursor:pointer}
+
+  /* Le doublement sur place — B. */
+  .c .paire{display:flex;gap:6px}
+  .c .paire button{flex:1 1 0;border-radius:999px;padding:11px;font:500 14px/1 inherit;cursor:pointer}
+  .c .paire .oui{border:1px solid color-mix(in srgb,var(--signal) 40%,transparent);
+     background:transparent;color:var(--signal)}
+  .c .paire .non{border:1px solid var(--trait);background:var(--carte);color:var(--encre)}
+
+  .feuille{position:absolute;left:0;right:0;bottom:0;background:transparent;
+     box-shadow:0 -10px 34px rgba(28,28,26,.18);padding:0;
+     transform:translateY(101%);transition:transform .36s cubic-bezier(.16,1,.3,1)}
+  .feuille[data-ouverte="oui"]{transform:translateY(0)}
+  .feuille > .c{background:#fff;border-radius:20px 20px 0 0;
+     padding:18px 16px 20px;min-height:0}
+  .feuille h3{text-align:center}
+  .feuille p.d{margin:6px 0 16px;text-align:center;font-size:14px;color:rgba(28,28,26,.62)}
+  .voile{position:absolute;inset:0;background:rgba(28,28,26,.32);opacity:0;
+     pointer-events:none;transition:opacity .36s cubic-bezier(.16,1,.3,1)}
+  .voile[data-ouverte="oui"]{opacity:1;pointer-events:auto}
+
+  .note{font-size:13.5px;color:var(--charcoal-soft);margin:14px 0 0;
+        padding-left:12px;border-left:1px solid var(--or)}
+  .rep{margin:34px 0 0;padding:16px 18px;background:var(--cream);
+       border:1px solid var(--line);border-radius:14px;font-size:14.5px}
+  .rep p{margin:0 0 8px} .rep p:last-child{margin:0}
+  .rep b{font-weight:600}
+  table{width:100%;border-collapse:collapse;margin:14px 0 0;font-size:13.5px}
+  th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{font-weight:600;color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <h1>Le refus par erreur</h1>
+  <p class="sous"><b>Votre message du 20 septembre :</b> <i>« j'ai sans faire exprès cliqué sur je ne donne pas suite, aucun moyen d'annuler ».</i> Trois sécurités possibles — touchez « Je ne donne pas suite » dans chacune pour voir ce qui se passe. <b>Rien n'est codé.</b></p>
+
+  <p class="quoi"><b>Pourquoi ce bouton-là et pas les deux autres.</b> « Une correction » ne part déjà pas sans un mot écrit. « J'accepte » ne perd rien : il reste le téléphone. « Je ne donne pas suite » est le seul qui ferme le devis d'un doigt, sans rien demander, et le client qui revient sur son lien ne trouve plus que « Réponse enregistrée ».</p>
+
+  <div class="choix" role="group" aria-label="La sécurité">
+    <button type="button" data-forme="aujourdhui" aria-pressed="true">Aujourd'hui</button>
+    <button type="button" data-forme="feuille" aria-pressed="false">A — la feuille</button>
+    <button type="button" data-forme="place" aria-pressed="false">B — sur place</button>
+    <button type="button" data-forme="apres" aria-pressed="false">C — le retour</button>
+  </div>
+
+  <div class="tel">
+    <div class="ecran" id="ecran"></div>
+    <div class="voile" id="voile"></div>
+    <div class="feuille" id="feuille"></div>
+  </div>
+  <p class="mesure">
+    <span id="etat">—</span>
+    <span>la page fait <b id="hauteur">—</b> pour 664 px d'écran</span>
+  </p>
+
+  <p class="note" id="explication"></p>
+
+  <div class="rep">
+    <p><b>Ce que chacune coûte, et ce qu'elle rattrape.</b></p>
+    <table>
+      <tr><th>Forme</th><th>Rattrape</th><th>Ne rattrape pas</th></tr>
+      <tr><td><b>A</b> — la feuille</td><td>le doigt qui glisse</td><td>le client qui confirme sans lire</td></tr>
+      <tr><td><b>B</b> — sur place</td><td>le doigt qui glisse</td><td>idem, et le second appui tombe là où était le premier</td></tr>
+      <tr><td><b>C</b> — le retour</td><td>tout, même le lendemain</td><td>rien — mais le refus part d'abord</td></tr>
+    </table>
+    <p style="margin-top:14px"><b>Ma proposition : A et C ensemble.</b> La feuille arrête le geste involontaire ; le retour rattrape ce qui passe quand même — c'est exactement votre cas, vous aviez déjà fermé la page. Les deux tiennent dans l'écran : aucune n'ajoute un pixel.</p>
+    <p><b>B est le seul que je déconseille</b> : le bouton « Confirmer » apparaît sous le doigt qui vient d'appuyer. Un doigt qui a glissé une fois glisse deux fois.</p>
+    <p><b>Et le retour a une limite, à trancher aussi :</b> jusqu'à quand ? Ma proposition — tant que vous n'avez pas repris le devis de votre côté. Après, c'est vous qui décidez, pas lui.</p>
+  </div>
+</div>
+
+<script>
+/* Une planche montre, elle ne décide pas. La hauteur affichée est mesurée. */
+let forme = "aujourdhui";
+let feuilleOuverte = false;
+let confirmeSurPlace = false;
+let envoye = false;
+
+const ecran = document.getElementById("ecran");
+const feuille = document.getElementById("feuille");
+const voile = document.getElementById("voile");
+
+function enTete(){
+  return '<div class="carte">' +
+    '<div class="tete"><h2>Devis n° 2026-000039</h2><p class="ent">Atlas</p></div>' +
+    '<p class="pour">Pour Mr. Balba</p>' +
+    '<dl>' +
+      '<div class="l"><dt>Total HT</dt><dd>580,00 €</dd></div>' +
+      '<div class="l"><dt>TVA (20 %)</dt><dd>116,00 €</dd></div>' +
+      '<div class="l ttc"><dt>Total TTC</dt><dd>696,00 €</dd></div>' +
+    '</dl>' +
+    '<button type="button" class="pdf">Télécharger mon devis</button>' +
+  '</div>';
+}
+
+function carteDate(){
+  return '<div class="carte"><h3>Quels jours vous arrangent ?</h3>' +
+    '<div class="lignes">' +
+      '<label><input type="radio" name="d"><span>le jeudi 8 octobre, le vendredi 9, le lundi 12 et le mardi 13 octobre</span></label>' +
+      '<label><input type="radio" name="d"><span>Cette date ne me convient pas — je propose :</span></label>' +
+    '</div>' +
+    '<span class="mot">Une erreur ? Écrivez-la, votre artisan la lira.</span>' +
+    '<textarea placeholder="« Mon nom est mal écrit », « plutôt le matin »…"></textarea>' +
+  '</div>';
+}
+
+function actions(){
+  /* Sur place, la troisième ligne se dédouble SANS changer de hauteur : deux
+     boutons côte à côte sur la ligne qu'occupait le troisième. */
+  const troisieme = (forme === "place" && confirmeSurPlace)
+    ? '<div class="paire"><button type="button" class="oui" id="confirmer">Confirmer</button>' +
+      '<button type="button" class="non" id="annuler">Annuler</button></div>'
+    : '<button type="button" class="b3" id="refus">Je ne donne pas suite</button>';
+
+  return '<div class="actions">' +
+    '<button type="button" class="b1">J’accepte ce devis</button>' +
+    '<button type="button" class="b2">Une correction avant d’accepter</button>' +
+    troisieme +
+  '</div>' +
+  '<p class="preuve">Votre accord est horodaté et conservé avec le devis.</p>';
+}
+
+function cadreFin(){
+  /* Ce que le patron a vu : « Votre réponse a bien été transmise ». En C, une
+     ligne de plus — et c'est toute la différence. */
+  return '<div class="fin"><h3>Votre réponse a bien été transmise.</h3>' +
+    '<p>Vous pouvez fermer cette page.</p>' +
+    (forme === "apres"
+      ? '<button type="button" class="revenir" id="revenir">Ce n’est pas ce que je voulais</button>'
+      : "") +
+  '</div>';
+}
+
+function peindre(){
+  ecran.innerHTML = '<div class="c">' + enTete() +
+    (envoye ? cadreFin() : carteDate() + actions()) + '</div>';
+
+  const dedans = forme === "feuille" && feuilleOuverte;
+  feuille.innerHTML = dedans
+    ? '<div class="c"><h3>Vous ne donnez pas suite ?</h3>' +
+      '<p class="d">Votre artisan en sera prévenu.</p>' +
+      '<div class="actions">' +
+        '<button type="button" class="b3" id="confirmer">Oui, je ne donne pas suite</button>' +
+        '<button type="button" class="b4" id="annuler">Revenir au devis</button>' +
+      '</div></div>'
+    : "";
+  feuille.dataset.ouverte = dedans ? "oui" : "non";
+  voile.dataset.ouverte = dedans ? "oui" : "non";
+  mesurer();
+}
+
+function mesurer(){
+  const h = ecran.scrollHeight;
+  const tient = h <= 664;
+  document.getElementById("hauteur").textContent = h + " px";
+  const e = document.getElementById("etat");
+  e.textContent = tient ? "Tout est en vue" : "Il doit faire défiler " + (h - 664) + " px";
+  e.className = tient ? "tient" : "deborde";
+}
+
+const EXPLICATIONS = {
+  aujourdhui: "Tel que c’est aujourd’hui : l’appui part, et l’écran suivant est définitif. C’est ce qui vous est arrivé.",
+  feuille: "A — la feuille monte du bas, comme le calendrier de cet écran. La page derrière ne bouge pas d’un pixel. Toucher à côté referme sans rien envoyer.",
+  place: "B — le bouton se dédouble sur sa propre ligne : « Confirmer » et « Annuler » à la place du troisième. Même hauteur, aucun voile — mais « Confirmer » tombe sous le doigt qui vient d’appuyer.",
+  apres: "C — le refus part tout de suite, et l’écran de retour porte de quoi revenir. C’est le seul qui rattrape un refus déjà envoyé, même après avoir fermé la page.",
+};
+
+Array.prototype.forEach.call(document.querySelectorAll("[data-forme]"), function(b){
+  b.addEventListener("click", function(){
+    Array.prototype.forEach.call(document.querySelectorAll("[data-forme]"), function(x){
+      x.setAttribute("aria-pressed", String(x === b));
+    });
+    forme = b.dataset.forme;
+    feuilleOuverte = false;
+    confirmeSurPlace = false;
+    envoye = false;
+    document.getElementById("explication").textContent = EXPLICATIONS[forme];
+    peindre();
+  });
+});
+
+document.querySelector(".tel").addEventListener("click", function(e){
+  const c = e.target.closest("#refus, #confirmer, #annuler, #revenir, .voile");
+  if (!c) return;
+  if (c.id === "refus"){
+    if (forme === "feuille") feuilleOuverte = true;
+    else if (forme === "place") confirmeSurPlace = true;
+    else envoye = true;
+  } else if (c.id === "confirmer"){
+    feuilleOuverte = false;
+    confirmeSurPlace = false;
+    envoye = true;
+  } else if (c.id === "annuler" || c.classList.contains("voile")){
+    feuilleOuverte = false;
+    confirmeSurPlace = false;
+  } else if (c.id === "revenir"){
+    envoye = false;
+  }
+  peindre();
+});
+
+document.getElementById("explication").textContent = EXPLICATIONS.aujourdhui;
+peindre();
+</script>
+</body>
+</html>
