@@ -29,7 +29,7 @@ là — donc les suites tournaient, et treize tombaient pour **d'autres raisons*
 
 | La suite | La vraie cause | Ce qui a été fait |
 |---|---|---|
-| `batterie-solitaire`, `garde-fusion-main`, `mise-a-jour-role-db` | les chemins s'écrivaient `src\lib\x.ts` sur Windows ; tout le reste attend `src/lib/x.ts` | corrigé **à la source** (l'empreinte des fichiers), et les deux rustines qui compensaient plus loin sont **retirées** |
+| `batterie-solitaire`, `garde-fusion-main`, `mise-a-jour-role-db` | les chemins s'écrivaient avec la barre inversée de Windows ; tout le reste attend celle de git | corrigé **à la source** (l'empreinte des fichiers), et les deux rustines qui compensaient plus loin sont **retirées** |
 | `garde-fusion-main`, `mise-a-jour-espace`, `migrations-banc` | ton git réécrit les fins de ligne (`CRLF`) : un fichier « change » sans qu'on l'ait touché | les dépôts d'essai qui imitent ton espace Linux se montent sans cette réécriture |
 | `secret-authentification-db` (5 rouges) | la suite lisait une variable que personne ne pose, et interrogeait **une autre base** que celle où elle avait posé son décor | elle lit la même variable que toutes les suites base |
 | `fiche-pendant-relance`, `port-remesure`, `verrou-construction`, `relance-construction`, `ouvrir-port`, `ouvrir-session` | elles emploient des mécanismes que **Windows n'a pas** : arrêter un groupe de processus, lancer un script `#!/bin/sh`, un `PATH` séparé par `:` | elles le **déclarent**, et se taisent en le nommant — même règle que pour un outil absent |

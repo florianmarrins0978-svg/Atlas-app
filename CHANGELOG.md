@@ -85,8 +85,8 @@ recoupent pas. `ARCHITECTURE.md` §390.
 appellent `npx` se taisaient. `npm test` y rendait « 383/398 suites réussies.
 2 non mesurable(s) ici. » Chaque rouge est allé à sa racine :
 
-- l'empreinte des sources écrit les chemins comme git (`src/lib/x.ts`), et non
-  plus `src\lib\x.ts` ; les deux couches qui compensaient en aval sont retirées,
+- l'empreinte des sources écrit les chemins comme git — barre oblique —, et non
+  plus avec la barre inversée de Windows ; les deux couches qui compensaient en aval sont retirées,
   et les verdicts déjà déposés se relisent sans faire passer l'arbre pour remué ;
 - les dépôts d'essai qui modèlent son espace Linux se montent avec
   `core.autocrlf=false`, sinon son git y écrit du CRLF et le contenu « change » ;
