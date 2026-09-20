@@ -3,6 +3,12 @@ import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { ouvrableParLeClient } from "../src/lib/adresse-du-client";
 import { originePublique } from "../src/server/origine-publique";
+import { exigerLesOutils } from "./_outil-requis";
+
+// **Sans ces outils, cette suite ne mesure RIEN** — elle le dit et sort du
+// compte, au lieu de rougir sur une machine qui n'y est pour rien
+// (`_outil-requis.ts`, sa colère du 20 septembre 2026).
+exigerLesOutils("bash");
 
 // LE LIEN QUE REÇOIT LE CLIENT — qu'il parte, et qu'il s'ouvre CHEZ LUI.
 //

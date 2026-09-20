@@ -32,15 +32,38 @@ export function phraseDeBlocage(fichier, minutes) {
   return `❌ ${fichier} n'a pas rendu la main en ${minutes} minutes — tué.`;
 }
 
-/** La ligne de compte, en fin de moteur. */
-export function phraseDeCompte(reussies, total) {
-  return `${reussies}/${total} suites réussies.`;
+/**
+ * La ligne d'une suite qui ne peut pas mesurer ICI — ni verte, ni rouge.
+ *
+ * **Elle doit NOMMER l'outil qui manque.** « Non applicable » tout court se
+ * lirait comme une dispense, et la prochaine session l'ajouterait à la
+ * sienne ; « `gh` est absent de cette machine » se vérifie en dix secondes, et
+ * cesse d'être vrai dès qu'on installe l'outil.
+ */
+export function phraseDeNonMesurable(fichier, raison) {
+  return `⏭️  ${fichier} n'a rien pu mesurer ici (${raison})`;
+}
+
+/**
+ * La ligne de compte, en fin de moteur.
+ *
+ * **Les non mesurables sortent du total**, et se disent à part. Les fondre
+ * dans les réussies rendrait un vert qui ne prouve rien — la faute exacte du
+ * 15 août 2026, où `0 − 0 = 0` annonçait « rien n'est coupé » sur un écran où
+ * trois noms l'étaient (`CLAUDE.md` §5).
+ */
+export function phraseDeCompte(reussies, total, nonMesurables = 0) {
+  const base = `${reussies}/${total} suites réussies.`;
+  return nonMesurables > 0
+    ? `${base} ${nonMesurables} non mesurable(s) ici.`
+    : base;
 }
 
 // Pas de `\b` après « échoué » : pour JavaScript, « é » n'est pas une lettre
 // de mot, et la frontière n'y existe pas — la ligne ne se lisait jamais.
 const LIGNE_ROUGE = /^\s*❌ (\S+\.ts) (?:a échoué|n'a pas rendu la main)(?=\s|$)/gmu;
-const LIGNE_COMPTE = /^\s*(\d+)\/(\d+) suites réussies\./gmu;
+const LIGNE_COMPTE = /^\s*(\d+)\/(\d+) suites réussies\.(?: (\d+) non mesurable\(s\) ici\.)?/gmu;
+const LIGNE_NON_MESURABLE = /^\s*⏭️\s+(\S+\.ts) n'a rien pu mesurer ici(?=\s|$)/gmu;
 
 /**
  * Relit la sortie d'un moteur de suites.
@@ -55,8 +78,17 @@ export function bilanDuJournal(texte) {
   if (comptes.length === 0) return null;
   // Le DERNIER compte : un moteur n'en écrit qu'un, mais une sortie de
   // batterie peut en enchaîner plusieurs, et c'est le dernier qui conclut.
-  const [, reussies, total] = comptes[comptes.length - 1];
+  const [, reussies, total, muettes] = comptes[comptes.length - 1];
   const rouges = [...new Set([...String(texte).matchAll(LIGNE_ROUGE)].map((m) => m[1]))].sort();
+  const nonMesurables = [
+    ...new Set([...String(texte).matchAll(LIGNE_NON_MESURABLE)].map((m) => m[1])),
+  ].sort();
+  // **Le compte est le seul témoin croisé d'un « non mesurable ».** Une suite
+  // qui se déclarerait muette sans que le moteur l'annonce serait une dispense
+  // que personne ne voit passer — la liste qu'on refuse, écrite autrement.
   const annonces = Number(total) - Number(reussies);
-  return { rouges, complet: rouges.length === annonces };
+  const complet =
+    rouges.length + nonMesurables.length === annonces &&
+    nonMesurables.length === Number(muettes ?? 0);
+  return { rouges, nonMesurables, complet };
 }

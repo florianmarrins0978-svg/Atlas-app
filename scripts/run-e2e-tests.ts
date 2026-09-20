@@ -5,6 +5,7 @@ import path from "node:path";
 import Redis from "ioredis";
 import { SUITES_SERVEUR } from "./_suites-serveur";
 import { phraseDEchec, phraseDeCompte } from "./_bilan-suites.mjs";
+import { CODE_NON_MESURABLE } from "./_outil-requis";
 
 const DOSSIER = path.join(__dirname);
 const NODE = process.execPath;
@@ -593,6 +594,8 @@ async function main() {
 
   console.log(`\nExécution de ${fichiers.length} suites dépendant du serveur...\n`);
   let echecs = 0;
+  // Celles qui ont refusé de conclure faute d'outil (`_outil-requis.ts`).
+  let muettes = 0;
   for (const fichier of fichiers) {
     console.log(`=== ${fichier} ===`);
 
@@ -635,6 +638,10 @@ async function main() {
       console.error(phraseDEchec(fichier, `signal: ${resultat.signal}`));
       continue;
     }
+    if (resultat.status === CODE_NON_MESURABLE) {
+      muettes++;
+      continue;
+    }
     if (resultat.status !== 0) {
       echecs++;
       console.error(phraseDEchec(fichier, `code: ${resultat.status}`));
@@ -648,7 +655,7 @@ async function main() {
   } catch {
     // Déjà parti — rien à faire, et surtout rien à cacher.
   }
-  console.log(`\n${phraseDeCompte(fichiers.length - echecs, fichiers.length)}`);
+  console.log(`\n${phraseDeCompte(fichiers.length - echecs - muettes, fichiers.length, muettes)}`);
   if (echecs > 0) process.exit(1);
 }
 

@@ -1,6 +1,12 @@
 import assert from "node:assert/strict";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
+import { exigerLesOutils } from "./_outil-requis";
+
+// **Sans ces outils, cette suite ne mesure RIEN** — elle le dit et sort du
+// compte, au lieu de rougir sur une machine qui n'y est pour rien
+// (`_outil-requis.ts`, sa colère du 20 septembre 2026).
+exigerLesOutils("npx");
 
 // **Deux défauts du 9 août 2026, tenus ici — et ils n'étaient pas des lenteurs.**
 //

@@ -32006,3 +32006,49 @@ part), `test-travaux-a-faire-e2e.ts` (le bandeau fermé, le contour mesuré du
 même or que « une journée », l'envoi sans rien, le second retour, le
 rechargement), `test-planning-e2e.ts` (les lignes ne s'étalent plus),
 `test-boutons-arrondis.ts` (les quatre cases, déclarées comme des cases).
+
+## §390 — Une suite qui ne peut pas MESURER refuse de conclure : ni verte, ni rouge
+
+**Sa colère du 20 septembre 2026 :** *« ça fait deux jours j'ai une session qui
+essaye de me fusionner une modif, elle y arrive pas alors qu'elle est seule ;
+y'a toujours un problème depuis qu'on a mis le garde-fou en place, supprime
+le »*.
+
+Le garde-fou n'était pas le coupable, et c'est ce qui rendait la panne si
+durable : il faisait exactement son travail. Dix-neuf suites d'outillage
+rougissent sur son PC **Windows** — elles appellent `bash`, `gh`, `curl`,
+`npx`, que la machine n'a pas ou pas sous ce nom. Elles sont rouges sur `main`
+aussi, avec ou sans lot. Devant un rouge, le garde demande de prouver qu'il
+préexiste, une suite à la fois : **trente minutes par lot pour réapprendre ce
+qu'on savait déjà**, et un lot resté deux jours en rade.
+
+**Ce qui a été refusé, et ne doit pas revenir.** Une liste « ces suites-là ne
+comptent pas sur Windows ». Une liste qui ABAISSE une exigence se trompe un
+jour de fichier, et du danger part sans que rien ne le dise
+(`.claude/rules/testing.md`). Ici on ne déclare pas des SUITES dispensées : on
+déclare l'OUTIL qu'une suite appelle — un fait sur elle, vrai sur toutes les
+machines — et c'est la machine qu'on interroge.
+
+| | |
+|---|---|
+| l'outil répond | la suite mesure, **exactement comme avant** — le cas de Linux et de la CI |
+| l'outil est absent (`ENOENT` seul) | elle le dit, le **nomme**, et sort du compte |
+| ce qu'elle n'est **jamais** | comptée verte — ce serait le contrôle qui mesure zéro (§5) |
+
+**Le compte est le témoin croisé.** Le moteur écrit « 150/169 suites réussies.
+19 non mesurable(s) ici. », et `bilanDuJournal` n'accepte le bilan que si les
+suites muettes nommées sont exactement autant que le compte l'annonce. Sans
+cela, une suite pourrait se taire sans que personne ne la voie passer — et
+l'exemption serait revenue par la fenêtre.
+
+**Ce qui tient la sur-déclaration** — la vraie tentation : `test-outil-requis`
+exige qu'un outil déclaré soit un outil **appelé** dans le fichier. Sa
+première version vérifiait qu'aucune suite ne se tait sur la machine courante ;
+ce poste n'ayant pas `gh`, elle rougissait sur un silence justifié, et
+n'aurait rien dit d'une sur-déclaration ailleurs. La question se pose au
+fichier, pas à la machine.
+
+**Ce qui n'est PAS mesuré ici, et qu'il ne faut pas croire tenu :** ce poste est
+sous Linux. Que les dix-neuf se taisent vraiment sur son PC se vérifie
+là-bas — `bash` livré avec Git y est parfois sur le chemin, auquel cas la
+suite tourne et peut tomber pour une autre raison.

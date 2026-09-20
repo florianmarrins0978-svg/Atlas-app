@@ -8,6 +8,20 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-20
 
+### Une suite qui ne peut rien mesurer ici se tait, au lieu de rougir
+
+Dix-neuf suites d'outillage rougissaient sur son PC Windows faute de `bash`,
+`gh`, `curl` ou `npx` — sur `main` comme sur n'importe quel lot. Le garde-fou
+demandait alors de prouver chaque rouge préexistant : trente minutes par lot,
+et un lot resté deux jours sans pouvoir fusionner.
+
+Une suite déclare désormais l'outil qu'elle appelle ; si la machine ne l'a pas,
+elle refuse de conclure, le nomme, et sort du compte — **jamais comptée verte**.
+Le moteur écrit les deux chiffres, et le bilan refuse de conclure s'ils ne se
+recoupent pas. `ARCHITECTURE.md` §390.
+
+**Non vérifié sur Windows** : ce poste est sous Linux. À mesurer sur son PC.
+
 ### La fiche d'intervention est codée — sa sixième planche, exactement
 
 **Son « tu peux coder exactement cette planche », à 2 h**, avec un dernier mot :

@@ -5,6 +5,7 @@ import { SUITES_SERVEUR } from "./_suites-serveur";
 // Les phrases d'échec et de compte viennent d'un seul endroit : la batterie
 // les relit pour nommer les rouges, et une copie divergente en cacherait un.
 import { phraseDEchec, phraseDeBlocage, phraseDeCompte } from "./_bilan-suites.mjs";
+import { CODE_NON_MESURABLE } from "./_outil-requis";
 
 const DOSSIER = path.join(__dirname);
 const NODE = process.execPath;
@@ -43,6 +44,8 @@ console.log(`Exécution de ${fichiers.length} suites de tests...\n`);
 const DELAI_PAR_SUITE_MS = 8 * 60 * 1000;
 
 let echecs = 0;
+// Les suites qui ont refusé de conclure : ni vertes, ni rouges (`_outil-requis.ts`).
+let muettes = 0;
 for (const fichier of fichiers) {
   console.log(`=== ${fichier} ===`);
   const resultat = spawnSync(NODE, [TSX, path.join(DOSSIER, fichier)], {
@@ -79,11 +82,17 @@ for (const fichier of fichiers) {
     console.error(phraseDEchec(fichier, `signal: ${resultat.signal}`));
     continue;
   }
+  // **Le silence déclaré N'EST PAS un échec** : la suite a dit, en toutes
+  // lettres, qu'elle n'avait rien pu mesurer ici. Elle a déjà écrit sa ligne.
+  if (resultat.status === CODE_NON_MESURABLE) {
+    muettes++;
+    continue;
+  }
   if (resultat.status !== 0) {
     echecs++;
     console.error(phraseDEchec(fichier, `code: ${resultat.status}`));
   }
 }
 
-console.log(`\n${phraseDeCompte(fichiers.length - echecs, fichiers.length)}`);
+console.log(`\n${phraseDeCompte(fichiers.length - echecs - muettes, fichiers.length, muettes)}`);
 if (echecs > 0) process.exit(1);

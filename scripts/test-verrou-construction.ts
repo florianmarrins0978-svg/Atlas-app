@@ -9,6 +9,12 @@ import {
   attendreLaConstructionEnCours,
   detenteursDuVerrou,
 } from "./verrou-construction.mjs";
+import { exigerLesOutils } from "./_outil-requis";
+
+// **Sans ces outils, cette suite ne mesure RIEN** — elle le dit et sort du
+// compte, au lieu de rougir sur une machine qui n'y est pour rien
+// (`_outil-requis.ts`, sa colère du 20 septembre 2026).
+exigerLesOutils("bash");
 
 // **« L'appli est vraiment très lente, mais vraiment. »** — 16 août 2026.
 //

@@ -151,7 +151,7 @@ Trois contrôles le tiennent, et les trois ont été **vus rouges** avant :
 `test-rate-limit-redis-real` (la clé absente, le plancher à zéro),
 `test-limite-magasin-en-panne` (rendre ne lève jamais).
 
-## LES SUITES D'OUTILLAGE SONT ROUGES SUR SON PC — 30 MIN DE COMPARAISON PAR LOT
+## ~~LES SUITES D'OUTILLAGE SONT ROUGES SUR SON PC~~ — MÉCANISME CODÉ LE 20 SEPTEMBRE 2026, À MESURER CHEZ LUI
 
 **Relevé le 18 septembre 2026**, dans le document du lot « deux jours qui ne se
 touchent pas » : dix-neuf suites d'outillage (`batterie-solitaire`,
@@ -172,9 +172,19 @@ rougir. C'est déjà la doctrine du dépôt (« un contrôle qui mesure ZÉRO ne
 rien »), et un « non applicable » n'entre pas dans les rouges, donc ne déclenche
 aucune comparaison.
 
-**Ce qui bloque :** cela se vérifie sur SON PC, pas ici — ce poste est sous
-Linux. À faire dans une session lancée depuis son espace Windows, suite par
-suite, en confrontant chacune au vrai message qu'elle rend là-bas.
+**CODÉ LE 20 SEPTEMBRE 2026** (`ARCHITECTURE.md` §390). Dix-sept suites
+déclarent l'outil qu'elles appellent — `bash`, `gh`, `curl`, `npx`, `sleep`,
+`cat`, `mkdir` — et refusent de conclure quand la machine ne l'a pas. Le moteur
+les compte à part (« 19 non mesurable(s) ici. »), et le bilan refuse de
+conclure si les deux chiffres ne se recoupent pas.
+
+**CE QUI RESTE, ET IL NE FAUT PAS LE CROIRE TENU :** que les dix-neuf se
+taisent VRAIMENT chez lui. Ce poste est sous Linux — quatorze des dix-sept y
+mesurent normalement, `test-ouvrir-port` s'y tait faute de `gh`, ce qui est le
+comportement voulu. Sur Windows, `bash` livré avec Git est parfois sur le
+chemin : la suite tourne alors et peut tomber pour une AUTRE raison — chemins,
+`ps -o`, un port. **À rejouer depuis son espace Windows**, et à compléter suite
+par suite avec le vrai message rendu là-bas.
 
 ## LES SUITES NAVIGATEUR TRAVERSENT LA RLS — ce qu'elles ne peuvent pas mesurer
 
