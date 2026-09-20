@@ -43,6 +43,7 @@ qui ne se résoudra pas en codant.
 13. [Choisir le prestataire qui lit vos virements](#13-choisir-le-prestataire-qui-lit-vos-virements)
 14. [Demander à votre comptable : ce que vaut l’accusé de réception d’une facture](#14-demander-à-votre-comptable--ce-que-vaut-laccusé-de-réception-dune-facture)
 15. [Créer le compte Brevo, pour que le code de vérification parte](#15-créer-le-compte-brevo-pour-que-le-code-de-vérification-parte)
+16. [Prendre un nom de domaine, pour que le devis parte d’Atlas avec un lien cliquable](#16-prendre-un-nom-de-domaine-pour-que-le-devis-parte-datlas-avec-un-lien-cliquable)
 
 ---
 
@@ -1044,7 +1045,8 @@ trace reste utile, et c’est le recommandé qui s’ajoute à côté.
 recopié le code reçu à son adresse** — c'est ce que vous avez demandé après
 être entré avec une adresse inventée. Ce code part par **Brevo**, que vous avez
 choisi : français, serveurs en France, gratuit jusqu'à 300 e-mails par jour,
-et une adresse vérifiée suffit — pas de nom de domaine nécessaire.
+et une adresse vérifiée suffit — ~~pas de nom de domaine nécessaire~~ (faux,
+voir plus bas : il en faut un, et il sert aussi au point 16).
 
 ### Pourquoi c'est bloquant
 
@@ -1089,3 +1091,45 @@ COURRIEL_EXPEDITEUR=votre@adresse.fr
 
 Le détail de ce qui a été fait : [`verification-email.md`](verification-email.md).
 
+---
+
+## 16. Prendre un nom de domaine, pour que le devis parte d’Atlas avec un lien cliquable
+
+**Constaté le 20 septembre 2026, capture à l’appui.** Le devis envoyé par
+e-mail depuis votre téléphone (Outlook) arrive chez le client avec l’adresse
+de la page **en texte, pas en lien** : il doit la copier. Ce n’est pas le
+message — le lien y est seul sur sa ligne, propre — c’est le canal : un
+`mailto:` ne transporte que du texte, et Outlook ne transforme pas en lien un
+texte qu’il n’a pas vu taper. Le client sous Gmail ou Mail d’Apple, lui, voit
+un lien ; sous Outlook, non. Aucune façon d’écrire le message n’y change rien.
+
+### Ce qui règle le problème, et pourquoi c’est bloquant
+
+**Que le devis parte d’Atlas lui-même**, par Brevo, avec un vrai bouton dans le
+mail. C’est ce qui a été décidé le 20 septembre. Mais Brevo n’expédie qu’avec
+une adresse **sur un nom de domaine à vous** (point 15 : laposte.net, gmail,
+orange sont refusés par les messageries) — et vous n’en avez pas encore.
+Tant qu’elle n’existe pas, **rien ne part d’Atlas** : ni le code de
+vérification, ni le devis. Coder l’envoi avant serait livrer quelque chose que
+personne ne peut essayer.
+
+### Ce que vous faites (vous seul le pouvez)
+
+1. Acheter un nom de domaine (~10 €/an, un `.fr` chez OVH, Gandi, Ionos…).
+2. Chez Brevo, *Domaines* → l’ajouter → copier les trois lignes chez le vendeur
+   du domaine. Puis *Expéditeurs* → `contact@votre-domaine.fr`, vérifiée.
+3. Poser cette adresse dans `COURRIEL_EXPEDITEUR` de votre espace (à côté de
+   `BREVO_API_KEY`), et rallumer l’espace.
+4. Me dire « l’adresse est là ».
+
+### Ce que je fais ensuite, et ce qui a été pensé pour votre adresse à venir
+
+L’envoi du devis par Atlas : votre message actuel mot pour mot, le lien en
+bouton, **votre nom d’entreprise** en expéditeur, **les réponses vers votre
+adresse** telle qu’elle est en base. L’adresse expéditrice reste un réglage de
+l’espace, jamais écrite dans le code : le jour où elle change, seul le réglage
+change. Le SMS ne bouge pas.
+
+### En attendant
+
+Par **SMS**, le lien arrive cliquable. Par e-mail, le client copie l’adresse.
