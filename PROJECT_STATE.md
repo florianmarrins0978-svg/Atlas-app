@@ -5,6 +5,15 @@
 
 ---
 
+## FAIT : LA FEUILLE DU DEVIS S'OUVRE AVEC SA PREMIÈRE LIGNE (20 septembre 2026)
+
+*« Quand j'ouvre la page du devis il doit avoir une ligne d'ouverte déjà. »*
+Elle est là sur tout devis brouillon sans ligne — et elle n'existe **pas en
+base** tant qu'il n'a rien écrit : une ligne vide posée d'office ferait
+disparaître la dictée suivante (sa panne du 7 août). `ligne-ouverte-devis.ts`,
+deux suites, vingt-cinq suites délestées d'un clic devenu inutile.
+`ARCHITECTURE.md` §391.
+
 ## FAIT : LA FICHE D'INTERVENTION DE SA SIXIÈME PLANCHE (20 septembre 2026)
 
 Carte cernée d'or (2 px, vraie bordure), quatre gestes sur une ligne avec le

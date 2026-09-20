@@ -32052,3 +32052,58 @@ fichier, pas à la machine.
 sous Linux. Que les dix-neuf se taisent vraiment sur son PC se vérifie
 là-bas — `bash` livré avec Git y est parfois sur le chemin, auquel cas la
 suite tourne et peut tomber pour une autre raison.
+
+## §391 — La feuille du devis s'ouvre avec sa première ligne, et la base ne le sait pas
+
+**Sa demande du 20 septembre 2026, capture à l'appui :** *« quand j'ouvre la
+page du devis il doit avoir une ligne d'ouverte déjà, je dois pas avoir besoin
+de cliquer sur ajouter une ligne »*.
+
+Il arrive sur sa feuille pour écrire ; le premier geste qu'on lui demandait ne
+servait qu'à ouvrir une case.
+
+### Ce qui a été écarté, et pourquoi c'était le piège
+
+Écrire la ligne **en base** à l'ouverture de l'écran tenait en une ligne de
+code — `page.tsx` crée déjà le devis brouillon au même endroit. C'était la
+mauvaise réponse, et le dépôt en porte la preuve : **trois endroits lisent
+« aucune ligne » comme « la chaîne n'a pas encore tourné ».**
+
+| | |
+|---|---|
+| `devis-depuis-dictee.ts` | n'écrit les prestations dictées que sur un devis vide |
+| `devis-a-preparer.ts` | décide si la dictée doit être reprise à l'arrivée |
+| `api/chantiers/[id]/devis-pret` | dit à l'écran qui attend que le devis est prêt |
+
+Une ligne vide posée d'office aurait menti aux trois. Le scénario n'est pas
+théorique : il ouvre le devis, repart, dicte chez sa cliente — et la chaîne
+trouve alors une ligne, donc n'écrit rien. C'est **sa panne du 7 août 2026**,
+dans ses mots : *« le devis ne comporte aucune ligne, gros bug »*.
+
+### Ce qui est fait
+
+La ligne vit dans l'ÉCRAN seul, sous un identifiant réservé (`ligne-ouverte`,
+constant — un identifiant tiré au hasard différerait entre le rendu serveur et
+le navigateur). Elle devient une ligne comme les autres au premier mot écrit.
+
+| | |
+|---|---|
+| **quand elle s'ouvre** | devis brouillon · aucune ligne · aucune dictée à reprendre |
+| **ce qui la fait naître** | un libellé, une unité, un prix non nul, une quantité autre que 1 |
+| **ce qui n'écrit rien** | un champ traversé — le devis enregistre à chaque sortie de case, qu'elle ait changé ou non |
+| **une seule fois** | la création est une promesse gardée (`ecritureDeLaLigneOuverte`) : deux sorties de champ rapprochées ne font pas deux lignes |
+
+La règle est pure (`src/lib/ligne-ouverte-devis.ts`), donc éprouvée sans
+navigateur ; le parcours l'est avec (`test-ligne-ouverte-devis-e2e.ts`), et il
+regarde **la base** — c'est là, et nulle part à l'écran, que se verrait la
+ligne vide qu'on refuse d'écrire.
+
+### Ce que les suites ont dû apprendre
+
+Vingt-cinq suites appuyaient sur « + Ajouter une ligne » avant d'écrire leur
+première ligne sur cet écran. Le geste n'existe plus dans son parcours : elles
+l'ont perdu, plutôt que de garder un clic qui ajoutait désormais une ligne vide
+de plus (`CLAUDE.md` §5 bis — une suite qui réclame un geste retiré rend
+l'écran impossible à changer). Celles qui écrivent plusieurs lignes n'appuient
+que pour **celles qui manquent**. L'écran Prix et la facture, eux, n'ont pas
+bougé.

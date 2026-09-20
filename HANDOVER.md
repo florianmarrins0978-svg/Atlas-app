@@ -4,10 +4,25 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-09-20 · `main` — la fiche d'intervention de sa sixième planche est codée
+**Point de reprise :** 2026-09-20 · `main` — la première ligne du devis est ouverte d'avance
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+
+## LA PREMIÈRE LIGNE DU DEVIS EST OUVERTE D'AVANCE — 20 septembre 2026
+
+*« Quand j'ouvre la page du devis il doit avoir une ligne d'ouverte déjà. »*
+Ce qu'une session doit savoir avant de toucher `DevisCompletClient.tsx` :
+
+- **la ligne ouverte n'est PAS en base.** Elle porte l'identifiant réservé
+  `ligne-ouverte` et s'écrit au premier mot (`src/lib/ligne-ouverte-devis.ts`).
+  **Ne jamais la poser en base à l'ouverture de l'écran** : trois endroits
+  lisent « aucune ligne » comme « la dictée n'a pas encore tourné », et sa
+  panne du 7 août 2026 revient (`ARCHITECTURE.md` §391) ;
+- **tout appel serveur qui prend l'identifiant d'une ligne passe par
+  `idEnBase()`** — il l'écrit si besoin, une seule fois ;
+- **les suites n'appuient plus sur « + Ajouter une ligne » pour la première
+  ligne** de cet écran. Celles de l'écran Prix, si.
 
 ## LA FICHE D'INTERVENTION EST CELLE DE SA SIXIÈME PLANCHE — 20 septembre 2026
 

@@ -8,6 +8,24 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-20
 
+### La feuille du devis s'ouvre avec sa première ligne
+
+*« Quand j'ouvre la page du devis il doit avoir une ligne d'ouverte déjà, je
+dois pas avoir besoin de cliquer sur ajouter une ligne. »* Elle est là, prête à
+écrire, sur tout devis brouillon qui ne porte aucune ligne.
+
+**Elle n'existe PAS en base tant qu'il n'a rien écrit**, et c'est tout l'enjeu :
+trois endroits du produit lisent « aucune ligne » comme « la chaîne n'a pas
+tourné » — la dictée qui écrit le devis, la reprise à l'arrivée, la route qui
+dit au chantier que son devis est prêt. Une ligne vide posée à l'ouverture
+aurait ressuscité sa panne du 7 août 2026 (« le devis ne comporte aucune ligne,
+gros bug »). Elle naît donc au premier mot : un champ traversé n'écrit rien.
+Et aucune ligne ne s'ouvre pendant qu'une dictée attend d'être reprise.
+
+`src/lib/ligne-ouverte-devis.ts`, `test-ligne-ouverte-devis(-e2e)`.
+`ARCHITECTURE.md` §391.
+
+
 ### Un refus par erreur n'a aucune issue — la planche, pas encore le code
 
 Sa capture du 20 septembre : *« j'ai sans faire exprès cliqué sur je ne donne

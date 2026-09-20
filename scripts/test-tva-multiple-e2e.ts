@@ -88,7 +88,10 @@ async function main() {
     ["Taille de haie de charmille", "1400"],
     ["Évacuation des déchets verts", "180"],
   ].entries()) {
-    await page.click('button:has-text("Ajouter une ligne")');
+    // La feuille s'ouvre déjà avec sa PREMIÈRE ligne (20 septembre 2026) :
+    // on n'ajoute que celles qui manquent.
+    const zones = page.locator('textarea[aria-label*="escription"]');
+    if ((await zones.count()) <= rang) await page.click('button:has-text("Ajouter une ligne")');
     await ecrireLigne(rang, libelle!, prix!);
   }
 
@@ -306,8 +309,6 @@ async function main() {
     // de retrouver le même chantier, et c'est la seconde qui a vieilli.
     const id2 = await creerPuisFiche(p2);
     await p2.goto(`${BASE}/chantiers/${id2}/devis-complet`, { waitUntil: "networkidle" });
-    await p2.click('button:has-text("Ajouter une ligne")');
-    await p2.waitForTimeout(1200);
     const z = p2.locator('textarea[aria-label*="escription"]').first();
     await z.fill("Élagage");
     await p2.keyboard.press("Tab");

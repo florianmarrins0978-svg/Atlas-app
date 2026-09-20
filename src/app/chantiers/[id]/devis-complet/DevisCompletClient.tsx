@@ -2,7 +2,13 @@
 
 import Link from "next/link";
 import { ligneAttendSonPrix, lignesEnAttenteDePrix, prixAEcrire } from "@/lib/preparation-devis";
-import { useState } from "react";
+import {
+  LIGNE_OUVERTE,
+  estLigneOuverte,
+  ligneOuverteAEcrire,
+  ligneOuverteAPoser,
+} from "@/lib/ligne-ouverte-devis";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { colors, font, voile } from "@/lib/design-tokens";
 import {
@@ -184,6 +190,15 @@ type Props = {
   /** Les cinq conditions figées sur ce devis (migration 0064) : ce que le PDF écrira sous ses notes. */
   conditionsReglees: ConditionsLues;
   conditionsPaiement: string;
+  /**
+   * La chaîne va reprendre sa dictée pour écrire ce devis (`devis-a-preparer.ts`).
+   *
+   * **Elle retient la ligne ouverte d'avance**, et c'est la seule raison pour
+   * laquelle cet écran a besoin de le savoir : la chaîne n'écrit les
+   * prestations dictées que sur un devis vide, et une ligne remplie pendant
+   * qu'elle tourne lui ferait tout abandonner — la panne du 7 août 2026.
+   */
+  dicteeAPreparer?: boolean;
   /** La dictée n'a pas été comprise, seulement recopiée — voir `lecture-litterale.ts`. */
   /**
    * Ce que l'agent a retenu des devis passés, par ligne.
@@ -237,15 +252,57 @@ export default function DevisCompletClient(props: Props) {
   const [emetteur, setEmetteur] = useState(props.emetteur);
   const [client, setClient] = useState(props.client);
   const [adresseChantier, setAdresseChantier] = useState(props.adresseChantier);
-  const [lignes, setLignes] = useState<Ligne[]>(
-    props.lignesInitiales.map((l) => ({
+  const [lignes, setLignes] = useState<Ligne[]>(() => {
+    const ecrites = props.lignesInitiales.map((l) => ({
       ...l,
       quantite: sansZerosInutiles(l.quantite),
       // Un prix jamais posé n'arrive PAS dans le champ : la règle est celle
       // du montant « à chiffrer », et elle n'est écrite qu'une fois.
       prixUnitaire: prixAEcrire(sansZerosInutiles(l.prixUnitaire)),
-    }))
-  );
+    }));
+    // **La feuille s'ouvre avec sa première ligne** — sa demande du
+    // 20 septembre 2026. Elle n'est PAS en base : `src/lib/ligne-ouverte-devis.ts`
+    // dit pourquoi, et ce qui la fait naître.
+    return ligneOuverteAPoser({
+      statut: props.statut,
+      nombreDeLignes: ecrites.length,
+      dicteeAPreparer: props.dicteeAPreparer ?? false,
+    })
+      ? [...ecrites, { id: LIGNE_OUVERTE, libelle: "", quantite: "1", prixUnitaire: "", montant: "0.00", tauxTva: null }]
+      : ecrites;
+  });
+
+  /**
+   * L'écriture de la ligne ouverte, une fois pour toutes.
+   *
+   * **Une seule, quoi qu'il arrive** : il remplit la description, passe au
+   * prix, et les deux sorties de champ partent avant que la première réponse
+   * revienne. Sans cette promesse gardée, chacune écrirait sa ligne — il en
+   * verrait deux au rechargement, dont une vide.
+   *
+   * Un refus ne la condamne pas : la promesse est oubliée, et la frappe
+   * suivante réessaie plutôt que de se heurter à un échec devenu définitif.
+   */
+  const ecritureDeLaLigneOuverte = useRef<Promise<string> | null>(null);
+
+  async function idEnBase(l: Ligne): Promise<string> {
+    if (!estLigneOuverte(l.id)) return l.id;
+    if (!ecritureDeLaLigneOuverte.current) {
+      const envoi = ajouterLigneAction(props.chantierId, l.tauxTva ?? null).then((creee) => {
+        // La ligne prend son identifiant réel : à partir de là, elle est une
+        // ligne comme les autres, et plus rien de tout ceci ne la concerne.
+        setLignes((cur) =>
+          cur.map((x) => (x.id === LIGNE_OUVERTE ? { ...x, id: creee.id, tauxTva: creee.tauxTva ?? x.tauxTva } : x))
+        );
+        return creee.id;
+      });
+      envoi.catch(() => {
+        if (ecritureDeLaLigneOuverte.current === envoi) ecritureDeLaLigneOuverte.current = null;
+      });
+      ecritureDeLaLigneOuverte.current = envoi;
+    }
+    return ecritureDeLaLigneOuverte.current;
+  }
   const [tauxTva, setTauxTva] = useState(sansZerosInutiles(props.tauxTva));
   // Le prix accordé au client — son geste commercial, arrangement B du 16 août.
   const [reduction, setReduction] = useState(
@@ -401,8 +458,13 @@ export default function DevisCompletClient(props: Props) {
         await majEnTeteDevisAction(props.devisId, { reductionPourcent: null });
         return;
       }
-      await retirerLigneAction(id);
-      setLignes((cur) => cur.filter((l) => l.id !== id));
+      // La ligne ouverte d'avance peut n'avoir jamais été écrite : il n'y a
+      // alors rien à retirer, et la réclamer ferait échouer le retrait sur un
+      // identifiant que la base ne connaît pas. Si elle vient de partir, on
+      // attend son identifiant plutôt que de laisser une ligne orpheline.
+      const enBase = estLigneOuverte(id) ? await ecritureDeLaLigneOuverte.current : id;
+      if (enBase) await retirerLigneAction(enBase);
+      setLignes((cur) => cur.filter((l) => l.id !== id && l.id !== enBase));
     },
   });
 
@@ -595,7 +657,12 @@ export default function DevisCompletClient(props: Props) {
     frais?: Partial<Pick<Ligne, "libelle" | "quantite" | "prixUnitaire" | "unite">>
   ) {
     const ligne = { ...l, ...frais };
-    await majLigneAction(ligne.id, {
+    // **La ligne ouverte d'avance ne s'écrit qu'une fois qu'elle porte quelque
+    // chose.** Sans quoi le doigt posé sur la description puis retiré laisserait
+    // une ligne vide en base — celle qui fait disparaître une dictée
+    // (`src/lib/ligne-ouverte-devis.ts`).
+    if (estLigneOuverte(ligne.id) && !ligneOuverteAEcrire(ligne)) return;
+    await majLigneAction(await idEnBase(ligne), {
       libelle: ligne.libelle,
       quantite: normaliser(ligne.quantite, "1"),
       prixUnitaire: normaliser(ligne.prixUnitaire, "0"),
@@ -701,7 +768,9 @@ export default function DevisCompletClient(props: Props) {
       ...cur.filter((l) => l.id !== ligne.id),
       { ...ligne, tauxTva: versLAccueil ? null : propre },
     ]);
-    await deplacerLigneVersTvaAction(ligne.id, propre, tauxDuDevis);
+    // Une ligne déplacée porte le taux de sa catégorie : elle doit exister en
+    // base pour le porter, fût-elle encore vide.
+    await deplacerLigneVersTvaAction(await idEnBase(ligne), propre, tauxDuDevis);
   }
 
   /**

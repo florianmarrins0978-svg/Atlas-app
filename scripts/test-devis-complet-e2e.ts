@@ -190,8 +190,6 @@ async function main() {
   console.log("  ✓ l'en-tête de l'entreprise s'enregistre — IBAN compris");
 
   // Une ligne complète : description, quantité, prix unitaire.
-  await page.click("text=+ Ajouter une ligne");
-  await page.waitForTimeout(600);
   await page.getByLabel("Description 1").fill("Élagage d'un tilleul — taille architecturée");
   await page.getByLabel("Description 1").blur();
   // **SON GESTE, PAS `fill()`** : `fill()` pose la valeur sans passer par le

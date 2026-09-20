@@ -528,8 +528,6 @@ async function main() {
 
     await page.goto(`${url}/devis-complet`, { waitUntil: "networkidle" });
     await page.waitForSelector("text=Total TTC", { timeout: DELAI_ECRAN_MS });
-    await page.getByRole("button", { name: "+ Ajouter une ligne" }).click();
-    await page.waitForTimeout(900);
     await page.getByLabel("Description 1").fill("Taille d'un chêne");
     await page.getByLabel("Prix unitaire 1").fill("550");
     await page.getByLabel("Description 1").click();
