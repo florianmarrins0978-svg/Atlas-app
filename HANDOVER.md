@@ -9,6 +9,23 @@ sert.
 
 ---
 
+## L'ÉCRAN DE SON CLIENT ATTEND UN LOT GROUPÉ — 20 septembre 2026
+
+Il a touché « Je ne donne pas suite » par erreur sur le lien d'un de ses devis,
+et il n'existe aucun retour : `enregistrerReponse` rejette toute seconde
+réponse (`deja_repondu`). **Sa décision, devant
+`appli/le-refus-par-erreur.html` : la A** — une feuille de confirmation
+(`BottomSheet`, celle qui porte déjà le calendrier de cet écran).
+
+**Ne pas coder cette feuille seule.** Sa consigne du même soir : *« avant de
+coder j'ai encore des modif à faire sur cette page, tu coderas tout d'un
+coup »*. Tout ce qui touche `src/app/devis/[jeton]/` attend ses autres
+demandes et part en un seul lot.
+
+**Et ne pas lui redemander son choix** : il est donné, il est dans `TODO.md`.
+
+---
+
 ## LA FICHE D'INTERVENTION EST CELLE DE SA SIXIÈME PLANCHE — 20 septembre 2026
 
 Six planches en une journée (`appli/fiche-intervention-*.html`), la sixième

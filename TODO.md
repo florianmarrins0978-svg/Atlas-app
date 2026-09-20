@@ -9,23 +9,31 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
-## ⏳ UNE PLANCHE À REGARDER — LA SÉCURITÉ AVANT « JE NE DONNE PAS SUITE » (20 septembre 2026)
+## 🔒 LA FEUILLE AVANT « JE NE DONNE PAS SUITE » — CHOISIE, À CODER AVEC SES AUTRES MODIFICATIONS (20 septembre 2026)
 
 **Son message, capture à l'appui :** *« j'ai sans faire exprès cliqué sur je ne
 donne pas suite, aucun moyen d'annuler, il faut mettre une sécurité avant
 l'envoi »*.
 
-`appli/le-refus-par-erreur.html` — trois formes, toutes à 0 px sur 390 × 664 :
-**A** la feuille (`BottomSheet`, déjà montée sur cet écran pour le calendrier),
-**B** le dédoublement sur place (déconseillé : « Confirmer » apparaît sous le
-doigt qui vient d'appuyer), **C** le retour depuis l'écran d'après — le seul
-qui rattrape un refus déjà parti. **Proposé : A et C.**
+**Sa réponse, le soir même, devant `appli/le-refus-par-erreur.html` :
+« La A »** — la feuille qui monte du bas, celle de la maison (`BottomSheet`),
+déjà montée sur cet écran pour le calendrier. Mesurée à **0 px** sur
+390 × 664 : la page derrière ne bouge pas. B (le dédoublement sur place) et C
+(le retour depuis l'écran d'après) ne sont pas retenus ; la planche reste en
+ligne comme relevé de ce qui a été comparé.
 
-Ce que C demande, et qui reste à trancher avec lui : jusqu'à quand le client
-peut revenir. Proposition — tant que le patron n'a pas repris le devis.
+**ET ON NE CODE PAS ENCORE — sa consigne, dans la même phrase :** *« avant de
+coder j'ai encore des modif à faire sur cette page, tu coderas tout d'un coup,
+retiens ça déjà »*. La page en question est celle de son client
+(`src/app/devis/[jeton]/`). **Rien ne part dans `src/` tant qu'il n'a pas donné
+le reste** : coder la feuille seule ferait deux lots là où il en veut un, et
+rouvrirait le même écran deux fois.
 
-**Rien n'est codé.** Son cas du jour se répare sans code : le chantier est
-passé à `retourne`, et un nouvel envoi rouvre un lien neuf.
+Ce qui reste à lui demander **au moment de coder**, pas avant : le libellé exact
+des deux boutons de la feuille (proposés — « Oui, je ne donne pas suite » et
+« Revenir au devis »).
+
+**Ne pas lui redemander son choix : il l'a donné.**
 
 ## 🔧 UNE PLANCHE NOMMÉE « PAIEMENT » EXIGE LA BATTERIE ENTIÈRE (18 septembre 2026)
 

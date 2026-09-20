@@ -20,7 +20,12 @@ laisse le téléphone.
 
 `appli/le-refus-par-erreur.html` compare trois sécurités, toutes mesurées à
 **0 px** sur 390 × 664 : la feuille de la maison, le dédoublement sur place, et
-le retour depuis l'écran d'après. **Rien n'est codé — en attente de son choix.**
+le retour depuis l'écran d'après.
+
+**Il a retenu la A le soir même** — la feuille. Et il a demandé de ne pas coder
+tout de suite : *« j'ai encore des modif à faire sur cette page, tu coderas
+tout d'un coup »*. L'écran de son client attend donc le reste de ses demandes,
+et partira en un seul lot (`TODO.md`).
 
 Son cas d'aujourd'hui, lui, se répare sans code : le chantier est passé à
 `retourne`, et un nouvel envoi rouvre un lien neuf (`creerEnvoi` ne refuse
