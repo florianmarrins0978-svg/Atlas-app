@@ -32121,3 +32121,26 @@ rendrait vert le défaut qu'elle éprouve), et elle recharge avant d'accuser, po
 ne pas reprocher à la création un défaut qui est dans l'affichage. **Vue rouge
 sur le code d'avant** : *« L'accueil est revenu sans « Retour 196714 » : il a
 fallu recharger pour le voir (au rechargement, 1 ligne(s) le portent). »*
+
+## §392 — Le sort d'une suite rejouée se lit dans les deux flux
+
+**Trouvé le 21 septembre 2026** en fusionnant un lot : la comparaison des
+rouges (`verifier-rouge-prealable.ts`, §384) rendait « illisible » des deux
+côtés sur deux suites que la copie propre reproduisait pourtant, bilan lisible
+à l'appui. En sondant l'appel exact, la vraie faute est apparue, plus grave que
+le symptôme : le moteur navigateur écrit « ❌ <suite> a échoué » sur **stderr**
+et son compte sur **stdout**, et `rejouer` ne lisait que stdout. Une suite
+rouge y passait donc pour **verte** — sur `main` comme sur le lot —, donc
+« pareil », donc **tolérée**. Le garde-fou aurait laissé passer une régression
+nouvelle exactement par la porte qu'il prétend fermer.
+
+| | |
+|---|---|
+| la lecture | `sortDUneSuite` (`_rouge-prealable.mjs`), pure : statut, stdout, stderr → rouge, vert, ou indéterminé |
+| ce qu'elle lit | **les deux flux**, comme la batterie (`2>&1`) |
+| ce qu'elle refuse | un compte qui annonce un échec que rien ne nomme, un moteur en erreur qui ne nomme pas la suite, un moteur qui n'a joué aucune suite : **indéterminé**, jamais vert |
+| ce qui la tient | `test-rouge-prealable-lit-le-journal.ts`, qui lui montre exactement ce que l'ancienne lecture voyait |
+
+Le « illisible » du symptôme, lui, venait d'un `DATABASE_URL` absent de
+l'environnement de la comparaison : le moteur s'arrêtait avant tout compte.
+Il est rendu tel quel — indéterminé —, et c'est juste.
