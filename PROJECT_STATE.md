@@ -5,6 +5,15 @@
 
 ---
 
+## FAIT : LE PRÉNOM SEUL PROPOSE LE CLIENT (20 septembre 2026)
+
+Il tapait « Julien » dans la fiche client et Atlas ne reconnaissait rien : la
+reconnaissance compare des noms ENTIERS. Un nom commencé ouvre désormais une
+liste sous la case — nom entier, ville, chantiers —, on la touche, les cases
+vides se remplissent, et le chantier va sur SA fiche. La reconnaissance
+automatique, elle, n'a pas bougé : elle ne pose toujours rien tant que ce n'est
+pas certain. `ARCHITECTURE.md` §391.
+
 ## FAIT : LA FICHE D'INTERVENTION DE SA SIXIÈME PLANCHE (20 septembre 2026)
 
 Carte cernée d'or (2 px, vraie bordure), quatre gestes sur une ligne avec le

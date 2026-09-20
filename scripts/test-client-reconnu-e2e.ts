@@ -54,6 +54,8 @@ async function capturer(page: Page, nom: string) {
 const NOM_CASE = 'input[placeholder="Bernard"]';
 const NOM_TEL = 'input[placeholder="06 12 34 56 78"]';
 const BANDEAU = '[data-atlas="client-reconnu"]';
+const LISTE = '[data-atlas="clients-proposes"]';
+const PROPOSE = '[data-atlas="client-propose"]';
 
 async function main() {
   console.log("=== Le client qu'Atlas reconnaît ===\n");
@@ -165,6 +167,88 @@ async function main() {
 
     const { rows: ou } = await pool.query(`SELECT client_id FROM chantiers WHERE id = $1`, [second]);
     assert.equal(ou[0].client_id, clientId, "le second chantier n'est pas sur sa fiche");
+  });
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // LE PRÉNOM SEUL — sa demande du 20 septembre 2026, capture à l'appui :
+  // *« quand on passe par la première photo et que je tape le prénom d'un
+  // client qui existe, il ne me le reconnaît pas ; il doit me le proposer et
+  // remplir le champ direct »*.
+  //
+  // **On entre par SA porte**, celle de la capture : l'accueil, puis « Créer un
+  // devis » — la feuille, pas l'adresse `/chantiers/nouveau` tapée à la main.
+  // Six gestes livrés verts et inatteignables le 28 août 2026 ont appris ce
+  // qu'un contrôle qui entre par la porte de service ne prouve pas
+  // (`CLAUDE.md` §5 quater).
+  // ═══════════════════════════════════════════════════════════════════════
+  const PRENOM = `Julien${Date.now()}`;
+  const NOM_COMPLET = `${PRENOM} Bernard`;
+
+  await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
+  await page.fill(NOM_CASE, NOM_COMPLET);
+  await page.fill(NOM_TEL, "06 11 22 33 44");
+  const sien = await creerPuisFiche(page);
+  await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 20_000 });
+  const { rows: saFiche } = await pool.query(
+    `SELECT client_id FROM chantiers WHERE id = $1`,
+    [sien]
+  );
+  const sonClient = saFiche[0].client_id as string;
+  await pool.query(`UPDATE clients SET adresse = '4 rue Haute, Nantes' WHERE id = $1`, [sonClient]);
+
+  await page.goto(`${BASE}/`, { waitUntil: "networkidle" });
+  await page.locator('[data-atlas="nouveau-chantier"]').click();
+  await page.locator(NOM_CASE).waitFor({ state: "visible", timeout: 15_000 });
+
+  await cas("le prénom seul PROPOSE son client — le défaut du 20 septembre", async () => {
+    await page.fill(NOM_CASE, PRENOM);
+    await page.locator(PROPOSE).first().waitFor({ state: "visible", timeout: 15_000 });
+    const dit = await page.locator(PROPOSE).first().innerText();
+    assert.match(dit, new RegExp(NOM_COMPLET), "la proposition ne porte pas son nom entier");
+    // Ce qui le DISTINGUE : sur quatre homonymes, le nom seul ne dit pas lequel.
+    assert.match(dit, /Nantes/, "la proposition ne dit pas où il habite");
+    await capturer(page, "client-propose-01-liste");
+  });
+
+  await cas("la liste tient dans la largeur du téléphone, et elle a une hauteur", async () => {
+    // Un contrôle qui mesure ZÉRO ne mesure rien (`CLAUDE.md` §5) : une liste
+    // écrasée passerait tous les contrôles ci-dessus.
+    const cadre = await page.locator(LISTE).boundingBox();
+    assert.ok(cadre, "la liste n'a pas de boîte");
+    assert.ok(cadre.height > 24, `liste écrasée : ${Math.round(cadre.height)} px de haut`);
+    assert.ok(cadre.width <= 390, `liste trop large : ${Math.round(cadre.width)} px`);
+    const deborde = await page.evaluate(
+      () => document.documentElement.scrollWidth > window.innerWidth + 1
+    );
+    assert.equal(deborde, false, "la page défile horizontalement");
+  });
+
+  await cas("on la touche : le nom se complète et les cases se remplissent", async () => {
+    await page.locator(PROPOSE).first().click();
+    await page.locator(BANDEAU).waitFor({ state: "visible", timeout: 15_000 });
+    assert.equal(await page.inputValue(NOM_CASE), NOM_COMPLET, "le nom n'a pas été complété");
+    assert.equal(await page.inputValue(NOM_TEL), "06 11 22 33 44", "le téléphone n'a pas été repris");
+    await capturer(page, "client-propose-02-choisi");
+  });
+
+  await cas("la liste ne se rouvre pas sous son doigt", async () => {
+    // Poser son nom entier relance la recherche : sans la mémoire du choix, le
+    // bandeau s'éteindrait et la liste reviendrait sur l'homme qu'il désigne.
+    await page.waitForTimeout(1800);
+    assert.equal(await page.locator(LISTE).count(), 0, "la liste s'est rouverte");
+    assert.equal(await page.locator(BANDEAU).count(), 1, "le bandeau s'est éteint");
+  });
+
+  await cas("le chantier créé depuis la feuille va sur SA fiche — pas de client en double", async () => {
+    const troisieme = await creerPuisFiche(page);
+    await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 20_000 });
+    const { rows: fiches } = await pool.query(
+      `SELECT id FROM clients WHERE nom = $1 AND deleted_at IS NULL`,
+      [NOM_COMPLET]
+    );
+    assert.equal(fiches.length, 1, `${fiches.length} fiches pour un seul homme`);
+    const { rows: ou } = await pool.query(`SELECT client_id FROM chantiers WHERE id = $1`, [troisieme]);
+    assert.equal(ou[0].client_id, sonClient, "le chantier n'est pas allé sur sa fiche");
   });
 
   await pool.end();

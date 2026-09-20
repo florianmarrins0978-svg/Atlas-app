@@ -15,7 +15,7 @@ import {
   getClient,
   reconnaitreLeClient,
   type CanalClient,
-  type ClientReconnu,
+  type ReconnaissanceClient,
 } from "@/server/repositories/clients";
 import { nomDuChantier } from "@/lib/nom-chantier";
 import type { Civilite } from "@/lib/civilite";
@@ -236,19 +236,28 @@ export async function reprendreLesPhotosAction(
  * non. `trouverOuCreerClient` réunit déjà les homonymes depuis le 17 août ;
  * cet écran ne fait que **montrer** ce qu'Atlas faisait en silence.
  *
- * **Ce n'est PAS la liste de correspondances qu'il a écartée** le 17 août
- * (*« non justement, il ne faut pas »*). On ne lui propose rien, on ne lui
- * demande rien : la fiche se remplit, et un seul bouton permet de dire non.
+ * **ET ELLE PROPOSE AUSSI, DEPUIS LE 20 SEPTEMBRE 2026** — sa demande, capture
+ * à l'appui : *« je tape le prénom d'un client qui existe, il ne me le
+ * reconnaît pas ; il doit me le proposer et remplir le champ direct »*. Un nom
+ * seulement COMMENCÉ ne pose rien (« julien » n'est pas « julien bernard ») :
+ * il rend alors une liste, qui attend son doigt.
+ *
+ * **Ce n'est toujours pas la liste écartée le 17 août** (*« non justement, il
+ * ne faut pas »*) : celle-là s'interposait à l'ENREGISTREMENT, pour faire
+ * confirmer un rapprochement qu'Atlas savait faire seul. Celle-ci répond
+ * pendant la frappe, là où il ne sait rien faire seul — et elle disparaît dès
+ * qu'il sait (`src/lib/rapprochement-client.ts`).
  *
  * **Rien de ce qui sort d'ici n'est un montant, ni une décision.** C'est une
- * lecture, sous `withEntreprise` comme le reste, et elle rend `null` bien plus
- * souvent qu'elle ne rend quelqu'un — quatre Martins sans numéro, c'est `null`.
+ * lecture, sous `withEntreprise` comme le reste, et `lui` reste vide bien plus
+ * souvent qu'il ne porte quelqu'un — quatre Martins sans numéro se proposent,
+ * ils ne se posent pas.
  */
 export async function reconnaitreLeClientAction(saisie: {
   nom: string;
   telephone?: string;
   email?: string;
-}): Promise<ClientReconnu | null> {
+}): Promise<ReconnaissanceClient> {
   const ctx = await getCurrentCtx();
   // La même porte que la création : reconnaître un client, c'est déjà lire sa
   // fiche, et un rôle qui n'a pas le droit de créer un chantier n'a pas à

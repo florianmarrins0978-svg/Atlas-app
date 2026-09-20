@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { colors, font, libelleCaps, smallCaps, surPlein } from "@/lib/design-tokens";
@@ -248,6 +248,26 @@ export default function FormulaireNouveauChantier({
    */
   const [reconnu, setReconnu] = useState<ClientReconnu | null>(null);
   /**
+   * CEUX QU'ATLAS PROPOSE, quand il n'ose pas poser — sa demande du
+   * 20 septembre 2026, capture de sa fiche client à l'appui : *« je tape le
+   * prénom d'un client qui existe, il ne me le reconnaît pas ; il doit me le
+   * proposer et remplir le champ direct »*.
+   *
+   * **Jamais en même temps que `reconnu`** : le serveur rend l'un OU l'autre
+   * (`reconnaitreLeClient`). Une fiche qui se remplit toute seule sous une
+   * liste qui redemande de choisir, ce serait deux réponses à une question.
+   */
+  const [propositions, setPropositions] = useState<ClientReconnu[]>([]);
+  /**
+   * Le nom qu'il vient de CHOISIR dans la liste — et qui ne se recherche plus.
+   *
+   * Sans cette mémoire, poser son nom entier relancerait la recherche : sur
+   * quatre Martins elle ne saurait pas lequel, le bandeau s'éteindrait et la
+   * liste se rouvrirait sous son doigt, sur l'homme qu'il vient de désigner.
+   * Une frappe de plus la rouvre, et c'est voulu : il corrige, donc il cherche.
+   */
+  const choisiPour = useRef<string | null>(null);
+  /**
    * Il a dit « ce n'est pas lui », et **rien ne rouvre la question**.
    *
    * Sans ce verrou, la reconnaissance repartirait à la frappe suivante et lui
@@ -288,16 +308,45 @@ export default function FormulaireNouveauChantier({
   const canal = canalChoisi ?? (aTelephone ? "sms" : aEmail ? "email" : null);
 
   /**
-   * Ce que la dictée a compris entre dans les champs VIDES seulement.
+   * CE QU'ATLAS POSE SUR LA FICHE D'UN CLIENT RETROUVÉ — les cases VIDES.
    *
-   * **La décision n'est plus ici** : `champsARemplir` la porte, éprouvable sans
-   * navigateur ni clé de transcription (`CLAUDE.md` §3). Cet écran ne fait plus
-   * que poser ce qu'elle rend — et un champ absent du résultat est un champ
-   * auquel on ne touche pas.
+   * **Une seule écriture pour deux chemins** : celui qu'Atlas reconnaît tout
+   * seul, et celui que le patron touche dans la liste des propositions. Deux
+   * copies auraient divergé au premier champ ajouté — l'une aurait repris
+   * l'e-mail, l'autre l'aurait oublié (`CLAUDE.md` §3).
    *
-   * La pastille « Mr / Mme » en fait partie depuis le 7 septembre 2026 : le mot
-   * dicté a quitté le nom (`detacherCivilite`) pour venir ici.
+   * **La décision n'est pas ici** : `champsARemplir` la porte, éprouvable sans
+   * navigateur (`CLAUDE.md` §3). Cet écran ne fait que poser ce qu'elle rend —
+   * et un champ absent du résultat est un champ auquel on ne touche pas.
    */
+  const poserCeQuAtlasSait = useCallback(
+    (lui: ClientReconnu) => {
+      // La même règle que la dictée, et c'est voulu : on ne remplit QUE ce qui
+      // est vide. Une seconde façon de « compléter sans écraser » finirait par
+      // diverger (`CLAUDE.md` §3).
+      const aRemplir = champsARemplir(
+        { nom: nomClient, civilite, telephone, email, adresse: adresseChantier },
+        {
+          nom: null,
+          civilite: lui.civilite,
+          telephone: lui.telephone,
+          email: lui.email,
+          adresse: lui.adresse,
+        }
+      );
+      const poses = posesParAtlas.current;
+      if (aRemplir.civilite !== undefined) { setCivilite(aRemplir.civilite); poses.add("civilite"); }
+      // **Le numéro s'écrit comme quand il le tape**, par la même fonction.
+      // Vu à la capture, pas à la mesure : la base le garde collé
+      // (`0679984514`), et la case le rendait tel quel — un numéro qu'on ne
+      // relit pas d'un coup d'œil, à côté de ceux qu'il a saisis lui-même.
+      if (aRemplir.telephone !== undefined) { setTelephone(espacerNumero(aRemplir.telephone).valeur); poses.add("telephone"); }
+      if (aRemplir.email !== undefined) { setEmail(aRemplir.email); poses.add("email"); }
+      if (aRemplir.adresse !== undefined) { setAdresseChantier(aRemplir.adresse); poses.add("adresse"); }
+    },
+    [nomClient, civilite, telephone, email, adresseChantier]
+  );
+
   /**
    * On demande au serveur QUI c'est, un court instant après qu'il a cessé de
    * taper.
@@ -314,36 +363,17 @@ export default function FormulaireNouveauChantier({
    */
   useEffect(() => {
     if (depart || refuse) return;
+    // **Ce qu'il vient de CHOISIR n'est pas une frappe.** Voir `choisiPour`.
+    if (choisiPour.current === nomClient) return;
     const demande = { nom: nomClient, telephone, email };
     let abandonne = false;
     const minuteur = setTimeout(() => {
       reconnaitreLeClientAction(demande)
-        .then((lui) => {
+        .then(({ lui, propositions: proposes }) => {
           if (abandonne) return;
           setReconnu(lui);
-          if (!lui) return;
-          // La même règle que la dictée, et c'est voulu : on ne remplit QUE ce
-          // qui est vide. Une seconde façon de « compléter sans écraser »
-          // finirait par diverger (`CLAUDE.md` §3).
-          const aRemplir = champsARemplir(
-            { nom: nomClient, civilite, telephone, email, adresse: adresseChantier },
-            {
-              nom: null,
-              civilite: lui.civilite,
-              telephone: lui.telephone,
-              email: lui.email,
-              adresse: lui.adresse,
-            }
-          );
-          const poses = posesParAtlas.current;
-          if (aRemplir.civilite !== undefined) { setCivilite(aRemplir.civilite); poses.add("civilite"); }
-          // **Le numéro s'écrit comme quand il le tape**, par la même fonction.
-          // Vu à la capture, pas à la mesure : la base le garde collé
-          // (`0679984514`), et la case le rendait tel quel — un numéro qu'on ne
-          // relit pas d'un coup d'œil, à côté de ceux qu'il a saisis lui-même.
-          if (aRemplir.telephone !== undefined) { setTelephone(espacerNumero(aRemplir.telephone).valeur); poses.add("telephone"); }
-          if (aRemplir.email !== undefined) { setEmail(aRemplir.email); poses.add("email"); }
-          if (aRemplir.adresse !== undefined) { setAdresseChantier(aRemplir.adresse); poses.add("adresse"); }
+          setPropositions(proposes);
+          if (lui) poserCeQuAtlasSait(lui);
         })
         // **Une reconnaissance qui échoue ne fait rien**, et surtout pas une
         // alerte : elle n'est qu'un confort, et l'écran marche entièrement sans
@@ -354,12 +384,33 @@ export default function FormulaireNouveauChantier({
       abandonne = true;
       clearTimeout(minuteur);
     };
-  }, [nomClient, telephone, email, civilite, adresseChantier, depart, refuse]);
+  }, [nomClient, telephone, email, depart, refuse, poserCeQuAtlasSait]);
+
+  /**
+   * IL A TOUCHÉ UNE PROPOSITION — *« il doit me le proposer et remplir le
+   * champ direct »*, sa demande du 20 septembre 2026.
+   *
+   * Le nom se complète — il a tapé « Julien », la case porte « Julien
+   * Bernard » —, la fiche se pose par la même écriture que la reconnaissance,
+   * et l'identifiant part avec le chantier (`assurerChantier`) : c'est ce qui
+   * évite la fiche en double, et ce qui remplit « Envoyer à ».
+   */
+  function choisirLeClient(lui: ClientReconnu) {
+    choisiPour.current = lui.nom;
+    setNomClient(lui.nom);
+    setPropositions([]);
+    setReconnu(lui);
+    poserCeQuAtlasSait(lui);
+  }
 
   /** « Ce n'est pas lui » : on retire ce qu'Atlas a posé, et rien d'autre. */
   function ceNestPasLui() {
     setRefuse(true);
     setReconnu(null);
+    // La liste part avec la fiche : la laisser proposerait de nouveau celui
+    // qu'il vient d'écarter.
+    setPropositions([]);
+    choisiPour.current = null;
     const poses = posesParAtlas.current;
     if (poses.has("civilite")) setCivilite(null);
     if (poses.has("telephone")) setTelephone("");
@@ -929,6 +980,16 @@ export default function FormulaireNouveauChantier({
               />
             </div>
           </div>
+
+          {/* **LA LISTE POUSSE L'ÉCRAN, elle ne le RECOUVRE pas.** Posée
+              par-dessus, elle se plaçait exactement sur la case E-mail : un
+              doigt qui visait l'e-mail touchait un client. La descendre
+              n'ajoute rien à fermer — c'est ce que font déjà les adresses
+              proposées (`ChampAdresse`), et c'est pour cela que ce champ-ci n'a
+              pas besoin d'un `onBlur` (`scripts/test-valeur-du-champ.ts`). */}
+          {propositions.length > 0 && (
+            <ClientsProposes liste={propositions} onChoisir={choisirLeClient} />
+          )}
 
           {/* ═══════════════════════════════════════════════════════════════
               **LES QUATRE CASES PORTENT DE NOUVEAU LEUR NOM — son choix du
@@ -1548,6 +1609,78 @@ function FlecheRetour() {
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={colors.rust} strokeWidth="2.4">
       <path d="M15 5l-7 7 7 7" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
+  );
+}
+
+/**
+ * CEUX QU'ATLAS PROPOSE — sa demande du 20 septembre 2026, capture de sa fiche
+ * client à l'appui : *« je tape le prénom d'un client qui existe, il ne me le
+ * reconnaît pas ; il doit me le proposer et remplir le champ direct »*.
+ *
+ * ───────────────────────────────────────────────────────────────────────────
+ * **Pourquoi une LISTE là où la reconnaissance se tait.** Poser, c'est écrire
+ * le numéro d'un homme sur la fiche d'un autre avant qu'il ait fini sa
+ * phrase — il ne le relira pas, c'est pour ne pas retaper qu'il a demandé cet
+ * écran. Proposer attend son doigt : quatre Martins peuvent se montrer, et
+ * c'est lui qui tranche (`src/lib/rapprochement-client.ts`).
+ *
+ * **La même allure que les adresses proposées** (`ChampAdresse`), et ce n'est
+ * pas une coquetterie : c'est le geste qu'il connaît depuis le 7 août 2026 —
+ * on tape, une liste descend, on touche, la case se remplit.
+ *
+ * **La seconde ligne le DISTINGUE**, comme sur la fiche reprise : « Repris de
+ * sa fiche » tout seul ne disait pas LEQUEL de ses quatre Martins
+ * (sa remarque du 3 septembre 2026). Le lieu manque parfois, et rien n'est
+ * inventé pour combler (`CLAUDE.md` §4).
+ */
+function ClientsProposes({
+  liste,
+  onChoisir,
+}: {
+  liste: ClientReconnu[];
+  onChoisir: (lui: ClientReconnu) => void;
+}) {
+  return (
+    <ul
+      role="listbox"
+      aria-label="Clients proposés"
+      data-atlas="clients-proposes"
+      // `z-40` : la couche au-dessus de la bulle de l'assistant, fixée en bas
+      // à droite (`AssistantSidebar.tsx`). Un élément dans le flux se fait
+      // recouvrir par un élément fixé — le doigt toucherait alors la bulle au
+      // lieu du client, défaut déjà payé sur les adresses proposées.
+      className="relative z-40 -mt-1 overflow-hidden rounded-[4px]"
+      style={{ backgroundColor: colors.card, border: `1px solid ${colors.rustTint}` }}
+    >
+      {liste.map((lui) => {
+        const lieu = villeDe(lui.adresse);
+        const chantiers = `${lui.chantiers} chantier${lui.chantiers > 1 ? "s" : ""}`;
+        return (
+          <li key={lui.id} role="option" aria-selected={false}>
+            {/* `onMouseDown` plutôt que `onClick` : la case perd le focus avant
+                qu'un clic n'aboutisse, la liste se fermerait sous le doigt et le
+                choix serait perdu une fois sur deux. */}
+            <button
+              type="button"
+              data-atlas="client-propose"
+              onMouseDown={(e) => {
+                e.preventDefault();
+                onChoisir(lui);
+              }}
+              // 48 px de haut : une ligne plus fine se touche mal sur un
+              // téléphone tenu d'une main, et il s'en sert dehors.
+              className="w-full px-4 py-3 text-left"
+              style={{ minHeight: 48, color: colors.ink }}
+            >
+              <span className="block text-[15px] leading-snug">{lui.nom}</span>
+              <span className="block text-[12px]" style={{ color: colors.muted }}>
+                {lieu ? `${lieu} · ${chantiers}` : chantiers}
+              </span>
+            </button>
+          </li>
+        );
+      })}
+    </ul>
   );
 }
 

@@ -4,10 +4,28 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-09-20 · `main` — la fiche d'intervention de sa sixième planche est codée
+**Point de reprise :** 2026-09-20 · `main` — le prénom seul propose le client
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+
+## LE NOM COMMENCÉ PROPOSE, LE NOM ENTIER POSE — 20 septembre 2026
+
+Sur la fiche client (`FormulaireNouveauChantier.tsx`), deux mécanismes vivent
+côte à côte, et il ne faut pas les confondre :
+
+- **`clientAPreremplir`** répond « est-ce certainement lui ? » et **pose** les
+  cases vides. Elle compare des noms ENTIERS, et rend `null` sur le moindre
+  doute — quatre Martins sans numéro, c'est `null`. **Ne pas la desserrer** :
+  poser le numéro d'un homme sur la fiche d'un autre est le seul dégât de cet
+  écran, et il ne se répare pas d'un clic ;
+- **`clientsProposes`** répond « par quoi cela peut-il commencer ? » et
+  **propose** une liste, qui attend son doigt. Elle ose là où la pose se tait.
+
+Les deux arrivent par la MÊME action (`reconnaitreLeClientAction`, qui rend
+`{ lui, propositions }`) : ne pas en ajouter une seconde, ce serait deux
+requêtes par pause de frappe. Et le choix se retient (`choisiPour`), sinon la
+liste se rouvre sous son doigt. `ARCHITECTURE.md` §391.
 
 ## LA FICHE D'INTERVENTION EST CELLE DE SA SIXIÈME PLANCHE — 20 septembre 2026
 

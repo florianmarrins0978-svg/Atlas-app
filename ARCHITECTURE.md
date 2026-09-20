@@ -32052,3 +32052,75 @@ fichier, pas à la machine.
 sous Linux. Que les dix-neuf se taisent vraiment sur son PC se vérifie
 là-bas — `bash` livré avec Git y est parfois sur le chemin, auquel cas la
 suite tourne et peut tomber pour une autre raison.
+
+---
+
+## §391 — Le nom COMMENCÉ se propose ; le nom ENTIER se pose
+
+**Sa demande du 20 septembre 2026**, trois captures à l'appui — l'accueil,
+la fiche client, et la feuille « Envoyer à » qui dit *« Ce chantier n'a pas
+encore de client »* : *« quand on passe par la première photo et que je tape
+le prénom d'un client qui existe, il ne me le reconnaît pas ; il doit me le
+proposer et remplir le champ direct. »*
+
+**La racine, et elle n'était pas un réglage trop prudent.** La reconnaissance
+du 9 septembre (§—, `clientAPreremplir`) compare deux noms **entiers** :
+`nomRapproche("Julien")` vaut « julien », `nomRapproche("Julien Bernard")`
+vaut « julien bernard ». Personne, donc — et sans le moindre message. La
+question du nom seulement COMMENCÉ ne lui avait jamais été posée.
+
+**Ce qui a été refusé : desserrer la reconnaissance.** « julien » désigne aussi
+bien Julien Bernard que Julien Morel ; poser le numéro de l'un sur la fiche de
+l'autre est exactement le dégât contre lequel la pose a été écrite — il ne
+relit pas ces cases, c'est pour ne pas les retaper qu'il a demandé cet écran,
+et le devis partirait au mauvais numéro sans que personne sache d'où il vient.
+Élargir la règle de pose aurait été le pansement (`CLAUDE.md` §4 quater).
+
+**Ce qui a été fait : une seconde question, pas un second réglage.**
+
+| | La question | Ce qu'Atlas fait |
+|---|---|---|
+| `clientAPreremplir` | « est-ce certainement lui ? » | il **pose** : les cases vides se remplissent |
+| `clientsProposes` | « par quoi cela peut-il commencer ? » | il **propose** : une liste, qui attend son doigt |
+
+**Proposer n'est pas poser, et tout tient dans cet écart.** Poser, c'est écrire
+à sa place ; proposer, c'est lui rendre le choix. C'est ce qui autorise ici la
+liste que la pose s'interdit — et c'est pourquoi elle ose descendre là où la
+pose se tait : **quatre Martins se montrent tous**, et c'est lui qui tranche,
+là où `clientAPreremplir` rend `null` plutôt que de deviner.
+
+**Ce n'est pas la liste écartée le 17 août 2026** (*« non justement, il ne faut
+pas »*). Celle-là s'interposait à l'ENREGISTREMENT, pour faire confirmer un
+rapprochement qu'Atlas savait faire seul — un geste de plus pour rien. Celle-ci
+répond **pendant la frappe**, là où il ne sait rien faire seul, et elle
+disparaît dès qu'il sait.
+
+**Le début d'un MOT, jamais le milieu.** « nard » est dans « Bernard » : le
+proposer ferait remonter des noms que personne ne cherchait, et une liste qui
+répond à côté cesse d'être lue — on perd alors l'aide sans s'en apercevoir.
+Deux lettres au minimum, cinq lignes au plus, le plus récent devant à
+ressemblance égale.
+
+**Une seule question au serveur, une seule réponse.**
+`reconnaitreLeClientAction` rend désormais `{ lui, propositions }` : une
+seconde action aurait doublé les requêtes à chaque pause de frappe et fait
+vivre deux attentes — deux règles pour une question (`CLAUDE.md` §3). Les
+chantiers des propositions se comptent en **une** requête groupée, pas cinq.
+
+**Le choix se RETIENT** (`choisiPour`). Sans cette mémoire, poser son nom
+entier relançait la recherche : sur quatre Martins elle ne savait pas lequel,
+le bandeau s'éteignait et la liste se rouvrait **sous son doigt**, sur l'homme
+qu'il venait de désigner. Une frappe de plus la rouvre, et c'est voulu — il
+corrige, donc il cherche. C'est la même forme que le `choisi` des adresses
+proposées (`ChampAdresse`), et pour la même raison.
+
+**Ce que cela répare au-delà de la case.** Le client choisi part avec le
+chantier (`assurerChantier`, `clientId: reconnu?.id`) : plus de fiche en
+double, et « Envoyer à » trouve son numéro au lieu de dire *« ce chantier n'a
+pas encore de client »* — la troisième de ses captures.
+
+**Ce qui le tient** : `scripts/test-rapprochement-client.ts` pour la règle,
+sans base ; `scripts/test-client-reconnu-e2e.ts` pour le geste, **par sa porte
+à lui** — l'accueil, « Créer un devis », la feuille — parce qu'un contrôle qui
+entre par la porte de service ne dit rien de celle qui peut être fermée
+(`CLAUDE.md` §5 quater).

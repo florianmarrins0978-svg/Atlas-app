@@ -8,6 +8,23 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-20
 
+### Le prénom seul propose le client — et le remplit d'un doigt
+
+Il tapait « Julien » dans la fiche client : rien. La reconnaissance compare des
+noms **entiers** — « julien » n'est pas « julien bernard » —, elle ne trouvait
+personne, et ne le disait pas. Le chantier partait alors sans client, et
+« Envoyer à » n'avait aucun numéro à proposer.
+
+Un nom seulement COMMENCÉ ouvre désormais une liste sous la case : son nom
+entier, sa ville, ses chantiers. On la touche, le nom se complète, les cases
+vides se remplissent, et le chantier va sur SA fiche — plus de fiche en double.
+
+**La reconnaissance automatique n'a pas bougé d'un pouce** : elle continue de
+ne rien poser tant que ce n'est pas certain. Proposer n'est pas poser — l'une
+écrit à sa place, l'autre lui rend le choix. C'est ce qui permet à la liste de
+montrer ses quatre Martins là où la pose se tait. `ARCHITECTURE.md` §391.
+
+
 ### Une suite qui ne peut rien mesurer ici se tait, au lieu de rougir
 
 Dix-neuf suites d'outillage rougissaient sur son PC Windows faute de `bash`,
