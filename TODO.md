@@ -1389,22 +1389,35 @@ publication 20:08:26 UTC, puis rien à 20:23 ni à 20:28, alors que le veilleur 
 réécrit au quart d'heure — l'espace ne tournait plus (`CLAUDE.md` §1 bis). Puis
 lui : *« je l'ai éteint »*.
 
-**CE QUI N'EST PAS TRANCHÉ, et cette entrée a d'abord affirmé le contraire :**
-a-t-il éteint son espace AVANT le téléchargement de 22 h 23, ou APRÈS, pour
-tenter de le réparer ?
+**L'ORDRE, une fois demandé :** *« après t'avoir envoyé la photo, l'appli ne
+répondait plus »* — il a donc éteint APRÈS. Son espace tournait encore, de son
+point de vue, quand le relais a refusé.
 
-| | |
+**ET POURTANT CE N'EST PAS LA RÉCIDIVE ATTENDUE — c'est la FICHE qui le dit.**
+Elle s'est tue en même temps que le port : écrite à 20:08:26, rien à 20:23, rien
+à 20:28, alors que sa publication ne passe PAS par le port 3000 (node, git,
+l'API de GitHub — tout sort par le réseau ordinaire).
+
+| Ce qu'on observe | Ce que cela exclut |
 |---|---|
-| éteint **avant** | aucune perte de port ce soir-là : un relais sans personne derrière refuse exactement pareil |
-| éteint **après** | la perte a bien eu lieu, et c'est la récidive attendue ci-dessous |
+| le port refuse, **la fiche continue** | le relais a perdu le port — c'est la panne des 31 août, 12 et 13 septembre |
+| le port refuse **et la fiche se tait** | ce n'est pas le port : plus personne ne tourne dans l'espace |
 
-Ce que la fiche de 20:08 portait, dans les deux cas : serveur debout, *« Port
-3000 : ouvert — Atlas répond bien à l'adresse publique (vérifié) »*. Le port
-allait bien quinze minutes avant qu'il clique.
+**Ce discriminateur est neuf, et il vaut pour toutes les sessions** : deux
+symptômes qui s'arrêtent à la même minute n'ont qu'une cause, et ce n'est pas
+celle qui n'explique qu'un seul des deux. Une perte de port laisse la fiche
+vivante ; un espace suspendu emporte les deux.
 
-**La leçon qui tient, elle :** « téléchargement au lieu d'Atlas » ne désigne
-jamais le port à lui seul. La DATE de la fiche se regarde d'abord — et un espace
-arrêté, par veille ou par sa main, produit le même écran qu'un port perdu.
+**L'hypothèse qui reste, et elle n'est PAS mesurée d'ici :** la suspension
+automatique de Codespaces. La fiche portait *« Dernière m.à.j. : 19:40 »*, et le
+délai d'inactivité par défaut est de trente minutes — 20:08 est la dernière
+publication avant l'heure où elle tomberait. Les processus de fond ne comptent
+pas comme activité : son veilleur peut tourner, l'espace s'endort quand même.
+
+**Ce qui la trancherait, et c'est chez lui :** github.com/settings/codespaces →
+délai d'inactivité. S'il y lit trente minutes, l'affaire est close et le remède
+est ce réglage — porté à 240 minutes, au prix d'heures d'espace facturées. À lui
+seul de décider (`docs/A-FAIRE.md` ne reçoit rien sans son accord).
 
 **Geste rendu :** rallumer l'espace depuis github.com/codespaces — il ne détruit
 rien, et il reprend au passage la version de retard que la fiche signalait.
