@@ -1381,6 +1381,28 @@ puis rallumer l'espace. **À barrer dès qu'il confirme que sa version a avancé
 
 ## LE PORT QUE LE RELAIS PERD — UNE HYPOTHÈSE À TRANCHER À LA RÉCIDIVE (13 septembre 2026)
 
+**20 SEPTEMBRE 2026, 22 h 23 — CE N'ÉTAIT PAS UNE PERTE DE PORT : L'ESPACE
+ÉTAIT ARRÊTÉ.** Il signale un téléchargement proposé à la place d'Atlas
+(`…-3000.app.github.dev`, sur `about:blank`) — exactement la signature du refus
+nu du relais, celle du 31 août. **Ce qui a tranché avant toute hypothèse, c'est
+la DATE de la fiche** : dernière publication 20:08:26 UTC, puis rien à 20:23 ni
+à 20:28, alors que le veilleur la réécrit au quart d'heure. Plus de vingt
+minutes sans réécriture, l'espace est arrêté (`CLAUDE.md` §1 bis).
+
+Et ce que cette fiche de 20:08 portait : serveur debout, *« Port 3000 : ouvert —
+Atlas répond bien à l'adresse publique (vérifié) »*. Le port allait bien quinze
+minutes avant qu'il clique.
+
+**Donc cette soirée NE COMPTE PAS comme la récidive attendue ci-dessous.** Un
+relais qui n'a personne derrière refuse de la même façon qu'un relais qui a
+perdu le port : depuis son téléphone, les deux sont indiscernables. Une session
+qui lirait « téléchargement au lieu d'Atlas » sans regarder la date de la fiche
+rouvrirait l'enquête sur la mauvaise piste, et conclurait à tort que
+l'hypothèse du port *détecté* tient encore.
+
+**Geste rendu :** rallumer l'espace depuis github.com/codespaces — il ne détruit
+rien, et il reprend au passage la version de retard que la fiche signalait.
+
 **MESURÉ LE 13 SEPTEMBRE À 10 h 16 (08:16 UTC) — le rallumage a remis le port.**
 Sa fiche : *« Port 3000 : ouvert — Atlas répond bien à l'adresse publique
 (vérifié) »*, et lui : *« ça fonctionne »*. C'est le comportement attendu, et
