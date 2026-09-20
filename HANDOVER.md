@@ -9,6 +9,22 @@ sert.
 
 ---
 
+## UNE ÉCRITURE DÉCLARE CE QU'ELLE CHANGE — sinon le RETOUR rejoue l'écran d'avant
+
+**Son défaut du 20 septembre 2026 :** un chantier créé, un retour, et l'accueil
+sans lui jusqu'au rechargement. Ce qu'une session doit savoir avant de chercher
+un défaut d'affichage de ce genre :
+
+| | |
+|---|---|
+| un lien vers un écran | l'écran est redemandé au serveur |
+| **un retour** (flèche ou geste du navigateur) | la page **telle qu'elle a été rendue**, et aucun délai n'en sort |
+| ce qui vide ce cache-là | une écriture qui le DIT — `revalidatePath` dans l'action |
+
+Devant « je dois recharger pour voir », la question n'est donc pas « la lecture
+est-elle juste » mais « **quelle écriture ne déclare pas cet écran** ».
+`ARCHITECTURE.md` §391.
+
 ## LA FICHE D'INTERVENTION EST CELLE DE SA SIXIÈME PLANCHE — 20 septembre 2026
 
 Six planches en une journée (`appli/fiche-intervention-*.html`), la sixième

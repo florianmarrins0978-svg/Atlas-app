@@ -8,6 +8,22 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-20
 
+### Un chantier créé est là quand il revient — plus de rechargement
+
+*« J'ai créé un chantier puis j'ai fait retour. Problème ! J'ai dû recharger la
+page pour qu'il arrive dans mes chantiers en cours ! »*
+
+Un RETOUR rejoue la page telle qu'elle a été rendue — c'est le cache du
+navigateur, et aucun délai n'en sort (`staleTimes` ne le touche pas). L'accueil
+revenait donc tel qu'il l'avait quitté. Racine : `creerChantierAction` était la
+seule écriture de l'accueil à ne pas déclarer ce qu'elle change, là où les sept
+autres le font déjà. Elle déclare désormais les trois écrans qu'elle touche —
+l'accueil, la liste des clients, la fiche du client.
+
+Ce que ça évite : croire qu'un chantier n'a pas été enregistré, et le recréer.
+Suite `test-chantier-neuf-au-retour-e2e.ts`, vue rouge sur le code d'avant.
+`ARCHITECTURE.md` §391.
+
 ### Un refus par erreur n'a aucune issue — la planche, pas encore le code
 
 Sa capture du 20 septembre : *« j'ai sans faire exprès cliqué sur je ne donne
