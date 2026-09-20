@@ -1,0 +1,438 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — je propose mes jours</title>
+<style>
+  /*
+    « JE PROPOSE » — LA PHRASE, ET LE CALENDRIER QUI S'OUVRE DERRIÈRE.
+
+    Ses quatre demandes du 20 septembre 2026 :
+
+      1. « on garde l'existant, juste quand il y a une date c'est : cette date
+         ne me convient pas ? Je propose » ;
+      2. « quand il y a plusieurs dates de proposées, mets la phrase au
+         pluriel » ;
+      3. « lorsqu'elle clique sur proposer des jours, s'il y a plusieurs jours
+         il faut mettre le même système que nous lorsqu'on sélectionne les
+         jours — donc les 4 dates s'affichent, elle clique sur un jour
+         sélectionné pour le désélectionner et reclique ailleurs pour le
+         déplacer » ;
+      4. « en dessous de "quels jours vous arrangent ?" et au-dessus de la
+         touche pour valider, écris le nombre de jours : les travaux sont
+         prévus sur (le nombre de jours) ».
+
+    Le geste du 3 est celui de SON écran d'envoi, à la lettre
+    (`src/lib/propositions-de-jours.ts`, sa règle du 17 septembre) : un appui
+    pose le bloc d'affilée, un appui sur un jour du bloc l'efface et RIEN NE SE
+    DÉCALE, un appui ailleurs repose le bloc. Les fins de semaine sont sautées.
+
+    RIEN N'EST CODÉ. Cette page ne touche ni aux données ni à l'application.
+  */
+  :root{
+    --bone:#f5f3ee; --cream:#faf9f5; --paper:#ece9e1;
+    --charcoal:#1c1c1a; --charcoal-soft:#4a4a44; --muted:#8a8578;
+    --pine:#2f3b2f; --or:#B98B47; --line:rgba(28,28,26,.12);
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --bone:#171613; --cream:#1e1c18; --paper:#262420; --charcoal:#e9e5dc;
+           --charcoal-soft:#c9c4b8; --muted:#8a867c; --or:#C9A15E;
+           --line:rgba(233,229,220,.16); }
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html{ scrollbar-color:var(--muted) transparent }
+  ::selection{ background:var(--or); color:var(--cream) }
+  body{margin:0;background:var(--bone);color:var(--charcoal);
+       font:16px/1.55 -apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:34px 0 70px;-webkit-text-size-adjust:100%}
+  .page{max-width:460px;margin:0 auto;padding:0 22px}
+  h1{font:600 25px/1.2 ui-serif,Georgia,serif;margin:0 0 6px;letter-spacing:-.01em}
+  .sous{color:var(--charcoal-soft);margin:0 0 22px;font-size:14.5px}
+  .quoi{margin:0 0 26px;padding-left:12px;border-left:2px solid var(--or);
+        font-size:14px;color:var(--charcoal-soft)}
+
+  .choix{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:16px}
+  .choix button{flex:1 1 auto;min-width:150px;border:1px solid var(--line);
+    background:var(--cream);color:var(--charcoal);border-radius:999px;
+    padding:9px 13px;font:500 13.5px/1 inherit;cursor:pointer;
+    transition:background .22s cubic-bezier(.16,1,.3,1),color .22s,border-color .22s}
+  .choix button:hover{border-color:var(--or)}
+  .choix button[aria-pressed="true"]{background:var(--charcoal);color:var(--cream);
+    border-color:var(--charcoal)}
+  .choix button:focus-visible{outline:2px solid var(--or);outline-offset:2px}
+
+  .tel{width:390px;max-width:100%;height:664px;margin:0 auto;position:relative;
+       border-radius:22px;overflow:hidden;border:1px solid var(--line);
+       box-shadow:0 18px 46px rgba(28,28,26,.16)}
+  .ecran{position:absolute;inset:0;overflow-y:auto;overflow-x:hidden}
+  @media (max-width:433px){
+    .tel{width:100vw;max-width:none;margin-left:calc(50% - 50vw);
+         border-radius:0;border-left:0;border-right:0}
+    .mesure{max-width:none;padding:0 4px}
+  }
+  .mesure{max-width:390px;margin:12px auto 0;font-size:12.5px;
+          display:flex;justify-content:space-between;gap:10px;color:var(--muted)}
+  .mesure b{font-variant-numeric:tabular-nums;font-weight:600}
+  .tient{color:var(--pine)} .deborde{color:#B5502F}
+  @media (prefers-color-scheme: dark){ .tient{color:#8fae8f} .deborde{color:#e08a6a} }
+
+  /* ─── L'écran de son client, tel qu'il est vraiment ───────────────────── */
+  .c{ --fond:#F4EFE8; --carte:#ffffff; --encre:#1c1c1a; --doux:rgba(28,28,26,.62);
+      --pale:rgba(28,28,26,.45); --trait:rgba(0,0,0,.10);
+      --plein:#7E9A6B; --surPlein:#ffffff; --signal:#B5502F;
+      min-height:100%;background:var(--fond);color:var(--encre);
+      padding:8px 16px;font:15px/1.5 -apple-system,"Segoe UI",Roboto,sans-serif}
+  .c .carte{background:var(--carte);border-radius:16px;padding:12px;
+            box-shadow:0 1px 2px rgba(28,28,26,.06);margin-bottom:4px}
+  .c .tete{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:0 12px}
+  .c h2{font:600 19px/1.25 ui-serif,Georgia,serif;margin:0}
+  .c .ent{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--pale);flex:none;margin:0}
+  .c .pour{margin:2px 0 0;font-size:14px;color:var(--doux)}
+  .c dl{margin:8px 0 0;padding-top:6px;border-top:1px solid var(--trait);font-size:14px}
+  .c .l{display:flex;justify-content:space-between;color:var(--doux)}
+  .c .l dt,.c .l dd{margin:0}
+  .c .l dd{font-variant-numeric:tabular-nums}
+  .c .ttc{color:var(--encre);font-size:16px;font-weight:600;font-family:ui-serif,Georgia,serif}
+  .c h3{font:600 16px/1.3 ui-serif,Georgia,serif;margin:0}
+  .c .lignes{margin-top:6px;display:flex;flex-direction:column;gap:2px}
+  .c .lignes label{display:flex;gap:12px;align-items:flex-start;font-size:15px;cursor:pointer}
+  .c .lignes input{width:20px;height:20px;margin:1px 0 0;flex:none;accent-color:var(--plein)}
+  .c .retenue{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-top:2px}
+  .c .retenue span{font-size:15px}
+  .c .retenue button{border:0;background:transparent;font:inherit;font-size:13px;flex:none;
+     color:var(--doux);text-decoration:underline;text-underline-offset:4px;cursor:pointer}
+  .c .mot{margin-top:10px;font-size:13px;font-weight:500;color:var(--doux);display:block}
+  .c textarea{margin-top:6px;width:100%;height:40px;resize:none;border-radius:12px;
+              border:1px solid var(--trait);background:var(--carte);color:var(--encre);
+              padding:8px 12px;font:15px/1.4 inherit}
+  .c .actions{margin-top:12px;display:flex;flex-direction:column;gap:6px}
+  .c .b1{border:0;border-radius:999px;background:var(--plein);color:var(--surPlein);
+         padding:13px;font:500 16px/1 ui-serif,Georgia,serif;cursor:pointer;width:100%}
+  .c .b2,.c .b3{border-radius:999px;background:transparent;padding:11px;
+         font:500 14px/1 inherit;cursor:pointer;color:var(--encre);
+         border:1px solid var(--trait);width:100%}
+  .c .b2{border-color:color-mix(in srgb,var(--signal) 34%,transparent);color:var(--signal)}
+  .c .b3{color:var(--doux)}
+  .c .preuve{text-align:center;font-size:11px;color:var(--pale);margin:6px 0 0;line-height:1.35}
+  .c .pdf{border:0;border-radius:999px;background:var(--plein);color:var(--surPlein);
+          padding:12px;font:500 15px/1 inherit;cursor:pointer;width:100%;margin-top:10px}
+
+  /* Le calendrier de la feuille — celui de la maison. */
+  .cal .mois{display:flex;align-items:center;justify-content:space-between;height:34px}
+  .cal .mois span{font-size:15px;font-weight:500;text-transform:capitalize}
+  .cal .mois button{width:34px;height:34px;border:0;background:transparent;
+     color:var(--encre);font-size:18px;border-radius:999px;cursor:pointer}
+  .cal .grille{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center}
+  .cal .j{font-size:11px;text-transform:uppercase;opacity:.45;padding-bottom:4px}
+  .cal .grille button{height:40px;border:0;border-radius:999px;cursor:pointer;
+     font-size:15px;color:var(--encre);background:rgba(0,0,0,.035)}
+  .cal .grille button.vide{background:transparent;cursor:default}
+  .cal .grille button[disabled]{opacity:.32;text-decoration:line-through;cursor:default;background:transparent}
+  .cal .grille button[aria-pressed="true"]{background:var(--plein);color:var(--surPlein);font-weight:600}
+
+  .feuille{position:absolute;left:0;right:0;bottom:0;background:transparent;
+     box-shadow:0 -10px 34px rgba(28,28,26,.18);padding:0;
+     transform:translateY(101%);transition:transform .36s cubic-bezier(.16,1,.3,1)}
+  .feuille[data-ouverte="oui"]{transform:translateY(0)}
+  .feuille > .c{background:#fff;border-radius:20px 20px 0 0;
+     padding:14px 16px 18px;min-height:0}
+  .feuille h3{text-align:center}
+  .compte{margin:10px 0 0;text-align:center;font-size:13.5px;color:var(--doux)}
+  .refus{margin:8px 0 0;text-align:center;font-size:13.5px;color:var(--signal)}
+  .voile{position:absolute;inset:0;background:rgba(28,28,26,.32);opacity:0;
+     pointer-events:none;transition:opacity .36s cubic-bezier(.16,1,.3,1)}
+  .voile[data-ouverte="oui"]{opacity:1;pointer-events:auto}
+
+  .note{font-size:13.5px;color:var(--charcoal-soft);margin:14px 0 0;
+        padding-left:12px;border-left:1px solid var(--or)}
+  .rep{margin:34px 0 0;padding:16px 18px;background:var(--cream);
+       border:1px solid var(--line);border-radius:14px;font-size:14.5px}
+  .rep p{margin:0 0 8px} .rep p:last-child{margin:0}
+  .rep b{font-weight:600}
+  table{width:100%;border-collapse:collapse;margin:14px 0 0;font-size:13.5px}
+  th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{font-weight:600;color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <h1>Je propose</h1>
+  <p class="sous"><b>Vos quatre demandes du 20 septembre</b>, mises ensemble. <b>Touchez la ligne « je propose »</b> : le calendrier monte, et les jours se posent comme sur votre écran à vous. <b>Rien n'est codé.</b></p>
+
+  <p class="quoi"><b>Le geste des jours est LE VÔTRE, à la lettre.</b> Un appui pose les jours d'affilée ; un appui sur un jour déjà posé l'efface <b>et rien ne se décale</b> ; un appui ailleurs repose le bloc entier. C'est votre règle du 17 septembre, celle de votre écran d'envoi — la même fonction, pas une seconde.</p>
+
+  <div class="choix" role="group" aria-label="Ce que l'artisan a proposé">
+    <button type="button" data-duree="1" aria-pressed="false">Un chantier d'1 jour</button>
+    <button type="button" data-duree="4" aria-pressed="true">Un chantier de 4 jours</button>
+  </div>
+
+  <div class="tel">
+    <div class="ecran" id="ecran"></div>
+    <div class="voile" id="voile"></div>
+    <div class="feuille" id="feuille"></div>
+  </div>
+  <p class="mesure">
+    <span id="etat">—</span>
+    <span>la page fait <b id="hauteur">—</b> pour 664 px d'écran</span>
+  </p>
+
+  <p class="note" id="explication"></p>
+
+  <div class="rep">
+    <p><b>Ce qui change, point par point.</b></p>
+    <table>
+      <tr><th>Votre demande</th><th>Avant</th><th>Ici</th></tr>
+      <tr><td>1 date proposée</td><td>Cette date ne me convient pas — je propose :</td><td><b>Cette date ne me convient pas&nbsp;? Je propose</b></td></tr>
+      <tr><td>plusieurs dates</td><td>la même phrase au singulier</td><td><b>Ces dates ne me conviennent pas&nbsp;? Je propose</b></td></tr>
+      <tr><td>le choix des jours</td><td>un seul jour, et elle ne peut pas le défaire</td><td>les <b>4 jours d'affilée</b>, un appui les efface, un appui ailleurs les déplace</td></tr>
+      <tr><td>le nombre de jours</td><td>nulle part</td><td><b>Les travaux sont prévus sur 4 jours</b>, juste au-dessus du bouton</td></tr>
+    </table>
+    <p style="margin-top:14px"><b>Le pluriel se décide sur les JOURS, pas sur le nombre de lignes.</b> Votre capture en est la raison : votre client lit « <i>le jeudi 8 octobre, le vendredi 9, le lundi 12 et le mardi 13</i> » — quatre dates — et juste en dessous « <i>cette date</i> », au singulier. C'est ce cas-là qui passe au pluriel ici.</p>
+    <p><b>Le bouton se met au pluriel aussi</b> : « Retenir ces jours » quand il y en a plusieurs, « Retenir cette date » quand il n'y en a qu'un. Sans ça, il resterait au singulier sous quatre jours allumés.</p>
+    <p><b>Et ça ne dit rien de votre planning.</b> Le compte vient des jours que VOUS avez proposés — ils sont déjà écrits sur sa page. Ni la durée en demi-journées, ni le matin ou l'après-midi ne descendent jusqu'à elle, et le contrôle qui le garde reste vert.</p>
+    <p><b>Un défaut trouvé en essayant la planche, et il comptait.</b> Poser les quatre jours depuis le 19 allumait le 20 et le 21 — <b>deux jours déjà pris</b>. Elle vous aurait proposé des jours que l'acceptation aurait refusés ensuite, sans qu'elle comprenne pourquoi. Un jour se barre donc désormais <b>quand le chantier n'y tient pas d'affilée</b>, pas seulement quand il est pris : c'est exactement ce que fait déjà VOTRE calendrier. Touchez le 19 dans la planche, il ne répond plus.</p>
+    <p><b>Et un second, dans la foulée.</b> Le 15 faisait partie des quatre jours posés depuis le 12, et il était <b>barré en même temps qu'allumé</b> — parce qu'un chantier de quatre jours ne <i>commence</i> pas le 15. Votre cliente voyait un jour vert barré, et ne pouvait plus l'enlever : exactement le geste que vous avez demandé. Un jour déjà posé reste touchable, toujours.</p>
+    <p><b>Un point où j'ai tranché pour vous, dites-le si c'est non :</b> j'ai mis la phrase du nombre de jours <b>juste au-dessus du bouton</b>. Sous le titre, elle prévient avant qu'elle touche ; au-dessus du bouton, elle est sous les yeux au moment de valider. C'est une ligne à déplacer.</p>
+  </div>
+</div>
+
+<script>
+/* Une planche montre, elle ne décide pas. La hauteur affichée est mesurée. */
+const AN = 2026, MOIS = 9;                   /* octobre 2026 */
+const OCCUPES = ["2026-10-01", "2026-10-02", "2026-10-20", "2026-10-21", "2026-10-28"];
+
+let duree = 4;             /* jours du chantier, tels que l'artisan les a proposés */
+let feuilleOuverte = false;
+let choix = "";            /* "", "proposee" ou "autre" */
+let jours = [];            /* les jours qu'elle a posés */
+let refus = "";
+
+const ecran = document.getElementById("ecran");
+const feuille = document.getElementById("feuille");
+const voile = document.getElementById("voile");
+
+const JOURS = ["dimanche","lundi","mardi","mercredi","jeudi","vendredi","samedi"];
+const NOMS_MOIS = ["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"];
+
+function iso(d){ return d.toISOString().slice(0, 10); }
+function dateDe(j){ return new Date(j + "T12:00:00Z"); }
+function estOuvre(d){ const w = d.getUTCDay(); return w !== 0 && w !== 6; }
+
+/* `joursDuBloc` : les jours d'affilée depuis un premier jour, fins de semaine
+   sautées. C'est ce que l'acceptation réservera vraiment. */
+function blocDepuis(premier){
+  const bloc = [];
+  let d = dateDe(premier);
+  while (bloc.length < duree){
+    if (estOuvre(d)) bloc.push(iso(d));
+    d = new Date(d.getTime() + 86400000);
+  }
+  return bloc;
+}
+
+/* Le chantier tient-il d'affilée à partir de ce jour ? */
+function blocLibre(premier){
+  return blocDepuis(premier).every(function(j){ return OCCUPES.indexOf(j) === -1; });
+}
+
+/* Le geste du patron, à la lettre : dans le bloc → on EFFACE et rien ne bouge ;
+   ailleurs → on repose le bloc entier. */
+function toucherUnJour(j){
+  if (jours.indexOf(j) !== -1) jours = jours.filter(function(x){ return x !== j; });
+  else jours = blocDepuis(j);
+  refus = "";
+}
+
+/* `joursEnToutesLettres`, à la lettre : le mois aux DEUX extrémités, et
+   seulement là quand tout tombe dans le même mois. C'est ce que sa capture
+   montre — « le jeudi 8 octobre, le vendredi 9, le lundi 12 et le mardi
+   13 octobre ». */
+function enToutesLettres(liste){
+  const tries = liste.slice().sort();
+  const memeMois = tries.every(function(j){ return j.slice(0, 7) === tries[0].slice(0, 7); });
+  const noms = tries.map(function(j, i){
+    const d = dateDe(j);
+    const extremite = i === 0 || i === tries.length - 1;
+    const mois = (!memeMois || extremite) ? " " + NOMS_MOIS[d.getUTCMonth()] : "";
+    return "le " + JOURS[d.getUTCDay()] + " " + d.getUTCDate() + mois;
+  });
+  if (noms.length === 1) return noms[0];
+  return noms.slice(0, -1).join(", ") + " et " + noms[noms.length - 1];
+}
+
+/* Ce que l'artisan a proposé : un bloc de `duree` jours à partir du 8 octobre. */
+function proposition(){
+  const bloc = [];
+  let d = dateDe("2026-10-08");
+  while (bloc.length < duree){
+    if (estOuvre(d)) bloc.push(iso(d));
+    d = new Date(d.getTime() + 86400000);
+  }
+  return bloc;
+}
+
+function enTete(){
+  return '<div class="carte">' +
+    '<div class="tete"><h2>Devis n° 2026-000039</h2><p class="ent">Atlas</p></div>' +
+    '<p class="pour">Pour Mr. Balba</p>' +
+    '<dl>' +
+      '<div class="l"><dt>Total HT</dt><dd>580,00 €</dd></div>' +
+      '<div class="l"><dt>TVA (20 %)</dt><dd>116,00 €</dd></div>' +
+      '<div class="l ttc"><dt>Total TTC</dt><dd>696,00 €</dd></div>' +
+    '</dl>' +
+    '<button type="button" class="pdf">Télécharger mon devis</button>' +
+  '</div>';
+}
+
+/* **LA PHRASE, ET SON PLURIEL.** Elle s'accorde sur le nombre de JOURS que le
+   client a sous les yeux, pas sur le nombre de lignes : sa capture montrait
+   quatre dates au-dessus d'un « cette date » au singulier. */
+function libelleJePropose(){
+  return duree > 1
+    ? "Ces dates ne me conviennent pas ? Je propose"
+    : "Cette date ne me convient pas ? Je propose";
+}
+
+function carteDate(){
+  const p = proposition();
+  const titre = duree > 1 ? "Quels jours vous arrangent ?" : "Quelle date vous arrange ?";
+
+  /* Une fois ses jours retenus, la liste se replie sur ce qu'elle a choisi —
+     le comportement d'aujourd'hui, inchangé. */
+  const corps = (choix === "autre" && jours.length)
+    ? '<div class="retenue"><span>' + enToutesLettres(jours) + '</span>' +
+      '<button type="button" id="changer">changer</button></div>'
+    : '<div class="lignes">' +
+        '<label><input type="radio" name="d"' + (choix === "proposee" ? " checked" : "") +
+          ' id="proposee"><span>' + enToutesLettres(p) + '</span></label>' +
+        '<label id="ouvrir"><input type="radio" name="d"><span>' + libelleJePropose() + '</span></label>' +
+      '</div>';
+
+  return '<div class="carte"><h3>' + titre + '</h3>' + corps +
+    '<span class="mot">Une erreur ? Écrivez-la, votre artisan la lira.</span>' +
+    '<textarea placeholder="« Mon nom est mal écrit », « plutôt le matin »…"></textarea>' +
+  '</div>';
+}
+
+function actions(){
+  return '<div class="actions">' +
+    '<button type="button" class="b1">J’accepte ce devis</button>' +
+    '<button type="button" class="b2">Une correction avant d’accepter</button>' +
+    '<button type="button" class="b3">Je ne donne pas suite</button>' +
+  '</div>' +
+  '<p class="preuve">Votre accord est horodaté et conservé avec le devis.</p>';
+}
+
+function calendrier(){
+  const premier = new Date(Date.UTC(AN, MOIS, 1));
+  const decalage = (premier.getUTCDay() + 6) % 7;   /* la semaine commence lundi */
+  const fin = new Date(Date.UTC(AN, MOIS + 1, 0)).getUTCDate();
+  const cases = [];
+  for (let i = 0; i < decalage; i++){
+    cases.push('<button type="button" class="vide" disabled aria-hidden="true"></button>');
+  }
+  for (let n = 1; n <= fin; n++){
+    const d = new Date(Date.UTC(AN, MOIS, n));
+    const j = iso(d);
+    /* **UN JOUR SE BARRE QUAND LE CHANTIER N'Y TIENT PAS**, pas seulement
+       quand il est pris — c'est déjà ce que fait le calendrier de l'artisan
+       (`jours-barres.ts`). Sans cela, poser les quatre jours depuis le 19
+       allumait le 20 et le 21, qui sont pris : elle proposerait des jours que
+       l'acceptation refuserait ensuite, sans qu'elle comprenne pourquoi. */
+    /* **UN JOUR DÉJÀ POSÉ RESTE TOUCHABLE, toujours.** Trouvé en essayant :
+       le 15 faisait partie du bloc posé depuis le 12, et il était barré en
+       même temps qu'allumé — parce qu'un chantier de quatre jours ne PART pas
+       du 15. Elle voyait un jour vert barré, et ne pouvait plus l'enlever,
+       c'est-à-dire exactement le geste qu'il a demandé. Barré veut dire « on
+       ne COMMENCE pas là » ; cela n'a jamais voulu dire « on ne peut pas le
+       retirer ». */
+    const pose = jours.indexOf(j) !== -1;
+    const pris = !pose && (!estOuvre(d) || !blocLibre(j));
+    cases.push('<button type="button" data-jour="' + j + '"' + (pris ? " disabled" : "") +
+      ' aria-pressed="' + pose + '" aria-label="' + n + ' octobre">' + n + '</button>');
+  }
+  return '<div class="cal">' +
+    '<div class="mois"><button type="button" aria-label="Mois précédent">‹</button>' +
+    '<span>' + NOMS_MOIS[MOIS] + ' ' + AN + '</span>' +
+    '<button type="button" aria-label="Mois suivant">›</button></div>' +
+    '<div class="grille">' +
+      ["L","M","M","J","V","S","D"].map(function(x){ return '<span class="j" aria-hidden="true">' + x + '</span>'; }).join("") +
+      cases.join("") +
+    '</div></div>';
+}
+
+function peindre(){
+  ecran.innerHTML = '<div class="c">' + enTete() + carteDate() + actions() + '</div>';
+
+  /* **LA FEUILLE.** Le titre qu'elle n'avait pas, le calendrier, puis — sa
+     demande — le nombre de jours, juste au-dessus du bouton. */
+  const titre = duree > 1 ? "Quels jours vous arrangent ?" : "Quelle date vous arrange ?";
+  const compte = duree > 1
+    ? '<p class="compte">Les travaux sont prévus sur ' + duree + ' jours.</p>' : "";
+  const bouton = duree > 1 ? "Retenir ces jours" : "Retenir cette date";
+  feuille.innerHTML = feuilleOuverte
+    ? '<div class="c"><h3>' + titre + '</h3>' + calendrier() + compte +
+      (refus ? '<p class="refus" role="alert">' + refus + '</p>' : "") +
+      '<button type="button" class="b1" id="retenir" style="margin-top:8px">' + bouton + '</button></div>'
+    : "";
+  feuille.dataset.ouverte = feuilleOuverte ? "oui" : "non";
+  voile.dataset.ouverte = feuilleOuverte ? "oui" : "non";
+  mesurer();
+}
+
+function mesurer(){
+  const h = ecran.scrollHeight;
+  const tient = h <= 664;
+  document.getElementById("hauteur").textContent = h + " px";
+  const e = document.getElementById("etat");
+  e.textContent = tient ? "Tout est en vue" : "Il doit faire défiler " + (h - 664) + " px";
+  e.className = tient ? "tient" : "deborde";
+}
+
+const EXPLICATIONS = {
+  1: "Un chantier d’un jour : la phrase reste au singulier, le calendrier pose un seul jour, et rien n’annonce de nombre — il n’y a rien à annoncer.",
+  4: "Un chantier de quatre jours : la phrase passe au pluriel, et le calendrier pose les quatre d’affilée. Touchez un jour allumé pour l’éteindre — rien ne se décale ; touchez ailleurs, les quatre se reposent.",
+};
+
+Array.prototype.forEach.call(document.querySelectorAll("[data-duree]"), function(b){
+  b.addEventListener("click", function(){
+    Array.prototype.forEach.call(document.querySelectorAll("[data-duree]"), function(x){
+      x.setAttribute("aria-pressed", String(x === b));
+    });
+    duree = Number(b.dataset.duree);
+    feuilleOuverte = false; choix = ""; jours = []; refus = "";
+    document.getElementById("explication").textContent = EXPLICATIONS[duree];
+    peindre();
+  });
+});
+
+document.querySelector(".tel").addEventListener("click", function(e){
+  const c = e.target.closest("#ouvrir, #changer, #proposee, #retenir, .voile, [data-jour]");
+  if (!c) return;
+  if (c.id === "ouvrir" || c.id === "changer"){
+    feuilleOuverte = true; refus = "";
+  } else if (c.id === "proposee"){
+    choix = "proposee"; jours = [];
+  } else if (c.id === "retenir"){
+    /* Le bouton ne s’éteint pas faute de jour : il répond, et c’est sa réponse
+       qui dit ce qui manque — la règle de cet écran. */
+    if (!jours.length){ refus = "Touchez d’abord un jour dans le calendrier."; peindre(); return; }
+    feuilleOuverte = false; choix = "autre";
+  } else if (c.classList.contains("voile")){
+    /* Refermer sans avoir choisi défait le choix : sinon elle reste sur « je
+       propose » sans jour, et le serveur refuserait sans qu’elle sache pourquoi. */
+    feuilleOuverte = false;
+    if (!jours.length) choix = "";
+  } else if (c.hasAttribute("data-jour") && !c.hasAttribute("disabled")){
+    toucherUnJour(c.getAttribute("data-jour"));
+  }
+  peindre();
+});
+
+document.getElementById("explication").textContent = EXPLICATIONS[4];
+peindre();
+</script>
+</body>
+</html>

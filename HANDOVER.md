@@ -25,6 +25,28 @@ Devant « je dois recharger pour voir », la question n'est donc pas « la lectu
 est-elle juste » mais « **quelle écriture ne déclare pas cet écran** ».
 `ARCHITECTURE.md` §391.
 
+## L'ÉCRAN DE SON CLIENT ATTEND UN LOT GROUPÉ — 20 septembre 2026
+
+Il a touché « Je ne donne pas suite » par erreur sur le lien d'un de ses devis,
+et il n'existe aucun retour : `enregistrerReponse` rejette toute seconde
+réponse (`deja_repondu`). **Sa décision, devant
+`appli/le-refus-par-erreur.html` : la A** — une feuille de confirmation
+(`BottomSheet`, celle qui porte déjà le calendrier de cet écran).
+
+**Ne pas coder cette feuille seule.** Sa consigne du même soir : *« avant de
+coder j'ai encore des modif à faire sur cette page, tu coderas tout d'un
+coup »*. Tout ce qui touche `src/app/devis/[jeton]/` attend ses autres
+demandes et part en un seul lot.
+
+**Et ne pas lui redemander son choix** : il est donné, il est dans `TODO.md`.
+
+**Le lot s'étoffe au fil de la soirée** : la feuille de confirmation, puis le
+libellé « je propose » et son pluriel, et le calendrier du client qui reprend
+le geste de l'écran d'envoi (`appli/proposer-ses-jours.html`). Le détail, et
+les deux défauts que les planches ont trouvés, sont dans `TODO.md`.
+
+---
+
 ## LA FICHE D'INTERVENTION EST CELLE DE SA SIXIÈME PLANCHE — 20 septembre 2026
 
 Six planches en une journée (`appli/fiche-intervention-*.html`), la sixième
