@@ -60,10 +60,16 @@ export const CHEMIN_NEXT = "node_modules/next/dist/bin/next";
  * l'arrêter.
  *
  * `detached` sert au tuage de l'arbre sous Unix ; sous Windows c'est `taskkill`
- * qui s'en charge, et le drapeau n'y coûte rien.
+ * qui s'en charge — et le drapeau y COÛTE, mesuré le 19 septembre 2026 : un
+ * enfant `detached` n'a plus de console, et le premier programme console qu'il
+ * lance à son tour (`git rev-parse HEAD` dans `banc.mjs`, un `cmd`) doit s'en
+ * faire ouvrir une nouvelle par Windows — ce qui peut rester suspendu sans fin
+ * (journal du banc à zéro octet, `git.exe` figé à 0 % de processeur, et « le
+ * serveur n'a pas répondu en dix minutes »). Sans le drapeau, l'enfant garde
+ * la console du lanceur et rien n'a à s'ouvrir.
  */
 export const OPTIONS_SERVEUR = {
-  detached: true,
+  detached: !SOUS_WINDOWS,
   shell: SOUS_WINDOWS,
 } as const;
 

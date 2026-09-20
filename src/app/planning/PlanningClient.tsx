@@ -1149,6 +1149,17 @@ export default function PlanningClient({
    * pas (`HANDOVER.md`, piège 0).
    */
   const [refus, setRefus] = useState<string | null>(null);
+  /**
+   * LE DERNIER CLIENT POSÉ DEPUIS LE TIROIR — pour le défaire d'un mot.
+   *
+   * **La réversibilité après, plutôt que la confirmation avant** (principe 4
+   * du produit, et sa planche du 18 septembre 2026) : le tiroir écrit « Mr.
+   * Linotte est sur jeudi 17 septembre · Annuler » tant que c'est vrai. Rien
+   * n'expire ; la ligne se tait d'elle-même dès que le chantier n'est plus sur
+   * ce jour — déplacé, retiré, ou reposé ailleurs —, parce qu'elle se DÉDUIT
+   * de la liste au lieu d'être un second état à tenir à jour.
+   */
+  const [dernierPose, setDernierPose] = useState<{ id: string; jour: JourIso } | null>(null);
   const PAGE_VIEILLIE = "Rien n'est parti. Rechargez la page.";
 
   /**
@@ -1290,8 +1301,16 @@ export default function PlanningClient({
         liste.map((c) => (c.id === chantierId ? { ...c, ...r.etat } : c))
       );
       setDebutFenetre(jour);
+      setDernierPose({ id: chantierId, jour });
     });
   }
+
+  /** Ce que le tiroir peut encore défaire : le dernier posé, s'il est toujours là. */
+  const poseADefaire = (() => {
+    if (!dernierPose) return null;
+    const c = chantiers.find((x) => x.id === dernierPose.id);
+    return c && c.datePlanifiee === dernierPose.jour ? { chantier: c, jour: dernierPose.jour } : null;
+  })();
 
   const joursDeLaSemaine = useMemo(
     () =>
@@ -1853,6 +1872,11 @@ export default function PlanningClient({
           attenteClient={attenteClient}
           jourTouche={jourTouche}
           poser={poser}
+          poseADefaire={poseADefaire}
+          defairePose={(id) => {
+            setDernierPose(null);
+            retirerDuJour(id);
+          }}
           retraits={retraits}
           portesOuvertes={ouvertes.fiche}
           onPortes={montrerLesPortes}
@@ -2120,12 +2144,20 @@ function Petit({
 }
 
 /**
- * La pastille d'équipe.
+ * QUI PART — des prénoms, et un « + » en or.
  *
- * **Le « ＋ » qui dit qu'on peut en ajouter un autre.** Sa remarque du 21 août :
+ * **Le « + » qui dit qu'on peut en ajouter un autre.** Sa remarque du 21 août :
  * *« l'utilisateur voit marqué Paul, mais il ne se dit pas qu'il peut cliquer
  * dessus pour ajouter un autre gars »*. Un signe collé au nom coûte huit pixels
  * et se lit comme une invitation ; une phrase aurait pris une ligne.
+ *
+ * **Plus de pastille verte, plus de pointillé — sa planche du 18 septembre
+ * 2026** (`appli/planning-tout-ensemble-en-mieux.html`) : les prénoms en noir,
+ * un fait ; le « + » en or, un geste. Et quand personne n'est posé, **« +
+ * Salarié »** — son choix du 18 au soir à la place de « Qui ? » : le même mot
+ * et le même « + » que « + Salarié absent ? » juste au-dessus, un seul geste à
+ * apprendre. Le contrat des suites ne bouge pas : `data-atlas="equipe"`,
+ * `data-vide`, et le texte porte les prénoms.
  */
 function PastilleEquipe({
   libelle,
@@ -2156,8 +2188,8 @@ function PastilleEquipe({
     return (
       <span
         data-atlas="equipe-lecture"
-        className="flex-shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-[12.5px]"
-        style={{ background: colors.plein, color: surPlein }}
+        className="flex-shrink-0 whitespace-nowrap text-[14.5px]"
+        style={{ color: colors.ink }}
       >
         {libelle}
       </span>
@@ -2170,19 +2202,25 @@ function PastilleEquipe({
       data-atlas="equipe"
       data-vide={vide ? "1" : "0"}
       onClick={onClick}
-      className="flex-shrink-0 cursor-pointer whitespace-nowrap rounded-full px-3 py-1.5 text-[12.5px]"
-      style={{
-        border: vide ? `1px dashed ${colors.or}` : "0",
-        background: vide ? "transparent" : colors.plein,
-        color: vide ? colors.or : surPlein,
-        WebkitTapHighlightColor: "transparent",
-      }}
+      className="inline-flex min-h-[44px] flex-shrink-0 cursor-pointer items-center gap-1.5 whitespace-nowrap border-0 bg-transparent px-0 text-[14.5px]"
+      style={{ color: vide ? colors.or : colors.ink, WebkitTapHighlightColor: "transparent" }}
     >
-      {libelle}
-      {avecPlus && !vide && (
-        <span className="ml-1.5 text-[11px] opacity-65" aria-hidden="true">
-          ＋
-        </span>
+      {vide ? (
+        <>
+          <span className="text-[17px] leading-none" aria-hidden="true">
+            +
+          </span>
+          Salarié
+        </>
+      ) : (
+        <>
+          {libelle}
+          {avecPlus && (
+            <span className="text-[17px] leading-none" style={{ color: colors.or }} aria-hidden="true">
+              +
+            </span>
+          )}
+        </>
       )}
     </button>
   );
@@ -2219,11 +2257,14 @@ function LieuDuChantier({ chantier }: { chantier: ChantierPlanning }) {
 }
 
 /** La rangée de boutons qui remplace ce qu'on vient de toucher. */
-function Choisir({ children }: { children: React.ReactNode }) {
+function Choisir({ children, mots }: { children: React.ReactNode; mots?: boolean }) {
   return (
     <div
       data-atlas="choisir"
-      className="mt-1 flex flex-wrap justify-start gap-1.5"
+      // **Des mots s'espacent, des pastilles se serrent** : dix-huit pixels
+      // entre deux prénoms en or (sa planche du 18 septembre 2026), six entre
+      // deux capsules — le même conteneur, deux respirations.
+      className={`mt-1 flex flex-wrap items-center justify-start ${mots ? "gap-x-[18px] pl-[46px]" : "gap-1.5"}`}
       style={{ flexBasis: "100%" }}
     >
       {children}
@@ -2547,6 +2588,98 @@ function MotDuGeste({
 }
 
 /**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * LA RÈGLE DE LA FICHE DU JOUR — noir un fait, or un geste, gris le reste.
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * **Sa planche du 18 septembre 2026**, `appli/planning-tout-ensemble-en-mieux`,
+ * et son oui du 19 : *« j'en ai marre des gros boutons ! Je veux une page
+ * élégante et minimaliste qu'on comprend direct »*. La fiche empilait cinq
+ * formes pour dire « ça s'appuie » — une pastille verte pleine, un pointillé,
+ * un interrupteur, des capsules, un rond cerné d'or — et l'œil devait
+ * apprendre chacune.
+ *
+ * Une seule règle les remplace, sans cadre ni aplat : un mot en OR est un
+ * geste ; un mot NOIR est un fait ; le GRIS est le reste. Les deux dessins
+ * ci-dessous sont les seuls qu'un geste prenne sur cette fiche :
+ *
+ * - `MotEnOr` — un mot qu'on touche ;
+ * - `MotAChoisir` — un mot parmi d'autres, dont un seul est retenu : le retenu
+ *   passe en noir, souligné d'or ; les autres restent en or.
+ *
+ * **44 px de haut, toujours** : l'encre rétrécit, la cible non. Un mot nu
+ * n'offre rien au pouce.
+ */
+function MotEnOr({
+  children,
+  onClick,
+  doux,
+  ...reste
+}: {
+  children: React.ReactNode;
+  onClick: () => void;
+  /** Gris plutôt qu'or — « Fermer », « Annuler » : une sortie, pas un geste. */
+  doux?: boolean;
+} & Record<string, unknown>) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      {...reste}
+      className="inline-flex min-h-[44px] flex-shrink-0 cursor-pointer items-center gap-1.5 border-0 bg-transparent px-0 text-[14px]"
+      style={{ color: doux ? colors.muted : colors.or, WebkitTapHighlightColor: "transparent" }}
+    >
+      {children}
+    </button>
+  );
+}
+
+function MotAChoisir({
+  children,
+  onClick,
+  retenu,
+  absente,
+  ...reste
+}: {
+  children: React.ReactNode;
+  onClick: () => void;
+  retenu: boolean;
+  /**
+   * **Cette personne n'est pas là** — son signalement du 7 septembre 2026 :
+   * *« il doit être grisé et on ne doit pas pouvoir le sélectionner »*. Grise
+   * toujours, n'interdit que la coche : un nom déjà retenu reste touchable
+   * pour être retiré (voir `Petit`, où la règle est écrite en entier).
+   */
+  absente?: boolean;
+} & Record<string, unknown>) {
+  const inerte = absente && !retenu;
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      {...reste}
+      disabled={inerte}
+      aria-disabled={inerte ? true : undefined}
+      aria-pressed={retenu}
+      data-absente={absente ? "1" : undefined}
+      className={`inline-flex min-h-[44px] flex-shrink-0 items-center border-0 bg-transparent px-0 text-[14px] ${
+        inerte ? "cursor-not-allowed" : "cursor-pointer"
+      }`}
+      style={{
+        color: absente ? colors.muted : retenu ? colors.ink : colors.or,
+        textDecoration: retenu ? "underline" : "none",
+        textDecorationColor: colors.or,
+        textDecorationThickness: 1.5,
+        textUnderlineOffset: 6,
+        WebkitTapHighlightColor: "transparent",
+      }}
+    >
+      {children}
+    </button>
+  );
+}
+
+/**
  * LE GESTE D'AJOUT D'UNE JOURNÉE — écrit une fois, posé à deux endroits.
  *
  * **Il appartient au JOUR, pas au chantier.** Sur la planche 86 il vit sous la
@@ -2618,14 +2751,20 @@ function AjoutAuJour({
   return (
     <>
       {ici === "ajout-voies" ? (
+        /* ─── SES RÉPONSES DU 17 ET DU 18 SEPTEMBRE 2026 ─────────────────────
+           *« Le C, pas d'Annuler »* : les trois voies gardent leurs mots, et
+           l'on referme par où l'on est entré — « Ajouter » devenu « Fermer »,
+           à sa place, sous les voies. Puis, sur sa planche du 18 : des mots en
+           or plutôt que des capsules, et *« quand on clique sur ajouter il
+           doit y avoir marqué client en attente »*. */
         <div className="mt-3.5 pt-3">
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap items-center gap-x-[18px]">
             {aEnAttente && (
               <VoieDAjout
                 data-atlas="voie-chantier"
                 onClick={() => setOuvert({ quoi: "ajout-qui", cle })}
               >
-                Un chantier en attente
+                Client en attente
               </VoieDAjout>
             )}
             <VoieDAjout
@@ -2644,11 +2783,7 @@ function AjoutAuJour({
               Autre chose
             </VoieDAjout>
           </div>
-          <div className="mt-2 flex justify-end">
-            <Petit data-atlas="annuler-ajout" onClick={() => setOuvert(null)}>
-              Annuler
-            </Petit>
-          </div>
+          <GesteAjouter ouvert onClick={() => setOuvert(null)} />
         </div>
       ) : ici === "ajout-qui" ? (
         <div className="mt-3.5 pt-3">
@@ -2710,34 +2845,34 @@ function AjoutAuJour({
           }}
         />
       ) : (
-        /* **Plus de filet au-dessus du « + »** — sa demande du 23 août 2026 :
-           *« la ligne qui se trouve entre le nom et le "+ Ajouter un chantier",
-           supprime-la »*. La planche 86 n'en porte pas : c'est l'écran qui en
-           avait ajouté un, et il refermait la journée juste avant le geste qui
-           la prolonge. */
-        <div
-          className="mt-3.5 flex items-center justify-center gap-2.5 pt-3 text-[12.5px]"
-          style={{ color: colors.inkSoft }}
-        >
-          <button
-            type="button"
-            data-atlas="ajouter"
-            aria-label="Ajouter"
-            onClick={() => setOuvert({ quoi: "ajout-voies", cle })}
-            className="h-[34px] w-[34px] cursor-pointer rounded-full text-[19px] leading-none"
-            style={{
-              border: `1px solid ${colors.or}`,
-              background: "transparent",
-              color: colors.or,
-              WebkitTapHighlightColor: "transparent",
-            }}
-          >
-            +
-          </button>
-          <span>Ajouter</span>
-        </div>
+        /* **Plus de filet au-dessus d'« Ajouter »** — sa demande du 23 août
+           2026 : *« la ligne qui se trouve entre le nom et le "+ Ajouter un
+           chantier", supprime-la »*. La planche 86 n'en porte pas : c'est
+           l'écran qui en avait ajouté un, et il refermait la journée juste
+           avant le geste qui la prolonge. */
+        <GesteAjouter ouvert={false} onClick={() => setOuvert({ quoi: "ajout-voies", cle })} />
       )}
     </>
+  );
+}
+
+/**
+ * « AJOUTER », ET LE MÊME MOT DEVENU « FERMER » — au milieu, en or.
+ *
+ * **C'était un rond cerné d'or avec un « + »** (sa demande du 21 août 2026 :
+ * *« un rond avec un plus »*). Sa planche du 18 septembre 2026 l'a remplacé par
+ * le mot seul, en or, comme tout ce qui s'appuie sur cette fiche : *« j'en ai
+ * marre des gros boutons »*. Il garde sa place — sous les chantiers, en bas de
+ * la fiche — et son repère `ajouter` : ouvert, il dit « Fermer » et referme,
+ * c'est sa réponse C du 17 septembre (*« le C, pas d'Annuler »*).
+ */
+function GesteAjouter({ ouvert, onClick }: { ouvert: boolean; onClick: () => void }) {
+  return (
+    <div className="mt-2 flex justify-center">
+      <MotEnOr data-atlas="ajouter" aria-label={ouvert ? "Fermer" : "Ajouter"} onClick={onClick}>
+        {ouvert ? "Fermer" : "Ajouter"}
+      </MotEnOr>
+    </div>
   );
 }
 
@@ -2759,7 +2894,13 @@ const STYLE_CHAMP = {
   fontSize: 16,
 } as const;
 
-/** L'une des voies de « Ajouter » — même dessin, trois destinations. */
+/**
+ * L'une des voies de « Ajouter » — même dessin, trois destinations.
+ *
+ * **Un mot en or, plus une capsule** — sa planche du 18 septembre 2026. La
+ * forme est celle de tout geste de cette fiche (`MotEnOr`) ; les repères des
+ * suites (`voie-chantier`, `voie-client`, `voie-temps`) ne bougent pas.
+ */
 function VoieDAjout({
   children,
   onClick,
@@ -2769,24 +2910,9 @@ function VoieDAjout({
   onClick: () => void;
 } & React.ComponentPropsWithoutRef<"button">) {
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      {...reste}
-      // **`rounded-full`, comme tout ce qui s'appuie ici.** La planche dessinait
-      // un rayon de 12 px ; sa règle du 12 août 2026 veut la même forme partout,
-      // et un contrôle la tient (`scripts/test-boutons-arrondis.ts`). Un dessin
-      // de planche ne prime pas sur une règle qu'il a posée.
-      className="min-h-[48px] flex-1 cursor-pointer rounded-full border-0 px-3 text-[13.5px]"
-      style={{
-        boxShadow: `inset 0 0 0 1px ${colors.line}`,
-        background: colors.card,
-        color: colors.ink,
-        WebkitTapHighlightColor: "transparent",
-      }}
-    >
+    <MotEnOr onClick={onClick} {...reste}>
       {children}
-    </button>
+    </MotEnOr>
   );
 }
 
@@ -3184,14 +3310,20 @@ function GesteAbsence({
       type="button"
       onClick={onClick}
       {...reste}
-      // **AU MILIEU, EN GRAS — sa demande du 17 septembre 2026**, planche
+      // **AU MILIEU — sa demande du 17 septembre 2026**, planche
       // `appli/deplacer-sur-le-calendrier.html` : *« mets la touche salarié
-      // absent au milieu en gras aussi »*. Collée à gauche, à la taille du
-      // texte courant, elle se lisait comme une ligne de la fiche et non comme
-      // un geste. Elle garde sa PLACE — sous la date, au-dessus du nom —,
-      // seuls son poids et son axe changent (`CLAUDE.md` §3).
-      className="flex min-h-[44px] w-full items-center justify-center gap-2.5 py-[9px] text-center text-[14.5px] font-bold"
-      style={{ color: colors.ink, WebkitTapHighlightColor: "transparent" }}
+      // absent au milieu »*. Collée à gauche, à la taille du texte courant,
+      // elle se lisait comme une ligne de la fiche et non comme un geste. Elle
+      // garde sa PLACE — sous la date, au-dessus du nom.
+      //
+      // **EN OR, PLUS EN GRAS — sa planche du 18 septembre 2026**
+      // (`appli/planning-tout-ensemble-en-mieux.html`) : sur cette fiche, un
+      // mot en or est un geste, un mot noir est un fait. Le gras servait à dire
+      // « ceci s'appuie » ; l'or le dit pour toute la fiche, et un mot en or ET
+      // en gras crierait. Le « + » reste — *« garde le + avant salarié
+      // absent ? »*, sa retouche du 18 au soir.
+      className="flex min-h-[44px] w-full items-center justify-center gap-2.5 py-[9px] text-center text-[14px]"
+      style={{ color: colors.or, WebkitTapHighlightColor: "transparent" }}
     >
       <span
         aria-hidden="true"
@@ -3206,26 +3338,29 @@ function GesteAbsence({
 }
 
 /**
- * L'INTERRUPTEUR DU MOMENT — un seul bouton, trois positions.
+ * LE CHOIX DU MOMENT — trois mots, un seul retenu.
  *
  * **Sa demande du 10 septembre 2026, capture à l'appui :** *« pour le choix
- * matin aprem journée utilise le bouton pour déplacer un chantier »*. Le dessin
- * vient de la planche `appli/deplacer-plus-simple.html` ; il est recopié, pas
- * réinventé.
+ * matin aprem journée utilise le bouton pour déplacer un chantier »* — c'était
+ * alors un interrupteur à trois cases, recopié de `appli/deplacer-plus-simple`.
  *
- * **Ce qu'il remplace :** trois pastilles séparées, où rien ne disait qu'elles
- * s'excluent. Un interrupteur le montre par sa forme — une seule position est
- * allumée, et c'est celle où l'on est.
+ * **Des mots depuis sa planche du 18 septembre 2026**
+ * (`appli/planning-tout-ensemble-en-mieux.html`) : *« j'en ai marre des gros
+ * boutons ! Je veux une page élégante et minimaliste qu'on comprend direct »*.
+ * Ce que l'interrupteur disait par sa forme — une seule position allumée —, le
+ * mot retenu le dit en noir, souligné d'or ; les deux autres restent en or,
+ * comme tout ce qui s'appuie sur cette fiche. Le contrat des suites ne bouge
+ * pas : même repère, `data-quand`, `aria-pressed`.
  *
- * **44 px, et non 36.** C'est la seule chose qui change par rapport à la
- * planche : celui-ci se touche sur un chantier, avec des gants.
+ * **44 px de haut, toujours** : l'encre rétrécit, la cible non.
  */
 function BasculeDuMoment({
   retenu,
   onChoisir,
   repere = "quand-absent",
+  moments = LES_TROIS_MOMENTS,
 }: {
-  retenu: MomentEntier;
+  retenu: MomentEntier | null;
   onChoisir: (moment: MomentEntier) => void;
   /**
    * **Le repère des suites, et il change avec le GESTE.** Deux gestes de cet
@@ -3234,31 +3369,22 @@ function BasculeDuMoment({
    * suite l'interrupteur de l'autre, ouvert dans la même carte.
    */
   repere?: string;
+  moments?: readonly { cle: MomentEntier; mot: string }[];
 }) {
   return (
-    <div
-      className="mt-2 flex overflow-hidden rounded-full"
-      style={{ background: colors.card, boxShadow: `inset 0 0 0 1px ${colors.line}` }}
-    >
-      {LES_TROIS_MOMENTS.map((m) => {
+    <div className="mt-1 flex flex-wrap items-center gap-x-[18px]">
+      {moments.map((m) => {
         const allume = m.cle === retenu;
         return (
-          <button
+          <MotAChoisir
             key={m.cle}
-            type="button"
             data-atlas={repere}
             data-quand={m.cle}
-            aria-pressed={allume}
+            retenu={allume}
             onClick={() => onChoisir(m.cle)}
-            className="min-h-[44px] flex-1 text-[12.5px]"
-            style={{
-              background: allume ? colors.plein : "transparent",
-              color: allume ? surPlein : colors.inkSoft,
-              WebkitTapHighlightColor: "transparent",
-            }}
           >
             {m.mot}
-          </button>
+          </MotAChoisir>
         );
       })}
     </div>
@@ -3360,64 +3486,79 @@ function PasLaCeJour({
       </div>
 
       {ouverte ? (
-        /* ─── OUVERT : CHACUN SUR SA LIGNE, AVEC CE QU'ON PEUT LUI FAIRE ───
-           Ceux qui manquent portent « Annuler » ; les autres attendent d'être
-           touchés, et leur nom porte le point d'interrogation de l'écran. */
-        <>
+        /* ─── OUVERT : LES PRÉNOMS, EN OR, SUR UNE LIGNE ───────────────────
+           Sa planche du 18 septembre 2026 : plus une ligne par personne, des
+           mots. Ceux qui manquent portent « · annuler » ; les autres attendent
+           d'être touchés. Les repères des suites ne bougent pas. */
+        <div className="flex flex-wrap items-center gap-x-[18px]">
           {rangs.map((r) => {
             const absente = absentsParRang.get(r);
             return absente ? (
-              <button
+              <MotEnOr
                 key={r}
-                type="button"
                 data-atlas="rouvrir-le-jour"
                 onClick={() => {
                   rouvrir(absente.id);
                   if (quiManque === r) setQuiManque(null);
                 }}
-                className={ligne}
               >
-                <span className="min-w-0 flex-1 text-[14.5px]" style={{ color: colors.ink }}>
-                  {nomDuRang(r)}
-                </span>
-                <span className={texteSituation} style={{ color: colors.muted, flex: "none" }}>
-                  Annuler
-                </span>
-              </button>
+                {nomDuRang(r)} · annuler
+              </MotEnOr>
             ) : (
-              <button
+              <MotEnOr
                 key={r}
-                type="button"
                 data-atlas="qui-nest-pas-la"
                 onClick={() => {
                   // **La journée entière, tout de suite.** Le cas courant reste
-                  // à un appui : il touche un nom, c'est posé. L'interrupteur
-                  // ne sert qu'à restreindre, le jour où ça compte.
+                  // à un appui : il touche un nom, c'est posé. Le choix du
+                  // moment ne sert qu'à restreindre, le jour où ça compte.
                   fermer(jour, r);
                   setQuiManque(r);
                   setOuverte(false);
                 }}
-                className={ligne}
               >
-                <span className="min-w-0 flex-1 text-[14.5px]" style={{ color: colors.ink }}>
-                  {nomDuRang(r)}&nbsp;?
-                </span>
-              </button>
+                {nomDuRang(r)}
+              </MotEnOr>
             );
           })}
-        </>
+        </div>
       ) : (
         /* ─── FERMÉ : ON NE LIT QUE CE QUI EST POSÉ, ET QUAND ──────────────
            *« Julien absent, et là on marque soit matin, soit aprem, soit
-           journée en fonction de la sélection ; le Annuler disparaît. »* */
+           journée en fonction de la sélection ; le Annuler disparaît. »*
+
+           **Et une petite croix noire, à droite de la durée** — sa retouche du
+           18 septembre au soir : *« quand je mets un salarié absent, mets une
+           petite croix à droite en noir pour le supprimer, à côté de la durée
+           de son absence »*. Elle fait ce que fait « · annuler » derrière le
+           +, sans avoir à rouvrir la liste. Le moment ne s'écrit pas pendant
+           qu'on le choisit juste en dessous : il serait écrit deux fois. */
         absences.map((a) => (
           <div key={a.id} data-atlas="absence-posee" data-quand={momentDe(a)} className={ligne}>
+            <span className="w-[86px] flex-shrink-0 text-[13px]" style={{ color: colors.muted }}>
+              Absent
+            </span>
             <span className="min-w-0 flex-1 text-[14.5px]" style={{ color: colors.ink }}>
-              {nombreSalaries > 0 ? `${nomEquipe(a.rang)} absent` : "Vous êtes absent"}
+              {nombreSalaries > 0 ? nomEquipe(a.rang) : "Vous"}
             </span>
-            <span className={texteSituation} style={{ color: colors.muted, flex: "none" }}>
-              {LES_TROIS_MOMENTS.find((m) => m.cle === momentDe(a))?.dit}
-            </span>
+            {quiManque !== a.rang && (
+              <span className={texteSituation} style={{ color: colors.muted, flex: "none" }}>
+                {LES_TROIS_MOMENTS.find((m) => m.cle === momentDe(a))?.dit}
+              </span>
+            )}
+            <button
+              type="button"
+              data-atlas="retirer-absence"
+              aria-label={`Supprimer l’absence de ${nomDuRang(a.rang)}`}
+              onClick={() => {
+                rouvrir(a.id);
+                if (quiManque === a.rang) setQuiManque(null);
+              }}
+              className="-mr-2 flex min-h-[44px] min-w-[44px] flex-shrink-0 cursor-pointer items-center justify-end border-0 bg-transparent pr-2 text-[15px]"
+              style={{ color: colors.ink, WebkitTapHighlightColor: "transparent" }}
+            >
+              ✕
+            </button>
           </div>
         ))
       )}
@@ -3572,6 +3713,14 @@ function CarteDuJour({
   const blocs = blocsDeLaJournee(duJour, occupe).filter(
     (b) => !seulement || b.type === "libre" || b.chantier.id === seulement
   );
+  // Le dernier chantier du jour, et les moitiés libres qui le suivent : elles
+  // se dessinent dans son bloc, au-dessus de « Déplacer  Retirer » (sa
+  // consigne du 18 septembre 2026). `blocsDeLaJournee` ne pose des blocs
+  // « libre » qu'en queue, donc tout ce qui suit le dernier chantier est libre.
+  const dernierChantier = blocs.reduce((r, b, i) => (b.type === "chantier" ? i : r), -1);
+  const libresApres = blocs
+    .slice(dernierChantier + 1)
+    .flatMap((b) => (b.type === "libre" ? [b.demi] : []));
 
   /**
    * OÙ REPOSER LE MORCEAU — la règle, pour TOUTE moitié libre de ce jour.
@@ -3727,6 +3876,10 @@ function CarteDuJour({
           const suite = rang === apresLaFiche ? laFiche : null;
 
           if (bloc.type === "libre") {
+            // **Les moitiés libres qui SUIVENT le dernier chantier se dessinent
+            // dans son bloc**, au-dessus de « Déplacer  Retirer » — voir
+            // `libresApres`. Ici il ne reste que la fiche à poser à son rang.
+            if (rang > dernierChantier && dernierChantier >= 0) return <Fragment key={`libre-${bloc.demi}`}>{suite}</Fragment>;
             return (
               <Fragment key={`libre-${bloc.demi}`}>
                 <LigneLibre
@@ -3872,7 +4025,7 @@ function CarteDuJour({
                       // reste ouverte tant qu'il n'a pas fini, et le calendrier
                       // se repeint derrière à chaque coche — sinon il faudrait
                       // refermer pour voir l'effet, et rouvrir pour corriger.
-                      <Choisir>
+                      <Choisir mots>
                         {lignesEquipes.map((e) => {
                           const cochee = rangs.includes(e.rang);
                           // **Elle n'est pas là sur au moins un jour de CE
@@ -3890,30 +4043,38 @@ function CarteDuJour({
                           const jours = joursDeLaPastilleDe(e.rang, c, demi);
                           const absente =
                             joursAbsentsDe(e.rang, c).length > 0 && jours === "";
+                          // **Des mots, plus des pastilles — sa planche du
+                          // 18 septembre 2026.** Le prénom retenu passe en
+                          // noir, souligné d'or ; les autres restent en or. La
+                          // coche partielle (sa proposition C) se lit aux jours
+                          // écrits à côté du prénom, comme avant.
                           return (
-                            <Petit
+                            <MotAChoisir
                               key={e.rang}
-                              serre
                               data-choix={e.rang}
-                              retenue={cochee && jours === ""}
-                              partielle={cochee && jours !== ""}
+                              retenu={cochee}
                               absente={absente}
                               onClick={() => basculerEquipe(c.id, jour, demi, e.rang)}
                             >
-                              {cochee ? "✓ " : ""}
                               {nomEquipe(e.rang)}
                               {/* **Les jours de PRÉSENCE, pas d'absence** —
                                   « ven. » répond à « quand vient-il », là où
                                   « pas jeudi » oblige à soustraire de tête. */}
                               {jours && (
-                                <span className="ml-1 font-medium">{jours}</span>
+                                <span className="ml-1 text-[12.5px]" style={{ color: colors.muted }}>
+                                  {jours}
+                                </span>
                               )}
-                            </Petit>
+                            </MotAChoisir>
                           );
                         })}
-                        <Petit serre data-fini="1" fini onClick={() => setOuvert(null)}>
-                          Terminé
-                        </Petit>
+                        {/* « Fermer », en gris, à droite : une sortie, pas un
+                            geste. Il garde le repère `data-fini` des suites. */}
+                        <span className="ml-auto">
+                          <MotEnOr doux data-fini="1" onClick={() => setOuvert(null)}>
+                            Fermer
+                          </MotEnOr>
+                        </span>
                       </Choisir>
                     ) : (
                       <PastilleEquipe
@@ -3950,6 +4111,23 @@ function CarteDuJour({
                   **Ils gardent leurs repères `deplacer` et `retirer`** : c'est
                   le même geste, à une autre place — les suites le désignent par
                   ce qu'il FAIT, pas par la ligne où il se trouvait. */}
+              {/* ─── LES MOITIÉS LIBRES QUI SUIVENT, AVANT LES GESTES ─────────
+                  **Sa consigne du 18 septembre 2026 au soir :** *« le Déplacer
+                  Retirer doit être en bas à droite, en dessous de l'aprem, au-
+                  dessus du Ajouter »*. Sur le dernier chantier du jour, la
+                  moitié restée libre passe donc ICI, sous ses demi-journées,
+                  et les deux mots viennent après elle. La ligne est la même
+                  `LigneLibre`, avec le même geste de repose : écrite une fois. */}
+              {rang === dernierChantier &&
+                libresApres.map((demi) => (
+                  <LigneLibre
+                    key={`apres-${demi}`}
+                    demi={demi}
+                    occupation={occupationDe(jour, demi)}
+                    marge={8}
+                    onPoser={poserIci(demi)}
+                  />
+                ))}
               {ecriture && (
                 <div
                   data-atlas="actes-chantier"
@@ -4548,6 +4726,8 @@ function TiroirDuBas({
   attenteClient,
   jourTouche,
   poser,
+  poseADefaire,
+  defairePose,
   retraits,
   portesOuvertes,
   onPortes,
@@ -4566,6 +4746,9 @@ function TiroirDuBas({
   attenteClient: ChantierPlanning[];
   jourTouche: JourIso | null;
   poser: (chantierId: string, jour: JourIso) => void;
+  /** Le dernier client posé d'ici, tant qu'il est encore sur ce jour — voir `dernierPose`. */
+  poseADefaire: { chantier: ChantierPlanning; jour: JourIso } | null;
+  defairePose: (chantierId: string) => void;
   /**
    * **Le type vient de la source, jamais recopié.** Une liste de champs écrite
    * ici aurait divergé au premier champ ajouté à `useRetraits` — et le tiroir
@@ -4663,7 +4846,14 @@ function TiroirDuBas({
    * lit comme une panne.
    */
   const aMorceaux = ecriture && morceaux.length > 0;
-  if (!aSansDate && !aAttente && !aMorceaux) return null;
+  /**
+   * **Le dernier client posé tient le tiroir ouvert à lui seul.** Il vient de
+   * poser le seul client qui attendait : la liste est vide, mais c'est là,
+   * exactement, qu'il doit pouvoir revenir. Un tiroir qui disparaît à
+   * l'instant du geste emporterait « Annuler » avec lui.
+   */
+  const aDefaire = ecriture && poseADefaire !== null;
+  if (!aSansDate && !aAttente && !aMorceaux && !aDefaire) return null;
 
   /** Ce qui attend une place, morceaux compris — un seul compte, un seul mot. */
   const combienEnAttente =
@@ -4698,7 +4888,9 @@ function TiroirDuBas({
         aAttente ? `${attenteClient.length} ${EN_ATTENTE_DU_CLIENT.toLowerCase()}` : null,
       ]
         .filter(Boolean)
-        .join(" · ");
+        .join(" · ") ||
+      // Plus rien n'attend, et le dernier posé est encore à défaire.
+      "Aucun client sans date";
 
   return (
     <div
@@ -4828,6 +5020,32 @@ function TiroirDuBas({
           }`,
         }}
       >
+        {/* ─── LE DERNIER POSÉ, ET LE MOT QUI LE DÉFAIT ────────────────────
+            Sa planche du 18 septembre 2026 : « Mr. Linotte est sur jeudi 17
+            septembre », et « Annuler » à droite, en gris — la même grammaire
+            que le reste de la fiche. Il vit AU-DESSUS de la liste, et hors
+            d'elle : quand le dernier client vient d'être posé, la liste n'a
+            plus rien à montrer, et c'est précisément là qu'on veut pouvoir
+            revenir. « Annuler » fait ce que fait « Retirer » sur la fiche du
+            jour — un seul chemin d'écriture (`CLAUDE.md` §3). */}
+        {ecriture && poseADefaire && (
+          <>
+            <div style={{ borderTop: `1px solid ${colors.line}` }} />
+            <div
+              data-atlas="pose-a-defaire"
+              className="mx-[18px] flex min-h-[46px] items-center justify-between gap-3 pt-1 text-[14px]"
+              style={{ color: colors.ink }}
+            >
+              <span className="min-w-0 flex-1">
+                {poseADefaire.chantier.nom} est sur {jourLisibleCourt(poseADefaire.jour).toLowerCase()}
+              </span>
+              <MotEnOr doux data-atlas="defaire-la-pose" onClick={() => defairePose(poseADefaire.chantier.id)}>
+                Annuler
+              </MotEnOr>
+            </div>
+          </>
+        )}
+
         {/* ─── SANS DATE — et c'est d'ici qu'on POSE ──────────────────────── */}
         {/* **RIEN N'ATTEND DE JOUR : LA SECTION N'EXISTE PAS.** Sa question du
             25 août 2026 : *« est-ce que la catégorie sans date a un réel besoin
@@ -4899,7 +5117,7 @@ function TiroirDuBas({
                 >
                   <div
                     data-atlas="sans-date"
-                    className="flex w-full items-center justify-between gap-2.5 py-[11px]"
+                    className="flex w-full items-center justify-between gap-2.5"
                     // **Le filet SÉPARE deux lignes, il ne souligne pas la
                     // dernière** — sa demande du 26 août : *« supprime le trait
                     // sous Jean Louis »*. Avec un seul chantier en attente, le
@@ -4911,28 +5129,61 @@ function TiroirDuBas({
                         i === sansDate.length - 1 ? "none" : `1px solid ${colors.line}`,
                     }}
                   >
-                    <span
-                      className="min-w-0 flex-1 truncate"
-                      style={{ fontFamily: font.display, fontSize: 19, lineHeight: 1.2 }}
-                    >
-                      {c.nom}
-                    </span>
-                    {portesOuvertes && <ChevronDesPortes chantier={c} onPortes={onPortes} />}
+                    {/* ─── LE NOM SEUL POSE LE CLIENT — ses réponses du 17 sept. 2026
+                        *« Au lieu du "Poser" entouré, le mieux serait qu'on
+                        clique sur Mr. Linotte »*, puis, le soir : *« laisse
+                        juste le nom du client et retire le contour doré »*.
+                        Le bouton « Poser » et le chevron « › » partent ; le
+                        nom porte le geste, et `data-poser` avec lui — les
+                        suites le cherchent là. Ce que le « › » emportait, il le
+                        sait : le chantier s'ouvre depuis l'onglet Chantiers.
+
+                        **Sans jour touché, rien ne s'appuie** : la ligne reste
+                        un texte, et `data-poser` n'existe pas
+                        (`test-poser-une-date-e2e`). La poignée dit « À poser
+                        sur … » en or : c'est elle qui annonce le geste.
+
+                        **La durée, en gris, à droite** — sa planche du 18 :
+                        c'est elle qui dit qu'une demi-journée trouvera sa place
+                        dans une journée déjà entamée. */}
                     {jourTouche ? (
-                      /* **UN SEUL BOUTON, ET LE JOUR EST DÉJÀ ÉCRIT AU-DESSUS.**
+                      /* **UN SEUL GESTE, ET LE JOUR EST DÉJÀ ÉCRIT AU-DESSUS.**
                          Les trois moments vivaient ici aussi — même question,
                          même défaut : ils écrasaient la durée que le devis avait
                          fixée (voir `poser`). Les laisser dans ce tiroir après
                          les avoir retirés de la carte du jour aurait fait deux
                          façons de poser un chantier, et c'est exactement ce que
                          `CLAUDE.md` §3 interdit : elles auraient divergé. */
-                      <Petit data-poser="1" onClick={() => poser(c.id, jourTouche)}>
-                        Poser
-                      </Petit>
+                      <button
+                        type="button"
+                        data-poser="1"
+                        aria-label={`Poser ${c.nom} sur ${jourLisibleCourt(jourTouche)}`}
+                        onClick={() => poser(c.id, jourTouche)}
+                        className="flex min-h-[50px] min-w-0 flex-1 cursor-pointer items-center justify-between gap-2.5 border-0 bg-transparent px-0 py-[11px] text-left"
+                        style={{ color: colors.ink, WebkitTapHighlightColor: "transparent" }}
+                      >
+                        <span
+                          className="min-w-0 flex-1 truncate"
+                          style={{ fontFamily: font.display, fontSize: 19, lineHeight: 1.2 }}
+                        >
+                          {c.nom}
+                        </span>
+                        <span className="flex-none text-[12.5px]" style={{ color: colors.muted }}>
+                          {ditCeQuIlOccupe(c)}
+                        </span>
+                      </button>
                     ) : (
-                      <span className="text-[12.5px]" style={{ color: colors.muted }}>
-                        en attente d’un jour
-                      </span>
+                      <div className="flex min-h-[50px] min-w-0 flex-1 items-center justify-between gap-2.5 py-[11px]">
+                        <span
+                          className="min-w-0 flex-1 truncate"
+                          style={{ fontFamily: font.display, fontSize: 19, lineHeight: 1.2 }}
+                        >
+                          {c.nom}
+                        </span>
+                        <span className="flex-none text-[12.5px]" style={{ color: colors.muted }}>
+                          en attente d’un jour
+                        </span>
+                      </div>
                     )}
                   </div>
                 </LigneRetirable>

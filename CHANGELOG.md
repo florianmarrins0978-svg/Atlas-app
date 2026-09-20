@@ -36,6 +36,45 @@ l'ancien écran échoue le temps de la construction, rien d'autre
 qu'il était ; les suivants s'ajoutent. Un retour ne termine toujours pas le
 chantier.
 
+## 2026-09-19
+
+### Sous Windows, le serveur d'essai n'est plus « detached » : il figeait sur `git rev-parse`
+
+L'étape « Connexion derrière un proxy » rendait « le serveur n'a pas répondu
+en dix minutes » avec un journal du banc à zéro octet. Mesuré sur son PC le
+19 septembre 2026 : `banc.mjs`, lancé `detached`, n'a plus de console, et son
+`git rev-parse HEAD` — comme n'importe quel `cmd` — devait s'en faire ouvrir
+une par Windows, ce qui restait suspendu (`git.exe` figé à 0 %). `OPTIONS_SERVEUR`
+(`scripts/_processus.ts`) ne pose plus le drapeau sous Windows : `taskkill /T`
+tue déjà l'arbre, le drapeau n'y servait à rien et coûtait l'étape. Rien ne
+change sous Unix.
+
+### La fiche du jour du planning, sans un bouton — sa planche codée
+
+**Son oui du 19 au matin :** *« enlève le Annuler à côté de Journée, ensuite
+c'est bon tu peux coder »*, sur `appli/planning-tout-ensemble-en-mieux.html`.
+
+Une seule règle sur la fiche du jour, et deux dessins qui la tiennent
+(`MotEnOr`, `MotAChoisir` dans `PlanningClient.tsx`) : **noir un fait, or un
+geste, gris le reste**. La pastille verte d'équipe, le pointillé « Qui ? »,
+l'interrupteur à trois cases, les capsules des voies et le rond cerné d'or
+sont partis. Ce qu'il a tranché est là, à la lettre : « + Salarié absent ? »
+en or avec son « + » ; les prénoms en mots ; « Absent · Julien · journée » avec
+une croix noire qui supprime ; Matin · Après-midi · Journée en mots, sans
+« Annuler » ; « + Salarié » à la place de « Qui ? » ; « Déplacer  Retirer »
+sous l'après-midi, au-dessus d'« Ajouter » ; « Ajouter » qui devient
+« Fermer », « Client en attente » ; et dans le tiroir, le nom seul qui pose, la
+durée en gris, et « … est sur jeudi 17 septembre · Annuler » pour défaire.
+
+**Matin / Après-midi ne bougent pas** — la pastille et le mot en capitales,
+sa demande du 18. Les repères des suites n'ont pas bougé non plus ; trois
+assertions ont été adaptées à ce qu'il a demandé (`docs/lot-planning-tout-ensemble.md`).
+
+**Un rouge du vendredi, corrigé au passage** : `test-poser-une-date-e2e`
+visait un jour d'accueil que le chantier occupait déjà quand le jour de départ
+est un vendredi. Il compte en jours ouvrables.
+
+---
 ## 2026-09-18
 
 ### La sixième fiche d'intervention — la quatrième, corrigée sur trois points

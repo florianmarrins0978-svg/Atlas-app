@@ -370,7 +370,15 @@ son oui.** Si oui, le lot touche `PlanningClient.tsx` (`FeuilleChantier`,
 `NoteDuChantier`, `Geste`) et `FinDeChantier.tsx` ; aucun mot, aucune place
 ne change.
 
-## ⏳ LA PLANCHE D'ENSEMBLE ATTEND SON OUI — PUIS ON CODE (17 septembre 2026)
+## ✅ CODÉE LE 19 SEPTEMBRE 2026 — la fiche du jour sans un bouton, d'après `planning-tout-ensemble-en-mieux`
+
+Son oui du 19 au matin ; le lot est `docs/lot-planning-tout-ensemble.md`. Ce
+qui reste à lui : les trois endroits que la planche ne dessinait pas (la liste
+derrière « Client en attente », les formulaires « Un client » / « Autre
+chose », le bandeau de « Déplacer ») gardent l'ancienne forme. L'entrée
+ci-dessous est l'histoire de la planche, gardée pour mémoire.
+
+## ~~⏳ LA PLANCHE D'ENSEMBLE ATTEND SON OUI — PUIS ON CODE (17 septembre 2026)~~ — codée le 19
 
 **DEUX PLANCHES DEPUIS LE 18 SEPTEMBRE, PAS UNE.** Sa demande du 18 : *« propose
 mieux : plus joli et facile d'utilisation »*. `appli/planning-tout-ensemble-en-mieux.html`
