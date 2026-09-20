@@ -32098,6 +32098,15 @@ navigateur ; le parcours l'est avec (`test-ligne-ouverte-devis-e2e.ts`), et il
 regarde **la base** — c'est là, et nulle part à l'écran, que se verrait la
 ligne vide qu'on refuse d'écrire.
 
+### Le piège que cette ligne ouvre, et qui ne se voit qu'au rechargement
+
+**Son rang en base se décide à l'ÉCRITURE.** S'il appuie sur « + Ajouter une
+ligne » avant d'avoir écrit, la ligne du dessous part la première et prend le
+rang 0 : les deux se croisent au rechargement, et c'est l'ordre du devis que
+le client lira qui change. Vu rouge d'abord — *« Évacuation — la seconde |
+Abattage — la première »* —, puis corrigé : « + Ajouter une ligne » et
+« + Ajouter une TVA » écrivent la ligne ouverte AVANT de créer la leur.
+
 ### Ce que les suites ont dû apprendre
 
 Vingt-cinq suites appuyaient sur « + Ajouter une ligne » avant d'écrire leur

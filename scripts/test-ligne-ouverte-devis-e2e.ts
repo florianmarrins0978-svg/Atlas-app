@@ -120,6 +120,38 @@ async function main() {
   );
   console.log("  ✓ un devis qui porte déjà une ligne n'en ouvre pas une de plus");
 
+  // --- 5. L'ordre qu'il voit est l'ordre que son client lira ---------------
+  //
+  // **Le piège de la ligne ouverte, et il ne se voit qu'au rechargement.** Son
+  // rang en base se décide à l'ÉCRITURE : s'il appuie sur « + Ajouter une
+  // ligne » avant d'avoir écrit, la ligne du dessous est écrite la première et
+  // passe devant. Les deux se croisent, et c'est le devis du client qui change
+  // d'ordre.
+  await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
+  await page.fill('input[placeholder="Bernard"]', `M. Deux lignes ${Date.now()}`);
+  await page.fill('input[placeholder="06 12 34 56 78"]', "0612345678");
+  const chantierDeux = await creerPuisFiche(page);
+  await page.waitForSelector("text=Choisir la date", { timeout: 15000 });
+
+  await page.getByRole("button", { name: "+ Ajouter une ligne" }).click();
+  await page.waitForTimeout(900);
+  await page.getByLabel("Description 1").fill("Abattage — la première");
+  await page.getByLabel("Description 1").blur();
+  await page.getByLabel("Description 2").fill("Évacuation — la seconde");
+  await page.getByLabel("Description 2").blur();
+
+  const deux = await attendreEnBase(
+    () => pool.query(`SELECT libelle FROM lignes_prix WHERE chantier_id = $1 ORDER BY ordre`, [chantierDeux]),
+    (r) => r.rowCount === 2
+  );
+  assert.equal(deux.rowCount, 2, `Le devis porte ${deux.rowCount} ligne(s) au lieu de deux.`);
+  assert.match(
+    deux.rows[0].libelle,
+    /première/i,
+    `Les lignes se sont croisées : la base lit « ${deux.rows.map((l) => l.libelle).join(" | ")} ».`
+  );
+  console.log("  ✓ la ligne ouverte garde son rang quand il en ajoute une seconde");
+
   await contexte.close();
   await navigateur.close();
   await pool.end();

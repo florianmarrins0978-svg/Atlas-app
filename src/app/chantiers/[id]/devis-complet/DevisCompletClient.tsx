@@ -692,6 +692,12 @@ export default function DevisCompletClient(props: Props) {
   }
 
   async function ajouter(tauxDeLaCategorie?: string | null) {
+    // **La ligne ouverte d'avance prend sa place AVANT la nouvelle.** Son rang
+    // en base se décide à l'écriture : écrite après, elle passerait sous une
+    // ligne qui s'affiche sous elle, et les deux se croiseraient au
+    // rechargement — sur un devis, l'ordre est celui que le client lira.
+    const ouverte = lignes.find((l) => estLigneOuverte(l.id));
+    if (ouverte) await idEnBase(ouverte);
     const creee = await ajouterLigneAction(props.chantierId, tauxDeLaCategorie ?? null);
     setLignes((cur) => [
       ...cur,
@@ -720,6 +726,9 @@ export default function DevisCompletClient(props: Props) {
    * une liste de taux aurait fait un écran de plus avant le premier mot écrit.
    */
   async function ajouterUneTva() {
+    // Comme pour « + Ajouter une ligne » : la ligne ouverte garde son rang.
+    const ouverte = lignes.find((l) => estLigneOuverte(l.id));
+    if (ouverte) await idEnBase(ouverte);
     const propose = tauxNeuf;
     const creee = await ajouterCategorieTvaAction(props.chantierId, propose);
     if (!creee) return;
