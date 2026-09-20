@@ -6,6 +6,19 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-09-21
+
+### La comparaison des rouges lit le journal entier — un rouge n'y passe plus pour vert
+
+`verifier-rouge-prealable` rejoue chaque suite rouge sur la base de `main` et
+sur le lot, puis compare. Elle ne lisait que la sortie standard du moteur ; or
+le moteur navigateur nomme ses rouges sur la sortie d'erreur. Toute suite rouge
+se lisait donc « verte » — des deux côtés, donc « pareil », donc tolérée : une
+régression nouvelle serait passée par là. La lecture vit désormais dans une
+fonction pure (`sortDUneSuite`), qui lit les deux flux et refuse de conclure
+quand le compte et les rouges nommés ne se recoupent pas.
+`test-rouge-prealable-lit-le-journal.ts` la tient.
+
 ## 2026-09-20
 
 ### Un chantier créé est là quand il revient — plus de rechargement
@@ -98,7 +111,7 @@ appellent `npx` se taisaient. `npm test` y rendait « 383/398 suites réussies.
 - `test-version-executee` mesure aussi un arbre détaché : aucune branche
   affichée, plutôt que « HEAD » exigé.
 
-`ARCHITECTURE.md` §392.
+`ARCHITECTURE.md` §393.
 
 ### La fiche d'intervention est codée — sa sixième planche, exactement
 

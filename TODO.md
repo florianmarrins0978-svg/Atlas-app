@@ -277,7 +277,7 @@ chemin : la suite tourne alors et peut tomber pour une AUTRE raison — chemins,
 `ps -o`, un port. **À rejouer depuis son espace Windows**, et à compléter suite
 par suite avec le vrai message rendu là-bas.
 
-**MESURÉ SUR SON PC LE 20 SEPTEMBRE 2026** (`ARCHITECTURE.md` §392). C'était
+**MESURÉ SUR SON PC LE 20 SEPTEMBRE 2026** (`ARCHITECTURE.md` §393). C'était
 exactement ça : `bash`, `gh`, `curl` répondent, seules les trois suites à `npx`
 se taisaient, et treize rougissaient — chemins en `\`, CRLF de son git, une
 suite base qui ignorait l'atelier, et six suites sur des mécanismes que Windows
