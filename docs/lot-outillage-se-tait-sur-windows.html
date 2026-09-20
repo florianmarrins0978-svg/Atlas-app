@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — Les suites d'outillage sur ton PC — compte rendu</title>
+<style>
+  :root{
+    --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
+    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
+    --accent:#2f3b2f; --alert:#b5562a; --line:rgba(28,28,26,0.13);
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#161815; --surface:#1d201c; --raised:#252924;
+      --ink:#eae7df; --ink-soft:#c2bdb1; --muted:#948f83;
+      --accent:#9fbd82; --alert:#e0885a; --line:rgba(234,231,223,0.17);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.65;}
+  main{max-width:44rem;margin:0 auto;padding:2.5rem 1.2rem 5rem;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.2;
+    text-wrap:balance;margin:2rem 0 0.6rem;scroll-margin-top:1rem;}
+  h1{font-size:2rem;margin-top:0;}
+  h2{font-size:1.5rem;padding-top:1.2rem;border-top:1px solid var(--line);}
+  h3{font-size:1.12rem;}
+  h4{font-size:1rem;}
+  p{margin:0 0 0.9rem;}
+  a{color:var(--accent);text-underline-offset:3px;}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px;}
+  ul,ol{margin:0 0 1rem;padding-left:1.3rem;}
+  li{margin-bottom:0.4rem;}
+  li::marker{color:var(--muted);}
+  /* Le sommaire : des cibles larges, confortables au doigt sur téléphone. */
+  ol li a{display:inline-block;padding:0.15rem 0;}
+  blockquote{margin:1rem 0;padding:0.85rem 1.05rem;background:var(--raised);
+    border-left:3px solid var(--accent);border-radius:0 10px 10px 0;color:var(--ink-soft);}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.87em;
+    background:var(--raised);padding:0.1rem 0.35rem;border-radius:5px;}
+  hr{border:0;border-top:1px solid var(--line);margin:2rem 0;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;
+    background:var(--surface);margin:0 0 1.2rem;}
+  table{border-collapse:collapse;width:100%;font-size:0.92rem;min-width:22rem;}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--line);
+    vertical-align:top;}
+  th{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--muted);white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .retour{display:inline-block;font-size:0.76rem;color:var(--muted);
+    text-decoration:none;margin:-0.3rem 0 1rem;}
+  .retour:hover{color:var(--accent);text-decoration:underline;}
+</style>
+</head>
+<body>
+<main>
+<h1 id="les-suites-doutillage-sur-ton-pc--compte-rendu">Les suites d'outillage sur ton PC — compte rendu</h1>
+<p><em>20 septembre 2026. Lot <code>lot/outillage-se-tait-sur-windows</code>, deux commits (<code>f017a5c0</code>, <code>eb7aa833</code>), joué dans un dossier à part. <strong>Pas encore sur <code>main</code></strong> : niveau 3, la batterie entière attend ton feu vert.</em></p>
+<hr>
+<h2 id="ce-que-tu-as-demandé">Ce que tu as demandé</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Vérifier que les suites d'outillage se <strong>taisent</strong> sur ta machine au lieu de rougir, lire la dernière ligne de <code>npm test</code>, corriger celles qui rougissent encore.</p>
+<h2 id="ce-que-ça-a-donné">Ce que ça a donné</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>La dernière ligne de <code>npm test</code></th>
+<th>Rouges</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>avant</strong> le lot</td>
+<td><code>383/398 suites réussies. 2 non mesurable(s) ici.</code></td>
+<td>13</td>
+</tr>
+<tr>
+<td><strong>après</strong> le lot</td>
+<td><code>389/398 suites réussies. 8 non mesurable(s) ici.</code></td>
+<td>1 — corrigé, rejoué vert seul</td>
+</tr>
+</tbody></table></div>
+<p>Le mécanisme du matin ne faisait taire que <strong>trois</strong> suites : celles qui appellent <code>npx</code>. Tout le reste répond sur ton PC — <code>bash</code>, <code>gh</code>, <code>curl</code> sont là — donc les suites tournaient, et treize tombaient pour <strong>d'autres raisons</strong>.</p>
+<hr>
+<h2 id="les-treize-rouges-et-doù-ils-venaient">Les treize rouges, et d'où ils venaient</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>La suite</th>
+<th>La vraie cause</th>
+<th>Ce qui a été fait</th>
+</tr></thead><tbody>
+<tr>
+<td><code>batterie-solitaire</code>, <code>garde-fusion-main</code>, <code>mise-a-jour-role-db</code></td>
+<td>les chemins s'écrivaient <code>src\lib\x.ts</code> sur Windows ; tout le reste attend <code>src/lib/x.ts</code></td>
+<td>corrigé <strong>à la source</strong> (l'empreinte des fichiers), et les deux rustines qui compensaient plus loin sont <strong>retirées</strong></td>
+</tr>
+<tr>
+<td><code>garde-fusion-main</code>, <code>mise-a-jour-espace</code>, <code>migrations-banc</code></td>
+<td>ton git réécrit les fins de ligne (<code>CRLF</code>) : un fichier « change » sans qu'on l'ait touché</td>
+<td>les dépôts d'essai qui imitent ton espace Linux se montent sans cette réécriture</td>
+</tr>
+<tr>
+<td><code>secret-authentification-db</code> (5 rouges)</td>
+<td>la suite lisait une variable que personne ne pose, et interrogeait <strong>une autre base</strong> que celle où elle avait posé son décor</td>
+<td>elle lit la même variable que toutes les suites base</td>
+</tr>
+<tr>
+<td><code>fiche-pendant-relance</code>, <code>port-remesure</code>, <code>verrou-construction</code>, <code>relance-construction</code>, <code>ouvrir-port</code>, <code>ouvrir-session</code></td>
+<td>elles emploient des mécanismes que <strong>Windows n'a pas</strong> : arrêter un groupe de processus, lancer un script <code>#!/bin/sh</code>, un <code>PATH</code> séparé par <code>:</code></td>
+<td>elles le <strong>déclarent</strong>, et se taisent en le nommant — même règle que pour un outil absent</td>
+</tr>
+<tr>
+<td><code>version-executee</code></td>
+<td>elle exigeait le nom de la branche, donc « HEAD » dans un dossier de batterie détaché — l'état recommandé par le dépôt</td>
+<td>elle mesure l'autre moitié de la règle : un arbre détaché n'affiche <strong>aucune</strong> branche</td>
+</tr>
+</tbody></table></div>
+<p>Et un rouge apparu <strong>par</strong> la correction : <code>portee-batterie</code> éprouvait la rustine retirée. La règle qu'il défend (une commande proposée se recopie sans barre inversée) n'a pas changé ; le contrôle la mesure désormais là où elle vit.</p>
+<h2 id="ce-que-la-mesure-a-laissé-derrière-et-qui-est-réglé">Ce que la mesure a laissé derrière, et qui est réglé</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Pendant la première mesure, les six suites « Windows n'a pas ça » ont laissé <strong>cinq processus orphelins</strong> sur ton PC — des veilleurs d'essai que la suite croyait avoir arrêtés, et qui écrivaient dans un dossier temporaire toutes les deux secondes. Ils sont arrêtés, par leur numéro. Un contrôle refuse désormais une suite qui arrête un groupe de processus sans le déclarer : ça ne peut plus se reproduire.</p>
+<h2 id="ce-qui-nest-pas-une-liste-dexemptions">Ce qui n'est PAS une liste d'exemptions</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Aucune suite n'est « dispensée sur Windows ». Chacune déclare <strong>ce qu'elle emploie</strong> — un fait sur elle, vrai partout — et c'est ta machine qu'on interroge. Sur ton espace Linux, les huit muettes mesurent exactement comme avant. Un contrôle vérifie qu'un mécanisme déclaré est un mécanisme réellement employé dans la suite, et l'inverse pour les groupes de processus.</p>
+<hr>
+<h2 id="ce-qui-reste-et-qui-décide">Ce qui reste, et qui décide</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Qui</th>
+</tr></thead><tbody>
+<tr>
+<td>lancer la batterie complète (~50 min, dans mon dossier à part, atelier 4) — le lot est de niveau 3</td>
+<td><strong>toi</strong> : un mot</td>
+</tr>
+<tr>
+<td>pousser sur <code>main</code> une fois vert</td>
+<td><strong>toi</strong> : un mot</td>
+</tr>
+</tbody></table></div>
+<p>Les huit suites muettes chez toi ne sont <strong>pas</strong> éprouvées sur ton PC — c'est le principe — ; elles le sont sur ton espace et en CI, qui ont ce que Windows n'a pas.</p>
+<p><em>Le détail technique est dans <code>ARCHITECTURE.md</code> §391 et <code>CHANGELOG.md</code> du 20 septembre.</em></p>
+</main>
+</body>
+</html>
