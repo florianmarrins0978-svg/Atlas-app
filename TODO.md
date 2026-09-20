@@ -9,6 +9,24 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## ⏳ UNE PLANCHE À REGARDER — LA SÉCURITÉ AVANT « JE NE DONNE PAS SUITE » (20 septembre 2026)
+
+**Son message, capture à l'appui :** *« j'ai sans faire exprès cliqué sur je ne
+donne pas suite, aucun moyen d'annuler, il faut mettre une sécurité avant
+l'envoi »*.
+
+`appli/le-refus-par-erreur.html` — trois formes, toutes à 0 px sur 390 × 664 :
+**A** la feuille (`BottomSheet`, déjà montée sur cet écran pour le calendrier),
+**B** le dédoublement sur place (déconseillé : « Confirmer » apparaît sous le
+doigt qui vient d'appuyer), **C** le retour depuis l'écran d'après — le seul
+qui rattrape un refus déjà parti. **Proposé : A et C.**
+
+Ce que C demande, et qui reste à trancher avec lui : jusqu'à quand le client
+peut revenir. Proposition — tant que le patron n'a pas repris le devis.
+
+**Rien n'est codé.** Son cas du jour se répare sans code : le chantier est
+passé à `retourne`, et un nouvel envoi rouvre un lien neuf.
+
 ## 🔧 UNE PLANCHE NOMMÉE « PAIEMENT » EXIGE LA BATTERIE ENTIÈRE (18 septembre 2026)
 
 `scripts/_niveau-de-risque.mjs` applique la gravité « argent » (`ARGENT`) à

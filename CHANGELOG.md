@@ -8,6 +8,24 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-20
 
+### Un refus par erreur n'a aucune issue — la planche, pas encore le code
+
+Sa capture du 20 septembre : *« j'ai sans faire exprès cliqué sur je ne donne
+pas suite, aucun moyen d'annuler »*. Le constat est dans le code :
+`enregistrerReponse` refuse toute seconde réponse (`envoi.reponse !== null` →
+`deja_repondu`), et la page rend alors le cadre « Réponse enregistrée ». Des
+trois issues, c'est la seule à la fois irrattrapable et coûteuse — « Une
+correction » ne part pas sans un mot (`message_manquant`), et « J'accepte »
+laisse le téléphone.
+
+`appli/le-refus-par-erreur.html` compare trois sécurités, toutes mesurées à
+**0 px** sur 390 × 664 : la feuille de la maison, le dédoublement sur place, et
+le retour depuis l'écran d'après. **Rien n'est codé — en attente de son choix.**
+
+Son cas d'aujourd'hui, lui, se répare sans code : le chantier est passé à
+`retourne`, et un nouvel envoi rouvre un lien neuf (`creerEnvoi` ne refuse
+rien).
+
 ### Une suite qui ne peut rien mesurer ici se tait, au lieu de rougir
 
 Dix-neuf suites d'outillage rougissaient sur son PC Windows faute de `bash`,
