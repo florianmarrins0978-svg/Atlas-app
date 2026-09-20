@@ -87,8 +87,18 @@ code :**
 apparaître dans ce que le client reçoit — `test-creneaux-planning.ts` le
 vérifie sur la charge sérialisée, et il doit rester vert.
 
-**Tranché pour lui, à confirmer au codage :** la phrase du compte est posée
-**juste au-dessus du bouton**, pas sous le titre.
+**LA PHRASE DU COMPTE EST SUR LA PAGE, pas seulement dans la feuille** — il a
+dû le redire : *« t'as pas mis […] en dessous de "quels jours vous arrangent ?"
+et au-dessus de la touche pour valider »*. Posée dans la feuille seule, elle ne
+se lisait que si le client l'ouvrait, c'est-à-dire seulement quand les dates ne
+lui convenaient pas. Elle vit donc sous la question, dans la carte des dates,
+et reste dans la feuille où elle explique les jours allumés — les deux ne sont
+jamais visibles en même temps.
+
+**Le pixel à remesurer au codage :** la phrase coûte une vingtaine de pixels. Le
+cas serré est celui d'une date retenue à moins de quatorze jours, qui fait
+apparaître le cadre de rétractation (`CLAUDE.md` §3, sa règle du 31 août : tout
+tient sans défiler).
 
 ## 🔧 UNE PLANCHE NOMMÉE « PAIEMENT » EXIGE LA BATTERIE ENTIÈRE (18 septembre 2026)
 

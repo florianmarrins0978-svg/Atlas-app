@@ -102,6 +102,7 @@
   .c .retenue span{font-size:15px}
   .c .retenue button{border:0;background:transparent;font:inherit;font-size:13px;flex:none;
      color:var(--doux);text-decoration:underline;text-underline-offset:4px;cursor:pointer}
+  .c .compte-page{margin:2px 0 0;font-size:13px;color:var(--doux)}
   .c .mot{margin-top:10px;font-size:13px;font-weight:500;color:var(--doux);display:block}
   .c textarea{margin-top:6px;width:100%;height:40px;resize:none;border-radius:12px;
               border:1px solid var(--trait);background:var(--carte);color:var(--encre);
@@ -187,7 +188,7 @@
       <tr><td>1 date proposée</td><td>Cette date ne me convient pas — je propose :</td><td><b>Cette date ne me convient pas&nbsp;? Je propose</b></td></tr>
       <tr><td>plusieurs dates</td><td>la même phrase au singulier</td><td><b>Ces dates ne me conviennent pas&nbsp;? Je propose</b></td></tr>
       <tr><td>le choix des jours</td><td>un seul jour, et elle ne peut pas le défaire</td><td>les <b>4 jours d'affilée</b> ; un appui sur un jour l'efface, et l'appui suivant le remet <b>où elle veut</b></td></tr>
-      <tr><td>le nombre de jours</td><td>nulle part</td><td><b>Les travaux sont prévus sur 4 jours</b>, juste au-dessus du bouton</td></tr>
+      <tr><td>le nombre de jours</td><td>nulle part</td><td><b>Les travaux sont prévus sur 4 jours</b>, sous la question — et dans la feuille</td></tr>
     </table>
     <p style="margin-top:14px"><b>Le pluriel se décide sur les JOURS, pas sur le nombre de lignes.</b> Votre capture en est la raison : votre client lit « <i>le jeudi 8 octobre, le vendredi 9, le lundi 12 et le mardi 13</i> » — quatre dates — et juste en dessous « <i>cette date</i> », au singulier. C'est ce cas-là qui passe au pluriel ici.</p>
     <p><b>Le bouton se met au pluriel aussi</b> : « Retenir ces jours » quand il y en a plusieurs, « Retenir cette date » quand il n'y en a qu'un. Sans ça, il resterait au singulier sous quatre jours allumés.</p>
@@ -195,7 +196,8 @@
     <p><b>Un défaut trouvé en essayant la planche, et il comptait.</b> Poser les quatre jours depuis le 19 allumait le 20 et le 21 — <b>deux jours déjà pris</b>. Elle vous aurait proposé des jours que l'acceptation aurait refusés ensuite, sans qu'elle comprenne pourquoi. Un jour se barre donc désormais <b>quand le chantier n'y tient pas d'affilée</b>, pas seulement quand il est pris : c'est exactement ce que fait déjà VOTRE calendrier. Touchez le 19 dans la planche, il ne répond plus.</p>
     <p><b>Le défaut que vous avez trouvé, et il était au cœur du geste.</b> <i>« On peut pas désélectionner un jour sur les 4 et le mettre ailleurs. »</i> Exact : un appui ailleurs reposait <b>tout le bloc</b> au lieu de combler le jour qui manquait. Votre règle du 17 septembre en compte trois — effacer, combler, poser — et il n'y en avait que deux. Désormais : effacez le 14, touchez le 22, et vous avez le 12, le 13, le 15 et le 22.</p>
     <p><b>Et un second, dans la foulée.</b> Le 15 faisait partie des quatre jours posés depuis le 12, et il était <b>barré en même temps qu'allumé</b> — parce qu'un chantier de quatre jours ne <i>commence</i> pas le 15. Votre cliente voyait un jour vert barré, et ne pouvait plus l'enlever : exactement le geste que vous avez demandé. Un jour déjà posé reste touchable, toujours.</p>
-    <p><b>Un point où j'ai tranché pour vous, dites-le si c'est non :</b> j'ai mis la phrase du nombre de jours <b>juste au-dessus du bouton</b>. Sous le titre, elle prévient avant qu'elle touche ; au-dessus du bouton, elle est sous les yeux au moment de valider. C'est une ligne à déplacer.</p>
+    <p><b>Et j'avais mal lu votre quatrième point — vous avez eu à le redire.</b> J'avais posé la phrase <b>dans la feuille seulement</b>, celle qui ne s'ouvre que si les dates ne lui vont pas : votre cliente lisait quatre dates sans jamais savoir que le chantier en prend quatre. Elle est maintenant <b>sur la page, sous la question</b>, là où vous l'aviez demandée — et elle reste dans la feuille, où elle explique pourquoi quatre jours s'allument. Les deux ne se voient jamais en même temps : la feuille recouvre la carte.</p>
+    <p><b>Ce qu'elle coûte :</b> la page passe de 561 à <b>605 px</b> pour 664 d'écran — elle tient. <b>Le cas à remesurer au codage</b> est le seul serré : une date retenue à moins de quatorze jours fait apparaître le cadre de rétractation, et c'est là que les vingt pixels se disputent.</p>
   </div>
 </div>
 
@@ -327,7 +329,16 @@ function carteDate(){
         '<label id="ouvrir"><input type="radio" name="d"><span>' + libelleJePropose() + '</span></label>' +
       '</div>';
 
-  return '<div class="carte"><h3>' + titre + '</h3>' + corps +
+  /* **LE COMPTE EST SUR LA PAGE, sous la question** — sa correction du
+     20 septembre : *« t'as pas mis […] en dessous de "quels jours vous
+     arrangent ?" et au-dessus de la touche pour valider »*. Je l'avais posé
+     dans la FEUILLE, qu'elle n'ouvre que si les dates ne lui vont pas : elle
+     lisait quatre dates sans jamais savoir que le chantier en prend quatre.
+     Ici, elle le lit avant même de choisir. */
+  const compteSurLaPage = duree > 1
+    ? '<p class="compte-page">Les travaux sont prévus sur ' + duree + ' jours.</p>' : "";
+
+  return '<div class="carte"><h3>' + titre + '</h3>' + compteSurLaPage + corps +
     '<span class="mot">Une erreur ? Écrivez-la, votre artisan la lira.</span>' +
     '<textarea placeholder="« Mon nom est mal écrit », « plutôt le matin »…"></textarea>' +
   '</div>';
@@ -404,7 +415,15 @@ function peindre(){
 }
 
 function mesurer(){
-  const h = ecran.scrollHeight;
+  /* **LA HAUTEUR SE MESURE SUR LE DERNIER ÉLÉMENT, pas sur `scrollHeight`.**
+     Le cadre du téléphone impose `min-height:100%` : tant que le contenu est
+     plus court que l'écran, `scrollHeight` rend 662 quoi qu'on ajoute — et
+     une ligne de plus ne se serait pas vue dans le chiffre. Un contrôle qui
+     rend toujours le même nombre ne mesure rien (`CLAUDE.md` §5). */
+  const dernier = ecran.querySelector(".preuve");
+  const h = dernier
+    ? Math.round(dernier.getBoundingClientRect().bottom - ecran.getBoundingClientRect().top) + 4
+    : ecran.scrollHeight;
   const tient = h <= 664;
   document.getElementById("hauteur").textContent = h + " px";
   const e = document.getElementById("etat");
