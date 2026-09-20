@@ -151,7 +151,7 @@ Trois contrôles le tiennent, et les trois ont été **vus rouges** avant :
 `test-rate-limit-redis-real` (la clé absente, le plancher à zéro),
 `test-limite-magasin-en-panne` (rendre ne lève jamais).
 
-## ~~LES SUITES D'OUTILLAGE SONT ROUGES SUR SON PC~~ — MÉCANISME CODÉ LE 20 SEPTEMBRE 2026, À MESURER CHEZ LUI
+## ~~LES SUITES D'OUTILLAGE SONT ROUGES SUR SON PC~~ — CODÉ ET MESURÉ CHEZ LUI LE 20 SEPTEMBRE 2026
 
 **Relevé le 18 septembre 2026**, dans le document du lot « deux jours qui ne se
 touchent pas » : dix-neuf suites d'outillage (`batterie-solitaire`,
@@ -185,6 +185,20 @@ comportement voulu. Sur Windows, `bash` livré avec Git est parfois sur le
 chemin : la suite tourne alors et peut tomber pour une AUTRE raison — chemins,
 `ps -o`, un port. **À rejouer depuis son espace Windows**, et à compléter suite
 par suite avec le vrai message rendu là-bas.
+
+**MESURÉ SUR SON PC LE 20 SEPTEMBRE 2026** (`ARCHITECTURE.md` §391). C'était
+exactement ça : `bash`, `gh`, `curl` répondent, seules les trois suites à `npx`
+se taisaient, et treize rougissaient — chemins en `\`, CRLF de son git, une
+suite base qui ignorait l'atelier, et six suites sur des mécanismes que Windows
+n'a pas (groupes de processus, `#!/bin/sh`, `PATH` en `:`). Toutes corrigées à
+la racine ; `exigerUnSystemePosix(…)` tient les six dernières. Chiffres avant /
+après dans `CHANGELOG.md`.
+
+**Ce qui reste vrai :** une suite qui fait `process.kill(-pid)` sans déclarer
+les groupes de processus laisse un orphelin sur Windows — rien n'y est tué.
+`test-outil-requis` refuse désormais une telle suite dans les deux sens
+(déclaré sans employer, employé sans déclarer) ; les autres mécanismes ne sont
+tenus que dans le premier.
 
 ## LES SUITES NAVIGATEUR TRAVERSENT LA RLS — ce qu'elles ne peuvent pas mesurer
 

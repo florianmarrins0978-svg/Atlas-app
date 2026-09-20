@@ -22,6 +22,27 @@ recoupent pas. `ARCHITECTURE.md` §390.
 
 **Non vérifié sur Windows** : ce poste est sous Linux. À mesurer sur son PC.
 
+### Mesuré sur son PC : treize suites rougissaient encore, quatre racines
+
+`bash`, `gh` et `curl` répondent sur Windows ; seules les trois suites qui
+appellent `npx` se taisaient. `npm test` y rendait « 383/398 suites réussies.
+2 non mesurable(s) ici. » Chaque rouge est allé à sa racine :
+
+- l'empreinte des sources écrit les chemins comme git (`src/lib/x.ts`), et non
+  plus `src\lib\x.ts` ; les deux couches qui compensaient en aval sont retirées,
+  et les verdicts déjà déposés se relisent sans faire passer l'arbre pour remué ;
+- les dépôts d'essai qui modèlent son espace Linux se montent avec
+  `core.autocrlf=false`, sinon son git y écrit du CRLF et le contenu « change » ;
+- `test-secret-authentification-db` lisait une variable que personne ne pose,
+  et interrogeait une autre base que celle du décor dès l'atelier 1 ;
+- six suites emploient des groupes de processus, des scripts `#!/bin/sh` ou un
+  `PATH` en `:` — Windows n'en a pas : `exigerUnSystemePosix(…)`, même règle
+  que pour un outil, et le silence nomme le mécanisme et le système ;
+- `test-version-executee` mesure aussi un arbre détaché : aucune branche
+  affichée, plutôt que « HEAD » exigé.
+
+`ARCHITECTURE.md` §391.
+
 ### La fiche d'intervention est codée — sa sixième planche, exactement
 
 **Son « tu peux coder exactement cette planche », à 2 h**, avec un dernier mot :

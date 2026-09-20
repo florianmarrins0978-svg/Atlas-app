@@ -701,7 +701,11 @@ try {
     // L'empreinte de la vérification, moins le fichier que le lot ajoute : ce
     // fichier-là n'a donc jamais été mesuré, et c'est bien le lot qui a bougé.
     const empreinte = empreinteDesSources(RACINE);
-    empreinte.delete(path.relative(RACINE, LOT_D_EPREUVE));
+    // La clé s'écrit comme git l'écrit, même sous Windows : `path.relative` y
+    // rendrait `scripts\…`, n'effacerait rien, et ce contrôle ne mesurerait
+    // plus rien — c'est ainsi qu'il passait au vert sur un verdict périmé.
+    const cle = path.relative(RACINE, LOT_D_EPREUVE).split(path.sep).join("/");
+    assert.ok(empreinte.delete(cle), `${cle} n'est pas dans l'empreinte : rien à retirer, ce contrôle ne mesure rien`);
     writeFileSync(TEMOIN, JSON.stringify({ quand: Date.now(), vert: true, niveau: 3, empreinte: [...empreinte] }));
     const { refuse, message } = jouer("git push origin claude/mon-lot:main");
     assert.ok(refuse, "un verdict périmé a été accepté");
@@ -737,6 +741,12 @@ try {
       g("init", "-q", "-b", "main");
       g("config", "user.email", "essai@atlas.test");
       g("config", "user.name", "Épreuve");
+      // Ce dépôt d'essai est celui de son espace, sous Linux. Sur son PC, git
+      // pose `core.autocrlf=true` : chaque changement de branche y réécrirait
+      // `mien.ts` avec des fins de ligne CRLF, l'empreinte verrait un contenu
+      // neuf, et le garde-fou accuserait le lot d'avoir bougé — un rouge sur un
+      // scénario juste (20 septembre 2026).
+      g("config", "core.autocrlf", "false");
       mkdirSync(path.join(d, "src", "lib"), { recursive: true });
       mkdirSync(path.join(d, "scripts"), { recursive: true });
       writeFileSync(path.join(d, "src/lib/commun.ts"), "export const commun = 1;\n");
