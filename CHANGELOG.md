@@ -8,6 +8,24 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-20
 
+### « Je propose » : la phrase, son pluriel, et le choix des jours
+
+Quatre demandes le même soir, après qu'il a écarté sa propre idée de la veille
+— un dessin de planning sur la ligne : *« non c'est nul, on garde l'existant »*.
+`appli/proposer-ses-jours.html` les met ensemble : le libellé « Cette date ne
+me convient pas ? Je propose », son pluriel décidé **sur les jours** et non sur
+le nombre de propositions, le geste de son écran d'envoi repris à la lettre
+dans le calendrier du client (`propositions-de-jours.ts`), et le compte « Les
+travaux sont prévus sur N jours » au-dessus du bouton.
+
+**Deux défauts trouvés en la parcourant**, tous deux dans le geste qu'il
+demande : le bloc posé depuis un jour d'où le chantier ne tient pas d'affilée
+recouvrait des jours pris, et un jour du bloc pouvait être barré en même temps
+qu'allumé — donc impossible à retirer. Les deux sont corrigés dans la planche
+et notés dans `TODO.md` pour le codage.
+
+**Rien n'est codé** : l'écran de son client part en un seul lot, à sa demande.
+
 ### Un refus par erreur n'a aucune issue — la planche, pas encore le code
 
 Sa capture du 20 septembre : *« j'ai sans faire exprès cliqué sur je ne donne

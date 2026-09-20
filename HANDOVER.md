@@ -24,6 +24,11 @@ demandes et part en un seul lot.
 
 **Et ne pas lui redemander son choix** : il est donné, il est dans `TODO.md`.
 
+**Le lot s'étoffe au fil de la soirée** : la feuille de confirmation, puis le
+libellé « je propose » et son pluriel, et le calendrier du client qui reprend
+le geste de l'écran d'envoi (`appli/proposer-ses-jours.html`). Le détail, et
+les deux défauts que les planches ont trouvés, sont dans `TODO.md`.
+
 ---
 
 ## LA FICHE D'INTERVENTION EST CELLE DE SA SIXIÈME PLANCHE — 20 septembre 2026

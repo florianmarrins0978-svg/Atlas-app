@@ -35,6 +35,38 @@ des deux boutons de la feuille (proposés — « Oui, je ne donne pas suite » e
 
 **Ne pas lui redemander son choix : il l'a donné.**
 
+### Le reste du lot, dicté le même soir — `appli/proposer-ses-jours.html`
+
+Il a d'abord proposé un dessin de planning sur la ligne « je propose », puis
+l'a écarté lui-même : *« non c'est nul, on garde l'existant »*. Ce qu'il veut à
+la place, en quatre points :
+
+| | |
+|---|---|
+| le libellé | « Cette date ne me convient pas ? Je propose » (`libelleAutreDate`) |
+| son pluriel | « Ces dates ne me conviennent pas ? Je propose » — et **le pluriel se décide sur les JOURS**, pas sur le nombre de propositions : sa capture montrait quatre dates listées au-dessus d'un « cette date » |
+| le choix des jours | le geste de SON écran d'envoi, à la lettre : `propositions-de-jours.ts` — un appui pose le bloc d'affilée, un appui sur un jour du bloc l'efface **sans rien décaler**, un appui ailleurs le repose |
+| le compte | « Les travaux sont prévus sur N jours », **au-dessus du bouton** de validation — et le bouton passe au pluriel avec |
+
+**Deux choses que la planche a trouvées et qu'il faudra porter dans le code :**
+
+1. le bloc posé sur un jour d'où le chantier ne tient pas d'affilée recouvrait
+   des jours pris. Le calendrier du client doit donc **barrer ce qui ne peut
+   pas COMMENCER un chantier** — c'est déjà ce que fait celui de l'artisan
+   (`jours-barres.ts`), et cela veut dire passer la durée à `Calendrier` là où
+   il reçoit `dureeDemiJournees={null}` ;
+2. un jour du bloc pouvait être **barré en même temps qu'allumé**, donc
+   impossible à retirer — le geste même qu'il demande. Un jour posé reste
+   touchable, toujours.
+
+**Ce que cela ne coûte PAS, et il faut le tenir :** le compte se déduit de
+`joursProposes`, déjà envoyé à la page. Ni « durée » ni « créneau » ne doivent
+apparaître dans ce que le client reçoit — `test-creneaux-planning.ts` le
+vérifie sur la charge sérialisée, et il doit rester vert.
+
+**Tranché pour lui, à confirmer au codage :** la phrase du compte est posée
+**juste au-dessus du bouton**, pas sous le titre.
+
 ## 🔧 UNE PLANCHE NOMMÉE « PAIEMENT » EXIGE LA BATTERIE ENTIÈRE (18 septembre 2026)
 
 `scripts/_niveau-de-risque.mjs` applique la gravité « argent » (`ARGENT`) à
