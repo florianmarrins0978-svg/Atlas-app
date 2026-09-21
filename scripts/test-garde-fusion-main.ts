@@ -713,6 +713,31 @@ try {
     assert.match(message, /verifier:avant-(fusion|livraison)/, "le refus ne dit pas quoi rejouer");
   });
 
+  // ─── LE GARDE-FOU DU DOSSIER VISÉ JUGE, PAS CELUI DE LA SESSION — 21 sept. ──
+  //
+  // Une session ouverte dans un dossier en retard poussait un lot depuis un
+  // autre dossier : c'est le garde-fou d'hier qui lisait le verdict
+  // d'aujourd'hui, et il refusait un lot vert. Le dossier visé porte son
+  // propre garde-fou : c'est lui qui rend le verdict.
+  cas("une poussée depuis un AUTRE dossier est jugée par le garde-fou de ce dossier-là", () => {
+    const d = mkdtempSync(path.join(tmpdir(), "atlas-delegue-"));
+    const g = (...a: string[]) => execFileSync("git", ["-C", d, ...a], { stdio: "ignore" });
+    try {
+      g("init", "-q", "-b", "lot");
+      mkdirSync(path.join(d, "scripts"), { recursive: true });
+      // Le garde-fou du dossier visé : il se reconnaît, et il tranche.
+      writeFileSync(
+        path.join(d, "scripts", "garde-fusion-main.mjs"),
+        'process.stdin.resume();process.stdin.on("end",()=>{console.error("jugé par le dossier visé");process.exit(2);});\n'
+      );
+      const r = jouer(`git -C "${d}" push origin HEAD:main`);
+      assert.ok(r.refuse, "le verdict du garde-fou du dossier visé n'a pas été rendu tel quel");
+      assert.match(r.message, /jugé par le dossier visé/, "c'est le garde-fou de la session qui a jugé, pas celui du dossier visé");
+    } finally {
+      rmSync(d, { recursive: true, force: true });
+    }
+  });
+
   // ─── LA SOIRÉE DU 17 SEPTEMBRE 2026, REJOUÉE EN ENTIER ───────────────────
   //
   // *« Les sessions rejouent des batteries en boucle juste parce qu'une a

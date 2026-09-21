@@ -32399,3 +32399,23 @@ d'essai qu'elle lance **survit** à la suite : `process.kill(-pid)` n'a rien tu�
 et il continue de publier dans un dossier temporaire. Six processus `bash` de
 cette espèce sont restés sur son PC après la première mesure ; ils s'arrêtent
 par leur PID, jamais par leur nom (`CLAUDE.md` §6).
+
+## §397 — Le garde-fou qui juge une poussée est celui du dossier VISÉ
+
+**Bloqué le 21 septembre 2026, à 5 h**, sur le dernier lot de la nuit : batterie
+verte, aucune régression nouvelle, garde-fou joué depuis le dossier du lot
+disant « fusion ouverte » — et la poussée refusée. Le déclencheur de
+`.claude/settings.json` lance `${CLAUDE_PROJECT_DIR}/scripts/garde-fusion-main.mjs`,
+c'est-à-dire le garde-fou **du dossier où la session a été ouverte**. Ce
+dossier-là était en retard de douze commits ; son garde-fou d'hier ne savait pas
+lire l'empreinte que le lot écrit depuis §396, et voyait « le lot a changé ».
+
+Le garde-fou mesure déjà le dossier que la commande vise (§370,
+`dossierDeLaCommande`) ; il doit aussi **être** celui de ce dossier. Quand la
+commande vise un autre dossier qui porte son propre `garde-fusion-main.mjs`,
+celui de la session lui délègue — même entrée, même verdict rendu tel quel — et
+là-bas, session et dossier coïncident : pas de seconde délégation. Un délégué
+qui ne rend pas de statut ferme la porte.
+
+`test-garde-fusion-main.ts` le tient (« une poussée depuis un AUTRE dossier est
+jugée par le garde-fou de ce dossier-là »), vu rouge sans la délégation.

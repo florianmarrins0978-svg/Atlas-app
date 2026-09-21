@@ -62,7 +62,7 @@ sans que rien ne le dise.
   « en dessous de "quels jours vous arrangent ?" et au-dessus de la touche pour
   valider » — les deux sont vrais, mais elle pourrait descendre.
 
-## 🔧 DEUX BLOCAGES DE LIVRAISON SUR SON PC, RELEVÉS LA NUIT DU 21 SEPTEMBRE 2026
+## 🔧 DEUX BLOCAGES DE LIVRAISON SUR SON PC, RELEVÉS LA NUIT DU 21 SEPTEMBRE 2026 — LE PREMIER CORRIGÉ LE MATIN MÊME (`ARCHITECTURE.md` §397)
 
 **1. Le garde-fou de `main` est celui du DOSSIER PRINCIPAL, jamais celui du lot.**
 `.claude/settings.json` lance `${CLAUDE_PROJECT_DIR}/scripts/garde-fusion-main.mjs`
