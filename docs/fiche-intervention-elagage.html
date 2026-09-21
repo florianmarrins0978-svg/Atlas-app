@@ -1,0 +1,474 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — La fiche d'intervention d'élagage — ce qu'il faut savoir avant d'écrire une ligne</title>
+<style>
+  :root{
+    --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
+    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
+    --accent:#2f3b2f; --alert:#b5562a; --line:rgba(28,28,26,0.13);
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#161815; --surface:#1d201c; --raised:#252924;
+      --ink:#eae7df; --ink-soft:#c2bdb1; --muted:#948f83;
+      --accent:#9fbd82; --alert:#e0885a; --line:rgba(234,231,223,0.17);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.65;}
+  main{max-width:44rem;margin:0 auto;padding:2.5rem 1.2rem 5rem;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.2;
+    text-wrap:balance;margin:2rem 0 0.6rem;scroll-margin-top:1rem;}
+  h1{font-size:2rem;margin-top:0;}
+  h2{font-size:1.5rem;padding-top:1.2rem;border-top:1px solid var(--line);}
+  h3{font-size:1.12rem;}
+  h4{font-size:1rem;}
+  p{margin:0 0 0.9rem;}
+  a{color:var(--accent);text-underline-offset:3px;}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px;}
+  ul,ol{margin:0 0 1rem;padding-left:1.3rem;}
+  li{margin-bottom:0.4rem;}
+  li::marker{color:var(--muted);}
+  /* Le sommaire : des cibles larges, confortables au doigt sur téléphone. */
+  ol li a{display:inline-block;padding:0.15rem 0;}
+  blockquote{margin:1rem 0;padding:0.85rem 1.05rem;background:var(--raised);
+    border-left:3px solid var(--accent);border-radius:0 10px 10px 0;color:var(--ink-soft);}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.87em;
+    background:var(--raised);padding:0.1rem 0.35rem;border-radius:5px;}
+  hr{border:0;border-top:1px solid var(--line);margin:2rem 0;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;
+    background:var(--surface);margin:0 0 1.2rem;}
+  table{border-collapse:collapse;width:100%;font-size:0.92rem;min-width:22rem;}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--line);
+    vertical-align:top;}
+  th{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--muted);white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .retour{display:inline-block;font-size:0.76rem;color:var(--muted);
+    text-decoration:none;margin:-0.3rem 0 1rem;}
+  .retour:hover{color:var(--accent);text-decoration:underline;}
+</style>
+</head>
+<body>
+<main>
+<h1 id="la-fiche-dintervention-délagage--ce-quil-faut-savoir-avant-décrire-une-ligne">La fiche d'intervention d'élagage — ce qu'il faut savoir avant d'écrire une ligne</h1>
+<p><strong>À qui ce document s'adresse :</strong> une session qui reprend ce sujet à froid, sans rien de la conversation du 21 septembre 2026 où il est né.</p>
+<p><strong>D'où il vient.</strong> Le patron : <em>« j'ai entendu parler qu'en élagage il y avait besoin de faire des fiches avant l'intervention, apparemment c'est devenu obligatoire — renseigne-toi »</em>. C'est vrai, et ce n'est pas nouveau.</p>
+<p><strong>Rien n'est codé.</strong> Ce document porte la recherche et le cadre ; la suite passe par une maquette (<code>CLAUDE.md</code> §3 bis), et par sa réponse.</p>
+<hr>
+<h2 id="sommaire">Sommaire</h2>
+<ol>
+<li><a href="#1-en-une-minute">En une minute</a></li>
+<li><a href="#2-ce-qui-est-vérifié-et-ce-qui-ne-lest-pas">Ce qui est vérifié, et ce qui ne l'est pas</a></li>
+<li><a href="#3-le-piège-à-ne-pas-tomber-dedans--atlas-a-déjà-une--fiche-de-chantier-">Le piège : Atlas a DÉJÀ une « fiche de chantier »</a></li>
+<li><a href="#4-le-contenu-exact-du-formulaire-officiel">Le contenu exact du formulaire officiel</a></li>
+<li><a href="#5-ce-que-le-dépôt-a-déjà-et-ce-qui-manque">Ce que le dépôt a déjà, et ce qui manque</a></li>
+<li><a href="#6-ce-quil-faut-lui-demander-avant-de-dessiner">Ce qu'il faut lui demander avant de dessiner</a></li>
+<li><a href="#7-comment-ce-lot-doit-se-faire">Comment ce lot doit se faire</a></li>
+<li><a href="#8-sources">Sources</a></li>
+</ol>
+<hr>
+<h2 id="1-en-une-minute">1. En une minute</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Le texte</strong></td>
+<td>décret n° 2021-1833 du 24 décembre 2021</td>
+</tr>
+<tr>
+<td><strong>En vigueur</strong></td>
+<td>1er mars 2022 (la formation secourisme : 28 avril 2023)</td>
+</tr>
+<tr>
+<td><strong>Ce qu'il crée</strong></td>
+<td>une <strong>fiche d'intervention</strong> à établir <strong>avant</strong> le début des travaux</td>
+</tr>
+<tr>
+<td><strong>Quels travaux</strong></td>
+<td>abattage, élagage, démontage, ébranchage, éhouppage, billonnage, broyage — parcs, jardins, arbres d'alignement. <strong>Pas</strong> la tonte, pas la haie</td>
+</tr>
+<tr>
+<td><strong>Qui</strong></td>
+<td>chaque chef d'entreprise intervenante, <strong>y compris l'artisan seul</strong> qui grimpe lui-même</td>
+</tr>
+<tr>
+<td><strong>Où</strong></td>
+<td>disponible en permanence sur le chantier — <strong>la dématérialisation est explicitement admise</strong></td>
+</tr>
+<tr>
+<td><strong>Combien de temps</strong></td>
+<td>conservée <strong>2 ans</strong> à compter de la date de signature</td>
+</tr>
+<tr>
+<td><strong>Pour qui</strong></td>
+<td>les travailleurs et les contrôles (MSA, inspection du travail). <strong>Ce n'est pas un document client</strong></td>
+</tr>
+</tbody></table></div>
+<p><strong>La phrase qui ouvre la porte à Atlas</strong>, citée mot pour mot du formulaire officiel (page 4) :</p>
+<blockquote>La fiche d'intervention est : • communiquée et présentée aux travailleurs avant le début des travaux. • disponible en permanence sur le chantier (<strong>possiblement dématérialisée</strong>). • communiquée au chef de l'entreprise utilisatrice lorsque le chantier est   réalisé dans le cadre des dispositions prises en application de l'article   L. 4511-1 du code du travail (plan de prévention). • conservée pendant deux ans à compter de sa date de signature.</blockquote>
+<hr>
+<h2 id="2-ce-qui-est-vérifié-et-ce-qui-ne-lest-pas">2. Ce qui est vérifié, et ce qui ne l'est pas</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>La distinction compte</strong> : une partie vient du formulaire officiel lui-même — le patron l'a transmis, il a été lu page à page —, l'autre de résumés de recherche web. Légifrance, <code>preventionbtp.fr</code>, <code>inrs.fr</code>, <code>msa.fr</code> et <code>agriculture.gouv.fr</code> sont <strong>bloqués par le mandataire réseau</strong> de l'environnement d'agent : le texte du décret n'a pas pu être lu à la source depuis ce poste.</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Affirmation</th>
+<th>Fondement</th>
+<th>Confiance</th>
+</tr></thead><tbody>
+<tr>
+<td>Le décret est le n° 2021-1833 du 24 décembre 2021</td>
+<td><strong>écrit en tête du formulaire officiel</strong></td>
+<td>acquis</td>
+</tr>
+<tr>
+<td>Les quatre règles de diffusion (travailleurs, sur place, entreprise utilisatrice, 2 ans)</td>
+<td><strong>page 4 du formulaire officiel</strong>, citée ci-dessus</td>
+<td>acquis</td>
+</tr>
+<tr>
+<td>Le contenu de la fiche (§4 de ce document)</td>
+<td><strong>le formulaire officiel</strong>, réf. <code>12350_A_10/2023</code></td>
+<td>acquis</td>
+</tr>
+<tr>
+<td>Entrée en vigueur au 1er mars 2022</td>
+<td>recherche web, sources concordantes (MSA, DREETS, ministère)</td>
+<td>élevée</td>
+</tr>
+<tr>
+<td>L'article est le R. 717-85-16 du code rural</td>
+<td>recherche web, <strong>une seule source</strong></td>
+<td>moyenne — <strong>à vérifier avant de l'écrire où que ce soit</strong></td>
+</tr>
+<tr>
+<td>Le décret vise aussi les travailleurs indépendants et les employeurs qui grimpent eux-mêmes</td>
+<td>recherche web, sources concordantes</td>
+<td>élevée</td>
+</tr>
+<tr>
+<td>Les sanctions en cas d'absence de fiche</td>
+<td><strong>rien d'établi</strong></td>
+<td><strong>ne rien affirmer</strong></td>
+</tr>
+</tbody></table></div>
+<p><strong>Ce qui reste à faire pour lever le doute</strong> : lire le décret et l'article du code rural à la source. Ce n'est pas faisable depuis un environnement d'agent dont le mandataire refuse Légifrance ; ça l'est depuis l'espace du patron, ou depuis une session qui a le réseau. <strong>Tant que ce n'est pas fait, le numéro d'article ne s'écrit pas dans l'application</strong> (<code>CLAUDE.md</code> §4 : on n'invente pas).</p>
+<hr>
+<h2 id="3-le-piège-à-ne-pas-tomber-dedans--atlas-a-déjà-une--fiche-de-chantier-">3. Le piège à ne pas tomber dedans : Atlas a DÉJÀ une « fiche de chantier »</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Ce sont deux documents différents, et les confondre casserait les deux.</strong></p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th><code>src/server/pdf/fiche-chantier-pdf.ts</code> — <strong>existant</strong></th>
+<th>La fiche d'<strong>intervention</strong> — <strong>à faire</strong></th>
+</tr></thead><tbody>
+<tr>
+<td>Quand</td>
+<td><strong>après</strong> le chantier</td>
+<td><strong>avant</strong> le chantier</td>
+</tr>
+<tr>
+<td>Ce qu'elle dit</td>
+<td>ce qui a été fait, avec quoi, ce qu'on a observé</td>
+<td>les risques du site et les mesures de sécurité</td>
+</tr>
+<tr>
+<td>Pour qui</td>
+<td>le <strong>client</strong> — transmissible à un locataire, un syndic, une assurance</td>
+<td>les <strong>travailleurs</strong> et les contrôles</td>
+</tr>
+<tr>
+<td>Prix</td>
+<td>aucun, délibérément (<code>sansChiffrage</code>)</td>
+<td>sans objet</td>
+</tr>
+<tr>
+<td>Signature</td>
+<td>aucune</td>
+<td><strong>obligatoire</strong>, chef d'entreprise ou son représentant</td>
+</tr>
+<tr>
+<td>Origine</td>
+<td>sa demande du 20 août 2026</td>
+<td>décret 2021-1833</td>
+</tr>
+</tbody></table></div>
+<p><strong>Ce qui se réutilise quand même</strong>, et c'est ce qui rend le lot abordable : <code>src/server/pdf/document-commun.ts</code> compose déjà l'en-tête, le bloc émetteur/client et le pied des trois documents existants. Une quatrième pièce doit ressembler aux trois autres — c'est le même artisan qui la sort.</p>
+<p><strong>Ce qui ne se réutilise PAS</strong> : le type <code>FicheChantierPdfData</code> et sa mention de pied (« Ce document rend compte des travaux réalisés »), qui dit exactement l'inverse de ce qu'une fiche d'intervention affirme.</p>
+<hr>
+<h2 id="4-le-contenu-exact-du-formulaire-officiel">4. Le contenu exact du formulaire officiel</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Restitution fidèle du formulaire MSA réf. <strong>12350_A_10/2023</strong> (4 pages), tel qu'il a été lu. <strong>C'est la référence</strong> : les libellés se recopient, ils ne se reformulent pas (même logique que <code>CLAUDE.md</code> §4 bis pour le catalogue d'arrosage — un libellé retouché ne se retrouve plus).</p>
+<h3 id="page-1--identification">Page 1 — Identification</h3>
+<p><strong>Identification du chantier</strong></p>
+<ul>
+<li>Nom du chantier</li>
+<li>N° de devis et/ou de commande afférent</li>
+<li>Entreprise réalisant le chantier : raison sociale</li>
+<li>Donneur d'ordre : nom, prénom, téléphone</li>
+<li>Lieu : adresse, coordonnées GPS</li>
+<li>Dates d'exécution : début (jour, heures) / fin (jour, heures) ; horaires, délais</li>
+<li>Responsable de l'entreprise sur le chantier</li>
+<li>Nombre de travailleurs de l'entreprise</li>
+<li>Téléphone en cas d'incident ou d'accident</li>
+</ul>
+<p><strong>Travaux à réaliser</strong> — cases à cocher, dans l'ordre du formulaire :</p>
+<blockquote>Billonnage · Broyage · Évacuation des rémanents · Rognage / essouchage · Démontage sans rétention · Abattage directionnel · Abattage non directionnel · Ébranchage · Éhouppage · Élagage de formation · Élagage d'entretien · Haubanage · Démontage avec rétention · Autres (à préciser)</blockquote>
+<p><strong>Main d'œuvre</strong> — niveau de formation, ancienneté, habilitation, autorisation de conduite.</p>
+<p><strong>Activités</strong> — moyens de prévention mis en œuvre, EPI appropriés à l'activité et aux travailleurs.</p>
+<p><strong>Matériels</strong> — approprié à l'activité, conforme, vérifié (VGP), état (maintenance) :</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Famille</th>
+<th>Choix</th>
+</tr></thead><tbody>
+<tr>
+<td>Moyens d'élévation <em>(privilégier la protection collective)</em></td>
+<td>Nacelle (PEMP) · PIRL · EPI de grimper · Échelle <em>(= moyen d'accès)</em> · Autres</td>
+</tr>
+<tr>
+<td>Matériels de coupe</td>
+<td>Tronçonneuse élagueuse · Tronçonneuse abatteuse · Lamier d'élagage · Scie sur perche · Sécateur · Autres</td>
+</tr>
+<tr>
+<td>Matériels autres</td>
+<td>Broyeur · Essoucheuse / Rogneuse · Treuil / Câble · Mini chargeur · Souffleur · Autres</td>
+</tr>
+</tbody></table></div>
+<p><em>Point de vigilance du formulaire : distance de sécurité à respecter vis-à-vis des matériels.</em></p>
+<p><strong>Matières</strong> — état sanitaire et physiologique des arbres, fragilisation des points d'ancrage et de la structure :</p>
+<ul>
+<li>Repérer la présence de bois morts ou dépérissants sur les sujets à traiter (ou à proximité)</li>
+<li>Évaluer l'état d'ancrage des arbres (enracinement)</li>
+<li>Identifier les affections dangereuses pour la santé et la sécurité des travailleurs (suie, chancre, capricorne, champignon lignivore…)</li>
+<li>Autres (à préciser)</li>
+</ul>
+<h3 id="page-2--le-croquis-et-les-risques-biologiques">Page 2 — Le croquis, et les risques biologiques</h3>
+<p><strong>« Carte / croquis / photo du chantier indiquant les accès, voies de circulation et les végétaux à traiter. »</strong></p>
+<p><strong>Le mot « photo » est dans le formulaire.</strong> Aucune lecture d'image n'est nécessaire pour être en règle : une photo du terrain prise sur place suffit. <em>(Le dépôt sait déjà lire un croquis — <code>src/server/ai/services/lire-croquis.ts</code> — mais c'est pour l'arrosage, et l'y employer ici serait hors périmètre.)</em></p>
+<p>Légende du formulaire, à reproduire si l'on dessine :</p>
+<blockquote>Arbre à abattre · Arbre à tailler · Arbre · Zone de stockage et broyage · Limite de parcelle · Accès au chantier (compatible au gabarit des engins) · Ruisseau · Ligne électrique aérienne · Point avec couverture téléphonique · <strong>PRS (Point de Rencontre Secours)</strong> · Zone de danger ou d'attention</blockquote>
+<p>Schéma des zones, en quatre couches :</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Zone</th>
+<th>Ce que le formulaire en dit</th>
+</tr></thead><tbody>
+<tr>
+<td>Zone extérieure</td>
+<td>—</td>
+</tr>
+<tr>
+<td>Zone de chantier</td>
+<td><strong>délimitation matérielle obligatoire</strong></td>
+</tr>
+<tr>
+<td>Zone de danger</td>
+<td>—</td>
+</tr>
+<tr>
+<td>Zone de sécurité</td>
+<td>délimitation organisationnelle, matérialisation optionnelle</td>
+</tr>
+</tbody></table></div>
+<p><strong>Risque biologique</strong> (cases) : chenilles processionnaires · frelons sp et autres hyménoptères · berce du Caucase, ambroisie sp… · tiques sp · suie de l'érable · chancre du platane · autres.</p>
+<p><strong>Mesures</strong> : EPI appropriés (masque, combinaison, gants…) · appel à un spécialiste pour circonscrire le danger · Certibiocide (si produits biocides) · autres.</p>
+<p><strong>Risques spécifiques au chantier → mesures de prévention</strong> : balisage externe avec panneaux d'interdiction d'accès et de signalisation du danger · balisage interne pour limiter la chute d'objet/branche sur l'homme de pied · mode de communication entre travailleurs (ex. casques communicants) · surveillance de l'accès au chantier (intrusion du public) · autres.</p>
+<h3 id="page-3--réseaux-environnement-météo">Page 3 — Réseaux, environnement, météo</h3>
+<p><strong>Risques liés aux réseaux</strong> (aériens et souterrains) : électrique — HTB (U &gt; 50 000 V), HTA (U ≤ 50 000 V), BT (U ≤ 1 000 V) — eau, vapeur · gaz · télécom · autres.</p>
+<p><strong>Mesures</strong>, et ce sont des obligations distinctes :</p>
+<ul>
+<li><strong>DT-DICT</strong> — déclaration de travaux à proximité des réseaux (chantier distant &lt; 50 m de conducteurs électriques nus, ou lors d'arrachage d'arbre, de creusement de tranchées…)</li>
+<li><strong>AIPR</strong> (formulaire)</li>
+<li>Formulaire de découverte fortuite de réseau</li>
+</ul>
+<p><strong>Distances de sécurité vis-à-vis des conducteurs électriques nus</strong>, telles que le formulaire les écrit :</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td>HTB (U &gt; 50 000 V)</td>
+<td><strong>5 m</strong></td>
+</tr>
+<tr>
+<td>HTA (U ≤ 50 000 V)</td>
+<td><strong>3 m</strong></td>
+</tr>
+<tr>
+<td>BT (U ≤ 1 000 V)</td>
+<td><strong>3 m</strong></td>
+</tr>
+</tbody></table></div>
+<p><strong>Risques liés à l'environnement</strong> : routier · facteurs météo ambiants · bruit · état des sols · conditions de vie sur le chantier · éclairage · vapeurs · poussières · noyade · autres.</p>
+<p><strong>Mesures</strong> : balisage du chantier sur voie publique (<code>jebalise.fr</code>) · adaptation des heures de travail · eau en quantité suffisante · cabinet d'aisance · équipements ou vêtements de travail spécifiques · signal d'alarme (sifflet) · équipement individuel de flottaison / barque / bouée · <strong>plan de prévention (entreprise utilisatrice)</strong> · autres.</p>
+<p><strong>Co-activité dans la zone de sécurité</strong> · entraînement par les éléments mobiles des équipements (rogneuse, broyeur…) · projection.</p>
+<p><strong>Règles organisationnelles</strong> : répartition des tâches dans le temps et l'espace · respect des consignes de sécurité des machines · manuel d'utilisation du matériel · mode de communication entre travailleurs · autres.</p>
+<p><strong>Conduite à tenir en cas de phénomènes météorologiques imprévus</strong> : bulletins d'alerte météorologiques · sécuriser les travaux en cours puis arrêter les travaux · protéger les zones dangereuses ou potentiellement dangereuses · prévenir le responsable du chantier ou le chef d'entreprise · autres.</p>
+<h3 id="page-4--secours-signature">Page 4 — Secours, signature</h3>
+<p><strong>Ressources</strong> : trousse de secours (contenu approprié à l'activité) · kit d'urgence portatif (élagueur) · <strong>lieu où se trouve la trousse</strong> · <strong>Point de Rencontre des Secours</strong> · tous les travailleurs sont SST (Sauveteurs Secouristes du Travail) · travailleurs disposant des compétences (type <strong>Grimpeur Sauveteur dans l'Arbre</strong>) et des moyens pour porter secours à une victime dans l'arbre, en nombre suffisant · moyen de communication fonctionnel.</p>
+<p><strong>Consignes — 1. Protéger</strong></p>
+<ol>
+<li>Sécuriser les travaux en cours puis arrêter les travaux</li>
+<li>Protéger les zones dangereuses ou potentiellement dangereuses</li>
+<li>Prévenir le responsable du chantier ou le chef d'entreprise</li>
+</ol>
+<p><strong>2. Alerter</strong></p>
+<ol>
+<li>S'identifier (nom, prénom, entreprise)</li>
+<li>Donner sa localisation et préciser les moyens d'accès</li>
+<li>Décrire la nature de l'accident</li>
+<li>Préciser le nombre et l'état du (des) blessé(s)</li>
+<li>Décrire les gestes de premiers secours en cours (le cas échéant)</li>
+<li>Fixer un rendez-vous au point de rencontre des secours (PRS)</li>
+<li>Ne jamais raccrocher le premier : attendre les instructions des services de secours</li>
+</ol>
+<p><strong>3. Secourir</strong></p>
+<ol>
+<li>Intervenir sans s'exposer (suivant référentiel SST et/ou GSA)</li>
+<li>Préparer l'arrivée et l'accès des secours (dégagement des rémanents et du matériel)</li>
+<li>Prévenir le siège des entreprises (du donneur d'ordre et de celle réalisant le chantier)</li>
+</ol>
+<p>Plus deux consignes permanentes : dès le début du chantier, stationner les véhicules dans le sens du départ et laisser la voie d'accès libre ; obtenir l'accord des services d'urgence avant de déplacer une victime.</p>
+<p><strong>Numéros d'urgence</strong> : 17 police · 18 pompiers · 15 SAMU · 112 partout en Europe · 114 sourd / malentendant / mal communicant.</p>
+<p><strong>Enregistrement</strong> : observations / consignes particulières, puis <strong>nom et prénom du chef d'entreprise (ou de son représentant), date, signature</strong>.</p>
+<hr>
+<h2 id="5-ce-que-le-dépôt-a-déjà-et-ce-qui-manque">5. Ce que le dépôt a déjà, et ce qui manque</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Ce qui suit est une lecture de code, pas un constat d'écran.</strong> Aucun écran n'a été ouvert (<code>.claude/rules/regarder-l-ecran.md</code>) : une session qui reprend doit REGARDER avant d'affirmer quoi que ce soit sur ce que le patron voit — <code>npm run voir -- /planning</code>, <code>npm run voir -- &lt;l'écran de la fiche&gt;</code>.</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Ce que la fiche demande</th>
+<th>Ce que le dépôt paraît porter</th>
+<th>À vérifier</th>
+</tr></thead><tbody>
+<tr>
+<td>Nom du chantier, lieu, n° de devis</td>
+<td>oui — <code>chargerFicheChantierPourPdf</code> les charge déjà pour la fiche de chantier</td>
+<td>l'adresse exacte, les coordonnées GPS</td>
+</tr>
+<tr>
+<td>Donneur d'ordre (nom, prénom, téléphone)</td>
+<td>le client du chantier</td>
+<td>est-ce toujours le donneur d'ordre ? <em>(question au patron, §6)</em></td>
+</tr>
+<tr>
+<td>Dates d'exécution début/fin + heures</td>
+<td>le planning tient le jour et le créneau (« matin » / « apres-midi »), <strong>pas des heures</strong></td>
+<td>les heures n'existent nulle part — elles ne s'inventent pas</td>
+</tr>
+<tr>
+<td>Travaux à réaliser</td>
+<td>vocabulaire présent : abattage, élagage, haie, dessouchage, fendage, grumes, broyage, évacuation, billonnage (<code>TODO.md</code>)</td>
+<td>la liste du décret est plus fine (éhouppage, haubanage, démontage avec/sans rétention, rognage)</td>
+</tr>
+<tr>
+<td>Matériels</td>
+<td><code>FicheChantierPdfData.materiel</code> existe</td>
+<td>d'où il vient, et s'il couvre les trois familles du formulaire</td>
+</tr>
+<tr>
+<td>Croquis / photo</td>
+<td>des photos de chantier existent</td>
+<td>comment elles sont rangées, et si une peut porter le rôle « croquis »</td>
+</tr>
+<tr>
+<td>Signature</td>
+<td><strong>rien trouvé</strong></td>
+<td>c'est du travail neuf</td>
+</tr>
+<tr>
+<td>Conservation 2 ans</td>
+<td><code>src/server/repositories/retention.ts</code> existe</td>
+<td>ce qu'il tient, et si 2 ans s'y accordent</td>
+</tr>
+<tr>
+<td>PDF</td>
+<td><code>document-commun.ts</code> compose déjà trois documents</td>
+<td>la quatrième pièce s'y greffe</td>
+</tr>
+</tbody></table></div>
+<p><strong>Ce qui manque à coup sûr</strong> : la signature, les cases à cocher de risques, le PRS, les consignes de secours, et la conservation obligatoire.</p>
+<hr>
+<h2 id="6-ce-quil-faut-lui-demander-avant-de-dessiner">6. Ce qu'il faut lui demander avant de dessiner</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Ne pas coder avant ses réponses.</strong> Chacune change ce qu'il y a à faire.</p>
+<ol>
+<li><strong>Travaille-t-il seul, ou avec des salariés ?</strong> « Communiquée et présentée aux travailleurs » n'a pas le même poids s'il est seul dans l'arbre. La fiche reste due dans les deux cas — c'est l'écran qui change.</li>
+<li><strong>Le donneur d'ordre est-il toujours le client du devis ?</strong> Sur un chantier de sous-traitance ou de copropriété, non. Le formulaire distingue les deux.</li>
+<li><strong>Veut-il la fiche sur TOUS les chantiers d'élagage/abattage, ou seulement quand il la juge utile ?</strong> Le décret ne laisse pas le choix ; l'application, si — elle peut la proposer ou l'imposer.</li>
+<li><strong>La signature : au doigt sur le téléphone, ou une signature enregistrée une fois pour toutes ?</strong> Le formulaire demande nom, prénom, date, signature.</li>
+<li><strong>Veut-il que la fiche parte au donneur d'ordre</strong> quand il y a un plan de prévention (art. L. 4511-1) ?</li>
+<li><strong>Combien de fois par an ?</strong> S'il fait trois chantiers d'élagage par an, un PDF pré-rempli à compléter à la main vaut peut-être mieux qu'un écran.</li>
+</ol>
+<hr>
+<h2 id="7-comment-ce-lot-doit-se-faire">7. Comment ce lot doit se faire</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Les règles du dépôt qui s'appliquent ici</strong>, et qui ne se rediscutent pas :</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td><code>CLAUDE.md</code> §3 bis</td>
+<td><strong>la maquette d'abord.</strong> Elle vit dans <code>appli/</code>, un lien l'ajoute à <code>appli/essais.html</code>, et <strong>on ne lui donne l'adresse qu'une fois qu'elle répond</strong> (200)</td>
+</tr>
+<tr>
+<td><code>CLAUDE.md</code> §3 bis, 2 ter</td>
+<td><strong>on ne lui envoie jamais une capture de la maquette</strong> — l'adresse entière, jamais tronquée</td>
+</tr>
+<tr>
+<td><code>CLAUDE.md</code> §3</td>
+<td>le français partout · <strong>le moins de mots possible à l'écran</strong> · aucune flèche décorative · aucune couleur écrite en clair</td>
+</tr>
+<tr>
+<td><code>CLAUDE.md</code> §4</td>
+<td><strong>rien ne s'invente</strong> : une mention sans source reste vide et le dit. Ni heures, ni distances, ni numéro d'article inventés</td>
+</tr>
+<tr>
+<td><code>CLAUDE.md</code> §4 quater</td>
+<td>pas de pansement — la racine, ou <code>pansement assumé : &lt;raison&gt;</code> plus une entrée <code>TODO.md</code></td>
+</tr>
+<tr>
+<td><code>CLAUDE.md</code> §4 sexies</td>
+<td>les couches : la règle pure dans <code>src/lib/</code>, le PDF et la base dans <code>src/server/</code>, l'écran ne décide de rien</td>
+</tr>
+<tr>
+<td><code>.claude/rules/testing.md</code></td>
+<td><strong>le niveau se calcule</strong> : <code>npm run niveau</code>. Ce document seul est niveau 1 ; du code dans <code>src/</code> ne l'est pas</td>
+</tr>
+<tr>
+<td><code>CLAUDE.md</code> §6</td>
+<td>une tâche = <strong>un lot isolé</strong>, parti de <code>origin/main</code> propre</td>
+</tr>
+</tbody></table></div>
+<p><strong>Et un avertissement de fond.</strong> Une fiche de sécurité qui affirme à tort qu'un risque est couvert est pire qu'une fiche absente : c'est le raisonnement du §4 ter sur l'arrosage, et il vaut ici davantage encore. Une case pré-cochée par l'application, un « Point de Rencontre Secours » deviné, une distance de sécurité posée par défaut — chacun est un mensonge qu'on signe. <strong>Ce que l'application ne sait pas reste vide, et l'écran le dit.</strong></p>
+<hr>
+<h2 id="8-sources">8. Sources</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Le formulaire officiel et sa notice — <strong>c'est la source à recopier</strong> :</p>
+<ul>
+<li>Fiche d'intervention, MSA réf. 12350 : <code>https://ssa.msa.fr/wp-content/uploads/2023/12/12350_A-_FICHE-DINTERVENTION_WEB.pdf</code></li>
+<li>Notice « Comment la remplir ? » : <code>https://ssa.msa.fr/wp-content/uploads/2023/12/12350_Notice_fiche_intervention_WEB.pdf</code></li>
+</ul>
+<p>Le texte, à lire à la source (non vérifié depuis un environnement d'agent) :</p>
+<ul>
+<li>Décret n° 2021-1833 du 24 décembre 2021 : <code>https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000044572758</code></li>
+<li>Code rural, section « travaux forestiers et sylvicoles », art. R. 717-77 et suivants</li>
+<li>FAQ du ministère de l'Agriculture sur le décret 2021-1833</li>
+<li>DREETS Centre-Val de Loire, « Nouvelles règles de sécurité applicables à certains chantiers d'abattage et d'élagage »</li>
+</ul>
+<p>Textes voisins, <strong>qui ne sont pas remplacés par la fiche</strong> :</p>
+<ul>
+<li>Arrêté du 4 août 2005, prévention des chutes lors des travaux réalisés dans les arbres au moyen de cordes</li>
+<li>Code du travail, art. R. 4323-89 (travaux sur cordes) et R. 4511-1 et suivants (plan de prévention)</li>
+<li>Le document unique d'évaluation des risques (DUERP), qui reste dû par ailleurs</li>
+</ul>
+</main>
+</body>
+</html>

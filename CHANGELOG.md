@@ -8,6 +8,17 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-21
 
+### La fiche d'intervention d'élagage est obligatoire depuis 2022 — le dépôt le sait enfin
+
+Il l'avait entendu dire et a demandé qu'on se renseigne. Le décret 2021-1833
+impose une fiche **avant** tout chantier d'abattage ou d'élagage, conservée deux
+ans, et admet explicitement qu'elle soit dématérialisée — ce dernier point
+change tout, puisqu'il autorise l'application à la porter. Le contenu intégral
+du formulaire officiel, ce qui est vérifié et ce qui ne l'est pas, et les
+questions à lui poser vivent dans `docs/fiche-intervention-elagage.md`. Rien
+n'est codé : une fiche de sécurité dont l'application devinerait une case serait
+un mensonge qu'il signe.
+
 ### La comparaison des rouges lit le journal entier — un rouge n'y passe plus pour vert
 
 `verifier-rouge-prealable` rejoue chaque suite rouge sur la base de `main` et

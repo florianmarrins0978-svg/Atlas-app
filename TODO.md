@@ -9,6 +9,33 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## ⏳ LA FICHE D'INTERVENTION D'ÉLAGAGE — RECHERCHE FAITE, RIEN N'EST CODÉ NI DESSINÉ (21 septembre 2026)
+
+Sa question : *« en élagage il y a besoin de faire des fiches avant
+l'intervention, apparemment c'est devenu obligatoire — renseigne-toi »*. C'est
+vrai : **décret n° 2021-1833 du 24 décembre 2021**, en vigueur depuis le
+1er mars 2022. Une fiche d'intervention s'établit **avant** tout chantier
+d'abattage ou d'élagage, se conserve 2 ans, et **la dématérialisation est
+explicitement admise** — donc Atlas a le droit de la porter.
+
+**Tout est dans `docs/fiche-intervention-elagage.md`** : le cadre légal, ce qui
+est vérifié et ce qui ne l'est pas, le contenu intégral du formulaire officiel
+MSA (réf. 12350), ce que le dépôt porte déjà, et les six questions à lui poser.
+
+**Aucune ligne de code, aucune maquette** (`CLAUDE.md` §3 bis). Une session qui
+reprend commence par les six questions du §6 de ce document — sans ses
+réponses, on dessinerait un écran pour un métier qu'on suppose.
+
+**Deux pièges nommés, à ne pas redécouvrir** :
+
+- `src/server/pdf/fiche-chantier-pdf.ts` existe déjà et porte un nom voisin.
+  C'est l'**inverse** : un compte rendu d'après chantier, pour le client. La
+  fiche d'intervention est un document de sécurité d'avant chantier, pour les
+  travailleurs. Les fusionner casserait les deux ;
+- le numéro d'article du code rural (R. 717-85-16 ?) **n'a pas pu être vérifié à
+  la source** — Légifrance est bloqué par le mandataire réseau. Il ne s'écrit
+  nulle part tant qu'il n'a pas été lu.
+
 ## 🔧 `test-repartir-du-client-e2e` TOMBE DANS LA BATTERIE, JAMAIS SEULE (20 septembre 2026)
 
 Elle rougit sur `le chantier n'a aucun devis à envoyer` — l'`UPDATE devis`
