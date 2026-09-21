@@ -276,7 +276,7 @@
 
   <!-- ═══ REMPLIR LA FACTURE ══════════════════════════════════════════════ -->
   <section class="ecran ouvert" id="v-remplir">
-    <div class="haut"><button class="fleche" type="button" aria-label="Retour à la facture">‹</button><span></span></div>
+    <div class="haut"><button class="fleche" type="button" data-va="facture" aria-label="Retour à la facture">‹</button><span></span></div>
     <div class="titre">
       <h1>Facture</h1>
       <p class="sur">F2026-000014</p>
@@ -339,7 +339,7 @@
     </section>
 
     <div class="bas">
-      <button class="principal" type="button">Revenir à la facture</button>
+      <button class="principal" type="button" data-va="facture">Revenir à la facture</button>
     </div>
   </section>
 
@@ -364,8 +364,8 @@
       <div class="grandttc"><p class="lib">Total TTC</p><p class="m" id="f-ttc"></p></div>
       <!-- Ce qui S'EN VA d'ici : « + Main d'œuvre ». Le chiffre se pose où il remplit. -->
       <button class="plus petit vieux" type="button" style="margin-top:12px">+ Main d’œuvre</button>
-      <button class="lien" type="button">Voir la facture en PDF</button>
-      <button class="lien sobre" type="button">Télécharger (F2026-000014-brouillon.pdf)</button>
+      <button class="lien" type="button" data-va="papier">Voir la facture en PDF</button>
+      <button class="lien sobre" type="button" data-va="papier">Télécharger (F2026-000014-brouillon.pdf)</button>
     </div>
 
     <div class="carte">
@@ -384,7 +384,7 @@
     </div>
 
     <div class="bas">
-      <button class="capsule-or" type="button">Remplir la facture</button>
+      <button class="capsule-or" type="button" data-va="remplir">Remplir la facture</button>
     </div>
   </section>
 
@@ -783,13 +783,30 @@
   });
 
   // ─── LES VUES ────────────────────────────────────────────────────────────
+  /**
+   * LES BOUTONS DE L'ÉCRAN MÈNENT QUELQUE PART — 21 septembre 2026.
+   *
+   * « Je peux pas ouvrir le pdf facture » : « Voir la facture en PDF » ne
+   * faisait rien, et un appui sans effet et sans un mot se lit comme une
+   * panne. La planche se parcourt donc comme l'application — la flèche et
+   * « Revenir à la facture » ramènent à la facture, le PDF s'ouvre, et
+   * « Remplir la facture » rouvre la feuille de saisie.
+   */
+  function ouvrir(ecran){
+    document.querySelectorAll(".choix [data-ecran]").forEach(function(x){
+      x.setAttribute("aria-pressed", String(x.dataset.ecran === ecran));
+    });
+    document.querySelectorAll(".ecran").forEach(function(s){ s.classList.remove("ouvert"); });
+    id("v-" + ecran).classList.add("ouvert");
+    window.scrollTo({ top: 0 });
+  }
+  document.querySelectorAll("[data-va]").forEach(function(b){
+    b.onclick = function(){ ouvrir(b.dataset.va); };
+  });
+
   document.querySelectorAll(".choix [data-ecran]").forEach(function(b){
     b.onclick = function(){
-      document.querySelectorAll(".choix [data-ecran]").forEach(function(x){ x.setAttribute("aria-pressed", "false"); });
-      b.setAttribute("aria-pressed", "true");
-      document.querySelectorAll(".ecran").forEach(function(s){ s.classList.remove("ouvert"); });
-      id("v-" + b.dataset.ecran).classList.add("ouvert");
-      window.scrollTo({ top: 0 });
+      ouvrir(b.dataset.ecran);
     };
   });
   // « Aujourd'hui » : les trois ajouts s'éteignent, ce qui est en place revient.
