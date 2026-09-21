@@ -4567,6 +4567,23 @@ est un bouton à LUI, sur cet écran même, et il produit exactement ce cas.
 passé par le planning, et n'a donc aucune date à montrer. **Trois portes, pas
 deux.**
 
+**ET LE JALON EST UNIQUE — sa question du 21 septembre 2026 :** *« comment ils
+se sont retrouvés dans les chantiers à facturer s'ils ne sont pas passés par le
+planning ? »* Le planning ne range rien : il ne fait que poser la date.
+`termine_at` ne s'écrit **qu'à un seul endroit du code**,
+`poserLaFactureBrouillon` (`factures.ts:462`) — c'est-à-dire **au moment où une
+facture est préparée**. D'où la règle, qui se lit dans les deux sens :
+
+| | |
+|---|---|
+| un chantier est dans « Terminés » **sans date** | une facture a été préparée pour lui, un jour |
+| il y est **« À facturer »** | cette facture n'est jamais partie (`statut ≠ 'emise'`) |
+
+Les deux appelants ne se valent pas : `terminerChantier` **exige un devis
+envoyé** (`devis_non_envoye` sinon), `creerFactureSansDevis` n'exige rien.
+**Une rangée sans date ET sans montant prévu vient donc de « Créer une
+facture »** — sans devis derrière, il n'y a pas d'autre chemin.
+
 ## Un chantier terminé SANS DATE n'appartient à aucun mois — sa question du 21 septembre 2026
 
 *« Pq Julien n'a pas de date ? »*, devant deux rangées « À FACTURER » dont la
