@@ -307,6 +307,8 @@
   .liens{display:flex;flex-direction:column;gap:8px;margin-top:18px}
   .liens a{display:flex;align-items:center;min-height:48px;padding:0 16px;border-radius:12px;background:var(--carte);
            box-shadow:inset 0 0 0 1px var(--trait);color:var(--pin);font-weight:600;text-decoration:none;font-size:15px}
+  .liens.petits{margin-top:10px;gap:6px}
+  .liens.petits a{min-height:44px;font-size:13.5px;font-weight:600;background:var(--vert-voile);box-shadow:inset 0 0 0 1px var(--vert-pale)}
   body.nuit .liens a{color:var(--encre)}
   .signee-titre{text-align:center;padding:26px 0 6px}
   .signee-titre .rond{width:54px;height:54px;border-radius:50%;background:var(--plein);color:var(--sur-plein);display:grid;place-items:center;margin:0 auto 14px}
@@ -360,6 +362,8 @@
     <tr><td>Les exemples en gris</td><td>dans chaque cadre, un « Exemple : … » pris dans la fiche remplie de la notice MSA. Il s’efface dès que vous écrivez.</td></tr>
     <tr><td>Les heures</td><td>le planning ne les connaît pas. Elles restent à saisir.</td></tr>
     <tr><td>Chaque partie s’explique</td><td>une phrase sous chaque titre dit quoi remplir et pourquoi, comme à quelqu’un qui n’a jamais vu le formulaire. C’est votre demande du 21 septembre.</td></tr>
+    <tr><td>Les liens</td><td>votre feuille souligne DT-DICT, AIPR et la découverte fortuite sans rien lier (elle n’a aucun lien cliquable, vérifié). Ici ils mènent aux sites officiels : le guichet unique des réseaux, le cerfa AIPR sur service-public, jebalise.fr pour le balisage. Un lien qu’on ne peut pas vérifier n’est pas mis.</td></tr>
+    <tr><td>Une case cochée ne fait plus remonter l’écran</td><td>chaque appui changeait tout l’écran et le défilement repartait du haut. Un appui ne change plus que sa case, et ce qui en dépend.</td></tr>
     <tr><td>Ajouter, partout</td><td>le décret ne donne aucune liste : ni matériel, ni arbres, ni risques, ni mesures. Il dit « les risques spécifiques au chantier » et « les mesures de sécurité spécifiques ». Les listes viennent du formulaire MSA, et « Ajouter » met les vôtres au bout de chacune. Ce que vous ajoutez reste pour les fiches suivantes.</td></tr>
     <tr><td>Rien à cocher dans une catégorie</td><td>ce n’est pas un problème. Pas de co-activité, on ne coche rien. La fiche ne dit « vide » que pour les sept éléments du décret.</td></tr>
     <tr><td>Ce que demande la loi</td><td>à la première ouverture, un écran le dit en sept lignes, avec deux liens : le décret sur Légifrance, et le formulaire de la MSA. Ensuite il ne revient plus, mais « Ce que demande la loi » reste dans le bandeau. C’est là qu’on dira aussi ce qui est gardé d’une fiche à l’autre.</td></tr>
@@ -386,37 +390,37 @@ const ENTREPRISE = { nom: "Eden Nature", patron: "Florian Marrins", tel: "06 12 
 const L = {
   travaux: ["Billonnage", "Broyage", "Évacuation des rémanents", "Rognage / essouchage", "Démontage sans rétention",
             "Abattage directionnel", "Abattage non directionnel", "Ébranchage", "Éhouppage", "Élagage de formation",
-            "Élagage d’entretien", "Haubanage", "Démontage avec rétention", "Autres"],
-  elevation: ["Nacelle (PEMP)", "PIRL", "EPI de grimper", "Échelle", "Autres"],
-  coupe: ["Tronçonneuse élagueuse", "Tronçonneuse abatteuse", "Lamier d’élagage", "Scie sur perche", "Sécateur", "Autres"],
-  autresMat: ["Broyeur", "Essoucheuse / Rogneuse", "Treuil / Câble", "Mini chargeur", "Souffleur", "Autres"],
+            "Élagage d’entretien", "Haubanage", "Démontage avec rétention"],
+  elevation: ["Nacelle (PEMP)", "PIRL", "EPI de grimper", "Échelle"],
+  coupe: ["Tronçonneuse élagueuse", "Tronçonneuse abatteuse", "Lamier d’élagage", "Scie sur perche", "Sécateur"],
+  autresMat: ["Broyeur", "Essoucheuse / Rogneuse", "Treuil / Câble", "Mini chargeur", "Souffleur"],
   matieres: ["Repérer la présence de bois morts ou dépérissants sur les sujets à traiter (ou à proximité)",
              "Évaluer l’état d’ancrage des arbres (enracinement)",
              "Identifier les affections dangereuses pour la santé et la sécurité des travailleurs (suie, chancre, capricorne, champignon lignivore…)"],
-  bio: ["Chenilles processionnaires", "Frelons sp et autres hyménoptères", "Berce du Caucase, ambroisie sp…", "Tiques sp", "Suie de l’érable", "Chancre du platane", "Autres"],
-  bioMesures: ["EPI appropriés (masque, combinaison, gants…)", "Appel à un spécialiste pour circonscrire le danger", "Certi biocide (si utilisation de produits biocides)", "Autres"],
+  bio: ["Chenilles processionnaires", "Frelons sp et autres hyménoptères", "Berce du Caucase, ambroisie sp…", "Tiques sp", "Suie de l’érable", "Chancre du platane"],
+  bioMesures: ["EPI appropriés (masque, combinaison, gants…)", "Appel à un spécialiste pour circonscrire le danger", "Certi biocide (si utilisation de produits biocides)"],
   specifiques: ["Balisage externe du chantier vis-à-vis des personnes extérieures avec panneaux d’interdiction d’accès et de signalisation du danger",
                 "Balisage interne au chantier pour limiter les risques de chute d’objet/branche sur l’homme de pied (délimitation organisationnelle)",
                 "Mode / moyen de communication entre travailleurs, à préciser (ex : casques communicants)",
-                "Surveillance de l’accès au chantier (intrusion du public)", "Autres"],
-  reseaux: ["Électrique HTB (U > 50 000 V)", "Électrique HTA (U ≤ 50 000 V)", "Électrique BT (U ≤ 1 000 V)", "Eau, vapeur", "Gaz", "Télécom", "Autres"],
-  reseauxMesures: ["DT-DICT, la déclaration de travaux à proximité des réseaux (chantier à moins de 50 m de conducteurs électriques nus, arrachage d’arbre, creusement de tranchées)",
+                "Surveillance de l’accès au chantier (intrusion du public)"],
+  reseaux: ["Électrique HTB (U > 50 000 V)", "Électrique HTA (U ≤ 50 000 V)", "Électrique BT (U ≤ 1 000 V)", "Eau, vapeur", "Gaz", "Télécom"],
+  reseauxMesures: ["DT-DICT, la déclaration de travaux à proximité des réseaux (chantier distant de moins de 50 m de conducteurs électriques nus, ou lors d’arrachage d’arbre, de creusement de tranchées)",
                    "AIPR (formulaire)", "Au cas où : formulaire de découverte fortuite de réseau"],
-  env: ["Routier", "Facteurs météo ambiants", "Bruit", "État des sols", "Conditions de vie sur le chantier", "Éclairage", "Vapeurs", "Poussières", "Noyade", "Autres"],
+  env: ["Routier", "Facteurs météo ambiants", "Bruit", "État des sols", "Conditions de vie sur le chantier", "Éclairage", "Vapeurs", "Poussières", "Noyade"],
   envMesures: ["Balisage du chantier sur voie publique", "Adaptation des heures de travail", "Mise à disposition d’eau en quantité suffisante",
-               "Mise à disposition de cabinet d’aisance", "Mise à disposition d’équipements ou de vêtements de travail spécifiques, préciser",
+               "Mise à disposition de cabinet d’aisance", "Mise à disposition d’équipements ou de vêtements de travail spécifiques, préciser :",
                "Signal d’alarme (sifflet)", "Équipement individuel de flottaison / barque / bouée de sauvetage",
-               "Plan de prévention (entreprise utilisatrice)", "Autres"],
+               "Plan de prévention (entreprise utilisatrice)"],
   coactivite: ["Co-activité dans la zone de sécurité du chantier", "Entraînement par les éléments mobiles des équipements de travail (rogneuse, broyeur…)",
-               "Projection (avec broyeur, rogneuse…)", "Autres"],
+               "Projection (avec broyeur, rogneuse…)"],
   orga: ["Répartition des tâches dans le temps et l’espace (travailleur/matériel)", "Respect des consignes de sécurité des machines",
-         "Manuel d’utilisation du matériel", "Mode de communication entre travailleurs", "Autres"],
+         "Manuel d’utilisation du matériel", "Mode de communication entre travailleurs"],
   meteo: ["Bulletins d’alerte météorologiques", "Sécuriser les travaux en cours puis arrêter les travaux",
-          "Protéger les zones dangereuses ou potentiellement dangereuses (matérialisation, interdiction d’accès…)", "Prévenir le responsable du chantier ou le chef d’entreprise", "Autres"],
+          "Protéger les zones dangereuses ou potentiellement dangereuses (matérialisation, interdiction d’accès…)", "Prévenir le responsable du chantier ou le chef d’entreprise"],
   secours: ["Trousse de secours (contenu approprié à l’activité)", "Kit d’urgence portatif (élagueur)",
             "Tous les travailleurs sont SST (Sauveteurs Secouristes du Travail)",
             "Travailleurs disposant des compétences (type Grimpeur Sauveteur dans l’Arbre) et des moyens pour porter secours à une victime dans l’arbre, en nombre suffisant",
-            "Moyen de communication fonctionnel", "Autres"],
+            "Moyen de communication fonctionnel"],
 };
 const ETAPES = ["Le chantier", "Les travaux", "Le terrain", "Réseaux, environnement, météo", "Les secours", "Signer"];
 const ETAPES_COURTES = ["Chantier", "Travaux", "Terrain", "Réseaux", "Secours", "Signer"];
@@ -449,12 +453,12 @@ function depart() {
       commencee: false, vue: 0, loiLue: false,
       donneur: null, donneurNom: "", donneurPrenom: "", donneurTel: "",
       gps: "", hDebut: "", hFin: "", horaires: "", responsable: ENTREPRISE.patron, nb: CHANTIER.equipe.length, telIncident: ENTREPRISE.tel,
-      travaux: new Set(), travauxAutres: "", mainOeuvre: "",
-      elevation: new Set(), coupe: new Set(), autresMat: new Set(), materielAutres: "", matieres: new Set(), matieresAutres: "",
+      travaux: new Set(), mainOeuvre: "",
+      elevation: new Set(), coupe: new Set(), autresMat: new Set(), matieres: new Set(), matieresAutres: "",
       ajouts: { elevation: [], coupe: [], autresMat: [], matieres: [], travaux: [], bio: [], bioMesures: [], specifiques: [], reseaux: [], reseauxMesures: [], env: [], envMesures: [], coactivite: [], orga: [], meteo: [], secours: [] }, enCours: null,
-      photos: 0, bio: new Set(), bioMesures: new Set(), specifiques: new Set(), specifiquesAutres: "", communication: "",
+      photos: 0, bio: new Set(), bioMesures: new Set(), specifiques: new Set(), communication: "",
       reseaux: new Set(), reseauxMesures: new Set(), env: new Set(), envMesures: new Set(), envPreciser: "", coactivite: new Set(), risquesAutres: "", mesuresAutres: "", orga: new Set(), orgaCommunication: "", meteo: new Set(),
-      secours: new Set(), secoursAutres: "", lieuTrousse: "", prs: "", observations: "",
+      secours: new Set(), lieuTrousse: "", prs: "", observations: "",
       signatureTracee: false, signeeLe: null, envoyee: false,
     },
   };
@@ -568,40 +572,50 @@ function planning() {
 
 /* ═══ LA FICHE — six écrans ═══ */
 const set = (s, v) => { s.has(v) ? s.delete(v) : s.add(v); };
+const avecLesSiens = (famille) => [...L[famille], ...etat.f.ajouts[famille]];
 function pastilles(liste, s, apres) {
   const p = el("div", "pastilles");
   liste.forEach((x) => {
-    const b = bouton(`<span class="p" aria-hidden="true">${COCHE}</span><span>${x}</span>`, () => { set(s, x); (apres || redessinerEtape)(); }, null);
+    const b = bouton(`<span class="p" aria-hidden="true">${COCHE}</span><span>${x}</span>`, () => { set(s, x); b.setAttribute("aria-pressed", String(s.has(x))); if (apres) apres(); }, null);
     b.setAttribute("aria-pressed", String(s.has(x))); p.appendChild(b);
   });
   return p;
 }
-// une pastille « Ajouter » au bout d'une liste : un champ s'ouvre, le mot devient
-// une pastille cochée, et reste pour les fiches suivantes
-function ajouter(famille, liste, conteneur) {
-  const f = etat.f;
-  if (f.enCours === famille) {
-    const l = el("div", "ajout");
-    const i = el("input"); i.type = "text"; i.placeholder = { matieres: "Exemple : nid de frelons", travaux: "Exemple : taille de réduction", bio: "Exemple : rats", specifiques: "Exemple : sortie du garage bloquée",
-                      env: "Exemple : pente forte", coactivite: "Exemple : livraison prévue à 10 h", secours: "Exemple : couverture de survie", meteo: "Exemple : on arrête dès 40 km/h de vent" }[famille] || "Exemple : camion-grue"; i.autocomplete = "off";
-    const valider = () => { const v = i.value.trim(); if (!v) return; f.ajouts[famille].push(v); f[famille].add(v); f.enCours = null; redessinerEtape(); };
-    i.onkeydown = (e) => { if (e.key === "Enter") { e.preventDefault(); valider(); } };
-    l.appendChild(i); l.appendChild(bouton("Ajouter", valider, "vert"));
-    conteneur.appendChild(l); setTimeout(() => i.focus(), 0);
-  } else {
-    const b = bouton(`${PLUS}<span>Ajouter</span>`, () => { f.enCours = famille; redessinerEtape(); }, "plus");
-    conteneur.querySelector(".pastilles, .cases").appendChild(b);
-  }
-}
-const avecLesSiens = (famille) => [...L[famille].filter((x) => x !== "Autres"), ...etat.f.ajouts[famille]];
-function cases(liste, s) {
+function cases(liste, s, apres) {
   const c = el("div", "cases serree");
   liste.forEach((x) => {
-    const b = bouton(`<span class="rond" aria-hidden="true">${COCHE}</span><span class="quoi">${x}</span>`, () => { set(s, x); redessinerEtape(); }, "case");
+    const b = bouton(`<span class="rond" aria-hidden="true">${COCHE}</span><span class="quoi">${x}</span>`, () => { set(s, x); b.setAttribute("aria-pressed", String(s.has(x))); if (apres) apres(); }, "case");
     b.setAttribute("aria-pressed", String(s.has(x))); c.appendChild(b);
   });
   return c;
 }
+// un groupe = une liste (les mots de la MSA, plus les siens), une pastille
+// « Ajouter » au bout, et une suite qui dépend de ce qui est coché
+function groupe(famille, type, suite) {
+  const f = etat.f; const g = el("div", "groupe"); let dep;
+  const rendreSuite = () => { if (!dep) return; dep.innerHTML = ""; if (suite) suite(dep); };
+  const rendre = () => {
+    g.innerHTML = "";
+    const conteneur = (type === "cases" ? cases : pastilles)(avecLesSiens(famille), f[famille], rendreSuite);
+    g.appendChild(conteneur);
+    if (f.enCours === famille) {
+      const l = el("div", "ajout");
+      const i = el("input"); i.type = "text"; i.autocomplete = "off";
+      i.placeholder = { matieres: "Exemple : nid de frelons", travaux: "Exemple : taille de réduction", bio: "Exemple : rats", specifiques: "Exemple : sortie du garage bloquée",
+                        env: "Exemple : pente forte", coactivite: "Exemple : livraison prévue à 10 h", secours: "Exemple : couverture de survie", meteo: "Exemple : on arrête dès 40 km/h de vent" }[famille] || "Exemple : camion-grue";
+      const valider = () => { const v = i.value.trim(); if (!v) return; f.ajouts[famille].push(v); f[famille].add(v); f.enCours = null; rendre(); rendreSuite(); };
+      i.onkeydown = (e) => { if (e.key === "Enter") { e.preventDefault(); valider(); } };
+      l.appendChild(i); l.appendChild(bouton("Ajouter", valider, "vert"));
+      g.appendChild(l); setTimeout(() => i.focus(), 0);
+    } else {
+      conteneur.appendChild(bouton(`${PLUS}<span>Ajouter</span>`, () => { f.enCours = famille; rendre(); }, "plus"));
+    }
+    dep = el("div", "suite"); g.appendChild(dep); rendreSuite();
+  };
+  rendre(); return g;
+}
+const aide = (texte, haut) => { const a = el("p", "aide", texte); if (haut) a.style.marginTop = haut; return a; };
+const liens = (l) => el("div", "liens petits", l.map(([mot, url]) => `<a href="${url}" target="_blank" rel="noopener">${mot}</a>`).join(""));
 function champ(nom, cle, placeholder, lignes, type) {
   const c = el("label", "champ", `<span class="nom">${nom}</span>`);
   const i = lignes ? el("textarea", null) : el("input", null);
@@ -672,7 +686,7 @@ function etape2(z) {
   const f = etat.f;
   let b = bloc("Travaux à réaliser", "", "Cochez ce que vous allez faire aujourd’hui sur ce chantier.");
   b.appendChild(el("p", "aide", `Le devis dit : <b>${CHANTIER.lignes.slice(0, -1).join(", ")} et ${CHANTIER.lignes.at(-1).toLowerCase()}</b>.`));
-  { const g = el("div"); g.appendChild(pastilles(avecLesSiens("travaux"), f.travaux)); ajouter("travaux", null, g); b.appendChild(g); }
+  b.appendChild(groupe("travaux", "pastilles"));
   z.appendChild(b);
 
   b = bloc("Main d’œuvre", "à remplir une fois", "Pour chaque personne : sa formation, depuis quand elle travaille, ce qu’elle a le droit de faire (habilitations, autorisations de conduite).");
@@ -680,20 +694,22 @@ function etape2(z) {
   // SA RÉPONSE DU 21 SEPTEMBRE : « la B, mais faut préciser que ça sera
   // conservé pour toutes les autres fiches ». Un seul texte, gardé d'une fiche
   // à l'autre, et l'écran le dit sous le cadre.
-  b.appendChild(el("p", "aide", "Ce texte est gardé pour toutes vos prochaines fiches. Corrigez-le ici quand l’équipe change.")).style.margin = "8px 0 0";
+  b.appendChild(aide("Ce texte est gardé pour toutes vos prochaines fiches. Corrigez-le ici quand l’équipe change.", "8px"));
   z.appendChild(b);
 
   b = bloc("Matériels", "", "Cochez le matériel que vous allez utiliser sur ce chantier. Il doit être en bon état, et vérifié (la VGP, pour la nacelle et le treuil).");
-  const groupe = (aide, famille) => { const g = el("div"); g.appendChild(el("p", "aide", aide)); g.appendChild(pastilles(avecLesSiens(famille), f[famille])); ajouter(famille, null, g); return g; };
-  b.appendChild(groupe("Pour monter. Une nacelle protège mieux que les cordes : quand c’est possible, préférez-la.", "elevation"));
-  b.appendChild(groupe("Pour couper.", "coupe")).style.marginTop = "12px";
-  b.appendChild(groupe("Le reste du matériel.", "autresMat")).style.marginTop = "12px";
-  b.appendChild(el("p", "aide", "Ce que vous ajoutez reste pour vos prochaines fiches.")).style.margin = "10px 0 0";
+  b.appendChild(aide("Pour monter. Une nacelle protège mieux que les cordes : quand c’est possible, préférez-la."));
+  b.appendChild(groupe("elevation", "pastilles"));
+  b.appendChild(aide("Pour couper.", "12px"));
+  b.appendChild(groupe("coupe", "pastilles"));
+  b.appendChild(aide("Le reste du matériel.", "12px"));
+  b.appendChild(groupe("autresMat", "pastilles"));
+  b.appendChild(aide("Ce que vous ajoutez reste pour vos prochaines fiches.", "10px"));
   z.appendChild(b);
 
-  b = bloc("L’état des arbres", "", "Ce que vous avez regardé sur les arbres avant de monter : du bois mort, des racines qui tiennent mal, une maladie. Cochez ce qui a été vérifié.");
-  { const g = el("div"); g.appendChild(cases([...L.matieres, ...f.ajouts.matieres], f.matieres)); ajouter("matieres", L.matieres, g); b.appendChild(g); }
-  b.appendChild(el("p", "aide", "Ce que vous ajoutez reste pour vos prochaines fiches.")).style.margin = "6px 0 0";
+  b = bloc("État sanitaire et physiologique des arbres", "", "Ce que vous avez regardé sur les arbres avant de monter : du bois mort, des racines qui tiennent mal, une maladie. Cochez ce qui a été vérifié.");
+  b.appendChild(groupe("matieres", "cases"));
+  b.appendChild(aide("Ce que vous ajoutez reste pour vos prochaines fiches.", "6px"));
   b.appendChild(champ("Ce que vous avez vu (à préciser)", "matieresAutres", "Exemple : rien vu sur les chênes, à confirmer sur place", 2));
   z.appendChild(b);
 }
@@ -703,66 +719,84 @@ function etape3(z) {
   let b = bloc("Carte / croquis / photo du chantier", "", "Une photo du chantier, prise sur place. On doit y voir par où on entre, par où on passe, et les arbres à traiter.");
   const ph = el("div", "photos");
   for (let i = 0; i < f.photos; i++) ph.appendChild(el("span", "vignette"));
+  // l'appareil OU la photothèque : un champ fichier « image/* » sans « capture »,
+  // le téléphone propose les deux — sa demande du 21 septembre
   const aj = el("label", "ajouter", `${APPAREIL}<input type="file" accept="image/*" multiple hidden>`); aj.setAttribute("aria-label", "Prendre une photo ou choisir dans la photothèque");
   aj.style.width = "72px"; aj.querySelector("input").onchange = (e) => { f.photos += e.target.files.length || 1; redessinerEtape(); };
   ph.appendChild(aj); b.appendChild(ph);
-  b.appendChild(el("p", "aide", "Prenez la photo, ou choisissez-la dans la photothèque.")).style.margin = "8px 0 0";
-  b.appendChild(el("p", "aide", "Délimitation matérielle du chantier obligatoire")).style.margin = "10px 0 0";
+  b.appendChild(aide("Prenez la photo, ou choisissez-la dans la photothèque.", "8px"));
+  b.appendChild(aide("Délimitation matérielle du chantier obligatoire", "10px"));
   z.appendChild(b);
 
-  b = bloc("Risque biologique", "", "Des bêtes ou des plantes dangereuses sur place ? Cochez-les, puis cochez ce que vous faites contre.");
-  { const g = el("div"); g.appendChild(pastilles(avecLesSiens("bio"), f.bio)); ajouter("bio", null, g); b.appendChild(g); }
-  if (f.bio.size) { const g = el("div"); g.appendChild(el("p", "aide", "Mesures")).style.marginTop = "12px"; g.appendChild(pastilles(avecLesSiens("bioMesures"), f.bioMesures)); ajouter("bioMesures", null, g); b.appendChild(g); }
-  z.appendChild(b);
-
+  // les mesures AVANT le risque biologique — sa demande du 21 septembre
   b = bloc("Mesures de prévention", "", "Ce que vous mettez en place pour que personne ne soit blessé : le balisage, la communication entre vous, la surveillance des passants.");
   b.appendChild(el("div", "rappel", `<b>Périmètre de sécurité, d’après le décret</b>
       <table><tr><td>Abattage à la main</td><td>2 fois la hauteur de l’arbre</td></tr><tr><td>Élagage, éhouppage</td><td>personne sous l’arbre</td></tr><tr><td>Machines</td><td>la distance marquée dessus</td></tr></table>`)).style.margin = "0 0 12px";
-  { const g = el("div"); g.appendChild(cases(avecLesSiens("specifiques"), f.specifiques)); ajouter("specifiques", null, g); b.appendChild(g); }
-  if (f.specifiques.has(L.specifiques[2])) { const c = champ("Moyen de communication", "communication", "Exemple : casques communicants à 3"); c.style.marginTop = "4px"; b.appendChild(c); }
+  b.appendChild(groupe("specifiques", "cases", (dep) => {
+    if (f.specifiques.has(L.specifiques[2])) { const c = champ("Moyen de communication", "communication", "Exemple : casques communicants à 3"); c.style.marginTop = "4px"; dep.appendChild(c); }
+  }));
+  z.appendChild(b);
+
+  b = bloc("Risque biologique", "", "Des bêtes ou des plantes dangereuses sur place ? Cochez-les, puis cochez ce que vous faites contre.");
+  b.appendChild(groupe("bio", "pastilles", (dep) => {
+    if (f.bio.size) { dep.appendChild(aide("Mesures", "12px")); dep.appendChild(groupe("bioMesures", "pastilles")); }
+  }));
   z.appendChild(b);
 }
 
 function etape4(z) {
   const f = etat.f;
   let b = bloc("Risques liés aux réseaux", "", "Des lignes électriques, des câbles ou des canalisations près des arbres, en l’air ou sous terre ? Cochez-les. Les distances à respecter s’affichent.");
-  { const g = el("div"); g.appendChild(pastilles(avecLesSiens("reseaux"), f.reseaux)); ajouter("reseaux", null, g); b.appendChild(g); }
-  if ([...f.reseaux].some((x) => x.startsWith("Électrique"))) {
-    b.appendChild(el("div", "rappel", `<b>Distance de sécurité vis-à-vis des conducteurs électriques nus</b>
-      <table><tr><td>HTB (U &gt; 50 000 V)</td><td>5 m</td></tr><tr><td>HTA (U ≤ 50 000 V)</td><td>3 m</td></tr><tr><td>BT (U ≤ 1 000 V)</td><td>3 m</td></tr></table>`));
-  }
-  if (f.reseaux.size) { const g = el("div"); g.appendChild(el("p", "aide", "Mesures")).style.marginTop = "12px"; g.appendChild(cases(avecLesSiens("reseauxMesures"), f.reseauxMesures)); ajouter("reseauxMesures", null, g); b.appendChild(g); }
+  b.appendChild(groupe("reseaux", "pastilles", (dep) => {
+    if ([...f.reseaux].some((x) => x.startsWith("Électrique"))) {
+      dep.appendChild(el("div", "rappel", `<b>Distance de sécurité vis-à-vis des conducteurs électriques nus</b>
+        <table><tr><td>HTB (U &gt; 50 000 V)</td><td>5 m</td></tr><tr><td>HTA (U ≤ 50 000 V)</td><td>3 m</td></tr><tr><td>BT (U ≤ 1 000 V)</td><td>3 m</td></tr></table>`));
+    }
+    if (f.reseaux.size) {
+      dep.appendChild(aide("Mesures", "12px"));
+      dep.appendChild(groupe("reseauxMesures", "cases"));
+      // les formulaires, là où ils se font — la feuille MSA les souligne sans
+      // les lier ; ce sont les sites officiels, vérifiés le 21 septembre
+      dep.appendChild(liens([["Faire la DT-DICT sur le guichet unique des réseaux", "https://www.reseaux-et-canalisations.ineris.fr/"],
+                             ["Le formulaire AIPR (cerfa 15465)", "https://entreprendre.service-public.gouv.fr/vosdroits/R42490"],
+                             ["Découverte fortuite d’un réseau : le guichet unique", "https://www.reseaux-et-canalisations.ineris.fr/"]]));
+    }
+  }));
   z.appendChild(b);
 
   b = bloc("Risques liés à l’environnement", "", "Ce qui, autour du chantier, peut gêner ou blesser : la route, le bruit, la chaleur, un sol glissant, un plan d’eau. Cochez, puis cochez ce que vous faites contre.");
-  { const g = el("div"); g.appendChild(pastilles(avecLesSiens("env"), f.env)); ajouter("env", null, g); b.appendChild(g); }
-  if (f.env.size) {
-    const g = el("div"); g.appendChild(el("p", "aide", "Mesures")).style.marginTop = "12px"; g.appendChild(pastilles(avecLesSiens("envMesures"), f.envMesures)); ajouter("envMesures", null, g); b.appendChild(g);
-    if (f.envMesures.has(L.envMesures[4])) { const c = champ("Préciser", "envPreciser", "Exemple : gilets haute visibilité"); c.style.marginTop = "8px"; b.appendChild(c); }
-  }
+  b.appendChild(groupe("env", "pastilles", (dep) => {
+    if (!f.env.size) return;
+    dep.appendChild(aide("Mesures", "12px"));
+    dep.appendChild(groupe("envMesures", "pastilles", (d2) => {
+      if (f.envMesures.has(L.envMesures[0])) d2.appendChild(liens([["Balisage sur voie publique : jebalise.fr", "https://www.jebalise.fr/"]]));
+      if (f.envMesures.has(L.envMesures[4])) { const c = champ("Préciser", "envPreciser", "Exemple : gilets haute visibilité"); c.style.marginTop = "8px"; d2.appendChild(c); }
+    }));
+  }));
   z.appendChild(b);
 
   b = bloc("Co-activité, machines", "", "D’autres personnes travaillent en même temps dans la zone ? Une machine peut happer ou projeter ? Cochez, et écrivez le reste.");
-  { const g = el("div"); g.appendChild(cases(avecLesSiens("coactivite"), f.coactivite)); ajouter("coactivite", null, g); b.appendChild(g); }
+  b.appendChild(groupe("coactivite", "cases"));
   b.appendChild(champ("Risques autres identifiés", "risquesAutres", "Exemple : coups de vent possibles", 2));
   b.appendChild(champ("Mesures de prévention autres", "mesuresAutres", "Exemple : rubalise autour de la propriété", 2));
-  b.appendChild(el("p", "aide", "Ces deux textes sont gardés pour vos prochaines fiches.")).style.margin = "8px 0 0";
+  b.appendChild(aide("Ces deux textes sont gardés pour vos prochaines fiches.", "8px"));
   z.appendChild(b);
 
   b = bloc("Règles organisationnelles à mettre en place", "", "Comment l’équipe s’organise pour ne pas se gêner ni se mettre en danger.");
-  { const g = el("div"); g.appendChild(cases(avecLesSiens("orga"), f.orga)); ajouter("orga", null, g); b.appendChild(g); }
-  if (f.orga.has("Mode de communication entre travailleurs")) { const c = champ("Mode de communication", "orgaCommunication", "Exemple : casques communicants"); c.style.marginTop = "4px"; b.appendChild(c); }
+  b.appendChild(groupe("orga", "cases", (dep) => {
+    if (f.orga.has("Mode de communication entre travailleurs")) { const c = champ("Mode de communication", "orgaCommunication", "Exemple : casques communicants"); c.style.marginTop = "4px"; dep.appendChild(c); }
+  }));
   z.appendChild(b);
 
   b = bloc("Si le temps tourne", "", "Ce qu’on fait en cas de vent, d’orage ou de pluie forte qui arrive pendant le chantier.");
-  { const g = el("div"); g.appendChild(cases(avecLesSiens("meteo"), f.meteo)); ajouter("meteo", null, g); b.appendChild(g); }
+  b.appendChild(groupe("meteo", "cases"));
   z.appendChild(b);
 }
 
 function etape5(z) {
   const f = etat.f;
   let b = bloc("Organisation des secours", "", "Ce qu’il y a sur place pour porter secours, et où. Le Point de Rencontre des Secours, c’est l’endroit précis où les pompiers vous retrouvent.");
-  { const g = el("div"); g.appendChild(cases(avecLesSiens("secours"), f.secours)); ajouter("secours", null, g); b.appendChild(g); }
+  b.appendChild(groupe("secours", "cases"));
   b.appendChild(champ("Lieu où se trouve la trousse de secours", "lieuTrousse", "Exemple : dans la cabine du camion"));
   // SA DEMANDE DU 21 SEPTEMBRE : la trousse ne change pas souvent — gardée
   // d'une fiche à l'autre, comme la main d'œuvre, et l'écran le dit
@@ -773,23 +807,23 @@ function etape5(z) {
   b = bloc("En cas d’accident", "", "Les consignes, dans l’ordre. Elles sont imprimées sur la fiche : à lire avant de commencer.");
   const ban = el("div", "bandeau" + (etat.consignesOuvertes ? " ouvert" : ""));
   const tete = bouton(`<span class="tete-mot">Protéger, alerter, secourir</span><span class="tete-compte">15, 18, 112</span>${CHEV}`,
-    () => { etat.consignesOuvertes = !etat.consignesOuvertes; redessinerEtape(); }, "tete");
+    () => { etat.consignesOuvertes = !etat.consignesOuvertes; ban.classList.toggle("ouvert", etat.consignesOuvertes); tete.setAttribute("aria-expanded", String(etat.consignesOuvertes)); }, "tete");
   tete.setAttribute("aria-expanded", String(!!etat.consignesOuvertes)); ban.appendChild(tete);
   const pli = el("div", "pli"); const dedans = el("div", "dedans"); pli.appendChild(dedans); ban.appendChild(pli);
-  b.appendChild(ban); b = dedans; b.style.paddingTop = "10px";
-  b.appendChild(el("p", "aide", "1. Protéger"));
-  b.appendChild(el("ol", "consignes", ["Sécuriser les travaux en cours puis arrêter les travaux", "Protéger les zones dangereuses ou potentiellement dangereuses (matérialisation, interdiction d’accès…)", "Prévenir le responsable du chantier ou le chef d’entreprise"].map((x) => `<li>${x}</li>`).join("")));
-  b.appendChild(el("p", "aide", "2. Alerter")).style.marginTop = "10px";
-  b.appendChild(el("ol", "consignes", ["S’identifier (nom, prénom, entreprise)", "Donner sa localisation et préciser les moyens d’accès", "Décrire la nature de l’accident", "Préciser le nombre et l’état du (des) blessé(s)", "Décrire les gestes de premiers secours en cours (le cas échéant)", "Fixer un rendez-vous au point de rencontre des secours (PRS)", "Ne jamais raccrocher le premier : attendre les instructions des services de secours"].map((x) => `<li>${x}</li>`).join("")));
-  b.appendChild(el("p", "aide", "3. Secourir")).style.marginTop = "10px";
-  b.appendChild(el("ol", "consignes", ["Intervenir sans s’exposer (suivant référentiel SST et/ou GSA)", "Préparer l’arrivée et l’accès des secours (dégagement des rémanents et du matériel)", "Prévenir le siège des entreprises (du donneur d’ordre et de celle réalisant le chantier)"].map((x) => `<li>${x}</li>`).join("")));
-  b.appendChild(el("p", "aide", "Dès le début du chantier, stationner les véhicules dans le sens du départ et laisser la voie d’accès libre. Obtenir l’accord des services d’urgence avant de déplacer une victime vers un centre de secours.")).style.margin = "12px 0 0";
-  b.appendChild(el("div", "urgence", [["15", "SAMU"], ["18", "Pompiers"], ["112", "Europe"], ["114", "Sourds, malentendants"], ["17", "Police"]].map(([n, q]) => `<a href="tel:${n}"><b>${n}</b><span>${q}</span></a>`).join("")));
-  z.appendChild(ban.parentElement);
+  b.appendChild(ban); const c = dedans; c.style.paddingTop = "10px";
+  c.appendChild(aide("1. Protéger"));
+  c.appendChild(el("ol", "consignes", ["Sécuriser les travaux en cours puis arrêter les travaux", "Protéger les zones dangereuses ou potentiellement dangereuses (matérialisation, interdiction d’accès…)", "Prévenir le responsable du chantier ou le chef d’entreprise"].map((x) => `<li>${x}</li>`).join("")));
+  c.appendChild(aide("2. Alerter", "10px"));
+  c.appendChild(el("ol", "consignes", ["S’identifier (nom, prénom, entreprise)", "Donner sa localisation et préciser les moyens d’accès", "Décrire la nature de l’accident", "Préciser le nombre et l’état du (des) blessé(s)", "Décrire les gestes de premiers secours en cours (le cas échéant)", "Fixer un rendez-vous au point de rencontre des secours (PRS)", "Ne jamais raccrocher le premier : attendre les instructions des services de secours"].map((x) => `<li>${x}</li>`).join("")));
+  c.appendChild(aide("3. Secourir", "10px"));
+  c.appendChild(el("ol", "consignes", ["Intervenir sans s’exposer (suivant référentiel SST et/ou GSA)", "Préparer l’arrivée et l’accès des secours (dégagement des rémanents et du matériel)", "Prévenir le siège des entreprises (du donneur d’ordre et de celle réalisant le chantier)"].map((x) => `<li>${x}</li>`).join("")));
+  c.appendChild(aide("Dès le début du chantier, stationner les véhicules dans le sens du départ et laisser la voie d’accès libre. Obtenir l’accord des services d’urgence avant de déplacer une victime vers un centre de secours.", "12px"));
+  c.appendChild(el("div", "urgence", [["15", "SAMU"], ["18", "Pompiers"], ["112", "Europe"], ["114", "Sourds, malentendants"], ["17", "Police"]].map(([n, q]) => `<a href="tel:${n}"><b>${n}</b><span>${q}</span></a>`).join("")));
+  z.appendChild(b);
 
   b = bloc("Observations, consignes particulières", "", "Ce que l’équipe doit savoir en plus, pour ce chantier-là.");
   b.appendChild(champ("", "observations", "Exemple : prévenir le chef si quelque chose change", 3));
-  b.appendChild(el("p", "aide", "Ce texte est gardé pour vos prochaines fiches.")).style.margin = "8px 0 0";
+  b.appendChild(aide("Ce texte est gardé pour vos prochaines fiches.", "8px"));
   z.appendChild(b);
 }
 
