@@ -33,7 +33,10 @@ par la fiche du jour.
 | où | **sur tous les chantiers** — *« des fois ça peut être un chantier d'entretien avec juste un peu d'élagage »* |
 | le nom | **« Fiche de sécurité »**, tranché après avoir vu que le décret dit « fiche d'intervention » — déjà pris par la fiche du jour |
 | la main d'œuvre | **un seul texte, gardé d'une fiche à l'autre**, et l'écran le dit (*« la B, mais faut préciser que ça sera conservé pour toutes les autres fiches »*). Pas de compétences par salarié dans Réglages : proposé, refusé |
-| l'envoi | par e-mail au donneur d'ordre ; « Plus tard » garde la fiche sans l'envoyer ; Atlas la conserve deux ans, dans Terminés |
+| l'envoi | **« Transmettre le PDF » ouvre la feuille de partage du téléphone**, comme le devis (`TransmettreAuClient.tsx`) : Atlas n'envoie rien tout seul, il l'a fait vérifier. « Plus tard » garde la fiche sans la transmettre ; Atlas la conserve deux ans, dans Terminés |
+| listes | **« Ajouter » partout** à la place de « Autres » : le décret ne donne aucune liste, ni risques ni mesures (vérifié le 21 septembre, R. 717-85-16 3° et 4°, 17 à 25). Rien à cocher dans une catégorie n'est pas un problème |
+| la photo | l'appareil OU la photothèque (`accept="image/*"` sans `capture`) |
+| gardé d'une fiche à l'autre | **pour l'instant** : la main d'œuvre, le lieu de la trousse, ce qu'il ajoute aux listes. *« Je pense que tout ce qu'on coche peut être gardé d'une fiche à l'autre… pour les autres je te le dirai plus tard »* — et il faudra **le dire à la première utilisation**. À lui de trancher |
 | matériel, arbres | **vérifié dans le décret le 21 septembre** : aucune liste de matériel imposée (« les équipements de travail utilisés », R. 717-85-16), rien sur l'examen de l'arbre. Les listes sont celles du formulaire MSA ; l'utilisateur **ajoute** les siennes, gardées d'une fiche à l'autre. Le périmètre de sécurité (R. 717-85-23 : abattage manuel, deux fois la hauteur de l'arbre) s'affiche dans les mesures |
 | l'heure | la roue du téléphone (`input type="time"`), *« les heures et les minutes qui défilent »* |
 | signature | au doigt, à chaque fiche |

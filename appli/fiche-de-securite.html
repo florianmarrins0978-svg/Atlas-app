@@ -176,7 +176,7 @@
   .cases.serree .case{padding:6px 0}
   .photos{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:8px}
   .photos .etiquette{margin:0 4px 0 0}
-  .photos .vignette,.photos .ajouter{width:46px;height:46px;border-radius:9px;flex:none;box-shadow:inset 0 0 0 1px var(--trait)}
+  .photos .vignette,.photos .ajouter{width:46px;height:46px;border-radius:9px;flex:none;box-shadow:inset 0 0 0 1px var(--trait);cursor:pointer}
   .photos .vignette{background:var(--pin);opacity:.55}
   .photos .ajouter{display:grid;place-items:center;background:var(--vert-voile);color:var(--pin);box-shadow:inset 0 0 0 1px var(--vert-pale)}
 
@@ -341,7 +341,7 @@
     <tr><td>Le donneur d’ordre n’est pas toujours le client</td><td>deux cases : « Le client du devis », ou « Quelqu’un d’autre » avec trois champs vides.</td></tr>
     <tr><td>Au bon vouloir, à l’arrivée, sur tous les chantiers</td><td>un bandeau sur la fiche du jour de chaque chantier, rien d’imposé. La notice MSA conseille de la préparer dès la visite. Le même bandeau pourra vivre sur la page du chantier, pour la commencer la veille.</td></tr>
     <tr><td>Signature au doigt</td><td>nom, date, et vous signez sur l’écran. Modifier une fiche signée efface la signature, et vous signez à nouveau.</td></tr>
-    <tr><td>Un bouton pour l’envoyer</td><td>« Envoyer au donneur d’ordre », une fois signée : elle part par e-mail, à l’adresse du client ou à celle que vous avez saisie. « Plus tard » la garde sans l’envoyer, et le bouton reste sur la fiche du jour.</td></tr>
+    <tr><td>Un bouton pour l’envoyer</td><td>« Transmettre le PDF », une fois signée : la feuille de partage du téléphone s’ouvre (Mail, SMS, WhatsApp) et c’est vous qui envoyez, comme pour le devis. Atlas n’envoie rien tout seul, vous l’avez vérifié. « Plus tard » la garde sans la transmettre, et le bouton reste sur la fiche du jour.</td></tr>
     <tr><td>Deux ans</td><td>c’est Atlas qui la garde, vous n’avez rien à faire. Le décret admet la fiche dématérialisée. Vous la retrouvez dans Terminés, sur le chantier.</td></tr>
     <tr><td>Plus de vingt par an</td><td>ce qu’Atlas sait est déjà posé : chantier, devis, adresse, dates, équipe, téléphone. Vous ne ressaisissez rien.</td></tr>
   </table>
@@ -353,7 +353,10 @@
     <tr><td>Les exemples en gris</td><td>dans chaque cadre, un « Exemple : … » pris dans la fiche remplie de la notice MSA. Il s’efface dès que vous écrivez.</td></tr>
     <tr><td>Les heures</td><td>le planning ne les connaît pas. Elles restent à saisir.</td></tr>
     <tr><td>Chaque partie s’explique</td><td>une phrase sous chaque titre dit quoi remplir et pourquoi, comme à quelqu’un qui n’a jamais vu le formulaire. C’est votre demande du 21 septembre.</td></tr>
-    <tr><td>Le matériel et les arbres</td><td>le décret n’impose aucune liste (seulement « les équipements de travail utilisés »), et rien sur l’examen de l’arbre : les listes viennent du formulaire MSA. « Ajouter » met le vôtre, et il reste pour les fiches suivantes.</td></tr>
+    <tr><td>Ajouter, partout</td><td>le décret ne donne aucune liste : ni matériel, ni arbres, ni risques, ni mesures. Il dit « les risques spécifiques au chantier » et « les mesures de sécurité spécifiques ». Les listes viennent du formulaire MSA, et « Ajouter » met les vôtres au bout de chacune. Ce que vous ajoutez reste pour les fiches suivantes.</td></tr>
+    <tr><td>Rien à cocher dans une catégorie</td><td>ce n’est pas un problème. Pas de co-activité, on ne coche rien. La fiche ne dit « vide » que pour les sept éléments du décret.</td></tr>
+    <tr><td>La photo</td><td>l’appareil photo, ou la photothèque : le téléphone propose les deux.</td></tr>
+    <tr><td>La trousse de secours</td><td>son emplacement est gardé d’une fiche à l’autre, et l’écran le dit.</td></tr>
     <tr><td>L’heure</td><td>la roue du téléphone, heures et minutes.</td></tr>
     <tr><td>La main d’œuvre</td><td>un seul texte, écrit une fois, gardé pour toutes les fiches suivantes, et l’écran le dit. Vous le corrigez quand l’équipe change. C’est votre choix du 21 septembre.</td></tr>
   </table>
@@ -365,7 +368,7 @@
 const CHANTIER = {
   nom: "Pagnol", ou: "Mantes-la-Jolie", adresse: "12 rue des Lilas, 78200 Mantes-la-Jolie",
   devis: "D-2026-041", jour: "Vendredi 18 septembre", jourCourt: "18 septembre",
-  client: { nom: "Pagnol", prenom: "Marcel", tel: "06 11 22 33 44", email: "marcel.pagnol@exemple.fr" },
+  client: { nom: "Pagnol", prenom: "Marcel", tel: "06 11 22 33 44" },
   lignes: ["Abattage d’un chêne mort", "Élagage de deux tilleuls", "Broyage et évacuation des rémanents"],
   equipe: ["Florian", "Antoine", "Julien"],
 };
@@ -436,11 +439,11 @@ function depart() {
     ecran: "planning", etape: 1, ficheOuverte: false, travauxOuverts: false, faites: CHANTIER.lignes.map(() => false),
     f: {
       commencee: false, vue: 0,
-      donneur: null, donneurNom: "", donneurPrenom: "", donneurTel: "", donneurEmail: "",
+      donneur: null, donneurNom: "", donneurPrenom: "", donneurTel: "",
       gps: "", hDebut: "", hFin: "", horaires: "", responsable: ENTREPRISE.patron, nb: CHANTIER.equipe.length, telIncident: ENTREPRISE.tel,
       travaux: new Set(), travauxAutres: "", mainOeuvre: "",
       elevation: new Set(), coupe: new Set(), autresMat: new Set(), materielAutres: "", matieres: new Set(), matieresAutres: "",
-      ajouts: { elevation: [], coupe: [], autresMat: [], matieres: [] }, enCours: null,
+      ajouts: { elevation: [], coupe: [], autresMat: [], matieres: [], travaux: [], bio: [], bioMesures: [], specifiques: [], reseaux: [], reseauxMesures: [], env: [], envMesures: [], coactivite: [], orga: [], meteo: [], secours: [] }, enCours: null,
       photos: 0, bio: new Set(), bioMesures: new Set(), specifiques: new Set(), specifiquesAutres: "", communication: "",
       reseaux: new Set(), reseauxMesures: new Set(), env: new Set(), envMesures: new Set(), envPreciser: "", coactivite: new Set(), risquesAutres: "", mesuresAutres: "", orga: new Set(), orgaCommunication: "", meteo: new Set(),
       secours: new Set(), secoursAutres: "", lieuTrousse: "", prs: "", observations: "",
@@ -450,8 +453,7 @@ function depart() {
 }
 
 const donneurNom = () => etat.f.donneur === "autre" && etat.f.donneurNom ? `${etat.f.donneurPrenom} ${etat.f.donneurNom}`.trim() : `${CHANTIER.client.prenom} ${CHANTIER.client.nom}`;
-const donneurEmail = () => etat.f.donneur === "autre" && etat.f.donneurNom ? etat.f.donneurEmail : CHANTIER.client.email;
-const envoyeeA = () => `Envoyée par e-mail à ${donneurNom()}${donneurEmail() ? ` (${donneurEmail()})` : ""}`;
+const envoyeeA = () => `Transmise à ${donneurNom()}, le ${CHANTIER.jourCourt}`;
 
 /* ─── ce que la fiche ne sait pas encore — les sept éléments obligatoires du décret, et rien d'autre ─── */
 function manques() {
@@ -514,10 +516,10 @@ function planning() {
     if (fe.signeeLe) {
       dedans.appendChild(el("p", "ligne", `Signée le <b>${fe.signeeLe}</b>.${mq.length ? ` ${mq.length} partie${mq.length > 1 ? "s" : ""} vide${mq.length > 1 ? "s" : ""}.` : ""}`));
       dedans.appendChild(el("p", "ligne", `À montrer à <b>${CHANTIER.equipe.filter((q) => q !== "Florian").join(" et ")}</b> avant de commencer.`));
-      if (!fe.envoyee) dedans.appendChild(el("p", "ligne", `Pas encore envoyée. Atlas la garde deux ans, dans Terminés.`));
+      if (!fe.envoyee) dedans.appendChild(el("p", "ligne", `Pas encore transmise. Atlas la garde deux ans, dans Terminés.`));
       const dbtn = el("div", "deux-boutons");
       dbtn.appendChild(bouton("Ouvrir le PDF", () => {}, "vert creux"));
-      if (!fe.envoyee) dbtn.appendChild(bouton("Envoyer par e-mail", () => { fe.envoyee = true; planning(); }, "vert"));
+      if (!fe.envoyee) dbtn.appendChild(bouton("Transmettre le PDF", () => { fe.envoyee = true; planning(); }, "vert"));
       dedans.appendChild(dbtn);
       if (fe.envoyee) dedans.appendChild(el("div", "parti", `<span class="rond" aria-hidden="true">${COCHE}</span><span><span class="mot">${envoyeeA()}</span></span>`));
       dedans.appendChild(bouton("Modifier", () => { fe.signeeLe = null; fe.signatureTracee = false; fe.trace = null; fe.envoyee = false; etat.etape = 1; etat.ecran = "fiche"; dessiner(); }, "pdf"));
@@ -571,7 +573,8 @@ function ajouter(famille, liste, conteneur) {
   const f = etat.f;
   if (f.enCours === famille) {
     const l = el("div", "ajout");
-    const i = el("input"); i.type = "text"; i.placeholder = famille === "matieres" ? "Exemple : nid de frelons" : "Exemple : camion-grue"; i.autocomplete = "off";
+    const i = el("input"); i.type = "text"; i.placeholder = { matieres: "Exemple : nid de frelons", travaux: "Exemple : taille de réduction", bio: "Exemple : rats", specifiques: "Exemple : sortie du garage bloquée",
+                      env: "Exemple : pente forte", coactivite: "Exemple : livraison prévue à 10 h", secours: "Exemple : couverture de survie", meteo: "Exemple : on arrête dès 40 km/h de vent" }[famille] || "Exemple : camion-grue"; i.autocomplete = "off";
     const valider = () => { const v = i.value.trim(); if (!v) return; f.ajouts[famille].push(v); f[famille].add(v); f.enCours = null; redessinerEtape(); };
     i.onkeydown = (e) => { if (e.key === "Enter") { e.preventDefault(); valider(); } };
     l.appendChild(i); l.appendChild(bouton("Ajouter", valider, "vert"));
@@ -581,6 +584,7 @@ function ajouter(famille, liste, conteneur) {
     conteneur.querySelector(".pastilles, .cases").appendChild(b);
   }
 }
+const avecLesSiens = (famille) => [...L[famille].filter((x) => x !== "Autres"), ...etat.f.ajouts[famille]];
 function cases(liste, s) {
   const c = el("div", "cases serree");
   liste.forEach((x) => {
@@ -605,12 +609,6 @@ function bloc(etiquette, doux, explication) {
   if (explication) b.appendChild(el("p", "aide explication", explication));
   return b;
 }
-function autresSi(s, cle, placeholder, lignes) {
-  // « Exemple : » devant : un gris qui ressemble à une valeur se prend pour une valeur
-  if (!s.has("Autres")) return null;
-  const c = champ("Autres (à préciser)", cle, placeholder || "", lignes);
-  c.style.marginTop = "8px"; return c;
-}
 
 function etape1(z) {
   const f = etat.f;
@@ -628,11 +626,9 @@ function etape1(z) {
   if (f.donneur === "client") {
     b.appendChild(fixe("Nom, prénom", `${CHANTIER.client.prenom} ${CHANTIER.client.nom}`));
     b.appendChild(fixe("Téléphone", CHANTIER.client.tel));
-    b.appendChild(fixe("E-mail", CHANTIER.client.email));
   } else if (f.donneur === "autre") {
     const d = el("div", "deux-champs"); d.appendChild(champ("Nom", "donneurNom", "Exemple : Dubeaujardin")); d.appendChild(champ("Prénom", "donneurPrenom", "Exemple : Marc")); b.appendChild(d);
     b.appendChild(champ("Téléphone", "donneurTel", "Exemple : 06 00 00 00 00"));
-    b.appendChild(champ("E-mail, pour lui envoyer la fiche", "donneurEmail", "Exemple : nom@exemple.fr", 0, "email"));
   }
   z.appendChild(b);
 
@@ -667,8 +663,7 @@ function etape2(z) {
   const f = etat.f;
   let b = bloc("Travaux à réaliser", "", "Cochez ce que vous allez faire aujourd’hui sur ce chantier.");
   b.appendChild(el("p", "aide", `Le devis dit : <b>${CHANTIER.lignes.slice(0, -1).join(", ")} et ${CHANTIER.lignes.at(-1).toLowerCase()}</b>.`));
-  b.appendChild(pastilles(L.travaux, f.travaux));
-  const a = autresSi(f.travaux, "travauxAutres", "Exemple : taille de réduction"); if (a) b.appendChild(a);
+  { const g = el("div"); g.appendChild(pastilles(avecLesSiens("travaux"), f.travaux)); ajouter("travaux", null, g); b.appendChild(g); }
   z.appendChild(b);
 
   b = bloc("Main d’œuvre", "à remplir une fois", "Pour chaque personne : sa formation, depuis quand elle travaille, ce qu’elle a le droit de faire (habilitations, autorisations de conduite).");
@@ -680,8 +675,7 @@ function etape2(z) {
   z.appendChild(b);
 
   b = bloc("Matériels", "", "Cochez le matériel que vous allez utiliser sur ce chantier. Il doit être en bon état, et vérifié (la VGP, pour la nacelle et le treuil).");
-  const liste = (famille) => [...L[famille].filter((x) => x !== "Autres"), ...f.ajouts[famille]];
-  const groupe = (aide, famille) => { const g = el("div"); g.appendChild(el("p", "aide", aide)); g.appendChild(pastilles(liste(famille), f[famille])); ajouter(famille, liste(famille), g); return g; };
+  const groupe = (aide, famille) => { const g = el("div"); g.appendChild(el("p", "aide", aide)); g.appendChild(pastilles(avecLesSiens(famille), f[famille])); ajouter(famille, null, g); return g; };
   b.appendChild(groupe("Pour monter. Une nacelle protège mieux que les cordes : quand c’est possible, préférez-la.", "elevation"));
   b.appendChild(groupe("Pour couper.", "coupe")).style.marginTop = "12px";
   b.appendChild(groupe("Le reste du matériel.", "autresMat")).style.marginTop = "12px";
@@ -700,66 +694,69 @@ function etape3(z) {
   let b = bloc("Carte / croquis / photo du chantier", "", "Une photo du chantier, prise sur place. On doit y voir par où on entre, par où on passe, et les arbres à traiter.");
   const ph = el("div", "photos");
   for (let i = 0; i < f.photos; i++) ph.appendChild(el("span", "vignette"));
-  const aj = bouton(APPAREIL, () => { f.photos++; redessinerEtape(); }, "ajouter"); aj.setAttribute("aria-label", "Prendre une photo");
-  aj.style.width = "72px"; ph.appendChild(aj); b.appendChild(ph);
+  const aj = el("label", "ajouter", `${APPAREIL}<input type="file" accept="image/*" multiple hidden>`); aj.setAttribute("aria-label", "Prendre une photo ou choisir dans la photothèque");
+  aj.style.width = "72px"; aj.querySelector("input").onchange = (e) => { f.photos += e.target.files.length || 1; redessinerEtape(); };
+  ph.appendChild(aj); b.appendChild(ph);
+  b.appendChild(el("p", "aide", "Prenez la photo, ou choisissez-la dans la photothèque.")).style.margin = "8px 0 0";
   b.appendChild(el("p", "aide", "Délimitation matérielle du chantier obligatoire")).style.margin = "10px 0 0";
   z.appendChild(b);
 
   b = bloc("Risque biologique", "", "Des bêtes ou des plantes dangereuses sur place ? Cochez-les, puis cochez ce que vous faites contre.");
-  b.appendChild(pastilles(L.bio, f.bio));
-  if (f.bio.size) { b.appendChild(el("p", "aide", "Mesures")).style.marginTop = "12px"; b.appendChild(pastilles(L.bioMesures, f.bioMesures)); }
+  { const g = el("div"); g.appendChild(pastilles(avecLesSiens("bio"), f.bio)); ajouter("bio", null, g); b.appendChild(g); }
+  if (f.bio.size) { const g = el("div"); g.appendChild(el("p", "aide", "Mesures")).style.marginTop = "12px"; g.appendChild(pastilles(avecLesSiens("bioMesures"), f.bioMesures)); ajouter("bioMesures", null, g); b.appendChild(g); }
   z.appendChild(b);
 
   b = bloc("Mesures de prévention", "", "Ce que vous mettez en place pour que personne ne soit blessé : le balisage, la communication entre vous, la surveillance des passants.");
   b.appendChild(el("div", "rappel", `<b>Périmètre de sécurité, d’après le décret</b>
       <table><tr><td>Abattage à la main</td><td>2 fois la hauteur de l’arbre</td></tr><tr><td>Élagage, éhouppage</td><td>personne sous l’arbre</td></tr><tr><td>Machines</td><td>la distance marquée dessus</td></tr></table>`)).style.margin = "0 0 12px";
-  b.appendChild(cases(L.specifiques, f.specifiques));
+  { const g = el("div"); g.appendChild(cases(avecLesSiens("specifiques"), f.specifiques)); ajouter("specifiques", null, g); b.appendChild(g); }
   if (f.specifiques.has(L.specifiques[2])) { const c = champ("Moyen de communication", "communication", "Exemple : casques communicants à 3"); c.style.marginTop = "4px"; b.appendChild(c); }
-  const a = autresSi(f.specifiques, "specifiquesAutres", "Exemple : sortie du garage bloquée", 2); if (a) b.appendChild(a);
   z.appendChild(b);
 }
 
 function etape4(z) {
   const f = etat.f;
   let b = bloc("Risques liés aux réseaux", "", "Des lignes électriques, des câbles ou des canalisations près des arbres, en l’air ou sous terre ? Cochez-les. Les distances à respecter s’affichent.");
-  b.appendChild(pastilles(L.reseaux, f.reseaux));
+  { const g = el("div"); g.appendChild(pastilles(avecLesSiens("reseaux"), f.reseaux)); ajouter("reseaux", null, g); b.appendChild(g); }
   if ([...f.reseaux].some((x) => x.startsWith("Électrique"))) {
     b.appendChild(el("div", "rappel", `<b>Distance de sécurité vis-à-vis des conducteurs électriques nus</b>
       <table><tr><td>HTB (U &gt; 50 000 V)</td><td>5 m</td></tr><tr><td>HTA (U ≤ 50 000 V)</td><td>3 m</td></tr><tr><td>BT (U ≤ 1 000 V)</td><td>3 m</td></tr></table>`));
   }
-  if (f.reseaux.size) { b.appendChild(el("p", "aide", "Mesures")).style.marginTop = "12px"; b.appendChild(cases(L.reseauxMesures, f.reseauxMesures)); }
+  if (f.reseaux.size) { const g = el("div"); g.appendChild(el("p", "aide", "Mesures")).style.marginTop = "12px"; g.appendChild(cases(avecLesSiens("reseauxMesures"), f.reseauxMesures)); ajouter("reseauxMesures", null, g); b.appendChild(g); }
   z.appendChild(b);
 
   b = bloc("Risques liés à l’environnement", "", "Ce qui, autour du chantier, peut gêner ou blesser : la route, le bruit, la chaleur, un sol glissant, un plan d’eau. Cochez, puis cochez ce que vous faites contre.");
-  b.appendChild(pastilles(L.env, f.env));
+  { const g = el("div"); g.appendChild(pastilles(avecLesSiens("env"), f.env)); ajouter("env", null, g); b.appendChild(g); }
   if (f.env.size) {
-    b.appendChild(el("p", "aide", "Mesures")).style.marginTop = "12px"; b.appendChild(pastilles(L.envMesures, f.envMesures));
+    const g = el("div"); g.appendChild(el("p", "aide", "Mesures")).style.marginTop = "12px"; g.appendChild(pastilles(avecLesSiens("envMesures"), f.envMesures)); ajouter("envMesures", null, g); b.appendChild(g);
     if (f.envMesures.has(L.envMesures[4])) { const c = champ("Préciser", "envPreciser", "Exemple : gilets haute visibilité"); c.style.marginTop = "8px"; b.appendChild(c); }
   }
   z.appendChild(b);
 
   b = bloc("Co-activité, machines", "", "D’autres personnes travaillent en même temps dans la zone ? Une machine peut happer ou projeter ? Cochez, et écrivez le reste.");
-  b.appendChild(cases(L.coactivite, f.coactivite));
+  { const g = el("div"); g.appendChild(cases(avecLesSiens("coactivite"), f.coactivite)); ajouter("coactivite", null, g); b.appendChild(g); }
   b.appendChild(champ("Risques autres identifiés", "risquesAutres", "Exemple : coups de vent possibles", 2));
   b.appendChild(champ("Mesures de prévention autres", "mesuresAutres", "Exemple : rubalise autour de la propriété", 2));
   z.appendChild(b);
 
   b = bloc("Règles organisationnelles à mettre en place", "", "Comment l’équipe s’organise pour ne pas se gêner ni se mettre en danger.");
-  b.appendChild(cases(L.orga, f.orga));
+  { const g = el("div"); g.appendChild(cases(avecLesSiens("orga"), f.orga)); ajouter("orga", null, g); b.appendChild(g); }
   if (f.orga.has("Mode de communication entre travailleurs")) { const c = champ("Mode de communication", "orgaCommunication", "Exemple : casques communicants"); c.style.marginTop = "4px"; b.appendChild(c); }
   z.appendChild(b);
 
   b = bloc("Si le temps tourne", "", "Ce qu’on fait en cas de vent, d’orage ou de pluie forte qui arrive pendant le chantier.");
-  b.appendChild(cases(L.meteo, f.meteo));
+  { const g = el("div"); g.appendChild(cases(avecLesSiens("meteo"), f.meteo)); ajouter("meteo", null, g); b.appendChild(g); }
   z.appendChild(b);
 }
 
 function etape5(z) {
   const f = etat.f;
   let b = bloc("Organisation des secours", "", "Ce qu’il y a sur place pour porter secours, et où. Le Point de Rencontre des Secours, c’est l’endroit précis où les pompiers vous retrouvent.");
-  b.appendChild(cases(L.secours, f.secours));
-  { const a = autresSi(f.secours, "secoursAutres", "Exemple : couverture de survie", 2); if (a) b.appendChild(a); }
+  { const g = el("div"); g.appendChild(cases(avecLesSiens("secours"), f.secours)); ajouter("secours", null, g); b.appendChild(g); }
   b.appendChild(champ("Lieu où se trouve la trousse de secours", "lieuTrousse", "Exemple : dans la cabine du camion"));
+  // SA DEMANDE DU 21 SEPTEMBRE : la trousse ne change pas souvent — gardée
+  // d'une fiche à l'autre, comme la main d'œuvre, et l'écran le dit
+  b.appendChild(el("p", "aide", "Gardé pour vos prochaines fiches.")).style.margin = "4px 0 10px";
   b.appendChild(champ("Point de Rencontre des Secours", "prs", "Exemple : devant le portail du client"));
   z.appendChild(b);
 
@@ -867,10 +864,11 @@ function signeeEcran() {
   if (m.length) li(`<span class="qui">${m.length} partie${m.length > 1 ? "s" : ""} vide${m.length > 1 ? "s" : ""} : ${m.map((x) => x.quoi.toLowerCase()).join(", ")}.</span>`);
   li(`<span class="qui">À montrer à ${CHANTIER.equipe.filter((q) => q !== "Florian").join(" et ")} avant de commencer.</span>`);
   li(`<span class="qui">Enregistrée. Atlas la garde deux ans : vous la retrouvez dans Terminés, sur ce chantier.</span>`);
+  if (!f.envoyee) li(`<span class="qui">« Transmettre le PDF » ouvre la feuille de partage du téléphone : Mail, SMS, WhatsApp. C’est vous qui envoyez.</span>`);
   if (f.envoyee) li(`<span class="rond" aria-hidden="true">${COCHE}</span><span class="qui">${envoyeeA()}</span>`);
   const p = tel.querySelector(".pied");
   const d = el("div", "deux-boutons"); d.style.cssText = "display:flex;flex-direction:column;gap:8px";
-  if (!f.envoyee) { const env = bouton(`Envoyer par e-mail à ${donneurNom()}`, () => { f.envoyee = true; signeeEcran(); }, "vert"); env.style.cssText = "margin:0;width:100%;padding:0 10px;font-size:15px"; d.appendChild(env); }
+  if (!f.envoyee) { const env = bouton("Transmettre le PDF", () => { f.envoyee = true; signeeEcran(); }, "vert"); env.style.cssText = "margin:0;width:100%;padding:0 10px;font-size:15px"; d.appendChild(env); }
   const pdf = bouton("Ouvrir le PDF", () => {}, "vert creux"); pdf.style.cssText = "margin:0;width:100%;padding:0 10px;font-size:15px;background:transparent;color:var(--pin);box-shadow:inset 0 0 0 1.5px var(--vert-pale)";
   d.appendChild(pdf);
   p.appendChild(d);
