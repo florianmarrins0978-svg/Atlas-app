@@ -24,6 +24,7 @@ import {
   planifierChantier,
   deplacerChantier,
   deplanifierChantier,
+  DeplanificationImpossibleError,
   ecrireNoteChantier,
   mettreAJourAdresseChantier,
   getChantier,
@@ -749,7 +750,23 @@ export async function appliquerPropositionsAction(
             resultats.push({ ...base, statut: "conflit", categorie: "conflit_metier", message: "Ce chantier n'existe plus." });
             break;
           }
-          await deplanifierChantier(ctx, cible);
+          // **Un chantier dont la facture est préparée garde sa date** — sa
+          // décision du 21 septembre 2026. Le refus se DIT, avec sa cause : un
+          // geste dicté qui ne se passe pas se lit comme une panne.
+          try {
+            await deplanifierChantier(ctx, cible);
+          } catch (err) {
+            if (err instanceof DeplanificationImpossibleError) {
+              resultats.push({
+                ...base,
+                statut: "conflit",
+                categorie: "conflit_metier",
+                message: "Sa facture est déjà préparée : le chantier garde sa date.",
+              });
+              break;
+            }
+            throw err;
+          }
           resultats.push({ ...base, statut: "appliquee" });
           break;
         }

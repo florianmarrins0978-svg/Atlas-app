@@ -928,10 +928,42 @@ export async function planifierChantier(
   });
 }
 
+/**
+ * Ce qui empêche de retirer un chantier du planning.
+ *
+ * **Le refus se rend en VALEUR par l'action qui appelle** (`AGENTS.md`, piège
+ * 0 ter) : le message d'une exception d'action serveur n'arrive jamais jusqu'au
+ * patron. Ici, dans le dépôt, la levée est le seul moyen d'arrêter le geste au
+ * seul endroit qui l'écrit — ses trois portes passent par là.
+ */
+export class DeplanificationImpossibleError extends Error {
+  constructor(readonly motif: "facture_preparee") {
+    super(motif);
+    this.name = "DeplanificationImpossibleError";
+  }
+}
+
 // Retire la date de planification (« suppression » d'une intervention) — le
 // chantier redevient "à planifier" si un devis a déjà été envoyé.
+//
+// **ET IL REFUSE DÈS QU'UNE FACTURE EXISTE — sa décision du 21 septembre
+// 2026.** Le geste remettait `date_planifiee` à NULL sans rien regarder : un
+// chantier dont la facture était déjà préparée restait dans « Terminés » par
+// son `termine_at`, **et perdait sa date pour toujours**. C'est ainsi que deux
+// rangées « Mr. Julien » se sont retrouvées sans deuxième ligne sur sa capture.
+//
+// Le contrôle est ICI et non dans les écrans : trois portes appellent ce
+// geste — le planning, l'assistant, et la fiche — et une condition recopiée
+// trois fois aurait divergé au premier ajout (`CLAUDE.md` §3).
 export async function deplanifierChantier(ctx: Ctx, chantierId: string) {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const [facture] = await tx
+      .select({ id: factures.id })
+      .from(factures)
+      .where(eq(factures.chantierId, chantierId))
+      .limit(1);
+    if (facture) throw new DeplanificationImpossibleError("facture_preparee");
+
     // **Un chantier rendu à « Sans date » n'occupe plus rien.** Laisser ses
     // créneaux derrière lui, c'est garder des demi-journées prises par un
     // chantier qui n'est plus posé — et un jour qui ne partirait jamais chez

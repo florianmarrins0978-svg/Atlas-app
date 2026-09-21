@@ -4761,7 +4761,7 @@ date du jour à laquelle on a créé la facture »*. Les deux sont codés :
 | | |
 |---|---|
 | la date du chantier | **CODÉ** — `date_planifiee ?? facture.date_emission`, une seule fonction pour le rangement, le tri et l'affichage (`dateDuChantier`) |
-| « retirer du planning » | **PAS ENCORE** — le refus touche le dépôt des chantiers, donc un lot de niveau 3 : il est écrit et éprouvé sur la branche `claude/pq-julien-missing-date-nqs1oi`, avec sa suite base, et il attend sa batterie |
+| « retirer du planning » | **CODÉ** — refusé dès qu'une facture existe, à la racine (`deplanifierChantier`), et rendu en valeur par les trois portes. Livré à part : niveau 3, batterie entière (`ARCHITECTURE.md` §401) |
 
 La date d'émission est posée une fois à la création de la facture brouillon et
 aucun code ne la réécrit : c'est le jour où il l'a créée. Elle n'est PAS écrite

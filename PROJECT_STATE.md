@@ -43,9 +43,10 @@ l'écran le jour où elle partait, tout en comptant dans « N facturés ». Sa
 décision : *« il faut même mettre la date du jour à laquelle on a créé la
 facture »*. La date se lit désormais `date_planifiee ?? date d'émission de la
 facture`, par une seule fonction (rangement, tri, affichage).
-`ARCHITECTURE.md` §400. **Reste à poser** : le refus de « retirer du planning »
-sur un chantier déjà facturé — niveau 3, prêt sur
-`claude/pq-julien-missing-date-nqs1oi`, en attente de sa batterie.
+`ARCHITECTURE.md` §400. Et « retirer du planning » est **refusé** dès qu'une
+facture est préparée : il effaçait la date du jour où le chantier a été fait,
+sans un mot, par ses trois portes (`ARCHITECTURE.md` §401). Livré en deux lots
+— la date au niveau 2, le refus au niveau 3, batterie entière.
 
 ## FAIT : L'ÉCRAN DU CLIENT — CONFIRMATION DU REFUS, ET SES JOURS (20 septembre 2026)
 

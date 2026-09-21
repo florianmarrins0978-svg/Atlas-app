@@ -8,6 +8,16 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-21
 
+### Retirer du planning n'efface plus la date d'un chantier déjà facturé
+
+Le geste remettait `date_planifiee` à NULL sans rien regarder. Un chantier dont
+la facture était préparée restait dans « Terminés » par son `termine_at` et
+perdait la date du jour où il a été fait — sans un mot, et par ses trois portes
+(le planning, l'assistant, la fiche). Le refus est posé à la racine, dans le
+dépôt où elles passent toutes ; chacune le rend en valeur, jamais en exception,
+et l'écran ne se repeint plus avant d'avoir l'accord du serveur.
+`ARCHITECTURE.md` §401.
+
 ### Ce qu'il remplit passe sur la page où il remplit — et le mot d'un règlement est à lui
 
 Sa correction, planche en main : « + Main d'œuvre », « + Règlement reçu » et
