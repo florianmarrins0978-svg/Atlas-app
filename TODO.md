@@ -100,6 +100,28 @@ cas serré est celui d'une date retenue à moins de quatorze jours, qui fait
 apparaître le cadre de rétractation (`CLAUDE.md` §3, sa règle du 31 août : tout
 tient sans défiler).
 
+## 🔧 DEUX BLOCAGES DE LIVRAISON SUR SON PC, RELEVÉS LA NUIT DU 21 SEPTEMBRE 2026
+
+**1. Le garde-fou de `main` est celui du DOSSIER PRINCIPAL, jamais celui du lot.**
+`.claude/settings.json` lance `${CLAUDE_PROJECT_DIR}/scripts/garde-fusion-main.mjs`
+— le code du dossier où la session a été ouverte. Ce dossier portait douze
+commits non fusionnés d'une autre session sur son `main` local, donc son
+garde-fou datait d'avant `lot/outillage-se-tait-sur-windows` : il ne sait pas
+lire un verdict aux chemins « façon git » et refuse à tort un lot vert, sans
+régression nouvelle, que le garde-fou à jour (joué depuis le dossier du lot)
+laisse passer. **À faire :** que le déclencheur délègue au
+`scripts/garde-fusion-main.mjs` du dossier VISÉ par la commande quand il
+existe — le garde-fou mesure déjà ce dossier-là, il doit aussi être le sien.
+En attendant : mettre le dossier principal sur `main` débloque ce lot.
+
+**2. `test-travaux-a-faire-e2e` rougit selon l'ORDRE des suites.** Verte seule
+et dans la batterie du lot photos ; rouge deux fois d'affilée quand elle suit
+`acomptes-devis`, `ligne-du-client`, `pages-publiques`, `recherche-client`
+dans le même serveur (le clic sur la première case ne coche plus, puis le
+bandeau ne s'ouvre plus : quelque chose intercepte les clics). Pas de capture à
+l'échec dans le moteur navigateur : à rejouer dans cet ordre exact avec
+`--seulement`, une capture au premier rouge, avant de toucher à la suite.
+
 ## 🔧 UNE PLANCHE NOMMÉE « PAIEMENT » EXIGE LA BATTERIE ENTIÈRE (18 septembre 2026)
 
 `scripts/_niveau-de-risque.mjs` applique la gravité « argent » (`ARGENT`) à
