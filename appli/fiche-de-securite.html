@@ -94,7 +94,16 @@
   .commandes button[aria-pressed="true"]{color:var(--encre);text-decoration:underline;
                                         text-decoration-color:var(--or);text-underline-offset:6px}
 
-  .scene{display:flex;flex-direction:column;align-items:center;padding:0 16px}
+  .deux{display:flex;flex-direction:column;align-items:center;gap:26px;padding:0 16px}
+  .cote{flex:none;width:100%;max-width:390px}
+  .cote .quel{margin:0 0 8px;text-align:center;font:600 11px/1 inherit;letter-spacing:.14em;text-transform:uppercase;color:var(--gris)}
+  .cote .quel b{color:var(--or);font-weight:600}
+  @media (min-width:840px){.deux{flex-direction:row;justify-content:center;align-items:flex-start;gap:28px}.cote{width:390px}}
+  iframe.tel{border:0;display:block}
+  body.seul{background:var(--fond);padding:0}
+  body.seul .commandes,body.seul .note,body.seul .quel{display:none}
+  body.seul .deux{padding:0}
+  body.seul .tel{margin:0;height:100vh;border-radius:0;box-shadow:none;max-width:none}
   .tel{width:100%;max-width:390px;height:760px;user-select:none;-webkit-user-select:none;margin:14px auto 0;background:var(--fond);
        border-radius:30px;overflow:hidden;box-shadow:0 18px 46px var(--ombre-forte);
        display:flex;flex-direction:column;position:relative}
@@ -405,10 +414,14 @@
   <button type="button" id="rejouer">Recommencer</button>
 </div>
 
-<div class="scene"><div class="tel" id="tel"></div></div>
+<div class="deux">
+  <div class="cote"><p class="quel">La fiche, depuis le planning</p><div class="tel" id="tel"></div></div>
+  <div class="cote second"><p class="quel"><b>Paysage</b>, où elle est gardée</p><iframe class="tel" src="?ecran=paysage" title="Paysage, où la fiche est gardée"></iframe></div>
+</div>
 
 <div class="note">
   <h2>La fiche de sécurité</h2>
+  <p><b>Deux téléphones</b> : à gauche la fiche, depuis le planning ; à droite Paysage directement, avec une fiche déjà signée, pour voir où elle est gardée sans tout remplir. Sur un téléphone, l’un est sous l’autre.</p>
   <p>C’est la fiche d’intervention du décret 2021-1833. Elle est obligatoire avant tout chantier d’élagage ou d’abattage, signée, et gardée deux ans. Elle vit <b>sur la fiche du jour de chaque chantier</b>, dans un bandeau au-dessus de « Travaux à faire », comme vous l’avez dit : un entretien peut porter un peu d’élagage. <b>Essayez</b> : touchez « Fiche de sécurité », remplissez, signez au doigt, envoyez.</p>
   <h2>Vos réponses, et ce qu’elles font</h2>
   <table>
@@ -1029,7 +1042,8 @@ function paysageEcran() {
     </div>
     <div class="barre" aria-hidden="true"><span>Chantiers</span><span>Planning</span><span>Terminés</span><span class="actif">Paysage</span><span>Réglages</span></div>`;
   tel.querySelector(".retour").innerHTML = RETOUR;
-  tel.querySelector(".retour").onclick = () => { etat.ecran = etat.dOu || "planning"; etat.ficheOuverte = true; dessiner(); };
+  tel.querySelector(".retour").onclick = () => { if (etat.dOu === "paysage") return; etat.ecran = etat.dOu || "planning"; etat.ficheOuverte = true; dessiner(); };
+  if (etat.dOu === "paysage") tel.querySelector(".retour").style.visibility = "hidden";
   tel.querySelector("#outil-fiches").onclick = () => { etat.ecran = "fiches"; dessiner(); };
 }
 const FICHES = [
@@ -1119,9 +1133,21 @@ function dessiner() {
   const e = tel.querySelector(".ecran"); if (e) e.scrollTop = 0;
 }
 
-depart(); dessiner();
-document.getElementById("rejouer").onclick = () => { depart(); dessiner(); };
-document.getElementById("nuit").onclick = () => { const on = document.body.classList.toggle("nuit"); document.getElementById("nuit").setAttribute("aria-pressed", String(on)); dessiner(); };
+depart();
+// ─── DEUX TÉLÉPHONES — sa demande du 21 septembre : « que je me tape pas toute
+//     la fiche à chaque fois pour voir la page Paysage ». Le second est cette
+//     même page, ouverte sur Paysage avec une fiche déjà signée (?ecran=paysage),
+//     dans un cadre. ───
+const PARAMS = new URLSearchParams(location.search);
+if (PARAMS.get("ecran") === "paysage") {
+  document.body.classList.add("seul"); document.querySelector(".cote.second").remove();
+  Object.assign(etat.f, { commencee: true, vue: 6, loiLue: true, signatureTracee: true, signeeLe: `${CHANTIER.jourCourt} à 8 h 05` });
+  etat.dOu = "paysage"; etat.carteOuverte = true; etat.ecran = "paysage";
+  window.addEventListener("message", (e) => { if (e.data === "nuit" || e.data === "jour") { document.body.classList.toggle("nuit", e.data === "nuit"); dessiner(); } });
+}
+dessiner();
+document.getElementById("rejouer").onclick = () => { depart(); dessiner(); const c = document.querySelector("iframe.tel"); if (c) c.contentWindow.location.reload(); };
+document.getElementById("nuit").onclick = () => { const on = document.body.classList.toggle("nuit"); document.getElementById("nuit").setAttribute("aria-pressed", String(on)); dessiner(); const c = document.querySelector("iframe.tel"); if (c) c.contentWindow.postMessage(on ? "nuit" : "jour", "*"); };
 </script>
 </body>
 </html>
