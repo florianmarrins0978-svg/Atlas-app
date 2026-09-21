@@ -9,13 +9,19 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
-## ⏳ UNE PLANCHE À REGARDER — LA FICHE D'ÉLAGAGE SUR LA FICHE DU JOUR (21 septembre 2026)
+## ⏳ UNE PLANCHE À REGARDER — LA FICHE DE SÉCURITÉ (DÉCRET 2021-1833) SUR LA FICHE DU JOUR (21 septembre 2026)
 
-`appli/fiche-d-elagage.html`, liée depuis `appli/essais.html`. Sa question :
+`appli/fiche-de-securite.html`, liée depuis `appli/essais.html`. Sa question :
 *« en élagage il y a besoin de faire des fiches avant l'intervention,
 apparemment c'est devenu obligatoire »*. La recherche vit dans
 `docs/fiche-intervention-elagage.md` sur la branche
 `claude/fiches-elagage-legal-iom2to` (pas sur `main` à cette heure).
+
+**Son nom : « Fiche de sécurité », et pas « fiche d'élagage »** — sa correction
+du 21 septembre : *« les utilisateurs ne font pas que ça, ils font du paysage
+aussi et la création de l'entretien »*. Le décret ne vise que l'élagage et
+l'abattage ; le nom à l'écran ne le dit pas. « Fiche d'intervention » est pris
+par la fiche du jour.
 
 **Ses six réponses du 21 septembre, à ne pas lui redemander :**
 

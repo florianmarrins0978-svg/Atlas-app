@@ -3,11 +3,19 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>La fiche d’élagage</title>
+<title>La fiche de sécurité</title>
 <!--
   ════════════════════════════════════════════════════════════════════════════
-  LA FICHE D'ÉLAGAGE — la fiche d'intervention du décret 2021-1833, sur la
+  LA FICHE DE SÉCURITÉ — la fiche d'intervention du décret 2021-1833, sur la
   fiche du jour. Planche du 21 septembre 2026.
+
+  SA CORRECTION DU 21 SEPTEMBRE, devant la première version nommée « Fiche
+  d'élagage » : *« faut pas l'appeler fiche d'élagage, les utilisateurs ne
+  font pas que ça, ils font du paysage aussi et la création de l'entretien »*.
+  Le décret ne vise que l'élagage et l'abattage, mais le NOM à l'écran ne le
+  dit pas : « Fiche de sécurité ». « Fiche d'intervention », le mot du
+  formulaire, est déjà pris par la fiche du jour — deux fiches du même nom
+  sur le même écran, personne ne saurait laquelle ouvrir.
 
   SA DEMANDE : *« en élagage il y a besoin de faire des fiches avant
   l'intervention, apparemment c'est devenu obligatoire — renseigne-toi »*.
@@ -142,7 +150,7 @@
   .bandeau.ouvert .pli{grid-template-rows:1fr}
   .pli .dedans{min-height:0;overflow:hidden;padding:0 14px}
   .bandeau.ouvert .pli .dedans{padding-bottom:14px}
-  /* le bandeau de la fiche d'élagage : l'or, celui de ce qui se lit et se signe */
+  /* le bandeau de la fiche de sécurité : l'or, celui de ce qui se lit et se signe */
   .bandeau.securite .tete{background:var(--or-papier)}
   .bandeau.securite .tete .tete-mot,.bandeau.securite .tete .tete-compte,.bandeau.securite .tete .chev{color:var(--or-texte)}
   body.nuit .bandeau.securite .tete .tete-mot,body.nuit .bandeau.securite .tete .tete-compte,body.nuit .bandeau.securite .tete .chev{color:var(--or)}
@@ -310,8 +318,8 @@
 <div class="scene"><div class="tel" id="tel"></div></div>
 
 <div class="note">
-  <h2>La fiche d’élagage</h2>
-  <p>C’est la fiche d’intervention du décret 2021-1833 — obligatoire avant tout chantier d’élagage ou d’abattage, signée, gardée deux ans. Elle vit <b>sur la fiche du jour</b>, dans un bandeau au-dessus de « Travaux à faire », comme vous l’avez dit. <b>Essayez</b> : touchez « Fiche d’élagage », remplissez, signez au doigt, envoyez.</p>
+  <h2>La fiche de sécurité</h2>
+  <p>C’est la fiche d’intervention du décret 2021-1833 — obligatoire avant tout chantier d’élagage ou d’abattage, signée, gardée deux ans. Elle vit <b>sur la fiche du jour</b>, dans un bandeau au-dessus de « Travaux à faire », comme vous l’avez dit. <b>Essayez</b> : touchez « Fiche de sécurité », remplissez, signez au doigt, envoyez.</p>
   <h2>Vos six réponses, et ce qu’elles font</h2>
   <table>
     <tr><td>Avec des salariés, parfois seul</td><td>le nombre de travailleurs vient du planning du jour — seul, c’est 1</td></tr>
@@ -470,7 +478,7 @@ function planning() {
     const fe = etat.f, mq = manques();
     const compte = fe.signeeLe ? (fe.envoyee ? "envoyée" : "signée") : !fe.commencee ? "à remplir" : `${fe.vue} sur 6`;
     const b = el("div", "bandeau securite" + (etat.ficheOuverte ? " ouvert" : ""));
-    const tete = bouton(`<span class="tete-mot">Fiche d’élagage</span><span class="tete-compte">${compte}</span>${CHEV}`,
+    const tete = bouton(`<span class="tete-mot">Fiche de sécurité</span><span class="tete-compte">${compte}</span>${CHEV}`,
       () => { etat.ficheOuverte = !etat.ficheOuverte; planning(); }, "tete");
     tete.setAttribute("aria-expanded", String(etat.ficheOuverte));
     b.appendChild(tete);
@@ -762,7 +770,7 @@ function ficheEcran() {
   const f = etat.f, n = etat.etape;
   tel.innerHTML = `<div class="entete">
       <button type="button" class="retour" aria-label="Retour"></button>
-      <span class="quoi"><span class="grand">Fiche d’élagage</span><span class="petit">${CHANTIER.nom}</span></span>
+      <span class="quoi"><span class="grand">Fiche de sécurité</span><span class="petit">${CHANTIER.nom}</span></span>
       <span class="ou">${n} sur 6</span></div>
     <div class="avancee" aria-hidden="true">${ETAPES.map((_, i) => `<i class="${i + 1 < n ? "fait" : i + 1 === n ? "la" : ""}"></i>`).join("")}</div>
     <div class="ecran"><div class="etape" id="etape"></div></div>

@@ -8,12 +8,12 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-21
 
-### La fiche d'élagage du décret 2021-1833 a sa planche, et ses trois inconnues sont levées
+### La fiche de sécurité du décret 2021-1833 a sa planche, et ses trois inconnues sont levées
 
 Sa question du 21 septembre — la fiche d'intervention obligatoire avant un
 chantier d'élagage. Six réponses de lui, trois points vérifiés à la source
 (article R. 717-85-16, champ d'application, notice MSA), et une planche sur la
-fiche du jour : `appli/fiche-d-elagage.html`. Rien n'est coché d'avance, ce qui
+fiche du jour : `appli/fiche-de-securite.html`. Rien n'est coché d'avance, ce qui
 reste vide se dit avant de signer. Rien dans `src/` : il choisit d'abord.
 
 ### La comparaison des rouges lit le journal entier — un rouge n'y passe plus pour vert
