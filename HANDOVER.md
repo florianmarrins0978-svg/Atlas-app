@@ -9,6 +9,44 @@ sert.
 
 ---
 
+## UNE ÉCRITURE DÉCLARE CE QU'ELLE CHANGE — sinon le RETOUR rejoue l'écran d'avant
+
+**Son défaut du 20 septembre 2026 :** un chantier créé, un retour, et l'accueil
+sans lui jusqu'au rechargement. Ce qu'une session doit savoir avant de chercher
+un défaut d'affichage de ce genre :
+
+| | |
+|---|---|
+| un lien vers un écran | l'écran est redemandé au serveur |
+| **un retour** (flèche ou geste du navigateur) | la page **telle qu'elle a été rendue**, et aucun délai n'en sort |
+| ce qui vide ce cache-là | une écriture qui le DIT — `revalidatePath` dans l'action |
+
+Devant « je dois recharger pour voir », la question n'est donc pas « la lecture
+est-elle juste » mais « **quelle écriture ne déclare pas cet écran** ».
+`ARCHITECTURE.md` §391.
+
+## L'ÉCRAN DE SON CLIENT ATTEND UN LOT GROUPÉ — 20 septembre 2026
+
+Il a touché « Je ne donne pas suite » par erreur sur le lien d'un de ses devis,
+et il n'existe aucun retour : `enregistrerReponse` rejette toute seconde
+réponse (`deja_repondu`). **Sa décision, devant
+`appli/le-refus-par-erreur.html` : la A** — une feuille de confirmation
+(`BottomSheet`, celle qui porte déjà le calendrier de cet écran).
+
+**Ne pas coder cette feuille seule.** Sa consigne du même soir : *« avant de
+coder j'ai encore des modif à faire sur cette page, tu coderas tout d'un
+coup »*. Tout ce qui touche `src/app/devis/[jeton]/` attend ses autres
+demandes et part en un seul lot.
+
+**Et ne pas lui redemander son choix** : il est donné, il est dans `TODO.md`.
+
+**Le lot s'étoffe au fil de la soirée** : la feuille de confirmation, puis le
+libellé « je propose » et son pluriel, et le calendrier du client qui reprend
+le geste de l'écran d'envoi (`appli/proposer-ses-jours.html`). Le détail, et
+les deux défauts que les planches ont trouvés, sont dans `TODO.md`.
+
+---
+
 ## LA PREMIÈRE LIGNE DU DEVIS EST OUVERTE D'AVANCE — 20 septembre 2026
 
 *« Quand j'ouvre la page du devis il doit avoir une ligne d'ouverte déjà. »*
@@ -18,7 +56,7 @@ Ce qu'une session doit savoir avant de toucher `DevisCompletClient.tsx` :
   `ligne-ouverte` et s'écrit au premier mot (`src/lib/ligne-ouverte-devis.ts`).
   **Ne jamais la poser en base à l'ouverture de l'écran** : trois endroits
   lisent « aucune ligne » comme « la dictée n'a pas encore tourné », et sa
-  panne du 7 août 2026 revient (`ARCHITECTURE.md` §391) ;
+  panne du 7 août 2026 revient (`ARCHITECTURE.md` §394) ;
 - **tout appel serveur qui prend l'identifiant d'une ligne passe par
   `idEnBase()`** — il l'écrit si besoin, une seule fois ;
 - **l'identifiant de la rangée ne change JAMAIS à l'écran.** Le remplacer par

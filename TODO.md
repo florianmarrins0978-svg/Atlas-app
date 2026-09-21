@@ -9,6 +9,8 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## 🔒 LA FEUILLE AVANT « JE NE DONNE PAS SUITE » — CHOISIE, À CODER AVEC SES AUTRES MODIFICATIONS (20 septembre 2026)
+
 ## 🔧 `test-repartir-du-client-e2e` TOMBE DANS LA BATTERIE, JAMAIS SEULE (20 septembre 2026)
 
 Elle rougit sur `le chantier n'a aucun devis à envoyer` — l'`UPDATE devis`
@@ -31,17 +33,90 @@ l'écran du devis —, jamais un délai.
 donne pas suite, aucun moyen d'annuler, il faut mettre une sécurité avant
 l'envoi »*.
 
-`appli/le-refus-par-erreur.html` — trois formes, toutes à 0 px sur 390 × 664 :
-**A** la feuille (`BottomSheet`, déjà montée sur cet écran pour le calendrier),
-**B** le dédoublement sur place (déconseillé : « Confirmer » apparaît sous le
-doigt qui vient d'appuyer), **C** le retour depuis l'écran d'après — le seul
-qui rattrape un refus déjà parti. **Proposé : A et C.**
+**Sa réponse, le soir même, devant `appli/le-refus-par-erreur.html` :
+« La A »** — la feuille qui monte du bas, celle de la maison (`BottomSheet`),
+déjà montée sur cet écran pour le calendrier. Mesurée à **0 px** sur
+390 × 664 : la page derrière ne bouge pas. B (le dédoublement sur place) et C
+(le retour depuis l'écran d'après) ne sont pas retenus ; la planche reste en
+ligne comme relevé de ce qui a été comparé.
 
-Ce que C demande, et qui reste à trancher avec lui : jusqu'à quand le client
-peut revenir. Proposition — tant que le patron n'a pas repris le devis.
+**ET ON NE CODE PAS ENCORE — sa consigne, dans la même phrase :** *« avant de
+coder j'ai encore des modif à faire sur cette page, tu coderas tout d'un coup,
+retiens ça déjà »*. La page en question est celle de son client
+(`src/app/devis/[jeton]/`). **Rien ne part dans `src/` tant qu'il n'a pas donné
+le reste** : coder la feuille seule ferait deux lots là où il en veut un, et
+rouvrirait le même écran deux fois.
 
-**Rien n'est codé.** Son cas du jour se répare sans code : le chantier est
-passé à `retourne`, et un nouvel envoi rouvre un lien neuf.
+Ce qui reste à lui demander **au moment de coder**, pas avant : le libellé exact
+des deux boutons de la feuille (proposés — « Oui, je ne donne pas suite » et
+« Revenir au devis »).
+
+**Ne pas lui redemander son choix : il l'a donné.**
+
+### Le reste du lot, dicté le même soir — `appli/proposer-ses-jours.html`
+
+Il a d'abord proposé un dessin de planning sur la ligne « je propose », puis
+l'a écarté lui-même : *« non c'est nul, on garde l'existant »*. Ce qu'il veut à
+la place, en quatre points :
+
+| | |
+|---|---|
+| le libellé | « Cette date ne me convient pas ? Je propose » (`libelleAutreDate`) |
+| son pluriel | « Ces dates ne me conviennent pas ? Je propose » — et **le pluriel se décide sur les JOURS**, pas sur le nombre de propositions : sa capture montrait quatre dates listées au-dessus d'un « cette date » |
+| le choix des jours | le geste de SON écran d'envoi, à la lettre : `propositions-de-jours.ts` — un appui pose le bloc d'affilée, un appui sur un jour du bloc l'efface **sans rien décaler**, un appui ailleurs le repose |
+| le compte | « Les travaux sont prévus sur N jours », **au-dessus du bouton** de validation — et le bouton passe au pluriel avec |
+
+**LES TROIS GESTES, et il a fallu qu'il le signale :** *« on peut pas
+désélectionner un jour sur les 4 et le mettre ailleurs en recliquant
+ailleurs »*. La planche n'en connaissait que deux — effacer, et reposer le
+bloc —, si bien qu'un appui ailleurs remplaçait tout. `gesteSurUnJour` en
+compte **trois**, et c'est exactement pour ce cas :
+
+| ce jour | ce que l'appui fait |
+|---|---|
+| déjà posé | il s'efface, et **rien ne se décale** |
+| il en manque | il **comble** — ce jour-là seul, le reste ne bouge pas |
+| rien ne manque | il repose le **bloc entier** ailleurs |
+
+**Ce que cela commande sur le barrage** : ce qui barre dépend de ce que l'appui
+ferait. Un jour qui COMBLE n'a qu'à être libre lui-même ; seul celui qui POSE
+le bloc doit pouvoir l'accueillir en entier. C'est déjà ce que fait son écran
+d'envoi, qui interroge le serveur sur un jour seul quand on comble
+(`verifierJourProposeAction`, `Math.min(2, duree)`).
+
+**Trois autres choses que la planche a trouvées et qu'il faudra porter dans le
+code :**
+
+1. le bloc posé sur un jour d'où le chantier ne tient pas d'affilée recouvrait
+   des jours pris. Le calendrier du client doit donc **barrer ce qui ne peut
+   pas COMMENCER un chantier** — c'est déjà ce que fait celui de l'artisan
+   (`jours-barres.ts`), et cela veut dire passer la durée à `Calendrier` là où
+   il reçoit `dureeDemiJournees={null}` ;
+2. un jour du bloc pouvait être **barré en même temps qu'allumé**, donc
+   impossible à retirer — le geste même qu'il demande. Un jour posé reste
+   touchable, toujours ;
+3. trois jours retenus pour un chantier de quatre **partaient sans rien dire**.
+   Le bouton ne s'éteint pas — il répond « Il manque 1 jour », comme le reste
+   de cet écran. À tenir aussi côté serveur : `enregistrerReponse` ne reçoit
+   aujourd'hui qu'une seule date.
+
+**Ce que cela ne coûte PAS, et il faut le tenir :** le compte se déduit de
+`joursProposes`, déjà envoyé à la page. Ni « durée » ni « créneau » ne doivent
+apparaître dans ce que le client reçoit — `test-creneaux-planning.ts` le
+vérifie sur la charge sérialisée, et il doit rester vert.
+
+**LA PHRASE DU COMPTE EST SUR LA PAGE, pas seulement dans la feuille** — il a
+dû le redire : *« t'as pas mis […] en dessous de "quels jours vous arrangent ?"
+et au-dessus de la touche pour valider »*. Posée dans la feuille seule, elle ne
+se lisait que si le client l'ouvrait, c'est-à-dire seulement quand les dates ne
+lui convenaient pas. Elle vit donc sous la question, dans la carte des dates,
+et reste dans la feuille où elle explique les jours allumés — les deux ne sont
+jamais visibles en même temps.
+
+**Le pixel à remesurer au codage :** la phrase coûte une vingtaine de pixels. Le
+cas serré est celui d'une date retenue à moins de quatorze jours, qui fait
+apparaître le cadre de rétractation (`CLAUDE.md` §3, sa règle du 31 août : tout
+tient sans défiler).
 
 ## 🔧 UNE PLANCHE NOMMÉE « PAIEMENT » EXIGE LA BATTERIE ENTIÈRE (18 septembre 2026)
 

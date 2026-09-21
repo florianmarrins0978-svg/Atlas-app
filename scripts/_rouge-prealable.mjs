@@ -52,6 +52,8 @@
  * entre les deux arbres : à conditions égales, un résultat identique des deux
  * côtés n'est pas causé par lui.
  */
+import { bilanDuJournal } from "./_bilan-suites.mjs";
+
 export const SUR_MAIN = {
   /** Le même sort des deux côtés : ce n'est pas ce lot qui le cause. */
   PAREIL: "pareil",
@@ -126,4 +128,35 @@ export function resteARejouer(rouges, connues, base) {
 export function surMainPourCetteBase(connues, base) {
   if (!connues || connues.base !== base) return {};
   return { ...(connues.suites ?? {}) };
+}
+
+/**
+ * LE SORT D'UNE SUITE REJOUÉE, lu dans ce que son moteur a rendu.
+ *
+ * **Payé le 21 septembre 2026, et c'était un trou du garde-fou lui-même.** Le
+ * moteur navigateur écrit « ❌ <suite> a échoué » sur **stderr** et son compte
+ * « 0/1 suites réussies. » sur **stdout** ; la comparaison ne lisait que
+ * stdout. Une suite rouge y passait donc pour VERTE — des deux côtés, donc
+ * « pareil », donc tolérée. Une régression nouvelle serait passée par là.
+ *
+ * On lit donc le journal ENTIER, comme la batterie le fait (`2>&1`), et l'on
+ * refuse de conclure dès que le compte et les rouges nommés ne se recoupent
+ * pas : ne pas savoir n'est jamais vert (`CLAUDE.md` §5).
+ *
+ * **Fonction pure**, pour être vue rouge sans rejouer six minutes de
+ * construction : on lui montre exactement ce que l'ancienne lecture voyait.
+ *
+ * @param {{ suite: string, estNavigateur: boolean, status: number | null | undefined, stdout?: string, stderr?: string }} moteur
+ * @returns {"rouge" | "vert" | "indetermine"}
+ */
+export function sortDUneSuite({ suite, estNavigateur, status, stdout = "", stderr = "" }) {
+  // Tué, ou jamais lancé : rien n'a été mesuré.
+  if (status === null || status === undefined) return "indetermine";
+  if (!estNavigateur) return status === 0 ? "vert" : "rouge";
+  const bilan = bilanDuJournal(`${stdout}\n${stderr}`);
+  if (!bilan || !bilan.complet) return "indetermine";
+  if (bilan.rouges.includes(suite)) return "rouge";
+  // Aucun rouge nommé et un moteur qui sort à zéro : verte. Un moteur qui sort
+  // en erreur sans nommer la suite a cassé ailleurs — on ne conclut pas.
+  return status === 0 ? "vert" : "indetermine";
 }

@@ -21,14 +21,23 @@ import { preparerPhotoEntrante } from "@/server/photo-entrante";
  * qu'on a oublié d'y écrire. `scripts/test-actions-gardees-db.ts` énumère
  * désormais **tout** fichier « use server » du dépôt.
  */
-export async function ajouterPhotoAction(chantierId: string, formData: FormData) {
+/**
+ * **Un refus se REND, il ne se lève pas** (`HANDOVER.md`, piège 0 ter). Jusqu'au
+ * 20 septembre 2026 cette action levait — et la pellicule, qui ajoute plusieurs
+ * photos d'affilée, avalait l'exception pour ne pas interrompre les autres : un
+ * plafond de téléversement atteint, une photo trop lourde, se perdaient sans un
+ * mot. Le plafond du chantier arrivant par le même chemin, il fallait que le
+ * chemin parle.
+ */
+export async function ajouterPhotoAction(
+  chantierId: string,
+  formData: FormData
+): Promise<{ ok: true; id: string; storageKey: string } | { ok: false; raison: string }> {
   const ctx = await getCurrentCtx();
   await exigerEcran(ctx, "/chantiers", "ajouter une photo de chantier");
 
   const limite = await verifierLimite(`televersement:${ctx.entrepriseId}`, LIMITES.televersementFichier);
-  if (!limite.autorise) {
-    throw new Error(limite.message);
-  }
+  if (!limite.autorise) return { ok: false, raison: limite.message };
 
   /**
    * **TOUT passe par `preparerPhotoEntrante`, et rien ne se refait ici.**
@@ -42,7 +51,7 @@ export async function ajouterPhotoAction(chantierId: string, formData: FormData)
    * les coordonnées GPS du domicile d'un client.
    */
   const prete = await preparerPhotoEntrante(formData.get("fichier"), "photo de chantier");
-  if (!prete.ok) throw new Error(prete.raison);
+  if (!prete.ok) return { ok: false, raison: prete.raison };
 
   const objet = await enregistrerObjet(
     `chantiers/${chantierId}/photos`,
@@ -50,7 +59,7 @@ export async function ajouterPhotoAction(chantierId: string, formData: FormData)
     prete.photo.extension
   );
 
-  const photo = await ajouterPhoto(ctx, chantierId, {
+  const ajout = await ajouterPhoto(ctx, chantierId, {
     storageKey: objet.storageKey,
     // Le type RETENU par la préparation, jamais celui que le navigateur
     // annonçait : les deux ne coïncident que si le contenu correspondait.
@@ -59,8 +68,9 @@ export async function ajouterPhotoAction(chantierId: string, formData: FormData)
     nomOriginal: prete.photo.nomOriginal,
     checksum: objet.checksum,
   });
+  if (!ajout.ok) return ajout;
 
-  return { id: photo.id, storageKey: photo.storageKey };
+  return { ok: true, id: ajout.photo.id, storageKey: ajout.photo.storageKey };
 }
 
 export async function supprimerPhotoAction(photoId: string) {

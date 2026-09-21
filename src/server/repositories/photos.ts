@@ -3,6 +3,7 @@ import { withEntreprise } from "../db/with-entreprise";
 import { photos, fichiersAPurger, chantiers } from "../db/schema";
 import { enregistrerObjet, lireObjet } from "../storage";
 import { photoTenueParUnRetour } from "./retours-intervention";
+import { refusDuPlafondDuChantier } from "@/lib/photos-plafonds";
 import type { Ctx } from "./context";
 
 type FichierPhoto = {
@@ -22,12 +23,33 @@ export async function listerPhotos(ctx: Ctx, chantierId: string) {
   );
 }
 
-export async function ajouterPhoto(ctx: Ctx, chantierId: string, fichier: FichierPhoto) {
+export type PhotoAjoutee = { ok: true; photo: typeof photos.$inferSelect } | { ok: false; raison: string };
+
+/**
+ * Ajouter une photo au chantier — **sous le plafond du chantier**, et c'est ici
+ * qu'il se tient (`PHOTOS_MAX_PAR_CHANTIER`, sa décision du 20 septembre 2026).
+ *
+ * Au serveur et non à l'écran : une sélection de la photothèque se recommence,
+ * et deux écrans ajoutent des photos au même chantier (la pellicule et le
+ * retour du jour). Le compte et l'insertion vivent dans la même transaction,
+ * sous `withEntreprise`, pour que deux ajouts d'affilée ne passent pas tous
+ * deux sous la barre.
+ */
+export async function ajouterPhoto(ctx: Ctx, chantierId: string, fichier: FichierPhoto): Promise<PhotoAjoutee> {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const existantes = await tx
       .select()
       .from(photos)
       .where(and(eq(photos.chantierId, chantierId), isNull(photos.deletedAt)));
+
+    const refus = refusDuPlafondDuChantier(existantes.length);
+    if (refus) {
+      // Les octets sont déjà rangés quand on arrive ici : une photo refusée ne
+      // laisse pas un fichier orphelin, elle part en purge comme une photo
+      // effacée (`supprimerPhoto`).
+      await tx.insert(fichiersAPurger).values({ storageKey: fichier.storageKey });
+      return { ok: false, raison: refus };
+    }
 
     const [row] = await tx
       .insert(photos)
@@ -39,7 +61,7 @@ export async function ajouterPhoto(ctx: Ctx, chantierId: string, fichier: Fichie
         createdBy: ctx.utilisateurId,
       })
       .returning();
-    return row;
+    return { ok: true, photo: row };
   });
 }
 

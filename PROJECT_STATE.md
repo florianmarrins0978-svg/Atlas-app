@@ -5,6 +5,14 @@
 
 ---
 
+## FAIT : UN CHANTIER CRÉÉ EST LÀ AU RETOUR (20 septembre 2026)
+
+*« J'ai dû recharger la page pour qu'il arrive dans mes chantiers en cours. »*
+Un retour rejoue la page telle qu'elle a été rendue (cache du navigateur, que
+`staleTimes` ne touche pas) : `creerChantierAction` était la seule écriture de
+l'accueil à ne pas déclarer ce qu'elle change. Elle déclare désormais l'accueil,
+la liste des clients et la fiche du client. Niveau 2.
+
 ## FAIT : LA FEUILLE DU DEVIS S'OUVRE AVEC SA PREMIÈRE LIGNE (20 septembre 2026)
 
 *« Quand j'ouvre la page du devis il doit avoir une ligne d'ouverte déjà. »*
@@ -12,7 +20,7 @@ Elle est là sur tout devis brouillon sans ligne — et elle n'existe **pas en
 base** tant qu'il n'a rien écrit : une ligne vide posée d'office ferait
 disparaître la dictée suivante (sa panne du 7 août). `ligne-ouverte-devis.ts`,
 deux suites, vingt-cinq suites délestées d'un clic devenu inutile.
-`ARCHITECTURE.md` §391.
+`ARCHITECTURE.md` §394.
 
 ## FAIT : LA FICHE D'INTERVENTION DE SA SIXIÈME PLANCHE (20 septembre 2026)
 

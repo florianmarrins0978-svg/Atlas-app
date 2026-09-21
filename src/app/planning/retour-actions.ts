@@ -19,6 +19,7 @@ import { preparerPhotoEntrante } from "@/server/photo-entrante";
 import { enregistrerObjet } from "@/server/storage";
 import { verifierLimite, LIMITES } from "@/server/rate-limit";
 import type { TacheDuRetour } from "@/lib/retour-intervention";
+import { refusDesPhotosDuRetour } from "@/lib/photos-plafonds";
 
 /**
  * LE RETOUR D'INTERVENTION — les gestes du salarié, depuis le planning.
@@ -125,6 +126,12 @@ export async function poserLeRetourAction(
 ): Promise<{ ok: true } | Refus> {
   const ctx = await garder(chantierId, "poser un retour d'intervention");
 
+  // **Le seul plafond du retour : ses photos** (sa décision du 20 septembre
+  // 2026, `PHOTOS_MAX_PAR_RETOUR`). L'écran le tient déjà ; le serveur le
+  // retient, parce que l'écran n'est pas la seule porte.
+  const tropDePhotos = refusDesPhotosDuRetour(quoi.photoIds.length);
+  if (tropDePhotos) return { ok: false, raison: tropDePhotos };
+
   // **Aucun refus sur ce qui manque — sa règle du 19 septembre 2026.** Le
   // retour du jour part avec ce qu'il a : sans photo, sans tout cocher. Ce que
   // le patron attend encore se lit sur la fiche (`ceQuiManque`), il ne ferme
@@ -178,13 +185,14 @@ export async function ajouterPhotoDuRetourAction(
     prete.photo.octets,
     prete.photo.extension
   );
-  const photo = await ajouterPhoto(ctx, chantierId, {
+  const ajout = await ajouterPhoto(ctx, chantierId, {
     storageKey: objet.storageKey,
     mimeType: prete.photo.mimeType,
     tailleOctets: objet.tailleOctets,
     nomOriginal: prete.photo.nomOriginal,
     checksum: objet.checksum,
   });
+  if (!ajout.ok) return ajout;
 
-  return { ok: true, id: photo.id, storageKey: photo.storageKey };
+  return { ok: true, id: ajout.photo.id, storageKey: ajout.photo.storageKey };
 }
