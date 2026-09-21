@@ -328,6 +328,33 @@
   .liens a{display:flex;align-items:center;min-height:48px;padding:0 16px;border-radius:12px;background:var(--carte);
            box-shadow:inset 0 0 0 1px var(--trait);color:var(--pin);font-weight:600;text-decoration:none;font-size:15px}
   body.nuit .liens a{color:var(--encre)}
+  .recherche{position:relative;margin:8px 6px 0}
+  .recherche .loupe{position:absolute;left:16px;top:50%;transform:translateY(-50%);color:var(--gris);display:grid}
+  .recherche input{width:100%;height:48px;border:0;border-radius:999px;padding:0 16px 0 44px;font:inherit;font-size:16px;background:var(--carte);
+                   box-shadow:inset 0 0 0 1px var(--trait);color:var(--encre)}
+  .recherche input::placeholder{color:var(--gris)}
+  .annees{display:flex;gap:7px;margin:10px 6px 0}
+  .annee{height:40px;padding:0 15px;border-radius:999px;font-size:13.5px;background:var(--carte);box-shadow:inset 0 0 0 1px var(--trait);color:var(--encre)}
+  .annee[aria-pressed="true"]{background:var(--plein);color:var(--sur-plein);box-shadow:none}
+  .client{margin:24px 6px 0;font:400 19px/1.2 ui-serif,Georgia,serif}
+  .carte-retour{margin:10px 6px 0;background:var(--carte);border-radius:13px;box-shadow:inset 0 0 0 1px var(--trait)}
+  .carte-retour.securite{box-shadow:inset 0 0 0 1.5px var(--or)}
+  .tete-carte{display:flex;width:100%;align-items:flex-start;gap:12px;padding:12px 14px}
+  .rond-carte{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;flex:none;background:var(--or-papier);color:var(--or-texte)}
+  body.nuit .rond-carte{color:var(--or)}
+  .corps{flex:1;min-width:0}
+  .titre-carte{display:block;font-size:14px;line-height:1.3;font-weight:600}
+  .sous-carte{display:block;margin-top:3px;font-size:12.5px;line-height:1.45;color:var(--gris)}
+  .chev-carte{flex:none;margin-top:6px;color:var(--gris);display:grid;transition:transform .18s cubic-bezier(.22,.9,.3,1)}
+  .carte-retour.ouverte .chev-carte{transform:rotate(90deg)}
+  .dedans-carte{display:none;padding:2px 14px 14px}
+  .carte-retour.ouverte .dedans-carte{display:block}
+  .dedans-carte .deux-boutons{display:flex;gap:8px}
+  .dedans-carte .vert{margin:0;flex:1;padding:0 10px;font-size:14.5px}
+  .dedans-carte .vert.creux{background:transparent;color:var(--pin);box-shadow:inset 0 0 0 1.5px var(--vert-pale)}
+  .dedans-carte .aide{font-size:12.5px;line-height:1.45;color:var(--gris)}
+  body.nuit .dedans-carte .vert.creux{color:var(--encre)}
+  .voir-ou{margin-left:auto;flex:none;min-height:44px;padding:0 4px;font-size:14px;font-weight:700;color:var(--encre)}
   .signee-titre{text-align:center;padding:26px 0 6px}
   .signee-titre .rond{width:54px;height:54px;border-radius:50%;background:var(--plein);color:var(--sur-plein);display:grid;place-items:center;margin:0 auto 14px}
   .signee-titre h2{margin:0;font:400 26px/1.15 ui-serif,Georgia,serif}
@@ -335,7 +362,7 @@
   .signee-liste{margin:18px 0 0;padding:0;list-style:none}
   .signee-liste li{display:flex;align-items:center;gap:12px;min-height:44px;padding:8px 0;border-top:1px solid var(--trait-doux);font-size:14.5px;line-height:1.4}
   .signee-liste li:first-child{border-top:0}
-  .signee-liste li .qui{flex:1}
+  .signee-liste li .qui{flex:1;min-width:0}
   .signee-liste li .rond{width:22px;height:22px;border-radius:50%;background:var(--plein);color:var(--sur-plein);display:grid;place-items:center;flex:none}
 
   @media (prefers-reduced-motion:reduce){.pli,.tete .chev,.vert{transition:none}}
@@ -369,6 +396,7 @@
     <tr><td>Au bon vouloir, à l’arrivée, sur tous les chantiers</td><td>un bandeau sur la fiche du jour de chaque chantier, rien d’imposé. La notice MSA conseille de la préparer dès la visite. Le même bandeau pourra vivre sur la page du chantier, pour la commencer la veille.</td></tr>
     <tr><td>Signature au doigt</td><td>nom, date, et vous signez sur l’écran. Modifier une fiche signée efface la signature, et vous signez à nouveau.</td></tr>
     <tr><td>Un bouton pour l’envoyer</td><td>« Transmettre le PDF », une fois signée : la feuille de partage du téléphone s’ouvre (Mail, SMS, WhatsApp) et c’est vous qui envoyez, comme pour le devis. l’application n’envoie rien tout seul, vous l’avez vérifié. « Plus tard » la garde sans la transmettre, et le bouton reste sur la fiche du jour.</td></tr>
+    <tr><td>Où elle est gardée</td><td>dans Terminés, onglet « Retours d’intervention », rangée par client, juste au-dessus du retour du jour du même chantier : « Fiche de sécurité, 18 septembre 2026, gardée jusqu’au 18 septembre 2028 ». Touchez « Voir où » sur l’écran « Fiche signée », ou « Voir où elle est gardée » dans le bandeau. Une question pour vous : l’onglet garde-t-il son nom, « Retours », ou devient-il « Retours et fiches » ?</td></tr>
     <tr><td>Deux ans</td><td>c’est l’application qui la garde, vous n’avez rien à faire. Le décret admet la fiche dématérialisée. Vous la retrouvez dans Terminés, sur le chantier.</td></tr>
     <tr><td>Plus de vingt par an</td><td>ce qu’l’application sait est déjà posé : chantier, devis, adresse, dates, équipe, téléphone. Vous ne ressaisissez rien.</td></tr>
   </table>
@@ -456,6 +484,9 @@ const MOINS = `<svg width="17" height="17" viewBox="0 0 20 20" fill="none" aria-
 const CHEV = `<svg class="chev" width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5 8l5 5 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 const RETOUR = `<svg width="22" height="22" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M12.5 4 6.5 10l6 6" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 const APPAREIL = `<svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7.5a1.5 1.5 0 0 1 1.5-1.5H7l1.3-2h3.4L13 6h2.5A1.5 1.5 0 0 1 17 7.5v7a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 3 14.5z"/><circle cx="10" cy="11" r="2.6"/></svg>`;
+const LOUPE = `<svg width="17" height="17" viewBox="0 0 17 17" fill="none" aria-hidden="true"><circle cx="7.2" cy="7.2" r="5.2" stroke="currentColor" stroke-width="1.6"/><path d="m11.6 11.6 4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>`;
+const CHEV_DROIT = `<svg width="9" height="15" viewBox="0 0 9 15" fill="none" aria-hidden="true"><path d="m1.5 1.5 6 6-6 6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+const BOUCLIER = `<svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 2.5 4 5v5c0 3.6 2.6 6.4 6 7.5 3.4-1.1 6-3.9 6-7.5V5z"/><path d="m7.3 10 1.9 1.9L12.8 8"/></svg>`;
 const CIBLE = `<svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><circle cx="10" cy="10" r="5.5"/><circle cx="10" cy="10" r="1.6"/><path d="M10 1.5v3M10 15.5v3M1.5 10h3M15.5 10h3"/></svg>`;
 
 const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
@@ -545,12 +576,13 @@ function planning() {
     if (fe.signeeLe) {
       dedans.appendChild(el("p", "ligne", `Signée le <b>${fe.signeeLe}</b>.${mq.length ? ` ${mq.length} partie${mq.length > 1 ? "s" : ""} vide${mq.length > 1 ? "s" : ""}.` : ""}`));
       dedans.appendChild(el("p", "ligne", `À montrer à <b>${CHANTIER.equipe.filter((q) => q !== "Florian").join(" et ")}</b> avant de commencer.`));
-      if (!fe.envoyee) dedans.appendChild(el("p", "ligne", `Pas encore transmise. Gardée deux ans, dans Terminés.`));
+      if (!fe.envoyee) dedans.appendChild(el("p", "ligne", `Pas encore transmise.`));
       const dbtn = el("div", "deux-boutons");
       dbtn.appendChild(bouton("Ouvrir le PDF", () => {}, "vert creux"));
       if (!fe.envoyee) dbtn.appendChild(bouton("Transmettre le PDF", () => { fe.envoyee = true; planning(); }, "vert"));
       dedans.appendChild(dbtn);
       if (fe.envoyee) dedans.appendChild(el("div", "parti", `<span class="rond" aria-hidden="true">${COCHE}</span><span><span class="mot">${envoyeeA()}</span></span>`));
+      dedans.appendChild(bouton("Voir où elle est gardée", () => { etat.dOu = "planning"; etat.carteOuverte = true; etat.ecran = "termines"; dessiner(); }, "pdf"));
       dedans.appendChild(bouton("Modifier", () => { fe.signeeLe = null; fe.signatureTracee = false; fe.trace = null; fe.envoyee = false; etat.etape = 1; etat.ecran = "fiche"; dessiner(); }, "pdf"));
     } else {
       if (fe.commencee) dedans.appendChild(el("p", "ligne", `Reprise à <b>${ETAPES[Math.min(fe.vue, 5)]}</b>`));
@@ -957,6 +989,52 @@ function loiEcran() {
   const pied = tel.querySelector(".pied");
   pied.appendChild(bouton(f.loiLue ? "Retour" : "Compris, je remplis", () => { const premiere = !f.loiLue; f.loiLue = true; if (premiere) { etat.etape = 1; etat.ecran = "fiche"; } else { etat.ecran = "planning"; etat.ficheOuverte = true; } dessiner(); }, "vert"));
 }
+function terminesEcran() {
+  const f = etat.f; const garde = "18 septembre 2028";
+  tel.innerHTML = `<div class="entete">
+      <button type="button" class="retour" aria-label="Retour"></button>
+      <span class="quoi"><span class="grand">Retours d’intervention</span><span class="petit">Terminés</span></span></div>
+    <div class="ecran" style="padding-top:8px">
+      <div class="recherche"><span class="loupe" aria-hidden="true">${LOUPE}</span><input type="search" placeholder="Un client, un chantier"></div>
+      <div class="annees"><button type="button" class="annee" aria-pressed="true">Tout</button><button type="button" class="annee" aria-pressed="false">2026</button></div>
+      <p class="client">${CHANTIER.client.prenom} ${CHANTIER.client.nom}</p>
+      <div class="carte-retour securite ${etat.carteOuverte ? "ouverte" : ""}" id="carte-fiche">
+        <button type="button" class="tete-carte" aria-expanded="${!!etat.carteOuverte}">
+          <span class="rond-carte" aria-hidden="true">${BOUCLIER}</span>
+          <span class="corps"><span class="titre-carte">Fiche de sécurité, ${CHANTIER.jourCourt} 2026</span>
+            <span class="sous-carte">Signée par ${ENTREPRISE.patron} · gardée jusqu’au ${garde}${f.envoyee ? " · transmise" : ""}</span></span>
+          <span class="chev-carte" aria-hidden="true">${CHEV_DROIT}</span>
+        </button>
+        <div class="dedans-carte">
+          <div class="deux-boutons"><button type="button" class="vert creux">Ouvrir le PDF</button>${f.envoyee ? "" : '<button type="button" class="vert" id="transmettre-termines">Transmettre le PDF</button>'}</div>
+          <p class="aide" style="margin:10px 0 0">Gardée deux ans après la signature, même si le chantier est supprimé. Sur le téléphone, donc sur le chantier.</p>
+        </div>
+      </div>
+      <div class="carte-retour">
+        <button type="button" class="tete-carte" aria-expanded="false">
+          <span class="rond-carte" aria-hidden="true">${COCHE}</span>
+          <span class="corps"><span class="titre-carte">Vendredi ${CHANTIER.jourCourt} 2026</span>
+            <span class="sous-carte">Antoine · 3 sur 3 faits · 1 photo</span></span>
+          <span class="chev-carte" aria-hidden="true">${CHEV_DROIT}</span>
+        </button>
+      </div>
+      <p class="client">Mr. Julien</p>
+      <div class="carte-retour">
+        <button type="button" class="tete-carte" aria-expanded="false">
+          <span class="rond-carte" aria-hidden="true">${COCHE}</span>
+          <span class="corps"><span class="titre-carte">Jeudi 17 septembre 2026</span>
+            <span class="sous-carte">Julien · 2 sur 5 faits</span></span>
+          <span class="chev-carte" aria-hidden="true">${CHEV_DROIT}</span>
+        </button>
+      </div>
+    </div>
+    <div class="barre" aria-hidden="true"><span>Chantiers</span><span>Planning</span><span class="actif">Terminés</span><span>Paysage</span><span>Réglages</span></div>`;
+  tel.querySelector(".retour").innerHTML = RETOUR;
+  tel.querySelector(".retour").onclick = () => { etat.ecran = etat.dOu || "planning"; etat.ficheOuverte = true; dessiner(); };
+  const carte = tel.querySelector("#carte-fiche");
+  carte.querySelector(".tete-carte").onclick = () => { etat.carteOuverte = !etat.carteOuverte; carte.classList.toggle("ouverte", etat.carteOuverte); carte.querySelector(".tete-carte").setAttribute("aria-expanded", String(etat.carteOuverte)); };
+  const tr = tel.querySelector("#transmettre-termines"); if (tr) tr.onclick = () => { f.envoyee = true; terminesEcran(); };
+}
 function signeeEcran() {
   const f = etat.f, m = manques();
   tel.innerHTML = `<div class="ecran"><div class="signee-titre"><span class="rond" aria-hidden="true">${COCHE_GRANDE}</span><h2>Fiche signée</h2><p>${CHANTIER.nom}, le ${f.signeeLe}</p></div>
@@ -965,7 +1043,7 @@ function signeeEcran() {
   const li = (html) => { const l = el("li", null, html); ul.appendChild(l); return l; };
   if (m.length) li(`<span class="qui">${m.length} partie${m.length > 1 ? "s" : ""} vide${m.length > 1 ? "s" : ""} : ${m.map((x) => x.quoi.toLowerCase()).join(", ")}.</span>`);
   li(`<span class="qui">À montrer à ${CHANTIER.equipe.filter((q) => q !== "Florian").join(" et ")} avant de commencer.</span>`);
-  li(`<span class="qui">Enregistrée, et gardée deux ans : vous la retrouvez dans Terminés, sur ce chantier.</span>`);
+  { const l = li(`<span class="qui">Enregistrée, et gardée deux ans.</span>`); l.appendChild(bouton("Voir où", () => { etat.dOu = "signee"; etat.carteOuverte = true; etat.ecran = "termines"; dessiner(); }, "voir-ou")); }
   if (!f.envoyee) li(`<span class="qui">« Transmettre le PDF » ouvre la feuille de partage du téléphone : Mail, SMS, WhatsApp. C’est vous qui envoyez.</span>`);
   if (f.envoyee) li(`<span class="rond" aria-hidden="true">${COCHE}</span><span class="qui">${envoyeeA()}</span>`);
   const p = tel.querySelector(".pied");
@@ -981,6 +1059,7 @@ function dessiner() {
   if (etat.ecran === "planning") planning();
   else if (etat.ecran === "fiche") ficheEcran();
   else if (etat.ecran === "loi") loiEcran();
+  else if (etat.ecran === "termines") terminesEcran();
   else signeeEcran();
   const e = tel.querySelector(".ecran"); if (e) e.scrollTop = 0;
 }
