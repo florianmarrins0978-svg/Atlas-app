@@ -50,17 +50,20 @@ JOURS et non sur le premier d'entre eux** — en gardant le premier jour et en
 poussant le quatrième, sa liste aurait été jetée au profit de celle du patron,
 sans que rien ne le dise.
 
-**Ce qui reste ouvert, et qu'il faudra trancher avec lui :**
+**TRANCHÉ LE 21 SEPTEMBRE 2026, ET IL NE SE ROUVRE PAS.** Il lui avait été
+signalé qu'un jour barré peut être libre pour une journée seule, et que combler
+y est donc refusé. Sa réponse : *« si le jour est barré il ne faut pas qu'elle
+puisse proposer cette date, c'est tout »*.
 
-- **combler se fait sur un jour libre pour le CHANTIER ENTIER.** La page ne
-  reçoit qu'une liste de jours barrés — ceux où le chantier ne peut pas
-  commencer (`lireParJeton`) —, donc un jour parfaitement libre pour une
-  journée seule reste barré quand elle cherche où remettre son quatrième. C'est
-  le côté sûr, et c'est plus restrictif que nécessaire. Lui envoyer une seconde
-  liste dirait quelque chose de plus de son planning : à lui de trancher.
-- **la place de la phrase du compte** : juste sous la question. Il l'a demandée
-  « en dessous de "quels jours vous arrangent ?" et au-dessus de la touche pour
-  valider » — les deux sont vrais, mais elle pourrait descendre.
+C'est déjà ce que fait le produit — un jour `occupe` est `disabled` dans
+`Calendrier`, et un jour reste ouvert seulement si le chantier ENTIER tient à
+partir de là (`jourRetenable` → `departPossible`), donc un bloc posé ne
+recouvre jamais un jour barré. **Rien à coder, et rien à lui redemander.**
+
+**Reste, et lui seul peut le dire :** la place de la phrase du compte, posée
+juste sous la question. Il l'a demandée « en dessous de "quels jours vous
+arrangent ?" et au-dessus de la touche pour valider » — les deux sont vrais,
+mais elle pourrait descendre.
 
 ## 🔧 UNE PLANCHE NOMMÉE « PAIEMENT » EXIGE LA BATTERIE ENTIÈRE (18 septembre 2026)
 
