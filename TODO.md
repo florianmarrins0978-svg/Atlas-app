@@ -9,6 +9,30 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## ⏳ UNE PLANCHE À REGARDER — MAIN D'ŒUVRE, RÈGLEMENTS ET « ACQUITTÉE » (21 septembre 2026)
+
+**Ses trois corrections, capture à l'appui :** *« à corriger : le + main
+d'œuvre et + règlement reçu. Le bouton facture acquittée doit apparaître
+lorsque je remplis la facture comme sur le devis ! Et si je clique sur facture
+acquittée l'encadré doré doit apparaître sous le total ttc au-dessus de revenir
+à la facture. »*
+
+**Planche : `appli/facture-remplir-acquittee.html`** — les deux écrans réels,
+le bouton « Aujourd'hui » pour comparer. **RIEN N'EST CODÉ.**
+
+| Ce qu'elle propose | Où |
+|---|---|
+| « + Main d'œuvre » | `TravauxSupplementairesClient`, sous « + Ajouter une TVA » — la place du devis |
+| « + Règlement reçu » et les lignes | même écran, sous le Total TTC |
+| l'interrupteur « Facture acquittée » | même écran, sous les règlements |
+| l'encadré doré | sous le Total TTC, au-dessus de « Revenir à la facture » |
+| `FactureClient` / `ReglementsRecus` | n'affichent plus que la lecture — plus de « + », plus d'interrupteur |
+
+**CE QUI ATTEND SA RÉPONSE, et qu'on ne tranche pas seul :** les trois gestes
+**quittent-ils** la page de la facture, ou restent-ils aux deux endroits ? La
+planche montre le départ (un seul endroit, `CLAUDE.md` §3). S'il veut les deux,
+c'est un mot à changer.
+
 ## 🔧 `test-repartir-du-client-e2e` TOMBE DANS LA BATTERIE, JAMAIS SEULE (20 septembre 2026)
 
 Elle rougit sur `le chantier n'a aucun devis à envoyer` — l'`UPDATE devis`

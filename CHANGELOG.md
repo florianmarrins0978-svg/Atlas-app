@@ -8,6 +8,20 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-21
 
+### Une planche : main d'œuvre, règlements et « Facture acquittée » là où il REMPLIT
+
+Ses trois corrections du 21 septembre, capture à l'appui. « + Main d'œuvre » et
+« + Règlement reçu » vivent sur la page de la facture — celle de l'arrêt 3, qui
+ne sert qu'à vérifier avant l'envoi —, et l'interrupteur « Facture acquittée »
+avec eux ; lui les attend sur « Remplir la facture », *« comme sur le devis »*,
+où le devis porte déjà sa main d'œuvre et ses acomptes. Et l'acquittement doit
+se VOIR : un encadré doré sous le Total TTC, au-dessus de « Revenir à la
+facture ». `appli/facture-remplir-acquittee.html` montre les deux écrans, avec
+un bouton « Aujourd'hui » qui éteint les trois ajouts pour comparer.
+**Rien n'est codé** (`CLAUDE.md` §3 bis) : la question qui reste — les trois
+gestes quittent-ils la page de la facture, ou restent-ils aux deux endroits ?
+— est posée sous l'écran, et elle est à lui.
+
 ### La comparaison des rouges lit le journal entier — un rouge n'y passe plus pour vert
 
 `verifier-rouge-prealable` rejoue chaque suite rouge sur la base de `main` et
