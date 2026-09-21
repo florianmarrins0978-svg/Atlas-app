@@ -43,6 +43,32 @@ reconstitue en une lecture de la page si elle est perdue. Il a passé
 `appli/diagnostic-brunissure-peuplier-feuille.jpg` (422 Ko, CC BY 3.0 US,
 Manfred Mielke / USDA Forest Service / Bugwood, via Commons).
 
+**SA RÈGLE DU 22 SEPTEMBRE AU SOIR, ET ELLE VAUT POUR TOUTES LES FICHES :**
+*« Plus jamais tu mets de point entre le nom et probable ! Retiens pour les
+autres fiches, et plus jamais de tiret, fais des phrases normales. »* Elle est
+inscrite dans `CLAUDE.md` §3. **Ce qu'elle change dans le CODE de l'écran
+(`src/app/paysage/diagnostic/[id]/page.tsx`), à coder avec cette fiche, sur
+son oui, et pas avant — il a dit « ne lance aucune batterie » :**
+
+| Aujourd'hui, pour toutes les fiches | Ce qu'il veut lire |
+|---|---|
+| `Probable · Platane` | `Probable sur un platane.` |
+| `légende — crédit · licence` sous la photo | `Petites taches brunes sur une feuille de peuplier. Photo de …, sous licence CC BY 3.0 US.` |
+| `INRAE — Ephytia (…) · consultée le 22 septembre 2026` | `Source : INRAE, Ephytia (…), page consultée le 22 septembre 2026.` |
+| dans les détails, `Fiche version 1 · à jour au …` | `Fiche version 1, à jour au 21 octobre 2024.` |
+
+**L'article (« un », « une ») s'écrit dans la FICHE, sur le taxon** (champ
+`article`, déjà dans le brouillon de la fiche 4), jamais deviné par le code :
+la base ne connaît pas le genre d'un nom d'essence (c'est pour cela que le
+« sur un » de la planche du 11 septembre avait été retiré au codage). Donc :
+`TaxonSchema` + colonne `article` sur `taxons_phyto` (migration, nullable :
+expand), et les fiches 1 à 3 reçoivent le leur (« un platane », « un chêne »,
+« un hêtre », les résineux du fomès). Sans article en base, l'écran écrit
+`Probable.` puis le nom sur sa ligne, jamais un article deviné. Les
+`organisme`/`titre` des fiches 2 et 3 portent un tiret (« INRAE — Ephytia ») :
+à réécrire en même temps (« INRAE, Ephytia »). Ce lot touche `drizzle/`, donc
+niveau 3 : à jouer quand il autorisera une batterie.
+
 **Sur son oui :** le fichier **004-brunissure-peuplier.json** dans `donnees/phyto/fiches/` +
 **brunissure-peuplier-feuille.jpg** dans `donnees/phyto/images/` (ils n'existent pas encore, exprès), `--verifier`, puis
 `npx tsx scripts/test-import-fiches-phyto.ts` et `test-diagnostic-base.ts`, et
