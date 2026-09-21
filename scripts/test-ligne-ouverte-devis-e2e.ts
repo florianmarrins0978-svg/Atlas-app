@@ -183,9 +183,14 @@ async function main() {
   await page.getByLabel("Description 2").fill("Évacuation — la seconde");
   await page.getByLabel("Description 2").blur();
 
+  // **On attend les deux LIBELLÉS, pas seulement les deux rangées.** Une rangée
+  // naît vide à l'ouverture de la ligne, son libellé arrive à l'écriture
+  // suivante : n'attendre que le compte lisait « | » sur une machine chargée
+  // — trois rouges d'affilée le 21 septembre 2026, sur un produit juste — et
+  // accusait le croisement des lignes à tort.
   const deux = await attendreEnBase(
     () => pool.query(`SELECT libelle FROM lignes_prix WHERE chantier_id = $1 ORDER BY ordre`, [chantierDeux]),
-    (r) => r.rowCount === 2
+    (r) => r.rowCount === 2 && r.rows.every((l) => Boolean(l.libelle))
   );
   assert.equal(deux.rowCount, 2, `Le devis porte ${deux.rowCount} ligne(s) au lieu de deux.`);
   assert.match(
