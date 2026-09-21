@@ -100,10 +100,71 @@ export function raisonDuSilence(outil: string): string {
 export function exigerLesOutils(...outils: string[]): void {
   const manquant = outilManquant(outils);
   if (manquant === null) return;
+  seTaire(raisonDuSilence(manquant));
+}
+
+/**
+ * ─────────────────────────────────────────────────────────────────────────────
+ * CE QUI MANQUE N'EST PAS TOUJOURS UN OUTIL : PARFOIS C'EST LE SYSTÈME.
+ *
+ * **Mesuré sur son PC le 20 septembre 2026**, après le mécanisme des outils :
+ * `bash`, `gh`, `curl` y RÉPONDENT — Git en livre un, `gh` est installé —,
+ * donc treize suites d'outillage tournaient, et six tombaient quand même. Pas
+ * sur un outil : sur un mécanisme que Windows n'a pas.
+ *
+ * | ce que la suite emploie | ce que Windows en fait |
+ * |---|---|
+ * | `process.kill(-pid)` — tuer un groupe de processus | n'existe pas : le veilleur d'essai survit, la suite rougit, et l'orphelin reste |
+ * | un fichier `#!/bin/sh` rendu exécutable par `chmod` | n'est pas exécutable : `spawn` rend ENOENT |
+ * | `PATH` séparé par `:` | le séparateur est `;` : le faux binaire n'est jamais trouvé |
+ *
+ * **La même règle que pour un outil** : la suite déclare le mécanisme qu'elle
+ * emploie — un fait sur elle, vrai partout —, et c'est la machine qu'on
+ * interroge. Le nom déclaré doit correspondre à une trace dans son code
+ * (`MECANISMES_POSIX`), sinon la déclaration est refusée : c'est ce qui
+ * empêche le silence de devenir la liste d'exemptions qu'on a écartée.
+ */
+export const MECANISMES_POSIX = {
+  "groupes de processus": /process\.kill\(-/,
+  "scripts exécutables par leur première ligne": /#!\//,
+  "PATH séparé par « : »": /PATH: `\$\{[^}]+\}:/,
+} as const;
+
+export type MecanismePosix = keyof typeof MECANISMES_POSIX;
+
+/**
+ * Le premier mécanisme que cette plateforme n'a pas, ou `null`.
+ *
+ * **Fonction pure** : on lui montre « win32 » sans avoir de PC Windows sous la
+ * main, et Linux sans y être — un contrôle jamais vu rouge ne prouve rien.
+ */
+export function mecanismeManquant(
+  mecanismes: readonly MecanismePosix[],
+  plateforme: NodeJS.Platform = process.platform
+): MecanismePosix | null {
+  for (const m of mecanismes) {
+    if (!(m in MECANISMES_POSIX)) throw new Error(`« ${m} » n'est pas un mécanisme connu de _outil-requis.ts`);
+  }
+  return plateforme === "win32" ? (mecanismes[0] ?? null) : null;
+}
+
+/** La phrase rendue — elle NOMME le mécanisme et le système. */
+export function raisonDuSilenceSysteme(mecanisme: MecanismePosix, plateforme: NodeJS.Platform = process.platform): string {
+  return `${mecanisme} : « ${plateforme} » n'en a pas`;
+}
+
+/** À APPELER EN TÊTE D'UNE SUITE, comme `exigerLesOutils`, et pour la même raison. */
+export function exigerUnSystemePosix(...mecanismes: MecanismePosix[]): void {
+  const manquant = mecanismeManquant(mecanismes);
+  if (manquant === null) return;
+  seTaire(raisonDuSilenceSysteme(manquant));
+}
+
+function seTaire(raison: string): never {
   const fichier = path.basename(process.argv[1] ?? "cette suite");
   // La phrase exacte que les moteurs relisent — écrite là-bas, jamais recopiée
   // ici : deux orthographes d'un même message finissent par diverger, et un
   // silence mal écrit deviendrait un rouge invisible (`CLAUDE.md` §3).
-  console.log(phraseDeNonMesurable(fichier, raisonDuSilence(manquant)));
+  console.log(phraseDeNonMesurable(fichier, raison));
   process.exit(CODE_NON_MESURABLE);
 }

@@ -1,4 +1,4 @@
-import { and, count, eq, isNull } from "drizzle-orm";
+import { and, count, eq, inArray, isNull } from "drizzle-orm";
 import { withEntreprise } from "../db/with-entreprise";
 import { chantiers, clients } from "../db/schema";
 import type { Ctx } from "./context";
@@ -7,6 +7,7 @@ import {
   rapprocherClient,
   complementsPourFiche,
   clientAPreremplir,
+  clientsProposes,
 } from "@/lib/rapprochement-client";
 
 export async function listerClients(ctx: Ctx) {
@@ -69,46 +70,89 @@ export type ClientReconnu = {
 };
 
 /**
- * RECONNAÎTRE LE CLIENT PENDANT QU'IL TAPE — proposition C, tranchée le
- * 9 septembre 2026.
+ * Ce que l'écran apprend d'une frappe — celui qu'on POSE, et ceux qu'on PROPOSE.
  *
- * Rend `null` tant que l'identification n'est pas certaine : c'est
+ * **Une seule question, une seule réponse.** L'écran demande « qui cela
+ * peut-il être ? » et reçoit les deux moitiés ensemble : une seconde action
+ * pour les propositions aurait doublé les requêtes à chaque lettre et fait
+ * vivre deux attentes de frappe — deux règles pour une question, que
+ * `CLAUDE.md` §3 refuse.
+ */
+export type ReconnaissanceClient = {
+  /** Celui qu'Atlas pose de lui-même. `null` tant que ce n'est pas certain. */
+  lui: ClientReconnu | null;
+  /**
+   * Ceux qu'il propose quand il n'ose pas poser — vide dès qu'il a posé.
+   *
+   * Poser ET proposer le même homme, ce serait deux réponses à une question :
+   * la fiche se remplit toute seule, et une liste sous la case redemanderait
+   * de choisir ce qui vient d'être choisi.
+   */
+  propositions: ClientReconnu[];
+};
+
+/**
+ * RECONNAÎTRE LE CLIENT PENDANT QU'IL TAPE — proposition C, tranchée le
+ * 9 septembre 2026 ; et le PROPOSER quand le nom n'est que commencé, sa
+ * demande du 20 septembre 2026.
+ *
+ * `lui` reste `null` tant que l'identification n'est pas certaine : c'est
  * `clientAPreremplir` qui en décide, et elle seule. Ici on ne fait que lui
- * donner à lire, puis compter ses chantiers pour que le patron sache **de qui**
- * il s'agit — sur quatre Martins, « Saint-Marc · 3 chantiers » est ce qui les
- * sépare à l'œil.
+ * donner à lire, puis compter les chantiers pour que le patron sache **de
+ * qui** il s'agit — sur quatre Martins, « Saint-Marc · 3 chantiers » est ce
+ * qui les sépare à l'œil.
  */
 export async function reconnaitreLeClient(
   ctx: Ctx,
   saisie: { nom: string; telephone?: string; email?: string }
-): Promise<ClientReconnu | null> {
+): Promise<ReconnaissanceClient> {
   const nom = saisie.nom.trim();
   // Deux lettres ne reconnaissent personne, et interroger la base à chaque
   // frappe ferait une requête par caractère pour rien.
-  if (nom.length < 2) return null;
+  if (nom.length < 2) return { lui: null, propositions: [] };
 
   const existants = await clientsQuOnPeutReconnaitre(ctx);
-  const lui = clientAPreremplir({ ...saisie, nom }, existants);
-  if (!lui) return null;
+  const certain = clientAPreremplir({ ...saisie, nom }, existants);
+  const proposes = certain ? [] : clientsProposes({ ...saisie, nom }, existants);
 
-  const retrouve = existants.find((c) => c.id === lui.id)!;
-  const [compte] = await withEntreprise(ctx.utilisateurId, ctx.entrepriseId, (tx) =>
+  const retenus = certain ? [certain] : proposes;
+  if (retenus.length === 0) return { lui: null, propositions: [] };
+
+  const comptes = await compterLesChantiers(ctx, retenus.map((c) => c.id));
+  const fiches = retenus.map((c) => {
+    const retrouve = existants.find((e) => e.id === c.id)!;
+    return {
+      id: retrouve.id,
+      nom: retrouve.nom,
+      civilite: retrouve.civilite as Civilite | null,
+      telephone: retrouve.telephone,
+      email: retrouve.email,
+      adresse: retrouve.adresse,
+      canalCommunication: retrouve.canalCommunication as CanalClient | null,
+      chantiers: comptes.get(retrouve.id) ?? 0,
+    };
+  });
+
+  return certain ? { lui: fiches[0], propositions: [] } : { lui: null, propositions: fiches };
+}
+
+/**
+ * Combien de chantiers portent chacune de ces fiches.
+ *
+ * **Une seule requête pour toute la liste**, et non une par proposition : cinq
+ * allers-retours à chaque pause de frappe se paient sur un téléphone en
+ * bordure de réseau, là où il s'en sert.
+ */
+async function compterLesChantiers(ctx: Ctx, ids: string[]): Promise<Map<string, number>> {
+  if (ids.length === 0) return new Map();
+  const lignes = await withEntreprise(ctx.utilisateurId, ctx.entrepriseId, (tx) =>
     tx
-      .select({ n: count() })
+      .select({ clientId: chantiers.clientId, n: count() })
       .from(chantiers)
-      .where(and(eq(chantiers.clientId, lui.id), isNull(chantiers.deletedAt)))
+      .where(and(inArray(chantiers.clientId, ids), isNull(chantiers.deletedAt)))
+      .groupBy(chantiers.clientId)
   );
-
-  return {
-    id: retrouve.id,
-    nom: retrouve.nom,
-    civilite: retrouve.civilite as Civilite | null,
-    telephone: retrouve.telephone,
-    email: retrouve.email,
-    adresse: retrouve.adresse,
-    canalCommunication: retrouve.canalCommunication as CanalClient | null,
-    chantiers: Number(compte?.n ?? 0),
-  };
+  return new Map(lignes.map((l) => [l.clientId as string, Number(l.n)]));
 }
 
 /**

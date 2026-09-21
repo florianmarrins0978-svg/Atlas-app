@@ -12,6 +12,7 @@ import {
   rapprocherClient,
   complementsPourFiche,
   clientAPreremplir,
+  clientsProposes,
   type ClientExistant,
 } from "../src/lib/rapprochement-client";
 
@@ -257,6 +258,93 @@ essai("sans refus, le même nom retrouve bien le même homme — le contrôle sa
 essai("la civilité tapée à la volée ne casse pas la reconnaissance", () => {
   const lui = client({ id: "a", nom: "Martins", telephone: "0612345678" });
   assert.equal(clientAPreremplir({ nom: "M. Martins" }, [lui])?.id, "a");
+});
+
+
+// ═══════════════════════════════════════════════════════════════════════════
+// CE QU'ATLAS PROPOSE QUAND IL N'OSE PAS POSER — sa demande du 20 septembre
+// 2026, la capture de sa fiche client à l'appui : *« je tape le prénom d'un
+// client qui existe, il ne me le reconnaît pas ; il doit me le proposer et
+// remplir le champ direct »*.
+//
+// **Pourquoi la reconnaissance ne pouvait PAS y répondre.** Elle compare deux
+// noms ENTIERS (`nomRapproche` des deux côtés) : « Julien » n'est pas « Julien
+// Bernard », donc personne. Ce n'est pas un réglage trop prudent, c'est une
+// question qu'on ne lui avait jamais posée — celle du nom COMMENCÉ.
+//
+// **Et proposer n'est pas poser.** Poser, c'est écrire le numéro d'un homme
+// sur la fiche d'un autre avant qu'il ait fini sa phrase ; proposer attend son
+// doigt. C'est ce qui autorise ici la liste que la pose s'interdit.
+
+essai("le PRÉNOM seul propose le client qui le porte — le défaut du 20 septembre", () => {
+  const lui = client({ id: "a", nom: "Julien Bernard" });
+  // La reconnaissance, elle, ne voit rien : c'est le défaut qu'il a montré.
+  assert.equal(clientAPreremplir({ nom: "Julien" }, [lui]), null);
+  assert.deepEqual(clientsProposes({ nom: "Julien" }, [lui]).map((c) => c.id), ["a"]);
+});
+
+essai("le NOM DE FAMILLE seul le propose aussi, pas seulement le début de la fiche", () => {
+  const lui = client({ id: "a", nom: "Julien Bernard" });
+  assert.deepEqual(clientsProposes({ nom: "Bernard" }, [lui]).map((c) => c.id), ["a"]);
+});
+
+essai("un début de mot suffit, accents et casse compris", () => {
+  const lui = client({ id: "a", nom: "Jean-Michel Rivière" });
+  assert.deepEqual(clientsProposes({ nom: "RIVIE" }, [lui]).map((c) => c.id), ["a"]);
+});
+
+essai("une lettre ne propose personne : ce serait tout le carnet", () => {
+  assert.deepEqual(clientsProposes({ nom: "J" }, [client({ id: "a", nom: "Julien Bernard" })]), []);
+});
+
+essai("ce qui ne commence aucun mot ne propose rien — on n'est pas dans le « contient »", () => {
+  // « nard » est DANS « Bernard » ; le proposer ferait apparaître des noms que
+  // personne ne cherchait, et la liste cesserait d'être lue.
+  assert.deepEqual(clientsProposes({ nom: "nard" }, [client({ id: "a", nom: "Julien Bernard" })]), []);
+});
+
+essai("les quatre Martins se proposent TOUS — c'est le cas que la pose refuse", () => {
+  // `clientAPreremplir` rend `null` sur des homonymes : on ne devine pas
+  // lequel. La liste, elle, les montre et c'est LUI qui tranche.
+  const eux = [
+    client({ id: "a", nom: "Martins", adresse: "3 rue des Lilas, Saint-Marc" }),
+    client({ id: "b", nom: "Martins", adresse: "8 rue Haute, Nantes" }),
+  ];
+  assert.equal(clientAPreremplir({ nom: "Martins" }, eux), null);
+  assert.equal(clientsProposes({ nom: "Martins" }, eux).length, 2);
+});
+
+essai("le plus récent passe devant, à égalité de ressemblance", () => {
+  const eux = [
+    client({ id: "vieux", nom: "Martins", creeLe: "2025-01-01T00:00:00.000Z" }),
+    client({ id: "recent", nom: "Martins", creeLe: "2026-05-01T00:00:00.000Z" }),
+  ];
+  assert.deepEqual(clientsProposes({ nom: "Martins" }, eux).map((c) => c.id), ["recent", "vieux"]);
+});
+
+essai("celui dont le nom COMMENCE par ce qui est tapé passe devant celui dont c'est le second mot", () => {
+  const eux = [
+    client({ id: "second", nom: "Paul Martins" }),
+    client({ id: "debut", nom: "Martins Paul" }),
+  ];
+  assert.deepEqual(clientsProposes({ nom: "Martins" }, eux).map((c) => c.id), ["debut", "second"]);
+});
+
+essai("la liste est bornée : un carnet entier ne tient pas sous la case", () => {
+  const eux = Array.from({ length: 12 }, (_, i) => client({ id: `c${i}`, nom: `Martins ${i}` }));
+  assert.equal(clientsProposes({ nom: "Martins" }, eux).length, 5);
+});
+
+essai("« Ce n'est pas lui » ferme la liste comme il ferme la pose", () => {
+  // Sans cela, Atlas répondrait « si, c'est lui » à celui qu'il vient
+  // d'écarter — sous forme de proposition au lieu de fiche posée.
+  const lui = client({ id: "a", nom: "Martins" });
+  assert.deepEqual(clientsProposes({ nom: "Martins", refuseLeRapprochement: true }, [lui]), []);
+});
+
+essai("la civilité tapée à la volée ne gêne pas la proposition", () => {
+  const lui = client({ id: "a", nom: "Julien Bernard" });
+  assert.deepEqual(clientsProposes({ nom: "M. Julien" }, [lui]).map((c) => c.id), ["a"]);
 });
 
 console.log(`\n${echecs === 0 ? "✅" : "❌"} Reconnaître un client — ${echecs} échec(s).`);

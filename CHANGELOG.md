@@ -8,6 +8,46 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-21
 
+### Ce qu'il remplit passe sur la page où il remplit — et le mot d'un règlement est à lui
+
+Sa correction, planche en main : « + Main d'œuvre », « + Règlement reçu » et
+l'interrupteur « Facture acquittée » vivaient sur la page de la facture, qui
+ne sert qu'à vérifier avant l'envoi. Ils sont désormais sur « Remplir la
+facture », à la place qu'ils ont sur le devis ; la facture les LIT.
+
+Avec eux, trois choses. Le nom d'un règlement s'écrit (migration 0098) : il
+était déduit du rang — « Acompte 30 % » —, ce qui reste la proposition, mais
+des arrhes ou un avoir ne sont pas des acomptes, et c'est sa facture qui part.
+L'acquittement dit « Acquittée le 21/09/2026 » en or, le même mot à l'écran et
+sur le papier, écrit par la fonction du PDF. Et « Remplir la facture » est
+collé sous le pouce, au-dessus de la barre d'onglets.
+
+Un défaut trouvé sur la capture, et par rien d'autre : un libellé long passait
+par-dessus la colonne du moyen. `ARCHITECTURE.md` §398.
+
+### Une planche : main d'œuvre, règlements et « Facture acquittée » là où il REMPLIT
+
+Ses trois corrections du 21 septembre, capture à l'appui. « + Main d'œuvre » et
+« + Règlement reçu » vivent sur la page de la facture — celle de l'arrêt 3, qui
+ne sert qu'à vérifier avant l'envoi —, et l'interrupteur « Facture acquittée »
+avec eux ; lui les attend sur « Remplir la facture », *« comme sur le devis »*,
+où le devis porte déjà sa main d'œuvre et ses acomptes. Et l'acquittement doit
+se VOIR : un encadré doré sous le Total TTC, au-dessus de « Revenir à la
+facture ». `appli/facture-remplir-acquittee.html` montre les deux écrans, avec
+un bouton « Aujourd'hui » qui éteint les trois ajouts pour comparer.
+**Rien n'est codé** (`CLAUDE.md` §3 bis) : la question qui reste — les trois
+gestes quittent-ils la page de la facture, ou restent-ils aux deux endroits ?
+— est posée sous l'écran, et elle est à lui.
+
+### La fiche de sécurité du décret 2021-1833 a sa planche, et ses trois inconnues sont levées
+
+Sa question du 21 septembre — la fiche d'intervention obligatoire avant un
+chantier d'élagage. Six réponses de lui, trois points vérifiés à la source
+(article R. 717-85-16, champ d'application, notice MSA), et une planche sur la
+fiche du jour : `appli/fiche-de-securite.html`. Rien n'est coché d'avance, ce qui
+reste vide se dit avant de signer. Rien dans `src/` : il choisit d'abord.
+
+
 ### Un chantier terminé ne perd plus sa date — et sans planning, c'est sa facture qui la donne
 
 Deux rangées « Mr. Julien » n'avaient pas de deuxième ligne sur son écran
@@ -23,7 +63,7 @@ Et « retirer du planning » est **refusé dès qu'une facture est préparée** 
 remettait la date à NULL sans rien regarder, le chantier restait terminé, et sa
 date était perdue pour toujours. Le refus vit dans le dépôt, où les trois
 portes passent ; chacune le rend en valeur, jamais en exception.
-`ARCHITECTURE.md` §396.
+`ARCHITECTURE.md` §400.
 
 ### La comparaison des rouges lit le journal entier — un rouge n'y passe plus pour vert
 
@@ -166,6 +206,23 @@ Son cas d'aujourd'hui, lui, se répare sans code : le chantier est passé à
 `retourne`, et un nouvel envoi rouvre un lien neuf (`creerEnvoi` ne refuse
 rien).
 
+### Le prénom seul propose le client — et le remplit d'un doigt
+
+Il tapait « Julien » dans la fiche client : rien. La reconnaissance compare des
+noms **entiers** — « julien » n'est pas « julien bernard » —, elle ne trouvait
+personne, et ne le disait pas. Le chantier partait alors sans client, et
+« Envoyer à » n'avait aucun numéro à proposer.
+
+Un nom seulement COMMENCÉ ouvre désormais une liste sous la case : son nom
+entier, sa ville, ses chantiers. On la touche, le nom se complète, les cases
+vides se remplissent, et le chantier va sur SA fiche — plus de fiche en double.
+
+**La reconnaissance automatique n'a pas bougé d'un pouce** : elle continue de
+ne rien poser tant que ce n'est pas certain. Proposer n'est pas poser — l'une
+écrit à sa place, l'autre lui rend le choix. C'est ce qui permet à la liste de
+montrer ses quatre Martins là où la pose se tait. `ARCHITECTURE.md` §399.
+
+
 ### Une suite qui ne peut rien mesurer ici se tait, au lieu de rougir
 
 Dix-neuf suites d'outillage rougissaient sur son PC Windows faute de `bash`,
@@ -179,6 +236,27 @@ Le moteur écrit les deux chiffres, et le bilan refuse de conclure s'ils ne se
 recoupent pas. `ARCHITECTURE.md` §390.
 
 **Non vérifié sur Windows** : ce poste est sous Linux. À mesurer sur son PC.
+
+### Mesuré sur son PC : treize suites rougissaient encore, quatre racines
+
+`bash`, `gh` et `curl` répondent sur Windows ; seules les trois suites qui
+appellent `npx` se taisaient. `npm test` y rendait « 383/398 suites réussies.
+2 non mesurable(s) ici. » Chaque rouge est allé à sa racine :
+
+- l'empreinte des sources écrit les chemins comme git — barre oblique —, et non
+  plus avec la barre inversée de Windows ; les deux couches qui compensaient en aval sont retirées,
+  et les verdicts déjà déposés se relisent sans faire passer l'arbre pour remué ;
+- les dépôts d'essai qui modèlent son espace Linux se montent avec
+  `core.autocrlf=false`, sinon son git y écrit du CRLF et le contenu « change » ;
+- `test-secret-authentification-db` lisait une variable que personne ne pose,
+  et interrogeait une autre base que celle du décor dès l'atelier 1 ;
+- six suites emploient des groupes de processus, des scripts `#!/bin/sh` ou un
+  `PATH` en `:` — Windows n'en a pas : `exigerUnSystemePosix(…)`, même règle
+  que pour un outil, et le silence nomme le mécanisme et le système ;
+- `test-version-executee` mesure aussi un arbre détaché : aucune branche
+  affichée, plutôt que « HEAD » exigé.
+
+`ARCHITECTURE.md` §396.
 
 ### La fiche d'intervention est codée — sa sixième planche, exactement
 

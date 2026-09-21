@@ -81,6 +81,20 @@ async function main() {
     // date et sept caractères d'empreinte ne pouvaient pas l'arbitrer.
     await avec({ ATLAS_BANC_ESSAI: "1", ATLAS_VERSION: undefined, RELEASE_VERSION: undefined }, async () => {
       const v = await versionExecutee();
+      if (BRANCHE === "HEAD") {
+        // **Un arbre DÉTACHÉ n'a pas de branche, et la ligne ne doit pas en
+        // inventer une.** C'est l'état du dossier de batterie (`git checkout
+        // --detach origin/main`, `CLAUDE.md` §6) : exiger « HEAD » dans la
+        // ligne y rougissait sur une règle juste, et l'accepter comme nom de
+        // branche ferait afficher « HEAD » au patron — un mot qui ne répond à
+        // rien. On mesure donc l'autre moitié de la règle : rien après le commit.
+        const apresLeCommit = v && v.includes(COURT) ? v.slice(v.indexOf(COURT) + COURT.length) : null;
+        assert.ok(
+          apresLeCommit !== null && !apresLeCommit.includes("·"),
+          `La version affichée « ${v} » prête une branche à un arbre détaché : elle ne pourrait qu'être fausse.`
+        );
+        return;
+      }
       assert.ok(
         v?.includes(BRANCHE),
         `La version affichée « ${v} » ne nomme pas la branche servie (${BRANCHE}) : ` +

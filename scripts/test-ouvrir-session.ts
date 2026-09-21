@@ -17,6 +17,12 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { cheminDuJeton, JETONS } from "./ouvrir-session.mjs";
+import { exigerUnSystemePosix } from "./_outil-requis";
+
+// **Sans ces mécanismes, cette suite ne mesure RIEN** — elle le dit et sort du
+// compte, au lieu de rougir sur une machine qui n'y est pour rien
+// (`_outil-requis.ts`, mesuré sur son PC le 20 septembre 2026).
+exigerUnSystemePosix("scripts exécutables par leur première ligne", "PATH séparé par « : »");
 
 /**
  * **CHARGER CE FICHIER NE DOIT RIEN OUVRIR — 13 septembre 2026.**

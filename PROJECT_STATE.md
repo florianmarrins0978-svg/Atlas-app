@@ -1,6 +1,35 @@
 # État du projet
 
 **Dernière mise à jour :** 2026-09-21 · `main`
+· dernière migration `drizzle/0098_libelle_du_reglement.sql`
+
+---
+
+## FAIT : LA FACTURE SE REMPLIT OÙ ON LA REMPLIT (21 septembre 2026)
+
+*« À corriger : le + main d'œuvre et + règlement reçu. Le bouton facture
+acquittée doit apparaître lorsque je remplis la facture, comme sur le devis ! »*
+Les trois gestes passent sur `travaux-supplementaires` — la feuille où il
+remplit —, et la page de la facture ne fait plus que les lire. Le nom d'un
+règlement s'écrit (migration 0098) au lieu d'être déduit du rang ;
+l'acquittement porte « Acquittée le … » en or, le mot du PDF, aux deux
+endroits ; « Remplir la facture » est collé sous le pouce. Planche
+`appli/facture-remplir-acquittee.html`, codée sur son « code exactement cette
+planche ». `ARCHITECTURE.md` §398.
+
+## FAIT : LA NUIT DU 21 SEPTEMBRE 2026 — QUATRE LOTS SUR `main` DEPUIS SON PC
+
+| Lot | Ce qu'il apporte |
+|---|---|
+| suites d'outillage sur Windows | `npm test` y rend « 8 non mesurable(s) ici », plus aucun rouge d'outillage ; chemins façon git dans l'empreinte, `exigerUnSystemePosix`, une suite base qui suivait mal l'atelier (`ARCHITECTURE.md` §396) |
+| le garde-fou du dossier visé | une poussée depuis un autre dossier est jugée par le garde-fou de CE dossier (§397) |
+| la comparaison des rouges lit les deux flux | un rouge n'y passe plus pour vert (§392) |
+| photos en lot, trois plafonds | plusieurs photos d'un coup sur le retour du jour ; 15 / 10 / 30 (§393) |
+| document à faire, point 16 | le nom de domaine qui bloque le devis par e-mail cliquable |
+
+**Ce qui reste ouvert :** `test-travaux-a-faire-e2e` rougit selon l'ordre des suites (`TODO.md`) ; l'envoi du devis par Atlas attend son adresse pro.
+
+
 · dernière migration `drizzle/0097_jours_retenus_par_le_client.sql`
 
 ---
@@ -15,7 +44,7 @@ décision : *« il faut même mettre la date du jour à laquelle on a créé la
 facture »*. La date se lit désormais `date_planifiee ?? date d'émission de la
 facture`, par une seule fonction (rangement, tri, affichage), et « retirer du
 planning » est refusé dès qu'une facture est préparée — il effaçait la date
-pour toujours. `ARCHITECTURE.md` §396.
+pour toujours. `ARCHITECTURE.md` §400.
 
 ## FAIT : L'ÉCRAN DU CLIENT — CONFIRMATION DU REFUS, ET SES JOURS (20 septembre 2026)
 
@@ -45,6 +74,15 @@ base** tant qu'il n'a rien écrit : une ligne vide posée d'office ferait
 disparaître la dictée suivante (sa panne du 7 août). `ligne-ouverte-devis.ts`,
 deux suites, vingt-cinq suites délestées d'un clic devenu inutile.
 `ARCHITECTURE.md` §394.
+
+## FAIT : LE PRÉNOM SEUL PROPOSE LE CLIENT (20 septembre 2026)
+
+Il tapait « Julien » dans la fiche client et Atlas ne reconnaissait rien : la
+reconnaissance compare des noms ENTIERS. Un nom commencé ouvre désormais une
+liste sous la case — nom entier, ville, chantiers —, on la touche, les cases
+vides se remplissent, et le chantier va sur SA fiche. La reconnaissance
+automatique, elle, n'a pas bougé : elle ne pose toujours rien tant que ce n'est
+pas certain. `ARCHITECTURE.md` §399.
 
 ## FAIT : LA FICHE D'INTERVENTION DE SA SIXIÈME PLANCHE (20 septembre 2026)
 

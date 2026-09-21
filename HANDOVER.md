@@ -4,14 +4,44 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-09-21 · `main` — un chantier terminé ne perd plus sa date
+**Point de reprise :** 2026-09-21 · `main` — un chantier terminé ne perd plus sa
+date ; avant elle, la facture qui se remplit où on la remplit, le prénom seul
+qui propose le client, et les suites d'outillage qui se taisent sur son PC
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
 
+## OÙ VIT UN GESTE DE LA FACTURE — 21 septembre 2026
+
+Deux écrans portent les mêmes chiffres, et ils ne font pas le même métier.
+Avant de poser un bouton sur l'un des deux, savoir lequel :
+
+| | |
+|---|---|
+| `facture/travaux-supplementaires` | **il REMPLIT** : lignes, TVA, remise, main d'œuvre, règlements reçus, « Facture acquittée » |
+| `facture` | **il VÉRIFIE** (arrêt 3) : les mêmes chiffres en lecture, et l'envoi |
+
+Les pièces sont partagées, jamais recopiées : `ReglementsRecus` (prop `fige`,
+et `carte` pour savoir s'il porte sa propre carte) et `LigneMainDoeuvre` (ses
+trois gestes sont optionnels : figée, la ligne n'en a pas). Le nom d'un
+règlement se lit par `nomAcompte` — ce qu'il a écrit d'abord, la déduction du
+rang ensuite —, et l'acquittement par `tamponAcquittee`, celui du PDF.
+`ARCHITECTURE.md` §396.
+
+---
+
+## LIVRER DEPUIS SON PC — ce que la nuit du 21 septembre 2026 a appris
+
+- **un dossier = un verdict** : jouer le contrôle d'un second lot dans le même worktree écrase `.atlas-dernier-verdict.json` du premier — un worktree par lot, ou finir l'un avant l'autre ;
+- **`verifier-rouge-prealable` veut `DATABASE_URL`/`REDIS_URL` posées telles quelles** (pas seulement `ATLAS_BASE_*`), sinon « illisible » des deux côtés ;
+- **`next build` gonfle `tsconfig.json`** : le mettre de côté (`git stash push -- tsconfig.json`) avant `verifier-ce-qui-a-bouge` et avant de pousser, sinon « le lot a changé » au niveau 3 ;
+- **une suite dont le nom porte « devis »** fait monter n'importe quel lot au niveau 3 : corriger une suite de ce nom coûte une batterie ;
+- **les suites qui tuent un groupe de processus** laissent un orphelin sur Windows si elles ne le déclarent pas (`exigerUnSystemePosix`) — les arrêter par PID, jamais par nom.
+
+
 ## LA DATE D'UN CHANTIER TERMINÉ A DEUX SOURCES — et le planning n'est plus la seule
 
-**Depuis le 21 septembre 2026** (`ARCHITECTURE.md` §396). Avant de toucher à
+**Depuis le 21 septembre 2026** (`ARCHITECTURE.md` §400). Avant de toucher à
 « Terminés » ou au rangement par mois :
 
 | | |
@@ -80,6 +110,24 @@ Ce qu'une session doit savoir avant de toucher `DevisCompletClient.tsx` :
   disparaît sans rendre sa valeur : c'est le prix perdu du 20 septembre ;
 - **les suites n'appuient plus sur « + Ajouter une ligne » pour la première
   ligne** de cet écran. Celles de l'écran Prix, si.
+
+## LE NOM COMMENCÉ PROPOSE, LE NOM ENTIER POSE — 20 septembre 2026
+
+Sur la fiche client (`FormulaireNouveauChantier.tsx`), deux mécanismes vivent
+côte à côte, et il ne faut pas les confondre :
+
+- **`clientAPreremplir`** répond « est-ce certainement lui ? » et **pose** les
+  cases vides. Elle compare des noms ENTIERS, et rend `null` sur le moindre
+  doute — quatre Martins sans numéro, c'est `null`. **Ne pas la desserrer** :
+  poser le numéro d'un homme sur la fiche d'un autre est le seul dégât de cet
+  écran, et il ne se répare pas d'un clic ;
+- **`clientsProposes`** répond « par quoi cela peut-il commencer ? » et
+  **propose** une liste, qui attend son doigt. Elle ose là où la pose se tait.
+
+Les deux arrivent par la MÊME action (`reconnaitreLeClientAction`, qui rend
+`{ lui, propositions }`) : ne pas en ajouter une seconde, ce serait deux
+requêtes par pause de frappe. Et le choix se retient (`choisiPour`), sinon la
+liste se rouvre sous son doigt. `ARCHITECTURE.md` §399.
 
 ## LA FICHE D'INTERVENTION EST CELLE DE SA SIXIÈME PLANCHE — 20 septembre 2026
 

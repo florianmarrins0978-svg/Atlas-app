@@ -42,6 +42,11 @@ export type ReglementRecu = {
   numero: string | null;
   /** Posé par « Facture acquittée » : le solde, compté reçu. */
   solde: boolean;
+  /**
+   * Ce qu'il a ÉCRIT sur ce règlement (migration 0098). `null` : le nom se
+   * déduit du rang, comme avant — voir `nomAcompte`.
+   */
+  libelle: string | null;
 };
 
 /** « chèque n° 1806028 », « virement » — le numéro n'a de sens que pour un chèque. */
@@ -51,20 +56,32 @@ export function libelleReglement(g: Pick<ReglementRecu, "moyen" | "numero">): st
 }
 
 /**
- * « Acompte 30 % », « Acompte 50 % », « Acompte ».
+ * CE QU'IL A ÉCRIT, sinon « Acompte 30 % », « Acompte 50 % », « Acompte ».
  *
  * Le rang de l'acompte dit son taux — celui que le devis prévoyait à ce rang.
  * Au-delà des acomptes du devis, ou pour le solde posé par l'interrupteur,
  * « Acompte » tout court : ni taux inventé, ni « solde », qui n'est pas un
  * mot qu'il emploie.
+ *
+ * **Mais tout cela n'est qu'une PROPOSITION depuis le 21 septembre 2026**
+ * (migration 0098) : *« si c'est pas ça faut que je puisse écrire ce que
+ * c'est »*. Un libellé écrit passe devant, et il passe partout — c'est cette
+ * fonction que l'écran ET le papier appellent.
  */
 export function nomAcompte(
-  reglements: readonly Pick<ReglementRecu, "solde">[],
+  reglements: readonly Pick<ReglementRecu, "solde" | "libelle">[],
   index: number,
   acomptesDuDevis: readonly AcompteDevis[]
 ): string {
   const g = reglements[index];
-  if (!g || g.solde) return "Acompte";
+  if (!g) return "Acompte";
+  // **CE QU'IL A ÉCRIT PASSE AVANT TOUT — 21 septembre 2026.** « Acompte 30 % »
+  // n'est qu'une proposition ; des arrhes ou un avoir ne sont pas des acomptes,
+  // et c'est sa facture qui part. L'écran, le PDF et le papier appellent tous
+  // cette fonction : le mot ne peut donc pas différer de l'un à l'autre.
+  const ecrit = g.libelle?.trim();
+  if (ecrit) return ecrit;
+  if (g.solde) return "Acompte";
   const tries = [...acomptesDuDevis].sort((a, b) => a.rang - b.rang);
   const taux = tries[index]?.tauxCumule;
   return taux ? `Acompte ${new Decimal(taux).toDecimalPlaces(2).toString().replace(".", ",")} %` : "Acompte";

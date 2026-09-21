@@ -3,12 +3,13 @@ import { spawn, type ChildProcess } from "node:child_process";
 import { writeFileSync, rmSync } from "node:fs";
 import { lancerNavigateur } from "./e2e-browser";
 import { ADRESSE } from "./_adresse";
-import { exigerLesOutils } from "./_outil-requis";
+import { exigerLesOutils, exigerUnSystemePosix } from "./_outil-requis";
 
 // **Sans ces outils, cette suite ne mesure RIEN** — elle le dit et sort du
 // compte, au lieu de rougir sur une machine qui n'y est pour rien
 // (`_outil-requis.ts`, sa colère du 20 septembre 2026).
 exigerLesOutils("npx");
+exigerUnSystemePosix("groupes de processus");
 
 /**
  * « Version rapide en construction » : il le voit sur son banc, et nulle part ailleurs.

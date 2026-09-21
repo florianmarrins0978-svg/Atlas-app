@@ -1,0 +1,18 @@
+-- CE QU'UN RÈGLEMENT EST, ÉCRIT PAR LUI — sa correction du 21 septembre 2026,
+-- sur la planche `appli/facture-remplir-acquittee.html` :
+--
+--   « Tu as marqué acompte 30 % d'office, c'est bien, mais si c'est pas ça
+--     faut que je puisse écrire ce que c'est. »
+--
+-- Jusqu'ici le nom d'un règlement était DÉDUIT de son rang et des acomptes du
+-- devis (`nomAcompte`) : « Acompte 30 % », « Acompte 50 % », « Acompte ». La
+-- déduction reste — c'est ce qui se propose quand il ne dit rien —, mais elle
+-- ne peut plus rien affirmer : des arrhes, un avoir, un chèque du beau-père
+-- ne sont pas des acomptes, et c'est SA facture qui part chez sa cliente.
+--
+-- La colonne est NULLABLE, et c'est ce qui rend cette migration sûre sur une
+-- base habitée : les règlements déjà posés gardent NULL, donc leur nom déduit,
+-- exactement celui qu'ils portaient hier. Rien à transiter, rien à compter.
+-- Un `UPDATE` ici aurait figé en dur un libellé que le devis peut encore
+-- changer — c'est le contraire de ce qu'on veut.
+ALTER TABLE "paiements_facture" ADD COLUMN IF NOT EXISTS "libelle" text;

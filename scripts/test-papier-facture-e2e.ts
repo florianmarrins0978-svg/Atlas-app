@@ -141,19 +141,30 @@ async function main() {
     await page.click("text=Créer la facture");
     await page.waitForSelector('[data-atlas="reglements-recus"]', { timeout: 20_000 });
 
-    await cas("la facture recopie le titre et la main d'œuvre, et porte la planche : règlements, acquittée, net", async () => {
+    // ─── CE QUI A CHANGÉ DE PAGE LE 21 SEPTEMBRE 2026 ────────────────────
+    // Sa correction : « + Main d'œuvre », « + Règlement reçu » et
+    // l'interrupteur « Facture acquittée » vivent là où il REMPLIT la facture.
+    // La page de la facture, elle, les LIT. La règle éprouvée ici n'a pas
+    // bougé d'un pouce — un règlement se pose, prend son nom, le net suit,
+    // l'acquittement le met à zéro —, c'est le CHEMIN du patron qui change
+    // (`CLAUDE.md` §5 bis : on adapte le contrôle, on ne remet pas l'écran).
+    await cas("la facture LIT le titre, la main d'œuvre et le net — elle ne les saisit plus", async () => {
       assert.equal(await page.locator('[data-atlas="titre-facture"]').inputValue(), "Aménagement du jardin");
       assert.equal(await page.locator('[data-atlas="montant-main-doeuvre"]').inputValue(), "450");
-      assert.equal(await page.locator('[data-atlas="poser-reglement"]').count(), 1, "« + Règlement reçu » manque");
-      assert.equal(await page.locator('[data-atlas="facture-acquittee"]').count(), 1, "l'interrupteur « Facture acquittée » manque");
+      assert.equal(await page.locator('[data-atlas="poser-main-doeuvre"]').count(), 0, "« + Main d’œuvre » est resté sur la facture");
+      assert.equal(await page.locator('[data-atlas="poser-reglement"]').count(), 0, "« + Règlement reçu » est resté sur la facture");
+      assert.equal(await page.locator('[data-atlas="facture-acquittee"]').count(), 0, "l'interrupteur est resté sur la facture");
       const net = lisible(await page.locator('[data-atlas="net-a-payer"]').innerText());
       assert.ok(net.includes("1 910,40"), `le net à payer devrait être le TTC entier : ${net}`);
     });
 
     await cas("« + Règlement reçu » pose « Acompte 30 % » avec ce que le devis prévoyait, chèque en tête", async () => {
+      // La feuille où il remplit : c'est là que les gestes vivent désormais.
+      await page.click('[data-atlas="ajouter-travaux-supplementaires"]');
+      await page.waitForSelector('[data-atlas="reglements-recus"]', { timeout: 20_000 });
       await page.click('[data-atlas="poser-reglement"]');
       await page.waitForSelector('[data-atlas="reglement-recu"]', { timeout: 10_000 });
-      assert.equal(await page.locator('[data-atlas="nom-acompte"]').first().innerText(), "Acompte 30 %");
+      assert.equal(await page.locator('[data-atlas="nom-acompte"]').first().inputValue(), "Acompte 30 %");
       assert.equal(await page.locator('[data-atlas="moyen-reglement"]').first().inputValue(), "cheque");
       assert.equal(await page.locator('[data-atlas="numero-cheque"]').count(), 1, "un chèque a sa case pour le numéro");
       assert.equal(await page.locator('[data-atlas="montant-reglement"]').first().inputValue(), "573,12");
@@ -182,10 +193,41 @@ async function main() {
       await page.waitForTimeout(800);
       assert.equal(lisible(await page.locator('[data-atlas="net-a-payer"]').innerText()), lisible("0,00 €"));
       assert.equal(await page.locator('[data-atlas="acquittee"]').count(), 1);
-      assert.equal(await page.locator('[data-atlas="nom-acompte"]').nth(1).innerText(), "Acompte");
+      // Le nom est un CHAMP ici depuis le 21 septembre : on lit sa valeur, pas
+      // son texte — un `innerText` sur un `<input>` rend une chaîne vide, et
+      // le contrôle accuserait alors le produit d'un mot manquant.
+      assert.equal(await page.locator('[data-atlas="nom-acompte"]').nth(1).inputValue(), "Acompte");
       await page.click('[data-atlas="facture-acquittee"]');
       await page.waitForTimeout(800);
       assert.ok(lisible(await page.locator('[data-atlas="net-a-payer"]').innerText()).includes("1 337,28"));
+    });
+
+    await cas("ce qu'il ÉCRIT sur un règlement remplace « Acompte 30 % », et la facture le relit", async () => {
+      // Sa correction du 21 septembre : « si c'est pas ça faut que je puisse
+      // écrire ce que c'est ». Le champ est ici, sur la feuille qu'il remplit.
+      const nom = page.locator('[data-atlas="nom-acompte"]').first();
+      await nom.fill("Arrhes à la signature");
+      await page.keyboard.press("Tab");
+      await page.waitForTimeout(700);
+      const { rows } = await pool.query(
+        `SELECT p.libelle FROM paiements_facture p JOIN factures f ON f.id = p.facture_id
+         WHERE f.chantier_id = $1 ORDER BY p.date_paiement, p.created_at`,
+        [chantierId]
+      );
+      assert.equal(rows[0]?.libelle, "Arrhes à la signature", "le mot écrit n'est pas arrivé en base");
+
+      // Et la page de la facture, qui ne fait plus que lire, porte le même mot.
+      await page.click('[data-atlas="revenir-a-la-facture"]');
+      // **Un repère de la FACTURE, pas un repère commun.** Le bloc des
+      // règlements vit désormais sur les deux pages : l'attendre laisserait le
+      // contrôle conclure sans avoir quitté la feuille de saisie.
+      await page.waitForSelector('[data-atlas="voir-facture"]', { timeout: 20_000 });
+      assert.equal(await page.locator('[data-atlas="nom-acompte"]').first().innerText(), "Arrhes à la signature");
+      // L'écran qu'il regarde avant d'envoyer : on le capture, il se relit.
+      await page.screenshot({ path: `${CAPTURES}/facture-en-lecture.png` });
+      await page.locator('[data-atlas="net-a-payer"]').scrollIntoViewIfNeeded();
+      await page.waitForTimeout(300);
+      await page.screenshot({ path: `${CAPTURES}/facture-reglements.png` });
     });
 
     await cas("le papier se regarde dans l'application, et il est capturé", async () => {

@@ -5,9 +5,13 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import {
   CODE_NON_MESURABLE,
+  MECANISMES_POSIX,
+  mecanismeManquant,
   outilManquant,
   outilRepond,
   raisonDuSilence,
+  raisonDuSilenceSysteme,
+  type MecanismePosix,
 } from "./_outil-requis";
 import { bilanDuJournal, phraseDeCompte } from "./_bilan-suites.mjs";
 
@@ -141,6 +145,81 @@ cas("un outil déclaré est un outil que la suite appelle vraiment", () => {
         const mentions = [...texte.matchAll(new RegExp(`"${outil}"`, "g"))].length;
         if (mentions <= 1) fautes.push(`${f} déclare « ${outil} » sans jamais l'appeler`);
       }
+    }
+  }
+  assert.deepEqual(fautes, [], fautes.join("\n      "));
+});
+
+/**
+ * ─────────────────────────────────────────────────────────────────────────────
+ * LE SYSTÈME QUI MANQUE — mesuré sur son PC le 20 septembre 2026.
+ *
+ * `bash` et `gh` y répondent ; six suites tombaient quand même, sur des groupes
+ * de processus, des scripts `#!/bin/sh` et un `PATH` séparé par `:` — trois
+ * choses que Windows n'a pas. Même règle que pour un outil : déclaré, nommé,
+ * et interrogé sur la MACHINE (`exigerUnSystemePosix`).
+ */
+console.log("\n=== Le système qui manque se dit, lui aussi ===\n");
+
+cas("sur Linux, aucun mécanisme POSIX ne manque — rien ne se tait", () => {
+  assert.equal(mecanismeManquant(["groupes de processus"], "linux"), null);
+  assert.equal(mecanismeManquant(["groupes de processus", "PATH séparé par « : »"], "darwin"), null);
+});
+
+cas("sur win32, le PREMIER mécanisme déclaré est nommé — le contrôle vu rouge", () => {
+  assert.equal(
+    mecanismeManquant(["scripts exécutables par leur première ligne", "groupes de processus"], "win32"),
+    "scripts exécutables par leur première ligne"
+  );
+  assert.match(raisonDuSilenceSysteme("groupes de processus", "win32"), /groupes de processus.*win32/);
+});
+
+cas("un mécanisme INCONNU est refusé — le silence ne s'invente pas", () => {
+  assert.throws(
+    () => mecanismeManquant(["le vent" as MecanismePosix], "linux"),
+    /n'est pas un mécanisme connu/
+  );
+});
+
+cas("un mécanisme déclaré laisse sa trace dans le code de la suite", () => {
+  // La même garde que pour un outil : déclarer « groupes de processus » sans
+  // jamais faire `process.kill(-pid)` serait une exemption déguisée.
+  const fautes: string[] = [];
+  for (const f of readdirSync("scripts")) {
+    if (!/^test-.*\.(ts|mts)$/.test(f)) continue;
+    if (f === path.basename(__filename ?? "")) continue;
+    const texte = readFileSync(path.join("scripts", f), "utf8");
+    for (const m of texte.matchAll(/exigerUnSystemePosix\(([^)]*)\)/g)) {
+      for (const n of m[1].matchAll(/"([^"]+)"/g)) {
+        const mecanisme = n[1] as MecanismePosix;
+        const trace = MECANISMES_POSIX[mecanisme];
+        if (!trace) {
+          fautes.push(`${f} déclare « ${mecanisme} », qui n'existe pas`);
+          continue;
+        }
+        if (!trace.test(texte)) fautes.push(`${f} déclare « ${mecanisme} » sans jamais l'employer`);
+      }
+    }
+  }
+  assert.deepEqual(fautes, [], fautes.join("\n      "));
+});
+
+cas("une suite qui tue un groupe de processus le DÉCLARE — sinon Windows garde un orphelin", () => {
+  // L'autre sens de la garde précédente, et il a un prix concret : pendant la
+  // mesure du 20 septembre 2026, chaque suite de cette espèce jouée sans
+  // déclaration a laissé sur son PC un veilleur d'essai que `process.kill(-pid)`
+  // n'avait pas tué, à publier dans un dossier temporaire toutes les deux
+  // secondes. On ne lit que le code : un commentaire qui cite le geste ne
+  // lance rien.
+  const estCommentaire = (l: string) => /^\s*(\/\/|\*|\/\*)/.test(l);
+  const fautes: string[] = [];
+  for (const f of readdirSync("scripts")) {
+    if (!/^test-.*\.(ts|mts)$/.test(f)) continue;
+    if (f === path.basename(__filename ?? "")) continue;
+    const code = readFileSync(path.join("scripts", f), "utf8").split("\n").filter((l) => !estCommentaire(l)).join("\n");
+    if (!MECANISMES_POSIX["groupes de processus"].test(code)) continue;
+    if (!/exigerUnSystemePosix\([^)]*"groupes de processus"/.test(code)) {
+      fautes.push(`${f} fait process.kill(-pid) sans déclarer « groupes de processus »`);
     }
   }
   assert.deepEqual(fautes, [], fautes.join("\n      "));

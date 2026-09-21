@@ -41,7 +41,7 @@ export function ceQuiABouge(parLeContenu, parGit) {
     .map((c) => String(c).replace(/\\/g, "/").trim())
     .filter(Boolean)
     .filter((c) => !INDEXE_PAR_LEMPREINTE.test(c));
-  return [...new Set([...parLeContenu.map((c) => String(c).replace(/\\/g, "/")), ...dehors])].sort();
+  return [...new Set([...parLeContenu, ...dehors])].sort();
 }
 
 /** Une suite navigateur se reconnaît à son nom, ici comme dans le moteur. */

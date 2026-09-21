@@ -22,6 +22,7 @@ import {
   reglementsRecus,
   retirerReglementRecu,
 } from "../src/server/repositories/paiements-facture";
+import { nomAcompte } from "../src/lib/acomptes-facture";
 import type { Ctx } from "../src/server/repositories/context";
 
 /**
@@ -159,6 +160,42 @@ async function main() {
     assert.ok(/Montants versés : chèque n° 1806028 du 02\/09\/2026, 522,23/.test(texte), "« Montants versés » manque");
     assert.ok(texte.includes("Mode de règlement : 30 % à la signature, 50 % à mi-parcours"), "le mode de règlement manque");
     assert.ok(!texte.includes("Sous-total"), "le tableau est encore coupé par taux");
+  });
+
+  await essai("le mot qu'il ÉCRIT remplace la proposition, à l'écran comme sur le papier", async () => {
+    // Sa correction du 21 septembre 2026 : « acompte 30 % d'office c'est bien,
+    // mais si c'est pas ça faut que je puisse écrire ce que c'est ». Avant la
+    // migration 0098, ce libellé n'allait nulle part : la colonne n'existait
+    // pas, et le nom restait déduit du rang.
+    const [premier] = await reglementsRecus(ctx, factureId);
+    const ecrit = await majReglementRecu(ctx, premier.id, {
+      date: premier.date,
+      montant: premier.montant,
+      moyen: premier.moyen,
+      numero: premier.numero,
+      libelle: "Arrhes à la signature",
+    });
+    assert.ok(ecrit.ok);
+    assert.equal(ecrit.reglements[0].libelle, "Arrhes à la signature");
+    assert.equal(
+      nomAcompte(ecrit.reglements, 0, [{ rang: 1, tauxCumule: "30" }]),
+      "Arrhes à la signature",
+      "la proposition a écrasé ce qu'il a écrit"
+    );
+    const texte = texteDuPdf(await genererPdfFacturePourApercu(ctx, factureId));
+    assert.ok(texte.includes("Arrhes à la signature"), `le papier ne porte pas son mot : ${texte.slice(0, 600)}`);
+
+    // Vidé, le nom déduit revient — jamais un blanc sur la pièce comptable.
+    const efface = await majReglementRecu(ctx, premier.id, {
+      date: premier.date,
+      montant: premier.montant,
+      moyen: premier.moyen,
+      numero: premier.numero,
+      libelle: "   ",
+    });
+    assert.ok(efface.ok);
+    assert.equal(efface.reglements[0].libelle, null, "une case vidée a été enregistrée telle quelle");
+    assert.equal(nomAcompte(efface.reglements, 0, [{ rang: 1, tauxCumule: "30" }]), "Acompte 30 %");
   });
 
   await essai("acquittée, le papier porte le tampon ; émise, plus rien ne se pose", async () => {
