@@ -3,6 +3,7 @@ import { withEntreprise } from "../db/with-entreprise";
 import { photos, fichiersAPurger, chantiers } from "../db/schema";
 import { enregistrerObjet, lireObjet } from "../storage";
 import { photoTenueParUnRetour } from "./retours-intervention";
+import { photoTenueParUneFiche } from "./fiches-securite";
 import { refusDuPlafondDuChantier } from "@/lib/photos-plafonds";
 import type { Ctx } from "./context";
 
@@ -212,7 +213,8 @@ function extensionDe(storageKey: string): string {
 // et il reste vrai. C'est le FICHIER qui survit, parce qu'un autre écran en
 // dépend.
 export async function supprimerPhoto(ctx: Ctx, photoId: string) {
-  const tenueParUnRetour = await photoTenueParUnRetour(ctx, photoId);
+  // …ou une fiche de sécurité, gardée deux ans (migration 0099) : même règle.
+  const tenueParUnRetour = (await photoTenueParUnRetour(ctx, photoId)) || (await photoTenueParUneFiche(ctx, photoId));
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const [photo] = await tx.select().from(photos).where(eq(photos.id, photoId)).limit(1);
     if (!photo) return null;

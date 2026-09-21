@@ -5,6 +5,16 @@
 
 ---
 
+## FAIT : LA FICHE DE SÉCURITÉ, SUR LA FICHE DU JOUR (22 septembre 2026)
+
+La fiche d'intervention du décret 2021-1833, nommée « Fiche de sécurité » :
+bandeau sur la fiche du jour (tous les chantiers), six écrans aux mots de la
+feuille MSA, signature au doigt, PDF, transmission par la feuille de partage,
+liste dans Paysage par mois. Migration 0099. Le formulaire vit sous
+`/planning/fiche-de-securite/[chantierId]` (ouvert aux salariés : la loi veut
+qu'elle leur soit présentée), la liste sous `/paysage/fiches-securite`.
+`docs/lot-fiche-de-securite.md`.
+
 ## FAIT : LA FACTURE SE REMPLIT OÙ ON LA REMPLIT (21 septembre 2026)
 
 *« À corriger : le + main d'œuvre et + règlement reçu. Le bouton facture

@@ -3317,3 +3317,81 @@ export const evenementsPaiement = pgTable(
   },
   (t) => [index("evenements_paiement_entreprise_idx").on(t.entrepriseId, t.recuAt)]
 );
+
+// ─────────────────────────────────────────────────────────────────────────────
+// LA FICHE DE SÉCURITÉ — la fiche d'intervention du décret 2021-1833, migration
+// 0099. Une par chantier : elle se prépare, se signe au doigt, se transmet, et
+// se garde deux ans à compter de sa signature (`src/lib/fiche-securite.ts`).
+//
+// **Pourquoi UNE colonne jsonb, et pas trente colonnes.** La fiche est un
+// formulaire de quatre pages dont chaque case est un mot de la MSA que l'artisan
+// complète des siens ; ce que le patron lit, ce n'est jamais une case isolée,
+// c'est la fiche entière, sur son PDF. Rien ne se compte ni ne se trie sur une
+// case : la seule lecture SQL est « la fiche de ce chantier », et « les fiches
+// de ce mois ». Une colonne par case aurait figé les mots de la MSA dans le
+// schéma, et le premier mot qu'il ajoute aurait demandé une migration.
+export const fichesSecurite = pgTable(
+  "fiches_securite",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    entrepriseId: uuid("entreprise_id")
+      .notNull()
+      .references(() => entreprises.id, { onDelete: "cascade" }),
+    chantierId: uuid("chantier_id")
+      .notNull()
+      .references(() => chantiers.id, { onDelete: "cascade" }),
+    /** Le contenu entier — `ContenuFiche` de `src/lib/fiche-securite.ts`. */
+    contenu: jsonb("contenu").notNull(),
+    /** La dernière étape passée avec « Suivant » : le bandeau dit « 3 sur 6 ». */
+    etapeVue: integer("etape_vue").notNull().default(0),
+    /** L'écran « ce que demande la loi » a été lu une fois ; il ne revient plus. */
+    loiLue: boolean("loi_lue").notNull().default(false),
+    /** La signature au doigt, en PNG (data URL). NULL tant qu'elle n'est pas signée. */
+    signaturePng: text("signature_png"),
+    signataire: text("signataire"),
+    signeePar: uuid("signee_par").references(() => users.id, { onDelete: "set null" }),
+    signeeLe: timestamp("signee_le", { withTimezone: true }),
+    transmiseLe: timestamp("transmise_le", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    unique("fiches_securite_chantier_uk").on(t.chantierId),
+    index("fiches_securite_signees_idx").on(t.entrepriseId, t.signeeLe),
+  ]
+);
+
+// Les photos d'une fiche sont celles du chantier : cette table dit lesquelles,
+// pour que `supprimerPhoto` ne mette jamais en purge un fichier qu'une fiche
+// montre encore — le même piège que les retours (migration 0080).
+export const fichesSecuritePhotos = pgTable(
+  "fiches_securite_photos",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    entrepriseId: uuid("entreprise_id")
+      .notNull()
+      .references(() => entreprises.id, { onDelete: "cascade" }),
+    ficheId: uuid("fiche_id")
+      .notNull()
+      .references(() => fichesSecurite.id, { onDelete: "cascade" }),
+    photoId: uuid("photo_id")
+      .notNull()
+      .references(() => photos.id, { onDelete: "cascade" }),
+    ordre: integer("ordre").notNull().default(0),
+  },
+  (t) => [
+    unique("fiches_securite_photos_uk").on(t.ficheId, t.photoId),
+    index("fiches_securite_photos_par_photo_idx").on(t.photoId),
+  ]
+);
+
+// Ce qui est gardé d'une fiche à l'autre, par entreprise — `MemoireDesFiches`.
+// Sa règle du 21 septembre 2026 : la main d'œuvre, la trousse, les deux textes
+// de la co-activité, les observations, et ses ajouts aux listes.
+export const fichesSecuriteMemoire = pgTable("fiches_securite_memoire", {
+  entrepriseId: uuid("entreprise_id")
+    .primaryKey()
+    .references(() => entreprises.id, { onDelete: "cascade" }),
+  contenu: jsonb("contenu").notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});

@@ -65,6 +65,7 @@ import {
 } from "@/lib/planning-jour";
 import { equipesMobilisees, libelleSalarie, salariesAffiches } from "@/lib/equipes";
 import TravauxAFaire from "./TravauxAFaire";
+import FicheDeSecurite from "./FicheDeSecurite";
 import LigneRetirable from "@/components/atlas/LigneRetirable";
 import PortesDuChantier from "./PortesDuChantier";
 import { chantierDemandeAuPlanning, PARAM_CHANTIER_PLANNING } from "@/lib/lien-planning";
@@ -4507,6 +4508,10 @@ function FeuilleChantier({
         </div>
       )}
 
+      {/* ─── LA FICHE DE SÉCURITÉ — avant les travaux, parce qu'elle se remplit
+          avant de commencer. Sur TOUS les chantiers, au bon vouloir — sa
+          décision du 21 septembre 2026 (`FicheDeSecurite.tsx`). */}
+      <FicheDeSecurite chantierId={chantier.id} />
       {/* ─── LES TRAVAUX À FAIRE — le bandeau qui se déplie ─────────────────
           Les lignes du devis vivent DEDANS, et nulle part ailleurs : *« un
           devis de trois pages, ça va faire trop long sur le planning si c'est

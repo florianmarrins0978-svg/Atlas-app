@@ -78,6 +78,14 @@ const OUTILS: Outil[] = [
     dit: "Photographier une anomalie, et savoir quoi faire.",
     href: "/paysage/diagnostic",
   },
+  // Sa décision du 21 septembre 2026, après avoir vu Terminés : *« il faut créer
+  // une catégorie dans Paysage »*. La fiche elle-même se remplit depuis le
+  // planning ; ici vivent celles qui sont signées, gardées deux ans.
+  {
+    nom: "Fiches de sécurité",
+    dit: "Avant un chantier d'élagage ou d'abattage. Gardées deux ans.",
+    href: "/paysage/fiches-securite",
+  },
   {
     nom: "Terrasse bois",
     dit: "Lambourdes, plots, visserie — le même principe, à partir des mesures.",

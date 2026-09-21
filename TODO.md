@@ -9,7 +9,16 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
-## ⏳ UNE PLANCHE À REGARDER — LA FICHE DE SÉCURITÉ (DÉCRET 2021-1833) SUR LA FICHE DU JOUR (21 septembre 2026)
+## ~~UNE PLANCHE À REGARDER — LA FICHE DE SÉCURITÉ (DÉCRET 2021-1833) SUR LA FICHE DU JOUR~~ — CODÉE LE 22 SEPTEMBRE 2026
+
+**Codée dans la nuit du 21 au 22 septembre 2026**, sur son *« tu peux coder
+exactement tout ce qu'on vient de voir ensemble »*. Le document de retour :
+`docs/lot-fiche-de-securite.md`. Ce qui suit est l'histoire de la planche, et
+ses décisions restent vraies.
+
+**Ce qui reste ouvert** : le cerfa de la découverte fortuite de réseau (renvoi
+au guichet unique en attendant) ; le nombre de travailleurs part du nombre
+d'ÉQUIPES du planning, faute de personnes par équipe en base.
 
 `appli/fiche-de-securite.html`, liée depuis `appli/essais.html`. Sa question :
 *« en élagage il y a besoin de faire des fiches avant l'intervention,

@@ -11,6 +11,22 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 
 ---
 
+## LA FICHE DE SÉCURITÉ — 22 septembre 2026
+
+| | |
+|---|---|
+| la règle pure | `src/lib/fiche-securite.ts` : les mots de la MSA (`LIBELLES`), les points de vigilance, ce qui manque, ce qui est gardé d'une fiche à l'autre |
+| la base | `fiches_securite` (une par chantier, jsonb), `fiches_securite_photos`, `fiches_securite_memoire` — migration 0099, FORCE RLS |
+| le dépôt | `src/server/repositories/fiches-securite.ts` |
+| les gestes | `src/app/planning/fiche-securite-actions.ts` (sous /planning : les salariés doivent pouvoir la lire) |
+| les écrans | `src/app/planning/FicheDeSecurite.tsx` (bandeau), `src/app/planning/fiche-de-securite/[chantierId]/` (formulaire, signature, PDF), `src/app/paysage/fiches-securite/` (liste) |
+| le PDF | `src/server/pdf/fiche-securite-pdf.ts`, son propre moteur (cases, signature, note de la feuille) |
+| les suites | `test-fiche-securite.ts` (règles + PDF), `test-fiche-securite-db.ts` (RLS, mémoire, purge), `test-fiche-securite-e2e.ts` (le chemin entier) |
+
+**Le piège à connaître** : `supprimerPhoto` demande aussi à la fiche avant de
+mettre un fichier en purge. Une nouvelle pièce qui montre des photos du
+chantier doit faire pareil, sinon la purge lui ouvre un trou des mois plus tard.
+
 ## OÙ VIT UN GESTE DE LA FACTURE — 21 septembre 2026
 
 Deux écrans portent les mêmes chiffres, et ils ne font pas le même métier.

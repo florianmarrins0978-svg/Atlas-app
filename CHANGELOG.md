@@ -6,6 +6,18 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-09-22
+
+### La fiche de sécurité du décret 2021-1833 est dans l'application
+
+Sur la fiche du jour, un bandeau « Fiche de sécurité » au-dessus de « Travaux
+à faire », sur tous les chantiers, au bon vouloir. Six écrans aux mots exacts
+du formulaire MSA, la signature au doigt, le PDF, la feuille de partage pour la
+transmettre, et la liste dans Paysage, un mois à la fois. Migration 0099 : une
+fiche par chantier, gardée deux ans, jamais purgée ; ses photos non plus. Ce
+qui est coché et écrit revient sur la fiche suivante — son choix — et l'écran
+de la loi le dit. Rien n'est coché par l'application. `docs/lot-fiche-de-securite.md`.
+
 ## 2026-09-21
 
 ### Ce qu'il remplit passe sur la page où il remplit — et le mot d'un règlement est à lui

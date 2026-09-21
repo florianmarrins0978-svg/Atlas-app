@@ -32591,3 +32591,58 @@ plus sa date à l'écran — sa facture la donne —, mais il perd bel et bien l
 date du jour où il a été fait. Le refus se pose à la racine, dans le dépôt où
 passent les trois portes ; il touche `src/server/repositories/chantiers.ts`,
 donc un lot de niveau 3, et il attend sa batterie (`TODO.md`).
+
+## §401 — La fiche de sécurité vit là où sont les travailleurs, et se garde deux ans
+
+**Sa question du 21 septembre 2026 :** *« en élagage il y a besoin de faire des
+fiches avant l'intervention, apparemment c'est devenu obligatoire »*. C'est le
+décret n° 2021-1833 (art. R. 717-85-16 du code rural, lu à la source) : une
+fiche d'intervention établie avant tout chantier d'abattage ou d'élagage,
+signée, présentée aux travailleurs, disponible sur le chantier — *« possiblement
+dématérialisée »* —, conservée deux ans. Six réponses de lui ont dessiné la
+planche (`appli/fiche-de-securite.html`), codée mot pour mot dans la nuit du
+21 au 22 (`docs/lot-fiche-de-securite.md`).
+
+### Trois décisions de structure, et leur raison
+
+**1. Le formulaire est sous `/planning`, la liste sous `/paysage`.** Il a
+rangé les fiches dans Paysage ; mais Paysage est fermé aux salariés, et la loi
+veut que la fiche leur soit *« communiquée et présentée »* et reste *« disponible
+en permanence sur le chantier »*. Le formulaire et son PDF vivent donc sur la
+fiche du jour, ouverts à tout rôle qui pose un retour ; seule la liste des
+fiches signées est dans Paysage. Le lien « Voir où elle est gardée » ne se
+montre qu'à ceux à qui `cheminAutorise(role, "/paysage")` répond oui — la
+même fonction que celle qui refuse, jamais une liste à part (§3).
+
+**2. Une colonne jsonb, et non trente colonnes.** Chaque case est un mot de la
+MSA que l'artisan complète des siens (le décret n'impose aucune liste). Rien ne
+se compte ni ne se trie sur une case : la seule lecture SQL est « la fiche de
+ce chantier » et « les fiches signées de ce mois ». Une colonne par case aurait
+figé les mots de la MSA dans le schéma, et le premier mot ajouté aurait demandé
+une migration. Le contenu est typé et validé dans `src/lib/fiche-securite.ts`,
+seule vérité ; un contenu d'une version plus ancienne se complète par les
+valeurs vides, jamais devinées.
+
+**3. Son propre moteur de PDF.** `composerDocument` dessine des pièces qu'on
+paie ; la tordre en fiche aurait produit un document qu'un contrôleur ne
+reconnaît pas. Le moteur de la fiche partage les teintes et la marge, et
+imprime CHAQUE case, cochée ou non : une fiche qui ne montre que ce qui est
+coché ressemble à une fiche complète.
+
+### Ce que la mémoire d'une fiche à l'autre n'est pas
+
+Il a voulu que tout ce qui est coché revienne sur la fiche suivante — à plus de
+vingt par an, le chantier suivant ressemble au précédent. Ce n'est pas un
+pré-cochage de l'application : c'est SA fiche d'avant, reprise, par entreprise
+(`fiches_securite_memoire`), et l'écran de la loi le dit à la première
+ouverture avec la consigne qui va avec. Ce qui est propre au chantier — donneur
+d'ordre, lieu, heures, photo, point de rencontre — ne se garde pas.
+
+### Deux ans, et le piège des photos
+
+Aucune purge ne touche `fiches_securite`. Le piège est ailleurs, comme pour les
+retours (§ migration 0080) : la photo du chantier que la fiche montre ne doit
+pas partir en purge quand on l'efface de la pellicule. `fiches_securite_photos`
+existe pour que `supprimerPhoto` pose la question. `test-fiche-securite-db.ts`
+le mesure sur le compteur de `fichiers_a_purger`.
+
