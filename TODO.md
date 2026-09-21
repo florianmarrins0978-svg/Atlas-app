@@ -4581,8 +4581,26 @@ facture est préparée**. D'où la règle, qui se lit dans les deux sens :
 
 Les deux appelants ne se valent pas : `terminerChantier` **exige un devis
 envoyé** (`devis_non_envoye` sinon), `creerFactureSansDevis` n'exige rien.
-**Une rangée sans date ET sans montant prévu vient donc de « Créer une
-facture »** — sans devis derrière, il n'y a pas d'autre chemin.
+
+**SA SECONDE HYPOTHÈSE, ET CE QU'ELLE CORRIGE — même jour :** *« c'est pas
+plutôt des chantiers que j'ai ajoutés sur le planning sans envoyer de
+devis ? »* Elle est juste pour les rangées **qui portent une date** : un
+chantier posé au planning sans devis bascule dans « Terminés » dès que sa date
+est passée (`rangement()`, sans aucun jalon de facture), et il y attend sa
+facture — c'est le cas de « Mr. Frderik · 11 septembre » sur sa capture.
+
+Elle n'explique pas l'absence de date : un chantier posé au planning **garde**
+sa date. Sauf par un second chemin, qui existe et n'est gardé par rien —
+**« retirer du planning » remet `date_planifiee` à NULL sans regarder si une
+facture a déjà été préparée** (`deplanifierChantier`, `chantiers.ts:933` ; ni
+`deplanifierChantierAction` ni le geste `retirer_du_planning` de l'assistant ne
+posent de condition). Le chantier reste alors dans « Terminés » par son
+`termine_at`, **et il a perdu sa date pour toujours** : plus aucun mois ne le
+porte (le point ci-dessous), et l'écran ne peut plus rien en dire.
+
+**À trancher avec lui** : refuser la déplanification d'un chantier dont la
+facture est déjà préparée, ou garder le geste et ranger ces chantiers au mois
+de leur facture. Rien n'est codé.
 
 ## Un chantier terminé SANS DATE n'appartient à aucun mois — sa question du 21 septembre 2026
 
