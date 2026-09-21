@@ -30,6 +30,8 @@ par la fiche du jour.
 | équipe | avec des salariés — *« et des fois je travaille seul »* |
 | donneur d'ordre | **pas toujours** le client du devis |
 | quand | *« au bon vouloir de l'utilisateur »*, en arrivant sur le chantier → **sur la fiche du jour** ; rien d'imposé, rien d'automatique |
+| où | **sur tous les chantiers** — *« des fois ça peut être un chantier d'entretien avec juste un peu d'élagage »* |
+| le nom | **« Fiche de sécurité »**, tranché après avoir vu que le décret dit « fiche d'intervention » — déjà pris par la fiche du jour |
 | signature | au doigt, à chaque fiche |
 | plan de prévention | *« oui, un bouton pour l'envoyer »* |
 | fréquence | plus de vingt par an |
@@ -49,7 +51,11 @@ par la fiche du jour.
   d'entreprise ou son représentant, **elle engage sa responsabilité** ;
   *« l'initier dès la visite de chantier »*, la vérifier **le jour J** contre le
   terrain, la modifier en cas d'écart ; les cases sont *« un exemple non
-  exhaustif »* et ne remplacent pas le DUERP.
+  exhaustif »* et ne remplacent pas le DUERP ;
+- **il a envoyé la feuille officielle** (12350_A_10/2023) : les libellés de la
+  planche sont alignés dessus mot pour mot, y compris ce que la transcription
+  de la branche n'avait pas (co-activité et machines, « risques autres
+  identifiés », « mesures de prévention autres », « horaires, délais »).
 
 **Quand il aura répondu** : le document de la branche corrige son §2 avec ce
 qui précède avant de rejoindre `main`. Rien dans `src/` avant son oui

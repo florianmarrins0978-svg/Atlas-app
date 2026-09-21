@@ -33,9 +33,12 @@
      → deux choix : le client du devis, ou quelqu'un d'autre (à saisir).
   3. Quand : « au bon vouloir de l'utilisateur, certains ne vont pas vouloir
      la remplir » ; « si c'est en arrivant sur le chantier, tu la mets sur la
-     page de la fiche du jour ».
-     → un bandeau « Fiche d'élagage » sur la fiche du jour, au-dessus de
-       « Travaux à faire ». Rien d'imposé, rien d'automatique.
+     page de la fiche du jour ». Et le même jour : « je veux qu'elle soit
+     disponible partout, sur tous les chantiers — des fois ça peut être un
+     chantier d'entretien avec juste un peu d'élagage ».
+     → un bandeau « Fiche de sécurité » sur la fiche du jour de CHAQUE
+       chantier, au-dessus de « Travaux à faire ». Rien d'imposé, rien
+       d'automatique.
   4. Signature : au doigt, à chaque fiche.
   5. Plan de prévention : « oui, un bouton pour l'envoyer ».
   6. Plus de vingt chantiers par an.
@@ -319,12 +322,12 @@
 
 <div class="note">
   <h2>La fiche de sécurité</h2>
-  <p>C’est la fiche d’intervention du décret 2021-1833 — obligatoire avant tout chantier d’élagage ou d’abattage, signée, gardée deux ans. Elle vit <b>sur la fiche du jour</b>, dans un bandeau au-dessus de « Travaux à faire », comme vous l’avez dit. <b>Essayez</b> : touchez « Fiche de sécurité », remplissez, signez au doigt, envoyez.</p>
+  <p>C’est la fiche d’intervention du décret 2021-1833 — obligatoire avant tout chantier d’élagage ou d’abattage, signée, gardée deux ans. Elle vit <b>sur la fiche du jour de chaque chantier</b>, dans un bandeau au-dessus de « Travaux à faire », comme vous l’avez dit — un entretien peut porter un peu d’élagage. <b>Essayez</b> : touchez « Fiche de sécurité », remplissez, signez au doigt, envoyez.</p>
   <h2>Vos six réponses, et ce qu’elles font</h2>
   <table>
     <tr><td>Avec des salariés, parfois seul</td><td>le nombre de travailleurs vient du planning du jour — seul, c’est 1</td></tr>
     <tr><td>Le donneur d’ordre n’est pas toujours le client</td><td>deux cases : « Le client du devis », ou « Quelqu’un d’autre » et trois champs vides</td></tr>
-    <tr><td>Au bon vouloir, à l’arrivée</td><td>un bandeau sur la fiche du jour, rien d’imposé. La notice MSA conseille de la préparer dès la visite : le même bandeau pourra vivre sur la page du chantier, pour la commencer la veille</td></tr>
+    <tr><td>Au bon vouloir, à l’arrivée, sur tous les chantiers</td><td>un bandeau sur la fiche du jour de chaque chantier, rien d’imposé. La notice MSA conseille de la préparer dès la visite : le même bandeau pourra vivre sur la page du chantier, pour la commencer la veille</td></tr>
     <tr><td>Signature au doigt</td><td>nom, date, et vous signez sur l’écran. Modifier une fiche signée efface la signature : on re-signe</td></tr>
     <tr><td>Un bouton pour l’envoyer</td><td>« Envoyer au donneur d’ordre », une fois signée</td></tr>
     <tr><td>Plus de vingt par an</td><td>ce qu’Atlas sait est déjà posé : chantier, devis, adresse, dates, équipe, téléphone. Vous ne ressaisissez rien</td></tr>
@@ -333,7 +336,7 @@
   <table>
     <tr><td>Rien n’est coché d’avance</td><td>les lignes du devis sont montrées au-dessus des travaux, jamais cochées. Une case cochée par l’appli serait un mensonge que vous signez</td></tr>
     <tr><td>Ce qui est vide se dit</td><td>avant de signer, la liste de ce qui manque — et vous signez quand même si vous le voulez : c’est votre fiche</td></tr>
-    <tr><td>Les mots du formulaire</td><td>recopiés du formulaire MSA 12350, pas reformulés — un contrôleur retrouve son formulaire</td></tr>
+    <tr><td>Les mots du formulaire</td><td>recopiés de votre feuille (MSA 12350_A_10/2023), pas reformulés — un contrôleur retrouve son formulaire</td></tr>
     <tr><td>Les heures</td><td>le planning ne les connaît pas : elles restent à saisir</td></tr>
   </table>
   <p><b>Rien n’est codé.</b> Dites oui, ou ce qui reste à changer.</p>
@@ -362,25 +365,29 @@ const L = {
              "Évaluer l’état d’ancrage des arbres (enracinement)",
              "Identifier les affections dangereuses pour la santé et la sécurité des travailleurs (suie, chancre, capricorne, champignon lignivore…)"],
   bio: ["Chenilles processionnaires", "Frelons sp et autres hyménoptères", "Berce du Caucase, ambroisie sp…", "Tiques sp", "Suie de l’érable", "Chancre du platane", "Autres"],
-  bioMesures: ["EPI appropriés (masque, combinaison, gants…)", "Appel à un spécialiste pour circonscrire le danger", "Certibiocide (si produits biocides)", "Autres"],
-  specifiques: ["Balisage externe avec panneaux d’interdiction d’accès et de signalisation du danger",
-                "Balisage interne pour limiter la chute d’objet/branche sur l’homme de pied",
-                "Mode de communication entre travailleurs (ex. casques communicants)",
+  bioMesures: ["EPI appropriés (masque, combinaison, gants…)", "Appel à un spécialiste pour circonscrire le danger", "Certi biocide (si utilisation de produits biocides)", "Autres"],
+  specifiques: ["Balisage externe du chantier vis-à-vis des personnes extérieures avec panneaux d’interdiction d’accès et de signalisation du danger",
+                "Balisage interne au chantier pour limiter les risques de chute d’objet/branche sur l’homme de pied (délimitation organisationnelle)",
+                "Mode / moyen de communication entre travailleurs, à préciser (ex : casques communicants)",
                 "Surveillance de l’accès au chantier (intrusion du public)", "Autres"],
   reseaux: ["Électrique HTB (U > 50 000 V)", "Électrique HTA (U ≤ 50 000 V)", "Électrique BT (U ≤ 1 000 V)", "Eau, vapeur", "Gaz", "Télécom", "Autres"],
-  reseauxMesures: ["DT-DICT", "AIPR", "Formulaire de découverte fortuite de réseau"],
+  reseauxMesures: ["DT-DICT — déclaration de travaux à proximité des réseaux (chantier distant < 50 m de conducteurs électriques nus, ou arrachage d’arbre, creusement de tranchées…)",
+                   "AIPR (formulaire)", "Au cas où : formulaire de découverte fortuite de réseau"],
   env: ["Routier", "Facteurs météo ambiants", "Bruit", "État des sols", "Conditions de vie sur le chantier", "Éclairage", "Vapeurs", "Poussières", "Noyade", "Autres"],
-  envMesures: ["Balisage du chantier sur voie publique", "Adaptation des heures de travail", "Eau en quantité suffisante", "Cabinet d’aisance",
-               "Équipements ou vêtements de travail spécifiques", "Signal d’alarme (sifflet)", "Équipement individuel de flottaison / barque / bouée",
+  envMesures: ["Balisage du chantier sur voie publique", "Adaptation des heures de travail", "Mise à disposition d’eau en quantité suffisante",
+               "Mise à disposition de cabinet d’aisance", "Mise à disposition d’équipements ou de vêtements de travail spécifiques, préciser",
+               "Signal d’alarme (sifflet)", "Équipement individuel de flottaison / barque / bouée de sauvetage",
                "Plan de prévention (entreprise utilisatrice)", "Autres"],
-  orga: ["Répartition des tâches dans le temps et l’espace", "Respect des consignes de sécurité des machines", "Manuel d’utilisation du matériel",
-         "Mode de communication entre travailleurs", "Autres"],
+  coactivite: ["Co-activité dans la zone de sécurité du chantier", "Entraînement par les éléments mobiles des équipements de travail (rogneuse, broyeur…)",
+               "Projection (avec broyeur, rogneuse…)", "Autres"],
+  orga: ["Répartition des tâches dans le temps et l’espace (travailleur/matériel)", "Respect des consignes de sécurité des machines",
+         "Manuel d’utilisation du matériel", "Mode de communication entre travailleurs", "Autres"],
   meteo: ["Bulletins d’alerte météorologiques", "Sécuriser les travaux en cours puis arrêter les travaux",
-          "Protéger les zones dangereuses ou potentiellement dangereuses", "Prévenir le responsable du chantier ou le chef d’entreprise", "Autres"],
+          "Protéger les zones dangereuses ou potentiellement dangereuses (matérialisation, interdiction d’accès…)", "Prévenir le responsable du chantier ou le chef d’entreprise", "Autres"],
   secours: ["Trousse de secours (contenu approprié à l’activité)", "Kit d’urgence portatif (élagueur)",
             "Tous les travailleurs sont SST (Sauveteurs Secouristes du Travail)",
             "Travailleurs disposant des compétences (type Grimpeur Sauveteur dans l’Arbre) et des moyens pour porter secours à une victime dans l’arbre, en nombre suffisant",
-            "Moyen de communication fonctionnel"],
+            "Moyen de communication fonctionnel", "Autres"],
 };
 const ETAPES = ["Le chantier", "Les travaux", "Le terrain", "Réseaux, environnement, météo", "Les secours", "Signer"];
 const ETAPES_COURTES = ["Chantier", "Travaux", "Terrain", "Réseaux", "Secours", "Signer"];
@@ -412,12 +419,12 @@ function depart() {
     f: {
       commencee: false, vue: 0,
       donneur: null, donneurNom: "", donneurPrenom: "", donneurTel: "",
-      gps: "", hDebut: "", hFin: "", responsable: ENTREPRISE.patron, nb: CHANTIER.equipe.length, telIncident: ENTREPRISE.tel,
+      gps: "", hDebut: "", hFin: "", horaires: "", responsable: ENTREPRISE.patron, nb: CHANTIER.equipe.length, telIncident: ENTREPRISE.tel,
       travaux: new Set(), travauxAutres: "", mainOeuvre: "",
       elevation: new Set(), coupe: new Set(), autresMat: new Set(), materielAutres: "", matieres: new Set(), matieresAutres: "",
-      photos: 0, bio: new Set(), bioMesures: new Set(), specifiques: new Set(), specifiquesAutres: "",
-      reseaux: new Set(), reseauxMesures: new Set(), env: new Set(), envMesures: new Set(), orga: new Set(), meteo: new Set(),
-      secours: new Set(), lieuTrousse: "", prs: "", observations: "",
+      photos: 0, bio: new Set(), bioMesures: new Set(), specifiques: new Set(), specifiquesAutres: "", communication: "",
+      reseaux: new Set(), reseauxMesures: new Set(), env: new Set(), envMesures: new Set(), envPreciser: "", coactivite: new Set(), risquesAutres: "", mesuresAutres: "", orga: new Set(), orgaCommunication: "", meteo: new Set(),
+      secours: new Set(), secoursAutres: "", lieuTrousse: "", prs: "", observations: "",
       signatureTracee: false, signeeLe: null, envoyee: false,
     },
   };
@@ -433,8 +440,8 @@ function manques() {
   if (f.travaux.size === 0) m.push({ quoi: "Travaux à réaliser", etape: 2 });
   if (f.elevation.size + f.coupe.size + f.autresMat.size === 0) m.push({ quoi: "Matériels", etape: 2 });
   if (f.photos === 0) m.push({ quoi: "Carte / croquis / photo du chantier", etape: 3 });
-  if (f.bio.size + f.specifiques.size + f.reseaux.size + f.env.size === 0) m.push({ quoi: "Risques spécifiques au chantier", etape: 3 });
-  if (f.bioMesures.size + f.reseauxMesures.size + f.envMesures.size + f.orga.size === 0) m.push({ quoi: "Mesures de sécurité", etape: 4 });
+  if (f.bio.size + f.specifiques.size + f.reseaux.size + f.env.size + f.coactivite.size === 0 && f.risquesAutres.trim() === "") m.push({ quoi: "Risques spécifiques au chantier", etape: 3 });
+  if (f.bioMesures.size + f.reseauxMesures.size + f.envMesures.size + f.orga.size === 0 && f.mesuresAutres.trim() === "") m.push({ quoi: "Mesures de sécurité", etape: 4 });
   if (f.meteo.size === 0) m.push({ quoi: "Conduite à tenir en cas d’intempéries", etape: 4 });
   if (f.secours.size === 0) m.push({ quoi: "Organisation des secours", etape: 5 });
   if (f.prs.trim() === "") m.push({ quoi: "Point de Rencontre des Secours", etape: 5 });
@@ -597,6 +604,7 @@ function etape1(z) {
   b = bloc("Dates d’exécution", "d’après le planning");
   let d = el("div", "deux-champs"); d.appendChild(fixe("Début", CHANTIER.jourCourt)); d.appendChild(fixe("Fin", CHANTIER.jourCourt)); b.appendChild(d);
   d = el("div", "deux-champs"); d.appendChild(champ("Heures, début", "hDebut")); d.appendChild(champ("Heures, fin", "hFin")); b.appendChild(d);
+  b.appendChild(champ("Horaires, délais de réalisation…", "horaires"));
   z.appendChild(b);
 
   b = bloc("Sur le chantier");
@@ -647,6 +655,7 @@ function etape3(z) {
   for (let i = 0; i < f.photos; i++) ph.appendChild(el("span", "vignette"));
   const aj = bouton(APPAREIL, () => { f.photos++; redessinerEtape(); }, "ajouter"); aj.setAttribute("aria-label", "Prendre une photo");
   aj.style.width = "72px"; ph.appendChild(aj); b.appendChild(ph);
+  b.appendChild(el("p", "aide", "Délimitation matérielle du chantier obligatoire")).style.margin = "10px 0 0";
   z.appendChild(b);
 
   b = bloc("Risque biologique");
@@ -655,7 +664,8 @@ function etape3(z) {
   z.appendChild(b);
 
   b = bloc("Risques spécifiques au chantier", "mesures de prévention");
-  b.appendChild(pastilles(L.specifiques, f.specifiques));
+  b.appendChild(cases(L.specifiques, f.specifiques));
+  if (f.specifiques.has(L.specifiques[2])) { const c = champ("Moyen de communication", "communication"); c.style.marginTop = "4px"; b.appendChild(c); }
   const a = autresSi(f.specifiques, "specifiquesAutres"); if (a) b.appendChild(a);
   z.appendChild(b);
 }
@@ -668,20 +678,30 @@ function etape4(z) {
     b.appendChild(el("div", "rappel", `<b>Distance de sécurité vis-à-vis des conducteurs électriques nus</b>
       <table><tr><td>HTB (U &gt; 50 000 V)</td><td>5 m</td></tr><tr><td>HTA (U ≤ 50 000 V)</td><td>3 m</td></tr><tr><td>BT (U ≤ 1 000 V)</td><td>3 m</td></tr></table>`));
   }
-  if (f.reseaux.size) { b.appendChild(el("p", "aide", "Mesures")).style.marginTop = "12px"; b.appendChild(pastilles(L.reseauxMesures, f.reseauxMesures)); }
+  if (f.reseaux.size) { b.appendChild(el("p", "aide", "Mesures")).style.marginTop = "12px"; b.appendChild(cases(L.reseauxMesures, f.reseauxMesures)); }
   z.appendChild(b);
 
   b = bloc("Risques liés à l’environnement");
   b.appendChild(pastilles(L.env, f.env));
-  if (f.env.size) { b.appendChild(el("p", "aide", "Mesures")).style.marginTop = "12px"; b.appendChild(pastilles(L.envMesures, f.envMesures)); }
+  if (f.env.size) {
+    b.appendChild(el("p", "aide", "Mesures")).style.marginTop = "12px"; b.appendChild(pastilles(L.envMesures, f.envMesures));
+    if (f.envMesures.has(L.envMesures[4])) { const c = champ("Préciser", "envPreciser"); c.style.marginTop = "8px"; b.appendChild(c); }
+  }
   z.appendChild(b);
 
-  b = bloc("Règles organisationnelles");
-  b.appendChild(pastilles(L.orga, f.orga));
+  b = bloc("Co-activité, machines");
+  b.appendChild(cases(L.coactivite, f.coactivite));
+  b.appendChild(champ("Risques autres identifiés", "risquesAutres", "", 2));
+  b.appendChild(champ("Mesures de prévention autres", "mesuresAutres", "", 2));
   z.appendChild(b);
 
-  b = bloc("Conduite à tenir en cas de phénomènes météorologiques imprévus");
-  b.appendChild(pastilles(L.meteo, f.meteo));
+  b = bloc("Règles organisationnelles à mettre en place");
+  b.appendChild(cases(L.orga, f.orga));
+  if (f.orga.has("Mode de communication entre travailleurs")) { const c = champ("Mode de communication", "orgaCommunication"); c.style.marginTop = "4px"; b.appendChild(c); }
+  z.appendChild(b);
+
+  b = bloc("Consignes sur la conduite à tenir en cas de phénomènes météorologiques imprévus");
+  b.appendChild(cases(L.meteo, f.meteo));
   z.appendChild(b);
 }
 
@@ -689,6 +709,7 @@ function etape5(z) {
   const f = etat.f;
   let b = bloc("Organisation des secours", "ressources humaines et matérielles");
   b.appendChild(cases(L.secours, f.secours));
+  { const a = autresSi(f.secours, "secoursAutres"); if (a) b.appendChild(a); }
   b.appendChild(champ("Lieu où se trouve la trousse de secours", "lieuTrousse"));
   b.appendChild(champ("Point de Rencontre des Secours", "prs"));
   z.appendChild(b);
@@ -701,11 +722,12 @@ function etape5(z) {
   const pli = el("div", "pli"); const dedans = el("div", "dedans"); pli.appendChild(dedans); ban.appendChild(pli);
   b.appendChild(ban); b = dedans; b.style.paddingTop = "10px";
   b.appendChild(el("p", "aide", "1. Protéger"));
-  b.appendChild(el("ol", "consignes", ["Sécuriser les travaux en cours puis arrêter les travaux", "Protéger les zones dangereuses ou potentiellement dangereuses", "Prévenir le responsable du chantier ou le chef d’entreprise"].map((x) => `<li>${x}</li>`).join("")));
+  b.appendChild(el("ol", "consignes", ["Sécuriser les travaux en cours puis arrêter les travaux", "Protéger les zones dangereuses ou potentiellement dangereuses (matérialisation, interdiction d’accès…)", "Prévenir le responsable du chantier ou le chef d’entreprise"].map((x) => `<li>${x}</li>`).join("")));
   b.appendChild(el("p", "aide", "2. Alerter")).style.marginTop = "10px";
   b.appendChild(el("ol", "consignes", ["S’identifier (nom, prénom, entreprise)", "Donner sa localisation et préciser les moyens d’accès", "Décrire la nature de l’accident", "Préciser le nombre et l’état du (des) blessé(s)", "Décrire les gestes de premiers secours en cours (le cas échéant)", "Fixer un rendez-vous au point de rencontre des secours (PRS)", "Ne jamais raccrocher le premier : attendre les instructions des services de secours"].map((x) => `<li>${x}</li>`).join("")));
   b.appendChild(el("p", "aide", "3. Secourir")).style.marginTop = "10px";
   b.appendChild(el("ol", "consignes", ["Intervenir sans s’exposer (suivant référentiel SST et/ou GSA)", "Préparer l’arrivée et l’accès des secours (dégagement des rémanents et du matériel)", "Prévenir le siège des entreprises (du donneur d’ordre et de celle réalisant le chantier)"].map((x) => `<li>${x}</li>`).join("")));
+  b.appendChild(el("p", "aide", "Dès le début du chantier, stationner les véhicules dans le sens du départ et laisser la voie d’accès libre. Obtenir l’accord des services d’urgence avant de déplacer une victime vers un centre de secours.")).style.margin = "12px 0 0";
   b.appendChild(el("div", "urgence", [["15", "SAMU"], ["18", "Pompiers"], ["112", "Europe"], ["114", "Sourds, malentendants"], ["17", "Police"]].map(([n, q]) => `<a href="tel:${n}"><b>${n}</b><span>${q}</span></a>`).join("")));
   z.appendChild(ban.parentElement);
 
