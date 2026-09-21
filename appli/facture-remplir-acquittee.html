@@ -16,6 +16,11 @@
     --voileChamp:rgba(28,28,26,0.04);
     --surPlein:#faf9f5;
     --hors:#e6e3dc; --horsTexte:#4a4a44; --horsFort:#1c1c1a;
+    /* Le papier ne change jamais de charte : le PDF s'imprime en noir sur
+       blanc. Valeurs reprises de la planche validée le 14 septembre
+       (`le-papier-devis-et-facture.html`). */
+    --papier:#ffffff; --encre:#1c1c1a; --encreDouce:#5a5a52; --gris:#8a8578;
+    --filet:#d9d5cc; --filetDoux:#ebe8e1;
   }
   body[data-charte="nuit"]{
     --cream:#101210; --card:#1a1d19; --ink:#e9e8de; --inkSoft:#c1c2b6;
@@ -175,6 +180,70 @@
   .mention{margin:12px 0 0;text-align:center;font:600 12px/1 ui-sans-serif,sans-serif;letter-spacing:.2em;
            text-transform:uppercase;color:var(--rust)}
 
+  /* ═══ LE PAPIER — ce que le PDF imprime ══════════════════════════════════
+     Repris de la planche validée le 14 septembre 2026
+     (`le-papier-devis-et-facture.html`, « PARFAIT ! »), et rempli ici par les
+     MÊMES chiffres que l'écran : ce qu'il tape se lit sur le papier. Deux
+     polices comme le PDF, l'or seulement sur ce qui se lit. */
+  /* **LE PAPIER GARDE SES PROPORTIONS D'A4, et c'est tout l'objet.** Réduit à
+     la largeur du téléphone, le tableau se casse : « 237,50 € » passe à la
+     ligne, puis « % », puis « € » — on lit une colonne qui n'existe pas sur le
+     PDF. La feuille est donc dessinée large et RAPETISSÉE, comme un aperçu. */
+  .papier-cadre{padding:14px 14px 22px;overflow:hidden}
+  .feuille{width:660px;zoom:.53;background:var(--papier);color:var(--encre);margin:0;padding:26px 22px 24px;
+           border-radius:4px;box-shadow:0 10px 30px -8px rgba(20,18,14,.28),0 1px 2px rgba(20,18,14,.08);
+           font:9.6px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,Helvetica,sans-serif;
+           font-variant-numeric:tabular-nums;position:relative}
+  .feuille .haut{display:grid;grid-template-columns:1fr auto;gap:16px;align-items:start}
+  .feuille .emetteur .nom{font:400 17px/1.15 ui-serif,Georgia,"Times New Roman",serif;letter-spacing:-.01em}
+  .feuille .emetteur .coord{margin-top:4px;color:var(--encreDouce);font-size:8.2px;line-height:1.45}
+  .feuille .refs{font-size:8.4px;min-width:132px}
+  .feuille .refs div{display:flex;justify-content:space-between;gap:12px;padding:3px 0;border-bottom:.6px solid var(--filetDoux)}
+  .feuille .refs div:last-child{border-bottom:0}
+  .feuille .refs b{font-weight:600;color:var(--gris);font-size:7px;letter-spacing:.14em;text-transform:uppercase;align-self:center}
+  .feuille .titrepapier{margin:20px 0 0;padding:12px 0 11px;border-top:1.2px solid var(--encre);border-bottom:.6px solid var(--filet);
+                        display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+  .feuille .titrepapier h2{margin:0;font:400 19px/1 ui-serif,Georgia,"Times New Roman",serif;letter-spacing:.22em;text-transform:uppercase}
+  .feuille .titrepapier .no{font:400 12px/1 ui-serif,Georgia,serif;color:var(--encreDouce)}
+  .feuille .parties{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:14px 0 16px}
+  .feuille h3{margin:0 0 4px;font:600 7px/1 ui-sans-serif,sans-serif;letter-spacing:.2em;color:var(--or);text-transform:uppercase}
+  .feuille .parties p{margin:0;line-height:1.45}
+  .feuille table{width:100%;border-collapse:collapse;font-size:8.2px;table-layout:fixed}
+  .feuille th:first-child{width:31%}
+  .feuille th:nth-child(2){width:7%}
+  .feuille th:nth-child(3){width:9%}
+  .feuille th{text-align:left;font-size:6.3px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--gris);
+              padding:0 2px 5px;border-bottom:1px solid var(--encre);white-space:nowrap}
+  .feuille th.n,.feuille td.n{text-align:right}
+  .feuille th.c,.feuille td.c{text-align:center}
+  .feuille th.g,.feuille td.g{font-weight:700;color:var(--encre)}
+  .feuille td{padding:5px 2px;border-bottom:.6px solid var(--filetDoux);vertical-align:top}
+  .feuille td.n{white-space:nowrap}
+  .feuille .bas{display:grid;grid-template-columns:1fr 176px;gap:16px;margin-top:14px;align-items:start}
+  .feuille .tva{font-size:8.2px}
+  .feuille .tva .r{display:grid;grid-template-columns:1.2fr .8fr 1fr;gap:6px;padding:3px 0;border-bottom:.6px solid var(--filetDoux)}
+  .feuille .tva .r.h{color:var(--gris);font-size:6.6px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;border-bottom:.8px solid var(--encre)}
+  .feuille .tva .r span:nth-child(n+2){text-align:right}
+  .feuille .totaux{font-size:9px}
+  .feuille .totaux .r{display:flex;justify-content:space-between;gap:8px;padding:2.5px 0}
+  .feuille .totaux .r span:last-child{white-space:nowrap}
+  .feuille .totaux .r.or{color:var(--or)}
+  .feuille .totaux .r.doux{color:var(--encreDouce);font-size:8.2px}
+  .feuille .totaux .r.gras{font-weight:700}
+  .feuille .totaux .r.ttcpapier{margin-top:6px;padding-top:7px;border-top:1.2px solid var(--encre);font:400 13px/1.2 ui-serif,Georgia,serif}
+  .feuille .totaux .r.ttcpapier span:last-child{font-weight:700}
+  .feuille .totaux .r.netpapier{margin-top:5px;padding-top:6px;border-top:.6px solid var(--filet);font:400 13px/1.2 ui-serif,Georgia,serif}
+  .feuille .totaux .r.netpapier span:last-child{font-weight:700}
+  .feuille .tampon{display:inline-block;margin-top:10px;padding:5px 10px 4px;border:1px solid var(--or);border-radius:2px;
+                   color:var(--or);font:600 7.5px/1 ui-sans-serif,sans-serif;letter-spacing:.2em;text-transform:uppercase;white-space:nowrap}
+  .feuille .et{margin:18px 0 5px;font:600 7px/1 ui-sans-serif,sans-serif;letter-spacing:.2em;color:var(--or);text-transform:uppercase}
+  .feuille .notes p{margin:0 0 3px;line-height:1.45}
+  .feuille .notes p.g{font-weight:600}
+  .feuille .mentionpapier{margin-top:12px;font-size:7.6px;color:var(--encreDouce);line-height:1.45}
+  .feuille .mentionpapier p{margin:0 0 3px}
+  .feuille .pied{margin-top:16px;padding-top:8px;border-top:.6px solid var(--filetDoux);display:flex;justify-content:space-between;
+                 gap:8px;font-size:6.8px;color:var(--gris);letter-spacing:.04em}
+
   .note{max-width:430px;margin:18px auto 0;padding:0 18px;font-size:13px;line-height:1.6;color:var(--horsTexte)}
   .note b{color:var(--horsFort)}
   .note h3{font:600 12px/1 ui-sans-serif,sans-serif;letter-spacing:.16em;text-transform:uppercase;
@@ -187,12 +256,13 @@
 <body data-charte="origine" data-etat="corrige">
 
 <div class="bandeau">
-  <b>Vos trois corrections du 21 septembre, sur vos deux écrans.</b> <b>+ Main d’œuvre</b> et <b>+ Règlement reçu</b> passent sur la page où vous remplissez la facture, avec l’interrupteur <b>Facture acquittée</b> — comme le devis porte sa main d’œuvre et ses acomptes. Allumez-le : <b>l’encadré doré</b> apparaît sous le Total TTC, au-dessus de « Revenir à la facture ». La page de la facture, elle, ne fait plus que les <b>lire</b>. Tout se tape pour de vrai. <b>Rien n’est codé.</b>
+  <b>Vos trois corrections du 21 septembre, sur vos deux écrans.</b> <b>+ Main d’œuvre</b> et <b>+ Règlement reçu</b> passent sur la page où vous remplissez la facture, avec l’interrupteur <b>Facture acquittée</b> — comme le devis porte sa main d’œuvre et ses acomptes. Allumez-le : <b>l’encadré doré</b> apparaît sous le Total TTC, au-dessus de « Revenir à la facture ». La page de la facture, elle, ne fait plus que les <b>lire</b>. Tout se tape pour de vrai, et l’onglet <b>Le PDF</b> montre le papier que votre cliente reçoit — rempli par les mêmes chiffres, avec le mot que vous avez écrit. <b>Rien n’est codé.</b>
 </div>
 
 <div class="choix">
   <button data-ecran="remplir" aria-pressed="true">Remplir la facture</button>
   <button data-ecran="facture" aria-pressed="false">La facture</button>
+  <button data-ecran="papier" aria-pressed="false">Le PDF</button>
   <button id="avant" aria-pressed="false">Aujourd’hui</button>
   <button id="nuit" aria-pressed="false">Nuit</button>
 </div>
@@ -311,6 +381,59 @@
     </div>
   </section>
 
+  <!-- ═══ LE PDF ══════════════════════════════════════════════════════════
+       Le papier qu'elle recevra, rempli par les MÊMES chiffres que l'écran :
+       ce qu'il tape à gauche se lit ici. Le dessin est celui de sa planche du
+       14 septembre, déjà codée (migration 0092). -->
+  <section class="ecran" id="v-papier">
+    <div class="titre" style="padding-top:26px">
+      <h1>Le PDF</h1>
+      <p class="sur">Ce que votre cliente reçoit</p>
+    </div>
+
+    <div class="papier-cadre"><div class="feuille">
+      <div class="haut">
+        <div class="emetteur">
+          <div class="nom">Eden Nature</div>
+          <div class="coord">SAS au capital de 1 500,00 € · RCS Avignon 912 345 678<br>12 chemin des Vignes, 84000 Avignon<br>06 12 34 56 78 · contact@edennature.fr<br>SIRET 912 345 678 00019</div>
+        </div>
+        <div class="refs">
+          <div><b>Date</b><span>21/09/2026</span></div>
+          <div><b>Échéance</b><span>à réception</span></div>
+        </div>
+      </div>
+
+      <div class="titrepapier">
+        <h2 id="p-titre">Facture (brouillon)</h2>
+        <span class="no">n° F2026-000014</span>
+      </div>
+
+      <div class="parties">
+        <div><h3>Client</h3><p>Mme Grospiron<br>8 rue des Lilas<br>84000 Avignon<br>06 98 76 54 32</p></div>
+        <div><h3>Lieu des travaux</h3><p>8 rue des Lilas<br>84000 Avignon</p></div>
+      </div>
+
+      <table>
+        <thead><tr><th>Désignation</th><th class="n">Qté</th><th class="c">Unité</th><th class="n">P.U. HT</th><th class="c">Rem. %</th><th class="n">Total HT</th><th class="c">TVA %</th><th class="n g">Total TTC</th></tr></thead>
+        <tbody id="p-lignes"></tbody>
+      </table>
+
+      <div class="bas">
+        <div class="tva">
+          <div class="r h"><span>Base HT</span><span>Taux</span><span>TVA</span></div>
+          <div id="p-bases"></div>
+        </div>
+        <div class="totaux" id="p-totaux"></div>
+      </div>
+
+      <p class="et">Notes / conditions</p>
+      <div class="notes" id="p-notes"></div>
+
+      <div class="mentionpapier" id="p-mention"></div>
+      <div class="pied"><span>Eden Nature · SIRET 912 345 678 00019 · IBAN FR76 3000 1000 0000 0000 0000 000</span><span>Page 1/1</span></div>
+    </div></div>
+  </section>
+
 </div>
 
 <div class="note">
@@ -321,6 +444,7 @@
     <tr><td>Ce que c’est</td><td><b>« Acompte 30 % » n’est qu’une proposition : le mot est à vous.</b> Touchez-le et écrivez ce que c’est — arrhes, avoir, ce que vous voulez. C’est ce mot-là qui s’imprime sur la facture. (Dans l’application, il faudra une colonne pour le retenir : aujourd’hui le nom est déduit des acomptes du devis, et rien ne garde le vôtre.)</td></tr>
     <tr><td>Facture acquittée</td><td>l’interrupteur vit là où vous remplissez. Allumé, le solde est compté reçu ce jour, le net tombe à zéro.</td></tr>
     <tr><td>L’encadré doré</td><td>sous le Total TTC, au-dessus de « Revenir à la facture ». Il n’apparaît que si l’interrupteur est allumé.</td></tr>
+    <tr><td>Le PDF</td><td>le papier de votre cliente, à ses proportions. Chaque règlement y a sa ligne sous le Total TTC, avec <b>le mot que vous avez écrit</b> ; le détail — moyen, n° de chèque, date — est dans « Montants versés » sous les notes, et le tampon <b>Acquittée le …</b> s’imprime quand le net tombe à zéro. Changez un prix ou un libellé à gauche : le papier suit.</td></tr>
     <tr><td>« Aujourd’hui »</td><td>le bouton en haut éteint les trois ajouts et rallume ce qui est en place : c’est votre écran d’aujourd’hui, au pixel.</td></tr>
   </table>
   <h3>Ce que je vous demande de trancher</h3>
@@ -528,6 +652,78 @@
     });
     id("f-net").textContent = eur(c.net);
     id("f-mention").hidden = !allume;
+
+    rendreLePapier(c, mo, allume);
+  }
+
+  /**
+   * ─── LE PAPIER, REMPLI PAR LES MÊMES CHIFFRES ────────────────────────────
+   *
+   * Pas une seconde version de la facture : ce qu'il tape à l'écran se lit
+   * ici. Le libellé qu'il écrit sur un règlement est celui qui s'imprime, sous
+   * le Total TTC et dans « Montants versés » — c'est exactement ce que fait le
+   * PDF (`facture-pdf.ts` : lignesApresTotal, phraseMontantsVerses).
+   */
+  function rendreLePapier(c, mo, acquittee){
+    var qte = function(v){ return String(nb(v)).replace(".", ","); };
+
+    var tb = id("p-lignes"); tb.innerHTML = "";
+    etat.categories.forEach(function(cat){
+      cat.lignes.forEach(function(l){
+        var ht = r2(nb(l.q) * nb(l.pu));
+        var net = r2(ht * (1 - c.pc / 100));
+        var ttc = r2(net * (1 + cat.taux / 100));
+        var tr = document.createElement("tr");
+        tr.innerHTML = '<td>' + (l.lib || "—") + '</td><td class="n">' + qte(l.q) + '</td><td class="c">' + (l.u || "") +
+          '</td><td class="n">' + eur(l.pu) + '</td><td class="c">' + (c.pc || "") + '</td><td class="n">' + eur(net) +
+          '</td><td class="c">' + cat.taux + '</td><td class="n g">' + eur(ttc) + '</td>';
+        tb.appendChild(tr);
+      });
+    });
+
+    id("p-bases").innerHTML = c.taux.map(function(x){
+      return '<div class="r"><span>' + eur(x.base) + '</span><span>' + x.t + ' %</span><span>' + eur(x.tva) + '</span></div>';
+    }).join("");
+
+    var t = ['<div class="r gras"><span>Total HT</span><span>' + eur(c.brut) + '</span></div>'];
+    if (mo !== null) t.push('<div class="r doux"><span>dont main d’œuvre HT</span><span>' + eur(mo) + '</span></div>');
+    if (c.pc) {
+      t.push('<div class="r or"><span>Remise de ' + c.pc + ' %</span><span>− ' + eur(c.remise) + '</span></div>');
+      t.push('<div class="r gras"><span>Total HT après remise</span><span>' + eur(c.netHt) + '</span></div>');
+    }
+    c.taux.forEach(function(x){ t.push('<div class="r"><span>TVA ' + x.t + ' %</span><span>' + eur(x.tva) + '</span></div>'); });
+    t.push('<div class="r ttcpapier"><span>Total TTC</span><span>' + eur(c.ttc) + '</span></div>');
+    // Chaque règlement a SA ligne, avec le mot qu'il a écrit — jamais un mot
+    // recalculé ici, qui contredirait l'écran (`CLAUDE.md` §3).
+    etat.regls.forEach(function(g){
+      t.push('<div class="r doux"><span>' + g.libelle + '</span><span>− ' + eur(g.montant) + '</span></div>');
+    });
+    if (etat.regls.length) t.push('<div class="r netpapier"><span>Net à payer</span><span>' + eur(c.net) + '</span></div>');
+    // Le tampon porte la date du DERNIER règlement, comme `tamponAcquittee`.
+    if (acquittee && etat.regls.length) {
+      t.push('<span class="tampon">Acquittée le ' + etat.regls[etat.regls.length - 1].date + '</span>');
+    }
+    id("p-totaux").innerHTML = t.join("");
+
+    var n = ['<p>Accès par le portail de gauche, cour à dégager la veille.</p>'];
+    if (etat.regls.length) {
+      n.push('<p class="g">Montants versés : ' + etat.regls.map(function(g){
+        return moyenEcrit(g) + ' du ' + g.date + ', ' + eur(g.montant);
+      }).join(" ; ") + '.</p>');
+    }
+    n.push('<p class="g">Moyens de paiement acceptés : virement, chèque.</p>');
+    n.push('<p class="g">En cas de retard de paiement : pénalités au taux de trois fois le taux d’intérêt légal, et indemnité forfaitaire de 40 € pour frais de recouvrement.</p>');
+    id("p-notes").innerHTML = n.join("");
+
+    id("p-mention").innerHTML =
+      (mo === null ? "" : '<p>Pour information, montant de la main d’œuvre TTC : ' + eur(r2(mo * (1 - c.pc / 100) * 1.2)) + '.</p>') +
+      '<p>Assurance décennale : [assureur, n° de contrat, couverture géographique]. Médiateur de la consommation : [nom et coordonnées].</p>';
+  }
+
+  /** « chèque n° 1806028 », « virement » — le numéro n'a de sens que pour un chèque. */
+  function moyenEcrit(g){
+    var m = g.moyen.toLowerCase();
+    return m === "chèque" && g.numero ? m + " n° " + g.numero : m;
   }
 
   // ─── LES GESTES ──────────────────────────────────────────────────────────
