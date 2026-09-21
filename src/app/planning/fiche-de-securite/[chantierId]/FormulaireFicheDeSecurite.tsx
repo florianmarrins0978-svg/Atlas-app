@@ -323,7 +323,7 @@ export default function FormulaireFicheDeSecurite({
               {contenu.gps ? (
                 <Fixe nom="">{contenu.gps}</Fixe>
               ) : (
-                <button type="button" data-atlas="relever-gps" onClick={() => releverLaPosition((gps) => setContenu((c) => ({ ...c, gps })), setRefus)} className="flex min-h-[46px] w-full items-center justify-center gap-2 rounded-[10px] text-[15px]" style={{ background: colors.card, color: colors.rust, boxShadow: `inset 0 0 0 1px ${colors.line}` }}>
+                <button type="button" data-atlas="relever-gps" onClick={() => releverLaPosition((gps) => setContenu((c) => ({ ...c, gps })), setRefus)} className="flex min-h-[46px] w-full items-center justify-center gap-2 rounded-full text-[15px]" style={{ background: colors.card, color: colors.rust, boxShadow: `inset 0 0 0 1px ${colors.line}` }}>
                   <Cible /> Relever ici
                 </button>
               )}
@@ -496,7 +496,7 @@ export default function FormulaireFicheDeSecurite({
                     <TitreDeConsigne>2. Alerter</TitreDeConsigne>
                     <div className="mb-3 mt-2 grid grid-cols-5 gap-1.5">
                       {CONSIGNES_DE_SECOURS.urgences.map(([n, q]) => (
-                        <a key={n} href={`tel:${n}`} className="flex min-h-[56px] flex-col items-center justify-center rounded-[10px] no-underline" style={{ background: colors.card, color: colors.ink, boxShadow: `inset 0 0 0 1px ${colors.line}` }}>
+                        <a key={n} href={`tel:${n}`} className="flex min-h-[56px] flex-col items-center justify-center rounded-full no-underline" style={{ background: colors.card, color: colors.ink, boxShadow: `inset 0 0 0 1px ${colors.line}` }}>
                           <b className="text-[20px] font-normal leading-none" style={{ fontFamily: font.display }}>{n}</b>
                           <span className="mt-[3px] px-[2px] text-center text-[9.5px] leading-[1.1]" style={{ color: colors.muted }}>{q}</span>
                         </a>
@@ -738,7 +738,7 @@ function Loi({ children }: { children: React.ReactNode }) {
 }
 function LienDeLaLoi({ href, children }: { href: string; children: React.ReactNode }) {
   return (
-    <a href={href} target="_blank" rel="noopener" className="flex min-h-[48px] items-center rounded-[12px] px-4 text-[15px] font-semibold no-underline" style={{ background: colors.card, color: colors.rust, boxShadow: `inset 0 0 0 1px ${colors.line}` }}>
+    <a href={href} target="_blank" rel="noopener" className="flex min-h-[48px] items-center rounded-full px-5 text-[15px] font-semibold no-underline" style={{ background: colors.card, color: colors.rust, boxShadow: `inset 0 0 0 1px ${colors.line}` }}>
       {children}
     </a>
   );
@@ -777,14 +777,14 @@ function Champ({ nom, lignes, type, ...reste }: { nom: string; lignes?: number; 
 }
 function Choix({ actif, onClick, children }: { actif: boolean; onClick: () => void; children: React.ReactNode }) {
   return (
-    <button type="button" aria-pressed={actif} onClick={onClick} className="flex min-h-[46px] items-center justify-center rounded-[10px] px-2.5 py-1.5 text-center text-[14.5px] leading-[1.2]" style={{ background: actif ? voile(colors.plein, 0.16) : colors.card, boxShadow: `inset 0 0 0 ${actif ? "1.5px" : "1px"} ${actif ? colors.rust : colors.line}`, color: actif ? colors.rust : colors.ink, fontWeight: actif ? 600 : 400 }}>
+    <button type="button" aria-pressed={actif} onClick={onClick} className="flex min-h-[46px] items-center justify-center rounded-full px-2.5 py-1.5 text-center text-[14.5px] leading-[1.2]" style={{ background: actif ? voile(colors.plein, 0.16) : colors.card, boxShadow: `inset 0 0 0 ${actif ? "1.5px" : "1px"} ${actif ? colors.rust : colors.line}`, color: actif ? colors.rust : colors.ink, fontWeight: actif ? 600 : 400 }}>
       {children}
     </button>
   );
 }
 function Compteur({ signe, onClick }: { signe: "plus" | "moins"; onClick: () => void }) {
   return (
-    <button type="button" aria-label={signe === "plus" ? "Un de plus" : "Un de moins"} onClick={onClick} className="grid h-[46px] w-[46px] place-items-center rounded-[10px]" style={{ background: colors.card, boxShadow: `inset 0 0 0 1px ${colors.line}`, color: colors.rust }}>
+    <button type="button" aria-label={signe === "plus" ? "Un de plus" : "Un de moins"} onClick={onClick} className="grid h-[46px] w-[46px] place-items-center rounded-full" style={{ background: colors.card, boxShadow: `inset 0 0 0 1px ${colors.line}`, color: colors.rust }}>
       {signe === "plus" ? <Plus /> : <svg width="17" height="17" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4 10h12" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" /></svg>}
     </button>
   );

@@ -120,6 +120,11 @@ essai("aucun bouton plein n'est resté au vert pin", () => {
  */
 const APLATS_DECLARES: { fichier: string; motif: RegExp; pourquoi: string }[] = [
   {
+    fichier: "src/app/planning/fiche-de-securite/[chantierId]/FormulaireFicheDeSecurite.tsx",
+    motif: /i \+ 1 === etape \? colors\.rust/,
+    pourquoi: "la barre d'avancement de la fiche de sécurité (22 septembre 2026) : le trait de l'écran en cours est un état, on ne le presse pas",
+  },
+  {
     fichier: "src/app/chantiers/[id]/export/EnvoiAuClient.tsx",
     motif: /autreDateAutorisee \? colors\.rust/,
     pourquoi: "un interrupteur : il dit un état, on ne le presse pas pour agir",

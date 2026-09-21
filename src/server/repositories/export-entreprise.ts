@@ -7,6 +7,9 @@ import {
   brouillonsInformations,
   chantiers,
   creneauxChantier,
+  fichesSecurite,
+  fichesSecuritePhotos,
+  fichesSecuriteMemoire,
   clients,
   devis,
   documents,
@@ -172,6 +175,9 @@ export async function exporterEntreprise(
       sonAbonnement,
       sesEvenementsDePaiement,
       sesCreneauxPoses,
+      sesFichesDeSecurite,
+      sesPhotosDeFiche,
+      saMemoireDesFiches,
     ] = await Promise.all([
       tx.select().from(entreprises).where(eq(entreprises.id, e)),
       tx.select().from(entrepriseCompteurs).where(eq(entrepriseCompteurs.entrepriseId, e)),
@@ -353,6 +359,11 @@ export async function exporterEntreprise(
       // planning d'une saison entière serait à refaire à la main. Le contrôle
       // d'exhaustivité les a réclamées le soir même de leur arrivée.
       tx.select().from(creneauxChantier).where(eq(creneauxChantier.entrepriseId, e)),
+      // Les fiches de sécurité (migration 0099) : gardées deux ans par la loi,
+      // donc à reprendre avec tout le reste — la signature dessinée comprise.
+      tx.select().from(fichesSecurite).where(eq(fichesSecurite.entrepriseId, e)),
+      tx.select().from(fichesSecuritePhotos).where(eq(fichesSecuritePhotos.entrepriseId, e)),
+      tx.select().from(fichesSecuriteMemoire).where(eq(fichesSecuriteMemoire.entrepriseId, e)),
     ]);
 
     // Ordre volontaire : parents avant enfants. Une reprise qui rejouerait ce
@@ -438,6 +449,11 @@ export async function exporterEntreprise(
       abonnements: sonAbonnement,
       evenements_paiement: sesEvenementsDePaiement,
       creneaux_chantier: sesCreneauxPoses,
+      // La fiche de sécurité de chaque chantier, ses photos, et ce qui est
+      // gardé d'une fiche à l'autre. Parent avant enfants.
+      fiches_securite: sesFichesDeSecurite,
+      fiches_securite_photos: sesPhotosDeFiche,
+      fiches_securite_memoire: saMemoireDesFiches,
     };
 
     const compte: Record<string, number> = {};

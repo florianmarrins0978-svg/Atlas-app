@@ -86,6 +86,12 @@ const ADRESSES = adressesDuDepot();
 /** Ce qu'un salarié a le droit d'ouvrir, écrit ici À LA MAIN, et c'est le but. */
 const OUVERT_AU_SALARIE = [
   "/planning",
+  // La fiche de sécurité (décret 2021-1833) vit sous /planning EXPRÈS : la loi
+  // veut qu'elle soit « communiquée et présentée aux travailleurs » et reste
+  // « disponible en permanence sur le chantier ». Le salarié la lit, la
+  // remplit, l'imprime — pas la liste de Paysage, qui reste fermée (§401).
+  "/planning/fiche-de-securite/xxxx",
+  "/planning/fiche-de-securite/xxxx/pdf",
   "/documents-legaux",
   "/verifier-email",
   "/reglages",
