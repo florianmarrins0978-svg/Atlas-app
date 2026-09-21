@@ -4602,7 +4602,7 @@ porte (le point ci-dessous), et l'écran ne peut plus rien en dire.
 facture est déjà préparée, ou garder le geste et ranger ces chantiers au mois
 de leur facture. Rien n'est codé.
 
-## Un chantier terminé SANS DATE n'appartient à aucun mois — sa question du 21 septembre 2026
+## ~~Un chantier terminé SANS DATE n'appartient à aucun mois~~ — CODÉ LE 21 SEPTEMBRE 2026
 
 *« Pq Julien n'a pas de date ? »*, devant deux rangées « À FACTURER » dont la
 deuxième ligne est vide.
@@ -4624,12 +4624,24 @@ Un chiffre qui compte ce que la liste ne montre pas est exactement ce que la
 planche 90 avait fait disparaître (« 3 828,00 € » écrit deux fois sans qu'on
 sache pourquoi).
 
-**Le remède probable, et il n'est PAS codé — la décision lui revient**
-(`CLAUDE.md` §3 bis) : ranger ces chantiers-là au mois de ce qu'on sait d'eux —
-la date d'émission de la facture, sinon `termineAt` —, tout en continuant à
-n'écrire aucune date sur la rangée. Deux réserves à porter sur la planche avant
-de coder : le mois de la facture n'est pas le mois du chantier, et le compte
-« N facturés » se met alors à correspondre à ce qu'on peut atteindre.
+**SA DÉCISION, le jour même :** *« 1 oui, et pour la 2 il faut même mettre la
+date du jour à laquelle on a créé la facture »*. Les deux sont codés :
+
+| | |
+|---|---|
+| la date du chantier | `date_planifiee ?? facture.date_emission` — une seule fonction pour le rangement, le tri et l'affichage (`dateDuChantier`) |
+| « retirer du planning » | **refusé** dès qu'une facture existe, à la racine (`deplanifierChantier`) |
+
+La date d'émission est posée une fois à la création de la facture brouillon et
+aucun code ne la réécrit : c'est le jour où il l'a créée. Elle n'est PAS écrite
+dans `date_planifiee` — cette colonne commande l'occupation du planning, et un
+jour posé là ferait redemander une place à un chantier déjà facturé.
+`ARCHITECTURE.md` §396, `scripts/test-chantier-garde-sa-date-db.ts`.
+
+**Ce qui reste ouvert, et c'est à lui :** un chantier terminé qui n'a NI date de
+planning NI facture n'a toujours aucune date — il n'existe qu'en théorie
+(`termine_at` ne s'écrit qu'avec une facture), et la rangée reste muette plutôt
+que d'inventer.
 
 ## EN ATTENTE DE SA DÉCISION : les travaux supplémentaires sur la facture (31 août 2026)
 

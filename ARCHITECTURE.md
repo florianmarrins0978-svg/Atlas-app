@@ -32366,3 +32366,64 @@ sûr — elle ne propose jamais un jour que l'acceptation refuserait —, et c'e
 plus restrictif que nécessaire. Lui envoyer une seconde liste apprendrait
 quelque chose de plus du planning de son artisan : cela se demande à lui
 (`TODO.md`).
+
+---
+
+## §396 — La date d'un chantier terminé : le planning, sinon sa facture
+
+**Sa question du 21 septembre 2026**, devant deux rangées « Mr. Julien » sans
+deuxième ligne : *« pourquoi Julien n'a pas de date ? »* — puis, une fois les
+deux défauts nommés : *« 1 oui, et pour la 2 il faut même mettre la date du
+jour à laquelle on a créé la facture »*.
+
+### Ce qui n'allait pas, et ce n'était pas une ligne vide
+
+« Terminés » n'avait qu'une source de date, `chantiers.date_planifiee` — celle
+du planning. Un chantier qui n'y était jamais passé n'avait donc rien à
+montrer, ce qui est juste : on n'invente pas une date. Mais `cleMois` se
+déduisait de la même colonne, et valait `""` : **aucun mois ne portait ce
+chantier**. L'œil le montrait tant qu'il attendait sa facture — il ignore
+délibérément le mois —, et le jour où la facture partait, la rangée quittait
+l'écran **tout en comptant dans « N facturés »**. Un compte qui compte ce que
+la liste ne montre pas est exactement ce que la planche 90 avait fait retirer.
+
+Deux portes menaient là :
+
+| | |
+|---|---|
+| « Créer une facture » (10 septembre 2026) | `creerFactureSansDevis` pose `termine_at` et ne touche jamais `date_planifiee` |
+| « retirer du planning » | `deplanifierChantier` remettait la date à NULL **sans regarder si une facture existait déjà** — le chantier restait terminé, et perdait sa date pour toujours |
+
+### La règle retenue
+
+`dateDuChantier = date_planifiee ?? facture.date_emission`
+(`src/lib/termines-par-mois.ts`), et **la même fonction sert au rangement par
+mois, au tri et à l'affichage** : trois lectures d'une même question finissent
+toujours par diverger (`CLAUDE.md` §3). La date d'émission est posée une fois,
+`jourIso(maintenant)`, à la création de la facture brouillon, et aucun code ne
+la réécrit : c'est littéralement le jour où il a créé la facture.
+
+**Pourquoi on ne l'écrit PAS dans `date_planifiee`, alors que c'eût été plus
+simple.** C'est la colonne du planning, et elle commande l'occupation : un jour
+posé là ferait compter le chantier parmi les demi-journées qui attendent une
+place (`demiJourneesAPoser`), et ferait occuper une demi-journée passée par un
+travail déjà facturé. La date de RÉALISATION se déduit ; elle ne se force pas
+dans la date de POSE.
+
+**Et la rangée facturée n'écrit pas sa date deux fois.** Quand elle vient de la
+facture, « Facturé le 18 septembre » la dit déjà trois mots plus loin : la
+répétition part, pas la ligne (`CLAUDE.md` §3).
+
+### Le geste qui effaçait la date est refusé à la RACINE
+
+`deplanifierChantier` lève `DeplanificationImpossibleError("facture_preparee")`
+dès qu'une facture existe pour ce chantier. Le contrôle vit dans le dépôt et
+non dans les écrans : trois portes l'appellent — le planning, l'assistant, la
+fiche —, et une condition recopiée trois fois aurait divergé au premier ajout.
+Chaque porte traduit le refus **en valeur** (`AGENTS.md`, piège 0 ter) : le
+planning l'affiche sous le calendrier, l'assistant le rend en conflit métier.
+
+`scripts/test-chantier-garde-sa-date-db.ts` tient les deux moitiés, et sait
+rougir : confrontée au code d'avant, elle rend quatre rouges — et laisse verts
+les deux cas qui devaient le rester, dont le retrait ordinaire d'un chantier
+sans facture. Un garde-fou qui parle à tort s'apprend à être ignoré.

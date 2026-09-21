@@ -8,6 +8,23 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-21
 
+### Un chantier terminé ne perd plus sa date — et sans planning, c'est sa facture qui la donne
+
+Deux rangées « Mr. Julien » n'avaient pas de deuxième ligne sur son écran
+Terminés. Elles disaient vrai — aucune date de planning —, mais elles ne
+tenaient à rien : sans date, `cleMois` valait `""`, donc aucun mois ne portait
+le chantier. Tant qu'il attendait sa facture, l'œil le montrait ; le jour où
+elle partait, il quittait la liste **en continuant de compter dans « N
+facturés »**. La date du chantier se lit désormais `date_planifiee ?? date
+d'émission de la facture`, par une seule fonction qui sert au rangement, au tri
+et à l'affichage — et la rangée facturée ne l'écrit pas deux fois.
+
+Et « retirer du planning » est **refusé dès qu'une facture est préparée** : il
+remettait la date à NULL sans rien regarder, le chantier restait terminé, et sa
+date était perdue pour toujours. Le refus vit dans le dépôt, où les trois
+portes passent ; chacune le rend en valeur, jamais en exception.
+`ARCHITECTURE.md` §396.
+
 ### La comparaison des rouges lit le journal entier — un rouge n'y passe plus pour vert
 
 `verifier-rouge-prealable` rejoue chaque suite rouge sur la base de `main` et

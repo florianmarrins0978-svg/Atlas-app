@@ -1,9 +1,21 @@
 # État du projet
 
-**Dernière mise à jour :** 2026-09-20 · `main`
+**Dernière mise à jour :** 2026-09-21 · `main`
 · dernière migration `drizzle/0097_jours_retenus_par_le_client.sql`
 
 ---
+
+## FAIT : UN CHANTIER TERMINÉ NE PERD PLUS SA DATE (21 septembre 2026)
+
+*« Pourquoi Julien n'a pas de date ? »*, devant deux rangées « À FACTURER » sans
+deuxième ligne. Sans `date_planifiee`, le chantier n'appartenait à **aucun
+mois** : l'œil le montrait tant qu'il attendait sa facture, puis il quittait
+l'écran le jour où elle partait, tout en comptant dans « N facturés ». Sa
+décision : *« il faut même mettre la date du jour à laquelle on a créé la
+facture »*. La date se lit désormais `date_planifiee ?? date d'émission de la
+facture`, par une seule fonction (rangement, tri, affichage), et « retirer du
+planning » est refusé dès qu'une facture est préparée — il effaçait la date
+pour toujours. `ARCHITECTURE.md` §396.
 
 ## FAIT : L'ÉCRAN DU CLIENT — CONFIRMATION DU REFUS, ET SES JOURS (20 septembre 2026)
 

@@ -7,6 +7,7 @@ import {
   listerChantiersPourPlanning,
   planifierChantier,
   deplanifierChantier,
+  DeplanificationImpossibleError,
   ecrireNoteChantier,
   supprimerChantier,
   SuppressionChantierRefusee,
@@ -266,16 +267,41 @@ export async function ecrireNoteChantierAction(
   return { succes: true, note: row.note };
 }
 
-export async function deplanifierChantierAction(chantierId: string) {
+/**
+ * Le refus de ce geste, dans SES mots — et il dit le pourquoi, pas la règle.
+ *
+ * **Sa décision du 21 septembre 2026.** Retirer du planning un chantier déjà
+ * facturé lui faisait perdre sa date pour toujours, sans rien afficher.
+ */
+const REFUS_DEPLANIFICATION: Record<DeplanificationImpossibleError["motif"], string> = {
+  facture_preparee: "Sa facture est déjà préparée : le chantier garde sa date.",
+};
+
+export type ResultatDeplanification =
+  | { succes: true }
+  | { succes: false; erreur: string };
+
+export async function deplanifierChantierAction(
+  chantierId: string
+): Promise<ResultatDeplanification> {
   const ctx = await getCurrentCtx();
   await exigerEcritureSurLePlanning(ctx, "retirer ce chantier du planning");
   await exigerChantierDansSaPortee(ctx, chantierId, "retirer ce chantier du planning");
-  const resultat = await deplanifierChantier(ctx, chantierId);
+  try {
+    await deplanifierChantier(ctx, chantierId);
+  } catch (err) {
+    // **Le refus se rend en VALEUR** : une exception d'action serveur arrive
+    // chez lui en identifiant opaque de six chiffres (`AGENTS.md`, piège 0 ter).
+    if (err instanceof DeplanificationImpossibleError) {
+      return { succes: false, erreur: REFUS_DEPLANIFICATION[err.motif] };
+    }
+    throw err;
+  }
   // Le pendant obligatoire de l'écriture : sans ce retrait, un chantier
   // déplanifié resterait dans son téléphone pour toujours — et il se fierait à
   // un agenda qui ment.
   await porterChantierDansAgenda(ctx, chantierId);
-  return resultat;
+  return { succes: true };
 }
 
 /**

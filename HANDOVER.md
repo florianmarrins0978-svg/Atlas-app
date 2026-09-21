@@ -4,10 +4,22 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-09-20 · `main` — la première ligne du devis est ouverte d'avance
+**Point de reprise :** 2026-09-21 · `main` — un chantier terminé ne perd plus sa date
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+
+## LA DATE D'UN CHANTIER TERMINÉ A DEUX SOURCES — et le planning n'est plus la seule
+
+**Depuis le 21 septembre 2026** (`ARCHITECTURE.md` §396). Avant de toucher à
+« Terminés » ou au rangement par mois :
+
+| | |
+|---|---|
+| ce qui donne le jour d'un chantier | `dateDuChantier` = `date_planifiee ?? facture.date_emission` |
+| ce qui l'emploie | le rangement par mois, le tri, et la ligne affichée — **la même fonction**, jamais trois lectures |
+| ce qu'il ne faut PAS faire | écrire cette date dans `date_planifiee` : c'est la colonne du planning, et un chantier facturé redemanderait une place |
+| ce qui est refusé | « retirer du planning » sur un chantier dont la facture est préparée (`DeplanificationImpossibleError`) |
 
 ## UNE ÉCRITURE DÉCLARE CE QU'ELLE CHANGE — sinon le RETOUR rejoue l'écran d'avant
 
