@@ -9,6 +9,46 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## ⏳ UNE PLANCHE À REGARDER — FICHE 4, LA BRUNISSURE DES FEUILLES DE PEUPLIER (22 septembre 2026)
+
+`appli/fiche-brunissure-des-feuilles-de-peuplier.html`, liée depuis
+`appli/essais.html`. Sa demande du 22 septembre : *« continue dans l'ordre
+après l'anthracnose du platane sur le site de l'INRAE »*, puis *« fais-moi
+valider pour chaque fiche avant de la coder, fais des planches »*.
+
+**L'ordre, c'est celui d'Ephytia** — rubrique « Champignons foliaires »,
+`https://ephytia.inrae.fr/fr/C/18684/Forets-Champignons-foliaires` : anthracnose
+du platane (fiche 2), anthracnose du chêne et du hêtre (fiche 3), **brunissure
+des feuilles de peuplier** (celle-ci), puis chalarose du frêne, criblure du
+merisier, cylindrosporiose du merisier, Cyclaneusma sur pin, maladie des bandes
+rouges, croûtes noires de l'érable, taches blanches, maladie des pousses des
+résineux, taches brunes, oïdium du chêne, pathologies foliaires du mélèze,
+Phytophthora ramorum, pourriture grise, Rhizosphaera, Rhabdocline du Douglas,
+rouge cryptogamique du pin, rouilles, rouille suisse du Douglas, Sphaeropsis
+des pins, Thyriopsis halepensis. **Une planche par fiche, chacune attend son
+oui avant d'entrer dans `donnees/phyto/fiches/`.**
+
+**Ce qu'il a demandé et qui ne se fait PAS ainsi — à lui redire s'il le
+redemande :** *« reprends leur photo et leur texte »*. Les mentions légales
+d'Ephytia (`donnees/phyto/LISEZ-MOI.md`) interdisent la copie et l'usage
+commercial ; la fiche 2 n'a jamais recopié ni texte ni figure, et c'est cette
+méthode-là qui continue : les faits rédigés, la photo prise ailleurs sous
+licence libre, vérifiée sur ses deux pages (Commons ET la source d'origine).
+
+**Où est le brouillon.** Le JSON complet est INJECTÉ dans la planche (bloc
+`var LOT`), privé de ses champs `_source_*` ; la version avec ses notes de
+lecture est dans le dossier de travail de la session qui l'a écrite, et se
+reconstitue en une lecture de la page si elle est perdue. Il a passé
+`importer-fiches-phyto.ts --verifier`. La photo est déjà dans
+`appli/diagnostic-brunissure-peuplier-feuille.jpg` (422 Ko, CC BY 3.0 US,
+Manfred Mielke / USDA Forest Service / Bugwood, via Commons).
+
+**Sur son oui :** le fichier **004-brunissure-peuplier.json** dans `donnees/phyto/fiches/` +
+**brunissure-peuplier-feuille.jpg** dans `donnees/phyto/images/` (ils n'existent pas encore, exprès), `--verifier`, puis
+`npx tsx scripts/test-import-fiches-phyto.ts` et `test-diagnostic-base.ts`, et
+`PROJECT_STATE.md` passe à « 4 sur ~50 ». Ses trois questions sont au bas de
+la planche : Vigilance ou Faible ; la photo ; le oui.
+
 ## ⏳ UNE PLANCHE À REGARDER — LA FICHE DE SÉCURITÉ (DÉCRET 2021-1833) SUR LA FICHE DU JOUR (21 septembre 2026)
 
 `appli/fiche-de-securite.html`, liée depuis `appli/essais.html`. Sa question :

@@ -6,6 +6,25 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-09-22
+
+### La fiche 4 du diagnostic végétal dessinée avant d'être codée — et la licence d'Ephytia lue
+
+Sa demande : continuer les fiches de maladies dans l'ordre d'Ephytia après
+l'anthracnose du platane, une planche par fiche, son oui avant d'écrire. La
+suivante est la brunissure des feuilles de peuplier :
+`appli/fiche-brunissure-des-feuilles-de-peuplier.html` montre l'écran tel que
+l'application le rendra, avec le brouillon complet de la fiche injecté depuis
+son JSON — rien de retapé —, et d'où vient chaque ligne. Le brouillon passe
+déjà `importer-fiches-phyto.ts --verifier`.
+
+Ce que ça évite : coder une fiche qu'il aurait corrigée après coup, et surtout
+recopier Ephytia. Il avait demandé *« reprends leur photo et leur texte »* ;
+les mentions légales du site, lues ce jour, interdisent la copie et l'usage
+commercial (`donnees/phyto/LISEZ-MOI.md`). La méthode de la fiche 2 tient
+donc : les faits rédigés, la photo prise sur Wikimedia Commons sous CC BY 3.0
+US, licence et citation vérifiées sur Commons ET sur Bugwood.
+
 ## 2026-09-21
 
 ### Retirer du planning n'efface plus la date d'un chantier déjà facturé

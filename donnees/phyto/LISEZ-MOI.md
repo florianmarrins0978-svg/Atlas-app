@@ -34,6 +34,30 @@ suffi à écrire une fiche complète en une lecture. La base d'INRAE (Ephytia) e
 contient beaucoup — d'où la question de sa licence, qui est le vrai point
 bloquant.
 
+## Ce qu'Ephytia autorise, lu sur ses mentions légales — 22 septembre 2026
+
+Le patron a demandé de *« reprendre leur photo et leur texte »* pour les fiches
+suivantes. Ses mentions légales (`https://ephytia.inrae.fr/fr/CMS/73/Mentions_Legales`,
+lues depuis son poste, qui a le réseau) disent :
+
+> Les informations diffusées sur les serveurs Inrae sont la propriété de
+> l'Inrae. Toute copie totale ou partielle ne peut se faire sans l'accord de
+> l'Institut. […] Pas d'Utilisation Commerciale […] Pas de Modification.
+
+Et chaque page porte « Ephytia - tous droits réservés ». **Atlas est un usage
+commercial.** Donc, tant que le courriel de `docs/courriel-inrae.md` n'a pas
+reçu de réponse (aucune dans sa boîte au 22 septembre 2026) :
+
+| | |
+|---|---|
+| **leur texte** | jamais recopié — les faits, rédigés, avec de courtes citations dans les libellés, comme la fiche 2 |
+| **leurs figures** | jamais employées — la plupart portent un « © » nominatif, et les autres n'ont aucune licence |
+| **la photo** | prise ailleurs, sous licence libre, **vérifiée sur les DEUX pages** : celle de Commons (bandeau de licence) et celle de la source d'origine (Bugwood dit la licence ET la citation qu'il demande) |
+
+**L'ordre des fiches suit le site**, rubrique « Champignons foliaires »
+(`/fr/C/18684`), et chaque fiche passe par une planche dans `appli/` avant
+d'entrer ici — sa règle du 22 septembre.
+
 ## Le blocage à connaître avant de se lancer
 
 **Aucune de ces sources n'est joignable depuis l'environnement de développement
