@@ -152,7 +152,8 @@
   /* l'encadré doré, quand la facture est acquittée */
   /* Rien d'autre que le mot — sa correction du 21 septembre : « retire tout ce
      qui est en gris, même format que sur la facture ». C'est exactement la
-     mention que porte la page de la facture (.mention), dans un cadre d'or. */
+     mention d'acquittement, dans un cadre d'or — et elle sert aux DEUX écrans
+     depuis le 21 septembre au soir. */
   .encadre{margin-top:16px;border:1px solid var(--or);border-radius:4px;padding:12px 14px}
   .encadre p{margin:0;text-align:center;font:600 12px/1 ui-sans-serif,sans-serif;letter-spacing:.2em;
              text-transform:uppercase;color:var(--or)}
@@ -177,8 +178,12 @@
   .grandttc .lib{margin:0 0 6px;font:500 9.5px/1 ui-sans-serif,sans-serif;letter-spacing:.28em;
                  text-transform:uppercase;color:var(--ink)}
   .grandttc .m{margin:0;font:600 32px/1 ui-serif,Georgia,serif;color:var(--rust)}
-  .mention{margin:12px 0 0;text-align:center;font:600 12px/1 ui-sans-serif,sans-serif;letter-spacing:.2em;
-           text-transform:uppercase;color:var(--rust)}
+  /* **ACQUITTÉE SE LIT EN OR, ET AU MÊME DESSIN PARTOUT** — sa correction du
+     21 septembre : « mets facture acquittée en doré, comme sur la facture ».
+     La page de la facture l'écrivait à l'encre : le même fait se lisait de
+     deux façons selon l'écran, et le PDF, lui, en fait un tampon d'or. C'est
+     donc l'encadré (.encadre) qui sert ici aussi — une seule pièce, jamais
+     deux dessins pour la même chose. */
 
   /* ═══ LE PAPIER — ce que le PDF imprime ══════════════════════════════════
      Repris de la planche validée le 14 septembre 2026
@@ -373,7 +378,9 @@
         <button class="bascule" type="button" aria-pressed="false" aria-label="Facture acquittée"></button>
       </div>
       <div class="net"><b>Net à payer</b><span class="m" id="f-net"></span></div>
-      <p class="mention" id="f-mention" hidden>Facture acquittée</p>
+      <div class="encadre" id="f-mention" hidden>
+        <p>Facture acquittée</p>
+      </div>
     </div>
 
     <div class="bas">
