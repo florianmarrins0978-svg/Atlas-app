@@ -32122,7 +32122,161 @@ ne pas reprocher à la création un défaut qui est dans l'affichage. **Vue roug
 sur le code d'avant** : *« L'accueil est revenu sans « Retour 196714 » : il a
 fallu recharger pour le voir (au rechargement, 1 ligne(s) le portent). »*
 
-## §392 — La cliente pose SES jours, et un doigt ne ferme plus un devis
+## §392 — Le sort d'une suite rejouée se lit dans les deux flux
+
+**Trouvé le 21 septembre 2026** en fusionnant un lot : la comparaison des
+rouges (`verifier-rouge-prealable.ts`, §384) rendait « illisible » des deux
+côtés sur deux suites que la copie propre reproduisait pourtant, bilan lisible
+à l'appui. En sondant l'appel exact, la vraie faute est apparue, plus grave que
+le symptôme : le moteur navigateur écrit « ❌ <suite> a échoué » sur **stderr**
+et son compte sur **stdout**, et `rejouer` ne lisait que stdout. Une suite
+rouge y passait donc pour **verte** — sur `main` comme sur le lot —, donc
+« pareil », donc **tolérée**. Le garde-fou aurait laissé passer une régression
+nouvelle exactement par la porte qu'il prétend fermer.
+
+| | |
+|---|---|
+| la lecture | `sortDUneSuite` (`_rouge-prealable.mjs`), pure : statut, stdout, stderr → rouge, vert, ou indéterminé |
+| ce qu'elle lit | **les deux flux**, comme la batterie (`2>&1`) |
+| ce qu'elle refuse | un compte qui annonce un échec que rien ne nomme, un moteur en erreur qui ne nomme pas la suite, un moteur qui n'a joué aucune suite : **indéterminé**, jamais vert |
+| ce qui la tient | `test-rouge-prealable-lit-le-journal.ts`, qui lui montre exactement ce que l'ancienne lecture voyait |
+
+Le « illisible » du symptôme, lui, venait d'un `DATABASE_URL` absent de
+l'environnement de la comparaison : le moteur s'arrêtait avant tout compte.
+Il est rendu tel quel — indéterminé —, et c'est juste.
+
+## §393 — Plusieurs photos d'un coup, et trois plafonds
+
+**Sa demande du 20 septembre 2026 :** *« pouvoir ajouter plusieurs photos en
+même temps : j'ouvre la photothèque et j'en sélectionne plusieurs — par contre
+il faut mettre un nombre de photos max »*, puis *« faut mettre un max dans tous
+les cas »*, et, devant l'inventaire, *« très bien, fais ça »*.
+
+**Ce que l'inventaire a montré.** La pellicule (fiche client, création de
+chantier, tiroir) acceptait déjà plusieurs photos, sans aucune borne ; le retour
+du jour n'en prenait qu'une. Les autres entrées — ticket de caisse, croquis
+d'arrosage, diagnostic végétal, assistant, logo — prennent UNE photo par
+nature (une photo = une lecture par l'IA) : leur maximum est 1, et il le
+reste.
+
+**Et ce qui a changé la réponse :** les photos du retour du jour SONT les
+photos du chantier — le retour en « reprend » certaines. Un plafond de 15 par
+chantier, sa première idée, aurait bloqué le deuxième jour d'un chantier de
+trois. D'où trois chiffres (`src/lib/photos-plafonds.ts`) :
+
+| | | tenu par |
+|---|---|---|
+| une sélection sur la pellicule | 15 | l'écran, avant le premier octet |
+| une sélection sur le retour, et les photos cochées d'un retour | 10 | l'écran, et `poserLeRetourAction` |
+| un chantier entier | 30 | **le dépôt** (`ajouterPhoto`), dans la transaction qui compte et insère |
+
+**Pourquoi le chantier se tient au dépôt et non à l'écran** : une sélection se
+recommence, et deux écrans ajoutent au même chantier. Une photo refusée là a
+déjà ses octets rangés : ils partent en file de purge dans la même
+transaction, comme une photo effacée — pas d'orphelin.
+
+**Ce que le lot a réparé en passant, et qui était muet.** `ajouterPhotoAction`
+LEVAIT ses refus, et la pellicule, qui ajoute plusieurs photos d'affilée,
+avalait l'exception dans un `catch` vide pour ne pas interrompre les autres :
+un plafond de téléversement atteint, une photo trop lourde, se perdaient sans
+un mot. Le plafond du chantier arrivant par le même chemin, le chemin parle
+désormais — un refus est une valeur de retour (`HANDOVER.md`, piège 0 ter), et
+la pellicule l'affiche.
+
+Éprouvé : `test-photos-plafonds.ts` (la règle pure, ses chiffres),
+`test-photos-repo.ts` (la 31e refusée, ses octets en purge),
+`test-retour-intervention-db.ts` (onze photos refusées par l'action),
+`test-travaux-a-faire-e2e.ts` (trois photos d'un coup, cochées, « 3/10 »).
+
+---
+
+## §394 — La feuille du devis s'ouvre avec sa première ligne, et la base ne le sait pas
+
+**Sa demande du 20 septembre 2026, capture à l'appui :** *« quand j'ouvre la
+page du devis il doit avoir une ligne d'ouverte déjà, je dois pas avoir besoin
+de cliquer sur ajouter une ligne »*.
+
+Il arrive sur sa feuille pour écrire ; le premier geste qu'on lui demandait ne
+servait qu'à ouvrir une case.
+
+### Ce qui a été écarté, et pourquoi c'était le piège
+
+Écrire la ligne **en base** à l'ouverture de l'écran tenait en une ligne de
+code — `page.tsx` crée déjà le devis brouillon au même endroit. C'était la
+mauvaise réponse, et le dépôt en porte la preuve : **trois endroits lisent
+« aucune ligne » comme « la chaîne n'a pas encore tourné ».**
+
+| | |
+|---|---|
+| `devis-depuis-dictee.ts` | n'écrit les prestations dictées que sur un devis vide |
+| `devis-a-preparer.ts` | décide si la dictée doit être reprise à l'arrivée |
+| `api/chantiers/[id]/devis-pret` | dit à l'écran qui attend que le devis est prêt |
+
+Une ligne vide posée d'office aurait menti aux trois. Le scénario n'est pas
+théorique : il ouvre le devis, repart, dicte chez sa cliente — et la chaîne
+trouve alors une ligne, donc n'écrit rien. C'est **sa panne du 7 août 2026**,
+dans ses mots : *« le devis ne comporte aucune ligne, gros bug »*.
+
+### Ce qui est fait
+
+La ligne vit dans l'ÉCRAN seul, sous un identifiant réservé (`ligne-ouverte`,
+constant — un identifiant tiré au hasard différerait entre le rendu serveur et
+le navigateur). Elle devient une ligne comme les autres au premier mot écrit.
+
+| | |
+|---|---|
+| **quand elle s'ouvre** | devis brouillon · aucune ligne · aucune dictée à reprendre |
+| **ce qui la fait naître** | un libellé, une unité, un prix non nul, une quantité autre que 1 |
+| **ce qui n'écrit rien** | un champ traversé — le devis enregistre à chaque sortie de case, qu'elle ait changé ou non |
+| **une seule fois** | la création est une promesse gardée (`ecritureDeLaLigneOuverte`) : deux sorties de champ rapprochées ne font pas deux lignes |
+
+La règle est pure (`src/lib/ligne-ouverte-devis.ts`), donc éprouvée sans
+navigateur ; le parcours l'est avec (`test-ligne-ouverte-devis-e2e.ts`), et il
+regarde **la base** — c'est là, et nulle part à l'écran, que se verrait la
+ligne vide qu'on refuse d'écrire.
+
+### LE PRIX QU'ELLE A FAILLI FAIRE PERDRE — l'identité de la rangée
+
+**Trouvé par la batterie, avant livraison.** La première version remplaçait
+`ligne-ouverte` par l'identifiant que la base venait de rendre. La CLÉ de la
+rangée changeait donc sous React, qui démonte alors la rangée et en monte une
+neuve : **le champ où le doigt écrit disparaît**, sa sortie n'a jamais lieu, et
+ce qu'il vient de taper ne part nulle part.
+
+Le geste ordinaire — écrire la description, passer au prix, quitter — laissait
+donc le devis à 0,00 €. Trois suites sont tombées, dont deux sur une facture au
+bouton « Envoyer » éteint, trois écrans plus loin.
+
+**C'est le contrôle rendu bavard qui l'a nommé en une ligne** (`AGENTS.md`) :
+une seule requête partie, celle de la description, avec `"prixUnitaire":"0"`.
+La suite garde cette trace — sans elle, le rouge accuse la facture.
+
+| | |
+|---|---|
+| l'identifiant à l'écran | `ligne-ouverte`, **il ne change jamais** |
+| l'identifiant en base | une référence à côté, rendue par `idEnBase()` |
+| les écritures d'une ligne | **à la suite** (`file-d-ecritures.ts`), comme l'en-tête et les acomptes : deux sorties de champ rapprochées envoient chacune la ligne entière, et celle de la description reposerait un prix à zéro |
+
+### Le piège que cette ligne ouvre, et qui ne se voit qu'au rechargement
+
+**Son rang en base se décide à l'ÉCRITURE.** S'il appuie sur « + Ajouter une
+ligne » avant d'avoir écrit, la ligne du dessous part la première et prend le
+rang 0 : les deux se croisent au rechargement, et c'est l'ordre du devis que
+le client lira qui change. Vu rouge d'abord — *« Évacuation — la seconde |
+Abattage — la première »* —, puis corrigé : « + Ajouter une ligne » et
+« + Ajouter une TVA » écrivent la ligne ouverte AVANT de créer la leur.
+
+### Ce que les suites ont dû apprendre
+
+Vingt-cinq suites appuyaient sur « + Ajouter une ligne » avant d'écrire leur
+première ligne sur cet écran. Le geste n'existe plus dans son parcours : elles
+l'ont perdu, plutôt que de garder un clic qui ajoutait désormais une ligne vide
+de plus (`CLAUDE.md` §5 bis — une suite qui réclame un geste retiré rend
+l'écran impossible à changer). Celles qui écrivent plusieurs lignes n'appuient
+que pour **celles qui manquent**. L'écran Prix et la facture, eux, n'ont pas
+bougé.
+
+## §395 — La cliente pose SES jours, et un doigt ne ferme plus un devis
 
 **Sa soirée du 20 septembre 2026, capture à l'appui :** *« j'ai sans faire
 exprès cliqué sur je ne donne pas suite, aucun moyen d'annuler, il faut mettre

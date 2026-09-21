@@ -71,8 +71,6 @@ async function main() {
 
   // --- Une ligne identifiée, pas chiffrée : ce que la dictée produit -------
   await page.waitForSelector("text=DEVIS", { timeout: 15000 });
-  await page.click("text=+ Ajouter une ligne");
-  await page.waitForTimeout(400);
   await page.getByLabel("Description 1").fill("Dessouchage du frêne");
   await page.getByLabel("Description 1").blur();
   await page.waitForTimeout(600);

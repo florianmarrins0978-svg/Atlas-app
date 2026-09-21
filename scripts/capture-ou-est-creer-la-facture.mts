@@ -39,8 +39,6 @@ const chantierId = await creerPuisFiche(page, BASE);
 // le chantier PLANIFIÉ.
 await page.goto(`${BASE}/chantiers/${chantierId}/devis-complet`, { waitUntil: "networkidle" });
 await page.waitForSelector("text=Total TTC", { timeout: 40_000 });
-await page.getByRole("button", { name: "+ Ajouter une ligne" }).click();
-await page.waitForTimeout(1000);
 await page.getByLabel("Description 1").fill("Taille de haie");
 await page.getByLabel("Prix unitaire 1").fill("450");
 await page.getByLabel("Description 1").click();

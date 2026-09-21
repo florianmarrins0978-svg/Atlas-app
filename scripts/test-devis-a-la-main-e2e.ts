@@ -102,8 +102,6 @@ async function main() {
   console.log("  ✓ la fiche client mène au devis écrit à la main, sans détour");
 
   // Une ligne, son prix — c'est tout ce que le patron veut faire.
-  await page.click("text=+ Ajouter une ligne");
-  await page.waitForTimeout(500);
   await page.getByLabel("Description 1").fill("Abattage d'un chêne mort");
   await page.getByLabel("Description 1").blur();
   await page.getByLabel("Prix unitaire 1").fill("1250");
