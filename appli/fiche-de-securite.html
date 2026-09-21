@@ -340,7 +340,21 @@
   .recherche input{width:100%;height:48px;border:0;border-radius:999px;padding:0 16px 0 44px;font:inherit;font-size:16px;background:var(--carte);
                    box-shadow:inset 0 0 0 1px var(--trait);color:var(--encre)}
   .recherche input::placeholder{color:var(--gris)}
-  .annees{display:flex;gap:7px;margin:10px 6px 0}
+  .annees,.pas{display:flex;gap:7px;margin:10px 6px 0;overflow-x:auto;scrollbar-width:none}
+  .pas{gap:6px;margin-left:4px;margin-right:4px}
+  .pas .annee{flex:none;padding:0 11px;font-size:13px}
+  .calendrier{position:relative;display:flex;align-items:center;gap:10px;min-height:48px;margin:10px 6px 0;padding:0 14px;border-radius:12px;
+              background:var(--carte);box-shadow:inset 0 0 0 1px var(--trait);cursor:pointer}
+  .calendrier .cal-dessin{color:var(--pin);display:grid;flex:none}
+  body.nuit .calendrier .cal-dessin{color:var(--encre)}
+  .calendrier .cal-nom{flex:1;font-size:15px;color:var(--encre)}
+  .calendrier .cal-nom::first-letter{text-transform:uppercase}
+  /* le vrai calendrier du téléphone s'ouvre : le champ couvre toute la ligne, invisible */
+  .calendrier input{position:absolute;inset:0;width:100%;height:100%;opacity:0;font-size:16px}
+  .trois-boutons{display:flex;flex-direction:column;gap:8px}
+  .trois-boutons .vert{margin:0;width:100%;padding:0 10px;font-size:14.5px}
+  .trois-boutons .vert.creux{background:transparent;color:var(--pin);box-shadow:inset 0 0 0 1.5px var(--vert-pale)}
+  body.nuit .trois-boutons .vert.creux{color:var(--encre)}
   .annee{height:40px;padding:0 15px;border-radius:999px;font-size:13.5px;background:var(--carte);box-shadow:inset 0 0 0 1px var(--trait);color:var(--encre)}
   .annee[aria-pressed="true"]{background:var(--plein);color:var(--sur-plein);box-shadow:none}
   .client{margin:24px 6px 0;font:400 19px/1.2 ui-serif,Georgia,serif}
@@ -403,7 +417,7 @@
     <tr><td>Au bon vouloir, à l’arrivée, sur tous les chantiers</td><td>un bandeau sur la fiche du jour de chaque chantier, rien d’imposé. La notice MSA conseille de la préparer dès la visite. Le même bandeau pourra vivre sur la page du chantier, pour la commencer la veille.</td></tr>
     <tr><td>Signature au doigt</td><td>nom, date, et vous signez sur l’écran. Modifier une fiche signée efface la signature, et vous signez à nouveau.</td></tr>
     <tr><td>Un bouton pour l’envoyer</td><td>« Transmettre le PDF », une fois signée : la feuille de partage du téléphone s’ouvre (Mail, SMS, WhatsApp) et c’est vous qui envoyez, comme pour le devis. l’application n’envoie rien tout seul, vous l’avez vérifié. « Plus tard » la garde sans la transmettre, et le bouton reste sur la fiche du jour.</td></tr>
-    <tr><td>Où elle est gardée</td><td>dans Paysage, une ligne de plus parmi les outils du métier : « Fiches de sécurité », comme vous l’avez décidé. Dedans, rangées par client, avec la date jusqu’à laquelle chacune est gardée. Touchez « Voir où » sur l’écran « Fiche signée », ou « Voir où elle est gardée » dans le bandeau. Terminés ne change pas.</td></tr>
+    <tr><td>Où elle est gardée</td><td>dans Paysage, une ligne de plus parmi les outils du métier : « Fiches de sécurité », comme vous l’avez décidé. Dedans, rangées par client, avec la date jusqu’à laquelle chacune est gardée. Pour retrouver : Jour, Semaine, Mois ou Année, et le calendrier du téléphone pour choisir la date. Sur chaque fiche : ouvrir, <b>enregistrer</b> dans vos fichiers, transmettre. Touchez « Voir où » sur l’écran « Fiche signée », ou « Voir où elle est gardée » dans le bandeau. Terminés ne change pas.</td></tr>
     <tr><td>Deux ans</td><td>c’est l’application qui la garde, vous n’avez rien à faire. Le décret admet la fiche dématérialisée. Vous la retrouvez dans Terminés, sur le chantier.</td></tr>
     <tr><td>Plus de vingt par an</td><td>ce qu’l’application sait est déjà posé : chantier, devis, adresse, dates, équipe, téléphone. Vous ne ressaisissez rien.</td></tr>
   </table>
@@ -492,6 +506,7 @@ const CHEV = `<svg class="chev" width="16" height="16" viewBox="0 0 20 20" fill=
 const RETOUR = `<svg width="22" height="22" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M12.5 4 6.5 10l6 6" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 const APPAREIL = `<svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7.5a1.5 1.5 0 0 1 1.5-1.5H7l1.3-2h3.4L13 6h2.5A1.5 1.5 0 0 1 17 7.5v7a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 3 14.5z"/><circle cx="10" cy="11" r="2.6"/></svg>`;
 const LOUPE = `<svg width="17" height="17" viewBox="0 0 17 17" fill="none" aria-hidden="true"><circle cx="7.2" cy="7.2" r="5.2" stroke="currentColor" stroke-width="1.6"/><path d="m11.6 11.6 4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>`;
+const CALENDRIER = `<svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4.5" width="14" height="12.5" rx="2"/><path d="M3 8.5h14M7 2.5v3.5M13 2.5v3.5"/></svg>`;
 const CHEV_DROIT = `<svg width="9" height="15" viewBox="0 0 9 15" fill="none" aria-hidden="true"><path d="m1.5 1.5 6 6-6 6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 const BOUCLIER = `<svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 2.5 4 5v5c0 3.6 2.6 6.4 6 7.5 3.4-1.1 6-3.9 6-7.5V5z"/><path d="m7.3 10 1.9 1.9L12.8 8"/></svg>`;
 const CIBLE = `<svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><circle cx="10" cy="10" r="5.5"/><circle cx="10" cy="10" r="1.6"/><path d="M10 1.5v3M10 15.5v3M1.5 10h3M15.5 10h3"/></svg>`;
@@ -1017,43 +1032,62 @@ function paysageEcran() {
   tel.querySelector(".retour").onclick = () => { etat.ecran = etat.dOu || "planning"; etat.ficheOuverte = true; dessiner(); };
   tel.querySelector("#outil-fiches").onclick = () => { etat.ecran = "fiches"; dessiner(); };
 }
+const FICHES = [
+  { client: "Marcel Pagnol", chantier: "Pagnol", date: "2026-09-18", garde: "18 septembre 2028", transmise: () => etat.f.envoyee, courante: true },
+  { client: "Mme Aubert", chantier: "Aubert", date: "2026-09-04", garde: "4 septembre 2028", transmise: () => true },
+  { client: "Mairie de Vernouillet", chantier: "Platanes de la place", date: "2026-06-12", garde: "12 juin 2028", transmise: () => true },
+  { client: "Mme Aubert", chantier: "Aubert", date: "2025-11-03", garde: "3 novembre 2027", transmise: () => true },
+];
+const MOIS = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre"];
+const JOURS = ["dimanche", "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi"];
+const dateLongue = (d) => `${d.getDate()} ${MOIS[d.getMonth()]} ${d.getFullYear()}`;
+// la période autour du jour choisi : du premier au dernier jour, et son nom
+function periode(quand, pas) {
+  const d = new Date(quand + "T12:00:00"); let debut, fin, nom;
+  if (pas === "jour") { debut = new Date(d); fin = new Date(d); nom = `${JOURS[d.getDay()]} ${dateLongue(d)}`; }
+  else if (pas === "semaine") { debut = new Date(d); debut.setDate(d.getDate() - ((d.getDay() + 6) % 7)); fin = new Date(debut); fin.setDate(debut.getDate() + 6); nom = `du ${debut.getDate()} ${debut.getMonth() === fin.getMonth() ? "" : MOIS[debut.getMonth()] + " "}au ${dateLongue(fin)}`; }
+  else if (pas === "mois") { debut = new Date(d.getFullYear(), d.getMonth(), 1); fin = new Date(d.getFullYear(), d.getMonth() + 1, 0); nom = `${MOIS[d.getMonth()]} ${d.getFullYear()}`; }
+  else { debut = new Date(d.getFullYear(), 0, 1); fin = new Date(d.getFullYear(), 11, 31); nom = String(d.getFullYear()); }
+  const cle = (x) => x.toISOString().slice(0, 10);
+  return { debut: cle(debut), fin: cle(fin), nom };
+}
 function fichesEcran() {
-  const f = etat.f; const garde = "18 septembre 2028";
+  const f = etat.f; etat.filtre = etat.filtre || { pas: "tout", quand: "2026-09-18" };
+  const per = etat.filtre.pas === "tout" ? null : periode(etat.filtre.quand, etat.filtre.pas);
+  const visibles = FICHES.filter((x) => !per || (x.date >= per.debut && x.date <= per.fin));
+  const groupes = []; visibles.forEach((x) => { let g = groupes.find((g) => g.client === x.client); if (!g) { g = { client: x.client, fiches: [] }; groupes.push(g); } g.fiches.push(x); });
+  const carte = (x, i) => { const d = new Date(x.date + "T12:00:00"); const ouverte = x.courante && etat.carteOuverte; return `
+      <div class="carte-retour securite ${ouverte ? "ouverte" : ""}" data-rang="${i}">
+        <button type="button" class="tete-carte" aria-expanded="${ouverte}">
+          <span class="rond-carte" aria-hidden="true">${BOUCLIER}</span>
+          <span class="corps"><span class="titre-carte">${x.chantier}, ${dateLongue(d)}</span>
+            <span class="sous-carte">Signée par ${ENTREPRISE.patron} · gardée jusqu’au ${x.garde}${x.transmise() ? " · transmise" : ""}</span></span>
+          <span class="chev-carte" aria-hidden="true">${CHEV_DROIT}</span>
+        </button>
+        <div class="dedans-carte">
+          <div class="trois-boutons"><button type="button" class="vert creux">Ouvrir le PDF</button><button type="button" class="vert creux">Enregistrer le PDF</button>${x.transmise() ? "" : `<button type="button" class="vert transmettre">Transmettre le PDF</button>`}</div>
+          <p class="aide" style="margin:10px 0 0">Gardée deux ans après la signature, même si le chantier est supprimé. « Enregistrer » la met dans vos fichiers, sur le téléphone.</p>
+        </div>
+      </div>`; };
   tel.innerHTML = `<div class="entete">
       <button type="button" class="retour" aria-label="Retour"></button>
       <span class="quoi"><span class="grand">Fiches de sécurité</span><span class="petit">Paysage</span></span></div>
     <div class="ecran" style="padding-top:8px">
       <div class="recherche"><span class="loupe" aria-hidden="true">${LOUPE}</span><input type="search" placeholder="Un client, un chantier"></div>
-      <div class="annees"><button type="button" class="annee" aria-pressed="true">Tout</button><button type="button" class="annee" aria-pressed="false">2026</button></div>
-      <p class="client">${CHANTIER.client.prenom} ${CHANTIER.client.nom}</p>
-      <div class="carte-retour securite ${etat.carteOuverte ? "ouverte" : ""}" id="carte-fiche">
-        <button type="button" class="tete-carte" aria-expanded="${!!etat.carteOuverte}">
-          <span class="rond-carte" aria-hidden="true">${BOUCLIER}</span>
-          <span class="corps"><span class="titre-carte">${CHANTIER.nom}, ${CHANTIER.jourCourt} 2026</span>
-            <span class="sous-carte">Signée par ${ENTREPRISE.patron} · gardée jusqu’au ${garde}${f.envoyee ? " · transmise" : ""}</span></span>
-          <span class="chev-carte" aria-hidden="true">${CHEV_DROIT}</span>
-        </button>
-        <div class="dedans-carte">
-          <div class="deux-boutons"><button type="button" class="vert creux">Ouvrir le PDF</button>${f.envoyee ? "" : '<button type="button" class="vert" id="transmettre-fiche">Transmettre le PDF</button>'}</div>
-          <p class="aide" style="margin:10px 0 0">Gardée deux ans après la signature, même si le chantier est supprimé.</p>
-        </div>
-      </div>
-      <p class="client">Mme Aubert</p>
-      <div class="carte-retour securite">
-        <button type="button" class="tete-carte" aria-expanded="false">
-          <span class="rond-carte" aria-hidden="true">${BOUCLIER}</span>
-          <span class="corps"><span class="titre-carte">Aubert, 4 septembre 2026</span>
-            <span class="sous-carte">Signée par ${ENTREPRISE.patron} · gardée jusqu’au 4 septembre 2028 · transmise</span></span>
-          <span class="chev-carte" aria-hidden="true">${CHEV_DROIT}</span>
-        </button>
-      </div>
+      <div class="pas">${["tout", "jour", "semaine", "mois", "année"].map((x) => `<button type="button" class="annee" data-pas="${x}" aria-pressed="${etat.filtre.pas === x}">${x[0].toUpperCase() + x.slice(1)}</button>`).join("")}</div>
+      ${per ? `<label class="calendrier"><span class="cal-dessin" aria-hidden="true">${CALENDRIER}</span><span class="cal-nom">${per.nom}</span><input type="date" value="${etat.filtre.quand}" aria-label="Choisir une date"></label>` : ""}
+      ${groupes.length ? groupes.map((g) => `<p class="client">${g.client}</p>${g.fiches.map((x) => carte(x, FICHES.indexOf(x))).join("")}`).join("") : `<p class="aide" style="margin:28px 6px 0;color:var(--gris);font-size:13.5px">Aucune fiche ${per ? per.nom.startsWith("du") || per.nom.match(/^[a-z]+ \d/) ? per.nom : "en " + per.nom : ""}.</p>`}
     </div>
     <div class="barre" aria-hidden="true"><span>Chantiers</span><span>Planning</span><span>Terminés</span><span class="actif">Paysage</span><span>Réglages</span></div>`;
   tel.querySelector(".retour").innerHTML = RETOUR;
   tel.querySelector(".retour").onclick = () => { etat.ecran = "paysage"; dessiner(); };
-  const carte = tel.querySelector("#carte-fiche");
-  carte.querySelector(".tete-carte").onclick = () => { etat.carteOuverte = !etat.carteOuverte; carte.classList.toggle("ouverte", etat.carteOuverte); carte.querySelector(".tete-carte").setAttribute("aria-expanded", String(etat.carteOuverte)); };
-  const tr = tel.querySelector("#transmettre-fiche"); if (tr) tr.onclick = () => { f.envoyee = true; fichesEcran(); };
+  tel.querySelectorAll(".pas .annee").forEach((b) => { b.onclick = () => { etat.filtre.pas = b.dataset.pas; fichesEcran(); }; });
+  const cal = tel.querySelector(".calendrier input"); if (cal) cal.onchange = () => { if (cal.value) { etat.filtre.quand = cal.value; fichesEcran(); } };
+  tel.querySelectorAll(".carte-retour").forEach((c) => {
+    const rang = Number(c.dataset.rang); const x = FICHES[rang];
+    c.querySelector(".tete-carte").onclick = () => { if (x.courante) { etat.carteOuverte = !etat.carteOuverte; fichesEcran(); } else { c.classList.toggle("ouverte"); c.querySelector(".tete-carte").setAttribute("aria-expanded", String(c.classList.contains("ouverte"))); } };
+    const tr = c.querySelector(".transmettre"); if (tr) tr.onclick = () => { f.envoyee = true; fichesEcran(); };
+  });
 }
 function signeeEcran() {
   const f = etat.f, m = manques();
