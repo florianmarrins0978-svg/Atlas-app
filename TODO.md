@@ -4558,6 +4558,44 @@ exige un devis **envoyé**, rien d'autre. Deux portes, donc :
 le lien n'apparaît pas. Ne pas « réparer » en exigeant une date dans
 `terminerChantier` : le 3 août, il s'est plaint de l'inverse (*« pourquoi n'y
 ai-je pas accès ??? »*), et un chantier se finit parfois avant sa date.
+
+**CETTE DERNIÈRE PHRASE EST FAUSSE DEPUIS LE 10 SEPTEMBRE 2026, et il faut le
+lire noir sur blanc :** « Créer une facture » (`/chantiers/nouveau?facture=1`)
+est un bouton à LUI, sur cet écran même, et il produit exactement ce cas.
+`creerFactureSansDevis` (`factures.ts:514`) crée la facture puis pose
+`termine_at` sans jamais toucher `date_planifiee` — le chantier n'est jamais
+passé par le planning, et n'a donc aucune date à montrer. **Trois portes, pas
+deux.**
+
+## Un chantier terminé SANS DATE n'appartient à aucun mois — sa question du 21 septembre 2026
+
+*« Pq Julien n'a pas de date ? »*, devant deux rangées « À FACTURER » dont la
+deuxième ligne est vide.
+
+**Ce qu'il voit est juste**, et c'est la règle du 31 août : sans `datePlanifiee`
+et sans devis envoyé, la rangée n'a pas de deuxième ligne — on n'invente pas une
+date (`libelleEtatLigne`).
+
+**CE QUI N'AVAIT PAS ÉTÉ VU, et qui est mesuré** (fonctions pures, sans base) :
+`preparer` range par `cleMois = datePlanifiee.slice(0,7)`. Sans date, `cleMois`
+vaut `""` — **aucun mois ne porte donc ce chantier**.
+
+| | |
+|---|---|
+| tant qu'il attend sa facture | il se voit par l'ŒIL, qui ignore le mois (`aFacturerPartout`) — c'est ce qui le sauve aujourd'hui |
+| **une fois la facture émise** | il compte dans « N facturés » et **ne s'affiche plus nulle part** : le feuilletage ne l'atteint jamais |
+
+Un chiffre qui compte ce que la liste ne montre pas est exactement ce que la
+planche 90 avait fait disparaître (« 3 828,00 € » écrit deux fois sans qu'on
+sache pourquoi).
+
+**Le remède probable, et il n'est PAS codé — la décision lui revient**
+(`CLAUDE.md` §3 bis) : ranger ces chantiers-là au mois de ce qu'on sait d'eux —
+la date d'émission de la facture, sinon `termineAt` —, tout en continuant à
+n'écrire aucune date sur la rangée. Deux réserves à porter sur la planche avant
+de coder : le mois de la facture n'est pas le mois du chantier, et le compte
+« N facturés » se met alors à correspondre à ce qu'on peut atteindre.
+
 ## EN ATTENTE DE SA DÉCISION : les travaux supplémentaires sur la facture (31 août 2026)
 
 **Son constat :** *« si on effectue des travaux en plus chez un client, on n'a
