@@ -42,6 +42,11 @@ import { uniteDeLaLigne } from "@/lib/unite-de-ligne";
 // d'écrire un euro finissent par s'écrire différemment (`CLAUDE.md` §3).
 import { enEuros } from "@/lib/euros";
 import { ligneSeCorrige } from "@/lib/lignes-corrigeables";
+import LigneMainDoeuvre from "../../devis-complet/LigneMainDoeuvre";
+import ReglementsRecus from "../ReglementsRecus";
+import { majMainDoeuvreFactureAction } from "../actions";
+import type { AcompteDevis } from "@/lib/acomptes-devis";
+import type { ReglementEnregistre } from "@/server/repositories/paiements-facture";
 
 /**
  * ─── LA FEUILLE OÙ IL SAISIT SES LIGNES ────────────────────────────────────
@@ -109,6 +114,9 @@ export default function TravauxSupplementairesClient({
   devisId,
   tauxTvaFacture,
   reductionPourcent,
+  mainDoeuvreHt,
+  acomptesDuDevis,
+  reglements,
   lignes: lignesInitiales,
 }: {
   chantierId: string;
@@ -124,6 +132,17 @@ export default function TravauxSupplementairesClient({
   devisId: string | null;
   tauxTvaFacture: string;
   reductionPourcent: string | null;
+  /**
+   * ─── CE QUI ARRIVE ICI LE 21 SEPTEMBRE 2026 ──────────────────────────────
+   *
+   * Sa correction, planche en main : « + Main d'œuvre » et « + Règlement
+   * reçu » vivaient sur la page de la facture — celle qui ne sert qu'à
+   * vérifier avant l'envoi — alors qu'il les attend là où il REMPLIT, comme
+   * le devis porte sa main d'œuvre et ses acomptes.
+   */
+  mainDoeuvreHt: string | null;
+  acomptesDuDevis: AcompteDevis[];
+  reglements: ReglementEnregistre[];
   lignes: LigneEcran[];
 }) {
   const router = useRouter();
@@ -209,6 +228,37 @@ export default function TravauxSupplementairesClient({
    * pièce (`Remise`) — recopié, il aurait divergé au premier
    * ajustement.
    */
+  /**
+   * ─── « + MAIN D'ŒUVRE », À LA PLACE QU'IL A SUR LE DEVIS ────────────────
+   *
+   * Le geste et la ligne sont ceux du devis, montés depuis la même pièce
+   * (`LigneMainDoeuvre`) : « dont main d'œuvre HT » sous le Total HT, rien ne
+   * bouge aux totaux. Le champ s'ouvre VIDE — un montant de main d'œuvre n'a
+   * pas de valeur plausible, et un chiffre d'office s'imprimerait chez sa
+   * cliente (`docs/AGENT.md` §3).
+   */
+  const [mainDoeuvre, setMainDoeuvre] = useState(sansZerosInutiles(mainDoeuvreHt ?? ""));
+  const [mainDoeuvreOuverte, setMainDoeuvreOuverte] = useState(mainDoeuvreHt !== null);
+
+  function enregistrerMainDoeuvre(valeurBrute: string) {
+    enTransition(async () => {
+      const r = await majMainDoeuvreFactureAction(factureId, valeurBrute.trim() || null);
+      if (!r.succes) {
+        setErreur(r.erreur);
+        return;
+      }
+      // Ce que la BASE a retenu, jamais ce qu'il a tapé : le serveur borne le
+      // montant au total HT, et l'écran doit montrer la valeur bornée.
+      const montant = r.mainDoeuvreHt ?? null;
+      if (montant === null) {
+        setMainDoeuvre("");
+        setMainDoeuvreOuverte(false);
+      } else {
+        setMainDoeuvre(sansZerosInutiles(montant));
+      }
+    });
+  }
+
   const [reduction, setReduction] = useState(reductionPourcent ?? "");
   const [remiseOuverte, setRemiseOuverte] = useState(reductionPourcent !== null);
   /** Les écritures de la remise se suivent : voir `enregistrerLaRemise`. */
@@ -583,6 +633,20 @@ export default function TravauxSupplementairesClient({
           + Ajouter une TVA
         </button>
 
+        {/* **Sous « + Ajouter une TVA », exactement comme sur le devis.** Il
+            ouvre la ligne, vide : le chiffre est à lui, pas à nous. */}
+        {!mainDoeuvreOuverte && (
+          <button
+            type="button"
+            data-atlas="poser-main-doeuvre"
+            onClick={() => setMainDoeuvreOuverte(true)}
+            className="mt-2.5 block text-[14px] font-medium"
+            style={{ color: colors.or }}
+          >
+            + Main d’œuvre
+          </button>
+        )}
+
         {erreur && (
           <p className="mt-4 text-[13px]" style={{ color: colors.alert }}>
             {erreur}
@@ -602,6 +666,15 @@ export default function TravauxSupplementairesClient({
               {enEuros(remiseOuverte ? totaux.brutHt : totaux.totalHt)}
             </span>
           </div>
+          {mainDoeuvreOuverte && (
+            <LigneMainDoeuvre
+              montant={mainDoeuvre}
+              fige={false}
+              onChange={setMainDoeuvre}
+              onFini={(v) => enregistrerMainDoeuvre(v)}
+              onRetirer={() => enregistrerMainDoeuvre("")}
+            />
+          )}
           {remiseOuverte && (
             <>
               <LigneRemise
@@ -650,8 +723,29 @@ export default function TravauxSupplementairesClient({
               }}
             />
           )}
+
+          <ReglementsRecus
+            factureId={factureId}
+            totalTtc={totaux.totalTtc}
+            acomptesDuDevis={acomptesDuDevis}
+            initiaux={reglements}
+            fige={false}
+            carte={false}
+          />
         </div>
       </section>
+
+      {/* ─── LES RÈGLEMENTS REÇUS, SOUS LE TOTAL TTC ─────────────────────────
+          Sa correction du 21 septembre 2026 : « + Règlement reçu » et
+          l'interrupteur « Facture acquittée » vivent ici, avec le reste de ce
+          qu'il remplit. C'est la MÊME pièce que la page de la facture, montée
+          en saisie plutôt qu'en lecture — deux blocs jumeaux auraient divergé
+          au premier ajustement (`CLAUDE.md` §3).
+
+          **Le total qu'elle déduit est celui de CETTE feuille**, recalculé à
+          chaque frappe : le net à payer suit le prix qu'il vient de taper,
+          sans attendre un rechargement. */}
+
 
       <div className="mx-[26px] mt-6">
         <PrimaryButton onClick={() => router.push(`/chantiers/${chantierId}/facture`)} repere="revenir-a-la-facture">

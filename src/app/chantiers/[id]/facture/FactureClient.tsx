@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { colors, font, smallCaps, couleursDocument } from "@/lib/design-tokens";
+import { colors, font, smallCaps, couleursDocument, voile } from "@/lib/design-tokens";
 import PrimaryButton from "@/components/atlas/PrimaryButton";
 import NumeroDeDocument from "@/components/atlas/NumeroDeDocument";
 import BoutonTelechargerDocument from "@/components/atlas/BoutonTelechargerDocument";
@@ -16,7 +16,7 @@ import { adressePourLeClient, ouvrableParLeClient, phraseAdresseLocale } from "@
 import ChoixCanal from "@/components/atlas/ChoixCanal";
 import TransmettreLaFacture from "./TransmettreLaFacture";
 import ReglementsRecus from "./ReglementsRecus";
-import { majMainDoeuvreFactureAction, majTitreFactureAction } from "./actions";
+import { majTitreFactureAction } from "./actions";
 import LigneMainDoeuvre from "../devis-complet/LigneMainDoeuvre";
 import { sansZerosInutiles } from "../devis-complet/ChampsDuDevis";
 import type { AcompteDevis } from "@/lib/acomptes-devis";
@@ -196,28 +196,13 @@ export default function FactureClient({
   const [erreur, setErreur] = useState<string | null>(null);
   const [emise, setEmise] = useState(initialFacture?.statut === "emise");
 
-  // Le même papier que le devis (sa planche du 14 septembre 2026) : le titre
-  // qu'il donne, et la main d'œuvre nommée sous le total. Les deux arrivent
-  // recopiés du devis, et se retouchent tant que la facture n'est pas arrêtée.
+  // Le titre qu'il donne, comme sur le devis (sa planche du 14 septembre 2026).
+  //
+  // **La main d'œuvre, elle, ne se SAISIT plus ici — 21 septembre 2026.** Sa
+  // correction : « + Main d'œuvre » vit sur la page où il remplit la facture,
+  // exactement la place qu'il a sur le devis. Cet écran-là est l'arrêt 3 : il
+  // montre ce qui partira, il ne le compose pas. Il la LIT donc, figée.
   const [titre, setTitre] = useState(initialFacture?.titre ?? "");
-  const [mainDoeuvre, setMainDoeuvre] = useState(sansZerosInutiles(initialFacture?.mainDoeuvreHt ?? ""));
-  const [mainDoeuvreOuverte, setMainDoeuvreOuverte] = useState((initialFacture?.mainDoeuvreHt ?? null) !== null);
-
-  async function enregistrerMainDoeuvre(valeurBrute: string) {
-    if (!initialFacture) return;
-    const r = await majMainDoeuvreFactureAction(initialFacture.id, valeurBrute.trim() || null);
-    if (!r.succes) {
-      setErreur(r.erreur);
-      return;
-    }
-    const montant = r.mainDoeuvreHt ?? null;
-    if (montant === null) {
-      setMainDoeuvre("");
-      setMainDoeuvreOuverte(false);
-    } else {
-      setMainDoeuvre(sansZerosInutiles(montant));
-    }
-  }
 
   // L'échéance — proposée par défaut à la création (son délai de paiement, ou
   // 30 jours), et modifiable ICI tant que la facture n'est pas arrêtée. Sa
@@ -436,15 +421,10 @@ export default function FactureClient({
     initialFacture.reductionPourcent
   );
   const libelleRemise = libelleReduction(totaux.reductionPourcent);
-  const ligneMainDoeuvre = mainDoeuvreOuverte ? (
-    <LigneMainDoeuvre
-      montant={mainDoeuvre}
-      fige={emise}
-      onChange={setMainDoeuvre}
-      onFini={(v) => void enregistrerMainDoeuvre(v)}
-      onRetirer={() => void enregistrerMainDoeuvre("")}
-    />
-  ) : null;
+  const ligneMainDoeuvre =
+    initialFacture.mainDoeuvreHt === null ? null : (
+      <LigneMainDoeuvre montant={sansZerosInutiles(initialFacture.mainDoeuvreHt)} fige />
+    );
 
   /**
    * Cette facture a-t-elle de quoi partir ?
@@ -694,20 +674,6 @@ export default function FactureClient({
             {formatEuros.format(Number(totaux.totalTtc))}
           </p>
         </div>
-        {/* **« + Main d'œuvre », comme sur le devis** — sa planche du
-            14 septembre 2026. Il ouvre la ligne, vide : le chiffre est à lui. */}
-        {!emise && !mainDoeuvreOuverte && (
-          <button
-            type="button"
-            data-atlas="poser-main-doeuvre"
-            onClick={() => setMainDoeuvreOuverte(true)}
-            className="mt-3 block text-[14px] font-medium"
-            style={{ color: colors.or }}
-          >
-            + Main d’œuvre
-          </button>
-        )}
-
         {/* Sans ce lien, la facture existe sans que personne puisse la
             regarder : le patron valide un montant sans avoir vu la pièce que
             son client recevra. C'est justement ce que l'arrêt 3 lui demande de
@@ -756,14 +722,16 @@ export default function FactureClient({
         </BoutonTelechargerDocument>
       </div>
 
-      {/* Les acomptes reçus, le net à payer, « Facture acquittée » — le même
-          bloc que le papier déduit sous le Total TTC (sa planche). */}
+      {/* Les règlements reçus, le net à payer, l'acquittement — **en lecture**.
+          Sa correction du 21 septembre 2026 : « + Règlement reçu » et
+          l'interrupteur vivent là où il REMPLIT la facture, comme les acomptes
+          du devis. Ici, il vérifie avant d'envoyer ; il ne compose plus. */}
       <ReglementsRecus
         factureId={initialFacture.id}
         totalTtc={totaux.totalTtc}
         acomptesDuDevis={initialFacture.acomptesDuDevis}
         initiaux={initialFacture.reglements}
-        fige={emise}
+        fige
       />
 
       {erreur && (
@@ -831,7 +799,24 @@ export default function FactureClient({
               **Le geste ne s'offre que sur un BROUILLON**, et la page qu'il
               ouvre refuse d'elle-même si la facture est partie : une facture
               arrêtée est inscrite au relevé de TVA, elle ne se complète plus. */}
+          {/* ─── SOUS LE POUCE, ET AU-DESSUS DE LA BARRE — 21 septembre 2026 ──
+              Sa demande : *« sur la page de la facture mets le bouton remplir
+              la facture en bouton flottant »*. Cette page défile — les lignes,
+              les totaux, les règlements — et le seul geste qui reste à faire
+              partait hors de l'écran : il fallait redescendre pour le trouver.
+
+              **C'est le patron du devis, appelé et non réinventé** : collé en
+              bas, un dégradé qui le détache du document qui passe dessous, et
+              la hauteur de la barre d'onglets RÉSERVÉE — `--atlas-barre`, là
+              où elle est écrite. Sa capture du 5 septembre le dit : « le sous
+              le pouce est caché par le menu du bas ». La réserve s'efface là
+              où la barre n'existe pas (`:has`), sans quoi le bouton flotterait
+              au-dessus du vide sur les écrans qui n'en portent pas. */}
           {reprise.aJour && (
+            <div
+              className="sticky bottom-0 z-10 -mx-6 px-6 pt-6 pb-[calc(12px+var(--atlas-barre))] [body:not(:has(.atlas-nav-basse))_&]:pb-3"
+              style={{ background: `linear-gradient(to top, ${colors.cream} 68%, ${voile(colors.cream, 0)})` }}
+            >
             <Link
               href={`/chantiers/${chantierId}/facture/travaux-supplementaires`}
               data-atlas="ajouter-travaux-supplementaires"
@@ -848,6 +833,7 @@ export default function FactureClient({
                 ? "Remplir la facture"
                 : "Ajouter des travaux supplémentaires"}
             </Link>
+            </div>
           )}
 
           {/* **L'encart du canal, à la forme de la fiche client — sa demande du

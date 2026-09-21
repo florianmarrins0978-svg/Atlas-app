@@ -9,7 +9,7 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
-## ⏳ UNE PLANCHE À REGARDER — MAIN D'ŒUVRE, RÈGLEMENTS ET « ACQUITTÉE » (21 septembre 2026)
+## ~~MAIN D'ŒUVRE, RÈGLEMENTS ET « ACQUITTÉE » LÀ OÙ IL REMPLIT~~ — CODÉ LE 21 SEPTEMBRE 2026
 
 **Ses trois corrections, capture à l'appui :** *« à corriger : le + main
 d'œuvre et + règlement reçu. Le bouton facture acquittée doit apparaître
@@ -28,10 +28,12 @@ le bouton « Aujourd'hui » pour comparer. **RIEN N'EST CODÉ.**
 | l'encadré doré | sous le Total TTC, au-dessus de « Revenir à la facture » |
 | `FactureClient` / `ReglementsRecus` | n'affichent plus que la lecture — plus de « + », plus d'interrupteur |
 
-**CE QUI ATTEND SA RÉPONSE, et qu'on ne tranche pas seul :** les trois gestes
-**quittent-ils** la page de la facture, ou restent-ils aux deux endroits ? La
-planche montre le départ (un seul endroit, `CLAUDE.md` §3). S'il veut les deux,
-c'est un mot à changer.
+**TRANCHÉ ET CODÉ LE 21 SEPTEMBRE 2026** — *« code exactement cette
+planche »*. Les trois gestes ont quitté la page de la facture : un seul
+endroit. S'y sont ajoutés, sur ses corrections du même soir : le libellé d'un
+règlement écrit par lui (migration 0098), « Acquittée le … » en or et
+identique sur les deux pages, et le bouton collé sous le pouce.
+`ARCHITECTURE.md` §396.
 
 ## 🔧 `test-repartir-du-client-e2e` TOMBE DANS LA BATTERIE, JAMAIS SEULE (20 septembre 2026)
 

@@ -4,8 +4,27 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-09-20 · `main` — la première ligne du devis est ouverte d'avance
+**Point de reprise :** 2026-09-21 · `main` — la facture se remplit où on la remplit
 (l'historique fait foi : `git log --oneline -20`)
+
+---
+
+## OÙ VIT UN GESTE DE LA FACTURE — 21 septembre 2026
+
+Deux écrans portent les mêmes chiffres, et ils ne font pas le même métier.
+Avant de poser un bouton sur l'un des deux, savoir lequel :
+
+| | |
+|---|---|
+| `facture/travaux-supplementaires` | **il REMPLIT** : lignes, TVA, remise, main d'œuvre, règlements reçus, « Facture acquittée » |
+| `facture` | **il VÉRIFIE** (arrêt 3) : les mêmes chiffres en lecture, et l'envoi |
+
+Les pièces sont partagées, jamais recopiées : `ReglementsRecus` (prop `fige`,
+et `carte` pour savoir s'il porte sa propre carte) et `LigneMainDoeuvre` (ses
+trois gestes sont optionnels : figée, la ligne n'en a pas). Le nom d'un
+règlement se lit par `nomAcompte` — ce qu'il a écrit d'abord, la déduction du
+rang ensuite —, et l'acquittement par `tamponAcquittee`, celui du PDF.
+`ARCHITECTURE.md` §396.
 
 ---
 

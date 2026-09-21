@@ -32366,3 +32366,49 @@ sûr — elle ne propose jamais un jour que l'acceptation refuserait —, et c'e
 plus restrictif que nécessaire. Lui envoyer une seconde liste apprendrait
 quelque chose de plus du planning de son artisan : cela se demande à lui
 (`TODO.md`).
+
+## §396 — Ce qu'il remplit vit sur la page où il remplit
+
+**Sa correction du 21 septembre 2026, planche en main** (`appli/facture-remplir-acquittee.html`) :
+*« À corriger : le + main d'œuvre et + règlement reçu. Le bouton facture
+acquittée doit apparaître lorsque je remplis la facture, comme sur le devis ! »*
+
+**Le partage n'était pas le bon.** La page de la facture est l'arrêt 3
+(`docs/AGENT.md` §2.3) : elle existe pour qu'il VÉRIFIE ce qui partira. Elle
+portait pourtant trois gestes de composition — « + Main d'œuvre »,
+« + Règlement reçu », l'interrupteur « Facture acquittée » — pendant que la
+feuille où il remplit, elle, n'en avait aucun. Le devis, lui, tient la règle
+depuis toujours : sa main d'œuvre et ses acomptes se posent là où on le
+rédige.
+
+| | |
+|---|---|
+| `TravauxSupplementairesClient` — **remplir** | les lignes, la TVA, la remise, **+ Main d'œuvre**, **+ Règlement reçu**, **Facture acquittée** |
+| `FactureClient` — **vérifier** | les mêmes chiffres, en lecture, et le seul geste qui reste : envoyer |
+
+**Aucune pièce n'a été recopiée** : `ReglementsRecus` et `LigneMainDoeuvre`
+sont montés des deux côtés, en saisie ici, figés là. Deux blocs jumeaux
+auraient divergé au premier ajustement (`CLAUDE.md` §3) — et c'est exactement
+ce qui est arrivé au dessin de l'acquittement, corrigé dans le même lot.
+
+**Trois choses en sont sorties, et elles valent d'être dites :**
+
+1. **Le nom d'un règlement est à LUI** (migration 0098). Il était DÉDUIT du
+   rang et des acomptes du devis — « Acompte 30 % ». Sa réponse : *« si c'est
+   pas ça faut que je puisse écrire ce que c'est »*. La déduction reste comme
+   proposition ; le mot écrit passe devant, dans `nomAcompte`, donc à l'écran
+   ET sur le PDF, qui appellent la même fonction. La colonne est nullable :
+   les règlements déjà posés gardent le nom qu'ils avaient hier.
+2. **« Acquittée le 21/09/2026 », le même mot partout.** L'écran écrivait
+   « Facture acquittée » à l'encre quand le papier imprimait la date en or —
+   *« il faut que les deux pages soient identiques »*. C'est `tamponAcquittee`,
+   celui du PDF, qui écrit les deux.
+3. **« Remplir la facture » est collé en bas**, au-dessus de la barre
+   d'onglets dont la hauteur est réservée (`--atlas-barre`) : le patron du
+   devis, repris tel quel. Sa capture du 5 septembre disait déjà ce qui arrive
+   sinon — *« le sous le pouce est caché par le menu du bas »*.
+
+**Ce que la capture a attrapé et qu'aucun test ne voyait :** « Arrhes à la
+signature » écrit dans une colonne de 92 px passait par-dessus la colonne du
+moyen. Le `nowrap` n'était juste que tant que le nom était déduit.
+

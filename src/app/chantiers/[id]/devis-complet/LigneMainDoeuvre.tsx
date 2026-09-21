@@ -27,15 +27,22 @@ export default function LigneMainDoeuvre({
   /** Ce que le champ porte, tel qu'il l'a tapé. */
   montant: string;
   fige: boolean;
-  onChange: (valeur: string) => void;
+  /**
+   * Les trois gestes sont ABSENTS quand la ligne est figée, et c'est le cas
+   * de la page de la facture depuis le 21 septembre 2026 : elle LIT la main
+   * d'œuvre, elle ne la saisit plus (c'est la page « Remplir la facture » qui
+   * la pose, comme le devis). Les exiger aurait obligé cet écran-là à passer
+   * trois fonctions qui ne servent à rien — du code mort déguisé en API.
+   */
+  onChange?: (valeur: string) => void;
   /** Appelé quand le doigt quitte le champ, avec ce que le CHAMP porte. */
-  onFini: (valeurDuChamp: string) => void;
-  onRetirer: () => void;
+  onFini?: (valeurDuChamp: string) => void;
+  onRetirer?: () => void;
 }) {
   return (
     <div className="flex items-center justify-between gap-3 py-1.5" style={{ color: colors.inkSoft }}>
       <span className="flex items-center gap-1 text-[14px]">
-        {!fige && (
+        {!fige && onRetirer && (
           <button
             type="button"
             aria-label="Retirer la main d’œuvre"
@@ -57,8 +64,8 @@ export default function LigneMainDoeuvre({
           autoFocus={!fige && montant === ""}
           aria-label="Main d’œuvre HT, en euros"
           data-atlas="montant-main-doeuvre"
-          onChange={(e) => onChange(e.target.value)}
-          onBlur={(e) => onFini(e.currentTarget.value)}
+          onChange={(e) => onChange?.(e.target.value)}
+          onBlur={(e) => onFini?.(e.currentTarget.value)}
           className="w-20 border-0 bg-transparent p-0 text-right outline-none focus:bg-[var(--voile-champ)]"
           style={{ color: colors.ink, fontSize: "16px" }}
         />

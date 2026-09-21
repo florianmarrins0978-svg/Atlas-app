@@ -11,6 +11,7 @@ import {
   montantAcompteDuDevis,
   netAPayer,
   nomAcompte,
+  tamponAcquittee,
   type MoyenDePaiement,
 } from "@/lib/acomptes-facture";
 import type { AcompteDevis } from "@/lib/acomptes-devis";
@@ -53,12 +54,22 @@ export default function ReglementsRecus({
   acomptesDuDevis,
   initiaux,
   fige,
+  carte = true,
 }: {
   factureId: string;
   totalTtc: string;
   acomptesDuDevis: readonly AcompteDevis[];
   initiaux: ReglementEnregistre[];
   fige: boolean;
+  /**
+   * Le bloc porte-t-il sa propre carte ?
+   *
+   * Sur la page de la facture, oui : il y est une carte parmi d'autres. Sur la
+   * feuille où il remplit, non — il vient **sous le Total TTC, dans la même
+   * feuille**, comme sa planche le montre. Une seconde carte posée sur la
+   * première se lirait comme un autre document.
+   */
+  carte?: boolean;
 }) {
   const [reglements, setReglements] = useState(initiaux);
   const [erreur, setErreur] = useState<string | null>(null);
@@ -66,6 +77,8 @@ export default function ReglementsRecus({
 
   const net = netAPayer(totalTtc, reglements);
   const acquittee = estAcquittee(totalTtc, reglements);
+  /** Le mot du papier, mot pour mot : « Acquittée le 21/09/2026 ». */
+  const tampon = tamponAcquittee(totalTtc, reglements);
 
   async function appliquer(promesse: Promise<ResultatReglements>) {
     setEnCours(true);
@@ -94,6 +107,7 @@ export default function ReglementsRecus({
         montant: saisie.montant ?? g.montant,
         moyen: saisie.moyen === undefined ? g.moyen : saisie.moyen,
         numero: saisie.numero === undefined ? g.numero : saisie.numero,
+        libelle: saisie.libelle === undefined ? g.libelle : saisie.libelle,
       })
     );
   }
@@ -101,7 +115,11 @@ export default function ReglementsRecus({
   const entete = { ...styleEntete, color: colors.muted };
 
   return (
-    <div className="rounded-[4px] px-5 py-5" style={{ backgroundColor: colors.card }} data-atlas="reglements-recus">
+    <div
+      className={carte ? "rounded-[4px] px-5 py-5" : ""}
+      style={carte ? { backgroundColor: colors.card } : undefined}
+      data-atlas="reglements-recus"
+    >
       <p className={smallCaps} style={{ color: colors.muted, marginBottom: 10 }}>
         Règlements reçus
       </p>
@@ -138,8 +156,36 @@ export default function ReglementsRecus({
               −
             </button>
           )}
-          <span className="whitespace-nowrap leading-tight">
-            <span data-atlas="nom-acompte">{nomAcompte(reglements, i, acomptesDuDevis)}</span>
+          {/* **Le mot qu'il écrit peut être long** — « Arrhes à la signature »
+              ne tient pas dans les 92 px de la colonne. Vu sur la capture du
+              21 septembre 2026 : sans report à la ligne, il passait par-dessus
+              la colonne du moyen. Le `nowrap` d'avant valait pour « Acompte
+              30 % », qui tenait ; il n'était juste que tant que le nom était
+              déduit. */}
+          <span className="break-words leading-tight">
+            {/* **CE QUE C'EST, ÉCRIT PAR LUI — 21 septembre 2026.** « Acompte
+                30 % » reste proposé d'office (`nomAcompte`, la même règle que
+                le papier), mais des arrhes ou un avoir ne sont pas des
+                acomptes : *« faut que je puisse écrire ce que c'est »*. Vidé,
+                le champ rend la proposition plutôt qu'un blanc. */}
+            {fige ? (
+              <span data-atlas="nom-acompte">{nomAcompte(reglements, i, acomptesDuDevis)}</span>
+            ) : (
+              <input
+                key={g.libelle ?? ""}
+                defaultValue={nomAcompte(reglements, i, acomptesDuDevis)}
+                aria-label="Ce que ce règlement est"
+                data-atlas="nom-acompte"
+                onFocus={(e) => e.currentTarget.select()}
+                onBlur={(e) => {
+                  const ecrit = e.currentTarget.value.trim();
+                  const propose = nomAcompte(reglements, i, acomptesDuDevis);
+                  if (ecrit !== propose) corriger(g, { libelle: ecrit || null });
+                }}
+                className="w-full border-0 bg-transparent p-0 text-center text-[14px] outline-none focus:bg-[var(--voile-champ)]"
+                style={{ color: colors.ink }}
+              />
+            )}
             {fige ? (
               <small className="block text-[12px]" style={{ color: colors.muted }}>{jourNumerique(g.date)}</small>
             ) : (
@@ -288,10 +334,23 @@ export default function ReglementsRecus({
           {enEuros(net)}
         </span>
       </div>
-      {acquittee && (
-        <p className={`${smallCaps} mt-3 text-center`} style={{ color: colors.rust }} data-atlas="acquittee">
-          Facture acquittée
-        </p>
+      {/* ─── « ACQUITTÉE LE 21/09/2026 », EN OR ET DANS UN CADRE ─────────────
+          **Sa correction du 21 septembre 2026, planche en main :** *« mets
+          facture acquittée en doré, comme sur la facture »*, puis, devant le
+          papier : *« il faut que les deux pages soient identiques »*.
+
+          Deux choses s'alignent ici. L'OR : l'écran l'écrivait à l'encre
+          pendant que le PDF en fait un tampon d'or, si bien que le même fait
+          se lisait de deux façons. Et le MOT : le papier porte la date depuis
+          toujours — c'est ce qu'on vient chercher trois mois plus tard —, et
+          c'est `tamponAcquittee` qui l'écrit, pour le PDF comme pour ici. Une
+          seconde rédaction aurait divergé au premier ajustement. */}
+      {tampon && (
+        <div className="mt-3 rounded-[4px] px-4 py-3" style={{ border: `1px solid ${colors.or}` }}>
+          <p className={`${smallCaps} text-center`} style={{ color: colors.or }} data-atlas="acquittee">
+            {tampon}
+          </p>
+        </div>
       )}
     </div>
   );

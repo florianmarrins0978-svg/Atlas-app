@@ -8,6 +8,23 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-21
 
+### Ce qu'il remplit passe sur la page où il remplit — et le mot d'un règlement est à lui
+
+Sa correction, planche en main : « + Main d'œuvre », « + Règlement reçu » et
+l'interrupteur « Facture acquittée » vivaient sur la page de la facture, qui
+ne sert qu'à vérifier avant l'envoi. Ils sont désormais sur « Remplir la
+facture », à la place qu'ils ont sur le devis ; la facture les LIT.
+
+Avec eux, trois choses. Le nom d'un règlement s'écrit (migration 0098) : il
+était déduit du rang — « Acompte 30 % » —, ce qui reste la proposition, mais
+des arrhes ou un avoir ne sont pas des acomptes, et c'est sa facture qui part.
+L'acquittement dit « Acquittée le 21/09/2026 » en or, le même mot à l'écran et
+sur le papier, écrit par la fonction du PDF. Et « Remplir la facture » est
+collé sous le pouce, au-dessus de la barre d'onglets.
+
+Un défaut trouvé sur la capture, et par rien d'autre : un libellé long passait
+par-dessus la colonne du moyen. `ARCHITECTURE.md` §396.
+
 ### Une planche : main d'œuvre, règlements et « Facture acquittée » là où il REMPLIT
 
 Ses trois corrections du 21 septembre, capture à l'appui. « + Main d'œuvre » et

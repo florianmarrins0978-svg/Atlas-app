@@ -1246,6 +1246,9 @@ export async function complementsDeLaFacture(
       moyen: p.moyen,
       numero: p.numero,
       solde: p.solde,
+      // Le mot qu'il a écrit part sur le PDF : c'est `nomAcompte` qui décide,
+      // ici comme à l'écran (migration 0098).
+      libelle: p.libelle,
     })),
   };
 }

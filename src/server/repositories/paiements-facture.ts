@@ -315,7 +315,15 @@ async function lireReglements(tx: DbOrTx, factureId: string): Promise<ReglementE
     .from(paiementsFacture)
     .where(eq(paiementsFacture.factureId, factureId))
     .orderBy(asc(paiementsFacture.datePaiement), asc(paiementsFacture.createdAt));
-  return rows.map((p) => ({ id: p.id, date: p.datePaiement, montant: p.montant, moyen: p.moyen, numero: p.numero, solde: p.solde }));
+  return rows.map((p) => ({
+    id: p.id,
+    date: p.datePaiement,
+    montant: p.montant,
+    moyen: p.moyen,
+    numero: p.numero,
+    solde: p.solde,
+    libelle: p.libelle,
+  }));
 }
 
 /** Les règlements reçus d'une facture, dans l'ordre où ils sont tombés. */
@@ -328,7 +336,18 @@ export type SaisieReglement = {
   montant: string;
   moyen: MoyenDePaiement | null;
   numero: string | null;
+  /**
+   * Ce qu'il écrit à la place du nom proposé (migration 0098). Vide ou absent :
+   * la colonne repasse à `null`, donc au nom déduit — effacer le mot rend la
+   * proposition, jamais une case vide sur la facture.
+   */
+  libelle?: string | null;
 };
+
+/** Vide vaut `null` : une case effacée rend le nom déduit, pas un blanc. */
+function libellePropre(libelle: string | null | undefined): string | null {
+  return libelle?.trim() || null;
+}
 
 function montantPropre(montant: string): string {
   return String(montant ?? "").replace(/[\s  ]/g, "").replace("€", "").replace(",", ".");
@@ -354,6 +373,7 @@ export async function poserReglementRecu(
       montant: Number(montant).toFixed(2),
       moyen: saisie.moyen,
       numero: saisie.moyen === "cheque" ? saisie.numero?.trim() || null : null,
+      libelle: libellePropre(saisie.libelle),
       origine: "saisi",
     });
     return { ok: true as const, reglements: await lireReglements(tx, factureId) };
@@ -382,6 +402,7 @@ export async function majReglementRecu(
         montant: Number(montant).toFixed(2),
         moyen: saisie.moyen,
         numero: saisie.moyen === "cheque" ? saisie.numero?.trim() || null : null,
+        libelle: libellePropre(saisie.libelle),
       })
       .where(eq(paiementsFacture.id, reglementId));
     return { ok: true as const, reglements: await lireReglements(tx, p.factureId) };

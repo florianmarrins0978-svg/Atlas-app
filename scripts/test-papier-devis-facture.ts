@@ -118,8 +118,8 @@ async function main() {
   console.log("\n=== Les acomptes reçus sur la facture ===\n");
 
   const DEVIS_ACOMPTES = [{ rang: 1, tauxCumule: "30" }, { rang: 2, tauxCumule: "50" }];
-  const cheque: ReglementRecu = { date: "2026-09-02", montant: "522.23", moyen: "cheque", numero: "1806028", solde: false };
-  const virement: ReglementRecu = { date: "2026-09-14", montant: "25.00", moyen: "virement", numero: null, solde: false };
+  const cheque: ReglementRecu = { date: "2026-09-02", montant: "522.23", moyen: "cheque", numero: "1806028", solde: false, libelle: null };
+  const virement: ReglementRecu = { date: "2026-09-14", montant: "25.00", moyen: "virement", numero: null, solde: false, libelle: null };
 
   await cas("le rang dit le taux du devis : « Acompte 30 % », « Acompte 50 % », puis « Acompte »", () => {
     const trois = [cheque, virement, virement];
@@ -153,7 +153,7 @@ async function main() {
     assert.equal(netAPayer("1740.78", [cheque, virement]), "1193.55");
     assert.equal(estAcquittee("1740.78", [cheque]), false);
     assert.equal(tamponAcquittee("1740.78", [cheque]), null);
-    const solde: ReglementRecu = { date: "2026-09-21", montant: "1218.55", moyen: "virement", numero: null, solde: true };
+    const solde: ReglementRecu = { date: "2026-09-21", montant: "1218.55", moyen: "virement", numero: null, solde: true, libelle: null };
     assert.equal(netAPayer("1740.78", [cheque, solde]), "0.00");
     assert.equal(tamponAcquittee("1740.78", [cheque, solde]), "Acquittée le 21/09/2026");
     // Une facture sans aucun règlement n'est pas acquittée, même à zéro.
@@ -277,7 +277,7 @@ async function main() {
   });
 
   await cas("acquittée : le tampon, et le net à zéro", async () => {
-    const solde: ReglementRecu = { date: "2026-09-21", montant: "1193.55", moyen: "virement", numero: null, solde: true };
+    const solde: ReglementRecu = { date: "2026-09-21", montant: "1193.55", moyen: "virement", numero: null, solde: true, libelle: null };
     const { trace } = await composerFacturePdf({ ...FACTURE, reglements: [cheque, virement, solde] });
     const textes = trace.textes.map((t) => t.contenu);
     assert.ok(textes.includes("ACQUITTÉE LE 21/09/2026"), `le tampon manque : ${textes.filter((t) => t.includes("ACQUITT")).join("|")}`);

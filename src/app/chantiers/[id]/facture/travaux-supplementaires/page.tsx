@@ -2,6 +2,8 @@ import { notFound, redirect } from "next/navigation";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { getChantier } from "@/server/repositories/chantiers";
 import { getFacturePourChantier } from "@/server/repositories/factures";
+import { getAcomptesDevis } from "@/server/repositories/devis";
+import { reglementsRecus } from "@/server/repositories/paiements-facture";
 import TravauxSupplementairesClient from "./TravauxSupplementairesClient";
 
 export const dynamic = "force-dynamic";
@@ -43,6 +45,14 @@ export default async function TravauxSupplementairesPage({
   if (!existante) redirect(`/chantiers/${id}/facture`);
   if (existante.facture.statut !== "brouillon") redirect(`/chantiers/${id}/facture`);
 
+  // Ce que la feuille doit porter depuis le 21 septembre 2026 : les acomptes du
+  // devis nomment chaque règlement, et les règlements déjà reçus se relisent.
+  // Les deux lectures partent ensemble — elles ne dépendent pas l'une de l'autre.
+  const [acomptesDuDevis, reglements] = await Promise.all([
+    existante.facture.devisId ? getAcomptesDevis(ctx, existante.facture.devisId) : Promise.resolve([]),
+    reglementsRecus(ctx, existante.facture.id),
+  ]);
+
   return (
     <TravauxSupplementairesClient
       chantierId={id}
@@ -60,6 +70,9 @@ export default async function TravauxSupplementairesPage({
       devisId={existante.facture.devisId}
       tauxTvaFacture={existante.facture.tauxTva}
       reductionPourcent={existante.facture.reductionPourcent}
+      mainDoeuvreHt={existante.facture.mainDoeuvreHt}
+      acomptesDuDevis={acomptesDuDevis}
+      reglements={reglements}
       lignes={existante.lignes.map((l) => ({
         id: l.id,
         libelle: l.libelle,

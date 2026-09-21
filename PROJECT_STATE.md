@@ -1,9 +1,21 @@
 # État du projet
 
-**Dernière mise à jour :** 2026-09-20 · `main`
-· dernière migration `drizzle/0097_jours_retenus_par_le_client.sql`
+**Dernière mise à jour :** 2026-09-21 · `main`
+· dernière migration `drizzle/0098_libelle_du_reglement.sql`
 
 ---
+
+## FAIT : LA FACTURE SE REMPLIT OÙ ON LA REMPLIT (21 septembre 2026)
+
+*« À corriger : le + main d'œuvre et + règlement reçu. Le bouton facture
+acquittée doit apparaître lorsque je remplis la facture, comme sur le devis ! »*
+Les trois gestes passent sur `travaux-supplementaires` — la feuille où il
+remplit —, et la page de la facture ne fait plus que les lire. Le nom d'un
+règlement s'écrit (migration 0098) au lieu d'être déduit du rang ;
+l'acquittement porte « Acquittée le … » en or, le mot du PDF, aux deux
+endroits ; « Remplir la facture » est collé sous le pouce. Planche
+`appli/facture-remplir-acquittee.html`, codée sur son « code exactement cette
+planche ». `ARCHITECTURE.md` §396.
 
 ## FAIT : L'ÉCRAN DU CLIENT — CONFIRMATION DU REFUS, ET SES JOURS (20 septembre 2026)
 
