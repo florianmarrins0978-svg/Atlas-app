@@ -6,6 +6,7 @@ import * as photosRepo from "../src/server/repositories/photos";
 import { enregistrerObjet, lireObjet, supprimerObjet } from "../src/server/storage/local-storage";
 import { purgerFichiersEnAttente } from "../src/server/repositories/fichiers";
 import { nettoyerBase } from "./_test-db";
+import { PHOTOS_MAX_PAR_CHANTIER } from "../src/lib/photos-plafonds";
 
 let passed = 0;
 let failed = 0;
@@ -53,13 +54,14 @@ async function main() {
 
   await test("ajouterPhoto persiste les métadonnées réelles", async () => {
     const objet = await enregistrerObjet(`chantiers/${chantier.id}/photos`, Buffer.from("abc"), ".jpg");
-    const photo = await photosRepo.ajouterPhoto(A, chantier.id, {
+    const ajout = await photosRepo.ajouterPhoto(A, chantier.id, {
       storageKey: objet.storageKey,
       mimeType: "image/jpeg",
       tailleOctets: objet.tailleOctets,
       checksum: objet.checksum,
     });
-    assert.ok(photo.id);
+    assert.ok(ajout.ok, "la photo a été refusée");
+    assert.ok(ajout.photo.id);
     const liste = await photosRepo.listerPhotos(A, chantier.id);
     assert.equal(liste.length, 1);
     assert.equal(liste[0].storageKey, objet.storageKey);
@@ -83,6 +85,38 @@ async function main() {
     const nb = await purgerFichiersEnAttente(24);
     assert.ok(nb >= 1);
     await assert.rejects(() => lireObjet(photo.storageKey), "Le fichier doit être réellement supprimé après purge");
+  });
+
+  // ═══ LE PLAFOND DU CHANTIER — sa décision du 20 septembre 2026 ═══════════
+  //
+  // **Tenu par le DÉPÔT, pas par l'écran** : une sélection de la photothèque se
+  // recommence, et deux écrans ajoutent au même chantier. Et la photo refusée
+  // ne laisse pas d'octets orphelins : ses octets sont déjà rangés quand le
+  // dépôt refuse, ils partent donc en purge comme une photo effacée.
+  await test(`la ${PHOTOS_MAX_PAR_CHANTIER + 1}e photo d'un chantier est refusée, ses octets partent en purge`, async () => {
+    const plein = await chantiersRepo.creerChantier(A, { nom: "Chantier plein" });
+    for (let i = 0; i < PHOTOS_MAX_PAR_CHANTIER; i++) {
+      const objet = await enregistrerObjet(`chantiers/${plein.id}/photos`, Buffer.from(`photo ${i}`), ".jpg");
+      const ajout = await photosRepo.ajouterPhoto(A, plein.id, {
+        storageKey: objet.storageKey,
+        mimeType: "image/jpeg",
+        tailleOctets: objet.tailleOctets,
+        checksum: objet.checksum,
+      });
+      assert.ok(ajout.ok, `la photo n° ${i + 1} a été refusée sous le plafond`);
+    }
+    const objet = await enregistrerObjet(`chantiers/${plein.id}/photos`, Buffer.from("une de trop"), ".jpg");
+    const refus = await photosRepo.ajouterPhoto(A, plein.id, {
+      storageKey: objet.storageKey,
+      mimeType: "image/jpeg",
+      tailleOctets: objet.tailleOctets,
+      checksum: objet.checksum,
+    });
+    assert.equal(refus.ok, false, "la photo de trop est entrée");
+    assert.match(refus.ok ? "" : refus.raison, /30 photos au plus par chantier/);
+    assert.equal((await photosRepo.listerPhotos(A, plein.id)).length, PHOTOS_MAX_PAR_CHANTIER);
+    const enPurge = await pool.query(`SELECT 1 FROM fichiers_a_purger WHERE storage_key = $1`, [objet.storageKey]);
+    assert.equal(enPurge.rowCount, 1, "les octets de la photo refusée ne sont pas en file de purge");
   });
 
   console.log(`\n${passed} test(s) réussi(s), ${failed} échoué(s).`);
