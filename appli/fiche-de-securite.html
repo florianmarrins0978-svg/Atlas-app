@@ -328,6 +328,16 @@
   .liens a{display:flex;align-items:center;min-height:48px;padding:0 16px;border-radius:12px;background:var(--carte);
            box-shadow:inset 0 0 0 1px var(--trait);color:var(--pin);font-weight:600;text-decoration:none;font-size:15px}
   body.nuit .liens a{color:var(--encre)}
+  .tva{display:flex;align-items:baseline;justify-content:space-between;margin:6px 6px 0;padding:14px 16px;border-radius:14px;background:var(--carte);box-shadow:inset 0 0 0 1px var(--trait-doux)}
+  .tva-mot{font:600 11px/1 inherit;letter-spacing:.14em;text-transform:uppercase}
+  .tva-somme{font:400 22px/1 ui-serif,Georgia,serif}
+  .portes{display:flex;flex-wrap:wrap;gap:8px;margin:18px 6px 0}
+  .porte{display:flex;min-height:44px;align-items:center;padding:0 12px;border-radius:999px;font-size:12.5px;white-space:nowrap;
+         background:var(--carte);color:var(--encre-douce);box-shadow:inset 0 0 0 1px var(--trait)}
+  .porte.or{margin-left:auto;color:var(--or-texte);box-shadow:inset 0 0 0 1.5px var(--or);font-weight:600}
+  body.nuit .porte.or{color:var(--or)}
+  .porte.ici{box-shadow:inset 0 0 0 1.5px var(--pin);color:var(--pin);font-weight:600}
+  body.nuit .porte.ici{color:var(--encre)}
   .recherche{position:relative;margin:8px 6px 0}
   .recherche .loupe{position:absolute;left:16px;top:50%;transform:translateY(-50%);color:var(--gris);display:grid}
   .recherche input{width:100%;height:48px;border:0;border-radius:999px;padding:0 16px 0 44px;font:inherit;font-size:16px;background:var(--carte);
@@ -396,7 +406,7 @@
     <tr><td>Au bon vouloir, à l’arrivée, sur tous les chantiers</td><td>un bandeau sur la fiche du jour de chaque chantier, rien d’imposé. La notice MSA conseille de la préparer dès la visite. Le même bandeau pourra vivre sur la page du chantier, pour la commencer la veille.</td></tr>
     <tr><td>Signature au doigt</td><td>nom, date, et vous signez sur l’écran. Modifier une fiche signée efface la signature, et vous signez à nouveau.</td></tr>
     <tr><td>Un bouton pour l’envoyer</td><td>« Transmettre le PDF », une fois signée : la feuille de partage du téléphone s’ouvre (Mail, SMS, WhatsApp) et c’est vous qui envoyez, comme pour le devis. l’application n’envoie rien tout seul, vous l’avez vérifié. « Plus tard » la garde sans la transmettre, et le bouton reste sur la fiche du jour.</td></tr>
-    <tr><td>Où elle est gardée</td><td>dans Terminés, onglet « Retours d’intervention », rangée par client, juste au-dessus du retour du jour du même chantier : « Fiche de sécurité, 18 septembre 2026, gardée jusqu’au 18 septembre 2028 ». Touchez « Voir où » sur l’écran « Fiche signée », ou « Voir où elle est gardée » dans le bandeau. Une question pour vous : l’onglet garde-t-il son nom, « Retours », ou devient-il « Retours et fiches » ?</td></tr>
+    <tr><td>Où elle est gardée</td><td>dans Terminés, une catégorie à part, « Fiches de sécurité », entre « Retours d’intervention » et « Créer une facture », comme vous l’avez demandé. Dedans, rangées par client, avec la date jusqu’à laquelle chacune est gardée. Touchez « Voir où » sur l’écran « Fiche signée », ou « Voir où elle est gardée » dans le bandeau.</td></tr>
     <tr><td>Deux ans</td><td>c’est l’application qui la garde, vous n’avez rien à faire. Le décret admet la fiche dématérialisée. Vous la retrouvez dans Terminés, sur le chantier.</td></tr>
     <tr><td>Plus de vingt par an</td><td>ce qu’l’application sait est déjà posé : chantier, devis, adresse, dates, équipe, téléphone. Vous ne ressaisissez rien.</td></tr>
   </table>
@@ -990,10 +1000,30 @@ function loiEcran() {
   pied.appendChild(bouton(f.loiLue ? "Retour" : "Compris, je remplis", () => { const premiere = !f.loiLue; f.loiLue = true; if (premiere) { etat.etape = 1; etat.ecran = "fiche"; } else { etat.ecran = "planning"; etat.ficheOuverte = true; } dessiner(); }, "vert"));
 }
 function terminesEcran() {
+  tel.innerHTML = `<div class="entete">
+      <button type="button" class="retour" aria-label="Retour"></button>
+      <span class="quoi"><span class="grand">Terminés</span><span class="petit">Septembre 2026</span></span></div>
+    <div class="ecran" style="padding-top:6px">
+      <div class="tva"><span class="tva-mot">TVA du mois</span><span class="tva-somme">1 240 €</span></div>
+      <div class="portes">
+        <button type="button" class="porte">Retours d’intervention</button>
+        <button type="button" class="porte ici" id="porte-fiches">Fiches de sécurité</button>
+        <button type="button" class="porte or">Créer une facture</button>
+      </div>
+      <p class="aide" style="margin:14px 6px 0;color:var(--gris);font-size:13px">3 à facturer, 14 facturés.</p>
+      <p class="client">${CHANTIER.client.prenom} ${CHANTIER.client.nom}</p>
+      <div class="carte-retour"><button type="button" class="tete-carte" aria-expanded="false"><span class="corps"><span class="titre-carte">${CHANTIER.nom}</span><span class="sous-carte">${CHANTIER.jourCourt} · 1 240 € · à facturer</span></span><span class="chev-carte" aria-hidden="true">${CHEV_DROIT}</span></button></div>
+    </div>
+    <div class="barre" aria-hidden="true"><span>Chantiers</span><span>Planning</span><span class="actif">Terminés</span><span>Paysage</span><span>Réglages</span></div>`;
+  tel.querySelector(".retour").innerHTML = RETOUR;
+  tel.querySelector(".retour").onclick = () => { etat.ecran = etat.dOu || "planning"; etat.ficheOuverte = true; dessiner(); };
+  tel.querySelector("#porte-fiches").onclick = () => { etat.ecran = "fiches"; dessiner(); };
+}
+function fichesEcran() {
   const f = etat.f; const garde = "18 septembre 2028";
   tel.innerHTML = `<div class="entete">
       <button type="button" class="retour" aria-label="Retour"></button>
-      <span class="quoi"><span class="grand">Retours d’intervention</span><span class="petit">Terminés</span></span></div>
+      <span class="quoi"><span class="grand">Fiches de sécurité</span><span class="petit">Terminés</span></span></div>
     <div class="ecran" style="padding-top:8px">
       <div class="recherche"><span class="loupe" aria-hidden="true">${LOUPE}</span><input type="search" placeholder="Un client, un chantier"></div>
       <div class="annees"><button type="button" class="annee" aria-pressed="true">Tout</button><button type="button" class="annee" aria-pressed="false">2026</button></div>
@@ -1001,39 +1031,31 @@ function terminesEcran() {
       <div class="carte-retour securite ${etat.carteOuverte ? "ouverte" : ""}" id="carte-fiche">
         <button type="button" class="tete-carte" aria-expanded="${!!etat.carteOuverte}">
           <span class="rond-carte" aria-hidden="true">${BOUCLIER}</span>
-          <span class="corps"><span class="titre-carte">Fiche de sécurité, ${CHANTIER.jourCourt} 2026</span>
+          <span class="corps"><span class="titre-carte">${CHANTIER.nom}, ${CHANTIER.jourCourt} 2026</span>
             <span class="sous-carte">Signée par ${ENTREPRISE.patron} · gardée jusqu’au ${garde}${f.envoyee ? " · transmise" : ""}</span></span>
           <span class="chev-carte" aria-hidden="true">${CHEV_DROIT}</span>
         </button>
         <div class="dedans-carte">
           <div class="deux-boutons"><button type="button" class="vert creux">Ouvrir le PDF</button>${f.envoyee ? "" : '<button type="button" class="vert" id="transmettre-termines">Transmettre le PDF</button>'}</div>
-          <p class="aide" style="margin:10px 0 0">Gardée deux ans après la signature, même si le chantier est supprimé. Sur le téléphone, donc sur le chantier.</p>
+          <p class="aide" style="margin:10px 0 0">Gardée deux ans après la signature, même si le chantier est supprimé.</p>
         </div>
       </div>
-      <div class="carte-retour">
+      <p class="client">Mme Aubert</p>
+      <div class="carte-retour securite">
         <button type="button" class="tete-carte" aria-expanded="false">
-          <span class="rond-carte" aria-hidden="true">${COCHE}</span>
-          <span class="corps"><span class="titre-carte">Vendredi ${CHANTIER.jourCourt} 2026</span>
-            <span class="sous-carte">Antoine · 3 sur 3 faits · 1 photo</span></span>
-          <span class="chev-carte" aria-hidden="true">${CHEV_DROIT}</span>
-        </button>
-      </div>
-      <p class="client">Mr. Julien</p>
-      <div class="carte-retour">
-        <button type="button" class="tete-carte" aria-expanded="false">
-          <span class="rond-carte" aria-hidden="true">${COCHE}</span>
-          <span class="corps"><span class="titre-carte">Jeudi 17 septembre 2026</span>
-            <span class="sous-carte">Julien · 2 sur 5 faits</span></span>
+          <span class="rond-carte" aria-hidden="true">${BOUCLIER}</span>
+          <span class="corps"><span class="titre-carte">Aubert, 4 septembre 2026</span>
+            <span class="sous-carte">Signée par ${ENTREPRISE.patron} · gardée jusqu’au 4 septembre 2028 · transmise</span></span>
           <span class="chev-carte" aria-hidden="true">${CHEV_DROIT}</span>
         </button>
       </div>
     </div>
     <div class="barre" aria-hidden="true"><span>Chantiers</span><span>Planning</span><span class="actif">Terminés</span><span>Paysage</span><span>Réglages</span></div>`;
   tel.querySelector(".retour").innerHTML = RETOUR;
-  tel.querySelector(".retour").onclick = () => { etat.ecran = etat.dOu || "planning"; etat.ficheOuverte = true; dessiner(); };
+  tel.querySelector(".retour").onclick = () => { etat.ecran = "termines"; dessiner(); };
   const carte = tel.querySelector("#carte-fiche");
   carte.querySelector(".tete-carte").onclick = () => { etat.carteOuverte = !etat.carteOuverte; carte.classList.toggle("ouverte", etat.carteOuverte); carte.querySelector(".tete-carte").setAttribute("aria-expanded", String(etat.carteOuverte)); };
-  const tr = tel.querySelector("#transmettre-termines"); if (tr) tr.onclick = () => { f.envoyee = true; terminesEcran(); };
+  const tr = tel.querySelector("#transmettre-termines"); if (tr) tr.onclick = () => { f.envoyee = true; fichesEcran(); };
 }
 function signeeEcran() {
   const f = etat.f, m = manques();
@@ -1060,6 +1082,7 @@ function dessiner() {
   else if (etat.ecran === "fiche") ficheEcran();
   else if (etat.ecran === "loi") loiEcran();
   else if (etat.ecran === "termines") terminesEcran();
+  else if (etat.ecran === "fiches") fichesEcran();
   else signeeEcran();
   const e = tel.querySelector(".ecran"); if (e) e.scrollTop = 0;
 }
