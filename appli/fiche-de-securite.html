@@ -222,6 +222,14 @@
   .bloc .aide.vigilance{color:var(--encre-douce);font-size:13.5px;margin:8px 0 8px;padding-left:12px;border-left:2px solid var(--or)}
   .bloc .aide.vigilance b{color:var(--or-texte);font-weight:600;margin-right:4px}
   body.nuit .bloc .aide.vigilance b{color:var(--or)}
+  .case-lien{cursor:pointer}
+  .case-lien a,.aide a{color:var(--pin);font-weight:600;text-decoration:underline;text-decoration-color:var(--or);text-underline-offset:3px;text-decoration-thickness:1.5px}
+  body.nuit .case-lien a,body.nuit .aide a{color:var(--encre)}
+  .pastilles .case-lien{display:inline-flex;align-items:center;gap:7px;min-height:44px;padding:8px 14px 8px 12px;border-radius:999px;
+                        background:var(--carte);box-shadow:inset 0 0 0 1px var(--trait);font-size:14px;line-height:1.2;color:var(--encre)}
+  .pastilles .case-lien .p{width:18px;height:18px;border-radius:50%;flex:none;box-shadow:inset 0 0 0 1.5px var(--vert-pale);display:grid;place-items:center;color:transparent}
+  .pastilles .case-lien[aria-pressed="true"]{background:var(--vert-voile);box-shadow:inset 0 0 0 1.5px var(--plein)}
+  .pastilles .case-lien[aria-pressed="true"] .p{background:var(--plein);box-shadow:none;color:var(--sur-plein)}
   .sous-ligne{flex-basis:100%;margin:2px 0 4px 18px}
   .sous-ligne:empty{display:none}
   .sous-ligne .champ{margin-top:2px}
@@ -319,9 +327,6 @@
   .liens{display:flex;flex-direction:column;gap:8px;margin-top:18px}
   .liens a{display:flex;align-items:center;min-height:48px;padding:0 16px;border-radius:12px;background:var(--carte);
            box-shadow:inset 0 0 0 1px var(--trait);color:var(--pin);font-weight:600;text-decoration:none;font-size:15px}
-  .liens.petits{margin-top:10px;gap:6px}
-  .sous-ligne .liens.petits{margin-top:4px}
-  .liens.petits a{min-height:44px;font-size:13.5px;font-weight:600;background:var(--vert-voile);box-shadow:inset 0 0 0 1px var(--vert-pale)}
   body.nuit .liens a{color:var(--encre)}
   .signee-titre{text-align:center;padding:26px 0 6px}
   .signee-titre .rond{width:54px;height:54px;border-radius:50%;background:var(--plein);color:var(--sur-plein);display:grid;place-items:center;margin:0 auto 14px}
@@ -376,7 +381,7 @@
     <tr><td>Les exemples en gris</td><td>dans chaque cadre, un « Exemple : … » pris dans la fiche remplie de la notice MSA. Il s’efface dès que vous écrivez.</td></tr>
     <tr><td>Les heures</td><td>le planning ne les connaît pas. Elles restent à saisir.</td></tr>
     <tr><td>Chaque partie s’explique</td><td>une phrase sous chaque titre dit quoi remplir et pourquoi, comme à quelqu’un qui n’a jamais vu le formulaire. C’est votre demande du 21 septembre.</td></tr>
-    <tr><td>Les liens</td><td>votre feuille souligne DT-DICT, AIPR et la découverte fortuite sans rien lier (elle n’a aucun lien cliquable, vérifié). Ici ils mènent aux sites officiels : le guichet unique des réseaux, le cerfa AIPR sur service-public, jebalise.fr pour le balisage. Un lien qu’on ne peut pas vérifier n’est pas mis.</td></tr>
+    <tr><td>Les liens</td><td>là où votre feuille souligne, le mot souligné est le lien, dans la case : « DT DICT declaration-travaux-proximite-reseaux » ouvre le guichet unique des réseaux, « Formulaire » de l’AIPR ouvre le cerfa 15465 sur service-public, « formulaire de découverte fortuite de réseau » ouvre le guichet unique, et l’adresse jebalise.fr s’ouvre. Le reste de la case coche.</td></tr>
     <tr><td>Une case cochée ne fait plus remonter l’écran</td><td>chaque appui changeait tout l’écran et le défilement repartait du haut. Un appui ne change plus que sa case, et ce qui en dépend.</td></tr>
     <tr><td>Ajouter, partout</td><td>le décret ne donne aucune liste : ni matériel, ni arbres, ni risques, ni mesures. Il dit « les risques spécifiques au chantier » et « les mesures de sécurité spécifiques ». Les listes viennent du formulaire MSA, et « Ajouter » met les vôtres au bout de chacune. Ce que vous ajoutez reste pour les fiches suivantes.</td></tr>
     <tr><td>Rien à cocher dans une catégorie</td><td>ce n’est pas un problème. Pas de co-activité, on ne coche rien. La fiche ne dit « vide » que pour les sept éléments du décret.</td></tr>
@@ -584,14 +589,30 @@ function planning() {
 
 /* ═══ LA FICHE — six écrans ═══ */
 const set = (s, v) => { s.has(v) ? s.delete(v) : s.add(v); };
+// le mot souligné sur la feuille, et le site officiel qu'il désigne (vérifiés le 21 septembre)
+const SOULIGNES = {
+  "DT DICT declaration-travaux-proximite-reseaux (chantier distant < 50 m conducteurs électriques nus ou lors d’arrachage d’arbre, de creusement de tranchées…)":
+    [["DT DICT declaration-travaux-proximite-reseaux", "https://www.reseaux-et-canalisations.ineris.fr/"]],
+  "AIPR (Formulaire)": [["Formulaire", "https://entreprendre.service-public.gouv.fr/vosdroits/R42490"]],
+  "Balisage du chantier sur voie publique (https://www.jebalise.fr/)": [["https://www.jebalise.fr/", "https://www.jebalise.fr/"]],
+};
+const avecLiens = (x) => (SOULIGNES[x] || []).reduce((t, [mot, url]) => t.replace(mot, `<a href="${url}" target="_blank" rel="noopener">${mot}</a>`), x);
 const avecLesSiens = (famille) => [...L[famille], ...etat.f.ajouts[famille]];
 function pastilles(liste, s, apres, sous) { return listeACocher("pastilles", liste, s, apres, sous); }
 function cases(liste, s, apres, sous) { return listeACocher("cases serree", liste, s, apres, sous); }
 function listeACocher(genre, liste, s, apres, sous) {
   const c = el("div", genre); const enPastilles = genre === "pastilles"; const dessous = [];
   liste.forEach((x) => {
-    const b = bouton(enPastilles ? `<span class="p" aria-hidden="true">${COCHE}</span><span>${x}</span>` : `<span class="rond" aria-hidden="true">${COCHE}</span><span class="quoi">${x}</span>`,
-      () => { set(s, x); b.setAttribute("aria-pressed", String(s.has(x))); dessous.forEach((d) => d()); if (apres) apres(); }, enPastilles ? null : "case");
+    const cocher = () => { set(s, x); b.setAttribute("aria-pressed", String(s.has(x))); dessous.forEach((d) => d()); if (apres) apres(); };
+    const html = enPastilles ? `<span class="p" aria-hidden="true">${COCHE}</span><span>${avecLiens(x)}</span>` : `<span class="rond" aria-hidden="true">${COCHE}</span><span class="quoi">${avecLiens(x)}</span>`;
+    let b;
+    if (SOULIGNES[x]) {
+      // un lien dans un bouton n'est pas permis : la ligne est une boîte, le mot
+      // souligné ouvre le site, tout le reste coche
+      b = el("div", enPastilles ? "case-lien" : "case case-lien", html); b.setAttribute("role", "checkbox"); b.tabIndex = 0;
+      b.onclick = (e) => { if (e.target.closest("a")) return; cocher(); };
+      b.onkeydown = (e) => { if (e.key === " " || e.key === "Enter") { e.preventDefault(); cocher(); } };
+    } else b = bouton(html, cocher, enPastilles ? null : "case");
     b.setAttribute("aria-pressed", String(s.has(x))); c.appendChild(b);
     if (sous && sous[x]) {
       const d = el("div", "sous-ligne"); c.appendChild(d);
@@ -627,7 +648,6 @@ function groupe(famille, type, suite, sous) {
 }
 const vigilance = (texte) => el("p", "aide vigilance", `<b>Point de vigilance</b> ${texte}`);
 const aide = (texte, haut) => { const a = el("p", "aide", texte); if (haut) a.style.marginTop = haut; return a; };
-const liens = (l) => el("div", "liens petits", l.map(([mot, url]) => `<a href="${url}" target="_blank" rel="noopener">${mot}</a>`).join(""));
 function champ(nom, cle, placeholder, lignes, type) {
   const c = el("label", "champ", `<span class="nom">${nom}</span>`);
   const i = lignes ? el("textarea", null) : el("input", null);
@@ -769,12 +789,7 @@ function etape4(z) {
     if (f.reseaux.size) {
       dep.appendChild(aide("Mesures", "12px"));
       dep.appendChild(groupe("reseauxMesures", "cases", (d2) => {
-        d2.appendChild(aide("Au cas où : formulaire de découverte fortuite de réseau", "10px"));
-        // les formulaires, là où ils se font : la feuille les souligne sans les
-        // lier ; ce sont les sites officiels, vérifiés le 21 septembre
-        d2.appendChild(liens([["La DT-DICT, sur le guichet unique des réseaux", "https://www.reseaux-et-canalisations.ineris.fr/"],
-                              ["Le formulaire AIPR (cerfa 15465)", "https://entreprendre.service-public.gouv.fr/vosdroits/R42490"],
-                              ["Découverte fortuite d’un réseau : le guichet unique", "https://www.reseaux-et-canalisations.ineris.fr/"]]));
+        d2.appendChild(aide(`Au cas où : <a href="https://www.reseaux-et-canalisations.ineris.fr/" target="_blank" rel="noopener">formulaire de découverte fortuite de réseau</a>`, "10px"));
       }, { [L.reseauxMesures[2]]: (d) => d.appendChild(cases(L.distances, f.distances)) }));
     }
   }, { "Électrique": (d) => d.appendChild(pastilles(L.tensions, f.tensions)) }));
@@ -784,10 +799,7 @@ function etape4(z) {
   b.appendChild(groupe("env", "pastilles", (dep) => {
     if (!f.env.size) return;
     dep.appendChild(aide("Mesures", "12px"));
-    dep.appendChild(groupe("envMesures", "pastilles", null, {
-      [L.envMesures[0]]: (d) => d.appendChild(liens([["Ouvrir jebalise.fr", "https://www.jebalise.fr/"]])),
-      [L.envMesures[4]]: (d) => d.appendChild(champ("", "envPreciser", "Exemple : gilets haute visibilité")),
-    }));
+    dep.appendChild(groupe("envMesures", "pastilles", null, { [L.envMesures[4]]: (d) => d.appendChild(champ("", "envPreciser", "Exemple : gilets haute visibilité")) }));
   }));
   z.appendChild(b);
 
