@@ -116,6 +116,8 @@
                       text-transform:uppercase;color:var(--muted)}
   .regl{padding:8px 0;border-bottom:1px solid var(--lineSoft);font-size:14px;color:var(--ink)}
   .regl .quoi{white-space:nowrap;line-height:1.15}
+  /* Le libellé est un CHAMP : « Acompte 30 % » n'est qu'une proposition. */
+  .regl input.lib{font-size:14px;color:var(--ink);line-height:1.15}
   .regl .quoi small{display:block;font-size:12px;color:var(--muted)}
   .regl select{width:100%;border:0;background:transparent;padding:0 12px 0 0;font-size:13px;color:var(--ink);
                outline:none;text-align:center;text-align-last:center;-webkit-appearance:none;appearance:none;
@@ -143,11 +145,12 @@
   .net .m{font:600 20px/1 ui-serif,Georgia,serif}
 
   /* l'encadré doré, quand la facture est acquittée */
+  /* Rien d'autre que le mot — sa correction du 21 septembre : « retire tout ce
+     qui est en gris, même format que sur la facture ». C'est exactement la
+     mention que porte la page de la facture (.mention), dans un cadre d'or. */
   .encadre{margin-top:16px;border:1px solid var(--or);border-radius:4px;padding:12px 14px}
-  .encadre p{margin:0;font:600 12px/1 ui-sans-serif,sans-serif;letter-spacing:.2em;
+  .encadre p{margin:0;text-align:center;font:600 12px/1 ui-sans-serif,sans-serif;letter-spacing:.2em;
              text-transform:uppercase;color:var(--or)}
-  .encadre small{display:block;margin-top:6px;font-size:12.5px;line-height:1.45;color:var(--inkSoft);
-                 letter-spacing:0;text-transform:none;font-weight:400}
 
   /* les boutons de l'application */
   .bas{margin:24px 26px 0}
@@ -254,7 +257,7 @@
 
           <!-- L'ENCADRÉ DORÉ : sous le Total TTC, au-dessus de « Revenir à la facture » -->
           <div class="encadre" id="encadre" hidden>
-            <p>Facture acquittée<small>Le solde est compté reçu aujourd’hui, le net tombe à zéro, et le tampon s’imprime sur la facture de votre cliente.</small></p>
+            <p>Facture acquittée</p>
           </div>
         </div>
       </div>
@@ -315,6 +318,7 @@
   <table>
     <tr><td>+ Main d’œuvre</td><td>passe sur <b>Remplir la facture</b>, sous « + Ajouter une TVA » — exactement la place qu’il a sur le devis. La page de la facture <b>lit</b> « dont main d’œuvre HT » sous le Total HT, elle ne le saisit plus.</td></tr>
     <tr><td>+ Règlement reçu</td><td>passe au même endroit, sous le Total TTC : le moyen, le n° de chèque, la date, le montant. La page de la facture les <b>affiche</b>, avec le net à payer.</td></tr>
+    <tr><td>Ce que c’est</td><td><b>« Acompte 30 % » n’est qu’une proposition : le mot est à vous.</b> Touchez-le et écrivez ce que c’est — arrhes, avoir, ce que vous voulez. C’est ce mot-là qui s’imprime sur la facture. (Dans l’application, il faudra une colonne pour le retenir : aujourd’hui le nom est déduit des acomptes du devis, et rien ne garde le vôtre.)</td></tr>
     <tr><td>Facture acquittée</td><td>l’interrupteur vit là où vous remplissez. Allumé, le solde est compté reçu ce jour, le net tombe à zéro.</td></tr>
     <tr><td>L’encadré doré</td><td>sous le Total TTC, au-dessus de « Revenir à la facture ». Il n’apparaît que si l’interrupteur est allumé.</td></tr>
     <tr><td>« Aujourd’hui »</td><td>le bouton en haut éteint les trois ajouts et rallume ce qui est en place : c’est votre écran d’aujourd’hui, au pixel.</td></tr>
@@ -346,6 +350,20 @@
   function nb(v){ var n = parseFloat(String(v == null ? "" : v).replace(",", ".")); return isFinite(n) ? n : 0; }
   function r2(n){ return Math.round(n * 100) / 100; }
   function eur(n){ return nb(n).toLocaleString("fr-FR", {minimumFractionDigits:2, maximumFractionDigits:2}) + " €"; }
+  /**
+   * CE QU'UN RÈGLEMENT EST — proposé d'office, écrit par lui s'il veut.
+   *
+   * Le rang dit le taux du devis (« Acompte 30 % », puis 50 %) ; au-delà, et
+   * pour le solde, « Acompte » tout court. **Ce n'est qu'un DÉPART** : sa
+   * correction du 21 septembre 2026 — *« si c'est pas ça faut que je puisse
+   * écrire ce que c'est »*. Arrhes, avoir, chèque du beau-père : le mot est à
+   * lui, et c'est celui-là qui s'imprimera.
+   */
+  function libellePropose(rang, solde){
+    if (solde) return "Acompte";
+    return ["Acompte 30 %", "Acompte 50 %"][rang] || "Acompte";
+  }
+
   // La date s'écrit comme il la lit — 21/09/2026. Le sélecteur natif du
   // navigateur tient dans la colonne de 92 px sur son téléphone, pas ici.
   function aujourdhui(){
@@ -433,7 +451,7 @@
       d.className = "grille regl";
       d.innerHTML =
         '<button class="petitmoins" type="button" aria-label="Retirer ce règlement">−</button>' +
-        '<span class="quoi">' + (g.solde ? "Acompte" : "Acompte " + (i === 0 ? "30" : "50") + " %") +
+        '<span class="quoi"><input class="lib" value="' + g.libelle + '" aria-label="Ce que ce règlement est">' +
           '<small><input class="date" value="' + g.date + '" inputmode="numeric" aria-label="Date du règlement"></small></span>' +
         '<select aria-label="Moyen de paiement">' + MOYENS.map(function(m){
             return '<option' + (m === g.moyen ? ' selected' : '') + '>' + m + '</option>'; }).join("") + '</select>' +
@@ -442,6 +460,11 @@
           : '<span></span>') +
         '<span class="m"><input class="mt" inputmode="decimal" value="' + String(g.montant).replace(".", ",") + '" aria-label="Montant reçu"> €</span>';
       d.querySelector(".petitmoins").onclick = function(){ etat.regls.splice(i, 1); etat.acquittee = false; rendre(); };
+      // **Le libellé est À LUI** — sa correction du 21 septembre : « acompte
+      // 30 % d'office c'est bien, mais si c'est pas ça, faut que je puisse
+      // écrire ce que c'est ». Proposé à la pose, jamais recalculé ensuite :
+      // le refaire à chaque rendu effacerait ce qu'il vient de taper.
+      d.querySelector(".lib").onchange = function(e){ g.libelle = e.target.value.trim() || libellePropose(i, g.solde); rendre(); };
       d.querySelector(".date").onchange = function(e){ g.date = e.target.value; rendre(); };
       d.querySelector("select").onchange = function(e){ g.moyen = e.target.value; if (g.moyen !== "Chèque") g.numero = ""; rendre(); };
       var num = d.querySelector(".num"); if (num) num.onchange = function(e){ g.numero = e.target.value.trim(); };
@@ -498,7 +521,7 @@
     var fr = id("f-regls"); fr.innerHTML = "";
     etat.regls.forEach(function(g, i){
       var d = document.createElement("div"); d.className = "ligne";
-      d.innerHTML = '<span>' + (g.solde ? "Acompte" : "Acompte " + (i === 0 ? "30" : "50") + " %") +
+      d.innerHTML = '<span>' + g.libelle +
         ' <small style="color:var(--muted)">' + g.date + ' · ' + g.moyen.toLowerCase() +
         (g.numero ? " n° " + g.numero : "") + '</small></span><span class="m">' + eur(g.montant) + '</span>';
       fr.appendChild(d);
@@ -528,7 +551,10 @@
   // Le montant proposé : ce qui reste, jamais plus — le chiffre est à vous.
   id("plus-regl").onclick = function(){
     var c = calcul();
-    etat.regls.push({ moyen: "Chèque", numero: "", date: aujourdhui(), montant: c.net, solde: false });
+    etat.regls.push({
+      libelle: libellePropose(etat.regls.length, false),
+      moyen: "Chèque", numero: "", date: aujourdhui(), montant: c.net, solde: false,
+    });
     rendre();
   };
 
@@ -536,7 +562,10 @@
   id("acquittee").onclick = function(){
     var c = calcul();
     if (c.net > 0) {
-      etat.regls.push({ moyen: "Virement", numero: "", date: aujourdhui(), montant: c.net, solde: true });
+      etat.regls.push({
+        libelle: libellePropose(etat.regls.length, true),
+        moyen: "Virement", numero: "", date: aujourdhui(), montant: c.net, solde: true,
+      });
       etat.acquittee = true;
     } else {
       etat.regls = etat.regls.filter(function(g){ return !g.solde; });
