@@ -228,6 +228,8 @@
         font-family:inherit;font-size:16px;line-height:1.4;caret-color:var(--or);resize:none;transition:box-shadow .15s}
   .champ input::placeholder,.champ textarea::placeholder{color:var(--gris);opacity:1}
   .champ input:focus,.champ textarea:focus{outline:0;box-shadow:inset 0 0 0 1.5px var(--or)}
+  .champ input[type="time"]{font-variant-numeric:tabular-nums;-webkit-appearance:none;appearance:none}
+  .champ input[type="time"]::-webkit-calendar-picker-indicator{opacity:.55}
   .champ .fixe{display:flex;align-items:center;min-height:46px;padding:10px 12px;border-radius:10px;background:var(--teinte);
                box-shadow:inset 0 0 0 1px var(--trait-doux);font-size:16px;line-height:1.4;color:var(--encre)}
   .champ .fixe.vide{color:var(--gris);font-style:italic}
@@ -249,6 +251,15 @@
   .pastilles button .p{width:18px;height:18px;border-radius:50%;flex:none;box-shadow:inset 0 0 0 1.5px var(--vert-pale);display:grid;place-items:center;color:transparent}
   .pastilles button[aria-pressed="true"]{background:var(--vert-voile);box-shadow:inset 0 0 0 1.5px var(--plein)}
   .pastilles button[aria-pressed="true"] .p{background:var(--plein);box-shadow:none;color:var(--sur-plein)}
+  .pastilles .plus,.cases .plus{display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:8px 14px 8px 10px;border-radius:999px;
+                     background:var(--vert-voile);color:var(--pin);box-shadow:inset 0 0 0 1px var(--vert-pale);font-size:14px}
+  .cases .plus{margin-top:4px}
+  body.nuit .pastilles .plus,body.nuit .cases .plus{color:var(--encre)}
+  .ajout{display:flex;gap:8px;margin-top:8px}
+  .ajout input{flex:1;min-width:0;min-height:46px;padding:10px 12px;border:0;border-radius:10px;background:var(--carte);
+               box-shadow:inset 0 0 0 1px var(--or);color:var(--encre);font:inherit;caret-color:var(--or)}
+  .ajout input::placeholder{color:var(--gris);opacity:1}
+  .ajout .vert{margin:0;padding:0 18px;min-height:46px;font-size:15px}
   .compteur{display:flex;align-items:center;gap:10px}
   .compteur button{width:46px;height:46px;border-radius:10px;background:var(--carte);box-shadow:inset 0 0 0 1px var(--trait);display:grid;place-items:center;color:var(--pin)}
   .compteur .n{font:400 24px/1 ui-serif,Georgia,serif;min-width:34px;text-align:center}
@@ -342,6 +353,8 @@
     <tr><td>Les exemples en gris</td><td>dans chaque cadre, un « Exemple : … » pris dans la fiche remplie de la notice MSA. Il s’efface dès que vous écrivez.</td></tr>
     <tr><td>Les heures</td><td>le planning ne les connaît pas. Elles restent à saisir.</td></tr>
     <tr><td>Chaque partie s’explique</td><td>une phrase sous chaque titre dit quoi remplir et pourquoi, comme à quelqu’un qui n’a jamais vu le formulaire. C’est votre demande du 21 septembre.</td></tr>
+    <tr><td>Le matériel et les arbres</td><td>le décret n’impose aucune liste (seulement « les équipements de travail utilisés »), et rien sur l’examen de l’arbre : les listes viennent du formulaire MSA. « Ajouter » met le vôtre, et il reste pour les fiches suivantes.</td></tr>
+    <tr><td>L’heure</td><td>la roue du téléphone, heures et minutes.</td></tr>
     <tr><td>La main d’œuvre</td><td>un seul texte, écrit une fois, gardé pour toutes les fiches suivantes, et l’écran le dit. Vous le corrigez quand l’équipe change. C’est votre choix du 21 septembre.</td></tr>
   </table>
   <p><b>Rien n’est codé.</b> Dites oui, ou ce qui reste à changer.</p>
@@ -427,6 +440,7 @@ function depart() {
       gps: "", hDebut: "", hFin: "", horaires: "", responsable: ENTREPRISE.patron, nb: CHANTIER.equipe.length, telIncident: ENTREPRISE.tel,
       travaux: new Set(), travauxAutres: "", mainOeuvre: "",
       elevation: new Set(), coupe: new Set(), autresMat: new Set(), materielAutres: "", matieres: new Set(), matieresAutres: "",
+      ajouts: { elevation: [], coupe: [], autresMat: [], matieres: [] }, enCours: null,
       photos: 0, bio: new Set(), bioMesures: new Set(), specifiques: new Set(), specifiquesAutres: "", communication: "",
       reseaux: new Set(), reseauxMesures: new Set(), env: new Set(), envMesures: new Set(), envPreciser: "", coactivite: new Set(), risquesAutres: "", mesuresAutres: "", orga: new Set(), orgaCommunication: "", meteo: new Set(),
       secours: new Set(), secoursAutres: "", lieuTrousse: "", prs: "", observations: "",
@@ -551,6 +565,22 @@ function pastilles(liste, s, apres) {
   });
   return p;
 }
+// une pastille « Ajouter » au bout d'une liste : un champ s'ouvre, le mot devient
+// une pastille cochée, et reste pour les fiches suivantes
+function ajouter(famille, liste, conteneur) {
+  const f = etat.f;
+  if (f.enCours === famille) {
+    const l = el("div", "ajout");
+    const i = el("input"); i.type = "text"; i.placeholder = famille === "matieres" ? "Exemple : nid de frelons" : "Exemple : camion-grue"; i.autocomplete = "off";
+    const valider = () => { const v = i.value.trim(); if (!v) return; f.ajouts[famille].push(v); f[famille].add(v); f.enCours = null; redessinerEtape(); };
+    i.onkeydown = (e) => { if (e.key === "Enter") { e.preventDefault(); valider(); } };
+    l.appendChild(i); l.appendChild(bouton("Ajouter", valider, "vert"));
+    conteneur.appendChild(l); setTimeout(() => i.focus(), 0);
+  } else {
+    const b = bouton(`${PLUS}<span>Ajouter</span>`, () => { f.enCours = famille; redessinerEtape(); }, "plus");
+    conteneur.querySelector(".pastilles, .cases").appendChild(b);
+  }
+}
 function cases(liste, s) {
   const c = el("div", "cases serree");
   liste.forEach((x) => {
@@ -559,10 +589,10 @@ function cases(liste, s) {
   });
   return c;
 }
-function champ(nom, cle, placeholder, lignes) {
+function champ(nom, cle, placeholder, lignes, type) {
   const c = el("label", "champ", `<span class="nom">${nom}</span>`);
   const i = lignes ? el("textarea", null) : el("input", null);
-  if (lignes) i.rows = lignes; else i.type = "text";
+  if (lignes) i.rows = lignes; else i.type = type || "text";
   i.value = etat.f[cle]; i.placeholder = placeholder || ""; i.autocomplete = "off";
   i.oninput = () => { etat.f[cle] = i.value; };
   c.appendChild(i); return c;
@@ -575,10 +605,10 @@ function bloc(etiquette, doux, explication) {
   if (explication) b.appendChild(el("p", "aide explication", explication));
   return b;
 }
-function autresSi(s, cle, placeholder) {
+function autresSi(s, cle, placeholder, lignes) {
   // « Exemple : » devant : un gris qui ressemble à une valeur se prend pour une valeur
   if (!s.has("Autres")) return null;
-  const c = champ("Autres (à préciser)", cle, placeholder || "");
+  const c = champ("Autres (à préciser)", cle, placeholder || "", lignes);
   c.style.marginTop = "8px"; return c;
 }
 
@@ -602,7 +632,7 @@ function etape1(z) {
   } else if (f.donneur === "autre") {
     const d = el("div", "deux-champs"); d.appendChild(champ("Nom", "donneurNom", "Exemple : Dubeaujardin")); d.appendChild(champ("Prénom", "donneurPrenom", "Exemple : Marc")); b.appendChild(d);
     b.appendChild(champ("Téléphone", "donneurTel", "Exemple : 06 00 00 00 00"));
-    b.appendChild(champ("E-mail, pour lui envoyer la fiche", "donneurEmail", "Exemple : nom@exemple.fr"));
+    b.appendChild(champ("E-mail, pour lui envoyer la fiche", "donneurEmail", "Exemple : nom@exemple.fr", 0, "email"));
   }
   z.appendChild(b);
 
@@ -616,7 +646,7 @@ function etape1(z) {
 
   b = bloc("Dates d’exécution", "d’après le planning", "Quel jour et à quelle heure on commence et on finit.");
   let d = el("div", "deux-champs"); d.appendChild(fixe("Début", CHANTIER.jourCourt)); d.appendChild(fixe("Fin", CHANTIER.jourCourt)); b.appendChild(d);
-  d = el("div", "deux-champs"); d.appendChild(champ("Heures, début", "hDebut", "Exemple : 8 h")); d.appendChild(champ("Heures, fin", "hFin", "Exemple : 12 h 30")); b.appendChild(d);
+  d = el("div", "deux-champs"); d.appendChild(champ("Heure de début", "hDebut", "", 0, "time")); d.appendChild(champ("Heure de fin", "hFin", "", 0, "time")); b.appendChild(d);
   b.appendChild(champ("Horaires, délais de réalisation", "horaires", "Exemple : une demi-journée, le matin"));
   z.appendChild(b);
 
@@ -650,18 +680,18 @@ function etape2(z) {
   z.appendChild(b);
 
   b = bloc("Matériels", "", "Cochez le matériel que vous allez utiliser sur ce chantier. Il doit être en bon état, et vérifié (la VGP, pour la nacelle et le treuil).");
-  b.appendChild(el("p", "aide", "Pour monter. Une nacelle protège mieux que les cordes : quand c’est possible, préférez-la."));
-  b.appendChild(pastilles(L.elevation, f.elevation));
-  b.appendChild(el("p", "aide", "Pour couper.")).style.marginTop = "12px";
-  b.appendChild(pastilles(L.coupe, f.coupe));
-  b.appendChild(el("p", "aide", "Le reste du matériel.")).style.marginTop = "12px";
-  b.appendChild(pastilles(L.autresMat, f.autresMat));
-  if (f.elevation.has("Autres") || f.coupe.has("Autres") || f.autresMat.has("Autres")) { const c = champ("Autres (à préciser)", "materielAutres"); c.style.marginTop = "8px"; b.appendChild(c); }
+  const liste = (famille) => [...L[famille].filter((x) => x !== "Autres"), ...f.ajouts[famille]];
+  const groupe = (aide, famille) => { const g = el("div"); g.appendChild(el("p", "aide", aide)); g.appendChild(pastilles(liste(famille), f[famille])); ajouter(famille, liste(famille), g); return g; };
+  b.appendChild(groupe("Pour monter. Une nacelle protège mieux que les cordes : quand c’est possible, préférez-la.", "elevation"));
+  b.appendChild(groupe("Pour couper.", "coupe")).style.marginTop = "12px";
+  b.appendChild(groupe("Le reste du matériel.", "autresMat")).style.marginTop = "12px";
+  b.appendChild(el("p", "aide", "Ce que vous ajoutez reste pour vos prochaines fiches.")).style.margin = "10px 0 0";
   z.appendChild(b);
 
   b = bloc("L’état des arbres", "", "Ce que vous avez regardé sur les arbres avant de monter : du bois mort, des racines qui tiennent mal, une maladie. Cochez ce qui a été vérifié.");
-  b.appendChild(cases(L.matieres, f.matieres));
-  b.appendChild(champ("Autres (à préciser)", "matieresAutres", "Exemple : visite du 20 janvier, aucune fragilisation vue sur les chênes, à confirmer le jour même"));
+  { const g = el("div"); g.appendChild(cases([...L.matieres, ...f.ajouts.matieres], f.matieres)); ajouter("matieres", L.matieres, g); b.appendChild(g); }
+  b.appendChild(el("p", "aide", "Ce que vous ajoutez reste pour vos prochaines fiches.")).style.margin = "6px 0 0";
+  b.appendChild(champ("Ce que vous avez vu (à préciser)", "matieresAutres", "Exemple : rien vu sur les chênes, à confirmer sur place", 2));
   z.appendChild(b);
 }
 
@@ -681,9 +711,11 @@ function etape3(z) {
   z.appendChild(b);
 
   b = bloc("Mesures de prévention", "", "Ce que vous mettez en place pour que personne ne soit blessé : le balisage, la communication entre vous, la surveillance des passants.");
+  b.appendChild(el("div", "rappel", `<b>Périmètre de sécurité, d’après le décret</b>
+      <table><tr><td>Abattage à la main</td><td>2 fois la hauteur de l’arbre</td></tr><tr><td>Élagage, éhouppage</td><td>personne sous l’arbre</td></tr><tr><td>Machines</td><td>la distance marquée dessus</td></tr></table>`)).style.margin = "0 0 12px";
   b.appendChild(cases(L.specifiques, f.specifiques));
   if (f.specifiques.has(L.specifiques[2])) { const c = champ("Moyen de communication", "communication", "Exemple : casques communicants à 3"); c.style.marginTop = "4px"; b.appendChild(c); }
-  const a = autresSi(f.specifiques, "specifiquesAutres", "Exemple : sortie du garage bloquée pendant le chantier"); if (a) b.appendChild(a);
+  const a = autresSi(f.specifiques, "specifiquesAutres", "Exemple : sortie du garage bloquée", 2); if (a) b.appendChild(a);
   z.appendChild(b);
 }
 
@@ -709,7 +741,7 @@ function etape4(z) {
   b = bloc("Co-activité, machines", "", "D’autres personnes travaillent en même temps dans la zone ? Une machine peut happer ou projeter ? Cochez, et écrivez le reste.");
   b.appendChild(cases(L.coactivite, f.coactivite));
   b.appendChild(champ("Risques autres identifiés", "risquesAutres", "Exemple : coups de vent possibles", 2));
-  b.appendChild(champ("Mesures de prévention autres", "mesuresAutres", "Exemple : rubalise autour de la propriété, le propriétaire reste à l’intérieur", 2));
+  b.appendChild(champ("Mesures de prévention autres", "mesuresAutres", "Exemple : rubalise autour de la propriété", 2));
   z.appendChild(b);
 
   b = bloc("Règles organisationnelles à mettre en place", "", "Comment l’équipe s’organise pour ne pas se gêner ni se mettre en danger.");
@@ -726,9 +758,9 @@ function etape5(z) {
   const f = etat.f;
   let b = bloc("Organisation des secours", "", "Ce qu’il y a sur place pour porter secours, et où. Le Point de Rencontre des Secours, c’est l’endroit précis où les pompiers vous retrouvent.");
   b.appendChild(cases(L.secours, f.secours));
-  { const a = autresSi(f.secours, "secoursAutres", "Exemple : couverture de survie dans le camion"); if (a) b.appendChild(a); }
+  { const a = autresSi(f.secours, "secoursAutres", "Exemple : couverture de survie", 2); if (a) b.appendChild(a); }
   b.appendChild(champ("Lieu où se trouve la trousse de secours", "lieuTrousse", "Exemple : dans la cabine du camion"));
-  b.appendChild(champ("Point de Rencontre des Secours", "prs", "Exemple : devant la maison du propriétaire, à l’adresse du chantier"));
+  b.appendChild(champ("Point de Rencontre des Secours", "prs", "Exemple : devant le portail du client"));
   z.appendChild(b);
 
   b = bloc("En cas d’accident", "", "Les consignes, dans l’ordre. Elles sont imprimées sur la fiche : à lire avant de commencer.");
@@ -749,7 +781,7 @@ function etape5(z) {
   z.appendChild(ban.parentElement);
 
   b = bloc("Observations, consignes particulières", "", "Ce que l’équipe doit savoir en plus, pour ce chantier-là.");
-  b.appendChild(champ("", "observations", "Exemple : prévenir le chef de chantier si quelque chose change après l’inspection du matin", 3));
+  b.appendChild(champ("", "observations", "Exemple : prévenir le chef si quelque chose change", 3));
   z.appendChild(b);
 }
 
