@@ -4,12 +4,13 @@ import { createServer } from "node:http";
 import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync, chmodSync, mkdirSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { exigerLesOutils } from "./_outil-requis";
+import { exigerLesOutils, exigerUnSystemePosix } from "./_outil-requis";
 
 // **Sans ces outils, cette suite ne mesure RIEN** — elle le dit et sort du
 // compte, au lieu de rougir sur une machine qui n'y est pour rien
 // (`_outil-requis.ts`, sa colère du 20 septembre 2026).
 exigerLesOutils("bash");
+exigerUnSystemePosix("groupes de processus", "scripts exécutables par leur première ligne", "PATH séparé par « : »");
 
 // **« Je crois que j'ai encore la version lente » — le 18 août 2026.**
 //

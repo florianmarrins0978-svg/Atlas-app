@@ -61,7 +61,13 @@ export function empreinteDesSources(racine) {
         continue;
       }
       if (!/\.(ts|tsx|js|mjs|mts|sql|css)$/.test(entree.name)) continue;
-      empreinte.set(path.relative(racine, chemin), {
+      // **Un chemin s'écrit d'UNE seule façon, celle de git : `src/lib/x.ts`.**
+      // `path.relative` rend `src\lib\x.ts` sous Windows — le PC du patron —,
+      // et c'est ainsi que trois suites y rougissaient sur un dépôt sain
+      // (20 septembre 2026) : ce qu'on compare à ces clés vient de `git diff`,
+      // qui n'écrit jamais de barre inversée, et ce qu'on en tire est une
+      // commande à recopier, où `\t` est un caractère d'échappement.
+      empreinte.set(cheminGit(path.relative(racine, chemin)), {
         date: statSync(chemin).mtimeMs,
         // sha1 et non sha256 : on cherche à distinguer deux versions d'un
         // fichier qu'on a soi-même sous la main, pas à résister à quelqu'un qui
@@ -93,8 +99,12 @@ export function empreinteDesSources(racine) {
 export function fichiersRemues(avant, apres) {
   /** @type {Set<string>} */
   const remues = new Set();
+  // Les verdicts déposés sur Windows AVANT le 20 septembre 2026 portent des
+  // clés en barres inversées. Les relire telles quelles ferait passer l'arbre
+  // entier pour remué — cinquante minutes de batterie pour une orthographe.
+  const avantGit = new Map([...avant].map(([chemin, trace]) => [cheminGit(chemin), trace]));
   for (const [chemin, trace] of apres) {
-    const trAvant = avant.get(chemin);
+    const trAvant = avantGit.get(chemin);
     if (!trAvant) {
       remues.add(chemin); // neuf
       continue;
@@ -103,8 +113,13 @@ export function fichiersRemues(avant, apres) {
     // réécrit des fichiers à l'identique. C'est le contenu qui tranche.
     if (trAvant.empreinte !== trace.empreinte) remues.add(chemin);
   }
-  for (const chemin of avant.keys()) {
+  for (const chemin of avantGit.keys()) {
     if (!apres.has(chemin)) remues.add(chemin);
   }
   return [...remues].sort();
+}
+
+/** Le chemin tel que git l'écrit, quel que soit le système qui l'a lu. */
+function cheminGit(chemin) {
+  return String(chemin).split("\\").join("/");
 }

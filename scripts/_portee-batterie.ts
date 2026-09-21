@@ -43,20 +43,15 @@ export type Portee =
   | { quoi: "suites"; pourquoi: string; suites: string[] };
 
 /**
- * Le même chemin, écrit d'une seule façon.
+ * Une suite, et rien d'autre : `scripts/test-…​.ts`, jouée telle quelle.
  *
- * L'empreinte rend des chemins de la machine — `scripts\test-x.ts` sous
- * Windows. Ce qu'on en fait est une **commande à recopier** : une barre
- * inversée y est un caractère d'échappement, et la commande ne marche pas.
- * On normalise donc AVANT de comparer et avant d'écrire, jamais après.
+ * Les chemins arrivent déjà écrits comme git les écrit — c'est l'empreinte qui
+ * s'en charge, à la source (`_empreinte-des-sources.mjs`). Une normalisation
+ * ici serait une seconde façon de le dire, et elle a existé : elle masquait le
+ * défaut à cet endroit pendant que trois suites rougissaient ailleurs.
  */
-function chemin_(chemin: string): string {
-  return chemin.split("\\").join("/");
-}
-
-/** Une suite, et rien d'autre : `scripts/test-…​.ts`, jouée telle quelle. */
 function estUneSuite(chemin: string): boolean {
-  return /^scripts\/test-[^/]+\.(ts|mts)$/.test(chemin_(chemin));
+  return /^scripts\/test-[^/]+\.(ts|mts)$/.test(chemin);
 }
 
 /**
@@ -83,7 +78,7 @@ export function porteeDuLot(remues: string[]): Portee {
         suites.length === 1
           ? "une seule suite a changé, et rien d'autre"
           : `${suites.length} suites ont changé, et rien d'autre`,
-      suites: suites.map(chemin_).sort(),
+      suites: [...suites].sort(),
     };
   }
 

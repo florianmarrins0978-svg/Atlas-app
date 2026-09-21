@@ -32367,7 +32367,60 @@ plus restrictif que nécessaire. Lui envoyer une seconde liste apprendrait
 quelque chose de plus du planning de son artisan : cela se demande à lui
 (`TODO.md`).
 
-## §396 — Ce qu'il remplit vit sur la page où il remplit
+## §396 — Mesuré sur son PC : bash répond, et treize suites tombaient quand même
+
+**Le §390 le disait sans l'avoir vu** : sur Windows, `bash` livré avec Git est
+parfois sur le chemin. Il l'est, `gh` et `curl` aussi. Joué sur son PC le
+20 septembre 2026, le mécanisme des outils n'a fait taire que les trois suites
+qui appellent `npx` (`npx.cmd` là-bas, donc `ENOENT` sans shell) ; **treize
+autres rougissaient**, et aucune sur un outil. Quatre racines, toutes
+corrigées là où elles partent :
+
+| La racine | Les suites qu'elle faisait rougir | Ce qui a été fait |
+|---|---|---|
+| `empreinteDesSources` rendait `src\lib\x.ts` (`path.relative`), et trois couches en aval compensaient avec `replace(/\/g, "/")` | `batterie-solitaire`, `garde-fusion-main`, `mise-a-jour-role-db` | l'empreinte écrit les chemins comme git les écrit, à la source ; `fichiersRemues` relit les verdicts déjà déposés (barres inversées) sans faire passer l'arbre entier pour remué ; les couches de `_portee-batterie.ts` et `_ce-qui-a-bouge.mjs` sont retirées |
+| son git pose `core.autocrlf=true` : un dépôt d'essai monté par une suite y reçoit des fins de ligne CRLF, et le contenu « change » sans qu'on l'ait touché | `garde-fusion-main`, `mise-a-jour-espace`, `migrations-banc` | les dépôts d'essai qui modèlent son espace Linux se montent avec `core.autocrlf=false`, **avant** le premier checkout ; le lecteur de `demarrer.sh` mesure la structure, pas la fin de ligne |
+| `test-secret-authentification-db` lisait `DATABASE_APP_URL`, que personne ne pose : dans un atelier autre que le premier, le décor et l'interrogation ne visaient pas la même base | `secret-authentification-db` (cinq rouges) | `DATABASE_URL`, comme toute suite base — invisible en CI, qui n'a qu'un atelier |
+| Windows n'a **ni groupes de processus** (`process.kill(-pid)`), **ni scripts exécutables par leur première ligne** (`#!/bin/sh` + `chmod`), **ni `PATH` séparé par `:`** | `fiche-pendant-relance`, `port-remesure`, `verrou-construction`, `relance-construction`, `ouvrir-port`, `ouvrir-session` | `exigerUnSystemePosix(…)`, même règle que pour un outil : le mécanisme se déclare, la machine se demande, le silence nomme les deux |
+
+Et une cinquième, qui n'a rien de Windows : `test-version-executee` exigeait le
+nom de la branche dans la ligne de version, donc « HEAD » dans un dossier de
+batterie détaché — l'état que `CLAUDE.md` §6 recommande. Elle mesure désormais
+l'autre moitié de la règle : un arbre détaché n'affiche **aucune** branche.
+
+**Ce qui tient la nouvelle déclaration**, comme la première : un mécanisme
+déclaré doit laisser sa trace dans le code de la suite (`MECANISMES_POSIX`
+porte le motif de chacun), un nom inconnu est refusé, et la fonction est pure —
+on lui montre « win32 » sans avoir de PC Windows sous la main.
+
+**Ce que ça laisse derrière.** Quand une de ces suites tourne sur Windows sans
+la déclaration — c'est ce qui s'est passé pendant la mesure —, le veilleur
+d'essai qu'elle lance **survit** à la suite : `process.kill(-pid)` n'a rien tué,
+et il continue de publier dans un dossier temporaire. Six processus `bash` de
+cette espèce sont restés sur son PC après la première mesure ; ils s'arrêtent
+par leur PID, jamais par leur nom (`CLAUDE.md` §6).
+
+## §397 — Le garde-fou qui juge une poussée est celui du dossier VISÉ
+
+**Bloqué le 21 septembre 2026, à 5 h**, sur le dernier lot de la nuit : batterie
+verte, aucune régression nouvelle, garde-fou joué depuis le dossier du lot
+disant « fusion ouverte » — et la poussée refusée. Le déclencheur de
+`.claude/settings.json` lance `${CLAUDE_PROJECT_DIR}/scripts/garde-fusion-main.mjs`,
+c'est-à-dire le garde-fou **du dossier où la session a été ouverte**. Ce
+dossier-là était en retard de douze commits ; son garde-fou d'hier ne savait pas
+lire l'empreinte que le lot écrit depuis §396, et voyait « le lot a changé ».
+
+Le garde-fou mesure déjà le dossier que la commande vise (§370,
+`dossierDeLaCommande`) ; il doit aussi **être** celui de ce dossier. Quand la
+commande vise un autre dossier qui porte son propre `garde-fusion-main.mjs`,
+celui de la session lui délègue — même entrée, même verdict rendu tel quel — et
+là-bas, session et dossier coïncident : pas de seconde délégation. Un délégué
+qui ne rend pas de statut ferme la porte.
+
+`test-garde-fusion-main.ts` le tient (« une poussée depuis un AUTRE dossier est
+jugée par le garde-fou de ce dossier-là »), vu rouge sans la délégation.
+
+## §398 — Ce qu'il remplit vit sur la page où il remplit
 
 **Sa correction du 21 septembre 2026, planche en main** (`appli/facture-remplir-acquittee.html`) :
 *« À corriger : le + main d'œuvre et + règlement reçu. Le bouton facture

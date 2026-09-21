@@ -3,12 +3,13 @@ import { spawn, execFileSync } from "node:child_process";
 import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { exigerLesOutils } from "./_outil-requis";
+import { exigerLesOutils, exigerUnSystemePosix } from "./_outil-requis";
 
 // **Sans ces outils, cette suite ne mesure RIEN** — elle le dit et sort du
 // compte, au lieu de rougir sur une machine qui n'y est pour rien
 // (`_outil-requis.ts`, sa colère du 20 septembre 2026).
 exigerLesOutils("bash", "curl", "sleep");
+exigerUnSystemePosix("groupes de processus");
 
 // **« L'appli ne se lance plus » — sa nuit du 30 au 31 août 2026, 1 h 07.**
 //

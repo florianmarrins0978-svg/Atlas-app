@@ -76,7 +76,13 @@ function monterEspace(): { distant: string; espace: string; racine: string } {
   git(source, "remote", "add", "origin", distant);
 
   const espace = path.join(racine, "espace");
-  execFileSync("git", ["clone", "--quiet", distant, espace]);
+  // Son espace est sous Linux. Sur son PC, git pose `core.autocrlf=true` et
+  // le code récupéré arrivait en CRLF : « version 2\r\n » contre « version
+  // 2\n », un rouge sur une mise à jour juste (20 septembre 2026). Le réglage
+  // se pose AVANT le premier checkout, sinon celui-ci écrit déjà du CRLF que
+  // le réglage suivant tient pour une modification non enregistrée.
+  execFileSync("git", ["-c", "core.autocrlf=false", "clone", "--quiet", distant, espace]);
+  git(espace, "config", "core.autocrlf", "false");
   return { distant, espace, racine };
 }
 

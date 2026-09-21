@@ -1,0 +1,927 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>La fiche de sécurité</title>
+<!--
+  ════════════════════════════════════════════════════════════════════════════
+  LA FICHE DE SÉCURITÉ — la fiche d'intervention du décret 2021-1833, sur la
+  fiche du jour. Planche du 21 septembre 2026.
+
+  SA CORRECTION DU 21 SEPTEMBRE, devant la première version nommée « Fiche
+  d'élagage » : *« faut pas l'appeler fiche d'élagage, les utilisateurs ne
+  font pas que ça, ils font du paysage aussi et la création de l'entretien »*.
+  Le décret ne vise que l'élagage et l'abattage, mais le NOM à l'écran ne le
+  dit pas : « Fiche de sécurité ». « Fiche d'intervention », le mot du
+  formulaire, est déjà pris par la fiche du jour — deux fiches du même nom
+  sur le même écran, personne ne saurait laquelle ouvrir.
+
+  SA DEMANDE : *« en élagage il y a besoin de faire des fiches avant
+  l'intervention, apparemment c'est devenu obligatoire — renseigne-toi »*.
+  La recherche vit dans `docs/fiche-intervention-elagage.md` (branche
+  claude/fiches-elagage-legal-iom2to). Le décret et la notice MSA ont été lus à
+  la source le 21 septembre : art. R. 717-85-16 du code rural, fiche établie
+  AVANT les travaux, format libre, dématérialisée admise, signée par le chef
+  d'entreprise, conservée deux ans.
+
+  ─── SES SIX RÉPONSES DU 21 SEPTEMBRE, qui dessinent cette planche ────────
+
+  1. Équipe : avec des salariés — « et des fois je travaille seul ».
+     → le nombre de travailleurs vient du planning ; seul, c'est 1.
+  2. Donneur d'ordre : « pas toujours » le client du devis.
+     → deux choix : le client du devis, ou quelqu'un d'autre (à saisir).
+  3. Quand : « au bon vouloir de l'utilisateur, certains ne vont pas vouloir
+     la remplir » ; « si c'est en arrivant sur le chantier, tu la mets sur la
+     page de la fiche du jour ». Et le même jour : « je veux qu'elle soit
+     disponible partout, sur tous les chantiers — des fois ça peut être un
+     chantier d'entretien avec juste un peu d'élagage ».
+     → un bandeau « Fiche de sécurité » sur la fiche du jour de CHAQUE
+       chantier, au-dessus de « Travaux à faire ». Rien d'imposé, rien
+       d'automatique.
+  4. Signature : au doigt, à chaque fiche.
+  5. Plan de prévention : « oui, un bouton pour l'envoyer ».
+  6. Plus de vingt chantiers par an.
+     → ce qu'Atlas sait déjà est posé (chantier, devis, adresse, dates,
+       équipe, téléphone) ; tout le reste est vide.
+
+  ─── LA RÈGLE QUI PRIME : RIEN NE SE PRÉ-COCHE ─────────────────────────────
+
+  Une fiche de sécurité qui affirme à tort qu'un risque est couvert est pire
+  qu'une fiche absente — c'est lui qui la signe. Aucune case n'est cochée
+  d'avance ; les lignes du devis sont MONTRÉES au-dessus des travaux à cocher
+  (la notice MSA demande la « cohérence avec le devis »), jamais cochées.
+  Ce qui reste vide se dit avant la signature, et la signature reste possible :
+  c'est sa fiche, et c'est lui qui décide (réponse 3).
+
+  Les libellés sont ceux du formulaire MSA réf. 12350, recopiés — pas
+  reformulés — pour qu'un contrôleur retrouve son formulaire.
+
+  ─── LES COULEURS ET LES MESURES ─────────────────────────────────────────
+
+  Celles de la sixième planche, codée le 20 septembre : or #B98B47, teinte
+  #ece9e1, carte #faf9f5, encre #1c1c1a, vert pin #2f3b2f, vert plein #7d9a6d.
+  Nuit : l'accent plein devient CLAIR. Toutes les cibles font 44 px au moins.
+
+  RIEN N'EST CODÉ.
+  ════════════════════════════════════════════════════════════════════════════
+-->
+<style>
+  :root{
+    --scene:#e6e3dc; --fond:#f5f3ee; --carte:#faf9f5; --teinte:#ece9e1; --encre:#1c1c1a;
+    --encre-douce:#4a4a44; --gris:#8a8578; --or:#B98B47; --or-texte:#8b6835; --plein:#7d9a6d; --sur-plein:#faf9f5;
+    --pin:#2f3b2f; --trait:rgba(28,28,26,.12); --trait-doux:rgba(28,28,26,.07);
+    --ombre:rgba(28,28,26,.07); --ombre-forte:rgba(20,18,14,.18); --or-voile:rgba(185,139,71,.10);
+    --vert-pale:#b9c6b4; --vert-voile:rgba(125,154,109,.16); --or-papier:rgba(185,139,71,.13);
+  }
+  body.nuit{
+    --scene:#070908; --fond:#101210; --carte:#1a1d19; --teinte:#151814; --encre:#e9e8de;
+    --encre-douce:#c1c2b6; --gris:#84887b; --or:#C9A05E; --or-texte:#d9b676; --plein:#e9e8de; --sur-plein:#101210;
+    --pin:#b9c6b4; --trait:rgba(233,232,222,.14); --trait-doux:rgba(233,232,222,.08);
+    --ombre:rgba(0,0,0,.35); --ombre-forte:rgba(0,0,0,.6); --or-voile:rgba(201,160,94,.14);
+    --vert-pale:#4f5f4c; --vert-voile:rgba(185,198,180,.12); --or-papier:rgba(201,160,94,.16);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;background:var(--scene)}
+  body{font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--encre);
+       -webkit-text-size-adjust:100%;padding:0 0 48px;font-variant-numeric:tabular-nums}
+  ::selection{background:var(--or-voile);color:var(--encre)}
+  button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;text-align:left}
+  button:focus-visible,textarea:focus-visible,input:focus-visible{outline:2px solid var(--or);outline-offset:3px;border-radius:4px}
+
+  .commandes{display:flex;justify-content:center;gap:22px;padding:16px 16px 0;font-size:13px;flex-wrap:wrap}
+  .commandes button{min-height:40px;color:var(--gris)}
+  .commandes button[aria-pressed="true"]{color:var(--encre);text-decoration:underline;
+                                        text-decoration-color:var(--or);text-underline-offset:6px}
+
+  .scene{display:flex;flex-direction:column;align-items:center;padding:0 16px}
+  .tel{width:100%;max-width:390px;height:760px;user-select:none;-webkit-user-select:none;margin:14px auto 0;background:var(--fond);
+       border-radius:30px;overflow:hidden;box-shadow:0 18px 46px var(--ombre-forte);
+       display:flex;flex-direction:column;position:relative}
+  .ecran{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;padding:20px 16px 24px;
+         scrollbar-width:thin;scrollbar-color:var(--trait) transparent}
+  @media (max-width:420px){.tel{border-radius:22px;margin-top:10px}}
+
+  /* ─── la carte du jour — la sixième, telle qu'elle est codée ─── */
+  .fiche{background:var(--carte);border-radius:14px;border:1px solid var(--trait-doux);
+         box-shadow:0 6px 20px var(--ombre);padding:16px 16px 8px}
+  .titre{margin:0;text-align:center;font:600 11px/1 inherit;letter-spacing:.14em;text-transform:uppercase}
+  .filet{margin:14px 0 2px;border:0;border-top:1px solid var(--trait)}
+  .actions{display:flex;justify-content:flex-end;gap:14px;min-height:44px;align-items:center;font:700 14.5px/1 inherit}
+  .actions button{min-height:44px;color:var(--encre)}
+  .chantier{padding:8px 0 2px}
+  .chantier .nom{margin:0;font:400 20px/1.2 ui-serif,Georgia,serif}
+  .chantier .ou{margin:1px 0 0;font-size:13px;color:var(--gris)}
+  .chantier .duree{margin:1px 0 4px;font-size:13px;color:var(--or)}
+  .demi{display:flex;min-height:44px;align-items:center;gap:18px;font:600 11px/1 inherit;letter-spacing:.16em;text-transform:uppercase}
+  .demi .a{display:flex;align-items:center;gap:12px;min-width:112px}
+  .demi .b{font:400 14.5px/1.4 inherit;letter-spacing:0;text-transform:none}
+  .demi .b .plus{color:var(--or);margin-left:6px}
+  .pastille{width:16px;height:16px;border-radius:4px;flex:none;background:var(--pin)}
+
+  .feuille{margin:10px 0 6px;padding:16px 12px 14px;border-radius:14px;background:var(--carte);
+           border:2px solid var(--or);box-shadow:0 2px 10px var(--ombre)}
+  .feuille .sur{margin:0;text-align:center;font:700 10.5px/1 inherit;letter-spacing:.22em;text-transform:uppercase;color:var(--or)}
+  .feuille .qui{margin:10px 0 0;text-align:center;font:400 22px/1.15 ui-serif,Georgia,serif}
+  .feuille .part{margin:14px 0 0;padding-top:14px;border-top:1px solid var(--trait-doux)}
+  .feuille .part.sans-filet{border-top:0;padding-top:0}
+  .feuille .etiquette{margin:0 0 8px;font:600 10px/1 inherit;letter-spacing:.16em;text-transform:uppercase;color:var(--encre)}
+  .barre-gestes{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));margin-top:14px;gap:6px}
+  .cellule{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;min-height:78px;
+           padding:8px 4px;font-size:11.5px;line-height:1.15;text-align:center;color:var(--encre);
+           border-radius:12px;background:var(--teinte);box-shadow:inset 0 0 0 1px var(--trait-doux);transition:background .15s}
+  .cellule > span:not(.disque){display:flex;align-items:center;min-height:2.3em}
+  .cellule:active{background:var(--or-voile)}
+  .disque{display:grid;place-items:center;height:30px;flex:none}
+  .disque.d-vert{color:var(--pin)} .disque.d-or{color:var(--or)}
+  .note-cadre{display:block;width:100%;min-height:78px;padding:10px 12px;border:0;border-radius:10px;
+              background:var(--or-papier);box-shadow:inset 0 0 0 1px rgba(185,139,71,.22);color:var(--encre);resize:none;
+              font-family:inherit;font-size:16px;line-height:1.45;caret-color:var(--or);transition:box-shadow .15s}
+  .note-cadre::placeholder{color:var(--gris);opacity:1}
+  .note-cadre:focus{outline:0;box-shadow:inset 0 0 0 1.5px var(--or)}
+  .pdf{display:block;width:max-content;margin:10px auto 0;padding:8px 12px 2px;font-size:14px;font-weight:700;color:var(--encre)}
+
+  .bandeau{border-radius:12px;background:var(--carte);box-shadow:inset 0 0 0 1px var(--trait);overflow:hidden;margin-top:10px}
+  .bandeau:first-child{margin-top:0}
+  .tete{display:flex;width:100%;align-items:center;gap:10px;min-height:54px;padding:0 14px 0 16px;background:var(--vert-voile)}
+  .tete .tete-mot{flex:1;min-width:0;font:400 16px/1.2 ui-serif,Georgia,serif;color:var(--pin)}
+  .tete .tete-compte{flex:none;font-size:12.5px;color:var(--pin);font-weight:600}
+  .tete .chev{flex:none;color:var(--pin);transition:transform .28s cubic-bezier(.2,.7,.2,1)}
+  .bandeau.ouvert .tete .chev{transform:rotate(180deg)}
+  .bandeau:active .tete{background:var(--or-voile)}
+  .pli{display:grid;grid-template-rows:0fr;transition:grid-template-rows .3s cubic-bezier(.2,.7,.2,1)}
+  .bandeau.ouvert .pli{grid-template-rows:1fr}
+  .pli .dedans{min-height:0;overflow:hidden;padding:0 14px}
+  .bandeau.ouvert .pli .dedans{padding-bottom:14px}
+  /* le bandeau de la fiche de sécurité : l'or, celui de ce qui se lit et se signe */
+  .bandeau.securite .tete{background:var(--or-papier)}
+  .bandeau.securite .tete .tete-mot,.bandeau.securite .tete .tete-compte,.bandeau.securite .tete .chev{color:var(--or-texte)}
+  body.nuit .bandeau.securite .tete .tete-mot,body.nuit .bandeau.securite .tete .tete-compte,body.nuit .bandeau.securite .tete .chev{color:var(--or)}
+  .bandeau .cases{padding-top:10px}
+  .bandeau .vert{margin-top:14px}
+  .bandeau .ligne{margin:12px 0 0;font-size:14px;line-height:1.45;color:var(--encre-douce)}
+  .bandeau .ligne b{color:var(--encre);font-weight:600}
+  .bandeau .deux-boutons{display:flex;gap:8px;margin-top:12px}
+  .bandeau .deux-boutons .vert{margin:0;flex:1;padding:0 10px;font-size:14.5px}
+  .bandeau .deux-boutons .vert.creux{background:transparent;color:var(--pin);box-shadow:inset 0 0 0 1.5px var(--vert-pale)}
+  body.nuit .bandeau .deux-boutons .vert.creux{color:var(--encre)}
+
+  .case{display:flex;width:100%;align-items:flex-start;gap:12px;min-height:44px;padding:7px 0;font-size:14.5px;line-height:1.45}
+  .case .rond{flex:none;width:24px;height:24px;border-radius:50%;background:var(--carte);
+              box-shadow:inset 0 0 0 1.5px var(--vert-pale);display:grid;place-items:center;color:transparent;margin-top:-1px;
+              transition:background .18s,box-shadow .18s}
+  .case[aria-pressed="true"] .rond{background:var(--plein);box-shadow:none;color:var(--sur-plein)}
+  .case[aria-pressed="true"] .quoi{color:var(--gris)}
+  .case .quoi{flex:1;min-width:0}
+  .cases.serree .case{padding:6px 0}
+  .photos{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:8px}
+  .photos .etiquette{margin:0 4px 0 0}
+  .photos .vignette,.photos .ajouter{width:46px;height:46px;border-radius:9px;flex:none;box-shadow:inset 0 0 0 1px var(--trait);cursor:pointer}
+  .photos .vignette{background:var(--pin);opacity:.55}
+  .photos .ajouter{display:grid;place-items:center;background:var(--vert-voile);color:var(--pin);box-shadow:inset 0 0 0 1px var(--vert-pale)}
+
+  .vert{display:flex;width:max-content;max-width:100%;min-height:46px;margin:16px auto 0;padding:0 26px;
+        align-items:center;justify-content:center;gap:9px;border-radius:999px;background:var(--plein);
+        color:var(--sur-plein);font:400 15.5px/1 ui-serif,Georgia,serif;transition:filter .15s,opacity .2s}
+  .vert:active{filter:brightness(.94)}
+  .vert.doux{opacity:.45}
+  .parti{display:flex;align-items:center;gap:12px;min-height:52px;margin-top:14px;padding:10px 16px;
+         border-radius:12px;background:var(--vert-voile);box-shadow:inset 0 0 0 1px var(--vert-pale)}
+  .parti .rond{width:19px;height:19px;border-radius:50%;background:var(--plein);color:var(--sur-plein);display:grid;place-items:center;flex:none}
+  .parti .mot{display:block;font:400 15px/1.15 ui-serif,Georgia,serif;color:var(--pin)}
+  body.nuit .parti .mot{color:var(--encre)}
+  .parti .ou{display:block;margin-top:1px;font-size:11.5px;color:var(--gris);line-height:1.35}
+
+  .barre{flex:none;display:grid;grid-template-columns:repeat(5,1fr);height:64px;
+         background:var(--carte);border-top:1px solid var(--trait);padding-bottom:6px}
+  .barre span{display:flex;align-items:end;justify-content:center;padding-bottom:12px;font-size:11px;color:var(--gris)}
+  .barre span.actif{color:var(--encre);font-weight:600}
+
+  /* ═══ LA FICHE DE SÉCURITÉ — six écrans, l'un après l'autre ═══ */
+  .entete{flex:none;display:flex;align-items:center;gap:6px;min-height:58px;padding:8px 10px 0 4px;background:var(--fond)}
+  .entete .retour{display:grid;place-items:center;width:44px;height:44px;color:var(--pin);flex:none}
+  .entete .quoi{flex:1;min-width:0;line-height:1.15}
+  .entete .quoi .grand{display:block;font:400 17px/1.15 ui-serif,Georgia,serif}
+  .entete .quoi .petit{display:block;font-size:12px;color:var(--gris);margin-top:1px}
+  .entete .ou{flex:none;font-size:12.5px;color:var(--or-texte);font-weight:600}
+  body.nuit .entete .ou{color:var(--or)}
+  .avancee{flex:none;display:grid;grid-template-columns:repeat(6,1fr);gap:4px;padding:8px 16px 0}
+  .avancee i{display:block;height:3px;border-radius:2px;background:var(--trait)}
+  .avancee i.fait{background:var(--or)}
+  .avancee i.la{background:var(--pin)}
+  .etape{padding-top:14px}
+  .etape h2{margin:0 0 4px;font:400 24px/1.15 ui-serif,Georgia,serif}
+  .etape .sous{margin:0 0 14px;font-size:13px;color:var(--gris)}
+  .bloc{margin-top:16px;padding-top:14px;border-top:1px solid var(--trait-doux)}
+  .bloc:first-of-type{border-top:0;padding-top:0;margin-top:8px}
+  .bloc .etiquette{margin:0 0 8px;font:600 10px/1 inherit;letter-spacing:.16em;text-transform:uppercase;color:var(--encre)}
+  .bloc .etiquette .doux{font-weight:500;letter-spacing:.02em;text-transform:none;color:var(--gris);margin-left:6px;font-size:11.5px}
+  .bloc .aide{margin:-4px 0 10px;font-size:12.5px;color:var(--gris);line-height:1.45}
+  .bloc .aide b{color:var(--encre-douce);font-weight:600}
+  .bloc .aide.explication{color:var(--encre-douce);font-size:14px;margin:-2px 0 12px}
+
+  .champ{display:block;margin-top:10px}
+  .champ:first-child{margin-top:0}
+  .champ .nom{display:block;font-size:12.5px;color:var(--gris);margin-bottom:3px}
+  .champ input,.champ textarea{user-select:text;-webkit-user-select:text;display:block;width:100%;min-height:46px;padding:10px 12px;border:0;border-radius:10px;
+        background:var(--carte);box-shadow:inset 0 0 0 1px var(--trait);color:var(--encre);
+        font-family:inherit;font-size:16px;line-height:1.4;caret-color:var(--or);resize:none;transition:box-shadow .15s}
+  .champ input::placeholder,.champ textarea::placeholder{color:var(--gris);opacity:1}
+  .champ input:focus,.champ textarea:focus{outline:0;box-shadow:inset 0 0 0 1.5px var(--or)}
+  .champ input[type="time"]{font-variant-numeric:tabular-nums;-webkit-appearance:none;appearance:none}
+  .champ input[type="time"]::-webkit-calendar-picker-indicator{opacity:.55}
+  .champ .fixe{display:flex;align-items:center;min-height:46px;padding:10px 12px;border-radius:10px;background:var(--teinte);
+               box-shadow:inset 0 0 0 1px var(--trait-doux);font-size:16px;line-height:1.4;color:var(--encre)}
+  .champ .fixe.vide{color:var(--gris);font-style:italic}
+  .deux-champs{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .deux-champs .champ{margin-top:10px}
+
+  /* le choix à deux : deux cases larges, une seule enfoncée */
+  .choix{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:4px}
+  .choix button{display:flex;align-items:center;justify-content:center;min-height:46px;padding:6px 10px;border-radius:10px;
+                background:var(--carte);box-shadow:inset 0 0 0 1px var(--trait);font-size:14.5px;text-align:center;line-height:1.2;color:var(--encre)}
+  .choix button[aria-pressed="true"]{background:var(--vert-voile);box-shadow:inset 0 0 0 1.5px var(--pin);color:var(--pin);font-weight:600}
+  body.nuit .choix button[aria-pressed="true"]{color:var(--encre)}
+
+  /* les pastilles à cocher : plusieurs à la fois, 44 px de haut */
+  .pastilles{display:flex;flex-wrap:wrap;gap:6px}
+  .pastilles button{display:inline-flex;align-items:center;gap:7px;min-height:44px;padding:8px 14px 8px 12px;border-radius:999px;
+                    background:var(--carte);box-shadow:inset 0 0 0 1px var(--trait);font-size:14px;line-height:1.2;color:var(--encre);
+                    transition:background .15s,box-shadow .15s}
+  .pastilles button .p{width:18px;height:18px;border-radius:50%;flex:none;box-shadow:inset 0 0 0 1.5px var(--vert-pale);display:grid;place-items:center;color:transparent}
+  .pastilles button[aria-pressed="true"]{background:var(--vert-voile);box-shadow:inset 0 0 0 1.5px var(--plein)}
+  .pastilles button[aria-pressed="true"] .p{background:var(--plein);box-shadow:none;color:var(--sur-plein)}
+  .pastilles .plus,.cases .plus{display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:8px 14px 8px 10px;border-radius:999px;
+                     background:var(--vert-voile);color:var(--pin);box-shadow:inset 0 0 0 1px var(--vert-pale);font-size:14px}
+  .cases .plus{margin-top:4px}
+  body.nuit .pastilles .plus,body.nuit .cases .plus{color:var(--encre)}
+  .ajout{display:flex;gap:8px;margin-top:8px}
+  .ajout input{flex:1;min-width:0;min-height:46px;padding:10px 12px;border:0;border-radius:10px;background:var(--carte);
+               box-shadow:inset 0 0 0 1px var(--or);color:var(--encre);font:inherit;caret-color:var(--or)}
+  .ajout input::placeholder{color:var(--gris);opacity:1}
+  .ajout .vert{margin:0;padding:0 18px;min-height:46px;font-size:15px}
+  .compteur{display:flex;align-items:center;gap:10px}
+  .compteur button{width:46px;height:46px;border-radius:10px;background:var(--carte);box-shadow:inset 0 0 0 1px var(--trait);display:grid;place-items:center;color:var(--pin)}
+  .compteur .n{font:400 24px/1 ui-serif,Georgia,serif;min-width:34px;text-align:center}
+  .compteur .qui{font-size:12.5px;color:var(--gris);flex:1;line-height:1.35}
+
+  .rappel{margin-top:10px;padding:10px 12px;border-radius:10px;background:var(--or-papier);font-size:13.5px;line-height:1.5;color:var(--encre-douce)}
+  .rappel b{color:var(--encre);font-weight:600}
+  .rappel table{border-collapse:collapse;width:100%}
+  .rappel td{padding:2px 0;vertical-align:top}
+  .rappel td:last-child{text-align:right;font-weight:600;color:var(--encre)}
+  .consignes{margin:0;padding:0;list-style:none;counter-reset:c}
+  .consignes li{position:relative;padding:4px 0 4px 26px;font-size:14px;line-height:1.45;counter-increment:c}
+  .consignes li::before{content:counter(c);position:absolute;left:0;top:5px;width:18px;height:18px;border-radius:50%;
+                        background:var(--or-papier);color:var(--or-texte);font-size:11px;font-weight:700;display:grid;place-items:center}
+  .urgence{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:8px}
+  .urgence a{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:56px;border-radius:10px;
+             background:var(--carte);box-shadow:inset 0 0 0 1px var(--trait);text-decoration:none;color:var(--encre)}
+  .urgence a b{font:400 20px/1 ui-serif,Georgia,serif}
+  .urgence a span{font-size:10px;color:var(--gris);margin-top:3px;text-align:center;line-height:1.1}
+
+  .pied{flex:none;padding:10px 16px 14px;background:var(--fond);border-top:1px solid var(--trait-doux)}
+  .pied .vert{margin:0 auto}
+
+  /* ce qui reste vide, avant de signer — on le dit, on ne bloque pas */
+  .vides{margin:0;padding:0;list-style:none}
+  .vides li{margin:0}
+  .vides button{display:flex;width:100%;align-items:center;gap:10px;min-height:44px;padding:6px 0;font-size:14.5px;color:var(--encre-douce)}
+  .vides button .tiret{width:22px;height:22px;border-radius:50%;flex:none;box-shadow:inset 0 0 0 1.5px var(--trait);display:grid;place-items:center;color:var(--gris)}
+  .vides button .etape-n{margin-left:auto;font-size:12px;color:var(--or-texte);flex:none}
+  body.nuit .vides button .etape-n{color:var(--or)}
+  .tout-la{display:flex;align-items:center;gap:10px;min-height:44px;font-size:14.5px;color:var(--pin)}
+  body.nuit .tout-la{color:var(--encre)}
+  .tout-la .rond{width:22px;height:22px;border-radius:50%;background:var(--plein);color:var(--sur-plein);display:grid;place-items:center;flex:none}
+
+  .signature{position:relative;margin-top:6px;height:170px;border-radius:12px;background:var(--carte);box-shadow:inset 0 0 0 1px var(--trait);overflow:hidden}
+  .signature canvas{display:block;width:100%;height:100%;touch-action:none;cursor:crosshair}
+  .signature .ligne-sig{position:absolute;left:18px;right:18px;bottom:34px;border-top:1px dashed var(--trait);pointer-events:none}
+  .signature .ici{position:absolute;left:0;right:0;bottom:10px;text-align:center;font-size:12px;color:var(--gris);pointer-events:none}
+  .signature.signee .ici{display:none}
+  .effacer{display:block;width:max-content;margin:8px 0 0 auto;min-height:40px;padding:0 4px;font-size:13.5px;font-weight:600;color:var(--encre)}
+
+  .loi{margin:12px 0 0;font-size:15px;line-height:1.5;color:var(--encre)}
+  .loi-liste{margin-top:10px}
+  .loi-liste li{font-size:14.5px}
+  .liens{display:flex;flex-direction:column;gap:8px;margin-top:18px}
+  .liens a{display:flex;align-items:center;min-height:48px;padding:0 16px;border-radius:12px;background:var(--carte);
+           box-shadow:inset 0 0 0 1px var(--trait);color:var(--pin);font-weight:600;text-decoration:none;font-size:15px}
+  body.nuit .liens a{color:var(--encre)}
+  .signee-titre{text-align:center;padding:26px 0 6px}
+  .signee-titre .rond{width:54px;height:54px;border-radius:50%;background:var(--plein);color:var(--sur-plein);display:grid;place-items:center;margin:0 auto 14px}
+  .signee-titre h2{margin:0;font:400 26px/1.15 ui-serif,Georgia,serif}
+  .signee-titre p{margin:6px 0 0;font-size:14px;color:var(--gris)}
+  .signee-liste{margin:18px 0 0;padding:0;list-style:none}
+  .signee-liste li{display:flex;align-items:center;gap:12px;min-height:44px;padding:8px 0;border-top:1px solid var(--trait-doux);font-size:14.5px;line-height:1.4}
+  .signee-liste li:first-child{border-top:0}
+  .signee-liste li .qui{flex:1}
+  .signee-liste li .rond{width:22px;height:22px;border-radius:50%;background:var(--plein);color:var(--sur-plein);display:grid;place-items:center;flex:none}
+
+  @media (prefers-reduced-motion:reduce){.pli,.tete .chev,.vert{transition:none}}
+
+  .note{max-width:430px;margin:26px auto 0;padding:0 22px;font-size:13px;line-height:1.6;color:var(--encre-douce)}
+  .note h2{font:400 20px/1.2 ui-serif,Georgia,serif;color:var(--encre);margin:20px 0 8px}
+  .note p{margin:0 0 10px}
+  .note b{color:var(--encre)}
+  .note a{color:var(--or)}
+  .note table{border-collapse:collapse;width:100%;margin:0 0 12px}
+  .note td{padding:5px 8px 5px 0;vertical-align:top;border-top:1px solid var(--trait-doux)}
+  .note td:first-child{color:var(--encre);width:42%}
+</style>
+</head>
+<body>
+
+<div class="commandes">
+  <button type="button" id="nuit" aria-pressed="false">Voir sur Nuit</button>
+  <button type="button" id="rejouer">Recommencer</button>
+</div>
+
+<div class="scene"><div class="tel" id="tel"></div></div>
+
+<div class="note">
+  <h2>La fiche de sécurité</h2>
+  <p>C’est la fiche d’intervention du décret 2021-1833. Elle est obligatoire avant tout chantier d’élagage ou d’abattage, signée, et gardée deux ans. Elle vit <b>sur la fiche du jour de chaque chantier</b>, dans un bandeau au-dessus de « Travaux à faire », comme vous l’avez dit : un entretien peut porter un peu d’élagage. <b>Essayez</b> : touchez « Fiche de sécurité », remplissez, signez au doigt, envoyez.</p>
+  <h2>Vos réponses, et ce qu’elles font</h2>
+  <table>
+    <tr><td>Avec des salariés, parfois seul</td><td>le nombre de travailleurs vient du planning du jour. Seul, c’est 1.</td></tr>
+    <tr><td>Le donneur d’ordre n’est pas toujours le client</td><td>deux cases : « Le client du devis », ou « Quelqu’un d’autre » avec trois champs vides.</td></tr>
+    <tr><td>Au bon vouloir, à l’arrivée, sur tous les chantiers</td><td>un bandeau sur la fiche du jour de chaque chantier, rien d’imposé. La notice MSA conseille de la préparer dès la visite. Le même bandeau pourra vivre sur la page du chantier, pour la commencer la veille.</td></tr>
+    <tr><td>Signature au doigt</td><td>nom, date, et vous signez sur l’écran. Modifier une fiche signée efface la signature, et vous signez à nouveau.</td></tr>
+    <tr><td>Un bouton pour l’envoyer</td><td>« Transmettre le PDF », une fois signée : la feuille de partage du téléphone s’ouvre (Mail, SMS, WhatsApp) et c’est vous qui envoyez, comme pour le devis. Atlas n’envoie rien tout seul, vous l’avez vérifié. « Plus tard » la garde sans la transmettre, et le bouton reste sur la fiche du jour.</td></tr>
+    <tr><td>Deux ans</td><td>c’est Atlas qui la garde, vous n’avez rien à faire. Le décret admet la fiche dématérialisée. Vous la retrouvez dans Terminés, sur le chantier.</td></tr>
+    <tr><td>Plus de vingt par an</td><td>ce qu’Atlas sait est déjà posé : chantier, devis, adresse, dates, équipe, téléphone. Vous ne ressaisissez rien.</td></tr>
+  </table>
+  <h2>Ce qui ne bouge pas</h2>
+  <table>
+    <tr><td>Rien n’est coché d’avance</td><td>les lignes du devis sont montrées au-dessus des travaux, jamais cochées. Une case cochée par l’appli serait un mensonge que vous signez.</td></tr>
+    <tr><td>Ce qui est vide se dit</td><td>avant de signer, la liste de ce qui manque. Vous signez quand même si vous le voulez : c’est votre fiche.</td></tr>
+    <tr><td>Les mots du formulaire</td><td>recopiés de votre feuille (MSA 12350_A_10/2023), pas reformulés. Un contrôleur retrouve son formulaire.</td></tr>
+    <tr><td>Les exemples en gris</td><td>dans chaque cadre, un « Exemple : … » pris dans la fiche remplie de la notice MSA. Il s’efface dès que vous écrivez.</td></tr>
+    <tr><td>Les heures</td><td>le planning ne les connaît pas. Elles restent à saisir.</td></tr>
+    <tr><td>Chaque partie s’explique</td><td>une phrase sous chaque titre dit quoi remplir et pourquoi, comme à quelqu’un qui n’a jamais vu le formulaire. C’est votre demande du 21 septembre.</td></tr>
+    <tr><td>Ajouter, partout</td><td>le décret ne donne aucune liste : ni matériel, ni arbres, ni risques, ni mesures. Il dit « les risques spécifiques au chantier » et « les mesures de sécurité spécifiques ». Les listes viennent du formulaire MSA, et « Ajouter » met les vôtres au bout de chacune. Ce que vous ajoutez reste pour les fiches suivantes.</td></tr>
+    <tr><td>Rien à cocher dans une catégorie</td><td>ce n’est pas un problème. Pas de co-activité, on ne coche rien. La fiche ne dit « vide » que pour les sept éléments du décret.</td></tr>
+    <tr><td>Ce que demande la loi</td><td>à la première ouverture, un écran le dit en sept lignes, avec deux liens : le décret sur Légifrance, et le formulaire de la MSA. Ensuite il ne revient plus, mais « Ce que demande la loi » reste dans le bandeau. C’est là qu’on dira aussi ce qui est gardé d’une fiche à l’autre.</td></tr>
+    <tr><td>La photo</td><td>l’appareil photo, ou la photothèque : le téléphone propose les deux.</td></tr>
+    <tr><td>Gardé d’une fiche à l’autre</td><td>la main d’œuvre, le lieu de la trousse, les deux textes de la co-activité, les observations, et tout ce que vous ajoutez aux listes. L’écran le dit sous chaque cadre.</td></tr>
+    <tr><td>L’heure</td><td>la roue du téléphone, heures et minutes.</td></tr>
+    <tr><td>La main d’œuvre</td><td>un seul texte, écrit une fois, gardé pour toutes les fiches suivantes, et l’écran le dit. Vous le corrigez quand l’équipe change. C’est votre choix du 21 septembre.</td></tr>
+  </table>
+  <p><b>Rien n’est codé.</b> Dites oui, ou ce qui reste à changer.</p>
+</div>
+
+<script>
+/* ─── ce qu'Atlas sait déjà du chantier — d'après le devis, le planning, les réglages ─── */
+const CHANTIER = {
+  nom: "Pagnol", ou: "Mantes-la-Jolie", adresse: "12 rue des Lilas, 78200 Mantes-la-Jolie",
+  devis: "D-2026-041", jour: "Vendredi 18 septembre", jourCourt: "18 septembre",
+  client: { nom: "Pagnol", prenom: "Marcel", tel: "06 11 22 33 44" },
+  lignes: ["Abattage d’un chêne mort", "Élagage de deux tilleuls", "Broyage et évacuation des rémanents"],
+  equipe: ["Florian", "Antoine", "Julien"],
+};
+const ENTREPRISE = { nom: "Eden Nature", patron: "Florian Marrins", tel: "06 12 34 56 78" };
+
+/* ─── les libellés du formulaire MSA réf. 12350 — recopiés, jamais reformulés ─── */
+const L = {
+  travaux: ["Billonnage", "Broyage", "Évacuation des rémanents", "Rognage / essouchage", "Démontage sans rétention",
+            "Abattage directionnel", "Abattage non directionnel", "Ébranchage", "Éhouppage", "Élagage de formation",
+            "Élagage d’entretien", "Haubanage", "Démontage avec rétention", "Autres"],
+  elevation: ["Nacelle (PEMP)", "PIRL", "EPI de grimper", "Échelle", "Autres"],
+  coupe: ["Tronçonneuse élagueuse", "Tronçonneuse abatteuse", "Lamier d’élagage", "Scie sur perche", "Sécateur", "Autres"],
+  autresMat: ["Broyeur", "Essoucheuse / Rogneuse", "Treuil / Câble", "Mini chargeur", "Souffleur", "Autres"],
+  matieres: ["Repérer la présence de bois morts ou dépérissants sur les sujets à traiter (ou à proximité)",
+             "Évaluer l’état d’ancrage des arbres (enracinement)",
+             "Identifier les affections dangereuses pour la santé et la sécurité des travailleurs (suie, chancre, capricorne, champignon lignivore…)"],
+  bio: ["Chenilles processionnaires", "Frelons sp et autres hyménoptères", "Berce du Caucase, ambroisie sp…", "Tiques sp", "Suie de l’érable", "Chancre du platane", "Autres"],
+  bioMesures: ["EPI appropriés (masque, combinaison, gants…)", "Appel à un spécialiste pour circonscrire le danger", "Certi biocide (si utilisation de produits biocides)", "Autres"],
+  specifiques: ["Balisage externe du chantier vis-à-vis des personnes extérieures avec panneaux d’interdiction d’accès et de signalisation du danger",
+                "Balisage interne au chantier pour limiter les risques de chute d’objet/branche sur l’homme de pied (délimitation organisationnelle)",
+                "Mode / moyen de communication entre travailleurs, à préciser (ex : casques communicants)",
+                "Surveillance de l’accès au chantier (intrusion du public)", "Autres"],
+  reseaux: ["Électrique HTB (U > 50 000 V)", "Électrique HTA (U ≤ 50 000 V)", "Électrique BT (U ≤ 1 000 V)", "Eau, vapeur", "Gaz", "Télécom", "Autres"],
+  reseauxMesures: ["DT-DICT, la déclaration de travaux à proximité des réseaux (chantier à moins de 50 m de conducteurs électriques nus, arrachage d’arbre, creusement de tranchées)",
+                   "AIPR (formulaire)", "Au cas où : formulaire de découverte fortuite de réseau"],
+  env: ["Routier", "Facteurs météo ambiants", "Bruit", "État des sols", "Conditions de vie sur le chantier", "Éclairage", "Vapeurs", "Poussières", "Noyade", "Autres"],
+  envMesures: ["Balisage du chantier sur voie publique", "Adaptation des heures de travail", "Mise à disposition d’eau en quantité suffisante",
+               "Mise à disposition de cabinet d’aisance", "Mise à disposition d’équipements ou de vêtements de travail spécifiques, préciser",
+               "Signal d’alarme (sifflet)", "Équipement individuel de flottaison / barque / bouée de sauvetage",
+               "Plan de prévention (entreprise utilisatrice)", "Autres"],
+  coactivite: ["Co-activité dans la zone de sécurité du chantier", "Entraînement par les éléments mobiles des équipements de travail (rogneuse, broyeur…)",
+               "Projection (avec broyeur, rogneuse…)", "Autres"],
+  orga: ["Répartition des tâches dans le temps et l’espace (travailleur/matériel)", "Respect des consignes de sécurité des machines",
+         "Manuel d’utilisation du matériel", "Mode de communication entre travailleurs", "Autres"],
+  meteo: ["Bulletins d’alerte météorologiques", "Sécuriser les travaux en cours puis arrêter les travaux",
+          "Protéger les zones dangereuses ou potentiellement dangereuses (matérialisation, interdiction d’accès…)", "Prévenir le responsable du chantier ou le chef d’entreprise", "Autres"],
+  secours: ["Trousse de secours (contenu approprié à l’activité)", "Kit d’urgence portatif (élagueur)",
+            "Tous les travailleurs sont SST (Sauveteurs Secouristes du Travail)",
+            "Travailleurs disposant des compétences (type Grimpeur Sauveteur dans l’Arbre) et des moyens pour porter secours à une victime dans l’arbre, en nombre suffisant",
+            "Moyen de communication fonctionnel", "Autres"],
+};
+const ETAPES = ["Le chantier", "Les travaux", "Le terrain", "Réseaux, environnement, météo", "Les secours", "Signer"];
+const ETAPES_COURTES = ["Chantier", "Travaux", "Terrain", "Réseaux", "Secours", "Signer"];
+
+const T = (d, taille = 16) => `<svg width="${taille}" height="${taille}" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+const DESSIN = {
+  maps: `<path d="M10 17.5s-5.5-5-5.5-9a5.5 5.5 0 0 1 11 0c0 4-5.5 9-5.5 9z"/><circle cx="10" cy="8.5" r="2"/>`,
+  waze: `<path d="M16.5 3.5 3.5 9l6 1.5 1.5 6z"/>`,
+  copier: `<rect x="7" y="7" width="9.5" height="9.5" rx="2"/><path d="M13 7V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/>`,
+  appeler: `<path d="M4 3.5h3l1.5 3.5-2 1.2a9 9 0 0 0 5.3 5.3l1.2-2 3.5 1.5v3a1.5 1.5 0 0 1-1.6 1.5A13 13 0 0 1 2.5 5.1 1.5 1.5 0 0 1 4 3.5z"/>`,
+};
+const COCHE = `<svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.4 6.3 11.7 13 5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+const COCHE_GRANDE = `<svg width="26" height="26" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4 10.4 8.2 14.6 16 5.8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+const PLUS = `<svg width="17" height="17" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 4v12M4 10h12" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>`;
+const MOINS = `<svg width="17" height="17" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4 10h12" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>`;
+const CHEV = `<svg class="chev" width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5 8l5 5 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+const RETOUR = `<svg width="22" height="22" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M12.5 4 6.5 10l6 6" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+const APPAREIL = `<svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7.5a1.5 1.5 0 0 1 1.5-1.5H7l1.3-2h3.4L13 6h2.5A1.5 1.5 0 0 1 17 7.5v7a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 3 14.5z"/><circle cx="10" cy="11" r="2.6"/></svg>`;
+const CIBLE = `<svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><circle cx="10" cy="10" r="5.5"/><circle cx="10" cy="10" r="1.6"/><path d="M10 1.5v3M10 15.5v3M1.5 10h3M15.5 10h3"/></svg>`;
+
+const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
+const bouton = (html, onClick, cls) => { const b = el("button", cls, html); b.type = "button"; b.onclick = onClick; return b; };
+
+const tel = document.getElementById("tel");
+let etat;
+function depart() {
+  etat = {
+    ecran: "planning", etape: 1, ficheOuverte: false, travauxOuverts: false, faites: CHANTIER.lignes.map(() => false),
+    f: {
+      commencee: false, vue: 0, loiLue: false,
+      donneur: null, donneurNom: "", donneurPrenom: "", donneurTel: "",
+      gps: "", hDebut: "", hFin: "", horaires: "", responsable: ENTREPRISE.patron, nb: CHANTIER.equipe.length, telIncident: ENTREPRISE.tel,
+      travaux: new Set(), travauxAutres: "", mainOeuvre: "",
+      elevation: new Set(), coupe: new Set(), autresMat: new Set(), materielAutres: "", matieres: new Set(), matieresAutres: "",
+      ajouts: { elevation: [], coupe: [], autresMat: [], matieres: [], travaux: [], bio: [], bioMesures: [], specifiques: [], reseaux: [], reseauxMesures: [], env: [], envMesures: [], coactivite: [], orga: [], meteo: [], secours: [] }, enCours: null,
+      photos: 0, bio: new Set(), bioMesures: new Set(), specifiques: new Set(), specifiquesAutres: "", communication: "",
+      reseaux: new Set(), reseauxMesures: new Set(), env: new Set(), envMesures: new Set(), envPreciser: "", coactivite: new Set(), risquesAutres: "", mesuresAutres: "", orga: new Set(), orgaCommunication: "", meteo: new Set(),
+      secours: new Set(), secoursAutres: "", lieuTrousse: "", prs: "", observations: "",
+      signatureTracee: false, signeeLe: null, envoyee: false,
+    },
+  };
+}
+
+const donneurNom = () => etat.f.donneur === "autre" && etat.f.donneurNom ? `${etat.f.donneurPrenom} ${etat.f.donneurNom}`.trim() : `${CHANTIER.client.prenom} ${CHANTIER.client.nom}`;
+const envoyeeA = () => `Transmise à ${donneurNom()}, le ${CHANTIER.jourCourt}`;
+
+/* ─── ce que la fiche ne sait pas encore — les sept éléments obligatoires du décret, et rien d'autre ─── */
+function manques() {
+  const f = etat.f, m = [];
+  if (f.hDebut === "" && f.hFin === "") m.push({ quoi: "Heures d’exécution", etape: 1 });
+  if (f.donneur === null || (f.donneur === "autre" && f.donneurNom === "")) m.push({ quoi: "Donneur d’ordre", etape: 1 });
+  if (f.travaux.size === 0) m.push({ quoi: "Travaux à réaliser", etape: 2 });
+  if (f.elevation.size + f.coupe.size + f.autresMat.size === 0) m.push({ quoi: "Matériels", etape: 2 });
+  if (f.photos === 0) m.push({ quoi: "Carte / croquis / photo du chantier", etape: 3 });
+  if (f.bio.size + f.specifiques.size + f.reseaux.size + f.env.size + f.coactivite.size === 0 && f.risquesAutres.trim() === "") m.push({ quoi: "Risques spécifiques au chantier", etape: 3 });
+  if (f.bioMesures.size + f.reseauxMesures.size + f.envMesures.size + f.orga.size === 0 && f.mesuresAutres.trim() === "") m.push({ quoi: "Mesures de sécurité", etape: 4 });
+  if (f.meteo.size === 0) m.push({ quoi: "Si le temps tourne", etape: 4 });
+  if (f.secours.size === 0) m.push({ quoi: "Organisation des secours", etape: 5 });
+  if (f.prs.trim() === "") m.push({ quoi: "Point de Rencontre des Secours", etape: 5 });
+  if (f.lieuTrousse.trim() === "") m.push({ quoi: "Lieu où se trouve la trousse de secours", etape: 5 });
+  return m;
+}
+
+/* ═══ L'ÉCRAN DU PLANNING — la fiche du jour, la sixième ═══ */
+function planning() {
+  const avant = tel.querySelector(".ecran"); const y = avant ? avant.scrollTop : 0;
+  tel.innerHTML = `<div class="ecran"><div class="fiche">
+      <p class="titre">${CHANTIER.jour}</p><hr class="filet">
+      <div class="chantier"><p class="nom">${CHANTIER.nom}</p><p class="ou">${CHANTIER.ou}</p><p class="duree">une journée</p>
+        <div class="demi"><span class="a"><span class="pastille"></span>Matin</span><span class="b">Antoine / Julien<span class="plus" aria-hidden="true">+</span></span></div>
+        <div class="demi"><span class="a"><span class="pastille"></span>Après-midi</span><span class="b">Antoine / Julien<span class="plus" aria-hidden="true">+</span></span></div>
+        <div class="actions"><button type="button">Déplacer</button><button type="button">Retirer</button></div></div>
+      <section class="feuille" aria-label="Fiche d’intervention"></section>
+      <div class="chantier"><p class="nom">Mr. Julien</p><p class="ou">Vernouillet</p><p class="duree">8 jours</p></div>
+    </div></div>
+    <div class="barre" aria-hidden="true"><span>Chantiers</span><span class="actif">Planning</span><span>Terminés</span><span>Paysage</span><span>Réglages</span></div>`;
+  const f = tel.querySelector(".feuille");
+  f.appendChild(el("p", "sur", "Fiche d’intervention"));
+  f.appendChild(el("p", "qui", CHANTIER.nom));
+  const g = el("div", "barre-gestes");
+  const disque = (d, teinte) => `<span class="disque ${teinte}" aria-hidden="true">${T(d, 22)}</span>`;
+  g.appendChild(bouton(`${disque(DESSIN.maps, "d-vert")}<span>Maps</span>`, () => {}, "cellule"));
+  g.appendChild(bouton(`${disque(DESSIN.waze, "d-vert")}<span>Waze</span>`, () => {}, "cellule"));
+  g.appendChild(bouton(`${disque(DESSIN.copier, "d-or")}<span>Copier l’adresse</span>`, () => {}, "cellule"));
+  g.appendChild(bouton(`${disque(DESSIN.appeler, "d-vert")}<span>Appeler le client</span>`, () => {}, "cellule"));
+  f.appendChild(g);
+
+  const n = el("div", "part", `<p class="etiquette">Ma note</p>`);
+  const t = el("textarea", "note-cadre"); t.rows = 3; t.placeholder = "Penser à prendre le broyeur. Client dispo à partir de 9 h.";
+  n.appendChild(t); f.appendChild(n);
+
+  const p = el("div", "part sans-filet");
+
+  /* ─── LE BANDEAU « FICHE DE SÉCURITÉ » — avant les travaux, parce qu'elle se
+     remplit avant de commencer. Fermé, il dit où on en est. ─── */
+  {
+    const fe = etat.f, mq = manques();
+    const compte = fe.signeeLe ? (fe.envoyee ? "envoyée" : "signée") : !fe.commencee ? "à remplir" : `${fe.vue} sur 6`;
+    const b = el("div", "bandeau securite" + (etat.ficheOuverte ? " ouvert" : ""));
+    const tete = bouton(`<span class="tete-mot">Fiche de sécurité</span><span class="tete-compte">${compte}</span>${CHEV}`,
+      () => { etat.ficheOuverte = !etat.ficheOuverte; planning(); }, "tete");
+    tete.setAttribute("aria-expanded", String(etat.ficheOuverte));
+    b.appendChild(tete);
+    const pli = el("div", "pli"); const dedans = el("div", "dedans"); pli.appendChild(dedans); b.appendChild(pli);
+    if (fe.signeeLe) {
+      dedans.appendChild(el("p", "ligne", `Signée le <b>${fe.signeeLe}</b>.${mq.length ? ` ${mq.length} partie${mq.length > 1 ? "s" : ""} vide${mq.length > 1 ? "s" : ""}.` : ""}`));
+      dedans.appendChild(el("p", "ligne", `À montrer à <b>${CHANTIER.equipe.filter((q) => q !== "Florian").join(" et ")}</b> avant de commencer.`));
+      if (!fe.envoyee) dedans.appendChild(el("p", "ligne", `Pas encore transmise. Atlas la garde deux ans, dans Terminés.`));
+      const dbtn = el("div", "deux-boutons");
+      dbtn.appendChild(bouton("Ouvrir le PDF", () => {}, "vert creux"));
+      if (!fe.envoyee) dbtn.appendChild(bouton("Transmettre le PDF", () => { fe.envoyee = true; planning(); }, "vert"));
+      dedans.appendChild(dbtn);
+      if (fe.envoyee) dedans.appendChild(el("div", "parti", `<span class="rond" aria-hidden="true">${COCHE}</span><span><span class="mot">${envoyeeA()}</span></span>`));
+      dedans.appendChild(bouton("Modifier", () => { fe.signeeLe = null; fe.signatureTracee = false; fe.trace = null; fe.envoyee = false; etat.etape = 1; etat.ecran = "fiche"; dessiner(); }, "pdf"));
+    } else {
+      if (fe.commencee) dedans.appendChild(el("p", "ligne", `Reprise à <b>${ETAPES[Math.min(fe.vue, 5)]}</b>`));
+      dedans.appendChild(bouton(fe.commencee ? "Continuer" : "Remplir la fiche", () => { fe.commencee = true; etat.etape = fe.vue > 0 ? Math.min(fe.vue + 1, 6) : 1; etat.ecran = fe.loiLue ? "fiche" : "loi"; dessiner(); }, "vert"));
+      dedans.appendChild(bouton("Ce que demande la loi", () => { etat.ecran = "loi"; dessiner(); }, "pdf"));
+    }
+    p.appendChild(b);
+  }
+
+  /* ─── « Travaux à faire », tel qu'il est codé ─── */
+  {
+    const faites = etat.faites.filter(Boolean).length, total = CHANTIER.lignes.length;
+    const b = el("div", "bandeau" + (etat.travauxOuverts ? " ouvert" : ""));
+    const tete = bouton(`<span class="tete-mot">Travaux à faire</span>
+      <span class="tete-compte">${faites === 0 ? `${total} lignes` : faites === total ? "tout est fait" : `${faites} sur ${total} faits`}</span>${CHEV}`,
+      () => { etat.travauxOuverts = !etat.travauxOuverts; planning(); }, "tete");
+    tete.setAttribute("aria-expanded", String(etat.travauxOuverts));
+    b.appendChild(tete);
+    const pli = el("div", "pli"); const dedans = el("div", "dedans"); pli.appendChild(dedans); b.appendChild(pli);
+    const c = el("div", "cases serree");
+    CHANTIER.lignes.forEach((x, i) => {
+      const cb = bouton(`<span class="rond" aria-hidden="true">${COCHE}</span><span class="quoi">${x}</span>`, () => { etat.faites[i] = !etat.faites[i]; planning(); }, "case");
+      cb.setAttribute("aria-pressed", String(etat.faites[i])); c.appendChild(cb);
+    });
+    dedans.appendChild(c);
+    const ph = el("div", "photos", `<span class="etiquette">Photos</span>`);
+    const aj = bouton(PLUS, () => {}, "ajouter"); aj.setAttribute("aria-label", "Ajouter une photo"); ph.appendChild(aj); dedans.appendChild(ph);
+    const s = el("textarea", "note-cadre"); s.rows = 2; s.placeholder = "À signaler — facultatif"; s.style.marginTop = "10px"; s.style.minHeight = "58px"; s.style.fontSize = "14.5px"; dedans.appendChild(s);
+    dedans.appendChild(bouton("Envoyer le retour du jour", () => {}, "vert"));
+    p.appendChild(b);
+  }
+  f.appendChild(p);
+  f.appendChild(bouton("Ouvrir le PDF sans les prix", () => {}, "pdf"));
+  tel.querySelector(".ecran").scrollTop = y;
+}
+
+/* ═══ LA FICHE — six écrans ═══ */
+const set = (s, v) => { s.has(v) ? s.delete(v) : s.add(v); };
+function pastilles(liste, s, apres) {
+  const p = el("div", "pastilles");
+  liste.forEach((x) => {
+    const b = bouton(`<span class="p" aria-hidden="true">${COCHE}</span><span>${x}</span>`, () => { set(s, x); (apres || redessinerEtape)(); }, null);
+    b.setAttribute("aria-pressed", String(s.has(x))); p.appendChild(b);
+  });
+  return p;
+}
+// une pastille « Ajouter » au bout d'une liste : un champ s'ouvre, le mot devient
+// une pastille cochée, et reste pour les fiches suivantes
+function ajouter(famille, liste, conteneur) {
+  const f = etat.f;
+  if (f.enCours === famille) {
+    const l = el("div", "ajout");
+    const i = el("input"); i.type = "text"; i.placeholder = { matieres: "Exemple : nid de frelons", travaux: "Exemple : taille de réduction", bio: "Exemple : rats", specifiques: "Exemple : sortie du garage bloquée",
+                      env: "Exemple : pente forte", coactivite: "Exemple : livraison prévue à 10 h", secours: "Exemple : couverture de survie", meteo: "Exemple : on arrête dès 40 km/h de vent" }[famille] || "Exemple : camion-grue"; i.autocomplete = "off";
+    const valider = () => { const v = i.value.trim(); if (!v) return; f.ajouts[famille].push(v); f[famille].add(v); f.enCours = null; redessinerEtape(); };
+    i.onkeydown = (e) => { if (e.key === "Enter") { e.preventDefault(); valider(); } };
+    l.appendChild(i); l.appendChild(bouton("Ajouter", valider, "vert"));
+    conteneur.appendChild(l); setTimeout(() => i.focus(), 0);
+  } else {
+    const b = bouton(`${PLUS}<span>Ajouter</span>`, () => { f.enCours = famille; redessinerEtape(); }, "plus");
+    conteneur.querySelector(".pastilles, .cases").appendChild(b);
+  }
+}
+const avecLesSiens = (famille) => [...L[famille].filter((x) => x !== "Autres"), ...etat.f.ajouts[famille]];
+function cases(liste, s) {
+  const c = el("div", "cases serree");
+  liste.forEach((x) => {
+    const b = bouton(`<span class="rond" aria-hidden="true">${COCHE}</span><span class="quoi">${x}</span>`, () => { set(s, x); redessinerEtape(); }, "case");
+    b.setAttribute("aria-pressed", String(s.has(x))); c.appendChild(b);
+  });
+  return c;
+}
+function champ(nom, cle, placeholder, lignes, type) {
+  const c = el("label", "champ", `<span class="nom">${nom}</span>`);
+  const i = lignes ? el("textarea", null) : el("input", null);
+  if (lignes) i.rows = lignes; else i.type = type || "text";
+  i.value = etat.f[cle]; i.placeholder = placeholder || ""; i.autocomplete = "off";
+  i.oninput = () => { etat.f[cle] = i.value; };
+  c.appendChild(i); return c;
+}
+function fixe(nom, valeur, vide) {
+  return el("div", "champ", `<span class="nom">${nom}</span><span class="fixe${vide ? " vide" : ""}">${valeur}</span>`);
+}
+function bloc(etiquette, doux, explication) {
+  const b = el("div", "bloc", `<p class="etiquette">${etiquette}${doux ? `<span class="doux">${doux}</span>` : ""}</p>`);
+  if (explication) b.appendChild(el("p", "aide explication", explication));
+  return b;
+}
+
+function etape1(z) {
+  const f = etat.f;
+  let b = bloc("Identification du chantier", "", "Le chantier, tel qu’il est dans Atlas. Rien à écrire.");
+  b.appendChild(fixe("Nom du chantier", CHANTIER.nom));
+  b.appendChild(fixe("N° de devis et/ou de commande afférent", CHANTIER.devis));
+  b.appendChild(fixe("Entreprise réalisant le chantier", ENTREPRISE.nom));
+  z.appendChild(b);
+
+  b = bloc("Donneur d’ordre", "", "Qui vous a commandé les travaux ? Le client du devis, ou quelqu’un d’autre : une entreprise qui vous sous-traite, un syndic, une mairie.");
+  const ch = el("div", "choix");
+  const c1 = bouton("Le client du devis", () => { f.donneur = "client"; redessinerEtape(); }); c1.setAttribute("aria-pressed", String(f.donneur === "client"));
+  const c2 = bouton("Quelqu’un d’autre", () => { f.donneur = "autre"; redessinerEtape(); }); c2.setAttribute("aria-pressed", String(f.donneur === "autre"));
+  ch.appendChild(c1); ch.appendChild(c2); b.appendChild(ch);
+  if (f.donneur === "client") {
+    b.appendChild(fixe("Nom, prénom", `${CHANTIER.client.prenom} ${CHANTIER.client.nom}`));
+    b.appendChild(fixe("Téléphone", CHANTIER.client.tel));
+  } else if (f.donneur === "autre") {
+    const d = el("div", "deux-champs"); d.appendChild(champ("Nom", "donneurNom", "Exemple : Dubeaujardin")); d.appendChild(champ("Prénom", "donneurPrenom", "Exemple : Marc")); b.appendChild(d);
+    b.appendChild(champ("Téléphone", "donneurTel", "Exemple : 06 00 00 00 00"));
+  }
+  z.appendChild(b);
+
+  b = bloc("Lieu", "", "Où est le chantier. Relevez la position GPS sur place : elle guide les secours.");
+  b.appendChild(fixe("Adresse", CHANTIER.adresse));
+  const g = el("div", "champ", `<span class="nom">Coordonnées GPS</span>`);
+  if (f.gps) g.appendChild(el("span", "fixe", f.gps));
+  else { const r = bouton(`${CIBLE}<span>Relever ici</span>`, () => { f.gps = "48°59′24″ N 1°42′36″ E"; redessinerEtape(); }, "vert creux"); r.style.cssText = "margin:0;min-height:46px;width:100%;background:var(--carte);color:var(--pin);box-shadow:inset 0 0 0 1px var(--trait);font:inherit;font-size:15px"; g.appendChild(r); }
+  b.appendChild(g);
+  z.appendChild(b);
+
+  b = bloc("Dates d’exécution", "d’après le planning", "Quel jour et à quelle heure on commence et on finit.");
+  let d = el("div", "deux-champs"); d.appendChild(fixe("Début", CHANTIER.jourCourt)); d.appendChild(fixe("Fin", CHANTIER.jourCourt)); b.appendChild(d);
+  d = el("div", "deux-champs"); d.appendChild(champ("Heure de début", "hDebut", "", 0, "time")); d.appendChild(champ("Heure de fin", "hFin", "", 0, "time")); b.appendChild(d);
+  b.appendChild(champ("Horaires, délais de réalisation", "horaires", "Exemple : une demi-journée, le matin"));
+  z.appendChild(b);
+
+  b = bloc("Sur le chantier", "", "Qui est le chef sur place, combien de personnes de l’entreprise sont là, et quel numéro appeler s’il arrive quelque chose.");
+  b.appendChild(champ("Responsable de l’entreprise sur le chantier", "responsable"));
+  const nb = el("div", "champ", `<span class="nom">Nombre de travailleurs de l’entreprise</span>`);
+  const cp = el("div", "compteur");
+  cp.appendChild(bouton(MOINS, () => { if (f.nb > 1) { f.nb--; redessinerEtape(); } }));
+  cp.appendChild(el("span", "n", String(f.nb)));
+  cp.appendChild(bouton(PLUS, () => { f.nb++; redessinerEtape(); }));
+  cp.appendChild(el("span", "qui", f.nb === CHANTIER.equipe.length ? `${CHANTIER.equipe.slice(0, -1).join(", ")} et ${CHANTIER.equipe.at(-1)}, d’après le planning` : f.nb === 1 ? "Seul" : ""));
+  nb.appendChild(cp); b.appendChild(nb);
+  b.appendChild(champ("Téléphone en cas d’incident ou d’accident", "telIncident"));
+  z.appendChild(b);
+}
+
+function etape2(z) {
+  const f = etat.f;
+  let b = bloc("Travaux à réaliser", "", "Cochez ce que vous allez faire aujourd’hui sur ce chantier.");
+  b.appendChild(el("p", "aide", `Le devis dit : <b>${CHANTIER.lignes.slice(0, -1).join(", ")} et ${CHANTIER.lignes.at(-1).toLowerCase()}</b>.`));
+  { const g = el("div"); g.appendChild(pastilles(avecLesSiens("travaux"), f.travaux)); ajouter("travaux", null, g); b.appendChild(g); }
+  z.appendChild(b);
+
+  b = bloc("Main d’œuvre", "à remplir une fois", "Pour chaque personne : sa formation, depuis quand elle travaille, ce qu’elle a le droit de faire (habilitations, autorisations de conduite).");
+  b.appendChild(champ("", "mainOeuvre", "Exemple : 3 personnes en CDI, CACES nacelle OK, autorisation de conduite OK", 3));
+  // SA RÉPONSE DU 21 SEPTEMBRE : « la B, mais faut préciser que ça sera
+  // conservé pour toutes les autres fiches ». Un seul texte, gardé d'une fiche
+  // à l'autre, et l'écran le dit sous le cadre.
+  b.appendChild(el("p", "aide", "Ce texte est gardé pour toutes vos prochaines fiches. Corrigez-le ici quand l’équipe change.")).style.margin = "8px 0 0";
+  z.appendChild(b);
+
+  b = bloc("Matériels", "", "Cochez le matériel que vous allez utiliser sur ce chantier. Il doit être en bon état, et vérifié (la VGP, pour la nacelle et le treuil).");
+  const groupe = (aide, famille) => { const g = el("div"); g.appendChild(el("p", "aide", aide)); g.appendChild(pastilles(avecLesSiens(famille), f[famille])); ajouter(famille, null, g); return g; };
+  b.appendChild(groupe("Pour monter. Une nacelle protège mieux que les cordes : quand c’est possible, préférez-la.", "elevation"));
+  b.appendChild(groupe("Pour couper.", "coupe")).style.marginTop = "12px";
+  b.appendChild(groupe("Le reste du matériel.", "autresMat")).style.marginTop = "12px";
+  b.appendChild(el("p", "aide", "Ce que vous ajoutez reste pour vos prochaines fiches.")).style.margin = "10px 0 0";
+  z.appendChild(b);
+
+  b = bloc("L’état des arbres", "", "Ce que vous avez regardé sur les arbres avant de monter : du bois mort, des racines qui tiennent mal, une maladie. Cochez ce qui a été vérifié.");
+  { const g = el("div"); g.appendChild(cases([...L.matieres, ...f.ajouts.matieres], f.matieres)); ajouter("matieres", L.matieres, g); b.appendChild(g); }
+  b.appendChild(el("p", "aide", "Ce que vous ajoutez reste pour vos prochaines fiches.")).style.margin = "6px 0 0";
+  b.appendChild(champ("Ce que vous avez vu (à préciser)", "matieresAutres", "Exemple : rien vu sur les chênes, à confirmer sur place", 2));
+  z.appendChild(b);
+}
+
+function etape3(z) {
+  const f = etat.f;
+  let b = bloc("Carte / croquis / photo du chantier", "", "Une photo du chantier, prise sur place. On doit y voir par où on entre, par où on passe, et les arbres à traiter.");
+  const ph = el("div", "photos");
+  for (let i = 0; i < f.photos; i++) ph.appendChild(el("span", "vignette"));
+  const aj = el("label", "ajouter", `${APPAREIL}<input type="file" accept="image/*" multiple hidden>`); aj.setAttribute("aria-label", "Prendre une photo ou choisir dans la photothèque");
+  aj.style.width = "72px"; aj.querySelector("input").onchange = (e) => { f.photos += e.target.files.length || 1; redessinerEtape(); };
+  ph.appendChild(aj); b.appendChild(ph);
+  b.appendChild(el("p", "aide", "Prenez la photo, ou choisissez-la dans la photothèque.")).style.margin = "8px 0 0";
+  b.appendChild(el("p", "aide", "Délimitation matérielle du chantier obligatoire")).style.margin = "10px 0 0";
+  z.appendChild(b);
+
+  b = bloc("Risque biologique", "", "Des bêtes ou des plantes dangereuses sur place ? Cochez-les, puis cochez ce que vous faites contre.");
+  { const g = el("div"); g.appendChild(pastilles(avecLesSiens("bio"), f.bio)); ajouter("bio", null, g); b.appendChild(g); }
+  if (f.bio.size) { const g = el("div"); g.appendChild(el("p", "aide", "Mesures")).style.marginTop = "12px"; g.appendChild(pastilles(avecLesSiens("bioMesures"), f.bioMesures)); ajouter("bioMesures", null, g); b.appendChild(g); }
+  z.appendChild(b);
+
+  b = bloc("Mesures de prévention", "", "Ce que vous mettez en place pour que personne ne soit blessé : le balisage, la communication entre vous, la surveillance des passants.");
+  b.appendChild(el("div", "rappel", `<b>Périmètre de sécurité, d’après le décret</b>
+      <table><tr><td>Abattage à la main</td><td>2 fois la hauteur de l’arbre</td></tr><tr><td>Élagage, éhouppage</td><td>personne sous l’arbre</td></tr><tr><td>Machines</td><td>la distance marquée dessus</td></tr></table>`)).style.margin = "0 0 12px";
+  { const g = el("div"); g.appendChild(cases(avecLesSiens("specifiques"), f.specifiques)); ajouter("specifiques", null, g); b.appendChild(g); }
+  if (f.specifiques.has(L.specifiques[2])) { const c = champ("Moyen de communication", "communication", "Exemple : casques communicants à 3"); c.style.marginTop = "4px"; b.appendChild(c); }
+  z.appendChild(b);
+}
+
+function etape4(z) {
+  const f = etat.f;
+  let b = bloc("Risques liés aux réseaux", "", "Des lignes électriques, des câbles ou des canalisations près des arbres, en l’air ou sous terre ? Cochez-les. Les distances à respecter s’affichent.");
+  { const g = el("div"); g.appendChild(pastilles(avecLesSiens("reseaux"), f.reseaux)); ajouter("reseaux", null, g); b.appendChild(g); }
+  if ([...f.reseaux].some((x) => x.startsWith("Électrique"))) {
+    b.appendChild(el("div", "rappel", `<b>Distance de sécurité vis-à-vis des conducteurs électriques nus</b>
+      <table><tr><td>HTB (U &gt; 50 000 V)</td><td>5 m</td></tr><tr><td>HTA (U ≤ 50 000 V)</td><td>3 m</td></tr><tr><td>BT (U ≤ 1 000 V)</td><td>3 m</td></tr></table>`));
+  }
+  if (f.reseaux.size) { const g = el("div"); g.appendChild(el("p", "aide", "Mesures")).style.marginTop = "12px"; g.appendChild(cases(avecLesSiens("reseauxMesures"), f.reseauxMesures)); ajouter("reseauxMesures", null, g); b.appendChild(g); }
+  z.appendChild(b);
+
+  b = bloc("Risques liés à l’environnement", "", "Ce qui, autour du chantier, peut gêner ou blesser : la route, le bruit, la chaleur, un sol glissant, un plan d’eau. Cochez, puis cochez ce que vous faites contre.");
+  { const g = el("div"); g.appendChild(pastilles(avecLesSiens("env"), f.env)); ajouter("env", null, g); b.appendChild(g); }
+  if (f.env.size) {
+    const g = el("div"); g.appendChild(el("p", "aide", "Mesures")).style.marginTop = "12px"; g.appendChild(pastilles(avecLesSiens("envMesures"), f.envMesures)); ajouter("envMesures", null, g); b.appendChild(g);
+    if (f.envMesures.has(L.envMesures[4])) { const c = champ("Préciser", "envPreciser", "Exemple : gilets haute visibilité"); c.style.marginTop = "8px"; b.appendChild(c); }
+  }
+  z.appendChild(b);
+
+  b = bloc("Co-activité, machines", "", "D’autres personnes travaillent en même temps dans la zone ? Une machine peut happer ou projeter ? Cochez, et écrivez le reste.");
+  { const g = el("div"); g.appendChild(cases(avecLesSiens("coactivite"), f.coactivite)); ajouter("coactivite", null, g); b.appendChild(g); }
+  b.appendChild(champ("Risques autres identifiés", "risquesAutres", "Exemple : coups de vent possibles", 2));
+  b.appendChild(champ("Mesures de prévention autres", "mesuresAutres", "Exemple : rubalise autour de la propriété", 2));
+  b.appendChild(el("p", "aide", "Ces deux textes sont gardés pour vos prochaines fiches.")).style.margin = "8px 0 0";
+  z.appendChild(b);
+
+  b = bloc("Règles organisationnelles à mettre en place", "", "Comment l’équipe s’organise pour ne pas se gêner ni se mettre en danger.");
+  { const g = el("div"); g.appendChild(cases(avecLesSiens("orga"), f.orga)); ajouter("orga", null, g); b.appendChild(g); }
+  if (f.orga.has("Mode de communication entre travailleurs")) { const c = champ("Mode de communication", "orgaCommunication", "Exemple : casques communicants"); c.style.marginTop = "4px"; b.appendChild(c); }
+  z.appendChild(b);
+
+  b = bloc("Si le temps tourne", "", "Ce qu’on fait en cas de vent, d’orage ou de pluie forte qui arrive pendant le chantier.");
+  { const g = el("div"); g.appendChild(cases(avecLesSiens("meteo"), f.meteo)); ajouter("meteo", null, g); b.appendChild(g); }
+  z.appendChild(b);
+}
+
+function etape5(z) {
+  const f = etat.f;
+  let b = bloc("Organisation des secours", "", "Ce qu’il y a sur place pour porter secours, et où. Le Point de Rencontre des Secours, c’est l’endroit précis où les pompiers vous retrouvent.");
+  { const g = el("div"); g.appendChild(cases(avecLesSiens("secours"), f.secours)); ajouter("secours", null, g); b.appendChild(g); }
+  b.appendChild(champ("Lieu où se trouve la trousse de secours", "lieuTrousse", "Exemple : dans la cabine du camion"));
+  // SA DEMANDE DU 21 SEPTEMBRE : la trousse ne change pas souvent — gardée
+  // d'une fiche à l'autre, comme la main d'œuvre, et l'écran le dit
+  b.appendChild(el("p", "aide", "Gardé pour vos prochaines fiches.")).style.margin = "4px 0 10px";
+  b.appendChild(champ("Point de Rencontre des Secours", "prs", "Exemple : devant le portail du client"));
+  z.appendChild(b);
+
+  b = bloc("En cas d’accident", "", "Les consignes, dans l’ordre. Elles sont imprimées sur la fiche : à lire avant de commencer.");
+  const ban = el("div", "bandeau" + (etat.consignesOuvertes ? " ouvert" : ""));
+  const tete = bouton(`<span class="tete-mot">Protéger, alerter, secourir</span><span class="tete-compte">15, 18, 112</span>${CHEV}`,
+    () => { etat.consignesOuvertes = !etat.consignesOuvertes; redessinerEtape(); }, "tete");
+  tete.setAttribute("aria-expanded", String(!!etat.consignesOuvertes)); ban.appendChild(tete);
+  const pli = el("div", "pli"); const dedans = el("div", "dedans"); pli.appendChild(dedans); ban.appendChild(pli);
+  b.appendChild(ban); b = dedans; b.style.paddingTop = "10px";
+  b.appendChild(el("p", "aide", "1. Protéger"));
+  b.appendChild(el("ol", "consignes", ["Sécuriser les travaux en cours puis arrêter les travaux", "Protéger les zones dangereuses ou potentiellement dangereuses (matérialisation, interdiction d’accès…)", "Prévenir le responsable du chantier ou le chef d’entreprise"].map((x) => `<li>${x}</li>`).join("")));
+  b.appendChild(el("p", "aide", "2. Alerter")).style.marginTop = "10px";
+  b.appendChild(el("ol", "consignes", ["S’identifier (nom, prénom, entreprise)", "Donner sa localisation et préciser les moyens d’accès", "Décrire la nature de l’accident", "Préciser le nombre et l’état du (des) blessé(s)", "Décrire les gestes de premiers secours en cours (le cas échéant)", "Fixer un rendez-vous au point de rencontre des secours (PRS)", "Ne jamais raccrocher le premier : attendre les instructions des services de secours"].map((x) => `<li>${x}</li>`).join("")));
+  b.appendChild(el("p", "aide", "3. Secourir")).style.marginTop = "10px";
+  b.appendChild(el("ol", "consignes", ["Intervenir sans s’exposer (suivant référentiel SST et/ou GSA)", "Préparer l’arrivée et l’accès des secours (dégagement des rémanents et du matériel)", "Prévenir le siège des entreprises (du donneur d’ordre et de celle réalisant le chantier)"].map((x) => `<li>${x}</li>`).join("")));
+  b.appendChild(el("p", "aide", "Dès le début du chantier, stationner les véhicules dans le sens du départ et laisser la voie d’accès libre. Obtenir l’accord des services d’urgence avant de déplacer une victime vers un centre de secours.")).style.margin = "12px 0 0";
+  b.appendChild(el("div", "urgence", [["15", "SAMU"], ["18", "Pompiers"], ["112", "Europe"], ["114", "Sourds, malentendants"], ["17", "Police"]].map(([n, q]) => `<a href="tel:${n}"><b>${n}</b><span>${q}</span></a>`).join("")));
+  z.appendChild(ban.parentElement);
+
+  b = bloc("Observations, consignes particulières", "", "Ce que l’équipe doit savoir en plus, pour ce chantier-là.");
+  b.appendChild(champ("", "observations", "Exemple : prévenir le chef si quelque chose change", 3));
+  b.appendChild(el("p", "aide", "Ce texte est gardé pour vos prochaines fiches.")).style.margin = "8px 0 0";
+  z.appendChild(b);
+}
+
+function etape6(z) {
+  const f = etat.f, m = manques();
+  let b = bloc(m.length ? "Encore vide" : "Tout est renseigné", "", m.length ? "Ce qui n’est pas rempli. Touchez une ligne pour y aller." : "");
+  if (m.length) {
+    const ul = el("ul", "vides");
+    m.forEach((x) => { const li = el("li"); li.appendChild(bouton(`<span class="tiret" aria-hidden="true">–</span><span>${x.quoi}</span><span class="etape-n">${ETAPES_COURTES[x.etape - 1]}</span>`, () => { etat.etape = x.etape; dessiner(); })); ul.appendChild(li); });
+    b.appendChild(ul);
+  } else b.appendChild(el("div", "tout-la", `<span class="rond" aria-hidden="true">${COCHE}</span>Les sept éléments du décret sont là`));
+  z.appendChild(b);
+
+  b = bloc("Enregistrement", "", "Le chef d’entreprise signe. Sa signature engage sa responsabilité.");
+  b.appendChild(fixe("Nom et prénom du chef d’entreprise (ou de son représentant)", ENTREPRISE.patron));
+  b.appendChild(fixe("Date", CHANTIER.jourCourt + " 2026"));
+  const s = el("div", "signature" + (f.signatureTracee ? " signee" : ""), `<canvas aria-label="Signature"></canvas><span class="ligne-sig" aria-hidden="true"></span><span class="ici">Signez ici, au doigt</span>`);
+  s.style.marginTop = "10px"; b.appendChild(s);
+  const eff = bouton("Effacer", () => { f.signatureTracee = false; f.trace = null; redessinerEtape(); }, "effacer"); b.appendChild(eff);
+  z.appendChild(b);
+  setTimeout(() => brancherSignature(s.querySelector("canvas"), s), 0);
+}
+
+/* la signature : un trait au doigt, redessiné à l'identique quand l'écran se refait */
+function brancherSignature(cv, cadre) {
+  const f = etat.f, ratio = window.devicePixelRatio || 1;
+  const w = cadre.clientWidth, h = cadre.clientHeight;
+  cv.width = w * ratio; cv.height = h * ratio;
+  const ctx = cv.getContext("2d"); ctx.scale(ratio, ratio);
+  ctx.lineWidth = 2.2; ctx.lineCap = "round"; ctx.lineJoin = "round";
+  ctx.strokeStyle = getComputedStyle(document.body).getPropertyValue("--encre").trim();
+  f.trace = f.trace || [];
+  const rejouer = () => { ctx.clearRect(0, 0, w, h); f.trace.forEach((t) => { ctx.beginPath(); t.forEach(([x, y], i) => i ? ctx.lineTo(x, y) : ctx.moveTo(x, y)); ctx.stroke(); }); };
+  rejouer();
+  let courant = null;
+  const pos = (e) => { const r = cv.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
+  cv.onpointerdown = (e) => { cv.setPointerCapture(e.pointerId); courant = [pos(e)]; f.trace.push(courant); };
+  cv.onpointermove = (e) => { if (!courant) return; courant.push(pos(e)); rejouer(); };
+  cv.onpointerup = cv.onpointercancel = () => {
+    if (!courant) return; courant = null;
+    const points = f.trace.reduce((n, t) => n + t.length, 0);
+    if (points > 8 && !f.signatureTracee) { f.signatureTracee = true; cadre.classList.add("signee"); dessinerPied(); }
+  };
+}
+
+function dessinerPied() {
+  const pied = tel.querySelector(".pied"); if (!pied) return; pied.innerHTML = "";
+  const f = etat.f;
+  if (etat.etape < 6) {
+    pied.appendChild(bouton("Suivant", () => { f.vue = Math.max(f.vue, etat.etape); etat.etape++; dessiner(); }, "vert"));
+  } else {
+    pied.appendChild(bouton("Signer la fiche", () => { if (!f.signatureTracee) return; f.vue = 6; f.signeeLe = `${CHANTIER.jourCourt} à 8 h 05`; etat.ecran = "signee"; dessiner(); }, "vert" + (f.signatureTracee ? "" : " doux")));
+  }
+}
+
+function ficheEcran() {
+  const f = etat.f, n = etat.etape;
+  tel.innerHTML = `<div class="entete">
+      <button type="button" class="retour" aria-label="Retour"></button>
+      <span class="quoi"><span class="grand">Fiche de sécurité</span><span class="petit">${CHANTIER.nom}</span></span>
+      <span class="ou">${n} sur 6</span></div>
+    <div class="avancee" aria-hidden="true">${ETAPES.map((_, i) => `<i class="${i + 1 < n ? "fait" : i + 1 === n ? "la" : ""}"></i>`).join("")}</div>
+    <div class="ecran"><div class="etape" id="etape"></div></div>
+    <div class="pied"></div>`;
+  tel.querySelector(".retour").innerHTML = RETOUR;
+  tel.querySelector(".retour").onclick = () => { if (n > 1) { etat.etape--; dessiner(); } else { etat.ecran = "planning"; etat.ficheOuverte = true; dessiner(); } };
+  redessinerEtape(); dessinerPied();
+}
+function redessinerEtape() {
+  const ecran = tel.querySelector(".ecran"); const y = ecran ? ecran.scrollTop : 0;
+  const z = document.getElementById("etape"); z.innerHTML = "";
+  z.appendChild(el("h2", null, ETAPES[etat.etape - 1]));
+  [etape1, etape2, etape3, etape4, etape5, etape6][etat.etape - 1](z);
+  if (ecran) ecran.scrollTop = y;
+}
+
+function loiEcran() {
+  const f = etat.f;
+  tel.innerHTML = `<div class="ecran"><div class="etape">
+    <h2>Ce que demande la loi</h2>
+    <p class="sous">Décret 2021-1833, en vigueur depuis le 1er mars 2022</p>
+    <p class="loi">Avant un chantier d’élagage ou d’abattage, le chef d’entreprise remplit une fiche d’intervention, la signe, la montre à son équipe, la garde sur le chantier, et la conserve deux ans. Elle doit dire :</p>
+    <ol class="consignes loi-liste">
+      <li>où est le chantier, quels travaux, avec quel matériel, quels jours</li>
+      <li>une carte, un croquis ou une photo : les accès, les passages, les arbres à traiter</li>
+      <li>les risques propres à ce chantier et à ce qui l’entoure</li>
+      <li>les mesures de sécurité prises</li>
+      <li>ce qu’on fait en cas d’accident</li>
+      <li>comment les secours s’organisent</li>
+      <li>ce qu’on fait si le temps tourne</li>
+    </ol>
+    <p class="loi">La fiche peut être sur le téléphone. Aucune liste de matériel, de risques ou de mesures n’est imposée : celles d’Atlas viennent du formulaire de la MSA, et vous y ajoutez les vôtres.</p>
+    <p class="loi">Elle ne vaut que pour l’élagage et l’abattage, dans les parcs, jardins et arbres d’alignement. Pas pour une tonte, une haie, une création.</p>
+    <div class="liens">
+      <a href="https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000044572758" target="_blank" rel="noopener">Lire le décret sur Légifrance</a>
+      <a href="https://ssa.msa.fr/wp-content/uploads/2023/12/12350_A-_FICHE-DINTERVENTION_WEB.pdf" target="_blank" rel="noopener">Voir le formulaire de la MSA</a>
+    </div>
+  </div></div><div class="pied"></div>`;
+  const pied = tel.querySelector(".pied");
+  pied.appendChild(bouton(f.loiLue ? "Retour" : "Compris, je remplis", () => { const premiere = !f.loiLue; f.loiLue = true; if (premiere) { etat.etape = 1; etat.ecran = "fiche"; } else { etat.ecran = "planning"; etat.ficheOuverte = true; } dessiner(); }, "vert"));
+}
+function signeeEcran() {
+  const f = etat.f, m = manques();
+  tel.innerHTML = `<div class="ecran"><div class="signee-titre"><span class="rond" aria-hidden="true">${COCHE_GRANDE}</span><h2>Fiche signée</h2><p>${CHANTIER.nom}, le ${f.signeeLe}</p></div>
+    <ul class="signee-liste" id="suite"></ul></div><div class="pied"></div>`;
+  const ul = tel.querySelector("#suite");
+  const li = (html) => { const l = el("li", null, html); ul.appendChild(l); return l; };
+  if (m.length) li(`<span class="qui">${m.length} partie${m.length > 1 ? "s" : ""} vide${m.length > 1 ? "s" : ""} : ${m.map((x) => x.quoi.toLowerCase()).join(", ")}.</span>`);
+  li(`<span class="qui">À montrer à ${CHANTIER.equipe.filter((q) => q !== "Florian").join(" et ")} avant de commencer.</span>`);
+  li(`<span class="qui">Enregistrée. Atlas la garde deux ans : vous la retrouvez dans Terminés, sur ce chantier.</span>`);
+  if (!f.envoyee) li(`<span class="qui">« Transmettre le PDF » ouvre la feuille de partage du téléphone : Mail, SMS, WhatsApp. C’est vous qui envoyez.</span>`);
+  if (f.envoyee) li(`<span class="rond" aria-hidden="true">${COCHE}</span><span class="qui">${envoyeeA()}</span>`);
+  const p = tel.querySelector(".pied");
+  const d = el("div", "deux-boutons"); d.style.cssText = "display:flex;flex-direction:column;gap:8px";
+  if (!f.envoyee) { const env = bouton("Transmettre le PDF", () => { f.envoyee = true; signeeEcran(); }, "vert"); env.style.cssText = "margin:0;width:100%;padding:0 10px;font-size:15px"; d.appendChild(env); }
+  const pdf = bouton("Ouvrir le PDF", () => {}, "vert creux"); pdf.style.cssText = "margin:0;width:100%;padding:0 10px;font-size:15px;background:transparent;color:var(--pin);box-shadow:inset 0 0 0 1.5px var(--vert-pale)";
+  d.appendChild(pdf);
+  p.appendChild(d);
+  p.appendChild(bouton(f.envoyee ? "Retour au planning" : "Plus tard", () => { etat.ecran = "planning"; etat.ficheOuverte = true; dessiner(); }, "pdf"));
+}
+
+function dessiner() {
+  if (etat.ecran === "planning") planning();
+  else if (etat.ecran === "fiche") ficheEcran();
+  else if (etat.ecran === "loi") loiEcran();
+  else signeeEcran();
+  const e = tel.querySelector(".ecran"); if (e) e.scrollTop = 0;
+}
+
+depart(); dessiner();
+document.getElementById("rejouer").onclick = () => { depart(); dessiner(); };
+document.getElementById("nuit").onclick = () => { const on = document.body.classList.toggle("nuit"); document.getElementById("nuit").setAttribute("aria-pressed", String(on)); dessiner(); };
+</script>
+</body>
+</html>

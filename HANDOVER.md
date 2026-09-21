@@ -4,7 +4,7 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-09-21 · `main` — la facture se remplit où on la remplit
+**Point de reprise :** 2026-09-21 · `main` — la facture se remplit où on la remplit ; avant elle, les suites d'outillage qui se taisent sur son PC
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
@@ -27,6 +27,15 @@ rang ensuite —, et l'acquittement par `tamponAcquittee`, celui du PDF.
 `ARCHITECTURE.md` §396.
 
 ---
+
+## LIVRER DEPUIS SON PC — ce que la nuit du 21 septembre 2026 a appris
+
+- **un dossier = un verdict** : jouer le contrôle d'un second lot dans le même worktree écrase `.atlas-dernier-verdict.json` du premier — un worktree par lot, ou finir l'un avant l'autre ;
+- **`verifier-rouge-prealable` veut `DATABASE_URL`/`REDIS_URL` posées telles quelles** (pas seulement `ATLAS_BASE_*`), sinon « illisible » des deux côtés ;
+- **`next build` gonfle `tsconfig.json`** : le mettre de côté (`git stash push -- tsconfig.json`) avant `verifier-ce-qui-a-bouge` et avant de pousser, sinon « le lot a changé » au niveau 3 ;
+- **une suite dont le nom porte « devis »** fait monter n'importe quel lot au niveau 3 : corriger une suite de ce nom coûte une batterie ;
+- **les suites qui tuent un groupe de processus** laissent un orphelin sur Windows si elles ne le déclarent pas (`exigerUnSystemePosix`) — les arrêter par PID, jamais par nom.
+
 
 ## UNE ÉCRITURE DÉCLARE CE QU'ELLE CHANGE — sinon le RETOUR rejoue l'écran d'avant
 

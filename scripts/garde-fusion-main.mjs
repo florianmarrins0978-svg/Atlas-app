@@ -43,9 +43,10 @@
  * ignoré, et l'on perd alors la protection sans s'en apercevoir.
  * ═══════════════════════════════════════════════════════════════════════════
  */
-import { execFileSync } from "node:child_process";
+import { execFileSync, spawnSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import {
   FICHIER_VERDICT,
   cheminsDuLot,
@@ -138,9 +139,39 @@ process.stdin.on("end", () => {
     process.exit(0); // Rien de lisible : on ne gêne personne.
   }
 
+  const dossierDeLaSession = RACINE;
   RACINE = dossierDeLaCommande(commande, RACINE);
   const branche = git("rev-parse", "--abbrev-ref", "HEAD");
   if (!poussseVersMain(commande, branche)) process.exit(0);
+
+  // ─── LE GARDE-FOU DU DOSSIER VISÉ, PAS CELUI DE LA SESSION — 21 sept. 2026 ──
+  //
+  // `.claude/settings.json` lance CE fichier depuis le dossier où la session a
+  // été ouverte. Or la commande vise un autre dossier — celui du lot —, et
+  // c'est lui que le garde-fou mesure. Quand la session vit dans un dossier en
+  // retard, c'est un garde-fou d'hier qui juge un verdict d'aujourd'hui : il a
+  // refusé un lot vert, sans régression nouvelle, parce qu'il ne savait pas
+  // encore lire l'empreinte que le lot écrit. Le garde-fou qui mesure un
+  // dossier doit donc être le sien. On délègue, une fois, et l'on rend son
+  // verdict tel quel ; là-bas, session et dossier coïncident, donc pas de
+  // seconde délégation.
+  const gardeDuDossierVise = path.join(RACINE, "scripts", "garde-fusion-main.mjs");
+  const ceFichier = fileURLToPath(import.meta.url);
+  if (
+    path.resolve(RACINE) !== path.resolve(dossierDeLaSession) &&
+    existsSync(gardeDuDossierVise) &&
+    path.resolve(gardeDuDossierVise) !== path.resolve(ceFichier)
+  ) {
+    const delegue = spawnSync(process.execPath, [gardeDuDossierVise], {
+      input: entree,
+      encoding: "utf8",
+      env: { ...process.env, CLAUDE_PROJECT_DIR: RACINE },
+    });
+    if (delegue.stdout) process.stdout.write(delegue.stdout);
+    if (delegue.stderr) process.stderr.write(delegue.stderr);
+    // Un garde-fou qui n'a pas pu rendre de verdict ne laisse pas passer.
+    process.exit(delegue.status ?? 2);
+  }
 
   // **UN DOSSIER QU'ON NE SAIT PAS LIRE FERME LA PORTE — 18 septembre 2026.**
   // Un lot de niveau 3 est passé parce que le dossier visé n'existait pas

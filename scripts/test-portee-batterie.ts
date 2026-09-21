@@ -11,7 +11,11 @@
  * Un garde-fou qui laisse passer une régression est pire qu'aucun garde-fou.
  */
 import assert from "node:assert/strict";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import path from "node:path";
 import { porteeDuLot, phraseDuRefusDePortee, refusApresUnRouge } from "./_portee-batterie";
+import { empreinteDesSources, fichiersRemues } from "./_empreinte-des-sources.mjs";
 
 let reussis = 0;
 let echoues = 0;
@@ -55,20 +59,33 @@ test("plusieurs suites, et rien d'autre : on les joue toutes les trois, dans l'o
   ]);
 });
 
-test("les chemins de Windows comptent comme les autres", () => {
-  assert.equal(porteeDuLot(["scripts\\test-porte-e2e.ts"]).quoi, "suites");
-});
-
 // **Trouvé en regardant le refus, pas par un test — 10 septembre 2026.** Le
 // premier jet rendait le chemin de la machine tel quel : « npx tsx
 // scripts\test-x.ts » ne se recopie pas dans un terminal, la barre inversée
 // y échappe la lettre suivante. Une commande qu'on donne se parcourt soi-même
 // (`AGENTS.md`).
+//
+// **La règle a changé d'étage le 20 septembre 2026, pas de sens.** Elle vivait
+// ici, dans une normalisation de `porteeDuLot` ; elle vit désormais à la
+// source, dans l'empreinte, qui écrit ses chemins comme git — et la couche
+// d'ici est partie avec (`CLAUDE.md` §4 quater). Ce contrôle suit donc le
+// vrai chemin : un arbre lu par l'empreinte, sur CETTE machine, et la commande
+// qu'on en tire. Sous Windows il mesure ; ailleurs il ne peut que passer.
 test("LA COMMANDE PROPOSÉE EST COPIABLE — jamais une barre inversée", () => {
-  const p = porteeDuLot(["scripts\\test-porte-e2e.ts"]);
-  assert.deepEqual(p.quoi === "suites" ? p.suites : [], ["scripts/test-porte-e2e.ts"]);
-  const phrase = phraseDuRefusDePortee(p, "✅", "à l'instant");
-  assert.ok(!phrase.includes("\\"), `une barre inversée traîne dans : ${phrase}`);
+  const racine = mkdtempSync(path.join(tmpdir(), "atlas-portee-"));
+  try {
+    mkdirSync(path.join(racine, "scripts"));
+    const avant = empreinteDesSources(racine);
+    writeFileSync(path.join(racine, "scripts", "test-porte-e2e.ts"), "// une suite\n");
+    const remues = fichiersRemues(avant, empreinteDesSources(racine));
+    assert.deepEqual(remues, ["scripts/test-porte-e2e.ts"], "l'empreinte n'écrit pas ses chemins comme git");
+    const p = porteeDuLot(remues);
+    assert.deepEqual(p.quoi === "suites" ? p.suites : [], ["scripts/test-porte-e2e.ts"]);
+    const phrase = phraseDuRefusDePortee(p, "✅", "à l'instant");
+    assert.ok(!phrase.includes("\\"), `une barre inversée traîne dans : ${phrase}`);
+  } finally {
+    rmSync(racine, { recursive: true, force: true });
+  }
 });
 
 test("une suite en .mts est une suite elle aussi", () => {

@@ -191,7 +191,11 @@ console.log("\n=== Une base en retard se rattrape, même quand le code n'a pas b
 // et un redémarrage. C'est la structure qui a menti ; c'est elle qu'on tient.
 
 cas("le démarrage migre à CHAQUE allumage, pas seulement quand le code a bougé", () => {
-  const source = readFileSync(path.join(RACINE, ".devcontainer", "demarrer.sh"), "utf8");
+  // Lu tel que git l'a écrit sur CETTE machine : sur son PC, `core.autocrlf`
+  // livre le script en CRLF, et « \nfi\n » n'y existait plus — le contrôle
+  // rougissait sur une structure juste (20 septembre 2026). C'est la
+  // structure qu'on mesure, pas la fin de ligne.
+  const source = readFileSync(path.join(RACINE, ".devcontainer", "demarrer.sh"), "utf8").replace(/\r\n/g, "\n");
   const depart = source.indexOf('if [ "$MISE_A_JOUR" = "faite" ]; then');
   assert.notEqual(depart, -1, "le bloc « code neuf » a disparu du démarrage : ce contrôle ne mesure plus rien");
   const finDuBloc = source.indexOf("\nfi\n", depart);

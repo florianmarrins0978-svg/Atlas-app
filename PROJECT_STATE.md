@@ -15,7 +15,20 @@ règlement s'écrit (migration 0098) au lieu d'être déduit du rang ;
 l'acquittement porte « Acquittée le … » en or, le mot du PDF, aux deux
 endroits ; « Remplir la facture » est collé sous le pouce. Planche
 `appli/facture-remplir-acquittee.html`, codée sur son « code exactement cette
-planche ». `ARCHITECTURE.md` §396.
+planche ». `ARCHITECTURE.md` §398.
+
+## FAIT : LA NUIT DU 21 SEPTEMBRE 2026 — QUATRE LOTS SUR `main` DEPUIS SON PC
+
+| Lot | Ce qu'il apporte |
+|---|---|
+| suites d'outillage sur Windows | `npm test` y rend « 8 non mesurable(s) ici », plus aucun rouge d'outillage ; chemins façon git dans l'empreinte, `exigerUnSystemePosix`, une suite base qui suivait mal l'atelier (`ARCHITECTURE.md` §396) |
+| le garde-fou du dossier visé | une poussée depuis un autre dossier est jugée par le garde-fou de CE dossier (§397) |
+| la comparaison des rouges lit les deux flux | un rouge n'y passe plus pour vert (§392) |
+| photos en lot, trois plafonds | plusieurs photos d'un coup sur le retour du jour ; 15 / 10 / 30 (§393) |
+| document à faire, point 16 | le nom de domaine qui bloque le devis par e-mail cliquable |
+
+**Ce qui reste ouvert :** `test-travaux-a-faire-e2e` rougit selon l'ordre des suites (`TODO.md`) ; l'envoi du devis par Atlas attend son adresse pro.
+
 
 ## FAIT : L'ÉCRAN DU CLIENT — CONFIRMATION DU REFUS, ET SES JOURS (20 septembre 2026)
 
