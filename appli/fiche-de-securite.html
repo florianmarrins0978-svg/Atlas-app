@@ -301,6 +301,13 @@
   .signature.signee .ici{display:none}
   .effacer{display:block;width:max-content;margin:8px 0 0 auto;min-height:40px;padding:0 4px;font-size:13.5px;font-weight:600;color:var(--encre)}
 
+  .loi{margin:12px 0 0;font-size:15px;line-height:1.5;color:var(--encre)}
+  .loi-liste{margin-top:10px}
+  .loi-liste li{font-size:14.5px}
+  .liens{display:flex;flex-direction:column;gap:8px;margin-top:18px}
+  .liens a{display:flex;align-items:center;min-height:48px;padding:0 16px;border-radius:12px;background:var(--carte);
+           box-shadow:inset 0 0 0 1px var(--trait);color:var(--pin);font-weight:600;text-decoration:none;font-size:15px}
+  body.nuit .liens a{color:var(--encre)}
   .signee-titre{text-align:center;padding:26px 0 6px}
   .signee-titre .rond{width:54px;height:54px;border-radius:50%;background:var(--plein);color:var(--sur-plein);display:grid;place-items:center;margin:0 auto 14px}
   .signee-titre h2{margin:0;font:400 26px/1.15 ui-serif,Georgia,serif}
@@ -355,8 +362,9 @@
     <tr><td>Chaque partie s’explique</td><td>une phrase sous chaque titre dit quoi remplir et pourquoi, comme à quelqu’un qui n’a jamais vu le formulaire. C’est votre demande du 21 septembre.</td></tr>
     <tr><td>Ajouter, partout</td><td>le décret ne donne aucune liste : ni matériel, ni arbres, ni risques, ni mesures. Il dit « les risques spécifiques au chantier » et « les mesures de sécurité spécifiques ». Les listes viennent du formulaire MSA, et « Ajouter » met les vôtres au bout de chacune. Ce que vous ajoutez reste pour les fiches suivantes.</td></tr>
     <tr><td>Rien à cocher dans une catégorie</td><td>ce n’est pas un problème. Pas de co-activité, on ne coche rien. La fiche ne dit « vide » que pour les sept éléments du décret.</td></tr>
+    <tr><td>Ce que demande la loi</td><td>à la première ouverture, un écran le dit en sept lignes, avec deux liens : le décret sur Légifrance, et le formulaire de la MSA. Ensuite il ne revient plus, mais « Ce que demande la loi » reste dans le bandeau. C’est là qu’on dira aussi ce qui est gardé d’une fiche à l’autre.</td></tr>
     <tr><td>La photo</td><td>l’appareil photo, ou la photothèque : le téléphone propose les deux.</td></tr>
-    <tr><td>La trousse de secours</td><td>son emplacement est gardé d’une fiche à l’autre, et l’écran le dit.</td></tr>
+    <tr><td>Gardé d’une fiche à l’autre</td><td>la main d’œuvre, le lieu de la trousse, les deux textes de la co-activité, les observations, et tout ce que vous ajoutez aux listes. L’écran le dit sous chaque cadre.</td></tr>
     <tr><td>L’heure</td><td>la roue du téléphone, heures et minutes.</td></tr>
     <tr><td>La main d’œuvre</td><td>un seul texte, écrit une fois, gardé pour toutes les fiches suivantes, et l’écran le dit. Vous le corrigez quand l’équipe change. C’est votre choix du 21 septembre.</td></tr>
   </table>
@@ -438,7 +446,7 @@ function depart() {
   etat = {
     ecran: "planning", etape: 1, ficheOuverte: false, travauxOuverts: false, faites: CHANTIER.lignes.map(() => false),
     f: {
-      commencee: false, vue: 0,
+      commencee: false, vue: 0, loiLue: false,
       donneur: null, donneurNom: "", donneurPrenom: "", donneurTel: "",
       gps: "", hDebut: "", hFin: "", horaires: "", responsable: ENTREPRISE.patron, nb: CHANTIER.equipe.length, telIncident: ENTREPRISE.tel,
       travaux: new Set(), travauxAutres: "", mainOeuvre: "",
@@ -525,7 +533,8 @@ function planning() {
       dedans.appendChild(bouton("Modifier", () => { fe.signeeLe = null; fe.signatureTracee = false; fe.trace = null; fe.envoyee = false; etat.etape = 1; etat.ecran = "fiche"; dessiner(); }, "pdf"));
     } else {
       if (fe.commencee) dedans.appendChild(el("p", "ligne", `Reprise à <b>${ETAPES[Math.min(fe.vue, 5)]}</b>`));
-      dedans.appendChild(bouton(fe.commencee ? "Continuer" : "Remplir la fiche", () => { fe.commencee = true; etat.etape = fe.commencee && fe.vue > 0 ? Math.min(fe.vue + 1, 6) : 1; etat.ecran = "fiche"; dessiner(); }, "vert"));
+      dedans.appendChild(bouton(fe.commencee ? "Continuer" : "Remplir la fiche", () => { fe.commencee = true; etat.etape = fe.vue > 0 ? Math.min(fe.vue + 1, 6) : 1; etat.ecran = fe.loiLue ? "fiche" : "loi"; dessiner(); }, "vert"));
+      dedans.appendChild(bouton("Ce que demande la loi", () => { etat.ecran = "loi"; dessiner(); }, "pdf"));
     }
     p.appendChild(b);
   }
@@ -737,6 +746,7 @@ function etape4(z) {
   { const g = el("div"); g.appendChild(cases(avecLesSiens("coactivite"), f.coactivite)); ajouter("coactivite", null, g); b.appendChild(g); }
   b.appendChild(champ("Risques autres identifiés", "risquesAutres", "Exemple : coups de vent possibles", 2));
   b.appendChild(champ("Mesures de prévention autres", "mesuresAutres", "Exemple : rubalise autour de la propriété", 2));
+  b.appendChild(el("p", "aide", "Ces deux textes sont gardés pour vos prochaines fiches.")).style.margin = "8px 0 0";
   z.appendChild(b);
 
   b = bloc("Règles organisationnelles à mettre en place", "", "Comment l’équipe s’organise pour ne pas se gêner ni se mettre en danger.");
@@ -779,6 +789,7 @@ function etape5(z) {
 
   b = bloc("Observations, consignes particulières", "", "Ce que l’équipe doit savoir en plus, pour ce chantier-là.");
   b.appendChild(champ("", "observations", "Exemple : prévenir le chef si quelque chose change", 3));
+  b.appendChild(el("p", "aide", "Ce texte est gardé pour vos prochaines fiches.")).style.margin = "8px 0 0";
   z.appendChild(b);
 }
 
@@ -855,6 +866,31 @@ function redessinerEtape() {
   if (ecran) ecran.scrollTop = y;
 }
 
+function loiEcran() {
+  const f = etat.f;
+  tel.innerHTML = `<div class="ecran"><div class="etape">
+    <h2>Ce que demande la loi</h2>
+    <p class="sous">Décret 2021-1833, en vigueur depuis le 1er mars 2022</p>
+    <p class="loi">Avant un chantier d’élagage ou d’abattage, le chef d’entreprise remplit une fiche d’intervention, la signe, la montre à son équipe, la garde sur le chantier, et la conserve deux ans. Elle doit dire :</p>
+    <ol class="consignes loi-liste">
+      <li>où est le chantier, quels travaux, avec quel matériel, quels jours</li>
+      <li>une carte, un croquis ou une photo : les accès, les passages, les arbres à traiter</li>
+      <li>les risques propres à ce chantier et à ce qui l’entoure</li>
+      <li>les mesures de sécurité prises</li>
+      <li>ce qu’on fait en cas d’accident</li>
+      <li>comment les secours s’organisent</li>
+      <li>ce qu’on fait si le temps tourne</li>
+    </ol>
+    <p class="loi">La fiche peut être sur le téléphone. Aucune liste de matériel, de risques ou de mesures n’est imposée : celles d’Atlas viennent du formulaire de la MSA, et vous y ajoutez les vôtres.</p>
+    <p class="loi">Elle ne vaut que pour l’élagage et l’abattage, dans les parcs, jardins et arbres d’alignement. Pas pour une tonte, une haie, une création.</p>
+    <div class="liens">
+      <a href="https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000044572758" target="_blank" rel="noopener">Lire le décret sur Légifrance</a>
+      <a href="https://ssa.msa.fr/wp-content/uploads/2023/12/12350_A-_FICHE-DINTERVENTION_WEB.pdf" target="_blank" rel="noopener">Voir le formulaire de la MSA</a>
+    </div>
+  </div></div><div class="pied"></div>`;
+  const pied = tel.querySelector(".pied");
+  pied.appendChild(bouton(f.loiLue ? "Retour" : "Compris, je remplis", () => { const premiere = !f.loiLue; f.loiLue = true; if (premiere) { etat.etape = 1; etat.ecran = "fiche"; } else { etat.ecran = "planning"; etat.ficheOuverte = true; } dessiner(); }, "vert"));
+}
 function signeeEcran() {
   const f = etat.f, m = manques();
   tel.innerHTML = `<div class="ecran"><div class="signee-titre"><span class="rond" aria-hidden="true">${COCHE_GRANDE}</span><h2>Fiche signée</h2><p>${CHANTIER.nom}, le ${f.signeeLe}</p></div>
@@ -878,6 +914,7 @@ function signeeEcran() {
 function dessiner() {
   if (etat.ecran === "planning") planning();
   else if (etat.ecran === "fiche") ficheEcran();
+  else if (etat.ecran === "loi") loiEcran();
   else signeeEcran();
   const e = tel.querySelector(".ecran"); if (e) e.scrollTop = 0;
 }
