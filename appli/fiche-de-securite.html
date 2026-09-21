@@ -218,6 +218,7 @@
   .bloc .etiquette .doux{font-weight:500;letter-spacing:.02em;text-transform:none;color:var(--gris);margin-left:6px;font-size:11.5px}
   .bloc .aide{margin:-4px 0 10px;font-size:12.5px;color:var(--gris);line-height:1.45}
   .bloc .aide b{color:var(--encre-douce);font-weight:600}
+  .bloc .aide.explication{color:var(--encre-douce);font-size:14px;margin:-2px 0 12px}
 
   .champ{display:block;margin-top:10px}
   .champ:first-child{margin-top:0}
@@ -340,6 +341,7 @@
     <tr><td>Les mots du formulaire</td><td>recopiés de votre feuille (MSA 12350_A_10/2023), pas reformulés. Un contrôleur retrouve son formulaire.</td></tr>
     <tr><td>Les exemples en gris</td><td>dans chaque cadre, un « Exemple : … » pris dans la fiche remplie de la notice MSA. Il s’efface dès que vous écrivez.</td></tr>
     <tr><td>Les heures</td><td>le planning ne les connaît pas. Elles restent à saisir.</td></tr>
+    <tr><td>Chaque partie s’explique</td><td>une phrase sous chaque titre dit quoi remplir et pourquoi, comme à quelqu’un qui n’a jamais vu le formulaire. C’est votre demande du 21 septembre.</td></tr>
     <tr><td>La main d’œuvre</td><td>un seul texte, écrit une fois, gardé pour toutes les fiches suivantes, et l’écran le dit. Vous le corrigez quand l’équipe change. C’est votre choix du 21 septembre.</td></tr>
   </table>
   <p><b>Rien n’est codé.</b> Dites oui, ou ce qui reste à changer.</p>
@@ -447,7 +449,7 @@ function manques() {
   if (f.photos === 0) m.push({ quoi: "Carte / croquis / photo du chantier", etape: 3 });
   if (f.bio.size + f.specifiques.size + f.reseaux.size + f.env.size + f.coactivite.size === 0 && f.risquesAutres.trim() === "") m.push({ quoi: "Risques spécifiques au chantier", etape: 3 });
   if (f.bioMesures.size + f.reseauxMesures.size + f.envMesures.size + f.orga.size === 0 && f.mesuresAutres.trim() === "") m.push({ quoi: "Mesures de sécurité", etape: 4 });
-  if (f.meteo.size === 0) m.push({ quoi: "Conduite à tenir en cas d’intempéries", etape: 4 });
+  if (f.meteo.size === 0) m.push({ quoi: "Si le temps tourne", etape: 4 });
   if (f.secours.size === 0) m.push({ quoi: "Organisation des secours", etape: 5 });
   if (f.prs.trim() === "") m.push({ quoi: "Point de Rencontre des Secours", etape: 5 });
   if (f.lieuTrousse.trim() === "") m.push({ quoi: "Lieu où se trouve la trousse de secours", etape: 5 });
@@ -568,8 +570,10 @@ function champ(nom, cle, placeholder, lignes) {
 function fixe(nom, valeur, vide) {
   return el("div", "champ", `<span class="nom">${nom}</span><span class="fixe${vide ? " vide" : ""}">${valeur}</span>`);
 }
-function bloc(etiquette, doux) {
-  return el("div", "bloc", `<p class="etiquette">${etiquette}${doux ? `<span class="doux">${doux}</span>` : ""}</p>`);
+function bloc(etiquette, doux, explication) {
+  const b = el("div", "bloc", `<p class="etiquette">${etiquette}${doux ? `<span class="doux">${doux}</span>` : ""}</p>`);
+  if (explication) b.appendChild(el("p", "aide explication", explication));
+  return b;
 }
 function autresSi(s, cle, placeholder) {
   // « Exemple : » devant : un gris qui ressemble à une valeur se prend pour une valeur
@@ -580,13 +584,13 @@ function autresSi(s, cle, placeholder) {
 
 function etape1(z) {
   const f = etat.f;
-  let b = bloc("Identification du chantier");
+  let b = bloc("Identification du chantier", "", "Le chantier, tel qu’il est dans Atlas. Rien à écrire.");
   b.appendChild(fixe("Nom du chantier", CHANTIER.nom));
   b.appendChild(fixe("N° de devis et/ou de commande afférent", CHANTIER.devis));
   b.appendChild(fixe("Entreprise réalisant le chantier", ENTREPRISE.nom));
   z.appendChild(b);
 
-  b = bloc("Donneur d’ordre");
+  b = bloc("Donneur d’ordre", "", "Qui vous a commandé les travaux ? Le client du devis, ou quelqu’un d’autre : une entreprise qui vous sous-traite, un syndic, une mairie.");
   const ch = el("div", "choix");
   const c1 = bouton("Le client du devis", () => { f.donneur = "client"; redessinerEtape(); }); c1.setAttribute("aria-pressed", String(f.donneur === "client"));
   const c2 = bouton("Quelqu’un d’autre", () => { f.donneur = "autre"; redessinerEtape(); }); c2.setAttribute("aria-pressed", String(f.donneur === "autre"));
@@ -602,7 +606,7 @@ function etape1(z) {
   }
   z.appendChild(b);
 
-  b = bloc("Lieu");
+  b = bloc("Lieu", "", "Où est le chantier. Relevez la position GPS sur place : elle guide les secours.");
   b.appendChild(fixe("Adresse", CHANTIER.adresse));
   const g = el("div", "champ", `<span class="nom">Coordonnées GPS</span>`);
   if (f.gps) g.appendChild(el("span", "fixe", f.gps));
@@ -610,13 +614,13 @@ function etape1(z) {
   b.appendChild(g);
   z.appendChild(b);
 
-  b = bloc("Dates d’exécution", "d’après le planning");
+  b = bloc("Dates d’exécution", "d’après le planning", "Quel jour et à quelle heure on commence et on finit.");
   let d = el("div", "deux-champs"); d.appendChild(fixe("Début", CHANTIER.jourCourt)); d.appendChild(fixe("Fin", CHANTIER.jourCourt)); b.appendChild(d);
   d = el("div", "deux-champs"); d.appendChild(champ("Heures, début", "hDebut", "Exemple : 8 h")); d.appendChild(champ("Heures, fin", "hFin", "Exemple : 12 h 30")); b.appendChild(d);
   b.appendChild(champ("Horaires, délais de réalisation", "horaires", "Exemple : une demi-journée, le matin"));
   z.appendChild(b);
 
-  b = bloc("Sur le chantier");
+  b = bloc("Sur le chantier", "", "Qui est le chef sur place, combien de personnes de l’entreprise sont là, et quel numéro appeler s’il arrive quelque chose.");
   b.appendChild(champ("Responsable de l’entreprise sur le chantier", "responsable"));
   const nb = el("div", "champ", `<span class="nom">Nombre de travailleurs de l’entreprise</span>`);
   const cp = el("div", "compteur");
@@ -631,31 +635,31 @@ function etape1(z) {
 
 function etape2(z) {
   const f = etat.f;
-  let b = bloc("Travaux à réaliser");
+  let b = bloc("Travaux à réaliser", "", "Cochez ce que vous allez faire aujourd’hui sur ce chantier.");
   b.appendChild(el("p", "aide", `Le devis dit : <b>${CHANTIER.lignes.slice(0, -1).join(", ")} et ${CHANTIER.lignes.at(-1).toLowerCase()}</b>.`));
   b.appendChild(pastilles(L.travaux, f.travaux));
   const a = autresSi(f.travaux, "travauxAutres", "Exemple : taille de réduction"); if (a) b.appendChild(a);
   z.appendChild(b);
 
-  b = bloc("Main d’œuvre", "à remplir une fois");
-  b.appendChild(champ("Pour chaque personne : sa formation, depuis quand elle travaille, ses habilitations et ses autorisations de conduite", "mainOeuvre", "Exemple : 3 personnes en CDI, CACES nacelle OK, autorisation de conduite OK", 3));
+  b = bloc("Main d’œuvre", "à remplir une fois", "Pour chaque personne : sa formation, depuis quand elle travaille, ce qu’elle a le droit de faire (habilitations, autorisations de conduite).");
+  b.appendChild(champ("", "mainOeuvre", "Exemple : 3 personnes en CDI, CACES nacelle OK, autorisation de conduite OK", 3));
   // SA RÉPONSE DU 21 SEPTEMBRE : « la B, mais faut préciser que ça sera
   // conservé pour toutes les autres fiches ». Un seul texte, gardé d'une fiche
   // à l'autre, et l'écran le dit sous le cadre.
   b.appendChild(el("p", "aide", "Ce texte est gardé pour toutes vos prochaines fiches. Corrigez-le ici quand l’équipe change.")).style.margin = "8px 0 0";
   z.appendChild(b);
 
-  b = bloc("Matériels", "approprié, conforme, vérifié (VGP)");
-  b.appendChild(el("p", "aide", "Moyens d’élévation. Privilégier la protection collective."));
+  b = bloc("Matériels", "", "Cochez le matériel que vous allez utiliser sur ce chantier. Il doit être en bon état, et vérifié (la VGP, pour la nacelle et le treuil).");
+  b.appendChild(el("p", "aide", "Pour monter. Une nacelle protège mieux que les cordes : quand c’est possible, préférez-la."));
   b.appendChild(pastilles(L.elevation, f.elevation));
-  b.appendChild(el("p", "aide", "Matériels de coupe")).style.marginTop = "12px";
+  b.appendChild(el("p", "aide", "Pour couper.")).style.marginTop = "12px";
   b.appendChild(pastilles(L.coupe, f.coupe));
-  b.appendChild(el("p", "aide", "Matériels autres")).style.marginTop = "12px";
+  b.appendChild(el("p", "aide", "Le reste du matériel.")).style.marginTop = "12px";
   b.appendChild(pastilles(L.autresMat, f.autresMat));
   if (f.elevation.has("Autres") || f.coupe.has("Autres") || f.autresMat.has("Autres")) { const c = champ("Autres (à préciser)", "materielAutres"); c.style.marginTop = "8px"; b.appendChild(c); }
   z.appendChild(b);
 
-  b = bloc("L’état des arbres", "santé, ancrage, structure");
+  b = bloc("L’état des arbres", "", "Ce que vous avez regardé sur les arbres avant de monter : du bois mort, des racines qui tiennent mal, une maladie. Cochez ce qui a été vérifié.");
   b.appendChild(cases(L.matieres, f.matieres));
   b.appendChild(champ("Autres (à préciser)", "matieresAutres", "Exemple : visite du 20 janvier, aucune fragilisation vue sur les chênes, à confirmer le jour même"));
   z.appendChild(b);
@@ -663,7 +667,7 @@ function etape2(z) {
 
 function etape3(z) {
   const f = etat.f;
-  let b = bloc("Carte / croquis / photo du chantier", "accès, voies de circulation, végétaux à traiter");
+  let b = bloc("Carte / croquis / photo du chantier", "", "Une photo du chantier, prise sur place. On doit y voir par où on entre, par où on passe, et les arbres à traiter.");
   const ph = el("div", "photos");
   for (let i = 0; i < f.photos; i++) ph.appendChild(el("span", "vignette"));
   const aj = bouton(APPAREIL, () => { f.photos++; redessinerEtape(); }, "ajouter"); aj.setAttribute("aria-label", "Prendre une photo");
@@ -671,12 +675,12 @@ function etape3(z) {
   b.appendChild(el("p", "aide", "Délimitation matérielle du chantier obligatoire")).style.margin = "10px 0 0";
   z.appendChild(b);
 
-  b = bloc("Risque biologique");
+  b = bloc("Risque biologique", "", "Des bêtes ou des plantes dangereuses sur place ? Cochez-les, puis cochez ce que vous faites contre.");
   b.appendChild(pastilles(L.bio, f.bio));
   if (f.bio.size) { b.appendChild(el("p", "aide", "Mesures")).style.marginTop = "12px"; b.appendChild(pastilles(L.bioMesures, f.bioMesures)); }
   z.appendChild(b);
 
-  b = bloc("Risques spécifiques au chantier", "mesures de prévention");
+  b = bloc("Mesures de prévention", "", "Ce que vous mettez en place pour que personne ne soit blessé : le balisage, la communication entre vous, la surveillance des passants.");
   b.appendChild(cases(L.specifiques, f.specifiques));
   if (f.specifiques.has(L.specifiques[2])) { const c = champ("Moyen de communication", "communication", "Exemple : casques communicants à 3"); c.style.marginTop = "4px"; b.appendChild(c); }
   const a = autresSi(f.specifiques, "specifiquesAutres", "Exemple : sortie du garage bloquée pendant le chantier"); if (a) b.appendChild(a);
@@ -685,7 +689,7 @@ function etape3(z) {
 
 function etape4(z) {
   const f = etat.f;
-  let b = bloc("Risques liés aux réseaux", "aériens et souterrains");
+  let b = bloc("Risques liés aux réseaux", "", "Des lignes électriques, des câbles ou des canalisations près des arbres, en l’air ou sous terre ? Cochez-les. Les distances à respecter s’affichent.");
   b.appendChild(pastilles(L.reseaux, f.reseaux));
   if ([...f.reseaux].some((x) => x.startsWith("Électrique"))) {
     b.appendChild(el("div", "rappel", `<b>Distance de sécurité vis-à-vis des conducteurs électriques nus</b>
@@ -694,7 +698,7 @@ function etape4(z) {
   if (f.reseaux.size) { b.appendChild(el("p", "aide", "Mesures")).style.marginTop = "12px"; b.appendChild(cases(L.reseauxMesures, f.reseauxMesures)); }
   z.appendChild(b);
 
-  b = bloc("Risques liés à l’environnement");
+  b = bloc("Risques liés à l’environnement", "", "Ce qui, autour du chantier, peut gêner ou blesser : la route, le bruit, la chaleur, un sol glissant, un plan d’eau. Cochez, puis cochez ce que vous faites contre.");
   b.appendChild(pastilles(L.env, f.env));
   if (f.env.size) {
     b.appendChild(el("p", "aide", "Mesures")).style.marginTop = "12px"; b.appendChild(pastilles(L.envMesures, f.envMesures));
@@ -702,32 +706,32 @@ function etape4(z) {
   }
   z.appendChild(b);
 
-  b = bloc("Co-activité, machines");
+  b = bloc("Co-activité, machines", "", "D’autres personnes travaillent en même temps dans la zone ? Une machine peut happer ou projeter ? Cochez, et écrivez le reste.");
   b.appendChild(cases(L.coactivite, f.coactivite));
   b.appendChild(champ("Risques autres identifiés", "risquesAutres", "Exemple : coups de vent possibles", 2));
   b.appendChild(champ("Mesures de prévention autres", "mesuresAutres", "Exemple : rubalise autour de la propriété, le propriétaire reste à l’intérieur", 2));
   z.appendChild(b);
 
-  b = bloc("Règles organisationnelles à mettre en place");
+  b = bloc("Règles organisationnelles à mettre en place", "", "Comment l’équipe s’organise pour ne pas se gêner ni se mettre en danger.");
   b.appendChild(cases(L.orga, f.orga));
   if (f.orga.has("Mode de communication entre travailleurs")) { const c = champ("Mode de communication", "orgaCommunication", "Exemple : casques communicants"); c.style.marginTop = "4px"; b.appendChild(c); }
   z.appendChild(b);
 
-  b = bloc("Consignes sur la conduite à tenir en cas de phénomènes météorologiques imprévus");
+  b = bloc("Si le temps tourne", "", "Ce qu’on fait en cas de vent, d’orage ou de pluie forte qui arrive pendant le chantier.");
   b.appendChild(cases(L.meteo, f.meteo));
   z.appendChild(b);
 }
 
 function etape5(z) {
   const f = etat.f;
-  let b = bloc("Organisation des secours", "ressources humaines et matérielles");
+  let b = bloc("Organisation des secours", "", "Ce qu’il y a sur place pour porter secours, et où. Le Point de Rencontre des Secours, c’est l’endroit précis où les pompiers vous retrouvent.");
   b.appendChild(cases(L.secours, f.secours));
   { const a = autresSi(f.secours, "secoursAutres", "Exemple : couverture de survie dans le camion"); if (a) b.appendChild(a); }
   b.appendChild(champ("Lieu où se trouve la trousse de secours", "lieuTrousse", "Exemple : dans la cabine du camion"));
   b.appendChild(champ("Point de Rencontre des Secours", "prs", "Exemple : devant la maison du propriétaire, à l’adresse du chantier"));
   z.appendChild(b);
 
-  b = bloc("En cas d’accident", "sur la fiche, à lire avant");
+  b = bloc("En cas d’accident", "", "Les consignes, dans l’ordre. Elles sont imprimées sur la fiche : à lire avant de commencer.");
   const ban = el("div", "bandeau" + (etat.consignesOuvertes ? " ouvert" : ""));
   const tete = bouton(`<span class="tete-mot">Protéger, alerter, secourir</span><span class="tete-compte">15, 18, 112</span>${CHEV}`,
     () => { etat.consignesOuvertes = !etat.consignesOuvertes; redessinerEtape(); }, "tete");
@@ -744,14 +748,14 @@ function etape5(z) {
   b.appendChild(el("div", "urgence", [["15", "SAMU"], ["18", "Pompiers"], ["112", "Europe"], ["114", "Sourds, malentendants"], ["17", "Police"]].map(([n, q]) => `<a href="tel:${n}"><b>${n}</b><span>${q}</span></a>`).join("")));
   z.appendChild(ban.parentElement);
 
-  b = bloc("Observations, consignes particulières");
-  b.appendChild(champ("Ce que l’équipe doit savoir en plus", "observations", "Exemple : prévenir le chef de chantier si quelque chose change après l’inspection du matin", 3));
+  b = bloc("Observations, consignes particulières", "", "Ce que l’équipe doit savoir en plus, pour ce chantier-là.");
+  b.appendChild(champ("", "observations", "Exemple : prévenir le chef de chantier si quelque chose change après l’inspection du matin", 3));
   z.appendChild(b);
 }
 
 function etape6(z) {
   const f = etat.f, m = manques();
-  let b = bloc(m.length ? "Encore vide" : "Tout est renseigné");
+  let b = bloc(m.length ? "Encore vide" : "Tout est renseigné", "", m.length ? "Ce qui n’est pas rempli. Touchez une ligne pour y aller." : "");
   if (m.length) {
     const ul = el("ul", "vides");
     m.forEach((x) => { const li = el("li"); li.appendChild(bouton(`<span class="tiret" aria-hidden="true">–</span><span>${x.quoi}</span><span class="etape-n">${ETAPES_COURTES[x.etape - 1]}</span>`, () => { etat.etape = x.etape; dessiner(); })); ul.appendChild(li); });
@@ -759,7 +763,7 @@ function etape6(z) {
   } else b.appendChild(el("div", "tout-la", `<span class="rond" aria-hidden="true">${COCHE}</span>Les sept éléments du décret sont là`));
   z.appendChild(b);
 
-  b = bloc("Enregistrement");
+  b = bloc("Enregistrement", "", "Le chef d’entreprise signe. Sa signature engage sa responsabilité.");
   b.appendChild(fixe("Nom et prénom du chef d’entreprise (ou de son représentant)", ENTREPRISE.patron));
   b.appendChild(fixe("Date", CHANTIER.jourCourt + " 2026"));
   const s = el("div", "signature" + (f.signatureTracee ? " signee" : ""), `<canvas aria-label="Signature"></canvas><span class="ligne-sig" aria-hidden="true"></span><span class="ici">Signez ici, au doigt</span>`);
