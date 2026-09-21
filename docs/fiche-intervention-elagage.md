@@ -32,7 +32,7 @@ par une maquette (`CLAUDE.md` §3 bis), et par sa réponse.
 | **Le texte** | décret n° 2021-1833 du 24 décembre 2021 |
 | **En vigueur** | 1er mars 2022 (la formation secourisme : 28 avril 2023) |
 | **Ce qu'il crée** | une **fiche d'intervention** à établir **avant** le début des travaux |
-| **Quels travaux** | abattage, élagage, démontage, ébranchage, éhouppage, billonnage, broyage — parcs, jardins, arbres d'alignement. **Pas** la tonte, pas la haie |
+| **Quels travaux** | abattage, élagage, démontage, ébranchage, éhouppage, billonnage, broyage — parcs, jardins, arbres d'alignement. La tonte et la taille de haie n'y sont pas nommées — mais **c'est une déduction, pas une citation**, voir §2 |
 | **Qui** | chaque chef d'entreprise intervenante, **y compris l'artisan seul** qui grimpe lui-même |
 | **Où** | disponible en permanence sur le chantier — **la dématérialisation est explicitement admise** |
 | **Combien de temps** | conservée **2 ans** à compter de la date de signature |
@@ -68,7 +68,21 @@ depuis ce poste.
 | Entrée en vigueur au 1er mars 2022 | recherche web, sources concordantes (MSA, DREETS, ministère) | élevée |
 | L'article est le R. 717-85-16 du code rural | recherche web, **une seule source** | moyenne — **à vérifier avant de l'écrire où que ce soit** |
 | Le décret vise aussi les travailleurs indépendants et les employeurs qui grimpent eux-mêmes | recherche web, sources concordantes | élevée |
+| **La tonte et la taille de haie ne sont pas concernées** | **déduction** : le décret vise l'abattage et l'élagage d'arbres et les opérations qui y sont directement liées ; ni la tonte ni la haie ne figurent dans les treize travaux du formulaire | **à trancher avant de s'en servir** — c'est la ligne qui décide si une fiche est due ou non |
 | Les sanctions en cas d'absence de fiche | **rien d'établi** | **ne rien affirmer** |
+
+### Ce qui n'a PAS été lu, et qu'il ne faut pas croire lu
+
+- **La notice « Comment la remplir ? »** (MSA réf. 12350, le second PDF). Elle
+  existe, elle n'a pas été ouverte. Elle peut porter des précisions — qui signe
+  quand plusieurs entreprises interviennent, ce qu'on écrit dans une rubrique
+  sans objet — que le formulaire seul ne donne pas. **À lire avant de dessiner.**
+- **Le décret lui-même.** Seul son numéro, repris en tête du formulaire, est
+  acquis. Son champ d'application exact, ses exclusions et ses sanctions ne le
+  sont pas.
+- **Le formulaire PDF n'est pas dans le dépôt** — il est trop lourd, et il vit à
+  l'adresse du §8. Le §4 de ce document le restitue en entier : une session sans
+  accès réseau peut travailler dessus sans le télécharger.
 
 **Ce qui reste à faire pour lever le doute** : lire le décret et l'article du
 code rural à la source. Ce n'est pas faisable depuis un environnement d'agent
