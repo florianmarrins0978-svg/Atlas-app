@@ -158,6 +158,25 @@
   .encadre p{margin:0;text-align:center;font:600 12px/1 ui-sans-serif,sans-serif;letter-spacing:.2em;
              text-transform:uppercase;color:var(--or)}
 
+  /* ═══ LE BOUTON FLOTTANT, ET CE QU'IL NE DOIT PAS CACHER ═════════════════
+     Sa demande du 21 septembre. C'est le patron du devis, déjà codé
+     (`DevisCompletClient`, « sticky bottom-0 ») : la capsule reste sous le
+     pouce pendant qu'il fait défiler.
+
+     **Et elle se pose AU-DESSUS de la barre d'onglets, jamais dessus.** Sa
+     capture du 5 septembre 2026 : « le sous le pouce est caché par le menu du
+     bas ». La barre est donc dessinée ici — sans elle, la planche montrerait
+     un bouton qui tient et un écran qui ment. */
+  .fenetre{position:relative}
+  .defile{height:620px;overflow-y:auto;-webkit-overflow-scrolling:touch}
+  .flottant{position:sticky;bottom:0;z-index:2;margin-top:24px;padding:26px 26px 14px;
+            background:linear-gradient(to top, var(--cream) 68%, rgba(0,0,0,0))}
+  .barre{display:flex;justify-content:space-between;gap:4px;padding:12px 18px 10px;
+         border-top:1px solid var(--lineSoft);background:var(--cream)}
+  .barre span{font:500 9.5px/1 ui-sans-serif,sans-serif;letter-spacing:.16em;
+              text-transform:uppercase;color:var(--muted);padding-bottom:6px}
+  .barre span.ici{color:var(--ink);border-bottom:1.5px solid var(--or)}
+
   /* les boutons de l'application */
   .bas{margin:24px 26px 0}
   .principal{display:flex;width:100%;align-items:center;justify-content:center;min-height:50px;padding:13px 36px;
@@ -345,6 +364,7 @@
 
   <!-- ═══ LA FACTURE ══════════════════════════════════════════════════════ -->
   <section class="ecran" id="v-facture">
+    <div class="fenetre"><div class="defile">
     <div class="titre" style="padding-top:26px">
       <h1>Facture</h1>
       <p class="sur">F2026-000014 · Mme Grospiron</p>
@@ -383,8 +403,13 @@
       </div>
     </div>
 
-    <div class="bas">
+    <div class="flottant">
       <button class="capsule-or" type="button" data-va="remplir">Remplir la facture</button>
+    </div>
+    </div>
+    <nav class="barre" aria-label="Les onglets d’Atlas">
+      <span class="ici">Chantiers</span><span>Planning</span><span>Terminés</span><span>Paysage</span><span>Réglages</span>
+    </nav>
     </div>
   </section>
 
