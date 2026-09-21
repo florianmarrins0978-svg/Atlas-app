@@ -1,10 +1,9 @@
-import { execFileSync } from "node:child_process";
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { spawnSync } from "node:child_process";
+import { writeFileSync } from "node:fs";
 import path from "node:path";
 import { lireDernierVerdict } from "./_dernier-verdict";
-import { SUR_MAIN, decisionSurLesRouges, resteARejouer, surMainPourCetteBase } from "./_rouge-prealable.mjs";
+import { SUR_MAIN, decisionSurLesRouges, resteARejouer, sortDUneSuite, surMainPourCetteBase } from "./_rouge-prealable.mjs";
 import { FICHIER_REPONSES, baseDuLot, cheminDuTemoin, lireLesReponses, preparerLeTemoin } from "./_temoin-de-main.mjs";
-import { bilanDuJournal } from "./_bilan-suites.mjs";
 
 /**
  * ═══════════════════════════════════════════════════════════════════════════
@@ -65,36 +64,22 @@ function rejouer(dossier: string, suite: string): string {
   const env = { ...process.env };
   delete env.ATLAS_ADRESSE;
   const motif = suite.replace(/^test-/, "").replace(/\.ts$/, "");
-  try {
-    const sortie = execFileSync(
-      "npm",
-      estNavigateur
-        ? ["run", "test:e2e", "--", "--seulement", motif]
-        : ["exec", "--", "tsx", path.join("scripts", suite)],
-      // **`npm` est `npm.cmd` sous Windows** : sans interpréteur, le lancement
-      // rend ENOENT — un statut absent —, donc « indéterminé » des DEUX côtés,
-      // et rien ne se compare jamais (payé le 18 septembre 2026, sur douze
-      // rouges d'outillage). Même geste que `_jouer-etape.ts`.
-      { cwd: dossier, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"], env, timeout: 20 * 60_000, shell: process.platform === "win32" }
-    );
-    // **Un moteur qui rend 0 mais n'a joué AUCUNE suite ne prouve rien** : un
-    // motif trop étroit ne mesure pas, il se tait (`CLAUDE.md` §5).
-    if (estNavigateur) {
-      const bilan = bilanDuJournal(sortie);
-      if (!bilan) return SUR_MAIN.INDETERMINE;
-      return bilan.rouges.includes(suite) ? "rouge" : "vert";
-    }
-    return "vert";
-  } catch (e) {
-    const err = e as { stdout?: string; status?: number | null };
-    if (err.status === null || err.status === undefined) return "indetermine"; // tué, ou jamais lancé
-    if (estNavigateur) {
-      const bilan = bilanDuJournal(err.stdout ?? "");
-      if (!bilan) return "indetermine";
-      return bilan.rouges.includes(suite) ? "rouge" : "vert";
-    }
-    return "rouge";
-  }
+  // **Les DEUX flux, et la lecture vit ailleurs** (`sortDUneSuite`). Le moteur
+  // nomme ses rouges sur stderr et compte sur stdout ; ne lire que stdout
+  // faisait passer toute suite rouge pour verte, des deux côtés — donc
+  // « pareil », donc tolérée (21 septembre 2026).
+  const moteur = spawnSync(
+    "npm",
+    estNavigateur
+      ? ["run", "test:e2e", "--", "--seulement", motif]
+      : ["exec", "--", "tsx", path.join("scripts", suite)],
+    // **`npm` est `npm.cmd` sous Windows** : sans interpréteur, le lancement
+    // rend ENOENT — un statut absent —, donc « indéterminé » des DEUX côtés,
+    // et rien ne se compare jamais (payé le 18 septembre 2026, sur douze
+    // rouges d'outillage). Même geste que `_jouer-etape.ts`.
+    { cwd: dossier, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"], env, timeout: 20 * 60_000, shell: process.platform === "win32" }
+  );
+  return sortDUneSuite({ suite, estNavigateur, status: moteur.status, stdout: moteur.stdout, stderr: moteur.stderr });
 }
 
 function main() {

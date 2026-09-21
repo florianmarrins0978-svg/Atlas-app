@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { exigerEcran, exigerFacturation } from "@/server/garde-action";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { logger } from "@/server/logger";
@@ -150,6 +151,39 @@ export async function creerChantierAction(data: CreerChantierInput): Promise<{ i
     adresseChantier: data.adresseChantier?.trim() || undefined,
     clientId,
   });
+
+  // ── CE QUE CETTE ÉCRITURE CHANGE SE DÉCLARE ICI — 20 septembre 2026 ───────
+  //
+  // **Sa remarque, capture à l'appui :** *« j'ai créé un chantier puis j'ai
+  // fait retour. Problème ! J'ai dû recharger la page pour qu'il arrive dans
+  // mes chantiers en cours ! »*
+  //
+  // Le chantier était bien en base. C'est l'accueil qu'il retrouvait tel qu'il
+  // l'avait quitté : un RETOUR — la flèche, ou le geste du navigateur — rejoue
+  // la page telle qu'elle a été rendue, et rien ne disait que la liste avait
+  // changé (`node_modules/next/dist/docs/01-app/04-glossary.md`, « Client
+  // Cache » : *pages … are reused during browser back/forward navigation*).
+  // Aucune durée ne l'en sortait : `staleTimes` ne touche pas ce cas-là.
+  //
+  // **Les sept autres écritures qui touchent l'accueil l'annonçaient déjà** —
+  // `marquerReponseVueAction`, `corrigerDevisAction`, `repartirDeCeClient`
+  // (`src/app/actions.ts`, `src/app/clients/[id]/actions.ts`). Celle qui CRÉE
+  // la ligne était la seule à se taire.
+  //
+  // **Les trois écrans, pas seulement le sien** : la création pose aussi une
+  // fiche client, ou une date de dernier chantier sur une fiche existante —
+  // même retour, même page rejouée, et un défaut qu'il aurait signalé au lot
+  // suivant.
+  //
+  // **Et les trois se nomment, même si une seule suffit AUJOURD'HUI.** La
+  // documentation du cadre le dit elle-même (`revalidatePath.md`) : un appel
+  // rafraîchit pour l'instant *toutes* les pages déjà visitées, et *« this
+  // behavior is temporary and will be updated in the future to apply only to
+  // the specific path »*. S'appuyer sur cet effet de bord, c'est laisser deux
+  // écrans se figer le jour d'une mise à jour, sans que rien ne le dise.
+  revalidatePath("/");
+  revalidatePath("/clients");
+  if (clientId) revalidatePath(`/clients/${clientId}`);
 
   return { id: chantier.id };
 }

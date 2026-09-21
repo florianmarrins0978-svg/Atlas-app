@@ -6,7 +6,54 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-09-21
+
+### La comparaison des rouges lit le journal entier — un rouge n'y passe plus pour vert
+
+`verifier-rouge-prealable` rejoue chaque suite rouge sur la base de `main` et
+sur le lot, puis compare. Elle ne lisait que la sortie standard du moteur ; or
+le moteur navigateur nomme ses rouges sur la sortie d'erreur. Toute suite rouge
+se lisait donc « verte » — des deux côtés, donc « pareil », donc tolérée : une
+régression nouvelle serait passée par là. La lecture vit désormais dans une
+fonction pure (`sortDUneSuite`), qui lit les deux flux et refuse de conclure
+quand le compte et les rouges nommés ne se recoupent pas.
+`test-rouge-prealable-lit-le-journal.ts` la tient.
+
 ## 2026-09-20
+
+### Un chantier créé est là quand il revient — plus de rechargement
+
+*« J'ai créé un chantier puis j'ai fait retour. Problème ! J'ai dû recharger la
+page pour qu'il arrive dans mes chantiers en cours ! »*
+
+Un RETOUR rejoue la page telle qu'elle a été rendue — c'est le cache du
+navigateur, et aucun délai n'en sort (`staleTimes` ne le touche pas). L'accueil
+revenait donc tel qu'il l'avait quitté. Racine : `creerChantierAction` était la
+seule écriture de l'accueil à ne pas déclarer ce qu'elle change, là où les sept
+autres le font déjà. Elle déclare désormais les trois écrans qu'elle touche —
+l'accueil, la liste des clients, la fiche du client.
+
+Ce que ça évite : croire qu'un chantier n'a pas été enregistré, et le recréer.
+Suite `test-chantier-neuf-au-retour-e2e.ts`, vue rouge sur le code d'avant.
+`ARCHITECTURE.md` §391.
+
+### « Je propose » : la phrase, son pluriel, et le choix des jours
+
+Quatre demandes le même soir, après qu'il a écarté sa propre idée de la veille
+— un dessin de planning sur la ligne : *« non c'est nul, on garde l'existant »*.
+`appli/proposer-ses-jours.html` les met ensemble : le libellé « Cette date ne
+me convient pas ? Je propose », son pluriel décidé **sur les jours** et non sur
+le nombre de propositions, le geste de son écran d'envoi repris à la lettre
+dans le calendrier du client (`propositions-de-jours.ts`), et le compte « Les
+travaux sont prévus sur N jours » au-dessus du bouton.
+
+**Deux défauts trouvés en la parcourant**, tous deux dans le geste qu'il
+demande : le bloc posé depuis un jour d'où le chantier ne tient pas d'affilée
+recouvrait des jours pris, et un jour du bloc pouvait être barré en même temps
+qu'allumé — donc impossible à retirer. Les deux sont corrigés dans la planche
+et notés dans `TODO.md` pour le codage.
+
+**Rien n'est codé** : l'écran de son client part en un seul lot, à sa demande.
 
 ### Plusieurs photos d'un coup depuis la photothèque, sous trois plafonds
 
@@ -16,7 +63,7 @@ maximum : 15 par sélection sur la pellicule, 10 sur le retour et par retour, 30
 par chantier — ce dernier tenu par le dépôt, pas par l'écran. Les entrées à une
 seule photo (ticket, croquis, diagnostic, assistant, logo) restent à une. En
 passant : un refus d'ajout de photo sur la pellicule s'affiche, au lieu de se
-perdre dans un `catch` muet. `ARCHITECTURE.md` §392.
+perdre dans un `catch` muet. `ARCHITECTURE.md` §393.
 
 ### Un refus par erreur n'a aucune issue — la planche, pas encore le code
 
@@ -30,7 +77,12 @@ laisse le téléphone.
 
 `appli/le-refus-par-erreur.html` compare trois sécurités, toutes mesurées à
 **0 px** sur 390 × 664 : la feuille de la maison, le dédoublement sur place, et
-le retour depuis l'écran d'après. **Rien n'est codé — en attente de son choix.**
+le retour depuis l'écran d'après.
+
+**Il a retenu la A le soir même** — la feuille. Et il a demandé de ne pas coder
+tout de suite : *« j'ai encore des modif à faire sur cette page, tu coderas
+tout d'un coup »*. L'écran de son client attend donc le reste de ses demandes,
+et partira en un seul lot (`TODO.md`).
 
 Son cas d'aujourd'hui, lui, se répare sans code : le chantier est passé à
 `retourne`, et un nouvel envoi rouvre un lien neuf (`creerEnvoi` ne refuse
