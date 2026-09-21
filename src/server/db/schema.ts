@@ -2106,6 +2106,16 @@ export const paiementsFacture = pgTable(
     /** Le numéro du chèque (migration 0092) — « chèque n° 1806028 » sur la facture. */
     numero: text("numero"),
     /**
+     * Ce que CE règlement est, écrit par lui (migration 0098).
+     *
+     * `null` : le nom se déduit du rang et des acomptes du devis — « Acompte
+     * 30 % » (`nomAcompte`). Dès qu'il écrit quelque chose, c'est ce mot-là
+     * qui s'affiche et qui s'imprime : des arrhes ou un avoir ne sont pas des
+     * acomptes, et le deviner à sa place mettrait un mot faux sur la pièce
+     * comptable de sa cliente.
+     */
+    libelle: text("libelle"),
+    /**
      * Posé par l'interrupteur « Facture acquittée » (migration 0092) : le
      * solde, compté reçu. Il se retire quand on éteint, et s'écrit « Acompte »
      * tout court — jamais avec un taux du devis.

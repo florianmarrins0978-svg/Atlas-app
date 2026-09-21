@@ -701,12 +701,41 @@ try {
     // L'empreinte de la vérification, moins le fichier que le lot ajoute : ce
     // fichier-là n'a donc jamais été mesuré, et c'est bien le lot qui a bougé.
     const empreinte = empreinteDesSources(RACINE);
-    empreinte.delete(path.relative(RACINE, LOT_D_EPREUVE));
+    // La clé s'écrit comme git l'écrit, même sous Windows : `path.relative` y
+    // rendrait `scripts\…`, n'effacerait rien, et ce contrôle ne mesurerait
+    // plus rien — c'est ainsi qu'il passait au vert sur un verdict périmé.
+    const cle = path.relative(RACINE, LOT_D_EPREUVE).split(path.sep).join("/");
+    assert.ok(empreinte.delete(cle), `${cle} n'est pas dans l'empreinte : rien à retirer, ce contrôle ne mesure rien`);
     writeFileSync(TEMOIN, JSON.stringify({ quand: Date.now(), vert: true, niveau: 3, empreinte: [...empreinte] }));
     const { refuse, message } = jouer("git push origin claude/mon-lot:main");
     assert.ok(refuse, "un verdict périmé a été accepté");
     assert.match(message, /le lot a changé/);
     assert.match(message, /verifier:avant-(fusion|livraison)/, "le refus ne dit pas quoi rejouer");
+  });
+
+  // ─── LE GARDE-FOU DU DOSSIER VISÉ JUGE, PAS CELUI DE LA SESSION — 21 sept. ──
+  //
+  // Une session ouverte dans un dossier en retard poussait un lot depuis un
+  // autre dossier : c'est le garde-fou d'hier qui lisait le verdict
+  // d'aujourd'hui, et il refusait un lot vert. Le dossier visé porte son
+  // propre garde-fou : c'est lui qui rend le verdict.
+  cas("une poussée depuis un AUTRE dossier est jugée par le garde-fou de ce dossier-là", () => {
+    const d = mkdtempSync(path.join(tmpdir(), "atlas-delegue-"));
+    const g = (...a: string[]) => execFileSync("git", ["-C", d, ...a], { stdio: "ignore" });
+    try {
+      g("init", "-q", "-b", "lot");
+      mkdirSync(path.join(d, "scripts"), { recursive: true });
+      // Le garde-fou du dossier visé : il se reconnaît, et il tranche.
+      writeFileSync(
+        path.join(d, "scripts", "garde-fusion-main.mjs"),
+        'process.stdin.resume();process.stdin.on("end",()=>{console.error("jugé par le dossier visé");process.exit(2);});\n'
+      );
+      const r = jouer(`git -C "${d}" push origin HEAD:main`);
+      assert.ok(r.refuse, "le verdict du garde-fou du dossier visé n'a pas été rendu tel quel");
+      assert.match(r.message, /jugé par le dossier visé/, "c'est le garde-fou de la session qui a jugé, pas celui du dossier visé");
+    } finally {
+      rmSync(d, { recursive: true, force: true });
+    }
   });
 
   // ─── LA SOIRÉE DU 17 SEPTEMBRE 2026, REJOUÉE EN ENTIER ───────────────────
@@ -737,6 +766,12 @@ try {
       g("init", "-q", "-b", "main");
       g("config", "user.email", "essai@atlas.test");
       g("config", "user.name", "Épreuve");
+      // Ce dépôt d'essai est celui de son espace, sous Linux. Sur son PC, git
+      // pose `core.autocrlf=true` : chaque changement de branche y réécrirait
+      // `mien.ts` avec des fins de ligne CRLF, l'empreinte verrait un contenu
+      // neuf, et le garde-fou accuserait le lot d'avoir bougé — un rouge sur un
+      // scénario juste (20 septembre 2026).
+      g("config", "core.autocrlf", "false");
       mkdirSync(path.join(d, "src", "lib"), { recursive: true });
       mkdirSync(path.join(d, "scripts"), { recursive: true });
       writeFileSync(path.join(d, "src/lib/commun.ts"), "export const commun = 1;\n");

@@ -9,6 +9,96 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## ⏳ UNE PLANCHE À REGARDER — LA FICHE DE SÉCURITÉ (DÉCRET 2021-1833) SUR LA FICHE DU JOUR (21 septembre 2026)
+
+`appli/fiche-de-securite.html`, liée depuis `appli/essais.html`. Sa question :
+*« en élagage il y a besoin de faire des fiches avant l'intervention,
+apparemment c'est devenu obligatoire »*. La recherche vit dans
+le fichier **fiche-intervention-elagage.md** du dossier `docs/`, **sur la
+branche `claude/fiches-elagage-legal-iom2to`** — pas sur `main` à cette heure,
+et c'est pour cela qu'il n'est pas écrit ici comme un chemin : la mémoire du
+dépôt refuse une référence qu'on ne peut pas ouvrir.
+
+**Son nom : « Fiche de sécurité », et pas « fiche d'élagage »** — sa correction
+du 21 septembre : *« les utilisateurs ne font pas que ça, ils font du paysage
+aussi et la création de l'entretien »*. Le décret ne vise que l'élagage et
+l'abattage ; le nom à l'écran ne le dit pas. « Fiche d'intervention » est pris
+par la fiche du jour.
+
+**Ses six réponses du 21 septembre, à ne pas lui redemander :**
+
+| | |
+|---|---|
+| équipe | avec des salariés — *« et des fois je travaille seul »* |
+| donneur d'ordre | **pas toujours** le client du devis |
+| quand | *« au bon vouloir de l'utilisateur »*, en arrivant sur le chantier → **sur la fiche du jour** ; rien d'imposé, rien d'automatique |
+| où | **sur tous les chantiers** — *« des fois ça peut être un chantier d'entretien avec juste un peu d'élagage »* |
+| le nom | **« Fiche de sécurité »**, tranché après avoir vu que le décret dit « fiche d'intervention » — déjà pris par la fiche du jour |
+| la main d'œuvre | **un seul texte, gardé d'une fiche à l'autre**, et l'écran le dit (*« la B, mais faut préciser que ça sera conservé pour toutes les autres fiches »*). Pas de compétences par salarié dans Réglages : proposé, refusé |
+| l'envoi | **« Transmettre le PDF » ouvre la feuille de partage du téléphone**, comme le devis (`TransmettreAuClient.tsx`) : Atlas n'envoie rien tout seul, il l'a fait vérifier. « Plus tard » garde la fiche sans la transmettre ; Atlas la conserve deux ans, dans Terminés |
+| listes | **« Ajouter » partout** à la place de « Autres » : le décret ne donne aucune liste, ni risques ni mesures (vérifié le 21 septembre, R. 717-85-16 3° et 4°, 17 à 25). Rien à cocher dans une catégorie n'est pas un problème |
+| la photo | l'appareil OU la photothèque (`accept="image/*"` sans `capture`) |
+| la loi | **à la première ouverture**, un écran dit ce que le décret demande (les sept éléments), avec deux liens : Légifrance et le formulaire MSA. Puis « Ce que demande la loi » reste dans le bandeau. Sa question : *« le préciser au début, et un lien vers le décret pour qu'ils vérifient par eux-mêmes ? »* |
+| gardé d'une fiche à l'autre | **pour l'instant** : la main d'œuvre, le lieu de la trousse, les deux textes de la co-activité, les observations, ce qu'il ajoute aux listes. *« Je pense que tout ce qu'on coche peut être gardé d'une fiche à l'autre… pour les autres je te le dirai plus tard »* — et il faudra **le dire à la première utilisation**. À lui de trancher |
+| matériel, arbres | **vérifié dans le décret le 21 septembre** : aucune liste de matériel imposée (« les équipements de travail utilisés », R. 717-85-16), rien sur l'examen de l'arbre. Les listes sont celles du formulaire MSA ; l'utilisateur **ajoute** les siennes, gardées d'une fiche à l'autre. Le périmètre de sécurité (R. 717-85-23 : abattage manuel, deux fois la hauteur de l'arbre) s'affiche dans les mesures |
+| l'heure | la roue du téléphone (`input type="time"`), *« les heures et les minutes qui défilent »* |
+| signature | au doigt, à chaque fiche |
+| plan de prévention | *« oui, un bouton pour l'envoyer »* |
+| fréquence | plus de vingt par an |
+
+**Les trois points ouverts du §2 de ce document sont LEVÉS, à la source, le
+21 septembre** (Légifrance et la notice MSA répondaient depuis ce poste) :
+
+- l'article est bien **R. 717-85-16** du code rural (champ : R. 717-85-11 à
+  13) — il peut s'écrire ;
+- le champ : abattage, élagage, éhouppage, démontage, ébranchage, billonnage,
+  broyage — parcs, jardins, arbres d'alignement et isolés, y compris sur
+  chantier BTP ou d'aménagement ; **toutes les techniques** (sol, nacelle,
+  arbre) ; l'employeur qui grimpe et l'indépendant sont visés. Exclus :
+  peuplements forestiers (fiche de chantier forestier, R. 717-78-1) et
+  vergers de production ;
+- la notice MSA : format libre, dématérialisée admise ; signée par le chef
+  d'entreprise ou son représentant, **elle engage sa responsabilité** ;
+  *« l'initier dès la visite de chantier »*, la vérifier **le jour J** contre le
+  terrain, la modifier en cas d'écart ; les cases sont *« un exemple non
+  exhaustif »* et ne remplacent pas le DUERP ;
+- **il a envoyé la feuille officielle** (12350_A_10/2023) : les libellés de la
+  planche sont alignés dessus mot pour mot, y compris ce que la transcription
+  de la branche n'avait pas (co-activité et machines, « risques autres
+  identifiés », « mesures de prévention autres », « horaires, délais »).
+
+**Quand il aura répondu** : le document de la branche corrige son §2 avec ce
+qui précède avant de rejoindre `main`. Rien dans `src/` avant son oui
+(`CLAUDE.md` §3 bis). **Rien ne se pré-coche sur une fiche de sécurité** — les
+lignes du devis se montrent au-dessus des travaux, elles ne se cochent pas.
+
+## ~~MAIN D'ŒUVRE, RÈGLEMENTS ET « ACQUITTÉE » LÀ OÙ IL REMPLIT~~ — CODÉ LE 21 SEPTEMBRE 2026
+
+**Ses trois corrections, capture à l'appui :** *« à corriger : le + main
+d'œuvre et + règlement reçu. Le bouton facture acquittée doit apparaître
+lorsque je remplis la facture comme sur le devis ! Et si je clique sur facture
+acquittée l'encadré doré doit apparaître sous le total ttc au-dessus de revenir
+à la facture. »*
+
+**Planche : `appli/facture-remplir-acquittee.html`** — les deux écrans réels,
+le bouton « Aujourd'hui » pour comparer. **RIEN N'EST CODÉ.**
+
+| Ce qu'elle propose | Où |
+|---|---|
+| « + Main d'œuvre » | `TravauxSupplementairesClient`, sous « + Ajouter une TVA » — la place du devis |
+| « + Règlement reçu » et les lignes | même écran, sous le Total TTC |
+| l'interrupteur « Facture acquittée » | même écran, sous les règlements |
+| l'encadré doré | sous le Total TTC, au-dessus de « Revenir à la facture » |
+| `FactureClient` / `ReglementsRecus` | n'affichent plus que la lecture — plus de « + », plus d'interrupteur |
+
+**TRANCHÉ ET CODÉ LE 21 SEPTEMBRE 2026** — *« code exactement cette
+planche »*. Les trois gestes ont quitté la page de la facture : un seul
+endroit. S'y sont ajoutés, sur ses corrections du même soir : le libellé d'un
+règlement écrit par lui (migration 0098), « Acquittée le … » en or et
+identique sur les deux pages, et le bouton collé sous le pouce.
+`ARCHITECTURE.md` §398.
+
+
 ## 🔧 `test-repartir-du-client-e2e` TOMBE DANS LA BATTERIE, JAMAIS SEULE (20 septembre 2026)
 
 Elle rougit sur `le chantier n'a aucun devis à envoyer` — l'`UPDATE devis`
@@ -50,17 +140,42 @@ JOURS et non sur le premier d'entre eux** — en gardant le premier jour et en
 poussant le quatrième, sa liste aurait été jetée au profit de celle du patron,
 sans que rien ne le dise.
 
-**Ce qui reste ouvert, et qu'il faudra trancher avec lui :**
+**TRANCHÉ LE 21 SEPTEMBRE 2026, ET IL NE SE ROUVRE PAS.** Il lui avait été
+signalé qu'un jour barré peut être libre pour une journée seule, et que combler
+y est donc refusé. Sa réponse : *« si le jour est barré il ne faut pas qu'elle
+puisse proposer cette date, c'est tout »*.
 
-- **combler se fait sur un jour libre pour le CHANTIER ENTIER.** La page ne
-  reçoit qu'une liste de jours barrés — ceux où le chantier ne peut pas
-  commencer (`lireParJeton`) —, donc un jour parfaitement libre pour une
-  journée seule reste barré quand elle cherche où remettre son quatrième. C'est
-  le côté sûr, et c'est plus restrictif que nécessaire. Lui envoyer une seconde
-  liste dirait quelque chose de plus de son planning : à lui de trancher.
-- **la place de la phrase du compte** : juste sous la question. Il l'a demandée
-  « en dessous de "quels jours vous arrangent ?" et au-dessus de la touche pour
-  valider » — les deux sont vrais, mais elle pourrait descendre.
+C'est déjà ce que fait le produit — un jour `occupe` est `disabled` dans
+`Calendrier`, et un jour reste ouvert seulement si le chantier ENTIER tient à
+partir de là (`jourRetenable` → `departPossible`), donc un bloc posé ne
+recouvre jamais un jour barré. **Rien à coder, et rien à lui redemander.**
+
+**Reste, et lui seul peut le dire :** la place de la phrase du compte, posée
+juste sous la question. Il l'a demandée « en dessous de "quels jours vous
+arrangent ?" et au-dessus de la touche pour valider » — les deux sont vrais,
+mais elle pourrait descendre.
+
+## 🔧 DEUX BLOCAGES DE LIVRAISON SUR SON PC, RELEVÉS LA NUIT DU 21 SEPTEMBRE 2026 — LE PREMIER CORRIGÉ LE MATIN MÊME (`ARCHITECTURE.md` §397)
+
+**1. Le garde-fou de `main` est celui du DOSSIER PRINCIPAL, jamais celui du lot.**
+`.claude/settings.json` lance `${CLAUDE_PROJECT_DIR}/scripts/garde-fusion-main.mjs`
+— le code du dossier où la session a été ouverte. Ce dossier portait douze
+commits non fusionnés d'une autre session sur son `main` local, donc son
+garde-fou datait d'avant `lot/outillage-se-tait-sur-windows` : il ne sait pas
+lire un verdict aux chemins « façon git » et refuse à tort un lot vert, sans
+régression nouvelle, que le garde-fou à jour (joué depuis le dossier du lot)
+laisse passer. **À faire :** que le déclencheur délègue au
+`scripts/garde-fusion-main.mjs` du dossier VISÉ par la commande quand il
+existe — le garde-fou mesure déjà ce dossier-là, il doit aussi être le sien.
+En attendant : mettre le dossier principal sur `main` débloque ce lot.
+
+**2. `test-travaux-a-faire-e2e` rougit selon l'ORDRE des suites.** Verte seule
+et dans la batterie du lot photos ; rouge deux fois d'affilée quand elle suit
+`acomptes-devis`, `ligne-du-client`, `pages-publiques`, `recherche-client`
+dans le même serveur (le clic sur la première case ne coche plus, puis le
+bandeau ne s'ouvre plus : quelque chose intercepte les clics). Pas de capture à
+l'échec dans le moteur navigateur : à rejouer dans cet ordre exact avec
+`--seulement`, une capture au premier rouge, avant de toucher à la suite.
 
 ## 🔧 UNE PLANCHE NOMMÉE « PAIEMENT » EXIGE LA BATTERIE ENTIÈRE (18 septembre 2026)
 
@@ -204,7 +319,7 @@ Trois contrôles le tiennent, et les trois ont été **vus rouges** avant :
 `test-rate-limit-redis-real` (la clé absente, le plancher à zéro),
 `test-limite-magasin-en-panne` (rendre ne lève jamais).
 
-## ~~LES SUITES D'OUTILLAGE SONT ROUGES SUR SON PC~~ — MÉCANISME CODÉ LE 20 SEPTEMBRE 2026, À MESURER CHEZ LUI
+## ~~LES SUITES D'OUTILLAGE SONT ROUGES SUR SON PC~~ — CODÉ ET MESURÉ CHEZ LUI LE 20 SEPTEMBRE 2026
 
 **Relevé le 18 septembre 2026**, dans le document du lot « deux jours qui ne se
 touchent pas » : dix-neuf suites d'outillage (`batterie-solitaire`,
@@ -238,6 +353,20 @@ comportement voulu. Sur Windows, `bash` livré avec Git est parfois sur le
 chemin : la suite tourne alors et peut tomber pour une AUTRE raison — chemins,
 `ps -o`, un port. **À rejouer depuis son espace Windows**, et à compléter suite
 par suite avec le vrai message rendu là-bas.
+
+**MESURÉ SUR SON PC LE 20 SEPTEMBRE 2026** (`ARCHITECTURE.md` §396). C'était
+exactement ça : `bash`, `gh`, `curl` répondent, seules les trois suites à `npx`
+se taisaient, et treize rougissaient — chemins en `\`, CRLF de son git, une
+suite base qui ignorait l'atelier, et six suites sur des mécanismes que Windows
+n'a pas (groupes de processus, `#!/bin/sh`, `PATH` en `:`). Toutes corrigées à
+la racine ; `exigerUnSystemePosix(…)` tient les six dernières. Chiffres avant /
+après dans `CHANGELOG.md`.
+
+**Ce qui reste vrai :** une suite qui fait `process.kill(-pid)` sans déclarer
+les groupes de processus laisse un orphelin sur Windows — rien n'y est tué.
+`test-outil-requis` refuse désormais une telle suite dans les deux sens
+(déclaré sans employer, employé sans déclarer) ; les autres mécanismes ne sont
+tenus que dans le premier.
 
 ## LES SUITES NAVIGATEUR TRAVERSENT LA RLS — ce qu'elles ne peuvent pas mesurer
 

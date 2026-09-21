@@ -135,18 +135,24 @@ Deux choses, et les deux apprennent quelque chose :
 
 ---
 
-## Ce qui reste ouvert, et que vous seul pouvez trancher
+## Le point que vous avez tranché le lendemain
 
-**Quand elle cherche où remettre son quatrième jour, les jours barrés le restent
-trop largement.** Sa page ne reçoit qu'une liste : les jours où votre chantier
-**ne peut pas commencer**. Un jour parfaitement libre pour une journée seule y
-figure donc, alors qu'il ferait très bien l'affaire pour combler.
+Je vous avais signalé qu'un jour barré peut être **libre pour une journée
+seule**, et que votre cliente ne peut donc pas y poser le jour qui lui manque.
+Corriger aurait voulu dire lui montrer un peu plus de votre planning.
 
-C'est le côté sûr : elle ne vous propose jamais un jour que l'acceptation
-refuserait. Mais c'est plus restrictif que nécessaire, et sur un mois chargé
-cela lui laisse peu de place. **Lui en envoyer une seconde liste apprendrait
-quelque chose de plus de votre planning** — c'est votre règle depuis toujours
-qu'il n'apprenne rien : à vous de dire si elle bouge ici.
+**Votre réponse :** *« si le jour est barré il ne faut pas qu'elle puisse
+proposer cette date, c'est tout. »*
+
+**C'est déjà ce que fait l'application**, et c'est vérifié :
+
+| | |
+|---|---|
+| un jour barré | ne répond pas au doigt — ni pour poser les 4 jours, ni pour combler |
+| le bloc de 4 jours | ne peut pas recouvrir un jour barré : un jour reste ouvert seulement si le chantier ENTIER tient à partir de là |
+| ce qu'elle voit | des dates barrées, rien d'autre — ni qui, ni quel chantier, ni matin ou après-midi |
+
+**Rien à coder.** Le point est fermé.
 
 ---
 
