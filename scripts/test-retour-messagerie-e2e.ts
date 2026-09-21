@@ -142,8 +142,6 @@ async function chantierAvecDevisPret(page: import("playwright").Page): Promise<s
 
   await page.goto(`${BASE}/chantiers/${chantierId}/devis-complet`, { waitUntil: "networkidle" });
   await page.waitForSelector("text=Total TTC", { timeout: 40_000 });
-  await page.getByRole("button", { name: "+ Ajouter une ligne" }).click();
-  await page.waitForTimeout(900);
   await page.getByLabel("Description 1").fill("Taille d'une haie de charmille");
   await page.getByLabel("Prix unitaire 1").fill("420");
   await page.getByLabel("Description 1").click();

@@ -1806,6 +1806,22 @@ export const envoisDevis = pgTable(
      */
     joursProposes: jsonb("jours_proposes").$type<string[][]>(),
     /**
+     * LES JOURS QUE LE CLIENT A RETENUS — sa demande du 20 septembre 2026 :
+     * elle choisit ses jours un à un, et ils peuvent ne pas se suivre.
+     *
+     * `date_retenue` n'en porte qu'un ; il ne suffit plus à redire ce qu'elle a
+     * proposé, ni sur l'écran de retour qu'elle rouvre depuis son SMS, ni dans
+     * la notification que le patron lit. Le PLANNING, lui, ne dépend pas de
+     * cette colonne : `ecrireLesCreneaux` pose les créneaux à l'acceptation, et
+     * c'est lui qui fait foi. Ceci est la mémoire de la réponse.
+     *
+     * Absente (réponses d'avant la migration 0097) : les jours se redéduisent
+     * comme toujours — la liste de `jours_proposes` quand elle a pris une date
+     * offerte, le bloc d'affilée depuis `date_retenue` sinon. Expand/contract —
+     * `.claude/rules/deployment-safety.md`.
+     */
+    joursRetenus: jsonb("jours_retenus").$type<string[]>(),
+    /**
      * Le client peut-il proposer une autre date que celles offertes ?
      *
      * Décidé par le patron **avant l'envoi** (17 août 2026), puis FIGÉ ici :

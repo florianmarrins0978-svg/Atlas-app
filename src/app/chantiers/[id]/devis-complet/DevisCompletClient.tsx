@@ -2,7 +2,13 @@
 
 import Link from "next/link";
 import { ligneAttendSonPrix, lignesEnAttenteDePrix, prixAEcrire } from "@/lib/preparation-devis";
-import { useState } from "react";
+import {
+  LIGNE_OUVERTE,
+  estLigneOuverte,
+  ligneOuverteAEcrire,
+  ligneOuverteAPoser,
+} from "@/lib/ligne-ouverte-devis";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { colors, font, voile } from "@/lib/design-tokens";
 import {
@@ -184,6 +190,15 @@ type Props = {
   /** Les cinq conditions figées sur ce devis (migration 0064) : ce que le PDF écrira sous ses notes. */
   conditionsReglees: ConditionsLues;
   conditionsPaiement: string;
+  /**
+   * La chaîne va reprendre sa dictée pour écrire ce devis (`devis-a-preparer.ts`).
+   *
+   * **Elle retient la ligne ouverte d'avance**, et c'est la seule raison pour
+   * laquelle cet écran a besoin de le savoir : la chaîne n'écrit les
+   * prestations dictées que sur un devis vide, et une ligne remplie pendant
+   * qu'elle tourne lui ferait tout abandonner — la panne du 7 août 2026.
+   */
+  dicteeAPreparer?: boolean;
   /** La dictée n'a pas été comprise, seulement recopiée — voir `lecture-litterale.ts`. */
   /**
    * Ce que l'agent a retenu des devis passés, par ligne.
@@ -237,15 +252,69 @@ export default function DevisCompletClient(props: Props) {
   const [emetteur, setEmetteur] = useState(props.emetteur);
   const [client, setClient] = useState(props.client);
   const [adresseChantier, setAdresseChantier] = useState(props.adresseChantier);
-  const [lignes, setLignes] = useState<Ligne[]>(
-    props.lignesInitiales.map((l) => ({
+  const [lignes, setLignes] = useState<Ligne[]>(() => {
+    const ecrites = props.lignesInitiales.map((l) => ({
       ...l,
       quantite: sansZerosInutiles(l.quantite),
       // Un prix jamais posé n'arrive PAS dans le champ : la règle est celle
       // du montant « à chiffrer », et elle n'est écrite qu'une fois.
       prixUnitaire: prixAEcrire(sansZerosInutiles(l.prixUnitaire)),
-    }))
-  );
+    }));
+    // **La feuille s'ouvre avec sa première ligne** — sa demande du
+    // 20 septembre 2026. Elle n'est PAS en base : `src/lib/ligne-ouverte-devis.ts`
+    // dit pourquoi, et ce qui la fait naître.
+    return ligneOuverteAPoser({
+      statut: props.statut,
+      nombreDeLignes: ecrites.length,
+      dicteeAPreparer: props.dicteeAPreparer ?? false,
+    })
+      ? [...ecrites, { id: LIGNE_OUVERTE, libelle: "", quantite: "1", prixUnitaire: "", montant: "0.00", tauxTva: null }]
+      : ecrites;
+  });
+
+  /**
+   * L'écriture de la ligne ouverte, une fois pour toutes.
+   *
+   * **Une seule, quoi qu'il arrive** : il remplit la description, passe au
+   * prix, et les deux sorties de champ partent avant que la première réponse
+   * revienne. Sans cette promesse gardée, chacune écrirait sa ligne — il en
+   * verrait deux au rechargement, dont une vide.
+   *
+   * Un refus ne la condamne pas : la promesse est oubliée, et la frappe
+   * suivante réessaie plutôt que de se heurter à un échec devenu définitif.
+   *
+   * ═════════════════════════════════════════════════════════════════════════
+   * **L'IDENTIFIANT DE LA LIGNE NE CHANGE JAMAIS À L'ÉCRAN — et c'est un prix
+   * perdu qui l'a appris.**
+   *
+   * La première version remplaçait `ligne-ouverte` par l'identifiant rendu par
+   * la base. La clé de la rangée changeait donc sous React, qui démonte alors
+   * la rangée et en monte une neuve : **le champ où le doigt est en train
+   * d'écrire disparaît**, sa sortie n'a jamais lieu, et ce qu'il venait de
+   * taper ne part nulle part. Écrire la description puis le prix laissait le
+   * devis à 0,00 € — une facture au bouton « Envoyer » éteint, trois écrans
+   * plus loin.
+   *
+   * Le contrôle rendu bavard l'a nommé en une ligne : une seule requête partie,
+   * celle de la description, avec `"prixUnitaire":"0"`.
+   *
+   * L'identifiant réel vit donc ICI, en référence, et ne remonte jamais à
+   * l'écran. Tout appel serveur passe par `idEnBase()`.
+   * ═════════════════════════════════════════════════════════════════════════
+   */
+  const ecritureDeLaLigneOuverte = useRef<Promise<string> | null>(null);
+
+  async function idEnBase(l: Ligne): Promise<string> {
+    if (!estLigneOuverte(l.id)) return l.id;
+    if (!ecritureDeLaLigneOuverte.current) {
+      const envoi = ajouterLigneAction(props.chantierId, l.tauxTva ?? null).then((creee) => creee.id);
+      envoi.catch(() => {
+        if (ecritureDeLaLigneOuverte.current === envoi) ecritureDeLaLigneOuverte.current = null;
+      });
+      ecritureDeLaLigneOuverte.current = envoi;
+    }
+    return ecritureDeLaLigneOuverte.current;
+  }
   const [tauxTva, setTauxTva] = useState(sansZerosInutiles(props.tauxTva));
   // Le prix accordé au client — son geste commercial, arrangement B du 16 août.
   const [reduction, setReduction] = useState(
@@ -401,7 +470,12 @@ export default function DevisCompletClient(props: Props) {
         await majEnTeteDevisAction(props.devisId, { reductionPourcent: null });
         return;
       }
-      await retirerLigneAction(id);
+      // La ligne ouverte d'avance peut n'avoir jamais été écrite : il n'y a
+      // alors rien à retirer, et la réclamer ferait échouer le retrait sur un
+      // identifiant que la base ne connaît pas. Si elle vient de partir, on
+      // attend son identifiant plutôt que de laisser une ligne orpheline.
+      const enBase = estLigneOuverte(id) ? await ecritureDeLaLigneOuverte.current : id;
+      if (enBase) await retirerLigneAction(enBase);
       setLignes((cur) => cur.filter((l) => l.id !== id));
     },
   });
@@ -595,13 +669,30 @@ export default function DevisCompletClient(props: Props) {
     frais?: Partial<Pick<Ligne, "libelle" | "quantite" | "prixUnitaire" | "unite">>
   ) {
     const ligne = { ...l, ...frais };
-    await majLigneAction(ligne.id, {
-      libelle: ligne.libelle,
-      quantite: normaliser(ligne.quantite, "1"),
-      prixUnitaire: normaliser(ligne.prixUnitaire, "0"),
-      // Vide : aucune unité, et le papier n'écrit que la quantité.
-      unite: (ligne.unite ?? "").trim() || null,
-    });
+    // **La ligne ouverte d'avance ne s'écrit qu'une fois qu'elle porte quelque
+    // chose.** Sans quoi le doigt posé sur la description puis retiré laisserait
+    // une ligne vide en base — celle qui fait disparaître une dictée
+    // (`src/lib/ligne-ouverte-devis.ts`).
+    if (estLigneOuverte(ligne.id) && !ligneOuverteAEcrire(ligne)) return;
+    // **À LA SUITE, jamais en parallèle — et c'est un prix qui se perdait.**
+    // Chaque sortie de champ envoie la ligne ENTIÈRE, bâtie sur le rendu du
+    // moment : deux sorties rapprochées — la description, puis le prix —
+    // arrivent dans l'ordre que le réseau choisit, et celle de la description
+    // repose alors un prix à zéro par-dessus les 850 € qu'il vient de taper.
+    // La file existe déjà pour l'en-tête et les acomptes
+    // (`src/lib/file-d-ecritures.ts`) ; les lignes lui manquaient.
+    //
+    // L'écriture de la ligne ouverte vit DANS la file : sans cela, les deux
+    // sorties attendraient la même création puis repartiraient ensemble.
+    await aLaSuite(async () =>
+      majLigneAction(await idEnBase(ligne), {
+        libelle: ligne.libelle,
+        quantite: normaliser(ligne.quantite, "1"),
+        prixUnitaire: normaliser(ligne.prixUnitaire, "0"),
+        // Vide : aucune unité, et le papier n'écrit que la quantité.
+        unite: (ligne.unite ?? "").trim() || null,
+      })
+    );
   }
 
   /**
@@ -617,15 +708,25 @@ export default function DevisCompletClient(props: Props) {
     // Le serveur l'éteint aussi (`modifierLignePrix`) ; l'écran ne doit pas
     // continuer d'annoncer « à chiffrer » sur une ligne qu'il vient de chiffrer.
     if (Number(prix) > 0) setLignes((cur) => cur.map((x) => (x.id === l.id ? { ...x, aChiffrer: false } : x)));
-    await majLigneAction(l.id, {
-      libelle: l.libelle,
-      quantite: normaliser(l.quantite, "1"),
-      prixUnitaire: prix,
-    });
+    await aLaSuite(async () =>
+      majLigneAction(await idEnBase(l), {
+        libelle: l.libelle,
+        quantite: normaliser(l.quantite, "1"),
+        prixUnitaire: prix,
+      })
+    );
   }
 
   async function ajouter(tauxDeLaCategorie?: string | null) {
-    const creee = await ajouterLigneAction(props.chantierId, tauxDeLaCategorie ?? null);
+    // **La ligne ouverte d'avance prend sa place AVANT la nouvelle.** Son rang
+    // en base se décide à l'écriture : écrite après, elle passerait sous une
+    // ligne qui s'affiche sous elle, et les deux se croiseraient au
+    // rechargement — sur un devis, l'ordre est celui que le client lira.
+    const ouverte = lignes.find((l) => estLigneOuverte(l.id));
+    const creee = await aLaSuite(async () => {
+      if (ouverte) await idEnBase(ouverte);
+      return ajouterLigneAction(props.chantierId, tauxDeLaCategorie ?? null);
+    });
     setLignes((cur) => [
       ...cur,
       {
@@ -653,8 +754,13 @@ export default function DevisCompletClient(props: Props) {
    * une liste de taux aurait fait un écran de plus avant le premier mot écrit.
    */
   async function ajouterUneTva() {
+    // Comme pour « + Ajouter une ligne » : la ligne ouverte garde son rang.
+    const ouverte = lignes.find((l) => estLigneOuverte(l.id));
     const propose = tauxNeuf;
-    const creee = await ajouterCategorieTvaAction(props.chantierId, propose);
+    const creee = await aLaSuite(async () => {
+      if (ouverte) await idEnBase(ouverte);
+      return ajouterCategorieTvaAction(props.chantierId, propose);
+    });
     if (!creee) return;
     setLignes((cur) => [
       ...cur,
@@ -701,7 +807,9 @@ export default function DevisCompletClient(props: Props) {
       ...cur.filter((l) => l.id !== ligne.id),
       { ...ligne, tauxTva: versLAccueil ? null : propre },
     ]);
-    await deplacerLigneVersTvaAction(ligne.id, propre, tauxDuDevis);
+    // Une ligne déplacée porte le taux de sa catégorie : elle doit exister en
+    // base pour le porter, fût-elle encore vide.
+    await aLaSuite(async () => deplacerLigneVersTvaAction(await idEnBase(ligne), propre, tauxDuDevis));
   }
 
   /**

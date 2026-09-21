@@ -1,7 +1,7 @@
 import { lireParJeton } from "@/server/repositories/envois-devis";
 import { aujourdHuiIso } from "@/server/repositories/envois-devis";
 import FormulaireReponse from "./formulaire";
-import { jourLisible } from "@/lib/jour";
+import { jourLisible, joursEnToutesLettres } from "@/lib/jour";
 import NumeroDeDocument from "@/components/atlas/NumeroDeDocument";
 import { avecCivilite } from "@/lib/civilite";
 import { colors, font, surPlein } from "@/lib/design-tokens";
@@ -98,10 +98,21 @@ export default async function PageDevisClient({ params }: { params: Promise<{ je
     return (
       <Cadre
         titre="Devis accepté"
+        /* **TOUS SES JOURS, pas seulement le premier** — depuis le
+           20 septembre 2026, elle en retient autant que le chantier en prend.
+           « Intervention prévue le lundi 12 octobre » sur un chantier de quatre
+           jours lui redisait un jour sur quatre, et c'est cet écran qu'elle
+           rouvre depuis son SMS pour vérifier ce qu'elle a accepté.
+
+           `joursRetenus` est absent sur les réponses d'avant la migration
+           0097 : l'écran retombe alors sur la date, comme il l'a toujours
+           fait. */
         texte={
-          envoi.dateRetenue
-            ? `Intervention prévue le ${jourLisible(envoi.dateRetenue)}. Votre artisan vous recontactera si besoin.`
-            : "Votre réponse a bien été enregistrée."
+          envoi.joursRetenus && envoi.joursRetenus.length > 1
+            ? `Intervention prévue ${joursEnToutesLettres(envoi.joursRetenus)}. Votre artisan vous recontactera si besoin.`
+            : envoi.dateRetenue
+              ? `Intervention prévue le ${jourLisible(envoi.dateRetenue)}. Votre artisan vous recontactera si besoin.`
+              : "Votre réponse a bien été enregistrée."
         }
         /* **Son devis reste à portée, même une fois accepté** — sa demande du
            31 août 2026 : *« lorsque le client a accepté le devis et qu'il

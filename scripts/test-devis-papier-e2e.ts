@@ -102,8 +102,6 @@ async function main() {
   console.log("  ✓ l'adresse des travaux ne se répète pas quand elle est la même");
 
   // --- 2. Le prix se voit, et se touche ------------------------------------
-  await page.getByRole("button", { name: "+ Ajouter une ligne" }).click();
-  await page.waitForTimeout(1000);
 
   const prix = page.getByLabel("Prix unitaire 1");
   const boite = await prix.boundingBox();

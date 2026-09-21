@@ -85,8 +85,6 @@ async function main() {
   const chantierId = chantierUrl.split("/").pop()!;
 
   await page.goto(`${chantierUrl}/devis-complet`, { waitUntil: "networkidle" });
-  await page.click('button:has-text("Ajouter une ligne")');
-  await page.waitForTimeout(600);
   const zones = page.locator('textarea[aria-label*="escription"]');
   await zones.nth((await zones.count()) - 1).fill("Élagage — 3 chênes");
   const prixs = page.locator('input[aria-label*="Prix unitaire"]');

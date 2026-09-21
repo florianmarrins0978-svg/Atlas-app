@@ -4,8 +4,8 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-09-20 · `main` — le prénom seul propose le client,
-et une écriture déclare ce qu'elle change
+**Point de reprise :** 2026-09-20 · `main` — la première ligne du devis est
+ouverte d'avance, et le prénom seul propose le client
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
@@ -26,27 +26,49 @@ Devant « je dois recharger pour voir », la question n'est donc pas « la lectu
 est-elle juste » mais « **quelle écriture ne déclare pas cet écran** ».
 `ARCHITECTURE.md` §391.
 
-## L'ÉCRAN DE SON CLIENT ATTEND UN LOT GROUPÉ — 20 septembre 2026
+## L'ÉCRAN DE SON CLIENT A CHANGÉ — 20 septembre 2026
 
-Il a touché « Je ne donne pas suite » par erreur sur le lien d'un de ses devis,
-et il n'existe aucun retour : `enregistrerReponse` rejette toute seconde
-réponse (`deja_repondu`). **Sa décision, devant
-`appli/le-refus-par-erreur.html` : la A** — une feuille de confirmation
-(`BottomSheet`, celle qui porte déjà le calendrier de cet écran).
+Quatre demandes en une soirée, codées **en un seul lot** à sa demande. Ce qu'une
+session doit savoir avant de toucher `src/app/devis/[jeton]/` :
 
-**Ne pas coder cette feuille seule.** Sa consigne du même soir : *« avant de
-coder j'ai encore des modif à faire sur cette page, tu coderas tout d'un
-coup »*. Tout ce qui touche `src/app/devis/[jeton]/` attend ses autres
-demandes et part en un seul lot.
+- **« Je ne donne pas suite » n'envoie plus rien par lui-même** : il ouvre une
+  feuille de confirmation, sa réponse « la A ». Il avait fermé un de ses devis
+  par erreur, et il n'y a AUCUN retour (`deja_repondu`). Le `submit` vit DANS la
+  feuille, à l'intérieur du `<form>` — l'en sortir enverrait un formulaire vide ;
+- **le repère `data-atlas="ne-pas-donner-suite"` n'est pas décoratif** : la
+  suite qui garde « tout tient dans un écran » mesurait zéro sans lui ;
+- **la cliente pose SES jours**, avec le geste de l'écran d'envoi
+  (`toucherUnJourDuClient` = `toucherUnJour` avec une seule proposition). Ne pas
+  réécrire cette règle ailleurs ;
+- **le pluriel se décide sur les JOURS**, jamais sur le nombre de propositions ;
+- **le serveur accepte une liste** (migration 0097, `jours_retenus`) et décide
+  de la contre-proposition sur les JOURS, pas sur le premier d'entre eux ;
+- **rien de la durée ni des créneaux ne descend jusqu'à elle** : le compte de
+  jours se lit sur `joursProposes`, déjà envoyés. `test-creneaux-planning.ts`
+  inspecte la charge sérialisée et doit rester vert.
 
-**Et ne pas lui redemander son choix** : il est donné, il est dans `TODO.md`.
-
-**Le lot s'étoffe au fil de la soirée** : la feuille de confirmation, puis le
-libellé « je propose » et son pluriel, et le calendrier du client qui reprend
-le geste de l'écran d'envoi (`appli/proposer-ses-jours.html`). Le détail, et
-les deux défauts que les planches ont trouvés, sont dans `TODO.md`.
+`ARCHITECTURE.md` §395. Les planches restent en ligne :
+`appli/le-refus-par-erreur.html`, `appli/proposer-ses-jours.html`.
 
 ---
+
+## LA PREMIÈRE LIGNE DU DEVIS EST OUVERTE D'AVANCE — 20 septembre 2026
+
+*« Quand j'ouvre la page du devis il doit avoir une ligne d'ouverte déjà. »*
+Ce qu'une session doit savoir avant de toucher `DevisCompletClient.tsx` :
+
+- **la ligne ouverte n'est PAS en base.** Elle porte l'identifiant réservé
+  `ligne-ouverte` et s'écrit au premier mot (`src/lib/ligne-ouverte-devis.ts`).
+  **Ne jamais la poser en base à l'ouverture de l'écran** : trois endroits
+  lisent « aucune ligne » comme « la dictée n'a pas encore tourné », et sa
+  panne du 7 août 2026 revient (`ARCHITECTURE.md` §394) ;
+- **tout appel serveur qui prend l'identifiant d'une ligne passe par
+  `idEnBase()`** — il l'écrit si besoin, une seule fois ;
+- **l'identifiant de la rangée ne change JAMAIS à l'écran.** Le remplacer par
+  celui de la base démonte la rangée sous React, et le champ où il écrit
+  disparaît sans rendre sa valeur : c'est le prix perdu du 20 septembre ;
+- **les suites n'appuient plus sur « + Ajouter une ligne » pour la première
+  ligne** de cet écran. Celles de l'écran Prix, si.
 
 ## LE NOM COMMENCÉ PROPOSE, LE NOM ENTIER POSE — 20 septembre 2026
 
@@ -64,7 +86,7 @@ côte à côte, et il ne faut pas les confondre :
 Les deux arrivent par la MÊME action (`reconnaitreLeClientAction`, qui rend
 `{ lui, propositions }`) : ne pas en ajouter une seconde, ce serait deux
 requêtes par pause de frappe. Et le choix se retient (`choisiPour`), sinon la
-liste se rouvre sous son doigt. `ARCHITECTURE.md` §392.
+liste se rouvre sous son doigt. `ARCHITECTURE.md` §396.
 
 ## LA FICHE D'INTERVENTION EST CELLE DE SA SIXIÈME PLANCHE — 20 septembre 2026
 

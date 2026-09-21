@@ -256,7 +256,7 @@ async function main() {
     await page.locator('button:has-text("Retenir cette date")').click();
     assert.strictEqual(await page.locator("[data-jour]").count(), 0, "la feuille ne s'est pas refermée");
     assert.strictEqual(
-      await page.locator('input[name="dateAutre"]').inputValue(),
+      await page.locator('input[name="joursAutres"]').inputValue(),
       jourRetenu,
       "la date retenue ne part pas au serveur"
     );
@@ -317,13 +317,68 @@ async function main() {
     const page = await context.newPage();
     await page.goto(`${BASE}/devis/${envoi.jeton}`, { waitUntil: "networkidle" });
 
+    // **Le refus demande une confirmation depuis le 20 septembre 2026** — sa
+    // réponse « la A », après avoir fermé un de ses devis par erreur : *« j'ai
+    // sans faire exprès cliqué sur je ne donne pas suite, aucun moyen
+    // d'annuler »*. Le premier appui ouvre la feuille, le second envoie.
     await page.click('button:has-text("Je ne donne pas suite")');
+    await page.click('button:has-text("Oui, je ne donne pas suite")');
     await page.waitForSelector("text=Votre réponse a bien été transmise", { timeout: 10000 });
 
     const chantier = await chantiersRepo.getChantier(ctx, chantierId);
     assert.strictEqual(chantier?.datePlanifiee, null, "un refus ne doit rien planifier");
     const relu = await lireParJeton(envoi.jeton);
     assert.strictEqual(relu?.reponse, "refusee");
+    await page.close();
+  });
+
+  await test("un seul appui ne ferme plus le devis — et « Revenir au devis » le rouvre", async () => {
+    // ═══════════════════════════════════════════════════════════════════
+    // **SA SÉCURITÉ DU 20 SEPTEMBRE 2026, réponse « la A ».**
+    //
+    // Ce qui l'a provoquée, de sa main : *« j'ai sans faire exprès cliqué sur
+    // je ne donne pas suite, aucun moyen d'annuler, il faut mettre une
+    // sécurité avant l'envoi »*. Et il n'y a AUCUN retour :
+    // `enregistrerReponse` refuse toute seconde réponse (`deja_repondu`).
+    //
+    // **Ce contrôle passe par la porte du client**, pas par la fonction :
+    // c'est le doigt qui glisse qu'on veut arrêter, et un contrôle qui
+    // appellerait l'action directement ne dirait rien de la feuille
+    // (`CLAUDE.md` §5 quater).
+    // ═══════════════════════════════════════════════════════════════════
+    const { envoi } = await preparerEnvoi("annule", [9]);
+    const page = await context.newPage();
+    await page.goto(`${BASE}/devis/${envoi.jeton}`, { waitUntil: "networkidle" });
+
+    await page.click('button:has-text("Je ne donne pas suite")');
+    assert.ok(
+      await page.locator("text=Vous ne donnez pas suite").isVisible(),
+      "le premier appui n'ouvre pas la confirmation"
+    );
+
+    // Rien n'est parti : le devis est toujours là, et la base n'a rien vu.
+    assert.ok(
+      await page.locator('button:has-text("J\'accepte ce devis")').isVisible(),
+      "le devis a disparu alors que rien n'a été confirmé"
+    );
+    assert.strictEqual(
+      (await lireParJeton(envoi.jeton))?.reponse,
+      null,
+      "un seul appui a suffi à fermer le devis"
+    );
+
+    // Et la sortie existe : c'est tout ce que le patron n'avait pas.
+    await page.click('button:has-text("Revenir au devis")');
+    assert.strictEqual(
+      await page.locator("text=Vous ne donnez pas suite").count(),
+      0,
+      "la feuille ne se referme pas"
+    );
+    assert.strictEqual(
+      (await lireParJeton(envoi.jeton))?.reponse,
+      null,
+      "revenir au devis a quand même envoyé le refus"
+    );
     await page.close();
   });
 
@@ -534,7 +589,7 @@ async function main() {
     const m = await page.evaluate(() => ({
       page: document.documentElement.scrollHeight,
       ecran: window.innerHeight,
-      dernier: document.querySelector('button[value="refuse"]')?.getBoundingClientRect().bottom ?? 0,
+      dernier: document.querySelector('[data-atlas="ne-pas-donner-suite"]')?.getBoundingClientRect().bottom ?? 0,
     }));
 
     // **Sans ce garde-fou, « 0 ≤ 664 » rendrait un vert qui ne mesure rien** —
@@ -585,7 +640,7 @@ async function main() {
       const p = await page.evaluate(() => ({
         page: document.documentElement.scrollHeight,
         ecran: window.innerHeight,
-        dernier: document.querySelector('button[value="refuse"]')?.getBoundingClientRect().bottom ?? 0,
+        dernier: document.querySelector('[data-atlas="ne-pas-donner-suite"]')?.getBoundingClientRect().bottom ?? 0,
       }));
       assert.ok(p.dernier > 100, `rien n'est mis en page (dernier bouton à ${p.dernier} px)`);
       assert.ok(

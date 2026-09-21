@@ -6,7 +6,54 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-09-21
+
+### La comparaison des rouges lit le journal entier — un rouge n'y passe plus pour vert
+
+`verifier-rouge-prealable` rejoue chaque suite rouge sur la base de `main` et
+sur le lot, puis compare. Elle ne lisait que la sortie standard du moteur ; or
+le moteur navigateur nomme ses rouges sur la sortie d'erreur. Toute suite rouge
+se lisait donc « verte » — des deux côtés, donc « pareil », donc tolérée : une
+régression nouvelle serait passée par là. La lecture vit désormais dans une
+fonction pure (`sortDUneSuite`), qui lit les deux flux et refuse de conclure
+quand le compte et les rouges nommés ne se recoupent pas.
+`test-rouge-prealable-lit-le-journal.ts` la tient.
+
 ## 2026-09-20
+
+### L'écran du client : on ne ferme plus un devis d'un seul doigt
+
+Sa sécurité du 20 septembre, réponse « la A » : « Je ne donne pas suite »
+n'envoie plus rien par lui-même — il ouvre la feuille de la maison, qui demande
+« Vous ne donnez pas suite ? » et offre de revenir. Des trois issues, c'était la
+seule à la fois irrattrapable et coûteuse : la correction ne part déjà pas sans
+un mot, et une acceptation laisse le téléphone.
+
+Trois autres demandes du même soir sont dans le même lot, à sa demande — *« tu
+coderas tout d'un coup »* :
+
+- le libellé devient « Cette date ne me convient pas ? Je propose », et passe au
+  pluriel **sur le nombre de JOURS**, pas de propositions : sa capture listait
+  quatre dates au-dessus d'un « cette date » au singulier ;
+- sa cliente pose désormais SES jours au calendrier, avec le geste de l'écran
+  d'envoi — un appui pose le bloc d'affilée, un appui sur un jour l'efface sans
+  rien décaler, l'appui suivant le remet où elle veut. La règle n'est pas
+  réécrite : c'est `toucherUnJour` avec une seule proposition autorisée ;
+- « Les travaux sont prévus sur N jours » se lit sous la question, sur la page.
+
+**Ce que le serveur a dû apprendre.** Il ne recevait qu'une date et étalait un
+bloc derrière elle : le chantier tombait sur des jours qu'elle n'avait jamais
+vus. Il accepte maintenant sa liste (migration 0097, `jours_retenus`), refuse
+une liste plus courte que le chantier, et **décide de la contre-proposition sur
+les jours** — en gardant le premier et en poussant le quatrième, sa liste aurait
+été jetée au profit de celle du patron sans qu'un mot le dise.
+
+**Deux défauts trouvés en éprouvant, et notés parce qu'ils apprennent quelque
+chose** : sans liste (un envoi d'avant la migration 0095), un jour seul faisait
+poser un chantier de deux jours sur une journée ; et la suite qui garde « tout
+tient dans un écran » mesurait ZÉRO depuis que le bouton du refus n'envoie plus
+rien — un vert qui ne mesure rien, la faute du 15 août 2026. Un repère
+`data-atlas` a remplacé le `value` qu'elle visait.
 
 ### Un chantier créé est là quand il revient — plus de rechargement
 
@@ -41,6 +88,43 @@ qu'allumé — donc impossible à retirer. Les deux sont corrigés dans la planc
 et notés dans `TODO.md` pour le codage.
 
 **Rien n'est codé** : l'écran de son client part en un seul lot, à sa demande.
+
+### Plusieurs photos d'un coup depuis la photothèque, sous trois plafonds
+
+Sa demande du jour. Le retour du jour prend désormais plusieurs photos à la
+fois (la pellicule le faisait déjà), et tout ce qui ajoute des photos a un
+maximum : 15 par sélection sur la pellicule, 10 sur le retour et par retour, 30
+par chantier — ce dernier tenu par le dépôt, pas par l'écran. Les entrées à une
+seule photo (ticket, croquis, diagnostic, assistant, logo) restent à une. En
+passant : un refus d'ajout de photo sur la pellicule s'affiche, au lieu de se
+perdre dans un `catch` muet. `ARCHITECTURE.md` §393.
+
+### La feuille du devis s'ouvre avec sa première ligne
+
+*« Quand j'ouvre la page du devis il doit avoir une ligne d'ouverte déjà, je
+dois pas avoir besoin de cliquer sur ajouter une ligne. »* Elle est là, prête à
+écrire, sur tout devis brouillon qui ne porte aucune ligne.
+
+**Elle n'existe PAS en base tant qu'il n'a rien écrit**, et c'est tout l'enjeu :
+trois endroits du produit lisent « aucune ligne » comme « la chaîne n'a pas
+tourné » — la dictée qui écrit le devis, la reprise à l'arrivée, la route qui
+dit au chantier que son devis est prêt. Une ligne vide posée à l'ouverture
+aurait ressuscité sa panne du 7 août 2026 (« le devis ne comporte aucune ligne,
+gros bug »). Elle naît donc au premier mot : un champ traversé n'écrit rien.
+Et aucune ligne ne s'ouvre pendant qu'une dictée attend d'être reprise.
+
+Deux pièges trouvés et fermés avant livraison. **Le prix se perdait** : la
+rangée changeait d'identifiant au moment où la ligne s'écrivait, React la
+remontait, et le champ où le doigt écrivait disparaissait sans jamais rendre sa
+valeur — devis à 0,00 €, facture au bouton éteint. L'identifiant de base vit
+désormais à côté, et les écritures d'une ligne passent à la suite. Et appuyer
+sur « + Ajouter une ligne » sans avoir écrit faisait **se croiser** les deux
+lignes au rechargement — le rang en base se décide à l'écriture. Les deux vus
+rouges d'abord.
+
+`src/lib/ligne-ouverte-devis.ts`, `test-ligne-ouverte-devis(-e2e)`.
+`ARCHITECTURE.md` §394.
+
 
 ### Un refus par erreur n'a aucune issue — la planche, pas encore le code
 
@@ -79,7 +163,7 @@ vides se remplissent, et le chantier va sur SA fiche — plus de fiche en double
 **La reconnaissance automatique n'a pas bougé d'un pouce** : elle continue de
 ne rien poser tant que ce n'est pas certain. Proposer n'est pas poser — l'une
 écrit à sa place, l'autre lui rend le choix. C'est ce qui permet à la liste de
-montrer ses quatre Martins là où la pose se tait. `ARCHITECTURE.md` §392.
+montrer ses quatre Martins là où la pose se tait. `ARCHITECTURE.md` §396.
 
 
 ### Une suite qui ne peut rien mesurer ici se tait, au lieu de rougir

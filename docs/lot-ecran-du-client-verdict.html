@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — L'écran de votre client — ce qui a été codé le 20 septembre 2026</title>
+<style>
+  :root{
+    --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
+    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
+    --accent:#2f3b2f; --alert:#b5562a; --line:rgba(28,28,26,0.13);
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#161815; --surface:#1d201c; --raised:#252924;
+      --ink:#eae7df; --ink-soft:#c2bdb1; --muted:#948f83;
+      --accent:#9fbd82; --alert:#e0885a; --line:rgba(234,231,223,0.17);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.65;}
+  main{max-width:44rem;margin:0 auto;padding:2.5rem 1.2rem 5rem;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.2;
+    text-wrap:balance;margin:2rem 0 0.6rem;scroll-margin-top:1rem;}
+  h1{font-size:2rem;margin-top:0;}
+  h2{font-size:1.5rem;padding-top:1.2rem;border-top:1px solid var(--line);}
+  h3{font-size:1.12rem;}
+  h4{font-size:1rem;}
+  p{margin:0 0 0.9rem;}
+  a{color:var(--accent);text-underline-offset:3px;}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px;}
+  ul,ol{margin:0 0 1rem;padding-left:1.3rem;}
+  li{margin-bottom:0.4rem;}
+  li::marker{color:var(--muted);}
+  /* Le sommaire : des cibles larges, confortables au doigt sur téléphone. */
+  ol li a{display:inline-block;padding:0.15rem 0;}
+  blockquote{margin:1rem 0;padding:0.85rem 1.05rem;background:var(--raised);
+    border-left:3px solid var(--accent);border-radius:0 10px 10px 0;color:var(--ink-soft);}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.87em;
+    background:var(--raised);padding:0.1rem 0.35rem;border-radius:5px;}
+  hr{border:0;border-top:1px solid var(--line);margin:2rem 0;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;
+    background:var(--surface);margin:0 0 1.2rem;}
+  table{border-collapse:collapse;width:100%;font-size:0.92rem;min-width:22rem;}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--line);
+    vertical-align:top;}
+  th{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--muted);white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .retour{display:inline-block;font-size:0.76rem;color:var(--muted);
+    text-decoration:none;margin:-0.3rem 0 1rem;}
+  .retour:hover{color:var(--accent);text-decoration:underline;}
+</style>
+</head>
+<body>
+<main>
+<h1 id="lécran-de-votre-client--ce-qui-a-été-codé-le-20-septembre-2026">L'écran de votre client — ce qui a été codé le 20 septembre 2026</h1>
+<p>Quatre demandes, une soirée, <strong>un seul lot</strong> comme vous l'avez demandé : <em>« avant de coder j'ai encore des modif à faire sur cette page, tu coderas tout d'un coup »</em>.</p>
+<p>Les deux planches restent en ligne : <code>https://florianmarrins0978-svg.github.io/Atlas-app/le-refus-par-erreur.html</code> et <code>https://florianmarrins0978-svg.github.io/Atlas-app/proposer-ses-jours.html</code></p>
+<hr>
+<h2 id="1--je-ne-donne-pas-suite--ne-ferme-plus-un-devis-dun-doigt">1. « Je ne donne pas suite » ne ferme plus un devis d'un doigt</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Ce que vous avez dit :</strong> <em>« j'ai sans faire exprès cliqué sur je ne donne pas suite, aucun moyen d'annuler, il faut mettre une sécurité avant l'envoi »</em>.</p>
+<p><strong>Fait — la A, la feuille.</strong> Le bouton n'envoie plus rien par lui-même : il ouvre la feuille qui demande « Vous ne donnez pas suite ? », avec « Revenir au devis » en dessous.</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td>le fichier</td>
+<td><code>src/app/devis/[jeton]/formulaire.tsx</code></td>
+</tr>
+<tr>
+<td>ce que ça coûte à l'écran</td>
+<td><strong>0 pixel</strong> — la feuille monte par-dessus, la page ne bouge pas</td>
+</tr>
+<tr>
+<td>le contrôle</td>
+<td><code>test-devis-client-e2e.ts</code> : un seul appui ne ferme plus le devis, et « Revenir » le rouvre</td>
+</tr>
+</tbody></table></div>
+<p><strong>Pourquoi ce bouton-là et pas les deux autres.</strong> « Une correction » ne part déjà pas sans un mot écrit. « J'accepte » ne perd rien : il reste le téléphone. « Je ne donne pas suite » était le seul geste à la fois irrattrapable et coûteux.</p>
+<p><strong>Et votre devis d'hier n'est pas perdu :</strong> le chantier est passé en « Devis retourné », vous le renvoyez depuis la fiche et un lien neuf part.</p>
+<hr>
+<h2 id="2-la-phrase---cette-date-ne-me-convient-pas--je-propose-">2. La phrase : « Cette date ne me convient pas ? Je propose »</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Ce que vous avez dit :</strong> <em>« quand il y a une date c'est : cette date ne me convient pas ? Je propose »</em>, et <em>« quand il y a plusieurs dates de proposées, mets la phrase au pluriel »</em>.</p>
+<p><strong>Fait</strong>, et avec une précision que vous n'aviez pas eu à dire : <strong>le pluriel se décide sur les JOURS, pas sur le nombre de lignes</strong>. Votre capture le montrait — une seule ligne listait <em>« le jeudi 8 octobre, le vendredi 9, le lundi 12 et le mardi 13 octobre »</em>, quatre dates, et juste en dessous « cette date », au singulier. Compter les lignes aurait redonné ce singulier-là.</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td>le fichier</td>
+<td><code>src/lib/libelle-dates.ts</code></td>
+</tr>
+<tr>
+<td>le contrôle</td>
+<td><code>test-libelle-dates.ts</code></td>
+</tr>
+</tbody></table></div>
+<hr>
+<h2 id="3-elle-pose-ses-jours-comme-vous-posez-les-vôtres">3. Elle pose ses jours comme vous posez les vôtres</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Ce que vous avez dit :</strong> <em>« lorsqu'elle clique sur proposer des jours, s'il y a plusieurs jours il faut mettre le même système que nous : les 4 dates s'affichent, elle clique sur un jour sélectionné pour le désélectionner et reclique ailleurs pour le déplacer »</em>.</p>
+<p><strong>Fait, avec VOTRE règle — pas une copie.</strong> C'est la fonction de votre écran d'envoi, appelée avec une seule proposition au lieu de deux. Deux façons de poser un bloc finiraient par ne plus dire la même chose.</p>
+<p><strong>Et vous avez trouvé le trou vous-même</strong>, sur la planche : <em>« on peut pas désélectionner un jour sur les 4 et le mettre ailleurs en recliquant ailleurs »</em>. Votre règle du 17 septembre compte <strong>trois</strong> gestes, la planche n'en connaissait que deux :</p>
+<div class="tablewrap"><table><thead><tr>
+<th>ce jour</th>
+<th>ce que l'appui fait</th>
+</tr></thead><tbody>
+<tr>
+<td>déjà posé</td>
+<td>il s'efface, et <strong>rien ne se décale</strong></td>
+</tr>
+<tr>
+<td>il en manque</td>
+<td>il <strong>comble</strong> — ce jour-là seul</td>
+</tr>
+<tr>
+<td>rien ne manque</td>
+<td>il repose le <strong>bloc entier</strong> ailleurs</td>
+</tr>
+</tbody></table></div>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td>les fichiers</td>
+<td><code>src/lib/propositions-de-jours.ts</code>, <code>formulaire.tsx</code></td>
+</tr>
+<tr>
+<td>les contrôles</td>
+<td><code>test-jours-du-client.ts</code> (le geste), <code>test-jours-du-client-db.ts</code> (la base)</td>
+</tr>
+</tbody></table></div>
+<hr>
+<h2 id="4--les-travaux-sont-prévus-sur-4-jours-">4. « Les travaux sont prévus sur 4 jours »</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Ce que vous avez dit :</strong> <em>« en dessous de "quels jours vous arrangent ?" et au-dessus de la touche pour valider, écris le nombre de jours »</em>.</p>
+<p><strong>Fait — et vous avez eu à le redire.</strong> Je l'avais d'abord posée <strong>dans la feuille</strong> du calendrier, que votre cliente n'ouvre que si les dates ne lui vont pas : elle lisait quatre dates sans jamais savoir que le chantier en prend quatre, au moment précis où elle choisit. Elle est maintenant sur la page, sous la question — et reprise dans la feuille, où elle explique les quatre jours allumés. Les deux ne se voient jamais en même temps.</p>
+<p><strong>Et ça ne dit rien de votre planning.</strong> Le compte vient des jours que VOUS avez proposés, déjà écrits sur sa page. Ni la durée en demi-journées, ni le matin ou l'après-midi ne descendent jusqu'à elle — le contrôle qui le garde (<code>test-creneaux-planning.ts</code>) est resté vert.</p>
+<hr>
+<h2 id="ce-que-vous-naviez-pas-demandé-et-quil-a-fallu-faire">Ce que vous n'aviez pas demandé, et qu'il a fallu faire</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Le serveur ne savait recevoir qu'UNE date.</strong> Il étalait ensuite un bloc de quatre jours derrière elle : votre cliente engageait des jours qu'elle n'avait jamais vus. Il reçoit maintenant sa liste, la revérifie contre votre planning jour par jour, et la garde (migration <code>0097</code>).</p>
+<p><strong>Trois jours retenus pour un chantier de quatre partaient sans un mot.</strong> Vous n'auriez pas eu de quoi faire le travail, et personne ne l'aurait su avant le chantier. L'écran répond « Il manque 1 jour », et le serveur refuse de son côté.</p>
+<p><strong>Un défaut sérieux, trouvé en écrivant le contrôle :</strong> si elle gardait votre premier jour et poussait seulement le quatrième, sa liste aurait été <strong>jetée au profit de la vôtre, en silence</strong> — parce que la réponse se jugeait sur le premier jour. Elle se juge désormais sur les jours.</p>
+<hr>
+<h2 id="ce-qui-a-rougi-avant-de-passer-au-vert">Ce qui a rougi avant de passer au vert</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Deux choses, et les deux apprennent quelque chose :</p>
+<ol>
+<li><strong>Un envoi d'avant le 18 septembre</strong> (sans liste de jours) posait un chantier de deux jours sur <strong>une seule journée</strong>. Attrapé par <code>test-envoi-jours-pas-colles-db</code> et <code>test-creneaux-planning</code>, pas par l'œil.</li>
+<li><strong>Le contrôle « tout tient dans un écran » mesurait ZÉRO.</strong> Il visait le bouton du refus par son <code>value</code>, parti dans la feuille — et « 0 ≤ 664 » serait passé au vert si le dépôt n'avait pas, depuis le 15 août, un garde-fou contre les mesures nulles. Un repère stable a remplacé ce <code>value</code>.</li>
+</ol>
+<hr>
+<h2 id="ce-qui-reste-ouvert-et-que-vous-seul-pouvez-trancher">Ce qui reste ouvert, et que vous seul pouvez trancher</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Quand elle cherche où remettre son quatrième jour, les jours barrés le restent trop largement.</strong> Sa page ne reçoit qu'une liste : les jours où votre chantier <strong>ne peut pas commencer</strong>. Un jour parfaitement libre pour une journée seule y figure donc, alors qu'il ferait très bien l'affaire pour combler.</p>
+<p>C'est le côté sûr : elle ne vous propose jamais un jour que l'acceptation refuserait. Mais c'est plus restrictif que nécessaire, et sur un mois chargé cela lui laisse peu de place. <strong>Lui en envoyer une seconde liste apprendrait quelque chose de plus de votre planning</strong> — c'est votre règle depuis toujours qu'il n'apprenne rien : à vous de dire si elle bouge ici.</p>
+<hr>
+<h2 id="la-batterie">La batterie</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Jouée en entier (niveau 3 : migration + écran du client + devis).</p>
+<div class="tablewrap"><table><thead><tr>
+<th>étape</th>
+<th>verdict</th>
+</tr></thead><tbody>
+<tr>
+<td>Types</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Lint</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Construction</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Mémoire du dépôt</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Suites base de données</td>
+<td>✅ <strong>399/400</strong> — 1 non mesurable ici (pas de clé IA sur ce poste)</td>
+</tr>
+<tr>
+<td>Suites navigateur</td>
+<td>✅ <strong>163/163</strong></td>
+</tr>
+<tr>
+<td>Connexion derrière un proxy</td>
+<td>✅ connexion réelle, origine étrangère</td>
+</tr>
+</tbody></table></div>
+<p><strong>Rien n'est livré tant que ce n'est pas sur <code>main</code></strong> : votre espace ne suit que <code>main</code>, et la fusion se demande.</p>
+</main>
+</body>
+</html>

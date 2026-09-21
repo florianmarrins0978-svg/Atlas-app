@@ -30,6 +30,7 @@ import { jourDuPatron } from "./_jour-e2e";
 import { Pool } from "pg";
 import { lancerNavigateur } from "./e2e-browser";
 import { ADRESSE } from "./_adresse";
+import { jpegDeTaille } from "./_images-temoins";
 
 const BASE = ADRESSE;
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
@@ -41,6 +42,7 @@ const COMPTE = "[data-atlas='compte-des-travaux']";
 const TACHE = "[data-atlas='tache-du-retour']";
 const ENVOYER = "[data-atlas='envoyer-le-retour']";
 const ENVOYE = "[data-atlas='retour-envoye']";
+const PHOTO_DU_RETOUR = "[data-atlas='photo-du-retour']";
 
 let echecs = 0;
 async function cas(nom: string, fn: () => Promise<void>) {
@@ -222,6 +224,27 @@ async function main() {
       "true",
       "la case cochée hier est revenue vide : il devrait tout recocher le soir 3"
     );
+  });
+
+  // ─── PLUSIEURS PHOTOS D'UN COUP — sa demande du 20 septembre 2026 ──────────
+  //
+  // *« J'ouvre la photothèque et j'en sélectionne plusieurs »*, avec un
+  // plafond. Le sélecteur est celui du téléphone ; ce qui se mesure ici, c'est
+  // ce qui en sort : autant de vignettes que de photos choisies, toutes
+  // cochées, et le compte sous le plafond du retour.
+  await cas("TROIS PHOTOS CHOISIES D'UN COUP arrivent toutes, cochées, et le compte dit « 3/10 »", async () => {
+    const avant = await page.locator(PHOTO_DU_RETOUR).count();
+    await page.locator("[data-atlas='travaux-a-faire'] input[type=file]").setInputFiles(
+      [1, 2, 3].map((n) => ({ name: `photo-${n}.jpg`, mimeType: "image/jpeg", buffer: Buffer.from(jpegDeTaille(2048)) }))
+    );
+    await page.waitForFunction(
+      ([s, n]) => document.querySelectorAll(s).length === n,
+      [PHOTO_DU_RETOUR, avant + 3] as [string, number],
+      { timeout: 30_000 }
+    );
+    const cochees = await page.locator(`${PHOTO_DU_RETOUR}[aria-pressed='true']`).count();
+    assert.equal(cochees, 3, `${cochees} photo(s) cochée(s) sur les trois ajoutées`);
+    assert.equal((await page.locator("[data-atlas='compte-photos-retour']").innerText()).trim(), "3/10");
   });
 
   await pool.end();

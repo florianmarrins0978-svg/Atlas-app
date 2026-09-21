@@ -4,6 +4,14 @@ import { useEffect, useRef, useState } from "react";
 import { colors, font, libelleCaps, surPlein, voile } from "@/lib/design-tokens";
 import { ACCEPT_PHOTOS } from "@/lib/exif";
 import {
+  PHOTOS_MAX_PAR_CHANTIER,
+  PHOTOS_MAX_PAR_RETOUR,
+  PHOTOS_PAR_SELECTION,
+  limiterLaSelection,
+  placesRestantes,
+  refusDesPhotosDuRetour,
+} from "@/lib/photos-plafonds";
+import {
   ceQuiManque,
   type ReglesDuRetour,
   type TacheDuRetour,
@@ -149,20 +157,54 @@ export default function TravauxAFaire({
     setOuvert(false);
   }
 
-  async function ajouterUnePhoto(fichier: File) {
+  /**
+   * **Plusieurs photos d'un coup depuis la photothèque** — sa demande du
+   * 20 septembre 2026 : *« j'ouvre la photothèque et j'en sélectionne
+   * plusieurs »*. Chacune part à son tour et se coche en arrivant ; les bornes
+   * viennent de `photos-plafonds.ts` : 10 par ouverture, jamais plus que ce
+   * qui reste à cocher sur ce retour, ni que ce qui reste sur le chantier.
+   */
+  async function ajouterDesPhotos(choisies: File[]) {
     setRefus(null);
-    const corps = new FormData();
-    corps.set("chantierId", chantierId);
-    corps.set("fichier", fichier);
-    const r = await ajouterPhotoDuRetourAction(corps);
-    if (!r.ok) {
-      setRefus(r.raison);
-      return;
+    const { retenues, raison } = limiterLaSelection(choisies, {
+      parSelection: Math.min(
+        PHOTOS_PAR_SELECTION.retour,
+        placesRestantes(reprises.size, PHOTOS_MAX_PAR_RETOUR)
+      ),
+      restantesSurLeChantier: placesRestantes(photos.length, PHOTOS_MAX_PAR_CHANTIER),
+    });
+    if (raison) setRefus(raison);
+    for (const fichier of retenues) {
+      const corps = new FormData();
+      corps.set("chantierId", chantierId);
+      corps.set("fichier", fichier);
+      const r = await ajouterPhotoDuRetourAction(corps);
+      if (!r.ok) {
+        setRefus(r.raison);
+        continue;
+      }
+      setPhotos((avant) => [...avant, { id: r.id, storageKey: r.storageKey }]);
+      // Une photo qu'il vient de prendre est une photo qu'il veut montrer :
+      // la lui faire cocher ensuite serait un geste de plus, avec des gants.
+      setReprises((avant) => new Set([...avant, r.id]));
     }
-    setPhotos((avant) => [...avant, { id: r.id, storageKey: r.storageKey }]);
-    // Une photo qu'il vient de prendre est une photo qu'il veut montrer :
-    // la lui faire cocher ensuite serait un geste de plus, avec des gants.
-    setReprises((avant) => new Set([...avant, r.id]));
+  }
+
+  /** Cocher une photo déjà là — sous le plafond du retour, et il le dit. */
+  function basculer(id: string) {
+    const apres = new Set(reprises);
+    if (apres.has(id)) {
+      apres.delete(id);
+      setRefus(null);
+    } else {
+      const trop = refusDesPhotosDuRetour(apres.size + 1);
+      if (trop) {
+        setRefus(trop);
+        return;
+      }
+      apres.add(id);
+    }
+    setReprises(apres);
   }
 
   const compte =
@@ -291,6 +333,13 @@ export default function TravauxAFaire({
                   <span className={libelleCaps} style={{ color: colors.ink }}>
                     Photos
                   </span>
+                  {/* Le compte n'apparaît qu'avec une photo cochée : sans
+                      rien, « 0/10 » annoncerait une règle avant le geste. */}
+                  {reprises.size > 0 && (
+                    <span className="text-[12px]" style={{ color: colors.muted }} data-atlas="compte-photos-retour">
+                      {reprises.size}/{PHOTOS_MAX_PAR_RETOUR}
+                    </span>
+                  )}
                   {photos.map((p) => {
                     const prise = reprises.has(p.id);
                     return (
@@ -299,14 +348,7 @@ export default function TravauxAFaire({
                         type="button"
                         aria-pressed={prise}
                         data-atlas="photo-du-retour"
-                        onClick={() =>
-                          setReprises((avant) => {
-                            const apres = new Set(avant);
-                            if (apres.has(p.id)) apres.delete(p.id);
-                            else apres.add(p.id);
-                            return apres;
-                          })
-                        }
+                        onClick={() => basculer(p.id)}
                         className="h-[46px] w-[46px] overflow-hidden rounded-[9px]"
                         style={{
                           opacity: prise ? 1 : 0.45,
@@ -347,10 +389,11 @@ export default function TravauxAFaire({
                     ref={champ}
                     type="file"
                     accept={ACCEPT_PHOTOS}
+                    multiple
                     className="hidden"
                     onChange={(e) => {
-                      const f = e.target.files?.[0];
-                      if (f) void ajouterUnePhoto(f);
+                      const choisies = Array.from(e.target.files ?? []);
+                      if (choisies.length > 0) void ajouterDesPhotos(choisies);
                       e.target.value = "";
                     }}
                   />

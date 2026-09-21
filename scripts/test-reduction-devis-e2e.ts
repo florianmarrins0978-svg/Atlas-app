@@ -67,8 +67,10 @@ async function main() {
     ["Évacuation des déchets verts", "240"],
   ];
   for (const [rang, [libelle, prix]] of lignesVoulues.entries()) {
-    await page.click('button:has-text("Ajouter une ligne")');
     const zones = page.locator('textarea[aria-label*="escription"]');
+    // La feuille s'ouvre déjà avec sa PREMIÈRE ligne (20 septembre 2026) :
+    // on n'ajoute que celles qui manquent.
+    if ((await zones.count()) <= rang) await page.click('button:has-text("Ajouter une ligne")');
     // **On attend que la ligne EXISTE, on ne compte pas 500 ms.** Sous la
     // batterie, la nouvelle ligne n'était pas encore rendue : `nth(count - 1)`
     // désignait alors la PRÉCÉDENTE, et l'écrasait. Une ligne disparaissait
