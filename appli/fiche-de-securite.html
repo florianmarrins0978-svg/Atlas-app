@@ -340,6 +340,7 @@
     <tr><td>Les mots du formulaire</td><td>recopiés de votre feuille (MSA 12350_A_10/2023), pas reformulés. Un contrôleur retrouve son formulaire.</td></tr>
     <tr><td>Les exemples en gris</td><td>dans chaque cadre, un « Exemple : … » pris dans la fiche remplie de la notice MSA. Il s’efface dès que vous écrivez.</td></tr>
     <tr><td>Les heures</td><td>le planning ne les connaît pas. Elles restent à saisir.</td></tr>
+    <tr><td>La main d’œuvre</td><td>un seul texte, écrit une fois, gardé pour toutes les fiches suivantes, et l’écran le dit. Vous le corrigez quand l’équipe change. C’est votre choix du 21 septembre.</td></tr>
   </table>
   <p><b>Rien n’est codé.</b> Dites oui, ou ce qui reste à changer.</p>
 </div>
@@ -636,8 +637,12 @@ function etape2(z) {
   const a = autresSi(f.travaux, "travauxAutres", "Exemple : taille de réduction"); if (a) b.appendChild(a);
   z.appendChild(b);
 
-  b = bloc("Main d’œuvre");
+  b = bloc("Main d’œuvre", "à remplir une fois");
   b.appendChild(champ("Pour chaque personne : sa formation, depuis quand elle travaille, ses habilitations et ses autorisations de conduite", "mainOeuvre", "Exemple : 3 personnes en CDI, CACES nacelle OK, autorisation de conduite OK", 3));
+  // SA RÉPONSE DU 21 SEPTEMBRE : « la B, mais faut préciser que ça sera
+  // conservé pour toutes les autres fiches ». Un seul texte, gardé d'une fiche
+  // à l'autre, et l'écran le dit sous le cadre.
+  b.appendChild(el("p", "aide", "Ce texte est gardé pour toutes vos prochaines fiches. Corrigez-le ici quand l’équipe change.")).style.margin = "8px 0 0";
   z.appendChild(b);
 
   b = bloc("Matériels", "approprié, conforme, vérifié (VGP)");

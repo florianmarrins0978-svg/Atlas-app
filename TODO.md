@@ -32,6 +32,8 @@ par la fiche du jour.
 | quand | *« au bon vouloir de l'utilisateur »*, en arrivant sur le chantier → **sur la fiche du jour** ; rien d'imposé, rien d'automatique |
 | où | **sur tous les chantiers** — *« des fois ça peut être un chantier d'entretien avec juste un peu d'élagage »* |
 | le nom | **« Fiche de sécurité »**, tranché après avoir vu que le décret dit « fiche d'intervention » — déjà pris par la fiche du jour |
+| la main d'œuvre | **un seul texte, gardé d'une fiche à l'autre**, et l'écran le dit (*« la B, mais faut préciser que ça sera conservé pour toutes les autres fiches »*). Pas de compétences par salarié dans Réglages : proposé, refusé |
+| l'envoi | par e-mail au donneur d'ordre ; « Plus tard » garde la fiche sans l'envoyer ; Atlas la conserve deux ans, dans Terminés |
 | signature | au doigt, à chaque fiche |
 | plan de prévention | *« oui, un bouton pour l'envoyer »* |
 | fréquence | plus de vingt par an |
