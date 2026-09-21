@@ -48,6 +48,21 @@ fiche du jour : `appli/fiche-de-securite.html`. Rien n'est coché d'avance, ce q
 reste vide se dit avant de signer. Rien dans `src/` : il choisit d'abord.
 
 
+### Un chantier terminé ne perd plus sa date — et sans planning, c'est sa facture qui la donne
+
+Deux rangées « Mr. Julien » n'avaient pas de deuxième ligne sur son écran
+Terminés. Elles disaient vrai — aucune date de planning —, mais elles ne
+tenaient à rien : sans date, `cleMois` valait `""`, donc aucun mois ne portait
+le chantier. Tant qu'il attendait sa facture, l'œil le montrait ; le jour où
+elle partait, il quittait la liste **en continuant de compter dans « N
+facturés »**. La date du chantier se lit désormais `date_planifiee ?? date
+d'émission de la facture`, par une seule fonction qui sert au rangement, au tri
+et à l'affichage — et la rangée facturée ne l'écrit pas deux fois.
+
+`ARCHITECTURE.md` §400. Le garde-fou qui empêchera « retirer du planning »
+d'effacer la date d'un chantier déjà facturé vient ensuite : il touche le dépôt
+des chantiers, et c'est un lot de niveau 3.
+
 ### La comparaison des rouges lit le journal entier — un rouge n'y passe plus pour vert
 
 `verifier-rouge-prealable` rejoue chaque suite rouge sur la base de `main` et

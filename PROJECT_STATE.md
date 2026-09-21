@@ -30,6 +30,23 @@ planche ». `ARCHITECTURE.md` §398.
 **Ce qui reste ouvert :** `test-travaux-a-faire-e2e` rougit selon l'ordre des suites (`TODO.md`) ; l'envoi du devis par Atlas attend son adresse pro.
 
 
+· dernière migration `drizzle/0097_jours_retenus_par_le_client.sql`
+
+---
+
+## FAIT : UN CHANTIER TERMINÉ NE PERD PLUS SA DATE (21 septembre 2026)
+
+*« Pourquoi Julien n'a pas de date ? »*, devant deux rangées « À FACTURER » sans
+deuxième ligne. Sans `date_planifiee`, le chantier n'appartenait à **aucun
+mois** : l'œil le montrait tant qu'il attendait sa facture, puis il quittait
+l'écran le jour où elle partait, tout en comptant dans « N facturés ». Sa
+décision : *« il faut même mettre la date du jour à laquelle on a créé la
+facture »*. La date se lit désormais `date_planifiee ?? date d'émission de la
+facture`, par une seule fonction (rangement, tri, affichage).
+`ARCHITECTURE.md` §400. **Reste à poser** : le refus de « retirer du planning »
+sur un chantier déjà facturé — niveau 3, prêt sur
+`claude/pq-julien-missing-date-nqs1oi`, en attente de sa batterie.
+
 ## FAIT : L'ÉCRAN DU CLIENT — CONFIRMATION DU REFUS, ET SES JOURS (20 septembre 2026)
 
 *« J'ai sans faire exprès cliqué sur je ne donne pas suite, aucun moyen

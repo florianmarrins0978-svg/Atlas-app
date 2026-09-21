@@ -38,9 +38,42 @@ export type LigneAffichee = LigneTerminee & {
   aFacturer: boolean;
   /** Le montant à montrer : celui de la facture, sinon celui du devis. */
   montant: number | null;
+  /** Le jour du chantier — `dateDuChantier`, et `null` quand rien ne le dit. */
+  dateDuChantier: string | null;
   /** `AAAA-MM`, ou `""` quand le chantier n'a pas de date. */
   cleMois: string;
 };
+
+/**
+ * LE JOUR DU CHANTIER : le planning s'il l'a posé, sinon le jour de sa facture.
+ *
+ * **Sa décision du 21 septembre 2026**, devant deux rangées « Mr. Julien » sans
+ * deuxième ligne — *« pourquoi Julien n'a pas de date ? »*, puis : *« il faut
+ * même mettre la date du jour à laquelle on a créé la facture »*.
+ *
+ * **Ce que ça répare, et ce n'était pas qu'une ligne vide.** Sans
+ * `datePlanifiee`, `cleMois` valait `""` : **aucun mois ne portait le
+ * chantier**. L'œil le montrait tant qu'il attendait sa facture — il ignore le
+ * mois —, et le jour où la facture partait, il disparaissait de l'écran tout en
+ * comptant dans « N facturés ». Un chiffre qui compte ce que la liste ne montre
+ * pas est exactement ce que la planche 90 avait fait retirer.
+ *
+ * **Pourquoi la date d'émission, et pourquoi elle est fiable.** Elle est posée
+ * une fois, `jourIso(maintenant)`, à la création de la facture brouillon
+ * (`poserLaFactureBrouillon`), et **aucun code ne la réécrit ensuite** : c'est
+ * littéralement le jour où il a créé la facture. Pour un dépannage réglé sur
+ * place — le cas que « Créer une facture » sert — c'est le jour du chantier.
+ *
+ * **Pourquoi on ne l'écrit PAS dans `date_planifiee`.** C'est la colonne du
+ * planning : y poser un jour ferait redemander une place à un chantier déjà
+ * facturé (`demiJourneesAPoser` le compterait parmi les demi-journées qui
+ * attendent), et ferait occuper une demi-journée passée par un travail qui
+ * n'occupe plus personne. La date de RÉALISATION se déduit, elle ne se force
+ * pas dans la date de POSE.
+ */
+export function dateDuChantier(l: Pick<LigneTerminee, "datePlanifiee" | "factureDateEmission">): string | null {
+  return l.datePlanifiee ?? l.factureDateEmission;
+}
 
 /** Ce qu'un mois porte, une fois qu'on s'y est arrêté. */
 export type ResumeMois = {
@@ -93,16 +126,18 @@ export function preparer(lignes: readonly LigneTerminee[]): LigneAffichee[] {
   return lignes
     .map((l): LigneAffichee => {
       const facture = estFacture(l);
+      const jour = dateDuChantier(l);
       return {
         ...l,
         aFacturer: !facture,
         montant: facture ? euros(l.totalTtc) : euros(l.devisTotalTtc),
-        cleMois: (l.datePlanifiee ?? "").slice(0, 7),
+        dateDuChantier: jour,
+        cleMois: (jour ?? "").slice(0, 7),
       };
     })
     .sort((a, b) => {
-      const da = a.datePlanifiee ?? "";
-      const db = b.datePlanifiee ?? "";
+      const da = a.dateDuChantier ?? "";
+      const db = b.dateDuChantier ?? "";
       if (da === db) return 0;
       // Un chantier sans date ne se range nulle part dans le temps : il passe
       // devant plutôt que de se perdre au fond de la liste.
@@ -287,7 +322,15 @@ export function libelleDateChantier(jour: string | null, anneeCourante: string):
  */
 export function libelleEtatLigne(l: LigneAffichee, anneeCourante: string): string {
   const bouts: string[] = [];
-  const date = libelleDateChantier(l.datePlanifiee, anneeCourante);
+  // **La rangée FACTURÉE ne montre que sa date de planning.** Quand le chantier
+  // n'en a pas, son jour est celui de la facture (`dateDuChantier`) — et
+  // « Facturé le 18 septembre » le dit déjà, trois mots plus loin. Écrire les
+  // deux donnerait « 18 septembre · Facturé le 18 septembre », la répétition
+  // qu'il fait retirer à chaque fois (`CLAUDE.md` §3).
+  const date = libelleDateChantier(
+    l.aFacturer ? l.dateDuChantier : l.datePlanifiee,
+    anneeCourante
+  );
   if (date) bouts.push(date);
   if (l.aFacturer) {
     if (l.montant !== null) bouts.push(`${formatEuros(l.montant)} prévus`);

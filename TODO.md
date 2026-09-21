@@ -4684,6 +4684,91 @@ exige un devis **envoyé**, rien d'autre. Deux portes, donc :
 le lien n'apparaît pas. Ne pas « réparer » en exigeant une date dans
 `terminerChantier` : le 3 août, il s'est plaint de l'inverse (*« pourquoi n'y
 ai-je pas accès ??? »*), et un chantier se finit parfois avant sa date.
+
+**CETTE DERNIÈRE PHRASE EST FAUSSE DEPUIS LE 10 SEPTEMBRE 2026, et il faut le
+lire noir sur blanc :** « Créer une facture » (`/chantiers/nouveau?facture=1`)
+est un bouton à LUI, sur cet écran même, et il produit exactement ce cas.
+`creerFactureSansDevis` (`factures.ts:514`) crée la facture puis pose
+`termine_at` sans jamais toucher `date_planifiee` — le chantier n'est jamais
+passé par le planning, et n'a donc aucune date à montrer. **Trois portes, pas
+deux.**
+
+**ET LE JALON EST UNIQUE — sa question du 21 septembre 2026 :** *« comment ils
+se sont retrouvés dans les chantiers à facturer s'ils ne sont pas passés par le
+planning ? »* Le planning ne range rien : il ne fait que poser la date.
+`termine_at` ne s'écrit **qu'à un seul endroit du code**,
+`poserLaFactureBrouillon` (`factures.ts:462`) — c'est-à-dire **au moment où une
+facture est préparée**. D'où la règle, qui se lit dans les deux sens :
+
+| | |
+|---|---|
+| un chantier est dans « Terminés » **sans date** | une facture a été préparée pour lui, un jour |
+| il y est **« À facturer »** | cette facture n'est jamais partie (`statut ≠ 'emise'`) |
+
+Les deux appelants ne se valent pas : `terminerChantier` **exige un devis
+envoyé** (`devis_non_envoye` sinon), `creerFactureSansDevis` n'exige rien.
+
+**SA SECONDE HYPOTHÈSE, ET CE QU'ELLE CORRIGE — même jour :** *« c'est pas
+plutôt des chantiers que j'ai ajoutés sur le planning sans envoyer de
+devis ? »* Elle est juste pour les rangées **qui portent une date** : un
+chantier posé au planning sans devis bascule dans « Terminés » dès que sa date
+est passée (`rangement()`, sans aucun jalon de facture), et il y attend sa
+facture — c'est le cas de « Mr. Frderik · 11 septembre » sur sa capture.
+
+Elle n'explique pas l'absence de date : un chantier posé au planning **garde**
+sa date. Sauf par un second chemin, qui existe et n'est gardé par rien —
+**« retirer du planning » remet `date_planifiee` à NULL sans regarder si une
+facture a déjà été préparée** (`deplanifierChantier`, `chantiers.ts:933` ; ni
+`deplanifierChantierAction` ni le geste `retirer_du_planning` de l'assistant ne
+posent de condition). Le chantier reste alors dans « Terminés » par son
+`termine_at`, **et il a perdu sa date pour toujours** : plus aucun mois ne le
+porte (le point ci-dessous), et l'écran ne peut plus rien en dire.
+
+**À trancher avec lui** : refuser la déplanification d'un chantier dont la
+facture est déjà préparée, ou garder le geste et ranger ces chantiers au mois
+de leur facture. Rien n'est codé.
+
+## ~~Un chantier terminé SANS DATE n'appartient à aucun mois~~ — CODÉ LE 21 SEPTEMBRE 2026
+
+*« Pq Julien n'a pas de date ? »*, devant deux rangées « À FACTURER » dont la
+deuxième ligne est vide.
+
+**Ce qu'il voit est juste**, et c'est la règle du 31 août : sans `datePlanifiee`
+et sans devis envoyé, la rangée n'a pas de deuxième ligne — on n'invente pas une
+date (`libelleEtatLigne`).
+
+**CE QUI N'AVAIT PAS ÉTÉ VU, et qui est mesuré** (fonctions pures, sans base) :
+`preparer` range par `cleMois = datePlanifiee.slice(0,7)`. Sans date, `cleMois`
+vaut `""` — **aucun mois ne porte donc ce chantier**.
+
+| | |
+|---|---|
+| tant qu'il attend sa facture | il se voit par l'ŒIL, qui ignore le mois (`aFacturerPartout`) — c'est ce qui le sauve aujourd'hui |
+| **une fois la facture émise** | il compte dans « N facturés » et **ne s'affiche plus nulle part** : le feuilletage ne l'atteint jamais |
+
+Un chiffre qui compte ce que la liste ne montre pas est exactement ce que la
+planche 90 avait fait disparaître (« 3 828,00 € » écrit deux fois sans qu'on
+sache pourquoi).
+
+**SA DÉCISION, le jour même :** *« 1 oui, et pour la 2 il faut même mettre la
+date du jour à laquelle on a créé la facture »*. Les deux sont codés :
+
+| | |
+|---|---|
+| la date du chantier | **CODÉ** — `date_planifiee ?? facture.date_emission`, une seule fonction pour le rangement, le tri et l'affichage (`dateDuChantier`) |
+| « retirer du planning » | **PAS ENCORE** — le refus touche le dépôt des chantiers, donc un lot de niveau 3 : il est écrit et éprouvé sur la branche `claude/pq-julien-missing-date-nqs1oi`, avec sa suite base, et il attend sa batterie |
+
+La date d'émission est posée une fois à la création de la facture brouillon et
+aucun code ne la réécrit : c'est le jour où il l'a créée. Elle n'est PAS écrite
+dans `date_planifiee` — cette colonne commande l'occupation du planning, et un
+jour posé là ferait redemander une place à un chantier déjà facturé.
+`ARCHITECTURE.md` §400.
+
+**Ce qui reste ouvert, et c'est à lui :** un chantier terminé qui n'a NI date de
+planning NI facture n'a toujours aucune date — il n'existe qu'en théorie
+(`termine_at` ne s'écrit qu'avec une facture), et la rangée reste muette plutôt
+que d'inventer.
+
 ## EN ATTENTE DE SA DÉCISION : les travaux supplémentaires sur la facture (31 août 2026)
 
 **Son constat :** *« si on effectue des travaux en plus chez un client, on n'a

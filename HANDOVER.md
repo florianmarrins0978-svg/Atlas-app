@@ -4,8 +4,9 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-09-21 · `main` — la facture se remplit où on la remplit, et le prénom seul propose le client ; avant elles, les suites
-d'outillage qui se taisent sur son PC
+**Point de reprise :** 2026-09-21 · `main` — un chantier terminé ne perd plus sa
+date ; avant elle, la facture qui se remplit où on la remplit, le prénom seul
+qui propose le client, et les suites d'outillage qui se taisent sur son PC
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
@@ -37,6 +38,18 @@ rang ensuite —, et l'acquittement par `tamponAcquittee`, celui du PDF.
 - **une suite dont le nom porte « devis »** fait monter n'importe quel lot au niveau 3 : corriger une suite de ce nom coûte une batterie ;
 - **les suites qui tuent un groupe de processus** laissent un orphelin sur Windows si elles ne le déclarent pas (`exigerUnSystemePosix`) — les arrêter par PID, jamais par nom.
 
+
+## LA DATE D'UN CHANTIER TERMINÉ A DEUX SOURCES — et le planning n'est plus la seule
+
+**Depuis le 21 septembre 2026** (`ARCHITECTURE.md` §400). Avant de toucher à
+« Terminés » ou au rangement par mois :
+
+| | |
+|---|---|
+| ce qui donne le jour d'un chantier | `dateDuChantier` = `date_planifiee ?? facture.date_emission` |
+| ce qui l'emploie | le rangement par mois, le tri, et la ligne affichée — **la même fonction**, jamais trois lectures |
+| ce qu'il ne faut PAS faire | écrire cette date dans `date_planifiee` : c'est la colonne du planning, et un chantier facturé redemanderait une place |
+| ce qui n'est PAS encore tenu | « retirer du planning » efface toujours `date_planifiee`, facture préparée ou non — le refus attend son lot de niveau 3 |
 
 ## UNE ÉCRITURE DÉCLARE CE QU'ELLE CHANGE — sinon le RETOUR rejoue l'écran d'avant
 
