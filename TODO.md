@@ -9,6 +9,47 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## ⏳ UNE PLANCHE À REGARDER — LA FICHE D'ÉLAGAGE SUR LA FICHE DU JOUR (21 septembre 2026)
+
+`appli/fiche-d-elagage.html`, liée depuis `appli/essais.html`. Sa question :
+*« en élagage il y a besoin de faire des fiches avant l'intervention,
+apparemment c'est devenu obligatoire »*. La recherche vit dans
+`docs/fiche-intervention-elagage.md` sur la branche
+`claude/fiches-elagage-legal-iom2to` (pas sur `main` à cette heure).
+
+**Ses six réponses du 21 septembre, à ne pas lui redemander :**
+
+| | |
+|---|---|
+| équipe | avec des salariés — *« et des fois je travaille seul »* |
+| donneur d'ordre | **pas toujours** le client du devis |
+| quand | *« au bon vouloir de l'utilisateur »*, en arrivant sur le chantier → **sur la fiche du jour** ; rien d'imposé, rien d'automatique |
+| signature | au doigt, à chaque fiche |
+| plan de prévention | *« oui, un bouton pour l'envoyer »* |
+| fréquence | plus de vingt par an |
+
+**Les trois points ouverts du §2 de ce document sont LEVÉS, à la source, le
+21 septembre** (Légifrance et la notice MSA répondaient depuis ce poste) :
+
+- l'article est bien **R. 717-85-16** du code rural (champ : R. 717-85-11 à
+  13) — il peut s'écrire ;
+- le champ : abattage, élagage, éhouppage, démontage, ébranchage, billonnage,
+  broyage — parcs, jardins, arbres d'alignement et isolés, y compris sur
+  chantier BTP ou d'aménagement ; **toutes les techniques** (sol, nacelle,
+  arbre) ; l'employeur qui grimpe et l'indépendant sont visés. Exclus :
+  peuplements forestiers (fiche de chantier forestier, R. 717-78-1) et
+  vergers de production ;
+- la notice MSA : format libre, dématérialisée admise ; signée par le chef
+  d'entreprise ou son représentant, **elle engage sa responsabilité** ;
+  *« l'initier dès la visite de chantier »*, la vérifier **le jour J** contre le
+  terrain, la modifier en cas d'écart ; les cases sont *« un exemple non
+  exhaustif »* et ne remplacent pas le DUERP.
+
+**Quand il aura répondu** : le document de la branche corrige son §2 avec ce
+qui précède avant de rejoindre `main`. Rien dans `src/` avant son oui
+(`CLAUDE.md` §3 bis). **Rien ne se pré-coche sur une fiche de sécurité** — les
+lignes du devis se montrent au-dessus des travaux, elles ne se cochent pas.
+
 ## 🔧 `test-repartir-du-client-e2e` TOMBE DANS LA BATTERIE, JAMAIS SEULE (20 septembre 2026)
 
 Elle rougit sur `le chantier n'a aucun devis à envoyer` — l'`UPDATE devis`
