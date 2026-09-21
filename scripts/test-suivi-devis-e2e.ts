@@ -114,7 +114,10 @@ async function clientRefuse(browser: Awaited<ReturnType<typeof lancerNavigateur>
   const contexte = await browser.newContext();
   const p = await contexte.newPage();
   await p.goto(`${BASE}/devis/${jeton}`, { waitUntil: "networkidle" });
+  // Le refus passe par une feuille de confirmation depuis le 20 septembre 2026
+  // (sa réponse « la A ») : un appui ne ferme plus un devis.
   await p.click('button:has-text("Je ne donne pas suite")');
+  await p.click('button:has-text("Oui, je ne donne pas suite")');
   await p.waitForSelector("text=Votre réponse a bien été transmise", { timeout: 15000 });
   await contexte.close();
 }

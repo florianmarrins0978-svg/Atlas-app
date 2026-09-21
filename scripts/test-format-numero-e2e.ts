@@ -193,7 +193,6 @@ async function main() {
     const chantierId = await creerPuisFiche(page, BASE);
 
     await page.goto(`${BASE}/chantiers/${chantierId}/devis-complet`, { waitUntil: "networkidle" });
-    await page.click('button:has-text("Ajouter une ligne")');
     const zones = page.locator('textarea[aria-label*="escription"]');
     for (const essai of [1, 2, 3, 4, 5]) {
       if ((await zones.count()) > 0) break;

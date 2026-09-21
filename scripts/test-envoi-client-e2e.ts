@@ -528,8 +528,6 @@ async function main() {
 
     await page.goto(`${url}/devis-complet`, { waitUntil: "networkidle" });
     await page.waitForSelector("text=Total TTC", { timeout: DELAI_ECRAN_MS });
-    await page.getByRole("button", { name: "+ Ajouter une ligne" }).click();
-    await page.waitForTimeout(900);
     await page.getByLabel("Description 1").fill("Taille d'un chêne");
     await page.getByLabel("Prix unitaire 1").fill("550");
     await page.getByLabel("Description 1").click();
@@ -717,10 +715,14 @@ async function main() {
     await pageClient.goto(`${BASE}${chemin}`, { waitUntil: "networkidle" });
     const vu = await pageClient.locator("body").innerText();
     assert.match(vu, /Quelle date vous arrange/, `la page du client ne s'est pas ouverte : ${vu.slice(0, 200)}`);
+    // **Le libellé a changé le 20 septembre 2026** — *« quand il y a une date
+    // c'est : cette date ne me convient pas ? Je propose »*. Viser l'ancien
+    // mot à mot laisserait ce contrôle passer au vert sans plus rien défendre
+    // (`CLAUDE.md` §5 bis) : c'est le GESTE qu'on interdit, pas une formule.
     assert.doesNotMatch(
       vu,
-      /une autre date|autre date/i,
-      "le client peut encore demander une autre date alors que l'artisan l'a refusé"
+      /ne me convient pas|ne me conviennent pas|je propose/i,
+      "le client peut encore proposer ses jours alors que l'artisan l'a refusé"
     );
     assert.strictEqual(
       await pageClient.locator('input[name="choixDate"][value="autre"]').count(),

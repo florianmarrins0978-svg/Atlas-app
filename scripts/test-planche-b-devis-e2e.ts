@@ -81,8 +81,10 @@ async function main() {
       ["Terrassement et préparation du sol", "380"],
       ["Fourniture de gazon en rouleau", "780"],
     ].entries()) {
-      await page.click('button:has-text("Ajouter une ligne")');
       const zones = page.locator('textarea[aria-label*="escription"]');
+      // La feuille s'ouvre déjà avec sa PREMIÈRE ligne (20 septembre 2026) :
+      // on n'ajoute que celles qui manquent.
+      if ((await zones.count()) <= rang) await page.click('button:has-text("Ajouter une ligne")');
       for (const essai of [1, 2, 3, 4, 5]) {
         if ((await zones.count()) > rang) break;
         await page.waitForTimeout(essai * 300);

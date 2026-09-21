@@ -42,8 +42,6 @@ async function main() {
 
   await page.goto(`${BASE}/chantiers/${chantierId}/devis-complet`, { waitUntil: "networkidle" });
   await page.waitForSelector("text=Total TTC");
-  await page.getByRole("button", { name: "+ Ajouter une ligne" }).click();
-  await page.waitForTimeout(900);
   await page.getByLabel("Description 1").fill("Abattage d'un cèdre mort");
   await page.getByLabel("Prix unitaire 1").fill("850");
   await page.getByLabel("Description 1").click();

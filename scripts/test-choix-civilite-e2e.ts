@@ -144,8 +144,6 @@ async function main() {
     if (saisi !== CLIENTE) throw new Error(`le champ du nom porte « ${saisi} »`);
   });
 
-  await page.getByRole("button", { name: "+ Ajouter une ligne" }).click();
-  await page.waitForTimeout(900);
   await page.getByLabel("Description 1").fill("Taille d'une haie de laurier (20 ml)");
   await page.getByLabel("Prix unitaire 1").fill("350");
   await page.getByLabel("Description 1").click();

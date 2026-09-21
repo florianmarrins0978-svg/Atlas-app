@@ -33,6 +33,7 @@ import {
   creneauxDuChantier,
   creneauxSurLesJours,
   estUnBlocDAffilee,
+  joursDuBloc,
   joursDuChantier,
   propositionRetenable,
   type ChantierPlanifie,
@@ -441,6 +442,15 @@ export type EnvoiPourClient = {
   fenetre: { debut: JourIso; fin: JourIso };
   reponse: "acceptee" | "refusee" | "correction" | null;
   dateRetenue: JourIso | null;
+  /**
+   * Tous les jours qu'elle a retenus — pour l'écran de RETOUR, celui qu'elle
+   * rouvre depuis son SMS. `dateRetenue` n'en porte qu'un, et sur un chantier
+   * de quatre jours cela lui redisait un jour sur quatre.
+   *
+   * `null` sur une réponse d'avant la migration 0097 : l'écran retombe alors
+   * sur la date, comme il l'a toujours fait.
+   */
+  joursRetenus: JourIso[] | null;
   expire: boolean;
   devis: {
     numeroCommercial: string;
@@ -632,6 +642,15 @@ export async function lireParJeton(
       fenetre,
       reponse: envoi.reponse,
       dateRetenue: envoi.dateRetenue,
+      /**
+       * Les jours qu'elle a retenus, pour l'écran de RETOUR — celui qu'elle
+       * rouvre depuis son SMS le lendemain. Sur un chantier de quatre jours,
+       * `dateRetenue` seule lui redirait un jour sur quatre.
+       *
+       * `null` sur une réponse d'avant la migration 0097 : l'écran retombe
+       * alors sur la date, comme il l'a toujours fait.
+       */
+      joursRetenus: envoi.joursRetenus ?? null,
       expire,
       devis: {
         numeroCommercial: d.numeroCommercial,
@@ -728,6 +747,19 @@ export type ReponseClient = {
   decision: "accepte" | "refuse" | "correction";
   /** Requise si accepte : l'une des dates proposées, ou une contre-proposition. */
   dateRetenue?: JourIso;
+  /**
+   * LES JOURS QU'ELLE A POSÉS, quand elle propose les siens — sa demande du
+   * 20 septembre 2026.
+   *
+   * Absente : le comportement d'avant, inchangé — le chantier prend le bloc
+   * d'affilée depuis `dateRetenue`. C'est ce que font encore les envois partis
+   * avant, et les clients qui retiennent une date offerte.
+   *
+   * **Elle ne remplace pas `dateRetenue`** : le premier jour reste ce par quoi
+   * tout le reste du produit désigne cette réponse (le planning, la
+   * notification, l'écran de retour).
+   */
+  joursRetenus?: readonly JourIso[];
   precision?: string | null;
   demarrageAnticipe?: boolean;
   adresseIp?: string | null;
@@ -744,6 +776,12 @@ export type ResultatReponse =
         | "deja_repondu"
         | "date_indisponible"
         | "date_manquante"
+        /**
+         * Elle a retenu moins de jours que le chantier n'en prend — trois sur
+         * quatre. Accepté tel quel, l'artisan n'aurait pas eu de quoi faire le
+         * travail, et personne ne l'aurait su avant le chantier.
+         */
+        | "jours_incomplets"
         | "message_manquant"
         /** Le patron n'a pas autorisé d'autre date sur CET envoi (17 août 2026). */
         | "autre_date_refusee";
@@ -815,7 +853,54 @@ export async function enregistrerReponse(
     const date = reponse.dateRetenue;
     if (!date) return { succes: false, motif: "date_manquante" as const };
 
-    const contreProposee = !envoi.datesProposees.includes(date);
+    /**
+     * **LES JOURS QU'ELLE A POSÉS — sa demande du 20 septembre 2026.**
+     *
+     * Sur un chantier de quatre jours, elle pose les quatre au calendrier, et
+     * ils peuvent ne pas se suivre. Jusque-là elle envoyait UNE date que le
+     * serveur étalait en bloc d'affilée derrière elle : le chantier tombait sur
+     * des jours qu'elle n'avait jamais vus.
+     *
+     * `dateRetenue` reste le PREMIER de ses jours — c'est par lui que le
+     * planning, la notification et l'écran de retour désignent cette réponse —
+     * et ce lien est vérifié plutôt que supposé : deux vérités sur la même
+     * réponse, et le planning dirait autre chose que l'écran qu'elle rouvre.
+     */
+    const joursDuClient =
+      reponse.joursRetenus && reponse.joursRetenus.length > 0
+        ? [...new Set(reponse.joursRetenus)].sort()
+        : null;
+    if (joursDuClient && joursDuClient[0] !== date) {
+      return { succes: false, motif: "date_manquante" as const };
+    }
+
+    const rangProposee = envoi.datesProposees.indexOf(date);
+    /**
+     * `null`, et surtout PAS `[date]`, sur un envoi d'avant la migration 0095 :
+     * une liste d'un seul jour ferait poser un chantier de deux jours sur un
+     * seul (`creneauxSurLesJours` n'étale que sur les jours qu'on lui donne),
+     * là où l'absence de liste doit rendre le bloc d'affilée d'autrefois.
+     * C'est ce qu'a attrapé `test-envoi-jours-pas-colles-db`.
+     */
+    const joursProposesPourCeJour =
+      rangProposee >= 0 ? (envoi.joursProposes?.[rangProposee] ?? null) : null;
+
+    /**
+     * **CE QUI FAIT D'UNE RÉPONSE UNE CONTRE-PROPOSITION : les JOURS, pas le
+     * premier d'entre eux.**
+     *
+     * Le raccourci d'avant — « la date n'est pas dans celles proposées » — a
+     * cessé d'être vrai le jour où elle a pu déplacer UN jour sur quatre : en
+     * gardant le premier et en poussant le quatrième, elle envoyait une date
+     * proposée avec des jours qui ne le sont pas. Sa liste aurait été jetée au
+     * profit de celle du patron, sans que rien ne le dise.
+     */
+    const memesJoursQueProposes =
+      joursDuClient !== null &&
+      joursProposesPourCeJour !== null &&
+      joursDuClient.length === joursProposesPourCeJour.length &&
+      joursDuClient.every((j, i) => j === [...joursProposesPourCeJour].sort()[i]);
+    const contreProposee = rangProposee < 0 || (joursDuClient !== null && !memesJoursQueProposes);
 
     // **Le refus se fait ICI, pas seulement à l'écran** (17 août 2026). La page
     // du client est publique : elle s'ouvre sans compte, et son formulaire se
@@ -840,9 +925,7 @@ export async function enregistrerReponse(
     // d'affilée depuis le jour du client, comme toujours. Et un bloc d'affilée
     // posé à l'écran se juge et s'écrit comme avant, pour que `departPossible`
     // garde le droit de commencer l'après-midi quand le matin est pris.
-    const joursChoisis = contreProposee
-      ? null
-      : (envoi.joursProposes?.[envoi.datesProposees.indexOf(date)] ?? null);
+    const joursChoisis = joursDuClient ?? joursProposesPourCeJour;
 
     await tx.execute(sql`SELECT set_config('app.entreprise_id', ${envoi.entrepriseId}, true)`);
     const fenetre = fenetrePourDates(envoi.envoyeAt, [
@@ -889,6 +972,19 @@ export async function enregistrerReponse(
     // Ce qui autorise, c'est `dates_forcees` : la photographie prise à l'envoi
     // de ce qui était déjà plein ce jour-là. Elle distingue « il a choisi » de
     // « le planning a bougé depuis ».
+    /**
+     * **ELLE NE RETIENT PAS MOINS DE JOURS QUE LE CHANTIER N'EN PREND.**
+     *
+     * L'écran le refuse déjà — « Il manque 1 jour » —, mais cette page est
+     * publique et son formulaire se rejoue : la règle vit ici, une seule fois
+     * (`CLAUDE.md` §3). Sans elle, `creneauxSurLesJours` poserait trois
+     * demi-journées là où le chantier en demande huit, et personne ne l'aurait
+     * su avant le jour des travaux.
+     */
+    if (joursDuClient && joursDuClient.length !== joursDuChantier(duree)) {
+      return { succes: false, motif: "jours_incomplets" as const };
+    }
+
     const surDesJoursChoisis = joursChoisis !== null && !estUnBlocDAffilee(joursChoisis, duree);
     const forcee = envoi.datesForcees.includes(date);
     const tient = surDesJoursChoisis
@@ -913,6 +1009,13 @@ export async function enregistrerReponse(
         reponse: "acceptee",
         responduAt: maintenant,
         dateRetenue: date,
+        /**
+         * Les jours qu'elle a réellement retenus — les siens quand elle les a
+         * posés, ceux du patron sinon. Écrits même dans le second cas : une
+         * réponse qui se redit toute seule vaut mieux qu'une réponse qu'il faut
+         * recroiser avec `jours_proposes` pour comprendre (migration 0097).
+         */
+        joursRetenus: joursChoisis ?? joursDuBloc(date as JourIso, duree),
         dateContreProposee: contreProposee,
         precisionClient: precision,
         demarrageAnticipe: reponse.demarrageAnticipe ?? false,

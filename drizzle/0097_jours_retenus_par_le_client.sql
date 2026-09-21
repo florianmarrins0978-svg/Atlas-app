@@ -1,0 +1,37 @@
+-- LES JOURS QUE LE CLIENT A RETENUS — sa demande du 20 septembre 2026 :
+-- « lorsqu'elle clique sur proposer des jours, s'il y a plusieurs jours il faut
+-- mettre le même système que nous : les 4 dates s'affichent, elle clique sur un
+-- jour sélectionné pour le désélectionner et reclique ailleurs pour le
+-- déplacer ». Planche `appli/proposer-ses-jours.html`, geste dicté par lui.
+--
+-- ════════════════════════════════════════════════════════════════════════════
+-- CE QUE `date_retenue` NE SAIT PAS DIRE.
+--
+-- Elle porte UN jour. Tant que le client ne pouvait proposer qu'une date, cela
+-- suffisait : le chantier prenait le bloc d'affilée à partir de là. Désormais
+-- elle choisit ses jours un à un, et ils peuvent ne pas se suivre — « le 12, le
+-- 13, le 15 et le 22 ». Un seul jour ne permet plus de redire ce qu'elle a
+-- proposé : ni sur l'écran de retour qu'elle rouvre depuis son SMS, ni dans la
+-- notification que le patron lit.
+--
+-- Le PLANNING, lui, ne dépend pas de cette colonne : `ecrireLesCreneaux` pose
+-- les créneaux du chantier à l'acceptation, et c'est lui qui fait foi. Cette
+-- colonne est la MÉMOIRE de la réponse, pas la réservation.
+--
+-- ════════════════════════════════════════════════════════════════════════════
+-- ÉTENDRE, SANS RIEN RETIRER (expand/contract, `.claude/rules/deployment-safety.md`).
+--
+-- Nullable, aucune ligne réécrite, aucune contrainte ajoutée. Le code d'avant,
+-- servi sur cette base, continue de lire `date_retenue` et ne voit pas cette
+-- colonne ; le code neuf, servi sur une base sans elle, tomberait — c'est
+-- pourquoi elle arrive AVANT lui.
+--
+-- NULL sur une réponse d'avant : les jours se redéduisent comme ils l'ont
+-- toujours été — la liste de `jours_proposes` quand le client a pris une date
+-- offerte, le bloc d'affilée depuis `date_retenue` sinon. Rien ne s'invente
+-- (`.claude/rules/migrations.md`).
+--
+-- Aucun `UPDATE` ici, donc rien à prouver sur FORCE RLS : `envois_devis` en
+-- porte (migration 0015) et `atlas_owner` n'a pas BYPASSRLS — une écriture de
+-- données aurait touché zéro ligne en silence.
+ALTER TABLE "envois_devis" ADD COLUMN IF NOT EXISTS "jours_retenus" jsonb;

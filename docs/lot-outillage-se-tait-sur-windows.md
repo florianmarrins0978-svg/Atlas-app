@@ -69,5 +69,5 @@ Les huit suites muettes chez toi ne sont **pas** éprouvées sur ton PC — c'es
 le principe — ; elles le sont sur ton espace et en CI, qui ont ce que Windows
 n'a pas.
 
-*Le détail technique est dans `ARCHITECTURE.md` §394 et `CHANGELOG.md` du
+*Le détail technique est dans `ARCHITECTURE.md` §396 et `CHANGELOG.md` du
 20 septembre.*
