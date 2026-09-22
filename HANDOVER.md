@@ -65,7 +65,7 @@ rang ensuite —, et l'acquittement par `tamponAcquittee`, celui du PDF.
 | ce qui donne le jour d'un chantier | `dateDuChantier` = `date_planifiee ?? facture.date_emission` |
 | ce qui l'emploie | le rangement par mois, le tri, et la ligne affichée — **la même fonction**, jamais trois lectures |
 | ce qu'il ne faut PAS faire | écrire cette date dans `date_planifiee` : c'est la colonne du planning, et un chantier facturé redemanderait une place |
-| ce qui n'est PAS encore tenu | « retirer du planning » efface toujours `date_planifiee`, facture préparée ou non — le refus attend son lot de niveau 3 |
+| ce qui est refusé | « retirer du planning » sur un chantier dont la facture est préparée — `DeplanificationImpossibleError`, levée dans le dépôt, rendue en valeur par les trois portes (`ARCHITECTURE.md` §401) |
 
 ## UNE ÉCRITURE DÉCLARE CE QU'ELLE CHANGE — sinon le RETOUR rejoue l'écran d'avant
 

@@ -18,7 +18,34 @@ fiche par chantier, gardée deux ans, jamais purgée ; ses photos non plus. Ce
 qui est coché et écrit revient sur la fiche suivante — son choix — et l'écran
 de la loi le dit. Rien n'est coché par l'application. `docs/lot-fiche-de-securite.md`.
 
+### La fiche 4 du diagnostic végétal dessinée avant d'être codée — et la licence d'Ephytia lue
+
+Sa demande : continuer les fiches de maladies dans l'ordre d'Ephytia après
+l'anthracnose du platane, une planche par fiche, son oui avant d'écrire. La
+suivante est la brunissure des feuilles de peuplier :
+`appli/fiche-brunissure-des-feuilles-de-peuplier.html` montre l'écran tel que
+l'application le rendra, avec le brouillon complet de la fiche injecté depuis
+son JSON — rien de retapé —, et d'où vient chaque ligne. Le brouillon passe
+déjà `importer-fiches-phyto.ts --verifier`.
+
+Ce que ça évite : coder une fiche qu'il aurait corrigée après coup, et surtout
+recopier Ephytia. Il avait demandé *« reprends leur photo et leur texte »* ;
+les mentions légales du site, lues ce jour, interdisent la copie et l'usage
+commercial (`donnees/phyto/LISEZ-MOI.md`). La méthode de la fiche 2 tient
+donc : les faits rédigés, la photo prise sur Wikimedia Commons sous CC BY 3.0
+US, licence et citation vérifiées sur Commons ET sur Bugwood.
+
 ## 2026-09-21
+
+### Retirer du planning n'efface plus la date d'un chantier déjà facturé
+
+Le geste remettait `date_planifiee` à NULL sans rien regarder. Un chantier dont
+la facture était préparée restait dans « Terminés » par son `termine_at` et
+perdait la date du jour où il a été fait — sans un mot, et par ses trois portes
+(le planning, l'assistant, la fiche). Le refus est posé à la racine, dans le
+dépôt où elles passent toutes ; chacune le rend en valeur, jamais en exception,
+et l'écran ne se repeint plus avant d'avoir l'accord du serveur.
+`ARCHITECTURE.md` §401.
 
 ### Ce qu'il remplit passe sur la page où il remplit — et le mot d'un règlement est à lui
 

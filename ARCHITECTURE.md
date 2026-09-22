@@ -32583,16 +32583,60 @@ dans la date de POSE.
 facture, « Facturé le 18 septembre » la dit déjà trois mots plus loin : la
 répétition part, pas la ligne (`CLAUDE.md` §3).
 
-### Ce qui reste ouvert, et qui vient ensuite
+### L'autre moitié est au §401
 
-« Retirer du planning » remet encore `date_planifiee` à NULL **sans regarder si
-une facture est déjà préparée** (`deplanifierChantier`). Le chantier ne perd
-plus sa date à l'écran — sa facture la donne —, mais il perd bel et bien la
-date du jour où il a été fait. Le refus se pose à la racine, dans le dépôt où
-passent les trois portes ; il touche `src/server/repositories/chantiers.ts`,
-donc un lot de niveau 3, et il attend sa batterie (`TODO.md`).
+« Retirer du planning » remettait `date_planifiee` à NULL sans regarder si une
+facture était déjà préparée. Livré à part, parce que le refus touche le dépôt
+des chantiers : un lot de niveau 3 n'attend pas un lot de niveau 2
+(`CLAUDE.md` §6).
 
-## §401 — La fiche de sécurité vit là où sont les travailleurs, et se garde deux ans
+---
+
+## §401 — Un chantier dont la facture est préparée ne se retire plus du planning
+
+**Sa décision du 21 septembre 2026**, une fois les deux défauts nommés :
+*« 1 oui »* — le premier des deux étant ce geste-ci.
+
+### Ce qu'il faisait, et il ne disait rien
+
+`deplanifierChantier` remet `date_planifiee` à NULL, efface les créneaux et
+replie les équipes. C'est juste pour un chantier qu'on repose ailleurs. Mais il
+ne regardait **pas** si une facture existait déjà : un chantier terminé —
+`termine_at` ne s'écrit qu'en posant la facture brouillon (§400) — restait dans
+« Terminés » et **perdait la date du jour où il a été fait**, sans un mot.
+
+Rien ne l'empêchait par ses boutons à lui : le planning, le geste dicté à
+l'assistant (`retirer_du_planning`) et la fiche appellent tous les trois cette
+seule fonction.
+
+### Le refus vit dans le dépôt, jamais dans les écrans
+
+`DeplanificationImpossibleError("facture_preparee")` est levée à la racine, là
+où les trois portes passent. Une condition recopiée dans chaque écran aurait
+divergé au premier ajout (`CLAUDE.md` §3), et la quatrième porte écrite demain
+serait partie sans elle.
+
+**Chaque porte traduit le refus EN VALEUR** (`AGENTS.md`, piège 0 ter) : le
+message d'une exception d'action serveur n'arrive jamais jusqu'au patron —
+Next.js le remplace en production par un identifiant opaque. Le planning rend
+`{ succes: false, erreur }` et l'affiche sous le calendrier (`setRefus`, le
+même chemin que le déplacement refusé) ; l'assistant le rend en conflit métier.
+
+**Et l'écran ne se repeint qu'après un accord.** `retirerDuJour` vidait la date
+dans son état local avant même de savoir si le serveur avait accepté : le
+chantier se serait affiché « Sans date » alors qu'il n'y était pas — la
+divergence que `CLAUDE.md` §3 interdit.
+
+### Ce qu'un garde-fou ne doit pas faire
+
+`scripts/test-chantier-garde-sa-date-db.ts` éprouve les deux sens : le refus
+sur une facture préparée **et** sur une facture émise, et le retrait ordinaire
+d'un chantier sans facture, qui doit toujours passer. Un garde-fou qui parle à
+tort s'apprend à être ignoré, et l'on perd la protection sans s'en apercevoir
+(`CLAUDE.md` §1 bis). Confrontée au code d'avant, la suite rend quatre rouges
+et laisse ces deux cas-là verts.
+
+## §402 — La fiche de sécurité vit là où sont les travailleurs, et se garde deux ans
 
 **Sa question du 21 septembre 2026 :** *« en élagage il y a besoin de faire des
 fiches avant l'intervention, apparemment c'est devenu obligatoire »*. C'est le
@@ -32645,4 +32689,3 @@ retours (§ migration 0080) : la photo du chantier que la fiche montre ne doit
 pas partir en purge quand on l'efface de la pellicule. `fiches_securite_photos`
 existe pour que `supprimerPhoto` pose la question. `test-fiche-securite-db.ts`
 le mesure sur le compteur de `fichiers_a_purger`.
-

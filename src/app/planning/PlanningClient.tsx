@@ -1247,8 +1247,18 @@ export default function PlanningClient({
   function retirerDuJour(chantierId: string) {
     setOuvert(null);
     setFeuille(null);
+    setRefus(null);
     enTransition(async () => {
-      await deplanifierChantierAction(chantierId);
+      const r = await deplanifierChantierAction(chantierId);
+      // **Un chantier déjà facturé garde sa date** — sa décision du
+      // 21 septembre 2026. Sans ce garde-fou, il la perdait pour toujours, et
+      // « Terminés » n'avait plus rien à écrire sur sa rangée. Repeindre l'écran
+      // avant de savoir si le serveur a accepté afficherait « Sans date » sur un
+      // chantier qui ne l'est pas : la divergence que `CLAUDE.md` §3 interdit.
+      if (!r.succes) {
+        setRefus(r.erreur);
+        return;
+      }
       setChantiers((liste) =>
         liste.map((c) => (c.id === chantierId ? { ...c, datePlanifiee: null, creneaux: [] } : c))
       );

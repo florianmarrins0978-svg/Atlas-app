@@ -465,6 +465,14 @@ retransmet — un document périmé le ferait travailler sur une version disparu
   lit en une seconde, une ligne qui bouge se cherche. Quand la réécriture crée
   une répétition, c'est **le mot en trop** qui part, jamais la ligne entière.
 
+- **Ni point médian, ni tiret : des phrases.** Sa règle du 22 septembre 2026,
+  devant « Probable · Peuplier » : *« Plus jamais tu mets de point entre le nom
+  et probable ! Retiens pour les autres fiches, et plus jamais de tiret, fais
+  des phrases normales. »* Le « · » qui colle deux mots et le « — » qui
+  coupe une phrase sont de la typographie de rapport ; à l'écran, il lit une
+  phrase : « Probable sur un peuplier. », « Photo de X, sous licence Y. ».
+  Ce qui a besoin d'un genre (« un », « une ») se lit dans la donnée, jamais
+  deviné. Vaut pour les écrans, les maquettes et les fiches phytosanitaires.
 - **Pas de flèches décoratives au bout des libellés.** Sa consigne du 25 août
   2026 : *« arrête de mettre des flèches, c'est moche »*. Le « → » (et le « › »)
   ajouté à la fin d'un bouton ou d'un lien — « Régler à la main → », « Créer le

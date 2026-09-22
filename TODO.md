@@ -9,6 +9,72 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## ⏳ UNE PLANCHE À REGARDER — FICHE 4, LA BRUNISSURE DES FEUILLES DE PEUPLIER (22 septembre 2026)
+
+`appli/fiche-brunissure-des-feuilles-de-peuplier.html`, liée depuis
+`appli/essais.html`. Sa demande du 22 septembre : *« continue dans l'ordre
+après l'anthracnose du platane sur le site de l'INRAE »*, puis *« fais-moi
+valider pour chaque fiche avant de la coder, fais des planches »*.
+
+**L'ordre, c'est celui d'Ephytia** — rubrique « Champignons foliaires »,
+`https://ephytia.inrae.fr/fr/C/18684/Forets-Champignons-foliaires` : anthracnose
+du platane (fiche 2), anthracnose du chêne et du hêtre (fiche 3), **brunissure
+des feuilles de peuplier** (celle-ci), puis chalarose du frêne, criblure du
+merisier, cylindrosporiose du merisier, Cyclaneusma sur pin, maladie des bandes
+rouges, croûtes noires de l'érable, taches blanches, maladie des pousses des
+résineux, taches brunes, oïdium du chêne, pathologies foliaires du mélèze,
+Phytophthora ramorum, pourriture grise, Rhizosphaera, Rhabdocline du Douglas,
+rouge cryptogamique du pin, rouilles, rouille suisse du Douglas, Sphaeropsis
+des pins, Thyriopsis halepensis. **Une planche par fiche, chacune attend son
+oui avant d'entrer dans `donnees/phyto/fiches/`.**
+
+**Ce qu'il a demandé et qui ne se fait PAS ainsi — à lui redire s'il le
+redemande :** *« reprends leur photo et leur texte »*. Les mentions légales
+d'Ephytia (`donnees/phyto/LISEZ-MOI.md`) interdisent la copie et l'usage
+commercial ; la fiche 2 n'a jamais recopié ni texte ni figure, et c'est cette
+méthode-là qui continue : les faits rédigés, la photo prise ailleurs sous
+licence libre, vérifiée sur ses deux pages (Commons ET la source d'origine).
+
+**Où est le brouillon.** Le JSON complet est INJECTÉ dans la planche (bloc
+`var LOT`), privé de ses champs `_source_*` ; la version avec ses notes de
+lecture est dans le dossier de travail de la session qui l'a écrite, et se
+reconstitue en une lecture de la page si elle est perdue. Il a passé
+`importer-fiches-phyto.ts --verifier`. La photo est déjà dans
+`appli/diagnostic-brunissure-peuplier-feuille.jpg` (422 Ko, CC BY 3.0 US,
+Manfred Mielke / USDA Forest Service / Bugwood, via Commons).
+
+**SA RÈGLE DU 22 SEPTEMBRE AU SOIR, ET ELLE VAUT POUR TOUTES LES FICHES :**
+*« Plus jamais tu mets de point entre le nom et probable ! Retiens pour les
+autres fiches, et plus jamais de tiret, fais des phrases normales. »* Elle est
+inscrite dans `CLAUDE.md` §3. **Ce qu'elle change dans le CODE de l'écran
+(`src/app/paysage/diagnostic/[id]/page.tsx`), à coder avec cette fiche, sur
+son oui, et pas avant — il a dit « ne lance aucune batterie » :**
+
+| Aujourd'hui, pour toutes les fiches | Ce qu'il veut lire |
+|---|---|
+| `Probable · Platane` | `Probable sur un platane.` |
+| `légende — crédit · licence` sous la photo | `Petites taches brunes sur une feuille de peuplier. Photo de …, sous licence CC BY 3.0 US.` |
+| `INRAE — Ephytia (…) · consultée le 22 septembre 2026` | `Source : INRAE, Ephytia (…), page consultée le 22 septembre 2026.` |
+| dans les détails, `Fiche version 1 · à jour au …` | `Fiche version 1, à jour au 21 octobre 2024.` |
+
+**L'article (« un », « une ») s'écrit dans la FICHE, sur le taxon** (champ
+`article`, déjà dans le brouillon de la fiche 4), jamais deviné par le code :
+la base ne connaît pas le genre d'un nom d'essence (c'est pour cela que le
+« sur un » de la planche du 11 septembre avait été retiré au codage). Donc :
+`TaxonSchema` + colonne `article` sur `taxons_phyto` (migration, nullable :
+expand), et les fiches 1 à 3 reçoivent le leur (« un platane », « un chêne »,
+« un hêtre », les résineux du fomès). Sans article en base, l'écran écrit
+`Probable.` puis le nom sur sa ligne, jamais un article deviné. Les
+`organisme`/`titre` des fiches 2 et 3 portent un tiret (« INRAE — Ephytia ») :
+à réécrire en même temps (« INRAE, Ephytia »). Ce lot touche `drizzle/`, donc
+niveau 3 : à jouer quand il autorisera une batterie.
+
+**Sur son oui :** le fichier **004-brunissure-peuplier.json** dans `donnees/phyto/fiches/` +
+**brunissure-peuplier-feuille.jpg** dans `donnees/phyto/images/` (ils n'existent pas encore, exprès), `--verifier`, puis
+`npx tsx scripts/test-import-fiches-phyto.ts` et `test-diagnostic-base.ts`, et
+`PROJECT_STATE.md` passe à « 4 sur ~50 ». Ses trois questions sont au bas de
+la planche : Vigilance ou Faible ; la photo ; le oui.
+
 ## ~~UNE PLANCHE À REGARDER — LA FICHE DE SÉCURITÉ (DÉCRET 2021-1833) SUR LA FICHE DU JOUR~~ — CODÉE LE 22 SEPTEMBRE 2026
 
 **Codée dans la nuit du 21 au 22 septembre 2026**, sur son *« tu peux coder
@@ -4770,7 +4836,7 @@ date du jour à laquelle on a créé la facture »*. Les deux sont codés :
 | | |
 |---|---|
 | la date du chantier | **CODÉ** — `date_planifiee ?? facture.date_emission`, une seule fonction pour le rangement, le tri et l'affichage (`dateDuChantier`) |
-| « retirer du planning » | **PAS ENCORE** — le refus touche le dépôt des chantiers, donc un lot de niveau 3 : il est écrit et éprouvé sur la branche `claude/pq-julien-missing-date-nqs1oi`, avec sa suite base, et il attend sa batterie |
+| « retirer du planning » | **CODÉ** — refusé dès qu'une facture existe, à la racine (`deplanifierChantier`), et rendu en valeur par les trois portes. Livré à part : niveau 3, batterie entière (`ARCHITECTURE.md` §401) |
 
 La date d'émission est posée une fois à la création de la facture brouillon et
 aucun code ne la réécrit : c'est le jour où il l'a créée. Elle n'est PAS écrite

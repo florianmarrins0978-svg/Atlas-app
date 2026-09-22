@@ -1,0 +1,515 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Brunissure des feuilles de peuplier, fiche à valider (Atlas)</title>
+<style>
+/*
+  ═══════════════════════════════════════════════════════════════════════════
+  FICHE 4 — BRUNISSURE DES FEUILLES DE PEUPLIER — 22 septembre 2026
+  ═══════════════════════════════════════════════════════════════════════════
+
+  Sa demande : « continue dans l'ordre après l'anthracnose du platane sur le
+  site de l'INRAE », et « fais-moi valider chaque fiche avant de la coder ».
+  Sur Ephytia, la liste « Champignons foliaires » va : anthracnose du platane
+  (fiche 2), anthracnose du chêne et du hêtre (fiche 3), puis la brunissure des
+  feuilles de peuplier — celle-ci.
+
+  La planche montre l'écran EXACTEMENT comme l'application le rend aujourd'hui
+  (src/app/paysage/diagnostic/[id]/page.tsx), avec les textes du brouillon de
+  la fiche. Tout ce qui est écrit dans FICHE, en bas, est le fichier JSON qui
+  sera versé dans donnees/phyto/fiches/ sur son « oui » — rien n'est retapé.
+
+  Même méthode que la fiche 2 : les mentions légales d'Ephytia interdisent la
+  copie et l'usage commercial, donc les faits sont rédigés, les figures de la
+  page (« © Pinon ») sont écartées, et la photo vient de Wikimedia Commons sous
+  licence libre vérifiée. RIEN N'EST CODÉ. Les couleurs viennent de
+  src/lib/chartes.ts.
+*/
+:root{
+  --fond:#f5f3ee; --plage:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
+  --gris:#8a8578; --or:#B98B47; --accent:#2f3b2f; --alerte:#9c3b2e;
+  --trait:rgba(28,28,26,.12); --trait-doux:rgba(28,28,26,.07); --scene:#e6e3dc;
+  --plein:#7d9a6d; --surPlein:#faf9f5; --papier:#ece9e1;
+}
+body.nuit{
+  --fond:#101210; --plage:#1a1d19; --encre:#e9e8de; --encre-douce:#c1c2b6;
+  --gris:#84887b; --or:#C9A15E; --accent:#e9e8de; --alerte:#e0857a;
+  --trait:rgba(233,232,222,.12); --trait-doux:rgba(233,232,222,.07); --scene:#070908;
+  --plein:#e9e8de; --surPlein:#1a1d19; --papier:#232722;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--scene)}
+body{font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+     color:var(--encre);-webkit-text-size-adjust:100%;padding:0 0 60px}
+::selection{background:var(--or);color:var(--fond)}
+
+.commandes{position:sticky;top:0;z-index:20;background:var(--scene);
+  padding:10px 16px;border-bottom:1px solid var(--trait);text-align:center}
+.commandes button{font:inherit;font-size:13.5px;padding:9px 16px;margin:3px;
+  border:1px solid var(--trait);background:var(--plage);color:var(--encre);
+  border-radius:999px;cursor:pointer;min-height:44px}
+.commandes button[aria-pressed=true]{background:var(--encre);color:var(--fond);border-color:var(--encre)}
+
+.tete{max-width:740px;margin:0 auto;padding:26px 20px 4px}
+.tete h1{font-family:ui-serif,Georgia,"Times New Roman",serif;font-size:30px;line-height:1.12;margin:0 0 12px;font-weight:400}
+.tete p{margin:0 0 10px;font-size:14.5px;line-height:1.65;color:var(--encre-douce)}
+.tete b{color:var(--encre)}
+.sceau{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--fond);background:var(--accent);
+  padding:5px 11px;border-radius:3px;margin-bottom:14px}
+body.nuit .sceau{color:var(--scene)}
+
+.scene{display:flex;justify-content:center;padding:22px 12px 0}
+.tel{width:390px;max-width:100%;height:700px;border-radius:38px;padding:10px;
+  background:var(--encre);box-shadow:0 22px 50px -18px rgba(0,0,0,.55)}
+.dedans{height:100%;border-radius:30px;overflow:auto;background:var(--fond);color:var(--encre);
+  scrollbar-width:thin;scrollbar-color:var(--trait) transparent}
+.dessous{max-width:520px;margin:14px auto 0;padding:0 20px;font-size:13.5px;line-height:1.6;color:var(--gris);text-align:center}
+.dessous b{color:var(--encre-douce)}
+
+/* ── L'écran, dans la grammaire d'Atlas ─────────────────────────────────── */
+.ecran{padding:0 26px 64px;font-size:15px}
+.retour{display:flex;align-items:center;justify-content:space-between;padding-top:28px}
+.retour .rond{width:40px;height:40px;border-radius:50%;background:var(--papier);color:var(--encre);
+  display:flex;align-items:center;justify-content:center;font-size:18px}
+.titre-ligne{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding-top:20px}
+.titre-ligne h2{font-family:ui-serif,Georgia,"Times New Roman",serif;font-weight:400;
+  font-size:34px;line-height:1.02;letter-spacing:-.018em;margin:0}
+.caps{font-size:9.5px;font-weight:500;letter-spacing:.28em;text-transform:uppercase;color:var(--or);margin:12px 0 0}
+.caps.gris{color:var(--gris)}
+.assistant{flex:none;width:44px;height:44px;border-radius:50%;background:var(--accent);
+  display:flex;align-items:center;justify-content:center;margin-top:6px}
+.assistant svg{width:18px;height:18px;stroke:var(--fond);fill:none;stroke-width:1.6}
+body.nuit .assistant svg{stroke:var(--scene)}
+
+.corps{margin-top:24px}
+.p{margin:0;line-height:1.6;color:var(--encre-douce)}
+.p.petit{font-size:12px;color:var(--gris);line-height:1.5}
+.bloc{margin-top:20px;border-top:1px solid var(--trait);padding-top:14px}
+.bloc .caps{margin:0}
+.bloc .val{margin:6px 0 0;line-height:1.55;color:var(--encre)}
+.bloc.fort .val{font-size:17px;line-height:1.5}
+.confiance{margin:0;font-size:17px;line-height:1.4;color:var(--encre)}
+.confiance .sep{color:var(--gris);padding:0 6px}
+.source{margin:18px 0 0;font-size:12.5px;line-height:1.55;color:var(--gris)}
+.source b{color:var(--encre-douce);font-weight:500}
+
+.carte{margin-top:16px;background:var(--plage);border-radius:4px;padding:12px 16px;
+  box-shadow:inset 0 0 0 1px var(--trait-doux)}
+.carte p{margin:0;font-size:13px;line-height:1.55;color:var(--encre)}
+
+.photos{margin-top:20px}
+.photos img{display:block;width:100%;border-radius:4px;border:1px solid var(--trait);margin-top:10px}
+.photos figcaption{margin-top:6px;font-size:11.5px;line-height:1.5;color:var(--gris)}
+.photos figcaption span{color:var(--encre-douce)}
+
+.boutons{margin-top:30px;display:flex;flex-direction:column;align-items:center;gap:14px}
+.btn{display:inline-flex;align-items:center;justify-content:center;padding:13px 36px;
+  border-radius:9999px;font-family:ui-serif,Georgia,"Times New Roman",serif;font-size:17px;
+  text-decoration:none;cursor:pointer;border:0;min-height:48px}
+.btn.plein{background:var(--plein);color:var(--surPlein)}
+
+details.det{margin-top:26px}
+details.det summary{cursor:pointer;font-size:13px;color:var(--accent);list-style:none}
+details.det summary::before{content:"▸ ";color:var(--gris)}
+details.det[open] summary::before{content:"▾ "}
+details.det .ligne{margin:14px 0 0}
+details.det .ligne .caps{margin:0}
+details.det .ligne p{margin:3px 0 0;font-size:13.5px;line-height:1.55;color:var(--encre)}
+details.det .ligne ul{margin:3px 0 0;padding-left:18px;font-size:13.5px;line-height:1.55;color:var(--encre)}
+details.det .ligne li{margin-top:2px}
+details.det .fiche{border-top:1px solid var(--trait);padding-top:14px;margin-top:18px}
+details.det .fiche p{font-size:12.5px;color:var(--encre-douce)}
+details.det .fiche p.pale{font-size:11.5px;color:var(--gris)}
+
+.notes{max-width:740px;margin:0 auto;padding:6px 20px 0}
+.notes h3{font-family:ui-serif,Georgia,"Times New Roman",serif;font-size:20px;margin:34px 0 10px;font-weight:400}
+.notes p{font-size:14px;line-height:1.7;color:var(--encre-douce);margin:0 0 10px}
+.notes b{color:var(--encre)}
+.notes .cadre{overflow-x:auto}
+.notes table{width:100%;border-collapse:collapse;font-size:13.5px;margin:6px 0 14px}
+.notes th,.notes td{text-align:left;padding:8px 9px;border-bottom:1px solid var(--trait-doux);color:var(--encre-douce);vertical-align:top}
+.notes th{font-size:9.5px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--gris)}
+.notes td b{color:var(--encre)}
+.notes td i{color:var(--gris)}
+.notes ol{padding-left:20px;font-size:14px;line-height:1.7;color:var(--encre-douce)}
+.notes ol li{margin-bottom:6px}
+.notes a{color:var(--or)}
+</style>
+</head>
+<body>
+
+<div class="commandes">
+  <button type="button" id="pole" aria-pressed="false">Voir sur Nuit</button>
+</div>
+
+<div class="tete">
+  <span class="sceau">22 septembre, diagnostic végétal, fiche 4</span>
+  <h1>Brunissure des feuilles de peuplier</h1>
+  <p>C’est la fiche qui suit l’anthracnose du platane sur Ephytia. Elle est
+  écrite de la même façon : <b>les faits de la page</b>, jamais son texte, parce
+  que ses mentions légales interdisent la copie et l’usage commercial. La
+  <b>photo vient de Wikimedia Commons</b>, sous licence libre vérifiée sur ses
+  deux pages d’origine. Voici l’écran tel qu’Atlas le rendra. <b>Rien n’est
+  codé.</b></p>
+</div>
+
+<div class="scene"><div class="tel"><div class="dedans" id="ecran"></div></div></div>
+<p class="dessous">Faites défiler. <b>« Voir les détails »</b> s’ouvre, comme dans l’application.</p>
+
+<div class="notes">
+  <h3>Ce qui change à l’écran, pour toutes les fiches</h3>
+  <p>Votre règle du 22 septembre : <b>plus de point entre le nom et
+  « probable », plus de tiret, des phrases normales.</b> Sur la fiche du
+  platane, l’application écrit aujourd’hui « Probable · Platane », et sous la
+  photo « légende — crédit · licence ». La planche montre ce que ces lignes
+  deviennent : <b>« Probable sur un peuplier. »</b>, une phrase sous la photo,
+  une phrase pour la source. Ce changement est dans le code de l’écran, pas
+  dans la fiche : il vaudra pour le platane, le chêne et toutes les suivantes.
+  Il sera codé avec la fiche, sur votre oui.</p>
+
+  <h3>D’où vient chaque ligne</h3>
+  <div class="cadre">
+  <table>
+    <tr><th>Ligne</th><th>La page dit</th><th>Atlas écrit</th></tr>
+    <tr><td><b>Gravité</b></td>
+        <td>Défoliation partielle ou totale. Sensibilité à des parasites de faiblesse. « Chez les jeunes tiges : dépérissement et mort de l’arbre si les attaques sont répétées. » Ses jauges donnent fréquence 3 sur 3, agressivité 2 sur 3, impact 1 sur 3.</td>
+        <td><b>Vigilance</b>, comme pour l’anthracnose du chêne : des jeunes tiges meurent, aucun arbre adulte. <i>C’est le seul jugement de la fiche.</i></td></tr>
+    <tr><td><b>Que faire ?</b></td>
+        <td>Ni traitement, ni méthode de lutte.</td>
+        <td>Bâti sur ses dégâts et ses facteurs : surveiller, surtout les jeunes plantations ; la sensibilité dépend du clone.</td></tr>
+    <tr><td><b>Période</b></td>
+        <td>« Au printemps » pour les taches, « juin-juillet » pour la chute des feuilles, et des contaminations « toute la période de végétation ».</td>
+        <td>De mars à septembre. Hors saison, la fiche est pénalisée, jamais écartée.</td></tr>
+    <tr><td><b>Hôte</b></td>
+        <td>« Peuplier (section Aigeiros, section Tacamahaca) », P. trichocarpa tolérant.</td>
+        <td>Le genre <b>Peuplier</b>, strict : la fiche ne sortira jamais sur un autre arbre.</td></tr>
+    <tr><td><b>Sur photo</b></td>
+        <td>Que des critères visuels, aucun laboratoire exigé.</td>
+        <td>Diagnostic « possible » : Atlas pourra aller jusqu’à « Très probable ».</td></tr>
+    <tr><td><b>Photo</b></td>
+        <td>Quatre figures : trois « © Pinon », une sans licence.</td>
+        <td><b>Aucune des quatre.</b> Wikimedia Commons, licence <b>CC BY 3.0 US</b>, photo de Manfred Mielke (USDA Forest Service, Bugwood). Licence et citation relevées sur Commons <b>et</b> sur Bugwood.</td></tr>
+    <tr><td><b>Confusions</b></td>
+        <td>Deux autres Marssonina du peuplier : <i>M. castagnei</i> (taches de 5 à 10 mm, blanc-gris, tremble et grisard) et <i>M. populi nigrae</i> (taches rondes de 1 à 8 mm, peuplier noir).</td>
+        <td>Pas de fiche pour elles, donc rien n’est relié. Ce que la page en dit va dans <b>« Ce qui l’écarte »</b>.</td></tr>
+    <tr><td><b>Agent</b></td>
+        <td>« Champignon - Ascomycète - Heliothales »</td>
+        <td>Les deux noms du champignon. Le nom d’ordre n’est pas repris : tel qu’il est écrit, il n’existe pas, et le corriger serait une autre source.</td></tr>
+    <tr><td><b>Stabilité</b></td>
+        <td>Rien.</td>
+        <td>« Inconnu ». Avec Vigilance, la phrase sur la solidité s’affiche, c’est la règle du 20 août.</td></tr>
+  </table>
+  </div>
+
+  <h3>Ce que je vous demande</h3>
+  <ol>
+    <li><b>Vigilance</b>, ou Faible ? C’est le seul choix de la fiche.</li>
+    <li>La <b>photo</b> vous convient ? Sinon la vôtre, ou aucune.</li>
+    <li>Un <b>« oui »</b>, et la fiche entre dans Atlas : fichier, photo, import vérifié, et les phrases de l’écran.</li>
+  </ol>
+
+  <h3>La suite, dans l’ordre du site</h3>
+  <p>Chalarose du frêne, criblure du merisier, cylindrosporiose du merisier,
+  Cyclaneusma sur pin, maladie des bandes rouges, maladie des croûtes noires
+  de l’érable, et ainsi de suite. Une planche par fiche, chacune attend son oui.</p>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var pole = document.getElementById("pole");
+  pole.addEventListener("click", function(){
+    var nuit = document.body.classList.toggle("nuit");
+    pole.setAttribute("aria-pressed", String(nuit));
+    pole.textContent = nuit ? "Voir sur Origine" : "Voir sur Nuit";
+  });
+
+  // ── LE BROUILLON DE LA FICHE, injecté depuis le JSON, jamais retapé ──────
+  var LOT = {
+  "version": "ephytia-2026-09-22",
+  "sources": [
+    {
+      "code": "ephytia-brunissure-peuplier",
+      "organisme": "INRAE, Ephytia (auteur : Département de la santé des forêts)",
+      "titre": "Brunissure des feuilles de peuplier (Drepanopeziza brunnea), rubrique Forêts",
+      "url": "https://ephytia.inrae.fr/fr/C/19057/Forets-Brunissure-des-feuilles-de-peuplier",
+      "nature": "officielle",
+      "publieeLe": "2024-10-21",
+      "consulteeLe": "2026-09-22"
+    }
+  ],
+  "taxons": [
+    {
+      "code": "populus",
+      "nomScientifique": "Populus",
+      "nomCommun": "Peuplier",
+      "article": "un",
+      "synonymes": [
+        "peupliers",
+        "peuplier noir",
+        "peuplier deltoïde",
+        "peuplier hybride",
+        "peuplier euraméricain"
+      ],
+      "rang": "genre",
+      "port": "feuillu"
+    }
+  ],
+  "fiches": [
+    {
+      "code": "brunissure-peuplier",
+      "nomCommun": "Brunissure des feuilles de peuplier",
+      "nomScientifique": "Drepanopeziza brunnea",
+      "categorie": "maladie",
+      "agentCausal": "Drepanopeziza brunnea (forme sexuée) ; Marssonina brunnea (forme asexuée). Ascomycète.",
+      "agentType": "champignon",
+      "partiesAtteintes": [
+        "feuille",
+        "rameau",
+        "houppier"
+      ],
+      "periodeDebutMois": 3,
+      "periodeFinMois": 9,
+      "explicationCourte": "Maladie fongique du peuplier. Petites taches brunes sur les feuilles au printemps, feuillage qui jaunit puis prend une couleur bronze, chute précoce des feuilles en commençant par le bas de l’arbre.",
+      "gravite": "vigilance",
+      "impactMecanique": "inconnu",
+      "risqueHumainAnimal": "inconnu",
+      "statutReglementaire": "aucun",
+      "diagnosticPhoto": "possible",
+      "photosUtiles": [
+        "feuille",
+        "rameau",
+        "houppier"
+      ],
+      "conduiteRecommandee": "Surveiller l’évolution, surtout sur les jeunes plantations : des attaques répétées peuvent faire dépérir et mourir les jeunes tiges, et un arbre défolié devient sensible à des parasites de faiblesse. La sensibilité dépend du clone de peuplier.",
+      "prevention": null,
+      "gestion": "Le champignon passe l’hiver sous sa forme sexuée dans les feuilles malades tombées au sol, et sous sa forme asexuée dans l’écorce des rameaux contaminés l’année précédente. Dès la reprise de végétation, les deux formes peuvent réaliser les premières infections : les ascospores, portées par le vent, assurent les contaminations à longue distance ; les conidies, en suspension dans l’eau de pluie, la dispersion locale. Les contaminations se poursuivent pendant toute la période de végétation dès que l’humidité de l’air est forte. Les spores germent sur le limbe, les pétioles ou les jeunes rameaux.",
+      "traitement": null,
+      "symptomes": [
+        {
+          "nature": "symptome",
+          "partie": "feuille",
+          "motif": "tache",
+          "couleurs": [
+            "brun"
+          ],
+          "localisations": [
+            "face_superieure",
+            "face_inferieure",
+            "eparse"
+          ],
+          "poids": "cardinal",
+          "libelle": "Au printemps, sur les deux faces du limbe, petites taches brunes arrondies de moins d’un millimètre, d’abord éparses puis confluentes, formant des taches plus grandes."
+        },
+        {
+          "nature": "symptome",
+          "partie": "feuille",
+          "motif": "decoloration",
+          "couleurs": [
+            "jaune",
+            "brun"
+          ],
+          "localisations": [
+            "toute_la_surface"
+          ],
+          "poids": "frequent",
+          "libelle": "Quand les taches sont nombreuses, les tissus qui les entourent jaunissent puis brunissent, donnant à la feuille une « couleur bronze caractéristique »."
+        },
+        {
+          "nature": "symptome",
+          "partie": "feuille",
+          "motif": "pustule",
+          "couleurs": [
+            "noir"
+          ],
+          "localisations": [
+            "nervure",
+            "base"
+          ],
+          "poids": "possible",
+          "libelle": "Sur les nervures et les pétioles, taches plus grandes et plus allongées, souvent qualifiées de pustules ; en cas d’attaque forte ou de clone sensible, pustules noires plus ou moins allongées."
+        },
+        {
+          "nature": "symptome",
+          "partie": "rameau",
+          "motif": "pustule",
+          "couleurs": [
+            "noir"
+          ],
+          "localisations": [],
+          "poids": "possible",
+          "libelle": "Sur les jeunes pousses de l’année, pustules noires plus ou moins allongées, en cas d’attaque forte ou de clone sensible."
+        },
+        {
+          "nature": "signe",
+          "partie": "feuille",
+          "motif": "pustule",
+          "couleurs": [
+            "blanc"
+          ],
+          "localisations": [
+            "nervure"
+          ],
+          "poids": "possible",
+          "libelle": "Par temps humide, au milieu des pustules, des masses cireuses blanchâtres qui renferment les spores."
+        },
+        {
+          "nature": "symptome",
+          "partie": "houppier",
+          "motif": "decoloration",
+          "couleurs": [
+            "jaune"
+          ],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Jaunissement du feuillage."
+        },
+        {
+          "nature": "symptome",
+          "partie": "houppier",
+          "motif": "defoliation",
+          "couleurs": [],
+          "localisations": [
+            "base"
+          ],
+          "poids": "frequent",
+          "libelle": "Chute précoce des feuilles (juin-juillet) ; feuillage clairsemé dans le tiers inférieur, car la défoliation débute par le bas. Elle peut être partielle ou totale."
+        }
+      ],
+      "hotes": [
+        {
+          "taxon": "populus",
+          "specificite": "strict"
+        }
+      ],
+      "confusions": [],
+      "criteresDiscriminants": [
+        "Taches brunes arrondies de moins d’un millimètre, d’abord éparses puis confluentes, sur les deux faces du limbe.",
+        "Quand les taches sont nombreuses, la feuille prend une couleur bronze caractéristique.",
+        "La défoliation débute par le bas : feuillage clairsemé dans le tiers inférieur.",
+        "En cas d’attaque forte ou de clone sensible : pustules noires plus ou moins allongées sur les pétioles, les nervures et les jeunes pousses de l’année."
+      ],
+      "criteresExclusion": [
+        "Des taches blanc-gris de 5 à 10 mm, surtout sur tremble et peuplier grisard, désignent plutôt Marssonina castagnei.",
+        "Des taches rondes de 1 à 8 mm sur peuplier noir désignent plutôt Marssonina populi nigrae."
+      ],
+      "facteursFavorisants": [
+        "La présence de clones sensibles.",
+        "Des précipitations importantes, une forte humidité atmosphérique.",
+        "Des températures moyennes de 12 °C à 20 °C."
+      ],
+      "informationsRequises": [],
+      "methodeConfirmation": null,
+      "hotesNonExhaustifs": false,
+      "niveauValidation": "validee",
+      "origine": "reelle",
+      "version": 1,
+      "sourcesAJourLe": "2024-10-21",
+      "sources": [
+        {
+          "source": "ephytia-brunissure-peuplier",
+          "champs": [
+            "conduite_recommandee",
+            "gravite",
+            "statut_reglementaire",
+            "symptomes",
+            "hotes",
+            "explication_courte",
+            "gestion",
+            "agent_causal",
+            "parties_atteintes",
+            "criteres_discriminants",
+            "criteres_exclusion",
+            "facteurs_favorisants"
+          ]
+        }
+      ],
+      "images": [
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Marssonina%20brunnea%20at%20Populus%201399110.jpg?width=1200",
+          "fichier": "donnees/phyto/images/brunissure-peuplier-feuille.jpg",
+          "licence": "CC BY 3.0 US",
+          "credit": "Photo de Manfred Mielke, USDA Forest Service, Bugwood.org, via Wikimedia Commons",
+          "partie": "feuille",
+          "legende": "Petites taches brunes sur une feuille de peuplier."
+        }
+      ]
+    }
+  ]
+};
+  var F = LOT.fiches[0];
+  var SRC = LOT.sources[0];
+  var IMG = F.images[0];
+
+  // Ce que l'écran affiche : les mêmes constantes que src/lib/diagnostic-vegetal.ts
+  var LIBELLE_GRAVITE = { faible: "Faible", vigilance: "Vigilance", importante: "Importante" };
+  var MENTION_MECANIQUE = "Une photo ne permet pas de juger la solidité de l’arbre. Si sa stabilité est en question, faites-le examiner sur place.";
+  var stabiliteEnJeu = F.impactMecanique === "avere" || F.impactMecanique === "possible" ||
+    (F.impactMecanique === "inconnu" && F.gravite !== "faible");
+
+  var MOIS = ["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"];
+  function dateCitee(iso){ var p = iso.split("-"); return Number(p[2]) + " " + MOIS[Number(p[1]) - 1] + " " + p[0]; }
+  function e(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+
+  var ICONE = '<svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 1 3 6.2L4 20l1.4-3.4A8 8 0 0 1 4 12z"/></svg>';
+
+  function entete(){
+    return '<div class="retour"><span class="rond">‹</span><span></span></div>' +
+      '<div class="titre-ligne"><div><h2>'+e(F.nomCommun)+'</h2><p class="caps">Diagnostic végétal</p></div>' +
+      '<span class="assistant">'+ICONE+'</span></div>';
+  }
+  function photos(){
+    return '<div class="photos"><p class="caps gris">À quoi ça ressemble</p>' +
+      '<p class="p petit" style="margin-top:6px">Une ressemblance n’est pas une preuve : ces photos servent à comparer, pas à confirmer.</p>' +
+      '<figure style="margin:0"><img src="diagnostic-brunissure-peuplier-feuille.jpg" alt="'+e(IMG.legende)+'">' +
+      '<figcaption><span>'+e(IMG.legende)+' </span>'+e(IMG.credit)+', sous licence '+e(IMG.licence)+'.</figcaption></figure></div>';
+  }
+  function bloc(cle, val, fort){
+    return '<div class="bloc'+(fort?' fort':'')+'"><p class="caps gris">'+e(cle)+'</p><p class="val">'+e(val)+'</p></div>';
+  }
+  function ligne(cle, val){
+    if (val === null || val === undefined || val === "") return "";
+    return '<div class="ligne"><p class="caps gris">'+e(cle)+'</p><p>'+e(val)+'</p></div>';
+  }
+  function liste(cle, vals){
+    if (!vals || vals.length === 0) return "";
+    return '<div class="ligne"><p class="caps gris">'+e(cle)+'</p><ul>'+vals.map(function(v){ return '<li>'+e(v)+'</li>'; }).join("")+'</ul></div>';
+  }
+  function details(){
+    return '<details class="det"><summary>Voir les détails</summary>' +
+      ligne("Nom scientifique", F.nomScientifique) +
+      ligne("Agent en cause", F.agentCausal) +
+      ligne("Parties atteintes", F.partiesAtteintes.map(function(p){ return p.replace(/_/g," "); }).join(", ")) +
+      liste("Ce qui le distingue", F.criteresDiscriminants) +
+      liste("Ce qui l’écarte", F.criteresExclusion) +
+      liste("Ce qui le favorise", F.facteursFavorisants) +
+      ligne("Prévention", F.prevention) +
+      ligne("Comment ça évolue", F.gestion) +
+      ligne("Traitement", F.traitement) +
+      '<div class="ligne fiche"><p class="caps gris">La fiche</p>' +
+      '<p>'+e(SRC.organisme)+', '+e(SRC.titre)+'. <span style="color:var(--gris)">Page consultée le '+e(dateCitee(SRC.consulteeLe))+'.</span></p>' +
+      '<p class="pale">Fiche version '+F.version+', à jour au '+e(dateCitee(F.sourcesAJourLe))+'.</p></div>' +
+      '<div class="ligne fiche"><p class="caps gris">Chantier</p><p>Rattacher à un chantier</p></div>' +
+      '</details>';
+  }
+
+  document.getElementById("ecran").innerHTML =
+    '<div class="ecran">' + entete() + '<div class="corps">' +
+    '<p class="confiance">Probable sur '+e(LOT.taxons[0].article)+' '+e(LOT.taxons[0].nomCommun.toLowerCase())+'.</p>' +
+    '<p class="p" style="margin-top:12px">'+e(F.explicationCourte)+'</p>' +
+    photos() +
+    bloc("Gravité", LIBELLE_GRAVITE[F.gravite]) +
+    bloc("Que faire ?", F.conduiteRecommandee, true) +
+    '<p class="source">Source : <b>'+e(SRC.organisme)+'</b>, page consultée le '+e(dateCitee(SRC.consulteeLe))+'.</p>' +
+    (stabiliteEnJeu ? '<div class="carte"><p>'+e(MENTION_MECANIQUE)+'</p></div>' : '') +
+    '<div class="boutons"><span class="btn plein">Nouvelle photo</span></div>' +
+    details() +
+    '</div></div>';
+})();
+</script>
+</body>
+</html>
