@@ -8,6 +8,12 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-22
 
+### Fiche de chantier : l'interrupteur « Visible » passe au vert de l'application
+
+Sa demande. Allumé, il prend `plein` (le vert de « Créer une fiche ») et sa
+pastille `surPlein`. L'exception qui le tenait hors du vert depuis le
+3 septembre est retirée de `scripts/test-boutons-pleins.ts`.
+
 ### Fiche de chantier : nommer le client recoche son dernier passage, et ne retire plus rien
 
 *« Ce qui a déjà été coché par le passé se recoche automatiquement, mais les 20

@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import PrimaryButton from "@/components/atlas/PrimaryButton";
 import { ChampRecherche } from "@/components/atlas/ChampRecherche";
-import { colors, font, smallCaps } from "@/lib/design-tokens";
+import { colors, font, smallCaps, surPlein } from "@/lib/design-tokens";
 import { jourLisible } from "@/lib/jour";
 import { parFamilles } from "@/lib/prestations-entretien";
 import { MINUTES_MAX, PAS_MINUTES, empechementEnvoi } from "@/lib/passage-entretien";
@@ -411,16 +411,20 @@ export default function FicheChantierClient({
             <span
               aria-hidden="true"
               className="relative block h-[26px] w-[44px] rounded-full transition-colors"
+              // **Allumé, il est VERT** : le vert plein de l'application
+              // (`plein`, celui de « Créer une fiche »), sa demande du
+              // 22 septembre 2026. La pastille posée dessus prend `surPlein`,
+              // lisible sur les sept chartes.
               style={
                 tempsVisible
-                  ? { backgroundColor: colors.rust }
+                  ? { backgroundColor: colors.plein }
                   : { backgroundColor: colors.rustTint, boxShadow: `inset 0 0 0 1px ${colors.line}` }
               }
             >
               <span
                 className="absolute left-[3px] top-[3px] block h-[20px] w-[20px] rounded-full transition-transform"
                 style={{
-                  backgroundColor: colors.card,
+                  backgroundColor: tempsVisible ? surPlein : colors.card,
                   boxShadow: "0 1px 3px rgba(20,18,14,0.28)",
                   transform: tempsVisible ? "translateX(18px)" : "none",
                 }}
