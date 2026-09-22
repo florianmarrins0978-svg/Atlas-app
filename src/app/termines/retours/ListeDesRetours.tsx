@@ -5,8 +5,9 @@ import { colors, font, libelleCaps, surPlein } from "@/lib/design-tokens";
 import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 import VisionneusePhoto from "@/components/atlas/VisionneusePhoto";
 import { ChampRecherche } from "@/components/atlas/ChampRecherche";
+import FiltreDeDate from "@/components/atlas/FiltreDeDate";
+import { moisEnCours } from "@/lib/periode";
 import {
-  anneesDesRetours,
   compteDesTaches,
   rangerLesRetours,
   type RetourEnListe,
@@ -29,17 +30,18 @@ import { marquerLeRetourVuAction } from "./actions";
  * ce qu'on avait fait la dernière fois.
  *
  * **Deux filtres, et ils font deux métiers.** Le champ sert quand il sait qui
- * il cherche ; les années servent quand il ne sait plus quand. Un seul des deux
- * l'aurait obligé à taper de mémoire, avec des doigts épais.
+ * il cherche ; la date sert quand il sait quand. Depuis le 22 septembre 2026,
+ * la date est celle des fiches de sécurité — jour, mois, année, par la roue du
+ * téléphone (*« met le filtre jours mois année de la fiche de sécurité »*) —
+ * et elle remplace les pastilles d'années. Un nom tapé passe par-dessus.
  */
 export default function ListeDesRetours({ retours }: { retours: RetourEnListe[] }) {
   const [cherche, setCherche] = useState("");
-  const [annee, setAnnee] = useState<string | null>(null);
+  const [periode, setPeriode] = useState(() => moisEnCours());
 
-  const annees = useMemo(() => anneesDesRetours(retours), [retours]);
   const groupes = useMemo(
-    () => rangerLesRetours(retours, { client: cherche, annee }),
-    [retours, cherche, annee]
+    () => rangerLesRetours(retours, { client: cherche, periode }),
+    [retours, cherche, periode]
   );
 
   return (
@@ -47,38 +49,18 @@ export default function ListeDesRetours({ retours }: { retours: RetourEnListe[] 
       <EnTeteEcran titre="Retours d'intervention" retour={{ href: "/termines", libelle: "Retour aux chantiers terminés" }}
         allure="commune" />
 
-      {/* **Le champ d'abord, les années ensuite.** Quand il sait qui il cherche,
-          il tape ; le reste du temps il touche une année. L'ordre inverse
-          l'aurait fait lire trois pastilles avant d'arriver à ce qu'il voulait. */}
+      {/* La date en tête et le champ dessous : l'ordre des fiches de sécurité,
+          pour que les deux listes se lisent pareil. */}
+      <FiltreDeDate periode={periode} choisir={setPeriode} />
+
       <ChampRecherche
         valeur={cherche}
         onChange={setCherche}
         placeholder="Un nom de client"
         ariaLabel="Chercher un client"
         dataAtlas="chercher-un-client"
-        className="mx-[22px] mt-4"
+        className="mx-[22px] mt-3"
       />
-
-      {/* **`flex-none` sur la rangée, et ce n'est pas décoratif** : dans une
-          colonne flexible, une rangée qui défile horizontalement se laisse
-          écraser à zéro pixel. Elle répond alors au doigt sans s'afficher nulle
-          part — payé sur la maquette du 8 septembre, vu à la capture. */}
-      {annees.length > 1 && (
-        <div
-          className="mt-2.5 flex flex-none gap-[7px] overflow-x-auto px-[22px]"
-          style={{ scrollbarWidth: "none" }}
-          data-atlas="annees-des-retours"
-        >
-          <Pastille actif={annee === null} onClick={() => setAnnee(null)}>
-            Tout
-          </Pastille>
-          {annees.map((a) => (
-            <Pastille key={a} actif={annee === a} onClick={() => setAnnee(a)}>
-              {a}
-            </Pastille>
-          ))}
-        </div>
-      )}
 
       {groupes.length === 0 ? (
         <p className="mx-[22px] mt-7 text-[13.5px] leading-[1.65]" style={{ color: colors.muted }}>
@@ -102,40 +84,6 @@ export default function ListeDesRetours({ retours }: { retours: RetourEnListe[] 
         ))
       )}
     </div>
-  );
-}
-
-function Pastille({
-  actif,
-  onClick,
-  children,
-}: {
-  actif: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-pressed={actif}
-      // Quarante pixels : la mesure que tout le reste de l'application tient
-      // pour un pouce. Les serrer pour faire tenir une année de plus se paierait
-      // à chaque appui, sur un écran sale.
-      className="h-10 flex-none rounded-full px-[15px] text-[13.5px]"
-      style={
-        actif
-          ? { backgroundColor: colors.plein, color: surPlein, WebkitTapHighlightColor: "transparent" }
-          : {
-              backgroundColor: "transparent",
-              color: colors.inkSoft,
-              boxShadow: `inset 0 0 0 1px ${colors.line}`,
-              WebkitTapHighlightColor: "transparent",
-            }
-      }
-    >
-      {children}
-    </button>
   );
 }
 

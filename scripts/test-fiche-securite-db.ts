@@ -11,7 +11,7 @@ import {
   detacherPhotoDeLaFiche,
   enregistrerLaFiche,
   ficheDuChantier,
-  listerLesFichesDuMois,
+  listerLesFichesSignees,
   marquerTransmise,
   memoireDeLEntreprise,
   ouvrirLaFiche,
@@ -124,18 +124,14 @@ async function main() {
     assert.ok(estCoche(rouverte.contenu, "travaux", "Élagage d’entretien"), "rouvrir garde le contenu : on re-signe, on ne recommence pas");
   });
 
-  await essai("la liste de Paysage : les fiches SIGNÉES du mois, rangées par client, de A seulement", async () => {
+  await essai("la liste de Paysage : les fiches SIGNÉES, de A seulement", async () => {
     await signerLaFiche(ctxA, chantierA.id, { signaturePng: PNG, signataire: "Anne" });
     await ouvrirLaFiche(ctxB, chantierB.id);
     await signerLaFiche(ctxB, chantierB.id, { signaturePng: PNG, signataire: "Bruno" });
-    const maintenant = new Date();
-    const mois = { annee: maintenant.getUTCFullYear(), mois: maintenant.getUTCMonth() + 1 };
-    const deA = await listerLesFichesDuMois(ctxA, mois);
+    const deA = await listerLesFichesSignees(ctxA);
     assert.deepEqual(deA.map((f) => f.chantierNom), ["Chêne Rialland"], "la fiche non signée de « Tilleuls Bernard » n'y est pas, ni celle de B");
     assert.equal(deA[0].client, "Sans client");
     assert.equal(deA[0].signataire, "Anne");
-    const moisDAvant = mois.mois === 1 ? { annee: mois.annee - 1, mois: 12 } : { annee: mois.annee, mois: mois.mois - 1 };
-    assert.deepEqual(await listerLesFichesDuMois(ctxA, moisDAvant), [], "un autre mois, rien");
   });
 
   await essai("une photo qu'une fiche montre ne part pas en purge quand on l'efface de la pellicule", async () => {
