@@ -25,6 +25,13 @@ Il revient sur la page que « À facturer » ouvre, passe **sous le net à payer
 aux deux endroits, et ne s'offre que sur un brouillon — une facture émise ne se
 solde plus d'un doigt. `ARCHITECTURE.md` §403.
 
+Et la panne qui allait avec : *« je peux pas mettre de règlement reçu non
+plus »*. Sur une facture faite **sans devis**, le garde des règlements lisait
+la colonne `total_ttc` — restée à zéro, puisque les totaux d'un brouillon se
+recalculent depuis les lignes. Aucun acompte n'y passait, et l'interrupteur ne
+posait aucun solde. Il calcule désormais le total comme l'écran et le PDF.
+`ARCHITECTURE.md` §404.
+
 ## FAIT : LA FACTURE SE REMPLIT OÙ ON LA REMPLIT (21 septembre 2026)
 
 *« À corriger : le + main d'œuvre et + règlement reçu. Le bouton facture

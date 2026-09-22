@@ -44,6 +44,12 @@ constate, et le constat se fait aussi devant ce qui va partir. Il ne suit donc
 pas `fige` mais son propre `acquittement`, fermé par l'ÉMISSION seule
 (`ARCHITECTURE.md` §403).
 
+**Et le total d'un BROUILLON ne se lit jamais dans `factures.total_ttc`** : la
+colonne vaut « 0.00 » sur une facture née sans devis, et rien ne la réécrit
+avant l'émission. Tout ce qui décide sur un brouillon appelle
+`totauxAvecReduction` — c'est ce qui a coûté les règlements d'une facture
+directe le 22 septembre 2026 (`ARCHITECTURE.md` §404).
+
 Les pièces sont partagées, jamais recopiées : `ReglementsRecus` (prop `fige`,
 et `carte` pour savoir s'il porte sa propre carte) et `LigneMainDoeuvre` (ses
 trois gestes sont optionnels : figée, la ligne n'en a pas). Le nom d'un

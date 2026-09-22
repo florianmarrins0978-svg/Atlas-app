@@ -193,6 +193,12 @@ où il remplit ; l'acquittement CONSTATE, et il revient sur la page que « À
 facturer » ouvre — sur les deux écrans, **sous le net à payer**, et fermé par
 l'émission seule. `ARCHITECTURE.md` §403.
 
+**ET LA PANNE DESSOUS, LE MÊME JOUR :** *« je peux pas mettre de règlement reçu
+non plus »* — « Il ne reste que 0,00 € à recevoir » sous un Total TTC de
+552,52 €. Sur une facture faite SANS devis, le garde lisait `factures.total_ttc`,
+restée à zéro. Corrigé à la racine : il calcule, comme l'écran et le PDF.
+`ARCHITECTURE.md` §404.
+
 
 ## 🔧 `test-repartir-du-client-e2e` TOMBE DANS LA BATTERIE, JAMAIS SEULE (20 septembre 2026)
 

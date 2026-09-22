@@ -14,6 +14,10 @@ import {
   getFacturePourChantier,
   majMainDoeuvreDeFacture,
   majTitreDeFacture,
+  creerFactureSansDevis,
+  ajouterLigneDeFacture,
+  majLigneDeFacture,
+  majReductionDeFacture,
 } from "../src/server/repositories/factures";
 import {
   basculerAcquittee,
@@ -212,6 +216,51 @@ async function main() {
     // s'offre que sur un BROUILLON ; le dépôt le tient, quel que soit l'écran.
     const bascule = await basculerAcquittee(ctx, factureId, false, "2026-09-22");
     assert.ok(!bascule.ok, "une facture émise s'est désacquittée");
+  });
+
+  // ═══ LA FACTURE DIRECTE — sa panne du 22 septembre 2026 ══════════════════
+  //
+  // *« Je peux pas mettre de règlement reçu non plus »*, capture à l'appui :
+  // « Il ne reste que 0,00 € à recevoir sur cette facture » sous un Total TTC
+  // de 552,52 €. La facture née sans devis pose ses trois colonnes de totaux à
+  // « 0.00 » — délibérément : elles ne font pas foi, tout se recalcule depuis
+  // les lignes à chaque affichage comme à l'émission. Le garde des règlements,
+  // lui, lisait la COLONNE : il voyait donc une facture à zéro euro, refusait
+  // le moindre acompte, et l'interrupteur « Facture acquittée » ne posait
+  // aucun solde — le doigt sur l'écran ne faisait rien.
+  console.log("\n=== La facture née SANS devis ===\n");
+
+  const chantierDirect = await chantiersRepo.creerChantier(ctx, {
+    nom: "Haie du fond",
+    adresseChantier: "4 le Moutier, 78200 Fontenay-Mauvoisin",
+    clientId: client.id,
+  });
+  const directe = await creerFactureSansDevis(ctx, chantierDirect.id, MAINTENANT);
+
+  await essai("ses lignes font le total, et un règlement s'y pose — la colonne à zéro ne commande pas", async () => {
+    const l1 = await ajouterLigneDeFacture(ctx, directe.id);
+    assert.ok(l1.ok);
+    await majLigneDeFacture(ctx, directe.id, l1.ligne.id, { libelle: "Taille de la haie", quantite: "1", prixUnitaire: "250" });
+    const l2 = await ajouterLigneDeFacture(ctx, directe.id, "10.00");
+    assert.ok(l2.ok);
+    await majLigneDeFacture(ctx, directe.id, l2.ligne.id, { libelle: "Évacuation", quantite: "1", prixUnitaire: "256" });
+
+    const pose = await poserReglementRecu(ctx, directe.id, {
+      date: "2026-09-22", montant: "100", moyen: "cheque", numero: "1806029",
+    });
+    assert.ok(pose.ok, `un règlement a été refusé sur une facture directe : ${pose.ok ? "" : pose.raison}`);
+    assert.equal(pose.reglements.length, 1);
+  });
+
+  await essai("« Facture acquittée » pose le solde d'une facture directe, remise comprise", async () => {
+    await majReductionDeFacture(ctx, directe.id, "5");
+    const allume = await basculerAcquittee(ctx, directe.id, true, "2026-09-22");
+    assert.ok(allume.ok, `l'interrupteur a été refusé : ${allume.ok ? "" : allume.raison}`);
+    const solde = allume.reglements.find((g) => g.solde);
+    // 506,00 HT − 5 % = 480,70 ; TVA 20 % sur 237,50 et 10 % sur 243,20 →
+    // 552,52 TTC, moins les 100 € déjà reçus.
+    assert.ok(solde, "aucun solde n'a été posé : le doigt sur l'interrupteur n'a rien fait");
+    assert.equal(solde.montant, "452.52");
   });
 
   console.log(`\n${echecs === 0 ? "✅" : "❌"} Le papier de la facture, en base — ${echecs} échec(s).`);

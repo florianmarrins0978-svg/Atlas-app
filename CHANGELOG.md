@@ -8,6 +8,17 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-22
 
+### Un règlement se pose enfin sur une facture faite sans devis
+
+« Il ne reste que 0,00 € à recevoir sur cette facture », sous un Total TTC de
+552,52 € : le garde des règlements lisait la colonne `total_ttc`, qui reste à
+zéro sur une facture née sans devis — ses totaux se recalculent depuis les
+lignes, et rien ne réécrit ces colonnes avant l'émission. Aucun acompte ne
+passait, et « Facture acquittée » ne posait aucun solde : le doigt sur
+l'interrupteur ne faisait rien, sans un mot. Le garde calcule désormais le
+total comme l'écran et le PDF. Une facture émise garde sa colonne, figée.
+`ARCHITECTURE.md` §404.
+
 ### « Facture acquittée » est sous le net à payer, et sur la page où « À facturer » le mène
 
 Il l'a cherché là, et il n'y était plus : l'interrupteur était parti la veille

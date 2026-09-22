@@ -32731,3 +32731,47 @@ demandé le contraire : `test-papier-facture-e2e.ts` exigeait que l'interrupteur
 soit ABSENT de la page de la facture. Il exige désormais qu'il y soit, sous le
 net, et qu'il marche depuis là (`CLAUDE.md` §5 bis : on adapte le contrôle, on
 ne remet pas l'écran).
+
+---
+
+## §404 — Le total d'un brouillon se CALCULE ; la colonne ne fait foi qu'une fois la facture émise
+
+**Sa panne du 22 septembre 2026 :** *« je peux pas mettre de règlement reçu non
+plus »*, capture à l'appui — **« Il ne reste que 0,00 € à recevoir sur cette
+facture »** écrit juste sous un **Total TTC de 552,52 €**. Le même écran
+affirmait les deux à trois centimètres d'écart.
+
+**Deux vérités, et le garde lisait la mauvaise.** Une facture née sans devis
+(`creerFactureSansDevis`) pose ses trois colonnes de totaux à « 0.00 », et son
+commentaire le dit depuis toujours : *« zéro parce qu'elle est VIDE »*, les
+totaux se recalculent depuis les lignes à chaque affichage comme à l'émission.
+Rien ne les réécrit quand une ligne se pose — c'est délibéré (§ du
+10 septembre : imposer ces colonnes au PDF avait sorti une facture aux totaux
+faux). Or `factureEnBrouillon`, dans `paiements-facture.ts`, lisait
+`factures.total_ttc` pour décider ce qu'il reste à recevoir.
+
+| | ce que l'écran voyait | ce que le garde voyait |
+|---|---|---|
+| facture née d'un DEVIS | 1 910,40 € | 1 910,40 € — la colonne est recopiée du devis |
+| facture née SANS devis | 552,52 € | **0,00 €** |
+
+**Ce que ça cassait, et pourquoi c'était muet.** Le moindre acompte était
+refusé avec cette phrase-là. Et « Facture acquittée » ne posait aucun solde —
+`basculerAcquittee` ne pose le solde que s'il reste quelque chose à recevoir :
+le doigt sur l'interrupteur ne faisait donc **rien du tout**, sans un mot.
+C'est la moitié de son « impossible de cliquer dessus » du même jour ; l'autre
+moitié était l'interrupteur absent de la page de la facture (§403).
+
+**La correction est à la racine, et elle enlève au lieu d'ajouter** : le garde
+ne lit plus la colonne, il appelle `totauxAvecReduction` — celle de l'écran et
+du PDF. Une addition écrite ici aurait divergé au premier ajustement
+(`CLAUDE.md` §3). Une facture ÉMISE, elle, garde sa colonne : figée à
+l'émission, c'est le chiffre que le client a reçu, et ses lignes ne bougent
+plus.
+
+**Ce qu'aucun contrôle ne voyait :** toutes les suites des règlements partaient
+d'une facture née d'un devis, dont la colonne est juste. La facture directe
+existe depuis la migration 0085 et n'avait jamais reçu d'acompte dans une
+suite. `test-papier-facture-db.ts` en pose un désormais, remise et second taux
+de TVA compris — *une règle éprouvée sur un seul chantier n'est pas une règle
+éprouvée*.
