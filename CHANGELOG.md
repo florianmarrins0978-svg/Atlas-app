@@ -8,6 +8,27 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-22
 
+### Un règlement se pose enfin sur une facture faite sans devis
+
+« Il ne reste que 0,00 € à recevoir sur cette facture », sous un Total TTC de
+552,52 € : le garde des règlements lisait la colonne `total_ttc`, qui reste à
+zéro sur une facture née sans devis — ses totaux se recalculent depuis les
+lignes, et rien ne réécrit ces colonnes avant l'émission. Aucun acompte ne
+passait, et « Facture acquittée » ne posait aucun solde : le doigt sur
+l'interrupteur ne faisait rien, sans un mot. Le garde calcule désormais le
+total comme l'écran et le PDF. Une facture émise garde sa colonne, figée.
+`ARCHITECTURE.md` §405.
+
+### « Facture acquittée » est sous le net à payer, et sur la page où « À facturer » le mène
+
+Il l'a cherché là, et il n'y était plus : l'interrupteur était parti la veille
+sur la seule feuille où il remplit, avec les deux « + ». Saisir un règlement
+est une composition ; solder est un constat, et il se fait sur l'écran qu'on
+regarde avant d'envoyer. Il revient donc, sur les deux écrans, et il passe
+SOUS le net à payer — le chiffre d'abord, ce qui le met à zéro juste en
+dessous. Une facture arrêtée ne l'offre pas : ses règlements se notent depuis
+Terminés, et le dépôt refusait déjà. `ARCHITECTURE.md` §404.
+
 ### La facture porte le jour où elle part, pas celui où le brouillon a été posé
 
 Son constat : « facturé le 21 septembre » un 22, sur une facture qu'il venait

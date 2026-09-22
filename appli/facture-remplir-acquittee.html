@@ -280,7 +280,7 @@
 <body data-charte="origine" data-etat="corrige">
 
 <div class="bandeau">
-  <b>Vos trois corrections du 21 septembre, sur vos deux écrans.</b> <b>+ Main d’œuvre</b> et <b>+ Règlement reçu</b> passent sur la page où vous remplissez la facture, avec l’interrupteur <b>Facture acquittée</b> — comme le devis porte sa main d’œuvre et ses acomptes. Allumez-le : <b>l’encadré doré</b> apparaît sous le Total TTC, au-dessus de « Revenir à la facture ». La page de la facture, elle, ne fait plus que les <b>lire</b>. Tout se tape pour de vrai, et l’onglet <b>Le PDF</b> montre le papier que votre cliente reçoit — rempli par les mêmes chiffres, avec le mot que vous avez écrit. <b>Rien n’est codé.</b>
+  <b>Vos corrections du 21 puis du 22 septembre, sur vos deux écrans.</b> <b>+ Main d’œuvre</b> et <b>+ Règlement reçu</b> passent sur la page où vous remplissez la facture — comme le devis porte sa main d’œuvre et ses acomptes —, et la page de la facture ne fait plus que les <b>lire</b>. <b>Facture acquittée</b> est sur les deux, <b>sous le net à payer</b> : c’est là que vous le cherchez avant d’envoyer. Allumez-le : <b>l’encadré doré</b> apparaît. Tout se tape pour de vrai, et l’onglet <b>Le PDF</b> montre le papier que votre cliente reçoit — rempli par les mêmes chiffres, avec le mot que vous avez écrit. <b>Rien n’est codé.</b>
 </div>
 
 <div class="choix">
@@ -341,13 +341,13 @@
           <div id="regls"></div>
           <button class="plus petit" type="button" id="plus-regl" style="margin-top:12px">+ Règlement reçu</button>
 
-          <!-- LA CORRECTION 3 : l'interrupteur, là où il remplit -->
+          <div class="net"><b>Net à payer</b><span class="m" id="net"></span></div>
+
+          <!-- LA CORRECTION 3 : l'interrupteur, SOUS le net à payer (22 septembre) -->
           <div class="bascule-ligne">
             <span>Facture acquittée<small>Tout est réglé avant l’envoi</small></span>
             <button class="bascule" type="button" id="acquittee" aria-pressed="false" aria-label="Facture acquittée"></button>
           </div>
-
-          <div class="net"><b>Net à payer</b><span class="m" id="net"></span></div>
 
           <!-- L'ENCADRÉ DORÉ : sous le Total TTC, au-dessus de « Revenir à la facture » -->
           <div class="encadre" id="encadre" hidden><p></p></div>
@@ -391,11 +391,14 @@
       <div id="f-regls"></div>
       <!-- Ce qui S'EN VA d'ici : « + Règlement reçu » et l'interrupteur -->
       <button class="plus petit vieux" type="button" style="margin-top:12px">+ Règlement reçu</button>
-      <div class="bascule-ligne vieux">
-        <span>Facture acquittée<small>Tout est réglé avant l’envoi</small></span>
-        <button class="bascule" type="button" aria-pressed="false" aria-label="Facture acquittée"></button>
-      </div>
       <div class="net"><b>Net à payer</b><span class="m" id="f-net"></span></div>
+      <!-- IL REVIENT ICI — 22 septembre : « À facturer » ouvre cet écran, et
+           c'est là qu'il a cherché l'interrupteur. Saisir un règlement compose
+           la facture ; solder la constate, juste avant l'envoi. -->
+      <div class="bascule-ligne">
+        <span>Facture acquittée<small>Tout est réglé avant l’envoi</small></span>
+        <button class="bascule" type="button" id="f-acquittee" aria-pressed="false" aria-label="Facture acquittée"></button>
+      </div>
       <div class="encadre" id="f-mention" hidden><p></p></div>
     </div>
 
@@ -470,14 +473,14 @@
     <tr><td>+ Main d’œuvre</td><td>passe sur <b>Remplir la facture</b>, sous « + Ajouter une TVA » — exactement la place qu’il a sur le devis. La page de la facture <b>lit</b> « dont main d’œuvre HT » sous le Total HT, elle ne le saisit plus.</td></tr>
     <tr><td>+ Règlement reçu</td><td>passe au même endroit, sous le Total TTC : le moyen, le n° de chèque, la date, le montant. La page de la facture les <b>affiche</b>, avec le net à payer.</td></tr>
     <tr><td>Ce que c’est</td><td><b>« Acompte 30 % » n’est qu’une proposition : le mot est à vous.</b> Touchez-le et écrivez ce que c’est — arrhes, avoir, ce que vous voulez. C’est ce mot-là qui s’imprime sur la facture. (Dans l’application, il faudra une colonne pour le retenir : aujourd’hui le nom est déduit des acomptes du devis, et rien ne garde le vôtre.)</td></tr>
-    <tr><td>Facture acquittée</td><td>l’interrupteur vit là où vous remplissez. Allumé, le solde est compté reçu ce jour, le net tombe à zéro.</td></tr>
+    <tr><td>Facture acquittée</td><td>l’interrupteur est sous le net à payer, sur les deux écrans. Allumé, le solde est compté reçu ce jour, le net tombe à zéro. Une facture arrêtée ne l’offre plus : ses règlements se notent depuis Terminés.</td></tr>
     <tr><td>L’encadré doré</td><td>sous le Total TTC, au-dessus de « Revenir à la facture ». Il n’apparaît que si l’interrupteur est allumé.</td></tr>
     <tr><td>Le PDF</td><td>le papier de votre cliente, à ses proportions. Chaque règlement y a sa ligne sous le Total TTC, avec <b>le mot que vous avez écrit</b> ; le détail — moyen, n° de chèque, date — est dans « Montants versés » sous les notes, et le tampon <b>Acquittée le …</b> s’imprime quand le net tombe à zéro. Changez un prix ou un libellé à gauche : le papier suit.</td></tr>
     <tr><td>« Aujourd’hui »</td><td>le bouton en haut éteint les trois ajouts et rallume ce qui est en place : c’est votre écran d’aujourd’hui, au pixel.</td></tr>
   </table>
   <h3>Ce que je vous demande de trancher</h3>
   <table>
-    <tr><td>Un seul endroit, ou les deux ?</td><td>Ici, les trois gestes <b>quittent</b> la page de la facture : un même réglage à deux endroits finit par ne plus dire la même chose. Si vous voulez les garder aux deux, dites-le — c’est un mot à changer.</td></tr>
+    <tr><td>Un seul endroit, ou les deux ? — <b>tranché le 22 septembre</b></td><td>Les deux « + » restent sur la page où vous remplissez : ce sont eux qui composent la facture. <b>Facture acquittée</b> est aux deux endroits, sous le net à payer — vous l’avez cherché sur la facture, et c’est le dernier écran avant l’envoi. C’est la même pièce des deux côtés, jamais deux réglages.</td></tr>
     <tr><td>Un règlement après l’envoi</td><td>Une facture arrêtée ne se remplit plus : le chèque qui arrive trois semaines après se note dans « En attente de paiement ». Si vous voulez le noter depuis la facture, c’est un autre lot.</td></tr>
   </table>
 </div>
@@ -680,6 +683,7 @@
       fr.appendChild(d);
     });
     id("f-net").textContent = eur(c.net);
+    id("f-acquittee").setAttribute("aria-pressed", String(allume));
     id("f-mention").hidden = !allume;
     id("f-mention").firstElementChild.textContent = motAcquittee();
 
@@ -798,7 +802,8 @@
   };
 
   // Allumé : le solde est compté reçu à la date du jour ; éteint, il repart.
-  id("acquittee").onclick = function(){
+  // Le même geste sur les deux écrans : une seconde rédaction divergerait.
+  id("acquittee").onclick = id("f-acquittee").onclick = function(){
     var c = calcul();
     if (c.net > 0) {
       etat.regls.push({

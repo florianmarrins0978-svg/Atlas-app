@@ -303,6 +303,20 @@ règlement écrit par lui (migration 0098), « Acquittée le … » en or et
 identique sur les deux pages, et le bouton collé sous le pouce.
 `ARCHITECTURE.md` §398.
 
+**CORRIGÉ LE 22 SEPTEMBRE 2026 — l'interrupteur était parti de trop.** *« Depuis
+terminé, à facturer […] il doit y avoir sous net à payer un bouton on off
+facture acquitté. J'ai essayé de cliquer dessus depuis la facture mais
+impossible. »* Les deux « + » composent le document et restent sur la feuille
+où il remplit ; l'acquittement CONSTATE, et il revient sur la page que « À
+facturer » ouvre — sur les deux écrans, **sous le net à payer**, et fermé par
+l'émission seule. `ARCHITECTURE.md` §404.
+
+**ET LA PANNE DESSOUS, LE MÊME JOUR :** *« je peux pas mettre de règlement reçu
+non plus »* — « Il ne reste que 0,00 € à recevoir » sous un Total TTC de
+552,52 €. Sur une facture faite SANS devis, le garde lisait `factures.total_ttc`,
+restée à zéro. Corrigé à la racine : il calcule, comme l'écran et le PDF.
+`ARCHITECTURE.md` §405.
+
 
 ## 🔧 `test-repartir-du-client-e2e` TOMBE DANS LA BATTERIE, JAMAIS SEULE (20 septembre 2026)
 

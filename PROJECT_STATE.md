@@ -36,6 +36,23 @@ liste dans Paysage par mois. Migration 0099. Le formulaire vit sous
 qu'elle leur soit présentée), la liste sous `/paysage/fiches-securite`.
 `docs/lot-fiche-de-securite.md`.
 
+## FAIT : « FACTURE ACQUITTÉE » SOUS LE NET, ET SUR LES DEUX ÉCRANS (22 septembre 2026)
+
+*« Depuis terminé, à facturer […] il doit y avoir sous net à payer un bouton on
+off facture acquitté. J'ai essayé de cliquer dessus depuis la facture mais
+impossible. »* La veille, l'interrupteur était parti avec les deux « + » sur la
+feuille où il remplit ; or les « + » composent le document et lui constate.
+Il revient sur la page que « À facturer » ouvre, passe **sous le net à payer**
+aux deux endroits, et ne s'offre que sur un brouillon — une facture émise ne se
+solde plus d'un doigt. `ARCHITECTURE.md` §404.
+
+Et la panne qui allait avec : *« je peux pas mettre de règlement reçu non
+plus »*. Sur une facture faite **sans devis**, le garde des règlements lisait
+la colonne `total_ttc` — restée à zéro, puisque les totaux d'un brouillon se
+recalculent depuis les lignes. Aucun acompte n'y passait, et l'interrupteur ne
+posait aucun solde. Il calcule désormais le total comme l'écran et le PDF.
+`ARCHITECTURE.md` §405.
+
 **Ses trois remarques du 22 septembre, corrigées** : la saisie s'enregistre au
 fil de l'eau (un lien qui sort de l'application ne coûte plus l'étape en
 cours) ; le relevé GPS nomme sa cause, réessaie sans la haute précision, dit
