@@ -8,6 +8,16 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-22
 
+### Fiches de sécurité : chercher un client, toutes ses fiches sortent
+
+*« Faut pouvoir faire une recherche par nom aussi et il te sort toutes les
+fiches de ce client. »* Un champ « Chercher un client » sous le mois, dessiné
+comme celui de Clients. Un nom tapé passe par-dessus le mois : toutes les fiches
+signées du client (ou du chantier), tous mois confondus. Le dépôt rend désormais
+toutes les fiches signées (`listerLesFichesSignees`) ; le mois et le nom se
+choisissent à l'écran par une règle pure (`fichesAMontrer`), qui reprend la
+recherche des clients. `scripts/test-fiches-securite-recherche.ts`.
+
 ### Chaque photo à un seul endroit : celui où elle a été posée
 
 Une photo posée sur la fiche de sécurité y reste — elle ne passe plus dans

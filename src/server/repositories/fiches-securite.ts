@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, gte, inArray, isNull, lt } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, isNotNull, isNull } from "drizzle-orm";
 import { withEntreprise } from "../db/with-entreprise";
 import {
   chantiers,
@@ -289,14 +289,16 @@ export type FicheEnListe = {
 };
 
 /**
- * Les fiches SIGNÉES d'un mois, rangées par client puis de la plus récente à la
- * plus ancienne — la liste de Paysage. Une fiche commencée et non signée n'y
- * est pas : elle vit sur la fiche du jour du planning, tant qu'elle n'est pas
- * signée.
+ * TOUTES les fiches SIGNÉES, de la plus récente à la plus ancienne — la liste
+ * de Paysage. Une fiche commencée et non signée n'y est pas : elle vit sur la
+ * fiche du jour du planning, tant qu'elle n'est pas signée.
+ *
+ * **Pas un mois, toutes** — depuis sa demande du 22 septembre 2026 : *« une
+ * recherche par nom, et il te sort toutes les fiches de ce client »*. Le mois
+ * et le nom se choisissent à l'écran (`fichesAMontrer`), sans aller-retour au
+ * serveur à chaque lettre ; une fiche se garde deux ans, la liste reste courte.
  */
-export async function listerLesFichesDuMois(ctx: Ctx, mois: { annee: number; mois: number }): Promise<FicheEnListe[]> {
-  const debut = new Date(Date.UTC(mois.annee, mois.mois - 1, 1));
-  const fin = new Date(Date.UTC(mois.annee, mois.mois, 1));
+export async function listerLesFichesSignees(ctx: Ctx): Promise<FicheEnListe[]> {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const lignes = await tx
       .select({
@@ -310,7 +312,7 @@ export async function listerLesFichesDuMois(ctx: Ctx, mois: { annee: number; moi
       .from(fichesSecurite)
       .innerJoin(chantiers, eq(fichesSecurite.chantierId, chantiers.id))
       .leftJoin(clients, eq(chantiers.clientId, clients.id))
-      .where(and(gte(fichesSecurite.signeeLe, debut), lt(fichesSecurite.signeeLe, fin)))
+      .where(isNotNull(fichesSecurite.signeeLe))
       .orderBy(desc(fichesSecurite.signeeLe));
     return lignes
       .filter((l): l is typeof l & { signeeLe: Date } => l.signeeLe !== null)

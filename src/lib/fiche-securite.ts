@@ -36,6 +36,7 @@
  * dit avant de signer (`manques`), et la signature reste possible — c'est sa
  * fiche, et c'est lui qui décide (*« au bon vouloir de l'utilisateur »*).
  */
+import { filtrerClientsParNom, normaliserPourRecherche } from "./recherche-client";
 
 /** Une famille de cases à cocher : les mots de la MSA, dans l'ordre de la feuille. */
 export const LIBELLES = {
@@ -477,4 +478,30 @@ export const POINTS_MINIMUM_D_UNE_SIGNATURE = 8;
 /** Le texte que le PDF (et la liste) écrivent sous une fiche signée. */
 export function phraseDeGarde(signeeLe: Date, jourLong: (d: Date) => string): string {
   return `gardée jusqu’au ${jourLong(gardeeJusquAu(signeeLe))}`;
+}
+
+/**
+ * LES FICHES QUE LA LISTE DE PAYSAGE MONTRE — le mois choisi, ou le nom tapé.
+ *
+ * **Sa demande du 22 septembre 2026 :** *« faut pouvoir faire une recherche par
+ * nom aussi et il te sort toutes les fiches de ce client »*. Un nom tapé passe
+ * donc PAR-DESSUS le mois : la fiche de juin d'un client se retrouve depuis
+ * septembre, sans tourner la roue mois par mois.
+ *
+ * La comparaison est celle de la recherche des clients (`filtrerClientsParNom`),
+ * sur le client et sur le nom du chantier — une seule façon de chercher un nom
+ * dans l'application (`CLAUDE.md` §3). Le mois se lit en UTC, comme les bornes
+ * que la base appliquait avant que la liste ne soit filtrée ici.
+ */
+export function fichesAMontrer<T extends { client: string; chantierNom: string; signeeLe: Date }>(
+  fiches: readonly T[],
+  choix: { mois: string; saisie: string }
+): T[] {
+  if (normaliserPourRecherche(choix.saisie)) {
+    return filtrerClientsParNom(
+      fiches.map((f) => ({ nom: `${f.client} ${f.chantierNom}`, fiche: f })),
+      choix.saisie
+    ).map((x) => x.fiche);
+  }
+  return fiches.filter((f) => `${f.signeeLe.getUTCFullYear()}-${String(f.signeeLe.getUTCMonth() + 1).padStart(2, "0")}` === choix.mois);
 }

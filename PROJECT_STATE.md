@@ -31,7 +31,7 @@ facture, une ligne vide part chez le client. `ARCHITECTURE.md` §394.
 La fiche d'intervention du décret 2021-1833, nommée « Fiche de sécurité » :
 bandeau sur la fiche du jour (tous les chantiers), six écrans aux mots de la
 feuille MSA, signature au doigt, PDF, transmission par la feuille de partage,
-liste dans Paysage par mois. Migration 0099. Le formulaire vit sous
+liste dans Paysage par mois, et par nom de client tous mois confondus. Migration 0099. Le formulaire vit sous
 `/planning/fiche-de-securite/[chantierId]` (ouvert aux salariés : la loi veut
 qu'elle leur soit présentée), la liste sous `/paysage/fiches-securite`.
 `docs/lot-fiche-de-securite.md`.

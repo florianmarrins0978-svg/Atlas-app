@@ -257,6 +257,18 @@ async function main() {
     await carte.waitFor({ timeout: 15_000 });
     assert.match(await carte.innerText(), /gardée jusqu’au/);
 
+    // LA RECHERCHE PAR NOM — sa demande du 22 septembre 2026 : *« une recherche
+    // par nom, et il te sort toutes les fiches de ce client »*. Tapé, le nom
+    // garde la fiche ; un nom inconnu la retire et le dit.
+    const champ = page.locator("[data-atlas='chercher-une-fiche']");
+    await champ.fill(chantierNom.slice(0, 6).toLowerCase());
+    await carte.waitFor({ timeout: 5_000 });
+    await champ.fill("zzqqxx");
+    await page.getByText("Aucune fiche pour « zzqqxx ».").waitFor({ timeout: 5_000 });
+    assert.equal(await page.locator("[data-atlas='carte-de-fiche']").count(), 0, "un nom inconnu laisse des fiches à l'écran");
+    await champ.fill("");
+    await carte.waitFor({ timeout: 5_000 });
+
     // « ENREGISTRER » EST UN BOUTON, PAS UN LIEN — sa capture du 22 septembre
     // 2026 : *« je clique sur enregistrer le pdf, ça me propose pas de le
     // télécharger »*. Un lien vers le PDF, même en `attachment`, se fait
