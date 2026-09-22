@@ -132,3 +132,98 @@ Les trois suites du lot — `test-fiche-securite`, `test-fiche-securite-db`,
 - **Le nombre de travailleurs** part du nombre d'équipes posées sur le chantier
   au planning, pas du nombre de personnes : les équipes n'ont pas de liste de
   personnes en base. Vous le corrigez d'un appui.
+
+---
+
+## 7. Ce que vous avez relevé le 22 septembre, et ce qui a été fait
+
+Trois remarques depuis votre iPhone, plus une question. Un verdict par point.
+
+### La question : les liens qui sortent de l'application
+
+*« Une fois l'appli hébergée, comment je retourne sur l'appli ? Et est-ce que
+les liens fonctionneront ? »*
+
+**Les liens fonctionnent, et ils ne dépendent pas de l'hébergement.** Les cinq
+adresses sont publiques et extérieures : le décret sur Légifrance, le
+formulaire MSA, la découverte fortuite de réseau chez l'Ineris, le formulaire
+de service-public, jebalise. Votre capture du formulaire MSA le prouve déjà.
+Elles n'ont pas pu être interrogées depuis le poste de travail : son réseau
+refuse ces domaines.
+
+**Pour revenir**, les boutons portent déjà `target="_blank"`. Une fois
+l'application sur votre écran d'accueil, iOS 16.4 et au-dessus ouvre le lien
+dans une fenêtre posée par-dessus, avec « OK » en haut à gauche ; un appui et
+vous retombez sur votre fiche au même endroit. Sur un iOS plus ancien, ça
+bascule vers Safari et le retour se fait par le sélecteur d'applications.
+**À confirmer sur votre téléphone** : c'est votre version d'iOS qui décide.
+
+Ce qui a été trouvé en cherchant, et que personne n'avait demandé : la fiche
+n'était enregistrée qu'au « Suivant ». Sortir vers un de ces liens en plein
+remplissage pouvait donc coûter l'étape en cours. C'est le point suivant.
+
+### 1. La saisie s'enregistre pendant que vous écrivez — FAIT
+
+Deux secondes de silence et la fiche part toute seule, plus un envoi au moment
+où l'application passe en arrière-plan. Vous pouvez ouvrir un lien, refuser un
+appel, verrouiller le téléphone : ce qui est tapé est déjà en base.
+
+Le contrôle qui le tient tape un numéro, **ne touche ni « Suivant » ni
+« Retour »**, vérifie en base, rouvre l'écran et le retrouve
+(`test-fiche-securite-e2e.ts`). Il a été vu rouge sans le correctif.
+
+Ce qui n'a PAS été fait, et pourquoi : le bandeau du planning ne se rafraîchit
+pas à chaque frappe. Le faire, c'était recharger trois écrans toutes les deux
+secondes sous vos doigts, pour un écran que vous avez déjà devant vous.
+
+### 2. Le relevé GPS — QUATRE DÉFAUTS, PAS UN
+
+*« La position exacte fonctionne pas. »*
+
+| Ce qui n'allait pas | Ce qui change |
+|---|---|
+| une seule phrase pour les trois causes du navigateur | refus de localisation, pas de signal, délai dépassé : trois phrases, trois gestes |
+| la haute précision abandonnait au bout de 15 secondes | elle réessaie une fois en précision normale, celle du réseau, qui répond sous un couvert d'arbres ou dans une camionnette |
+| aucun retour pendant l'attente | le bouton dit « Relevé en cours… » |
+| « ou écrivez-la » alors qu'aucun champ ne le permettait | un champ apparaît dès qu'un relevé échoue, et une position relevée devient corrigeable |
+
+**Ce que cela ne dit pas : pourquoi ça a raté chez vous.** Les trois causes
+restent possibles, et ce poste n'a pas de puce GPS pour en décider. À la
+prochaine tentative, la phrase le dira — envoyez-la.
+
+### 3. Les deux heures — FAIT, MAIS NON REPRODUIT ICI
+
+*« Pour l'h ça serait bien d'avoir deux encarts séparés. »*
+
+Le navigateur du poste de travail les dessine **déjà** séparées : le défaut
+est propre à Safari, qui habille `input[type="time"]` à sa façon et jette le
+cadre qu'on pose dessus. C'est pour cela que Nom et Prénom, deux lignes plus
+bas et **le même composant**, montraient bien deux cadres sur votre capture.
+
+Le cadre a donc été sorti du champ : il vit maintenant sur une boîte
+qu'aucun navigateur ne rhabille. **Une capture prise ici ne prouve rien de
+votre iPhone** — c'est à regarder chez vous.
+
+### Les chiffres de la batterie, le 22 septembre au soir
+
+| | |
+|---|---|
+| Types, lint, construction, mémoire du dépôt | verts |
+| Suites base de données | **405 vertes sur 406**, 1 non mesurable ici |
+| Suites navigateur | **165 sur 165** |
+| Connexion derrière un proxy | verte |
+
+Aucun rouge. Le lot est de niveau 3 (`src/lib/fiche-securite.ts` atteint
+15 points d'entrée), donc la batterie entière était obligatoire.
+
+Les deux contrôles neufs ont été **vus rouges avant d'être verts** : la phrase
+unique du GPS fait échouer `test-fiche-securite.ts`, et retirer
+l'enregistrement au fil de l'eau fait échouer `test-fiche-securite-e2e.ts`
+(« 02 40 00 00 00 » au lieu du numéro tapé).
+
+## 8. Ce qui reste ouvert après le 22 septembre
+
+- **Le rendu des deux heures sur votre iPhone**, à confirmer.
+- **Le formulaire MSA est un fichier posé sur leur site.** Le jour où ils le
+  déplacent, le bouton donnera une page d'erreur et rien ne nous préviendra.
+  Un contrôle qui interroge les cinq adresses depuis GitHub reste à faire.

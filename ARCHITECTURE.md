@@ -32273,8 +32273,41 @@ première ligne sur cet écran. Le geste n'existe plus dans son parcours : elles
 l'ont perdu, plutôt que de garder un clic qui ajoutait désormais une ligne vide
 de plus (`CLAUDE.md` §5 bis — une suite qui réclame un geste retiré rend
 l'écran impossible à changer). Celles qui écrivent plusieurs lignes n'appuient
-que pour **celles qui manquent**. L'écran Prix et la facture, eux, n'ont pas
-bougé.
+que pour **celles qui manquent**. L'écran Prix n'a pas bougé ; **la facture,
+elle, a suivi deux jours plus tard** — voir ci-dessous.
+
+### LA FACTURE SANS DEVIS A DEMANDÉ LA MÊME CHOSE — 22 septembre 2026
+
+**Sa capture, sur la feuille où il remplit une facture faite sans devis :**
+*« quand je crée une facture il devrait déjà avoir une ligne d'ouverte ! Je ne
+dois pas avoir besoin d'ajouter une ligne au début ! »* Le même geste, donc la
+même règle : `ligneOuverteAPoserSurLaFacture`, dans le même fichier. Une
+seconde rédaction aurait divergé au premier ajustement (`CLAUDE.md` §3).
+
+**Une facture NÉE D'UN DEVIS n'en ouvre pas**, et c'est le seul écart :
+la seule chose qu'on y saisit est un travail SUPPLÉMENTAIRE. Une case vide
+d'office y ferait apparaître le bandeau « Travaux supplémentaires » sur une
+facture qui n'en porte aucun — l'écran annoncerait un ajout qu'il n'a pas fait,
+juste avant qu'il vérifie ce qui part chez son client.
+
+**Le danger, lui, change de nature.** Sur le devis, une ligne vide écrite
+d'office faisait disparaître une dictée ; sur la facture, elle **s'imprime chez
+le client**, en face de 0,00 €, sur une pièce qui ne se corrige que par un
+avoir. `peutPreparerLaPiece` ne retient pas une ligne sans libellé — c'est au
+patron de juger. D'où la même garde, pour une raison de plus : rien n'est écrit
+avant son premier mot (`test-ligne-ouverte-facture-e2e.ts`, qui lit la base).
+
+| | |
+|---|---|
+| l'écran | la feuille « Remplir la facture » — `TravauxSupplementairesClient.tsx` |
+| la règle pure | `ligneOuverteAPoserSurLaFacture` · `test-ligne-ouverte-facture.ts` |
+| son parcours | `test-ligne-ouverte-facture-e2e.ts` — il regarde la BASE |
+| ce qui n'a pas changé | « + Ajouter une ligne » et « + Ajouter une TVA » écrivent la ligne ouverte AVANT de créer la leur, pour le rang |
+
+**Et deux contrôles ont dû apprendre le geste retiré** (`CLAUDE.md` §5 bis) :
+`test-facture-sans-devis-e2e.ts` et `capture-facture-sans-devis.mts`
+appuyaient sur « + Ajouter une ligne » avant d'écrire — cet appui poserait
+aujourd'hui une seconde ligne, vide, sur la facture du client.
 
 ## §395 — La cliente pose SES jours, et un doigt ne ferme plus un devis
 
@@ -32690,7 +32723,153 @@ pas partir en purge quand on l'efface de la pellicule. `fiches_securite_photos`
 existe pour que `supprimerPhoto` pose la question. `test-fiche-securite-db.ts`
 le mesure sur le compteur de `fichiers_a_purger`.
 
-## §403 — Une photo appartient à l'endroit où elle a été posée
+## §403 — La date d'une facture est celle du jour où elle PART
+
+**Son constat du 22 septembre 2026 :** *« pourquoi il me met facturé le
+21 septembre, on est le 22 ? Et je viens de l'envoyer ! »*
+
+`factures.date_emission` était posée à la CRÉATION du brouillon —
+`poserLaFactureBrouillon`, c'est-à-dire à la fin du chantier ou à l'ouverture
+de la facture depuis la fiche du client. L'émission (`emettreFacture`)
+enregistrait bien l'instant réel dans `emise_le`, mais ne rouvrait ni la date
+d'émission ni l'échéance.
+
+### Ce que ça coûtait, et pourquoi ce n'était pas qu'un affichage
+
+| Où | Ce qui était faux |
+|---|---|
+| l'écran Terminés | « Facturé le 21 septembre » un 22 — ce qu'il a vu |
+| **le PDF du client** | « Date : 21/09/2026 », sur la pièce qui fait foi |
+| **le délai de paiement** | l'échéance courait depuis le 21 : un jour de moins, et la mention imprimée à côté — « Paiement à 30 jours à compter de la facture » — le contredisait |
+| **le relevé de TVA** | un brouillon du 31 mars envoyé le 1er avril portait sa TVA sur le trimestre précédent |
+
+Le décalage réel n'est pas d'un jour : un brouillon se prépare à la fin du
+chantier et part quand il a le temps — parfois la semaine suivante.
+
+### La correction, et où elle se pose
+
+`datesDeLaFactureQuiPart` (`src/lib/echeance-facture.ts`) — une règle pure,
+éprouvée sans base. `emettreFacture` l'appelle **avant de composer le PDF** :
+plus bas, le papier archivé aurait gardé la date du brouillon, et c'est celui-là
+que le client conserve. Le trigger d'immuabilité ne s'y oppose pas — il lit
+`OLD.statut`, qui vaut encore `brouillon` à cet instant.
+
+### L'échéance se DÉCALE, elle ne se recalcule pas
+
+Trois façons de la traiter, et deux sont fausses :
+
+| | |
+|---|---|
+| la laisser où elle est | le délai accordé rétrécit, et la mention « à compter de la facture » ment |
+| la refaire depuis le délai réglé | efface l'échéance qu'il a posée à la main avant l'envoi (`majEcheanceFacture`) |
+| **la décaler du même nombre de jours** | ce qu'il accorde au client est un DÉLAI, et il reste entier dans les deux cas |
+
+Aucune heuristique n'a donc à deviner si l'échéance venait du réglage ou de sa
+main : le décalage est juste pour les deux, et c'est pour cela qu'il a été
+retenu plutôt qu'une colonne « échéance choisie ».
+
+### Ce qui n'a PAS été touché, et c'est voulu
+
+Les factures déjà émises ne bougent pas : une pièce partie est immuable, et
+réécrire la date de celle que son client a reçue serait pire que le défaut.
+Le brouillon garde, lui, une date provisoire — la colonne est `NOT NULL`, et le
+PDF d'aperçu porte « FACTURE (BROUILLON) » en titre.
+
+**Aucune couche n'a été retirée** : le défaut n'était pas recouvert, il était
+silencieux. Rien ne lisait `emise_le` pour compenser `date_emission`
+(`donnees-client.ts` s'en sert pour la durée de conservation, ce qui est son
+vrai métier).
+
+`scripts/test-factures.ts` (trois cas, dont le PDF archivé relu) et
+`scripts/test-echeance-facture.ts` (la règle pure, huit cas).
+
+---
+
+## §404 — Solder n'est pas composer : l'acquittement revient sur la page de la facture
+
+**Sa correction du 22 septembre 2026 :** *« Depuis terminé, à facturer et
+seulement par ce passage il doit y avoir sous net à payer un bouton on off
+facture acquitté. J'ai essayé de cliquer dessus depuis la facture mais
+impossible. »*
+
+**Ce qui était faux dans le §398, et c'est le mot « geste » qui l'a fait.** La
+veille, trois gestes ont quitté la page de la facture d'un seul mouvement,
+parce qu'ils étaient rangés ensemble. Deux d'entre eux composent le document :
+nommer la main d'œuvre, saisir un règlement avec sa date, son moyen, son
+numéro. Le troisième CONSTATE — tout est réglé, oui ou non —, et ce constat se
+fait sur l'écran où il regarde ce qui va partir, pas sur la feuille de saisie
+qu'il vient de quitter. « À facturer », dans Terminés, ouvre cette page-là
+(`ListeTermines`, `/chantiers/<id>/facture`) : c'est le dernier écran avant
+l'envoi, et c'est là qu'il a cherché l'interrupteur.
+
+| | |
+|---|---|
+| **composer** — « + Main d'œuvre », « + Règlement reçu » | la feuille où il remplit, elle seule (§398, inchangé) |
+| **constater** — « Facture acquittée » | les deux écrans, **sous le net à payer** |
+
+**Sous le net, jamais au-dessus.** Le net est le chiffre qu'il vient lire ;
+l'interrupteur est ce qui le met à zéro. Posé au-dessus, la cause et son effet
+se lisaient à contre-sens, et il fallait remonter pour vérifier ce qu'on
+venait de changer.
+
+**Il ne suit plus `fige`, il suit la facture ARRÊTÉE.** `ReglementsRecus` prend
+un `acquittement` à part : `fige` dit qu'on ne SAISIT plus, ce qui n'a jamais
+voulu dire qu'on ne solde plus. Ce qui ferme l'interrupteur, c'est l'émission —
+une facture au relevé de TVA ne se solde pas d'un doigt, ses règlements se
+notent depuis Terminés. L'écran ne l'offre pas, et `basculerAcquittee` refuse
+de son côté : deux verrous, dont un que l'écran ne peut pas contourner.
+
+**Ce que l'ancien contrôle affirmait**, et qui est devenu faux le jour où il a
+demandé le contraire : `test-papier-facture-e2e.ts` exigeait que l'interrupteur
+soit ABSENT de la page de la facture. Il exige désormais qu'il y soit, sous le
+net, et qu'il marche depuis là (`CLAUDE.md` §5 bis : on adapte le contrôle, on
+ne remet pas l'écran).
+
+---
+
+## §405 — Le total d'un brouillon se CALCULE ; la colonne ne fait foi qu'une fois la facture émise
+
+**Sa panne du 22 septembre 2026 :** *« je peux pas mettre de règlement reçu non
+plus »*, capture à l'appui — **« Il ne reste que 0,00 € à recevoir sur cette
+facture »** écrit juste sous un **Total TTC de 552,52 €**. Le même écran
+affirmait les deux à trois centimètres d'écart.
+
+**Deux vérités, et le garde lisait la mauvaise.** Une facture née sans devis
+(`creerFactureSansDevis`) pose ses trois colonnes de totaux à « 0.00 », et son
+commentaire le dit depuis toujours : *« zéro parce qu'elle est VIDE »*, les
+totaux se recalculent depuis les lignes à chaque affichage comme à l'émission.
+Rien ne les réécrit quand une ligne se pose — c'est délibéré (§ du
+10 septembre : imposer ces colonnes au PDF avait sorti une facture aux totaux
+faux). Or `factureEnBrouillon`, dans `paiements-facture.ts`, lisait
+`factures.total_ttc` pour décider ce qu'il reste à recevoir.
+
+| | ce que l'écran voyait | ce que le garde voyait |
+|---|---|---|
+| facture née d'un DEVIS | 1 910,40 € | 1 910,40 € — la colonne est recopiée du devis |
+| facture née SANS devis | 552,52 € | **0,00 €** |
+
+**Ce que ça cassait, et pourquoi c'était muet.** Le moindre acompte était
+refusé avec cette phrase-là. Et « Facture acquittée » ne posait aucun solde —
+`basculerAcquittee` ne pose le solde que s'il reste quelque chose à recevoir :
+le doigt sur l'interrupteur ne faisait donc **rien du tout**, sans un mot.
+C'est la moitié de son « impossible de cliquer dessus » du même jour ; l'autre
+moitié était l'interrupteur absent de la page de la facture (§404).
+
+**La correction est à la racine, et elle enlève au lieu d'ajouter** : le garde
+ne lit plus la colonne, il appelle `totauxAvecReduction` — celle de l'écran et
+du PDF. Une addition écrite ici aurait divergé au premier ajustement
+(`CLAUDE.md` §3). Une facture ÉMISE, elle, garde sa colonne : figée à
+l'émission, c'est le chiffre que le client a reçu, et ses lignes ne bougent
+plus.
+
+**Ce qu'aucun contrôle ne voyait :** toutes les suites des règlements partaient
+d'une facture née d'un devis, dont la colonne est juste. La facture directe
+existe depuis la migration 0085 et n'avait jamais reçu d'acompte dans une
+suite. `test-papier-facture-db.ts` en pose un désormais, remise et second taux
+de TVA compris — *une règle éprouvée sur un seul chantier n'est pas une règle
+éprouvée*.
+
+## §406 — Une photo appartient à l'endroit où elle a été posée
 
 **Sa règle du 22 septembre 2026 :** *« les photos dans la fiche de sécurité
 restent à l'intérieur de la fiche, et les photos de la fiche client restent à

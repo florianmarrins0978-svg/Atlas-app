@@ -19,7 +19,7 @@ voit plus ailleurs, la fiche gagne « Retirer » sur sa visionneuse ; une fiche
 signée, elle, garde les siennes.
 
 Ce que ça évite : les mêmes photos à trois endroits, et un croquis de terrain
-qui part avec le retour du jour chez le client. `ARCHITECTURE.md` §403.
+qui part avec le retour du jour chez le client. `ARCHITECTURE.md` §406.
 
 ### Les photos du chantier se regardent en grand, et à un seul endroit
 
@@ -34,6 +34,108 @@ ouvert dans un onglet neuf — depuis son téléphone, plus aucun retour en
 arrière. Et la même rangée deux fois sur le même écran faisait lire deux
 séries de photos là où il n'y en a qu'une, au prix d'une requête de plus à
 chaque ouverture d'une feuille.
+### Un règlement se pose enfin sur une facture faite sans devis
+
+« Il ne reste que 0,00 € à recevoir sur cette facture », sous un Total TTC de
+552,52 € : le garde des règlements lisait la colonne `total_ttc`, qui reste à
+zéro sur une facture née sans devis — ses totaux se recalculent depuis les
+lignes, et rien ne réécrit ces colonnes avant l'émission. Aucun acompte ne
+passait, et « Facture acquittée » ne posait aucun solde : le doigt sur
+l'interrupteur ne faisait rien, sans un mot. Le garde calcule désormais le
+total comme l'écran et le PDF. Une facture émise garde sa colonne, figée.
+`ARCHITECTURE.md` §405.
+
+### « Facture acquittée » est sous le net à payer, et sur la page où « À facturer » le mène
+
+Il l'a cherché là, et il n'y était plus : l'interrupteur était parti la veille
+sur la seule feuille où il remplit, avec les deux « + ». Saisir un règlement
+est une composition ; solder est un constat, et il se fait sur l'écran qu'on
+regarde avant d'envoyer. Il revient donc, sur les deux écrans, et il passe
+SOUS le net à payer — le chiffre d'abord, ce qui le met à zéro juste en
+dessous. Une facture arrêtée ne l'offre pas : ses règlements se notent depuis
+Terminés, et le dépôt refusait déjà. `ARCHITECTURE.md` §404.
+
+### La facture porte le jour où elle part, pas celui où le brouillon a été posé
+
+Son constat : « facturé le 21 septembre » un 22, sur une facture qu'il venait
+d'envoyer. La date d'émission était posée à la création du brouillon — à la fin
+du chantier — et l'envoi ne la rouvrait pas : le PDF du client portait cette
+date-là, l'échéance courait depuis elle (un délai de paiement raccourci
+d'autant, alors que le papier imprime « à 30 jours à compter de la facture »),
+et un brouillon du 31 mars envoyé le 1er avril aurait porté sa TVA sur le
+trimestre précédent. La date et l'échéance se posent désormais à l'émission,
+avant la composition du PDF ; l'échéance se DÉCALE du même nombre de jours,
+pour ne pas écraser celle qu'il aurait choisie à la main. Les factures déjà
+émises ne bougent pas. `ARCHITECTURE.md` §403.
+
+### Le relevé de TVA sort du plus récent au plus ancien
+
+Sa règle : *« l'ordre pour la TVA collectée et la TVA déductible doit être le
+dernier enregistré visible »*. La preuve « TVA collectée » sortait du plus
+ANCIEN au plus récent : le règlement qu'il venait de noter tombait tout en bas
+d'une liste de neuf, alors que c'est la seule raison d'ouvrir cette preuve juste
+après avoir noté quelque chose. Elle sort désormais comme la liste des achats,
+qui le faisait déjà — le dernier jour en tête, et à date égale le numéro de
+facture le plus grand, qui est le plus récent. Tout ce qui décide de l'ordre est
+écrit sur la ligne. L'ordre du CALCUL ne bouge pas : la TVA des acomptes se
+répartit toujours dans l'ordre où l'argent est rentré, et le règlement qui solde
+porte le reliquat d'arrondi.
+
+### La fiche de sécurité s'enregistre pendant qu'il écrit, et le GPS dit enfin ce qui a raté
+
+Ses trois remarques du 22 septembre, depuis son iPhone.
+
+**Ce qu'il tape part tout seul.** La fiche n'était écrite qu'au « Suivant » et
+au « Retour ». Or l'écran porte des liens qui SORTENT de l'application — le
+décret, le formulaire MSA, la découverte fortuite de réseau, jebalise — et il
+les ouvre en plein remplissage. Une fois l'application posée sur son écran
+d'accueil, iOS peut décharger la page pendant qu'il lit : l'étape en cours
+repartait vide. Deux secondes de silence et la fiche part, plus un envoi quand
+l'onglet passe en arrière-plan. `rafraichirLesEcrans: false` évite de refaire
+les trois écrans du bandeau toutes les deux secondes sous ses doigts — une
+seule fonction écrit toujours la fiche.
+
+**Le relevé GPS.** *« la position exacte fonctionne pas ».* Quatre défauts dans
+le même bouton : une seule phrase pour les trois causes du navigateur (dont
+deux qu'aucun réglage ne répare) ; la haute précision qui abandonne à quinze
+secondes alors que la position du réseau, elle, répond sous un couvert d'arbres
+ou dans une camionnette ; aucun retour pendant l'attente ; et un « ou
+écrivez-la » qu'aucun champ ne permettait d'exaucer. `refusDuReleveGps` rend une
+phrase par cause, le relevé réessaie une fois en précision normale, le bouton
+dit « Relevé en cours… », et un champ apparaît dès qu'un relevé échoue.
+
+**Les deux heures ne faisaient qu'un encart.** Sa demande : *« pour l'h ça
+serait bien d'avoir deux encarts séparés »*. Chromium les dessine déjà
+séparées : le défaut est propre à Safari, qui habille `input[type="time"]` à
+sa façon et jette le cadre qu'on pose dessus — c'est pourquoi Nom et Prénom,
+deux lignes plus bas et **le même composant**, montraient bien deux cadres. Et
+nos deux fonds sont trop proches (`card` #faf9f5 sur `cream` #f5f3ee) pour que
+l'œil retrouve la séparation sans ce trait. Le cadre vit désormais sur un
+`<span>`, qu'aucun navigateur ne rhabille : il tiendra aussi pour le prochain
+`type` que le téléphone décidera d'habiller. **Non reproduit ici** — à regarder
+sur son iPhone.
+
+### La facture s'ouvre avec sa première ligne
+
+*« Quand je crée une facture il devrait déjà avoir une ligne d'ouverte ! Je ne
+dois pas avoir besoin d'ajouter une ligne au début ! »* — sur la feuille où il
+remplit une facture faite sans devis. C'est le geste que le devis a reçu le
+20 septembre, et c'est la même règle, appelée et non recopiée
+(`ligneOuverteAPoserSurLaFacture`). Une facture née d'un devis n'ouvre rien :
+ce qu'on y saisit est un travail supplémentaire, et une case vide y annoncerait
+un ajout qu'il n'a pas fait. La ligne n'existe PAS en base tant qu'il n'a rien
+écrit — sur une facture, une ligne vide s'imprime chez le client en face de
+0,00 €, et une pièce arrêtée ne se corrige que par un avoir. `ARCHITECTURE.md`
+§394.
+
+### La capture de la facture sans devis mettait le prix dans l'unité
+
+Elle visait le deuxième champ de la rangée ; depuis que la colonne Unité s'est
+glissée entre Qté et Prix (15 septembre), ce deuxième champ est l'UNITÉ. Les
+145 € partaient donc dans « u », la facture restait à 0,00 €, et le script
+accusait l'envoi d'être fermé sur une facture « remplie ». La suite de bout en
+bout avait été corrigée ce jour-là ; ce script avait été oublié. Le prix se
+cherche désormais par son nom.
 
 ### La fiche de sécurité du décret 2021-1833 est dans l'application
 
@@ -44,6 +146,44 @@ transmettre, et la liste dans Paysage, un mois à la fois. Migration 0099 : une
 fiche par chantier, gardée deux ans, jamais purgée ; ses photos non plus. Ce
 qui est coché et écrit revient sur la fiche suivante — son choix — et l'écran
 de la loi le dit. Rien n'est coché par l'application. `docs/lot-fiche-de-securite.md`.
+
+### Relire les deux fiches contre les pages de l'INRAE, et corriger ce qui disait plus qu'elles
+
+Sa demande : « va vérifier avec les infos de l'INRAE que tu n'as fait aucune
+erreur ». Champ par champ, sur les deux fiches. Une erreur de fond : la page
+du chêne écrit « diminution de l'activité photosynthétique », et la fiche
+disait « l'arbre respire moins bien par ses feuilles », ce qui n'est pas le
+même mécanisme.
+
+Trois phrases disaient plus que la page : « produit moins de bois » là où elle
+écrit « diminution de production » sans le mot bois (et donne deux chiffres
+qui manquaient), un nom courant inventé pour P. trichocarpa, et « plusieurs
+années de suite » là où elle écrit « répétée » et « parfois ». Une condition
+manquait, « ou clone sensible ». Cinq phrases étaient dites dans deux blocs à
+la fois.
+
+Ce que la relecture a confirmé, et qui vaut d'être noté : les trois notes du
+peuplier ont été recomptées case par case dans le tableau de la page, et la
+page du chêne n'en porte réellement aucune.
+
+### Une base commune aux planches de maladies, et la fiche du chêne enfin montrée
+
+Sa demande, la planche du peuplier retenue : « garde cette planche, elle est
+finie, avance sur les autres en gardant la même base ». Le style et le rendu
+vivent désormais dans `appli/fiche-maladie.css` et `appli/fiche-maladie.js`,
+une seule fois pour toutes les planches. Ce qu'il corrige sur une fiche les
+corrige toutes, et le peuplier reposé sur cette base rend le même écran au
+pixel près.
+
+Puis sa remarque : « l'anthracnose du chêne n'a pas été faite ». Elle l'avait
+été le 20 août, mais aucune planche ne l'avait jamais montrée, donc elle
+n'existait pas pour lui. `appli/fiche-anthracnose-du-chene-et-du-hetre.html`
+la rend dans la forme arrêtée ce soir-là, avec une photo qu'elle n'avait pas.
+
+Deux choses que sa page dit et que le peuplier ne disait pas : elle ne porte
+aucune note de gravité, et elle exige un laboratoire pour confirmer. Les deux
+s'affichent, et la base a dû être corrigée pour cela : le nom de la photo était
+écrit en dur, et l'exigence de laboratoire n'était rendue nulle part.
 
 ### La fiche 4 du diagnostic végétal dessinée avant d'être codée — et la licence d'Ephytia lue
 

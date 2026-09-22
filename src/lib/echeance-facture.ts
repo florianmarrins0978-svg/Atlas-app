@@ -49,3 +49,45 @@ export function validerEcheance(dateEmissionIso: string, saisieIso: string): Res
   }
   return { ok: true, iso: saisieIso };
 }
+
+/**
+ * LES DEUX DATES D'UNE FACTURE QUI PART — la sienne, et celle du règlement.
+ *
+ * **Son constat du 22 septembre 2026 :** *« pourquoi il me met facturé le
+ * 21 septembre, on est le 22 ? Et je viens de l'envoyer ! »*
+ *
+ * `date_emission` était posée à la CRÉATION du brouillon — à la fin du
+ * chantier, ou à l'ouverture de la facture depuis la fiche du client. Un
+ * brouillon préparé le lundi et envoyé le jeudi partait donc daté du lundi :
+ * sur l'écran Terminés, sur le papier que le client reçoit, et dans le relevé
+ * de TVA, où un brouillon du 31 mars envoyé le 1er avril aurait porté sa TVA
+ * sur le trimestre précédent. Une pièce comptable porte le jour où elle part.
+ *
+ * **L'ÉCHÉANCE SE DÉCALE, elle ne se recalcule pas.** La refaire depuis le
+ * délai réglé effacerait celle qu'il a pu choisir à la main avant l'envoi
+ * (`majEcheanceFacture`) ; la laisser où elle est contredirait la mention
+ * imprimée juste à côté — « Paiement à 30 jours à compter de la facture »
+ * (`conditions-documents.ts`) —, qui n'en compterait plus que vingt-neuf. Le
+ * décalage tient les deux : ce qu'il accorde au client est un DÉLAI, et il
+ * reste entier quel que soit le jour de l'envoi.
+ *
+ * Une date illisible ne s'invente pas : elle est rendue telle quelle plutôt que
+ * de poser une échéance calculée sur un `NaN` (`docs/AGENT.md` §3).
+ */
+export function datesDeLaFactureQuiPart(
+  jourDeLEnvoi: string,
+  avant: { dateEmission: string; dateEcheance: string | null }
+): { dateEmission: string; dateEcheance: string | null } {
+  const brouillon = Date.parse(`${avant.dateEmission}T00:00:00Z`);
+  const envoi = Date.parse(`${jourDeLEnvoi}T00:00:00Z`);
+  if (Number.isNaN(brouillon) || Number.isNaN(envoi)) return { ...avant };
+  if (avant.dateEcheance === null) return { dateEmission: jourDeLEnvoi, dateEcheance: null };
+  const echeance = Date.parse(`${avant.dateEcheance}T00:00:00Z`);
+  if (Number.isNaN(echeance)) {
+    return { dateEmission: jourDeLEnvoi, dateEcheance: avant.dateEcheance };
+  }
+  return {
+    dateEmission: jourDeLEnvoi,
+    dateEcheance: new Date(echeance + (envoi - brouillon)).toISOString().slice(0, 10),
+  };
+}

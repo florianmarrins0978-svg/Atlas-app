@@ -195,6 +195,23 @@ export const DECOUVERTE_FORTUITE = {
   mot: "formulaire de découverte fortuite de réseau",
   url: "https://www.reseaux-et-canalisations.ineris.fr/",
 } as const;
+/**
+ * CE QUE LE TÉLÉPHONE A REFUSÉ, EN CLAIR — trois causes, trois gestes.
+ *
+ * Le navigateur rend un code (`GeolocationPositionError`) ; l'écran n'en
+ * gardait qu'une phrase pour les trois : *« Autorisez la localisation, ou
+ * écrivez-la »*. Elle envoie chercher dans les réglages quand c'est le ciel
+ * qui manque, et elle ne dit rien quand le relevé a simplement mis trop de
+ * temps. Une erreur qui accuse à tort coûte plus cher que pas d'erreur du tout
+ * (`AGENTS.md`).
+ */
+export function refusDuReleveGps(code: number | undefined): string {
+  if (code === 1) return "La localisation est refusée à ce site. Autorisez-la dans les réglages du téléphone, ou écrivez les coordonnées.";
+  if (code === 2) return "Le téléphone ne trouve pas sa position. Sortez à découvert, ou écrivez les coordonnées.";
+  if (code === 3) return "Le téléphone a mis trop de temps. Réessayez dehors, ou écrivez les coordonnées.";
+  return "La position n’a pas pu être relevée. Écrivez les coordonnées.";
+}
+
 export const LIENS_DE_LA_LOI = {
   decret: "https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000044572758",
   formulaire: "https://ssa.msa.fr/wp-content/uploads/2023/12/12350_A-_FICHE-DINTERVENTION_WEB.pdf",

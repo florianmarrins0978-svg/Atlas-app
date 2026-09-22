@@ -722,16 +722,29 @@ export default function FactureClient({
         </BoutonTelechargerDocument>
       </div>
 
-      {/* Les règlements reçus, le net à payer, l'acquittement — **en lecture**.
-          Sa correction du 21 septembre 2026 : « + Règlement reçu » et
-          l'interrupteur vivent là où il REMPLIT la facture, comme les acomptes
-          du devis. Ici, il vérifie avant d'envoyer ; il ne compose plus. */}
+      {/* Les règlements reçus et le net à payer — **en lecture**. Sa correction
+          du 21 septembre 2026 : « + Règlement reçu » vit là où il REMPLIT la
+          facture, comme les acomptes du devis. Ici, il vérifie avant d'envoyer ;
+          il ne compose plus.
+
+          **L'ACQUITTEMENT, LUI, REVIENT — 22 septembre 2026.** *« Depuis
+          terminé, à facturer […] il doit y avoir sous net à payer un bouton on
+          off facture acquitté. J'ai essayé de cliquer dessus depuis la facture
+          mais impossible. »* Il était parti avec les deux « + » la veille, et
+          c'était une erreur de rangement : saisir un règlement est une
+          composition, solder est un CONSTAT — celui qu'il fait sur l'écran où
+          « À facturer » le mène, juste avant d'envoyer.
+
+          **Sur un brouillon seulement.** Une facture arrêtée est au relevé de
+          TVA : ses règlements se notent depuis Terminés, et le dépôt refuse
+          déjà (`basculerAcquittee`). L'écran ne l'offre donc pas. */}
       <ReglementsRecus
         factureId={initialFacture.id}
         totalTtc={totaux.totalTtc}
         acomptesDuDevis={initialFacture.acomptesDuDevis}
         initiaux={initialFacture.reglements}
         fige
+        acquittement={!emise}
       />
 
       {erreur && (
