@@ -105,7 +105,11 @@ export default async function FichesPage() {
               // teinte de terre cuite : le nom vient d'avant la reprise
               // d'Arborea. C'est le fond des éléments teintés, et il reste
               // lisible sur les deux chartes sombres.
-              style={{ backgroundColor: colors.rustTint, border: `1px solid ${colors.line}` }}
+              //
+              // **Le liseré est d'OR, sa demande du 22 septembre 2026** :
+              // « mets un liseré doré, celui de l'appli ». `colors.or` est l'or
+              // des canaux pris (`ChoixCanal`), défini dans les sept chartes.
+              style={{ backgroundColor: colors.rustTint, border: `1px solid ${colors.or}` }}
             >
               <span className="min-w-0 flex-1">
                 <span className="block text-[16px] leading-[1.2]" style={{ fontFamily: font.display }}>
