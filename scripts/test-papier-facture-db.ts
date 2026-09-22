@@ -263,6 +263,28 @@ async function main() {
     assert.equal(solde.montant, "452.52");
   });
 
+  await essai("ses chiffres du 22 septembre : 1 125 HT, main d'œuvre 745, remise 8 % — le règlement passe", async () => {
+    // Sa seconde capture, au chiffre près : une ligne de 250 × 4,50 = 1 125 HT,
+    // « dont main d'œuvre HT 745 », remise de 8 % → 1 035, TVA 20 % → 207,
+    // Total TTC 1 242,00. L'écran l'écrivait ; le garde lisait zéro.
+    const chantierSien = await chantiersRepo.creerChantier(ctx, { nom: "Haie de charmille", clientId: client.id });
+    const sienne = await creerFactureSansDevis(ctx, chantierSien.id, MAINTENANT);
+    const l = await ajouterLigneDeFacture(ctx, sienne.id);
+    assert.ok(l.ok);
+    await majLigneDeFacture(ctx, sienne.id, l.ligne.id, { libelle: "Plantation", quantite: "250", prixUnitaire: "4.50" });
+    // La main d'œuvre est une INFORMATION prise dans le total, pas une ligne de
+    // plus : elle ne doit rien changer à ce qui reste à recevoir.
+    const mo = await majMainDoeuvreDeFacture(ctx, sienne.id, "745");
+    assert.ok(mo.ok && mo.mainDoeuvreHt === "745.00", JSON.stringify(mo));
+    await majReductionDeFacture(ctx, sienne.id, "8");
+
+    const pose = await poserReglementRecu(ctx, sienne.id, { date: "2026-09-22", montant: "1242", moyen: "virement", numero: null });
+    assert.ok(pose.ok, `son règlement a été refusé : ${pose.ok ? "" : pose.raison}`);
+    assert.equal(pose.reglements[0].montant, "1242.00");
+    const trop = await poserReglementRecu(ctx, sienne.id, { date: "2026-09-22", montant: "1", moyen: "virement", numero: null });
+    assert.ok(!trop.ok, "un règlement est passé au-delà du total : le garde ne compte plus rien");
+  });
+
   console.log(`\n${echecs === 0 ? "✅" : "❌"} Le papier de la facture, en base — ${echecs} échec(s).`);
   await pool.end();
   process.exit(echecs === 0 ? 0 : 1);
