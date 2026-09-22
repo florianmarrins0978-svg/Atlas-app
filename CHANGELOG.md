@@ -8,6 +8,21 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-22
 
+### Un seul champ de recherche, souligné, partout où l'on cherche
+
+Sa demande, capture de shapersclub.com à l'appui puis planche regardée
+(`appli/la-recherche-soulignee.html`) : une loupe dans l'accent, le mot en gris,
+un filet dessous qui passe à l'or quand on écrit, et plus aucune boîte. Clients,
+Retours d'intervention, fiche paysage « Pour qui ? » et Planning « Nom du
+client » passent tous par `src/components/atlas/ChampRecherche.tsx`.
+
+Ce que ça évite : quatre écrans dessinaient chacun le leur (plage teintée,
+pilule, boîte crème, boîte blanche), deux sans loupe, deux en `type="search"`
+qui ajoutait la croix bleue du navigateur. Leurs styles sont retirés ; le gris
+du mot passe par une classe (`atlas-recherche`) sous la même règle mesurée que
+la coordonnée client, au lieu d'un repère propre à la liste des clients. Les
+mots et les repères `data-atlas` n'ont pas bougé.
+
 ### Chaque photo à un seul endroit : celui où elle a été posée
 
 Une photo posée sur la fiche de sécurité y reste — elle ne passe plus dans
