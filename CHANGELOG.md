@@ -8,6 +8,20 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-22
 
+### Tous les points du milieu de phrase relevés, écran par écran
+
+Sa demande, après « Probable · Peuplier » : *« va me chercher tous les · qui
+servent à rien dans l'application comme le 6 à facturer · 19 facturés »*. Le
+relevé est dans `docs/les-points-inutiles.md` : 123 lignes de `src/`, 149
+points, dont **72 lignes sur les écrans qu'il ouvre et sur les documents qui
+partent chez ses clients** — les factures, les PDF de chantier, la fiche de
+sécurité, le rapport d'entretien. Les 42 points des conditions générales sont
+des puces de liste, dans un document juridique déjà accepté : ils sont mis à
+part. Trois « trouvailles » sont des faux positifs — du code qui RETIRE des
+points d'une saisie. **Rien n'a été corrigé** : le retrait attend sa décision,
+écran par écran, et il est inscrit dans `TODO.md`.
+
+
 ### La fiche de sécurité du décret 2021-1833 est dans l'application
 
 Sur la fiche du jour, un bandeau « Fiche de sécurité » au-dessus de « Travaux

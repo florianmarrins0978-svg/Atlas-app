@@ -9,6 +9,30 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## ⏳ LES POINTS DU MILIEU DE PHRASE — RELEVÉS, PAS ENCORE RETIRÉS (22 septembre 2026)
+
+Sa règle du jour : *« plus jamais de point entre le nom et probable, et plus
+jamais de tiret, fais des phrases normales »*. Puis sa demande : *« va me
+chercher tous les · qui servent à rien »*.
+
+**Le relevé est fait** : `docs/les-points-inutiles.md` — 72 lignes de code sur
+les écrans et les documents qui partent chez ses clients, du `6 à facturer ·
+19 facturés` de Terminés au `15 SAMU · 18 Pompiers` du PDF de sécurité.
+
+**Ce qui reste**, et il faut son arbitrage écran par écran : chaque point ne se
+remplace pas de la même façon — certains deviennent une phrase (`Probable sur
+un peuplier.`), d'autres une simple espace ou un retour à la ligne, et deux
+cas portent une mise en page de document (`ÉMETTEUR · CLIENT` dans l'aperçu du
+devis). **Sa règle du 11 septembre tient ici** : on change le TEXTE, jamais la
+PLACE.
+
+**Ce qui N'EST PAS à toucher** : les 42 points des conditions générales, qui
+sont des puces de liste dans un document juridique déjà publié et accepté —
+les modifier demande une nouvelle version et une nouvelle acceptation.
+
+**Et le deuxième relevé n'est pas fait** : les tirets `—` affichés à l'écran,
+que la même règle vise.
+
 ## ⏳ UNE PLANCHE À REGARDER — FICHE 4, LA BRUNISSURE DES FEUILLES DE PEUPLIER (22 septembre 2026)
 
 `appli/fiche-brunissure-des-feuilles-de-peuplier.html`, liée depuis
