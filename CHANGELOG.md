@@ -8,6 +8,15 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-22
 
+### Le piquage se désigne : compteur d'eau ou robinet extérieur
+
+L'avertissement au-dessus du croquis disait « l'endroit où le piquage se
+fait » sans dire ce que c'est. Il précise désormais de noter l'emplacement du
+compteur d'eau ou du robinet extérieur : un croquis qui ne le porte pas perd
+son plan (`CLAUDE.md` §4 bis), et le mot « piquage » seul ne le faisait pas
+dessiner. Même texte dans l'écran (`ArrosageClient.tsx`) et dans la maquette
+`appli/arrosage-plan-et-pieces.html`, à la même place.
+
 ### Fiche de sécurité : le décret devient le titre de l'écran de la loi
 
 Sa demande, capture à l'appui : retirer « Ce que demande la loi » et poser
