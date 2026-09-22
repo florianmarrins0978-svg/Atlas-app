@@ -88,6 +88,7 @@ body.nuit .assistant svg{stroke:var(--scene)}
 .p{margin:0;line-height:1.6;color:var(--encre-douce)}
 .p.petit{font-size:12px;color:var(--gris);line-height:1.5}
 .bloc{margin-top:20px;border-top:1px solid var(--trait);padding-top:14px}
+.corps > .bloc:first-child{margin-top:0;border-top:0;padding-top:0}
 .bloc .caps{margin:0}
 .bloc .val{margin:6px 0 0;line-height:1.55;color:var(--encre)}
 .bloc.fort .val{font-size:17px;line-height:1.5}
@@ -161,9 +162,10 @@ details.det .fiche p.pale{font-size:11.5px;color:var(--gris)}
 
 <div class="notes">
   <h3>Ce qui change à l’écran, pour toutes les fiches</h3>
-  <p>Vos règles du 22 septembre au soir. <b>D’abord le nom de la maladie et du
-  champignon</b>, puis vos quatre questions dans l’ordre : <b>ce que c’est, est-ce
-  grave pour l’arbre, comment ça arrive, comment ça se propage</b>. <b>Plus de
+  <p>Vos règles du 22 septembre au soir. <b>D’abord le nom</b>, avec le nom scientifique,
+  puis <b>l’agent en cause</b> et <b>les parties atteintes</b>, visibles et plus
+  dans les détails. Puis vos questions dans l’ordre : <b>est-ce grave pour
+  l’arbre, comment ça arrive, comment ça se propage</b>. <b>Plus de
   point entre le nom et « probable », plus de tiret, des phrases.</b> Et pour la
   gravité, <b>ce que dit l’INRAE</b>, en phrases, à la place du mot « Vigilance »
   d’Atlas. Sur la fiche du platane, l’application écrit aujourd’hui
@@ -460,6 +462,8 @@ details.det .fiche p.pale{font-size:11.5px;color:var(--gris)}
   var stabiliteEnJeu = F.impactMecanique === "avere" || F.impactMecanique === "possible" ||
     (F.impactMecanique === "inconnu" && F.gravite !== "faible");
 
+  // Les parties du vocabulaire fermé, en mots : « les feuilles, les rameaux, le houppier »
+  var PARTIES_AU_PLURIEL = { feuille: "feuilles", aiguille: "aiguilles", rameau: "rameaux", branche: "branches", tronc: "tronc", ecorce: "écorce", collet: "collet", racine: "racines", fruit: "fruits", fleur: "fleurs", bourgeon: "bourgeons", champignon_sur_bois: "champignons sur le bois", houppier: "houppier", ensemble: "arbre entier" };
   var MOIS = ["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"];
   function dateCitee(iso){ var p = iso.split("-"); return Number(p[2]) + " " + MOIS[Number(p[1]) - 1] + " " + p[0]; }
   function e(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
@@ -490,14 +494,10 @@ details.det .fiche p.pale{font-size:11.5px;color:var(--gris)}
   }
   function details(){
     return '<details class="det"><summary>Voir les détails</summary>' +
-      ligne("Nom scientifique", F.nomScientifique) +
-      ligne("Agent en cause", F.agentCausal) +
-      ligne("Parties atteintes", F.partiesAtteintes.map(function(p){ return p.replace(/_/g," "); }).join(", ")) +
       liste("Ce qui le distingue", F.criteresDiscriminants) +
       liste("Ce qui l’écarte", F.criteresExclusion) +
       liste("Ce qui le favorise", F.facteursFavorisants) +
       ligne("Prévention", F.prevention) +
-      ligne("Comment ça évolue", F.gestion) +
       ligne("Traitement", F.traitement) +
       '<div class="ligne fiche"><p class="caps gris">La fiche</p>' +
       '<p>'+e(SRC.organisme)+', '+e(SRC.titre)+'. <span style="color:var(--gris)">Page consultée le '+e(dateCitee(SRC.consulteeLe))+'.</span></p>' +
@@ -508,8 +508,10 @@ details.det .fiche p.pale{font-size:11.5px;color:var(--gris)}
 
   document.getElementById("ecran").innerHTML =
     '<div class="ecran">' + entete() + '<div class="corps">' +
-    bloc("Ce que c’est", F.nomCommun + ". Une maladie causée par un champignon, " + F.agentCausal.replace(/. Ascomycète.$/, ".")) +
-    '<p class="confiance" style="margin-top:12px">Probable sur '+e(LOT.taxons[0].article)+' '+e(LOT.taxons[0].nomCommun.toLowerCase())+'.</p>' +
+    bloc("Nom", F.nomCommun + ", " + F.nomScientifique + ".", true) +
+    bloc("Agent en cause", F.agentCausal) +
+    bloc("Parties atteintes", "Les " + F.partiesAtteintes.map(function(p){ return PARTIES_AU_PLURIEL[p] || p; }).join(", les ") + ".") +
+    '<p class="confiance" style="margin-top:20px">Probable sur '+e(LOT.taxons[0].article)+' '+e(LOT.taxons[0].nomCommun.toLowerCase())+'.</p>' +
     photos() +
     bloc("Est-ce grave pour l’arbre ?", F.graviteSelonLaSource) +
     bloc("Comment ça arrive", F.commentCaArrive) +
