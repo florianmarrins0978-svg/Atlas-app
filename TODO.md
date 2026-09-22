@@ -9,6 +9,74 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## ⏳ UNE PLANCHE À REGARDER — FICHE 3, L'ANTHRACNOSE DU CHÊNE ET DU HÊTRE (22 septembre 2026)
+
+`appli/fiche-anthracnose-du-chene-et-du-hetre.html`, liée depuis
+`appli/essais.html`. **Sa remarque : *« l'anthracnose du chêne n'a pas été
+faite ! On a fait que le platane »*. Elle l'avait été**, le 20 août, et son
+`_lisez_moi` dit qu'il l'avait relue champ par champ — mais **aucune planche
+n'avait jamais été faite**, donc il ne l'avait jamais vue à l'écran. C'est
+exactement le cas du §1 de `CLAUDE.md` dans l'autre sens : le code faisait foi,
+et personne ne le lui avait montré.
+
+**Ce que la planche change dans la fiche 003, et rien d'autre :** la forme
+arrêtée le 22 septembre au soir (ses blocs dans son ordre, des phrases, aucun
+tiret ni point-virgule), plus les deux champs nés ce soir-là
+(`quandCaSeVoit`, `autresEssences`, `graviteSelonLaSource`, `commentCaArrive`,
+`article`) et **une photo, qu'elle n'avait pas**. Aucun fait n'a bougé.
+
+**Deux différences avec le peuplier, à ne pas gommer :**
+
+| | |
+|---|---|
+| sa page **ne porte AUCUNE jauge** de fréquence, d'agressivité ni d'impact | « Est-ce grave pour l'arbre ? » ne repose que sur sa rubrique « Dégâts », et le dit. **Ne pas recopier les notes du peuplier par ressemblance** |
+| sa page **exige un laboratoire** pour confirmer | `methodeConfirmation` s'affiche dans un cadre **sous « Que faire ? »**, jamais dans les détails. C'est la règle du 20 août, et la base commune la tient |
+
+**La photo, et c'est la question qui lui est posée :** les HUIT figures de la
+page portent un « © » nominatif, donc aucune. Celle retenue vient de Commons,
+en domaine public (CC0), et sa description dit « Oak Anthracnose » — **mais
+cette identification vient d'iNaturalist, pas d'un laboratoire**, alors que la
+fiche elle-même exige un laboratoire. C'est écrit sous la photo et sur la
+planche. S'il dit non, la fiche part sans photo, comme elle était.
+
+**Sur son oui :** les fiches 003 et 004 entrent ensemble (003 en corrige une
+existante, donc la version de la fiche passe à 2), avec
+`anthracnose-chene-feuille.jpg` et `brunissure-peuplier-feuille.jpg` dans
+`donnees/phyto/images/`, puis `--verifier`,
+`npx tsx scripts/test-import-fiches-phyto.ts` et `test-diagnostic-base.ts`.
+
+## LA BASE COMMUNE DES PLANCHES DE MALADIES (22 septembre 2026)
+
+**Sa demande, la planche du peuplier une fois finie :** *« garde cette planche,
+elle est finie, avance sur les autres planches en gardant la même base que
+celle-ci »*. Le style et le rendu vivent donc dans `appli/fiche-maladie.css`
+et `appli/fiche-maladie.js`, **une seule fois**. Chaque planche ne porte que
+son lot (`window.FICHE_LOT`, le futur fichier de `donnees/phyto/fiches/`) et ce
+qu'on lui demande.
+
+**Ce que cela garantit :** une correction qu'il demande sur une fiche les
+corrige toutes. La planche du peuplier a été reposée sur cette base et
+**rend le même écran au pixel près** (comparaison d'empreintes avant/après).
+
+**Deux pièges déjà payés, dans la base :** le nom du fichier de la photo était
+écrit en dur, ce qui aurait mis la photo du peuplier sur toutes les fiches — il
+se déduit du chemin que la fiche déclare ; et `methodeConfirmation` n'était
+rendu nulle part, ce qui aurait fait disparaître l'exigence de laboratoire du
+chêne.
+
+**RESTE À FAIRE, ET C'EST UNE LIGNE.** Les deux fichiers ne sont liés par
+aucun `href`, donc la liste que `pages.yml` déduit d'`essais.html` ne les voit
+pas : une base absente en ligne ne casserait aucun contrôle et rendrait toutes
+les planches blanches. Il faut les **nommer dans `pages.yml`**, à côté
+d'`arrosage-catalogue.js` :
+
+    for f in index.html essais.html nav.js arrosage-catalogue.js              fiche-maladie.css fiche-maladie.js 
+**Ce n'est pas fait**, parce que toucher `.github/` fait passer le lot en
+niveau 2 et qu'il avait demandé le soir même de **ne lancer aucune batterie**.
+La ligne est dans une remise git du dossier principal (« la ligne pages.yml de
+la base commune »), et les deux fichiers ont été **interrogés à la main** en
+ligne après la poussée. À reprendre avec un contrôle de niveau 2.
+
 ## À REGARDER SUR SON IPHONE — LES DEUX HEURES DE LA FICHE (22 septembre 2026)
 
 Sa demande : *« pour l'h ça serait bien d'avoir deux encarts séparés »*. Le
@@ -75,6 +143,17 @@ son oui, et pas avant — il a dit « ne lance aucune batterie » :**
 | `INRAE — Ephytia (…) · consultée le 22 septembre 2026` | `Source : INRAE, Ephytia (…), page consultée le 22 septembre 2026.` |
 | dans les détails, `Fiche version 1 · à jour au …` | `Fiche version 1, à jour au 21 octobre 2024.` |
 | `Gravité : Vigilance` (un mot d'Atlas) | ce que dit la SOURCE, en phrases, sous « Est-ce grave pour l'arbre ? » (nouveau champ `graviteSelonLaSource`) ; le niveau `gravite` reste interne, il pèse sur la mention de stabilité |
+**SON ORDRE DE BLOCS, ARRÊTÉ LE 22 SEPTEMBRE AU SOIR, ET IL NE SE DEVINE PAS :**
+le nom, les parties atteintes, à quoi ça ressemble, est-ce grave pour l'arbre,
+que faire, comment le reconnaître, comment ça arrive, comment ça se propage.
+**Tout le reste va dans « Voir les détails »** : l'agent en cause, quand ça se
+voit, et les autres arbres du jardin, ça pourrait aussi être, ce qui le
+favorise, la fiche, le chantier. La pastille de l'assistant est retirée de cet
+écran. C'est l'ordre de la planche, et il vaut pour toutes les fiches.
+
+| dans les détails, « Ce qui le distingue » et « Ce qui l'écarte » | **VISIBLES** : ce sont eux qui servent debout devant l'arbre. Titres « Comment le reconnaître » et « Ça pourrait aussi être » |
+| rien sur la saison, rien sur les autres arbres | deux blocs de plus, « Quand ça se voit » (champ `quandCaSeVoit`) et « Et les autres arbres du jardin ? » (champ `autresEssences`) : les deux questions qu'il se pose sur le chantier |
+| « Ce qui le favorise » affiché deux fois, « parasites de faiblesse » deux fois | chaque chose une seule fois. Ce qui monte à l'écran sort des détails |
 | explication, photo, gravité, que faire | **SON ordre du 22 septembre** : « Nom » (nom courant et nom scientifique, EN PREMIER : *« c'est la première chose qu'on veut savoir »*), « Agent en cause », « Parties atteintes » (les trois VISIBLES, sortis des détails, en phrases : « Les feuilles, les rameaux, le houppier. »), puis « Probable sur un peuplier. », la photo, « Est-ce grave pour l'arbre ? », « Comment ça arrive » (nouveau champ `commentCaArrive`), « Comment ça se propage » (= `gestion`, sorti des détails), « Que faire ? » |
 
 *« Gravité vigilance, ça veut rien dire ? Que dit l'INRAE ? »* et *« on n'a pas le nom du champignon ou de la maladie en premier alors que c'est ça qu'on est venu identifier. On veut savoir ce que c'est, est-ce que c'est grave pour l'arbre ou arbuste, comment ça arrive, comment ça se propage. »* Les deux nouveaux champs sont des colonnes de plus sur `fiches_phyto` (expand), à ajouter à `CHAMPS_SCALAIRES` ; les fiches 1 à 3 les reçoivent depuis leurs sources, jamais de mémoire.
