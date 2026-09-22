@@ -8,6 +8,16 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-22
 
+### « Facture acquittée » est sous le net à payer, et sur la page où « À facturer » le mène
+
+Il l'a cherché là, et il n'y était plus : l'interrupteur était parti la veille
+sur la seule feuille où il remplit, avec les deux « + ». Saisir un règlement
+est une composition ; solder est un constat, et il se fait sur l'écran qu'on
+regarde avant d'envoyer. Il revient donc, sur les deux écrans, et il passe
+SOUS le net à payer — le chiffre d'abord, ce qui le met à zéro juste en
+dessous. Une facture arrêtée ne l'offre pas : ses règlements se notent depuis
+Terminés, et le dépôt refusait déjà. `ARCHITECTURE.md` §403.
+
 ### La fiche de sécurité du décret 2021-1833 est dans l'application
 
 Sur la fiche du jour, un bandeau « Fiche de sécurité » au-dessus de « Travaux

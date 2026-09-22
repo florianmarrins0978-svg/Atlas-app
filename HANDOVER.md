@@ -34,8 +34,15 @@ Avant de poser un bouton sur l'un des deux, savoir lequel :
 
 | | |
 |---|---|
-| `facture/travaux-supplementaires` | **il REMPLIT** : lignes, TVA, remise, main d'œuvre, règlements reçus, « Facture acquittée » |
+| `facture/travaux-supplementaires` | **il REMPLIT** : lignes, TVA, remise, main d'œuvre, règlements reçus |
 | `facture` | **il VÉRIFIE** (arrêt 3) : les mêmes chiffres en lecture, et l'envoi |
+
+**« Facture acquittée » est sur les DEUX, sous le net à payer** — sa correction
+du 22 septembre 2026, après l'avoir cherché en vain sur la page où « À
+facturer » le mène. Saisir un règlement compose le document ; solder le
+constate, et le constat se fait aussi devant ce qui va partir. Il ne suit donc
+pas `fige` mais son propre `acquittement`, fermé par l'ÉMISSION seule
+(`ARCHITECTURE.md` §403).
 
 Les pièces sont partagées, jamais recopiées : `ReglementsRecus` (prop `fige`,
 et `carte` pour savoir s'il porte sa propre carte) et `LigneMainDoeuvre` (ses

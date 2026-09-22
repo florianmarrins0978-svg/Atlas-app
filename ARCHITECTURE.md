@@ -32689,3 +32689,45 @@ retours (§ migration 0080) : la photo du chantier que la fiche montre ne doit
 pas partir en purge quand on l'efface de la pellicule. `fiches_securite_photos`
 existe pour que `supprimerPhoto` pose la question. `test-fiche-securite-db.ts`
 le mesure sur le compteur de `fichiers_a_purger`.
+
+---
+
+## §403 — Solder n'est pas composer : l'acquittement revient sur la page de la facture
+
+**Sa correction du 22 septembre 2026 :** *« Depuis terminé, à facturer et
+seulement par ce passage il doit y avoir sous net à payer un bouton on off
+facture acquitté. J'ai essayé de cliquer dessus depuis la facture mais
+impossible. »*
+
+**Ce qui était faux dans le §398, et c'est le mot « geste » qui l'a fait.** La
+veille, trois gestes ont quitté la page de la facture d'un seul mouvement,
+parce qu'ils étaient rangés ensemble. Deux d'entre eux composent le document :
+nommer la main d'œuvre, saisir un règlement avec sa date, son moyen, son
+numéro. Le troisième CONSTATE — tout est réglé, oui ou non —, et ce constat se
+fait sur l'écran où il regarde ce qui va partir, pas sur la feuille de saisie
+qu'il vient de quitter. « À facturer », dans Terminés, ouvre cette page-là
+(`ListeTermines`, `/chantiers/<id>/facture`) : c'est le dernier écran avant
+l'envoi, et c'est là qu'il a cherché l'interrupteur.
+
+| | |
+|---|---|
+| **composer** — « + Main d'œuvre », « + Règlement reçu » | la feuille où il remplit, elle seule (§398, inchangé) |
+| **constater** — « Facture acquittée » | les deux écrans, **sous le net à payer** |
+
+**Sous le net, jamais au-dessus.** Le net est le chiffre qu'il vient lire ;
+l'interrupteur est ce qui le met à zéro. Posé au-dessus, la cause et son effet
+se lisaient à contre-sens, et il fallait remonter pour vérifier ce qu'on
+venait de changer.
+
+**Il ne suit plus `fige`, il suit la facture ARRÊTÉE.** `ReglementsRecus` prend
+un `acquittement` à part : `fige` dit qu'on ne SAISIT plus, ce qui n'a jamais
+voulu dire qu'on ne solde plus. Ce qui ferme l'interrupteur, c'est l'émission —
+une facture au relevé de TVA ne se solde pas d'un doigt, ses règlements se
+notent depuis Terminés. L'écran ne l'offre pas, et `basculerAcquittee` refuse
+de son côté : deux verrous, dont un que l'écran ne peut pas contourner.
+
+**Ce que l'ancien contrôle affirmait**, et qui est devenu faux le jour où il a
+demandé le contraire : `test-papier-facture-e2e.ts` exigeait que l'interrupteur
+soit ABSENT de la page de la facture. Il exige désormais qu'il y soit, sous le
+net, et qu'il marche depuis là (`CLAUDE.md` §5 bis : on adapte le contrôle, on
+ne remet pas l'écran).

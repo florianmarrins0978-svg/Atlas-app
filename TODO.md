@@ -185,6 +185,14 @@ règlement écrit par lui (migration 0098), « Acquittée le … » en or et
 identique sur les deux pages, et le bouton collé sous le pouce.
 `ARCHITECTURE.md` §398.
 
+**CORRIGÉ LE 22 SEPTEMBRE 2026 — l'interrupteur était parti de trop.** *« Depuis
+terminé, à facturer […] il doit y avoir sous net à payer un bouton on off
+facture acquitté. J'ai essayé de cliquer dessus depuis la facture mais
+impossible. »* Les deux « + » composent le document et restent sur la feuille
+où il remplit ; l'acquittement CONSTATE, et il revient sur la page que « À
+facturer » ouvre — sur les deux écrans, **sous le net à payer**, et fermé par
+l'émission seule. `ARCHITECTURE.md` §403.
+
 
 ## 🔧 `test-repartir-du-client-e2e` TOMBE DANS LA BATTERIE, JAMAIS SEULE (20 septembre 2026)
 

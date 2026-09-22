@@ -208,6 +208,10 @@ async function main() {
     const [g] = await reglementsRecus(ctx, factureId);
     const retrait = await retirerReglementRecu(ctx, g.id);
     assert.ok(!retrait.ok, "un acompte s'est retiré d'une facture émise");
+    // L'interrupteur revenu sur la page de la facture le 22 septembre 2026 ne
+    // s'offre que sur un BROUILLON ; le dépôt le tient, quel que soit l'écran.
+    const bascule = await basculerAcquittee(ctx, factureId, false, "2026-09-22");
+    assert.ok(!bascule.ok, "une facture émise s'est désacquittée");
   });
 
   console.log(`\n${echecs === 0 ? "✅" : "❌"} Le papier de la facture, en base — ${echecs} échec(s).`);

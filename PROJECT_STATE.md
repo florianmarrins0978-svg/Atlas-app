@@ -15,6 +15,16 @@ liste dans Paysage par mois. Migration 0099. Le formulaire vit sous
 qu'elle leur soit présentée), la liste sous `/paysage/fiches-securite`.
 `docs/lot-fiche-de-securite.md`.
 
+## FAIT : « FACTURE ACQUITTÉE » SOUS LE NET, ET SUR LES DEUX ÉCRANS (22 septembre 2026)
+
+*« Depuis terminé, à facturer […] il doit y avoir sous net à payer un bouton on
+off facture acquitté. J'ai essayé de cliquer dessus depuis la facture mais
+impossible. »* La veille, l'interrupteur était parti avec les deux « + » sur la
+feuille où il remplit ; or les « + » composent le document et lui constate.
+Il revient sur la page que « À facturer » ouvre, passe **sous le net à payer**
+aux deux endroits, et ne s'offre que sur un brouillon — une facture émise ne se
+solde plus d'un doigt. `ARCHITECTURE.md` §403.
+
 ## FAIT : LA FACTURE SE REMPLIT OÙ ON LA REMPLIT (21 septembre 2026)
 
 *« À corriger : le + main d'œuvre et + règlement reçu. Le bouton facture
