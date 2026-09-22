@@ -28,8 +28,16 @@
  * il dit ce que le patron attend, il ne l'impose plus. `peutPoserLeRetour`,
  * qui verrouillait, est parti avec le verrou (`CLAUDE.md` §4 quinquies).
  *
- * Ni base, ni réseau, ni date.
+ * ─────────────────────────────────────────────────────────────────────────
+ * **LE MOIS A REMPLACÉ LES ANNÉES — sa demande du 22 septembre 2026 :** *« pour
+ * les retours d'intervention, il faut mettre le même filtre que pour la fiche
+ * de sécurité, avec le mois et l'année qui défile »*. Les pastilles d'années
+ * sont parties avec : deux filtres pour la même question, c'est celui qu'on
+ * n'a pas touché qui fait mentir la liste.
+ *
+ * Ni base, ni réseau.
  */
+import { jourIso } from "./jour";
 
 /** Une tâche du retour : le libellé recopié du devis, et si elle a été faite. */
 export type TacheDuRetour = {
@@ -181,18 +189,19 @@ export function nomCherche(texte: string): string {
  * d'arriver est en haut : le patron n'a rien à chercher le soir même. Un ordre
  * alphabétique aurait enterré le retour du jour au milieu du carnet.
  *
- * `annee` vaut `null` pour « tout » — et « tout » veut dire tout, sans fenêtre
- * glissante : *« il faut pouvoir les garder longtemps »*.
+ * `mois` vaut `null` pour « tout » — et « tout » veut dire tout, sans fenêtre
+ * glissante : *« il faut pouvoir les garder longtemps »*. Le filtre réduit ce
+ * qui s'affiche ; il ne réduit jamais ce qui est gardé.
  */
 export function rangerLesRetours(
   retours: readonly RetourEnListe[],
-  filtres: { client?: string | null; annee?: string | null } = {}
+  filtres: { client?: string | null; mois?: string | null } = {}
 ): GroupeDeRetours[] {
   const cherche = nomCherche(filtres.client ?? "");
-  const annee = filtres.annee ?? null;
+  const mois = filtres.mois ?? null;
 
   const gardes = retours.filter((r) => {
-    if (annee && r.poseLe.slice(0, 4) !== annee) return false;
+    if (mois && moisDuRetour(r.poseLe) !== mois) return false;
     if (cherche && !nomCherche(r.clientNom).includes(cherche)) return false;
     return true;
   });
@@ -218,13 +227,14 @@ export function rangerLesRetours(
 }
 
 /**
- * Les années qu'il peut toucher, de la plus récente à la plus ancienne.
+ * Le mois d'un retour, « AAAA-MM » — celui de la roue.
  *
- * **Elles sortent des retours eux-mêmes**, jamais d'un calcul sur la date du
- * jour : une année sans retour serait une pastille qui ne rend rien, et un
- * filtre qui rend une liste vide s'apprend à ne plus être touché.
+ * **Il se lit dans le fuseau du patron, pas dans celui de la machine.** Un
+ * retour posé le 30 septembre à 23 h 30 est enregistré en UTC : découpé à la
+ * ficelle (`poseLe.slice(0, 7)`), il tomberait en septembre pour le serveur et
+ * en octobre pour le téléphone, et il disparaîtrait des deux mois selon qui
+ * regarde. `jourIso` tient déjà ce fuseau pour tout le dépôt.
  */
-export function anneesDesRetours(retours: readonly RetourEnListe[]): string[] {
-  const annees = new Set(retours.map((r) => r.poseLe.slice(0, 4)).filter((a) => a.length === 4));
-  return [...annees].sort().reverse();
+export function moisDuRetour(poseLe: string): string {
+  return jourIso(new Date(poseLe)).slice(0, 7);
 }

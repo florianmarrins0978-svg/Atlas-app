@@ -8,6 +8,23 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-22
 
+### Les retours d'intervention se filtrent au mois, comme les fiches de sécurité
+
+Sa demande, capture à l'appui : *« pour les retours d'intervention, il faut
+mettre le même filtre que pour la fiche de sécurité, avec le mois et l'année qui
+défile »*. Le mois en tête de l'écran, la roue du téléphone au toucher, le mois
+en cours à l'ouverture. Les pastilles d'années sont parties : deux filtres pour
+la même question, et c'est celui qu'on n'a pas touché qui fait paraître la liste
+vide. Le champ « Un nom de client » reste, et il cherche dans le mois affiché.
+
+Ce que ça évite : un mois lu à la ficelle sur l'heure UTC — un retour posé le
+30 septembre à 23 h 30 tombait en septembre pour le serveur et en octobre pour
+le téléphone, donc disparaissait des deux selon qui regardait. Le mois se lit
+désormais dans le fuseau du patron (`moisDuRetour`), et le mois d'ouverture est
+décidé par le serveur, jamais par le navigateur. Rien ne change au chargement :
+tout ce que l'entreprise porte est toujours là, remonter à 2024 ne demande rien
+au serveur.
+
 ### La fiche de sécurité du décret 2021-1833 est dans l'application
 
 Sur la fiche du jour, un bandeau « Fiche de sécurité » au-dessus de « Travaux

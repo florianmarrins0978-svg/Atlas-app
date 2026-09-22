@@ -5,11 +5,11 @@ import { colors, font, libelleCaps, surPlein } from "@/lib/design-tokens";
 import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 import VisionneusePhoto from "@/components/atlas/VisionneusePhoto";
 import {
-  anneesDesRetours,
   compteDesTaches,
   rangerLesRetours,
   type RetourEnListe,
 } from "@/lib/retour-intervention";
+import { nomDuMois } from "@/lib/termines-par-mois";
 import { marquerLeRetourVuAction } from "./actions";
 
 /**
@@ -27,18 +27,36 @@ import { marquerLeRetourVuAction } from "./actions";
  * rangés par client, ils se lisent côte à côte — et c'est ainsi qu'on retrouve
  * ce qu'on avait fait la dernière fois.
  *
- * **Deux filtres, et ils font deux métiers.** Le champ sert quand il sait qui
- * il cherche ; les années servent quand il ne sait plus quand. Un seul des deux
- * l'aurait obligé à taper de mémoire, avec des doigts épais.
+ * **Deux filtres, et ils SE CUMULENT.** La roue dit quand, le champ dit qui —
+ * un nom tapé cherche dans le mois affiché, pas dans tout le carnet. C'est ce
+ * qu'il faut pour que l'écran ne se contredise pas : un mois écrit en tête qui
+ * rendrait un retour de mars serait un titre qui ment. Pour remonter le temps,
+ * on tourne la roue.
+ *
+ * **LE MOIS EST CELUI DE LA FICHE DE SÉCURITÉ — sa demande du 22 septembre
+ * 2026 :** *« pour les retours d'intervention, il faut mettre le même filtre
+ * que pour la fiche de sécurité, avec le mois et l'année qui défile »*. Le même
+ * geste, le même dessin : on touche le mois, la roue du téléphone tourne. Les
+ * pastilles d'années sont parties avec — garder les deux, c'est un filtre qu'on
+ * oublie de remettre à « Tout », et une liste qui paraît vide sans raison.
+ *
+ * **Le mois par défaut vient du SERVEUR** (`moisCourant`). Le lire dans le
+ * navigateur rendrait un mois au serveur et un autre au client la nuit du
+ * changement de mois — le piège que `ListeTermines` porte déjà.
  */
-export default function ListeDesRetours({ retours }: { retours: RetourEnListe[] }) {
+export default function ListeDesRetours({
+  retours,
+  moisCourant,
+}: {
+  retours: RetourEnListe[];
+  moisCourant: string;
+}) {
   const [cherche, setCherche] = useState("");
-  const [annee, setAnnee] = useState<string | null>(null);
+  const [mois, setMois] = useState(moisCourant);
 
-  const annees = useMemo(() => anneesDesRetours(retours), [retours]);
   const groupes = useMemo(
-    () => rangerLesRetours(retours, { client: cherche, annee }),
-    [retours, cherche, annee]
+    () => rangerLesRetours(retours, { client: cherche, mois }),
+    [retours, cherche, mois]
   );
 
   return (
@@ -46,10 +64,36 @@ export default function ListeDesRetours({ retours }: { retours: RetourEnListe[] 
       <EnTeteEcran titre="Retours d'intervention" retour={{ href: "/termines", libelle: "Retour aux chantiers terminés" }}
         allure="commune" />
 
-      {/* **Le champ d'abord, les années ensuite.** Quand il sait qui il cherche,
-          il tape ; le reste du temps il touche une année. L'ordre inverse
-          l'aurait fait lire trois pastilles avant d'arriver à ce qu'il voulait. */}
-      <div className="relative mx-[22px] mt-4">
+      {/* **Le mois en tête, comme sur la fiche de sécurité** : le champ couvre
+          le titre sans se voir, et la roue mois/année du téléphone s'ouvre au
+          toucher. `fontSize: 16` sur le champ invisible — en dessous, iOS
+          agrandit la page à l'ouverture de la roue. */}
+      <label
+        className="relative mx-[22px] mt-3 flex min-h-12 cursor-pointer items-center justify-center gap-2"
+        data-atlas="mois-des-retours"
+      >
+        <span className="text-[20px] leading-[1.2]" style={{ fontFamily: font.display }}>
+          {nomDuMois(mois)}
+        </span>
+        <svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true" style={{ color: colors.or }}>
+          <path d="M5 8l5 5 5-5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+        <input
+          type="month"
+          aria-label="Choisir un mois"
+          value={mois}
+          onChange={(e) => {
+            if (e.target.value) setMois(e.target.value);
+          }}
+          className="absolute inset-0 h-full w-full opacity-0"
+          style={{ fontSize: 16 }}
+        />
+      </label>
+
+      {/* **Le mois d'abord, le nom ensuite.** Il arrive sur le mois en cours —
+          ce qu'il vient de faire — et le nom ne sert qu'à trancher dans ce
+          mois-là, quand la journée en a laissé six. */}
+      <div className="relative mx-[22px] mt-2">
         <span
           aria-hidden="true"
           className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2"
@@ -76,32 +120,14 @@ export default function ListeDesRetours({ retours }: { retours: RetourEnListe[] 
         />
       </div>
 
-      {/* **`flex-none` sur la rangée, et ce n'est pas décoratif** : dans une
-          colonne flexible, une rangée qui défile horizontalement se laisse
-          écraser à zéro pixel. Elle répond alors au doigt sans s'afficher nulle
-          part — payé sur la maquette du 8 septembre, vu à la capture. */}
-      {annees.length > 1 && (
-        <div
-          className="mt-2.5 flex flex-none gap-[7px] overflow-x-auto px-[22px]"
-          style={{ scrollbarWidth: "none" }}
-          data-atlas="annees-des-retours"
-        >
-          <Pastille actif={annee === null} onClick={() => setAnnee(null)}>
-            Tout
-          </Pastille>
-          {annees.map((a) => (
-            <Pastille key={a} actif={annee === a} onClick={() => setAnnee(a)}>
-              {a}
-            </Pastille>
-          ))}
-        </div>
-      )}
-
       {groupes.length === 0 ? (
         <p className="mx-[22px] mt-7 text-[13.5px] leading-[1.65]" style={{ color: colors.muted }}>
           {retours.length === 0
             ? "Rien encore. Un retour arrive ici quand un salarié pose « c'est fini » sur sa fiche."
-            : "Aucun retour ne correspond."}
+            : /* **Le mois est NOMMÉ dans le refus.** « Aucun retour ne
+                 correspond » devant une liste vide fait douter du produit ;
+                 avec le mois, il sait quoi toucher pour en sortir. */
+              `Aucun retour en ${nomDuMois(mois).toLowerCase()}.`}
         </p>
       ) : (
         groupes.map((groupe) => (
@@ -119,40 +145,6 @@ export default function ListeDesRetours({ retours }: { retours: RetourEnListe[] 
         ))
       )}
     </div>
-  );
-}
-
-function Pastille({
-  actif,
-  onClick,
-  children,
-}: {
-  actif: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-pressed={actif}
-      // Quarante pixels : la mesure que tout le reste de l'application tient
-      // pour un pouce. Les serrer pour faire tenir une année de plus se paierait
-      // à chaque appui, sur un écran sale.
-      className="h-10 flex-none rounded-full px-[15px] text-[13.5px]"
-      style={
-        actif
-          ? { backgroundColor: colors.plein, color: surPlein, WebkitTapHighlightColor: "transparent" }
-          : {
-              backgroundColor: "transparent",
-              color: colors.inkSoft,
-              boxShadow: `inset 0 0 0 1px ${colors.line}`,
-              WebkitTapHighlightColor: "transparent",
-            }
-      }
-    >
-      {children}
-    </button>
   );
 }
 

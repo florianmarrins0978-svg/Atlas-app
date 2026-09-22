@@ -12,7 +12,7 @@ import {
   compteDesTaches,
   nomCherche,
   rangerLesRetours,
-  anneesDesRetours,
+  moisDuRetour,
   type RetourEnListe,
 } from "../src/lib/retour-intervention";
 
@@ -177,14 +177,42 @@ essai("le client au retour le plus récent passe devant", () => {
   assert.deepEqual(rangerLesRetours(liste).map((g) => g.client), ["Récent", "Ancien"]);
 });
 
-// ── Les années — « il faut pouvoir les garder longtemps » ──────────────
-essai("filtrer sur 2024 ne rend que 2024", () => {
+// ── Le mois — la roue de la fiche de sécurité (22 septembre 2026) ──────
+essai("filtrer sur septembre 2026 ne rend que septembre 2026", () => {
   const liste = [
     retour({ clientNom: "A", poseLe: "2024-10-07T16:15:00.000Z" }),
     retour({ clientNom: "B", poseLe: "2026-09-02T16:40:00.000Z" }),
+    retour({ clientNom: "C", poseLe: "2026-08-28T17:05:00.000Z" }),
   ];
-  const g = rangerLesRetours(liste, { annee: "2024" });
-  assert.deepEqual(g.map((x) => x.client), ["A"]);
+  const g = rangerLesRetours(liste, { mois: "2026-09" });
+  assert.deepEqual(g.map((x) => x.client), ["B"]);
+});
+
+// Le mois qui SÉPARE deux retours du même client : rangés par client, ils se
+// lisaient côte à côte ; la roue doit quand même n'en garder qu'un.
+essai("deux passages chez le même client, un seul dans le mois", () => {
+  const liste = [
+    retour({ clientNom: "Mme Costa", poseLe: "2026-09-02T16:40:00.000Z" }),
+    retour({ clientNom: "Mme Costa", poseLe: "2026-08-28T17:05:00.000Z" }),
+  ];
+  const g = rangerLesRetours(liste, { mois: "2026-08" });
+  assert.equal(g.length, 1);
+  assert.deepEqual(g[0].retours.map((r) => r.poseLe.slice(0, 10)), ["2026-08-28"]);
+});
+
+// Un mois vide est une RÉPONSE, pas une panne : l'écran écrit « Aucun retour
+// en septembre 2026 » et la roue reste là pour en sortir.
+essai("un mois sans retour rend une liste vide, sans casser", () => {
+  const liste = [retour({ clientNom: "A", poseLe: "2026-09-02T16:40:00.000Z" })];
+  assert.deepEqual(rangerLesRetours(liste, { mois: "2026-07" }), []);
+});
+
+// Le fuseau du patron, pas celui de la machine : découpé à la ficelle, un
+// retour de fin de mois change de mois selon qui regarde.
+essai("le mois se lit dans le fuseau du patron", () => {
+  assert.equal(moisDuRetour("2026-09-02T16:40:00.000Z"), "2026-09");
+  // 23 h 30 UTC le 30 septembre, c'est déjà le 1er octobre à Paris.
+  assert.equal(moisDuRetour("2026-09-30T23:30:00.000Z"), "2026-10");
 });
 
 // Aucune fenêtre glissante : un retour de 2024 se retrouve en 2026.
@@ -196,26 +224,13 @@ essai("sans filtre, les vieilles années restent là", () => {
   assert.equal(rangerLesRetours(liste).length, 2);
 });
 
-essai("les années proposées sortent des retours, pas du calendrier", () => {
-  const liste = [
-    retour({ clientNom: "A", poseLe: "2024-10-07T16:15:00.000Z" }),
-    retour({ clientNom: "B", poseLe: "2026-09-02T16:40:00.000Z" }),
-    retour({ clientNom: "C", poseLe: "2026-01-02T09:00:00.000Z" }),
-  ];
-  assert.deepEqual(anneesDesRetours(liste), ["2026", "2024"]);
-});
-
-essai("aucun retour : aucune année à proposer", () => {
-  assert.deepEqual(anneesDesRetours([]), []);
-});
-
-essai("le nom et l'année se cumulent", () => {
+essai("le nom et le mois se cumulent", () => {
   const liste = [
     retour({ clientNom: "Mme Costa", poseLe: "2025-06-12T15:40:00.000Z" }),
     retour({ clientNom: "Mme Costa", poseLe: "2026-08-28T17:05:00.000Z" }),
-    retour({ clientNom: "M. Rialland", poseLe: "2026-09-02T16:40:00.000Z" }),
+    retour({ clientNom: "M. Rialland", poseLe: "2026-08-02T16:40:00.000Z" }),
   ];
-  const g = rangerLesRetours(liste, { client: "costa", annee: "2026" });
+  const g = rangerLesRetours(liste, { client: "costa", mois: "2026-08" });
   assert.equal(g.length, 1);
   assert.equal(g[0].retours.length, 1);
 });

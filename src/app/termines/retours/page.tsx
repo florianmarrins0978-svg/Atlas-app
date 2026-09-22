@@ -1,4 +1,5 @@
 import { colors, font } from "@/lib/design-tokens";
+import { jourIso } from "@/lib/jour";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { listerLesRetours } from "@/server/repositories/retours-intervention";
 import { abonnementDeLEntreprise } from "@/server/repositories/abonnements";
@@ -16,10 +17,11 @@ import ListeDesRetours from "./ListeDesRetours";
  * infos, et en haut mettre un filtre pour que le patron puisse les retrouver
  * facilement. Et il faut pouvoir les garder longtemps. »*
  *
- * **« Longtemps » se lit dans ce qui N'EST PAS ici** : aucun mois, aucune
- * fenêtre de dix-huit mois, aucun `LIMIT` par défaut visible à l'écran. La
- * liste part de tout ce que l'entreprise porte, et c'est le filtre qui réduit —
- * jamais le chargement.
+ * **« Longtemps » se lit dans ce qui N'EST PAS ici** : aucune fenêtre de
+ * dix-huit mois, aucun `LIMIT`. La liste part de tout ce que l'entreprise
+ * porte, et c'est le filtre qui réduit — jamais le chargement. Le mois affiché
+ * (sa demande du 22 septembre 2026, la roue de la fiche de sécurité) se déplace
+ * donc sur du déjà-chargé : remonter à 2024 ne demande rien au serveur.
  *
  * **Elle est fermée au salarié** par la liste blanche : elle vit sous
  * `/termines`, qu'il n'atteint pas (`src/lib/acces-roles.ts`). Elle ne porte
@@ -43,6 +45,10 @@ export default async function PageDesRetours() {
     );
   }
   const retours = await listerLesRetours(ctx);
+  // **Le mois du patron, pas celui de la machine ni celui du navigateur.**
+  // Décidé ici, il est le même au rendu et à l'hydratation — sinon la nuit du
+  // 30 au 1er, le serveur écrirait « Septembre » et le téléphone « Octobre ».
+  const moisCourant = jourIso(new Date()).slice(0, 7);
 
   return (
     <div
@@ -53,7 +59,7 @@ export default async function PageDesRetours() {
         minHeight: "100%",
       }}
     >
-      <ListeDesRetours retours={retours} />
+      <ListeDesRetours retours={retours} moisCourant={moisCourant} />
     </div>
   );
 }
