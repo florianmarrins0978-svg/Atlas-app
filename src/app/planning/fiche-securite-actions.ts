@@ -76,14 +76,28 @@ export async function ouvrirLaFicheAction(chantierId: string): Promise<FicheOuve
   return { fiche, contexte, photos: photos.map((p) => ({ id: p.id, storageKey: p.storageKey })) };
 }
 
+/**
+ * **`rafraichirLesEcrans` : pourquoi un enregistrement peut se taire.**
+ *
+ * L’écran enregistre désormais pendant qu’il écrit, pas seulement au
+ * « Suivant » — sinon sortir vers le décret ou le formulaire MSA en plein
+ * remplissage rend l’étape en cours au vide (22 septembre 2026). Mais
+ * `revalidatePath` fait refaire au routeur les trois écrans qui montrent la
+ * fiche, et le faire toutes les deux secondes pendant qu’il tape, c’est
+ * recharger sous ses doigts pour rien : seul son écran a changé, et il l’a
+ * déjà devant lui. Le bandeau du planning, lui, se rafraîchit au « Suivant »
+ * et au « Retour », quand il quitte pour de bon.
+ *
+ * Une seule fonction écrit la fiche : deux en divergeraient (`CLAUDE.md` §3).
+ */
 export async function enregistrerLaFicheAction(
   chantierId: string,
-  quoi: { contenu: ContenuFiche; etapeVue: number; loiLue: boolean }
+  quoi: { contenu: ContenuFiche; etapeVue: number; loiLue: boolean; rafraichirLesEcrans?: boolean }
 ): Promise<{ ok: true } | Refus> {
   const ctx = await garder(chantierId, "enregistrer la fiche de sécurité");
   const fiche = await enregistrerLaFiche(ctx, chantierId, quoi);
   if (!fiche) return { ok: false, raison: "La fiche n’existe pas encore : ouvrez-la d’abord." };
-  rafraichir(chantierId);
+  if (quoi.rafraichirLesEcrans !== false) rafraichir(chantierId);
   return { ok: true };
 }
 

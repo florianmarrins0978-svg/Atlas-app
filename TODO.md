@@ -9,6 +9,24 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## À REGARDER SUR SON IPHONE — LES DEUX HEURES DE LA FICHE (22 septembre 2026)
+
+Sa demande : *« pour l'h ça serait bien d'avoir deux encarts séparés »*. Le
+cadre des champs est sorti de l'`<input>` pour le poser sur un `<span>`, que
+Safari ne rhabille pas (`FormulaireFicheDeSecurite.tsx`, `Champ`). **Chromium
+ne reproduisait pas le défaut** : la correction n'a donc pas pu être vérifiée
+ici. Une capture de l'écran 1 de la fiche, chez lui, tranche.
+
+## PRÉVENIR QUAND UNE ADRESSE DE LA FICHE MEURT (22 septembre 2026)
+
+`LIENS_DE_LA_LOI.formulaire` pointe un PDF posé sur le site de la MSA
+(`ssa.msa.fr/wp-content/uploads/…`). Le jour où ils le déplacent, le bouton
+rend une erreur et **rien ne nous prévient**. Ce poste ne peut pas interroger
+ces domaines ; un contrôle dans `.github/workflows/` le peut, comme
+`pages.yml` interroge le site publié. Les cinq adresses à surveiller sont dans
+`src/lib/fiche-securite.ts` (`LIENS_DE_LA_LOI`, `DECOUVERTE_FORTUITE`,
+`SOULIGNES`).
+
 ## ⏳ UNE PLANCHE À REGARDER — FICHE 4, LA BRUNISSURE DES FEUILLES DE PEUPLIER (22 septembre 2026)
 
 `appli/fiche-brunissure-des-feuilles-de-peuplier.html`, liée depuis

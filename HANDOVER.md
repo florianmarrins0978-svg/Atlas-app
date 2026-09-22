@@ -27,6 +27,21 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 mettre un fichier en purge. Une nouvelle pièce qui montre des photos du
 chantier doit faire pareil, sinon la purge lui ouvre un trou des mois plus tard.
 
+**Elle s'enregistre pendant qu'il écrit** (22 septembre 2026) : deux secondes
+de silence, plus un envoi quand l'onglet passe en arrière-plan. C'est
+`rafraichirLesEcrans: false` sur `enregistrerLaFicheAction` — sans lui, le
+routeur refait les trois écrans du bandeau toutes les deux secondes sous ses
+doigts. « Suivant » et « Retour », eux, rafraîchissent : c'est là qu'il quitte.
+Pourquoi : l'écran porte des liens qui SORTENT de l'application, et iOS peut
+décharger la page pendant qu'il lit.
+
+**Un cadre de champ ne se pose jamais sur l'`<input>`** (22 septembre 2026).
+Safari habille `input[type="time"]` à sa façon et jette le `box-shadow` : ses
+deux heures se lisaient comme un seul encart blanc, alors que Nom et Prénom —
+le même composant — montraient deux cadres. Le cadre vit donc sur un `<span>`,
+qu'aucun navigateur ne rhabille. **Chromium ne reproduit pas ce défaut** : une
+capture ici ne prouve rien de son iPhone.
+
 ## OÙ VIT UN GESTE DE LA FACTURE — 21 septembre 2026
 
 Deux écrans portent les mêmes chiffres, et ils ne font pas le même métier.

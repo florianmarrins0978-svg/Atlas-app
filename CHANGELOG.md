@@ -8,6 +8,40 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-22
 
+### La fiche de sécurité s'enregistre pendant qu'il écrit, et le GPS dit enfin ce qui a raté
+
+Ses trois remarques du 22 septembre, depuis son iPhone.
+
+**Ce qu'il tape part tout seul.** La fiche n'était écrite qu'au « Suivant » et
+au « Retour ». Or l'écran porte des liens qui SORTENT de l'application — le
+décret, le formulaire MSA, la découverte fortuite de réseau, jebalise — et il
+les ouvre en plein remplissage. Une fois l'application posée sur son écran
+d'accueil, iOS peut décharger la page pendant qu'il lit : l'étape en cours
+repartait vide. Deux secondes de silence et la fiche part, plus un envoi quand
+l'onglet passe en arrière-plan. `rafraichirLesEcrans: false` évite de refaire
+les trois écrans du bandeau toutes les deux secondes sous ses doigts — une
+seule fonction écrit toujours la fiche.
+
+**Le relevé GPS.** *« la position exacte fonctionne pas ».* Quatre défauts dans
+le même bouton : une seule phrase pour les trois causes du navigateur (dont
+deux qu'aucun réglage ne répare) ; la haute précision qui abandonne à quinze
+secondes alors que la position du réseau, elle, répond sous un couvert d'arbres
+ou dans une camionnette ; aucun retour pendant l'attente ; et un « ou
+écrivez-la » qu'aucun champ ne permettait d'exaucer. `refusDuReleveGps` rend une
+phrase par cause, le relevé réessaie une fois en précision normale, le bouton
+dit « Relevé en cours… », et un champ apparaît dès qu'un relevé échoue.
+
+**Les deux heures ne faisaient qu'un encart.** Sa demande : *« pour l'h ça
+serait bien d'avoir deux encarts séparés »*. Chromium les dessine déjà
+séparées : le défaut est propre à Safari, qui habille `input[type="time"]` à
+sa façon et jette le cadre qu'on pose dessus — c'est pourquoi Nom et Prénom,
+deux lignes plus bas et **le même composant**, montraient bien deux cadres. Et
+nos deux fonds sont trop proches (`card` #faf9f5 sur `cream` #f5f3ee) pour que
+l'œil retrouve la séparation sans ce trait. Le cadre vit désormais sur un
+`<span>`, qu'aucun navigateur ne rhabille : il tiendra aussi pour le prochain
+`type` que le téléphone décidera d'habiller. **Non reproduit ici** — à regarder
+sur son iPhone.
+
 ### La fiche de sécurité du décret 2021-1833 est dans l'application
 
 Sur la fiche du jour, un bandeau « Fiche de sécurité » au-dessus de « Travaux
