@@ -23,6 +23,24 @@ servait qu'à ce lien part avec lui : `?loi=1`, `loiDemandee`, et le bouton
 « Retour » de l'écran de la loi, qu'on n'atteint plus qu'une fois la fiche
 jamais lue.
 
+### Le nom et le prénom se reprennent d'une fiche de sécurité à l'autre
+
+Sa plainte : *« la case nom et prénom ne s'enregistre pas d'une fiche à
+l'autre ! »*. Deux racines. Le nom du signataire ne vivait que dans l'état de
+l'écran : jamais enregistré pendant la frappe, jamais gardé, et la fiche
+suivante repartait du nom du compte (« Compte de demo »). Et la mémoire des
+fiches ne gardait ni le nom, ni le prénom, ni le téléphone du responsable sur
+place.
+
+Le signataire entre dans `ContenuFiche` (enregistré avec le reste, repris par
+`MemoireDesFiches`) ; l'état local de l'écran et le paramètre séparé de
+`signerLaFicheAction` disparaissent. La colonne `signataire` garde le nom figé
+à la signature, celui du PDF. Aucune migration : le contenu est un jsonb, et
+un contenu ancien reçoit un signataire vide, que l'écran remplace par le nom du
+compte comme avant. Éprouvé : `test-fiche-securite.ts` et
+`test-fiche-securite-e2e.ts` (« le nom signé est repris sur la fiche
+suivante »), vus rouges sur l'ancien code.
+
 ### Chaque photo à un seul endroit : celui où elle a été posée
 
 Une photo posée sur la fiche de sécurité y reste — elle ne passe plus dans

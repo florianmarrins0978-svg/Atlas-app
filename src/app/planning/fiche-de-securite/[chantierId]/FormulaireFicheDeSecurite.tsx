@@ -90,7 +90,6 @@ export default function FormulaireFicheDeSecurite({
   // et la place dans cette liste (`VisionneusePhoto`).
   const [rangOuvert, setRangOuvert] = useState<number | null>(null);
   const [trace, setTrace] = useState<Trace>([]);
-  const [signataire, setSignataire] = useState(ouverte.fiche.signataire ?? `${contexte.patron.prenom ?? ""} ${contexte.patron.nom ?? ""}`.trim());
   const [occupe, setOccupe] = useState(false);
   const [refus, setRefus] = useState<string | null>(null);
   const [enCours, setEnCours] = useState<Famille | null>(null);
@@ -177,7 +176,7 @@ export default function FormulaireFicheDeSecurite({
     if (!png) return;
     setOccupe(true);
     setRefus(null);
-    const r = await signerLaFicheAction(chantierId, { contenu, signaturePng: png, points, signataire });
+    const r = await signerLaFicheAction(chantierId, { contenu, signaturePng: png, points });
     setOccupe(false);
     if (!r.ok) {
       setRefus(r.raison);
@@ -655,7 +654,7 @@ export default function FormulaireFicheDeSecurite({
             )}
           </Bloc>
           <Bloc titre="Enregistrement" explication="Le chef d’entreprise signe. Sa signature engage sa responsabilité. La note de la feuille sera imprimée au bas du PDF : présentée aux travailleurs, disponible sur le chantier, transmise s’il y a un plan de prévention, conservée deux ans.">
-            <Champ nom="Nom et prénom du chef d’entreprise (ou de son représentant)" value={signataire} onChange={(e) => setSignataire(e.target.value)} />
+            <Champ nom="Nom et prénom du chef d’entreprise (ou de son représentant)" {...champ("signataire")} />
             <Fixe nom="Date">{dateLongue(new Date())}</Fixe>
             <div className="mt-2.5">
               <Signature trace={trace} onTrace={setTrace} />
@@ -759,9 +758,13 @@ function Groupe({ contenu, setContenu, enCours, setEnCours, famille, genre, sous
 // ─── ce qu'Atlas sait déjà, posé sur une fiche neuve ; jamais sur une fiche commencée ───
 function preremplir(ouverte: FicheOuverte): ContenuFiche {
   const { fiche, contexte } = ouverte;
-  if (fiche.etapeVue > 0 || fiche.signeeLe) return fiche.contenu;
+  // Le signataire se propose même sur une fiche commencée : celles d'avant le
+  // 22 septembre 2026 ne l'ont pas dans leur contenu, et l'écran le proposait.
+  const signataire = fiche.contenu.signataire || `${contexte.patron.prenom ?? ""} ${contexte.patron.nom ?? ""}`.trim();
+  if (fiche.etapeVue > 0 || fiche.signeeLe) return { ...fiche.contenu, signataire };
   return {
     ...fiche.contenu,
+    signataire,
     telephoneIncident: fiche.contenu.telephoneIncident || contexte.entreprise.telephone || "",
     responsableNom: fiche.contenu.responsableNom || contexte.patron.nom || "",
     responsablePrenom: fiche.contenu.responsablePrenom || contexte.patron.prenom || "",

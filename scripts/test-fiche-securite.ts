@@ -127,6 +127,18 @@ async function main() {
     assert.deepEqual(appliquerLaMemoire(contenuVide(), memoireVide()), contenuVide(), "sans mémoire, la fiche est vide");
   });
 
+  await cas("le nom et le prénom sont repris d'une fiche à l'autre : le signataire et le responsable sur place", () => {
+    // *« La case nom et prénom ne s'enregistre pas d'une fiche à l'autre ! »*
+    // (22 septembre 2026). Le signataire ne vivait que dans l'état de l'écran,
+    // jamais dans le contenu : ni enregistré en cours de route, ni gardé.
+    const c = { ...contenuVide(), signataire: "Martins Florian", responsableNom: "Martins", responsablePrenom: "Florian", responsableTel: "06 79 98 45 14" };
+    const suivante = appliquerLaMemoire(contenuVide(), memoireDepuis(c));
+    assert.equal(suivante.signataire, "Martins Florian");
+    assert.equal(suivante.responsableNom, "Martins");
+    assert.equal(suivante.responsablePrenom, "Florian");
+    assert.equal(suivante.responsableTel, "06 79 98 45 14");
+  });
+
   await cas("deux ans à compter de la signature, et le bandeau dit où on en est", () => {
     const signee = new Date(2026, 8, 18, 8, 5);
     const garde = gardeeJusquAu(signee);

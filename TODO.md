@@ -9,6 +9,16 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## 🔧 `test-fiche-securite-e2e` : SON PREMIER CAS LIT L'ORDRE AVANT QUE « TRAVAUX À FAIRE » SOIT MONTÉ (22 septembre 2026)
+
+Relevé en jouant la suite seule, trois fois : rouge deux fois, vert une.
+« le bandeau est sur la fiche du jour… » attend « à remplir » puis lit l'ordre
+des blocs tout de suite ; or `PlanningClient.tsx` affiche « Lecture du
+devis… » tant que la feuille n'est pas lue, et `travaux-a-faire` n'existe pas
+encore. Le cas rend alors `['fiche-de-securite']`. Défaut du CONTRÔLE, pas du
+produit : attendre `[data-atlas='travaux-a-faire']` avant de mesurer. Hors du
+lot « nom et prénom repris », laissé tel quel.
+
 ## LA VÉRIFICATION DU SITE EN LIGNE TOMBE SUR DES 503 PASSAGERS (22 septembre 2026)
 
 `pages.yml`, étape « Vérifier que chaque écran est servi ». Elle interroge
