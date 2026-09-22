@@ -274,15 +274,21 @@ export default function FicheChantierClient({
       data-atlas="fiche-chantier"
     >
       <section className="mx-[26px] mt-[20px]">
-        <p className="text-[13px]" style={{ color: colors.muted }}>
+        {/* Le jour en noir gras, sa demande du 22 septembre 2026 : c'est ce
+            qu'il vérifie en ouvrant la fiche. */}
+        <p className="text-[13px] font-semibold" style={{ color: colors.ink }}>
           {jourLisible(passage.jour)}
         </p>
 
         {/* ─── LE PONT VERS LE CLIENT — arrangement C ─────────────────────────
-            « Une ligne discrète, touchable à tout moment. » Elle est en HAUT et
-            non au bas de la fiche : c'est la première chose qu'il sait en
-            arrivant chez quelqu'un, et la dernière qu'on veut lui réclamer une
-            fois qu'il a tout coché. */}
+            En HAUT et non au bas de la fiche : c'est la première chose qu'il
+            sait en arrivant chez quelqu'un, et la dernière qu'on veut lui
+            réclamer une fois qu'il a tout coché.
+
+            **« + Ajouter un client », en gros, doré, centré** — sa demande du
+            22 septembre 2026, qui remplace « + C'est pour quel client ? » et
+            retire la phrase grise « Facultatif… » dessous. L'or est celui de
+            « + Ajouter une prestation » (`colors.or`). */}
         {clientId ? (
           <>
             <div className="mt-[8px] flex items-center gap-[10px]">
@@ -318,14 +324,10 @@ export default function FicheChantierClient({
               type="button"
               data-atlas="pont-client"
               onClick={() => setChoixOuvert(true)}
-              className="mt-[8px] text-left"
+              className="mt-[14px] block min-h-[44px] w-full text-center text-[20px]"
+              style={{ color: colors.or }}
             >
-              <span className="text-[15px]" style={{ color: colors.rust }}>
-                + C&apos;est pour quel client ?
-              </span>
-              <span className="mt-[2px] block text-[11.5px]" style={{ color: colors.muted }}>
-                Facultatif — vous pourrez le dire à la fin.
-              </span>
+              + Ajouter un client
             </button>
           )
         )}

@@ -25,6 +25,10 @@ filtre de date, qui ne sont pas encore sur `main`.
 Et deux retouches du même soir : la phrase « Ceux-ci sont partis chez vos
 clients… » quitte « Composer ma fiche », et sa carte prend un liseré d'or.
 
+Sur la fiche de chantier, « + C'est pour quel client ? » devient « + Ajouter un
+client », en gros, doré, centré ; la phrase grise « Facultatif… » dessous est
+retirée, et le jour au-dessus passe en noir gras.
+
 ### Un seul champ de recherche, souligné, partout où l'on cherche
 
 Sa demande, capture de shapersclub.com à l'appui puis planche regardée
