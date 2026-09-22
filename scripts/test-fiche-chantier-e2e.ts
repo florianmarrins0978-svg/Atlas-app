@@ -465,11 +465,12 @@ async function main() {
     await anonyme.close();
   });
 
-  await test("Le passage SUIVANT chez lui s'ouvre entier, puis se replie", async () => {
-    // **Le cœur de l'arrangement C, et il ne se voit qu'au SECOND passage.**
-    // Au premier, ce client n'a pas d'historique : la fiche garde tout, et une
-    // capture prise là ne montre aucun repli. C'est exactement le genre de
-    // contrôle qui reste vert sans rien prouver (`CLAUDE.md` §5).
+  await test("Le passage SUIVANT chez lui garde toutes ses lignes, et recoche le dernier", async () => {
+    // **Sa règle du 22 septembre 2026**, qui remplace le repli de l'arrangement
+    // C : *« ce qui a déjà été coché par le passé se recoche automatiquement,
+    // mais les 20 points qui composent ma fiche doivent être présents ! »*
+    // (`ARCHITECTURE.md` §408). Elle ne se voit qu'au SECOND passage : au
+    // premier, ce client n'a pas de rapport, et rien ne se coche.
     // `networkidle` : le bouton est un composant client, et un appui posé avant
     // l'hydratation ne déclenche rien — l'écran reste sur la liste sans un mot.
     await page.goto(`${BASE}/paysage/fiche`, { waitUntil: "networkidle" });
@@ -477,33 +478,22 @@ async function main() {
     await page.waitForURL(/\/paysage\/fiche\/[0-9a-f-]{36}/, { timeout: 30_000 });
 
     const cases = page.locator('[data-atlas="fiche-chantier"] button[data-atlas="prestation"]');
+    const cochees = page.locator('[data-atlas="fiche-chantier"] button[data-atlas="prestation"][aria-pressed="true"]');
     const entier = await cases.count();
     assert.ok(entier > 5, `la fiche ne s'ouvre pas sur le modèle entier (${entier} lignes)`);
+    assert.equal(await cochees.count(), 0, "la fiche s'ouvre avec des coches avant que le client soit nommé");
 
     await page.locator('[data-atlas="pont-client"]').click();
     await page.locator('[data-atlas="choix-du-client"]').getByText(CLIENT).click();
     await page.waitForTimeout(1500);
-    await capturer(page, "10-second-passage-replie");
+    await capturer(page, "10-second-passage-recoche");
 
-    const replie = await cases.count();
-    assert.ok(
-      replie < entier,
-      `la fiche ne s'est pas repliée sur ce client : ${replie} lignes sur ${entier}`
-    );
-    // Les trois prestations du premier rapport, et elles seules.
+    assert.equal(await cases.count(), entier, "nommer le client a retiré des lignes de la fiche");
+    // Les trois prestations du premier rapport, et elles seules, reviennent cochées.
+    assert.equal(await cochees.count(), 3, "ce ne sont pas les coches du dernier rapport qui reviennent");
     const texte = await page.locator('[data-atlas="fiche-chantier"]').innerText();
-    // **Le repli se DIT, et se dit comme un constat.** Une fiche qui perd
-    // dix-sept lignes sans un mot passe pour une fiche amputée ; la même chose
-    // écrite en rouge sous le bouton passe pour une panne.
-    assert.match(texte, /repliée sur ce que/i, "le repli ne se dit nulle part");
-    assert.match(texte, /Tonte et ébarbage/);
-    assert.doesNotMatch(texte, /Scarification/, "une ligne jamais faite chez lui est revenue");
-
-    // Et elles reviennent DÉCOCHÉES : c'est un nouveau passage, pas une copie.
-    const cochees = await page
-      .locator('[data-atlas="fiche-chantier"] button[data-atlas="prestation"][aria-pressed="true"]')
-      .count();
-    assert.equal(cochees, 0, "le passage suivant arrive avec des coches déjà posées");
+    // **Le geste se DIT, en ses mots à lui.**
+    assert.match(texte, /3 prestations cochées, celles du dernier chantier\./, "la phrase n'est pas la sienne");
 
     await page.goBack();
   });
