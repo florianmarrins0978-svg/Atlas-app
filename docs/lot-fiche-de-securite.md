@@ -102,8 +102,28 @@ espace** après la fusion.
 
 ## 5. Les chiffres
 
-À remplir à la fin de la batterie (§ ci-dessous, complété au moment de la
-fusion).
+Batterie entière jouée dans la nuit du 22 septembre 2026, dans le dossier du
+lot (atelier 4), sur le code tel que poussé :
+
+| Étape | Résultat |
+|---|---|
+| Types, lint, mémoire du dépôt, construction | verts |
+| Suites base | 397 vertes sur 405, 8 non mesurables sur ce PC (outillage Windows) |
+| Suites navigateur | 160 vertes sur 165, 1 non mesurable, 4 rouges |
+| Connexion derrière un proxy | verte |
+
+Les quatre rouges, rejoués seuls puis sur la base de `main` sans ce lot
+(`verifier-rouge-prealable`) : `papier-facture` vert seul (un appui lu avant le
+rendu, en charge) ; `devis-client`, `ligne-du-client`, `recherche-client`
+rouges de la même façon des deux côtés — ils ne viennent pas de ce lot, et
+sont connus sur ce PC. Aucune régression nouvelle.
+
+Après la fusion de `main` (le refus de retirer un chantier facturé, la
+planche de la fiche 4), la rencontre a été rejouée : types, lint, atelier,
+398 suites base sur 406, la coupure des sessions, les écrans. Même sort.
+
+Les trois suites du lot — `test-fiche-securite`, `test-fiche-securite-db`,
+`test-fiche-securite-e2e` — sont vertes, en batterie et seules.
 
 ## 6. Ce qui reste ouvert
 
