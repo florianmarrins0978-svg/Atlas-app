@@ -16,6 +16,13 @@ et en noir. Le petit sous-titre gris est supprimé plutôt que doublé ; le bout
 du bandeau garde son libellé. `test-fiche-securite-e2e.ts` attend désormais ce
 titre (§5 bis : le contrôle suit l'écran qu'il a demandé).
 
+Puis, le même soir : le lien « Ce que demande la loi » sous « Remplir la
+fiche » est retiré — *« pas besoin d'avoir deux portes pour le même
+endroit »*. Chaque fiche neuve ouvre déjà le décret en premier. Ce qui ne
+servait qu'à ce lien part avec lui : `?loi=1`, `loiDemandee`, et le bouton
+« Retour » de l'écran de la loi, qu'on n'atteint plus qu'une fois la fiche
+jamais lue.
+
 ### Chaque photo à un seul endroit : celui où elle a été posée
 
 Une photo posée sur la fiche de sécurité y reste — elle ne passe plus dans

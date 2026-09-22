@@ -12,16 +12,14 @@ export const metadata = { title: "Fiche de sécurité — Atlas" };
 /**
  * LA FICHE DE SÉCURITÉ D'UN CHANTIER — sous /planning, ouverte à tous ceux qui
  * voient le planning : la loi veut qu'elle soit présentée aux travailleurs, et
- * Paysage leur est fermé. `?loi=1` ouvre d'abord « ce que demande la loi ».
+ * Paysage leur est fermé.
  */
 export default async function FicheDeSecuritePage({
   params,
-  searchParams,
 }: {
   params: Promise<{ chantierId: string }>;
-  searchParams: Promise<{ loi?: string }>;
 }) {
-  const [{ chantierId }, { loi }] = await Promise.all([params, searchParams]);
+  const { chantierId } = await params;
   const ouverte = await ouvrirLaFicheAction(chantierId);
   const ctx = await getCurrentCtx();
   const role = await getRole(ctx);
@@ -34,5 +32,5 @@ export default async function FicheDeSecuritePage({
       </div>
     );
   }
-  return <FormulaireFicheDeSecurite chantierId={chantierId} ouverte={ouverte} paysageOuvert={paysageOuvert} loiDemandee={loi === "1"} />;
+  return <FormulaireFicheDeSecurite chantierId={chantierId} ouverte={ouverte} paysageOuvert={paysageOuvert} />;
 }

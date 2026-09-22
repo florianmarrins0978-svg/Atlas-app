@@ -69,20 +69,17 @@ export default function FormulaireFicheDeSecurite({
   chantierId,
   ouverte,
   paysageOuvert,
-  loiDemandee,
 }: {
   chantierId: string;
   ouverte: FicheOuverte;
   paysageOuvert: boolean;
-  loiDemandee: boolean;
 }) {
   const router = useRouter();
   const { contexte } = ouverte;
   const [contenu, setContenu] = useState<ContenuFiche>(() => preremplir(ouverte));
-  const [loiLue, setLoiLue] = useState(ouverte.fiche.loiLue);
   const [etapeVue, setEtapeVue] = useState(ouverte.fiche.etapeVue);
   const [etape, setEtape] = useState(Math.min(Math.max(ouverte.fiche.etapeVue + 1, 1), NOMBRE_D_ETAPES));
-  const [ecran, setEcran] = useState<Ecran>(loiDemandee || !ouverte.fiche.loiLue ? "loi" : ouverte.fiche.signeeLe ? "signee" : "fiche");
+  const [ecran, setEcran] = useState<Ecran>(!ouverte.fiche.loiLue ? "loi" : ouverte.fiche.signeeLe ? "signee" : "fiche");
   const [signeeLe, setSigneeLe] = useState<Date | null>(ouverte.fiche.signeeLe);
   const [transmise, setTransmise] = useState(ouverte.fiche.transmiseLe !== null);
   const [photos, setPhotos] = useState(ouverte.photos);
@@ -260,7 +257,7 @@ export default function FormulaireFicheDeSecurite({
   // ══════════════════ CE QUE DEMANDE LA LOI — à la première ouverture ══════════════════
   if (ecran === "loi") {
     return (
-      <Cadre pied={<Vert onClick={() => { if (!loiLue) { setLoiLue(true); void enregistrer(etapeVue); } setEcran(signeeLe ? "signee" : "fiche"); }}>{loiLue ? "Retour" : "Compris, je remplis"}</Vert>}>
+      <Cadre pied={<Vert onClick={() => { void enregistrer(etapeVue); setEcran(signeeLe ? "signee" : "fiche"); }}>Compris, je remplis</Vert>}>
         <h2 className="m-0 mb-3.5 text-[24px] leading-[1.15]" style={{ fontFamily: font.display }}>Décret 2021-1833, en vigueur depuis le 1er mars 2022</h2>
         <Loi>Avant un chantier d’élagage ou d’abattage, le chef d’entreprise remplit une fiche d’intervention, la signe, la montre à son équipe, la garde sur le chantier, la transmet à l’entreprise qui l’a fait venir quand il y a un plan de prévention, et la conserve deux ans. Elle doit dire :</Loi>
         <ol className="m-0 mt-2.5 list-none p-0">
