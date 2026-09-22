@@ -17,25 +17,50 @@ export default function FiltreDeDate({ periode, choisir }: { periode: string; ch
   const unJour = periode.length === 10;
   return (
     <div className="mx-[22px] mt-3 flex items-center justify-center gap-1">
-      <label className="relative flex min-h-12 cursor-pointer items-center justify-center gap-2" data-atlas="periode-choisie">
-        <span className="text-[20px] leading-[1.2]" style={{ fontFamily: font.display }}>{titreDeLaPeriode(periode)}</span>
-        <svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true" style={{ color: colors.or }}><path d="M5 8l5 5 5-5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
-        <input
-          type="date"
-          aria-label="Choisir un jour"
-          value={jourDeLaRoue(periode)}
-          onChange={(e) => {
-            if (e.target.value) choisir(e.target.value);
-          }}
-          className="absolute inset-0 h-full w-full opacity-0"
-          style={{ fontSize: 16 }}
-        />
-      </label>
+      <TitreAvecRoue titre={titreDeLaPeriode(periode)} jour={jourDeLaRoue(periode)} choisir={choisir} dataAtlas="periode-choisie" />
       {unJour && (
         <button type="button" onClick={() => choisir(periode.slice(0, 7))} aria-label="Tout le mois" data-atlas="tout-le-mois" className="flex h-12 w-11 items-center justify-center" style={{ color: colors.muted, fontSize: 17, lineHeight: 1 }}>
           ✕
         </button>
       )}
     </div>
+  );
+}
+
+/**
+ * UNE DATE ÉCRITE EN TITRE, qui ouvre la roue du téléphone au toucher.
+ *
+ * Sortie du filtre le 22 septembre 2026, quand le jour du passage de la fiche
+ * de chantier a pris la même typographie (*« met la même typographie que
+ * septembre 2026 mais rajoute le jour »*) : deux copies du dessin finiraient
+ * par ne plus se ressembler.
+ */
+export function TitreAvecRoue({
+  titre,
+  jour,
+  choisir,
+  dataAtlas,
+}: {
+  titre: string;
+  /** Le jour `AAAA-MM-JJ` sur lequel la roue s'ouvre. */
+  jour: string;
+  choisir: (jour: string) => void;
+  dataAtlas: string;
+}) {
+  return (
+    <label className="relative flex min-h-12 cursor-pointer items-center justify-center gap-2" data-atlas={dataAtlas}>
+      <span className="text-[20px] leading-[1.2]" style={{ fontFamily: font.display }}>{titre}</span>
+      <svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true" style={{ color: colors.or }}><path d="M5 8l5 5 5-5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
+      <input
+        type="date"
+        aria-label="Choisir un jour"
+        value={jour}
+        onChange={(e) => {
+          if (e.target.value) choisir(e.target.value);
+        }}
+        className="absolute inset-0 h-full w-full opacity-0"
+        style={{ fontSize: 16 }}
+      />
+    </label>
   );
 }

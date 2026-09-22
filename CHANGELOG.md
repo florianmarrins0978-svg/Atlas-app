@@ -29,6 +29,11 @@ Sur la fiche de chantier, « + C'est pour quel client ? » devient « + Ajouter 
 client », en gros, doré, centré ; la phrase grise « Facultatif… » dessous est
 retirée, et le jour au-dessus passe en noir gras.
 
+Le jour du passage, sur l'écran d'ouverture, s'écrit comme « Septembre 2026 »,
+le nom du jour en plus : « Mardi 22 septembre 2026 » (`jourEnTitre`,
+`scripts/test-jour-en-titre.ts`). Le titre et sa roue sont sortis du filtre de
+date (`TitreAvecRoue`) : un seul dessin pour les deux.
+
 ### Un seul champ de recherche, souligné, partout où l'on cherche
 
 Sa demande, capture de shapersclub.com à l'appui puis planche regardée
