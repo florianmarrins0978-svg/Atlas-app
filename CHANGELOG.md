@@ -18,6 +18,25 @@ fiche par chantier, gardée deux ans, jamais purgée ; ses photos non plus. Ce
 qui est coché et écrit revient sur la fiche suivante — son choix — et l'écran
 de la loi le dit. Rien n'est coché par l'application. `docs/lot-fiche-de-securite.md`.
 
+### Une base commune aux planches de maladies, et la fiche du chêne enfin montrée
+
+Sa demande, la planche du peuplier retenue : « garde cette planche, elle est
+finie, avance sur les autres en gardant la même base ». Le style et le rendu
+vivent désormais dans `appli/fiche-maladie.css` et `appli/fiche-maladie.js`,
+une seule fois pour toutes les planches. Ce qu'il corrige sur une fiche les
+corrige toutes, et le peuplier reposé sur cette base rend le même écran au
+pixel près.
+
+Puis sa remarque : « l'anthracnose du chêne n'a pas été faite ». Elle l'avait
+été le 20 août, mais aucune planche ne l'avait jamais montrée, donc elle
+n'existait pas pour lui. `appli/fiche-anthracnose-du-chene-et-du-hetre.html`
+la rend dans la forme arrêtée ce soir-là, avec une photo qu'elle n'avait pas.
+
+Deux choses que sa page dit et que le peuplier ne disait pas : elle ne porte
+aucune note de gravité, et elle exige un laboratoire pour confirmer. Les deux
+s'affichent, et la base a dû être corrigée pour cela : le nom de la photo était
+écrit en dur, et l'exigence de laboratoire n'était rendue nulle part.
+
 ### La fiche 4 du diagnostic végétal dessinée avant d'être codée — et la licence d'Ephytia lue
 
 Sa demande : continuer les fiches de maladies dans l'ordre d'Ephytia après
