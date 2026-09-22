@@ -8,6 +8,23 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-22
 
+### La flèche retour de la fiche client garde ce qu'il a tapé
+
+*« Je crée un devis, je remplis la fiche client, je fais retour, mais elle
+n'apparaît plus dans mes clients en cours !! »* Depuis le 17 septembre, seul
+« Je rédige à la main » enregistrait la fiche client : la flèche retour jetait
+la saisie. Dans la feuille « Créer un devis », aucun chantier ne naissait ; sur
+la fiche rouverte depuis un devis, le chantier restait « Chantier du … », sans
+son client (reproduit sur une version bâtie, vérifié en base).
+
+La flèche enregistre désormais ce qui a changé depuis l'ouverture, puis sort.
+Rien de tapé : elle sort comme avant, sans créer de chantier vide. Les trois
+sorties (devis, facture, retour) passent par une seule écriture,
+`enregistrerLaSaisie` ; `enregistrerSurLeChantier` disparaît. La règle :
+`src/lib/saisie-fiche-client.ts`. Suites : `test-saisie-fiche-client.ts`,
+`test-fiche-client-gardee-au-retour-e2e.ts` (vue rouge avant, verte après).
+`ARCHITECTURE.md` §407.
+
 ### Chaque photo à un seul endroit : celui où elle a été posée
 
 Une photo posée sur la fiche de sécurité y reste — elle ne passe plus dans

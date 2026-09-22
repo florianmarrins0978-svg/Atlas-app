@@ -33,6 +33,7 @@ import AnneauNoteVocale from "../[id]/AnneauNoteVocale";
 import DevisDepuisDictee from "../[id]/DevisDepuisDictee";
 import type { Civilite } from "@/lib/civilite";
 import { espacerNumero, numeroEnregistre } from "@/lib/numero-telephone";
+import { saisieAEnregistrer } from "@/lib/saisie-fiche-client";
 
 // Intégration réelle : la création passe désormais par une Server Action
 // (creerChantierAction), qui persiste le chantier (et le client s'il est
@@ -292,7 +293,9 @@ export default function FormulaireNouveauChantier({
   // **Quel bouton travaille**, et pas seulement « ça travaille ». Les deux
   // capsules sont identiques ; sans cela, « Création… » s'afficherait sur celle
   // qu'il n'a pas touchée, et il croirait s'être trompé de geste.
-  const [enCoursVers, setEnCoursVers] = useState<Destination | null>(null);
+  // `retour` : la flèche enregistre ce qui est saisi avant de sortir
+  // (`sortirEnEnregistrant`), et aucun second geste ne doit partir pendant ce temps.
+  const [enCoursVers, setEnCoursVers] = useState<Destination | "retour" | null>(null);
   const enCours = enCoursVers !== null;
   const [erreur, setErreur] = useState<string | null>(null);
 
@@ -559,54 +562,154 @@ export default function FormulaireNouveauChantier({
   }
 
   /**
-   * Reporte la saisie sur un chantier déjà créé par un geste de l'écran.
+   * ENREGISTRE ce qui est saisi, et rend le chantier qui le porte.
    *
-   * **Le cas est courant, pas théorique :** il dicte d'abord — le chantier
-   * naît alors avec un nom vide —, puis il tape le nom du client avant de
-   * toucher le bouton. Sans ce report, tout ce qui a été saisi APRÈS le premier
-   * geste serait perdu, en silence.
+   * **Une seule écriture pour les trois sorties** — « Je rédige à la main »,
+   * « Facturer », et la FLÈCHE DE RETOUR depuis le 22 septembre 2026. Sa
+   * remarque ce soir-là : *« je crée un devis, je remplis la fiche client, je
+   * fais retour, mais elle n'apparaît plus dans mes clients en cours !! »* La
+   * flèche jetait ce qu'il venait de taper : elle passe désormais par ici, et
+   * trois chemins d'écriture auraient divergé au premier champ ajouté
+   * (`CLAUDE.md` §3).
+   *
+   * **Trois cas, une seule question — le chantier existe-t-il déjà ?**
+   *
+   * | le chantier | ce qu'on fait |
+   * |---|---|
+   * | rouvert (`reprise`) | on enregistre dessus : l'écran ne crée jamais un second chantier |
+   * | né d'une photo ou d'une dictée de cet écran | on reporte la saisie dessus — il a pu taper le nom APRÈS avoir dicté, et ce serait perdu en silence |
+   * | pas encore | on le crée, avec ce qui est saisi |
+   *
+   * Lu dans la référence `chantierDeCetEcran`, pas dans l'état : une photo
+   * encore en route a déjà lancé la création, et l'état ne le sait pas encore.
+   *
+   * **Un refus se rend en valeur**, jamais en exception avalée (`AGENTS.md`) :
+   * celui du serveur arrive tel quel, en toutes lettres.
    */
-  async function enregistrerSurLeChantier(id: string): Promise<string> {
-    const r = await reprendreChantierAction(id, {
+  async function enregistrerLaSaisie(): Promise<{ ok: true; id: string } | { ok: false; raison: string }> {
+    try {
+      const existant = reprise?.id ?? (chantierDeCetEcran.current ? await chantierDeCetEcran.current : null);
+      if (existant) {
+        const r = await reprendreChantierAction(existant, {
+          nomClient,
+          civilite: civilite ?? undefined,
+          // Espacé à l'écran, en chiffres en base — voir `numeroEnregistre`.
+          telephone: numeroEnregistre(telephone),
+          email,
+          canal: canal ?? undefined,
+          adresseChantier,
+          adresseClient,
+        });
+        if (!r.ok) return r;
+      }
+      const id = existant ?? (await assurerChantier());
+
+      // **Les photos cochées rejoignent le dossier À L'ENREGISTREMENT**, pas au
+      // moment où il les touche. Recopier à la volée poserait des fichiers sur
+      // un chantier qu'il peut encore abandonner — et décocher devrait alors
+      // les supprimer, geste que rien ne demande.
+      //
+      // **Une reprise qui échoue ne fait PAS échouer le chantier.** Ce qu'il a
+      // saisi est enregistré ; des photos de rappel qui manquent se recochent,
+      // un chantier perdu se retape.
+      if (photosReprises.size > 0) {
+        const r = await reprendreLesPhotosAction(id, [...photosReprises]);
+        if (!r.ok) setErreur(r.raison);
+      }
+      return { ok: true, id };
+    } catch (panne) {
+      // **Journalisée avant d'être dite** : le message d'une panne imprévue
+      // n'atteint jamais l'écran (`AGENTS.md`), et un « réessayez » que
+      // personne ne sait expliquer coûte deux fois.
+      console.error("[fiche client] saisie non enregistrée", panne);
+      return {
+        ok: false,
+        raison: reprise
+          ? "Impossible d'enregistrer pour l'instant. Réessayez."
+          : "Impossible de créer le chantier pour l'instant. Réessayez.",
+      };
+    }
+  }
+
+  /**
+   * Y a-t-il quelque chose à enregistrer avant de sortir par la flèche ?
+   *
+   * La règle vit dans `saisie-fiche-client.ts` : l'écart avec ce que l'écran
+   * portait en s'ouvrant, jamais « un champ est rempli ».
+   */
+  const aEnregistrerEnSortant = saisieAEnregistrer(
+    {
+      nomClient: depart?.nomClient ?? "",
+      civilite: depart?.civilite ?? null,
+      telephone: depart?.telephone ?? "",
+      email: depart?.email ?? "",
+      canal: depart?.canal ?? null,
+      adresseChantier: reprise?.adresseChantier ?? "",
+      adresseClient: depart?.adresseClient ?? "",
+      photosCochees: 0,
+    },
+    {
       nomClient,
-      civilite: civilite ?? undefined,
-      telephone: numeroEnregistre(telephone),
+      civilite,
+      telephone,
       email,
-      canal: canal ?? undefined,
+      canal: canalChoisi,
       adresseChantier,
       adresseClient,
-    });
-    if (!r.ok) throw new Error(r.raison);
-    return id;
+      photosCochees: photosReprises.size,
+    }
+  );
+
+  /**
+   * LA FLÈCHE DE RETOUR ENREGISTRE AVANT DE SORTIR — 22 septembre 2026.
+   *
+   * Sans saisie, elle sort tout de suite, comme avant : une feuille ouverte par
+   * erreur ne laisse aucun chantier vide derrière elle. Avec une saisie, elle
+   * l'enregistre, puis sort ; un refus la retient ici, dit en toutes lettres —
+   * sortir quand même ferait perdre la saisie, c'est-à-dire le défaut même.
+   */
+  async function sortirEnEnregistrant(sortir: () => void) {
+    if (enCours) return;
+    if (!aEnregistrerEnSortant) {
+      sortir();
+      return;
+    }
+    setEnCoursVers("retour");
+    setErreur(null);
+    const r = await enregistrerLaSaisie();
+    if (!r.ok) {
+      setErreur(r.raison);
+      setEnCoursVers(null);
+      return;
+    }
+    sortir();
   }
+
+  /** Où mène la flèche EN PAGE — en feuille, elle referme (`onFermer`). */
+  const sortieDeLaPage = pourLeDevis
+    ? retourDesCoordonnees(reprise?.id ?? "", reprise?.provenance ?? null)
+    : "/termines";
 
   async function creerPuisAller(vers: Destination) {
     if (enCours) return;
     setEnCoursVers(vers);
     setErreur(null);
 
+    const enregistre = await enregistrerLaSaisie();
+    if (!enregistre.ok) {
+      // Le refus se dit en toutes lettres, jamais avalé en silence : le
+      // 11 août 2026, « impossible d'enregistrer la note » ne pouvait être
+      // expliqué par personne (`AGENTS.md`).
+      setErreur(enregistre.raison);
+      setEnCoursVers(null);
+      return;
+    }
+    const id = enregistre.id;
+
     // **Rouvert, l'écran ENREGISTRE — il ne crée pas un second chantier.** La
     // saisie est la même, la destination aussi ; seul le chemin d'écriture
     // change, et il vit côté serveur (`coordonnees/actions.ts`).
     if (reprise) {
-      const r = await reprendreChantierAction(reprise.id, {
-        nomClient,
-        civilite: civilite ?? undefined,
-        // Espacé à l'écran, en chiffres en base — voir `numeroEnregistre`.
-        telephone: numeroEnregistre(telephone),
-        email,
-        canal: canal ?? undefined,
-        adresseChantier,
-        adresseClient,
-      });
-      if (!r.ok) {
-        // Le refus se dit en toutes lettres, jamais un `catch {}` muet : le
-        // 11 août 2026, « impossible d'enregistrer la note » ne pouvait être
-        // expliqué par personne (`AGENTS.md`).
-        setErreur(r.raison);
-        setEnCoursVers(null);
-        return;
-      }
       // **Enregistré, on va AU DEVIS — 17 septembre 2026**, comme une fiche
       // neuve : c'est le bouton « Je rédige à la main » qui enregistre ce
       // qu'il vient de taper, et il dit où il mène. Entré depuis un devis sans
@@ -627,27 +730,6 @@ export default function FormulaireNouveauChantier({
     }
 
     try {
-      // **Un chantier déjà né d'une photo ou d'une dictée n'est pas recréé** —
-      // sinon la moitié de ce qu'il vient de faire resterait sur un chantier
-      // fantôme, et il verrait deux lignes à l'accueil pour un seul client.
-      // Lu dans la référence, pas dans l'état : une photo encore en route a
-      // déjà lancé la création, et l'état ne le sait pas encore.
-      const id = chantierDeCetEcran.current
-        ? await enregistrerSurLeChantier(await chantierDeCetEcran.current)
-        : await assurerChantier();
-
-      // **Les photos cochées rejoignent le dossier À L'ENREGISTREMENT**, pas au
-      // moment où il les touche. Recopier à la volée poserait des fichiers sur
-      // un chantier qu'il peut encore abandonner — et décocher devrait alors
-      // les supprimer, geste que rien ne demande.
-      //
-      // **Une reprise qui échoue ne fait PAS échouer le chantier.** Ce qu'il a
-      // saisi est enregistré ; des photos de rappel qui manquent se recochent,
-      // un chantier perdu se retape.
-      if (photosReprises.size > 0) {
-        const r = await reprendreLesPhotosAction(id, [...photosReprises]);
-        if (!r.ok) setErreur(r.raison);
-      }
       // **LA FACTURE DIRECTE NAÎT ICI, avant qu'on l'affiche.** Le chantier
       // existe et il n'a pas de devis : c'est le seul instant où la facture
       // peut être posée sans que rien ne soit à reprendre. L'écran d'arrivée
@@ -774,7 +856,7 @@ export default function FormulaireNouveauChantier({
           {enFeuille ? (
             <button
               type="button"
-              onClick={onFermer}
+              onClick={() => void sortirEnEnregistrant(() => onFermer?.())}
               aria-label="Retour à la liste des chantiers"
               className="-ml-1 flex h-8 w-6 flex-shrink-0 items-center justify-center"
             >
@@ -796,11 +878,14 @@ export default function FormulaireNouveauChantier({
                faute de provenance, et il se retrouverait à l'accueil après
                avoir appuyé sur retour depuis un écran qu'il vient de quitter. */
             <Link
-              href={
-                pourLeDevis
-                  ? retourDesCoordonnees(reprise?.id ?? "", reprise?.provenance ?? null)
-                  : "/termines"
-              }
+              href={sortieDeLaPage}
+              // Le lien reste un lien — il s'ouvre, se lit et se partage comme
+              // avant ; seul l'appui retient la sortie le temps d'enregistrer.
+              onClick={(e) => {
+                if (!aEnregistrerEnSortant && !enCours) return;
+                e.preventDefault();
+                void sortirEnEnregistrant(() => router.push(sortieDeLaPage));
+              }}
               aria-label={
                 pourLeDevis
                   ? libelleRetourDesCoordonnees(reprise?.id ?? "", reprise?.provenance ?? null)

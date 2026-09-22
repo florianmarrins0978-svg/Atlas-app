@@ -1,5 +1,16 @@
 # Prochaines tâches
 
+## LA FEUILLE « CRÉER UN DEVIS » REFERMÉE PAR LE VOILE OU ÉCHAP PERD LA SAISIE (22 septembre 2026)
+
+La flèche retour de la fiche client enregistre depuis le 22 septembre
+(`ARCHITECTURE.md` §407). Trois sorties ne passent pas par elle et jettent
+encore ce qui a été tapé : toucher le voile au-dessus de la feuille, Échap
+(`EcranChantiers.tsx`, `setOuvert(false)`), et le geste « retour » du
+navigateur sur la fiche en page. Les faire passer par `sortirEnEnregistrant`
+demande que la feuille demande sa fermeture au formulaire, qui tient la saisie.
+À trancher : le voile doit-il enregistrer, ou ne plus refermer ?
+
+
 Par ordre de priorité. Une tâche terminée se **barre** avec sa date plutôt que
 de disparaître : savoir qu'elle a été traitée évite de la rouvrir.
 

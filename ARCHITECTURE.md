@@ -32922,3 +32922,38 @@ l'écran.
 `test-fiche-securite-db.ts` tient la séparation et le refus ;
 `test-fiche-securite-e2e.ts` compte les vignettes de « Travaux à faire » avant
 la fiche et après — les deux ont été vues rouges sans la règle.
+
+## §407 — La flèche retour de la fiche client ENREGISTRE ce qui a changé
+
+**Sa remarque du 22 septembre 2026 :** *« Je crée un devis, je remplis la fiche
+client, je fais retour, mais elle n'apparaît plus dans mes clients en
+cours !! »*
+
+**Reproduit sur une version bâtie, et vérifié en base.** Le 17 septembre, le
+bouton « Enregistrer » de la fiche rouverte a été retiré à sa demande (voir
+`Destination`) : « Je rédige à la main » restait la seule écriture. La flèche
+retour, elle, ne faisait que sortir — la saisie partait avec l'écran.
+
+| la fiche | ce que la flèche faisait |
+|---|---|
+| la feuille « Créer un devis » de l'accueil | se refermait : aucun chantier |
+| la fiche rouverte depuis un devis sans client | revenait à l'accueil : « Chantier du … », sans client |
+
+**La racine est l'écran, pas l'accueil.** Le 20 septembre (§391), le même
+symptôme venait d'une page rejouée ; ici le chantier était bien affiché, mais
+sans ce qu'il avait tapé — ou pas créé du tout. Aucun cache n'y pouvait rien.
+
+**Ce qui décide d'enregistrer : l'ÉCART avec l'ouverture** (`saisieAEnregistrer`,
+`src/lib/saisie-fiche-client.ts`), jamais « un champ est rempli ». Venu de la
+fiche d'un client, tout est prérempli : ressortir sans rien toucher ne crée
+rien. Une feuille ouverte par erreur ne laisse pas de chantier vide.
+
+**Une seule écriture pour trois sorties.** `enregistrerLaSaisie` sert « Je
+rédige à la main », « Faire la facture » et la flèche ; `enregistrerSurLeChantier`
+et la branche `reprise` recopiée dans `creerPuisAller` ont disparu. Un refus
+retient l'écran et se dit — sortir quand même reperdrait la saisie.
+
+**Ce qui n'enregistre PAS encore**, et c'est inscrit dans `TODO.md` : refermer
+la feuille en touchant le voile ou par Échap (`EcranChantiers.tsx`), et le
+geste « retour » du navigateur. Ces trois sorties ne passent pas par la flèche.
+
