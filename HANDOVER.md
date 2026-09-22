@@ -99,6 +99,13 @@ le même composant — montraient deux cadres. Le cadre vit donc sur un `<span>`
 qu'aucun navigateur ne rhabille. **Chromium ne reproduit pas ce défaut** : une
 capture ici ne prouve rien de son iPhone.
 
+**Le second piège, payé le 22 septembre 2026** : « Enregistrer le PDF » ne
+s'écrit JAMAIS en `<a href="…?telecharger=1">`. Sur iPhone, un PDF servi en
+`attachment` reste un document que Safari peint — il s'ouvre au lieu de se
+ranger. Les deux seules portes sont `BoutonTelechargerDocument` (garder) et
+`adresseDeLaVisionneuse` (regarder) ; `scripts/test-tous-les-pdf.ts` les tient,
+et il suit maintenant une adresse rangée dans une variable.
+
 ## OÙ VIT UN GESTE DE LA FACTURE — 21 septembre 2026
 
 Deux écrans portent les mêmes chiffres, et ils ne font pas le même métier.

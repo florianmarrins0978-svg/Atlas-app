@@ -256,6 +256,23 @@ async function main() {
     const carte = page.locator("[data-atlas='carte-de-fiche']").filter({ hasText: chantierNom }).first();
     await carte.waitFor({ timeout: 15_000 });
     assert.match(await carte.innerText(), /gardée jusqu’au/);
+
+    // « ENREGISTRER » EST UN BOUTON, PAS UN LIEN — sa capture du 22 septembre
+    // 2026 : *« je clique sur enregistrer le pdf, ça me propose pas de le
+    // télécharger »*. Un lien vers le PDF, même en `attachment`, se fait
+    // PEINDRE par Safari sur son iPhone. Ce qui range le fichier, c'est la
+    // feuille de partage, et elle demande que la page aille chercher le PDF
+    // elle-même (`BoutonTelechargerDocument`). On éprouve donc le geste qu'il
+    // fait, pas la route qu'il ne voit pas.
+    await carte.click();
+    const enregistrer = page.locator("[data-atlas='enregistrer-le-pdf']").first();
+    await enregistrer.waitFor({ timeout: 15_000 });
+    assert.equal(
+      await enregistrer.evaluate((n) => n.tagName),
+      "BUTTON",
+      "« Enregistrer le PDF » est redevenu un lien : sur iPhone il ouvre le PDF au lieu de le ranger"
+    );
+
     await page.goto(`${BASE}/paysage`, { waitUntil: "networkidle" });
     assert.ok(await page.locator('a[href="/paysage/fiches-securite"]').count(), "la ligne « Fiches de sécurité » manque dans Paysage");
   });
