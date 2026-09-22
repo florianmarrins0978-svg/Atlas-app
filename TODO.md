@@ -10807,7 +10807,9 @@ d'envoyer, par un pont vers la fiche client (existante depuis le 16 août).
 **LA QUESTION EST TRANCHÉE — « Fait la C », le 17 août 2026**
 (`docs/maquettes/77-la-fiche-dans-paysage.html`). Le client se nomme à tout
 moment, et la fiche se replie sur ses prestations dès qu'il est connu, **sans
-perdre une coche**. Codé le 18 août : `ARCHITECTURE.md` §128.
+perdre une coche**. Codé le 18 août : `ARCHITECTURE.md` §128. **Remplacé le 22 septembre
+2026** : plus de repli, la fiche garde toutes ses lignes et recoche le dernier
+passage (`ARCHITECTURE.md` §407).
 
 **L'ordre de construction, quand ça démarre** — c'est un troisième parcours, pas
 une case à ajouter :

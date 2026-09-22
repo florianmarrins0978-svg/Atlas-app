@@ -21,8 +21,8 @@ import { useAdressePourLeClient } from "@/lib/use-adresse-client";
 
 // La fiche qu'il coche sur un chantier — arrangement C, 17 août 2026.
 //
-// **Ce que cet écran ne fait PAS : décider.** Ce qui reste à l'écran quand le
-// client est nommé est calculé par le serveur (`recomposerPourClient`), et
+// **Ce que cet écran ne fait PAS : décider.** Ce qui se coche quand le client
+// est nommé est calculé par le serveur (`cocherCommeLaDerniereFois`), et
 // l'écran affiche ce qu'on lui rend. Refaire ce tri ici donnerait deux vérités
 // sur une même liste, et elles finiraient par diverger (`CLAUDE.md` §3).
 
@@ -102,8 +102,8 @@ export default function FicheChantierClient({
   const [envoyeLe, setEnvoyeLe] = useState(passage.envoyeLe);
   const [jeton, setJeton] = useState(passage.jeton);
   const [phrase, setPhrase] = useState<string | null>(null);
-  // **Un CONSTAT n'est pas un refus, et ne se peint pas en rouge.** « 17
-  // prestations retirées » est le résultat attendu du repli : le dire en rouge,
+  // **Un CONSTAT n'est pas un refus, et ne se peint pas en rouge.** « 3
+  // prestations cochées » est le résultat attendu du geste : le dire en rouge,
   // au bas de l'écran, au-dessous du bouton, le ferait lire comme une panne
   // — et il chercherait ce qu'il a cassé. Il se dit là où le changement a eu
   // lieu, sous le nom du client, du même gris que le reste.
@@ -188,15 +188,14 @@ export default function FicheChantierClient({
     setTelephone(c.telephone);
     setEmail(c.email);
     setCanal(c.canal ?? (c.telephone ? "sms" : "email"));
-    // **Le serveur rend ce qui reste, l'écran l'affiche.** Refaire le repli
-    // ici donnerait deux vérités sur une même liste, et une fiche qui montre
-    // autre chose que ce qui est en base est pire qu'une fiche trop longue.
+    // **Le serveur rend les lignes cochées, l'écran les affiche.** Refaire les
+    // coches ici donnerait deux vérités sur une même liste.
     setLignes(r.lignes);
+    // Une phrase claire et courte, sa demande du 22 septembre 2026 : « Fiche
+    // repliée sur ce que … prend d'habitude » ne voulait rien dire pour lui.
     setConstat(
-      r.retirees > 0
-        ? `Fiche repliée sur ce que ${c.nom} prend d'habitude — ${r.retirees} ligne${
-            r.retirees > 1 ? "s" : ""
-          } de moins. Vous pouvez encore tout cocher.`
+      r.cochees > 0
+        ? `${r.cochees} prestation${r.cochees > 1 ? "s cochées" : " cochée"} comme au dernier passage.`
         : null
     );
   }

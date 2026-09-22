@@ -5,22 +5,17 @@
 // exige un client ne sert pas en visite. Le client est nommé quand il veut —
 // **arrangement C** de `docs/maquettes/77-la-fiche-dans-paysage.html`.
 //
-// ─── LE CŒUR DE L'ARRANGEMENT C ──────────────────────────────────────────────
-// Deux de ses décisions se rencontraient sur un même point, et paraissaient se
-// contredire :
+// ─── QUAND LE CLIENT EST NOMMÉ ───────────────────────────────────────────────
+// **Sa règle du 22 septembre 2026, qui remplace le repli du 17 août :**
+// *« ce qui a déjà été coché par le passé se recoche automatiquement, mais les
+// 20 points qui composent ma fiche doivent être présents ! Car si j'ai fait
+// quelque chose en plus ce jour, je le coche, or là je ne peux pas, les cases
+// ne sont pas visibles »*.
 //
-//   · 16 août — « chaque client aura sa fiche » : le passage suivant chez le
-//     même client doit RETROUVER son ajustement, sinon il retrie vingt lignes
-//     douze fois par an ;
-//   · 17 août — l'outil s'ouvre SANS client.
-//
-// Elles ne se contredisent pas : elles se rencontrent sur le MOMENT où le
-// client est nommé. D'où `recomposerPourClient` : la fiche part du modèle
-// complet, et se replie sur les prestations du client dès qu'on le connaît —
-// **sans perdre ce qui vient d'être coché**. C'est cette dernière clause qui
-// fait tout le travail, et c'est elle qu'un contrôle doit tenir : perdre trois
-// coches parce qu'on a nommé le client au milieu serait pire que ne rien
-// pré-remplir du tout.
+// Le repli retirait les lignes que ce client ne prenait pas d'habitude : il
+// voulait lui épargner de retrier vingt lignes, et il l'empêchait de cocher le
+// travail en plus. Désormais la fiche garde TOUT le modèle, et c'est la coche
+// qui porte l'habitude (`cocherCommeLaDerniereFois`).
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { filtrerClientsParNom, normaliserPourRecherche } from "./recherche-client";
@@ -75,63 +70,27 @@ export function minutesValides(brut: number | null | undefined): number | null {
 }
 
 /**
- * Recompose la fiche quand le client est enfin nommé — **sans rien perdre**.
+ * Recoche ce que ce client a eu à son DERNIER passage envoyé — **sans retirer
+ * une ligne ni décocher ce qui est déjà coché**.
  *
  * @param actuelles ce qui est à l'écran, coches comprises
- * @param dejaPris ce que ce client a **déjà pris** : les prestations cochées
- *   sur ses rapports envoyés, tous passages confondus. Vide au premier passage.
+ * @param derniere les prestations cochées sur son dernier rapport envoyé. Vide
+ *   au premier passage : rien ne se coche tout seul.
  *
- * **Trois règles, et chacune répare un défaut prévisible :**
+ * **Le dernier passage, et non tout son historique** : une taille de haie
+ * d'automne cochée une fois en octobre se recocherait sinon à chaque passage
+ * de l'année, et partirait sur des rapports où elle n'a pas été faite. Le
+ * dernier passage est ce qui ressemble le plus à celui du jour ; ce qui change
+ * se décoche ou se coche d'un geste, puisque toutes les lignes sont là.
  *
- * 1. **Ce qui est coché reste, quoi qu'il arrive.** Même si ce client n'a
- *    jamais pris cette prestation : il vient de la faire, et une fiche qui
- *    efface un geste déjà fait est pire qu'une fiche qui en montre trop.
- * 2. **Ce que ce client prend revient**, décoché : c'est ce qui lui évite de
- *    retrier vingt lignes douze fois par an.
- * 3. **Le reste tombe.** Les lignes que ce client ne paie pas n'ont rien à
- *    faire sous son pouce — c'est tout l'intérêt de nommer le client.
- *
- * ─── POURQUOI « TOUT SON HISTORIQUE » ET NON « SON DERNIER PASSAGE » ─────────
- * La première version regardait le seul passage précédent, et elle a été
- * refusée par son propre contrôle avant d'atteindre le patron. Deux défauts,
- * dans les deux sens :
- *
- *   · **les lignes PRÉSENTES du dernier passage** ne convergent jamais : au
- *     premier passage la fiche porte le modèle entier, donc le second le
- *     reprend entier, et ainsi de suite. Le repli ne replie rien ;
- *   · **les lignes COCHÉES du seul dernier passage** replient trop fort : une
- *     taille de haie d'automne se fait une fois l'an. Au passage de mars elle
- *     n'aurait pas été cochée en février, donc elle disparaîtrait — et il ne
- *     pourrait plus la cocher en octobre, faute de ligne.
- *
- * D'où l'historique complet : **ce que ce client a déjà pris au moins une
- * fois**. Il se construit tout seul, garde les gestes saisonniers, et ne rend
- * jamais une fiche plus longue que le modèle du jour.
- *
- * **Ce que cela coûte, et c'est assumé** : une prestation cochée par erreur
- * chez un client y reste proposée. Une ligne de trop se saute des yeux ; une
- * ligne manquante bloque le geste sur un chantier.
- * ─────────────────────────────────────────────────────────────────────────────
- *
- * **L'ordre vient de ce qui est à l'écran**, jamais de l'historique : la fiche
- * ne doit pas se réorganiser sous ses doigts pendant qu'il coche.
+ * **L'ordre et les lignes viennent de l'écran** : rien ne bouge sous ses doigts.
  */
-export function recomposerPourClient(
-  actuelles: readonly LignePassage[],
-  dejaPris: readonly { libelle: string }[]
-): LignePassage[] {
-  // Client neuf — ou client dont aucun rapport n'a encore rien porté : il n'y a
-  // rien à replier, et deviner à sa place serait pire que de tout montrer.
-  if (dejaPris.length === 0) return [...actuelles];
-
-  const sien = new Set(dejaPris.map((l) => plie(l.libelle)));
-
-  // Une prestation que ce client prend et que le modèle ne porte plus — retirée
-  // des Réglages depuis — n'est pas dans `actuelles`, et on ne la ramène PAS :
-  // le modèle est ce qu'il propose aujourd'hui, et ressusciter une ligne qu'il
-  // a retirée irait contre son geste. Le rapport du passé, lui, garde la
-  // sienne : il porte sa propre copie (migration 0055).
-  return actuelles.filter((l) => l.faite || sien.has(plie(l.libelle)));
+export function cocherCommeLaDerniereFois<L extends LignePassage>(
+  actuelles: readonly L[],
+  derniere: readonly { libelle: string }[]
+): L[] {
+  const cochees = new Set(derniere.map((l) => plie(l.libelle)));
+  return actuelles.map((l) => (l.faite || !cochees.has(plie(l.libelle)) ? l : { ...l, faite: true }));
 }
 
 /**

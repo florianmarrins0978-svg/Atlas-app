@@ -12,12 +12,14 @@ import { ADRESSE } from "./_adresse";
  * *Sa demande du 16 août 2026 : « une fiche où ils cochent ce qu'ils ont fait
  * ou non sur le chantier et ensuite qu'ils peuvent enregistrer et envoyer
  * directement au client ».* Puis, le 17 : **« Fait la C »** — le client est
- * nommable à tout moment, et la fiche se replie alors sur ses prestations.
+ * nommable à tout moment. Depuis le 22 septembre 2026, le nommer recoche son
+ * dernier passage, et toutes les lignes de la fiche restent.
  *
  * ─────────────────────────────────────────────────────────────────────────────
  * **CE QUE CETTE SUITE TIENT, ET QU'AUCUNE AUTRE NE PEUT VOIR.**
  *
- * `test-passage-entretien.ts` éprouve les règles et le dépôt : le repli,
+ * `test-passage-entretien.ts` éprouve les règles et le dépôt : les coches du
+ * dernier passage,
  * l'invariant du rapport figé, l'isolation, la lecture par jeton. Toutes
  * resteraient vertes si l'ÉCRAN n'appelait jamais ces fonctions — c'est le
  * piège 13 du dépôt, « une règle juste que l'écran n'applique pas ne protège
@@ -102,7 +104,7 @@ async function main() {
   // `LIMIT 1`.** La base en porte plusieurs — les suites précédentes en
   // laissent —, et une entreprise prise au hasard fabrique un client que
   // l'écran ne montrera jamais : le contrôle rougirait alors en accusant le
-  // repli, qui n'y serait pour rien. Payé une fois, le 18 août 2026.
+  // choix du client, qui n'y serait pour rien. Payé une fois, le 18 août 2026.
   const { rows: entreprises } = await pool.query(
     `SELECT m.entreprise_id AS id FROM membres_entreprise m
        JOIN users u ON u.id = m.utilisateur_id
@@ -178,7 +180,12 @@ async function main() {
     assert.equal(rows[0].n, 3, "les coches ne sont pas arrivées en base");
   });
 
-  await test("Nommer le client replie la fiche — et ne perd aucune coche", async () => {
+  await test("Nommer le client ne retire aucune ligne, et ne perd aucune coche", async () => {
+    // Sa règle du 22 septembre 2026 : « les 20 points qui composent ma fiche
+    // doivent être présents ! ». L'ancien repli retirait les lignes que ce
+    // client ne prenait pas d'habitude, et il ne pouvait plus cocher un travail
+    // en plus.
+    const lignesAvant = await page.locator('[data-atlas="fiche-chantier"] button[data-atlas="prestation"]').count();
     const avant = await page
       .locator('[data-atlas="fiche-chantier"] button[data-atlas="prestation"][aria-pressed="true"]')
       .count();
@@ -187,12 +194,18 @@ async function main() {
     await capturer(page, "05-choix-du-client");
     await page.locator('[data-atlas="choix-du-client"]').getByText(CLIENT).click();
     await page.waitForTimeout(1200);
-    await capturer(page, "06-fiche-repliee");
+    await capturer(page, "06-client-nomme");
 
     const apres = await page
       .locator('[data-atlas="fiche-chantier"] button[data-atlas="prestation"][aria-pressed="true"]')
       .count();
     assert.equal(apres, avant, "nommer le client a effacé une coche déjà posée");
+    assert.ok(lignesAvant > 0, "aucune ligne à l'écran : rien n'est prouvé");
+    assert.equal(
+      await page.locator('[data-atlas="fiche-chantier"] button[data-atlas="prestation"]').count(),
+      lignesAvant,
+      "nommer le client a retiré des lignes de la fiche"
+    );
 
     const { rows } = await pool.query(
       `SELECT p.id FROM passages_entretien p

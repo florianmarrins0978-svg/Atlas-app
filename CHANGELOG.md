@@ -8,6 +8,16 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-22
 
+### Fiche de chantier : nommer le client recoche son dernier passage, et ne retire plus rien
+
+*« Ce qui a déjà été coché par le passé se recoche automatiquement, mais les 20
+points qui composent ma fiche doivent être présents ! »* Le repli du 17 août
+retirait les lignes que le client ne prenait pas d'habitude, et empêchait de
+cocher un travail en plus. `recomposerPourClient` est remplacé par
+`cocherCommeLaDerniereFois` : toutes les lignes restent, celles du dernier
+rapport envoyé se cochent. La phrase devient « 3 prestations cochées comme au
+dernier passage. ». `ARCHITECTURE.md` §407.
+
 ### Rapports envoyés : chercher un client, choisir un jour, un mois, une année
 
 *« Faut pouvoir filtrer par nom de client et que ça nous sorte toutes les fiches

@@ -11554,8 +11554,12 @@ contredire :
 | B | À la fin, pour envoyer | Plus de pré-remplissage : la fiche repart des vingt lignes du modèle au douzième passage chez le même client |
 | **C** | **Quand il veut** | **Un état de plus à tenir** : la fiche doit se recomposer en cours de route sans effacer ce qui vient d'être coché |
 
+> **Remplacé le 22 septembre 2026 (§407)** : le repli décrit ci-dessous n'existe
+> plus. Nommer le client recoche son dernier passage, et la fiche garde toutes
+> ses lignes.
+
 Elles ne se contredisent pas : elles se rencontrent sur le **moment**. C'est ce
-que fait `recomposerPourClient` (`src/lib/passage-entretien.ts`), et c'est la
+que faisait `recomposerPourClient` (`src/lib/passage-entretien.ts`), et c'est la
 clause « sans effacer » qui porte tout le travail — perdre trois coches parce
 qu'on a nommé le client au milieu serait pire que ne rien pré-remplir du tout.
 
@@ -32922,3 +32926,35 @@ l'écran.
 `test-fiche-securite-db.ts` tient la séparation et le refus ;
 `test-fiche-securite-e2e.ts` compte les vignettes de « Travaux à faire » avant
 la fiche et après — les deux ont été vues rouges sans la règle.
+
+## §407 — Nommer le client recoche son dernier passage ; la fiche garde toutes ses lignes
+
+**Sa règle du 22 septembre 2026**, captures de deux fiches à l'appui : *« ce
+qui a déjà été coché par le passé se recoche automatiquement, mais les 20 points
+qui composent ma fiche doivent être présents ! Car si j'ai fait quelque chose en
+plus ce jour, je le coche, or là je ne peux pas, les cases ne sont pas
+visibles »*. Et la phrase « Fiche repliée sur ce que … prend d'habitude, 14
+lignes de moins » *« ne veut rien dire »*.
+
+**Ce qui est retiré** : le repli du 17 août (`recomposerPourClient`), qui
+supprimait de la fiche les lignes que ce client n'avait jamais prises. Il
+épargnait un tri, et il interdisait le travail en plus : la ligne n'était plus
+là pour être cochée.
+
+**Ce qui le remplace** : `cocherCommeLaDerniereFois` (`src/lib/passage-entretien.ts`).
+Toutes les lignes restent ; celles que le DERNIER rapport envoyé à ce client
+portait cochées se cochent ; ce qui était déjà coché le reste. L'écran dit
+« 3 prestations cochées comme au dernier passage. ».
+
+**Le dernier passage, et non tout l'historique, et c'est une décision prise
+ici** : l'historique entier servait à décider quelles lignes GARDER. Pour
+décider quoi COCHER, il cocherait à chaque passage une taille de haie d'automne
+faite une fois en octobre, et elle partirait chez le client sur des rapports où
+elle n'a pas été faite. Le dernier passage est ce qui ressemble le plus à celui
+du jour, et toute différence se corrige d'un geste, puisque toutes les lignes
+sont là. Seul un rapport ENVOYÉ fait foi : un brouillon abandonné ne coche
+rien.
+
+`scripts/test-passage-entretien.ts` (règle et dépôt, vus rouges avant la
+correction) et `scripts/test-fiche-chantier-e2e.ts` (le nombre de lignes à
+l'écran ne bouge pas quand le client est nommé).
