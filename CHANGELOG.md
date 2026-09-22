@@ -8,6 +8,14 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-22
 
+### Fiche de sécurité : le décret devient le titre de l'écran de la loi
+
+Sa demande, capture à l'appui : retirer « Ce que demande la loi » et poser
+« Décret 2021-1833, en vigueur depuis le 1er mars 2022 » à sa place, en grand
+et en noir. Le petit sous-titre gris est supprimé plutôt que doublé ; le bouton
+du bandeau garde son libellé. `test-fiche-securite-e2e.ts` attend désormais ce
+titre (§5 bis : le contrôle suit l'écran qu'il a demandé).
+
 ### Chaque photo à un seul endroit : celui où elle a été posée
 
 Une photo posée sur la fiche de sécurité y reste — elle ne passe plus dans

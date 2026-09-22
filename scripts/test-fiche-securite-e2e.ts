@@ -99,7 +99,7 @@ async function main() {
     await page.locator(OUVRIR).click();
     await page.locator("[data-atlas='remplir-la-fiche']").click();
     await page.waitForURL(new RegExp(`${ECRAN}/${chantierId}`), { timeout: 20_000 });
-    await page.getByText("Ce que demande la loi").waitFor({ timeout: 20_000 });
+    await page.getByRole("heading", { name: "Décret 2021-1833, en vigueur depuis le 1er mars 2022" }).waitFor({ timeout: 20_000 });
     assert.ok(await page.locator('a[href*="legifrance.gouv.fr"]').count(), "le lien vers le décret manque");
     await page.getByRole("button", { name: "Compris, je remplis" }).click();
     await page.locator("[data-atlas='etape-de-la-fiche']").filter({ hasText: "1 sur 6" }).waitFor({ timeout: 15_000 });
