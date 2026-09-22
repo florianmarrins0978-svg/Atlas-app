@@ -35,6 +35,9 @@ le nom du jour en plus : « Mardi 22 septembre 2026 » (`jourEnTitre`,
 `scripts/test-jour-en-titre.ts`). Le titre et sa roue sont sortis du filtre de
 date (`TitreAvecRoue`) : un seul dessin pour les deux.
 
+Le bouton « Ouvrir une fiche » devient « Créer une fiche » (« Création… »
+pendant qu'elle se crée).
+
 ### Un seul champ de recherche, souligné, partout où l'on cherche
 
 Sa demande, capture de shapersclub.com à l'appui puis planche regardée

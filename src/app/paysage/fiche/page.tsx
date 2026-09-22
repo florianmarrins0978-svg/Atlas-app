@@ -88,7 +88,7 @@ export default async function FichesPage() {
 
                 **Moins large qu'une carte pleine.** Elle prend la largeur de
                 son texte, plafonnée — un pavé bord à bord pèserait autant que
-                « Ouvrir une fiche », qui est le geste de tous les jours, et
+                « Créer une fiche », qui est le geste de tous les jours, et
                 c'est le défaut que la planche annonçait. Le plafond existe pour
                 les gros caractères du téléphone : sans lui la carte redeviendrait
                 pleine largeur chez qui grossit son texte, c'est-à-dire là où

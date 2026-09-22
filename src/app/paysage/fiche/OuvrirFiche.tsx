@@ -45,7 +45,7 @@ export default function OuvrirFiche() {
             })
           }
         >
-          {enCours ? "Ouverture…" : "Ouvrir une fiche"}
+          {enCours ? "Création…" : "Créer une fiche"}
         </PrimaryButton>
       </div>
 
