@@ -28,6 +28,8 @@ const COMPTE = "[data-atlas='compte-de-la-fiche']";
 // — alors que celle-ci l'ouvre du premier geste au dernier (22 septembre 2026).
 const ECRAN = "/planning/fiche-de-securite";
 const TEL_DE_L_ENTREPRISE = "Téléphone (en cas d’incident ou d’accident)";
+const SIGNATAIRE = "Nom et prénom du chef d’entreprise (ou de son représentant)";
+const NOM_SIGNE = "Martins Florian";
 
 let echecs = 0;
 async function cas(nom: string, fn: () => Promise<void>) {
@@ -99,7 +101,7 @@ async function main() {
     await page.locator(OUVRIR).click();
     await page.locator("[data-atlas='remplir-la-fiche']").click();
     await page.waitForURL(new RegExp(`${ECRAN}/${chantierId}`), { timeout: 20_000 });
-    await page.getByText("Ce que demande la loi").waitFor({ timeout: 20_000 });
+    await page.getByRole("heading", { name: "Décret 2021-1833, en vigueur depuis le 1er mars 2022" }).waitFor({ timeout: 20_000 });
     assert.ok(await page.locator('a[href*="legifrance.gouv.fr"]').count(), "le lien vers le décret manque");
     await page.getByRole("button", { name: "Compris, je remplis" }).click();
     await page.locator("[data-atlas='etape-de-la-fiche']").filter({ hasText: "1 sur 6" }).waitFor({ timeout: 15_000 });
@@ -208,6 +210,7 @@ async function main() {
     assert.match(texte, /Encore vide/i, "ce qui manque se dit avant de signer");
     const signer = page.locator("[data-atlas='signer-la-fiche']");
     assert.equal(await signer.isDisabled(), true, "sans trait, on ne signe pas");
+    await page.getByLabel(SIGNATAIRE).fill(NOM_SIGNE);
     const toile = page.locator("[data-atlas='signature'] canvas");
     await toile.scrollIntoViewIfNeeded();
     // **On descend jusqu'au BAS de la page avant de mesurer** — c'est le geste
@@ -236,7 +239,7 @@ async function main() {
     );
     assert.ok(r[0].signee_le, "la signature n'est pas en base");
     assert.ok(r[0].signature_png?.startsWith("data:image/png;base64,"), "le trait n'est pas en base");
-    assert.ok(r[0].signataire, "le nom du signataire n'est pas en base");
+    assert.equal(r[0].signataire, NOM_SIGNE, "le nom tapé n'est pas celui qui est signé");
   });
 
   await cas("le PDF répond, en PDF, et se télécharge sous son nom", async () => {
@@ -256,6 +259,30 @@ async function main() {
     const carte = page.locator("[data-atlas='carte-de-fiche']").filter({ hasText: chantierNom }).first();
     await carte.waitFor({ timeout: 15_000 });
     assert.match(await carte.innerText(), /gardée jusqu’au/);
+
+    // LA RECHERCHE PAR NOM — sa demande du 22 septembre 2026 : *« une recherche
+    // par nom, et il te sort toutes les fiches de ce client »*. Tapé, le nom
+    // garde la fiche ; un nom inconnu la retire et le dit.
+    const champ = page.locator("[data-atlas='chercher-une-fiche']");
+    await champ.fill(chantierNom.slice(0, 6).toLowerCase());
+    await carte.waitFor({ timeout: 5_000 });
+    await champ.fill("zzqqxx");
+    await page.getByText("Aucune fiche pour « zzqqxx ».").waitFor({ timeout: 5_000 });
+    assert.equal(await page.locator("[data-atlas='carte-de-fiche']").count(), 0, "un nom inconnu laisse des fiches à l'écran");
+    await champ.fill("");
+    await carte.waitFor({ timeout: 5_000 });
+
+    // LE JOUR — *« rajoute le jour aussi en filtre jour mois année »*. La fiche
+    // vient d'être signée : elle est au jour d'aujourd'hui, pas à celui d'avant.
+    const aujourdhui = jourDuPatron();
+    const laVeille = jourDuPatron(1);
+    await page.goto(`${BASE}/paysage/fiches-securite?jour=${aujourdhui}`, { waitUntil: "networkidle" });
+    await carte.waitFor({ timeout: 15_000 });
+    await page.goto(`${BASE}/paysage/fiches-securite?jour=${laVeille}`, { waitUntil: "networkidle" });
+    await page.locator("[data-atlas='tout-le-mois']").waitFor({ timeout: 15_000 });
+    assert.equal(await carte.count(), 0, "la fiche d'aujourd'hui sort sous la veille");
+    await page.goto(`${BASE}/paysage/fiches-securite`, { waitUntil: "networkidle" });
+    await carte.waitFor({ timeout: 15_000 });
 
     // « ENREGISTRER » EST UN BOUTON, PAS UN LIEN — sa capture du 22 septembre
     // 2026 : *« je clique sur enregistrer le pdf, ça me propose pas de le
@@ -313,6 +340,22 @@ async function main() {
       [chantierId]
     );
     assert.equal(Number(n[0].n), 2, "les deux photos de l'écran 3 ne sont pas liées à la fiche");
+  });
+
+  // *« La case nom et prénom ne s'enregistre pas d'une fiche à l'autre ! »*
+  // (22 septembre 2026). Le nom ne vivait que dans l'écran : la fiche suivante
+  // repartait du nom du compte. On éprouve SON chemin — une fiche neuve,
+  // ouverte depuis l'écran —, pas la mémoire lue en base. En dernier : la fiche
+  // signée plus haut est effacée pour en faire naître une neuve.
+  await cas("le nom signé est repris sur la fiche suivante", async () => {
+    await pool.query(`DELETE FROM fiches_securite WHERE chantier_id = $1`, [chantierId]);
+    await page.goto(`${BASE}${ECRAN}/${chantierId}`, { waitUntil: "networkidle" });
+    await page.getByRole("button", { name: "Compris, je remplis" }).click();
+    for (const n of [2, 3, 4, 5, 6]) {
+      await page.locator("[data-atlas='suivant']").click();
+      await page.locator("[data-atlas='etape-de-la-fiche']").filter({ hasText: `${n} sur 6` }).waitFor({ timeout: 15_000 });
+    }
+    assert.equal(await page.getByLabel(SIGNATAIRE).inputValue(), NOM_SIGNE, "la fiche neuve ne reprend pas le nom signé sur la précédente");
   });
 
   await contexte.close();

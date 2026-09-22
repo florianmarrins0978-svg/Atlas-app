@@ -36,6 +36,8 @@
  * dit avant de signer (`manques`), et la signature reste possible — c'est sa
  * fiche, et c'est lui qui décide (*« au bon vouloir de l'utilisateur »*).
  */
+import { filtrerClientsParNom, normaliserPourRecherche } from "./recherche-client";
+import { dansLaPeriode } from "./periode";
 
 /** Une famille de cases à cocher : les mots de la MSA, dans l'ordre de la feuille. */
 export const LIBELLES = {
@@ -303,6 +305,13 @@ export type ContenuFiche = {
   pointDeRencontre: string;
   observations: string;
   photoIds: string[];
+  /**
+   * Le nom tel qu'il sera signé — dans le contenu, et non plus dans l'état de
+   * l'écran : il s'enregistre en même temps que le reste, et se garde
+   * (22 septembre 2026). La colonne `signataire` de la fiche ne porte que le
+   * nom FIGÉ à la signature, celui du PDF.
+   */
+  signataire: string;
 };
 
 export function contenuVide(): ContenuFiche {
@@ -332,6 +341,7 @@ export function contenuVide(): ContenuFiche {
     pointDeRencontre: "",
     observations: "",
     photoIds: [],
+    signataire: "",
   };
 }
 
@@ -377,6 +387,11 @@ export function ajouter(contenu: ContenuFiche, famille: Famille, mot: string): C
  * avec la consigne qui va avec — chaque case se vérifie à chaque chantier,
  * c'est sa signature. Ce qui ne se garde pas : ce qui est propre au chantier —
  * le donneur d'ordre, le lieu, les heures, la photo, le point de rencontre.
+ *
+ * **Les noms aussi — sa plainte du 22 septembre 2026 :** *« la case nom et
+ * prénom ne s'enregistre pas d'une fiche à l'autre ! »*. Le responsable sur
+ * place et le signataire sont les mêmes d'un chantier à l'autre : ils se
+ * gardent, comme la main d'œuvre qu'ils encadrent.
  */
 export type MemoireDesFiches = {
   mainDOeuvre: string;
@@ -389,9 +404,13 @@ export type MemoireDesFiches = {
   communication: string;
   environnementPreciser: string;
   organisationCommunication: string;
+  responsableNom: string;
+  responsablePrenom: string;
+  responsableTel: string;
+  signataire: string;
 };
 export function memoireVide(): MemoireDesFiches {
-  return { mainDOeuvre: "", lieuTrousse: "", risquesAutres: "", mesuresAutres: "", observations: "", ajouts: {}, coches: {}, communication: "", environnementPreciser: "", organisationCommunication: "" };
+  return { mainDOeuvre: "", lieuTrousse: "", risquesAutres: "", mesuresAutres: "", observations: "", ajouts: {}, coches: {}, communication: "", environnementPreciser: "", organisationCommunication: "", responsableNom: "", responsablePrenom: "", responsableTel: "", signataire: "" };
 }
 export function memoireDepuis(contenu: ContenuFiche): MemoireDesFiches {
   return {
@@ -405,6 +424,10 @@ export function memoireDepuis(contenu: ContenuFiche): MemoireDesFiches {
     communication: contenu.communication,
     environnementPreciser: contenu.environnementPreciser,
     organisationCommunication: contenu.organisationCommunication,
+    responsableNom: contenu.responsableNom,
+    responsablePrenom: contenu.responsablePrenom,
+    responsableTel: contenu.responsableTel,
+    signataire: contenu.signataire,
   };
 }
 /** Une fiche neuve part de ce qui a été gardé ; ce qui est propre au chantier reste vide. */
@@ -421,6 +444,10 @@ export function appliquerLaMemoire(contenu: ContenuFiche, memoire: MemoireDesFic
     communication: memoire.communication,
     environnementPreciser: memoire.environnementPreciser,
     organisationCommunication: memoire.organisationCommunication,
+    responsableNom: memoire.responsableNom,
+    responsablePrenom: memoire.responsablePrenom,
+    responsableTel: memoire.responsableTel,
+    signataire: memoire.signataire,
   };
 }
 
@@ -477,4 +504,34 @@ export const POINTS_MINIMUM_D_UNE_SIGNATURE = 8;
 /** Le texte que le PDF (et la liste) écrivent sous une fiche signée. */
 export function phraseDeGarde(signeeLe: Date, jourLong: (d: Date) => string): string {
   return `gardée jusqu’au ${jourLong(gardeeJusquAu(signeeLe))}`;
+}
+
+/**
+ * LES FICHES QUE LA LISTE DE PAYSAGE MONTRE — le mois ou le jour choisi, ou le
+ * nom tapé.
+ *
+ * **Sa demande du 22 septembre 2026 :** *« faut pouvoir faire une recherche par
+ * nom aussi et il te sort toutes les fiches de ce client »*. Un nom tapé passe
+ * donc PAR-DESSUS le mois : la fiche de juin d'un client se retrouve depuis
+ * septembre, sans tourner la roue mois par mois.
+ *
+ * La comparaison est celle de la recherche des clients (`filtrerClientsParNom`),
+ * sur le client et sur le nom du chantier — une seule façon de chercher un nom
+ * dans l'application (`CLAUDE.md` §3).
+ *
+ * **Le jour aussi — sa demande du même soir :** *« rajoute le jour aussi en
+ * filtre jour mois année »*. La période est donc `2026-09` (le mois) ou
+ * `2026-09-22` (le jour), lue à l'heure du patron (`dansLaPeriode`).
+ */
+export function fichesAMontrer<T extends { client: string; chantierNom: string; signeeLe: Date }>(
+  fiches: readonly T[],
+  choix: { periode: string; saisie: string }
+): T[] {
+  if (normaliserPourRecherche(choix.saisie)) {
+    return filtrerClientsParNom(
+      fiches.map((f) => ({ nom: `${f.client} ${f.chantierNom}`, fiche: f })),
+      choix.saisie
+    ).map((x) => x.fiche);
+  }
+  return fiches.filter((f) => dansLaPeriode(f.signeeLe, choix.periode));
 }

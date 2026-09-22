@@ -69,20 +69,17 @@ export default function FormulaireFicheDeSecurite({
   chantierId,
   ouverte,
   paysageOuvert,
-  loiDemandee,
 }: {
   chantierId: string;
   ouverte: FicheOuverte;
   paysageOuvert: boolean;
-  loiDemandee: boolean;
 }) {
   const router = useRouter();
   const { contexte } = ouverte;
   const [contenu, setContenu] = useState<ContenuFiche>(() => preremplir(ouverte));
-  const [loiLue, setLoiLue] = useState(ouverte.fiche.loiLue);
   const [etapeVue, setEtapeVue] = useState(ouverte.fiche.etapeVue);
   const [etape, setEtape] = useState(Math.min(Math.max(ouverte.fiche.etapeVue + 1, 1), NOMBRE_D_ETAPES));
-  const [ecran, setEcran] = useState<Ecran>(loiDemandee || !ouverte.fiche.loiLue ? "loi" : ouverte.fiche.signeeLe ? "signee" : "fiche");
+  const [ecran, setEcran] = useState<Ecran>(!ouverte.fiche.loiLue ? "loi" : ouverte.fiche.signeeLe ? "signee" : "fiche");
   const [signeeLe, setSigneeLe] = useState<Date | null>(ouverte.fiche.signeeLe);
   const [transmise, setTransmise] = useState(ouverte.fiche.transmiseLe !== null);
   const [photos, setPhotos] = useState(ouverte.photos);
@@ -93,7 +90,6 @@ export default function FormulaireFicheDeSecurite({
   // et la place dans cette liste (`VisionneusePhoto`).
   const [rangOuvert, setRangOuvert] = useState<number | null>(null);
   const [trace, setTrace] = useState<Trace>([]);
-  const [signataire, setSignataire] = useState(ouverte.fiche.signataire ?? `${contexte.patron.prenom ?? ""} ${contexte.patron.nom ?? ""}`.trim());
   const [occupe, setOccupe] = useState(false);
   const [refus, setRefus] = useState<string | null>(null);
   const [enCours, setEnCours] = useState<Famille | null>(null);
@@ -180,7 +176,7 @@ export default function FormulaireFicheDeSecurite({
     if (!png) return;
     setOccupe(true);
     setRefus(null);
-    const r = await signerLaFicheAction(chantierId, { contenu, signaturePng: png, points, signataire });
+    const r = await signerLaFicheAction(chantierId, { contenu, signaturePng: png, points });
     setOccupe(false);
     if (!r.ok) {
       setRefus(r.raison);
@@ -260,9 +256,8 @@ export default function FormulaireFicheDeSecurite({
   // ══════════════════ CE QUE DEMANDE LA LOI — à la première ouverture ══════════════════
   if (ecran === "loi") {
     return (
-      <Cadre pied={<Vert onClick={() => { if (!loiLue) { setLoiLue(true); void enregistrer(etapeVue); } setEcran(signeeLe ? "signee" : "fiche"); }}>{loiLue ? "Retour" : "Compris, je remplis"}</Vert>}>
-        <h2 className="m-0 text-[24px] leading-[1.15]" style={{ fontFamily: font.display }}>Ce que demande la loi</h2>
-        <p className="m-0 mb-3.5 text-[13px]" style={{ color: colors.muted }}>Décret 2021-1833, en vigueur depuis le 1er mars 2022</p>
+      <Cadre pied={<Vert onClick={() => { void enregistrer(etapeVue); setEcran(signeeLe ? "signee" : "fiche"); }}>Compris, je remplis</Vert>}>
+        <h2 className="m-0 mb-3.5 text-[24px] leading-[1.15]" style={{ fontFamily: font.display }}>Décret 2021-1833, en vigueur depuis le 1er mars 2022</h2>
         <Loi>Avant un chantier d’élagage ou d’abattage, le chef d’entreprise remplit une fiche d’intervention, la signe, la montre à son équipe, la garde sur le chantier, la transmet à l’entreprise qui l’a fait venir quand il y a un plan de prévention, et la conserve deux ans. Elle doit dire :</Loi>
         <ol className="m-0 mt-2.5 list-none p-0">
           {[
@@ -659,7 +654,7 @@ export default function FormulaireFicheDeSecurite({
             )}
           </Bloc>
           <Bloc titre="Enregistrement" explication="Le chef d’entreprise signe. Sa signature engage sa responsabilité. La note de la feuille sera imprimée au bas du PDF : présentée aux travailleurs, disponible sur le chantier, transmise s’il y a un plan de prévention, conservée deux ans.">
-            <Champ nom="Nom et prénom du chef d’entreprise (ou de son représentant)" value={signataire} onChange={(e) => setSignataire(e.target.value)} />
+            <Champ nom="Nom et prénom du chef d’entreprise (ou de son représentant)" {...champ("signataire")} />
             <Fixe nom="Date">{dateLongue(new Date())}</Fixe>
             <div className="mt-2.5">
               <Signature trace={trace} onTrace={setTrace} />
@@ -763,9 +758,13 @@ function Groupe({ contenu, setContenu, enCours, setEnCours, famille, genre, sous
 // ─── ce qu'Atlas sait déjà, posé sur une fiche neuve ; jamais sur une fiche commencée ───
 function preremplir(ouverte: FicheOuverte): ContenuFiche {
   const { fiche, contexte } = ouverte;
-  if (fiche.etapeVue > 0 || fiche.signeeLe) return fiche.contenu;
+  // Le signataire se propose même sur une fiche commencée : celles d'avant le
+  // 22 septembre 2026 ne l'ont pas dans leur contenu, et l'écran le proposait.
+  const signataire = fiche.contenu.signataire || `${contexte.patron.prenom ?? ""} ${contexte.patron.nom ?? ""}`.trim();
+  if (fiche.etapeVue > 0 || fiche.signeeLe) return { ...fiche.contenu, signataire };
   return {
     ...fiche.contenu,
+    signataire,
     telephoneIncident: fiche.contenu.telephoneIncident || contexte.entreprise.telephone || "",
     responsableNom: fiche.contenu.responsableNom || contexte.patron.nom || "",
     responsablePrenom: fiche.contenu.responsablePrenom || contexte.patron.prenom || "",

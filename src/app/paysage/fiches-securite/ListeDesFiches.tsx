@@ -5,11 +5,13 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { colors, font, surPlein, voile } from "@/lib/design-tokens";
 import { adresseDeLaVisionneuse } from "@/lib/visionneuse-pdf";
-import { gardeeJusquAu } from "@/lib/fiche-securite";
+import { fichesAMontrer, gardeeJusquAu } from "@/lib/fiche-securite";
+import { titreDeLaPeriode } from "@/lib/periode";
 import type { FicheEnListe } from "@/server/repositories/fiches-securite";
 import { marquerTransmiseAction } from "@/app/planning/fiche-securite-actions";
 import { transmettreLePdf } from "@/components/atlas/transmettre-le-pdf";
 import BoutonTelechargerDocument from "@/components/atlas/BoutonTelechargerDocument";
+import FiltreDeDate from "@/components/atlas/FiltreDeDate";
 
 /**
  * LES FICHES DE SÉCURITÉ, DANS PAYSAGE — sa décision du 21 septembre 2026 :
@@ -18,6 +20,14 @@ import BoutonTelechargerDocument from "@/components/atlas/BoutonTelechargerDocum
  * bouton de filtre** : *« enlève tous tes filtres boutons et garde que
  * celui-là »*, *« tout ça doit être la forme par défaut, pas besoin de mettre
  * le bouton »*.
+ *
+ * **Le jour se choisit aussi** — *« rajoute le jour aussi en filtre jour mois
+ * année »* : `FiltreDeDate`, le même que sur les retours d'intervention.
+ *
+ * **Et un nom se cherche, par-dessus le mois** — sa demande du 22 septembre
+ * 2026 : *« faut pouvoir faire une recherche par nom aussi et il te sort toutes
+ * les fiches de ce client »*. Le champ est celui de Clients, loupe et croix
+ * comprises : la même recherche, le même dessin.
  *
  * Sur chaque fiche : ouvrir, **enregistrer** (dans les fichiers du téléphone),
  * transmettre. Et la date jusqu'à laquelle elle est gardée : deux ans.
@@ -34,17 +44,16 @@ import BoutonTelechargerDocument from "@/components/atlas/BoutonTelechargerDocum
 const MOIS = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre"];
 const dateLongue = (d: Date) => `${d.getDate()} ${MOIS[d.getMonth()]} ${d.getFullYear()}`;
 
-export default function ListeDesFiches({ fiches, mois }: { fiches: FicheEnListe[]; mois: string }) {
+export default function ListeDesFiches({ fiches, periode }: { fiches: FicheEnListe[]; periode: string }) {
   const router = useRouter();
   const [ouverte, setOuverte] = useState<string | null>(null);
   const [transmises, setTransmises] = useState<ReadonlySet<string>>(new Set(fiches.filter((f) => f.transmiseLe).map((f) => f.chantierId)));
   const [refus, setRefus] = useState<string | null>(null);
   const [occupe, setOccupe] = useState(false);
-  const [annee, numero] = mois.split("-").map(Number);
-  const nomDuMois = `${MOIS[numero - 1]} ${annee}`;
+  const [saisie, setSaisie] = useState("");
 
   const groupes: { client: string; fiches: FicheEnListe[] }[] = [];
-  for (const f of fiches) {
+  for (const f of fichesAMontrer(fiches, { periode, saisie })) {
     let g = groupes.find((x) => x.client === f.client);
     if (!g) {
       g = { client: f.client, fiches: [] };
@@ -72,25 +81,38 @@ export default function ListeDesFiches({ fiches, mois }: { fiches: FicheEnListe[
   return (
     <div className="pb-10" data-atlas="liste-des-fiches-de-securite">
       {/* Le mois en tête, comme « Septembre 2026 » sur Terminés : la roue du
-          téléphone s'ouvre au toucher — le champ couvre le titre, invisible. */}
-      <label className="relative mx-[22px] mt-3 flex min-h-12 cursor-pointer items-center justify-center gap-2" data-atlas="mois-des-fiches">
-        <span className="text-[20px] leading-[1.2]" style={{ fontFamily: font.display }}>{nomDuMois.charAt(0).toUpperCase() + nomDuMois.slice(1)}</span>
-        <svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true" style={{ color: colors.or }}><path d="M5 8l5 5 5-5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
+          téléphone s'ouvre au toucher. */}
+      <FiltreDeDate periode={periode} choisir={(p) => router.push(`/paysage/fiches-securite?${p.length === 10 ? "jour" : "mois"}=${p}`)} />
+
+      <div className="relative mx-[22px] mt-3 flex items-center rounded-[10px] pl-[44px] pr-[46px] focus-within:shadow-[inset_0_0_0_1.5px_var(--atlas-or,#B98B47)]" style={{ backgroundColor: colors.rustTint, minHeight: 50 }}>
+        <svg aria-hidden="true" width="19" height="19" viewBox="0 0 20 20" fill="none" stroke={colors.muted} strokeWidth="1.6" className="pointer-events-none absolute left-[15px] top-1/2 -translate-y-1/2">
+          <circle cx="8.2" cy="8.2" r="6.2" />
+          <path d="M12.8 12.8L18 18" strokeLinecap="round" />
+        </svg>
+        {/* `type="text"` et 16 px, pour les raisons écrites dans ListeClients :
+            ni la croix bleue du navigateur, ni le zoom de Safari au premier appui. */}
         <input
-          type="month"
-          aria-label="Choisir un mois"
-          value={mois}
-          onChange={(e) => {
-            if (e.target.value) router.push(`/paysage/fiches-securite?mois=${e.target.value}`);
-          }}
-          className="absolute inset-0 h-full w-full opacity-0"
-          style={{ fontSize: 16 }}
+          type="text"
+          inputMode="search"
+          autoComplete="off"
+          value={saisie}
+          onChange={(e) => setSaisie(e.target.value)}
+          placeholder="Chercher un client"
+          aria-label="Chercher un client"
+          data-atlas="chercher-une-fiche"
+          className="w-full border-0 bg-transparent py-[13px] outline-none"
+          style={{ color: colors.ink, fontSize: 16, caretColor: colors.or }}
         />
-      </label>
+        {saisie && (
+          <button type="button" onClick={() => setSaisie("")} aria-label="Effacer la recherche" className="absolute right-0 top-0 flex h-full w-[46px] items-center justify-center" style={{ color: colors.muted, fontSize: 19, lineHeight: 1 }}>
+            ✕
+          </button>
+        )}
+      </div>
 
       {groupes.length === 0 ? (
         <p className="mx-[22px] mt-7 text-center text-[13.5px] leading-[1.65]" style={{ color: colors.muted }}>
-          Aucune fiche signée en {nomDuMois}.
+          {saisie.trim() ? `Aucune fiche pour « ${saisie.trim()} ».` : periode.length === 10 ? `Aucune fiche signée le ${titreDeLaPeriode(periode)}.` : `Aucune fiche signée en ${titreDeLaPeriode(periode).toLowerCase()}.`}
         </p>
       ) : (
         groupes.map((g) => (

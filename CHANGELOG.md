@@ -8,6 +8,65 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-22
 
+### Fiche de sécurité : le décret devient le titre de l'écran de la loi
+
+Sa demande, capture à l'appui : retirer « Ce que demande la loi » et poser
+« Décret 2021-1833, en vigueur depuis le 1er mars 2022 » à sa place, en grand
+et en noir. Le petit sous-titre gris est supprimé plutôt que doublé ; le bouton
+du bandeau garde son libellé. `test-fiche-securite-e2e.ts` attend désormais ce
+titre (§5 bis : le contrôle suit l'écran qu'il a demandé).
+
+Puis, le même soir : le lien « Ce que demande la loi » sous « Remplir la
+fiche » est retiré — *« pas besoin d'avoir deux portes pour le même
+endroit »*. Chaque fiche neuve ouvre déjà le décret en premier. Ce qui ne
+servait qu'à ce lien part avec lui : `?loi=1`, `loiDemandee`, et le bouton
+« Retour » de l'écran de la loi, qu'on n'atteint plus qu'une fois la fiche
+jamais lue.
+
+### Le nom et le prénom se reprennent d'une fiche de sécurité à l'autre
+
+Sa plainte : *« la case nom et prénom ne s'enregistre pas d'une fiche à
+l'autre ! »*. Deux racines. Le nom du signataire ne vivait que dans l'état de
+l'écran : jamais enregistré pendant la frappe, jamais gardé, et la fiche
+suivante repartait du nom du compte (« Compte de demo »). Et la mémoire des
+fiches ne gardait ni le nom, ni le prénom, ni le téléphone du responsable sur
+place.
+
+Le signataire entre dans `ContenuFiche` (enregistré avec le reste, repris par
+`MemoireDesFiches`) ; l'état local de l'écran et le paramètre séparé de
+`signerLaFicheAction` disparaissent. La colonne `signataire` garde le nom figé
+à la signature, celui du PDF. Aucune migration : le contenu est un jsonb, et
+un contenu ancien reçoit un signataire vide, que l'écran remplace par le nom du
+compte comme avant. Éprouvé : `test-fiche-securite.ts` et
+`test-fiche-securite-e2e.ts` (« le nom signé est repris sur la fiche
+suivante »), vus rouges sur l'ancien code.
+
+### Fiches de sécurité : chercher un client, toutes ses fiches sortent
+
+*« Faut pouvoir faire une recherche par nom aussi et il te sort toutes les
+fiches de ce client. »* Un champ « Chercher un client » sous le mois, dessiné
+comme celui de Clients. Un nom tapé passe par-dessus le mois : toutes les fiches
+signées du client (ou du chantier), tous mois confondus. Le dépôt rend désormais
+toutes les fiches signées (`listerLesFichesSignees`) ; le mois et le nom se
+choisissent à l'écran par une règle pure (`fichesAMontrer`), qui reprend la
+recherche des clients. `scripts/test-fiches-securite-recherche.ts`.
+
+Et le jour, le même soir : *« rajoute le jour aussi en filtre jour mois
+année »*. La roue du titre choisit désormais un jour (`?jour=2026-09-22`) ; le
+jour s'écrit en titre, une croix à côté rend le mois entier. Le jour se lit à
+l'heure du téléphone, pas en UTC : une fiche signée à 0 h 30 reste au jour que
+sa carte écrit.
+
+Puis les retours d'intervention : *« met le filtre jours mois année de la fiche
+de sécurité »*. Le filtre est sorti dans une seule pièce, `FiltreDeDate`, avec
+sa règle pure dans `src/lib/periode.ts`, et les deux écrans s'en servent. Les
+pastilles d'années des retours sont retirées avec `anneesDesRetours`, qui ne
+servait qu'à elles. Les retours s'ouvrent donc sur le mois en cours, et un nom
+tapé sort tous les retours du client, depuis toujours, comme sur les fiches. Le
+jour se lit par `jourIso`, à l'heure de Paris, la même règle côté serveur et
+côté téléphone : la fonction à l'heure du téléphone écrite plus tôt pour les
+fiches faisait double emploi, elle est retirée.
+
 ### La flèche retour de la fiche client garde ce qu'il a tapé
 
 *« Je crée un devis, je remplis la fiche client, je fais retour, mais elle
