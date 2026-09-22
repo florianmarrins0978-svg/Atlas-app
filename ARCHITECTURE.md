@@ -32944,7 +32944,7 @@ là pour être cochée.
 **Ce qui le remplace** : `cocherCommeLaDerniereFois` (`src/lib/passage-entretien.ts`).
 Toutes les lignes restent ; celles que le DERNIER rapport envoyé à ce client
 portait cochées se cochent ; ce qui était déjà coché le reste. L'écran dit
-« 3 prestations cochées comme au dernier passage. ».
+« Prestations cochées : celles du dernier passage. ».
 
 **Le dernier passage, et non tout l'historique, et c'est une décision prise
 ici** : l'historique entier servait à décider quelles lignes GARDER. Pour

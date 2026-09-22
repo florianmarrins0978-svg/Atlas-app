@@ -102,8 +102,8 @@ export default function FicheChantierClient({
   const [envoyeLe, setEnvoyeLe] = useState(passage.envoyeLe);
   const [jeton, setJeton] = useState(passage.jeton);
   const [phrase, setPhrase] = useState<string | null>(null);
-  // **Un CONSTAT n'est pas un refus, et ne se peint pas en rouge.** « 3
-  // prestations cochées » est le résultat attendu du geste : le dire en rouge,
+  // **Un CONSTAT n'est pas un refus, et ne se peint pas en rouge.** « Prestations
+  // cochées : celles du dernier passage » est le résultat attendu du geste : le dire en rouge,
   // au bas de l'écran, au-dessous du bouton, le ferait lire comme une panne
   // — et il chercherait ce qu'il a cassé. Il se dit là où le changement a eu
   // lieu, sous le nom du client, du même gris que le reste.
@@ -191,13 +191,9 @@ export default function FicheChantierClient({
     // **Le serveur rend les lignes cochées, l'écran les affiche.** Refaire les
     // coches ici donnerait deux vérités sur une même liste.
     setLignes(r.lignes);
-    // Une phrase claire et courte, sa demande du 22 septembre 2026 : « Fiche
-    // repliée sur ce que … prend d'habitude » ne voulait rien dire pour lui.
-    setConstat(
-      r.cochees > 0
-        ? `${r.cochees} prestation${r.cochees > 1 ? "s cochées" : " cochée"} comme au dernier passage.`
-        : null
-    );
+    // Une phrase claire et courte, sans compte : sa demande du 22 septembre
+    // 2026, « pas 2 prestations cochées, celles du dernier passage ».
+    setConstat(r.cochees > 0 ? "Prestations cochées : celles du dernier passage." : null);
   }
 
   /**
