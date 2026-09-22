@@ -9,15 +9,16 @@ import { fichesAMontrer } from "../src/lib/fiche-securite";
 // tête ne borne plus rien dès qu'un nom est tapé — une fiche de juin se
 // cherche en septembre.
 
-// Les dates sont à l'heure LOCALE (sans « Z ») : c'est celle que la carte écrit,
-// et celle que le filtre doit lire, quel que soit le fuseau de la machine.
-const fiche = (client: string, chantierNom: string, local: string) => ({ client, chantierNom, signeeLe: new Date(local) });
+// Des instants, en UTC : le filtre les lit à l'heure de Paris, quel que soit le
+// fuseau de la machine qui joue la suite.
+const fiche = (client: string, chantierNom: string, iso: string) => ({ client, chantierNom, signeeLe: new Date(iso) });
 const FICHES = [
-  fiche("Pagnol", "Mr. Pagnol", "2026-09-22T09:00:00"),
-  fiche("Julien", "Mr. Julien", "2026-09-21T08:00:00"),
-  fiche("Pagnol", "Mr. Pagnol, la haie", "2026-06-03T09:00:00"),
-  fiche("Moréau", "Mme Moréau", "2025-11-14T09:00:00"),
-  fiche("Lebrun", "Mr. Lebrun", "2026-10-01T00:30:00"),
+  fiche("Pagnol", "Mr. Pagnol", "2026-09-22T09:00:00Z"),
+  fiche("Julien", "Mr. Julien", "2026-09-21T08:00:00Z"),
+  fiche("Pagnol", "Mr. Pagnol, la haie", "2026-06-03T09:00:00Z"),
+  fiche("Moréau", "Mme Moréau", "2025-11-14T09:00:00Z"),
+  // 0 h 30 le 1er octobre à Paris, 22 h 30 le 30 septembre à Greenwich.
+  fiche("Lebrun", "Mr. Lebrun", "2026-09-30T22:30:00Z"),
 ];
 const noms = (l: { chantierNom: string }[]) => l.map((f) => f.chantierNom);
 

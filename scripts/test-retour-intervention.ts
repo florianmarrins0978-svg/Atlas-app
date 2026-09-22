@@ -12,7 +12,6 @@ import {
   compteDesTaches,
   nomCherche,
   rangerLesRetours,
-  anneesDesRetours,
   type RetourEnListe,
 } from "../src/lib/retour-intervention";
 
@@ -177,14 +176,23 @@ essai("le client au retour le plus récent passe devant", () => {
   assert.deepEqual(rangerLesRetours(liste).map((g) => g.client), ["Récent", "Ancien"]);
 });
 
-// ── Les années — « il faut pouvoir les garder longtemps » ──────────────
-essai("filtrer sur 2024 ne rend que 2024", () => {
+// ── La date — le filtre des fiches de sécurité (22 septembre 2026) ─────
+essai("un mois ne rend que ce mois", () => {
   const liste = [
     retour({ clientNom: "A", poseLe: "2024-10-07T16:15:00.000Z" }),
     retour({ clientNom: "B", poseLe: "2026-09-02T16:40:00.000Z" }),
   ];
-  const g = rangerLesRetours(liste, { annee: "2024" });
-  assert.deepEqual(g.map((x) => x.client), ["A"]);
+  assert.deepEqual(rangerLesRetours(liste, { periode: "2024-10" }).map((x) => x.client), ["A"]);
+});
+
+essai("un jour ne rend que ce jour, lu à l'heure de Paris", () => {
+  const liste = [
+    retour({ clientNom: "A", poseLe: "2026-09-02T16:40:00.000Z" }),
+    // 0 h 30 le 3 septembre à Paris, 22 h 30 le 2 à Greenwich.
+    retour({ clientNom: "B", poseLe: "2026-09-02T22:30:00.000Z" }),
+  ];
+  assert.deepEqual(rangerLesRetours(liste, { periode: "2026-09-02" }).map((x) => x.client), ["A"]);
+  assert.deepEqual(rangerLesRetours(liste, { periode: "2026-09-03" }).map((x) => x.client), ["B"]);
 });
 
 // Aucune fenêtre glissante : un retour de 2024 se retrouve en 2026.
@@ -196,28 +204,15 @@ essai("sans filtre, les vieilles années restent là", () => {
   assert.equal(rangerLesRetours(liste).length, 2);
 });
 
-essai("les années proposées sortent des retours, pas du calendrier", () => {
-  const liste = [
-    retour({ clientNom: "A", poseLe: "2024-10-07T16:15:00.000Z" }),
-    retour({ clientNom: "B", poseLe: "2026-09-02T16:40:00.000Z" }),
-    retour({ clientNom: "C", poseLe: "2026-01-02T09:00:00.000Z" }),
-  ];
-  assert.deepEqual(anneesDesRetours(liste), ["2026", "2024"]);
-});
-
-essai("aucun retour : aucune année à proposer", () => {
-  assert.deepEqual(anneesDesRetours([]), []);
-});
-
-essai("le nom et l'année se cumulent", () => {
+essai("un nom tapé passe par-dessus la date : tous les retours du client", () => {
   const liste = [
     retour({ clientNom: "Mme Costa", poseLe: "2025-06-12T15:40:00.000Z" }),
     retour({ clientNom: "Mme Costa", poseLe: "2026-08-28T17:05:00.000Z" }),
     retour({ clientNom: "M. Rialland", poseLe: "2026-09-02T16:40:00.000Z" }),
   ];
-  const g = rangerLesRetours(liste, { client: "costa", annee: "2026" });
+  const g = rangerLesRetours(liste, { client: "costa", periode: "2026-09" });
   assert.equal(g.length, 1);
-  assert.equal(g[0].retours.length, 1);
+  assert.equal(g[0].retours.length, 2);
 });
 
 console.log(`\n${echecs === 0 ? "✅" : "❌"} Le retour d'intervention — ${echecs} échec(s).`);

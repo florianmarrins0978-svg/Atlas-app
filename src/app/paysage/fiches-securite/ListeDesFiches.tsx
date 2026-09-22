@@ -5,11 +5,13 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { colors, font, surPlein, voile } from "@/lib/design-tokens";
 import { adresseDeLaVisionneuse } from "@/lib/visionneuse-pdf";
-import { fichesAMontrer, gardeeJusquAu, jourDeLaFiche } from "@/lib/fiche-securite";
+import { fichesAMontrer, gardeeJusquAu } from "@/lib/fiche-securite";
+import { titreDeLaPeriode } from "@/lib/periode";
 import type { FicheEnListe } from "@/server/repositories/fiches-securite";
 import { marquerTransmiseAction } from "@/app/planning/fiche-securite-actions";
 import { transmettreLePdf } from "@/components/atlas/transmettre-le-pdf";
 import BoutonTelechargerDocument from "@/components/atlas/BoutonTelechargerDocument";
+import FiltreDeDate from "@/components/atlas/FiltreDeDate";
 
 /**
  * LES FICHES DE SÉCURITÉ, DANS PAYSAGE — sa décision du 21 septembre 2026 :
@@ -20,8 +22,7 @@ import BoutonTelechargerDocument from "@/components/atlas/BoutonTelechargerDocum
  * le bouton »*.
  *
  * **Le jour se choisit aussi** — *« rajoute le jour aussi en filtre jour mois
- * année »* : la roue du titre est celle du jour, du mois et de l'année. Un jour
- * choisi s'écrit en titre, et la croix d'à côté rend le mois entier.
+ * année »* : `FiltreDeDate`, le même que sur les retours d'intervention.
  *
  * **Et un nom se cherche, par-dessus le mois** — sa demande du 22 septembre
  * 2026 : *« faut pouvoir faire une recherche par nom aussi et il te sort toutes
@@ -50,14 +51,6 @@ export default function ListeDesFiches({ fiches, periode }: { fiches: FicheEnLis
   const [refus, setRefus] = useState<string | null>(null);
   const [occupe, setOccupe] = useState(false);
   const [saisie, setSaisie] = useState("");
-  const [annee, numero, jour] = periode.split("-").map(Number);
-  const mois = periode.slice(0, 7);
-  const nomDuMois = `${MOIS[numero - 1]} ${annee}`;
-  const titre = jour ? `${jour} ${nomDuMois}` : nomDuMois.charAt(0).toUpperCase() + nomDuMois.slice(1);
-  // La roue s'ouvre sur le jour choisi ; sur un mois entier, sur aujourd'hui
-  // s'il est de ce mois, sinon sur le 1er.
-  const aujourdhui = jourDeLaFiche(new Date());
-  const valeurDeLaRoue = jour ? periode : aujourdhui.startsWith(mois) ? aujourdhui : `${mois}-01`;
 
   const groupes: { client: string; fiches: FicheEnListe[] }[] = [];
   for (const f of fichesAMontrer(fiches, { periode, saisie })) {
@@ -88,28 +81,8 @@ export default function ListeDesFiches({ fiches, periode }: { fiches: FicheEnLis
   return (
     <div className="pb-10" data-atlas="liste-des-fiches-de-securite">
       {/* Le mois en tête, comme « Septembre 2026 » sur Terminés : la roue du
-          téléphone s'ouvre au toucher — le champ couvre le titre, invisible. */}
-      <div className="mx-[22px] mt-3 flex items-center justify-center gap-1">
-        <label className="relative flex min-h-12 cursor-pointer items-center justify-center gap-2" data-atlas="mois-des-fiches">
-          <span className="text-[20px] leading-[1.2]" style={{ fontFamily: font.display }}>{titre}</span>
-          <svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true" style={{ color: colors.or }}><path d="M5 8l5 5 5-5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
-          <input
-            type="date"
-            aria-label="Choisir un jour"
-            value={valeurDeLaRoue}
-            onChange={(e) => {
-              if (e.target.value) router.push(`/paysage/fiches-securite?jour=${e.target.value}`);
-            }}
-            className="absolute inset-0 h-full w-full opacity-0"
-            style={{ fontSize: 16 }}
-          />
-        </label>
-        {jour ? (
-          <Link href={`/paysage/fiches-securite?mois=${mois}`} aria-label="Tout le mois" data-atlas="tout-le-mois" className="flex h-12 w-11 items-center justify-center no-underline" style={{ color: colors.muted, fontSize: 17, lineHeight: 1 }}>
-            ✕
-          </Link>
-        ) : null}
-      </div>
+          téléphone s'ouvre au toucher. */}
+      <FiltreDeDate periode={periode} choisir={(p) => router.push(`/paysage/fiches-securite?${p.length === 10 ? "jour" : "mois"}=${p}`)} />
 
       <div className="relative mx-[22px] mt-3 flex items-center rounded-[10px] pl-[44px] pr-[46px] focus-within:shadow-[inset_0_0_0_1.5px_var(--atlas-or,#B98B47)]" style={{ backgroundColor: colors.rustTint, minHeight: 50 }}>
         <svg aria-hidden="true" width="19" height="19" viewBox="0 0 20 20" fill="none" stroke={colors.muted} strokeWidth="1.6" className="pointer-events-none absolute left-[15px] top-1/2 -translate-y-1/2">
@@ -139,7 +112,7 @@ export default function ListeDesFiches({ fiches, periode }: { fiches: FicheEnLis
 
       {groupes.length === 0 ? (
         <p className="mx-[22px] mt-7 text-center text-[13.5px] leading-[1.65]" style={{ color: colors.muted }}>
-          {saisie.trim() ? `Aucune fiche pour « ${saisie.trim()} ».` : jour ? `Aucune fiche signée le ${titre}.` : `Aucune fiche signée en ${nomDuMois}.`}
+          {saisie.trim() ? `Aucune fiche pour « ${saisie.trim()} ».` : periode.length === 10 ? `Aucune fiche signée le ${titreDeLaPeriode(periode)}.` : `Aucune fiche signée en ${titreDeLaPeriode(periode).toLowerCase()}.`}
         </p>
       ) : (
         groupes.map((g) => (

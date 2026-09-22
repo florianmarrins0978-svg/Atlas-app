@@ -2,6 +2,7 @@ import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 import { colors, font } from "@/lib/design-tokens";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { listerLesFichesSignees } from "@/server/repositories/fiches-securite";
+import { moisEnCours, periodeValide } from "@/lib/periode";
 import ListeDesFiches from "./ListeDesFiches";
 
 export const dynamic = "force-dynamic";
@@ -14,14 +15,9 @@ export const metadata = { title: "Fiches de sécurité — Atlas" };
  * Par défaut, le mois en cours.
  * Un nom tapé passe par-dessus le mois (`fichesAMontrer`).
  */
-function moisEnCours(): string {
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-}
-
 export default async function FichesDeSecuritePage({ searchParams }: { searchParams: Promise<{ mois?: string; jour?: string }> }) {
   const { mois, jour } = await searchParams;
-  const choisi = jour && /^\d{4}-\d{2}-\d{2}$/.test(jour) ? jour : mois && /^\d{4}-\d{2}$/.test(mois) ? mois : moisEnCours();
+  const choisi = periodeValide(jour) ?? periodeValide(mois) ?? moisEnCours();
   const ctx = await getCurrentCtx();
   const fiches = await listerLesFichesSignees(ctx);
   return (

@@ -37,6 +37,7 @@
  * fiche, et c'est lui qui décide (*« au bon vouloir de l'utilisateur »*).
  */
 import { filtrerClientsParNom, normaliserPourRecherche } from "./recherche-client";
+import { dansLaPeriode } from "./periode";
 
 /** Une famille de cases à cocher : les mots de la MSA, dans l'ordre de la feuille. */
 export const LIBELLES = {
@@ -495,11 +496,7 @@ export function phraseDeGarde(signeeLe: Date, jourLong: (d: Date) => string): st
  *
  * **Le jour aussi — sa demande du même soir :** *« rajoute le jour aussi en
  * filtre jour mois année »*. La période est donc `2026-09` (le mois) ou
- * `2026-09-22` (le jour), et une fiche y est quand sa date commence par elle.
- *
- * **L'heure locale, jamais UTC.** Signée à 0 h 30 à Paris, une fiche est à
- * 22 h 30 UTC la veille : lue en UTC, elle sortirait sous le 21 alors que sa
- * carte écrit « 22 septembre ». Le jour filtré est celui que la carte affiche.
+ * `2026-09-22` (le jour), lue à l'heure du patron (`dansLaPeriode`).
  */
 export function fichesAMontrer<T extends { client: string; chantierNom: string; signeeLe: Date }>(
   fiches: readonly T[],
@@ -511,10 +508,5 @@ export function fichesAMontrer<T extends { client: string; chantierNom: string; 
       choix.saisie
     ).map((x) => x.fiche);
   }
-  return fiches.filter((f) => jourDeLaFiche(f.signeeLe).startsWith(choix.periode));
-}
-
-/** `2026-09-22`, à l'heure du téléphone — la date que la carte écrit. */
-export function jourDeLaFiche(d: Date): string {
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  return fiches.filter((f) => dansLaPeriode(f.signeeLe, choix.periode));
 }

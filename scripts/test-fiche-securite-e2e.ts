@@ -271,10 +271,8 @@ async function main() {
 
     // LE JOUR — *« rajoute le jour aussi en filtre jour mois année »*. La fiche
     // vient d'être signée : elle est au jour d'aujourd'hui, pas à celui d'avant.
-    const d = new Date();
-    const aujourdhui = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-    const hier = new Date(d.getTime() - 86_400_000);
-    const laVeille = `${hier.getFullYear()}-${String(hier.getMonth() + 1).padStart(2, "0")}-${String(hier.getDate()).padStart(2, "0")}`;
+    const aujourdhui = jourDuPatron();
+    const laVeille = jourDuPatron(1);
     await page.goto(`${BASE}/paysage/fiches-securite?jour=${aujourdhui}`, { waitUntil: "networkidle" });
     await carte.waitFor({ timeout: 15_000 });
     await page.goto(`${BASE}/paysage/fiches-securite?jour=${laVeille}`, { waitUntil: "networkidle" });
