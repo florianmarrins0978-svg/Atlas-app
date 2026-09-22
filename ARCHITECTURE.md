@@ -32722,3 +32722,63 @@ retours (§ migration 0080) : la photo du chantier que la fiche montre ne doit
 pas partir en purge quand on l'efface de la pellicule. `fiches_securite_photos`
 existe pour que `supprimerPhoto` pose la question. `test-fiche-securite-db.ts`
 le mesure sur le compteur de `fichiers_a_purger`.
+
+## §403 — La date d'une facture est celle du jour où elle PART
+
+**Son constat du 22 septembre 2026 :** *« pourquoi il me met facturé le
+21 septembre, on est le 22 ? Et je viens de l'envoyer ! »*
+
+`factures.date_emission` était posée à la CRÉATION du brouillon —
+`poserLaFactureBrouillon`, c'est-à-dire à la fin du chantier ou à l'ouverture
+de la facture depuis la fiche du client. L'émission (`emettreFacture`)
+enregistrait bien l'instant réel dans `emise_le`, mais ne rouvrait ni la date
+d'émission ni l'échéance.
+
+### Ce que ça coûtait, et pourquoi ce n'était pas qu'un affichage
+
+| Où | Ce qui était faux |
+|---|---|
+| l'écran Terminés | « Facturé le 21 septembre » un 22 — ce qu'il a vu |
+| **le PDF du client** | « Date : 21/09/2026 », sur la pièce qui fait foi |
+| **le délai de paiement** | l'échéance courait depuis le 21 : un jour de moins, et la mention imprimée à côté — « Paiement à 30 jours à compter de la facture » — le contredisait |
+| **le relevé de TVA** | un brouillon du 31 mars envoyé le 1er avril portait sa TVA sur le trimestre précédent |
+
+Le décalage réel n'est pas d'un jour : un brouillon se prépare à la fin du
+chantier et part quand il a le temps — parfois la semaine suivante.
+
+### La correction, et où elle se pose
+
+`datesDeLaFactureQuiPart` (`src/lib/echeance-facture.ts`) — une règle pure,
+éprouvée sans base. `emettreFacture` l'appelle **avant de composer le PDF** :
+plus bas, le papier archivé aurait gardé la date du brouillon, et c'est celui-là
+que le client conserve. Le trigger d'immuabilité ne s'y oppose pas — il lit
+`OLD.statut`, qui vaut encore `brouillon` à cet instant.
+
+### L'échéance se DÉCALE, elle ne se recalcule pas
+
+Trois façons de la traiter, et deux sont fausses :
+
+| | |
+|---|---|
+| la laisser où elle est | le délai accordé rétrécit, et la mention « à compter de la facture » ment |
+| la refaire depuis le délai réglé | efface l'échéance qu'il a posée à la main avant l'envoi (`majEcheanceFacture`) |
+| **la décaler du même nombre de jours** | ce qu'il accorde au client est un DÉLAI, et il reste entier dans les deux cas |
+
+Aucune heuristique n'a donc à deviner si l'échéance venait du réglage ou de sa
+main : le décalage est juste pour les deux, et c'est pour cela qu'il a été
+retenu plutôt qu'une colonne « échéance choisie ».
+
+### Ce qui n'a PAS été touché, et c'est voulu
+
+Les factures déjà émises ne bougent pas : une pièce partie est immuable, et
+réécrire la date de celle que son client a reçue serait pire que le défaut.
+Le brouillon garde, lui, une date provisoire — la colonne est `NOT NULL`, et le
+PDF d'aperçu porte « FACTURE (BROUILLON) » en titre.
+
+**Aucune couche n'a été retirée** : le défaut n'était pas recouvert, il était
+silencieux. Rien ne lisait `emise_le` pour compenser `date_emission`
+(`donnees-client.ts` s'en sert pour la durée de conservation, ce qui est son
+vrai métier).
+
+`scripts/test-factures.ts` (trois cas, dont le PDF archivé relu) et
+`scripts/test-echeance-facture.ts` (la règle pure, huit cas).

@@ -8,6 +8,19 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-22
 
+### La facture porte le jour où elle part, pas celui où le brouillon a été posé
+
+Son constat : « facturé le 21 septembre » un 22, sur une facture qu'il venait
+d'envoyer. La date d'émission était posée à la création du brouillon — à la fin
+du chantier — et l'envoi ne la rouvrait pas : le PDF du client portait cette
+date-là, l'échéance courait depuis elle (un délai de paiement raccourci
+d'autant, alors que le papier imprime « à 30 jours à compter de la facture »),
+et un brouillon du 31 mars envoyé le 1er avril aurait porté sa TVA sur le
+trimestre précédent. La date et l'échéance se posent désormais à l'émission,
+avant la composition du PDF ; l'échéance se DÉCALE du même nombre de jours,
+pour ne pas écraser celle qu'il aurait choisie à la main. Les factures déjà
+émises ne bougent pas. `ARCHITECTURE.md` §403.
+
 ### Le relevé de TVA sort du plus récent au plus ancien
 
 Sa règle : *« l'ordre pour la TVA collectée et la TVA déductible doit être le

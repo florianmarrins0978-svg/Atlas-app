@@ -26,6 +26,8 @@ import {
   libelleTrimestre,
 } from "../src/server/trimestre";
 import { reglerExigibilite } from "../src/server/repositories/paiements-facture";
+import { lireObjet } from "../src/server/storage";
+import { texteDuPdf } from "./_lecteur-pdf-protege";
 import { nettoyerBase } from "./_test-db";
 
 // Fin de chantier, facture et relevé de TVA — docs/AGENT.md §2.3.
@@ -45,6 +47,9 @@ async function test(nom: string, fn: () => Promise<void>) {
 }
 
 const MAINTENANT = new Date("2026-05-20T09:00:00Z");
+// Son cas, au jour près : brouillon posé le 21 au soir, facture envoyée le 22.
+const LE_21_SEPTEMBRE = new Date("2026-09-21T17:00:00Z");
+const LE_22_SEPTEMBRE = new Date("2026-09-22T12:02:00Z");
 type Ctx = { utilisateurId: string; entrepriseId: string };
 
 async function contexte(suffixe: string): Promise<Ctx> {
@@ -255,6 +260,51 @@ async function main() {
     assert.ok(emise.emiseLe, "la date d'émission n'est pas posée");
     const chantier = await relireChantier(ctx, chantierId);
     assert.ok(chantier?.factureEnvoyeeAt, "le jalon de facturation n'est pas posé");
+  });
+
+  // **LA DATE DE LA FACTURE EST CELLE DE SON ENVOI — son constat du 22 septembre
+  // 2026 :** *« pourquoi il me met facturé le 21 septembre, on est le 22 ? Et je
+  // viens de l'envoyer ! »* Le brouillon était posé la veille, à la fin du
+  // chantier ; c'est ce jour-là qui partait sur le papier du client.
+  await test("la facture porte le jour où elle part, pas celui où le brouillon a été posé", async () => {
+    const ctx = await contexte("datedenvoi");
+    const { chantierId } = await chantierDevise(ctx, "1000.00");
+    const brouillon = await terminerChantier(ctx, chantierId, LE_21_SEPTEMBRE);
+    assert.strictEqual(brouillon.dateEmission, "2026-09-21");
+
+    const emise = await emettreFacture(ctx, brouillon.id, LE_22_SEPTEMBRE);
+
+    assert.strictEqual(emise.dateEmission, "2026-09-22", "la facture garde la date du brouillon");
+    // Le délai accordé au client reste ENTIER : trente jours à compter de la
+    // facture, comme l'imprime la mention juste à côté.
+    assert.strictEqual(emise.dateEcheance, "2026-10-22", "l'échéance n'a pas suivi la facture");
+  });
+
+  // Et ce n'est pas qu'une colonne : c'est ce que le client lit sur son papier.
+  await test("le PDF archivé porte lui aussi le jour de l'envoi", async () => {
+    const ctx = await contexte("datepdf");
+    const { chantierId } = await chantierDevise(ctx, "1000.00");
+    const brouillon = await terminerChantier(ctx, chantierId, LE_21_SEPTEMBRE);
+    const emise = await emettreFacture(ctx, brouillon.id, LE_22_SEPTEMBRE);
+
+    assert.ok(emise.pdfStorageKey, "la facture émise n'a pas de PDF archivé");
+    const texte = texteDuPdf(new Uint8Array(await lireObjet(emise.pdfStorageKey!)));
+    assert.ok(texte.includes("22/09/2026"), "le papier du client ne porte pas le jour de l'envoi");
+    assert.ok(!texte.includes("21/09/2026"), "le papier du client porte encore la date du brouillon");
+  });
+
+  // L'échéance qu'il a posée À LA MAIN garde le délai qu'il a accordé : la
+  // recalculer depuis son délai réglé effacerait son geste, la laisser en place
+  // contredirait la mention « à compter de la facture ». Elle se décale.
+  await test("une échéance choisie à la main se décale avec la facture", async () => {
+    const ctx = await contexte("echeancemain");
+    const { chantierId } = await chantierDevise(ctx, "1000.00");
+    const brouillon = await terminerChantier(ctx, chantierId, LE_21_SEPTEMBRE);
+    const r = await majEcheanceFacture(ctx, brouillon.id, "2026-10-05");
+    assert.strictEqual(r.ok, true);
+
+    const emise = await emettreFacture(ctx, brouillon.id, LE_22_SEPTEMBRE);
+    assert.strictEqual(emise.dateEcheance, "2026-10-06", "les quatorze jours accordés ont fondu");
   });
 
   await test("les totaux sont recalculés depuis les lignes, jamais recopiés", async () => {
