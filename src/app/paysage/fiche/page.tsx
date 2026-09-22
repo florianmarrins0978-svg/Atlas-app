@@ -101,15 +101,13 @@ export default async function FichesPage() {
               // sa tenue ». La capsule est réservée à ce qu'on APPUIE ; ceci est
               // une carte qu'on parcourt, comme « Ma TVA à déclarer ».
               className="flex w-fit max-w-[270px] min-h-[44px] items-center gap-[14px] rounded-[4px] px-[16px] py-[13px]"
-              // `rustTint` est le PAPIER de la charte (`--paper`), pas une
-              // teinte de terre cuite : le nom vient d'avant la reprise
-              // d'Arborea. C'est le fond des éléments teintés, et il reste
-              // lisible sur les deux chartes sombres.
-              //
-              // **Le liseré est d'OR, sa demande du 22 septembre 2026** :
-              // « mets un liseré doré, celui de l'appli ». `colors.or` est l'or
-              // des canaux pris (`ChoixCanal`), défini dans les sept chartes.
-              style={{ backgroundColor: colors.rustTint, border: `1px solid ${colors.or}` }}
+              // **Le fond est BLANC, le liseré d'OR, ses deux demandes du
+              // 22 septembre 2026** : « mets un liseré doré, celui de l'appli »,
+              // puis « mets l'intérieur en blanc ». Le blanc est `card`, celui
+              // des cartes et des champs : sur les deux chartes sombres il
+              // devient leur carte sombre, jamais un aplat blanc illisible.
+              // `colors.or` est l'or des canaux pris (`ChoixCanal`).
+              style={{ backgroundColor: colors.card, border: `1px solid ${colors.or}` }}
             >
               <span className="min-w-0 flex-1">
                 <span className="block text-[16px] leading-[1.2]" style={{ fontFamily: font.display }}>

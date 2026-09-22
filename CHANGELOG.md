@@ -23,7 +23,8 @@ plafond est retiré. Ce lot repose sur les branches du champ de recherche et du
 filtre de date, qui ne sont pas encore sur `main`.
 
 Et deux retouches du même soir : la phrase « Ceux-ci sont partis chez vos
-clients… » quitte « Composer ma fiche », et sa carte prend un liseré d'or.
+clients… » quitte « Composer ma fiche », et sa carte prend un liseré d'or
+sur un fond blanc (`card`).
 
 Sur la fiche de chantier, « + C'est pour quel client ? » devient « + Ajouter un
 client », en gros, doré, centré ; la phrase grise « Facultatif… » dessous est
