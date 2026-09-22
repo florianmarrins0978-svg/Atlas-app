@@ -549,7 +549,7 @@ function caseDuJour(
               // **L'état reste ANNONCÉ, même s'il ne s'écrit plus.** La planche
               // a retiré les mots de la case — c'est la couleur qui parle —,
               // mais une couleur ne se lit pas à voix haute.
-              aria-label={`${c.numero} ${MOIS_LONGS[mois]} — matin : ${ditLaBarre(
+              aria-label={`${c.numero} ${MOIS_LONGS[mois]}, matin : ${ditLaBarre(
                 occupationDe(c.jour, "matin")
               )}, après-midi : ${ditLaBarre(occupationDe(c.jour, "apres_midi"))}`}
               onClick={() => onToucherJour(c.jour)}

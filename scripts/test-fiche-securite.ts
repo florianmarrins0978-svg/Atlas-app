@@ -163,7 +163,7 @@ async function main() {
     });
     const doc = await PDFDocument.load(pdf);
     assert.ok(doc.getPageCount() >= 2, `une fiche entière tient sur plusieurs pages, pas ${doc.getPageCount()}`);
-    assert.equal(doc.getTitle(), "Fiche de sécurité — Pagnol");
+    assert.equal(doc.getTitle(), "Fiche de sécurité, Pagnol");
     assert.equal(NOTE_DE_LA_FEUILLE.lignes.length, 4, "la note au bas de la feuille a quatre lignes");
   });
 

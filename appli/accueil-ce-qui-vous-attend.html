@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Atlas — l'accueil, ce qui vous attend</title>
+<title>Atlas : l'accueil, ce qui vous attend</title>
 <style>
 /*
   L'ACCUEIL — proposition pour « / » (src/app/page.tsx + EcranChantiers.tsx).
@@ -495,7 +495,7 @@ h2.titre{
 
 <div class="pilote">
   <h1>L'accueil, ce qui vous attend
-    <small>Proposition pour « / » — rien n'est codé dans l'application</small></h1>
+    <small>Proposition pour « / » : rien n'est codé dans l'application</small></h1>
 
   <div class="rang"><b>Écran</b>
     <button data-k="ecran" data-v="apres">Après</button>
@@ -555,7 +555,7 @@ function railDuRetard(j) {
   return { haut: String(j), bas: j > 1 ? "jours" : "jour" };
 }
 
-/* Les onze grains — EcranChantiers.tsx, repris tels quels. */
+/* Les onze grains : EcranChantiers.tsx, repris tels quels. */
 const GRAINS = [
   {x:7.7,y:-36.9,l:2.3,t:9},{x:17,y:-44.8,l:1.6,t:43},{x:34.9,y:-22.6,l:1.7,t:22},
   {x:35.2,y:2.1,l:1.8,t:0},{x:35,y:29,l:1.9,t:34},{x:9.5,y:38,l:2,t:13},
@@ -569,30 +569,30 @@ const GRAINS = [
    propre libellé et une précision datée. */
 const SEPT = [
   { j:"03", m:"sept.", nom:"Mme Rialland", lieu:"7 chemin du Pré, Vertou",
-    etat:"Devis prêt à envoyer · 3 photos" },
+    etat:"Devis prêt à envoyer : 3 photos" },
   { j:"02", m:"sept.", nom:"Mr. Martins", lieu:"Adresse non renseignée", manquant:true,
-    etat:"Brouillon · sans photo" },
+    etat:"Brouillon : sans photo" },
   { j:"31", m:"août", nom:"Mme Lucie", lieu:"18 allée des Chênes, Rezé",
-    etat:"Correction demandée · 4 photos" },
+    etat:"Correction demandée : 4 photos" },
   { j:"28", m:"août", nom:"Mr. Bernard", lieu:"12 rue des Lilas, Nantes",
-    etat:"Devis envoyé · sans réponse", precision:"Envoyé le lundi 10 août." },
+    etat:"Devis envoyé : sans réponse", precision:"Envoyé le lundi 10 août." },
   { j:"26", m:"août", nom:"Copropriété Les Tilleuls", lieu:"3 bd Guist'hau, Nantes",
-    etat:"Devis envoyé · à relancer", precision:"Envoyé le mardi 12 août." },
+    etat:"Devis envoyé : à relancer", precision:"Envoyé le mardi 12 août." },
   { j:"24", m:"août", nom:"Mr. Gourdon", lieu:"La Chapelle-sur-Erdre",
-    etat:"À vérifier · 2 photos" },
+    etat:"À vérifier : 2 photos" },
   { j:"21", m:"août", nom:"Mme Peltier", lieu:"9 rue du Verger, Orvault",
-    etat:"Vérifié · 5 photos" },
+    etat:"Vérifié : 5 photos" },
 ];
 
 const LIMITES = [
   { j:"03", m:"sept.", nom:"Mr. Martins", lieu:"Adresse non renseignée", manquant:true,
-    etat:"Brouillon · sans photo" },
+    etat:"Brouillon : sans photo" },
   { j:"02", m:"sept.", nom:"Syndicat intercommunal des Bords de Sèvre", lieu:"Vertou",
-    etat:"Devis prêt à envoyer · 1 photo" },
+    etat:"Devis prêt à envoyer : 1 photo" },
   { j:"01", m:"sept.", nom:"Mme Lucie", lieu:"18 allée des Chênes, Rezé",
-    etat:"Devis caduc · sans photo" },
+    etat:"Devis caduc : sans photo" },
   { j:"29", m:"août", nom:"Mr. Bernard", lieu:"12 rue des Lilas, Nantes",
-    etat:"Facturé · 2 photos",
+    etat:"Facturé : 2 photos",
     refus:"Ce chantier est facturé : sa facture figure au relevé de TVA." },
 ];
 
@@ -607,7 +607,7 @@ const ATTENTES = [
   { id:"a5", genre:"acceptee", jours:1, qui:"Mme Rialland", verbe:"a accepté",
     decide:"Retenu le mardi 15 septembre.",
     faire:"Ouvrir le devis validé", ferme:[] },
-  /* PERSONNE N'A RIEN DIT — c'est l'application qui compte les jours. */
+  /* PERSONNE N'A RIEN DIT : c'est l'application qui compte les jours. */
   { id:"a2", genre:"facture-impayee", jours:9, etiquette:"Facture impayée", nom:"Mr. Gourdon",
     dit:"Échéance dépassée.", somme:"1 240,00 €", sur:"2 480,00 €",
     faire:"Noter un règlement", ferme:["commercial"] },
@@ -617,12 +617,12 @@ const ATTENTES = [
     dit:"Chantier terminé, et aucune facture n'est partie.",
     faire:"Créer la facture", ferme:["commercial"] },
   /* LE LIEN A EXPIRÉ : personne n'a rien dit. C'est donc un rappel, pas une
-     réponse — et c'est la limite de la règle, assumée. */
+     réponse : et c'est la limite de la règle, assumée. */
   { id:"a6", genre:"caduc", jours:3, etiquette:"Devis caduc", nom:"Mr. Gourdon",
     dit:"Le lien a expiré sans réponse.", faire:"Reprendre le devis", ferme:[] },
 ];
 
-/* Les onglets du bas, par rôle — ce que `cheminAutorise()` autorise, vérifié
+/* Les onglets du bas, par rôle : ce que `cheminAutorise()` autorise, vérifié
    en exécutant src/lib/acces-roles.ts. */
 const ONGLETS = {
   patron:      ["Chantiers","Planning","Terminés","Paysage","Réglages"],
@@ -632,7 +632,7 @@ const ONGLETS = {
 
 /* Combien de rangées « Aujourd'hui » se montrent sans qu'on déplie.
    UNE, et c'est une correction faite APRÈS mesure : à deux, la liste des
-   chantiers ne montrait plus une seule ligne entière sur un matin chargé —
+   chantiers ne montrait plus une seule ligne entière sur un matin chargé :
    c'est-à-dire exactement le défaut qu'on venait réparer. Le compte de la
    rangée (« Aujourd'hui 3 ») dit ce qui n'est pas montré ; « 2 de plus »
    l'ouvre. */
@@ -653,7 +653,7 @@ function chantiers() {
     const out = [];
     for (let i = 0; i < 30; i++) {
       const s = SEPT[i % SEPT.length];
-      out.push({ ...s, nom: s.nom + (i >= SEPT.length ? " · " + (i + 1) : ""), id: "c" + i });
+      out.push({ ...s, nom: s.nom + (i >= SEPT.length ? " : " + (i + 1) : ""), id: "c" + i });
     }
     return out;
   }
@@ -668,7 +668,7 @@ function attentes() {
   return a
     .filter((x) => !x.ferme.includes(etat.role))
     .filter((x) => !masquees.includes(x.id))
-    /* LE PLUS RÉCENT EN HAUT, ET RIEN D'AUTRE — sa règle du 26 août 2026
+    /* LE PLUS RÉCENT EN HAUT, ET RIEN D'AUTRE : sa règle du 26 août 2026
        ($src/lib/ordre-notifications.ts). Ni la sorte, ni l'urgence, ni le
        montant : une seule question, quand est-ce arrivé. Le tri est le MÊME
        dans les deux versions de l'écran, sans quoi la comparaison mentirait. */
@@ -743,13 +743,13 @@ function uneAttente(a) {
      c'est QUELQU'UN QUI A ÉCRIT.
 
      La règle tient en une ligne : **la grande ligne porte ce que la PERSONNE
-     a dit ou décidé.** S'il n'y a personne — un rappel, un lien expiré —,
+     a dit ou décidé.** S'il n'y a personne, un rappel, un lien expiré —,
      elle porte le nom du chantier, comme avant. Les deux rangées n'ont donc
      plus la même silhouette : l'une s'ouvre sur des mots entre guillemets,
      l'autre sur un nom.
 
-     Et l'étiquette NOMME LA PERSONNE ET SON GESTE — « Mme Lucie a répondu »,
-     « Mme Rialland a accepté » — au lieu de nommer un état de dossier.
+     Et l'étiquette NOMME LA PERSONNE ET SON GESTE : « Mme Lucie a répondu »,
+     « Mme Rialland a accepté » : au lieu de nommer un état de dossier.
 
      Ce qui NE change pas : l'ordre reste la date, sa règle du 26 août. Une
      réponse ne double personne ; elle se reconnaît, c'est tout.
@@ -794,7 +794,7 @@ function rendreApres() {
 
   /* La rangée porte le compte de tête ET l'action. Une seule rangée, toujours
      à la même place : « Aujourd'hui » quand quelque chose attend, « En cours »
-     sinon — et « Créer un devis » à sa droite dans les deux cas. */
+     sinon : et « Créer un devis » à sa droite dans les deux cas. */
   const rubriqueHaute = as.length
     ? `<span class="mot pointe">Aujourd'hui</span><span class="nb">${as.length}</span>`
     : `<span class="mot">En cours</span><span class="nb">${cs.length}</span>`;
@@ -823,7 +823,7 @@ function rendreApres() {
     ${barreDuBas()}`;
 }
 
-/* ─── AVANT — l'écran d'aujourd'hui, reproduit pour comparer ───────────── */
+/* ─── AVANT, l'écran d'aujourd'hui, reproduit pour comparer ───────────── */
 function rendreAvant() {
   const cs = chantiers();
   const as = attentes();
@@ -837,7 +837,7 @@ function rendreAvant() {
     const texte =
       a.genre === "correction" ? "Le client veut ce devis corrigé avant de l'accepter."
       : a.genre === "acceptee" ? "Le client a accepté, et retenu le mardi 15 septembre."
-      : a.genre === "caduc" ? "Le lien a expiré sans réponse. Le client n'a rien dit — ni oui, ni non. Le devis peut être repris et renvoyé."
+      : a.genre === "caduc" ? "Le lien a expiré sans réponse. Le client n'a rien dit, ni oui, ni non. Le devis peut être repris et renvoyé."
       : a.genre === "chantier-sans-devis" ? `Chantier ouvert ${depuisCombien(a.jours)}, et aucun devis n'est parti.`
       : a.genre === "facture-impayee" ? `Échéance dépassée ${depuisCombien(a.jours)}.`
       : `Chantier terminé ${depuisCombien(a.jours)}, et aucune facture n'est partie.`;
@@ -848,7 +848,7 @@ function rendreAvant() {
       : a.etiquette;
     /* Le nom du chantier, qui est celui du client quand rien ne l'a nommé
        ($src/lib/nom-chantier.ts$). Une réponse et un rappel l'affichent
-       pareil — c'est exactement ce qu'il reproche à cet écran. */
+       pareil, c'est exactement ce qu'il reproche à cet écran. */
     const nom = a.qui || a.nom;
     return `<div class="carte" data-ton="${urgent ? "teinte" : "nu"}">
       <p class="t">${titre}</p><p class="n">${nom}</p><p class="x">${texte}</p>
@@ -937,7 +937,7 @@ function rendre() {
   mesurer();
 }
 
-/* Ce qui reste visible sous la ligne de flottaison — mesuré, pas estimé. */
+/* Ce qui reste visible sous la ligne de flottaison, mesuré, pas estimé. */
 function mesurer() {
   const fil = document.getElementById("fil");
   if (!fil) return;
@@ -1001,7 +1001,7 @@ function majTiroir() {
   t.dataset.ouvert = retires.length ? "oui" : "non";
   t.querySelector("span").textContent = retires.length > 1 ? "Retirés à l'instant" : "Retiré à l'instant";
   t.querySelector("button").tabIndex = retires.length ? 0 : -1;
-  /* Le compte suit le retrait tout de suite — sa règle : « un 8 au-dessus de
+  /* Le compte suit le retrait tout de suite, sa règle : « un 8 au-dessus de
      sept lignes ferait douter que le retrait ait eu lieu ». */
   const nbs = [...ecran.querySelectorAll(".rubrique")];
   const enCours = nbs.find((r) => r.textContent.trim().startsWith("En cours"));
@@ -1032,25 +1032,24 @@ décidé.</b> S'il n'y a personne, elle porte le nom du chantier, comme avant.</
 <table>
 <tr><th>Ce qui est arrivé</th><th>Ce que la rangée montre</th></tr>
 <tr><td>Le client a <b>écrit</b></td><td>« Mme Lucie a répondu », puis <b>ses mots</b>, en serif, sous un cheveu d'or</td></tr>
-<tr><td>Le client a <b>décidé</b> sans un mot</td><td>« Mme Rialland a accepté », puis <b>sa décision</b> — sans guillemets, il n'a rien dit</td></tr>
+<tr><td>Le client a <b>décidé</b> sans un mot</td><td>« Mme Rialland a accepté », puis <b>sa décision</b> : sans guillemets, il n'a rien dit</td></tr>
 <tr><td><b>Personne</b> n'a rien dit</td><td>le délai en gros à gauche, l'état, le nom du chantier</td></tr>
 </table>
 <p>L'étiquette <b>nomme la personne et son geste</b> au lieu de nommer un état de dossier.
 Touchez <b>« 5 de plus »</b> pour voir les deux formes l'une sous l'autre.</p>
-<p><b>Ce qui ne change pas :</b> l'ordre reste la date, votre règle du 26 août — une réponse
+<p><b>Ce qui ne change pas :</b> l'ordre reste la date, votre règle du 26 août : une réponse
 ne double personne, elle se reconnaît. <b>Et une limite, dite franchement :</b> un devis caduc
-garde la forme d'un rappel, parce que personne n'a rien dit — ni oui, ni non.</p>
+garde la forme d'un rappel, parce que personne n'a rien dit : ni oui, ni non.</p>
 
 <h3>Ce qui change</h3>
 <ul>
   <li><b>Le rail de gauche porte le retard, pas la date.</b> « Hier », « 14 / jours ».
       Le nombre existe déjà au serveur (<code>depuisJours</code>) ; il croît vers le bas,
-      ce qui rend lisible l'ordre qu'il a choisi le 26 août — le plus récent en haut —
-      sans avoir à l'expliquer.</li>
+      ce qui rend lisible l'ordre qu'il a choisi le 26 août (le plus récent en haut) sans avoir à l'expliquer.</li>
   <li><b>Plus de cartes.</b> Ce qui attend se pose sur le même fil que les chantiers.
       Il avait refusé les boîtes autour d'un chantier le 10 août ; les notifications en
       étaient restées une, et l'écran portait deux mondes.</li>
-  <li><b>Le compte de tête est nommé</b> — « Aujourd'hui 4 ». Une pile de cartes ne dit
+  <li><b>Le compte de tête est nommé</b> : « Aujourd'hui 4 ». Une pile de cartes ne dit
       pas si on les a toutes vues.</li>
   <li><b>« Créer un devis » quitte le milieu de l'écran</b> et se range à droite, au-dessus
       de la liste. Le mot, l'anneau, le battement et les onze grains ne bougent pas d'un
@@ -1077,27 +1076,27 @@ mais il est d'un chantier, pas de trois.</p>
 <ul>
   <li>Le compte et le bouton étaient sur <b>la même rangée</b>. À 390 px c'était juste ;
       à 360 px « 4 » et « CRÉER » se touchaient. La mesure annonçait pourtant 10 px de
-      marge — c'est l'image qui a tranché. Le bouton a sa rangée.</li>
+      marge, c'est l'image qui a tranché. Le bouton a sa rangée.</li>
   <li>La zone du haut montrait <b>deux</b> choses en attente. Mesuré : plus un seul
       chantier entier à l'écran, c'est-à-dire le défaut qu'on venait réparer. Elle en
       montre une, et le compte dit le reste.</li>
   <li>Mes rangées n'avaient <b>aucun point d'accroche</b> : le fil se calait sur le
       premier chantier et coupait le haut de la première. C'est exactement ce qu'il avait
-      signalé le 16 août — « le premier message est trop haut » — et c'est corrigé comme
+      signalé le 16 août (« le premier message est trop haut ») et c'est corrigé comme
       <code>globals.css</code> le corrige.</li>
 </ul>
 
 <h3>Ce que la mesure des couleurs a dit</h3>
 <table><tr><th>Mesuré</th><th>Origine</th><th>Nuit</th></tr>
-<tr><td>L'or sur le fond — la ligne d'état de chaque chantier</td><td><b>2,77</b></td><td>6,14</td></tr>
-<tr><td>Le gris sur le fond — le lieu, « En cours »</td><td><b>3,32</b></td><td>5,19</td></tr>
-<tr><td>Carte teintée contre carte nue — « urgent » contre « pas urgent »</td><td>1,15</td><td><b>1,05</b></td></tr></table>
+<tr><td>L'or sur le fond, la ligne d'état de chaque chantier</td><td><b>2,77</b></td><td>6,14</td></tr>
+<tr><td>Le gris sur le fond : le lieu, « En cours »</td><td><b>3,32</b></td><td>5,19</td></tr>
+<tr><td>Carte teintée contre carte nue : « urgent » contre « pas urgent »</td><td>1,15</td><td><b>1,05</b></td></tr></table>
 <p>Le seuil d'un texte est 4,5. La ligne d'état est en dessous sur la charte qu'il regarde
 tous les jours, en plein soleil. Le bouton « Or au contraste mesuré » montre ce que la
 fonction <code>detacher()</code> du dépôt rend au seuil 4,5 : <code>#8b6835</code>.
-C'est son or — il ne se change pas sans lui.</p>
-<p>Sur Nuit, la carte teintée qu'il a choisie le 16 août — « la B », pour qu'au quatorzième
-jour ça ne se rate pas — se distingue d'une carte ordinaire de <b>1,05</b>. Elle ne signale
+C'est son or : il ne se change pas sans lui.</p>
+<p>Sur Nuit, la carte teintée qu'il a choisie le 16 août : « la B », pour qu'au quatorzième
+jour ça ne se rate pas : se distingue d'une carte ordinaire de <b>1,05</b>. Elle ne signale
 rien. Dans la proposition, ce qui attend se distingue par sa place et par son retard : ça
 tient sur les huit chartes.</p>
 

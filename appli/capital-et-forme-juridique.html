@@ -96,16 +96,16 @@
   <b>Ce que vous avez demandé le 30 août :</b> pouvoir ajouter, si vous le
   voulez, le capital ou la forme juridique de votre société, avec ou sans le
   nom de société. <b>La solution retenue (B) :</b> la forme juridique existe
-  déjà dans vos réglages mais ne s'imprime nulle part — je la répare — et
+  déjà dans vos réglages mais ne s'imprime nulle part (je la répare) et
   j'ajoute le capital, qui ne s'affiche que pour une vraie société, jamais
   pour une entreprise individuelle. <b>Touchez, le devis dessous change.</b>
   <b>Ajout du même jour :</b> une troisième mention légale, la ville
-  d'immatriculation au RCS — le numéro, lui, existe déjà, c'est votre SIREN.
+  d'immatriculation au RCS : le numéro, lui, existe déjà, c'est votre SIREN.
 </div>
 
 <div class="bloc">
   <h2>L'écran, dans Réglages → Identité</h2>
-  <p>Rien de nouveau pour la forme juridique — vous la choisissez déjà. <b>Le
+  <p>Rien de nouveau pour la forme juridique : vous la choisissez déjà. <b>Le
      capital est le seul champ neuf</b>, et il s'efface tout seul dès que la
      forme n'en a pas.</p>
 </div>
@@ -144,7 +144,7 @@
 
 <div class="verdict">
   <b>« Ne pas l'imprimer » n'efface rien.</b> La forme et le capital restent
-  enregistrés dans Identité — seul le devis cesse de les montrer. Rallumer
+  enregistrés dans Identité, seul le devis cesse de les montrer. Rallumer
   l'affichage plus tard n'oblige pas à ressaisir le capital.
   <b>Et ça vaut pour la facture aussi</b> : les deux documents lisent la même
   identité d'entreprise et le même réglage d'affichage, donc un seul geste
@@ -153,17 +153,17 @@
 
 <div class="question">
   <b>Une chose à trancher :</b> pour « Autre » (société civile, GAEC…), je
-  laisse le champ Capital apparaître, faute de savoir s'il en a un — dites-moi
+  laisse le champ Capital apparaître, faute de savoir s'il en a un : dites-moi
   si je dois plutôt le masquer. <b>Rien n'est codé.</b>
 </div>
 
 <script>
 /* ── Les formes, et qui a un capital ──────────────────────────────────
    Reprend exactement `src/lib/formes-juridiques.ts` : même liste, même
-   ordre. `capital` dit si la mention a un sens pour cette forme — une
+   ordre. `capital` dit si la mention a un sens pour cette forme : une
    entreprise individuelle n'a pas de capital social, une SASU en a un.
    `null` pour « Autre » : une société civile ou un GAEC peuvent en avoir
-   un, une association non — on ne tranche pas à sa place. */
+   un, une association non : on ne tranche pas à sa place. */
 const FORMES = [
   { sigle: "EI", nom: "Entreprise individuelle", capital: false },
   { sigle: "Micro-entreprise", nom: "Régime de l'entreprise individuelle", capital: false },
@@ -209,7 +209,7 @@ function peindreForme() {
 
 function peindreCapital() {
   // **Silence, pas grisé.** Les deux champs disparaissent entièrement pour
-  // une forme sans capital ni RCS — grisés, ils se rempliraient quand même
+  // une forme sans capital ni RCS, grisés, ils se rempliraient quand même
   // « au cas où ».
   if (formeCourante().capital === false) {
     hoteCapital.innerHTML = "";

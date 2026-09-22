@@ -151,8 +151,8 @@
 </div>
 
 <div class="choix" role="group" aria-label="Où poser « Annuler », et à quelle largeur">
-  <button type="button" data-ou="cote" aria-pressed="true">A — à côté</button>
-  <button type="button" data-ou="dessous" aria-pressed="false">B — en dessous</button>
+  <button type="button" data-ou="cote" aria-pressed="true">A : à côté</button>
+  <button type="button" data-ou="dessous" aria-pressed="false">B, en dessous</button>
   <button type="button" id="largeur" aria-pressed="false">Écran étroit</button>
 </div>
 
@@ -189,21 +189,21 @@
 
 <div class="note">
   <p><b>Ce qui change :</b> tant que l’interrupteur est là, « Annuler » est
-  avec lui. Il efface l’absence que vous venez de poser, en un seul appui — au
+  avec lui. Il efface l’absence que vous venez de poser, en un seul appui : au
   lieu de rouvrir « + Salarié absent ? » puis de toucher le nom.</p>
   <p><b>Ce qui ne change pas :</b> ce second chemin reste. C’est le vôtre, du
-  10 septembre — pour annuler une absence posée hier, l’interrupteur n’est plus
+  10 septembre : pour annuler une absence posée hier, l’interrupteur n’est plus
   là, et c’est par « + Salarié absent ? » qu’on y revient.</p>
   <p><b>Ce qui a été écarté :</b> mettre « Annuler » comme quatrième case DANS
-  l’interrupteur. « Matin · Après-midi · Journée · Annuler » se lirait comme un
+  l’interrupteur. « Matin, Après-midi, Journée, Annuler » se lirait comme un
   quatrième moment.</p>
   <p><b>Pourquoi deux placements, et pas un seul :</b> « Annuler » à côté
   reprend de la place à « Après-midi ». Sur un écran large, ça tient. <b>Sur un
-  écran étroit, « Après-midi » passe sous la case verte</b> — touchez
+  écran étroit, « Après-midi » passe sous la case verte</b> : touchez
   « Écran étroit » pour le voir. <b>B</b> ne dépend d’aucune largeur.</p>
   <p><b>Ce que je défends : A si vous gardez votre téléphone</b>, c’est votre
-  phrase et ça tient chez vous. <b>B si l’appli doit tenir chez n’importe qui</b>
-  — et elle le doit.</p>
+  phrase et ça tient chez vous. <b>B si l’appli doit tenir chez n’importe qui</b>,
+  et elle le doit.</p>
   <p><b>Rien n’est codé.</b></p>
 </div>
 
@@ -217,7 +217,7 @@ const fait = document.getElementById("fait");
 function recommencer() {
   pose.style.display = "block";
   // **Vider le style en ligne, ne pas imposer « flex »** : c'est la feuille
-  // qui décide — B pose l'interrupteur en bloc, et un « flex » écrit ici
+  // qui décide : B pose l'interrupteur en bloc, et un « flex » écrit ici
   // l'écraserait sans qu'on voie pourquoi.
   rangee.style.display = "";
   quand.textContent = "journée";
@@ -244,7 +244,7 @@ document.getElementById("annuler").onclick = () => {
 };
 
 document.getElementById("geste").onclick = () => {
-  fait.textContent = "C’est par ici qu’on annule une absence posée hier — inchangé.";
+  fait.textContent = "C’est par ici qu’on annule une absence posée hier, inchangé.";
 };
 
 document.getElementById("rejouer").onclick = recommencer;

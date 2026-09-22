@@ -773,7 +773,10 @@ cas("chaque arroseur dit sa famille, et la légende la traduit", () => {
     // Enfin : la légende parle-t-elle du matériel que la LISTE facture ? C'est
     // le contrôle qui aurait vu le mensonge — la légende disait 5004 pendant
     // que la commande portait des 3504.
-    const modele = buse.nom.split("·")[0].trim();
+    // Le nom du catalogue s'écrit « 3504, buse 0,75 » depuis le 22 septembre 2026
+    // (sa règle : plus de point médian). Le modèle est ce qui précède la première
+    // virgule.
+    const modele = buse.nom.split(",")[0].trim();
     if (!facturees.includes(sansAccent(modele))) {
       throw new Error(
         `la légende annonce « ${modele} » que la liste des pièces ne facture nulle part : ` +

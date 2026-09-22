@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Atlas — la dictée, quatre allures</title>
+<title>Atlas : la dictée, quatre allures</title>
 <style>
 /*
   LA DICTÉE DE LA FICHE CHANTIER — QUATRE ALLURES À ESSAYER.
@@ -302,10 +302,10 @@ body[data-etat="pause"] .v2 .stop::after{animation-play-state:paused}
   <nav class="onglets" aria-label="Les quatre allures">
     <div class="onglets-piste" id="piste">
       <button type="button" data-v="0" aria-pressed="true">Aujourd'hui</button>
-      <button type="button" data-v="1" aria-pressed="false">1 · La barre</button>
-      <button type="button" data-v="2" aria-pressed="false">2 · L'anneau</button>
-      <button type="button" data-v="3" aria-pressed="false">3 · La ligne</button>
-      <button type="button" data-v="4" aria-pressed="false">4 · Le galet</button>
+      <button type="button" data-v="1" aria-pressed="false">1, La barre</button>
+      <button type="button" data-v="2" aria-pressed="false">2, L'anneau</button>
+      <button type="button" data-v="3" aria-pressed="false">3, La ligne</button>
+      <button type="button" data-v="4" aria-pressed="false">4, Le galet</button>
     </div>
     <button type="button" class="teinte" id="teinte" aria-label="Passer en fond noir">☾</button>
   </nav>
@@ -314,7 +314,7 @@ body[data-etat="pause"] .v2 .stop::after{animation-play-state:paused}
     <div class="entete">
       <button class="retour" type="button" aria-label="Retour">‹</button>
       <div>
-        <p class="avant">M. Bernard — 12 rue des Lilas, Nantes</p>
+        <p class="avant">M. Bernard, 12 rue des Lilas, Nantes</p>
         <h1>Taille de haie</h1>
         <p class="statut">Devis à faire</p>
       </div>
@@ -557,7 +557,7 @@ body[data-etat="pause"] .v2 .stop::after{animation-play-state:paused}
       aller('envoi');
       if (retourEnvoi) clearTimeout(retourEnvoi);
       /* La planche revient au repos : dans l'application, l'envoi mène au
-         devis — ici il n'y a rien derrière, et rester bloqué sur trois points
+         devis : ici il n'y a rien derrière, et rester bloqué sur trois points
          empêcherait d'essayer la proposition suivante. */
       retourEnvoi = setTimeout(function () { aller('repos'); }, 2400);
     }

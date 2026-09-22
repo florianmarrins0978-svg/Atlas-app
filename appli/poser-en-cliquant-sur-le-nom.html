@@ -180,14 +180,14 @@
 <body>
 
 <div class="bandeau">
-  <b>Le doublon part, et le nom se touche.</b> <b>Quatre clients attendent un jour</b> —
+  <b>Le doublon part, et le nom se touche.</b> <b>Quatre clients attendent un jour</b> :
   c’est le cas qui départage. Choisissez A, B ou C, touchez le 22, puis le nom.
 </div>
 
 <div class="choix" role="group" aria-label="Trois façons de rendre le nom appuyable">
-  <button type="button" data-style="a" aria-pressed="false">A — la tuile</button>
-  <button type="button" data-style="b" aria-pressed="false">B — le nom en or</button>
-  <button type="button" data-style="c" aria-pressed="true">C — le nom entouré</button>
+  <button type="button" data-style="a" aria-pressed="false">A, la tuile</button>
+  <button type="button" data-style="b" aria-pressed="false">B, le nom en or</button>
+  <button type="button" data-style="c" aria-pressed="true">C, le nom entouré</button>
 </div>
 
 <div class="tel" id="tel">
@@ -216,7 +216,7 @@
 <div class="note">
   <p><b>Ce qui change, dans les trois :</b> le bouton « Poser » disparaît, et
   c’est le nom qu’on appuie. La phrase noire « À poser sur mardi 22 septembre »
-  disparaît aussi — elle redisait la ligne dorée juste au-dessus.</p>
+  disparaît aussi, elle redisait la ligne dorée juste au-dessus.</p>
   <p><b>Elle ne disparaît pas quand aucun jour n’est touché :</b> là, elle dit
   « Touchez d’abord un jour du calendrier », et c’est la seule ligne qui
   l’explique. Touchez à nouveau le 22 pour le voir.</p>
@@ -226,8 +226,8 @@
   <p><b>À quatre, ce qui change :</b> <b>A</b> empile quatre pavés et remplit le
   tiroir ; <b>B</b> tient dans la hauteur mais quatre noms en or se ressemblent ;
   <b>C</b> garde quatre lignes espacées, chacune close. Le quatrième nom est
-  volontairement long — c’est lui qui dit si la ligne tient.</p>
-  <p><b>Ce que je défends : C.</b> C’est votre phrase — le contour du « Poser »
+  volontairement long : c’est lui qui dit si la ligne tient.</p>
+  <p><b>Ce que je défends : C.</b> C’est votre phrase, le contour du « Poser »
   vient se mettre autour du nom, et l’application a déjà cette forme partout.</p>
   <p><b>Rien n’est codé</b>, sauf la phrase noire en double, qui est supprimée.</p>
 </div>
@@ -235,7 +235,7 @@
 <script>
 /*
   Aucune règle ici : la planche ne calcule rien. Les jours sont posés autour
-  du 22 pour reproduire exactement sa capture — une planche qui montre un mois
+  du 22 pour reproduire exactement sa capture, une planche qui montre un mois
   inventé se lit comme une planche fausse.
 */
 const JOURS = [21, 22, 23, 24, 25];
@@ -281,7 +281,7 @@ function dessinerLeMois() {
 function dessiner() {
   dessinerLeMois();
 
-  // LA POIGNÉE, et elle seule, porte « À poser sur … » — en or.
+  // LA POIGNÉE, et elle seule, porte « À poser sur … » : en or.
   if (jourTouche && restants.length > 0) {
     resume.textContent = "À poser sur " + NOM_DU_JOUR[jourTouche];
     resume.classList.remove("neutre");
@@ -337,9 +337,9 @@ function dessiner() {
     const chev = document.createElement("button");
     chev.type = "button";
     chev.className = "chev";
-    chev.setAttribute("aria-label", "Ouvrir le chantier — " + c.nom);
+    chev.setAttribute("aria-label", "Ouvrir le chantier : " + c.nom);
     chev.textContent = "›";
-    chev.onclick = () => { fait.textContent = "Le « › » ouvre le chantier — il ne pose rien."; };
+    chev.onclick = () => { fait.textContent = "Le « › » ouvre le chantier, il ne pose rien."; };
 
     rangee.appendChild(poser);
     rangee.appendChild(chev);

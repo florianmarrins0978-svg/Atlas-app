@@ -223,7 +223,7 @@ export function debitRetenu(saisie: MesureSaisie): DebitRetenu {
   if (dyn !== null) {
     reserves.push(
       "la pression ne donne pas le débit : il est ESTIMÉ à " +
-        `${DEBIT_COMPTEUR.toFixed(2).replace(".", ",")} m³/h — chronométrez un seau de ` +
+        `${DEBIT_COMPTEUR.toFixed(2).replace(".", ",")} m³/h. Chronométrez un seau de ` +
         `${SEAU_LITRES} L pour le mesurer`
     );
     return {

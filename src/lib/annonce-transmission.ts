@@ -39,7 +39,7 @@ export function annonceTransmission(t: Transmission): string {
     return `Facture transmise${destinataire}.`;
   }
 
-  return `Devis transmis${destinataire} — en attente de sa réponse.`;
+  return `Devis transmis${destinataire}, en attente de sa réponse.`;
 }
 
 /**

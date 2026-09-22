@@ -21,7 +21,7 @@ import { roleDeLaSession } from "@/server/autorisation";
 // `globals.css` — voir le commentaire de `--font-display`.
 export const metadata: Metadata = {
   title: "Atlas",
-  description: "Atlas — dictée de chantier, vérification et préparation de devis.",
+  description: "Atlas : dictée de chantier, vérification et préparation de devis.",
   manifest: "/manifest.json",
   // iOS ne lit pas les icônes du manifeste : il cherche `apple-touch-icon`.
   // L'oublier donne, sur l'écran d'accueil, une vignette de la page au lieu

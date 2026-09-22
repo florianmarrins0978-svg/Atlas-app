@@ -26,7 +26,7 @@ export type BrouillonInitial = {
 // au lieu de faire confiance à une analyse qui n'a pas eu lieu.
 const MENTION_LITTERALE =
   "Votre dictée a été recopiée mot à mot : aucun modèle n'était disponible pour la comprendre. " +
-  "Chaque phrase est donc reprise telle quelle — relisez-la de près avant de confirmer.";
+  "Chaque phrase est donc reprise telle quelle. Relisez-la de près avant de confirmer.";
 
 /** Tout ce que l'écran sait du brouillon — une seule source pour ses morceaux. */
 export type Brouillon = ReturnType<typeof useBrouillon>;
@@ -244,7 +244,7 @@ export default function BrouillonSection({
         <Carte>
           <p className={texteSituation} style={{ color: colors.muted }}>
             Votre dictée est bien enregistrée, mais elle n&apos;a pas été transcrite. Rien n&apos;a
-            donc pu en être extrait — et rien ne sera inventé.
+            donc pu en être extrait, et rien ne sera inventé.
           </p>
           <a
             href={`/chantiers/${chantierId}/transcription`}

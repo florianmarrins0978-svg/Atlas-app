@@ -83,7 +83,7 @@
 
   <h2>Ce que la loi demande vraiment</h2>
   <p>Aucun format n'est imposé. Ce qui l'est : une <b>suite chronologique, sans
-  trou et sans doublon</b>. Atlas la tient déjà — un compteur par entreprise,
+  trou et sans doublon</b>. Atlas la tient déjà : un compteur par entreprise,
   qui ne saute jamais un numéro.</p>
   <p>D'où la seule vraie contrainte du réglage : <b>changer de format en cours
   d'année casse la suite</b>. C'est la réserve que porte l'écran ci-dessous.</p>
@@ -133,7 +133,7 @@ let choisi = "annee-4";
 function dessiner(){
   document.getElementById("formats").innerHTML = FORMATS.map(f =>
     '<button type="button" data-clef="' + f.clef + '" aria-pressed="' + (f.clef === choisi) + '">'
-    + '<span class="quoi">' + f.nom + '<small>' + f.dit + (f.defaut ? " · par défaut" : "") + '</small></span>'
+    + '<span class="quoi">' + f.nom + '<small>' + f.dit + (f.defaut ? ", par défaut" : "") + '</small></span>'
     + '<span class="apercu">' + f.facture + '</span></button>').join("");
 
   const f = FORMATS.find(x => x.clef === choisi);

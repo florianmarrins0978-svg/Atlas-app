@@ -156,5 +156,5 @@ export function motifConservation(
     ? ` jusqu'au ${echeance.toISOString().slice(0, 10)}`
     : "";
   const pieces = nbPiecesConservees === 1 ? "1 pièce comptable" : `${nbPiecesConservees} pièces comptables`;
-  return `${pieces} conservée${nbPiecesConservees > 1 ? "s" : ""}${jusquA} — obligation comptable (Code de commerce L123-22).`;
+  return `${pieces} conservée${nbPiecesConservees > 1 ? "s" : ""}${jusquA}, obligation comptable (Code de commerce L123-22).`;
 }

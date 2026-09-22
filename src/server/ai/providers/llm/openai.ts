@@ -171,7 +171,7 @@ export const fournisseurLLMOpenAI: FournisseurLLM = {
 
   async genererTexte(systeme: string, message: string, contexte?: string): Promise<ResultatLLM> {
     if (!message || message.trim().length === 0) {
-      return { succes: false, erreur: erreurIA("reponse_invalide", "Message vide — rien à traiter.") };
+      return { succes: false, erreur: erreurIA("reponse_invalide", "Message vide, rien à traiter.") };
     }
 
     const resultat = await appeler({

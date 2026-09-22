@@ -473,6 +473,14 @@ retransmet — un document périmé le ferait travailler sur une version disparu
   phrase : « Probable sur un peuplier. », « Photo de X, sous licence Y. ».
   Ce qui a besoin d'un genre (« un », « une ») se lit dans la donnée, jamais
   deviné. Vaut pour les écrans, les maquettes et les fiches phytosanitaires.
+  **Il a dû le redire le soir même**, et la règle ne vit donc plus seulement
+  ici : `scripts/test-aucun-tiret.ts` refuse « — », « – » et « · » entre deux
+  mots dans tout ce qui s'affiche — les chaînes et le texte des écrans, les
+  maquettes publiées. Les commentaires sont épargnés (ils citent ses phrases à
+  lui), le trait d'union aussi (« sous-traitant »), et un tiret SEUL dans une
+  case reste ce qu'il est : un montant absent. Ce qui remplace : une virgule,
+  un deux-points quand la suite explique, un point quand c'est une phrase
+  entière, deux parenthèses pour une incise (`ARCHITECTURE.md` §403).
 - **Pas de flèches décoratives au bout des libellés.** Sa consigne du 25 août
   2026 : *« arrête de mettre des flèches, c'est moche »*. Le « → » (et le « › »)
   ajouté à la fin d'un bouton ou d'un lien — « Régler à la main → », « Créer le

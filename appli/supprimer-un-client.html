@@ -99,7 +99,7 @@
 <div class="bandeau">
   <b>RETENUE ET CODÉE le 27 août 2026 : la C.</b> Votre réponse :
   <i>« je pense la C ; lorsqu'un client a des documents il faut mettre la phrase de
-  prévention, et une phrase disant avez-vous sauvegardé ses documents autre part —
+  prévention, et une phrase disant avez-vous sauvegardé ses documents autre part :
   et s'il dit oui il peut supprimer quand même »</i>. C'est dans l'application.
   <b>Une seule chose n'a pas pu vous être donnée</b>, et ce n'est pas Atlas qui refuse :
   une <b>facture émise se conserve dix ans</b> (Code de commerce). L'écran la nomme
@@ -112,7 +112,7 @@
   <p>
     L'effacement d'un client est <b>écrit dans Atlas depuis longtemps</b>, et il est éprouvé :
     il retire les coordonnées, les photos, les notes vocales, et garde ce que la loi impose.
-    <b>Aucun bouton ne l'appelle</b> — il n'a jamais eu d'écran.
+    <b>Aucun bouton ne l'appelle</b> : il n'a jamais eu d'écran.
   </p>
   <p>
     <b>Et il tombe sur le cas le plus courant.</b> Je l'ai joué ce soir sur un client qui avait
@@ -123,7 +123,7 @@
   cause : Un devis envoyé ne peut pas être supprimé</div>
 <div class="bloc">
   <p>
-    Un devis parti est <b>scellé</b> — c'est voulu, il fait foi. L'effacement essayait de le
+    Un devis parti est <b>scellé</b>, c'est voulu, il fait foi. L'effacement essayait de le
     détruire quand même. Il ne marchait donc que pour un client <b>qui n'a jamais reçu de devis</b>.
     <b>C'est réparé</b> : un devis parti que personne n'a accepté n'engage rien, et il s'efface
     avec le reste. Ce qui est <b>accepté</b>, lui, ne bouge pas.
@@ -136,17 +136,17 @@
 
   <div class="choix" id="regles">
     <button type="button" data-regle="A" aria-pressed="false">
-      <span class="quoi">A — Le retirer de ma liste
+      <span class="quoi">A, Le retirer de ma liste
         <small>Rien n'est détruit. Il quitte vos clients ; ses devis et factures restent trouvables. Se défait.</small>
       </span>
     </button>
     <button type="button" data-regle="B" aria-pressed="false">
-      <span class="quoi">B — Effacer ses coordonnées
-        <small>Téléphone, adresse, e-mail, photos et notes partent. Devis partis et factures restent — la loi. Ne se défait pas.</small>
+      <span class="quoi">B, Effacer ses coordonnées
+        <small>Téléphone, adresse, e-mail, photos et notes partent. Devis partis et factures restent : la loi. Ne se défait pas.</small>
       </span>
     </button>
     <button type="button" data-regle="C" aria-pressed="true">
-      <span class="quoi">C — Tout supprimer
+      <span class="quoi">C, Tout supprimer
         <small>Ne marche que si rien n'est parti chez le client. Sinon l'écran refuse, et dit pourquoi.</small>
       </span>
     </button>
@@ -160,7 +160,7 @@
   <div class="reserve">
     <p>Une facture émise se conserve <b>dix ans</b>, un devis accepté <b>cinq</b>. Ce n'est pas un
       choix d'Atlas : c'est le Code de commerce.</p>
-    <p>C'est pourquoi « tout supprimer » ne peut pas exister pour un client facturé — quelle que
+    <p>C'est pourquoi « tout supprimer » ne peut pas exister pour un client facturé, quelle que
       soit la règle retenue.</p>
   </div>
 </div>
@@ -169,14 +169,14 @@
   <h2>Où se pose le geste</h2>
   <p>Deux places possibles. Rien n'est codé.</p>
   <div class="place">
-    <div><b>1 — Sur sa fiche</b>Tout en bas, sous les trois colonnes. On le trouve quand on le cherche, jamais par accident.</div>
-    <div><b>2 — Dans la liste</b>En glissant la ligne vers la gauche, comme « Retirer » au planning. Plus rapide, plus facile à toucher sans le vouloir.</div>
+    <div><b>1, Sur sa fiche</b>Tout en bas, sous les trois colonnes. On le trouve quand on le cherche, jamais par accident.</div>
+    <div><b>2 : Dans la liste</b>En glissant la ligne vers la gauche, comme « Retirer » au planning. Plus rapide, plus facile à toucher sans le vouloir.</div>
   </div>
 </div>
 
 <div class="question">
   <h3>Ce qui reste ouvert</h3>
-  <p><b>Le bouton est en bas de sa fiche</b> — c'est la place 1. Vous n'avez pas
+  <p><b>Le bouton est en bas de sa fiche</b>, c'est la place 1. Vous n'avez pas
   tranché entre les deux : le bas de la fiche a été retenu parce qu'on l'y trouve
   en le cherchant, jamais du pouce en faisant défiler une liste. Dites-le si vous
   préférez l'autre.</p>
@@ -199,7 +199,7 @@
 const DEPART = [
   { id: "neuf",    nom: "M. Moreau",     quoi: "Aucun document",                   devisParti: false, facture: false },
   { id: "devis",   nom: "Mme Larousse",  quoi: "1 devis parti, sans réponse",      devisParti: true,  facture: false },
-  { id: "facture", nom: "Monsieur Martins", quoi: "1 devis accepté · 1 facture émise", devisParti: true,  facture: true  },
+  { id: "facture", nom: "Monsieur Martins", quoi: "1 devis accepté : 1 facture émise", devisParti: true,  facture: true  },
 ];
 
 let regle = "C"; // Ce qu'il a retenu le 27 août 2026 : la planche s'ouvre dessus.
@@ -210,7 +210,7 @@ const $clients = document.getElementById("clients");
 const $feuille = document.getElementById("feuille");
 const $voile = document.getElementById("voile");
 
-/** Ce que la règle choisie ferait de ce client — la seule règle du fichier. */
+/** Ce que la règle choisie ferait de ce client, la seule règle du fichier. */
 function verdictDe(c) {
   if (regle === "A") {
     return {
@@ -223,7 +223,7 @@ function verdictDe(c) {
   if (regle === "B") {
     const reste = [];
     if (c.devisParti) reste.push("Le devis parti, et son nom dessus");
-    if (c.facture) reste.push("La facture émise — dix ans");
+    if (c.facture) reste.push("La facture émise : dix ans");
     return {
       possible: true,
       part: ["Téléphone, adresse, e-mail", "Les photos et les notes vocales", "Les chantiers sans papier"],
@@ -296,7 +296,7 @@ function ouvrir(c) {
   vise = c;
   document.getElementById("feuille-titre").textContent = v.possible ? c.nom : "Impossible";
   document.getElementById("feuille-quoi").textContent = v.possible
-    ? (regle === "A" ? "Il quitte votre liste. Ses papiers restent." : v.part.join(" · ") + ". " + v.note)
+    ? (regle === "A" ? "Il quitte votre liste. Ses papiers restent." : v.part.join(", ") + ". " + v.note)
     : v.pourquoi;
   const $ok = document.getElementById("confirmer");
   $ok.hidden = !v.possible;

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Atlas — la date du chantier à côté du nom</title>
+<title>Atlas : la date du chantier à côté du nom</title>
 </head>
 <body>
 <style>
@@ -223,18 +223,18 @@
 
 <header class="entete">
   <button class="nuit" id="nuit" type="button" aria-label="Fond sombre">☾</button>
-  <p class="sur">Atlas · planche du 31 août 2026</p>
+  <p class="sur">Atlas, planche du 31 août 2026</p>
   <h1>La date du chantier,<br>à côté du nom</h1>
   <p><b>« À FACTURER » posé, et « Pas encore facturé » retiré</b> dans les
-     quatre — c'est tranché. Ce qui se choisit, c'est <b>où se met la date</b>.
+     quatre : c'est tranché. Ce qui se choisit, c'est <b>où se met la date</b>.
      Les onglets marchent.</p>
 </header>
 
 <div class="choix" role="group" aria-label="La place de la date">
-  <button type="button" data-place="ligne" aria-pressed="true">A · Sur la ligne du nom</button>
-  <button type="button" data-place="etat" aria-pressed="false">B · Devant l'état</button>
-  <button type="button" data-place="dessus" aria-pressed="false">C · Au-dessus du nom</button>
-  <button type="button" data-place="etiquette" aria-pressed="false">D · Une étiquette</button>
+  <button type="button" data-place="ligne" aria-pressed="true">A, Sur la ligne du nom</button>
+  <button type="button" data-place="etat" aria-pressed="false">B, Devant l'état</button>
+  <button type="button" data-place="dessus" aria-pressed="false">C, Au-dessus du nom</button>
+  <button type="button" data-place="etiquette" aria-pressed="false">D, Une étiquette</button>
 </div>
 
 <p class="dit" id="dit"></p>
@@ -265,19 +265,19 @@
 <div class="note">
   <h2>Ce qu'il faut regarder avant de choisir</h2>
   <ul>
-    <li><b>« Chantier test — Abri Pornic » n'a ni date ni montant.</b> Sa
+    <li><b>« Chantier test, Abri Pornic » n'a ni date ni montant.</b> Sa
         deuxième ligne est donc vide : « Pas encore facturé » parti, il n'y a
         plus rien d'exact à y écrire, et rien ne s'invente. C'est le cas d'un
         chantier clôturé sans être passé par le planning.</li>
-    <li><b>« Mme Grospiron » est de l'an dernier</b> — son année s'écrit,
+    <li><b>« Mme Grospiron » est de l'an dernier</b>, son année s'écrit,
         les autres pas. L'onglet « À facturer » mélange tous les mois : sans
         année, « 14 septembre » se lirait comme le mois qui vient.</li>
     <li><b>Appuyez sur « Tout ».</b> Les chantiers déjà facturés y portent
         <i>deux</i> dates : celle du chantier et celle de la facture. C'est là
-        que la proposition B se juge — « 9 août · Facturé le 20 août » sur une
+        que la proposition B se juge, « 9 août, Facturé le 20 août » sur une
         seule ligne. <b>« Facturé le 20 août » reste</b> : lui n'est pas
         « Pas encore facturé », et aucun bouton ne le dit à sa place.</li>
-    <li><b>« Chantier test — Muret Clisson » est le nom le plus long.</b> En A
+    <li><b>« Chantier test : Muret Clisson » est le nom le plus long.</b> En A
         et en D, c'est lui qui cède : le nom se coupe, jamais la date.</li>
   </ul>
   <h2 style="margin-top:18px">Ce qui a été écarté</h2>
@@ -290,32 +290,32 @@
   <p>L'application ne garde pas de date de réalisation à part : elle garde
      <b>la date du planning</b>, celle qui range déjà ces chantiers par mois.
      Un chantier déplacé la voit changer, donc dans les faits c'est bien le jour
-     où il a été fait. <b>Dites-moi si ça vous va</b> — sinon, il faudra
+     où il a été fait. <b>Dites-moi si ça vous va</b>, sinon, il faudra
      enregistrer une date au moment où vous clôturez le chantier, et c'est un
      geste de plus pour vous.</p>
 </div>
 
 <script>
   // ── Les six chantiers de SA capture du 31 août ─────────────────────────
-  // Montants et noms : les siens. Dates : inventées — sa capture ne les montre
+  // Montants et noms : les siens. Dates : inventées, sa capture ne les montre
   // pas —, et choisies pour éprouver ce qui fait mal : un chantier sans date,
   // un chantier de l'an dernier, un nom long qui doit cohabiter avec la date.
   const CHANTIERS = [
     { nom: "Mme Grospiron",                 date: "14 septembre 2025", attente: true, montant: "600,00 €" },
-    { nom: "Chantier test — Abri Pornic",   date: null,                attente: true, montant: null },
+    { nom: "Chantier test : Abri Pornic",   date: null,                attente: true, montant: null },
     { nom: "Mr. Marco",                     date: "3 juillet",         attente: true, montant: "0,00 €" },
     { nom: "Mr. Eric",                      date: "21 juillet",        attente: true, montant: "0,00 €" },
     { nom: "Mr. Martins",                   date: "12 août",           attente: true, montant: "360,00 €" },
-    { nom: "Chantier test — Muret Clisson", date: "26 août",           attente: true, montant: null },
+    { nom: "Chantier test : Muret Clisson", date: "26 août",           attente: true, montant: null },
     { nom: "Mme Bernard",                   date: "9 août",            attente: false, montant: "1 240,00 €", quand: "Facturé le 20 août" },
     { nom: "Mr. Lemoine",                   date: "4 août",            attente: false, montant: "890,00 €",   quand: "Facturé le 14 août" },
   ];
 
   const DITS = {
-    ligne: "<span class='retenu'>La date suit le nom, en gris.</span> Rien ne s'ajoute en hauteur — la liste garde le même nombre de lignes. Sur un nom long, c'est le nom qui se coupe : la date reste entière.",
-    etat: "<b>La date ouvre la deuxième ligne</b> : « 12 août · 360,00 € prévus ». Le nom garde toute sa largeur, et la ligne tient maintenant sur un seul rang. Sur « Tout », elle porte deux dates.",
+    ligne: "<span class='retenu'>La date suit le nom, en gris.</span> Rien ne s'ajoute en hauteur : la liste garde le même nombre de lignes. Sur un nom long, c'est le nom qui se coupe : la date reste entière.",
+    etat: "<b>La date ouvre la deuxième ligne</b> : « 12 août : 360,00 € prévus ». Le nom garde toute sa largeur, et la ligne tient maintenant sur un seul rang. Sur « Tout », elle porte deux dates.",
     dessus: "<b>Une petite ligne dorée au-dessus du nom.</b> La date se repère d'un coup d'œil, en balayant la colonne. Elle coûte <b>une ligne de hauteur par chantier</b>, et le chantier sans date remonte tout seul : le rang n'est plus régulier.",
-    etiquette: "<b>La date tamponnée devant le nom.</b> Elle se voit le mieux des quatre. Elle prend aussi la place la plus visible de la ligne — celle que le nom du client occupe aujourd'hui.",
+    etiquette: "<b>La date tamponnée devant le nom.</b> Elle se voit le mieux des quatre. Elle prend aussi la place la plus visible de la ligne, celle que le nom du client occupe aujourd'hui.",
   };
 
   const tel = document.getElementById("tel");
@@ -343,8 +343,8 @@
    * **Elle se redessine à chaque changement de place, et c'est délibéré.** La
    * première version posait la date quatre fois dans le HTML et n'en montrait
    * qu'une par CSS. « Pas encore facturé » parti (sa demande du 31 août), il
-   * reste des lignes où il n'y a plus rien à écrire — « 26 août » seul en B,
-   * RIEN du tout en A, C et D — et un séparateur écrit en dur y laissait un
+   * reste des lignes où il n'y a plus rien à écrire : « 26 août » seul en B,
+   * RIEN du tout en A, C et D : et un séparateur écrit en dur y laissait un
    * « · » pendu dans le vide.
    */
   function ligneEtat(c) {
@@ -357,7 +357,7 @@
     } else {
       bouts.push(c.quand);
     }
-    return bouts.join(" · ");
+    return bouts.join(", ");
   }
 
   function dessinerListe() {

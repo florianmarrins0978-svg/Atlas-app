@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Une équipe sans nom — la ligne déborde</title>
+<title>Une équipe sans nom : la ligne déborde</title>
 <style>
   /* Les couleurs et les tailles sont celles de la planche 84, sans exception :
      cette page ne propose pas un autre écran, elle montre UNE ligne du vôtre. */
@@ -78,7 +78,7 @@
 
 <div class="bandeau">
   <b>Regardez, rien n’est codé.</b> Vos équipes s’appellent Paul et Julien, alors la
-  ligne tient. Mais si une équipe <b>n’a pas de nom</b>, l’écran écrit « Équipe A » —
+  ligne tient. Mais si une équipe <b>n’a pas de nom</b>, l’écran écrit « Équipe A » :
   et « Retirer » tombe à la ligne. Voici l’état actuel, puis trois façons de le régler.
   <b>Dites-moi laquelle, ou aucune.</b>
   <br><span style="opacity:.72">Ici rien ne se touche : c’est une ligne montrée quatre fois, pas un écran à essayer.</span>
@@ -153,16 +153,16 @@
 
 <div class="notes">
   <h2>Ce que chacune coûte</h2>
-  <p><b>A — la lettre seule.</b> Rien d’autre ne bouge. Mais « A » tout seul est moins
+  <p><b>A, la lettre seule.</b> Rien d’autre ne bouge. Mais « A » tout seul est moins
     parlant que « Équipe A » : sur la fiche du jour, on voit une lettre sans savoir
     tout de suite que c’est une équipe.</p>
-  <p><b>B — « Ap.-m. ».</b> Ce mot existe déjà : c’est celui de vos boutons quand vous
+  <p><b>B : « Ap.-m. ».</b> Ce mot existe déjà : c’est celui de vos boutons quand vous
     posez un chantier sans date. Mais il raccourcit la colonne pour <b>toutes</b> les
-    lignes, y compris celles qui tiennent déjà — le matin et l’après-midi resteraient
+    lignes, y compris celles qui tiennent déjà : le matin et l’après-midi resteraient
     alignés, simplement plus serrés.</p>
-  <p><b>C — vous la nommez.</b> Au lieu d’inventer « Équipe A », l’écran vous propose
+  <p><b>C : vous la nommez.</b> Au lieu d’inventer « Équipe A », l’écran vous propose
     de lui donner son nom, d’un appui. C’est le plus court à lire, et c’est ce que
-    vous faites déjà — vos équipes s’appellent Paul et Julien.</p>
+    vous faites déjà : vos équipes s’appellent Paul et Julien.</p>
 
   <div class="rappel">
     <b>Et si vous ne voulez rien changer</b>, c’est une réponse aussi : la ligne se
@@ -173,7 +173,7 @@
 
 <script>
 /**
- * La page se MESURE elle-même — aucun chiffre n'est écrit à la main.
+ * La page se MESURE elle-même, aucun chiffre n'est écrit à la main.
  *
  * Deux boutons d'une même ligne partagent leur bord du haut ; un bouton replié
  * tombe plus bas. C'est ce qu'on regarde, et ça ne dépend ni de la police du
@@ -201,8 +201,8 @@ function mesurer() {
     const p = document.querySelector(`[data-verdict="${ligne.dataset.essai}"]`);
     p.className = 'verdict ' + (replie ? 'deborde' : 'tient');
     p.textContent = replie
-      ? `↩ « Retirer » passe à la ligne — il manque ${trop} px`
-      : `✓ tout tient sur un trait — il reste ${-trop} px`;
+      ? `↩ « Retirer » passe à la ligne, il manque ${trop} px`
+      : `✓ tout tient sur un trait, il reste ${-trop} px`;
   }
 }
 mesurer();

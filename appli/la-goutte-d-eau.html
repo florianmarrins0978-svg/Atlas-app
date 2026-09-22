@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Atlas — La goutte d'eau</title>
+<title>Atlas : La goutte d'eau</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -665,7 +665,7 @@
         <span class="corps">
           <span class="nom">Villa Beaumont</span>
           <span class="lieu">Saint-Jean, chemin des Cyprès</span>
-          <span class="etat">Brouillon · 3 photos</span>
+          <span class="etat">Brouillon : 3 photos</span>
         </span>
       </a>
     </nav>
@@ -697,13 +697,13 @@
   ecranPlaque.style.height = '744px';
   cale.appendChild(ecranPlaque);
   // « Revoir » vit DANS la page : ancré à sa colonne, pas au bord de la
-  // fenêtre — sur grand écran il flottait dans le vide.
+  // fenêtre : sur grand écran il flottait dans le vide.
   ecranApp.appendChild(document.getElementById('revoir'));
 
   // ── Poser le ROND sous la goutte : mesuré, jamais estimé.
   function viser(){
     // Sur la plaque : décaler la page pour que le centre du rond soit au
-    // centre du plan — c'est là que la goutte tombe.
+    // centre du plan, c'est là que la goutte tombe.
     const rondP = ecranPlaque.querySelector('.atlas-rond');
     let x = 21, y = 21, n = rondP;
     while (n && n !== ecranPlaque){ x += n.offsetLeft; y += n.offsetTop; n = n.offsetParent; }
@@ -711,7 +711,7 @@
     cale.style.setProperty('--dy', (572 - y) + 'px');
 
     // Le rond RÉEL de la page révélée : la goutte, l'impact, l'éclosion et
-    // la perspective du cinéma s'ancrent tous sur ce point — posé sur
+    // la perspective du cinéma s'ancrent tous sur ce point : posé sur
     // <body>, chacun l'hérite.
     const r = ecranApp.querySelector('.atlas-rond').getBoundingClientRect();
     corps.style.setProperty('--rx', (r.left + r.width/2) + 'px');

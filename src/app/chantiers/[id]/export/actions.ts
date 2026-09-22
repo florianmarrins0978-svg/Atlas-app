@@ -216,7 +216,7 @@ export async function envoyerAuClientAction(
   if (preparation.blocage === "canal_absent") {
     return {
       succes: false,
-      erreur: "Indiquez d'abord comment joindre ce client — par SMS ou par e-mail.",
+      erreur: "Indiquez d'abord comment joindre ce client, par SMS ou par e-mail.",
     };
   }
   if (preparation.blocage === "coordonnee_absente") {

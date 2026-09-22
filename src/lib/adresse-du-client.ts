@@ -98,7 +98,7 @@ export function phraseAdresseLocale(quoi: string): string {
   return (
     "Atlas est ouvert sur une adresse qui n'existe que sur votre machine : le lien " +
     "s'ouvrirait sur le téléphone de votre client, pas sur son document. Rouvrez " +
-    `Atlas par son adresse web, puis renvoyez — ${quoi} vous attend ici, rien n'est ` +
+    `Atlas par son adresse web, puis renvoyez : ${quoi} vous attend ici, rien n'est ` +
     "perdu."
   );
 }

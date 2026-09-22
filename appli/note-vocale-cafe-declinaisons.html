@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Atlas — café, déclinaisons, et le trait à la voix</title>
+<title>Atlas : café, déclinaisons, et le trait à la voix</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -446,7 +446,7 @@ body{margin:0;background:var(--bone);color:var(--charcoal);
 <body>
 
 <header class="tete">
-  <h1>Le café, ses déclinaisons — et le trait qui écoute</h1>
+  <h1>Le café, ses déclinaisons : et le trait qui écoute</h1>
   <p>Six matières de café, sur la fiche « Épurée » inchangée. Et pendant la dictée, « le trait » est
      branché sur <b>votre vrai micro</b> : son épaisseur est la force de votre voix, mesurée soixante
      fois par seconde. Appuyez sur le bouton, autorisez le micro, et parlez. Rien n'est enregistré.</p>
@@ -456,16 +456,16 @@ body{margin:0;background:var(--bone);color:var(--charcoal);
   <div class="rangee" role="group" aria-label="Avant d'appuyer">
     <p class="quoi">Avant d'appuyer</p>
     <button type="button" data-repos="plein" aria-pressed="true">Aujourd'hui</button>
-    <button type="button" data-repos="cafe-ristretto" aria-pressed="false">1 · Le ristretto</button>
-    <button type="button" data-repos="cafe-crema" aria-pressed="false">2 · La crema</button>
-    <button type="button" data-repos="cafe-moka" aria-pressed="false">3 · Le moka</button>
-    <button type="button" data-repos="cafe-noisette" aria-pressed="false">4 · Le noisette</button>
-    <button type="button" data-repos="cafe-coeur" aria-pressed="false">5 · Cœur de crema</button>
-    <button type="button" data-repos="cafe-tasse" aria-pressed="false">6 · En tasse</button>
+    <button type="button" data-repos="cafe-ristretto" aria-pressed="false">1, Le ristretto</button>
+    <button type="button" data-repos="cafe-crema" aria-pressed="false">2, La crema</button>
+    <button type="button" data-repos="cafe-moka" aria-pressed="false">3, Le moka</button>
+    <button type="button" data-repos="cafe-noisette" aria-pressed="false">4, Le noisette</button>
+    <button type="button" data-repos="cafe-coeur" aria-pressed="false">5, Cœur de crema</button>
+    <button type="button" data-repos="cafe-tasse" aria-pressed="false">6, En tasse</button>
   </div>
   <div class="rangee" role="group" aria-label="Pendant la dictée">
     <p class="quoi">Pendant la dictée</p>
-    <span class="dit">Le trait, branché sur votre micro <b id="etat-micro">— appuyez pour l'essayer</b></span>
+    <span class="dit">Le trait, branché sur votre micro<b id="etat-micro">, appuyez pour l'essayer</b></span>
   </div>
 </nav>
 
@@ -572,14 +572,14 @@ body{margin:0;background:var(--bone);color:var(--charcoal);
 
   <div class="colonne">
     <div class="legende">
-      <span class="nom" id="rang-repos">Avant d'appuyer — aujourd'hui</span>
+      <span class="nom" id="rang-repos">Avant d'appuyer, aujourd'hui</span>
       <h2 id="titre-repos">Le disque plein, votre choix du 30 août</h2>
       <p id="propos-repos">Il est ici pour comparer : c'est la seule tache sombre de la fiche,
         et c'est elle que vous ne voulez plus.</p>
       <p class="mesure"><span>Encre sombre au repos</span><b id="encre">4 536 px²</b></p>
     </div>
     <div class="legende">
-      <span class="nom" id="rang-ligne">Pendant la dictée — aujourd'hui</span>
+      <span class="nom" id="rang-ligne">Pendant la dictée, aujourd'hui</span>
       <h2 id="titre-ligne">La ligne, votre choix du 31 août</h2>
       <p id="propos-ligne">Poubelle, chrono, onde d'or en barreaux, rond d'envoi. C'est ce que
         l'application porte, et le point de départ des trois dessins d'à côté.</p>
@@ -589,36 +589,36 @@ body{margin:0;background:var(--bone);color:var(--charcoal);
 
 <script>
 const MOTS_REPOS = {
-  plein: ["Avant d'appuyer — aujourd'hui", "Le disque plein, votre choix du 30 août",
+  plein: ["Avant d'appuyer, aujourd'hui", "Le disque plein, votre choix du 30 août",
     "Il est ici pour comparer : c'est la seule tache sombre de la fiche, et c'est elle que vous ne voulez plus.",
     "4 536 px²"],
-  "cafe-ristretto": ["Avant d'appuyer — matière 1", "Le ristretto",
+  "cafe-ristretto": ["Avant d'appuyer : matière 1", "Le ristretto",
     "Le café serré, presque noir, et sa lumière en haut à gauche. Le plus profond des quatre : le micro s'y détache en mousse de lait. Filet d'or, comme celui de votre tasse.",
     "4 536 px²"],
-  "cafe-crema": ["Avant d'appuyer — matière 2", "La crema",
-    "Le dessus d'un espresso vu de haut — votre photo : la mousse blonde, ses bulles, le tourbillon du centre. C'est la matière la plus gourmande, et la plus claire.",
+  "cafe-crema": ["Avant d'appuyer : matière 2", "La crema",
+    "Le dessus d'un espresso vu de haut : votre photo : la mousse blonde, ses bulles, le tourbillon du centre. C'est la matière la plus gourmande, et la plus claire.",
     "4 536 px²"],
-  "cafe-moka": ["Avant d'appuyer — matière 3", "Le moka",
+  "cafe-moka": ["Avant d'appuyer : matière 3", "Le moka",
     "Plus rouge, plus chocolaté. Votre palette portait deux bruns rouges que rien n'employait encore : #6B372B et #492310. Les voici.",
     "4 536 px²"],
-  "cafe-noisette": ["Avant d'appuyer — matière 4", "Le noisette",
-    "Le lait domine, le café n'est plus qu'une ombre. C'est le plus clair de la série, donc celui qui pèse le moins sur la fiche — et le seul où le micro passe en brun foncé.",
+  "cafe-noisette": ["Avant d'appuyer : matière 4", "Le noisette",
+    "Le lait domine, le café n'est plus qu'une ombre. C'est le plus clair de la série, donc celui qui pèse le moins sur la fiche : et le seul où le micro passe en brun foncé.",
     "4 536 px²"],
-  "cafe-coeur": ["Avant d'appuyer — matière 5", "Le cœur de crema",
+  "cafe-coeur": ["Avant d'appuyer : matière 5", "Le cœur de crema",
     "L'observation juste de votre photo : sur un espresso, la crema est plus dense AU BORD et le cœur reste sombre. C'est l'inverse d'un dégradé ordinaire, et c'est ce qui fait qu'on reconnaît un café.",
     "4 536 px²"],
-  "cafe-tasse": ["Avant d'appuyer — matière 6", "En tasse",
-    "Votre photo entière : le café, le liseré de porcelaine blanche, puis le filet d'or. Deux anneaux au lieu d'un — c'est la tasse, pas seulement ce qu'il y a dedans.",
+  "cafe-tasse": ["Avant d'appuyer : matière 6", "En tasse",
+    "Votre photo entière : le café, le liseré de porcelaine blanche, puis le filet d'or. Deux anneaux au lieu d'un : c'est la tasse, pas seulement ce qu'il y a dedans.",
     "4 536 px²"],
 };
 const MOTS_LIGNE = {
-  onde: ["Pendant la dictée — aujourd'hui", "La ligne, votre choix du 31 août",
+  onde: ["Pendant la dictée : aujourd'hui", "La ligne, votre choix du 31 août",
     "Poubelle, chrono, onde d'or en barreaux, rond d'envoi. C'est ce que l'application porte, et le point de départ des trois dessins d'à côté."],
-  bande: ["Pendant la dictée — dessin 1", "La bande",
+  bande: ["Pendant la dictée : dessin 1", "La bande",
     "Une bande de papier qui sort de l'appareil et défile vers la gauche, liseré d'or en haut et en bas, le tracé imprimé dessus. Ce qui est passé à gauche est déjà dit."],
-  metre: ["Pendant la dictée — dessin 2", "Le mètre",
+  metre: ["Pendant la dictée : dessin 2", "Le mètre",
     "Votre mètre ruban qui se déroule. Les graduations passent avec le temps ; leur hauteur garde ce que la voix a fait à cet instant-là."],
-  trait: ["Pendant la dictée — dessin 3", "Le trait",
+  trait: ["Pendant la dictée : dessin 3", "Le trait",
     "Un seul trait continu qui défile, épais quand la voix monte, fin quand elle baisse. Le plus sobre des trois : ni papier, ni graduation, juste la ligne."],
 
 };
@@ -699,7 +699,7 @@ redessiner();
 //
 // Rien n'est enregistré : le son ne sert qu'à mesurer, et le flux est coupé
 // dès qu'on arrête. La moyenne quadratique est la même grandeur que celle que
-// l'application emploie — pas une hauteur inventée.
+// l'application emploie, pas une hauteur inventée.
 let audio = null, analyse = null, flux = null, tampon = null, boucle = null, faux = null;
 
 async function ecouter() {
@@ -745,13 +745,13 @@ async function demarrer() {
   let ecoute = false;
   try { ecoute = await ecouter(); } catch (e) { ecoute = false; }
   if (ecoute) {
-    etat.textContent = "— il écoute, parlez";
+    etat.textContent = "Il écoute, parlez";
     const tic = () => { avancer(mesurer()); boucle = requestAnimationFrame(tic); };
     tic();
   } else {
     // **On le DIT.** Un dessin qui prétend écouter sans écouter est exactement
     // le reproche déjà fait à un anneau qui battait sans rien lire.
-    etat.textContent = "— micro refusé : la courbe est tirée au sort";
+    etat.textContent = "Micro refusé : la courbe est tirée au sort";
     faux = setInterval(() => avancer(0.15 + Math.random() * 0.7), 60);
   }
 }
@@ -766,7 +766,7 @@ function arreter(mot) {
   mesures.fill(0); redessiner();
   dictee.style.setProperty("--v", "1");
   indice.textContent = mot;
-  etat.textContent = "— appuyez pour l'essayer";
+  etat.textContent = "Appuyez pour l'essayer";
 }
 document.getElementById("dicter").addEventListener("click", demarrer);
 document.getElementById("jeter").addEventListener("click", () => arreter("Appuyez et décrivez le chantier"));

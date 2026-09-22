@@ -270,12 +270,12 @@ export function Feuille({ allure, logo, nom }: { allure: Allure; logo: string | 
       )}
       <p className="text-[17px] leading-tight">{nom || "Votre entreprise"}</p>
       <p className="mt-1 text-[10px]" style={{ color: encreDouce }}>
-        Adresse · SIRET · téléphone
+        Adresse, SIRET, téléphone
       </p>
       <div className="my-2.5 h-px" style={{ backgroundColor: encre }} />
       <p className="text-center text-[13px] tracking-[0.2em]">DEVIS</p>
       <p className="mt-2.5 text-[9px] tracking-[0.14em]" style={{ color: allure.accent }}>
-        ÉMETTEUR · CLIENT
+        ÉMETTEUR et CLIENT
       </p>
       <div className="mt-1.5 space-y-1">
         {["Taille de haie", "Évacuation des déchets"].map((l) => (

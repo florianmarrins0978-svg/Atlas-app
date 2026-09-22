@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Créer une facture, sous les onglets — Atlas</title>
+<title>Créer une facture, sous les onglets : Atlas</title>
 <style>
 /*
   ═══════════════════════════════════════════════════════════════════════════
@@ -155,10 +155,10 @@ body.nuit .sceau{color:var(--scene)}
 </div>
 
 <div class="tete">
-  <span class="sceau">11 septembre — ce que vous avez demandé</span>
+  <span class="sceau">11 septembre, ce que vous avez demandé</span>
   <h1>Créer une facture, sous les onglets</h1>
   <p>Sous « Retours d'intervention », <b>collé à droite</b>, en or à contour
-  vide. Et le problème de largeur disparaît : <b>plus rien à raccourcir</b> —
+  vide. Et le problème de largeur disparaît : <b>plus rien à raccourcir</b>,
   « Retours d'intervention » garde son nom entier, « Créer une facture » aussi.</p>
 </div>
 
@@ -222,9 +222,9 @@ body.nuit .sceau{color:var(--scene)}
   var elEtats  = document.getElementById("etats");
 
   var LARGEURS = [
-    { px:360, mot:"360 px — le petit" },
-    { px:390, mot:"390 px — le vôtre" },
-    { px:430, mot:"430 px — le grand" }
+    { px:360, mot:"360 px : le petit" },
+    { px:390, mot:"390 px : le vôtre" },
+    { px:430, mot:"430 px : le grand" }
   ];
 
   var ETATS = [
@@ -237,9 +237,9 @@ body.nuit .sceau{color:var(--scene)}
 
   function brins(){
     var L = [
-      { nom:"M. Aubert",   etat:"Facturé · 1 240,00 €",                 or:false },
-      { nom:"Mme Chaix",   etat:"Pas encore facturé · 360,00 € prévus", or:true  },
-      { nom:"M. Sabatier", etat:"Facturé · 890,00 €",                   or:false }
+      { nom:"M. Aubert",   etat:"Facturé : 1 240,00 €",                 or:false },
+      { nom:"Mme Chaix",   etat:"Pas encore facturé : 360,00 € prévus", or:true  },
+      { nom:"M. Sabatier", etat:"Facturé : 890,00 €",                   or:false }
     ];
     return L.map(function(c){
       return '<div class="brin"><p class="nom">' + c.nom + '</p>'
@@ -269,7 +269,7 @@ body.nuit .sceau{color:var(--scene)}
       + '<div class="mois" id="mois"><button class="feuillet" type="button" aria-label="Mois précédent">‹</button>'
       +   '<span>Septembre 2026</span>'
       +   '<button class="feuillet" type="button" aria-label="Mois suivant">›</button></div>'
-      + '<p class="compte"><span class="or">1 à facturer</span> · 2 facturés</p>'
+      + '<p class="compte"><span class="or">1 à facturer</span>, 2 facturés</p>'
       + '<div class="lignes">' + brins() + '</div>'
       + '</div>';
 
@@ -311,7 +311,7 @@ body.nuit .sceau{color:var(--scene)}
 
     if (!avecBouton) {
       verdict.innerHTML = '<p class="chiffres">Les onglets : <b>' + prise + ' px</b> pour '
-        + dispo + ' px — le mois commence à ' + hautDuMois + ' px du haut.</p>'
+        + dispo + ' px, le mois commence à ' + hautDuMois + ' px du haut.</p>'
         + '<span class="reste">L’écran d’aujourd’hui, sans le bouton.</span>';
       verdict.setAttribute("data-mois", String(hautDuMois));
       return;
@@ -322,10 +322,10 @@ body.nuit .sceau{color:var(--scene)}
     var avant = Number(verdict.getAttribute("data-mois") || 0);
 
     verdict.innerHTML = '<p class="chiffres">Les onglets tiennent : <b>' + prise + ' px</b> pour '
-      + dispo + ' px — et le bouton, seul sur sa ligne, en prend <b>' + largeurBouton + '</b>.</p>'
+      + dispo + ' px, et le bouton, seul sur sa ligne, en prend <b>' + largeurBouton + '</b>.</p>'
       + '<span class="reste">'
       + (avant > 0
-          ? 'La liste descend de ' + (hautDuMois - avant) + ' px — comparez avec « Aujourd’hui ».'
+          ? 'La liste descend de ' + (hautDuMois - avant) + ' px, comparez avec « Aujourd’hui ».'
           : 'Touchez « Aujourd’hui » pour voir ce que la seconde rangée pousse vers le bas.')
       + '</span>';
   }

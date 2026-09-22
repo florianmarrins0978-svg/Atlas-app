@@ -44,7 +44,7 @@ export default function PlanDessine({ dessin }: { dessin: Dessin }) {
   return (
     <div data-atlas="plan-dessine">
       <p className={`mx-[22px] mt-7 ${libelleCaps}`} style={{ color: colors.muted }}>
-        Le plan · {dessin.metresTranchee.toString().replace(".", ",")} ml de tranchée
+        Le plan, {dessin.metresTranchee.toString().replace(".", ",")} ml de tranchée
       </p>
 
       <div className="mx-[22px] mt-2 rounded-[12px] p-3" style={{ backgroundColor: colors.card }}>
@@ -267,17 +267,17 @@ export default function PlanDessine({ dessin }: { dessin: Dessin }) {
         />
         <Legende
           symbole={<circle r={0.72} fill={colors.ink} />}
-          texte={<><b>plein</b> : la ligne continue · té taraudé 25×3/4″×25</>}
+          texte={<><b>plein</b> : la ligne continue, té taraudé 25×3/4″×25</>}
         />
         <Legende
           symbole={<circle r={0.6} fill={colors.card} stroke={colors.ink} strokeWidth={0.3} />}
-          texte={<><b>creux</b> : la ligne s’arrête là · coude taraudé 25×3/4″</>}
+          texte={<><b>creux</b> : la ligne s’arrête là, coude taraudé 25×3/4″</>}
         />
         <Legende
           symbole={
             <rect x={-0.56} y={-0.56} width={1.12} height={1.12} transform="rotate(45)" fill={colors.card} stroke={colors.ink} strokeWidth={0.3} />
           }
-          texte={<><b>losange</b> : la ligne se sépare · té égal 25×25×25</>}
+          texte={<><b>losange</b> : la ligne se sépare, té égal 25×25×25</>}
         />
         <Legende
           symbole={<line x1={-0.85} y1={0} x2={0.85} y2={0} stroke={colors.ink} strokeWidth={0.18} />}

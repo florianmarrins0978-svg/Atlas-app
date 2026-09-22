@@ -85,7 +85,7 @@ export async function analyserFichierTarifsAction(donnees: FormData): Promise<Ap
   // Une borne franche : au-delà, ce n'est plus une liste de prix, et un fichier
   // de cent mégaoctets tiendrait la mémoire du serveur pour rien.
   if (fichier.size > 5_000_000) {
-    return { statut: "refuse", raison: "Ce fichier dépasse 5 Mo — ce n'est probablement pas une liste de prix." };
+    return { statut: "refuse", raison: "Ce fichier dépasse 5 Mo. Ce n'est probablement pas une liste de prix." };
   }
 
   /**
@@ -470,7 +470,7 @@ export async function mettreAJourApplicationAction(): Promise<ResultatMiseAJour>
         succes: true,
         etat,
         message:
-          `LA BASE N'A PAS SUIVI — ${migrations.raison}. ` +
+          `LA BASE N'A PAS SUIVI : ${migrations.raison}. ` +
           `Les écrans qui touchent une table neuve vont tomber : c'est ça, et rien d'autre.`,
       };
     }
@@ -616,5 +616,5 @@ export async function derniereIssueMiseAJour(): Promise<string | null> {
  */
 async function suffixeVersion(): Promise<string> {
   const version = await versionExecutee();
-  return version ? ` — version ${version}` : "";
+  return version ? `, version ${version}` : "";
 }

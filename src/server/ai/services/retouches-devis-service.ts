@@ -58,13 +58,13 @@ import { logger } from "../../logger";
  */
 export function systeme(lignes: readonly LigneDevis[], reductionEnCours: string | null): string {
   const inventaire = lignes
-    .map((l, i) => `${i + 1}. ${l.libelle || "(sans libellé)"} — ${l.quantite} × ${l.prixUnitaire} €`)
+    .map((l, i) => `${i + 1}. ${l.libelle || "(sans libellé)"}, ${l.quantite} × ${l.prixUnitaire} €`)
     .join("\n");
 
   return `Tu lis la dictée d'un artisan paysagiste-élagueur qui construit SON devis, et tu la traduis en changements.
 
 Voici les lignes du devis, dans l'ordre où il les voit :
-${inventaire || "(le devis est vide — il est probablement en train de dicter le chantier)"}
+${inventaire || "(le devis est vide, il est probablement en train de dicter le chantier)"}
 ${reductionEnCours ? `Un prix de ${reductionEnCours} % est déjà accordé au client sur ce devis.` : "Aucune réduction n'est accordée sur ce devis."}
 
 Il parle de deux façons, souvent mêlées dans la même dictée :
@@ -103,13 +103,15 @@ Règles absolues :
 - Une réduction en EUROS n'existe pas : « fais-moi 50 € de moins » n'est pas une réduction, ne rends rien.
 - Rien à changer, ou dictée incompréhensible : rends { "retouches": [] }. Ne comble jamais.
 
-Rédiger les libellés — c'est ce qui sépare un devis d'une transcription :
+Rédiger les libellés, c'est ce qui sépare un devis d'une transcription :
 - Un "libelle" est un LIBELLÉ DE DEVIS, pas la phrase qu'il a prononcée : un groupe nominal court,
   en français correct, tel qu'un artisan l'écrit sur un document qui part chez un client.
   « j'aimerais tailler ma haie » → "Taille de haie"
   « couper les inflorescences des hortensias » → "Taille des inflorescences d'hortensias"
   « et tondre la pelouse je crois » → "Tonte de la pelouse"
   Pas de « je », pas de verbe conjugué, pas d'hésitation, pas de point final ; une majuscule au début.
+  Ni tiret ni point médian au milieu d'un libellé, rien que des phrases normales :
+  « Taille de haie, façade et retour ».
 - Un travail = une ligne. Ne fonds pas deux travaux dans un même libellé, n'en découpe pas un en deux.
 - Une ligne du devis porte DÉJÀ ce travail à l'identique ? Ne l'ajoute pas une seconde fois. S'il en
   précise la mesure ou le prix, c'est une "quantite" ou un "prix" sur cette ligne-là.
@@ -122,13 +124,13 @@ Rédiger les libellés — c'est ce qui sépare un devis d'une transcription :
 Les mesures :
 - "quantite" est le nombre qu'il annonce pour ce travail, en chiffres : "vingt mètres linéaires" → "20".
 - "unite" est l'unité de ce nombre, dans son mot à lui : "mètres linéaires", "m²", "heures",
-  "jour/homme", "forfait", "tonne", "stère" — ou l'OBJET qu'il compte quand il compte des choses :
+  "jour/homme", "forfait", "tonne", "stère", ou l'OBJET qu'il compte quand il compte des choses :
   « deux souches » -> "2" / "souche", « trois arbres » -> "3" / "arbre". L'unité de comptage doit être
   l'objet explicitement prononcé ; n'invente pas une unité pour un nombre dont on ne sait pas ce qu'il
-  compte. Sans nombre dit, "quantite" et "unite" valent tous les deux null — jamais l'une sans l'autre.
+  compte. Sans nombre dit, "quantite" et "unite" valent tous les deux null, jamais l'une sans l'autre.
 - Une mesure annoncée avec hésitation SE GARDE quand même (« je crois que ça fait vingt mètres » →
   "20") : c'est un chiffre qu'il ira vérifier sur place, et le lui redemander ne lui apprend rien.
-  Un PRIX, lui, ne se retient que s'il l'annonce fermement — un prix approximatif part chez le client.`;
+  Un PRIX, lui, ne se retient que s'il l'annonce fermement, un prix approximatif part chez le client.`;
 }
 
 export type ResultatRetouches =

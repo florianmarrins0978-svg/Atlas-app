@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Atlas — note vocale, série 3 : le minimum</title>
+<title>Atlas : note vocale, série 3 : le minimum</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -312,7 +312,7 @@ body{margin:0;background:var(--bone);color:var(--charcoal);
 <body>
 
 <header class="tete">
-  <h1>La note vocale — série 3 : le minimum</h1>
+  <h1>La note vocale, série 3 : le minimum</h1>
   <p>Plus rien qui décore : le mot, le point, le cercle, le fil. Pendant la dictée : le pointillé, la respiration, rien. C'est la série où le micro disparaît. Page conservée pour comparer.</p>
 </header>
 
@@ -320,17 +320,17 @@ body{margin:0;background:var(--bone);color:var(--charcoal);
   <div class="rangee" role="group" aria-label="Avant d'appuyer">
     <p class="quoi">Avant d'appuyer</p>
     <button type="button" data-repos="plein" aria-pressed="true">Aujourd'hui</button>
-    <button type="button" data-repos="mot" aria-pressed="false">1 · Le mot</button>
-    <button type="button" data-repos="point" aria-pressed="false">2 · Le point</button>
-    <button type="button" data-repos="cercle" aria-pressed="false">3 · Le cercle</button>
-    <button type="button" data-repos="fil" aria-pressed="false">4 · Le fil</button>
+    <button type="button" data-repos="mot" aria-pressed="false">1, Le mot</button>
+    <button type="button" data-repos="point" aria-pressed="false">2, Le point</button>
+    <button type="button" data-repos="cercle" aria-pressed="false">3, Le cercle</button>
+    <button type="button" data-repos="fil" aria-pressed="false">4, Le fil</button>
   </div>
   <div class="rangee" role="group" aria-label="Pendant la dictée">
     <p class="quoi">Pendant la dictée</p>
     <button type="button" data-ligne="onde" aria-pressed="true">Aujourd'hui</button>
-    <button type="button" data-ligne="pointille" aria-pressed="false">1 · Le pointillé</button>
-    <button type="button" data-ligne="respire" aria-pressed="false">2 · La respiration</button>
-    <button type="button" data-ligne="rien" aria-pressed="false">3 · Rien</button>
+    <button type="button" data-ligne="pointille" aria-pressed="false">1, Le pointillé</button>
+    <button type="button" data-ligne="respire" aria-pressed="false">2, La respiration</button>
+    <button type="button" data-ligne="rien" aria-pressed="false">3, Rien</button>
   </div>
 </nav>
 
@@ -439,14 +439,14 @@ body{margin:0;background:var(--bone);color:var(--charcoal);
 
   <div class="colonne">
     <div class="legende">
-      <span class="nom" id="rang-repos">Avant d'appuyer — aujourd'hui</span>
+      <span class="nom" id="rang-repos">Avant d'appuyer, aujourd'hui</span>
       <h2 id="titre-repos">Le disque plein, votre choix du 30 août</h2>
       <p id="propos-repos">Il est ici pour comparer : c'est la seule tache sombre de la fiche,
         et c'est elle que vous ne voulez plus.</p>
       <p class="mesure"><span>Encre sombre au repos</span><b id="encre">4 536 px²</b></p>
     </div>
     <div class="legende">
-      <span class="nom" id="rang-ligne">Pendant la dictée — aujourd'hui</span>
+      <span class="nom" id="rang-ligne">Pendant la dictée, aujourd'hui</span>
       <h2 id="titre-ligne">La ligne, votre choix du 31 août</h2>
       <p id="propos-ligne">Poubelle, chrono, onde d'or en barreaux, rond d'envoi. C'est ce que
         l'application porte, et le point de départ des trois dessins d'à côté.</p>
@@ -456,30 +456,30 @@ body{margin:0;background:var(--bone);color:var(--charcoal);
 
 <script>
 const MOTS_REPOS = {
-  plein: ["Avant d'appuyer — aujourd'hui", "Le disque plein, votre choix du 30 août",
+  plein: ["Avant d'appuyer, aujourd'hui", "Le disque plein, votre choix du 30 août",
     "Il est ici pour comparer : c'est la seule tache sombre de la fiche, et c'est elle que vous ne voulez plus.",
     "4 536 px²"],
-  mot: ["Avant d'appuyer — dessin 1", "Le mot",
+  mot: ["Avant d'appuyer : dessin 1", "Le mot",
     "L'action en petites capitales, comme « + Client » juste au-dessus : la dictée devient un geste du formulaire, plus un objet posé dessus. Rien d'autre.",
     "≈ 150 px²"],
-  point: ["Avant d'appuyer — dessin 2", "Le point",
-    "Un point d'or de neuf pixels, et c'est tout — le point final de la fiche. La zone d'appui reste large, elle est simplement invisible.",
+  point: ["Avant d'appuyer : dessin 2", "Le point",
+    "Un point d'or de neuf pixels, et c'est tout : le point final de la fiche. La zone d'appui reste large, elle est simplement invisible.",
     "0 px²"],
-  cercle: ["Avant d'appuyer — dessin 3", "Le cercle",
+  cercle: ["Avant d'appuyer : dessin 3", "Le cercle",
     "Un filet gris au trait de la fiche, le micro affiné dedans. Le contour le plus discret qu'un objet puisse garder.",
     "≈ 250 px²"],
-  fil: ["Avant d'appuyer — dessin 4", "Le fil",
+  fil: ["Avant d'appuyer : dessin 4", "Le fil",
     "Un filet d'or de 56 pixels, posé comme un alinéa. C'est le soulignage de vos onglets d'envoi, devenu le geste lui-même.",
     "0 px²"],
 };
 const MOTS_LIGNE = {
-  onde: ["Pendant la dictée — aujourd'hui", "La ligne, votre choix du 31 août",
+  onde: ["Pendant la dictée : aujourd'hui", "La ligne, votre choix du 31 août",
     "Poubelle, chrono, onde d'or en barreaux, rond d'envoi. C'est ce que l'application porte, et le point de départ des trois dessins d'à côté."],
-  pointille: ["Pendant la dictée — dessin 1", "Le pointillé",
+  pointille: ["Pendant la dictée : dessin 1", "Le pointillé",
     "Un point d'or s'écrit chaque seconde : on voit le temps se déposer. La voix règle la taille du dernier point. Aucune onde."],
-  respire: ["Pendant la dictée — dessin 2", "La respiration",
+  respire: ["Pendant la dictée : dessin 2", "La respiration",
     "Un seul point, que la voix fait respirer. Le frère du « point » du repos : le même objet, devenu vivant. Rien d'autre ne bouge."],
-  rien: ["Pendant la dictée — dessin 3", "Rien",
+  rien: ["Pendant la dictée : dessin 3", "Rien",
     "La trace disparaît : la pastille qui bat et le chrono disent déjà qu'on enregistre, le reste est du papier. Le plus dépouillé possible."],
 };
 
@@ -536,7 +536,7 @@ const HAUTEURS = [7, 13, 9, 18, 11, 22, 10, 15, 8, 19, 12, 16];
 document.querySelectorAll(".frange").forEach((f) => {
   f.innerHTML = HAUTEURS.map((h) => `<i style="height:${h}px"></i>`).join("");
 });
-// Vingt-six barreaux : l'onde part PLEINE, à plat — sinon les deux premières
+// Vingt-six barreaux : l'onde part PLEINE, à plat : sinon les deux premières
 // secondes montrent un trait qui pousse dans le vide.
 document.getElementById("onde").innerHTML =
   Array.from({ length: 26 }, (_, i) => `<i style="height:${6 + ((i * 7) % 17)}px"></i>`).join("");

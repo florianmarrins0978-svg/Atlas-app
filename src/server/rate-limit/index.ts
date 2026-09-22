@@ -83,7 +83,7 @@ export async function rendreLimite(cle: string): Promise<void> {
       await getSecours().rendre(cle);
     } catch {
       console.error(
-        "[limite] impossible de rendre le jeton d'un geste réussi — le seuil se videra à la fin de sa fenêtre.",
+        "[limite] impossible de rendre le jeton d'un geste réussi, le seuil se videra à la fin de sa fenêtre.",
         { cle, erreur }
       );
     }
@@ -130,7 +130,7 @@ export async function verifierLimite(
     // seuils se comportent autrement ce jour-là.
     // ─────────────────────────────────────────────────────────────────────────
     console.error(
-      "[limite] le magasin de limitation n'a pas répondu — bascule sur le compteur EN MÉMOIRE, " +
+      "[limite] le magasin de limitation n'a pas répondu, bascule sur le compteur EN MÉMOIRE, " +
         "propre à cette instance. La protection reste, dégradée, jusqu'au retour du service.",
       { cle, erreur }
     );

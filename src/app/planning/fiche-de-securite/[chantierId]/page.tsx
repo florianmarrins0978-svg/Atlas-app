@@ -7,7 +7,7 @@ import { ouvrirLaFicheAction } from "../../fiche-securite-actions";
 import FormulaireFicheDeSecurite from "./FormulaireFicheDeSecurite";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Fiche de sécurité — Atlas" };
+export const metadata = { title: "Fiche de sécurité, Atlas" };
 
 /**
  * LA FICHE DE SÉCURITÉ D'UN CHANTIER — sous /planning, ouverte à tous ceux qui

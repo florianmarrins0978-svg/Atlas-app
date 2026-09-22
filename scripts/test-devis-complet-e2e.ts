@@ -190,7 +190,7 @@ async function main() {
   console.log("  ✓ l'en-tête de l'entreprise s'enregistre — IBAN compris");
 
   // Une ligne complète : description, quantité, prix unitaire.
-  await page.getByLabel("Description 1").fill("Élagage d'un tilleul — taille architecturée");
+  await page.getByLabel("Description 1").fill("Élagage d'un tilleul, taille architecturée");
   await page.getByLabel("Description 1").blur();
   // **SON GESTE, PAS `fill()`** : `fill()` pose la valeur sans passer par le
   // champ, donc sans sa sélection à l'entrée. On entre et on tape, comme lui.

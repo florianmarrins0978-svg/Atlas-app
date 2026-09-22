@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Salarié absent — Atlas</title>
+<title>Salarié absent : Atlas</title>
 <style>
 /*
   ═══════════════════════════════════════════════════════════════════════════
@@ -166,7 +166,7 @@ td b{color:var(--encre)}
 </div>
 
 <div class="tete">
-  <span class="sceau">Retenu le 9 septembre — A, sans contour</span>
+  <span class="sceau">Retenu le 9 septembre, A, sans contour</span>
   <h1>Le petit +</h1>
   <p>Votre choix : <b>A</b>, « Salarié absent ? », <b>sans contour</b>, et le
   titre « Ce jour-là » retiré. <b>C’est ce qui est codé.</b> Les autres
@@ -226,17 +226,17 @@ td b{color:var(--encre)}
   que sur la variante <b>Aujourd’hui</b>, qui montre l’écran tel qu’il est.</p>
 
   <h3>Ce que le petit + ne doit pas emporter</h3>
-  <p><b>La cible du doigt reste à 44 px</b>, dans les trois variantes — y
+  <p><b>La cible du doigt reste à 44 px</b>, dans les trois variantes : y
   compris B, dont le dessin n’en fait que 38 : la zone qui répond déborde de
   trois pixels en haut et en bas, sans se voir. Sinon le geste rate une fois
   sur trois, avec des gants.</p>
 
   <h3>Deux choses à trancher, et je ne les tranche pas seul</h3>
   <p><b>1. Le mot exact.</b> Tranché le 9 septembre : <b>« Salarié absent ? »</b>,
-  avec le point d’interrogation — le bouton ne note rien, il ouvre la question
+  avec le point d’interrogation : le bouton ne note rien, il ouvre la question
   « Qui ? ».</p>
-  <p><b>2. Quand vous êtes seul.</b> Tranché le 9 septembre : <b>« Absent ? »</b>
-  — le mot « salarié » tomberait à faux quand vous n’en avez aucun.
+  <p><b>2. Quand vous êtes seul.</b> Tranché le 9 septembre : <b>« Absent ? »</b>,
+  le mot « salarié » tomberait à faux quand vous n’en avez aucun.
   <b>Voir sans salarié</b>, en haut, le montre.</p>
 
   <h3>Ce que je n’ai pas proposé</h3>
@@ -284,12 +284,12 @@ document.getElementById("choix").addEventListener("click", (e) => {
 const NOMS = ["Julien", "Antoine"];
 const NOTES = [
   "Aujourd’hui. Un bouton de 48 px, plein de mots, en haut de la fiche du jour.",
-  "A — retenu. Un + nu et les mots à côté, sans contour. La zone qui répond au doigt fait toujours 44 px.",
-  "B — la même pastille qu’aujourd’hui, rétrécie à 38 px, avec un + devant.",
-  "C — le + seul. Le plus discret : rien ne dit ce qu’on ajoute avant d’appuyer.",
+  "A : retenu. Un + nu et les mots à côté, sans contour. La zone qui répond au doigt fait toujours 44 px.",
+  "B : la même pastille qu’aujourd’hui, rétrécie à 38 px, avec un + devant.",
+  "C : le + seul. Le plus discret : rien ne dit ce qu’on ajoute avant d’appuyer.",
 ];
 
-/** Le mot du geste — et il change quand il n’a personne sous ses ordres. */
+/** Le mot du geste : et il change quand il n’a personne sous ses ordres. */
 function mot() {
   return salaries === 0 ? "Absent\u00a0?" : "Salarié absent\u00a0?";
 }
@@ -308,7 +308,7 @@ function gesteHtml() {
     return `<div class="pastilles"><button type="button" class="past mini" data-ouvre="1">
         <span class="signe" aria-hidden="true">+</span>${m}</button></div>`;
   }
-  // C — le + seul. Le mot ne vit plus que dans `aria-label`, pour la voix.
+  // C, le + seul. Le mot ne vit plus que dans `aria-label`, pour la voix.
   return `<button type="button" class="rond-seul" data-ouvre="1" aria-label="${m}">
       <span aria-hidden="true">+</span></button>`;
 }

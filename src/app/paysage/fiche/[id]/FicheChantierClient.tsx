@@ -193,7 +193,7 @@ export default function FicheChantierClient({
     setLignes(r.lignes);
     setConstat(
       r.retirees > 0
-        ? `Fiche repliée sur ce que ${c.nom} prend d'habitude — ${r.retirees} ligne${
+        ? `Fiche repliée sur ce que ${c.nom} prend d'habitude, ${r.retirees} ligne${
             r.retirees > 1 ? "s" : ""
           } de moins. Vous pouvez encore tout cocher.`
         : null
@@ -323,7 +323,7 @@ export default function FicheChantierClient({
                 + C&apos;est pour quel client ?
               </span>
               <span className="mt-[2px] block text-[11.5px]" style={{ color: colors.muted }}>
-                Facultatif — vous pourrez le dire à la fin.
+                Facultatif, vous pourrez le dire à la fin.
               </span>
             </button>
           )
@@ -450,7 +450,7 @@ export default function FicheChantierClient({
             if (!r.ok) setPhrase(r.phrase);
           }}
           rows={3}
-          placeholder="Ce que le client doit savoir — une haie à reprendre, un arrosage coupé…"
+          placeholder="Ce que le client doit savoir : une haie à reprendre, un arrosage coupé…"
           className="mt-[8px] w-full rounded-[14px] px-[15px] py-3 text-[15px] leading-[1.5] outline-none"
           style={{ backgroundColor: colors.card, color: colors.ink, border: `1px solid ${colors.line}` }}
         />
@@ -561,7 +561,7 @@ function ChoixDuCanal({
           >
             {c.mot}
             {!c.coordonnee?.trim() && (
-              <span style={{ opacity: 0.7 }}> · absent</span>
+              <span style={{ opacity: 0.7 }}>, absent</span>
             )}
           </button>
         );

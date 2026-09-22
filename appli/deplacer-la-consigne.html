@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Atlas — Déplacer : le mois entier au-dessus</title>
+<title>Atlas : Déplacer : le mois entier au-dessus</title>
 </head>
 <body>
 <style>
@@ -163,13 +163,13 @@
 </div>
 
 <h2>Ce que ça change</h2>
-<p class="note">Au repos, la fiche est <b>coincée dans la semaine du 18</b> : le 21 au 30 sont dessous. Pendant le déplacement, elle <b>descend sous le mois entier</b> — vos 30 jours d'un coup, et la phrase dit enfin vrai.</p>
+<p class="note">Au repos, la fiche est <b>coincée dans la semaine du 18</b> : le 21 au 30 sont dessous. Pendant le déplacement, elle <b>descend sous le mois entier</b> : vos 30 jours d'un coup, et la phrase dit enfin vrai.</p>
 
 <h2>Vous avez dit la A</h2>
 <p class="note">La fiche descend <b>entière</b>. Et « Annuler » est passé <b>en noir gras, à droite de la phrase</b>, comme vous l’avez demandé. La B reste là pour comparer.</p>
 
 <div class="choix" id="choix">
-  <button data-fiche="entiere" aria-pressed="true"><b>A</b>Entière — les demi-journées et « Ajouter » restent</button>
+  <button data-fiche="entiere" aria-pressed="true"><b>A</b>Entière, les demi-journées et « Ajouter » restent</button>
   <button data-fiche="courte" aria-pressed="false"><b>B</b>Juste le nom, le lieu et la question</button>
 </div>
 
@@ -197,7 +197,7 @@
 
 <div class="tranche">
   <p><b>Ce que votre idée règle, et que la mienne ratait.</b> Je proposais de
-  réécrire la phrase. Vous, vous rendez la phrase vraie — et du même coup la
+  réécrire la phrase. Vous, vous rendez la phrase vraie : et du même coup la
   fiche ne disparaît plus quand vous tournez le mois pour atteindre votre jour.
   Aujourd'hui elle disparaît, et il a fallu écrire <b>un second affichage</b>
   sous le calendrier rien que pour ça. Avec votre solution, il n'a plus lieu
@@ -205,9 +205,9 @@
   <p><b>Ce que j'ai tranché seul, dites-le si c'est mal :</b> la petite pointe
   qui rattache la fiche à sa case disparaît pendant le geste. Descendue sous le
   mois entier, elle ne touchait plus rien et désignait la case d'à côté. C'est
-  le <b>cerne noir du 18</b> qui dit le jour ouvert — il ne ment pas sur la
+  le <b>cerne noir du 18</b> qui dit le jour ouvert, il ne ment pas sur la
   distance.</p>
-  <p><b>Répondez par une lettre</b> — A ou B.</p>
+  <p><b>Répondez par une lettre</b>, A ou B.</p>
 </div>
 
 <script>
@@ -224,7 +224,7 @@
   var geste = false;   // le déplacement est-il ouvert ?
   var fiche = 'entiere';
 
-  /* LE NOM DU JOUR SE DÉDUIT DE SA COLONNE — jamais écrit en dur.
+  /* LE NOM DU JOUR SE DÉDUIT DE SA COLONNE, jamais écrit en dur.
      La première version disait « ven. 24 » : le 24 est un jeudi. Une maquette
      qui se trompe sur une date fait douter de tout ce qu'elle montre. */
   var ABREGE = ['lun.','mar.','mer.','jeu.','ven.','sam.','dim.'];
@@ -253,7 +253,7 @@
     return h;
   }
 
-  /* LA FICHE EST ÉCRITE UNE FOIS et posée à l'une ou l'autre place — jamais
+  /* LA FICHE EST ÉCRITE UNE FOIS et posée à l'une ou l'autre place, jamais
      deux fois : deux écritures d'une même fiche finiraient par diverger
      (CLAUDE.md §3). */
   function laFiche(){

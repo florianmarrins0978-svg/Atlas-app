@@ -164,12 +164,12 @@
 <body data-charte="origine">
 
 <div class="bandeau">
-  <b>L'acompte sur le devis — la B, comme vous l'avez choisie le 12 septembre.</b><br>
+  <b>L'acompte sur le devis, la B, comme vous l'avez choisie le 12 septembre.</b><br>
   Posé <b>d'office</b> avec le taux de vos Réglages. Le <b>−</b> le retire des
-  totaux — il reste écrit dans les notes et conditions, quoi qu'il arrive.
+  totaux, il reste écrit dans les notes et conditions, quoi qu'il arrive.
   <b>+ Ajouter un acompte</b> en pose un deuxième, à mi-parcours. Chez le
   client : <b>« Reste à régler après acompte »</b> et le montant.<br>
-  <b>Tout est réel ici</b> : changez un taux, retirez, rajoutez — le papier en dessous suit.
+  <b>Tout est réel ici</b> : changez un taux, retirez, rajoutez : le papier en dessous suit.
   <b>Corrigé le 12 au soir</b> : plus de reste négatif, le 3ᵉ acompte renommé, le tiret retiré des notes,
   et la colonne <b>Unité</b> après Qté. <b>Puis</b> : taux <b>cumulés</b>, 50 et 75 d'office pour le 2ᵉ et le 3ᵉ. <b>Le 13</b> : « Acompte à l'avancement 75 % », sans parenthèses.
 </div>
@@ -186,13 +186,13 @@
   <section>
     <div class="entete">
       <button class="retour" type="button" aria-label="Revenir au chantier">‹</button>
-      <div style="flex:1"><h1>Devis</h1><p class="sur">D2026-000017 · M. Chausson</p></div>
+      <div style="flex:1"><h1>Devis</h1><p class="sur">D2026-000017, M. Chausson</p></div>
     </div>
 
     <div class="feuille">
       <p style="margin:0 0 2px;font-size:13px;color:var(--muted)">Chantier</p>
       <p style="margin:0 0 18px;font-size:15px;color:var(--ink)">
-        Élagage et abattage — 6 rue des Mureaux
+        Élagage et abattage, 6 rue des Mureaux
       </p>
 
       <div class="colonnes">
@@ -268,7 +268,7 @@
   </table>
 
   <h2>Et la colonne Unité</h2>
-  <p>Après Qté : <b>u, ml, m², m³, kg, h, forfait</b> — ou ce que vous tapez.
+  <p>Après Qté : <b>u, ml, m², m³, kg, h, forfait</b> : ou ce que vous tapez.
   Elle existe déjà en base et sur le PDF (« 4 m³ »), il ne manquait que
   l'écran. Les unités usuelles viennent sous la ligne quand vous touchez le
   champ, pour ne pas les taper au doigt.</p>
@@ -341,14 +341,14 @@
   // Le moment de chaque acompte, dans l'ordre où ils tombent.
   // La fin du chantier n'est pas un acompte : c'est le reste à régler.
   const MOMENTS = ['à la signature', 'à mi-parcours', "à l'avancement"];
-  // Ses valeurs d'office : le 1er vient des Réglages, puis 50 et 75 — CUMULÉS.
+  // Ses valeurs d'office : le 1er vient des Réglages, puis 50 et 75 : CUMULÉS.
   // « 50 % » à mi-parcours veut dire : à ce moment-là, la moitié du devis est
   // réglée. Ce qui tombe ce jour-là, c'est la différence avec l'acompte d'avant.
   const DEFAUTS = [REGLAGE_ACOMPTE, 50, 75];
 
   // Le taux cumulé d'un acompte, BORNÉ : jamais sous celui d'avant, jamais
   // au-dessus de 100. Une seule règle, lue par le calcul comme par la borne
-  // du champ — deux versions finiraient par diverger.
+  // du champ : deux versions finiraient par diverger.
   function cumul(i) {
     const avant = i > 0 ? cumul(i - 1) : 0;
     return Math.min(100, Math.max(avant, nombre(acomptes[i].taux)));

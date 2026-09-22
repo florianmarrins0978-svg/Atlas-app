@@ -485,7 +485,7 @@ export async function verifierJourPropose(
   // ═══════════════════════════════════════════════════════════════════════
   const tresProche = jour < fenetreProposition(maintenant).debut;
   const remarqueProche = tresProche
-    ? "C'est dans moins de deux jours — votre client aura peu de temps pour répondre."
+    ? "C'est dans moins de deux jours, votre client aura peu de temps pour répondre."
     : null;
 
   const libre = (j: JourIso) => jourRetenable(j, preparation.dureeDemiJournees, contrainte, preparation.nombreEquipes, horizon);
@@ -498,7 +498,7 @@ export async function verifierJourPropose(
       // distrait sur un samedi, qui ne se rattrape qu'en rappelant le client.
       raison:
         joindre(
-          weekEnd ? "C'est un week-end — vous pouvez le proposer, mais vérifiez que c'est voulu." : null,
+          weekEnd ? "C'est un week-end, vous pouvez le proposer, mais vérifiez que c'est voulu." : null,
           remarqueProche
         ),
       alternative: null,
@@ -529,7 +529,7 @@ export async function verifierJourPropose(
     jour,
     retenable: true,
     raison: joindre(
-      `Ce jour est complet — ${libelleDuree(preparation.dureeDemiJournees).toLowerCase()} n'y tient pas. Vous pouvez le proposer quand même.`,
+      `Ce jour est complet, ${libelleDuree(preparation.dureeDemiJournees).toLowerCase()} n'y tient pas. Vous pouvez le proposer quand même.`,
       remarqueProche
     ),
     alternative: jourLibreLePlusProche(jour, horizon, libre),

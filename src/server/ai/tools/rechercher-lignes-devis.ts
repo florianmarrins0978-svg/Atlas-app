@@ -19,7 +19,7 @@ export const rechercherLignesDevis: Outil = {
   description:
     "Cherche une ligne dans les devis de TOUS les clients de l'entreprise, pour pouvoir la reprendre sur " +
     "le devis en cours. Filtre par un mot du libellé et/ou par le nom du client. Rend l'identifiant de chaque " +
-    "ligne — c'est cet identifiant qu'il faut donner à une proposition « copier_ligne_devis ».",
+    "ligne, et c'est cet identifiant qu'il faut donner à une proposition « copier_ligne_devis ».",
   // `nom` accepté comme `motCle`, pour la même raison qu'ailleurs : trois noms
   // pour une même idée dans le registre, c'est une invitation à se tromper.
   schema: z.object({
@@ -34,7 +34,7 @@ export const rechercherLignesDevis: Outil = {
     if (!motCle?.trim() && !client?.trim()) {
       return {
         trouve: false,
-        raison: "Il faut au moins un mot du libellé ou un nom de client — je ne parcours pas tous les devis.",
+        raison: "Il faut au moins un mot du libellé ou un nom de client, je ne parcours pas tous les devis.",
       };
     }
     const lignes = await rechercherLignesDevisEntreprise(ctx, { motCle, client });

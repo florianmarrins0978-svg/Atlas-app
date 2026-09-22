@@ -32689,3 +32689,55 @@ retours (§ migration 0080) : la photo du chantier que la fiche montre ne doit
 pas partir en purge quand on l'efface de la pellicule. `fiches_securite_photos`
 existe pour que `supprimerPhoto` pose la question. `test-fiche-securite-db.ts`
 le mesure sur le compteur de `fichiers_a_purger`.
+
+---
+
+## §403 — Des phrases, jamais un tiret au milieu : la règle a désormais un garde-fou
+
+**Sa règle, redite le 22 septembre 2026 :** *« Je ne veux plus de tiret, je veux
+des phrases normales, sans tiret en plein milieu. »* Elle était déjà écrite le
+matin même dans `CLAUDE.md` §3, née de « Probable · Peuplier » sur une fiche
+phytosanitaire. Le soir, **deux cent quarante** tirets et points médians vivaient
+encore dans ce qui s'affiche : les écrans, le papier du client, les maquettes.
+
+**Pourquoi une règle en prose ne suffisait pas.** C'est la troisième fois que ce
+dépôt l'apprend au même endroit : les flèches décoratives ont dû être
+redemandées deux fois avant que `test-aucune-fleche.ts` existe (`CLAUDE.md` §3),
+et il en va de même ici. Une règle de style se lit au début d'une conversation
+et s'oublie au troisième écran, surtout quand trois sessions écrivent en
+parallèle sans se lire.
+
+`scripts/test-aucun-tiret.ts` la tient, dans `npm test` :
+
+| | |
+|---|---|
+| ce qu'il lit | ce qui s'AFFICHE : les chaînes et le texte des écrans (`src/`, par l'arbre TypeScript), et le texte des maquettes publiées (`appli/`) |
+| ce qu'il épargne | les **commentaires** : ils citent ses propres phrases, et les réécrire lui ferait dire autre chose |
+| ce qu'il vise | « — », « – », « · » **entre deux mots**. Jamais le trait d'union : il tient « sous-traitant », les dates ISO et le moins d'un `calc()` |
+| ce qu'il laisse | un tiret **seul** dans une case : c'est un montant absent (`CLAUDE.md` §4), pas une phrase coupée |
+
+**La ponctuation qui remplace, et elle se choisit.** Une virgule quand la suite
+complète la phrase, un deux-points quand elle l'explique (ou quand la phrase
+porte déjà une virgule), un point quand c'est une phrase entière, deux
+parenthèses pour une incise que deux tirets encadraient.
+
+**Deux endroits gardent le leur, et c'est dit.**
+
+- `src/server/documents-legaux/versions.ts` : **une version publiée ne se
+  modifie jamais**, sans quoi une acceptation déjà recueillie désignerait un
+  texte qui n'existe plus. Le tiret partira avec la rédaction par un juriste,
+  qui sera une entrée de plus. L'exception est nommée dans le contrôle, avec sa
+  raison.
+- `docs/` et `docs/maquettes/` : la mémoire du dépôt et l'ancienne galerie, qui
+  ne sont pas publiées et qu'il n'ouvre pas depuis son téléphone. La mémoire
+  cite ses messages mot pour mot ; les réécrire effacerait ce qu'il a dit.
+
+**Ce que le lot a déplacé au passage, et qu'il faut savoir.** Le catalogue
+d'arrosage nommait ses buses « 3504 · buse 0,75 ». Le point médian est devenu
+une virgule **dans les deux copies à la fois** (`appli/arrosage-catalogue.js` et
+`src/lib/arrosage/catalogue.js`, que `verifier-arrosage-une-seule-source.mjs`
+compare ligne à ligne). La **référence fournisseur** (`ref:'HA2211-B3'`), elle,
+n'a pas bougé : c'est elle qu'il commande. Deux contrôles coupaient le libellé
+sur le séparateur pour retrouver le modèle au catalogue ; ils coupent désormais
+à la première virgule, et essaient les morceaux du plus long au plus court —
+« 3504, buse 0,75 » avant « 3504 », puisque le nom du catalogue en porte une.

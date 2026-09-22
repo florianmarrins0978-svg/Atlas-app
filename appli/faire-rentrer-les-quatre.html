@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Faire rentrer les quatre — Atlas</title>
+<title>Faire rentrer les quatre : Atlas</title>
 <style>
 /*
   ═══════════════════════════════════════════════════════════════════════════
@@ -170,11 +170,11 @@ body.nuit .sceau{color:var(--scene)}
 </div>
 
 <div class="tete">
-  <span class="sceau">11 septembre — ce que vous avez demandé</span>
+  <span class="sceau">11 septembre, ce que vous avez demandé</span>
   <h1>Faire rentrer les quatre</h1>
   <p>Vous voulez la <b>quatrième pastille</b>. Je vous avais dit qu'elle
   débordait : c'était vrai du dessin d'aujourd'hui, pas de tout dessin possible.
-  <b>Cette planche se mesure elle-même</b> — changez de téléphone, le verdict
+  <b>Cette planche se mesure elle-même</b> : changez de téléphone, le verdict
   change sous vos yeux.</p>
 </div>
 
@@ -200,7 +200,7 @@ body.nuit .sceau{color:var(--scene)}
 
   <h3>Ce que je ne resserre pas</h3>
   <p><b>Les 44 px de hauteur.</b> C'est la mesure d'un pouce sur un chantier,
-  parfois avec des gants — le 2 septembre, ces onglets étaient les seuls à 40 et
+  parfois avec des gants : le 2 septembre, ces onglets étaient les seuls à 40 et
   sont passés à 44. On resserre le rembourrage et les mots, jamais la cible.</p>
 
   <h3>Pourquoi la quatrième est dorée</h3>
@@ -231,9 +231,9 @@ body.nuit .sceau{color:var(--scene)}
   var AUJOURDHUI = { corps:12.5, remb:8, ecart:4, marge:26, mini:60 };
 
   var LARGEURS = [
-    { px:360, mot:"360 px — le petit" },
-    { px:390, mot:"390 px — le vôtre" },
-    { px:430, mot:"430 px — le grand" }
+    { px:360, mot:"360 px : le petit" },
+    { px:390, mot:"390 px : le vôtre" },
+    { px:430, mot:"430 px : le grand" }
   ];
 
   var OPTIONS = [
@@ -244,11 +244,11 @@ body.nuit .sceau{color:var(--scene)}
       mots:["Tout","À facturer","Retours d’intervention","Créer une facture"],
       style:AUJOURDHUI,
       quoi:"Le dessin d’aujourd’hui, la quatrième ajoutée telle quelle.",
-      perd:"Rien — mais elle sort de l’écran."
+      perd:"Rien : mais elle sort de l’écran."
     },
     {
       cle:"quatrieme",
-      mot:"A · Le 4ᵉ mot court",
+      mot:"A : Le 4ᵉ mot court",
       resume:"« Facturer »",
       mots:["Tout","À facturer","Retours d’intervention","Facturer"],
       style:AUJOURDHUI,
@@ -257,7 +257,7 @@ body.nuit .sceau{color:var(--scene)}
     },
     {
       cle:"troisieme",
-      mot:"B · Le 3ᵉ raccourci",
+      mot:"B : Le 3ᵉ raccourci",
       resume:"« Retours »",
       mots:["Tout","À facturer","Retours","Créer une facture"],
       style:AUJOURDHUI,
@@ -266,8 +266,8 @@ body.nuit .sceau{color:var(--scene)}
     },
     {
       cle:"dessin",
-      mot:"C · Le dessin resserré",
-      resume:"Corps 11,5 · marges 20",
+      mot:"C : Le dessin resserré",
+      resume:"Corps 11,5 : marges 20",
       mots:["Tout","À facturer","Retours d’intervention","Créer une facture"],
       style:{ corps:11.5, remb:6, ecart:3, marge:20, mini:52 },
       quoi:"Tous les mots entiers. C’est le rembourrage, l’écart et les marges qui cèdent.",
@@ -275,7 +275,7 @@ body.nuit .sceau{color:var(--scene)}
     },
     {
       cle:"mots-courts",
-      mot:"D · Les mots seuls",
+      mot:"D : Les mots seuls",
       resume:"Dessin intact",
       mots:["Tout","À facturer","Retours","Facturer"],
       style:AUJOURDHUI,
@@ -284,7 +284,7 @@ body.nuit .sceau{color:var(--scene)}
     },
     {
       cle:"les-deux",
-      mot:"E · Les deux",
+      mot:"E : Les deux",
       resume:"Mots courts + dessin",
       mots:["Tout","À facturer","Retours","Facturer"],
       style:{ corps:11.5, remb:6, ecart:3, marge:20, mini:52 },
@@ -302,9 +302,9 @@ body.nuit .sceau{color:var(--scene)}
 
   function brins(){
     var L = [
-      { nom:"M. Aubert",   etat:"Facturé · 1 240,00 €",                 or:false },
-      { nom:"Mme Chaix",   etat:"Pas encore facturé · 360,00 € prévus", or:true  },
-      { nom:"M. Sabatier", etat:"Facturé · 890,00 €",                   or:false }
+      { nom:"M. Aubert",   etat:"Facturé : 1 240,00 €",                 or:false },
+      { nom:"Mme Chaix",   etat:"Pas encore facturé : 360,00 € prévus", or:true  },
+      { nom:"M. Sabatier", etat:"Facturé : 890,00 €",                   or:false }
     ];
     return L.map(function(c){
       return '<div class="brin"><p class="nom">' + c.nom + '</p>'
@@ -312,7 +312,7 @@ body.nuit .sceau{color:var(--scene)}
     }).join("");
   }
 
-  /** La rangée, aux mesures de l'option — c'est ce qu'on mesurera. */
+  /** La rangée, aux mesures de l'option : c'est ce qu'on mesurera. */
   function rangee(o){
     var s = o.style;
     var pastilles = o.mots.map(function(mot, i){
@@ -339,7 +339,7 @@ body.nuit .sceau{color:var(--scene)}
       + '<div class="mois"><button class="feuillet" type="button" aria-label="Mois précédent">‹</button>'
       +   '<span>Septembre 2026</span>'
       +   '<button class="feuillet" type="button" aria-label="Mois suivant">›</button></div>'
-      + '<p class="compte"><span class="or">1 à facturer</span> · 2 facturés</p>'
+      + '<p class="compte"><span class="or">1 à facturer</span>, 2 facturés</p>'
       + '<div class="lignes">' + brins() + '</div>'
       + '</div>';
 
@@ -348,7 +348,7 @@ body.nuit .sceau{color:var(--scene)}
   }
 
   /**
-   * LA MESURE — relevée dans la page, jamais estimée.
+   * LA MESURE, relevée dans la page, jamais estimée.
    *
    * On additionne la largeur RÉELLE de chaque pastille plus les écarts, et on
    * la compare à la place que les marges laissent. Lire `scrollWidth` du
@@ -382,8 +382,8 @@ body.nuit .sceau{color:var(--scene)}
       + ' px</b> disponibles</p>'
       + '<span class="dit">' + (rentre ? "Ça rentre" : "Ça déborde") + '</span>'
       + '<span class="reste">' + (rentre
-          ? ecart + " px de marge — " + o.resume
-          : "Il manque " + ecart + " px — " + o.resume) + '</span>';
+          ? ecart + " px de marge, " + o.resume
+          : "Il manque " + ecart + " px, " + o.resume) + '</span>';
   }
 
   function marquer(){
@@ -395,7 +395,7 @@ body.nuit .sceau{color:var(--scene)}
     });
   }
 
-  /** Le tableau du bas, rempli des MÊMES mesures — jamais recopiées à la main. */
+  /** Le tableau du bas, rempli des MÊMES mesures : jamais recopiées à la main. */
   function remplirLeTableau(){
     var lignes = ['<tr><th>Ce qu’on resserre</th><th>Ce que ça donne</th>'
       + '<th>360</th><th>390</th><th>430</th><th>Ce que ça coûte</th></tr>'];
@@ -416,7 +416,7 @@ body.nuit .sceau{color:var(--scene)}
   /**
    * La même mesure, hors écran, pour remplir le tableau.
    *
-   * Elle passe par le VRAI rendu — une boîte posée dans la page puis retirée —
+   * Elle passe par le VRAI rendu : une boîte posée dans la page puis retirée —
    * plutôt que par un calcul de largeur de texte : deux façons de mesurer
    * finiraient par se contredire, et c'est le tableau qu'on croirait.
    */

@@ -114,7 +114,7 @@ export default function PieceDuDossier({ piece }: { piece: PieceDuClient }) {
           setFeuilleOuverte(true);
         }}
         data-atlas="piece"
-        aria-label={`${piece.titre} — que faire de ce document ?`}
+        aria-label={`${piece.titre}, que faire de ce document ?`}
         className="grid min-h-[64px] w-full grid-cols-[1fr_auto_auto] items-center gap-x-[14px] py-[15px] text-left"
         style={{ borderTop: `1px solid ${colors.lineSoft}`, WebkitTapHighlightColor: "transparent" }}
       >

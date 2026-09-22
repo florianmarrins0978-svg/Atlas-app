@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Terminés — l'œil sur ce qui attend</title>
+<title>Terminés : l'œil sur ce qui attend</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@400;500&display=swap" rel="stylesheet">
@@ -171,14 +171,14 @@
 
 <div class="bandeau">
   <b>Votre page, avec vos quatre demandes du 13 septembre.</b> Deux boutons
-  sous la TVA, le mois centré, plus d'onglet « Tout » ni « À facturer » — et
+  sous la TVA, le mois centré, plus d'onglet « Tout » ni « À facturer » : et
   l'œil à côté de « 3 à facturer ». <b>Appuyez dessus.</b>
 </div>
 
 <div class="mot">
   <b>L'œil fait ce que faisait l'onglet « À facturer », sans prendre une
   rangée.</b> Barré, la liste montre le mois : c'est le mode d'origine. Ouvert,
-  elle ne garde que ce qui attend — <b>tous mois confondus</b>, votre règle du
+  elle ne garde que ce qui attend : <b>tous mois confondus</b>, votre règle du
   22 août pour le retard de facturation : M. Gauthier, d'août, remonte —, le
   mois se met en veille et « 14 facturés » s'éteint. On rappuie, tout revient.
   <b>Changez de mois</b> avec les flèches : en juillet il n'y a rien, la phrase
@@ -250,30 +250,30 @@
   // on change de mois, et le cas où rien n'attend.
   const MOIS = [
     { nom: "Septembre 2026", lignes: [
-      { nom: "M. Rialland",        etat: "12 septembre · 1 240,00 € prévus", attend: true },
-      { nom: "Mme Claudette",      etat: "9 septembre · Facturé le 10 septembre · Facture n° 6", montant: "5 340,00 €" },
-      { nom: "Résidence des Ormes",etat: "8 septembre · 860,00 € prévus", attend: true },
-      { nom: "Mr. Alicanter",      etat: "8 septembre · Facturé le 9 septembre · Facture n° 3", montant: "428,69 €" },
-      { nom: "Mme Costa",          etat: "5 septembre · Facturé le 5 septembre · Facture n° 2", montant: "1 120,00 €" },
-      { nom: "Copropriété Le Clos",etat: "2 septembre · Facturé le 4 septembre · Facture n° 1", montant: "3 980,00 €" },
-      { nom: "M. Ferrand",         etat: "1er septembre · Facturé le 2 septembre", montant: "540,00 €" },
-      { nom: "Mme Perrot",         etat: "1er septembre · Facturé le 1er septembre", montant: "310,00 €" },
-      { nom: "M. et Mme Dufour",   etat: "4 septembre · Facturé le 4 septembre · Facture n° 4", montant: "2 150,00 €" },
-      { nom: "Mairie de Saint-Loup",etat: "4 septembre · Facturé le 6 septembre · Facture n° 5", montant: "8 400,00 €" },
-      { nom: "Mme Aubry",          etat: "3 septembre · Facturé le 3 septembre", montant: "620,00 €" },
-      { nom: "M. Lacroix",         etat: "3 septembre · Facturé le 4 septembre", montant: "1 480,00 €" },
-      { nom: "Résidence Bel Air",  etat: "2 septembre · Facturé le 3 septembre", montant: "4 020,00 €" },
-      { nom: "Mme Toussaint",      etat: "2 septembre · Facturé le 2 septembre", montant: "390,00 €" },
+      { nom: "M. Rialland",        etat: "12 septembre : 1 240,00 € prévus", attend: true },
+      { nom: "Mme Claudette",      etat: "9 septembre : Facturé le 10 septembre : Facture n° 6", montant: "5 340,00 €" },
+      { nom: "Résidence des Ormes",etat: "8 septembre : 860,00 € prévus", attend: true },
+      { nom: "Mr. Alicanter",      etat: "8 septembre : Facturé le 9 septembre : Facture n° 3", montant: "428,69 €" },
+      { nom: "Mme Costa",          etat: "5 septembre : Facturé le 5 septembre : Facture n° 2", montant: "1 120,00 €" },
+      { nom: "Copropriété Le Clos",etat: "2 septembre : Facturé le 4 septembre : Facture n° 1", montant: "3 980,00 €" },
+      { nom: "M. Ferrand",         etat: "1er septembre : Facturé le 2 septembre", montant: "540,00 €" },
+      { nom: "Mme Perrot",         etat: "1er septembre : Facturé le 1er septembre", montant: "310,00 €" },
+      { nom: "M. et Mme Dufour",   etat: "4 septembre : Facturé le 4 septembre : Facture n° 4", montant: "2 150,00 €" },
+      { nom: "Mairie de Saint-Loup",etat: "4 septembre : Facturé le 6 septembre : Facture n° 5", montant: "8 400,00 €" },
+      { nom: "Mme Aubry",          etat: "3 septembre : Facturé le 3 septembre", montant: "620,00 €" },
+      { nom: "M. Lacroix",         etat: "3 septembre : Facturé le 4 septembre", montant: "1 480,00 €" },
+      { nom: "Résidence Bel Air",  etat: "2 septembre : Facturé le 3 septembre", montant: "4 020,00 €" },
+      { nom: "Mme Toussaint",      etat: "2 septembre : Facturé le 2 septembre", montant: "390,00 €" },
     ]},
     { nom: "Août 2026", lignes: [
-      { nom: "Mme Lenoir",         etat: "28 août · Facturé le 29 août", montant: "760,00 €" },
-      { nom: "M. Gauthier",        etat: "21 août · 1 980,00 € prévus", attend: true },
-      { nom: "Les Jardins du Parc",etat: "14 août · Facturé le 18 août", montant: "6 210,00 €" },
+      { nom: "Mme Lenoir",         etat: "28 août : Facturé le 29 août", montant: "760,00 €" },
+      { nom: "M. Gauthier",        etat: "21 août : 1 980,00 € prévus", attend: true },
+      { nom: "Les Jardins du Parc",etat: "14 août : Facturé le 18 août", montant: "6 210,00 €" },
     ]},
     { nom: "Juillet 2026", lignes: [] },
   ];
   // Les comptes sont « tous mois confondus », comme dans le code depuis le
-  // 23 août — et l'œil ouvert aussi : un chantier d'août jamais facturé se
+  // 23 août : et l'œil ouvert aussi : un chantier d'août jamais facturé se
   // voit en septembre, c'est sa règle du 22 août pour le retard de
   // facturation. Le mois se met alors en veille, il ne commande plus la liste.
   const TOUTES = MOIS.flatMap(m => m.lignes);
@@ -292,7 +292,7 @@
     const attend = TOUTES.filter(l => l.attend).length;
     const faites = TOUTES.length - attend;
     // Sans rien à facturer, l'œil n'a rien à filtrer : il part avec son compte
-    // et le point. Sans rien du tout, la phrase part entière — sa règle du
+    // et le point. Sans rien du tout, la phrase part entière : sa règle du
     // 13 septembre : elle n'apparaît que s'il y a des chantiers à facturer ou
     // des factures déjà faites.
     if (attend === 0) mode = "tout";

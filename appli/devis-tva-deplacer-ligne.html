@@ -109,7 +109,7 @@
 
 <div class="bandeau">
   <h1>Déplacer une ligne d'une TVA à l'autre</h1>
-  <p>Vous avez choisi l'appui long. Voici ce que ça donne — essayez-le pour de vrai.</p>
+  <p>Vous avez choisi l'appui long. Voici ce que ça donne, essayez-le pour de vrai.</p>
 </div>
 
 <div class="consigne">
@@ -150,8 +150,8 @@ const euros = (n) => n.toLocaleString('fr-FR', { minimumFractionDigits: 2, maxim
 let lignes = [
   { id: 1, libelle: "Taille de haie de charmille", qte: 80, pu: 17.5, taux: "20" },
   { id: 2, libelle: "Évacuation des déchets verts", qte: 1, pu: 180, taux: "20" },
-  { id: 3, libelle: "Charmille en motte — 1,50/1,75 m", qte: 45, pu: 22, taux: "10" },
-  { id: 4, libelle: "Terreau de plantation — sac 40 L", qte: 12, pu: 8.9, taux: "10" },
+  { id: 3, libelle: "Charmille en motte : 1,50/1,75 m", qte: 45, pu: 22, taux: "10" },
+  { id: 4, libelle: "Terreau de plantation : sac 40 L", qte: 12, pu: 8.9, taux: "10" },
 ];
 const montant = (l) => Math.round(l.qte * l.pu * 100) / 100;
 
@@ -216,7 +216,7 @@ function dessiner() {
 //
 // 500 ms : en dessous, un doigt qui hésite sur une ligne ouvre le tiroir sans
 // l'avoir voulu ; au-dessus, on croit que rien ne répond. Le geste s'annule dès
-// que le doigt bouge de plus de 10 px — sinon on ne pourrait plus faire défiler
+// que le doigt bouge de plus de 10 px : sinon on ne pourrait plus faire défiler
 // la page en partant d'une ligne.
 function brancherAppuiLong(element, ligne) {
   let minuteur = null, depart = null;
@@ -286,7 +286,7 @@ function deplacer(taux) {
     // **LA LIGNE REJOINT LE GROUPE, elle ne l'emmène pas devant.** L'ordre des
     // catégories suit celui des lignes : sans ce déplacement en fin de liste,
     // déplacer la PREMIÈRE ligne du devis faisait remonter toute sa nouvelle
-    // catégorie au-dessus de l'autre — on croyait avoir bougé le tableau entier.
+    // catégorie au-dessus de l'autre, on croyait avoir bougé le tableau entier.
     lignes = lignes.filter((l) => l.id !== cible.id).concat(cible);
     dessiner();
   }, 180);

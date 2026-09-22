@@ -166,7 +166,7 @@ export default function DicterCoordonnees({
       setMessage(
         remplis === 0
           ? "Aucune coordonnée reconnue dans ce que vous avez dit. Rien n'a été rempli."
-          : `${remplis} information${remplis > 1 ? "s" : ""} reprise${remplis > 1 ? "s" : ""} — relisez avant de créer.`
+          : `${remplis} information${remplis > 1 ? "s" : ""} reprise${remplis > 1 ? "s" : ""}. Relisez avant de créer.`
       );
     } catch {
       if (actuelle()) {
@@ -253,7 +253,7 @@ export default function DicterCoordonnees({
           style={{ color: colors.muted }}
         >
           {enCours
-            ? "J'écoute — touchez pour arrêter."
+            ? "J'écoute. Touchez pour arrêter."
             : etat === "traite"
               ? phraseAttente(attente)
               : message}

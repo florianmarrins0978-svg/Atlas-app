@@ -109,7 +109,7 @@
   <p class="chapeau">
     Aujourd’hui, changer l’adresse ou le numéro d’un client passe par un de ses
     chantiers. S’il n’en a aucun en cours, c’est impossible. Voici trois places
-    pour la porte, sur sa fiche — et l’écran qu’elle ouvre.
+    pour la porte, sur sa fiche : et l’écran qu’elle ouvre.
   </p>
   <button class="bascule" id="jourNuit" aria-pressed="false">Voir en mode nuit</button>
 
@@ -134,7 +134,7 @@
     e.currentTarget.textContent = on ? "Voir en plein jour" : "Voir en mode nuit";
   });
 
-  /** La fiche du client, telle qu'elle est — la porte se pose selon `place`. */
+  /** La fiche du client, telle qu'elle est : la porte se pose selon `place`. */
   function fiche(place) {
     const crayon = place === "entete"
       ? '<span class="crayon neuf">\u270e</span>'
@@ -168,12 +168,12 @@
   }
 
   const PLACES = [
-    { cle: "sous", nom: "A — sous ses coordonnées",
+    { cle: "sous", nom: "A : sous ses coordonnées",
       idee: "Une ligne, là où on vient de lire l\u2019adresse et le numéro. C\u2019est l\u2019endroit où l\u2019on s\u2019aperçoit qu\u2019ils sont faux." },
-    { cle: "entete", nom: "B — un crayon en haut",
+    { cle: "entete", nom: "B : un crayon en haut",
       idee: "À la place du bouton de l\u2019assistant, à droite du nom. Il se voit tout de suite, mais il pousse l\u2019assistant ailleurs." },
-    { cle: "coord", nom: "C — les coordonnées elles-mêmes",
-      idee: "On appuie sur l\u2019adresse ou le numéro pour le corriger. Rien n\u2019est ajouté à l\u2019écran — mais rien ne dit qu\u2019on peut appuyer." },
+    { cle: "coord", nom: "C : les coordonnées elles-mêmes",
+      idee: "On appuie sur l\u2019adresse ou le numéro pour le corriger. Rien n\u2019est ajouté à l\u2019écran, mais rien ne dit qu\u2019on peut appuyer." },
   ];
 
   document.getElementById("places").innerHTML = PLACES.map((p) => `

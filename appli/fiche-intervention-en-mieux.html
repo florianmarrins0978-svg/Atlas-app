@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>La fiche d’intervention — en mieux</title>
+<title>La fiche d’intervention : en mieux</title>
 <!--
   ════════════════════════════════════════════════════════════════════════════
   SA DEMANDE DU 18 SEPTEMBRE 2026, AU SOIR, capture à l'appui :
@@ -220,7 +220,7 @@
 
 <div class="deux" id="deux">
 <div class="cote ojd">
-  <p class="quel">Aujourd’hui — votre application</p>
+  <p class="quel">Aujourd’hui, votre application</p>
   <div class="tel">
     <img src="images/fiche-intervention-aujourdhui.png" width="390" height="845"
          alt="La fiche d'intervention telle qu'elle est aujourd'hui dans l'application">
@@ -267,13 +267,13 @@
   <h2>La même fiche, en plus belle</h2>
   <p><b>Votre page d’abord, la proposition juste en dessous.</b> <b>Rien ne bouge, rien ne change de nom.</b> La carte, les quatre cases, la note, les puces, le bouton vert, le PDF en gras : tout est là, à sa place.</p>
   <table>
-    <tr><td>Les quatre cases</td><td>moins hautes, serrées entre elles, une ligne fine au lieu d’un contour — et un petit dessin devant chaque mot</td></tr>
+    <tr><td>Les quatre cases</td><td>moins hautes, serrées entre elles, une ligne fine au lieu d’un contour : et un petit dessin devant chaque mot</td></tr>
     <tr><td>Ma note</td><td>le même blanc que les cases, le curseur en or</td></tr>
     <tr><td>Fin de chantier</td><td>toujours le bouton vert, mais moins haut et arrêté au mot, comme « C’est fini »</td></tr>
     <tr><td>Les filets</td><td>tous les mêmes, à la même distance</td></tr>
   </table>
   <p><b>Touchez « Fin de chantier »</b> : les lignes deviennent les cases, comme aujourd’hui ; ce qui manque se dit avant « C’est fini ».</p>
-  <p><b>La première version de cette planche</b> — sans un cadre, sans un bouton — est écartée : vous vouliez votre fiche, pas une autre.</p>
+  <p><b>La première version de cette planche</b> (sans un cadre, sans un bouton) est écartée : vous vouliez votre fiche, pas une autre.</p>
   <p><b>Rien n’est codé.</b></p>
 </div>
 
@@ -281,7 +281,7 @@
 /* La planche ne calcule aucune règle : ce qui manque avant « C'est fini » est
    celui de `retour-intervention.ts` — cocher au moins une ligne, et une photo
    quand l'entreprise l'exige (ici, elle l'exige). */
-const TACHES = ["Taille de haie de thuya", "Tonte de pelouse — 500", "Forfait désherbage", "Erigeron — 10"];
+const TACHES = ["Taille de haie de thuya", "Tonte de pelouse (500", "Forfait désherbage", "Erigeron) 10"];
 const T = (d) => `<svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
 const ICONE = {
   maps: T(`<path d="M10 17.5s-5.5-5-5.5-9a5.5 5.5 0 0 1 11 0c0 4-5.5 9-5.5 9z"/><circle cx="10" cy="8.5" r="2"/>`),
@@ -314,7 +314,7 @@ function dessiner() {
   f.appendChild(el("p", "sur", "Fiche d’intervention"));
   f.appendChild(el("p", "qui", "Pagnol"));
 
-  // les quatre gestes — les mêmes mots, dans le même ordre, avec un dessin devant
+  // les quatre gestes : les mêmes mots, dans le même ordre, avec un dessin devant
   const g = el("div", "gestes");
   g.appendChild(bouton(`${ICONE.maps}<span class="mot">Maps</span>`, () => {}, "geste"));
   g.appendChild(bouton(`${ICONE.waze}<span class="mot">Waze</span>`, () => {}, "geste"));
@@ -339,7 +339,7 @@ function dessiner() {
   if (rendu) {
     p.appendChild(el("ul", "taches", TACHES.map((x) => `<li>${x}</li>`).join("")));
     p.appendChild(el("div", "parti",
-      `<span class="rond" aria-hidden="true">${COCHE}</span><span><span class="mot">C’est parti</span><span class="ou">Terminés — Retour d’intervention</span></span>`));
+      `<span class="rond" aria-hidden="true">${COCHE}</span><span><span class="mot">C’est parti</span><span class="ou">Terminés, Retour d’intervention</span></span>`));
   } else if (!finOuverte) {
     p.appendChild(el("ul", "taches", TACHES.map((x) => `<li>${x}</li>`).join("")));
     const v = bouton(`${COCHE_VERT}<span>Fin de chantier</span>`, () => { finOuverte = true; dessiner(); }, "vert");
@@ -347,7 +347,7 @@ function dessiner() {
   } else {
     // le même bouton, à la même place : « Fin de chantier » devient « Replier »
     const r = bouton(`${COCHE_VERT}<span>Replier</span>`, () => { finOuverte = false; dessiner(); }, "vert"); r.style.marginTop = "0"; p.appendChild(r);
-    // les lignes DEVIENNENT les cases — sa proposition A du 9 septembre
+    // les lignes DEVIENNENT les cases, sa proposition A du 9 septembre
     const c = el("div", "cases"); c.style.marginTop = "10px";
     TACHES.forEach((x, i) => {
       const b = bouton(`<span class="rond" aria-hidden="true">${COCHE}</span><span class="quoi">${x}</span>`,
@@ -361,7 +361,7 @@ function dessiner() {
     const aj = bouton(PLUS, () => { photos++; dessiner(); }, "ajouter"); aj.setAttribute("aria-label", "Ajouter une photo");
     ph.appendChild(aj); p.appendChild(ph);
 
-    const s = el("textarea", "note-cadre"); s.rows = 2; s.value = aSignaler; s.placeholder = "À signaler — facultatif";
+    const s = el("textarea", "note-cadre"); s.rows = 2; s.value = aSignaler; s.placeholder = "À signaler : facultatif";
     s.style.marginTop = "10px"; s.style.minHeight = "58px"; s.style.fontSize = "14.5px";
     s.oninput = () => { aSignaler = s.value; }; p.appendChild(s);
 

@@ -104,7 +104,7 @@ function decrire(
     return {
       role,
       nature: "simule",
-      libelle: "Mode déterministe — aucun prestataire branché",
+      libelle: "Mode déterministe, aucun prestataire branché",
       explication: `Rien ne part chez personne. ${CE_QUI_REMPLACE[role]}`,
     };
   }
@@ -118,7 +118,7 @@ function decrire(
     return {
       role,
       nature: "simule",
-      libelle: `Mode déterministe — le nom « ${valeur} » n'est pas reconnu`,
+      libelle: `Mode déterministe, le nom « ${valeur} » n'est pas reconnu`,
       explication: `Rien ne part chez personne. Vérifiez l'orthographe : ${Object.keys(connus).join(", ")}.`,
     };
   }
@@ -127,7 +127,7 @@ function decrire(
     return {
       role,
       nature: "non_raccorde",
-      libelle: `${fiche.libelle} — raccordement non écrit`,
+      libelle: `${fiche.libelle}, raccordement non écrit`,
       explication: `Ce prestataire est choisi mais son raccordement reste à écrire : chaque tentative échouera. Rien ne part chez personne pour autant.`,
     };
   }
@@ -140,7 +140,7 @@ function decrire(
     return {
       role,
       nature: "cle_absente",
-      libelle: `${fiche.libelle} — clé absente`,
+      libelle: `${fiche.libelle}, clé absente`,
       explication: `Ce prestataire est choisi, mais ${fiche.variable} n'est pas renseignée : chaque tentative échouera. Rien ne part chez personne pour autant.`,
       variableManquante: fiche.variable,
     };
@@ -184,7 +184,7 @@ export function decrireEtatIA(
 export function aFaireIA(etats: EtatFournisseur[]): string | undefined {
   const toutSimule = etats.every((e) => e.nature === "simule" && !e.libelle.includes("n'est pas reconnu"));
   if (!toutSimule) return undefined;
-  return "Posez OPENAI_API_KEY (pour écouter la dictée) et ANTHROPIC_API_KEY (pour en écrire le devis) — voir docs/ESSAYER.md.";
+  return "Posez OPENAI_API_KEY (pour écouter la dictée) et ANTHROPIC_API_KEY (pour en écrire le devis). Voir docs/ESSAYER.md.";
 }
 
 /** Vrai si au moins un des deux ne fait pas ce qu'on croit — sert à colorer l'écran. */

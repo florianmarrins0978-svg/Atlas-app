@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Décennale et médiateur — Mon entreprise</title>
+<title>Décennale et médiateur : Mon entreprise</title>
 <style>
   /* ═══ LES JETONS, SORTIS DU CODE (src/lib/chartes.ts) ═══════════════════*/
   :root{
@@ -65,7 +65,7 @@
 <body data-charte="origine">
 
 <div class="bandeau">
-  <b>Votre accord du 14 septembre.</b> L’assurance décennale et le médiateur ne se cherchent plus dans le texte des conditions générales : <b>deux blocs dans Mon entreprise</b>, remplis une fois, imprimés en bas du devis et de la facture comme le SIRET — et repris dans les conditions générales à la place des crochets. Vide : rien ne s’imprime, et l’écran le dit. <b>Codé le 16 septembre 2026</b> (migration 0094).
+  <b>Votre accord du 14 septembre.</b> L’assurance décennale et le médiateur ne se cherchent plus dans le texte des conditions générales : <b>deux blocs dans Mon entreprise</b>, remplis une fois, imprimés en bas du devis et de la facture comme le SIRET : et repris dans les conditions générales à la place des crochets. Vide : rien ne s’imprime, et l’écran le dit. <b>Codé le 16 septembre 2026</b> (migration 0094).
 </div>
 
 <div class="choix">
@@ -92,7 +92,7 @@
     <div class="bloc">
       <p class="titre">Médiateur de la consommation</p>
       <div class="champ"><label for="mediateur">Nom</label><input id="mediateur" placeholder="Celui auquel vous adhérez"><small id="mediateur-dit"></small></div>
-      <div class="champ"><label for="mediateur-coord">Adresse ou site</label><input id="mediateur-coord" placeholder="49 rue de Ponthieu, 75008 Paris · cm2c.net"></div>
+      <div class="champ"><label for="mediateur-coord">Adresse ou site</label><input id="mediateur-coord" placeholder="49 rue de Ponthieu, 75008 Paris : cm2c.net"></div>
     </div>
 
     <div class="apercu">
@@ -116,7 +116,7 @@
 <script>
   function id(x){ return document.getElementById(x); }
   var CHAMPS = ["assureur","contrat","zone","mediateur","mediateur-coord"];
-  var REMPLI = { assureur:"AXA", contrat:"0000020872696404", zone:"France métropolitaine", mediateur:"CM2C", "mediateur-coord":"49 rue de Ponthieu, 75008 Paris · cm2c.net" };
+  var REMPLI = { assureur:"AXA", contrat:"0000020872696404", zone:"France métropolitaine", mediateur:"CM2C", "mediateur-coord":"49 rue de Ponthieu, 75008 Paris : cm2c.net" };
   function v(x){ return id(x).value.trim(); }
   function rendre(){
     var d = [v("assureur"), v("contrat") ? "contrat n° "+v("contrat") : "", v("zone")].filter(Boolean).join(", ");

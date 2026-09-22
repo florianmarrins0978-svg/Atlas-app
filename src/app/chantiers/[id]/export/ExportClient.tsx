@@ -329,7 +329,7 @@ function AvertissementModification({
         </p>
         <p className="mt-3 text-[14px] leading-relaxed" style={{ color: colors.inkSoft }}>
           Le modifier en crée une nouvelle version. Tant que vous ne l&apos;aurez pas
-          renvoyée, votre client continuera de voir celle qu&apos;il a reçue — et il
+          renvoyée, votre client continuera de voir celle qu&apos;il a reçue, et il
           pourra l&apos;accepter au prix d&apos;avant.
         </p>
         <button

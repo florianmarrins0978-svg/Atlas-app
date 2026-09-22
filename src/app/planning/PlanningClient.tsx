@@ -1932,7 +1932,7 @@ function ChevronDesPortes({
     <button
       type="button"
       onClick={() => onPortes(chantier)}
-      aria-label={`Ouvrir le chantier — ${chantier.nom}`}
+      aria-label={`Ouvrir le chantier ${chantier.nom}`}
       className="flex-shrink-0 cursor-pointer border-0 bg-transparent px-0.5 text-[19px]"
       style={{ color: colors.chevron }}
     >
@@ -2825,7 +2825,7 @@ function AjoutAuJour({
                   setOuvert(null);
                 }}
               >
-                {m.chantier.nom} · ½
+                {m.chantier.nom}, ½
               </Petit>
             ))}
           </Choisir>
@@ -3172,7 +3172,7 @@ function AjoutDunClient({
            la fiche existe ensuite comme les autres. */
         <>
           <p data-atlas="fiche-a-creer" className="mt-2 text-[13px]" style={{ color: colors.inkSoft }}>
-            Inconnu — sa fiche sera créée
+            Inconnu, sa fiche sera créée
           </p>
           {(
             [
@@ -3513,7 +3513,7 @@ function PasLaCeJour({
                   if (quiManque === r) setQuiManque(null);
                 }}
               >
-                {nomDuRang(r)} · annuler
+                {nomDuRang(r)}, annuler
               </MotEnOr>
             ) : (
               <MotEnOr

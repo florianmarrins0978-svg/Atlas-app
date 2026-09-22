@@ -252,7 +252,7 @@ export function rangerTranche(
       return {
         raison:
           `« ${chevauche.libelle} » n'a pas de borne haute : tout ce qui dépasse ${chevauche.de} y tombe déjà. ` +
-          `Retirez-la d'abord, puis reposez vos deux tranches — ses prix vous attendront.`,
+          `Retirez-la d'abord, puis reposez vos deux tranches. Ses prix vous attendront.`,
       };
     }
     return {
@@ -319,7 +319,7 @@ export const NATURES_PAR_DEFAUT: readonly Nature[] = [
   {
     cle: "abattage",
     titre: "Abattre un arbre",
-    aide: "Par technique et par diamètre — c'est la technique qui fait le plus gros écart.",
+    aide: "Par technique et par diamètre. C'est la technique qui fait le plus gros écart.",
     axe: "Diamètre du tronc",
     forme: "technique-diametre",
     integree: true,
@@ -438,7 +438,7 @@ function celluleCroisee(hauteur: Tranche, diametre: Tranche): Cellule {
     cle: `${hauteur.cle}|${diametre.cle}`,
     hauteur,
     diametre,
-    libelle: `${hauteur.libelle} de haut · tronc de ⌀ ${diametre.libelle}`,
+    libelle: `${hauteur.libelle} de haut, tronc de ⌀ ${diametre.libelle}`,
   };
 }
 
@@ -478,7 +478,7 @@ function celluleTechnique(t: Technique, diametre: Tranche): Cellule {
     // connaître ; ce sont les LIBELLÉS qui disent au patron de quoi on parle.
     hauteur: { cle: t.cle, de: 0, a: null, libelle: t.libelle },
     diametre,
-    libelle: `${t.libelle} · tronc de ⌀ ${diametre.libelle}`,
+    libelle: `${t.libelle}, tronc de ⌀ ${diametre.libelle}`,
   };
 }
 

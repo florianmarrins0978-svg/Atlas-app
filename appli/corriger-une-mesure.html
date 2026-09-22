@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="color-scheme" content="only light">
-<title>Arborea — Corriger une mesure</title>
+<title>Arborea : Corriger une mesure</title>
 <meta name="description" content="Corriger la quantité d'une prestation sans réécrire son nom.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -55,12 +55,12 @@
 </head>
 <body>
 <div class="page">
-  <span class="eyebrow">Chantier — Mme Martin</span>
+  <span class="eyebrow">Chantier, Mme Martin</span>
   <h1>Ce qu’il y a à faire</h1>
 
   <div class="carte" data-prix-unitaire="17.50" data-unite-prix="ml">
     <p class="nom">Taille de haie de laurier</p>
-    <p class="nature">Haie · laurier</p>
+    <p class="nature">Haie, laurier</p>
     <div class="mesure">
       <label for="q1">Quantité</label>
       <input id="q1" type="number" inputmode="decimal" value="800" min="0" step="1">
@@ -71,13 +71,13 @@
         <option>jour</option>
       </select>
     </div>
-    <p class="prix">Sur le devis : <b class="montant">14 000,00 €</b> — 800 × 17,50 €</p>
+    <p class="prix">Sur le devis : <b class="montant">14 000,00 €</b> : 800 × 17,50 €</p>
     <p class="marque">Corrigé par vous. Une nouvelle lecture de la dictée ne l’effacera pas.</p>
   </div>
 
   <div class="carte">
-    <p class="nom">Démontage d’un érable — rétention, ⌀ 45 cm</p>
-    <p class="nature">Abattage · érable</p>
+    <p class="nom">Démontage d’un érable, rétention, ⌀ 45 cm</p>
+    <p class="nature">Abattage : érable</p>
     <div class="mesure">
       <label for="q2">Quantité</label>
       <input id="q2" type="number" inputmode="decimal" value="1" min="0" step="1">
@@ -86,7 +86,7 @@
         <option>souche</option>
       </select>
     </div>
-    <p class="prix">Sur le devis : <b class="montant">800,00 €</b> — votre grille, ⌀ 40 à 50 cm</p>
+    <p class="prix">Sur le devis : <b class="montant">800,00 €</b> : votre grille, ⌀ 40 à 50 cm</p>
     <p class="marque">Corrigé par vous. Une nouvelle lecture de la dictée ne l’effacera pas.</p>
   </div>
 
@@ -108,7 +108,7 @@
   <p class="note">
     <b>Ce que cette planche propose.</b> Corriger une quantité sans réécrire le nom de la
     prestation. Aujourd’hui il faut transformer « Haie (800 ml) » en « Haie (80 ml) »,
-    et le prix suit — mais le nom se salit à chaque correction.
+    et le prix suit : mais le nom se salit à chaque correction.
     <br><br>
     Ce qui est déjà en place derrière : la valeur que vous posez fait foi, aucune relecture
     de la dictée ne l’écrase, et une ligne sans prix s’affiche « à chiffrer » plutôt que 0 €.
@@ -116,7 +116,7 @@
 </div>
 
 <script>
-  // La planche RÉAGIT — c'est ce qu'il demande : pouvoir essayer avant de choisir.
+  // La planche RÉAGIT, c'est ce qu'il demande : pouvoir essayer avant de choisir.
   document.querySelectorAll('.carte').forEach(function (carte) {
     var champ = carte.querySelector('input');
     var montant = carte.querySelector('.montant');

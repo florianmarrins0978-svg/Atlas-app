@@ -182,7 +182,7 @@ export default function EnAttenteDePaiement({
                       Le jour court, comme la trace de réception juste en
                       dessous : une seule façon d'écrire un jour sur cet écran. */}
                   <p className="text-[11.5px] leading-[1.45]" style={{ color: colors.muted }}>
-                    {f.numeroCommercial} · émise le {jourCourt(f.dateEmission, aujourdHui)}
+                    {f.numeroCommercial}, émise le {jourCourt(f.dateEmission, aujourdHui)}
                   </p>
                 </div>
                 <div className="flex-shrink-0 text-right">

@@ -34,7 +34,7 @@ montre. Tu ne conseilles rien, tu ne conclus rien, tu ne calcules rien : tu déc
 const CONSIGNE = `Décris cette photo en français, en quelques lignes.
 
 RECOPIE MOT POUR MOT tout texte, tout chiffre, toute référence lisible : désignations, quantités,
-unités, prix, références de matériel, mesures, dates. Ce sont eux qui servent — un résumé qui les
+unités, prix, références de matériel, mesures, dates. Ce sont eux qui servent, et un résumé qui les
 perd ne sert à rien.
 
 Ce qui est flou, coupé ou illisible : dis-le, ne le devine pas. Un chiffre inventé coûte plus cher

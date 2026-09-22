@@ -153,7 +153,7 @@ export function echelleDuCroquis(zones: ZonePositionnee[]): Echelle {
       ok: false,
       raison:
         `le croquis n'est pas à l'échelle : selon les zones, un même trait vaut de ` +
-        `${Math.round(mini)} à ${Math.round(maxi)} m — les distances ne s'en déduisent pas`,
+        `${Math.round(mini)} à ${Math.round(maxi)} m, et les distances ne s'en déduisent pas`,
     };
   }
 
@@ -448,10 +448,10 @@ export function poserSurLeTerrain(
   // **Ce qu'on dit du placement**, dans son langage et sans jargon.
   const reserve = echelle.approchee
     ? "le croquis ne donne pas les proportions des zones : elles sont placées à l’estime, " +
-      "d’après leurs cotes — les métrés sont justes, l’agencement est à vérifier d’un coup d’œil"
+      "d’après leurs cotes. Les métrés sont justes, l’agencement est à vérifier d’un coup d’œil"
     : echelle.dispersion > ECART_MAX_ENTRE_ZONES
       ? "le croquis n’est pas à l’échelle : les zones sont placées d’après leurs cotes, " +
-        "pas d’après le dessin — les métrés sont justes, l’agencement est à vérifier d’un coup d’œil"
+        "pas d’après le dessin. Les métrés sont justes, l’agencement est à vérifier d’un coup d’œil"
       : null;
 
   return {

@@ -230,7 +230,7 @@ export default function DicterDansLeDevis({
           style={{ color: colors.muted }}
         >
           {enCours
-            ? "J'écoute — touchez pour arrêter."
+            ? "J'écoute. Touchez pour arrêter."
             : etat === "traite"
               ? phraseAttente(attente)
               : message}
@@ -317,8 +317,8 @@ function FeuilleRetouches({
 
       {propositions.length === 0 && (
         <p className="mb-2 text-[13px] leading-relaxed" style={{ color: colors.muted }}>
-          Votre dictée a été recopiée, mais aucun changement n’a pu en être tiré. Le devis n’a pas bougé —
-          corrigez les lignes à la main en relisant ce que vous avez dit.
+          Votre dictée a été recopiée, mais aucun changement n’a pu en être tiré. Le devis n’a pas bougé.
+          Corrigez les lignes à la main en relisant ce que vous avez dit.
         </p>
       )}
 

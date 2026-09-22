@@ -5,7 +5,7 @@ import { rechercherCartes } from "../../repositories/mots-catalogue";
 export const rechercheSynonymes: Outil = {
   nom: "RechercheSynonymes",
   description:
-    "Donne tous les mots connus pour un mot-clé — ceux d'Atlas et ceux de l'entreprise (ex. « sapin » -> " +
+    "Donne tous les mots connus pour un mot-clé : ceux d'Atlas et ceux de l'entreprise (ex. « sapin » -> " +
     "« conifère », « abattage », « démontage », rattachés à la prestation canonique « Élagage »).",
   schema: z.object({ motCle: z.string() }),
   async executer(contexte, parametres) {

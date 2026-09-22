@@ -329,7 +329,7 @@ export function composerMessageClient(params: {
     // courriel — jamais par SMS —, il doit rester reconnaissable dans une boîte
     // de réception, et un objet vide ou trompeur envoie le message aux
     // indésirables. Ce qu'il écrit, c'est le corps.
-    objet: `Votre devis — ${entrepriseNom}`,
+    objet: `Votre devis de ${entrepriseNom}`,
     corps: rendreMessage(modele?.trim() || MESSAGES_PAR_DEFAUT.devis, {
       client: nommer(clientNom, clientCivilite),
       document: motDuDocument("devis"),
@@ -397,7 +397,7 @@ export function composerMessageEntretien(params: {
 }): MessageClient {
   const { clientNom, clientCivilite, entrepriseNom, lien, modele } = params;
   return {
-    objet: `Retour d'intervention — ${entrepriseNom}`,
+    objet: `Retour d'intervention de ${entrepriseNom}`,
     corps: rendreMessage(modele?.trim() || MESSAGES_PAR_DEFAUT.passage, {
       client: nommer(clientNom, clientCivilite),
       document: motDuDocument("passage"),

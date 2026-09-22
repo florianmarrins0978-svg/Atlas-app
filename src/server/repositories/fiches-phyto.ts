@@ -280,7 +280,7 @@ export async function versionBase(): Promise<string> {
     })
     .from(fichesPhyto)
     .where(filtreServable());
-  return `${ligne?.nombre ?? 0} fiches · ${ligne?.maj ?? "sans date"}`;
+  return `${ligne?.nombre ?? 0} fiches, ${ligne?.maj ?? "sans date"}`;
 }
 
 /**

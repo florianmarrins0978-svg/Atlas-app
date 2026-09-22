@@ -356,7 +356,7 @@ export default function AllureClient({
                   {t.nom}
                 </span>
                 <span className={`mt-0.5 block ${texteSituation}`} style={{ color: colors.inkSoft }}>
-                  {t.clef === ALLURE_PAR_DEFAUT.typographie ? `${t.dit} · par défaut` : t.dit}
+                  {t.clef === ALLURE_PAR_DEFAUT.typographie ? `${t.dit}, par défaut` : t.dit}
                 </span>
               </button>
             );
@@ -399,7 +399,7 @@ export default function AllureClient({
             // 7 septembre — « il manque le doré » — visait la maquette, pas
             // l'application : la planche l'avait perdu en recopiant les
             // pastilles à la main.
-            [ALLURE_PAR_DEFAUT.accent, "Celui d'aujourd'hui — le doré"],
+            [ALLURE_PAR_DEFAUT.accent, "Celui d'aujourd'hui, le doré"],
             ["#2f3b2f", "Vert pin"],
             ["#6e2433", "Bordeaux"],
             ["#1c1c1a", "Noir"],

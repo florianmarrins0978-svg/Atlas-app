@@ -424,7 +424,7 @@ function AjouterTranche({
           onChange={(e) => setA(e.target.value)}
           inputMode="decimal"
           placeholder={`à 120`}
-          aria-label={`Borne haute, en ${unite} — vide pour « et plus »`}
+          aria-label={`Borne haute, en ${unite}, vide pour « et plus »`}
           className="min-w-0 flex-1 rounded-[4px] border-0 px-3 py-2.5 outline-none"
           style={{ backgroundColor: colors.cream, color: colors.ink, fontSize: "16px" }}
         />
@@ -452,7 +452,7 @@ function AjouterTranche({
       </div>
       <p className="rounded-[4px] px-3 py-2 text-[12px] leading-snug" style={{ backgroundColor: colors.rustTint, color: colors.inkSoft }}>
         {consequence.total > 0
-          ? `Cette ${mot} ajoutera ${consequence.total} case${consequence.total > 1 ? "s" : ""} en tout — ${consequence.parNature
+          ? `Cette ${mot} ajoutera ${consequence.total} case${consequence.total > 1 ? "s" : ""} en tout, ${consequence.parNature
               .map((x) => x.nature.titre.toLowerCase())
               .join(", ")}.`
           : "Cette tranche n'ajoutera aucune case : aucune grille ne s'en sert."}
@@ -529,12 +529,12 @@ function AjouterTravail({
   const router = useRouter();
 
   const FORMES: { valeur: FormeGrille; titre: string; quoi: string }[] = [
-    { valeur: "une-case", titre: "Un seul prix", quoi: "multiplié par une quantité — comme la haie, au mètre" },
-    { valeur: "un-axe", titre: "Par diamètre", quoi: "une case par tranche — comme le dessouchage" },
+    { valeur: "une-case", titre: "Un seul prix", quoi: "multiplié par une quantité, comme la haie, au mètre" },
+    { valeur: "un-axe", titre: "Par diamètre", quoi: "une case par tranche, comme le dessouchage" },
     {
       valeur: "technique-diametre",
       titre: "Par façon de faire et par diamètre",
-      quoi: "croisé — comme l'abattage",
+      quoi: "croisé, comme l'abattage",
     },
   ];
 

@@ -5,6 +5,16 @@
 
 ---
 
+## FAIT : DES PHRASES, PLUS DE TIRET AU MILIEU (22 septembre 2026)
+
+Sa règle du 22 septembre, portée partout : 240 tirets et points médians retirés
+des écrans, du papier du client, des messages et des maquettes publiées, et
+remplacés par de la ponctuation qui fait une phrase. Le devis imprime « Bon pour
+accord, signature du client ». `scripts/test-aucun-tiret.ts` le tient désormais
+dans `npm test`. Restent, avec leur raison : les canevas juridiques (une version
+publiée ne se modifie jamais) et la mémoire du dépôt, qui cite ses messages mot
+pour mot. `ARCHITECTURE.md` §403.
+
 ## FAIT : LA FICHE DE SÉCURITÉ, SUR LA FICHE DU JOUR (22 septembre 2026)
 
 La fiche d'intervention du décret 2021-1833, nommée « Fiche de sécurité » :

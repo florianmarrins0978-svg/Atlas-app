@@ -130,7 +130,7 @@ export default async function ReglagesPage() {
             Version
           </p>
           <p className="text-[13px]" style={{ color: colors.inkSoft }}>
-            {version ?? "inconnue — cette installation n'annonce pas sa version."}
+            {version ?? "inconnue, cette installation n'annonce pas sa version."}
           </p>
 
           {/* **LE CAS QUI LUI A COÛTÉ UNE SOIRÉE, dit en toutes lettres.**
@@ -152,7 +152,7 @@ export default async function ReglagesPage() {
               </p>
               <p className="mt-1 text-[12px]" style={{ color: colors.muted }}>
                 En attente : {etatVersion.enAttente}. Arrêtez puis rouvrez l&apos;espace de
-                travail — il se reconstruira au démarrage.
+                travail. Il se reconstruira au démarrage.
               </p>
             </div>
           )}

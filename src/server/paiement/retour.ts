@@ -22,7 +22,7 @@ export class UrlPubliqueManquanteError extends Error {
   constructor() {
     super(
       "ATLAS_URL_PUBLIQUE n'est pas posée : impossible de dire au prestataire de paiement " +
-        "où renvoyer le patron. Elle ne se déduit pas de la requête — voir src/server/paiement/retour.ts."
+        "où renvoyer le patron. Elle ne se déduit pas de la requête. Voir src/server/paiement/retour.ts."
     );
     this.name = "UrlPubliqueManquanteError";
   }

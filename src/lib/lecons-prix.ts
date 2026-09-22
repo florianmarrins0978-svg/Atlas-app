@@ -159,8 +159,8 @@ export function rappelDePrix(lecons: readonly LeconObservee[]): RappelDePrix | n
   const quand = derniere.constateLe.toLocaleDateString("fr-FR", { day: "numeric", month: "long" });
   const phrase =
     lecons.length === 1
-      ? `La dernière fois — « ${derniere.libelle} », le ${quand} — vous aviez retenu ${prix} € HT.`
-      : `La dernière fois — « ${derniere.libelle} », le ${quand} — vous aviez retenu ${prix} € HT ` +
+      ? `La dernière fois, pour « ${derniere.libelle} » le ${quand}, vous aviez retenu ${prix} € HT.`
+      : `La dernière fois, pour « ${derniere.libelle} » le ${quand}, vous aviez retenu ${prix} € HT ` +
         `(${lecons.length} chantiers comparables).`;
 
   return { prix, phrase, observations: lecons.length };

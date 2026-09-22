@@ -88,7 +88,7 @@ class Plume {
     this.page.drawRectangle({ x: 0, y: 0, width: LARGEUR, height: HAUTEUR, color: teinte(PALETTE_DOCUMENT.papier) });
     this.y = HAUTEUR - MARGE;
     this.numero++;
-    this.page.drawText(`Fiche de sécurité — page ${this.numero}`, {
+    this.page.drawText(`Fiche de sécurité, page ${this.numero}`, {
       x: MARGE,
       y: PLANCHER - 14,
       size: 7.5,
@@ -192,7 +192,7 @@ function famille(plume: Plume, contenu: ContenuFiche, nom: Famille, retrait = 0)
 
 export async function composerFicheSecuritePdf(data: FicheSecuritePdfData): Promise<Uint8Array> {
   const doc = await PDFDocument.create();
-  doc.setTitle(`Fiche de sécurité — ${data.chantierNom}`);
+  doc.setTitle(`Fiche de sécurité, ${data.chantierNom}`);
   doc.setLanguage("fr-FR");
   const p = await polices(doc);
   const encre = teinte(PALETTE_DOCUMENT.encre);

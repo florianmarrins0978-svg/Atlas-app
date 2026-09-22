@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>L'allure de mes devis — dix typographies, et le fond au choix</title>
+<title>L'allure de mes devis : dix typographies, et le fond au choix</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Lato:wght@400;700&family=Source+Sans+3:wght@400;700&family=Work+Sans:wght@400;700&family=Archivo+Narrow:wght@400;700&family=EB+Garamond:wght@400;700&family=Libre+Baskerville:wght@400;700&family=Merriweather:wght@400;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
@@ -125,12 +125,12 @@
 <div class="bandeau">
   <b>Tu as tranché :</b> un bloc dans « Devis &amp; factures » (B), <b>pour le
   devis et la facture seulement</b>, une dizaine de typographies, et le fond de
-  page modifiable — <b>tes réglages d'aujourd'hui étant ceux par défaut</b>.<br>
+  page modifiable : <b>tes réglages d'aujourd'hui étant ceux par défaut</b>.<br>
   Voici l'écran. <b>Touche, la feuille dessous change.</b>
 </div>
 
 <div class="bloc">
-  <h2>Où il se range — ton choix B</h2>
+  <h2>Où il se range : ton choix B</h2>
   <p>Dans « Devis &amp; factures », sous la validité et l'acompte. Pas de
      rubrique de plus dans le sommaire.</p>
 </div>
@@ -181,7 +181,7 @@
       <input type="color" id="accent-libre" value="#b98b47" aria-label="Couleur d'accent">
       <span class="valeur" id="accent-valeur">#B98B47</span>
       <div class="pastilles" id="accent-rapide">
-        <button type="button" data-valeur="#b98b47" style="background:#b98b47" aria-pressed="true" aria-label="Or — celui d'aujourd'hui"></button>
+        <button type="button" data-valeur="#b98b47" style="background:#b98b47" aria-pressed="true" aria-label="Or, celui d'aujourd'hui"></button>
         <button type="button" data-valeur="#2f3b2f" style="background:#2f3b2f" aria-pressed="false" aria-label="Vert pin"></button>
         <button type="button" data-valeur="#6e2433" style="background:#6e2433" aria-pressed="false" aria-label="Bordeaux"></button>
         <button type="button" data-valeur="#1c1c1a" style="background:#1c1c1a" aria-pressed="false" aria-label="Noir"></button>
@@ -211,7 +211,7 @@
   disposition des colonnes et l'ordre des totaux restent scellés : un devis mal
   posé n'est pas un devis moins joli, c'est un devis qu'on peut te contester.<br>
   <b>Et une chose à savoir avant que je code :</b> ton PDF ne connaît aujourd'hui
-  que deux polices — celles du format. Chacune de ces dix devra être embarquée
+  que deux polices, celles du format. Chacune de ces dix devra être embarquée
   dans le fichier ; c'est faisable, ça alourdit un peu chaque devis.
 </div>
 
@@ -237,7 +237,7 @@ const POLICES = [
   { nom: "Lato", pile: '"Lato",ui-sans-serif,sans-serif', quoi: "Linéale, ronde" },
   { nom: "Source Sans", pile: '"Source Sans 3",ui-sans-serif,sans-serif', quoi: "Linéale, sobre" },
   { nom: "Work Sans", pile: '"Work Sans",ui-sans-serif,sans-serif', quoi: "Linéale, franche" },
-  { nom: "Archivo Narrow", pile: '"Archivo Narrow",ui-sans-serif,sans-serif', quoi: "Étroite — tient plus de lignes" },
+  { nom: "Archivo Narrow", pile: '"Archivo Narrow",ui-sans-serif,sans-serif', quoi: "Étroite : tient plus de lignes" },
   { nom: "EB Garamond", pile: '"EB Garamond",ui-serif,Georgia,serif', quoi: "Empattements, classique" },
   { nom: "Libre Baskerville", pile: '"Libre Baskerville",ui-serif,Georgia,serif', quoi: "Empattements, lisible" },
   { nom: "Merriweather", pile: '"Merriweather",ui-serif,Georgia,serif', quoi: "Empattements, solide" },
@@ -253,7 +253,7 @@ const AUJOURDHUI = { police: 0, fond: "#faf9f5", accent: "#b98b47", logo: false 
 const choix = { ...AUJOURDHUI };
 let document_ = "devis";
 
-/* Les deux documents, avec SES chiffres — ceux de son devis du 23 août. */
+/* Les deux documents, avec SES chiffres : ceux de son devis du 23 août. */
 const DOCUMENTS = {
   devis: {
     titre: "Devis", meta: ["N° 2026-0012", "23 août 2026", "Validité 30 jours"],
@@ -299,7 +299,7 @@ function peindre() {
   feuille.innerHTML =
     '<div class="haut">' + marque
       + '<div><p class="nom">Eden Nature</p>'
-      + '<p class="sous">Paysagiste · 10 rue Denfert-Rochereau, 78200 Mantes-la-Jolie<br>'
+      + '<p class="sous">Paysagiste, 10 rue Denfert-Rochereau, 78200 Mantes-la-Jolie<br>'
       + "06 79 98 45 14</p></div>"
       + '<div class="meta">' + d.meta.join("<br>") + "</div>"
     + "</div>"
@@ -327,7 +327,7 @@ const hotePolices = document.getElementById("choix-police");
 hotePolices.innerHTML = POLICES.map((p, i) =>
   '<button type="button" data-i="' + i + '" aria-pressed="' + (i === choix.police) + '"'
   + ' style="font-family:' + p.pile.replace(/"/g, "&quot;") + '">'
-  + p.nom + "<small>" + p.quoi + (p.defaut ? ' · <span class="def">par défaut</span>' : "")
+  + p.nom + "<small>" + p.quoi + (p.defaut ? ' : <span class="def">par défaut</span>' : "")
   + "</small></button>"
 ).join("");
 

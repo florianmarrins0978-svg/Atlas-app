@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Les six derniers écrans des Réglages — Atlas</title>
+<title>Les six derniers écrans des Réglages : Atlas</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@400;500&display=swap" rel="stylesheet">
@@ -162,7 +162,7 @@ h2.titre{margin:14px 0 0;font:400 32px/1.04 var(--serif);letter-spacing:-.018em}
 
 <div class="bandeau">
   <b>Les six derniers écrans des Réglages.</b> À gauche ce qu'ils affichent aujourd'hui,
-  à droite ce que je propose. <b>Rien n'est codé.</b> Dites-moi lesquels je fais —
+  à droite ce que je propose. <b>Rien n'est codé.</b> Dites-moi lesquels je fais :
   « tous » me va très bien.
 </div>
 
@@ -207,11 +207,11 @@ h2.titre{margin:14px 0 0;font:400 32px/1.04 var(--serif);letter-spacing:-.018em}
   APRÈS dans la même structure : deux dessins écrits à la main divergeraient au
   premier libellé changé, et la comparaison serait fausse.
 
-  Le compte de mots se MESURE sur le rendu, il ne se recopie pas — un chiffre
+  Le compte de mots se MESURE sur le rendu, il ne se recopie pas : un chiffre
   écrit en dur dit vrai la veille (`CLAUDE.md` §4 bis).
 */
 /**
- * L’adresse à laquelle on lui écrit — sa demande du 9 septembre 2026 :
+ * L’adresse à laquelle on lui écrit, sa demande du 9 septembre 2026 :
  * *« prépare-le, on changera l’adresse le jour où j’aurai créé une pour
  * l’appli »*. Elle vit à UN seul endroit, ici : recopiée à deux, elle
  * divergerait le jour du changement, et l’une des deux enverrait dans le vide.
@@ -228,9 +228,9 @@ function entete(titre, sur){ return '<h2 class="titre">' + ech(titre) + '</h2><p
 /* ─── ATLAS IA ─────────────────────────────────────────────────────────── */
 function iaAvant(){
   var cartes = [
-    ["Transcription", "Mode déterministe — aucun prestataire branché",
+    ["Transcription", "Mode déterministe : aucun prestataire branché",
      "Rien ne part chez personne. Les textes rendus sont fabriqués et portent la mention « Transcription simulée », pour qu'on ne les prenne jamais pour vos mots."],
-    ["Rédaction", "Mode déterministe — aucun prestataire branché",
+    ["Rédaction", "Mode déterministe : aucun prestataire branché",
      "Rien ne part chez personne. Les informations du chantier sont déduites par de simples règles d'écriture, sans aucun modèle de langage derrière."],
     ["Lecture d'image", "Aucun fournisseur de lecture d'image n'est configuré.",
      "Aucun croquis ne sera lu : l'écran d'arrosage le dit avant de faire photographier."]
@@ -244,7 +244,7 @@ function iaAvant(){
     }).join("") +
     '<p class="note parti">Poser une clé suffit à brancher le fournisseur correspondant. ' +
     'Les variables TRANSCRIPTION_PROVIDER, LLM_PROVIDER et VISION_PROVIDER ne servent ' +
-    'qu\'à forcer un autre choix — par exemple « dev » pour couper l\'IA sans retirer ' +
+    'qu\'à forcer un autre choix : par exemple « dev » pour couper l\'IA sans retirer ' +
     'les clés. Sans VISION_PROVIDER, les images vont chez celui qui rédige.</p>';
 }
 function iaApres(){
@@ -270,9 +270,9 @@ var CHARTES = [
   ["Pierre", "", "Gris légèrement vert, encre presque noire, sauge désaturée.", "Gris pierre, encre noire.", false],
   ["Beurre", "", "Le jaune beurre, très pâle, donne une chaleur qu'aucun crème n'atteint.", "Jaune beurre, très pâle.", false],
   ["Moka", "", "Un moka laiteux, une encre espresso.", "Moka laiteux, encre café.", false],
-  ["Soirée", "", "La plus habillée — celle qui ressemble le moins à un outil.", "La plus habillée.", false],
+  ["Soirée", "", "La plus habillée : celle qui ressemble le moins à un outil.", "La plus habillée.", false],
   ["Sylve", "Sombre", "Le vert profond passe du bouton au FOND. Un écran de paysagiste.", "Vert profond au fond.", false],
-  ["Nuit", "Sombre", "Noir chaud, laiton doux. La plus spectaculaire — et la moins lisible au soleil.", "Noir chaud, laiton.", false]
+  ["Nuit", "Sombre", "Noir chaud, laiton doux. La plus spectaculaire : et la moins lisible au soleil.", "Noir chaud, laiton.", false]
 ];
 function charteRang(c, court){
   return '<div class="charte"><span class="vignette"><i></i><i></i></span>' +
@@ -287,7 +287,7 @@ function couleursAvant(){
     'Elle n\'appartient qu\'à vous : vos devis et vos factures gardent leur apparence.</p>' +
     '<p class="inter">Votre charte</p>' +
     CHARTES.map(function(c){ return charteRang(c, false); }).join("") +
-    '<p class="note parti">Deux d\'entre elles sont sombres — <b>Nuit</b> et <b>Sylve</b>. ' +
+    '<p class="note parti">Deux d\'entre elles sont sombres : <b>Nuit</b> et <b>Sylve</b>. ' +
     'Elles se lisent mal en plein soleil : sur un chantier, à midi, l\'écran clair reste le plus sûr.</p>';
 }
 function couleursApres(){
@@ -305,7 +305,7 @@ function abonnementAvant(){
   ];
   return entete("Abonnement", "Mon entreprise") +
     '<p class="chapeau"><b>Atlas ne vous facture rien aujourd\'hui.</b> Ni le prix ni le contenu ' +
-    'de l\'offre ne sont arrêtés — et tant qu\'ils ne le sont pas, cet écran n\'affichera aucun ' +
+    'de l\'offre ne sont arrêtés, et tant qu\'ils ne le sont pas, cet écran n\'affichera aucun ' +
     'montant : un chiffre inventé sur une page qui parle d\'argent finirait par être cru.</p>' +
     '<div class="parti"><p class="inter">Ce qu\'il y aura ici</p>' +
     rangs.map(function(r){
@@ -387,58 +387,58 @@ function compteEcran(civilites, neuf){
 var ECRANS = {
   ia: {
     nom: "Atlas IA",
-    idee: "<b>Le pire des six, et de loin : il est écrit pour un développeur.</b> « Mode déterministe », « aucun prestataire branché », et surtout <b>TRANSCRIPTION_PROVIDER, LLM_PROVIDER, VISION_PROVIDER</b> — trois noms de variables affichés à <b>tout artisan</b> qui achètera Atlas, pas seulement à vous. À droite : trois lignes qui répondent à la seule question qu'il se pose.",
+    idee: "<b>Le pire des six, et de loin : il est écrit pour un développeur.</b> « Mode déterministe », « aucun prestataire branché », et surtout <b>TRANSCRIPTION_PROVIDER, LLM_PROVIDER, VISION_PROVIDER</b> : trois noms de variables affichés à <b>tout artisan</b> qui achètera Atlas, pas seulement à vous. À droite : trois lignes qui répondent à la seule question qu'il se pose.",
     avant: iaAvant, apres: iaApres,
     notes: [
       "<b>Ce que le paragraphe technique devient.</b> Il ne disparaît pas : il passe derrière la porte de l'ÉDITEUR, où vit déjà « Mon vocabulaire ». Vous le verrez, vos futurs clients non. C'est exactement ce que vous aviez demandé le 7 août : <i>« est-ce que les utilisateurs auront accès à cette page ? Moi c'est ça que je ne veux pas. »</i>",
-      "<b>Et « Pas encore » plutôt que « aucun prestataire branché ».</b> Chez vous, les trois lignes diront <b>Oui</b> : les clés sont posées. Sur cette planche elles disent « Pas encore », parce que la machine qui l'a dessinée n'a aucune clé — c'est l'état réel de CET écran, pas le vôtre."
+      "<b>Et « Pas encore » plutôt que « aucun prestataire branché ».</b> Chez vous, les trois lignes diront <b>Oui</b> : les clés sont posées. Sur cette planche elles disent « Pas encore », parce que la machine qui l'a dessinée n'a aucune clé : c'est l'état réel de CET écran, pas le vôtre."
     ]
   },
   couleurs: {
     nom: "Couleurs",
-    idee: "<b>167 mots</b> pour huit couleurs. Chaque charte a droit à une phrase littéraire — <i>« un moka laiteux, une encre espresso »</i> — alors que la vignette montre déjà la couleur. Et le paragraphe du bas répète ce que l'étiquette <b>SOMBRE</b> dit à côté de Nuit et de Sylve.",
+    idee: "<b>167 mots</b> pour huit couleurs. Chaque charte a droit à une phrase littéraire, <i>« un moka laiteux, une encre espresso »</i> : alors que la vignette montre déjà la couleur. Et le paragraphe du bas répète ce que l'étiquette <b>SOMBRE</b> dit à côté de Nuit et de Sylve.",
     avant: couleursAvant, apres: couleursApres,
     notes: [
-      "<b>Ce qui NE change pas :</b> les huit chartes, leurs noms, leurs vignettes, et l'étiquette « sombre ». On ne retire aucun choix — on retire des mots.",
+      "<b>Ce qui NE change pas :</b> les huit chartes, leurs noms, leurs vignettes, et l'étiquette « sombre ». On ne retire aucun choix : on retire des mots.",
       "<b>La phrase du bas part, et rien ne se perd :</b> « sombre » est écrit à côté des deux concernées, et la vignette le montre. Un écran ne s'explique pas, il se montre."
     ]
   },
   abonnement: {
     nom: "Abonnement",
-    idee: "<b>EN ATTENTE — il veut deux ou trois formules.</b> Sa demande du 9 septembre : <i>« il faut réfléchir à ce qu'on peut faire, je voudrais proposer 2 ou 3 abonnements différents avec des prix différents, conseille-moi »</i>. Le dessin de droite reste vrai <b>tant qu'aucune offre n'existe</b> — mais ce n'est plus la question. Ce qui est certain : les <b>141 mots</b> d'aujourd'hui ne servent à rien dans les deux cas.",
+    idee: "<b>EN ATTENTE : il veut deux ou trois formules.</b> Sa demande du 9 septembre : <i>« il faut réfléchir à ce qu'on peut faire, je voudrais proposer 2 ou 3 abonnements différents avec des prix différents, conseille-moi »</i>. Le dessin de droite reste vrai <b>tant qu'aucune offre n'existe</b> : mais ce n'est plus la question. Ce qui est certain : les <b>141 mots</b> d'aujourd'hui ne servent à rien dans les deux cas.",
     avant: abonnementAvant, apres: abonnementApres,
     notes: [
-      "<b>Cet écran ne se code pas maintenant.</b> Tant que l'offre n'est pas arrêtée, tout ce qu'on dessinerait serait à refaire — et un montant inventé sur une page qui parle d'argent finit par être cru.",
-      "<b>Ce qu'il faut décider AVANT de dessiner :</b> combien de formules, ce qui les sépare, et ce que coûte une dictée. Ma réponse lui a été donnée dans la conversation, et elle tient en une phrase : <b>deux formules, séparées par le nombre de personnes</b> — pas par les fonctions.",
-      "<b>Les trois lignes « Bientôt » partent quand même</b>, quelle que soit l'offre : elles annoncent des écrans qui n'existent pas. Le paragraphe « Attention au mot » part avec elles — il ne servait qu'à lever une confusion créée par la ligne « Vos factures Atlas »."
+      "<b>Cet écran ne se code pas maintenant.</b> Tant que l'offre n'est pas arrêtée, tout ce qu'on dessinerait serait à refaire : et un montant inventé sur une page qui parle d'argent finit par être cru.",
+      "<b>Ce qu'il faut décider AVANT de dessiner :</b> combien de formules, ce qui les sépare, et ce que coûte une dictée. Ma réponse lui a été donnée dans la conversation, et elle tient en une phrase : <b>deux formules, séparées par le nombre de personnes</b> : pas par les fonctions.",
+      "<b>Les trois lignes « Bientôt » partent quand même</b>, quelle que soit l'offre : elles annoncent des écrans qui n'existent pas. Le paragraphe « Attention au mot » part avec elles, il ne servait qu'à lever une confusion créée par la ligne « Vos factures Atlas »."
     ]
   },
   donnees: {
     nom: "Mes données",
-    idee: "<b>Le plus court des six déjà</b> (67 mots), et il n'y a qu'une phrase à reprendre : celle du bas. <i>« Le registre des traitements ne se fait pas encore depuis l'application »</i> — c'est du vocabulaire de juriste, et ça annonce une absence.",
+    idee: "<b>Le plus court des six déjà</b> (67 mots), et il n'y a qu'une phrase à reprendre : celle du bas. <i>« Le registre des traitements ne se fait pas encore depuis l'application »</i>, c'est du vocabulaire de juriste, et ça annonce une absence.",
     avant: donneesAvant, apres: donneesApres,
     notes: [
-      "<b>L'adresse est celle qu'il a aujourd'hui</b>, et elle ne vit qu'à UN endroit dans le code : le jour où il en crée une pour l'application, une seule ligne change. Recopiée à deux endroits, elle divergerait — et l'une des deux enverrait dans le vide.",
+      "<b>L'adresse est celle qu'il a aujourd'hui</b>, et elle ne vit qu'à UN endroit dans le code : le jour où il en crée une pour l'application, une seule ligne change. Recopiée à deux endroits, elle divergerait : et l'une des deux enverrait dans le vide.",
       "<b>Et le « registre des traitements » disparaît de l'écran.</b> C'est une obligation qui vous concerne, vous, pas votre écran de réglages. Elle est dans votre document « à faire »."
     ]
   },
   motdepasse: {
     nom: "Mot de passe",
-    idee: "<b>TRANCHÉ le 9 septembre : il garde l'écran d'aujourd'hui.</b> <i>« Je préfère celui qu'on a aujourd'hui, rajoute juste un ? à la fin de changer de mdp. »</i> Ma proposition — retirer le titre du bloc, passer les étiquettes en minuscules — est <b>écartée</b>. Le seul changement est le sien, et il fait du titre une <b>question</b> plutôt qu'une étiquette : la même idée que sur l'écran Équipe, qu'il avait retenue le 8 septembre.",
+    idee: "<b>TRANCHÉ le 9 septembre : il garde l'écran d'aujourd'hui.</b> <i>« Je préfère celui qu'on a aujourd'hui, rajoute juste un ? à la fin de changer de mdp. »</i> Ma proposition (retirer le titre du bloc, passer les étiquettes en minuscules) est <b>écartée</b>. Le seul changement est le sien, et il fait du titre une <b>question</b> plutôt qu'une étiquette : la même idée que sur l'écran Équipe, qu'il avait retenue le 8 septembre.",
     avant: motdepasseAvant, apres: motdepasseApres,
     notes: [
-      "<b>Une seule chose change : le point d'interrogation.</b> Tout le reste est l'écran d'aujourd'hui, étiquettes en capitales comprises — il les garde.",
-      "<b>Et l'œil est corrigé sur cette planche.</b> Je l'avais dessiné avec un emoji : il change de forme d'un téléphone à l'autre et ne rend ni l'épaisseur ni la couleur. C'est maintenant le vrai dessin de l'application — 21 px, filaire, épaisseur 1,4. Il l'a vu tout de suite."
+      "<b>Une seule chose change : le point d'interrogation.</b> Tout le reste est l'écran d'aujourd'hui, étiquettes en capitales comprises : il les garde.",
+      "<b>Et l'œil est corrigé sur cette planche.</b> Je l'avais dessiné avec un emoji : il change de forme d'un téléphone à l'autre et ne rend ni l'épaisseur ni la couleur. C'est maintenant le vrai dessin de l'application, 21 px, filaire, épaisseur 1,4. Il l'a vu tout de suite."
     ]
   },
   compte: {
     nom: "Mon compte",
-    idee: "<b>Le plus propre des six</b> (30 mots). Une seule chose à corriger, et elle est fautive : <b>« Mr. »</b> n'existe pas en français — c'est l'abréviation anglaise. La nôtre est « M. ». Et sur l'écran de création de compte, Atlas écrit déjà <b>« Madame »</b> et <b>« Monsieur »</b> en toutes lettres.",
+    idee: "<b>Le plus propre des six</b> (30 mots). Une seule chose à corriger, et elle est fautive : <b>« Mr. »</b> n'existe pas en français : c'est l'abréviation anglaise. La nôtre est « M. ». Et sur l'écran de création de compte, Atlas écrit déjà <b>« Madame »</b> et <b>« Monsieur »</b> en toutes lettres.",
     avant: function(){ return compteEcran(["Mme","Mr."], false); },
     apres: function(){ return compteEcran(["Madame","Monsieur"], true); },
     notes: [
-      "<b>Deux façons d'écrire la même chose, dans la même application.</b> La porte dit « Madame · Monsieur », cet écran dit « Mme · Mr. ». On aligne sur la porte : c'est la première chose qu'un artisan voit, et les mots entiers ne se confondent pas au doigt.",
-      "<b>Et le champ « Prénom » vide gagne un repli</b> — « Votre prénom ». Une ligne nue sous une étiquette ne dit pas si le champ est vide ou si l'écran n'a pas fini de charger."
+      "<b>Deux façons d'écrire la même chose, dans la même application.</b> La porte dit « Madame : Monsieur », cet écran dit « Mme : Mr. ». On aligne sur la porte : c'est la première chose qu'un artisan voit, et les mots entiers ne se confondent pas au doigt.",
+      "<b>Et le champ « Prénom » vide gagne un repli</b> : « Votre prénom ». Une ligne nue sous une étiquette ne dit pas si le champ est vide ou si l'écran n'a pas fini de charger."
     ]
   }
 };

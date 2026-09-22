@@ -416,7 +416,7 @@ export default function TravauxSupplementairesClient({
         </p>
         <p className="mt-1 text-[12.5px]" style={{ color: colors.muted }}>
           {avecCivilite(clientNom, clientCivilite)}
-          {numeroDevis ? ` · devis ${numeroDevis}` : ""}
+          {numeroDevis ? `, devis ${numeroDevis}` : ""}
         </p>
 
         <div

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Retours d'intervention — la sous-catégorie et sa page</title>
+<title>Retours d'intervention : la sous-catégorie et sa page</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@400;500&display=swap" rel="stylesheet">
@@ -337,7 +337,7 @@
 <div class="mot">
   <b>L'onglet « Retours » se pose à côté de « À facturer »</b>, comme vous l'avez
   demandé. À trois onglets, la rangée ne tient plus sur la largeur d'un
-  téléphone : <b>elle défile</b> plutôt que de rétrécir les cibles — les 44 px
+  téléphone : <b>elle défile</b> plutôt que de rétrécir les cibles, les 44 px
   du pouce ne se négocient pas.
 </div>
 <div class="mot">
@@ -364,7 +364,7 @@
   LES RETOURS SONT DES DONNÉES, PAS DU DESSIN.
 
   Ils vivent dans une liste, et l'écran ne fait que la filtrer et la ranger.
-  Écrire les cartes à la main dans le HTML aurait rendu le filtre décoratif —
+  Écrire les cartes à la main dans le HTML aurait rendu le filtre décoratif,
   et un filtre décoratif ne dit rien de ce qu'on veut savoir : est-ce qu'on
   retrouve un chantier de 2024 en trois gestes ?
 */
@@ -470,10 +470,10 @@ function dessinerListe() {
 
 function ouvrirLeDetail(r) {
   document.getElementById("detailClient").textContent = r.client;
-  document.getElementById("detailQuand").textContent = r.jour + ", " + r.heure + " · " + r.par;
+  document.getElementById("detailQuand").textContent = r.jour + ", " + r.heure + " : " + r.par;
 
   // **Ce qui n'a PAS été fait reste à l'écran, éteint.** Le retirer donnerait
-  // un chantier qui paraît complet — et c'est sur cette impression-là qu'une
+  // un chantier qui paraît complet : et c'est sur cette impression-là qu'une
   // facture part pour un travail qui n'a pas eu lieu.
   document.getElementById("detailTaches").innerHTML = r.taches
     .map(

@@ -29,7 +29,7 @@ export type EtatLiaison = "page-vieillie" | "serveur-en-peine" | "hors-ligne";
 const PHRASE: Record<EtatLiaison, string> = {
   "page-vieillie":
     "L'enregistrement n'est pas parti : cette page a été ouverte avant la dernière mise à jour " +
-    "de l'espace de travail. Rechargez-la, puis refaites la note — le serveur, lui, répond bien.",
+    "de l'espace de travail. Rechargez-la, puis refaites la note. Le serveur, lui, répond bien.",
   "serveur-en-peine":
     "L'enregistrement n'est pas parti : le serveur répond mal, il est sans doute en train de " +
     "redémarrer. Attendez une minute, rechargez la page, puis refaites la note.",

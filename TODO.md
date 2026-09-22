@@ -9,6 +9,17 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## LES TIRETS QUI RESTENT, ET POURQUOI (22 septembre 2026)
+
+Sa règle du 22 septembre est tenue partout où ça s'affiche, et
+`scripts/test-aucun-tiret.ts` le refuse désormais. Deux endroits gardent le
+leur, **sciemment** :
+
+| | |
+|---|---|
+| `src/server/documents-legaux/versions.ts` | « ARTICLE 1 — Qui édite Atlas ». Une version publiée ne se modifie JAMAIS : une acceptation déjà recueillie désignerait un texte disparu. Le tiret partira avec la rédaction par un juriste, qui sera une entrée de plus (`docs/RGPD.md` §9) |
+| `docs/`, dont `docs/maquettes/` | la mémoire du dépôt cite ses messages mot pour mot, et l'ancienne galerie n'est pas publiée : il ne peut pas l'ouvrir depuis son téléphone (`.github/workflows/pages.yml` ne publie que `appli/`). **À lui de dire s'il veut qu'on la reprenne aussi** |
+
 ## ⏳ UNE PLANCHE À REGARDER — FICHE 4, LA BRUNISSURE DES FEUILLES DE PEUPLIER (22 septembre 2026)
 
 `appli/fiche-brunissure-des-feuilles-de-peuplier.html`, liée depuis

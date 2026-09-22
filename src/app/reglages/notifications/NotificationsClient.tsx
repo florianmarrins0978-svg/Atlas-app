@@ -162,7 +162,7 @@ export default function NotificationsClient({ initial }: { initial: ReglagesRapp
       <Bloc titre="Ce qui vous est toujours signalé">
         <Fixe
           nom="Réponse à un devis"
-          dit="Accepté, corrigé ou refusé — avec le message du client"
+          dit="Accepté, corrigé ou refusé, avec le message du client"
         />
         <Fixe
           nom="Lien de devis expiré"

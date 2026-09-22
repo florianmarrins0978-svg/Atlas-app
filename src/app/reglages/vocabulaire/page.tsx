@@ -52,7 +52,7 @@ export default async function VocabulairePage() {
           <p className="text-[14px] leading-snug" style={{ color: colors.muted }}>
             Ce que vous écrivez ici part avec <strong>chaque dictée</strong>, pour qu&apos;Atlas comprenne du premier
             coup au lieu qu&apos;on le rattrape après. Ces mots et ces règles accompagnent l&apos;application chez tous
-            vos clients — ils ne contiennent aucune donnée de client, c&apos;est ce qui les rend partageables.
+            vos clients. Ils ne contiennent aucune donnée de client, c&apos;est ce qui les rend partageables.
           </p>
         </div>
 

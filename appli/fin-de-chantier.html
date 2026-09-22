@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Fin de chantier — trois façons de la poser</title>
+<title>Fin de chantier : trois façons de la poser</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@400;500&display=swap" rel="stylesheet">
@@ -192,7 +192,7 @@
 </div>
 
 <div class="mot">
-  <b>Les trois partent de la même fiche d'intervention</b> — la vôtre, au détail
+  <b>Les trois partent de la même fiche d'intervention</b>, la vôtre, au détail
   près. La seule différence est <b>quand</b> le salarié voit ce qu'on attend de
   lui : tout de suite, ou après avoir appuyé.
 </div>
@@ -217,7 +217,7 @@
   <div class="planche">
     <p class="nom">A. Tout ouvert</p>
     <p class="idee">Les cases, les photos et le mot sont là dès l'ouverture.
-      Rien à découvrir — mais la fiche est plus longue, et il fait défiler
+      Rien à découvrir : mais la fiche est plus longue, et il fait défiler
       pour lire ce qu'il y a à faire.</p>
     <div class="tel"><div class="ecran">
       <span class="pastilleJour">Mercredi 2 septembre</span>
@@ -250,7 +250,7 @@
             <svg width="17" height="17" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 4v12M4 10h12" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>
           </button>
         </div>
-        <textarea class="aSignaler" placeholder="À signaler — facultatif"></textarea>
+        <textarea class="aSignaler" placeholder="À signaler, facultatif"></textarea>
         <button type="button" class="boutonFeuille" data-fini="A" disabled>C'est fini</button>
         <p class="manque" data-manque="A"></p>
       </div>
@@ -261,7 +261,7 @@
   <div class="planche">
     <p class="nom">B. Un bouton « Fin de chantier »<span class="tenu">Ce que vous demandez</span></p>
     <p class="idee">La fiche reste comme la vôtre. Le bouton est en bas, nommé.
-      On appuie, une feuille monte, et tout s'y remplit — au calme, en grand.</p>
+      On appuie, une feuille monte, et tout s'y remplit : au calme, en grand.</p>
     <div class="tel"><div class="ecran">
       <span class="pastilleJour">Mercredi 2 septembre</span>
       <div class="teteChantier">
@@ -309,7 +309,7 @@
             <svg width="17" height="17" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 4v12M4 10h12" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>
           </button>
         </div>
-        <textarea class="aSignaler" placeholder="À signaler — facultatif"></textarea>
+        <textarea class="aSignaler" placeholder="À signaler, facultatif"></textarea>
         <button type="button" class="boutonFeuille" data-fini="B" disabled>Envoyer au patron</button>
         <p class="manque" data-manque="B"></p>
       </div>
@@ -361,7 +361,7 @@
               <svg width="17" height="17" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 4v12M4 10h12" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>
             </button>
           </div>
-          <textarea class="aSignaler" placeholder="À signaler — facultatif"></textarea>
+          <textarea class="aSignaler" placeholder="À signaler, facultatif"></textarea>
           <button type="button" class="boutonFeuille" data-fini="C" disabled>C'est fini</button>
           <p class="manque" data-manque="C"></p>
         </div>
@@ -390,7 +390,7 @@
   <b>Le risque commun à B et C, et il faut le dire :</b> tant qu'il n'a pas
   appuyé, <b>il ne voit pas ce qu'on attend de lui</b>. Sur un chantier qu'on
   quitte à la hâte, c'est ce qui fait rentrer sans rien poser. La A n'a pas ce
-  défaut — elle a l'autre, la longueur.
+  défaut : elle a l'autre, la longueur.
 </div>
 
 <script>
@@ -463,7 +463,7 @@ ouvrirC.addEventListener("click", () => {
   deplieC.dataset.ouvert = ouvert ? "non" : "oui";
   casesC.hidden = ouvert;
   // **Les puces s'effacent quand les cases arrivent.** Les deux à la fois
-  // afficherait la même liste deux fois — et c'est ce qui fait douter d'un
+  // afficherait la même liste deux fois, et c'est ce qui fait douter d'un
   // écran plus sûrement qu'une erreur franche.
   pucesC.forEach((p) => (p.hidden = !ouvert));
   ouvrirC.lastChild.textContent = ouvert ? " Fin de chantier" : " Replier";

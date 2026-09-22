@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Atlas — la note vocale couleur café</title>
+<title>Atlas : la note vocale couleur café</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -411,24 +411,24 @@ body{margin:0;background:var(--bone);color:var(--charcoal);
   <h1>La note vocale, couleur café</h1>
   <p>Quatre matières, sur la fiche « Épurée » inchangée. Les couleurs viennent de votre palette,
      à l'identique ; le filet d'or est celui de votre tasse. Appuyez : le bouton s'enfonce et la
-     crema ondule. La quatrième est mate, exprès — elle sert à comparer.</p>
+     crema ondule. La quatrième est mate, exprès : elle sert à comparer.</p>
 </header>
 
 <nav class="choix" aria-label="Choisir les dessins">
   <div class="rangee" role="group" aria-label="Avant d'appuyer">
     <p class="quoi">Avant d'appuyer</p>
     <button type="button" data-repos="plein" aria-pressed="true">Aujourd'hui</button>
-    <button type="button" data-repos="cafe-ristretto" aria-pressed="false">1 · Le ristretto</button>
-    <button type="button" data-repos="cafe-crema" aria-pressed="false">2 · La crema</button>
-    <button type="button" data-repos="cafe-latte" aria-pressed="false">3 · Le latte</button>
-    <button type="button" data-repos="cafe-grain" aria-pressed="false">4 · Le grain (mat)</button>
+    <button type="button" data-repos="cafe-ristretto" aria-pressed="false">1, Le ristretto</button>
+    <button type="button" data-repos="cafe-crema" aria-pressed="false">2, La crema</button>
+    <button type="button" data-repos="cafe-latte" aria-pressed="false">3, Le latte</button>
+    <button type="button" data-repos="cafe-grain" aria-pressed="false">4, Le grain (mat)</button>
   </div>
   <div class="rangee" role="group" aria-label="Pendant la dictée">
     <p class="quoi">Pendant la dictée</p>
     <button type="button" data-ligne="onde" aria-pressed="true">Aujourd'hui</button>
-    <button type="button" data-ligne="bande" aria-pressed="false">1 · La bande</button>
-    <button type="button" data-ligne="metre" aria-pressed="false">2 · Le mètre</button>
-    <button type="button" data-ligne="trait" aria-pressed="false">3 · Le trait</button>
+    <button type="button" data-ligne="bande" aria-pressed="false">1, La bande</button>
+    <button type="button" data-ligne="metre" aria-pressed="false">2, Le mètre</button>
+    <button type="button" data-ligne="trait" aria-pressed="false">3, Le trait</button>
   </div>
 </nav>
 
@@ -538,14 +538,14 @@ body{margin:0;background:var(--bone);color:var(--charcoal);
 
   <div class="colonne">
     <div class="legende">
-      <span class="nom" id="rang-repos">Avant d'appuyer — aujourd'hui</span>
+      <span class="nom" id="rang-repos">Avant d'appuyer, aujourd'hui</span>
       <h2 id="titre-repos">Le disque plein, votre choix du 30 août</h2>
       <p id="propos-repos">Il est ici pour comparer : c'est la seule tache sombre de la fiche,
         et c'est elle que vous ne voulez plus.</p>
       <p class="mesure"><span>Encre sombre au repos</span><b id="encre">4 536 px²</b></p>
     </div>
     <div class="legende">
-      <span class="nom" id="rang-ligne">Pendant la dictée — aujourd'hui</span>
+      <span class="nom" id="rang-ligne">Pendant la dictée, aujourd'hui</span>
       <h2 id="titre-ligne">La ligne, votre choix du 31 août</h2>
       <p id="propos-ligne">Poubelle, chrono, onde d'or en barreaux, rond d'envoi. C'est ce que
         l'application porte, et le point de départ des trois dessins d'à côté.</p>
@@ -555,30 +555,30 @@ body{margin:0;background:var(--bone);color:var(--charcoal);
 
 <script>
 const MOTS_REPOS = {
-  plein: ["Avant d'appuyer — aujourd'hui", "Le disque plein, votre choix du 30 août",
+  plein: ["Avant d'appuyer, aujourd'hui", "Le disque plein, votre choix du 30 août",
     "Il est ici pour comparer : c'est la seule tache sombre de la fiche, et c'est elle que vous ne voulez plus.",
     "4 536 px²"],
-  "cafe-ristretto": ["Avant d'appuyer — matière 1", "Le ristretto",
+  "cafe-ristretto": ["Avant d'appuyer : matière 1", "Le ristretto",
     "Le café serré, presque noir, et sa lumière en haut à gauche. Le plus profond des quatre : le micro s'y détache en mousse de lait. Filet d'or, comme celui de votre tasse.",
     "4 536 px²"],
-  "cafe-crema": ["Avant d'appuyer — matière 2", "La crema",
-    "Le dessus d'un espresso vu de haut — votre photo : la mousse blonde, ses bulles, le tourbillon du centre. C'est la matière la plus gourmande, et la plus claire.",
+  "cafe-crema": ["Avant d'appuyer : matière 2", "La crema",
+    "Le dessus d'un espresso vu de haut : votre photo : la mousse blonde, ses bulles, le tourbillon du centre. C'est la matière la plus gourmande, et la plus claire.",
     "4 536 px²"],
-  "cafe-latte": ["Avant d'appuyer — matière 3", "Le latte",
+  "cafe-latte": ["Avant d'appuyer : matière 3", "Le latte",
     "La volute de lait de votre troisième image, tournée dans le café. Le plus doux et le plus clair des quatre ; le micro y passe en café foncé.",
     "4 536 px²"],
-  "cafe-grain": ["Avant d'appuyer — matière 4", "Le grain, mat",
+  "cafe-grain": ["Avant d'appuyer : matière 4", "Le grain, mat",
     "La même couleur, sans aucune brillance et sans mouvement. Il est là pour trancher une question : est-ce l'onctuosité qui donne envie d'appuyer, ou seulement le brun ? Comparez-le au 1.",
     "4 536 px²"],
 };
 const MOTS_LIGNE = {
-  onde: ["Pendant la dictée — aujourd'hui", "La ligne, votre choix du 31 août",
+  onde: ["Pendant la dictée : aujourd'hui", "La ligne, votre choix du 31 août",
     "Poubelle, chrono, onde d'or en barreaux, rond d'envoi. C'est ce que l'application porte, et le point de départ des trois dessins d'à côté."],
-  bande: ["Pendant la dictée — dessin 1", "La bande",
+  bande: ["Pendant la dictée : dessin 1", "La bande",
     "Une bande de papier qui sort de l'appareil et défile vers la gauche, liseré d'or en haut et en bas, le tracé imprimé dessus. Ce qui est passé à gauche est déjà dit."],
-  metre: ["Pendant la dictée — dessin 2", "Le mètre",
+  metre: ["Pendant la dictée : dessin 2", "Le mètre",
     "Votre mètre ruban qui se déroule. Les graduations passent avec le temps ; leur hauteur garde ce que la voix a fait à cet instant-là."],
-  trait: ["Pendant la dictée — dessin 3", "Le trait",
+  trait: ["Pendant la dictée : dessin 3", "Le trait",
     "Un seul trait continu qui défile, épais quand la voix monte, fin quand elle baisse. Le plus sobre des trois : ni papier, ni graduation, juste la ligne."],
 
 };
@@ -636,7 +636,7 @@ const HAUTEURS = [7, 13, 9, 18, 11, 22, 10, 15, 8, 19, 12, 16];
 document.querySelectorAll(".frange").forEach((f) => {
   f.innerHTML = HAUTEURS.map((h) => `<i style="height:${h}px"></i>`).join("");
 });
-// Vingt-six barreaux : l'onde part PLEINE, à plat — sinon les deux premières
+// Vingt-six barreaux : l'onde part PLEINE, à plat : sinon les deux premières
 // secondes montrent un trait qui pousse dans le vide.
 document.getElementById("onde").innerHTML =
   Array.from({ length: 26 }, (_, i) => `<i style="height:${6 + ((i * 7) % 17)}px"></i>`).join("");
@@ -647,7 +647,7 @@ document.getElementById("onde").innerHTML =
 // C'est ce qui fait qu'on ne voit pas la reprise : au moment où l'animation
 // revient à zéro, le pixel affiché est exactement le même. Un motif qui ne se
 // répète pas au pas de la boucle fabrique un saut, une fois toutes les sept
-// secondes — assez rare pour passer les tests, assez visible pour agacer.
+// secondes : assez rare pour passer les tests, assez visible pour agacer.
 const LARGE = 420, PAS = 6;
 const AMPLEUR = [];
 for (let x = 0; x <= LARGE; x += PAS) {
@@ -658,7 +658,7 @@ for (let x = 0; x <= LARGE; x += PAS) {
 }
 AMPLEUR[AMPLEUR.length - 1] = AMPLEUR[0];
 
-// 1 · LA BANDE — un tracé imprimé sur le papier.
+// 1, LA BANDE, un tracé imprimé sur le papier.
 {
   const pts = [];
   for (let k = 0; k < AMPLEUR.length; k++) pts.push(`${k * PAS} ${(10 + (AMPLEUR[k] - 0.6) * 13).toFixed(1)}`);
@@ -666,7 +666,7 @@ AMPLEUR[AMPLEUR.length - 1] = AMPLEUR[0];
   document.querySelector(".bande path").setAttribute("d", "M" + pts.concat(suite.slice(1)).join(" L"));
 }
 
-// 2 · LE MÈTRE — des graduations dont la hauteur garde ce que la voix a fait.
+// 2 : LE MÈTRE : des graduations dont la hauteur garde ce que la voix a fait.
 {
   const un = AMPLEUR.slice(0, -1)
     .map((a, k) => `<i style="height:${(4 + a * 15).toFixed(1)}px${k % 5 === 0 ? ";opacity:1" : ""}"></i>`)
@@ -674,7 +674,7 @@ AMPLEUR[AMPLEUR.length - 1] = AMPLEUR[0];
   document.querySelector(".metre span").innerHTML = un + un;
 }
 
-// 3 · LE TRAIT — un ruban dont l'épaisseur suit la voix : un seul contour
+// 3, LE TRAIT, un ruban dont l'épaisseur suit la voix : un seul contour
 // fermé, dessiné aller par le dessus et retour par le dessous.
 {
   const haut = [], bas = [];

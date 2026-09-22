@@ -8,6 +8,24 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-22
 
+### Plus un tiret au milieu d'une phrase, nulle part dans ce qui s'affiche
+
+*« Je ne veux plus de tiret, je veux des phrases normales, sans tiret en plein
+milieu. »* Sa règle du matin (« Probable · Peuplier ») valait déjà pour les
+fiches ; le soir, **240** tirets et points médians vivaient encore dans les
+écrans, sur le papier du client et dans les maquettes. Tous réécrits : une
+virgule quand la suite complète la phrase, un deux-points quand elle l'explique,
+un point quand c'est une phrase entière, des parenthèses pour une incise. Le
+devis imprime « Bon pour accord, signature du client » ; le message au client
+porte « Votre devis de Eden Nature » ; le catalogue d'arrosage dit « 3504, buse
+0,75 » (sa référence fournisseur, elle, ne bouge pas). Ce que ça évite : qu'on
+le lui redemande une quatrième fois. `scripts/test-aucun-tiret.ts` le refuse
+désormais dans `npm test`, commentaires exceptés, et il sait rougir sur le
+cadre de signature du devis. Deux endroits gardent le leur, nommés avec leur
+raison : les canevas juridiques, dont une version publiée ne se modifie jamais,
+et la mémoire du dépôt, qui cite ses messages mot pour mot (`ARCHITECTURE.md`
+§403).
+
 ### La fiche de sécurité du décret 2021-1833 est dans l'application
 
 Sur la fiche du jour, un bandeau « Fiche de sécurité » au-dessus de « Travaux

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Atlas — l'accueil à bout de bras</title>
+<title>Atlas : l'accueil à bout de bras</title>
 <style>
 /*
   L'ACCUEIL — proposition pour « / » (src/app/page.tsx, EcranChantiers.tsx,
@@ -609,18 +609,18 @@ body{
 
 <div class="pilote">
   <h1>L'accueil, à bout de bras
-    <small>Proposition — rien n'est codé</small>
+    <small>Proposition : rien n'est codé</small>
   </h1>
   <div class="rang"><b>Écran</b>
     <button data-k="ecran" data-v="apres">À bout de bras</button>
     <button data-k="ecran" data-v="avant">Aujourd'hui</button>
   </div>
   <div class="rang"><b>Le bouton</b>
-    <button data-k="bouton" data-v="1">1 · aujourd'hui</button>
-    <button data-k="bouton" data-v="2">2 · l'anneau serré</button>
-    <button data-k="bouton" data-v="3">3 · le mot souligné</button>
-    <button data-k="bouton" data-v="4">4 · la capsule</button>
-    <button data-k="bouton" data-v="5">5 · l'aplat vert</button>
+    <button data-k="bouton" data-v="1">1, aujourd'hui</button>
+    <button data-k="bouton" data-v="2">2, l'anneau serré</button>
+    <button data-k="bouton" data-v="3">3, le mot souligné</button>
+    <button data-k="bouton" data-v="4">4, la capsule</button>
+    <button data-k="bouton" data-v="5">5, l'aplat vert</button>
   </div>
   <div class="rang"><b>Charte</b>
     <button data-k="charte" data-v="origine">Origine</button>
@@ -739,7 +739,7 @@ body{
   <ul>
     <li><b>Tout ce qui se lit grossit et sort du gris.</b> L'état d'un chantier passe de
         9,5 à 12 px, le lieu de 11,5 à 14, la date d'envoi à 13. L'or des états passe de
-        <b>2,77</b> à <b>4,59</b> de contraste — c'est le même or, celui que le dépôt
+        <b>2,77</b> à <b>4,59</b> de contraste : c'est le même or, celui que le dépôt
         appelle déjà <b>orTexte</b> ; il n'a jamais servi ici.</li>
     <li><b>« ATLAS » part.</b> C'est le nom de l'application, écrit en haut de
         l'application qu'on vient d'ouvrir. Il coûte 39 px sur 596.</li>
@@ -770,7 +770,7 @@ body{
 
 <script>
 /* ═══════════════════════════════════════════════════════════════════════════
-   LES DONNÉES — des exemples de maquette, dans les formes du dépôt.
+   LES DONNÉES, des exemples de maquette, dans les formes du dépôt.
    Les états viennent de `statutLabel` ; leur composition de `ligneEtatChantier()`.
    ═══════════════════════════════════════════════════════════════════════════ */
 
@@ -779,18 +779,18 @@ const LIEU_MANQUANT = "Adresse non renseignée";
 const CHANTIERS = [
   /* `precision` est ce que `ligneEtatChantier()` écrit aujourd'hui.
      `precisionCourte` retire le mot « Envoyé », déjà dit par la ligne d'état
-     juste au-dessus — c'est sa plainte du 19 août, mot pour mot : « l'ancienneté
+     juste au-dessus : c'est sa plainte du 19 août, mot pour mot : « l'ancienneté
      du devis est écrite deux fois ». La DATE, qu'il a demandée le 13 août,
      reste entière. */
   { id:"c1", nom:"M. Martins", jour:"04", mois:"sept.", lieu:"12 rue d'Enfer, Nantes",
-    etat:"Devis envoyé · sans réponse",
+    etat:"Devis envoyé : sans réponse",
     precision:"Envoyé le lundi 1er septembre.", precisionCourte:"Lundi 1er septembre" },
   { id:"c2", nom:"Mme Rialland", jour:"03", mois:"sept.", lieu:LIEU_MANQUANT,
-    etat:"Devis prêt à envoyer · 3 photos", precision:null },
+    etat:"Devis prêt à envoyer : 3 photos", precision:null },
   { id:"c3", nom:"Résidence des Tilleuls", jour:"02", mois:"sept.", lieu:"Chemin du Pré, Vertou",
-    etat:"À vérifier · 2 photos", precision:null },
+    etat:"À vérifier : 2 photos", precision:null },
   { id:"c4", nom:"M. Bourgeois", jour:"31", mois:"août", lieu:"9 allée des Chênes, Rezé",
-    etat:"Brouillon · sans photo", precision:null },
+    etat:"Brouillon : sans photo", precision:null },
 ];
 
 const BANDEAUX = [
@@ -801,10 +801,10 @@ const BANDEAUX = [
   { id:"b2", ton:"teinte", quoi:"Devis retourné", qui:"M. Chauvet",
     phrase:"Le client n'a pas donné suite. Le devis peut être repris et renvoyé.",
     dit:null, faire:"Reprendre le devis" },
-  /* Teinté, et c'est SA décision du 16 août — la proposition B : « au
+  /* Teinté, et c'est SA décision du 16 août : la proposition B : « au
      quatorzième jour, ça ne doit pas se rater ». C'est le seul des trois
      rappels où rien n'est encore parti chez le client. */
-  { id:"b3", ton:"teinte", quoi:"Devis en attente · 14 jours", qui:"Résidence des Tilleuls",
+  { id:"b3", ton:"teinte", quoi:"Devis en attente : 14 jours", qui:"Résidence des Tilleuls",
     phrase:"Chantier ouvert depuis 14 jours, et aucun devis n'est parti.",
     dit:null, faire:"Faire le devis" },
 ];
@@ -818,7 +818,7 @@ const CAS = {
 
 /* Combien de bandeaux avant de proposer de déplier.
    AVANT : 2 (`VISIBLES_PAR_DEFAUT` dans Notifications.tsx).
-   APRÈS : 1 — l'écran s'appelle « Vos chantiers » et doit en montrer. */
+   APRÈS : 1, l'écran s'appelle « Vos chantiers » et doit en montrer. */
 const VISIBLES = { avant:2, apres:1 };
 
 /* Les onze grains, repris tels quels de `EcranChantiers.tsx`. Irréguliers à
@@ -894,13 +894,13 @@ function dessiner(){
         <button class="vu" type="button" data-vu="${b.id}">J'ai vu</button>
       </div>
     </div>`).join("")
-    /* **UNE PORTE QUI S'OUVRE DOIT SE REFERMER — trouvé par le patron le
+    /* **UNE PORTE QUI S'OUVRE DOIT SE REFERMER, trouvé par le patron le
        6 septembre 2026 : « on peut cliquer dessus pour agrandir la fenêtre
        mais on peut pas la refermer ».**
 
        Le défaut est dans L'APPLICATION, pas seulement ici
        (`src/app/Notifications.tsx:564`) : `setToutVoir(true)` n'a pas de
-       retour, et le bouton disparaît une fois déplié — il ne reste plus rien
+       retour, et le bouton disparaît une fois déplié : il ne reste plus rien
        à toucher. C'est sa règle du 5 septembre, « une erreur se rattrape » :
        un geste sans retour en est une.
 
@@ -915,7 +915,7 @@ function dessiner(){
   /* Les lignes.
      **Aucune perle sur une liste vide** : l'application ne rend `ListeChantiers`
      que si `restants.length > 0` (`EcranChantiers.tsx`). Sans cette ligne, la
-     maquette laissait le point d'or seul au milieu du vide — un défaut de la
+     maquette laissait le point d'or seul au milieu du vide : un défaut de la
      maquette, pas de l'écran, et il ne s'est vu qu'en capture. */
   const dedans = choix.chantiers.map(i => CHANTIERS[i]);
   if (dedans.length === 0) { tige.innerHTML = ""; tige.style.display = "none"; }
@@ -982,7 +982,7 @@ fil.addEventListener("scroll", () => {
   prevu = requestAnimationFrame(() => { prevu = 0; placerPerle(); });
 }, { passive:true });
 
-/* ═══ LA MESURE — elle interroge la page, elle ne récite rien ═════════════ */
+/* ═══ LA MESURE : elle interroge la page, elle ne récite rien ═════════════ */
 
 function luminance(c){
   const [r,g,b] = c.map(v => { v /= 255; return v <= 0.03928 ? v/12.92 : Math.pow((v+0.055)/1.055, 2.4); });
@@ -1022,7 +1022,7 @@ function mesurer(){
 
   /* Ce qu'on voit VRAIMENT du premier chantier. « Entier ou pas » est trop
      grossier : sur un matin chargé, la différence entre les deux écrans est
-     qu'on lit son nom, son lieu et son état — ou qu'on ne le voit pas du tout. */
+     qu'on lit son nom, son lieu et son état : ou qu'on ne le voit pas du tout. */
   const parties = [[".nom","le nom"],[".lieu, .lieu-manquant","le lieu"],[".etat","l'état"],[".precision","la date"]];
   let vues = [];
   if (premiere) {
@@ -1036,8 +1036,7 @@ function mesurer(){
 
   /* Les mots réellement affichés, en DEUX comptes.
      Le total seul ne se compare pas d'un écran à l'autre : celui d'aujourd'hui
-     en affiche moins parce qu'il n'affiche aucun chantier. Le second compte —
-     tout ce qui n'est pas un chantier — est celui qui se compare, et c'est
+     en affiche moins parce qu'il n'affiche aucun chantier. Le second compte (tout ce qui n'est pas un chantier) est celui qui se compare, et c'est
      celui que sa plainte du 19 août visait. */
   let mots = 0, motsHors = 0;
   const marche = document.createTreeWalker(ecran, NodeFilter.SHOW_TEXT);
@@ -1063,7 +1062,7 @@ function mesurer(){
     if (!plusPetit || taille < plusPetit.taille) plusPetit = { taille, el, st };
   });
 
-  /* Le contraste de la ligne d'état — celle que toutes les lignes portent. */
+  /* Le contraste de la ligne d'état : celle que toutes les lignes portent. */
   const unEtat = [...ecran.querySelectorAll(".etat")].find(dansLEcran);
   let cEtat = null;
   if (unEtat) {
@@ -1095,13 +1094,13 @@ function mesurer(){
     ["Dont mots qui ne sont pas un chantier", `<b>${motsHors}</b>`],
     ["Le plus petit texte", plusPetit ? `<b>${plusPetit.taille.toString().replace(".", ",")} px</b>` : "—"],
     ["Contraste de la ligne d'état", cEtat === null ? "—" :
-      (seuil(cEtat) ? `<b>${cEtat.toFixed(2).replace(".", ",")}</b> — passe 4,5` : `<b>${cEtat.toFixed(2).replace(".", ",")}</b> — <em>il en faut 4,5</em>`)],
-    ["La plus petite cible", cible ? (cible.h >= 44 ? `<b>${cible.h} px</b> — « ${echapper(cible.quoi)} »` : `<b>${cible.h} px</b> — <em>« ${echapper(cible.quoi)} », il en faut 44</em>`) : "—"],
+      (seuil(cEtat) ? `<b>${cEtat.toFixed(2).replace(".", ",")}</b> : passe 4,5` : `<b>${cEtat.toFixed(2).replace(".", ",")}</b> — <em>il en faut 4,5</em>`)],
+    ["La plus petite cible", cible ? (cible.h >= 44 ? `<b>${cible.h} px</b> : « ${echapper(cible.quoi)} »` : `<b>${cible.h} px</b> — <em>« ${echapper(cible.quoi)} », il en faut 44</em>`) : "—"],
   ];
   document.getElementById("corps-mesures").innerHTML =
     rangs.map(([a,b]) => `<tr><th>${a}</th><td>${b}</td></tr>`).join("");
   document.getElementById("legende-mesures").textContent =
-    "Relevé sur l'écran ci-dessus, à l'instant, par la page elle-même — 390 × 596, la barre du bas déduite.";
+    "Relevé sur l'écran ci-dessus, à l'instant, par la page elle-même : 390 × 596, la barre du bas déduite.";
 }
 
 /* ═══ Les gestes ═════════════════════════════════════════════════════════ */
@@ -1149,7 +1148,7 @@ document.addEventListener("click", e => {
   if (lien) e.preventDefault();
 });
 
-/* Le geste du bouton : le tour, les grains, puis la feuille — 520 ms. */
+/* Le geste du bouton : le tour, les grains, puis la feuille : 520 ms. */
 const geste = document.getElementById("geste");
 geste.addEventListener("click", () => {
   if (geste.dataset.part === "oui") return;

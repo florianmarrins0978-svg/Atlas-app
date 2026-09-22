@@ -175,7 +175,7 @@ export const fournisseurLLMAnthropic: FournisseurLLM = {
       return { succes: false, erreur: erreurIA("cle_api_absente", "ANTHROPIC_API_KEY n'est pas configurée.") };
     }
     if (!message || message.trim().length === 0) {
-      return { succes: false, erreur: erreurIA("reponse_invalide", "Message vide — rien à traiter.") };
+      return { succes: false, erreur: erreurIA("reponse_invalide", "Message vide, rien à traiter.") };
     }
 
     try {

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Réglée sur place — Atlas</title>
+<title>Réglée sur place : Atlas</title>
 <style>
 /*
   ═══════════════════════════════════════════════════════════════════════════
@@ -154,17 +154,17 @@ p.dessous b{color:var(--encre)}
 </div>
 
 <div class="tete">
-  <span class="sceau">11 septembre — votre question</span>
+  <span class="sceau">11 septembre, votre question</span>
   <h1>Réglée sur place : dans la TVA tout de suite ?</h1>
   <p>Un dépannage sans devis se règle sur place. Vous voulez que la facture
   entre <b>directement dans la TVA</b> une fois envoyée. Trois façons de le
-  faire — <b>touchez chacune</b>, puis avancez dans le parcours.</p>
+  faire, <b>touchez chacune</b>, puis avancez dans le parcours.</p>
 </div>
 
 <div class="bloc">
   <span class="numero">Ce que vous aviez tranché le 14 août</span>
   <p class="alerte">Une facture envoyée <b>attend</b>, et n'entre dans la TVA que
-  quand vous appuyez sur « Payée » — parce qu'un client qui ne paie pas ne doit
+  quand vous appuyez sur « Payée » : parce qu'un client qui ne paie pas ne doit
   pas vous faire déclarer une TVA que vous n'avez pas touchée. C'est aussi la
   loi pour une prestation de services. Ici l'argent est là : il faut juste que
   ce soit <b>vous</b> qui le disiez, d'un geste.</p>
@@ -181,16 +181,16 @@ p.dessous b{color:var(--encre)}
   <div class="cadre">
   <table>
     <tr><th></th><th>Le geste</th><th>Ce que ça coûte</th><th>Ce que ça risque</th></tr>
-    <tr><td><b>A · « Payée » après l'envoi</b></td><td>un appui de plus, sur l'écran de la facture</td><td>un appui</td><td>l'oublier — et la facture attend pour rien</td></tr>
-    <tr><td><b>B · « Réglée sur place » avant l'envoi</b></td><td>un réglage à côté du choix SMS / e-mail ; envoyer note aussi le paiement</td><td>rien : c'est le même geste</td><td>le laisser coché quand le client n'a pas payé</td></tr>
-    <tr><td><b>C · Automatique</b></td><td>aucun</td><td>rien</td><td>déclarer de la TVA sur de l'argent pas reçu — <b>contraire à votre règle du 14 août</b></td></tr>
+    <tr><td><b>A, « Payée » après l'envoi</b></td><td>un appui de plus, sur l'écran de la facture</td><td>un appui</td><td>l'oublier : et la facture attend pour rien</td></tr>
+    <tr><td><b>B, « Réglée sur place » avant l'envoi</b></td><td>un réglage à côté du choix SMS / e-mail ; envoyer note aussi le paiement</td><td>rien : c'est le même geste</td><td>le laisser coché quand le client n'a pas payé</td></tr>
+    <tr><td><b>C, Automatique</b></td><td>aucun</td><td>rien</td><td>déclarer de la TVA sur de l'argent pas reçu, <b>contraire à votre règle du 14 août</b></td></tr>
   </table>
   </div>
 
   <h3>Ce que je recommande</h3>
   <p><b>B.</b> Un dépannage réglé sur place l'est neuf fois sur dix : le réglage
   est proposé à <b>oui</b> sur une facture sans devis, et vous le décochez la
-  fois où le client vous doit encore. Envoyer fait alors les deux — la facture
+  fois où le client vous doit encore. Envoyer fait alors les deux : la facture
   part, et elle entre dans la TVA. Rien n'est supposé : c'est vous qui l'avez
   laissé coché.</p>
   <p>Sur une facture née d'un <b>devis</b>, rien ne change : elle attend
@@ -217,9 +217,9 @@ p.dessous b{color:var(--encre)}
   var TTC = "199,10 €", TVA = "22,10 €";
 
   var OPTIONS = [
-    { cle:"A", mot:"A · « Payée » après l'envoi",   pas:["Avant l'envoi","Envoyée","Payée"] },
-    { cle:"B", mot:"B · « Réglée sur place »",       pas:["Avant l'envoi","Envoyée"] },
-    { cle:"C", mot:"C · Automatique",                pas:["Avant l'envoi","Envoyée"] }
+    { cle:"A", mot:"A : « Payée » après l'envoi",   pas:["Avant l'envoi","Envoyée","Payée"] },
+    { cle:"B", mot:"B : « Réglée sur place »",       pas:["Avant l'envoi","Envoyée"] },
+    { cle:"C", mot:"C : Automatique",                pas:["Avant l'envoi","Envoyée"] }
   ];
   var choisie = "B";
   var etape = 0;
@@ -234,7 +234,7 @@ p.dessous b{color:var(--encre)}
     return '<div class="doc">'
       + '<div class="tot" style="font-size:13px"><span>Facture n° F-2026-041</span><span></span></div>'
       + '<div class="tot gros"><span>Total TTC</span><span class="mt">' + TTC + '</span></div>'
-      + '<div class="petit">2 lignes · à régler avant le 10 octobre</div></div>';
+      + '<div class="petit">2 lignes, à régler avant le 10 octobre</div></div>';
   }
   function reglageEnvoi(){
     return '<div class="reglage"><span class="mot">Envoi</span><span class="lesdeux">'
@@ -252,7 +252,7 @@ p.dessous b{color:var(--encre)}
   function carte(dansLaTva){
     return '<p class="legende">Ce que dit Terminés ensuite</p>'
       + '<div class="carte-tva"><span><span class="quoi">Ma TVA à déclarer</span>'
-      + '<span class="periode">Septembre 2026 · reste à payer</span></span>'
+      + '<span class="periode">Septembre 2026, reste à payer</span></span>'
       + '<span class="mt' + (dansLaTva ? ' bouge' : '') + '">' + (dansLaTva ? TVA : "0,00 €") + '</span></div>'
       + (dansLaTva ? '' : '<p class="attente">Et dans <b>en attente de paiement</b> : F-2026-041 · ' + TTC + '</p>');
   }
@@ -275,7 +275,7 @@ p.dessous b{color:var(--encre)}
       } else if (etape === 1) {
         html += arretee() + '<button class="creux" type="button" id="payee">Payée</button>'
           + carte(false);
-        texte = "Envoyée, elle <b>attend</b>. Un bouton « Payée » est là — <b>c’est l’appui de plus</b>.";
+        texte = "Envoyée, elle <b>attend</b>. Un bouton « Payée » est là : <b>c’est l’appui de plus</b>.";
       } else {
         html += arretee() + carte(true);
         texte = "Après « Payée » : elle est dans la TVA.";
@@ -305,7 +305,7 @@ p.dessous b{color:var(--encre)}
         texte = "Rien à toucher.";
       } else {
         html += arretee() + carte(true);
-        texte = "<span class=\"mise-en-garde\">Dans la TVA sans que personne ait dit que l’argent est reçu.</span> Si le client n’a pas payé, vous déclarez quand même — c’est ce que vous refusiez le 14 août.";
+        texte = "<span class=\"mise-en-garde\">Dans la TVA sans que personne ait dit que l’argent est reçu.</span> Si le client n’a pas payé, vous déclarez quand même : c’est ce que vous refusiez le 14 août.";
       }
     }
 

@@ -34,7 +34,7 @@ export const rechercherModeEmploi: Outil = {
       return {
         trouve: false,
         consigne:
-          "Aucun geste connu ne correspond. Dis-le franchement — n'invente jamais un geste, " +
+          "Aucun geste connu ne correspond. Dis-le franchement, n'invente jamais un geste, " +
           "un nom de bouton ou un écran.",
       };
     }

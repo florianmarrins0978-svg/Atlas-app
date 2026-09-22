@@ -122,7 +122,7 @@ async function main() {
       "Total TTC",
       "NOTES / CONDITIONS",
       "MODALITÉS DE PAIEMENT",
-      "Bon pour accord — signature du client",
+      "Bon pour accord, signature du client",
     ]) {
       assert.ok(textes.includes(attendu), `« ${attendu} » manque au devis.`);
     }
@@ -274,7 +274,7 @@ async function main() {
     assert.ok(!textes.some((t) => t.startsWith("IBAN")), "Un IBAN a été inventé.");
     assert.ok(!textes.some((t) => t.startsWith("SIRET")), "Un SIRET a été inventé.");
     // Le pied, lui, reste : c'est ce que le client signe.
-    assert.ok(textes.includes("Bon pour accord — signature du client"), "Le cadre de signature a disparu.");
+    assert.ok(textes.includes("Bon pour accord, signature du client"), "Le cadre de signature a disparu.");
   });
 
   await cas("une ligne CHIFFRÉE n'affiche jamais « à chiffrer », drapeau ou pas", async () => {

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Atlas — Le temps passé, montré ou non</title>
+<title>Atlas : Le temps passé, montré ou non</title>
 </head>
 <body>
 <style>
@@ -177,7 +177,7 @@
 </style>
 
 <p class="bandeau">
-  <b>Un petit bouton on/off à côté de « Temps passé »</b> — votre demande du 22 août.<br>
+  <b>Un petit bouton on/off à côté de « Temps passé »</b>, votre demande du 22 août.<br>
   Touchez-le : le compte rendu de votre client se refait à droite. <b>Rien n’est codé.</b>
 </p>
 
@@ -189,7 +189,7 @@
     <div class="tel">
       <p class="marque">ATLAS</p>
       <h1>Fiche d’entretien</h1>
-      <p class="sous">Vendredi 22 août 2026 · Mme Lucie Bertin</p>
+      <p class="sous">Vendredi 22 août 2026, Mme Lucie Bertin</p>
 
       <p class="titre-section">Tonte</p>
       <div class="presta"><i>✓</i><span>Tonte des pelouses</span></div>
@@ -231,7 +231,7 @@
       <div class="feuille">
         <p class="chapeau">Compte rendu de passage</p>
         <h3>Éden Nature</h3>
-        <p class="quand">Vendredi 22 août 2026 · Mme Lucie Bertin</p>
+        <p class="quand">Vendredi 22 août 2026, Mme Lucie Bertin</p>
 
         <p class="fam">Tonte</p>
         <ul>
@@ -256,11 +256,11 @@
 <div class="question">
   <div class="cadre">
     <h4>Ce que j’attends de vous</h4>
-    <p><b>Le réglage de départ.</b> La planche s’ouvre sur <b>Visible</b> — c’est ce que
+    <p><b>Le réglage de départ.</b> La planche s’ouvre sur <b>Visible</b>, c’est ce que
       l’application fait aujourd’hui, le temps s’affiche toujours. Si vous préférez que
       chaque fiche parte <b>Masquée</b>, et que vous décidiez de le montrer au cas par cas,
       dites-le : c’est une ligne à changer.</p>
-    <p><b>Le temps n’est jamais perdu.</b> Éteint, il reste enregistré sur votre fiche —
+    <p><b>Le temps n’est jamais perdu.</b> Éteint, il reste enregistré sur votre fiche :
       seul le compte rendu du client l’ignore. Si vous vouliez au contraire pouvoir
       <b>ne rien saisir du tout</b>, c’est autre chose, et il faut me le dire.</p>
     <p><b>Une fois parti, plus rien ne bouge.</b> Touchez « Enregistrer et envoyer » :
@@ -311,12 +311,12 @@
     bascule.setAttribute('aria-pressed', visible ? 'true' : 'false');
     mot.textContent = visible ? 'Visible' : 'Masqué';
 
-    // La ligne du client s'en va pour de bon — elle ne se grise pas.
+    // La ligne du client s'en va pour de bon, elle ne se grise pas.
     tempsDoc.classList.toggle('partie', !visible);
     note.classList.toggle('cachee', visible);
     // **La phrase est FIXE, elle ne porte plus la durée.** Sa demande du
     // 23 août : « raccourcis la phrase à "votre client ne le verra pas sur son
-    // compte rendu" ». Elle disait aussi que la durée restait enregistrée — il
+    // compte rendu" ». Elle disait aussi que la durée restait enregistrée, il
     // n'en veut pas, et un écran encombré se lit moins bien qu'un écran sobre.
 
     bascule.disabled = parti;
@@ -324,7 +324,7 @@
     envoyer.disabled = parti;
     envoyer.textContent = parti ? 'Rapport envoyé' : 'Enregistrer et envoyer';
     fige.textContent = parti
-      ? 'Rapport parti à 17:12. La fiche est figée — rechargez la page pour recommencer.'
+      ? 'Rapport parti à 17:12. La fiche est figée, rechargez la page pour recommencer.'
       : '';
   }
 

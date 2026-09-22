@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Atlas — la fiche client, deux propositions</title>
+<title>Atlas : la fiche client, deux propositions</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -507,12 +507,12 @@ body{margin:0;background:var(--bone);color:var(--charcoal);
 
     <figcaption class="legende">
       <span class="nom">Proposition A</span>
-      <h2>Épurée — votre écran, embelli</h2>
+      <h2>Épurée, votre écran, embelli</h2>
       <ul>
         <li><b>Rien n'est déplacé.</b> Mêmes champs, même ordre, même chemin : ce sont les
             poids qui changent, pas la page.</li>
         <li><b>Chaque case porte son nom</b>, et il reste quand vous tapez. L'exemple gris
-            passe de 3,0 à 4,7 de contraste — le seuil de lisibilité est à 4,5.</li>
+            passe de 3,0 à 4,7 de contraste : le seuil de lisibilité est à 4,5.</li>
         <li><b>Deux libellés en plus, et l'écran ne s'allonge pas d'un pixel.</b> La rangée
             « + Ajouter une adresse client différente » et le bloc photo les paient : les
             trois écrans finissent au même endroit, à 604 px.</li>
@@ -603,17 +603,17 @@ body{margin:0;background:var(--bone);color:var(--charcoal);
 
     <figcaption class="legende">
       <span class="nom">Proposition B</span>
-      <h2>Registre — la fiche devient le devis</h2>
+      <h2>Registre, la fiche devient le devis</h2>
       <ul>
         <li><b>Plus une seule case.</b> Une rangée, un filet, un libellé qui ne part jamais :
             c'est la première page du devis que votre client recevra.</li>
         <li><b>Le nom et le numéro ne se partagent plus une ligne</b> : chacun prend toute
-            la largeur. À dire franchement, cela défait votre choix du 21 août — si vous y
+            la largeur. À dire franchement, cela défait votre choix du 21 août : si vous y
             tenez, ils tiennent sur une seule rangée.</li>
         <li><b>L'anneau est le seul aplat de l'écran.</b> Il n'a plus rien à disputer : le
             geste principal se voit sans qu'on l'explique.</li>
         <li><b>Le risque, dit franchement :</b> un filet se voit moins qu'un aplat en plein
-            soleil. C'est le libellé qui tient la rangée — d'où sa présence partout.</li>
+            soleil. C'est le libellé qui tient la rangée, d'où sa présence partout.</li>
       </ul>
     </figcaption>
   </figure>
@@ -678,7 +678,7 @@ document.querySelectorAll("[data-dicter]").forEach((bouton) => {
     }
     secondes = 0; indice.textContent = "0:00";
     // Le signe change, jamais la forme : c'est sa règle la plus ancienne sur
-    // cet objet — « il ne doit pas changer de visage ».
+    // cet objet : « il ne doit pas changer de visage ».
     bouton.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2.5"/></svg>`;
     horloge = setInterval(() => { secondes++; indice.textContent = mmss(secondes); }, 1000);
   });

@@ -445,7 +445,7 @@ export function direRetouche(r: RetoucheResolue): { verbe: string; quoi: string;
       : {
           verbe: "Accorder",
           quoi: libelleReduction(t.pourcent) ?? LIBELLE_REDUCTION,
-          detail: "Appliqué au total HT — la TVA suit",
+          detail: "Appliqué au total HT, la TVA suit",
         };
   }
   if (t.type === "ajouter") {
@@ -458,8 +458,8 @@ export function direRetouche(r: RetoucheResolue): { verbe: string; quoi: string;
       detail:
         t.prixUnitaire == null
           ? mesure
-            ? `${mesure} — aucun prix dicté, à vous de la chiffrer`
-            : "Aucun prix dicté — la ligne arrive vide, à vous de la chiffrer"
+            ? `${mesure}, aucun prix dicté, à vous de la chiffrer`
+            : "Aucun prix dicté, la ligne arrive vide et c'est à vous de la chiffrer"
           : `${t.prixUnitaire} €${mesure ? ` × ${mesure}` : ""}`,
     };
   }
@@ -494,7 +494,7 @@ export function direRetouche(r: RetoucheResolue): { verbe: string; quoi: string;
       return {
         verbe: "Retirer",
         quoi: r.ligne.libelle,
-        detail: `${r.ligne.prixUnitaire} € — la ligne part du devis`,
+        detail: `${r.ligne.prixUnitaire} €, la ligne part du devis`,
       };
   }
 }

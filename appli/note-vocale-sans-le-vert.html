@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Atlas — note vocale, série 4 : le signe, et ce qui défile</title>
+<title>Atlas : note vocale, série 4 : le signe, et ce qui défile</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -362,7 +362,7 @@ body{margin:0;background:var(--bone);color:var(--charcoal);
 <body>
 
 <header class="tete">
-  <h1>La note vocale — série 4 : le signe, et ce qui défile</h1>
+  <h1>La note vocale, série 4 : le signe, et ce qui défile</h1>
   <p>Le micro est sur les quatre dessins, et les trois traces défilent. Au repos : le signe et le mot, sur son filet, en pastille, le signe seul. Pendant la dictée : la bande, le mètre, le trait.</p>
 </header>
 
@@ -370,17 +370,17 @@ body{margin:0;background:var(--bone);color:var(--charcoal);
   <div class="rangee" role="group" aria-label="Avant d'appuyer">
     <p class="quoi">Avant d'appuyer</p>
     <button type="button" data-repos="plein" aria-pressed="true">Aujourd'hui</button>
-    <button type="button" data-repos="signe-mot" aria-pressed="false">1 · Signe et mot</button>
-    <button type="button" data-repos="signe-filet" aria-pressed="false">2 · Sur son filet</button>
-    <button type="button" data-repos="signe-pastille" aria-pressed="false">3 · En pastille</button>
-    <button type="button" data-repos="signe-grand" aria-pressed="false">4 · Le signe seul</button>
+    <button type="button" data-repos="signe-mot" aria-pressed="false">1, Signe et mot</button>
+    <button type="button" data-repos="signe-filet" aria-pressed="false">2, Sur son filet</button>
+    <button type="button" data-repos="signe-pastille" aria-pressed="false">3, En pastille</button>
+    <button type="button" data-repos="signe-grand" aria-pressed="false">4, Le signe seul</button>
   </div>
   <div class="rangee" role="group" aria-label="Pendant la dictée">
     <p class="quoi">Pendant la dictée</p>
     <button type="button" data-ligne="onde" aria-pressed="true">Aujourd'hui</button>
-    <button type="button" data-ligne="bande" aria-pressed="false">1 · La bande</button>
-    <button type="button" data-ligne="metre" aria-pressed="false">2 · Le mètre</button>
-    <button type="button" data-ligne="trait" aria-pressed="false">3 · Le trait</button>
+    <button type="button" data-ligne="bande" aria-pressed="false">1, La bande</button>
+    <button type="button" data-ligne="metre" aria-pressed="false">2, Le mètre</button>
+    <button type="button" data-ligne="trait" aria-pressed="false">3, Le trait</button>
   </div>
 </nav>
 
@@ -490,14 +490,14 @@ body{margin:0;background:var(--bone);color:var(--charcoal);
 
   <div class="colonne">
     <div class="legende">
-      <span class="nom" id="rang-repos">Avant d'appuyer — aujourd'hui</span>
+      <span class="nom" id="rang-repos">Avant d'appuyer, aujourd'hui</span>
       <h2 id="titre-repos">Le disque plein, votre choix du 30 août</h2>
       <p id="propos-repos">Il est ici pour comparer : c'est la seule tache sombre de la fiche,
         et c'est elle que vous ne voulez plus.</p>
       <p class="mesure"><span>Encre sombre au repos</span><b id="encre">4 536 px²</b></p>
     </div>
     <div class="legende">
-      <span class="nom" id="rang-ligne">Pendant la dictée — aujourd'hui</span>
+      <span class="nom" id="rang-ligne">Pendant la dictée, aujourd'hui</span>
       <h2 id="titre-ligne">La ligne, votre choix du 31 août</h2>
       <p id="propos-ligne">Poubelle, chrono, onde d'or en barreaux, rond d'envoi. C'est ce que
         l'application porte, et le point de départ des trois dessins d'à côté.</p>
@@ -507,30 +507,30 @@ body{margin:0;background:var(--bone);color:var(--charcoal);
 
 <script>
 const MOTS_REPOS = {
-  plein: ["Avant d'appuyer — aujourd'hui", "Le disque plein, votre choix du 30 août",
+  plein: ["Avant d'appuyer, aujourd'hui", "Le disque plein, votre choix du 30 août",
     "Il est ici pour comparer : c'est la seule tache sombre de la fiche, et c'est elle que vous ne voulez plus.",
     "4 536 px²"],
-  "signe-mot": ["Avant d'appuyer — dessin 1", "Le signe et le mot",
-    "Le micro, puis l'action en petites capitales — le vocabulaire de « + Client » juste au-dessus. C'est le dessin de la série précédente, avec le signe qui lui manquait.",
+  "signe-mot": ["Avant d'appuyer : dessin 1", "Le signe et le mot",
+    "Le micro, puis l'action en petites capitales : le vocabulaire de « + Client » juste au-dessus. C'est le dessin de la série précédente, avec le signe qui lui manquait.",
     "≈ 320 px²"],
-  "signe-filet": ["Avant d'appuyer — dessin 2", "Le signe sur son filet",
+  "signe-filet": ["Avant d'appuyer : dessin 2", "Le signe sur son filet",
     "Le micro posé sur un filet d'or, comme un objet sur sa tablette. Ce filet existe déjà sur votre écran : c'est celui qui souligne « SMS » quand vous le choisissez.",
     "≈ 260 px²"],
-  "signe-pastille": ["Avant d'appuyer — dessin 3", "Le signe en pastille",
+  "signe-pastille": ["Avant d'appuyer : dessin 3", "Le signe en pastille",
     "Le micro dans un rond du beige de vos cases. Aucun vert, aucun or : exactement la matière des champs au-dessus, donc rien de neuf n'entre sur la fiche.",
     "≈ 210 px²"],
-  "signe-grand": ["Avant d'appuyer — dessin 4", "Le signe seul",
-    "Le micro en grand, rien autour : le symbole est l'objet. C'est le « micro nu » d'une série précédente, reproporté — il y était tracé trop fin et se perdait.",
+  "signe-grand": ["Avant d'appuyer : dessin 4", "Le signe seul",
+    "Le micro en grand, rien autour : le symbole est l'objet. C'est le « micro nu » d'une série précédente, reproporté : il y était tracé trop fin et se perdait.",
     "≈ 330 px²"],
 };
 const MOTS_LIGNE = {
-  onde: ["Pendant la dictée — aujourd'hui", "La ligne, votre choix du 31 août",
+  onde: ["Pendant la dictée : aujourd'hui", "La ligne, votre choix du 31 août",
     "Poubelle, chrono, onde d'or en barreaux, rond d'envoi. C'est ce que l'application porte, et le point de départ des trois dessins d'à côté."],
-  bande: ["Pendant la dictée — dessin 1", "La bande",
+  bande: ["Pendant la dictée : dessin 1", "La bande",
     "Une bande de papier qui sort de l'appareil et défile vers la gauche, liseré d'or en haut et en bas, le tracé imprimé dessus. Ce qui est passé à gauche est déjà dit."],
-  metre: ["Pendant la dictée — dessin 2", "Le mètre",
+  metre: ["Pendant la dictée : dessin 2", "Le mètre",
     "Votre mètre ruban qui se déroule. Les graduations passent avec le temps ; leur hauteur garde ce que la voix a fait à cet instant-là."],
-  trait: ["Pendant la dictée — dessin 3", "Le trait",
+  trait: ["Pendant la dictée : dessin 3", "Le trait",
     "Un seul trait continu qui défile, épais quand la voix monte, fin quand elle baisse. Le plus sobre des trois : ni papier, ni graduation, juste la ligne."],
 
 };
@@ -588,7 +588,7 @@ const HAUTEURS = [7, 13, 9, 18, 11, 22, 10, 15, 8, 19, 12, 16];
 document.querySelectorAll(".frange").forEach((f) => {
   f.innerHTML = HAUTEURS.map((h) => `<i style="height:${h}px"></i>`).join("");
 });
-// Vingt-six barreaux : l'onde part PLEINE, à plat — sinon les deux premières
+// Vingt-six barreaux : l'onde part PLEINE, à plat : sinon les deux premières
 // secondes montrent un trait qui pousse dans le vide.
 document.getElementById("onde").innerHTML =
   Array.from({ length: 26 }, (_, i) => `<i style="height:${6 + ((i * 7) % 17)}px"></i>`).join("");
@@ -599,7 +599,7 @@ document.getElementById("onde").innerHTML =
 // C'est ce qui fait qu'on ne voit pas la reprise : au moment où l'animation
 // revient à zéro, le pixel affiché est exactement le même. Un motif qui ne se
 // répète pas au pas de la boucle fabrique un saut, une fois toutes les sept
-// secondes — assez rare pour passer les tests, assez visible pour agacer.
+// secondes : assez rare pour passer les tests, assez visible pour agacer.
 const LARGE = 420, PAS = 6;
 const AMPLEUR = [];
 for (let x = 0; x <= LARGE; x += PAS) {
@@ -610,7 +610,7 @@ for (let x = 0; x <= LARGE; x += PAS) {
 }
 AMPLEUR[AMPLEUR.length - 1] = AMPLEUR[0];
 
-// 1 · LA BANDE — un tracé imprimé sur le papier.
+// 1, LA BANDE, un tracé imprimé sur le papier.
 {
   const pts = [];
   for (let k = 0; k < AMPLEUR.length; k++) pts.push(`${k * PAS} ${(10 + (AMPLEUR[k] - 0.6) * 13).toFixed(1)}`);
@@ -618,7 +618,7 @@ AMPLEUR[AMPLEUR.length - 1] = AMPLEUR[0];
   document.querySelector(".bande path").setAttribute("d", "M" + pts.concat(suite.slice(1)).join(" L"));
 }
 
-// 2 · LE MÈTRE — des graduations dont la hauteur garde ce que la voix a fait.
+// 2 : LE MÈTRE : des graduations dont la hauteur garde ce que la voix a fait.
 {
   const un = AMPLEUR.slice(0, -1)
     .map((a, k) => `<i style="height:${(4 + a * 15).toFixed(1)}px${k % 5 === 0 ? ";opacity:1" : ""}"></i>`)
@@ -626,7 +626,7 @@ AMPLEUR[AMPLEUR.length - 1] = AMPLEUR[0];
   document.querySelector(".metre span").innerHTML = un + un;
 }
 
-// 3 · LE TRAIT — un ruban dont l'épaisseur suit la voix : un seul contour
+// 3, LE TRAIT, un ruban dont l'épaisseur suit la voix : un seul contour
 // fermé, dessiné aller par le dessus et retour par le dessous.
 {
   const haut = [], bas = [];

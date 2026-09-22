@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Où poser « Créer une facture » — Atlas</title>
+<title>Où poser « Créer une facture » : Atlas</title>
 <style>
 /*
   ═══════════════════════════════════════════════════════════════════════════
@@ -181,20 +181,20 @@ p.dessous b{color:var(--encre)}
 </div>
 
 <div class="tete">
-  <span class="sceau">11 septembre — votre question</span>
+  <span class="sceau">11 septembre, votre question</span>
   <h1>Où poser « Créer une facture »</h1>
   <p><b>Vous avez raison sur la catégorie.</b> Un dépannage réglé sur place,
   c'est du travail fini : ça vit avec Terminés, pas avec vos chantiers en
-  cours. Reste à choisir la place exacte — <b>touchez les trois</b>.</p>
+  cours. Reste à choisir la place exacte : <b>touchez les trois</b>.</p>
 </div>
 
 <div class="bloc">
   <span class="numero">Ce qui n'est pas possible</span>
   <h2>Une quatrième pastille déborde</h2>
-  <p class="alerte">La rangée <b>Tout · À facturer · Retours d'intervention</b>
+  <p class="alerte">La rangée <b>Tout, À facturer, Retours d'intervention</b>
   prend déjà <b>377 px sur les 390</b> de votre téléphone. Vous l'aviez fait
   resserrer le 9 septembre pour que les trois tiennent sur une ligne. Une
-  quatrième sort de l'écran — <b>la place 4 vous le montre</b>.</p>
+  quatrième sort de l'écran, <b>la place 4 vous le montre</b>.</p>
 </div>
 
 <div class="places" id="places"></div>
@@ -211,22 +211,22 @@ p.dessous b{color:var(--encre)}
   <table>
     <tr><th>La place</th><th>Ce qu'elle donne</th><th>Ce qu'elle coûte</th></tr>
     <tr>
-      <td><b>1 · Accueil</b><br>(ce qui est codé)</td>
+      <td><b>1, Accueil</b><br>(ce qui est codé)</td>
       <td>C'est l'écran que vous ouvrez en premier</td>
       <td>Deux gestes se disputent l'accueil, où « Créer un devis » était seul</td>
     </tr>
     <tr>
-      <td><b>2 · Terminés, sous le titre</b></td>
+      <td><b>2 : Terminés, sous le titre</b></td>
       <td>Un geste par écran, au même endroit et du même dessin</td>
       <td>La carte de TVA descend d'une cinquantaine de pixels</td>
     </tr>
     <tr>
-      <td><b>3 · Terminés, dans « À facturer »</b></td>
+      <td><b>3, Terminés, dans « À facturer »</b></td>
       <td>Exactement là où vous allez quand vous voulez facturer</td>
       <td>Il faut deux appuis pour l'atteindre, et on ne le voit pas d'emblée</td>
     </tr>
     <tr>
-      <td><b>4 · La 4ᵉ pastille</b></td>
+      <td><b>4 : La 4ᵉ pastille</b></td>
       <td>Rien</td>
       <td>Sort de l'écran, et fait rougir la suite qui tient la rangée</td>
     </tr>
@@ -240,8 +240,8 @@ p.dessous b{color:var(--encre)}
   unique, et la porte se trouve là où le chantier atterrit.</p>
 
   <h3>Changer de place ne recode rien</h3>
-  <p>Ce qui est déjà écrit — la base qui accepte enfin une facture sans devis,
-  les lignes que vous saisissez, les refus — <b>ne dépend pas de la porte</b>.
+  <p>Ce qui est déjà écrit, la base qui accepte enfin une facture sans devis,
+  les lignes que vous saisissez, les refus : <b>ne dépend pas de la porte</b>.
   Seule la porte se déplace. Dites-moi laquelle.</p>
 
 </div>
@@ -268,9 +268,9 @@ p.dessous b{color:var(--encre)}
   ];
 
   var FAITS = [
-    { nom:"M. Aubert",   etat:"Facturé · 1 240,00 €",              or:false },
-    { nom:"Mme Chaix",   etat:"Pas encore facturé · 360,00 € prévus", or:true },
-    { nom:"M. Sabatier", etat:"Facturé · 890,00 €",                or:false }
+    { nom:"M. Aubert",   etat:"Facturé : 1 240,00 €",              or:false },
+    { nom:"Mme Chaix",   etat:"Pas encore facturé : 360,00 € prévus", or:true },
+    { nom:"M. Sabatier", etat:"Facturé : 890,00 €",                or:false }
   ];
 
   function geste(mot){
@@ -321,14 +321,14 @@ p.dessous b{color:var(--encre)}
     return '<div class="mois"><button class="feuillet" type="button" aria-label="Mois précédent">‹</button>'
       +   '<span>Septembre 2026</span>'
       +   '<button class="feuillet" type="button" aria-label="Mois suivant">›</button></div>'
-      + '<p class="compte"><span class="or">1 à facturer</span> · 2 facturés</p>'
+      + '<p class="compte"><span class="or">1 à facturer</span>, 2 facturés</p>'
       + '<div class="lignes">' + brins(FAITS) + '</div>';
   }
 
   var PLACES = [
     {
       cle: "accueil",
-      mot: "1 · Accueil",
+      mot: "1 : Accueil",
       dit: "Ce qui est <b>codé aujourd’hui</b> : les deux anneaux sur l’accueil, « Créer une facture » décalé à gauche.",
       rendu: function(){
         return '<div class="acc">'
@@ -346,7 +346,7 @@ p.dessous b{color:var(--encre)}
     },
     {
       cle: "sous-titre",
-      mot: "2 · Terminés, sous le titre",
+      mot: "2 : Terminés, sous le titre",
       dit: "Un geste par écran, <b>au même endroit et du même dessin</b> que « Créer un devis ». C’est ce que je recommande.",
       rendu: function(){
         return '<div class="ter">' + teteTermines(true) + onglets("tout", false) + moisEtListe() + '</div>';
@@ -354,7 +354,7 @@ p.dessous b{color:var(--encre)}
     },
     {
       cle: "a-facturer",
-      mot: "3 · Dans « À facturer »",
+      mot: "3 : Dans « À facturer »",
       dit: "Le geste vit <b>dans l’onglet</b> où vous allez pour facturer. Il faut deux appuis pour l’atteindre.",
       rendu: function(){
         return '<div class="ter">' + teteTermines(false) + onglets("attente", false)
@@ -367,8 +367,8 @@ p.dessous b{color:var(--encre)}
     },
     {
       cle: "pastille",
-      mot: "4 · La 4ᵉ pastille",
-      dit: "<b>Elle sort de l’écran</b> — la rangée en prend déjà 377 sur 390. C’est la seule place impossible.",
+      mot: "4 : La 4ᵉ pastille",
+      dit: "<b>Elle sort de l’écran</b> : la rangée en prend déjà 377 sur 390. C’est la seule place impossible.",
       rendu: function(){
         return '<div class="ter">' + teteTermines(false) + onglets("tout", true) + moisEtListe() + '</div>';
       }

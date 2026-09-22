@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Atlas — La fiche de sécurité — codée</title>
+<title>Atlas (La fiche de sécurité) codée</title>
 <style>
   :root{
     --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
@@ -57,7 +57,7 @@
 </head>
 <body>
 <main>
-<h1 id="la-fiche-de-sécurité--codée">La fiche de sécurité — codée</h1>
+<h1 id="la-fiche-de-sécurité--codée">La fiche de sécurité, codée</h1>
 <p><em>Lot ouvert le 21 septembre 2026 au soir, sur votre « tu peux coder exactement tout ce qu'on vient de voir ensemble », CLOS le 22 au matin. La planche est <code>appli/fiche-de-securite.html</code> ; elle a été codée mot pour mot.</em></p>
 <p><em>Sa page consultable vit dans <code>appli/</code> : <code>node scripts/md-en-page.mjs docs/lot-fiche-de-securite.md appli/lot-fiche-de-securite.html</code>.</em></p>
 <hr>
@@ -87,7 +87,7 @@
 <td><code>fiche-securite.ts</code></td>
 </tr>
 <tr>
-<td>« avec des salariés — et des fois je travaille seul »</td>
+<td>« avec des salariés : et des fois je travaille seul »</td>
 <td>le nombre de travailleurs vient des équipes du planning ; seul, c'est 1</td>
 <td><code>contexteDuChantier</code></td>
 </tr>
@@ -182,13 +182,13 @@
 <ul>
 <li><strong>La fiche vit sous <code>/planning</code>, pas sous <code>/paysage</code>.</strong> Paysage est fermé aux salariés ; or la loi veut que la fiche leur soit <em>« présentée »</em> et soit <em>« disponible sur le chantier »</em>. Le formulaire et son PDF s'ouvrent donc à tous ceux qui voient le planning ; la liste, elle, est dans Paysage comme vous l'avez dit. Le lien « Voir où elle est gardée » n'apparaît qu'à ceux qui peuvent ouvrir Paysage.</li>
 <li><strong>Un PDF à part, pas le moteur du devis.</strong> Le moteur commun dessine des pièces qu'on paie (lignes, totaux, TVA) ; la fiche est quatre pages de cases et une signature dessinée. Elle a son propre moteur, avec les mêmes teintes et la même marge.</li>
-<li><strong>Ce qui n'est pas repris d'une fiche à l'autre</strong> : ce qui est propre au chantier — le donneur d'ordre, le lieu, les heures, la photo, le point de rencontre. Tout le reste l'est.</li>
+<li><strong>Ce qui n'est pas repris d'une fiche à l'autre</strong> : ce qui est propre au chantier, le donneur d'ordre, le lieu, les heures, la photo, le point de rencontre. Tout le reste l'est.</li>
 <li><strong>Deux fautes de la feuille ne sont pas recopiées</strong> : « essoussage », « sauvatage ».</li>
 <li><strong>Le formulaire de découverte fortuite</strong> renvoie au guichet unique des réseaux, pas à un numéro de cerfa : je n'en ai pas trouvé de sûr.</li>
 </ul>
 <h2 id="3-ce-que-ça-défait-et-qui-était-juste-avant">3. Ce que ça défait, et qui était juste avant</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
-<p>Rien. La fiche du jour garde tout ce qu'elle avait ; le bandeau s'ajoute au-dessus de « Travaux à faire ». <code>supprimerPhoto</code> regarde désormais aussi si une fiche montre la photo avant de la mettre en purge — le même geste que pour les retours.</p>
+<p>Rien. La fiche du jour garde tout ce qu'elle avait ; le bandeau s'ajoute au-dessus de « Travaux à faire ». <code>supprimerPhoto</code> regarde désormais aussi si une fiche montre la photo avant de la mettre en purge, le même geste que pour les retours.</p>
 <h2 id="4-la-fenêtre-à-connaître">4. La fenêtre à connaître</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
 <p>Votre espace applique les migrations à l'allumage : la 0099 crée trois tables vides, rien à transiter. Tant qu'il n'a pas redémarré, le bandeau du planning répondrait « relation fiches_securite does not exist » : <strong>redémarre ton espace</strong> après la fusion.</p>
@@ -216,9 +216,9 @@
 <td>verte</td>
 </tr>
 </tbody></table></div>
-<p>Les quatre rouges, rejoués seuls puis sur la base de <code>main</code> sans ce lot (<code>verifier-rouge-prealable</code>) : <code>papier-facture</code> vert seul (un appui lu avant le rendu, en charge) ; <code>devis-client</code>, <code>ligne-du-client</code>, <code>recherche-client</code> rouges de la même façon des deux côtés — ils ne viennent pas de ce lot, et sont connus sur ce PC. Aucune régression nouvelle.</p>
+<p>Les quatre rouges, rejoués seuls puis sur la base de <code>main</code> sans ce lot (<code>verifier-rouge-prealable</code>) : <code>papier-facture</code> vert seul (un appui lu avant le rendu, en charge) ; <code>devis-client</code>, <code>ligne-du-client</code>, <code>recherche-client</code> rouges de la même façon des deux côtés : ils ne viennent pas de ce lot, et sont connus sur ce PC. Aucune régression nouvelle.</p>
 <p>Après la fusion de <code>main</code> (le refus de retirer un chantier facturé, la planche de la fiche 4), la rencontre a été rejouée : types, lint, atelier, 398 suites base sur 406, la coupure des sessions, les écrans. Même sort.</p>
-<p>Les trois suites du lot — <code>test-fiche-securite</code>, <code>test-fiche-securite-db</code>, <code>test-fiche-securite-e2e</code> — sont vertes, en batterie et seules.</p>
+<p>Les trois suites du lot : <code>test-fiche-securite</code>, <code>test-fiche-securite-db</code>, <code>test-fiche-securite-e2e</code> : sont vertes, en batterie et seules.</p>
 <h2 id="6-ce-qui-reste-ouvert">6. Ce qui reste ouvert</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
 <ul>

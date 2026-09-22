@@ -38,7 +38,7 @@ import { colors, font, libelleCaps } from "@/lib/design-tokens";
  * d'Atlas, et le disait. Ce commentaire décrivait donc un monde disparu : il est
  * corrigé dans le même commit que le code, comme le dépôt l'exige.
  */
-export const metadata = { title: "Paysage — Atlas" };
+export const metadata = { title: "Paysage, Atlas" };
 
 
 type Outil = {
@@ -53,7 +53,7 @@ const OUTILS: Outil[] = [
     // **DANS l'application depuis le 20 août 2026** — *« code le tout dans
     // l'appli »*. Il ouvrait jusque-là une page publiée à côté, hors d'Atlas.
     nom: "Plan d'arrosage automatique",
-    dit: "Le piquage, le croquis photographié — et le plan sort.",
+    dit: "Le piquage, le croquis photographié, et le plan sort.",
     href: "/paysage/arrosage",
   },
   {
@@ -88,7 +88,7 @@ const OUTILS: Outil[] = [
   },
   {
     nom: "Terrasse bois",
-    dit: "Lambourdes, plots, visserie — le même principe, à partir des mesures.",
+    dit: "Lambourdes, plots, visserie : le même principe, à partir des mesures.",
     href: null,
   },
 ];

@@ -47,7 +47,7 @@ export async function envoyerNoteVocale(
     return {
       ok: false,
       raison:
-        "Le serveur a répondu autre chose que prévu — la page a sans doute vieilli. " +
+        "Le serveur a répondu autre chose que prévu. La page a sans doute vieilli. " +
         "Rechargez-la, puis refaites la note.",
       ...(reponse.status === 401 || reponse.status === 403 ? { sessionPerimee: true as const } : {}),
     };

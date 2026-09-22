@@ -135,7 +135,7 @@ export default function AgendaAppleClient({ etat }: { etat: EtatAgendaApple }) {
         {etat.relie && etat.actif && !etat.derniereErreur && (
           <p className="mt-3 text-[14px] leading-snug" style={{ color: colors.muted }}>
             Une demi-journée prise dans votre agenda <strong>ne sera plus proposée</strong>{" à vos clients. Ce"}{" "}
-            qu&apos;ils voient, ce sont des dates — jamais le titre d&apos;un rendez-vous.
+            qu&apos;ils voient, ce sont des dates, jamais le titre d&apos;un rendez-vous.
           </p>
         )}
 
@@ -148,7 +148,7 @@ export default function AgendaAppleClient({ etat }: { etat: EtatAgendaApple }) {
             style={{ backgroundColor: colors.card, borderLeft: `3px solid ${colors.alert}` }}
           >
             <strong>Atlas n&apos;arrive plus à lire votre agenda.</strong>{" En attendant, il propose des dates"}{" "}
-            à partir de vos seuls chantiers — donc un doublon reste possible.
+            à partir de vos seuls chantiers, donc un doublon reste possible.
             <span className="mt-2 block" style={{ color: colors.muted }}>
               Détail : {etat.derniereErreur}
             </span>
@@ -300,7 +300,7 @@ export default function AgendaAppleClient({ etat }: { etat: EtatAgendaApple }) {
                         <span className="block text-[15px]">{a.nom}</span>
                         {!a.inscriptible && (
                           <span className="block text-[12.5px]" style={{ color: colors.muted }}>
-                            Partagé en lecture seule — Atlas ne peut pas y écrire
+                            Partagé en lecture seule, Atlas ne peut pas y écrire
                           </span>
                         )}
                       </span>

@@ -50,7 +50,7 @@ import Reessayer from "./Reessayer";
  * libre — le nom qu'il donne à l'essence, ses réserves — ne monte jamais ici.
  */
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Diagnostic — Atlas" };
+export const metadata = { title: "Diagnostic, Atlas" };
 
 export default async function ResultatPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -527,15 +527,15 @@ async function Details({
             <ul className="mt-[8px]">
               {resultat.details.sources.map((s, i) => (
                 <li key={i} className="mb-[8px] text-[12.5px] leading-[1.5]" style={{ color: colors.inkSoft }}>
-                  {s.organisme} — {s.titre}
-                  <span style={{ color: colors.muted }}> · consultée le {dateCitee(s.consulteeLe)}</span>
+                  {s.organisme}, {s.titre}
+                  <span style={{ color: colors.muted }}>, consultée le {dateCitee(s.consulteeLe)}</span>
                 </li>
               ))}
             </ul>
           )}
           <p className="mt-[6px] text-[11.5px]" style={{ color: colors.muted }}>
             Fiche version {resultat.details.versionFiche}
-            {resultat.details.sourcesAJourLe ? ` · à jour au ${dateCitee(resultat.details.sourcesAJourLe)}` : ""}
+            {resultat.details.sourcesAJourLe ? `, à jour au ${dateCitee(resultat.details.sourcesAJourLe)}` : ""}
           </p>
         </div>
 

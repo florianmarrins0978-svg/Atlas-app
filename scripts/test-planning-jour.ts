@@ -84,17 +84,17 @@ essai("une équipe absente occupe la demi-journée", () => {
 essai("le pourcentage ne s'écrit QUE s'il dépasse", () => {
   assert.equal(ditLeCompteDemi(occupationDemi(chantiers(0), 2)), "libre");
   assert.equal(ditLeCompteDemi(occupationDemi(chantiers(1), 2)), "1 chantier");
-  assert.equal(ditLeCompteDemi(occupationDemi(chantiers(2), 2)), "2 chantiers · complet");
+  assert.equal(ditLeCompteDemi(occupationDemi(chantiers(2), 2)), "2 chantiers, complet");
   assert.equal(
     ditLeCompteDemi(occupationDemi(chantiers(3), 2)),
-    "3 chantiers · 150 % de vos équipes"
+    "3 chantiers, 150 % de vos équipes"
   );
 });
 
 essai("le compte de la journée prend la demi-journée la plus chargée", () => {
   assert.equal(ditLeCompteDuJour(1, 0.5), "1 chantier");
-  assert.equal(ditLeCompteDuJour(2, 1), "2 chantiers · complet");
-  assert.equal(ditLeCompteDuJour(3, 1.5), "3 chantiers · 150 % de vos équipes");
+  assert.equal(ditLeCompteDuJour(2, 1), "2 chantiers, complet");
+  assert.equal(ditLeCompteDuJour(3, 1.5), "3 chantiers, 150 % de vos équipes");
   assert.equal(ditLeCompteDuJour(0, 0), "libre");
 });
 

@@ -165,8 +165,8 @@ export function partDeLaBarre(charge: number): number {
 export function ditLeCompteDemi<C>(o: OccupationDemi<C>): string {
   if (o.pris.length === 0) return "libre";
   const chantiers = `${o.pris.length} chantier${o.pris.length > 1 ? "s" : ""}`;
-  if (o.charge > 1) return `${chantiers} · ${Math.round(o.charge * 100)} % de vos équipes`;
-  if (o.charge === 1) return `${chantiers} · complet`;
+  if (o.charge > 1) return `${chantiers}, ${Math.round(o.charge * 100)} % de vos équipes`;
+  if (o.charge === 1) return `${chantiers}, complet`;
   return chantiers;
 }
 
@@ -184,8 +184,8 @@ export function ditLeCompteDemi<C>(o: OccupationDemi<C>): string {
 export function ditLeCompteDuJour(nombreChantiers: number, chargeMax: number): string {
   if (nombreChantiers === 0) return "libre";
   const texte = `${nombreChantiers} chantier${nombreChantiers > 1 ? "s" : ""}`;
-  if (chargeMax > 1) return `${texte} · ${Math.round(chargeMax * 100)} % de vos équipes`;
-  if (chargeMax === 1) return `${texte} · complet`;
+  if (chargeMax > 1) return `${texte}, ${Math.round(chargeMax * 100)} % de vos équipes`;
+  if (chargeMax === 1) return `${texte}, complet`;
   return texte;
 }
 

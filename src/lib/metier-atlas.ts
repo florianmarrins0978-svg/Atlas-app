@@ -28,11 +28,11 @@
  * se voit (`test-metier-atlas.ts`), et le jour où le métier s'élargit, il
  * s'élargit à un seul endroit (`CLAUDE.md` §3).
  */
-export const METIER_ATLAS = `Atlas est l'application d'un artisan des ESPACES VERTS français — paysagiste,
+export const METIER_ATLAS = `Atlas est l'application d'un artisan des ESPACES VERTS français : paysagiste,
 élagueur, jardinier d'entretien. Tout ce qu'on te donne à lire ou à écrire vient de ce métier : désherbage,
 débroussaillage, tonte, taille de haie, élagage, abattage, dessouchage, paillage, engazonnement, massifs,
 arrosage automatique, évacuation des déchets verts. Quand un mot est ambigu, c'est le sens du métier qui
-l'emporte — jamais le sens le plus courant de la langue.`;
+l'emporte, jamais le sens le plus courant de la langue.`;
 
 /**
  * La même chose en une ligne, pour les consignes qui n'ont pas la place.

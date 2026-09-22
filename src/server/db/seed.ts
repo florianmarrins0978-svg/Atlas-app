@@ -334,7 +334,7 @@ async function main() {
         }))
       );
       console.log(
-        `Identifiants d'agenda conservés (${identifiantsGardes.length}) — le raccordement se refait en un appui.`
+        `Identifiants d'agenda conservés (${identifiantsGardes.length}). Le raccordement se refait en un appui.`
       );
     }
 
@@ -390,7 +390,7 @@ async function main() {
             utilisateurId: utilisateur.id,
             documentId: d.id,
             adresseIp: null,
-            agentUtilisateur: "seed de démonstration — consentement fictif",
+            agentUtilisateur: "seed de démonstration, consentement fictif",
           }))
         )
         .onConflictDoNothing();
@@ -578,9 +578,9 @@ async function main() {
     console.log("Insertion du devis envoyé pour Reprise de toiture...");
     const idToiture = chantierIdsParNom["Reprise de toiture"];
     const lignesToiture = [
-      { libelle: "Main d'œuvre — 2 hommes × 2 jours", montant: "1120.00" },
-      { libelle: "Dépose carrelage — 8 m²", montant: "144.00" },
-      { libelle: "Pose faïence — 8 m²", montant: "360.00" },
+      { libelle: "Main d'œuvre, 2 hommes × 2 jours", montant: "1120.00" },
+      { libelle: "Dépose carrelage, 8 m²", montant: "144.00" },
+      { libelle: "Pose faïence, 8 m²", montant: "360.00" },
       { libelle: "Forfait déplacement", montant: "35.00" },
     ];
     await tx.insert(lignesPrix).values(
@@ -713,7 +713,7 @@ async function main() {
       // L'empreinte fige le devis tel qu'il est parti : le client ne peut pas
       // se voir opposer une version modifiée après coup.
       empreinteDevis: createHash("sha256")
-        .update("Reprise de toiture — devis de démonstration")
+        .update("Reprise de toiture, devis de démonstration")
         .digest("hex"),
       expireAt: new Date(Date.now() + 14 * 86400_000),
       // **Le client a répondu, et il a renvoyé le devis.** Sans cette réponse,

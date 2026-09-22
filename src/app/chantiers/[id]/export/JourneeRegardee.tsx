@@ -277,7 +277,7 @@ function Pastille({ etat }: { etat: EtatDemi }) {
 function compteLisible(o: { pris: readonly unknown[]; charge: number }): string {
   if (o.pris.length === 0) return "libre";
   const chantiers = `${o.pris.length} chantier${o.pris.length > 1 ? "s" : ""}`;
-  if (o.charge > 1) return `${chantiers} · ${Math.round(o.charge * 100)} % de vos équipes`;
-  if (o.charge === 1) return `${chantiers} · complet`;
+  if (o.charge > 1) return `${chantiers}, ${Math.round(o.charge * 100)} % de vos équipes`;
+  if (o.charge === 1) return `${chantiers}, complet`;
   return chantiers;
 }

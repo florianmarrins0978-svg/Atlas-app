@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Atlas — note vocale, série 1 : la matière</title>
+<title>Atlas : note vocale, série 1 : la matière</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -345,7 +345,7 @@ body{margin:0;background:var(--bone);color:var(--charcoal);
 <body>
 
 <header class="tete">
-  <h1>La note vocale — série 1 : la matière</h1>
+  <h1>La note vocale, série 1 : la matière</h1>
   <p>Le gros rond reste, seule sa matière change : la couronne godronnée, le cadran guilloché, l'empreinte creusée, le cabochon d'or. Pendant la dictée : le sillon, la règle, le fil. Page conservée pour comparer.</p>
 </header>
 
@@ -353,17 +353,17 @@ body{margin:0;background:var(--bone);color:var(--charcoal);
   <div class="rangee" role="group" aria-label="Avant d'appuyer">
     <p class="quoi">Avant d'appuyer</p>
     <button type="button" data-repos="plein" aria-pressed="true">Aujourd'hui</button>
-    <button type="button" data-repos="couronne" aria-pressed="false">1 · Couronne</button>
-    <button type="button" data-repos="guilloche" aria-pressed="false">2 · Guilloché</button>
-    <button type="button" data-repos="empreinte" aria-pressed="false">3 · Empreinte</button>
-    <button type="button" data-repos="cabochon" aria-pressed="false">4 · Cabochon</button>
+    <button type="button" data-repos="couronne" aria-pressed="false">1, Couronne</button>
+    <button type="button" data-repos="guilloche" aria-pressed="false">2, Guilloché</button>
+    <button type="button" data-repos="empreinte" aria-pressed="false">3, Empreinte</button>
+    <button type="button" data-repos="cabochon" aria-pressed="false">4, Cabochon</button>
   </div>
   <div class="rangee" role="group" aria-label="Pendant la dictée">
     <p class="quoi">Pendant la dictée</p>
     <button type="button" data-ligne="onde" aria-pressed="true">Aujourd'hui</button>
-    <button type="button" data-ligne="sillon" aria-pressed="false">1 · Le sillon</button>
-    <button type="button" data-ligne="regle" aria-pressed="false">2 · La règle</button>
-    <button type="button" data-ligne="fil" aria-pressed="false">3 · Le fil</button>
+    <button type="button" data-ligne="sillon" aria-pressed="false">1, Le sillon</button>
+    <button type="button" data-ligne="regle" aria-pressed="false">2, La règle</button>
+    <button type="button" data-ligne="fil" aria-pressed="false">3, Le fil</button>
   </div>
 </nav>
 
@@ -472,14 +472,14 @@ body{margin:0;background:var(--bone);color:var(--charcoal);
 
   <div class="colonne">
     <div class="legende">
-      <span class="nom" id="rang-repos">Avant d'appuyer — aujourd'hui</span>
+      <span class="nom" id="rang-repos">Avant d'appuyer, aujourd'hui</span>
       <h2 id="titre-repos">Le disque plein, votre choix du 30 août</h2>
       <p id="propos-repos">C'est le « B » de la planche des cinq dessins. Il est ici pour comparer :
         c'est la seule tache sombre de la fiche, et c'est elle que vous ne voulez plus.</p>
       <p class="mesure"><span>Encre sombre au repos</span><b id="encre">4 536 px²</b></p>
     </div>
     <div class="legende">
-      <span class="nom" id="rang-ligne">Pendant la dictée — aujourd'hui</span>
+      <span class="nom" id="rang-ligne">Pendant la dictée, aujourd'hui</span>
       <h2 id="titre-ligne">La ligne, votre choix du 31 août</h2>
       <p id="propos-ligne">Poubelle, chrono, onde d'or en barreaux, rond d'envoi. C'est ce que
         l'application porte, et le point de départ des trois dessins d'à côté.</p>
@@ -489,30 +489,30 @@ body{margin:0;background:var(--bone);color:var(--charcoal);
 
 <script>
 const MOTS_REPOS = {
-  plein: ["Avant d'appuyer — aujourd'hui", "Le disque plein, votre choix du 30 août",
+  plein: ["Avant d'appuyer, aujourd'hui", "Le disque plein, votre choix du 30 août",
     "C'est le « B » de la planche des cinq dessins. Il est ici pour comparer : c'est la seule tache sombre de la fiche, et c'est elle que vous ne voulez plus.",
     "4 536 px²"],
-  couronne: ["Avant d'appuyer — dessin 1", "La couronne",
+  couronne: ["Avant d'appuyer : dessin 1", "La couronne",
     "Le godron d'une couronne de montre : des stries d'or, un jonc fin, et le fond de la page à l'intérieur. C'est le registre de l'accueil que vous avez applaudi. Aucune encre sombre ajoutée.",
     "0 px²"],
-  guilloche: ["Avant d'appuyer — dessin 2", "Le guilloché",
-    "Le cadran gravé : des cercles d'un cheveu, en or, sur le beige de vos cases. L'objet garde toute sa présence — on le voit de loin —, mais il ne pose plus de noir sur la fiche.",
+  guilloche: ["Avant d'appuyer : dessin 2", "Le guilloché",
+    "Le cadran gravé : des cercles d'un cheveu, en or, sur le beige de vos cases. L'objet garde toute sa présence : on le voit de loin —, mais il ne pose plus de noir sur la fiche.",
     "0 px²"],
-  empreinte: ["Avant d'appuyer — dessin 3", "L'empreinte",
+  empreinte: ["Avant d'appuyer : dessin 3", "L'empreinte",
     "Le disque est creusé dans le papier, comme un gaufrage de reliure. Rien n'est ajouté : la profondeur seule le dessine. Le plus discret des quatre, et celui qui demande la meilleure lumière.",
     "0 px²"],
-  cabochon: ["Avant d'appuyer — dessin 4", "Le cabochon",
-    "La masse reste, elle change de matière : l'or au lieu du vert, avec la même ombre portée. C'est le plus proche de ce que vous avez — vous ne perdez rien de sa présence, vous perdez le vert.",
+  cabochon: ["Avant d'appuyer : dessin 4", "Le cabochon",
+    "La masse reste, elle change de matière : l'or au lieu du vert, avec la même ombre portée. C'est le plus proche de ce que vous avez : vous ne perdez rien de sa présence, vous perdez le vert.",
     "0 px² de sombre"],
 };
 const MOTS_LIGNE = {
-  onde: ["Pendant la dictée — aujourd'hui", "La ligne, votre choix du 31 août",
+  onde: ["Pendant la dictée : aujourd'hui", "La ligne, votre choix du 31 août",
     "Poubelle, chrono, onde d'or en barreaux, rond d'envoi. C'est ce que l'application porte, et le point de départ des trois dessins d'à côté."],
-  sillon: ["Pendant la dictée — dessin 1", "Le sillon",
+  sillon: ["Pendant la dictée : dessin 1", "Le sillon",
     "L'onde devient un sillon creusé dans le papier, où une lueur d'or passe. Ce n'est pas une jauge : une dictée n'a pas de durée connue, donc rien ne se remplit. La largeur de la lueur suit votre voix."],
-  regle: ["Pendant la dictée — dessin 2", "La règle",
-    "La réglette d'un instrument de mesure : des graduations d'or, et une aiguille fine qui bouge avec la voix. C'est le dessin le plus « métier » des trois — on lit qu'on enregistre à ce qui bouge."],
-  fil: ["Pendant la dictée — dessin 3", "Le fil",
+  regle: ["Pendant la dictée : dessin 2", "La règle",
+    "La réglette d'un instrument de mesure : des graduations d'or, et une aiguille fine qui bouge avec la voix. C'est le dessin le plus « métier » des trois : on lit qu'on enregistre à ce qui bouge."],
+  fil: ["Pendant la dictée : dessin 3", "Le fil",
     "Un filet d'or tendu, une perle qui glisse dessus et grossit quand vous parlez. Le plus silencieux des trois : la ligne ne bat plus, elle respire."],
 };
 
@@ -571,7 +571,7 @@ const HAUTEURS = [7, 13, 9, 18, 11, 22, 10, 15, 8, 19, 12, 16];
 document.querySelectorAll(".frange").forEach((f) => {
   f.innerHTML = HAUTEURS.map((h) => `<i style="height:${h}px"></i>`).join("");
 });
-// Vingt-six barreaux : l'onde part PLEINE, à plat — sinon les deux premières
+// Vingt-six barreaux : l'onde part PLEINE, à plat : sinon les deux premières
 // secondes montrent un trait qui pousse dans le vide.
 document.getElementById("onde").innerHTML =
   Array.from({ length: 26 }, (_, i) => `<i style="height:${6 + ((i * 7) % 17)}px"></i>`).join("");

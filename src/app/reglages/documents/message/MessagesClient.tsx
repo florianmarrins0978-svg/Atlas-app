@@ -121,7 +121,7 @@ export default function MessagesClient({
         <p className={`${texteSituation} mb-2`} style={{ color: colors.inkSoft }}>
           Les mots en doré se remplissent tout seuls.{" "}
           <b style={{ color: colors.ink, fontWeight: 400 }}>
-            Le lien et le mot du document — devis, facture, retour d&apos;intervention — ne peuvent pas être
+            Le lien et le mot du document (devis, facture, retour d&apos;intervention) ne peuvent pas être
             retirés.
           </b>{" "}
           Tout le reste se modifie.

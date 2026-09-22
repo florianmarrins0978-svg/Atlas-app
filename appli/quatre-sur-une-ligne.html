@@ -139,14 +139,14 @@
 <body>
 
 <div class="bandeau">
-  <b>Les quatre sur une ligne.</b> Trois façons — touchez-les. La mesure sous la
+  <b>Les quatre sur une ligne.</b> Trois façons, touchez-les. La mesure sous la
   carte dit si le mot tient vraiment dans sa pastille.
 </div>
 
 <div class="choix" role="group" aria-label="Trois façons de ranger les voies">
-  <button type="button" data-v="a" aria-pressed="false">A — quatre égales</button>
-  <button type="button" data-v="b" aria-pressed="false">B — trois + une croix</button>
-  <button type="button" data-v="c" aria-pressed="true">C — pas d’Annuler</button>
+  <button type="button" data-v="a" aria-pressed="false">A, quatre égales</button>
+  <button type="button" data-v="b" aria-pressed="false">B, trois + une croix</button>
+  <button type="button" data-v="c" aria-pressed="true">C, pas d’Annuler</button>
   <button type="button" id="largeur" aria-pressed="false">Écran étroit</button>
 </div>
 
@@ -169,15 +169,15 @@
   <p><b>Le chiffre qui décide :</b> à quatre pastilles égales, il reste
   <b>50 px pour le mot</b>. « Un chantier en attente » en réclame 135,
   « Autre chose » 72, « En attente » 62, « Chantier » 51. <b>Quatre sur une
-  ligne à taille égale oblige donc à raccourcir</b> — ce n’est pas un réglage,
+  ligne à taille égale oblige donc à raccourcir</b> : ce n’est pas un réglage,
   c’est un échange. La ligne grise sous la carte le dit pour chaque pastille.</p>
-  <p><b>A</b> — votre demande, mot pour mot. Ce qu’elle coûte : « en attente »
+  <p><b>A</b>, votre demande, mot pour mot. Ce qu’elle coûte : « en attente »
   disparaît, et c’est lui qui disait ce qu’on trouve derrière.</p>
-  <p><b>B</b> — « Annuler » devient une croix de 34 px, la forme de
+  <p><b>B</b> : « Annuler » devient une croix de 34 px, la forme de
   « Ajouter » à l’envers. Une ligne, mais la quatrième n’a pas la taille des
   autres : ce n’est pas un choix, c’est une sortie. Le rond prend quand même de
-  la place — « Autre chose » y redevient « Autre ».</p>
-  <p><b>C</b> — plus d’« Annuler ». Le « ＋ Ajouter » qui a ouvert les voies
+  la place : « Autre chose » y redevient « Autre ».</p>
+  <p><b>C</b>, plus d’« Annuler ». Le « ＋ Ajouter » qui a ouvert les voies
   reste à sa place et devient « ✕ Fermer » : on referme par où l’on est entré.
   <b>C’est déjà ce que fait « + Salarié absent ? »</b> deux centimètres plus
   haut, dans la même carte.</p>
@@ -194,14 +194,14 @@ const tel = document.getElementById("tel");
 let variante = "c";
 
 const DESSINS = {
-  // A — quatre pastilles égales. Les mots sont RACCOURCIS, sinon rien ne tient.
+  // A, quatre pastilles égales. Les mots sont RACCOURCIS, sinon rien ne tient.
   a: `<div class="voies">
         <button class="voie">Chantier</button>
         <button class="voie">Client</button>
         <button class="voie">Autre</button>
         <button class="voie" data-sortie="1">Annuler</button>
       </div>`,
-  // B — trois voies égales, et la sortie en rond : elle ne se compte pas
+  // B : trois voies égales, et la sortie en rond : elle ne se compte pas
   // parmi les choix.
   b: `<div class="voies">
         <button class="voie">En attente</button>
@@ -209,7 +209,7 @@ const DESSINS = {
         <button class="voie">Autre</button>
         <button class="croix" data-sortie="1" aria-label="Annuler">✕</button>
       </div>`,
-  // C — aucune sortie dans la ligne : on referme par le « ＋ » qui a ouvert.
+  // C : aucune sortie dans la ligne : on referme par le « ＋ » qui a ouvert.
   c: `<div class="voies">
         <button class="voie">En attente</button>
         <button class="voie">Un client</button>
@@ -221,17 +221,17 @@ const DESSINS = {
 };
 
 /*
-  LA MESURE JUSTE — et il a fallu s'y reprendre à deux fois.
+  LA MESURE JUSTE : et il a fallu s'y reprendre à deux fois.
 
   Première version : `scrollWidth` contre `clientWidth`. Elle a répondu « rien
   n'est coupé » sur une capture qui montrait le contraire (CLAUDE.md §5).
-  Deuxième : un `Range` sur le contenu — mais un texte qui se REPLIE rend la
+  Deuxième : un `Range` sur le contenu, mais un texte qui se REPLIE rend la
   largeur de sa ligne la plus longue, pas celle qu'il lui faudrait : « En
   attente » sur deux lignes mesurait 41 px et se déclarait à l'aise.
 
   Celle-ci pose le mot dans un jumeau invisible qu'on empêche de se replier :
   c'est la largeur qu'il RÉCLAME. On la compare à la place qu'il a, et l'on
-  compte les lignes réellement peintes — deux lignes dans une pastille, c'est
+  compte les lignes réellement peintes : deux lignes dans une pastille, c'est
   exactement ce qu'il veut faire disparaître.
 */
 const reglet = document.createElement("span");
@@ -252,18 +252,18 @@ function mesurer() {
     lignes.push(
       `« ${b.textContent} » ${Math.round(veut)} px pour ${Math.round(dedans)} px` +
       // **Trois réponses, pas deux.** « Chantier » réclame 51 px pour 50 : à
-      // l'œil, rien ne dépasse — mais c'est un pixel, et le prochain mot un peu
+      // l'œil, rien ne dépasse : mais c'est un pixel, et le prochain mot un peu
       // plus long sortira. Le dire « tout juste » avertit sans crier au défaut.
       (replie
-        ? " — <b>sur deux lignes</b>"
+        ? ", <b>sur deux lignes</b>"
         : veut > dedans + 3
-          ? " — <b>ça déborde</b>"
+          ? ", <b>ça déborde</b>"
           : veut > dedans - 3
-            ? " — <b>tout juste</b>"
-            : " — ça tient")
+            ? ", <b>tout juste</b>"
+            : ", ça tient")
     );
   }
-  mesure.innerHTML = lignes.join(" · ");
+  mesure.innerHTML = lignes.join(", ");
 }
 
 function dessiner() {
@@ -272,7 +272,7 @@ function dessiner() {
   for (const b of bloc.querySelectorAll("button")) {
     b.onclick = () => {
       fait.textContent = b.dataset.sortie
-        ? "Refermé — on revient au « ＋ Ajouter »."
+        ? "Refermé, on revient au « ＋ Ajouter »."
         : "« " + b.textContent.trim() + " » ouvre la suite.";
     };
   }

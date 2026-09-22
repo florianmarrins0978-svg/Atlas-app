@@ -221,7 +221,7 @@
 <body data-vue="avant">
 
 <p class="bandeau">
-  <b>Deux chantiers par jour, un planning vide</b> — et pourtant les jours que vous proposez
+  <b>Deux chantiers par jour, un planning vide</b> : et pourtant les jours que vous proposez
   se peignent du vert que la légende appelle « complet ».
   <b>Ils ne sont pas complets : ils sont proposés.</b>
   Touchez les jours, changez de mois, comparez les trois. <b>Rien n’est codé.</b>
@@ -257,7 +257,7 @@
 <p class="note">
   <b>Ce que la couleur dit aujourd’hui.</b> Le même vert sert à deux choses :
   la charge d’une journée (« complet ») et votre choix (« proposé »).
-  Et l’aplat recouvre les deux barres — le jour que vous venez de proposer devient
+  Et l’aplat recouvre les deux barres, le jour que vous venez de proposer devient
   le seul du mois dont vous ne pouvez plus lire la charge.
 </p>
 <p class="note">
@@ -267,8 +267,8 @@
 
 <script>
 /* ═══════════════════════════════════════════════════════════════════════════
-   Les règles de charge sont celles de l'application (`src/lib/planning-jour.ts`)
-   — recopiées ici parce qu'une maquette ne peut pas l'importer, et tenues en
+   Les règles de charge sont celles de l'application (`src/lib/planning-jour.ts`),
+   recopiées ici parce qu'une maquette ne peut pas l'importer, et tenues en
    une seule fonction pour qu'on voie tout de suite qu'elles n'ont pas dérivé :
 
      charge = équipes mobilisées ÷ nombre d'équipes
@@ -295,7 +295,7 @@ const MAINTENANT = new Date();
 const AUJOURDHUI = iso(new Date(Date.UTC(
   MAINTENANT.getFullYear(), MAINTENANT.getMonth(), MAINTENANT.getDate())));
 
-/* Le premier jour proposable : le surlendemain, comme sur son écran — un jour
+/* Le premier jour proposable : le surlendemain, comme sur son écran : un jour
    annoncé le matin pour le lendemain ne laisse pas le temps de répondre. */
 const PREMIER = iso(plus(enDate(AUJOURDHUI), 2));
 
@@ -329,8 +329,8 @@ const partDeLaBarre = (charge) => Math.round(Math.min(charge,1) * 100);
 function compteLisible(o){
   if (o.pris.length === 0) return "libre";
   const t = o.pris.length + " chantier" + (o.pris.length > 1 ? "s" : "");
-  if (o.charge > 1) return t + " · " + Math.round(o.charge*100) + " % de vos équipes";
-  if (o.charge === 1) return t + " · complet";
+  if (o.charge > 1) return t + ", " + Math.round(o.charge*100) + " % de vos équipes";
+  if (o.charge === 1) return t + ", complet";
   return t;
 }
 function jourLisible(j){
@@ -389,7 +389,7 @@ function dessinerCalendrier(){
         return '<button type="button" class="' + classes.join(" ") + '" data-jour="' + j + '"'
              + ' aria-pressed="' + (j === touche) + '"'
              + ' aria-label="' + d.getUTCDate() + ' ' + MOIS_LONGS[curseur.mois]
-             + (selection.has(j) ? ' — proposé au client' : '') + '">'
+             + (selection.has(j) ? ', proposé au client' : '') + '">'
              + '<span class="n">' + d.getUTCDate() + '</span>' + marque(j)
              + '<span class="point"></span></button>';
       }).join("") + '</div>'
@@ -469,7 +469,7 @@ function dessinerFaceAFace(){
 
 function tout(){ dessinerCalendrier(); dessinerFiche(); dessinerListe(); dessinerFaceAFace(); }
 
-/* Toucher un jour l'ouvre ET le propose — sa demande du 25 août 2026 :
+/* Toucher un jour l'ouvre ET le propose, sa demande du 25 août 2026 :
    « je dois pouvoir sélectionner les jours juste en les touchant ». Un jour
    trop proche s'ouvre quand même : c'est là qu'on lit pourquoi il est refusé. */
 function toucher(jour){

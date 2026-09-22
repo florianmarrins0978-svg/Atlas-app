@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Réglages — ce que « 2 chantiers par jour » donne au planning</title>
+<title>Réglages : ce que « 2 chantiers par jour » donne au planning</title>
 <!--
   ════════════════════════════════════════════════════════════════════════════
   SA DEMANDE DU 31 AOÛT 2026, capture des Réglages à l'appui :
@@ -113,16 +113,16 @@
 <body data-vue="avant">
 
 <p class="bandeau">
-  <b>Votre demande du 31 août</b> — sur cette page, dire ce que le réglage donne au
+  <b>Votre demande du 31 août</b>, sur cette page, dire ce que le réglage donne au
   planning : <b>le petit carré vert foncé et le mot « complet »</b>.
   Le − et le + marchent : changez le chiffre, tout suit. <b>Rien n’est codé.</b>
 </p>
 
 <nav class="choix" aria-label="Les quatre versions">
   <button type="button" data-vue="avant" aria-pressed="true">Aujourd’hui</button>
-  <button type="button" data-vue="phrase" aria-pressed="false">A · la phrase</button>
-  <button type="button" data-vue="echelle" aria-pressed="false">B · l’échelle</button>
-  <button type="button" data-vue="jour" aria-pressed="false">C · le jour</button>
+  <button type="button" data-vue="phrase" aria-pressed="false">A, la phrase</button>
+  <button type="button" data-vue="echelle" aria-pressed="false">B, l’échelle</button>
+  <button type="button" data-vue="jour" aria-pressed="false">C, le jour</button>
 </nav>
 
 <div class="tel">
@@ -164,8 +164,8 @@
 /* ═══════════════════════════════════════════════════════════════════════════
    Les mots et les seuils viennent du produit, et d'un seul endroit chacun :
 
-     · la phrase d'aujourd'hui  → `phraseDuCompteur` (src/lib/equipes.ts)
-     · les états et leurs mots  → `etatDemi` + la légende de MoisCharge.tsx
+     · la phrase d'aujourd'hui  → `phraseDuCompteur` (src/lib/equipes.ts),
+     les états et leurs mots  → `etatDemi` + la légende de MoisCharge.tsx
        (charge = chantiers ÷ capacité : < 1 incomplet, = 1 complet)
 
    Une planche qui recalculerait autrement montrerait un écran qui n'existe pas.
@@ -193,7 +193,7 @@ function dessous() {
 
   if (vue === "echelle") {
     /* Ce que vaut chaque carré à CE réglage-là : c'est le chiffre qui bouge,
-       pas les mots. À 1 chantier par jour, « incomplet » n'existe pas — une
+       pas les mots. À 1 chantier par jour, « incomplet » n'existe pas : une
        ligne qui dirait « 1 à 0 chantier » serait une ligne fausse. */
     const milieu = n <= 1 ? null : (n === 2 ? "1 chantier" : "1 à " + (n - 1) + " chantiers");
     return '<div class="echelle">'

@@ -180,7 +180,7 @@ export default function FicheEntretienClient({
 
         <div className="mt-5 rounded-[14px] p-5" style={{ backgroundColor: colors.card }}>
           <p className={smallCaps} style={{ color: colors.muted, marginBottom: 10 }}>
-            Le modèle Atlas — {modeleFourni.length} prestations
+            Le modèle Atlas, {modeleFourni.length} prestations
           </p>
           <p className="text-[14px] leading-relaxed" style={{ color: colors.ink }}>
             {modeleFourni.map((p) => p.libelle).join(" · ")}

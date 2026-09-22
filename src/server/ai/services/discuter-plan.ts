@@ -72,8 +72,8 @@ export function etatDuPlanEnClair(
     const impose = parametres.zones.find((x) => x.id === z.id);
     lignes.push(
       `  - zone ${z.id} « ${z.nom} » : ${z.points.length} × ${z.modele ?? "?"} ${z.buse ?? ""} ` +
-        `(portée ${z.portee} m)${impose?.materiel ? ` — matériel imposé : ${impose.materiel}` : ""}` +
-        `${impose?.buse ? ` — buse imposée : ${impose.buse}` : ""}`
+        `(portée ${z.portee} m)${impose?.materiel ? `, matériel imposé : ${impose.materiel}` : ""}` +
+        `${impose?.buse ? `, buse imposée : ${impose.buse}` : ""}`
     );
   }
   lignes.push(`Marque : ${parametres.marque ?? "Rain Bird (défaut)"}.`);
@@ -89,7 +89,7 @@ function busesEnClair(): string {
         ref: string; nom: string; marqueCle: string; pourType: string;
         rayon: number; debit: Record<string, number>;
       };
-      return `${x.ref} · ${x.nom} · ${x.marqueCle} · ${x.pourType} · portée ${x.rayon} m · ${x.debit[360]} m³/h à 360°`;
+      return `${x.ref}, ${x.nom}, ${x.marqueCle}, ${x.pourType}, portée ${x.rayon} m, ${x.debit[360]} m³/h à 360°`;
     })
     .join("\n");
 }

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Le sommaire des réglages — Atlas</title>
+<title>Le sommaire des réglages : Atlas</title>
 <style>
 /*
   ═══════════════════════════════════════════════════════════════════════════
@@ -124,7 +124,7 @@ td b{color:var(--encre)}
 </div>
 
 <div class="tete">
-  <span class="sceau">Tranché — ce n'est pas une question</span>
+  <span class="sceau">Tranché, ce n'est pas une question</span>
   <h1>Le sommaire des réglages</h1>
   <p>C'est la porte de quatorze écrans, et le plus ouvert après l'accueil. Il
   fait aujourd'hui <b class="nb">1 310 pixels</b> de haut pour une fenêtre de
@@ -149,7 +149,7 @@ td b{color:var(--encre)}
   <p>C'était la question de <b>docs/QUESTIONS.md §23</b>, posée le 19 août et
   restée sans réponse. Le motif est dans la question elle-même : une phrase
   d'explication ne répare jamais un mauvais titre, elle le cache. On corrige
-  donc les titres, et on retire les phrases — jamais l'inverse.</p>
+  donc les titres, et on retire les phrases : jamais l'inverse.</p>
 
   <h3>2. Quatre titres changent de mot</h3>
   <table>
@@ -182,13 +182,13 @@ td b{color:var(--encre)}
     <tr><td>la ligne du salarié</td><td>gris</td><td>encre douce</td></tr>
   </table>
   <p>Le gris de la charte n'a pas été touché : c'est la vôtre, relevée sur le
-  site d'Arborea. Ce qui change, c'est <b>où on l'emploie</b> — plus pour du
+  site d'Arborea. Ce qui change, c'est <b>où on l'emploie</b> : plus pour du
   texte qu'il faut lire au soleil. Mesuré sur les huit chartes, ce gris tient
   entre <b class="nb">2,85</b> (Moka) et <b class="nb">3,59</b> (Brume) là où
   la norme demande 4,5 ; les deux seules qui passent sont Nuit et Sylve.</p>
   <p><b>La hauteur des lignes ne bouge pas : 56 pixels.</b> C'est au-delà des
   44 d'Apple, et c'est toute la ligne qui se touche. Gagner un demi-écran en
-  serrant les lignes se serait payé au pouce — mauvais marché.</p>
+  serrant les lignes se serait payé au pouce, mauvais marché.</p>
 
   <h3>Ce que ça donne</h3>
   <table>
@@ -205,17 +205,17 @@ td b{color:var(--encre)}
   </table>
   <p><b>Ces chiffres viennent de votre application, pas de ce dessin.</b> Ils
   sont relevés dans un navigateur sur l'écran réel, avant et après, à 390 × 664
-  et sur les deux pôles — <i>scripts/capture-sommaire-reglages.mts</i>. Le
+  et sur les deux pôles : <i>scripts/capture-sommaire-reglages.mts</i>. Le
   téléphone ci-dessus est une image de l'écran ; c'est la mesure qui fait foi.</p>
   <p><b>Un détail de cette planche, pour qu'il ne trompe pas :</b> les
   pictogrammes ne sont pas dessinés ici, seulement leur place. Dans
-  l'application ils y sont — et l'un d'eux a changé le même jour : « Mon
+  l'application ils y sont : et l'un d'eux a changé le même jour : « Mon
   agenda » portait encore la <b>pièce de puzzle</b> d'« Intégrations », la
   métaphore d'informaticien qu'on venait justement de retirer du mot. C'est un
   calendrier depuis. Aucun test ne l'a vu ; la capture, si.</p>
   <p><b>La ligne la plus parlante est la quatrième.</b> Avant, les lignes ne
   faisaient pas toutes la même hauteur : celles dont l'explication tenait sur
-  deux lignes — « Équipe » — poussaient à 84 px. Une liste au pas irrégulier se
+  deux lignes (« Équipe ») poussaient à 84 px. Une liste au pas irrégulier se
   parcourt moins vite qu'une liste au pas égal, et c'est ce qu'on ne voit pas
   en lisant le code.</p>
   <p><b>Et ce que ça ne fait pas :</b> ça ne tient toujours pas en un seul
@@ -224,8 +224,8 @@ td b{color:var(--encre)}
 
   <h3>La seconde question : l'écran Équipe</h3>
   <p><b>Tranché : la proposition C</b> de la planche 96, restée sans réponse
-  depuis le 26 août. Le titre pose la question — « Combien d'équipes partent en
-  même temps ? » — au lieu de la faire deviner. C'est quatre mots de plus, et
+  depuis le 26 août. Le titre pose la question : « Combien d'équipes partent en
+  même temps ? », au lieu de la faire deviner. C'est quatre mots de plus, et
   c'est exactement ce que demande la consigne du 5 septembre : celui qui ouvre
   l'écran pour la première fois n'a plus rien à deviner. La phrase sur les
   congés part vers « Absences », où elle est chez elle.</p>
@@ -238,7 +238,7 @@ td b{color:var(--encre)}
 <script>
 /*
   Un seul jeu de données, deux rendus. Deux listes écrites à la main
-  divergeraient au premier libellé changé — la règle du dépôt vaut aussi pour
+  divergeraient au premier libellé changé : la règle du dépôt vaut aussi pour
   une planche.
 */
 var RUBRIQUES = [
@@ -285,7 +285,7 @@ function dessiner(){
     h += '</div>';
   }
   h += '<div class="version"><p class="inter">Version</p>' +
-       '<p>5 septembre 2026 · a1b2c3d · main</p></div></div>';
+       '<p>5 septembre 2026, a1b2c3d, main</p></div></div>';
   tel.innerHTML = h;
   document.getElementById("etiquette").textContent = ap ? "Après" : "Avant";
   mesurer();
@@ -294,14 +294,14 @@ function dessiner(){
 /*
   **LA PLANCHE NE MESURE PLUS ELLE-MÊME, ET C'EST DÉLIBÉRÉ.**
 
-  Elle affichait sous le téléphone une règle vivante — hauteur, rubriques
-  visibles — recalculée sur son propre dessin. Elle rendait 1 076 px là où
+  Elle affichait sous le téléphone une règle vivante : hauteur, rubriques
+  visibles : recalculée sur son propre dessin. Elle rendait 1 076 px là où
   l'application en fait 1 145 : ce dessin n'est pas l'écran, son en-tête est à
   quelques pixels près, et l'écart n'a aucune signification.
 
   Or le tableau plus bas porte, lui, les mesures relevées dans un navigateur
   sur l'écran RÉEL. Deux chiffres qui se contredisent sur la même page, c'est
-  toute la liste qu'on cesse de croire (`CLAUDE.md` §4 bis) — et le patron
+  toute la liste qu'on cesse de croire (`CLAUDE.md` §4 bis) : et le patron
   aurait eu raison de ne plus croire aucune des deux.
 
   Le dessin montre donc, et la mesure chiffre. Chacun son métier.

@@ -111,7 +111,7 @@ export function piecesDuPlan(
       q: options.amenee !== null ? Math.ceil(options.amenee) : null,
       u: "ml",
       ou: "amenee",
-      detail: options.amenee !== null ? `du piquage à la nourrice, calculé sur le croquis · ${seuil}` : seuil,
+      detail: options.amenee !== null ? `du piquage à la nourrice, calculé sur le croquis, ${seuil}` : seuil,
     },
   ];
   if (options.compteur) {
@@ -149,7 +149,7 @@ export function piecesDuPlan(
         l.ref === PEBD16
           ? "2 m par arroseur"
           : !dessin && surLeTrace.has(l.ref ?? "")
-            ? "compté sans le tracé — à vérifier sur le plan"
+            ? "compté sans le tracé, à vérifier sur le plan"
             : undefined,
     });
   }

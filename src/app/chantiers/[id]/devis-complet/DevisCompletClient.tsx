@@ -1260,7 +1260,7 @@ export default function DevisCompletClient(props: Props) {
               valeur={l.libelle}
               fige={fige}
               aria={`Description ${i + 1}`}
-              placeholder="Ex : Élagage d'un tilleul — taille architecturée"
+              placeholder="Ex : Élagage d'un tilleul, taille architecturée"
               onChange={(v) => majLigneLocale(l.id, "libelle", v)}
               onFini={(fraiche) => {
                 void persisterLigne(l, { libelle: fraiche });
@@ -1637,7 +1637,7 @@ export default function DevisCompletClient(props: Props) {
         <div className="sm:w-[300px]">
           <div className="h-24 rounded" style={{ border: `1px dashed ${colors.line}` }} aria-hidden="true" />
           <p className="mt-1.5 text-center text-[12px]" style={{ color: colors.muted }}>
-            Bon pour accord — signature du client
+            Bon pour accord, signature du client
           </p>
         </div>
       </footer>

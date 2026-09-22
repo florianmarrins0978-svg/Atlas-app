@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Deux mots du planning — Atlas</title>
+<title>Deux mots du planning : Atlas</title>
 <style>
 /*
   ═══════════════════════════════════════════════════════════════════════════
@@ -155,7 +155,7 @@ td b{color:var(--encre)}
 </div>
 
 <div class="tete">
-  <span class="sceau">Retenu le 7 septembre — 1 = B, 2 = A</span>
+  <span class="sceau">Retenu le 7 septembre, 1 = B, 2 = A</span>
   <h1>Deux mots du planning</h1>
   <p>Vos deux remarques du 7 septembre. <b>Vous avez choisi B et A</b>, et
   c'est ce qui est codé. Les autres variantes restent ici : elles racontent
@@ -164,10 +164,10 @@ td b{color:var(--encre)}
 
 <!-- ═══ BLOC 1 ═══════════════════════════════════════════════════════════ -->
 
-<h2 class="bloc">1 — « 1 chez le client »</h2>
+<h2 class="bloc">1, « 1 chez le client »</h2>
 <p class="sous">Ce sont les chantiers dont <b>le devis est parti</b> et dont
 <b>vous attendez la réponse</b>. La liste, à l'intérieur, s'appelle déjà
-« En attente du client » — c'est la poignée qui abrège trop.</p>
+« En attente du client » : c'est la poignée qui abrège trop.</p>
 
 <div class="choix" id="choix1">
   <button type="button" data-v="0" aria-pressed="true">Aujourd'hui</button>
@@ -183,7 +183,7 @@ td b{color:var(--encre)}
       <span class="jour"></span><span class="jour"></span><span class="jour"></span><span class="jour"></span><span class="jour"></span>
     </div>
     <button type="button" class="poignee" id="poignee">
-      <span id="resume">3 sans date · 1 chez le client</span>
+      <span id="resume">3 sans date, 1 chez le client</span>
       <span class="chev" id="chev">⌃</span>
     </button>
     <div class="dedans" id="dedans" hidden>
@@ -200,10 +200,10 @@ td b{color:var(--encre)}
 
 <!-- ═══ BLOC 2 ═══════════════════════════════════════════════════════════ -->
 
-<h2 class="bloc">2 — « Quelqu'un n'est pas là »</h2>
+<h2 class="bloc">2, « Quelqu'un n'est pas là »</h2>
 <p class="sous">C'est un <b>bouton</b> : il ferme la journée pour la personne
-que vous désignez, et ce jour ne part plus chez vos clients. Rien ne le disait
-— pas de cerne, pas de couleur. Il ressemble à une phrase.</p>
+que vous désignez, et ce jour ne part plus chez vos clients. Rien ne le disait :
+pas de cerne, pas de couleur. Il ressemble à une phrase.</p>
 
 <div class="choix" id="choix2">
   <button type="button" data-v="0" aria-pressed="true">Aujourd'hui</button>
@@ -259,14 +259,14 @@ que vous désignez, et ce jour ne part plus chez vos clients. Rien ne le disait
       <td><b>2</b></td>
       <td><b>A</b><span class="reco">recommandé</span></td>
       <td>Une pastille cerclée, <b>comme tous les autres gestes de cette
-      feuille</b> — « Terminé », « Qui ? », « Déplacer », « Retirer ». Le geste
+      feuille</b> : « Terminé », « Qui ? », « Déplacer », « Retirer ». Le geste
       se reconnaît sans qu'on l'explique.</td>
     </tr>
     </tbody>
   </table>
 
   <h3>Une chose vue en regardant, et non en codant</h3>
-  <p>La variante <b>B</b> du bloc 2 — pointillé doré — <b>ressemble trop à
+  <p>La variante <b>B</b> du bloc 2 (pointillé doré) <b>ressemble trop à
   « Qui ? »</b> posé juste au-dessus. Deux gestes sans rapport prendraient la
   même allure, et sur la charte Nuit l'écart est encore plus mince. C'est
   pourquoi je recommande A, cerne simple.</p>
@@ -274,7 +274,7 @@ que vous désignez, et ce jour ne part plus chez vos clients. Rien ne le disait
   <h3>Ce que je n'ai pas proposé</h3>
   <p><b>Une flèche au bout du texte.</b> Vous l'avez fait retirer partout le
   25 août, et le dépôt la refuse depuis. Un bouton n'a pas besoin d'une flèche
-  pour dire qu'on l'appuie — il a besoin d'avoir la forme d'un bouton.</p>
+  pour dire qu'on l'appuie, il a besoin d'avoir la forme d'un bouton.</p>
   <p><b>Une phrase d'explication sous le mot.</b> Même règle, la vôtre du
   25 août : un écran n'explique pas son propre fonctionnement. Si un mot a
   besoin d'une phrase pour être compris, c'est le mot qu'il faut changer.</p>
@@ -288,10 +288,10 @@ document.getElementById("pole").addEventListener("click", (e) => {
 
 /* ── Bloc 1 : ce que la poignée écrit ─────────────────────────────────── */
 const RESUMES = [
-  ["3 sans date · 1 chez le client", "Aujourd'hui. « Chez le client » ne dit ni ce qui est chez lui, ni ce qu'on attend."],
-  ["3 sans date · 1 en attente",     "A — plus court, mais on attend quoi ? Le doute reste."],
-  ["3 sans date · 1 en attente du client", "B — le titre exact de la liste, à l'intérieur. Rien de nouveau à apprendre."],
-  ["3 à poser · 1 réponse attendue", "C — dit le geste et l'attente, mais invente deux mots que l'écran n'emploie nulle part ailleurs."],
+  ["3 sans date, 1 chez le client", "Aujourd'hui. « Chez le client » ne dit ni ce qui est chez lui, ni ce qu'on attend."],
+  ["3 sans date : 1 en attente",     "A : plus court, mais on attend quoi ? Le doute reste."],
+  ["3 sans date : 1 en attente du client", "B : le titre exact de la liste, à l'intérieur. Rien de nouveau à apprendre."],
+  ["3 à poser : 1 réponse attendue", "C : dit le geste et l'attente, mais invente deux mots que l'écran n'emploie nulle part ailleurs."],
 ];
 const resume = document.getElementById("resume");
 const quoi1 = document.getElementById("quoi1");
@@ -317,13 +317,13 @@ const ALLURES = [
    "Aujourd'hui. Rien ne dit que ça s'appuie : ni cerne, ni couleur, ni forme."],
   [`<p class="marque">Ce jour-là</p>
     <div class="pastilles"><button type="button" class="past">Quelqu'un n'est pas là</button></div>`,
-   "A — une pastille, comme les autres gestes de la feuille."],
+   "A : une pastille, comme les autres gestes de la feuille."],
   [`<p class="marque">Ce jour-là</p>
     <div class="pastilles"><button type="button" class="past pointille">Quelqu'un n'est pas là</button></div>`,
-   "B — la même, en pointillé doré. Vu à l'écran : elle ressemble trop à « Qui ? » juste au-dessus, et ce sont deux gestes sans rapport."],
+   "B : la même, en pointillé doré. Vu à l'écran : elle ressemble trop à « Qui ? » juste au-dessus, et ce sont deux gestes sans rapport."],
   [`<p class="marque">Personne ce jour-là</p>
     <div class="pastilles"><button type="button" class="past">Julien</button><button type="button" class="past">Antoine</button></div>`,
-   "C — on saute l'étape : les noms tout de suite, un appui au lieu de deux."],
+   "C : on saute l'étape : les noms tout de suite, un appui au lieu de deux."],
 ];
 const absence = document.getElementById("absence");
 const quoi2 = document.getElementById("quoi2");

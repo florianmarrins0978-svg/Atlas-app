@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>L’ordre de l’absence — Atlas</title>
+<title>L’ordre de l’absence : Atlas</title>
 <style>
 /*
   ═══════════════════════════════════════════════════════════════════════════
@@ -129,7 +129,7 @@ p.dessous b{color:var(--encre)}
 </div>
 
 <div class="tete">
-  <span class="sceau">10 septembre — à essayer</span>
+  <span class="sceau">10 septembre, à essayer</span>
   <h1>L’ordre de l’absence</h1>
   <p>Le <b>+</b> reste en haut, les noms passent dessous. Le moment se choisit
   comme sur « Déplacer », et le bouton s’efface une fois choisi. <b>Essayez le
@@ -151,19 +151,19 @@ p.dessous b{color:var(--encre)}
 <div class="notes">
   <h3>Le geste, dans l’ordre</h3>
   <ol>
-    <li><b>+ Salarié absent ?</b> — seul sur la carte.</li>
+    <li><b>+ Salarié absent ?</b> : seul sur la carte.</li>
     <li>On appuie : les noms s’ouvrent <b>sous</b> le +, jamais au-dessus.</li>
-    <li>On touche un nom : il est posé absent, et l’interrupteur apparaît —
-    <b>Matin · Après-midi · Journée</b>, celui de « Déplacer », recopié tel quel.</li>
+    <li>On touche un nom : il est posé absent, et l’interrupteur apparaît :
+    <b>Matin : Après-midi : Journée</b>, celui de « Déplacer », recopié tel quel.</li>
     <li>On choisit : les boutons s’effacent, et la ligne dit
-    <b>« Julien absent · matin »</b>.</li>
+    <b>« Julien absent : matin »</b>.</li>
     <li>Pour annuler : on rappuie sur le +, et <b>Annuler</b> est là, sur sa
-    ligne — à côté d’<b>Antoine ?</b>, encore disponible.</li>
+    ligne : à côté d’<b>Antoine ?</b>, encore disponible.</li>
   </ol>
 
   <h3>Deux choses que j’ai dû trancher pour dessiner</h3>
   <p><b>Avant de choisir, l’absence vaut la journée.</b> Toucher un nom l’écrit
-  tout de suite — c’est ce qui garde le cas courant à un appui. Les trois
+  tout de suite : c’est ce qui garde le cas courant à un appui. Les trois
   boutons ne servent qu’à restreindre ; tant qu’on n’a rien touché, la ligne dit
   « journée ».</p>
   <p><b>« Journée » est allumé d’office</b>, puisque c’est ce qui vient d’être
@@ -175,7 +175,7 @@ p.dessous b{color:var(--encre)}
 
   <h3>Ce que ça enlève</h3>
   <p>« Annuler » ne reste plus sous les yeux à côté d’une absence qu’on vient de
-  poser. Ce qui s’affiche est ce qu’il faut <b>lire</b> — qui manque, et quand.
+  poser. Ce qui s’affiche est ce qu’il faut <b>lire</b>, qui manque, et quand.
   Ce qui se défait se retrouve là où on l’a fait.</p>
 </div>
 
@@ -207,7 +207,7 @@ function dessiner() {
       <span class="plus" aria-hidden="true">+</span><span>Salarié absent&nbsp;?</span></button>`;
 
   if (ouverte) {
-    // Ouvert : chacun sur sa ligne — ceux qui manquent portent « Annuler ».
+    // Ouvert : chacun sur sa ligne, ceux qui manquent portent « Annuler ».
     for (const n of NOMS) {
       html += absents.has(n)
         ? `<button type="button" class="personne" data-annule="${n}"><span>${n}</span><span class="droite">Annuler</span></button>`
@@ -232,7 +232,7 @@ function dessiner() {
   peindreLesDemis();
 }
 
-/** Les deux demi-journées suivent ce qui est posé — sinon l'écran se contredit. */
+/** Les deux demi-journées suivent ce qui est posé, sinon l'écran se contredit. */
 function peindreLesDemis() {
   const pris = { matin: false, aprem: false };
   for (const quand of absents.values()) {
@@ -258,7 +258,7 @@ document.getElementById("zone").addEventListener("click", (e) => {
     absents.set(b.dataset.poser, "journee");
     dernier = b.dataset.poser;
     ouverte = false;
-    dire("Posé pour la journée. Les trois moments servent à restreindre — ou à laisser la journée.");
+    dire("Posé pour la journée. Les trois moments servent à restreindre, ou à laisser la journée.");
   } else if (b.dataset.quand) {
     absents.set(dernier, b.dataset.quand);
     dernier = null;

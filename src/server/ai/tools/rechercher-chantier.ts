@@ -33,7 +33,7 @@ export const rechercherChantier: Outil = {
   description:
     "Trouve un ou plusieurs chantiers par le nom du client ou le nom du chantier, dans toute " +
     "l'entreprise. À employer dès qu'une question nomme quelqu'un ou quelque chose sans qu'un " +
-    "chantier soit ouvert — les autres outils ont alors besoin de l'identifiant qu'il rend.",
+    "chantier soit ouvert : les autres outils ont alors besoin de l'identifiant qu'il rend.",
   /**
    * **Trois noms pour un seul mot cherché, et c'est délibéré.**
    *

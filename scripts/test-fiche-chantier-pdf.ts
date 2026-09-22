@@ -101,8 +101,20 @@ const dire = (bon: boolean, quoi: string) => {
 // visionneuse de l'application, en grand, et REGARDÉ — en-tête de tableau noir
 // et gras d'un bout à l'autre, « BASE HT · TAUX · TVA » de même, coordonnées et
 // mentions légales à l'encre, filets du tableau inchangés.
+//
+// **LE DEVIS SEUL, RELEVÉ DE NOUVEAU LE 22 SEPTEMBRE 2026**, après sa règle :
+// *« Je ne veux plus de tiret, je veux des phrases normales, sans tiret en
+// plein milieu. »* Le cadre de signature dit désormais « Bon pour accord,
+// signature du client ».
+//
+// **CE QUI A AUTORISÉ CE RELEVÉ** : les deux traces entières, relevées ici et
+// sur `HEAD` dans un arbre de travail séparé, puis comparées ligne à ligne.
+// Sur 134 lignes, UNE diffère — ce texte-là, et l'abscisse qui suit sa
+// longueur, la phrase étant centrée. La facture, elle, ne bouge pas : son
+// empreinte est inchangée. C'est la méthode du relevé du 30 août, faute de
+// pouvoir ouvrir un PDF à l'œil dans cet environnement (`CLAUDE.md` §5).
 const EMPREINTE_FACTURE = "930faf494840c0075cb50da535e3b03e60813fe1409b9947fce0b0541eba9ae6";
-const EMPREINTE_DEVIS = "d88db55813f3d31b5d5b97bf55d1b5bc5ff1ba23200391a8f4b5c57a28fca5b6";
+const EMPREINTE_DEVIS = "bb47afb09d38ba8f4c982055569dcf404926ca89e2f0ec41cee94ff4716be7a6";
 
 const DOCUMENT: FacturePdfData = {
   numeroCommercial: "F-2026-0004",

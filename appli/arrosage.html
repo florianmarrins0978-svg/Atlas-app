@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Plan d'arrosage — essai</title>
+<title>Plan d'arrosage : essai</title>
 <!--
   ═══════════════════════════════════════════════════════════════════════════
   PLAN D'ARROSAGE AUTOMATIQUE — MAQUETTE ESSAYABLE, RIEN N'EST CODÉ DANS L'APPLI
@@ -204,18 +204,18 @@
 <body>
 <div class="dedans">
 
-  <p class="sur">Atlas · maquette essayable</p>
+  <p class="sur">Atlas, maquette essayable</p>
   <p class="bandeau" id="bandeau"></p>
   <h1>Plan d'arrosage automatique</h1>
   <p class="chapo">Entrez votre jardin : tout se recalcule à chaque frappe.
-    <b>Rien n'est codé dans l'application</b> — cette page sert à éprouver le
+    <b>Rien n'est codé dans l'application</b>, cette page sert à éprouver le
     calcul avant. <b>Aucun prix</b> : la sortie est la liste à envoyer au
     fournisseur.</p>
 
   <section>
-    <h2>1 · Le point d'eau</h2>
+    <h2>1, Le point d'eau</h2>
     <p class="aide">D'où part l'arrosage ? C'est ce qui décide de tout le
-      reste — et c'est la seule chose que l'outil ne peut pas deviner.</p>
+      reste, et c'est la seule chose que l'outil ne peut pas deviner.</p>
 
     <div class="ligne" style="margin-bottom:10px">
       <div><label for="compteur">Le piquage se fait…</label>
@@ -238,9 +238,9 @@
   </section>
 
   <section>
-    <h2>2 · Le croquis</h2>
+    <h2>2, Le croquis</h2>
     <p class="aide">Photographiez le croquis du client, avec ses métrés. Il
-      reste sous les yeux pendant que le jardin se renseigne — et il part
+      reste sous les yeux pendant que le jardin se renseigne : et il part
       avec le chantier.</p>
 
     <div id="croquis"></div>
@@ -250,7 +250,7 @@
     </label>
     <p class="aide" id="croquisNote" style="margin:10px 0 16px"></p>
 
-    <p class="aide"><b>Ce que je lis du croquis</b> — corrigez ce qui ne
+    <p class="aide"><b>Ce que je lis du croquis</b>, corrigez ce qui ne
       correspond pas. Une zone = une partie du jardin qui s'arrose pareil ; les
       mesures suffisent, le matériel et la pose se déduisent.</p>
     <div class="ligne" style="margin-bottom:10px">
@@ -275,7 +275,7 @@
   </section>
 
   <section>
-    <h2>3 · La liste à envoyer au fournisseur</h2>
+    <h2>3, La liste à envoyer au fournisseur</h2>
     <p class="aide">Des <b>quantités</b>, pas des prix. Les longueurs de tuyau
       sont à mesurer sur place : elles ne se devinent pas, alors elles se
       saisissent.</p>
@@ -340,17 +340,17 @@ function dessinerZones(){
       ? (t.forme === 'surface'
           ? p.nombre + ' ' + p.m.nom.toLowerCase() + (p.nombre>1?'s':'') +
             (p.m.detail ? ' ' + p.m.detail : '') + ' (' + p.nx + ' × ' + p.ny + ')' +
-            ' — un tous les ' + nb(p.ecart) + ' m, recouvrement ' +
+            ', un tous les ' + nb(p.ecart) + ' m, recouvrement ' +
             Math.round(recouvrementObtenu(p.m.portee, p.ecart) * 100) + ' %' +
             (p.quinconce ? ', en quinconce' : ', en carré') +
-            (p.tropSerre ? ' · <span class="provisoire">buse trop grande pour cette zone : ' +
+            (p.tropSerre ? ' : <span class="provisoire">buse trop grande pour cette zone : ' +
               'l\'écart tombe sous la portée</span>' : '')
           : (p.lignes ? p.lignes + ' ligne' + (p.lignes>1?'s':'') +
               (p.ecartLignes ? ' à ' + Math.round(p.ecartLignes*100) + ' cm' : '') + ' · ' : '') +
             p.nombre + ' m de gaine')
         + ' · ' + nb(p.debit) + ' m³/h · ' + p.minutes + ' min, ' + p.passages + '×/semaine'
-        + (p.emprunte ? ' · <span class="provisoire">modèle générique, pas encore ' + nomDeMarque(marqueCourante()) + '</span>'
-                      : (p.m.source === 'provisoire' ? ' · <span class="provisoire">portée à confirmer</span>' : ''))
+        + (p.emprunte ? ' : <span class="provisoire">modèle générique, pas encore ' + nomDeMarque(marqueCourante()) + '</span>'
+                      : (p.m.source === 'provisoire' ? ', <span class="provisoire">portée à confirmer</span>' : ''))
       : 'Mesures à compléter.';
 
     bloc.innerHTML =
@@ -407,7 +407,7 @@ function dessinerMarques(){
           : '';
       })()
     : '<span class="provisoire">Aucun modèle ' + nomDeMarque(cle) + ' enregistré.</span> ' +
-      'Je calcule avec des valeurs génériques en attendant vos photos — et je le ' +
+      'Je calcule avec des valeurs génériques en attendant vos photos, et je le ' +
       'redis sur chaque zone plutôt que de le laisser croire.';
 }
 
@@ -438,7 +438,7 @@ function dessinerCorps(){
    **La photo est REDIMENSIONNÉE avant d'être gardée, et ce n'est pas du
    confort.** Une photo de téléphone pèse 3 à 8 Mo ; `localStorage` en accepte
    environ 5 au total, pour TOUT le jardin. Enregistrée telle quelle, elle
-   ferait sauter la sauvegarde — et c'est le jardin entier qui disparaîtrait au
+   ferait sauter la sauvegarde : et c'est le jardin entier qui disparaîtrait au
    rechargement, pas seulement l'image. On la ramène donc à 1400 px de grand
    côté, en JPEG, ce qui suffit largement à relire des cotes écrites à la main.
 
@@ -489,7 +489,7 @@ function dessinerCroquis(){
     // sur une photo demande l'application. Laisser croire le contraire ferait
     // livrer un jardin vide sur un chantier.
     note.innerHTML = '<span class="provisoire">Les cotes ne se lisent pas encore ' +
-      'toutes seules</span> — cette page est servie sans serveur. Renseignez le ' +
+      'toutes seules</span>, cette page est servie sans serveur. Renseignez le ' +
       'jardin ci-dessous en regardant le croquis ; il reste affiché, et il part ' +
       'avec le chantier.';
   } else {
@@ -564,11 +564,11 @@ function dessinerVerdict(d){
   hote.innerHTML = html;
 }
 
-/* Les couleurs des réseaux — les siennes en tête (« réseau un en bleu, réseau
+/* Les couleurs des réseaux, les siennes en tête (« réseau un en bleu, réseau
    deux en vert, réseau trois en jaune, ainsi de suite »), puis de quoi tenir
    au-delà sans que deux voisines se confondent. Un jardin dépasse vite six
    secteurs : la liste boucle plutôt que de rendre du gris, et le numéro reste
-   écrit à côté de la pastille — c'est LUI qui identifie le réseau, la couleur
+   écrit à côté de la pastille : c'est LUI qui identifie le réseau, la couleur
    ne fait que le retrouver d'un coup d'œil. Quelqu'un qui distingue mal le
    vert du rouge lit toujours le plan. */
 
@@ -654,9 +654,9 @@ function dessinerMateriel(d){
     : (t.manquantes
         ? '<b>' + nb(t.somme) + ' € HT</b> sur ' + t.chiffrees + ' ligne(s) — ' +
           '<b>' + t.manquantes + ' sans prix</b>, non comptée(s). Le total est donc INCOMPLET.'
-        : '<b style="color:inherit">' + nb(t.somme) + ' € HT</b> — toutes les lignes chiffrées à vos prix.');
+        : '<b style="color:inherit">' + nb(t.somme) + ' € HT</b>, toutes les lignes chiffrées à vos prix.');
   // Les LONGUEURS ne se devinent pas : elles dépendent du chemin, pas des
-  // surfaces. Une valeur inventée ici serait pire qu'une case vide — elle
+  // surfaces. Une valeur inventée ici serait pire qu'une case vide : elle
   // serait crue. Le DIAMÈTRE, lui, se calcule (voir `amenee`).
   [['amenee','Du compteur au regard','ml'],['pe25','Antennes vers les secteurs (Ø25)','ml']].forEach(function(t){
     var b = document.createElement('div');
@@ -669,7 +669,7 @@ function dessinerMateriel(d){
     hote.appendChild(b);
   });
 
-  // **LE VERDICT Ø25 / Ø32 — sa règle du 17 août, et il porte ses nombres.**
+  // **LE VERDICT Ø25 / Ø32, sa règle du 17 août, et il porte ses nombres.**
   // Un « prenez du Ø32 » sans les chiffres qui l'imposent est un ordre ; avec
   // eux, c'est un calcul qu'il peut contredire. Et ce qui N'EST PAS compté est
   // écrit noir sur blanc : un verdict qu'on croit complet quand il ne l'est
@@ -682,7 +682,7 @@ function dessinerMateriel(d){
     note.innerHTML = '<b>Le diamètre de l\'amenée se calcule</b> dès que sa longueur est saisie ' +
                      'ci-dessus. Sa règle : <b>Ø25 par défaut</b>, Ø32 seulement si le calcul le démontre.';
   } else if (!(a.debit > 0 && a.exigee > 0)){
-    note.innerHTML = '<b>Ø25</b> par défaut — le calcul ne peut pas encore trancher : il lui manque ' +
+    note.innerHTML = '<b>Ø25</b> par défaut, le calcul ne peut pas encore trancher : il lui manque ' +
                      'un secteur posé et sa pression de service.';
   } else {
     // **LE SEUIL EN MÈTRES, sa demande du 22 août 2026.** Le verdict répondait
@@ -707,13 +707,13 @@ function dessinerMateriel(d){
         ? ' <b>Et le Ø32 lui-même est en surrégime à ce débit</b> (' + nb(a.debitMax32) + ' m³/h au ' +
           'maximum) : c\'est du Ø40, ou un secteur de plus.'
         : '') +
-      // **CE QUI ARRIVE AU DERNIER ARROSEUR — le trou fermé le 22 août au soir.**
+      // **CE QUI ARRIVE AU DERNIER ARROSEUR : le trou fermé le 22 août au soir.**
       // Cette phrase disait « ce calcul ne compte QUE l'amenée ». Ce n'est plus
       // vrai : l'électrovanne, la ligne, ses raccords et l'antenne Ø16 sont
       // maintenant retirés. Ce qui reste dehors, c'est le trajet du regard à la
-      // première tête — et c'est CELA qu'il faut dire, pas l'ancien aveu.
+      // première tête : et c'est CELA qu'il faut dire, pas l'ancien aveu.
       (d.pressionAuxArroseurs > 0
-        ? ' <b>Au dernier arroseur : ' + nb(d.pressionAuxArroseurs, 2) + ' bar</b> — il s\'en ' +
+        ? ' <b>Au dernier arroseur : ' + nb(d.pressionAuxArroseurs, 2) + ' bar</b> : il s\'en ' +
           'perd encore ' + nb(d.perteReseau, 2) + ' bar après le regard (électrovanne, ligne, ' +
           'raccords, antenne Ø16).' +
           (d.pressionTropBasse
@@ -728,7 +728,7 @@ function dessinerMateriel(d){
 }
 
 /* La nourrice : SA fiche, ou rien. Composer une nourrice de son cru, c'est
-   envoyer une commande à laquelle il manquera un té — et le chantier s'arrête
+   envoyer une commande à laquelle il manquera un té : et le chantier s'arrête
    à la pose, pas au bureau. */
 function dessinerNourrice(d){
   var hote = document.getElementById('nourrice');
@@ -748,11 +748,11 @@ function dessinerNourrice(d){
       (voies>1?'s':'') + ' » à renseigner.</b> Le calcul dit qu\'il en faut une ; ' +
       'je ne compose pas son contenu à votre place. ' + etat +
       '<br><span class="aide-courte">Et au-delà d\'une certaine taille : une seule ' +
-      'nourrice, ou deux plus petites ? Je ne le suppose pas — dites-le, ' +
+      'nourrice, ou deux plus petites ? Je ne le suppose pas : dites-le, ' +
       'et ce sera pareil pour toutes.</span></p>';
     return;
   }
-  var html = '<p class="aide" style="margin:0 0 6px"><b>' + fiche.nom + '</b> — votre fiche.</p>';
+  var html = '<p class="aide" style="margin:0 0 6px"><b>' + fiche.nom + '</b>, votre fiche.</p>';
   fiche.pieces.forEach(function(x){
     var p = CATALOGUE.piece(x.ref);
     var nom = p ? (p.marque ? p.marque + ' ' : '') + p.nom : x.ref;
@@ -767,7 +767,7 @@ function dessinerBandeau(){
   var relevees = CATALOGUE.buses.filter(function(b){ return b.source === 'patron'; }).length;
   // **Dire ce qui est ARRIVÉ autant que ce qui manque.** Un bandeau qui ne
   // compte que les trous laisse croire que rien n'a avancé le jour même où sept
-  // buses sont entrées — et il finit par être ignoré.
+  // buses sont entrées, et il finit par être ignoré.
   var arrive = relevees
     ? '<b>' + relevees + ' buses relevées de vos catalogues.</b> ' : '';
   document.getElementById('bandeau').innerHTML = arrive + (n === 0 && fiches > 0
@@ -783,7 +783,7 @@ var PRIX = (function(){ try { return JSON.parse(localStorage.getItem('atlas-arro
 
 /* Le total à SES prix. **Aucune ligne n'est complétée par une autre** : ce qui
    n'a pas de prix dans son registre est compté comme manquant et annoncé. Un
-   total qui bouche ses trous est faux d'une façon qui ne se voit pas — il reste
+   total qui bouche ses trous est faux d'une façon qui ne se voit pas, il reste
    plausible. */
 function totalDeLaListe(lignes){
   var somme = 0, manquantes = 0, chiffrees = 0;
@@ -796,11 +796,11 @@ function totalDeLaListe(lignes){
 }
 
 function texteDeLaListe(d){
-  var l = ['Demande de prix — arrosage automatique',
+  var l = ['Demande de prix : arrosage automatique',
            'Marque souhaitée : ' + nomDeMarque(marqueCourante()), ''];
   listeMateriel(d).forEach(function(x){ l.push('- ' + quantiteEcrite(x.q, x.u) + '  ' + x.nom); });
   // Le diamètre de l'amenée est CALCULÉ (sa règle : Ø25 par défaut, Ø32 s'il
-  // le faut) — le fournisseur doit lire le bon, pas un Ø32 posé d'office.
+  // le faut) : le fournisseur doit lire le bon, pas un Ø32 posé d'office.
   var a = amenee(d);
   l.push('- ' + etat.amenee + ' ml  Tuyau PEHD Ø' + a.diametre + ' (amenée compteur → regard)');
   l.push('- ' + etat.pe25 + ' ml  Tuyau PEHD Ø25 (antennes vers les secteurs)');
@@ -821,7 +821,7 @@ function recalculer(redessinerZones){
   var d = decouper();
   document.getElementById('debitDispo').textContent = d.dispo > 0 ? nb(d.dispo) : '—';
   document.getElementById('debitNote').textContent = d.dispo > 0
-    ? Math.round(d.dispo * 1000 / 60) + ' L/min · un secteur ne dépassera pas ' + nb(d.limite) + ' m³/h'
+    ? Math.round(d.dispo * 1000 / 60) + ' L/min, un secteur ne dépassera pas ' + nb(d.limite) + ' m³/h'
     : 'Remplissez le seau et le temps.';
   dessinerMarques();
   dessinerCorps();
@@ -833,7 +833,7 @@ function recalculer(redessinerZones){
   dessinerMateriel(d);
   dessinerBandeau();
     // **Sa règle du 17 août :** « L'utilisateur devra dire s'il se repique juste
-  // après le compteur d'eau — le top du top, la ville délivre au moins 3 bar,
+  // après le compteur d'eau, le top du top, la ville délivre au moins 3 bar,
   // du sûr, et là tu sauras. Sinon tu dois lui expliquer quoi faire pour que tu
   // aies les bonnes infos. » L'écran ne se contente donc pas de poser la
   // question : dans le cas défavorable, il dit QUOI FAIRE. Une question sans
@@ -843,7 +843,7 @@ function recalculer(redessinerZones){
       '<b>1.</b> ouvrir en grand et remplir un seau gradué en comptant les secondes ' +
       '(c\'est le débit ci-dessous) ; <b>2.</b> visser un manomètre à 5 € sur le ' +
       'robinet, ouvert, pour lire la pression. <span class="provisoire">Sans ces ' +
-      'deux mesures, le plan repose sur une supposition</span> — et il s\'écroule à ' +
+      'deux mesures, le plan repose sur une supposition</span> : et il s\'écroule à ' +
       'la mise en eau.'
     : '<b>Le meilleur cas.</b> Le réseau de ville délivre au moins 3 bar au ' +
       'compteur : la pression est connue, il ne reste que le débit à mesurer au seau.';
@@ -856,7 +856,7 @@ function recalculer(redessinerZones){
     'Une portée de 5 m donne donc entre 5 et 6 m. Quinconce dès ' +
     (QUINCONCE_AU_DELA_DE + 1) + ' arroseurs, et les coins toujours occupés.';
   var mail = document.getElementById('envoyer');
-  mail.href = 'mailto:?subject=' + encodeURIComponent('Demande de prix — arrosage automatique') +
+  mail.href = 'mailto:?subject=' + encodeURIComponent('Demande de prix, arrosage automatique') +
               '&body=' + encodeURIComponent(texteDeLaListe(d));
   enregistrer();
 }
@@ -904,7 +904,7 @@ document.getElementById('corps').addEventListener('change', function(e){
 document.getElementById('compteur').addEventListener('change', function(e){
   etat.compteur = e.target.value;
   // Au compteur, la pression est celle du réseau : au moins 3 bar. On la pose
-  // plutôt que de la laisser à 3 « par hasard » — et il peut la corriger.
+  // plutôt que de la laisser à 3 « par hasard », et il peut la corriger.
   if (etat.compteur === 'oui' && (!etat.pression || Number(etat.pression) < 3)){
     etat.pression = 3;
     document.getElementById('pression').value = 3;
@@ -918,7 +918,7 @@ var caseSonde = document.getElementById('sonde');
 caseSonde.checked = !!etat.sonde;
 caseSonde.addEventListener('change', function(){ etat.sonde = caseSonde.checked; recalculer(false); });
 
-// **Le choix de la photo — et l'échec de l'enregistrement se DIT.** Une photo
+// **Le choix de la photo, et l'échec de l'enregistrement se DIT.** Une photo
 // trop lourde pour `localStorage` ferait sauter la sauvegarde du jardin
 // entier ; on remet alors la page dans l'état d'avant plutôt que d'afficher
 // une image qui ne survivra pas au rechargement.

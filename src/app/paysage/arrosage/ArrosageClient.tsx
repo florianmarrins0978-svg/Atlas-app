@@ -477,7 +477,7 @@ function Plan({ etat }: { etat: Extract<EtatPlan, { etat: "lu" }> }) {
             {r?.materiels.map((m) => (
               <p key={m.libelle} className="mt-1 text-[13px]" style={{ color: colors.inkSoft }}>
                 {m.nombre}× {m.libelle}
-                {m.portee > 0 ? ` · portée ${virgule(m.portee)} m` : ""}
+                {m.portee > 0 ? `, portée ${virgule(m.portee)} m` : ""}
               </p>
             ))}
             {r && (

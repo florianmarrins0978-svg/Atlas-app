@@ -20,7 +20,7 @@ const MESSAGES: Record<string, string> = {
   // Message volontairement actionnable : le client doit comprendre qu'il peut
   // recommencer, et que son intérêt pour le devis n'est pas perdu.
   date_indisponible:
-    "Cette date vient d'être retenue par ailleurs. Choisissez-en une autre — votre accord sur le devis reste valable.",
+    "Cette date vient d'être retenue par ailleurs. Choisissez-en une autre. Votre accord sur le devis reste valable.",
   date_manquante: "Choisissez une date d'intervention avant de valider.",
   // Elle a posé moins de jours que le chantier n'en prend. L'écran le dit déjà
   // avant d'envoyer ; cette phrase-ci ne sert qu'au formulaire rejoué.

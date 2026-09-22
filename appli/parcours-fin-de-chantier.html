@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Le parcours de bout en bout — tout se touche</title>
+<title>Le parcours de bout en bout : tout se touche</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@400;500&display=swap" rel="stylesheet">
@@ -341,7 +341,7 @@
               <svg width="17" height="17" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 4v12M4 10h12" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>
             </button>
           </div>
-          <textarea class="aSignaler" placeholder="À signaler — facultatif"></textarea>
+          <textarea class="aSignaler" placeholder="À signaler, facultatif"></textarea>
           <button type="button" class="boutonFeuille" id="cestFini" disabled>C'est fini</button>
           <p class="manque" id="manque"></p>
         </div>
@@ -444,7 +444,7 @@
 <div class="mot">
   <b>Le vôtre :</b> touchez <b>« Vous »</b> en haut. Le retour est sous le chantier,
   dans Terminés, avec le bouton « Facturer » sur la même rangée. Ce que le
-  salarié vient de cocher s'y retrouve — <b>essayez d'abord son parcours, puis
+  salarié vient de cocher s'y retrouve, <b>essayez d'abord son parcours, puis
   passez du côté patron.</b>
 </div>
 <div class="mot">
@@ -459,7 +459,7 @@
   Sa demande : *« fais-moi une maquette avec liens cliquables »*. Les planches
   d'avant posaient les états côte à côte ; on y voyait tout sauf le CHEMIN, et
   c'est le chemin qui casse. Ici on avance, et ce que le salarié coche revient
-  chez le patron — c'est le seul moyen de sentir si la boucle se tient.
+  chez le patron : c'est le seul moyen de sentir si la boucle se tient.
 */
 const qq = (s) => Array.from(document.querySelectorAll(s));
 const vues = qq(".vue");
@@ -574,7 +574,7 @@ function poserLeRetour() {
     .join("");
 }
 
-// La pastille « pas lu » s'éteint dès qu'il ouvre la fiche — un compte dit
+// La pastille « pas lu » s'éteint dès qu'il ouvre la fiche, un compte dit
 // combien, une pastille dit lequel.
 qq('[data-va="ficheLue"]').forEach((b) =>
   b.addEventListener("click", () => {
@@ -594,7 +594,7 @@ function qui(salarie) {
 versSalarie.addEventListener("click", () => qui(true));
 versPatron.addEventListener("click", () => qui(false));
 
-// ── Les deux barres du bas — écrites une fois, posées deux fois ─────────
+// ── Les deux barres du bas : écrites une fois, posées deux fois ─────────
 const ONGLETS = {
   salarie: [["Planning", "calendrier", true], ["Réglages", "roue", false]],
   patron: [

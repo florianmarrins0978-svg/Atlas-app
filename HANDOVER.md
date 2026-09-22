@@ -11,6 +11,20 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 
 ---
 
+## PLUS DE TIRET AU MILIEU D'UNE PHRASE — 22 septembre 2026
+
+*« Je ne veux plus de tiret, je veux des phrases normales, sans tiret en plein
+milieu. »* 240 tirets et points médians réécrits dans tout ce qui s'affiche.
+
+| | |
+|---|---|
+| le garde-fou | `scripts/test-aucun-tiret.ts`, dans `npm test` : il lit l'arbre TypeScript de `src/` (chaînes et texte d'écran, jamais les commentaires) et le texte des maquettes de `appli/` |
+| ce qui remplace | virgule, deux-points quand la suite explique, point pour une phrase entière, parenthèses pour une incise |
+| ce qui garde le sien | `src/server/documents-legaux/versions.ts` (une version publiée ne se modifie jamais) et la mémoire du dépôt, qui cite ses messages |
+| le piège | le catalogue d'arrosage existe en DEUX copies identiques (`appli/` et `src/lib/arrosage/`) : toucher un libellé d'un seul côté fait rougir `verifier-arrosage-une-seule-source.mjs` |
+
+`ARCHITECTURE.md` §403.
+
 ## LA FICHE DE SÉCURITÉ — 22 septembre 2026
 
 | | |

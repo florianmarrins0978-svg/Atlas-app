@@ -7,7 +7,7 @@ import { annonceTransmission } from "../src/lib/annonce-transmission";
 // Deux formulations lui ont été proposées, et il a choisi la seconde :
 //
 //   A. « Devis envoyé à Mr Cuisseau »
-//   B. « Devis transmis à Mr Cuisseau — en attente de sa réponse »
+//   B. « Devis transmis à Mr Cuisseau, en attente de sa réponse »
 //
 // *« Oui la B. »* — et c'est la seule des deux qui reste vraie : Atlas ouvre la
 // messagerie, mais ne voit pas ce qui s'y passe. Le patron a pu changer d'avis
@@ -33,7 +33,7 @@ console.log("=== Le devis attend une réponse ===");
 
 cas("la phrase nomme le client et dit ce qui suit", () => {
   const phrase = annonceTransmission({ quoi: "devis", client: "Mr Cuisseau" });
-  assert.equal(phrase, "Devis transmis à Mr Cuisseau — en attente de sa réponse.");
+  assert.equal(phrase, "Devis transmis à Mr Cuisseau, en attente de sa réponse.");
 });
 
 cas("« transmis », jamais « envoyé »", () => {
@@ -75,7 +75,7 @@ for (const [nom, client] of [
   cas(`${nom} : la phrase reste vraie et complète`, () => {
     const devis = annonceTransmission({ quoi: "devis", client });
     const facture = annonceTransmission({ quoi: "facture", client });
-    assert.equal(devis, "Devis transmis — en attente de sa réponse.");
+    assert.equal(devis, "Devis transmis, en attente de sa réponse.");
     assert.equal(facture, "Facture transmise.");
     assert.doesNotMatch(devis, / à\s*(—|\.)/, `Une préposition pend dans le vide : « ${devis} »`);
     assert.doesNotMatch(facture, / à\s*\./, `Une préposition pend dans le vide : « ${facture} »`);
@@ -85,7 +85,7 @@ for (const [nom, client] of [
 cas("les espaces autour du nom ne se voient pas dans la phrase", () => {
   assert.equal(
     annonceTransmission({ quoi: "devis", client: "  Mme Aubry  " }),
-    "Devis transmis à Mme Aubry — en attente de sa réponse."
+    "Devis transmis à Mme Aubry, en attente de sa réponse."
   );
 });
 
