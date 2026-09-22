@@ -9,6 +9,7 @@ import { gardeeJusquAu } from "@/lib/fiche-securite";
 import type { FicheEnListe } from "@/server/repositories/fiches-securite";
 import { marquerTransmiseAction } from "@/app/planning/fiche-securite-actions";
 import { transmettreLePdf } from "@/components/atlas/transmettre-le-pdf";
+import BoutonTelechargerDocument from "@/components/atlas/BoutonTelechargerDocument";
 
 /**
  * LES FICHES DE SÉCURITÉ, DANS PAYSAGE — sa décision du 21 septembre 2026 :
@@ -20,6 +21,15 @@ import { transmettreLePdf } from "@/components/atlas/transmettre-le-pdf";
  *
  * Sur chaque fiche : ouvrir, **enregistrer** (dans les fichiers du téléphone),
  * transmettre. Et la date jusqu'à laquelle elle est gardée : deux ans.
+ *
+ * **« Enregistrer » passe par `BoutonTelechargerDocument`, jamais par un lien —
+ * sa capture du 22 septembre 2026 :** *« je clique sur enregistrer le pdf, ça ne
+ * me propose pas de le télécharger »*. L'écran écrivait `<a
+ * href={...?telecharger=1}>` : un PDF servi en `attachment` reste un document
+ * que Safari sait peindre, et sur son iPhone il l'ouvrait au lieu de le ranger.
+ * Ce qui range un fichier sur iOS, c'est la feuille de partage avec le fichier
+ * lui-même, et c'est ce que le composant fait depuis le 12 septembre — écrit une
+ * fois, pour les six autres documents (`CLAUDE.md` §3).
  */
 const MOIS = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre"];
 const dateLongue = (d: Date) => `${d.getDate()} ${MOIS[d.getMonth()]} ${d.getFullYear()}`;
@@ -112,9 +122,9 @@ export default function ListeDesFiches({ fiches, mois }: { fiches: FicheEnListe[
                         <Link href={adresseDeLaVisionneuse(pdf, { surtitre: "Fiche de sécurité", titre: f.chantierNom })} className="flex min-h-[46px] w-full items-center justify-center rounded-full px-2.5 text-[14.5px] no-underline" style={{ fontFamily: font.display, color: colors.rust, boxShadow: `inset 0 0 0 1.5px ${colors.vertPale}` }}>
                           Ouvrir le PDF
                         </Link>
-                        <a href={`${pdf}?telecharger=1`} data-atlas="enregistrer-le-pdf" className="flex min-h-[46px] w-full items-center justify-center rounded-full px-2.5 text-[14.5px] no-underline" style={{ fontFamily: font.display, color: colors.rust, boxShadow: `inset 0 0 0 1.5px ${colors.vertPale}` }}>
+                        <BoutonTelechargerDocument fichier={pdf} nom="fiche-de-securite.pdf" dataAtlas="enregistrer-le-pdf" className="flex min-h-[46px] w-full items-center justify-center rounded-full px-2.5 text-[14.5px]" style={{ fontFamily: font.display, color: colors.rust, boxShadow: `inset 0 0 0 1.5px ${colors.vertPale}` }}>
                           Enregistrer le PDF
-                        </a>
+                        </BoutonTelechargerDocument>
                         {!transmise && (
                           <button type="button" disabled={occupe} onClick={() => transmettre(f.chantierId)} className="flex min-h-[46px] w-full items-center justify-center rounded-full px-2.5 text-[14.5px]" style={{ fontFamily: font.display, background: colors.plein, color: surPlein }}>
                             Transmettre le PDF
