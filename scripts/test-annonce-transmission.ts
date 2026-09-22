@@ -89,5 +89,16 @@ cas("les espaces autour du nom ne se voient pas dans la phrase", () => {
   );
 });
 
+console.log("\n=== La fiche de chantier est envoyée ===");
+
+cas("la fiche dit qu'elle est bien envoyée, au client nommé", () => {
+  // Sa demande du 22 septembre 2026 : revenir sur « Fiche de chantier » avec
+  // « une petite mention qui dit que la fiche a bien été envoyée ». Le mot est
+  // le sien, et il est juste ici : le rapport est figé et daté en base avant
+  // même que la messagerie s'ouvre, et la liste le range sous « Rapports envoyés ».
+  assert.equal(annonceTransmission({ quoi: "fiche", client: "M. Bernard" }), "Fiche envoyée à M. Bernard.");
+  assert.equal(annonceTransmission({ quoi: "fiche", client: "" }), "Fiche envoyée.");
+});
+
 console.log(`\n${echecs === 0 ? "✅" : "❌"} Annonce de transmission — ${echecs} échec(s).`);
 if (echecs > 0) process.exit(1);

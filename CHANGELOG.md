@@ -8,6 +8,18 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-22
 
+### La fiche envoyée se ferme au retour de la messagerie
+
+*« Une fois que j'ai envoyé la fiche au client, je reviens sur cette page, c'est
+pas bon ! Elle doit se fermer et je dois arriver sur la page précédente avec une
+petite mention. »* Le mécanisme du devis et de la facture (7 août) est
+généralisé plutôt que recopié : `useRetourDeMessagerie` prend sa destination
+(l'accueil pour eux, « Fiche de chantier » pour la fiche), `Transmission` gagne
+`fiche`, et `annonceTransmission` écrit « Fiche envoyée à M. Bernard. » — le mot
+« envoyée » est juste ici, le rapport étant figé et daté en base avant que la
+messagerie s'ouvre. Le départ se marque après le figeage, et sur le bouton
+« Envoyer par SMS » d'une fiche déjà figée. `scripts/test-annonce-transmission.ts`.
+
 ### Retour d'intervention du client : surtitre doré, une phrase, plus de date d'envoi
 
 « Retour d'intervention » est centré, dans l'or des documents. La ligne sous le

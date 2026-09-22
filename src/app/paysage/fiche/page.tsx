@@ -1,4 +1,5 @@
 import Link from "next/link";
+import AnnonceTransmission from "@/components/atlas/AnnonceTransmission";
 import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 import { colors, font } from "@/lib/design-tokens";
 import { getCurrentCtx } from "@/server/session-ctx";
@@ -55,6 +56,9 @@ export default async function FichesPage() {
           titre="Fiche de chantier"
           retour={{ href: "/paysage", libelle: "Retour à Paysage" }}
         />
+        {/* « Fiche envoyée à … » au retour de la messagerie : la fiche envoyée
+            ramène ici (`useRetourDeMessagerie`), sa demande du 22 septembre 2026. */}
+        <AnnonceTransmission />
 
         {/* ─── Composer ma fiche, EN PREMIER ─────────────────────────────────
             **Sa décision du 26 août 2026**, après avoir choisi la proposition B

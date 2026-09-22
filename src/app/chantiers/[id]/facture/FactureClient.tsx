@@ -191,7 +191,7 @@ export default function FactureClient({
   regimeTva: "encaissements" | "debits";
 }) {
   const router = useRouter();
-  useRetourDeMessagerie();
+  useRetourDeMessagerie("/");
   const [enCours, setEnCours] = useState(false);
   const [erreur, setErreur] = useState<string | null>(null);
   const [emise, setEmise] = useState(initialFacture?.statut === "emise");

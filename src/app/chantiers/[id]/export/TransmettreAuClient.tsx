@@ -129,7 +129,7 @@ export default function TransmettreAuClient({
   // quand on revient de Messages, il la réveille. Aucun événement de navigation
   // ne se produit, et un `focus` seul se déclenche aussi en changeant d'onglet
   // sans jamais être parti.
-  useRetourDeMessagerie();
+  useRetourDeMessagerie("/");
 
   // L'origine du lien, remplacée par celle du navigateur dès qu'il a la main
   // (`use-adresse-client.ts`).

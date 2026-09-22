@@ -16,6 +16,7 @@ import {
   majPassageAction,
   nommerClientAction,
 } from "../actions";
+import { marquerDepartMessagerie, useRetourDeMessagerie } from "@/lib/depart-messagerie";
 import { adressePourLeClient, ouvrableParLeClient, phraseAdresseLocale } from "@/lib/adresse-du-client";
 import { useAdressePourLeClient } from "@/lib/use-adresse-client";
 
@@ -217,6 +218,8 @@ export default function FicheChantierClient({
    * `sms:` qui ne suit pas immédiatement le doigt, sans un mot. S'il refuse, le
    * patron retrouve le bouton ; s'il accepte, il ne le voit qu'au retour.
    */
+  useRetourDeMessagerie("/paysage/fiche");
+
   async function envoyer() {
     const r = await envoyerFicheAction(passage.id);
     if (!r.ok) {
@@ -259,6 +262,13 @@ export default function FicheChantierClient({
       modele: modeleMessage,
       lien: `${adresse}/entretien/${jetonNeuf}`,
     });
+    // **Au retour de la messagerie, la fiche se ferme** — sa demande du
+    // 22 septembre 2026 : *« je dois arriver sur la page précédente avec une
+    // petite mention qui dit que la fiche a bien été envoyée »*. Marqué APRÈS
+    // le figeage : ce qu'annonce le bandeau est déjà vrai en base. Et si le
+    // navigateur refuse d'ouvrir la messagerie, la page ne se cache jamais,
+    // donc rien ne se déclenche.
+    marquerDepartMessagerie("fiche", clientNom ?? "");
     ouvrirAdresse(lienTransmission({ canal, destinataire, message }), canal);
   }
 
@@ -822,6 +832,7 @@ function RapportParti({
         <PrimaryButton
           repere={canal === "sms" ? "ouvrir-sms-fiche" : "ouvrir-email-fiche"}
           href={lienTransmission({ canal, destinataire, message })}
+          onClick={() => marquerDepartMessagerie("fiche", clientNom ?? "")}
         >
           {canal === "sms" ? "Envoyer par SMS" : "Envoyer par e-mail"}
         </PrimaryButton>
