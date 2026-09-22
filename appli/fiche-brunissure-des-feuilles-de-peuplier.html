@@ -160,15 +160,15 @@ details.det .fiche p.pale{font-size:11.5px;color:var(--gris)}
 
 <div class="notes">
   <h3>Ce qui change à l’écran, pour toutes les fiches</h3>
-  <p><b>D’abord le nom</b>, avec le nom scientifique, puis <b>l’agent en cause</b>
-  et <b>les parties atteintes</b>, visibles et plus dans les détails. Ensuite
-  <b>comment le reconnaître</b> et <b>ça pourrait aussi être</b>, qui servent
-  debout devant l’arbre et étaient cachés eux aussi. Puis <b>quand ça se voit,
-  est-ce grave pour l’arbre, et les autres arbres du jardin, comment ça arrive,
-  comment ça se propage, que faire</b>. Plus de point entre le nom et
-  « probable », aucun tiret et aucun point virgule, rien que des phrases. Ce changement
-  est dans le code de l’écran, pas dans la fiche, donc il vaudra pour le
-  platane, le chêne et toutes les suivantes.</p>
+  <p><b>Votre ordre du 22 septembre au soir</b>, et rien d’autre à l’écran.
+  Le nom, les parties atteintes, à quoi ça ressemble, est-ce grave pour
+  l’arbre, que faire, comment le reconnaître, comment ça arrive, comment ça se
+  propage. Tout le reste est passé dans <b>« Voir les détails »</b> : l’agent en
+  cause, quand ça se voit, les autres arbres du jardin, ce qui pourrait aussi
+  être, ce qui le favorise, la fiche et son chantier. Plus de point entre le nom
+  et « probable », aucun tiret et aucun point virgule, rien que des phrases.
+  Ce changement est dans le code de l’écran, pas dans la fiche, donc il vaudra
+  pour le platane, le chêne et toutes les suivantes.</p>
 
   <h3>Ce que j’ai trouvé en relisant la fiche</h3>
   <p>Vous avez demandé si un utilisateur qui photographie sa maladie a tout ce
@@ -531,6 +531,11 @@ details.det .fiche p.pale{font-size:11.5px;color:var(--gris)}
   }
   function details(){
     return '<details class="det"><summary>Voir les détails</summary>' +
+      ligne("Agent en cause", F.agentCausal) +
+      ligne("Quand ça se voit", F.quandCaSeVoit) +
+      ligne("Et les autres arbres du jardin ?", F.autresEssences) +
+      liste("Ça pourrait aussi être", F.criteresExclusion) +
+      liste("Ce qui le favorise", F.facteursFavorisants) +
       ligne("Prévention", F.prevention) +
       ligne("Traitement", F.traitement) +
       '<div class="ligne fiche"><p class="caps gris">La fiche</p>' +
@@ -543,18 +548,14 @@ details.det .fiche p.pale{font-size:11.5px;color:var(--gris)}
   document.getElementById("ecran").innerHTML =
     '<div class="ecran">' + entete() + '<div class="corps">' +
     bloc("Nom", F.nomCommun + ", " + F.nomScientifique + ".", true) +
-    bloc("Agent en cause", F.agentCausal) +
     bloc("Parties atteintes", enListe(F.partiesAtteintes.map(function(p){ return PARTIES_AU_PLURIEL[p] || p; })) + ".") +
     '<p class="confiance" style="margin-top:20px">Probable sur '+e(LOT.taxons[0].article)+' '+e(LOT.taxons[0].nomCommun.toLowerCase())+'.</p>' +
     photos() +
-    listeBloc("Comment le reconnaître", F.criteresDiscriminants) +
-    listeBloc("Ça pourrait aussi être", F.criteresExclusion) +
-    bloc("Quand ça se voit", F.quandCaSeVoit) +
     bloc("Est-ce grave pour l’arbre ?", F.graviteSelonLaSource) +
-    bloc("Et les autres arbres du jardin ?", F.autresEssences) +
+    bloc("Que faire ?", F.conduiteRecommandee, true) +
+    listeBloc("Comment le reconnaître", F.criteresDiscriminants) +
     bloc("Comment ça arrive", F.commentCaArrive) +
     bloc("Comment ça se propage", F.gestion) +
-    bloc("Que faire ?", F.conduiteRecommandee, true) +
     '<p class="source">Source : <b>'+e(SRC.organisme)+'</b>, page consultée le '+e(dateCitee(SRC.consulteeLe))+'.</p>' +
     (stabiliteEnJeu ? '<div class="carte"><p>'+e(MENTION_MECANIQUE)+'</p></div>' : '') +
     '<div class="boutons"><span class="btn plein">Nouvelle photo</span></div>' +

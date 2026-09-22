@@ -57,6 +57,14 @@ son oui, et pas avant — il a dit « ne lance aucune batterie » :**
 | `INRAE — Ephytia (…) · consultée le 22 septembre 2026` | `Source : INRAE, Ephytia (…), page consultée le 22 septembre 2026.` |
 | dans les détails, `Fiche version 1 · à jour au …` | `Fiche version 1, à jour au 21 octobre 2024.` |
 | `Gravité : Vigilance` (un mot d'Atlas) | ce que dit la SOURCE, en phrases, sous « Est-ce grave pour l'arbre ? » (nouveau champ `graviteSelonLaSource`) ; le niveau `gravite` reste interne, il pèse sur la mention de stabilité |
+**SON ORDRE DE BLOCS, ARRÊTÉ LE 22 SEPTEMBRE AU SOIR, ET IL NE SE DEVINE PAS :**
+le nom, les parties atteintes, à quoi ça ressemble, est-ce grave pour l'arbre,
+que faire, comment le reconnaître, comment ça arrive, comment ça se propage.
+**Tout le reste va dans « Voir les détails »** : l'agent en cause, quand ça se
+voit, et les autres arbres du jardin, ça pourrait aussi être, ce qui le
+favorise, la fiche, le chantier. La pastille de l'assistant est retirée de cet
+écran. C'est l'ordre de la planche, et il vaut pour toutes les fiches.
+
 | dans les détails, « Ce qui le distingue » et « Ce qui l'écarte » | **VISIBLES** : ce sont eux qui servent debout devant l'arbre. Titres « Comment le reconnaître » et « Ça pourrait aussi être » |
 | rien sur la saison, rien sur les autres arbres | deux blocs de plus, « Quand ça se voit » (champ `quandCaSeVoit`) et « Et les autres arbres du jardin ? » (champ `autresEssences`) : les deux questions qu'il se pose sur le chantier |
 | « Ce qui le favorise » affiché deux fois, « parasites de faiblesse » deux fois | chaque chose une seule fois. Ce qui monte à l'écran sort des détails |
