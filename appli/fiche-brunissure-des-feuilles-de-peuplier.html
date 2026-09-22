@@ -161,14 +161,15 @@ details.det .fiche p.pale{font-size:11.5px;color:var(--gris)}
 
 <div class="notes">
   <h3>Ce qui change à l’écran, pour toutes les fiches</h3>
-  <p>Votre règle du 22 septembre : <b>plus de point entre le nom et
-  « probable », plus de tiret, des phrases normales.</b> Sur la fiche du
-  platane, l’application écrit aujourd’hui « Probable · Platane », et sous la
-  photo « légende — crédit · licence ». La planche montre ce que ces lignes
-  deviennent : <b>« Probable sur un peuplier. »</b>, une phrase sous la photo,
-  une phrase pour la source. Ce changement est dans le code de l’écran, pas
-  dans la fiche : il vaudra pour le platane, le chêne et toutes les suivantes.
-  Il sera codé avec la fiche, sur votre oui.</p>
+  <p>Vos règles du 22 septembre au soir. <b>D’abord le nom de la maladie et du
+  champignon</b>, puis vos quatre questions dans l’ordre : <b>ce que c’est, est-ce
+  grave pour l’arbre, comment ça arrive, comment ça se propage</b>. <b>Plus de
+  point entre le nom et « probable », plus de tiret, des phrases.</b> Et pour la
+  gravité, <b>ce que dit l’INRAE</b>, en phrases, à la place du mot « Vigilance »
+  d’Atlas. Sur la fiche du platane, l’application écrit aujourd’hui
+  « Probable · Platane », puis « Gravité : Faible ». Ce changement est dans le
+  code de l’écran, pas dans la fiche : il vaudra pour le platane, le chêne et
+  toutes les suivantes. Il sera codé avec la fiche, sur votre oui.</p>
 
   <h3>D’où vient chaque ligne</h3>
   <div class="cadre">
@@ -176,7 +177,13 @@ details.det .fiche p.pale{font-size:11.5px;color:var(--gris)}
     <tr><th>Ligne</th><th>La page dit</th><th>Atlas écrit</th></tr>
     <tr><td><b>Gravité</b></td>
         <td>Défoliation partielle ou totale. Sensibilité à des parasites de faiblesse. « Chez les jeunes tiges : dépérissement et mort de l’arbre si les attaques sont répétées. » Ses jauges donnent fréquence 3 sur 3, agressivité 2 sur 3, impact 1 sur 3.</td>
-        <td><b>Vigilance</b>, comme pour l’anthracnose du chêne : des jeunes tiges meurent, aucun arbre adulte. <i>C’est le seul jugement de la fiche.</i></td></tr>
+        <td>Ses jauges et ses dégâts, en phrases, sous « Est-ce grave pour l’arbre ? ». Aucun mot d’Atlas.</td></tr>
+    <tr><td><b>Comment ça arrive</b></td>
+        <td>Biologie : le champignon germe « si l’humidité est suffisante ». Facteurs prédisposants : clones sensibles, précipitations importantes, forte humidité, 12 °C à 20 °C.</td>
+        <td>Ces deux rubriques, en deux phrases.</td></tr>
+    <tr><td><b>Comment ça se propage</b></td>
+        <td>Biologie : hivernation au sol et dans l’écorce des rameaux, ascospores par le vent à longue distance, conidies par l’eau de pluie localement, toute la période de végétation.</td>
+        <td>La rubrique, en phrases.</td></tr>
     <tr><td><b>Que faire ?</b></td>
         <td>Ni traitement, ni méthode de lutte.</td>
         <td>Bâti sur ses dégâts et ses facteurs : surveiller, surtout les jeunes plantations ; la sensibilité dépend du clone.</td></tr>
@@ -206,7 +213,7 @@ details.det .fiche p.pale{font-size:11.5px;color:var(--gris)}
 
   <h3>Ce que je vous demande</h3>
   <ol>
-    <li><b>Vigilance</b>, ou Faible ? C’est le seul choix de la fiche.</li>
+    <li>Les <b>quatre questions</b>, dans cet ordre et avec ces mots ?</li>
     <li>La <b>photo</b> vous convient ? Sinon la vôtre, ou aucune.</li>
     <li>Un <b>« oui »</b>, et la fiche entre dans Atlas : fichier, photo, import vérifié, et les phrases de l’écran.</li>
   </ol>
@@ -276,6 +283,7 @@ details.det .fiche p.pale{font-size:11.5px;color:var(--gris)}
       "periodeFinMois": 9,
       "explicationCourte": "Maladie fongique du peuplier. Petites taches brunes sur les feuilles au printemps, feuillage qui jaunit puis prend une couleur bronze, chute précoce des feuilles en commençant par le bas de l’arbre.",
       "gravite": "vigilance",
+      "graviteSelonLaSource": "Selon l’INRAE, l’impact est de 1 sur 3, l’agressivité de 2 sur 3 et la fréquence de 3 sur 3. Défoliation partielle ou totale. L’arbre défolié devient sensible à des parasites de faiblesse. Chez les arbres adultes, la production diminue. Chez les jeunes tiges, dépérissement et mort de l’arbre si les attaques sont répétées.",
       "impactMecanique": "inconnu",
       "risqueHumainAnimal": "inconnu",
       "statutReglementaire": "aucun",
@@ -287,7 +295,8 @@ details.det .fiche p.pale{font-size:11.5px;color:var(--gris)}
       ],
       "conduiteRecommandee": "Surveiller l’évolution, surtout sur les jeunes plantations : des attaques répétées peuvent faire dépérir et mourir les jeunes tiges, et un arbre défolié devient sensible à des parasites de faiblesse. La sensibilité dépend du clone de peuplier.",
       "prevention": null,
-      "gestion": "Le champignon passe l’hiver sous sa forme sexuée dans les feuilles malades tombées au sol, et sous sa forme asexuée dans l’écorce des rameaux contaminés l’année précédente. Dès la reprise de végétation, les deux formes peuvent réaliser les premières infections : les ascospores, portées par le vent, assurent les contaminations à longue distance ; les conidies, en suspension dans l’eau de pluie, la dispersion locale. Les contaminations se poursuivent pendant toute la période de végétation dès que l’humidité de l’air est forte. Les spores germent sur le limbe, les pétioles ou les jeunes rameaux.",
+      "commentCaArrive": "Le champignon germe sur les feuilles, les pétioles ou les jeunes rameaux quand l’humidité de l’air est forte. Ce qui le favorise : la présence de clones sensibles, des précipitations importantes, une forte humidité atmosphérique, et des températures moyennes de 12 °C à 20 °C.",
+      "gestion": "Le champignon passe l’hiver dans les feuilles malades tombées au sol, sous sa forme sexuée, et dans l’écorce des rameaux contaminés l’année précédente, sous sa forme asexuée. Dès la reprise de végétation, les deux formes peuvent réaliser les premières infections. Les ascospores, portées par le vent, assurent les contaminations à longue distance. Les conidies, en suspension dans l’eau de pluie, assurent la dispersion locale. Les contaminations se poursuivent pendant toute la période de végétation, chaque fois que l’humidité de l’air est forte.",
       "traitement": null,
       "symptomes": [
         {
@@ -499,10 +508,12 @@ details.det .fiche p.pale{font-size:11.5px;color:var(--gris)}
 
   document.getElementById("ecran").innerHTML =
     '<div class="ecran">' + entete() + '<div class="corps">' +
-    '<p class="confiance">Probable sur '+e(LOT.taxons[0].article)+' '+e(LOT.taxons[0].nomCommun.toLowerCase())+'.</p>' +
-    '<p class="p" style="margin-top:12px">'+e(F.explicationCourte)+'</p>' +
+    bloc("Ce que c’est", F.nomCommun + ". Une maladie causée par un champignon, " + F.agentCausal.replace(/. Ascomycète.$/, ".")) +
+    '<p class="confiance" style="margin-top:12px">Probable sur '+e(LOT.taxons[0].article)+' '+e(LOT.taxons[0].nomCommun.toLowerCase())+'.</p>' +
     photos() +
-    bloc("Gravité", LIBELLE_GRAVITE[F.gravite]) +
+    bloc("Est-ce grave pour l’arbre ?", F.graviteSelonLaSource) +
+    bloc("Comment ça arrive", F.commentCaArrive) +
+    bloc("Comment ça se propage", F.gestion) +
     bloc("Que faire ?", F.conduiteRecommandee, true) +
     '<p class="source">Source : <b>'+e(SRC.organisme)+'</b>, page consultée le '+e(dateCitee(SRC.consulteeLe))+'.</p>' +
     (stabiliteEnJeu ? '<div class="carte"><p>'+e(MENTION_MECANIQUE)+'</p></div>' : '') +

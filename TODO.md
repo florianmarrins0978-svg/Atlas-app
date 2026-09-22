@@ -56,6 +56,10 @@ son oui, et pas avant — il a dit « ne lance aucune batterie » :**
 | `légende — crédit · licence` sous la photo | `Petites taches brunes sur une feuille de peuplier. Photo de …, sous licence CC BY 3.0 US.` |
 | `INRAE — Ephytia (…) · consultée le 22 septembre 2026` | `Source : INRAE, Ephytia (…), page consultée le 22 septembre 2026.` |
 | dans les détails, `Fiche version 1 · à jour au …` | `Fiche version 1, à jour au 21 octobre 2024.` |
+| `Gravité : Vigilance` (un mot d'Atlas) | ce que dit la SOURCE, en phrases, sous « Est-ce grave pour l'arbre ? » (nouveau champ `graviteSelonLaSource`) ; le niveau `gravite` reste interne, il pèse sur la mention de stabilité |
+| explication, photo, gravité, que faire | **SON ordre du 22 septembre** : « Ce que c'est » (nom de la maladie + champignon, puis « Probable sur un peuplier. »), la photo, « Est-ce grave pour l'arbre ? », « Comment ça arrive » (nouveau champ `commentCaArrive`), « Comment ça se propage » (= `gestion`, sorti des détails), « Que faire ? » |
+
+*« Gravité vigilance, ça veut rien dire ? Que dit l'INRAE ? »* et *« on n'a pas le nom du champignon ou de la maladie en premier alors que c'est ça qu'on est venu identifier. On veut savoir ce que c'est, est-ce que c'est grave pour l'arbre ou arbuste, comment ça arrive, comment ça se propage. »* Les deux nouveaux champs sont des colonnes de plus sur `fiches_phyto` (expand), à ajouter à `CHAMPS_SCALAIRES` ; les fiches 1 à 3 les reçoivent depuis leurs sources, jamais de mémoire.
 
 **L'article (« un », « une ») s'écrit dans la FICHE, sur le taxon** (champ
 `article`, déjà dans le brouillon de la fiche 4), jamais deviné par le code :
