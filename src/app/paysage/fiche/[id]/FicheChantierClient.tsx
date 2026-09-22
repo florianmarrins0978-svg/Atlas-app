@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import PrimaryButton from "@/components/atlas/PrimaryButton";
+import { ChampRecherche } from "@/components/atlas/ChampRecherche";
 import { colors, font, smallCaps } from "@/lib/design-tokens";
 import { jourLisible } from "@/lib/jour";
 import { parFamilles } from "@/lib/prestations-entretien";
@@ -675,13 +676,13 @@ function ChoixDuClient({
           </button>
         </div>
 
-        <input
-          type="search"
-          value={recherche}
-          onChange={(e) => setRecherche(e.target.value)}
+        <ChampRecherche
+          valeur={recherche}
+          onChange={setRecherche}
           placeholder="Chercher un client"
-          className="mt-[10px] w-full rounded-[12px] px-[13px] py-[9px] text-[15px] outline-none"
-          style={{ backgroundColor: colors.cream, color: colors.ink, border: `1px solid ${colors.line}` }}
+          ariaLabel="Chercher un client"
+          dataAtlas="chercher-client-de-la-fiche"
+          className="mt-[10px]"
         />
 
         {clients.length === 0 ? (

@@ -67,6 +67,7 @@ import { equipesMobilisees, libelleSalarie, salariesAffiches } from "@/lib/equip
 import TravauxAFaire from "./TravauxAFaire";
 import FicheDeSecurite from "./FicheDeSecurite";
 import LigneRetirable from "@/components/atlas/LigneRetirable";
+import { ChampRecherche } from "@/components/atlas/ChampRecherche";
 import PortesDuChantier from "./PortesDuChantier";
 import { chantierDemandeAuPlanning, PARAM_CHANTIER_PLANNING } from "@/lib/lien-planning";
 import TiroirDesRetires from "@/components/atlas/TiroirDesRetires";
@@ -3127,17 +3128,17 @@ function AjoutDunClient({
 
   return (
     <div className="mt-3.5 pt-3">
-      <input
-        data-atlas="nom-du-client"
+      <ChampRecherche
+        dataAtlas="nom-du-client"
         autoFocus
-        value={saisie}
-        onChange={(e) => {
-          setSaisie(e.target.value);
+        valeur={saisie}
+        onChange={(v) => {
+          setSaisie(v);
           setRetenu(null);
         }}
         placeholder="Nom du client"
-        className={CHAMP}
-        style={STYLE_CHAMP}
+        ariaLabel="Nom du client"
+        className="mt-2"
       />
 
       {retenu ? (

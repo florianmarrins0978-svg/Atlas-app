@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { colors, font, libelleCaps, surPlein } from "@/lib/design-tokens";
 import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 import VisionneusePhoto from "@/components/atlas/VisionneusePhoto";
+import { ChampRecherche } from "@/components/atlas/ChampRecherche";
 import {
   anneesDesRetours,
   compteDesTaches,
@@ -49,32 +50,14 @@ export default function ListeDesRetours({ retours }: { retours: RetourEnListe[] 
       {/* **Le champ d'abord, les années ensuite.** Quand il sait qui il cherche,
           il tape ; le reste du temps il touche une année. L'ordre inverse
           l'aurait fait lire trois pastilles avant d'arriver à ce qu'il voulait. */}
-      <div className="relative mx-[22px] mt-4">
-        <span
-          aria-hidden="true"
-          className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2"
-          style={{ color: colors.muted }}
-        >
-          <svg width="17" height="17" viewBox="0 0 18 18" fill="none">
-            <circle cx="7.6" cy="7.6" r="5.4" stroke="currentColor" strokeWidth="1.6" />
-            <path d="m11.6 11.6 4 4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-          </svg>
-        </span>
-        <input
-          type="search"
-          value={cherche}
-          onChange={(e) => setCherche(e.target.value)}
-          placeholder="Un nom de client"
-          aria-label="Chercher un client"
-          data-atlas="chercher-un-client"
-          className="h-12 w-full rounded-full border-0 pl-11 pr-4 text-[16px] outline-none"
-          style={{
-            backgroundColor: colors.card,
-            color: colors.ink,
-            boxShadow: `inset 0 0 0 1px ${colors.line}`,
-          }}
-        />
-      </div>
+      <ChampRecherche
+        valeur={cherche}
+        onChange={setCherche}
+        placeholder="Un nom de client"
+        ariaLabel="Chercher un client"
+        dataAtlas="chercher-un-client"
+        className="mx-[22px] mt-4"
+      />
 
       {/* **`flex-none` sur la rangée, et ce n'est pas décoratif** : dans une
           colonne flexible, une rangée qui défile horizontalement se laisse
