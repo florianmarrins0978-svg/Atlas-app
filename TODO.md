@@ -9,6 +9,30 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## LA VÉRIFICATION DU SITE EN LIGNE TOMBE SUR DES 503 PASSAGERS (22 septembre 2026)
+
+`pages.yml`, étape « Vérifier que chaque écran est servi ». Elle interroge
+aujourd'hui **plus de cent cinquante adresses à la suite, sans une pause et
+sans réessai**. Deux poussées consécutives ont échoué ce jour-là sur deux
+pages différentes, `planning-simple.html` puis `devis-tva-deplacer-ligne.html`,
+qu'aucun lot ne touchait : GitHub Pages a rendu un **503**, et les deux
+répondaient 200 trois fois de suite l'instant d'après. Un `gh run rerun
+--failed` est passé au vert les deux fois.
+
+**Ce que ça coûte :** un rouge qui n'accuse personne, à chaque livraison de
+planche, et l'habitude de rejouer sans regarder. C'est exactement le
+garde-fou qui parle à tort de `CLAUDE.md` §1 bis.
+
+**Le correctif, et il tient en trois lignes :** réessayer deux fois, avec une
+seconde d'attente, avant de déclarer une adresse morte. Ne pas relâcher le
+contrôle : une page vraiment absente échoue toujours, trois fois au lieu
+d'une.
+
+**Pourquoi ce n'est pas fait :** toucher `.github/` fait passer le lot en
+niveau 2, et il avait demandé le soir même de ne lancer aucune batterie. À
+reprendre avec la ligne `fiche-maladie.css fiche-maladie.js` ci-dessus, dans
+le même lot d'outillage.
+
 ## ⏳ UNE PLANCHE À REGARDER — FICHE 3, L'ANTHRACNOSE DU CHÊNE ET DU HÊTRE (22 septembre 2026)
 
 `appli/fiche-anthracnose-du-chene-et-du-hetre.html`, liée depuis
