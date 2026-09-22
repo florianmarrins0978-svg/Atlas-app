@@ -28,9 +28,16 @@ import {
   type ContenuFiche,
   type Famille,
 } from "@/lib/fiche-securite";
-import { ajouterPhotoDuRetourAction } from "../../retour-actions";
-import { enregistrerLaFicheAction, marquerTransmiseAction, signerLaFicheAction, type FicheOuverte } from "../../fiche-securite-actions";
+import {
+  ajouterPhotoDeLaFicheAction,
+  enregistrerLaFicheAction,
+  marquerTransmiseAction,
+  retirerPhotoDeLaFicheAction,
+  signerLaFicheAction,
+  type FicheOuverte,
+} from "../../fiche-securite-actions";
 import { transmettreLePdf } from "@/components/atlas/transmettre-le-pdf";
+import VisionneusePhoto from "@/components/atlas/VisionneusePhoto";
 import Signature, { pngDeLaSignature, type Trace } from "./Signature";
 
 /**
@@ -79,6 +86,12 @@ export default function FormulaireFicheDeSecurite({
   const [signeeLe, setSigneeLe] = useState<Date | null>(ouverte.fiche.signeeLe);
   const [transmise, setTransmise] = useState(ouverte.fiche.transmiseLe !== null);
   const [photos, setPhotos] = useState(ouverte.photos);
+  // **La photo s'ouvre EN GRAND, ici comme ailleurs — sa demande du
+  // 22 septembre 2026** : *« les photos de la fiche de sécurité je ne peux pas
+  // cliquer dessus pour les voir en grand et les faire défiler »*. Le rang, et
+  // non la clé : la visionneuse feuillette, donc elle reçoit la liste entière
+  // et la place dans cette liste (`VisionneusePhoto`).
+  const [rangOuvert, setRangOuvert] = useState<number | null>(null);
   const [trace, setTrace] = useState<Trace>([]);
   const [signataire, setSignataire] = useState(ouverte.fiche.signataire ?? `${contexte.patron.prenom ?? ""} ${contexte.patron.nom ?? ""}`.trim());
   const [occupe, setOccupe] = useState(false);
@@ -200,7 +213,7 @@ export default function FormulaireFicheDeSecurite({
       const corps = new FormData();
       corps.set("chantierId", chantierId);
       corps.set("fichier", fichier);
-      const r = await ajouterPhotoDuRetourAction(corps);
+      const r = await ajouterPhotoDeLaFicheAction(corps);
       if (!r.ok) {
         setRefus(r.raison);
         continue;
@@ -210,12 +223,37 @@ export default function FormulaireFicheDeSecurite({
     }
   }
 
+  /**
+   * **La retirer d'ici, parce qu'elle ne se voit plus ailleurs.** Depuis sa
+   * règle du 22 septembre 2026, une photo posée sur la fiche n'apparaît ni
+   * dans « Travaux à faire » ni sur la fiche client : sans ce geste, une photo
+   * de travers resterait sur la fiche pour toujours.
+   */
+  async function retirerLaPhoto(photoId: string) {
+    setRefus(null);
+    const r = await retirerPhotoDeLaFicheAction(chantierId, photoId);
+    if (!r.ok) {
+      setRefus(r.raison);
+      return;
+    }
+    setPhotos((avant) => avant.filter((p) => p.id !== photoId));
+    setContenu((c) => ({ ...c, photoIds: c.photoIds.filter((id) => id !== photoId) }));
+    setRangOuvert(null);
+  }
+
   const champ = (cle: keyof ContenuFiche) => ({
     value: String(contenu[cle] ?? ""),
     onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setContenu((c) => ({ ...c, [cle]: e.target.value })),
   });
 
   const g = { contenu, setContenu, enCours, setEnCours };
+
+  // **Une seule liste pour la rangée et pour la visionneuse.** Le rang ouvert
+  // est une place dans CETTE liste : deux `map` séparés, et une photo effacée
+  // entre les deux ouvrirait la voisine.
+  const sesPhotos = contenu.photoIds
+    .map((id) => photos.find((x) => x.id === id))
+    .filter((p): p is { id: string; storageKey: string } => p !== undefined);
 
   const m = manques(contenu);
 
@@ -449,14 +487,19 @@ export default function FormulaireFicheDeSecurite({
         <>
           <Bloc titre="Carte / croquis / photo du chantier indiquant les accès, voies de circulation et les végétaux à traiter" explication="Une photo du chantier, prise sur place. On doit y voir par où on entre, par où on passe, et les arbres à traiter.">
             <div className="mt-2 flex flex-wrap items-center gap-[7px]">
-              {contenu.photoIds.map((id) => {
-                const p = photos.find((x) => x.id === id);
-                return p ? (
-                  <span key={id} data-atlas="photo-de-la-fiche" className="h-[46px] w-[46px] flex-none overflow-hidden rounded-[9px]" style={{ boxShadow: `inset 0 0 0 1px ${colors.line}` }}>
-                    <img src={`/api/fichiers/${p.storageKey}`} alt="" className="h-full w-full object-cover" />
-                  </span>
-                ) : null;
-              })}
+              {sesPhotos.map((p, i) => (
+                <button
+                  key={p.id}
+                  type="button"
+                  onClick={() => setRangOuvert(i)}
+                  aria-label={`Photo ${i + 1} en grand`}
+                  data-atlas="photo-de-la-fiche"
+                  className="h-[46px] w-[46px] flex-none overflow-hidden rounded-[9px] p-0"
+                  style={{ boxShadow: `inset 0 0 0 1px ${colors.line}` }}
+                >
+                  <img src={`/api/fichiers/${p.storageKey}`} alt="" className="h-full w-full object-cover" />
+                </button>
+              ))}
               {/* L'appareil OU la photothèque : « image/* » sans « capture », le téléphone propose les deux. */}
               <label data-atlas="prendre-une-photo" className="grid h-[46px] w-[72px] flex-none cursor-pointer place-items-center rounded-[9px]" style={{ background: voile(colors.plein, 0.16), color: colors.rust, boxShadow: `inset 0 0 0 1px ${colors.vertPale}` }}>
                 <Appareil />
@@ -464,6 +507,31 @@ export default function FormulaireFicheDeSecurite({
               </label>
             </div>
             <Aide haut>Prenez la photo, ou choisissez-la dans la photothèque.</Aide>
+            {rangOuvert !== null && (
+              <VisionneusePhoto
+                photos={sesPhotos.map((p) => p.storageKey)}
+                rang={rangOuvert}
+                onRang={setRangOuvert}
+                onFermer={() => setRangOuvert(null)}
+              >
+                {/* **On retire une photo d'où on la regarde** — comme dans la
+                    pellicule du client. Une fiche signée garde les siennes :
+                    elle fait foi devant un contrôleur, et le serveur le refuse
+                    aussi (`detacherPhotoDeLaFiche`). */}
+                {signeeLe === null && sesPhotos[rangOuvert] && (
+                  <button
+                    type="button"
+                    data-atlas="retirer-photo-de-la-fiche"
+                    onClick={() => void retirerLaPhoto(sesPhotos[rangOuvert]!.id)}
+                    aria-label="Retirer cette photo"
+                    className="flex h-11 items-center justify-center rounded-full px-4 text-[11px] font-semibold uppercase"
+                    style={{ backgroundColor: voile(surPlein, 0.12), color: colors.orSurEncre, letterSpacing: "0.26em" }}
+                  >
+                    Retirer
+                  </button>
+                )}
+              </VisionneusePhoto>
+            )}
           </Bloc>
           <Bloc titre="Zones du chantier" explication="Ce que vous mettez en place pour que personne ne soit blessé : le balisage, la communication entre vous, la surveillance des passants.">
             <Aide>Délimitation matérielle du chantier obligatoire</Aide>

@@ -6,7 +6,9 @@ import { getRole } from "@/server/autorisation";
 import { exigerEcran, exigerChantierDansSaPortee } from "@/server/garde-action";
 import { cheminAutorise, peutPoserUnRetour } from "@/lib/acces-roles";
 import {
+  attacherPhotoALaFiche,
   contexteDuChantier,
+  detacherPhotoDeLaFiche,
   enregistrerLaFiche,
   ficheDuChantier,
   marquerTransmise,
@@ -16,7 +18,8 @@ import {
   type ContexteDuChantier,
   type FicheEnregistree,
 } from "@/server/repositories/fiches-securite";
-import { listerPhotos } from "@/server/repositories/photos";
+import { listerPhotos, recevoirPhotoDeChantier, supprimerPhoto } from "@/server/repositories/photos";
+import { verifierLimite, LIMITES } from "@/server/rate-limit";
 import { POINTS_MINIMUM_D_UNE_SIGNATURE, type ContenuFiche } from "@/lib/fiche-securite";
 
 // LES GESTES DE LA FICHE DE SÉCURITÉ, depuis le planning.
@@ -74,6 +77,59 @@ export async function ouvrirLaFicheAction(chantierId: string): Promise<FicheOuve
   if (!contexte) return { ok: false, raison: "Chantier introuvable." };
   const [fiche, photos] = await Promise.all([ouvrirLaFiche(ctx, chantierId), listerPhotos(ctx, chantierId)]);
   return { fiche, contexte, photos: photos.map((p) => ({ id: p.id, storageKey: p.storageKey })) };
+}
+
+/**
+ * POSER UNE PHOTO SUR LA FICHE — et elle y reste.
+ *
+ * **Sa règle du 22 septembre 2026 :** *« les photos dans la fiche de sécurité
+ * restent à l'intérieur de la fiche, et les photos de la fiche client restent à
+ * l'intérieur de la feuille travaux à faire »*. D'où ce geste propre à la
+ * fiche, là où elle empruntait celui du retour du jour : la liaison s'écrit
+ * dans le même souffle que l'inscription (`attacherPhotoALaFiche`), et la
+ * photo ne passe jamais par « Travaux à faire », pas même une minute.
+ *
+ * L'image, elle, entre par le chemin commun — nettoyée de ses métadonnées,
+ * rangée, comptée sous le plafond du chantier.
+ */
+export async function ajouterPhotoDeLaFicheAction(
+  formData: FormData
+): Promise<{ ok: true; id: string; storageKey: string } | Refus> {
+  const chantierId = String(formData.get("chantierId") ?? "");
+  if (!chantierId) return { ok: false, raison: "Chantier inconnu." };
+  const ctx = await garder(chantierId, "ajouter une photo à la fiche de sécurité");
+
+  const limite = await verifierLimite(`televersement:${ctx.entrepriseId}`, LIMITES.televersementFichier);
+  if (!limite.autorise) return { ok: false, raison: limite.message };
+
+  const ajout = await recevoirPhotoDeChantier(ctx, chantierId, formData.get("fichier"));
+  if (!ajout.ok) return ajout;
+
+  // **La fiche doit exister**, et elle existe : on n'atteint l'écran 3 qu'après
+  // deux « Suivant », qui l'ont créée. Si elle n'existait pas, la photo serait
+  // une photo de chantier ordinaire — donc visible dans « Travaux à faire » :
+  // on le dit plutôt que de la laisser filer là-bas.
+  if (!(await attacherPhotoALaFiche(ctx, chantierId, ajout.photo.id))) {
+    return { ok: false, raison: "La fiche n’est pas encore ouverte : la photo n’a pas pu y être rangée." };
+  }
+  rafraichir(chantierId);
+  return { ok: true, id: ajout.photo.id, storageKey: ajout.photo.storageKey };
+}
+
+/** La retirer de la fiche — tant qu'elle n'est pas signée. */
+export async function retirerPhotoDeLaFicheAction(
+  chantierId: string,
+  photoId: string
+): Promise<{ ok: true } | Refus> {
+  const ctx = await garder(chantierId, "retirer une photo de la fiche de sécurité");
+  const detachee = await detacherPhotoDeLaFiche(ctx, chantierId, photoId);
+  if (!detachee.ok) return detachee;
+  // **Détachée d'abord, effacée ensuite** : `supprimerPhoto` regarde qui tient
+  // encore la photo pour décider de la purge du fichier. Tant que la liaison
+  // existe, il la croirait gardée par la fiche et laisserait le fichier.
+  await supprimerPhoto(ctx, photoId);
+  rafraichir(chantierId);
+  return { ok: true };
 }
 
 /**

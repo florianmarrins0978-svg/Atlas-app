@@ -81,11 +81,7 @@ import type { FeuilleDuChantier } from "@/server/repositories/devis";
  * bandeau fermé, dès l’ouverture — pas seulement dans la session où l’on a
  * appuyé. Un chantier de huit jours en envoie un chaque soir (19 septembre 2026).
  */
-type FeuilleEtRetour = FeuilleDuChantier & {
-  retours: number;
-  /** Ce qu’il a photographié du chantier — vu AVANT le travail, pas après. */
-  photos: { id: string; storageKey: string }[];
-};
+type FeuilleEtRetour = FeuilleDuChantier & { retours: number };
 import { NOTE_MAX } from "@/lib/note-chantier";
 // **Les types se prennent par `import type`, jamais dans l'import des actions.**
 // Un fichier « use server » réexporté par Next ne laisse survivre que des
@@ -4485,38 +4481,6 @@ function FeuilleChantier({
       </div>
 
       <NoteDuChantier chantier={chantier} ecriture={ecriture} />
-
-      {/* ─── CE QU'IL A PHOTOGRAPHIÉ DU CHANTIER ──────────────────────────
-          **Sa remarque du 9 septembre 2026 :** *« j'ai joint des photos lorsque
-          j'ai créé la fiche client de Julien, mais elles n'apparaissent nulle
-          part »*, puis : *« elles devraient être au-dessus de Désherbage
-          gravier »*. Leur place est AVANT le travail, avec la note — pas dans
-          le tiroir qu'on n'ouvre qu'en partant. */}
-      {(feuille?.photos ?? []).length > 0 && (
-        <div className="mt-3.5 pt-3" style={{ borderTop: `1px solid ${colors.lineSoft}` }}>
-          <div className="flex flex-wrap gap-2">
-            {(feuille?.photos ?? []).map((photo) => (
-              <a
-                key={photo.id}
-                href={`/api/fichiers/${photo.storageKey}`}
-                target="_blank"
-                rel="noreferrer"
-                data-atlas="photo-du-chantier"
-                className="h-[74px] w-[74px] overflow-hidden rounded-[11px]"
-                style={{
-                  // **Un fond, pour qu'une photo qui n'arrive pas laisse un cadre
-                  // calme et non une image brisée** — le glyphe du navigateur se
-                  // lit comme une panne de l'application.
-                  backgroundColor: colors.rustTint,
-                  boxShadow: `inset 0 0 0 1px ${colors.line}`,
-                }}
-              >
-                <img src={`/api/fichiers/${photo.storageKey}`} alt="" className="h-full w-full object-cover" />
-              </a>
-            ))}
-          </div>
-        </div>
-      )}
 
       {/* ─── LA FICHE DE SÉCURITÉ — avant les travaux, parce qu'elle se remplit
           avant de commencer. Sur TOUS les chantiers, au bon vouloir — sa

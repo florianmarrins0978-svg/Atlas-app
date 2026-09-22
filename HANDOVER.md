@@ -64,6 +64,22 @@ le 22 septembre.
 | le PDF | `src/server/pdf/fiche-securite-pdf.ts`, son propre moteur (cases, signature, note de la feuille) |
 | les suites | `test-fiche-securite.ts` (règles + PDF), `test-fiche-securite-db.ts` (RLS, mémoire, purge), `test-fiche-securite-e2e.ts` (le chemin entier) |
 
+**UNE PHOTO APPARTIENT À L'ENDROIT OÙ ELLE A ÉTÉ POSÉE — 22 septembre 2026,
+`ARCHITECTURE.md` §406.** Celle de la fiche ne se voit QUE sur la fiche : la
+liaison `fiches_securite_photos` s'écrit dès l'ajout
+(`ajouterPhotoDeLaFicheAction` → `attacherPhotoALaFiche`), et
+`listerPhotosHorsFicheDeSecurite` la retire des photos du chantier — c'est elle
+que lisent « Travaux à faire » et la pellicule du client. Toute pièce neuve qui
+montre « les photos du chantier » emploie celle-là, jamais `listerPhotos`.
+
+Deux conséquences à connaître : la fiche porte « Retirer » sur sa visionneuse
+(elle est la seule porte, et une fiche signée refuse) ; et l'image entre par
+`recevoirPhotoDeChantier`, le chemin commun aux trois écrans qui en posent —
+une seconde porte d'entrée divergerait sur le nettoyage des métadonnées.
+
+Une vignette de l'écran 3 s'ouvre avec `VisionneusePhoto`, celle de toute
+l'application — ne pas en écrire une seconde (`CLAUDE.md` §3).
+
 **Le piège à connaître** : `supprimerPhoto` demande aussi à la fiche avant de
 mettre un fichier en purge. Une nouvelle pièce qui montre des photos du
 chantier doit faire pareil, sinon la purge lui ouvre un trou des mois plus tard.
@@ -82,6 +98,13 @@ deux heures se lisaient comme un seul encart blanc, alors que Nom et Prénom —
 le même composant — montraient deux cadres. Le cadre vit donc sur un `<span>`,
 qu'aucun navigateur ne rhabille. **Chromium ne reproduit pas ce défaut** : une
 capture ici ne prouve rien de son iPhone.
+
+**Le second piège, payé le 22 septembre 2026** : « Enregistrer le PDF » ne
+s'écrit JAMAIS en `<a href="…?telecharger=1">`. Sur iPhone, un PDF servi en
+`attachment` reste un document que Safari peint — il s'ouvre au lieu de se
+ranger. Les deux seules portes sont `BoutonTelechargerDocument` (garder) et
+`adresseDeLaVisionneuse` (regarder) ; `scripts/test-tous-les-pdf.ts` les tient,
+et il suit maintenant une adresse rangée dans une variable.
 
 ## OÙ VIT UN GESTE DE LA FACTURE — 21 septembre 2026
 

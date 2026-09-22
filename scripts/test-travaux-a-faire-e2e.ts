@@ -156,13 +156,25 @@ async function main() {
     assert.notEqual(couleur, contour, `le lien a la couleur du contour (${couleur})`);
   });
 
-  await cas("SES PHOTOS SE VOIENT SUR LA FICHE, au-dessus des travaux", async () => {
-    const photo = page.locator("[data-atlas='photo-du-chantier']").first();
-    await photo.waitFor({ state: "visible", timeout: 15_000 });
-    const hautPhoto = (await photo.boundingBox())?.y ?? 0;
-    const hautTravaux = (await page.locator(OUVRIR).boundingBox())?.y ?? 0;
-    assert.ok(hautPhoto > 0 && hautTravaux > 0, "rien n'est mesuré : la mise en page n'est pas faite");
-    assert.ok(hautPhoto < hautTravaux, `la photo est SOUS les travaux (${Math.round(hautPhoto)} contre ${Math.round(hautTravaux)})`);
+  await cas("SES PHOTOS NE SONT PLUS SUR LA FICHE — elles sont dans la fiche de sécurité", async () => {
+    // **Sa demande du 22 septembre 2026** : *« pas besoin d'avoir les photos à
+    // cet endroit, elles sont déjà présentes dans la fiche de sécurité »*. Ce
+    // contrôle réclamait l'inverse depuis le 9 septembre ; on l'adapte, on ne
+    // remet pas ce qu'il a fait retirer (`CLAUDE.md` §5 bis).
+    //
+    // **Et l'on vérifie que ce qui les remplace est bien là** : constater une
+    // absence ne prouverait rien si la rangée avait simplement déménagé nulle
+    // part. La fiche de sécurité, elle, lit les MÊMES photos du chantier.
+    await page.locator(FEUILLE).first().waitFor({ state: "visible", timeout: 15_000 });
+    assert.equal(
+      await page.locator("[data-atlas='photo-du-chantier']").count(),
+      0,
+      "la rangée des photos est revenue au-dessus de la fiche de sécurité"
+    );
+    assert.ok(
+      await page.locator("[data-atlas='fiche-de-securite']").first().isVisible(),
+      "la porte de la fiche de sécurité n'est pas sur la feuille : les photos ne sont plus nulle part"
+    );
   });
 
   await cas("OUVERT, les lignes du devis sont les cases — autant que le devis en porte", async () => {

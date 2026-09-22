@@ -6,7 +6,9 @@ import * as entreprisesRepo from "../src/server/repositories/entreprises";
 import * as chantiersRepo from "../src/server/repositories/chantiers";
 import * as photosRepo from "../src/server/repositories/photos";
 import {
+  attacherPhotoALaFiche,
   contexteDuChantier,
+  detacherPhotoDeLaFiche,
   enregistrerLaFiche,
   ficheDuChantier,
   listerLesFichesDuMois,
@@ -154,6 +156,74 @@ async function main() {
     await photosRepo.supprimerPhoto(ctxA, photoId);
     const enPurgeApres = Number((await admin.query<{ n: number }>("SELECT count(*)::int AS n FROM fichiers_a_purger")).rows[0].n);
     assert.equal(enPurgeApres, enPurgeAvant, "le fichier de la fiche a été mis en purge : dans deux ans, la fiche montrerait un trou");
+  });
+
+  // ─── CHACUNE CHEZ SOI — sa règle du 22 septembre 2026 ─────────────────────
+  //
+  // *« Les photos dans la fiche de sécurité restent à l'intérieur de la fiche,
+  // et les photos de la fiche client restent à l'intérieur de la feuille
+  // travaux à faire. »* Les deux vivent dans la même table : ce qui les sépare
+  // est la liaison `fiches_securite_photos`, et elle se pose DÈS l'ajout.
+  await essai("une photo posée sur la fiche sort des photos du chantier ; celle du client y reste", async () => {
+    const duClient = await photosRepo.ajouterPhoto(ctxA, autreA.id, {
+      storageKey: `chantiers/${autreA.id}/photos/pellicule.jpg`,
+      mimeType: "image/jpeg",
+      tailleOctets: 10,
+      nomOriginal: "pellicule.jpg",
+      checksum: "b".repeat(64),
+    });
+    const deLaFiche = await photosRepo.ajouterPhoto(ctxA, autreA.id, {
+      storageKey: `chantiers/${autreA.id}/photos/croquis.jpg`,
+      mimeType: "image/jpeg",
+      tailleOctets: 10,
+      nomOriginal: "croquis.jpg",
+      checksum: "c".repeat(64),
+    });
+    assert.ok(duClient.ok && deLaFiche.ok);
+    await ouvrirLaFiche(ctxA, autreA.id);
+
+    const avant = await photosRepo.listerPhotosHorsFicheDeSecurite(ctxA, autreA.id);
+    assert.equal(avant.length, 2, "les deux photos du chantier devraient être là avant l'attache");
+
+    // **Sans le moindre enregistrement de la fiche** : c'est tout le point —
+    // entre la photo posée et le prochain « Suivant », elle ne doit pas
+    // apparaître dans « Travaux à faire ».
+    assert.equal(await attacherPhotoALaFiche(ctxA, autreA.id, deLaFiche.photo.id), true);
+    const apres = await photosRepo.listerPhotosHorsFicheDeSecurite(ctxA, autreA.id);
+    assert.deepEqual(
+      apres.map((p) => p.id),
+      [duClient.photo.id],
+      "la photo de la fiche se voit encore dans les photos du chantier"
+    );
+    assert.equal(
+      (await photosRepo.listerPhotos(ctxA, autreA.id)).length,
+      2,
+      "les photos du chantier ne sont pas toutes là : l'attache en a perdu une"
+    );
+
+    // Et la fiche, elle, la porte — sinon la photo ne serait visible nulle part.
+    const fiche = await ficheDuChantier(ctxA, autreA.id);
+    assert.deepEqual(fiche?.contenu.photoIds, [deLaFiche.photo.id]);
+  });
+
+  await essai("la retirer de la fiche la rend au chantier ; une fiche SIGNÉE garde les siennes", async () => {
+    const fiche = await ficheDuChantier(ctxA, autreA.id);
+    assert.ok(fiche);
+    const photoId = fiche.contenu.photoIds[0];
+    assert.ok(photoId, "le cas précédent n'a rien attaché : rien à retirer");
+
+    const retiree = await detacherPhotoDeLaFiche(ctxA, autreA.id, photoId);
+    assert.equal(retiree.ok, true);
+    const rendues = await photosRepo.listerPhotosHorsFicheDeSecurite(ctxA, autreA.id);
+    assert.equal(rendues.length, 2, "la photo détachée ne revient pas dans les photos du chantier");
+    assert.equal(await photoTenueParUneFiche(ctxA, photoId), false);
+
+    // Rattachée, puis signée : elle ne se retire plus — la fiche fait foi.
+    await attacherPhotoALaFiche(ctxA, autreA.id, photoId);
+    await signerLaFiche(ctxA, autreA.id, { signaturePng: PNG, signataire: "Anne" });
+    const refus = await detacherPhotoDeLaFiche(ctxA, autreA.id, photoId);
+    assert.equal(refus.ok, false, "une fiche signée a laissé retirer sa photo");
+    assert.equal(await photoTenueParUneFiche(ctxA, photoId), true);
   });
 
   await essai("sans contexte d'entreprise, la table ne rend rien (FORCE ROW LEVEL SECURITY)", async () => {

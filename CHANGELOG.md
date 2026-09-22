@@ -8,6 +8,33 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-22
 
+### Chaque photo à un seul endroit : celui où elle a été posée
+
+Une photo posée sur la fiche de sécurité y reste — elle ne passe plus dans
+« Travaux à faire » ni dans la pellicule du client. Une photo jointe à la fiche
+client reste, elle, dans « Travaux à faire ». *« Les photos dans la fiche de
+sécurité restent à l'intérieur de la fiche, et les photos de la fiche client
+restent à l'intérieur de la feuille travaux à faire. »* Et puisqu'elle ne se
+voit plus ailleurs, la fiche gagne « Retirer » sur sa visionneuse ; une fiche
+signée, elle, garde les siennes.
+
+Ce que ça évite : les mêmes photos à trois endroits, et un croquis de terrain
+qui part avec le retour du jour chez le client. `ARCHITECTURE.md` §406.
+
+### Les photos du chantier se regardent en grand, et à un seul endroit
+
+Sur la fiche du jour, la rangée de photos qui se trouvait au-dessus de la
+fiche de sécurité a été retirée : la fiche de sécurité porte exactement les
+mêmes — *« elles sont déjà présentes dans la fiche de sécurité »*. Et là-bas,
+une photo s'ouvre maintenant en grand au doigt, se feuillette et se ferme par
+la croix, avec la visionneuse de toute l'application.
+
+Ce que ça évite : la vignette du planning était un lien vers le fichier brut,
+ouvert dans un onglet neuf — depuis son téléphone, plus aucun retour en
+arrière. Et la même rangée deux fois sur le même écran faisait lire deux
+séries de photos là où il n'y en a qu'une, au prix d'une requête de plus à
+chaque ouverture d'une feuille.
+
 ### Un règlement se pose enfin sur une facture faite sans devis
 
 « Il ne reste que 0,00 € à recevoir sur cette facture », sous un Total TTC de
@@ -110,6 +137,23 @@ glissée entre Qté et Prix (15 septembre), ce deuxième champ est l'UNITÉ. Les
 accusait l'envoi d'être fermé sur une facture « remplie ». La suite de bout en
 bout avait été corrigée ce jour-là ; ce script avait été oublié. Le prix se
 cherche désormais par son nom.
+### « Enregistrer le PDF » range enfin la fiche de sécurité dans ses fichiers
+
+Sa capture : *« je clique sur enregistrer le pdf, ça me propose pas de le
+télécharger »*. L'écran des fiches de sécurité posait un lien
+`?telecharger=1` ; sur iPhone, un PDF servi en `attachment` reste un document
+que Safari sait peindre — il l'ouvrait au lieu de le ranger. C'est le défaut
+du 10 septembre, réglé une fois par `BoutonTelechargerDocument` (feuille de
+partage, « Enregistrer dans Fichiers ») et refait à la main ici une semaine
+plus tard.
+
+Ce que ça évite, au-delà de ce bouton : le contrôle qui existait pour refuser
+exactement cela — `test-tous-les-pdf.ts` — cherchait « /pdf » dans l'attribut,
+et l'écran rangeait son adresse dans un `const pdf`. Il suit désormais la
+variable d'un cran, refuse un `?telecharger=1` dans un lien, ne lit plus les
+commentaires, et **cherche** les routes qui servent un PDF au lieu de les
+lister : la liste tenue à la main en oubliait déjà une, celle de la fiche de
+sécurité.
 
 ### La fiche de sécurité du décret 2021-1833 est dans l'application
 
