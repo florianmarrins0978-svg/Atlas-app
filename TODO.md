@@ -1,24 +1,12 @@
 # Prochaines tâches
 
-## LA FEUILLE « CRÉER UN DEVIS » REFERMÉE PAR LE VOILE OU ÉCHAP PERD LA SAISIE (22 septembre 2026)
+## LE GESTE « RETOUR » DU NAVIGATEUR SUR LA FICHE CLIENT PERD LA SAISIE (22 septembre 2026)
 
-La flèche retour de la fiche client enregistre depuis le 22 septembre
-(`ARCHITECTURE.md` §407). Trois sorties ne passent pas par elle et jettent
-encore ce qui a été tapé : toucher le voile au-dessus de la feuille, Échap
-(`EcranChantiers.tsx`, `setOuvert(false)`), et le geste « retour » du
-navigateur sur la fiche en page. Les faire passer par `sortirEnEnregistrant`
-demande que la feuille demande sa fermeture au formulaire, qui tient la saisie.
-À trancher : le voile doit-il enregistrer, ou ne plus refermer ?
-
-
-Par ordre de priorité. Une tâche terminée se **barre** avec sa date plutôt que
-de disparaître : savoir qu'elle a été traitée évite de la rouvrir.
-
-Ce fichier porte le travail de **développement**. Ce qui bloque et n'avancera
-pas en codant est dans `docs/A-FAIRE.md` — tenu pour le patron, dans son
-langage, et rien n'y entre sans son accord.
-
----
+La flèche, le voile et Échap enregistrent depuis le 22 septembre
+(`ARCHITECTURE.md` §407). Le geste « retour » du navigateur sur la fiche client
+en page (`/chantiers/[id]/coordonnees`) ne passe par aucun code d'Atlas : ce qui
+est tapé se perd encore. Il ramène au devis, pas à l'accueil — moins grave,
+mais à regarder s'il le signale.
 
 ## 🔧 `test-fiche-securite-e2e` : SON PREMIER CAS LIT L'ORDRE AVANT QUE « TRAVAUX À FAIRE » SOIT MONTÉ (22 septembre 2026)
 

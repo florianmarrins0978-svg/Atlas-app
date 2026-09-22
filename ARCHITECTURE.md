@@ -32953,7 +32953,14 @@ rédige à la main », « Faire la facture » et la flèche ; `enregistrerSurLeC
 et la branche `reprise` recopiée dans `creerPuisAller` ont disparu. Un refus
 retient l'écran et se dit — sortir quand même reperdrait la saisie.
 
-**Ce qui n'enregistre PAS encore**, et c'est inscrit dans `TODO.md` : refermer
-la feuille en touchant le voile ou par Échap (`EcranChantiers.tsx`), et le
-geste « retour » du navigateur. Ces trois sorties ne passent pas par la flèche.
+**Le voile et Échap passent par la même sortie** (le soir même, mesuré : la
+flèche gardait le client, le voile le perdait encore). Ils vivent dans
+`EcranChantiers`, la saisie dans le formulaire : la feuille ne se referme plus
+elle-même, elle le DEMANDE au formulaire (`FermetureDeLaFeuille`, par
+`useImperativeHandle`), qui enregistre puis appelle `onFermer`. Mesuré en
+version bâtie : la ligne est dans « En cours » en 0,2 s par la flèche comme par
+le voile, en 0,8 s depuis le devis, sans rechargement.
 
+**Ce qui n'enregistre PAS encore**, et c'est inscrit dans `TODO.md` : le geste
+« retour » du navigateur sur la fiche en page. Il ne passe par aucun code
+d'Atlas, et il ramène au devis, pas à l'accueil.

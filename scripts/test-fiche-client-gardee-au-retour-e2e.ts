@@ -15,7 +15,7 @@ import { ADRESSE } from "./_adresse";
  *
  * | la fiche | ce que la flèche faisait |
  * |---|---|
- * | la feuille « Créer un devis » de l'accueil | se refermait : aucun chantier, la saisie perdue |
+ * | la feuille « Créer un devis » de l'accueil | se refermait (flèche, voile ou Échap) : aucun chantier, la saisie perdue |
  * | la fiche rouverte depuis le devis (« Renseigner la fiche client ») | revenait à l'accueil : le chantier restait « Chantier du … », sans son client |
  *
  * Depuis le 17 septembre 2026, seul « Je rédige à la main » enregistrait — la
@@ -101,6 +101,26 @@ async function main() {
     );
   }
   assert.equal(await compteEnCours(page), avant + 1, "Le compteur « En cours » doit suivre la ligne");
+
+  // ── 1 bis. La feuille refermée d'un doigt, sur le voile au-dessus d'elle ──
+  // Même sortie que la flèche, même promesse : ce qu'il a tapé reste. Le
+  // 22 septembre 2026 au soir, mesuré : la flèche gardait le client, le voile
+  // le perdait encore.
+  const avantVoile = await compteEnCours(page);
+  const nomVoile = `Voile ${Date.now().toString().slice(-6)}`;
+  await ouvrirLaFeuille(page);
+  await feuille.locator('input[placeholder="Bernard"]').fill(nomVoile);
+  // Le voile couvre tout l'écran sous la feuille, qui s'arrête à 60 px du haut.
+  await page.mouse.click(20, 20);
+  if (!(await voitLaLigne(page, nomVoile))) {
+    await page.reload({ waitUntil: "networkidle" });
+    const apresRechargement = await page.locator(`text=${nomVoile}`).count();
+    assert.fail(
+      `La feuille refermée sur le voile a perdu « ${nomVoile} » ` +
+        `(au rechargement, ${apresRechargement} ligne(s)). C'est sa remarque du 22 septembre 2026.`
+    );
+  }
+  assert.equal(await compteEnCours(page), avantVoile + 1, "Le compteur « En cours » doit suivre la ligne");
 
   // ── 2. Le devis sans client : « Renseigner la fiche client », puis retour ─
   await ouvrirLaFeuille(page);

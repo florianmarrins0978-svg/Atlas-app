@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useImperativeHandle, useRef, useState, type Ref } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { colors, font, libelleCaps, smallCaps, surPlein } from "@/lib/design-tokens";
@@ -160,15 +160,28 @@ export type ClientDeDepart = {
   anciennesPhotos: { id: string; storageKey: string; chantierNom: string }[];
 };
 
+/**
+ * Ce que la feuille de l'accueil peut demander au formulaire : se refermer.
+ *
+ * **La feuille ne referme plus elle-même — 22 septembre 2026.** Le voile et
+ * Échap vivent dans `EcranChantiers`, la saisie vit ici : refermer depuis
+ * là-bas jetait ce qu'il avait tapé, pendant que la flèche, elle,
+ * l'enregistrait. Une seule sortie, qui sait ce qu'il y a à garder.
+ */
+export type FermetureDeLaFeuille = { fermer: () => void };
+
 export default function FormulaireNouveauChantier({
   enFeuille = false,
   onFermer,
+  fermeture,
   reprise,
   depuisClient,
   pour = "devis",
 }: {
   enFeuille?: boolean;
   onFermer?: () => void;
+  /** En feuille : la porte par laquelle le voile et Échap demandent à refermer. */
+  fermeture?: Ref<FermetureDeLaFeuille>;
   /** Présent : l'écran ENREGISTRE sur ce chantier au lieu d'en créer un. */
   reprise?: ChantierRepris;
   /** Présent : le client est connu d'avance, ses cases sont déjà posées. */
@@ -685,6 +698,10 @@ export default function FormulaireNouveauChantier({
     sortir();
   }
 
+  /** Refermer la feuille : la flèche, le voile et Échap passent tous par ici. */
+  const fermerLaFeuille = () => void sortirEnEnregistrant(() => onFermer?.());
+  useImperativeHandle(fermeture, () => ({ fermer: fermerLaFeuille }));
+
   /** Où mène la flèche EN PAGE — en feuille, elle referme (`onFermer`). */
   const sortieDeLaPage = pourLeDevis
     ? retourDesCoordonnees(reprise?.id ?? "", reprise?.provenance ?? null)
@@ -856,7 +873,7 @@ export default function FormulaireNouveauChantier({
           {enFeuille ? (
             <button
               type="button"
-              onClick={() => void sortirEnEnregistrant(() => onFermer?.())}
+              onClick={fermerLaFeuille}
               aria-label="Retour à la liste des chantiers"
               className="-ml-1 flex h-8 w-6 flex-shrink-0 items-center justify-center"
             >

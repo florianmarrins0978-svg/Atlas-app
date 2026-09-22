@@ -82,7 +82,11 @@ sorties (devis, facture, retour) passent par une seule écriture,
 `enregistrerLaSaisie` ; `enregistrerSurLeChantier` disparaît. La règle :
 `src/lib/saisie-fiche-client.ts`. Suites : `test-saisie-fiche-client.ts`,
 `test-fiche-client-gardee-au-retour-e2e.ts` (vue rouge avant, verte après).
-`ARCHITECTURE.md` §407.
+
+Le soir même : refermer la feuille en touchant le voile, ou par Échap, perdait
+encore le client. Les deux passent désormais par la même sortie que la flèche.
+Mesuré en version bâtie : la ligne est dans « En cours » en moins d'une
+seconde, sans recharger ni changer de page. `ARCHITECTURE.md` §407.
 
 ### Chaque photo à un seul endroit : celui où elle a été posée
 
