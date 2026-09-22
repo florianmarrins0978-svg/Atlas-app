@@ -5,6 +5,17 @@
 
 ---
 
+## FAIT : LA FACTURE PORTE LE JOUR OÙ ELLE PART (22 septembre 2026)
+
+Son constat : « Facturé le 21 septembre » un 22, sur une facture qu'il venait
+d'envoyer. `date_emission` était posée à la CRÉATION du brouillon, et l'envoi ne
+la rouvrait pas — le PDF du client portait cette date, l'échéance courait depuis
+elle, et la TVA d'un brouillon de fin de trimestre serait tombée du mauvais
+côté. La date et l'échéance se posent désormais à l'émission, AVANT la
+composition du PDF ; l'échéance se décale du même nombre de jours, pour ne pas
+écraser celle qu'il aurait choisie à la main. Les factures déjà émises ne
+bougent pas. `ARCHITECTURE.md` §403.
+
 ## FAIT : LA FICHE DE SÉCURITÉ, SUR LA FICHE DU JOUR (22 septembre 2026)
 
 La fiche d'intervention du décret 2021-1833, nommée « Fiche de sécurité » :

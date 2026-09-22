@@ -11,6 +11,28 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 
 ---
 
+## LA DATE D'UNE FACTURE EST CELLE DE SON ENVOI — 22 septembre 2026
+
+| | |
+|---|---|
+| **ce qu'il a vu** | « Facturé le 21 septembre » un 22, sur une facture qu'il venait d'envoyer |
+| **la racine** | `date_emission` posée à la création du BROUILLON (`poserLaFactureBrouillon`), jamais rouverte à l'envoi |
+| **ce que ça touchait** | l'écran Terminés, le PDF du client, le délai de paiement, le relevé de TVA |
+| **où c'est corrigé** | `emettreFacture`, **avant** la composition du PDF — plus bas, le papier archivé garderait l'ancienne date |
+| **la règle** | `datesDeLaFactureQuiPart`, `src/lib/echeance-facture.ts` — pure, éprouvée sans base |
+
+**L'échéance se DÉCALE du même nombre de jours, elle ne se recalcule pas.** La
+refaire depuis le délai réglé écraserait celle qu'il a posée à la main avant
+l'envoi ; la laisser en place raccourcirait le délai que le papier annonce (« à
+30 jours à compter de la facture »). Ne pas rouvrir : le raisonnement complet
+est dans `ARCHITECTURE.md` §403.
+
+**Les factures DÉJÀ émises n'ont pas été touchées** — une pièce partie est
+immuable, et réécrire la date de celle que son client a reçue serait pire que le
+défaut. Si une ancienne facture l'intrigue, c'est ça.
+
+---
+
 ## LA FICHE DE SÉCURITÉ — 22 septembre 2026
 
 | | |
