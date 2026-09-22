@@ -92,6 +92,8 @@ body.nuit .assistant svg{stroke:var(--scene)}
 .bloc .caps{margin:0}
 .bloc .val{margin:6px 0 0;line-height:1.55;color:var(--encre)}
 .bloc.fort .val{font-size:17px;line-height:1.5}
+.bloc ul.puces{margin:6px 0 0;padding-left:18px}
+.bloc ul.puces li{margin-top:4px;line-height:1.55;color:var(--encre)}
 .confiance{margin:0;font-size:17px;line-height:1.4;color:var(--encre)}
 .confiance .sep{color:var(--gris);padding:0 6px}
 .source{margin:18px 0 0;font-size:12.5px;line-height:1.55;color:var(--gris)}
@@ -162,16 +164,44 @@ details.det .fiche p.pale{font-size:11.5px;color:var(--gris)}
 
 <div class="notes">
   <h3>Ce qui change à l’écran, pour toutes les fiches</h3>
-  <p>Vos règles du 22 septembre au soir. <b>D’abord le nom</b>, avec le nom scientifique,
-  puis <b>l’agent en cause</b> et <b>les parties atteintes</b>, visibles et plus
-  dans les détails. Puis vos questions dans l’ordre : <b>est-ce grave pour
-  l’arbre, comment ça arrive, comment ça se propage</b>. <b>Plus de
-  point entre le nom et « probable », plus de tiret, des phrases.</b> Et pour la
-  gravité, <b>ce que dit l’INRAE</b>, en phrases, à la place du mot « Vigilance »
-  d’Atlas. Sur la fiche du platane, l’application écrit aujourd’hui
-  « Probable · Platane », puis « Gravité : Faible ». Ce changement est dans le
-  code de l’écran, pas dans la fiche : il vaudra pour le platane, le chêne et
-  toutes les suivantes. Il sera codé avec la fiche, sur votre oui.</p>
+  <p><b>D’abord le nom</b>, avec le nom scientifique, puis <b>l’agent en cause</b>
+  et <b>les parties atteintes</b>, visibles et plus dans les détails. Ensuite
+  <b>comment le reconnaître</b> et <b>ça pourrait aussi être</b>, qui servent
+  debout devant l’arbre et étaient cachés eux aussi. Puis <b>quand ça se voit,
+  est-ce grave pour l’arbre, et les autres arbres du jardin, comment ça arrive,
+  comment ça se propage, que faire</b>. Plus de point entre le nom et
+  « probable », plus de tiret, plus de point-virgule, des phrases. Ce changement
+  est dans le code de l’écran, pas dans la fiche, donc il vaudra pour le
+  platane, le chêne et toutes les suivantes.</p>
+
+  <h3>Ce que j’ai trouvé en relisant la fiche</h3>
+  <p>Vous avez demandé si un utilisateur qui photographie sa maladie a tout ce
+  qu’il lui faut pour continuer son chantier. <b>Cinq défauts trouvés et
+  corrigés</b>, et <b>un trou que je ne peux pas combler seul</b>.</p>
+  <div class="cadre">
+  <table>
+    <tr><th>Ce qui n’allait pas</th><th>Corrigé</th></tr>
+    <tr><td><b>« Les feuilles, les rameaux, les houppier »</b>, une faute que j’avais écrite</td>
+        <td>« Les feuilles, les rameaux et le houppier. »</td></tr>
+    <tr><td><b>Trois fois la même information.</b> Ce qui favorise la maladie était écrit deux fois, et les parasites de faiblesse deux fois aussi</td>
+        <td>chaque chose une fois, à sa place</td></tr>
+    <tr><td><b>Des mots de laboratoire</b> : ascospores, conidies, forme sexuée et asexuée</td>
+        <td>« les spores que le vent emporte contaminent des arbres éloignés, celles que la pluie entraîne contaminent les arbres voisins »</td></tr>
+    <tr><td><b>Il ne savait pas QUAND</b> regarder. La saison était dans la fiche, elle ne s’affichait nulle part</td>
+        <td>un bloc « Quand ça se voit », avec les mots de la page</td></tr>
+    <tr><td><b>La question du chantier n’était pas posée</b> : est-ce que ça va passer aux autres arbres du jardin</td>
+        <td>un bloc qui répond, avec ce que la page dit et rien de plus</td></tr>
+  </table>
+  </div>
+  <p><b>Le trou, et il est réel : l’INRAE ne donne AUCUN traitement ni aucune
+  méthode de lutte.</b> La fiche le dit maintenant en toutes lettres, plutôt que
+  de le cacher derrière « surveiller l’évolution ». Ce qu’un paysagiste voudrait
+  savoir et qui manque encore : faut-il ramasser les feuilles mortes, faut-il
+  tailler les rameaux atteints, faut-il prévenir le client. <b>Je ne l’invente
+  pas.</b> Deux façons de le combler, et c’est vous qui tranchez : une autre
+  source (FREDON, Plante &amp; Cité, un document de pépiniériste), ou <b>votre
+  propre geste de métier</b>, écrit comme venant de vous. Dites-le-moi et je
+  l’ajoute, avec sa source.</p>
 
   <h3>D’où vient chaque ligne</h3>
   <div class="cadre">
@@ -215,7 +245,8 @@ details.det .fiche p.pale{font-size:11.5px;color:var(--gris)}
 
   <h3>Ce que je vous demande</h3>
   <ol>
-    <li>Les <b>quatre questions</b>, dans cet ordre et avec ces mots ?</li>
+    <li>Les <b>blocs</b>, dans cet ordre et avec ces mots ?</li>
+    <li><b>Que faire</b> : votre geste de métier, ou on laisse « l’INRAE ne donne aucun traitement » ?</li>
     <li>La <b>photo</b> vous convient ? Sinon la vôtre, ou aucune.</li>
     <li>Un <b>« oui »</b>, et la fiche entre dans Atlas : fichier, photo, import vérifié, et les phrases de l’écran.</li>
   </ol>
@@ -274,18 +305,20 @@ details.det .fiche p.pale{font-size:11.5px;color:var(--gris)}
       "nomCommun": "Brunissure des feuilles de peuplier",
       "nomScientifique": "Drepanopeziza brunnea",
       "categorie": "maladie",
-      "agentCausal": "Drepanopeziza brunnea (forme sexuée) ; Marssonina brunnea (forme asexuée). Ascomycète.",
+      "agentCausal": "Un champignon, Drepanopeziza brunnea. Il porte un second nom, Marssonina brunnea, quand il se reproduit sous son autre forme.",
       "agentType": "champignon",
       "partiesAtteintes": [
         "feuille",
         "rameau",
         "houppier"
       ],
+      "quandCaSeVoit": "Les taches apparaissent au printemps. Les feuilles tombent tôt, en juin et juillet. Les contaminations continuent pendant toute la période de végétation.",
+      "autresEssences": "La page ne nomme aucun autre arbre que le peuplier. Les peupliers noirs, les peupliers deltoïdes et leurs hybrides sont les plus touchés. Le peuplier baumier de l’Ouest, Populus trichocarpa, est tolérant.",
       "periodeDebutMois": 3,
       "periodeFinMois": 9,
       "explicationCourte": "Maladie fongique du peuplier. Petites taches brunes sur les feuilles au printemps, feuillage qui jaunit puis prend une couleur bronze, chute précoce des feuilles en commençant par le bas de l’arbre.",
       "gravite": "vigilance",
-      "graviteSelonLaSource": "Selon l’INRAE, l’impact est de 1 sur 3, l’agressivité de 2 sur 3 et la fréquence de 3 sur 3. Défoliation partielle ou totale. L’arbre défolié devient sensible à des parasites de faiblesse. Chez les arbres adultes, la production diminue. Chez les jeunes tiges, dépérissement et mort de l’arbre si les attaques sont répétées.",
+      "graviteSelonLaSource": "L’INRAE donne un impact de 1 sur 3, une agressivité de 2 sur 3 et une fréquence de 3 sur 3. L’arbre perd une partie ou la totalité de ses feuilles, et il devient alors sensible à d’autres parasites qui s’attaquent aux arbres affaiblis. Un arbre adulte produit moins de bois. Une jeune tige peut dépérir et mourir si elle est attaquée plusieurs années de suite.",
       "impactMecanique": "inconnu",
       "risqueHumainAnimal": "inconnu",
       "statutReglementaire": "aucun",
@@ -295,10 +328,10 @@ details.det .fiche p.pale{font-size:11.5px;color:var(--gris)}
         "rameau",
         "houppier"
       ],
-      "conduiteRecommandee": "Surveiller l’évolution, surtout sur les jeunes plantations : des attaques répétées peuvent faire dépérir et mourir les jeunes tiges, et un arbre défolié devient sensible à des parasites de faiblesse. La sensibilité dépend du clone de peuplier.",
+      "conduiteRecommandee": "L’INRAE ne donne aucun traitement ni aucune méthode de lutte pour cette maladie. Surveillez l’arbre d’une année sur l’autre, surtout s’il est jeune, car ce sont les attaques répétées qui le font mourir.",
       "prevention": null,
-      "commentCaArrive": "Le champignon germe sur les feuilles, les pétioles ou les jeunes rameaux quand l’humidité de l’air est forte. Ce qui le favorise : la présence de clones sensibles, des précipitations importantes, une forte humidité atmosphérique, et des températures moyennes de 12 °C à 20 °C.",
-      "gestion": "Le champignon passe l’hiver dans les feuilles malades tombées au sol, sous sa forme sexuée, et dans l’écorce des rameaux contaminés l’année précédente, sous sa forme asexuée. Dès la reprise de végétation, les deux formes peuvent réaliser les premières infections. Les ascospores, portées par le vent, assurent les contaminations à longue distance. Les conidies, en suspension dans l’eau de pluie, assurent la dispersion locale. Les contaminations se poursuivent pendant toute la période de végétation, chaque fois que l’humidité de l’air est forte.",
+      "commentCaArrive": "Le champignon germe sur les feuilles, les pétioles ou les jeunes rameaux quand l’air est humide. Il se développe surtout par temps de pluie, dans une humidité forte et entre 12 °C et 20 °C. Certains clones de peuplier sont plus sensibles que d’autres.",
+      "gestion": "Le champignon passe l’hiver dans les feuilles malades tombées au sol et dans l’écorce des rameaux contaminés l’année précédente. Il repart dès que la végétation redémarre. Les spores que le vent emporte contaminent des arbres éloignés. Celles que la pluie entraîne contaminent les arbres voisins. Les contaminations continuent pendant toute la période de végétation, chaque fois que l’air est humide.",
       "traitement": null,
       "symptomes": [
         {
@@ -399,14 +432,14 @@ details.det .fiche p.pale{font-size:11.5px;color:var(--gris)}
       ],
       "confusions": [],
       "criteresDiscriminants": [
-        "Taches brunes arrondies de moins d’un millimètre, d’abord éparses puis confluentes, sur les deux faces du limbe.",
+        "Des taches brunes rondes de moins d’un millimètre, sur les deux faces de la feuille. Elles sont d’abord isolées, puis elles se rejoignent.",
         "Quand les taches sont nombreuses, la feuille prend une couleur bronze caractéristique.",
-        "La défoliation débute par le bas : feuillage clairsemé dans le tiers inférieur.",
-        "En cas d’attaque forte ou de clone sensible : pustules noires plus ou moins allongées sur les pétioles, les nervures et les jeunes pousses de l’année."
+        "Les feuilles tombent en commençant par le bas de l’arbre. C’est le tiers inférieur qui s’éclaircit le premier.",
+        "Quand l’attaque est forte, des pustules noires plus ou moins allongées apparaissent sur les pétioles, sur les nervures et sur les jeunes pousses de l’année."
       ],
       "criteresExclusion": [
-        "Des taches blanc-gris de 5 à 10 mm, surtout sur tremble et peuplier grisard, désignent plutôt Marssonina castagnei.",
-        "Des taches rondes de 1 à 8 mm sur peuplier noir désignent plutôt Marssonina populi nigrae."
+        "Sur un tremble ou un peuplier grisard, des taches blanc-gris de 5 à 10 mm désignent plutôt un autre champignon, Marssonina castagnei.",
+        "Sur un peuplier noir, des taches rondes de 1 à 8 mm désignent plutôt un autre champignon, Marssonina populi nigrae."
       ],
       "facteursFavorisants": [
         "La présence de clones sensibles.",
@@ -463,7 +496,13 @@ details.det .fiche p.pale{font-size:11.5px;color:var(--gris)}
     (F.impactMecanique === "inconnu" && F.gravite !== "faible");
 
   // Les parties du vocabulaire fermé, en mots : « les feuilles, les rameaux, le houppier »
-  var PARTIES_AU_PLURIEL = { feuille: "feuilles", aiguille: "aiguilles", rameau: "rameaux", branche: "branches", tronc: "tronc", ecorce: "écorce", collet: "collet", racine: "racines", fruit: "fruits", fleur: "fleurs", bourgeon: "bourgeons", champignon_sur_bois: "champignons sur le bois", houppier: "houppier", ensemble: "arbre entier" };
+  var PARTIES_AU_PLURIEL = { feuille: "les feuilles", aiguille: "les aiguilles", rameau: "les rameaux", branche: "les branches", tronc: "le tronc", ecorce: "l’écorce", collet: "le collet", racine: "les racines", fruit: "les fruits", fleur: "les fleurs", bourgeon: "les bourgeons", champignon_sur_bois: "les champignons sur le bois", houppier: "le houppier", ensemble: "l’arbre entier" };
+  // « les feuilles, les rameaux et le houppier » : la dernière se lie par « et »,
+  // jamais par une virgule de plus. Majuscule sur la première.
+  function enListe(mots){
+    var s = mots.length < 2 ? mots.join("") : mots.slice(0, -1).join(", ") + " et " + mots[mots.length - 1];
+    return s.charAt(0).toUpperCase() + s.slice(1);
+  }
   var MOIS = ["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"];
   function dateCitee(iso){ var p = iso.split("-"); return Number(p[2]) + " " + MOIS[Number(p[1]) - 1] + " " + p[0]; }
   function e(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
@@ -484,6 +523,11 @@ details.det .fiche p.pale{font-size:11.5px;color:var(--gris)}
   function bloc(cle, val, fort){
     return '<div class="bloc'+(fort?' fort':'')+'"><p class="caps gris">'+e(cle)+'</p><p class="val">'+e(val)+'</p></div>';
   }
+  function listeBloc(cle, vals){
+    if (!vals || vals.length === 0) return "";
+    return '<div class="bloc"><p class="caps gris">'+e(cle)+'</p><ul class="val puces">' +
+      vals.map(function(v){ return '<li>'+e(v)+'</li>'; }).join("") + '</ul></div>';
+  }
   function ligne(cle, val){
     if (val === null || val === undefined || val === "") return "";
     return '<div class="ligne"><p class="caps gris">'+e(cle)+'</p><p>'+e(val)+'</p></div>';
@@ -494,9 +538,6 @@ details.det .fiche p.pale{font-size:11.5px;color:var(--gris)}
   }
   function details(){
     return '<details class="det"><summary>Voir les détails</summary>' +
-      liste("Ce qui le distingue", F.criteresDiscriminants) +
-      liste("Ce qui l’écarte", F.criteresExclusion) +
-      liste("Ce qui le favorise", F.facteursFavorisants) +
       ligne("Prévention", F.prevention) +
       ligne("Traitement", F.traitement) +
       '<div class="ligne fiche"><p class="caps gris">La fiche</p>' +
@@ -510,10 +551,14 @@ details.det .fiche p.pale{font-size:11.5px;color:var(--gris)}
     '<div class="ecran">' + entete() + '<div class="corps">' +
     bloc("Nom", F.nomCommun + ", " + F.nomScientifique + ".", true) +
     bloc("Agent en cause", F.agentCausal) +
-    bloc("Parties atteintes", "Les " + F.partiesAtteintes.map(function(p){ return PARTIES_AU_PLURIEL[p] || p; }).join(", les ") + ".") +
+    bloc("Parties atteintes", enListe(F.partiesAtteintes.map(function(p){ return PARTIES_AU_PLURIEL[p] || p; })) + ".") +
     '<p class="confiance" style="margin-top:20px">Probable sur '+e(LOT.taxons[0].article)+' '+e(LOT.taxons[0].nomCommun.toLowerCase())+'.</p>' +
     photos() +
+    listeBloc("Comment le reconnaître", F.criteresDiscriminants) +
+    listeBloc("Ça pourrait aussi être", F.criteresExclusion) +
+    bloc("Quand ça se voit", F.quandCaSeVoit) +
     bloc("Est-ce grave pour l’arbre ?", F.graviteSelonLaSource) +
+    bloc("Et les autres arbres du jardin ?", F.autresEssences) +
     bloc("Comment ça arrive", F.commentCaArrive) +
     bloc("Comment ça se propage", F.gestion) +
     bloc("Que faire ?", F.conduiteRecommandee, true) +
