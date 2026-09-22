@@ -41,6 +41,32 @@ compte comme avant. Éprouvé : `test-fiche-securite.ts` et
 `test-fiche-securite-e2e.ts` (« le nom signé est repris sur la fiche
 suivante »), vus rouges sur l'ancien code.
 
+### Fiches de sécurité : chercher un client, toutes ses fiches sortent
+
+*« Faut pouvoir faire une recherche par nom aussi et il te sort toutes les
+fiches de ce client. »* Un champ « Chercher un client » sous le mois, dessiné
+comme celui de Clients. Un nom tapé passe par-dessus le mois : toutes les fiches
+signées du client (ou du chantier), tous mois confondus. Le dépôt rend désormais
+toutes les fiches signées (`listerLesFichesSignees`) ; le mois et le nom se
+choisissent à l'écran par une règle pure (`fichesAMontrer`), qui reprend la
+recherche des clients. `scripts/test-fiches-securite-recherche.ts`.
+
+Et le jour, le même soir : *« rajoute le jour aussi en filtre jour mois
+année »*. La roue du titre choisit désormais un jour (`?jour=2026-09-22`) ; le
+jour s'écrit en titre, une croix à côté rend le mois entier. Le jour se lit à
+l'heure du téléphone, pas en UTC : une fiche signée à 0 h 30 reste au jour que
+sa carte écrit.
+
+Puis les retours d'intervention : *« met le filtre jours mois année de la fiche
+de sécurité »*. Le filtre est sorti dans une seule pièce, `FiltreDeDate`, avec
+sa règle pure dans `src/lib/periode.ts`, et les deux écrans s'en servent. Les
+pastilles d'années des retours sont retirées avec `anneesDesRetours`, qui ne
+servait qu'à elles. Les retours s'ouvrent donc sur le mois en cours, et un nom
+tapé sort tous les retours du client, depuis toujours, comme sur les fiches. Le
+jour se lit par `jourIso`, à l'heure de Paris, la même règle côté serveur et
+côté téléphone : la fonction à l'heure du téléphone écrite plus tôt pour les
+fiches faisait double emploi, elle est retirée.
+
 ### Chaque photo à un seul endroit : celui où elle a été posée
 
 Une photo posée sur la fiche de sécurité y reste — elle ne passe plus dans
