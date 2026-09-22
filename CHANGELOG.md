@@ -52,6 +52,25 @@ fiche par chantier, gardée deux ans, jamais purgée ; ses photos non plus. Ce
 qui est coché et écrit revient sur la fiche suivante — son choix — et l'écran
 de la loi le dit. Rien n'est coché par l'application. `docs/lot-fiche-de-securite.md`.
 
+### Relire les deux fiches contre les pages de l'INRAE, et corriger ce qui disait plus qu'elles
+
+Sa demande : « va vérifier avec les infos de l'INRAE que tu n'as fait aucune
+erreur ». Champ par champ, sur les deux fiches. Une erreur de fond : la page
+du chêne écrit « diminution de l'activité photosynthétique », et la fiche
+disait « l'arbre respire moins bien par ses feuilles », ce qui n'est pas le
+même mécanisme.
+
+Trois phrases disaient plus que la page : « produit moins de bois » là où elle
+écrit « diminution de production » sans le mot bois (et donne deux chiffres
+qui manquaient), un nom courant inventé pour P. trichocarpa, et « plusieurs
+années de suite » là où elle écrit « répétée » et « parfois ». Une condition
+manquait, « ou clone sensible ». Cinq phrases étaient dites dans deux blocs à
+la fois.
+
+Ce que la relecture a confirmé, et qui vaut d'être noté : les trois notes du
+peuplier ont été recomptées case par case dans le tableau de la page, et la
+page du chêne n'en porte réellement aucune.
+
 ### Une base commune aux planches de maladies, et la fiche du chêne enfin montrée
 
 Sa demande, la planche du peuplier retenue : « garde cette planche, elle est
