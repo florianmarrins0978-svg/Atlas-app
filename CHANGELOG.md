@@ -53,7 +53,7 @@ retirait les lignes que le client ne prenait pas d'habitude, et empêchait de
 cocher un travail en plus. `recomposerPourClient` est remplacé par
 `cocherCommeLaDerniereFois` : toutes les lignes restent, celles du dernier
 rapport envoyé se cochent. La phrase devient « 3 prestations cochées, celles du
-dernier chantier. ». `ARCHITECTURE.md` §407.
+dernier chantier. ». `ARCHITECTURE.md` §408.
 
 ### Rapports envoyés : chercher un client, choisir un jour, un mois, une année
 
@@ -167,6 +167,27 @@ tapé sort tous les retours du client, depuis toujours, comme sur les fiches. Le
 jour se lit par `jourIso`, à l'heure de Paris, la même règle côté serveur et
 côté téléphone : la fonction à l'heure du téléphone écrite plus tôt pour les
 fiches faisait double emploi, elle est retirée.
+
+### La flèche retour de la fiche client garde ce qu'il a tapé
+
+*« Je crée un devis, je remplis la fiche client, je fais retour, mais elle
+n'apparaît plus dans mes clients en cours !! »* Depuis le 17 septembre, seul
+« Je rédige à la main » enregistrait la fiche client : la flèche retour jetait
+la saisie. Dans la feuille « Créer un devis », aucun chantier ne naissait ; sur
+la fiche rouverte depuis un devis, le chantier restait « Chantier du … », sans
+son client (reproduit sur une version bâtie, vérifié en base).
+
+La flèche enregistre désormais ce qui a changé depuis l'ouverture, puis sort.
+Rien de tapé : elle sort comme avant, sans créer de chantier vide. Les trois
+sorties (devis, facture, retour) passent par une seule écriture,
+`enregistrerLaSaisie` ; `enregistrerSurLeChantier` disparaît. La règle :
+`src/lib/saisie-fiche-client.ts`. Suites : `test-saisie-fiche-client.ts`,
+`test-fiche-client-gardee-au-retour-e2e.ts` (vue rouge avant, verte après).
+
+Le soir même : refermer la feuille en touchant le voile, ou par Échap, perdait
+encore le client. Les deux passent désormais par la même sortie que la flèche.
+Mesuré en version bâtie : la ligne est dans « En cours » en moins d'une
+seconde, sans recharger ni changer de page. `ARCHITECTURE.md` §407.
 
 ### Chaque photo à un seul endroit : celui où elle a été posée
 

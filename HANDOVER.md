@@ -11,6 +11,18 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 
 ---
 
+## LA FLÈCHE RETOUR DE LA FICHE CLIENT ENREGISTRE — 22 septembre 2026
+
+| | |
+|---|---|
+| **ce qu'il a vu** | fiche client remplie, retour : son client n'est pas dans « En cours » |
+| **la racine** | seul « Je rédige à la main » enregistrait ; la flèche sortait en jetant la saisie |
+| **où c'est corrigé** | `FormulaireNouveauChantier` : `sortirEnEnregistrant` — flèche, voile et Échap (`FermetureDeLaFeuille`) |
+| **la règle** | `saisieAEnregistrer`, `src/lib/saisie-fiche-client.ts` — l'écart avec l'ouverture |
+| **ce qui reste** | le geste retour du navigateur sur la fiche en page (`TODO.md`) |
+
+---
+
 ## LA DATE D'UNE FACTURE EST CELLE DE SON ENVOI — 22 septembre 2026
 
 | | |

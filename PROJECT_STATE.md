@@ -5,6 +5,14 @@
 
 ---
 
+## FAIT : LA FLÈCHE RETOUR DE LA FICHE CLIENT GARDE LA SAISIE (22 septembre 2026)
+
+*« Je remplis la fiche client, je fais retour, mais elle n'apparaît plus dans
+mes clients en cours !! »* La flèche jetait ce qu'il avait tapé : dans la
+feuille de l'accueil, aucun chantier ; depuis un devis, un chantier sans client.
+Elle enregistre désormais ce qui a changé depuis l'ouverture, puis sort.
+`ARCHITECTURE.md` §407.
+
 ## FAIT : LA FACTURE PORTE LE JOUR OÙ ELLE PART (22 septembre 2026)
 
 Son constat : « Facturé le 21 septembre » un 22, sur une facture qu'il venait
