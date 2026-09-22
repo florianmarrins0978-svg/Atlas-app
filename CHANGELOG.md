@@ -8,11 +8,11 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-22
 
-### Le piquage se désigne : compteur d'eau ou robinet extérieur
+### Le piquage se désigne : compteur d'eau ou robinet de jardin
 
 L'avertissement au-dessus du croquis disait « l'endroit où le piquage se
 fait » sans dire ce que c'est. Il précise désormais de noter l'emplacement du
-compteur d'eau ou du robinet extérieur : un croquis qui ne le porte pas perd
+compteur d'eau ou du robinet de jardin, les deux mots du menu juste au-dessus : un croquis qui ne le porte pas perd
 son plan (`CLAUDE.md` §4 bis), et le mot « piquage » seul ne le faisait pas
 dessiner. Même texte dans l'écran (`ArrosageClient.tsx`) et dans la maquette
 `appli/arrosage-plan-et-pieces.html`, à la même place.
