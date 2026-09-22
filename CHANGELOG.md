@@ -18,6 +18,12 @@ toutes les fiches signées (`listerLesFichesSignees`) ; le mois et le nom se
 choisissent à l'écran par une règle pure (`fichesAMontrer`), qui reprend la
 recherche des clients. `scripts/test-fiches-securite-recherche.ts`.
 
+Et le jour, le même soir : *« rajoute le jour aussi en filtre jour mois
+année »*. La roue du titre choisit désormais un jour (`?jour=2026-09-22`) ; le
+jour s'écrit en titre, une croix à côté rend le mois entier. Le jour se lit à
+l'heure du téléphone, pas en UTC : une fiche signée à 0 h 30 reste au jour que
+sa carte écrit.
+
 ### Chaque photo à un seul endroit : celui où elle a été posée
 
 Une photo posée sur la fiche de sécurité y reste — elle ne passe plus dans

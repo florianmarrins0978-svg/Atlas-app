@@ -9,12 +9,15 @@ import { fichesAMontrer } from "../src/lib/fiche-securite";
 // tête ne borne plus rien dès qu'un nom est tapé — une fiche de juin se
 // cherche en septembre.
 
-const fiche = (client: string, chantierNom: string, iso: string) => ({ client, chantierNom, signeeLe: new Date(iso) });
+// Les dates sont à l'heure LOCALE (sans « Z ») : c'est celle que la carte écrit,
+// et celle que le filtre doit lire, quel que soit le fuseau de la machine.
+const fiche = (client: string, chantierNom: string, local: string) => ({ client, chantierNom, signeeLe: new Date(local) });
 const FICHES = [
-  fiche("Pagnol", "Mr. Pagnol", "2026-09-22T09:00:00Z"),
-  fiche("Julien", "Mr. Julien", "2026-09-22T08:00:00Z"),
-  fiche("Pagnol", "Mr. Pagnol, la haie", "2026-06-03T09:00:00Z"),
-  fiche("Moréau", "Mme Moréau", "2025-11-14T09:00:00Z"),
+  fiche("Pagnol", "Mr. Pagnol", "2026-09-22T09:00:00"),
+  fiche("Julien", "Mr. Julien", "2026-09-21T08:00:00"),
+  fiche("Pagnol", "Mr. Pagnol, la haie", "2026-06-03T09:00:00"),
+  fiche("Moréau", "Mme Moréau", "2025-11-14T09:00:00"),
+  fiche("Lebrun", "Mr. Lebrun", "2026-10-01T00:30:00"),
 ];
 const noms = (l: { chantierNom: string }[]) => l.map((f) => f.chantierNom);
 
@@ -30,25 +33,40 @@ function cas(nom: string, fn: () => void) {
 }
 
 cas("sans saisie, le mois choisi et lui seul", () => {
-  assert.deepEqual(noms(fichesAMontrer(FICHES, { mois: "2026-09", saisie: "" })), ["Mr. Pagnol", "Mr. Julien"]);
-  assert.deepEqual(noms(fichesAMontrer(FICHES, { mois: "2026-06", saisie: "  " })), ["Mr. Pagnol, la haie"]);
-  assert.deepEqual(fichesAMontrer(FICHES, { mois: "2026-01", saisie: "" }), []);
+  assert.deepEqual(noms(fichesAMontrer(FICHES, { periode: "2026-09", saisie: "" })), ["Mr. Pagnol", "Mr. Julien"]);
+  assert.deepEqual(noms(fichesAMontrer(FICHES, { periode: "2026-06", saisie: "  " })), ["Mr. Pagnol, la haie"]);
+  assert.deepEqual(fichesAMontrer(FICHES, { periode: "2026-01", saisie: "" }), []);
+});
+
+cas("un jour choisi : ce jour-là, et lui seul", () => {
+  assert.deepEqual(noms(fichesAMontrer(FICHES, { periode: "2026-09-22", saisie: "" })), ["Mr. Pagnol"]);
+  assert.deepEqual(noms(fichesAMontrer(FICHES, { periode: "2026-09-21", saisie: "" })), ["Mr. Julien"]);
+  assert.deepEqual(fichesAMontrer(FICHES, { periode: "2026-09-23", saisie: "" }), []);
+});
+
+cas("signée à 0 h 30 le 1er octobre, elle est au 1er octobre — pas au 30 septembre", () => {
+  assert.deepEqual(noms(fichesAMontrer(FICHES, { periode: "2026-10-01", saisie: "" })), ["Mr. Lebrun"]);
+  assert.deepEqual(noms(fichesAMontrer(FICHES, { periode: "2026-09", saisie: "" })), ["Mr. Pagnol", "Mr. Julien"]);
+});
+
+cas("un nom tapé passe aussi par-dessus le jour", () => {
+  assert.deepEqual(noms(fichesAMontrer(FICHES, { periode: "2026-09-21", saisie: "pagnol" })), ["Mr. Pagnol", "Mr. Pagnol, la haie"]);
 });
 
 cas("un nom tapé rend TOUTES les fiches du client, tous mois confondus", () => {
-  assert.deepEqual(noms(fichesAMontrer(FICHES, { mois: "2026-09", saisie: "pagnol" })), ["Mr. Pagnol", "Mr. Pagnol, la haie"]);
+  assert.deepEqual(noms(fichesAMontrer(FICHES, { periode: "2026-09", saisie: "pagnol" })), ["Mr. Pagnol", "Mr. Pagnol, la haie"]);
 });
 
 cas("sans accent ni casse, comme la recherche des clients", () => {
-  assert.deepEqual(noms(fichesAMontrer(FICHES, { mois: "2026-09", saisie: "MOREAU" })), ["Mme Moréau"]);
+  assert.deepEqual(noms(fichesAMontrer(FICHES, { periode: "2026-09", saisie: "MOREAU" })), ["Mme Moréau"]);
 });
 
 cas("le nom du chantier se cherche aussi", () => {
-  assert.deepEqual(noms(fichesAMontrer(FICHES, { mois: "2026-09", saisie: "haie" })), ["Mr. Pagnol, la haie"]);
+  assert.deepEqual(noms(fichesAMontrer(FICHES, { periode: "2026-09", saisie: "haie" })), ["Mr. Pagnol, la haie"]);
 });
 
 cas("un nom inconnu ne rend rien", () => {
-  assert.deepEqual(fichesAMontrer(FICHES, { mois: "2026-09", saisie: "dupont" }), []);
+  assert.deepEqual(fichesAMontrer(FICHES, { periode: "2026-09", saisie: "dupont" }), []);
 });
 
 if (echecs) {

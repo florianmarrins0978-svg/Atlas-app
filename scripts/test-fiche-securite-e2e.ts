@@ -269,6 +269,20 @@ async function main() {
     await champ.fill("");
     await carte.waitFor({ timeout: 5_000 });
 
+    // LE JOUR — *« rajoute le jour aussi en filtre jour mois année »*. La fiche
+    // vient d'être signée : elle est au jour d'aujourd'hui, pas à celui d'avant.
+    const d = new Date();
+    const aujourdhui = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    const hier = new Date(d.getTime() - 86_400_000);
+    const laVeille = `${hier.getFullYear()}-${String(hier.getMonth() + 1).padStart(2, "0")}-${String(hier.getDate()).padStart(2, "0")}`;
+    await page.goto(`${BASE}/paysage/fiches-securite?jour=${aujourdhui}`, { waitUntil: "networkidle" });
+    await carte.waitFor({ timeout: 15_000 });
+    await page.goto(`${BASE}/paysage/fiches-securite?jour=${laVeille}`, { waitUntil: "networkidle" });
+    await page.locator("[data-atlas='tout-le-mois']").waitFor({ timeout: 15_000 });
+    assert.equal(await carte.count(), 0, "la fiche d'aujourd'hui sort sous la veille");
+    await page.goto(`${BASE}/paysage/fiches-securite`, { waitUntil: "networkidle" });
+    await carte.waitFor({ timeout: 15_000 });
+
     // « ENREGISTRER » EST UN BOUTON, PAS UN LIEN — sa capture du 22 septembre
     // 2026 : *« je clique sur enregistrer le pdf, ça me propose pas de le
     // télécharger »*. Un lien vers le PDF, même en `attachment`, se fait
