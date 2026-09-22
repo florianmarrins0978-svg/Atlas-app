@@ -8,6 +8,19 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-22
 
+### Le relevé de TVA sort du plus récent au plus ancien
+
+Sa règle : *« l'ordre pour la TVA collectée et la TVA déductible doit être le
+dernier enregistré visible »*. La preuve « TVA collectée » sortait du plus
+ANCIEN au plus récent : le règlement qu'il venait de noter tombait tout en bas
+d'une liste de neuf, alors que c'est la seule raison d'ouvrir cette preuve juste
+après avoir noté quelque chose. Elle sort désormais comme la liste des achats,
+qui le faisait déjà — le dernier jour en tête, et à date égale le numéro de
+facture le plus grand, qui est le plus récent. Tout ce qui décide de l'ordre est
+écrit sur la ligne. L'ordre du CALCUL ne bouge pas : la TVA des acomptes se
+répartit toujours dans l'ordre où l'argent est rentré, et le règlement qui solde
+porte le reliquat d'arrondi.
+
 ### La fiche de sécurité s'enregistre pendant qu'il écrit, et le GPS dit enfin ce qui a raté
 
 Ses trois remarques du 22 septembre, depuis son iPhone.

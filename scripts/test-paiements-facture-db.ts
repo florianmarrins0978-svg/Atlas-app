@@ -128,6 +128,41 @@ async function main() {
     assert.strictEqual((await facturesEnAttente(ctx)).length, 0);
   });
 
+  // **LE DERNIER ENREGISTRÉ EN TÊTE** — sa règle du 22 septembre 2026 :
+  // *« l'ordre pour la TVA collectée et la TVA déductible doit être le dernier
+  // enregistré visible »*. Le relevé sortait du plus ancien au plus récent, et
+  // le règlement qu'il venait de noter tombait en bas d'une liste de neuf.
+  //
+  // Éprouvé ICI et pas sur une règle pure : l'ordre naît de `assemblerReleve`,
+  // qui n'est pas exporté, et le numéro qui départage vient de la base.
+  await test("LE RELEVÉ SORT DU PLUS RÉCENT AU PLUS ANCIEN", async () => {
+    const ctx = await contexte("ordre");
+    const ancienne = await factureEmise(ctx, "1000.00");
+    const recente = await factureEmise(ctx, "500.00");
+    const memeJour = await factureEmise(ctx, "200.00");
+
+    assert.ok((await noterPaiement(ctx, ancienne.id, { date: "2026-09-10", montant: "1200.00" })).ok);
+    assert.ok((await noterPaiement(ctx, recente.id, { date: "2026-09-20", montant: "600.00" })).ok);
+    // Même jour que la plus récente : c'est le numéro qui départage, et il
+    // grandit avec le temps — la dernière facture passe donc devant.
+    assert.ok((await noterPaiement(ctx, memeJour.id, { date: "2026-09-20", montant: "240.00" })).ok);
+
+    const t3 = await releveTvaCollectee(ctx, T3.debut, T3.fin);
+    assert.deepStrictEqual(
+      t3.lignes.map((l) => `${l.dateEmission}|${l.numeroCommercial}`),
+      [
+        `2026-09-20|${memeJour.numeroCommercial}`,
+        `2026-09-20|${recente.numeroCommercial}`,
+        `2026-09-10|${ancienne.numeroCommercial}`,
+      ],
+      "le dernier règlement noté n'est plus en tête du relevé"
+    );
+
+    // Et les totaux ne dépendent pas de l'ordre d'affichage : la TVA des
+    // acomptes se répartit toujours dans l'ordre où l'argent est rentré.
+    assert.strictEqual(t3.totalTva, "340.00");
+  });
+
   await test("« Payée » solde en un geste, à la date du jour", async () => {
     // La porte qu'il a décrite : *« je clique sur valider, et boum »*.
     const ctx = await contexte("solde");
