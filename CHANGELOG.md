@@ -81,6 +81,7 @@ Le jour du passage, sur l'écran d'ouverture, s'écrit comme « Septembre 2026 �
 le nom du jour en plus : « Mardi 22 septembre 2026 » (`jourEnTitre`,
 `scripts/test-jour-en-titre.ts`). Le titre et sa roue sont sortis du filtre de
 date (`TitreAvecRoue`) : un seul dessin pour les deux.
+Le libellé « Jour du passage » au-dessus est retiré le même soir, à sa demande.
 
 Le bouton « Ouvrir une fiche » devient « Créer une fiche » (« Création… »
 pendant qu'elle se crée).

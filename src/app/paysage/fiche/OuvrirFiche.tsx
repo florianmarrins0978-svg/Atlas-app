@@ -22,12 +22,10 @@ export default function OuvrirFiche() {
 
   return (
     <div>
-      <p className="text-[12.5px]" style={{ color: colors.muted }}>
-        Jour du passage
-      </p>
       {/* **Le jour écrit en titre**, comme « Septembre 2026 », avec le nom du
-          jour — sa demande du 22 septembre 2026. La roue du téléphone s'ouvre
-          toujours au toucher : seule l'écriture a changé. */}
+          jour, sa demande du 22 septembre 2026. La roue du téléphone s'ouvre
+          toujours au toucher. Le libellé « Jour du passage » est retiré le même
+          soir, à sa demande : le jour en titre se suffit. */}
       <div className="flex">
         <TitreAvecRoue titre={jourEnTitre(jour)} jour={jour} choisir={setJour} dataAtlas="jour-du-passage" />
       </div>
