@@ -104,7 +104,7 @@ export default function JourneeRegardee({
     // **Ceux de CE jour** (migration 0093) — la fiche regarde une journée.
     const rangs = equipesDuJour(c.equipes, jour)[demi];
     if (rangs.length === 0) return null;
-    return rangs.map((r) => nomEquipe(r)).join(" · ");
+    return rangs.map((r) => nomEquipe(r)).join(", ");
   };
 
   // Ce qui reste de capacité ce jour-là, dit par la fonction du planning.
@@ -277,7 +277,7 @@ function Pastille({ etat }: { etat: EtatDemi }) {
 function compteLisible(o: { pris: readonly unknown[]; charge: number }): string {
   if (o.pris.length === 0) return "libre";
   const chantiers = `${o.pris.length} chantier${o.pris.length > 1 ? "s" : ""}`;
-  if (o.charge > 1) return `${chantiers} · ${Math.round(o.charge * 100)} % de vos équipes`;
-  if (o.charge === 1) return `${chantiers} · complet`;
+  if (o.charge > 1) return `${chantiers}, ${Math.round(o.charge * 100)} % de vos équipes`;
+  if (o.charge === 1) return `${chantiers}, complet`;
   return chantiers;
 }

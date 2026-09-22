@@ -276,13 +276,13 @@ export function derniereTraceDuClient(jours: {
  * **Née d'une mesure, pas d'un goût — 9 septembre 2026.** La ligne d'un client
  * porte son adresse ET la dernière chose qui s'est produite. Sur son téléphone,
  * la deuxième ligne dispose de 316 px : « 4 Clos Moutier 78200
- * Fontenay-Mauvoisin · Devis 2 sept. 2026 » n'y tient pas, et se coupe. Or
+ * Fontenay-Mauvoisin, Devis 2 sept. 2026 » n'y tient pas, et se coupe. Or
  * l'adresse est ce qui sépare quatre clients du même nom (sa demande du
  * 3 septembre) — la rogner pour afficher une année qu'on connaît déjà, c'est
  * échanger ce qui sert contre ce qui ne sert pas.
  *
  * **Les quatre caractères de l'année suffisent à faire la différence** : sans
- * eux, la ligne mesure exactement ce que mesurait « · 8 chantiers », qu'elle
+ * eux, la ligne mesure exactement ce que mesurait « , 8 chantiers », qu'elle
  * remplace. Rien ne se coupe qui ne se coupait déjà.
  *
  * **Et l'année reparaît dès qu'elle apprend quelque chose.** Un devis de l'an

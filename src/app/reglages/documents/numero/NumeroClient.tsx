@@ -93,7 +93,7 @@ export default function NumeroClient({ formatInitial }: { formatInitial: string 
                   </span>
                   {/* **La mention « par défaut » vit dans `dit`, et nulle part
                       ailleurs.** L'ajouter ici la faisait lire deux fois sur le
-                      format concerné — « Le format par défaut · par défaut ».
+                      format concerné — « Le format par défaut, par défaut ».
                       Vu à la capture, par aucun test (`CLAUDE.md` §5). */}
                   <span className={`mt-0.5 block ${texteSituation}`} style={{ color: colors.inkSoft }}>
                     {f.dit}

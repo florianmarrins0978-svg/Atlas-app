@@ -309,7 +309,6 @@ export default function ListeTermines({
                   <Oeil ouvert={montrerCeQuiAttend} onClick={() => setOeilOuvert((o) => !o)} />
                 </>
               )}
-              {attente.length > 0 && faites.length > 0 && <span aria-hidden="true">·</span>}
               {/* Les facturés s'éteignent quand l'œil est ouvert : ils ne
                   sont plus dans la liste, mais le chiffre reste à sa place
                   pour dire qu'ils existent. `muted` plutôt qu'une opacité :
@@ -552,7 +551,7 @@ function Ligne({ ligne, annee }: { ligne: LigneAffichee; annee: string }) {
           {ligne.nom}
         </b>
         {/* **La ligne d'état s'enroule, elle ne se coupe pas.** Vu sur une
-            capture de l'écran, avec de vrais montants : « 12 août ·
+            capture de l'écran, avec de vrais montants : « 12 août,
             1 764,00 € prévus » perdrait « prévus », et parfois le montant
             lui-même. Le NOM, lui, reste sur une ligne — un nom se reconnaît
             tronqué, un chiffre coupé ne se devine pas.

@@ -57,19 +57,19 @@ cas("un devis parti se dit parti, et porte sa date d'envoi", () => {
     envoyeLe: "2026-08-10",
     aujourdHui: AUJOURDHUI,
   });
-  assert.equal(l.etat, "Devis envoyé · sans réponse");
+  assert.equal(l.etat, "Devis envoyé, sans réponse");
   assert.equal(l.precision, "Lundi 10 août");
   assert.equal(l.enOr, true);
 });
 
 cas("« devis envoyé » dit la même chose : c'est le même moment pour lui", () => {
   const l = ligneEtatChantier({ statut: "devis_envoye", photosCount: 3, envoyeLe: "2026-08-10", aujourdHui: AUJOURDHUI });
-  assert.equal(l.etat, "Devis envoyé · sans réponse");
+  assert.equal(l.etat, "Devis envoyé, sans réponse");
 });
 
 cas("à relancer : la ligne le dit, et garde la date", () => {
   const l = ligneEtatChantier({ statut: "a_relancer", photosCount: 0, envoyeLe: "2026-07-28", aujourdHui: AUJOURDHUI });
-  assert.equal(l.etat, "Devis envoyé · à relancer");
+  assert.equal(l.etat, "Devis envoyé, à relancer");
   assert.equal(l.precision, "Mardi 28 juillet");
 });
 
@@ -78,7 +78,7 @@ cas("SANS envoi enregistré, aucune date n'est inventée", () => {
   // modification du chantier faute de mieux. Ce n'est PAS la date d'envoi, et
   // il compte ses jours d'attente dessus (`CLAUDE.md` §4).
   const l = ligneEtatChantier({ statut: "en_attente_client", photosCount: 0, envoyeLe: null });
-  assert.equal(l.etat, "Devis envoyé · sans réponse");
+  assert.equal(l.etat, "Devis envoyé, sans réponse");
   assert.equal(l.precision, null);
 });
 
@@ -90,23 +90,23 @@ cas("la mention des photos disparaît une fois le devis parti", () => {
 cas("avant l'envoi, elle reste — c'est là qu'elle sert", () => {
   assert.equal(
     ligneEtatChantier({ statut: "brouillon", photosCount: 0 }).etat,
-    "Brouillon · sans photo"
+    "Brouillon, sans photo"
   );
   assert.equal(
     ligneEtatChantier({ statut: "a_verifier", photosCount: 1 }).etat,
-    "À vérifier · 1 photo"
+    "À vérifier, 1 photo"
   );
   assert.equal(
     ligneEtatChantier({ statut: "verifie", photosCount: 4 }).etat,
-    "Vérifié · 4 photos"
+    "Vérifié, 4 photos"
   );
 });
 
 cas("les états qui n'ont rien à voir avec un envoi ne bougent pas d'un mot", () => {
   for (const [statut, attendu] of [
-    ["planifie", "Planifié · sans photo"],
-    ["termine", "À facturer · sans photo"],
-    ["facture", "Facturé · sans photo"],
+    ["planifie", "Planifié, sans photo"],
+    ["termine", "À facturer, sans photo"],
+    ["facture", "Facturé, sans photo"],
   ] as const) {
     const l = ligneEtatChantier({ statut, photosCount: 0 });
     assert.equal(l.etat, attendu);

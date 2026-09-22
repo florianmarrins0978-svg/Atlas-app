@@ -356,7 +356,7 @@ export default function AllureClient({
                   {t.nom}
                 </span>
                 <span className={`mt-0.5 block ${texteSituation}`} style={{ color: colors.inkSoft }}>
-                  {t.clef === ALLURE_PAR_DEFAUT.typographie ? `${t.dit} · par défaut` : t.dit}
+                  {t.clef === ALLURE_PAR_DEFAUT.typographie ? `${t.dit}, par défaut` : t.dit}
                 </span>
               </button>
             );

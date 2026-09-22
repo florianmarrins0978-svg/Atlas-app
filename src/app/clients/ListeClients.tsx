@@ -389,7 +389,7 @@ function LigneClient({
           >
             {/* **C'EST L'ADRESSE QUI SE ROGNE, JAMAIS LA DATE — mesuré, pas
                 supposé.** Sur les 316 px de sa ligne, « 10 Rue de Nantes 77400
-                Lagny-sur-Marne · Devis 7 sept. » déborde de trois caractères.
+                Lagny-sur-Marne, Devis 7 sept. » déborde de trois caractères.
                 Écrits d'un seul tenant, ce sont les DERNIERS mots qui tombent :
                 la date disparaîtrait exactement chez les clients dont l'adresse
                 est longue, c'est-à-dire là où l'on ajoutait quelque chose.
@@ -397,16 +397,13 @@ function LigneClient({
                 et sa rue, qui sont ce qui distingue quatre Martins. */}
             {client.adresse && <span className="min-w-0 truncate">{client.adresse}</span>}
             {quandQuoi && (
-              // **L'espace de séparation est une MARGE, pas un caractère.** Vu
-              // à la capture : écrit « ` · ` » en tête du texte, l'espace du
-              // début tombe — une boîte flexible ne garde pas le blanc qui la
-              // commence —, et l'on lisait « 44300 Nantes· Devis 5 sept. »
-              // collé. Il tenait par accident sur les adresses coupées, jamais
-              // sur les autres.
-              <span
-                className={`flex-none whitespace-nowrap${client.adresse ? " ml-[5px]" : ""}`}
-              >
-                {client.adresse ? `· ${quandQuoi}` : quandQuoi}
+              // **La virgule se COLLE à l'adresse, donc plus aucune marge.**
+              // Le point du milieu portait une marge de 5 px, parce qu'une
+              // boîte flexible mange le blanc qui la commence et qu'on lisait
+              // « 44300 Nantes· Devis 5 sept. ». Une virgule, elle, ne se
+              // décolle pas du mot qu'elle suit : la marge la ferait flotter.
+              <span className="flex-none whitespace-nowrap">
+                {client.adresse ? `, ${quandQuoi}` : quandQuoi}
               </span>
             )}
           </span>

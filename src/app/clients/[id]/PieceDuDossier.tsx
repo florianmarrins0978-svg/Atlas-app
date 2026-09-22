@@ -178,7 +178,7 @@ export default function PieceDuDossier({ piece }: { piece: PieceDuClient }) {
       <BottomSheet open={feuilleOuverte} onBackdropClick={() => setFeuilleOuverte(false)}>
         <p className="text-center text-[12px]" style={{ color: colors.muted }}>
           {piece.titre}
-          {piece.precision ? ` · ${piece.precision}` : ""}
+          {piece.precision ? ` ${piece.precision}` : ""}
         </p>
 
         {/* **« Enregistrer » en tête, et c'est le geste qu'il est venu chercher.**

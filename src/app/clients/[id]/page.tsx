@@ -183,7 +183,7 @@ export default async function FicheClientPage({
           <p className={libelleCaps} style={{ color: colors.muted }}>
             Dernière prestation
             {fiche.derniere.jour ? (
-              <span style={{ textTransform: "none" }}> · {jourCourt(fiche.derniere.jour)}</span>
+              <span style={{ textTransform: "none" }}> le {jourCourt(fiche.derniere.jour)}</span>
             ) : null}
           </p>
           {fiche.derniere.comprend.length > 0 && (

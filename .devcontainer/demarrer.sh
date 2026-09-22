@@ -145,11 +145,11 @@ fi
 # ligne existe pour éteindre.
 version_du_depot() {
   local v b
-  v="$(git log -1 --date=format:'%d/%m/%Y %H:%M' --format='%cd · %h' 2>/dev/null)" || v=""
+  v="$(git log -1 --date=format:'%d/%m/%Y %H:%M' --format='%cd, %h' 2>/dev/null)" || v=""
   [ -z "$v" ] && { echo "inconnue"; return; }
   b="$(git rev-parse --abbrev-ref HEAD 2>/dev/null)" || b=""
   # Tête détachée : on n'invente pas un nom de branche, on n'en dit aucun.
-  [ -n "$b" ] && [ "$b" != "HEAD" ] && v="$v · $b"
+  [ -n "$b" ] && [ "$b" != "HEAD" ] && v="$v, $b"
   echo "$v"
 }
 ATLAS_VERSION="$(version_du_depot)"

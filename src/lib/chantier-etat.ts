@@ -147,7 +147,7 @@ export function ligneEtatChantier(params: {
 
   if (DEVIS_PARTI_SANS_REPONSE.includes(statut)) {
     return {
-      etat: statut === "a_relancer" ? "Devis envoyé · à relancer" : "Devis envoyé · sans réponse",
+      etat: statut === "a_relancer" ? "Devis envoyé, à relancer" : "Devis envoyé, sans réponse",
       // **LA DATE SEULE, SANS LE MOT « ENVOYÉ » — 6 septembre 2026.**
       //
       // Elle s'écrivait « Envoyé le lundi 10 août. » sous une ligne qui dit
@@ -166,7 +166,7 @@ export function ligneEtatChantier(params: {
   }
 
   const photos = photosCount > 0 ? `${photosCount} photo${photosCount > 1 ? "s" : ""}` : "sans photo";
-  return { etat: `${statutLabel[statut]} · ${photos}`, precision: null, enOr };
+  return { etat: `${statutLabel[statut]}, ${photos}`, precision: null, enOr };
 }
 
 // Détermine l'unique action principale à proposer sur la fiche chantier.

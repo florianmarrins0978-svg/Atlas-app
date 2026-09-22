@@ -96,7 +96,7 @@ async function main() {
   await cas("la carte est là, et son étiquette porte le compte des jours", async () => {
     const ecran = await page.locator("body").innerText();
     // **Le compte AVANT le nom** : c'est l'autre moitié de sa proposition B.
-    if (!/DEVIS EN ATTENTE\s*·\s*14 JOURS/i.test(ecran)) {
+    if (!/DEVIS EN ATTENTE,\s*14 JOURS/i.test(ecran)) {
       throw new Error(
         "l'étiquette « Devis en attente · 14 jours » manque à l'accueil.\n      " +
           ecran.split("\n").filter((l) => l.trim()).slice(0, 12).join("\n      ")

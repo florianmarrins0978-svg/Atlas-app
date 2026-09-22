@@ -339,7 +339,7 @@ function rappelVersCarte(r: RappelAffiche): Carte {
     titre: sansDevis
       // **Le compte des jours DANS l'étiquette**, avant le nom — l'autre moitié
       // de la proposition B. Le nombre se lit avant qu'on ait lu le chantier.
-      ? `Devis en attente · ${r.depuisJours} jour${r.depuisJours > 1 ? "s" : ""}`
+      ? `Devis en attente, ${r.depuisJours} jour${r.depuisJours > 1 ? "s" : ""}`
       : devis
         ? "Devis sans réponse"
         : "À facturer",

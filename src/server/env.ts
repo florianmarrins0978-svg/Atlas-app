@@ -136,7 +136,7 @@ export type Env = {
   sentryEnvironment: string;
   releaseVersion?: string;
   /**
-   * Version affichée au patron (« 04/08/2026 21:12 · b05e282 »), posée par
+   * Version affichée au patron (« 04/08/2026 21:12, b05e282 »), posée par
    * `.devcontainer/demarrer.sh`. Faite pour être lue sur une capture d'écran :
    * elle répond à « quelle version essayez-vous ? » sans avoir à la poser.
    * Absente hors banc d'essai — on dit alors « inconnue » plutôt que d'inventer.

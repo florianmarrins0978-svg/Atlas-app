@@ -183,7 +183,7 @@ export default function FicheEntretienClient({
             Le modèle Atlas — {modeleFourni.length} prestations
           </p>
           <p className="text-[14px] leading-relaxed" style={{ color: colors.ink }}>
-            {modeleFourni.map((p) => p.libelle).join(" · ")}
+            {modeleFourni.map((p) => p.libelle).join(", ")}
           </p>
           <p className="mt-3 text-[13px]" style={{ color: colors.muted }}>
             Rien n&apos;est figé : vous retirez, ajoutez et renommez ce que vous voulez ensuite.

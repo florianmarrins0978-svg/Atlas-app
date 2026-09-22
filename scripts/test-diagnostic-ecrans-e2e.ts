@@ -221,7 +221,11 @@ async function main() {
     const legende = page.locator('[data-atlas="diagnostic-photos-reference"] figcaption').first();
     const texte = await legende.innerText();
     assert.ok(texte.trim().length > 5, "la légende ne doit pas être vide");
-    assert.match(texte, /·/, "le crédit et la licence sont séparés par un point médian");
+    assert.match(
+      texte,
+      /,/,
+      "le crédit et la licence doivent être tous deux lisibles, séparés d'une virgule"
+    );
   });
 
   await cas("la photo est AVANT « Que faire ? » — comparer suppose de voir les deux", async () => {

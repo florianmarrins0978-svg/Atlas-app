@@ -379,7 +379,7 @@ function Element({ ok, quoi, lu }: { ok: boolean; quoi: string; lu: string | nul
         {quoi}
         {lu && (
           <span className="text-[13px]" style={{ color: colors.muted }}>
-            {" "}· {lu}
+            {" "}{lu}
           </span>
         )}
       </span>
@@ -433,7 +433,7 @@ function Plan({ etat }: { etat: Extract<EtatPlan, { etat: "lu" }> }) {
 
       <p className={`mx-[22px] mt-7 ${libelleCaps}`} style={{ color: colors.muted }}>
         {plan.secteurs.length} réseau{plan.secteurs.length > 1 ? "x" : ""}
-        {plan.debitDisponible > 0 ? ` · ${virgule(plan.debitDisponible)} m³/h${auCompteur ? " au compteur" : ""}` : ""}
+        {plan.debitDisponible > 0 ? `, ${virgule(plan.debitDisponible)} m³/h${auCompteur ? " au compteur" : ""}` : ""}
       </p>
 
       {/* **UNE CARTE PAR RÉSEAU — sa maquette du 11 septembre.** L'écran en
@@ -477,16 +477,16 @@ function Plan({ etat }: { etat: Extract<EtatPlan, { etat: "lu" }> }) {
             {r?.materiels.map((m) => (
               <p key={m.libelle} className="mt-1 text-[13px]" style={{ color: colors.inkSoft }}>
                 {m.nombre}× {m.libelle}
-                {m.portee > 0 ? ` · portée ${virgule(m.portee)} m` : ""}
+                {m.portee > 0 ? `, portée ${virgule(m.portee)} m` : ""}
               </p>
             ))}
             {r && (
               <p className="mt-1.5 text-[12.5px]" style={{ color: colors.muted }}>
-                {r.tetes.length} arroseur{r.tetes.length > 1 ? "s" : ""} · {r.tes} té{r.tes > 1 ? "s" : ""} ·{" "}
+                {r.tetes.length} arroseur{r.tetes.length > 1 ? "s" : ""}, {r.tes} té{r.tes > 1 ? "s" : ""},{" "}
                 {r.coudes} coude{r.coudes > 1 ? "s" : ""}
-                {r.tesEgaux > 0 ? ` · ${r.tesEgaux} té${r.tesEgaux > 1 ? "s" : ""} égal${r.tesEgaux > 1 ? "aux" : ""}` : ""}
-                {" "}· {virgule(r.metresTuyau, 0)} ml Ø25
-                {r.metresAntennes > 0 ? ` · ${virgule(r.metresAntennes, 0)} ml Ø16` : ""}
+                {r.tesEgaux > 0 ? `, ${r.tesEgaux} té${r.tesEgaux > 1 ? "s" : ""} égal${r.tesEgaux > 1 ? "aux" : ""}` : ""}
+                , {virgule(r.metresTuyau, 0)} ml Ø25
+                {r.metresAntennes > 0 ? `, ${virgule(r.metresAntennes, 0)} ml Ø16` : ""}
               </p>
             )}
           </div>

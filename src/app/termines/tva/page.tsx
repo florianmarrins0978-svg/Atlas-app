@@ -289,7 +289,7 @@ export default async function ReleveTvaPage({
                     {l.clientNom ?? "Client non renseigné"}
                   </p>
                   <p className="mt-0.5 text-[11.5px]" style={{ color: colors.muted }}>
-                    Facture n° <NumeroDeDocument valeur={l.numeroCommercial} /> ·{" "}
+                    Facture n° <NumeroDeDocument valeur={l.numeroCommercial} />,{" "}
                     {l.motif === "paiement" ? "règlement du" : "émise le"} {jourLisible(l.dateEmission)}
                   </p>
                   <Paire

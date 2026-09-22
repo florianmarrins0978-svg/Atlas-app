@@ -407,7 +407,7 @@ export type Cellule = {
   /** Le premier axe — hauteur, technique, ou le rôle tenu par la case unique. */
   hauteur: Tranche;
   diametre: Tranche;
-  /** Ce que le patron lit : « 10 à 15 m de haut · tronc de 40 à 50 cm ». */
+  /** Ce que le patron lit : « 10 à 15 m de haut, tronc de 40 à 50 cm ». */
   libelle: string;
 };
 
@@ -438,7 +438,7 @@ function celluleCroisee(hauteur: Tranche, diametre: Tranche): Cellule {
     cle: `${hauteur.cle}|${diametre.cle}`,
     hauteur,
     diametre,
-    libelle: `${hauteur.libelle} de haut · tronc de ⌀ ${diametre.libelle}`,
+    libelle: `${hauteur.libelle} de haut, tronc de ⌀ ${diametre.libelle}`,
   };
 }
 
@@ -478,7 +478,7 @@ function celluleTechnique(t: Technique, diametre: Tranche): Cellule {
     // connaître ; ce sont les LIBELLÉS qui disent au patron de quoi on parle.
     hauteur: { cle: t.cle, de: 0, a: null, libelle: t.libelle },
     diametre,
-    libelle: `${t.libelle} · tronc de ⌀ ${diametre.libelle}`,
+    libelle: `${t.libelle}, tronc de ⌀ ${diametre.libelle}`,
   };
 }
 

@@ -90,7 +90,7 @@ async function main() {
         // rien. On mesure donc l'autre moitié de la règle : rien après le commit.
         const apresLeCommit = v && v.includes(COURT) ? v.slice(v.indexOf(COURT) + COURT.length) : null;
         assert.ok(
-          apresLeCommit !== null && !apresLeCommit.includes("·"),
+          apresLeCommit !== null && !apresLeCommit.includes(","),
           `La version affichée « ${v} » prête une branche à un arbre détaché : elle ne pourrait qu'être fausse.`
         );
         return;

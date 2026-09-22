@@ -928,7 +928,7 @@ export function mentionsDeSecurite(champs: ChampsSecurite): Mention[] {
  *
  * **« Confiance probable » est parti le 12 septembre 2026**, sur sa planche :
  * c'était du jargon en capitales dorées, en PREMIÈRE ligne sous le nom de la
- * maladie. Ce qu'il lit désormais : « Probable · Platane » — le degré de
+ * maladie. Ce qu'il lit désormais : « Probable, platane » — le degré de
  * sûreté et l'essence reconnue, ensemble, en clair. Toujours des mots, jamais
  * un pourcentage.
  *
@@ -1117,7 +1117,7 @@ export function decrireObservation(
     const couleurs = signe.couleurs.map((c) => LIBELLE_COULEUR[c]).join(", ");
     lignes.push({
       titre: LIBELLE_MOTIF[signe.motif],
-      detail: [ou, couleurs].filter((x) => x.length > 0).join(" · ") || null,
+      detail: [ou, couleurs].filter((x) => x.length > 0).join(", ") || null,
     });
   }
 

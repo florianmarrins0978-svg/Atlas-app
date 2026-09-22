@@ -83,7 +83,7 @@ export type FicheChantierPdfData = Omit<
 };
 
 /**
- * « Matin · 2 demi-journées · équipe Nord » — et rien de ce qui manque.
+ * « Matin, 2 demi-journées, équipe Nord » — et rien de ce qui manque.
  *
  * **Chaque morceau est facultatif, et son absence ne se comble pas.** Un
  * chantier posé sans créneau était, avant la migration 0019, une journée
@@ -98,7 +98,7 @@ function ligneIntervention(data: FicheChantierPdfData): string | null {
     morceaux.push(`${data.demiJournees} demi-journée${data.demiJournees > 1 ? "s" : ""}`);
   }
   if (data.equipe) morceaux.push(`équipe ${data.equipe}`);
-  return morceaux.length > 0 ? morceaux.join(" · ") : null;
+  return morceaux.length > 0 ? morceaux.join(", ") : null;
 }
 
 /**
@@ -146,7 +146,7 @@ export async function composerFicheChantierPdf(
 
   const blocsTexte: [string, string][] = [];
   if (data.materiel.length > 0) {
-    blocsTexte.push(["MATÉRIEL EMPLOYÉ", data.materiel.join(" · ")]);
+    blocsTexte.push(["MATÉRIEL EMPLOYÉ", data.materiel.join(", ")]);
   }
   // Le compte des photos, jamais les photos elles-mêmes : elles pèsent, elles
   // sont purgées au bout de deux ans (sa décision du 17 août 2026), et une

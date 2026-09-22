@@ -154,5 +154,5 @@ export function decrireProposition(
     if (rang >= 0) morceaux[rang] = `${brut} €`;
   }
 
-  return morceaux.length === 0 ? verbe : `${verbe} : ${morceaux.join(" · ")}`;
+  return morceaux.length === 0 ? verbe : `${verbe} : ${morceaux.join(", ")}`;
 }

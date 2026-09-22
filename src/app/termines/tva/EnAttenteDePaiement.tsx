@@ -149,7 +149,7 @@ export default function EnAttenteDePaiement({
         /* Ses mots, et pas de tiret : *« à la place du tiret »*. Le montant est
            celui qui vient d'entrer au relevé — le reste dû, pas le total. */
         <p key={r.id} data-atlas="rentree-au-releve" className="mt-3 text-[12px] leading-[1.5]" style={{ color: colors.muted }}>
-          {r.nom} · <span className="tabular-nums" style={{ color: colors.inkSoft }}>{euros(r.montant)}</span> est rentrée au
+          {r.nom}, <span className="tabular-nums" style={{ color: colors.inkSoft }}>{euros(r.montant)}</span> est rentrée au
           relevé.
         </p>
       ))}
@@ -182,7 +182,7 @@ export default function EnAttenteDePaiement({
                       Le jour court, comme la trace de réception juste en
                       dessous : une seule façon d'écrire un jour sur cet écran. */}
                   <p className="text-[11.5px] leading-[1.45]" style={{ color: colors.muted }}>
-                    {f.numeroCommercial} · émise le {jourCourt(f.dateEmission, aujourdHui)}
+                    {f.numeroCommercial} émise le {jourCourt(f.dateEmission, aujourdHui)}
                   </p>
                 </div>
                 <div className="flex-shrink-0 text-right">

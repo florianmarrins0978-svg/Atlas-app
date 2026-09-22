@@ -291,7 +291,7 @@ cas("l'écran d'abonnement : pendant l'essai, aucune formule n'est « actuelle �
 
 cas("l'écran dit l'essai : les jours, la date, aucune carte ; puis « terminé » en alerte", () => {
   const enCours = etatAffiche(ESSAI, apres(0, 1));
-  assert.equal(enCours.titre, "Essai gratuit · 15 jours restants");
+  assert.equal(enCours.titre, "Essai gratuit, 15 jours restants");
   assert.match(enCours.detail ?? "", /28 septembre 2026/);
   assert.match(enCours.detail ?? "", /Aucune carte/);
   assert.equal(enCours.ton, "calme");

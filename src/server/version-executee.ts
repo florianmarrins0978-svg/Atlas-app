@@ -97,13 +97,13 @@ async function versionDuDepot(racine: string): Promise<string | null> {
   try {
     const { stdout } = await executer(
       "git",
-      ["-c", `safe.directory=${racine}`, "log", "-1", "--date=format:%d/%m/%Y %H:%M", "--format=%cd · %h"],
+      ["-c", `safe.directory=${racine}`, "log", "-1", "--date=format:%d/%m/%Y %H:%M", "--format=%cd, %h"],
       { cwd: racine, timeout: 5_000 }
     );
     const version = stdout.trim();
     if (!version) return null;
     const branche = await brancheDuDepot(racine);
-    return branche ? `${version} · ${branche}` : version;
+    return branche ? `${version}, ${branche}` : version;
   } catch {
     return null;
   }

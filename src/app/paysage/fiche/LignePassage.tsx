@@ -55,7 +55,7 @@ export default function LignePassage({
             {passage.clientNom ?? "Sans client"}
           </span>
           <span className="mt-[3px] block text-[11.5px] leading-[1.5]" style={{ color: colors.muted }}>
-            {jourLisible(passage.jour)} · {bouts.join(" · ")}
+            {jourLisible(passage.jour)}, {bouts.join(", ")}
           </span>
         </span>
         {passage.envoyeLe === null ? (

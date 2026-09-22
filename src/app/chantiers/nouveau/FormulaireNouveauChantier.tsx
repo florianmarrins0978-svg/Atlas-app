@@ -1674,7 +1674,7 @@ function ClientsProposes({
             >
               <span className="block text-[15px] leading-snug">{lui.nom}</span>
               <span className="block text-[12px]" style={{ color: colors.muted }}>
-                {lieu ? `${lieu} · ${chantiers}` : chantiers}
+                {lieu ? `${lieu}, ${chantiers}` : chantiers}
               </span>
             </button>
           </li>
@@ -1725,7 +1725,7 @@ function FicheReprise({ lui, onRefuser }: { lui: ClientReconnu; onRefuser: () =>
       <span className="min-w-0 flex-1">
         <span className="block text-[14.5px] leading-[1.35]">Repris de sa fiche</span>
         <span className="mt-[2px] block text-[12.5px] leading-[1.45]" style={{ color: colors.muted }}>
-          {lieu ? `${lieu} · ${chantiers}` : chantiers}
+          {lieu ? `${lieu}, ${chantiers}` : chantiers}
         </span>
         {/* **Le seul geste de tout l'écran**, et il ne se grise jamais : un
             bouton grisé se touche quand même, et son silence se lit comme une

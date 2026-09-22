@@ -830,5 +830,5 @@ export function libelleOccupation(
   // que sa matinée du lendemain est libre.
   if (jours.length === 1 && creneaux.length === 2) return { texte: "journée" };
 
-  return { texte: `${LIBELLE_MOMENT[depart.moment]} · ${libelleDureeCourt(duree)}` };
+  return { texte: `${LIBELLE_MOMENT[depart.moment]}, ${libelleDureeCourt(duree)}` };
 }

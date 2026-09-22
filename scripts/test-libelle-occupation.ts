@@ -23,7 +23,7 @@ import { DUREES } from "../src/lib/durees-chantier";
 // défaut du 13 août, et c'est lui que la suite garde désormais.
 //
 // Les repères de dates, tous vérifiés :
-//   ven. 14 août 2026 · lun. 17 · jeu. 20 · ven. 21 · lun. 24 · mar. 25
+//   ven. 14 août 2026, lun. 17, jeu. 20, ven. 21, lun. 24, mar. 25
 
 let echecs = 0;
 function cas(nom: string, f: () => void) {
@@ -47,13 +47,13 @@ cas("une journée entière dit « journée », JAMAIS « matin »", () => {
 });
 
 cas("une vraie demi-journée dit son moment ET sa durée", () => {
-  assert.equal(libelleOccupation(j("2026-08-17"), "matin", 1).texte, "matin · ½ journée");
-  assert.equal(libelleOccupation(j("2026-08-20"), "apres_midi", 1).texte, "après-midi · ½ journée");
+  assert.equal(libelleOccupation(j("2026-08-17"), "matin", 1).texte, "matin, ½ journée");
+  assert.equal(libelleOccupation(j("2026-08-20"), "apres_midi", 1).texte, "après-midi, ½ journée");
 });
 
 // ── Plusieurs jours : les mots qu'il a arrêtés le 15 août 2026 ──────────────
-cas("trois jours partis un vendredi disent « matin · 3 jours »", () => {
-  assert.equal(libelleOccupation(j("2026-08-21"), "matin", 6).texte, "matin · 3 jours");
+cas("trois jours partis un vendredi disent « matin, 3 jours »", () => {
+  assert.equal(libelleOccupation(j("2026-08-21"), "matin", 6).texte, "matin, 3 jours");
 });
 
 // **LE PIÈGE QUE PERSONNE NE VOIT VENIR.** Deux demi-journées à partir de
@@ -63,11 +63,11 @@ cas("trois jours partis un vendredi disent « matin · 3 jours »", () => {
 cas("deux demi-journées parties l'après-midi ne sont PAS une « journée »", () => {
   const o = libelleOccupation(j("2026-08-17"), "apres_midi", 2);
   assert.notEqual(o.texte, "journée");
-  assert.equal(o.texte, "après-midi · 1 journée");
+  assert.equal(o.texte, "après-midi, 1 journée");
 });
 
 cas("une journée et demie partie l'après-midi garde sa durée impaire", () => {
-  assert.equal(libelleOccupation(j("2026-08-24"), "apres_midi", 3).texte, "après-midi · 1 journée ½");
+  assert.equal(libelleOccupation(j("2026-08-24"), "apres_midi", 3).texte, "après-midi, 1 journée ½");
 });
 
 // ── L'INVARIANT, et c'est le cœur de cette suite ────────────────────────────
@@ -84,7 +84,7 @@ cas("aucun moment n'est JAMAIS écrit sans sa durée — sur toutes les durées"
       if (texte === "journée") continue; // le seul mot qui porte sa durée
       assert.match(
         texte,
-        /^(matin|après-midi) · .+$/,
+        /^(matin|après-midi), .+$/,
         `départ ${depart}, durée ${duree} : « ${texte} » — un moment sans durée redit le défaut du 13 août`
       );
     }
@@ -140,14 +140,14 @@ cas("sans moment ni durée : une journée entière, comme le reste du produit", 
 });
 
 cas("une durée absurde ne fait pas tomber l'écran", () => {
-  assert.equal(libelleOccupation(j("2026-08-14"), "matin", 0).texte, "matin · ½ journée");
-  assert.equal(libelleOccupation(j("2026-08-14"), "matin", -3).texte, "matin · ½ journée");
-  assert.equal(libelleOccupation(j("2026-08-14"), "matin", 1.7).texte, "matin · ½ journée");
+  assert.equal(libelleOccupation(j("2026-08-14"), "matin", 0).texte, "matin, ½ journée");
+  assert.equal(libelleOccupation(j("2026-08-14"), "matin", -3).texte, "matin, ½ journée");
+  assert.equal(libelleOccupation(j("2026-08-14"), "matin", 1.7).texte, "matin, ½ journée");
 });
 
 // Cent jours, la borne haute de la liste des durées : rien ne doit s'emballer.
 cas("cent jours restent lisibles sur une ligne", () => {
-  assert.equal(libelleOccupation(j("2026-08-14"), "matin", 200).texte, "matin · 100 jours");
+  assert.equal(libelleOccupation(j("2026-08-14"), "matin", 200).texte, "matin, 100 jours");
 });
 
 console.log(`\n${echecs === 0 ? "✅" : "❌"} ${echecs} échec(s).`);

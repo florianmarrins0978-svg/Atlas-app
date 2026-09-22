@@ -131,7 +131,7 @@ export default function AlerteAncienIban({
               </div>
               <div className="mt-1 flex items-center justify-between gap-3">
                 <span className="min-w-0 text-[11.5px] leading-[1.45]" style={{ color: colors.muted }}>
-                  {f.numeroCommercial} · émise le {jourEtMois(f.dateEmission)}
+                  {f.numeroCommercial} émise le {jourEtMois(f.dateEmission)}
                 </span>
                 <button
                   type="button"

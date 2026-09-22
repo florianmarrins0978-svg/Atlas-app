@@ -316,7 +316,7 @@ export async function composerFicheSecuritePdf(data: FicheSecuritePdfData): Prom
   plume.sousTitre("1. Protéger");
   CONSIGNES_DE_SECOURS.proteger.forEach((x, i) => plume.texte(`${i + 1}. ${x}`, { retrait: 4 }));
   plume.sousTitre("2. Alerter");
-  plume.texte(CONSIGNES_DE_SECOURS.urgences.map(([n, q]) => `${q} ${n}`).join(" · "), { grasse: true, retrait: 4 });
+  plume.texte(CONSIGNES_DE_SECOURS.urgences.map(([n, q]) => `${q} ${n}`).join(", "), { grasse: true, retrait: 4 });
   CONSIGNES_DE_SECOURS.alerter.forEach((x, i) => plume.texte(`${i + 1}. ${x}`, { retrait: 4 }));
   plume.sousTitre("3. Secourir");
   CONSIGNES_DE_SECOURS.secourir.forEach((x, i) => plume.texte(`${i + 1}. ${x}`, { retrait: 4 }));

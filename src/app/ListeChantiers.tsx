@@ -332,7 +332,7 @@ export default function ListeChantiers({
             )}
             {/* **12 px, et l'interlettrage descendu de 0,28 à 0,14 em.**
                 Trouvé en CAPTURE, par aucun contrôle : à 12 px et 0,28 em,
-                « DEVIS PRÊT À ENVOYER · 3 PHOTOS » passait à la ligne et
+                « DEVIS PRÊT À ENVOYER, 3 PHOTOS » passait à la ligne et
                 laissait « PHOTOS » seul en dessous — un état qui se replie se
                 lit comme deux états. C'est l'espacement des onglets du bas.
 

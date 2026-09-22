@@ -149,7 +149,12 @@ export default function MesMots({
                     </button>
                   </span>
                 ))}
-                {carte.mesMots.length > 0 && <span style={{ color: colors.or }}> · vous</span>}
+                {carte.mesMots.length > 0 && (
+                  <span data-atlas="mes-mots-marque" style={{ color: colors.or }}>
+                    {" "}
+                    vous
+                  </span>
+                )}
               </p>
             )}
 

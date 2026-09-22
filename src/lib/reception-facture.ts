@@ -15,7 +15,7 @@ import { jourCourt, jourIso } from "./jour";
  * infos »*.
  *
  * Les deux dates s'écrivaient côte à côte — « Ouverte le 11 septembre à 17 h 57
- * · réception confirmée le 11 septembre » —, et la seconde rend la première
+ * , réception confirmée le 11 septembre » —, et la seconde rend la première
  * inutile : un client qui coche a forcément ouvert. La ligne disait donc deux
  * fois la même chose sur deux lignes de téléphone.
  *

@@ -231,7 +231,7 @@ async function main() {
   dire(mots.includes("FICHE DE CHANTIER"), "elle porte son titre");
   dire(/Élagage de trois chênes/.test(tout), "elle nomme le chantier");
   dire(/12\/08\/2026/.test(tout), `elle porte le jour de l'intervention (lu : ${tout.match(/\d\d\/\d\d\/\d{4}/)?.[0] ?? "aucun"})`);
-  dire(/Matin · 2 demi-journées · équipe Nord/.test(tout), "elle dit quand on est venu, et avec qui");
+  dire(/Matin, 2 demi-journées, équipe Nord/.test(tout), "elle dit quand on est venu, et avec qui");
   dire(/M\. Martins/.test(tout), "elle nomme le client");
   dire(
     FICHE.prestations.every((p) => tout.includes(p.slice(0, 30))),

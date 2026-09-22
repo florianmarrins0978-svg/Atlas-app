@@ -81,7 +81,7 @@ export default async function PageRapportClient({
         </h1>
         <p className="mt-1 text-[14px]" style={{ color: couleursDocument.etiquette }}>
           {jourLisible(rapport.jour)}
-          {rapport.clientNom ? ` · ${rapport.clientNom}` : ""}
+          {rapport.clientNom ? `, ${rapport.clientNom}` : ""}
         </p>
 
         <div className="mt-6">

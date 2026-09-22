@@ -561,7 +561,7 @@ function ChoixDuCanal({
           >
             {c.mot}
             {!c.coordonnee?.trim() && (
-              <span style={{ opacity: 0.7 }}> · absent</span>
+              <span style={{ opacity: 0.7 }}> absent</span>
             )}
           </button>
         );

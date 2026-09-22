@@ -95,7 +95,7 @@ export function piecesDuPlan(
   options: { compteur: boolean; seuil25: number; amenee: number | null }
 ): Piece[] {
   const parReseau = (f: (r: Dessin["reseaux"][number]) => number) =>
-    dessin ? `par réseau : ${dessin.reseaux.map((r) => f(r)).join(" · ")}` : undefined;
+    dessin ? `par réseau : ${dessin.reseaux.map((r) => f(r)).join(", ")}` : undefined;
 
   // ── Du compteur à la nourrice ─────────────────────────────────────────────
   //
@@ -111,7 +111,7 @@ export function piecesDuPlan(
       q: options.amenee !== null ? Math.ceil(options.amenee) : null,
       u: "ml",
       ou: "amenee",
-      detail: options.amenee !== null ? `du piquage à la nourrice, calculé sur le croquis · ${seuil}` : seuil,
+      detail: options.amenee !== null ? `du piquage à la nourrice, calculé sur le croquis, ${seuil}` : seuil,
     },
   ];
   if (options.compteur) {

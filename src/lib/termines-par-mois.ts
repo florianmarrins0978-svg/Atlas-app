@@ -338,7 +338,7 @@ export function libelleEtatLigne(l: LigneAffichee, anneeCourante: string): strin
     // « Facturé le 20 août » reste, lui : aucun bouton ne le dit à sa place.
     bouts.push(libelleFacturee(l));
   }
-  return bouts.join(" · ");
+  return bouts.join(", ");
 }
 
 /** « Facturé le 20 août », d'après la date d'émission — ou rien si on l'ignore. */
@@ -346,7 +346,7 @@ export function libelleFacturee(l: LigneAffichee): string {
   const jour = l.factureDateEmission;
   if (!jour) return l.factureNumero ? numeroCourt(l.factureNumero) : "Facturée";
   const quand = `Facturé le ${Number(jour.slice(8, 10))} ${moisSeul(jour.slice(0, 7))}`;
-  return l.factureNumero ? `${quand} · ${numeroCourt(l.factureNumero)}` : quand;
+  return l.factureNumero ? `${quand}, ${numeroCourt(l.factureNumero)}` : quand;
 }
 
 const EUROS = new Intl.NumberFormat("fr-FR", {

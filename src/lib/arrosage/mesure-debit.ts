@@ -216,7 +216,7 @@ export function debitRetenu(saisie: MesureSaisie): DebitRetenu {
       // le Ø25 du compteur — on retient le minimum viable (sa règle du 21 août).
       pression: dyn ?? BAR_SUPPOSE_AU_SEAU,
       mesure: "seau",
-      reserve: reserves.length > 0 ? reserves.join(" · ") : null,
+      reserve: reserves.length > 0 ? reserves.join(", ") : null,
     };
   }
 
@@ -231,7 +231,7 @@ export function debitRetenu(saisie: MesureSaisie): DebitRetenu {
       debit: DEBIT_COMPTEUR,
       pression: dyn,
       mesure: "estime",
-      reserve: reserves.join(" · "),
+      reserve: reserves.join(", "),
     };
   }
 

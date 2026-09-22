@@ -69,7 +69,7 @@ async function main() {
     `Le mot « ${mot} » a disparu au rechargement : il n'a pas été enregistré.`
   );
   assert.ok(
-    /· vous/.test(apres),
+    (await page.locator('[data-atlas="mes-mots-marque"]').count()) > 0,
     "Ses mots doivent être marqués « vous » : sans la marque, il croit corriger le vocabulaire commun."
   );
 

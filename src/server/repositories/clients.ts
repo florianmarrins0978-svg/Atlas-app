@@ -99,7 +99,7 @@ export type ReconnaissanceClient = {
  * `lui` reste `null` tant que l'identification n'est pas certaine : c'est
  * `clientAPreremplir` qui en décide, et elle seule. Ici on ne fait que lui
  * donner à lire, puis compter les chantiers pour que le patron sache **de
- * qui** il s'agit — sur quatre Martins, « Saint-Marc · 3 chantiers » est ce
+ * qui** il s'agit — sur quatre Martins, « Saint-Marc, 3 chantiers » est ce
  * qui les sépare à l'œil.
  */
 export async function reconnaitreLeClient(

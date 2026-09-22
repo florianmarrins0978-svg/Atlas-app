@@ -58,7 +58,7 @@ console.log("=== Le mois, et ce qu'il porte ===");
 
 // **Quatre essais ont disparu le 23 août 2026, avec la phrase qu'ils gardaient.**
 //
-// Le décompte sous le mois — « 2 factures envoyées · et 620,00 € qui attendent
+// Le décompte sous le mois — « 2 factures envoyées, et 620,00 € qui attendent
 // leur facture » — a été remplacé, à sa demande, par celle qui vivait sous le
 // titre : *« supprime ce qui est marqué sous le mois d'août et à la place tu
 // écris la phrase qui est marquée sous Terminés »*. `libelleCompte` n'avait plus
@@ -272,7 +272,7 @@ essai("« Facturé le 20 août » vient de la DATE D'ÉMISSION, pas du chantier"
       factureDateEmission: "2026-08-30",
     }),
   ]);
-  assert.equal(libelleFacturee(l), "Facturé le 30 août · Facture n° 5");
+  assert.equal(libelleFacturee(l), "Facturé le 30 août, Facture n° 5");
 });
 
 essai("sans date d'émission, on ne l'invente pas", () => {
@@ -325,7 +325,7 @@ essai("la ligne d'état porte la date puis le montant prévu", () => {
   // Le montant se compare par `formatEuros`, jamais par une chaîne écrite à la
   // main : l'espace qui précède le « € » est une espace fine insécable, et deux
   // caractères invisibles qui diffèrent font rougir un contrôle juste.
-  assert.equal(libelleEtatLigne(l, "2026"), `12 août · ${formatEuros(360)} prévus`);
+  assert.equal(libelleEtatLigne(l, "2026"), `12 août, ${formatEuros(360)} prévus`);
 });
 
 essai("« Pas encore facturé » n'est plus écrit nulle part", () => {
@@ -340,7 +340,7 @@ essai("« Pas encore facturé » n'est plus écrit nulle part", () => {
   }
 });
 
-essai("sans devis envoyé, il ne reste que la date — et JAMAIS un « · » pendu", () => {
+essai("sans devis envoyé, il ne reste que la date — et JAMAIS un «, » pendu", () => {
   const [l] = preparer([ligne({ id: "a", datePlanifiee: "2026-08-26" })]);
   assert.equal(libelleEtatLigne(l, "2026"), "26 août");
 });
@@ -364,7 +364,7 @@ essai("une fois facturé, la date du chantier précède celle de la facture", ()
       factureNumero: "F2026-0005",
     }),
   ]);
-  assert.equal(libelleEtatLigne(l, "2026"), "9 août · Facturé le 20 août · Facture n° 5");
+  assert.equal(libelleEtatLigne(l, "2026"), "9 août, Facturé le 20 août, Facture n° 5");
 });
 
 // ─── SANS DATE DE PLANNING, C'EST LA FACTURE QUI DIT QUAND ──────────────────
@@ -407,7 +407,7 @@ essai("le planning l'emporte quand les deux existent", () => {
 });
 
 essai("facturée sans date de planning, la date ne s'écrit PAS deux fois", () => {
-  // « 18 septembre · Facturé le 18 septembre » est la répétition que le patron
+  // « 18 septembre, Facturé le 18 septembre » est la répétition que le patron
   // fait retirer à chaque fois (`CLAUDE.md` §3) : c'est le mot en trop qui part.
   const [l] = preparer([
     ligne({
@@ -418,7 +418,7 @@ essai("facturée sans date de planning, la date ne s'écrit PAS deux fois", () =
       factureNumero: "F2026-0012",
     }),
   ]);
-  assert.equal(libelleEtatLigne(l, "2026"), "Facturé le 18 septembre · Facture n° 12");
+  assert.equal(libelleEtatLigne(l, "2026"), "Facturé le 18 septembre, Facture n° 12");
 });
 
 essai("une rangée sans date de facture se range toujours devant", () => {

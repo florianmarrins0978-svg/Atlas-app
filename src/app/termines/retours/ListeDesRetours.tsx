@@ -274,7 +274,7 @@ function Carte({ retour }: { retour: RetourEnListe }) {
             </span>
           </span>
           <span className="mt-[3px] block text-[12.5px] leading-[1.45]" style={{ color: colors.muted }}>
-            {[retour.posePar, compte, phrasePhotos(retour.photos.length)].filter(Boolean).join(" · ")}
+            {[retour.posePar, compte, phrasePhotos(retour.photos.length)].filter(Boolean).join(", ")}
           </span>
         </span>
         <span

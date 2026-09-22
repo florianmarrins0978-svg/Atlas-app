@@ -13,9 +13,9 @@ import { libelleDuree } from "@/lib/disponibilites";
 // COMMENCER ? ». Les deux ne coïncident pas, et l'écart n'a rien d'exotique —
 // reproduit avant d'écrire une ligne, avec un seul chantier posé le 19 :
 //
-//     18 août · ½ journée → proposable   (le calendrier du planning le dit LIBRE)
-//     18 août · 1 journée → proposable
-//     18 août · 2 jours   → BARRÉ        (le 18 est pourtant vide)
+//     18 août, ½ journée → proposable   (le calendrier du planning le dit LIBRE)
+//     18 août, 1 journée → proposable
+//     18 août, 2 jours   → BARRÉ        (le 18 est pourtant vide)
 //
 // Le 18 est barré parce que deux jours partis du 18 déborderaient sur le 19,
 // qui est plein. La règle est juste : sans elle, le chantier mordrait sur une

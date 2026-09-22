@@ -8,19 +8,36 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-22
 
-### Tous les points du milieu de phrase relevés, écran par écran
+### Plus un seul point au milieu d'une phrase dans ce que le produit affiche
 
-Sa demande, après « Probable · Peuplier » : *« va me chercher tous les · qui
-servent à rien dans l'application comme le 6 à facturer · 19 facturés »*. Le
-relevé est dans `docs/les-points-inutiles.md` : 123 lignes de `src/`, 149
-points, dont **72 lignes sur les écrans qu'il ouvre et sur les documents qui
-partent chez ses clients** — les factures, les PDF de chantier, la fiche de
-sécurité, le rapport d'entretien. Les 42 points des conditions générales sont
-des puces de liste, dans un document juridique déjà accepté : ils sont mis à
-part. Trois « trouvailles » sont des faux positifs — du code qui RETIRE des
-points d'une saisie. **Rien n'a été corrigé** : le retrait attend sa décision,
-écran par écran, et il est inscrit dans `TODO.md`.
+Sa règle du 22 septembre, devant « Probable · Peuplier » : *« plus jamais de
+point entre le nom et probable, et plus jamais de tiret, fais des phrases
+normales »*. Les 123 lignes de `src/` qui en portaient ont été relevées
+(`docs/les-points-inutiles.md`), et les **72 qui s'affichent** sont corrigées :
+ses écrans, mais aussi les PDF de chantier et de sécurité, le rapport
+d'entretien et l'aperçu du devis — ce qui part chez ses clients. Son
+arbitrage : « le » pour la dernière prestation, la suppression partout
+ailleurs ; une virgule là où l'espace seule collait deux nombres
+(« 12 août 1 250 € ») ou changeait le sens (« Devis envoyé à relancer »).
 
+**Trois choses trouvées en chemin.** `version-servie.ts` compare
+caractère pour caractère la marque posée par `demarrer.sh` et celle de
+`version-executee.ts` pour dire si le serveur est en retard : changer une
+seule des deux aurait fait annoncer « en retard » en permanence dans Réglages
+— les deux ont bougé ensemble. La ligne des clients portait une marge de 5 px
+pour décoller le point de l'adresse ; une virgule doit coller, la marge est
+partie avec lui. Et `abonnements.ts` remplaçait un tiret par un point, c'est-
+à-dire les deux caractères qu'il refuse, l'un par l'autre.
+
+Onze suites réclamaient un point : adaptées, jamais le libellé remis
+(`CLAUDE.md` §5 bis). `test-catalogue-mes-mots-e2e` cherchait « · vous » dans
+toute la page — le mot « vous » se lit partout : la marque porte désormais un
+repère. Les 42 points des conditions générales restent : ce sont des puces
+dans un document déjà accepté, les toucher demande une nouvelle acceptation.
+
+**Aucune batterie jouée — sa consigne.** Types, lint et les six suites de
+règles pures sont verts ; le lot est de niveau 3 (TVA, devis, règlements) et
+n'ira sur `main` qu'une fois `verifier:avant-livraison` joué.
 
 ### La fiche de sécurité du décret 2021-1833 est dans l'application
 

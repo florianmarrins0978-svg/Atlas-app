@@ -81,7 +81,7 @@ export function ligneEtatDeLaBase(retard: RetardDeLaBase | null): string {
         .join(", ")}`
     );
   }
-  return morceaux.length > 0 ? morceaux.join(" · ") : "à jour";
+  return morceaux.length > 0 ? morceaux.join(", ") : "à jour";
 }
 
 /** « 0090_remise_main_doeuvre_conditions_generales.sql » → « 0090 ». */

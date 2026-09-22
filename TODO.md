@@ -9,29 +9,26 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
-## ⏳ LES POINTS DU MILIEU DE PHRASE — RELEVÉS, PAS ENCORE RETIRÉS (22 septembre 2026)
+## ⏳ LES POINTS SONT RETIRÉS — LA BATTERIE RESTE À JOUER (22 septembre 2026)
 
-Sa règle du jour : *« plus jamais de point entre le nom et probable, et plus
-jamais de tiret, fais des phrases normales »*. Puis sa demande : *« va me
-chercher tous les · qui servent à rien »*.
+Les 72 lignes qui affichaient un point du milieu de phrase sont corrigées, et
+les onze suites qui en réclamaient un sont adaptées
+(`docs/les-points-inutiles.md`). **Il a demandé qu'aucune batterie ne soit
+lancée** : types, lint et les six suites de règles pures sont verts, rien
+d'autre n'a été mesuré.
 
-**Le relevé est fait** : `docs/les-points-inutiles.md` — 72 lignes de code sur
-les écrans et les documents qui partent chez ses clients, du `6 à facturer ·
-19 facturés` de Terminés au `15 SAMU · 18 Pompiers` du PDF de sécurité.
+**Le lot est de niveau 3** — il touche la TVA, les devis et les règlements, et
+`abonnements.ts` atteint 68 points d'entrée. `npm run verifier:avant-livraison`
+est donc obligatoire avant la fusion, et le garde-fou de `main` la refusera
+sans lui. À jouer quand il le dira (`CLAUDE.md` §5 : on le prévient d'abord).
 
-**Ce qui reste**, et il faut son arbitrage écran par écran : chaque point ne se
-remplace pas de la même façon — certains deviennent une phrase (`Probable sur
-un peuplier.`), d'autres une simple espace ou un retour à la ligne, et deux
-cas portent une mise en page de document (`ÉMETTEUR · CLIENT` dans l'aperçu du
-devis). **Sa règle du 11 septembre tient ici** : on change le TEXTE, jamais la
-PLACE.
+**Deux choses à surveiller à la batterie**, parce qu'elles n'ont pas pu être
+regardées ici faute de données de démonstration : l'écran Terminés (le compte
+du mois, où l'œil sépare maintenant les deux nombres à lui seul) et la fiche
+client (« DERNIÈRE PRESTATION le 12 août », le seul remplacement qu'il a dicté).
 
-**Ce qui N'EST PAS à toucher** : les 42 points des conditions générales, qui
-sont des puces de liste dans un document juridique déjà publié et accepté —
-les modifier demande une nouvelle version et une nouvelle acceptation.
-
-**Et le deuxième relevé n'est pas fait** : les tirets `—` affichés à l'écran,
-que la même règle vise.
+**Et le relevé des tirets `—` n'est pas fait.** C'est sa deuxième règle du même
+jour : *« plus jamais de tiret, fais des phrases normales »*.
 
 ## ⏳ UNE PLANCHE À REGARDER — FICHE 4, LA BRUNISSURE DES FEUILLES DE PEUPLIER (22 septembre 2026)
 

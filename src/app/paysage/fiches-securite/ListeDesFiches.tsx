@@ -99,7 +99,7 @@ export default function ListeDesFiches({ fiches, mois }: { fiches: FicheEnListe[
                     <span className="min-w-0 flex-1">
                       <span className="block text-[14px] font-semibold leading-[1.3]">{f.chantierNom}, {dateLongue(f.signeeLe)}</span>
                       <span className="mt-[3px] block text-[12.5px] leading-[1.45]" style={{ color: colors.muted }}>
-                        {[f.signataire ? `Signée par ${f.signataire}` : "Signée", `gardée jusqu’au ${dateLongue(gardeeJusquAu(f.signeeLe))}`, transmise ? "transmise" : null].filter(Boolean).join(" · ")}
+                        {[f.signataire ? `Signée par ${f.signataire}` : "Signée", `gardée jusqu’au ${dateLongue(gardeeJusquAu(f.signeeLe))}`, transmise ? "transmise" : null].filter(Boolean).join(", ")}
                       </span>
                     </span>
                     <span aria-hidden="true" className="mt-1.5 flex-none" style={{ color: colors.muted, transform: estOuverte ? "rotate(90deg)" : "none", transition: "transform .18s cubic-bezier(.22,.9,.3,1)" }}>

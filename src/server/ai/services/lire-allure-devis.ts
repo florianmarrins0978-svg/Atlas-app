@@ -171,7 +171,7 @@ export function lireReponseAllure(texte: string): ResultatAllure {
       accent,
       typographie,
       conditions,
-      reserve: reserves.length === 0 ? null : `${reserves.join(" · ")}.`,
+      reserve: reserves.length === 0 ? null : `${reserves.join(", ")}.`,
     },
   };
 }
