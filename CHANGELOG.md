@@ -100,6 +100,47 @@ qui ajoutait la croix bleue du navigateur. Leurs styles sont retirés ; le gris
 du mot passe par une classe (`atlas-recherche`) sous la même règle mesurée que
 la coordonnée client, au lieu d'un repère propre à la liste des clients. Les
 mots et les repères `data-atlas` n'ont pas bougé.
+### Le piquage se désigne : compteur d'eau ou robinet de jardin
+
+L'avertissement au-dessus du croquis disait « l'endroit où le piquage se
+fait » sans dire ce que c'est. Il précise désormais de noter l'emplacement du
+compteur d'eau ou du robinet de jardin, les deux mots du menu juste au-dessus : un croquis qui ne le porte pas perd
+son plan (`CLAUDE.md` §4 bis), et le mot « piquage » seul ne le faisait pas
+dessiner. Même texte dans l'écran (`ArrosageClient.tsx`) et dans la maquette
+`appli/arrosage-plan-et-pieces.html`, à la même place.
+
+### Fiche de sécurité : le décret devient le titre de l'écran de la loi
+
+Sa demande, capture à l'appui : retirer « Ce que demande la loi » et poser
+« Décret 2021-1833, en vigueur depuis le 1er mars 2022 » à sa place, en grand
+et en noir. Le petit sous-titre gris est supprimé plutôt que doublé ; le bouton
+du bandeau garde son libellé. `test-fiche-securite-e2e.ts` attend désormais ce
+titre (§5 bis : le contrôle suit l'écran qu'il a demandé).
+
+Puis, le même soir : le lien « Ce que demande la loi » sous « Remplir la
+fiche » est retiré — *« pas besoin d'avoir deux portes pour le même
+endroit »*. Chaque fiche neuve ouvre déjà le décret en premier. Ce qui ne
+servait qu'à ce lien part avec lui : `?loi=1`, `loiDemandee`, et le bouton
+« Retour » de l'écran de la loi, qu'on n'atteint plus qu'une fois la fiche
+jamais lue.
+
+### Le nom et le prénom se reprennent d'une fiche de sécurité à l'autre
+
+Sa plainte : *« la case nom et prénom ne s'enregistre pas d'une fiche à
+l'autre ! »*. Deux racines. Le nom du signataire ne vivait que dans l'état de
+l'écran : jamais enregistré pendant la frappe, jamais gardé, et la fiche
+suivante repartait du nom du compte (« Compte de demo »). Et la mémoire des
+fiches ne gardait ni le nom, ni le prénom, ni le téléphone du responsable sur
+place.
+
+Le signataire entre dans `ContenuFiche` (enregistré avec le reste, repris par
+`MemoireDesFiches`) ; l'état local de l'écran et le paramètre séparé de
+`signerLaFicheAction` disparaissent. La colonne `signataire` garde le nom figé
+à la signature, celui du PDF. Aucune migration : le contenu est un jsonb, et
+un contenu ancien reçoit un signataire vide, que l'écran remplace par le nom du
+compte comme avant. Éprouvé : `test-fiche-securite.ts` et
+`test-fiche-securite-e2e.ts` (« le nom signé est repris sur la fiche
+suivante »), vus rouges sur l'ancien code.
 
 ### Fiches de sécurité : chercher un client, toutes ses fiches sortent
 

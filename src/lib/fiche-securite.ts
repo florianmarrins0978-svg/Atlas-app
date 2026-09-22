@@ -305,6 +305,13 @@ export type ContenuFiche = {
   pointDeRencontre: string;
   observations: string;
   photoIds: string[];
+  /**
+   * Le nom tel qu'il sera signé — dans le contenu, et non plus dans l'état de
+   * l'écran : il s'enregistre en même temps que le reste, et se garde
+   * (22 septembre 2026). La colonne `signataire` de la fiche ne porte que le
+   * nom FIGÉ à la signature, celui du PDF.
+   */
+  signataire: string;
 };
 
 export function contenuVide(): ContenuFiche {
@@ -334,6 +341,7 @@ export function contenuVide(): ContenuFiche {
     pointDeRencontre: "",
     observations: "",
     photoIds: [],
+    signataire: "",
   };
 }
 
@@ -379,6 +387,11 @@ export function ajouter(contenu: ContenuFiche, famille: Famille, mot: string): C
  * avec la consigne qui va avec — chaque case se vérifie à chaque chantier,
  * c'est sa signature. Ce qui ne se garde pas : ce qui est propre au chantier —
  * le donneur d'ordre, le lieu, les heures, la photo, le point de rencontre.
+ *
+ * **Les noms aussi — sa plainte du 22 septembre 2026 :** *« la case nom et
+ * prénom ne s'enregistre pas d'une fiche à l'autre ! »*. Le responsable sur
+ * place et le signataire sont les mêmes d'un chantier à l'autre : ils se
+ * gardent, comme la main d'œuvre qu'ils encadrent.
  */
 export type MemoireDesFiches = {
   mainDOeuvre: string;
@@ -391,9 +404,13 @@ export type MemoireDesFiches = {
   communication: string;
   environnementPreciser: string;
   organisationCommunication: string;
+  responsableNom: string;
+  responsablePrenom: string;
+  responsableTel: string;
+  signataire: string;
 };
 export function memoireVide(): MemoireDesFiches {
-  return { mainDOeuvre: "", lieuTrousse: "", risquesAutres: "", mesuresAutres: "", observations: "", ajouts: {}, coches: {}, communication: "", environnementPreciser: "", organisationCommunication: "" };
+  return { mainDOeuvre: "", lieuTrousse: "", risquesAutres: "", mesuresAutres: "", observations: "", ajouts: {}, coches: {}, communication: "", environnementPreciser: "", organisationCommunication: "", responsableNom: "", responsablePrenom: "", responsableTel: "", signataire: "" };
 }
 export function memoireDepuis(contenu: ContenuFiche): MemoireDesFiches {
   return {
@@ -407,6 +424,10 @@ export function memoireDepuis(contenu: ContenuFiche): MemoireDesFiches {
     communication: contenu.communication,
     environnementPreciser: contenu.environnementPreciser,
     organisationCommunication: contenu.organisationCommunication,
+    responsableNom: contenu.responsableNom,
+    responsablePrenom: contenu.responsablePrenom,
+    responsableTel: contenu.responsableTel,
+    signataire: contenu.signataire,
   };
 }
 /** Une fiche neuve part de ce qui a été gardé ; ce qui est propre au chantier reste vide. */
@@ -423,6 +444,10 @@ export function appliquerLaMemoire(contenu: ContenuFiche, memoire: MemoireDesFic
     communication: memoire.communication,
     environnementPreciser: memoire.environnementPreciser,
     organisationCommunication: memoire.organisationCommunication,
+    responsableNom: memoire.responsableNom,
+    responsablePrenom: memoire.responsablePrenom,
+    responsableTel: memoire.responsableTel,
+    signataire: memoire.signataire,
   };
 }
 

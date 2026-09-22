@@ -159,16 +159,16 @@ export async function enregistrerLaFicheAction(
 
 export async function signerLaFicheAction(
   chantierId: string,
-  quoi: { contenu: ContenuFiche; signaturePng: string; points: number; signataire: string }
+  quoi: { contenu: ContenuFiche; signaturePng: string; points: number }
 ): Promise<{ ok: true; signeeLe: string } | Refus> {
   const ctx = await garder(chantierId, "signer la fiche de sécurité");
   if (quoi.points < POINTS_MINIMUM_D_UNE_SIGNATURE || !quoi.signaturePng.startsWith("data:image/png;base64,")) {
     return { ok: false, raison: "Signez au doigt avant de signer la fiche." };
   }
-  if (!quoi.signataire.trim()) return { ok: false, raison: "Le nom du signataire manque." };
+  if (!quoi.contenu.signataire.trim()) return { ok: false, raison: "Le nom du signataire manque." };
   const enregistree = await enregistrerLaFiche(ctx, chantierId, { contenu: quoi.contenu, etapeVue: 6, loiLue: true });
   if (!enregistree) return { ok: false, raison: "La fiche n’existe pas encore : ouvrez-la d’abord." };
-  const signee = await signerLaFiche(ctx, chantierId, { signaturePng: quoi.signaturePng, signataire: quoi.signataire });
+  const signee = await signerLaFiche(ctx, chantierId, { signaturePng: quoi.signaturePng, signataire: quoi.contenu.signataire });
   if (!signee?.signeeLe) return { ok: false, raison: "La signature n’a pas pu être enregistrée." };
   rafraichir(chantierId);
   return { ok: true, signeeLe: signee.signeeLe.toISOString() };

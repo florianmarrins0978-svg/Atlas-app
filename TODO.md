@@ -9,6 +9,16 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## 🔧 `test-fiche-securite-e2e` : SON PREMIER CAS LIT L'ORDRE AVANT QUE « TRAVAUX À FAIRE » SOIT MONTÉ (22 septembre 2026)
+
+Relevé en jouant la suite seule, trois fois : rouge deux fois, vert une.
+« le bandeau est sur la fiche du jour… » attend « à remplir » puis lit l'ordre
+des blocs tout de suite ; or `PlanningClient.tsx` affiche « Lecture du
+devis… » tant que la feuille n'est pas lue, et `travaux-a-faire` n'existe pas
+encore. Le cas rend alors `['fiche-de-securite']`. Défaut du CONTRÔLE, pas du
+produit : attendre `[data-atlas='travaux-a-faire']` avant de mesurer. Hors du
+lot « nom et prénom repris », laissé tel quel.
+
 ## LA VÉRIFICATION DU SITE EN LIGNE TOMBE SUR DES 503 PASSAGERS (22 septembre 2026)
 
 `pages.yml`, étape « Vérifier que chaque écran est servi ». Elle interroge
@@ -243,7 +253,7 @@ par la fiche du jour.
 | mot pour mot | **sa règle du 21 septembre** : *« il faut reprendre exactement leurs termes mot pour mot, seuls les titres et les explications peuvent être ajoutés ou modifiés »*. La feuille a été **rendue en image** (pdf.js) et relue case par case : co-activité est un TITRE, « Manuel d'utilisation du matériel », « Bulletins d'alerte météorologiques », « Échelle = moyen d'accès », « Horaires, délais… », « Niveau de formation… » sont des **points de vigilance** (main rouge), pas des cases ; « Électrique » et « Distance de sécurité… » ont des sous-cases ; l'ordre des travaux est celui de la page 1. Deux fautes de la feuille non recopiées : « essoussage », « sauvatage ». Plus aucun « Atlas » à l'écran (*« dis l'application ou dis rien »*) |
 | la note finale de la feuille | ce ne sont pas des champs : quatre obligations sur ce qu'on FAIT de la fiche, toutes tenues (montrée à l'équipe, sur le chantier, transmise si plan de prévention, deux ans) ; **à imprimer au bas du PDF** |
 | où elle est gardée | sa décision du 21 septembre, après avoir vu Terminés : **une ligne de plus dans Paysage, « Fiches de sécurité »**, parmi les outils du métier (*« non, je pense qu'il faut créer une catégorie dans Paysage en fait »*). Dedans, rangées par client comme les retours. Terminés ne change pas. **Aucun bouton de filtre** : la liste s'ouvre sur le mois en cours, son nom en tête comme sur Terminés, et le toucher fait tourner la roue mois/année du téléphone (`input type="month"`). Ses trois consignes du 21 septembre au soir : un calendrier plutôt qu'un bouton « 2026 » ; *« enlève tous tes filtres boutons et garde que celui-là »* (la roue) ; *« tout ça doit être la forme par défaut, pas besoin de mettre le bouton »*. Sur chaque fiche : ouvrir, **enregistrer** (dans les fichiers du téléphone), transmettre. **Avec le chantier** : une ligne en base, le PDF signé dans le stockage des documents (comme le devis), visible dans Terminés à côté du retour d'intervention. Aujourd'hui rien ne purge un chantier (`docs/RGPD.md` §4) ; au codage, écrire la règle : **jamais effacée avant deux ans après la signature, même si le chantier est supprimé**, et l'ajouter au tableau de RGPD.md |
-| la loi | **à la première ouverture**, un écran dit ce que le décret demande (les sept éléments), avec deux liens : Légifrance et le formulaire MSA. Puis « Ce que demande la loi » reste dans le bandeau. Sa question : *« le préciser au début, et un lien vers le décret pour qu'ils vérifient par eux-mêmes ? »* |
+| la loi | **à la première ouverture**, un écran dit ce que le décret demande (les sept éléments), avec deux liens : Légifrance et le formulaire MSA. « Remplir la fiche » y mène à la première ouverture de chaque fiche ; le second lien du bandeau a été retiré le 22 septembre 2026 (*« pas besoin d'avoir deux portes pour le même endroit »*). Sa question : *« le préciser au début, et un lien vers le décret pour qu'ils vérifient par eux-mêmes ? »* |
 | gardé d'une fiche à l'autre | **pour l'instant** : la main d'œuvre, le lieu de la trousse, les deux textes de la co-activité, les observations, ce qu'il ajoute aux listes. *« Je pense que tout ce qu'on coche peut être gardé d'une fiche à l'autre… pour les autres je te le dirai plus tard »* — et il faudra **le dire à la première utilisation**. À lui de trancher |
 | matériel, arbres | **vérifié dans le décret le 21 septembre** : aucune liste de matériel imposée (« les équipements de travail utilisés », R. 717-85-16), rien sur l'examen de l'arbre. Les listes sont celles du formulaire MSA ; l'utilisateur **ajoute** les siennes, gardées d'une fiche à l'autre. Le périmètre de sécurité (R. 717-85-23 : abattage manuel, deux fois la hauteur de l'arbre) s'affiche dans les mesures |
 | l'heure | la roue du téléphone (`input type="time"`), *« les heures et les minutes qui défilent »* |
