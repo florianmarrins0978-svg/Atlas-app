@@ -5,6 +5,16 @@
 
 ---
 
+## FAIT : LA FACTURE S'OUVRE AVEC SA PREMIÈRE LIGNE (22 septembre 2026)
+
+*« Quand je crée une facture il devrait déjà avoir une ligne d'ouverte ! Je ne
+dois pas avoir besoin d'ajouter une ligne au début ! »* La feuille où il remplit
+une facture SANS devis s'ouvre désormais avec sa case, comme le devis depuis le
+20 septembre — même règle, même fichier (`ligneOuverteAPoserSurLaFacture`). Une
+facture née d'un devis n'en ouvre pas : on n'y saisit que des travaux
+supplémentaires. Rien n'est écrit en base avant son premier mot : sur une
+facture, une ligne vide part chez le client. `ARCHITECTURE.md` §394.
+
 ## FAIT : LA FICHE DE SÉCURITÉ, SUR LA FICHE DU JOUR (22 septembre 2026)
 
 La fiche d'intervention du décret 2021-1833, nommée « Fiche de sécurité » :

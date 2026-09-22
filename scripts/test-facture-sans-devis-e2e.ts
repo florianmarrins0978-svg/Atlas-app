@@ -318,10 +318,13 @@ async function main() {
     const enTete = await page.locator("h1").first().innerText();
     assert.match(enTete, /Facture/, `l'en-tête dit « ${enTete} »`);
 
-    await page.click('[data-atlas="ajouter-ligne-supplement"]');
-    await page.waitForTimeout(600);
-
+    // **IL ÉCRIT DIRECTEMENT — sa demande du 22 septembre 2026 :** *« quand je
+    // crée une facture il devrait déjà avoir une ligne d'ouverte »*. L'appui sur
+    // « + Ajouter une ligne » qui était ici poserait aujourd'hui une SECONDE
+    // ligne, vide, et elle s'imprimerait sur la facture du client. On adapte le
+    // contrôle, on ne remet pas le geste (`CLAUDE.md` §5 bis).
     const description = page.locator('[data-atlas="ligne-supplement"] textarea').first();
+    await page.waitForSelector('[data-atlas="ligne-supplement"] textarea', { timeout: 15000 });
     await description.fill("Dépannage arrosage — remplacement électrovanne");
     await description.blur();
     // **Le prix se cherche par son NOM, jamais par son rang** : la colonne Unité

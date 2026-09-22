@@ -32273,8 +32273,41 @@ première ligne sur cet écran. Le geste n'existe plus dans son parcours : elles
 l'ont perdu, plutôt que de garder un clic qui ajoutait désormais une ligne vide
 de plus (`CLAUDE.md` §5 bis — une suite qui réclame un geste retiré rend
 l'écran impossible à changer). Celles qui écrivent plusieurs lignes n'appuient
-que pour **celles qui manquent**. L'écran Prix et la facture, eux, n'ont pas
-bougé.
+que pour **celles qui manquent**. L'écran Prix n'a pas bougé ; **la facture,
+elle, a suivi deux jours plus tard** — voir ci-dessous.
+
+### LA FACTURE SANS DEVIS A DEMANDÉ LA MÊME CHOSE — 22 septembre 2026
+
+**Sa capture, sur la feuille où il remplit une facture faite sans devis :**
+*« quand je crée une facture il devrait déjà avoir une ligne d'ouverte ! Je ne
+dois pas avoir besoin d'ajouter une ligne au début ! »* Le même geste, donc la
+même règle : `ligneOuverteAPoserSurLaFacture`, dans le même fichier. Une
+seconde rédaction aurait divergé au premier ajustement (`CLAUDE.md` §3).
+
+**Une facture NÉE D'UN DEVIS n'en ouvre pas**, et c'est le seul écart :
+la seule chose qu'on y saisit est un travail SUPPLÉMENTAIRE. Une case vide
+d'office y ferait apparaître le bandeau « Travaux supplémentaires » sur une
+facture qui n'en porte aucun — l'écran annoncerait un ajout qu'il n'a pas fait,
+juste avant qu'il vérifie ce qui part chez son client.
+
+**Le danger, lui, change de nature.** Sur le devis, une ligne vide écrite
+d'office faisait disparaître une dictée ; sur la facture, elle **s'imprime chez
+le client**, en face de 0,00 €, sur une pièce qui ne se corrige que par un
+avoir. `peutPreparerLaPiece` ne retient pas une ligne sans libellé — c'est au
+patron de juger. D'où la même garde, pour une raison de plus : rien n'est écrit
+avant son premier mot (`test-ligne-ouverte-facture-e2e.ts`, qui lit la base).
+
+| | |
+|---|---|
+| l'écran | la feuille « Remplir la facture » — `TravauxSupplementairesClient.tsx` |
+| la règle pure | `ligneOuverteAPoserSurLaFacture` · `test-ligne-ouverte-facture.ts` |
+| son parcours | `test-ligne-ouverte-facture-e2e.ts` — il regarde la BASE |
+| ce qui n'a pas changé | « + Ajouter une ligne » et « + Ajouter une TVA » écrivent la ligne ouverte AVANT de créer la leur, pour le rang |
+
+**Et deux contrôles ont dû apprendre le geste retiré** (`CLAUDE.md` §5 bis) :
+`test-facture-sans-devis-e2e.ts` et `capture-facture-sans-devis.mts`
+appuyaient sur « + Ajouter une ligne » avant d'écrire — cet appui poserait
+aujourd'hui une seconde ligne, vide, sur la facture du client.
 
 ## §395 — La cliente pose SES jours, et un doigt ne ferme plus un devis
 

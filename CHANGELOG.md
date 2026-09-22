@@ -8,6 +8,28 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-22
 
+### La facture s'ouvre avec sa première ligne
+
+*« Quand je crée une facture il devrait déjà avoir une ligne d'ouverte ! Je ne
+dois pas avoir besoin d'ajouter une ligne au début ! »* — sur la feuille où il
+remplit une facture faite sans devis. C'est le geste que le devis a reçu le
+20 septembre, et c'est la même règle, appelée et non recopiée
+(`ligneOuverteAPoserSurLaFacture`). Une facture née d'un devis n'ouvre rien :
+ce qu'on y saisit est un travail supplémentaire, et une case vide y annoncerait
+un ajout qu'il n'a pas fait. La ligne n'existe PAS en base tant qu'il n'a rien
+écrit — sur une facture, une ligne vide s'imprime chez le client en face de
+0,00 €, et une pièce arrêtée ne se corrige que par un avoir. `ARCHITECTURE.md`
+§394.
+
+### La capture de la facture sans devis mettait le prix dans l'unité
+
+Elle visait le deuxième champ de la rangée ; depuis que la colonne Unité s'est
+glissée entre Qté et Prix (15 septembre), ce deuxième champ est l'UNITÉ. Les
+145 € partaient donc dans « u », la facture restait à 0,00 €, et le script
+accusait l'envoi d'être fermé sur une facture « remplie ». La suite de bout en
+bout avait été corrigée ce jour-là ; ce script avait été oublié. Le prix se
+cherche désormais par son nom.
+
 ### La fiche de sécurité du décret 2021-1833 est dans l'application
 
 Sur la fiche du jour, un bandeau « Fiche de sécurité » au-dessus de « Travaux

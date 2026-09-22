@@ -11,6 +11,25 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 
 ---
 
+## LA LIGNE OUVERTE D'AVANCE — devis ET facture
+
+| | |
+|---|---|
+| la règle pure | `src/lib/ligne-ouverte-devis.ts` — `ligneOuverteAPoser` (devis), `ligneOuverteAPoserSurLaFacture` (facture sans devis), `ligneOuverteAEcrire` (ce qui la fait naître) |
+| les écrans | `src/app/chantiers/[id]/devis-complet/DevisCompletClient.tsx` · `src/app/chantiers/[id]/facture/travaux-supplementaires/TravauxSupplementairesClient.tsx` |
+| les suites | `test-ligne-ouverte-devis.ts` · `test-ligne-ouverte-devis-e2e.ts` · `test-ligne-ouverte-facture.ts` · `test-ligne-ouverte-facture-e2e.ts` |
+
+**Le piège à connaître** : cette ligne n'existe PAS en base tant qu'il n'a rien
+écrit, et ce n'est pas un détail d'implémentation. Sur le devis, une ligne vide
+écrite d'office fait disparaître une dictée (panne du 7 août 2026) ; sur la
+facture, elle s'imprime chez le client en face de 0,00 €. Toute écriture d'une
+ligne de ces deux écrans passe donc par `idEnBase()`, et jamais par `l.id`.
+
+**Et une suite qui appuie sur « + Ajouter une ligne » avant d'écrire sa
+première ligne pose aujourd'hui une ligne VIDE de plus.** C'est ce qui a été
+corrigé dans `test-facture-sans-devis-e2e.ts` et `capture-facture-sans-devis.mts`
+le 22 septembre.
+
 ## LA FICHE DE SÉCURITÉ — 22 septembre 2026
 
 | | |
