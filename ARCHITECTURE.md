@@ -32689,3 +32689,57 @@ retours (§ migration 0080) : la photo du chantier que la fiche montre ne doit
 pas partir en purge quand on l'efface de la pellicule. `fiches_securite_photos`
 existe pour que `supprimerPhoto` pose la question. `test-fiche-securite-db.ts`
 le mesure sur le compteur de `fichiers_a_purger`.
+
+## §403 — Une photo appartient à l'endroit où elle a été posée
+
+**Sa règle du 22 septembre 2026 :** *« les photos dans la fiche de sécurité
+restent à l'intérieur de la fiche, et les photos de la fiche client restent à
+l'intérieur de la feuille travaux à faire »*.
+
+Elle arrive après deux écrans qui montraient les mêmes photos : la rangée du
+planning répétait celles de la fiche de sécurité — retirée le même jour —, et
+« Travaux à faire » recevait les croquis de terrain posés sur la fiche.
+
+### Ce qui les sépare n'est pas leur nature
+
+Les deux sont des photos du même chantier, dans la même table : même plafond
+(`PHOTOS_MAX_PAR_CHANTIER`), même nettoyage de métadonnées, même purge. Leur
+donner deux tables aurait dupliqué tout cela, et la troisième provenance —
+celle qui viendra — aurait demandé une troisième table.
+
+Ce qui les sépare est **l'endroit où il l'a posée**, et cet endroit est déjà
+écrit : `fiches_securite_photos`, la liaison née du piège des photos (§402).
+`listerPhotosHorsFicheDeSecurite` lit donc les photos du chantier **moins**
+celles qu'une fiche tient ; c'est elle que servent « Travaux à faire » et la
+pellicule du client, tandis que la fiche lit les siennes par son contenu.
+
+**Le tri est au SERVEUR, jamais à l'écran.** Un écran qui écarte ce qu'on lui
+donne en trop finit par en oublier un, et l'oubli ne se voit pas.
+
+### La liaison s'écrit à l'ajout, pas au prochain « Suivant »
+
+`enregistrerLaFiche` réécrit déjà les liaisons depuis `contenu.photoIds` ;
+s'en contenter laissait une fenêtre — entre la photo posée et l'enregistrement,
+il peut ranger son téléphone, et la photo est alors une photo du chantier comme
+une autre, donc visible dans « Travaux à faire ». `attacherPhotoALaFiche` écrit
+les deux dans la même transaction : la liaison **et** l'identifiant dans le
+contenu. Écrire l'une sans l'autre rendrait la photo invisible des deux côtés.
+
+D'où un geste propre à la fiche (`ajouterPhotoDeLaFicheAction`) là où elle
+empruntait celui du retour du jour. L'entrée de l'image, elle, reste commune —
+`recevoirPhotoDeChantier` : nettoyer, ranger, inscrire. Deux portes d'entrée
+d'images auraient divergé sur le nettoyage des métadonnées, ce que
+`photo-entrante.ts` existe précisément pour empêcher.
+
+### Ce que cela oblige : la retirer d'où on la regarde
+
+Une photo de la fiche ne se voit plus dans la pellicule du client : sans un
+geste de retrait sur la fiche elle-même, une photo de travers y resterait pour
+toujours. La visionneuse de la fiche porte donc « Retirer », comme celle de la
+pellicule — et **une fiche signée garde les siennes** : elle fait foi devant un
+contrôleur, et `detacherPhotoDeLaFiche` le refuse au serveur, pas seulement à
+l'écran.
+
+`test-fiche-securite-db.ts` tient la séparation et le refus ;
+`test-fiche-securite-e2e.ts` compte les vignettes de « Travaux à faire » avant
+la fiche et après — les deux ont été vues rouges sans la règle.

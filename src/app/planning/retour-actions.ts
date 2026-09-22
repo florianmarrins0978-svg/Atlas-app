@@ -8,15 +8,13 @@ import { peutPoserUnRetour } from "@/lib/acces-roles";
 import { getEntreprise } from "@/server/repositories/entreprises";
 import { abonnementDeLEntreprise } from "@/server/repositories/abonnements";
 import { fonctionOuverte } from "@/lib/abonnements";
-import { listerPhotos, ajouterPhoto } from "@/server/repositories/photos";
+import { listerPhotosHorsFicheDeSecurite, recevoirPhotoDeChantier } from "@/server/repositories/photos";
 import {
   dernierRetourDuChantier,
   nombreDeRetoursDuChantier,
   poserLeRetour,
 } from "@/server/repositories/retours-intervention";
 import { tachesDuChantier } from "@/server/repositories/devis";
-import { preparerPhotoEntrante } from "@/server/photo-entrante";
-import { enregistrerObjet } from "@/server/storage";
 import { verifierLimite, LIMITES } from "@/server/rate-limit";
 import type { TacheDuRetour } from "@/lib/retour-intervention";
 import { refusDesPhotosDuRetour } from "@/lib/photos-plafonds";
@@ -98,7 +96,7 @@ export async function etatDuRetourAction(chantierId: string) {
     tachesDuChantier(ctx, chantierId),
     dernierRetourDuChantier(ctx, chantierId),
     nombreDeRetoursDuChantier(ctx, chantierId),
-    listerPhotos(ctx, chantierId),
+    listerPhotosHorsFicheDeSecurite(ctx, chantierId),
   ]);
 
   return {
@@ -158,10 +156,11 @@ export async function poserLeRetourAction(
  * le rester : c'est là que vivent le devis, les prix et la facture. Ouvrir cet
  * écran pour une photo aurait ouvert tout le reste avec.
  *
- * **Tout le reste est repris, jamais refait** : `preparerPhotoEntrante` vérifie
- * la taille, le format, retire les métadonnées — et REFUSE si elle n'a pas pu
- * les retirer. C'est elle qui empêche les coordonnées GPS du domicile d'un
- * client de descendre jusqu'au rangement.
+ * **Tout le reste est repris, jamais refait** : `recevoirPhotoDeChantier`
+ * nettoie, range et inscrit — et REFUSE si les métadonnées n'ont pas pu être
+ * retirées. C'est ce chemin-là qui empêche les coordonnées GPS du domicile d'un
+ * client de descendre jusqu'au rangement, et la fiche de sécurité emprunte le
+ * même (22 septembre 2026).
  */
 export async function ajouterPhotoDuRetourAction(
   formData: FormData
@@ -177,21 +176,7 @@ export async function ajouterPhotoDuRetourAction(
   );
   if (!limite.autorise) return { ok: false, raison: limite.message };
 
-  const prete = await preparerPhotoEntrante(formData.get("fichier"), "photo de chantier");
-  if (!prete.ok) return { ok: false, raison: prete.raison };
-
-  const objet = await enregistrerObjet(
-    `chantiers/${chantierId}/photos`,
-    prete.photo.octets,
-    prete.photo.extension
-  );
-  const ajout = await ajouterPhoto(ctx, chantierId, {
-    storageKey: objet.storageKey,
-    mimeType: prete.photo.mimeType,
-    tailleOctets: objet.tailleOctets,
-    nomOriginal: prete.photo.nomOriginal,
-    checksum: objet.checksum,
-  });
+  const ajout = await recevoirPhotoDeChantier(ctx, chantierId, formData.get("fichier"));
   if (!ajout.ok) return ajout;
 
   return { ok: true, id: ajout.photo.id, storageKey: ajout.photo.storageKey };

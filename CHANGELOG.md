@@ -8,6 +8,19 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-22
 
+### Chaque photo à un seul endroit : celui où elle a été posée
+
+Une photo posée sur la fiche de sécurité y reste — elle ne passe plus dans
+« Travaux à faire » ni dans la pellicule du client. Une photo jointe à la fiche
+client reste, elle, dans « Travaux à faire ». *« Les photos dans la fiche de
+sécurité restent à l'intérieur de la fiche, et les photos de la fiche client
+restent à l'intérieur de la feuille travaux à faire. »* Et puisqu'elle ne se
+voit plus ailleurs, la fiche gagne « Retirer » sur sa visionneuse ; une fiche
+signée, elle, garde les siennes.
+
+Ce que ça évite : les mêmes photos à trois endroits, et un croquis de terrain
+qui part avec le retour du jour chez le client. `ARCHITECTURE.md` §403.
+
 ### Les photos du chantier se regardent en grand, et à un seul endroit
 
 Sur la fiche du jour, la rangée de photos qui se trouvait au-dessus de la

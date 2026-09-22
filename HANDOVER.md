@@ -23,11 +23,21 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 | le PDF | `src/server/pdf/fiche-securite-pdf.ts`, son propre moteur (cases, signature, note de la feuille) |
 | les suites | `test-fiche-securite.ts` (règles + PDF), `test-fiche-securite-db.ts` (RLS, mémoire, purge), `test-fiche-securite-e2e.ts` (le chemin entier) |
 
-**LES PHOTOS DU CHANTIER NE SE VOIENT QU'ICI — 22 septembre 2026.** Elles se
-voyaient aussi sur la fiche du jour, juste au-dessus du bandeau ; c'étaient les
-mêmes (`listerPhotos` du même chantier), et il a fait retirer la rangée du
-planning. Une vignette de l'écran 3 s'ouvre avec `VisionneusePhoto`, celle de
-toute l'application — ne pas en écrire une seconde (`CLAUDE.md` §3).
+**UNE PHOTO APPARTIENT À L'ENDROIT OÙ ELLE A ÉTÉ POSÉE — 22 septembre 2026,
+`ARCHITECTURE.md` §403.** Celle de la fiche ne se voit QUE sur la fiche : la
+liaison `fiches_securite_photos` s'écrit dès l'ajout
+(`ajouterPhotoDeLaFicheAction` → `attacherPhotoALaFiche`), et
+`listerPhotosHorsFicheDeSecurite` la retire des photos du chantier — c'est elle
+que lisent « Travaux à faire » et la pellicule du client. Toute pièce neuve qui
+montre « les photos du chantier » emploie celle-là, jamais `listerPhotos`.
+
+Deux conséquences à connaître : la fiche porte « Retirer » sur sa visionneuse
+(elle est la seule porte, et une fiche signée refuse) ; et l'image entre par
+`recevoirPhotoDeChantier`, le chemin commun aux trois écrans qui en posent —
+une seconde porte d'entrée divergerait sur le nettoyage des métadonnées.
+
+Une vignette de l'écran 3 s'ouvre avec `VisionneusePhoto`, celle de toute
+l'application — ne pas en écrire une seconde (`CLAUDE.md` §3).
 
 **Le piège à connaître** : `supprimerPhoto` demande aussi à la fiche avant de
 mettre un fichier en purge. Une nouvelle pièce qui montre des photos du

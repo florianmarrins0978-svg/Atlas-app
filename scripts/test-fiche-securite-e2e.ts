@@ -84,6 +84,16 @@ async function main() {
     assert.deepEqual(ordre, ["fiche-de-securite", "travaux-a-faire"], "la fiche de sécurité se remplit AVANT les travaux : elle est au-dessus");
   });
 
+  // Ce que « Travaux à faire » montre AVANT que la fiche ne pose quoi que ce
+  // soit : c'est la référence du contrôle de la fin.
+  let photosDeLaFeuilleAvant = -1;
+  await cas("« Travaux à faire » montre les photos du chantier — on les compte avant", async () => {
+    await page.locator("[data-atlas='ouvrir-travaux']").click();
+    await page.locator("[data-atlas='ajouter-photo-retour']").waitFor({ state: "visible", timeout: 20_000 });
+    photosDeLaFeuilleAvant = await page.locator("[data-atlas='photo-du-retour']").count();
+    await page.locator("[data-atlas='ouvrir-travaux']").click();
+  });
+
   await cas("« Remplir la fiche » ouvre d'abord ce que demande la loi, une fois", async () => {
     await page.locator(OUVRIR).click();
     await page.locator("[data-atlas='remplir-la-fiche']").click();
@@ -239,6 +249,32 @@ async function main() {
     assert.equal(r.length, 1, "la mémoire de l'entreprise n'a pas été écrite");
     assert.ok(r[0].contenu.coches.travaux?.includes("Haubanage"), "ce qui est coché n'est pas gardé pour la fiche suivante");
     assert.ok(r[0].contenu.ajouts.coupe?.includes("Perche élagueuse"), "le mot ajouté n'est pas gardé");
+  });
+
+  // ─── CHACUNE CHEZ SOI — sa règle du 22 septembre 2026 ─────────────────────
+  //
+  // *« Les photos dans la fiche de sécurité restent à l'intérieur de la fiche,
+  // et les photos de la fiche client restent à l'intérieur de la feuille
+  // travaux à faire. »* Les deux photos posées sur l'écran 3 sont des photos
+  // de ce chantier : sans la liaison, elles s'afficheraient ici.
+  await cas("LES PHOTOS DE LA FICHE NE PASSENT PAS DANS « TRAVAUX À FAIRE »", async () => {
+    assert.ok(photosDeLaFeuilleAvant >= 0, "le compte d'avant n'a pas été pris : rien à comparer");
+    await page.locator("[data-atlas='ouvrir-travaux']").click();
+    await page.locator("[data-atlas='ajouter-photo-retour']").waitFor({ state: "visible", timeout: 20_000 });
+    const apres = await page.locator("[data-atlas='photo-du-retour']").count();
+    assert.equal(
+      apres,
+      photosDeLaFeuilleAvant,
+      `« Travaux à faire » montre ${apres} photo(s) contre ${photosDeLaFeuilleAvant} avant la fiche : les photos de la fiche de sécurité ont débordé`
+    );
+    // Et elles existent bien, en base, sur ce chantier : sans cela le contrôle
+    // passerait au vert le jour où l'ajout de photo serait cassé.
+    const { rows: n } = await pool.query<{ n: number }>(
+      `SELECT count(*)::int AS n FROM fiches_securite_photos f
+        JOIN fiches_securite s ON s.id = f.fiche_id WHERE s.chantier_id = $1`,
+      [chantierId]
+    );
+    assert.equal(Number(n[0].n), 2, "les deux photos de l'écran 3 ne sont pas liées à la fiche");
   });
 
   await contexte.close();

@@ -27,8 +27,14 @@ import {
   type ContenuFiche,
   type Famille,
 } from "@/lib/fiche-securite";
-import { ajouterPhotoDuRetourAction } from "../../retour-actions";
-import { enregistrerLaFicheAction, marquerTransmiseAction, signerLaFicheAction, type FicheOuverte } from "../../fiche-securite-actions";
+import {
+  ajouterPhotoDeLaFicheAction,
+  enregistrerLaFicheAction,
+  marquerTransmiseAction,
+  retirerPhotoDeLaFicheAction,
+  signerLaFicheAction,
+  type FicheOuverte,
+} from "../../fiche-securite-actions";
 import { transmettreLePdf } from "@/components/atlas/transmettre-le-pdf";
 import VisionneusePhoto from "@/components/atlas/VisionneusePhoto";
 import Signature, { pngDeLaSignature, type Trace } from "./Signature";
@@ -163,7 +169,7 @@ export default function FormulaireFicheDeSecurite({
       const corps = new FormData();
       corps.set("chantierId", chantierId);
       corps.set("fichier", fichier);
-      const r = await ajouterPhotoDuRetourAction(corps);
+      const r = await ajouterPhotoDeLaFicheAction(corps);
       if (!r.ok) {
         setRefus(r.raison);
         continue;
@@ -171,6 +177,24 @@ export default function FormulaireFicheDeSecurite({
       setPhotos((avant) => [...avant, { id: r.id, storageKey: r.storageKey }]);
       setContenu((c) => ({ ...c, photoIds: [...c.photoIds, r.id] }));
     }
+  }
+
+  /**
+   * **La retirer d'ici, parce qu'elle ne se voit plus ailleurs.** Depuis sa
+   * règle du 22 septembre 2026, une photo posée sur la fiche n'apparaît ni
+   * dans « Travaux à faire » ni sur la fiche client : sans ce geste, une photo
+   * de travers resterait sur la fiche pour toujours.
+   */
+  async function retirerLaPhoto(photoId: string) {
+    setRefus(null);
+    const r = await retirerPhotoDeLaFicheAction(chantierId, photoId);
+    if (!r.ok) {
+      setRefus(r.raison);
+      return;
+    }
+    setPhotos((avant) => avant.filter((p) => p.id !== photoId));
+    setContenu((c) => ({ ...c, photoIds: c.photoIds.filter((id) => id !== photoId) }));
+    setRangOuvert(null);
   }
 
   const champ = (cle: keyof ContenuFiche) => ({
@@ -440,7 +464,24 @@ export default function FormulaireFicheDeSecurite({
                 rang={rangOuvert}
                 onRang={setRangOuvert}
                 onFermer={() => setRangOuvert(null)}
-              />
+              >
+                {/* **On retire une photo d'où on la regarde** — comme dans la
+                    pellicule du client. Une fiche signée garde les siennes :
+                    elle fait foi devant un contrôleur, et le serveur le refuse
+                    aussi (`detacherPhotoDeLaFiche`). */}
+                {signeeLe === null && sesPhotos[rangOuvert] && (
+                  <button
+                    type="button"
+                    data-atlas="retirer-photo-de-la-fiche"
+                    onClick={() => void retirerLaPhoto(sesPhotos[rangOuvert]!.id)}
+                    aria-label="Retirer cette photo"
+                    className="flex h-11 items-center justify-center rounded-full px-4 text-[11px] font-semibold uppercase"
+                    style={{ backgroundColor: voile(surPlein, 0.12), color: colors.orSurEncre, letterSpacing: "0.26em" }}
+                  >
+                    Retirer
+                  </button>
+                )}
+              </VisionneusePhoto>
             )}
           </Bloc>
           <Bloc titre="Zones du chantier" explication="Ce que vous mettez en place pour que personne ne soit blessé : le balisage, la communication entre vous, la surveillance des passants.">
