@@ -1,13 +1,13 @@
 import Link from "next/link";
 import EnTeteEcran from "@/components/atlas/EnTeteEcran";
-import { colors, font, smallCaps } from "@/lib/design-tokens";
+import { colors, font } from "@/lib/design-tokens";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { estProprietaire } from "@/server/autorisation";
 import { listerPassages } from "@/server/repositories/passages-entretien";
 import { listerPrestations } from "@/server/repositories/prestations-entretien";
 import OuvrirFiche from "./OuvrirFiche";
 import FichesEnCours from "./FichesEnCours";
-import LignePassage from "./LignePassage";
+import RapportsEnvoyes from "./RapportsEnvoyes";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Fiche de chantier — Atlas" };
@@ -171,18 +171,7 @@ export default async function FichesPage() {
 
         <FichesEnCours brouillons={brouillons} />
 
-        {partis.length > 0 && (
-          <section className="mx-[26px] mt-[28px]">
-            <h2 className={smallCaps} style={{ color: colors.muted }}>
-              Rapports envoyés
-            </h2>
-            <div className="mt-[10px]">
-              {partis.map((p) => (
-                <LignePassage key={p.id} passage={p} />
-              ))}
-            </div>
-          </section>
-        )}
+        {partis.length > 0 && <RapportsEnvoyes rapports={partis} />}
 
       </div>
     </div>

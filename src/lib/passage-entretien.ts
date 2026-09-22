@@ -23,6 +23,8 @@
 // pré-remplir du tout.
 // ─────────────────────────────────────────────────────────────────────────────
 
+import { filtrerClientsParNom, normaliserPourRecherche } from "./recherche-client";
+
 /** Une ligne de la fiche en cours — copiée du modèle, jamais lue dedans. */
 export type LignePassage = {
   famille: string;
@@ -205,4 +207,31 @@ function plie(t: string): string {
     .toLowerCase()
     .replace(/\s+/g, " ")
     .trim();
+}
+
+/**
+ * LES RAPPORTS ENVOYÉS QUE LA LISTE MONTRE — le mois ou le jour choisi, ou le
+ * nom tapé.
+ *
+ * **Sa demande du 22 septembre 2026 :** *« faut pouvoir filtrer par nom de
+ * client et que ça nous sorte toutes les fiches liées au client, et un filtre
+ * par jour mois année »*. Le contrat des fiches de sécurité (`fichesAMontrer`) :
+ * la période est `2026-09` ou `2026-09-22`, et un nom tapé passe PAR-DESSUS —
+ * il sort tous les rapports du client, sans tourner la roue mois par mois.
+ *
+ * Le jour est celui du passage, déjà une date de calendrier : il se compare tel
+ * quel, sans fuseau. Et le nom se cherche comme celui des clients
+ * (`filtrerClientsParNom`) : une seule façon de chercher un nom (`CLAUDE.md` §3).
+ */
+export function rapportsAMontrer<T extends { clientNom: string | null; jour: string }>(
+  rapports: readonly T[],
+  choix: { periode: string; saisie: string }
+): T[] {
+  if (normaliserPourRecherche(choix.saisie)) {
+    return filtrerClientsParNom(
+      rapports.flatMap((r) => (r.clientNom ? [{ nom: r.clientNom, rapport: r }] : [])),
+      choix.saisie
+    ).map((x) => x.rapport);
+  }
+  return rapports.filter((r) => r.jour.startsWith(choix.periode));
 }

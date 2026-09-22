@@ -415,10 +415,16 @@ export async function supprimerPassage(
  * **Les brouillons d'abord, et c'est le sens de l'écran** : une fiche laissée
  * en plan hier est ce qu'il vient chercher. Les rapports partis viennent
  * ensuite, du plus récent — ils ne se modifient plus, ils se consultent.
+ *
+ * **TOUS, sans plafond — depuis le 22 septembre 2026.** Il en rendait trente,
+ * brouillons compris : un nom tapé dans « Rapports envoyés » (*« que ça nous
+ * sorte toutes les fiches liées au client »*) n'aurait jamais trouvé le
+ * trente et unième, et le mois choisi aurait paru vide. Le filtre se fait à
+ * l'écran (`rapportsAMontrer`), sur la liste entière, comme les fiches de
+ * sécurité.
  */
 export async function listerPassages(
-  ctx: Ctx,
-  combien = 30
+  ctx: Ctx
 ): Promise<
   {
     id: string;
@@ -450,8 +456,7 @@ export async function listerPassages(
         asc(sql`${passagesEntretien.envoyeLe} is not null`),
         desc(passagesEntretien.jour),
         desc(passagesEntretien.createdAt)
-      )
-      .limit(combien);
+      );
   });
 }
 

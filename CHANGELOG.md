@@ -8,6 +8,23 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-22
 
+### Rapports envoyés : chercher un client, choisir un jour, un mois, une année
+
+*« Faut pouvoir filtrer par nom de client et que ça nous sorte toutes les fiches
+liées au client, et un filtre par jour mois année. »* La section de « Fiche de
+chantier » reprend les deux pièces déjà posées ailleurs : `FiltreDeDate` (le mois
+en cours à l'ouverture, un jour au choix) et `ChampRecherche`. Un nom tapé passe
+par-dessus la date et sort tous les rapports du client (`rapportsAMontrer`,
+`scripts/test-rapports-envoyes-recherche.ts`).
+
+La racine : `listerPassages` n'en rendait que trente, brouillons compris. Un
+filtre posé sur cette liste n'aurait jamais trouvé les plus anciens ; le
+plafond est retiré. Ce lot repose sur les branches du champ de recherche et du
+filtre de date, qui ne sont pas encore sur `main`.
+
+Et deux retouches du même soir : la phrase « Ceux-ci sont partis chez vos
+clients… » quitte « Composer ma fiche », et sa carte prend un liseré d'or.
+
 ### Un seul champ de recherche, souligné, partout où l'on cherche
 
 Sa demande, capture de shapersclub.com à l'appui puis planche regardée
