@@ -20,6 +20,7 @@ const FEUILLE = "[data-atlas='feuille']";
 const BANDEAU = "[data-atlas='fiche-de-securite']";
 const OUVRIR = "[data-atlas='ouvrir-fiche-de-securite']";
 const COMPTE = "[data-atlas='compte-de-la-fiche']";
+const TEL_DE_L_ENTREPRISE = "Téléphone (en cas d’incident ou d’accident)";
 
 let echecs = 0;
 async function cas(nom: string, fn: () => Promise<void>) {
@@ -85,6 +86,26 @@ async function main() {
     assert.ok(await page.locator('a[href*="legifrance.gouv.fr"]').count(), "le lien vers le décret manque");
     await page.getByRole("button", { name: "Compris, je remplis" }).click();
     await page.locator("[data-atlas='etape-de-la-fiche']").filter({ hasText: "1 sur 6" }).waitFor({ timeout: 15_000 });
+  });
+
+  await cas("ce qu'il écrit est enregistré sans « Suivant », et il le retrouve en revenant", async () => {
+    // Sa question du 22 septembre 2026 : une fois l'application sur son écran
+    // d'accueil, un lien de la fiche l'emmène dehors en plein remplissage. Si
+    // le téléphone décharge la page, l'étape en cours ne doit pas repartir vide.
+    // On ne touche donc NI « Suivant » NI « Retour » : c'est tout le sujet.
+    const ecrit = "06 12 34 56 78";
+    await page.getByLabel(TEL_DE_L_ENTREPRISE).fill(ecrit);
+    const enBase = async () => {
+      const { rows } = await pool.query<{ contenu: { telephoneIncident?: string } }>(`SELECT contenu FROM fiches_securite WHERE chantier_id = $1`, [chantierId]);
+      return rows[0]?.contenu?.telephoneIncident ?? null;
+    };
+    const jusqua = Date.now() + 15_000;
+    while ((await enBase()) !== ecrit && Date.now() < jusqua) await page.waitForTimeout(500);
+    assert.equal(await enBase(), ecrit, "ce qu'il tape part tout seul, sans « Suivant »");
+    // Et il le retrouve : l'écran rouvert porte ce qu'il avait écrit.
+    await page.goto(`${BASE}/planning/fiche-de-securite/${chantierId}`, { waitUntil: "networkidle" });
+    await page.locator("[data-atlas='etape-de-la-fiche']").filter({ hasText: "1 sur 6" }).waitFor({ timeout: 15_000 });
+    assert.equal(await page.getByLabel(TEL_DE_L_ENTREPRISE).inputValue(), ecrit, "au retour dans l'application, sa saisie est là");
   });
 
   await cas("l'écran 1 porte ce qu'Atlas sait, et « Suivant » enregistre l'étape", async () => {

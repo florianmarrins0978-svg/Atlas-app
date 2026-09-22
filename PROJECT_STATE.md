@@ -25,6 +25,14 @@ liste dans Paysage par mois. Migration 0099. Le formulaire vit sous
 qu'elle leur soit présentée), la liste sous `/paysage/fiches-securite`.
 `docs/lot-fiche-de-securite.md`.
 
+**Ses trois remarques du 22 septembre, corrigées** : la saisie s'enregistre au
+fil de l'eau (un lien qui sort de l'application ne coûte plus l'étape en
+cours) ; le relevé GPS nomme sa cause, réessaie sans la haute précision, dit
+qu'il travaille, et laisse écrire les coordonnées à la main ; le cadre des
+champs est sorti de l'`<input>` pour que Safari cesse de le jeter sur les deux
+heures. **Ce dernier point n'est pas reproductible ici** — il se regarde sur
+son iPhone.
+
 ## FAIT : LA FACTURE SE REMPLIT OÙ ON LA REMPLIT (21 septembre 2026)
 
 *« À corriger : le + main d'œuvre et + règlement reçu. Le bouton facture

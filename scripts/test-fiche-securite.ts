@@ -17,6 +17,7 @@ import {
   manques,
   memoireDepuis,
   memoireVide,
+  refusDuReleveGps,
 } from "../src/lib/fiche-securite";
 import { composerFicheSecuritePdf } from "../src/server/pdf/fiche-securite-pdf";
 
@@ -165,6 +166,22 @@ async function main() {
     assert.ok(doc.getPageCount() >= 2, `une fiche entière tient sur plusieurs pages, pas ${doc.getPageCount()}`);
     assert.equal(doc.getTitle(), "Fiche de sécurité — Pagnol");
     assert.equal(NOTE_DE_LA_FEUILLE.lignes.length, 4, "la note au bas de la feuille a quatre lignes");
+  });
+
+  await cas("le refus du relevé GPS nomme sa cause, et chaque cause donne un geste différent", () => {
+    // Le 22 septembre 2026, le patron : « la position exacte fonctionne pas ».
+    // L'écran répondait la même phrase aux trois causes — dont deux qu'aucun
+    // réglage ne répare.
+    const refuse = refusDuReleveGps(1);
+    const sansSignal = refusDuReleveGps(2);
+    const tropLong = refusDuReleveGps(3);
+    assert.match(refuse, /réglages/i, "un refus de permission renvoie aux réglages");
+    assert.doesNotMatch(sansSignal, /réglages/i, "sans signal, les réglages n’y peuvent rien");
+    assert.doesNotMatch(tropLong, /réglages/i, "un délai dépassé n’est pas un refus");
+    assert.equal(new Set([refuse, sansSignal, tropLong, refusDuReleveGps(undefined)]).size, 4, "quatre causes, quatre phrases");
+    for (const m of [refuse, sansSignal, tropLong, refusDuReleveGps(undefined)]) {
+      assert.match(m, /écrivez les coordonnées/i, "chaque refus laisse la sortie : les écrire à la main");
+    }
   });
 
   console.log(echecs === 0 ? "\n✅ La fiche de sécurité tient ses règles." : `\n❌ ${echecs} cas en échec.`);

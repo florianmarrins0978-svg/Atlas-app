@@ -24,6 +24,7 @@ import {
   gardeeJusquAu,
   libellesAvecLesSiens,
   manques,
+  refusDuReleveGps,
   type ContenuFiche,
   type Famille,
 } from "@/lib/fiche-securite";
@@ -84,15 +85,58 @@ export default function FormulaireFicheDeSecurite({
   const [refus, setRefus] = useState<string | null>(null);
   const [enCours, setEnCours] = useState<Famille | null>(null);
   const [consignesOuvertes, setConsignesOuvertes] = useState(false);
+  const [releveEnCours, setReleveEnCours] = useState(false);
+  const [gpsAEcrire, setGpsAEcrire] = useState(false);
   useEffect(() => {
     window.scrollTo({ top: 0 });
   }, [etape, ecran]);
 
   const adresseDuPdf = `/planning/fiche-de-securite/${chantierId}/pdf`;
 
+  /**
+   * ON ENREGISTRE PENDANT QU’IL ÉCRIT — sa demande du 22 septembre 2026.
+   *
+   * La fiche n’était écrite qu’au « Suivant » et au « Retour ». Or l’écran
+   * porte des liens qui SORTENT de l’application — le formulaire de découverte
+   * fortuite de réseau, jebalise —, et il les ouvre en plein remplissage : si
+   * le téléphone décharge l’application pendant qu’il lit, l’étape en cours
+   * repart vide. Une fois l’application posée sur son écran d’accueil, c’est le
+   * chemin ordinaire, pas un cas de bord.
+   *
+   * Deux secondes de silence, et la fiche part ; on renvoie aussi dès que
+   * l’onglet passe en arrière-plan, car c’est là que le geste se joue — au
+   * mieux, l’envoi est parti avant que le téléphone ne coupe.
+   *
+   * `dejaEnvoye` garde CE QUI A ÉTÉ ÉCRIT, pas l’heure du dernier envoi : un
+   * envoi refusé ne marque rien, donc la frappe suivante réessaie toute seule.
+   */
+  const dejaEnvoye = useRef(JSON.stringify(contenu));
+  useEffect(() => {
+    if (ecran !== "fiche" || signeeLe) return;
+    const aEnvoyer = JSON.stringify(contenu);
+    if (aEnvoyer === dejaEnvoye.current) return;
+    let vivant = true;
+    async function envoyer() {
+      const r = await enregistrerLaFicheAction(chantierId, { contenu, etapeVue, loiLue: true, rafraichirLesEcrans: false });
+      if (r.ok) dejaEnvoye.current = aEnvoyer;
+      else if (vivant) setRefus(r.raison);
+    }
+    const minuterie = setTimeout(() => void envoyer(), 2_000);
+    const enPartant = () => {
+      if (document.visibilityState === "hidden") void envoyer();
+    };
+    document.addEventListener("visibilitychange", enPartant);
+    return () => {
+      vivant = false;
+      clearTimeout(minuterie);
+      document.removeEventListener("visibilitychange", enPartant);
+    };
+  }, [contenu, ecran, signeeLe, chantierId, etapeVue]);
+
   async function enregistrer(prochaineEtapeVue: number) {
     const r = await enregistrerLaFicheAction(chantierId, { contenu, etapeVue: prochaineEtapeVue, loiLue: true });
-    if (!r.ok) setRefus(r.raison);
+    if (r.ok) dejaEnvoye.current = JSON.stringify(contenu);
+    else setRefus(r.raison);
     return r.ok;
   }
 
@@ -308,7 +352,7 @@ export default function FormulaireFicheDeSecurite({
             )}
             {contenu.donneur === "autre" && (
               <>
-                <div className="mt-2.5 grid grid-cols-2 gap-2 [&>*]:mt-0">
+                <div className="mt-2.5 grid grid-cols-2 gap-2 [&>*]:mt-0 [&>*]:min-w-0">
                   <Champ nom="Nom" {...champ("donneurNom")} placeholder="Exemple : Dubeaujardin" />
                   <Champ nom="Prénom" {...champ("donneurPrenom")} placeholder="Exemple : Marc" />
                 </div>
@@ -321,19 +365,24 @@ export default function FormulaireFicheDeSecurite({
             <div className="mt-2.5">
               <span className="mb-[3px] block text-[12.5px]" style={{ color: colors.muted }}>Coordonnées GPS</span>
               {contenu.gps ? (
-                <Fixe nom="">{contenu.gps}</Fixe>
+                <Champ nom="" {...champ("gps")} placeholder="Exemple : 48.94123, 1.72004" />
               ) : (
-                <button type="button" data-atlas="relever-gps" onClick={() => releverLaPosition((gps) => setContenu((c) => ({ ...c, gps })), setRefus)} className="flex min-h-[46px] w-full items-center justify-center gap-2 rounded-full text-[15px]" style={{ background: colors.card, color: colors.rust, boxShadow: `inset 0 0 0 1px ${colors.line}` }}>
-                  <Cible /> Relever ici
-                </button>
+                <>
+                  <button type="button" data-atlas="relever-gps" disabled={releveEnCours} onClick={() => { setReleveEnCours(true); setRefus(null); releverLaPosition((gps) => setContenu((c) => ({ ...c, gps })), (r) => { setRefus(r); setGpsAEcrire(true); }, () => setReleveEnCours(false)); }} className="flex min-h-[46px] w-full items-center justify-center gap-2 rounded-full text-[15px]" style={{ background: colors.card, color: releveEnCours ? colors.muted : colors.rust, boxShadow: `inset 0 0 0 1px ${colors.line}` }}>
+                    <Cible /> {releveEnCours ? "Relevé en cours…" : "Relever ici"}
+                  </button>
+                  {/* Le refus dit « écrivez les coordonnées » : il faut donc de quoi les écrire.
+                      Sans ce champ, la phrase envoyait le patron sur un écran qui ne pouvait pas l’exaucer. */}
+                  {gpsAEcrire && <Champ nom="" {...champ("gps")} placeholder="Exemple : 48.94123, 1.72004" />}
+                </>
               )}
             </div>
             <Aide haut>Dates d’exécution, d’après le planning</Aide>
-            <div className="mt-2.5 grid grid-cols-2 gap-2 [&>*]:mt-0">
+            <div className="mt-2.5 grid grid-cols-2 gap-2 [&>*]:mt-0 [&>*]:min-w-0">
               <Fixe nom="Début, jour" vide={!contexte.datePlanifiee}>{jourDepuisIso(contexte.datePlanifiee) || "pas encore planifié"}</Fixe>
               <Fixe nom="Fin, jour" vide={!contexte.datePlanifiee}>{jourDepuisIso(contexte.datePlanifiee) || "pas encore planifié"}</Fixe>
             </div>
-            <div className="mt-2.5 grid grid-cols-2 gap-2 [&>*]:mt-0">
+            <div className="mt-2.5 grid grid-cols-2 gap-2 [&>*]:mt-0 [&>*]:min-w-0">
               <Champ nom="Début, heures" {...champ("heureDebut")} type="time" />
               <Champ nom="Fin, heures" {...champ("heureFin")} type="time" />
             </div>
@@ -341,7 +390,7 @@ export default function FormulaireFicheDeSecurite({
           </Bloc>
           <Bloc titre="Main d’œuvre" explication="Qui est le chef sur place, et combien de personnes de l’entreprise sont là.">
             <Aide>Responsable de l’entreprise sur le chantier</Aide>
-            <div className="mt-2.5 grid grid-cols-2 gap-2 [&>*]:mt-0">
+            <div className="mt-2.5 grid grid-cols-2 gap-2 [&>*]:mt-0 [&>*]:min-w-0">
               <Champ nom="Nom" {...champ("responsableNom")} />
               <Champ nom="Prénom" {...champ("responsablePrenom")} />
             </div>
@@ -658,15 +707,41 @@ function preremplir(ouverte: FicheOuverte): ContenuFiche {
   };
 }
 
-function releverLaPosition(pose: (gps: string) => void, refus: (r: string) => void) {
+/**
+ * LE RELEVÉ, ET SON RATTRAPAGE.
+ *
+ * La haute précision interroge la puce GPS : sous un couvert d’arbres, dans un
+ * hangar ou une camionnette, elle dépasse le délai alors que la position du
+ * réseau, elle, répond tout de suite. On redemande donc une fois sans l’exiger
+ * — dix mètres d’écart guident les secours, une case vide non.
+ *
+ * Et le code du navigateur n’est plus jeté : `refusDuReleveGps` en fait une
+ * phrase par cause (`fiche-securite.ts`).
+ */
+function releverLaPosition(pose: (gps: string) => void, refus: (r: string) => void, fini: () => void) {
   if (!navigator.geolocation) {
     refus("Ce téléphone ne donne pas sa position.");
+    fini();
     return;
   }
+  const ecrire = (p: GeolocationPosition) => {
+    pose(`${p.coords.latitude.toFixed(5)}, ${p.coords.longitude.toFixed(5)}`);
+    fini();
+  };
+  const abandonner = (e: GeolocationPositionError) => {
+    refus(refusDuReleveGps(e.code));
+    fini();
+  };
   navigator.geolocation.getCurrentPosition(
-    (p) => pose(`${p.coords.latitude.toFixed(5)}, ${p.coords.longitude.toFixed(5)}`),
-    () => refus("La position n’a pas pu être relevée. Autorisez la localisation, ou écrivez-la."),
-    { enableHighAccuracy: true, timeout: 15_000 }
+    ecrire,
+    (e) => {
+      if (e.code !== e.TIMEOUT) {
+        abandonner(e);
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(ecrire, abandonner, { enableHighAccuracy: false, timeout: 20_000, maximumAge: 60_000 });
+    },
+    { enableHighAccuracy: true, timeout: 12_000 }
   );
 }
 
@@ -766,12 +841,28 @@ function Fixe({ nom, children, vide }: { nom: string; children: React.ReactNode;
   );
 }
 function Champ({ nom, lignes, type, ...reste }: { nom: string; lignes?: number; type?: string; value: string; placeholder?: string; onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void }) {
-  const style = { background: colors.card, boxShadow: `inset 0 0 0 1px ${colors.line}`, color: colors.ink, caretColor: colors.or };
+  // **LE CADRE SE DESSINE SUR LA BOÎTE, PAS SUR LE CHAMP — sinon il n’y a qu’un
+  // encart.** Le 22 septembre 2026, le patron demande « deux encarts séparés »
+  // pour les heures. Sur son iPhone, début et fin se lisaient comme une seule
+  // barre blanche, alors que Nom et Prénom — le MÊME composant, deux lignes
+  // plus bas — montraient bien deux cadres. Safari habille
+  // `input[type="time"]` à sa façon et jette le trait qu’on pose dessus ; les
+  // champs de texte, eux, le gardent. Et nos deux fonds sont trop proches
+  // (`card` #faf9f5 sur `cream` #f5f3ee) pour que l’œil retrouve la séparation
+  // sans ce trait.
+  //
+  // Un `<span>` n’est pas un contrôle de formulaire : aucun navigateur ne le
+  // rhabille. Le cadre y vit donc, et il tient partout — y compris pour le
+  // prochain `type` que le téléphone décidera d’habiller. `appearance: none`
+  // reste pour que le CHAMP, lui, garde nos mesures.
+  const dedans = { color: colors.ink, caretColor: colors.or, WebkitAppearance: "none", appearance: "none", background: "transparent" } as const;
   const classe = "block w-full min-h-[46px] rounded-[10px] border-0 px-3 py-2.5 text-[16px] leading-[1.4] outline-none";
   return (
     <label className="mt-2.5 block first:mt-0">
       {nom && <span className="mb-[3px] block text-[12.5px]" style={{ color: colors.muted }}>{nom}</span>}
-      {lignes ? <textarea rows={lignes} className={`${classe} resize-none`} style={style} {...reste} /> : <input type={type ?? "text"} autoComplete="off" className={classe} style={style} {...reste} />}
+      <span className="block rounded-[10px]" style={{ background: colors.card, boxShadow: `inset 0 0 0 1px ${colors.line}` }}>
+        {lignes ? <textarea rows={lignes} className={`${classe} resize-none`} style={dedans} {...reste} /> : <input type={type ?? "text"} autoComplete="off" className={classe} style={dedans} {...reste} />}
+      </span>
     </label>
   );
 }
