@@ -430,6 +430,7 @@ export async function listerPassages(
     envoyeLe: Date | null;
     minutes: number | null;
     faites: number;
+    jeton: string | null;
   }[]
 > {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
@@ -440,6 +441,7 @@ export async function listerPassages(
         clientNom: clients.nom,
         envoyeLe: passagesEntretien.envoyeLe,
         minutes: passagesEntretien.minutes,
+        jeton: passagesEntretien.jeton,
         faites: sql<number>`(
           select count(*)::int from ${lignesPassage} l
            where l.passage_id = ${passagesEntretien.id} and l.faite

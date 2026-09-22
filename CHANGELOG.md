@@ -8,6 +8,15 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-22
 
+### Fiche de chantier : titres en noir gras, un rapport envoyé s'ouvre tel que le client l'a reçu
+
+« En cours » et « Rapports envoyés » passent en noir gras. Toucher une ligne de
+« Rapports envoyés » ouvre le rapport reçu par le client (`/entretien/<jeton>`,
+l'adresse que la fiche du client porte déjà) au lieu de la fiche cochée :
+*« je dois avoir le rapport envoyé au client, pas la fiche que je viens de
+remplir »*. `LignePassage` reçoit sa destination de l'appelant, et
+`listerPassages` rend le jeton.
+
 ### La fiche envoyée se ferme au retour de la messagerie
 
 *« Une fois que j'ai envoyé la fiche au client, je reviens sur cette page, c'est

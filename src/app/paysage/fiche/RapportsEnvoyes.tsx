@@ -26,7 +26,8 @@ export default function RapportsEnvoyes({ rapports }: { rapports: PassageListe[]
 
   return (
     <section className="mx-[26px] mt-[28px]" data-atlas="rapports-envoyes">
-      <h2 className={smallCaps} style={{ color: colors.muted }}>
+      {/* En noir gras, sa demande du 22 septembre 2026. */}
+      <h2 className={smallCaps} style={{ color: colors.ink, fontWeight: 700 }}>
         Rapports envoyés
       </h2>
 
@@ -52,7 +53,13 @@ export default function RapportsEnvoyes({ rapports }: { rapports: PassageListe[]
       ) : (
         <div className="mt-[10px]">
           {montres.map((p) => (
-            <LignePassage key={p.id} passage={p} />
+            // **Le rapport tel que le client l'a reçu**, et non la fiche à
+            // cocher : sa demande du 22 septembre 2026, *« quand je clique sur
+            // M. Bernard, je dois avoir le rapport envoyé au client »*. C'est
+            // l'adresse que porte déjà la fiche du client (`fiche-client.ts`).
+            // Un rapport envoyé a toujours son jeton (`figerPassage` les pose
+            // ensemble) ; la fiche reste le repli d'une ligne qui n'en aurait pas.
+            <LignePassage key={p.id} passage={p} href={p.jeton ? `/entretien/${p.jeton}` : `/paysage/fiche/${p.id}`} />
           ))}
         </div>
       )}
