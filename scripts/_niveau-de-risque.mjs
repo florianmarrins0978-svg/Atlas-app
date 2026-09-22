@@ -145,6 +145,32 @@ const ARGENT = [
   /(^|[/_-])(factur\w*|devis|tva|reglement|reglements|règlement|règlements|paiement\w*|acompte|acomptes|prix|euros|montant|montants|remise|remises|avoir|avoirs|tarif|tarifs|comptabilite|comptabilité|banque|rapprochement)([/_.-]|$)/i,
 ];
 
+/**
+ * CE QUI NE S'EXÉCUTE PAS DANS LE PRODUIT — et sur quoi la gravité ne se lit pas.
+ *
+ * **Le 21 septembre 2026, une planche a réclamé la batterie entière.**
+ * `appli/facture-remplir-acquittee.html` est une maquette : le produit ne
+ * l'importe pas, ne la sert pas, ne l'exécute jamais. Son NOM portait un mot
+ * d'argent, et la gravité l'a lu — cinquante minutes de contrôles dont pas un
+ * ne regarde ce fichier-là. `appli/devis-remise-main-d-oeuvre-conditions.html`,
+ * déjà sur `main`, est dans le même cas.
+ *
+ * **La gravité dit « une faute ici part chez son client ».** Une maquette ne
+ * facture personne : elle se regarde, et c'est lui qui tranche ensuite. La
+ * règle l'écrivait déjà — « ce qui ne s'exécute pas : 1 »
+ * (`.claude/rules/testing.md`) —, c'est l'implémentation qui la contredisait.
+ *
+ * **Ce que cela n'abaisse PAS, et la limite ne bouge pas :** le plancher garde
+ * son pouvoir, et l'outillage reste au niveau 2 — un `.md` de `.claude/` décide
+ * de ce que les autres jouent, et `scripts/` fait tourner le produit.
+ */
+const INERTE = [/^docs\//, /^appli\//, /\.md$/i];
+
+/** Ce chemin s'exécute-t-il dans le produit ? La gravité ne se lit que là. */
+export function neSExecutePas(chemin) {
+  return INERTE.some((m) => m.test(String(chemin).replace(/\\/g, "/")));
+}
+
 const teste = (motifs, chemin) => motifs.some((m) => (Array.isArray(m) ? m[0] : m).test(chemin));
 
 /**
@@ -169,6 +195,9 @@ export function estUnPlancher(chemin) {
 /** La gravité d'un chemin — l'argent ou la sécurité — sans rien décider avec. */
 export function porteUneGravite(chemin) {
   const c = String(chemin).replace(/\\/g, "/");
+  // Une maquette, un document : rien à éprouver, donc rien à remesurer quand
+  // `main` les apporte sous un lot (`verifier-ce-qui-a-bouge`).
+  if (neSExecutePas(c)) return false;
   return teste(SÉCURITÉ, c) || teste(ARGENT, c);
 }
 
@@ -212,8 +241,13 @@ export function evaluerLeLot(chemins, { racine, graphe } = {}) {
 
     const plancher = PLANCHER.find(([motif]) => motif.test(chemin));
     if (plancher) monter(3, plancher[1]);
-    if (teste(SÉCURITÉ, chemin)) monter(3, "authentification, sessions, isolation ou rôles");
-    if (teste(ARGENT, chemin)) monter(3, "l'argent : facturation, TVA, devis ou règlements");
+    // **La gravité se lit sur ce qui S'EXÉCUTE.** Une maquette ne facture
+    // personne : son nom la désignait, et cinquante minutes partaient pour un
+    // fichier qu'aucune étape ne regarde (21 septembre 2026).
+    if (porteUneGravite(chemin)) {
+      if (teste(SÉCURITÉ, chemin)) monter(3, "authentification, sessions, isolation ou rôles");
+      if (teste(ARGENT, chemin)) monter(3, "l'argent : facturation, TVA, devis ou règlements");
+    }
 
     const flou = indéterminable(chemin, g);
     if (flou) monter(3, flou);

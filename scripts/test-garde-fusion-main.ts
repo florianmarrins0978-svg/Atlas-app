@@ -190,6 +190,27 @@ cas("ce qui ne s'exécute pas → niveau 1", () => {
   assert.equal(lot.risque, "faible");
 });
 
+cas("une MAQUETTE au nom d'argent reste niveau 1 — 21 septembre 2026", () => {
+  // **Le faux positif, et il a bloqué une planche.** Le nom portait « facture »
+  // et « devis » ; la gravité les a lus sur un fichier que le produit n'importe
+  // pas, ne sert pas et n'exécute jamais. Cinquante minutes de batterie dont
+  // pas une étape ne regarde ce fichier-là.
+  for (const planche of [
+    "appli/facture-remplir-acquittee.html",
+    "appli/devis-remise-main-d-oeuvre-conditions.html",
+    "docs/lot-3-tva-et-reglements.md",
+  ]) {
+    const lot = evaluer([planche]);
+    assert.equal(lot.niveau, 1, `${planche} : une maquette ne facture personne (obtenu ${lot.niveau} — ${lot.raison})`);
+  }
+
+  // **ET LA LIMITE NE BOUGE PAS** : ce qui s'exécute garde sa gravité, et un
+  // `.md` de règles décide de ce que les autres jouent — donc l'outillage.
+  assert.equal(evaluer(["src/app/chantiers/[id]/facture/actions.ts"]).niveau, 3);
+  assert.equal(evaluer(["src/lib/tva.ts"]).niveau, 3);
+  assert.equal(evaluer([".claude/rules/testing.md"]).niveau, 2);
+});
+
 cas("et chaque niveau nomme SA commande", () => {
   assert.equal(commandeDuNiveau(3), "npm run verifier:avant-livraison");
   assert.equal(commandeDuNiveau(2), "npm run verifier:avant-fusion");
