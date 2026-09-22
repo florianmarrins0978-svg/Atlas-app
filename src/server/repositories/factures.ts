@@ -1643,14 +1643,32 @@ function assemblerReleve(
     }
   }
 
-  // L'ordre du relevé : la date qui compte, puis le numéro. C'est l'ordre du
-  // formulaire, et celui où il recopie.
+  // **LE DERNIER ENREGISTRÉ EN TÊTE** — sa règle du 22 septembre 2026 :
+  // *« l'ordre pour la TVA collectée et la TVA déductible doit être le dernier
+  // enregistré visible »*.
+  //
+  // Le relevé sortait du plus ANCIEN au plus récent : le règlement qu'il venait
+  // de noter tombait tout en bas d'une liste de neuf, et il fallait la parcourir
+  // entière pour vérifier qu'il avait bien été pris. Or c'est la seule raison
+  // d'ouvrir cette preuve juste après avoir noté quelque chose.
+  //
+  // La liste des achats sort déjà ainsi (`achats-tva.ts`, `desc(dateAchat)`) :
+  // les deux preuves du même écran se lisent désormais dans le même sens.
+  //
+  // **Le numéro départage à date égale, du plus grand au plus petit** : il
+  // grandit avec le temps, donc la facture la plus récente passe devant. Tout ce
+  // qui décide de l'ordre est ainsi ÉCRIT sur la ligne — la date et le numéro —,
+  // et rien ne s'explique par une colonne qu'il ne voit pas.
+  //
+  // **L'ordre du CALCUL, lui, ne bouge pas** : `entreesDuReleve` répartit la TVA
+  // des acomptes dans l'ordre où l'argent est rentré, et le règlement qui solde
+  // porte le reliquat d'arrondi. Ce tri-ci ne touche que l'affichage.
   lignes.sort((a, b) =>
     a.dateEmission === b.dateEmission
-      ? a.numeroCommercial.localeCompare(b.numeroCommercial)
+      ? b.numeroCommercial.localeCompare(a.numeroCommercial)
       : a.dateEmission < b.dateEmission
-        ? -1
-        : 1
+        ? 1
+        : -1
   );
 
   const somme = (champ: "totalHt" | "totalTva" | "totalTtc") =>
