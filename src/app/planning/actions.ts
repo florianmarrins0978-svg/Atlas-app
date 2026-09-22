@@ -24,7 +24,6 @@ import { estUnJourValide } from "@/lib/planning-jour";
 import { porterChantierDansAgenda } from "@/server/repositories/agenda-apple";
 import { tachesDuChantier, type FeuilleDuChantier } from "@/server/repositories/devis";
 import { nombreDeRetoursDuChantier } from "@/server/repositories/retours-intervention";
-import { listerPhotos } from "@/server/repositories/photos";
 import { listerClients, trouverOuCreerClient } from "@/server/repositories/clients";
 import { filtrerClientsParNom } from "@/lib/recherche-client";
 import { nomDuChantier } from "@/lib/nom-chantier";
@@ -351,33 +350,25 @@ export async function supprimerChantierAction(chantierId: string): Promise<Resul
  */
 export async function tachesDuChantierAction(
   chantierId: string
-): Promise<
-  FeuilleDuChantier & { retours: number; photos: { id: string; storageKey: string }[] }
-> {
+): Promise<FeuilleDuChantier & { retours: number }> {
   const ctx = await getCurrentCtx();
   await exigerChantierDansSaPortee(ctx, chantierId, "ouvrir la feuille de ce chantier");
   // **Le compte des retours se demande ICI, avec la feuille — pas à
   // l’ouverture du bandeau.** La fiche dit « 2 retours envoyés » sous le
   // bandeau fermé, avant qu’on l’ouvre ; c’est une requête de plus sur une
   // lecture qui se fait déjà, jamais une requête de plus tout court.
-  // **Et les PHOTOS du chantier, celles qu’il a jointes en créant la fiche.**
   //
-  // Sa remarque du 9 septembre 2026 : *« j’ai joint des photos lorsque j’ai
-  // créé la fiche client de Julien, mais elles n’apparaissent nulle part »*.
-  // Elles n’étaient visibles QUE dans le bandeau « Fin de chantier », où le
-  // salarié coche ses preuves — c’est-à-dire APRÈS le travail, dans un tiroir
-  // qu’il n’ouvre qu’en partant. Or elles sont là pour être vues AVANT : c’est
-  // ce qu’il montre du chantier à celui qui s’y rend.
-  const [feuille, retours, sesPhotos] = await Promise.all([
+  // **Les photos du chantier ne sont plus lues ici — 22 septembre 2026.** Elles
+  // se voyaient au-dessus de la fiche de sécurité, qui porte exactement les
+  // mêmes (`listerPhotos` du même chantier) : *« pas besoin d’avoir les photos
+  // à cet endroit, elles sont déjà présentes dans la fiche de sécurité »*. Deux
+  // fois la même rangée sur le même écran, c’est une lecture de plus à chaque
+  // ouverture d’une feuille, et un doute sur ce qui les distingue.
+  const [feuille, retours] = await Promise.all([
     tachesDuChantier(ctx, chantierId),
     nombreDeRetoursDuChantier(ctx, chantierId),
-    listerPhotos(ctx, chantierId),
   ]);
-  return {
-    ...feuille,
-    retours,
-    photos: sesPhotos.map((p) => ({ id: p.id, storageKey: p.storageKey })),
-  };
+  return { ...feuille, retours };
 }
 
 // ═══════════════════════════════════════════════════════════════════════════

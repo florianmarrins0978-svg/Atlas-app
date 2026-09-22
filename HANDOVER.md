@@ -23,6 +23,12 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 | le PDF | `src/server/pdf/fiche-securite-pdf.ts`, son propre moteur (cases, signature, note de la feuille) |
 | les suites | `test-fiche-securite.ts` (règles + PDF), `test-fiche-securite-db.ts` (RLS, mémoire, purge), `test-fiche-securite-e2e.ts` (le chemin entier) |
 
+**LES PHOTOS DU CHANTIER NE SE VOIENT QU'ICI — 22 septembre 2026.** Elles se
+voyaient aussi sur la fiche du jour, juste au-dessus du bandeau ; c'étaient les
+mêmes (`listerPhotos` du même chantier), et il a fait retirer la rangée du
+planning. Une vignette de l'écran 3 s'ouvre avec `VisionneusePhoto`, celle de
+toute l'application — ne pas en écrire une seconde (`CLAUDE.md` §3).
+
 **Le piège à connaître** : `supprimerPhoto` demande aussi à la fiche avant de
 mettre un fichier en purge. Une nouvelle pièce qui montre des photos du
 chantier doit faire pareil, sinon la purge lui ouvre un trou des mois plus tard.

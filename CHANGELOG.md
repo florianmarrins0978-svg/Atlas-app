@@ -8,6 +8,20 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-22
 
+### Les photos du chantier se regardent en grand, et à un seul endroit
+
+Sur la fiche du jour, la rangée de photos qui se trouvait au-dessus de la
+fiche de sécurité a été retirée : la fiche de sécurité porte exactement les
+mêmes — *« elles sont déjà présentes dans la fiche de sécurité »*. Et là-bas,
+une photo s'ouvre maintenant en grand au doigt, se feuillette et se ferme par
+la croix, avec la visionneuse de toute l'application.
+
+Ce que ça évite : la vignette du planning était un lien vers le fichier brut,
+ouvert dans un onglet neuf — depuis son téléphone, plus aucun retour en
+arrière. Et la même rangée deux fois sur le même écran faisait lire deux
+séries de photos là où il n'y en a qu'une, au prix d'une requête de plus à
+chaque ouverture d'une feuille.
+
 ### La fiche de sécurité du décret 2021-1833 est dans l'application
 
 Sur la fiche du jour, un bandeau « Fiche de sécurité » au-dessus de « Travaux
