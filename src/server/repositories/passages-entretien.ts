@@ -506,7 +506,6 @@ export type RapportPublic = {
   /** `null` s'il n'a rien chronométré — **ou s'il a masqué le temps** (§0060). */
   minutes: number | null;
   observations: string | null;
-  envoyeLe: Date;
   clientNom: string | null;
   entrepriseNom: string;
   /** **Ce qui a été FAIT, et rien d'autre** — voir plus bas. */
@@ -565,7 +564,6 @@ export async function lireRapportParJeton(jeton: string): Promise<RapportPublic 
       // juste en dessous. Ce qui est masqué ne quitte pas le serveur.
       minutes: p.tempsVisible ? p.minutes : null,
       observations: p.observations,
-      envoyeLe: p.envoyeLe,
       clientNom: p.clientNom ?? null,
       entrepriseNom: p.entrepriseNom,
       faites,

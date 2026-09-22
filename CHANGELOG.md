@@ -8,6 +8,16 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-22
 
+### Retour d'intervention du client : surtitre doré, une phrase, plus de date d'envoi
+
+« Retour d'intervention » est centré, dans l'or des documents. La ligne sous le
+nom de l'entreprise devient une phrase en noir, le jour en gras : « Mardi
+22 septembre chez M. Bernard », sans point médian. « Envoyé le … Ce retour est
+figé » quitte la page du client (*« à garder seulement pour l'utilisateur dans
+l'appli »*) : la date d'envoi s'affiche désormais sur la fiche envoyée, dans
+l'appli, et `lireRapportParJeton` ne la rend plus, donc elle n'est plus dans le
+HTML du client.
+
 ### Fiche de chantier : l'interrupteur « Visible » passe au vert de l'application
 
 Sa demande. Allumé, il prend `plein` (le vert de « Créer une fiche ») et sa

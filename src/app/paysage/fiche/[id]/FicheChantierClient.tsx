@@ -460,6 +460,16 @@ export default function FicheChantierClient({
 
       {/* ─── L'ENVOI ────────────────────────────────────────────────────────── */}
       <section className="mx-[26px] mt-[30px]">
+        {/* **La date d'envoi est pour LUI** — sa demande du 22 septembre
+            2026 : *« ça, c'est à garder seulement pour l'utilisateur dans
+            l'appli, supprime-le pour le client »*. Elle a quitté la page du
+            client pour venir ici. */}
+        {envoyeLe && (
+          <p className="mb-[14px] text-center text-[12.5px]" style={{ color: colors.muted }} data-atlas="envoye-le">
+            Envoyé le{" "}
+            {new Date(envoyeLe).toLocaleString("fr-FR", { dateStyle: "long", timeStyle: "short", timeZone: "Europe/Paris" })}.
+          </p>
+        )}
         {parti ? (
           <RapportParti
             lien={jeton ? `${adressePublique}/entretien/${jeton}` : ""}
