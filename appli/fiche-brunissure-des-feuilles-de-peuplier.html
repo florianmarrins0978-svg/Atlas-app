@@ -4,141 +4,16 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Brunissure des feuilles de peuplier, fiche à valider (Atlas)</title>
-<style>
-/*
-  ═══════════════════════════════════════════════════════════════════════════
-  FICHE 4 — BRUNISSURE DES FEUILLES DE PEUPLIER — 22 septembre 2026
-  ═══════════════════════════════════════════════════════════════════════════
-
-  Sa demande : « continue dans l'ordre après l'anthracnose du platane sur le
-  site de l'INRAE », et « fais-moi valider chaque fiche avant de la coder ».
-  Sur Ephytia, la liste « Champignons foliaires » va : anthracnose du platane
-  (fiche 2), anthracnose du chêne et du hêtre (fiche 3), puis la brunissure des
-  feuilles de peuplier — celle-ci.
-
-  La planche montre l'écran EXACTEMENT comme l'application le rend aujourd'hui
-  (src/app/paysage/diagnostic/[id]/page.tsx), avec les textes du brouillon de
-  la fiche. Tout ce qui est écrit dans FICHE, en bas, est le fichier JSON qui
-  sera versé dans donnees/phyto/fiches/ sur son « oui » — rien n'est retapé.
-
-  Même méthode que la fiche 2 : les mentions légales d'Ephytia interdisent la
-  copie et l'usage commercial, donc les faits sont rédigés, les figures de la
-  page (« © Pinon ») sont écartées, et la photo vient de Wikimedia Commons sous
-  licence libre vérifiée. RIEN N'EST CODÉ. Les couleurs viennent de
-  src/lib/chartes.ts.
-*/
-:root{
-  --fond:#f5f3ee; --plage:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
-  --gris:#8a8578; --or:#B98B47; --accent:#2f3b2f; --alerte:#9c3b2e;
-  --trait:rgba(28,28,26,.12); --trait-doux:rgba(28,28,26,.07); --scene:#e6e3dc;
-  --plein:#7d9a6d; --surPlein:#faf9f5; --papier:#ece9e1;
-}
-body.nuit{
-  --fond:#101210; --plage:#1a1d19; --encre:#e9e8de; --encre-douce:#c1c2b6;
-  --gris:#84887b; --or:#C9A15E; --accent:#e9e8de; --alerte:#e0857a;
-  --trait:rgba(233,232,222,.12); --trait-doux:rgba(233,232,222,.07); --scene:#070908;
-  --plein:#e9e8de; --surPlein:#1a1d19; --papier:#232722;
-}
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;background:var(--scene)}
-body{font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
-     color:var(--encre);-webkit-text-size-adjust:100%;padding:0 0 60px}
-::selection{background:var(--or);color:var(--fond)}
-
-.commandes{position:sticky;top:0;z-index:20;background:var(--scene);
-  padding:10px 16px;border-bottom:1px solid var(--trait);text-align:center}
-.commandes button{font:inherit;font-size:13.5px;padding:9px 16px;margin:3px;
-  border:1px solid var(--trait);background:var(--plage);color:var(--encre);
-  border-radius:999px;cursor:pointer;min-height:44px}
-.commandes button[aria-pressed=true]{background:var(--encre);color:var(--fond);border-color:var(--encre)}
-
-.tete{max-width:740px;margin:0 auto;padding:26px 20px 4px}
-.tete h1{font-family:ui-serif,Georgia,"Times New Roman",serif;font-size:30px;line-height:1.12;margin:0 0 12px;font-weight:400}
-.tete p{margin:0 0 10px;font-size:14.5px;line-height:1.65;color:var(--encre-douce)}
-.tete b{color:var(--encre)}
-.sceau{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.16em;
-  text-transform:uppercase;color:var(--fond);background:var(--accent);
-  padding:5px 11px;border-radius:3px;margin-bottom:14px}
-body.nuit .sceau{color:var(--scene)}
-
-.scene{display:flex;justify-content:center;padding:22px 12px 0}
-.tel{width:390px;max-width:100%;height:700px;border-radius:38px;padding:10px;
-  background:var(--encre);box-shadow:0 22px 50px -18px rgba(0,0,0,.55)}
-.dedans{height:100%;border-radius:30px;overflow:auto;background:var(--fond);color:var(--encre);
-  scrollbar-width:thin;scrollbar-color:var(--trait) transparent}
-.dessous{max-width:520px;margin:14px auto 0;padding:0 20px;font-size:13.5px;line-height:1.6;color:var(--gris);text-align:center}
-.dessous b{color:var(--encre-douce)}
-
-/* ── L'écran, dans la grammaire d'Atlas ─────────────────────────────────── */
-.ecran{padding:0 26px 64px;font-size:15px}
-.retour{display:flex;align-items:center;justify-content:space-between;padding-top:28px}
-.retour .rond{width:40px;height:40px;border-radius:50%;background:var(--papier);color:var(--encre);
-  display:flex;align-items:center;justify-content:center;font-size:18px}
-.titre-ligne{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding-top:20px}
-.titre-ligne h2{font-family:ui-serif,Georgia,"Times New Roman",serif;font-weight:400;
-  font-size:34px;line-height:1.02;letter-spacing:-.018em;margin:0}
-.caps{font-size:9.5px;font-weight:500;letter-spacing:.28em;text-transform:uppercase;color:var(--or);margin:12px 0 0}
-.caps.gris{color:var(--gris)}
-.assistant{flex:none;width:44px;height:44px;border-radius:50%;background:var(--accent);
-  display:flex;align-items:center;justify-content:center;margin-top:6px}
-.assistant svg{width:18px;height:18px;stroke:var(--fond);fill:none;stroke-width:1.6}
-body.nuit .assistant svg{stroke:var(--scene)}
-
-.corps{margin-top:24px}
-.p{margin:0;line-height:1.6;color:var(--encre-douce)}
-.p.petit{font-size:12px;color:var(--gris);line-height:1.5}
-.bloc{margin-top:20px;border-top:1px solid var(--trait);padding-top:14px}
-.corps > .bloc:first-child{margin-top:0;border-top:0;padding-top:0}
-.bloc .caps{margin:0}
-.bloc .val{margin:6px 0 0;line-height:1.55;color:var(--encre)}
-.bloc.fort .val{font-size:17px;line-height:1.5}
-.confiance{margin:0;font-size:17px;line-height:1.4;color:var(--encre)}
-.confiance .sep{color:var(--gris);padding:0 6px}
-.source{margin:18px 0 0;font-size:12.5px;line-height:1.55;color:var(--gris)}
-.source b{color:var(--encre-douce);font-weight:500}
-
-.carte{margin-top:16px;background:var(--plage);border-radius:4px;padding:12px 16px;
-  box-shadow:inset 0 0 0 1px var(--trait-doux)}
-.carte p{margin:0;font-size:13px;line-height:1.55;color:var(--encre)}
-
-.photos{margin-top:20px}
-.photos img{display:block;width:100%;border-radius:4px;border:1px solid var(--trait);margin-top:10px}
-.photos figcaption{margin-top:6px;font-size:11.5px;line-height:1.5;color:var(--gris)}
-.photos figcaption span{color:var(--encre-douce)}
-
-.boutons{margin-top:30px;display:flex;flex-direction:column;align-items:center;gap:14px}
-.btn{display:inline-flex;align-items:center;justify-content:center;padding:13px 36px;
-  border-radius:9999px;font-family:ui-serif,Georgia,"Times New Roman",serif;font-size:17px;
-  text-decoration:none;cursor:pointer;border:0;min-height:48px}
-.btn.plein{background:var(--plein);color:var(--surPlein)}
-
-details.det{margin-top:26px}
-details.det summary{cursor:pointer;font-size:13px;color:var(--accent);list-style:none}
-details.det summary::before{content:"▸ ";color:var(--gris)}
-details.det[open] summary::before{content:"▾ "}
-details.det .ligne{margin:14px 0 0}
-details.det .ligne .caps{margin:0}
-details.det .ligne p{margin:3px 0 0;font-size:13.5px;line-height:1.55;color:var(--encre)}
-details.det .ligne ul{margin:3px 0 0;padding-left:18px;font-size:13.5px;line-height:1.55;color:var(--encre)}
-details.det .ligne li{margin-top:2px}
-details.det .fiche{border-top:1px solid var(--trait);padding-top:14px;margin-top:18px}
-details.det .fiche p{font-size:12.5px;color:var(--encre-douce)}
-details.det .fiche p.pale{font-size:11.5px;color:var(--gris)}
-
-.notes{max-width:740px;margin:0 auto;padding:6px 20px 0}
-.notes h3{font-family:ui-serif,Georgia,"Times New Roman",serif;font-size:20px;margin:34px 0 10px;font-weight:400}
-.notes p{font-size:14px;line-height:1.7;color:var(--encre-douce);margin:0 0 10px}
-.notes b{color:var(--encre)}
-.notes .cadre{overflow-x:auto}
-.notes table{width:100%;border-collapse:collapse;font-size:13.5px;margin:6px 0 14px}
-.notes th,.notes td{text-align:left;padding:8px 9px;border-bottom:1px solid var(--trait-doux);color:var(--encre-douce);vertical-align:top}
-.notes th{font-size:9.5px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--gris)}
-.notes td b{color:var(--encre)}
-.notes td i{color:var(--gris)}
-.notes ol{padding-left:20px;font-size:14px;line-height:1.7;color:var(--encre-douce)}
-.notes ol li{margin-bottom:6px}
-.notes a{color:var(--or)}
-</style>
+<!--
+  FICHE 4, LA BRUNISSURE DES FEUILLES DE PEUPLIER — retenue le 22 septembre 2026.
+  « Garde cette planche, elle est finie. » L'écran et le style vivent dans
+  fiche-maladie.css et fiche-maladie.js, communs à toutes les planches de
+  maladies : ce qu'il corrige ici se corrige partout. Ne restent ici que ce qui
+  est propre à CETTE fiche — son brouillon, et ce que je lui demande.
+-->
+<link rel="stylesheet" href="fiche-maladie.css">
+</head>
+<body>
 </head>
 <body>
 
@@ -162,16 +37,71 @@ details.det .fiche p.pale{font-size:11.5px;color:var(--gris)}
 
 <div class="notes">
   <h3>Ce qui change à l’écran, pour toutes les fiches</h3>
-  <p>Vos règles du 22 septembre au soir. <b>D’abord le nom</b>, avec le nom scientifique,
-  puis <b>l’agent en cause</b> et <b>les parties atteintes</b>, visibles et plus
-  dans les détails. Puis vos questions dans l’ordre : <b>est-ce grave pour
-  l’arbre, comment ça arrive, comment ça se propage</b>. <b>Plus de
-  point entre le nom et « probable », plus de tiret, des phrases.</b> Et pour la
-  gravité, <b>ce que dit l’INRAE</b>, en phrases, à la place du mot « Vigilance »
-  d’Atlas. Sur la fiche du platane, l’application écrit aujourd’hui
-  « Probable : Platane », puis « Gravité : Faible ». Ce changement est dans le
-  code de l’écran, pas dans la fiche : il vaudra pour le platane, le chêne et
-  toutes les suivantes. Il sera codé avec la fiche, sur votre oui.</p>
+  <p><b>Votre ordre du 22 septembre au soir</b>, et rien d’autre à l’écran.
+  Le nom, les parties atteintes, à quoi ça ressemble, est-ce grave pour
+  l’arbre, que faire, comment le reconnaître, comment ça arrive, comment ça se
+  propage. Tout le reste est passé dans <b>« Voir les détails »</b> : l’agent en
+  cause, quand ça se voit, les autres arbres du jardin, ce qui pourrait aussi
+  être, ce qui le favorise, la fiche et son chantier. Plus de point entre le nom
+  et « probable », aucun tiret et aucun point virgule, rien que des phrases.
+  Ce changement est dans le code de l’écran, pas dans la fiche, donc il vaudra
+  pour le platane, le chêne et toutes les suivantes.</p>
+
+  <h3>Ce que la relecture contre l’INRAE a corrigé</h3>
+  <p>Vous m’avez demandé de tout revérifier contre leurs pages. Je l’ai fait
+  champ par champ, sur les deux fiches. <b>Une erreur de fond, trois phrases qui
+  disaient plus que la page, et cinq répétitions.</b> Tout est corrigé ici.</p>
+  <div class="cadre">
+  <table>
+    <tr><th>Ce qui était écrit</th><th>Ce que la page dit</th></tr>
+    <tr><td><b>Chêne.</b> « L’arbre respire moins bien par ses feuilles »</td>
+        <td>« diminution de l’activité photosynthétique ». Ce n’est pas la même chose, et c’était une <b>erreur de fond</b>. La fiche dit maintenant que <b>la photosynthèse diminue</b>.</td></tr>
+    <tr><td><b>Peuplier.</b> « Un arbre adulte produit moins de bois »</td>
+        <td>« diminution de production », sans le mot bois. Et elle donne deux chiffres que j’avais laissés de côté : <b>environ 16 % en Italie, jusqu’à 60 % pour les clones les plus sensibles</b>. Ils y sont.</td></tr>
+    <tr><td><b>Peuplier.</b> « Le peuplier baumier de l’Ouest, Populus trichocarpa »</td>
+        <td>La page écrit seulement « P. trichocarpa est tolérant ». Ce nom courant venait de moi.</td></tr>
+    <tr><td><b>Chêne.</b> « quand les pousses meurent plusieurs années de suite »</td>
+        <td>« la mortalité répétée des pousses aboutit <b>parfois</b> ». Le « parfois » manquait, et « répétée » ne veut pas dire « plusieurs années ».</td></tr>
+    <tr><td><b>Peuplier.</b> Les pustules noires « quand l’attaque est forte »</td>
+        <td>« attaque forte <b>ou clone sensible</b> ». La seconde condition manquait.</td></tr>
+    <tr><td><b>Cinq répétitions</b> d’un bloc à l’autre</td>
+        <td>Les contaminations pendant toute la période de végétation, les chancres qui fragilisent les branches, le champignon caché dans l’écorce. Chaque chose n’est plus dite qu’une fois.</td></tr>
+  </table>
+  </div>
+  <p><b>Ce que la relecture a confirmé :</b> les trois notes du peuplier
+  (fréquence 3 sur 3, agressivité 2 sur 3, impact 1 sur 3) sont bien celles de
+  la page, comptées case par case, et la page du chêne n’en porte réellement
+  aucune. Les tailles des taches, les températures, les hôtes, les deux
+  confusions et l’exigence de laboratoire sont exacts.</p>
+
+  <h3>Ce que j’ai trouvé en relisant la fiche</h3>
+  <p>Vous avez demandé si un utilisateur qui photographie sa maladie a tout ce
+  qu’il lui faut pour continuer son chantier. <b>Cinq défauts trouvés et
+  corrigés</b>, et <b>un trou que je ne peux pas combler seul</b>.</p>
+  <div class="cadre">
+  <table>
+    <tr><th>Ce qui n’allait pas</th><th>Corrigé</th></tr>
+    <tr><td><b>« Les feuilles, les rameaux, les houppier »</b>, une faute que j’avais écrite</td>
+        <td>« Les feuilles, les rameaux et le houppier. »</td></tr>
+    <tr><td><b>Trois fois la même information.</b> Ce qui favorise la maladie était écrit deux fois, et les parasites de faiblesse deux fois aussi</td>
+        <td>chaque chose une fois, à sa place</td></tr>
+    <tr><td><b>Des mots de laboratoire</b> : ascospores, conidies, forme sexuée et asexuée</td>
+        <td>« les spores que le vent emporte contaminent des arbres éloignés, celles que la pluie entraîne contaminent les arbres voisins »</td></tr>
+    <tr><td><b>Il ne savait pas QUAND</b> regarder. La saison était dans la fiche, elle ne s’affichait nulle part</td>
+        <td>un bloc « Quand ça se voit », avec les mots de la page</td></tr>
+    <tr><td><b>La question du chantier n’était pas posée</b> : est-ce que ça va passer aux autres arbres du jardin</td>
+        <td>un bloc qui répond, avec ce que la page dit et rien de plus</td></tr>
+  </table>
+  </div>
+  <p><b>Le trou, et il est réel : l’INRAE ne donne AUCUN traitement ni aucune
+  méthode de lutte.</b> La fiche le dit maintenant en toutes lettres, plutôt que
+  de le cacher derrière « surveiller l’évolution ». Ce qu’un paysagiste voudrait
+  savoir et qui manque encore : faut-il ramasser les feuilles mortes, faut-il
+  tailler les rameaux atteints, faut-il prévenir le client. <b>Je ne l’invente
+  pas.</b> Deux façons de le combler, et c’est vous qui tranchez : une autre
+  source (FREDON, Plante &amp; Cité, un document de pépiniériste), ou <b>votre
+  propre geste de métier</b>, écrit comme venant de vous. Dites-le-moi et je
+  l’ajoute, avec sa source.</p>
 
   <h3>D’où vient chaque ligne</h3>
   <div class="cadre">
@@ -187,10 +117,10 @@ details.det .fiche p.pale{font-size:11.5px;color:var(--gris)}
         <td>Biologie : hivernation au sol et dans l’écorce des rameaux, ascospores par le vent à longue distance, conidies par l’eau de pluie localement, toute la période de végétation.</td>
         <td>La rubrique, en phrases.</td></tr>
     <tr><td><b>Que faire ?</b></td>
-        <td>Ni traitement, ni méthode de lutte.</td>
-        <td>Bâti sur ses dégâts et ses facteurs : surveiller, surtout les jeunes plantations ; la sensibilité dépend du clone.</td></tr>
+        <td>Aucun traitement, aucune méthode de lutte.</td>
+        <td>La fiche le dit en clair, et ajoute de surveiller l’arbre d’une année sur l’autre, ce que la page fonde en écrivant que ce sont les attaques répétées qui tuent les jeunes tiges.</td></tr>
     <tr><td><b>Période</b></td>
-        <td>« Au printemps » pour les taches, « juin-juillet » pour la chute des feuilles, et des contaminations « toute la période de végétation ».</td>
+        <td>Les taches viennent « au printemps ». Les feuilles tombent « en juin et juillet ». Les contaminations durent « toute la période de végétation ».</td>
         <td>De mars à septembre. Hors saison, la fiche est pénalisée, jamais écartée.</td></tr>
     <tr><td><b>Hôte</b></td>
         <td>« Peuplier (section Aigeiros, section Tacamahaca) », P. trichocarpa tolérant.</td>
@@ -202,10 +132,10 @@ details.det .fiche p.pale{font-size:11.5px;color:var(--gris)}
         <td>Quatre figures : trois « © Pinon », une sans licence.</td>
         <td><b>Aucune des quatre.</b> Wikimedia Commons, licence <b>CC BY 3.0 US</b>, photo de Manfred Mielke (USDA Forest Service, Bugwood). Licence et citation relevées sur Commons <b>et</b> sur Bugwood.</td></tr>
     <tr><td><b>Confusions</b></td>
-        <td>Deux autres Marssonina du peuplier : <i>M. castagnei</i> (taches de 5 à 10 mm, blanc-gris, tremble et grisard) et <i>M. populi nigrae</i> (taches rondes de 1 à 8 mm, peuplier noir).</td>
+        <td>Deux autres Marssonina du peuplier. <i>M. castagnei</i> fait des taches blanches et grises de 5 à 10 mm, sur le tremble et le peuplier grisard. <i>M. populi nigrae</i> fait des taches rondes de 1 à 8 mm sur le peuplier noir.</td>
         <td>Pas de fiche pour elles, donc rien n’est relié. Ce que la page en dit va dans <b>« Ce qui l’écarte »</b>.</td></tr>
     <tr><td><b>Agent</b></td>
-        <td>« Champignon - Ascomycète - Heliothales »</td>
+        <td>Elle range le champignon ainsi, avec ce tiret qui est le sien : « Champignon - Ascomycète - Heliothales ».</td>
         <td>Les deux noms du champignon. Le nom d’ordre n’est pas repris : tel qu’il est écrit, il n’existe pas, et le corriger serait une autre source.</td></tr>
     <tr><td><b>Stabilité</b></td>
         <td>Rien.</td>
@@ -215,7 +145,8 @@ details.det .fiche p.pale{font-size:11.5px;color:var(--gris)}
 
   <h3>Ce que je vous demande</h3>
   <ol>
-    <li>Les <b>quatre questions</b>, dans cet ordre et avec ces mots ?</li>
+    <li>Les <b>blocs</b>, dans cet ordre et avec ces mots ?</li>
+    <li><b>Que faire</b> : votre geste de métier, ou on laisse « l’INRAE ne donne aucun traitement » ?</li>
     <li>La <b>photo</b> vous convient ? Sinon la vôtre, ou aucune.</li>
     <li>Un <b>« oui »</b>, et la fiche entre dans Atlas : fichier, photo, import vérifié, et les phrases de l’écran.</li>
   </ol>
@@ -227,18 +158,7 @@ details.det .fiche p.pale{font-size:11.5px;color:var(--gris)}
 </div>
 
 <script>
-(function(){
-  "use strict";
-
-  var pole = document.getElementById("pole");
-  pole.addEventListener("click", function(){
-    var nuit = document.body.classList.toggle("nuit");
-    pole.setAttribute("aria-pressed", String(nuit));
-    pole.textContent = nuit ? "Voir sur Origine" : "Voir sur Nuit";
-  });
-
-  // ── LE BROUILLON DE LA FICHE, injecté depuis le JSON, jamais retapé ──────
-  var LOT = {
+window.FICHE_LOT = {
   "version": "ephytia-2026-09-22",
   "sources": [
     {
@@ -274,18 +194,20 @@ details.det .fiche p.pale{font-size:11.5px;color:var(--gris)}
       "nomCommun": "Brunissure des feuilles de peuplier",
       "nomScientifique": "Drepanopeziza brunnea",
       "categorie": "maladie",
-      "agentCausal": "Drepanopeziza brunnea (forme sexuée) ; Marssonina brunnea (forme asexuée). Ascomycète.",
+      "agentCausal": "Un champignon, Drepanopeziza brunnea. Il porte un second nom, Marssonina brunnea, quand il se reproduit sous son autre forme.",
       "agentType": "champignon",
       "partiesAtteintes": [
         "feuille",
         "rameau",
         "houppier"
       ],
+      "quandCaSeVoit": "Les taches apparaissent au printemps. Le feuillage jaunit, et les feuilles tombent tôt, en juin et juillet.",
+      "autresEssences": "La page ne nomme aucun autre arbre que le peuplier. Les peupliers noirs, les peupliers deltoïdes et leurs hybrides sont les plus touchés. La page indique que Populus trichocarpa est tolérant.",
       "periodeDebutMois": 3,
       "periodeFinMois": 9,
-      "explicationCourte": "Maladie fongique du peuplier. Petites taches brunes sur les feuilles au printemps, feuillage qui jaunit puis prend une couleur bronze, chute précoce des feuilles en commençant par le bas de l’arbre.",
+      "explicationCourte": "Maladie causée par un champignon, sur le peuplier. De petites taches brunes apparaissent sur les feuilles au printemps. Quand elles sont nombreuses, la feuille prend une couleur bronze. Les feuilles tombent tôt, en commençant par le bas de l’arbre.",
       "gravite": "vigilance",
-      "graviteSelonLaSource": "Selon l’INRAE, l’impact est de 1 sur 3, l’agressivité de 2 sur 3 et la fréquence de 3 sur 3. Défoliation partielle ou totale. L’arbre défolié devient sensible à des parasites de faiblesse. Chez les arbres adultes, la production diminue. Chez les jeunes tiges, dépérissement et mort de l’arbre si les attaques sont répétées.",
+      "graviteSelonLaSource": "L’INRAE donne un impact de 1 sur 3, une agressivité de 2 sur 3 et une fréquence de 3 sur 3. L’arbre perd une partie ou la totalité de ses feuilles, et il devient alors sensible à d’autres parasites qui s’attaquent aux arbres affaiblis. Chez les arbres adultes, la production diminue : environ 16 % en Italie pour l’ensemble des clones, et jusqu’à 60 % pour les clones les plus sensibles. Une jeune tige peut dépérir et mourir si les attaques se répètent.",
       "impactMecanique": "inconnu",
       "risqueHumainAnimal": "inconnu",
       "statutReglementaire": "aucun",
@@ -295,10 +217,10 @@ details.det .fiche p.pale{font-size:11.5px;color:var(--gris)}
         "rameau",
         "houppier"
       ],
-      "conduiteRecommandee": "Surveiller l’évolution, surtout sur les jeunes plantations : des attaques répétées peuvent faire dépérir et mourir les jeunes tiges, et un arbre défolié devient sensible à des parasites de faiblesse. La sensibilité dépend du clone de peuplier.",
+      "conduiteRecommandee": "L’INRAE ne donne aucun traitement ni aucune méthode de lutte pour cette maladie. Surveillez l’arbre d’une année sur l’autre, surtout s’il est jeune, car ce sont les attaques répétées qui le font mourir.",
       "prevention": null,
-      "commentCaArrive": "Le champignon germe sur les feuilles, les pétioles ou les jeunes rameaux quand l’humidité de l’air est forte. Ce qui le favorise : la présence de clones sensibles, des précipitations importantes, une forte humidité atmosphérique, et des températures moyennes de 12 °C à 20 °C.",
-      "gestion": "Le champignon passe l’hiver dans les feuilles malades tombées au sol, sous sa forme sexuée, et dans l’écorce des rameaux contaminés l’année précédente, sous sa forme asexuée. Dès la reprise de végétation, les deux formes peuvent réaliser les premières infections. Les ascospores, portées par le vent, assurent les contaminations à longue distance. Les conidies, en suspension dans l’eau de pluie, assurent la dispersion locale. Les contaminations se poursuivent pendant toute la période de végétation, chaque fois que l’humidité de l’air est forte.",
+      "commentCaArrive": "Le champignon germe sur les feuilles, les pétioles ou les jeunes rameaux quand l’air est humide. Il se développe surtout par temps de pluie, dans une humidité forte et entre 12 °C et 20 °C. Certains clones de peuplier sont plus sensibles que d’autres.",
+      "gestion": "Le champignon passe l’hiver dans les feuilles malades tombées au sol et dans l’écorce des rameaux contaminés l’année précédente. Il repart dès que la végétation redémarre. Les spores que le vent emporte contaminent des arbres éloignés. Celles que la pluie entraîne contaminent les arbres voisins. Les contaminations continuent pendant toute la période de végétation, chaque fois que l’air est humide.",
       "traitement": null,
       "symptomes": [
         {
@@ -342,7 +264,7 @@ details.det .fiche p.pale{font-size:11.5px;color:var(--gris)}
             "base"
           ],
           "poids": "possible",
-          "libelle": "Sur les nervures et les pétioles, taches plus grandes et plus allongées, souvent qualifiées de pustules ; en cas d’attaque forte ou de clone sensible, pustules noires plus ou moins allongées."
+          "libelle": "Sur les nervures et les pétioles, les taches sont plus grandes et plus allongées, et on les appelle des pustules. Quand l’attaque est forte ou le clone sensible, elles sont noires et plus ou moins allongées."
         },
         {
           "nature": "symptome",
@@ -388,7 +310,7 @@ details.det .fiche p.pale{font-size:11.5px;color:var(--gris)}
             "base"
           ],
           "poids": "frequent",
-          "libelle": "Chute précoce des feuilles (juin-juillet) ; feuillage clairsemé dans le tiers inférieur, car la défoliation débute par le bas. Elle peut être partielle ou totale."
+          "libelle": "Les feuilles tombent tôt, en juin et juillet. Le feuillage s’éclaircit d’abord dans le tiers inférieur, car la chute commence par le bas. Elle peut être partielle ou totale."
         }
       ],
       "hotes": [
@@ -399,14 +321,14 @@ details.det .fiche p.pale{font-size:11.5px;color:var(--gris)}
       ],
       "confusions": [],
       "criteresDiscriminants": [
-        "Taches brunes arrondies de moins d’un millimètre, d’abord éparses puis confluentes, sur les deux faces du limbe.",
+        "Des taches brunes rondes de moins d’un millimètre, sur les deux faces de la feuille. Elles sont d’abord isolées, puis elles se rejoignent.",
         "Quand les taches sont nombreuses, la feuille prend une couleur bronze caractéristique.",
-        "La défoliation débute par le bas : feuillage clairsemé dans le tiers inférieur.",
-        "En cas d’attaque forte ou de clone sensible : pustules noires plus ou moins allongées sur les pétioles, les nervures et les jeunes pousses de l’année."
+        "Les feuilles tombent en commençant par le bas de l’arbre. C’est le tiers inférieur qui s’éclaircit le premier.",
+        "Quand l’attaque est forte, ou que le clone est sensible, des pustules noires plus ou moins allongées apparaissent sur les pétioles, sur les nervures et sur les jeunes pousses de l’année."
       ],
       "criteresExclusion": [
-        "Des taches blanc-gris de 5 à 10 mm, surtout sur tremble et peuplier grisard, désignent plutôt Marssonina castagnei.",
-        "Des taches rondes de 1 à 8 mm sur peuplier noir désignent plutôt Marssonina populi nigrae."
+        "Sur un tremble ou un peuplier grisard, des taches blanches et grises de 5 à 10 mm désignent plutôt un autre champignon, Marssonina castagnei.",
+        "Sur un peuplier noir, des taches rondes de 1 à 8 mm désignent plutôt un autre champignon, Marssonina populi nigrae."
       ],
       "facteursFavorisants": [
         "La présence de clones sensibles.",
@@ -452,77 +374,7 @@ details.det .fiche p.pale{font-size:11.5px;color:var(--gris)}
     }
   ]
 };
-  var F = LOT.fiches[0];
-  var SRC = LOT.sources[0];
-  var IMG = F.images[0];
-
-  // Ce que l'écran affiche : les mêmes constantes que src/lib/diagnostic-vegetal.ts
-  var LIBELLE_GRAVITE = { faible: "Faible", vigilance: "Vigilance", importante: "Importante" };
-  var MENTION_MECANIQUE = "Une photo ne permet pas de juger la solidité de l’arbre. Si sa stabilité est en question, faites-le examiner sur place.";
-  var stabiliteEnJeu = F.impactMecanique === "avere" || F.impactMecanique === "possible" ||
-    (F.impactMecanique === "inconnu" && F.gravite !== "faible");
-
-  // Les parties du vocabulaire fermé, en mots : « les feuilles, les rameaux, le houppier »
-  var PARTIES_AU_PLURIEL = { feuille: "feuilles", aiguille: "aiguilles", rameau: "rameaux", branche: "branches", tronc: "tronc", ecorce: "écorce", collet: "collet", racine: "racines", fruit: "fruits", fleur: "fleurs", bourgeon: "bourgeons", champignon_sur_bois: "champignons sur le bois", houppier: "houppier", ensemble: "arbre entier" };
-  var MOIS = ["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"];
-  function dateCitee(iso){ var p = iso.split("-"); return Number(p[2]) + " " + MOIS[Number(p[1]) - 1] + " " + p[0]; }
-  function e(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
-
-  var ICONE = '<svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 1 3 6.2L4 20l1.4-3.4A8 8 0 0 1 4 12z"/></svg>';
-
-  function entete(){
-    return '<div class="retour"><span class="rond">‹</span><span></span></div>' +
-      '<div class="titre-ligne"><div><h2>'+e(F.nomCommun)+'</h2><p class="caps">Diagnostic végétal</p></div>' +
-      '<span class="assistant">'+ICONE+'</span></div>';
-  }
-  function photos(){
-    return '<div class="photos"><p class="caps gris">À quoi ça ressemble</p>' +
-      '<p class="p petit" style="margin-top:6px">Une ressemblance n’est pas une preuve : ces photos servent à comparer, pas à confirmer.</p>' +
-      '<figure style="margin:0"><img src="diagnostic-brunissure-peuplier-feuille.jpg" alt="'+e(IMG.legende)+'">' +
-      '<figcaption><span>'+e(IMG.legende)+' </span>'+e(IMG.credit)+', sous licence '+e(IMG.licence)+'.</figcaption></figure></div>';
-  }
-  function bloc(cle, val, fort){
-    return '<div class="bloc'+(fort?' fort':'')+'"><p class="caps gris">'+e(cle)+'</p><p class="val">'+e(val)+'</p></div>';
-  }
-  function ligne(cle, val){
-    if (val === null || val === undefined || val === "") return "";
-    return '<div class="ligne"><p class="caps gris">'+e(cle)+'</p><p>'+e(val)+'</p></div>';
-  }
-  function liste(cle, vals){
-    if (!vals || vals.length === 0) return "";
-    return '<div class="ligne"><p class="caps gris">'+e(cle)+'</p><ul>'+vals.map(function(v){ return '<li>'+e(v)+'</li>'; }).join("")+'</ul></div>';
-  }
-  function details(){
-    return '<details class="det"><summary>Voir les détails</summary>' +
-      liste("Ce qui le distingue", F.criteresDiscriminants) +
-      liste("Ce qui l’écarte", F.criteresExclusion) +
-      liste("Ce qui le favorise", F.facteursFavorisants) +
-      ligne("Prévention", F.prevention) +
-      ligne("Traitement", F.traitement) +
-      '<div class="ligne fiche"><p class="caps gris">La fiche</p>' +
-      '<p>'+e(SRC.organisme)+', '+e(SRC.titre)+'. <span style="color:var(--gris)">Page consultée le '+e(dateCitee(SRC.consulteeLe))+'.</span></p>' +
-      '<p class="pale">Fiche version '+F.version+', à jour au '+e(dateCitee(F.sourcesAJourLe))+'.</p></div>' +
-      '<div class="ligne fiche"><p class="caps gris">Chantier</p><p>Rattacher à un chantier</p></div>' +
-      '</details>';
-  }
-
-  document.getElementById("ecran").innerHTML =
-    '<div class="ecran">' + entete() + '<div class="corps">' +
-    bloc("Nom", F.nomCommun + ", " + F.nomScientifique + ".", true) +
-    bloc("Agent en cause", F.agentCausal) +
-    bloc("Parties atteintes", "Les " + F.partiesAtteintes.map(function(p){ return PARTIES_AU_PLURIEL[p] || p; }).join(", les ") + ".") +
-    '<p class="confiance" style="margin-top:20px">Probable sur '+e(LOT.taxons[0].article)+' '+e(LOT.taxons[0].nomCommun.toLowerCase())+'.</p>' +
-    photos() +
-    bloc("Est-ce grave pour l’arbre ?", F.graviteSelonLaSource) +
-    bloc("Comment ça arrive", F.commentCaArrive) +
-    bloc("Comment ça se propage", F.gestion) +
-    bloc("Que faire ?", F.conduiteRecommandee, true) +
-    '<p class="source">Source : <b>'+e(SRC.organisme)+'</b>, page consultée le '+e(dateCitee(SRC.consulteeLe))+'.</p>' +
-    (stabiliteEnJeu ? '<div class="carte"><p>'+e(MENTION_MECANIQUE)+'</p></div>' : '') +
-    '<div class="boutons"><span class="btn plein">Nouvelle photo</span></div>' +
-    details() +
-    '</div></div>';
-})();
 </script>
+<script src="fiche-maladie.js"></script>
 </body>
 </html>

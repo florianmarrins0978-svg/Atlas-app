@@ -11554,8 +11554,12 @@ contredire :
 | B | À la fin, pour envoyer | Plus de pré-remplissage : la fiche repart des vingt lignes du modèle au douzième passage chez le même client |
 | **C** | **Quand il veut** | **Un état de plus à tenir** : la fiche doit se recomposer en cours de route sans effacer ce qui vient d'être coché |
 
+> **Remplacé le 22 septembre 2026 (§408)** : le repli décrit ci-dessous n'existe
+> plus. Nommer le client recoche son dernier passage, et la fiche garde toutes
+> ses lignes.
+
 Elles ne se contredisent pas : elles se rencontrent sur le **moment**. C'est ce
-que fait `recomposerPourClient` (`src/lib/passage-entretien.ts`), et c'est la
+que faisait `recomposerPourClient` (`src/lib/passage-entretien.ts`), et c'est la
 clause « sans effacer » qui porte tout le travail — perdre trois coches parce
 qu'on a nommé le client au milieu serait pire que ne rien pré-remplir du tout.
 
@@ -32273,8 +32277,41 @@ première ligne sur cet écran. Le geste n'existe plus dans son parcours : elles
 l'ont perdu, plutôt que de garder un clic qui ajoutait désormais une ligne vide
 de plus (`CLAUDE.md` §5 bis — une suite qui réclame un geste retiré rend
 l'écran impossible à changer). Celles qui écrivent plusieurs lignes n'appuient
-que pour **celles qui manquent**. L'écran Prix et la facture, eux, n'ont pas
-bougé.
+que pour **celles qui manquent**. L'écran Prix n'a pas bougé ; **la facture,
+elle, a suivi deux jours plus tard** — voir ci-dessous.
+
+### LA FACTURE SANS DEVIS A DEMANDÉ LA MÊME CHOSE — 22 septembre 2026
+
+**Sa capture, sur la feuille où il remplit une facture faite sans devis :**
+*« quand je crée une facture il devrait déjà avoir une ligne d'ouverte ! Je ne
+dois pas avoir besoin d'ajouter une ligne au début ! »* Le même geste, donc la
+même règle : `ligneOuverteAPoserSurLaFacture`, dans le même fichier. Une
+seconde rédaction aurait divergé au premier ajustement (`CLAUDE.md` §3).
+
+**Une facture NÉE D'UN DEVIS n'en ouvre pas**, et c'est le seul écart :
+la seule chose qu'on y saisit est un travail SUPPLÉMENTAIRE. Une case vide
+d'office y ferait apparaître le bandeau « Travaux supplémentaires » sur une
+facture qui n'en porte aucun — l'écran annoncerait un ajout qu'il n'a pas fait,
+juste avant qu'il vérifie ce qui part chez son client.
+
+**Le danger, lui, change de nature.** Sur le devis, une ligne vide écrite
+d'office faisait disparaître une dictée ; sur la facture, elle **s'imprime chez
+le client**, en face de 0,00 €, sur une pièce qui ne se corrige que par un
+avoir. `peutPreparerLaPiece` ne retient pas une ligne sans libellé — c'est au
+patron de juger. D'où la même garde, pour une raison de plus : rien n'est écrit
+avant son premier mot (`test-ligne-ouverte-facture-e2e.ts`, qui lit la base).
+
+| | |
+|---|---|
+| l'écran | la feuille « Remplir la facture » — `TravauxSupplementairesClient.tsx` |
+| la règle pure | `ligneOuverteAPoserSurLaFacture` · `test-ligne-ouverte-facture.ts` |
+| son parcours | `test-ligne-ouverte-facture-e2e.ts` — il regarde la BASE |
+| ce qui n'a pas changé | « + Ajouter une ligne » et « + Ajouter une TVA » écrivent la ligne ouverte AVANT de créer la leur, pour le rang |
+
+**Et deux contrôles ont dû apprendre le geste retiré** (`CLAUDE.md` §5 bis) :
+`test-facture-sans-devis-e2e.ts` et `capture-facture-sans-devis.mts`
+appuyaient sur « + Ajouter une ligne » avant d'écrire — cet appui poserait
+aujourd'hui une seconde ligne, vide, sur la facture du client.
 
 ## §395 — La cliente pose SES jours, et un doigt ne ferme plus un devis
 
@@ -32690,9 +32727,349 @@ pas partir en purge quand on l'efface de la pellicule. `fiches_securite_photos`
 existe pour que `supprimerPhoto` pose la question. `test-fiche-securite-db.ts`
 le mesure sur le compteur de `fichiers_a_purger`.
 
+## §403 — La date d'une facture est celle du jour où elle PART
+
+**Son constat du 22 septembre 2026 :** *« pourquoi il me met facturé le
+21 septembre, on est le 22 ? Et je viens de l'envoyer ! »*
+
+`factures.date_emission` était posée à la CRÉATION du brouillon —
+`poserLaFactureBrouillon`, c'est-à-dire à la fin du chantier ou à l'ouverture
+de la facture depuis la fiche du client. L'émission (`emettreFacture`)
+enregistrait bien l'instant réel dans `emise_le`, mais ne rouvrait ni la date
+d'émission ni l'échéance.
+
+### Ce que ça coûtait, et pourquoi ce n'était pas qu'un affichage
+
+| Où | Ce qui était faux |
+|---|---|
+| l'écran Terminés | « Facturé le 21 septembre » un 22 — ce qu'il a vu |
+| **le PDF du client** | « Date : 21/09/2026 », sur la pièce qui fait foi |
+| **le délai de paiement** | l'échéance courait depuis le 21 : un jour de moins, et la mention imprimée à côté — « Paiement à 30 jours à compter de la facture » — le contredisait |
+| **le relevé de TVA** | un brouillon du 31 mars envoyé le 1er avril portait sa TVA sur le trimestre précédent |
+
+Le décalage réel n'est pas d'un jour : un brouillon se prépare à la fin du
+chantier et part quand il a le temps — parfois la semaine suivante.
+
+### La correction, et où elle se pose
+
+`datesDeLaFactureQuiPart` (`src/lib/echeance-facture.ts`) — une règle pure,
+éprouvée sans base. `emettreFacture` l'appelle **avant de composer le PDF** :
+plus bas, le papier archivé aurait gardé la date du brouillon, et c'est celui-là
+que le client conserve. Le trigger d'immuabilité ne s'y oppose pas — il lit
+`OLD.statut`, qui vaut encore `brouillon` à cet instant.
+
+### L'échéance se DÉCALE, elle ne se recalcule pas
+
+Trois façons de la traiter, et deux sont fausses :
+
+| | |
+|---|---|
+| la laisser où elle est | le délai accordé rétrécit, et la mention « à compter de la facture » ment |
+| la refaire depuis le délai réglé | efface l'échéance qu'il a posée à la main avant l'envoi (`majEcheanceFacture`) |
+| **la décaler du même nombre de jours** | ce qu'il accorde au client est un DÉLAI, et il reste entier dans les deux cas |
+
+Aucune heuristique n'a donc à deviner si l'échéance venait du réglage ou de sa
+main : le décalage est juste pour les deux, et c'est pour cela qu'il a été
+retenu plutôt qu'une colonne « échéance choisie ».
+
+### Ce qui n'a PAS été touché, et c'est voulu
+
+Les factures déjà émises ne bougent pas : une pièce partie est immuable, et
+réécrire la date de celle que son client a reçue serait pire que le défaut.
+Le brouillon garde, lui, une date provisoire — la colonne est `NOT NULL`, et le
+PDF d'aperçu porte « FACTURE (BROUILLON) » en titre.
+
+**Aucune couche n'a été retirée** : le défaut n'était pas recouvert, il était
+silencieux. Rien ne lisait `emise_le` pour compenser `date_emission`
+(`donnees-client.ts` s'en sert pour la durée de conservation, ce qui est son
+vrai métier).
+
+`scripts/test-factures.ts` (trois cas, dont le PDF archivé relu) et
+`scripts/test-echeance-facture.ts` (la règle pure, huit cas).
+
 ---
 
-## §403 — Des phrases, jamais un tiret au milieu : la règle a désormais un garde-fou
+## §404 — Solder n'est pas composer : l'acquittement revient sur la page de la facture
+
+**Sa correction du 22 septembre 2026 :** *« Depuis terminé, à facturer et
+seulement par ce passage il doit y avoir sous net à payer un bouton on off
+facture acquitté. J'ai essayé de cliquer dessus depuis la facture mais
+impossible. »*
+
+**Ce qui était faux dans le §398, et c'est le mot « geste » qui l'a fait.** La
+veille, trois gestes ont quitté la page de la facture d'un seul mouvement,
+parce qu'ils étaient rangés ensemble. Deux d'entre eux composent le document :
+nommer la main d'œuvre, saisir un règlement avec sa date, son moyen, son
+numéro. Le troisième CONSTATE — tout est réglé, oui ou non —, et ce constat se
+fait sur l'écran où il regarde ce qui va partir, pas sur la feuille de saisie
+qu'il vient de quitter. « À facturer », dans Terminés, ouvre cette page-là
+(`ListeTermines`, `/chantiers/<id>/facture`) : c'est le dernier écran avant
+l'envoi, et c'est là qu'il a cherché l'interrupteur.
+
+| | |
+|---|---|
+| **composer** — « + Main d'œuvre », « + Règlement reçu » | la feuille où il remplit, elle seule (§398, inchangé) |
+| **constater** — « Facture acquittée » | les deux écrans, **sous le net à payer** |
+
+**Sous le net, jamais au-dessus.** Le net est le chiffre qu'il vient lire ;
+l'interrupteur est ce qui le met à zéro. Posé au-dessus, la cause et son effet
+se lisaient à contre-sens, et il fallait remonter pour vérifier ce qu'on
+venait de changer.
+
+**Il ne suit plus `fige`, il suit la facture ARRÊTÉE.** `ReglementsRecus` prend
+un `acquittement` à part : `fige` dit qu'on ne SAISIT plus, ce qui n'a jamais
+voulu dire qu'on ne solde plus. Ce qui ferme l'interrupteur, c'est l'émission —
+une facture au relevé de TVA ne se solde pas d'un doigt, ses règlements se
+notent depuis Terminés. L'écran ne l'offre pas, et `basculerAcquittee` refuse
+de son côté : deux verrous, dont un que l'écran ne peut pas contourner.
+
+**Ce que l'ancien contrôle affirmait**, et qui est devenu faux le jour où il a
+demandé le contraire : `test-papier-facture-e2e.ts` exigeait que l'interrupteur
+soit ABSENT de la page de la facture. Il exige désormais qu'il y soit, sous le
+net, et qu'il marche depuis là (`CLAUDE.md` §5 bis : on adapte le contrôle, on
+ne remet pas l'écran).
+
+---
+
+## §405 — Le total d'un brouillon se CALCULE ; la colonne ne fait foi qu'une fois la facture émise
+
+**Sa panne du 22 septembre 2026 :** *« je peux pas mettre de règlement reçu non
+plus »*, capture à l'appui — **« Il ne reste que 0,00 € à recevoir sur cette
+facture »** écrit juste sous un **Total TTC de 552,52 €**. Le même écran
+affirmait les deux à trois centimètres d'écart.
+
+**Deux vérités, et le garde lisait la mauvaise.** Une facture née sans devis
+(`creerFactureSansDevis`) pose ses trois colonnes de totaux à « 0.00 », et son
+commentaire le dit depuis toujours : *« zéro parce qu'elle est VIDE »*, les
+totaux se recalculent depuis les lignes à chaque affichage comme à l'émission.
+Rien ne les réécrit quand une ligne se pose — c'est délibéré (§ du
+10 septembre : imposer ces colonnes au PDF avait sorti une facture aux totaux
+faux). Or `factureEnBrouillon`, dans `paiements-facture.ts`, lisait
+`factures.total_ttc` pour décider ce qu'il reste à recevoir.
+
+| | ce que l'écran voyait | ce que le garde voyait |
+|---|---|---|
+| facture née d'un DEVIS | 1 910,40 € | 1 910,40 € — la colonne est recopiée du devis |
+| facture née SANS devis | 552,52 € | **0,00 €** |
+
+**Ce que ça cassait, et pourquoi c'était muet.** Le moindre acompte était
+refusé avec cette phrase-là. Et « Facture acquittée » ne posait aucun solde —
+`basculerAcquittee` ne pose le solde que s'il reste quelque chose à recevoir :
+le doigt sur l'interrupteur ne faisait donc **rien du tout**, sans un mot.
+C'est la moitié de son « impossible de cliquer dessus » du même jour ; l'autre
+moitié était l'interrupteur absent de la page de la facture (§404).
+
+**La correction est à la racine, et elle enlève au lieu d'ajouter** : le garde
+ne lit plus la colonne, il appelle `totauxAvecReduction` — celle de l'écran et
+du PDF. Une addition écrite ici aurait divergé au premier ajustement
+(`CLAUDE.md` §3). Une facture ÉMISE, elle, garde sa colonne : figée à
+l'émission, c'est le chiffre que le client a reçu, et ses lignes ne bougent
+plus.
+
+**Ce qu'aucun contrôle ne voyait :** toutes les suites des règlements partaient
+d'une facture née d'un devis, dont la colonne est juste. La facture directe
+existe depuis la migration 0085 et n'avait jamais reçu d'acompte dans une
+suite. `test-papier-facture-db.ts` en pose un désormais, remise et second taux
+de TVA compris — *une règle éprouvée sur un seul chantier n'est pas une règle
+éprouvée*.
+
+## §406 — Une photo appartient à l'endroit où elle a été posée
+
+**Sa règle du 22 septembre 2026 :** *« les photos dans la fiche de sécurité
+restent à l'intérieur de la fiche, et les photos de la fiche client restent à
+l'intérieur de la feuille travaux à faire »*.
+
+Elle arrive après deux écrans qui montraient les mêmes photos : la rangée du
+planning répétait celles de la fiche de sécurité — retirée le même jour —, et
+« Travaux à faire » recevait les croquis de terrain posés sur la fiche.
+
+### Ce qui les sépare n'est pas leur nature
+
+Les deux sont des photos du même chantier, dans la même table : même plafond
+(`PHOTOS_MAX_PAR_CHANTIER`), même nettoyage de métadonnées, même purge. Leur
+donner deux tables aurait dupliqué tout cela, et la troisième provenance —
+celle qui viendra — aurait demandé une troisième table.
+
+Ce qui les sépare est **l'endroit où il l'a posée**, et cet endroit est déjà
+écrit : `fiches_securite_photos`, la liaison née du piège des photos (§402).
+`listerPhotosHorsFicheDeSecurite` lit donc les photos du chantier **moins**
+celles qu'une fiche tient ; c'est elle que servent « Travaux à faire » et la
+pellicule du client, tandis que la fiche lit les siennes par son contenu.
+
+**Le tri est au SERVEUR, jamais à l'écran.** Un écran qui écarte ce qu'on lui
+donne en trop finit par en oublier un, et l'oubli ne se voit pas.
+
+### La liaison s'écrit à l'ajout, pas au prochain « Suivant »
+
+`enregistrerLaFiche` réécrit déjà les liaisons depuis `contenu.photoIds` ;
+s'en contenter laissait une fenêtre — entre la photo posée et l'enregistrement,
+il peut ranger son téléphone, et la photo est alors une photo du chantier comme
+une autre, donc visible dans « Travaux à faire ». `attacherPhotoALaFiche` écrit
+les deux dans la même transaction : la liaison **et** l'identifiant dans le
+contenu. Écrire l'une sans l'autre rendrait la photo invisible des deux côtés.
+
+D'où un geste propre à la fiche (`ajouterPhotoDeLaFicheAction`) là où elle
+empruntait celui du retour du jour. L'entrée de l'image, elle, reste commune —
+`recevoirPhotoDeChantier` : nettoyer, ranger, inscrire. Deux portes d'entrée
+d'images auraient divergé sur le nettoyage des métadonnées, ce que
+`photo-entrante.ts` existe précisément pour empêcher.
+
+### Ce que cela oblige : la retirer d'où on la regarde
+
+Une photo de la fiche ne se voit plus dans la pellicule du client : sans un
+geste de retrait sur la fiche elle-même, une photo de travers y resterait pour
+toujours. La visionneuse de la fiche porte donc « Retirer », comme celle de la
+pellicule — et **une fiche signée garde les siennes** : elle fait foi devant un
+contrôleur, et `detacherPhotoDeLaFiche` le refuse au serveur, pas seulement à
+l'écran.
+
+`test-fiche-securite-db.ts` tient la séparation et le refus ;
+`test-fiche-securite-e2e.ts` compte les vignettes de « Travaux à faire » avant
+la fiche et après — les deux ont été vues rouges sans la règle.
+
+## §407 — La flèche retour de la fiche client ENREGISTRE ce qui a changé
+
+**Sa remarque du 22 septembre 2026 :** *« Je crée un devis, je remplis la fiche
+client, je fais retour, mais elle n'apparaît plus dans mes clients en
+cours !! »*
+
+**Reproduit sur une version bâtie, et vérifié en base.** Le 17 septembre, le
+bouton « Enregistrer » de la fiche rouverte a été retiré à sa demande (voir
+`Destination`) : « Je rédige à la main » restait la seule écriture. La flèche
+retour, elle, ne faisait que sortir — la saisie partait avec l'écran.
+
+| la fiche | ce que la flèche faisait |
+|---|---|
+| la feuille « Créer un devis » de l'accueil | se refermait : aucun chantier |
+| la fiche rouverte depuis un devis sans client | revenait à l'accueil : « Chantier du … », sans client |
+
+**La racine est l'écran, pas l'accueil.** Le 20 septembre (§391), le même
+symptôme venait d'une page rejouée ; ici le chantier était bien affiché, mais
+sans ce qu'il avait tapé — ou pas créé du tout. Aucun cache n'y pouvait rien.
+
+**Ce qui décide d'enregistrer : l'ÉCART avec l'ouverture** (`saisieAEnregistrer`,
+`src/lib/saisie-fiche-client.ts`), jamais « un champ est rempli ». Venu de la
+fiche d'un client, tout est prérempli : ressortir sans rien toucher ne crée
+rien. Une feuille ouverte par erreur ne laisse pas de chantier vide.
+
+**Une seule écriture pour trois sorties.** `enregistrerLaSaisie` sert « Je
+rédige à la main », « Faire la facture » et la flèche ; `enregistrerSurLeChantier`
+et la branche `reprise` recopiée dans `creerPuisAller` ont disparu. Un refus
+retient l'écran et se dit — sortir quand même reperdrait la saisie.
+
+**Le voile et Échap passent par la même sortie** (le soir même, mesuré : la
+flèche gardait le client, le voile le perdait encore). Ils vivent dans
+`EcranChantiers`, la saisie dans le formulaire : la feuille ne se referme plus
+elle-même, elle le DEMANDE au formulaire (`FermetureDeLaFeuille`, par
+`useImperativeHandle`), qui enregistre puis appelle `onFermer`. Mesuré en
+version bâtie : la ligne est dans « En cours » en 0,2 s par la flèche comme par
+le voile, en 0,8 s depuis le devis, sans rechargement.
+
+**Ce qui n'enregistre PAS encore**, et c'est inscrit dans `TODO.md` : le geste
+« retour » du navigateur sur la fiche en page. Il ne passe par aucun code
+d'Atlas, et il ramène au devis, pas à l'accueil.
+
+## §408 — Nommer le client recoche son dernier passage ; la fiche garde toutes ses lignes
+
+**Sa règle du 22 septembre 2026**, captures de deux fiches à l'appui : *« ce
+qui a déjà été coché par le passé se recoche automatiquement, mais les 20 points
+qui composent ma fiche doivent être présents ! Car si j'ai fait quelque chose en
+plus ce jour, je le coche, or là je ne peux pas, les cases ne sont pas
+visibles »*. Et la phrase « Fiche repliée sur ce que … prend d'habitude, 14
+lignes de moins » *« ne veut rien dire »*.
+
+**Ce qui est retiré** : le repli du 17 août (`recomposerPourClient`), qui
+supprimait de la fiche les lignes que ce client n'avait jamais prises. Il
+épargnait un tri, et il interdisait le travail en plus : la ligne n'était plus
+là pour être cochée.
+
+**Ce qui le remplace** : `cocherCommeLaDerniereFois` (`src/lib/passage-entretien.ts`).
+Toutes les lignes restent ; celles que le DERNIER rapport envoyé à ce client
+portait cochées se cochent ; ce qui était déjà coché le reste. L'écran dit
+« 3 prestations cochées, celles du dernier chantier. ».
+
+**Le dernier passage, et non tout l'historique, et c'est une décision prise
+ici** : l'historique entier servait à décider quelles lignes GARDER. Pour
+décider quoi COCHER, il cocherait à chaque passage une taille de haie d'automne
+faite une fois en octobre, et elle partirait chez le client sur des rapports où
+elle n'a pas été faite. Le dernier passage est ce qui ressemble le plus à celui
+du jour, et toute différence se corrige d'un geste, puisque toutes les lignes
+sont là. Seul un rapport ENVOYÉ fait foi : un brouillon abandonné ne coche
+rien.
+
+`scripts/test-passage-entretien.ts` (règle et dépôt, vus rouges avant la
+correction) et `scripts/test-fiche-chantier-e2e.ts` (le nombre de lignes à
+l'écran ne bouge pas quand le client est nommé).
+
+## §409 — Filtrer par jour, par mois OU par année : les trois mots du titre se touchent
+
+**Sa demande du 23 septembre 2026 :** *« l'idée c'est de pouvoir filtrer aussi
+par mois ou par année ou par jour mois année »*. La veille, le filtre de date
+(`FiltreDeDate`, §405) donnait un mois ou un jour, et une croix « tout le
+mois » remontait d'un cran. **L'année n'avait aucun chemin** : on ne pouvait
+pas demander ce qu'on avait fait chez quelqu'un en 2026.
+
+**Deux façons lui ont été montrées** sur `appli/retours-la-roue-du-jour.html`,
+et il a tranché : *« la B »*.
+
+| | |
+|---|---|
+| A — la croix élargit d'un cran de plus | rien de neuf à l'écran, mais le cran suivant ne s'annonce pas, et l'on ne redescend que par la roue |
+| **B — les trois mots du titre se touchent** | « 23 septembre 2026 » : le quantième, le mois, l'année, et **le mot souligné d'or dit ce que la liste embrasse** |
+
+**La croix est partie avec.** Elle ne menait qu'à un cran et ne se lisait pas ;
+les trois mots montent et descendent dans les deux sens sans rien ajouter à
+l'écran — et **aucun bouton de filtre**, sa consigne du 21 septembre.
+
+**La roue ne change que la DATE.** Choisir un jour dedans, c'est vouloir ce
+jour : la portée redescend au jour. Élargir est le travail des mots.
+
+**LE QUANTIÈME SURVIT À L'ÉLARGISSEMENT, et ça s'est vu à l'écran.** Posé sur
+le 11 mars, toucher « mars » réécrivait le titre « 1 mars 2026 » : la période ne
+portant plus que le mois, le jour était reconstruit par `jourDeLaRoue`, et il
+tombait sur le 1er — redescendre rendait alors une journée qu'il n'avait pas
+demandée. Le filtre retient donc le jour sous le doigt et ne le recalcule que
+lorsqu'il sort de la période reçue (une autre adresse, un autre écran). Le jour
+retenu est **dérivé au rendu**, jamais recopié par un effet : un effet
+repeindrait l'ancien jour une fois avant de se corriger, et cela se voit.
+
+**Une période est désormais une année (`2026`), un mois (`2026-09`) ou un jour
+(`2026-09-22`)** — `src/lib/periode.ts`, avec `porteeDeLaPeriode` et
+`avecLaPortee`. Le découpage se lit par longueur de chaîne, jamais par un
+`new Date` : `dansLaPeriode` compare des préfixes à l'heure du patron, et une
+année est le préfixe de ses douze mois.
+
+**L'adresse des fiches de sécurité porte une `?periode=`**, quelle que soit sa
+forme. `?mois=` et `?jour=` restent lus : ce sont les adresses d'avant, et elles
+vivent dans des onglets laissés ouverts.
+
+**Trois écrans suivent d'un coup**, puisqu'ils partagent le composant : les
+fiches de sécurité, les retours d'intervention, les rapports envoyés.
+
+`scripts/test-periode.ts` (neuf, vu rouge contre l'ancienne version),
+`scripts/test-fiches-securite-recherche.ts` et `scripts/test-retour-intervention.ts`
+pour l'année, `scripts/test-fiche-securite-e2e.ts` pour le geste — son repère
+était la croix, il est devenu le mot souligné (`CLAUDE.md` §5 bis).
+
+**« TERMINÉS » GARDE SES FLÈCHES, ET CE N'EST PAS UN OUBLI — 23 septembre
+2026.** Il avait demandé, dans la foulée : *« partout dans l'appli où il y a ce
+filtre, remplace-le par la B »*. Ça a été fait, il l'a regardé, et il l'a
+refusé : *« sauf que Terminés ! Remets comme c'était avant ! »*. L'écran est
+donc revenu à ses deux flèches « ‹ Septembre 2026 › » (commit reverté), avec
+`NavigationMois`, son plancher de dix-huit mois et `resumeDuMois`.
+
+**Ne pas le refaire.** « Partout » ne veut pas dire « y compris là » : le mois
+de Terminés n'est pas qu'un filtre, c'est le repère qui dit où l'on est dans la
+page — il est le seul à être écrit en 26 px, seul sous le titre, et il se
+feuillette d'un pouce sans viser un mot. Une session qui relirait sa consigne
+sans lire ce paragraphe le rechangerait.
+
+**Les trois écrans qui portent la B sont donc** : les fiches de sécurité, les
+retours d'intervention et les rapports envoyés. Le calendrier de TVA et la
+grille du planning n'en sont pas : ce ne sont pas des filtres de liste.
+---
+
+## §410 — Des phrases, jamais un tiret au milieu : la règle a désormais un garde-fou
 
 **Sa règle, redite le 22 septembre 2026 :** *« Je ne veux plus de tiret, je veux
 des phrases normales, sans tiret en plein milieu. »* Elle était déjà écrite le

@@ -428,8 +428,7 @@ export default function FicheEntretienClient({
       )}
 
       <p className="mt-8 text-[13px] leading-relaxed" style={{ color: colors.muted }}>
-        Modifier cette fiche ne change <b style={{ color: colors.ink }}>aucun rapport déjà envoyé</b>
-        . Ceux-ci sont partis chez vos clients, et ils restent tels quels.
+        Modifier cette fiche ne change <b style={{ color: colors.ink }}>aucun rapport déjà envoyé</b>.
       </p>
 
       <TiroirDesRetires

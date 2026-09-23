@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, gte, inArray, isNull, lt } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, isNotNull, isNull } from "drizzle-orm";
 import { withEntreprise } from "../db/with-entreprise";
 import {
   chantiers,
@@ -289,14 +289,16 @@ export type FicheEnListe = {
 };
 
 /**
- * Les fiches SIGNÉES d'un mois, rangées par client puis de la plus récente à la
- * plus ancienne — la liste de Paysage. Une fiche commencée et non signée n'y
- * est pas : elle vit sur la fiche du jour du planning, tant qu'elle n'est pas
- * signée.
+ * TOUTES les fiches SIGNÉES, de la plus récente à la plus ancienne — la liste
+ * de Paysage. Une fiche commencée et non signée n'y est pas : elle vit sur la
+ * fiche du jour du planning, tant qu'elle n'est pas signée.
+ *
+ * **Pas un mois, toutes** — depuis sa demande du 22 septembre 2026 : *« une
+ * recherche par nom, et il te sort toutes les fiches de ce client »*. Le mois
+ * et le nom se choisissent à l'écran (`fichesAMontrer`), sans aller-retour au
+ * serveur à chaque lettre ; une fiche se garde deux ans, la liste reste courte.
  */
-export async function listerLesFichesDuMois(ctx: Ctx, mois: { annee: number; mois: number }): Promise<FicheEnListe[]> {
-  const debut = new Date(Date.UTC(mois.annee, mois.mois - 1, 1));
-  const fin = new Date(Date.UTC(mois.annee, mois.mois, 1));
+export async function listerLesFichesSignees(ctx: Ctx): Promise<FicheEnListe[]> {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const lignes = await tx
       .select({
@@ -310,11 +312,80 @@ export async function listerLesFichesDuMois(ctx: Ctx, mois: { annee: number; moi
       .from(fichesSecurite)
       .innerJoin(chantiers, eq(fichesSecurite.chantierId, chantiers.id))
       .leftJoin(clients, eq(chantiers.clientId, clients.id))
-      .where(and(gte(fichesSecurite.signeeLe, debut), lt(fichesSecurite.signeeLe, fin)))
+      .where(isNotNull(fichesSecurite.signeeLe))
       .orderBy(desc(fichesSecurite.signeeLe));
     return lignes
       .filter((l): l is typeof l & { signeeLe: Date } => l.signeeLe !== null)
       .map((l) => ({ ...l, client: l.client?.trim() || "Sans client" }));
+  });
+}
+
+/**
+ * LA PHOTO POSÉE SUR LA FICHE LUI APPARTIENT — DÈS QU'ELLE EST POSÉE.
+ *
+ * **Sa règle du 22 septembre 2026 :** *« les photos dans la fiche de sécurité
+ * restent à l'intérieur de la fiche, et les photos de la fiche client restent à
+ * l'intérieur de la feuille travaux à faire »*. Ce qui décide n'est donc pas la
+ * photo, c'est l'ENDROIT où il l'a posée — et cet endroit doit être écrit tout
+ * de suite.
+ *
+ * **Pourquoi pas au prochain « Suivant »**, qui réécrit déjà la liaison
+ * (`enregistrerLaFiche`) : entre la photo posée et l'enregistrement, il peut
+ * ranger son téléphone. La photo serait alors une photo du chantier comme une
+ * autre, et elle s'afficherait dans « Travaux à faire » — exactement le
+ * mélange qu'il a fait retirer.
+ *
+ * Les deux écritures vont ensemble : la liaison, et l'identifiant dans le
+ * contenu de la fiche. Sans la seconde, la photo disparaîtrait des deux côtés
+ * à la fois — visible nulle part, ni sur la fiche ni sur la feuille.
+ */
+export async function attacherPhotoALaFiche(ctx: Ctx, chantierId: string, photoId: string): Promise<boolean> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const [ligne] = await tx.select().from(fichesSecurite).where(eq(fichesSecurite.chantierId, chantierId)).limit(1);
+    if (!ligne) return false;
+    const contenu = lireContenu(ligne.contenu);
+    if (contenu.photoIds.includes(photoId)) return true;
+    await tx
+      .update(fichesSecurite)
+      .set({ contenu: { ...contenu, photoIds: [...contenu.photoIds, photoId] }, updatedAt: new Date() })
+      .where(eq(fichesSecurite.id, ligne.id));
+    await tx
+      .insert(fichesSecuritePhotos)
+      .values({ entrepriseId: ctx.entrepriseId, ficheId: ligne.id, photoId, ordre: contenu.photoIds.length })
+      .onConflictDoNothing();
+    return true;
+  });
+}
+
+/**
+ * La retirer de la fiche — **la seule porte, puisqu'elle ne se voit plus
+ * ailleurs.** Une fiche SIGNÉE ne perd pas ses photos : elle fait foi devant un
+ * contrôleur, et ce qu'elle montrait le jour du chantier ne se réécrit pas.
+ *
+ * Ne touche pas au fichier : c'est `supprimerPhoto` qui décide de la purge, et
+ * lui seul sait qui d'autre tient cette photo (un retour, par exemple).
+ */
+export async function detacherPhotoDeLaFiche(
+  ctx: Ctx,
+  chantierId: string,
+  photoId: string
+): Promise<{ ok: true } | { ok: false; raison: string }> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const [ligne] = await tx.select().from(fichesSecurite).where(eq(fichesSecurite.chantierId, chantierId)).limit(1);
+    if (!ligne) return { ok: false, raison: "La fiche n’existe pas encore." };
+    if (ligne.signeeLe !== null) return { ok: false, raison: "La fiche est signée : ses photos ne se retirent plus." };
+    const contenu = lireContenu(ligne.contenu);
+    await tx
+      .update(fichesSecurite)
+      .set({
+        contenu: { ...contenu, photoIds: contenu.photoIds.filter((id) => id !== photoId) },
+        updatedAt: new Date(),
+      })
+      .where(eq(fichesSecurite.id, ligne.id));
+    await tx
+      .delete(fichesSecuritePhotos)
+      .where(and(eq(fichesSecuritePhotos.ficheId, ligne.id), eq(fichesSecuritePhotos.photoId, photoId)));
+    return { ok: true };
   });
 }
 

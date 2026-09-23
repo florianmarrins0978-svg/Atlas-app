@@ -1,12 +1,18 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import { useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 import PrimaryButton from "@/components/atlas/PrimaryButton";
 import { colors, font, smallCaps } from "@/lib/design-tokens";
 import { avecCivilite } from "@/lib/civilite";
 import { ligneAttendSonPrix, prixAEcrire } from "@/lib/preparation-devis";
+import {
+  LIGNE_OUVERTE,
+  estLigneOuverte,
+  ligneOuverteAEcrire,
+  ligneOuverteAPoserSurLaFacture,
+} from "@/lib/ligne-ouverte-devis";
 import {
   lignesParBloc,
   lignesParCategorie,
@@ -108,6 +114,7 @@ export default function TravauxSupplementairesClient({
   adresseChantier,
   factureId,
   numeroFacture,
+  statutFacture,
   clientNom,
   clientCivilite,
   numeroDevis,
@@ -124,6 +131,16 @@ export default function TravauxSupplementairesClient({
   adresseChantier: string | null;
   factureId: string;
   numeroFacture: string;
+  /**
+   * L'état de la facture — « brouillon » tant qu'elle n'est pas partie.
+   *
+   * **Il arrive ici pour la ligne ouverte d'avance, et pour elle seule.** La
+   * page refuse déjà d'ouvrir cet écran sur une facture arrêtée ; écrire
+   * « brouillon » en dur dans la règle aurait fait reposer la ligne ouverte
+   * sur ce refus-là, et le jour où il bouge, une case vide s'ajouterait sous
+   * une pièce que le client a déjà reçue.
+   */
+  statutFacture: string;
   clientNom: string | null;
   clientCivilite: "mr" | "mme" | null;
   numeroDevis: string | null;
@@ -166,13 +183,89 @@ export default function TravauxSupplementairesClient({
    * frappe** : dérivé au rendu, le champ se viderait au premier « 0 » tapé, et
    * « 0,50 » deviendrait impossible à écrire.
    */
-  const [lignes, setLignes] = useState<LigneEcran[]>(() =>
-    lignesInitiales.map((l) => ({
+  const [lignes, setLignes] = useState<LigneEcran[]>(() => {
+    const ecrites = lignesInitiales.map((l) => ({
       ...l,
       quantite: sansZerosInutiles(l.quantite),
       prixUnitaire: prixAEcrire(sansZerosInutiles(l.prixUnitaire)),
-    }))
-  );
+    }));
+    // **LA FEUILLE S'OUVRE AVEC SA PREMIÈRE LIGNE — sa demande du 22 septembre
+    // 2026 :** *« quand je crée une facture il devrait déjà avoir une ligne
+    // d'ouverte ; je ne dois pas avoir besoin d'ajouter une ligne au début »*.
+    //
+    // Elle n'est PAS en base tant qu'il n'a rien écrit : une ligne vide
+    // s'imprimerait sur la facture du client, en face d'un montant à zéro.
+    // `src/lib/ligne-ouverte-devis.ts` porte la règle, et ce qui la fait naître.
+    return ligneOuverteAPoserSurLaFacture({
+      statut: statutFacture,
+      sansDevis: devisId === null,
+      nombreDeLignes: ecrites.length,
+    })
+      ? [
+          ...ecrites,
+          {
+            id: LIGNE_OUVERTE,
+            libelle: "",
+            quantite: "1",
+            unite: null,
+            prixUnitaire: "",
+            montant: "0",
+            tauxTva: null,
+            // Sans devis, une ligne neuve est ORDINAIRE — c'est ce que le
+            // serveur écrira (`factureNeeSansDevis`). L'écran la range dans le
+            // même bloc en attendant, sinon elle sauterait de bloc à l'écriture.
+            supplement: false,
+          },
+        ]
+      : ecrites;
+  });
+
+  /**
+   * L'écriture de la ligne ouverte, une fois pour toutes.
+   *
+   * **Une seule, quoi qu'il arrive** : il remplit la description, passe au
+   * prix, et les deux sorties de champ partent avant que la première réponse
+   * revienne. Sans cette promesse gardée, chacune créerait sa ligne — il en
+   * verrait deux au rechargement, dont une vide.
+   *
+   * Un refus ne la condamne pas : la promesse est oubliée, et la frappe
+   * suivante réessaie plutôt que de se heurter à un échec devenu définitif.
+   *
+   * **L'identifiant de la ligne ne change JAMAIS à l'écran**, et c'est un prix
+   * perdu qui l'a appris sur le devis : remplacer `ligne-ouverte` par
+   * l'identifiant rendu par la base change la clé de la rangée, React la
+   * démonte, et le champ où le doigt écrit disparaît avant sa sortie
+   * (`DevisCompletClient.tsx`). L'identifiant réel vit donc ici, en référence.
+   */
+  const ecritureDeLaLigneOuverte = useRef<Promise<string> | null>(null);
+
+  async function idEnBase(l: LigneEcran): Promise<string> {
+    if (!estLigneOuverte(l.id)) return l.id;
+    if (!ecritureDeLaLigneOuverte.current) {
+      const envoi = ajouterLigneDeFactureAction(factureId, l.tauxTva ?? null).then((r) => {
+        if (!r.succes) throw new Error(r.erreur);
+        return r.ligneId;
+      });
+      envoi.catch(() => {
+        if (ecritureDeLaLigneOuverte.current === envoi) ecritureDeLaLigneOuverte.current = null;
+      });
+      ecritureDeLaLigneOuverte.current = envoi;
+    }
+    return ecritureDeLaLigneOuverte.current;
+  }
+
+  /**
+   * Ce que la base porte DÉJÀ de cette ligne — sans jamais l'y écrire.
+   *
+   * Changer un taux ou retirer une catégorie ne doit pas faire naître la ligne
+   * ouverte : elle n'a rien à enregistrer tant qu'il n'y a rien écrit dedans.
+   * `null` veut dire « rien à faire côté serveur », jamais « échec ».
+   */
+  async function idDejaEcrit(l: LigneEcran): Promise<string | null> {
+    if (!estLigneOuverte(l.id)) return l.id;
+    if (!ecritureDeLaLigneOuverte.current) return null;
+    return ecritureDeLaLigneOuverte.current.catch(() => null);
+  }
   const [erreur, setErreur] = useState<string | null>(null);
   const [, enTransition] = useTransition();
 
@@ -280,6 +373,19 @@ export default function TravauxSupplementairesClient({
   /** Une ligne de plus, dans la catégorie où le doigt a appuyé. */
   function ajouterUneLigne(taux: string | null) {
     enTransition(async () => {
+      // **LA LIGNE OUVERTE PREND SA PLACE AVANT LA NOUVELLE.** Son rang en base
+      // se décide à l'écriture : écrite après, elle passerait sous une ligne
+      // qui s'affiche au-dessous d'elle, et les deux se croiseraient au
+      // rechargement — sur une facture, l'ordre est celui que le client lira.
+      const ouverte = lignes.find((l) => estLigneOuverte(l.id));
+      if (ouverte) {
+        try {
+          await idEnBase(ouverte);
+        } catch {
+          porter({ succes: false, erreur: "La première ligne n'a pas pu être enregistrée. Réessayez." });
+          return;
+        }
+      }
       const r = await ajouterLigneDeFactureAction(factureId, taux);
       if (!porter(r) || !r.succes) return;
       setLignes((l) => [
@@ -317,9 +423,27 @@ export default function TravauxSupplementairesClient({
     );
   }
 
-  function persister(id: string, champs: Parameters<typeof majLigneDeFactureAction>[2]) {
+  /**
+   * Ce qu'il vient de taper part en base — **et la ligne ouverte naît ici**.
+   *
+   * La ligne entière est demandée, pas seulement son identifiant : c'est elle
+   * qui répond à la question « y a-t-il quelque chose à écrire ? ». Sans cette
+   * question, le doigt posé sur une case puis retiré — l'écran enregistre à
+   * chaque sortie de champ, qu'elle ait changé ou non — poserait en base une
+   * ligne vide, qui s'imprimerait sur la facture du client en face de 0,00 €.
+   */
+  function persisterLigne(
+    l: LigneEcran,
+    frais: Parameters<typeof majLigneDeFactureAction>[2]
+  ) {
+    const ligne = { ...l, ...frais };
+    if (estLigneOuverte(ligne.id) && !ligneOuverteAEcrire(ligne)) return;
     enTransition(async () => {
-      porter(await majLigneDeFactureAction(factureId, id, champs));
+      try {
+        porter(await majLigneDeFactureAction(factureId, await idEnBase(ligne), frais));
+      } catch {
+        porter({ succes: false, erreur: "La ligne n'a pas pu être enregistrée. Réessayez." });
+      }
     });
   }
 
@@ -368,7 +492,11 @@ export default function TravauxSupplementairesClient({
     setLignes((l) => l.map((x) => (ids.has(x.id) ? { ...x, tauxTva: taux } : x)));
     enTransition(async () => {
       for (const l of concernees) {
-        porter(await majLigneDeFactureAction(factureId, l.id, { tauxTva: taux }));
+        // La ligne ouverte n'est pas encore en base : elle emportera son taux
+        // le jour où elle s'y écrira. Le créer ici poserait une ligne vide.
+        const id = await idDejaEcrit(l);
+        if (id === null) continue;
+        porter(await majLigneDeFactureAction(factureId, id, { tauxTva: taux }));
       }
     });
   }
@@ -386,7 +514,12 @@ export default function TravauxSupplementairesClient({
     setLignes((l) => l.filter((x) => !ids.has(x.id)));
     enTransition(async () => {
       for (const l of concernees) {
-        porter(await retirerLignesDeFactureAction(factureId, l.id));
+        // Une ligne ouverte jamais écrite n'a rien à retirer — et la référence
+        // se rend, sans quoi une écriture suivante viserait une ligne effacée.
+        const id = await idDejaEcrit(l);
+        if (estLigneOuverte(l.id)) ecritureDeLaLigneOuverte.current = null;
+        if (id === null) continue;
+        porter(await retirerLignesDeFactureAction(factureId, id));
       }
     });
   }
@@ -550,7 +683,7 @@ export default function TravauxSupplementairesClient({
                     fige={false}
                     placeholder="Ex : dessouchage de la haie"
                     onChange={(v) => majLocale(l.id, "libelle", v)}
-                    onFini={(fraiche) => persister(l.id, { libelle: fraiche })}
+                    onFini={(fraiche) => persisterLigne(l, { libelle: fraiche })}
                     className="block w-full resize-none overflow-hidden border-0 bg-transparent p-0 outline-none focus:bg-[var(--voile-champ)]"
                     style={{ color: colors.ink, fontSize: "16px", lineHeight: 1.45 }}
                   />
@@ -561,7 +694,7 @@ export default function TravauxSupplementairesClient({
                       fige={false}
                       placeholder="1"
                       onChange={(v) => majLocale(l.id, "quantite", v)}
-                      onFini={(fraiche) => persister(l.id, { quantite: fraiche })}
+                      onFini={(fraiche) => persisterLigne(l, { quantite: fraiche })}
                     />
                   </Cellule>
                   <Cellule libelle="Unité">
@@ -570,7 +703,7 @@ export default function TravauxSupplementairesClient({
                       fige={false}
                       aria={`${sansDevis ? "Unité de la ligne" : "Unité du travail supplémentaire"} ${i + 1}`}
                       onChange={(v) => majLocale(l.id, "unite", v)}
-                      onFini={(fraiche) => persister(l.id, { unite: fraiche })}
+                      onFini={(fraiche) => persisterLigne(l, { unite: fraiche })}
                     />
                   </Cellule>
                   <Cellule libelle="Prix unitaire HT">
@@ -580,7 +713,7 @@ export default function TravauxSupplementairesClient({
                       fige={false}
                       placeholder="0,00"
                       onChange={(v) => majLocale(l.id, "prixUnitaire", v)}
-                      onFini={(fraiche) => persister(l.id, { prixUnitaire: fraiche })}
+                      onFini={(fraiche) => persisterLigne(l, { prixUnitaire: fraiche })}
                     />
                   </Cellule>
                   <Cellule libelle="Montant HT">

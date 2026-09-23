@@ -1,7 +1,8 @@
-import { and, desc, eq, inArray, isNull, ne } from "drizzle-orm";
+import { and, desc, eq, inArray, isNull, ne, notExists, sql } from "drizzle-orm";
 import { withEntreprise } from "../db/with-entreprise";
-import { photos, fichiersAPurger, chantiers } from "../db/schema";
+import { photos, fichiersAPurger, chantiers, fichesSecuritePhotos } from "../db/schema";
 import { enregistrerObjet, lireObjet } from "../storage";
+import { preparerPhotoEntrante } from "../photo-entrante";
 import { photoTenueParUnRetour } from "./retours-intervention";
 import { photoTenueParUneFiche } from "./fiches-securite";
 import { refusDuPlafondDuChantier } from "@/lib/photos-plafonds";
@@ -21,6 +22,42 @@ export async function listerPhotos(ctx: Ctx, chantierId: string) {
       .select()
       .from(photos)
       .where(and(eq(photos.chantierId, chantierId), isNull(photos.deletedAt)))
+  );
+}
+
+/**
+ * LES PHOTOS DU CHANTIER, SANS CELLES DE LA FICHE DE SÉCURITÉ — sa règle du
+ * 22 septembre 2026 : *« les photos dans la fiche de sécurité restent à
+ * l'intérieur de la fiche, et les photos de la fiche client restent à
+ * l'intérieur de la feuille travaux à faire »*.
+ *
+ * **Les deux vivent dans la même table, et c'est juste** : ce sont des photos
+ * du même chantier, comptées sous le même plafond, purgées par le même chemin.
+ * Ce qui les distingue n'est pas leur nature mais l'endroit où il les a
+ * posées — et cet endroit est écrit dans `fiches_securite_photos`, dès
+ * l'instant où il la pose (`ajouterPhotoDeLaFicheAction`).
+ *
+ * D'où cette lecture-ci, et non un filtrage à l'écran : un écran qui trie ce
+ * que le serveur lui donne en trop finit par en oublier un, et l'oubli ne se
+ * voit pas.
+ */
+export async function listerPhotosHorsFicheDeSecurite(ctx: Ctx, chantierId: string) {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, (tx) =>
+    tx
+      .select()
+      .from(photos)
+      .where(
+        and(
+          eq(photos.chantierId, chantierId),
+          isNull(photos.deletedAt),
+          notExists(
+            tx
+              .select({ un: sql`1` })
+              .from(fichesSecuritePhotos)
+              .where(eq(fichesSecuritePhotos.photoId, photos.id))
+          )
+        )
+      )
   );
 }
 
@@ -63,6 +100,41 @@ export async function ajouterPhoto(ctx: Ctx, chantierId: string, fichier: Fichie
       })
       .returning();
     return { ok: true, photo: row };
+  });
+}
+
+/**
+ * RECEVOIR UNE PHOTO DE CHANTIER — nettoyée, rangée, inscrite. **Un seul
+ * chemin**, pour les trois écrans qui en posent : la pellicule du client, le
+ * retour du jour, et la fiche de sécurité.
+ *
+ * Il est né le 22 septembre 2026, quand la fiche de sécurité a dû poser SES
+ * photos autrement que par le geste du retour. Recopier les quatre étapes —
+ * nettoyer, ranger, inscrire, refuser — aurait fait deux portes d'entrée
+ * d'images, et c'est exactement ce que `photo-entrante.ts` interdit : elles
+ * auraient divergé sur le nettoyage des métadonnées (`CLAUDE.md` §3).
+ *
+ * Ce qui reste à l'appelant : la limite de téléversement, qui est une règle de
+ * l'entreprise et non du chantier.
+ */
+export async function recevoirPhotoDeChantier(
+  ctx: Ctx,
+  chantierId: string,
+  fichier: unknown
+): Promise<PhotoAjoutee> {
+  const prete = await preparerPhotoEntrante(fichier, "photo de chantier");
+  if (!prete.ok) return { ok: false, raison: prete.raison };
+  const objet = await enregistrerObjet(
+    `chantiers/${chantierId}/photos`,
+    prete.photo.octets,
+    prete.photo.extension
+  );
+  return ajouterPhoto(ctx, chantierId, {
+    storageKey: objet.storageKey,
+    mimeType: prete.photo.mimeType,
+    tailleOctets: objet.tailleOctets,
+    nomOriginal: prete.photo.nomOriginal,
+    checksum: objet.checksum,
   });
 }
 

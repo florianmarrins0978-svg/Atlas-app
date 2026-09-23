@@ -2,7 +2,9 @@
 
 import { useState, useTransition } from "react";
 import PrimaryButton from "@/components/atlas/PrimaryButton";
+import { TitreAvecRoue } from "@/components/atlas/FiltreDeDate";
 import { colors } from "@/lib/design-tokens";
+import { jourEnTitre } from "@/lib/jour";
 import { ouvrirFicheAction } from "./actions";
 
 /**
@@ -20,16 +22,13 @@ export default function OuvrirFiche() {
 
   return (
     <div>
-      <label className="block text-[12.5px]" style={{ color: colors.muted }}>
-        Jour du passage
-        <input
-          type="date"
-          value={jour}
-          onChange={(e) => setJour(e.target.value)}
-          className="mt-[6px] block w-full rounded-[14px] px-[15px] py-3 text-[16px] outline-none"
-          style={{ backgroundColor: colors.card, color: colors.ink, border: `1px solid ${colors.line}` }}
-        />
-      </label>
+      {/* **Le jour écrit en titre**, comme « Septembre 2026 », avec le nom du
+          jour, sa demande du 22 septembre 2026. La roue du téléphone s'ouvre
+          toujours au toucher. Le libellé « Jour du passage » est retiré le même
+          soir, à sa demande : le jour en titre se suffit. */}
+      <div className="flex">
+        <TitreAvecRoue titre={jourEnTitre(jour)} jour={jour} choisir={setJour} dataAtlas="jour-du-passage" />
+      </div>
 
       <div className="mt-[16px]">
         <PrimaryButton
@@ -44,7 +43,7 @@ export default function OuvrirFiche() {
             })
           }
         >
-          {enCours ? "Ouverture…" : "Ouvrir une fiche"}
+          {enCours ? "Création…" : "Créer une fiche"}
         </PrimaryButton>
       </div>
 

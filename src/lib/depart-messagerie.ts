@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { CLE_TRANSMISSION } from "./annonce-transmission";
+import { CLE_TRANSMISSION, type Transmission } from "./annonce-transmission";
 
 /**
  * Partir vers la messagerie, et revenir chez soi.
@@ -28,7 +28,7 @@ const CLE_DEPART = "atlas.transmission.depart";
  * ne transporterait l'information — et une adresse qui la porterait
  * réafficherait le bandeau à chaque retour sur l'accueil.
  */
-export function marquerDepartMessagerie(quoi: "devis" | "facture", client: string): void {
+export function marquerDepartMessagerie(quoi: Transmission["quoi"], client: string): void {
   try {
     sessionStorage.setItem(CLE_TRANSMISSION, JSON.stringify({ quoi, client }));
     sessionStorage.setItem(CLE_DEPART, "1");
@@ -73,7 +73,12 @@ export function marquerDepartMessagerie(quoi: "devis" | "facture", client: strin
  */
 
 /**
- * Ramène à l'accueil au retour de la messagerie — une seule fois.
+ * Ramène à `destination` au retour de la messagerie — une seule fois.
+ *
+ * L'accueil pour le devis et la facture (7 août 2026) ; « Fiche de chantier »
+ * pour la fiche, sa demande du 22 septembre 2026 : *« elle doit se fermer et je
+ * dois arriver sur la page précédente, avec une petite mention »*. Le bandeau
+ * (`AnnonceTransmission`) doit donc être posé sur chaque destination.
  *
  * **Par `visibilitychange`, et pas autrement.** iOS ne recharge pas la page
  * quand on revient de Messages : il la réveille. Aucun événement de navigation
@@ -84,7 +89,7 @@ export function marquerDepartMessagerie(quoi: "devis" | "facture", client: strin
  * l'écran renverrait le patron à l'accueil, y compris quand il vient
  * simplement relire son devis.
  */
-export function useRetourDeMessagerie(): void {
+export function useRetourDeMessagerie(destination: string): void {
   const router = useRouter();
   useEffect(() => {
     function auRetour() {
@@ -96,9 +101,9 @@ export function useRetourDeMessagerie(): void {
       } catch {
         return;
       }
-      if (parti) router.push("/");
+      if (parti) router.push(destination);
     }
     document.addEventListener("visibilitychange", auRetour);
     return () => document.removeEventListener("visibilitychange", auRetour);
-  }, [router]);
+  }, [router, destination]);
 }

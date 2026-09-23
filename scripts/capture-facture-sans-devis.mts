@@ -127,14 +127,22 @@ await page.waitForURL(/travaux-supplementaires/, { timeout: 20000 });
 await page.waitForLoadState("networkidle");
 await poser("4-la-saisie-des-lignes");
 
-await page.click('[data-atlas="ajouter-ligne-supplement"]');
-await page.waitForTimeout(700);
+// **AUCUN APPUI POUR OBTENIR LA PREMIÈRE CASE — 22 septembre 2026.** La
+// feuille s'ouvre avec sa ligne (`ligne-ouverte-devis.ts`) : appuyer sur
+// « + Ajouter une ligne » ici en poserait une seconde, vide, et la capture
+// montrerait autre chose que ce qu'il voit.
 const description = page.locator('[data-atlas="ligne-supplement"] textarea').first();
 await description.fill("Dépannage arrosage — remplacement électrovanne");
 await description.blur();
-const chiffres = page.locator('[data-atlas="ligne-supplement"] input');
-await chiffres.nth(1).fill("145");
-await chiffres.nth(1).blur();
+// **LE PRIX SE CHERCHE PAR SON NOM, JAMAIS PAR SON RANG.** Ce script visait le
+// deuxième champ de la rangée ; depuis que la colonne Unité s'est glissée entre
+// Qté et Prix (15 septembre 2026), ce deuxième champ est l'UNITÉ. Les 145 €
+// partaient donc dans « u », la facture restait à 0,00 €, et le script accusait
+// l'envoi d'être fermé sur une facture « remplie ». La suite de bout en bout
+// avait déjà été corrigée ce jour-là ; celui-ci a été oublié.
+const prix = page.locator('[data-atlas="ligne-supplement"] input[aria-label^="Prix unitaire"]').first();
+await prix.fill("145");
+await prix.blur();
 await page.waitForTimeout(900);
 await poser("5-la-ligne-saisie");
 

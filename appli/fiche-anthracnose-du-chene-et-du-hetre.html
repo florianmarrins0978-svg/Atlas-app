@@ -1,0 +1,371 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Anthracnose du chêne et du hêtre, fiche à valider (Atlas)</title>
+<!--
+  FICHE 3, L'ANTHRACNOSE DU CHÊNE ET DU HÊTRE — planche du 22 septembre 2026.
+
+  Sa remarque : « l'anthracnose du chêne n'a pas été faite, on a fait que le
+  platane ». La FICHE existe dans le dépôt depuis le 20 août 2026
+  (donnees/phyto/fiches/003-anthracnose-chene-hetre.json), mais il ne l'a
+  jamais VUE : aucune planche n'avait été faite. La voici, réécrite dans la
+  forme qu'il a arrêtée le 22 septembre au soir, avec sa photo, qui manquait.
+
+  L'écran et le style viennent de fiche-maladie.css et fiche-maladie.js,
+  communs à toutes les planches de maladies.
+-->
+<link rel="stylesheet" href="fiche-maladie.css">
+</head>
+<body>
+
+<div class="commandes">
+  <button type="button" id="pole" aria-pressed="false">Voir sur Nuit</button>
+</div>
+
+<div class="tete">
+  <span class="sceau">22 septembre, diagnostic végétal, fiche 3</span>
+  <h1>Anthracnose du chêne et du hêtre</h1>
+  <p>Vous m’avez dit qu’elle n’avait pas été faite. <b>Elle l’a été le 20 août</b>,
+  et vous l’aviez relue champ par champ, mais <b>aucune planche n’avait été
+  faite</b> : vous ne l’aviez donc jamais vue à l’écran. La voici, réécrite dans
+  la forme que vous avez arrêtée ce soir, et <b>avec une photo</b>, qu’elle
+  n’avait pas. <b>Rien n’est codé.</b></p>
+</div>
+
+<div class="scene"><div class="tel"><div class="dedans" id="ecran"></div></div></div>
+<p class="dessous">Faites défiler. <b>« Voir les détails »</b> s’ouvre, comme dans l’application.</p>
+
+<div class="notes">
+  <h3>Ce qui a changé par rapport au 20 août</h3>
+  <p>Le contenu vient de la même page de l’INRAE et n’a pas bougé d’un fait.
+  Ce qui change, c’est la <b>forme que vous avez demandée</b> : vos blocs dans
+  votre ordre, des phrases, aucun tiret ni point virgule, et les mots de
+  laboratoire remplacés par ce qu’ils veulent dire. Deux blocs sont nés ce
+  soir, <b>quand ça se voit</b> et <b>et les autres arbres du jardin</b>, et
+  cette fiche avait de quoi les remplir.</p>
+
+  <h3>Ce que la relecture contre l’INRAE a corrigé</h3>
+  <p>Vous m’avez demandé de tout revérifier contre leurs pages. Je l’ai fait
+  champ par champ, sur les deux fiches. <b>Une erreur de fond, trois phrases qui
+  disaient plus que la page, et cinq répétitions.</b> Tout est corrigé ici.</p>
+  <div class="cadre">
+  <table>
+    <tr><th>Ce qui était écrit</th><th>Ce que la page dit</th></tr>
+    <tr><td><b>Chêne.</b> « L’arbre respire moins bien par ses feuilles »</td>
+        <td>« diminution de l’activité photosynthétique ». Ce n’est pas la même chose, et c’était une <b>erreur de fond</b>. La fiche dit maintenant que <b>la photosynthèse diminue</b>.</td></tr>
+    <tr><td><b>Peuplier.</b> « Un arbre adulte produit moins de bois »</td>
+        <td>« diminution de production », sans le mot bois. Et elle donne deux chiffres que j’avais laissés de côté : <b>environ 16 % en Italie, jusqu’à 60 % pour les clones les plus sensibles</b>. Ils y sont.</td></tr>
+    <tr><td><b>Peuplier.</b> « Le peuplier baumier de l’Ouest, Populus trichocarpa »</td>
+        <td>La page écrit seulement « P. trichocarpa est tolérant ». Ce nom courant venait de moi.</td></tr>
+    <tr><td><b>Chêne.</b> « quand les pousses meurent plusieurs années de suite »</td>
+        <td>« la mortalité répétée des pousses aboutit <b>parfois</b> ». Le « parfois » manquait, et « répétée » ne veut pas dire « plusieurs années ».</td></tr>
+    <tr><td><b>Peuplier.</b> Les pustules noires « quand l’attaque est forte »</td>
+        <td>« attaque forte <b>ou clone sensible</b> ». La seconde condition manquait.</td></tr>
+    <tr><td><b>Cinq répétitions</b> d’un bloc à l’autre</td>
+        <td>Les contaminations pendant toute la période de végétation, les chancres qui fragilisent les branches, le champignon caché dans l’écorce. Chaque chose n’est plus dite qu’une fois.</td></tr>
+  </table>
+  </div>
+  <p><b>Ce que la relecture a confirmé :</b> les trois notes du peuplier
+  (fréquence 3 sur 3, agressivité 2 sur 3, impact 1 sur 3) sont bien celles de
+  la page, comptées case par case, et la page du chêne n’en porte réellement
+  aucune. Les tailles des taches, les températures, les hôtes, les deux
+  confusions et l’exigence de laboratoire sont exacts.</p>
+
+  <h3>Une différence avec le peuplier, et elle compte</h3>
+  <p><b>Cette page ne porte aucune note de fréquence, d’agressivité ni
+  d’impact.</b> Celle du peuplier en avait trois, la sienne n’en a aucune. Le
+  bloc « Est-ce grave pour l’arbre ? » ne repose donc que sur sa rubrique
+  « Dégâts ». Je n’ai pas repris les notes de l’autre fiche par ressemblance.</p>
+
+  <h3>Ce que la page exige, et qu’Atlas affiche</h3>
+  <p>« Seule la détection du champignon en laboratoire permet de confirmer avec
+  certitude le diagnostic. » C’est écrit sur la page, et cela change tout : Atlas
+  ne dira <b>jamais</b> mieux que « probable » sur cette maladie, quoi que
+  montre la photo. La phrase est sous « Que faire ? », dans un cadre.</p>
+
+  <h3>La photo, et la question que je vous pose</h3>
+  <p>Les <b>huit</b> figures de la page portent un nom avec un « © », donc
+  aucune n’est utilisable. Celle-ci vient de Wikimedia Commons, <b>en domaine
+  public</b>, et sa description dit bien « Oak Anthracnose ». <b>Mais cette
+  identification vient d’iNaturalist</b>, c’est-à-dire d’un observateur et de la
+  communauté, <b>pas d’un laboratoire</b>, alors que la fiche exige justement un
+  laboratoire. C’est écrit sous la photo. <b>Vous êtes l’expert : regardez-la et
+  dites-moi si elle va.</b> Si elle ne va pas, la fiche part sans photo, comme
+  elle était.</p>
+
+  <h3>Ce que je vous demande</h3>
+  <ol>
+    <li>La <b>photo</b> : on la garde, ou la fiche part sans ?</li>
+    <li><b>Que faire</b> : l’INRAE ne donne aucun traitement ici non plus. Votre geste de métier, ou on laisse comme ça ?</li>
+    <li>Un <b>« oui »</b>, et les deux fiches entrent ensemble, celle-ci et le peuplier.</li>
+  </ol>
+
+  <h3>La suite, dans l’ordre du site</h3>
+  <p>Chalarose du frêne, criblure du merisier, cylindrosporiose du merisier,
+  Cyclaneusma sur pin, maladie des bandes rouges, maladie des croûtes noires de
+  l’érable, et ainsi de suite. Une planche par fiche, sur cette même base.</p>
+</div>
+
+<script>
+window.FICHE_LOT = {
+  "version": "ephytia-2026-08-20",
+  "sources": [
+    {
+      "code": "ephytia-anthracnose-chene-hetre",
+      "organisme": "INRAE, Ephytia (auteur : Département de la santé des forêts)",
+      "titre": "Anthracnose du chêne et du hêtre (Apiognomonia errabunda), rubrique Forêts",
+      "url": "https://ephytia.inrae.fr/fr/C/20417/Forets-Anthracnose-du-chene-et-du-hetre",
+      "nature": "officielle",
+      "publieeLe": "2024-08-08",
+      "consulteeLe": "2026-08-20"
+    }
+  ],
+  "taxons": [
+    {
+      "code": "quercus",
+      "nomScientifique": "Quercus",
+      "nomCommun": "Chêne",
+      "article": "un",
+      "synonymes": [
+        "chênes",
+        "chêne pédonculé",
+        "chêne sessile",
+        "chêne vert"
+      ],
+      "rang": "genre",
+      "port": "feuillu"
+    },
+    {
+      "code": "fagus",
+      "nomScientifique": "Fagus",
+      "nomCommun": "Hêtre",
+      "article": "un",
+      "synonymes": [
+        "hêtre commun",
+        "fayard"
+      ],
+      "rang": "genre",
+      "port": "feuillu"
+    }
+  ],
+  "fiches": [
+    {
+      "code": "anthracnose-chene-hetre",
+      "nomCommun": "Anthracnose du chêne et du hêtre",
+      "nomScientifique": "Apiognomonia errabunda",
+      "agentCausal": "Un champignon, Apiognomonia errabunda. La page précise que ce nom recouvre en réalité plusieurs espèces très proches, chacune plutôt attachée à un hôte. Sur le hêtre c’est Apiognomonia errabunda elle-même, qui porte aussi le nom de Discula umbrinella sous son autre forme. Sur le chêne c’est Apiognomonia quercina, qui porte aussi le nom de Discula quercina. La page ajoute qu’elles se comportent de la même façon et ne les distingue pas ensuite.",
+      "agentType": "champignon",
+      "categorie": "maladie",
+      "partiesAtteintes": [
+        "feuille",
+        "rameau",
+        "branche",
+        "fruit"
+      ],
+      "quandCaSeVoit": "Les taches apparaissent au printemps sur les feuilles. C’est aussi au printemps que les premières contaminations se font.",
+      "autresEssences": "La page nomme les chênes et le hêtre comme hôtes habituels. Elle ajoute que le champignon peut vivre caché dans l’écorce d’arbres sains ou dépérissants d’un grand nombre d’espèces, sans faire de dégât visible. D’autres arbres du jardin peuvent donc le porter sans le montrer.",
+      "periodeDebutMois": 3,
+      "periodeFinMois": 6,
+      "explicationCourte": "Maladie causée par un champignon, sur le chêne et sur le hêtre. Des taches brunes apparaissent sur les feuilles au printemps. L’écorce des rameaux se nécrose, et des chancres peuvent fragiliser les branches.",
+      "gravite": "vigilance",
+      "graviteSelonLaSource": "Les tissus des feuilles nécrosés ne travaillent plus, et la photosynthèse diminue. Quand l’infection est importante, des feuilles et même des rameaux se dessèchent. Les chancres fragilisent les branches. Dans les cas extrêmes, des mortalités de jeunes tiges de hêtre ont été constatées. Cette page ne donne aucune note de fréquence ni de gravité.",
+      "impactMecanique": "possible",
+      "impactMecaniqueNote": "La source décrit des chancres fragilisant les branches. Elle ne se prononce pas sur le risque de rupture.",
+      "risqueHumainAnimal": "inconnu",
+      "statutReglementaire": "aucun",
+      "diagnosticPhoto": "indicatif",
+      "photosUtiles": [
+        "feuille",
+        "rameau",
+        "branche"
+      ],
+      "conduiteRecommandee": "L’INRAE ne donne aucun traitement ni aucune méthode de lutte pour cette maladie. Surveillez les rameaux : quand plusieurs nécroses se rejoignent, elles font le tour de la pousse et la tuent.",
+      "commentCaArrive": "La spore germe à la surface de la feuille, puis le champignon entre dans les tissus. Il peut y rester endormi sans rien provoquer, ou faire les taches de l’anthracnose. L’infection d’une feuille gagne souvent la queue de la feuille, puis une partie de la pousse. La spore peut aussi germer directement sur un jeune rameau. Ce qui favorise la maladie, ce sont les printemps froids et humides, et les dégâts d’insectes qui mangent les feuilles. Sur les rameaux, le manque d’eau pourrait réveiller le champignon endormi chez certains chênes de la zone méditerranéenne.",
+      "prevention": null,
+      "gestion": "Le champignon passe l’hiver dans les pousses mortes et dans les chancres qu’il a faits, ainsi que sur les feuilles tombées au sol. Au printemps, les spores nées des feuilles au sol sont emportées par le vent et contaminent les feuilles neuves. Celles qui se forment sur les rameaux sont entraînées par l’eau.",
+      "traitement": null,
+      "symptomes": [
+        {
+          "nature": "symptome",
+          "partie": "feuille",
+          "motif": "tache",
+          "couleurs": [
+            "brun"
+          ],
+          "localisations": [
+            "eparse",
+            "en_plages"
+          ],
+          "poids": "cardinal",
+          "libelle": "De petites mouchetures qui deviennent des taches irrégulières ou anguleuses, roussâtres à brun sombre, pouvant atteindre 15 à 20 mm. Le passage entre la partie brune et la partie verte est net."
+        },
+        {
+          "nature": "symptome",
+          "partie": "feuille",
+          "motif": "necrose",
+          "couleurs": [
+            "brun"
+          ],
+          "localisations": [
+            "bord"
+          ],
+          "poids": "frequent",
+          "libelle": "Taches nécrotiques brunes parfois limitées à l’extrémité du limbe."
+        },
+        {
+          "nature": "symptome",
+          "partie": "feuille",
+          "motif": "dessechement",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Plus tard, les feuilles peuvent se dessécher entièrement et mourir."
+        },
+        {
+          "nature": "symptome",
+          "partie": "feuille",
+          "motif": "deformation",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "possible",
+          "libelle": "Les feuilles peuvent se recroqueviller."
+        },
+        {
+          "nature": "symptome",
+          "partie": "rameau",
+          "motif": "necrose",
+          "couleurs": [
+            "brun"
+          ],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Taches brunâtres sur les rameaux, correspondant à des nécroses de l’écorce."
+        },
+        {
+          "nature": "signe",
+          "partie": "rameau",
+          "motif": "pustule",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "De nombreuses petites pustules sur les rameaux morts."
+        },
+        {
+          "nature": "symptome",
+          "partie": "rameau",
+          "motif": "chancre",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Des lésions cicatrisées qui prennent l’aspect de petits chancres. Quand plusieurs nécroses se rejoignent, elles font le tour de la pousse et la tuent."
+        },
+        {
+          "nature": "symptome",
+          "partie": "branche",
+          "motif": "deformation",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "possible",
+          "libelle": "Quand les pousses et les rameaux meurent de façon répétée, le chêne prend parfois un port buissonnant en « chou-fleur », qui rappelle de petits balais de sorcière."
+        },
+        {
+          "nature": "symptome",
+          "partie": "fruit",
+          "motif": "tache",
+          "couleurs": [
+            "noir"
+          ],
+          "localisations": [],
+          "poids": "possible",
+          "libelle": "Sur les glands, de petits points noirs sur la peau."
+        },
+        {
+          "nature": "symptome",
+          "partie": "fruit",
+          "motif": "necrose",
+          "couleurs": [
+            "brun"
+          ],
+          "localisations": [],
+          "poids": "possible",
+          "libelle": "Sur les glands, une pourriture brune à l’intérieur. La page indique que cela ne semble pas avoir été constaté sur les faînes du hêtre."
+        }
+      ],
+      "hotes": [
+        {
+          "taxon": "quercus",
+          "specificite": "frequent"
+        },
+        {
+          "taxon": "fagus",
+          "specificite": "frequent"
+        }
+      ],
+      "confusions": [
+        {
+          "fiche": "anthracnose-platane",
+          "critereDifferenciant": "C’est l’essence qui tranche, et elle seule. Cette fiche concerne les chênes et le hêtre, l’autre concerne le platane. Les deux pages donnent des hôtes qui ne se recoupent pas.",
+          "photoQuiTranche": "Photographiez une feuille entière, posée à plat.",
+          "partieQuiTranche": "feuille"
+        }
+      ],
+      "criteresDiscriminants": [
+        "Le passage entre la partie brune et la partie verte de la feuille est net, sans dégradé.",
+        "Les taches sont irrégulières ou anguleuses, roussâtres à brun sombre, et peuvent atteindre 15 à 20 mm.",
+        "Sur les rameaux morts apparaissent de nombreuses petites pustules.",
+        "Sur le chêne, quand les pousses et les rameaux meurent de façon répétée, l’arbre prend parfois un port buissonnant que la page appelle « chou-fleur »."
+      ],
+      "criteresExclusion": [],
+      "facteursFavorisants": [
+        "Les printemps froids et humides.",
+        "Les dégâts provoqués par les insectes qui mangent les feuilles.",
+        "Sur les rameaux, le manque d’eau pourrait réveiller le champignon endormi chez certains chênes de la zone méditerranéenne."
+      ],
+      "informationsRequises": [
+        "Une photo de rameau, pour chercher les nécroses de l’écorce et les petites pustules des rameaux morts.",
+        "Une photo de l’arbre entier, pour voir si le port est devenu buissonnant."
+      ],
+      "methodeConfirmation": "La détection du champignon en laboratoire est nécessaire pour confirmer avec certitude le diagnostic.",
+      "certitudeMax": "probable",
+      "hotesNonExhaustifs": true,
+      "niveauValidation": "validee",
+      "origine": "reelle",
+      "version": 1,
+      "sourcesAJourLe": "2024-08-08",
+      "sources": [
+        {
+          "source": "ephytia-anthracnose-chene-hetre",
+          "champs": [
+            "conduite_recommandee",
+            "gravite",
+            "statut_reglementaire",
+            "symptomes",
+            "hotes",
+            "explication_courte",
+            "gestion",
+            "agent_causal",
+            "parties_atteintes",
+            "impact_mecanique",
+            "confusions"
+          ]
+        }
+      ],
+      "images": [
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Apiognomonia%20errabunda%2099554012.jpg?width=1200",
+          "fichier": "donnees/phyto/images/anthracnose-chene-feuille.jpg",
+          "licence": "Domaine public (CC0)",
+          "credit": "Photo d’Adam Kranz, via Wikimedia Commons, identifiée sur iNaturalist et non en laboratoire",
+          "partie": "feuille",
+          "legende": "Nécrose brune sur une feuille de chêne, avec un passage net entre la partie brune et la partie verte."
+        }
+      ]
+    }
+  ]
+};
+</script>
+<script src="fiche-maladie.js"></script>
+</body>
+</html>

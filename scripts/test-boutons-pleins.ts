@@ -172,11 +172,6 @@ const APLATS_DECLARES: { fichier: string; motif: RegExp; pourquoi: string }[] = 
     pourquoi: "la coche d'une prestation faite",
   },
   {
-    fichier: "src/app/paysage/fiche/[id]/FicheChantierClient.tsx",
-    motif: /\? \{ backgroundColor: colors\.rust \}/,
-    pourquoi: "l'interrupteur « temps visible », nommément écarté le 3 septembre",
-  },
-  {
     fichier: "src/app/reglages/agenda/AgendaAppleClient.tsx",
     motif: /etat\.ecritureActive \? colors\.rust/,
     pourquoi: "un interrupteur",

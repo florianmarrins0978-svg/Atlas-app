@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Remplir la facture : main d’œuvre, règlements, acquittée</title>
+<title>Remplir la facture — main d’œuvre, règlements, acquittée</title>
 <style>
   /* ═══ LES JETONS, SORTIS DU CODE ══════════════════════════════════════════
      src/lib/chartes.ts au caractère près, plus le vert des boutons
@@ -280,7 +280,7 @@
 <body data-charte="origine" data-etat="corrige">
 
 <div class="bandeau">
-  <b>Vos trois corrections du 21 septembre, sur vos deux écrans.</b> <b>+ Main d’œuvre</b> et <b>+ Règlement reçu</b> passent sur la page où vous remplissez la facture, avec l’interrupteur <b>Facture acquittée</b> : comme le devis porte sa main d’œuvre et ses acomptes. Allumez-le : <b>l’encadré doré</b> apparaît sous le Total TTC, au-dessus de « Revenir à la facture ». La page de la facture, elle, ne fait plus que les <b>lire</b>. Tout se tape pour de vrai, et l’onglet <b>Le PDF</b> montre le papier que votre cliente reçoit : rempli par les mêmes chiffres, avec le mot que vous avez écrit. <b>Rien n’est codé.</b>
+  <b>Vos corrections du 21 puis du 22 septembre, sur vos deux écrans.</b> <b>+ Main d’œuvre</b> et <b>+ Règlement reçu</b> passent sur la page où vous remplissez la facture — comme le devis porte sa main d’œuvre et ses acomptes —, et la page de la facture ne fait plus que les <b>lire</b>. <b>Facture acquittée</b> est sur les deux, <b>sous le net à payer</b> : c’est là que vous le cherchez avant d’envoyer. Allumez-le : <b>l’encadré doré</b> apparaît. Tout se tape pour de vrai, et l’onglet <b>Le PDF</b> montre le papier que votre cliente reçoit — rempli par les mêmes chiffres, avec le mot que vous avez écrit. <b>Rien n’est codé.</b>
 </div>
 
 <div class="choix">
@@ -303,7 +303,7 @@
 
     <section class="feuille">
       <p class="chantier">Chantier</p>
-      <p class="nom">Jardin Grospiron, 12 rue des Lilas</p>
+      <p class="nom">Jardin Grospiron — 12 rue des Lilas</p>
       <p class="client">Mme Grospiron</p>
 
       <div id="categories"></div>
@@ -341,13 +341,13 @@
           <div id="regls"></div>
           <button class="plus petit" type="button" id="plus-regl" style="margin-top:12px">+ Règlement reçu</button>
 
-          <!-- LA CORRECTION 3 : l'interrupteur, là où il remplit -->
+          <div class="net"><b>Net à payer</b><span class="m" id="net"></span></div>
+
+          <!-- LA CORRECTION 3 : l'interrupteur, SOUS le net à payer (22 septembre) -->
           <div class="bascule-ligne">
             <span>Facture acquittée<small>Tout est réglé avant l’envoi</small></span>
             <button class="bascule" type="button" id="acquittee" aria-pressed="false" aria-label="Facture acquittée"></button>
           </div>
-
-          <div class="net"><b>Net à payer</b><span class="m" id="net"></span></div>
 
           <!-- L'ENCADRÉ DORÉ : sous le Total TTC, au-dessus de « Revenir à la facture » -->
           <div class="encadre" id="encadre" hidden><p></p></div>
@@ -365,7 +365,7 @@
     <div class="fenetre"><div class="defile">
     <div class="titre" style="padding-top:26px">
       <h1>Facture</h1>
-      <p class="sur">F2026-000014, Mme Grospiron</p>
+      <p class="sur">F2026-000014 · Mme Grospiron</p>
     </div>
 
     <div class="carte">
@@ -391,11 +391,14 @@
       <div id="f-regls"></div>
       <!-- Ce qui S'EN VA d'ici : « + Règlement reçu » et l'interrupteur -->
       <button class="plus petit vieux" type="button" style="margin-top:12px">+ Règlement reçu</button>
-      <div class="bascule-ligne vieux">
-        <span>Facture acquittée<small>Tout est réglé avant l’envoi</small></span>
-        <button class="bascule" type="button" aria-pressed="false" aria-label="Facture acquittée"></button>
-      </div>
       <div class="net"><b>Net à payer</b><span class="m" id="f-net"></span></div>
+      <!-- IL REVIENT ICI — 22 septembre : « À facturer » ouvre cet écran, et
+           c'est là qu'il a cherché l'interrupteur. Saisir un règlement compose
+           la facture ; solder la constate, juste avant l'envoi. -->
+      <div class="bascule-ligne">
+        <span>Facture acquittée<small>Tout est réglé avant l’envoi</small></span>
+        <button class="bascule" type="button" id="f-acquittee" aria-pressed="false" aria-label="Facture acquittée"></button>
+      </div>
       <div class="encadre" id="f-mention" hidden><p></p></div>
     </div>
 
@@ -423,7 +426,7 @@
       <div class="haut">
         <div class="emetteur">
           <div class="nom">Eden Nature</div>
-          <div class="coord">SAS au capital de 1 500,00 € : RCS Avignon 912 345 678<br>12 chemin des Vignes, 84000 Avignon<br>06 12 34 56 78 : contact@edennature.fr<br>SIRET 912 345 678 00019</div>
+          <div class="coord">SAS au capital de 1 500,00 € · RCS Avignon 912 345 678<br>12 chemin des Vignes, 84000 Avignon<br>06 12 34 56 78 · contact@edennature.fr<br>SIRET 912 345 678 00019</div>
         </div>
         <div class="refs">
           <div><b>Date</b><span>21/09/2026</span></div>
@@ -458,7 +461,7 @@
       <div class="notes" id="p-notes"></div>
 
       <div class="mentionpapier" id="p-mention"></div>
-      <div class="pied"><span>Eden Nature, SIRET 912 345 678 00019, IBAN FR76 3000 1000 0000 0000 0000 000</span><span>Page 1/1</span></div>
+      <div class="pied"><span>Eden Nature · SIRET 912 345 678 00019 · IBAN FR76 3000 1000 0000 0000 0000 000</span><span>Page 1/1</span></div>
     </div></div>
   </section>
 
@@ -467,17 +470,17 @@
 <div class="note">
   <h3>Ce que ça change</h3>
   <table>
-    <tr><td>+ Main d’œuvre</td><td>passe sur <b>Remplir la facture</b>, sous « + Ajouter une TVA » : exactement la place qu’il a sur le devis. La page de la facture <b>lit</b> « dont main d’œuvre HT » sous le Total HT, elle ne le saisit plus.</td></tr>
+    <tr><td>+ Main d’œuvre</td><td>passe sur <b>Remplir la facture</b>, sous « + Ajouter une TVA » — exactement la place qu’il a sur le devis. La page de la facture <b>lit</b> « dont main d’œuvre HT » sous le Total HT, elle ne le saisit plus.</td></tr>
     <tr><td>+ Règlement reçu</td><td>passe au même endroit, sous le Total TTC : le moyen, le n° de chèque, la date, le montant. La page de la facture les <b>affiche</b>, avec le net à payer.</td></tr>
-    <tr><td>Ce que c’est</td><td><b>« Acompte 30 % » n’est qu’une proposition : le mot est à vous.</b> Touchez-le et écrivez ce que c’est, arrhes, avoir, ce que vous voulez. C’est ce mot-là qui s’imprime sur la facture. (Dans l’application, il faudra une colonne pour le retenir : aujourd’hui le nom est déduit des acomptes du devis, et rien ne garde le vôtre.)</td></tr>
-    <tr><td>Facture acquittée</td><td>l’interrupteur vit là où vous remplissez. Allumé, le solde est compté reçu ce jour, le net tombe à zéro.</td></tr>
+    <tr><td>Ce que c’est</td><td><b>« Acompte 30 % » n’est qu’une proposition : le mot est à vous.</b> Touchez-le et écrivez ce que c’est — arrhes, avoir, ce que vous voulez. C’est ce mot-là qui s’imprime sur la facture. (Dans l’application, il faudra une colonne pour le retenir : aujourd’hui le nom est déduit des acomptes du devis, et rien ne garde le vôtre.)</td></tr>
+    <tr><td>Facture acquittée</td><td>l’interrupteur est sous le net à payer, sur les deux écrans. Allumé, le solde est compté reçu ce jour, le net tombe à zéro. Une facture arrêtée ne l’offre plus : ses règlements se notent depuis Terminés.</td></tr>
     <tr><td>L’encadré doré</td><td>sous le Total TTC, au-dessus de « Revenir à la facture ». Il n’apparaît que si l’interrupteur est allumé.</td></tr>
-    <tr><td>Le PDF</td><td>le papier de votre cliente, à ses proportions. Chaque règlement y a sa ligne sous le Total TTC, avec <b>le mot que vous avez écrit</b> ; le détail (moyen, n° de chèque, date) est dans « Montants versés » sous les notes, et le tampon <b>Acquittée le …</b> s’imprime quand le net tombe à zéro. Changez un prix ou un libellé à gauche : le papier suit.</td></tr>
+    <tr><td>Le PDF</td><td>le papier de votre cliente, à ses proportions. Chaque règlement y a sa ligne sous le Total TTC, avec <b>le mot que vous avez écrit</b> ; le détail — moyen, n° de chèque, date — est dans « Montants versés » sous les notes, et le tampon <b>Acquittée le …</b> s’imprime quand le net tombe à zéro. Changez un prix ou un libellé à gauche : le papier suit.</td></tr>
     <tr><td>« Aujourd’hui »</td><td>le bouton en haut éteint les trois ajouts et rallume ce qui est en place : c’est votre écran d’aujourd’hui, au pixel.</td></tr>
   </table>
   <h3>Ce que je vous demande de trancher</h3>
   <table>
-    <tr><td>Un seul endroit, ou les deux ?</td><td>Ici, les trois gestes <b>quittent</b> la page de la facture : un même réglage à deux endroits finit par ne plus dire la même chose. Si vous voulez les garder aux deux, dites-le : c’est un mot à changer.</td></tr>
+    <tr><td>Un seul endroit, ou les deux ? — <b>tranché le 22 septembre</b></td><td>Les deux « + » restent sur la page où vous remplissez : ce sont eux qui composent la facture. <b>Facture acquittée</b> est aux deux endroits, sous le net à payer — vous l’avez cherché sur la facture, et c’est le dernier écran avant l’envoi. C’est la même pièce des deux côtés, jamais deux réglages.</td></tr>
     <tr><td>Un règlement après l’envoi</td><td>Une facture arrêtée ne se remplit plus : le chèque qui arrive trois semaines après se note dans « En attente de paiement ». Si vous voulez le noter depuis la facture, c’est un autre lot.</td></tr>
   </table>
 </div>
@@ -503,7 +506,7 @@
   function r2(n){ return Math.round(n * 100) / 100; }
   function eur(n){ return nb(n).toLocaleString("fr-FR", {minimumFractionDigits:2, maximumFractionDigits:2}) + " €"; }
   /**
-   * CE QU'UN RÈGLEMENT EST : proposé d'office, écrit par lui s'il veut.
+   * CE QU'UN RÈGLEMENT EST — proposé d'office, écrit par lui s'il veut.
    *
    * Le rang dit le taux du devis (« Acompte 30 % », puis 50 %) ; au-delà, et
    * pour le solde, « Acompte » tout court. **Ce n'est qu'un DÉPART** : sa
@@ -516,7 +519,7 @@
     return ["Acompte 30 %", "Acompte 50 %"][rang] || "Acompte";
   }
 
-  // La date s'écrit comme il la lit : 21/09/2026. Le sélecteur natif du
+  // La date s'écrit comme il la lit — 21/09/2026. Le sélecteur natif du
   // navigateur tient dans la colonne de 92 px sur son téléphone, pas ici.
   function aujourdhui(){
     var d = new Date(), deux = function(n){ return (n < 10 ? "0" : "") + n; };
@@ -652,7 +655,7 @@
 
     dessinerReglements();
     id("net").textContent = eur(c.net);
-    // Il s'allume seul quand les règlements couvrent tout, la règle de l'appli.
+    // Il s'allume seul quand les règlements couvrent tout — la règle de l'appli.
     var allume = etat.acquittee || (c.verses > 0 && c.net === 0);
     id("acquittee").setAttribute("aria-pressed", String(allume));
     id("encadre").hidden = !allume;
@@ -680,6 +683,7 @@
       fr.appendChild(d);
     });
     id("f-net").textContent = eur(c.net);
+    id("f-acquittee").setAttribute("aria-pressed", String(allume));
     id("f-mention").hidden = !allume;
     id("f-mention").firstElementChild.textContent = motAcquittee();
 
@@ -691,7 +695,7 @@
    *
    * Pas une seconde version de la facture : ce qu'il tape à l'écran se lit
    * ici. Le libellé qu'il écrit sur un règlement est celui qui s'imprime, sous
-   * le Total TTC et dans « Montants versés » : c'est exactement ce que fait le
+   * le Total TTC et dans « Montants versés » — c'est exactement ce que fait le
    * PDF (`facture-pdf.ts` : lignesApresTotal, phraseMontantsVerses).
    */
   function rendreLePapier(c, mo, acquittee){
@@ -723,7 +727,7 @@
     }
     c.taux.forEach(function(x){ t.push('<div class="r"><span>TVA ' + x.t + ' %</span><span>' + eur(x.tva) + '</span></div>'); });
     t.push('<div class="r ttcpapier"><span>Total TTC</span><span>' + eur(c.ttc) + '</span></div>');
-    // Chaque règlement a SA ligne, avec le mot qu'il a écrit : jamais un mot
+    // Chaque règlement a SA ligne, avec le mot qu'il a écrit — jamais un mot
     // recalculé ici, qui contredirait l'écran (`CLAUDE.md` §3).
     etat.regls.forEach(function(g){
       t.push('<div class="r doux"><span>' + g.libelle + '</span><span>− ' + eur(g.montant) + '</span></div>');
@@ -749,13 +753,13 @@
   }
 
   /**
-   * LE MOT DE L'ACQUITTEMENT, le même sur les deux écrans et sur le papier.
+   * LE MOT DE L'ACQUITTEMENT — le même sur les deux écrans et sur le papier.
    *
    * Sa question du 21 septembre : le papier écrivait « Acquittée le 21/09/2026 »
    * pendant que l'écran disait « Facture acquittée ». *« Il faut que les deux
    * pages soient identiques. »* C'est le papier qui l'emporte : la DATE est ce
    * qu'on vient chercher trois mois plus tard, et c'est déjà ce que le PDF
-   * imprime (`tamponAcquittee`). Une seule fonction l'écrit : deux rédactions
+   * imprime (`tamponAcquittee`). Une seule fonction l'écrit — deux rédactions
    * du même mot finissent par se contredire (`CLAUDE.md` §3).
    */
   function motAcquittee(){
@@ -763,7 +767,7 @@
     return "Acquittée le " + etat.regls[etat.regls.length - 1].date;
   }
 
-  /** « chèque n° 1806028 », « virement » : le numéro n'a de sens que pour un chèque. */
+  /** « chèque n° 1806028 », « virement » — le numéro n'a de sens que pour un chèque. */
   function moyenEcrit(g){
     var m = g.moyen.toLowerCase();
     return m === "chèque" && g.numero ? m + " n° " + g.numero : m;
@@ -787,7 +791,7 @@
     rendre();
   };
 
-  // Le montant proposé : ce qui reste, jamais plus : le chiffre est à vous.
+  // Le montant proposé : ce qui reste, jamais plus — le chiffre est à vous.
   id("plus-regl").onclick = function(){
     var c = calcul();
     etat.regls.push({
@@ -798,7 +802,8 @@
   };
 
   // Allumé : le solde est compté reçu à la date du jour ; éteint, il repart.
-  id("acquittee").onclick = function(){
+  // Le même geste sur les deux écrans : une seconde rédaction divergerait.
+  id("acquittee").onclick = id("f-acquittee").onclick = function(){
     var c = calcul();
     if (c.net > 0) {
       etat.regls.push({
@@ -820,11 +825,11 @@
 
   // ─── LES VUES ────────────────────────────────────────────────────────────
   /**
-   * LES BOUTONS DE L'ÉCRAN MÈNENT QUELQUE PART, 21 septembre 2026.
+   * LES BOUTONS DE L'ÉCRAN MÈNENT QUELQUE PART — 21 septembre 2026.
    *
    * « Je peux pas ouvrir le pdf facture » : « Voir la facture en PDF » ne
    * faisait rien, et un appui sans effet et sans un mot se lit comme une
-   * panne. La planche se parcourt donc comme l'application, la flèche et
+   * panne. La planche se parcourt donc comme l'application — la flèche et
    * « Revenir à la facture » ramènent à la facture, le PDF s'ouvre, et
    * « Remplir la facture » rouvre la feuille de saisie.
    */

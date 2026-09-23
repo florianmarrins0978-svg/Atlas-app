@@ -6,7 +6,359 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-09-23
+
+### Filtrer par jour, par mois ou par année
+
+Sa demande : *« l'idée c'est de pouvoir filtrer aussi par mois ou par année ou
+par jour mois année »*. L'année manquait. Deux façons lui ont été montrées sur
+une planche, il a retenu la B : les trois mots du titre se touchent — « 23
+septembre 2026 » —, et celui qui est souligné d'or dit ce que la liste montre.
+La croix « tout le mois » part avec : elle ne menait qu'à un cran et ne se
+lisait pas. La roue du téléphone, elle, ne change que la date.
+
+Trois écrans suivent d'un coup : les fiches de sécurité, les retours
+d'intervention, les rapports envoyés.
+
+**« Terminés » le garde tel qu'il était**, avec ses flèches « ‹ Septembre
+2026 › ». Il a été changé puis remis : *« sauf que Terminés ! Remets comme
+c'était avant ! »*. Là-bas, le mois n'est pas qu'un filtre — c'est le repère
+qui dit où l'on est dans la page, et il se feuillette d'un pouce.
+
+Ce que ça évite, vu à l'écran avant de livrer : posé sur le 11 mars, élargir au
+mois réécrivait « 1 mars » et faisait perdre le quantième — redescendre rendait
+alors une journée qu'il n'avait pas demandée.
+
+---
 ## 2026-09-22
+
+### Fiche de chantier : titres en noir gras, un rapport envoyé s'ouvre tel que le client l'a reçu
+
+« En cours » et « Rapports envoyés » passent en noir gras. Toucher une ligne de
+« Rapports envoyés » ouvre le rapport reçu par le client (`/entretien/<jeton>`,
+l'adresse que la fiche du client porte déjà) au lieu de la fiche cochée :
+*« je dois avoir le rapport envoyé au client, pas la fiche que je viens de
+remplir »*. `LignePassage` reçoit sa destination de l'appelant, et
+`listerPassages` rend le jeton.
+
+### La fiche envoyée se ferme au retour de la messagerie
+
+*« Une fois que j'ai envoyé la fiche au client, je reviens sur cette page, c'est
+pas bon ! Elle doit se fermer et je dois arriver sur la page précédente avec une
+petite mention. »* Le mécanisme du devis et de la facture (7 août) est
+généralisé plutôt que recopié : `useRetourDeMessagerie` prend sa destination
+(l'accueil pour eux, « Fiche de chantier » pour la fiche), `Transmission` gagne
+`fiche`, et `annonceTransmission` écrit « Fiche envoyée à M. Bernard. » — le mot
+« envoyée » est juste ici, le rapport étant figé et daté en base avant que la
+messagerie s'ouvre. Le départ se marque après le figeage, et sur le bouton
+« Envoyer par SMS » d'une fiche déjà figée. `scripts/test-annonce-transmission.ts`.
+
+### Retour d'intervention du client : surtitre doré, une phrase, plus de date d'envoi
+
+« Retour d'intervention » est centré, dans l'or des documents. La ligne sous le
+nom de l'entreprise devient une phrase en noir, le jour en gras : « Mardi
+22 septembre chez M. Bernard », sans point médian. « Envoyé le … Ce retour est
+figé » quitte la page du client (*« à garder seulement pour l'utilisateur dans
+l'appli »*) : la date d'envoi s'affiche désormais sur la fiche envoyée, dans
+l'appli, et `lireRapportParJeton` ne la rend plus, donc elle n'est plus dans le
+HTML du client.
+
+### Fiche de chantier : l'interrupteur « Visible » passe au vert de l'application
+
+Sa demande. Allumé, il prend `plein` (le vert de « Créer une fiche ») et sa
+pastille `surPlein`. L'exception qui le tenait hors du vert depuis le
+3 septembre est retirée de `scripts/test-boutons-pleins.ts`.
+
+### Fiche de chantier : nommer le client recoche son dernier passage, et ne retire plus rien
+
+*« Ce qui a déjà été coché par le passé se recoche automatiquement, mais les 20
+points qui composent ma fiche doivent être présents ! »* Le repli du 17 août
+retirait les lignes que le client ne prenait pas d'habitude, et empêchait de
+cocher un travail en plus. `recomposerPourClient` est remplacé par
+`cocherCommeLaDerniereFois` : toutes les lignes restent, celles du dernier
+rapport envoyé se cochent. La phrase devient « 3 prestations cochées, celles du
+dernier chantier. ». `ARCHITECTURE.md` §408.
+
+### Rapports envoyés : chercher un client, choisir un jour, un mois, une année
+
+*« Faut pouvoir filtrer par nom de client et que ça nous sorte toutes les fiches
+liées au client, et un filtre par jour mois année. »* La section de « Fiche de
+chantier » reprend les deux pièces déjà posées ailleurs : `FiltreDeDate` (le mois
+en cours à l'ouverture, un jour au choix) et `ChampRecherche`. Un nom tapé passe
+par-dessus la date et sort tous les rapports du client (`rapportsAMontrer`,
+`scripts/test-rapports-envoyes-recherche.ts`).
+
+La racine : `listerPassages` n'en rendait que trente, brouillons compris. Un
+filtre posé sur cette liste n'aurait jamais trouvé les plus anciens ; le
+plafond est retiré. Ce lot repose sur les branches du champ de recherche et du
+filtre de date, qui ne sont pas encore sur `main`.
+
+Et deux retouches du même soir : la phrase « Ceux-ci sont partis chez vos
+clients… » quitte « Composer ma fiche », et sa carte prend un liseré d'or
+sur un fond blanc (`card`).
+
+Sur la fiche de chantier, « + C'est pour quel client ? » devient « + Ajouter un
+client », en gros, doré, centré ; la phrase grise « Facultatif… » dessous est
+retirée, et le jour au-dessus passe en noir gras.
+
+Le jour du passage, sur l'écran d'ouverture, s'écrit comme « Septembre 2026 »,
+le nom du jour en plus : « Mardi 22 septembre 2026 » (`jourEnTitre`,
+`scripts/test-jour-en-titre.ts`). Le titre et sa roue sont sortis du filtre de
+date (`TitreAvecRoue`) : un seul dessin pour les deux.
+Le libellé « Jour du passage » au-dessus est retiré le même soir, à sa demande.
+
+Le bouton « Ouvrir une fiche » devient « Créer une fiche » (« Création… »
+pendant qu'elle se crée).
+
+### Un seul champ de recherche, souligné, partout où l'on cherche
+
+Sa demande, capture de shapersclub.com à l'appui puis planche regardée
+(`appli/la-recherche-soulignee.html`) : une loupe dans l'accent, le mot en gris,
+un filet dessous qui passe à l'or quand on écrit, et plus aucune boîte. Clients,
+Retours d'intervention, fiche paysage « Pour qui ? » et Planning « Nom du
+client » passent tous par `src/components/atlas/ChampRecherche.tsx`.
+
+Ce que ça évite : quatre écrans dessinaient chacun le leur (plage teintée,
+pilule, boîte crème, boîte blanche), deux sans loupe, deux en `type="search"`
+qui ajoutait la croix bleue du navigateur. Leurs styles sont retirés ; le gris
+du mot passe par une classe (`atlas-recherche`) sous la même règle mesurée que
+la coordonnée client, au lieu d'un repère propre à la liste des clients. Les
+mots et les repères `data-atlas` n'ont pas bougé.
+### Le piquage se désigne : compteur d'eau ou robinet de jardin
+
+L'avertissement au-dessus du croquis disait « l'endroit où le piquage se
+fait » sans dire ce que c'est. Il précise désormais de noter l'emplacement du
+compteur d'eau ou du robinet de jardin, les deux mots du menu juste au-dessus : un croquis qui ne le porte pas perd
+son plan (`CLAUDE.md` §4 bis), et le mot « piquage » seul ne le faisait pas
+dessiner. Même texte dans l'écran (`ArrosageClient.tsx`) et dans la maquette
+`appli/arrosage-plan-et-pieces.html`, à la même place.
+
+### Fiche de sécurité : le décret devient le titre de l'écran de la loi
+
+Sa demande, capture à l'appui : retirer « Ce que demande la loi » et poser
+« Décret 2021-1833, en vigueur depuis le 1er mars 2022 » à sa place, en grand
+et en noir. Le petit sous-titre gris est supprimé plutôt que doublé ; le bouton
+du bandeau garde son libellé. `test-fiche-securite-e2e.ts` attend désormais ce
+titre (§5 bis : le contrôle suit l'écran qu'il a demandé).
+
+Puis, le même soir : le lien « Ce que demande la loi » sous « Remplir la
+fiche » est retiré — *« pas besoin d'avoir deux portes pour le même
+endroit »*. Chaque fiche neuve ouvre déjà le décret en premier. Ce qui ne
+servait qu'à ce lien part avec lui : `?loi=1`, `loiDemandee`, et le bouton
+« Retour » de l'écran de la loi, qu'on n'atteint plus qu'une fois la fiche
+jamais lue.
+
+### Le nom et le prénom se reprennent d'une fiche de sécurité à l'autre
+
+Sa plainte : *« la case nom et prénom ne s'enregistre pas d'une fiche à
+l'autre ! »*. Deux racines. Le nom du signataire ne vivait que dans l'état de
+l'écran : jamais enregistré pendant la frappe, jamais gardé, et la fiche
+suivante repartait du nom du compte (« Compte de demo »). Et la mémoire des
+fiches ne gardait ni le nom, ni le prénom, ni le téléphone du responsable sur
+place.
+
+Le signataire entre dans `ContenuFiche` (enregistré avec le reste, repris par
+`MemoireDesFiches`) ; l'état local de l'écran et le paramètre séparé de
+`signerLaFicheAction` disparaissent. La colonne `signataire` garde le nom figé
+à la signature, celui du PDF. Aucune migration : le contenu est un jsonb, et
+un contenu ancien reçoit un signataire vide, que l'écran remplace par le nom du
+compte comme avant. Éprouvé : `test-fiche-securite.ts` et
+`test-fiche-securite-e2e.ts` (« le nom signé est repris sur la fiche
+suivante »), vus rouges sur l'ancien code.
+
+### Fiches de sécurité : chercher un client, toutes ses fiches sortent
+
+*« Faut pouvoir faire une recherche par nom aussi et il te sort toutes les
+fiches de ce client. »* Un champ « Chercher un client » sous le mois, dessiné
+comme celui de Clients. Un nom tapé passe par-dessus le mois : toutes les fiches
+signées du client (ou du chantier), tous mois confondus. Le dépôt rend désormais
+toutes les fiches signées (`listerLesFichesSignees`) ; le mois et le nom se
+choisissent à l'écran par une règle pure (`fichesAMontrer`), qui reprend la
+recherche des clients. `scripts/test-fiches-securite-recherche.ts`.
+
+Et le jour, le même soir : *« rajoute le jour aussi en filtre jour mois
+année »*. La roue du titre choisit désormais un jour (`?jour=2026-09-22`) ; le
+jour s'écrit en titre, une croix à côté rend le mois entier. Le jour se lit à
+l'heure du téléphone, pas en UTC : une fiche signée à 0 h 30 reste au jour que
+sa carte écrit.
+
+Puis les retours d'intervention : *« met le filtre jours mois année de la fiche
+de sécurité »*. Le filtre est sorti dans une seule pièce, `FiltreDeDate`, avec
+sa règle pure dans `src/lib/periode.ts`, et les deux écrans s'en servent. Les
+pastilles d'années des retours sont retirées avec `anneesDesRetours`, qui ne
+servait qu'à elles. Les retours s'ouvrent donc sur le mois en cours, et un nom
+tapé sort tous les retours du client, depuis toujours, comme sur les fiches. Le
+jour se lit par `jourIso`, à l'heure de Paris, la même règle côté serveur et
+côté téléphone : la fonction à l'heure du téléphone écrite plus tôt pour les
+fiches faisait double emploi, elle est retirée.
+
+### La flèche retour de la fiche client garde ce qu'il a tapé
+
+*« Je crée un devis, je remplis la fiche client, je fais retour, mais elle
+n'apparaît plus dans mes clients en cours !! »* Depuis le 17 septembre, seul
+« Je rédige à la main » enregistrait la fiche client : la flèche retour jetait
+la saisie. Dans la feuille « Créer un devis », aucun chantier ne naissait ; sur
+la fiche rouverte depuis un devis, le chantier restait « Chantier du … », sans
+son client (reproduit sur une version bâtie, vérifié en base).
+
+La flèche enregistre désormais ce qui a changé depuis l'ouverture, puis sort.
+Rien de tapé : elle sort comme avant, sans créer de chantier vide. Les trois
+sorties (devis, facture, retour) passent par une seule écriture,
+`enregistrerLaSaisie` ; `enregistrerSurLeChantier` disparaît. La règle :
+`src/lib/saisie-fiche-client.ts`. Suites : `test-saisie-fiche-client.ts`,
+`test-fiche-client-gardee-au-retour-e2e.ts` (vue rouge avant, verte après).
+
+Le soir même : refermer la feuille en touchant le voile, ou par Échap, perdait
+encore le client. Les deux passent désormais par la même sortie que la flèche.
+Mesuré en version bâtie : la ligne est dans « En cours » en moins d'une
+seconde, sans recharger ni changer de page. `ARCHITECTURE.md` §407.
+
+### Chaque photo à un seul endroit : celui où elle a été posée
+
+Une photo posée sur la fiche de sécurité y reste — elle ne passe plus dans
+« Travaux à faire » ni dans la pellicule du client. Une photo jointe à la fiche
+client reste, elle, dans « Travaux à faire ». *« Les photos dans la fiche de
+sécurité restent à l'intérieur de la fiche, et les photos de la fiche client
+restent à l'intérieur de la feuille travaux à faire. »* Et puisqu'elle ne se
+voit plus ailleurs, la fiche gagne « Retirer » sur sa visionneuse ; une fiche
+signée, elle, garde les siennes.
+
+Ce que ça évite : les mêmes photos à trois endroits, et un croquis de terrain
+qui part avec le retour du jour chez le client. `ARCHITECTURE.md` §406.
+
+### Les photos du chantier se regardent en grand, et à un seul endroit
+
+Sur la fiche du jour, la rangée de photos qui se trouvait au-dessus de la
+fiche de sécurité a été retirée : la fiche de sécurité porte exactement les
+mêmes — *« elles sont déjà présentes dans la fiche de sécurité »*. Et là-bas,
+une photo s'ouvre maintenant en grand au doigt, se feuillette et se ferme par
+la croix, avec la visionneuse de toute l'application.
+
+Ce que ça évite : la vignette du planning était un lien vers le fichier brut,
+ouvert dans un onglet neuf — depuis son téléphone, plus aucun retour en
+arrière. Et la même rangée deux fois sur le même écran faisait lire deux
+séries de photos là où il n'y en a qu'une, au prix d'une requête de plus à
+chaque ouverture d'une feuille.
+
+### Un règlement se pose enfin sur une facture faite sans devis
+
+« Il ne reste que 0,00 € à recevoir sur cette facture », sous un Total TTC de
+552,52 € : le garde des règlements lisait la colonne `total_ttc`, qui reste à
+zéro sur une facture née sans devis — ses totaux se recalculent depuis les
+lignes, et rien ne réécrit ces colonnes avant l'émission. Aucun acompte ne
+passait, et « Facture acquittée » ne posait aucun solde : le doigt sur
+l'interrupteur ne faisait rien, sans un mot. Le garde calcule désormais le
+total comme l'écran et le PDF. Une facture émise garde sa colonne, figée.
+`ARCHITECTURE.md` §405.
+
+### « Facture acquittée » est sous le net à payer, et sur la page où « À facturer » le mène
+
+Il l'a cherché là, et il n'y était plus : l'interrupteur était parti la veille
+sur la seule feuille où il remplit, avec les deux « + ». Saisir un règlement
+est une composition ; solder est un constat, et il se fait sur l'écran qu'on
+regarde avant d'envoyer. Il revient donc, sur les deux écrans, et il passe
+SOUS le net à payer — le chiffre d'abord, ce qui le met à zéro juste en
+dessous. Une facture arrêtée ne l'offre pas : ses règlements se notent depuis
+Terminés, et le dépôt refusait déjà. `ARCHITECTURE.md` §404.
+
+### La facture porte le jour où elle part, pas celui où le brouillon a été posé
+
+Son constat : « facturé le 21 septembre » un 22, sur une facture qu'il venait
+d'envoyer. La date d'émission était posée à la création du brouillon — à la fin
+du chantier — et l'envoi ne la rouvrait pas : le PDF du client portait cette
+date-là, l'échéance courait depuis elle (un délai de paiement raccourci
+d'autant, alors que le papier imprime « à 30 jours à compter de la facture »),
+et un brouillon du 31 mars envoyé le 1er avril aurait porté sa TVA sur le
+trimestre précédent. La date et l'échéance se posent désormais à l'émission,
+avant la composition du PDF ; l'échéance se DÉCALE du même nombre de jours,
+pour ne pas écraser celle qu'il aurait choisie à la main. Les factures déjà
+émises ne bougent pas. `ARCHITECTURE.md` §403.
+
+### Le relevé de TVA sort du plus récent au plus ancien
+
+Sa règle : *« l'ordre pour la TVA collectée et la TVA déductible doit être le
+dernier enregistré visible »*. La preuve « TVA collectée » sortait du plus
+ANCIEN au plus récent : le règlement qu'il venait de noter tombait tout en bas
+d'une liste de neuf, alors que c'est la seule raison d'ouvrir cette preuve juste
+après avoir noté quelque chose. Elle sort désormais comme la liste des achats,
+qui le faisait déjà — le dernier jour en tête, et à date égale le numéro de
+facture le plus grand, qui est le plus récent. Tout ce qui décide de l'ordre est
+écrit sur la ligne. L'ordre du CALCUL ne bouge pas : la TVA des acomptes se
+répartit toujours dans l'ordre où l'argent est rentré, et le règlement qui solde
+porte le reliquat d'arrondi.
+
+### La fiche de sécurité s'enregistre pendant qu'il écrit, et le GPS dit enfin ce qui a raté
+
+Ses trois remarques du 22 septembre, depuis son iPhone.
+
+**Ce qu'il tape part tout seul.** La fiche n'était écrite qu'au « Suivant » et
+au « Retour ». Or l'écran porte des liens qui SORTENT de l'application — le
+décret, le formulaire MSA, la découverte fortuite de réseau, jebalise — et il
+les ouvre en plein remplissage. Une fois l'application posée sur son écran
+d'accueil, iOS peut décharger la page pendant qu'il lit : l'étape en cours
+repartait vide. Deux secondes de silence et la fiche part, plus un envoi quand
+l'onglet passe en arrière-plan. `rafraichirLesEcrans: false` évite de refaire
+les trois écrans du bandeau toutes les deux secondes sous ses doigts — une
+seule fonction écrit toujours la fiche.
+
+**Le relevé GPS.** *« la position exacte fonctionne pas ».* Quatre défauts dans
+le même bouton : une seule phrase pour les trois causes du navigateur (dont
+deux qu'aucun réglage ne répare) ; la haute précision qui abandonne à quinze
+secondes alors que la position du réseau, elle, répond sous un couvert d'arbres
+ou dans une camionnette ; aucun retour pendant l'attente ; et un « ou
+écrivez-la » qu'aucun champ ne permettait d'exaucer. `refusDuReleveGps` rend une
+phrase par cause, le relevé réessaie une fois en précision normale, le bouton
+dit « Relevé en cours… », et un champ apparaît dès qu'un relevé échoue.
+
+**Les deux heures ne faisaient qu'un encart.** Sa demande : *« pour l'h ça
+serait bien d'avoir deux encarts séparés »*. Chromium les dessine déjà
+séparées : le défaut est propre à Safari, qui habille `input[type="time"]` à
+sa façon et jette le cadre qu'on pose dessus — c'est pourquoi Nom et Prénom,
+deux lignes plus bas et **le même composant**, montraient bien deux cadres. Et
+nos deux fonds sont trop proches (`card` #faf9f5 sur `cream` #f5f3ee) pour que
+l'œil retrouve la séparation sans ce trait. Le cadre vit désormais sur un
+`<span>`, qu'aucun navigateur ne rhabille : il tiendra aussi pour le prochain
+`type` que le téléphone décidera d'habiller. **Non reproduit ici** — à regarder
+sur son iPhone.
+
+### La facture s'ouvre avec sa première ligne
+
+*« Quand je crée une facture il devrait déjà avoir une ligne d'ouverte ! Je ne
+dois pas avoir besoin d'ajouter une ligne au début ! »* — sur la feuille où il
+remplit une facture faite sans devis. C'est le geste que le devis a reçu le
+20 septembre, et c'est la même règle, appelée et non recopiée
+(`ligneOuverteAPoserSurLaFacture`). Une facture née d'un devis n'ouvre rien :
+ce qu'on y saisit est un travail supplémentaire, et une case vide y annoncerait
+un ajout qu'il n'a pas fait. La ligne n'existe PAS en base tant qu'il n'a rien
+écrit — sur une facture, une ligne vide s'imprime chez le client en face de
+0,00 €, et une pièce arrêtée ne se corrige que par un avoir. `ARCHITECTURE.md`
+§394.
+
+### La capture de la facture sans devis mettait le prix dans l'unité
+
+Elle visait le deuxième champ de la rangée ; depuis que la colonne Unité s'est
+glissée entre Qté et Prix (15 septembre), ce deuxième champ est l'UNITÉ. Les
+145 € partaient donc dans « u », la facture restait à 0,00 €, et le script
+accusait l'envoi d'être fermé sur une facture « remplie ». La suite de bout en
+bout avait été corrigée ce jour-là ; ce script avait été oublié. Le prix se
+cherche désormais par son nom.
+### « Enregistrer le PDF » range enfin la fiche de sécurité dans ses fichiers
+
+Sa capture : *« je clique sur enregistrer le pdf, ça me propose pas de le
+télécharger »*. L'écran des fiches de sécurité posait un lien
+`?telecharger=1` ; sur iPhone, un PDF servi en `attachment` reste un document
+que Safari sait peindre — il l'ouvrait au lieu de le ranger. C'est le défaut
+du 10 septembre, réglé une fois par `BoutonTelechargerDocument` (feuille de
+partage, « Enregistrer dans Fichiers ») et refait à la main ici une semaine
+plus tard.
+
+Ce que ça évite, au-delà de ce bouton : le contrôle qui existait pour refuser
+exactement cela — `test-tous-les-pdf.ts` — cherchait « /pdf » dans l'attribut,
+et l'écran rangeait son adresse dans un `const pdf`. Il suit désormais la
+variable d'un cran, refuse un `?telecharger=1` dans un lien, ne lit plus les
+commentaires, et **cherche** les routes qui servent un PDF au lieu de les
+lister : la liste tenue à la main en oubliait déjà une, celle de la fiche de
+sécurité.
 
 ### Plus un tiret au milieu d'une phrase, nulle part dans ce qui s'affiche
 
@@ -24,7 +376,7 @@ désormais dans `npm test`, commentaires exceptés, et il sait rougir sur le
 cadre de signature du devis. Deux endroits gardent le leur, nommés avec leur
 raison : les canevas juridiques, dont une version publiée ne se modifie jamais,
 et la mémoire du dépôt, qui cite ses messages mot pour mot (`ARCHITECTURE.md`
-§403).
+§410).
 
 ### La fiche de sécurité du décret 2021-1833 est dans l'application
 
@@ -35,6 +387,44 @@ transmettre, et la liste dans Paysage, un mois à la fois. Migration 0099 : une
 fiche par chantier, gardée deux ans, jamais purgée ; ses photos non plus. Ce
 qui est coché et écrit revient sur la fiche suivante — son choix — et l'écran
 de la loi le dit. Rien n'est coché par l'application. `docs/lot-fiche-de-securite.md`.
+
+### Relire les deux fiches contre les pages de l'INRAE, et corriger ce qui disait plus qu'elles
+
+Sa demande : « va vérifier avec les infos de l'INRAE que tu n'as fait aucune
+erreur ». Champ par champ, sur les deux fiches. Une erreur de fond : la page
+du chêne écrit « diminution de l'activité photosynthétique », et la fiche
+disait « l'arbre respire moins bien par ses feuilles », ce qui n'est pas le
+même mécanisme.
+
+Trois phrases disaient plus que la page : « produit moins de bois » là où elle
+écrit « diminution de production » sans le mot bois (et donne deux chiffres
+qui manquaient), un nom courant inventé pour P. trichocarpa, et « plusieurs
+années de suite » là où elle écrit « répétée » et « parfois ». Une condition
+manquait, « ou clone sensible ». Cinq phrases étaient dites dans deux blocs à
+la fois.
+
+Ce que la relecture a confirmé, et qui vaut d'être noté : les trois notes du
+peuplier ont été recomptées case par case dans le tableau de la page, et la
+page du chêne n'en porte réellement aucune.
+
+### Une base commune aux planches de maladies, et la fiche du chêne enfin montrée
+
+Sa demande, la planche du peuplier retenue : « garde cette planche, elle est
+finie, avance sur les autres en gardant la même base ». Le style et le rendu
+vivent désormais dans `appli/fiche-maladie.css` et `appli/fiche-maladie.js`,
+une seule fois pour toutes les planches. Ce qu'il corrige sur une fiche les
+corrige toutes, et le peuplier reposé sur cette base rend le même écran au
+pixel près.
+
+Puis sa remarque : « l'anthracnose du chêne n'a pas été faite ». Elle l'avait
+été le 20 août, mais aucune planche ne l'avait jamais montrée, donc elle
+n'existait pas pour lui. `appli/fiche-anthracnose-du-chene-et-du-hetre.html`
+la rend dans la forme arrêtée ce soir-là, avec une photo qu'elle n'avait pas.
+
+Deux choses que sa page dit et que le peuplier ne disait pas : elle ne porte
+aucune note de gravité, et elle exige un laboratoire pour confirmer. Les deux
+s'affichent, et la base a dû être corrigée pour cela : le nom de la photo était
+écrit en dur, et l'exigence de laboratoire n'était rendue nulle part.
 
 ### La fiche 4 du diagnostic végétal dessinée avant d'être codée — et la licence d'Ephytia lue
 

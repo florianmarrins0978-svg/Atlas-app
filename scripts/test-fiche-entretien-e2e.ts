@@ -135,9 +135,11 @@ async function main() {
     await rubrique.waitFor({ timeout: 20_000 });
 
     const boite = await rubrique.boundingBox();
-    const jour = await page.getByText("Jour du passage").first().boundingBox();
+    // Le jour se vise par son repère : le libellé « Jour du passage » a été
+    // retiré à sa demande le 22 septembre 2026 (`CLAUDE.md` §5 bis).
+    const jour = await page.locator('[data-atlas="jour-du-passage"]').boundingBox();
     assert.ok(boite && boite.height > 0, "la rubrique ne se mesure pas : rien n'est prouvé");
-    assert.ok(jour && jour.height > 0, "« Jour du passage » ne se mesure pas : rien n'est prouvé");
+    assert.ok(jour && jour.height > 0, "le jour du passage ne se mesure pas : rien n'est prouvé");
     assert.ok(
       boite!.y < jour!.y,
       `la rubrique est passée SOUS le jour du passage (${Math.round(boite!.y)} px contre ${Math.round(jour!.y)} px) — il l'a demandée en premier`

@@ -17,7 +17,7 @@ import { listerPrestations } from "./prestations-entretien";
 import {
   empechementEnvoi,
   minutesValides,
-  recomposerPourClient,
+  cocherCommeLaDerniereFois,
   type LignePassage,
   type RefusPassage,
 } from "@/lib/passage-entretien";
@@ -211,19 +211,18 @@ export async function majPassage(
 }
 
 /**
- * Nomme le client — **et replie la fiche sur SES prestations**.
+ * Nomme le client — **et recoche ce que son dernier rapport portait**.
  *
- * C'est le pont qu'il a demandé le 17 août, et le cœur de l'arrangement C :
- * la fiche se replie sur ce que ce client prend, en gardant tout ce qui est
- * déjà coché. La règle vit dans `recomposerPourClient`, éprouvée sans base —
- * refaire ce tri ici donnerait deux vérités sur ce qui reste à l'écran.
+ * Sa règle du 22 septembre 2026 : toutes les lignes de la fiche restent, pour
+ * qu'il coche ce qu'il fait en plus ce jour-là ; seules les coches viennent du
+ * passé. La règle vit dans `cocherCommeLaDerniereFois`, éprouvée sans base.
  */
 export async function nommerClient(
   ctx: Ctx,
   passageId: string,
   clientId: string
 ): Promise<
-  | { ok: true; retirees: number; lignes: (LignePassage & { id: string })[] }
+  | { ok: true; cochees: number; lignes: (LignePassage & { id: string })[] }
   | { ok: false; refus: RefusPassage }
 > {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
@@ -244,26 +243,27 @@ export async function nommerClient(
       .limit(1);
     if (!leClient) return { ok: false as const, refus: "client_inconnu" as const };
 
-    // **Ce que ce client a DÉJÀ PRIS**, tous rapports envoyés confondus — et
-    // non les lignes de son seul dernier passage. Le pourquoi tient en une
-    // taille de haie d'automne : elle ne se fait qu'une fois l'an, et un repli
-    // sur le seul passage précédent la ferait disparaître de sa fiche en mars
-    // (le récit complet est sur `recomposerPourClient`).
-    //
-    // **Envoyés seulement** : un brouillon ouvert par erreur puis abandonné ne
-    // dit rien de ce que ce client prend.
-    const dejaPris = await tx
-      .selectDistinct({ libelle: lignesPassage.libelle })
-      .from(lignesPassage)
-      .innerJoin(passagesEntretien, eq(passagesEntretien.id, lignesPassage.passageId))
+    // **Son DERNIER rapport envoyé**, et lui seul (le pourquoi est sur
+    // `cocherCommeLaDerniereFois`). Envoyé seulement : un brouillon ouvert par
+    // erreur puis abandonné ne dit rien de ce qui a été fait chez lui.
+    const [dernier] = await tx
+      .select({ id: passagesEntretien.id })
+      .from(passagesEntretien)
       .where(
         and(
           eq(passagesEntretien.entrepriseId, ctx.entrepriseId),
           eq(passagesEntretien.clientId, clientId),
-          isNotNull(passagesEntretien.envoyeLe),
-          eq(lignesPassage.faite, true)
+          isNotNull(passagesEntretien.envoyeLe)
         )
-      );
+      )
+      .orderBy(desc(passagesEntretien.jour), desc(passagesEntretien.envoyeLe))
+      .limit(1);
+    const derniere = dernier
+      ? await tx
+          .select({ libelle: lignesPassage.libelle })
+          .from(lignesPassage)
+          .where(and(eq(lignesPassage.passageId, dernier.id), eq(lignesPassage.faite, true)))
+      : [];
 
     const actuelles = await tx
       .select({
@@ -276,13 +276,10 @@ export async function nommerClient(
       .from(lignesPassage)
       .where(eq(lignesPassage.passageId, passageId));
 
-    const restantes = recomposerPourClient(actuelles, dejaPris) as (LignePassage & {
-      id: string;
-    })[];
-    const gardees = new Set(restantes.map((l) => l.libelle));
-    const aRetirer = actuelles.filter((l) => !gardees.has(l.libelle));
-    for (const l of aRetirer) {
-      await tx.delete(lignesPassage).where(eq(lignesPassage.id, l.id));
+    const lignes = cocherCommeLaDerniereFois(actuelles, derniere);
+    const aCocher = lignes.filter((l, i) => l.faite && !actuelles[i].faite);
+    for (const l of aCocher) {
+      await tx.update(lignesPassage).set({ faite: true }).where(eq(lignesPassage.id, l.id));
     }
 
     await tx
@@ -290,13 +287,13 @@ export async function nommerClient(
       .set({ clientId, updatedAt: new Date() })
       .where(eq(passagesEntretien.id, passageId));
 
-    // **Les lignes qui restent partent avec la réponse.** L'écran ne refait pas
-    // le tri de son côté : deux implémentations de la même règle finissent
+    // **Les lignes partent avec la réponse.** L'écran ne refait pas les
+    // coches de son côté : deux implémentations de la même règle finissent
     // toujours par diverger (`CLAUDE.md` §3).
     return {
       ok: true as const,
-      retirees: aRetirer.length,
-      lignes: [...restantes].sort((a, b) => a.ordre - b.ordre || a.libelle.localeCompare(b.libelle)),
+      cochees: aCocher.length,
+      lignes: [...lignes].sort((a, b) => a.ordre - b.ordre || a.libelle.localeCompare(b.libelle)),
     };
   });
 }
@@ -415,10 +412,16 @@ export async function supprimerPassage(
  * **Les brouillons d'abord, et c'est le sens de l'écran** : une fiche laissée
  * en plan hier est ce qu'il vient chercher. Les rapports partis viennent
  * ensuite, du plus récent — ils ne se modifient plus, ils se consultent.
+ *
+ * **TOUS, sans plafond — depuis le 22 septembre 2026.** Il en rendait trente,
+ * brouillons compris : un nom tapé dans « Rapports envoyés » (*« que ça nous
+ * sorte toutes les fiches liées au client »*) n'aurait jamais trouvé le
+ * trente et unième, et le mois choisi aurait paru vide. Le filtre se fait à
+ * l'écran (`rapportsAMontrer`), sur la liste entière, comme les fiches de
+ * sécurité.
  */
 export async function listerPassages(
-  ctx: Ctx,
-  combien = 30
+  ctx: Ctx
 ): Promise<
   {
     id: string;
@@ -427,6 +430,7 @@ export async function listerPassages(
     envoyeLe: Date | null;
     minutes: number | null;
     faites: number;
+    jeton: string | null;
   }[]
 > {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
@@ -437,6 +441,7 @@ export async function listerPassages(
         clientNom: clients.nom,
         envoyeLe: passagesEntretien.envoyeLe,
         minutes: passagesEntretien.minutes,
+        jeton: passagesEntretien.jeton,
         faites: sql<number>`(
           select count(*)::int from ${lignesPassage} l
            where l.passage_id = ${passagesEntretien.id} and l.faite
@@ -450,8 +455,7 @@ export async function listerPassages(
         asc(sql`${passagesEntretien.envoyeLe} is not null`),
         desc(passagesEntretien.jour),
         desc(passagesEntretien.createdAt)
-      )
-      .limit(combien);
+      );
   });
 }
 
@@ -504,7 +508,6 @@ export type RapportPublic = {
   /** `null` s'il n'a rien chronométré — **ou s'il a masqué le temps** (§0060). */
   minutes: number | null;
   observations: string | null;
-  envoyeLe: Date;
   clientNom: string | null;
   entrepriseNom: string;
   /** **Ce qui a été FAIT, et rien d'autre** — voir plus bas. */
@@ -563,7 +566,6 @@ export async function lireRapportParJeton(jeton: string): Promise<RapportPublic 
       // juste en dessous. Ce qui est masqué ne quitte pas le serveur.
       minutes: p.tempsVisible ? p.minutes : null,
       observations: p.observations,
-      envoyeLe: p.envoyeLe,
       clientNom: p.clientNom ?? null,
       entrepriseNom: p.entrepriseNom,
       faites,

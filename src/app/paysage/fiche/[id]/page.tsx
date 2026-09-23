@@ -16,9 +16,8 @@ export const metadata = { title: "Fiche de chantier, Atlas" };
  * 17 août 2026 (planche `docs/maquettes/77-la-fiche-dans-paysage.html`).
  *
  * La fiche s'ouvre SANS client : un outil qui exige un client ne sert pas en
- * visite. Une ligne discrète — « c'est pour quel client ? » — se touche à tout
- * moment, et la fiche se replie alors sur SES prestations sans perdre une
- * coche. La règle est dans `src/lib/passage-entretien.ts`.
+ * visite. « + Ajouter un client » se touche à tout moment, et la fiche recoche
+ * alors son dernier passage, sans retirer une ligne ni perdre une coche. La règle est dans `src/lib/passage-entretien.ts`.
  *
  * **La liste des clients part avec la page**, et c'est délibéré : sur un
  * chantier, la couverture réseau est ce qu'elle est. Une recherche qui appelle

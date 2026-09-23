@@ -31,6 +31,8 @@
  * Ni base, ni réseau, ni date.
  */
 
+import { dansLaPeriode } from "./periode";
+
 /** Une tâche du retour : le libellé recopié du devis, et si elle a été faite. */
 export type TacheDuRetour = {
   libelle: string;
@@ -181,21 +183,22 @@ export function nomCherche(texte: string): string {
  * d'arriver est en haut : le patron n'a rien à chercher le soir même. Un ordre
  * alphabétique aurait enterré le retour du jour au milieu du carnet.
  *
- * `annee` vaut `null` pour « tout » — et « tout » veut dire tout, sans fenêtre
- * glissante : *« il faut pouvoir les garder longtemps »*.
+ * **La période** — un mois ou un jour, le filtre des fiches de sécurité (*« met
+ * le filtre jours mois année de la fiche de sécurité »*, 22 septembre 2026).
+ * Absente, rien n'est écarté. **Un nom tapé passe par-dessus**, comme sur les
+ * fiches : il sort tous les retours du client, depuis toujours — *« il faut
+ * pouvoir les garder longtemps »*, et les retrouver sans tourner la roue.
  */
 export function rangerLesRetours(
   retours: readonly RetourEnListe[],
-  filtres: { client?: string | null; annee?: string | null } = {}
+  filtres: { client?: string | null; periode?: string | null } = {}
 ): GroupeDeRetours[] {
   const cherche = nomCherche(filtres.client ?? "");
-  const annee = filtres.annee ?? null;
+  const periode = filtres.periode ?? null;
 
-  const gardes = retours.filter((r) => {
-    if (annee && r.poseLe.slice(0, 4) !== annee) return false;
-    if (cherche && !nomCherche(r.clientNom).includes(cherche)) return false;
-    return true;
-  });
+  const gardes = retours.filter((r) =>
+    cherche ? nomCherche(r.clientNom).includes(cherche) : !periode || dansLaPeriode(new Date(r.poseLe), periode)
+  );
 
   const parClient = new Map<string, RetourEnListe[]>();
   for (const r of gardes) {
@@ -215,16 +218,4 @@ export function rangerLesRetours(
     const db = b.retours[0]?.poseLe ?? "";
     return da < db ? 1 : da > db ? -1 : 0;
   });
-}
-
-/**
- * Les années qu'il peut toucher, de la plus récente à la plus ancienne.
- *
- * **Elles sortent des retours eux-mêmes**, jamais d'un calcul sur la date du
- * jour : une année sans retour serait une pastille qui ne rend rien, et un
- * filtre qui rend une liste vide s'apprend à ne plus être touché.
- */
-export function anneesDesRetours(retours: readonly RetourEnListe[]): string[] {
-  const annees = new Set(retours.map((r) => r.poseLe.slice(0, 4)).filter((a) => a.length === 4));
-  return [...annees].sort().reverse();
 }
