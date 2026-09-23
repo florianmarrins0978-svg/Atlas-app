@@ -128,6 +128,19 @@ ces domaines ; un contrôle dans `.github/workflows/` le peut, comme
 `src/lib/fiche-securite.ts` (`LIENS_DE_LA_LOI`, `DECOUVERTE_FORTUITE`,
 `SOULIGNES`).
 
+## LE GARDE-FOU DES TIRETS NE VOIT PAS CE QUI PASSE PAR LE TERMINAL (23 septembre 2026)
+
+`scripts/garde-tirets.mjs` refuse la phrase écrite par `Write`, `Edit`,
+`MultiEdit` et `NotebookEdit`. **Un fichier écrit depuis le terminal lui
+échappe** : `sed -i`, un `cat > fichier`, un script Python qui réécrit une
+page. Éprouvé, et c'est bien « PAS VU ».
+
+| | |
+|---|---|
+| ce qui rattrape | `scripts/test-aucun-tiret.ts`, dans `npm test` : rien ne se livre avec un tiret, quel que soit le chemin par lequel il est entré |
+| ce qui reste à faire | lire la commande du terminal comme le fait `garde-redis-des-autres.mjs`, et refuser celles qui écrivent une phrase fautive dans un fichier affiché |
+| ce qui retient | un refus à tort sur une commande qui cite la règle dans un message de commit gênerait tout le monde. C'est le faux positif exact que `test-garde-redis-des-autres.ts` a déjà attrapé une fois |
+
 ## LES TIRETS QUI RESTENT, ET POURQUOI (22 septembre 2026)
 
 Sa règle du 22 septembre est tenue partout où ça s'affiche, et
