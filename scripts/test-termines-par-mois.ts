@@ -13,7 +13,7 @@
 import assert from "node:assert/strict";
 import {
   preparer,
-  resumeDeLaPeriode,
+  resumeDuMois,
   moisLePlusRecent,
   bornesDuFeuilletage,
   decalerMois,
@@ -65,13 +65,13 @@ console.log("=== Le mois, et ce qu'il porte ===");
 // d'appelant : la garder éprouvée aurait fait croire qu'un écran l'affiche.
 //
 // Ce que ces essais tenaient encore de vivant — le pluriel, l'espace insécable
-// des milliers — reste tenu par les essais de `resumeDeLaPeriode` ci-dessus, qui
+// des milliers — reste tenu par les essais de `resumeDuMois` ci-dessus, qui
 // portent les mêmes chiffres.
 
 essai("un chantier du 20 août est un chantier d'AOÛT, facturé ou non", () => {
   // Le sortir dans un bloc à part casserait le fil du temps : l'écran ne
   // raconterait plus le mois mais deux listes empilées.
-  const mois = resumeDeLaPeriode(
+  const mois = resumeDuMois(
     preparer([
       ligne({ id: "a", datePlanifiee: "2026-08-20", devisTotalTtc: "1240.00" }),
       ligne({ id: "b", datePlanifiee: "2026-08-02", factureStatut: "emise", totalTtc: "1320.00" }),
@@ -107,7 +107,7 @@ essai("le total du mois ne compte QUE ce qui est facturé", () => {
   // Mélanger le prévu et le facturé annoncerait un chiffre qui n'existe nulle
   // part : ni ce qui est rentré, ni ce qui attend. C'est exactement ce que la
   // maquette a fait une première fois — 5 868,00 €.
-  const mois = resumeDeLaPeriode(
+  const mois = resumeDuMois(
     preparer([
       ligne({ id: "a", datePlanifiee: "2026-08-02", factureStatut: "emise", totalTtc: "1320.00" }),
       ligne({ id: "b", datePlanifiee: "2026-08-20", devisTotalTtc: "1240.00" }),
@@ -119,7 +119,7 @@ essai("le total du mois ne compte QUE ce qui est facturé", () => {
 });
 
 essai("le montant affiché vient de la facture, sinon du devis", () => {
-  const mois = resumeDeLaPeriode(
+  const mois = resumeDuMois(
     preparer([
       ligne({ id: "a", datePlanifiee: "2026-08-02", factureStatut: "emise", totalTtc: "1320.00", devisTotalTtc: "9999.00" }),
       ligne({ id: "b", datePlanifiee: "2026-08-20", devisTotalTtc: "1240.00" }),
@@ -133,7 +133,7 @@ essai("le montant affiché vient de la facture, sinon du devis", () => {
 essai("une facture à 0,00 € se lit — elle ne se cache pas", () => {
   // Le patron en a une dans ses données réelles (F2026-0001). Sa réponse du
   // 10 août 2026 : on l'affiche telle quelle, sans commentaire.
-  const mois = resumeDeLaPeriode(
+  const mois = resumeDuMois(
     preparer([
       ligne({ id: "z", datePlanifiee: "2026-08-05", factureStatut: "emise", totalTtc: "0.00", factureNumero: "F2026-0001" }),
     ]),
@@ -145,7 +145,7 @@ essai("une facture à 0,00 € se lit — elle ne se cache pas", () => {
 
 essai("un montant inconnu n'est pas zéro", () => {
   // Sinon on ne distinguerait plus une vraie facture à 0 € d'un devis muet.
-  const mois = resumeDeLaPeriode(preparer([ligne({ id: "x", datePlanifiee: "2026-08-11" })]), "2026-08");
+  const mois = resumeDuMois(preparer([ligne({ id: "x", datePlanifiee: "2026-08-11" })]), "2026-08");
   assert.equal(mois.aFacturer[0].montant, null);
   assert.equal(mois.totalPrevu, 0, "un montant inconnu ne doit rien ajouter au total");
 });
@@ -185,7 +185,7 @@ essai("on recule sur le CALENDRIER, pas sur les mois qui portent quelque chose",
 });
 
 essai("un mois sans rien rend une liste vide, pas une erreur", () => {
-  const mois = resumeDeLaPeriode(
+  const mois = resumeDuMois(
     preparer([ligne({ id: "a", datePlanifiee: "2026-08-02", factureStatut: "emise", totalTtc: "10.00" })]),
     "2026-07"
   );
@@ -207,7 +207,7 @@ essai("CE QUI ATTEND NE SUIT PAS LE MOIS — c'est tout l'objet de sa demande", 
   assert.deepEqual(partout.map((l) => l.id), ["aout", "retard"]);
   assert.equal(somme(partout), 1510);
   // Et le mois d'août, lui, n'en porte qu'un.
-  assert.equal(resumeDeLaPeriode(lignes, "2026-08").aFacturer.length, 1);
+  assert.equal(resumeDuMois(lignes, "2026-08").aFacturer.length, 1);
   assert.equal(factureesPartout(lignes).length, 1);
 });
 
@@ -223,7 +223,7 @@ essai("UN CHANTIER CLÔTURÉ EN AVANCE NE VIDE PAS L'ÉCRAN", () => {
   const { entree, borne } = bornesDuFeuilletage(lignes, "2026-08");
   assert.equal(entree, "2026-08", "l'écran doit s'ouvrir sur le mois courant, pas sur le futur");
   assert.equal(borne, "2026-09", "mais la flèche doit permettre d'aller voir le chantier en avance");
-  assert.equal(resumeDeLaPeriode(lignes, entree).lignes.length, 1);
+  assert.equal(resumeDuMois(lignes, entree).lignes.length, 1);
 });
 
 essai("sans rien ce mois-ci, on s'ouvre sur le dernier mois qui porte quelque chose", () => {
@@ -378,34 +378,6 @@ essai("une fois facturé, la date du chantier précède celle de la facture", ()
 // qu'il attendait sa facture, et il disparaissait de l'écran le jour où elle
 // partait, tout en comptant dans « N facturés ».
 
-console.log("\n=== L'année et le jour — le filtre du 23 septembre 2026 ===");
-
-// Sa demande : *« pouvoir filtrer aussi par mois ou par année ou par jour mois
-// année »*. « Terminés » feuilletait mois par mois ; douze appuis pour revoir
-// l'an dernier.
-essai("une année garde ses douze mois, un jour ne garde que lui", () => {
-  const lignes = preparer([
-    ligne({ id: "mars", datePlanifiee: "2026-03-11" }),
-    ligne({ id: "aout", datePlanifiee: "2026-08-11" }),
-    ligne({ id: "avant", datePlanifiee: "2025-11-04" }),
-  ]);
-  assert.deepEqual(
-    resumeDeLaPeriode(lignes, "2026").lignes.map((l) => l.id).sort(),
-    ["aout", "mars"]
-  );
-  assert.deepEqual(resumeDeLaPeriode(lignes, "2025").lignes.map((l) => l.id), ["avant"]);
-  assert.deepEqual(resumeDeLaPeriode(lignes, "2026-03-11").lignes.map((l) => l.id), ["mars"]);
-  assert.deepEqual(resumeDeLaPeriode(lignes, "2026-03-12").lignes, []);
-});
-
-// Un chantier sans date n'est dans aucune période — il l'était déjà, et il
-// doit le rester : sinon il apparaîtrait sous une année qui ne le porte pas.
-essai("un chantier sans date n'entre dans aucune période", () => {
-  const lignes = preparer([ligne({ id: "sans" })]);
-  assert.deepEqual(resumeDeLaPeriode(lignes, "2026").lignes, []);
-  assert.deepEqual(resumeDeLaPeriode(lignes, "2026-09").lignes, []);
-});
-
 console.log("\n=== Sans date de planning : la facture dit quand ===");
 
 essai("le mois vient de la facture quand le planning n'a rien posé", () => {
@@ -416,7 +388,7 @@ essai("le mois vient de la facture quand le planning n'a rien posé", () => {
 essai("et le mois le retrouve, au lieu de le perdre", () => {
   const lignes = preparer([ligne({ id: "a", factureDateEmission: "2026-09-18" })]);
   assert.deepEqual(
-    resumeDeLaPeriode(lignes, "2026-09").lignes.map((l) => l.id),
+    resumeDuMois(lignes, "2026-09").lignes.map((l) => l.id),
     ["a"]
   );
 });

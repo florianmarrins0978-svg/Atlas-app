@@ -64,20 +64,6 @@ export function titreDeLaPeriode(periode: string): string {
 }
 
 /**
- * « en septembre 2026 », « en 2026 », « le 22 septembre 2026 » — la période
- * telle qu'une phrase la porte.
- *
- * **Écrite une fois pour tous les écrans qui disent « il n'y a rien ».** Ils
- * étaient deux à choisir entre « le » et « en » selon la longueur de la
- * période, et un troisième arrivait : trois façons d'écrire la même chose, qui
- * divergent au premier cran ajouté (`CLAUDE.md` §3).
- */
-export function phraseDeLaPeriode(periode: string): string {
-  const titre = titreDeLaPeriode(periode);
-  return porteeDeLaPeriode(periode) === "jour" ? `le ${titre}` : `en ${titre.toLowerCase()}`;
-}
-
-/**
  * Le jour sur lequel la roue s'ouvre : celui qui est choisi ; sur un mois
  * entier, aujourd'hui s'il en est, sinon le 1er — la roue d'un téléphone ne
  * s'ouvre que sur un jour.

@@ -77,16 +77,13 @@ const SONDE = `(() => {
     // **Rien ne doit être replié** : ce qui reste à faire ne se cache plus.
     // Une ligne de zéro pixel de haut serait un pli qui n'ose pas dire son nom.
     lignesEcrasees: lignes.filter((l) => l.getBoundingClientRect().height < 20).length,
-    mois: corps?.querySelector("[data-atlas='periode-choisie']")?.innerText.replace(/\\s+/g, " ").trim() ?? null,
+    mois: corps?.querySelector("[data-atlas='navigation-mois']")?.innerText.replace(/\\s+/g, " ").trim() ?? null,
     compte: compte ? compte.innerText.replace(/\\s+/g, " ").trim() : null,
     compteGras: styleCompte ? Number(styleCompte.fontWeight) : null,
     compteCouleur: styleCompte ? styleCompte.color : null,
-    // Les trois mots de la date — le filtre du 23 septembre 2026 (§409). Les
-    // flèches « ‹ › » sont parties avec : un contrôle qui réclame ce qu'il a
-    // fait retirer rend l'écran impossible à changer (CLAUDE.md §5 bis).
-    mots: [...(corps ? corps.querySelectorAll("[data-atlas^='portee-']") : [])]
+    fleches: [...(corps ? corps.querySelectorAll("[data-atlas^='mois-']") : [])]
       .map((b) => ({ quoi: b.dataset.atlas, h: Math.round(b.getBoundingClientRect().height),
-                     ferme: b.disabled, actif: b.getAttribute("aria-pressed") === "true" })),
+                     ferme: b.disabled })),
     // La capsule à facturer, visée par son REPÈRE et non par son texte : elle
     // s'appelait « Facturer » jusqu'au 31 août 2026, et ce contrôle-là rougissait
     // alors sur du code juste, pour un mot que le patron a fait changer
@@ -136,41 +133,32 @@ else {
     echecs.push(`le compte est en ${etat.compteCouleur} : il le veut NOIR.`);
 }
 
-// **Les trois mots se touchent avec un pouce, et UN SEUL commande.**
-const mots = etat.mots as { quoi: string; h: number; ferme: boolean; actif: boolean }[];
-if (mots.length !== 3) echecs.push(`${mots.length} mot(s) de date au lieu de trois.`);
-for (const m of mots) {
-  if (m.h < 44) echecs.push(`le mot « ${m.quoi} » fait ${m.h} px : sous 44, on le rate.`);
+// **Les flèches se touchent avec un pouce, et celle du futur est fermée.**
+const fleches = etat.fleches as { quoi: string; h: number; ferme: boolean }[];
+if (fleches.length !== 2) echecs.push(`${fleches.length} flèche(s) de mois au lieu de deux.`);
+for (const f of fleches) {
+  if (f.h < 44) echecs.push(`la flèche « ${f.quoi} » fait ${f.h} px : sous 44, on la rate.`);
 }
+// **Une flèche ouverte doit MENER quelque part, et se fermer au bout.** On ne
+// peut pas exiger qu'elle soit fermée au repos : un chantier clôturé en avance
+// porte une date à venir, l'écran s'ouvre alors sur le mois courant et il y a
+// bien un mois plus loin à aller voir.
 {
-  const actifs = mots.filter((m) => m.actif).length;
-  if (actifs !== 1) echecs.push(`${actifs} mot(s) soulignés : on ne sait plus ce que la liste montre.`);
-}
-// **ÉLARGIR MONTRE PLUS, JAMAIS MOINS.** Le mois est contenu dans son année :
-// toucher « 2026 » ne peut pas retirer des lignes. C'est la seule chose qu'on
-// puisse affirmer sans connaître le jeu de données de la machine qui mesure.
-{
-  const avant = etat.lignes as number;
-  const titreAvant = String(etat.mois ?? "");
-  await page.locator("[data-atlas='portee-annee']").first().click();
-  await page.waitForTimeout(350);
-  const apres = await sonder("l'année entière");
-  await page.screenshot({ path: `${dossier}/termines-1b-annee.png`, fullPage: true });
-  if ((apres.lignes as number) < avant)
-    echecs.push(`l'année montre ${apres.lignes} ligne(s) là où son mois en montrait ${avant}.`);
-  // **Ce qui change, c'est le mot SOULIGNÉ, pas le texte du titre** : il porte
-  // toujours la date entière, c'est tout le principe de la proposition B
-  // retenue le 23 septembre 2026. Un contrôle qui attendait un autre libellé
-  // visait le dessin d'avant.
-  const souligne = (e: Record<string, unknown>) =>
-    (e.mots as { quoi: string; actif: boolean }[]).find((m) => m.actif)?.quoi ?? "aucun";
-  if (souligne(apres) !== "portee-annee")
-    echecs.push(`l'année est touchée et c'est « ${souligne(apres)} » qui reste souligné.`);
-  if (String(apres.mois ?? "") !== titreAvant)
-    echecs.push("le titre a changé de texte en élargissant : il doit garder la date entière.");
-  await page.locator("[data-atlas='portee-mois']").first().click();
-  await page.waitForTimeout(350);
-  etat = await sonder("retour au mois");
+  let tours = 0;
+  while (tours < 6 && !(await page.locator("[data-atlas='mois-suivant']").first().isDisabled())) {
+    const avant = await page.locator("[data-atlas='navigation-mois']").first().innerText();
+    await page.locator("[data-atlas='mois-suivant']").first().click();
+    await page.waitForTimeout(300);
+    const apres = await page.locator("[data-atlas='navigation-mois']").first().innerText();
+    if (avant === apres) { echecs.push("la flèche › est ouverte et ne change pas de mois."); break; }
+    tours++;
+  }
+  if (tours >= 6) echecs.push("la flèche › ne se ferme jamais : le feuilletage part vers l'infini.");
+  // Et on revient d'où l'on venait, pour que la suite mesure ce qu'elle croit.
+  for (let i = 0; i < tours; i++) {
+    await page.locator("[data-atlas='mois-precedent']").first().click();
+    await page.waitForTimeout(200);
+  }
 }
 
 // **Les montants d'une même colonne finissent au même pixel.**
@@ -185,26 +173,19 @@ if ((etat.montantsTabulaires as boolean) !== true)
 
 // ─── 2. Revenir dans le passé ───────────────────────────────────────────────
 const moisAvant = String(etat.mois ?? "");
-// **On recule par la ROUE** — c'est le geste qui reste depuis que les flèches
-// sont parties : on se pose sur un jour du mois d'avant, puis on touche le mois.
-const moisPrecedent = (cle: string) => {
-  const [a, m] = cle.split("-").map(Number);
-  return m === 1 ? `${a - 1}-12-15` : `${a}-${String(m - 1).padStart(2, "0")}-15`;
-};
-const cleActuelle = await page.locator("[data-atlas='periode-choisie'] input[type=date]").first().inputValue();
-await page.locator("[data-atlas='periode-choisie'] input[type=date]").first().fill(moisPrecedent(cleActuelle.slice(0, 7)));
-await page.waitForTimeout(400);
-await page.locator("[data-atlas='portee-mois']").first().click();
+await page.locator("[data-atlas='mois-precedent']").first().click();
 await page.waitForTimeout(400);
 etat = await sonder("un mois en arrière");
 await page.screenshot({ path: `${dossier}/termines-2-mois-precedent.png`, fullPage: true });
 
 if (String(etat.mois ?? "") === moisAvant)
-  echecs.push(`la roue n'a rien changé : toujours « ${moisAvant} ».`);
-// Une période sans rien DIT qu'elle n'a rien — elle ne se saute pas, et elle ne
-// se tait pas. « Rien en septembre 2026 », « Rien le 11 mars 2026 ».
-if ((etat.lignes as number) === 0 && !/Rien (en|le) /i.test(await page.locator("[data-atlas='ecran-termines']").innerText()))
-  echecs.push("une période vide ne dit pas qu'elle est vide.");
+  echecs.push(`la flèche ‹ n'a rien changé : toujours « ${moisAvant} ».`);
+if (fleches.length === 2 &&
+    (etat.fleches as { quoi: string; ferme: boolean }[]).find((f) => f.quoi === "mois-suivant")?.ferme === true)
+  echecs.push("la flèche du futur reste fermée après avoir reculé : on ne peut plus revenir.");
+// Un mois sans rien DIT qu'il n'a rien — il ne se saute pas, et il ne se tait pas.
+if ((etat.lignes as number) === 0 && !/Rien en /i.test(await page.locator("[data-atlas='ecran-termines']").innerText()))
+  echecs.push("un mois vide ne dit pas qu'il est vide.");
 
 // ─── 3. L'œil — l'ancien onglet « À facturer », depuis le 13 septembre 2026 ──
 // Il n'existe que s'il y a quelque chose à montrer : sans rien qui attend, la
@@ -223,12 +204,12 @@ if ((await oeil.count()) === 0) {
 
   // **Le mois se met en veille** : l'œil ouvert montre tout ce qui attend, tous
   // mois confondus — ce que le patron a demandé pour le retard de facturation —,
-  // et des mots qui règleraient une liste immobile feraient croire l'écran
-  // cassé.
+  // et des flèches qui feuilletteraient une liste immobile feraient croire
+  // l'écran cassé.
   const fermees = await page.evaluate(() =>
-    [...document.querySelectorAll<HTMLButtonElement>("[data-atlas^='portee-']")].every((b) => b.disabled)
+    [...document.querySelectorAll<HTMLButtonElement>("[data-atlas='mois-precedent'], [data-atlas='mois-suivant']")].every((b) => b.disabled)
   );
-  if (!fermees) echecs.push("l'œil est ouvert et les mots de la date restent ouverts : la liste ignore la période.");
+  if (!fermees) echecs.push("l'œil est ouvert et les flèches de mois restent ouvertes : la liste ignore le mois.");
   if ((etat.lignes as number) === 0)
     echecs.push("l'œil est ouvert sur rien : il n'aurait pas dû être rendu.");
   // **Ce que porte une rangée en attente, c'est sa CAPSULE.** Ce contrôle

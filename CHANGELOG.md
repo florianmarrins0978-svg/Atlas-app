@@ -17,12 +17,13 @@ septembre 2026 » —, et celui qui est souligné d'or dit ce que la liste montr
 La croix « tout le mois » part avec : elle ne menait qu'à un cran et ne se
 lisait pas. La roue du téléphone, elle, ne change que la date.
 
-Quatre écrans suivent d'un coup : les fiches de sécurité, les retours
-d'intervention, les rapports envoyés et « Terminés » — *« partout dans l'appli
-où il y a ce filtre, remplace-le par la B »*. Terminés perd ses flèches « ‹ › »
-qui feuilletaient mois par mois : revoir l'automne dernier demandait douze
-appuis, et l'année entière n'existait pas. Le calendrier de TVA et la grille du
-planning ne changent pas : ce ne sont pas des filtres de liste.
+Trois écrans suivent d'un coup : les fiches de sécurité, les retours
+d'intervention, les rapports envoyés.
+
+**« Terminés » le garde tel qu'il était**, avec ses flèches « ‹ Septembre
+2026 › ». Il a été changé puis remis : *« sauf que Terminés ! Remets comme
+c'était avant ! »*. Là-bas, le mois n'est pas qu'un filtre — c'est le repère
+qui dit où l'on est dans la page, et il se feuillette d'un pouce.
 
 Ce que ça évite, vu à l'écran avant de livrer : posé sur le 11 mars, élargir au
 mois réécrivait « 1 mars » et faisait perdre le quantième — redescendre rendait

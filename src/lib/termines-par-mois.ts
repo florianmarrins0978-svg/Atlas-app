@@ -218,18 +218,14 @@ export function moisSeul(cle: string): string {
   return MOIS[Number(cle.slice(5, 7)) - 1] ?? "";
 }
 
-/** Ce que porte la période choisie — une année, un mois ou un jour. */
-export function resumeDeLaPeriode(lignes: readonly LigneAffichee[], periode: string): ResumeMois {
-  // **Le JOUR du chantier, et non sa seule clé de mois** : depuis le
-  // 23 septembre 2026, la période peut être une année, un mois ou un jour
-  // (`ARCHITECTURE.md` §409), et une année est le préfixe de ses douze mois.
-  // Un chantier sans date n'est dans aucune période, comme avant.
-  const dedans = lignes.filter((l) => (l.dateDuChantier ?? "").startsWith(periode));
-  const facturees = dedans.filter((l) => !l.aFacturer);
-  const aFacturer = dedans.filter((l) => l.aFacturer);
+/** Ce que porte un mois donné. */
+export function resumeDuMois(lignes: readonly LigneAffichee[], cle: string): ResumeMois {
+  const duMois = lignes.filter((l) => l.cleMois === cle);
+  const facturees = duMois.filter((l) => !l.aFacturer);
+  const aFacturer = duMois.filter((l) => l.aFacturer);
   return {
-    cle: periode,
-    lignes: dedans,
+    cle,
+    lignes: duMois,
     facturees,
     aFacturer,
     totalFacture: somme(facturees),

@@ -295,16 +295,18 @@ async function main() {
     // contrôle dont le verdict dépend de ses voisines ne mesure pas ce qu'il
     // croit.
     await page.goto(`${BASE}/termines`, { waitUntil: "networkidle" });
-    // **L'ANNÉE d'un seul doigt** — le feuilletage mois par mois est parti le
-    // 23 septembre 2026 avec les flèches (§409). On touche « 2026 », et tout
-    // ce que l'année porte est là.
-    let trouve = (await page.innerText("body")).includes(nomRecent);
-    if (!trouve) {
-      await page.locator('[data-atlas="portee-annee"]').click();
-      await page.waitForTimeout(200);
-      trouve = (await page.innerText("body")).includes(nomRecent);
+    let trouve = false;
+    for (let i = 0; i < 18; i++) {
+      if ((await page.innerText("body")).includes(nomRecent)) {
+        trouve = true;
+        break;
+      }
+      const recul = page.locator('[data-atlas="mois-precedent"]');
+      if (await recul.isDisabled()) break;
+      await recul.click();
+      await page.waitForTimeout(120);
     }
-    assert.ok(trouve, "il a disparu de « Terminés », mois affiché comme année entière");
+    assert.ok(trouve, "il a disparu de « Terminés », mois par mois jusqu'à la butée");
   });
 
   await essai("il n'est pas revenu dans « Chantiers »", async () => {
