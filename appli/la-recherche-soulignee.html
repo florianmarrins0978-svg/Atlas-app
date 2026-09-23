@@ -1,0 +1,339 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>La recherche soulignée — Atlas</title>
+<style>
+/*
+  ═══════════════════════════════════════════════════════════════════════════
+  LA RECHERCHE SOULIGNÉE — la planche, 22 septembre 2026
+  ═══════════════════════════════════════════════════════════════════════════
+
+  CE QU'IL A DEMANDÉ, capture de shapersclub.com à l'appui :
+
+    « À chaque endroit où il y a la fonction recherche, fais-moi une planche
+      avec celle de la photo. »
+
+  LE DESSIN DE LA PHOTO, relevé : une loupe au trait, dans l'accent ; le mot
+  en gris clair, grand ; AUCUNE boîte, aucun fond, aucun arrondi ; un seul
+  filet fin dessous, qui s'arrête avant le bord droit.
+
+  LES QUATRE ENDROITS, trouvés dans src/ puis confirmés par le code monté :
+
+    1. Clients                 src/app/clients/ListeClients.tsx
+                               plage teintée rustTint, loupe, « Chercher un client »
+    2. Retours d'intervention  src/app/termines/retours/ListeDesRetours.tsx
+                               pilule arrondie, loupe, « Un nom de client »
+    3. Fiche paysage, Pour qui ?  src/app/paysage/fiche/[id]/FicheChantierClient.tsx
+                               boîte crème, sans loupe, « Chercher un client »
+    4. Planning, poser un client  src/app/planning/PlanningClient.tsx
+                               boîte blanche, sans loupe, « Nom du client »
+
+  CE QUI N'EST PAS DANS LA PLANCHE, et pourquoi :
+    · ChampAdresse (suggestions d'adresse) : c'est une saisie d'adresse qui
+      propose, pas une recherche. Le souligner changerait tous les formulaires.
+    · src/app/design/b : une page d'essai de charte, jamais montrée au patron.
+
+  LE N° 4 EST UN CAS À PART : il ne fait pas que chercher, il CRÉE le client
+  s'il est inconnu. « Rechercher » y mentirait ; le bouton « Rechercher » de la
+  planche le montre et le laisse à « Nom du client ».
+
+  LES COULEURS sont celles de src/lib/design-tokens.ts (Origine) et de la
+  charte Nuit dérivée dans src/lib/chartes.ts, recopiées de vos-clients.html.
+  Le filtre recopie src/lib/recherche-client.ts : sans accents, sans casse,
+  chaque mot n'importe où dans le nom. Les noms sont des exemples.
+*/
+:root{
+  --cream:#f5f3ee; --card:#faf9f5; --ink:#1c1c1a; --inkSoft:#4a4a44;
+  --muted:#8a8578; --rustTint:#ece9e1; --or:#B98B47;
+  --line:rgba(28,28,26,.12); --filet:rgba(28,28,26,.30);
+  --fond:#e7e4dd;
+}
+body[data-charte="nuit"]{
+  --cream:#101210; --card:#1a1d19; --ink:#e9e8de; --inkSoft:#c1c2b6;
+  --muted:#84887b; --rustTint:#1f211e; --or:#B98B47;
+  --line:rgba(233,232,222,.12); --filet:rgba(233,232,222,.30);
+  --fond:#070806;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0}
+body{background:var(--fond);color:var(--ink);
+  font:15px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+  -webkit-text-size-adjust:100%;padding:18px 16px 60px}
+.serif{font-family:ui-serif,"Iowan Old Style","Palatino Linotype",Georgia,serif;font-weight:400}
+.page{max-width:760px;margin:0 auto}
+h1{font-size:26px;margin:4px 0 4px}
+.chapo{color:var(--inkSoft);margin:0 0 16px;font-size:14px}
+
+.reglages{display:flex;flex-wrap:wrap;gap:10px 18px;margin:0 0 22px}
+.bascule{display:inline-flex;border:1px solid var(--line);border-radius:999px;padding:3px;background:var(--card)}
+.bascule button{border:0;background:none;color:var(--inkSoft);font:inherit;font-size:13px;
+  padding:7px 13px;border-radius:999px;cursor:pointer}
+.bascule button[aria-pressed="true"]{background:var(--ink);color:var(--cream)}
+
+.endroit{margin:0 0 30px}
+.endroit h2{font-size:19px;margin:0 0 2px}
+.endroit .ou{font-size:12.5px;color:var(--muted);margin:0 0 10px}
+.paire{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:620px){.paire{grid-template-columns:1fr}}
+.cote{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0 0 6px}
+.ecran{background:var(--cream);border:1px solid var(--line);border-radius:22px;overflow:hidden;min-height:260px}
+.ecran .haut{padding:16px 20px 4px;font-size:22px}
+
+/* ── Aujourd'hui : les quatre champs tels qu'ils sont codés ── */
+.av-clients{margin:10px 20px 12px;position:relative;display:flex;align-items:center;
+  background:var(--rustTint);border-radius:10px;min-height:50px;padding:0 14px 0 44px}
+.av-retours{margin:10px 18px 12px;position:relative;display:flex;align-items:center;
+  background:var(--card);border-radius:999px;height:48px;padding:0 16px 0 44px;box-shadow:inset 0 0 0 1px var(--line)}
+.carte{margin:12px 16px;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px 16px}
+.carte .pour{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.av-fiche{margin-top:10px;background:var(--cream);border:1px solid var(--line);border-radius:12px;padding:9px 13px;display:flex}
+.av-planning{margin:12px 16px 0;background:var(--card);border-radius:9px;min-height:48px;padding:0 12px;
+  box-shadow:inset 0 0 0 1px var(--line);display:flex;align-items:center}
+.av-loupe{position:absolute;left:15px;top:50%;transform:translateY(-50%)}
+
+/* ── Comme la photo ── */
+.souligne{position:relative;display:flex;align-items:center;gap:14px;
+  margin:14px 20px 8px;padding:0 0 12px;border-bottom:1.5px solid var(--filet);max-width:82%}
+.carte .souligne{margin:12px 0 4px;max-width:none}
+.souligne svg{flex:none;color:var(--or)}
+.souligne:focus-within{border-bottom-color:var(--or)}
+
+input{flex:1;min-width:0;border:0;background:transparent;outline:none;color:var(--ink);
+  font:inherit;font-size:16px;caret-color:var(--or);padding:0}
+.souligne input{font-size:19px;font-weight:300;letter-spacing:.01em}
+input::placeholder{color:var(--muted);opacity:1}
+.souligne input::placeholder{opacity:.75}
+.effacer{border:0;background:none;color:var(--muted);font-size:17px;padding:0 2px;cursor:pointer}
+.effacer[hidden]{display:none}
+
+.liste{padding:4px 20px 14px}
+.carte .liste{padding:4px 0 0}
+.ligne{display:block;padding:10px 0;border-bottom:1px solid var(--line);font-size:15px}
+.ligne small{display:block;color:var(--inkSoft);font-size:12px;margin-top:1px}
+.ligne mark{background:rgba(185,139,71,.26);color:inherit;border-radius:3px}
+.rien{color:var(--inkSoft);font-size:13px;padding:10px 0}
+
+.note{margin-top:26px;border-top:1px solid var(--line);padding-top:14px;font-size:13.5px;color:var(--inkSoft)}
+.note b{color:var(--ink)}
+</style>
+</head>
+<body>
+<div class="page">
+  <h1 class="serif">La recherche soulignée</h1>
+  <p class="chapo">Les quatre endroits de l'application où l'on cherche, aujourd'hui puis comme la photo. Le champ souligné cherche pour de vrai.</p>
+
+  <div class="reglages">
+    <div class="bascule" role="group" aria-label="Charte">
+      <button type="button" data-charte="origine" aria-pressed="true">Origine</button>
+      <button type="button" data-charte="nuit" aria-pressed="false">Nuit</button>
+    </div>
+    <div class="bascule" role="group" aria-label="Le mot du champ">
+      <button type="button" data-mot="le-votre" aria-pressed="true">Le mot d'aujourd'hui</button>
+      <button type="button" data-mot="rechercher" aria-pressed="false">Rechercher</button>
+    </div>
+  </div>
+
+  <!-- 1 ─────────────────────────────────────────────────────────────── -->
+  <section class="endroit">
+    <h2 class="serif">1. Vos clients</h2>
+    <p class="ou">L'onglet Clients, en haut de la liste.</p>
+    <div class="paire">
+      <div>
+        <p class="cote">Aujourd'hui</p>
+        <div class="ecran">
+          <div class="haut serif">Clients</div>
+          <div class="av-clients">
+            <svg class="av-loupe" width="19" height="19" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" style="color:var(--muted)"><circle cx="8.2" cy="8.2" r="6.2"/><path d="M12.8 12.8L18 18" stroke-linecap="round"/></svg>
+            <input type="text" inputmode="search" placeholder="Chercher un client" aria-label="Chercher un client">
+          </div>
+          <div class="liste" data-exemples></div>
+        </div>
+      </div>
+      <div>
+        <p class="cote">Comme la photo</p>
+        <div class="ecran">
+          <div class="haut serif">Clients</div>
+          <div class="souligne">
+            <svg width="22" height="22" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8.2" cy="8.2" r="6.2"/><path d="M12.8 12.8L18 18" stroke-linecap="round"/></svg>
+            <input type="text" inputmode="search" autocomplete="off" data-cherche data-mot-actuel="Chercher un client" placeholder="Chercher un client" aria-label="Chercher un client">
+            <button type="button" class="effacer" hidden aria-label="Effacer la recherche">✕</button>
+          </div>
+          <div class="liste" data-resultats></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2 ─────────────────────────────────────────────────────────────── -->
+  <section class="endroit">
+    <h2 class="serif">2. Retours d'intervention</h2>
+    <p class="ou">Terminés, puis Retours d'intervention.</p>
+    <div class="paire">
+      <div>
+        <p class="cote">Aujourd'hui</p>
+        <div class="ecran">
+          <div class="haut serif">Retours d'intervention</div>
+          <div class="av-retours">
+            <svg class="av-loupe" width="17" height="17" viewBox="0 0 18 18" fill="none" style="color:var(--muted)"><circle cx="7.6" cy="7.6" r="5.4" stroke="currentColor" stroke-width="1.6"/><path d="m11.6 11.6 4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+            <input type="text" inputmode="search" placeholder="Un nom de client" aria-label="Chercher un client">
+          </div>
+          <div class="liste" data-exemples></div>
+        </div>
+      </div>
+      <div>
+        <p class="cote">Comme la photo</p>
+        <div class="ecran">
+          <div class="haut serif">Retours d'intervention</div>
+          <div class="souligne">
+            <svg width="22" height="22" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8.2" cy="8.2" r="6.2"/><path d="M12.8 12.8L18 18" stroke-linecap="round"/></svg>
+            <input type="text" inputmode="search" autocomplete="off" data-cherche data-mot-actuel="Un nom de client" placeholder="Un nom de client" aria-label="Chercher un client">
+            <button type="button" class="effacer" hidden aria-label="Effacer la recherche">✕</button>
+          </div>
+          <div class="liste" data-resultats></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3 ─────────────────────────────────────────────────────────────── -->
+  <section class="endroit">
+    <h2 class="serif">3. Fiche paysage, Pour qui ?</h2>
+    <p class="ou">Une fiche maladie ou arrosage, au moment de la rattacher à un client.</p>
+    <div class="paire">
+      <div>
+        <p class="cote">Aujourd'hui</p>
+        <div class="ecran">
+          <div class="carte">
+            <span class="pour">Pour qui ?</span>
+            <div class="av-fiche"><input type="text" placeholder="Chercher un client" style="font-size:15px"></div>
+            <div class="liste" data-exemples></div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <p class="cote">Comme la photo</p>
+        <div class="ecran">
+          <div class="carte">
+            <span class="pour">Pour qui ?</span>
+            <div class="souligne">
+              <svg width="22" height="22" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8.2" cy="8.2" r="6.2"/><path d="M12.8 12.8L18 18" stroke-linecap="round"/></svg>
+              <input type="text" inputmode="search" autocomplete="off" data-cherche data-mot-actuel="Chercher un client" placeholder="Chercher un client" aria-label="Chercher un client">
+              <button type="button" class="effacer" hidden aria-label="Effacer la recherche">✕</button>
+            </div>
+            <div class="liste" data-resultats></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4 ─────────────────────────────────────────────────────────────── -->
+  <section class="endroit">
+    <h2 class="serif">4. Planning, poser un client</h2>
+    <p class="ou">Un appui sur une demi-journée vide, puis Client.</p>
+    <div class="paire">
+      <div>
+        <p class="cote">Aujourd'hui</p>
+        <div class="ecran">
+          <div class="haut serif">Mardi matin</div>
+          <div class="av-planning"><input type="text" placeholder="Nom du client"></div>
+          <div class="liste" data-exemples></div>
+        </div>
+      </div>
+      <div>
+        <p class="cote">Comme la photo</p>
+        <div class="ecran">
+          <div class="haut serif">Mardi matin</div>
+          <div class="souligne">
+            <svg width="22" height="22" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8.2" cy="8.2" r="6.2"/><path d="M12.8 12.8L18 18" stroke-linecap="round"/></svg>
+            <input type="text" autocomplete="off" data-cherche data-cree data-mot-actuel="Nom du client" placeholder="Nom du client" aria-label="Nom du client">
+            <button type="button" class="effacer" hidden aria-label="Effacer la recherche">✕</button>
+          </div>
+          <div class="liste" data-resultats></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="note">
+    <b>Le n° 4 garde « Nom du client »</b> même avec Rechercher : ce champ crée le client quand il est inconnu, il ne fait pas que chercher.<br><br>
+    Les suggestions d'adresse ne sont pas ici : elles proposent une adresse pendant qu'on l'écrit, ce n'est pas une recherche.<br><br>
+    Maquette seulement. Rien de ce que vous tapez ne part.
+  </div>
+</div>
+
+<script>
+// Exemples, repris des autres planches clients. Aucun vrai client.
+const CLIENTS = [
+  ["Martin Dubois", "Saint-Germain-en-Laye"],
+  ["Claire Martin", "Poissy"],
+  ["Mme Lefèvre", "Maisons-Laffitte"],
+  ["Jean-Pierre Bernard", "Chatou"],
+  ["Sophie Garnier", "Le Vésinet"],
+  ["Hélène Roussel", "Croissy-sur-Seine"],
+];
+
+// Recopie de src/lib/recherche-client.ts : sans accents, sans casse,
+// ponctuation ramenée à des espaces, chaque mot n'importe où dans le nom.
+const plier = (s) => s.normalize("NFD").replace(/[̀-ͯ]/g, "")
+  .toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+const echapper = (s) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+function ligne(nom, lieu, mots) {
+  let rendu = echapper(nom);
+  if (mots.length) {
+    // Plié lettre par lettre : « é » reste UNE lettre, et les positions
+    // trouvées tombent sur le nom affiché.
+    const plie = [...nom].map((c) => c.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().slice(0, 1) || c).join("");
+    const garde = new Array(nom.length).fill(false);
+    for (const m of mots) {
+      const i = plie.indexOf(m);
+      if (i >= 0) for (let k = i; k < i + m.length; k++) garde[k] = true;
+    }
+    rendu = [...nom].map((c, i) => {
+      const e = echapper(c);
+      return garde[i] ? `<mark>${e}</mark>` : e;
+    }).join("").replace(/<\/mark><mark>/g, "");
+  }
+  return `<span class="ligne">${rendu}<small>${echapper(lieu)}</small></span>`;
+}
+
+document.querySelectorAll("[data-exemples]").forEach((l) => {
+  l.innerHTML = CLIENTS.slice(0, 3).map(([n, v]) => ligne(n, v, [])).join("");
+});
+
+document.querySelectorAll("[data-cherche]").forEach((champ) => {
+  const bloc = champ.closest(".ecran");
+  const liste = bloc.querySelector("[data-resultats]");
+  const effacer = champ.parentElement.querySelector(".effacer");
+  const rendre = () => {
+    const mots = plier(champ.value).split(" ").filter(Boolean);
+    effacer.hidden = !champ.value;
+    const trouves = CLIENTS.filter(([n]) => mots.every((m) => plier(n).includes(m)));
+    if (!mots.length) { liste.innerHTML = CLIENTS.slice(0, 3).map(([n, v]) => ligne(n, v, [])).join(""); return; }
+    liste.innerHTML = trouves.length
+      ? trouves.map(([n, v]) => ligne(n, v, mots)).join("")
+      : `<p class="rien">${champ.hasAttribute("data-cree") ? "Client inconnu. Il sera créé." : "Aucun client à ce nom."}</p>`;
+  };
+  champ.addEventListener("input", rendre);
+  effacer.addEventListener("click", () => { champ.value = ""; rendre(); champ.focus(); });
+  rendre();
+});
+
+document.querySelectorAll("[data-charte]").forEach((b) => b.addEventListener("click", () => {
+  document.body.dataset.charte = b.dataset.charte;
+  document.querySelectorAll("[data-charte]").forEach((x) => x.setAttribute("aria-pressed", x === b));
+}));
+
+document.querySelectorAll("[data-mot]").forEach((b) => b.addEventListener("click", () => {
+  const rechercher = b.dataset.mot === "rechercher";
+  document.querySelectorAll("[data-mot]").forEach((x) => x.setAttribute("aria-pressed", x === b));
+  document.querySelectorAll("[data-cherche]").forEach((c) => {
+    c.placeholder = rechercher && !c.hasAttribute("data-cree") ? "Rechercher" : c.dataset.motActuel;
+  });
+}));
+</script>
+</body>
+</html>

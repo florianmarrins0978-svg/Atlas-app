@@ -1,13 +1,132 @@
 # Prochaines tâches
 
-Par ordre de priorité. Une tâche terminée se **barre** avec sa date plutôt que
-de disparaître : savoir qu'elle a été traitée évite de la rouvrir.
+## LE GESTE « RETOUR » DU NAVIGATEUR SUR LA FICHE CLIENT PERD LA SAISIE (22 septembre 2026)
 
-Ce fichier porte le travail de **développement**. Ce qui bloque et n'avancera
-pas en codant est dans `docs/A-FAIRE.md` — tenu pour le patron, dans son
-langage, et rien n'y entre sans son accord.
+La flèche, le voile et Échap enregistrent depuis le 22 septembre
+(`ARCHITECTURE.md` §407). Le geste « retour » du navigateur sur la fiche client
+en page (`/chantiers/[id]/coordonnees`) ne passe par aucun code d'Atlas : ce qui
+est tapé se perd encore. Il ramène au devis, pas à l'accueil — moins grave,
+mais à regarder s'il le signale.
 
----
+## 🔧 `test-fiche-securite-e2e` : SON PREMIER CAS LIT L'ORDRE AVANT QUE « TRAVAUX À FAIRE » SOIT MONTÉ (22 septembre 2026)
+
+Relevé en jouant la suite seule, trois fois : rouge deux fois, vert une.
+« le bandeau est sur la fiche du jour… » attend « à remplir » puis lit l'ordre
+des blocs tout de suite ; or `PlanningClient.tsx` affiche « Lecture du
+devis… » tant que la feuille n'est pas lue, et `travaux-a-faire` n'existe pas
+encore. Le cas rend alors `['fiche-de-securite']`. Défaut du CONTRÔLE, pas du
+produit : attendre `[data-atlas='travaux-a-faire']` avant de mesurer. Hors du
+lot « nom et prénom repris », laissé tel quel.
+
+## LA VÉRIFICATION DU SITE EN LIGNE TOMBE SUR DES 503 PASSAGERS (22 septembre 2026)
+
+`pages.yml`, étape « Vérifier que chaque écran est servi ». Elle interroge
+aujourd'hui **plus de cent cinquante adresses à la suite, sans une pause et
+sans réessai**. Deux poussées consécutives ont échoué ce jour-là sur deux
+pages différentes, `planning-simple.html` puis `devis-tva-deplacer-ligne.html`,
+qu'aucun lot ne touchait : GitHub Pages a rendu un **503**, et les deux
+répondaient 200 trois fois de suite l'instant d'après. Un `gh run rerun
+--failed` est passé au vert les deux fois.
+
+**Ce que ça coûte :** un rouge qui n'accuse personne, à chaque livraison de
+planche, et l'habitude de rejouer sans regarder. C'est exactement le
+garde-fou qui parle à tort de `CLAUDE.md` §1 bis.
+
+**Le correctif, et il tient en trois lignes :** réessayer deux fois, avec une
+seconde d'attente, avant de déclarer une adresse morte. Ne pas relâcher le
+contrôle : une page vraiment absente échoue toujours, trois fois au lieu
+d'une.
+
+**Pourquoi ce n'est pas fait :** toucher `.github/` fait passer le lot en
+niveau 2, et il avait demandé le soir même de ne lancer aucune batterie. À
+reprendre avec la ligne `fiche-maladie.css fiche-maladie.js` ci-dessus, dans
+le même lot d'outillage.
+
+## ⏳ UNE PLANCHE À REGARDER — FICHE 3, L'ANTHRACNOSE DU CHÊNE ET DU HÊTRE (22 septembre 2026)
+
+`appli/fiche-anthracnose-du-chene-et-du-hetre.html`, liée depuis
+`appli/essais.html`. **Sa remarque : *« l'anthracnose du chêne n'a pas été
+faite ! On a fait que le platane »*. Elle l'avait été**, le 20 août, et son
+`_lisez_moi` dit qu'il l'avait relue champ par champ — mais **aucune planche
+n'avait jamais été faite**, donc il ne l'avait jamais vue à l'écran. C'est
+exactement le cas du §1 de `CLAUDE.md` dans l'autre sens : le code faisait foi,
+et personne ne le lui avait montré.
+
+**Ce que la planche change dans la fiche 003, et rien d'autre :** la forme
+arrêtée le 22 septembre au soir (ses blocs dans son ordre, des phrases, aucun
+tiret ni point-virgule), plus les deux champs nés ce soir-là
+(`quandCaSeVoit`, `autresEssences`, `graviteSelonLaSource`, `commentCaArrive`,
+`article`) et **une photo, qu'elle n'avait pas**. Aucun fait n'a bougé.
+
+**Deux différences avec le peuplier, à ne pas gommer :**
+
+| | |
+|---|---|
+| sa page **ne porte AUCUNE jauge** de fréquence, d'agressivité ni d'impact | « Est-ce grave pour l'arbre ? » ne repose que sur sa rubrique « Dégâts », et le dit. **Ne pas recopier les notes du peuplier par ressemblance** |
+| sa page **exige un laboratoire** pour confirmer | `methodeConfirmation` s'affiche dans un cadre **sous « Que faire ? »**, jamais dans les détails. C'est la règle du 20 août, et la base commune la tient |
+
+**La photo, et c'est la question qui lui est posée :** les HUIT figures de la
+page portent un « © » nominatif, donc aucune. Celle retenue vient de Commons,
+en domaine public (CC0), et sa description dit « Oak Anthracnose » — **mais
+cette identification vient d'iNaturalist, pas d'un laboratoire**, alors que la
+fiche elle-même exige un laboratoire. C'est écrit sous la photo et sur la
+planche. S'il dit non, la fiche part sans photo, comme elle était.
+
+**Sur son oui :** les fiches 003 et 004 entrent ensemble (003 en corrige une
+existante, donc la version de la fiche passe à 2), avec
+`anthracnose-chene-feuille.jpg` et `brunissure-peuplier-feuille.jpg` dans
+`donnees/phyto/images/`, puis `--verifier`,
+`npx tsx scripts/test-import-fiches-phyto.ts` et `test-diagnostic-base.ts`.
+
+## LA BASE COMMUNE DES PLANCHES DE MALADIES (22 septembre 2026)
+
+**Sa demande, la planche du peuplier une fois finie :** *« garde cette planche,
+elle est finie, avance sur les autres planches en gardant la même base que
+celle-ci »*. Le style et le rendu vivent donc dans `appli/fiche-maladie.css`
+et `appli/fiche-maladie.js`, **une seule fois**. Chaque planche ne porte que
+son lot (`window.FICHE_LOT`, le futur fichier de `donnees/phyto/fiches/`) et ce
+qu'on lui demande.
+
+**Ce que cela garantit :** une correction qu'il demande sur une fiche les
+corrige toutes. La planche du peuplier a été reposée sur cette base et
+**rend le même écran au pixel près** (comparaison d'empreintes avant/après).
+
+**Deux pièges déjà payés, dans la base :** le nom du fichier de la photo était
+écrit en dur, ce qui aurait mis la photo du peuplier sur toutes les fiches — il
+se déduit du chemin que la fiche déclare ; et `methodeConfirmation` n'était
+rendu nulle part, ce qui aurait fait disparaître l'exigence de laboratoire du
+chêne.
+
+**RESTE À FAIRE, ET C'EST UNE LIGNE.** Les deux fichiers ne sont liés par
+aucun `href`, donc la liste que `pages.yml` déduit d'`essais.html` ne les voit
+pas : une base absente en ligne ne casserait aucun contrôle et rendrait toutes
+les planches blanches. Il faut les **nommer dans `pages.yml`**, à côté
+d'`arrosage-catalogue.js` :
+
+    for f in index.html essais.html nav.js arrosage-catalogue.js              fiche-maladie.css fiche-maladie.js 
+**Ce n'est pas fait**, parce que toucher `.github/` fait passer le lot en
+niveau 2 et qu'il avait demandé le soir même de **ne lancer aucune batterie**.
+La ligne est dans une remise git du dossier principal (« la ligne pages.yml de
+la base commune »), et les deux fichiers ont été **interrogés à la main** en
+ligne après la poussée. À reprendre avec un contrôle de niveau 2.
+
+## À REGARDER SUR SON IPHONE — LES DEUX HEURES DE LA FICHE (22 septembre 2026)
+
+Sa demande : *« pour l'h ça serait bien d'avoir deux encarts séparés »*. Le
+cadre des champs est sorti de l'`<input>` pour le poser sur un `<span>`, que
+Safari ne rhabille pas (`FormulaireFicheDeSecurite.tsx`, `Champ`). **Chromium
+ne reproduisait pas le défaut** : la correction n'a donc pas pu être vérifiée
+ici. Une capture de l'écran 1 de la fiche, chez lui, tranche.
+
+## PRÉVENIR QUAND UNE ADRESSE DE LA FICHE MEURT (22 septembre 2026)
+
+`LIENS_DE_LA_LOI.formulaire` pointe un PDF posé sur le site de la MSA
+(`ssa.msa.fr/wp-content/uploads/…`). Le jour où ils le déplacent, le bouton
+rend une erreur et **rien ne nous prévient**. Ce poste ne peut pas interroger
+ces domaines ; un contrôle dans `.github/workflows/` le peut, comme
+`pages.yml` interroge le site publié. Les cinq adresses à surveiller sont dans
+`src/lib/fiche-securite.ts` (`LIENS_DE_LA_LOI`, `DECOUVERTE_FORTUITE`,
+`SOULIGNES`).
 
 ## ⏳ LES POINTS SONT RETIRÉS — LA BATTERIE RESTE À JOUER (22 septembre 2026)
 
@@ -154,7 +273,7 @@ par la fiche du jour.
 | mot pour mot | **sa règle du 21 septembre** : *« il faut reprendre exactement leurs termes mot pour mot, seuls les titres et les explications peuvent être ajoutés ou modifiés »*. La feuille a été **rendue en image** (pdf.js) et relue case par case : co-activité est un TITRE, « Manuel d'utilisation du matériel », « Bulletins d'alerte météorologiques », « Échelle = moyen d'accès », « Horaires, délais… », « Niveau de formation… » sont des **points de vigilance** (main rouge), pas des cases ; « Électrique » et « Distance de sécurité… » ont des sous-cases ; l'ordre des travaux est celui de la page 1. Deux fautes de la feuille non recopiées : « essoussage », « sauvatage ». Plus aucun « Atlas » à l'écran (*« dis l'application ou dis rien »*) |
 | la note finale de la feuille | ce ne sont pas des champs : quatre obligations sur ce qu'on FAIT de la fiche, toutes tenues (montrée à l'équipe, sur le chantier, transmise si plan de prévention, deux ans) ; **à imprimer au bas du PDF** |
 | où elle est gardée | sa décision du 21 septembre, après avoir vu Terminés : **une ligne de plus dans Paysage, « Fiches de sécurité »**, parmi les outils du métier (*« non, je pense qu'il faut créer une catégorie dans Paysage en fait »*). Dedans, rangées par client comme les retours. Terminés ne change pas. **Aucun bouton de filtre** : la liste s'ouvre sur le mois en cours, son nom en tête comme sur Terminés, et le toucher fait tourner la roue mois/année du téléphone (`input type="month"`). Ses trois consignes du 21 septembre au soir : un calendrier plutôt qu'un bouton « 2026 » ; *« enlève tous tes filtres boutons et garde que celui-là »* (la roue) ; *« tout ça doit être la forme par défaut, pas besoin de mettre le bouton »*. Sur chaque fiche : ouvrir, **enregistrer** (dans les fichiers du téléphone), transmettre. **Avec le chantier** : une ligne en base, le PDF signé dans le stockage des documents (comme le devis), visible dans Terminés à côté du retour d'intervention. Aujourd'hui rien ne purge un chantier (`docs/RGPD.md` §4) ; au codage, écrire la règle : **jamais effacée avant deux ans après la signature, même si le chantier est supprimé**, et l'ajouter au tableau de RGPD.md |
-| la loi | **à la première ouverture**, un écran dit ce que le décret demande (les sept éléments), avec deux liens : Légifrance et le formulaire MSA. Puis « Ce que demande la loi » reste dans le bandeau. Sa question : *« le préciser au début, et un lien vers le décret pour qu'ils vérifient par eux-mêmes ? »* |
+| la loi | **à la première ouverture**, un écran dit ce que le décret demande (les sept éléments), avec deux liens : Légifrance et le formulaire MSA. « Remplir la fiche » y mène à la première ouverture de chaque fiche ; le second lien du bandeau a été retiré le 22 septembre 2026 (*« pas besoin d'avoir deux portes pour le même endroit »*). Sa question : *« le préciser au début, et un lien vers le décret pour qu'ils vérifient par eux-mêmes ? »* |
 | gardé d'une fiche à l'autre | **pour l'instant** : la main d'œuvre, le lieu de la trousse, les deux textes de la co-activité, les observations, ce qu'il ajoute aux listes. *« Je pense que tout ce qu'on coche peut être gardé d'une fiche à l'autre… pour les autres je te le dirai plus tard »* — et il faudra **le dire à la première utilisation**. À lui de trancher |
 | matériel, arbres | **vérifié dans le décret le 21 septembre** : aucune liste de matériel imposée (« les équipements de travail utilisés », R. 717-85-16), rien sur l'examen de l'arbre. Les listes sont celles du formulaire MSA ; l'utilisateur **ajoute** les siennes, gardées d'une fiche à l'autre. Le périmètre de sécurité (R. 717-85-23 : abattage manuel, deux fois la hauteur de l'arbre) s'affiche dans les mesures |
 | l'heure | la roue du téléphone (`input type="time"`), *« les heures et les minutes qui défilent »* |
@@ -213,6 +332,20 @@ endroit. S'y sont ajoutés, sur ses corrections du même soir : le libellé d'un
 règlement écrit par lui (migration 0098), « Acquittée le … » en or et
 identique sur les deux pages, et le bouton collé sous le pouce.
 `ARCHITECTURE.md` §398.
+
+**CORRIGÉ LE 22 SEPTEMBRE 2026 — l'interrupteur était parti de trop.** *« Depuis
+terminé, à facturer […] il doit y avoir sous net à payer un bouton on off
+facture acquitté. J'ai essayé de cliquer dessus depuis la facture mais
+impossible. »* Les deux « + » composent le document et restent sur la feuille
+où il remplit ; l'acquittement CONSTATE, et il revient sur la page que « À
+facturer » ouvre — sur les deux écrans, **sous le net à payer**, et fermé par
+l'émission seule. `ARCHITECTURE.md` §404.
+
+**ET LA PANNE DESSOUS, LE MÊME JOUR :** *« je peux pas mettre de règlement reçu
+non plus »* — « Il ne reste que 0,00 € à recevoir » sous un Total TTC de
+552,52 €. Sur une facture faite SANS devis, le garde lisait `factures.total_ttc`,
+restée à zéro. Corrigé à la racine : il calcule, comme l'écran et le PDF.
+`ARCHITECTURE.md` §405.
 
 
 ## 🔧 `test-repartir-du-client-e2e` TOMBE DANS LA BATTERIE, JAMAIS SEULE (20 septembre 2026)
@@ -10704,7 +10837,9 @@ d'envoyer, par un pont vers la fiche client (existante depuis le 16 août).
 **LA QUESTION EST TRANCHÉE — « Fait la C », le 17 août 2026**
 (`docs/maquettes/77-la-fiche-dans-paysage.html`). Le client se nomme à tout
 moment, et la fiche se replie sur ses prestations dès qu'il est connu, **sans
-perdre une coche**. Codé le 18 août : `ARCHITECTURE.md` §128.
+perdre une coche**. Codé le 18 août : `ARCHITECTURE.md` §128. **Remplacé le 22 septembre
+2026** : plus de repli, la fiche garde toutes ses lignes et recoche le dernier
+passage (`ARCHITECTURE.md` §408).
 
 **L'ordre de construction, quand ça démarre** — c'est un troisième parcours, pas
 une case à ajouter :

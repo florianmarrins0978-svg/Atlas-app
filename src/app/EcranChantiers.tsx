@@ -8,7 +8,7 @@ import { vibrer } from "@/lib/vibration";
 import BoutonAssistant from "@/components/atlas/BoutonAssistant";
 import TiroirDesRetires from "@/components/atlas/TiroirDesRetires";
 import { useRetraits } from "@/components/atlas/useRetraits";
-import FormulaireNouveauChantier from "./chantiers/nouveau/FormulaireNouveauChantier";
+import FormulaireNouveauChantier, { type FermetureDeLaFeuille } from "./chantiers/nouveau/FormulaireNouveauChantier";
 import { supprimerChantierAction } from "./planning/actions";
 import ListeChantiers, { type BrinChantier } from "./ListeChantiers";
 
@@ -216,12 +216,18 @@ export default function EcranChantiers({
     </div>
   );
 
+  // **Refermer, c'est demander au formulaire** — 22 septembre 2026. Il tient la
+  // saisie : refermer d'ici jetait le client qu'il venait de taper, et la ligne
+  // n'arrivait jamais dans « En cours ». Le formulaire enregistre s'il y a
+  // quelque chose, puis appelle `onFermer`.
+  const feuille = useRef<FermetureDeLaFeuille>(null);
+
   // Échapper referme, comme partout ailleurs. Sans cela, une personne au
   // clavier se retrouve enfermée dans la feuille.
   useEffect(() => {
     if (!ouvert) return;
     const auClavier = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOuvert(false);
+      if (e.key === "Escape") feuille.current?.fermer();
     };
     document.addEventListener("keydown", auClavier);
     return () => document.removeEventListener("keydown", auClavier);
@@ -601,7 +607,7 @@ export default function EcranChantiers({
         type="button"
         tabIndex={-1}
         aria-hidden="true"
-        onClick={() => setOuvert(false)}
+        onClick={() => feuille.current?.fermer()}
         className="fixed inset-0 z-[45]"
         style={{
           backgroundColor: "rgba(20,18,14,0.12)",
@@ -646,6 +652,7 @@ export default function EcranChantiers({
           {ouvert && (
             <FormulaireNouveauChantier
               enFeuille
+              fermeture={feuille}
               onFermer={() => {
                 setOuvert(false);
                 // La liste peut avoir changé pendant que la feuille était

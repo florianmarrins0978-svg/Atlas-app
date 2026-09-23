@@ -1018,7 +1018,7 @@ body:not(:has(.atlas-nav-basse)) .atlas-contenu {
   box-shadow: inset 0 0 0 1.5px var(--atlas-or, #B98B47);
 }
 
-/* ─── « Chercher un client » : la plage grise du navigateur n'est d'aucune
+/* ─── Le mot gris des champs de recherche : celui du navigateur n'est d'aucune
  * charte ───────────────────────────────────────────────────────────────────
  *
  * **Posée le 3 septembre 2026, avec la refonte de la liste des clients.** Ce
@@ -1039,8 +1039,12 @@ body:not(:has(.atlas-nav-basse)) .atlas-contenu {
  * Elle porte l'exemple — « 06 12 34 56 78 » — sur le seul écran où le patron
  * répare un client sans numéro, et le gris du navigateur y disparaissait
  * pareillement. La mesure est la même, la raison est la même : deux règles
- * séparées auraient fini par diverger. */
-[data-atlas="chercher-client"]::placeholder,
+ * séparées auraient fini par diverger.
+ *
+ * **Tous les champs de recherche l'ont rejointe le 22 septembre 2026**, en
+ * passant par `ChampRecherche` : la classe les vise tous, quel que soit leur
+ * repère. */
+.atlas-recherche::placeholder,
 [data-atlas="coordonnee-client"]::placeholder {
   color: var(--atlas-inkSoft, #4a4a44);
   opacity: 0.85;

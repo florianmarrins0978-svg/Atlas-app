@@ -231,7 +231,8 @@ export default function ArrosageClient({
           style={{ color: colors.ink }}
         >
           Votre croquis doit impérativement contenir les métrés, l’endroit définitif de la
-          nourrice, et l’endroit où le piquage se fait.
+          nourrice, et l’endroit où le piquage se fait (noter l’emplacement du compteur
+          d’eau ou du robinet de jardin).
         </p>
 
         {/* 64 px de haut : c'est un bouton qu'il touche dehors, avec des gants. */}

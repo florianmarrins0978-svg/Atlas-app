@@ -83,7 +83,7 @@ export async function majPassageAction(
 /**
  * Nomme le client — le pont demandé le 17 août.
  *
- * **Rend les lignes qui restent**, et pas un simple `ok` : la fiche se replie,
+ * **Rend les lignes**, et pas un simple `ok` : son dernier passage se recoche,
  * et l'écran doit montrer le résultat sans recharger. Le lui faire recalculer
  * de son côté donnerait deux vérités sur ce qui est à l'écran.
  */
@@ -91,7 +91,7 @@ export async function nommerClientAction(
   passageId: string,
   clientId: string
 ): Promise<
-  | { ok: true; retirees: number; lignes: LignePassageAffichee[] }
+  | { ok: true; cochees: number; lignes: LignePassageAffichee[] }
   | { ok: false; phrase: string }
 > {
   const ctx = await getCurrentCtx();
@@ -99,7 +99,7 @@ export async function nommerClientAction(
   const r = await nommerClient(ctx, passageId, clientId);
   if (!r.ok) return { ok: false, phrase: PHRASE_REFUS_PASSAGE[r.refus] };
   revalidatePath(`/paysage/fiche/${passageId}`);
-  return { ok: true, retirees: r.retirees, lignes: r.lignes };
+  return { ok: true, cochees: r.cochees, lignes: r.lignes };
 }
 
 /**

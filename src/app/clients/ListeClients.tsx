@@ -4,6 +4,7 @@ import { createContext, useContext, useEffect, useMemo, useRef, useState } from 
 import Link from "next/link";
 import { colors, font, libelleCaps, voile } from "@/lib/design-tokens";
 import { enEuros } from "@/lib/euros";
+import { ChampRecherche } from "@/components/atlas/ChampRecherche";
 import { grouperEnBandes } from "@/lib/bandes-clients";
 import { jourDeLaLigne, type TraceDuClient } from "@/lib/documents-du-client";
 import {
@@ -195,70 +196,13 @@ export default function ListeClients() {
           transition: "box-shadow 180ms ease-out",
         }}
       >
-        <div
-          className="relative flex items-center rounded-[10px] pl-[44px] pr-[46px] focus-within:shadow-[inset_0_0_0_1.5px_var(--atlas-or,#B98B47)]"
-          style={{ backgroundColor: colors.rustTint, minHeight: 50 }}
-        >
-          {/* La loupe dit ce que fait la plage sans un mot de plus. Dessinée,
-              jamais un caractère emprunté à une police d'émojis. */}
-          <svg
-            aria-hidden="true"
-            width="19"
-            height="19"
-            viewBox="0 0 20 20"
-            fill="none"
-            stroke={colors.muted}
-            strokeWidth="1.6"
-            className="pointer-events-none absolute left-[15px] top-1/2 -translate-y-1/2"
-          >
-            <circle cx="8.2" cy="8.2" r="6.2" />
-            <path d="M12.8 12.8L18 18" strokeLinecap="round" />
-          </svg>
-
-          {/* **`type="text"`, et surtout PAS `type="search"`.** Trouvé en
-              regardant la capture, jamais par une suite : le navigateur ajoute
-              alors sa propre croix d'effacement, et elle est d'un BLEU VIF qui
-              n'existe nulle part dans Atlas. Sur un écran de crème et de bronze,
-              c'est la seule tache de couleur de la page. On la refuse et l'on
-              pose la nôtre, ci-dessous. */}
-          <input
-            type="text"
-            inputMode="search"
-            autoComplete="off"
-            value={saisie}
-            onChange={(e) => poser(e.target.value)}
-            placeholder="Chercher un client"
-            aria-label="Chercher un client"
-            data-atlas="chercher-client"
-            className="w-full border-0 bg-transparent py-[13px] outline-none"
-            style={{
-              color: colors.ink,
-              // **16 px au moins.** En dessous, Safari sur iPhone zoome tout
-              // seul au premier appui et l'écran part de travers — le patron
-              // se retrouve avec une page décalée qu'il faut repincer.
-              fontSize: 16,
-              // Le trait qui clignote appartient à la charte comme le reste :
-              // celui du navigateur ne connaît aucune des huit.
-              caretColor: colors.or,
-            }}
-          />
-
-          {/* Notre croix : de la couleur de l'application, et assez grande pour
-              un pouce. Elle n'existe que s'il y a quelque chose à effacer — un
-              bouton qui ne fait rien est un bouton de trop. */}
-          {cherche && (
-            <button
-              type="button"
-              onClick={() => poser("")}
-              aria-label="Effacer la recherche"
-              data-atlas="effacer-recherche"
-              className="absolute right-0 top-0 flex h-full w-[46px] items-center justify-center"
-              style={{ color: colors.muted, fontSize: 19, lineHeight: 1 }}
-            >
-              ✕
-            </button>
-          )}
-        </div>
+        <ChampRecherche
+          valeur={saisie}
+          onChange={poser}
+          placeholder="Chercher un client"
+          ariaLabel="Chercher un client"
+          dataAtlas="chercher-client"
+        />
       </div>
 
       {visibles.length === 0 ? (

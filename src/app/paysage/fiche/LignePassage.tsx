@@ -22,13 +22,18 @@ export type PassageListe = {
   envoyeLe: Date | null;
   minutes: number | null;
   faites: number;
+  /** L'adresse du rapport chez le client, une fois envoyé. */
+  jeton: string | null;
 };
 
 export default function LignePassage({
   passage,
+  href,
   action,
 }: {
   passage: PassageListe;
+  /** Où mène la ligne : la fiche à cocher, ou le rapport tel que le client l'a reçu. */
+  href: string;
   /**
    * Ce qui se pose APRÈS le lien — la croix de retrait d'un brouillon.
    *
@@ -47,7 +52,7 @@ export default function LignePassage({
   return (
     <div className="flex items-center border-b" style={{ borderColor: colors.line }}>
       <Link
-        href={`/paysage/fiche/${passage.id}`}
+        href={href}
         className="flex min-h-[56px] min-w-0 flex-1 items-center gap-[15px] py-[13px] text-left"
       >
         <span className="min-w-0 flex-1">

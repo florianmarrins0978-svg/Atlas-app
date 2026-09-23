@@ -24,12 +24,20 @@ import {
   gardeeJusquAu,
   libellesAvecLesSiens,
   manques,
+  refusDuReleveGps,
   type ContenuFiche,
   type Famille,
 } from "@/lib/fiche-securite";
-import { ajouterPhotoDuRetourAction } from "../../retour-actions";
-import { enregistrerLaFicheAction, marquerTransmiseAction, signerLaFicheAction, type FicheOuverte } from "../../fiche-securite-actions";
+import {
+  ajouterPhotoDeLaFicheAction,
+  enregistrerLaFicheAction,
+  marquerTransmiseAction,
+  retirerPhotoDeLaFicheAction,
+  signerLaFicheAction,
+  type FicheOuverte,
+} from "../../fiche-securite-actions";
 import { transmettreLePdf } from "@/components/atlas/transmettre-le-pdf";
+import VisionneusePhoto from "@/components/atlas/VisionneusePhoto";
 import Signature, { pngDeLaSignature, type Trace } from "./Signature";
 
 /**
@@ -61,38 +69,83 @@ export default function FormulaireFicheDeSecurite({
   chantierId,
   ouverte,
   paysageOuvert,
-  loiDemandee,
 }: {
   chantierId: string;
   ouverte: FicheOuverte;
   paysageOuvert: boolean;
-  loiDemandee: boolean;
 }) {
   const router = useRouter();
   const { contexte } = ouverte;
   const [contenu, setContenu] = useState<ContenuFiche>(() => preremplir(ouverte));
-  const [loiLue, setLoiLue] = useState(ouverte.fiche.loiLue);
   const [etapeVue, setEtapeVue] = useState(ouverte.fiche.etapeVue);
   const [etape, setEtape] = useState(Math.min(Math.max(ouverte.fiche.etapeVue + 1, 1), NOMBRE_D_ETAPES));
-  const [ecran, setEcran] = useState<Ecran>(loiDemandee || !ouverte.fiche.loiLue ? "loi" : ouverte.fiche.signeeLe ? "signee" : "fiche");
+  const [ecran, setEcran] = useState<Ecran>(!ouverte.fiche.loiLue ? "loi" : ouverte.fiche.signeeLe ? "signee" : "fiche");
   const [signeeLe, setSigneeLe] = useState<Date | null>(ouverte.fiche.signeeLe);
   const [transmise, setTransmise] = useState(ouverte.fiche.transmiseLe !== null);
   const [photos, setPhotos] = useState(ouverte.photos);
+  // **La photo s'ouvre EN GRAND, ici comme ailleurs — sa demande du
+  // 22 septembre 2026** : *« les photos de la fiche de sécurité je ne peux pas
+  // cliquer dessus pour les voir en grand et les faire défiler »*. Le rang, et
+  // non la clé : la visionneuse feuillette, donc elle reçoit la liste entière
+  // et la place dans cette liste (`VisionneusePhoto`).
+  const [rangOuvert, setRangOuvert] = useState<number | null>(null);
   const [trace, setTrace] = useState<Trace>([]);
-  const [signataire, setSignataire] = useState(ouverte.fiche.signataire ?? `${contexte.patron.prenom ?? ""} ${contexte.patron.nom ?? ""}`.trim());
   const [occupe, setOccupe] = useState(false);
   const [refus, setRefus] = useState<string | null>(null);
   const [enCours, setEnCours] = useState<Famille | null>(null);
   const [consignesOuvertes, setConsignesOuvertes] = useState(false);
+  const [releveEnCours, setReleveEnCours] = useState(false);
+  const [gpsAEcrire, setGpsAEcrire] = useState(false);
   useEffect(() => {
     window.scrollTo({ top: 0 });
   }, [etape, ecran]);
 
   const adresseDuPdf = `/planning/fiche-de-securite/${chantierId}/pdf`;
 
+  /**
+   * ON ENREGISTRE PENDANT QU’IL ÉCRIT — sa demande du 22 septembre 2026.
+   *
+   * La fiche n’était écrite qu’au « Suivant » et au « Retour ». Or l’écran
+   * porte des liens qui SORTENT de l’application — le formulaire de découverte
+   * fortuite de réseau, jebalise —, et il les ouvre en plein remplissage : si
+   * le téléphone décharge l’application pendant qu’il lit, l’étape en cours
+   * repart vide. Une fois l’application posée sur son écran d’accueil, c’est le
+   * chemin ordinaire, pas un cas de bord.
+   *
+   * Deux secondes de silence, et la fiche part ; on renvoie aussi dès que
+   * l’onglet passe en arrière-plan, car c’est là que le geste se joue — au
+   * mieux, l’envoi est parti avant que le téléphone ne coupe.
+   *
+   * `dejaEnvoye` garde CE QUI A ÉTÉ ÉCRIT, pas l’heure du dernier envoi : un
+   * envoi refusé ne marque rien, donc la frappe suivante réessaie toute seule.
+   */
+  const dejaEnvoye = useRef(JSON.stringify(contenu));
+  useEffect(() => {
+    if (ecran !== "fiche" || signeeLe) return;
+    const aEnvoyer = JSON.stringify(contenu);
+    if (aEnvoyer === dejaEnvoye.current) return;
+    let vivant = true;
+    async function envoyer() {
+      const r = await enregistrerLaFicheAction(chantierId, { contenu, etapeVue, loiLue: true, rafraichirLesEcrans: false });
+      if (r.ok) dejaEnvoye.current = aEnvoyer;
+      else if (vivant) setRefus(r.raison);
+    }
+    const minuterie = setTimeout(() => void envoyer(), 2_000);
+    const enPartant = () => {
+      if (document.visibilityState === "hidden") void envoyer();
+    };
+    document.addEventListener("visibilitychange", enPartant);
+    return () => {
+      vivant = false;
+      clearTimeout(minuterie);
+      document.removeEventListener("visibilitychange", enPartant);
+    };
+  }, [contenu, ecran, signeeLe, chantierId, etapeVue]);
+
   async function enregistrer(prochaineEtapeVue: number) {
     const r = await enregistrerLaFicheAction(chantierId, { contenu, etapeVue: prochaineEtapeVue, loiLue: true });
-    if (!r.ok) setRefus(r.raison);
+    if (r.ok) dejaEnvoye.current = JSON.stringify(contenu);
+    else setRefus(r.raison);
     return r.ok;
   }
 
@@ -123,7 +176,7 @@ export default function FormulaireFicheDeSecurite({
     if (!png) return;
     setOccupe(true);
     setRefus(null);
-    const r = await signerLaFicheAction(chantierId, { contenu, signaturePng: png, points, signataire });
+    const r = await signerLaFicheAction(chantierId, { contenu, signaturePng: png, points });
     setOccupe(false);
     if (!r.ok) {
       setRefus(r.raison);
@@ -156,7 +209,7 @@ export default function FormulaireFicheDeSecurite({
       const corps = new FormData();
       corps.set("chantierId", chantierId);
       corps.set("fichier", fichier);
-      const r = await ajouterPhotoDuRetourAction(corps);
+      const r = await ajouterPhotoDeLaFicheAction(corps);
       if (!r.ok) {
         setRefus(r.raison);
         continue;
@@ -166,6 +219,24 @@ export default function FormulaireFicheDeSecurite({
     }
   }
 
+  /**
+   * **La retirer d'ici, parce qu'elle ne se voit plus ailleurs.** Depuis sa
+   * règle du 22 septembre 2026, une photo posée sur la fiche n'apparaît ni
+   * dans « Travaux à faire » ni sur la fiche client : sans ce geste, une photo
+   * de travers resterait sur la fiche pour toujours.
+   */
+  async function retirerLaPhoto(photoId: string) {
+    setRefus(null);
+    const r = await retirerPhotoDeLaFicheAction(chantierId, photoId);
+    if (!r.ok) {
+      setRefus(r.raison);
+      return;
+    }
+    setPhotos((avant) => avant.filter((p) => p.id !== photoId));
+    setContenu((c) => ({ ...c, photoIds: c.photoIds.filter((id) => id !== photoId) }));
+    setRangOuvert(null);
+  }
+
   const champ = (cle: keyof ContenuFiche) => ({
     value: String(contenu[cle] ?? ""),
     onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setContenu((c) => ({ ...c, [cle]: e.target.value })),
@@ -173,14 +244,20 @@ export default function FormulaireFicheDeSecurite({
 
   const g = { contenu, setContenu, enCours, setEnCours };
 
+  // **Une seule liste pour la rangée et pour la visionneuse.** Le rang ouvert
+  // est une place dans CETTE liste : deux `map` séparés, et une photo effacée
+  // entre les deux ouvrirait la voisine.
+  const sesPhotos = contenu.photoIds
+    .map((id) => photos.find((x) => x.id === id))
+    .filter((p): p is { id: string; storageKey: string } => p !== undefined);
+
   const m = manques(contenu);
 
   // ══════════════════ CE QUE DEMANDE LA LOI — à la première ouverture ══════════════════
   if (ecran === "loi") {
     return (
-      <Cadre pied={<Vert onClick={() => { if (!loiLue) { setLoiLue(true); void enregistrer(etapeVue); } setEcran(signeeLe ? "signee" : "fiche"); }}>{loiLue ? "Retour" : "Compris, je remplis"}</Vert>}>
-        <h2 className="m-0 text-[24px] leading-[1.15]" style={{ fontFamily: font.display }}>Ce que demande la loi</h2>
-        <p className="m-0 mb-3.5 text-[13px]" style={{ color: colors.muted }}>Décret 2021-1833, en vigueur depuis le 1er mars 2022</p>
+      <Cadre pied={<Vert onClick={() => { void enregistrer(etapeVue); setEcran(signeeLe ? "signee" : "fiche"); }}>Compris, je remplis</Vert>}>
+        <h2 className="m-0 mb-3.5 text-[24px] leading-[1.15]" style={{ fontFamily: font.display }}>Décret 2021-1833, en vigueur depuis le 1er mars 2022</h2>
         <Loi>Avant un chantier d’élagage ou d’abattage, le chef d’entreprise remplit une fiche d’intervention, la signe, la montre à son équipe, la garde sur le chantier, la transmet à l’entreprise qui l’a fait venir quand il y a un plan de prévention, et la conserve deux ans. Elle doit dire :</Loi>
         <ol className="m-0 mt-2.5 list-none p-0">
           {[
@@ -308,7 +385,7 @@ export default function FormulaireFicheDeSecurite({
             )}
             {contenu.donneur === "autre" && (
               <>
-                <div className="mt-2.5 grid grid-cols-2 gap-2 [&>*]:mt-0">
+                <div className="mt-2.5 grid grid-cols-2 gap-2 [&>*]:mt-0 [&>*]:min-w-0">
                   <Champ nom="Nom" {...champ("donneurNom")} placeholder="Exemple : Dubeaujardin" />
                   <Champ nom="Prénom" {...champ("donneurPrenom")} placeholder="Exemple : Marc" />
                 </div>
@@ -321,19 +398,24 @@ export default function FormulaireFicheDeSecurite({
             <div className="mt-2.5">
               <span className="mb-[3px] block text-[12.5px]" style={{ color: colors.muted }}>Coordonnées GPS</span>
               {contenu.gps ? (
-                <Fixe nom="">{contenu.gps}</Fixe>
+                <Champ nom="" {...champ("gps")} placeholder="Exemple : 48.94123, 1.72004" />
               ) : (
-                <button type="button" data-atlas="relever-gps" onClick={() => releverLaPosition((gps) => setContenu((c) => ({ ...c, gps })), setRefus)} className="flex min-h-[46px] w-full items-center justify-center gap-2 rounded-full text-[15px]" style={{ background: colors.card, color: colors.rust, boxShadow: `inset 0 0 0 1px ${colors.line}` }}>
-                  <Cible /> Relever ici
-                </button>
+                <>
+                  <button type="button" data-atlas="relever-gps" disabled={releveEnCours} onClick={() => { setReleveEnCours(true); setRefus(null); releverLaPosition((gps) => setContenu((c) => ({ ...c, gps })), (r) => { setRefus(r); setGpsAEcrire(true); }, () => setReleveEnCours(false)); }} className="flex min-h-[46px] w-full items-center justify-center gap-2 rounded-full text-[15px]" style={{ background: colors.card, color: releveEnCours ? colors.muted : colors.rust, boxShadow: `inset 0 0 0 1px ${colors.line}` }}>
+                    <Cible /> {releveEnCours ? "Relevé en cours…" : "Relever ici"}
+                  </button>
+                  {/* Le refus dit « écrivez les coordonnées » : il faut donc de quoi les écrire.
+                      Sans ce champ, la phrase envoyait le patron sur un écran qui ne pouvait pas l’exaucer. */}
+                  {gpsAEcrire && <Champ nom="" {...champ("gps")} placeholder="Exemple : 48.94123, 1.72004" />}
+                </>
               )}
             </div>
             <Aide haut>Dates d’exécution, d’après le planning</Aide>
-            <div className="mt-2.5 grid grid-cols-2 gap-2 [&>*]:mt-0">
+            <div className="mt-2.5 grid grid-cols-2 gap-2 [&>*]:mt-0 [&>*]:min-w-0">
               <Fixe nom="Début, jour" vide={!contexte.datePlanifiee}>{jourDepuisIso(contexte.datePlanifiee) || "pas encore planifié"}</Fixe>
               <Fixe nom="Fin, jour" vide={!contexte.datePlanifiee}>{jourDepuisIso(contexte.datePlanifiee) || "pas encore planifié"}</Fixe>
             </div>
-            <div className="mt-2.5 grid grid-cols-2 gap-2 [&>*]:mt-0">
+            <div className="mt-2.5 grid grid-cols-2 gap-2 [&>*]:mt-0 [&>*]:min-w-0">
               <Champ nom="Début, heures" {...champ("heureDebut")} type="time" />
               <Champ nom="Fin, heures" {...champ("heureFin")} type="time" />
             </div>
@@ -341,7 +423,7 @@ export default function FormulaireFicheDeSecurite({
           </Bloc>
           <Bloc titre="Main d’œuvre" explication="Qui est le chef sur place, et combien de personnes de l’entreprise sont là.">
             <Aide>Responsable de l’entreprise sur le chantier</Aide>
-            <div className="mt-2.5 grid grid-cols-2 gap-2 [&>*]:mt-0">
+            <div className="mt-2.5 grid grid-cols-2 gap-2 [&>*]:mt-0 [&>*]:min-w-0">
               <Champ nom="Nom" {...champ("responsableNom")} />
               <Champ nom="Prénom" {...champ("responsablePrenom")} />
             </div>
@@ -400,14 +482,19 @@ export default function FormulaireFicheDeSecurite({
         <>
           <Bloc titre="Carte / croquis / photo du chantier indiquant les accès, voies de circulation et les végétaux à traiter" explication="Une photo du chantier, prise sur place. On doit y voir par où on entre, par où on passe, et les arbres à traiter.">
             <div className="mt-2 flex flex-wrap items-center gap-[7px]">
-              {contenu.photoIds.map((id) => {
-                const p = photos.find((x) => x.id === id);
-                return p ? (
-                  <span key={id} data-atlas="photo-de-la-fiche" className="h-[46px] w-[46px] flex-none overflow-hidden rounded-[9px]" style={{ boxShadow: `inset 0 0 0 1px ${colors.line}` }}>
-                    <img src={`/api/fichiers/${p.storageKey}`} alt="" className="h-full w-full object-cover" />
-                  </span>
-                ) : null;
-              })}
+              {sesPhotos.map((p, i) => (
+                <button
+                  key={p.id}
+                  type="button"
+                  onClick={() => setRangOuvert(i)}
+                  aria-label={`Photo ${i + 1} en grand`}
+                  data-atlas="photo-de-la-fiche"
+                  className="h-[46px] w-[46px] flex-none overflow-hidden rounded-[9px] p-0"
+                  style={{ boxShadow: `inset 0 0 0 1px ${colors.line}` }}
+                >
+                  <img src={`/api/fichiers/${p.storageKey}`} alt="" className="h-full w-full object-cover" />
+                </button>
+              ))}
               {/* L'appareil OU la photothèque : « image/* » sans « capture », le téléphone propose les deux. */}
               <label data-atlas="prendre-une-photo" className="grid h-[46px] w-[72px] flex-none cursor-pointer place-items-center rounded-[9px]" style={{ background: voile(colors.plein, 0.16), color: colors.rust, boxShadow: `inset 0 0 0 1px ${colors.vertPale}` }}>
                 <Appareil />
@@ -415,6 +502,31 @@ export default function FormulaireFicheDeSecurite({
               </label>
             </div>
             <Aide haut>Prenez la photo, ou choisissez-la dans la photothèque.</Aide>
+            {rangOuvert !== null && (
+              <VisionneusePhoto
+                photos={sesPhotos.map((p) => p.storageKey)}
+                rang={rangOuvert}
+                onRang={setRangOuvert}
+                onFermer={() => setRangOuvert(null)}
+              >
+                {/* **On retire une photo d'où on la regarde** — comme dans la
+                    pellicule du client. Une fiche signée garde les siennes :
+                    elle fait foi devant un contrôleur, et le serveur le refuse
+                    aussi (`detacherPhotoDeLaFiche`). */}
+                {signeeLe === null && sesPhotos[rangOuvert] && (
+                  <button
+                    type="button"
+                    data-atlas="retirer-photo-de-la-fiche"
+                    onClick={() => void retirerLaPhoto(sesPhotos[rangOuvert]!.id)}
+                    aria-label="Retirer cette photo"
+                    className="flex h-11 items-center justify-center rounded-full px-4 text-[11px] font-semibold uppercase"
+                    style={{ backgroundColor: voile(surPlein, 0.12), color: colors.orSurEncre, letterSpacing: "0.26em" }}
+                  >
+                    Retirer
+                  </button>
+                )}
+              </VisionneusePhoto>
+            )}
           </Bloc>
           <Bloc titre="Zones du chantier" explication="Ce que vous mettez en place pour que personne ne soit blessé : le balisage, la communication entre vous, la surveillance des passants.">
             <Aide>Délimitation matérielle du chantier obligatoire</Aide>
@@ -542,7 +654,7 @@ export default function FormulaireFicheDeSecurite({
             )}
           </Bloc>
           <Bloc titre="Enregistrement" explication="Le chef d’entreprise signe. Sa signature engage sa responsabilité. La note de la feuille sera imprimée au bas du PDF : présentée aux travailleurs, disponible sur le chantier, transmise s’il y a un plan de prévention, conservée deux ans.">
-            <Champ nom="Nom et prénom du chef d’entreprise (ou de son représentant)" value={signataire} onChange={(e) => setSignataire(e.target.value)} />
+            <Champ nom="Nom et prénom du chef d’entreprise (ou de son représentant)" {...champ("signataire")} />
             <Fixe nom="Date">{dateLongue(new Date())}</Fixe>
             <div className="mt-2.5">
               <Signature trace={trace} onTrace={setTrace} />
@@ -646,9 +758,13 @@ function Groupe({ contenu, setContenu, enCours, setEnCours, famille, genre, sous
 // ─── ce qu'Atlas sait déjà, posé sur une fiche neuve ; jamais sur une fiche commencée ───
 function preremplir(ouverte: FicheOuverte): ContenuFiche {
   const { fiche, contexte } = ouverte;
-  if (fiche.etapeVue > 0 || fiche.signeeLe) return fiche.contenu;
+  // Le signataire se propose même sur une fiche commencée : celles d'avant le
+  // 22 septembre 2026 ne l'ont pas dans leur contenu, et l'écran le proposait.
+  const signataire = fiche.contenu.signataire || `${contexte.patron.prenom ?? ""} ${contexte.patron.nom ?? ""}`.trim();
+  if (fiche.etapeVue > 0 || fiche.signeeLe) return { ...fiche.contenu, signataire };
   return {
     ...fiche.contenu,
+    signataire,
     telephoneIncident: fiche.contenu.telephoneIncident || contexte.entreprise.telephone || "",
     responsableNom: fiche.contenu.responsableNom || contexte.patron.nom || "",
     responsablePrenom: fiche.contenu.responsablePrenom || contexte.patron.prenom || "",
@@ -658,15 +774,41 @@ function preremplir(ouverte: FicheOuverte): ContenuFiche {
   };
 }
 
-function releverLaPosition(pose: (gps: string) => void, refus: (r: string) => void) {
+/**
+ * LE RELEVÉ, ET SON RATTRAPAGE.
+ *
+ * La haute précision interroge la puce GPS : sous un couvert d’arbres, dans un
+ * hangar ou une camionnette, elle dépasse le délai alors que la position du
+ * réseau, elle, répond tout de suite. On redemande donc une fois sans l’exiger
+ * — dix mètres d’écart guident les secours, une case vide non.
+ *
+ * Et le code du navigateur n’est plus jeté : `refusDuReleveGps` en fait une
+ * phrase par cause (`fiche-securite.ts`).
+ */
+function releverLaPosition(pose: (gps: string) => void, refus: (r: string) => void, fini: () => void) {
   if (!navigator.geolocation) {
     refus("Ce téléphone ne donne pas sa position.");
+    fini();
     return;
   }
+  const ecrire = (p: GeolocationPosition) => {
+    pose(`${p.coords.latitude.toFixed(5)}, ${p.coords.longitude.toFixed(5)}`);
+    fini();
+  };
+  const abandonner = (e: GeolocationPositionError) => {
+    refus(refusDuReleveGps(e.code));
+    fini();
+  };
   navigator.geolocation.getCurrentPosition(
-    (p) => pose(`${p.coords.latitude.toFixed(5)}, ${p.coords.longitude.toFixed(5)}`),
-    () => refus("La position n’a pas pu être relevée. Autorisez la localisation, ou écrivez-la."),
-    { enableHighAccuracy: true, timeout: 15_000 }
+    ecrire,
+    (e) => {
+      if (e.code !== e.TIMEOUT) {
+        abandonner(e);
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(ecrire, abandonner, { enableHighAccuracy: false, timeout: 20_000, maximumAge: 60_000 });
+    },
+    { enableHighAccuracy: true, timeout: 12_000 }
   );
 }
 
@@ -766,12 +908,28 @@ function Fixe({ nom, children, vide }: { nom: string; children: React.ReactNode;
   );
 }
 function Champ({ nom, lignes, type, ...reste }: { nom: string; lignes?: number; type?: string; value: string; placeholder?: string; onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void }) {
-  const style = { background: colors.card, boxShadow: `inset 0 0 0 1px ${colors.line}`, color: colors.ink, caretColor: colors.or };
+  // **LE CADRE SE DESSINE SUR LA BOÎTE, PAS SUR LE CHAMP — sinon il n’y a qu’un
+  // encart.** Le 22 septembre 2026, le patron demande « deux encarts séparés »
+  // pour les heures. Sur son iPhone, début et fin se lisaient comme une seule
+  // barre blanche, alors que Nom et Prénom — le MÊME composant, deux lignes
+  // plus bas — montraient bien deux cadres. Safari habille
+  // `input[type="time"]` à sa façon et jette le trait qu’on pose dessus ; les
+  // champs de texte, eux, le gardent. Et nos deux fonds sont trop proches
+  // (`card` #faf9f5 sur `cream` #f5f3ee) pour que l’œil retrouve la séparation
+  // sans ce trait.
+  //
+  // Un `<span>` n’est pas un contrôle de formulaire : aucun navigateur ne le
+  // rhabille. Le cadre y vit donc, et il tient partout — y compris pour le
+  // prochain `type` que le téléphone décidera d’habiller. `appearance: none`
+  // reste pour que le CHAMP, lui, garde nos mesures.
+  const dedans = { color: colors.ink, caretColor: colors.or, WebkitAppearance: "none", appearance: "none", background: "transparent" } as const;
   const classe = "block w-full min-h-[46px] rounded-[10px] border-0 px-3 py-2.5 text-[16px] leading-[1.4] outline-none";
   return (
     <label className="mt-2.5 block first:mt-0">
       {nom && <span className="mb-[3px] block text-[12.5px]" style={{ color: colors.muted }}>{nom}</span>}
-      {lignes ? <textarea rows={lignes} className={`${classe} resize-none`} style={style} {...reste} /> : <input type={type ?? "text"} autoComplete="off" className={classe} style={style} {...reste} />}
+      <span className="block rounded-[10px]" style={{ background: colors.card, boxShadow: `inset 0 0 0 1px ${colors.line}` }}>
+        {lignes ? <textarea rows={lignes} className={`${classe} resize-none`} style={dedans} {...reste} /> : <input type={type ?? "text"} autoComplete="off" className={classe} style={dedans} {...reste} />}
+      </span>
     </label>
   );
 }

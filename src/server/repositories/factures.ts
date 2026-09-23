@@ -25,7 +25,7 @@ import { genererPdfFacture, type FacturePdfData } from "../pdf/facture-pdf";
 import { enregistrerObjet } from "../storage";
 import { jourIso } from "../../lib/jour";
 import { echeanceFacture } from "../../lib/rappels";
-import { validerEcheance } from "../../lib/echeance-facture";
+import { datesDeLaFactureQuiPart, validerEcheance } from "../../lib/echeance-facture";
 import { ALLURE_PAR_DEFAUT } from "../../lib/allure-documents";
 import { repriseDuDevis } from "../../lib/facture-face-au-devis";
 import { factureNeeSansDevis } from "../../lib/lignes-corrigeables";
@@ -1373,6 +1373,13 @@ export async function emettreFacture(ctx: Ctx, factureId: string, maintenant: Da
     const totalTva = new Decimal(t.totalTva);
     const totalTtc = new Decimal(t.totalTtc);
 
+    // **LA PIÈCE PREND LA DATE DU JOUR OÙ ELLE PART, et son échéance suit.**
+    // Posées à la création du brouillon, les deux dataient de la fin du chantier
+    // — son constat du 22 septembre 2026. Elles se recalculent ICI, avant le
+    // PDF : plus bas, le papier archivé porterait encore la date du brouillon,
+    // et c'est celui-là que le client garde (`datesDeLaFactureQuiPart`).
+    const dates = datesDeLaFactureQuiPart(jourIso(maintenant), avant);
+
     // La pièce est figée au moment de l'émission, jamais régénérée ensuite :
     // une facture émise est immuable (trigger PostgreSQL), et un PDF reconstruit
     // depuis les données du jour ne serait plus celui que le client a reçu.
@@ -1386,7 +1393,7 @@ export async function emettreFacture(ctx: Ctx, factureId: string, maintenant: Da
     // une facture aux totaux faux. Seul le STATUT reste forcé : la pièce
     // archivée doit dire « émise » alors que la ligne ne le sera qu'après.
     const pdfBytes = await genererPdfFacture(
-      donneesFacture({ ...avant, statut: "emise" }, lignes, complements),
+      donneesFacture({ ...avant, ...dates, statut: "emise" }, lignes, complements),
       habillage2
     );
 
@@ -1412,6 +1419,7 @@ export async function emettreFacture(ctx: Ctx, factureId: string, maintenant: Da
       .set({
         statut: "emise",
         emiseLe: maintenant,
+        ...dates,
         docTypographie: allureFigee.typographie,
         docFond: allureFigee.fond,
         docAccent: allureFigee.accent,
@@ -1643,14 +1651,32 @@ function assemblerReleve(
     }
   }
 
-  // L'ordre du relevé : la date qui compte, puis le numéro. C'est l'ordre du
-  // formulaire, et celui où il recopie.
+  // **LE DERNIER ENREGISTRÉ EN TÊTE** — sa règle du 22 septembre 2026 :
+  // *« l'ordre pour la TVA collectée et la TVA déductible doit être le dernier
+  // enregistré visible »*.
+  //
+  // Le relevé sortait du plus ANCIEN au plus récent : le règlement qu'il venait
+  // de noter tombait tout en bas d'une liste de neuf, et il fallait la parcourir
+  // entière pour vérifier qu'il avait bien été pris. Or c'est la seule raison
+  // d'ouvrir cette preuve juste après avoir noté quelque chose.
+  //
+  // La liste des achats sort déjà ainsi (`achats-tva.ts`, `desc(dateAchat)`) :
+  // les deux preuves du même écran se lisent désormais dans le même sens.
+  //
+  // **Le numéro départage à date égale, du plus grand au plus petit** : il
+  // grandit avec le temps, donc la facture la plus récente passe devant. Tout ce
+  // qui décide de l'ordre est ainsi ÉCRIT sur la ligne — la date et le numéro —,
+  // et rien ne s'explique par une colonne qu'il ne voit pas.
+  //
+  // **L'ordre du CALCUL, lui, ne bouge pas** : `entreesDuReleve` répartit la TVA
+  // des acomptes dans l'ordre où l'argent est rentré, et le règlement qui solde
+  // porte le reliquat d'arrondi. Ce tri-ci ne touche que l'affichage.
   lignes.sort((a, b) =>
     a.dateEmission === b.dateEmission
-      ? a.numeroCommercial.localeCompare(b.numeroCommercial)
+      ? b.numeroCommercial.localeCompare(a.numeroCommercial)
       : a.dateEmission < b.dateEmission
-        ? -1
-        : 1
+        ? 1
+        : -1
   );
 
   const somme = (champ: "totalHt" | "totalTva" | "totalTtc") =>

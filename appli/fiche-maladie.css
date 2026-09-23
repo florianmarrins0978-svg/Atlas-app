@@ -1,0 +1,146 @@
+/*
+  ═══════════════════════════════════════════════════════════════════════════
+  LA BASE COMMUNE DES PLANCHES DE MALADIES — 22 septembre 2026
+  ═══════════════════════════════════════════════════════════════════════════
+
+  Sa demande, la planche du peuplier une fois finie : « avance sur les autres
+  planches en gardant la même base que celle-ci ». Le style et le rendu vivent
+  donc ICI, une seule fois, et non recopiés dans chaque planche : une
+  correction qu'il demande sur une fiche les corrige toutes, et deux copies
+  finissent toujours par diverger (CLAUDE.md §3).
+
+  Les couleurs viennent de src/lib/chartes.ts, chartes Origine et Nuit.
+*/
+/*
+  ═══════════════════════════════════════════════════════════════════════════
+  FICHE 4 — BRUNISSURE DES FEUILLES DE PEUPLIER — 22 septembre 2026
+  ═══════════════════════════════════════════════════════════════════════════
+
+  Sa demande : « continue dans l'ordre après l'anthracnose du platane sur le
+  site de l'INRAE », et « fais-moi valider chaque fiche avant de la coder ».
+  Sur Ephytia, la liste « Champignons foliaires » va : anthracnose du platane
+  (fiche 2), anthracnose du chêne et du hêtre (fiche 3), puis la brunissure des
+  feuilles de peuplier — celle-ci.
+
+  La planche montre l'écran EXACTEMENT comme l'application le rend aujourd'hui
+  (src/app/paysage/diagnostic/[id]/page.tsx), avec les textes du brouillon de
+  la fiche. Tout ce qui est écrit dans FICHE, en bas, est le fichier JSON qui
+  sera versé dans donnees/phyto/fiches/ sur son « oui » — rien n'est retapé.
+
+  Même méthode que la fiche 2 : les mentions légales d'Ephytia interdisent la
+  copie et l'usage commercial, donc les faits sont rédigés, les figures de la
+  page (« © Pinon ») sont écartées, et la photo vient de Wikimedia Commons sous
+  licence libre vérifiée. RIEN N'EST CODÉ. Les couleurs viennent de
+  src/lib/chartes.ts.
+*/
+:root{
+  --fond:#f5f3ee; --plage:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
+  --gris:#8a8578; --or:#B98B47; --accent:#2f3b2f; --alerte:#9c3b2e;
+  --trait:rgba(28,28,26,.12); --trait-doux:rgba(28,28,26,.07); --scene:#e6e3dc;
+  --plein:#7d9a6d; --surPlein:#faf9f5; --papier:#ece9e1;
+}
+body.nuit{
+  --fond:#101210; --plage:#1a1d19; --encre:#e9e8de; --encre-douce:#c1c2b6;
+  --gris:#84887b; --or:#C9A15E; --accent:#e9e8de; --alerte:#e0857a;
+  --trait:rgba(233,232,222,.12); --trait-doux:rgba(233,232,222,.07); --scene:#070908;
+  --plein:#e9e8de; --surPlein:#1a1d19; --papier:#232722;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--scene)}
+body{font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+     color:var(--encre);-webkit-text-size-adjust:100%;padding:0 0 60px}
+::selection{background:var(--or);color:var(--fond)}
+
+.commandes{position:sticky;top:0;z-index:20;background:var(--scene);
+  padding:10px 16px;border-bottom:1px solid var(--trait);text-align:center}
+.commandes button{font:inherit;font-size:13.5px;padding:9px 16px;margin:3px;
+  border:1px solid var(--trait);background:var(--plage);color:var(--encre);
+  border-radius:999px;cursor:pointer;min-height:44px}
+.commandes button[aria-pressed=true]{background:var(--encre);color:var(--fond);border-color:var(--encre)}
+
+.tete{max-width:740px;margin:0 auto;padding:26px 20px 4px}
+.tete h1{font-family:ui-serif,Georgia,"Times New Roman",serif;font-size:30px;line-height:1.12;margin:0 0 12px;font-weight:400}
+.tete p{margin:0 0 10px;font-size:14.5px;line-height:1.65;color:var(--encre-douce)}
+.tete b{color:var(--encre)}
+.sceau{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--fond);background:var(--accent);
+  padding:5px 11px;border-radius:3px;margin-bottom:14px}
+body.nuit .sceau{color:var(--scene)}
+
+.scene{display:flex;justify-content:center;padding:22px 12px 0}
+.tel{width:390px;max-width:100%;height:700px;border-radius:38px;padding:10px;
+  background:var(--encre);box-shadow:0 22px 50px -18px rgba(0,0,0,.55)}
+.dedans{height:100%;border-radius:30px;overflow:auto;background:var(--fond);color:var(--encre);
+  scrollbar-width:thin;scrollbar-color:var(--trait) transparent}
+.dessous{max-width:520px;margin:14px auto 0;padding:0 20px;font-size:13.5px;line-height:1.6;color:var(--gris);text-align:center}
+.dessous b{color:var(--encre-douce)}
+
+/* ── L'écran, dans la grammaire d'Atlas ─────────────────────────────────── */
+.ecran{padding:0 26px 64px;font-size:15px}
+.retour{display:flex;align-items:center;justify-content:space-between;padding-top:28px}
+.retour .rond{width:40px;height:40px;border-radius:50%;background:var(--papier);color:var(--encre);
+  display:flex;align-items:center;justify-content:center;font-size:18px}
+.titre-ligne{padding-top:20px}
+.titre-ligne h2{font-family:ui-serif,Georgia,"Times New Roman",serif;font-weight:400;
+  font-size:34px;line-height:1.02;letter-spacing:-.018em;margin:0}
+.caps{font-size:9.5px;font-weight:500;letter-spacing:.28em;text-transform:uppercase;color:var(--or);margin:12px 0 0}
+.caps.gris{color:var(--gris)}
+
+.corps{margin-top:24px}
+.p{margin:0;line-height:1.6;color:var(--encre-douce)}
+.p.petit{font-size:12px;color:var(--gris);line-height:1.5}
+.bloc{margin-top:20px;border-top:1px solid var(--trait);padding-top:14px}
+.corps > .bloc:first-child{margin-top:0;border-top:0;padding-top:0}
+.bloc .caps{margin:0}
+.bloc .val{margin:6px 0 0;line-height:1.55;color:var(--encre)}
+.bloc.fort .val{font-size:17px;line-height:1.5}
+.bloc ul.puces{margin:6px 0 0;padding-left:18px}
+.bloc ul.puces li{margin-top:4px;line-height:1.55;color:var(--encre)}
+.confiance{margin:0;font-size:17px;line-height:1.4;color:var(--encre)}
+.confiance .sep{color:var(--gris);padding:0 6px}
+.source{margin:18px 0 0;font-size:12.5px;line-height:1.55;color:var(--gris)}
+.source b{color:var(--encre-douce);font-weight:500}
+
+.carte{margin-top:16px;background:var(--plage);border-radius:4px;padding:12px 16px;
+  box-shadow:inset 0 0 0 1px var(--trait-doux)}
+.carte p{margin:0;font-size:13px;line-height:1.55;color:var(--encre)}
+.carte ul.puces{font-size:13px;line-height:1.55;color:var(--encre-douce)}
+.carte ul.puces li{margin-top:3px}
+
+.photos{margin-top:20px}
+.photos img{display:block;width:100%;border-radius:4px;border:1px solid var(--trait);margin-top:10px}
+.photos figcaption{margin-top:6px;font-size:11.5px;line-height:1.5;color:var(--gris)}
+.photos figcaption span{color:var(--encre-douce)}
+
+.boutons{margin-top:30px;display:flex;flex-direction:column;align-items:center;gap:14px}
+.btn{display:inline-flex;align-items:center;justify-content:center;padding:13px 36px;
+  border-radius:9999px;font-family:ui-serif,Georgia,"Times New Roman",serif;font-size:17px;
+  text-decoration:none;cursor:pointer;border:0;min-height:48px}
+.btn.plein{background:var(--plein);color:var(--surPlein)}
+
+details.det{margin-top:26px}
+details.det summary{cursor:pointer;font-size:13px;color:var(--accent);list-style:none}
+details.det summary::before{content:"▸ ";color:var(--gris)}
+details.det[open] summary::before{content:"▾ "}
+details.det .ligne{margin:14px 0 0}
+details.det .ligne .caps{margin:0}
+details.det .ligne p{margin:3px 0 0;font-size:13.5px;line-height:1.55;color:var(--encre)}
+details.det .ligne ul{margin:3px 0 0;padding-left:18px;font-size:13.5px;line-height:1.55;color:var(--encre)}
+details.det .ligne li{margin-top:2px}
+details.det .fiche{border-top:1px solid var(--trait);padding-top:14px;margin-top:18px}
+details.det .fiche p{font-size:12.5px;color:var(--encre-douce)}
+details.det .fiche p.pale{font-size:11.5px;color:var(--gris)}
+
+.notes{max-width:740px;margin:0 auto;padding:6px 20px 0}
+.notes h3{font-family:ui-serif,Georgia,"Times New Roman",serif;font-size:20px;margin:34px 0 10px;font-weight:400}
+.notes p{font-size:14px;line-height:1.7;color:var(--encre-douce);margin:0 0 10px}
+.notes b{color:var(--encre)}
+.notes .cadre{overflow-x:auto}
+.notes table{width:100%;border-collapse:collapse;font-size:13.5px;margin:6px 0 14px}
+.notes th,.notes td{text-align:left;padding:8px 9px;border-bottom:1px solid var(--trait-doux);color:var(--encre-douce);vertical-align:top}
+.notes th{font-size:9.5px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--gris)}
+.notes td b{color:var(--encre)}
+.notes td i{color:var(--gris)}
+.notes ol{padding-left:20px;font-size:14px;line-height:1.7;color:var(--encre-douce)}
+.notes ol li{margin-bottom:6px}
+.notes a{color:var(--or)}

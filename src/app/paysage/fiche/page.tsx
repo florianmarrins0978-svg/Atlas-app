@@ -1,13 +1,14 @@
 import Link from "next/link";
+import AnnonceTransmission from "@/components/atlas/AnnonceTransmission";
 import EnTeteEcran from "@/components/atlas/EnTeteEcran";
-import { colors, font, smallCaps } from "@/lib/design-tokens";
+import { colors, font } from "@/lib/design-tokens";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { estProprietaire } from "@/server/autorisation";
 import { listerPassages } from "@/server/repositories/passages-entretien";
 import { listerPrestations } from "@/server/repositories/prestations-entretien";
 import OuvrirFiche from "./OuvrirFiche";
 import FichesEnCours from "./FichesEnCours";
-import LignePassage from "./LignePassage";
+import RapportsEnvoyes from "./RapportsEnvoyes";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Fiche de chantier — Atlas" };
@@ -55,6 +56,9 @@ export default async function FichesPage() {
           titre="Fiche de chantier"
           retour={{ href: "/paysage", libelle: "Retour à Paysage" }}
         />
+        {/* « Fiche envoyée à … » au retour de la messagerie : la fiche envoyée
+            ramène ici (`useRetourDeMessagerie`), sa demande du 22 septembre 2026. */}
+        <AnnonceTransmission />
 
         {/* ─── Composer ma fiche, EN PREMIER ─────────────────────────────────
             **Sa décision du 26 août 2026**, après avoir choisi la proposition B
@@ -88,7 +92,7 @@ export default async function FichesPage() {
 
                 **Moins large qu'une carte pleine.** Elle prend la largeur de
                 son texte, plafonnée — un pavé bord à bord pèserait autant que
-                « Ouvrir une fiche », qui est le geste de tous les jours, et
+                « Créer une fiche », qui est le geste de tous les jours, et
                 c'est le défaut que la planche annonçait. Le plafond existe pour
                 les gros caractères du téléphone : sans lui la carte redeviendrait
                 pleine largeur chez qui grossit son texte, c'est-à-dire là où
@@ -101,11 +105,13 @@ export default async function FichesPage() {
               // sa tenue ». La capsule est réservée à ce qu'on APPUIE ; ceci est
               // une carte qu'on parcourt, comme « Ma TVA à déclarer ».
               className="flex w-fit max-w-[270px] min-h-[44px] items-center gap-[14px] rounded-[4px] px-[16px] py-[13px]"
-              // `rustTint` est le PAPIER de la charte (`--paper`), pas une
-              // teinte de terre cuite : le nom vient d'avant la reprise
-              // d'Arborea. C'est le fond des éléments teintés, et il reste
-              // lisible sur les deux chartes sombres.
-              style={{ backgroundColor: colors.rustTint, border: `1px solid ${colors.line}` }}
+              // **Le fond est BLANC, le liseré d'OR, ses deux demandes du
+              // 22 septembre 2026** : « mets un liseré doré, celui de l'appli »,
+              // puis « mets l'intérieur en blanc ». Le blanc est `card`, celui
+              // des cartes et des champs : sur les deux chartes sombres il
+              // devient leur carte sombre, jamais un aplat blanc illisible.
+              // `colors.or` est l'or des canaux pris (`ChoixCanal`).
+              style={{ backgroundColor: colors.card, border: `1px solid ${colors.or}` }}
             >
               <span className="min-w-0 flex-1">
                 <span className="block text-[16px] leading-[1.2]" style={{ fontFamily: font.display }}>
@@ -167,18 +173,7 @@ export default async function FichesPage() {
 
         <FichesEnCours brouillons={brouillons} />
 
-        {partis.length > 0 && (
-          <section className="mx-[26px] mt-[28px]">
-            <h2 className={smallCaps} style={{ color: colors.muted }}>
-              Rapports envoyés
-            </h2>
-            <div className="mt-[10px]">
-              {partis.map((p) => (
-                <LignePassage key={p.id} passage={p} />
-              ))}
-            </div>
-          </section>
-        )}
+        {partis.length > 0 && <RapportsEnvoyes rapports={partis} />}
 
       </div>
     </div>

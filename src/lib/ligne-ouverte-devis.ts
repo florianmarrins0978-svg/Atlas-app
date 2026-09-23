@@ -10,6 +10,11 @@
  * ne servait qu'à ouvrir une case. Une feuille de devis s'ouvre avec sa
  * première ligne, comme un carnet.
  *
+ * **Et la FACTURE l'a demandée à son tour, le 22 septembre 2026** — *« quand je
+ * crée une facture il devrait déjà avoir une ligne d'ouverte »*. C'est le même
+ * geste, donc la même règle : `ligneOuverteAPoserSurLaFacture`, tout en bas de
+ * ce fichier, dit la seule chose qui change.
+ *
  * ───────────────────────────────────────────────────────────────────────────
  * **ET ELLE N'EXISTE PAS EN BASE TANT QU'IL N'A RIEN ÉCRIT — c'est tout
  * l'enjeu de ce fichier.**
@@ -92,4 +97,37 @@ export function ligneOuverteAEcrire(ligne: {
   if (Number.isFinite(prix) && prix !== 0) return true;
   const quantite = Number(String(ligne.quantite ?? "").replace(",", ".").trim());
   return Number.isFinite(quantite) && quantite !== 1;
+}
+
+/**
+ * Faut-il ouvrir une ligne d'avance sur cette FACTURE ?
+ *
+ * **Sa demande du 22 septembre 2026, capture à l'appui :** *« quand je crée une
+ * facture il devrait déjà avoir une ligne d'ouverte ; je ne dois pas avoir
+ * besoin d'ajouter une ligne au début »*. C'est le même geste que sur le devis,
+ * et c'est pourquoi la règle vit ici plutôt qu'une seconde fois dans l'écran
+ * (`CLAUDE.md` §3).
+ *
+ * **Une facture NÉE D'UN DEVIS n'en ouvre pas**, et ce n'est pas un oubli : ses
+ * lignes viennent du devis, et la seule chose qu'on y saisit est un travail
+ * SUPPLÉMENTAIRE. Une case vide d'office y ferait apparaître le bandeau
+ * « Travaux supplémentaires » sur une facture qui n'en porte aucun — l'écran
+ * annoncerait au patron un ajout qu'il n'a pas fait, juste avant qu'il vérifie
+ * ce qui part chez son client.
+ *
+ * Aucune dictée ne se déverse dans une facture : la garde du devis ne s'applique
+ * pas ici, et c'est la seule différence entre les deux.
+ */
+export function ligneOuverteAPoserSurLaFacture(facture: {
+  statut: string;
+  /** Née sans devis (migration 0086) — c'est ici qu'on saisit ses lignes. */
+  sansDevis: boolean;
+  nombreDeLignes: number;
+}): boolean {
+  if (!facture.sansDevis) return false;
+  return ligneOuverteAPoser({
+    statut: facture.statut,
+    nombreDeLignes: facture.nombreDeLignes,
+    dicteeAPreparer: false,
+  });
 }

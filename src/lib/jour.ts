@@ -28,11 +28,31 @@ const MOIS = [
 export function jourLisible(iso: string, aujourdHui: Date = new Date()): string {
   const [a, m, j] = iso.split("-").map(Number);
   if (!a || !m || !j) return iso;
+  const annee = a === aujourdHui.getUTCFullYear() ? "" : ` ${a}`;
+  return `${jourEtMoisEnLettres(a, m, j)}${annee}`;
+}
+
+/**
+ * « Mardi 22 septembre 2026 » — le jour écrit comme le titre d'un mois
+ * (« Septembre 2026 », `titreDeLaPeriode`), le nom du jour en plus.
+ *
+ * Sa demande du 22 septembre 2026, pour le jour du passage de la fiche de
+ * chantier. **L'année y est toujours**, contrairement à `jourLisible` : c'est un
+ * titre, et le titre du mois la porte.
+ */
+export function jourEnTitre(iso: string): string {
+  const [a, m, j] = iso.split("-").map(Number);
+  if (!a || !m || !j) return iso;
+  const texte = `${jourEtMoisEnLettres(a, m, j)} ${a}`;
+  return texte.charAt(0).toUpperCase() + texte.slice(1);
+}
+
+/** « mardi 22 septembre », « samedi 1er août » : ce que les deux écritures partagent. */
+function jourEtMoisEnLettres(a: number, m: number, j: number): string {
   const jourSemaine = JOURS[new Date(Date.UTC(a, m - 1, j)).getUTCDay()];
   // Le premier du mois est le seul ordinal en français : « 1er août », jamais
   // « 1 août ». Sur un devis, cette faute se remarque.
-  const annee = a === aujourdHui.getUTCFullYear() ? "" : ` ${a}`;
-  return `${jourSemaine} ${j === 1 ? "1er" : j} ${MOIS[m - 1]}${annee}`;
+  return `${jourSemaine} ${j === 1 ? "1er" : j} ${MOIS[m - 1]}`;
 }
 
 /**

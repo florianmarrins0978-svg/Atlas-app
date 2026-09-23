@@ -17,6 +17,7 @@ import {
   manques,
   memoireDepuis,
   memoireVide,
+  refusDuReleveGps,
 } from "../src/lib/fiche-securite";
 import { composerFicheSecuritePdf } from "../src/server/pdf/fiche-securite-pdf";
 
@@ -126,6 +127,18 @@ async function main() {
     assert.deepEqual(appliquerLaMemoire(contenuVide(), memoireVide()), contenuVide(), "sans mémoire, la fiche est vide");
   });
 
+  await cas("le nom et le prénom sont repris d'une fiche à l'autre : le signataire et le responsable sur place", () => {
+    // *« La case nom et prénom ne s'enregistre pas d'une fiche à l'autre ! »*
+    // (22 septembre 2026). Le signataire ne vivait que dans l'état de l'écran,
+    // jamais dans le contenu : ni enregistré en cours de route, ni gardé.
+    const c = { ...contenuVide(), signataire: "Martins Florian", responsableNom: "Martins", responsablePrenom: "Florian", responsableTel: "06 79 98 45 14" };
+    const suivante = appliquerLaMemoire(contenuVide(), memoireDepuis(c));
+    assert.equal(suivante.signataire, "Martins Florian");
+    assert.equal(suivante.responsableNom, "Martins");
+    assert.equal(suivante.responsablePrenom, "Florian");
+    assert.equal(suivante.responsableTel, "06 79 98 45 14");
+  });
+
   await cas("deux ans à compter de la signature, et le bandeau dit où on en est", () => {
     const signee = new Date(2026, 8, 18, 8, 5);
     const garde = gardeeJusquAu(signee);
@@ -165,6 +178,22 @@ async function main() {
     assert.ok(doc.getPageCount() >= 2, `une fiche entière tient sur plusieurs pages, pas ${doc.getPageCount()}`);
     assert.equal(doc.getTitle(), "Fiche de sécurité — Pagnol");
     assert.equal(NOTE_DE_LA_FEUILLE.lignes.length, 4, "la note au bas de la feuille a quatre lignes");
+  });
+
+  await cas("le refus du relevé GPS nomme sa cause, et chaque cause donne un geste différent", () => {
+    // Le 22 septembre 2026, le patron : « la position exacte fonctionne pas ».
+    // L'écran répondait la même phrase aux trois causes — dont deux qu'aucun
+    // réglage ne répare.
+    const refuse = refusDuReleveGps(1);
+    const sansSignal = refusDuReleveGps(2);
+    const tropLong = refusDuReleveGps(3);
+    assert.match(refuse, /réglages/i, "un refus de permission renvoie aux réglages");
+    assert.doesNotMatch(sansSignal, /réglages/i, "sans signal, les réglages n’y peuvent rien");
+    assert.doesNotMatch(tropLong, /réglages/i, "un délai dépassé n’est pas un refus");
+    assert.equal(new Set([refuse, sansSignal, tropLong, refusDuReleveGps(undefined)]).size, 4, "quatre causes, quatre phrases");
+    for (const m of [refuse, sansSignal, tropLong, refusDuReleveGps(undefined)]) {
+      assert.match(m, /écrivez les coordonnées/i, "chaque refus laisse la sortie : les écrire à la main");
+    }
   });
 
   console.log(echecs === 0 ? "\n✅ La fiche de sécurité tient ses règles." : `\n❌ ${echecs} cas en échec.`);

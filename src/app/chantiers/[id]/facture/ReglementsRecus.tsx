@@ -34,10 +34,10 @@ import {
  * tout court. « Chèque » est déjà écrit ; on le touche pour choisir virement,
  * espèces, carte ; seul un chèque a sa case pour le numéro.
  *
- * Sous la liste, « Facture acquittée » : allumé, le solde est compté reçu à la
- * date du jour ; il s'allume seul quand les règlements couvrent tout. Puis le
- * net à payer — ce que le papier écrit, par les mêmes fonctions
- * (`src/lib/acomptes-facture.ts`).
+ * Puis le net à payer — ce que le papier écrit, par les mêmes fonctions
+ * (`src/lib/acomptes-facture.ts`) —, et sous lui « Facture acquittée » :
+ * allumé, le solde est compté reçu à la date du jour ; il s'allume seul quand
+ * les règlements couvrent tout.
  *
  * **Un chiffre touché est sélectionné en entier** : on tape, l'ancien part.
  */
@@ -55,6 +55,7 @@ export default function ReglementsRecus({
   initiaux,
   fige,
   carte = true,
+  acquittement = !fige,
 }: {
   factureId: string;
   totalTtc: string;
@@ -70,6 +71,21 @@ export default function ReglementsRecus({
    * première se lirait comme un autre document.
    */
   carte?: boolean;
+  /**
+   * L'interrupteur « Facture acquittée » s'offre-t-il ?
+   *
+   * **Sa correction du 22 septembre 2026 :** *« depuis terminé, à facturer
+   * […] il doit y avoir sous net à payer un bouton on off facture acquitté.
+   * J'ai essayé de cliquer dessus depuis la facture mais impossible. »* Il
+   * avait quitté la page de la facture la veille, avec les deux « + » ; or
+   * c'est là que « À facturer » le mène, et c'est là qu'il l'a cherché.
+   *
+   * Il ne suit donc plus `fige` : sur la facture, on ne SAISIT plus de
+   * règlement — un geste de composition —, mais on solde d'un doigt. Ce qui
+   * le ferme, c'est la facture ARRÊTÉE : ses règlements se notent depuis
+   * Terminés, et le dépôt refuse déjà (`basculerAcquittee`).
+   */
+  acquittement?: boolean;
 }) {
   const [reglements, setReglements] = useState(initiaux);
   const [erreur, setErreur] = useState<string | null>(null);
@@ -290,7 +306,28 @@ export default function ReglementsRecus({
         </button>
       )}
 
-      {!fige && (
+      {erreur && (
+        <p role="alert" data-atlas="refus-reglement" className="mt-2 text-[13px]" style={{ color: colors.alert }}>
+          {erreur}
+        </p>
+      )}
+
+      <div className="mt-3 flex items-center justify-between pt-3" style={{ borderTop: `2px solid ${colors.ink}` }}>
+        <span className="text-[17px] font-semibold" style={{ color: colors.ink }}>
+          Net à payer
+        </span>
+        <span className="text-[20px] font-semibold" style={{ fontFamily: font.display, color: colors.ink }} data-atlas="net-a-payer">
+          {enEuros(net)}
+        </span>
+      </div>
+
+      {/* ─── L'INTERRUPTEUR, SOUS LE NET À PAYER — 22 septembre 2026 ─────────
+          *« Il doit y avoir sous net à payer un bouton on off facture
+          acquitté. »* Il vivait au-dessus, sous la liste des règlements. Le
+          net est le chiffre qu'il regarde ; l'acquittement est ce qui le met
+          à zéro, et sa place est juste en dessous, là où la réponse se lit
+          dans le même mouvement. */}
+      {acquittement && (
         <div
           className="mt-3 flex items-center justify-between gap-3 pt-3 text-[15px]"
           style={{ borderTop: `1px solid ${colors.lineSoft}`, color: colors.ink }}
@@ -319,21 +356,6 @@ export default function ReglementsRecus({
           </button>
         </div>
       )}
-
-      {erreur && (
-        <p role="alert" data-atlas="refus-reglement" className="mt-2 text-[13px]" style={{ color: colors.alert }}>
-          {erreur}
-        </p>
-      )}
-
-      <div className="mt-3 flex items-center justify-between pt-3" style={{ borderTop: `2px solid ${colors.ink}` }}>
-        <span className="text-[17px] font-semibold" style={{ color: colors.ink }}>
-          Net à payer
-        </span>
-        <span className="text-[20px] font-semibold" style={{ fontFamily: font.display, color: colors.ink }} data-atlas="net-a-payer">
-          {enEuros(net)}
-        </span>
-      </div>
       {/* ─── « ACQUITTÉE LE 21/09/2026 », EN OR ET DANS UN CADRE ─────────────
           **Sa correction du 21 septembre 2026, planche en main :** *« mets
           facture acquittée en doré, comme sur la facture »*, puis, devant le

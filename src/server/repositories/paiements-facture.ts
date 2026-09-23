@@ -1,6 +1,6 @@
 import { and, asc, desc, eq, sql } from "drizzle-orm";
 import { withEntreprise } from "../db/with-entreprise";
-import { entreprises, factures, paiementsFacture } from "../db/schema";
+import { entreprises, factures, lignesFacture, paiementsFacture } from "../db/schema";
 import type { Ctx } from "./context";
 import {
   etatPaiement,
@@ -12,6 +12,7 @@ import {
   type Paiement,
 } from "../../lib/exigibilite-tva";
 import { netAPayer, refusDuReglementRecu, type MoyenDePaiement, type ReglementRecu } from "../../lib/acomptes-facture";
+import { totauxAvecReduction } from "../../lib/reduction-devis";
 import type { DbOrTx } from "../db/client";
 
 /**
@@ -296,9 +297,33 @@ export async function compterPaiements(ctx: Ctx, factureId: string): Promise<num
 
 export type ReglementEnregistre = ReglementRecu & { id: string };
 
+/**
+ * ─── LE TOTAL D'UN BROUILLON SE CALCULE, IL NE SE LIT PAS ──────────────────
+ *
+ * **Sa panne du 22 septembre 2026 :** *« je peux pas mettre de règlement reçu
+ * non plus »*, capture à l'appui — « Il ne reste que 0,00 € à recevoir sur
+ * cette facture » écrit sous un Total TTC de 552,52 €.
+ *
+ * Une facture née SANS devis pose ses trois colonnes de totaux à « 0.00 », et
+ * c'est délibéré : elles ne font pas foi, tout se recalcule depuis les lignes
+ * à chaque affichage comme à l'émission (`creerFactureSansDevis`). L'écran
+ * montrait donc le vrai total pendant que ce garde-ci lisait la COLONNE :
+ * zéro euro à recevoir, le moindre acompte refusé, et « Facture acquittée »
+ * qui ne posait aucun solde — le doigt sur l'interrupteur ne faisait rien.
+ *
+ * **C'est `totauxAvecReduction` qui décide**, celle de l'écran et du PDF : une
+ * seconde addition ici aurait divergé au premier ajustement (`CLAUDE.md` §3).
+ * Une facture ÉMISE, elle, garde la colonne — figée au moment de l'émission,
+ * c'est le chiffre que le client a reçu, et ses lignes ne bougent plus.
+ */
 async function factureEnBrouillon(tx: DbOrTx, factureId: string) {
   const [f] = await tx
-    .select({ id: factures.id, statut: factures.statut, totalTtc: factures.totalTtc })
+    .select({
+      id: factures.id,
+      statut: factures.statut,
+      tauxTva: factures.tauxTva,
+      reductionPourcent: factures.reductionPourcent,
+    })
     .from(factures)
     .where(eq(factures.id, factureId))
     .limit(1);
@@ -306,7 +331,12 @@ async function factureEnBrouillon(tx: DbOrTx, factureId: string) {
   if (f.statut !== "brouillon") {
     return { ok: false as const, raison: "La facture est déjà arrêtée : ses règlements se notent depuis Terminés." };
   }
-  return { ok: true as const, facture: f };
+  const lignes = await tx
+    .select({ montant: lignesFacture.montant, tauxTva: lignesFacture.tauxTva })
+    .from(lignesFacture)
+    .where(eq(lignesFacture.factureId, factureId));
+  const totaux = totauxAvecReduction(lignes, f.tauxTva, f.reductionPourcent);
+  return { ok: true as const, facture: { id: f.id, statut: f.statut, totalTtc: totaux.totalTtc } };
 }
 
 async function lireReglements(tx: DbOrTx, factureId: string): Promise<ReglementEnregistre[]> {

@@ -2,7 +2,8 @@
 
 import { useMemo, useState } from "react";
 import PrimaryButton from "@/components/atlas/PrimaryButton";
-import { colors, font, smallCaps } from "@/lib/design-tokens";
+import { ChampRecherche } from "@/components/atlas/ChampRecherche";
+import { colors, font, smallCaps, surPlein } from "@/lib/design-tokens";
 import { jourLisible } from "@/lib/jour";
 import { parFamilles } from "@/lib/prestations-entretien";
 import { MINUTES_MAX, PAS_MINUTES, empechementEnvoi } from "@/lib/passage-entretien";
@@ -15,13 +16,14 @@ import {
   majPassageAction,
   nommerClientAction,
 } from "../actions";
+import { marquerDepartMessagerie, useRetourDeMessagerie } from "@/lib/depart-messagerie";
 import { adressePourLeClient, ouvrableParLeClient, phraseAdresseLocale } from "@/lib/adresse-du-client";
 import { useAdressePourLeClient } from "@/lib/use-adresse-client";
 
 // La fiche qu'il coche sur un chantier — arrangement C, 17 août 2026.
 //
-// **Ce que cet écran ne fait PAS : décider.** Ce qui reste à l'écran quand le
-// client est nommé est calculé par le serveur (`recomposerPourClient`), et
+// **Ce que cet écran ne fait PAS : décider.** Ce qui se coche quand le client
+// est nommé est calculé par le serveur (`cocherCommeLaDerniereFois`), et
 // l'écran affiche ce qu'on lui rend. Refaire ce tri ici donnerait deux vérités
 // sur une même liste, et elles finiraient par diverger (`CLAUDE.md` §3).
 
@@ -101,8 +103,8 @@ export default function FicheChantierClient({
   const [envoyeLe, setEnvoyeLe] = useState(passage.envoyeLe);
   const [jeton, setJeton] = useState(passage.jeton);
   const [phrase, setPhrase] = useState<string | null>(null);
-  // **Un CONSTAT n'est pas un refus, et ne se peint pas en rouge.** « 17
-  // prestations retirées » est le résultat attendu du repli : le dire en rouge,
+  // **Un CONSTAT n'est pas un refus, et ne se peint pas en rouge.** « 3 prestations
+  // cochées, celles du dernier chantier » est le résultat attendu du geste : le dire en rouge,
   // au bas de l'écran, au-dessous du bouton, le ferait lire comme une panne
   // — et il chercherait ce qu'il a cassé. Il se dit là où le changement a eu
   // lieu, sous le nom du client, du même gris que le reste.
@@ -187,16 +189,17 @@ export default function FicheChantierClient({
     setTelephone(c.telephone);
     setEmail(c.email);
     setCanal(c.canal ?? (c.telephone ? "sms" : "email"));
-    // **Le serveur rend ce qui reste, l'écran l'affiche.** Refaire le repli
-    // ici donnerait deux vérités sur une même liste, et une fiche qui montre
-    // autre chose que ce qui est en base est pire qu'une fiche trop longue.
+    // **Le serveur rend les lignes cochées, l'écran les affiche.** Refaire les
+    // coches ici donnerait deux vérités sur une même liste.
     setLignes(r.lignes);
+    // Ses mots du 22 septembre 2026 : le nombre, puis « prestations cochées,
+    // celles du dernier chantier ». Accordé au singulier pour une seule.
     setConstat(
-      r.retirees > 0
-        ? `Fiche repliée sur ce que ${c.nom} prend d'habitude — ${r.retirees} ligne${
-            r.retirees > 1 ? "s" : ""
-          } de moins. Vous pouvez encore tout cocher.`
-        : null
+      r.cochees > 1
+        ? `${r.cochees} prestations cochées, celles du dernier chantier.`
+        : r.cochees === 1
+          ? "1 prestation cochée, celle du dernier chantier."
+          : null
     );
   }
 
@@ -215,6 +218,8 @@ export default function FicheChantierClient({
    * `sms:` qui ne suit pas immédiatement le doigt, sans un mot. S'il refuse, le
    * patron retrouve le bouton ; s'il accepte, il ne le voit qu'au retour.
    */
+  useRetourDeMessagerie("/paysage/fiche");
+
   async function envoyer() {
     const r = await envoyerFicheAction(passage.id);
     if (!r.ok) {
@@ -257,6 +262,13 @@ export default function FicheChantierClient({
       modele: modeleMessage,
       lien: `${adresse}/entretien/${jetonNeuf}`,
     });
+    // **Au retour de la messagerie, la fiche se ferme** — sa demande du
+    // 22 septembre 2026 : *« je dois arriver sur la page précédente avec une
+    // petite mention qui dit que la fiche a bien été envoyée »*. Marqué APRÈS
+    // le figeage : ce qu'annonce le bandeau est déjà vrai en base. Et si le
+    // navigateur refuse d'ouvrir la messagerie, la page ne se cache jamais,
+    // donc rien ne se déclenche.
+    marquerDepartMessagerie("fiche", clientNom ?? "");
     ouvrirAdresse(lienTransmission({ canal, destinataire, message }), canal);
   }
 
@@ -273,15 +285,21 @@ export default function FicheChantierClient({
       data-atlas="fiche-chantier"
     >
       <section className="mx-[26px] mt-[20px]">
-        <p className="text-[13px]" style={{ color: colors.muted }}>
+        {/* Le jour en noir gras, sa demande du 22 septembre 2026 : c'est ce
+            qu'il vérifie en ouvrant la fiche. */}
+        <p className="text-[13px] font-semibold" style={{ color: colors.ink }}>
           {jourLisible(passage.jour)}
         </p>
 
         {/* ─── LE PONT VERS LE CLIENT — arrangement C ─────────────────────────
-            « Une ligne discrète, touchable à tout moment. » Elle est en HAUT et
-            non au bas de la fiche : c'est la première chose qu'il sait en
-            arrivant chez quelqu'un, et la dernière qu'on veut lui réclamer une
-            fois qu'il a tout coché. */}
+            En HAUT et non au bas de la fiche : c'est la première chose qu'il
+            sait en arrivant chez quelqu'un, et la dernière qu'on veut lui
+            réclamer une fois qu'il a tout coché.
+
+            **« + Ajouter un client », en gros, doré, centré** — sa demande du
+            22 septembre 2026, qui remplace « + C'est pour quel client ? » et
+            retire la phrase grise « Facultatif… » dessous. L'or est celui de
+            « + Ajouter une prestation » (`colors.or`). */}
         {clientId ? (
           <>
             <div className="mt-[8px] flex items-center gap-[10px]">
@@ -317,14 +335,10 @@ export default function FicheChantierClient({
               type="button"
               data-atlas="pont-client"
               onClick={() => setChoixOuvert(true)}
-              className="mt-[8px] text-left"
+              className="mt-[14px] block min-h-[44px] w-full text-center text-[20px]"
+              style={{ color: colors.or }}
             >
-              <span className="text-[15px]" style={{ color: colors.rust }}>
-                + C&apos;est pour quel client ?
-              </span>
-              <span className="mt-[2px] block text-[11.5px]" style={{ color: colors.muted }}>
-                Facultatif — vous pourrez le dire à la fin.
-              </span>
+              + Ajouter un client
             </button>
           )
         )}
@@ -409,16 +423,20 @@ export default function FicheChantierClient({
             <span
               aria-hidden="true"
               className="relative block h-[26px] w-[44px] rounded-full transition-colors"
+              // **Allumé, il est VERT** : le vert plein de l'application
+              // (`plein`, celui de « Créer une fiche »), sa demande du
+              // 22 septembre 2026. La pastille posée dessus prend `surPlein`,
+              // lisible sur les sept chartes.
               style={
                 tempsVisible
-                  ? { backgroundColor: colors.rust }
+                  ? { backgroundColor: colors.plein }
                   : { backgroundColor: colors.rustTint, boxShadow: `inset 0 0 0 1px ${colors.line}` }
               }
             >
               <span
                 className="absolute left-[3px] top-[3px] block h-[20px] w-[20px] rounded-full transition-transform"
                 style={{
-                  backgroundColor: colors.card,
+                  backgroundColor: tempsVisible ? surPlein : colors.card,
                   boxShadow: "0 1px 3px rgba(20,18,14,0.28)",
                   transform: tempsVisible ? "translateX(18px)" : "none",
                 }}
@@ -458,6 +476,16 @@ export default function FicheChantierClient({
 
       {/* ─── L'ENVOI ────────────────────────────────────────────────────────── */}
       <section className="mx-[26px] mt-[30px]">
+        {/* **La date d'envoi est pour LUI** — sa demande du 22 septembre
+            2026 : *« ça, c'est à garder seulement pour l'utilisateur dans
+            l'appli, supprime-le pour le client »*. Elle a quitté la page du
+            client pour venir ici. */}
+        {envoyeLe && (
+          <p className="mb-[14px] text-center text-[12.5px]" style={{ color: colors.muted }} data-atlas="envoye-le">
+            Envoyé le{" "}
+            {new Date(envoyeLe).toLocaleString("fr-FR", { dateStyle: "long", timeStyle: "short", timeZone: "Europe/Paris" })}.
+          </p>
+        )}
         {parti ? (
           <RapportParti
             lien={jeton ? `${adressePublique}/entretien/${jeton}` : ""}
@@ -675,13 +703,13 @@ function ChoixDuClient({
           </button>
         </div>
 
-        <input
-          type="search"
-          value={recherche}
-          onChange={(e) => setRecherche(e.target.value)}
+        <ChampRecherche
+          valeur={recherche}
+          onChange={setRecherche}
           placeholder="Chercher un client"
-          className="mt-[10px] w-full rounded-[12px] px-[13px] py-[9px] text-[15px] outline-none"
-          style={{ backgroundColor: colors.cream, color: colors.ink, border: `1px solid ${colors.line}` }}
+          ariaLabel="Chercher un client"
+          dataAtlas="chercher-client-de-la-fiche"
+          className="mt-[10px]"
         />
 
         {clients.length === 0 ? (
@@ -804,6 +832,7 @@ function RapportParti({
         <PrimaryButton
           repere={canal === "sms" ? "ouvrir-sms-fiche" : "ouvrir-email-fiche"}
           href={lienTransmission({ canal, destinataire, message })}
+          onClick={() => marquerDepartMessagerie("fiche", clientNom ?? "")}
         >
           {canal === "sms" ? "Envoyer par SMS" : "Envoyer par e-mail"}
         </PrimaryButton>

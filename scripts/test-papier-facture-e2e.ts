@@ -153,9 +153,40 @@ async function main() {
       assert.equal(await page.locator('[data-atlas="montant-main-doeuvre"]').inputValue(), "450");
       assert.equal(await page.locator('[data-atlas="poser-main-doeuvre"]').count(), 0, "« + Main d’œuvre » est resté sur la facture");
       assert.equal(await page.locator('[data-atlas="poser-reglement"]').count(), 0, "« + Règlement reçu » est resté sur la facture");
-      assert.equal(await page.locator('[data-atlas="facture-acquittee"]').count(), 0, "l'interrupteur est resté sur la facture");
       const net = lisible(await page.locator('[data-atlas="net-a-payer"]').innerText());
       assert.ok(net.includes("1 910,40"), `le net à payer devrait être le TTC entier : ${net}`);
+    });
+
+    // ─── L'INTERRUPTEUR EST SUR LA PAGE OÙ LE MÈNE « À FACTURER » ──────────
+    // Sa correction du 22 septembre 2026 : *« depuis terminé, à facturer […]
+    // il doit y avoir sous net à payer un bouton on off facture acquitté.
+    // J'ai essayé de cliquer dessus depuis la facture mais impossible »*.
+    // Il était parti la veille sur la seule feuille où il remplit ; la page
+    // que « À facturer » ouvre est celle où il regarde avant d'envoyer, et
+    // c'est là qu'il l'a cherché. Il revient — SOUS le net, sa place à lui —
+    // et il ne s'offre que sur un BROUILLON : une facture arrêtée ne se
+    // solde plus d'un doigt, ses règlements se notent depuis Terminés.
+    await cas("« Facture acquittée » s'offre sur la page de la facture, SOUS le net à payer", async () => {
+      assert.equal(await page.locator('[data-atlas="facture-acquittee"]').count(), 1, "l'interrupteur manque sur la facture");
+      const ordre = await page.evaluate(() => {
+        const net = document.querySelector('[data-atlas="net-a-payer"]');
+        const inter = document.querySelector('[data-atlas="facture-acquittee"]');
+        if (!net || !inter) return "absent";
+        // `DOCUMENT_POSITION_FOLLOWING` : l'interrupteur vient APRÈS le net.
+        return net.compareDocumentPosition(inter) & Node.DOCUMENT_POSITION_FOLLOWING ? "sous" : "au-dessus";
+      });
+      assert.equal(ordre, "sous", "l'interrupteur n'est pas sous le net à payer");
+    });
+
+    await cas("et il marche depuis la facture : le net tombe à zéro, le tampon paraît", async () => {
+      await page.click('[data-atlas="facture-acquittee"]');
+      await page.waitForTimeout(900);
+      assert.equal(lisible(await page.locator('[data-atlas="net-a-payer"]').innerText()), lisible("0,00 €"));
+      assert.equal(await page.locator('[data-atlas="acquittee"]').count(), 1, "le tampon doré manque");
+      await page.click('[data-atlas="facture-acquittee"]');
+      await page.waitForTimeout(900);
+      const net = lisible(await page.locator('[data-atlas="net-a-payer"]').innerText());
+      assert.ok(net.includes("1 910,40"), `l'éteindre ne rend pas le net : ${net}`);
     });
 
     await cas("« + Règlement reçu » pose « Acompte 30 % » avec ce que le devis prévoyait, chèque en tête", async () => {

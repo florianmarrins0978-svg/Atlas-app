@@ -3,7 +3,7 @@ import { getCurrentCtx } from "@/server/session-ctx";
 import { getChantierPourCoordonnees } from "@/server/repositories/chantiers";
 import FormulaireNouveauChantier from "../../nouveau/FormulaireNouveauChantier";
 import { provenanceDesCoordonnees } from "@/lib/retour-du-devis";
-import { listerPhotos } from "@/server/repositories/photos";
+import { listerPhotosHorsFicheDeSecurite } from "@/server/repositories/photos";
 import { getNoteVocale } from "@/server/repositories/notes-vocales";
 
 // Données réelles, propres à l'entreprise courante : jamais de pré-rendu statique.
@@ -56,7 +56,14 @@ export default async function CoordonneesDuChantierPage({
   // qu'une note existe, sinon l'écran change de visage entre deux visites
   // (`FormulaireNouveauChantier`, champ `aUneNote`). Elle sert seulement à ne
   // pas l'inviter à dicter par-dessus.
-  const [photos, note] = await Promise.all([listerPhotos(ctx, id), getNoteVocale(ctx, id)]);
+  // **Sans celles de la fiche de sécurité** — sa règle du 22 septembre 2026 :
+  // elles restent à l'intérieur de la fiche. Une photo de croquis posée là-bas
+  // n'a rien à faire dans la pellicule du client, qui sert à décrire le
+  // chantier et à faire le devis.
+  const [photos, note] = await Promise.all([
+    listerPhotosHorsFicheDeSecurite(ctx, id),
+    getNoteVocale(ctx, id),
+  ]);
 
   const adresseChantier = chantier.adresseChantier ?? "";
   const adresseClient = chantier.clientAdresse ?? "";

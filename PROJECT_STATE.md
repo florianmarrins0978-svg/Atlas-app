@@ -5,15 +5,69 @@
 
 ---
 
+## FAIT : LA FLÈCHE RETOUR DE LA FICHE CLIENT GARDE LA SAISIE (22 septembre 2026)
+
+*« Je remplis la fiche client, je fais retour, mais elle n'apparaît plus dans
+mes clients en cours !! »* La flèche jetait ce qu'il avait tapé : dans la
+feuille de l'accueil, aucun chantier ; depuis un devis, un chantier sans client.
+Elle enregistre désormais ce qui a changé depuis l'ouverture, puis sort.
+`ARCHITECTURE.md` §407.
+
+## FAIT : LA FACTURE PORTE LE JOUR OÙ ELLE PART (22 septembre 2026)
+
+Son constat : « Facturé le 21 septembre » un 22, sur une facture qu'il venait
+d'envoyer. `date_emission` était posée à la CRÉATION du brouillon, et l'envoi ne
+la rouvrait pas — le PDF du client portait cette date, l'échéance courait depuis
+elle, et la TVA d'un brouillon de fin de trimestre serait tombée du mauvais
+côté. La date et l'échéance se posent désormais à l'émission, AVANT la
+composition du PDF ; l'échéance se décale du même nombre de jours, pour ne pas
+écraser celle qu'il aurait choisie à la main. Les factures déjà émises ne
+bougent pas. `ARCHITECTURE.md` §403.
+
+## FAIT : LA FACTURE S'OUVRE AVEC SA PREMIÈRE LIGNE (22 septembre 2026)
+
+*« Quand je crée une facture il devrait déjà avoir une ligne d'ouverte ! Je ne
+dois pas avoir besoin d'ajouter une ligne au début ! »* La feuille où il remplit
+une facture SANS devis s'ouvre désormais avec sa case, comme le devis depuis le
+20 septembre — même règle, même fichier (`ligneOuverteAPoserSurLaFacture`). Une
+facture née d'un devis n'en ouvre pas : on n'y saisit que des travaux
+supplémentaires. Rien n'est écrit en base avant son premier mot : sur une
+facture, une ligne vide part chez le client. `ARCHITECTURE.md` §394.
+
 ## FAIT : LA FICHE DE SÉCURITÉ, SUR LA FICHE DU JOUR (22 septembre 2026)
 
 La fiche d'intervention du décret 2021-1833, nommée « Fiche de sécurité » :
 bandeau sur la fiche du jour (tous les chantiers), six écrans aux mots de la
 feuille MSA, signature au doigt, PDF, transmission par la feuille de partage,
-liste dans Paysage par mois. Migration 0099. Le formulaire vit sous
+liste dans Paysage par mois ou par jour, et par nom de client tous mois confondus. Migration 0099. Le formulaire vit sous
 `/planning/fiche-de-securite/[chantierId]` (ouvert aux salariés : la loi veut
 qu'elle leur soit présentée), la liste sous `/paysage/fiches-securite`.
 `docs/lot-fiche-de-securite.md`.
+
+## FAIT : « FACTURE ACQUITTÉE » SOUS LE NET, ET SUR LES DEUX ÉCRANS (22 septembre 2026)
+
+*« Depuis terminé, à facturer […] il doit y avoir sous net à payer un bouton on
+off facture acquitté. J'ai essayé de cliquer dessus depuis la facture mais
+impossible. »* La veille, l'interrupteur était parti avec les deux « + » sur la
+feuille où il remplit ; or les « + » composent le document et lui constate.
+Il revient sur la page que « À facturer » ouvre, passe **sous le net à payer**
+aux deux endroits, et ne s'offre que sur un brouillon — une facture émise ne se
+solde plus d'un doigt. `ARCHITECTURE.md` §404.
+
+Et la panne qui allait avec : *« je peux pas mettre de règlement reçu non
+plus »*. Sur une facture faite **sans devis**, le garde des règlements lisait
+la colonne `total_ttc` — restée à zéro, puisque les totaux d'un brouillon se
+recalculent depuis les lignes. Aucun acompte n'y passait, et l'interrupteur ne
+posait aucun solde. Il calcule désormais le total comme l'écran et le PDF.
+`ARCHITECTURE.md` §405.
+
+**Ses trois remarques du 22 septembre, corrigées** : la saisie s'enregistre au
+fil de l'eau (un lien qui sort de l'application ne coûte plus l'étape en
+cours) ; le relevé GPS nomme sa cause, réessaie sans la haute précision, dit
+qu'il travaille, et laisse écrire les coordonnées à la main ; le cadre des
+champs est sorti de l'`<input>` pour que Safari cesse de le jeter sur les deux
+heures. **Ce dernier point n'est pas reproductible ici** — il se regarde sur
+son iPhone.
 
 ## FAIT : LA FACTURE SE REMPLIT OÙ ON LA REMPLIT (21 septembre 2026)
 

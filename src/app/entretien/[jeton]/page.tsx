@@ -14,6 +14,10 @@ import { couleursDocument } from "@/lib/design-tokens";
 // l'acceptation d'un devis — plus solide qu'un trait au doigt, et qui n'exige
 // personne sur place.
 //
+// **La date d'envoi n'y est plus** (22 septembre 2026) : *« ça, c'est à garder
+// seulement pour l'utilisateur dans l'appli »*. Elle vit sur sa fiche, et ne
+// quitte donc plus le serveur pour la page du client.
+//
 // **Seul ce qui a été FAIT s'affiche** (sa décision « B ») — et le tri est fait
 // en base : ce qui n'a pas été fait n'arrive même pas dans ce HTML.
 //
@@ -23,6 +27,8 @@ export const dynamic = "force-dynamic";
 
 // Un compte rendu de passage n'a rien à faire dans un moteur de recherche.
 export const metadata = { robots: { index: false, follow: false } };
+
+const majuscule = (t: string) => t.charAt(0).toUpperCase() + t.slice(1);
 
 function Cadre({ titre, texte }: { titre: string; texte: string }) {
   return (
@@ -70,18 +76,24 @@ export default async function PageRapportClient({
         data-atlas="rapport-entretien"
         style={{ color: couleursDocument.encre }}
       >
+        {/* Centré et doré, sa demande du 22 septembre 2026 : l'or des
+            documents (`couleursDocument.accent`), pas celui de la charte, qui
+            changerait avec les réglages de l'artisan. */}
         <p
-          className="text-[11px] font-semibold uppercase tracking-[0.18em]"
-          style={{ color: couleursDocument.etiquette }}
+          className="text-center text-[11px] font-semibold uppercase tracking-[0.18em]"
+          style={{ color: couleursDocument.accent }}
         >
           Retour d&apos;intervention
         </p>
         <h1 className="mt-2 text-[21px]" style={{ fontFamily: "ui-serif, Georgia, serif" }}>
           {rapport.entrepriseNom}
         </h1>
-        <p className="mt-1 text-[14px]" style={{ color: couleursDocument.etiquette }}>
-          {jourLisible(rapport.jour)}
-          {rapport.clientNom ? `, ${rapport.clientNom}` : ""}
+        {/* **Une phrase, en noir, le jour en gras** — sa demande du
+            22 septembre 2026 : plus de point médian entre la date et le nom
+            (`CLAUDE.md` §3, « ni point médian, ni tiret : des phrases »). */}
+        <p className="mt-1 text-[14px]" style={{ color: couleursDocument.encre }}>
+          <b>{majuscule(jourLisible(rapport.jour))}</b>
+          {rapport.clientNom ? ` chez ${rapport.clientNom}` : ""}
         </p>
 
         <div className="mt-6">
@@ -124,16 +136,6 @@ export default async function PageRapportClient({
             {rapport.observations}
           </div>
         )}
-
-        <p className="mt-6 text-[11.5px] leading-[1.6]" style={{ color: couleursDocument.etiquette }}>
-          Envoyé le{" "}
-          {rapport.envoyeLe.toLocaleString("fr-FR", {
-            dateStyle: "long",
-            timeStyle: "short",
-            timeZone: "Europe/Paris",
-          })}
-          . Ce retour d&apos;intervention est figé&nbsp;: il ne peut plus être modifié.
-        </p>
       </div>
     </div>
   );

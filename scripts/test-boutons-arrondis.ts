@@ -239,6 +239,23 @@ const HORS_CHARTE: Array<{
     pourquoi: "vignette d'une photo du retour : un cercle rognerait l'image",
   },
   {
+    // **LA MÊME VIGNETTE, SUR LA FICHE DE SÉCURITÉ** — arrivée le 22 septembre
+    // 2026 avec sa demande : *« les photos de la fiche de sécurité, je ne peux
+    // pas cliquer dessus pour les voir en grand »*. Elle était un `<span>`
+    // jusque-là ; la rendre cliquable en a fait un bouton, et ce contrôle l'a
+    // dénoncée aussitôt — c'est ce qu'on lui demande.
+    //
+    // Même arbitrage que les quatre au-dessus, au pixel près : un cercle rogne
+    // les quatre coins d'une photo réduite à 46 px, c'est-à-dire ce qui permet
+    // de reconnaître le croquis du terrain. Une image n'est pas un geste.
+    //
+    // **Ce qu'elle ne couvre PAS** : le « Retirer » de la visionneuse, dans le
+    // même fichier — celui-là est un geste, et il porte la capsule.
+    motif: /^src[/\\]app[/\\]planning[/\\]fiche-de-securite[/\\]\[chantierId\][/\\]FormulaireFicheDeSecurite\.tsx$/,
+    seulement: /h-\[46px\] w-\[46px\]/,
+    pourquoi: "vignette d'une photo du terrain : un cercle rognerait l'image",
+  },
+  {
     // **UNE PHOTO QU'ON OUVRE, PAS UN BOUTON** — la quatrième de cette famille,
     // arrivée le 11 septembre 2026 avec sa demande : *« ce qui serait bien,
     // c'est qu'on puisse cliquer dessus pour qu'elle apparaisse en grand »*.

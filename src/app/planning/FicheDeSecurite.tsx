@@ -172,13 +172,6 @@ export default function FicheDeSecurite({ chantierId }: { chantierId: string }) 
                 >
                   {fiche && fiche.etapeVue > 0 ? "Continuer" : "Remplir la fiche"}
                 </Link>
-                <Link
-                  href={`${adresseDuFormulaire}?loi=1`}
-                  className="mx-auto mt-2.5 block w-max px-3 py-2 text-[14px] font-bold no-underline"
-                  style={{ color: colors.ink }}
-                >
-                  Ce que demande la loi
-                </Link>
               </div>
             )}
             {refus && (
