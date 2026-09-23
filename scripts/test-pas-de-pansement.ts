@@ -36,8 +36,10 @@
    devient la fondation du suivant.
    ======================================================================= */
 import assert from "node:assert/strict";
-import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
+// La lecture du diff est la MÊME que celle du contrôle des points du milieu de
+// phrase : c'est elle qui décide de ce qu'un garde-fou voit (`CLAUDE.md` §3).
+import { lignesAjoutees as lignesAjouteesDe } from "./_lignes-ajoutees";
 import path from "node:path";
 
 const RACINE = path.join(__dirname, "..");
@@ -88,49 +90,6 @@ const PANSEMENTS: { nom: string; motif: RegExp; pourquoi: string }[] = [
 
 /** L'aveu qui rend un contournement acceptable, avec sa raison. */
 const AVEU = /pansement assum[ée]\s*:\s*(.{20,})/i;
-
-/**
- * Ce que le lot ajoute, par rapport au tronc commun avec `main`.
- *
- * `git diff <base>` compare l'ARBRE DE TRAVAIL à cette base : ce qui est
- * commité comme ce qui ne l'est pas encore. C'est bien ce qu'on veut —
- * un pansement n'a pas besoin d'être commité pour être livré.
- */
-function lignesAjoutees(): { fichier: string; ligne: string; precedente: string }[] {
-  const git = (...args: string[]) =>
-    execFileSync("git", args, { cwd: RACINE, encoding: "utf8", maxBuffer: 64 * 1024 * 1024 }).trim();
-
-  let base: string;
-  try {
-    base = git("merge-base", "HEAD", "origin/main");
-  } catch {
-    // Pas de `origin/main` sous la main (dépôt fraîchement cloné, CI d'une
-    // fourche) : on se rabat sur le commit précédent plutôt que de rendre un
-    // vert qui n'aurait rien mesuré.
-    base = git("rev-parse", "HEAD~1");
-  }
-
-  const diff = git("diff", "--unified=0", base, "--", "src");
-  const sorties: { fichier: string; ligne: string; precedente: string }[] = [];
-  let fichier = "";
-  let precedente = "";
-  for (const ligne of diff.split("\n")) {
-    if (ligne.startsWith("+++ b/")) {
-      fichier = ligne.slice("+++ b/".length);
-      precedente = "";
-      continue;
-    }
-    if (ligne.startsWith("@@")) {
-      precedente = "";
-      continue;
-    }
-    if (!ligne.startsWith("+") || ligne.startsWith("+++")) continue;
-    const texte = ligne.slice(1);
-    sorties.push({ fichier, ligne: texte, precedente });
-    precedente = texte;
-  }
-  return sorties;
-}
 
 /**
  * Le cœur, isolé pour qu'il puisse être ÉPROUVÉ sans dépôt ni diff.
@@ -211,7 +170,7 @@ assert.equal(
 console.log("  ok    l'aveu compte, mais seulement avec sa raison");
 
 // ── 2. Ce que CE lot ajoute ──────────────────────────────────────────────
-const ajoutees = lignesAjoutees();
+const ajoutees = lignesAjouteesDe(RACINE, ["src"]);
 const trouves = pansementsDe(ajoutees);
 console.log(`\n  ${ajoutees.length} ligne(s) ajoutée(s) sous src/ par ce lot, mesurées.`);
 

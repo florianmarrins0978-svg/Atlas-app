@@ -188,3 +188,64 @@ retour à la ligne, c'est la règle du langage.
 | des points neufs ? | **non**, aucun |
 | un point retiré par quelqu'un d'autre ? | **oui, un** : le rapport d'intervention du client. Une autre session l'a corrigé le 22 septembre, sur la même règle. Sa version est gardée — elle va plus loin : « Mardi 22 septembre chez M. Bernard », une phrase, le jour en gras |
 | après fusion | **zéro** point du milieu de phrase dans ce que le produit affiche |
+
+
+---
+
+## Les deux trous que SA question a trouvés — 23 septembre 2026
+
+*« Si dans la maquette il met des points n'importe où, quand il va pousser sur
+main il va pousser avec les points ? Donc c'est pas bon. »*
+
+Il a raison deux fois : la planche est ce qu'il OUVRE depuis son téléphone, et
+une planche validée se recopie en code — c'est le chemin normal de ce dépôt.
+
+### 1. Les maquettes
+
+Le contrôle lit désormais ce qu'un lot **ajoute** sous `appli/` et
+`maquettes/`. Pas le reste : **2 320 points dorment dans 231 planches**, dont
+des dizaines d'essais archivés. Les faire rougir toutes, c'est un garde-fou
+éteint dans la journée — c'est la règle qui fait vivre celui des pansements
+depuis le 7 septembre, et la mécanique est maintenant partagée avec lui.
+
+Éprouvé : un point ajouté dans une planche le fait rougir et nomme la ligne.
+
+### 2. Le catalogue d'arrosage — et celui-là était DANS l'application
+
+Le contrôle ne lisait que le TypeScript. `src/lib/arrosage/catalogue.js` est un
+`.js` : **61 libellés y portaient un point**, et ils partent sur le plan, dans
+la liste des pièces, et chez le fournisseur.
+
+| Avant | Après |
+|---|---|
+| `PGP-ADJ · buse 1 (rouge std)` | `PGP-ADJ buse 1 (rouge std)` |
+| `escamotable 10 cm · SAM` | `escamotable 10 cm, SAM` |
+| `2,5 bar · par 20` | `2,5 bar, par 20` |
+
+Corrigés dans les **deux** copies du catalogue — celle de l'application et
+celle de la page publiée —, qui restent identiques à la ligne près
+(`verifier-arrosage-une-seule-source.mjs` le vérifie).
+
+Sept maquettes citaient ces libellés en dur : elles suivent le catalogue.
+
+### Un contrôle qui tenait au point lui-même
+
+`verifier-maquette-arrosage-plan.mjs` isolait le modèle d'une buse en
+**découpant sur le point médian**. Le point parti, il rendait le nom entier,
+ne le retrouvait pas dans la liste des pièces, et rougissait sur du code juste.
+Il lit maintenant le mot « buse ». C'est sa règle du 20 août : un contrôle ne
+doit pas réclamer ce qu'il a fait retirer.
+
+### Et la lecture partagée avait un trou
+
+`https://` n'est pas un commentaire : le « // » d'une adresse coupait la ligne
+en deux, et tout ce qui suivait devenait invisible au contrôle. Corrigé, avec
+le commentaire `<!-- -->` des maquettes ajouté au passage.
+
+## Ce qui reste, et qu'il faut savoir
+
+| | |
+|---|---|
+| les 2 320 points des planches archivées | laissés. Il ne les rouvrira pas, et les corriger ferait rougir leurs vérificateurs |
+| **7 générateurs de maquettes** en écrivent encore (99 points) | régénérer l'une de ces planches fera rougir le contrôle. C'est voulu : c'est le bon moment pour corriger le générateur, puisque la planche repart chez lui. `TODO.md` le porte |
+| les tirets `—` | deuxième relevé, toujours à faire |

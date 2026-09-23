@@ -24,7 +24,7 @@
 export function sansCommentaires(source: string): string[] {
   const sortie = source.split("");
   let i = 0;
-  let etat: "code" | "ligne" | "bloc" | "chaine" | "gabarit" = "code";
+  let etat: "code" | "ligne" | "bloc" | "html" | "chaine" | "gabarit" = "code";
   let guillemet = "";
 
   while (i < source.length) {
@@ -32,11 +32,23 @@ export function sansCommentaires(source: string): string[] {
     const d = source[i + 1];
 
     if (etat === "code") {
-      if (c === "/" && d === "/") {
+      /* **`https://` n'est pas un commentaire.** Une adresse écrite en texte
+         dans une maquette coupait la ligne en deux pour tout contrôle qui lit
+         par ici, et ce qui suivait devenait invisible. Le « : » qui précède
+         suffit à les distinguer, et aucun commentaire de ce dépôt ne s'ouvre
+         collé à un deux-points. */
+      if (c === "/" && d === "/" && source[i - 1] !== ":") {
         etat = "ligne";
         sortie[i] = " ";
         sortie[i + 1] = " ";
         i += 2;
+        continue;
+      }
+      // Le commentaire HTML des maquettes, qui n'a pas la même forme.
+      if (c === "<" && source.startsWith("<!--", i)) {
+        etat = "html";
+        sortie[i] = " ";
+        i++;
         continue;
       }
       if (c === "/" && d === "*") {
@@ -64,6 +76,20 @@ export function sansCommentaires(source: string): string[] {
     if (etat === "ligne") {
       if (c === "\n") etat = "code";
       else sortie[i] = " ";
+      i++;
+      continue;
+    }
+
+    if (etat === "html") {
+      if (c === "-" && source.startsWith("-->", i)) {
+        sortie[i] = " ";
+        sortie[i + 1] = " ";
+        sortie[i + 2] = " ";
+        etat = "code";
+        i += 3;
+        continue;
+      }
+      if (c !== "\n") sortie[i] = " ";
       i++;
       continue;
     }

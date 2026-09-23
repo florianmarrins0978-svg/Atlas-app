@@ -274,7 +274,7 @@
         return '<button type="button" data-typo="' + t.clef + '" aria-pressed="' +
           (allure.typographie === t.clef) + '">' +
           '<span class="nom"' + (t.css ? ' style="font-family:' + t.css + '"' : '') + '>' + t.nom + '</span>' +
-          '<span class="quoi">' + t.quoi + (t.clef === DEFAUT.typographie ? ' · par défaut' : '') + '</span>' +
+          '<span class="quoi">' + t.quoi + (t.clef === DEFAUT.typographie ? ', par défaut' : '') + '</span>' +
           '</button>';
       }).join('') + '</div></div>';
   }

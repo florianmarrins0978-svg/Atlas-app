@@ -150,6 +150,20 @@ démonstration : Terminés (le compte du mois, où l'œil sépare maintenant les
 deux nombres à lui seul) et la fiche client (« DERNIÈRE PRESTATION le 12 août »,
 le seul remplacement qu'il a dicté).
 
+## ⏳ LES PLANCHES ARCHIVÉES GARDENT LEURS POINTS, ET LEURS GÉNÉRATEURS AUSSI (23 septembre 2026)
+
+Le garde-fou des points ne regarde, dans les maquettes, que ce qu'un lot
+**ajoute**. Ce qui dort derrière, et qu'on ne touche pas : **2 320 points dans
+231 planches**, dont des dizaines d'essais qu'il ne rouvrira pas.
+
+**Ce qui peut surprendre une session**, et c'est pour cela que ce point existe :
+sept générateurs écrivent encore un point dans la maquette qu'ils produisent
+(`engendrer-maquette-fiche-entretien`, `-arrosage`, `-ligne-chantier`, `-fil`,
+`-assistant`, `-sequence`, `engendrer-planche-fleches` — 99 en tout). Régénérer
+l'une de ces planches fait donc rougir le contrôle. **Ce n'est pas un défaut du
+contrôle : c'est le bon moment pour corriger le générateur**, puisque la
+planche repart chez le patron.
+
 ## ⏳ LES TIRETS `—` NE SONT PAS RELEVÉS (23 septembre 2026)
 
 C'est la deuxième moitié de sa règle du 22 septembre : *« plus jamais de

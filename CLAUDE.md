@@ -483,8 +483,19 @@ retransmet — un document périmé le ferait travailler sur une version disparu
   du garde-fou, à sa demande du 23. Un point qui ne s'affiche pas (un document
   légal déjà accepté, une consigne envoyée au modèle) s'y déclare **avec sa
   raison** ; un commentaire n'a rien à déclarer, ils sont ignorés. Le relevé
-  complet est dans `docs/les-points-inutiles.md`. **Les tirets `—` ne sont pas
-  encore tenus** — leur relevé reste à faire (`TODO.md`).
+  complet est dans `docs/les-points-inutiles.md`.
+
+  **LA MAQUETTE EN EST, et c'est LUI qui l'a vu** — sa question du
+  23 septembre : *« si dans la maquette il met des points n'importe où, quand
+  il va pousser sur main il va pousser avec les points ? Donc c'est pas bon »*.
+  Deux fois raison : la planche est ce qu'il OUVRE, et une planche validée se
+  recopie en code. Le contrôle lit donc aussi ce qu'un lot **ajoute** sous
+  `appli/` et `maquettes/` — seulement ce qu'il ajoute : 2 320 points dorment
+  dans 231 planches archivées, et les faire rougir toutes éteindrait le
+  garde-fou dans la journée. **Et il lit les `.js` et le `.css`**, pas
+  seulement le TypeScript : 43 noms d'arroseurs du catalogue portaient un
+  point, et la première version les avait tous manqués. **Les tirets `—` ne
+  sont pas encore tenus** — leur relevé reste à faire (`TODO.md`).
 
 - **Pas de flèches décoratives au bout des libellés.** Sa consigne du 25 août
   2026 : *« arrête de mettre des flèches, c'est moche »*. Le « → » (et le « › »)

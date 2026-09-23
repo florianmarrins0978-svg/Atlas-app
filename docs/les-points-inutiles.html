@@ -338,6 +338,58 @@
 <td><strong>zéro</strong> point du milieu de phrase dans ce que le produit affiche</td>
 </tr>
 </tbody></table></div>
+<hr>
+<h2 id="les-deux-trous-que-sa-question-a-trouvés--23-septembre-2026">Les deux trous que SA question a trouvés — 23 septembre 2026</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><em>« Si dans la maquette il met des points n'importe où, quand il va pousser sur main il va pousser avec les points ? Donc c'est pas bon. »</em></p>
+<p>Il a raison deux fois : la planche est ce qu'il OUVRE depuis son téléphone, et une planche validée se recopie en code — c'est le chemin normal de ce dépôt.</p>
+<h3 id="1-les-maquettes">1. Les maquettes</h3>
+<p>Le contrôle lit désormais ce qu'un lot <strong>ajoute</strong> sous <code>appli/</code> et <code>maquettes/</code>. Pas le reste : <strong>2 320 points dorment dans 231 planches</strong>, dont des dizaines d'essais archivés. Les faire rougir toutes, c'est un garde-fou éteint dans la journée — c'est la règle qui fait vivre celui des pansements depuis le 7 septembre, et la mécanique est maintenant partagée avec lui.</p>
+<p>Éprouvé : un point ajouté dans une planche le fait rougir et nomme la ligne.</p>
+<h3 id="2-le-catalogue-darrosage--et-celui-là-était-dans-lapplication">2. Le catalogue d'arrosage — et celui-là était DANS l'application</h3>
+<p>Le contrôle ne lisait que le TypeScript. <code>src/lib/arrosage/catalogue.js</code> est un <code>.js</code> : <strong>61 libellés y portaient un point</strong>, et ils partent sur le plan, dans la liste des pièces, et chez le fournisseur.</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Avant</th>
+<th>Après</th>
+</tr></thead><tbody>
+<tr>
+<td><code>PGP-ADJ · buse 1 (rouge std)</code></td>
+<td><code>PGP-ADJ buse 1 (rouge std)</code></td>
+</tr>
+<tr>
+<td><code>escamotable 10 cm · SAM</code></td>
+<td><code>escamotable 10 cm, SAM</code></td>
+</tr>
+<tr>
+<td><code>2,5 bar · par 20</code></td>
+<td><code>2,5 bar, par 20</code></td>
+</tr>
+</tbody></table></div>
+<p>Corrigés dans les <strong>deux</strong> copies du catalogue — celle de l'application et celle de la page publiée —, qui restent identiques à la ligne près (<code>verifier-arrosage-une-seule-source.mjs</code> le vérifie).</p>
+<p>Sept maquettes citaient ces libellés en dur : elles suivent le catalogue.</p>
+<h3 id="un-contrôle-qui-tenait-au-point-lui-même">Un contrôle qui tenait au point lui-même</h3>
+<p><code>verifier-maquette-arrosage-plan.mjs</code> isolait le modèle d'une buse en <strong>découpant sur le point médian</strong>. Le point parti, il rendait le nom entier, ne le retrouvait pas dans la liste des pièces, et rougissait sur du code juste. Il lit maintenant le mot « buse ». C'est sa règle du 20 août : un contrôle ne doit pas réclamer ce qu'il a fait retirer.</p>
+<h3 id="et-la-lecture-partagée-avait-un-trou">Et la lecture partagée avait un trou</h3>
+<p><code>https://</code> n'est pas un commentaire : le « // » d'une adresse coupait la ligne en deux, et tout ce qui suivait devenait invisible au contrôle. Corrigé, avec le commentaire <code>&lt;!-- --&gt;</code> des maquettes ajouté au passage.</p>
+<h2 id="ce-qui-reste-et-quil-faut-savoir">Ce qui reste, et qu'il faut savoir</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td>les 2 320 points des planches archivées</td>
+<td>laissés. Il ne les rouvrira pas, et les corriger ferait rougir leurs vérificateurs</td>
+</tr>
+<tr>
+<td><strong>7 générateurs de maquettes</strong> en écrivent encore (99 points)</td>
+<td>régénérer l'une de ces planches fera rougir le contrôle. C'est voulu : c'est le bon moment pour corriger le générateur, puisque la planche repart chez lui. <code>TODO.md</code> le porte</td>
+</tr>
+<tr>
+<td>les tirets <code>—</code></td>
+<td>deuxième relevé, toujours à faire</td>
+</tr>
+</tbody></table></div>
 </main>
 </body>
 </html>

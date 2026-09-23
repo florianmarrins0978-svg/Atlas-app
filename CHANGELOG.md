@@ -8,6 +8,33 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-23
 
+### Le garde-fou des points couvre les maquettes, et le catalogue d'arrosage
+
+**Sa question, et elle a trouvé deux trous :** *« si dans la maquette il met
+des points n'importe où, quand il va pousser sur main il va pousser avec les
+points ? Donc c'est pas bon »*. Le contrôle lit donc aussi ce qu'un lot
+**ajoute** sous `appli/` et `maquettes/` — seulement ce qu'il ajoute, les 2 320
+points de 231 planches archivées n'ayant aucune raison de rougir, et un
+contrôle qui rougit sur tout est éteint dans la journée. La mécanique du diff
+est celle de `test-pas-de-pansement.ts`, désormais partagée
+(`scripts/_lignes-ajoutees.ts`).
+
+**Le second trou était dans l'application, pas dans la maquette.** Le contrôle
+ne lisait que le TypeScript : `src/lib/arrosage/catalogue.js` est un `.js`, et
+**61 libellés d'arroseurs y portaient un point** — « PGP-ADJ · buse 1 »,
+« escamotable 10 cm · SAM ». Ils partent sur le plan, dans la liste des pièces
+et chez le fournisseur. Corrigés dans les deux copies du catalogue, qui
+restent identiques à la ligne près.
+
+`verifier-maquette-arrosage-plan.mjs` isolait le modèle d'une buse en
+**découpant sur le point médian** : il rendait le nom entier une fois le point
+parti, et rougissait sur du code juste. Il lit maintenant le mot « buse », qui
+ne dépend d'aucune typographie.
+
+Et la lecture partagée sait lire le HTML des maquettes : le commentaire
+`<!-- -->`, et surtout le « // » d'une adresse `https://`, qui coupait la ligne
+en deux et rendait invisible ce qui suivait.
+
 ### Le point du milieu de phrase ne peut plus revenir : un contrôle le refuse
 
 Sa demande, au lendemain des 72 retraits : *« mets cette règle en garde-fou,

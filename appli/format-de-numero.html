@@ -133,7 +133,7 @@ let choisi = "annee-4";
 function dessiner(){
   document.getElementById("formats").innerHTML = FORMATS.map(f =>
     '<button type="button" data-clef="' + f.clef + '" aria-pressed="' + (f.clef === choisi) + '">'
-    + '<span class="quoi">' + f.nom + '<small>' + f.dit + (f.defaut ? " · par défaut" : "") + '</small></span>'
+    + '<span class="quoi">' + f.nom + '<small>' + f.dit + (f.defaut ? ", par défaut" : "") + '</small></span>'
     + '<span class="apercu">' + f.facture + '</span></button>').join("");
 
   const f = FORMATS.find(x => x.clef === choisi);
