@@ -116,10 +116,13 @@ async function main() {
   // lui, porte toujours le numéro brut — les deux assertions se tiennent, et
   // c'est voulu : le jour où l'affichage contaminerait le lien, la première
   // rougirait.
-  const sousLigne = await page.locator("text=/c'est vous qui l'envoyez/").first().innerText();
+  // La phrase s'écrit en DEUX phrases depuis le 23 septembre 2026, le tiret
+  // ayant laissé la place à un point (sa règle du 22). Le motif cherché ne
+  // porte donc plus la majuscule initiale, qui a bougé avec lui.
+  const sousLigne = await page.locator("text=/vous qui l'envoyez/").first().innerText();
   assert.equal(
     sousLigne.replace(/\s+/g, " ").trim(),
-    `Au ${numeroLisible(TELEPHONE)} — c'est vous qui l'envoyez.`,
+    `Au ${numeroLisible(TELEPHONE)}. C'est vous qui l'envoyez.`,
     `La phrase du destinataire est mal composée : « ${sousLigne} »`
   );
   console.log("  ✓ le destinataire est annoncé sur l'écran, phrase entière");

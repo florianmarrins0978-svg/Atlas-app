@@ -75,7 +75,7 @@ async function main() {
 
   // --- Confirme l'application (dans la même session de sidebar) ---
   await page.click("text=Appliquer les modifications");
-  await page.waitForSelector("text=/— Appliqué/", { timeout: 10000 });
+  await page.waitForSelector("text=/, appliqué/", { timeout: 10000 });
 
   // --- Vérifie sur l'écran Prix : aucune ligne de prix (décochée) ---
   await page.goto(`${chantierUrl}/prix`, { waitUntil: "networkidle" });

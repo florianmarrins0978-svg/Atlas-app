@@ -204,8 +204,34 @@ process.stdin.on("end", () => {
     });
     if (delegue.stdout) process.stdout.write(delegue.stdout);
     if (delegue.stderr) process.stderr.write(delegue.stderr);
-    // Un garde-fou qui n'a pas pu rendre de verdict ne laisse pas passer.
-    process.exit(delegue.status ?? 2);
+    /* **UN DÉLÉGUÉ QUI PLANTE FERME LA PORTE — 23 septembre 2026.**
+       `?? 2` ne couvrait que le cas où le processus n'a pas de code du tout.
+       Or un garde-fou qui tombe rend **1**, et 1 se lit « rien à signaler » :
+       la poussée passait. C'est arrivé le jour même, et pour une raison
+       ordinaire — le dossier de session n'avait pas ses `node_modules`, donc
+       l'import de `typescript` par la lecture des tirets échouait. Un dossier
+       fraîchement préparé ouvrait ainsi `main` en grand.
+       Seuls deux codes veulent dire quelque chose : 0 (rien à signaler) et
+       2 (refus). Tout le reste, c'est « on ne sait pas » — et ne pas savoir
+       n'est jamais vert (`CLAUDE.md` §5). */
+    const rendu = delegue.status;
+    if (rendu !== 0 && rendu !== 2) {
+      console.error(
+        [
+          "❌ Poussée sur « main » refusée : le garde-fou du dossier visé n'a pas pu rendre de verdict.",
+          "",
+          `   ${gardeDuDossierVise}`,
+          `   (code ${rendu === null || rendu === undefined ? "aucun" : rendu})`,
+          "",
+          "   La cause la plus fréquente : ce dossier n'a pas ses dépendances.",
+          "   Depuis ce dossier :  npm ci",
+          "",
+          "   Ne pas savoir ce qu'on pousse n'est jamais une raison d'ouvrir.",
+        ].join("\n")
+      );
+      process.exit(2);
+    }
+    process.exit(rendu);
   }
 
   // **UN DOSSIER QU'ON NE SAIT PAS LIRE FERME LA PORTE — 18 septembre 2026.**

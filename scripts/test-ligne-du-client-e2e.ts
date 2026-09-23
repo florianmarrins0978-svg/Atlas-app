@@ -35,8 +35,18 @@ import type { Page } from "playwright";
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 const BASE = ADRESSE;
 
-/** Aussi longue que la sienne : c'est elle qui débordait. */
-const ADRESSE_LONGUE = "10 Rue de Nantes 77400 Lagny-sur-Marne";
+/**
+ * Aussi longue que les siennes : c'est ce genre d'adresse qui débordait.
+ *
+ * **Allongée le 23 septembre 2026, et il faut dire pourquoi.** Le séparateur
+ * de cette ligne était un point médian précédé d'une marge de 5 px ; il est
+ * devenu une virgule, qui se colle au mot. La ligne a donc gagné quelques
+ * pixels, et « 10 Rue de Nantes 77400 Lagny-sur-Marne » tenait tout juste —
+ * ce contrôle ne mesurait alors plus rien, et un contrôle qui ne mesure rien
+ * est pire qu'absent (`CLAUDE.md` §5). La RÈGLE défendue n'a pas bougé : quand
+ * ça déborde, c'est l'adresse qui se rogne, jamais la date.
+ */
+const ADRESSE_LONGUE = "128 Avenue du Général de Gaulle 77400 Lagny-sur-Marne";
 
 let echecs = 0;
 async function cas(nom: string, fn: () => Promise<void>) {

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, renameSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, renameSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import {
@@ -736,6 +736,13 @@ try {
     const session = mkdtempSync(path.join(tmpdir(), "atlas-session-"));
     try {
       execFileSync("git", ["-C", RACINE, "worktree", "add", "-q", "--detach", session]);
+      // **Un vrai dossier de session a ses dépendances** — `preparer-sessions`
+      // les installe. Sans elles, le garde-fou de là-bas ne se charge même pas
+      // (il lit les tirets, donc importe TypeScript), et ce contrôle mesurait
+      // un dossier que personne n'a jamais. Le trou qu'il cachait est réel :
+      // un délégué qui plante rendait 1, et 1 se lit « rien à signaler » —
+      // corrigé le 23 septembre 2026, dans `garde-fusion-main.mjs`.
+      symlinkSync(path.join(RACINE, "node_modules"), path.join(session, "node_modules"), "dir");
       rmSync(TEMOIN, { force: true });
       // Un lot de niveau 2 là-bas — un fichier d'outillage en attente —, pour
       // que le hook ait quelque chose à juger.

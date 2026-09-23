@@ -627,7 +627,7 @@ cas("un signe se décrit avec les mots du dépôt, la partie, l'endroit et la co
     { nom: "Platane", certitude: "probable" }
   );
   assert.deepEqual(lignes, [
-    { titre: "Nécroses", detail: "feuille, le long des nervures · brun, noir" },
+    { titre: "Nécroses", detail: "feuille, le long des nervures : brun, noir" },
     { titre: "Platane", detail: "essence probable" },
   ]);
 });

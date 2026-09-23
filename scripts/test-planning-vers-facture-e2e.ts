@@ -257,7 +257,7 @@ async function main() {
       "le nom du chantier a fait monter les portes : elles appartiennent au chevron"
     );
 
-    await ligne.getByRole("button", { name: `Ouvrir le chantier — ${nom}` }).click();
+    await ligne.getByRole("button", { name: `Ouvrir le chantier ${nom}` }).click();
 
     // La feuille porte le devis, nommé et daté. Le lien est visé par son
     // adresse : « Devis » apparaît à plusieurs endroits, et viser le premier

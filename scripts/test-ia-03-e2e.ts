@@ -36,7 +36,7 @@ async function main() {
 
   // --- Confirme l'application ---
   await page.click("text=Appliquer les modifications");
-  await page.waitForSelector("text=/— Appliqué/", { timeout: 10000 });
+  await page.waitForSelector("text=/, appliqué/", { timeout: 10000 });
 
   // --- Vérifie la persistance réelle sur l'écran Informations ---
   await page.goto(`${chantierUrl}/informations`, { waitUntil: "networkidle" });

@@ -1117,7 +1117,7 @@ export function decrireObservation(
     const couleurs = signe.couleurs.map((c) => LIBELLE_COULEUR[c]).join(", ");
     lignes.push({
       titre: LIBELLE_MOTIF[signe.motif],
-      detail: [ou, couleurs].filter((x) => x.length > 0).join(", ") || null,
+      detail: [ou, couleurs].filter((x) => x.length > 0).join(" : ") || null,
     });
   }
 

@@ -345,7 +345,7 @@ async function main() {
     // prend celui de son client, mais la règle qui le compose (`nom-chantier.ts`)
     // est libre de l'habiller — « Chez … » l'a fait, puis ne l'a plus fait.
     const chevron = page.getByRole("button", {
-      name: new RegExp(`Ouvrir le chantier — .*${nomChantier.split(" ").pop()}`),
+      name: new RegExp(`Ouvrir le chantier .*${nomChantier.split(" ").pop()}`),
     });
     await chevron.waitFor({ state: "visible", timeout: 20_000 });
     await chevron.click();

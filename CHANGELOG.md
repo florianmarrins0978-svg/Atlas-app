@@ -8,6 +8,41 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-23
 
+### Un garde-fou qui PLANTE ouvrait « main » en grand
+
+Trouvé par la batterie du 23 septembre, et c'est le pire genre de défaut :
+silencieux, et sur la porte elle-même. Le hook de fusion **délègue** au
+garde-fou du dossier visé quand la poussée porte un `-C`, puis rend son code
+tel quel — `process.exit(delegue.status ?? 2)`. Or `?? 2` ne couvre que
+l'absence totale de code : un garde-fou qui TOMBE rend **1**, et 1 se lit
+« rien à signaler ». La poussée passait.
+
+Ce n'était pas théorique : un dossier de session fraîchement préparé n'a pas
+ses `node_modules`, la lecture des tirets importe TypeScript, l'import échoue,
+et le garde-fou meurt avant d'avoir jugé quoi que ce soit. N'importe quel lot
+partait alors sur `main` sans contrôle.
+
+Désormais, seuls 0 (rien à signaler) et 2 (refus) veulent dire quelque chose ;
+tout le reste ferme la porte en nommant le dossier et en disant `npm ci`. Ne
+pas savoir n'est jamais vert. Et le contrôle qui aurait dû le voir mesurait un
+dossier que personne n'a jamais — un worktree sans dépendances : il en pose
+maintenant, comme `preparer-sessions` le fait.
+
+### Onze contrôles remis d'accord avec les phrases
+
+La batterie a rendu neuf suites rouges, toutes pour la même raison : elles
+cherchaient un libellé d'avant. « Devis en attente · 14 jours », « Ouvrir le
+chantier — X », « — Appliqué », « Au 06 … — c'est vous qui l'envoyez. » Les
+contrôles suivent le libellé, jamais l'inverse (`CLAUDE.md` §5 bis).
+
+Deux méritent d'être dites. Le détail d'un signe du diagnostic s'écrivait
+« feuille, le long des nervures, brun, noir » : quatre virgules d'affilée, et
+l'on ne distinguait plus l'endroit des couleurs — c'est un deux-points qui les
+sépare. Et la ligne d'un client a gagné quelques pixels en perdant la marge de
+son point médian : l'adresse d'essai ne débordait plus, donc le contrôle du
+rognage ne mesurait plus rien. Il en porte une plus longue, et la règle qu'il
+défend n'a pas bougé.
+
 ### Les deux lots de la même règle n'en font plus qu'un
 
 Sa demande : *« j'ai une session qui taffe sur les tirets, combinez-vous »*.
