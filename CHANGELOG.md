@@ -8,6 +8,22 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-23
 
+### Le tiret est refusé À L'ÉCRITURE, plus seulement à la batterie
+
+*« Il faut mettre cette règle en garde-fou que les sessions futures ne
+recommencent pas à mettre des tirets inutiles là où elles peuvent faire des
+phrases. »* `scripts/garde-tirets.mjs` est branché sur chaque écriture de chaque
+session : une phrase avec « — » ou « · » au milieu est refusée sur-le-champ, et
+le refus dit quoi mettre à la place. Il partage sa règle avec le contrôle de la
+batterie (`scripts/_tirets.mjs`) : deux lectures du même tiret auraient fini par
+se contredire. Ce que ça évite : réécrire trente écrans après coup. Éprouvé sur
+les 936 fichiers affichés du dépôt, **aucun faux refus** — les deux premières
+versions en faisaient 211, puis 4 (`ARCHITECTURE.md` §410).
+
+Au passage, les tirets revenus avec `main` : les cinq maquettes du 22 et du
+23 septembre, le bandeau de démonstration de toutes les planches
+(`appli/nav.js`) et deux phrases de la fiche de chantier.
+
 ### Filtrer par jour, par mois ou par année
 
 Sa demande : *« l'idée c'est de pouvoir filtrer aussi par mois ou par année ou

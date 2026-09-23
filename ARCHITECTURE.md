@@ -33118,3 +33118,30 @@ n'a pas bougé : c'est elle qu'il commande. Deux contrôles coupaient le libell�
 sur le séparateur pour retrouver le modèle au catalogue ; ils coupent désormais
 à la première virgule, et essaient les morceaux du plus long au plus court —
 « 3504, buse 0,75 » avant « 3504 », puisque le nom du catalogue en porte une.
+
+**ET LE REFUS ARRIVE MAINTENANT À L'ÉCRITURE, PAS À LA BATTERIE — sa demande du
+22 septembre au soir :** *« il faut mettre cette règle en garde-fou que les
+sessions futures ne recommencent pas à mettre des tirets inutiles là où elles
+peuvent faire des phrases »*. Un contrôle qui ne parle qu'à la batterie laisse
+écrire trente écrans avant de se faire entendre, et c'est alors trente
+réécritures.
+
+`scripts/garde-tirets.mjs` est donc branché sur **chaque écriture de chaque
+session** (`.claude/settings.json`, `PreToolUse`) : il refuse la phrase à la
+seconde où elle s'écrit, et son refus dit quoi mettre à la place. Il ne corrige
+rien de lui-même : la bonne ponctuation dépend de la phrase, et un script qui
+choisirait poserait des virgules là où il fallait un point.
+
+**Les deux garde-fous lisent la MÊME règle** (`scripts/_tirets.mjs`). Deux
+lectures du même tiret auraient fini par se contredire, et celle qui écrit
+aurait laissé passer ce que celle qui livre refuse (`CLAUDE.md` §3). Les
+exceptions y vivent aussi, pour la même raison.
+
+**Ce que l'épreuve a corrigé, et il faut le savoir avant d'y toucher.** La
+première version lisait ligne à ligne : elle prenait l'apostrophe d'un
+commentaire français pour une ouverture de chaîne et refusait **211 fichiers
+justes** sur le dépôt entier. La deuxième lisait tout `.ts` comme du TSX :
+`const memeLigne = <E>(a, b) => …` y devenait une balise, et la suite du
+fichier du « texte d'écran ». C'est en confrontant le garde-fou aux 936
+fichiers affichés du dépôt qu'on l'a vu, pas en le relisant — et c'est
+l'épreuve à refaire après chaque changement de sa détection.

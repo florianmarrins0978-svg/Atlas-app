@@ -75,6 +75,8 @@ milieu. »* 240 tirets et points médians réécrits dans tout ce qui s'affiche.
 | ce qui remplace | virgule, deux-points quand la suite explique, point pour une phrase entière, parenthèses pour une incise |
 | ce qui garde le sien | `src/server/documents-legaux/versions.ts` (une version publiée ne se modifie jamais) et la mémoire du dépôt, qui cite ses messages |
 | le piège | le catalogue d'arrosage existe en DEUX copies identiques (`appli/` et `src/lib/arrosage/`) : toucher un libellé d'un seul côté fait rougir `verifier-arrosage-une-seule-source.mjs` |
+| à l'écriture | `scripts/garde-tirets.mjs`, branché sur chaque écriture (`.claude/settings.json`) : il refuse la phrase avant qu'elle soit posée |
+| la règle, une seule fois | `scripts/_tirets.mjs`, lue par les deux. **Après tout changement de sa détection, la confronter aux fichiers affichés du dépôt** : c'est ainsi qu'on a vu 211 puis 4 faux refus, jamais en la relisant |
 
 `ARCHITECTURE.md` §410.
 

@@ -40,7 +40,8 @@ Sa règle du 22 septembre, portée partout : 240 tirets et points médians retir
 des écrans, du papier du client, des messages et des maquettes publiées, et
 remplacés par de la ponctuation qui fait une phrase. Le devis imprime « Bon pour
 accord, signature du client ». `scripts/test-aucun-tiret.ts` le tient désormais
-dans `npm test`. Restent, avec leur raison : les canevas juridiques (une version
+dans `npm test`, et `scripts/garde-tirets.mjs` le refuse dès l'écriture, dans
+chaque session. Restent, avec leur raison : les canevas juridiques (une version
 publiée ne se modifie jamais) et la mémoire du dépôt, qui cite ses messages mot
 pour mot. `ARCHITECTURE.md` §410.
 

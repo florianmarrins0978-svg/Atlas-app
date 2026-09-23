@@ -481,6 +481,12 @@ retransmet — un document périmé le ferait travailler sur une version disparu
   case reste ce qu'il est : un montant absent. Ce qui remplace : une virgule,
   un deux-points quand la suite explique, un point quand c'est une phrase
   entière, deux parenthèses pour une incise (`ARCHITECTURE.md` §410).
+  **Et il ne se lit plus seulement à la batterie** : sa demande du soir, *« il
+  faut mettre cette règle en garde-fou que les sessions futures ne recommencent
+  pas »*. `scripts/garde-tirets.mjs` est branché sur chaque écriture de chaque
+  session et refuse la phrase avant qu'elle soit posée. Les deux lisent la même
+  règle (`scripts/_tirets.mjs`) ; toucher à sa détection oblige à la confronter
+  aux fichiers affichés du dépôt, faute de quoi elle refuse du texte juste.
 - **Pas de flèches décoratives au bout des libellés.** Sa consigne du 25 août
   2026 : *« arrête de mettre des flèches, c'est moche »*. Le « → » (et le « › »)
   ajouté à la fin d'un bouton ou d'un lien — « Régler à la main → », « Créer le
