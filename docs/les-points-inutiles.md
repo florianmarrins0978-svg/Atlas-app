@@ -136,3 +136,55 @@ Deux suites interdisaient DÉJÀ le point — `test-fiche-client-e2e` et
 `npm run verifier:avant-livraison` avant toute fusion : **rien n'arrivera sur
 son espace tant que la batterie n'aura pas été jouée**, et c'est lui qui dit
 quand.
+
+---
+
+## Le garde-fou — 23 septembre 2026
+
+Sa demande du lendemain : *« mets cette règle en garde-fou, que les sessions
+futures ne recommencent pas à mettre des points inutiles là où elles peuvent
+faire des phrases »*.
+
+`scripts/test-aucun-point-median.ts`, joué par `npm test`, donc par la
+batterie. Il lit les 152 000 lignes de `src/`, commentaires retirés, et refuse
+tout « · » qui n'est pas déclaré **avec sa raison** :
+
+| Déclaré | Pourquoi |
+|---|---|
+| les conditions générales | des puces, dans un texte déjà publié et accepté |
+| `/design/a`, `/design/b` | hors produit |
+| le fournisseur d'IA de développement | rien de ce qu'il écrit n'atteint un écran |
+| la consigne envoyée au modèle | mise en forme pour lui, pas pour l'écran |
+
+Les trois fichiers qui **retirent** des points d'une saisie sont ignorés : les
+faire rougir reviendrait à demander de retirer le nettoyage.
+
+**Son message ne dit pas seulement non**, il donne la phrase à écrire : une
+espace quand elle se lit seule, une virgule quand l'espace collerait deux
+nombres, un mot de liaison quand il en faut un.
+
+**Et il sait échouer** : confronté à un point remis dans `Notifications.tsx`,
+il rougit et nomme la ligne. Vérifié, pas supposé.
+
+### Ce que le garde-fou a trouvé au passage
+
+Les deux contrôles de style — points et flèches — lisent désormais le code par
+le même module, `scripts/_sans-commentaires.ts`. Deux copies auraient divergé,
+et la copie d'origine avait déjà un trou : elle prenait le « // » d'une adresse
+`https://…` pour un commentaire et cessait de lire la ligne.
+
+En la remplaçant, deux commentaires de `dev.ts` ont surgi : une expression
+régulière `/['"]/` y ouvrait une chaîne qui n'a jamais existé, et cinq cents
+lignes échappaient au contrôle des flèches. La lecture des chaînes s'arrête
+maintenant à la fin de leur ligne — seule une chaîne à gabarit peut contenir un
+retour à la ligne, c'est la règle du langage.
+
+## Le check-up du 23 septembre
+
+`main` avait avancé de **63 commits** depuis le relevé.
+
+| | |
+|---|---|
+| des points neufs ? | **non**, aucun |
+| un point retiré par quelqu'un d'autre ? | **oui, un** : le rapport d'intervention du client. Une autre session l'a corrigé le 22 septembre, sur la même règle. Sa version est gardée — elle va plus loin : « Mardi 22 septembre chez M. Bernard », une phrase, le jour en gras |
+| après fusion | **zéro** point du milieu de phrase dans ce que le produit affiche |

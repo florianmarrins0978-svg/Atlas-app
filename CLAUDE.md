@@ -472,7 +472,20 @@ retransmet — un document périmé le ferait travailler sur une version disparu
   coupe une phrase sont de la typographie de rapport ; à l'écran, il lit une
   phrase : « Probable sur un peuplier. », « Photo de X, sous licence Y. ».
   Ce qui a besoin d'un genre (« un », « une ») se lit dans la donnée, jamais
-  deviné. Vaut pour les écrans, les maquettes et les fiches phytosanitaires.
+  deviné — **et quand il n'y est pas, on écrit la phrase sans lui** : aucune
+  table ne porte le genre d'une essence, donc l'écran du diagnostic dit
+  « Probable, peuplier », pas « Probable sur un peuplier » qui serait une
+  devinette. Vaut pour les écrans, les maquettes et les fiches phytosanitaires.
+  **Et ce n'est plus une consigne : `scripts/test-aucun-point-median.ts` la
+  tient**, joué par `npm test`, donc par la batterie. Il a fallu en retirer
+  **72** le 22 septembre — sur ses écrans, mais aussi sur les PDF qui partent
+  chez ses clients —, et la règle était DÉJÀ écrite ici : c'est ce qui a décidé
+  du garde-fou, à sa demande du 23. Un point qui ne s'affiche pas (un document
+  légal déjà accepté, une consigne envoyée au modèle) s'y déclare **avec sa
+  raison** ; un commentaire n'a rien à déclarer, ils sont ignorés. Le relevé
+  complet est dans `docs/les-points-inutiles.md`. **Les tirets `—` ne sont pas
+  encore tenus** — leur relevé reste à faire (`TODO.md`).
+
 - **Pas de flèches décoratives au bout des libellés.** Sa consigne du 25 août
   2026 : *« arrête de mettre des flèches, c'est moche »*. Le « → » (et le « › »)
   ajouté à la fin d'un bouton ou d'un lien — « Régler à la main → », « Créer le

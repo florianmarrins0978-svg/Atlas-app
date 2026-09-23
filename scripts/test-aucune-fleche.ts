@@ -22,6 +22,9 @@
 import assert from "node:assert/strict";
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
+// La lecture qui ignore les commentaires est la MÊME que celle du contrôle des
+// points du milieu de phrase : deux copies auraient divergé (`CLAUDE.md` §3).
+import { sansCommentaires } from "./_sans-commentaires";
 
 const RACINE = path.join(__dirname, "..", "src");
 
@@ -105,40 +108,6 @@ const HORS_ECRAN = [
   "src/lib/consigne-metier.ts",
   "src/server/db/seed.ts",
 ];
-
-/**
- * Retire les commentaires, y compris ceux de JSX (`{/* … *\/}`).
- *
- * Sans cela, le contrôle rougirait sur les explications de ce dépôt —
- * qui citent les libellés fléchés d'hier pour dire pourquoi ils sont
- * partis. Un contrôle qui interdit d'expliquer se fait contourner.
- */
-function sansCommentaires(source: string): string[] {
-  const lignes = source.split("\n");
-  let dansBloc = false;
-  return lignes.map((ligne) => {
-    let sortie = "";
-    let i = 0;
-    while (i < ligne.length) {
-      if (dansBloc) {
-        const fin = ligne.indexOf("*/", i);
-        if (fin === -1) return sortie;
-        dansBloc = false;
-        i = fin + 2;
-        continue;
-      }
-      if (ligne.startsWith("//", i)) return sortie;
-      if (ligne.startsWith("/*", i)) {
-        dansBloc = true;
-        i += 2;
-        continue;
-      }
-      sortie += ligne[i];
-      i++;
-    }
-    return sortie;
-  });
-}
 
 function fichiers(dossier: string): string[] {
   return readdirSync(dossier).flatMap((nom) => {

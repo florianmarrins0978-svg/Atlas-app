@@ -8,6 +8,40 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-23
 
+### Le point du milieu de phrase ne peut plus revenir : un contrôle le refuse
+
+Sa demande, au lendemain des 72 retraits : *« mets cette règle en garde-fou,
+que les sessions futures ne recommencent pas à mettre des points inutiles là
+où elles peuvent faire des phrases »*. `scripts/test-aucun-point-median.ts`
+est joué par `npm test`, donc par la batterie : il lit les 152 000 lignes de
+`src/`, commentaires retirés, et refuse tout « · » qui n'est pas déclaré avec
+sa raison — les conditions générales, où c'est une puce dans un texte déjà
+accepté ; les pages `/design` ; le fournisseur d'IA de développement ; la
+consigne envoyée au modèle. Son message ne dit pas seulement « non » : il
+donne la phrase à écrire à la place. **La règle était pourtant déjà dans
+`CLAUDE.md` §3 depuis la veille** — et c'est précisément ce qui a décidé du
+contrôle : une règle de style qui ne vit que dans un document se perd au
+troisième écran écrit par une autre session, comme la flèche décorative qu'il
+a dû redemander le soir même de sa règle du matin.
+
+**Les deux contrôles lisent le code par le MÊME module.**
+`scripts/_sans-commentaires.ts` retire les commentaires sans déplacer une
+ligne, et il a corrigé un trou que personne n'avait vu : la lecture des
+flèches prenait le « // » d'une adresse `https://…` pour un commentaire et
+cessait de regarder la ligne. En la remplaçant, deux commentaires de `dev.ts`
+ont surgi — une expression régulière `/['"]/` y ouvrait une chaîne qui n'a
+jamais existé, et cinq cents lignes échappaient au contrôle. Borné à la ligne,
+puisque seule une chaîne à gabarit peut contenir un retour à la ligne.
+
+### Le lot des points remis sur `main`, et rien de neuf à corriger
+
+`main` avait avancé de 63 commits. Une autre session avait déjà retiré le
+point du rapport d'intervention du client, sur la même règle et le même jour :
+sa version est gardée, elle va plus loin (« Mardi 22 septembre chez
+M. Bernard », une phrase, le jour en gras). Aucun point neuf n'était arrivé.
+Après fusion, le produit en affiche toujours **zéro**.
+
+
 ### Filtrer par jour, par mois ou par année
 
 Sa demande : *« l'idée c'est de pouvoir filtrer aussi par mois ou par année ou

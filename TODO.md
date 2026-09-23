@@ -128,26 +128,36 @@ ces domaines ; un contrôle dans `.github/workflows/` le peut, comme
 `src/lib/fiche-securite.ts` (`LIENS_DE_LA_LOI`, `DECOUVERTE_FORTUITE`,
 `SOULIGNES`).
 
-## ⏳ LES POINTS SONT RETIRÉS — LA BATTERIE RESTE À JOUER (22 septembre 2026)
+## ⏳ LES POINTS : RETIRÉS ET TENUS — LA BATTERIE RESTE À JOUER (23 septembre 2026)
 
-Les 72 lignes qui affichaient un point du milieu de phrase sont corrigées, et
-les onze suites qui en réclamaient un sont adaptées
-(`docs/les-points-inutiles.md`). **Il a demandé qu'aucune batterie ne soit
-lancée** : types, lint et les six suites de règles pures sont verts, rien
-d'autre n'a été mesuré.
+Les 72 lignes qui affichaient un point du milieu de phrase sont corrigées, les
+onze suites qui en réclamaient un sont adaptées, et
+`scripts/test-aucun-point-median.ts` empêche le retour
+(`docs/les-points-inutiles.md`). Le lot est reposé sur `main`, qui avait avancé
+de 63 commits.
+
+**Il a demandé qu'aucune batterie ne soit lancée** : types, lint, les six
+suites de règles pures, les deux contrôles de style — points et flèches — sont
+verts, rien d'autre n'a été mesuré.
 
 **Le lot est de niveau 3** — il touche la TVA, les devis et les règlements, et
 `abonnements.ts` atteint 68 points d'entrée. `npm run verifier:avant-livraison`
-est donc obligatoire avant la fusion, et le garde-fou de `main` la refusera
-sans lui. À jouer quand il le dira (`CLAUDE.md` §5 : on le prévient d'abord).
+est obligatoire avant la fusion, et le garde-fou de `main` la refusera sans
+lui. À jouer quand il le dira (`CLAUDE.md` §5 : on le prévient d'abord).
 
-**Deux choses à surveiller à la batterie**, parce qu'elles n'ont pas pu être
-regardées ici faute de données de démonstration : l'écran Terminés (le compte
-du mois, où l'œil sépare maintenant les deux nombres à lui seul) et la fiche
-client (« DERNIÈRE PRESTATION le 12 août », le seul remplacement qu'il a dicté).
+**Deux écrans n'ont pas pu être regardés ici**, faute de données de
+démonstration : Terminés (le compte du mois, où l'œil sépare maintenant les
+deux nombres à lui seul) et la fiche client (« DERNIÈRE PRESTATION le 12 août »,
+le seul remplacement qu'il a dicté).
 
-**Et le relevé des tirets `—` n'est pas fait.** C'est sa deuxième règle du même
-jour : *« plus jamais de tiret, fais des phrases normales »*.
+## ⏳ LES TIRETS `—` NE SONT PAS RELEVÉS (23 septembre 2026)
+
+C'est la deuxième moitié de sa règle du 22 septembre : *« plus jamais de
+tiret, fais des phrases normales »*. Le contrôle des points ne les porte PAS,
+et c'est délibéré : les ajouter d'un coup ferait rougir le dépôt entier au
+premier jour, donc désarmer le garde-fou. Il faut d'abord le relevé — écran
+par écran, comme pour les points —, puis son arbitrage, puis l'élargissement
+de `test-aucun-point-median.ts`.
 
 ## ⏳ UNE PLANCHE À REGARDER — FICHE 4, LA BRUNISSURE DES FEUILLES DE PEUPLIER (22 septembre 2026)
 
