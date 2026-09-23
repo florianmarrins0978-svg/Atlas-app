@@ -278,9 +278,23 @@ async function main() {
     const laVeille = jourDuPatron(1);
     await page.goto(`${BASE}/paysage/fiches-securite?jour=${aujourdhui}`, { waitUntil: "networkidle" });
     await carte.waitFor({ timeout: 15_000 });
-    await page.goto(`${BASE}/paysage/fiches-securite?jour=${laVeille}`, { waitUntil: "networkidle" });
-    await page.locator("[data-atlas='tout-le-mois']").waitFor({ timeout: 15_000 });
+    await page.goto(`${BASE}/paysage/fiches-securite?periode=${laVeille}`, { waitUntil: "networkidle" });
+    // **Le repère est le MOT du titre, plus la croix** : elle est partie le
+    // 23 septembre avec l'année (sa proposition B). Un contrôle qui réclame ce
+    // qu'il a fait retirer rend son écran impossible à changer (§5 bis).
+    const jourActif = page.locator("[data-atlas='portee-jour'][aria-pressed='true']");
+    await jourActif.waitFor({ timeout: 15_000 });
     assert.equal(await carte.count(), 0, "la fiche d'aujourd'hui sort sous la veille");
+
+    // L'ANNÉE — sa demande du 23 septembre : la fiche du jour doit revenir
+    // quand on touche « 2026 », alors qu'elle était hors du jour d'avant.
+    await page.locator("[data-atlas='portee-annee']").click();
+    await carte.waitFor({ timeout: 15_000 });
+    assert.equal(
+      await page.locator("[data-atlas='portee-annee'][aria-pressed='true']").count(),
+      1,
+      "l'année touchée ne se souligne pas"
+    );
     await page.goto(`${BASE}/paysage/fiches-securite`, { waitUntil: "networkidle" });
     await carte.waitFor({ timeout: 15_000 });
 

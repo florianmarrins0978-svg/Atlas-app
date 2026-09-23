@@ -185,6 +185,23 @@ essai("un mois ne rend que ce mois", () => {
   assert.deepEqual(rangerLesRetours(liste, { periode: "2024-10" }).map((x) => x.client), ["A"]);
 });
 
+// **L'ANNÉE — sa demande du 23 septembre 2026 :** *« pouvoir filtrer aussi par
+// mois ou par année ou par jour mois année »*. C'est le cran le plus large, et
+// celui qui manquait : deux passages chez le même client à huit mois d'écart
+// doivent se lire ensemble.
+essai("une année rend tous ses mois, et elle seule", () => {
+  const liste = [
+    retour({ clientNom: "A", poseLe: "2026-01-07T16:15:00.000Z" }),
+    retour({ clientNom: "B", poseLe: "2026-09-02T16:40:00.000Z" }),
+    retour({ clientNom: "C", poseLe: "2025-11-04T09:20:00.000Z" }),
+  ];
+  assert.deepEqual(
+    rangerLesRetours(liste, { periode: "2026" }).map((x) => x.client).sort(),
+    ["A", "B"]
+  );
+  assert.deepEqual(rangerLesRetours(liste, { periode: "2025" }).map((x) => x.client), ["C"]);
+});
+
 essai("un jour ne rend que ce jour, lu à l'heure de Paris", () => {
   const liste = [
     retour({ clientNom: "A", poseLe: "2026-09-02T16:40:00.000Z" }),

@@ -33000,3 +33000,53 @@ rien.
 `scripts/test-passage-entretien.ts` (règle et dépôt, vus rouges avant la
 correction) et `scripts/test-fiche-chantier-e2e.ts` (le nombre de lignes à
 l'écran ne bouge pas quand le client est nommé).
+
+## §409 — Filtrer par jour, par mois OU par année : les trois mots du titre se touchent
+
+**Sa demande du 23 septembre 2026 :** *« l'idée c'est de pouvoir filtrer aussi
+par mois ou par année ou par jour mois année »*. La veille, le filtre de date
+(`FiltreDeDate`, §405) donnait un mois ou un jour, et une croix « tout le
+mois » remontait d'un cran. **L'année n'avait aucun chemin** : on ne pouvait
+pas demander ce qu'on avait fait chez quelqu'un en 2026.
+
+**Deux façons lui ont été montrées** sur `appli/retours-la-roue-du-jour.html`,
+et il a tranché : *« la B »*.
+
+| | |
+|---|---|
+| A — la croix élargit d'un cran de plus | rien de neuf à l'écran, mais le cran suivant ne s'annonce pas, et l'on ne redescend que par la roue |
+| **B — les trois mots du titre se touchent** | « 23 septembre 2026 » : le quantième, le mois, l'année, et **le mot souligné d'or dit ce que la liste embrasse** |
+
+**La croix est partie avec.** Elle ne menait qu'à un cran et ne se lisait pas ;
+les trois mots montent et descendent dans les deux sens sans rien ajouter à
+l'écran — et **aucun bouton de filtre**, sa consigne du 21 septembre.
+
+**La roue ne change que la DATE.** Choisir un jour dedans, c'est vouloir ce
+jour : la portée redescend au jour. Élargir est le travail des mots.
+
+**LE QUANTIÈME SURVIT À L'ÉLARGISSEMENT, et ça s'est vu à l'écran.** Posé sur
+le 11 mars, toucher « mars » réécrivait le titre « 1 mars 2026 » : la période ne
+portant plus que le mois, le jour était reconstruit par `jourDeLaRoue`, et il
+tombait sur le 1er — redescendre rendait alors une journée qu'il n'avait pas
+demandée. Le filtre retient donc le jour sous le doigt et ne le recalcule que
+lorsqu'il sort de la période reçue (une autre adresse, un autre écran). Le jour
+retenu est **dérivé au rendu**, jamais recopié par un effet : un effet
+repeindrait l'ancien jour une fois avant de se corriger, et cela se voit.
+
+**Une période est désormais une année (`2026`), un mois (`2026-09`) ou un jour
+(`2026-09-22`)** — `src/lib/periode.ts`, avec `porteeDeLaPeriode` et
+`avecLaPortee`. Le découpage se lit par longueur de chaîne, jamais par un
+`new Date` : `dansLaPeriode` compare des préfixes à l'heure du patron, et une
+année est le préfixe de ses douze mois.
+
+**L'adresse des fiches de sécurité porte une `?periode=`**, quelle que soit sa
+forme. `?mois=` et `?jour=` restent lus : ce sont les adresses d'avant, et elles
+vivent dans des onglets laissés ouverts.
+
+**Trois écrans suivent d'un coup**, puisqu'ils partagent le composant : les
+fiches de sécurité, les retours d'intervention, les rapports envoyés.
+
+`scripts/test-periode.ts` (neuf, vu rouge contre l'ancienne version),
+`scripts/test-fiches-securite-recherche.ts` et `scripts/test-retour-intervention.ts`
+pour l'année, `scripts/test-fiche-securite-e2e.ts` pour le geste — son repère
+était la croix, il est devenu le mot souligné (`CLAUDE.md` §5 bis).

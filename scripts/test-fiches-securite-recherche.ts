@@ -39,6 +39,19 @@ cas("sans saisie, le mois choisi et lui seul", () => {
   assert.deepEqual(fichesAMontrer(FICHES, { periode: "2026-01", saisie: "" }), []);
 });
 
+// L'ANNÉE, le cran le plus large — sa demande du 23 septembre 2026 : *« pouvoir
+// filtrer aussi par mois ou par année ou par jour mois année »*. Une fiche se
+// garde deux ans : l'année est la seule portée qui les montre ensemble.
+cas("une année choisie : ses douze mois, et elle seule", () => {
+  assert.deepEqual(
+    noms(fichesAMontrer(FICHES, { periode: "2026", saisie: "" })),
+    // L'ordre est celui que le dépôt rend : le filtre garde, il ne range pas.
+    ["Mr. Pagnol", "Mr. Julien", "Mr. Pagnol, la haie", "Mr. Lebrun"]
+  );
+  assert.deepEqual(noms(fichesAMontrer(FICHES, { periode: "2025", saisie: "" })), ["Mme Moréau"]);
+  assert.deepEqual(fichesAMontrer(FICHES, { periode: "2024", saisie: "" }), []);
+});
+
 cas("un jour choisi : ce jour-là, et lui seul", () => {
   assert.deepEqual(noms(fichesAMontrer(FICHES, { periode: "2026-09-22", saisie: "" })), ["Mr. Pagnol"]);
   assert.deepEqual(noms(fichesAMontrer(FICHES, { periode: "2026-09-21", saisie: "" })), ["Mr. Julien"]);

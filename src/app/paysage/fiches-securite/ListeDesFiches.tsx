@@ -82,7 +82,7 @@ export default function ListeDesFiches({ fiches, periode }: { fiches: FicheEnLis
     <div className="pb-10" data-atlas="liste-des-fiches-de-securite">
       {/* Le mois en tête, comme « Septembre 2026 » sur Terminés : la roue du
           téléphone s'ouvre au toucher. */}
-      <FiltreDeDate periode={periode} choisir={(p) => router.push(`/paysage/fiches-securite?${p.length === 10 ? "jour" : "mois"}=${p}`)} />
+      <FiltreDeDate periode={periode} choisir={(p) => router.push(`/paysage/fiches-securite?periode=${p}`)} />
 
       <div className="relative mx-[22px] mt-3 flex items-center rounded-[10px] pl-[44px] pr-[46px] focus-within:shadow-[inset_0_0_0_1.5px_var(--atlas-or,#B98B47)]" style={{ backgroundColor: colors.rustTint, minHeight: 50 }}>
         <svg aria-hidden="true" width="19" height="19" viewBox="0 0 20 20" fill="none" stroke={colors.muted} strokeWidth="1.6" className="pointer-events-none absolute left-[15px] top-1/2 -translate-y-1/2">

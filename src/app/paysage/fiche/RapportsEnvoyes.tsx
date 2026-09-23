@@ -5,7 +5,7 @@ import { colors, smallCaps } from "@/lib/design-tokens";
 import { ChampRecherche } from "@/components/atlas/ChampRecherche";
 import FiltreDeDate from "@/components/atlas/FiltreDeDate";
 import { rapportsAMontrer } from "@/lib/passage-entretien";
-import { moisEnCours, titreDeLaPeriode } from "@/lib/periode";
+import { moisEnCours, porteeDeLaPeriode, titreDeLaPeriode } from "@/lib/periode";
 import LignePassage, { type PassageListe } from "./LignePassage";
 
 /**
@@ -46,7 +46,7 @@ export default function RapportsEnvoyes({ rapports }: { rapports: PassageListe[]
         <p className="mt-7 text-center text-[13.5px] leading-[1.65]" style={{ color: colors.muted }}>
           {saisie.trim()
             ? `Aucun rapport pour « ${saisie.trim()} ».`
-            : periode.length === 10
+            : porteeDeLaPeriode(periode) === "jour"
               ? `Aucun rapport envoyé le ${titreDeLaPeriode(periode)}.`
               : `Aucun rapport envoyé en ${titreDeLaPeriode(periode).toLowerCase()}.`}
         </p>

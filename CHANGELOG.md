@@ -6,6 +6,25 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-09-23
+
+### Filtrer par jour, par mois ou par année
+
+Sa demande : *« l'idée c'est de pouvoir filtrer aussi par mois ou par année ou
+par jour mois année »*. L'année manquait. Deux façons lui ont été montrées sur
+une planche, il a retenu la B : les trois mots du titre se touchent — « 23
+septembre 2026 » —, et celui qui est souligné d'or dit ce que la liste montre.
+La croix « tout le mois » part avec : elle ne menait qu'à un cran et ne se
+lisait pas. La roue du téléphone, elle, ne change que la date.
+
+Trois écrans suivent d'un coup : les fiches de sécurité, les retours
+d'intervention, les rapports envoyés.
+
+Ce que ça évite, vu à l'écran avant de livrer : posé sur le 11 mars, élargir au
+mois réécrivait « 1 mars » et faisait perdre le quantième — redescendre rendait
+alors une journée qu'il n'avait pas demandée.
+
+---
 ## 2026-09-22
 
 ### Fiche de chantier : titres en noir gras, un rapport envoyé s'ouvre tel que le client l'a reçu
