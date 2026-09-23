@@ -3,20 +3,35 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Les retours, la roue du jour</title>
+<title>Les retours — filtrer par jour, par mois ou par année</title>
 <!--
   ════════════════════════════════════════════════════════════════════════════
-  LES RETOURS D'INTERVENTION — LA ROUE JOUR / MOIS / ANNÉE. 23 septembre 2026.
+  LES RETOURS D'INTERVENTION — CHOISIR LA PORTÉE DU FILTRE. 23 septembre 2026.
 
-  SA DEMANDE DU 22 SEPTEMBRE, capture à l'appui : « pour les retours
-  d'intervention, il faut mettre le même filtre que pour la fiche de sécurité,
-  avec le mois et l'année qui défile ».
+  CE QUI EST DÉJÀ CODÉ (main, 22 septembre) : la roue jour/mois/année, le mois
+  en titre, un jour choisi qui s'y écrit, et une croix qui rend le mois entier.
 
-  CETTE PLANCHE EST CELLE DU CODE SERVI, pas une proposition : elle reproduit
-  `FiltreDeDate` et `src/lib/periode.ts`, tels qu'ils sont sur `main` depuis le
-  22 septembre 2026 — un seul filtre pour les fiches de sécurité et pour les
-  retours. Le titre porte le mois ; un jour choisi s'y écrit, et la croix rend
-  le mois entier sans rouvrir la roue.
+  SA DEMANDE DU 23 : « l'idée c'est de pouvoir filtrer aussi par mois ou par
+  année ou par jour mois année ». L'ANNÉE MANQUE — on ne peut pas demander
+  « tout 2026 ». Cette planche propose deux façons de la donner, et rien
+  n'est codé tant qu'il n'a pas choisi.
+
+  A — LA CROIX ÉLARGIT, CRAN PAR CRAN : un jour, puis son mois, puis son année.
+      Aucun bouton de plus que ce qui existe ; la croix fait juste un cran de
+      plus. Mais rien à l'écran n'annonce le cran suivant : il faut l'essayer
+      une fois pour le savoir.
+
+  B — LES TROIS MOTS DU TITRE SE TOUCHENT : « 20 septembre 2026 » — le jour,
+      le mois, l'année, chacun donnant sa portée, la portée en cours soulignée
+      d'or. Ça se voit sans mode d'emploi, et l'on saute d'un cran à l'autre
+      dans les deux sens. Mais le titre porte toujours une date entière, même
+      quand la liste tient l'année.
+
+  Dans les deux cas, LE CHEVRON DORÉ ouvre la roue du téléphone : elle change
+  la DATE ; la portée, elle, se règle par la croix (A) ou par les mots (B).
+
+  AUCUN BOUTON DE FILTRE — sa consigne du 21 septembre sur les fiches de
+  sécurité : « enlève tous tes filtres boutons et garde que celui-là ».
 
   Les couleurs sont celles des jetons — or #B98B47, carte #faf9f5,
   encre #1c1c1a, plein #7d9a6d. Nuit : l'accent plein devient CLAIR.
@@ -29,14 +44,12 @@
     --encre-douce:#4a4a44; --gris:#8a8578; --or:#B98B47; --or-texte:#8b6835;
     --plein:#7d9a6d; --sur-plein:#faf9f5; --trait:rgba(28,28,26,.12);
     --trait-doux:rgba(28,28,26,.07); --ombre:rgba(28,28,26,.07); --ombre-forte:rgba(20,18,14,.18);
-    --or-voile:rgba(185,139,71,.10);
   }
   body.nuit{
     --scene:#070908; --fond:#101210; --carte:#1a1d19; --teinte:#151814; --encre:#e9e8de;
     --encre-douce:#c1c2b6; --gris:#84887b; --or:#C9A05E; --or-texte:#d9b676;
     --plein:#e9e8de; --sur-plein:#101210; --trait:rgba(233,232,222,.14);
     --trait-doux:rgba(233,232,222,.08); --ombre:rgba(0,0,0,.35); --ombre-forte:rgba(0,0,0,.6);
-    --or-voile:rgba(201,160,94,.14);
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   html,body{margin:0;background:var(--scene)}
@@ -45,16 +58,17 @@
   button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;text-align:left}
   button:focus-visible,input:focus-visible{outline:2px solid var(--or);outline-offset:3px;border-radius:4px}
 
-  .commandes{display:flex;justify-content:center;gap:22px;padding:16px 16px 0;font-size:13px}
+  .commandes{display:flex;justify-content:center;gap:20px;padding:16px 16px 0;font-size:13px}
   .commandes button{min-height:44px;color:var(--gris)}
   .commandes button[aria-pressed="true"]{color:var(--encre);text-decoration:underline;
                                         text-decoration-color:var(--or);text-underline-offset:6px}
+  .quel{max-width:390px;margin:2px auto 0;padding:0 22px;text-align:center;font-size:12.5px;color:var(--gris)}
 
-  .tel{width:100%;max-width:390px;height:780px;margin:14px auto 0;background:var(--fond);
+  .tel{width:100%;max-width:390px;height:780px;margin:10px auto 0;background:var(--fond);
        border-radius:30px;overflow:hidden;box-shadow:0 18px 46px var(--ombre-forte);
        display:flex;flex-direction:column;position:relative}
   .ecran{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;padding:18px 0 10px}
-  @media (max-width:420px){.tel{border-radius:22px;margin-top:10px}}
+  @media (max-width:420px){.tel{border-radius:22px;margin-top:8px}}
 
   .haut{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:0 22px}
   .retour{width:44px;height:44px;border-radius:999px;background:var(--teinte);
@@ -63,18 +77,18 @@
          display:grid;place-items:center;flex:none}
   h1{margin:14px 22px 0;font:400 31px/1.12 ui-serif,Georgia,serif;letter-spacing:-.01em}
 
-  /* ─── LA ROUE : le libellé se lit, le champ le couvre sans se voir ─── */
-  .barre{margin:12px 22px 0;display:flex;align-items:center;justify-content:center;gap:4px}
-  .mois{position:relative;min-height:48px;display:flex;align-items:center;
-        justify-content:center;gap:8px;cursor:pointer}
-  .mois .nom{font:400 20px/1.2 ui-serif,Georgia,serif}
-  .mois input{position:absolute;inset:0;width:100%;height:100%;opacity:0;font-size:16px;
-              border:0;padding:0;margin:0;background:none}
-
-  /* `display:grid` bat le `display:none` que le navigateur donne à [hidden] :
-     sans cette ligne, la croix reste peinte quand le mois entier est affiché. */
+  /* ─── LE TITRE DE LA PÉRIODE, ET LA ROUE DESSOUS, INVISIBLE ─── */
+  .barre{margin:12px 22px 0;display:flex;align-items:center;justify-content:center;gap:2px}
+  .titre{position:relative;min-height:48px;display:flex;align-items:center;justify-content:center;gap:8px}
+  .titre .mot{font:400 20px/1.2 ui-serif,Georgia,serif;padding:0 3px;min-height:44px;
+              display:inline-flex;align-items:center}
+  .titre .mot.actif{color:var(--or-texte);box-shadow:inset 0 -2px 0 var(--or)}
+  .chevron{min-height:44px;width:30px;display:grid;place-items:center;color:var(--or);position:relative}
+  .chevron input{position:absolute;inset:-6px -10px;width:auto;height:auto;opacity:0;font-size:16px;
+                 border:0;padding:0;margin:0;background:none}
   .croix{width:44px;height:48px;display:grid;place-items:center;color:var(--gris);font-size:17px;line-height:1}
   .croix[hidden]{display:none}
+
   .chercher{position:relative;margin:10px 22px 0}
   .chercher input{width:100%;height:48px;border:0;border-radius:999px;padding:0 16px 0 44px;
                   font-size:16px;background:var(--carte);color:var(--encre);
@@ -116,13 +130,17 @@
 
   .note{max-width:390px;margin:18px auto 0;padding:0 22px;font-size:13.5px;line-height:1.6;color:var(--encre-douce)}
   .note b{color:var(--encre)}
+  .note p{margin:0 0 10px}
 </style>
 </head>
 <body>
 
 <div class="commandes">
-  <button id="jourNuit" type="button" aria-pressed="false">Nuit</button>
+  <button type="button" id="versionA" aria-pressed="true">A</button>
+  <button type="button" id="versionB" aria-pressed="false">B</button>
+  <button type="button" id="jourNuit" aria-pressed="false">Nuit</button>
 </div>
+<p class="quel" id="quelle">A — la croix élargit : le jour, puis son mois, puis son année.</p>
 
 <div class="tel">
   <div class="ecran">
@@ -137,12 +155,12 @@
     <h1>Retours d'intervention</h1>
 
     <div class="barre">
-      <label class="mois">
-        <span class="nom" id="nomDuMois">Septembre 2026</span>
-        <svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true" style="color:var(--or)"><path d="M5 8l5 5 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span class="titre" id="leTitre"></span>
+      <span class="chevron">
+        <svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5 8l5 5 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
         <input type="date" id="laRoue" value="2026-09-23" aria-label="Choisir un jour">
-      </label>
-      <button type="button" class="croix" id="toutLeMois" aria-label="Tout le mois" hidden>✕</button>
+      </span>
+      <button type="button" class="croix" id="elargir" aria-label="Élargir" hidden>✕</button>
     </div>
 
     <div class="chercher">
@@ -160,19 +178,17 @@
 </div>
 
 <p class="note">
-  <b>Touchez « Septembre 2026 »</b> : la roue défile le jour, le mois et l'année.
-  Un jour choisi s'écrit en titre et <b>la liste se referme sur ce jour</b> ;
-  <b>la croix à côté rend le mois entier</b>.
-  Il y a des retours en septembre, en août et en mars 2026 ; juillet est vide.
-  Le nom cherche dans ce qui est affiché.
-  <br><br>
-  <b>C'est déjà dans l'application</b> — redémarrez votre espace et allez dans Terminés, Retours d'intervention.
-  Une seule chose reste à dire : devant un mois vide, l'écran écrit « Aucun retour ne correspond ».
-  Je propose « Aucun retour en juillet 2026 », pour que vous sachiez quoi toucher.
+  <p><b>Ce qui manque aujourd'hui, c'est l'année</b> : on peut demander un jour ou un mois, jamais « tout 2026 ».
+  Deux façons de la donner, <b>touchez A puis B</b> pour les comparer.</p>
+  <p><b>A</b> — la croix à droite élargit d'un cran : le jour, puis son mois, puis son année. Rien de neuf à l'écran, mais il faut l'avoir essayée une fois pour la connaître, et pour redescendre au mois il faut repasser par la roue.</p>
+  <p><b>B</b> — les trois mots du titre se touchent : le jour, le mois, l'année, et la portée en cours est soulignée d'or. Ça se voit tout de suite, et l'on remonte comme on redescend.</p>
+  <p>Dans les deux cas, <b>le chevron doré ouvre la roue</b> du téléphone pour changer de date.
+  Il y a des retours en 2025 et en 2026 : posez-vous sur « 2026 » pour voir ce que l'année change.</p>
+  <p><b>Rien n'est codé.</b> Dites-moi A ou B.</p>
 </p>
 
 <script>
-  /* Les retours de démonstration — trois mois, pour que la roue serve à quelque chose. */
+  /* Les retours de démonstration — deux années, pour que l'année serve. */
   const RETOURS = [
     { client:"Julien",    jour:"2026-09-20", par:"Compte de démonstration", faites:4, total:4, photos:6, signale:"Le portail du fond ferme mal.",
       taches:["Tonte et ébarbage","Taille de la haie","Désherbage des massifs","Ramassage des feuilles"] },
@@ -180,22 +196,14 @@
       taches:["Tonte","Taille des lauriers","Débroussaillage du talus","Évacuation des déchets verts","Traitement anti-mousse"] },
     { client:"Claudette", jour:"2026-08-26", par:"Compte de démonstration", faites:2, total:2, photos:2, signale:null,
       taches:["Tonte","Arrosage automatique remis en route"] },
-    { client:"Julien",    jour:"2026-08-07", par:"Compte de démonstration", faites:3, total:3, photos:0, signale:null,
-      taches:["Tonte","Taille de la haie","Ramassage"] },
-    { client:"Frderik",   jour:"2026-03-11", par:"Compte de démonstration", faites:1, total:2, photos:1, signale:null,
-      taches:["Taille des fruitiers","Broyage des branches"] },
+    { client:"Julien",    jour:"2026-03-11", par:"Compte de démonstration", faites:3, total:3, photos:0, signale:null,
+      taches:["Taille des fruitiers","Broyage des branches","Ramassage"] },
+    { client:"Frderik",   jour:"2025-11-04", par:"Compte de démonstration", faites:1, total:2, photos:1, signale:null,
+      taches:["Taille de la haie","Évacuation"] },
   ];
 
   const MOIS = ["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"];
   const JOURS = ["dimanche","lundi","mardi","mercredi","jeudi","vendredi","samedi"];
-  /* `titreDeLaPeriode` : « Septembre 2026 », ou « 22 septembre 2026 » pour un jour. */
-  const titreDeLaPeriode = (p) => {
-    const [a, m, j] = p.split("-").map(Number);
-    const nom = MOIS[m-1] + " " + a;
-    return j ? j + " " + nom : nom.charAt(0).toUpperCase() + nom.slice(1);
-  };
-  /* `jourDeLaRoue` : la roue d'un téléphone ne s'ouvre que sur un jour. */
-  const jourDeLaRoue = (p) => p.length === 10 ? p : (p === "2026-09" ? "2026-09-23" : p + "-01");
   const jourEcrit = (iso) => {
     const [a,m,j] = iso.split("-").map(Number);
     const d = new Date(Date.UTC(a, m-1, j));
@@ -205,30 +213,54 @@
   const compte = (r) => r.total ? r.faites + " sur " + r.total : "";
   const lesPhotos = (n) => n === 0 ? "" : (n === 1 ? "1 photo" : n + " photos");
 
+  const leTitre = document.getElementById("leTitre");
   const roue = document.getElementById("laRoue");
+  const elargir = document.getElementById("elargir");
   const champ = document.getElementById("leNom");
   const sortie = document.getElementById("laListe");
-  const titre = document.getElementById("nomDuMois");
-  const croix = document.getElementById("toutLeMois");
+  const quelle = document.getElementById("quelle");
 
-  /* La période : un mois (2026-09) ou un jour (2026-09-23). */
-  let periode = "2026-09";
+  /* Le jour que la roue porte, et la PORTÉE : "jour", "mois" ou "annee". */
+  let jour = "2026-09-20";
+  let portee = "mois";
+  let version = "A";
+
+  /* La période telle que la liste la lit : 2026, 2026-09, ou 2026-09-20. */
+  const periode = () => portee === "annee" ? jour.slice(0,4) : portee === "mois" ? jour.slice(0,7) : jour;
+
+  function dessinerLeTitre(){
+    const [a, m, j] = jour.split("-");
+    const nomDuMois = MOIS[Number(m) - 1];
+    if (version === "B"){
+      /* Les trois mots se touchent ; la portée en cours est soulignée d'or. */
+      leTitre.innerHTML =
+        '<button type="button" class="mot ' + (portee === "jour" ? "actif" : "") + '" data-portee="jour">' + Number(j) + '</button>' +
+        '<button type="button" class="mot ' + (portee === "mois" ? "actif" : "") + '" data-portee="mois">' + nomDuMois + '</button>' +
+        '<button type="button" class="mot ' + (portee === "annee" ? "actif" : "") + '" data-portee="annee">' + a + '</button>';
+      elargir.hidden = true;
+    } else {
+      const ecrit = portee === "annee" ? a
+                  : portee === "mois" ? nomDuMois.charAt(0).toUpperCase() + nomDuMois.slice(1) + " " + a
+                  : Number(j) + " " + nomDuMois + " " + a;
+      leTitre.innerHTML = '<span class="mot">' + ecrit + '</span>';
+      elargir.hidden = portee === "annee";
+    }
+  }
 
   function dessiner(){
+    dessinerLeTitre();
+    roue.value = jour;
+    const p = periode();
     const cherche = sansAccent(champ.value);
-    titre.textContent = titreDeLaPeriode(periode);
-    roue.value = jourDeLaRoue(periode);
-    croix.hidden = periode.length !== 10;
-
     const gardes = RETOURS.filter((r) =>
-      r.jour.startsWith(periode) && (!cherche || sansAccent(r.client).includes(cherche)));
+      r.jour.startsWith(p) && (!cherche || sansAccent(r.client).includes(cherche)));
 
     if (gardes.length === 0){
       sortie.innerHTML = '<p class="vide">Aucun retour ne correspond.</p>';
       return;
     }
 
-    /* Rangés par client, du plus récent au plus ancien — c'est sa demande du 8 septembre. */
+    /* Rangés par client, du plus récent au plus ancien — sa demande du 8 septembre. */
     const parClient = [];
     for (const r of gardes.slice().sort((a,b) => a.jour < b.jour ? 1 : -1)){
       let g = parClient.find((x) => x.client === r.client);
@@ -272,15 +304,44 @@
     `).join("");
   }
 
+  leTitre.addEventListener("click", (e) => {
+    const mot = e.target.closest("[data-portee]");
+    if (!mot) return;
+    portee = mot.dataset.portee;
+    dessiner();
+  });
+  /* A — un cran plus large : le jour donne son mois, le mois donne son année. */
+  elargir.addEventListener("click", () => {
+    portee = portee === "jour" ? "mois" : "annee";
+    dessiner();
+  });
+  /* La roue ne change que la DATE : choisir un jour, c'est vouloir ce jour. */
+  roue.addEventListener("change", (e) => {
+    if (!e.target.value) return;
+    jour = e.target.value;
+    portee = "jour";
+    dessiner();
+  });
+  champ.addEventListener("input", dessiner);
+
+  function choisirLaVersion(v){
+    version = v;
+    document.getElementById("versionA").setAttribute("aria-pressed", String(v === "A"));
+    document.getElementById("versionB").setAttribute("aria-pressed", String(v === "B"));
+    quelle.textContent = v === "A"
+      ? "A — la croix élargit : le jour, puis son mois, puis son année."
+      : "B — les trois mots du titre se touchent : le jour, le mois, l'année.";
+    dessiner();
+  }
+  document.getElementById("versionA").addEventListener("click", () => choisirLaVersion("A"));
+  document.getElementById("versionB").addEventListener("click", () => choisirLaVersion("B"));
+
   sortie.addEventListener("click", (e) => {
     const ouvrir = e.target.closest("[data-ouvrir]");
     if (ouvrir){ ouvrir.closest(".carte").classList.toggle("ouvert"); return; }
     const replier = e.target.closest("[data-replier]");
     if (replier) replier.closest(".carte").classList.remove("ouvert");
   });
-  roue.addEventListener("change", (e) => { if (e.target.value){ periode = e.target.value; dessiner(); } });
-  croix.addEventListener("click", () => { periode = periode.slice(0,7); dessiner(); });
-  champ.addEventListener("input", dessiner);
   document.getElementById("jourNuit").addEventListener("click", (e) => {
     const nuit = document.body.classList.toggle("nuit");
     e.currentTarget.setAttribute("aria-pressed", String(nuit));
