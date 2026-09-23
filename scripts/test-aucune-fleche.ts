@@ -59,11 +59,6 @@ const AUTORISEES: { fichier: string; motif: RegExp; pourquoi: string }[] = [
     pourquoi: "feuilleter les semaines du planning",
   },
   {
-    fichier: "src/app/termines/ListeTermines.tsx",
-    motif: /sens === "passe" \? "‹" : "›"/,
-    pourquoi: "feuilleter les chantiers terminés",
-  },
-  {
     fichier: "src/app/termines/tva/CalendrierPeriodes.tsx",
     motif: /^\s*[‹›]\s*$/,
     pourquoi: "feuilleter les années du calendrier de TVA",

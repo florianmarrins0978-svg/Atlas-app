@@ -33050,3 +33050,34 @@ fiches de sécurité, les retours d'intervention, les rapports envoyés.
 `scripts/test-fiches-securite-recherche.ts` et `scripts/test-retour-intervention.ts`
 pour l'année, `scripts/test-fiche-securite-e2e.ts` pour le geste — son repère
 était la croix, il est devenu le mot souligné (`CLAUDE.md` §5 bis).
+
+**ET « TERMINÉS » L'A PRIS AUSSI, LE MÊME JOUR.** Sa demande, dans la foulée :
+*« partout dans l'appli où il y a ce filtre, remplace-le par la B »*. Cet
+écran-là feuilletait mois par mois entre deux flèches « ‹ › », avec un plancher
+à dix-huit mois : revoir l'automne dernier demandait douze appuis, et l'année
+entière n'existait pas. Les flèches, leur plancher et `NavigationMois` sont
+partis ; `resumeDuMois` est devenu `resumeDeLaPeriode`, et il filtre sur le
+JOUR du chantier plutôt que sur sa seule clé de mois — une année est le préfixe
+de ses douze mois.
+
+| | |
+|---|---|
+| le filtre y reste **grand** | 26 px, sa proposition A du 2 septembre 2026 : ici, ce nom dit à lui seul où l'on est dans la page |
+| il se met **en veille** | quand l'œil ne montre que ce qui attend d'être facturé, la liste ignore la période : les trois mots grisent, et le trait d'or s'efface — il désignerait une portée qui ne commande rien |
+
+**Ce qui n'a PAS été touché, et c'est délibéré** : le calendrier de TVA
+(`CalendrierPeriodes`) et la grille du planning. Ce ne sont pas des filtres de
+liste — l'un porte des périodes de déclaration, qui sont légales et non
+choisies, l'autre sert à POSER une date sur un chantier.
+
+**Une phrase de période, écrite une fois** (`phraseDeLaPeriode`) : « en
+septembre 2026 », « en 2026 », « le 11 mars 2026 ». Deux écrans choisissaient
+déjà entre « le » et « en » selon la longueur de la chaîne, un troisième
+arrivait — trois rédactions qui divergent au premier cran ajouté.
+
+`scripts/test-termines-par-mois.ts` (l'année, le jour, et le chantier sans date
+qui n'entre dans aucune période), `scripts/test-onglets-termines-e2e.ts` (les
+trois mots dorment quand l'œil est ouvert), `scripts/test-planning-memoire-e2e.ts`
+(l'année d'un doigt, au lieu de dix-huit reculs) et `scripts/capture-termines.mts`,
+qui mesure le nouveau filtre — son premier contrôle attendait un titre qui
+change, alors que ce qui change est le mot SOULIGNÉ : corrigé en le jouant.

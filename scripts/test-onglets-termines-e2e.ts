@@ -380,9 +380,15 @@ async function main() {
     assert.equal(await oeil.getAttribute("aria-pressed"), "true");
     assert.equal(await page.locator(lignes).count(), attendus, "ouvert, l'œil ne montre pas ce que le chiffre annonce");
     assert.equal(await page.locator(capsules).count(), attendus, "une rangée sans capsule s'est glissée parmi ce qui attend");
-    // Le mois se met en veille : ce qu'on voit l'ignore, ses flèches se ferment.
-    for (const f of ["mois-precedent", "mois-suivant"]) {
-      assert.ok(await page.locator(`[data-atlas='${f}']`).isDisabled(), `${f} reste ouvert alors que la liste ignore le mois`);
+    // La période se met en veille : ce qu'on voit l'ignore, et ses trois mots
+    // se ferment. Les flèches « ‹ › » sont parties le 23 septembre 2026 avec
+    // le filtre jour/mois/année (§409) — un contrôle qui réclame ce qu'il a
+    // fait retirer rend l'écran impossible à changer (`CLAUDE.md` §5 bis).
+    for (const mot of ["portee-jour", "portee-mois", "portee-annee"]) {
+      assert.ok(
+        await page.locator(`[data-atlas='${mot}']`).isDisabled(),
+        `${mot} reste ouvert alors que la liste ignore la période`
+      );
     }
 
     await oeil.click();

@@ -3,15 +3,15 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { colors, font, surPlein } from "@/lib/design-tokens";
+import FiltreDeDate from "@/components/atlas/FiltreDeDate";
+import { phraseDeLaPeriode } from "@/lib/periode";
 import {
   aFacturerPartout,
   bornesDuFeuilletage,
-  decalerMois,
   factureesPartout,
   formatEuros,
   libelleEtatLigne,
-  nomDuMois,
-  resumeDuMois,
+  resumeDeLaPeriode,
   type LigneAffichee,
 } from "@/lib/termines-par-mois";
 
@@ -92,15 +92,16 @@ export default function ListeTermines({
   const attente = useMemo(() => aFacturerPartout(lignes), [lignes]);
   const faites = useMemo(() => factureesPartout(lignes), [lignes]);
 
-  const { entree, borne } = useMemo(
+  // **Le mois d'OUVERTURE** — `borne` servait à fermer la flèche du futur, et
+  // les flèches sont parties avec le filtre du 23 septembre 2026 (§409).
+  const { entree } = useMemo(
     () => bornesDuFeuilletage(lignes, moisCourant),
     [lignes, moisCourant]
   );
-  // Le mois affiché se garde en clair — un décalage relatif se recalculait à
-  // chaque rendu, et le jour où l'entrée bouge il ne veut plus rien dire.
-  const [cle, setCle] = useState(entree);
-  const plancher = decalerMois(entree, RECUL_MAX);
-  const mois = useMemo(() => resumeDuMois(lignes, cle), [lignes, cle]);
+  // La période affichée se garde en clair — un décalage relatif se recalculait
+  // à chaque rendu, et le jour où l'entrée bouge il ne veut plus rien dire.
+  const [periode, setPeriode] = useState(entree);
+  const mois = useMemo(() => resumeDeLaPeriode(lignes, periode), [lignes, periode]);
   // Un œil ouvert sur rien ne montre rien : dès que la dernière facture part,
   // on revient à tout — sans quoi l'écran resterait vide sous un bouton parti.
   const montrerCeQuiAttend = oeilOuvert && attente.length > 0;
@@ -242,13 +243,16 @@ export default function ListeTermines({
               feuilletteraient une liste qui ne bouge pas feraient croire
               l'écran cassé. Le nom reste à sa place, en retrait : une ligne qui
               disparaît se cherche, une ligne qui s'éteint se comprend. */}
-          <NavigationMois
-            cle={cle}
-            peutReculer={cle > plancher}
-            peutAvancer={cle < borne}
-            enVeille={montrerCeQuiAttend}
-            surMois={setCle}
-          />
+          {/* **LE MÊME FILTRE QUE PARTOUT — sa demande du 23 septembre 2026 :**
+              *« partout dans l'appli où il y a ce filtre, remplace-le par la
+              B »*. Les flèches « ‹ › » feuilletaient mois par mois et ne
+              savaient aller ni au jour ni à l'année : remonter à l'an dernier
+              demandait douze appuis. Les trois mots du titre y vont d'un.
+
+              **Il reste GRAND ici** (sa proposition A du 2 septembre 2026) :
+              c'est ce nom qui dit où l'on est dans la page, et à la taille
+              des autres écrans il aurait le corps d'un nom de client. */}
+          <FiltreDeDate periode={periode} choisir={setPeriode} enVeille={montrerCeQuiAttend} grand />
           {/* **Sa phrase, ici — 23 août 2026 —, réduite à ses DEUX
               COMPTES le soir même** : *« là où il y a écrit trois à
               facturer et huit facturés, supprime les montants qu'il y a
@@ -323,7 +327,7 @@ export default function ListeTermines({
           )}
           {!montrerCeQuiAttend && mois.lignes.length === 0 ? (
             <p className="mt-4 text-[13.5px] leading-[1.65]" style={{ color: colors.muted }}>
-              Rien en {nomDuMois(cle).toLowerCase()}.
+              Rien {phraseDeLaPeriode(periode)}.
             </p>
           ) : (
             (montrerCeQuiAttend ? attente : mois.lignes).map((l) => (
@@ -333,103 +337,6 @@ export default function ListeTermines({
         </section>
       )}
     </div>
-  );
-}
-
-/** Dix-huit mois en arrière : au-delà, il n'y a rien à aller chercher. */
-const RECUL_MAX = 18;
-
-/**
- * ‹ Août 2026 › — sa demande du 22 août 2026.
- *
- * **La flèche du futur se ferme sur le mois le plus récent.** Un bouton qui ne
- * fait rien s'appuie deux fois, puis on croit l'écran cassé.
- *
- * **44 px de haut**, comme partout : c'est un pouce, sur un chantier, parfois
- * avec des gants.
- *
- * **Le total du mois a quitté cette ligne le 23 août 2026, à sa demande** :
- * *« le montant 5 028,00 € qui est sur la même ligne qu'août 2026, celui-là tu
- * peux le supprimer »*. Il n'avait pas la même portée que les deux comptes en
- * dessous — lui ne comptait que le mois affiché, eux comptent tous les mois —
- * et deux chiffres voisins de portées différentes se lisent comme une
- * contradiction. Le nom du mois se déplace ; ce qu'on additionne se lit dans
- * les lignes.
- */
-function NavigationMois({
-  cle,
-  peutReculer,
-  peutAvancer,
-  enVeille,
-  surMois,
-}: {
-  cle: string;
-  peutReculer: boolean;
-  peutAvancer: boolean;
-  /** L'œil est ouvert : la liste ignore le mois, les flèches se ferment. */
-  enVeille: boolean;
-  surMois: (cle: string) => void;
-}) {
-  return (
-    // Centré — sa demande du 13 septembre 2026 : *« Septembre 2026, centre-le »*.
-    <div className="flex items-center justify-center gap-0.5" data-atlas="navigation-mois">
-      <Fleche
-        sens="passe"
-        desactivee={enVeille || !peutReculer}
-        onClick={() => surMois(decalerMois(cle, 1))}
-      />
-      {/* **26 px au lieu de 21 — « le calme », sa proposition A du 2 septembre
-          2026** (`appli/termines-elegance.html`). C'est ce nom qui dit où l'on
-          est dans la page ; à 21 px il avait exactement le corps d'un nom de
-          client — 17 px de serif, à trois centimètres en dessous —, et l'écran
-          n'avait plus de repère. Les deux pixels de marge resserrent
-          « ‹ Août 2026 › » en UN objet, au lieu de trois signes qui se suivent. */}
-      <span
-        style={{
-          fontFamily: font.display,
-          fontSize: 26,
-          lineHeight: 1.2,
-          whiteSpace: "nowrap",
-          marginInline: 2,
-          color: enVeille ? colors.muted : colors.ink,
-        }}
-      >
-        {nomDuMois(cle)}
-      </span>
-      <Fleche
-        sens="futur"
-        desactivee={enVeille || !peutAvancer}
-        onClick={() => surMois(decalerMois(cle, -1))}
-      />
-    </div>
-  );
-}
-
-function Fleche({
-  sens,
-  desactivee,
-  onClick,
-}: {
-  sens: "passe" | "futur";
-  desactivee: boolean;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={desactivee}
-      aria-label={sens === "passe" ? "Mois précédent" : "Mois suivant"}
-      data-atlas={sens === "passe" ? "mois-precedent" : "mois-suivant"}
-      className="flex h-11 w-[34px] items-center justify-center text-[22px] leading-none"
-      style={{
-        fontFamily: font.display,
-        color: desactivee ? colors.line : colors.or,
-        WebkitTapHighlightColor: "transparent",
-      }}
-    >
-      {sens === "passe" ? "‹" : "›"}
-    </button>
   );
 }
 

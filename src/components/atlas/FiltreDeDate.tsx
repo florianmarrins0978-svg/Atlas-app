@@ -33,11 +33,31 @@ import { avecLaPortee, jourDeLaRoue, porteeDeLaPeriode, type Portee } from "@/li
  * demandée. Le filtre retient donc le jour sous le doigt, et ne le recalcule
  * que lorsqu'il sort de la période reçue (une autre adresse, un autre écran).
  *
- * Un seul dessin pour les fiches de sécurité, les retours d'intervention et
- * les rapports envoyés : ce qui change d'un écran à l'autre, c'est ce qu'on
- * fait de la période choisie (`choisir`), jamais la façon de la choisir.
+ * Un seul dessin pour les fiches de sécurité, les retours d'intervention, les
+ * rapports envoyés et « Terminés » : ce qui change d'un écran à l'autre, c'est
+ * ce qu'on fait de la période choisie (`choisir`), jamais la façon de la
+ * choisir. C'est sa demande du 23 septembre 2026 — *« partout dans l'appli où
+ * il y a ce filtre, remplace-le par la B »*.
+ *
+ * **`grand`** n'est là que pour « Terminés », où ce nom dit à lui seul où l'on
+ * est dans la page (sa proposition A du 2 septembre 2026, 26 px) ; ailleurs il
+ * vit sous un titre d'écran qui le dit déjà.
+ *
+ * **`enVeille`** sert à « Terminés » quand l'œil ne montre que ce qui attend
+ * d'être facturé : la liste ignore alors la période, et un filtre qui répond
+ * au doigt sans que rien ne bouge fait croire l'écran cassé.
  */
-export default function FiltreDeDate({ periode, choisir }: { periode: string; choisir: (periode: string) => void }) {
+export default function FiltreDeDate({
+  periode,
+  choisir,
+  enVeille = false,
+  grand = false,
+}: {
+  periode: string;
+  choisir: (periode: string) => void;
+  enVeille?: boolean;
+  grand?: boolean;
+}) {
   const [jourRetenu, setJourRetenu] = useState(() => jourDeLaRoue(periode));
   // Dérivé au rendu plutôt que recopié par un effet : un effet repeindrait
   // l'ancien jour une fois avant de se corriger, et cela se voit.
@@ -47,16 +67,17 @@ export default function FiltreDeDate({ periode, choisir }: { periode: string; ch
 
   return (
     <div className="mx-[22px] mt-3 flex items-center justify-center gap-1" data-atlas="periode-choisie">
-      <Mot actif={portee === "jour"} portee="jour" onClick={() => choisir(avecLaPortee(jour, "jour"))}>
+      <Mot actif={portee === "jour"} portee="jour" enVeille={enVeille} grand={grand} onClick={() => choisir(avecLaPortee(jour, "jour"))}>
         {String(Number(quantieme))}
       </Mot>
-      <Mot actif={portee === "mois"} portee="mois" onClick={() => choisir(avecLaPortee(jour, "mois"))}>
+      <Mot actif={portee === "mois"} portee="mois" enVeille={enVeille} grand={grand} onClick={() => choisir(avecLaPortee(jour, "mois"))}>
         {MOIS_LONGS[Number(mois) - 1]}
       </Mot>
-      <Mot actif={portee === "annee"} portee="annee" onClick={() => choisir(avecLaPortee(jour, "annee"))}>
+      <Mot actif={portee === "annee"} portee="annee" enVeille={enVeille} grand={grand} onClick={() => choisir(avecLaPortee(jour, "annee"))}>
         {annee}
       </Mot>
       <RoueDuTelephone
+        enVeille={enVeille}
         jour={jour}
         choisir={(j) => {
           setJourRetenu(j);
@@ -76,11 +97,15 @@ export default function FiltreDeDate({ periode, choisir }: { periode: string; ch
 function Mot({
   actif,
   portee,
+  enVeille,
+  grand,
   onClick,
   children,
 }: {
   actif: boolean;
   portee: Portee;
+  enVeille: boolean;
+  grand: boolean;
   onClick: () => void;
   children: React.ReactNode;
 }) {
@@ -88,13 +113,17 @@ function Mot({
     <button
       type="button"
       onClick={onClick}
+      disabled={enVeille}
       aria-pressed={actif}
       data-atlas={`portee-${portee}`}
-      className="flex min-h-11 items-center px-[3px] text-[20px] leading-[1.2]"
+      className="flex min-h-11 items-center px-[3px] leading-[1.2]"
       style={{
         fontFamily: font.display,
-        color: actif ? colors.orTexte : colors.ink,
-        boxShadow: actif ? `inset 0 -2px 0 ${colors.or}` : "none",
+        fontSize: grand ? 26 : 20,
+        color: enVeille ? colors.muted : actif ? colors.orTexte : colors.ink,
+        // En veille, plus de trait : il désignerait une portée qui ne commande
+        // rien. Le gris dit « ceci dort », le trait dirait « ceci décide ».
+        boxShadow: actif && !enVeille ? `inset 0 -2px 0 ${colors.or}` : "none",
         WebkitTapHighlightColor: "transparent",
       }}
     >
@@ -108,16 +137,25 @@ function Mot({
  *
  * `fontSize: 16` : en dessous, iOS agrandit la page à l'ouverture de la roue.
  */
-function RoueDuTelephone({ jour, choisir }: { jour: string; choisir: (jour: string) => void }) {
+function RoueDuTelephone({
+  jour,
+  enVeille,
+  choisir,
+}: {
+  jour: string;
+  enVeille: boolean;
+  choisir: (jour: string) => void;
+}) {
   return (
     <label className="relative flex min-h-11 w-8 cursor-pointer items-center justify-center" data-atlas="ouvrir-la-roue">
-      <svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true" style={{ color: colors.or }}>
+      <svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true" style={{ color: enVeille ? colors.line : colors.or }}>
         <path d="M5 8l5 5 5-5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
       <input
         type="date"
         aria-label="Choisir un jour"
         value={jour}
+        disabled={enVeille}
         onChange={(e) => {
           if (e.target.value) choisir(e.target.value);
         }}
