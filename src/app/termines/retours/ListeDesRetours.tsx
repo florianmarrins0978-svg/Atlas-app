@@ -40,19 +40,28 @@ import { marquerLeRetourVuAction } from "./actions";
  * pastilles d'années sont parties avec — garder les deux, c'est un filtre qu'on
  * oublie de remettre à « Tout », et une liste qui paraît vide sans raison.
  *
- * **Le mois par défaut vient du SERVEUR** (`moisCourant`). Le lire dans le
+ * **LA ROUE DÉFILE JOUR, MOIS, ANNÉE — MAIS C'EST LE MOIS QUI FILTRE.** Son
+ * choix du 23 septembre 2026, entre trois façons de faire : *« le jour en plus
+ * du mois »*, la liste restant sur le mois. Le jour sert à SE POSER — trois
+ * tours de roue au lieu d'un pour atteindre mars —, il ne réduit rien : une
+ * liste d'une seule journée obligerait à tourner la roue chaque soir pour
+ * relire la semaine.
+ *
+ * **Le jour par défaut vient du SERVEUR** (`jourCourant`). Le lire dans le
  * navigateur rendrait un mois au serveur et un autre au client la nuit du
  * changement de mois — le piège que `ListeTermines` porte déjà.
  */
 export default function ListeDesRetours({
   retours,
-  moisCourant,
+  jourCourant,
 }: {
   retours: RetourEnListe[];
-  moisCourant: string;
+  jourCourant: string;
 }) {
   const [cherche, setCherche] = useState("");
-  const [mois, setMois] = useState(moisCourant);
+  // Le jour est ce que la roue porte ; le mois est ce que la liste écoute.
+  const [jour, setJour] = useState(jourCourant);
+  const mois = jour.slice(0, 7);
 
   const groupes = useMemo(
     () => rangerLesRetours(retours, { client: cherche, mois }),
@@ -64,10 +73,15 @@ export default function ListeDesRetours({
       <EnTeteEcran titre="Retours d'intervention" retour={{ href: "/termines", libelle: "Retour aux chantiers terminés" }}
         allure="commune" />
 
-      {/* **Le mois en tête, comme sur la fiche de sécurité** : le champ couvre
-          le titre sans se voir, et la roue mois/année du téléphone s'ouvre au
-          toucher. `fontSize: 16` sur le champ invisible — en dessous, iOS
-          agrandit la page à l'ouverture de la roue. */}
+      {/* **Le mois en tête, la roue jour/mois/année dessous** : le champ couvre
+          le titre sans se voir, et le sélecteur du téléphone s'ouvre au
+          toucher. C'est un `date` et non un `month` — sa demande du
+          23 septembre : le jour défile aussi. Ce qui est ÉCRIT reste le mois,
+          parce que c'est le mois qui décide de la liste ; afficher la date
+          exacte ferait croire à une journée.
+
+          `fontSize: 16` sur le champ invisible — en dessous, iOS agrandit la
+          page à l'ouverture de la roue. */}
       <label
         className="relative mx-[22px] mt-3 flex min-h-12 cursor-pointer items-center justify-center gap-2"
         data-atlas="mois-des-retours"
@@ -79,11 +93,11 @@ export default function ListeDesRetours({
           <path d="M5 8l5 5 5-5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
         <input
-          type="month"
-          aria-label="Choisir un mois"
-          value={mois}
+          type="date"
+          aria-label="Choisir un jour"
+          value={jour}
           onChange={(e) => {
-            if (e.target.value) setMois(e.target.value);
+            if (e.target.value) setJour(e.target.value);
           }}
           className="absolute inset-0 h-full w-full opacity-0"
           style={{ fontSize: 16 }}

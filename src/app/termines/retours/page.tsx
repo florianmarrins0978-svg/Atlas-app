@@ -20,8 +20,9 @@ import ListeDesRetours from "./ListeDesRetours";
  * **« Longtemps » se lit dans ce qui N'EST PAS ici** : aucune fenêtre de
  * dix-huit mois, aucun `LIMIT`. La liste part de tout ce que l'entreprise
  * porte, et c'est le filtre qui réduit — jamais le chargement. Le mois affiché
- * (sa demande du 22 septembre 2026, la roue de la fiche de sécurité) se déplace
- * donc sur du déjà-chargé : remonter à 2024 ne demande rien au serveur.
+ * (sa demande du 22 septembre 2026, la roue de la fiche de sécurité ; le jour
+ * ajouté à la roue le 23) se déplace donc sur du déjà-chargé : remonter à 2024
+ * ne demande rien au serveur.
  *
  * **Elle est fermée au salarié** par la liste blanche : elle vit sous
  * `/termines`, qu'il n'atteint pas (`src/lib/acces-roles.ts`). Elle ne porte
@@ -45,10 +46,11 @@ export default async function PageDesRetours() {
     );
   }
   const retours = await listerLesRetours(ctx);
-  // **Le mois du patron, pas celui de la machine ni celui du navigateur.**
+  // **Le jour du patron, pas celui de la machine ni celui du navigateur.**
   // Décidé ici, il est le même au rendu et à l'hydratation — sinon la nuit du
   // 30 au 1er, le serveur écrirait « Septembre » et le téléphone « Octobre ».
-  const moisCourant = jourIso(new Date()).slice(0, 7);
+  // La roue porte ce jour ; c'est son mois qui commande la liste.
+  const jourCourant = jourIso(new Date());
 
   return (
     <div
@@ -59,7 +61,7 @@ export default async function PageDesRetours() {
         minHeight: "100%",
       }}
     >
-      <ListeDesRetours retours={retours} moisCourant={moisCourant} />
+      <ListeDesRetours retours={retours} jourCourant={jourCourant} />
     </div>
   );
 }

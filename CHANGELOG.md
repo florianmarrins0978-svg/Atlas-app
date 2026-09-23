@@ -8,6 +8,15 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-22
 
+### La roue des retours défile aussi le JOUR
+
+Son choix du 23 septembre 2026 : *« le jour en plus du mois »*. La roue porte
+maintenant une date entière — jour, mois, année —, et c'est toujours le MOIS qui
+commande la liste : le jour sert à se poser, il ne réduit rien. Une liste d'une
+seule journée l'obligerait à tourner la roue chaque soir pour relire la semaine.
+Ce qui est écrit en tête reste le mois, pour que l'écran ne promette pas une
+journée qu'il ne montre pas.
+
 ### Les retours d'intervention se filtrent au mois, comme les fiches de sécurité
 
 Sa demande, capture à l'appui : *« pour les retours d'intervention, il faut
