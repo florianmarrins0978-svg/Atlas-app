@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Les retours, la roue du jour</title>
+<!--
+  ════════════════════════════════════════════════════════════════════════════
+  LES RETOURS D'INTERVENTION — LA ROUE JOUR / MOIS / ANNÉE. 23 septembre 2026.
+
+  SA DEMANDE DU 22 SEPTEMBRE, capture à l'appui : « pour les retours
+  d'intervention, il faut mettre le même filtre que pour la fiche de sécurité,
+  avec le mois et l'année qui défile ».
+
+  CETTE PLANCHE EST CELLE DU CODE SERVI, pas une proposition : elle reproduit
+  `FiltreDeDate` et `src/lib/periode.ts`, tels qu'ils sont sur `main` depuis le
+  22 septembre 2026 — un seul filtre pour les fiches de sécurité et pour les
+  retours. Le titre porte le mois ; un jour choisi s'y écrit, et la croix rend
+  le mois entier sans rouvrir la roue.
+
+  Les couleurs sont celles des jetons — or #B98B47, carte #faf9f5,
+  encre #1c1c1a, plein #7d9a6d. Nuit : l'accent plein devient CLAIR.
+  Toutes les cibles font 44 px au moins.
+  ════════════════════════════════════════════════════════════════════════════
+-->
+<style>
+  :root{
+    --scene:#e6e3dc; --fond:#f5f3ee; --carte:#faf9f5; --teinte:#ece9e1; --encre:#1c1c1a;
+    --encre-douce:#4a4a44; --gris:#8a8578; --or:#B98B47; --or-texte:#8b6835;
+    --plein:#7d9a6d; --sur-plein:#faf9f5; --trait:rgba(28,28,26,.12);
+    --trait-doux:rgba(28,28,26,.07); --ombre:rgba(28,28,26,.07); --ombre-forte:rgba(20,18,14,.18);
+    --or-voile:rgba(185,139,71,.10);
+  }
+  body.nuit{
+    --scene:#070908; --fond:#101210; --carte:#1a1d19; --teinte:#151814; --encre:#e9e8de;
+    --encre-douce:#c1c2b6; --gris:#84887b; --or:#C9A05E; --or-texte:#d9b676;
+    --plein:#e9e8de; --sur-plein:#101210; --trait:rgba(233,232,222,.14);
+    --trait-doux:rgba(233,232,222,.08); --ombre:rgba(0,0,0,.35); --ombre-forte:rgba(0,0,0,.6);
+    --or-voile:rgba(201,160,94,.14);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;background:var(--scene)}
+  body{font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--encre);
+       -webkit-text-size-adjust:100%;padding:0 0 48px;font-variant-numeric:tabular-nums}
+  button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;text-align:left}
+  button:focus-visible,input:focus-visible{outline:2px solid var(--or);outline-offset:3px;border-radius:4px}
+
+  .commandes{display:flex;justify-content:center;gap:22px;padding:16px 16px 0;font-size:13px}
+  .commandes button{min-height:44px;color:var(--gris)}
+  .commandes button[aria-pressed="true"]{color:var(--encre);text-decoration:underline;
+                                        text-decoration-color:var(--or);text-underline-offset:6px}
+
+  .tel{width:100%;max-width:390px;height:780px;margin:14px auto 0;background:var(--fond);
+       border-radius:30px;overflow:hidden;box-shadow:0 18px 46px var(--ombre-forte);
+       display:flex;flex-direction:column;position:relative}
+  .ecran{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;padding:18px 0 10px}
+  @media (max-width:420px){.tel{border-radius:22px;margin-top:10px}}
+
+  .haut{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:0 22px}
+  .retour{width:44px;height:44px;border-radius:999px;background:var(--teinte);
+          display:grid;place-items:center;flex:none;color:var(--encre)}
+  .bulle{width:52px;height:52px;border-radius:999px;background:var(--plein);color:var(--sur-plein);
+         display:grid;place-items:center;flex:none}
+  h1{margin:14px 22px 0;font:400 31px/1.12 ui-serif,Georgia,serif;letter-spacing:-.01em}
+
+  /* ─── LA ROUE : le libellé se lit, le champ le couvre sans se voir ─── */
+  .barre{margin:12px 22px 0;display:flex;align-items:center;justify-content:center;gap:4px}
+  .mois{position:relative;min-height:48px;display:flex;align-items:center;
+        justify-content:center;gap:8px;cursor:pointer}
+  .mois .nom{font:400 20px/1.2 ui-serif,Georgia,serif}
+  .mois input{position:absolute;inset:0;width:100%;height:100%;opacity:0;font-size:16px;
+              border:0;padding:0;margin:0;background:none}
+
+  /* `display:grid` bat le `display:none` que le navigateur donne à [hidden] :
+     sans cette ligne, la croix reste peinte quand le mois entier est affiché. */
+  .croix{width:44px;height:48px;display:grid;place-items:center;color:var(--gris);font-size:17px;line-height:1}
+  .croix[hidden]{display:none}
+  .chercher{position:relative;margin:10px 22px 0}
+  .chercher input{width:100%;height:48px;border:0;border-radius:999px;padding:0 16px 0 44px;
+                  font-size:16px;background:var(--carte);color:var(--encre);
+                  box-shadow:inset 0 0 0 1px var(--trait)}
+  .chercher .loupe{position:absolute;left:16px;top:50%;transform:translateY(-50%);color:var(--gris);
+                   pointer-events:none;display:grid}
+
+  .client{margin:26px 22px 0;font:400 19px/1.2 ui-serif,Georgia,serif}
+  .carte{margin:10px 22px 0;background:var(--carte);border-radius:13px;
+         box-shadow:inset 0 0 0 1px var(--trait);overflow:hidden}
+  .ligne{display:flex;align-items:flex-start;gap:12px;width:100%;padding:12px 14px}
+  .coche{width:26px;height:26px;border-radius:999px;background:var(--teinte);color:var(--or-texte);
+         display:grid;place-items:center;flex:none;margin-top:1px}
+  .ligne .quoi{flex:1;min-width:0}
+  .jour{display:flex;align-items:center;gap:8px}
+  .pastille{width:9px;height:9px;border-radius:999px;background:var(--or);flex:none}
+  .jour b{font:600 14px/1.3 inherit}
+  .meta{margin-top:3px;font-size:12.5px;line-height:1.45;color:var(--gris)}
+  .chev{flex:none;margin-top:6px;color:var(--gris);transition:transform .18s cubic-bezier(.22,.9,.3,1)}
+  .carte.ouvert .chev{transform:rotate(90deg)}
+  .detail{padding:2px 14px 14px;display:none}
+  .carte.ouvert .detail{display:block}
+  .capitale{margin:12px 0 0;font:600 11px/1 inherit;letter-spacing:.14em;text-transform:uppercase;color:var(--gris)}
+  .taches{list-style:none;margin:8px 0 0;padding:0}
+  .taches li{display:flex;align-items:flex-start;gap:10px;padding:5px 0;font-size:13.5px;line-height:1.35}
+  .case{width:17px;height:17px;border-radius:5px;flex:none;margin-top:1px;display:grid;place-items:center;
+        box-shadow:inset 0 0 0 1.5px var(--trait)}
+  .case.faite{background:var(--plein);color:var(--sur-plein);box-shadow:none}
+  .pasfait{color:var(--or-texte)}
+  .signale{margin:8px 0 0;background:var(--teinte);color:var(--encre-douce);border-radius:12px;
+           padding:10px 12px;font-size:13.5px;line-height:1.45}
+  .replier{margin-top:14px;width:100%;height:42px;border-radius:999px;text-align:center;
+           color:var(--or-texte);box-shadow:inset 0 0 0 1px var(--or-texte);font-size:13.5px}
+  .vide{margin:28px 22px 0;font-size:13.5px;line-height:1.65;color:var(--gris)}
+
+  .onglets{display:flex;justify-content:space-between;gap:4px;padding:14px 18px 22px;
+           border-top:1px solid var(--trait);font:600 10.5px/1 inherit;letter-spacing:.12em;color:var(--gris)}
+  .onglets span.ici{color:var(--encre);padding-bottom:8px;box-shadow:inset 0 -2px 0 var(--or)}
+
+  .note{max-width:390px;margin:18px auto 0;padding:0 22px;font-size:13.5px;line-height:1.6;color:var(--encre-douce)}
+  .note b{color:var(--encre)}
+</style>
+</head>
+<body>
+
+<div class="commandes">
+  <button id="jourNuit" type="button" aria-pressed="false">Nuit</button>
+</div>
+
+<div class="tel">
+  <div class="ecran">
+    <div class="haut">
+      <span class="retour" aria-hidden="true">
+        <svg width="11" height="18" viewBox="0 0 9 15" fill="none"><path d="M7.5 1.5l-6 6 6 6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </span>
+      <span class="bulle" aria-hidden="true">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M21 12a8 8 0 0 1-8 8H5l-2 2v-10a8 8 0 0 1 8-8h2a8 8 0 0 1 8 8z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+      </span>
+    </div>
+    <h1>Retours d'intervention</h1>
+
+    <div class="barre">
+      <label class="mois">
+        <span class="nom" id="nomDuMois">Septembre 2026</span>
+        <svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true" style="color:var(--or)"><path d="M5 8l5 5 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <input type="date" id="laRoue" value="2026-09-23" aria-label="Choisir un jour">
+      </label>
+      <button type="button" class="croix" id="toutLeMois" aria-label="Tout le mois" hidden>✕</button>
+    </div>
+
+    <div class="chercher">
+      <span class="loupe" aria-hidden="true">
+        <svg width="17" height="17" viewBox="0 0 18 18" fill="none"><circle cx="7.6" cy="7.6" r="5.4" stroke="currentColor" stroke-width="1.6"/><path d="m11.6 11.6 4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      </span>
+      <input type="search" id="leNom" placeholder="Un nom de client" aria-label="Chercher un client">
+    </div>
+
+    <div id="laListe"></div>
+  </div>
+  <div class="onglets">
+    <span>CHANTIERS</span><span>PLANNING</span><span class="ici">TERMINÉS</span><span>PAYSAGE</span><span>RÉGLAGES</span>
+  </div>
+</div>
+
+<p class="note">
+  <b>Touchez « Septembre 2026 »</b> : la roue défile le jour, le mois et l'année.
+  Un jour choisi s'écrit en titre et <b>la liste se referme sur ce jour</b> ;
+  <b>la croix à côté rend le mois entier</b>.
+  Il y a des retours en septembre, en août et en mars 2026 ; juillet est vide.
+  Le nom cherche dans ce qui est affiché.
+  <br><br>
+  <b>C'est déjà dans l'application</b> — redémarrez votre espace et allez dans Terminés, Retours d'intervention.
+  Une seule chose reste à dire : devant un mois vide, l'écran écrit « Aucun retour ne correspond ».
+  Je propose « Aucun retour en juillet 2026 », pour que vous sachiez quoi toucher.
+</p>
+
+<script>
+  /* Les retours de démonstration — trois mois, pour que la roue serve à quelque chose. */
+  const RETOURS = [
+    { client:"Julien",    jour:"2026-09-20", par:"Compte de démonstration", faites:4, total:4, photos:6, signale:"Le portail du fond ferme mal.",
+      taches:["Tonte et ébarbage","Taille de la haie","Désherbage des massifs","Ramassage des feuilles"] },
+    { client:"Pagnol",    jour:"2026-09-17", par:"Compte de démonstration", faites:4, total:5, photos:0, signale:null,
+      taches:["Tonte","Taille des lauriers","Débroussaillage du talus","Évacuation des déchets verts","Traitement anti-mousse"] },
+    { client:"Claudette", jour:"2026-08-26", par:"Compte de démonstration", faites:2, total:2, photos:2, signale:null,
+      taches:["Tonte","Arrosage automatique remis en route"] },
+    { client:"Julien",    jour:"2026-08-07", par:"Compte de démonstration", faites:3, total:3, photos:0, signale:null,
+      taches:["Tonte","Taille de la haie","Ramassage"] },
+    { client:"Frderik",   jour:"2026-03-11", par:"Compte de démonstration", faites:1, total:2, photos:1, signale:null,
+      taches:["Taille des fruitiers","Broyage des branches"] },
+  ];
+
+  const MOIS = ["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"];
+  const JOURS = ["dimanche","lundi","mardi","mercredi","jeudi","vendredi","samedi"];
+  /* `titreDeLaPeriode` : « Septembre 2026 », ou « 22 septembre 2026 » pour un jour. */
+  const titreDeLaPeriode = (p) => {
+    const [a, m, j] = p.split("-").map(Number);
+    const nom = MOIS[m-1] + " " + a;
+    return j ? j + " " + nom : nom.charAt(0).toUpperCase() + nom.slice(1);
+  };
+  /* `jourDeLaRoue` : la roue d'un téléphone ne s'ouvre que sur un jour. */
+  const jourDeLaRoue = (p) => p.length === 10 ? p : (p === "2026-09" ? "2026-09-23" : p + "-01");
+  const jourEcrit = (iso) => {
+    const [a,m,j] = iso.split("-").map(Number);
+    const d = new Date(Date.UTC(a, m-1, j));
+    return JOURS[d.getUTCDay()] + " " + j + " " + MOIS[m-1] + " " + a;
+  };
+  const sansAccent = (t) => t.normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase().trim();
+  const compte = (r) => r.total ? r.faites + " sur " + r.total : "";
+  const lesPhotos = (n) => n === 0 ? "" : (n === 1 ? "1 photo" : n + " photos");
+
+  const roue = document.getElementById("laRoue");
+  const champ = document.getElementById("leNom");
+  const sortie = document.getElementById("laListe");
+  const titre = document.getElementById("nomDuMois");
+  const croix = document.getElementById("toutLeMois");
+
+  /* La période : un mois (2026-09) ou un jour (2026-09-23). */
+  let periode = "2026-09";
+
+  function dessiner(){
+    const cherche = sansAccent(champ.value);
+    titre.textContent = titreDeLaPeriode(periode);
+    roue.value = jourDeLaRoue(periode);
+    croix.hidden = periode.length !== 10;
+
+    const gardes = RETOURS.filter((r) =>
+      r.jour.startsWith(periode) && (!cherche || sansAccent(r.client).includes(cherche)));
+
+    if (gardes.length === 0){
+      sortie.innerHTML = '<p class="vide">Aucun retour ne correspond.</p>';
+      return;
+    }
+
+    /* Rangés par client, du plus récent au plus ancien — c'est sa demande du 8 septembre. */
+    const parClient = [];
+    for (const r of gardes.slice().sort((a,b) => a.jour < b.jour ? 1 : -1)){
+      let g = parClient.find((x) => x.client === r.client);
+      if (!g){ g = { client:r.client, siens:[] }; parClient.push(g); }
+      g.siens.push(r);
+    }
+
+    sortie.innerHTML = parClient.map((g) => `
+      <p class="client">${g.client}</p>
+      ${g.siens.map((r) => `
+        <div class="carte">
+          <button type="button" class="ligne" data-ouvrir>
+            <span class="coche" aria-hidden="true">
+              <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 8.4 6.3 11.7 13 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+            <span class="quoi">
+              <span class="jour"><span class="pastille" aria-hidden="true"></span><b>${jourEcrit(r.jour)}</b></span>
+              <span class="meta">${[r.par, compte(r), lesPhotos(r.photos)].filter(Boolean).join(" · ")}</span>
+            </span>
+            <span class="chev" aria-hidden="true">
+              <svg width="9" height="15" viewBox="0 0 9 15" fill="none"><path d="m1.5 1.5 6 6-6 6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+          </button>
+          <div class="detail">
+            <p class="capitale">Ce qui a été fait</p>
+            <ul class="taches">
+              ${r.taches.map((t, rang) => {
+                const faite = rang < r.faites;
+                return `<li>
+                  <span class="case ${faite ? "faite" : ""}" aria-hidden="true">${faite
+                    ? '<svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2 6.3 4.7 9 10 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+                    : ""}</span>
+                  <span style="color:${faite ? "var(--encre)" : "var(--gris)"}">${t}${faite ? "" : ' <span class="pasfait">— pas fait</span>'}</span>
+                </li>`;
+              }).join("")}
+            </ul>
+            ${r.signale ? `<p class="capitale">À signaler</p><p class="signale">« ${r.signale} »</p>` : ""}
+            <button type="button" class="replier" data-replier>Replier</button>
+          </div>
+        </div>`).join("")}
+    `).join("");
+  }
+
+  sortie.addEventListener("click", (e) => {
+    const ouvrir = e.target.closest("[data-ouvrir]");
+    if (ouvrir){ ouvrir.closest(".carte").classList.toggle("ouvert"); return; }
+    const replier = e.target.closest("[data-replier]");
+    if (replier) replier.closest(".carte").classList.remove("ouvert");
+  });
+  roue.addEventListener("change", (e) => { if (e.target.value){ periode = e.target.value; dessiner(); } });
+  croix.addEventListener("click", () => { periode = periode.slice(0,7); dessiner(); });
+  champ.addEventListener("input", dessiner);
+  document.getElementById("jourNuit").addEventListener("click", (e) => {
+    const nuit = document.body.classList.toggle("nuit");
+    e.currentTarget.setAttribute("aria-pressed", String(nuit));
+  });
+  dessiner();
+</script>
+</body>
+</html>
