@@ -120,7 +120,7 @@
 
   <div class="encart"><span class="t">Ce que chacune coûte</span>
     <table>
-      <tr><td>A</td><td>Rien à apprendre : même place, un mot au lieu d’un bouton. Il se voit moins — c’est voulu, c’est le document de secours.</td></tr>
+      <tr><td>A</td><td>Rien à apprendre : même place, un mot au lieu d’un bouton. Il se voit moins : c’est voulu, c’est le document de secours.</td></tr>
       <tr><td>B</td><td>Le PDF rejoint les outils du chantier, en haut. Cinq cases au lieu de quatre, et il remonte avant les tâches.</td></tr>
       <tr><td>C</td><td>Plus de papier pour l’équipe : la liste à l’écran est la seule feuille. Vous, vous imprimez le devis avec les prix depuis le chantier.</td></tr>
     </table>
@@ -140,7 +140,7 @@
 
   const COCHE = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg>';
 
-  /** La fiche d'intervention, telle qu'elle est — le PDF se range selon `place`. */
+  /** La fiche d'intervention, telle qu'elle est : le PDF se range selon `place`. */
   function fiche(place) {
     const cinquieme = place === "B"
       ? '<span class="large neuf">Feuille de chantier (PDF)</span>' : "";
@@ -180,11 +180,11 @@
   const PLACES = [
     { cle: "aujourdhui", nom: "Aujourd\u2019hui",
       idee: "Deux boutons verts l\u2019un sous l\u2019autre. Le second a la même allure que le geste principal." },
-    { cle: "A", nom: "A — un mot, à la même place",
+    { cle: "A", nom: "A : un mot, à la même place",
       idee: "Le bouton devient une ligne de texte, là où il était. On sait qu\u2019il est là, il ne se dispute plus la place avec « Fin de chantier »." },
-    { cle: "B", nom: "B — avec Maps, Waze, Copier, Appeler",
+    { cle: "B", nom: "B : avec Maps, Waze, Copier, Appeler",
       idee: "Une cinquième case, dans les outils du chantier. Tout ce qu\u2019on ouvre est au même endroit, en haut." },
-    { cle: "C", nom: "C — il disparaît",
+    { cle: "C", nom: "C : il disparaît",
       idee: "La liste à l\u2019écran suffit. Plus de PDF depuis le planning." },
   ];
 

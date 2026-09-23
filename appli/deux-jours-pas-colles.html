@@ -295,11 +295,11 @@
    La charge affichée est celle de l'application (`src/lib/planning-jour.ts`),
    recopiée ici parce qu'une maquette ne peut pas l'importer :
      charge = équipes mobilisées ÷ nombre d'équipes
-     libre : rien · dispo : charge < 1 · plein : charge = 1
+     libre : rien, dispo : charge < 1, plein : charge = 1
    ═══════════════════════════════════════════════════════════════════════════ */
 
 const EQUIPES = 2;                  /* ses réglages : deux chantiers par jour */
-const DUREES = [1, 2, 3, 4, 8];     /* « changer » y passe — 4 et 8, ses exemples */
+const DUREES = [1, 2, 3, 4, 8];     /* « changer » y passe : 4 et 8, ses exemples */
 const JOURS_COURTS = ["L","M","M","J","V","S","D"];
 const MOIS_LONGS = ["janvier","février","mars","avril","mai","juin","juillet","août",
                     "septembre","octobre","novembre","décembre"];
@@ -335,7 +335,7 @@ const PREMIER = ouvre(1);
 
 /* Une PROPOSITION, c'est la liste des jours du chantier. Le premier appui la
    remplit d'affilée ; un appui sur un de ses jours l'efface, et l'appui
-   suivant sur un jour libre le remet là. Deux au plus — « une ou deux,
+   suivant sur un jour libre le remet là. Deux au plus : « une ou deux,
    jamais plus », la règle d'aujourd'hui. Au départ : 4 jours d'affilée depuis le 18. */
 let propositions = [];
 /* L'interrupteur allumé sans premier jour : le prochain appui le pose. */
@@ -429,7 +429,7 @@ function dessinerCalendrier(){
         return '<button type="button" class="' + classes.join(" ") + '" data-jour="' + j + '"'
              + ' aria-pressed="' + (p >= 0) + '"'
              + ' aria-label="' + jourLisible(j)
-             + (p < 0 ? '' : ' — jour du chantier' + (propositions.length > 1 ? ', ' + (p ? '2e' : '1re') + ' proposition' : '')) + '">'
+             + (p < 0 ? '' : ', jour du chantier' + (propositions.length > 1 ? ', ' + (p ? '2e' : '1re') + ' proposition' : '')) + '">'
              + '<span class="n">' + d.getUTCDate() + '</span>' + marque(j) + '</button>';
       }).join("") + '</div>'
     + '<button class="retour-aujourdhui" type="button" data-retour' + (surLeMois ? " hidden" : "") + '>‹ Aujourd’hui</button>'
@@ -451,9 +451,9 @@ function dessinerListe(){
       + '<span>' + jourLisible(j) + '</span>'
       + '<span class="dit">' + (joursDuChantier === 1 ? 'proposée' : rang(i)) + '</span>'
       + '</button>').join("");
-    /* Ce qui manque, dit là où il le lit — jamais un bouton éteint sans raison. */
+    /* Ce qui manque, dit là où il le lit : jamais un bouton éteint sans raison. */
     const reste = joursDuChantier - propositions[p].length;
-    if (reste > 0) html += '<span class="vide' + (p ? ' p2' : '') + '">Il manque ' + (reste === 1 ? 'un jour' : reste + ' jours') + ' — touchez celui que vous voulez</span>';
+    if (reste > 0) html += '<span class="vide' + (p ? ' p2' : '') + '">Il manque ' + (reste === 1 ? 'un jour' : reste + ' jours') + ', touchez celui que vous voulez</span>';
   }
   $("#liste").innerHTML = html;
   /* La seule phrase de l'écran, et seulement quand le chantier dépasse un
@@ -463,7 +463,7 @@ function dessinerListe(){
   c.textContent = "Touchez un jour du chantier pour l’effacer, puis le jour que vous voulez à la place.";
 }
 
-/* Ce que sa cliente lit — des jours, jamais des demi-journées. */
+/* Ce que sa cliente lit : des jours, jamais des demi-journées. */
 function enToutesLettres(jours){
   const lisibles = jours.map((j) => "le " + jourLisible(j));
   return lisibles.length === 1 ? lisibles[0]
@@ -501,7 +501,7 @@ function tout(){
   dessinerCalendrier(); dessinerListe(); dessinerClient();
 }
 
-/* Un appui sur un jour du chantier l'efface — rien ne bouge. Un appui sur un
+/* Un appui sur un jour du chantier l'efface, rien ne bouge. Un appui sur un
    jour libre : il remplit ce qui manque ; s'il ne manque rien, il pose un
    nouveau premier jour, et le bloc se refait d'affilée derrière lui. La 2e
    proposition, si elle attend son premier jour, passe avant tout. */
@@ -512,7 +512,7 @@ function toucher(jour){
     active = p;
     propositions[p].splice(propositions[p].indexOf(jour), 1);
     /* Effacer la seule date d'une journée : la 2e proposition se ferme ; la
-       1re la garde — un envoi sans date n'existe pas. */
+       1re la garde, un envoi sans date n'existe pas. */
     if (propositions[p].length === 0 && joursDuChantier === 1) {
       if (p === 1) { propositions.pop(); secondeVoulue = false; } else propositions[0].push(jour);
     }

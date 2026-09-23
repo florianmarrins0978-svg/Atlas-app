@@ -56,7 +56,7 @@ const CROQUIS_ESSAI = '/tmp/croquis-essai-e2e.png';
   await ctx.route(/googleapis|gstatic|cloudflare|jsdelivr/i, r => r.abort());
 
   const GRID = { tvaDefault:10, ressources:[
-    { libelle:'Main-d’œuvre — 1 personne', categorie:'Main-d’œuvre', unite:'jour', prix:250 },
+    { libelle:'Main-d’œuvre, 1 personne', categorie:'Main-d’œuvre', unite:'jour', prix:250 },
     { libelle:'Camion benne', categorie:'Matériel / location', unite:'jour', prix:120 },
     { libelle:'Broyeur', categorie:'Matériel / location', unite:'jour', prix:180 },
     { libelle:'Dessouchage', categorie:'Prestation', unite:'forfait', prix:null }

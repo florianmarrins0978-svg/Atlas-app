@@ -6,7 +6,7 @@ import { moisEnCours, periodeValide } from "@/lib/periode";
 import ListeDesFiches from "./ListeDesFiches";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Fiches de sécurité — Atlas" };
+export const metadata = { title: "Fiches de sécurité, Atlas" };
 
 /**
  * LES FICHES DE SÉCURITÉ — dans Paysage, une ligne de plus parmi les outils du

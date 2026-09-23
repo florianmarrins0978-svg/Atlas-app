@@ -11,7 +11,7 @@ import FichesEnCours from "./FichesEnCours";
 import RapportsEnvoyes from "./RapportsEnvoyes";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Fiche de chantier — Atlas" };
+export const metadata = { title: "Fiche de chantier, Atlas" };
 
 /**
  * « Fiche de chantier » — ce qu'il retrouve en ouvrant l'outil.

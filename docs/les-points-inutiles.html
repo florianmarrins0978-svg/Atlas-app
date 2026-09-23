@@ -290,7 +290,7 @@
 <h2 id="le-garde-fou--23-septembre-2026">Le garde-fou — 23 septembre 2026</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
 <p>Sa demande du lendemain : <em>« mets cette règle en garde-fou, que les sessions futures ne recommencent pas à mettre des points inutiles là où elles peuvent faire des phrases »</em>.</p>
-<p><code>scripts/test-aucun-point-median.ts</code>, joué par <code>npm test</code>, donc par la batterie. Il lit les 152 000 lignes de <code>src/</code>, commentaires retirés, et refuse tout « · » qui n'est pas déclaré <strong>avec sa raison</strong> :</p>
+<p><code>scripts/test-aucun-tiret.ts</code> (qui a absorbé celui des points le 23 septembre, voir plus bas), joué par <code>npm test</code>, donc par la batterie. Il lit les 152 000 lignes de <code>src/</code>, commentaires retirés, et refuse tout « · » qui n'est pas déclaré <strong>avec sa raison</strong> :</p>
 <div class="tablewrap"><table><thead><tr>
 <th>Déclaré</th>
 <th>Pourquoi</th>
@@ -390,6 +390,33 @@
 <td>deuxième relevé, toujours à faire</td>
 </tr>
 </tbody></table></div>
+<hr>
+<h2 id="les-deux-lots-combinés--23-septembre-2026">Les deux lots combinés — 23 septembre 2026</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Sa demande : <em>« j'ai une session qui taffe sur les tirets, combinez-vous »</em>.</p>
+<p>Une autre session traitait la même règle par l'autre bout, et <strong>son contrôle refusait déjà le point médian</strong>. Deux contrôles pour une règle, c'est la divergence assurée (<code>CLAUDE.md</code> §3) : un seul reste, <strong>le sien</strong>, parce qu'il lit l'arbre TypeScript pour savoir où sont les vraies chaînes — là où celui-ci lisait caractère par caractère. <code>test-aucun-point-median.ts</code> est supprimé.</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Ce qui vient de son lot</th>
+<th>Ce qui vient de celui-ci</th>
+</tr></thead><tbody>
+<tr>
+<td>le garde-fou d'écriture, qui refuse la phrase avant qu'elle soit posée</td>
+<td>la lecture des <strong><code>.js</code> de <code>src/</code></strong> : 10 tirets de plus trouvés dans le catalogue</td>
+</tr>
+<tr>
+<td>le refus à la poussée vers <code>main</code>, <strong>même en niveau 1</strong> — une maquette est inerte, donc aucun contrôle ne s'y jouait</td>
+<td>le NOM d'un matériel sans virgule : « PGP-ADJ buse 1 »</td>
+</tr>
+<tr>
+<td>les phrases, meilleures : « Devis en attente depuis 5 jours »</td>
+<td>le contrôle de la maquette du plan, qui tenait au point médian</td>
+</tr>
+<tr>
+<td>les tirets, partout</td>
+<td>l'exception des conditions générales, que nous avions posée tous les deux</td>
+</tr>
+</tbody></table></div>
+<p><strong>Ce qui n'est pas visé</strong> : <code>maquettes/</code>, que <code>pages.yml</code> ne publie pas. 398 lignes y portent encore un tiret ou un point — des planches sans adresse, qu'il ne peut pas ouvrir depuis son téléphone.</p>
 </main>
 </body>
 </html>

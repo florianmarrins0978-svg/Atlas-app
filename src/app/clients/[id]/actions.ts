@@ -49,7 +49,7 @@ export async function supprimerClientAction(
     console.error("[supprimerClientAction] échec", { clientId, err });
     return {
       ok: false,
-      message: "La suppression n'a pas abouti. Rien n'a été retiré — réessayez.",
+      message: "La suppression n'a pas abouti. Rien n'a été retiré. Réessayez.",
     };
   }
 

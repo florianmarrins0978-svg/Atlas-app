@@ -66,7 +66,7 @@ export function ligneEtatDeLaBase(retard: RetardDeLaBase | null): string {
   // **Un contrôle qui ne peut pas mesurer ne rend JAMAIS un vert.** Base
   // injoignable, dossier absent : on le dit. L'absence de matière à mesurer
   // n'est pas un succès (`CLAUDE.md` §5).
-  if (!retard) return "état inconnu — la base n'a pas répondu";
+  if (!retard) return "état inconnu, la base n'a pas répondu";
 
   const morceaux: string[] = [];
   if (retard.manquantes.length > 0) {

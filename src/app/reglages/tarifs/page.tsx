@@ -77,7 +77,7 @@ export default async function TarifsPage() {
           <Renvoi
             href="/reglages/prix"
             nom="Mes prix"
-            dit="Abattre, enlever les grumes, fendre, dessoucher, tailler une haie — le montant par diamètre, par hauteur et par technique."
+            dit="Abattre, enlever les grumes, fendre, dessoucher, tailler une haie : le montant par diamètre, par hauteur et par technique."
           />
           <Renvoi
             href="/catalogue"

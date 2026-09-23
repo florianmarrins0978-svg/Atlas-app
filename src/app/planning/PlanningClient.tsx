@@ -1152,7 +1152,7 @@ export default function PlanningClient({
    *
    * **La réversibilité après, plutôt que la confirmation avant** (principe 4
    * du produit, et sa planche du 18 septembre 2026) : le tiroir écrit « Mr.
-   * Linotte est sur jeudi 17 septembre, Annuler » tant que c'est vrai. Rien
+   * Linotte est sur jeudi 17 septembre · Annuler » tant que c'est vrai. Rien
    * n'expire ; la ligne se tait d'elle-même dès que le chantier n'est plus sur
    * ce jour — déplacé, retiré, ou reposé ailleurs —, parce qu'elle se DÉDUIT
    * de la liste au lieu d'être un second état à tenir à jour.
@@ -1929,7 +1929,7 @@ function ChevronDesPortes({
     <button
       type="button"
       onClick={() => onPortes(chantier)}
-      aria-label={`Ouvrir le chantier — ${chantier.nom}`}
+      aria-label={`Ouvrir le chantier ${chantier.nom}`}
       className="flex-shrink-0 cursor-pointer border-0 bg-transparent px-0.5 text-[19px]"
       style={{ color: colors.chevron }}
     >
@@ -2822,7 +2822,7 @@ function AjoutAuJour({
                   setOuvert(null);
                 }}
               >
-                {m.chantier.nom} ½
+                {m.chantier.nom}, ½
               </Petit>
             ))}
           </Choisir>
@@ -3145,7 +3145,7 @@ function AjoutDunClient({
         <p data-atlas="client-retenu" className="mt-2 text-[13px]" style={{ color: colors.inkSoft }}>
           {retenu.nom}
           <span className="block" style={{ color: colors.muted }}>
-            {retenu.telephone || "sans numéro"}, {retenu.adresse || "sans adresse"}
+            {retenu.telephone || "sans numéro"} · {retenu.adresse || "sans adresse"}
           </span>
         </p>
       ) : trouves.length > 0 ? (
@@ -3169,7 +3169,7 @@ function AjoutDunClient({
            la fiche existe ensuite comme les autres. */
         <>
           <p data-atlas="fiche-a-creer" className="mt-2 text-[13px]" style={{ color: colors.inkSoft }}>
-            Inconnu — sa fiche sera créée
+            Inconnu, sa fiche sera créée
           </p>
           {(
             [
@@ -3496,7 +3496,7 @@ function PasLaCeJour({
       {ouverte ? (
         /* ─── OUVERT : LES PRÉNOMS, EN OR, SUR UNE LIGNE ───────────────────
            Sa planche du 18 septembre 2026 : plus une ligne par personne, des
-           mots. Ceux qui manquent portent « , annuler » ; les autres attendent
+           mots. Ceux qui manquent portent « · annuler » ; les autres attendent
            d'être touchés. Les repères des suites ne bougent pas. */
         <div className="flex flex-wrap items-center gap-x-[18px]">
           {rangs.map((r) => {
@@ -3538,7 +3538,7 @@ function PasLaCeJour({
            **Et une petite croix noire, à droite de la durée** — sa retouche du
            18 septembre au soir : *« quand je mets un salarié absent, mets une
            petite croix à droite en noir pour le supprimer, à côté de la durée
-           de son absence »*. Elle fait ce que fait « , annuler » derrière le
+           de son absence »*. Elle fait ce que fait « · annuler » derrière le
            +, sans avoir à rouvrir la liste. Le moment ne s'écrit pas pendant
            qu'on le choisit juste en dessous : il serait écrit deux fois. */
         absences.map((a) => (
@@ -3922,7 +3922,7 @@ function CarteDuJour({
               data-chantier={c.id}
               style={{ marginTop: rang === 0 ? 0 : 16 }}
             >
-              {/* **Le compte « 1 chantier, complet » a disparu.** Sa
+              {/* **Le compte « 1 chantier · complet » a disparu.** Sa
                   demande du 22 août : *« supprime-moi la notion "un chantier"
                   en gris ; on n'a pas besoin d'avoir cette information-là »*.
                   Ce que la journée porte se voit déjà aux pastilles de chaque
@@ -4868,7 +4868,7 @@ function TiroirDuBas({
         aAttente ? `${attenteClient.length} ${EN_ATTENTE_DU_CLIENT.toLowerCase()}` : null,
       ]
         .filter(Boolean)
-        .join(", ") ||
+        .join(" · ") ||
       // Plus rien n'attend, et le dernier posé est encore à défaire.
       "Aucun client sans date";
 

@@ -145,7 +145,8 @@ Sa demande du lendemain : *« mets cette règle en garde-fou, que les sessions
 futures ne recommencent pas à mettre des points inutiles là où elles peuvent
 faire des phrases »*.
 
-`scripts/test-aucun-point-median.ts`, joué par `npm test`, donc par la
+`scripts/test-aucun-tiret.ts` (qui a absorbé celui des points le 23 septembre,
+voir plus bas), joué par `npm test`, donc par la
 batterie. Il lit les 152 000 lignes de `src/`, commentaires retirés, et refuse
 tout « · » qui n'est pas déclaré **avec sa raison** :
 
@@ -249,3 +250,26 @@ le commentaire `<!-- -->` des maquettes ajouté au passage.
 | les 2 320 points des planches archivées | laissés. Il ne les rouvrira pas, et les corriger ferait rougir leurs vérificateurs |
 | **7 générateurs de maquettes** en écrivent encore (99 points) | régénérer l'une de ces planches fera rougir le contrôle. C'est voulu : c'est le bon moment pour corriger le générateur, puisque la planche repart chez lui. `TODO.md` le porte |
 | les tirets `—` | deuxième relevé, toujours à faire |
+
+---
+
+## Les deux lots combinés — 23 septembre 2026
+
+Sa demande : *« j'ai une session qui taffe sur les tirets, combinez-vous »*.
+
+Une autre session traitait la même règle par l'autre bout, et **son contrôle
+refusait déjà le point médian**. Deux contrôles pour une règle, c'est la
+divergence assurée (`CLAUDE.md` §3) : un seul reste, **le sien**, parce qu'il
+lit l'arbre TypeScript pour savoir où sont les vraies chaînes — là où celui-ci
+lisait caractère par caractère. `test-aucun-point-median.ts` est supprimé.
+
+| Ce qui vient de son lot | Ce qui vient de celui-ci |
+|---|---|
+| le garde-fou d'écriture, qui refuse la phrase avant qu'elle soit posée | la lecture des **`.js` de `src/`** : 10 tirets de plus trouvés dans le catalogue |
+| le refus à la poussée vers `main`, **même en niveau 1** — une maquette est inerte, donc aucun contrôle ne s'y jouait | le NOM d'un matériel sans virgule : « PGP-ADJ buse 1 » |
+| les phrases, meilleures : « Devis en attente depuis 5 jours » | le contrôle de la maquette du plan, qui tenait au point médian |
+| les tirets, partout | l'exception des conditions générales, que nous avions posée tous les deux |
+
+**Ce qui n'est pas visé** : `maquettes/`, que `pages.yml` ne publie pas. 398
+lignes y portent encore un tiret ou un point — des planches sans adresse, qu'il
+ne peut pas ouvrir depuis son téléphone.

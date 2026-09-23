@@ -28,7 +28,7 @@ async function main() {
   await page.click("text=+ Ajouter une ligne");
   await page.waitForTimeout(300);
   const inputs = page.locator("form input");
-  await inputs.nth(0).fill("Main d'œuvre — 2 hommes × 2 jours");
+  await inputs.nth(0).fill("Main d'œuvre, 2 hommes × 2 jours");
   await inputs.nth(1).fill("1120.00");
   await inputs.nth(2).fill("Dépose carrelage — 8 m²");
   await inputs.nth(3).fill("144.00");

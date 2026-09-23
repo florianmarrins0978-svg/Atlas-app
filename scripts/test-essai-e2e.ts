@@ -10,7 +10,7 @@ import { ADRESSE } from "./_adresse";
  *
  *   · jour 1 : le ruban en tête de l'accueil, calme ;
  *   · jour 13 : le ruban en rouge, rien d'autre ne bouge ;
- *   · jour 16 : « Essai terminé — lecture seule », le bouton de création
+ *   · jour 16 : « Essai terminé, lecture seule », le bouton de création
  *     éteint et la phrase dessous, l'écran de création qui le dit aussi ;
  *   · « Artisan » : les absences et les retours remplacés par « c'est dans
  *     Entreprise », la pastille des retours éteinte ;
@@ -79,7 +79,7 @@ async function main() {
       await ruban.waitFor({ timeout: 10_000 });
       assert.equal(await ruban.getAttribute("data-etat"), "en-cours");
       assert.equal(await ruban.getAttribute("data-ton"), "calme");
-      assert.match(await ruban.innerText(), /Essai gratuit — 15 jours restants/);
+      assert.match(await ruban.innerText(), /Essai gratuit, 15 jours restants/);
       // Le ruban est TOUT EN HAUT : au-dessus du titre, pas au milieu des chantiers.
       const boite = await ruban.boundingBox();
       assert.ok(boite && boite.y < 60, `le ruban est à ${boite?.y} px du haut`);
@@ -102,7 +102,7 @@ async function main() {
       await page.goto(`${BASE}/`, { waitUntil: "networkidle" });
       const ruban = page.locator('[data-atlas="ruban-essai"]');
       assert.equal(await ruban.getAttribute("data-etat"), "termine");
-      assert.match(await ruban.innerText(), /Essai terminé — lecture seule/);
+      assert.match(await ruban.innerText(), /Essai terminé, lecture seule/);
       const bouton = page.locator('[data-atlas="nouveau-chantier"]');
       assert.equal(await bouton.getAttribute("aria-disabled"), "true");
       const phrase = page.locator('[data-atlas="lecture-seule"]');

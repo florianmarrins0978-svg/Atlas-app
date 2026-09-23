@@ -205,7 +205,7 @@ function AjouterTranche({
           onChange={(e) => setA(e.target.value)}
           inputMode="decimal"
           placeholder="à 120"
-          aria-label={`Borne haute, en ${unite} — vide pour « et plus »`}
+          aria-label={`Borne haute, en ${unite}, vide pour « et plus »`}
           className="min-w-0 flex-1 rounded-[4px] border-0 px-3 py-2.5 outline-none"
           style={{ backgroundColor: colors.cream, color: colors.ink, fontSize: "16px" }}
         />

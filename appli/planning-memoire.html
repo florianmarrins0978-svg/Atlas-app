@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Le planning se souvient — un an en arrière</title>
+<title>Le planning se souvient : un an en arrière</title>
 <style>
   /* ─── LES JETONS DES DEUX CHARTES, RELEVÉS DANS LE CODE ────────────────────
      Sortis de `src/lib/chartes.ts` par un script (`variablesCharte`), jamais
@@ -170,11 +170,11 @@
 <div class="bandeau">
   <b>Votre question du 31 août :</b> « est-ce que le planning garde en mémoire les
   chantiers passés ? »<br>
-  <b>Réponse : les chantiers ne sont pas perdus</b> — ils sont tous en base, et
+  <b>Réponse : les chantiers ne sont pas perdus</b>, ils sont tous en base, et
   ils s'affichent dans <b>Terminés</b>, mois par mois. <b>Mais le calendrier du
   planning, lui, ne les montre plus</b> : dès le lendemain, le jour redevient
   vide. C'est ce que montre votre capture de juillet.<br>
-  <b>Deux façons de le lui rendre — touchez A et B</b>, puis promenez-vous dans
+  <b>Deux façons de le lui rendre, touchez A et B</b>, puis promenez-vous dans
   les mois.<br>
   <b>RETENUE ET CODÉE le 31 août 2026 : la B</b>, et <b>deux ans</b> de mémoire.
   La planche reste en ligne pour comparer avec l'avant : touchez
@@ -217,15 +217,15 @@
   <h2>Ce que chaque proposition change</h2>
   <table>
     <tr><td><b>Aujourd’hui</b></td><td>Passé le jour dit, la journée redevient vide. Juillet est un mois blanc.</td></tr>
-    <tr><td><b>A</b> — la trace grise</td><td>Le jour passé garde ses deux barres, <b>en gris</b>. On voit d’un coup d’œil ce qui a été fait, sans confondre avec la charge à venir. Coûte <b>un mot de plus</b> dans la légende : « fait ».</td></tr>
-    <tr><td><b>B</b> — les mêmes couleurs</td><td>Le jour passé garde ses barres <b>telles quelles</b>. Aucun mot en plus, mais juillet et septembre se ressemblent : rien ne dit à l’œil ce qui est derrière vous.</td></tr>
+    <tr><td><b>A</b> : la trace grise</td><td>Le jour passé garde ses deux barres, <b>en gris</b>. On voit d’un coup d’œil ce qui a été fait, sans confondre avec la charge à venir. Coûte <b>un mot de plus</b> dans la légende : « fait ».</td></tr>
+    <tr><td><b>B</b>, les mêmes couleurs</td><td>Le jour passé garde ses barres <b>telles quelles</b>. Aucun mot en plus, mais juillet et septembre se ressemblent : rien ne dit à l’œil ce qui est derrière vous.</td></tr>
   </table>
 
-  <h2>Jusqu’où — et ce que ça pèse</h2>
+  <h2>Jusqu’où, et ce que ça pèse</h2>
   <p>La planche s’arrête à douze mois ; <b>l’application en garde deux ans</b>,
   ce que vous avez choisi après avoir vu le prix : <b>71 Ko</b> pour mille
   chantiers une fois la page comprimée, soit le dixième d’une photo de chantier.
-  Au-delà, les chantiers existent toujours — ils sont dans <b>Terminés</b>.</p>
+  Au-delà, les chantiers existent toujours : ils sont dans <b>Terminés</b>.</p>
 
   <h2>Ce qu’un jour passé ne fait pas</h2>
   <p>Il s’ouvre, il se lit, il mène à la fiche du chantier. <b>Il ne se modifie
@@ -236,7 +236,7 @@
 
 <script>
 /* ═══════════════════════════════════════════════════════════════════════════
-   LES DONNÉES — un extrait plausible de son entreprise : deux salariés,
+   LES DONNÉES, un extrait plausible de son entreprise : deux salariés,
    Julien et Paul, et deux équipes de capacité. Les noms sont ceux de ses
    propres planches (Martins, Bernard, Pornic) : on n'invente pas un client
    pour une maquette, pas plus qu'on n'invente une pièce d'arrosage.
@@ -248,44 +248,44 @@ const PLUS_LOIN = '2025-09-01';   // douze mois en arrière : la butée
 const CHANTIERS = [
   // ── Juin 2026
   { jour:'2026-06-02', demis:['matin','apres_midi'], nom:'Chez Martins', qui:['Julien'] },
-  { jour:'2026-06-04', demis:['matin'],              nom:'Taille des haies — Bernard', qui:['Paul'] },
+  { jour:'2026-06-04', demis:['matin'],              nom:'Taille des haies : Bernard', qui:['Paul'] },
   { jour:'2026-06-09', demis:['matin','apres_midi'], nom:'Abri de Pornic', qui:['Julien','Paul'] },
   { jour:'2026-06-16', demis:['matin'],              nom:'Tonte Le Cloirec', qui:['Julien'] },
   { jour:'2026-06-16', demis:['apres_midi'],         nom:'Chez Martins', qui:['Paul'] },
   { jour:'2026-06-23', demis:['matin','apres_midi'], nom:'Massif Guérande', qui:['Julien','Paul'] },
-  { jour:'2026-06-25', demis:['matin'],              nom:'Taille des haies — Bernard', qui:['Paul'] },
+  { jour:'2026-06-25', demis:['matin'],              nom:'Taille des haies : Bernard', qui:['Paul'] },
 
-  // ── Juillet 2026 — le mois de sa capture
+  // ── Juillet 2026 : le mois de sa capture
   { jour:'2026-07-01', demis:['matin','apres_midi'], nom:'Chez Martins', qui:['Julien'] },
-  { jour:'2026-07-02', demis:['matin'],              nom:'Taille des haies — Bernard', qui:['Paul'] },
+  { jour:'2026-07-02', demis:['matin'],              nom:'Taille des haies : Bernard', qui:['Paul'] },
   { jour:'2026-07-03', demis:['matin','apres_midi'], nom:'Abri de Pornic', qui:['Julien','Paul'] },
   { jour:'2026-07-06', demis:['matin'],              nom:'Tonte Le Cloirec', qui:['Julien'] },
   { jour:'2026-07-06', demis:['apres_midi'],         nom:'Chez Martins', qui:['Paul'] },
   { jour:'2026-07-07', demis:['matin','apres_midi'], nom:'Massif Guérande', qui:['Julien','Paul'] },
-  { jour:'2026-07-08', demis:['matin'],              nom:'Taille des haies — Bernard', qui:['Paul'] },
+  { jour:'2026-07-08', demis:['matin'],              nom:'Taille des haies : Bernard', qui:['Paul'] },
   { jour:'2026-07-10', demis:['matin','apres_midi'], nom:'Tonte Le Cloirec', qui:['Julien'] },
   { jour:'2026-07-13', demis:['matin','apres_midi'], nom:'Abri de Pornic', qui:['Julien','Paul'] },
-  { jour:'2026-07-15', demis:['matin'],              nom:'Arrosage — Mme Riou', qui:['Julien'] },
-  { jour:'2026-07-16', demis:['matin','apres_midi'], nom:'Arrosage — Mme Riou', qui:['Julien','Paul'] },
+  { jour:'2026-07-15', demis:['matin'],              nom:'Arrosage : Mme Riou', qui:['Julien'] },
+  { jour:'2026-07-16', demis:['matin','apres_midi'], nom:'Arrosage : Mme Riou', qui:['Julien','Paul'] },
   { jour:'2026-07-17', demis:['matin'],              nom:'Tonte Le Cloirec', qui:['Paul'] },
   // Un matin à trois chantiers : c'est lui qui peint le bordeaux du 28.
   { jour:'2026-07-28', demis:['matin'],              nom:'Chez Martins', qui:['Julien'] },
-  { jour:'2026-07-28', demis:['matin'],              nom:'Taille des haies — Bernard', qui:['Paul'] },
+  { jour:'2026-07-28', demis:['matin'],              nom:'Taille des haies : Bernard', qui:['Paul'] },
   { jour:'2026-07-28', demis:['matin','apres_midi'], nom:'Massif Guérande', qui:['Julien'] },
   { jour:'2026-07-30', demis:['apres_midi'],         nom:'Tonte Le Cloirec', qui:['Paul'] },
 
-  // ── Août 2026 — le mois courant : du passé ET de l'à-venir dans la même grille
+  // ── Août 2026 : le mois courant : du passé ET de l'à-venir dans la même grille
   { jour:'2026-08-04', demis:['matin','apres_midi'], nom:'Chez Martins', qui:['Julien','Paul'] },
   { jour:'2026-08-06', demis:['matin'],              nom:'Tonte Le Cloirec', qui:['Julien'] },
   { jour:'2026-08-11', demis:['matin','apres_midi'], nom:'Abri de Pornic', qui:['Julien','Paul'] },
-  { jour:'2026-08-18', demis:['matin'],              nom:'Taille des haies — Bernard', qui:['Paul'] },
+  { jour:'2026-08-18', demis:['matin'],              nom:'Taille des haies : Bernard', qui:['Paul'] },
   { jour:'2026-08-20', demis:['matin','apres_midi'], nom:'Massif Guérande', qui:['Julien','Paul'] },
   { jour:'2026-08-25', demis:['apres_midi'],         nom:'Tonte Le Cloirec', qui:['Julien'] },
   { jour:'2026-08-31', demis:['matin'],              nom:'Chez Martins', qui:['Julien'] },
 
-  // ── Septembre 2026 — l'à-venir
+  // ── Septembre 2026 : l'à-venir
   { jour:'2026-09-02', demis:['matin','apres_midi'], nom:'Abri de Pornic', qui:['Julien','Paul'] },
-  { jour:'2026-09-03', demis:['matin'],              nom:'Arrosage — Mme Riou', qui:['Paul'] },
+  { jour:'2026-09-03', demis:['matin'],              nom:'Arrosage : Mme Riou', qui:['Paul'] },
   { jour:'2026-09-08', demis:['matin','apres_midi'], nom:'Massif Guérande', qui:['Julien'] },
 ];
 
@@ -297,7 +297,7 @@ const MOT_DEMI = { matin:'Matin', apres_midi:'Après-midi' };
 
 /* ── Ce que porte une demi-journée ─────────────────────────────────────────
    La charge se compte comme dans l'application : ce qui est mobilisé sur la
-   demi-journée, rapporté à la capacité — et plafonné par chantier, car trois
+   demi-journée, rapporté à la capacité : et plafonné par chantier, car trois
    gars sur un même chantier ne ferment pas une journée qui en accepte deux. */
 function occupation(jour, demi){
   const pris = CHANTIERS.filter(c => c.jour === jour && c.demis.includes(demi));
@@ -326,7 +326,7 @@ function part(charge){ return Math.max(0, Math.min(100, Math.round(charge*100)))
 
 /* ═══ L'ÉTAT DE LA PLANCHE ═══════════════════════════════════════════════ */
 let vue = 'temoin';
-let curseur = { annee:2026, mois:6 };       // juillet 2026 — le mois de sa capture
+let curseur = { annee:2026, mois:6 };       // juillet 2026 : le mois de sa capture
 let jourTouche = '2026-07-13';
 
 const iso = (a,m,j) => `${a}-${String(m+1).padStart(2,'0')}-${String(j).padStart(2,'0')}`;
@@ -445,7 +445,7 @@ function carte(){
   }
 
   // Les demi-journées que personne n'occupe restent SOUS leur journée, même
-  // vides — sa correction du 22 août : « l'après-midi de libre doit rester en
+  // vides : sa correction du 22 août : « l'après-midi de libre doit rester en
   // dessous du matin ».
   for (const dm of ['matin','apres_midi']){
     const p = peinture(jourTouche, dm, vue);

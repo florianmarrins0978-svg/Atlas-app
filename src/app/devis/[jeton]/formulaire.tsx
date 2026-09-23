@@ -332,7 +332,7 @@ export default function FormulaireReponse({
               className="mt-0.5 self-start text-[13px] underline underline-offset-4"
               style={{ color: colors.inkSoft }}
             >
-              {joursEnToutesLettres(joursAutres)} — changer
+              {joursEnToutesLettres(joursAutres)}, changer
             </button>
           )}
 

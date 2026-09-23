@@ -298,7 +298,7 @@ function Contenu({
       setPreparation(null);
       setRejouer((n) => n + 1);
     } catch {
-      setErreur("L'enregistrement n'a pas abouti — vérifiez votre réseau et réessayez.");
+      setErreur("L'enregistrement n'a pas abouti. Vérifiez votre réseau et réessayez.");
     } finally {
       setEnregistrement(false);
     }
@@ -413,7 +413,7 @@ function Contenu({
       setErreur(
         e instanceof Error && e.message
           ? `L'envoi n'a pas abouti : ${e.message.slice(0, 160)}`
-          : "L'envoi n'a pas abouti — la réponse n'est pas revenue. Vérifiez votre réseau et réessayez."
+          : "L'envoi n'a pas abouti. La réponse n'est pas revenue. Vérifiez votre réseau et réessayez."
       );
     } finally {
       setEnCours(false);
@@ -932,8 +932,8 @@ function Contenu({
                         style={{ color: colors.muted, boxShadow: `inset 0 0 0 1.5px ${colors.rustTint}` }}
                       >
                         {joursManquants(proposition, dureeEnCours) === 1
-                          ? "Il manque un jour — touchez celui que vous voulez"
-                          : `Il manque ${joursManquants(proposition, dureeEnCours)} jours — touchez ceux que vous voulez`}
+                          ? "Il manque un jour, touchez celui que vous voulez"
+                          : `Il manque ${joursManquants(proposition, dureeEnCours)} jours, touchez ceux que vous voulez`}
                       </p>
                     )}
                   </div>

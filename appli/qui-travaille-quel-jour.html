@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Qui travaille quel jour — Atlas</title>
+<title>Qui travaille quel jour : Atlas</title>
 <style>
 /*
   ═══════════════════════════════════════════════════════════════════════════
@@ -157,7 +157,7 @@ td b{color:var(--encre)}
 </div>
 
 <div class="tete">
-  <span class="sceau">Maquette — rien n'est codé</span>
+  <span class="sceau">Maquette, rien n'est codé</span>
   <h1>Qui travaille quel jour</h1>
   <p><b>Deux questions ici</b>, sur le même coin de l'application : qui travaille
   quel jour, et comment noter un congé d'une demi-journée.</p>
@@ -167,13 +167,13 @@ td b{color:var(--encre)}
   <p><b>Touchez les pastilles</b>, essayez les trois. Julien est en congé le
   jeudi 10, et libre le vendredi.</p>
   <p>Le bouton du haut montre ce que ça donne sur un chantier d'<b>un seul
-  jour</b> — c'est neuf chantiers sur dix, et rien ne doit y changer.</p>
+  jour</b>, c'est neuf chantiers sur dix, et rien ne doit y changer.</p>
 </div>
 
 <div class="choix" id="choix">
-  <button type="button" data-v="a" aria-pressed="false">A — un bloc par jour</button>
-  <button type="button" data-v="b" aria-pressed="false">B — un onglet par jour</button>
-  <button type="button" data-v="c" aria-pressed="true">C — une coche, l'exception se dit</button>
+  <button type="button" data-v="a" aria-pressed="false">A, un bloc par jour</button>
+  <button type="button" data-v="b" aria-pressed="false">B, un onglet par jour</button>
+  <button type="button" data-v="c" aria-pressed="true">C, une coche, l'exception se dit</button>
 </div>
 
 <div class="scene">
@@ -202,9 +202,9 @@ td b{color:var(--encre)}
 </p>
 
 <div class="choix" id="choix2">
-  <button type="button" data-v="d" aria-pressed="true">D — trois pastilles</button>
-  <button type="button" data-v="d2" aria-pressed="false">D2 — deux pastilles</button>
-  <button type="button" data-v="e" aria-pressed="false">E — deux cases</button>
+  <button type="button" data-v="d" aria-pressed="true">D, trois pastilles</button>
+  <button type="button" data-v="d2" aria-pressed="false">D2, deux pastilles</button>
+  <button type="button" data-v="e" aria-pressed="false">E, deux cases</button>
 </div>
 
 <div class="scene">
@@ -241,12 +241,12 @@ td b{color:var(--encre)}
 
   <h3>Ce que votre remarque a corrigé dans C</h3>
   <p>La première version cochait Julien en <b>vert plein</b> et écrivait
-  « sauf le jeudi 10 » en dessous. Vous avez demandé : <i>« c'est normal ? »</i>
-  — non. <b>On lit l'aplat, pas la phrase</b> : c'était exactement le défaut que
+  « sauf le jeudi 10 » en dessous. Vous avez demandé : <i>« c'est normal ? »</i>,
+  non. <b>On lit l'aplat, pas la phrase</b> : c'était exactement le défaut que
   vous aviez signalé au départ, redessiné sans le voir.</p>
   <p>La pastille est maintenant <b>cerclée et non pleine</b>, et elle porte le
   jour. Une pastille pleine veut dire « tous les jours », un cerne veut dire
-  « pas partout » — et il n'y a plus de phrase à confronter au dessin.</p>
+  « pas partout » : et il n'y a plus de phrase à confronter au dessin.</p>
 
   <h3>Pourquoi C, en un mot</h3>
   <p>Les trois règlent le problème. <b>C est la seule qui ne vous demande rien
@@ -261,8 +261,8 @@ td b{color:var(--encre)}
   <table>
     <thead><tr><th>Version</th><th>Sur votre iPhone (390)</th><th>Sur un écran plus étroit (360)</th></tr></thead>
     <tbody>
-    <tr><td><b>D</b> — trois pastilles</td><td>tient</td><td><b>se replie</b> : « Quand » passe au-dessus</td></tr>
-    <tr><td><b>D2</b> — deux pastilles<span class="reco">recommandé</span></td><td>tient</td><td>tient</td></tr>
+    <tr><td><b>D</b>, trois pastilles</td><td>tient</td><td><b>se replie</b> : « Quand » passe au-dessus</td></tr>
+    <tr><td><b>D2</b>, deux pastilles<span class="reco">recommandé</span></td><td>tient</td><td>tient</td></tr>
     </tbody>
   </table>
   <p><b>D tient sur votre téléphone, et sur lui seul.</b> Les trois pastilles
@@ -328,7 +328,7 @@ function rendre() {
         <div class="pastilles">${P("Julien", "mis")}${P("Antoine")}</div>
       </div>`;
     document.getElementById("dit").textContent =
-      "A — tout est là, sans rien toucher. Sur trois jours, ça fait six lignes de pastilles.";
+      "A, tout est là, sans rien toucher. Sur trois jours, ça fait six lignes de pastilles.";
   } else if (version === "b") {
     corps.innerHTML = `
       <div class="onglets">
@@ -340,7 +340,7 @@ function rendre() {
       <p class="demi"><span class="carre"></span>Après-midi</p>
       <div class="pastilles">${P("Julien", "absent")}${P("Antoine", "mis")}</div>`;
     document.getElementById("dit").textContent =
-      "B — un jour à la fois. Court, mais le second jour ne se vérifie qu'en y allant.";
+      "B : un jour à la fois. Court, mais le second jour ne se vérifie qu'en y allant.";
   } else {
     corps.innerHTML = `
       <p class="demi"><span class="carre"></span>Matin</p>
@@ -353,7 +353,7 @@ function rendre() {
            d'origine, redessiné. Le vert plein ne peut pas porter une exception :
            on lit l'aplat, pas la phrase. -->`;
     document.getElementById("dit").textContent =
-      "C — vous cochez une fois, comme aujourd'hui. L'application retire le jour du congé, et l'écrit.";
+      "C, vous cochez une fois, comme aujourd'hui. L'application retire le jour du congé, et l'écrit.";
   }
 }
 
@@ -386,7 +386,7 @@ const DEMI = {
       <div class="pastilles">${P("Julien", "mis")}${P("Antoine")}</div></div>
     <div class="ligneq"><span class="q">Quand</span>
       <div class="pastilles">${P("Matin")}${P("Après-midi")}${P("Journée", "mis")}</div></div>`,
-    "D — qui, puis quand, sur une ligne chacun. « Journée » est déjà choisi : si vous ne touchez rien, c'est comme aujourd'hui."],
+    "D : qui, puis quand, sur une ligne chacun. « Journée » est déjà choisi : si vous ne touchez rien, c'est comme aujourd'hui."],
   d2: [`
     <p class="jour">Jeudi 10 septembre</p>
     <div class="ligneq"><span class="q">Qui</span>
@@ -394,9 +394,9 @@ const DEMI = {
     <div class="ligneq"><span class="q">Quand</span>
       <div class="pastilles">${P("Matin")}${P("Après-midi")}</div></div>
     <p class="sauf">Rien de coché&nbsp;: la journée entière.</p>`,
-    "D2 — deux pastilles seulement. La ligne tient partout, et ne rien toucher vaut la journée : le cas courant reste sans appui."],
+    "D2 : deux pastilles seulement. La ligne tient partout, et ne rien toucher vaut la journée : le cas courant reste sans appui."],
   e: [`
-    <p class="jour">Réglages · Équipe · Absences</p>
+    <p class="jour">Réglages : Équipe : Absences</p>
     <p class="demi" style="margin-top:4px">Julien n'est pas là</p>
     <div class="pastilles" style="gap:10px">
       <span style="font-size:14px;color:var(--encre-douce);align-self:center">du</span>
@@ -407,7 +407,7 @@ const DEMI = {
     <p class="demi">Sur ces jours-là</p>
     <div class="pastilles">${P("Matin", "mis")}${P("Après-midi", "mis")}</div>
     <p class="sauf">Décochez-en une pour une demi-journée.</p>`,
-    "E — deux cases à décocher. Plus souple sur une longue période, mais deux gestes au lieu d'un pour le cas courant."],
+    "E : deux cases à décocher. Plus souple sur une longue période, mais deux gestes au lieu d'un pour le cas courant."],
 };
 let volet = "d";
 function rendre2() {

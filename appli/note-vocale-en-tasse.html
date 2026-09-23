@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Atlas — en tasse : l'auréole affinée, et le vert</title>
+<title>Atlas : en tasse : l'auréole affinée, et le vert</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -476,24 +476,24 @@ body{margin:0;background:var(--bone);color:var(--charcoal);
 <body>
 
 <header class="tete">
-  <h1>En tasse — l'auréole affinée, et le vert</h1>
+  <h1>En tasse, l'auréole affinée, et le vert</h1>
   <p>Votre « en tasse », gardé. L'objet grandit de 76 à 80 px, la porcelaine s'affine de 3,3 à 1,9 px :
      le café gagne onze pour cent. Et le même dessin en <b>vert pin d'origine</b>, dans la matière du
-     café. Le trait de la dictée écoute toujours <b>votre vrai micro</b> — appuyez et parlez.</p>
+     café. Le trait de la dictée écoute toujours <b>votre vrai micro</b>, appuyez et parlez.</p>
 </header>
 
 <nav class="choix" aria-label="Choisir les dessins">
   <div class="rangee" role="group" aria-label="Avant d'appuyer">
     <p class="quoi">Avant d'appuyer</p>
     <button type="button" data-repos="plein" aria-pressed="true">Aujourd'hui</button>
-    <button type="button" data-repos="tasse-avant" aria-pressed="false">1 · En tasse, aujourd'hui</button>
-    <button type="button" data-repos="tasse-cafe" aria-pressed="false">2 · Café, auréole fine</button>
-    <button type="button" data-repos="tasse-vert" aria-pressed="false">3 · Vert, auréole fine</button>
-    <button type="button" data-repos="tasse-eau" aria-pressed="false">4 · Le verre d'eau</button>
+    <button type="button" data-repos="tasse-avant" aria-pressed="false">1, En tasse, aujourd'hui</button>
+    <button type="button" data-repos="tasse-cafe" aria-pressed="false">2, Café, auréole fine</button>
+    <button type="button" data-repos="tasse-vert" aria-pressed="false">3, Vert, auréole fine</button>
+    <button type="button" data-repos="tasse-eau" aria-pressed="false">4, Le verre d'eau</button>
   </div>
   <div class="rangee" role="group" aria-label="Pendant la dictée">
     <p class="quoi">Pendant la dictée</p>
-    <span class="dit">Le trait, branché sur votre micro <b id="etat-micro">— appuyez pour l'essayer</b></span>
+    <span class="dit">Le trait, branché sur votre micro<b id="etat-micro">, appuyez pour l'essayer</b></span>
   </div>
 </nav>
 
@@ -600,14 +600,14 @@ body{margin:0;background:var(--bone);color:var(--charcoal);
 
   <div class="colonne">
     <div class="legende">
-      <span class="nom" id="rang-repos">Avant d'appuyer — aujourd'hui</span>
+      <span class="nom" id="rang-repos">Avant d'appuyer, aujourd'hui</span>
       <h2 id="titre-repos">Le disque plein, votre choix du 30 août</h2>
       <p id="propos-repos">Il est ici pour comparer : c'est la seule tache sombre de la fiche,
         et c'est elle que vous ne voulez plus.</p>
       <p class="mesure"><span>Encre sombre au repos</span><b id="encre">4 536 px²</b></p>
     </div>
     <div class="legende">
-      <span class="nom" id="rang-ligne">Pendant la dictée — aujourd'hui</span>
+      <span class="nom" id="rang-ligne">Pendant la dictée, aujourd'hui</span>
       <h2 id="titre-ligne">La ligne, votre choix du 31 août</h2>
       <p id="propos-ligne">Poubelle, chrono, onde d'or en barreaux, rond d'envoi. C'est ce que
         l'application porte, et le point de départ des trois dessins d'à côté.</p>
@@ -617,30 +617,30 @@ body{margin:0;background:var(--bone);color:var(--charcoal);
 
 <script>
 const MOTS_REPOS = {
-  plein: ["Avant d'appuyer — aujourd'hui", "Le disque plein, votre choix du 30 août",
+  plein: ["Avant d'appuyer, aujourd'hui", "Le disque plein, votre choix du 30 août",
     "Il est ici pour comparer : c'est la seule tache sombre de la fiche, et c'est elle que vous ne voulez plus.",
     "4 536 px²"],
-  "tasse-avant": ["En tasse — aujourd'hui", "Le dessin que vous avez retenu",
+  "tasse-avant": ["En tasse : aujourd'hui", "Le dessin que vous avez retenu",
     "Inchangé, pour mesurer l'écart à l'œil. L'objet fait 76 px et la porcelaine 3,3 px.",
     "4 536 px²"],
-  "tasse-cafe": ["En tasse — votre demande", "Le café, auréole affinée",
-    "L'objet passe à 80 px et la porcelaine tombe à 1,9 px : le café gagne onze pour cent de diamètre. Il grandit et l'anneau maigrit — les deux à la fois.",
+  "tasse-cafe": ["En tasse : votre demande", "Le café, auréole affinée",
+    "L'objet passe à 80 px et la porcelaine tombe à 1,9 px : le café gagne onze pour cent de diamètre. Il grandit et l'anneau maigrit : les deux à la fois.",
     "5 026 px²"],
-  "tasse-vert": ["En tasse — le vert d'origine", "Le vert, dans la matière du café",
+  "tasse-vert": ["En tasse : le vert d'origine", "Le vert, dans la matière du café",
     "La même tasse, la même lumière, le vert pin de la charte. Les trois nuances sont vos jetons : pine-light, pine, et le charbon des titres. Ce qu'on emprunte au café, c'est la lumière, pas la couleur.",
     "5 026 px²"],
-  "tasse-eau": ["En tasse — le verre d'eau", "L'eau, dans la même lumière",
-    "Le contrepoint : froid et clair là où le café est chaud et sombre. La paroi du verre remplace la porcelaine — un anneau translucide, parce qu'on voit à travers un verre. À dire franchement : ces trois teintes ne sont PAS dans votre charte, qui n'a ni bleu ni gris froid. Elles sont proposées, pas relevées.",
+  "tasse-eau": ["En tasse : le verre d'eau", "L'eau, dans la même lumière",
+    "Le contrepoint : froid et clair là où le café est chaud et sombre. La paroi du verre remplace la porcelaine, un anneau translucide, parce qu'on voit à travers un verre. À dire franchement : ces trois teintes ne sont PAS dans votre charte, qui n'a ni bleu ni gris froid. Elles sont proposées, pas relevées.",
     "5 026 px²"],
 };
 const MOTS_LIGNE = {
-  onde: ["Pendant la dictée — aujourd'hui", "La ligne, votre choix du 31 août",
+  onde: ["Pendant la dictée : aujourd'hui", "La ligne, votre choix du 31 août",
     "Poubelle, chrono, onde d'or en barreaux, rond d'envoi. C'est ce que l'application porte, et le point de départ des trois dessins d'à côté."],
-  bande: ["Pendant la dictée — dessin 1", "La bande",
+  bande: ["Pendant la dictée : dessin 1", "La bande",
     "Une bande de papier qui sort de l'appareil et défile vers la gauche, liseré d'or en haut et en bas, le tracé imprimé dessus. Ce qui est passé à gauche est déjà dit."],
-  metre: ["Pendant la dictée — dessin 2", "Le mètre",
+  metre: ["Pendant la dictée : dessin 2", "Le mètre",
     "Votre mètre ruban qui se déroule. Les graduations passent avec le temps ; leur hauteur garde ce que la voix a fait à cet instant-là."],
-  trait: ["Pendant la dictée — dessin 3", "Le trait",
+  trait: ["Pendant la dictée : dessin 3", "Le trait",
     "Un seul trait continu qui défile, épais quand la voix monte, fin quand elle baisse. Le plus sobre des trois : ni papier, ni graduation, juste la ligne."],
 
 };
@@ -721,7 +721,7 @@ redessiner();
 //
 // Rien n'est enregistré : le son ne sert qu'à mesurer, et le flux est coupé
 // dès qu'on arrête. La moyenne quadratique est la même grandeur que celle que
-// l'application emploie — pas une hauteur inventée.
+// l'application emploie, pas une hauteur inventée.
 let audio = null, analyse = null, flux = null, tampon = null, boucle = null, faux = null;
 
 async function ecouter() {
@@ -767,13 +767,13 @@ async function demarrer() {
   let ecoute = false;
   try { ecoute = await ecouter(); } catch (e) { ecoute = false; }
   if (ecoute) {
-    etat.textContent = "— il écoute, parlez";
+    etat.textContent = "Il écoute, parlez";
     const tic = () => { avancer(mesurer()); boucle = requestAnimationFrame(tic); };
     tic();
   } else {
     // **On le DIT.** Un dessin qui prétend écouter sans écouter est exactement
     // le reproche déjà fait à un anneau qui battait sans rien lire.
-    etat.textContent = "— micro refusé : la courbe est tirée au sort";
+    etat.textContent = "Micro refusé : la courbe est tirée au sort";
     faux = setInterval(() => avancer(0.15 + Math.random() * 0.7), 60);
   }
 }
@@ -788,7 +788,7 @@ function arreter(mot) {
   mesures.fill(0); redessiner();
   dictee.style.setProperty("--v", "1");
   indice.textContent = mot;
-  etat.textContent = "— appuyez pour l'essayer";
+  etat.textContent = "Appuyez pour l'essayer";
 }
 document.getElementById("dicter").addEventListener("click", demarrer);
 document.getElementById("jeter").addEventListener("click", () => arreter("Appuyez et décrivez le chantier"));

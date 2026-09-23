@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>La note vocale à plat — fiche client</title>
+<title>La note vocale à plat : fiche client</title>
 <style>
   /* ═══ LES JETONS, SORTIS DU CODE (src/lib/design-tokens.ts) ═══════════════
      `plein` (#7d9a6d) est le vert des boutons qu'on appuie — « Enregistrer ».
@@ -133,7 +133,7 @@
 <body>
 
 <div class="bandeau">
-  Votre demande du 14 septembre : <b>le gros bouton de la note vocale sans ses contours, du vert des boutons, le signe blanc</b> — et, une fois appuyé, <b>la touche d’envoi à droite traitée de la même façon</b>. Touchez le micro. <b>Rien n’est codé.</b>
+  Votre demande du 14 septembre : <b>le gros bouton de la note vocale sans ses contours, du vert des boutons, le signe blanc</b> : et, une fois appuyé, <b>la touche d’envoi à droite traitée de la même façon</b>. Touchez le micro. <b>Rien n’est codé.</b>
 </div>
 
 <div class="choix" role="group" aria-label="Quel moment voir">
@@ -213,8 +213,8 @@
 
 <div class="note">
   <h3>Ce qui change</h3>
-  <p><b>Le micro</b> — un disque plein, le vert des boutons (celui d’« Enregistrer »), sans filet d’or, sans reflet, sans ombre. Le signe reste blanc. Même taille qu’aujourd’hui.</p>
-  <p><b>La touche d’envoi</b>, à droite quand on dicte — le même disque, plus petit, l’avion blanc. La poubelle, le chrono et le trait ne bougent pas.</p>
+  <p><b>Le micro</b>, un disque plein, le vert des boutons (celui d’« Enregistrer »), sans filet d’or, sans reflet, sans ombre. Le signe reste blanc. Même taille qu’aujourd’hui.</p>
+  <p><b>La touche d’envoi</b>, à droite quand on dicte : le même disque, plus petit, l’avion blanc. La poubelle, le chrono et le trait ne bougent pas.</p>
   <p><b>Les autres écrans</b> qui portent ce micro (la fiche du chantier, la fiche neuve) suivraient : c’est le même objet.</p>
 </div>
 
@@ -223,7 +223,7 @@
   var secondes = 0, horloge = null, mesures = [];
   function mmss(s){ return Math.floor(s/60) + ":" + String(s%60).padStart(2,"0"); }
   function dessiner(){
-    // Un ruban dont l'épaisseur suit la voix — ici tirée au sort, dans l'appli mesurée.
+    // Un ruban dont l'épaisseur suit la voix : ici tirée au sort, dans l'appli mesurée.
     var n = 60, haut = [], bas = [];
     for (var i = 0; i < n; i++) {
       var v = mesures[i] == null ? 0.05 : mesures[i];

@@ -153,7 +153,7 @@ export default async function IAPage() {
             </div>
             <p className="mt-[10px] text-[12px] leading-snug" style={{ color: colors.muted }}>
               {aFaire ??
-                "Poser une clé suffit à brancher le fournisseur correspondant. Les variables TRANSCRIPTION_PROVIDER, LLM_PROVIDER et VISION_PROVIDER ne servent qu’à forcer un autre choix — par exemple « dev » pour couper l’IA sans retirer les clés. Sans VISION_PROVIDER, les images vont chez celui qui rédige."}
+                "Poser une clé suffit à brancher le fournisseur correspondant. Les variables TRANSCRIPTION_PROVIDER, LLM_PROVIDER et VISION_PROVIDER ne servent qu’à forcer un autre choix, par exemple « dev » pour couper l’IA sans retirer les clés. Sans VISION_PROVIDER, les images vont chez celui qui rédige."}
             </p>
           </section>
         )}

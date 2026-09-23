@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Me déconnecter — Atlas</title>
+<title>Me déconnecter : Atlas</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@400;500&display=swap" rel="stylesheet">
@@ -141,7 +141,7 @@ h2.titre{margin:14px 0 0;font:400 32px/1.04 var(--serif);letter-spacing:-.018em}
 <body>
 
 <div class="bandeau">
-  <b>Se déconnecter.</b> Une ligne en bas, une confirmation, rien à choisir —
+  <b>Se déconnecter.</b> Une ligne en bas, une confirmation, rien à choisir :
   comme WhatsApp, Instagram ou les Réglages de l'iPhone. <b>Rien n'est codé.</b>
 </div>
 
@@ -201,13 +201,13 @@ function feuille(){
       /* **PAS de surtitre d'alerte ici, contrairement à « Supprimer ce
          client ».** Là-bas, « SUPPRESSION DÉFINITIVE » avertit d'un geste
          irréversible. Se déconnecter se défait en cinq secondes : le même
-         signal, posé sur un geste anodin, s'apprend à être ignoré — et l'on
+         signal, posé sur un geste anodin, s'apprend à être ignoré : et l'on
          perd l'avertissement là où il compte vraiment (`CLAUDE.md` §4 ter).
          Il était aussi redondant avec le bouton juste dessous. */
       '<h3>Eden Nature</h3>' +
-      /* **AUCUNE phrase sous le titre — sa demande du 9 septembre 2026 : « y'a
+      /* **AUCUNE phrase sous le titre, sa demande du 9 septembre 2026 : « y'a
          pas besoin de la phrase en gris qui explique ».** Elle disait « votre
-         mot de passe — ou Face ID — vous fera revenir » : la façon dont on se
+         mot de passe (ou Face ID) vous fera revenir » : la façon dont on se
          reconnecte à Atlas n'a pas à se rappeler au moment d'en sortir, et
          c'est sa règle du 25 août (« retire les phrases inutiles qui
          expliquent »). Le nom du compte et le bouton suffisent. */
@@ -219,25 +219,25 @@ function feuille(){
 var VUES = {
   reglages: {
     nom: "Le bas des Réglages",
-    idee: "<b>Il n'y a pas de « se déconnecter » dans les Réglages.</b> Le seul geste est « Me déconnecter partout », rangé au bas de l'écran <b>Mot de passe</b>. À droite, une ligne en bas de liste — <b>le dessin exact de « Supprimer ce client »</b>, que vous avez retenu le 2 septembre.",
+    idee: "<b>Il n'y a pas de « se déconnecter » dans les Réglages.</b> Le seul geste est « Me déconnecter partout », rangé au bas de l'écran <b>Mot de passe</b>. À droite, une ligne en bas de liste : <b>le dessin exact de « Supprimer ce client »</b>, que vous avez retenu le 2 septembre.",
     avant: function(){ return reglages(false); },
     apres: function(){ return reglages(true); },
     versLeBas: true, feuilleB: false,
     notes: [
-      "<b>Ce n'est pas un bouton, et c'est voulu.</b> Une capsule cernée de rouge serait le seul objet dessiné de l'écran : elle appellerait l'œil vers la sortie. En capitales espacées elle reste parfaitement lisible et cesse d'appeler — la cible fait quand même 44 px de haut. <b>C'est le raisonnement que vous avez validé le 2 septembre</b> pour la suppression d'un client ; il n'y a aucune raison d'en avoir deux.",
+      "<b>Ce n'est pas un bouton, et c'est voulu.</b> Une capsule cernée de rouge serait le seul objet dessiné de l'écran : elle appellerait l'œil vers la sortie. En capitales espacées elle reste parfaitement lisible et cesse d'appeler, la cible fait quand même 44 px de haut. <b>C'est le raisonnement que vous avez validé le 2 septembre</b> pour la suppression d'un client ; il n'y a aucune raison d'en avoir deux.",
       "<b>Et « Me déconnecter partout » ne bouge pas</b>, sous « Mot de passe ». C'est là que les grandes applications le rangent aussi : la déconnexion de tous les appareils est un geste de sécurité, pas un geste de tous les jours."
     ]
   },
   feuille: {
     nom: "L'appui",
-    idee: "<b>Un seul geste, rien à choisir.</b> Ma première version posait deux boutons — « cet appareil » ou « tous » — au moment où l'on veut juste sortir : c'est ce qui ne faisait pas sérieux, et vous aviez raison. À droite, la feuille d'Atlas, celle de « Supprimer ce client » : un bouton plein, et <b>« Annuler » en simple mot</b>.",
+    idee: "<b>Un seul geste, rien à choisir.</b> Ma première version posait deux boutons (« cet appareil » ou « tous ») au moment où l'on veut juste sortir : c'est ce qui ne faisait pas sérieux, et vous aviez raison. À droite, la feuille d'Atlas, celle de « Supprimer ce client » : un bouton plein, et <b>« Annuler » en simple mot</b>.",
     avant: function(){ return reglages(true); },
     apres: function(){ return reglages(true) + feuille(); },
     versLeBas: true, feuilleB: true,
     notes: [
-      "<b>Deux appuis, pas un.</b> Une déconnexion au premier toucher se déclenche par mégarde au fond d'un écran de réglages — et l'on se retrouve devant la page de connexion sans comprendre pourquoi. C'est ce que fait votre iPhone, et c'est ce que fait déjà Atlas pour supprimer un client.",
-      "<b>Rien sous le titre.</b> J'y avais mis « votre mot de passe — ou Face ID — vous fera revenir » : vous l'avez fait retirer, et vous avez raison. Comment on rentre dans Atlas n'a pas à se rappeler au moment d'en sortir. Le nom du compte dit d'où l'on sort, le bouton dit ce qu'on fait.",
-      "<b>Ce que ça fait, techniquement :</b> les cookies s'effacent et vous repartez sur l'écran de connexion <b>tout de suite</b>. Face ID reste posé sur ce téléphone — c'est ce qui sépare ce geste de « Me déconnecter partout », qui, lui, retire les clés."
+      "<b>Deux appuis, pas un.</b> Une déconnexion au premier toucher se déclenche par mégarde au fond d'un écran de réglages, et l'on se retrouve devant la page de connexion sans comprendre pourquoi. C'est ce que fait votre iPhone, et c'est ce que fait déjà Atlas pour supprimer un client.",
+      "<b>Rien sous le titre.</b> J'y avais mis « votre mot de passe (ou Face ID) vous fera revenir » : vous l'avez fait retirer, et vous avez raison. Comment on rentre dans Atlas n'a pas à se rappeler au moment d'en sortir. Le nom du compte dit d'où l'on sort, le bouton dit ce qu'on fait.",
+      "<b>Ce que ça fait, techniquement :</b> les cookies s'effacent et vous repartez sur l'écran de connexion <b>tout de suite</b>. Face ID reste posé sur ce téléphone, c'est ce qui sépare ce geste de « Me déconnecter partout », qui, lui, retire les clés."
     ]
   }
 };

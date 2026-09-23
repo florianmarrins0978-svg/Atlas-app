@@ -149,7 +149,7 @@ export function piecesDuPlan(
         l.ref === PEBD16
           ? "2 m par arroseur"
           : !dessin && surLeTrace.has(l.ref ?? "")
-            ? "compté sans le tracé — à vérifier sur le plan"
+            ? "compté sans le tracé, à vérifier sur le plan"
             : undefined,
     });
   }

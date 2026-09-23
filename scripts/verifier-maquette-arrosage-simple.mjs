@@ -352,8 +352,17 @@ const nomsCatalogue = new Set(
 const connu = (libelle) => {
   const l = normaliser(libelle);
   if (nomsCatalogue.has(l)) return true;
-  const avantTiret = normaliser(l.split("—")[0]);
-  return avantTiret.length > 0 && nomsCatalogue.has(avantTiret);
+  // **La virgule a remplacé le tiret le 22 septembre 2026** (sa règle : des
+  // phrases, pas de tiret au milieu). Le nom du catalogue en porte lui-même —
+  // « 3504, buse 0,75 » —, donc on essaie les morceaux du PLUS LONG au plus
+  // court : « 3504, buse 0,75 » avant « 3504 ». Couper à la première virgule
+  // rendrait inconnue toute pièce dont le nom en contient une.
+  const morceaux = l.split(",");
+  for (let i = morceaux.length - 1; i >= 1; i--) {
+    const debut = normaliser(morceaux.slice(0, i).join(","));
+    if (debut.length > 0 && nomsCatalogue.has(debut)) return true;
+  }
+  return false;
 };
 // Les longueurs à relever ne sont pas des références : elles portent leur
 // propre repère, et n'ont rien à chercher dans le catalogue.

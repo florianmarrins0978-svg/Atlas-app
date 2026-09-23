@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Atlas — ma journée</title>
+<title>Atlas : ma journée</title>
 <style>
 /*
   MA JOURNÉE — une page d'accueil repartie de zéro.
@@ -336,7 +336,7 @@ body{
 
 <div class="pilote">
   <h1>Ma journée
-    <small>Une page d'accueil repartie de zéro — rien n'est codé</small>
+    <small>Une page d'accueil repartie de zéro, rien n'est codé</small>
   </h1>
   <div class="rang"><b>Charte</b>
     <button data-k="charte" data-v="origine">Origine</button>
@@ -412,7 +412,7 @@ body{
   <h2>Ce que cet accueil fait, et que le vôtre ne fait pas</h2>
   <ul>
     <li><b>Il écrit le geste, pas l'état.</b> « Envoyer le devis au client »
-        plutôt que « Devis envoyé · sans réponse ». Ces phrases ne sont pas
+        plutôt que « Devis envoyé : sans réponse ». Ces phrases ne sont pas
         inventées : votre application les calcule déjà pour chaque chantier
         (<code>getNextAction()</code>), et elle ne s'en sert que pour décider où
         mène un appui. Elle ne les écrit nulle part.</li>
@@ -420,17 +420,17 @@ body{
         autre onglet : l'écran que vous ouvrez vingt fois par jour ne vous l'a
         jamais dit.</li>
     <li><b>Il range par ce qui attend le plus longtemps</b>, et l'écrit en
-        clair — « depuis 14 jours ».</li>
+        clair : « depuis 14 jours ».</li>
     <li><b>Rien n'est caché.</b> Aucun glissement, aucun appui long. Une ligne
         entière est une cible de 68 px, et elle s'enfonce sous le doigt.</li>
-    <li><b>Rien n'est en gris.</b> Rien de ce qui se lit ne descend sous 15 px —
+    <li><b>Rien n'est en gris.</b> Rien de ce qui se lit ne descend sous 15 px,
         seuls les cinq mots du bas sont à 11. Une seule chose est colorée :
         depuis combien de temps ça attend.</li>
     <li><b>Une erreur se rattrape.</b> « J'ai vu » fait partir le message, et
         « Annuler » le ramène tant que le tiroir est ouvert.</li>
   </ul>
 
-  <h2>Ce qui a été mis de côté — vous l'avez demandé, mais ça se nomme</h2>
+  <h2>Ce qui a été mis de côté, vous l'avez demandé, mais ça se nomme</h2>
   <ul>
     <li>le <b>fil</b> et sa <b>perle</b> ; les <b>cartes</b> de notification ;</li>
     <li>« <b>ATLAS</b> », le titre « <b>Vos chantiers</b> », le compteur
@@ -445,11 +445,11 @@ body{
   <ul>
     <li><b>« Aujourd'hui » montre des chantiers rangés au planning.</b> Votre
         règle du 6 août dit qu'un chantier ne figure que dans un seul onglet.
-        Les trois onglets la gardent — c'est l'accueil qui cesse d'être l'un
+        Les trois onglets la gardent, c'est l'accueil qui cesse d'être l'un
         d'eux. <b>Si ça ne vous va pas, cette rubrique tombe</b> et le reste
         tient sans elle.</li>
     <li><b>Le bouton vert en bas.</b> Vous aviez refusé « ce gros bouton en
-        plein milieu, ça ne fait pas très luxe » — celui-ci n'est pas au milieu,
+        plein milieu, ça ne fait pas très luxe » : celui-ci n'est pas au milieu,
         il est sous le pouce, et il porte son mot. Dites-moi s'il vous gêne
         quand même.</li>
     <li><b>« Ma journée » remplace « Chantiers »</b> dans la barre du bas.</li>
@@ -457,7 +457,7 @@ body{
 </div>
 
 <script>
-/* ═══ LES DONNÉES — exemples de maquette, dans les formes du dépôt ═══════
+/* ═══ LES DONNÉES, exemples de maquette, dans les formes du dépôt ═══════
    Les libellés de geste sont ceux de `getNextAction()`, de
    `suite-de-la-reponse.ts` et de `Notifications.tsx`, mot pour mot.
    Les délais sont les trois formes de `depuisCombien()`. */
@@ -546,7 +546,7 @@ function dessiner(){
   mesurer();
 }
 
-/* ═══ LA MESURE — elle interroge la page, elle ne récite rien ════════════ */
+/* ═══ LA MESURE, elle interroge la page, elle ne récite rien ════════════ */
 
 function luminance(c){
   const [r,g,b] = c.map(v => { v /= 255; return v <= 0.03928 ? v/12.92 : Math.pow((v+0.055)/1.055, 2.4); });
@@ -572,7 +572,7 @@ function mesurer(){
   const boite = cadre.getBoundingClientRect();
   const fondCalcule = getComputedStyle(cadre).backgroundColor;
 
-  /* Combien de gestes entiers se lisent sans rien faire — sans défiler, sans
+  /* Combien de gestes entiers se lisent sans rien faire, sans défiler, sans
      appuyer. C'est la seule question qui compte sur un écran ouvert debout. */
   const visibles = [...liste.querySelectorAll(".ligne")].filter(l => {
     const r = l.getBoundingClientRect();
@@ -629,16 +629,16 @@ function mesurer(){
     ["Mots affichés", `<b>${mots}</b>`],
     ["Le plus petit texte", plusPetit ? `<b>${String(plusPetit).replace(".", ",")} px</b>` : "—"],
     ["Le pire contraste", !pire ? "—" :
-      (pire.c >= 4.5 ? `<b>${pire.c.toFixed(2).replace(".", ",")}</b> — passe 4,5 · « ${echapper(pire.quoi)} »`
-                     : `<b>${pire.c.toFixed(2).replace(".", ",")}</b> — <em>il en faut 4,5 · « ${echapper(pire.quoi)} »</em>`)],
+      (pire.c >= 4.5 ? `<b>${pire.c.toFixed(2).replace(".", ",")}</b> : passe 4,5 : « ${echapper(pire.quoi)} »`
+                     : `<b>${pire.c.toFixed(2).replace(".", ",")}</b> — <em>il en faut 4,5 : « ${echapper(pire.quoi)} »</em>`)],
     ["La plus petite cible", !cible ? "—" :
-      (cible.h >= 44 ? `<b>${cible.h} px</b> — « ${echapper(cible.quoi)} »`
+      (cible.h >= 44 ? `<b>${cible.h} px</b> : « ${echapper(cible.quoi)} »`
                      : `<b>${cible.h} px</b> — <em>« ${echapper(cible.quoi)} », il en faut 44</em>`)],
   ];
   document.getElementById("corps-mesures").innerHTML =
     rangs.map(([a, b]) => `<tr><th>${a}</th><td>${b}</td></tr>`).join("");
   document.getElementById("legende-mesures").textContent =
-    "Relevé sur l'écran ci-dessus, à l'instant, par la page elle-même — 390 × 596, la barre du bas déduite.";
+    "Relevé sur l'écran ci-dessus, à l'instant, par la page elle-même : 390 × 596, la barre du bas déduite.";
 }
 
 /* ═══ Les gestes ════════════════════════════════════════════════════════ */

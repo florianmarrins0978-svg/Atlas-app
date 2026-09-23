@@ -84,7 +84,7 @@ cas("les deux écarts à la fois se disent tous les deux", () => {
 cas("une mesure IMPOSSIBLE ne rend jamais un vert", () => {
   // Base injoignable, dossier absent : l'absence de matière à mesurer n'est pas
   // un succès (`CLAUDE.md` §5, le contrôle qui mesurait zéro).
-  assert.equal(ligneEtatDeLaBase(null), "état inconnu — la base n'a pas répondu");
+  assert.equal(ligneEtatDeLaBase(null), "état inconnu, la base n'a pas répondu");
 });
 
 console.log("\n=== …et le constat est ATTEIGNABLE, pas seulement écrit ===");

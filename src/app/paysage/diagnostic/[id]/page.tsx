@@ -50,7 +50,7 @@ import Reessayer from "./Reessayer";
  * libre — le nom qu'il donne à l'essence, ses réserves — ne monte jamais ici.
  */
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Diagnostic — Atlas" };
+export const metadata = { title: "Diagnostic, Atlas" };
 
 export default async function ResultatPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -157,7 +157,7 @@ async function Rendu({
   return (
     <div data-atlas="diagnostic-rendu">
       {/* **La sûreté et l'essence, ensemble, en clair — sa planche du
-          11 septembre 2026.** « Probable, platane » à la place de « CONFIANCE
+          11 septembre 2026.** « Probable · Platane » à la place de « CONFIANCE
           PROBABLE » en capitales dorées : le premier mot dit ce qu'Atlas pense,
           le second sur quoi — l'essence est la règle la plus structurante du
           moteur, et elle n'apparaissait nulle part. Jamais un pourcentage :
@@ -166,7 +166,7 @@ async function Rendu({
         {LIBELLE_CONFIANCE[resultat.confiance]}
         {essenceNom && (
           <>
-            <span style={{ color: colors.muted }}>, </span>
+            <span style={{ color: colors.muted }}> · </span>
             {essenceNom}
           </>
         )}
@@ -226,7 +226,7 @@ async function Rendu({
       {source && (
         <p className="mt-[18px] text-[12.5px] leading-[1.55]" style={{ color: colors.muted }} data-atlas="diagnostic-source">
           <span style={{ color: colors.inkSoft }}>{source.organisme}</span>
-          {", consultée le "}
+          {" · consultée le "}
           {dateCitee(source.consulteeLe)}
         </p>
       )}
@@ -285,7 +285,7 @@ function PhotosDeReference({
             />
             <figcaption className="mt-[6px] text-[11.5px] leading-[1.5]" style={{ color: colors.muted }}>
               {image.legende && <span style={{ color: colors.inkSoft }}>{image.legende} — </span>}
-              {image.credit}, {image.licence}
+              {image.credit} · {image.licence}
             </figcaption>
           </figure>
         ))}
@@ -527,7 +527,7 @@ async function Details({
             <ul className="mt-[8px]">
               {resultat.details.sources.map((s, i) => (
                 <li key={i} className="mb-[8px] text-[12.5px] leading-[1.5]" style={{ color: colors.inkSoft }}>
-                  {s.organisme} — {s.titre}
+                  {s.organisme}, {s.titre}
                   <span style={{ color: colors.muted }}>, consultée le {dateCitee(s.consulteeLe)}</span>
                 </li>
               ))}

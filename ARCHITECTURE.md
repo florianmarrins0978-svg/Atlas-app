@@ -33067,3 +33067,110 @@ sans lire ce paragraphe le rechangerait.
 **Les trois écrans qui portent la B sont donc** : les fiches de sécurité, les
 retours d'intervention et les rapports envoyés. Le calendrier de TVA et la
 grille du planning n'en sont pas : ce ne sont pas des filtres de liste.
+---
+
+## §410 — Des phrases, jamais un tiret au milieu : la règle a désormais un garde-fou
+
+**Sa règle, redite le 22 septembre 2026 :** *« Je ne veux plus de tiret, je veux
+des phrases normales, sans tiret en plein milieu. »* Elle était déjà écrite le
+matin même dans `CLAUDE.md` §3, née de « Probable · Peuplier » sur une fiche
+phytosanitaire. Le soir, **deux cent quarante** tirets et points médians vivaient
+encore dans ce qui s'affiche : les écrans, le papier du client, les maquettes.
+
+**Pourquoi une règle en prose ne suffisait pas.** C'est la troisième fois que ce
+dépôt l'apprend au même endroit : les flèches décoratives ont dû être
+redemandées deux fois avant que `test-aucune-fleche.ts` existe (`CLAUDE.md` §3),
+et il en va de même ici. Une règle de style se lit au début d'une conversation
+et s'oublie au troisième écran, surtout quand trois sessions écrivent en
+parallèle sans se lire.
+
+`scripts/test-aucun-tiret.ts` la tient, dans `npm test` :
+
+| | |
+|---|---|
+| ce qu'il lit | ce qui s'AFFICHE : les chaînes et le texte des écrans (`src/`, par l'arbre TypeScript), et le texte des maquettes publiées (`appli/`) |
+| ce qu'il épargne | les **commentaires** : ils citent ses propres phrases, et les réécrire lui ferait dire autre chose |
+| ce qu'il vise | « — », « – », « · » **entre deux mots**. Jamais le trait d'union : il tient « sous-traitant », les dates ISO et le moins d'un `calc()` |
+| ce qu'il laisse | un tiret **seul** dans une case : c'est un montant absent (`CLAUDE.md` §4), pas une phrase coupée |
+
+**La ponctuation qui remplace, et elle se choisit.** Une virgule quand la suite
+complète la phrase, un deux-points quand elle l'explique (ou quand la phrase
+porte déjà une virgule), un point quand c'est une phrase entière, deux
+parenthèses pour une incise que deux tirets encadraient.
+
+**Deux endroits gardent le leur, et c'est dit.**
+
+- `src/server/documents-legaux/versions.ts` : **une version publiée ne se
+  modifie jamais**, sans quoi une acceptation déjà recueillie désignerait un
+  texte qui n'existe plus. Le tiret partira avec la rédaction par un juriste,
+  qui sera une entrée de plus. L'exception est nommée dans le contrôle, avec sa
+  raison.
+- `docs/` et `docs/maquettes/` : la mémoire du dépôt et l'ancienne galerie, qui
+  ne sont pas publiées et qu'il n'ouvre pas depuis son téléphone. La mémoire
+  cite ses messages mot pour mot ; les réécrire effacerait ce qu'il a dit.
+
+**Ce que le lot a déplacé au passage, et qu'il faut savoir.** Le catalogue
+d'arrosage nommait ses buses « 3504 · buse 0,75 ». Le point médian est devenu
+une virgule **dans les deux copies à la fois** (`appli/arrosage-catalogue.js` et
+`src/lib/arrosage/catalogue.js`, que `verifier-arrosage-une-seule-source.mjs`
+compare ligne à ligne). La **référence fournisseur** (`ref:'HA2211-B3'`), elle,
+n'a pas bougé : c'est elle qu'il commande. Deux contrôles coupaient le libellé
+sur le séparateur pour retrouver le modèle au catalogue ; ils coupent désormais
+à la première virgule, et essaient les morceaux du plus long au plus court —
+« 3504, buse 0,75 » avant « 3504 », puisque le nom du catalogue en porte une.
+
+**ET LE REFUS ARRIVE MAINTENANT À L'ÉCRITURE, PAS À LA BATTERIE — sa demande du
+22 septembre au soir :** *« il faut mettre cette règle en garde-fou que les
+sessions futures ne recommencent pas à mettre des tirets inutiles là où elles
+peuvent faire des phrases »*. Un contrôle qui ne parle qu'à la batterie laisse
+écrire trente écrans avant de se faire entendre, et c'est alors trente
+réécritures.
+
+`scripts/garde-tirets.mjs` est donc branché sur **chaque écriture de chaque
+session** (`.claude/settings.json`, `PreToolUse`) : il refuse la phrase à la
+seconde où elle s'écrit, et son refus dit quoi mettre à la place. Il ne corrige
+rien de lui-même : la bonne ponctuation dépend de la phrase, et un script qui
+choisirait poserait des virgules là où il fallait un point.
+
+**Les deux garde-fous lisent la MÊME règle** (`scripts/_tirets.mjs`). Deux
+lectures du même tiret auraient fini par se contredire, et celle qui écrit
+aurait laissé passer ce que celle qui livre refuse (`CLAUDE.md` §3). Les
+exceptions y vivent aussi, pour la même raison.
+
+**Ce que l'épreuve a corrigé, et il faut le savoir avant d'y toucher.** La
+première version lisait ligne à ligne : elle prenait l'apostrophe d'un
+commentaire français pour une ouverture de chaîne et refusait **211 fichiers
+justes** sur le dépôt entier. La deuxième lisait tout `.ts` comme du TSX :
+`const memeLigne = <E>(a, b) => …` y devenait une balise, et la suite du
+fichier du « texte d'écran ». C'est en confrontant le garde-fou aux 936
+fichiers affichés du dépôt qu'on l'a vu, pas en le relisant — et c'est
+l'épreuve à refaire après chaque changement de sa détection.
+
+**ET LE TROU QU'IL A VU LUI-MÊME, LE 23 SEPTEMBRE :** *« mais si dans la
+maquette il met des tirets n'importe où, quand il va pousser sur main il va
+pousser avec les tirets ? Donc c'est pas bon. »* Il avait raison, et c'était
+entier : une maquette est **inerte** (`_niveau-de-risque.mjs`), donc un lot qui
+n'en touche que est de niveau 1, donc **rien ne se joue**. Le contrôle de la
+batterie ne voyait jamais ce lot-là, et le déclencheur d'écriture ne voit pas
+un fichier réécrit depuis le terminal.
+
+`scripts/garde-fusion-main.mjs` lit donc les tirets du lot **avant de regarder
+son niveau** (`tiretsDuLot`), et refuse la poussée quelle que soit sa nature.
+La mesure coûte moins d'une seconde : elle ne lit que les fichiers du lot qui
+s'affichent. C'est le troisième garde-fou, et le dernier verrou avant son
+espace :
+
+| | |
+|---|---|
+| à l'écriture | `garde-tirets.mjs` refuse la phrase, et dit quoi mettre à la place |
+| à la livraison | `test-aucun-tiret.ts`, dans `npm test` |
+| **à la poussée vers `main`** | `tiretsDuLot`, **à tous les niveaux**, maquette comprise |
+
+Les trois lisent la même règle et la même liste d'exceptions
+(`scripts/_tirets.mjs`, `fichierQuiSAffiche`) : trois réponses différentes à
+« ce fichier se voit-il ? » laisseraient une porte ouverte quelque part.
+
+**Au passage, le garde-fou de la fusion ne lit plus l'entrée standard qu'à
+l'appel direct.** Sans cette porte, une suite qui importe sa décision restait
+pendue à attendre une entrée qui ne venait jamais — et un contrôle qui ne rend
+pas la main ne prouve rien (`CLAUDE.md` §5).

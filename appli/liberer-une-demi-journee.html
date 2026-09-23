@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Libérer une demi-journée — Atlas</title>
+<title>Libérer une demi-journée : Atlas</title>
 <style>
 /*
   ═══════════════════════════════════════════════════════════════════════════
@@ -125,7 +125,7 @@ p.dessous b{color:var(--encre)}
 </div>
 
 <div class="tete">
-  <span class="sceau">10 septembre — à essayer</span>
+  <span class="sceau">10 septembre, à essayer</span>
   <h1>Libérer une demi-journée</h1>
   <p>« Déplacer » ne déplace plus le chantier : il <b>libère la demi-journée
   qu'on désigne</b>. Les deux positions sont vides tant qu'on n'a rien choisi.
@@ -145,12 +145,12 @@ p.dessous b{color:var(--encre)}
 <div class="notes">
   <h3>Le geste, dans l'ordre</h3>
   <ol>
-    <li>Sur <b>vendredi 11</b>, « Déplacer » ouvre l'interrupteur — <b>rien
+    <li>Sur <b>vendredi 11</b>, « Déplacer » ouvre l'interrupteur : <b>rien
     n'est allumé</b> : c'est une question, pas un état.</li>
     <li>On touche <b>Matin</b> : il s'allume, le matin du vendredi redevient
     libre, et une demi-journée de Mr. Julien part <b>en attente</b>, dans le
     tiroir du bas.</li>
-    <li>On pose ce qu'on veut sur ce matin libéré — « Ajouter un chantier »,
+    <li>On pose ce qu'on veut sur ce matin libéré : « Ajouter un chantier »,
     comme d'habitude.</li>
     <li>La demi-journée en attente se repose ensuite <b>où l'on veut</b> : on la
     touche dans le tiroir, puis on touche la demi-journée qui l'accueille.</li>
@@ -162,15 +162,15 @@ p.dessous b{color:var(--encre)}
   après-midi ». Il n'a pas d'endroit où écrire « une demi-journée ici, une autre
   là-bas ».</p>
   <p class="alerte">Poser un chantier en morceaux demande donc de changer la
-  façon dont il est enregistré — <b>une pose par morceau</b>.</p>
+  façon dont il est enregistré, <b>une pose par morceau</b>.</p>
   <p class="alerte"><b>CE QUE J'AI ÉCRIT D'ABORD ÉTAIT TROP LARGE, et je le
   corrige :</b> j'avais nommé le devis et la facture. Vérifié dans le code : ni
-  l'un ni l'autre ne se construit sur le jour du chantier — une facture porte sa
+  l'un ni l'autre ne se construit sur le jour du chantier, une facture porte sa
   propre date d'émission, et un devis ses lignes et ses prix.</p>
   <p class="alerte">Ce qui lit vraiment « quels jours sont pris », et devrait
   donc lire plusieurs morceaux :</p>
   <ul class="alerte" style="font-size:14px;line-height:1.7;color:var(--encre-douce)">
-    <li>la <b>charge du calendrier</b> — les deux barres de chaque jour ;</li>
+    <li>la <b>charge du calendrier</b>, les deux barres de chaque jour ;</li>
     <li>les <b>dates proposées au client</b> quand un devis part ;</li>
     <li>la <b>fiche de chantier</b>, qui imprime le jour et le moment ;</li>
     <li>l'<b>export vers votre agenda</b> (un événement par chantier) ;</li>
@@ -183,7 +183,7 @@ p.dessous b{color:var(--encre)}
 
   <h3>Ce que j'ai ajouté, et qu'on peut retirer</h3>
   <p>Le mot <b>« Libérer »</b> à gauche de l'interrupteur. Sans lui, deux
-  positions vides ne disent pas ce qu'elles font — et un geste qui ne se devine
+  positions vides ne disent pas ce qu'elles font : et un geste qui ne se devine
   pas, c'est le défaut du 7 septembre. Si vous le trouvez de trop, il part.</p>
 </div>
 
@@ -242,7 +242,7 @@ function dessiner() {
 
   // ── la carte du jour regardé
   //
-  // **LA JOURNÉE SE LIT DANS SON ORDRE — matin, puis après-midi** (sa règle du
+  // **LA JOURNÉE SE LIT DANS SON ORDRE, matin, puis après-midi** (sa règle du
   // 10 septembre). On parcourt donc les deux moitiés dans l'ordre : celle qui
   // porte un chantier écrit son nom la première fois qu'il paraît, celle qui
   // est libre le dit.
@@ -307,7 +307,7 @@ function dessiner() {
           <span>${a.nom}</span><span class="quoi">${enMain === a.id ? "touchez une demi-journée" : a.quoi}</span></button>`).join(""));
 }
 
-/** « 2 jours », « 1 jour ½ » — ce que le chantier occupe encore. */
+/** « 2 jours », « 1 jour ½ » : ce que le chantier occupe encore. */
 function compteDe(nom) {
   const n = Object.values(pose).filter((p) => p?.nom === nom).length;
   const jours = Math.floor(n / 2);
@@ -320,7 +320,7 @@ document.querySelector(".tel").addEventListener("click", (e) => {
   const b = e.target.closest("button"); if (!b) return;
   const d = b.dataset;
   if (d.jour) { jourVu = d.jour; libere = null; ajoutOuvert = false; }
-  else if (d.deplacer) { libere = d.deplacer; dire("Les deux positions sont vides : c'est une question — <b>quelle demi-journée je libère ?</b>"); }
+  else if (d.deplacer) { libere = d.deplacer; dire("Les deux positions sont vides : c'est une question, <b>quelle demi-journée je libère ?</b>"); }
   else if (d.libere) {
     // **Une demi-journée sort du chantier et va en attente.**
     const clef = `${jourVu}-${d.libere}`;
@@ -328,7 +328,7 @@ document.querySelector(".tel").addEventListener("click", (e) => {
     pose[clef] = null;
     attente.push({ id: `${nom}-${clef}`, nom, quoi: "½ journée à poser" });
     libere = null;
-    dire("Libéré. La demi-journée de Mr. Julien attend en bas — et ce moment-là peut recevoir autre chose.");
+    dire("Libéré. La demi-journée de Mr. Julien attend en bas, et ce moment-là peut recevoir autre chose.");
   }
   else if (d.ajout) { ajoutOuvert = true; }
   else if (d.prendre) {

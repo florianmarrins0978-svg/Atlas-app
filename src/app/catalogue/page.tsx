@@ -51,7 +51,7 @@ export default async function CataloguePage() {
 
         <p className="mx-[26px] mt-[18px] text-[13px] leading-[1.55]" style={{ color: colors.muted }}>
           Les mots qu&apos;Atlas reconnaît quand vous dictez.{" "}
-          <span style={{ color: colors.or }}>En doré, les vôtres</span> — visibles de vous seul.
+          <span style={{ color: colors.or }}>En doré, les vôtres</span>, visibles de vous seul.
         </p>
 
         <MotsProposes proposes={proposes} />

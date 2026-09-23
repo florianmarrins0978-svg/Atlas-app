@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Atlas — la fiche client, cinq dessins de cases</title>
+<title>Atlas : la fiche client, cinq dessins de cases</title>
 <style>
 /*
   LA PAGE ENTIÈRE, CINQ FOIS — sa demande du 21 août 2026 :
@@ -190,11 +190,11 @@ input:focus{outline:0}
 <div class="tel" id="ecran" data-cases="1">
 
   <nav class="choix" aria-label="Le dessin des cases">
-    <button type="button" data-c="1" aria-pressed="true">1 · Le trait</button>
-    <button type="button" data-c="2" aria-pressed="false">2 · La capsule</button>
-    <button type="button" data-c="3" aria-pressed="false">3 · La ligne de fiche</button>
-    <button type="button" data-c="4" aria-pressed="false">4 · La carte douce</button>
-    <button type="button" data-c="5" aria-pressed="false">5 · Le creux</button>
+    <button type="button" data-c="1" aria-pressed="true">1, Le trait</button>
+    <button type="button" data-c="2" aria-pressed="false">2, La capsule</button>
+    <button type="button" data-c="3" aria-pressed="false">3, La ligne de fiche</button>
+    <button type="button" data-c="4" aria-pressed="false">4, La carte douce</button>
+    <button type="button" data-c="5" aria-pressed="false">5, Le creux</button>
   </nav>
   <p class="nom-du-dessin"><b id="titre-dessin">Le trait</b> — <span id="quoi-dessin">plus aucune boîte, une ligne sous le texte qui s’éclaire quand vous écrivez.</span></p>
 
@@ -314,7 +314,7 @@ document.querySelectorAll(".civilite button").forEach((b) => {
 $("#par-sms").addEventListener("click", () => { $("#par-sms").setAttribute("aria-pressed","true"); $("#par-mail").setAttribute("aria-pressed","false"); });
 $("#par-mail").addEventListener("click", () => { $("#par-mail").setAttribute("aria-pressed","true"); $("#par-sms").setAttribute("aria-pressed","false"); });
 
-/* Le numéro s'espace tout seul — la même règle que sur la fiche client. */
+/* Le numéro s'espace tout seul : la même règle que sur la fiche client. */
 function espacerLeNumero(champ) {
   const avant = champ.value.slice(0, champ.selectionStart ?? champ.value.length);
   const chiffresAGauche = (avant.match(/\d/g) ?? []).length;
@@ -342,7 +342,7 @@ $("#fichiers").addEventListener("change", (e) => {
   e.target.value = "";
 });
 
-/* L'anneau — le même geste que sur la fiche client. */
+/* L'anneau : le même geste que sur la fiche client. */
 let enregistre = false, secondes = 0, horloge = null, ondulation = null;
 const mmss = (s) => Math.floor(s / 60) + ":" + String(Math.floor(s % 60)).padStart(2, "0");
 $("#dicter").addEventListener("click", () => (enregistre ? arreter() : commencer()));

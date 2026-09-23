@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Mon message au client — un seul, pour les trois</title>
+<title>Mon message au client : un seul, pour les trois</title>
 <style>
   :root{
     --fond:#f5f3ee; --plage:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
@@ -92,13 +92,13 @@
   <b>Tu as tranché :</b> le message se règle dans « Devis &amp; factures » (A), le
   lien est <b>obligatoire</b>, et c'est <b>un seul message pour tous</b>.<br>
   Reste une chose à voir de tes yeux : la phrase du milieu n'est pas la même sur
-  un devis et sur une facture. Voici les deux façons de le faire — <b>écris dans
+  un devis et sur une facture. Voici les deux façons de le faire, <b>écris dans
   le cadre, les trois téléphones suivent</b>.
 </div>
 
 <!-- ═══ L'ÉCRAN ═════════════════════════════════════════════════════ -->
 <div class="bloc">
-  <h2>Où il se règle — ton choix A</h2>
+  <h2>Où il se règle : ton choix A</h2>
   <p>Dans « Devis &amp; factures », en dernier bloc. Rien de neuf à trouver dans
      le sommaire des réglages.</p>
 </div>
@@ -129,17 +129,17 @@
 
 <!-- ═══ FAÇON 1 ═════════════════════════════════════════════════════ -->
 <div class="bloc" style="margin-top:30px">
-  <h2>Façon 1 — la pastille « le document »</h2>
+  <h2>Façon 1, la pastille « le document »</h2>
   <p>Tu écris le bonjour, la formule, la signature, tout ce que tu veux ajouter.
-     <b>Là où tu poses « le document », Atlas met la phrase juste</b> — surlignée
+     <b>Là où tu poses « le document », Atlas met la phrase juste</b> : surlignée
      en doré dans les trois téléphones.</p>
 </div>
 <div class="trois" id="facon1"></div>
 
 <!-- ═══ FAÇON 2 ═════════════════════════════════════════════════════ -->
 <div class="bloc" style="margin-top:30px">
-  <h2>Façon 2 — le même texte, mot pour mot</h2>
-  <p>Pas de pastille : tu écris ta phrase toi-même — celle du devis, forcément,
+  <h2>Façon 2, le même texte, mot pour mot</h2>
+  <p>Pas de pastille : tu écris ta phrase toi-même : celle du devis, forcément,
      c'est ce que tu envoies le plus. <b>Elle part telle quelle sur les trois.</b>
      Regarde la facture et le compte rendu.</p>
 </div>
@@ -149,7 +149,7 @@
   <b>Ce que la façon 2 te coûte, et c'est pour ça que je te montre :</b> ta
   facture ne dit plus « à régler avant le 21 septembre », ton compte rendu parle
   d'un devis, et ton client peut te rappeler pour comprendre. Tu peux écrire une
-  phrase qui convienne aux trois — « Voici votre document » —, mais c'est plus
+  phrase qui convienne aux trois, « Voici votre document » —, mais c'est plus
   froid, et l'échéance disparaît quand même.
 </div>
 
@@ -158,7 +158,7 @@
 </div>
 
 <script>
-/* Le texte d'aujourd'hui, RECOPIÉ de src/lib/message-client.ts — pas réécrit de
+/* Le texte d'aujourd'hui, RECOPIÉ de src/lib/message-client.ts : pas réécrit de
    mémoire : la planche doit montrer ce que ses clients reçoivent vraiment. */
 const ORIGINE = [
   "Bonjour [client],",
@@ -204,10 +204,10 @@ function rendre(texte, doc, avecDocument) {
     .replace(/\[client\]/g, echapper(CLIENT))
     .replace(/\[entreprise\]/g, echapper(ENTREPRISE))
     .replace(/\[lien\]/g, '<span class="lien">' + echapper(LIEN) + "</span>");
-  // Façon 2 : la pastille n'existe pas. Ce qu'il a écrit part tel quel — et si
+  // Façon 2 : la pastille n'existe pas. Ce qu'il a écrit part tel quel, et si
   // son texte porte encore « [document] », il partirait ainsi, ce qui se voit.
   // **Façon 2 : la pastille n'existe pas, alors il écrit SA phrase.** Et il
-  // l'écrit forcément en pensant au devis — c'est le document qu'il envoie dix
+  // l'écrit forcément en pensant au devis : c'est le document qu'il envoie dix
   // fois par semaine. On rend donc la phrase du devis sur les TROIS : c'est
   // exactement ce qui partirait, et c'est ce qu'il faut lui montrer. Laisser
   // « [document] » en clair dans la bulle ne montrait rien qu'un écran cassé.
@@ -221,7 +221,7 @@ function rendre(texte, doc, avecDocument) {
 function peindre() {
   const texte = modele.value;
 
-  // **Le lien est OBLIGATOIRE — sa décision du 23 août.** Atlas refuse
+  // **Le lien est OBLIGATOIRE, sa décision du 23 août.** Atlas refuse
   // d'enregistrer, il ne se contente pas de prévenir : sans lien, le message
   // part et le client ne peut rien ouvrir. Le bouton s'éteint AVEC le message,
   // sinon on appuie et rien ne se passe.

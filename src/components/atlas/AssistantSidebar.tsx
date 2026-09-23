@@ -392,8 +392,8 @@ export default function AssistantSidebar() {
                                   }}
                                 >
                                   {m.resultats.find((r) => r.propositionId === p.proposition.id)?.statut === "conflit"
-                                    ? ` — Conflit : ${m.resultats.find((r) => r.propositionId === p.proposition.id)?.message ?? ""}`
-                                    : " — Appliqué"}
+                                    ? `, conflit : ${m.resultats.find((r) => r.propositionId === p.proposition.id)?.message ?? ""}`
+                                    : ", appliqué"}
                                 </span>
                               )}
                             </span>
@@ -458,12 +458,12 @@ export default function AssistantSidebar() {
                 a l'air en panne (`AGENTS.md`, le défaut muet). */}
             {(observation || souci || photoEnCours || dictee !== "repos") && (
               <div className="border-t px-3 pt-2 text-[12.5px]" style={{ borderColor: colors.line, color: colors.muted }}>
-                {dictee === "enregistre" && <span data-atlas="dictee-en-cours">Je vous écoute — appuyez à nouveau pour arrêter.</span>}
+                {dictee === "enregistre" && <span data-atlas="dictee-en-cours">Je vous écoute. Appuyez à nouveau pour arrêter.</span>}
                 {dictee === "traite" && <span>Transcription…</span>}
                 {photoEnCours && <span data-atlas="photo-en-cours">Je regarde la photo…</span>}
                 {observation && !photoEnCours && (
                   <span data-atlas="photo-lue" className="flex items-center gap-2">
-                    <span className="flex-1">Photo lue — elle part avec votre question.</span>
+                    <span className="flex-1">Photo lue, elle part avec votre question.</span>
                     <button onClick={() => setObservation(null)} className="underline" style={{ color: colors.muted }}>
                       Retirer
                     </button>

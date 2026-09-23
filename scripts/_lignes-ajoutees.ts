@@ -1,16 +1,11 @@
 /* =======================================================================
    Ce qu'un lot AJOUTE, par rapport au tronc commun avec `main`.
 
-   **Pourquoi deux contrôles en ont besoin, et pourquoi ils partagent
-   celui-ci.** Un garde-fou qui rougirait sur du code d'il y a six mois
-   serait éteint dans la journée, et l'on aurait perdu la protection pour
-   de bon : le contrôle des pansements ne regarde donc que ce que le lot
-   ajoute, et celui des points du milieu de phrase fait de même pour les
-   maquettes, dont 2 320 points dorment dans des planches archivées que
-   personne ne rouvrira.
-
-   Deux copies de cette lecture auraient divergé (`CLAUDE.md` §3) — et
-   c'est la lecture qui décide de ce qu'un contrôle voit.
+   **Pourquoi un contrôle ne regarde que cela.** Un garde-fou qui rougirait
+   sur du code d'il y a six mois serait éteint dans la journée, et l'on aurait
+   perdu la protection pour de bon. `test-pas-de-pansement.ts` ne mesure donc
+   que ce que le lot ajoute, et cette lecture vit à part pour être lisible et
+   éprouvable sans lui.
 
    `git diff <base>` compare l'ARBRE DE TRAVAIL à ce tronc commun : ce qui
    est commité comme ce qui ne l'est pas encore. C'est bien ce qu'on veut,

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Atlas — le refus par erreur</title>
+<title>Atlas : le refus par erreur</title>
 <style>
   /*
     LE REFUS PAR ERREUR — trois sécurités possibles, à essayer.
@@ -155,15 +155,15 @@
 <div class="page">
 
   <h1>Le refus par erreur</h1>
-  <p class="sous"><b>Votre message du 20 septembre :</b> <i>« j'ai sans faire exprès cliqué sur je ne donne pas suite, aucun moyen d'annuler ».</i> Trois sécurités possibles — touchez « Je ne donne pas suite » dans chacune pour voir ce qui se passe. <b>Rien n'est codé.</b></p>
+  <p class="sous"><b>Votre message du 20 septembre :</b> <i>« j'ai sans faire exprès cliqué sur je ne donne pas suite, aucun moyen d'annuler ».</i> Trois sécurités possibles : touchez « Je ne donne pas suite » dans chacune pour voir ce qui se passe. <b>Rien n'est codé.</b></p>
 
   <p class="quoi"><b>Pourquoi ce bouton-là et pas les deux autres.</b> « Une correction » ne part déjà pas sans un mot écrit. « J'accepte » ne perd rien : il reste le téléphone. « Je ne donne pas suite » est le seul qui ferme le devis d'un doigt, sans rien demander, et le client qui revient sur son lien ne trouve plus que « Réponse enregistrée ».</p>
 
   <div class="choix" role="group" aria-label="La sécurité">
     <button type="button" data-forme="aujourdhui" aria-pressed="true">Aujourd'hui</button>
-    <button type="button" data-forme="feuille" aria-pressed="false">A — la feuille</button>
-    <button type="button" data-forme="place" aria-pressed="false">B — sur place</button>
-    <button type="button" data-forme="apres" aria-pressed="false">C — le retour</button>
+    <button type="button" data-forme="feuille" aria-pressed="false">A, la feuille</button>
+    <button type="button" data-forme="place" aria-pressed="false">B, sur place</button>
+    <button type="button" data-forme="apres" aria-pressed="false">C, le retour</button>
   </div>
 
   <div class="tel">
@@ -182,13 +182,13 @@
     <p><b>Ce que chacune coûte, et ce qu'elle rattrape.</b></p>
     <table>
       <tr><th>Forme</th><th>Rattrape</th><th>Ne rattrape pas</th></tr>
-      <tr><td><b>A</b> — la feuille</td><td>le doigt qui glisse</td><td>le client qui confirme sans lire</td></tr>
-      <tr><td><b>B</b> — sur place</td><td>le doigt qui glisse</td><td>idem, et le second appui tombe là où était le premier</td></tr>
-      <tr><td><b>C</b> — le retour</td><td>tout, même le lendemain</td><td>rien — mais le refus part d'abord</td></tr>
+      <tr><td><b>A</b>, la feuille</td><td>le doigt qui glisse</td><td>le client qui confirme sans lire</td></tr>
+      <tr><td><b>B</b>, sur place</td><td>le doigt qui glisse</td><td>idem, et le second appui tombe là où était le premier</td></tr>
+      <tr><td><b>C</b> : le retour</td><td>tout, même le lendemain</td><td>rien : mais le refus part d'abord</td></tr>
     </table>
-    <p style="margin-top:14px"><b>Ma proposition : A et C ensemble.</b> La feuille arrête le geste involontaire ; le retour rattrape ce qui passe quand même — c'est exactement votre cas, vous aviez déjà fermé la page. Les deux tiennent dans l'écran : aucune n'ajoute un pixel.</p>
+    <p style="margin-top:14px"><b>Ma proposition : A et C ensemble.</b> La feuille arrête le geste involontaire ; le retour rattrape ce qui passe quand même, c'est exactement votre cas, vous aviez déjà fermé la page. Les deux tiennent dans l'écran : aucune n'ajoute un pixel.</p>
     <p><b>B est le seul que je déconseille</b> : le bouton « Confirmer » apparaît sous le doigt qui vient d'appuyer. Un doigt qui a glissé une fois glisse deux fois.</p>
-    <p><b>Et le retour a une limite, à trancher aussi :</b> jusqu'à quand ? Ma proposition — tant que vous n'avez pas repris le devis de votre côté. Après, c'est vous qui décidez, pas lui.</p>
+    <p><b>Et le retour a une limite, à trancher aussi :</b> jusqu'à quand ? Ma proposition : tant que vous n'avez pas repris le devis de votre côté. Après, c'est vous qui décidez, pas lui.</p>
   </div>
 </div>
 
@@ -220,7 +220,7 @@ function carteDate(){
   return '<div class="carte"><h3>Quels jours vous arrangent ?</h3>' +
     '<div class="lignes">' +
       '<label><input type="radio" name="d"><span>le jeudi 8 octobre, le vendredi 9, le lundi 12 et le mardi 13 octobre</span></label>' +
-      '<label><input type="radio" name="d"><span>Cette date ne me convient pas — je propose :</span></label>' +
+      '<label><input type="radio" name="d"><span>Cette date ne me convient pas, je propose :</span></label>' +
     '</div>' +
     '<span class="mot">Une erreur ? Écrivez-la, votre artisan la lira.</span>' +
     '<textarea placeholder="« Mon nom est mal écrit », « plutôt le matin »…"></textarea>' +
@@ -245,7 +245,7 @@ function actions(){
 
 function cadreFin(){
   /* Ce que le patron a vu : « Votre réponse a bien été transmise ». En C, une
-     ligne de plus — et c'est toute la différence. */
+     ligne de plus : et c'est toute la différence. */
   return '<div class="fin"><h3>Votre réponse a bien été transmise.</h3>' +
     '<p>Vous pouvez fermer cette page.</p>' +
     (forme === "apres"
@@ -283,9 +283,9 @@ function mesurer(){
 
 const EXPLICATIONS = {
   aujourdhui: "Tel que c’est aujourd’hui : l’appui part, et l’écran suivant est définitif. C’est ce qui vous est arrivé.",
-  feuille: "A — la feuille monte du bas, comme le calendrier de cet écran. La page derrière ne bouge pas d’un pixel. Toucher à côté referme sans rien envoyer.",
-  place: "B — le bouton se dédouble sur sa propre ligne : « Confirmer » et « Annuler » à la place du troisième. Même hauteur, aucun voile — mais « Confirmer » tombe sous le doigt qui vient d’appuyer.",
-  apres: "C — le refus part tout de suite, et l’écran de retour porte de quoi revenir. C’est le seul qui rattrape un refus déjà envoyé, même après avoir fermé la page.",
+  feuille: "A : la feuille monte du bas, comme le calendrier de cet écran. La page derrière ne bouge pas d’un pixel. Toucher à côté referme sans rien envoyer.",
+  place: "B : le bouton se dédouble sur sa propre ligne : « Confirmer » et « Annuler » à la place du troisième. Même hauteur, aucun voile : mais « Confirmer » tombe sous le doigt qui vient d’appuyer.",
+  apres: "C : le refus part tout de suite, et l’écran de retour porte de quoi revenir. C’est le seul qui rattrape un refus déjà envoyé, même après avoir fermé la page.",
 };
 
 Array.prototype.forEach.call(document.querySelectorAll("[data-forme]"), function(b){

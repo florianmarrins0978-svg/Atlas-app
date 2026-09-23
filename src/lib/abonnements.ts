@@ -132,10 +132,10 @@ export const PHRASE_LECTURE_SEULE = "Votre essai est terminé. Choisissez une fo
 
 /** Le ruban en tête de l'accueil — le seul écran qu'il ouvre tous les matins. */
 export function texteDuRuban(etat: EtatEssai): string {
-  if (etat.statut === "termine") return "Essai terminé — lecture seule";
+  if (etat.statut === "termine") return "Essai terminé, lecture seule";
   return etat.joursRestants > 1
-    ? `Essai gratuit — ${etat.joursRestants} jours restants`
-    : "Essai gratuit — dernier jour";
+    ? `Essai gratuit, ${etat.joursRestants} jours restants`
+    : "Essai gratuit, dernier jour";
 }
 
 /**
@@ -390,7 +390,7 @@ export function etatAffiche(
         };
       }
       return {
-        titre: texteDuRuban(essai).replace(" — ", ", "),
+        titre: texteDuRuban(essai),
         detail: `Jusqu’au ${jourEnLettres(essai.fin)}. Aucune carte n’a été demandée.`,
         ton: essai.alerte ? "attention" : "calme",
       };
@@ -404,11 +404,11 @@ export function etatAffiche(
         ton: "attention",
       };
     case "resilie":
-      return { titre: `${nom} — résilié`, detail: "Vous pouvez reprendre un abonnement quand vous voulez.", ton: "calme" };
+      return { titre: `${nom}, résilié`, detail: "Vous pouvez reprendre un abonnement quand vous voulez.", ton: "calme" };
     case "actif":
       if (abonnement.annulationDemandee && abonnement.periodeFin) {
         return {
-          titre: `${nom} — s’arrête le ${jourEnLettres(abonnement.periodeFin)}`,
+          titre: `${nom}, s’arrête le ${jourEnLettres(abonnement.periodeFin)}`,
           detail: "Vous gardez tout jusqu’à cette date.",
           ton: "attention",
         };
@@ -417,7 +417,7 @@ export function etatAffiche(
         titre: nom,
         detail: [prix, abonnement.periodeFin ? `Prochain paiement le ${jourEnLettres(abonnement.periodeFin)}` : null]
           .filter(Boolean)
-          .join(", ") || null,
+          .join(" · ") || null,
         ton: maintenant > (abonnement.periodeFin ?? maintenant) ? "attention" : "calme",
       };
   }

@@ -52,7 +52,7 @@ export type ResultatAllure =
   | { ok: true; allure: AllureLue }
   | { ok: false; raison: string };
 
-const SYSTEME = `Tu regardes la photo d'un devis ou d'une facture d'artisan français, et tu en décris l'ALLURE — pas le contenu.
+const SYSTEME = `Tu regardes la photo d'un devis ou d'une facture d'artisan français, et tu en décris l'ALLURE, pas le contenu.
 Tu réponds UNIQUEMENT par un objet JSON, sans phrase avant ni après, sans balises de code.
 Champs attendus :
 - fond (string|null) : la couleur de fond de la page, au format "#rrggbb". Le blanc pur vaut "#ffffff".
@@ -142,7 +142,7 @@ export function lireReponseAllure(texte: string): ResultatAllure {
     // familles ont été retirées à sa demande, et un devis photographié en
     // Playfair tombe maintenant ici. On le DIT plutôt que d’approcher : lui
     // poser la plus ressemblante repeindrait ses documents sur une photo.
-    reserves.push("la police n’a pas été reconnue parmi les cinq disponibles — à choisir à la main");
+    reserves.push("la police n’a pas été reconnue parmi les cinq disponibles, à choisir à la main");
   }
 
   const c = (brut.conditions ?? {}) as Record<string, unknown>;
@@ -162,7 +162,7 @@ export function lireReponseAllure(texte: string): ResultatAllure {
 
   // **Le logo se dit toujours**, parce qu'on ne sait pas le reprendre d'une
   // photo : il reste à poser à la main, et il ne faut pas le lui laisser croire.
-  reserves.push("le logo n’est pas repris d’une photo — ajoutez-le à la main");
+  reserves.push("le logo n’est pas repris d’une photo, ajoutez-le à la main");
 
   return {
     ok: true,

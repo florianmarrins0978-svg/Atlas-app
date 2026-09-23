@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Atlas — Ses salariés, et ce qui remplit le planning</title>
+<title>Atlas : Ses salariés, et ce qui remplit le planning</title>
 </head>
 <body>
 <style>
@@ -165,14 +165,14 @@
 
 <div class="bandeau">
   <b>Vos salariés, et ce qui remplit le planning.</b><br>
-  Trois façons. Touchez-les, comparez — puis dites-moi laquelle.
+  Trois façons. Touchez-les, comparez : puis dites-moi laquelle.
 </div>
 
 <div class="barre">
   <div class="choix" role="group" aria-label="Les trois propositions">
-    <button type="button" data-p="A" aria-pressed="true">A · On coche les gens</button>
-    <button type="button" data-p="B" aria-pressed="false">B · Les gens dans des équipes</button>
-    <button type="button" data-p="C" aria-pressed="false">C · Sans curseur pour les gens</button>
+    <button type="button" data-p="A" aria-pressed="true">A, On coche les gens</button>
+    <button type="button" data-p="B" aria-pressed="false">B, Les gens dans des équipes</button>
+    <button type="button" data-p="C" aria-pressed="false">C, Sans curseur pour les gens</button>
   </div>
 </div>
 
@@ -208,7 +208,7 @@
   </div>
 
   <div class="colonne">
-    <p class="etiquette">Planning · mardi 8 septembre</p>
+    <p class="etiquette">Planning, mardi 8 septembre</p>
     <div class="tel">
       <div class="retour">‹</div>
       <p class="surtitre">Votre semaine</p>
@@ -226,7 +226,7 @@
   <b>La question que je ne tranche pas à votre place.</b><br>
   Aujourd'hui <b>un seul nombre fait deux métiers</b> : il dit combien de
   chantiers tiennent dans une journée, <i>et</i> il fabrique les noms qu'on lit
-  au planning — « Équipe A », « Équipe B ». Vous demandez de séparer les deux,
+  au planning : « Équipe A », « Équipe B ». Vous demandez de séparer les deux,
   et vous avez raison : on peut avoir quatre salariés et ne mener qu'un chantier
   à la fois. Reste à savoir <b>comment les gens arrivent sur un chantier</b> :
   on les coche un par un (A, C), ou on range une fois pour toutes qui part avec
@@ -236,13 +236,13 @@
 <div class="verdict">
   <b>Une remarque sur le curseur des salariés.</b> Vous en demandez un. Mais un
   curseur <i>à côté</i> d'une liste de noms crée deux vérités sur la même
-  question : le curseur dit 3, vous avez écrit 2 noms — lequel croire ? En A,
+  question : le curseur dit 3, vous avez écrit 2 noms : lequel croire ? En A,
   essayez : montez le curseur sans taper de nom, et regardez le planning.
   <br><br>
-  La <b>C</b> supprime le curseur des salariés — on ajoute quelqu'un, on le
+  La <b>C</b> supprime le curseur des salariés : on ajoute quelqu'un, on le
   retire, et le nombre se compte tout seul. Le curseur des <b>équipes</b>, lui,
   reste dans les trois : c'est une capacité, elle n'a pas de nom, rien ne la
-  compte à sa place. <b>C'est votre appel</b> — vous avez peut-être une raison
+  compte à sa place. <b>C'est votre appel</b> : vous avez peut-être une raison
   de vouloir le chiffre que je ne vois pas.
 </div>
 
@@ -264,7 +264,7 @@
   var etat = {
     p: "A",
     equipes: 2,
-    cible: 3,                                   /* le curseur « salariés » — A seulement */
+    cible: 3,                                   /* le curseur « salariés » : A seulement */
     gens: [ personne("Marc", 0), personne("Léo", 0), personne("Sofiane", 1) ],
     /* qui part sur chaque chantier : un tableau d'identifiants (A, C) */
     surLeChantier: [ [], [], [], [] ],
@@ -320,7 +320,7 @@
 
     $("clefGens").textContent = etat.p === "B"
       ? "Qui part avec qui"
-      : "Vos salariés — " + etat.gens.length + (etat.gens.length > 1 ? " personnes" : " personne");
+      : "Vos salariés, " + etat.gens.length + (etat.gens.length > 1 ? " personnes" : " personne");
 
     var liste = $("listeGens");
     liste.textContent = "";
@@ -347,7 +347,7 @@
         })(e);
       }
       /* Une personne rangée dans une équipe qui n'existe plus doit rester
-         visible — sinon on la perd sans jamais l'avoir retirée. */
+         visible, sinon on la perd sans jamais l'avoir retirée. */
       var orphelins = etat.gens.filter(function(g){ return g.eq >= etat.equipes; });
       if (orphelins.length){
         var t = document.createElement("p");
@@ -405,7 +405,7 @@
      champ. On ne remet à jour que ce qui compte les gens. */
   function dessinerCles(){
     if (etat.p !== "B"){
-      $("clefGens").textContent = "Vos salariés — " + etat.gens.length
+      $("clefGens").textContent = "Vos salariés, " + etat.gens.length
         + (etat.gens.length > 1 ? " personnes" : " personne");
     }
   }
@@ -464,13 +464,13 @@
           var e = etat.equipeDuChantier[i];
           var membres = etat.gens.filter(function(g){ return g.eq === e; });
           qui.innerHTML = membres.length
-            ? "<b>" + membres.map(function(g){ return g.nom.trim() || "sans nom"; }).join(" · ") + "</b>"
-            : "Équipe " + (e + 1) + " — personne dedans";
+            ? "<b>" + membres.map(function(g){ return g.nom.trim() || "sans nom"; }).join(", ") + "</b>"
+            : "Équipe " + (e + 1) + ", personne dedans";
           if (compte["e" + e] > 1) doublons.push("L'équipe " + (e + 1));
         } else {
           var ids = etat.surLeChantier[i];
           var noms = ids.map(nomDe);
-          qui.innerHTML = noms.length ? "<b>" + noms.join(" · ") + "</b>" : "Personne n'est encore dessus";
+          qui.innerHTML = noms.length ? "<b>" + noms.join(", ") + "</b>" : "Personne n'est encore dessus";
           ids.forEach(function(id){ if (compte["g" + id] > 1) doublons.push(nomDe(id)); });
         }
         bloc.appendChild(qui);
@@ -528,7 +528,7 @@
     var d = $("planDit");
     if (etat.p === "A" && anonymes() > 0){
       d.innerHTML = "Le curseur annonce " + etat.cible + " salariés, vous avez écrit "
-        + etat.gens.length + " noms. <b>Les pastilles ne connaissent que les noms</b> — "
+        + etat.gens.length + " noms. <b>Les pastilles ne connaissent que les noms</b>, "
         + "un salarié sans nom ne peut pas être mis sur un chantier.";
     } else if (etat.p === "B"){
       d.textContent = "Le planning n'écrit plus « Équipe A » : il écrit les gens qui la composent.";
@@ -539,13 +539,13 @@
 
   /* ── Le mot d'accompagnement, propre à chaque proposition ──────────── */
   var NOTES = {
-    A: "<p><b>A — on coche les gens.</b> Un curseur pour les équipes (la capacité du "
+    A: "<p><b>A : on coche les gens.</b> Un curseur pour les équipes (la capacité du "
       + "planning), un curseur pour les salariés, et une liste de noms. Sur chaque "
       + "chantier, on touche les pastilles pour dire qui part.</p>"
       + "<p><b>Essayez ceci :</b> montez le curseur des salariés à 5 sans taper de nom. "
-      + "L'écran annonce 5 salariés — et le chantier n'en connaît que 3. "
+      + "L'écran annonce 5 salariés, et le chantier n'en connaît que 3. "
       + "C'est le défaut que la C corrige.</p>",
-    B: "<p><b>B — les gens sont rangés dans des équipes.</b> On range une fois pour "
+    B: "<p><b>B : les gens sont rangés dans des équipes.</b> On range une fois pour "
       + "toutes qui part avec qui, et le chantier prend une équipe entière. Le planning "
       + "n'écrit plus la lettre : il écrit les prénoms.</p>"
       + "<p><b>Ce que ça vous évite :</b> recocher les trois mêmes noms à chaque chantier "
@@ -553,11 +553,11 @@
       + "l'un d'eux part avec l'autre équipe, il faut le déplacer dans les réglages. "
       + "Baissez le compteur d'équipes à 1 pour voir ce que deviennent les gens de la "
       + "seconde.</p>",
-    C: "<p><b>C — pas de curseur pour les salariés.</b> Le reste est identique à la A : "
+    C: "<p><b>C : pas de curseur pour les salariés.</b> Le reste est identique à la A : "
       + "on coche les gens sur le chantier. Mais le nombre de salariés n'est plus "
       + "déclaré, il se compte : vous ajoutez quelqu'un, il apparaît ; vous le retirez, "
       + "il disparaît.</p>"
-      + "<p><b>Une seule vérité</b> — la liste. Rien ne peut plus la contredire.</p>"
+      + "<p><b>Une seule vérité</b> : la liste. Rien ne peut plus la contredire.</p>"
   };
 
   function dessiner(){

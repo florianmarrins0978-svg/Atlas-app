@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Atlas — la ligne, avec ou sans le rond d'envoi</title>
+<title>Atlas : la ligne, avec ou sans le rond d'envoi</title>
 <style>
 /*
   LA LIGNE, TELLE QU'IL L'A CORRIGÉE — 31 août 2026, au soir.
@@ -240,8 +240,8 @@ body[data-forme="nu"] .envoyer{background:transparent;box-shadow:none}
 
   <nav class="onglets" aria-label="La touche d'envoi, avec ou sans son rond">
     <div class="onglets-piste" id="piste">
-      <button type="button" data-f="rond" aria-pressed="true">1 · Avec le rond</button>
-      <button type="button" data-f="nu" aria-pressed="false">2 · Sans le rond</button>
+      <button type="button" data-f="rond" aria-pressed="true">1, Avec le rond</button>
+      <button type="button" data-f="nu" aria-pressed="false">2, Sans le rond</button>
     </div>
     <button type="button" class="teinte" id="teinte" aria-label="Passer en fond noir">☾</button>
   </nav>
@@ -250,7 +250,7 @@ body[data-forme="nu"] .envoyer{background:transparent;box-shadow:none}
     <div class="entete">
       <button class="retour" type="button" aria-label="Retour">‹</button>
       <div>
-        <p class="avant">M. Bernard — 12 rue des Lilas, Nantes</p>
+        <p class="avant">M. Bernard, 12 rue des Lilas, Nantes</p>
         <h1>Taille de haie</h1>
         <p class="statut">Devis à faire</p>
       </div>
@@ -342,7 +342,7 @@ body[data-forme="nu"] .envoyer{background:transparent;box-shadow:none}
     });
   });
 
-  /* L'onde de la planche est un DÉCOR — dans l'application elle suit le volume
+  /* L'onde de la planche est un DÉCOR, dans l'application elle suit le volume
      réellement capté, et une page publiée ne peut pas demander le micro sans
      un dialogue qui casserait l'essai. */
   var HAUTEURS = [];
@@ -382,7 +382,7 @@ body[data-forme="nu"] .envoyer{background:transparent;box-shadow:none}
     if (etat === 'repos') { secondes = 0; HAUTEURS.length = 0; courant = 8; }
     /* **Plus de pause : le chrono ne s'arrête qu'en jetant ou en envoyant.**
        C'est sa correction du 31 août au soir, et c'est ce qu'il faut regarder
-       en essayant — on ne peut plus suspendre pour répondre à quelqu'un. */
+       en essayant : on ne peut plus suspendre pour répondre à quelqu'un. */
     if (etat === 'dicte') minuterie = setInterval(function () {
       secondes += 1; chrono.textContent = mmss(secondes);
     }, 1000);

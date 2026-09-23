@@ -134,7 +134,7 @@ export default function AbsencesEquipe({
             <span style={{ color: colors.ink }}>
               Pour vos congés, posez-les dans votre agenda
             </span>{" "}
-            — Atlas en tient compte et ne proposera rien sur ces jours-là.
+            : Atlas en tient compte et ne proposera rien sur ces jours-là.
           </>
         ) : (
           <>
@@ -381,7 +381,7 @@ export default function AbsencesEquipe({
             phraseDuRefus(refusSaisi)
           ) : (
             <>
-              {nomDuRang(rang)} sera absente {libelleAbsence(premierJour, dernierJour)} —
+              {nomDuRang(rang)} sera absente {libelleAbsence(premierJour, dernierJour)},
               week-ends compris. Le motif n’est là que pour vous.
             </>
           )}

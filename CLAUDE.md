@@ -472,30 +472,41 @@ retransmet — un document périmé le ferait travailler sur une version disparu
   coupe une phrase sont de la typographie de rapport ; à l'écran, il lit une
   phrase : « Probable sur un peuplier. », « Photo de X, sous licence Y. ».
   Ce qui a besoin d'un genre (« un », « une ») se lit dans la donnée, jamais
-  deviné — **et quand il n'y est pas, on écrit la phrase sans lui** : aucune
-  table ne porte le genre d'une essence, donc l'écran du diagnostic dit
-  « Probable, peuplier », pas « Probable sur un peuplier » qui serait une
-  devinette. Vaut pour les écrans, les maquettes et les fiches phytosanitaires.
-  **Et ce n'est plus une consigne : `scripts/test-aucun-point-median.ts` la
-  tient**, joué par `npm test`, donc par la batterie. Il a fallu en retirer
-  **72** le 22 septembre — sur ses écrans, mais aussi sur les PDF qui partent
-  chez ses clients —, et la règle était DÉJÀ écrite ici : c'est ce qui a décidé
-  du garde-fou, à sa demande du 23. Un point qui ne s'affiche pas (un document
-  légal déjà accepté, une consigne envoyée au modèle) s'y déclare **avec sa
-  raison** ; un commentaire n'a rien à déclarer, ils sont ignorés. Le relevé
-  complet est dans `docs/les-points-inutiles.md`.
+  deviné. Vaut pour les écrans, les maquettes et les fiches phytosanitaires.
+  **Il a dû le redire le soir même**, et la règle ne vit donc plus seulement
+  ici : `scripts/test-aucun-tiret.ts` refuse « — », « – » et « · » entre deux
+  mots dans tout ce qui s'affiche — les chaînes et le texte des écrans, les
+  maquettes publiées. Les commentaires sont épargnés (ils citent ses phrases à
+  lui), le trait d'union aussi (« sous-traitant »), et un tiret SEUL dans une
+  case reste ce qu'il est : un montant absent. Ce qui remplace : une virgule,
+  un deux-points quand la suite explique, un point quand c'est une phrase
+  entière, deux parenthèses pour une incise (`ARCHITECTURE.md` §410).
+  **Et il ne se lit plus seulement à la batterie** : sa demande du soir, *« il
+  faut mettre cette règle en garde-fou que les sessions futures ne recommencent
+  pas »*. `scripts/garde-tirets.mjs` est branché sur chaque écriture de chaque
+  session et refuse la phrase avant qu'elle soit posée. Les deux lisent la même
+  règle (`scripts/_tirets.mjs`) ; toucher à sa détection oblige à la confronter
+  aux fichiers affichés du dépôt, faute de quoi elle refuse du texte juste.
+  **Et rien ne passe vers `main`** : `garde-fusion-main.mjs` lit les tirets du
+  lot AVANT son niveau (`tiretsDuLot`). C'est lui qui ferme le chemin qu'il a
+  vu le 23 septembre — une maquette est inerte, donc de niveau 1, donc aucun
+  contrôle ne s'y jouait.
 
-  **LA MAQUETTE EN EST, et c'est LUI qui l'a vu** — sa question du
-  23 septembre : *« si dans la maquette il met des points n'importe où, quand
-  il va pousser sur main il va pousser avec les points ? Donc c'est pas bon »*.
-  Deux fois raison : la planche est ce qu'il OUVRE, et une planche validée se
-  recopie en code. Le contrôle lit donc aussi ce qu'un lot **ajoute** sous
-  `appli/` et `maquettes/` — seulement ce qu'il ajoute : 2 320 points dorment
-  dans 231 planches archivées, et les faire rougir toutes éteindrait le
-  garde-fou dans la journée. **Et il lit les `.js` et le `.css`**, pas
-  seulement le TypeScript : 43 noms d'arroseurs du catalogue portaient un
-  point, et la première version les avait tous manqués. **Les tirets `—` ne
-  sont pas encore tenus** — leur relevé reste à faire (`TODO.md`).
+  **Il lit aussi les `.js` de `src/` et le dossier `maquettes/`** — deux trous
+  trouvés le 23 septembre, et le premier était dans l'application : le
+  catalogue d'arrosage est un `.js` repris tel quel de la page publiée, et
+  **61 libellés d'arroseurs y portaient un point médian** (« PGP-ADJ · buse 1 »)
+  — ils partent sur le plan, dans la liste des pièces, et chez le fournisseur.
+  **Et le NOM d'un matériel ne prend pas de virgule** : « PGP-ADJ buse 1 », pas
+  « PGP-ADJ, buse 1 » — c'est ce qu'il porte chez son fournisseur, et §4 bis le
+  dit déjà (*« une virgule de plus rend la référence introuvable »*).
+
+  **Ce qui n'est PAS touché, et c'est délibéré** : les conditions générales
+  (`src/server/documents-legaux/versions.ts`), où le « · » est une **puce de
+  liste** dans un texte **déjà publié et accepté** par des comptes. Le
+  réécrire demande une nouvelle version et une nouvelle acceptation de chacun :
+  c'est sa décision, pas une correction de forme. Le relevé complet est dans
+  `docs/les-points-inutiles.md`.
 
 - **Pas de flèches décoratives au bout des libellés.** Sa consigne du 25 août
   2026 : *« arrête de mettre des flèches, c'est moche »*. Le « → » (et le « › »)

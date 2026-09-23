@@ -325,7 +325,7 @@ export default function AchatsTva({
           style={{ backgroundColor: voile(colors.or, 0.1), color: colors.or }}
         >
           {photoCle
-            ? `${lecture ? `${lecture} ` : "Ticket lu. Vérifiez les montants avant d’ajouter. "}Gardez le papier — la photo ne le remplace pas.`
+            ? `${lecture ? `${lecture} ` : "Ticket lu. Vérifiez les montants avant d’ajouter. "}Gardez le papier, la photo ne le remplace pas.`
             : "La TVA se calcule depuis le total et le taux. Si votre ticket en affiche une autre, écrivez la sienne : c’est elle qui fait foi."}
         </p>
 

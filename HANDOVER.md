@@ -64,6 +64,23 @@ première ligne pose aujourd'hui une ligne VIDE de plus.** C'est ce qui a été
 corrigé dans `test-facture-sans-devis-e2e.ts` et `capture-facture-sans-devis.mts`
 le 22 septembre.
 
+## PLUS DE TIRET AU MILIEU D'UNE PHRASE — 22 septembre 2026
+
+*« Je ne veux plus de tiret, je veux des phrases normales, sans tiret en plein
+milieu. »* 240 tirets et points médians réécrits dans tout ce qui s'affiche.
+
+| | |
+|---|---|
+| le garde-fou | `scripts/test-aucun-tiret.ts`, dans `npm test` : il lit l'arbre TypeScript de `src/` (chaînes et texte d'écran, jamais les commentaires) et le texte des maquettes de `appli/` |
+| ce qui remplace | virgule, deux-points quand la suite explique, point pour une phrase entière, parenthèses pour une incise |
+| ce qui garde le sien | `src/server/documents-legaux/versions.ts` (une version publiée ne se modifie jamais) et la mémoire du dépôt, qui cite ses messages |
+| le piège | le catalogue d'arrosage existe en DEUX copies identiques (`appli/` et `src/lib/arrosage/`) : toucher un libellé d'un seul côté fait rougir `verifier-arrosage-une-seule-source.mjs` |
+| à l'écriture | `scripts/garde-tirets.mjs`, branché sur chaque écriture (`.claude/settings.json`) : il refuse la phrase avant qu'elle soit posée |
+| à la poussée vers `main` | `tiretsDuLot` dans `garde-fusion-main.mjs`, **à tous les niveaux** : une maquette seule est de niveau 1 et ne joue rien, c'est par là que ça sortait |
+| la règle, une seule fois | `scripts/_tirets.mjs`, lue par les deux. **Après tout changement de sa détection, la confronter aux fichiers affichés du dépôt** : c'est ainsi qu'on a vu 211 puis 4 faux refus, jamais en la relisant |
+
+`ARCHITECTURE.md` §410.
+
 ## LA FICHE DE SÉCURITÉ — 22 septembre 2026
 
 | | |

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Atlas — l'accueil, deux registres</title>
+<title>Atlas : l'accueil, deux registres</title>
 <style>
 /*
   L'ACCUEIL — DEUX REGISTRES. Proposition pour « / ».
@@ -504,17 +504,17 @@ body{
 <body>
 
 <div class="pilote">
-  <h1>L'accueil — deux registres
-    <small>Élégant, minimaliste — rien n'est codé</small>
+  <h1>L'accueil, deux registres
+    <small>Élégant, minimaliste : rien n'est codé</small>
   </h1>
   <div class="rang"><b>Charte</b>
     <button data-k="charte" data-v="origine">Origine</button>
     <button data-k="charte" data-v="nuit">Nuit</button>
   </div>
   <div class="rang"><b>Les deux</b>
-    <button data-k="distinction" data-v="aplat">A · l'aplat</button>
-    <button data-k="distinction" data-v="dessin">B · le dessin</button>
-    <button data-k="distinction" data-v="mots">C · les mots</button>
+    <button data-k="distinction" data-v="aplat">A, l'aplat</button>
+    <button data-k="distinction" data-v="dessin">B, le dessin</button>
+    <button data-k="distinction" data-v="mots">C, les mots</button>
     <button data-k="distinction" data-v="aplat-mots">A + C</button>
   </div>
   <div class="rang"><b>Le geste</b>
@@ -607,11 +607,11 @@ body{
 <div class="note">
   <h2>Les deux endroits que vous avez demandés</h2>
   <ul>
-    <li><b>Retours clients</b> — ce que vos clients vous ont répondu. Leurs mots
+    <li><b>Retours clients</b>, ce que vos clients vous ont répondu. Leurs mots
         y sont écrits <b>tels quels</b>, en italique derrière un filet d'or :
         c'est la seule chose de cet écran que l'application n'a pas rédigée.
         Sous chacun, le geste qu'il appelle.</li>
-    <li><b>Devis en cours</b> — ceux que vous êtes en train de faire, rangés par
+    <li><b>Devis en cours</b> : ceux que vous êtes en train de faire, rangés par
         celui qui attend depuis le plus longtemps.</li>
     <li><b>Vos clients</b> sont revenus, en haut à droite, avec leur nombre.
         Ils manquaient sur la page d'hier, et c'était une faute.</li>
@@ -622,10 +622,10 @@ body{
     <li><b>Le sceau</b> en haut : votre feuille au trait dans son cercle d'or,
         recopiée trait pour trait de l'application. Rien d'inventé.</li>
     <li><b>L'ornement</b> qui sépare les deux registres : deux filets d'or et la
-        même feuille. Il sépare — il ne ferme pas l'en-tête. <b>Le trait gris de
+        même feuille. Il sépare, il ne ferme pas l'en-tête. <b>Le trait gris de
         l'en-tête que vous aviez fait retirer le 24 août n'est pas revenu.</b></li>
-    <li><b>Deux voix</b> : le nom d'un client est en serif — c'est une personne ;
-        ce qu'il faut faire est en sans — c'est l'application qui parle.</li>
+    <li><b>Deux voix</b> : le nom d'un client est en serif, c'est une personne ;
+        ce qu'il faut faire est en sans, c'est l'application qui parle.</li>
     <li><b>Une seule couleur</b> dans tout l'écran, et elle veut dire quelque
         chose : depuis combien de temps ça attend.</li>
   </ul>
@@ -633,7 +633,7 @@ body{
   <h2>Ce que j'ai ajouté sans que vous le demandiez</h2>
   <ul>
     <li><b>La date</b> en haut à gauche : elle situe tout ce qui est écrit en
-        dessous — « depuis 14 jours » n'a de sens que par rapport à un jour.</li>
+        dessous, « depuis 14 jours » n'a de sens que par rapport à un jour.</li>
     <li><b>Le nombre à côté de chaque enseigne</b> : vous savez d'un coup d'œil
         s'il en reste sous le pli.</li>
     <li><b>« Et N autres » se replie</b>, contrairement à l'application
@@ -642,7 +642,7 @@ body{
 </div>
 
 <script>
-/* ═══ LES DONNÉES — exemples de maquette, dans les mots du dépôt ═════════ */
+/* ═══ LES DONNÉES, exemples de maquette, dans les mots du dépôt ═════════ */
 
 const DATE = "Mardi 8 septembre";
 /* Le premier jour, il n'a pas encore de client : le nombre disparaît plutôt
@@ -662,24 +662,24 @@ const RETOURS = [
 
 /* États : `statutLabel` (chantier-etat.ts), mot pour mot.
 
-   **LA DATE — sa demande du 6 septembre : « il manque les dates à laquelle on
+   **LA DATE : sa demande du 6 septembre : « il manque les dates à laquelle on
    a créé le devis pour les clients ».**
 
-   Elle est écrite avec `jourEtMois()` (`src/lib/jour.ts`) — « 25 août », le
+   Elle est écrite avec `jourEtMois()` (`src/lib/jour.ts`), « 25 août », le
    format que le dépôt réserve aux listes, sans le jour de la semaine qui
    prendrait la moitié de la largeur. Pas de seconde table de mois.
 
    **DEUX DATES, ET ELLES NE DISENT PAS LA MÊME CHOSE.** Un chantier de ce
    registre n'a pas toujours de devis : « Brouillon » et « À vérifier »
    décrivent un chantier ouvert dont le devis n'existe pas encore. Écrire
-   « devis du 25 août » sur celui-là serait inventer une date — ce que ce dépôt
-   s'interdit (`CLAUDE.md` §4).
+   « devis du 25 août » sur celui-là serait inventer une date, ce que ce dépôt
+   s'interdit (`CLAUDE.md` §4).,
 
-     · le devis existe (`devisGenereAt`) → **« devis du 25 août »**
+     le devis existe (`devisGenereAt`) → **« devis du 25 août »**
      · il n'existe pas encore (`createdAt`) → **« ouvert le 25 août »**
 
    **Ce que ça coûtera à coder :** `createdAt` n'est pas descendu à l'accueil
-   aujourd'hui — la requête l'emploie pour TRIER mais ne le sélectionne pas
+   aujourd'hui, la requête l'emploie pour TRIER mais ne le sélectionne pas
    (`listerChantiersPourAffichage`). Une colonne de plus, rien d'autre. */
 const DEVIS = [
   { id:"d1", qui:"Résidence des Tilleuls", quoi:"À vérifier",           date:"ouvert le 25 août" },
@@ -714,7 +714,7 @@ function echapper(s){
 const ORNEMENT = `
   <div class="ornement" aria-hidden="true"><i></i><i></i></div>`;
 
-/** « Et trois autres » — en toutes lettres jusqu'à dix, comme on parle. */
+/** « Et trois autres », en toutes lettres jusqu'à dix, comme on parle. */
 const MOTS = ["", "un", "deux", "trois", "quatre", "cinq", "six", "sept", "huit", "neuf", "dix"];
 function enLettres(n){ return n <= 10 ? MOTS[n] : String(n); }
 
@@ -733,7 +733,7 @@ const MARQUES = {
     </svg>`,
 };
 
-/** « 3 clients vous répondent », « 5 chantiers en préparation » — la façon C. */
+/** « 3 clients vous répondent », « 5 chantiers en préparation » : la façon C. */
 function phrase(cle, n){
   if (cle === "retours") return n > 1 ? `${n} clients vous répondent` : "1 client vous répond";
   return n > 1 ? `${n} chantiers en préparation` : "1 chantier en préparation";
@@ -812,7 +812,7 @@ function dessiner(){
   mesurer();
 }
 
-/* ═══ LA MESURE — elle interroge la page, elle ne récite rien ════════════ */
+/* ═══ LA MESURE, elle interroge la page, elle ne récite rien ════════════ */
 
 function luminance(c){
   const [r,g,b] = c.map(v => { v /= 255; return v <= 0.03928 ? v/12.92 : Math.pow((v+0.055)/1.055, 2.4); });
@@ -838,7 +838,7 @@ function mesurer(){
   const fondCadre = getComputedStyle(cadre).backgroundColor;
 
   /* Ce qui se lit ENTIÈREMENT sans défiler, et sans passer sous ce qui est
-     posé en bas. La bande réservée se MESURE — écrite à 140 px en dur, elle
+     posé en bas. La bande réservée se MESURE : écrite à 140 px en dur, elle
      comptait le socle même quand le bouton est remonté en haut, et rendait la
      version haute plus mauvaise qu'elle n'est. Un contrôle qui fausse la
      comparaison qu'il sert ne prouve rien (`CLAUDE.md` §5). */
@@ -899,21 +899,21 @@ function mesurer(){
 
   const rangs = [
     ["Les deux registres se voient", enseignesVues.length === 0 ? "<em>rien à faire</em>"
-      : `<b>${enseignesVues.join(" · ")}</b>`],
+      : `<b>${enseignesVues.join(" : ")}</b>`],
     ["Entrées lisibles sans défiler", total === 0 ? "<em>rien à faire</em>" : `<b>${vues}</b> sur ${total}`],
     ["Mots affichés", `<b>${mots}</b>`],
     ["Le plus petit texte", plusPetit ? `<b>${String(plusPetit).replace(".", ",")} px</b>` : "—"],
     ["Le pire contraste", !pire ? "—" :
-      (pire.c >= 4.5 ? `<b>${pire.c.toFixed(2).replace(".", ",")}</b> — passe 4,5 · « ${echapper(pire.quoi)} »`
-                     : `<b>${pire.c.toFixed(2).replace(".", ",")}</b> — <em>il en faut 4,5 · « ${echapper(pire.quoi)} »</em>`)],
+      (pire.c >= 4.5 ? `<b>${pire.c.toFixed(2).replace(".", ",")}</b> : passe 4,5 : « ${echapper(pire.quoi)} »`
+                     : `<b>${pire.c.toFixed(2).replace(".", ",")}</b> — <em>il en faut 4,5 : « ${echapper(pire.quoi)} »</em>`)],
     ["La plus petite cible", !cible ? "—" :
-      (cible.h >= 44 ? `<b>${cible.h} px</b> — « ${echapper(cible.quoi)} »`
+      (cible.h >= 44 ? `<b>${cible.h} px</b> : « ${echapper(cible.quoi)} »`
                      : `<b>${cible.h} px</b> — <em>« ${echapper(cible.quoi)} », il en faut 44</em>`)],
   ];
   document.getElementById("corps-mesures").innerHTML =
     rangs.map(([a, b]) => `<tr><th>${a}</th><td>${b}</td></tr>`).join("");
   document.getElementById("legende-mesures").textContent =
-    "Relevé sur l'écran ci-dessus, à l'instant, par la page elle-même — 390 × 596, la barre du bas déduite.";
+    "Relevé sur l'écran ci-dessus, à l'instant, par la page elle-même : 390 × 596, la barre du bas déduite.";
 }
 
 /* ═══ Les gestes ════════════════════════════════════════════════════════ */

@@ -59,7 +59,7 @@ export default async function MesMesuresPage() {
 
         <div className="px-[26px] pt-4">
           <p className="text-[14px] leading-snug" style={{ color: colors.muted }}>
-            Les tranches se règlent ici, une fois. Toutes les grilles les suivent — c&apos;est le même diamètre qui
+            Les tranches se règlent ici, une fois. Toutes les grilles les suivent. C&apos;est le même diamètre qui
             sert à abattre, à fendre et à dessoucher.
           </p>
           <p className="mt-2 text-[14px] leading-snug" style={{ color: colors.muted }}>

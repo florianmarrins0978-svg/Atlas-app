@@ -189,7 +189,7 @@ export default function ExigibiliteTva({
       >
         {memeChiffre ? (
           <>
-            Sur <strong style={{ color: colors.ink }}>{periode}</strong>, ce choix ne change rien —{" "}
+            Sur <strong style={{ color: colors.ink }}>{periode}</strong>, ce choix ne change rien :{" "}
             <strong style={{ color: colors.ink }}>{siPaye}</strong>{" "}
             dans les deux cas.
           </>

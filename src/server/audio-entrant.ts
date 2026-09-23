@@ -56,7 +56,7 @@ export type AudioEntrant =
   | { ok: false; message: string };
 
 export const MESSAGE_ENREGISTREMENT_VIDE =
-  "L'enregistrement est vide — le micro n'a rien capté. Réessayez en parlant après l'appui.";
+  "L'enregistrement est vide, le micro n'a rien capté. Réessayez en parlant après l'appui.";
 
 export async function preparerAudioEntrant(fichier: File): Promise<AudioEntrant> {
   // 1. La taille, avant toute lecture.

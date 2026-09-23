@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Atlas — vos clients, la liste</title>
+<title>Atlas : vos clients, la liste</title>
 <style>
   /*
     VOS CLIENTS — proposition pour /clients (src/app/clients/).
@@ -255,7 +255,7 @@
 <body data-charte="origine">
 
 <div class="banc">
-  <h2>Vos clients — proposition</h2>
+  <h2>Vos clients, proposition</h2>
   <div class="boutons">
     <button type="button" data-etat="repos" aria-pressed="true">Au repos</button>
     <button type="button" data-frappe="martins">Je tape « martins »</button>
@@ -328,7 +328,7 @@
       (<code>clients.adresse</code>) ; la liste ne la charge pas encore.</li>
     <li><b>Ce qui reste dû passe de 9,5 px en capitales à 16 px</b>, à droite du
       nom. C'est la seule chose de l'écran qui demande un geste.</li>
-    <li><b>La liste dit son ordre</b> — du chantier le plus récent au plus ancien
+    <li><b>La liste dit son ordre</b>, du chantier le plus récent au plus ancien
       (elle l'est déjà, sans le dire). La date vient de <code>dernierJour</code>,
       déjà calculée, jamais transmise à l'écran.</li>
     <li><b>Le compte remonte dans l'en-tête</b> et suit la recherche. Aujourd'hui
@@ -343,13 +343,13 @@
     <li>Le total facturé par client (« 2 400,00 € facturés ») quitte la ligne.
       Deux montants sur une même ligne, l'un gris l'autre rouge, se confondent
       d'un coup d'œil. Il ne se lit plus nulle part ailleurs depuis que la fiche
-      a été allégée le 2 septembre — <b>à trancher</b>.</li>
+      a été allégée le 2 septembre, <b>à trancher</b>.</li>
   </ul>
 </div>
 
 <script>
 /* ── Les vingt et un clients de l'exemple ─────────────────────────────────
-   Cinq champs, tous en base. `du` à null : rien n'est facturé — jamais 0 €. */
+   Cinq champs, tous en base. `du` à null : rien n'est facturé : jamais 0 €. */
 const CLIENTS = [
   {nom:"Mme Chauvin",      lieu:"Bouguenais",                    n:3, jour:"2026-09-01", du:null},
   {nom:"M. Martins",       lieu:"10 rue d'Enfer, Nantes",        n:5, jour:"2026-08-28", du:"740,00 €"},
@@ -459,7 +459,7 @@ function dessiner(){
 
   effacer.classList.toggle("vu", cherche);
 
-  /* Aucun client du tout : ni recherche, ni liste — il n'y a rien à chercher. */
+  /* Aucun client du tout : ni recherche, ni liste : il n'y a rien à chercher. */
   if(etat === "vide"){
     zone.style.display = "none";
     liste.innerHTML = "";
@@ -499,13 +499,13 @@ function dessiner(){
     if(c.lieu) suite.push(echapper(c.lieu));
     suite.push(c.n === 0 ? "aucun chantier" : c.n === 1 ? "1 chantier" : c.n + " chantiers");
     const ditAvant = (c.n === 0 ? "aucun chantier" : c.n === 1 ? "1 chantier" : c.n + " chantiers")
-      + (FACTURE[i] ? " · " + FACTURE[i] + " facturés" : " · rien de facturé");
+      + (FACTURE[i] ? ", " + FACTURE[i] + " facturés" : ", rien de facturé");
     const dernier = rang === vus.length - 1 ? " dernier" : "";
     html +=
       '<a class="ligne' + dernier + '" href="#" tabindex="0">' +
         '<span class="gauche">' +
           '<span class="nom serif">' + nomSurligne(c.nom, listeMots) + '</span>' +
-          '<span class="dit apres-seul">' + suite.join(" · ") + '</span>' +
+          '<span class="dit apres-seul">' + suite.join(" : ") + '</span>' +
           '<span class="dit avant-seul">' + ditAvant + '</span>' +
         '</span>' +
         (c.du

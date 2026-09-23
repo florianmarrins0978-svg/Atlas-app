@@ -183,6 +183,6 @@ export function reserveDeContradiction(nom: string, m: MesureResolue): string | 
   if (m.origine !== "contradiction") return null;
   return (
     `« ${nom} » : la dictée dit ${m.structure} et le libellé dit ${m.libelle}. ` +
-    "Le prix n'a pas été calculé sur une valeur incertaine — corrigez celle qui est bonne."
+    "Le prix n'a pas été calculé sur une valeur incertaine. Corrigez celle qui est bonne."
   );
 }

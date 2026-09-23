@@ -42,7 +42,7 @@ export default function DesignAPage() {
         {/* Liste — rows plates, hairline, sans carte */}
         <div className="mt-8 px-6">
           <p className="mb-3 text-[13px] font-semibold uppercase tracking-wide text-[#8E8E93]">
-            En cours · {mockChantiers.length}
+            En cours : {mockChantiers.length}
           </p>
           <div className="border-t border-[#E5E5EA]">
             {mockChantiers.map((c) => (

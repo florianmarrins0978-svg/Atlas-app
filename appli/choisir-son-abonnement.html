@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Choisir son abonnement — Atlas</title>
+<title>Choisir son abonnement : Atlas</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@400;500&display=swap" rel="stylesheet">
@@ -146,7 +146,7 @@ h2.titre{margin:14px 0 0;font:400 32px/1.04 var(--serif);letter-spacing:-.018em}
 
 <div class="bandeau">
   <b>Votre écran d'abonnement, avec vos chiffres.</b> Trois formules, séparées par
-  <b>qui fabrique des devis</b> — jamais par les fonctions, et jamais par le nombre
+  <b>qui fabrique des devis</b> : jamais par les fonctions, et jamais par le nombre
   de salariés. <b>Rien n'est codé.</b>
 </div>
 
@@ -176,7 +176,7 @@ h2.titre{margin:14px 0 0;font:400 32px/1.04 var(--serif);letter-spacing:-.018em}
 <script>
 /*
   UN SEUL JEU DE FORMULES, DEUX RENDUS. Les prix sont écrits une fois : recopiés
-  dans l'écran et dans les notes, ils finiraient par se contredire — et c'est le
+  dans l'écran et dans les notes, ils finiraient par se contredire : et c'est le
   pire endroit pour ça, une page qui parle d'argent (`CLAUDE.md` §4 bis).
 */
 var etat = { vue: "offre", nuit: false };
@@ -184,7 +184,7 @@ var etat = { vue: "offre", nuit: false };
 /**
  * LES TROIS FORMULES.
  *
- * `compte` est le nombre de personnes qui FABRIQUENT des documents — le patron,
+ * `compte` est le nombre de personnes qui FABRIQUENT des documents, le patron,
  * les commerciaux, la facturation. Les salariés n'y entrent jamais : ils voient
  * leur planning et rien d'autre (`src/lib/acces-roles.ts`), ils ne consomment
  * aucune IA, et les facturer reviendrait à facturer la taille de ses chantiers.
@@ -233,12 +233,12 @@ function entete(){ return '<h2 class="titre">Abonnement</h2><p class="sur">Mon e
 
 function ecranAvecOffre(){
   // **LE PRIX S’ÉCRIT COMME CHEZ CEUX QUI EN VIVENT.** Relevé le 9 septembre
-  // 2026 chez Obat, Tolteck et Batappli, à sa demande — « va te renseigner
+  // 2026 chez Obat, Tolteck et Batappli, à sa demande : « va te renseigner
   // comment c’est formulé chez les plus grandes applis ». Quatre choses
   // reviennent partout, et aucune n’y était :
   //
   //   · le montant en gros, « /mois HT » en petit à côté ;
-  //   · l’année en seconde ligne avec l’ÉCONOMIE EN EUROS — « économisez 58 € »
+  //   · l’année en seconde ligne avec l’ÉCONOMIE EN EUROS : « économisez 58 € »
   //     se compare d’un coup d’œil, « deux mois offerts » se calcule ;
   //   · une accroche par formule, qui dit le BÉNÉFICE et non la limite ;
   //   · « sans engagement » et « sans carte bancaire », les deux objections d’un
@@ -255,7 +255,7 @@ function ecranAvecOffre(){
         '<ul class="compris">' + f.compris.map(function(c){
           return '<li' + (c.neuf ? ' class="neuf"' : "") + '>' + ech(c.texte) + "</li>";
         }).join("") + '</ul>' +
-        '<p class="an">Ou ' + f.an.toLocaleString("fr-FR") + ' € par an — économisez ' + economie + ' €.</p>' +
+        '<p class="an">Ou ' + f.an.toLocaleString("fr-FR") + ' € par an, économisez ' + economie + ' €.</p>' +
         (f.mienne
           ? '<button type="button" class="bouton creux">Gérer mon abonnement</button>'
           : '<button type="button" class="bouton">Passer à ' + ech(f.nom) + '</button>') +
@@ -280,13 +280,13 @@ function ecranEnAttente(){
 var VUES = {
   offre: {
     nom: "L'écran, quand l'offre existe",
-    idee: "Trois formules empilées, la vôtre en haut avec un liseré doré. <b>Pas de colonnes à comparer</b> : sur un téléphone, trois colonnes ne se choisissent pas, elles se referment — et vos clients sont « des vieux qui ont du mal avec leur téléphone ».",
+    idee: "Trois formules empilées, la vôtre en haut avec un liseré doré. <b>Pas de colonnes à comparer</b> : sur un téléphone, trois colonnes ne se choisissent pas, elles se referment : et vos clients sont « des vieux qui ont du mal avec leur téléphone ».",
     rendre: ecranAvecOffre,
     notes: [
-      "<b>Votre correction commande toute la grille, et elle est juste.</b> Je comptais « les personnes » ; vous avez dit : <i>« limiter à 5 commerciaux, et si on veut commerciaux illimités faut payer genre 120 »</i>. Un paysagiste avec huit gars sur le terrain n'utilise pas huit fois Atlas — il coche huit cases dans un planning. Compter les salariés, c'est facturer la taille de ses chantiers au lieu de l'usage de l'outil, et punir exactement le client qu'on veut garder.",
-      "<b>Ce qui se compte, c'est donc qui FABRIQUE.</b> Le patron, les commerciaux, la facturation — les trois rôles qui produisent des devis et des factures. C'est aussi ce qui coûte : chaque devis dicté consomme de l'IA, un salarié n'en consomme aucune. La grille suit le coût ET la valeur, ce qui est rare.",
+      "<b>Votre correction commande toute la grille, et elle est juste.</b> Je comptais « les personnes » ; vous avez dit : <i>« limiter à 5 commerciaux, et si on veut commerciaux illimités faut payer genre 120 »</i>. Un paysagiste avec huit gars sur le terrain n'utilise pas huit fois Atlas, il coche huit cases dans un planning. Compter les salariés, c'est facturer la taille de ses chantiers au lieu de l'usage de l'outil, et punir exactement le client qu'on veut garder.",
+      "<b>Ce qui se compte, c'est donc qui FABRIQUE.</b> Le patron, les commerciaux, la facturation : les trois rôles qui produisent des devis et des factures. C'est aussi ce qui coûte : chaque devis dicté consomme de l'IA, un salarié n'en consomme aucune. La grille suit le coût ET la valeur, ce qui est rare.",
       "<b>Aucune fonction n'est coupée entre les formules, et ça ne se négocie pas.</b> Un artisan qui découvre que « dicter son devis » est réservé aux gros s'en va, et il le raconte. Les trois lignes de chaque formule commencent d'ailleurs par « tout ce qu'il y a dans la précédente ».",
-      "<b>L'IA n'est jamais au compteur.</b> Une dictée transcrite plus un devis rédigé coûtent quelques centimes ; même à soixante devis par mois vous êtes sous 10 €. Mettre un compteur ferait peur pour rien — et un artisan qui a peur de dicter n'a plus de raison de payer Atlas.",
+      "<b>L'IA n'est jamais au compteur.</b> Une dictée transcrite plus un devis rédigé coûtent quelques centimes ; même à soixante devis par mois vous êtes sous 10 €. Mettre un compteur ferait peur pour rien, et un artisan qui a peur de dicter n'a plus de raison de payer Atlas.",
       "<b>Ce que je ne peux pas garantir :</b> que 29, 59 et 120 soient les bons chiffres du marché cette semaine. La STRUCTURE, je la défends ; les montants se vérifient chez deux concurrents en dix minutes."
     ]
   },
@@ -295,7 +295,7 @@ var VUES = {
     idee: "Ce que l'écran dit <b>aujourd'hui</b>, et jusqu'au jour où vous fixez les prix. <b>19 mots</b> au lieu de 141 : trois lignes « Bientôt » qui ne s'appuyaient pas, et deux paragraphes qui expliquaient une confusion créée par ces lignes.",
     rendre: ecranEnAttente,
     notes: [
-      "<b>Aucun montant tant que l'offre n'existe pas.</b> Un chiffre inventé sur une page qui parle d'argent finit par être cru — et c'est ce que dit déjà l'écran d'aujourd'hui, en cinq paragraphes. Il le dira en une phrase.",
+      "<b>Aucun montant tant que l'offre n'existe pas.</b> Un chiffre inventé sur une page qui parle d'argent finit par être cru, et c'est ce que dit déjà l'écran d'aujourd'hui, en cinq paragraphes. Il le dira en une phrase.",
       "<b>« Vous serez prévenu ici, et avant. »</b> C'est la seule chose qu'un artisan a besoin de savoir : qu'un prélèvement ne va pas apparaître un matin sans qu'on lui ait rien dit."
     ]
   }

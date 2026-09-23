@@ -214,7 +214,7 @@ export const CATALOGUE = {
       pourType:'tuyere', rayon:4.0, pression:2.4,
       debit:{ 90:0.066, 180:0.132 },
       colisage:25, source:'patron', releve:'Aqua Plus 2026, p. 9 bis',
-      aVerifier:'270° absent du relevé — seuls 90° et 180° étaient lisibles' },
+      aVerifier:'270° absent du relevé, seuls 90° et 180° étaient lisibles' },
     { ref:'RBT1419', nom:'14 R-VAN 360°', marqueCle:'rainbird', fournisseur:'Aqua Plus',
       pourType:'tuyere', rayon:4.0, pression:2.4,
       debit:{ 360:0.264 },
@@ -224,7 +224,7 @@ export const CATALOGUE = {
       pourType:'tuyere', rayon:4.9, pression:2.4,
       debit:{ 90:0.106, 180:0.206 },
       colisage:25, source:'patron', releve:'Aqua Plus 2026, p. 9 bis',
-      aVerifier:'270° absent du relevé — seuls 90° et 180° étaient lisibles' },
+      aVerifier:'270° absent du relevé, seuls 90° et 180° étaient lisibles' },
     { ref:'RBT1429', nom:'18 R-VAN 360°', marqueCle:'rainbird', fournisseur:'Aqua Plus',
       pourType:'tuyere', rayon:4.9, pression:2.4,
       debit:{ 360:0.412 },
@@ -234,7 +234,7 @@ export const CATALOGUE = {
       pourType:'tuyere', rayon:6.1, pression:2.4,
       debit:{ 90:0.148, 180:0.295 },
       colisage:25, source:'patron', releve:'Aqua Plus 2026, p. 9 bis',
-      aVerifier:'270° absent du relevé — seuls 90° et 180° étaient lisibles' },
+      aVerifier:'270° absent du relevé, seuls 90° et 180° étaient lisibles' },
     { ref:'RBT1439', nom:'24 R-VAN 360°', marqueCle:'rainbird', fournisseur:'Aqua Plus',
       pourType:'tuyere', rayon:6.1, pression:2.4,
       debit:{ 360:0.590 },
@@ -346,7 +346,7 @@ export const CATALOGUE = {
     { ref:'RA5004-B6p', nom:'5000 Plus buse 6,0 Portée+', marqueCle:'rainbird', fournisseur:'Aqua Plus',
       pourType:'turbine', rayon:13.70, pression:2.5, debit:{ 360:0.92 },
       colisage:25, source:'patron', releve:'Aqua Plus 2026, p. 13 bis',
-      aVerifier:'débit identique à la buse 3,0 Portée+ (0,92) — recopié tel quel de la photo, à confirmer' },
+      aVerifier:'débit identique à la buse 3,0 Portée+ (0,92), recopié tel quel de la photo, à confirmer' },
 
     { ref:'TAMINI8-B075', nom:'Mini 8 buse 0,75', marqueCle:'toro', fournisseur:'Aqua Plus',
       pourType:'turbine', rayon:6.0, pression:2.5, debit:{ 360:0.20 },
@@ -641,9 +641,9 @@ export const CATALOGUE = {
      fausse le verdict Ø25/Ø32 dans le sens dangereux. À confirmer par lui. */
   tuyaux: {
     pe25: { nom:'Tuyau PEHD Ø25', dInterieur:20.4, source:'provisoire',
-            aVerifier:'Diamètre intérieur du PN10 — dépend de la pression nominale, non précisée' },
+            aVerifier:'Diamètre intérieur du PN10, il dépend de la pression nominale, non précisée' },
     pe32: { nom:'Tuyau PEHD Ø32', dInterieur:26.2, source:'provisoire',
-            aVerifier:'Diamètre intérieur du PN10 — dépend de la pression nominale, non précisée' }
+            aVerifier:'Diamètre intérieur du PN10, il dépend de la pression nominale, non précisée' }
   },
 
   piecesReseau: {
@@ -751,9 +751,9 @@ export const CATALOGUE = {
     'regard-jumbo5': { nom:'Regard jumbo 5 voies', marque:'Dura' },
     'regard-jumbo6': { nom:'Regard jumbo 6 voies', marque:'Dura' },
     'te-mmf':        { nom:'Té taraudé/fileté 1" MMF', marque:'Dura' },
-    'clarinette-2v': { nom:'Clarinette taraudée 1" — 2 vannes', marque:'Dura' },
-    'clarinette-3v': { nom:'Clarinette taraudée 1" — 3 vannes', marque:'Dura' },
-    'clarinette-4v': { nom:'Clarinette taraudée 1" — 4 vannes', marque:'Dura' },
+    'clarinette-2v': { nom:'Clarinette taraudée 1" pour 2 vannes', marque:'Dura' },
+    'clarinette-3v': { nom:'Clarinette taraudée 1" pour 3 vannes', marque:'Dura' },
+    'clarinette-4v': { nom:'Clarinette taraudée 1" pour 4 vannes', marque:'Dura' },
     'prog-1':        { nom:'Programmateur BL-IP 1 station 9V' },
     'prog-2':        { nom:'Programmateur BL-IP 2 stations 9V' },
     'prog-4':        { nom:'Programmateur BL-IP 4 stations 9V' },
@@ -1106,7 +1106,7 @@ CATALOGUE.explicationCorps = function (c) {
       : 'pour une végétation haute, loin de la tondeuse.');
   var opts = c.options.map(function (o) {
     return o === 'clapet anti-vidange'
-      ? 'Clapet anti-vidange : évite les fuites au point bas après l\'arrêt — utile sur un terrain en pente.'
+      ? 'Clapet anti-vidange : évite les fuites au point bas après l\'arrêt, utile sur un terrain en pente.'
       : o === 'régulateur de pression'
       ? 'Pression régulée : utile si la pression varie sur le réseau.'
       : o;

@@ -355,7 +355,7 @@ function lePlan(
     );
   } else if (plan.pressionRaffinee) {
     reserves.push(
-      `${bar(plan.pressionAuxArroseurs)} bar au dernier arroseur — ${bar(plan.perteReseau, 2)} bar perdus ` +
+      `${bar(plan.pressionAuxArroseurs)} bar au dernier arroseur, ${bar(plan.perteReseau, 2)} bar perdus ` +
         `dans le réseau, ${bar(plan.perteAmenee, 2)} dans l’amenée` +
         (parametres.regardVersZone > 0 ? `, trajet du regard ${parametres.regardVersZone.toFixed(0)} m lu sur le croquis` : "") +
         "."
@@ -374,7 +374,7 @@ function lePlan(
   if (plan.porteeEstimee) {
     reserves.push(
       `${String(plan.pression).replace(".", ",")} bar : les portées sont réduites par rapport au ` +
-        "catalogue, donné à plus forte pression — estimation, à confirmer sur place."
+        "catalogue, donné à plus forte pression. Estimation à confirmer sur place."
     );
   }
   reserves.push(...reservesDuDessin);
@@ -455,7 +455,7 @@ export async function discuterDuPlan(
   const propos = demande.trim();
   if (propos === "") return { etat: "refus", raison: "Écrivez ce que vous voulez changer." };
   if (propos.length > 2000) {
-    return { etat: "refus", raison: "Votre message est trop long — dites-le en quelques phrases." };
+    return { etat: "refus", raison: "Votre message est trop long. Dites-le en quelques phrases." };
   }
 
   // **Les cotes viennent du NAVIGATEUR, et elles passaient au calcul sans être

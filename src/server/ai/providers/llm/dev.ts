@@ -29,7 +29,7 @@ export const fournisseurLLMDev: FournisseurLLM = {
   // fournisseur répond à côté, le défaut atteindrait la production.
   async genererTexte(_systeme: string, message: string, _contexte?: string): Promise<ResultatLLM> {
     if (!message || message.trim().length === 0) {
-      return { succes: false, erreur: erreurIA("reponse_invalide", "Message vide — rien à traiter.") };
+      return { succes: false, erreur: erreurIA("reponse_invalide", "Message vide, rien à traiter.") };
     }
 
     return { succes: true, texte: JSON.stringify(lireLitteralement(message)) };
@@ -497,7 +497,7 @@ function expliquerChiffrage(resultat: unknown): string {
   const s = r.variantes.standard;
   const lignes = [
     `Prix conseillé (variante standard) : ${s.prixConseille} € HT, soit ${s.prixTtc} € TTC.`,
-    `Sous-total des coûts : ${s.sousTotal} € — marge appliquée : ${s.margePourcent} %.`,
+    `Sous-total des coûts : ${s.sousTotal} €, marge appliquée : ${s.margePourcent} %.`,
     ...s.explications.map((e) => `${e.libelle} : ${e.detail}`),
   ];
   if (r.historique) {
@@ -508,7 +508,7 @@ function expliquerChiffrage(resultat: unknown): string {
   if (s.avertissements.length > 0) {
     lignes.push(...s.avertissements);
   }
-  lignes.push("Ce prix est une proposition à vérifier — je ne l'applique jamais moi-même.");
+  lignes.push("Ce prix est une proposition à vérifier. Je ne l'applique jamais moi-même.");
   return lignes.join("\n");
 }
 
@@ -595,9 +595,9 @@ function expliquerSuiviWorkflow(resultat: unknown, texteMinuscule: string): stri
       return `Aucun tarif existant ne correspondait : le prix proposé a été calculé par le moteur de chiffrage. Détail : ${JSON.stringify(etapeChiffrage?.resultat)}.`;
     }
     if (sourcePrix === "tarifs_ambigus") {
-      return "Aucun prix n'a été proposé : plusieurs tarifs correspondent à cette demande, et l'assistant ne choisit jamais arbitrairement entre eux — une décision de votre part est nécessaire.";
+      return "Aucun prix n'a été proposé : plusieurs tarifs correspondent à cette demande, et l'assistant ne choisit jamais arbitrairement entre eux. Une décision de votre part est nécessaire.";
     }
-    return "Aucun prix n'a été proposé pour cette demande (aucun tarif trouvé, aucun calcul possible) — le prix reste à renseigner manuellement.";
+    return "Aucun prix n'a été proposé pour cette demande (aucun tarif trouvé, aucun calcul possible). Le prix reste à renseigner manuellement.";
   }
   return "Je n'ai pas d'information supplémentaire à ce sujet.";
 }
@@ -618,7 +618,7 @@ function expliquerModeEmploi(resultat: unknown): string {
     fiches?: { ecran: string; ou: string; intitule: string; geste: string; reserve: string | null }[];
   };
   if (!r.trouve || !r.fiches || r.fiches.length === 0) {
-    return "Je ne connais pas ce geste — je préfère le dire plutôt que d'en inventer un.";
+    return "Je ne connais pas ce geste. Je préfère le dire plutôt que d'en inventer un.";
   }
   // **UNE fiche, pas trois.** Vu à l'image le 25 août 2026 : la réponse à
   // « comment je supprime un client ? » enchaînait le retrait, la création d'un
@@ -771,9 +771,9 @@ function traiterGeste(
       // **Sans prix, pas de tarif.** Un prix ne s'invente pas (`CLAUDE.md` §4) :
       // on demande plutôt que d'en poser un plausible.
       if (!prix || !intitule) {
-        return { succes: true, type: "texte", texte: "Il me faut l'intitulé ET le prix — je n'invente pas un prix." };
+        return { succes: true, type: "texte", texte: "Il me faut l'intitulé ET le prix, je n'invente pas un prix." };
       }
-      return proposer("creer_tarif", `Créer le tarif : ${intitule} — ${prix} €`, { intitule, prix });
+      return proposer("creer_tarif", `Créer le tarif : ${intitule}, ${prix} €`, { intitule, prix });
     }
     case "modifier_client": {
       const telephone = texte.match(/\b((?:0|\+33)[\d\s.]{8,})/)?.[1]?.replace(/[\s.]/g, "");

@@ -113,7 +113,7 @@ export const TYPOGRAPHIES: readonly Typographie[] = [
   {
     clef: "archivo-narrow",
     nom: "Archivo Narrow",
-    dit: "Étroite — tient plus de lignes",
+    dit: "Étroite, tient plus de lignes",
     pileCss: '"Archivo Narrow", ui-sans-serif, system-ui, sans-serif',
     famille: "Archivo Narrow",
     fichiers: { normal: "archivo-narrow-400.ttf", gras: "archivo-narrow-700.ttf" },

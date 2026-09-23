@@ -128,11 +128,34 @@ ces domaines ; un contrôle dans `.github/workflows/` le peut, comme
 `src/lib/fiche-securite.ts` (`LIENS_DE_LA_LOI`, `DECOUVERTE_FORTUITE`,
 `SOULIGNES`).
 
+## LE GARDE-FOU DES TIRETS NE VOIT PAS CE QUI PASSE PAR LE TERMINAL (23 septembre 2026)
+
+`scripts/garde-tirets.mjs` refuse la phrase écrite par `Write`, `Edit`,
+`MultiEdit` et `NotebookEdit`. **Un fichier écrit depuis le terminal lui
+échappe** : `sed -i`, un `cat > fichier`, un script Python qui réécrit une
+page. Éprouvé, et c'est bien « PAS VU ».
+
+| | |
+|---|---|
+| ce qui rattrape | `scripts/test-aucun-tiret.ts` dans `npm test`, et surtout `tiretsDuLot` dans `garde-fusion-main.mjs`, qui lit le lot à TOUS les niveaux : rien n'atteint `main` avec un tiret, quel que soit le chemin par lequel il est entré |
+| ce qui reste à faire | lire la commande du terminal comme le fait `garde-redis-des-autres.mjs`, et refuser celles qui écrivent une phrase fautive dans un fichier affiché |
+| ce qui retient | un refus à tort sur une commande qui cite la règle dans un message de commit gênerait tout le monde. C'est le faux positif exact que `test-garde-redis-des-autres.ts` a déjà attrapé une fois |
+
+## LES TIRETS QUI RESTENT, ET POURQUOI (22 septembre 2026)
+
+Sa règle du 22 septembre est tenue partout où ça s'affiche, et
+`scripts/test-aucun-tiret.ts` le refuse désormais. Deux endroits gardent le
+leur, **sciemment** :
+
+| | |
+|---|---|
+| `src/server/documents-legaux/versions.ts` | « ARTICLE 1 — Qui édite Atlas ». Une version publiée ne se modifie JAMAIS : une acceptation déjà recueillie désignerait un texte disparu. Le tiret partira avec la rédaction par un juriste, qui sera une entrée de plus (`docs/RGPD.md` §9) |
+| `docs/`, dont `docs/maquettes/` | la mémoire du dépôt cite ses messages mot pour mot, et l'ancienne galerie n'est pas publiée : il ne peut pas l'ouvrir depuis son téléphone (`.github/workflows/pages.yml` ne publie que `appli/`). **À lui de dire s'il veut qu'on la reprenne aussi** |
 ## ⏳ LES POINTS : RETIRÉS ET TENUS — LA BATTERIE RESTE À JOUER (23 septembre 2026)
 
 Les 72 lignes qui affichaient un point du milieu de phrase sont corrigées, les
 onze suites qui en réclamaient un sont adaptées, et
-`scripts/test-aucun-point-median.ts` empêche le retour
+`scripts/test-aucun-tiret.ts` — qui a absorbé celui des points le 23 septembre — empêche le retour
 (`docs/les-points-inutiles.md`). Le lot est reposé sur `main`, qui avait avancé
 de 63 commits.
 
@@ -171,8 +194,7 @@ tiret, fais des phrases normales »*. Le contrôle des points ne les porte PAS,
 et c'est délibéré : les ajouter d'un coup ferait rougir le dépôt entier au
 premier jour, donc désarmer le garde-fou. Il faut d'abord le relevé — écran
 par écran, comme pour les points —, puis son arbitrage, puis l'élargissement
-de `test-aucun-point-median.ts`.
-
+de `test-aucun-tiret.ts`.
 ## ⏳ UNE PLANCHE À REGARDER — FICHE 4, LA BRUNISSURE DES FEUILLES DE PEUPLIER (22 septembre 2026)
 
 `appli/fiche-brunissure-des-feuilles-de-peuplier.html`, liée depuis

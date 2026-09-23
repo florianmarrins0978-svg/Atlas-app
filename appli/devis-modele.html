@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Arborea — Modèle de devis</title>
+<title>Arborea : Modèle de devis</title>
 <meta name="color-scheme" content="only light">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -239,7 +239,7 @@
 <body>
 
 <div class="toolbar no-print">
-  <span class="brand-mini">Arborea — Modèle de devis</span>
+  <span class="brand-mini">Arborea, Modèle de devis</span>
   <div class="toolbar-actions">
     <button class="btn-secondary" id="createFactureBtn" type="button">Valider → Créer la facture</button>
     <button class="btn-secondary" id="printBtn" type="button">Imprimer</button>
@@ -253,7 +253,7 @@
   <div class="doc-header">
     <div>
       <span class="brand-name">Arborea</span>
-      <span class="brand-tagline">Arboriculture · Paysagisme · Île-de-France<br>06 79 98 45 14 — arboreapro@outlook.com</span>
+      <span class="brand-tagline">Arboriculture, Paysagisme, Île-de-France<br>06 79 98 45 14, arboreapro@outlook.com</span>
     </div>
     <div class="doc-meta">
       <div class="meta-row"><label for="devisNum">Devis n°</label><input id="devisNum" value="2026-001"></div>
@@ -272,7 +272,7 @@
       <input id="issuerPhone" value="06 79 98 45 14" aria-label="Téléphone">
       <input id="issuerEmail" value="arboreapro@outlook.com" aria-label="Email">
       <input id="issuerSiret" placeholder="N° SIREN / SIRET" aria-label="Numéro SIREN ou SIRET">
-      <input id="issuerRcsRm" placeholder="RCS ou RM — ville d'immatriculation" aria-label="RCS ou RM et ville d'immatriculation">
+      <input id="issuerRcsRm" placeholder="RCS ou RM, ville d'immatriculation" aria-label="RCS ou RM et ville d'immatriculation">
       <p class="field-hint no-print">RCS si commerçant, RM (Répertoire des métiers) si artisan.</p>
     </div>
     <div class="party editable">
@@ -301,7 +301,7 @@
       </thead>
       <tbody id="linesBody">
         <tr>
-          <td class="desc-cell"><span class="cell-label">Description</span><textarea rows="1" placeholder="Ex : Élagage d'un tilleul — taille architecturée" class="desc"></textarea></td>
+          <td class="desc-cell"><span class="cell-label">Description</span><textarea rows="1" placeholder="Ex : Élagage d'un tilleul, taille architecturée" class="desc"></textarea></td>
           <td class="qty-cell"><span class="cell-label">Qté</span><input type="number" class="qty" value="1" min="0" step="1"></td>
           <td class="price-cell"><span class="cell-label">Prix unitaire HT</span><input type="number" class="price" value="0" min="0" step="0.01"></td>
           <td class="line-total"><span class="cell-label">Total HT</span><span class="line-total-value">0,00 €</span></td>
@@ -333,7 +333,7 @@ IBAN : FR76 3123 3123 4500 2348 1091 175</textarea>
     <p class="legal">Devis établi par Arborea, valable selon la durée indiquée ci-dessus. Bon pour accord précédé de la mention manuscrite, daté et signé par le client.</p>
     <div class="signature">
       <div class="sign-box"></div>
-      <p>Bon pour accord — signature du client</p>
+      <p>Bon pour accord, signature du client</p>
     </div>
   </div>
 </div>
@@ -562,12 +562,12 @@ IBAN : FR76 3123 3123 4500 2348 1091 175</textarea>
   /* Le partage natif d'iOS et d'Android n'a PAS de champ destinataire : il vise
      aussi bien Mail que WhatsApp ou Messages, où « À : » n'aurait pas de sens.
      Le nom du client et l'objet restent donc à saisir, et c'est inévitable tant
-     qu'on veut joindre le PDF automatiquement — l'alternative (mailto) remplit
+     qu'on veut joindre le PDF automatiquement : l'alternative (mailto) remplit
      le destinataire mais interdit toute pièce jointe, ce qui obligerait à
      attacher le devis à la main.
      On copie donc l'adresse dans le presse-papier : il ne reste qu'à la coller.
      L'écriture doit avoir lieu DANS le geste de l'utilisateur, avant toute
-     attente — après un `await`, Safari refuse l'accès au presse-papier. */
+     attente : après un `await`, Safari refuse l'accès au presse-papier. */
   function copierDestinataire(adresse){
     if (!adresse || !navigator.clipboard || !navigator.clipboard.writeText) return false;
     try{
@@ -600,7 +600,7 @@ IBAN : FR76 3123 3123 4500 2348 1091 175</textarea>
         afficherStatut(
           'Adresse du client' + (adresseCopiee ? ' <strong>copiée</strong>' : '') +
           ' : <strong>' + draft.to + '</strong>' +
-          (adresseCopiee ? ' — collez-la dans « À : ».' : ' — recopiez-la dans « À : ».') +
+          (adresseCopiee ? ' (collez-la dans « À : ».' : ') recopiez-la dans « À : ».') +
           '<br>Objet suggéré : <strong>' + draft.subject + '</strong>'
         );
       } else {
@@ -746,7 +746,7 @@ IBAN : FR76 3123 3123 4500 2348 1091 175</textarea>
 
   /* ---------- Insertion de lignes depuis la grille « Mes tarifs » ----------
      Les prix viennent UNIQUEMENT de la grille du patron. Si un poste n'a pas
-     de prix, la ligne est ajoutée à 0 (à compléter) — jamais un prix inventé. */
+     de prix, la ligne est ajoutée à 0 (à compléter) : jamais un prix inventé. */
   (function(){
     const TARIFS_KEY = 'arborea_tarifs';
     const UNITE_LABELS = {
@@ -817,7 +817,7 @@ IBAN : FR76 3123 3123 4500 2348 1091 175</textarea>
           <h3 id="tarifTitle">Depuis mes tarifs</h3>
           <button type="button" class="tarif-x" aria-label="Fermer">×</button>
         </div>
-        <p class="tarif-sub">Cliquez un poste pour l'ajouter au devis. Le prix vient de votre grille — ajustez ensuite la quantité (jours, heures…) sur la ligne.</p>
+        <p class="tarif-sub">Cliquez un poste pour l'ajouter au devis. Le prix vient de votre grille, ajustez ensuite la quantité (jours, heures…) sur la ligne.</p>
         <div class="tarif-body"></div>
       </div>`;
     document.body.appendChild(overlay);

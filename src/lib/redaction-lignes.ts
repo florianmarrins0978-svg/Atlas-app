@@ -53,7 +53,7 @@ export function defautsDeRedaction(libelle: string): string[] {
 
   const defauts = MARQUES.filter(({ motif }) => motif.test(texte)).map(({ defaut }) => defaut);
   if (texte.length > LONGUEUR_MAX_LIBELLE) {
-    defauts.push(`fait ${texte.length} caractères — c'est une phrase, pas un libellé`);
+    defauts.push(`fait ${texte.length} caractères, c'est une phrase et pas un libellé`);
   }
   return defauts;
 }

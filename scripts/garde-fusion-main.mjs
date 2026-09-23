@@ -59,6 +59,33 @@ import {
 import { empreinteDesSources, fichiersRemues } from "./_empreinte-des-sources.mjs";
 import { suitesDesRoutes } from "./_suites-ciblees.mjs";
 import { baseDuLot, cheminDuTemoin } from "./_temoin-de-main.mjs";
+import { fautesDuFichier, fichierQuiSAffiche, CE_QUI_REMPLACE } from "./_tirets.mjs";
+
+/**
+ * Les tirets qu'un lot emmènerait sur « main », quel que soit son niveau.
+ *
+ * **Sa question du 23 septembre 2026 :** *« mais si dans la maquette il met
+ * des tirets n'importe où, quand il va pousser sur main il va pousser avec
+ * les tirets ? Donc c'est pas bon. »* Il avait raison, et c'était un trou
+ * entier : une maquette est INERTE (`_niveau-de-risque.mjs`), donc un lot qui
+ * n'en touche que est de niveau 1 et ne joue RIEN. Le contrôle de la batterie
+ * ne le voyait donc jamais.
+ *
+ * Il lit les fichiers du lot, et eux seuls : moins d'une seconde, et il refuse
+ * avant que la phrase parte chez lui (`ARCHITECTURE.md` §410).
+ */
+export function tiretsDuLot(racine, fichiers) {
+  const trouves = [];
+  for (const chemin of fichiers) {
+    if (!fichierQuiSAffiche(chemin)) continue;
+    const entier = path.join(racine, chemin);
+    if (!existsSync(entier)) continue; // un fichier supprimé n'affiche plus rien.
+    for (const f of fautesDuFichier(chemin, readFileSync(entier, "utf8"))) {
+      trouves.push(`${chemin}:${f.ligne}  ${f.texte.slice(0, 90)}`);
+    }
+  }
+  return trouves;
+}
 
 // **Le dossier se décide par la commande, pas par la session** (sa règle du
 // 17 septembre 2026, `dossierDeLaCommande`) : `git -C <dossier> push …` fait
@@ -129,7 +156,15 @@ function cequiABouge(verdict) {
   }
 }
 
+// **Il ne lit l'entrée standard que quand il EST le geste** — même contrat que
+// les autres déclencheurs du dépôt. Sans cette porte, une suite qui importe sa
+// décision (`tiretsDuLot`) attendait une entrée qui ne venait jamais, et
+// restait pendue : un contrôle qui ne rend pas la main ne prouve rien.
+const APPELE_DIRECTEMENT =
+  Boolean(process.argv[1]) && process.argv[1].replace(/\\/g, "/").endsWith("garde-fusion-main.mjs");
+
 let entree = "";
+if (APPELE_DIRECTEMENT) {
 process.stdin.on("data", (bloc) => (entree += bloc));
 process.stdin.on("end", () => {
   let commande = "";
@@ -194,8 +229,31 @@ process.stdin.on("end", () => {
   }
 
   const fichiersDuLot = cheminsDuLot(RACINE);
+
+  // Aucun tiret ne passe vers « main », quel que soit le niveau du lot.
+  const tirets = tiretsDuLot(RACINE, fichiersDuLot);
+  if (tirets.length > 0) {
+    console.error(
+      [
+        `❌ Poussée sur « main » refusée : ${tirets.length} tiret(s) au milieu d'une phrase.`,
+        "",
+        ...tirets.slice(0, 12).map((t) => `   ${t}`),
+        tirets.length > 12 ? `   … et ${tirets.length - 12} autre(s)` : "",
+        "",
+        "Sa règle du 22 septembre 2026 : des phrases normales, pas de tiret en",
+        "plein milieu. Ce qui se met à la place, selon ce que la phrase fait :",
+        CE_QUI_REMPLACE,
+        "",
+        "Pour les voir tous : npx tsx scripts/test-aucun-tiret.ts",
+      ]
+        .filter(Boolean)
+        .join("\n")
+    );
+    process.exit(2);
+  }
+
   const lot = evaluerLeLot(fichiersDuLot, { racine: RACINE });
-  if (lot.niveau === 1) process.exit(0); // documents seuls : rien à éprouver.
+  if (lot.niveau === 1) process.exit(0); // documents seuls : rien d'autre à éprouver.
 
   const base = baseDuLot(RACINE);
   const verdict = lireVerdict();
@@ -319,3 +377,4 @@ process.stdin.on("end", () => {
   );
   process.exit(2);
 });
+}

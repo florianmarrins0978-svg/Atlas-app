@@ -414,7 +414,7 @@ cas("une dictée sans montant ne chiffre RIEN, même bien rédigée", () => {
   }
   const [haie] = resoudreRetouches([], r);
   // Sa mesure se lit AVANT le prix manquant : c'est elle qu'il relit en premier.
-  assert.equal(direRetouche(haie).detail, "20 ml — aucun prix dicté, à vous de la chiffrer");
+  assert.equal(direRetouche(haie).detail, "20 ml, aucun prix dicté, à vous de la chiffrer");
 });
 
 cas("une unité sans quantité ne s'écrit pas : « 1 ml » serait un chiffre inventé", () => {

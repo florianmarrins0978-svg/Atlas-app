@@ -44,9 +44,9 @@ Règles absolues :
 - Ne déduis jamais une quantité d'un pluriel ou d'un contexte : sans nombre écrit, "quantite" et "unite"
   restent null.
 - "quantite" et "unite" vont TOUJOURS ensemble : jamais l'une sans l'autre. Un nombre sans unité ne veut
-  rien dire — « 800 » se lit 800 mètres, 800 m² ou 800 heures selon qui le lit.
+  rien dire : « 800 » se lit 800 mètres, 800 m² ou 800 heures selon qui le lit.
 - "unite" est l'unité de ce nombre, dans SON mot à lui : "ml", "m²", "m³", "heure", "jour", "tonne",
-  "stère" — ou l'OBJET qu'il compte quand il compte des choses :
+  "stère", ou l'OBJET qu'il compte quand il compte des choses :
     « deux souches »   -> "quantite": "2", "unite": "souche"
     « trois arbres »   -> "quantite": "3", "unite": "arbre"
   L'unité de comptage doit être l'objet explicitement prononcé. N'invente pas une unité pour un nombre
@@ -55,13 +55,13 @@ Règles absolues :
     ${NATURES.map((n) => n.cle).join(", ")}
   Si le travail décrit n'en fait manifestement partie d'aucune, "nature" vaut null. N'invente
   JAMAIS un nom de nature : un travail sans nature reste un travail à part entière.
-- "espece" n'est renseignée que si l'espèce est PRONONCÉE — « un érable », « de la haie de
+- "espece" n'est renseignée que si l'espèce est PRONONCÉE, « un érable », « de la haie de
   laurier ». Recopie le mot au singulier, sans article : "érable", "laurier". Jamais déduite
   d'un contexte : sinon null.
 - La DURÉE du chantier et la TAILLE de l'équipe ne sont pas des prestations. « quatre journées » et
-  « deux hommes » vont dans "dureePrevue" et "tailleEquipe" — jamais dans la quantité d'une prestation.
+  « deux hommes » vont dans "dureePrevue" et "tailleEquipe", jamais dans la quantité d'une prestation.
 - Toute information absente vaut null (ou un tableau vide) et doit être citée dans "informationsManquantes".
-- Une information présente mais incertaine garde "aConfirmer": true — ce drapeau ne sert jamais à combler
+- Une information présente mais incertaine garde "aConfirmer": true, ce drapeau ne sert jamais à combler
   un vide par une supposition.
 - Si une caractéristique est ambiguë (ex. une dimension qui pourrait être une épaisseur ou une longueur),
   place-la dans "ambiguites" plutôt que de choisir arbitrairement.
@@ -86,7 +86,7 @@ Règle de complétude, aussi importante que celle de non-invention :
   évacuer, fendre, ranger, dessoucher, protéger…) est une prestation, même si
   l'artisan la mentionne comme une évidence.
 - Ce qui décrit la DESTINATION des déchets ("on laisse sur place", "on emporte")
-  va dans "gestionDechets" — mais le TRAVAIL fait sur la matière (fendre, ranger)
+  va dans "gestionDechets", mais le TRAVAIL fait sur la matière (fendre, ranger)
   reste une prestation à part entière.
 - **Une seule exception, et elle est du métier : le billonnage.** Tronçonner le
   tronc d'un arbre qu'on vient d'abattre ("on le coupe en 50", "débité en
@@ -99,7 +99,7 @@ Règle de complétude, aussi importante que celle de non-invention :
   trouvé sa prestation. Un travail oublié est une perte sèche pour l'artisan :
   il ne le facturera pas.
 
-Comment écrire "ambiguites" et "informationsManquantes" — sa demande du
+Comment écrire "ambiguites" et "informationsManquantes", sa demande du
 25 août 2026, capture à l'appui : « c'est trop long, synthétise, moins de mots ».
 - **Six mots au plus par ligne, et pas de phrase.** Un groupe nominal, comme sur
   une liste de courses : "Hauteur de taille de la haie", "Destination des
@@ -107,7 +107,7 @@ Comment écrire "ambiguites" et "informationsManquantes" — sa demande du
 - **Jamais de question rédigée**, jamais de "s'agit-il de…", "faut-il…",
   "non précisé", "à confirmer" : le titre au-dessus le dit déjà.
 - **Ne recopie pas la dictée.** Ce qu'il faut nommer, c'est ce qui manque ou ce
-  qui hésite — pas ce que l'artisan a dit.
+  qui hésite, pas ce que l'artisan a dit.
 - **Cinq lignes au plus** dans chaque tableau. Il les lit sur un téléphone,
   entre deux chantiers : au-delà, il ne les lit plus du tout. Garde ce qui
   l'empêcherait de chiffrer, laisse le reste.
@@ -168,7 +168,7 @@ export async function extraire(
   consigneMetier?: string
 ): Promise<ResultatExtraction> {
   if (!texte || texte.trim().length === 0) {
-    return { succes: false, erreur: erreurIA("reponse_invalide", "Texte vide — rien à analyser.") };
+    return { succes: false, erreur: erreurIA("reponse_invalide", "Texte vide, rien à analyser.") };
   }
 
   const fournisseur = fournisseurInjecte ?? getFournisseurLLM();

@@ -402,7 +402,7 @@ export default function TravauxAFaire({
                 <textarea
                   value={aSignaler}
                   onChange={(e) => setASignaler(e.target.value)}
-                  placeholder="À signaler — facultatif"
+                  placeholder="À signaler, facultatif"
                   data-atlas="a-signaler"
                   rows={2}
                   // **16 px au moins.** En dessous, iOS grossit la page à la mise

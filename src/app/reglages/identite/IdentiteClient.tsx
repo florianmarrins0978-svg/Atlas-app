@@ -239,7 +239,7 @@ export default function IdentiteClient({
           manquant={valeurs.siret.trim() === ""}
           empeche="Vos factures ne sont pas conformes sans lui."
           /* Le SIREN se MONTRE, il ne se demande pas. */
-          sous={siren ? `SIREN ${siren} — les neuf premiers chiffres. Il ne se saisit pas séparément.` : null}
+          sous={siren ? `SIREN ${siren}, les neuf premiers chiffres. Il ne se saisit pas séparément.` : null}
         />
       </Bloc>
 

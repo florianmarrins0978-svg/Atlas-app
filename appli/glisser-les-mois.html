@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Glisser les mois — Atlas</title>
+<title>Glisser les mois : Atlas</title>
 <style>
 /*
   ═══════════════════════════════════════════════════════════════════════════
@@ -141,7 +141,7 @@ td b{color:var(--encre)}
 </div>
 
 <div class="tete">
-  <span class="sceau">Maquette — rien n'est codé</span>
+  <span class="sceau">Maquette, rien n'est codé</span>
   <h1>Glisser d'un mois à l'autre</h1>
   <p>Le calendrier se pousse du doigt, à droite ou à gauche. <b>Les deux flèches
   restent</b> : le glissement est un raccourci, jamais le seul chemin.</p>
@@ -149,8 +149,8 @@ td b{color:var(--encre)}
 </div>
 
 <div class="choix">
-  <button type="button" data-variante="suit" aria-pressed="true">A — Le mois suit le doigt</button>
-  <button type="button" data-variante="relache" aria-pressed="false">B — Il bascule au relâcher</button>
+  <button type="button" data-variante="suit" aria-pressed="true">A, Le mois suit le doigt</button>
+  <button type="button" data-variante="relache" aria-pressed="false">B, Il bascule au relâcher</button>
 </div>
 
 <div class="scene">
@@ -187,13 +187,13 @@ td b{color:var(--encre)}
     </tbody>
   </table>
 
-  <h3>Ce qui reste à décider — par lui</h3>
+  <h3>Ce qui reste à décider, par lui</h3>
   <p><b>A ou B.</b> En A, le mois suit le doigt et l'on voit arriver le suivant ;
   c'est ce que font les applications qu'il a déjà dans la main. En B, rien ne
   bouge tant qu'on n'a pas lâché : moins vivant, mais rien ne tremble sous le
   doigt de qui vise une case.</p>
   <p>Mon avis : <b>A</b>. Voir le mois suivant arriver pendant qu'on pousse, c'est
-  ce qui apprend le geste sans qu'on l'explique — et le geste s'annule en
+  ce qui apprend le geste sans qu'on l'explique : et le geste s'annule en
   ramenant le doigt, ce que B ne permet pas.</p>
 </div>
 
@@ -336,7 +336,7 @@ td b{color:var(--encre)}
       // **LE TITRE SUIT, LUI AUSSI.** Sans cela on voit octobre arriver sous
       // le doigt pendant que le titre dit encore « septembre » : deux vérités
       // à deux centimètres, sur l'écran qui sert à savoir où l'on est. Il
-      // bascule au franchissement de la moitié — là où le mois qui arrive
+      // bascule au franchissement de la moitié, là où le mois qui arrive
       // occupe plus de place que celui qui part.
       var vu = decale(curseur, dx < -hublot.clientWidth / 2 ? 1 : dx > hublot.clientWidth / 2 ? -1 : 0);
       titre.textContent = MOIS[vu.mois] + " " + vu.annee;

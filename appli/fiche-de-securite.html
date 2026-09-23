@@ -450,7 +450,7 @@
 </div>
 
 <script>
-/* ─── ce qu'l’application sait déjà du chantier — d'après le devis, le planning, les réglages ─── */
+/* ─── ce qu'l’application sait déjà du chantier, d'après le devis, le planning, les réglages ─── */
 const CHANTIER = {
   nom: "Pagnol", ou: "Mantes-la-Jolie", adresse: "12 rue des Lilas, 78200 Mantes-la-Jolie",
   devis: "D-2026-041", jour: "Vendredi 18 septembre", jourCourt: "18 septembre",
@@ -460,7 +460,7 @@ const CHANTIER = {
 };
 const ENTREPRISE = { nom: "Eden Nature", patron: "Florian Marrins", patronNom: "Marrins", patronPrenom: "Florian", tel: "06 12 34 56 78" };
 
-/* ─── les libellés du formulaire MSA réf. 12350 — recopiés, jamais reformulés ─── */
+/* ─── les libellés du formulaire MSA réf. 12350 : recopiés, jamais reformulés ─── */
 const L = {
   travaux: ["Éhoupage", "Élagage de formation", "Élagage d’entretien", "Haubanage", "Démontage avec rétention", "Démontage sans rétention",
             "Abattage directionnel", "Abattage non directionnel", "Ébranchage", "Billonnage", "Broyage", "Évacuation des rémanents", "Rognage / essouchage"],
@@ -543,7 +543,7 @@ function depart() {
 const donneurNom = () => etat.f.donneur === "autre" && etat.f.donneurNom ? `${etat.f.donneurPrenom} ${etat.f.donneurNom}`.trim() : `${CHANTIER.client.prenom} ${CHANTIER.client.nom}`;
 const envoyeeA = () => `Transmise à ${donneurNom()}, le ${CHANTIER.jourCourt}`;
 
-/* ─── ce que la fiche ne sait pas encore — les sept éléments obligatoires du décret, et rien d'autre ─── */
+/* ─── ce que la fiche ne sait pas encore : les sept éléments obligatoires du décret, et rien d'autre ─── */
 function manques() {
   const f = etat.f, m = [];
   if (f.hDebut === "" && f.hFin === "") m.push({ quoi: "Heures d’exécution", etape: 1 });
@@ -560,7 +560,7 @@ function manques() {
   return m;
 }
 
-/* ═══ L'ÉCRAN DU PLANNING — la fiche du jour, la sixième ═══ */
+/* ═══ L'ÉCRAN DU PLANNING : la fiche du jour, la sixième ═══ */
 function planning() {
   const avant = tel.querySelector(".ecran"); const y = avant ? avant.scrollTop : 0;
   tel.innerHTML = `<div class="ecran"><div class="fiche">
@@ -590,7 +590,7 @@ function planning() {
 
   const p = el("div", "part sans-filet");
 
-  /* ─── LE BANDEAU « FICHE DE SÉCURITÉ » — avant les travaux, parce qu'elle se
+  /* ─── LE BANDEAU « FICHE DE SÉCURITÉ » : avant les travaux, parce qu'elle se
      remplit avant de commencer. Fermé, il dit où on en est. ─── */
   {
     const fe = etat.f, mq = manques();
@@ -638,7 +638,7 @@ function planning() {
     dedans.appendChild(c);
     const ph = el("div", "photos", `<span class="etiquette">Photos</span>`);
     const aj = bouton(PLUS, () => {}, "ajouter"); aj.setAttribute("aria-label", "Ajouter une photo"); ph.appendChild(aj); dedans.appendChild(ph);
-    const s = el("textarea", "note-cadre"); s.rows = 2; s.placeholder = "À signaler — facultatif"; s.style.marginTop = "10px"; s.style.minHeight = "58px"; s.style.fontSize = "14.5px"; dedans.appendChild(s);
+    const s = el("textarea", "note-cadre"); s.rows = 2; s.placeholder = "À signaler : facultatif"; s.style.marginTop = "10px"; s.style.minHeight = "58px"; s.style.fontSize = "14.5px"; dedans.appendChild(s);
     dedans.appendChild(bouton("Envoyer le retour du jour", () => {}, "vert"));
     p.appendChild(b);
   }
@@ -647,7 +647,7 @@ function planning() {
   tel.querySelector(".ecran").scrollTop = y;
 }
 
-/* ═══ LA FICHE — six écrans ═══ */
+/* ═══ LA FICHE : six écrans ═══ */
 const set = (s, v) => { s.has(v) ? s.delete(v) : s.add(v); };
 // le mot souligné sur la feuille, et le site officiel qu'il désigne (vérifiés le 21 septembre)
 const SOULIGNES = {
@@ -820,14 +820,14 @@ function etape3(z) {
   const ph = el("div", "photos");
   for (let i = 0; i < f.photos; i++) ph.appendChild(el("span", "vignette"));
   // l'appareil OU la photothèque : un champ fichier « image/* » sans « capture »,
-  // le téléphone propose les deux — sa demande du 21 septembre
+  // le téléphone propose les deux : sa demande du 21 septembre
   const aj = el("label", "ajouter", `${APPAREIL}<input type="file" accept="image/*" multiple hidden>`); aj.setAttribute("aria-label", "Prendre une photo ou choisir dans la photothèque");
   aj.style.width = "72px"; aj.querySelector("input").onchange = (e) => { f.photos += e.target.files.length || 1; redessinerEtape(); };
   ph.appendChild(aj); b.appendChild(ph);
   b.appendChild(aide("Prenez la photo, ou choisissez-la dans la photothèque.", "8px"));
   z.appendChild(b);
 
-  // les mesures de balisage, AVANT le risque biologique — comme sur la page 2
+  // les mesures de balisage, AVANT le risque biologique : comme sur la page 2
   b = bloc("Zones du chantier", "", "Ce que vous mettez en place pour que personne ne soit blessé : le balisage, la communication entre vous, la surveillance des passants.");
   b.appendChild(aide("Délimitation matérielle du chantier obligatoire"));
   b.appendChild(el("div", "rappel", `<b>Périmètre de sécurité, d’après le décret</b>
@@ -889,7 +889,7 @@ function etape5(z) {
   let b = bloc("Organisation des secours. Ressources humaines et matérielles", "", "Ce qu’il y a sur place pour porter secours, et où. Le Point de Rencontre des Secours, c’est l’endroit précis où les pompiers vous retrouvent.");
   b.appendChild(groupe("secours", "cases"));
   b.appendChild(champ("Préciser le lieu où se trouve la trousse de secours :", "lieuTrousse", "Exemple : dans la cabine du camion"));
-  // SA DEMANDE DU 21 SEPTEMBRE : la trousse ne change pas souvent — gardée
+  // SA DEMANDE DU 21 SEPTEMBRE : la trousse ne change pas souvent, gardée
   // d'une fiche à l'autre, comme la main d'œuvre, et l'écran le dit
   b.appendChild(el("p", "aide", "Gardé pour vos prochaines fiches.")).style.margin = "4px 0 10px";
   b.appendChild(champ("Préciser le Point de Rencontre des Secours :", "prs", "Exemple : devant le portail du client"));
@@ -1058,7 +1058,7 @@ function fichesEcran() {
         <button type="button" class="tete-carte" aria-expanded="${ouverte}">
           <span class="rond-carte" aria-hidden="true">${BOUCLIER}</span>
           <span class="corps"><span class="titre-carte">${x.chantier}, ${dateLongue(d)}</span>
-            <span class="sous-carte">Signée par ${ENTREPRISE.patron} · gardée jusqu’au ${x.garde}${x.transmise() ? " · transmise" : ""}</span></span>
+            <span class="sous-carte">Signée par ${ENTREPRISE.patron} · gardée jusqu’au ${x.garde}${x.transmise() ? ", transmise" : ""}</span></span>
           <span class="chev-carte" aria-hidden="true">${CHEV_DROIT}</span>
         </button>
         <div class="dedans-carte">
@@ -1115,7 +1115,7 @@ function dessiner() {
 }
 
 depart();
-// ─── DEUX TÉLÉPHONES — sa demande du 21 septembre : « que je me tape pas toute
+// ─── DEUX TÉLÉPHONES, sa demande du 21 septembre : « que je me tape pas toute
 //     la fiche à chaque fois pour voir la page Paysage ». Le second est cette
 //     même page, ouverte sur Paysage avec une fiche déjà signée (?ecran=paysage),
 //     dans un cadre. ───

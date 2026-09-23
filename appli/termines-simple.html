@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Atlas — « Terminés », simplifié</title>
+<title>Atlas : « Terminés », simplifié</title>
 </head>
 <body>
 <style>
@@ -288,18 +288,18 @@
 </style>
 
 <div class="entete">
-  <p class="sur">Atlas · 22 août 2026</p>
+  <p class="sur">Atlas, 22 août 2026</p>
   <h1>« Terminés », simplifié</h1>
   <p>Votre écran d’aujourd’hui, puis <b>trois façons de le simplifier</b>.
-     Appuyez sur les onglets pour passer de l’un à l’autre —
+     Appuyez sur les onglets pour passer de l’un à l’autre,
      <b>et les boutons « Facturer » facturent pour de bon</b>.</p>
 </div>
 
 <div class="choix" role="group" aria-label="Quel écran regarder">
   <button type="button" data-vue="aujourdhui" aria-pressed="true">Aujourd’hui</button>
-  <button type="button" data-vue="a" aria-pressed="false">A · Deux&nbsp;piles</button>
-  <button type="button" data-vue="b" aria-pressed="false">B · Une&nbsp;liste</button>
-  <button type="button" data-vue="c" aria-pressed="false">C · À&nbsp;facturer</button>
+  <button type="button" data-vue="a" aria-pressed="false">A, Deux&nbsp;piles</button>
+  <button type="button" data-vue="b" aria-pressed="false">B, Une&nbsp;liste</button>
+  <button type="button" data-vue="c" aria-pressed="false">C, À&nbsp;facturer</button>
 </div>
 
 <div class="tel">
@@ -318,12 +318,12 @@
   maquette. Ce que vous y facturez ne part nulle part et disparaît en fermant.
   <br><br>
   Les cinq factures, leurs montants et les deux totaux sont ceux de <b>votre
-  capture</b>. Les quatre chantiers à facturer sont des exemples — votre écran
-  les cache — et leurs montants font bien les <b>2 040,00 €</b> qu’il annonce.
+  capture</b>. Les quatre chantiers à facturer sont des exemples, votre écran
+  les cache, et leurs montants font bien les <b>2 040,00 €</b> qu’il annonce.
   <br><br>
   Les trois propositions portent <b>un chantier de plus</b> : M. Ferreira,
   terminé le 14 juillet et jamais facturé, pour que <b>le retard s’essaie</b>.
-  L’onglet « Aujourd’hui » ne l’a pas — il doit rester votre capture au chiffre
+  L’onglet « Aujourd’hui » ne l’a pas : il doit rester votre capture au chiffre
   près. Et <b>aucune facture n’a été inventée dans le passé</b> : vos numéros
   commencent au 18 août, donc les mois d’avant répondent « aucune facture ».
   <br><br>
@@ -332,7 +332,7 @@
 
 <script>
 /* ======================================================================
-   LES CHANTIERS — une seule liste, et tout se recalcule à partir d'elle.
+   LES CHANTIERS, une seule liste, et tout se recalcule à partir d'elle.
 
    `numero` non nul = facturé. C'est la seule différence entre les deux
    camps, exactement comme dans l'application (`estFacture`, qui regarde
@@ -346,7 +346,7 @@ const CAPTURE = [
   { id:'f1', nom:'Monsieur Martins', jour:'2026-08-18', montant:936.00,  numero:'F2026-0001' },
   { id:'f3', nom:'Monsieur Martin',  jour:'2026-08-14', montant:840.00,  numero:'F2026-0003' },
   // Les quatre qui attendent : sa capture en annonce quatre pour 2 040,00 €,
-  // sans les montrer. Exemples — 620 + 480 + 700 + 240 = 2 040.
+  // sans les montrer. Exemples : 620 + 480 + 700 + 240 = 2 040.
   { id:'a1', nom:'Mme Renard',            jour:'2026-08-21', montant:620.00, numero:null },
   { id:'a2', nom:'M. Blanchard',          jour:'2026-08-17', montant:480.00, numero:null },
   { id:'a3', nom:'Mairie de Sainte-Luce', jour:'2026-08-12', montant:700.00, numero:null },
@@ -355,17 +355,17 @@ const CAPTURE = [
 
 /* **Le retard de facturation, sa demande du 22 août** : *« il faut pouvoir
    revenir dans le passé si jamais on a du retard sur la facturation »*. Un
-   chantier de JUILLET jamais facturé — sans lui, le retour en arrière ne se
+   chantier de JUILLET jamais facturé, sans lui, le retour en arrière ne se
    juge pas, il se croit sur parole.
 
    **Il ne va que dans les propositions, jamais dans l'écran d'aujourd'hui.**
    Celui-là doit rester sa capture au chiffre près : un cinquième chantier en
-   attente y ferait « Cinq à facturer · 2 930,00 € », et on ne comparerait plus
+   attente y ferait « Cinq à facturer, 2 930,00 € », et on ne comparerait plus
    à ce qu'il a sous les yeux.
 
    **Aucune facture n'est inventée dans le passé, et c'est délibéré.** Ses
    numéros commencent à F2026-0001 le 18 août : il n'a jamais facturé avant.
-   Un mois passé sans facture le DIT — « Aucune facture en juillet » — plutôt
+   Un mois passé sans facture le DIT (« Aucune facture en juillet ») plutôt
    que d'en fabriquer (`CLAUDE.md` §4 : ce qui n'a pas de source reste vide et
    signalé). */
 const RETARD = { id:'r1', nom:'M. Ferreira', jour:'2026-07-14', montant:890.00, numero:null };
@@ -382,22 +382,22 @@ const MOIS = ['janvier','février','mars','avril','mai','juin',
 
 const EUROS = new Intl.NumberFormat('fr-FR',
   { style:'currency', currency:'EUR', minimumFractionDigits:2, maximumFractionDigits:2 });
-/** « 1 764,00 € » — le même formateur que l'application. */
+/** « 1 764,00 € » : le même formateur que l'application. */
 const euros = (n) => EUROS.format(n);
-/** « 1 764 € » — pour un titre, où les centimes n'apprennent rien. */
+/** « 1 764 € », pour un titre, où les centimes n'apprennent rien. */
 const eurosCourt = (n) => new Intl.NumberFormat('fr-FR',
   { style:'currency', currency:'EUR', maximumFractionDigits:0 }).format(n);
 
 const jourDe  = (iso) => Number(iso.slice(8,10));
 const moisDe  = (iso) => MOIS[Number(iso.slice(5,7)) - 1];
 const anneeDe = (iso) => iso.slice(0,4);
-/** « Jeudi 20 août » — une date qu'on lit, pas « LE 20 ». */
+/** « Jeudi 20 août » : une date qu'on lit, pas « LE 20 ». */
 function dateEnClair(iso){
   const d = new Date(iso + 'T12:00:00Z');
   const j = d.toLocaleDateString('fr-FR', { weekday:'long', timeZone:'UTC' });
   return j.charAt(0).toUpperCase() + j.slice(1) + ' ' + jourDe(iso) + ' ' + moisDe(iso);
 }
-/** « Facture n° 5 » — le numéro qu'il lit à voix haute, pas « F2026-0005 ».
+/** « Facture n° 5 », le numéro qu'il lit à voix haute, pas « F2026-0005 ».
     `slice(6)` et non 5 : le tiret de « F2026-0005 » entrait dans le nombre et
     l'écran affichait « Facture n° -5 ». Trouvé en REGARDANT la capture, pas
     par un contrôle (`CLAUDE.md` §5). */
@@ -408,7 +408,7 @@ const echappe = (t) => String(t).replace(/[&<>"]/g,
 
 /* ── Les comptes. AUCUN chiffre n'est écrit à la main. ───────────────── */
 
-/** Du plus récent au plus ancien — et **0 quand c'est le même jour**.
+/** Du plus récent au plus ancien, et **0 quand c'est le même jour**.
     Un comparateur qui répond -1 à égalité n'est pas seulement instable : il
     se contredit (a<b et b<a en même temps), et le tri rend un ordre qu'aucune
     donnée n'explique. Ses deux factures du 19 août sortaient à l'envers de sa
@@ -418,7 +418,7 @@ const aFacturer = () => chantiers.filter((c) => !c.numero).sort(duPlusRecent);
 const facturees = () => chantiers.filter((c) => c.numero).sort(duPlusRecent);
 const somme = (liste) => liste.reduce((t,c) => t + c.montant, 0);
 
-/** Le prochain numéro libre — pour que « Facturer » se voie jusqu'au bout. */
+/** Le prochain numéro libre : pour que « Facturer » se voie jusqu'au bout. */
 function prochainNumero(){
   const pris = chantiers.filter((c) => c.numero).map((c) => Number(c.numero.slice(5)));
   return 'F2026-' + String(Math.max(0, ...pris) + 1).padStart(4,'0');
@@ -433,7 +433,7 @@ function facturer(id){
 }
 
 /* ======================================================================
-   REVENIR DANS LE PASSÉ — sa demande du 22 août 2026.
+   REVENIR DANS LE PASSÉ, sa demande du 22 août 2026.
 
    *« En haut il y a marqué août 2026, mais il faut pouvoir revenir dans le
    passé si jamais on a du retard sur la facturation. »*
@@ -451,7 +451,7 @@ function facturer(id){
 let recul = 0;              // 0 = le mois le plus récent
 const RECUL_MAX = 18;       // dix-huit mois en arrière : au-delà, plus rien
 
-/** Le mois le plus récent des données — le point de départ du feuilletage. */
+/** Le mois le plus récent des données : le point de départ du feuilletage. */
 const MOIS_BASE = [...DEPART].sort(duPlusRecent)[0].jour.slice(0, 7);
 
 /** « 2026-08 » reculé de n mois. */
@@ -462,7 +462,7 @@ function decaler(cle, n){
   return annee + '-' + String(mois).padStart(2, '0');
 }
 const cleAffichee = () => decaler(MOIS_BASE, recul);
-/** « Août 2026 » — le mois en toutes lettres, capitale en tête. */
+/** « Août 2026 » : le mois en toutes lettres, capitale en tête. */
 function nomDuMois(cle){
   const n = MOIS[Number(cle.slice(5,7)) - 1];
   return n.charAt(0).toUpperCase() + n.slice(1) + ' ' + cle.slice(0,4);
@@ -498,7 +498,7 @@ function parMois(liste){
 }
 
 /* ======================================================================
-   AUJOURD'HUI — l'écran tel qu'il est, refait de sa capture.
+   AUJOURD'HUI, l'écran tel qu'il est, refait de sa capture.
 
    Il est ici pour une raison : comparer une proposition à un souvenir ne
    prouve rien. Les points, la pastille, l'encart replié et le fil sont
@@ -507,7 +507,7 @@ function parMois(liste){
 function ecranAujourdhui(){
   // **Sur SA capture, pas sur les données des propositions.** Le chantier de
   // juillet resté à facturer n'existe que dans les propositions : ici, l'écran
-  // doit rendre « Quatre à facturer · 2 040,00 € », ce qu'il a sous les yeux.
+  // doit rendre « Quatre à facturer : 2 040,00 € », ce qu'il a sous les yeux.
   const attente = CAPTURE.filter((c) => !c.numero).sort(duPlusRecent);
   const faites = CAPTURE.filter((c) => c.numero).sort(duPlusRecent);
   const moisFaits = parMois(faites);
@@ -528,7 +528,7 @@ function ecranAujourdhui(){
         <span style="min-width:0">
           <span class="nom">${echappe(c.nom)}</span>
           <span class="ref">${c.numero
-            ? echappe(c.numero) + ' · le ' + jourDe(c.jour)
+            ? echappe(c.numero) + ', le ' + jourDe(c.jour)
             : 'Le ' + jourDe(c.jour) + ' ' + moisDe(c.jour)}</span>
         </span>
         <span class="euros${creuse ? ' attente' : ''}">${euros(c.montant)}</span>
@@ -575,7 +575,7 @@ function ecranAujourdhui(){
 }
 
 /* ======================================================================
-   A — DEUX PILES : ce qui reste à faire, puis ce qui est fait.
+   A, DEUX PILES : ce qui reste à faire, puis ce qui est fait.
 
    Le travail qui reste n'est plus replié : il est en HAUT, dépliés, avec
    son bouton. Ce qui est fait descend, calme, sous son propre titre.
@@ -583,7 +583,7 @@ function ecranAujourdhui(){
 function ecranA(){
   const attente = aFacturer(), faites = facturees();
   // Le mois feuilleté, et lui seul. `attente` ne le suit pas : un chantier de
-  // juillet resté à facturer se voit encore en août — c'est le retard.
+  // juillet resté à facturer se voit encore en août, c'est le retard.
   const cle = cleAffichee();
   const duMois = faites.filter((c) => c.jour.slice(0,7) === cle);
 
@@ -640,7 +640,7 @@ function ecranA(){
 }
 
 /* ======================================================================
-   B — UNE SEULE LISTE, et l'état écrit en toutes lettres.
+   B, UNE SEULE LISTE, et l'état écrit en toutes lettres.
 
    Le plus proche d'aujourd'hui : on garde le fil du temps, on retire les
    codes. Plus de points, plus de pastille, plus d'or contre noir : chaque
@@ -655,7 +655,7 @@ function ecranB(){
       aria-pressed="${filtreB === cle}">${texte}</button>`;
 
   /* **Le total du mois ne mélange pas les deux camps.** Il portait la somme
-     de tout — 5 868,00 € — c'est-à-dire un chiffre qui n'existe nulle part :
+     de tout (5 868,00 €) c'est-à-dire un chiffre qui n'existe nulle part :
      ni ce qui est rentré, ni ce qui attend. Exactement le défaut qu'on est en
      train de retirer. Il ne compte donc que le FACTURÉ, et ce qui attend se
      dit en dessous, en toutes lettres. */
@@ -677,7 +677,7 @@ function ecranB(){
         </div>`;
 
   /* **L'onglet « À facturer » ne se feuillette pas.** Il montre tout ce qui
-     attend, tous mois confondus — c'est exactement ce qu'on vient y chercher
+     attend, tous mois confondus : c'est exactement ce qu'on vient y chercher
      quand on a du retard. Seul « Tout » se déplace de mois en mois. */
   const blocs = filtreB === 'attente'
     ? (attente.length === 0
@@ -720,7 +720,7 @@ function ecranB(){
 let filtreB = 'tout';
 
 /* ======================================================================
-   C — LA PAGE NE FAIT QU'UNE CHOSE : facturer.
+   C, LA PAGE NE FAIT QU'UNE CHOSE : facturer.
 
    L'onglet du bas change de nom. L'écran ne montre QUE ce qui attend, en
    grand. Ce qui est fait n'est plus une liste : c'est une porte, une
@@ -781,42 +781,42 @@ const LEGENDES = {
     titre:'Votre écran d’aujourd’hui',
     chapo:'Refait à l’identique de votre capture, pour comparer sans se fier à un souvenir. <b>L’encart doré s’ouvre</b> : c’est là que sont les quatre chantiers à facturer.',
     points:[
-      '<b>Le seul travail qui reste est replié</b> — quatre chantiers cachés derrière une ligne en petites capitales, sans rien qui dise qu’on peut appuyer.',
-      '<b>3 828,00 € est écrit deux fois</b>, à droite d’« août » et tout en bas. C’est le même chiffre parce qu’il n’y a qu’un mois — mais il faut le deviner.',
+      '<b>Le seul travail qui reste est replié</b> : quatre chantiers cachés derrière une ligne en petites capitales, sans rien qui dise qu’on peut appuyer.',
+      '<b>3 828,00 € est écrit deux fois</b>, à droite d’« août » et tout en bas. C’est le même chiffre parce qu’il n’y a qu’un mois : mais il faut le deviner.',
       '<b>Trois codes que personne n’a appris</b> : la pastille dorée « 4 », les points pleins et creux, le montant en or contre le montant en noir.',
-      '<b>« F2026-0005 · LE 20 »</b> : un numéro de facture avant tout le reste, et une date sans son mois.',
+      '<b>« F2026-0005 : LE 20 »</b> : un numéro de facture avant tout le reste, et une date sans son mois.',
       '<b>Le fil vertical prend 47 px de large</b> et ne dit rien que la liste ne dise déjà.',
     ],
   },
   a: {
-    titre:'A · Deux piles : ce qui reste, ce qui est fait',
+    titre:'A : Deux piles : ce qui reste, ce qui est fait',
     chapo:'Ce qui attend <b>monte en haut de l’écran, déplié</b>, avec un bouton « Facturer » par ligne. Ce qui est fait descend, sous un titre qui le nomme.',
     points:[
       '<b>Plus rien de replié</b> : les chantiers à facturer se voient et se facturent en un appui.',
-      '<b>‹ Août 2026 › se feuillette</b> — votre demande du 22 août. Reculez : « Aucune facture en juillet » est une réponse, et un mois vide ne se saute pas.',
+      '<b>‹ Août 2026 › se feuillette</b> : votre demande du 22 août. Reculez : « Aucune facture en juillet » est une réponse, et un mois vide ne se saute pas.',
       '<b>Ce qui reste à facturer NE suit PAS le mois.</b> M. Ferreira, terminé le 14 juillet et jamais facturé, reste sous vos yeux en août : c’est ça, le retard.',
       '<b>« 5 factures envoyées » est en noir gras</b>, votre demande. La phrase sur les devis reste grise : c’est une réserve, pas un chiffre.',
-      '<b>« Facture n° 5 · Jeudi 20 août »</b> remplace « F2026-0005 · LE 20 ». Ni fil, ni points, ni pastille.',
+      '<b>« Facture n° 5 : Jeudi 20 août »</b> remplace « F2026-0005 : LE 20 ». Ni fil, ni points, ni pastille.',
     ],
   },
   b: {
-    titre:'B · Une seule liste, l’état écrit',
+    titre:'B : Une seule liste, l’état écrit',
     chapo:'Le plus proche de votre écran actuel : on garde le fil du temps, <b>on remplace les codes par des mots</b>. Chaque ligne dit où elle en est.',
     points:[
       '<b>« Pas encore facturé » / « Facturé le 20 août »</b> : plus de point creux à décoder.',
-      '<b>‹ Août 2026 › se feuillette</b>, comme dans la A — et le compte des factures est en <b>noir gras</b>.',
-      '<b>Deux onglets</b> — Tout, À facturer. Le second <b>ne se feuillette pas</b> : il montre tout ce qui attend, tous mois confondus. C’est là qu’on va quand on a du retard.',
+      '<b>‹ Août 2026 › se feuillette</b>, comme dans la A : et le compte des factures est en <b>noir gras</b>.',
+      '<b>Deux onglets</b> : Tout, À facturer. Le second <b>ne se feuillette pas</b> : il montre tout ce qui attend, tous mois confondus. C’est là qu’on va quand on a du retard.',
       '<b>Une phrase en haut</b> dit les deux chiffres et ce qu’ils sont, au lieu de les poser sans légende.',
-      'C’est la proposition qui change le moins de choses — <b>et donc la plus rapide à coder</b>.',
+      'C’est la proposition qui change le moins de choses : <b>et donc la plus rapide à coder</b>.',
     ],
   },
   c: {
-    titre:'C · La page ne fait qu’une chose',
+    titre:'C : La page ne fait qu’une chose',
     chapo:'La plus radicale : <b>l’onglet s’appelle « À facturer »</b> et l’écran ne montre que ça. Ce qui est déjà facturé devient une porte, en bas, pas une liste.',
     points:[
       '<b>Un chantier, une carte, un bouton.</b> On ne peut pas se tromper sur ce qu’on attend de vous.',
-      '<b>Quand tout est facturé, l’écran le dit</b> — « Tout est facturé » — au lieu d’avoir l’air vide. Facturez les quatre pour voir.',
-      '<b>« Mes factures — 5 · 3 828 € »</b> : l’historique tient en une ligne, et s’ouvre si vous le voulez.',
+      '<b>Quand tout est facturé, l’écran le dit</b> (« Tout est facturé ») au lieu d’avoir l’air vide. Facturez les quatre pour voir.',
+      '<b>« Mes factures : 5 : 3 828 € »</b> : l’historique tient en une ligne, et s’ouvre si vous le voulez.',
       'La TVA n’est plus coupée par la barre du bas.',
       'Le prix à payer : <b>votre historique n’est plus sous les yeux</b>, il est à un appui.',
     ],

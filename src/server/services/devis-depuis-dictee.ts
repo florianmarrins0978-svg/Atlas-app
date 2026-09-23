@@ -343,7 +343,7 @@ async function poursuivreJusquAuDevis(
   const sansReponse = await questionsRestantes(ctx, chantierId, contenu?.prestations ?? []);
 
   return chiffrerEtPreparer(ctx, chantierId, {
-    aSignaler: sansReponse.map((q) => `${q.libellePrestation} : ${q.question.toLowerCase()} — sans réponse`),
+    aSignaler: sansReponse.map((q) => `${q.libellePrestation} : ${q.question.toLowerCase()}, sans réponse`),
     contenu,
     lecture: brouillon?.lecture ?? "modele",
     prestations: contenu?.prestations.map((l) => l.libelle) ?? [],

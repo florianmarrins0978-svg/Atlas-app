@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>L'essai de 15 jours, et ce qui se ferme — Atlas</title>
+<title>L'essai de 15 jours, et ce qui se ferme : Atlas</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@400;500&display=swap" rel="stylesheet">
@@ -162,7 +162,7 @@ body.nuit .ruban.chaud{background:rgba(192,122,86,.14)}
 var ETATS = [
   ["j1",       "Jour 1"],
   ["j13",      "Jour 13"],
-  ["j16",      "Jour 16 — lecture seule"],
+  ["j16",      "Jour 16 : lecture seule"],
   ["geste",    "Il essaie d’écrire"],
   ["absences", "Artisan ouvre Absences"],
   ["retours",  "Artisan ouvre Retours"],
@@ -175,8 +175,7 @@ function ech(t){ return String(t).replace(/&/g,"&amp;").replace(/</g,"&lt;").rep
 
 /**
  * L'en-tête réelle (`EnTeteEcran`). **La flèche de retour ne se met QUE sur un
- * écran d'où l'on revient** : l'accueil n'en a pas, et lui en dessiner une —
- * ce que faisait la première version de cette planche, vu à la capture — donne
+ * écran d'où l'on revient** : l'accueil n'en a pas, et lui en dessiner une (* ce que faisait la première version de cette planche, vu à la capture) donne
  * à croire qu'il y a un écran au-dessus.
  */
 function entete(titre, sur, avecRetour){
@@ -187,7 +186,7 @@ function entete(titre, sur, avecRetour){
 }
 
 /**
- * LE CADENAS, DESSINÉ — jamais un emoji.
+ * LE CADENAS, DESSINÉ : jamais un emoji.
  *
  * Sa correction du 9 septembre 2026, sur l'œil du mot de passe : *« ne mets pas
  * l'emoji, remets ce que c'était »*. Un emoji change de dessin d'un téléphone à
@@ -201,10 +200,10 @@ var CADENAS =
   '<path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"></path></svg>';
 
 var CHANTIERS =
-  '<div class="ligne"><span class="nom">Mme Durand — taille de haies</span>' +
-    '<p class="situation">5 rue des Lilas · matin</p></div>' +
-  '<div class="ligne"><span class="nom">M. Petit — tonte</span>' +
-    '<p class="situation">12 chemin du Moulin · après-midi</p></div>';
+  '<div class="ligne"><span class="nom">Mme Durand, taille de haies</span>' +
+    '<p class="situation">5 rue des Lilas, matin</p></div>' +
+  '<div class="ligne"><span class="nom">M. Petit, tonte</span>' +
+    '<p class="situation">12 chemin du Moulin, après-midi</p></div>';
 
 /**
  * L'ACCUEIL PENDANT L'ESSAI.
@@ -218,8 +217,8 @@ function accueilEnEssai(jours){
   var chaud = jours <= 3;
   return '<div class="ecran">' +
     '<div class="ruban' + (chaud ? " chaud" : "") + '">' +
-      '<span class="j">' + (jours > 1 ? "Essai gratuit — " + jours + " jours restants"
-                                      : "Essai gratuit — dernier jour") + '</span>' +
+      '<span class="j">' + (jours > 1 ? "Essai gratuit, " + jours + " jours restants"
+                                      : "Essai gratuit, dernier jour") + '</span>' +
       '<span class="lien">S’abonner</span>' +
     '</div>' +
     entete("Aujourd’hui", "", false) +
@@ -231,7 +230,7 @@ function accueilEnEssai(jours){
 function lectureSeule(){
   return '<div class="ecran">' +
     '<div class="ruban chaud">' +
-      '<span class="j">Essai terminé — lecture seule</span>' +
+      '<span class="j">Essai terminé, lecture seule</span>' +
       '<span class="lien">S’abonner</span>' +
     '</div>' +
     entete("Aujourd’hui", "", false) +
@@ -266,7 +265,7 @@ function gesteRefuse(){
  * LES DEUX ÉCRANS RÉSERVÉS À « ENTREPRISE ».
  *
  * Ce sont les VRAIS écrans : même en-tête, même titre, même flèche de retour.
- * Seul le contenu change — c'est exactement ce que verra l'artisan.
+ * Seul le contenu change : c'est exactement ce que verra l'artisan.
  */
 function ecranReserve(titre, sur, quoi, pourquoi){
   return '<div class="ecran">' +
@@ -287,9 +286,9 @@ function rendre(){
   if (etat.vue === "j1" || etat.vue === "nuit") {
     tel = accueilEnEssai(15);
     note =
-      '<h2>Jour 1 — l’essai commence tout seul</h2>' +
+      '<h2>Jour 1, l’essai commence tout seul</h2>' +
       '<p><b>Aucune carte bancaire n’est demandée</b>, et c’est ce que vos conditions ' +
-      'promettent déjà (article 14.2). L’essai n’est donc pas géré par Stripe — Stripe, lui, ' +
+      'promettent déjà (article 14.2). L’essai n’est donc pas géré par Stripe, Stripe, lui, ' +
       'réclame la carte d’avance. C’est Atlas qui compte les quinze jours.</p>' +
       '<p><b>Le compteur se pose en tête de l’accueil</b>, pas ailleurs : c’est le seul écran ' +
       'qu’il ouvre tous les matins. Une carte posée au milieu se ferait dépasser par les ' +
@@ -302,7 +301,7 @@ function rendre(){
   else if (etat.vue === "j13") {
     tel = accueilEnEssai(2);
     note =
-      '<h2>Jour 13 — le ruban change de couleur</h2>' +
+      '<h2>Jour 13, le ruban change de couleur</h2>' +
       '<p>À trois jours de la fin, le compteur passe au <b>rouge d’alerte</b>. Rien d’autre ne ' +
       'bouge : pas de fenêtre qui s’ouvre, pas de message à fermer. Un artisan sur un chantier ' +
       'n’a pas à écarter une boîte pour voir son planning.</p>' +
@@ -313,12 +312,12 @@ function rendre(){
   else if (etat.vue === "j16") {
     tel = lectureSeule();
     note =
-      '<h2>Jour 16 — il lit tout, il n’écrit plus</h2>' +
+      '<h2>Jour 16, il lit tout, il n’écrit plus</h2>' +
       '<p>Votre choix, mot pour mot : <i>« la B, mais il ne doit plus rien pouvoir faire à part ' +
       'enregistrer ses documents, ses clients »</i>.</p>' +
       '<p><b>Rien ne disparaît de l’écran.</b> Ses chantiers sont là, ses clients aussi, ses ' +
       'devis et ses factures s’ouvrent. C’est ce qui le sépare d’une application qui l’a mis ' +
-      'dehors — et c’est ce qui fait qu’il reviendra s’abonner.</p>' +
+      'dehors, et c’est ce qui fait qu’il reviendra s’abonner.</p>' +
       '<ul>' +
         '<li><b>Ce qui reste ouvert :</b> tout relire, et emporter une copie de tout ' +
         '(Réglages, puis Mes données).</li>' +
@@ -333,7 +332,7 @@ function rendre(){
     note =
       '<h2>Ce qui se passe s’il appuie quand même</h2>' +
       '<p><b>Le bouton est éteint, et la phrase dit pourquoi.</b> Un bouton gris sans explication ' +
-      'se lit comme une panne — il rappuierait, puis il appellerait.</p>' +
+      'se lit comme une panne, il rappuierait, puis il appellerait.</p>' +
       '<p><b>Et le refus ne tient pas qu’à l’écran.</b> L’application compte 176 gestes qui ' +
       'écrivent : les fermer un par un finirait par diverger, et il suffirait d’un oubli pour ' +
       'que l’un d’eux reste ouvert. La fermeture se pose à <b>un seul endroit</b>, là où passent ' +
@@ -352,10 +351,10 @@ function rendre(){
       'Ce qui change, c’est ce qu’il y a dedans.</p>' +
       '<p><b>Pourquoi on ne le RETIRE pas du sommaire :</b> une rubrique qui disparaît se ' +
       'cherche. Il l’a vue hier, il ne la trouve plus, il appelle. Une rubrique qui s’ouvre sur ' +
-      '« c’est dans Entreprise » répond en une seconde — et elle vend.</p>' +
+      '« c’est dans Entreprise » répond en une seconde, et elle vend.</p>' +
       '<p><b>Ce que ça coûte, et il faut le dire :</b> un artisan qui se sert des absences ' +
       'aujourd’hui les perdra le jour où il prendra « Artisan » à 29&nbsp;€. Ses absences déjà ' +
-      'saisies ne s’effacent pas — elles reparaissent s’il monte de formule.</p>';
+      'saisies ne s’effacent pas, elles reparaissent s’il monte de formule.</p>';
   }
 
   else if (etat.vue === "retours") {
@@ -367,7 +366,7 @@ function rendre(){
     note =
       '<h2>Le même écran, pour les retours</h2>' +
       '<p>Même dessin, même phrase, même bouton. <b>Deux écrans fermés qui ne se ressemblent pas ' +
-      'donnent l’impression de deux pannes différentes</b> — ici c’est la même raison, donc ' +
+      'donnent l’impression de deux pannes différentes</b>, ici c’est la même raison, donc ' +
       'c’est le même écran.</p>' +
       '<p><b>L’onglet reste en place</b> dans « Terminés » : votre demande du 9 septembre — ' +
       '<i>« l’onglet retour d’intervention doit exister même s’il n’y a aucun retour »</i> — ' +
@@ -379,7 +378,7 @@ function rendre(){
   if (etat.vue === "nuit") {
     note = '<h2>Le même écran, en nuit</h2>' +
       '<p>Deux chartes du produit sont sombres. Le ruban d’essai, le rouge d’alerte et le ' +
-      'cadenas doivent s’y lire — c’est ce que cet onglet vérifie.</p>' + note;
+      'cadenas doivent s’y lire : c’est ce que cet onglet vérifie.</p>' + note;
   }
 
   document.getElementById("tel").innerHTML = tel;

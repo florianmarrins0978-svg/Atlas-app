@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Les deux compteurs de l'écran Équipe — Atlas</title>
+<title>Les deux compteurs de l'écran Équipe : Atlas</title>
 <style>
 /*
   ═══════════════════════════════════════════════════════════════════════════
@@ -149,18 +149,18 @@ td b{color:var(--encre)}
 
 <div class="commandes">
   <button type="button" data-v="aujourdhui" aria-pressed="true">Aujourd'hui</button>
-  <button type="button" data-v="A" aria-pressed="false">A · les titres posent la question</button>
-  <button type="button" data-v="B" aria-pressed="false">B · une liste, plus un compteur</button>
+  <button type="button" data-v="A" aria-pressed="false">A, les titres posent la question</button>
+  <button type="button" data-v="B" aria-pressed="false">B, une liste, plus un compteur</button>
   <button type="button" id="pole" aria-pressed="false">Voir sur Nuit</button>
 </div>
 
 <div class="tete">
-  <span class="sceau">Maquette — rien n'est codé</span>
+  <span class="sceau">Maquette, rien n'est codé</span>
   <h1>Les deux compteurs de l'écran Équipe</h1>
   <p><b>Regardez « Aujourd'hui » d'abord.</b> Deux compteurs se suivent, dessinés
   pareil, et ils affichent le même chiffre : <b>2</b> chantiers, <b>2</b> salariés.
-  Ils ne parlent pas de la même chose — l'un dit ce que votre planning accepte,
-  l'autre qui part sur le chantier — et rien à l'œil ne les sépare.</p>
+  Ils ne parlent pas de la même chose : l'un dit ce que votre planning accepte,
+  l'autre qui part sur le chantier : et rien à l'œil ne les sépare.</p>
   <p><b>Ce n'est pas ce que la planche du 26 août montrait</b>, et c'est pour ça
   que je vous en refais une : votre décision du 6 septembre visait un écran qui
   n'existe plus. Le détail est sous le téléphone.</p>
@@ -192,7 +192,7 @@ td b{color:var(--encre)}
       <td>qui se coche sur une demi-journée du planning. Il ne change RIEN à ce
       que vos clients peuvent réserver</td></tr>
   </table>
-  <p><b>C'est vous qui avez fait séparer les deux, le 26 août</b> — et vous
+  <p><b>C'est vous qui avez fait séparer les deux, le 26 août</b> : et vous
   aviez raison : tant qu'un seul chiffre portait les deux métiers, monter
   l'effectif ouvrait des journées que vous ne pouviez pas tenir. Ce qui reste,
   c'est que la séparation ne se VOIT pas.</p>
@@ -200,12 +200,12 @@ td b{color:var(--encre)}
   <h3>Les deux propositions</h3>
   <table>
     <tr><th></th><th>Ce que ça change</th></tr>
-    <tr><td><b>A · les titres posent la question</b></td>
+    <tr><td><b>A, les titres posent la question</b></td>
       <td>« Combien de chantiers par jour ? » et « Combien de salariés ? », en
       toutes lettres à la place des étiquettes en capitales. C'est l'esprit de
       votre décision du 6 septembre, appliqué à l'écran d'aujourd'hui. Les deux
       compteurs se ressemblent toujours, mais on ne peut plus les confondre</td></tr>
-    <tr><td><b>B · une liste, plus un compteur</b><br><i>celle que je vous conseille</i></td>
+    <tr><td><b>B : une liste, plus un compteur</b><br><i>celle que je vous conseille</i></td>
       <td>le compteur des chantiers reste un compteur. Les salariés deviennent
       une <b>liste de noms</b> avec « + Ajouter un salarié » : on ne compte pas
       des gens avec un + et un −, on les nomme. Le nombre se déduit de la liste,
@@ -213,14 +213,14 @@ td b{color:var(--encre)}
   </table>
   <p><b>Pourquoi B :</b> c'est le seul qui retire vraiment la ressemblance, au
   lieu de l'expliquer. Et il suit ce que vous m'aviez dit le 6 septembre :
-  <i>« c'est pas les équipes, c'est le nom des salariés »</i> — dans B, ajouter
+  <i>« c'est pas les équipes, c'est le nom des salariés »</i> : dans B, ajouter
   un salarié, c'est écrire son nom, pas pousser un chiffre.</p>
   <p><b>Ce que B coûte, et je le dis avant :</b> le nombre de salariés n'est
-  plus un réglage à part en base — il devient le nombre de lignes. C'est un
+  plus un réglage à part en base : il devient le nombre de lignes. C'est un
   changement de plomberie, pas un habillage ; une demi-journée de plus que A.</p>
 
   <h3>Ce qui ne bouge dans aucune des deux</h3>
-  <p><b>« Qui a accès » reste en tête</b> — c'est la question qu'on se pose en
+  <p><b>« Qui a accès » reste en tête</b>, c'est la question qu'on se pose en
   arrivant, et c'est votre planche du 13 août. <b>« Absences » reste en bas</b>,
   sous les noms, comme vous l'aviez retenu. Et les deux réglages continuent de
   faire exactement ce qu'ils font : rien n'est ajouté, rien n'est retiré.</p>
@@ -228,7 +228,7 @@ td b{color:var(--encre)}
   <h3>Ce que je n'ai pas tranché</h3>
   <p>Sous la liste des noms, l'écran écrit aujourd'hui : <i>« 2 salariés n'ont
   pas de nom : le chantier les montrera sous leur numéro »</i>. Dans B, cette
-  phrase n'a plus lieu d'être — une ligne sans nom se voit dans la liste. Elle
+  phrase n'a plus lieu d'être : une ligne sans nom se voit dans la liste. Elle
   disparaît donc, sauf si vous la voulez.</p>
 
 </div>
@@ -335,8 +335,8 @@ function dessiner(){
   defile.innerHTML = enTete() + blocAcces() + blocChantiers() + blocSalaries() + blocAbsences();
   document.getElementById("etiquette").textContent =
     etat.vue === "aujourdhui" ? "Aujourd'hui"
-    : etat.vue === "A" ? "A · les titres posent la question"
-    : "B · une liste, plus un compteur";
+    : etat.vue === "A" ? "A, les titres posent la question"
+    : "B, une liste, plus un compteur";
   brancher();
 }
 
@@ -346,7 +346,7 @@ function brancher(){
     var c = this.getAttribute("data-moins");
     var haut = defile.scrollTop;
     // Le plancher n'est pas le même : à zéro chantier, plus aucun jour ne
-    // serait proposable — c'est la borne du code (`MAX_EQUIPES`, plancher 1).
+    // serait proposable : c'est la borne du code (`MAX_EQUIPES`, plancher 1).
     etat[c] = Math.max(c === "chantiers" ? 1 : 0, etat[c] - 1);
     dessiner(); defile.scrollTop = haut;
   });

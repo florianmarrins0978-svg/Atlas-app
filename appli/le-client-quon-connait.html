@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Le client qu'on connaît déjà — cinq propositions</title>
+<title>Le client qu'on connaît déjà : cinq propositions</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@400;500&display=swap" rel="stylesheet">
@@ -265,7 +265,7 @@
 <div class="mot">
   <b>Ce qui manque :</b> rien ne te dit ce qu'il a fait, et rien ne mène de la
   fiche d'un client à un chantier pour lui. <b>Aucune proposition ci-dessous ne
-  te fait choisir dans une liste</b> — tu l'avais écarté le 17 août.
+  te fait choisir dans une liste</b>, tu l'avais écarté le 17 août.
 </div>
 
 <div class="etats" role="group" aria-label="Les cas à jouer">
@@ -284,7 +284,7 @@
   <h2>Il tape un nom qu'Atlas connaît</h2>
   <p>Trois façons de le lui dire. <b>Aucune ne lui demande de choisir</b> : Atlas
   range le chantier chez le bon client comme il le fait déjà, et se contente de
-  le dire — avec un moyen de le séparer si c'est le mauvais.</p>
+  le dire : avec un moyen de le séparer si c'est le mauvais.</p>
 </div>
 
 <div class="planches">
@@ -416,7 +416,7 @@
 <!-- ══════════════════ PARTIE 2 ══════════════════════════════════════ -->
 <div class="partie">
   <h2>Il part de la fiche d'un client</h2>
-  <p>Aujourd'hui cet écran ne mène nulle part — tu avais fait retirer le reste le
+  <p>Aujourd'hui cet écran ne mène nulle part, tu avais fait retirer le reste le
   2 septembre, « c'est du trop ». <b>Ces deux-là n'ajoutent aucun mot</b> : un
   geste, et le chantier s'ouvre déjà rempli.</p>
 </div>
@@ -504,15 +504,15 @@
 </div>
 
 <div class="mot" style="margin-top:42px">
-  <b>D et E ne s'opposent pas.</b> E porte les deux gestes — « Refaire » et
+  <b>D et E ne s'opposent pas.</b> E porte les deux gestes, « Refaire » et
   « Autre chantier ». Si tu retiens E, D n'a plus lieu d'être.
 </div>
 
 <script>
 /*
-  LES TROIS CAS SONT CEUX DE `rapprocherClient`, PAS DES CAS INVENTÉS.
+  LES TROIS CAS SONT CEUX DE `rapprocherClient`, PAS DES CAS INVENTÉS. :
 
-  · « nom »           il tape un nom, rien d'autre : un seul Martins en base,
+  « nom »           il tape un nom, rien d'autre : un seul Martins en base,
                       rien ne contredit, on le reprend (motif `nom`) ;
   · « coordonnee »    quatre Martins ; le numéro tapé concorde avec un seul,
                       et cela tranche tout le reste (motif `coordonnee`) ;
@@ -528,7 +528,7 @@
 
   Une coche sous « Nouvelle fiche » se lit comme une confirmation de reprise :
   elle dirait exactement l'inverse de ce que la ligne annonce. Vu sur la
-  capture — la mesure, elle, ne regardait que le texte.
+  capture, la mesure, elle, ne regardait que le texte.
 */
 const COCHE = '<svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M3 8.4 6.3 11.7 13 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 const NEUVE = '<svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M8 2.8v10.4M2.8 8h10.4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>';
@@ -537,17 +537,17 @@ const CAS = {
   nom: {
     repris: true,
     titre: "Rangé chez M. Martins",
-    sous: "Saint-Marc · 3 chantiers",
+    sous: "Saint-Marc : 3 chantiers",
     titreC: "Repris de sa fiche",
-    souffle: "<b>Déjà un Martins</b> · Saint-Marc, 3 chantiers",
+    souffle: "<b>Déjà un Martins</b> : Saint-Marc, 3 chantiers",
     telB: ""
   },
   coordonnee: {
     repris: true,
     titre: "Rangé chez M. Martins",
-    sous: "Son numéro correspond · 4 Martins en fiche",
+    sous: "Son numéro correspond : 4 Martins en fiche",
     titreC: "Repris de sa fiche",
-    souffle: "<b>Son numéro le désigne</b> · Saint-Marc, 3 chantiers",
+    souffle: "<b>Son numéro le désigne</b> : Saint-Marc, 3 chantiers",
     telB: "06 79 98 45 14"
   },
   contradiction: {
@@ -555,7 +555,7 @@ const CAS = {
     titre: "Nouvelle fiche",
     sous: "Aucun Martins n'a ce numéro",
     titreC: "Nouvelle fiche",
-    souffle: "<b>Aucun Martins n'a ce numéro</b> · fiche séparée",
+    souffle: "<b>Aucun Martins n'a ce numéro</b> : fiche séparée",
     telB: "07 55 12 04 88"
   }
 };

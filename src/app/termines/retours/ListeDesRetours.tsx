@@ -277,7 +277,7 @@ function Carte({ retour }: { retour: RetourEnListe }) {
                       {/* **Ce qui n'a pas été fait le DIT.** Une case vide se lit
                           comme un oubli de lecture ; ces deux mots l'arrêtent
                           avant de facturer un travail qui n'a pas eu lieu. */}
-                      {!t.faite && <span style={{ color: colors.orTexte }}> — pas fait</span>}
+                      {!t.faite && <span style={{ color: colors.orTexte }}>, pas fait</span>}
                     </span>
                   </li>
                 ))}

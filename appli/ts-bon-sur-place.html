@@ -16,7 +16,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Atlas — le bon de travaux en plus, signé sur place</title>
+<title>Atlas : le bon de travaux en plus, signé sur place</title>
 <style>
 /*
   LE BON DE TRAVAUX EN PLUS, SIGNÉ SUR PLACE — solution C du document
@@ -138,9 +138,9 @@ h1{margin:10px 0 0;font-family:Georgia,serif;font-weight:400;font-size:30px;
 </head>
 <body>
 <div class="page">
-  <p class="sur">Travaux en plus · solution C</p>
+  <p class="sur">Travaux en plus, solution C</p>
   <h1>Le bon signé sur place</h1>
-  <p class="chapo">Le client accepte <b>avant</b> que vous sortiez la tronçonneuse. <b>Signez du doigt sur l'écran</b> — le tracé est réel.</p>
+  <p class="chapo">Le client accepte <b>avant</b> que vous sortiez la tronçonneuse. <b>Signez du doigt sur l'écran</b>, le tracé est réel.</p>
 
   <div class="tel">
     <!-- 1 · le chantier -->
@@ -148,7 +148,7 @@ h1{margin:10px 0 0;font-family:Georgia,serif;font-weight:400;font-size:30px;
       <span class="retour">‹</span>
       <h2>M. Bernard</h2>
       <p class="ou">Chantier en cours</p>
-      <p class="dit">12 rue des Tilleuls · devis 2026-014 accepté · 950,00 € HT</p>
+      <p class="dit">12 rue des Tilleuls, devis 2026-014 accepté, 950,00 € HT</p>
       <button class="bouton" type="button" data-va="2">Travaux en plus</button>
       <button class="bouton creux" type="button">Fin de chantier</button>
     </section>
@@ -179,7 +179,7 @@ h1{margin:10px 0 0;font-family:Georgia,serif;font-weight:400;font-size:30px;
       <button class="retour" type="button" data-va="2">‹</button>
       <h2>Bon n°1</h2>
       <p class="ou">Travaux supplémentaires</p>
-      <p class="dit">Chantier M. Bernard · en plus du devis 2026-014</p>
+      <p class="dit">Chantier M. Bernard, en plus du devis 2026-014</p>
 
       <div id="recap"></div>
       <div class="totaux">
@@ -225,13 +225,13 @@ h1{margin:10px 0 0;font-family:Georgia,serif;font-weight:400;font-size:30px;
 </div>
 
 <script>
-/* Les prestations proposées — celles de sa fiche de chantier, plus la journée
+/* Les prestations proposées, celles de sa fiche de chantier, plus la journée
    d'homme de sa grille (250 €). Un prix « null » se demanderait à l'écran ;
    cette planche n'en montre pas, pour ne pas mêler deux questions. */
 const CATALOGUE = [
   { nom:"Dessouchage",              unite:"forfait", pu:320 },
   { nom:"Bêchage massif",           unite:"m²",      pu:6 },
-  { nom:"Main-d'œuvre — 1 personne",unite:"jour",    pu:250 },
+  { nom:"Main-d'œuvre : 1 personne",unite:"jour",    pu:250 },
   { nom:"Taille des rosiers",       unite:"forfait", pu:90 },
   { nom:"Évacuation des déchets",   unite:"forfait", pu:180 }
 ];

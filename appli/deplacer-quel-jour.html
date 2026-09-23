@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Déplacer : quel jour ? — Atlas</title>
+<title>Déplacer : quel jour ? : Atlas</title>
 <style>
 /*
   ═══════════════════════════════════════════════════════════════════════════
@@ -141,10 +141,10 @@ td b{color:var(--encre)}
 </div>
 
 <div class="tete">
-  <span class="sceau">10 septembre — à essayer</span>
+  <span class="sceau">10 septembre, à essayer</span>
   <h1>Déplacer : quel jour&nbsp;?</h1>
   <p>Votre chantier de 2 jours <b>commence le vendredi 11 après-midi</b> et
-  déborde sur le lundi 14. La carte du 14 le montre — et « Déplacer » y déplace
+  déborde sur le lundi 14. La carte du 14 le montre, et « Déplacer » y déplace
   le départ, qui est le 11. <b>Deux façons de le dire</b>, à essayer du doigt.</p>
 </div>
 
@@ -199,14 +199,14 @@ td b{color:var(--encre)}
   <h3>Pourquoi deux jours bougent, et pas celui qu’on regarde</h3>
   <p>Deux jours font <b>quatre demi-journées</b>, et le week-end ne compte pas.
   Départ le vendredi après-midi : 11 aprem, 14 matin, 14 aprem, 15 matin.
-  Reculer le départ d’une demi-journée fait glisser toute la suite —
+  Reculer le départ d’une demi-journée fait glisser toute la suite :
   le 11 se remplit, le 15 se vide, et le 14 ne bouge pas.</p>
   <p><b>Le calcul est juste.</b> Ce qui manque, c’est le mot qui dit d’où part
   le chantier : la carte annonce sa durée, jamais son départ.</p>
 
   <h3>Ce qui ne change dans aucune des deux</h3>
   <p><b>« Retirer » reste partout.</b> Il rend le chantier à « Sans date », et
-  cela ne dépend d’aucun jour — il n’y a rien à confondre.</p>
+  cela ne dépend d’aucun jour : il n’y a rien à confondre.</p>
 </div>
 
 <script>
@@ -225,8 +225,8 @@ let deplie = false;
 
 const NOTES = [
   "Aujourd’hui. Rien ne dit que « Déplacer » agit sur le vendredi 11.",
-  "A — sur un jour qui n’est pas le premier, « Déplacer » s’efface et la carte dit d’où part le chantier.",
-  "B — « Déplacer » reste, et l’interrupteur porte le jour qu’il déplace.",
+  "A : sur un jour qui n’est pas le premier, « Déplacer » s’efface et la carte dit d’où part le chantier.",
+  "B : « Déplacer » reste, et l’interrupteur porte le jour qu’il déplace.",
 ];
 
 document.getElementById("choix").addEventListener("click", (e) => {
@@ -278,7 +278,7 @@ function dessiner() {
 }
 
 /**
- * Les quatre demi-journées, jour par jour — la même règle que
+ * Les quatre demi-journées, jour par jour : la même règle que
  * `creneauxDuChantier` : on avance d'une demi-journée, et le week-end saute.
  */
 function dessinerRuban() {
@@ -293,7 +293,7 @@ function dessinerRuban() {
     const matin = suite.includes(`${j}-matin`);
     const aprem = suite.includes(`${j}-aprem`);
     // Le 11 au matin porte DÉJÀ un autre chantier : deux à la fois, c'est
-    // « au-delà » — c'est le rouge qu'il a vu apparaître sur sa capture.
+    // « au-delà » : c'est le rouge qu'il a vu apparaître sur sa capture.
     const trop = j === 11 && matin;
     return `<div class="jourCase">
       <div class="nom">${j === 11 ? "vendredi 11" : j === 14 ? "lundi 14" : "mardi 15"}</div>

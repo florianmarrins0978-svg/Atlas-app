@@ -141,15 +141,15 @@
   passe, et <b>bien entendu qu'il faut conserver le mot de passe</b>. L'utilisateur
   va commencer par créer son compte avec son mot de passe et ensuite il décidera
   s'il veut ouvrir sa session avec le mot de passe ou le Face ID. »<br><br>
-  <b>Rien n'est codé.</b> Deux façons de poser le geste sur la porte —
+  <b>Rien n'est codé.</b> Deux façons de poser le geste sur la porte,
   <b>touche-les, elles répondent</b>. Puis l'endroit où on l'allume, et ce qui se
   passe le jour où ça rate.
 </div>
 
 <!-- ═══ A ═══════════════════════════════════════════════════════════ -->
 <div class="bloc">
-  <h2>A — le visage d'abord</h2>
-  <p>Face ID prend la place du bouton. <b>Un doigt, tu es dedans</b> — pas de
+  <h2>A : le visage d'abord</h2>
+  <p>Face ID prend la place du bouton. <b>Un doigt, tu es dedans</b> : pas de
      clavier, pas d'adresse à taper. Le mot de passe descend en une ligne
      dessous, toujours là.</p>
   <p>Ce que ça coûte : sur un téléphone où Face ID n'a jamais été allumé, le
@@ -186,11 +186,11 @@
 
 <!-- ═══ B ═══════════════════════════════════════════════════════════ -->
 <div class="bloc">
-  <h2>B — l'écran d'aujourd'hui, plus une ligne</h2>
+  <h2>B, l'écran d'aujourd'hui, plus une ligne</h2>
   <p>La porte ne bouge pas : l'adresse, le mot de passe, « Entrer ». <b>Face ID
      s'ajoute au-dessus</b>, dans un encadré discret. Rien de ce que tu connais ne
      change de place.</p>
-  <p>Ce que ça coûte : le geste rapide est moins évident — il faut le voir avant
+  <p>Ce que ça coûte : le geste rapide est moins évident, il faut le voir avant
      de descendre au clavier.</p>
 </div>
 <div class="porte" data-porte="B">
@@ -222,7 +222,7 @@
   <h2>Le jour où ça ne marche pas</h2>
   <p>Un visage pas reconnu, un téléphone neuf, une tablette empruntée, une
      batterie changée : <b>Face ID ne suit pas</b>. C'est le cas normal, pas
-     l'exception — et c'est pour ça que le mot de passe reste.</p>
+     l'exception : et c'est pour ça que le mot de passe reste.</p>
   <p><b>Essaie :</b> ci-dessous, le visage est réglé pour échouer. Touche-le sur
      l'une ou l'autre des deux portes.</p>
 </div>
@@ -243,7 +243,7 @@
 
 <!-- ═══ L'ACTIVATION ════════════════════════════════════════════════ -->
 <div class="bloc">
-  <h2>Où on l'allume — Réglages › Connexion</h2>
+  <h2>Où on l'allume : Réglages › Connexion</h2>
   <p><b>Le compte se crée toujours au mot de passe</b>, comme tu l'as dit. Face ID
      ne s'allume qu'ensuite, ici, et téléphone par téléphone.</p>
 </div>
@@ -261,7 +261,7 @@
   <div class="rang">
     <div class="texte">
       <div class="nom">Mot de passe</div>
-      <div class="sous">Toujours actif. <b>Il ne peut pas se retirer</b> — c'est ce
+      <div class="sous">Toujours actif. <b>Il ne peut pas se retirer</b>, c'est ce
         qui vous fait entrer sur un téléphone neuf.</div>
     </div>
     <button class="inter" data-mdp-toujours aria-pressed="true" disabled style="opacity:.55;cursor:default"><span class="pastille"></span></button>
@@ -272,14 +272,14 @@
 
 <!-- ═══ CE QUI EST DÉJÀ TRANCHÉ ═════════════════════════════════════ -->
 <div class="acquis">
-  <b>Ce que je ne te demande pas — c'est décidé</b>
+  <b>Ce que je ne te demande pas, c'est décidé</b>
   <ul>
     <li><b>Le mot de passe reste, toujours.</b> Il ne se désactive pas. Face ID
       est une porte de plus, jamais une porte à la place.</li>
     <li><b>Le compte se crée au mot de passe.</b> Face ID s'allume après, depuis
       les Réglages, sur un téléphone déjà connecté.</li>
     <li><b>C'est par appareil.</b> Allumé sur ton iPhone, il ne l'est pas sur
-      l'iPad — chacun s'allume une fois. Ce n'est pas un défaut : c'est ce qui
+      l'iPad : chacun s'allume une fois. Ce n'est pas un défaut : c'est ce qui
       fait que personne ne peut entrer avec ton visage depuis ailleurs.</li>
     <li><b>Ça marche aussi ailleurs qu'Apple.</b> Le même geste ouvre l'empreinte
       sur Android et Windows Hello sur un ordinateur. On l'appelle « Face ID »
@@ -292,7 +292,7 @@
 <!-- ═══ LA QUESTION ═════════════════════════════════════════════════ -->
 <div class="question">
   <b>La seule chose que j'attends de toi</b>
-  A ou B ? C'est la place du geste sur la porte, et rien d'autre — tout le reste
+  A ou B ? C'est la place du geste sur la porte, et rien d'autre : tout le reste
   est identique dans les deux.
   <div class="choix">
     <div><span class="mot">A</span><span>le visage d'abord, le mot de passe en
@@ -317,7 +317,7 @@
       </div>
     </div>
     <p class="avert">Ceci est un <b>dessin</b>. Sur ton téléphone, c'est la
-      fenêtre d'iOS qui s'affiche — la même que pour payer.</p>
+      fenêtre d'iOS qui s'affiche : la même que pour payer.</p>
   </div>
 </div>
 
@@ -333,7 +333,7 @@ const sheetTitre = document.querySelector('[data-sheet-titre]');
 const sheetSous  = document.querySelector('[data-sheet-sous]');
 const faceDessin = document.querySelector('[data-face-dessin]');
 let enAttente = null;   // { porte } — quelle porte a ouvert la fenêtre
-let faceAllume = true;  // l'interrupteur des Réglages — la planche s'ouvre allumé
+let faceAllume = true;  // l'interrupteur des Réglages, la planche s'ouvre allumé
                         // pour qu'il puisse essayer A et B tout de suite.
 let faceEchoue = false; // l'interrupteur « faire échouer »
 
@@ -422,14 +422,14 @@ const verdict = document.querySelector('[data-verdict-activation]');
 function appliquerAllumage(){
   // Éteint, Face ID n'apparaît NULLE PART : proposer un geste qui ne peut pas
   // aboutir est pire que ne rien proposer. C'est aussi l'état de tout compte
-  // neuf — la porte redevient exactement celle d'aujourd'hui.
+  // neuf, la porte redevient exactement celle d'aujourd'hui.
   vue('A', faceAllume ? 'visage' : 'mdp');
   vue('B', 'tout');
   porte('B').querySelector('[data-face="B"]').style.display = faceAllume ? '' : 'none';
   porte('A').querySelector('[data-retour="A"]').style.display = faceAllume ? '' : 'none';
   verdict.innerHTML = faceAllume
-    ? '<b>Allumé</b> — c\u2019est ce que la planche te montre en haut. Le mot de passe reste joignable sur les deux portes : c\u2019est la règle, pas une option. <b>Éteins-le</b> pour voir ce que voit un compte neuf.'
-    : '<b>Éteint — l\u2019état de tout compte neuf.</b> Les deux portes du haut sont redevenues <b>exactement</b> l\u2019écran que tu connais aujourd\u2019hui : rien n\u2019a bougé tant qu\u2019on ne l\u2019allume pas.';
+    ? '<b>Allumé</b>, c\u2019est ce que la planche te montre en haut. Le mot de passe reste joignable sur les deux portes : c\u2019est la règle, pas une option. <b>Éteins-le</b> pour voir ce que voit un compte neuf.'
+    : '<b>Éteint : l\u2019état de tout compte neuf.</b> Les deux portes du haut sont redevenues <b>exactement</b> l\u2019écran que tu connais aujourd\u2019hui : rien n\u2019a bougé tant qu\u2019on ne l\u2019allume pas.';
 }
 
 interFace.addEventListener('click', () => {

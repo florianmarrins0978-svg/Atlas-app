@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Ce que l'artisan accepte vraiment — Atlas</title>
+<title>Ce que l'artisan accepte vraiment : Atlas</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@400;500&display=swap" rel="stylesheet">
@@ -136,7 +136,7 @@ h2.titre{margin:0;font:600 22px/1.2 var(--serif)}
 <body>
 
 <div class="bandeau">
-  <b>L'écran où votre artisan s'engage.</b> Recopié du vrai — les deux cartes,
+  <b>L'écran où votre artisan s'engage.</b> Recopié du vrai, les deux cartes,
   la version, « Lire le texte », les cases. <b>Le texte qu'il coche n'est
   pas celui que vous publiez</b>, et c'est ce que cette planche montre.
 </div>
@@ -188,25 +188,25 @@ var CANEVAS = "# Conditions générales d'utilisation\n\n" +
 
 /** Ce qu'il lirait avec la version 2 : les dix-neuf articles déjà écrits. */
 var VRAI = [
-  "ARTICLE 1 — Qui édite Atlas",
-  "ARTICLE 2 — Ce que ce document engage",
-  "ARTICLE 3 — Ce qu'Atlas fait, et ce qu'il ne fait pas",
-  "ARTICLE 4 — L'assistance par intelligence artificielle",
-  "ARTICLE 5 — Votre compte et vos accès",
-  "ARTICLE 6 — Ce que vous vous engagez à ne pas faire",
-  "ARTICLE 7 — Vos contenus vous appartiennent",
-  "ARTICLE 8 — Données personnelles",
-  "ARTICLE 9 — Disponibilité du service",
-  "ARTICLE 10 — Sauvegarde et perte de données",
-  "ARTICLE 11 — Responsabilité",
-  "ARTICLE 12 — Durée, suspension, résiliation",
-  "ARTICLE 13 — Récupérer vos données",
-  "ARTICLE 14 — Prix, abonnement et paiement",
-  "ARTICLE 15 — Modification des présentes conditions",
-  "ARTICLE 16 — Force majeure",
-  "ARTICLE 17 — Preuve",
-  "ARTICLE 18 — Droit applicable et litiges",
-  "ARTICLE 19 — Dispositions diverses"
+  "ARTICLE 1, Qui édite Atlas",
+  "ARTICLE 2 : Ce que ce document engage",
+  "ARTICLE 3 : Ce qu'Atlas fait, et ce qu'il ne fait pas",
+  "ARTICLE 4 : L'assistance par intelligence artificielle",
+  "ARTICLE 5 : Votre compte et vos accès",
+  "ARTICLE 6 : Ce que vous vous engagez à ne pas faire",
+  "ARTICLE 7 : Vos contenus vous appartiennent",
+  "ARTICLE 8 : Données personnelles",
+  "ARTICLE 9 : Disponibilité du service",
+  "ARTICLE 10 : Sauvegarde et perte de données",
+  "ARTICLE 11 : Responsabilité",
+  "ARTICLE 12 : Durée, suspension, résiliation",
+  "ARTICLE 13 : Récupérer vos données",
+  "ARTICLE 14 : Prix, abonnement et paiement",
+  "ARTICLE 15 : Modification des présentes conditions",
+  "ARTICLE 16 : Force majeure",
+  "ARTICLE 17 : Preuve",
+  "ARTICLE 18 : Droit applicable et litiges",
+  "ARTICLE 19 : Dispositions diverses"
 ];
 
 function texteVrai(){
@@ -236,7 +236,7 @@ function ecran(cgu, sousTraitance, chapeau){
     // « Continuer » disait que la date, l'heure et la version sont conservées.
     // Elle expliquait le mécanisme de l'écran au lieu de le laisser faire. Ce
     // qu'elle annonçait n'a pas disparu : l'horodatage et l'appareil sont
-    // toujours enregistrés — c'est le commentaire qui part, pas la preuve.
+    // toujours enregistrés, c'est le commentaire qui part, pas la preuve.
     '<button type="button" class="continuer">Continuer</button>';
 }
 
@@ -251,32 +251,32 @@ var INTRO = "Vos clients vous confient leurs coordonnées&nbsp;; vous nous les c
 var VUES = {
   avant: {
     nom: "Aujourd'hui",
-    idee: "L'écran est bon, le mécanisme est bon — la date, l'heure et la version sont enregistrées, et c'est ce qui vaut preuve. <b>Mais dépliez « Lire le texte » :</b> ce que votre artisan coche fait quatre paragraphes, dont trois disent « à rédiger ». Il lit même « Version <b>canevas-1</b> » sur l'écran.",
+    idee: "L'écran est bon, le mécanisme est bon : la date, l'heure et la version sont enregistrées, et c'est ce qui vaut preuve. <b>Mais dépliez « Lire le texte » :</b> ce que votre artisan coche fait quatre paragraphes, dont trois disent « à rédiger ». Il lit même « Version <b>canevas-1</b> » sur l'écran.",
     rendre: function(){
       return ecran({ cle: "cgu", nom: "Conditions générales d'utilisation", version: "canevas-1",
                      texte: ech(CANEVAS) }, SOUS_TRAITANCE, INTRO);
     },
     notes: [
-      { rouge: true, html: "<b>Le trou, dit simplement.</b> Vous avez de bonnes conditions — dix-neuf articles, écrits, publiés, lisibles depuis votre téléphone. <b>Elles n'engagent aucun de vos clients</b>, parce que ce n'est pas ce qu'ils cochent." },
-      { html: "<b>Ce qui marche déjà, et qu'il ne faut pas casser :</b> l'écran, l'enregistrement de la date et de l'appareil, et le fait que l'accord se redemande quand le texte change. Tout le mécanisme est là — il ne lui manque que le bon texte." }
+      { rouge: true, html: "<b>Le trou, dit simplement.</b> Vous avez de bonnes conditions : dix-neuf articles, écrits, publiés, lisibles depuis votre téléphone. <b>Elles n'engagent aucun de vos clients</b>, parce que ce n'est pas ce qu'ils cochent." },
+      { html: "<b>Ce qui marche déjà, et qu'il ne faut pas casser :</b> l'écran, l'enregistrement de la date et de l'appareil, et le fait que l'accord se redemande quand le texte change. Tout le mécanisme est là : il ne lui manque que le bon texte." }
     ]
   },
   apres: {
     nom: "Ce que je propose",
-    idee: "<b>Le même écran, au mot près.</b> Rien ne bouge : ni les deux cartes, ni les cases, ni la phrase du bas. Seule change la <b>version</b> — et derrière « Lire le texte », le vrai document. <b>Dépliez-le.</b>",
+    idee: "<b>Le même écran, au mot près.</b> Rien ne bouge : ni les deux cartes, ni les cases, ni la phrase du bas. Seule change la <b>version</b> : et derrière « Lire le texte », le vrai document. <b>Dépliez-le.</b>",
     rendre: function(){
       return ecran({ cle: "cgu", nom: "Conditions générales d'utilisation", version: "2", neuf: true,
                      texte: texteVrai() }, SOUS_TRAITANCE, INTRO);
     },
     notes: [
-      { html: "<b>On AJOUTE une version, on ne corrige pas l'ancienne.</b> C'est la règle écrite dans votre dépôt : <i>« une version publiée ne se modifie jamais »</i>. Corriger « canevas-1 » ferait désigner, par toutes les acceptations déjà recueillies, un texte qui n'existe plus — c'est-à-dire rien." },
-      { html: "<b>L'article 14 part avec le reste.</b> C'est lui qui vend l'abonnement : les trois formules, la TVA, l'essai sans carte, la tacite reconduction, le défaut de paiement. Tant qu'il n'est pas accepté, <b>vous n'avez pas de conditions de vente</b> — juste un texte publié." },
-      { html: "<b>Le contrat de sous-traitance reste en canevas-1</b>, et c'est volontaire : il n'a pas été réécrit. Le faire changer de version pour rien redemanderait un accord sans raison — et un écran qui redemande sans raison s'apprend à être coché sans lire." }
+      { html: "<b>On AJOUTE une version, on ne corrige pas l'ancienne.</b> C'est la règle écrite dans votre dépôt : <i>« une version publiée ne se modifie jamais »</i>. Corriger « canevas-1 » ferait désigner, par toutes les acceptations déjà recueillies, un texte qui n'existe plus : c'est-à-dire rien." },
+      { html: "<b>L'article 14 part avec le reste.</b> C'est lui qui vend l'abonnement : les trois formules, la TVA, l'essai sans carte, la tacite reconduction, le défaut de paiement. Tant qu'il n'est pas accepté, <b>vous n'avez pas de conditions de vente</b> : juste un texte publié." },
+      { html: "<b>Le contrat de sous-traitance reste en canevas-1</b>, et c'est volontaire : il n'a pas été réécrit. Le faire changer de version pour rien redemanderait un accord sans raison, et un écran qui redemande sans raison s'apprend à être coché sans lire." }
     ]
   },
   deja: {
     nom: "Ceux qui ont déjà accepté",
-    idee: "Ils <b>rouvrent Atlas</b>, et cet écran revient de lui-même — avec la seule carte qui a changé. Rien à leur écrire, rien à leur demander : le mécanisme le fait déjà, c'est exactement pour ça qu'il existe.",
+    idee: "Ils <b>rouvrent Atlas</b>, et cet écran revient de lui-même : avec la seule carte qui a changé. Rien à leur écrire, rien à leur demander : le mécanisme le fait déjà, c'est exactement pour ça qu'il existe.",
     rendre: function(){
       return '<h2 class="titre">Avant de commencer</h2>' +
         '<p class="intro">' + INTRO + "</p>" +
@@ -287,7 +287,7 @@ var VUES = {
     notes: [
       { html: "<b>Une seule carte, et c'est le bon comportement.</b> Le contrat de sous-traitance n'a pas changé : son acceptation de canevas-1 tient toujours, et on ne la redemande pas." },
       { html: "<b>Rien ne se perd.</b> L'ancienne acceptation reste en base avec sa date et sa version : le jour où l'on doit prouver ce qu'un artisan avait accepté en septembre, on le retrouve." },
-      { html: "<b>Et l'écran est BLOQUANT</b> — il faut cocher pour continuer. C'est ce qui donne sa valeur à l'accord, et c'est déjà le cas aujourd'hui." }
+      { html: "<b>Et l'écran est BLOQUANT</b> : il faut cocher pour continuer. C'est ce qui donne sa valeur à l'accord, et c'est déjà le cas aujourd'hui." }
     ]
   }
 };

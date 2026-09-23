@@ -8,6 +8,58 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-23
 
+### Les deux lots de la même règle n'en font plus qu'un
+
+Sa demande : *« j'ai une session qui taffe sur les tirets, combinez-vous »*.
+Deux lots corrigeaient la même règle chacun de son côté — les points ici, les
+tirets là —, et **deux contrôles se recouvraient** : celui des tirets refusait
+déjà le point médian. Un seul survit, et c'est le sien : il lit l'**arbre
+TypeScript** pour savoir où sont les vraies chaînes, là où celui des points
+lisait caractère par caractère et prenait une apostrophe pour une ouverture de
+chaîne. `test-aucun-point-median.ts` est supprimé.
+
+**Ce que la combinaison a gardé de chaque côté.** De son lot : le garde-fou
+d'écriture, le refus à la poussée même en niveau 1, et les phrases — elles
+sont meilleures (« Devis en attente depuis 5 jours » plutôt que « Devis en
+attente, 5 jours »). De celui-ci : la lecture des **`.js` de `src/`**, qui a
+trouvé **10 tirets de plus dans le catalogue d'arrosage** qu'aucun des deux ne
+voyait, et le NOM d'un matériel sans virgule — « PGP-ADJ buse 1 », parce que
+« une virgule de plus rend la référence introuvable » chez le fournisseur
+(`CLAUDE.md` §4 bis). Le contrôle de la maquette du plan, qui découpait ce nom
+sur le point médian, lit maintenant le mot « buse ».
+
+**Ce que le contrôle ne vise pas, et pourquoi** : `maquettes/`, que
+`pages.yml` ne publie pas — 398 lignes de planches sans adresse, qu'il ne peut
+pas ouvrir. Les viser ferait rougir le dépôt sans rien lui apporter.
+
+
+### Aucun tiret ne passe vers « main », même dans une maquette seule
+
+Sa question, et elle a trouvé un trou entier : *« mais si dans la maquette il
+met des tirets n'importe où, quand il va pousser sur main il va pousser avec
+les tirets ? Donc c'est pas bon. »* Une maquette est inerte, donc un lot qui
+n'en touche que est de niveau 1, donc **aucun contrôle ne se joue** : ni la
+batterie, ni rien. `scripts/garde-fusion-main.mjs` lit désormais les tirets du
+lot avant de regarder son niveau, et refuse la poussée en nommant la page et la
+ligne. Éprouvé sur un vrai dossier : une maquette d'une ligne, un tiret, la
+poussée refusée ; la phrase corrigée, elle passe. Ce que ça évite : croire la
+règle tenue alors que le chemin le plus court y échappait.
+
+### Le tiret est refusé À L'ÉCRITURE, plus seulement à la batterie
+
+*« Il faut mettre cette règle en garde-fou que les sessions futures ne
+recommencent pas à mettre des tirets inutiles là où elles peuvent faire des
+phrases. »* `scripts/garde-tirets.mjs` est branché sur chaque écriture de chaque
+session : une phrase avec « — » ou « · » au milieu est refusée sur-le-champ, et
+le refus dit quoi mettre à la place. Il partage sa règle avec le contrôle de la
+batterie (`scripts/_tirets.mjs`) : deux lectures du même tiret auraient fini par
+se contredire. Ce que ça évite : réécrire trente écrans après coup. Éprouvé sur
+les 936 fichiers affichés du dépôt, **aucun faux refus** — les deux premières
+versions en faisaient 211, puis 4 (`ARCHITECTURE.md` §410).
+
+Au passage, les tirets revenus avec `main` : les cinq maquettes du 22 et du
+23 septembre, le bandeau de démonstration de toutes les planches
+(`appli/nav.js`) et deux phrases de la fiche de chantier.
 ### Le garde-fou des points couvre les maquettes, et le catalogue d'arrosage
 
 **Sa question, et elle a trouvé deux trous :** *« si dans la maquette il met
@@ -39,7 +91,8 @@ en deux et rendait invisible ce qui suivait.
 
 Sa demande, au lendemain des 72 retraits : *« mets cette règle en garde-fou,
 que les sessions futures ne recommencent pas à mettre des points inutiles là
-où elles peuvent faire des phrases »*. `scripts/test-aucun-point-median.ts`
+où elles peuvent faire des phrases »*. Le contrôle des points
+(`test-aucun-point-median.ts`, depuis fondu dans `test-aucun-tiret.ts`)
 est joué par `npm test`, donc par la batterie : il lit les 152 000 lignes de
 `src/`, commentaires retirés, et refuse tout « · » qui n'est pas déclaré avec
 sa raison — les conditions générales, où c'est une puce dans un texte déjà
@@ -67,7 +120,6 @@ point du rapport d'intervention du client, sur la même règle et le même jour 
 sa version est gardée, elle va plus loin (« Mardi 22 septembre chez
 M. Bernard », une phrase, le jour en gras). Aucun point neuf n'était arrivé.
 Après fusion, le produit en affiche toujours **zéro**.
-
 
 ### Filtrer par jour, par mois ou par année
 
@@ -450,6 +502,24 @@ variable d'un cran, refuse un `?telecharger=1` dans un lien, ne lit plus les
 commentaires, et **cherche** les routes qui servent un PDF au lieu de les
 lister : la liste tenue à la main en oubliait déjà une, celle de la fiche de
 sécurité.
+
+### Plus un tiret au milieu d'une phrase, nulle part dans ce qui s'affiche
+
+*« Je ne veux plus de tiret, je veux des phrases normales, sans tiret en plein
+milieu. »* Sa règle du matin (« Probable · Peuplier ») valait déjà pour les
+fiches ; le soir, **240** tirets et points médians vivaient encore dans les
+écrans, sur le papier du client et dans les maquettes. Tous réécrits : une
+virgule quand la suite complète la phrase, un deux-points quand elle l'explique,
+un point quand c'est une phrase entière, des parenthèses pour une incise. Le
+devis imprime « Bon pour accord, signature du client » ; le message au client
+porte « Votre devis de Eden Nature » ; le catalogue d'arrosage dit « 3504, buse
+0,75 » (sa référence fournisseur, elle, ne bouge pas). Ce que ça évite : qu'on
+le lui redemande une quatrième fois. `scripts/test-aucun-tiret.ts` le refuse
+désormais dans `npm test`, commentaires exceptés, et il sait rougir sur le
+cadre de signature du devis. Deux endroits gardent le leur, nommés avec leur
+raison : les canevas juridiques, dont une version publiée ne se modifie jamais,
+et la mémoire du dépôt, qui cite ses messages mot pour mot (`ARCHITECTURE.md`
+§410).
 
 ### La fiche de sécurité du décret 2021-1833 est dans l'application
 

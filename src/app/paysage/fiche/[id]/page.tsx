@@ -9,7 +9,7 @@ import { getEntreprise } from "@/server/repositories/entreprises";
 import FicheChantierClient from "./FicheChantierClient";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Fiche de chantier — Atlas" };
+export const metadata = { title: "Fiche de chantier, Atlas" };
 
 /**
  * La fiche qu'il coche sur un chantier — **arrangement C**, sa décision du

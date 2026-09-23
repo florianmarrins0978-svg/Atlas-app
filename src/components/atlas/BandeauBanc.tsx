@@ -160,7 +160,7 @@ export default function BandeauBanc() {
             déjà prêts.
           </>
         ) : (
-          <> — un écran jamais ouvert peut tarder.</>
+          <>, un écran jamais ouvert peut tarder.</>
         )}
       </p>
       {part !== null && (

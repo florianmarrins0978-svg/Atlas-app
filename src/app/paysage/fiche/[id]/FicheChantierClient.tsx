@@ -468,7 +468,7 @@ export default function FicheChantierClient({
             if (!r.ok) setPhrase(r.phrase);
           }}
           rows={3}
-          placeholder="Ce que le client doit savoir — une haie à reprendre, un arrosage coupé…"
+          placeholder="Ce que le client doit savoir : une haie à reprendre, un arrosage coupé…"
           className="mt-[8px] w-full rounded-[14px] px-[15px] py-3 text-[15px] leading-[1.5] outline-none"
           style={{ backgroundColor: colors.card, color: colors.ink, border: `1px solid ${colors.line}` }}
         />
@@ -589,7 +589,7 @@ function ChoixDuCanal({
           >
             {c.mot}
             {!c.coordonnee?.trim() && (
-              <span style={{ opacity: 0.7 }}> absent</span>
+              <span style={{ opacity: 0.7 }}>, absent</span>
             )}
           </button>
         );

@@ -56,7 +56,7 @@ function cheminPour(storageKey: string): string {
   const chemin = path.resolve(RACINE_STOCKAGE, storageKey);
   const racine = path.resolve(RACINE_STOCKAGE);
   if (chemin !== racine && !chemin.startsWith(racine + path.sep)) {
-    throw new Error("Clé de stockage hors du dossier de stockage — refusée.");
+    throw new Error("Clé de stockage hors du dossier de stockage, refusée.");
   }
   return chemin;
 }

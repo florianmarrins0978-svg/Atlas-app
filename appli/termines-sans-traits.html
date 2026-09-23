@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Atlas — « Terminés » sans traits, et la TVA qui se voit cliquable</title>
+<title>Atlas : « Terminés » sans traits, et la TVA qui se voit cliquable</title>
 </head>
 <body>
 <style>
@@ -238,17 +238,17 @@
 </style>
 
 <header class="entete">
-  <p class="sur">Atlas · planche du 26 août 2026</p>
+  <p class="sur">Atlas, planche du 26 août 2026</p>
   <h1>« Terminés » : les traits partent,<br>et la TVA se voit</h1>
   <p>Les traits entre les lignes sont <b>déjà retirés</b> dans les quatre.
-     Ce qui change, c'est la carte de TVA — <b>essayez d'appuyer dessus</b>.</p>
+     Ce qui change, c'est la carte de TVA : <b>essayez d'appuyer dessus</b>.</p>
 </header>
 
 <div class="choix" role="group" aria-label="La carte de TVA">
-  <button type="button" data-carte="rien" aria-pressed="false">1 · Comme aujourd'hui</button>
-  <button type="button" data-carte="capsule" aria-pressed="true">2 · La capsule</button>
-  <button type="button" data-carte="contour" aria-pressed="false">3 · Le contour</button>
-  <button type="button" data-carte="deux" aria-pressed="false">4 · Les deux</button>
+  <button type="button" data-carte="rien" aria-pressed="false">1, Comme aujourd'hui</button>
+  <button type="button" data-carte="capsule" aria-pressed="true">2, La capsule</button>
+  <button type="button" data-carte="contour" aria-pressed="false">3, Le contour</button>
+  <button type="button" data-carte="deux" aria-pressed="false">4, Les deux</button>
 </div>
 
 <p class="dit" id="dit"></p>
@@ -273,7 +273,7 @@
     <div id="releve" hidden>
       <div class="releve">
         <h3>Mon relevé de TVA</h3>
-        <p>C'est ici que la carte mène. Cette planche ne montre pas le relevé —
+        <p>C'est ici que la carte mène. Cette planche ne montre pas le relevé,
            elle sert à vérifier qu'on comprend qu'on peut y aller.</p>
         <button type="button" id="fermer-releve">Revenir</button>
       </div>
@@ -297,7 +297,7 @@
   <h2>Ce qui a été écarté, et pourquoi</h2>
   <ul>
     <li><b>Une flèche au bout de la carte.</b> « Arrête de mettre des flèches,
-        c'est moche » — dit le 25 août, redit le soir même.</li>
+        c'est moche » : dit le 25 août, redit le soir même.</li>
     <li><b>Un « Voir le relevé » sous le montant.</b> Ça marcherait, et ça
         ajoute une ligne à lire sur un écran qui en porte déjà beaucoup.</li>
     <li><b>Changer la forme de la carte.</b> Vous venez d'écrire que vous
@@ -305,7 +305,7 @@
   </ul>
   <h2 style="margin-top:18px">Ce qui remplace les traits</h2>
   <p>Le trait sous « 3 chantiers à facturer » venait de votre demande du
-     23 août — <i>« laisser un peu d'espace entre cette phrase-là et le premier
+     23 août, <i>« laisser un peu d'espace entre cette phrase-là et le premier
      client, histoire qu'on fasse bien la démarcation »</i>. Vous aviez demandé
      de l'espace ; c'est l'espace qui le remplace, et les lignes respirent de
      24 px au lieu de 19. Sans cela, deux lignes voisines se liraient comme une
@@ -320,14 +320,14 @@
   const CHANTIERS = [
     { nom: "Mr. Eric",                      attente: true,  montant: "0,00 €" },
     { nom: "Mr. Martins",                   attente: true,  montant: "360,00 €" },
-    { nom: "Chantier test — Muret Clisson", attente: true,  montant: null },
+    { nom: "Chantier test : Muret Clisson", attente: true,  montant: null },
     { nom: "Mme Bernard",                   attente: false, montant: "1 240,00 €", quand: "Facturé le 20 août" },
     { nom: "Mr. Lemoine",                   attente: false, montant: "890,00 €",   quand: "Facturé le 14 août" },
   ];
 
   const DITS = {
     rien:    "<b>Ce que vous avez aujourd'hui.</b> La carte est posée sur un fond presque identique au sien : elle a la forme d'un bandeau d'information, pas d'un objet qu'on touche.",
-    capsule: "<span class='retenu'>Le montant prend la forme des boutons de l'écran</span> — « FACTURER » juste en dessous en est un. Aucun signe nouveau à apprendre.",
+    capsule: "<span class='retenu'>Le montant prend la forme des boutons de l'écran</span>, « FACTURER » juste en dessous en est un. Aucun signe nouveau à apprendre.",
     contour: "<b>La carte prend un bord</b>, et cesse d'être un aplat sur un fond de la même couleur. L'or est déjà celui de son titre.",
     deux:    "<b>Les deux à la fois.</b> Plus visible, et peut-être trop : une carte qui crie plus fort que la liste qu'elle surmonte.",
   };

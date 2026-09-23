@@ -1362,7 +1362,7 @@ export async function composerDocument(
       hauteur: 50,
       page: ctx.numeroPage,
     });
-    const legende = "Bon pour accord — signature du client";
+    const legende = "Bon pour accord, signature du client";
     ecrire(
       ctx,
       legende,

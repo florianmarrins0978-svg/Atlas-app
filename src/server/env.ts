@@ -250,7 +250,7 @@ function construireEnv(): Env {
   if (nodeEnvBrut !== undefined && !["development", "test", "production"].includes(nodeEnvBrut)) {
     throw new ErreurConfiguration(
       `NODE_ENV vaut « ${nodeEnvBrut} », qui n'est pas une valeur connue.\n` +
-        "Les seules acceptées sont development, test et production — en minuscules.\n" +
+        "Les seules acceptées sont development, test et production, en minuscules.\n" +
         "Une valeur inattendue faisait basculer Atlas en posture de développement sans le dire :\n" +
         "secret de session en dur, stockage local, IA simulée, et la porte de test rouverte."
     );
@@ -504,7 +504,7 @@ function construireEnv(): Env {
   if (exigencesDeDeploiement && !urlPublique) {
     throw new ErreurConfiguration(
       "ATLAS_URL_PUBLIQUE manquante en production.\n" +
-        "Sans elle, l'adresse du site se déduit d'un en-tête que le client peut écrire — et c'est\n" +
+        "Sans elle, l'adresse du site se déduit d'un en-tête que le client peut écrire, et c'est\n" +
         "cette adresse qui compose les liens de devis et de facture que le patron envoie à ses\n" +
         "clients. Poser l'adresse publique complète, par exemple https://atlas.exemple.fr"
     );
@@ -633,7 +633,7 @@ function construireEnv(): Env {
         throw new ErreurConfiguration(
           `${nom} détourne les appels vers « ${pose} » en production.\n` +
             "Cette variable n'existe que pour les essais : en production, la clé d'API et tout ce\n" +
-            "qui est envoyé au modèle — dictées, photos, noms et adresses des clients — partiraient\n" +
+            "qui est envoyé au modèle (dictées, photos, noms et adresses des clients) partiraient\n" +
             `à cette adresse. La retirer, ou la remettre à ${officielle}.`
         );
       }

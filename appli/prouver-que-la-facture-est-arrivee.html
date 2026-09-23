@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Où se range la réception d'une facture — Atlas</title>
+<title>Où se range la réception d'une facture : Atlas</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@400;500&display=swap" rel="stylesheet">
@@ -189,7 +189,7 @@ ul.factures li{padding:14px 0;border-top:1px solid var(--filet)}
 
 <div class="bandeau">
   <b>Ce qui revient CHEZ VOUS quand votre client confirme.</b> La case à cocher, elle,
-  est sur la planche de sa page — <b>« Sa facture, et comment vous régler »</b>, celle
+  est sur la planche de sa page : <b>« Sa facture, et comment vous régler »</b>, celle
   que vous avez validée le 8 septembre. <b>Rien n'est codé.</b>
 </div>
 
@@ -218,7 +218,7 @@ ul.factures li{padding:14px 0;border-top:1px solid var(--filet)}
 
 <div class="note">
   <b>Votre question : en cas de litige, où je vais chercher ?</b> Aujourd'hui,
-  <b>nulle part</b> — et c'est le vrai trou. La carte de l'accueil s'efface d'un
+  <b>nulle part</b> : et c'est le vrai trou. La carte de l'accueil s'efface d'un
   « J'ai vu », et il ne reste rien. Une preuve qu'on ne sait pas retrouver ne
   prouve rien.
 </div>
@@ -234,14 +234,14 @@ ul.factures li{padding:14px 0;border-top:1px solid var(--filet)}
 <div class="note">
   <b>La ligne du milieu est la plus forte, et c'est « ouverte ».</b> Atlas la note
   tout seul, sans rien demander à votre client : elle ne dépend pas de sa bonne
-  volonté. Regardez <b>« S'il ne coche jamais »</b> — vous avez encore une date à
+  volonté. Regardez <b>« S'il ne coche jamais »</b>, vous avez encore une date à
   opposer.
 </div>
 
 <div class="note">
   <b>Ce que ça vaut, et ce que ça ne vaut pas.</b> Ce n'est pas un recommandé, ça
   ne remplace pas une mise en demeure, et je ne suis pas juriste. Ce que ça fait :
-  remplacer « je ne l'ai jamais reçue » par une date, une heure et un appareil —
+  remplacer « je ne l'ai jamais reçue » par une date, une heure et un appareil :
   le mécanisme qui sert déjà pour vos devis, et que votre page de confidentialité
   annonce déjà (<i>« cette trace vaut signature »</i>).
 </div>
@@ -249,14 +249,14 @@ ul.factures li{padding:14px 0;border-top:1px solid var(--filet)}
 <div class="note">
   <b>Ce que je n'ai pas tranché :</b>
   <ul>
-    <li><b>Où va la carte.</b> Je la pose sur l'accueil, avec les réponses aux devis —
+    <li><b>Où va la carte.</b> Je la pose sur l'accueil, avec les réponses aux devis :
       le mécanisme et son « J'ai vu » existent déjà, il n'y a rien à inventer. Si
       vous la vouliez sur la fiche du chantier, dites-le.</li>
     <li><b>TRANCHÉ le 9 septembre, par vous :</b> <i>« je vais dans mes clients sur
-      la catégorie facture »</i>. La ligne va donc AUSSI dans le dossier du client —
+      la catégorie facture »</i>. La ligne va donc AUSSI dans le dossier du client,
       c'est l'onglet <b>« Dans la fiche du client »</b> ci-dessus. C'est là que vous
       chercherez, et une preuve qu'on ne trouve pas ne prouve rien.</li>
-    <li><b>Prévenir sur le téléphone</b> — le lot d'à côté. Cette confirmation est
+    <li><b>Prévenir sur le téléphone</b>, le lot d'à côté. Cette confirmation est
       l'un des deux événements qui mériteraient de sonner, avec « devis accepté ».</li>
   </ul>
 </div>
@@ -290,11 +290,11 @@ function trace(f, avecCoche){
     return '<div class="trace"><p class="t muet">Pas encore ouverte.</p></div>';
   }
   var t = 'Ouverte <b>' + ech(f.ouverte) + '</b>';
-  if (avecCoche && f.confirmee) t += ' · réception confirmée <b>' + ech(f.confirmee) + '</b>';
+  if (avecCoche && f.confirmee) t += ', réception confirmée <b>' + ech(f.confirmee) + '</b>';
   return '<div class="trace"><p class="t">' + t + '</p></div>';
 }
 
-/** « En attente de paiement » — recopié de `EnAttenteDePaiement.tsx`. */
+/** « En attente de paiement », recopié de `EnAttenteDePaiement.tsx`. */
 function enAttente(avecTrace, avecCoche){
   var h = '<div class="entete"><h1>Terminés</h1><p class="sur">TVA</p></div>' +
     '<section class="bloc"><div class="haut">' +
@@ -306,7 +306,7 @@ function enAttente(avecTrace, avecCoche){
 
   h += FACTURES.map(function(f){
     return '<li><div class="ligne"><span class="gauche"><span class="cli">' + ech(f.client) + '</span>' +
-      '<span class="meta">' + ech(f.numero) + ' · émise le ' + ech(f.emise) + '</span></span>' +
+      '<span class="meta">' + ech(f.numero) + ', émise le ' + ech(f.emise) + '</span></span>' +
       '<span class="eur">' + ech(f.reste) + '</span></div>' +
       (avecTrace ? trace(f, avecCoche) : "") +
       '<div class="gestes"><button type="button" class="payee">Payée</button>' +
@@ -325,15 +325,15 @@ function accueil(){
       '<div class="bas"><span class="lien">Voir la facture</span>' +
       '<button type="button" class="vu">J\'ai vu</button></div></div>' +
     '<section class="chantiers">' +
-      '<div class="l"><span class="n">Mme Durand<span class="o">Taille de haies · Rue des Écoles</span></span>' +
+      '<div class="l"><span class="n">Mme Durand<span class="o">Taille de haies, Rue des Écoles</span></span>' +
         '<span class="e">Facturé</span></div>' +
-      '<div class="l"><span class="n">M. Leroy<span class="o">Élagage · Chemin du Bois</span></span>' +
+      '<div class="l"><span class="n">M. Leroy<span class="o">Élagage, Chemin du Bois</span></span>' +
         '<span class="e">Devis parti</span></div>' +
     '</section>';
 }
 
 /**
- * Le dossier du client, onglet « Factures » — recopié de l'écran réel.
+ * Le dossier du client, onglet « Factures » : recopié de l'écran réel.
  *
  * **Sa réponse du 9 septembre 2026 :** *« je vais dans mes clients sur la
  * catégorie facture »*. C'est donc là qu'il cherchera, et la ligne doit y être.
@@ -350,7 +350,7 @@ function dossierDuClient(){
         h += '<span class="recu muet">Pas encore ouverte.</span>';
       } else {
         h += '<span class="recu">Ouverte <b>' + ech(f.ouverte) + '</b>' +
-          (f.confirmee ? ' · réception confirmée <b>' + ech(f.confirmee) + '</b>' : '') + '</span>';
+          (f.confirmee ? ', réception confirmée <b>' + ech(f.confirmee) + '</b>' : '') + '</span>';
       }
       return h + '</div>';
     }).join("") +
@@ -359,11 +359,11 @@ function dossierDuClient(){
 
 var TEXTES = {
   avant: ["Aujourd'hui",
-    "L'écran où vous allez déjà voir qui n'a pas payé. Il dit ce qu'on vous doit — jamais si votre client a seulement ouvert la facture."],
+    "L'écran où vous allez déjà voir qui n'a pas payé. Il dit ce qu'on vous doit : jamais si votre client a seulement ouvert la facture."],
   trace: ["Où l'info se range",
     "Deux dates de plus, sous la ligne, à la place exacte qu'occupe déjà la marque de l'ancien IBAN. Elles ne s'effacent jamais."],
   pasrecu: ["S'il ne coche jamais",
-    "La case reste vide, et vous avez quand même la date d'ouverture — celle-là, Atlas la note tout seul."],
+    "La case reste vide, et vous avez quand même la date d'ouverture : celle-là, Atlas la note tout seul."],
   carte: ["La carte, sur l'accueil",
     "Ce que vous voyez le jour où il confirme. « J'ai vu » l'efface, comme pour la réponse à un devis."],
   dossier: ["Dans la fiche du client",

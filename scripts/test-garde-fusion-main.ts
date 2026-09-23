@@ -32,6 +32,8 @@ import { suitesDesRoutes } from "./_suites-ciblees.mjs";
  * perd alors la protection sans s'en apercevoir (`CLAUDE.md` §1 bis).
  */
 
+import { tiretsDuLot } from "./garde-fusion-main.mjs";
+
 const RACINE = path.join(__dirname, "..");
 const HOOK = path.join(__dirname, "garde-fusion-main.mjs");
 
@@ -63,7 +65,46 @@ function jouer(commande: string): { refuse: boolean; message: string } {
   }
 }
 
-console.log("=== MAX(plancher, rayon, gravité) — sur un graphe FABRIQUÉ ===");
+console.log("=== AUCUN TIRET NE PASSE VERS « main », MÊME EN NIVEAU 1 ===\n");
+
+/**
+ * **Sa question du 23 septembre 2026 :** *« mais si dans la maquette il met
+ * des tirets n'importe où, quand il va pousser sur main il va pousser avec
+ * les tirets ? »* Une maquette est INERTE, donc niveau 1, donc rien n'est
+ * joué : la batterie ne voyait jamais ce lot-là.
+ */
+{
+  const dossier = mkdtempSync(path.join(tmpdir(), "atlas-tirets-"));
+  mkdirSync(path.join(dossier, "appli"), { recursive: true });
+  const page = "appli/une-planche.html";
+
+  cas("une maquette avec un tiret est refusée, même seule dans le lot", () => {
+    writeFileSync(path.join(dossier, page), "<p>La fiche de sécurité — celle du décret</p>\n");
+    const trouves = tiretsDuLot(dossier, [page]);
+    assert.equal(trouves.length, 1, "le tiret de la maquette n'a pas été vu");
+    assert.match(trouves[0]!, /une-planche\.html:1/);
+  });
+
+  cas("la même page, la phrase écrite en entier, passe", () => {
+    writeFileSync(path.join(dossier, page), "<p>La fiche de sécurité, celle du décret</p>\n");
+    assert.deepEqual(tiretsDuLot(dossier, [page]), []);
+  });
+
+  cas("un fichier du lot qui a été SUPPRIMÉ n'affiche plus rien", () => {
+    assert.deepEqual(tiretsDuLot(dossier, ["appli/page-effacee.html"]), []);
+  });
+
+  cas("ce qui ne s'affiche pas n'est pas lu : un script, la mémoire", () => {
+    mkdirSync(path.join(dossier, "scripts"), { recursive: true });
+    writeFileSync(path.join(dossier, "scripts/x.ts"), 'const t = "un titre — une suite";\n');
+    writeFileSync(path.join(dossier, "CHANGELOG.md"), "Sa phrase — citée telle quelle.\n");
+    assert.deepEqual(tiretsDuLot(dossier, ["scripts/x.ts", "CHANGELOG.md"]), []);
+  });
+
+  rmSync(dossier, { recursive: true, force: true });
+}
+
+console.log("\n=== MAX(plancher, rayon, gravité) — sur un graphe FABRIQUÉ ===");
 
 /**
  * Un graphe d'essai, pour que ces cas-là ne dépendent pas de l'arbre du jour.

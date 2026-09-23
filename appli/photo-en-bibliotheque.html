@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>La photo en bibliothèque — Atlas</title>
+<title>La photo en bibliothèque : Atlas</title>
 <style>
 /*
   ═══════════════════════════════════════════════════════════════════════════
@@ -146,7 +146,7 @@ body.nuit .biblio svg{stroke:#101210}
 </div>
 
 <div class="tete">
-  <span class="sceau">Tranché et codé — la variante avec la rangée</span>
+  <span class="sceau">Tranché et codé, la variante avec la rangée</span>
   <h1>La photo en bibliothèque</h1>
   <p>Touchez une photo de la fiche. Elle vient <b>au milieu</b>, la fiche reste derrière. <b>Croix en haut à droite</b>, <b>un chevron de chaque côté</b>, et le doigt glisse aussi.</p>
 </div>
@@ -170,7 +170,7 @@ body.nuit .biblio svg{stroke:#101210}
         </div>
         <div class="parti">
           <span class="rond"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg></span>
-          <span><span class="t">C'est parti</span><br><span class="s">Terminés · Retour d'intervention</span></span>
+          <span><span class="t">C'est parti</span><br><span class="s">Terminés, Retour d'intervention</span></span>
         </div>
       </div>
       <p class="astuce">Touchez une photo</p>
@@ -198,14 +198,14 @@ body.nuit .biblio svg{stroke:#101210}
 
 <div class="bloc">
   <h2>Ce qui change par rapport à aujourd’hui</h2>
-  <p><b>La fiche reste derrière</b>, sous un voile : on sait d’où l’on vient. <b>La croix passe à droite.</b> <b>Les photos s’enchaînent</b> — chevrons, ou le doigt qui glisse — au lieu d’en ouvrir une, fermer, ouvrir l’autre.</p>
-  <p>Le bouton <b>Avec la rangée en bas</b> montre la seconde variante : les vignettes sous la photo, celle qu’on regarde cerclée d’or. C’est le côté « bibliothèque » — utile dès quatre ou cinq photos, un peu lourd pour deux.</p>
+  <p><b>La fiche reste derrière</b>, sous un voile : on sait d’où l’on vient. <b>La croix passe à droite.</b> <b>Les photos s’enchaînent</b> (chevrons, ou le doigt qui glisse) au lieu d’en ouvrir une, fermer, ouvrir l’autre.</p>
+  <p>Le bouton <b>Avec la rangée en bas</b> montre la seconde variante : les vignettes sous la photo, celle qu’on regarde cerclée d’or. C’est le côté « bibliothèque » : utile dès quatre ou cinq photos, un peu lourd pour deux.</p>
   <p>Même chose sur la pellicule d’un chantier, avec « Retirer » à côté de la croix.</p>
 </div>
 
 <script>
 /* Trois photos « de chantier », dessinées : aucune vraie photo n'est embarquée
-   dans une planche publiée. Deux formats — portrait et paysage — pour montrer
+   dans une planche publiée. Deux formats (portrait et paysage) pour montrer
    que le cadre s'adapte sans jamais couvrir l'écran. */
 function photo(l, h, ciel, herbe, tronc, legende){
   var s = '<svg xmlns="http://www.w3.org/2000/svg" width="'+l+'" height="'+h+'" viewBox="0 0 '+l+' '+h+'">'
@@ -264,7 +264,7 @@ function fermer(){ biblio.classList.remove('ouverte'); }
 document.getElementById('fermer').addEventListener('click', fermer);
 document.getElementById('prec').addEventListener('click', function(){ if (courante > 0) montrer(courante - 1); });
 document.getElementById('suiv').addEventListener('click', function(){ if (courante < PHOTOS.length - 1) montrer(courante + 1); });
-/* Toucher le voile ferme aussi — comme sur un site. Pas la photo, ni les boutons. */
+/* Toucher le voile ferme aussi, comme sur un site. Pas la photo, ni les boutons. */
 biblio.addEventListener('click', function(e){ if (e.target === biblio) fermer(); });
 document.addEventListener('keydown', function(e){
   if (!biblio.classList.contains('ouverte')) return;

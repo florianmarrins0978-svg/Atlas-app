@@ -217,7 +217,7 @@ export default function TransmettreAuClient({
               de porter le numéro brut — c'est `lienTransmission` qui retire les
               espaces, et non cette ligne. */}
           <p className="mt-2 text-center text-[12px]" style={{ color: colors.muted }}>
-            {`${canalChoisi === "sms" ? "Au" : "À"} ${destinataireLisible(canalChoisi, destinataire)} — c'est vous qui l'envoyez.`}
+            {`${canalChoisi === "sms" ? "Au" : "À"} ${destinataireLisible(canalChoisi, destinataire)}. C'est vous qui l'envoyez.`}
           </p>
         </>
       ) : (

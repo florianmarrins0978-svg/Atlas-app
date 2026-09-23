@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Atlas — la facture au planning, trois allures</title>
+<title>Atlas : la facture au planning, trois allures</title>
 <style>
 /*
   LA FACTURE AU PLANNING — refaite le 4 septembre 2026.
@@ -219,9 +219,9 @@ h1{margin:0;font-family:var(--serif);font-weight:400;font-size:23px;
   <p class="chapo">Le planning ne bouge pas. Seule change la façon dont la facture s'y pose.</p>
 
   <div class="onglets" role="tablist" aria-label="Trois allures">
-    <button role="tab" aria-selected="true"  data-allure="a">A · Dépliées</button>
-    <button role="tab" aria-selected="false" data-allure="b">B · Une seule</button>
-    <button role="tab" aria-selected="false" data-allure="c">C · La feuille</button>
+    <button role="tab" aria-selected="true"  data-allure="a">A, Dépliées</button>
+    <button role="tab" aria-selected="false" data-allure="b">B, Une seule</button>
+    <button role="tab" aria-selected="false" data-allure="c">C, La feuille</button>
   </div>
 
   <div class="ecran scene" id="scene">
@@ -229,7 +229,7 @@ h1{margin:0;font-family:var(--serif);font-weight:400;font-size:23px;
       <p class="titre-section">Planifiés</p>
       <div class="semaine">
         <button class="rond" aria-label="Semaine précédente">‹</button>
-        <b>31 août – 6 septembre</b>
+        <b>31 août, 6 septembre</b>
         <button class="rond" aria-label="Semaine suivante">›</button>
       </div>
 
@@ -252,7 +252,7 @@ h1{margin:0;font-family:var(--serif);font-weight:400;font-size:23px;
   <p class="quoi" id="quoi"></p>
   <p class="mesure" id="mesure"></p>
 
-  <p class="note">Trois cas, et c'est le dernier qui départage&nbsp;: <b>fait, pas encore facturé</b> · <b>devis parti</b> · <b>déjà facturé</b>. Répondez A, B ou C.</p>
+  <p class="note">Trois cas, et c'est le dernier qui départage&nbsp;: <b>fait, pas encore facturé</b> : <b>devis parti</b> : <b>déjà facturé</b>. Répondez A, B ou C.</p>
 </main>
 
 <script>
@@ -269,7 +269,7 @@ const JOURNEES = [
 ];
 
 /* Les portes d'un chantier, dans l'ordre où elles se présentent. La première
-   est le geste du moment — celle que B garde seule. */
+   est le geste du moment : celle que B garde seule. */
 function portesDe(c){
   const p = [];
   if (c.etat === 'a-facturer') p.push({ mot:'Créer la facture', etat:'', geste:true });
@@ -328,15 +328,15 @@ function poser(allure){
   });
   document.getElementById('voile').addEventListener('click', () => scene.classList.remove('ouverte'));
 
-  // Ce que l'allure coûte en hauteur — MESURÉ sur le rendu, jamais estimé :
+  // Ce que l'allure coûte en hauteur : MESURÉ sur le rendu, jamais estimé :
   // c'est le seul chiffre qui départage A des deux autres.
   requestAnimationFrame(() => {
     const dedans = document.querySelector('.dedans');
     const h = Math.round(document.getElementById('journees').getBoundingClientRect().height);
     const deborde = dedans.scrollHeight > dedans.clientHeight + 2;
     document.getElementById('mesure').innerHTML = deborde
-      ? `Les deux journées&nbsp;: <b>${h} px</b> — il faut faire défiler pour atteindre le vendredi.`
-      : `Les deux journées&nbsp;: <b>${h} px</b> — tout tient dans l'écran.`;
+      ? `Les deux journées&nbsp;: <b>${h} px</b>, il faut faire défiler pour atteindre le vendredi.`
+      : `Les deux journées&nbsp;: <b>${h} px</b>, tout tient dans l'écran.`;
   });
 }
 

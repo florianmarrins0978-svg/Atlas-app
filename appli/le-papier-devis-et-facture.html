@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Le papier — devis et facture</title>
+<title>Le papier : devis et facture</title>
 <style>
   /* ═══ LES JETONS, SORTIS DU CODE ══════════════════════════════════════════
      src/lib/design-tokens.ts : l'or des documents (#B98B47), l'encre, le crème.
@@ -160,7 +160,7 @@
 <body>
 
 <div class="bandeau">
-  <b>Votre demande du 14 septembre.</b> Le devis et la facture sont <b>le même papier</b> : seul le titre change, et ce que la facture ajoute — les règlements reçus, le net à payer. Colonne <b>Unité</b>, quantités sans « ,00 », le taux de TVA <b>sur la ligne</b> et les bases par taux dessous. Deux polices, comme le PDF ; l’or pour ce qui se lit. Rien n’est codé.
+  <b>Votre demande du 14 septembre.</b> Le devis et la facture sont <b>le même papier</b> : seul le titre change, et ce que la facture ajoute : les règlements reçus, le net à payer. Colonne <b>Unité</b>, quantités sans « ,00 », le taux de TVA <b>sur la ligne</b> et les bases par taux dessous. Deux polices, comme le PDF ; l’or pour ce qui se lit. Rien n’est codé.
 </div>
 
 <div class="choix">
@@ -190,7 +190,7 @@
     <div class="haut">
       <div class="emetteur">
         <div class="nom">Eden Nature</div>
-        <div class="coord">SAS au capital de 1 500,00 € · RCS Avignon 912 345 678<br>12 chemin des Vignes, 84000 Avignon<br>06 12 34 56 78 · contact@edennature.fr<br>SIRET 912 345 678 00019</div>
+        <div class="coord">SAS au capital de 1 500,00 € : RCS Avignon 912 345 678<br>12 chemin des Vignes, 84000 Avignon<br>06 12 34 56 78 : contact@edennature.fr<br>SIRET 912 345 678 00019</div>
       </div>
       <div class="refs" id="refs"></div>
     </div>
@@ -228,7 +228,7 @@
     </div>
 
     <div class="mention" id="mention"></div>
-    <div class="pied"><span>Eden Nature · SIRET 912 345 678 00019 · IBAN FR76 3000 1000 0000 0000 0000 000</span><span>Page 1/1</span></div>
+    <div class="pied"><span>Eden Nature, SIRET 912 345 678 00019, IBAN FR76 3000 1000 0000 0000 0000 000</span><span>Page 1/1</span></div>
   </div>
 </div>
 
@@ -241,7 +241,7 @@
     <tr><td>Le Total TTC par ligne</td><td>ce que le client compare à son relevé.</td></tr>
     <tr><td>Les libellés</td><td>« TVA 20 % » sans parenthèses, « P.U. HT », « Rem. % ». Les mêmes sur les deux papiers.</td></tr>
     <tr><td>Les règlements reçus</td><td>sur la facture, au-dessus du papier : l’acompte du devis d’office, « + Règlement reçu » pour un de plus. « Chèque » est déjà écrit ; touchez-le pour choisir virement, espèces, carte. Un chèque a sa case pour le numéro, un virement non. La date dessous, le montant à côté. Le papier suit : la ligne sous le Total TTC, le net à payer, « Montants versés », et le tampon « Acquittée » quand le net tombe à zéro.</td></tr>
-    <tr><td>Chaque montant reçu est un acompte</td><td>« Acompte 30 % », puis « Acompte 50 % » si le devis le prévoyait — proposé d’office avec ce qui tombe ce jour-là —, puis « Acompte » tout court. Sous le Total TTC, chaque acompte a sa ligne (− 522,23 €, − 348,16 €) ; leur somme, qui ne s’écrit pas, se déduit du net à payer. Dans « Montants versés » : le moyen, le numéro, la date, le montant.</td></tr>
+    <tr><td>Chaque montant reçu est un acompte</td><td>« Acompte 30 % », puis « Acompte 50 % » si le devis le prévoyait : proposé d’office avec ce qui tombe ce jour-là —, puis « Acompte » tout court. Sous le Total TTC, chaque acompte a sa ligne (− 522,23 €, − 348,16 €) ; leur somme, qui ne s’écrit pas, se déduit du net à payer. Dans « Montants versés » : le moyen, le numéro, la date, le montant.</td></tr>
     <tr><td>Facture acquittée</td><td>un interrupteur sous les règlements. Allumé, le solde est compté reçu à la date du jour, le net tombe à zéro et le tampon s’imprime ; il s’allume seul quand les règlements couvrent tout. Éteint, le solde repart.</td></tr>
     <tr><td>Un titre, si vous voulez</td><td>un champ au-dessus du papier, vide d’office : « Aménagement du jardin », « Chantier Machin ». Rempli, il s’écrit sous DEVIS ou FACTURE ; vide, rien.</td></tr>
     <tr><td>L’or</td><td>ne porte que ce qu’on lit : Client, Lieu des travaux, Notes, le tampon « Facture acquittée ». Jamais un montant.</td></tr>

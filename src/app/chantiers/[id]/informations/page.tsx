@@ -76,7 +76,7 @@ export default async function InformationsPage({ params }: { params: Promise<{ i
                 pas faire ce qu'elle fait tous les jours. Rien ne la remplace :
                 ce qui reste est ce qu'on sait. */}
             {dicteeDisponible
-              ? "Proposé à partir de votre dictée — à vérifier avant de continuer."
+              ? "Proposé à partir de votre dictée, à vérifier avant de continuer."
               : etat === "non_transcrite"
                 ? "Votre dictée n'a pas été transcrite : les informations ci-dessous sont celles que vous saisissez."
                 : "Aucune dictée n'a encore alimenté cet écran : les informations ci-dessous sont celles que vous saisissez."}

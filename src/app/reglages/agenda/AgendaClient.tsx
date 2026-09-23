@@ -25,7 +25,7 @@ const MESSAGES_RETOUR: Record<string, { ton: "bien" | "mal"; texte: string }> = 
   etat: {
     ton: "mal",
     texte:
-      "Le retour de Google n'a pas pu être vérifié — le lien a peut-être expiré, ou il ne venait pas de vous. Rien n'a été relié : recommencez.",
+      "Le retour de Google n'a pas pu être vérifié. Le lien a peut-être expiré, ou il ne venait pas de vous. Rien n'a été relié : recommencez.",
   },
   non_configure: {
     ton: "mal",
@@ -107,20 +107,20 @@ export default function AgendaClient({ etat, issue }: { etat: EtatAgenda; issue:
           <p className="mt-3 text-[14px] leading-snug" style={{ color: colors.muted }}>
             Il faut d&apos;abord créer des identifiants Google pour cette application, puis les coller
             ci-dessous. C&apos;est gratuit, mais cela demande un compte Google et l&apos;acceptation de
-            conditions — donc vous, personne d&apos;autre.
+            conditions, donc vous, personne d&apos;autre.
           </p>
         )}
 
         {etat.configure && !etat.relie && (
           <p className="mt-3 text-[14px] leading-snug" style={{ color: colors.muted }}>
             Sans agenda relié, Atlas propose des dates à partir de vos seuls chantiers. Si vous notez un
-            rendez-vous ailleurs, il pourra proposer ce jour-là — et c&apos;est le client qui le choisira.
+            rendez-vous ailleurs, il pourra proposer ce jour-là, et c&apos;est le client qui le choisira.
           </p>
         )}
 
         {agendaPrisEnCompte(etat) && (
           <p className="mt-3 text-[14px] leading-snug" style={{ color: colors.muted }}>
-            Atlas lit uniquement <strong>vos créneaux occupés</strong>{" "}— jamais le titre d&apos;un rendez-vous, ni
+            Atlas lit uniquement <strong>vos créneaux occupés</strong>, jamais le titre d&apos;un rendez-vous, ni
             qui y participe. Une demi-journée prise dans votre agenda ne sera plus proposée.
           </p>
         )}
@@ -134,7 +134,7 @@ export default function AgendaClient({ etat, issue }: { etat: EtatAgenda; issue:
             style={{ backgroundColor: colors.rustTint, borderLeft: `3px solid ${colors.alert}`, color: colors.ink }}
           >
             <strong>Atlas n&apos;arrive plus à lire votre agenda.</strong> En attendant, il propose des dates à
-            partir de vos seuls chantiers — donc un doublon reste possible. Rebranchez-le pour repartir.
+            partir de vos seuls chantiers, donc un doublon reste possible. Rebranchez-le pour repartir.
             <span className="mt-2 block" style={{ color: colors.muted }}>
               Détail : {etat.derniereErreur}
             </span>
@@ -176,7 +176,7 @@ export default function AgendaClient({ etat, issue }: { etat: EtatAgenda; issue:
             <p className="text-[13px] leading-snug" style={{ color: colors.muted, marginBottom: 14 }}>
               Ils se créent une fois, sur <strong>console.cloud.google.com</strong> : un projet, l&apos;API
               Google Agenda activée, puis un identifiant OAuth de type « application Web ». Collez ensuite
-              l&apos;adresse de retour ci-dessous <strong>à l&apos;identique</strong> dans la console — Google
+              l&apos;adresse de retour ci-dessous <strong>à l&apos;identique</strong> dans la console. Google
               refuse au moindre écart.
             </p>
 
@@ -190,7 +190,7 @@ export default function AgendaClient({ etat, issue }: { etat: EtatAgenda; issue:
               libelle="Secret client"
               valeur={clientSecret}
               onChange={setClientSecret}
-              exemple={etat.configure ? "(déjà enregistré — laissez vide pour le garder)" : "GOCSPX-…"}
+              exemple={etat.configure ? "(déjà enregistré, laissez vide pour le garder)" : "GOCSPX-…"}
               masque
             />
             <Champ

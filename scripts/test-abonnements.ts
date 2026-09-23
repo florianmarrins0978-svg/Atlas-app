@@ -238,14 +238,14 @@ cas("jour 1 : quinze jours restants, ruban calme", () => {
   assert.ok(e && e.statut === "en-cours");
   assert.equal(e.joursRestants, 15);
   assert.equal(e.alerte, false);
-  assert.equal(texteDuRuban(e), "Essai gratuit — 15 jours restants");
+  assert.equal(texteDuRuban(e), "Essai gratuit, 15 jours restants");
 });
 
 cas("les jours se comptent ENTAMÉS : à 14 h le dernier jour, il reste « dernier jour », pas zéro", () => {
   const e = etatDeLEssai(ESSAI, apres(14, 5));
   assert.ok(e && e.statut === "en-cours");
   assert.equal(e.joursRestants, 1);
-  assert.equal(texteDuRuban(e), "Essai gratuit — dernier jour");
+  assert.equal(texteDuRuban(e), "Essai gratuit, dernier jour");
 });
 
 cas("à trois jours de la fin, le ruban passe au rouge — pas avant", () => {
@@ -263,7 +263,7 @@ cas("jour 16 : terminé, lecture seule — et pas une minute avant", () => {
   assert.ok(apresLaFin && apresLaFin.statut === "termine");
   assert.equal(enLectureSeule(ESSAI, new Date(FIN.getTime() - 1)), false);
   assert.equal(enLectureSeule(ESSAI, FIN), true);
-  assert.equal(texteDuRuban(apresLaFin), "Essai terminé — lecture seule");
+  assert.equal(texteDuRuban(apresLaFin), "Essai terminé, lecture seule");
 });
 
 cas("SON Atlas à lui n'est pas en essai : sans ligne d'abonnement, ni ruban ni lecture seule", () => {

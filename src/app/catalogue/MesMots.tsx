@@ -150,9 +150,11 @@ export default function MesMots({
                   </span>
                 ))}
                 {carte.mesMots.length > 0 && (
+                  /* Le repère porte la marque : le mot « vôtres » se lit
+                     ailleurs dans l'écran, et une suite qui le chercherait
+                     dans la page entière rendrait un vert qui ne prouve rien. */
                   <span data-atlas="mes-mots-marque" style={{ color: colors.or }}>
-                    {" "}
-                    vous
+                    , dont les vôtres
                   </span>
                 )}
               </p>

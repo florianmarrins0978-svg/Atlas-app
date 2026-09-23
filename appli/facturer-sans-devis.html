@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Facturer sans devis — Atlas</title>
+<title>Facturer sans devis : Atlas</title>
 <style>
 /*
   ═══════════════════════════════════════════════════════════════════════════
@@ -232,10 +232,10 @@ p.dessous b{color:var(--encre)}
 </div>
 
 <div class="tete">
-  <span class="sceau">10 septembre — votre disposition</span>
+  <span class="sceau">10 septembre, votre disposition</span>
   <h1>Facturer sans passer par le devis</h1>
   <p>Un dépannage fait dans la journée, réglé sur place : pas de devis, une
-  facture tout de suite. <b>Tout est tranché</b> — cette planche montre ce que
+  facture tout de suite. <b>Tout est tranché</b> : cette planche montre ce que
   vous avez demandé, pour que vous le voyiez avant que ce soit codé.</p>
 </div>
 
@@ -275,9 +275,9 @@ p.dessous b{color:var(--encre)}
   <div class="cadre">
   <table>
     <tr><th>Ce que vous demandez</th><th>Où c'est déjà écrit</th></tr>
-    <tr><td>reconnaître le client au nom, remplir ses infos</td><td><b>Déjà fait</b> — la fiche client le fait pour le devis</td></tr>
-    <tr><td>des lignes avec des TVA différentes</td><td><b>Déjà fait</b> — l'écran « Travaux en plus » est un éditeur de lignes de facture</td></tr>
-    <tr><td>ouvrir le SMS ou l'e-mail avec le message tout prêt</td><td><b>Déjà fait</b> — le même code que pour le devis</td></tr>
+    <tr><td>reconnaître le client au nom, remplir ses infos</td><td><b>Déjà fait</b> : la fiche client le fait pour le devis</td></tr>
+    <tr><td>des lignes avec des TVA différentes</td><td><b>Déjà fait</b>, l'écran « Travaux en plus » est un éditeur de lignes de facture</td></tr>
+    <tr><td>ouvrir le SMS ou l'e-mail avec le message tout prêt</td><td><b>Déjà fait</b>, le même code que pour le devis</td></tr>
     <tr><td>une facture sans devis</td><td><b>Rien.</b> La base l'interdit aujourd'hui</td></tr>
   </table>
   </div>
@@ -289,7 +289,7 @@ p.dessous b{color:var(--encre)}
   ferait apparaître des numéros de devis qui n'existent pas, dans vos listes et
   dans votre TVA. Elle est écartée.</p>
 
-  <h3>Trois points où je ne vous suivais pas — vous les avez acceptés</h3>
+  <h3>Trois points où je ne vous suivais pas, vous les avez acceptés</h3>
   <ol>
     <li><b>« Les TS ».</b> Un travail supplémentaire, c'est ce qui s'ajoute à ce
     qu'un devis annonçait. Sans devis, il n'y a rien à quoi s'ajouter : toutes
@@ -396,7 +396,7 @@ p.dessous b{color:var(--encre)}
   var pastilles  = document.getElementById("pastilles");
   var ditPas     = document.getElementById("ditPas");
 
-  var pas = 0;                 // 0 fiche client · 1 facture · 2 envoi
+  var pas = 0;                 // 0 fiche client, 1 facture, 2 envoi
   var nom = "";
   var reconnu = false;
   var refuse = false;
@@ -407,7 +407,7 @@ p.dessous b{color:var(--encre)}
     // Chaque ligne porte SA TVA : c'est ce que « les différentes TVA » veut
     // dire, et l'application les range par taux, comme sur le devis.
     lignes = [
-      { lib:"Dépannage arrosage — remplacement électrovanne", qte:1, pu:145, tva:"10" },
+      { lib:"Dépannage arrosage : remplacement électrovanne", qte:1, pu:145, tva:"10" },
       { lib:"Électrovanne 9 V",                               qte:1, pu:38,  tva:"20" }
     ];
     enPlus = [
@@ -504,7 +504,7 @@ p.dessous b{color:var(--encre)}
       + '</div>';
   }
 
-  // ── Écran 3 : l'envoi — son dessin du 4 septembre, confirmé le 10 ───────
+  // ── Écran 3 : l'envoi, son dessin du 4 septembre, confirmé le 10 ───────
   function lEnvoi(){
     var ttc = totalHt() + tvaDue();
     var qui = canal === "sms" ? "06 14 22 87 30" : "j.julien@exemple.fr";

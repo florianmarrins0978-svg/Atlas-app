@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Atlas — note vocale, série 2 : la forme</title>
+<title>Atlas : note vocale, série 2 : la forme</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -334,7 +334,7 @@ body{margin:0;background:var(--bone);color:var(--charcoal);
 <body>
 
 <header class="tete">
-  <h1>La note vocale — série 2 : la forme</h1>
+  <h1>La note vocale, série 2 : la forme</h1>
   <p>La silhouette change, et l'un des dessins ne pose plus rien : la phrase, le cachet, le micro nu, le signet. Pendant la dictée : le sismographe, les chiffres, la goutte. Page conservée pour comparer.</p>
 </header>
 
@@ -342,17 +342,17 @@ body{margin:0;background:var(--bone);color:var(--charcoal);
   <div class="rangee" role="group" aria-label="Avant d'appuyer">
     <p class="quoi">Avant d'appuyer</p>
     <button type="button" data-repos="plein" aria-pressed="true">Aujourd'hui</button>
-    <button type="button" data-repos="phrase" aria-pressed="false">1 · La phrase</button>
-    <button type="button" data-repos="cachet" aria-pressed="false">2 · Le cachet</button>
-    <button type="button" data-repos="micro" aria-pressed="false">3 · Le micro nu</button>
-    <button type="button" data-repos="signet" aria-pressed="false">4 · Le signet</button>
+    <button type="button" data-repos="phrase" aria-pressed="false">1, La phrase</button>
+    <button type="button" data-repos="cachet" aria-pressed="false">2, Le cachet</button>
+    <button type="button" data-repos="micro" aria-pressed="false">3, Le micro nu</button>
+    <button type="button" data-repos="signet" aria-pressed="false">4, Le signet</button>
   </div>
   <div class="rangee" role="group" aria-label="Pendant la dictée">
     <p class="quoi">Pendant la dictée</p>
     <button type="button" data-ligne="onde" aria-pressed="true">Aujourd'hui</button>
-    <button type="button" data-ligne="sismo" aria-pressed="false">1 · Sismographe</button>
-    <button type="button" data-ligne="chiffres" aria-pressed="false">2 · Les chiffres</button>
-    <button type="button" data-ligne="goutte" aria-pressed="false">3 · La goutte</button>
+    <button type="button" data-ligne="sismo" aria-pressed="false">1, Sismographe</button>
+    <button type="button" data-ligne="chiffres" aria-pressed="false">2, Les chiffres</button>
+    <button type="button" data-ligne="goutte" aria-pressed="false">3, La goutte</button>
   </div>
 </nav>
 
@@ -466,14 +466,14 @@ body{margin:0;background:var(--bone);color:var(--charcoal);
 
   <div class="colonne">
     <div class="legende">
-      <span class="nom" id="rang-repos">Avant d'appuyer — aujourd'hui</span>
+      <span class="nom" id="rang-repos">Avant d'appuyer, aujourd'hui</span>
       <h2 id="titre-repos">Le disque plein, votre choix du 30 août</h2>
       <p id="propos-repos">C'est le « B » de la planche des cinq dessins. Il est ici pour comparer :
         c'est la seule tache sombre de la fiche, et c'est elle que vous ne voulez plus.</p>
       <p class="mesure"><span>Encre sombre au repos</span><b id="encre">4 536 px²</b></p>
     </div>
     <div class="legende">
-      <span class="nom" id="rang-ligne">Pendant la dictée — aujourd'hui</span>
+      <span class="nom" id="rang-ligne">Pendant la dictée, aujourd'hui</span>
       <h2 id="titre-ligne">La ligne, votre choix du 31 août</h2>
       <p id="propos-ligne">Poubelle, chrono, onde d'or en barreaux, rond d'envoi. C'est ce que
         l'application porte, et le point de départ des trois dessins d'à côté.</p>
@@ -483,30 +483,30 @@ body{margin:0;background:var(--bone);color:var(--charcoal);
 
 <script>
 const MOTS_REPOS = {
-  plein: ["Avant d'appuyer — aujourd'hui", "Le disque plein, votre choix du 30 août",
+  plein: ["Avant d'appuyer, aujourd'hui", "Le disque plein, votre choix du 30 août",
     "C'est le « B » de la planche des cinq dessins. Il est ici pour comparer : c'est la seule tache sombre de la fiche, et c'est elle que vous ne voulez plus.",
     "4 536 px²"],
-  phrase: ["Avant d'appuyer — dessin 1", "La phrase",
+  phrase: ["Avant d'appuyer : dessin 1", "La phrase",
     "Aucun objet du tout : la ligne est le geste. Vos caractères de titre, un filet d'or dessous, et l'on appuie sur les mots. C'est la seule proposition qui ne pose plus rien sur la fiche.",
     "0 px²"],
-  cachet: ["Avant d'appuyer — dessin 2", "Le cachet",
+  cachet: ["Avant d'appuyer : dessin 2", "Le cachet",
     "On sort du rond : un cachet à angles adoucis, du beige de vos cases, un filet d'or, le micro gravé dedans. Plus petit que le disque, et il ne roule plus.",
     "0 px²"],
-  micro: ["Avant d'appuyer — dessin 3", "Le micro nu",
-    "Pas de contenant. Le dessin seul, plus grand et plus fin, comme gravé à même le papier. Rien à remplir, rien à cerner — et rien à colorer.",
+  micro: ["Avant d'appuyer : dessin 3", "Le micro nu",
+    "Pas de contenant. Le dessin seul, plus grand et plus fin, comme gravé à même le papier. Rien à remplir, rien à cerner : et rien à colorer.",
     "0 px²"],
-  signet: ["Avant d'appuyer — dessin 4", "Le signet",
+  signet: ["Avant d'appuyer : dessin 4", "Le signet",
     "Le ruban d'une reliure, avec son encoche. Le seul dessin qui ne soit pas centré sur lui-même : il pend, comme un signet sorti d'un livre.",
     "0 px²"],
 };
 const MOTS_LIGNE = {
-  onde: ["Pendant la dictée — aujourd'hui", "La ligne, votre choix du 31 août",
+  onde: ["Pendant la dictée : aujourd'hui", "La ligne, votre choix du 31 août",
     "Poubelle, chrono, onde d'or en barreaux, rond d'envoi. C'est ce que l'application porte, et le point de départ des trois dessins d'à côté."],
-  sismo: ["Pendant la dictée — dessin 1", "Le sismographe",
+  sismo: ["Pendant la dictée : dessin 1", "Le sismographe",
     "Un trait continu qui se trace et défile. Les barreaux d'aujourd'hui découpent la voix en morceaux ; celui-ci la garde d'un seul tenant. Même information, écrite à la plume plutôt qu'en bâtons."],
-  chiffres: ["Pendant la dictée — dessin 2", "Les chiffres",
+  chiffres: ["Pendant la dictée : dessin 2", "Les chiffres",
     "La durée est l'objet, et il n'y a rien d'autre : la poubelle à gauche, le temps en grand dans vos caractères de titre, l'avion à droite. Aucune onde. Le plus dépouillé des trois."],
-  goutte: ["Pendant la dictée — dessin 3", "La goutte",
+  goutte: ["Pendant la dictée : dessin 3", "La goutte",
     "La vôtre, celle de la première page, en or. Elle grossit quand vous parlez et retombe quand vous vous taisez : c'est la voix qu'on voit, sans une seule barre."],
 };
 
@@ -565,7 +565,7 @@ const HAUTEURS = [7, 13, 9, 18, 11, 22, 10, 15, 8, 19, 12, 16];
 document.querySelectorAll(".frange").forEach((f) => {
   f.innerHTML = HAUTEURS.map((h) => `<i style="height:${h}px"></i>`).join("");
 });
-// Vingt-six barreaux : l'onde part PLEINE, à plat — sinon les deux premières
+// Vingt-six barreaux : l'onde part PLEINE, à plat : sinon les deux premières
 // secondes montrent un trait qui pousse dans le vide.
 document.getElementById("onde").innerHTML =
   Array.from({ length: 26 }, (_, i) => `<i style="height:${6 + ((i * 7) % 17)}px"></i>`).join("");

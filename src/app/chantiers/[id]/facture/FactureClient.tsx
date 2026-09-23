@@ -333,7 +333,7 @@ export default function FactureClient({
         // parce que le lien a manqué lui ferait croire que rien n'a eu lieu —
         // et il rappuierait sur un bouton qui a déjà engagé sa comptabilité.
         setErreur(
-          `Facture arrêtée, mais le lien n'a pas pu être préparé — ${lien.erreur} ` +
+          `Facture arrêtée, mais le lien n'a pas pu être préparé. ${lien.erreur} ` +
             `Le message tout prêt vous attend ci-dessous.`
         );
         router.refresh();

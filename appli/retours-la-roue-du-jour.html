@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Les retours — filtrer par jour, par mois ou par année</title>
+<title>Les retours : filtrer par jour, par mois ou par année</title>
 <!--
   ════════════════════════════════════════════════════════════════════════════
   LES RETOURS D'INTERVENTION — CHOISIR LA PORTÉE DU FILTRE. 23 septembre 2026.
@@ -140,7 +140,7 @@
   <button type="button" id="versionB" aria-pressed="false">B</button>
   <button type="button" id="jourNuit" aria-pressed="false">Nuit</button>
 </div>
-<p class="quel" id="quelle">A — la croix élargit : le jour, puis son mois, puis son année.</p>
+<p class="quel" id="quelle">A, la croix élargit : le jour, puis son mois, puis son année.</p>
 
 <div class="tel">
   <div class="ecran">
@@ -180,15 +180,15 @@
 <p class="note">
   <p><b>Ce qui manque aujourd'hui, c'est l'année</b> : on peut demander un jour ou un mois, jamais « tout 2026 ».
   Deux façons de la donner, <b>touchez A puis B</b> pour les comparer.</p>
-  <p><b>A</b> — la croix à droite élargit d'un cran : le jour, puis son mois, puis son année. Rien de neuf à l'écran, mais il faut l'avoir essayée une fois pour la connaître, et pour redescendre au mois il faut repasser par la roue.</p>
-  <p><b>B</b> — les trois mots du titre se touchent : le jour, le mois, l'année, et la portée en cours est soulignée d'or. Ça se voit tout de suite, et l'on remonte comme on redescend.</p>
+  <p><b>A</b> : la croix à droite élargit d'un cran : le jour, puis son mois, puis son année. Rien de neuf à l'écran, mais il faut l'avoir essayée une fois pour la connaître, et pour redescendre au mois il faut repasser par la roue.</p>
+  <p><b>B</b> : les trois mots du titre se touchent : le jour, le mois, l'année, et la portée en cours est soulignée d'or. Ça se voit tout de suite, et l'on remonte comme on redescend.</p>
   <p>Dans les deux cas, <b>le chevron doré ouvre la roue</b> du téléphone pour changer de date.
   Il y a des retours en 2025 et en 2026 : posez-vous sur « 2026 » pour voir ce que l'année change.</p>
   <p><b>Vous avez retenu la B</b>, et elle est codée : les retours d'intervention, les fiches de sécurité et les rapports envoyés la portent. A reste ici pour mémoire.</p>
 </p>
 
 <script>
-  /* Les retours de démonstration — deux années, pour que l'année serve. */
+  /* Les retours de démonstration, deux années, pour que l'année serve. */
   const RETOURS = [
     { client:"Julien",    jour:"2026-09-20", par:"Compte de démonstration", faites:4, total:4, photos:6, signale:"Le portail du fond ferme mal.",
       taches:["Tonte et ébarbage","Taille de la haie","Désherbage des massifs","Ramassage des feuilles"] },
@@ -260,7 +260,7 @@
       return;
     }
 
-    /* Rangés par client, du plus récent au plus ancien — sa demande du 8 septembre. */
+    /* Rangés par client, du plus récent au plus ancien : sa demande du 8 septembre. */
     const parClient = [];
     for (const r of gardes.slice().sort((a,b) => a.jour < b.jour ? 1 : -1)){
       let g = parClient.find((x) => x.client === r.client);
@@ -278,7 +278,7 @@
             </span>
             <span class="quoi">
               <span class="jour"><span class="pastille" aria-hidden="true"></span><b>${jourEcrit(r.jour)}</b></span>
-              <span class="meta">${[r.par, compte(r), lesPhotos(r.photos)].filter(Boolean).join(" · ")}</span>
+              <span class="meta">${[r.par, compte(r), lesPhotos(r.photos)].filter(Boolean).join(" : ")}</span>
             </span>
             <span class="chev" aria-hidden="true">
               <svg width="9" height="15" viewBox="0 0 9 15" fill="none"><path d="m1.5 1.5 6 6-6 6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -293,7 +293,7 @@
                   <span class="case ${faite ? "faite" : ""}" aria-hidden="true">${faite
                     ? '<svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2 6.3 4.7 9 10 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>'
                     : ""}</span>
-                  <span style="color:${faite ? "var(--encre)" : "var(--gris)"}">${t}${faite ? "" : ' <span class="pasfait">— pas fait</span>'}</span>
+                  <span style="color:${faite ? "var(--encre)" : "var(--gris)"}">${t}${faite ? "" : '<span class="pasfait">, pas fait</span>'}</span>
                 </li>`;
               }).join("")}
             </ul>
@@ -310,7 +310,7 @@
     portee = mot.dataset.portee;
     dessiner();
   });
-  /* A — un cran plus large : le jour donne son mois, le mois donne son année. */
+  /* A, un cran plus large : le jour donne son mois, le mois donne son année. */
   elargir.addEventListener("click", () => {
     portee = portee === "jour" ? "mois" : "annee";
     dessiner();
@@ -329,8 +329,8 @@
     document.getElementById("versionA").setAttribute("aria-pressed", String(v === "A"));
     document.getElementById("versionB").setAttribute("aria-pressed", String(v === "B"));
     quelle.textContent = v === "A"
-      ? "A — la croix élargit : le jour, puis son mois, puis son année."
-      : "B — les trois mots du titre se touchent : le jour, le mois, l'année.";
+      ? "A : la croix élargit : le jour, puis son mois, puis son année."
+      : "B : les trois mots du titre se touchent : le jour, le mois, l'année.";
     dessiner();
   }
   document.getElementById("versionA").addEventListener("click", () => choisirLaVersion("A"));

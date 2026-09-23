@@ -16,7 +16,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Atlas — corriger la facture avant qu'elle parte</title>
+<title>Atlas : corriger la facture avant qu'elle parte</title>
 <style>
 /*
   L'ARRÊT 3, RENDU CORRIGEABLE — solutions B et D du document
@@ -144,7 +144,7 @@ h1{margin:10px 0 0;font-family:Georgia,serif;font-weight:400;font-size:30px;
 </head>
 <body>
 <div class="page">
-  <p class="sur">Travaux en plus · solutions B et D</p>
+  <p class="sur">Travaux en plus, solutions B et D</p>
   <h1>Corriger avant l'envoi</h1>
   <p class="chapo">La facture en brouillon, <b>modifiable</b> : les quantités au réel se corrigent, une ligne s'ajoute. <b>Essayez les deux postures</b> ci-dessous.</p>
 
@@ -155,8 +155,8 @@ h1{margin:10px 0 0;font-family:Georgia,serif;font-weight:400;font-size:30px;
 
   <div class="tel">
     <h2>Facture 2026-031</h2>
-    <p class="ou">Brouillon · M. Bernard</p>
-    <p class="dit">Devis 2026-014, accepté le 18 août · 950,00 € HT</p>
+    <p class="ou">Brouillon, M. Bernard</p>
+    <p class="dit">Devis 2026-014, accepté le 18 août : 950,00 € HT</p>
 
     <p class="etiq">Les lignes</p>
     <div id="lignes"></div>
@@ -190,7 +190,7 @@ h1{margin:10px 0 0;font-family:Georgia,serif;font-weight:400;font-size:30px;
 
   <div class="note"><span class="t">Ce que cette page ne fait pas</span>
     Rien n'est enregistré, rien ne part chez personne. « Faire signer »
-    n'ouvre pas la vraie signature — elle se manipule sur
+    n'ouvre pas la vraie signature : elle se manipule sur
     <b><a href="ts-bon-sur-place.html">l'autre planche</a></b>.
   </div>
 
@@ -276,7 +276,7 @@ function maj(){
   $('#motBouton').textContent = nonSignees.length === 0
     ? 'Tout est couvert par le devis ou par un bon signé.'
     : (bloque ? 'Bloqué tant que le supplément n’est pas signé.'
-              : 'Elle partira quand même — le risque est pour vous.');
+              : 'Elle partira quand même, le risque est pour vous.');
 }
 
 $('#faireSigner').addEventListener('click', () => {

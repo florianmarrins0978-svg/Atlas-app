@@ -973,7 +973,7 @@ ${CHARTE}
       <!-- C · nommable à tout moment -->
       <div class="qc">
         <div class="pour"><span class="lien">+ C'est pour quel client ?</span><br>
-          <span style="font-size:12px">Facultatif — vous pourrez le dire à la fin.</span></div>
+          <span style="font-size:12px">Facultatif, vous pourrez le dire à la fin.</span></div>
       </div>
 
 ${familleCochee}

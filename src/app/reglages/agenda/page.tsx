@@ -80,7 +80,7 @@ export default async function AgendaPage({
         <div className="px-[26px] pt-4">
           <p className="text-[14px] leading-snug" style={{ color: colors.muted }}>
             Atlas propose des dates à vos clients à partir de vos chantiers.{" "}
-            <strong>Un rendez-vous noté ailleurs, il ne le voit pas</strong> — et il peut proposer ce jour-là.
+            <strong>Un rendez-vous noté ailleurs, il ne le voit pas</strong>, et il peut proposer ce jour-là.
           </p>
         </div>
 

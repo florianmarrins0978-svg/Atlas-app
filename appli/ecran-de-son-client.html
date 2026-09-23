@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Atlas — l'écran de son client</title>
+<title>Atlas : l'écran de son client</title>
 <style>
   /*
     L'ÉCRAN DE SON CLIENT — deux questions, mesurées.
@@ -186,18 +186,18 @@
 <div class="page">
 
   <h1>L'écran de son client</h1>
-  <p class="sous"><b>Les deux questions sont tranchées</b> — cette planche reste comme relevé de ce qui a été mesuré et choisi. Le cadre a la hauteur d'un vrai téléphone, 664 px, barre d'adresse déduite ; le chiffre en dessous est mesuré à chaque geste.</p>
-  <p class="tranche"><b>A — La feuille</b>, retenue le 4 septembre 2026, et <b>les couleurs d'origine</b> conservées. Les deux sont codées et en ligne.</p>
+  <p class="sous"><b>Les deux questions sont tranchées</b>, cette planche reste comme relevé de ce qui a été mesuré et choisi. Le cadre a la hauteur d'un vrai téléphone, 664 px, barre d'adresse déduite ; le chiffre en dessous est mesuré à chaque geste.</p>
+  <p class="tranche"><b>A, La feuille</b>, retenue le 4 septembre 2026, et <b>les couleurs d'origine</b> conservées. Les deux sont codées et en ligne.</p>
 
-  <p class="famille">Question 1 — quand il cherche une autre date</p>
+  <p class="famille">Question 1, quand il cherche une autre date</p>
   <p class="q">Aujourd'hui, ses trois boutons passent sous le pli</p>
   <p class="qd">Le calendrier est ouvert ci-dessous, comme chez lui. Sur « Aujourd'hui », la page passe de 664 à 990 px et « J'accepte ce devis » sort de l'écran. Passez d'un choix à l'autre : les trois autres le gardent en vue.</p>
 
   <div class="choix" role="group" aria-label="Comment le calendrier tient dans l'écran">
     <button type="button" data-forme="aujourdhui" aria-pressed="true">Aujourd'hui</button>
-    <button type="button" data-forme="feuille" aria-pressed="false">A — La feuille</button>
-    <button type="button" data-forme="echange" aria-pressed="false">B — L'échange</button>
-    <button type="button" data-forme="second" aria-pressed="false">C — Le second écran</button>
+    <button type="button" data-forme="feuille" aria-pressed="false">A, La feuille</button>
+    <button type="button" data-forme="echange" aria-pressed="false">B, L'échange</button>
+    <button type="button" data-forme="second" aria-pressed="false">C, Le second écran</button>
   </div>
 
   <div class="tel">
@@ -212,7 +212,7 @@
 
   <p class="note" id="explication"></p>
 
-  <p class="famille">Question 2 — l'identité de la pièce</p>
+  <p class="famille">Question 2, l'identité de la pièce</p>
   <p class="q">Sa page et son PDF ne se ressemblent pas</p>
   <p class="qd">Le PDF suit le papier et l'accent qu'il règle dans Atlas. Cette page-ci porte des couleurs figées qui ne sont ni celles du document, ni les siennes. Le même devis, deux identités, à une minute d'intervalle.</p>
 
@@ -223,15 +223,15 @@
 
   <div class="rep">
     <p><b>Vos réponses, du 4 septembre 2026 :</b></p>
-    <p><b>Question 1 — « J'aime bien la À la feuille ».</b> Codée. Sur l'écran de votre
+    <p><b>Question 1 : « J'aime bien la À la feuille ».</b> Codée. Sur l'écran de votre
       client, le calendrier monte du bas et la page derrière garde sa hauteur : 990 px
       d'avant, 664 aujourd'hui. Vous avez ensuite fait replier la liste des dates une
-      fois la date retenue — 790 px devenus 717 quand la case de rétractation apparaît.</p>
-    <p><b>Question 2 — « Non, garde les couleurs d'origine ».</b> Rien n'a bougé, et
+      fois la date retenue, 790 px devenus 717 quand la case de rétractation apparaît.</p>
+    <p><b>Question 2, « Non, garde les couleurs d'origine ».</b> Rien n'a bougé, et
       c'est écrit dans le dépôt pour qu'on ne vienne pas « faire propre » plus tard.</p>
     <p><b>Ce qui reste :</b> 53 px de trop dans le seul cas d'une date à moins de
       quatorze jours. Les fermer demanderait de descendre la case de rétractation
-      dans la feuille — l'option que vous n'avez pas retenue.</p>
+      dans la feuille, l'option que vous n'avez pas retenue.</p>
   </div>
 </div>
 
@@ -244,7 +244,7 @@ const PROPOSEES = ["Vendredi 11 septembre", "Vendredi 18 septembre"];
 
 let forme = "aujourdhui";
 let palette = "";
-let ouvert = true;       /* « une autre date » est cochée — vrai dès l'arrivée : c'est l'état en question */
+let ouvert = true;       /* « une autre date » est cochée, vrai dès l'arrivée : c'est l'état en question */
 let jour = null;         /* le jour retenu au calendrier */
 let ecranSecond = false; /* C : on est sur le calendrier */
 
@@ -328,14 +328,14 @@ function peindre(){
   let dansLaFeuille = "";
 
   if (forme === "second" && ouvert && ecranSecond) {
-    /* C — le calendrier prend l'écran, avec un retour. La décision reste dessous. */
+    /* C, le calendrier prend l'écran, avec un retour. La décision reste dessous. */
     corps =
       '<button type="button" class="retour" id="revenir">‹ Vos dates</button>' +
       '<div class="carte"><h3>Quelle date vous arrange ?</h3>' + calendrier() + '</div>' +
       (jour ? '<div class="carte"><div class="replie"><span>Vous avez choisi</span><b>' + jour + ' septembre</b></div></div>' : "") +
       retractation() + actions();
   } else if (forme === "echange" && ouvert) {
-    /* B — le haut se replie, les deux dates cèdent la place au calendrier. */
+    /* B, le haut se replie, les deux dates cèdent la place au calendrier. */
     corps = enTete(true) +
       '<div class="carte"><h3>Quelle date vous arrange ?</h3>' +
       '<button type="button" class="retour" id="revenir">‹ Vos deux dates</button>' +
@@ -350,7 +350,7 @@ function peindre(){
       messageEtActions() + '</div>' +
       retractation() + actions();
     if (forme === "feuille" && ouvert) {
-      /* A — la feuille : la page derrière ne bouge pas d'un pixel. */
+      /* A, la feuille : la page derrière ne bouge pas d'un pixel. */
       dansLaFeuille = '<h3>Quelle date vous arrange ?</h3>' + calendrier() +
         '<button type="button" class="b1" id="fermer" style="margin-top:10px">Retenir cette date</button>';
     }
@@ -389,7 +389,7 @@ Array.prototype.forEach.call(document.querySelectorAll("[data-forme]"), function
     forme = b.dataset.forme;
     // **Le choix ouvre le calendrier, il ne le referme pas.** Le patron, le
     // 4 septembre 2026 : « rien ne change quand je clique sur A B C ». Il avait
-    // raison — refermé, les quatre états sont le MÊME écran, et la planche ne
+    // raison, refermé, les quatre états sont le MÊME écran, et la planche ne
     // montrait rien de ce qu'elle demande de comparer. C'est l'état ouvert
     // qui est en question ; c'est donc lui qu'on rend, tout de suite.
     ouvert = true; jour = null;

@@ -204,7 +204,7 @@ export async function preparerPropositionPrix(ctx: Ctx, chantierId: string): Pro
           unite: ligne.unite,
         });
         elementsPrisEnCompte.push({
-          libelle: `Quantité — ${ligne.libelle}`,
+          libelle: `Quantité : ${ligne.libelle}`,
           detail: `${ligne.quantite}${ligne.unite ? ` ${ligne.unite}` : ""} (confirmé)`,
         });
       }
@@ -249,7 +249,7 @@ export async function preparerPropositionPrix(ctx: Ctx, chantierId: string): Pro
         elementsPrisEnCompte,
         calcul: candidats.map((c) => ({
           libelle: c.intitule,
-          detail: `${c.prix} €${c.unite ? ` / ${c.unite}` : ""} — tarif enregistré par l'entreprise.`,
+          detail: `${c.prix} €${c.unite ? ` / ${c.unite}` : ""}, tarif enregistré par l'entreprise.`,
         })),
         donneesManquantes,
         ambiguites,
@@ -318,7 +318,7 @@ export async function preparerPropositionPrix(ctx: Ctx, chantierId: string): Pro
       tarifId: tarif.tarifId,
       tarifsCandidats: [],
       explication: {
-        origine: "Ce prix provient d'un tarif que vous avez déjà enregistré — il n'a pas été calculé.",
+        origine: "Ce prix provient d'un tarif que vous avez déjà enregistré. Il n'a pas été calculé.",
         elementsPrisEnCompte,
         calcul,
         donneesManquantes,
@@ -361,12 +361,12 @@ export async function preparerPropositionPrix(ctx: Ctx, chantierId: string): Pro
       tarifsCandidats: [],
       explication: {
         origine:
-          "Ce prix vient de VOTRE grille de tarifs, appliquée à la durée et à l'équipe que vous avez dictées — il n'a pas été reconstitué depuis vos coûts.",
+          "Ce prix vient de VOTRE grille de tarifs, appliquée à la durée et à l'équipe que vous avez dictées. Il n'a pas été reconstitué depuis vos coûts.",
         elementsPrisEnCompte,
         calcul: [
           { libelle: "Main d'œuvre", detail: mainOeuvre.detail },
           ...(arrondi !== mainOeuvre.montant
-            ? [{ libelle: "Arrondi", detail: `${mainOeuvre.montant} € arrondi à ${arrondi} € — « en HT on fait des prix ronds ».` }]
+            ? [{ libelle: "Arrondi", detail: `${mainOeuvre.montant} € arrondi à ${arrondi} €, « en HT on fait des prix ronds ».` }]
             : []),
           ...decoupe.calcul,
         ],
@@ -448,7 +448,7 @@ export async function preparerPropositionPrix(ctx: Ctx, chantierId: string): Pro
           ? [
               {
                 libelle: "Arrondi",
-                detail: `${standard.prixConseille} € arrondi à ${arrondiCalcule} € — « en HT on fait des prix ronds ».`,
+                detail: `${standard.prixConseille} € arrondi à ${arrondiCalcule} €, « en HT on fait des prix ronds ».`,
               },
             ]
           : []),
@@ -526,7 +526,7 @@ async function decouperEnLignes(
     // toujours — c'est la règle — mais elle le dit.
     calcul.push({
       libelle: "Compris dans l'abattage",
-      detail: `${absorbes.join(", ")} — pas de ligne séparée : le billonnage fait partie du geste d'abattre.`,
+      detail: `${absorbes.join(", ")}, pas de ligne séparée : le billonnage fait partie du geste d'abattre.`,
     });
   }
   if (vendables.length === 0) {
@@ -608,7 +608,7 @@ async function decouperEnLignes(
     calcul.push({
       libelle: "Chiffré poste par poste",
       detail:
-        `${total} € — la somme de vos prix de grille, et non le tarif à la journée. ` +
+        `${total} €, la somme de vos prix de grille, et non le tarif à la journée. ` +
         "C'est votre grille qui décide dès qu'elle connaît le travail principal.",
     });
     direCeQuiResteAChiffrer(lignes);
@@ -827,7 +827,7 @@ async function prixDesGrumes(
     calcul: [
       {
         libelle: "Enlèvement des grumes",
-        detail: `${tonnage} t × ${aLaTonne} € = ${montant.toFixed(2)} € — votre prix à la tonne.`,
+        detail: `${tonnage} t × ${aLaTonne} € = ${montant.toFixed(2)} €, votre prix à la tonne.`,
       },
     ],
     donneesManquantes: [],
@@ -876,7 +876,7 @@ async function prixDeLaHaie(
     calcul: [
       {
         libelle: "Taille de haie",
-        detail: `${longueur} ml × ${auMetre} € = ${montant.toFixed(2)} € — votre prix au mètre linéaire.`,
+        detail: `${longueur} ml × ${auMetre} € = ${montant.toFixed(2)} €, votre prix au mètre linéaire.`,
       },
     ],
     donneesManquantes: [],
@@ -924,7 +924,7 @@ async function prixDepuisCase(
     calcul: [
       {
         libelle: nature === "abattage" ? "Abattage" : "Fendage",
-        detail: `${trouve.prix} € — votre grille, case « ${cellule.libelle} ».`,
+        detail: `${trouve.prix} €, votre grille, case « ${cellule.libelle} ».`,
       },
     ],
     donneesManquantes: [],

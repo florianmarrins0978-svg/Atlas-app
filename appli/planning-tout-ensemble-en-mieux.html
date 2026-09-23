@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Le planning, tout ensemble — en mieux</title>
+<title>Le planning, tout ensemble : en mieux</title>
 <!--
   ════════════════════════════════════════════════════════════════════════════
   SA DEMANDE DU 18 SEPTEMBRE 2026, EN DEUX TEMPS.
@@ -256,7 +256,7 @@
 
 <div class="deux">
 <div class="cote ojd">
-  <p class="quel">Aujourd’hui — votre application</p>
+  <p class="quel">Aujourd’hui, votre application</p>
   <div class="tel">
     <img src="images/planning-aujourdhui.png" width="390" height="760"
          alt="Le planning tel qu'il est aujourd'hui dans l'application">
@@ -302,16 +302,16 @@
 <div class="note">
   <h2>Une seule règle</h2>
   <div class="regle">
-    <b>Noir</b><span>un fait — un nom, un lieu, « libre »</span>
-    <b style="color:#B98B47">Or</b><span>un geste — un mot qu’on touche</span>
-    <b style="color:#8a8578">Gris</b><span>le reste — une heure, une durée, « Annuler »</span>
+    <b>Noir</b><span>un fait, un nom, un lieu, « libre »</span>
+    <b style="color:#B98B47">Or</b><span>un geste : un mot qu’on touche</span>
+    <b style="color:#8a8578">Gris</b><span>le reste, une heure, une durée, « Annuler »</span>
   </div>
-  <p>Aucun bouton, aucun cadre, aucun aplat. Vos trois réponses du 17 sont là : les trois voies gardent leurs mots et « Ajouter » devient « Fermer » ; Matin · Après-midi · Journée sans « Annuler » — la croix le remplace, sa réponse du 19 ; le nom seul pose le client, la date en or au-dessus.</p>
-  <p><b>Une chose change par rapport au 17 :</b> « Salarié absent ? » n’est plus en gras, il est en or — comme tout ce qui s’appuie. Le gras et l’or ensemble crieraient.</p>
+  <p>Aucun bouton, aucun cadre, aucun aplat. Vos trois réponses du 17 sont là : les trois voies gardent leurs mots et « Ajouter » devient « Fermer » ; Matin, Après-midi, Journée sans « Annuler », la croix le remplace, sa réponse du 19 ; le nom seul pose le client, la date en or au-dessus.</p>
+  <p><b>Une chose change par rapport au 17 :</b> « Salarié absent ? » n’est plus en gras, il est en or : comme tout ce qui s’appuie. Le gras et l’or ensemble crieraient.</p>
   <p><b>Vos quatre retouches du 18 sont là</b> : « Client en attente » derrière « Ajouter », plus de point entre l’adresse et la durée, le « + » devant « Salarié absent ? », et « Déplacer  Retirer » en bas à droite, sous l’après-midi et au-dessus d’« Ajouter ».</p>
-  <p><b>Ajouter ou retirer un salarié sur un chantier</b> : touchez « + Salarié » ou le « + » à côté du nom, sur la ligne Matin ou Après-midi — les prénoms s’affichent, touchez-en un pour l’ajouter ou le retirer. C’est le geste d’aujourd’hui, sans la pastille.</p>
+  <p><b>Ajouter ou retirer un salarié sur un chantier</b> : touchez « + Salarié » ou le « + » à côté du nom, sur la ligne Matin ou Après-midi : les prénoms s’affichent, touchez-en un pour l’ajouter ou le retirer. C’est le geste d’aujourd’hui, sans la pastille.</p>
   <p><b>Un salarié absent</b> : une petite croix noire à droite de la durée le supprime.</p>
-  <p><b>Matin et après-midi restent comme aujourd’hui</b> — la pastille et le mot en capitales.</p>
+  <p><b>Matin et après-midi restent comme aujourd’hui</b>, la pastille et le mot en capitales.</p>
   <p><b>« Aujourd’hui »</b>, en haut, est une photo de votre application, prise ce soir sur le 18 septembre, pour comparer.</p>
   <p><b>Touchez</b> un nom dans le tiroir, « Ajouter », « Salarié absent ? », un jour.</p>
   <p><b>L’autre planche</b> : <a href="planning-tout-ensemble.html">planning-tout-ensemble.html</a>. <b>Rien n’est codé.</b></p>
@@ -382,7 +382,7 @@ function poserLaPointe() {
   p.style.left = (b.getBoundingClientRect().left + b.offsetWidth / 2 - $("attache").getBoundingClientRect().left) + "px";
 }
 
-/* des mots à choisir, et « Annuler » à droite — la seule forme d'un choix sur cet écran */
+/* des mots à choisir, et « Annuler » à droite : la seule forme d'un choix sur cet écran */
 function mots(choix, actif, onChoisir, onAnnuler, libelle) {
   const r = el("div", "mots"); r.setAttribute("role", "group"); r.setAttribute("aria-label", libelle);
   for (const [cle, mot] of choix) {
@@ -403,8 +403,8 @@ function dessinerFiche() {
   $("titre-jour").textContent = s ? majuscule(s.nom) : "Aucun jour touché";
   if (!s) { corps.appendChild(el("p", "consigne", "Touchez un jour")); return; }
 
-  // « Salarié absent ? » — sous la date, au milieu ; en or, comme tout ce qui s'appuie
-  // le « + » reste devant — sa consigne du 18 : « garde le + avant Salarié absent ? »
+  // « Salarié absent ? » : sous la date, au milieu ; en or, comme tout ce qui s'appuie
+  // le « + » reste devant : sa consigne du 18 : « garde le + avant Salarié absent ? »
   corps.appendChild(geste(`<span class="plus" aria-hidden="true">${quiDemande ? "✕" : "+"}</span><span>${quiDemande ? "Fermer" : "Salarié absent ?"}</span>`,
     () => { quiDemande = !quiDemande; choixMoment = false; tout(); }, "centre"));
 
@@ -428,7 +428,7 @@ function dessinerFiche() {
     x.setAttribute("aria-label", `Supprimer l’absence de ${absence.qui}`); la.appendChild(x);
     corps.appendChild(la);
     if (choixMoment) {
-      // SA RÉPONSE A — « Annuler » à droite ; le choix et lui s'effacent ensemble
+      // SA RÉPONSE A, « Annuler » à droite ; le choix et lui s'effacent ensemble
       corps.appendChild(mots(MOMENTS, absence.moment,
         (cle) => { absence = { ...absence, moment: cle }; choixMoment = false; tout(); },
         null, `Quand ${absence.qui} est absent`));
@@ -448,7 +448,7 @@ function dessinerFiche() {
     for (const cle of c.demis) {
       // qui part, par moitié : les noms, et un « + » en or pour en ajouter ou en retirer
       const noms = (c.equipe && c.equipe[cle]) || [];
-      // « + Salarié » quand personne n'est posé — sa réponse du 18 au soir, à la
+      // « + Salarié » quand personne n'est posé, sa réponse du 18 au soir, à la
       // place de « Qui ? » : le même mot et le même « + » que la ligne du dessus
       const mot = noms.length <= 2 ? noms.join(" / ") : `${noms[0]} +${noms.length - 1}`;
       const b = geste(noms.length === 0 ? `<span class="plus" aria-hidden="true">+</span>Salarié` : `${mot}<span class="plus" aria-hidden="true">+</span>`,
@@ -469,7 +469,7 @@ function dessinerFiche() {
       }
     }
     // « Déplacer  Retirer » en bas à droite, SOUS l'après-midi et AU-DESSUS
-    // d'« Ajouter » — sa consigne du 18 au soir. Pour le dernier chantier du
+    // d'« Ajouter » : sa consigne du 18 au soir. Pour le dernier chantier du
     // jour, la ligne passe donc après la moitié restée libre.
     const a = el("div", "actions");
     a.appendChild(geste("Déplacer", () => {}, "")); a.appendChild(geste("Retirer", () => {}, ""));
@@ -482,10 +482,10 @@ function dessinerFiche() {
   }
   if (actionsDuDernier) corps.appendChild(actionsDuDernier);
 
-  // ajouter — trois mots, et l'on referme par où l'on est entré
+  // ajouter, trois mots, et l'on referme par où l'on est entré
   if (voies) {
     const r = el("div", "mots");
-    // « Client en attente » — sa consigne du 18
+    // « Client en attente » : sa consigne du 18
     for (const mot of ["Client en attente", "Un client", "Autre chose"])
       r.appendChild(geste(mot, () => { if (mot === "Client en attente") { ouvert = true; voies = false; tout(); } }));
     corps.appendChild(r);
@@ -534,7 +534,7 @@ function dessinerTiroir() {
         () => { demande = null; tout(); }, `Quand poser ${c.nom}`));
       d.appendChild(bloc); continue;
     }
-    // SA RÉPONSE C, retouchée le soir — le nom seul, rien autour
+    // SA RÉPONSE C, retouchée le soir : le nom seul, rien autour
     const b = el("button", "poser", `<span class="nom">${c.nom}</span><span class="duree">${c.duree}</span>`);
     b.type = "button"; b.setAttribute("aria-disabled", String(!s));
     b.setAttribute("aria-label", s ? `Poser ${c.nom} sur ${s.nom}` : `${c.nom} — en attente d’un jour`);
