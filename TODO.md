@@ -137,7 +137,7 @@ page. Éprouvé, et c'est bien « PAS VU ».
 
 | | |
 |---|---|
-| ce qui rattrape | `scripts/test-aucun-tiret.ts`, dans `npm test` : rien ne se livre avec un tiret, quel que soit le chemin par lequel il est entré |
+| ce qui rattrape | `scripts/test-aucun-tiret.ts` dans `npm test`, et surtout `tiretsDuLot` dans `garde-fusion-main.mjs`, qui lit le lot à TOUS les niveaux : rien n'atteint `main` avec un tiret, quel que soit le chemin par lequel il est entré |
 | ce qui reste à faire | lire la commande du terminal comme le fait `garde-redis-des-autres.mjs`, et refuser celles qui écrivent une phrase fautive dans un fichier affiché |
 | ce qui retient | un refus à tort sur une commande qui cite la règle dans un message de commit gênerait tout le monde. C'est le faux positif exact que `test-garde-redis-des-autres.ts` a déjà attrapé une fois |
 

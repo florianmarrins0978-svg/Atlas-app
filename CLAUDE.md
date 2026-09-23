@@ -487,6 +487,10 @@ retransmet — un document périmé le ferait travailler sur une version disparu
   session et refuse la phrase avant qu'elle soit posée. Les deux lisent la même
   règle (`scripts/_tirets.mjs`) ; toucher à sa détection oblige à la confronter
   aux fichiers affichés du dépôt, faute de quoi elle refuse du texte juste.
+  **Et rien ne passe vers `main`** : `garde-fusion-main.mjs` lit les tirets du
+  lot AVANT son niveau (`tiretsDuLot`). C'est lui qui ferme le chemin qu'il a
+  vu le 23 septembre — une maquette est inerte, donc de niveau 1, donc aucun
+  contrôle ne s'y jouait.
 - **Pas de flèches décoratives au bout des libellés.** Sa consigne du 25 août
   2026 : *« arrête de mettre des flèches, c'est moche »*. Le « → » (et le « › »)
   ajouté à la fin d'un bouton ou d'un lien — « Régler à la main → », « Créer le

@@ -101,6 +101,36 @@ export function fautesDansDuHtml(source) {
   return fautes;
 }
 
+/** Là où le texte finit sous ses yeux. Le reste ne s'affiche pas. */
+const DOSSIERS_VUS = [/^src\//, /^appli\//, /^public\//];
+/** Une suite n'est pas une page : `appli/tests/` nomme ses cas comme il veut. */
+const DOSSIERS_MUETS = [/^appli\/tests\//];
+const EXTENSIONS_VUES = /\.(ts|tsx|html|js|jsx)$/;
+
+/**
+ * Vrai quand ce fichier-là finit sous ses yeux.
+ *
+ * Partagé par les TROIS garde-fous : celui qui refuse à l'écriture, celui de
+ * la batterie, et celui de la poussée vers `main`. Trois réponses différentes
+ * à « ce fichier se voit-il ? » laisseraient une porte ouverte quelque part.
+ */
+export function fichierQuiSAffiche(chemin) {
+  if (typeof chemin !== "string") return false;
+  const propre = chemin.replace(/\\/g, "/").replace(/^.*?\/(?=(src|appli|public)\/)/, "");
+  if (!EXTENSIONS_VUES.test(propre)) return false;
+  if (DOSSIERS_MUETS.some((d) => d.test(propre))) return false;
+  return DOSSIERS_VUS.some((d) => d.test(propre));
+}
+
+/** Les phrases fautives d'un fichier du dépôt, lues selon ce qu'il est. */
+export function fautesDuFichier(chemin, contenu) {
+  const html = /\.html$/.test(chemin);
+  const fautes = html
+    ? fautesDansDuHtml(contenu)
+    : fautesDansDuCode(contenu, { tsx: /\.(tsx|jsx)$/.test(chemin) });
+  return fautes.filter((f) => !autorise(chemin, f.texte));
+}
+
 /**
  * Les seuls endroits qui gardent le leur, chacun avec sa raison.
  *

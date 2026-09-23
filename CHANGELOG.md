@@ -8,6 +8,18 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-23
 
+### Aucun tiret ne passe vers « main », même dans une maquette seule
+
+Sa question, et elle a trouvé un trou entier : *« mais si dans la maquette il
+met des tirets n'importe où, quand il va pousser sur main il va pousser avec
+les tirets ? Donc c'est pas bon. »* Une maquette est inerte, donc un lot qui
+n'en touche que est de niveau 1, donc **aucun contrôle ne se joue** : ni la
+batterie, ni rien. `scripts/garde-fusion-main.mjs` lit désormais les tirets du
+lot avant de regarder son niveau, et refuse la poussée en nommant la page et la
+ligne. Éprouvé sur un vrai dossier : une maquette d'une ligne, un tiret, la
+poussée refusée ; la phrase corrigée, elle passe. Ce que ça évite : croire la
+règle tenue alors que le chemin le plus court y échappait.
+
 ### Le tiret est refusé À L'ÉCRITURE, plus seulement à la batterie
 
 *« Il faut mettre cette règle en garde-fou que les sessions futures ne

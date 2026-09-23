@@ -39,23 +39,11 @@
  * ───────────────────────────────────────────────────────────────────────────
  */
 
-import { fautesDansDuCode, fautesDansDuHtml, autorise, CE_QUI_REMPLACE } from "./_tirets.mjs";
+import { fautesDansDuCode, fautesDansDuHtml, autorise, fichierQuiSAffiche, CE_QUI_REMPLACE } from "./_tirets.mjs";
+
+export { fichierQuiSAffiche };
 
 const OUTILS_QUI_ECRIVENT = new Set(["Write", "Edit", "MultiEdit", "NotebookEdit"]);
-
-/** Là où le texte finit sous ses yeux. Le reste ne s'affiche pas. */
-const DOSSIERS_VUS = [/^src\//, /^appli\//, /^public\//];
-/** Une suite n'est pas une page : `appli/tests/` nomme ses cas comme il veut. */
-const DOSSIERS_MUETS = [/^appli\/tests\//];
-const EXTENSIONS_VUES = /\.(ts|tsx|html|js|jsx)$/;
-
-export function fichierQuiSAffiche(chemin) {
-  if (typeof chemin !== "string") return false;
-  const propre = chemin.replace(/\\/g, "/").replace(/^.*?\/(?=(src|appli|public)\/)/, "");
-  if (!EXTENSIONS_VUES.test(propre)) return false;
-  if (DOSSIERS_MUETS.some((d) => d.test(propre))) return false;
-  return DOSSIERS_VUS.some((d) => d.test(propre));
-}
 
 /**
  * La phrase fautive d'un texte, ou `null`.

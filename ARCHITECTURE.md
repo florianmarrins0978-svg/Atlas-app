@@ -33145,3 +33145,32 @@ justes** sur le dépôt entier. La deuxième lisait tout `.ts` comme du TSX :
 fichier du « texte d'écran ». C'est en confrontant le garde-fou aux 936
 fichiers affichés du dépôt qu'on l'a vu, pas en le relisant — et c'est
 l'épreuve à refaire après chaque changement de sa détection.
+
+**ET LE TROU QU'IL A VU LUI-MÊME, LE 23 SEPTEMBRE :** *« mais si dans la
+maquette il met des tirets n'importe où, quand il va pousser sur main il va
+pousser avec les tirets ? Donc c'est pas bon. »* Il avait raison, et c'était
+entier : une maquette est **inerte** (`_niveau-de-risque.mjs`), donc un lot qui
+n'en touche que est de niveau 1, donc **rien ne se joue**. Le contrôle de la
+batterie ne voyait jamais ce lot-là, et le déclencheur d'écriture ne voit pas
+un fichier réécrit depuis le terminal.
+
+`scripts/garde-fusion-main.mjs` lit donc les tirets du lot **avant de regarder
+son niveau** (`tiretsDuLot`), et refuse la poussée quelle que soit sa nature.
+La mesure coûte moins d'une seconde : elle ne lit que les fichiers du lot qui
+s'affichent. C'est le troisième garde-fou, et le dernier verrou avant son
+espace :
+
+| | |
+|---|---|
+| à l'écriture | `garde-tirets.mjs` refuse la phrase, et dit quoi mettre à la place |
+| à la livraison | `test-aucun-tiret.ts`, dans `npm test` |
+| **à la poussée vers `main`** | `tiretsDuLot`, **à tous les niveaux**, maquette comprise |
+
+Les trois lisent la même règle et la même liste d'exceptions
+(`scripts/_tirets.mjs`, `fichierQuiSAffiche`) : trois réponses différentes à
+« ce fichier se voit-il ? » laisseraient une porte ouverte quelque part.
+
+**Au passage, le garde-fou de la fusion ne lit plus l'entrée standard qu'à
+l'appel direct.** Sans cette porte, une suite qui importe sa décision restait
+pendue à attendre une entrée qui ne venait jamais — et un contrôle qui ne rend
+pas la main ne prouve rien (`CLAUDE.md` §5).
