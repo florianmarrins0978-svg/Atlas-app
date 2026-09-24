@@ -335,10 +335,15 @@ export const FICHES_PAYSAGE: FicheModeEmploi[] = [
     ou: "« Paysage », Fiche de chantier",
     intitule: "Faire la fiche d'un autre jour que aujourd'hui",
     motsCles: ["jour", "date", "hier", "autre", "passage", "changer", "fiche"],
-    geste: "Au-dessus de « Créer une fiche », touchez le jour écrit : la roue s'ouvre, choisissez le jour du passage.",
-    source: "src/app/paysage/fiche/OuvrirFiche.tsx",
-    preuves: ['dataAtlas="jour-du-passage"', '"Créer une fiche"'],
-    ailleurs: [{ source: FILTRE, preuves: ['aria-label="Choisir un jour"'] }],
+    geste:
+      "Touchez « Créer une fiche » : elle s'ouvre sur le jour d'aujourd'hui. En tête de la fiche, touchez le jour écrit : la roue s'ouvre, choisissez le jour du passage.",
+    reserve: "Une fois la fiche partie chez le client, son jour ne change plus.",
+    source: FICHE,
+    preuves: ['dataAtlas="jour-du-passage"'],
+    ailleurs: [
+      { source: "src/app/paysage/fiche/OuvrirFiche.tsx", preuves: ['"Créer une fiche"'] },
+      { source: FILTRE, preuves: ['aria-label="Choisir un jour"'] },
+    ],
   },
   {
     id: "fiche-chantier-client",
@@ -356,9 +361,9 @@ export const FICHES_PAYSAGE: FicheModeEmploi[] = [
       "Changer",
       "Pour qui ?",
       'placeholder="Chercher un client"',
-      "prestations cochées, celles du dernier chantier.",
       "Vos clients se créent au fil des devis.",
     ],
+    ailleurs: [{ source: "src/lib/passage-entretien.ts", preuves: ["du dernier chantier."] }],
   },
   {
     id: "fiche-chantier-sms-email",
