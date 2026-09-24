@@ -25,6 +25,20 @@ au même écran sans rien envoyer ; essais et renvois limités comme à la
 création ; après le changement, `deconnecterPartout` ; un compte
 Google/Apple sans mot de passe en reçoit un.
 
+## MA TVA : OUVRIR LA FACTURE DEPUIS LE CLIENT, CODÉ, PAS ENCORE SUR `main` (24 septembre 2026)
+
+Codé sur `claude/invoice-pdf-display-0pugox`. Niveau **3** (argent et rôles) :
+il a demandé qu'**aucune batterie** ne soit lancée ce jour-là, donc
+`npm run verifier:avant-livraison` reste à jouer avant la poussée vers `main`.
+Joués ici au vert : types, lint, `test-acces-roles`, `test-roles-capacites-db`,
+`test-tva-au-paiement-e2e` (dont le nouveau cas, vu rouge sur une adresse
+faussée), `test-visionneuse-pdf-e2e`, code mort, couches, pansements, tirets.
+
+**À vérifier, non vérifié** : le salarié ouvre-t-il la feuille de chantier par
+la visionneuse (`PlanningClient.tsx`) ? `/documents/pdf` lui est fermé comme il
+l'était à la facturation ; si oui, il tombe sur un refus.
+
+
 ## LE GESTE « RETOUR » DU NAVIGATEUR SUR LA FICHE CLIENT PERD LA SAISIE (22 septembre 2026)
 
 La flèche, le voile et Échap enregistrent depuis le 22 septembre

@@ -88,6 +88,26 @@ ouvrait ce rapport depuis le dossier, garde cet accès (`acces-roles.ts`).
 Tenu par deux cas de `test-fiche-client-e2e.ts`, vus rouges avant la
 correction.
 
+### Ma TVA : un appui sur le client ouvre la facture envoyée
+
+Sa demande, planche `appli/ouvrir-la-facture-depuis-la-tva.html` retenue le
+jour même : toute la zone du client ouvre le PDF dans la visionneuse, dans
+« Factures en attente » (hors des deux boutons de paiement) comme dans la liste
+« TVA collectée ». Aucun signe à l'écran : il a refusé le nom souligné en doré,
+« comme sur la page Terminés ». La flèche ramène à la même hauteur de page,
+mesurée (`test-tva-au-paiement-e2e`).
+
+**Au passage, un refus caché : la facturation n'ouvrait pas la visionneuse.**
+`/documents/pdf` manquait à `OUVERT_A_LA_FACTURATION`, donc « Voir la facture en
+PDF » la menait déjà à un refus sur une facture qu'elle a le droit de lire. Le
+fichier reste gardé par sa propre route (`/api/factures`).
+
+**Ce que j'avais annoncé à tort** : que la flèche ramenait en haut de la page.
+Mesuré dans la vraie application, elle ramène déjà à la bonne hauteur ; rien
+n'a été codé pour ça. Le seul écart vu venait du robot d'essai, qui faisait
+défiler la page en cliquant un élément collé au bas de l'écran.
+
+
 ### Les maquettes ne se publiaient plus depuis le 23 septembre au soir
 
 Trois contrôles de `pages.yml` (`termines`, `boutons-verts`, `porte-plein-air`)

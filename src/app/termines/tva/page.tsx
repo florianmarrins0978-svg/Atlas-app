@@ -1,3 +1,4 @@
+import Link from "next/link";
 import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 import BoutonAssistant from "@/components/atlas/BoutonAssistant";
 import NumeroDeDocument from "@/components/atlas/NumeroDeDocument";
@@ -14,6 +15,7 @@ import {
 } from "@/server/periode-tva";
 import { jourLisible, jourEtMois, jourIso } from "@/lib/jour";
 import { enEuros } from "@/lib/euros";
+import { visionneuseDeLaFacture } from "@/lib/visionneuse-pdf";
 import FrisePeriodes from "./FrisePeriodes";
 import LigneMontant from "./LigneMontant";
 import RythmeTva from "./RythmeTva";
@@ -279,24 +281,34 @@ export default async function ReleveTvaPage({
                   deux lignes : deux clés identiques feraient disparaître la
                   seconde de l'écran, sans que le total change — un écart que
                   personne ne saurait expliquer. */}
+              {/* **La ligne entière ouvre la facture envoyée**, sa demande du
+                  24 septembre 2026, *« comme sur la page Terminés, je clique
+                  sur la zone du client et ça ouvre la facture »*
+                  (`appli/ouvrir-la-facture-depuis-la-tva.html`). Rien ne la
+                  signale : il a refusé le nom souligné en doré. */}
               {releve.lignes.map((l) => (
                 <li
                   key={`${l.numeroCommercial}|${l.dateEmission}|${l.totalTtc}`}
-                  className="py-3"
                   style={{ borderTop: `1px solid ${colors.lineSoft}` }}
                 >
-                  <p className="truncate text-[15px]" style={{ color: colors.ink }}>
-                    {l.clientNom ?? "Client non renseigné"}
-                  </p>
-                  <p className="mt-0.5 text-[11.5px]" style={{ color: colors.muted }}>
-                    Facture n° <NumeroDeDocument valeur={l.numeroCommercial} />,{" "}
-                    {l.motif === "paiement" ? "règlement du" : "émise le"} {jourLisible(l.dateEmission)}
-                  </p>
-                  <Paire
-                    quoi={l.motif === "paiement" ? "Règlement encaissé" : "Facture émise"}
-                    combien={`${enEuros(Number(l.totalTtc))} TTC`}
-                  />
-                  <Paire quoi="TVA collectée" combien={enEuros(Number(l.totalTva))} tva />
+                  <Link
+                    href={visionneuseDeLaFacture({ id: l.factureId, numeroCommercial: l.numeroCommercial })}
+                    data-atlas="ouvrir-la-facture"
+                    className="block py-3"
+                  >
+                    <p className="truncate text-[15px]" style={{ color: colors.ink }}>
+                      {l.clientNom ?? "Client non renseigné"}
+                    </p>
+                    <p className="mt-0.5 text-[11.5px]" style={{ color: colors.muted }}>
+                      Facture n° <NumeroDeDocument valeur={l.numeroCommercial} />,{" "}
+                      {l.motif === "paiement" ? "règlement du" : "émise le"} {jourLisible(l.dateEmission)}
+                    </p>
+                    <Paire
+                      quoi={l.motif === "paiement" ? "Règlement encaissé" : "Facture émise"}
+                      combien={`${enEuros(Number(l.totalTtc))} TTC`}
+                    />
+                    <Paire quoi="TVA collectée" combien={enEuros(Number(l.totalTva))} tva />
+                  </Link>
                 </li>
               ))}
               <Total quoi="Total collectée" combien={enEuros(collectee)} marque="total-collectee" />

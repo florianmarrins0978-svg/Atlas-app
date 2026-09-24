@@ -1,10 +1,12 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { colors, font } from "@/lib/design-tokens";
 import { jourCourt, jourEtMois, jourNumerique } from "@/lib/jour";
 import { enEuros } from "@/lib/euros";
+import { visionneuseDeLaFacture } from "@/lib/visionneuse-pdf";
 import { noterPaiementAction, retirerPaiementAction, soldeFactureAction } from "./actions";
 import { MarqueAncienIban } from "@/components/atlas/AlerteAncienIban";
 import { prevenirAction } from "@/app/prevenir-du-nouvel-iban";
@@ -167,7 +169,17 @@ export default function EnAttenteDePaiement({
         <ul className="mt-1 flex flex-col">
           {(toutes ? factures : factures.slice(0, QUELQUES)).map((f) => (
             <li key={f.id} className="py-3.5" style={{ borderTop: `1px solid ${colors.lineSoft}` }}>
-              <div className="flex items-baseline justify-between gap-3">
+              {/* **La zone du client ouvre la facture envoyée**, sa demande du
+                  24 septembre 2026 (`appli/ouvrir-la-facture-depuis-la-tva.html`) :
+                  le nom, le numéro, le montant. Les gestes de paiement en
+                  dessous gardent le leur, et la marque d'IBAN porte son propre
+                  bouton : un bouton dans un lien ne se touche pas sans ouvrir
+                  la facture. */}
+              <Link
+                href={visionneuseDeLaFacture(f)}
+                data-atlas="ouvrir-la-facture"
+                className="flex items-baseline justify-between gap-3"
+              >
                 <div className="min-w-0">
                   <p className="truncate text-[14.5px]" style={{ color: colors.ink }}>
                     {f.clientNom ?? "Client"}
@@ -220,7 +232,7 @@ export default function EnAttenteDePaiement({
                     </p>
                   )}
                 </div>
-              </div>
+              </Link>
 
               {/* La marque, sous la ligne et avant les gestes de paiement :
                   elle dit quelque chose sur la facture, pas sur son règlement. */}
@@ -235,7 +247,7 @@ export default function EnAttenteDePaiement({
                   ouvre quand il court après l'argent. Même place que la marque
                   ci-dessus, et pour la même raison — cela dit quelque chose sur
                   la facture, pas sur son règlement. */}
-              <CeQueLeClientEnAFait reception={receptions[f.id]} />
+              <CeQueLeClientEnAFait reception={receptions[f.id]} facture={visionneuseDeLaFacture(f)} />
 
               <div className="mt-2.5 flex flex-wrap items-center gap-2">
                 {/* Les suites visent les repères, jamais les mots : c'est le
@@ -504,13 +516,17 @@ function SaisieDuReglement({
  * montrer ce qui s'ajoutait. Sur l'écran, cette ligne est une ligne parmi les
  * autres.
  */
-function CeQueLeClientEnAFait({ reception }: { reception: ReceptionLisible | undefined }) {
+/**
+ * Elle fait partie de la zone du client, donc elle ouvre la facture comme le
+ * nom au-dessus. Hors de la tabulation : le clavier a déjà ce lien une fois.
+ */
+function CeQueLeClientEnAFait({ reception, facture }: { reception: ReceptionLisible | undefined; facture: string }) {
   if (!reception) return null;
   return (
-    <p className="mt-2 text-[11.5px] leading-[1.5]" style={{ color: colors.muted }}>
+    <Link href={facture} tabIndex={-1} className="mt-2 block text-[11.5px] leading-[1.5]" style={{ color: colors.muted }}>
       {reception.avant}
       {reception.date && <strong style={{ color: colors.inkSoft }}>{reception.date}</strong>}
-    </p>
+    </Link>
   );
 }
 

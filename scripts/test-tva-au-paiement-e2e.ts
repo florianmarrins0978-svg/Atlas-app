@@ -240,6 +240,48 @@ async function main() {
     assert.strictEqual(rows[0].n, 1, "aucun règlement n'a été écrit");
   });
 
+  // **La zone du client ouvre la facture envoyée, et la flèche ramène à la
+  // même hauteur** — sa demande du 24 septembre 2026, planche
+  // `appli/ouvrir-la-facture-depuis-la-tva.html`. On vise le repère et la
+  // facture qu'il ouvre, jamais un libellé : c'est la PIÈCE qu'il vient
+  // vérifier, et elle doit être celle de la ligne appuyée.
+  await test("UN APPUI SUR LE CLIENT OUVRE SA FACTURE, en attente comme au relevé", async () => {
+    const { chantierId } = await chantierRealise(page, "ouvre");
+    const numero = await emettre(page, chantierId);
+    const { rows } = await inspecter("SELECT id FROM factures WHERE chantier_id = $1", [chantierId], 1);
+    const fichier = `/api/factures/${rows[0].id}/pdf`;
+
+    async function ouvrirPuisRevenir(zone: ReturnType<Page["locator"]>) {
+      // **La zone se pose au MILIEU de l'écran avant la mesure.** Posée au ras
+      // du bas, le clic la remontait lui-même de trois cents pixels, et le
+      // contrôle accusait le retour d'un défilement qu'il avait fait.
+      await zone.evaluate((el) => el.scrollIntoView({ block: "center" }));
+      const hauteur = await page.evaluate(() => window.scrollY);
+      await zone.click();
+      await page.waitForURL(/\/documents\/pdf/, { timeout: 20_000 });
+      const adresse = new URL(page.url());
+      assert.strictEqual(adresse.searchParams.get("fichier"), fichier, "la ligne ouvre une autre facture que la sienne");
+      assert.strictEqual(adresse.searchParams.get("titre"), numero);
+      await page.getByRole("link", { name: "Retour" }).first().click();
+      await page.waitForURL(/\/termines\/tva/, { timeout: 20_000 });
+      await page.waitForTimeout(800);
+      const revenu = await page.evaluate(() => window.scrollY);
+      assert.ok(
+        Math.abs(revenu - hauteur) < 2,
+        `le retour ne ramène pas à la ligne appuyée : ${hauteur} px avant, ${revenu} px après`
+      );
+    }
+
+    await page.goto(`${BASE}/termines/tva`, { waitUntil: "networkidle" });
+    const enAttente = page.locator("li").filter({ hasText: numero });
+    await ouvrirPuisRevenir(enAttente.locator('[data-atlas="ouvrir-la-facture"]').first());
+
+    await enAttente.locator('[data-atlas="solder-la-facture"]').click();
+    const auReleve = page.locator('[data-atlas="preuve-collectee"] li').filter({ hasText: numero });
+    await auReleve.waitFor({ state: "visible", timeout: 15_000 });
+    await ouvrirPuisRevenir(auReleve.locator('[data-atlas="ouvrir-la-facture"]'));
+  });
+
   await test("un acompte n'apporte que sa part, et la facture reste en attente", async () => {
     await page.goto(`${BASE}/termines/tva`, { waitUntil: "networkidle" });
     const avant = await collectee(page);
