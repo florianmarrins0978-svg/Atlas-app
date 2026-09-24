@@ -2,7 +2,7 @@ import { randomBytes } from "node:crypto";
 import { and, eq, inArray, isNotNull, isNull, sql } from "drizzle-orm";
 import { db } from "../db/client";
 import { withEntreprise } from "../db/with-entreprise";
-import { envoisFactures, factures, chantiers } from "../db/schema";
+import { avoirs, envoisFactures, factures, chantiers } from "../db/schema";
 import { lireObjet } from "../storage";
 import { modalitesDeLaFacture, type ModalitesPaiement } from "@/lib/modalites-paiement";
 import type { Ctx } from "./context";
@@ -130,6 +130,18 @@ export async function dernierEnvoiFacture(ctx: Ctx, factureId: string): Promise<
 }
 
 /**
+ * Le jeton du dernier lien de cette facture, **s'il vit encore** — ou rien.
+ *
+ * Pour l'avoir, qui part avec le lien de sa facture : un lien périmé mis dans
+ * le message mènerait le client sur « ce lien n'est plus valable ». Rien, et
+ * l'écran en prépare un neuf à l'appui (`preparerLienFactureAction`).
+ */
+export async function jetonVivantDeLaFacture(ctx: Ctx, factureId: string, maintenant: Date = new Date()): Promise<string | null> {
+  const dernier = await dernierEnvoiFacture(ctx, factureId);
+  return dernier && dernier.expireAt.getTime() > maintenant.getTime() ? dernier.jeton : null;
+}
+
+/**
  * Le PDF de la facture, ouvert par le client depuis son lien — sans compte.
  *
  * Sert le fichier ARCHIVÉ au moment de l'arrêt, jamais un document régénéré :
@@ -217,6 +229,13 @@ export type FacturePourClient = {
    * d'Atlas.**
    */
   modalites: ModalitesPaiement;
+  /**
+   * **Les avoirs de cette facture** — sa question du 24 septembre 2026 :
+   * l'avoir part par SMS ou e-mail comme la facture. Il part avec le lien de la
+   * facture qu'il corrige, et le client le trouve ici, sous elle. Du plus
+   * ancien au plus récent, dans l'ordre de leurs numéros.
+   */
+  avoirs: { id: string; numero: string; dateEmission: string }[];
 };
 
 export async function factureParJeton(
@@ -253,6 +272,11 @@ export async function factureParJeton(
 
     const [f] = await tx.select().from(factures).where(eq(factures.id, envoi.factureId)).limit(1);
     if (!f) return null;
+    const sesAvoirs = await tx
+      .select({ id: avoirs.id, numero: avoirs.numero, dateEmission: avoirs.dateEmission })
+      .from(avoirs)
+      .where(eq(avoirs.factureId, f.id))
+      .orderBy(avoirs.numero);
     return {
       numeroCommercial: f.numeroCommercial,
       entrepriseNom: f.entrepriseNom,
@@ -264,8 +288,55 @@ export async function factureParJeton(
       // un ordre de chèque calculé deux fois, finiraient par ne plus coïncider
       // (`src/lib/modalites-paiement.ts`).
       modalites: modalitesDeLaFacture(f),
+      avoirs: sesAvoirs,
     };
   });
+}
+
+/**
+ * Le PDF d'un avoir, ouvert par le client depuis le lien de SA facture.
+ *
+ * **L'avoir doit appartenir à la facture du jeton**, et la condition est dans
+ * la requête, pas après : un lien de facture ne doit ouvrir aucun autre avoir de
+ * la même entreprise, même si quelqu'un devine son identifiant. Comme pour la
+ * facture, c'est le fichier ARCHIVÉ qui part, jamais un document refait.
+ */
+const FORMAT_UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+export async function pdfAvoirParJeton(
+  jeton: string,
+  avoirId: string,
+  maintenant: Date = new Date()
+): Promise<{ octets: Buffer; nom: string } | null> {
+  // Un identifiant qui n'en est pas un ferait lever PostgreSQL (« invalid input
+  // syntax for type uuid ») : le client verrait une erreur brute au lieu de la
+  // page qui dit que le lien n'est plus valable.
+  if (!jeton || !FORMAT_UUID.test(avoirId)) return null;
+
+  const cle = await db.transaction(async (tx) => {
+    await tx.execute(sql`SELECT set_config('app.jeton_envoi', ${jeton}, true)`);
+    const [envoi] = await tx.select().from(envoisFactures).where(eq(envoisFactures.jeton, jeton)).limit(1);
+    if (!envoi) return null;
+    if (envoi.expireAt.getTime() <= maintenant.getTime()) return null;
+    // Même contexte que `factureParJeton`, déduit du jeton et de lui seul.
+    await tx.execute(sql`SELECT set_config('app.entreprise_id', ${envoi.entrepriseId}, true)`);
+    const [a] = await tx
+      .select({ storageKey: avoirs.pdfStorageKey, numero: avoirs.numero })
+      .from(avoirs)
+      .where(and(eq(avoirs.id, avoirId), eq(avoirs.factureId, envoi.factureId)))
+      .limit(1);
+    return a ?? null;
+  });
+
+  if (!cle) return null;
+  try {
+    return { octets: await lireObjet(cle.storageKey), nom: `avoir-${cle.numero}.pdf` };
+  } catch (e) {
+    // Même règle que la facture : un 404, jamais un avoir reconstruit. Mais
+    // journalisé, pour qu'un fichier disparu ne reste pas une panne muette.
+    console.error("[avoir] PDF introuvable au stockage", { avoirId, erreur: e });
+    return null;
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════════════════

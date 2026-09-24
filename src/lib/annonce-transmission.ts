@@ -21,7 +21,7 @@
  * (`CLAUDE.md` §3).
  */
 /** Ce qui part par la messagerie, et que le bandeau sait annoncer. */
-export const TRANSMISSIONS = ["devis", "facture", "fiche"] as const;
+export const TRANSMISSIONS = ["devis", "facture", "avoir", "fiche"] as const;
 
 export type Transmission = {
   quoi: (typeof TRANSMISSIONS)[number];
@@ -48,6 +48,9 @@ export function annonceTransmission(t: Transmission): string {
     // jamais, et lui ferait relancer un client qui n'a rien à répondre.
     return `Facture transmise${destinataire}.`;
   }
+
+  // L'avoir non plus n'attend pas de réponse : il rend, il ne demande rien.
+  if (t.quoi === "avoir") return `Avoir transmis${destinataire}.`;
 
   return `Devis transmis${destinataire}, en attente de sa réponse.`;
 }

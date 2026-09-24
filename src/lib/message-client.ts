@@ -376,6 +376,48 @@ export function composerMessageFacture(params: {
 }
 
 /**
+ * Compose le message remettant l'AVOIR au client — sa question du 24 septembre
+ * 2026 : *« lorsque j'envoie l'avoir, ça fait comme pour envoyer un devis, ça
+ * ouvre soit les SMS soit les mails ? »*
+ *
+ * **Le lien est celui de la FACTURE**, et c'est délibéré : l'avoir corrige une
+ * facture, le client la retrouve donc là où il l'a déjà ouverte, avec l'avoir
+ * posé dessous. Un second système de liens publics serait une seconde porte à
+ * garder, pour un document qu'il dit lui-même « hyper rare ».
+ *
+ * **Pas de modèle réglable** : les trois messages qu'il écrit (devis, facture,
+ * retour d'intervention) vivent dans ses réglages ; un quatrième pour une pièce
+ * aussi rare ajouterait une case que personne ne remplira. Le texte d'Atlas suit
+ * la même enveloppe que les trois autres, donc la même voix.
+ */
+export function composerMessageAvoir(params: {
+  clientNom: string;
+  clientCivilite?: CiviliteChoisie;
+  entrepriseNom: string;
+  numeroAvoir: string;
+  numeroFacture: string;
+  lien: string;
+}): MessageClient {
+  const { clientNom, clientCivilite, entrepriseNom, numeroAvoir, numeroFacture, lien } = params;
+  return {
+    objet: `Votre avoir ${numeroAvoir} de ${entrepriseNom}`,
+    corps: rendreMessage(
+      enveloppe(
+        `Voici votre avoir [numero], qui rectifie la facture ${numeroFacture}. ` +
+          "Vous pouvez le consulter et le télécharger ici :"
+      ),
+      {
+        client: nommer(clientNom, clientCivilite),
+        document: "avoir",
+        numero: numeroAvoir,
+        lien,
+        entreprise: entrepriseNom,
+      }
+    ),
+  };
+}
+
+/**
  * Compose le message remettant le compte rendu de passage au client.
  *
  * **Même forme que le devis et la facture, et c'est le sujet.** Un client

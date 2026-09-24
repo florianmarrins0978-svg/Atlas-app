@@ -24,6 +24,12 @@ catégorie, « J'ai reçu le paiement », l'onglet « Avoirs » du client. Un d�
 qu'aucun compilateur ne voyait est sorti de la capture : un bloc de commentaire
 déplacé s'affichait en texte sur chaque ligne de Terminés.
 
+Puis le lot 3 : l'avoir part par SMS ou e-mail avec le lien de sa facture, et le
+client le télécharge sous elle ; « Mise en demeure » sous une facture non payée
+rédige la lettre (reste dû, facture, dates) et la donne en PDF. Défaut attrapé à
+l'image du PDF avant livraison : l'espace avant un montant en gras disparaissait
+(« de1 440,00 € ») ; `test-mise-en-demeure.ts` le tient.
+
 ### Les maquettes ne se publiaient plus depuis le 23 septembre au soir
 
 Trois contrôles de `pages.yml` (`termines`, `boutons-verts`, `porte-plein-air`)

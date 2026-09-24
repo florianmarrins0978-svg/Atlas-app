@@ -33215,5 +33215,18 @@ qu'une facture y est. L'onglet « Avoirs » de la fiche client n'existe que chez
 client qui en a un ; `natureDeLaPiece` connaît `/api/avoirs/`, sans quoi un
 avoir se rangeait en « Fiche de chantier ». Suite : `test-avoir-et-non-payee-e2e`.
 
-**Ce qui reste (lot 3)** : l'envoi de l'avoir au client (SMS ou e-mail, page
-publique par jeton) et la mise en demeure.
+**Le lot 3 : l'envoi de l'avoir, et la mise en demeure.**
+
+| | Où | Pourquoi ainsi |
+|---|---|---|
+| l'envoi de l'avoir | `TransmettreLaFacture` avec `avoir`, sur « C'est fait » | un seul composant d'envoi : le même SMS/e-mail, la même saisie de coordonnée manquante ; seul le message change (`composerMessageAvoir`) |
+| son lien | celui de la FACTURE (`envois_factures`) | l'avoir corrige cette facture ; le client le trouve sous elle. Un second système de jetons publics serait une seconde porte à garder, pour une pièce rare |
+| la page du client | `factureParJeton` rend `avoirs` ; `/factures/[jeton]/avoirs/[avoirId]/pdf` | l'avoir doit appartenir à la facture du jeton, et la condition est DANS la requête : un lien ne lit aucun autre avoir de l'entreprise (`test-avoirs-db`, qui sait rougir sans elle) |
+| la lettre | `lettreDeMiseEnDemeure` (`src/lib/mise-en-demeure.ts`), pure | l'aperçu à l'écran et le PDF lisent la même lettre ; elle réclame le RESTE dû, jamais le total |
+| son papier | `genererPdfMiseEnDemeure`, moteur à part | une lettre n'a ni lignes ni totaux ; composée à la demande et datée du jour, jamais archivée : la preuve est l'accusé de réception de la Poste |
+| l'appellation | « Monsieur X », « Madame X », sinon « Madame, Monsieur » | jamais la civilité par défaut des devis : sur un recommandé, elle ne se corrige plus |
+
+**Non vérifié dans les textes** : le délai de huit jours (usage) et « les
+intérêts au taux légal courent à compter de la présente lettre » (art. 1231-6
+du Code civil pour un particulier ; un client professionnel relève de L441-10
+du Code de commerce, que la lettre ne cite pas). Inscrit dans `TODO.md`.

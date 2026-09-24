@@ -10,6 +10,7 @@ import { emettreFacture, terminerChantier } from "../src/server/repositories/fac
 import { facturesAvecPaiements, noterPaiement } from "../src/server/repositories/paiements-facture";
 import { avoirsDeLaFacture, faireUnAvoir, pdfDeLAvoir } from "../src/server/repositories/avoirs";
 import { declarerNonPayee, listerFacturesNonPayees } from "../src/server/repositories/factures-non-payees";
+import { creerEnvoiFacture, factureParJeton, pdfAvoirParJeton } from "../src/server/repositories/envois-factures";
 import { fermerLimiteur } from "../src/server/rate-limit";
 import { nettoyerBase } from "./_test-db";
 
@@ -154,6 +155,27 @@ async function main() {
     assert.equal(r.ok, false);
     assert.equal((await listerFacturesNonPayees(voisin)).length, 0);
     assert.equal((await declarerNonPayee(voisin, facture.id)).ok, false);
+  });
+
+  await test("LE CLIENT TROUVE L'AVOIR PAR LE LIEN DE SA FACTURE, et par lui seul (rôle applicatif)", async () => {
+    const envoi = await creerEnvoiFacture(ctx, facture.id, "sms", MAINTENANT);
+    const page = await factureParJeton(envoi.jeton, MAINTENANT);
+    assert.equal(page?.avoirs.length, 2, "les deux avoirs devaient être sous la facture");
+    const pdf = await pdfAvoirParJeton(envoi.jeton, page!.avoirs[0]!.id, MAINTENANT);
+    assert.ok(pdf && pdf.octets.subarray(0, 4).toString() === "%PDF", "le PDF de l'avoir n'est pas servi");
+    assert.match(pdf.nom, /^avoir-A/);
+
+    // Le lien d'une AUTRE facture de la même entreprise n'ouvre pas cet avoir.
+    const autre = await factureEmise(ctx);
+    const envoiAutre = await creerEnvoiFacture(ctx, autre.id, "sms", MAINTENANT);
+    assert.equal((await factureParJeton(envoiAutre.jeton, MAINTENANT))?.avoirs.length, 0);
+    assert.equal(await pdfAvoirParJeton(envoiAutre.jeton, page!.avoirs[0]!.id, MAINTENANT), null);
+
+    // Un identifiant qui n'en est pas un, un jeton inconnu, un lien périmé : rien, et sans erreur.
+    assert.equal(await pdfAvoirParJeton(envoi.jeton, "pas-un-uuid", MAINTENANT), null);
+    assert.equal(await pdfAvoirParJeton("jeton-invente", page!.avoirs[0]!.id, MAINTENANT), null);
+    const dansTroisMois = new Date(MAINTENANT.getTime() + 90 * 86400_000);
+    assert.equal(await pdfAvoirParJeton(envoi.jeton, page!.avoirs[0]!.id, dansTroisMois), null);
   });
 
   console.log(`\n${passed} réussi(s), ${failed} échec(s).`);

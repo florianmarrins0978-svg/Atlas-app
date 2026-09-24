@@ -51,6 +51,11 @@ async function facturePartie(nom: string): Promise<string> {
   return chantier.id;
 }
 
+async function factureDe(chantierId: string): Promise<string> {
+  const { rows } = await pool.query("SELECT id FROM factures WHERE chantier_id = $1", [chantierId]);
+  return rows[0]!.id as string;
+}
+
 async function seConnecter(page: Page) {
   await page.goto(`${BASE}/login`, { waitUntil: "networkidle" });
   await page.fill('input[name="email"]', "demo@atlas.local");
@@ -113,6 +118,17 @@ async function main() {
     await page.click('[data-atlas="categorie-non-payees"]');
     await page.locator('[data-atlas="non-payee"]', { hasText: nomImpaye }).click();
     await page.waitForSelector('[data-atlas="facture-non-payee"]');
+
+    // La mise en demeure s'atteint d'ici, et sa lettre réclame le reste dû.
+    await page.click('[data-atlas="mise-en-demeure"]');
+    await page.waitForSelector('[data-atlas="lettre-mise-en-demeure"]', { timeout: 30_000 });
+    assert.match(await page.locator('[data-atlas="lettre-mise-en-demeure"]').innerText(), /la somme de 1\s440,00\s€/);
+    const lettre = await page.request.get(page.url().replace(/\/chantiers\/.*/, "") + `/api/factures/${await factureDe(chantierImpaye)}/mise-en-demeure`);
+    assert.equal(lettre.status(), 200, "le PDF de la lettre ne se télécharge pas");
+    assert.equal((await lettre.body()).subarray(0, 4).toString(), "%PDF");
+    await page.goBack();
+    await page.waitForSelector('[data-atlas="facture-non-payee"]');
+
     await page.click('[data-atlas="recu-le-paiement"]');
     await page.click('[data-atlas="paiement-moyen"]');
     await page.locator("button", { hasText: "Chèque" }).last().click();

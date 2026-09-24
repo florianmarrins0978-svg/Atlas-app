@@ -9351,7 +9351,7 @@ qu'on va éteindre.
 bouton qui coupe ou un bouton qui prévient. Ne pas trancher à sa place : c'est
 son application pendant ses heures de travail.
 
-### 0 quinquadragies. ⏸ L'AVOIR — dessiné le 17 août, **il choisit avant qu'on code**
+### 0 quinquadragies. L'AVOIR — codé le 24 septembre 2026, lots 1 à 3, **sur la branche, pas encore sur `main`**
 
 Sa demande : *« si jamais on facture un client et qui décide de ne pas nous
 payer, il faut avoir la possibilité de créer un avoir »*.
@@ -9385,7 +9385,7 @@ TVA après avoirs partout, le rappel qui se tait, le numéro du chèque sur
 `test-exigibilite-tva`. **Lot 2 (les écrans) codé le même jour, sur la branche** :
 volet de Terminés, saisie de l'avoir, « Il ne me paiera pas », « Non payées »,
 « J'ai reçu le paiement », onglet « Avoirs » (§412, `test-avoir-et-non-payee-e2e`).
-**Reste** : lot 3 (envoi de l'avoir, page publique, mise en demeure). **Réserve** : avoir après acompte, sur une ligne
+**Lot 3 codé le 24 septembre 2026** (sur la branche, pas sur `main`) : envoi de l'avoir par SMS ou e-mail avec le lien de la facture, l'avoir sous la facture sur la page du client, la mise en demeure (écran, lettre, PDF). **À faire vérifier par quelqu'un qui lit les textes** : le délai de huit jours et la phrase sur les intérêts au taux légal (particulier : art. 1231-6 C. civ. ; professionnel : L441-10 C. com., non cité). **Réserve** : avoir après acompte, sur une ligne
 d'un autre taux (§412).
 
 **LES TROIS PLANCHES** (sa demande : *« trois planches séparées »*) :

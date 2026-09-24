@@ -4,6 +4,7 @@ import {
   composerMessageClient,
   composerMessageEntretien,
   composerMessageFacture,
+  composerMessageAvoir,
   lienTransmission,
   refusDuMessage,
   rendreMessage,
@@ -371,6 +372,21 @@ test("son texte à lui commande, et les pastilles s'y remplissent", () => {
   assert.ok(corps.startsWith("Coucou "), `son texte n'a pas été employé : ${corps}`);
   assert.ok(/Ta facture F2026-0009, à régler avant le 3 octobre\./.test(corps), corps);
   assert.ok(!/\[/.test(corps), `une pastille est restée en clair : ${corps}`);
+});
+
+test("l'avoir nomme SA facture, garde le lien seul sur sa ligne, et ne laisse aucune pastille", () => {
+  const m = composerMessageAvoir({
+    clientNom: "Martin",
+    clientCivilite: "mr",
+    entrepriseNom: "Eden Nature",
+    numeroAvoir: "A2026-000001",
+    numeroFacture: "F2026-000012",
+    lien: "https://atlas.test/factures/abc",
+  });
+  assert.equal(m.objet, "Votre avoir A2026-000001 de Eden Nature");
+  assert.match(m.corps, /Voici votre avoir A2026-000001, qui rectifie la facture F2026-000012\./);
+  assert.match(m.corps, /\n\nhttps:\/\/atlas\.test\/factures\/abc\n\n/);
+  assert.ok(!/\[/.test(m.corps), `une pastille est restée en clair : ${m.corps}`);
 });
 
 console.log(`\n${passed} test(s) réussi(s), ${failed} échoué(s).`);

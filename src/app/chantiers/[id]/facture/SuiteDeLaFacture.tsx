@@ -8,7 +8,8 @@ import { listerFacturesNonPayees } from "@/server/repositories/factures-non-paye
 /**
  * Sous une facture partie, ce qu'il en fait quand le client ne paie pas (planches du 24 septembre
  * 2026, `appli/avoir.html` et `appli/il-ne-paiera-pas.html`) :
- *   - rangée « Non payée » : l'encadré, « J'ai reçu le paiement » ;
+ *   - rangée « Non payée » : l'encadré, « J'ai reçu le paiement », et la mise
+ *     en demeure (`appli/mise-en-demeure.html`) ;
  *   - encore due : le lien doré « Mon client ne me paie pas ».
  *
  * Composant serveur : il lit, il ne décide de rien (`src/lib/avoir.ts` et
@@ -44,6 +45,14 @@ export default async function SuiteDeLaFacture({ ctx, chantierId, factureId }: {
             data-atlas="recu-le-paiement"
           >
             J&apos;ai reçu le paiement
+          </Link>
+          <Link
+            href={`/chantiers/${chantierId}/facture/mise-en-demeure`}
+            className="mt-3 flex min-h-[50px] w-full items-center justify-center rounded-full no-underline"
+            style={{ boxShadow: `inset 0 0 0 1.5px ${colors.or}`, color: colors.ink, fontFamily: font.display, fontSize: 18 }}
+            data-atlas="mise-en-demeure"
+          >
+            Mise en demeure
           </Link>
         </section>
       )}

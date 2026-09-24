@@ -47,6 +47,17 @@ export function jourEnTitre(iso: string): string {
   return texte.charAt(0).toUpperCase() + texte.slice(1);
 }
 
+/**
+ * « 9 octobre 2026 », « 1er août 2026 » — la date d'une lettre : ni le nom du
+ * jour, ni l'année qu'on sous-entend. Une mise en demeure se relit devant un
+ * juge, parfois l'année suivante.
+ */
+export function jourDeLettre(iso: string): string {
+  const [a, m, j] = iso.split("-").map(Number);
+  if (!a || !m || !j) return iso;
+  return `${j === 1 ? "1er" : j} ${MOIS[m - 1]} ${a}`;
+}
+
 /** « mardi 22 septembre », « samedi 1er août » : ce que les deux écritures partagent. */
 function jourEtMoisEnLettres(a: number, m: number, j: number): string {
   const jourSemaine = JOURS[new Date(Date.UTC(a, m - 1, j)).getUTCDay()];

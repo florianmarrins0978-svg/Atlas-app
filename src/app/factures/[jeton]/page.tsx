@@ -151,6 +151,22 @@ export default async function PageFactureClient({ params }: { params: Promise<{ 
           Télécharger ma facture
         </BoutonTelechargerDocument>
 
+        {/* **L'avoir se trouve SOUS la facture qu'il corrige** — il part avec
+            son lien (`composerMessageAvoir`). Un bouton par avoir, au trait
+            doré : c'est une seconde pièce, pas le geste principal de la page. */}
+        {facture.avoirs.map((a) => (
+          <BoutonTelechargerDocument
+            key={a.id}
+            fichier={`/factures/${encodeURIComponent(jeton)}/avoirs/${a.id}/pdf`}
+            nom={`${a.numero}.pdf`}
+            className="mt-3 block w-full rounded-full px-5 py-[13px] text-[16px]"
+            style={{ border: `1.5px solid ${colors.or}`, color: colors.ink, fontFamily: font.display }}
+            dataAtlas="telecharger-avoir"
+          >
+            Télécharger l&apos;avoir {a.numero}
+          </BoutonTelechargerDocument>
+        ))}
+
         {/* **« Pour régler » est séparé par un FILET, jamais par une seconde
             carte.** Deux cadres emboîtés font lire deux documents là où il n'y
             en a qu'un — vu sur la planche avant de coder. */}

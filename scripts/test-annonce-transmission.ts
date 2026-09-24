@@ -100,5 +100,9 @@ cas("la fiche dit qu'elle est bien envoyée, au client nommé", () => {
   assert.equal(annonceTransmission({ quoi: "fiche", client: "" }), "Fiche envoyée.");
 });
 
+cas("l'avoir est « transmis », sans réponse attendue", () => {
+  assert.equal(annonceTransmission({ quoi: "avoir", client: "M. Martin" }), "Avoir transmis à M. Martin.");
+});
+
 console.log(`\n${echecs === 0 ? "✅" : "❌"} Annonce de transmission — ${echecs} échec(s).`);
 if (echecs > 0) process.exit(1);

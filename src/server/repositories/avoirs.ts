@@ -266,8 +266,10 @@ export async function avoirPourEcran(ctx: Ctx, avoirId: string) {
       numero: a.numero,
       motif: a.motif,
       totalTtc: a.totalTtc,
+      factureId: f.id,
       factureNumero: f.numeroCommercial,
       clientNom: f.clientNom,
+      clientCivilite: f.clientCivilite,
       chantierId: f.chantierId,
       nouveauTtc: apres.totalTtc,
     };
