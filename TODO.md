@@ -9339,7 +9339,9 @@ son application pendant ses heures de travail.
 Sa demande : *« si jamais on facture un client et qui décide de ne pas nous
 payer, il faut avoir la possibilité de créer un avoir »*.
 
-**LA PLANCHE À REGARDER EST LA 81**, `docs/maquettes/81-simple-il-ne-paie-pas.html`
+**LA PLANCHE À REGARDER EST LA 81**, publiée le 24 septembre 2026 dans
+`appli/il-ne-paie-pas.html` (elle dormait dans `docs/maquettes/`, qui n'est pas
+publié : il n'avait jamais pu l'ouvrir ; l'original y reste, avec 79 et 80)
 — un lien sur la facture, une question, deux réponses, quatre écrans. Les 79 et
 80 ont été **jugées trop compliquées par lui** (*« l'utilisateur a besoin d'aller
 à l'essentiel constamment »*) : elles restent comme raisonnement, pas comme
