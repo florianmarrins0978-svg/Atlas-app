@@ -194,7 +194,7 @@ const lire = async () =>
   page.$$eval("[data-mesure]", (n) =>
     n.map((e) => ({
       largeur: Number((e.textContent.match(/(\d+) px/) || [0, 0])[1]),
-      tenu: Number((e.textContent.match(/tient\s+([\d,]+)/) || [0, "0"])[1].replace(",", ".")),
+      tenu: Number((e.textContent.match(/tient\s+(\d+(?:,\d+)?)/) || [0, "0"])[1].replace(",", ".")),
       rouge: !!e.querySelector(".faible"),
     }))
   );

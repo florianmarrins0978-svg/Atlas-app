@@ -462,7 +462,7 @@ for (const f of ["conditions-utilisation.html", "confidentialite.html"]) {
   // des durées qu'on n'applique pas encore. Le jour où le bandeau disparaît
   // sans que les cases soient remplies, c'est ici qu'on doit l'apprendre.
   const cases = (corps.match(/À COMPLÉTER/g) || []).length;
-  const avertit = /Brouillon — à faire relire/.test(corps);
+  const avertit = /Brouillon, à faire relire/.test(corps);
   dire(cases === 0 ? avertit === false : avertit === true,
     f + " : " + cases + " case(s) à compléter, et le bandeau de brouillon " + (avertit ? "est là" : "est absent"));
 
