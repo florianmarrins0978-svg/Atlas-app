@@ -8,6 +8,17 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-24
 
+### Le jour de la fiche se choisit dans la fiche, et le titre des rapports descend
+
+Sa demande : *« le jeudi 24 septembre doit apparaître lorsque je clique sur
+Créer une fiche, dans la création, pas en dehors »*. Posé sur la liste, ce jour
+se lisait comme un second filtre au-dessus de celui des rapports envoyés
+(*« c'est hyper bizarre »*). « Créer une fiche » ouvre désormais la fiche du
+jour du téléphone, et la roue est en tête de la fiche, à la place de la ligne
+qui disait le jour ; `majPassage` accepte le jour et refuse un jour qui
+n'existe pas. Parti chez le client, le jour ne bouge plus. « Rapports envoyés »
+passe sous le filtre et la recherche, juste au-dessus du premier rapport.
+
 ### « 5 prestations cochées, celles du dernier chantier » alors que 8 l'étaient
 
 Le nombre était compté une fois par le serveur, au moment de nommer le client,

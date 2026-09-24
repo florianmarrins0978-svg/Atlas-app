@@ -4,7 +4,8 @@ import { useMemo, useState } from "react";
 import PrimaryButton from "@/components/atlas/PrimaryButton";
 import { ChampRecherche } from "@/components/atlas/ChampRecherche";
 import { colors, font, smallCaps, surPlein } from "@/lib/design-tokens";
-import { jourLisible } from "@/lib/jour";
+import { jourEnTitre, jourLisible } from "@/lib/jour";
+import { TitreAvecRoue } from "@/components/atlas/FiltreDeDate";
 import { parFamilles } from "@/lib/prestations-entretien";
 import { MINUTES_MAX, PAS_MINUTES, constatDesCoches, empechementEnvoi } from "@/lib/passage-entretien";
 import { composerMessageEntretien, lienTransmission } from "@/lib/message-client";
@@ -99,6 +100,7 @@ export default function FicheChantierClient({
    * la ressaisir au passage suivant (migration `0060`).
    */
   const [tempsVisible, setTempsVisible] = useState(passage.tempsVisible);
+  const [jour, setJour] = useState(passage.jour);
   const [observations, setObservations] = useState(passage.observations ?? "");
   const [envoyeLe, setEnvoyeLe] = useState(passage.envoyeLe);
   const [jeton, setJeton] = useState(passage.jeton);
@@ -162,6 +164,16 @@ export default function FicheChantierClient({
     setMinutes(valeur);
     const r = await majPassageAction(passage.id, { minutes: valeur });
     if (!r.ok) setPhrase(r.phrase);
+  }
+
+  async function poserJour(voulu: string) {
+    const avant = jour;
+    setJour(voulu);
+    const r = await majPassageAction(passage.id, { jour: voulu });
+    if (!r.ok) {
+      setJour(avant);
+      setPhrase(r.phrase);
+    }
   }
 
   async function basculerTemps() {
@@ -281,11 +293,21 @@ export default function FicheChantierClient({
       data-atlas="fiche-chantier"
     >
       <section className="mx-[26px] mt-[20px]">
-        {/* Le jour en noir gras, sa demande du 22 septembre 2026 : c'est ce
-            qu'il vérifie en ouvrant la fiche. */}
-        <p className="text-[13px] font-semibold" style={{ color: colors.ink }}>
-          {jourLisible(passage.jour)}
-        </p>
+        {/* **Le jour se choisit ICI, et plus sur la liste** — sa demande du
+            24 septembre 2026 : *« le jeudi 24 septembre doit apparaître
+            lorsque je clique sur Créer une fiche, dans la création, pas en
+            dehors »*. Même dessin que celui de la liste (`TitreAvecRoue`), à
+            la place de la ligne qui disait le jour. Parti chez le client, le
+            jour ne bouge plus : c'est la date qu'il a lue. */}
+        {parti ? (
+          <p className="text-[13px] font-semibold" style={{ color: colors.ink }}>
+            {jourLisible(jour)}
+          </p>
+        ) : (
+          <div className="flex">
+            <TitreAvecRoue titre={jourEnTitre(jour)} jour={jour} choisir={poserJour} dataAtlas="jour-du-passage" />
+          </div>
+        )}
 
         {/* ─── LE PONT VERS LE CLIENT — arrangement C ─────────────────────────
             En HAUT et non au bas de la fiche : c'est la première chose qu'il

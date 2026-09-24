@@ -175,6 +175,7 @@ export type RefusPassage =
   | "modele_vide"
   | "deja_envoye"
   | "duree_invalide"
+  | "jour_invalide"
   | "client_inconnu";
 
 export const PHRASE_REFUS_PASSAGE: Record<RefusPassage, string> = {
@@ -183,6 +184,7 @@ export const PHRASE_REFUS_PASSAGE: Record<RefusPassage, string> = {
     "Votre fiche n'a aucune prestation. Composez-la d'abord dans les réglages.",
   deja_envoye: "Ce rapport est déjà parti chez votre client. Il ne se modifie plus.",
   duree_invalide: "Ce temps ne tient pas dans une journée. Reprenez la molette.",
+  jour_invalide: "Ce jour n'existe pas. Reprenez la roue.",
   client_inconnu: "Ce client n'existe plus. Choisissez-en un autre.",
 };
 

@@ -71,7 +71,7 @@ export async function cocherLigneAction(
 
 export async function majPassageAction(
   passageId: string,
-  champs: { minutes?: number | null; tempsVisible?: boolean; observations?: string | null }
+  champs: { minutes?: number | null; tempsVisible?: boolean; observations?: string | null; jour?: string }
 ): Promise<Resultat> {
   const ctx = await getCurrentCtx();
   await exigerEcran(ctx, "/paysage", "mettre à jour un passage");

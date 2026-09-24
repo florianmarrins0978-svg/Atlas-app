@@ -14,6 +14,7 @@ import { withEntreprise } from "../db/with-entreprise";
 import { lignesPassage, passagesEntretien, clients, entreprises } from "../db/schema";
 import type { Ctx } from "./context";
 import { listerPrestations } from "./prestations-entretien";
+import { estUnJourValide } from "@/lib/planning-jour";
 import {
   empechementEnvoi,
   minutesValides,
@@ -173,8 +174,13 @@ export async function cocherLigne(
 export async function majPassage(
   ctx: Ctx,
   passageId: string,
-  champs: { minutes?: number | null; tempsVisible?: boolean; observations?: string | null }
+  champs: { minutes?: number | null; tempsVisible?: boolean; observations?: string | null; jour?: string }
 ): Promise<{ ok: true } | { ok: false; refus: RefusPassage }> {
+  // **Le jour se choisit DANS la fiche** depuis le 24 septembre 2026 : elle
+  // s'ouvre sur le jour même, et il le change s'il remplit le lendemain.
+  if (champs.jour !== undefined && !estUnJourValide(champs.jour)) {
+    return { ok: false, refus: "jour_invalide" };
+  }
   let minutes: number | null | undefined;
   if (champs.minutes !== undefined) {
     minutes = minutesValides(champs.minutes);
@@ -203,6 +209,7 @@ export async function majPassage(
         ...(minutes !== undefined ? { minutes } : {}),
         ...(champs.tempsVisible !== undefined ? { tempsVisible: champs.tempsVisible } : {}),
         ...(champs.observations !== undefined ? { observations: champs.observations } : {}),
+        ...(champs.jour !== undefined ? { jour: champs.jour } : {}),
         updatedAt: new Date(),
       })
       .where(eq(passagesEntretien.id, passageId));

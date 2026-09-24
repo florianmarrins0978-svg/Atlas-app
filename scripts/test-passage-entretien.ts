@@ -462,6 +462,37 @@ async function main() {
     assert.equal((await lirePassage(ctx, ouverte.id))!.minutes, null);
   });
 
+  await cas("le jour se change DANS la fiche, tant qu'elle n'est pas partie", async () => {
+    // **Sa demande du 24 septembre 2026** : *« le jeudi 24 septembre doit
+    // apparaître lorsque je clique sur Créer une fiche, dans la création, pas
+    // en dehors »*. La fiche s'ouvre sur le jour même ; il le change dedans.
+    const ctx = await contexte("jour");
+    await petitModele(ctx);
+    const client = await creerClient(ctx, { nom: "Faucher" });
+    const ouverte = await ouvrirPassage(ctx, "2026-09-24");
+    assert.equal(ouverte.ok, true);
+    if (!ouverte.ok) return;
+
+    assert.equal((await majPassage(ctx, ouverte.id, { jour: "2026-09-23" })).ok, true);
+    assert.equal((await lirePassage(ctx, ouverte.id))!.jour, "2026-09-23", "le jour n'a pas changé");
+    // Le 31 février s'écrit sur dix caractères : il se refuse quand même.
+    assert.deepEqual(await majPassage(ctx, ouverte.id, { jour: "2026-02-31" }), {
+      ok: false,
+      refus: "jour_invalide",
+    });
+    assert.equal((await lirePassage(ctx, ouverte.id))!.jour, "2026-09-23");
+
+    // Parti chez le client, le jour ne bouge plus : c'est la date qu'il a lue.
+    assert.equal((await nommerClient(ctx, ouverte.id, client.id)).ok, true);
+    const lue = await lirePassage(ctx, ouverte.id);
+    assert.equal((await cocherLigne(ctx, ouverte.id, lue!.lignes[0].id, true)).ok, true);
+    assert.equal((await figerPassage(ctx, ouverte.id)).ok, true);
+    assert.deepEqual(await majPassage(ctx, ouverte.id, { jour: "2026-09-22" }), {
+      ok: false,
+      refus: "deja_envoye",
+    });
+  });
+
   await cas("une entreprise ne voit ni ne touche le passage d'une autre", async () => {
     const ctxA = await contexte("isole-a");
     const ctxB = await contexte("isole-b");

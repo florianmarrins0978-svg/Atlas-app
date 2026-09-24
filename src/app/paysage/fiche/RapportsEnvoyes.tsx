@@ -27,11 +27,6 @@ export default function RapportsEnvoyes({ rapports }: { rapports: PassageListe[]
 
   return (
     <section className="mx-[26px] mt-[28px]" data-atlas="rapports-envoyes">
-      {/* En noir gras, sa demande du 22 septembre 2026. */}
-      <h2 className={smallCaps} style={{ color: colors.ink, fontWeight: 700 }}>
-        Rapports envoyés
-      </h2>
-
       <FiltreDeDate periode={periode} choisir={setPeriode} />
 
       <ChampRecherche
@@ -42,6 +37,14 @@ export default function RapportsEnvoyes({ rapports }: { rapports: PassageListe[]
         dataAtlas="chercher-un-rapport"
         className="mt-3"
       />
+
+      {/* En noir gras, sa demande du 22 septembre 2026. **Juste au-dessus du
+          premier rapport**, sous le filtre et la recherche : sa demande du
+          24 septembre 2026, *« Rapports envoyés doit se trouver au-dessus du
+          premier rapport »*. */}
+      <h2 className={`${smallCaps} mt-[22px]`} style={{ color: colors.ink, fontWeight: 700 }}>
+        Rapports envoyés
+      </h2>
 
       {montres.length === 0 ? (
         <p className="mt-7 text-center text-[13.5px] leading-[1.65]" style={{ color: colors.muted }}>
@@ -56,8 +59,8 @@ export default function RapportsEnvoyes({ rapports }: { rapports: PassageListe[]
           {montres.map((p) => (
             // **Le rapport tel que le client l'a reçu**, et non la fiche à
             // cocher : sa demande du 22 septembre 2026, *« quand je clique sur
-            // M. Bernard, je dois avoir le rapport envoyé au client »*. C'est
-            // Relu DANS l'application, avec sa flèche : la page du client n'en a
+            // M. Bernard, je dois avoir le rapport envoyé au client »*. Relu
+            // DANS l'application, avec sa flèche : la page du client n'en a
             // aucune (`rapport-dans-l-appli.ts`, 24 septembre 2026).
             // Un rapport envoyé a toujours son jeton (`figerPassage` les pose
             // ensemble) ; la fiche reste le repli d'une ligne qui n'en aurait pas.

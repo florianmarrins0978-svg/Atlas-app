@@ -477,6 +477,10 @@ async function main() {
     await page.locator('[data-atlas="ouvrir-fiche-chantier"]').click();
     await page.waitForURL(/\/paysage\/fiche\/[0-9a-f-]{36}/, { timeout: 30_000 });
 
+    // **Le jour se choisit DANS la fiche** (24 septembre 2026) : la roue y est,
+    // posée sur le jour même.
+    await page.locator('[data-atlas="fiche-chantier"] [data-atlas="jour-du-passage"]').waitFor({ timeout: 20_000 });
+
     const cases = page.locator('[data-atlas="fiche-chantier"] button[data-atlas="prestation"]');
     const cochees = page.locator('[data-atlas="fiche-chantier"] button[data-atlas="prestation"][aria-pressed="true"]');
     const entier = await cases.count();
