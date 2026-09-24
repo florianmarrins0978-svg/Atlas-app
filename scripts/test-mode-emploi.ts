@@ -297,6 +297,13 @@ async function main() {
     assert.equal(r.fiches?.[0].geste, FICHES_MODE_EMPLOI.find((f) => f.id === "chantiers-retirer")!.geste);
   });
 
+  await test("Le sommaire se demande aussi quand des fiches sont sorties, mais pas la bonne", async () => {
+    const r = (await rechercherModeEmploi.executer(contexte, { sommaire: true })) as {
+      sommaire?: { id: string }[];
+    };
+    assert.equal(r.sommaire?.length, FICHES_MODE_EMPLOI.length);
+  });
+
   await test("Un identifiant inventé ne rend pas une fiche au hasard", async () => {
     const r = (await rechercherModeEmploi.executer(contexte, { fiche: "bouton-magique" })) as { trouve: boolean };
     assert.equal(r.trouve, false);
