@@ -94,6 +94,34 @@ export function cocherCommeLaDerniereFois<L extends LignePassage>(
 }
 
 /**
+ * La phrase sous le nom du client : combien de cases sont cochées, et si ce
+ * sont celles du dernier chantier.
+ *
+ * **Calculée sur les cases, à chaque coche — 24 septembre 2026.** Sa capture :
+ * *« y'a marqué 5 prestations cochées, celles du dernier chantier, alors qu'il
+ * y en a 8 de cochées »*. Le chiffre était compté une fois par le serveur, au
+ * moment de nommer le client, puis gardé tel quel : il ignorait ce qui était
+ * coché avant, et tout ce qu'il cochait après.
+ *
+ * « Celles du dernier chantier » ne se dit que tant que c'est vrai : les cases
+ * cochées sont exactement celles reprises. `reprises` vaut `null` tant
+ * qu'aucun client n'a été nommé sur cet écran ; vide, rien n'a été repris
+ * (premier passage chez lui) et la phrase ne se pose pas, comme avant.
+ */
+export function constatDesCoches(
+  lignes: readonly { id: string; faite: boolean }[],
+  reprises: ReadonlySet<string> | null
+): string | null {
+  if (!reprises || reprises.size === 0) return null;
+  const faites = lignes.filter((l) => l.faite);
+  if (faites.length === 0) return null;
+  const nombre = faites.length > 1 ? `${faites.length} prestations cochées` : "1 prestation cochée";
+  const cesont = faites.length === reprises.size && faites.every((l) => reprises.has(l.id));
+  if (!cesont) return `${nombre}.`;
+  return `${nombre}, ${faites.length > 1 ? "celles" : "celle"} du dernier chantier.`;
+}
+
+/**
  * Ce qui empêche d'envoyer, dit en toutes lettres — ou `null` si tout va bien.
  *
  * **Rendu plutôt que levé** : une exception d'action serveur n'arrive jamais

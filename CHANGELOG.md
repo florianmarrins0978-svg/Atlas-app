@@ -8,6 +8,15 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-24
 
+### « 5 prestations cochées, celles du dernier chantier » alors que 8 l'étaient
+
+Le nombre était compté une fois par le serveur, au moment de nommer le client,
+puis gardé : ni les coches d'avant, ni celles d'après n'y entraient. Le serveur
+rend désormais les lignes reprises, et la phrase se refait à chaque coche
+(`constatDesCoches`). « Celles du dernier chantier » ne se dit que tant que les
+cases cochées sont exactement celles reprises. Non tranché : changer de client
+garde les coches reprises du premier (question posée au patron).
+
 ### Le rapport d'entretien ouvert depuis l'application n'avait pas de retour
 
 Sa capture : *« j'ai aucun moyen de faire retour ! »*. « Rapports envoyés » et

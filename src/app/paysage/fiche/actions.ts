@@ -91,7 +91,7 @@ export async function nommerClientAction(
   passageId: string,
   clientId: string
 ): Promise<
-  | { ok: true; cochees: number; lignes: LignePassageAffichee[] }
+  | { ok: true; reprises: string[]; lignes: LignePassageAffichee[] }
   | { ok: false; phrase: string }
 > {
   const ctx = await getCurrentCtx();
@@ -99,7 +99,7 @@ export async function nommerClientAction(
   const r = await nommerClient(ctx, passageId, clientId);
   if (!r.ok) return { ok: false, phrase: PHRASE_REFUS_PASSAGE[r.refus] };
   revalidatePath(`/paysage/fiche/${passageId}`);
-  return { ok: true, cochees: r.cochees, lignes: r.lignes };
+  return { ok: true, reprises: r.reprises, lignes: r.lignes };
 }
 
 /**

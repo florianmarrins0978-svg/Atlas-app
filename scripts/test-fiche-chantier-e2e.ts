@@ -495,6 +495,15 @@ async function main() {
     // **Le geste se DIT, en ses mots à lui.**
     assert.match(texte, /3 prestations cochées, celles du dernier chantier\./, "la phrase n'est pas la sienne");
 
+    // **Sa capture du 24 septembre 2026** : il coche ensuite ce qu'il a fait en
+    // plus, et la phrase restait sur le chiffre de la reprise. Elle suit.
+    await page.locator('[data-atlas="fiche-chantier"] button[data-atlas="prestation"][aria-pressed="false"]').first().click();
+    await page.waitForTimeout(800);
+    assert.equal(await cochees.count(), 4, "la coche en plus n'a pas pris");
+    const apres = await page.locator('[data-atlas="fiche-chantier"]').innerText();
+    assert.match(apres, /4 prestations cochées\./, "la phrase ne suit pas la coche en plus");
+    assert.doesNotMatch(apres, /celles du dernier chantier/, "la phrase attribue au dernier chantier une coche du jour");
+
     await page.goBack();
   });
 

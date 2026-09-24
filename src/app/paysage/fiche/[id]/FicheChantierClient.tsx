@@ -6,7 +6,7 @@ import { ChampRecherche } from "@/components/atlas/ChampRecherche";
 import { colors, font, smallCaps, surPlein } from "@/lib/design-tokens";
 import { jourLisible } from "@/lib/jour";
 import { parFamilles } from "@/lib/prestations-entretien";
-import { MINUTES_MAX, PAS_MINUTES, empechementEnvoi } from "@/lib/passage-entretien";
+import { MINUTES_MAX, PAS_MINUTES, constatDesCoches, empechementEnvoi } from "@/lib/passage-entretien";
 import { composerMessageEntretien, lienTransmission } from "@/lib/message-client";
 import { ouvrirAdresse } from "@/lib/ouvrir-messagerie";
 import type { CiviliteChoisie } from "@/lib/civilite";
@@ -108,7 +108,10 @@ export default function FicheChantierClient({
   // au bas de l'écran, au-dessous du bouton, le ferait lire comme une panne
   // — et il chercherait ce qu'il a cassé. Il se dit là où le changement a eu
   // lieu, sous le nom du client, du même gris que le reste.
-  const [constat, setConstat] = useState<string | null>(null);
+  //
+  // **On garde les lignes reprises, jamais la phrase** : la phrase se refait à
+  // chaque coche (`constatDesCoches`, 24 septembre 2026).
+  const [reprises, setReprises] = useState<ReadonlySet<string> | null>(null);
   const [choixOuvert, setChoixOuvert] = useState(false);
   /**
    * Par quoi le rapport part — **sa demande du 20 août 2026** : *« sous le nom
@@ -130,6 +133,7 @@ export default function FicheChantierClient({
   // rendu — sans effet, donc sans rendu en cascade (`use-adresse-client.ts`).
   const adressePublique = useAdressePourLeClient(origine);
   const familles = useMemo(() => parFamilles(lignes), [lignes]);
+  const constat = constatDesCoches(lignes, reprises);
 
   const empechement = empechementEnvoi({
     clientId,
@@ -192,15 +196,7 @@ export default function FicheChantierClient({
     // **Le serveur rend les lignes cochées, l'écran les affiche.** Refaire les
     // coches ici donnerait deux vérités sur une même liste.
     setLignes(r.lignes);
-    // Ses mots du 22 septembre 2026 : le nombre, puis « prestations cochées,
-    // celles du dernier chantier ». Accordé au singulier pour une seule.
-    setConstat(
-      r.cochees > 1
-        ? `${r.cochees} prestations cochées, celles du dernier chantier.`
-        : r.cochees === 1
-          ? "1 prestation cochée, celle du dernier chantier."
-          : null
-    );
+    setReprises(new Set(r.reprises));
   }
 
   /**

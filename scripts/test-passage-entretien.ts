@@ -28,6 +28,7 @@ import {
   libelleMinutes,
   minutesValides,
   cocherCommeLaDerniereFois,
+  constatDesCoches,
 } from "../src/lib/passage-entretien";
 
 // Le PASSAGE d'entretien — la fiche qu'il coche sur un chantier.
@@ -155,6 +156,33 @@ async function main() {
     assert.deepEqual(lignes.map((l) => l.libelle), ["Tonte", "Haies", "Massifs", "Feuilles"]);
     // Ce qu'il a coché la dernière fois se recoche ; ce qu'il vient de cocher reste.
     assert.deepEqual(lignes.map((l) => l.faite), [true, true, true, false]);
+  });
+
+  await cas("la phrase compte les cases COCHÉES, pas celles reprises une fois", () => {
+    // **Sa capture du 24 septembre 2026** : *« y'a marqué 5 prestations cochées,
+    // celles du dernier chantier, alors qu'il y en a 8 de cochées »*. Le
+    // chiffre était compté UNE fois, au moment de nommer le client, puis ne
+    // bougeait plus : ni ce qui était coché avant, ni ce qui l'était après.
+    const l = (id: string, faite: boolean) => ({ id, faite });
+    const reprises = new Set(["a", "b"]);
+    // Juste après la reprise : les cases cochées sont exactement celles reprises.
+    assert.equal(
+      constatDesCoches([l("a", true), l("b", true), l("c", false)], reprises),
+      "2 prestations cochées, celles du dernier chantier."
+    );
+    // Il coche une case de plus : le chiffre suit, et la reprise ne se prétend plus.
+    assert.equal(
+      constatDesCoches([l("a", true), l("b", true), l("c", true)], reprises),
+      "3 prestations cochées."
+    );
+    // Une case cochée AVANT de nommer le client compte aussi.
+    assert.equal(constatDesCoches([l("a", true), l("c", true)], new Set(["a"])), "2 prestations cochées.");
+    assert.equal(constatDesCoches([l("a", true)], new Set(["a"])), "1 prestation cochée, celle du dernier chantier.");
+    // Rien de coché, ou aucun client nommé sur cet écran : rien à dire.
+    assert.equal(constatDesCoches([l("a", false)], reprises), null);
+    assert.equal(constatDesCoches([l("a", true)], null), null);
+    // Premier passage chez lui : rien n'a été repris, la phrase ne se pose pas.
+    assert.equal(constatDesCoches([l("a", true)], new Set()), null);
   });
 
   await cas("premier passage chez un client : rien ne se coche tout seul", () => {
@@ -378,7 +406,12 @@ async function main() {
 
     const r = await nommerClient(ctx, suivant.id, client.id);
     assert.equal(r.ok, true);
-    if (r.ok) assert.equal(r.cochees, 1, "le compte des lignes recochées est faux");
+    if (r.ok) {
+      assert.equal(r.reprises.length, 1, "le compte des lignes recochées est faux");
+      // Feuilles, cochée avant, compte dans la phrase : 2, et pas « celles du
+      // dernier chantier », puisque Feuilles n'en vient pas.
+      assert.equal(constatDesCoches(r.lignes, new Set(r.reprises)), "2 prestations cochées.");
+    }
     const lu = await lirePassage(ctx, suivant.id);
     assert.equal(lu!.lignes.length, 4, "une ligne de la fiche a disparu en nommant le client");
     assert.deepEqual(

@@ -222,7 +222,7 @@ export async function nommerClient(
   passageId: string,
   clientId: string
 ): Promise<
-  | { ok: true; cochees: number; lignes: (LignePassage & { id: string })[] }
+  | { ok: true; reprises: string[]; lignes: (LignePassage & { id: string })[] }
   | { ok: false; refus: RefusPassage }
 > {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
@@ -290,9 +290,11 @@ export async function nommerClient(
     // **Les lignes partent avec la réponse.** L'écran ne refait pas les
     // coches de son côté : deux implémentations de la même règle finissent
     // toujours par diverger (`CLAUDE.md` §3).
+    // **Les lignes reprises, et non leur nombre** : un nombre figé ici ne
+    // suivait pas les coches d'après (`constatDesCoches`, 24 septembre 2026).
     return {
       ok: true as const,
-      cochees: aCocher.length,
+      reprises: aCocher.map((l) => l.id),
       lignes: [...lignes].sort((a, b) => a.ordre - b.ordre || a.libelle.localeCompare(b.libelle)),
     };
   });
