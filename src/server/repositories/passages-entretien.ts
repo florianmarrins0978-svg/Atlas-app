@@ -292,9 +292,9 @@ export async function nommerClient(
         await tx.update(lignesPassage).set({ faite: l.faite }).where(eq(lignesPassage.id, l.id));
       }
     }
-    // Reprises : ce qui est coché APRÈS et ne l'était pas sur la base de
-    // départ, c'est-à-dire sur une fiche vidée quand il change de client.
-    const aCocher = lignes.filter((l, i) => l.faite && !(actuelles[i].faite && !changeDeClient));
+    // Reprises : ce qui est coché et ne venait pas de sa main. Quand il change
+    // de client, rien ne venait de sa main : la fiche est repartie vide.
+    const reprises = lignes.filter((l, i) => l.faite && (changeDeClient || !actuelles[i].faite));
 
     await tx
       .update(passagesEntretien)
@@ -308,7 +308,7 @@ export async function nommerClient(
     // suivait pas les coches d'après (`constatDesCoches`, 24 septembre 2026).
     return {
       ok: true as const,
-      reprises: aCocher.map((l) => l.id),
+      reprises: reprises.map((l) => l.id),
       lignes: [...lignes].sort((a, b) => a.ordre - b.ordre || a.libelle.localeCompare(b.libelle)),
     };
   });
