@@ -170,20 +170,33 @@ export async function changerMotDePasse(
  */
 export async function deconnecterPartout(ctx: Ctx): Promise<Date> {
   const coupure = new Date(Math.ceil(Date.now() / 1000) * 1000);
+  await fermerToutesLesSessions(ctx.utilisateurId, coupure);
+  return coupure;
+}
+
+/**
+ * Ce que ferme « me déconnecter partout », sans session pour le demander.
+ *
+ * Le mot de passe oublié en a besoin : il n'a pas de `Ctx`, et il ferme tout
+ * pour la même raison (un mot de passe qu'on remplace est peut-être connu d'un
+ * autre). **La coupure est choisie par l'appelant**, et c'est ce qui distingue
+ * les deux gestes : « partout » coupe aussi la seconde en cours ; le mot de
+ * passe oublié ouvre juste après une session neuve, qui doit survivre.
+ */
+export async function fermerToutesLesSessions(utilisateurId: string, coupure: Date): Promise<void> {
   // Les sessions tombent : leurs preuves n'attestent donc plus de rien. Les
   // laisser serait laisser derrière soi des droits sans porteur.
-  await effacerPreuves(ctx.utilisateurId);
+  await effacerPreuves(utilisateurId);
   // **AVANT la coupure, et l'ordre se défend.** Une session expire d'elle-même ;
   // une clé est une porte permanente. Si l'écriture qui suit échoue, l'appelant
   // rend un refus et le geste se refait — refaire est sans effet de bord. Dans
   // l'autre sens, on aurait annoncé « tout est fermé » avec une porte encore
   // ouverte, ce qui est exactement le défaut qu'on répare.
-  await retirerToutesLesCles(ctx.utilisateurId);
+  await retirerToutesLesCles(utilisateurId);
   await db
     .update(users)
     .set({ jetonsValidesDepuis: coupure, updatedAt: new Date() })
-    .where(eq(users.id, ctx.utilisateurId));
-  return coupure;
+    .where(eq(users.id, utilisateurId));
 }
 
 /**

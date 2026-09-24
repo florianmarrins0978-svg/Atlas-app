@@ -139,6 +139,16 @@ export const LIMITES = {
    * il n'arbitre pas son choix.
    */
   ouvrirLePaiement: { max: 6, fenetreMs: 60 * 1000 },
+  /**
+   * « Recevoir un code » du mot de passe oublié, compté par SOURCE.
+   *
+   * Chaque adresse est déjà bornée à trois codes par quart d'heure, en base
+   * (`src/lib/code-verification.ts`). Ce seuil-ci borne l'autre abus : faire
+   * partir un code vers cent adresses différentes depuis un même poste. Il
+   * reste large parce que, sans `ATLAS_PROXY_SAUTS`, tous les visiteurs
+   * partagent la même source (même raisonnement que `cleAppareil`).
+   */
+  motDePasseOublie: { max: 30, fenetreMs: 15 * 60 * 1000 },
 } as const;
 
 export type ResultatLimite = { autorise: true } | { autorise: false; retryAfterMs: number };

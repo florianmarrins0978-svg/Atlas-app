@@ -11,6 +11,18 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 
 ---
 
+## MOT DE PASSE OUBLIÉ — 24 septembre 2026
+
+| | |
+|---|---|
+| **l'écran** | `src/app/mot-de-passe-oublie/`, public ; le lien est sur `FormulaireConnexion` |
+| **la base** | `codes_mot_de_passe` et `reinitialiser_mot_de_passe`, migration 0100 |
+| **le dépôt** | `src/server/repositories/mot-de-passe-oublie.ts` |
+| **la suite** | `scripts/test-mot-de-passe-oublie-db.ts` |
+| **ce qui reste** | la batterie (niveau 3), puis `main` : il a demandé de ne pas la lancer |
+
+---
+
 ## LA FLÈCHE RETOUR DE LA FICHE CLIENT ENREGISTRE — 22 septembre 2026
 
 | | |

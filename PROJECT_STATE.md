@@ -1,9 +1,17 @@
 # État du projet
 
 **Dernière mise à jour :** 2026-09-21 · `main`
-· dernière migration `drizzle/0098_libelle_du_reglement.sql`
+· dernière migration `drizzle/0100_mot_de_passe_oublie.sql` (sur sa branche)
 
 ---
+
+## FAIT, SUR SA BRANCHE : MOT DE PASSE OUBLIÉ (24 septembre 2026)
+
+*« Il faut mettre cette fonction ! »* Lien sous le mot de passe, code par
+e-mail, nouveau mot de passe, et l'on entre ; les autres appareils sont
+déconnectés. Migration 0100. **Pas encore sur `main`** : niveau 3
+(authentification et migration), et il a demandé qu'aucune batterie ne soit
+lancée. `ARCHITECTURE.md` §411.
 
 ## FAIT : LA FLÈCHE RETOUR DE LA FICHE CLIENT GARDE LA SAISIE (22 septembre 2026)
 

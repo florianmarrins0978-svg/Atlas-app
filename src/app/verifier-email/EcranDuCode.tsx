@@ -3,6 +3,8 @@
 import { useRouter } from "next/navigation";
 import PorteDeNuit from "@/components/atlas/PorteDeNuit";
 import SaisieDuCode from "@/components/atlas/SaisieDuCode";
+import { deconnexionAction } from "@/app/login/actions";
+import { renvoyerLeCodeAction, verifierLeCodeAction } from "./actions";
 
 /**
  * La porte de nuit, avec la seule case du code dedans.
@@ -17,7 +19,13 @@ export default function EcranDuCode({ email }: { email: string }) {
   return (
     <PorteDeNuit className="atlas-bas-sans-barre flex min-h-[100dvh] flex-col px-[22px]">
       <div className="flex flex-1 flex-col pt-[18px]">
-        <SaisieDuCode email={email} onVerifie={() => router.push("/documents-legaux")} />
+        <SaisieDuCode
+          email={email}
+          onVerifie={() => router.push("/documents-legaux")}
+          verifier={verifierLeCodeAction}
+          renvoyer={renvoyerLeCodeAction}
+          sortir={() => deconnexionAction("entree")}
+        />
       </div>
     </PorteDeNuit>
   );

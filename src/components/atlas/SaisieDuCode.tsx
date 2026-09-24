@@ -2,9 +2,9 @@
 
 import { useState, useTransition } from "react";
 import { CHAMP, NUIT, SERIF } from "@/components/atlas/PorteDeNuit";
-import { renvoyerLeCodeAction, verifierLeCodeAction } from "@/app/verifier-email/actions";
-import { deconnexionAction } from "@/app/login/actions";
 import { LONGUEUR_CODE, codeNormalise } from "@/lib/code-verification";
+
+type EtatDuCode = { ok: true } | { ok: false; refus: string; codeMort: boolean };
 
 /**
  * LA CASE DU CODE — une seule pièce, deux écrans.
@@ -36,12 +36,24 @@ export default function SaisieDuCode({
   email,
   avertissement,
   onVerifie,
+  verifier,
+  renvoyer: renvoyerLeCode,
+  sortir: sortirDeLEcran,
 }: {
   /** Où le code est parti — l'adresse ENTIÈRE, c'est là qu'il doit regarder. */
   email: string;
   /** Un envoi raté à la création : dit tout de suite, avec « Renvoyer » sous la main. */
   avertissement?: string;
   onVerifie: () => void;
+  /**
+   * **LES TROIS GESTES VIENNENT DE L'ÉCRAN QUI LA MONTE** (24 septembre 2026).
+   * La case sert aussi au mot de passe oublié, où il n'y a pas de session :
+   * le code se vérifie sur une adresse, et « Retour » ne déconnecte personne.
+   * Le dessin reste unique ; ce qu'il déclenche se choisit dehors.
+   */
+  verifier: (code: string) => Promise<EtatDuCode>;
+  renvoyer: () => Promise<{ ok: true } | { ok: false; refus: string }>;
+  sortir: () => Promise<void>;
 }) {
   const [code, setCode] = useState("");
   const [refus, setRefus] = useState<string | null>(avertissement ?? null);
@@ -58,7 +70,7 @@ export default function SaisieDuCode({
       return;
     }
     demarrer(async () => {
-      const etat = await verifierLeCodeAction(code);
+      const etat = await verifier(code);
       if (etat.ok) {
         onVerifie();
         return;
@@ -73,7 +85,7 @@ export default function SaisieDuCode({
     // Pas de `catch` : l'action se termine par une redirection qui remonte
     // jusqu'au routeur ; l'avaler laisserait l'écran en place, cookie effacé.
     demarrer(async () => {
-      await deconnexionAction("entree");
+      await sortirDeLEcran();
     });
   }
 
@@ -81,7 +93,7 @@ export default function SaisieDuCode({
     setRefus(null);
     setRenvoye(false);
     demarrer(async () => {
-      const etat = await renvoyerLeCodeAction();
+      const etat = await renvoyerLeCode();
       if (etat.ok) {
         setCode("");
         setRenvoye(true);

@@ -8,6 +8,15 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-24
 
+### Mot de passe oublié : on peut enfin rentrer
+
+Un utilisateur qui avait oublié son mot de passe n'avait aucun moyen de
+rentrer. Un lien « Mot de passe oublié ? » sous le mot de passe mène à
+`/mot-de-passe-oublie` : l'adresse, le code reçu par e-mail (celui de la
+création du compte), le nouveau mot de passe, et l'on entre. Tous les autres
+appareils sont déconnectés et un e-mail prévient du changement. Migration 0100.
+`ARCHITECTURE.md` §411.
+
 ### Les maquettes ne se publiaient plus depuis le 23 septembre au soir
 
 Trois contrôles de `pages.yml` (`termines`, `boutons-verts`, `porte-plein-air`)

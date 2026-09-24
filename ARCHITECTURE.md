@@ -33174,3 +33174,41 @@ Les trois lisent la même règle et la même liste d'exceptions
 l'appel direct.** Sans cette porte, une suite qui importe sa décision restait
 pendue à attendre une entrée qui ne venait jamais — et un contrôle qui ne rend
 pas la main ne prouve rien (`CLAUDE.md` §5).
+
+---
+
+## §411 — Mot de passe oublié : un code, puis un jeton que la BASE vérifie
+
+**Sa demande du 24 septembre 2026 :** *« si un utilisateur a oublié son mot de
+passe il ne pourra jamais le récupérer ou le changer ? Il faut mettre cette
+fonction ! »* Vrai : `/login` n'offrait rien. Son choix sur
+`appli/mot-de-passe-oublie.html` : un code par e-mail, pas un lien.
+
+| | |
+|---|---|
+| l'écran | `/mot-de-passe-oublie`, public (`chemins-publics.ts`), trois étapes : adresse, code, nouveau mot de passe |
+| le code | les règles de la création du compte, sans redite (`code-verification.ts`) ; la case est la même (`SaisieDuCode`, qui reçoit désormais ses trois gestes de l'écran qui la monte) |
+| la ligne | `codes_mot_de_passe` (0100), **pas** `codes_verification_email` : une ligne là veut dire « compte en attente » et fermerait la porte d'un compte vérifié |
+| la preuve | le bon code meurt et rend un **jeton** de 32 octets, un quart d'heure, une fois ; la base n'en garde que le SHA-256 |
+| la pose | `reinitialiser_mot_de_passe` (SECURITY DEFINER) consomme le jeton puis pose le condensat : `atlas_app` n'écrit toujours pas `password_hash` (0064) |
+| après | `fermerToutesLesSessions` : sessions, preuves, clés Face ID ; puis un e-mail « votre mot de passe a changé », puis la connexion |
+
+**La coupure est arrondie vers le BAS**, à l'inverse de « me déconnecter
+partout » (§ de `deconnecterPartout`) : la session ouverte juste après porte la
+même seconde et doit survivre. Arrondie vers le haut, l'artisan serait mis
+dehors à l'instant où il entre.
+
+**Une adresse sans compte ne se distingue pas** à la demande : même réponse,
+aucun e-mail, aucune ligne. La création du compte le dit déjà (« Cette adresse a
+déjà un compte »), mais ce n'est pas une raison d'ouvrir une seconde sonde.
+
+**Ce que ce lot ne ferme pas, dit franchement.** Qui exécute plusieurs
+instructions SQL sous `atlas_app` peut écrire une ligne et son jeton, puis
+appeler la fonction ; il pourrait aussi changer `users.email` (droit laissé par
+0064) et demander un code normalement. Aucun « mot de passe oublié » n'y échappe :
+l'application envoie le code, donc elle le connaît. Ce qui reste fermé, c'est la
+voie d'une seule écriture sur `users` ; et l'e-mail d'avis prévient le
+propriétaire si cela arrive.
+
+Éprouvé par `scripts/test-mot-de-passe-oublie-db.ts` (14 cas, sous `atlas_app`),
+vu rougir sur 5 cas en sabotant la fonction en base.

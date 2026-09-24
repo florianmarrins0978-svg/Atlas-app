@@ -40,6 +40,7 @@ export const CHEMINS_PUBLICS = [
   // avant d'accepter.
   "/bienvenue",
   "/creer-un-compte",
+  "/mot-de-passe-oublie",
   // Les deux pages légales sont des fichiers de `public/` — servies avant le
   // middleware, donc rien à déclarer ici pour elles.
   "/api/auth",

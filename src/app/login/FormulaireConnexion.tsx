@@ -146,6 +146,17 @@ export default function FormulaireConnexion({ fournisseurs }: { fournisseurs: Fo
         className="atlas-champ-gelule"
       />
 
+      {/* **Sous le mot de passe, à droite** : sa planche du 24 septembre 2026
+          (`appli/mot-de-passe-oublie.html`). L'adresse déjà tapée suit, pour
+          ne pas la retaper sur l'écran d'après. */}
+      <Link
+        href={adresse ? `/mot-de-passe-oublie?adresse=${encodeURIComponent(adresse)}` : "/mot-de-passe-oublie"}
+        className="self-end px-1 pb-1 pt-[10px] text-[13.5px]"
+        style={{ color: colors.or }}
+      >
+        Mot de passe oublié&nbsp;?
+      </Link>
+
       {/* La hauteur est réservée qu'il y ait un refus ou non : un message qui
           apparaît pousse le bouton d'une ligne, et l'appui suivant tombe à
           côté. `test-porte-e2e.ts` exige au moins 15 px. */}

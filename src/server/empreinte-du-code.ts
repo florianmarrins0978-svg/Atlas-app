@@ -1,4 +1,4 @@
-import { createHmac, randomInt } from "node:crypto";
+import { createHash, createHmac, randomBytes, randomInt } from "node:crypto";
 import { LONGUEUR_CODE, codeNormalise } from "@/lib/code-verification";
 
 /**
@@ -29,4 +29,20 @@ export function empreinteDuCode(code: string, utilisateurId: string, secret: str
 export function empreinteDeLaSaisie(saisie: string, utilisateurId: string, secret: string): string | null {
   const code = codeNormalise(saisie);
   return code ? empreinteDuCode(code, utilisateurId, secret) : null;
+}
+
+/**
+ * Le jeton du mot de passe oublié : ce que rend un code juste, et ce qu'exige
+ * la pose du nouveau mot de passe.
+ *
+ * 32 octets ne se devinent pas, donc un SHA-256 simple suffit pour la base
+ * (contrairement aux six chiffres du code, qu'un HMAC doit protéger). La base
+ * n'en garde que l'empreinte : lue par-dessus l'épaule, elle ne rend rien.
+ */
+export function tirerUnJeton(): string {
+  return randomBytes(32).toString("base64url");
+}
+
+export function empreinteDuJeton(jeton: string): string {
+  return createHash("sha256").update(jeton).digest("hex");
 }

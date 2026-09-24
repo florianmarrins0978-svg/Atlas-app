@@ -1754,6 +1754,23 @@ export const codesVerificationEmail = pgTable("codes_verification_email", {
   creeLe: timestamp("cree_le", { withTimezone: true }).notNull().defaultNow(),
 });
 
+// Mot de passe oublié (migration 0100) : mêmes colonnes et mêmes règles que
+// `codes_verification_email`, mais une ligne ici ne ferme aucune porte. Le
+// code juste donne un jeton, qui sert une fois à poser le nouveau mot de passe.
+export const codesMotDePasse = pgTable("codes_mot_de_passe", {
+  utilisateurId: uuid("utilisateur_id")
+    .primaryKey()
+    .references(() => users.id, { onDelete: "cascade" }),
+  empreinte: text("empreinte").notNull(),
+  expireLe: timestamp("expire_le", { withTimezone: true }).notNull(),
+  essais: integer("essais").notNull().default(0),
+  envois: integer("envois").notNull().default(1),
+  dernierEnvoi: timestamp("dernier_envoi", { withTimezone: true }).notNull().defaultNow(),
+  creeLe: timestamp("cree_le", { withTimezone: true }).notNull().defaultNow(),
+  jetonEmpreinte: text("jeton_empreinte"),
+  jetonExpireLe: timestamp("jeton_expire_le", { withTimezone: true }),
+});
+
 // --- Envoi du devis au client et réponse (voir docs/AGENT.md §2.1 à §2.3) ---
 
 // Une ligne par ENVOI, jamais par devis : un devis refusé puis corrigé et

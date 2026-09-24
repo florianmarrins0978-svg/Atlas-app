@@ -1,6 +1,13 @@
 # Prochaines tâches
 
-## ⏳ MOT DE PASSE OUBLIÉ : AUCUN MOYEN DE RENTRER (24 septembre 2026)
+## MOT DE PASSE OUBLIÉ : CODÉ, RESTE LA BATTERIE PUIS `main` (24 septembre 2026)
+
+**Codé le 24 septembre** sur sa branche, après son oui à la planche
+(`ARCHITECTURE.md` §411). Suite base verte, écrans regardés, parcours joué
+dans un navigateur. **Reste** : `npm run verifier:avant-livraison` (niveau 3),
+qu'il a demandé de ne pas lancer ; le garde-fou refusera `main` sans elle.
+
+Ce qui suit est l'entrée d'origine.
 
 Sa question : *« si un utilisateur a oublié son mot de passe il ne pourra
 jamais le récupérer ou le changer ? Il faut mettre cette fonction ! »* Vrai :
@@ -10,7 +17,7 @@ jamais le récupérer ou le changer ? Il faut mettre cette fonction ! »* Vrai :
 
 **Son choix : un CODE par e-mail, pas un lien** (24 septembre). On reprend
 `code-verification.ts`, `SaisieDuCode.tsx` et l'envoi Brevo déjà branchés.
-Planche : `appli/mot-de-passe-oublie.html`, en attente de son oui.
+Planche : `appli/mot-de-passe-oublie.html`, validée le 24 septembre.
 
 À tenir au codage (niveau 3, authentification) : une adresse sans compte mène
 au même écran sans rien envoyer ; essais et renvois limités comme à la
