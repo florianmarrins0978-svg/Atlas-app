@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Abonnements, ce qui manque : Atlas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/*
+  LES ABONNEMENTS, AVEC CE QUI MANQUE BARRÉ : la planche du 24 septembre 2026.
+
+  SA DEMANDE : « Formule artisan retire la possibilité d'avoir accès aux outils
+  dans la catégorie paysage (plan d'arrosage, diagnostic des maladies, fiches de
+  passage pour les entretiens). Et tu mets tout ce à quoi il n'a pas accès en
+  barré, qu'il voie ce qu'il loupe. Passe l'abonnement à 39 €. Pour le forfait
+  entreprise mets en barré ce à quoi il n'a pas accès aussi. Forfait illimité
+  mets-le à 159 par mois. »
+
+  Ce qui revient sur la planche du 9 septembre (`choisir-son-abonnement.html`) :
+  « aucune fonction n'est coupée entre les formules ». Il la tranche autrement,
+  et c'est son droit : Artisan perd les trois outils Paysage.
+
+  L'annuel garde la règle de la grille actuelle : deux mois offerts.
+  Les couleurs viennent de `src/lib/design-tokens.ts`, comme la planche d'avant.
+*/
+:root{
+  --fond:#f5f3ee; --carte:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
+  --gris:#8a8578; --pin:#2f3b2f; --plein:#7d9a6d;
+  --or:#B98B47; --trait:rgba(28,28,26,.12); --scene:#e6e3dc;
+  --serif:"Playfair Display",ui-serif,Georgia,serif;
+  --sans:"Inter",ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+body.nuit{
+  --fond:#101210; --carte:#1a1d19; --encre:#e9e8de; --encre-douce:#c1c2b6;
+  --gris:#84887b; --pin:#8fae86; --plein:#8fae86;
+  --or:#c6a15b; --trait:rgba(233,232,222,.12); --scene:#070908;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--scene)}
+body{font:16px/1.5 var(--sans);color:var(--encre);-webkit-text-size-adjust:100%;padding:0 0 64px}
+
+.bandeau{background:var(--encre);color:var(--fond);padding:18px 20px;font-size:14px;line-height:1.6}
+body.nuit .bandeau{background:#000}
+.bandeau b{color:#fff}
+body.nuit .bandeau b{color:var(--encre)}
+
+.etats{position:sticky;top:0;z-index:20;background:var(--scene);
+       border-bottom:1px solid var(--trait);padding:12px 16px 13px}
+.etats .rangee{max-width:470px;margin:0 auto;display:flex;flex-wrap:wrap;gap:7px}
+.etats button{border:1px solid var(--trait);background:var(--carte);color:var(--encre-douce);
+              border-radius:999px;padding:10px 14px;font:400 13px/1 var(--sans);cursor:pointer;
+              min-height:44px;-webkit-tap-highlight-color:transparent}
+.etats button[aria-pressed="true"]{background:var(--pin);border-color:var(--pin);color:#faf9f5}
+body.nuit .etats button[aria-pressed="true"]{color:#101210}
+
+.scene{display:flex;justify-content:center;padding:24px 16px 0}
+.tel{position:relative;width:390px;max-width:100%;height:760px;border-radius:26px;overflow:hidden;
+     box-shadow:0 16px 44px rgba(20,18,14,.22);background:var(--fond)}
+.defile{height:100%;overflow-y:auto;padding:24px 24px 70px}
+.regle{text-align:center;font-size:12.5px;color:var(--encre-douce);margin:10px 0 0}
+
+h2.titre{margin:14px 0 0;font:400 32px/1.04 var(--serif);letter-spacing:-.018em}
+.sur{margin:10px 0 0;font:500 11px/1 var(--sans);letter-spacing:.28em;
+     text-transform:uppercase;color:var(--or)}
+.note{margin:16px 0 0;font-size:12.5px;line-height:1.6;color:var(--gris)}
+.note b{color:var(--encre);font-weight:500}
+
+.formule{margin-top:16px;padding:16px 17px;border-radius:12px;background:var(--carte);
+         box-shadow:inset 0 0 0 1px var(--trait)}
+.formule .haut{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+.formule .n{font:400 22px/1.1 var(--serif)}
+.formule .prix{flex:none;font:400 22px/1.1 var(--serif);font-variant-numeric:tabular-nums}
+.formule .prix span{font:400 12px var(--sans);color:var(--gris)}
+.formule .pour{margin:6px 0 0;font-size:13.5px;line-height:1.5;color:var(--encre-douce)}
+.formule .an{margin:10px 0 0;font-size:12px;color:var(--gris)}
+.formule .bouton{display:block;width:100%;margin-top:12px;border:0;border-radius:999px;
+                 background:var(--plein);color:var(--carte);padding:13px;
+                 font:400 16px var(--sans);cursor:default}
+
+.compris{margin-top:10px;padding:0;list-style:none}
+.compris li{position:relative;padding:5px 0 5px 20px;font-size:13px;line-height:1.5;color:var(--encre-douce)}
+.compris li::before{content:"";position:absolute;left:2px;top:12px;width:6px;height:6px;
+                    border-radius:50%;background:var(--plein)}
+/* Ce qu'il n'a pas : barré, pâli, et pastille vide. Il le lit quand même. */
+.compris li.manque{color:var(--gris);text-decoration:line-through;text-decoration-thickness:1px}
+.compris li.manque::before{background:none;box-shadow:inset 0 0 0 1px var(--gris)}
+
+.nav{position:absolute;left:0;right:0;bottom:0;height:46px;background:var(--fond);
+     border-top:1px solid var(--trait);display:flex;align-items:center;
+     justify-content:space-around;font:400 9px var(--sans);letter-spacing:.18em;
+     text-transform:uppercase;color:var(--gris)}
+
+.notes{max-width:640px;margin:34px auto 0;padding:0 20px}
+.notes .bloc{padding:16px 20px;background:var(--carte);border-left:3px solid var(--or);
+             font-size:14px;line-height:1.7;color:var(--encre-douce)}
+.notes .bloc + .bloc{margin-top:12px}
+.notes b{color:var(--encre)}
+.notes table{width:100%;border-collapse:collapse;font-size:13.5px;margin:10px 0 4px}
+.notes th,.notes td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--trait)}
+.notes th{font:600 10px/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--gris)}
+</style>
+</head>
+<body>
+
+<div class="bandeau">
+  <b>Vos trois formules, avec ce qui manque barré.</b> Artisan à 39 €, sans les outils Paysage.
+  Illimité à 159 €. <b>Rien n'est codé.</b>
+</div>
+
+<div class="etats">
+  <div class="rangee">
+    <button type="button" id="pole" aria-pressed="false">Voir sur Nuit</button>
+  </div>
+</div>
+
+<div class="scene">
+  <div>
+    <div class="tel">
+      <div class="defile" id="defile"></div>
+      <div class="nav"><span>Chantiers</span><span>Planning</span><span>Terminés</span><span>Réglages</span></div>
+    </div>
+    <p class="regle">Rien ne s'appuie : c'est un dessin.</p>
+  </div>
+</div>
+
+<div class="notes" id="notes"></div>
+
+<script>
+/*
+  UNE SEULE LISTE DE LIGNES, et chaque formule dit lesquelles elle ouvre.
+  Ce qui n'est pas ouvert s'affiche barré, dans le même ordre pour les trois :
+  il compare ligne à ligne, sans chercher.
+
+  Les noms des trois outils sont ceux de l'écran Paysage
+  (`src/app/paysage/page.tsx`), au mot près : « Fiche de chantier » est ce
+  qu'il appelle la fiche de passage des entretiens.
+*/
+var LIGNES = [
+  { cle: "devis",      texte: "Devis et factures illimités" },
+  { cle: "dictee",     texte: "Vos dictées transcrites et chiffrées" },
+  { cle: "planning",   texte: "Le planning de vos chantiers" },
+  { cle: "tva",        texte: "Votre relevé de TVA, tenu tout seul" },
+  { cle: "salaries",   texte: "Vos salariés au planning, sans supplément" },
+  { cle: "arrosage",   texte: "Le plan d’arrosage automatique" },
+  { cle: "diagnostic", texte: "Le diagnostic végétal" },
+  { cle: "fiche",      texte: "Les fiches de chantier de vos entretiens" },
+  { cle: "absences",   texte: "Les absences de vos équipes" },
+  { cle: "retours",    texte: "Les retours d’intervention de vos gars" },
+  { cle: "cinq",       texte: "Jusqu’à 5 personnes aux devis et aux factures" },
+  { cle: "tous",       texte: "Autant de personnes que vous voulez aux devis et aux factures" }
+];
+
+var BASE = ["devis", "dictee", "planning", "tva", "salaries"];
+var PAYSAGE = ["arrosage", "diagnostic", "fiche"];
+var EQUIPE = ["absences", "retours"];
+
+var FORMULES = [
+  { nom: "Artisan", prix: 39, an: 390,
+    accroche: "Du devis dicté à la facture, sans rien retaper.",
+    ouvre: BASE },
+  { nom: "Entreprise", prix: 59, an: 590,
+    accroche: "Vos gars au planning, et jusqu’à cinq qui facturent.",
+    ouvre: BASE.concat(PAYSAGE, EQUIPE, ["cinq"]) },
+  { nom: "Illimité", prix: 159, an: 1590,
+    accroche: "Toute votre équipe sur Atlas.",
+    ouvre: BASE.concat(PAYSAGE, EQUIPE, ["tous"]) }
+];
+
+/*
+  « Jusqu'à 5 » et « autant que vous voulez » disent la même chose à deux
+  hauteurs : Illimité n'affiche pas « jusqu'à 5 » barré, ce serait lui
+  reprocher d'avoir plus. Seule la ligne du dessus se barre, jamais celle du
+  dessous.
+*/
+function lignesDe(f){
+  return LIGNES.filter(function(l){
+    if (l.cle === "cinq" && f.ouvre.indexOf("tous") >= 0) return false;
+    return true;
+  }).map(function(l){ return { texte: l.texte, manque: f.ouvre.indexOf(l.cle) < 0 }; });
+}
+
+function ech(t){ return String(t).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+
+function ecran(){
+  return '<h2 class="titre">Abonnement</h2><p class="sur">Mon entreprise</p>' +
+    FORMULES.map(function(f){
+      var economie = f.prix * 12 - f.an;
+      return '<div class="formule">' +
+        '<div class="haut"><span class="n">' + ech(f.nom) + '</span>' +
+        '<span class="prix">' + f.prix + ' € <span>/mois HT</span></span></div>' +
+        '<p class="pour">' + ech(f.accroche) + '</p>' +
+        '<ul class="compris">' + lignesDe(f).map(function(l){
+          return '<li' + (l.manque ? ' class="manque"' : "") + '>' + ech(l.texte) + "</li>";
+        }).join("") + '</ul>' +
+        '<p class="an">Ou ' + f.an.toLocaleString("fr-FR") + ' € par an, économisez ' + economie + ' €.</p>' +
+        '<button type="button" class="bouton">Choisir ' + ech(f.nom) + '</button>' +
+        '</div>';
+    }).join("") +
+    '<p class="note"><b>Sans engagement.</b> Résiliable à tout moment, et vos données restent à vous.</p>' +
+    '<p class="note"><b>Vos salariés ne comptent pas.</b> Seules comptent les personnes qui font des devis ou des factures.</p>';
+}
+
+var NOTES = [
+  "<b>Ce qui change par rapport à aujourd'hui :</b>" +
+    "<table><tr><th></th><th>Aujourd'hui</th><th>Proposé</th></tr>" +
+    "<tr><td>Artisan</td><td>29 €, 290 € par an</td><td><b>39 €</b>, 390 € par an</td></tr>" +
+    "<tr><td>Entreprise</td><td>59 €, 590 € par an</td><td>inchangé</td></tr>" +
+    "<tr><td>Illimité</td><td>120 €, 1 200 € par an</td><td><b>159 €</b>, 1 590 € par an</td></tr></table>" +
+    "L'annuel garde deux mois offerts, comme aujourd'hui. Dites si vous voulez un autre chiffre.",
+  "<b>Artisan perd trois outils Paysage :</b> le plan d'arrosage, le diagnostic végétal, et la fiche de chantier (celle qu'on coche puis qu'on envoie au client après un entretien). J'ai compris « fiche de passage » comme cette fiche là.",
+  "<b>Une question : les fiches de sécurité</b> (élagage, abattage) sont aussi dans Paysage. Je les ai laissées ouvertes à tous, parce qu'elles protègent vos gars. Vous les fermez aussi à Artisan ?",
+  "<b>Avant de mettre ces prix en service :</b> vos conditions générales publiées (version 2, article 14) écrivent encore 29, 59 et 120 €. Les nouveaux prix doivent y entrer avec la version 3, sinon le contrat et l'écran se contredisent."
+];
+
+document.getElementById("defile").innerHTML = ecran();
+document.getElementById("notes").innerHTML =
+  NOTES.map(function(n){ return '<div class="bloc">' + n + "</div>"; }).join("");
+
+var pole = document.getElementById("pole");
+pole.addEventListener("click", function(){
+  var nuit = !document.body.classList.contains("nuit");
+  document.body.classList.toggle("nuit", nuit);
+  pole.setAttribute("aria-pressed", String(nuit));
+  pole.textContent = nuit ? "Revenir sur Terre" : "Voir sur Nuit";
+});
+</script>
+</body>
+</html>
