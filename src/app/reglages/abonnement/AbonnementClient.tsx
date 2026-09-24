@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import PrimaryButton from "@/components/atlas/PrimaryButton";
 import { colors, font, libelleCaps, surPlein, texteSituation } from "@/lib/design-tokens";
-import { FORMULES, montantDu, type FormuleCode, type Periodicite } from "@/lib/abonnements";
+import { FORMULES, lignesDeLaFormule, montantDu, type FormuleCode, type Periodicite } from "@/lib/abonnements";
 import { sabonnerAction, ouvrirLeGuichetAction, changerDeFormuleAction } from "./actions";
 
 /**
@@ -117,13 +117,19 @@ export default function AbonnementClient({
                 </p>
 
                 <ul className="mt-3.5 flex flex-col gap-1.5">
-                  {f.compris.map((c) => (
+                  {/* Ce que la formule n'ouvre pas reste écrit, barré : sa
+                      demande du 24 septembre 2026, « qu'il voie ce qu'il loupe ». */}
+                  {lignesDeLaFormule(f).map((l) => (
                     <li
-                      key={c.texte}
+                      key={l.texte}
+                      data-atlas={l.manque ? "ligne-manque" : "ligne-comprise"}
                       className={texteSituation}
-                      style={{ color: c.neuf ? colors.ink : colors.inkSoft, fontWeight: c.neuf ? 500 : 400 }}
+                      style={{
+                        color: l.manque ? colors.muted : colors.inkSoft,
+                        textDecoration: l.manque ? "line-through" : "none",
+                      }}
                     >
-                      {c.texte}
+                      {l.texte}
                     </li>
                   ))}
                 </ul>

@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { exigerEcran } from "@/server/garde-action";
+import { exigerEcran, exigerFonction } from "@/server/garde-action";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { verifierLimite, LIMITES } from "@/server/rate-limit";
 import { enregistrerObjet, lireObjet } from "@/server/storage";
@@ -110,6 +110,7 @@ export async function analyserPhotoAction(formData: FormData): Promise<Resultat>
 
   const ctx = await getCurrentCtx();
   await exigerEcran(ctx, "/paysage", "analyser une photo de végétal");
+  await exigerFonction(ctx, "diagnostic", "analyser une photo de végétal");
   const limite = await verifierLimite(`diagnostic:${ctx.entrepriseId}`, LIMITES.diagnosticVegetal);
   if (!limite.autorise) return { ok: false, phrase: limite.message };
 
@@ -183,6 +184,7 @@ export async function ajouterComplementAction(diagnosticId: string, formData: Fo
 
   const ctx = await getCurrentCtx();
   await exigerEcran(ctx, "/paysage", "compléter un diagnostic");
+  await exigerFonction(ctx, "diagnostic", "compléter un diagnostic");
   const diagnostic = await lireDiagnostic(ctx, diagnosticId);
   if (!diagnostic) return { ok: false, phrase: "Ce diagnostic n’existe plus." };
   if (diagnostic.statut !== "complement_demande") {
@@ -219,6 +221,7 @@ export async function ajouterComplementAction(diagnosticId: string, formData: Fo
 export async function reprendreAnalyseAction(diagnosticId: string): Promise<Resultat> {
   const ctx = await getCurrentCtx();
   await exigerEcran(ctx, "/paysage", "réessayer un diagnostic");
+  await exigerFonction(ctx, "diagnostic", "réessayer un diagnostic");
   const diagnostic = await lireDiagnostic(ctx, diagnosticId);
   if (!diagnostic) return { ok: false, phrase: "Ce diagnostic n’existe plus." };
   if (diagnostic.statut !== "echoue") return { ok: false, phrase: "Ce diagnostic a déjà été regardé." };
@@ -303,6 +306,7 @@ export type ResultatSimple = { ok: true } | { ok: false; phrase: string };
 export async function rattacherAction(diagnosticId: string, chantierId: string): Promise<ResultatSimple> {
   const ctx = await getCurrentCtx();
   await exigerEcran(ctx, "/paysage", "rattacher un diagnostic à un chantier");
+  await exigerFonction(ctx, "diagnostic", "rattacher un diagnostic à un chantier");
   const r = await rattacherAUnChantier(ctx, diagnosticId, chantierId, politique());
   if (!r.ok) {
     return {

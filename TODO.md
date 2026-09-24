@@ -1,5 +1,16 @@
 # Prochaines tâches
 
+## LES NOUVEAUX PRIX : CODÉS, EN ATTENTE DE LA BATTERIE (24 septembre 2026)
+
+Sur la branche `claude/subscription-breakdown-rcv5i7`, prêts : 39 €, 59 €,
+159 € ; Artisan sans le plan d'arrosage, le diagnostic végétal ni la fiche de
+chantier (les fiches de sécurité restent ouvertes, sa réponse) ; ce qu'une
+formule n'ouvre pas s'affiche barré sur l'écran Abonnement ; les conditions
+générales version 3 disent la même chose. **Niveau 3 (argent) : la batterie
+entière avant `main`**, et il a demandé de ne pas la lancer tant qu'il ne l'a
+pas dit. À lui annoncer avant de la jouer. Publier fait réaccepter les
+conditions à chaque compte à sa prochaine connexion.
+
 ## ~~MOT DE PASSE OUBLIÉ~~ : SUR `main` LE 24 SEPTEMBRE 2026
 
 **Codé le 24 septembre** sur sa branche, après son oui à la planche

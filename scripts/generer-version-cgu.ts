@@ -23,7 +23,11 @@ import path from "node:path";
  * script sert à l'y poser la première fois.
  *
  *   npx tsx scripts/generer-version-cgu.ts            # affiche le texte
- *   npx tsx scripts/generer-version-cgu.ts --ecrire   # l'écrit dans un fichier
+ *   npx tsx scripts/generer-version-cgu.ts --ecrire <fichier>   # l'écrit dans ce fichier
+ *
+ * **Sans tiret ni point médian depuis la version 3** (24 septembre 2026) : la
+ * version 2 en portait, et elle reste figée telle quelle dans `versions.ts` ;
+ * la suivante suit la règle des écrans (`CLAUDE.md` §3, `test-aucun-tiret`).
  */
 
 const RACINE = path.join(__dirname, "..");
@@ -46,13 +50,15 @@ export function texteDeLaPage(html: string): string {
   return (
     utile
       // Un titre d'article devient une ligne à lui, précédée d'un blanc.
-      .replace(/<h2[^>]*><span class="num">([^<]*)<\/span>([^<]*)<\/h2>/g, "\n\n$1 — $2\n")
+      .replace(/<h2[^>]*><span class="num">([^<]*)<\/span>([^<]*)<\/h2>/g, "\n\n$1 : $2\n")
       .replace(/<h3[^>]*>(.*?)<\/h3>/g, "\n\n$1\n")
       // Un tableau se lit en lignes : « intitulé : valeur ».
       .replace(/<tr>\s*<th>(.*?)<\/th>\s*<td[^>]*>(.*?)<\/td>\s*<\/tr>/g, "\n$1 : $2")
-      .replace(/<th>(.*?)<\/th>/g, "$1 · ")
-      .replace(/<td[^>]*>(.*?)<\/td>/g, "$1 · ")
-      .replace(/<li>/g, "\n  · ")
+      // Une ligne de tableau à plusieurs cases : les cases séparées par des virgules.
+      .replace(/<tr>([\s\S]*?)<\/tr>/g, (_, ligne: string) =>
+        "\n" + [...ligne.matchAll(/<t[hd][^>]*>(.*?)<\/t[hd]>/g)].map((c) => c[1]).join(", ") + "\n"
+      )
+      .replace(/<li>/g, "\n  • ")
       .replace(/<\/p>|<\/li>|<\/ul>|<\/ol>|<\/table>|<\/tr>/g, "\n")
       .replace(/<br\s*\/?>/g, "\n")
       .replace(/<[^>]+>/g, "")
@@ -87,8 +93,9 @@ if (articles < 19) {
   process.exit(1);
 }
 
-if (process.argv.includes("--ecrire")) {
-  const cible = path.join(RACINE, "scripts", "cgu-version-2.txt");
+const ecrire = process.argv.indexOf("--ecrire");
+if (ecrire >= 0) {
+  const cible = path.resolve(process.argv[ecrire + 1] ?? "cgu.txt");
   writeFileSync(cible, texte, "utf8");
   console.log(`écrit dans ${cible}`);
 } else {

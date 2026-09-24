@@ -29,6 +29,13 @@
  * sont un plus d'« Entreprise » (`fonctionOuverte`). Et l'essai de quinze
  * jours, qui se referme en lecture seule (`enLectureSeule`).
  *
+ * **Le 24 septembre 2026, la grille a bougé** (planche
+ * `appli/abonnements-ce-qui-manque.html`) : Artisan passe à 39 €, Illimité à
+ * 159 €, et Artisan perd les trois outils de paysage — le plan d'arrosage, le
+ * diagnostic végétal, la fiche de chantier. Les fiches de sécurité restent
+ * ouvertes à tous, sa réponse du même jour. Et chaque carte montre, barré, ce
+ * que la formule n'ouvre pas : *« qu'il voie ce qu'il loupe »*.
+ *
  * **Une entreprise SANS ligne d'abonnement n'est touchée par aucune des
  * trois** : c'est son Atlas à lui, et celui de ceux qui s'en servaient avant
  * l'offre. Une fermeture est la conséquence d'une formule choisie.
@@ -155,13 +162,23 @@ export function formuleChoisie(
 /**
  * CE QUI SE FERME À « ARTISAN » — sa décision du 10 septembre 2026 : *« oui
  * bloqué pour l'abonnement artisan »*. Les absences d'équipe et les retours
- * d'intervention sont un plus d'« Entreprise ».
+ * d'intervention sont un plus d'« Entreprise ». Le 24 septembre, les trois
+ * outils de paysage les ont rejoints.
  *
  * La liste est FERMÉE, et chaque formule dit ce qu'elle ouvre (`fonctions`
  * ci-dessous) : une fonction réservée qui n'y figurerait pas ferait rougir la
  * compilation, pas un client.
  */
-export type FonctionReservee = "absences" | "retours";
+export type FonctionReservee = "arrosage" | "diagnostic" | "fiche-chantier" | "absences" | "retours";
+
+/** Toutes, dans l'ordre des cartes : « Entreprise » et « Illimité » les ouvrent. */
+const TOUTES_LES_FONCTIONS: readonly FonctionReservee[] = [
+  "arrosage",
+  "diagnostic",
+  "fiche-chantier",
+  "absences",
+  "retours",
+];
 
 /**
  * Cette formule ouvre-t-elle cette fonction ?
@@ -179,6 +196,21 @@ export function fonctionOuverte(code: string | null | undefined, fonction: Fonct
 /** Ce que lit un abonné « Artisan » à la place de la fonction — même dessin, même bouton. */
 export function phraseDeLaFermeture(fonction: FonctionReservee): { titre: string; detail: string } {
   switch (fonction) {
+    case "arrosage":
+      return {
+        titre: "Le plan d’arrosage est dans « Entreprise »",
+        detail: "Photographiez le croquis du jardin, et le plan sort avec sa liste de pièces.",
+      };
+    case "diagnostic":
+      return {
+        titre: "Le diagnostic végétal est dans « Entreprise »",
+        detail: "Photographiez une plante malade, et sachez quoi faire.",
+      };
+    case "fiche-chantier":
+      return {
+        titre: "Les fiches de chantier sont dans « Entreprise »",
+        detail: "Cochez ce qui a été fait pendant l’entretien, puis envoyez la fiche au client.",
+      };
     case "absences":
       return {
         titre: "Les absences sont dans « Entreprise »",
@@ -187,15 +219,49 @@ export function phraseDeLaFermeture(fonction: FonctionReservee): { titre: string
     case "retours":
       return {
         titre: "Les retours sont dans « Entreprise »",
-        detail: "Ce que vos gars ont constaté en fin de chantier : ce qui est fait, ce qui ne l’est pas, et leurs photos.",
+        detail: "Ce que vos salariés ont constaté en fin de chantier : ce qui est fait, ce qui ne l’est pas, et leurs photos.",
       };
   }
 }
 
-export type LigneComprise = {
+/**
+ * UNE LIGNE DE CARTE — la même liste pour les trois formules.
+ *
+ * **Une seule liste, et chaque formule la lit.** Avant le 24 septembre 2026,
+ * chaque formule portait sa propre liste de ce qu'elle comprend : trois listes
+ * recopiées qu'un contrôle devait tenir d'accord avec `fonctions`. Désormais
+ * une ligne DIT ce qui l'ouvre — une fonction réservée, ou un plafond — et
+ * `lignesDeLaFormule` en déduit ce qui s'affiche barré. Ce que la carte promet
+ * et ce que le code ouvre ne peuvent plus diverger : c'est la même donnée.
+ */
+type Ligne = {
   texte: string;
-  /** Vrai quand la ligne est un PLUS par rapport à la formule du dessous. */
-  neuf?: boolean;
+  /** La fonction qui l'ouvre ; sans elle, la ligne vaut pour toutes. */
+  fonction?: FonctionReservee;
+  /** Le plafond de fabricants qu'il faut au moins ; `null` = sans limite. */
+  plafond?: number | null;
+};
+
+/** **L'ordre est celui de la planche**, pour les trois cartes : il compare ligne à ligne. */
+const LIGNES: readonly Ligne[] = [
+  { texte: "Devis et factures illimités" },
+  { texte: "Vos dictées transcrites et chiffrées" },
+  { texte: "Le planning de vos chantiers" },
+  { texte: "Votre relevé de TVA, tenu tout seul" },
+  { texte: "Vos salariés ont accès au planning" },
+  { texte: "Le plan d’arrosage automatique", fonction: "arrosage" },
+  { texte: "Le diagnostic végétal", fonction: "diagnostic" },
+  { texte: "Les fiches de chantier de vos entretiens", fonction: "fiche-chantier" },
+  { texte: "Les absences de vos équipes", fonction: "absences" },
+  { texte: "Les retours d’intervention de vos salariés", fonction: "retours" },
+  { texte: "Jusqu’à 5 personnes aux devis et aux factures", plafond: 5 },
+  { texte: "Autant de personnes que vous voulez aux devis et aux factures", plafond: null },
+];
+
+export type LigneDeCarte = {
+  texte: string;
+  /** Vrai quand la formule ne l'ouvre pas : la ligne s'affiche barrée. */
+  manque: boolean;
 };
 
 export type Formule = {
@@ -213,17 +279,7 @@ export type Formule = {
   plafondFabricants: number | null;
   /** Les fonctions réservées que cette formule ouvre (`fonctionOuverte`). */
   fonctions: readonly FonctionReservee[];
-  compris: LigneComprise[];
 };
-
-const COMMUN: LigneComprise[] = [
-  { texte: "Devis et factures illimités" },
-  { texte: "Vos dictées transcrites et chiffrées" },
-  { texte: "Le planning de vos chantiers" },
-  { texte: "Votre relevé de TVA, tenu tout seul" },
-  { texte: "Le plan d’arrosage" },
-  { texte: "Vos salariés au planning, sans supplément" },
-];
 
 /**
  * **L'ordre est celui de la planche** : du moins cher au plus cher. Il se lit
@@ -234,43 +290,55 @@ export const FORMULES: readonly Formule[] = [
     code: "artisan",
     nom: "Artisan",
     accroche: "Du devis dicté à la facture, sans rien retaper.",
-    prixMensuel: 29,
-    prixAnnuel: 290,
+    prixMensuel: 39,
+    prixAnnuel: 390,
     plafondFabricants: 1,
     fonctions: [],
-    compris: COMMUN,
   },
   {
     code: "entreprise",
     nom: "Entreprise",
-    accroche: "Vos gars au planning, et jusqu’à cinq qui facturent.",
+    accroche: "Accès illimité à tous les outils, jusqu’à cinq personnes qui facturent.",
     prixMensuel: 59,
     prixAnnuel: 590,
     plafondFabricants: 5,
-    fonctions: ["absences", "retours"],
-    compris: [
-      ...COMMUN,
-      { texte: "Jusqu’à 5 personnes qui font des devis ou des factures", neuf: true },
-      { texte: "Les absences de vos équipes", neuf: true },
-      { texte: "Les retours d’intervention de vos gars", neuf: true },
-    ],
+    fonctions: TOUTES_LES_FONCTIONS,
   },
   {
     code: "illimite",
     nom: "Illimité",
     accroche: "Toute votre équipe sur Atlas.",
-    prixMensuel: 120,
-    prixAnnuel: 1200,
+    prixMensuel: 159,
+    prixAnnuel: 1590,
     plafondFabricants: null,
-    fonctions: ["absences", "retours"],
-    compris: [
-      ...COMMUN,
-      { texte: "Les absences de vos équipes" },
-      { texte: "Les retours d’intervention de vos gars" },
-      { texte: "Autant de personnes que vous voulez aux devis et aux factures", neuf: true },
-    ],
+    fonctions: TOUTES_LES_FONCTIONS,
   },
 ] as const;
+
+/** Un plafond en couvre-t-il un autre ? `null` couvre tout, et n'est couvert que par lui-même. */
+function plafondCouvre(detenu: number | null, exige: number | null): boolean {
+  if (detenu === null) return true;
+  return exige !== null && detenu >= exige;
+}
+
+/**
+ * CE QUE LA CARTE D'UNE FORMULE AFFICHE — ce qu'elle ouvre, et ce qu'elle
+ * n'ouvre pas, barré.
+ *
+ * **Une ligne de plafond disparaît quand une ligne plus haute la couvre** :
+ * « Illimité » n'affiche pas « jusqu'à 5 personnes » barré, ce serait lui
+ * reprocher d'avoir plus. Seule la ligne du dessus se barre.
+ */
+export function lignesDeLaFormule(f: Formule): LigneDeCarte[] {
+  return LIGNES.filter(
+    (l) => !(l.plafond !== undefined && l.plafond !== null && f.plafondFabricants === null)
+  ).map((l) => ({
+    texte: l.texte,
+    manque:
+      (l.fonction !== undefined && !f.fonctions.includes(l.fonction)) ||
+      (l.plafond !== undefined && !plafondCouvre(f.plafondFabricants, l.plafond)),
+  }));
+}
 
 export function estFormule(valeur: string | null | undefined): valeur is FormuleCode {
   return typeof valeur === "string" && FORMULES.some((f) => f.code === valeur);

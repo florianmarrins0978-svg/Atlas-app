@@ -159,8 +159,8 @@ async function main() {
 
   console.log("\n=== 4. « Artisan » : la garde tient ce que l'écran montre ===\n");
 
-  await essai("à « Artisan », noter une absence ou ouvrir un retour est refusé par la garde", async () => {
-    for (const f of ["absences", "retours"] as const) {
+  await essai("à « Artisan », le paysage, les absences et les retours sont refusés par la garde", async () => {
+    for (const f of ["arrosage", "diagnostic", "fiche-chantier", "absences", "retours"] as const) {
       await assert.rejects(
         () => exigerFonction(ctx, f, `essai ${f}`),
         (e: unknown) => e instanceof ActionRefuseeError
@@ -168,7 +168,7 @@ async function main() {
     }
   });
 
-  await essai("à « Entreprise », les deux passent", async () => {
+  await essai("à « Entreprise », tout passe", async () => {
     await enregistrerLAbonnement(ctx, {
       formule: "entreprise",
       periodicite: "mensuelle",
@@ -178,13 +178,11 @@ async function main() {
       clientPrestataire: "cus_essai",
       abonnementPrestataire: "sub_essai",
     });
-    await exigerFonction(ctx, "absences", "essai");
-    await exigerFonction(ctx, "retours", "essai");
+    for (const f of ["arrosage", "diagnostic", "fiche-chantier", "absences", "retours"] as const) await exigerFonction(ctx, f, "essai");
   });
 
-  await essai("sans abonnement, les deux passent aussi — une fermeture est la conséquence d'une formule choisie", async () => {
-    await exigerFonction(ctxAncien, "absences", "essai");
-    await exigerFonction(ctxAncien, "retours", "essai");
+  await essai("sans abonnement, tout passe aussi — une fermeture est la conséquence d'une formule choisie", async () => {
+    for (const f of ["arrosage", "diagnostic", "fiche-chantier", "absences", "retours"] as const) await exigerFonction(ctxAncien, f, "essai");
   });
 
   console.log(`\n${echecs === 0 ? "✅" : "❌"} ${echecs} échec(s)\n`);
