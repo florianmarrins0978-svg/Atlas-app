@@ -8,7 +8,9 @@ La version 3 des CGU est prête sur la branche `claude/subscription-breakdown-rc
 `FonctionReservee` étendue à l'arrosage, au diagnostic et à la fiche de
 chantier, `COMMUN` sans le plan d'arrosage), la fermeture à l'écran Paysage et
 côté serveur (`exigerFonction`), et `test-abonnements.ts` repointé sur la
-planche `appli/abonnements-ce-qui-manque.html`. Niveau 3 (argent) : batterie
+planche `appli/abonnements-ce-qui-manque.html`. La ligne « Vos salariés au planning, sans
+supplément » devient « Vos salariés voient leur planning sur leur téléphone,
+gratuitement » : sa remarque, *« ça veut rien dire »*. Niveau 3 (argent) : batterie
 entière, à annoncer au patron avant de la lancer. Publier la version 3 fait
 réaccepter les conditions à chaque compte à sa prochaine connexion.
 ## ⏳ MOT DE PASSE OUBLIÉ : AUCUN MOYEN DE RENTRER (24 septembre 2026)
