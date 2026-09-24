@@ -25,6 +25,7 @@ import {
   libelleFacturee,
   libelleDateChantier,
   libelleEtatLigne,
+  morceauxEtatLigne,
   numeroCourt,
   estFacture,
   type LigneTerminee,
@@ -439,6 +440,21 @@ essai("le tri place la facturée à SA date, pas en tête", () => {
     ligne({ id: "recent", datePlanifiee: "2026-09-20" }),
   ]);
   assert.deepEqual(lignes.map((l) => l.id), ["recent", "sans-planning", "vieux"]);
+});
+
+essai("« Facturé » se détache de sa ligne pour passer en gras doré (24 septembre 2026)", () => {
+  assert.deepEqual(morceauxEtatLigne("Facturé le 18 septembre, Facture n° 12"), {
+    avant: "", mot: "Facturé", apres: " le 18 septembre, Facture n° 12",
+  });
+  assert.deepEqual(morceauxEtatLigne("9 août, Facturé le 20 août"), {
+    avant: "9 août, ", mot: "Facturé", apres: " le 20 août",
+  });
+  assert.deepEqual(morceauxEtatLigne("Facturée"), { avant: "", mot: "Facturée", apres: "" });
+  // « Facture n° 5 » n'est pas « Facturé » : rien ne se colore.
+  assert.deepEqual(morceauxEtatLigne("Facture n° 5"), { avant: "Facture n° 5", mot: "", apres: "" });
+  assert.deepEqual(morceauxEtatLigne("23 septembre, 696,00 € prévus"), {
+    avant: "23 septembre, 696,00 € prévus", mot: "", apres: "",
+  });
 });
 
 console.log(`\n${echecs === 0 ? "✅" : "❌"} « Terminés » — ${echecs} échec(s).`);

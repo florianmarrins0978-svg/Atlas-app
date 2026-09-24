@@ -8,6 +8,15 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-24
 
+### Terminés : « Facturé » et le montant en gras doré
+
+Sa planche A (`appli/termines-facture-en-dore.html`). Sur une ligne facturée,
+le mot « Facturé » seul et le montant passent en gras doré ; la date et le
+numéro gardent l'encre douce, qui tient au soleil ce que l'or ne tient pas.
+Le mot se détache par une règle pure, `morceauxEtatLigne`
+(`src/lib/termines-par-mois.ts`), éprouvée dans `test-termines-par-mois.ts`.
+Regardé à l'écran sur une base locale ; aucune batterie jouée, à sa demande.
+
 ### Les maquettes ne se publiaient plus depuis le 23 septembre au soir
 
 Trois contrôles de `pages.yml` (`termines`, `boutons-verts`, `porte-plein-air`)

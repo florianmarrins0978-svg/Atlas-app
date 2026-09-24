@@ -341,6 +341,23 @@ export function libelleEtatLigne(l: LigneAffichee, anneeCourante: string): strin
   return bouts.join(", ");
 }
 
+/**
+ * Détache le mot « Facturé » (ou « Facturée ») de la ligne d'état, pour que
+ * l'écran le pose en gras doré — sa planche A du 24 septembre 2026
+ * (`appli/termines-facture-en-dore.html`) : le mot seul, la date et le numéro
+ * restent à l'encre douce. « Facture n° 5 » ne doit pas s'y prendre, d'où la
+ * limite après le mot.
+ */
+export function morceauxEtatLigne(etat: string): { avant: string; mot: string; apres: string } {
+  const trouve = /Facturée?(?= |,|$)/.exec(etat);
+  if (!trouve) return { avant: etat, mot: "", apres: "" };
+  return {
+    avant: etat.slice(0, trouve.index),
+    mot: trouve[0],
+    apres: etat.slice(trouve.index + trouve[0].length),
+  };
+}
+
 /** « Facturé le 20 août », d'après la date d'émission — ou rien si on l'ignore. */
 export function libelleFacturee(l: LigneAffichee): string {
   const jour = l.factureDateEmission;

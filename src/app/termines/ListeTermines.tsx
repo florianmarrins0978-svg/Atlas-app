@@ -10,6 +10,7 @@ import {
   factureesPartout,
   formatEuros,
   libelleEtatLigne,
+  morceauxEtatLigne,
   nomDuMois,
   resumeDuMois,
   type LigneAffichee,
@@ -582,7 +583,24 @@ function Ligne({ ligne, annee }: { ligne: LigneAffichee; annee: string }) {
             style={{ color: colors.inkSoft, fontVariantNumeric: "tabular-nums" }}
             data-atlas="etat-ligne"
           >
-            {etat}
+            {/* **« Facturé » en gras doré, le 24 septembre 2026** : sa planche
+                A (`appli/termines-facture-en-dore.html`). Le mot seul : la
+                date et le numéro gardent l'encre douce, qui tient au soleil
+                ce que l'or ne tient pas (voir juste au-dessus). */}
+            {(() => {
+              const { avant, mot, apres } = morceauxEtatLigne(etat);
+              return (
+                <>
+                  {avant}
+                  {mot !== "" && (
+                    <span style={{ color: colors.or, fontWeight: 700 }} data-atlas="mot-facture">
+                      {mot}
+                    </span>
+                  )}
+                  {apres}
+                </>
+              );
+            })()}
           </span>
         )}
       </span>
@@ -619,7 +637,9 @@ function Ligne({ ligne, annee }: { ligne: LigneAffichee; annee: string }) {
             lineHeight: 1.2,
             fontVariantNumeric: "tabular-nums",
             whiteSpace: "nowrap",
-            color: colors.ink,
+            // Gras doré, comme « Facturé » : sa planche A du 24 septembre 2026.
+            fontWeight: 700,
+            color: colors.or,
           }}
         >
           {ligne.montant === null ? "—" : formatEuros(ligne.montant)}
