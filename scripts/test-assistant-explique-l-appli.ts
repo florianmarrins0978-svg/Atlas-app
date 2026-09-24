@@ -156,7 +156,9 @@ async function main() {
   await test("Plusieurs écrans savent se raconter", async () => {
     const attendus: [string, RegExp][] = [
       ["comment envoyer le devis au client", /Envoyer le devis/],
-      ["comment changer mon mot de passe", /Changer de mot de passe/],
+      // « Changer de mot de passe ? » est le TITRE de la rubrique ; le bouton
+      // qu'on appuie dit « Changer mon mot de passe » (24 septembre 2026).
+      ["comment changer mon mot de passe", /Changer mon mot de passe/],
       ["comment je déplace un chantier sur le planning", /Déplacer/],
       ["où je vois ma tva", /Ma TVA/],
     ];

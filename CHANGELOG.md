@@ -34,6 +34,16 @@ RIEN.
 **Ce que ça évite :** un assistant qui répond à côté, ou « je ne sais pas », à la
 question la plus simple qu'on lui pose : où est ceci.
 
+### L'assistant connaît toutes les fonctions de l'appli (324 fiches)
+
+Sa relance du soir : un vrai assistant, qui explique chaque fonction. Chaque
+écran a été inventorié bouton par bouton, et chaque fiche est prouvée contre le
+code. **36 des 64 anciennes fiches étaient fausses ou floues** (un écran disparu, des
+boutons renommés) : récrites. La recherche compte désormais la rareté d'un mot,
+reconnaît les formes d'un même verbe et préfère le mot exact. Une fiche par zone
+dans `src/lib/fiches-mode-emploi/`. **Ce que ça évite :** qu'il enseigne un
+bouton qui n'existe plus, ou qu'il ne sache rien d'un écran entier.
+
 ### Les maquettes ne se publiaient plus depuis le 23 septembre au soir
 
 Trois contrôles de `pages.yml` (`termines`, `boutons-verts`, `porte-plein-air`)

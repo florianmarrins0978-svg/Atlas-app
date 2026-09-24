@@ -4,6 +4,7 @@ import path from "node:path";
 import ts from "typescript";
 import { FICHES_MODE_EMPLOI, chercherFiches, type FicheModeEmploi } from "../src/lib/mode-emploi";
 import { rechercherModeEmploi } from "../src/server/ai/tools/rechercher-mode-emploi";
+import { QUESTIONS_PAR_ZONE } from "./_questions-mode-emploi";
 
 /**
  * Le mode d'emploi que récite l'assistant, confronté au CODE.
@@ -106,7 +107,7 @@ function codeDeSrc(): [string, string][] {
   );
   cacheSrc = fichiers
     // Le mode d'emploi cite ce qui manque : il ne peut pas se prouver présent.
-    .filter((f) => !f.endsWith(path.join("lib", "mode-emploi.ts")))
+    .filter((f) => !f.endsWith(path.join("lib", "mode-emploi.ts")) && !f.startsWith(path.join("lib", "fiches-mode-emploi")))
     .map((f) => {
       const complet = path.join(RACINE, "src", f);
       return [path.join("src", f), codeSansCommentaires(complet, readFileSync(complet, "utf8"))];
@@ -243,6 +244,29 @@ async function main() {
       ([question, attendu]) => `« ${question} » → ${chercherFiches(question)[0]?.id ?? "(rien)"} au lieu de ${attendu}`
     );
     assert.deepEqual(ecarts, [], ecarts.join("\n"));
+  });
+
+  // **Sa demande du 24 septembre 2026, au soir : *« nourris-le avec toutes les
+  // fonctions de l'appli, qu'il soit capable de les expliquer »*.** Une zone
+  // par écran, et chaque fiche retrouvée par au moins une question.
+  for (const [zone, questions] of Object.entries(QUESTIONS_PAR_ZONE)) {
+    await test(`Zone ${zone} : chaque question retrouve sa fiche parmi les trois premières`, () => {
+      // **Parmi les trois premières, pas forcément la première** : l'outil en
+      // rend cinq et le modèle choisit celle qui répond. « Facturer mon
+      // chantier » a deux portes, Terminés et le Planning, et les deux
+      // fiches sont justes. Ses questions à lui (`ATTENDUS`) restent exigées
+      // en tête.
+      const ecarts = questions
+        .filter(([q, attendu]) => !chercherFiches(q, 5).slice(0, 3).some((f) => f.id === attendu))
+        .map(([q, attendu]) => `« ${q} » → ${chercherFiches(q, 5).slice(0, 3).map((f) => f.id).join(", ") || "(rien)"} sans ${attendu}`);
+      assert.deepEqual(ecarts, [], ecarts.join("\n"));
+    });
+  }
+
+  await test("Chaque fiche est retrouvée par au moins une question", () => {
+    const visees = new Set([...ATTENDUS, ...Object.values(QUESTIONS_PAR_ZONE).flat()].map(([, id]) => id));
+    const orphelines = FICHES_MODE_EMPLOI.filter((f) => !visees.has(f.id)).map((f) => f.id);
+    assert.deepEqual(orphelines, [], `Aucune question ne vise : ${orphelines.join(", ")}`);
   });
 
   await test("Une question qui n'en est pas une ne rend RIEN", () => {

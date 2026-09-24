@@ -33236,3 +33236,39 @@ l'ancien nom.** `test-mode-emploi.ts` blanchit désormais les commentaires
 (analyseur de TypeScript, sur place : l'imprimeur récrit « é » en « \u00E9 »,
 et toutes les preuves accentuées seraient tombées à tort).
 
+### Toutes les fonctions, pas seulement les lieux (le soir même)
+
+Sa relance : *« je veux que ce soit un vrai assistant, donc nourris-le avec
+toutes les fonctions de l'appli, qu'il soit capable de les expliquer »*.
+
+**324 fiches au lieu de 80, une zone par fichier** (`src/lib/fiches-mode-emploi/`
+: lieux, chantier, devis, facture, planning, paysage, reglages). La règle, la
+recherche et le pourquoi restent dans `src/lib/mode-emploi.ts`. Un fichier par
+zone, parce que deux sessions qui ajoutent chacune une fiche à deux écrans
+différents ne doivent pas se disputer un fichier de trois mille lignes.
+
+**36 des 64 fiches existantes étaient fausses ou floues**, et le contrôle ne
+le voyait pas : l'écran « Fiche du chantier » n'existe plus (le micro vit sur la fiche
+client), « Déplacer » et « Retirer » du planning ont changé de geste, la
+rubrique « Connexion » s'appelle « Mot de passe », « Apparence » s'appelle
+« Couleurs », le bouton est « Changer mon mot de passe », etc. Toutes récrites
+contre le code.
+
+**La recherche a dû changer avec le nombre.** À trois cents fiches, « client »,
+« devis », « facture » sont partout, et la fiche qui gagnait était celle qui
+avait le plus de mots COURANTS :
+
+| | |
+|---|---|
+| **la rareté** | un mot présent dans beaucoup de fiches pèse moins au classement (`rarete`). Le seuil de réponse, lui, reste compté sans elle : ce qui ne répondait pas ne se met pas à répondre |
+| **la même racine** | « transmets » et « transmettre » se reconnaissent (`memeRacine`) : cinq lettres communes au moins, seule la fin diffère |
+| **le mot exact d'abord** | « facture » passe devant « facturer » ; l'égalité ne se tranche plus par ordre alphabétique |
+| **cinq fiches rendues** | et le modèle peut demander le sommaire (`sommaire: true`) quand aucune ne répond |
+
+**Le contrôle** : 322 questions, au moins une par fiche
+(`scripts/_questions-mode-emploi.ts`). Les siennes (`ATTENDUS`) doivent sortir
+EN TÊTE ; celles du corpus parmi les trois premières, parce qu'une même chose a
+parfois deux portes (facturer depuis Terminés ou depuis le Planning) et que le
+modèle choisit parmi cinq. Une fiche qu'aucune question ne retrouve fait
+rougir la suite : elle ne serait jamais récitée.
+

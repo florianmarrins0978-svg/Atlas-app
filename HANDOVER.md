@@ -14,9 +14,10 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 ## L'ASSISTANT DIT OÙ LES CHOSES SONT RANGÉES — 24 septembre 2026
 
 Fiches de lieu, sommaire et preuves sans commentaires : `ARCHITECTURE.md` §411.
-**Pour ajouter une réponse de l'assistant, on ajoute une FICHE** dans
-`src/lib/mode-emploi.ts` et sa question dans `ATTENDUS`
-(`scripts/test-mode-emploi.ts`), jamais une consigne au modèle.
+**Pour ajouter une réponse de l'assistant, on ajoute une FICHE** dans le
+fichier de sa zone (`src/lib/fiches-mode-emploi/`, 324 fiches) et sa question
+dans `scripts/_questions-mode-emploi.ts`, jamais une consigne au modèle.
+`src/lib/mode-emploi.ts` ne porte que le type et la recherche.
 
 ---
 

@@ -28,6 +28,14 @@
  * savoir pourquoi le glissement a remplacé la corbeille rouge.
  */
 
+import { FICHES_LIEUX } from "./fiches-mode-emploi/lieux";
+import { FICHES_CHANTIER } from "./fiches-mode-emploi/chantier";
+import { FICHES_DEVIS } from "./fiches-mode-emploi/devis";
+import { FICHES_FACTURE } from "./fiches-mode-emploi/facture";
+import { FICHES_PLANNING } from "./fiches-mode-emploi/planning";
+import { FICHES_PAYSAGE } from "./fiches-mode-emploi/paysage";
+import { FICHES_REGLAGES } from "./fiches-mode-emploi/reglages";
+
 export type FicheModeEmploi = {
   /** Stable : il sert au diagnostic et aux suites. */
   id: string;
@@ -70,1016 +78,19 @@ export type FicheModeEmploi = {
   lieu?: true;
 };
 
-const FICHE_RETRAIT =
-  "Glissez la ligne de droite à gauche, puis appuyez sur « Retirer ». " +
-  "La ligne tombe et « Annuler » reste six secondes en bas de l'écran.";
-
+/**
+ * Toutes les fiches, une zone par fichier : un écran se retrouve dans le
+ * fichier qui porte son nom, et deux sessions qui touchent deux zones ne se
+ * marchent plus dessus.
+ */
 export const FICHES_MODE_EMPLOI: FicheModeEmploi[] = [
-  // --- Où se trouve quoi (sa demande du 24 septembre 2026) ------------------
-  //
-  // *« S'il cherche une touche ou l'endroit où on range les devis, facture,
-  // avoir, fiche de sécurité, fiche d'intervention, n'importe quoi, il DOIT
-  // pouvoir lui répondre. »* Les fiches plus bas disent comment FAIRE ; aucune
-  // ne disait où les choses sont RANGÉES, et « où sont mes factures » rendait
-  // la création d'une facture.
-  {
-    id: "ecran-chantiers",
-    ecran: "Chantiers",
-    ou: "« Chantiers », premier onglet de la barre du bas",
-    intitule: "Trouver les chantiers en cours",
-    motsCles: ["chantiers", "cours", "accueil", "liste", "devis", "attente", "trouver", "sont", "retrouver"],
-    geste: "Touchez « Chantiers » dans la barre du bas : tous les chantiers en cours, devis compris.",
-    source: "src/components/atlas/AtlasBottomNav.tsx",
-    preuves: ['label: "Chantiers"'],
-    lieu: true,
-  },
-  {
-    id: "ecran-planning",
-    ecran: "Planning",
-    ou: "« Planning », dans la barre du bas",
-    intitule: "Ouvrir le planning, le calendrier",
-    motsCles: ["planning", "calendrier", "agenda", "jour", "semaine", "trouver", "sont"],
-    geste: "Touchez « Planning » dans la barre du bas.",
-    source: "src/components/atlas/AtlasBottomNav.tsx",
-    preuves: ['label: "Planning"'],
-    lieu: true,
-  },
-  {
-    id: "ecran-termines",
-    ecran: "Terminés",
-    ou: "« Terminés », dans la barre du bas",
-    intitule: "Retrouver les chantiers terminés, mois par mois",
-    motsCles: ["termine", "termines", "fini", "finis", "finit", "passe", "anciens", "mois", "sont", "trouver"],
-    geste:
-      "Touchez « Terminés » dans la barre du bas : les chantiers finis, facturés ou non. " +
-      "Les chevrons changent de mois.",
-    source: "src/components/atlas/AtlasBottomNav.tsx",
-    preuves: ['label: "Terminés"'],
-    ailleurs: [{ source: "src/app/termines/ListeTermines.tsx", preuves: ['"Mois précédent"'] }],
-    lieu: true,
-  },
-  {
-    id: "ecran-paysage",
-    ecran: "Paysage",
-    ou: "« Paysage », dans la barre du bas",
-    intitule: "Trouver les outils du métier : arrosage, fiche de chantier, diagnostic, fiches de sécurité",
-    motsCles: ["paysage", "outils", "outil", "arrosage", "diagnostic", "metier", "sont", "trouver"],
-    geste:
-      "Touchez « Paysage » dans la barre du bas : Plan d'arrosage automatique, Fiche de chantier, " +
-      "Diagnostic végétal et Fiches de sécurité.",
-    source: "src/app/paysage/page.tsx",
-    preuves: ["Plan d'arrosage automatique", "Fiche de chantier", "Diagnostic végétal", "Fiches de sécurité"],
-    ailleurs: [{ source: "src/components/atlas/AtlasBottomNav.tsx", preuves: ['label: "Paysage"'] }],
-    lieu: true,
-  },
-  {
-    id: "ecran-reglages",
-    ecran: "Réglages",
-    ou: "« Réglages », dernier onglet de la barre du bas",
-    intitule: "Ouvrir les réglages",
-    motsCles: ["reglages", "reglage", "parametres", "parametre", "configurer", "options", "sont", "trouver"],
-    geste: "Touchez « Réglages » dans la barre du bas.",
-    source: "src/components/atlas/AtlasBottomNav.tsx",
-    preuves: ['label: "Réglages"'],
-    lieu: true,
-  },
-  {
-    id: "ou-devis",
-    ecran: "Vos clients",
-    ou: "« Chantiers » dans la barre du bas, puis « Vos clients »",
-    intitule: "Retrouver ses devis, en cours ou déjà envoyés",
-    motsCles: ["devis", "sont", "range", "ranger", "rangement", "retrouver", "trouver", "envoye", "envoyes", "anciens", "archive"],
-    geste:
-      "Un devis en cours est sur sa ligne, dans « Chantiers ». Ceux qui sont partis : " +
-      "« Chantiers », puis « Vos clients », touchez le nom, onglet « Devis ».",
-    source: "src/app/clients/[id]/page.tsx",
-    preuves: ['libelle: "Devis"', "Aucun devis parti"],
-    ailleurs: [{ source: "src/app/EcranChantiers.tsx", preuves: ['href="/clients"', "Vos clients"] }],
-    lieu: true,
-  },
-  {
-    id: "ou-factures",
-    ecran: "Terminés",
-    ou: "« Terminés », dans la barre du bas",
-    intitule: "Retrouver ses factures",
-    motsCles: ["factures", "facture", "sont", "range", "ranger", "retrouver", "trouver", "envoyee", "envoyees", "anciennes", "archive"],
-    geste:
-      "Touchez « Terminés » dans la barre du bas, puis la ligne du chantier : sa facture s'ouvre. " +
-      "Par client : « Chantiers », « Vos clients », touchez le nom, onglet « Factures ».",
-    source: "src/app/termines/ListeTermines.tsx",
-    preuves: ["/facture`", "ligne-terminee"],
-    ailleurs: [{ source: "src/app/clients/[id]/page.tsx", preuves: ['libelle: "Factures"', "Aucune facture émise"] }],
-    lieu: true,
-  },
-  {
-    id: "ou-fiches-envoyees",
-    ecran: "Vos clients",
-    ou: "« Chantiers » dans la barre du bas, puis « Vos clients »",
-    intitule: "Retrouver les fiches de chantier envoyées à un client",
-    motsCles: ["fiches", "fiche", "chantier", "envoyee", "envoyees", "sont", "retrouver", "trouver", "range", "client"],
-    geste: "« Chantiers », puis « Vos clients », touchez le nom, onglet « Fiches ».",
-    source: "src/app/clients/[id]/page.tsx",
-    preuves: ['libelle: "Fiches"', "Aucune fiche envoyée"],
-    lieu: true,
-  },
-  {
-    id: "avoir",
-    ecran: "Facture",
-    ou: "« Terminés » dans la barre du bas, puis la ligne du chantier",
-    intitule: "Faire un avoir, retrouver ses avoirs",
-    motsCles: ["avoir", "avoirs", "rembourser", "remboursement", "rembourse"],
-    geste: "Atlas ne fait pas encore d'avoir : l'écran est dessiné, il n'est pas encore dans l'application.",
-    reserve: "Une facture envoyée ne se modifie plus. En attendant, l'avoir se fait hors d'Atlas.",
-    source: "src/app/chantiers/[id]/facture/FactureClient.tsx",
-    preuves: ["Une correction passerait par un avoir."],
-    // Les mots de sa planche `appli/il-ne-paie-pas.html` : le jour où ils
-    // entrent dans `src/`, cette fiche ment.
-    absences: ["Je fais un avoir", 'libelle: "Avoirs"'],
-    lieu: true,
-  },
-  {
-    id: "facture-payee",
-    ecran: "Ma TVA",
-    ou: "« Terminés » dans la barre du bas, puis « Ma TVA à déclarer »",
-    intitule: "Noter qu'une facture est payée, voir celles qui ne le sont pas",
-    motsCles: ["paye", "payee", "payees", "paiement", "encaisse", "encaisser", "regle", "reglement", "cheque", "virement", "attente", "impaye", "impayees"],
-    geste:
-      "« Terminés », puis « Ma TVA à déclarer » : sous « Factures en attente », " +
-      "appuyez sur « J'ai reçu le paiement », ou « J'ai reçu une partie » pour un acompte.",
-    reserve: "Une facture payée quitte cette liste et entre au relevé de TVA.",
-    source: "src/app/termines/tva/EnAttenteDePaiement.tsx",
-    preuves: ["Factures en attente", "J'ai reçu le paiement", "J&apos;ai reçu une partie"],
-    ailleurs: [{ source: "src/app/termines/page.tsx", preuves: ["Ma TVA à déclarer"] }],
-    lieu: true,
-  },
-  {
-    id: "termines-retours",
-    ecran: "Retours d'intervention",
-    ou: "« Terminés » dans la barre du bas, puis « Retours d'intervention »",
-    intitule: "Lire les retours d'intervention de l'équipe",
-    motsCles: ["retours", "retour", "intervention", "interventions", "equipe", "salarie", "compte", "rendu", "sont", "trouver"],
-    geste: "Touchez « Terminés » dans la barre du bas, puis « Retours d'intervention ».",
-    source: "src/app/termines/ListeTermines.tsx",
-    preuves: ['href="/termines/retours"', "Retours d&apos;intervention"],
-    lieu: true,
-  },
-  {
-    id: "termines-creer-facture",
-    ecran: "Terminés",
-    ou: "« Terminés », dans la barre du bas",
-    intitule: "Faire une facture sans devis, pour un dépannage",
-    motsCles: ["facture", "sans", "devis", "depannage", "direct", "directement", "creer", "rapide"],
-    geste: "Touchez « Terminés » dans la barre du bas, puis « Créer une facture » en or, à droite.",
-    source: "src/app/termines/ListeTermines.tsx",
-    preuves: ['href="/chantiers/nouveau?facture=1"', "Créer une facture"],
-  },
-  {
-    id: "planning-fiche-intervention",
-    ecran: "Planning",
-    ou: "« Planning » dans la barre du bas, puis le jour du chantier",
-    intitule: "Ouvrir la fiche d'intervention d'un chantier",
-    motsCles: ["fiche", "intervention", "chantier", "jour", "planning", "ouvrir", "trouver", "sont"],
-    geste:
-      "Touchez « Planning » dans la barre du bas, puis le nom du chantier dans sa journée : " +
-      "sa fiche d'intervention se déplie dessous.",
-    source: "src/app/planning/PlanningClient.tsx",
-    preuves: ["Fiche d&apos;intervention", 'data-atlas="nom-du-jour"'],
-    lieu: true,
-  },
-  {
-    id: "fiche-securite-remplir",
-    ecran: "Planning",
-    ou: "la fiche d'intervention, dans « Planning »",
-    intitule: "Remplir et signer la fiche de sécurité avant les travaux",
-    motsCles: ["securite", "fiche", "remplir", "signer", "elagage", "abattage", "risques", "remplit"],
-    geste:
-      "Dans « Planning », touchez le nom du chantier, puis le bandeau « Fiche de sécurité » " +
-      "et « Remplir la fiche ».",
-    reserve: "Elle existe sur tous les chantiers, et reste facultative.",
-    source: "src/app/planning/FicheDeSecurite.tsx",
-    preuves: ["Fiche de sécurité", "Remplir la fiche"],
-  },
-  {
-    id: "fiche-securite-retrouver",
-    ecran: "Fiches de sécurité",
-    ou: "« Paysage » dans la barre du bas, puis « Fiches de sécurité »",
-    intitule: "Retrouver les fiches de sécurité signées",
-    motsCles: ["securite", "fiche", "fiches", "signees", "sont", "retrouver", "trouver", "range", "anciennes"],
-    geste: "Touchez « Paysage » dans la barre du bas, puis « Fiches de sécurité ».",
-    reserve: "Elles y sont gardées deux ans.",
-    source: "src/app/paysage/page.tsx",
-    preuves: ['href: "/paysage/fiches-securite"', "Gardées deux ans."],
-    lieu: true,
-  },
-
-  // --- Chantiers (l'accueil) ------------------------------------------------
-  {
-    id: "chantiers-retirer",
-    ecran: "Chantiers",
-    ou: "« Chantiers », dans la barre du bas",
-    intitule: "Retirer un chantier de la liste, devis pas encore écrit",
-    motsCles: [
-      "supprimer", "retirer", "enlever", "effacer", "virer", "chantier", "client",
-      "liste", "accueil", "devis", "redaction", "rediger", "brouillon", "attente",
-    ],
-    geste: FICHE_RETRAIT,
-    reserve:
-      "Un chantier déjà facturé ne part pas : sa facture figure au relevé de TVA. " +
-      "Le glissement découvre alors le motif à la place du bouton.",
-    source: "src/app/EcranChantiers.tsx",
-    preuves: ["useRetraits", "ListeChantiers", "TiroirDesRetires"],
-  },
-  {
-    id: "chantiers-annuler-retrait",
-    ecran: "Chantiers",
-    ou: "n'importe quel écran d'où l'on retire quelque chose",
-    intitule: "Annuler une suppression qu'on vient de faire",
-    motsCles: ["annuler", "revenir", "restaurer", "recuperer", "erreur", "trompe", "supprimer", "retirer", "ligne", "trop", "vite"],
-    geste: "Appuyez sur « Annuler » dans le bandeau du bas. Il reste six secondes.",
-    reserve: "Passé ce délai, la suppression est écrite et ne se défait plus.",
-    source: "src/components/atlas/useRetraits.ts",
-    preuves: ["delaiMs = 6000", "annuler"],
-  },
-  {
-    id: "chantiers-ouvrir",
-    ecran: "Chantiers",
-    ou: "« Chantiers », dans la barre du bas",
-    intitule: "Reprendre un chantier là où on s'est arrêté",
-    motsCles: ["ouvrir", "reprendre", "continuer", "chantier", "toucher", "revenir", "etape"],
-    geste: "Touchez la ligne : Atlas rouvre l'écran où le travail s'est arrêté, pas la fiche.",
-    source: "src/app/ListeChantiers.tsx",
-    preuves: ["reprise"],
-  },
-  {
-    id: "chantiers-nouveau",
-    ecran: "Chantiers",
-    ou: "« Chantiers », dans la barre du bas",
-    intitule: "Créer un chantier, un devis",
-    motsCles: ["creer", "nouveau", "ajouter", "devis", "chantier", "commencer", "demarrer", "client"],
-    geste: "Appuyez sur « Créer un devis » en bas de la liste.",
-    source: "src/app/EcranChantiers.tsx",
-    preuves: ["Créer un devis"],
-  },
-  {
-    id: "nouveau-chantier-saisie",
-    ecran: "Un chantier",
-    ou: "après « Créer un devis »",
-    intitule: "Renseigner le client d'un nouveau chantier",
-    motsCles: ["nouveau", "chantier", "client", "nom", "telephone", "email", "adresse", "photos", "saisir"],
-    geste:
-      "Remplissez la fiche client (nom, téléphone ou e-mail, adresse du chantier), " +
-      "réglez l'envoi sur SMS ou E-mail, puis « Enregistrer ».",
-    reserve: "Sans coordonnée, le devis ne pourra pas partir : mieux vaut la poser tout de suite.",
-    source: "src/app/chantiers/nouveau/FormulaireNouveauChantier.tsx",
-    // **« Par SMS » et « Par e-mail » ne sont plus à l'écran** — planche
-    // « A — Épurée », codée le 4 septembre 2026 : l'envoi est devenu un
-    // RÉGLAGE, une ligne et deux mots, « SMS » et « E-mail ». La fiche suit le
-    // mot qu'il lit ; garder l'ancien libellé aurait fait chercher un bouton
-    // qui n'existe plus.
-    // **« Envoi » et non « ENVOI »** : la capitale vient de la feuille de
-    // style (`libelleCaps`), le mot écrit dans l'écran porte sa minuscule. Ce
-    // contrôle lit la SOURCE — viser la forme affichée l'aurait fait tomber
-    // sur le commentaire d'à côté, c'est-à-dire une preuve qui ne prouve rien.
-    preuves: ["Nom du client", "Envoi", "E-mail", "Adresse du chantier"],
-  },
-
-  // --- La fiche du chantier -------------------------------------------------
-  {
-    id: "fiche-note-vocale",
-    ecran: "Fiche du chantier",
-    ou: "la fiche d'un chantier",
-    intitule: "Dicter le chantier plutôt que de l'écrire",
-    motsCles: ["dicter", "dictee", "vocal", "vocale", "note", "micro", "parler", "enregistrer", "voix"],
-    geste: "Appuyez sur l'anneau du micro, parlez, appuyez à nouveau pour arrêter.",
-    source: "src/app/chantiers/[id]/note-vocale/NoteVocaleClient.tsx",
-    preuves: ["Enregistrer une note vocale", "J'écoute. Touchez pour arrêter"],
-  },
-  {
-    id: "note-vocale-completer",
-    ecran: "Note vocale",
-    ou: "l'écran de la note vocale",
-    intitule: "Ajouter quelque chose à une note déjà enregistrée",
-    motsCles: ["completer", "ajouter", "oublie", "reprendre", "note", "vocale", "suite"],
-    geste: "Appuyez sur « Reprendre, j'avais oublié quelque chose », puis parlez.",
-    source: "src/app/chantiers/[id]/note-vocale/NoteVocaleClient.tsx",
-    preuves: ["Reprendre, j'avais oublié quelque chose"],
-  },
-  {
-    id: "note-vocale-remplacer",
-    ecran: "Note vocale",
-    ou: "l'écran de la note vocale",
-    intitule: "Refaire une note vocale depuis le début",
-    motsCles: ["remplacer", "refaire", "recommencer", "note", "vocale", "effacer", "supprimer"],
-    geste: "Appuyez sur « Remplacer la note », confirmez, puis réenregistrez.",
-    source: "src/app/chantiers/[id]/note-vocale/NoteVocaleClient.tsx",
-    preuves: ["Remplacer la note", "Remplacer cette note vocale ?"],
-  },
-  {
-    id: "note-vocale-fichier",
-    ecran: "Note vocale",
-    ou: "l'écran de la note vocale",
-    intitule: "Envoyer un fichier audio déjà enregistré",
-    motsCles: ["fichier", "audio", "importer", "televerser", "memo", "dictaphone", "ajouter"],
-    geste: "Appuyez sur « Ajouter un fichier audio » et choisissez l'enregistrement.",
-    source: "src/app/chantiers/[id]/note-vocale/NoteVocaleClient.tsx",
-    preuves: ["Ajouter un fichier audio"],
-  },
-  {
-    id: "transcription-corriger",
-    ecran: "Transcription",
-    ou: "l'écran de la transcription, après la dictée",
-    intitule: "Corriger le texte qu'Atlas a entendu",
-    motsCles: ["corriger", "transcription", "texte", "faute", "modifier", "ecrire", "mal", "compris"],
-    geste: "Appuyez sur « Corriger le texte à la main », modifiez, puis « Enregistrer le texte ».",
-    source: "src/app/chantiers/[id]/transcription/TexteDicte.tsx",
-    preuves: ["Corriger le texte à la main", "Enregistrer le texte"],
-  },
-  {
-    id: "photos-ajouter",
-    ecran: "Fiche du chantier",
-    ou: "la pellicule, sur la fiche du chantier",
-    intitule: "Ajouter ou retirer une photo de chantier",
-    motsCles: ["photo", "photos", "image", "ajouter", "supprimer", "retirer", "pellicule", "appareil"],
-    geste:
-      "Appuyez sur la pellicule pour ajouter une photo. Pour en retirer une, " +
-      "glissez sa ligne de droite à gauche puis « Retirer ».",
-    source: "src/app/chantiers/[id]/Pellicule.tsx",
-    preuves: ["useRetraits", "TiroirDesRetires"],
-  },
-
-  // --- Informations, prix, devis --------------------------------------------
-  {
-    id: "informations-prestations",
-    ecran: "Informations",
-    ou: "l'écran Informations d'un chantier",
-    intitule: "Ajouter, corriger ou retirer une prestation ou du matériel",
-    motsCles: [
-      "prestation", "prestations", "materiel", "ajouter", "modifier", "corriger",
-      "supprimer", "retirer", "informations", "ligne",
-    ],
-    geste:
-      "Appuyez sur la ligne pour la corriger, sur « + » pour en ajouter une. " +
-      "Pour en retirer une : glissez de droite à gauche, puis « Retirer ».",
-    source: "src/app/chantiers/[id]/informations/InformationsClient.tsx",
-    preuves: ["LigneRetirable", "useRetraits", "Prestations", "Matériel"],
-  },
-  {
-    id: "informations-duree-equipe",
-    ecran: "Informations",
-    ou: "l'écran Informations d'un chantier",
-    intitule: "Changer la durée du chantier ou la taille de l'équipe",
-    motsCles: ["duree", "temps", "jours", "equipe", "combien", "hommes", "personnes", "modifier"],
-    geste: "Appuyez sur « Ce chantier prend » ou sur « Équipe », et changez la valeur.",
-    source: "src/app/chantiers/[id]/informations/InformationsClient.tsx",
-    preuves: ["Ce chantier prend", "Équipe"],
-  },
-  {
-    id: "informations-valider",
-    ecran: "Informations",
-    ou: "en bas de l'écran Informations",
-    intitule: "Passer des informations au prix",
-    motsCles: ["valider", "prix", "calculer", "suite", "continuer", "informations", "etape"],
-    geste: "Appuyez sur « Valider et calculer le prix ».",
-    source: "src/app/chantiers/[id]/informations/InformationsClient.tsx",
-    preuves: ["Valider et calculer le prix"],
-  },
-  {
-    id: "prix-lignes",
-    ecran: "Prix",
-    ou: "l'écran Prix d'un chantier",
-    intitule: "Ajouter, corriger ou retirer une ligne de prix",
-    motsCles: ["prix", "ligne", "montant", "tarif", "ajouter", "modifier", "supprimer", "retirer", "euro"],
-    geste:
-      "Appuyez sur une ligne pour changer son libellé ou son montant. " +
-      "Pour la retirer : glissez de droite à gauche, puis « Retirer ».",
-    source: "src/app/chantiers/[id]/prix/PrixClient.tsx",
-    preuves: ["LigneRetirable", "useRetraits"],
-  },
-  {
-    id: "prix-preparer-devis",
-    ecran: "Prix",
-    ou: "en bas de l'écran Prix",
-    intitule: "Passer du prix au devis",
-    motsCles: ["preparer", "devis", "prix", "continuer", "suite", "generer"],
-    geste: "Appuyez sur « Préparer le devis ».",
-    source: "src/app/chantiers/[id]/prix/PrixClient.tsx",
-    preuves: ["Préparer le devis"],
-  },
-  {
-    id: "devis-ligne-retirer",
-    ecran: "Devis",
-    ou: "le devis complet d'un chantier",
-    intitule: "Retirer une ligne du devis",
-    motsCles: ["devis", "ligne", "supprimer", "retirer", "enlever", "effacer"],
-    geste: FICHE_RETRAIT,
-    reserve: "Un devis déjà parti chez le client ne se modifie plus : il faut le reprendre (voir « Corriger un devis envoyé »).",
-    source: "src/app/chantiers/[id]/devis-complet/DevisCompletClient.tsx",
-    preuves: ["LigneRetirable", "useRetraits"],
-  },
-  {
-    id: "devis-remise",
-    // **Sur la facture AUSSI, depuis le 11 septembre 2026** — sa demande :
-    // *« on n'a pas mis la réduction client cliquable comme sur le devis »*. La
-    // fiche qui ne nommerait que le devis l'enverrait chercher là où il n'a
-    // pas besoin d'aller.
-    ecran: "Devis et facture",
-    ou: "sous le total",
-    intitule: "Faire une remise au client",
-    motsCles: [
-      "remise",
-      "reduction",
-      "geste",
-      "pourcentage",
-      "rabais",
-      "prix",
-      "accorde",
-      "facture",
-    ],
-    geste: "Appuyez sur « + Remise », puis renseignez le pourcentage.",
-    // **La pièce commune, et non plus l'écran du devis** : le geste est monté
-    // par les deux écrans depuis qu'il l'a demandé sur la facture. Ancrée sur
-    // un seul des deux, cette fiche rougirait au premier déménagement — c'est
-    // ce qui vient d'arriver.
-    source: "src/components/atlas/Remise.tsx",
-    preuves: ["Remise, en pourcentage", "+ {LIBELLE_REDUCTION}"],
-  },
-  {
-    id: "devis-tva",
-    ecran: "Devis",
-    ou: "sous le total du devis",
-    intitule: "Changer le taux de TVA d'un devis",
-    motsCles: ["tva", "taux", "10", "20", "changer", "devis"],
-    geste: "Appuyez sur « Taux de TVA » et choisissez le taux.",
-    source: "src/app/chantiers/[id]/devis-complet/DevisCompletClient.tsx",
-    preuves: ["Taux de TVA"],
-  },
-  {
-    id: "devis-apercu",
-    ecran: "Devis",
-    ou: "en bas du devis complet",
-    intitule: "Voir le devis tel que le client le recevra",
-    motsCles: ["apercu", "pdf", "voir", "regarder", "imprimer", "devis", "telecharger"],
-    geste: "Appuyez sur « Aperçu du PDF ».",
-    source: "src/app/chantiers/[id]/devis-complet/DevisCompletClient.tsx",
-    preuves: ["Aperçu du PDF"],
-  },
-  {
-    id: "devis-dates",
-    ecran: "Envoi au client",
-    ou: "l'écran d'envoi du devis",
-    intitule: "Proposer une ou deux dates d'intervention au client",
-    motsCles: ["date", "dates", "proposer", "intervention", "calendrier", "jour", "choisir"],
-    geste: "Touchez les jours voulus dans le calendrier : les toucher suffit, il n'y a rien à valider.",
-    reserve: "Le client ne verra que la date, jamais la demi-journée.",
-    source: "src/app/chantiers/[id]/export/EnvoiAuClient.tsx",
-    // **La preuve visait une phrase qu'il a fait retirer le 26 août 2026.**
-    // Elle vise maintenant le libellé de la molette, qui porte le geste — une
-    // preuve doit s'accrocher à ce que l'écran FAIT, pas à ce qu'il explique
-    // (`CLAUDE.md` §5 bis). La réserve ci-dessus, elle, reste vraie : c'est
-    // l'assistant qui la dit, pas l'écran.
-    preuves: ["Proposez une ou deux dates", "Ce chantier prend"],
-  },
-  {
-    id: "devis-envoyer",
-    ecran: "Envoi au client",
-    ou: "en bas de l'écran d'envoi",
-    intitule: "Envoyer le devis au client",
-    motsCles: ["envoyer", "envoi", "devis", "client", "sms", "mail", "email", "transmettre"],
-    geste: "Choisissez SMS ou e-mail, puis appuyez sur « Envoyer le devis ».",
-    reserve: "Rien ne part sans ce geste : Atlas n'envoie jamais de lui-même.",
-    source: "src/app/chantiers/[id]/export/EnvoiAuClient.tsx",
-    preuves: ["Envoyer le devis", "Par SMS", "Par e-mail"],
-  },
-  {
-    id: "devis-corriger-envoye",
-    ecran: "Devis envoyé",
-    ou: "l'écran du devis, une fois parti",
-    intitule: "Corriger un devis déjà envoyé",
-    motsCles: ["corriger", "modifier", "devis", "envoye", "parti", "erreur", "renvoyer", "reprendre"],
-    geste: "Appuyez sur « Modifier mon devis », puis « Corriger et renvoyer ».",
-    reserve: "Une nouvelle version part chez le client : l'ancienne reste au dossier.",
-    source: "src/app/chantiers/[id]/export/ExportClient.tsx",
-    preuves: ["Modifier mon devis", "Corriger et renvoyer"],
-  },
-  {
-    id: "devis-telecharger",
-    ecran: "Devis envoyé",
-    ou: "l'écran du devis, une fois parti",
-    intitule: "Télécharger le PDF d'un devis",
-    motsCles: ["telecharger", "pdf", "devis", "garder", "enregistrer", "fichier"],
-    geste: "Appuyez sur « Télécharger le PDF ».",
-    source: "src/app/chantiers/[id]/export/ExportClient.tsx",
-    preuves: ["Télécharger le PDF"],
-  },
-
-  // --- Facture --------------------------------------------------------------
-  {
-    id: "facture-creer",
-    ecran: "Facture",
-    ou: "la fiche du chantier, une fois le chantier réalisé",
-    intitule: "Facturer un chantier",
-    motsCles: ["facturer", "facture", "creer", "encaisser", "payer", "fin", "termine"],
-    geste: "Appuyez sur « Créer la facture ». Atlas reprend le devis tel quel.",
-    source: "src/app/chantiers/[id]/facture/FactureClient.tsx",
-    preuves: ["Créer la facture", "Reprise du devis"],
-  },
-  {
-    id: "facture-echeance",
-    ecran: "Facture",
-    ou: "l'écran de la facture, tant qu'elle est brouillon",
-    intitule: "Changer la date d'échéance d'une facture",
-    motsCles: ["echeance", "date", "regler", "delai", "paiement", "avant", "changer"],
-    geste: "Appuyez sur la date sous « À régler avant le » et choisissez-en une autre.",
-    reserve: "Une facture arrêtée fige son échéance : elle ne se corrige plus.",
-    source: "src/app/chantiers/[id]/facture/FactureClient.tsx",
-    preuves: ["À régler avant le"],
-  },
-  {
-    id: "facture-envoyer",
-    ecran: "Facture",
-    ou: "en bas de l'écran de la facture",
-    intitule: "Envoyer la facture au client",
-    motsCles: ["envoyer", "facture", "client", "sms", "mail", "email", "transmettre"],
-    geste: "Choisissez SMS ou e-mail, puis « Envoyer la facture ».",
-    reserve: "Une fois partie, une correction passe par un avoir. La facture ne se réécrit pas.",
-    source: "src/app/chantiers/[id]/facture/FactureClient.tsx",
-    preuves: ["Envoyer la facture", "Une correction passerait par un avoir."],
-  },
-  {
-    id: "facture-pdf",
-    ecran: "Facture",
-    ou: "l'écran de la facture",
-    intitule: "Voir la facture en PDF",
-    motsCles: ["pdf", "facture", "voir", "apercu", "imprimer"],
-    geste: "Appuyez sur « Voir la facture en PDF ».",
-    source: "src/app/chantiers/[id]/facture/FactureClient.tsx",
-    preuves: ["Voir la facture en PDF"],
-  },
-
-  // --- Planning -------------------------------------------------------------
-  {
-    id: "planning-poser",
-    ecran: "Planning",
-    ou: "« Planning », dans la barre du bas",
-    intitule: "Poser un chantier sur un jour",
-    motsCles: ["planning", "planifier", "poser", "jour", "date", "semaine", "ajouter", "chantier", "calendrier"],
-    // **Le second temps a disparu le 9 septembre 2026** — *« si Claudette c'est
-    // un chantier 1 journée, deux, ou une demi, ça doit se mettre tout seul »*.
-    // La durée vient du devis ; la pose ne redemande plus rien.
-    // **« Ajouter un chantier » n'existe plus** (sa planche du 18 septembre
-    // 2026) : « Ajouter » ouvre trois voies, et la preuve ne tenait plus que
-    // par un commentaire qui citait l'ancien nom.
-    geste:
-      "Touchez le jour, puis « Ajouter » et « Client en attente », et touchez le nom : " +
-      "sa durée fait le reste.",
-    source: "src/app/planning/PlanningClient.tsx",
-    preuves: ['data-atlas="ajouter"', "Client en attente"],
-  },
-  {
-    id: "planning-deplacer",
-    ecran: "Planning",
-    ou: "« Planning » dans la barre du bas, puis le nom du chantier",
-    intitule: "Libérer une demi-journée d'un chantier",
-    motsCles: ["deplacer", "bouger", "changer", "jour", "reporter", "decaler", "planning", "liberer", "demi"],
-    // **« Déplacer » ne déplace plus rien depuis le 10 septembre 2026** : il
-    // rend la demi-journée qu'on touche, et elle attend en bas
-    // (`ARCHITECTURE.md` §322). Enseigner l'ancien geste, c'est envoyer le
-    // patron appuyer sur un bouton qui fait autre chose.
-    geste:
-      "Ouvrez le jour, appuyez sur « Déplacer », puis touchez le matin ou l'après-midi à libérer. " +
-      "La demi-journée rendue attend en bas : touchez-la, puis touchez la demi-journée qui l'accueille.",
-    reserve: "Changer un chantier de jour entier se fait avec « Retirer », puis en le reposant.",
-    source: "src/app/planning/PlanningClient.tsx",
-    preuves: ["Déplacer", "Poser ici"],
-  },
-  {
-    id: "planning-retirer",
-    ecran: "Planning",
-    ou: "« Planning » dans la barre du bas, puis le nom du chantier",
-    intitule: "Retirer un chantier du planning",
-    motsCles: ["retirer", "supprimer", "enlever", "planning", "annuler", "jour"],
-    geste: FICHE_RETRAIT,
-    source: "src/app/planning/PlanningClient.tsx",
-    preuves: ["LigneRetirable", "Retirer"],
-  },
-  {
-    id: "planning-note",
-    ecran: "Planning",
-    ou: "« Planning » dans la barre du bas, puis le nom du chantier",
-    intitule: "Laisser une note sur une journée",
-    motsCles: ["note", "penser", "rappel", "ecrire", "memo", "journee", "planning"],
-    geste: "Écrivez dans « Ma note », sur la fiche du jour. Elle s'enregistre toute seule.",
-    source: "src/app/planning/PlanningClient.tsx",
-    preuves: ["Ma note", "Enregistré."],
-  },
-  {
-    id: "planning-itineraire",
-    ecran: "Planning",
-    ou: "« Planning » dans la barre du bas, puis le nom du chantier",
-    intitule: "Y aller, appeler le client, copier l'adresse",
-    motsCles: ["maps", "waze", "itineraire", "route", "aller", "appeler", "telephone", "adresse", "copier"],
-    geste: "Sur la fiche du chantier : « Maps », « Waze », « Appeler le client » ou « Copier l'adresse ».",
-    source: "src/app/planning/PlanningClient.tsx",
-    preuves: ["Maps", "Waze", "Appeler le client"],
-  },
-  {
-    id: "planning-feuille",
-    ecran: "Planning",
-    ou: "« Planning » dans la barre du bas, puis le nom du chantier",
-    intitule: "Donner la feuille de chantier à l'équipe, sans les prix",
-    motsCles: ["feuille", "chantier", "equipe", "ouvrier", "papier", "prix", "sans", "pdf", "imprimer"],
-    // **Le bouton « Feuille de chantier » n'existe plus depuis le 9 septembre
-    // 2026** : la feuille EST la fiche du chantier, dépliée dans le planning, et
-    // il ne reste que le PDF au bas de celle-ci. La fiche enseignait donc un
-    // geste mort — c'est exactement ce que ce fichier existe pour empêcher.
-    geste: "Ouvrez le chantier dans le Planning : « Ouvrir le devis sans les prix » est au bas de sa fiche.",
-    source: "src/app/planning/PlanningClient.tsx",
-    // Le repère plutôt que le libellé (`CLAUDE.md` §5 bis) : `data-atlas` ne
-    // bouge pas quand le patron fait réécrire un mot à l'écran.
-    preuves: ["pdf-sans-prix", "Ouvrir le devis sans les prix"],
-  },
-  {
-    id: "planning-semaine",
-    ecran: "Planning",
-    ou: "sous le calendrier, quand les sept jours sont affichés",
-    intitule: "Voir les sept jours d'avant ou d'après",
-    motsCles: ["semaine", "suivante", "precedente", "avancer", "reculer", "changer", "planning"],
-    geste: "Appuyez sur les chevrons de part et d'autre des dates.",
-    source: "src/app/planning/PlanningClient.tsx",
-    preuves: ["Sept jours avant", "Sept jours après"],
-  },
-  {
-    // **Un geste qui ne se voit pas ne s'apprend pas seul** : le balayage a donc
-    // sa fiche, et les deux points sous le calendrier se touchent aussi.
-    id: "planning-journee-ou-semaine",
-    ecran: "Planning",
-    ou: "sous le calendrier du mois",
-    intitule: "Passer de la journée aux sept jours",
-    motsCles: ["journee", "semaine", "aujourdhui", "jour", "liste", "planning", "balayer"],
-    geste:
-      "Balayez la liste du doigt, ou appuyez sur l'un des deux points. " +
-      "L'écran s'ouvre toujours sur la journée du jour.",
-    source: "src/app/planning/PlanningClient.tsx",
-    preuves: ["La journée", "Les sept jours"],
-  },
-
-  // --- Terminés et TVA ------------------------------------------------------
-  {
-    id: "termines-facturer",
-    ecran: "Terminés",
-    ou: "« Terminés », dans la barre du bas",
-    intitule: "Retrouver les chantiers finis qui ne sont pas encore facturés",
-    motsCles: ["termine", "termines", "fini", "facturer", "reste", "oublie", "liste"],
-    // **L'onglet « À facturer » est parti le 13 septembre 2026** : c'est l'œil,
-    // à côté du compte, qui filtre. La fiche l'enseignait encore.
-    geste:
-      "Touchez « Terminés » dans la barre du bas, puis l'œil à côté de « à facturer » : " +
-      "il ne reste que ceux qui attendent. « À facturer » sur une ligne ouvre sa facture.",
-    source: "src/app/termines/ListeTermines.tsx",
-    preuves: ['data-atlas="oeil-a-facturer"', "À facturer"],
-  },
-  {
-    id: "tva",
-    ecran: "Ma TVA",
-    ou: "« Terminés », dans la barre du bas",
-    intitule: "Savoir combien de TVA déclarer",
-    motsCles: ["tva", "declarer", "declaration", "collectee", "deductible", "impot", "etat", "periode", "voir", "vois", "combien"],
-    geste: "Depuis « Terminés », appuyez sur « Ma TVA à déclarer ».",
-    source: "src/app/termines/tva/page.tsx",
-    // **Les mots entiers depuis le 12 septembre 2026** : l'écran écrit « TVA
-    // collectée » et « TVA déductible », plus « Collectée » seul. La fiche les
-    // suit — un mode d'emploi qui enseigne un mot disparu envoie chercher un
-    // bouton qui n'existe plus.
-    preuves: ["Ma TVA", "TVA collectée", "TVA déductible"],
-  },
-
-  // --- Clients --------------------------------------------------------------
-  {
-    id: "clients-liste",
-    ecran: "Vos clients",
-    ou: "« Chantiers » dans la barre du bas, puis « Vos clients »",
-    intitule: "Retrouver un client et tout ce qui le concerne",
-    motsCles: ["client", "clients", "fiche", "retrouver", "historique", "dossier", "devis", "facture", "liste", "carnet", "voir", "tous"],
-    // **« Fiche chantier » est devenu l'onglet « Fiches »** : la preuve ne
-    // tenait plus que par le commentaire qui racontait le changement.
-    geste:
-      "Touchez « Chantiers » dans la barre du bas, puis « Vos clients », puis son nom : " +
-      "ses devis, factures et fiches y sont, un onglet chacun.",
-    source: "src/app/clients/[id]/page.tsx",
-    preuves: ['libelle: "Devis"', 'libelle: "Factures"', 'libelle: "Fiches"'],
-    ailleurs: [{ source: "src/app/EcranChantiers.tsx", preuves: ['href="/clients"', "Vos clients"] }],
-  },
-
-  // --- Catalogue et vocabulaire --------------------------------------------
-  {
-    id: "catalogue-mots",
-    ecran: "Catalogue",
-    ou: "Réglages, puis Tarifs & catalogue, puis Le catalogue",
-    intitule: "Apprendre à Atlas un mot du métier",
-    motsCles: ["mot", "mots", "vocabulaire", "catalogue", "comprendre", "apprendre", "dictee", "ecime", "jargon"],
-    geste: "Dans « Mes mots », écrivez le mot tel que vous le dites, puis « Ajouter ».",
-    source: "src/app/catalogue/MesMots.tsx",
-    preuves: ["Ajouter", "Comme vous le dites"],
-  },
-  {
-    id: "vocabulaire-regles",
-    ecran: "Mon vocabulaire",
-    ou: "Réglages, puis Atlas IA",
-    intitule: "Poser une règle que l'IA doit suivre",
-    motsCles: ["regle", "regles", "ia", "consigne", "vocabulaire", "habitude", "toujours", "devis"],
-    geste: "Dans « Mes règles », écrivez la règle en une phrase, puis « Ajouter ».",
-    source: "src/app/reglages/vocabulaire/VocabulaireClient.tsx",
-    preuves: ["Mes règles", "La règle, en une phrase"],
-  },
-
-  // --- Réglages : l'entreprise ---------------------------------------------
-  {
-    id: "reglages-identite",
-    ecran: "Mon entreprise",
-    ou: "Réglages, puis Mon entreprise",
-    intitule: "Changer le nom, l'adresse, le SIRET, l'IBAN de l'entreprise",
-    motsCles: ["entreprise", "identite", "nom", "adresse", "siret", "iban", "tva", "coordonnees", "siege"],
-    geste: "Ouvrez « Mon entreprise », corrigez le champ, puis « Enregistrer ».",
-    reserve: "Ces informations figurent en tête de chaque devis et de chaque facture.",
-    source: "src/app/reglages/identite/IdentiteClient.tsx",
-    preuves: ["Nom de l'entreprise", "Adresse du siège", "Enregistrer"],
-  },
-  {
-    id: "reglages-tarifs",
-    ecran: "Mes tarifs",
-    ou: "Réglages, puis Tarifs & catalogue, puis Mes prix",
-    intitule: "Ajouter, corriger ou retirer un tarif",
-    motsCles: ["tarif", "tarifs", "prix", "ajouter", "modifier", "supprimer", "retirer", "grille", "catalogue"],
-    geste:
-      "Écrivez l'intitulé et le prix, puis « Ajouter ». " +
-      "Pour retirer un tarif : glissez sa ligne de droite à gauche, puis « Retirer ».",
-    source: "src/app/reglages/ReglagesClient.tsx",
-    preuves: ["LigneRetirable", "Intitulé du tarif", "Prix du tarif"],
-  },
-  {
-    id: "reglages-grilles",
-    ecran: "Mes prix",
-    ou: "Réglages, puis Tarifs & catalogue, puis Mes prix",
-    intitule: "Régler un prix qui dépend du diamètre ou de la façon de faire",
-    motsCles: ["grille", "diametre", "abattage", "cable", "facon", "travail", "prix", "mesure", "bareme"],
-    geste: "Appuyez sur « Ajouter un travail », nommez-le, et choisissez comment son prix se décide.",
-    source: "src/app/reglages/prix/GrillesPrixClient.tsx",
-    preuves: ["Ajouter un travail", "Comment son prix se décide"],
-  },
-  {
-    id: "reglages-documents",
-    ecran: "Devis & factures",
-    ou: "Réglages, puis Devis & factures",
-    intitule: "Régler la validité d'un devis, l'acompte, le délai de paiement, les mentions",
-    motsCles: ["validite", "acompte", "delai", "paiement", "mention", "condition", "document", "devis", "facture"],
-    geste: "Ouvrez « Devis & factures » et réglez chaque valeur.",
-    source: "src/lib/rubriques-reglages.ts",
-    // **La glose du sommaire a disparu le 5 septembre 2026**, avec les onze
-    // autres. La preuve qui reste est d'ailleurs la bonne : le geste de cette
-    // fiche est « ouvrez Devis & factures », et ce qu'il faut prouver, c'est
-    // que cette rubrique-là existe toujours.
-    preuves: ["Devis & factures"],
-  },
-  {
-    id: "reglages-allure-photo",
-    // **L'écran a été coupé en quatre le 7 septembre 2026** : « Devis &
-    // factures » n'est plus qu'un sommaire, et l'allure vit dans sa propre
-    // page. La fiche pointait encore le fichier disparu — un mode d'emploi qui
-    // enseigne un geste mort est pire qu'une page vide, puisqu'on le suit.
-    ecran: "L'allure de mes devis",
-    ou: "Réglages, puis Devis & factures, puis L'allure de mes devis",
-    intitule: "Reprendre l'allure de son ancien devis en le photographiant",
-    motsCles: ["photo", "photographier", "allure", "couleur", "police", "logo", "devis", "reprendre", "modele"],
-    geste: "Ouvrez « L’allure de mes devis », appuyez sur « Photographier mon devis » et choisissez l'appareil photo ou la photothèque.",
-    reserve: "L'allure et les mentions sont reprises ; ni les lignes, ni les prix, ni le logo.",
-    source: "src/app/reglages/documents/allure/AllureClient.tsx",
-    preuves: ["Photographier mon devis"],
-  },
-  {
-    id: "reglages-equipe",
-    ecran: "Équipe",
-    ou: "Réglages, puis Équipe",
-    // **Deux réglages distincts depuis le 26 août 2026** (`ARCHITECTURE.md`
-    // §192) : combien de chantiers partent en même temps, et combien de gens
-    // travaillent avec lui. Les confondre dans la réponse de l'assistant
-    // remettrait dans sa tête la confusion qu'on vient de retirer du code.
-    intitule: "Régler combien de chantiers partent en même temps, vos salariés et leurs absences",
-    motsCles: ["equipe", "equipes", "salarie", "salaries", "nom", "prenom", "gars", "absence", "conge", "vacances", "combien", "partent"],
-    geste: "Ouvrez « Équipe » : le nombre de chantiers menés en même temps, vos salariés et leurs absences s'y règlent.",
-    source: "src/lib/rubriques-reglages.ts",
-    preuves: ["Équipe"],
-  },
-  {
-    id: "reglages-donner-acces",
-    ecran: "Équipe",
-    ou: "« Réglages » dans la barre du bas, puis Équipe",
-    intitule: "Ajouter un salarié, lui donner un accès à Atlas",
-    motsCles: ["ajouter", "salarie", "salaries", "employe", "ouvrier", "acces", "inviter", "compte", "connecter", "gars"],
-    geste: "Ouvrez « Équipe », puis « Donner un accès ».",
-    source: "src/app/reglages/equipe/QuiAAcces.tsx",
-    preuves: ['href="/reglages/equipe/nouveau"', "Donner un accès"],
-  },
-  {
-    id: "paysage-composer-ma-fiche",
-    ecran: "Composer ma fiche",
-    // **Elle a quitté les Réglages le 26 août 2026**, à sa demande. Le mode
-    // d'emploi le dit à l'endroit où il cherchera : « Paysage », pas « Réglages ».
-    ou: "Paysage, Fiche de chantier, puis Composer ma fiche",
-    intitule: "Composer la fiche qu'on coche sur un chantier d'entretien",
-    motsCles: ["fiche", "entretien", "modele", "composer", "famille", "prestation", "cocher", "tonte", "rubrique"],
-    geste: "Ouvrez « Composer ma fiche », partez du modèle Atlas ou composez la vôtre.",
-    reserve: "La modifier ne change aucun rapport déjà envoyé.",
-    source: "src/app/paysage/fiche/composer/ComposerMaFiche.tsx",
-    preuves: ["Partir du modèle Atlas", "Je préfère composer la mienne"],
-  },
-  {
-    id: "reglages-notifications",
-    ecran: "Notifications",
-    ou: "Réglages, puis Notifications",
-    intitule: "Choisir ce qu'Atlas signale et quand",
-    motsCles: ["notification", "notifications", "alerte", "rappel", "signaler", "relance", "impaye", "prevenir"],
-    geste: "Ouvrez « Notifications » et réglez chaque rappel, ainsi que son délai.",
-    reserve: "Deux alertes ne se coupent pas : la réponse à un devis et le lien de devis expiré.",
-    source: "src/app/reglages/notifications/NotificationsClient.tsx",
-    preuves: ["Ce qui vous est toujours signalé", "Ce que vous réglez"],
-  },
-  {
-    id: "reglages-agenda",
-    ecran: "Mon agenda",
-    ou: "Réglages, puis Mon agenda",
-    intitule: "Relier son agenda Google",
-    motsCles: ["agenda", "calendrier", "google", "relier", "connecter", "brancher", "synchroniser", "doublon"],
-    geste: "Ouvrez « Mon agenda », puis « Relier mon agenda Google ».",
-    reserve: "Sans lui, Atlas ne voit pas les rendez-vous notés ailleurs et un client peut retenir un jour déjà pris.",
-    source: "src/app/reglages/agenda/AgendaClient.tsx",
-    preuves: ["Relier mon agenda Google", "Mettre en pause"],
-  },
-  {
-    id: "reglages-agenda-apple",
-    ecran: "Mon agenda",
-    ou: "Réglages, puis Mon agenda",
-    intitule: "Relier son agenda Apple, iCloud",
-    motsCles: ["agenda", "calendrier", "apple", "icloud", "iphone", "relier", "connecter", "synchroniser"],
-    geste: "Ouvrez « Mon agenda », puis « Relier mon agenda Apple ».",
-    source: "src/app/reglages/agenda/AgendaAppleClient.tsx",
-    preuves: ["Relier mon agenda Apple"],
-  },
-  {
-    id: "reglages-donnees",
-    ecran: "Mes données",
-    ou: "Réglages, puis Mes données",
-    intitule: "Télécharger toutes ses données",
-    motsCles: ["donnee", "donnees", "export", "telecharger", "sauvegarde", "copie", "rgpd", "effacer"],
-    geste: "Ouvrez « Mes données », puis « Télécharger mes données ».",
-    // **Le bouton a DÉMÉNAGÉ avec M11, et ce contrôle l'a vu.** Il vivait dans
-    // la page ; il est devenu un composant client pour pouvoir demander à qui
-    // l'on parle avant d'ouvrir l'export — un export porte tout ce que
-    // l'entreprise sait de ses clients. La fiche suit le bouton, sinon
-    // l'assistant enseignerait un geste dont la preuve n'existe plus là où elle
-    // est annoncée. Trouvé à la fusion du 26 août 2026.
-    source: "src/app/reglages/donnees/BoutonTelecharger.tsx",
-    preuves: ["Télécharger mes données"],
-  },
-  {
-    id: "reglages-abonnement",
-    ecran: "Abonnement",
-    ou: "Réglages, puis Abonnement",
-    intitule: "Voir son offre, son paiement et ses factures Atlas",
-    motsCles: ["abonnement", "offre", "payer", "paiement", "facture", "atlas", "prix", "resilier"],
-    geste: "Ouvrez « Abonnement ».",
-    source: "src/lib/rubriques-reglages.ts",
-    preuves: ["Abonnement"],
-  },
-
-  // --- Réglages : moi -------------------------------------------------------
-  {
-    id: "reglages-compte",
-    ecran: "Mon compte",
-    ou: "Réglages, puis Mon compte",
-    intitule: "Changer son nom ou son e-mail",
-    motsCles: ["compte", "nom", "email", "mail", "moi", "changer", "profil"],
-    geste: "Ouvrez « Mon compte », corrigez, puis « Enregistrer ».",
-    source: "src/app/reglages/compte/CompteClient.tsx",
-    preuves: ["Qui vous êtes", "Enregistrer"],
-  },
-  {
-    id: "reglages-mot-de-passe",
-    ecran: "Connexion",
-    ou: "Réglages, puis Connexion",
-    intitule: "Changer son mot de passe",
-    motsCles: ["mot", "passe", "motdepasse", "changer", "securite", "connexion", "identifiant"],
-    geste: "Ouvrez « Connexion », puis « Changer de mot de passe ».",
-    source: "src/app/reglages/connexion/ConnexionClient.tsx",
-    preuves: ["Changer de mot de passe", "Nouveau mot de passe"],
-  },
-  {
-    id: "reglages-face-id",
-    ecran: "Connexion",
-    ou: "Réglages, puis Connexion",
-    intitule: "Ouvrir Atlas avec Face ID",
-    motsCles: ["face", "id", "faceid", "empreinte", "biometrie", "ouvrir", "connexion", "rapide", "touch"],
-    geste: "Ouvrez « Connexion », puis « Enregistrer cet appareil » sous « Ouvrir avec Face ID ».",
-    reserve: "Votre mot de passe reste actif ; c'est à faire sur chaque appareil.",
-    source: "src/app/reglages/connexion/SectionFaceId.tsx",
-    preuves: ["Ouvrir avec Face ID", "Enregistrer cet appareil"],
-  },
-  {
-    id: "reglages-deconnexion-partout",
-    ecran: "Connexion",
-    ou: "Réglages, puis Connexion",
-    intitule: "Se déconnecter de tous ses appareils (téléphone perdu)",
-    motsCles: ["deconnecter", "deconnexion", "partout", "perdu", "vole", "telephone", "appareil", "session"],
-    geste: "Ouvrez « Connexion », puis « Me déconnecter partout ».",
-    reserve: "Celui-ci compris : vous devrez vous reconnecter.",
-    source: "src/app/reglages/connexion/ConnexionClient.tsx",
-    preuves: ["Me déconnecter partout"],
-  },
-  {
-    id: "reglages-apparence",
-    ecran: "Apparence",
-    ou: "Réglages, puis Apparence",
-    intitule: "Changer les couleurs de l'application, passer en sombre",
-    motsCles: ["couleur", "couleurs", "charte", "apparence", "sombre", "nuit", "theme", "clair", "mode", "fond"],
-    geste: "Ouvrez « Apparence » et touchez la charte voulue. « Nuit » et « Sylve » sont sombres.",
-    source: "src/app/reglages/apparence/ApparenceClient.tsx",
-    preuves: ["Votre charte"],
-    // Les noms des chartes vivent dans leur table, pas dans l'écran : ils n'y
-    // restaient prouvés que par un commentaire.
-    ailleurs: [{ source: "src/lib/chartes.ts", preuves: ['libelle: "Nuit"', 'libelle: "Sylve"'] }],
-  },
-
-  // --- Paysage --------------------------------------------------------------
-  {
-    id: "paysage-arrosage",
-    ecran: "Plan d'arrosage automatique",
-    ou: "Paysage, puis Plan d'arrosage automatique",
-    intitule: "Faire un plan d'arrosage",
-    motsCles: ["arrosage", "plan", "reseau", "arroseur", "turbine", "tuyere", "croquis", "piquage", "nourrice"],
-    geste:
-      "Dites où se fait le piquage, relevez le débit au seau, puis « Ajouter la photo du croquis ».",
-    reserve:
-      "Le croquis doit porter les métrés, l'endroit du piquage et l'endroit définitif de la nourrice. " +
-      "Sans les trois, aucun plan n'est proposé.",
-    source: "src/app/paysage/arrosage/ArrosageClient.tsx",
-    preuves: ["Le piquage se fait…", "Mesure au seau", "Ajouter la photo du croquis"],
-  },
-  {
-    id: "paysage-fiche",
-    ecran: "Fiche de chantier",
-    ou: "Paysage, puis Fiche de chantier",
-    intitule: "Cocher ce qui a été fait et l'envoyer au client",
-    motsCles: ["fiche", "chantier", "entretien", "cocher", "rapport", "compte", "rendu", "envoyer", "passage"],
-    geste: "Cochez les prestations faites, ajoutez vos observations, puis « Enregistrer et envoyer ».",
-    reserve: "Le temps passé n'apparaît chez le client que si vous le rendez visible.",
-    source: "src/app/paysage/fiche/[id]/FicheChantierClient.tsx",
-    preuves: ["Enregistrer et envoyer", "Temps passé", "Observations"],
-  },
-  {
-    id: "paysage-fiche-composer",
-    ecran: "Fiche de chantier",
-    ou: "Paysage, puis Fiche de chantier",
-    intitule: "Composer sa fiche d'entretien depuis Paysage",
-    motsCles: ["composer", "fiche", "modele", "entretien", "creer", "prestation"],
-    geste: "En bas de l'écran, appuyez sur « Composer ma fiche ».",
-    reserve: "Réservé au patron : c'est à lui de la composer.",
-    source: "src/app/paysage/fiche/page.tsx",
-    preuves: ["Composer ma fiche"],
-  },
-  {
-    id: "paysage-diagnostic",
-    ecran: "Diagnostic végétal",
-    ou: "Paysage, puis Diagnostic végétal",
-    intitule: "Savoir ce qu'a un arbre ou une plante",
-    motsCles: ["diagnostic", "vegetal", "maladie", "arbre", "feuille", "champignon", "photo", "anomalie", "ecorce"],
-    geste: "Appuyez sur « Prendre une photo » et photographiez la zone anormale.",
-    source: "src/app/paysage/diagnostic/page.tsx",
-    preuves: ["Prendre une photo", "Photographiez la zone qui vous semble anormale."],
-  },
-
-  // --- L'assistant lui-même -------------------------------------------------
-  {
-    id: "assistant-ouvrir",
-    ecran: "Assistant",
-    ou: "l'en-tête de chaque écran",
-    intitule: "Ouvrir l'assistant",
-    motsCles: ["assistant", "aide", "question", "ouvrir", "bulle", "parler", "toi"],
-    geste: "Appuyez sur la pastille ronde en haut à droite de l'écran.",
-    source: "src/components/atlas/BoutonAssistant.tsx",
-    preuves: ["Ouvrir l'assistant"],
-  },
-  {
-    id: "assistant-copier-ligne",
-    ecran: "Assistant",
-    ou: "l'assistant, depuis un devis ouvert",
-    intitule: "Reprendre une ligne du devis d'un autre client",
-    motsCles: ["reprendre", "copier", "ligne", "devis", "autre", "client", "meme", "chercher", "poser"],
-    geste:
-      "Ouvrez le devis où poser la ligne, puis demandez à l'assistant, par exemple : " +
-      "« reprends la ligne d'élagage du devis de Bernard ». Il la cherche, la propose, et vous la validez.",
-    reserve: "Le montant est relu sur la ligne d'origine au moment où vous validez : rien n'est recopié de mémoire.",
-    source: "src/server/ai/tools/rechercher-lignes-devis.ts",
-    preuves: ["RechercherLignesDevis"],
-  },
+  ...FICHES_LIEUX,
+  ...FICHES_CHANTIER,
+  ...FICHES_DEVIS,
+  ...FICHES_FACTURE,
+  ...FICHES_PLANNING,
+  ...FICHES_PAYSAGE,
+  ...FICHES_REGLAGES,
 ];
 
 // --- La recherche ---------------------------------------------------------
@@ -1132,8 +143,25 @@ function contient(ensemble: Set<string>, mot: string): boolean {
   if (mot.length < 4) return false;
   for (const candidat of ensemble) {
     if (candidat.length >= 4 && (candidat.startsWith(mot) || mot.startsWith(candidat))) return true;
+    if (memeRacine(candidat, mot)) return true;
   }
   return false;
+}
+
+/**
+ * Deux formes d'un même verbe : « transmets » et « transmettre », « envoyées »
+ * et « envoyer ». Le préfixe seul ne les voyait pas (aucun n'est le début de
+ * l'autre), et « comment je transmets la fiche » ne trouvait pas la fiche qui
+ * transmet. Il faut au moins cinq lettres communes, et que seule la fin
+ * diffère (deux lettres de plus que le plus court, au plus) : « planning » et
+ * « planifier » ne partagent que « plan », et restent deux mots.
+ */
+function memeRacine(a: string, b: string): boolean {
+  const court = Math.min(a.length, b.length);
+  if (court < 6) return false;
+  let commun = 0;
+  while (commun < court && a[commun] === b[commun]) commun++;
+  return commun >= Math.max(5, court - 2);
 }
 
 /**
@@ -1150,24 +178,70 @@ function contient(ensemble: Set<string>, mot: string): boolean {
  * facture. Un mot qui est à la fois dans les mots-clés ET dans l'intitulé
  * désigne une fiche plus précisément qu'un mot qui n'est que dans l'un des deux.
  */
-function score(fiche: FicheModeEmploi, mots: string[]): { points: number; motsTrouves: number } {
+function score(
+  fiche: FicheModeEmploi,
+  mots: string[]
+): { points: number; poids: number; motsTrouves: number } {
   const cles = new Set(fiche.motsCles.flatMap((m) => motsUtiles(m)));
   const titre = new Set(motsUtiles(`${fiche.intitule} ${fiche.ecran}`));
   const corps = new Set(motsUtiles(`${fiche.geste} ${fiche.ou} ${fiche.reserve ?? ""}`));
 
   let points = 0;
+  let poids = 0;
   let motsTrouves = 0;
   for (const mot of new Set(mots)) {
     let gain = 0;
-    if (contient(cles, mot)) gain += 3;
-    if (contient(titre, mot)) gain += 2;
+    let exact = 0;
+    if (contient(cles, mot)) {
+      gain += 3;
+      if (cles.has(mot)) exact += 3;
+    }
+    if (contient(titre, mot)) {
+      gain += 2;
+      if (titre.has(mot)) exact += 2;
+    }
     if (contient(corps, mot)) gain += 1;
     if (gain > 0) {
       points += gain;
+      // **Le mot exact passe devant sa forme voisine** : à « comment on fait
+      // une facture », la fiche qui porte « facture » répond mieux que celle
+      // qui ne porte que « facturer ». Sans cela, l'égalité se tranchait par
+      // ordre alphabétique, c'est-à-dire au hasard.
+      poids += (gain + exact * 0.25) * rarete(mot);
       motsTrouves++;
     }
   }
-  return { points, motsTrouves };
+  return { points, poids, motsTrouves };
+}
+
+/**
+ * Ce que vaut un mot pour DÉPARTAGER : un mot rare désigne, un mot courant ne
+ * fait que confirmer.
+ *
+ * **Payé le 24 septembre 2026**, en passant de quatre-vingts fiches à plus de
+ * trois cents. « Client », « devis », « facture » sont dans les mots-clés de
+ * dizaines de fiches ; « comment je note un acompte sur la facture » sortait
+ * alors la fiche qui avait le plus de mots COURANTS, pas celle qui porte
+ * « acompte ». Un mot présent dans une fiche sur trois ne dit presque rien de
+ * la question ; un mot présent dans deux fiches la désigne.
+ *
+ * Le poids ne sert qu'au CLASSEMENT. Le seuil (au moins trois points, deux
+ * mots communs) reste compté sans lui : ce qui ne répondait pas ne se met pas
+ * à répondre, et le refus garde sa valeur.
+ */
+function rarete(mot: string): number {
+  const presence = FREQUENCES.get(mot) ?? frequence(mot);
+  return 1 / (1 + Math.log2(1 + presence / 3));
+}
+
+const FREQUENCES = new Map<string, number>();
+function frequence(mot: string): number {
+  let n = 0;
+  for (const fiche of FICHES_MODE_EMPLOI) {
+    if (contient(new Set(fiche.motsCles.flatMap((m) => motsUtiles(m))), mot)) n++;
+  }
+  FREQUENCES.set(mot, n);
+  return n;
 }
 
 /**
@@ -1206,8 +280,8 @@ export function chercherFiches(question: string, maximum = 3): FicheModeEmploi[]
     .filter((c) => c.points >= 3 && (!exigeDeuxMots || c.motsTrouves >= 2))
     // **Le bonus vient APRÈS le seuil** : il départage des fiches qui
     // répondent déjà, il ne fait jamais entrer une fiche qui ne répond pas.
-    .map((c) => ({ ...c, points: c.points + (lieu && c.fiche.lieu ? 3 : 0) }))
-    .sort((a, b) => b.points - a.points || a.fiche.id.localeCompare(b.fiche.id))
+    .map((c) => ({ ...c, poids: c.poids + (lieu && c.fiche.lieu ? 2 : 0) }))
+    .sort((a, b) => b.poids - a.poids || a.fiche.id.localeCompare(b.fiche.id))
     .slice(0, maximum)
     .map((c) => c.fiche);
 }

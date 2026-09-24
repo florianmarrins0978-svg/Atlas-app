@@ -6979,6 +6979,19 @@ et qui ne se règle pas en une fois :
 - **La fiche « avoir » dit qu'Atlas ne le fait pas** : elle rougira d'elle-même
   (`absences`) le jour où « Je fais un avoir » entre dans `src/`. Il faudra
   alors la récrire avec le vrai geste.
+- **Relevé pendant l'inventaire des 324 fiches (24 septembre 2026), non corrigé
+  parce que hors de ce lot** :
+  - **aucun « mot de passe oublié »** dans `src/app/login` : l'assistant ne
+    peut rien répondre, faute de parcours ;
+  - le micro de l'assistant dit « Appuyez à nouveau pour arrêter », mais le
+    bouton disparaît pendant qu'on parle (`AssistantSidebar.tsx`) : texte à
+    vérifier à l'écran ;
+  - « Voir la proposition de prix » (`src/app/chantiers/[id]/prix/PrixClient.tsx`) n'apparaît qu'avec
+    `?saisie=manuelle`, adresse qu'aucun lien ne produit : probablement du code
+    mort, à regarder ;
+  - pas de geste trouvé pour retirer une seule ligne de travaux
+    supplémentaires, ni pour supprimer un achat de Ma TVA, ni pour retrouver un
+    diagnostic végétal passé.
 
 - **Les fiches couvrent les écrans principaux, pas encore chaque recoin.**
   Manquent notamment : le détail de l'écran Réglages → Devis & factures (chaque

@@ -5,11 +5,12 @@
 
 ---
 
-## FAIT : L'ASSISTANT DIT OÙ SONT DEVIS, FACTURES, FICHES (24 septembre 2026)
+## FAIT : L'ASSISTANT CONNAÎT TOUTES LES FONCTIONS DE L'APPLI (24 septembre 2026)
 
-Seize fiches de lieu, un sommaire pour les tournures imprévues, quatre
-gestes morts corrigés (`ARCHITECTURE.md` §411). Reste à l'essayer avec un vrai
-modèle, sur son espace.
+324 fiches, une zone par fichier, chacune prouvée contre le code ; 36 fiches
+fausses ou floues récrites ; recherche refaite pour trois cents fiches (`ARCHITECTURE.md`
+§411). Reste à l'essayer avec un vrai modèle, sur son espace, et la batterie
+avant `main`.
 
 ---
 
