@@ -9382,7 +9382,8 @@ seulement l'avoir, c'est lui donner un geste qui le désarme, sans avertissement
 
 **CE QUE LA LOI EXIGE D'UN AVOIR** (recherche du 24 septembre 2026, faite par
 moteur de recherche : Legifrance, le BOFiP et douane.gouv.fr sont refusés par le
-mandataire de cet environnement. À relire à la source avant de coder) :
+mandataire de cet environnement. **Aucune page n'a été ouverte, seuls les
+résumés du moteur ont été lus** : à relire à la source avant de coder) :
 
 - un avoir **est une facture rectificative** : il porte les mentions du I de
   l'article 242 nonies A de l'annexe II au CGI, comme une facture. Le BOFiP
