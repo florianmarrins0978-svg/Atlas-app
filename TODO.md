@@ -9361,6 +9361,8 @@ seulement l'avoir, c'est lui donner un geste qui le désarme, sans avertissement
 **CE QU'IL A DÉJÀ DIT, le 24 septembre 2026, sur `appli/il-ne-paie-pas.html`
 (ne pas le lui redemander) :**
 
+- les deux réponses s'appellent **« Je fais un avoir »** et **« Il ne me paiera
+  pas »**, sans aucune explication dessous (sa correction : *« pas d'explication »*) ;
 - le montant de l'avoir **s'écrit** dans un champ, pas « 300 € ou Tout » ;
 - le calcul se lit en entier : facture TTC, avoir TTC, **nouveau montant TTC** ;
 - l'avoir s'écrit avec le signe, **« - 250,00 € »**, jamais « moins 250 » (le
