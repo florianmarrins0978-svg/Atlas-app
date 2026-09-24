@@ -13,8 +13,10 @@ Format : le plus récent en tête.
 Sa planche A (`appli/termines-facture-en-dore.html`). Sur une ligne facturée,
 le mot « Facturé » seul et le montant passent en gras doré ; la date et le
 numéro gardent l'encre douce, qui tient au soleil ce que l'or ne tient pas.
-Le mot se détache par une règle pure, `morceauxEtatLigne`
-(`src/lib/termines-par-mois.ts`), éprouvée dans `test-termines-par-mois.ts`.
+Le mot sort déjà séparé de `libelleEtatLigne` (`src/lib/termines-par-mois.ts`),
+là où la phrase se compose : une première version la redécoupait après coup
+par une expression régulière, deux règles pour une seule question. Retirée le
+jour même.
 Regardé à l'écran sur une base locale ; aucune batterie jouée, à sa demande.
 
 ### Les maquettes ne se publiaient plus depuis le 23 septembre au soir

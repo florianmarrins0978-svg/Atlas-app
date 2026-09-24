@@ -25,13 +25,16 @@ import {
   libelleFacturee,
   libelleDateChantier,
   libelleEtatLigne,
-  morceauxEtatLigne,
   numeroCourt,
   estFacture,
   type LigneTerminee,
 } from "../src/lib/termines-par-mois";
 
 let echecs = 0;
+
+/** La ligne telle qu'elle se lit, morceaux recollés. */
+const lue = (e: { avant: string; mot: string; apres: string }) => e.avant + e.mot + e.apres;
+const lueFacturee = (f: { mot: string; suite: string }) => f.mot + f.suite;
 function essai(nom: string, fn: () => void) {
   try {
     fn();
@@ -273,14 +276,14 @@ essai("« Facturé le 20 août » vient de la DATE D'ÉMISSION, pas du chantier"
       factureDateEmission: "2026-08-30",
     }),
   ]);
-  assert.equal(libelleFacturee(l), "Facturé le 30 août, Facture n° 5");
+  assert.equal(lueFacturee(libelleFacturee(l)), "Facturé le 30 août, Facture n° 5");
 });
 
 essai("sans date d'émission, on ne l'invente pas", () => {
   const [l] = preparer([
     ligne({ id: "a", datePlanifiee: "2026-08-20", factureStatut: "emise", totalTtc: "10.00", factureNumero: "F2026-0005" }),
   ]);
-  assert.equal(libelleFacturee(l), "Facture n° 5");
+  assert.equal(lueFacturee(libelleFacturee(l)), "Facture n° 5");
 });
 
 essai("le total tous mois confondus est celui de la phrase d'en-tête", () => {
@@ -326,7 +329,7 @@ essai("la ligne d'état porte la date puis le montant prévu", () => {
   // Le montant se compare par `formatEuros`, jamais par une chaîne écrite à la
   // main : l'espace qui précède le « € » est une espace fine insécable, et deux
   // caractères invisibles qui diffèrent font rougir un contrôle juste.
-  assert.equal(libelleEtatLigne(l, "2026"), `12 août, ${formatEuros(360)} prévus`);
+  assert.equal(lue(libelleEtatLigne(l, "2026")), `12 août, ${formatEuros(360)} prévus`);
 });
 
 essai("« Pas encore facturé » n'est plus écrit nulle part", () => {
@@ -337,20 +340,20 @@ essai("« Pas encore facturé » n'est plus écrit nulle part", () => {
     ligne({ id: "b", datePlanifiee: "2026-08-26" }),
   ]);
   for (const l of lignes) {
-    assert.ok(!/pas encore factur/i.test(libelleEtatLigne(l, "2026")), libelleEtatLigne(l, "2026"));
+    assert.ok(!/pas encore factur/i.test(lue(libelleEtatLigne(l, "2026"))), lue(libelleEtatLigne(l, "2026")));
   }
 });
 
 essai("sans devis envoyé, il ne reste que la date — et JAMAIS un «, » pendu", () => {
   const [l] = preparer([ligne({ id: "a", datePlanifiee: "2026-08-26" })]);
-  assert.equal(libelleEtatLigne(l, "2026"), "26 août");
+  assert.equal(lue(libelleEtatLigne(l, "2026")), "26 août");
 });
 
 essai("sans date NI montant, la ligne d'état n'existe pas", () => {
   // L'écran n'affiche alors rien du tout : ni tiret, ni phrase de remplacement.
   // Un chantier clôturé sans être passé par le planning est dans ce cas.
   const [l] = preparer([ligne({ id: "a", termineAt: "2026-08-30T10:00:00Z" } as Partial<LigneTerminee> & { id: string })]);
-  assert.equal(libelleEtatLigne(l, "2026"), "");
+  assert.equal(lue(libelleEtatLigne(l, "2026")), "");
 });
 
 essai("une fois facturé, la date du chantier précède celle de la facture", () => {
@@ -365,7 +368,35 @@ essai("une fois facturé, la date du chantier précède celle de la facture", ()
       factureNumero: "F2026-0005",
     }),
   ]);
-  assert.equal(libelleEtatLigne(l, "2026"), "9 août, Facturé le 20 août, Facture n° 5");
+  assert.equal(lue(libelleEtatLigne(l, "2026")), "9 août, Facturé le 20 août, Facture n° 5");
+});
+
+essai("« Facturé » sort SÉPARÉ, pour le gras doré (planche A du 24 septembre 2026)", () => {
+  const [l] = preparer([
+    ligne({
+      id: "a",
+      datePlanifiee: "2026-08-09",
+      factureStatut: "emise",
+      factureDateEmission: "2026-08-20",
+      totalTtc: "1240.00",
+      factureNumero: "F2026-0005",
+    }),
+  ]);
+  assert.deepEqual(libelleEtatLigne(l, "2026"), {
+    avant: "9 août, ",
+    mot: "Facturé",
+    apres: " le 20 août, Facture n° 5",
+  });
+  // « Facture n° 5 » n'est pas « Facturé » : rien ne passe en doré.
+  assert.deepEqual(
+    libelleFacturee(
+      preparer([ligne({ id: "b", factureStatut: "emise", factureNumero: "F2026-0005" })])[0]
+    ),
+    { mot: "", suite: "Facture n° 5" }
+  );
+  // Une rangée qui attend n'a pas de mot doré.
+  const [attend] = preparer([ligne({ id: "c", datePlanifiee: "2026-08-12" })]);
+  assert.equal(libelleEtatLigne(attend, "2026").mot, "");
 });
 
 // ─── SANS DATE DE PLANNING, C'EST LA FACTURE QUI DIT QUAND ──────────────────
@@ -396,7 +427,7 @@ essai("et le mois le retrouve, au lieu de le perdre", () => {
 
 essai("la date de la facture s'écrit sur la rangée qui attend", () => {
   const [l] = preparer([ligne({ id: "a", factureDateEmission: "2026-09-18" })]);
-  assert.equal(libelleEtatLigne(l, "2026"), "18 septembre");
+  assert.equal(lue(libelleEtatLigne(l, "2026")), "18 septembre");
 });
 
 essai("le planning l'emporte quand les deux existent", () => {
@@ -404,7 +435,7 @@ essai("le planning l'emporte quand les deux existent", () => {
     ligne({ id: "a", datePlanifiee: "2026-09-11", factureDateEmission: "2026-09-18" }),
   ]);
   assert.equal(l.cleMois, "2026-09");
-  assert.equal(libelleEtatLigne(l, "2026"), "11 septembre");
+  assert.equal(lue(libelleEtatLigne(l, "2026")), "11 septembre");
 });
 
 essai("facturée sans date de planning, la date ne s'écrit PAS deux fois", () => {
@@ -419,7 +450,7 @@ essai("facturée sans date de planning, la date ne s'écrit PAS deux fois", () =
       factureNumero: "F2026-0012",
     }),
   ]);
-  assert.equal(libelleEtatLigne(l, "2026"), "Facturé le 18 septembre, Facture n° 12");
+  assert.equal(lue(libelleEtatLigne(l, "2026")), "Facturé le 18 septembre, Facture n° 12");
 });
 
 essai("une rangée sans date de facture se range toujours devant", () => {
@@ -440,21 +471,6 @@ essai("le tri place la facturée à SA date, pas en tête", () => {
     ligne({ id: "recent", datePlanifiee: "2026-09-20" }),
   ]);
   assert.deepEqual(lignes.map((l) => l.id), ["recent", "sans-planning", "vieux"]);
-});
-
-essai("« Facturé » se détache de sa ligne pour passer en gras doré (24 septembre 2026)", () => {
-  assert.deepEqual(morceauxEtatLigne("Facturé le 18 septembre, Facture n° 12"), {
-    avant: "", mot: "Facturé", apres: " le 18 septembre, Facture n° 12",
-  });
-  assert.deepEqual(morceauxEtatLigne("9 août, Facturé le 20 août"), {
-    avant: "9 août, ", mot: "Facturé", apres: " le 20 août",
-  });
-  assert.deepEqual(morceauxEtatLigne("Facturée"), { avant: "", mot: "Facturée", apres: "" });
-  // « Facture n° 5 » n'est pas « Facturé » : rien ne se colore.
-  assert.deepEqual(morceauxEtatLigne("Facture n° 5"), { avant: "Facture n° 5", mot: "", apres: "" });
-  assert.deepEqual(morceauxEtatLigne("23 septembre, 696,00 € prévus"), {
-    avant: "23 septembre, 696,00 € prévus", mot: "", apres: "",
-  });
 });
 
 console.log(`\n${echecs === 0 ? "✅" : "❌"} « Terminés » — ${echecs} échec(s).`);

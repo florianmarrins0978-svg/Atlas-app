@@ -10,7 +10,6 @@ import {
   factureesPartout,
   formatEuros,
   libelleEtatLigne,
-  morceauxEtatLigne,
   nomDuMois,
   resumeDuMois,
   type LigneAffichee,
@@ -506,7 +505,7 @@ function Oeil({ ouvert, onClick }: { ouvert: boolean; onClick: () => void }) {
  * chez un client sans un geste du patron (`docs/AGENT.md` §6).
  */
 function Ligne({ ligne, annee }: { ligne: LigneAffichee; annee: string }) {
-  const etat = libelleEtatLigne(ligne, annee);
+  const { avant, mot, apres } = libelleEtatLigne(ligne, annee);
   return (
     <Link
       href={`/chantiers/${ligne.id}/facture`}
@@ -577,7 +576,7 @@ function Ligne({ ligne, annee }: { ligne: LigneAffichee; annee: string }) {
               se voit de loin, là où une teinte se devine. L'or n'a pas quitté
               l'écran : il porte toujours « 3 à facturer » au-dessus de la
               liste, en gras, où il a la place de se voir. */}
-        {etat !== "" && (
+        {avant + mot + apres !== "" && (
           <span
             className="mt-[5px] block text-[13px] leading-[1.5]"
             style={{ color: colors.inkSoft, fontVariantNumeric: "tabular-nums" }}
@@ -587,20 +586,13 @@ function Ligne({ ligne, annee }: { ligne: LigneAffichee; annee: string }) {
                 A (`appli/termines-facture-en-dore.html`). Le mot seul : la
                 date et le numéro gardent l'encre douce, qui tient au soleil
                 ce que l'or ne tient pas (voir juste au-dessus). */}
-            {(() => {
-              const { avant, mot, apres } = morceauxEtatLigne(etat);
-              return (
-                <>
-                  {avant}
-                  {mot !== "" && (
-                    <span style={{ color: colors.or, fontWeight: 700 }} data-atlas="mot-facture">
-                      {mot}
-                    </span>
-                  )}
-                  {apres}
-                </>
-              );
-            })()}
+            {avant}
+            {mot !== "" && (
+              <span style={{ color: colors.or, fontWeight: 700 }} data-atlas="mot-facture">
+                {mot}
+              </span>
+            )}
+            {apres}
           </span>
         )}
       </span>
