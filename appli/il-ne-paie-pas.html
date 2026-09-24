@@ -164,6 +164,16 @@
   .liste .serif{font-size:22px}
   .barre button{border:0;background:none;padding:0;font:inherit;letter-spacing:inherit;color:inherit;cursor:default}
   .barre button.cible{cursor:pointer;color:var(--or);animation:appel 1.6s ease-in-out infinite;border-radius:4px}
+  .ecran[data-e="termines"]{position:relative}
+  .voile{position:absolute;inset:0;z-index:6;background:rgba(28,28,26,.38);display:flex;align-items:flex-end}
+  .voile[hidden]{display:none}
+  .feuille-choix{width:100%;background:var(--card);border-radius:18px 18px 0 0;padding:18px 16px 22px;
+                 box-shadow:0 -10px 30px rgba(20,18,14,.18)}
+  .feuille-choix button{display:block;width:100%;min-height:54px;margin-top:8px;border:1px solid var(--line);
+                        border-radius:12px;background:var(--cream);cursor:pointer;
+                        font:400 19px/1 ui-serif,Georgia,serif;color:var(--ink);
+                        animation:appel 1.6s ease-in-out infinite}
+  .feuille-choix button.annuler{animation:none;border:0;background:none;font:500 14px/1 ui-sans-serif,sans-serif;color:var(--muted)}
   .nonpayees{display:flex;justify-content:space-between;align-items:center;width:calc(100% - 44px);
              margin:14px 22px 0;min-height:48px;padding:0 18px;border-radius:999px;cursor:pointer;
              border:1px solid var(--alerte);background:transparent;color:var(--alerte);font-size:14px}
@@ -237,10 +247,22 @@
     <div class="deux"><span class="capsule">Retours d'intervention</span><span class="capsule or">Créer une facture</span></div>
     <div class="moisnav"><span class="ch">‹</span>Octobre 2026<span class="ch eteint">›</span></div>
     <div class="compte">1 facturé</div>
-    <button type="button" class="fact cible" data-va="facture">
+    <button type="button" class="fact cible" data-va="choix">
       <span class="l1"><span>Taille de haie</span><span>1 440,00 €</span></span>
       <span class="l2">Facturé le 9 octobre, Facture n° 12</span>
     </button>
+    <!-- Sa réponse du 24 septembre : aujourd'hui la ligne ouvre la facture,
+         « il faut pouvoir faire les deux » : un petit choix, « la possibilité
+         d'envoyer un avoir ou d'arrêter une facture dans non payé ». -->
+    <div class="voile" id="voile" hidden>
+      <div class="feuille-choix">
+        <p class="caps" style="text-align:center;margin:0 0 6px">Taille de haie, M. Martin</p>
+        <button type="button" data-va="facture">La facture</button>
+        <button type="button" data-va="combien">Je fais un avoir</button>
+        <button type="button" data-va="perdue">Il ne me paiera pas</button>
+        <button type="button" class="annuler" data-va="termines">Annuler</button>
+      </div>
+    </div>
   </section>
 
   <!-- ─── 2. LA FACTURE ENVOYÉE, et le seul ajout : le lien du bas ──────── -->
@@ -507,7 +529,8 @@
 <script>
   // Le récit de chaque écran : ce qui se passe, et où poser le doigt.
   const RECIT = {
-    termines: ["Vous êtes ici", "Nous sommes le <b>27 octobre</b>. M. Martin devait payer avant le 24 octobre, et Atlas vous l'a déjà signalé par une notification «&nbsp;Facture impayée&nbsp;». Vous ouvrez <b>Terminés</b>. <b>Touchez sa facture.</b>"],
+    termines: ["Vous êtes ici", "Nous sommes le <b>27 octobre</b>. M. Martin devait payer avant le 24 octobre, et Atlas vous l'a déjà signalé par une notification «&nbsp;Facture impayée&nbsp;». Vous ouvrez <b>Terminés</b>. <b>Touchez la ligne Taille de haie.</b>"],
+    choix:    ["Un petit choix", "Aujourd'hui, toucher la ligne ouvre directement la facture. Désormais un petit choix s'ouvre : <b>la facture</b>, <b>un avoir</b>, ou <b>il ne paiera pas</b>. <b>Essayez «&nbsp;Je fais un avoir&nbsp;»</b>, puis revenez avec «&nbsp;Recommencer&nbsp;» pour les deux autres."],
     facture:  ["Sa facture", "C'est l'écran d'aujourd'hui. <b>Une seule chose s'ajoute</b>, tout en bas : le lien doré. <b>Touchez «&nbsp;Mon client ne me paie pas&nbsp;».</b>"],
     question: ["La question", "Deux réponses, qui font l'inverse l'une de l'autre. <b>Essayez la première</b>, puis revenez avec «&nbsp;Recommencer&nbsp;» pour essayer la seconde."],
     combien:  ["Première réponse : vous faites un avoir", "Vous faites un geste commercial, ou vous réglez un désaccord. <b>Écrivez le montant</b> que vous lui retirez : Atlas vous donne tout de suite le nouveau montant de la facture. Puis <b>«&nbsp;C'est bon&nbsp;»</b>."],
@@ -522,16 +545,23 @@
     factureB2:["La facture, payée", "Le «&nbsp;Non payée&nbsp;» disparaît : la facture est <b>acquittée</b>, le Net à payer tombe à zéro. <b>Touchez «&nbsp;Voir Ma TVA&nbsp;».</b>"],
     tvaB:     ["Elle entre au relevé de TVA", "Les <b>240,00 €</b> de TVA de cette facture entrent au relevé de <b>novembre</b>, le mois où il a payé, pas celui de la facture. C'est la règle de l'encaissement, et c'est déjà ce que fait votre relevé aujourd'hui. Et la catégorie <b>Non payées</b> a disparu : elle était vide. Fin de la seconde branche."],
   };
-  const ORDRE_A = ["termines","facture","question","combien","fait","factureA","ficheA"];
-  const ORDRE_B = ["termines","facture","question","perdue","termB","nonPayees","factureB","paye","factureB2","tvaB"];
+  const ORDRE_A = ["termines","choix","combien","fait","factureA","ficheA"];
+  const ORDRE_B = ["termines","choix","perdue","termB","nonPayees","factureB","paye","factureB2","tvaB"];
+  const ORDRE_F = ["termines","choix","facture","question"];
   let chemin = ["termines"];
 
   const ecrans = [...document.querySelectorAll(".ecran")];
   const $ = (s) => document.querySelector(s);
 
   function montrer(cle){
-    ecrans.forEach((e) => e.classList.toggle("ouvert", e.dataset.e === cle));
-    const branche = ORDRE_B.includes(cle) && !ORDRE_A.includes(cle) ? ORDRE_B : ORDRE_A;
+    // Le choix s'ouvre PAR-DESSUS Terminés : l'écran reste, la feuille monte.
+    const ecran = cle === "choix" ? "termines" : cle;
+    ecrans.forEach((e) => e.classList.toggle("ouvert", e.dataset.e === ecran));
+    $("#voile").hidden = cle !== "choix";
+    const commun = cle === "termines" || cle === "choix";
+    const branche = !commun && ORDRE_F.includes(cle) ? ORDRE_F
+      : !commun && ORDRE_B.includes(cle) ? ORDRE_B
+      : ORDRE_A;
     const rang = branche.indexOf(cle);
     $("#etape").textContent = "Étape " + (rang + 1) + " sur " + branche.length + ". " + RECIT[cle][0];
     $("#texte").innerHTML = RECIT[cle][1];
