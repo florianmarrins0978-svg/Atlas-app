@@ -52,10 +52,14 @@
   .pas .points i.la{background:#d8b77e}
 
   /* ═══ LE TÉLÉPHONE ═══════════════════════════════════════════════════════ */
+  /* La barre du bas reste sous le pouce pendant qu'on défile, comme dans
+     l'application : `clip` et non `hidden`, sinon le téléphone devient son
+     propre défilement et la barre ne colle plus. */
   .tel{position:relative;max-width:400px;margin:18px auto 0;background:var(--cream);border-radius:26px;
-       overflow:hidden;box-shadow:0 18px 46px rgba(20,18,14,.22);min-height:720px;padding-bottom:78px}
+       overflow:clip;box-shadow:0 18px 46px rgba(20,18,14,.22);min-height:720px;
+       display:flex;flex-direction:column}
   .ecran{display:none}
-  .ecran.ouvert{display:block}
+  .ecran.ouvert{display:block;flex:1;padding-bottom:26px}
 
   .haut{display:flex;align-items:center;justify-content:space-between;padding:22px 22px 0}
   .fleche{width:36px;height:36px;border-radius:999px;border:0;background:var(--rustTint);color:var(--rust);
@@ -138,6 +142,17 @@
   .moyens button{min-height:40px;padding:0 14px;border-radius:999px;border:1px solid var(--line);
                  background:var(--card);font-size:14px;cursor:pointer}
   .moyens button[aria-pressed="true"]{background:var(--rust);border-color:var(--rust);color:var(--surPlein)}
+  .fleche.rond{background:none;border:1px solid var(--line)}
+  .onglets-fiche{display:flex;gap:22px;margin:26px 22px 0;border-bottom:1px solid var(--line)}
+  .onglets-fiche button{border:0;background:none;padding:0 0 10px;cursor:pointer;
+                        font:500 11px/1 ui-sans-serif,sans-serif;letter-spacing:.24em;text-transform:uppercase;color:var(--muted)}
+  .onglets-fiche button[aria-pressed="true"]{color:var(--ink);box-shadow:0 2px 0 0 var(--or)}
+  .onglets-fiche .neuf{animation:appel 1.6s ease-in-out infinite;border-radius:4px}
+  .liste{display:flex;justify-content:space-between;align-items:baseline;margin:20px 22px 0;font-size:14px}
+  .liste[hidden]{display:none}
+  .liste .serif{font-size:22px}
+  .barre button{border:0;background:none;padding:0;font:inherit;letter-spacing:inherit;color:inherit;cursor:default}
+  .barre button.cible{cursor:pointer;color:var(--or);animation:appel 1.6s ease-in-out infinite;border-radius:4px}
   .cible-tva{animation:appel 1.6s ease-in-out infinite}
   .vert[disabled]{opacity:.4;cursor:default;animation:none}
 
@@ -168,10 +183,10 @@
   .apercu .r b{color:#1c1c1a}
 
   /* la barre du bas, comme dans l'application */
-  .barre{position:absolute;left:0;right:0;bottom:0;display:flex;justify-content:space-around;
+  .barre{position:sticky;bottom:0;z-index:4;display:flex;justify-content:space-around;
          padding:16px 6px 22px;border-top:1px solid var(--line);background:var(--cream);
          font:500 10px/1 ui-sans-serif,sans-serif;letter-spacing:.16em;color:var(--muted)}
-  .barre span.la{color:var(--ink);box-shadow:0 12px 0 -10px var(--or)}
+  .barre .la{color:var(--ink);box-shadow:0 12px 0 -10px var(--or)}
 
   /* ═══ SOUS LE TÉLÉPHONE : ce que ça change, en trois lignes ═══════════════ */
   .apres{max-width:400px;margin:22px auto 0;padding:0 16px;font-size:14px;line-height:1.6;color:#3a3a35}
@@ -274,7 +289,7 @@
       <div class="t">AVOIR A2026-000001</div>
       <div class="r"><span>Sur la facture F2026-000012</span></div>
       <div class="r"><span>Facture TTC</span><span>1 440,00 €</span></div>
-      <div class="r"><span>Avoir TTC</span><span data-montre="avoir">moins 300,00 €</span></div>
+      <div class="r"><span>Avoir TTC</span><span data-montre="avoir">- 300,00 €</span></div>
       <div class="r" style="border-top:1px solid #e3dfd6;padding-top:8px"><span>Nouveau montant TTC</span><b data-montre="reste3">1 140,00 €</b></div>
     </div>
     <div class="envoi"><span class="caps">Envoi</span><span class="onglets"><span class="la">SMS</span><span>E-mail</span></span></div>
@@ -293,10 +308,39 @@
     </div>
     <div class="carte">
       <div class="caps">Règlements reçus</div>
-      <div class="regl"><span>Avoir A2026-000001<small>27 octobre, envoyé par SMS</small></span><span data-montre="moins">moins 300,00 €</span></div>
+      <div class="regl"><span>Avoir A2026-000001<small>27 octobre, envoyé par SMS</small></span><span data-montre="moins">- 300,00 €</span></div>
       <div class="net"><b>Net à payer</b><span class="m" data-montre="reste2">1 140,00 €</span></div>
     </div>
     <div class="carte"><p class="arretee" style="margin:0">Facture F2026-000012 arrêtée.</p></div>
+  </section>
+
+  <!-- ─── 7A. LA FICHE DU CLIENT, ET SON ONGLET « AVOIRS » ─────────────────
+       Sa demande du 24 septembre : « le jour où j'envoie un avoir, il faut
+       pouvoir le retrouver dans une nouvelle catégorie avoir chez mes
+       clients ; elle se crée seulement lorsque j'envoie un avoir, car ça
+       risque d'être hyper rare ». Recopiée de /clients/[id] servie : Devis,
+       Factures, Fiches ; Avoirs s'ajoute au bout, chez ce client seulement. -->
+  <section class="ecran" data-e="ficheA">
+    <div class="haut"><button type="button" class="fleche rond" data-va="factureA">‹</button><span class="bulle"></span></div>
+    <div class="titre"><p class="sur" style="margin:0 0 10px">Client</p><h1 style="font-size:46px">M. Martin</h1></div>
+    <p class="doux" style="margin:12px 22px 0">06 79 98 45 14</p>
+    <p class="caps or" style="margin:26px 22px 0">Modifier ses coordonnées</p>
+    <p class="caps" style="margin:30px 22px 0;letter-spacing:.2em">Dernière prestation le 9 oct. 2026</p>
+    <div class="deux" style="margin-top:16px">
+      <span class="vert" style="margin:0;width:auto;flex:1;min-height:50px;font-size:18px">Dernier devis</span>
+      <span class="contour" style="margin:0;width:auto;flex:1;min-height:50px">Autre chantier</span>
+    </div>
+    <div class="onglets-fiche">
+      <button type="button" data-o="devis">Devis</button>
+      <button type="button" data-o="factures">Factures</button>
+      <button type="button" data-o="fiches">Fiches</button>
+      <button type="button" data-o="avoirs" class="neuf" aria-pressed="true">Avoirs</button>
+    </div>
+    <div class="liste" data-l="devis" hidden><span class="serif">n° 2026-000002</span><span class="doux">9 oct. 2026 ›</span></div>
+    <div class="liste" data-l="factures" hidden><span class="serif">n° F2026-000012</span><span class="doux">9 oct. 2026 ›</span></div>
+    <div class="liste" data-l="fiches" hidden><span class="doux">Aucune fiche</span><span></span></div>
+    <div class="liste" data-l="avoirs"><span class="serif">n° A2026-000001</span><span class="doux">27 oct. 2026 ›</span></div>
+    <p class="caps" style="margin:34px 22px 0;color:var(--alerte)">Supprimer ce client</p>
   </section>
 
   <!-- ─── 4B. IL NE PAIERA PAS ───────────────────────────────────────────── -->
@@ -377,7 +421,7 @@
     <div class="coupe" style="margin-top:22px">(la liste des chantiers, comme aujourd'hui)</div>
   </section>
 
-  <nav class="barre"><span>CHANTIERS</span><span>PLANNING</span><span class="la">TERMINÉS</span><span>PAYSAGE</span><span>RÉGLAGES</span></nav>
+  <nav class="barre"><button type="button" id="versClients">CHANTIERS</button><span>PLANNING</span><span class="la" id="ongletTermines">TERMINÉS</span><span>PAYSAGE</span><span>RÉGLAGES</span></nav>
 </div>
 
 <div class="apres">
@@ -387,6 +431,7 @@
     <tr><td>Il doit encore</td><td>moins</td><td>tout</td></tr>
     <tr><td>Vous pouvez réclamer</td><td>non, plus jamais cette somme</td><td>oui</td></tr>
     <tr><td>Un document part</td><td>oui, l'avoir</td><td>non</td></tr>
+    <tr><td>Sur sa fiche client</td><td>un onglet Avoirs apparaît</td><td>rien ne change</td></tr>
     <tr><td>S'il paie après</td><td>il paie le nouveau montant</td><td>vous notez le paiement, et la TVA entre au relevé du mois où il a payé</td></tr>
     <tr><td>Votre TVA</td><td>ne bouge pas</td><td>ne bouge pas, tant qu'il n'a pas payé</td></tr>
   </table>
@@ -404,14 +449,15 @@
     question: ["La question", "Deux réponses, qui font l'inverse l'une de l'autre. <b>Essayez la première</b>, puis revenez avec «&nbsp;Recommencer&nbsp;» pour essayer la seconde."],
     combien:  ["Première réponse : vous lui enlevez une somme", "Vous faites un geste commercial, ou vous réglez un désaccord. <b>Écrivez le montant</b> que vous lui retirez : Atlas vous donne tout de suite le nouveau montant de la facture. Puis <b>«&nbsp;C'est bon&nbsp;»</b>."],
     fait:     ["L'avoir est prêt", "Atlas a fait le document, avec son propre numéro. Il part <b>comme la facture</b>, par SMS ou par e-mail. <b>Touchez «&nbsp;Envoyer l'avoir&nbsp;».</b>"],
-    factureA: ["La facture, après", "L'avoir apparaît dans les règlements, et le <b>Net à payer</b> descend. Plus de notification pour la somme enlevée. Fin de la première branche."],
+    factureA: ["La facture, après", "L'avoir apparaît dans les règlements, et le <b>Net à payer</b> descend. Plus de notification pour la somme enlevée. <b>Et pour le retrouver plus tard ?</b> Touchez <b>CHANTIERS</b> en bas, puis «&nbsp;Vos clients&nbsp;», puis M. Martin (ici, on saute la liste)."],
+    ficheA:   ["Sa fiche client", "Un onglet <b>Avoirs</b> est apparu, à côté de Devis, Factures et Fiches. <b>Il n'existe que chez les clients à qui vous avez envoyé un avoir</b> : chez tous les autres, rien ne change. Touchez les onglets pour comparer. Fin de la première branche."],
     perdue:   ["Seconde réponse : il ne vous paiera pas", "Le client refuse ou a disparu. Vous gardez votre droit : <b>rien n'est annulé</b>. <b>Touchez «&nbsp;C'est noté&nbsp;».</b>"],
     factureB: ["La facture, après", "La facture reste entière, marquée <b>Non payée</b>. Atlas ne vous la rappelle plus. Et <b>s'il paie un jour</b> ? Touchez «&nbsp;J'ai reçu le paiement&nbsp;»."],
     paye:     ["Il a finalement payé", "Vous notez le paiement comme n'importe quel règlement : le moyen, la date, le montant. <b>Touchez «&nbsp;C'est noté&nbsp;».</b>"],
     factureB2:["La facture, payée", "Le «&nbsp;Non payée&nbsp;» disparaît : la facture est <b>acquittée</b>, le Net à payer tombe à zéro. <b>Touchez «&nbsp;Voir Ma TVA&nbsp;».</b>"],
     tvaB:     ["Elle entre au relevé de TVA", "Les <b>240,00 €</b> de TVA de cette facture entrent au relevé de <b>novembre</b>, le mois où il a payé, pas celui de la facture. C'est la règle de l'encaissement, et c'est déjà ce que fait votre relevé aujourd'hui. Fin de la seconde branche."],
   };
-  const ORDRE_A = ["termines","facture","question","combien","fait","factureA"];
+  const ORDRE_A = ["termines","facture","question","combien","fait","factureA","ficheA"];
   const ORDRE_B = ["termines","facture","question","perdue","factureB","paye","factureB2","tvaB"];
   let chemin = ["termines"];
 
@@ -426,6 +472,10 @@
     $("#texte").innerHTML = RECIT[cle][1];
     $("#points").innerHTML = branche.map((_, i) => '<i class="' + (i === rang ? "la" : "") + '"></i>').join("");
     $("#avant").disabled = chemin.length < 2;
+    const versClients = $("#versClients");
+    versClients.classList.toggle("cible", cle === "factureA");
+    versClients.classList.toggle("la", cle === "ficheA");
+    $("#ongletTermines").classList.toggle("la", cle !== "ficheA");
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
   function aller(cle){ chemin.push(cle); montrer(cle); }
@@ -466,11 +516,16 @@
     $('[data-montre="reste"]').textContent = euros(reste);
     $('[data-montre="reste2"]').textContent = euros(reste);
     $('[data-montre="reste3"]').textContent = euros(reste);
-    $('[data-montre="avoir"]').textContent = "moins " + euros(m);
-    $('[data-montre="moins"]').textContent = "moins " + euros(m);
+    $('[data-montre="avoir"]').textContent = "- " + euros(m);
+    $('[data-montre="moins"]').textContent = "- " + euros(m);
     $('[data-montre="phrase"]').textContent = reste === 0 ? "M. Martin ne doit plus rien." : "M. Martin ne doit plus que " + euros(reste) + ".";
   }
   $("#montant").addEventListener("input", poser);
+  $("#versClients").addEventListener("click", () => { if ($("#versClients").classList.contains("cible")) aller("ficheA"); });
+  document.querySelectorAll(".onglets-fiche button").forEach((b) => b.addEventListener("click", () => {
+    document.querySelectorAll(".onglets-fiche button").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+    document.querySelectorAll(".liste").forEach((l) => { l.hidden = l.dataset.l !== b.dataset.o; });
+  }));
   document.querySelectorAll(".moyens button").forEach((b) => b.addEventListener("click", () => {
     document.querySelectorAll(".moyens button").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
     $('[data-montre="moyen"]').textContent = b.textContent.toLowerCase();

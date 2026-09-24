@@ -9358,6 +9358,22 @@ impayé ne sont pas la même chose :
 Ce qu'il a décrit — un client qui refuse de payer — relève du **second**. Bâtir
 seulement l'avoir, c'est lui donner un geste qui le désarme, sans avertissement.
 
+**CE QU'IL A DÉJÀ DIT, le 24 septembre 2026, sur `appli/il-ne-paie-pas.html`
+(ne pas le lui redemander) :**
+
+- le montant de l'avoir **s'écrit** dans un champ, pas « 300 € ou Tout » ;
+- le calcul se lit en entier : facture TTC, avoir TTC, **nouveau montant TTC** ;
+- l'avoir s'écrit avec le signe, **« - 250,00 € »**, jamais « moins 250 » (le
+  même `- ` que la ligne de remise, `FactureClient.tsx`, `retire`) ;
+- **un onglet « Avoirs » sur la fiche client**, à côté de Devis, Factures,
+  Fiches, qui n'existe **que** chez un client à qui un avoir a été envoyé
+  (*« ça risque d'être hyper rare »*) ;
+- une facture déclarée non payée **peut encore être payée** : « J'ai reçu le
+  paiement » la rend acquittée, et sa TVA entre au relevé du mois du paiement.
+
+Reste ouvert : faut-il préparer une mise en demeure avant « Il ne me paiera
+pas » ?
+
 **Une seule réponse à attendre de lui : la 81 lui va-t-elle ?** Le choix
 d'arrangement et le choix de forme ont été retirés — c'était précisément la
 complication qu'il a refusée. Si elle lui va, la forme du document est celle de
