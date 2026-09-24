@@ -122,14 +122,19 @@
   .reponse .d{display:block;margin-top:6px;font-size:13.5px;line-height:1.45;color:var(--inkSoft)}
   .reponse.cible{animation:appel 1.6s ease-in-out infinite}
 
-  /* le montant */
-  .puces{display:flex;gap:8px;margin-top:14px}
-  .puces button{min-height:40px;padding:0 16px;border-radius:999px;border:1px solid var(--line);
-                background:var(--card);font-size:14px;cursor:pointer}
-  .puces button[aria-pressed="true"]{background:var(--rust);border-color:var(--rust);color:var(--surPlein)}
-  .champ{margin-top:16px;padding:14px 0;border-bottom:1px solid var(--line);display:flex;
-         justify-content:space-between;align-items:baseline}
-  .champ .v{font:600 24px/1 ui-serif,Georgia,serif}
+  /* Sa demande du 24 septembre : « il faut pouvoir écrire le montant qu'on
+     veut retirer, pas 300 euros ou tout ». Un champ, rien d'autre. Et le
+     calcul se lit en entier : facture moins avoir égale le nouveau TTC. */
+  .calc{margin-top:6px}
+  .calc .ligne{padding:10px 0;border-bottom:1px solid var(--lineSoft)}
+  .calc .ligne .v{font:400 19px/1 ui-serif,Georgia,serif}
+  .saisie{display:flex;align-items:baseline;gap:6px}
+  .saisie input{width:130px;border:0;border-bottom:1.5px solid var(--or);background:var(--rustTint);
+                border-radius:6px 6px 0 0;padding:8px 10px;text-align:right;outline:none;color:var(--ink);
+                font:600 20px/1 ui-serif,Georgia,serif}
+  .saisie input::placeholder{color:var(--muted);font-weight:400}
+  .refus{margin:10px 0 0;font-size:13.5px;color:var(--alerte)}
+  .vert[disabled]{opacity:.4;cursor:default;animation:none}
 
   .vert{display:flex;align-items:center;justify-content:center;margin:26px auto 0;min-height:56px;
         width:78%;border:0;border-radius:999px;background:var(--plein);color:var(--surPlein);
@@ -242,17 +247,17 @@
   <!-- ─── 4A. COMBIEN ────────────────────────────────────────────────────── -->
   <section class="ecran" data-e="combien">
     <div class="haut"><button type="button" class="fleche" data-va="question">‹</button><span></span></div>
-    <div class="titre"><h1>Vous lui enlevez combien&nbsp;?</h1><p class="sur">Sur 1 440,00 €</p></div>
+    <div class="titre"><h1>Vous lui enlevez combien&nbsp;?</h1><p class="sur">M. Martin</p></div>
     <div class="carte">
-      <div class="caps">Montant retiré</div>
-      <div class="puces">
-        <button type="button" data-m="300" aria-pressed="true">300 €</button>
-        <button type="button" data-m="1440" aria-pressed="false">Tout</button>
+      <div class="calc">
+        <div class="ligne"><span>Facture TTC</span><span class="v">1 440,00 €</span></div>
+        <label class="ligne" for="montant"><span>Avoir TTC</span>
+          <span class="saisie"><input id="montant" inputmode="decimal" autocomplete="off" placeholder="0,00" value="300"><span class="serif" style="font-size:19px">€</span></span></label>
       </div>
-      <div class="champ"><span class="doux">Retiré</span><span class="v" data-montre="retire">300,00 €</span></div>
-      <div class="net"><b>Il devra</b><span class="m" data-montre="reste">1 140,00 €</span></div>
+      <div class="net"><b>Nouveau montant TTC</b><span class="m" data-montre="reste">1 140,00 €</span></div>
+      <p class="refus" data-montre="refus" hidden></p>
     </div>
-    <button type="button" class="vert cible" data-va="fait">C'est bon</button>
+    <button type="button" class="vert cible" data-va="fait" id="cestbon">C'est bon</button>
   </section>
 
   <!-- ─── 5A. C'EST FAIT, et l'avoir part comme la facture ───────────────── -->
@@ -263,7 +268,9 @@
     <div class="apercu">
       <div class="t">AVOIR A2026-000001</div>
       <div class="r"><span>Sur la facture F2026-000012</span></div>
-      <div class="r"><span>Montant de l'avoir</span><b data-montre="avoir">300,00 € TTC</b></div>
+      <div class="r"><span>Facture TTC</span><span>1 440,00 €</span></div>
+      <div class="r"><span>Avoir TTC</span><span data-montre="avoir">moins 300,00 €</span></div>
+      <div class="r" style="border-top:1px solid #e3dfd6;padding-top:8px"><span>Nouveau montant TTC</span><b data-montre="reste3">1 140,00 €</b></div>
     </div>
     <div class="envoi"><span class="caps">Envoi</span><span class="onglets"><span class="la">SMS</span><span>E-mail</span></span></div>
     <div class="au">Au 06 79 98 45 14</div>
@@ -340,7 +347,7 @@
     termines: ["Vous êtes ici", "Nous sommes le <b>27 octobre</b>. M. Martin devait payer avant le 24 octobre, et Atlas vous l'a déjà signalé par une notification «&nbsp;Facture impayée&nbsp;». Vous ouvrez <b>Terminés</b>. <b>Touchez sa facture.</b>"],
     facture:  ["Sa facture", "C'est l'écran d'aujourd'hui. <b>Une seule chose s'ajoute</b>, tout en bas : le lien doré. <b>Touchez «&nbsp;Mon client ne me paie pas&nbsp;».</b>"],
     question: ["La question", "Deux réponses, qui font l'inverse l'une de l'autre. <b>Essayez la première</b>, puis revenez avec «&nbsp;Recommencer&nbsp;» pour essayer la seconde."],
-    combien:  ["Première réponse : vous lui enlevez une somme", "Vous faites un geste commercial, ou vous réglez un désaccord. Choisissez <b>300 €</b> ou <b>Tout</b>, puis <b>«&nbsp;C'est bon&nbsp;»</b>."],
+    combien:  ["Première réponse : vous lui enlevez une somme", "Vous faites un geste commercial, ou vous réglez un désaccord. <b>Écrivez le montant</b> que vous lui retirez : Atlas vous donne tout de suite le nouveau montant de la facture. Puis <b>«&nbsp;C'est bon&nbsp;»</b>."],
     fait:     ["L'avoir est prêt", "Atlas a fait le document, avec son propre numéro. Il part <b>comme la facture</b>, par SMS ou par e-mail. <b>Touchez «&nbsp;Envoyer l'avoir&nbsp;».</b>"],
     factureA: ["La facture, après", "L'avoir apparaît dans les règlements, et le <b>Net à payer</b> descend. Plus de notification pour la somme enlevée. Fin de la première branche."],
     perdue:   ["Seconde réponse : il ne vous paiera pas", "Le client refuse ou a disparu. Vous gardez votre droit : <b>rien n'est annulé</b>. <b>Touchez «&nbsp;C'est noté&nbsp;».</b>"],
@@ -379,19 +386,35 @@
   // Le montant : les chiffres sortent d'un seul calcul, affichés partout.
   const TOTAL = 1440;
   const euros = (n) => n.toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).replace(/ | /g, " ") + " €";
-  function poser(m){
-    const reste = TOTAL - m;
-    document.querySelectorAll(".puces button").forEach((b) => b.setAttribute("aria-pressed", String(Number(b.dataset.m) === m)));
-    $('[data-montre="retire"]').textContent = euros(m);
+  // En centimes : 1 440,00 moins 0,10 ne doit jamais rendre 1 439,8999.
+  function lire(texte){
+    const t = String(texte).replace(/\s/g, "").replace(",", ".");
+    if (!/^\d+(\.\d{1,2})?$/.test(t)) return null;
+    return Math.round(Number(t) * 100);
+  }
+  const TOTAL_C = TOTAL * 100;
+  function poser(){
+    const c = lire($("#montant").value);
+    const refus = $('[data-montre="refus"]');
+    let dire = "";
+    if ($("#montant").value.trim() === "") dire = "Écrivez le montant de l'avoir.";
+    else if (c === null) dire = "Ce montant ne se lit pas. Exemple : 300 ou 250,50.";
+    else if (c === 0) dire = "Un avoir de 0 € ne change rien.";
+    else if (c > TOTAL_C) dire = "C'est plus que la facture : " + euros(TOTAL) + " au plus.";
+    refus.hidden = !dire; refus.textContent = dire;
+    $("#cestbon").disabled = !!dire;
+    const m = dire ? 0 : c / 100;
+    const reste = (TOTAL_C - (dire ? 0 : c)) / 100;
     $('[data-montre="reste"]').textContent = euros(reste);
     $('[data-montre="reste2"]').textContent = euros(reste);
-    $('[data-montre="avoir"]').textContent = euros(m) + " TTC";
+    $('[data-montre="reste3"]').textContent = euros(reste);
+    $('[data-montre="avoir"]').textContent = "moins " + euros(m);
     $('[data-montre="moins"]').textContent = "moins " + euros(m);
     $('[data-montre="phrase"]').textContent = reste === 0 ? "M. Martin ne doit plus rien." : "M. Martin ne doit plus que " + euros(reste) + ".";
   }
-  document.querySelectorAll(".puces button").forEach((b) => b.addEventListener("click", () => poser(Number(b.dataset.m))));
+  $("#montant").addEventListener("input", poser);
 
-  poser(300);
+  poser();
   montrer("termines");
 </script>
 </body>
