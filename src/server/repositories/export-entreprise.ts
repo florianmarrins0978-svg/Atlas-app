@@ -27,6 +27,8 @@ import {
   lignesPassage,
   naturesGrille,
   paiementsFacture,
+  avoirs,
+  facturesNonPayees,
   tranchesGrille,
   factures,
   fragmentsDocuments,
@@ -98,7 +100,7 @@ export type ExportEntreprise = {
 export type FichierAJoindre = {
   storageKey: string;
   /** D'où vient ce fichier, pour le retrouver dans les données. */
-  origine: "photo" | "note-vocale" | "devis-pdf" | "facture-pdf" | "logo" | "ticket-tva";
+  origine: "photo" | "note-vocale" | "devis-pdf" | "facture-pdf" | "avoir-pdf" | "logo" | "ticket-tva";
 };
 
 /**
@@ -158,6 +160,8 @@ export async function exporterEntreprise(
       sesTranches,
       sesNatures,
       lesReglements,
+      lesAvoirs,
+      lesNonPayees,
       sonModeleEntretien,
       sesPassages,
       sesLignesPassage,
@@ -273,6 +277,13 @@ export async function exporterEntreprise(
       // les factures sans dire lesquelles ont été payées — donc sans permettre
       // de reconstituer un seul relevé de TVA.
       tx.select().from(paiementsFacture).where(eq(paiementsFacture.entrepriseId, e)),
+      // Les avoirs (migration 0101) : sans eux, une sauvegarde rendrait des
+      // factures qui réclament des sommes déjà annulées, et un relevé de TVA
+      // faux de leur montant.
+      tx.select().from(avoirs).where(eq(avoirs.entrepriseId, e)),
+      // Ce qu'il a déclaré « Il ne me paiera pas » : sans cela, les rappels
+      // qu'il a fait taire reviendraient à la restauration.
+      tx.select().from(facturesNonPayees).where(eq(facturesNonPayees.entrepriseId, e)),
       // Le modèle de fiche d'entretien (migration 0051). C'est SA saisie —
       // les prestations, leurs familles, leur ordre —, et rien ne la
       // reconstitue : le modèle fourni au départ n'est qu'un point de départ,
@@ -417,6 +428,8 @@ export async function exporterEntreprise(
       natures_grille: sesNatures,
       // Ce qui a été encaissé, et quand : c'est ce qui date sa TVA.
       paiements_facture: lesReglements,
+      avoirs: lesAvoirs,
+      factures_non_payees: lesNonPayees,
       // Sans les jetons — voir la requête ci-dessus.
       agendas_externes: lesAgendas,
       equipes: lesEquipes,
@@ -473,6 +486,7 @@ export async function exporterEntreprise(
     for (const n of lesNotes) ajouter(n.storageKey as string | null, "note-vocale");
     for (const d of lesDevis) ajouter(d.pdfStorageKey as string | null, "devis-pdf");
     for (const f of lesFactures) ajouter(f.pdfStorageKey as string | null, "facture-pdf");
+    for (const a of lesAvoirs) ajouter(a.pdfStorageKey, "avoir-pdf");
     // Les photos de diagnostic partent avec le reste. Celles déjà purgées ont
     // une clé nulle : `ajouter` les ignore, plutôt que de faire échouer
     // l'archive sur un objet qui n'existe plus (c'est le cas normal après

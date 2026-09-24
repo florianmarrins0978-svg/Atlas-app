@@ -13,7 +13,7 @@ export default async function PageImpaye({ params }: { params: Promise<{ id: str
     <Link
       href={href}
       data-atlas={`impaye-${cle}`}
-      className="mt-3 flex min-h-[60px] w-full items-center rounded-[10px] px-[18px] no-underline"
+      className="mt-3 flex min-h-[60px] w-full items-center rounded-full px-[18px] no-underline"
       style={{ fontFamily: font.display, fontSize: 19, color: colors.ink, backgroundColor: colors.card, boxShadow: `inset 0 0 0 1px ${colors.line}` }}
     >
       {mot}

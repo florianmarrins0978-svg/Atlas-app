@@ -120,6 +120,14 @@ export const COLONNES_OBJET: readonly ColonneObjet[] = [
     raisonAbsence: "une facture en brouillon n'a pas encore de PDF",
   },
   {
+    table: "avoirs",
+    colonne: "pdf_storage_key",
+    quoi: "le PDF d'un avoir",
+    // Un avoir naît avec son PDF, dans la même transaction (NOT NULL) :
+    // l'absence de son fichier est une perte, jamais un état normal.
+    absenceNormale: false,
+  },
+  {
     table: "achats_tva",
     colonne: "photo_cle",
     quoi: "la photo d'un ticket de caisse",

@@ -163,8 +163,20 @@ essai("le commercial atteint l'application, sauf les adresses nommées", () => {
     // trois semaines (`docs/QUESTIONS.md` §10) — *« ni les factures, ni la
     // TVA »*. Les lignes ci-dessous manquaient, et leur absence défendait le
     // défaut.
+    // **L'avoir et la mise en demeure (24 septembre 2026)** sont des pièces de
+    // la facture : ils héritent de sa fermeture, et c'est voulu.
+    "/api/avoirs/xxxx/pdf",
+    "/api/factures/xxxx/mise-en-demeure",
     "/api/factures/xxxx/pdf",
     "/chantiers/xxxx/facture",
+    // Ses écrans d'avoir, d'impayé et de paiement (24 septembre 2026) : sous la
+    // facture, ils en héritent la fermeture.
+    "/chantiers/xxxx/facture/avoir",
+    "/chantiers/xxxx/facture/avoir/xxxx",
+    "/chantiers/xxxx/facture/impaye",
+    "/chantiers/xxxx/facture/mise-en-demeure",
+    "/chantiers/xxxx/facture/non-payee",
+    "/chantiers/xxxx/facture/paiement",
     // **Ajoutée le 9 septembre 2026 par ce contrôle**, comme
     // `/termines/retours` la veille : l'écran des travaux supplémentaires est
     // né sous `/chantiers/xxxx/facture`, et il en hérite le refus. C'est la
@@ -193,6 +205,8 @@ essai("le commercial atteint l'application, sauf les adresses nommées", () => {
     "/reglages/equipe/nouveau",
     "/reglages/identite",
     "/termines",
+    // La catégorie « Non payées » (24 septembre 2026), fermée comme Terminés.
+    "/termines/non-payees",
     // **Ajoutée le 8 septembre 2026 par ce contrôle**, comme
     // `/reglages/equipe/nouveau` deux semaines plus tôt : la page des retours
     // d'intervention est née sous `/termines`, et elle en hérite le refus.

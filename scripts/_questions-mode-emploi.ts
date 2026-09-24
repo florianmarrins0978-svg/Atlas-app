@@ -145,6 +145,8 @@ export const QUESTIONS_PAR_ZONE: Record<string, [string, string][]> = {
     ["le client dit que le lien ne marche plus", "devis-client-lien-expire"],
   ],
   facture: [
+    ["mon client ne me paiera jamais comment je range la facture", "il-ne-paiera-pas"],
+    ["comment faire une mise en demeure", "mise-en-demeure"],
     ["comment je fais la facture d'un chantier fini", "facture-creer"],
     ["je veux facturer mon chantier", "facture-creer"],
     ["comment je mets un titre sur ma facture", "facture-titre"],

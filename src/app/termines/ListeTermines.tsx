@@ -588,7 +588,7 @@ function Ligne({ ligne, annee }: { ligne: LigneAffichee; annee: string }) {
     <Link
       href={href}
       data-atlas={`volet-${cle}`}
-      className="mt-2 flex min-h-[54px] w-full items-center justify-center rounded-[12px] no-underline"
+      className="mt-2 flex min-h-[54px] w-full items-center justify-center rounded-full no-underline"
       style={{
         fontFamily: font.display,
         fontSize: 19,

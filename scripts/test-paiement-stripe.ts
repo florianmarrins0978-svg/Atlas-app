@@ -187,9 +187,9 @@ async function main() {
       retourAbandon: "https://atlas.example/b",
     });
 
-    await cas("290 € pour l'année d'Artisan, en intervalle annuel", async () => {
+    await cas("390 € pour l'année d'Artisan, en intervalle annuel", async () => {
       const c = champs(recues.find((x) => x.methode === "POST" && x.chemin === "/v1/prices")!.corps);
-      assert.equal(c.get("unit_amount"), "29000");
+      assert.equal(c.get("unit_amount"), "39000");
       assert.equal(c.get("recurring[interval]"), "year");
     });
 

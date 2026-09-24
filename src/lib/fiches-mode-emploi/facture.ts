@@ -536,14 +536,44 @@ export const FICHES_FACTURE: FicheModeEmploi[] = [
     ou: "« Terminés » dans la barre du bas, puis la ligne du chantier",
     intitule: "Faire un avoir, retrouver ses avoirs",
     motsCles: ["avoir", "avoirs", "rembourser", "remboursement", "rembourse"],
-    geste: "Atlas ne fait pas encore d'avoir : l'écran est dessiné, il n'est pas encore dans l'application.",
-    reserve: "Une facture envoyée ne se modifie plus. En attendant, l'avoir se fait hors d'Atlas.",
-    source: "src/app/chantiers/[id]/facture/FactureClient.tsx",
-    preuves: ["Une correction passerait par un avoir."],
-    // Les mots de sa planche `appli/il-ne-paie-pas.html` : le jour où ils
-    // entrent dans `src/`, cette fiche ment.
-    absences: ["Je fais un avoir", 'libelle: "Avoirs"'],
+    geste:
+      "Touchez « Terminés », la ligne du chantier facturé, puis « Je fais un avoir ». Choisissez la ligne, " +
+      "écrivez le montant et le motif, et validez. Sur l'écran suivant, « Envoyer par SMS » ou par e-mail le transmet au client.",
+    reserve: "Vos avoirs se retrouvent sous la facture, et dans l'onglet « Avoirs » de la fiche du client.",
+    source: "src/app/termines/ListeTermines.tsx",
+    preuves: ["Je fais un avoir"],
+    ailleurs: [
+      { source: "src/app/clients/[id]/page.tsx", preuves: ['libelle: "Avoirs"'] },
+      { source: "src/app/chantiers/[id]/facture/avoir/[avoirId]/page.tsx", preuves: ["<TransmettreLaFacture"] },
+    ],
     lieu: true,
+  },
+  {
+    id: "il-ne-paiera-pas",
+    ecran: "Terminés",
+    ou: "« Terminés » dans la barre du bas, puis la ligne du chantier",
+    intitule: "Ranger une facture que le client ne paiera pas",
+    motsCles: ["paiera", "paie", "impaye", "impayee", "impayees", "payee", "payees", "mauvais", "payeur", "ranger"],
+    geste:
+      "Touchez « Terminés », la ligne du chantier, puis « Il ne me paiera pas ». La facture se range dans « Non payées », " +
+      "et Atlas ne vous la rappelle plus. S'il paie un jour, ouvrez-la et touchez « J'ai reçu le paiement ».",
+    source: "src/app/termines/ListeTermines.tsx",
+    preuves: ["Il ne me paiera pas"],
+    ailleurs: [{ source: "src/app/chantiers/[id]/facture/SuiteDeLaFacture.tsx", preuves: ["J&apos;ai reçu le paiement"] }],
+    lieu: true,
+  },
+  {
+    id: "mise-en-demeure",
+    ecran: "Facture",
+    ou: "« Terminés », puis « Non payées », puis la facture",
+    intitule: "Envoyer une mise en demeure",
+    motsCles: ["mise", "demeure", "recommande", "lettre", "reclamer", "tribunal", "relance"],
+    geste:
+      "Dans « Terminés », ouvrez « Non payées », puis la facture, puis « Mise en demeure ». " +
+      "Relisez la lettre, touchez « Télécharger la lettre » et envoyez-la en recommandé avec accusé de réception.",
+    source: "src/app/chantiers/[id]/facture/SuiteDeLaFacture.tsx",
+    preuves: ["Mise en demeure"],
+    ailleurs: [{ source: "src/app/chantiers/[id]/facture/mise-en-demeure/page.tsx", preuves: ["Télécharger la lettre"] }],
   },
   {
     id: "termines-retours",
