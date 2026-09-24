@@ -1,6 +1,14 @@
 # Prochaines tâches
 
-## ⏳ MOT DE PASSE OUBLIÉ : AUCUN MOYEN DE RENTRER (24 septembre 2026)
+## ~~MOT DE PASSE OUBLIÉ~~ : SUR `main` LE 24 SEPTEMBRE 2026
+
+**Codé le 24 septembre** sur sa branche, après son oui à la planche
+(`ARCHITECTURE.md` §412). Suite base verte, écrans regardés, parcours joué
+dans un navigateur. Batterie jouée le soir même, avec le lot de l'assistant
+(sa demande : une batterie pour plusieurs sessions) : 165/167, puis les deux
+rouges corrigés ou rejoués verts deux fois. Poussé sur `main`.
+
+Ce qui suit est l'entrée d'origine.
 
 Sa question : *« si un utilisateur a oublié son mot de passe il ne pourra
 jamais le récupérer ou le changer ? Il faut mettre cette fonction ! »* Vrai :
@@ -10,12 +18,26 @@ jamais le récupérer ou le changer ? Il faut mettre cette fonction ! »* Vrai :
 
 **Son choix : un CODE par e-mail, pas un lien** (24 septembre). On reprend
 `code-verification.ts`, `SaisieDuCode.tsx` et l'envoi Brevo déjà branchés.
-Planche : `appli/mot-de-passe-oublie.html`, en attente de son oui.
+Planche : `appli/mot-de-passe-oublie.html`, validée le 24 septembre.
 
 À tenir au codage (niveau 3, authentification) : une adresse sans compte mène
 au même écran sans rien envoyer ; essais et renvois limités comme à la
 création ; après le changement, `deconnecterPartout` ; un compte
 Google/Apple sans mot de passe en reçoit un.
+
+## MA TVA : OUVRIR LA FACTURE DEPUIS LE CLIENT, CODÉ, PAS ENCORE SUR `main` (24 septembre 2026)
+
+Codé sur `claude/invoice-pdf-display-0pugox`. Niveau **3** (argent et rôles) :
+il a demandé qu'**aucune batterie** ne soit lancée ce jour-là, donc
+`npm run verifier:avant-livraison` reste à jouer avant la poussée vers `main`.
+Joués ici au vert : types, lint, `test-acces-roles`, `test-roles-capacites-db`,
+`test-tva-au-paiement-e2e` (dont le nouveau cas, vu rouge sur une adresse
+faussée), `test-visionneuse-pdf-e2e`, code mort, couches, pansements, tirets.
+
+**À vérifier, non vérifié** : le salarié ouvre-t-il la feuille de chantier par
+la visionneuse (`PlanningClient.tsx`) ? `/documents/pdf` lui est fermé comme il
+l'était à la facturation ; si oui, il tombe sur un refus.
+
 
 ## LE GESTE « RETOUR » DU NAVIGATEUR SUR LA FICHE CLIENT PERD LA SAISIE (22 septembre 2026)
 
@@ -6986,6 +7008,30 @@ a vieilli.
 **FAIT le 25 août 2026** pour l'essentiel (`ARCHITECTURE.md` §180). Ce qui reste,
 et qui ne se règle pas en une fois :
 
+- **Le 24 septembre 2026** (`ARCHITECTURE.md` §411) : les fiches de LIEU sont
+  écrites (onglets, devis, factures, avoir, paiement, fiches de sécurité et
+  d'intervention, retours), le sommaire rattrape les tournures imprévues, et
+  une preuve ne se satisfait plus d'un commentaire. **Pas vérifié ici : la
+  formulation d'un vrai modèle devant le sommaire** (aucune clé). À essayer sur
+  son espace avec « où sont mes factures », « je cherche la touche pour
+  envoyer le devis », « comment je fais un avoir ».
+- **La fiche « avoir » dit qu'Atlas ne le fait pas** : elle rougira d'elle-même
+  (`absences`) le jour où « Je fais un avoir » entre dans `src/`. Il faudra
+  alors la récrire avec le vrai geste.
+- **Relevé pendant l'inventaire des 324 fiches (24 septembre 2026), non corrigé
+  parce que hors de ce lot** :
+  - **aucun « mot de passe oublié »** dans `src/app/login` : l'assistant ne
+    peut rien répondre, faute de parcours ;
+  - le micro de l'assistant dit « Appuyez à nouveau pour arrêter », mais le
+    bouton disparaît pendant qu'on parle (`AssistantSidebar.tsx`) : texte à
+    vérifier à l'écran ;
+  - « Voir la proposition de prix » (`src/app/chantiers/[id]/prix/PrixClient.tsx`) n'apparaît qu'avec
+    `?saisie=manuelle`, adresse qu'aucun lien ne produit : probablement du code
+    mort, à regarder ;
+  - pas de geste trouvé pour retirer une seule ligne de travaux
+    supplémentaires, ni pour supprimer un achat de Ma TVA, ni pour retrouver un
+    diagnostic végétal passé.
+
 - **Les fiches couvrent les écrans principaux, pas encore chaque recoin.**
   Manquent notamment : le détail de l'écran Réglages → Devis & factures (chaque
   réglage un par un), les mesures de la grille de prix, l'écran d'abonnement, et
@@ -9377,16 +9423,16 @@ seulement l'avoir, c'est lui donner un geste qui le désarme, sans avertissement
 
 **LOT 1 CODÉ LE 24 SEPTEMBRE 2026, SUR LA BRANCHE, PAS SUR `main`** (sa
 consigne : *« ne lance aucune batterie »* ; or c'est un lot de niveau 3, argent
-et migration : `main` exige la batterie). `ARCHITECTURE.md` §412. Fait : la
+et migration : `main` exige la batterie). `ARCHITECTURE.md` §413. Fait : la
 migration 0101, `calculerAvoir`, `faireUnAvoir` (numéro « A », PDF sur le papier
 des factures), `declarerNonPayee` et `listerFacturesNonPayees`, le reste dû et la
 TVA après avoirs partout, le rappel qui se tait, le numéro du chèque sur
 `noterPaiement`. Suites : `test-avoir`, `test-avoirs-db`, `test-rappels-db`,
 `test-exigibilite-tva`. **Lot 2 (les écrans) codé le même jour, sur la branche** :
 volet de Terminés, saisie de l'avoir, « Il ne me paiera pas », « Non payées »,
-« J'ai reçu le paiement », onglet « Avoirs » (§412, `test-avoir-et-non-payee-e2e`).
+« J'ai reçu le paiement », onglet « Avoirs » (§413, `test-avoir-et-non-payee-e2e`).
 **Lot 3 codé le 24 septembre 2026** (sur la branche, pas sur `main`) : envoi de l'avoir par SMS ou e-mail avec le lien de la facture, l'avoir sous la facture sur la page du client, la mise en demeure (écran, lettre, PDF). **À faire vérifier par quelqu'un qui lit les textes** : le délai de huit jours et la phrase sur les intérêts au taux légal (particulier : art. 1231-6 C. civ. ; professionnel : L441-10 C. com., non cité). **Réserve** : avoir après acompte, sur une ligne
-d'un autre taux (§412).
+d'un autre taux (§413).
 
 **LES TROIS PLANCHES** (sa demande : *« trois planches séparées »*) :
 `appli/avoir.html`, `appli/il-ne-paiera-pas.html`, `appli/mise-en-demeure.html`,

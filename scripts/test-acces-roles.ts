@@ -223,7 +223,10 @@ essai("le commercial voit les chantiers, les devis et les prix — mais PAS les 
 });
 
 essai("la facturation tient son cycle, et rien de plus", () => {
-  for (const a of ["/", "/chantiers/xxxx", "/chantiers/xxxx/facture", "/clients", "/termines/tva", "/planning", "/api/factures/xxxx/pdf"]) {
+  // `/documents/pdf` : la visionneuse où s'ouvre la facture qu'elle émet, et
+  // depuis le 24 septembre 2026 celle d'une ligne de Ma TVA. Fermée, elle
+  // tombait sur un refus en appuyant sur « Voir la facture en PDF ».
+  for (const a of ["/", "/chantiers/xxxx", "/chantiers/xxxx/facture", "/clients", "/termines/tva", "/planning", "/api/factures/xxxx/pdf", "/documents/entretien/xxxx", "/documents/pdf"]) {
     assert.ok(cheminAutorise("facturation", a), `la facturation est refusée sur ${a}`);
   }
   for (const a of ["/paysage", "/catalogue", "/reglages/identite", "/reglages/tarifs", "/reglages/equipe"]) {

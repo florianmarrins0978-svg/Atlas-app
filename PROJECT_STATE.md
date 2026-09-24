@@ -1,9 +1,32 @@
 # État du projet
 
 **Dernière mise à jour :** 2026-09-21 · `main`
-· dernière migration `drizzle/0098_libelle_du_reglement.sql`
+· dernière migration `drizzle/0100_mot_de_passe_oublie.sql`
 
 ---
+
+## FAIT : MOT DE PASSE OUBLIÉ (24 septembre 2026)
+
+*« Il faut mettre cette fonction ! »* Lien sous le mot de passe, code par
+e-mail, nouveau mot de passe, et l'on entre ; les autres appareils sont
+déconnectés. Migration 0100. Livré sur `main` avec le lot de l'assistant,
+après une batterie commune aux deux. `ARCHITECTURE.md` §412.
+
+## FAIT : L'ASSISTANT CONNAÎT TOUTES LES FONCTIONS DE L'APPLI (24 septembre 2026)
+
+324 fiches, une zone par fichier, chacune prouvée contre le code ; 36 fiches
+fausses ou floues récrites ; recherche refaite pour trois cents fiches (`ARCHITECTURE.md`
+§411). Reste à l'essayer avec un vrai modèle, sur son espace, et la batterie
+avant `main`.
+
+---
+
+## CODÉ, PAS SUR `main` : OUVRIR LA FACTURE DEPUIS MA TVA (24 septembre 2026)
+
+Un appui sur la zone du client, en attente comme au relevé, ouvre le PDF dans
+la visionneuse ; la flèche ramène à la même hauteur. La visionneuse s'ouvre
+aussi au rôle Facturation. Branche `claude/invoice-pdf-display-0pugox`, batterie
+de niveau 3 à jouer avant `main` (`TODO.md`).
 
 ## FAIT : LA FLÈCHE RETOUR DE LA FICHE CLIENT GARDE LA SAISIE (22 septembre 2026)
 

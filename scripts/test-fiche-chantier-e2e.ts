@@ -477,6 +477,10 @@ async function main() {
     await page.locator('[data-atlas="ouvrir-fiche-chantier"]').click();
     await page.waitForURL(/\/paysage\/fiche\/[0-9a-f-]{36}/, { timeout: 30_000 });
 
+    // **Le jour se choisit DANS la fiche** (24 septembre 2026) : la roue y est,
+    // posée sur le jour même.
+    await page.locator('[data-atlas="fiche-chantier"] [data-atlas="jour-du-passage"]').waitFor({ timeout: 20_000 });
+
     const cases = page.locator('[data-atlas="fiche-chantier"] button[data-atlas="prestation"]');
     const cochees = page.locator('[data-atlas="fiche-chantier"] button[data-atlas="prestation"][aria-pressed="true"]');
     const entier = await cases.count();
@@ -494,6 +498,15 @@ async function main() {
     const texte = await page.locator('[data-atlas="fiche-chantier"]').innerText();
     // **Le geste se DIT, en ses mots à lui.**
     assert.match(texte, /3 prestations cochées, celles du dernier chantier\./, "la phrase n'est pas la sienne");
+
+    // **Sa capture du 24 septembre 2026** : il coche ensuite ce qu'il a fait en
+    // plus, et la phrase restait sur le chiffre de la reprise. Elle suit.
+    await page.locator('[data-atlas="fiche-chantier"] button[data-atlas="prestation"][aria-pressed="false"]').first().click();
+    await page.waitForTimeout(800);
+    assert.equal(await cochees.count(), 4, "la coche en plus n'a pas pris");
+    const apres = await page.locator('[data-atlas="fiche-chantier"]').innerText();
+    assert.match(apres, /4 prestations cochées\./, "la phrase ne suit pas la coche en plus");
+    assert.doesNotMatch(apres, /celles du dernier chantier/, "la phrase attribue au dernier chantier une coche du jour");
 
     await page.goBack();
   });

@@ -35,6 +35,21 @@ export function adresseDeLaVisionneuse(fichier: string, entete: { surtitre: stri
 }
 
 /**
+ * La facture telle que le client l'a reçue, dans la visionneuse.
+ *
+ * **Une seule adresse pour tous les écrans qui l'ouvrent** : la fiche de la
+ * facture, et depuis le 24 septembre 2026 les deux listes de Ma TVA, où il
+ * voulait « voir le pdf de la facture envoyée en cliquant sur le client ».
+ * Trois copies de la même chaîne finiraient par viser trois routes.
+ */
+export function visionneuseDeLaFacture(facture: { id: string; numeroCommercial: string }): string {
+  return adresseDeLaVisionneuse(`/api/factures/${facture.id}/pdf`, {
+    surtitre: "Facture",
+    titre: facture.numeroCommercial,
+  });
+}
+
+/**
  * Ce que la visionneuse accepte de peindre, ou `null`.
  *
  * **Uniquement une adresse de CE site, qui sert un PDF.** Le paramètre arrive

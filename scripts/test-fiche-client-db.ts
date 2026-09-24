@@ -327,7 +327,7 @@ async function main() {
       await chantierDate(ctx, client.id, "Milieu", [["Tonte", "150.00"]], "2025-06-10"),
       await chantierDate(ctx, client.id, "Récent", [["Élagage", "200.00"]], "2026-07-28"),
     ];
-    // **La colonne des avoirs (§412) se trie comme les autres** : un avoir par
+    // **La colonne des avoirs (§413) se trie comme les autres** : un avoir par
     // facture, le lendemain de chacune, pour que l'ordre ait à se prouver.
     for (const { factureId, jour } of anciens) {
       const lendemain = new Date(`${jour}T09:00:00Z`);

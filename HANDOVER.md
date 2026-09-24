@@ -11,6 +11,26 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 
 ---
 
+## MOT DE PASSE OUBLIÉ — 24 septembre 2026
+
+| | |
+|---|---|
+| **l'écran** | `src/app/mot-de-passe-oublie/`, public ; le lien est sur `FormulaireConnexion` |
+| **la base** | `codes_mot_de_passe` et `reinitialiser_mot_de_passe`, migration 0100 |
+| **le dépôt** | `src/server/repositories/mot-de-passe-oublie.ts` |
+| **la suite** | `scripts/test-mot-de-passe-oublie-db.ts` |
+| **ce qui reste** | un envoi réel par Brevo, à regarder sur son espace (ici, aucun e-mail ne part) |
+
+## L'ASSISTANT DIT OÙ LES CHOSES SONT RANGÉES — 24 septembre 2026
+
+Fiches de lieu, sommaire et preuves sans commentaires : `ARCHITECTURE.md` §411.
+**Pour ajouter une réponse de l'assistant, on ajoute une FICHE** dans le
+fichier de sa zone (`src/lib/fiches-mode-emploi/`, 324 fiches) et sa question
+dans `scripts/_questions-mode-emploi.ts`, jamais une consigne au modèle.
+`src/lib/mode-emploi.ts` ne porte que le type et la recherche.
+
+---
+
 ## LA FLÈCHE RETOUR DE LA FICHE CLIENT ENREGISTRE — 22 septembre 2026
 
 | | |

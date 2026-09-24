@@ -142,12 +142,12 @@ var LIGNES = [
   { cle: "dictee",     texte: "Vos dictées transcrites et chiffrées" },
   { cle: "planning",   texte: "Le planning de vos chantiers" },
   { cle: "tva",        texte: "Votre relevé de TVA, tenu tout seul" },
-  { cle: "salaries",   texte: "Vos salariés voient leur planning sur leur téléphone, gratuitement" },
+  { cle: "salaries",   texte: "Vos salariés ont accès au planning" },
   { cle: "arrosage",   texte: "Le plan d’arrosage automatique" },
   { cle: "diagnostic", texte: "Le diagnostic végétal" },
   { cle: "fiche",      texte: "Les fiches de chantier de vos entretiens" },
   { cle: "absences",   texte: "Les absences de vos équipes" },
-  { cle: "retours",    texte: "Les retours d’intervention de vos gars" },
+  { cle: "retours",    texte: "Les retours d’intervention de vos salariés" },
   { cle: "cinq",       texte: "Jusqu’à 5 personnes aux devis et aux factures" },
   { cle: "tous",       texte: "Autant de personnes que vous voulez aux devis et aux factures" }
 ];
@@ -161,7 +161,7 @@ var FORMULES = [
     accroche: "Du devis dicté à la facture, sans rien retaper.",
     ouvre: BASE },
   { nom: "Entreprise", prix: 59, an: 590,
-    accroche: "Vos gars au planning, et jusqu’à cinq qui facturent.",
+    accroche: "Accès illimité à tous les outils, jusqu’à cinq personnes qui facturent.",
     ouvre: BASE.concat(PAYSAGE, EQUIPE, ["cinq"]) },
   { nom: "Illimité", prix: 159, an: 1590,
     accroche: "Toute votre équipe sur Atlas.",
@@ -210,7 +210,7 @@ var NOTES = [
     "<tr><td>Illimité</td><td>120 €, 1 200 € par an</td><td><b>159 €</b>, 1 590 € par an</td></tr></table>" +
     "L'annuel garde deux mois offerts, comme aujourd'hui. Dites si vous voulez un autre chiffre.",
   "<b>Artisan perd trois outils Paysage :</b> le plan d'arrosage, le diagnostic végétal, et la fiche de chantier (celle qu'on coche puis qu'on envoie au client après un entretien). J'ai compris « fiche de passage » comme cette fiche là.",
-  "<b>Une question : les fiches de sécurité</b> (élagage, abattage) sont aussi dans Paysage. Je les ai laissées ouvertes à tous, parce qu'elles protègent vos gars. Vous les fermez aussi à Artisan ?",
+  "<b>Les fiches de sécurité</b> (élagage, abattage) sont aussi dans Paysage. Elles restent ouvertes à Artisan, votre réponse du 24 septembre.",
   "<b>Avant de mettre ces prix en service :</b> vos conditions générales publiées (version 2, article 14) écrivent encore 29, 59 et 120 €. Les nouveaux prix doivent y entrer avec la version 3, sinon le contrat et l'écran se contredisent."
 ];
 

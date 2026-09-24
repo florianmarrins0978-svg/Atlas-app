@@ -19,6 +19,8 @@ import PorteDeNuit, { CHAMP, NUIT, SERIF } from "@/components/atlas/PorteDeNuit"
 import SaisieDuCode from "@/components/atlas/SaisieDuCode";
 import OeilMotDePasse from "@/components/atlas/OeilMotDePasse";
 import { creerLeCompteAction } from "./actions";
+import { renvoyerLeCodeAction, verifierLeCodeAction } from "@/app/verifier-email/actions";
+import { deconnexionAction } from "@/app/login/actions";
 import type { SaisieCompte } from "@/server/repositories/creation-compte";
 
 /**
@@ -160,6 +162,9 @@ export default function CreerUnComptePage() {
             email={codeEnvoyeA.email}
             avertissement={codeEnvoyeA.avertissement}
             onVerifie={() => setFini(true)}
+            verifier={verifierLeCodeAction}
+            renvoyer={renvoyerLeCodeAction}
+            sortir={() => deconnexionAction("entree")}
           />
         </div>
       )}

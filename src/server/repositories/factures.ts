@@ -1568,6 +1568,8 @@ export async function listerChantiersTermines(ctx: Ctx, aujourdHui: string = jou
 // --- Relevé de TVA collectée ------------------------------------------------
 
 export type LigneReleveTva = {
+  /** Pour ouvrir la facture depuis sa ligne : un règlement se vérifie sur la pièce. */
+  factureId: string;
   numeroCommercial: string;
   /**
    * **La date qui compte pour la période**, et non plus forcément l'émission.
@@ -1663,6 +1665,7 @@ function assemblerReleve(
     for (const e of entrees) {
       if (!dansLaPeriode(e, debut, fin)) continue;
       lignes.push({
+        factureId: f.id,
         // Une ligne d'avoir porte le numéro de l'avoir : c'est la pièce qu'un
         // contrôle demandera pour justifier cette TVA retirée.
         numeroCommercial: e.motif === "avoir" && e.numeroAvoir ? e.numeroAvoir : f.numeroCommercial,

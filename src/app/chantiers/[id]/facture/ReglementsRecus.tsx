@@ -63,7 +63,7 @@ export default function ReglementsRecus({
   factureId: string;
   totalTtc: string;
   /**
-   * Les avoirs de la facture (§412) : ils se lisent parmi les règlements, et
+   * Les avoirs de la facture (§413) : ils se lisent parmi les règlements, et
    * le « Net à payer » descend d'autant — sa planche `appli/avoir.html`. Une
    * facture en cours n'en a jamais : un avoir ne se fait que sur une facture
    * partie.

@@ -5,6 +5,7 @@ import BottomSheet from "@/components/atlas/BottomSheet";
 import { colors, font } from "@/lib/design-tokens";
 import { natureDeLaPiece, nomDuFichierDeLaPiece, numeroDeLaPiece, type PieceDuClient } from "@/lib/documents-du-client";
 import { adresseDeLaVisionneuse } from "@/lib/visionneuse-pdf";
+import { rapportDansLAppli } from "@/lib/rapport-dans-l-appli";
 import BoutonTelechargerDocument from "@/components/atlas/BoutonTelechargerDocument";
 
 /**
@@ -38,8 +39,9 @@ import BoutonTelechargerDocument from "@/components/atlas/BoutonTelechargerDocum
  * `?telecharger=1` — et, depuis le 11 septembre 2026, **plus d'onglet à part**
  * pour un PDF : *« j'ai pas de touche retour »*. Le fichier se peint dans la
  * visionneuse de l'application, dont la flèche ramène à cette fiche
- * (`src/lib/visionneuse-pdf.ts`). Une pièce qui est une PAGE publique garde
- * son onglet : c'est l'adresse du client, sans en-tête de l'application.
+ * (`src/lib/visionneuse-pdf.ts`). Le rapport d'entretien, qui est une page,
+ * a suivi le 24 septembre 2026 : il se relit dans l'application
+ * (`src/lib/rapport-dans-l-appli.ts`), jamais sur la page du client.
  */
 /** Ce que l'en-tête de la visionneuse écrit au-dessus du numéro. */
 const NATURE_LISIBLE = { facture: "Facture", avoir: "Avoir", devis: "Devis", "fiche-chantier": "Fiche de chantier" } as const;
@@ -208,9 +210,13 @@ export default function PieceDuDossier({ piece }: { piece: PieceDuClient }) {
                   surtitre: NATURE_LISIBLE[natureDeLaPiece(piece.href)],
                   titre: numeroDeLaPiece(piece.titre) ?? piece.titre,
                 })
-              : piece.href
+              // **Plus d'onglet neuf — 24 septembre 2026.** Il y tombait sur la
+              // page de son client, sans flèche : *« j'ai aucun moyen de faire
+              // retour ! »*. Le rapport se relit dans l'application
+              // (`rapport-dans-l-appli.ts`) ; « Partager » garde l'adresse
+              // publique, la seule que le client puisse ouvrir.
+              : (rapportDansLAppli(piece.href) ?? piece.href)
           }
-          {...(estUnFichier ? {} : { target: "_blank", rel: "noreferrer" })}
           onClick={() => setFeuilleOuverte(false)}
           data-atlas="piece-ouvrir"
           className={

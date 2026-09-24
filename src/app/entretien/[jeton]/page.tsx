@@ -1,8 +1,6 @@
 import { lireRapportParJeton } from "@/server/repositories/passages-entretien";
-import { libelleMinutes } from "@/lib/passage-entretien";
-import { parFamilles } from "@/lib/prestations-entretien";
-import { jourLisible } from "@/lib/jour";
 import { couleursDocument } from "@/lib/design-tokens";
+import RapportEntretien from "@/components/atlas/RapportEntretien";
 
 // Le compte rendu de passage, tel que le CLIENT le reçoit.
 //
@@ -27,8 +25,6 @@ export const dynamic = "force-dynamic";
 
 // Un compte rendu de passage n'a rien à faire dans un moteur de recherche.
 export const metadata = { robots: { index: false, follow: false } };
-
-const majuscule = (t: string) => t.charAt(0).toUpperCase() + t.slice(1);
 
 function Cadre({ titre, texte }: { titre: string; texte: string }) {
   return (
@@ -67,76 +63,9 @@ export default async function PageRapportClient({
     );
   }
 
-  const familles = parFamilles(rapport.faites);
-
   return (
     <div className="min-h-dvh bg-[#F4EFE8] px-5 py-8">
-      <div
-        className="mx-auto w-full max-w-md rounded-2xl bg-white px-6 py-7 shadow-sm"
-        data-atlas="rapport-entretien"
-        style={{ color: couleursDocument.encre }}
-      >
-        {/* Centré et doré, sa demande du 22 septembre 2026 : l'or des
-            documents (`couleursDocument.accent`), pas celui de la charte, qui
-            changerait avec les réglages de l'artisan. */}
-        <p
-          className="text-center text-[11px] font-semibold uppercase tracking-[0.18em]"
-          style={{ color: couleursDocument.accent }}
-        >
-          Retour d&apos;intervention
-        </p>
-        <h1 className="mt-2 text-[21px]" style={{ fontFamily: "ui-serif, Georgia, serif" }}>
-          {rapport.entrepriseNom}
-        </h1>
-        {/* **Une phrase, en noir, le jour en gras** — sa demande du
-            22 septembre 2026 : plus de point médian entre la date et le nom
-            (`CLAUDE.md` §3, « ni point médian, ni tiret : des phrases »). */}
-        <p className="mt-1 text-[14px]" style={{ color: couleursDocument.encre }}>
-          <b>{majuscule(jourLisible(rapport.jour))}</b>
-          {rapport.clientNom ? ` chez ${rapport.clientNom}` : ""}
-        </p>
-
-        <div className="mt-6">
-          {familles.map((groupe) => (
-            <section key={groupe.famille} className="mt-5 first:mt-0">
-              <h2
-                className="text-[11px] font-semibold uppercase tracking-[0.18em]"
-                style={{ color: couleursDocument.etiquette }}
-              >
-                {groupe.famille}
-              </h2>
-              <ul className="mt-2">
-                {groupe.lignes.map((l) => (
-                  <li key={l.libelle} className="flex gap-2 py-[5px] text-[15px] leading-[1.4]">
-                    <span aria-hidden="true" style={{ color: couleursDocument.etiquette }}>
-                      ✓
-                    </span>
-                    <span>{l.libelle}</span>
-                  </li>
-                ))}
-              </ul>
-            </section>
-          ))}
-        </div>
-
-        {rapport.minutes !== null && (
-          <p
-            className="mt-6 border-t pt-4 text-[14px]"
-            style={{ borderColor: "rgba(28,28,26,0.12)", color: couleursDocument.etiquette }}
-          >
-            Temps passé&nbsp;: <b style={{ color: couleursDocument.encre }}>{libelleMinutes(rapport.minutes)}</b>
-          </p>
-        )}
-
-        {rapport.observations && (
-          <div
-            className="mt-4 rounded-xl px-4 py-3 text-[14px] leading-[1.6]"
-            style={{ backgroundColor: "#F7F5F0" }}
-          >
-            {rapport.observations}
-          </div>
-        )}
-      </div>
+      <RapportEntretien rapport={rapport} />
     </div>
   );
 }

@@ -16,7 +16,7 @@ factures, et **le reste dû comme la TVA se comptent après lui partout** : le
 type `FacturePourTva` exige désormais ses avoirs, et le compilateur a trouvé
 chaque endroit qui aurait réclamé au client une somme annulée. « Il ne me paiera
 pas » tait le rappel sans toucher à la facture. Aucun écran encore : pas
-atteignable. `ARCHITECTURE.md` §412.
+atteignable. `ARCHITECTURE.md` §413.
 
 Puis les écrans (lot 2) : le volet à trois choix de Terminés, l'avoir (ligne,
 montant, motif, et le refus qui se dit), « Il ne me paiera pas » et sa
@@ -29,6 +29,106 @@ client le télécharge sous elle ; « Mise en demeure » sous une facture non pa
 rédige la lettre (reste dû, facture, dates) et la donne en PDF. Défaut attrapé à
 l'image du PDF avant livraison : l'espace avant un montant en gras disparaissait
 (« de1 440,00 € ») ; `test-mise-en-demeure.ts` le tient.
+
+### Mot de passe oublié : on peut enfin rentrer
+
+Un utilisateur qui avait oublié son mot de passe n'avait aucun moyen de
+rentrer. Un lien « Mot de passe oublié ? » sous le mot de passe mène à
+`/mot-de-passe-oublie` : l'adresse, le code reçu par e-mail (celui de la
+création du compte), le nouveau mot de passe, et l'on entre. Tous les autres
+appareils sont déconnectés et un e-mail prévient du changement. Migration 0100.
+`ARCHITECTURE.md` §412.
+
+### L'assistant sait dire OÙ les choses sont rangées
+
+Sa plainte : *« il marche mal »*, et sa demande : devis, factures, avoirs,
+fiches de sécurité, fiches d'intervention, *« n'importe quoi, il DOIT pouvoir
+lui répondre »*. Mesuré avant de toucher : « où sont mes factures » rendait la
+création d'une facture, « où est la fiche de sécurité » la fiche d'entretien de
+Paysage, et les avoirs, les retours d'intervention, les réglages ne rendaient
+RIEN.
+
+- **Seize fiches neuves** dans `src/lib/mode-emploi.ts` : les cinq onglets du
+  bas, où dorment devis, factures et fiches envoyées, l'avoir (qu'Atlas ne fait
+  pas encore, et le dit), le paiement reçu, les retours d'intervention, la
+  facture sans devis, la fiche d'intervention, la fiche de sécurité (remplir,
+  retrouver), l'accès d'un salarié.
+- **Une question en « où » préfère une fiche de lieu.**
+- **Quand les mots ne suffisent pas, le modèle lit le sommaire** et redemande la
+  fiche par son identifiant : il choisit, le geste récité reste celui de la
+  fiche.
+- **Quatre fiches enseignaient un geste mort** (l'onglet « À facturer »,
+  « Ajouter un chantier », l'onglet « Fiche chantier », les chartes) : leur
+  preuve ne tenait plus que par un COMMENTAIRE qui citait l'ancien nom. Le
+  contrôle lit désormais le code sans ses commentaires.
+
+**Ce que ça évite :** un assistant qui répond à côté, ou « je ne sais pas », à la
+question la plus simple qu'on lui pose : où est ceci.
+
+### L'assistant connaît toutes les fonctions de l'appli (324 fiches)
+
+Sa relance du soir : un vrai assistant, qui explique chaque fonction. Chaque
+écran a été inventorié bouton par bouton, et chaque fiche est prouvée contre le
+code. **36 des 64 anciennes fiches étaient fausses ou floues** (un écran disparu, des
+boutons renommés) : récrites. La recherche compte désormais la rareté d'un mot,
+reconnaît les formes d'un même verbe et préfère le mot exact. Une fiche par zone
+dans `src/lib/fiches-mode-emploi/`. **Ce que ça évite :** qu'il enseigne un
+bouton qui n'existe plus, ou qu'il ne sache rien d'un écran entier.
+
+### Le jour de la fiche se choisit dans la fiche, et le titre des rapports descend
+
+Sa demande : *« le jeudi 24 septembre doit apparaître lorsque je clique sur
+Créer une fiche, dans la création, pas en dehors »*. Posé sur la liste, ce jour
+se lisait comme un second filtre au-dessus de celui des rapports envoyés
+(*« c'est hyper bizarre »*). « Créer une fiche » ouvre désormais la fiche du
+jour du téléphone, et la roue est en tête de la fiche, à la place de la ligne
+qui disait le jour ; `majPassage` accepte le jour et refuse un jour qui
+n'existe pas. Parti chez le client, le jour ne bouge plus. « Rapports envoyés »
+passe sous le filtre et la recherche, juste au-dessus du premier rapport.
+
+### « 5 prestations cochées, celles du dernier chantier » alors que 8 l'étaient
+
+Le nombre était compté une fois par le serveur, au moment de nommer le client,
+puis gardé : ni les coches d'avant, ni celles d'après n'y entraient. Le serveur
+rend désormais les lignes reprises, et la phrase se refait à chaque coche
+(`constatDesCoches`). « Celles du dernier chantier » ne se dit que tant que les
+cases cochées sont exactement celles reprises. **Changer de client décoche
+tout** puis reprend le dernier rapport du nouveau (sa règle : *« seules les
+cases du nouveau client doivent apparaître »*) ; au premier client nommé, les
+coches faites à la main restent.
+
+### Le rapport d'entretien ouvert depuis l'application n'avait pas de retour
+
+Sa capture : *« j'ai aucun moyen de faire retour ! »*. « Rapports envoyés » et
+le dossier d'un client menaient à `/entretien/<jeton>`, la page que son CLIENT
+reçoit, qui n'a volontairement ni en-tête ni flèche ; le dossier l'ouvrait en
+plus dans un onglet neuf. Même panne que le PDF du 11 septembre, même réponse :
+un écran de l'application, `/documents/entretien/<jeton>`, avec sa flèche, qui
+montre la MÊME carte (`RapportEntretien`, sortie de la page du client pour ne
+pas être recopiée). « Partager » garde l'adresse publique. La facturation, qui
+ouvrait ce rapport depuis le dossier, garde cet accès (`acces-roles.ts`).
+Tenu par deux cas de `test-fiche-client-e2e.ts`, vus rouges avant la
+correction.
+
+### Ma TVA : un appui sur le client ouvre la facture envoyée
+
+Sa demande, planche `appli/ouvrir-la-facture-depuis-la-tva.html` retenue le
+jour même : toute la zone du client ouvre le PDF dans la visionneuse, dans
+« Factures en attente » (hors des deux boutons de paiement) comme dans la liste
+« TVA collectée ». Aucun signe à l'écran : il a refusé le nom souligné en doré,
+« comme sur la page Terminés ». La flèche ramène à la même hauteur de page,
+mesurée (`test-tva-au-paiement-e2e`).
+
+**Au passage, un refus caché : la facturation n'ouvrait pas la visionneuse.**
+`/documents/pdf` manquait à `OUVERT_A_LA_FACTURATION`, donc « Voir la facture en
+PDF » la menait déjà à un refus sur une facture qu'elle a le droit de lire. Le
+fichier reste gardé par sa propre route (`/api/factures`).
+
+**Ce que j'avais annoncé à tort** : que la flèche ramenait en haut de la page.
+Mesuré dans la vraie application, elle ramène déjà à la bonne hauteur ; rien
+n'a été codé pour ça. Le seul écart vu venait du robot d'essai, qui faisait
+défiler la page en cliquant un élément collé au bas de l'écran.
+
 
 ### Les maquettes ne se publiaient plus depuis le 23 septembre au soir
 

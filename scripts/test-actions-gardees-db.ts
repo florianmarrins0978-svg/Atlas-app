@@ -235,6 +235,19 @@ const EXEMPTIONS: Record<string, string> = {
   "src/app/verifier-email/actions.ts#renvoyerLeCodeAction":
     "Même porte : le renvoi est borné en base (trois par quart d'heure, trente secondes " +
     "entre deux), et l'adresse est lue en base, jamais reçue du navigateur.",
+  "src/app/mot-de-passe-oublie/actions.ts#recevoirUnCodeAction":
+    "Mot de passe oublié : on y vient justement parce qu'on ne peut pas se connecter, " +
+    "il n'y a donc ni session ni rôle. Ce qui la borne : trois codes par adresse et par " +
+    "quart d'heure, en base, et le limiteur `motDePasseOublie` par source. Une adresse " +
+    "sans compte ne reçoit rien et ne laisse aucune trace.",
+  "src/app/mot-de-passe-oublie/actions.ts#verifierLeCodeOublieAction":
+    "Même porte. Ce qui la borne, c'est le code lui-même : cinq essais, un quart " +
+    "d'heure, et il meurt dès qu'il a servi. Le jeton qu'il rend est la seule clé de " +
+    "`choisirLeMotDePasseAction`, et la base le vérifie (migration 0100).",
+  "src/app/mot-de-passe-oublie/actions.ts#choisirLeMotDePasseAction":
+    "Même porte, dernier pas. Sa garde est le jeton rendu par le bon code : 32 octets " +
+    "tirés au sort, un quart d'heure, une seule fois, et c'est la BASE qui le vérifie " +
+    "avant de poser le condensat (`reinitialiser_mot_de_passe`, migration 0100).",
   "src/app/factures/[jeton]/actions.ts#noterOuvertureAction":
     "Même porte que la réponse au devis : la page de la facture s'ouvre par un jeton, " +
     "sans compte. Le jeton EST la garde — 256 bits tirés au sort, une politique RLS " +
