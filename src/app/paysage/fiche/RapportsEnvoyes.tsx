@@ -6,6 +6,7 @@ import { ChampRecherche } from "@/components/atlas/ChampRecherche";
 import FiltreDeDate from "@/components/atlas/FiltreDeDate";
 import { rapportsAMontrer } from "@/lib/passage-entretien";
 import { moisEnCours, porteeDeLaPeriode, titreDeLaPeriode } from "@/lib/periode";
+import { adresseDuRapportDansLAppli } from "@/lib/rapport-dans-l-appli";
 import LignePassage, { type PassageListe } from "./LignePassage";
 
 /**
@@ -26,11 +27,6 @@ export default function RapportsEnvoyes({ rapports }: { rapports: PassageListe[]
 
   return (
     <section className="mx-[26px] mt-[28px]" data-atlas="rapports-envoyes">
-      {/* En noir gras, sa demande du 22 septembre 2026. */}
-      <h2 className={smallCaps} style={{ color: colors.ink, fontWeight: 700 }}>
-        Rapports envoyés
-      </h2>
-
       <FiltreDeDate periode={periode} choisir={setPeriode} />
 
       <ChampRecherche
@@ -41,6 +37,14 @@ export default function RapportsEnvoyes({ rapports }: { rapports: PassageListe[]
         dataAtlas="chercher-un-rapport"
         className="mt-3"
       />
+
+      {/* En noir gras, sa demande du 22 septembre 2026. **Juste au-dessus du
+          premier rapport**, sous le filtre et la recherche : sa demande du
+          24 septembre 2026, *« Rapports envoyés doit se trouver au-dessus du
+          premier rapport »*. */}
+      <h2 className={`${smallCaps} mt-[22px]`} style={{ color: colors.ink, fontWeight: 700 }}>
+        Rapports envoyés
+      </h2>
 
       {montres.length === 0 ? (
         <p className="mt-7 text-center text-[13.5px] leading-[1.65]" style={{ color: colors.muted }}>
@@ -55,11 +59,16 @@ export default function RapportsEnvoyes({ rapports }: { rapports: PassageListe[]
           {montres.map((p) => (
             // **Le rapport tel que le client l'a reçu**, et non la fiche à
             // cocher : sa demande du 22 septembre 2026, *« quand je clique sur
-            // M. Bernard, je dois avoir le rapport envoyé au client »*. C'est
-            // l'adresse que porte déjà la fiche du client (`fiche-client.ts`).
+            // M. Bernard, je dois avoir le rapport envoyé au client »*. Relu
+            // DANS l'application, avec sa flèche : la page du client n'en a
+            // aucune (`rapport-dans-l-appli.ts`, 24 septembre 2026).
             // Un rapport envoyé a toujours son jeton (`figerPassage` les pose
             // ensemble) ; la fiche reste le repli d'une ligne qui n'en aurait pas.
-            <LignePassage key={p.id} passage={p} href={p.jeton ? `/entretien/${p.jeton}` : `/paysage/fiche/${p.id}`} />
+            <LignePassage
+              key={p.id}
+              passage={p}
+              href={p.jeton ? adresseDuRapportDansLAppli(p.jeton) : `/paysage/fiche/${p.id}`}
+            />
           ))}
         </div>
       )}

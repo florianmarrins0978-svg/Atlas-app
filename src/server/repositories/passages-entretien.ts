@@ -14,6 +14,7 @@ import { withEntreprise } from "../db/with-entreprise";
 import { lignesPassage, passagesEntretien, clients, entreprises } from "../db/schema";
 import type { Ctx } from "./context";
 import { listerPrestations } from "./prestations-entretien";
+import { estUnJourValide } from "@/lib/planning-jour";
 import {
   empechementEnvoi,
   minutesValides,
@@ -173,8 +174,13 @@ export async function cocherLigne(
 export async function majPassage(
   ctx: Ctx,
   passageId: string,
-  champs: { minutes?: number | null; tempsVisible?: boolean; observations?: string | null }
+  champs: { minutes?: number | null; tempsVisible?: boolean; observations?: string | null; jour?: string }
 ): Promise<{ ok: true } | { ok: false; refus: RefusPassage }> {
+  // **Le jour se choisit DANS la fiche** depuis le 24 septembre 2026 : elle
+  // s'ouvre sur le jour même, et il le change s'il remplit le lendemain.
+  if (champs.jour !== undefined && !estUnJourValide(champs.jour)) {
+    return { ok: false, refus: "jour_invalide" };
+  }
   let minutes: number | null | undefined;
   if (champs.minutes !== undefined) {
     minutes = minutesValides(champs.minutes);
@@ -203,6 +209,7 @@ export async function majPassage(
         ...(minutes !== undefined ? { minutes } : {}),
         ...(champs.tempsVisible !== undefined ? { tempsVisible: champs.tempsVisible } : {}),
         ...(champs.observations !== undefined ? { observations: champs.observations } : {}),
+        ...(champs.jour !== undefined ? { jour: champs.jour } : {}),
         updatedAt: new Date(),
       })
       .where(eq(passagesEntretien.id, passageId));
@@ -222,12 +229,12 @@ export async function nommerClient(
   passageId: string,
   clientId: string
 ): Promise<
-  | { ok: true; cochees: number; lignes: (LignePassage & { id: string })[] }
+  | { ok: true; reprises: string[]; lignes: (LignePassage & { id: string })[] }
   | { ok: false; refus: RefusPassage }
 > {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const [p] = await tx
-      .select({ envoyeLe: passagesEntretien.envoyeLe })
+      .select({ envoyeLe: passagesEntretien.envoyeLe, clientId: passagesEntretien.clientId })
       .from(passagesEntretien)
       .where(
         and(eq(passagesEntretien.id, passageId), eq(passagesEntretien.entrepriseId, ctx.entrepriseId))
@@ -276,11 +283,18 @@ export async function nommerClient(
       .from(lignesPassage)
       .where(eq(lignesPassage.passageId, passageId));
 
-    const lignes = cocherCommeLaDerniereFois(actuelles, derniere);
-    const aCocher = lignes.filter((l, i) => l.faite && !actuelles[i].faite);
-    for (const l of aCocher) {
-      await tx.update(lignesPassage).set({ faite: true }).where(eq(lignesPassage.id, l.id));
+    const changeDeClient = p.clientId !== null && p.clientId !== clientId;
+    const lignes = cocherCommeLaDerniereFois(actuelles, derniere, { changeDeClient });
+    // Tout ce qui change s'écrit : les coches reprises, et, quand il change de
+    // client, celles du précédent qui tombent.
+    for (const [i, l] of lignes.entries()) {
+      if (l.faite !== actuelles[i].faite) {
+        await tx.update(lignesPassage).set({ faite: l.faite }).where(eq(lignesPassage.id, l.id));
+      }
     }
+    // Reprises : ce qui est coché et ne venait pas de sa main. Quand il change
+    // de client, rien ne venait de sa main : la fiche est repartie vide.
+    const reprises = lignes.filter((l, i) => l.faite && (changeDeClient || !actuelles[i].faite));
 
     await tx
       .update(passagesEntretien)
@@ -290,9 +304,11 @@ export async function nommerClient(
     // **Les lignes partent avec la réponse.** L'écran ne refait pas les
     // coches de son côté : deux implémentations de la même règle finissent
     // toujours par diverger (`CLAUDE.md` §3).
+    // **Les lignes reprises, et non leur nombre** : un nombre figé ici ne
+    // suivait pas les coches d'après (`constatDesCoches`, 24 septembre 2026).
     return {
       ok: true as const,
-      cochees: aCocher.length,
+      reprises: reprises.map((l) => l.id),
       lignes: [...lignes].sort((a, b) => a.ordre - b.ordre || a.libelle.localeCompare(b.libelle)),
     };
   });

@@ -121,7 +121,7 @@ async function main() {
   // ce que son œil voit, et une mise en page peut réordonner ce que le HTML
   // empile. Il refuse de conclure sur une boîte de zéro pixel (`CLAUDE.md` §5,
   // le contrôle qui mesure zéro ne mesure rien).
-  await cas("la rubrique est SOUS LE TITRE, avant le jour du passage", async () => {
+  await cas("la rubrique est SOUS LE TITRE, avant le bouton qui crée la fiche", async () => {
     await page.goto(`${BASE}/paysage/fiche`, { waitUntil: "networkidle" });
     // **SON REPÈRE, PAS SON ADRESSE — 14 septembre 2026.**
     //
@@ -135,14 +135,20 @@ async function main() {
     await rubrique.waitFor({ timeout: 20_000 });
 
     const boite = await rubrique.boundingBox();
-    // Le jour se vise par son repère : le libellé « Jour du passage » a été
-    // retiré à sa demande le 22 septembre 2026 (`CLAUDE.md` §5 bis).
-    const jour = await page.locator('[data-atlas="jour-du-passage"]').boundingBox();
+    // **Le jour du passage n'est plus sur cette liste** — il se choisit dans
+    // la fiche depuis le 24 septembre 2026 (`OuvrirFiche`). Ce qui suit la
+    // rubrique est désormais le bouton (`CLAUDE.md` §5 bis).
+    const bouton = await page.locator('[data-atlas="ouvrir-fiche-chantier"]').boundingBox();
     assert.ok(boite && boite.height > 0, "la rubrique ne se mesure pas : rien n'est prouvé");
-    assert.ok(jour && jour.height > 0, "le jour du passage ne se mesure pas : rien n'est prouvé");
+    assert.ok(bouton && bouton.height > 0, "le bouton « Créer une fiche » ne se mesure pas : rien n'est prouvé");
     assert.ok(
-      boite!.y < jour!.y,
-      `la rubrique est passée SOUS le jour du passage (${Math.round(boite!.y)} px contre ${Math.round(jour!.y)} px) — il l'a demandée en premier`
+      boite!.y < bouton!.y,
+      `la rubrique est passée SOUS le bouton (${Math.round(boite!.y)} px contre ${Math.round(bouton!.y)} px) — il l'a demandée en premier`
+    );
+    assert.equal(
+      await page.locator('[data-atlas="jour-du-passage"]').count(),
+      0,
+      "le jour de la fiche est revenu sur la liste, au-dessus du filtre des rapports"
     );
 
     // Le titre doré, ses mots à lui.

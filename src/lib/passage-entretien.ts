@@ -84,13 +84,52 @@ export function minutesValides(brut: number | null | undefined): number | null {
  * se décoche ou se coche d'un geste, puisque toutes les lignes sont là.
  *
  * **L'ordre et les lignes viennent de l'écran** : rien ne bouge sous ses doigts.
+ *
+ * **CHANGER DE CLIENT repart de zéro** — sa règle du 24 septembre 2026 :
+ * *« les cases doivent se décocher, car seules les cases du nouveau client
+ * doivent apparaître »*. Gardées, les coches du premier client partaient sur
+ * le rapport du second, pour des travaux faits ailleurs. `changeDeClient` ne
+ * vaut que pour un client REMPLACÉ ; au premier client nommé, ce qu'il a coché
+ * à la main reste.
  */
 export function cocherCommeLaDerniereFois<L extends LignePassage>(
   actuelles: readonly L[],
-  derniere: readonly { libelle: string }[]
+  derniere: readonly { libelle: string }[],
+  { changeDeClient }: { changeDeClient: boolean } = { changeDeClient: false }
 ): L[] {
   const cochees = new Set(derniere.map((l) => plie(l.libelle)));
-  return actuelles.map((l) => (l.faite || !cochees.has(plie(l.libelle)) ? l : { ...l, faite: true }));
+  return actuelles.map((l) => {
+    const faite = (!changeDeClient && l.faite) || cochees.has(plie(l.libelle));
+    return faite === l.faite ? l : { ...l, faite };
+  });
+}
+
+/**
+ * La phrase sous le nom du client : combien de cases sont cochées, et si ce
+ * sont celles du dernier chantier.
+ *
+ * **Calculée sur les cases, à chaque coche — 24 septembre 2026.** Sa capture :
+ * *« y'a marqué 5 prestations cochées, celles du dernier chantier, alors qu'il
+ * y en a 8 de cochées »*. Le chiffre était compté une fois par le serveur, au
+ * moment de nommer le client, puis gardé tel quel : il ignorait ce qui était
+ * coché avant, et tout ce qu'il cochait après.
+ *
+ * « Celles du dernier chantier » ne se dit que tant que c'est vrai : les cases
+ * cochées sont exactement celles reprises. `reprises` vaut `null` tant
+ * qu'aucun client n'a été nommé sur cet écran ; vide, rien n'a été repris
+ * (premier passage chez lui) et la phrase ne se pose pas, comme avant.
+ */
+export function constatDesCoches(
+  lignes: readonly { id: string; faite: boolean }[],
+  reprises: ReadonlySet<string> | null
+): string | null {
+  if (!reprises || reprises.size === 0) return null;
+  const faites = lignes.filter((l) => l.faite);
+  if (faites.length === 0) return null;
+  const nombre = faites.length > 1 ? `${faites.length} prestations cochées` : "1 prestation cochée";
+  const cesont = faites.length === reprises.size && faites.every((l) => reprises.has(l.id));
+  if (!cesont) return `${nombre}.`;
+  return `${nombre}, ${faites.length > 1 ? "celles" : "celle"} du dernier chantier.`;
 }
 
 /**
@@ -147,6 +186,7 @@ export type RefusPassage =
   | "modele_vide"
   | "deja_envoye"
   | "duree_invalide"
+  | "jour_invalide"
   | "client_inconnu";
 
 export const PHRASE_REFUS_PASSAGE: Record<RefusPassage, string> = {
@@ -155,6 +195,7 @@ export const PHRASE_REFUS_PASSAGE: Record<RefusPassage, string> = {
     "Votre fiche n'a aucune prestation. Composez-la d'abord dans les réglages.",
   deja_envoye: "Ce rapport est déjà parti chez votre client. Il ne se modifie plus.",
   duree_invalide: "Ce temps ne tient pas dans une journée. Reprenez la molette.",
+  jour_invalide: "Ce jour n'existe pas. Reprenez la roue.",
   client_inconnu: "Ce client n'existe plus. Choisissez-en un autre.",
 };
 

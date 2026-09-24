@@ -1,5 +1,6 @@
 import { lancerNavigateur } from "./e2e-browser";
 import { fichierDemandeALaVisionneuse } from "../src/lib/visionneuse-pdf";
+import { adresseDuRapportDansLAppli } from "../src/lib/rapport-dans-l-appli";
 import assert from "node:assert/strict";
 import { Pool } from "pg";
 import { getOuCreerDevisBrouillon, envoyerDevis } from "../src/server/repositories/devis";
@@ -584,8 +585,9 @@ async function main() {
       Devis: /^\/api\/devis\//,
       Factures: /^\/api\/factures\//,
       // **Plus un PDF de chantier depuis le 23 août 2026** : le registre porte
-      // le rapport d'entretien, à l'adresse même que le client a reçue.
-      Fiches: /^\/entretien\/[A-Za-z0-9_-]+$/,
+      // le rapport d'entretien, relu DANS l'application depuis le
+      // 24 septembre 2026 : la page du client n'a pas de flèche.
+      Fiches: /^\/documents\/entretien\/[A-Za-z0-9_-]+$/,
     };
     for (const colonne of colonnes) {
       assert.ok(colonne.liens.length >= 1, `le registre « ${colonne.titre} » est vide`);
@@ -781,7 +783,7 @@ async function main() {
     await page.getByRole("button", { name: "Annuler" }).click();
     await ouvrir.waitFor({ state: "hidden", timeout: 15_000 });
 
-    assert.equal(href, `/entretien/${jetonFiche}`, `la feuille de la fiche mène à « ${href} »`);
+    assert.equal(href, adresseDuRapportDansLAppli(jetonFiche), `la feuille de la fiche mène à « ${href} »`);
 
     // **Ouvert POUR DE BON, pas seulement listé.** Un lien qui rend une erreur
     // 500 se voit exactement pareil dans le DOM ; c'est en le suivant qu'on
@@ -794,6 +796,38 @@ async function main() {
       /Tonte/i,
       "le rapport ne porte pas la prestation cochée : ce n'est pas la fiche envoyée"
     );
+  });
+
+  // **Sa capture du 24 septembre 2026 :** *« j'ai aucun moyen de faire
+  // retour ! »*, sur le rapport ouvert depuis l'application. « Ouvrir » le
+  // remettait à Safari dans un onglet neuf, sur la page de son CLIENT, qui ne
+  // porte ni en-tête ni flèche, et un onglet ouvert par un lien n'a rien
+  // derrière lui. Joué par SON geste : l'appui sur « Ouvrir », puis la flèche.
+  await cas("la fiche ouverte depuis le dossier porte une flèche qui y ramène", async () => {
+    await page.goto(ficheDuClientMonte, { waitUntil: "networkidle" });
+    const dossier = new URL(page.url()).pathname;
+    await page.locator('[data-atlas="registre"]:text-is("Fiches")').click();
+    await page.locator('[role="tabpanel"]:not([hidden]) [data-atlas="piece"]').first().click();
+    const ouvrir = page.locator('[data-atlas="piece-ouvrir"]');
+    await ouvrir.waitFor({ state: "visible", timeout: 20_000 });
+    const onglets = page.context().pages().length;
+    await ouvrir.click();
+    await page.locator('[data-atlas="rapport-entretien"]').waitFor({ timeout: 30_000 });
+    assert.equal(page.context().pages().length, onglets, "« Ouvrir » a ouvert un onglet neuf");
+    await page.getByRole("link", { name: "Retour", exact: true }).click();
+    await page.waitForURL((u) => u.pathname === dossier, { timeout: 30_000 });
+  });
+
+  // Le même rapport, par l'autre porte : « Rapports envoyés », dans Paysage.
+  await cas("un rapport envoyé s'ouvre dans l'application, et la flèche ramène à la liste", async () => {
+    const { rows } = await pool.query(`SELECT nom FROM clients WHERE id = $1`, [clientDuChantier]);
+    await page.goto(`${BASE}/paysage/fiche`, { waitUntil: "networkidle" });
+    // La fiche date de juin : le nom tapé passe par-dessus le mois en cours.
+    await page.locator('[data-atlas="chercher-un-rapport"]').fill(rows[0].nom);
+    await page.locator(`a[href="${adresseDuRapportDansLAppli(jetonFiche)}"]`).click();
+    await page.locator('[data-atlas="rapport-entretien"]').waitFor({ timeout: 30_000 });
+    await page.getByRole("link", { name: "Retour", exact: true }).click();
+    await page.waitForURL((u) => u.pathname === "/paysage/fiche", { timeout: 30_000 });
   });
 
   await cas("un chantier SANS client n'ouvre aucune porte sur du vide", async () => {

@@ -28,6 +28,7 @@ import {
   libelleMinutes,
   minutesValides,
   cocherCommeLaDerniereFois,
+  constatDesCoches,
 } from "../src/lib/passage-entretien";
 
 // Le PASSAGE d'entretien — la fiche qu'il coche sur un chantier.
@@ -155,6 +156,48 @@ async function main() {
     assert.deepEqual(lignes.map((l) => l.libelle), ["Tonte", "Haies", "Massifs", "Feuilles"]);
     // Ce qu'il a coché la dernière fois se recoche ; ce qu'il vient de cocher reste.
     assert.deepEqual(lignes.map((l) => l.faite), [true, true, true, false]);
+  });
+
+  await cas("la phrase compte les cases COCHÉES, pas celles reprises une fois", () => {
+    // **Sa capture du 24 septembre 2026** : *« y'a marqué 5 prestations cochées,
+    // celles du dernier chantier, alors qu'il y en a 8 de cochées »*. Le
+    // chiffre était compté UNE fois, au moment de nommer le client, puis ne
+    // bougeait plus : ni ce qui était coché avant, ni ce qui l'était après.
+    const l = (id: string, faite: boolean) => ({ id, faite });
+    const reprises = new Set(["a", "b"]);
+    // Juste après la reprise : les cases cochées sont exactement celles reprises.
+    assert.equal(
+      constatDesCoches([l("a", true), l("b", true), l("c", false)], reprises),
+      "2 prestations cochées, celles du dernier chantier."
+    );
+    // Il coche une case de plus : le chiffre suit, et la reprise ne se prétend plus.
+    assert.equal(
+      constatDesCoches([l("a", true), l("b", true), l("c", true)], reprises),
+      "3 prestations cochées."
+    );
+    // Une case cochée AVANT de nommer le client compte aussi.
+    assert.equal(constatDesCoches([l("a", true), l("c", true)], new Set(["a"])), "2 prestations cochées.");
+    assert.equal(constatDesCoches([l("a", true)], new Set(["a"])), "1 prestation cochée, celle du dernier chantier.");
+    // Rien de coché, ou aucun client nommé sur cet écran : rien à dire.
+    assert.equal(constatDesCoches([l("a", false)], reprises), null);
+    assert.equal(constatDesCoches([l("a", true)], null), null);
+    // Premier passage chez lui : rien n'a été repris, la phrase ne se pose pas.
+    assert.equal(constatDesCoches([l("a", true)], new Set()), null);
+  });
+
+  await cas("CHANGER de client décoche tout ce qui venait du premier", () => {
+    // **Sa règle du 24 septembre 2026** : *« les cases doivent se décocher,
+    // car seules les cases du nouveau client doivent apparaître »*.
+    const actuelles = [
+      { famille: "E", libelle: "Tonte", ordre: 10, faite: true },
+      { famille: "E", libelle: "Haies", ordre: 20, faite: true },
+      { famille: "E", libelle: "Massifs", ordre: 30, faite: false },
+    ];
+    const lignes = cocherCommeLaDerniereFois(actuelles, [{ libelle: "Massifs" }], { changeDeClient: true });
+    assert.deepEqual(lignes.map((l) => l.faite), [false, false, true]);
+    // Au PREMIER client nommé, ce qu'il a coché à la main reste.
+    const premier = cocherCommeLaDerniereFois(actuelles, [{ libelle: "Massifs" }]);
+    assert.deepEqual(premier.map((l) => l.faite), [true, true, true]);
   });
 
   await cas("premier passage chez un client : rien ne se coche tout seul", () => {
@@ -378,7 +421,12 @@ async function main() {
 
     const r = await nommerClient(ctx, suivant.id, client.id);
     assert.equal(r.ok, true);
-    if (r.ok) assert.equal(r.cochees, 1, "le compte des lignes recochées est faux");
+    if (r.ok) {
+      assert.equal(r.reprises.length, 1, "le compte des lignes recochées est faux");
+      // Feuilles, cochée avant, compte dans la phrase : 2, et pas « celles du
+      // dernier chantier », puisque Feuilles n'en vient pas.
+      assert.equal(constatDesCoches(r.lignes, new Set(r.reprises)), "2 prestations cochées.");
+    }
     const lu = await lirePassage(ctx, suivant.id);
     assert.equal(lu!.lignes.length, 4, "une ligne de la fiche a disparu en nommant le client");
     assert.deepEqual(
@@ -427,6 +475,37 @@ async function main() {
     // Effacer la durée reste permis : il peut se raviser.
     assert.equal((await majPassage(ctx, ouverte.id, { minutes: null })).ok, true);
     assert.equal((await lirePassage(ctx, ouverte.id))!.minutes, null);
+  });
+
+  await cas("le jour se change DANS la fiche, tant qu'elle n'est pas partie", async () => {
+    // **Sa demande du 24 septembre 2026** : *« le jeudi 24 septembre doit
+    // apparaître lorsque je clique sur Créer une fiche, dans la création, pas
+    // en dehors »*. La fiche s'ouvre sur le jour même ; il le change dedans.
+    const ctx = await contexte("jour");
+    await petitModele(ctx);
+    const client = await creerClient(ctx, { nom: "Faucher" });
+    const ouverte = await ouvrirPassage(ctx, "2026-09-24");
+    assert.equal(ouverte.ok, true);
+    if (!ouverte.ok) return;
+
+    assert.equal((await majPassage(ctx, ouverte.id, { jour: "2026-09-23" })).ok, true);
+    assert.equal((await lirePassage(ctx, ouverte.id))!.jour, "2026-09-23", "le jour n'a pas changé");
+    // Le 31 février s'écrit sur dix caractères : il se refuse quand même.
+    assert.deepEqual(await majPassage(ctx, ouverte.id, { jour: "2026-02-31" }), {
+      ok: false,
+      refus: "jour_invalide",
+    });
+    assert.equal((await lirePassage(ctx, ouverte.id))!.jour, "2026-09-23");
+
+    // Parti chez le client, le jour ne bouge plus : c'est la date qu'il a lue.
+    assert.equal((await nommerClient(ctx, ouverte.id, client.id)).ok, true);
+    const lue = await lirePassage(ctx, ouverte.id);
+    assert.equal((await cocherLigne(ctx, ouverte.id, lue!.lignes[0].id, true)).ok, true);
+    assert.equal((await figerPassage(ctx, ouverte.id)).ok, true);
+    assert.deepEqual(await majPassage(ctx, ouverte.id, { jour: "2026-09-22" }), {
+      ok: false,
+      refus: "deja_envoye",
+    });
   });
 
   await cas("une entreprise ne voit ni ne touche le passage d'une autre", async () => {

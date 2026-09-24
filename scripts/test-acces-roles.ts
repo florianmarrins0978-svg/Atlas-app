@@ -223,7 +223,7 @@ essai("le commercial voit les chantiers, les devis et les prix — mais PAS les 
 });
 
 essai("la facturation tient son cycle, et rien de plus", () => {
-  for (const a of ["/", "/chantiers/xxxx", "/chantiers/xxxx/facture", "/clients", "/termines/tva", "/planning", "/api/factures/xxxx/pdf"]) {
+  for (const a of ["/", "/chantiers/xxxx", "/chantiers/xxxx/facture", "/clients", "/termines/tva", "/planning", "/api/factures/xxxx/pdf", "/documents/entretien/xxxx"]) {
     assert.ok(cheminAutorise("facturation", a), `la facturation est refusée sur ${a}`);
   }
   for (const a of ["/paysage", "/catalogue", "/reglages/identite", "/reglages/tarifs", "/reglages/equipe"]) {

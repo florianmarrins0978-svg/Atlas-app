@@ -53,6 +53,41 @@ reconnaît les formes d'un même verbe et préfère le mot exact. Une fiche par 
 dans `src/lib/fiches-mode-emploi/`. **Ce que ça évite :** qu'il enseigne un
 bouton qui n'existe plus, ou qu'il ne sache rien d'un écran entier.
 
+### Le jour de la fiche se choisit dans la fiche, et le titre des rapports descend
+
+Sa demande : *« le jeudi 24 septembre doit apparaître lorsque je clique sur
+Créer une fiche, dans la création, pas en dehors »*. Posé sur la liste, ce jour
+se lisait comme un second filtre au-dessus de celui des rapports envoyés
+(*« c'est hyper bizarre »*). « Créer une fiche » ouvre désormais la fiche du
+jour du téléphone, et la roue est en tête de la fiche, à la place de la ligne
+qui disait le jour ; `majPassage` accepte le jour et refuse un jour qui
+n'existe pas. Parti chez le client, le jour ne bouge plus. « Rapports envoyés »
+passe sous le filtre et la recherche, juste au-dessus du premier rapport.
+
+### « 5 prestations cochées, celles du dernier chantier » alors que 8 l'étaient
+
+Le nombre était compté une fois par le serveur, au moment de nommer le client,
+puis gardé : ni les coches d'avant, ni celles d'après n'y entraient. Le serveur
+rend désormais les lignes reprises, et la phrase se refait à chaque coche
+(`constatDesCoches`). « Celles du dernier chantier » ne se dit que tant que les
+cases cochées sont exactement celles reprises. **Changer de client décoche
+tout** puis reprend le dernier rapport du nouveau (sa règle : *« seules les
+cases du nouveau client doivent apparaître »*) ; au premier client nommé, les
+coches faites à la main restent.
+
+### Le rapport d'entretien ouvert depuis l'application n'avait pas de retour
+
+Sa capture : *« j'ai aucun moyen de faire retour ! »*. « Rapports envoyés » et
+le dossier d'un client menaient à `/entretien/<jeton>`, la page que son CLIENT
+reçoit, qui n'a volontairement ni en-tête ni flèche ; le dossier l'ouvrait en
+plus dans un onglet neuf. Même panne que le PDF du 11 septembre, même réponse :
+un écran de l'application, `/documents/entretien/<jeton>`, avec sa flèche, qui
+montre la MÊME carte (`RapportEntretien`, sortie de la page du client pour ne
+pas être recopiée). « Partager » garde l'adresse publique. La facturation, qui
+ouvrait ce rapport depuis le dossier, garde cet accès (`acces-roles.ts`).
+Tenu par deux cas de `test-fiche-client-e2e.ts`, vus rouges avant la
+correction.
+
 ### Les maquettes ne se publiaient plus depuis le 23 septembre au soir
 
 Trois contrôles de `pages.yml` (`termines`, `boutons-verts`, `porte-plein-air`)
