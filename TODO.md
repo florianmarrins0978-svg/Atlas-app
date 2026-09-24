@@ -1,5 +1,15 @@
 # Prochaines tâches
 
+## ⏳ UNE PLANCHE À REGARDER : « FACTURÉ » ET LE MONTANT EN GRAS DORÉ (24 septembre 2026)
+
+Sa demande, sur sa capture de Terminés : sur chaque ligne facturée,
+« Facturé » en gras doré et le montant en gras doré pareil.
+`appli/termines-facture-en-dore.html` : A, le mot seul ; B, toute la petite
+ligne. Rien n'est codé. Réserve écrite sur la planche : l'or a quitté ces
+petites lignes le 2 septembre pour leur contraste (2,8 sur le crème, commentaire
+de `ListeTermines.tsx`). À coder dans `ListeTermines.tsx` (ligne d'état et
+montant des facturées) une fois choisie.
+
 ## LE GESTE « RETOUR » DU NAVIGATEUR SUR LA FICHE CLIENT PERD LA SAISIE (22 septembre 2026)
 
 La flèche, le voile et Échap enregistrent depuis le 22 septembre
