@@ -9380,31 +9380,36 @@ seulement l'avoir, c'est lui donner un geste qui le désarme, sans avertissement
 - une facture déclarée non payée **peut encore être payée** : « J'ai reçu le
   paiement » la rend acquittée, et sa TVA entre au relevé du mois du paiement.
 
-**CE QUE LA LOI EXIGE D'UN AVOIR** (recherche du 24 septembre 2026, faite par
-moteur de recherche : Legifrance, le BOFiP et douane.gouv.fr sont refusés par le
-mandataire de cet environnement. **Aucune page n'a été ouverte, seuls les
-résumés du moteur ont été lus** : à relire à la source avant de coder) :
+**CE QUE LA LOI EXIGE D'UN AVOIR** — lu à la source le 24 septembre 2026 :
+BOI-TVA-DECLA-30-20-20-20 (version du 19 janvier 2022), §180 à §340, texte
+collé par lui depuis bofip.impots.gouv.fr (refusé à cet environnement).
 
-- un avoir **est une facture rectificative** : il porte les mentions du I de
-  l'article 242 nonies A de l'annexe II au CGI, comme une facture. Le BOFiP
-  (BOI-TVA-DECLA-30-20-20-20) admet que certaines mentions puissent manquer ;
-  lesquelles exactement reste à lire à la source. Le plus sûr est de toutes les
-  porter ;
-- **une référence explicite à la facture initiale : son numéro ET sa date** ;
-- **un numéro unique, dans une suite chronologique et continue**. Une série à
-  part (préfixe « A ») est admise si elle est justifiée et tenue ; deux avoirs
-  d'une même année ne portent jamais le même numéro ;
-- sa date, l'identité de l'émetteur (nom, adresse, SIREN/SIRET, n° de TVA
-  s'il en a un), celle du client (nom, adresse) ;
-- **ce qui est corrigé et pourquoi** (la désignation), et les montants **HT,
-  taux, TVA et TTC**, taux par taux ; « TVA non applicable, art. 293 B du CGI »
-  pour une entreprise en franchise ;
-- la facture initiale **ne se modifie jamais** ;
-- les quatre mentions nouvelles de la réforme (SIREN du client s'il est une
-  entreprise, nature de l'opération, option pour les débits, adresse de
-  livraison) : 1er septembre 2026 pour les grandes entreprises et les ETI,
-  **1er septembre 2027 pour les PME et les micro-entreprises**, donc pour lui.
-  Elles valent pour l'avoir comme pour la facture.
+- **§220 (CGI art. 289, I-5)** : l'avoir fait référence **explicitement à la
+  facture initiale, numéro ET date**, et porte **toutes les mentions d'une
+  facture** (CGI ann. II art. 242 nonies A, I), sauf deux dont on peut se
+  dispenser (§180) : le n° de TVA intracommunautaire (2°) et la référence à
+  une exonération (12°). Quel que soit le montant ;
+- **§260** : il indique le **montant HT de la réduction et la TVA
+  correspondante**, les **noms et adresses des deux parties**, et le
+  **total HT et la TVA dus après la réduction** ;
+- **§270** : l'artisan peut renoncer à récupérer la TVA et écrire « net de
+  taxes » sur l'avoir. Pas de raison de l'offrir par défaut ;
+- **§300 à §320, ET C'EST CE QUI VALIDE « IL NE ME PAIERA PAS »** : pour un
+  impayé, **pas d'avoir**. *« La dette du client défaillant subsiste et la
+  facture initiale ne doit pas être modifiée. »* La seule rectification
+  prévue sert à récupérer une TVA déjà versée (art. 272) : un duplicata de la
+  facture portant, en caractères très apparents, « Facture impayée pour la
+  somme de … euros (prix net) et pour la somme de … euros (TVA
+  correspondante) qui ne peut faire l'objet d'une déduction (CGI, art.
+  272) », ou un état récapitulatif des impayés (§330). **À l'encaissement
+  (son régime), la TVA d'une facture impayée n'a jamais été versée : rien à
+  récupérer, donc aucun duplicata.** Pour un artisan au régime des débits,
+  Atlas devra le proposer ;
+- **non lu à la source** : la numérotation (suite chronologique et continue,
+  série « A » à part admise selon les résumés de BOI-TVA-DECLA-30-20-20-10),
+  et les quatre mentions de la réforme (SIREN du client entreprise, nature de
+  l'opération, option pour les débits, adresse de livraison ; 1er septembre
+  2027 pour les PME selon des sites privés).
 
 La planche ne montre aujourd'hui que le numéro, la facture visée (sans sa date)
 et le TTC. Le PDF de l'avoir doit reprendre l'en-tête de la facture
