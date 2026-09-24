@@ -9372,6 +9372,8 @@ seulement l'avoir, c'est lui donner un geste qui le désarme, sans avertissement
   (*« ça risque d'être hyper rare »*) ;
 - **une catégorie « Non payées » dans Terminés**, qui n'apparaît que tant qu'une
   facture y est rangée par « Il ne me paiera pas », et disparaît une fois vide ;
+- « Il vous a payé » : le moyen dans un **déroulant à chevron doré**, et **le
+  numéro du chèque** quand c'est un chèque ;
 - une facture déclarée non payée **peut encore être payée** : « J'ai reçu le
   paiement » la rend acquittée, et sa TVA entre au relevé du mois du paiement.
 

@@ -140,6 +140,8 @@
   .refus{margin:10px 0 0;font-size:13.5px;color:var(--alerte)}
   .deroulant{width:100%;border:0;border-bottom:1px solid var(--lineSoft);background:none;cursor:pointer;
              text-align:left;font-size:15px}
+  #ligneCheque[hidden]{display:none}
+  .regl .centre{text-align:center}
   .deroulant .choisi{display:flex;align-items:center;gap:9px}
   .deroulant .chevron{flex:none;overflow:visible;color:var(--or);transition:transform .18s}
   .deroulant[aria-expanded="true"] .chevron{transform:rotate(180deg)}
@@ -442,6 +444,11 @@
           <button type="button" aria-pressed="false">Espèces</button>
           <button type="button" aria-pressed="false">Carte</button>
         </div>
+        <!-- Sa demande : « quand je choisis le paiement par chèque, je dois
+             pouvoir mettre le numéro de chèque ». Seul le chèque a sa case,
+             comme dans les règlements de la facture (ReglementsRecus.tsx). -->
+        <label class="ligne" for="numeroCheque" id="ligneCheque"><span>N° de chèque</span>
+          <span class="saisie"><input id="numeroCheque" inputmode="numeric" autocomplete="off" placeholder="1234567" value="5800755"></span></label>
         <div class="ligne"><span>Le</span><span class="v">12 novembre</span></div>
         <div class="ligne"><span>Montant</span><span class="v">1 440,00 €</span></div>
       </div>
@@ -459,7 +466,7 @@
     </div>
     <div class="carte">
       <div class="caps">Règlements reçus</div>
-      <div class="regl"><span>Paiement<small>12/11/2026</small></span><span data-montre="moyen">chèque</span><span>1 440,00 €</span></div>
+      <div class="regl"><span>Paiement<small>12/11/2026</small></span><span class="centre"><span data-montre="moyen">chèque</span><small data-montre="numero">n° 5800755</small></span><span>1 440,00 €</span></div>
       <div class="net"><b>Net à payer</b><span class="m">0,00 €</span></div>
       <div class="encadre"><p>Facture acquittée</p></div>
     </div>
@@ -511,7 +518,7 @@
     termB:    ["Terminés, avec une catégorie de plus", "Une petite catégorie <b>Non payées</b> est apparue sous les deux boutons. <b>Elle n'existe que tant qu'une facture y est rangée</b> : sans facture non payée, vous ne la voyez jamais. <b>Touchez-la.</b>"],
     nonPayees:["Les factures non payées", "Toutes vos factures non payées, rangées ici. <b>Touchez celle de M. Martin.</b>"],
     factureB: ["La facture, après", "La facture reste entière, marquée <b>Non payée</b>. Atlas ne vous la rappelle plus. Et <b>s'il paie un jour</b> ? Touchez «&nbsp;J'ai reçu le paiement&nbsp;»."],
-    paye:     ["Il a finalement payé", "Vous notez le paiement comme n'importe quel règlement. <b>Touchez «&nbsp;Moyen&nbsp;»</b> pour choisir chèque, virement, espèces ou carte, puis <b>«&nbsp;C'est noté&nbsp;»</b>."],
+    paye:     ["Il a finalement payé", "Vous notez le paiement comme n'importe quel règlement. <b>Touchez «&nbsp;Moyen&nbsp;»</b> pour choisir chèque, virement, espèces ou carte. Pour un chèque, <b>son numéro</b> s'écrit dessous. Puis <b>«&nbsp;C'est noté&nbsp;»</b>."],
     factureB2:["La facture, payée", "Le «&nbsp;Non payée&nbsp;» disparaît : la facture est <b>acquittée</b>, le Net à payer tombe à zéro. <b>Touchez «&nbsp;Voir Ma TVA&nbsp;».</b>"],
     tvaB:     ["Elle entre au relevé de TVA", "Les <b>240,00 €</b> de TVA de cette facture entrent au relevé de <b>novembre</b>, le mois où il a payé, pas celui de la facture. C'est la règle de l'encaissement, et c'est déjà ce que fait votre relevé aujourd'hui. Et la catégorie <b>Non payées</b> a disparu : elle était vide. Fin de la seconde branche."],
   };
@@ -584,6 +591,13 @@
     document.querySelectorAll(".onglets-fiche button").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
     document.querySelectorAll(".liste").forEach((l) => { l.hidden = l.dataset.l !== b.dataset.o; });
   }));
+  function cheque(){
+    const estCheque = $('[data-montre="moyenChoisi"]').textContent === "Chèque";
+    const n = $("#numeroCheque").value.trim();
+    $("#ligneCheque").hidden = !estCheque;
+    $('[data-montre="numero"]').textContent = estCheque && n ? "n° " + n : "";
+  }
+  $("#numeroCheque").addEventListener("input", cheque);
   $("#moyen").addEventListener("click", () => {
     const ouvert = $("#moyen").getAttribute("aria-expanded") === "true";
     $("#moyen").setAttribute("aria-expanded", String(!ouvert));
@@ -595,6 +609,7 @@
     $('[data-montre="moyen"]').textContent = b.textContent.toLowerCase();
     $("#moyen").setAttribute("aria-expanded", "false");
     $("#moyens").hidden = true;
+    cheque();
   }));
 
   poser();
