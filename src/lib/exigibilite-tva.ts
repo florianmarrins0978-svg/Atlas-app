@@ -34,12 +34,34 @@ export type Paiement = {
   montant: string;
 };
 
-/** Ce qu'une facture apporte au relevé : ses trois totaux et sa date. */
+/**
+ * Un avoir fait sur la facture (migration 0101) : ce qu'il RETIRE, en positif,
+ * et le jour où il a été émis.
+ */
+export type AvoirPourTva = {
+  /** Le numéro de l'avoir : aux débits, c'est lui qui s'écrit au relevé. */
+  numero: string;
+  date: string;
+  ht: string;
+  tva: string;
+  ttc: string;
+};
+
+/**
+ * Ce qu'une facture apporte au relevé : ses trois totaux, sa date, et les
+ * avoirs qui la corrigent.
+ *
+ * **Les avoirs sont OBLIGATOIRES ici, pas facultatifs.** Un champ facultatif
+ * laisserait un appelant les oublier, et l'écran réclamerait alors au client
+ * une somme qu'un avoir a déjà annulée. Obligatoire, c'est le compilateur qui
+ * trouve chaque endroit qui doit les lire.
+ */
 export type FacturePourTva = {
   dateEmission: string;
   totalHt: string;
   totalTva: string;
   totalTtc: string;
+  avoirs: readonly AvoirPourTva[];
 };
 
 /**
@@ -55,7 +77,9 @@ export type EntreeReleve = {
   tva: string;
   ttc: string;
   /** D'où vient cette entrée — pour que l'écran puisse le dire. */
-  motif: "emission" | "paiement";
+  motif: "emission" | "paiement" | "avoir";
+  /** Le numéro de l'avoir, sur une entrée d'avoir : la pièce qui la justifie. */
+  numeroAvoir?: string;
 };
 
 /**
@@ -76,6 +100,23 @@ function d(x: string): Decimal {
   }
 }
 
+/**
+ * Ce que la facture vaut une fois ses avoirs retirés : ce que le client doit
+ * vraiment. C'est sur CE total que se comptent le reste dû, le solde, et la
+ * part de TVA de chaque encaissement.
+ */
+export function apresAvoirs(facture: FacturePourTva): { totalHt: string; totalTva: string; totalTtc: string } {
+  let ht = d(facture.totalHt);
+  let tva = d(facture.totalTva);
+  let ttc = d(facture.totalTtc);
+  for (const a of facture.avoirs) {
+    ht = ht.minus(d(a.ht));
+    tva = tva.minus(d(a.tva));
+    ttc = ttc.minus(d(a.ttc));
+  }
+  return { totalHt: ht.toFixed(2), totalTva: tva.toFixed(2), totalTtc: ttc.toFixed(2) };
+}
+
 /** La somme reçue sur une facture, tous règlements confondus. */
 export function totalRegle(paiements: readonly Paiement[]): string {
   return paiements.reduce((acc, p) => acc.plus(d(p.montant)), new Decimal(0)).toFixed(2);
@@ -90,7 +131,7 @@ export function totalRegle(paiements: readonly Paiement[]): string {
  * un écran, ce qui ne veut rien dire pour un artisan.
  */
 export function resteDu(facture: FacturePourTva, paiements: readonly Paiement[]): string {
-  const reste = d(facture.totalTtc).minus(d(totalRegle(paiements)));
+  const reste = d(apresAvoirs(facture).totalTtc).minus(d(totalRegle(paiements)));
   return reste.isNegative() ? "0.00" : reste.toFixed(2);
 }
 
@@ -112,10 +153,12 @@ export function etatPaiement(facture: FacturePourTva, paiements: readonly Paieme
   // ne peut pas la solder, un règlement de 0 € étant refusé à juste titre.
   // Elle occupait donc l'écran d'attente avec un bouton qui ne pouvait
   // qu'échouer, et gonflait le compte de factures en retard.
-  if (d(facture.totalTtc).lessThanOrEqualTo(0)) return "soldee";
+  // Un avoir total la ramène à zéro : elle n'attend plus rien non plus.
+  const du = d(apresAvoirs(facture).totalTtc);
+  if (du.lessThanOrEqualTo(0)) return "soldee";
   const regle = d(totalRegle(paiements));
   if (regle.lessThanOrEqualTo(0)) return "en_attente";
-  return regle.greaterThanOrEqualTo(d(facture.totalTtc)) ? "soldee" : "partielle";
+  return regle.greaterThanOrEqualTo(du) ? "soldee" : "partielle";
 }
 
 /**
@@ -181,18 +224,35 @@ export function entreesDuReleve(
   regime: Exigibilite
 ): EntreeReleve[] {
   if (regime === "debits") {
+    // **Aux débits, l'avoir se déclare le jour où il est émis, en négatif.**
+    // Réduire l'entrée de la facture réécrirait une période déjà déclarée ; la
+    // TVA se régularise dans la période de l'avoir (CGI art. 272).
     return [
       {
         date: facture.dateEmission,
         ht: d(facture.totalHt).toFixed(2),
         tva: d(facture.totalTva).toFixed(2),
         ttc: d(facture.totalTtc).toFixed(2),
-        motif: "emission",
+        motif: "emission" as const,
       },
+      ...facture.avoirs.map((a) => ({
+        date: a.date,
+        ht: d(a.ht).negated().toFixed(2),
+        tva: d(a.tva).negated().toFixed(2),
+        ttc: d(a.ttc).negated().toFixed(2),
+        motif: "avoir" as const,
+        numeroAvoir: a.numero,
+      })),
     ];
   }
 
-  const ttc = d(facture.totalTtc);
+  // **Aux encaissements, seul ce qui est payé entre** : la TVA de chaque
+  // règlement se compte au prorata de ce que la facture vaut APRÈS ses avoirs.
+  // Réserve connue, écrite dans TODO.md : un avoir émis APRÈS un acompte, sur
+  // une ligne d'un autre taux que le reste, déplace de quelques centimes la
+  // part de TVA de cet acompte déjà déclaré.
+  const net = apresAvoirs(facture);
+  const ttc = d(net.totalTtc);
   if (ttc.lessThanOrEqualTo(0)) return [];
 
   // Dans l'ordre où l'argent est rentré : c'est l'ordre des périodes.
@@ -207,8 +267,8 @@ export function entreesDuReleve(
     const dernier = rang === ordonnes.length - 1;
 
     // Le dernier règlement d'une facture SOLDÉE ramène exactement aux totaux.
-    const ht = dernier && solde ? d(facture.totalHt).minus(htCumule) : montant.times(d(facture.totalHt)).dividedBy(ttc);
-    const tva = dernier && solde ? d(facture.totalTva).minus(tvaCumulee) : montant.times(d(facture.totalTva)).dividedBy(ttc);
+    const ht = dernier && solde ? d(net.totalHt).minus(htCumule) : montant.times(d(net.totalHt)).dividedBy(ttc);
+    const tva = dernier && solde ? d(net.totalTva).minus(tvaCumulee) : montant.times(d(net.totalTva)).dividedBy(ttc);
 
     const htArrondi = ht.toDecimalPlaces(2);
     const tvaArrondie = tva.toDecimalPlaces(2);
@@ -247,8 +307,9 @@ export function enAttenteDeReglement(
     nombre++;
     const reste = d(resteDu(facture, paiements));
     ttc = ttc.plus(reste);
-    const total = d(facture.totalTtc);
-    if (total.greaterThan(0)) tva = tva.plus(reste.times(d(facture.totalTva)).dividedBy(total));
+    const net = apresAvoirs(facture);
+    const total = d(net.totalTtc);
+    if (total.greaterThan(0)) tva = tva.plus(reste.times(d(net.totalTva)).dividedBy(total));
   }
 
   return { nombre, ttc: ttc.toFixed(2), tva: tva.toDecimalPlaces(2).toFixed(2) };

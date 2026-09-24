@@ -289,11 +289,13 @@ export default async function ReleveTvaPage({
                     {l.clientNom ?? "Client non renseigné"}
                   </p>
                   <p className="mt-0.5 text-[11.5px]" style={{ color: colors.muted }}>
-                    Facture n° <NumeroDeDocument valeur={l.numeroCommercial} />,{" "}
-                    {l.motif === "paiement" ? "règlement du" : "émise le"} {jourLisible(l.dateEmission)}
+                    {/* Aux débits, un avoir retire sa TVA sous SON numéro (§412) :
+                        l'appeler « Facture » ferait chercher la mauvaise pièce. */}
+                    {l.motif === "avoir" ? "Avoir" : "Facture"} n° <NumeroDeDocument valeur={l.numeroCommercial} />,{" "}
+                    {l.motif === "paiement" ? "règlement du" : l.motif === "avoir" ? "émis le" : "émise le"} {jourLisible(l.dateEmission)}
                   </p>
                   <Paire
-                    quoi={l.motif === "paiement" ? "Règlement encaissé" : "Facture émise"}
+                    quoi={l.motif === "paiement" ? "Règlement encaissé" : l.motif === "avoir" ? "Avoir émis" : "Facture émise"}
                     combien={`${enEuros(Number(l.totalTtc))} TTC`}
                   />
                   <Paire quoi="TVA collectée" combien={enEuros(Number(l.totalTva))} tva />

@@ -85,25 +85,48 @@ const TAUX_TVA_PAR_DEFAUT = "20.00";
 // contrôle. D'où deux colonnes de compteur ET deux colonnes d'année — un devis
 // peut partir en décembre et sa facture en janvier.
 export async function attribuerNumeroFacture(tx: DbOrTx, entrepriseId: string): Promise<string> {
+  return attribuerNumero(tx, entrepriseId, "facture");
+}
+
+/**
+ * Le prochain numéro d'une suite qui n'est pas celle des devis : les factures,
+ * ou les avoirs (migration 0101).
+ *
+ * **Une seule écriture du compteur pour les deux suites.** Recopier l'UPDATE
+ * pour les avoirs, c'était deux règles de remise à zéro au 1ᵉʳ janvier, et la
+ * première correction n'en toucherait qu'une (`CLAUDE.md` §3). Les noms de
+ * colonnes viennent d'une table fermée, jamais d'une saisie.
+ */
+const COMPTEUR = {
+  facture: { prochain: sql.raw("prochain_numero_facture"), annee: sql.raw("annee_facture") },
+  avoir: { prochain: sql.raw("prochain_numero_avoir"), annee: sql.raw("annee_avoir") },
+} as const;
+
+export async function attribuerNumero(
+  tx: DbOrTx,
+  entrepriseId: string,
+  genre: keyof typeof COMPTEUR
+): Promise<string> {
   const maintenant = new Date();
   const annee = maintenant.getFullYear();
   const mois = maintenant.getMonth() + 1;
 
   const format = await formatNumeroDe(tx, entrepriseId);
   const remise = repartChaqueAnnee(format);
+  const { prochain, annee: colonneAnnee } = COMPTEUR[genre];
 
   const result: unknown = await tx.execute(sql`
     UPDATE entreprise_compteurs
-    SET prochain_numero_facture = CASE
-          WHEN ${remise} AND annee_facture IS DISTINCT FROM ${annee} THEN 2
-          ELSE prochain_numero_facture + 1
+    SET ${prochain} = CASE
+          WHEN ${remise} AND ${colonneAnnee} IS DISTINCT FROM ${annee} THEN 2
+          ELSE ${prochain} + 1
         END,
-        annee_facture = ${annee}
+        ${colonneAnnee} = ${annee}
     WHERE entreprise_id = ${entrepriseId}
-    RETURNING prochain_numero_facture - 1 AS numero
+    RETURNING ${prochain} - 1 AS numero
   `);
   const numero = (result as { rows: { numero: number }[] }).rows[0].numero;
-  return ecrireNumero(format, "facture", { annee, mois, numero });
+  return ecrireNumero(format, genre, { annee, mois, numero });
 }
 
 /**
@@ -1253,7 +1276,7 @@ export async function complementsDeLaFacture(
   };
 }
 
-function donneesFacture(
+export function donneesFacture(
   f: typeof factures.$inferSelect,
   lignes: (typeof lignesFacture.$inferSelect)[],
   complements: ComplementsDeLaFacture
@@ -1560,8 +1583,11 @@ export type LigneReleveTva = {
   tauxTva: string;
   totalTva: string;
   totalTtc: string;
-  /** `paiement` : la ligne est un encaissement. `emission` : le régime des débits. */
-  motif?: "emission" | "paiement";
+  /**
+   * `paiement` : la ligne est un encaissement. `emission` : le régime des débits.
+   * `avoir` : un avoir, aux débits, qui retire sa TVA le jour où il est émis.
+   */
+  motif?: "emission" | "paiement" | "avoir";
 };
 
 export type ReleveTva = {
@@ -1637,7 +1663,9 @@ function assemblerReleve(
     for (const e of entrees) {
       if (!dansLaPeriode(e, debut, fin)) continue;
       lignes.push({
-        numeroCommercial: f.numeroCommercial,
+        // Une ligne d'avoir porte le numéro de l'avoir : c'est la pièce qu'un
+        // contrôle demandera pour justifier cette TVA retirée.
+        numeroCommercial: e.motif === "avoir" && e.numeroAvoir ? e.numeroAvoir : f.numeroCommercial,
         dateEmission: e.date,
         clientNom: f.clientNom,
         totalHt: e.ht,

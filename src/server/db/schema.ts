@@ -8,6 +8,8 @@
 // RLS, contraintes composites, triggers et CHECK sont des mécanismes PostgreSQL,
 // indépendants de l'ORM utilisé pour les déclarer.
 
+import type { LigneAvoirStockee } from "../../lib/avoir";
+
 import {
   pgTable,
   uuid,
@@ -636,6 +638,12 @@ export const entrepriseCompteurs = pgTable("entreprise_compteurs", {
    */
   anneeDevis: integer("annee_devis"),
   anneeFacture: integer("annee_facture"),
+  /**
+   * La suite des avoirs (migration 0101), à part de celle des factures : un
+   * avoir numéroté dans la suite des factures y laisserait un trou.
+   */
+  prochainNumeroAvoir: integer("prochain_numero_avoir").notNull().default(1),
+  anneeAvoir: integer("annee_avoir"),
 });
 
 // Correction v2.1 §1 : remplace le lien direct utilisateur → entreprise.
@@ -2071,6 +2079,73 @@ export const factures = pgTable(
       foreignColumns: [devis.id, devis.entrepriseId],
       name: "factures_devis_entreprise_fk",
     }).onDelete("restrict"),
+  ]
+);
+
+/**
+ * Les avoirs (migration 0101) : la facture rectificative, qui ne se modifie
+ * jamais. BOFiP BOI-TVA-DECLA-30-20-20-20, §220 et §260 : la facture visée,
+ * sa date, le HT et la TVA de la réduction. Le verrou est en base
+ * (`trg_avoir_immuable`) ; ses lignes vivent dans `lignes` pour être verrouillées
+ * avec lui.
+ */
+export const avoirs = pgTable(
+  "avoirs",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    entrepriseId: uuid("entreprise_id")
+      .notNull()
+      .references(() => entreprises.id, { onDelete: "cascade" }),
+    factureId: uuid("facture_id").notNull(),
+    numero: text("numero").notNull(),
+    dateEmission: date("date_emission").notNull(),
+    motif: text("motif").notNull(),
+    /** La ligne de la facture visée ; `null` = toute la facture. */
+    ligneFactureId: uuid("ligne_facture_id"),
+    totalHt: numeric("total_ht", { precision: 12, scale: 2 }).notNull(),
+    totalTva: numeric("total_tva", { precision: 12, scale: 2 }).notNull(),
+    totalTtc: numeric("total_ttc", { precision: 12, scale: 2 }).notNull(),
+    lignes: jsonb("lignes").$type<LigneAvoirStockee[]>().notNull(),
+    pdfStorageKey: text("pdf_storage_key").notNull(),
+    pdfChecksum: text("pdf_checksum").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    createdBy: uuid("created_by").references(() => users.id, { onDelete: "set null" }),
+  },
+  (t) => [
+    unique("avoirs_entreprise_numero_uk").on(t.entrepriseId, t.numero),
+    unique("avoirs_id_entreprise_uk").on(t.id, t.entrepriseId),
+    index("avoirs_facture_idx").on(t.factureId),
+    index("avoirs_entreprise_date_idx").on(t.entrepriseId, t.dateEmission),
+    foreignKey({
+      name: "avoirs_facture_entreprise_fk",
+      columns: [t.factureId, t.entrepriseId],
+      foreignColumns: [factures.id, factures.entrepriseId],
+    }),
+  ]
+);
+
+/**
+ * Les factures qu'il a déclarées « Il ne me paiera pas » (migration 0101).
+ *
+ * Une table à part, parce qu'une facture émise ne se modifie pas (et le BOFiP
+ * le dit pour l'impayé, §310). La ligne s'efface quand il paie.
+ */
+export const facturesNonPayees = pgTable(
+  "factures_non_payees",
+  {
+    factureId: uuid("facture_id").primaryKey(),
+    entrepriseId: uuid("entreprise_id")
+      .notNull()
+      .references(() => entreprises.id, { onDelete: "cascade" }),
+    declareeLe: timestamp("declaree_le", { withTimezone: true }).notNull().defaultNow(),
+    declareePar: uuid("declaree_par").references(() => users.id, { onDelete: "set null" }),
+  },
+  (t) => [
+    foreignKey({
+      name: "factures_non_payees_facture_entreprise_fk",
+      columns: [t.factureId, t.entrepriseId],
+      foreignColumns: [factures.id, factures.entrepriseId],
+    }),
   ]
 );
 

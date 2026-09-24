@@ -35,6 +35,8 @@ import {
 import { RAPPELS_PAR_DEFAUT } from "../src/lib/rappels";
 import { terminerChantier, emettreFacture } from "../src/server/repositories/factures";
 import { noterPaiement } from "../src/server/repositories/paiements-facture";
+import { declarerNonPayee } from "../src/server/repositories/factures-non-payees";
+import { faireUnAvoir } from "../src/server/repositories/avoirs";
 import { mettreAJourEntreprise } from "../src/server/repositories/entreprises";
 import { withEntreprise } from "../src/server/db/with-entreprise";
 import { chantiers, envoisDevis } from "../src/server/db/schema";
@@ -380,6 +382,28 @@ async function main() {
     await noterPaiement(ctxA, factureId, { date: "2026-08-13", montant: "1200.00" });
     const rappels = (await rappelsEnCours(ctxA, MAINTENANT)).filter((r) => r.genre === "facture-impayee");
     assert.deepEqual(rappels, []);
+  });
+
+  // **« IL NE ME PAIERA PAS » TAIT LE RAPPEL** (sa planche du 24 septembre
+  // 2026) : il l'a dit, on ne le lui redit plus. La facture, elle, reste due.
+  await essai("déclarée « Il ne me paiera pas », elle n'est plus rappelée", async () => {
+    const { ctxA } = await monter();
+    const { factureId } = await factureEnvoyeeIlYA(ctxA, "Toiture", 40);
+    assert.deepEqual(await declarerNonPayee(ctxA, factureId), { ok: true });
+    const rappels = (await rappelsEnCours(ctxA, MAINTENANT)).filter((r) => r.genre === "facture-impayee");
+    assert.deepEqual(rappels, []);
+  });
+
+  // **Un avoir baisse ce qui est rappelé** : le rappel réclame ce qui reste
+  // après lui, jamais une somme déjà annulée.
+  await essai("après un avoir de 240 €, le rappel ne réclame plus que 960 €", async () => {
+    const { ctxA } = await monter();
+    const { factureId } = await factureEnvoyeeIlYA(ctxA, "Toiture", 40);
+    const avoir = await faireUnAvoir(ctxA, factureId, { portee: null, montantTtc: "240", motif: "Geste commercial" }, MAINTENANT);
+    assert.ok(avoir.ok, avoir.ok ? "" : avoir.refus);
+    const [rappel] = (await rappelsEnCours(ctxA, MAINTENANT)).filter((r) => r.genre === "facture-impayee");
+    assert.equal(rappel?.facture?.resteDuCts, 96000);
+    assert.equal(rappel?.facture?.totalCts, 96000);
   });
 
   // **LE DEUXIÈME PIÈGE.** Un acompte ne solde pas : la facture reste rappelée

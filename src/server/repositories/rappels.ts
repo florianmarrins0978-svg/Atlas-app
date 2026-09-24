@@ -14,6 +14,8 @@ import {
   type ReglagesRappels,
 } from "../../lib/rappels";
 import type { Ctx } from "./context";
+import { avoirsDesFactures } from "./avoirs";
+import { apresAvoirs } from "@/lib/exigibilite-tva";
 
 /**
  * Les quatre rappels : leur réglage, et ce qu'ils rappellent.
@@ -228,6 +230,9 @@ export async function rappelsEnCours(ctx: Ctx, maintenant: Date): Promise<Rappel
           numero: factures.numeroCommercial,
           chantierId: factures.chantierId,
           chantierNom: chantiers.nom,
+          dateEmission: factures.dateEmission,
+          totalHt: factures.totalHt,
+          totalTva: factures.totalTva,
           totalTtc: factures.totalTtc,
           envoyeeLe: chantiers.factureEnvoyeeAt,
           repousseeLe: chantiers.rappelFactureRepousseLe,
@@ -246,12 +251,21 @@ export async function rappelsEnCours(ctx: Ctx, maintenant: Date): Promise<Rappel
             eq(factures.entrepriseId, ctx.entrepriseId),
             eq(factures.statut, "emise"),
             isNull(chantiers.deletedAt),
-            isNotNull(chantiers.factureEnvoyeeAt)
+            isNotNull(chantiers.factureEnvoyeeAt),
+            // « Il ne me paiera pas » : il l'a dit, on ne le lui rappelle plus
+            // (sa planche du 24 septembre 2026). La facture reste réclamable ;
+            // c'est le rappel seul qui se tait.
+            sql`NOT EXISTS (SELECT 1 FROM factures_non_payees n WHERE n.facture_id = ${factures.id})`
           )
         );
 
+      // **Ce qu'il doit se compte APRÈS les avoirs** : sans eux, le rappel
+      // réclamerait une somme qu'un avoir a déjà annulée.
+      const avoirsParFacture = await avoirsDesFactures(tx, lignes.map((l) => l.id));
+
       for (const l of lignes) {
-        const totalCts = Math.round(Number(l.totalTtc) * 100);
+        const net = apresAvoirs({ ...l, avoirs: avoirsParFacture.get(l.id) ?? [] });
+        const totalCts = Math.round(Number(net.totalTtc) * 100);
         const resteDuCts = totalCts - Math.round(Number(l.recu) * 100);
         // Soldée : elle sort du rappel le jour même, sans geste.
         if (resteDuCts <= 0) continue;

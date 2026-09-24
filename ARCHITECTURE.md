@@ -33174,3 +33174,36 @@ Les trois lisent la même règle et la même liste d'exceptions
 l'appel direct.** Sans cette porte, une suite qui importe sa décision restait
 pendue à attendre une entrée qui ne venait jamais — et un contrôle qui ne rend
 pas la main ne prouve rien (`CLAUDE.md` §5).
+
+## §412 — L'avoir et « Il ne me paiera pas » : la fondation (migration 0101)
+
+**Ses décisions du 24 septembre 2026**, prises sur trois planches
+(`appli/avoir.html`, `appli/il-ne-paiera-pas.html`, `appli/mise-en-demeure.html`) ;
+le détail et la loi lue au BOFiP sont dans `TODO.md`, entrée « L'AVOIR ».
+
+| | Où | Pourquoi ainsi |
+|---|---|---|
+| l'avoir | table `avoirs`, immuable (`trg_avoir_immuable`), lignes en `jsonb` | une facture rectificative ne se modifie pas ; des lignes dans une table à part auraient demandé un verrou sur des INSERT, qui ne sait pas distinguer « posée avec l'avoir » de « ajoutée un mois après » |
+| son numéro | `attribuerNumero(tx, id, "avoir")`, suite « A » à part | un avoir dans la suite des factures y laisserait un trou ; le compteur n'a qu'UNE écriture pour les deux suites |
+| son calcul | `calculerAvoir` (`src/lib/avoir.ts`), pure | il écrit le TTC, choisit la ligne (« la B ») ; la TVA de l'avoir est celle de la ligne, la TVA est la DIFFÉRENCE TTC − HT (`avoirs_ttc_somme_ck`) |
+| son papier | `genererPdfAvoir`, sur `composerDocument` | « reprends exactement le style de nos factures » ; ni IBAN ni conditions de règlement : un avoir ne se paie pas |
+| « Il ne me paiera pas » | table `factures_non_payees`, jamais la facture | BOFiP §310 : la facture initiale ne se modifie pas pour un impayé |
+| « non payée » | DÉDUIT : déclarée ET encore due | payée, elle sort de la catégorie seule, sans second geste à oublier |
+
+**LES AVOIRS SONT UN CHAMP OBLIGATOIRE DE `FacturePourTva`.** C'est ce qui a
+trouvé les six endroits qui comptaient un reste dû (relevé, écran d'attente,
+fiche client, rappels, paiement) : facultatif, un seul oubli et le client se
+voit réclamer une somme déjà annulée. Aux encaissements, la TVA de chaque
+règlement se compte au prorata de la facture APRÈS ses avoirs ; aux débits,
+l'avoir se déclare en négatif à sa date, sous son numéro, sans réécrire la
+période de la facture.
+
+**Réserve connue** : un avoir émis après un acompte, sur une ligne d'un autre
+taux que le reste, déplace de quelques centimes la part de TVA de cet acompte
+déjà déclaré (encaissements). Cas rare (plusieurs taux, acompte, puis avoir) ;
+inscrit dans `TODO.md`.
+
+**Ce que ce lot ne fait pas encore** : les écrans (volet de Terminés, saisie de
+l'avoir, catégorie « Non payées », onglet « Avoirs »), l'envoi de l'avoir, et
+la mise en demeure. Rien de tout cela n'est atteignable par lui tant qu'ils ne
+sont pas codés.

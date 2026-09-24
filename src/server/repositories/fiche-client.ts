@@ -14,7 +14,8 @@ import {
 } from "../db/schema";
 import type { Ctx } from "./context";
 import { composerFicheClient, type FicheClient } from "@/lib/fiche-client";
-import { resteDu, type FacturePourTva } from "@/lib/exigibilite-tva";
+import { resteDu } from "@/lib/exigibilite-tva";
+import { avoirsDesFactures } from "./avoirs";
 import { receptionEnMots, type ReceptionLisible } from "@/lib/reception-facture";
 import {
   dernierePrestation,
@@ -281,6 +282,9 @@ export async function chargerFicheClient(ctx: Ctx, clientId: string): Promise<Fi
       parFacture.set(p.factureId, liste);
     }
 
+    // Le reste dû se compte APRÈS les avoirs : sans eux, sa fiche lui
+    // réclamerait une somme qu'il a déjà annulée.
+    const avoirsParFacture = await avoirsDesFactures(tx, sesFactures.map((f) => f.id));
     const factureParChantier = new Map<string, { totalTtc: string; reste: string; jour: string }>();
     for (const f of sesFactures) {
       // **`resteDu` et non une soustraction écrite ici.** C'est la règle qui
@@ -289,7 +293,7 @@ export async function chargerFicheClient(ctx: Ctx, clientId: string): Promise<Fi
       // la différence.
       factureParChantier.set(f.chantierId, {
         totalTtc: f.totalTtc,
-        reste: resteDu(f as FacturePourTva, parFacture.get(f.id) ?? []),
+        reste: resteDu({ ...f, avoirs: avoirsParFacture.get(f.id) ?? [] }, parFacture.get(f.id) ?? []),
         jour: f.dateEmission,
       });
     }
@@ -585,11 +589,14 @@ export async function listerFichesClients(ctx: Ctx): Promise<ClientEnListe[]> {
       parFacture.set(p.factureId, liste);
     }
 
+    // Le reste dû se compte APRÈS les avoirs : sans eux, sa fiche lui
+    // réclamerait une somme qu'il a déjà annulée.
+    const avoirsParFacture = await avoirsDesFactures(tx, sesFactures.map((f) => f.id));
     const factureParChantier = new Map<string, { totalTtc: string; reste: string; jour: string }>();
     for (const f of sesFactures) {
       factureParChantier.set(f.chantierId, {
         totalTtc: f.totalTtc,
-        reste: resteDu(f as FacturePourTva, parFacture.get(f.id) ?? []),
+        reste: resteDu({ ...f, avoirs: avoirsParFacture.get(f.id) ?? [] }, parFacture.get(f.id) ?? []),
         jour: f.dateEmission,
       });
     }

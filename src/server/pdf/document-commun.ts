@@ -720,6 +720,11 @@ export type OptionsDocument = {
    * régler ou le net à payer, dans la fonte du Total TTC, montant en gras.
    */
   apresTotal?: { libelle: string; montant: string; style?: "doux" | "grand" }[];
+  /**
+   * Le mot du total, quand ce n'est pas celui d'une facture : « Total avoir
+   * TTC » sur un avoir (sa demande du 24 septembre 2026). Absent : « Total TTC ».
+   */
+  libelleTotalTtc?: string;
   /** « Acquittée le 21/09/2026 » — encadré d'or sous le net, quand tout est reçu. */
   tampon?: string | null;
   /** Des lignes d'information sous les notes, en petit : la main d'œuvre TTC. */
@@ -1150,7 +1155,7 @@ export async function composerDocument(
   trait(ctx, y, 1.6, ctx.teintes.encre, gaucheTotaux, DROITE);
   y -= 22;
 
-  ecrire(ctx, "Total TTC", gaucheTotaux, y, { taille: 14, police: ctx.serifGras });
+  ecrire(ctx, options.libelleTotalTtc ?? "Total TTC", gaucheTotaux, y, { taille: 14, police: ctx.serifGras });
   ecrireADroite(ctx, formatMontant(data.totalTtc, data.devise), DROITE, y, {
     taille: 14,
     police: ctx.serifGras,

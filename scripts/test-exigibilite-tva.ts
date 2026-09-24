@@ -48,6 +48,7 @@ const FACTURE: FacturePourTva = {
   totalHt: "1200.00",
   totalTva: "240.00",
   totalTtc: "1440.00",
+  avoirs: [],
 };
 
 console.log("\n=== Le régime décide de la date, et de rien d'autre ===");
@@ -116,7 +117,7 @@ cas("LES CENTIMES NE SE PERDENT PAS : trois acomptes retombent sur la facture", 
 });
 
 cas("des tiers qui ne tombent pas rond retombent quand même juste", () => {
-  const facture: FacturePourTva = { dateEmission: "2026-01-05", totalHt: "100.00", totalTva: "20.00", totalTtc: "120.00" };
+  const facture: FacturePourTva = { dateEmission: "2026-01-05", totalHt: "100.00", totalTva: "20.00", totalTtc: "120.00", avoirs: [] };
   const entrees = entreesDuReleve(
     facture,
     [
@@ -245,7 +246,7 @@ cas("aux débits, rien n'attend — tout est déjà déclaré", () => {
 console.log("\n=== Ce qui ne doit pas casser ===");
 
 cas("une facture à zéro n'apporte rien, et ne divise pas par zéro", () => {
-  const gratuite: FacturePourTva = { dateEmission: "2026-08-05", totalHt: "0.00", totalTva: "0.00", totalTtc: "0.00" };
+  const gratuite: FacturePourTva = { dateEmission: "2026-08-05", totalHt: "0.00", totalTva: "0.00", totalTtc: "0.00", avoirs: [] };
   assert.deepEqual(entreesDuReleve(gratuite, [{ date: "2026-08-20", montant: "10.00" }], "encaissements"), []);
   assert.equal(enAttenteDeReglement([{ facture: gratuite, paiements: [] }], "encaissements").tva, "0.00");
 });
@@ -256,7 +257,7 @@ cas("UNE FACTURE À ZÉRO N'ATTEND AUCUN RÈGLEMENT — vu sur son écran", () =
   // « Payée » ne pouvait pas la solder — un règlement de 0 € est refusé, à
   // juste titre. Un bouton qui ne peut qu'échouer, sur l'écran même où il vient
   // vérifier que rien n'entre tout seul.
-  const gratuite: FacturePourTva = { dateEmission: "2026-08-05", totalHt: "0.00", totalTva: "0.00", totalTtc: "0.00" };
+  const gratuite: FacturePourTva = { dateEmission: "2026-08-05", totalHt: "0.00", totalTva: "0.00", totalTtc: "0.00", avoirs: [] };
   assert.equal(etatPaiement(gratuite, []), "soldee");
   assert.equal(refusDuPaiement(gratuite, [], { date: "2026-09-09", montant: "0.00" }) === null, false);
   assert.deepEqual(enAttenteDeReglement([{ facture: gratuite, paiements: [] }], "encaissements"), {
@@ -279,10 +280,61 @@ cas("UNE FACTURE ÉMISE N'ENTRE AU RELEVÉ QU'APRÈS UN RÈGLEMENT NOTÉ", () =>
 });
 
 cas("une facture en franchise de TVA passe sans encombre", () => {
-  const franchise: FacturePourTva = { dateEmission: "2026-08-05", totalHt: "500.00", totalTva: "0.00", totalTtc: "500.00" };
+  const franchise: FacturePourTva = { dateEmission: "2026-08-05", totalHt: "500.00", totalTva: "0.00", totalTtc: "500.00", avoirs: [] };
   const [entree] = entreesDuReleve(franchise, [{ date: "2026-09-01", montant: "500.00" }], "encaissements");
   assert.equal(entree.tva, "0.00");
   assert.equal(entree.ht, "500.00");
+});
+
+console.log("\n=== Les avoirs (migration 0101) ===");
+
+// L'avoir de sa planche du 24 septembre : 300 € TTC retirés de la facture de
+// 1 440 €, soit 250 € HT et 50 € de TVA.
+const AVOIR_300 = { numero: "A2026-000001", date: "2026-09-10", ht: "250.00", tva: "50.00", ttc: "300.00" };
+const AVEC_AVOIR: FacturePourTva = { ...FACTURE, avoirs: [AVOIR_300] };
+
+cas("après un avoir de 300 €, il ne doit plus que 1 140 €", () => {
+  assert.equal(resteDu(AVEC_AVOIR, []), "1140.00");
+  assert.equal(etatPaiement(AVEC_AVOIR, []), "en_attente");
+});
+
+cas("1 140 € reçus soldent la facture corrigée, et pas un centime de plus n'est accepté", () => {
+  assert.equal(etatPaiement(AVEC_AVOIR, [{ date: "2026-09-20", montant: "1140.00" }]), "soldee");
+  assert.notEqual(refusDuPaiement(AVEC_AVOIR, [], { date: "2026-09-20", montant: "1140.01" }), null);
+  assert.equal(refusDuPaiement(AVEC_AVOIR, [], { date: "2026-09-20", montant: "1140.00" }), null);
+});
+
+cas("aux encaissements, le paiement qui solde n'apporte que la TVA de la facture corrigée", () => {
+  const [entree] = entreesDuReleve(AVEC_AVOIR, [{ date: "2026-09-20", montant: "1140.00" }], "encaissements");
+  assert.equal(entree.tva, "190.00");
+  assert.equal(entree.ht, "950.00");
+});
+
+cas("aux débits, l'avoir se déclare en négatif le jour où il est émis, sous son numéro", () => {
+  const entrees = entreesDuReleve(AVEC_AVOIR, [], "debits");
+  assert.equal(entrees.length, 2);
+  assert.equal(entrees[0].tva, "240.00");
+  assert.equal(entrees[1].motif, "avoir");
+  assert.equal(entrees[1].date, "2026-09-10");
+  assert.equal(entrees[1].tva, "-50.00");
+  assert.equal(entrees[1].numeroAvoir, "A2026-000001");
+});
+
+cas("un avoir total solde la facture sans aucun paiement, et rien n'attend plus", () => {
+  const annulee: FacturePourTva = {
+    ...FACTURE,
+    avoirs: [{ numero: "A2026-000002", date: "2026-09-10", ht: "1200.00", tva: "240.00", ttc: "1440.00" }],
+  };
+  assert.equal(resteDu(annulee, []), "0.00");
+  assert.equal(etatPaiement(annulee, []), "soldee");
+  assert.deepEqual(entreesDuReleve(annulee, [], "encaissements"), []);
+  assert.equal(enAttenteDeReglement([{ facture: annulee, paiements: [] }], "encaissements").nombre, 0);
+});
+
+cas("ce qui attend se compte après l'avoir : 1 140 € et 190 € de TVA", () => {
+  const attente = enAttenteDeReglement([{ facture: AVEC_AVOIR, paiements: [] }], "encaissements");
+  assert.equal(attente.ttc, "1140.00");
+  assert.equal(attente.tva, "190.00");
 });
 
 console.log(`\n${echecs === 0 ? "✅ Toutes les vérifications passent." : `❌ ${echecs} échec(s).`}`);

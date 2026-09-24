@@ -8,6 +8,16 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-24
 
+### L'avoir et « Il ne me paiera pas » : la fondation (lot 1, sur la branche)
+
+Migration 0101 : `avoirs` (immuable, suite « A ») et `factures_non_payees`.
+L'avoir se calcule sur la ligne qu'il choisit, porte son PDF sur le papier des
+factures, et **le reste dû comme la TVA se comptent après lui partout** : le
+type `FacturePourTva` exige désormais ses avoirs, et le compilateur a trouvé
+chaque endroit qui aurait réclamé au client une somme annulée. « Il ne me paiera
+pas » tait le rappel sans toucher à la facture. Aucun écran encore : pas
+atteignable. `ARCHITECTURE.md` §412.
+
 ### Les maquettes ne se publiaient plus depuis le 23 septembre au soir
 
 Trois contrôles de `pages.yml` (`termines`, `boutons-verts`, `porte-plein-air`)

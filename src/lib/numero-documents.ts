@@ -25,8 +25,11 @@
  *   3. le **« F »** des factures reste.
  */
 
-/** Ce qui distingue les deux suites. Elles ne se mêlent jamais. */
-export type GenreDocument = "devis" | "facture";
+/**
+ * Ce qui distingue les trois suites. Elles ne se mêlent jamais : un avoir
+ * numéroté dans la suite des factures y laisserait un trou (migration 0101).
+ */
+export type GenreDocument = "devis" | "facture" | "avoir";
 
 export type FormatNumero = {
   /** Écrit en base. Ne change jamais : un réglage l'a peut-être posé. */
@@ -101,9 +104,10 @@ export const FORMAT_PAR_DEFAUT = "annee-6";
  *
  * Il sépare les deux suites d'un coup d'œil. Sans lui, un devis `2026-000012`
  * et une facture `2026-000012` se ressemblent, et c'est le genre de confusion
- * qui se paie devant un contrôle.
+ * qui se paie devant un contrôle. Le « A » des avoirs suit la même raison
+ * (planche `appli/avoir.html`, 24 septembre 2026).
  */
-const MARQUE: Record<GenreDocument, string> = { devis: "", facture: "F" };
+const MARQUE: Record<GenreDocument, string> = { devis: "", facture: "F", avoir: "A" };
 
 /** Le format désigné, ou celui par défaut si la clef ne dit rien. */
 export function formatDe(clef: string | null | undefined): FormatNumero {

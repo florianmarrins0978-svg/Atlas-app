@@ -9,11 +9,13 @@ import {
   type EtatPaiement,
   type Exigibilite,
   type FacturePourTva,
+  type AvoirPourTva,
   type Paiement,
 } from "../../lib/exigibilite-tva";
 import { netAPayer, refusDuReglementRecu, type MoyenDePaiement, type ReglementRecu } from "../../lib/acomptes-facture";
 import { totauxAvecReduction } from "../../lib/reduction-devis";
 import type { DbOrTx } from "../db/client";
+import { avoirsDesFactures } from "./avoirs";
 
 /**
  * Les règlements reçus, et le régime de TVA de l'entreprise.
@@ -47,6 +49,8 @@ export type FactureEnAttente = {
   totalHt: string;
   totalTva: string;
   totalTtc: string;
+  /** Les avoirs qui la corrigent : le reste dû et la TVA se comptent après eux. */
+  avoirs: readonly AvoirPourTva[];
   /**
    * **De quoi prévenir son client quand l'IBAN change** (8 septembre 2026).
    *
@@ -138,13 +142,17 @@ export async function facturesAvecPaiements(ctx: Ctx): Promise<FactureEnAttente[
       parFacture.set(p.factureId, liste);
     }
 
+    const avoirsParFacture = await avoirsDesFactures(tx, lignes.map((f) => f.id));
+
     return lignes.map((f) => {
       const paiements = parFacture.get(f.id) ?? [];
+      const pourTva: FacturePourTva = { ...f, avoirs: avoirsParFacture.get(f.id) ?? [] };
       return {
         ...f,
+        avoirs: pourTva.avoirs,
         paiements,
-        reste: resteDu(f as FacturePourTva, paiements),
-        etat: etatPaiement(f as FacturePourTva, paiements),
+        reste: resteDu(pourTva, paiements),
+        etat: etatPaiement(pourTva, paiements),
       };
     });
   });
@@ -167,7 +175,14 @@ export type ResultatPaiement = { ok: true; reste: string; etat: EtatPaiement } |
 export async function noterPaiement(
   ctx: Ctx,
   factureId: string,
-  demande: { date: string; montant: string; moyen?: PaiementEnregistre["moyen"]; note?: string }
+  demande: {
+    date: string;
+    montant: string;
+    moyen?: PaiementEnregistre["moyen"];
+    /** Le numéro du chèque (planche `appli/il-ne-paiera-pas.html`) ; ignoré pour un autre moyen. */
+    numero?: string | null;
+    note?: string;
+  }
 ): Promise<ResultatPaiement> {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const [facture] = await tx
@@ -197,7 +212,11 @@ export async function noterPaiement(
       .replace(/[\s  ]/g, "")
       .replace("€", "")
       .replace(",", ".");
-    const refus = refusDuPaiement(facture as FacturePourTva, dejaRegles, { date: demande.date, montant });
+    const pourTva: FacturePourTva = {
+      ...facture,
+      avoirs: (await avoirsDesFactures(tx, [factureId])).get(factureId) ?? [],
+    };
+    const refus = refusDuPaiement(pourTva, dejaRegles, { date: demande.date, montant });
     if (refus) return { ok: false as const, raison: refus };
 
     await tx.insert(paiementsFacture).values({
@@ -206,6 +225,9 @@ export async function noterPaiement(
       datePaiement: demande.date,
       montant: Number(montant).toFixed(2),
       moyen: demande.moyen ?? null,
+      // Comme sur la facture en cours (`poserReglementRecu`) : seul un chèque a
+      // un numéro, et un numéro vide n'en est pas un.
+      numero: demande.moyen === "cheque" ? demande.numero?.trim() || null : null,
       note: demande.note?.trim() || null,
       origine: "saisi",
     });
@@ -213,8 +235,8 @@ export async function noterPaiement(
     const tous = [...dejaRegles, { date: demande.date, montant }];
     return {
       ok: true as const,
-      reste: resteDu(facture as FacturePourTva, tous),
-      etat: etatPaiement(facture as FacturePourTva, tous),
+      reste: resteDu(pourTva, tous),
+      etat: etatPaiement(pourTva, tous),
     };
   });
 }

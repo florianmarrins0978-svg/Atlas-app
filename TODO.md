@@ -9375,6 +9375,17 @@ impayé ne sont pas la même chose :
 Ce qu'il a décrit — un client qui refuse de payer — relève du **second**. Bâtir
 seulement l'avoir, c'est lui donner un geste qui le désarme, sans avertissement.
 
+**LOT 1 CODÉ LE 24 SEPTEMBRE 2026, SUR LA BRANCHE, PAS SUR `main`** (sa
+consigne : *« ne lance aucune batterie »* ; or c'est un lot de niveau 3, argent
+et migration : `main` exige la batterie). `ARCHITECTURE.md` §412. Fait : la
+migration 0101, `calculerAvoir`, `faireUnAvoir` (numéro « A », PDF sur le papier
+des factures), `declarerNonPayee` et `listerFacturesNonPayees`, le reste dû et la
+TVA après avoirs partout, le rappel qui se tait, le numéro du chèque sur
+`noterPaiement`. Suites : `test-avoir`, `test-avoirs-db`, `test-rappels-db`,
+`test-exigibilite-tva`. **Reste** : lot 2 (les écrans), lot 3 (envoi de l'avoir,
+page publique, mise en demeure). **Réserve** : avoir après acompte, sur une ligne
+d'un autre taux (§412).
+
 **LES TROIS PLANCHES** (sa demande : *« trois planches séparées »*) :
 `appli/avoir.html`, `appli/il-ne-paiera-pas.html`, `appli/mise-en-demeure.html`,
 sur un seul moteur (`appli/facture-impayee.js` et `.css`) ; `il-ne-paie-pas.html`
