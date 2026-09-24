@@ -138,6 +138,8 @@ const FERME_AU_COMMERCIAL = [
 const FACTURE_DU_CHANTIER = [
   /^\/chantiers\/[^/]+\/facture(\/.*)?$/,
   /^\/api\/factures\/[^/]+(\/.*)?$/,
+  // L'avoir est une pièce de la facture : même porte, même fermeture (§412).
+  /^\/api\/avoirs\/[^/]+(\/.*)?$/,
 ];
 
 /**

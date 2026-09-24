@@ -11,6 +11,7 @@ import {
   paiementsFacture,
   passagesEntretien,
   prestations,
+  avoirs,
 } from "../db/schema";
 import type { Ctx } from "./context";
 import { composerFicheClient, type FicheClient } from "@/lib/fiche-client";
@@ -67,11 +68,11 @@ export type FicheClientComplete = FicheClient & {
    * jour : « tu peux rajouter une colonne facture et ranger les factures dans
    * le même ordre ».
    */
-  pieces: { devis: PieceDuClient[]; fiches: PieceDuClient[]; factures: PieceDuClient[] };
+  pieces: { devis: PieceDuClient[]; fiches: PieceDuClient[]; factures: PieceDuClient[]; avoirs: PieceDuClient[] };
 };
 
 /** Les trois colonnes vides — un client sans aucun chantier. */
-const AUCUNE_PIECE = { devis: [], fiches: [], factures: [] };
+const AUCUNE_PIECE = { devis: [], fiches: [], factures: [], avoirs: [] };
 
 export async function chargerFicheClient(ctx: Ctx, clientId: string): Promise<FicheClientComplete | null> {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
@@ -382,6 +383,26 @@ export async function chargerFicheClient(ctx: Ctx, clientId: string): Promise<Fi
       }))
     );
 
+    // **Ses avoirs, dans leur onglet à eux** — sa demande du 24 septembre 2026 :
+    // *« le jour où j'envoie un avoir, il faut pouvoir le retrouver dans une
+    // nouvelle catégorie avoir chez mes clients »*. La page ne montre l'onglet
+    // que s'il y en a un (`clients/[id]/page.tsx`).
+    const sesAvoirs = sesFactures.length
+      ? await tx
+          .select({ id: avoirs.id, numero: avoirs.numero, dateEmission: avoirs.dateEmission })
+          .from(avoirs)
+          .where(inArray(avoirs.factureId, sesFactures.map((f) => f.id)))
+      : [];
+    const piecesAvoirs = rangerDuPlusRecent(
+      sesAvoirs.map((a) => ({
+        id: a.id,
+        titre: `n° ${a.numero}`,
+        precision: jourCourt(a.dateEmission),
+        jour: a.dateEmission,
+        href: `/api/avoirs/${a.id}/pdf`,
+      }))
+    );
+
     // ─── La dernière prestation ──────────────────────────────────────────
     //
     // **Seuls les chantiers TERMINÉS comptent**, et cela s'est appris à
@@ -424,7 +445,7 @@ export async function chargerFicheClient(ctx: Ctx, clientId: string): Promise<Fi
         new Map(idDernier ? [[idDernier, prestationsDuDernier.map((p) => p.libelle)]] : [])
       ),
       chantierDuDernierDevis,
-      pieces: { devis: piecesDevis, fiches: piecesFiches, factures: piecesFactures },
+      pieces: { devis: piecesDevis, fiches: piecesFiches, factures: piecesFactures, avoirs: piecesAvoirs },
     };
   });
 }

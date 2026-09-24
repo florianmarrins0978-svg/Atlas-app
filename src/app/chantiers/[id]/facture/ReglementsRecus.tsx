@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { colors, font, smallCaps } from "@/lib/design-tokens";
 import { enEuros } from "@/lib/euros";
+import { ttcApresAvoirs } from "@/lib/avoir";
+import { adresseDeLaVisionneuse } from "@/lib/visionneuse-pdf";
 import { jourIso, jourNumerique } from "@/lib/jour";
 import {
   LIBELLES_MOYEN,
@@ -56,9 +58,17 @@ export default function ReglementsRecus({
   fige,
   carte = true,
   acquittement = !fige,
+  avoirs,
 }: {
   factureId: string;
   totalTtc: string;
+  /**
+   * Les avoirs de la facture (§412) : ils se lisent parmi les règlements, et
+   * le « Net à payer » descend d'autant — sa planche `appli/avoir.html`. Une
+   * facture en cours n'en a jamais : un avoir ne se fait que sur une facture
+   * partie.
+   */
+  avoirs: readonly { id: string; numero: string; dateEmission: string; totalTtc: string }[];
   acomptesDuDevis: readonly AcompteDevis[];
   initiaux: ReglementEnregistre[];
   fige: boolean;
@@ -91,7 +101,7 @@ export default function ReglementsRecus({
   const [erreur, setErreur] = useState<string | null>(null);
   const [enCours, setEnCours] = useState(false);
 
-  const net = netAPayer(totalTtc, reglements);
+  const net = netAPayer(ttcApresAvoirs(totalTtc, avoirs), reglements);
   const acquittee = estAcquittee(totalTtc, reglements);
   /** Le mot du papier, mot pour mot : « Acquittée le 21/09/2026 ». */
   const tampon = tamponAcquittee(totalTtc, reglements);
@@ -291,6 +301,24 @@ export default function ReglementsRecus({
             )}
           </span>
         </div>
+      ))}
+
+      {avoirs.map((a) => (
+        <a
+          key={a.id}
+          href={adresseDeLaVisionneuse(`/api/avoirs/${a.id}/pdf`, { surtitre: "Avoir", titre: a.numero })}
+          data-atlas="avoir-de-la-facture"
+          className="flex items-baseline justify-between gap-3 py-2.5 text-[14px] no-underline"
+          style={{ borderBottom: `1px solid ${colors.lineSoft}`, color: colors.ink }}
+        >
+          <span>
+            Avoir {a.numero}
+            <small className="block text-[12px]" style={{ color: colors.muted }}>
+              {jourNumerique(a.dateEmission)}
+            </small>
+          </span>
+          <span className="whitespace-nowrap">- {enEuros(a.totalTtc)}</span>
+        </a>
       ))}
 
       {!fige && (

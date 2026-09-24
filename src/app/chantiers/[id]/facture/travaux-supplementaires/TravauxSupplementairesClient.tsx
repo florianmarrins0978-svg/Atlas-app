@@ -858,6 +858,8 @@ export default function TravauxSupplementairesClient({
           )}
 
           <ReglementsRecus
+            // Une facture en cours n'a pas d'avoir : il ne se fait que sur une facture partie.
+            avoirs={[]}
             factureId={factureId}
             totalTtc={totaux.totalTtc}
             acomptesDuDevis={acomptesDuDevis}

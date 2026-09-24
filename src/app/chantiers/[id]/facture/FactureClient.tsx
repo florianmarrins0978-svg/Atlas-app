@@ -147,7 +147,10 @@ export default function FactureClient({
   jetonDejaPrepare = null,
   regimeTva,
   reprise,
+  avoirs,
 }: {
+  /** Ses avoirs (§412), lus parmi les règlements ; vide tant qu'elle n'est pas partie. */
+  avoirs: readonly { id: string; numero: string; dateEmission: string; totalTtc: string }[];
   chantierId: string;
   initialFacture: FacturePourEcran | null;
   /**
@@ -740,6 +743,7 @@ export default function FactureClient({
           déjà (`basculerAcquittee`). L'écran ne l'offre donc pas. */}
       <ReglementsRecus
         factureId={initialFacture.id}
+        avoirs={avoirs}
         totalTtc={totaux.totalTtc}
         acomptesDuDevis={initialFacture.acomptesDuDevis}
         initiaux={initialFacture.reglements}

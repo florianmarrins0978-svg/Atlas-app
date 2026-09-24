@@ -201,3 +201,75 @@ export async function pdfDeLAvoir(ctx: Ctx, avoirId: string): Promise<{ numero: 
   if (!a) return null;
   return { numero: a.numero, pdf: await lireObjet(a.cle) };
 }
+
+/**
+ * Ce que l'écran « Je fais un avoir » doit savoir pour calculer comme le
+ * serveur : la facture telle que `calculerAvoir` la lit, et les avoirs déjà
+ * faits. `null` si le chantier n'a pas de facture partie.
+ *
+ * **L'écran calcule avec la MÊME fonction que l'enregistrement** : ce qu'il
+ * affiche est ce qui s'écrira (`CLAUDE.md` §3). Le serveur recalcule quand
+ * même : l'écran ne décide de rien.
+ */
+export async function preparerAvoir(ctx: Ctx, chantierId: string) {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const [f] = await tx.select().from(factures).where(eq(factures.chantierId, chantierId));
+    if (!f || f.statut !== "emise") return null;
+    const lignes = await tx
+      .select()
+      .from(lignesFacture)
+      .where(eq(lignesFacture.factureId, f.id))
+      .orderBy(asc(lignesFacture.ordre));
+    const precedents = await tx
+      .select({ ligneFactureId: avoirs.ligneFactureId, totalTtc: avoirs.totalTtc })
+      .from(avoirs)
+      .where(eq(avoirs.factureId, f.id));
+    return {
+      factureId: f.id,
+      clientNom: f.clientNom,
+      facture: {
+        numero: f.numeroCommercial,
+        totalHt: f.totalHt,
+        totalTva: f.totalTva,
+        totalTtc: f.totalTtc,
+        tauxTva: f.tauxTva,
+        reductionPourcent: f.reductionPourcent,
+        lignes: lignes.map((l) => ({
+          id: l.id,
+          libelle: l.libelle,
+          quantite: l.quantite,
+          unite: l.unite,
+          prixUnitaire: l.prixUnitaire,
+          montant: l.montant,
+          tauxTva: l.tauxTva,
+        })),
+      },
+      dejaFaits: precedents,
+    };
+  });
+}
+
+/**
+ * Un avoir tel que l'écran « C'est fait » le montre : ce qu'il retire, et ce
+ * que la facture vaut désormais. `null` s'il n'est pas visible d'ici.
+ */
+export async function avoirPourEcran(ctx: Ctx, avoirId: string) {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const [a] = await tx.select().from(avoirs).where(eq(avoirs.id, avoirId));
+    if (!a) return null;
+    const [f] = await tx.select().from(factures).where(eq(factures.id, a.factureId));
+    if (!f) return null;
+    const tous = (await avoirsDesFactures(tx, [f.id])).get(f.id) ?? [];
+    const apres = apresAvoirs({ ...f, avoirs: tous });
+    return {
+      id: a.id,
+      numero: a.numero,
+      motif: a.motif,
+      totalTtc: a.totalTtc,
+      factureNumero: f.numeroCommercial,
+      clientNom: f.clientNom,
+      chantierId: f.chantierId,
+      nouveauTtc: apres.totalTtc,
+    };
+  });
+}

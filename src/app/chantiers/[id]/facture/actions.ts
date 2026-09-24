@@ -23,7 +23,11 @@ import {
   basculerAcquittee,
   type ReglementEnregistre,
   type SaisieReglement,
+  noterPaiement,
 } from "@/server/repositories/paiements-facture";
+import { faireUnAvoir } from "@/server/repositories/avoirs";
+import { declarerNonPayee } from "@/server/repositories/factures-non-payees";
+import type { MoyenDePaiement } from "@/lib/acomptes-facture";
 import { jourIso } from "@/lib/jour";
 import { logger } from "@/server/logger";
 import {
@@ -376,4 +380,43 @@ export async function basculerAcquitteeAction(factureId: string, allumee: boolea
   const ctx = await getCurrentCtx();
   await exigerFacturation(ctx, "marquer la facture acquittée");
   return enReglements("Facture acquittée", () => basculerAcquittee(ctx, factureId, allumee, jourIso(new Date())));
+}
+
+// ─── L'avoir, « Il ne me paiera pas », le paiement qui arrive quand même ─────
+//
+// Ses planches du 24 septembre 2026 (`appli/avoir.html`,
+// `appli/il-ne-paiera-pas.html`). Le refus se rend en VALEUR, jamais en
+// exception : elle deviendrait un identifiant opaque chez lui (`AGENTS.md`).
+// Les écrans sont `force-dynamic` : ils relisent la base à chaque ouverture.
+
+export type ResultatAvoirAction = { succes: true; avoirId: string } | { succes: false; erreur: string };
+
+export async function faireUnAvoirAction(
+  factureId: string,
+  demande: { portee: string | null; montantTtc: string; motif: string }
+): Promise<ResultatAvoirAction> {
+  const ctx = await getCurrentCtx();
+  await exigerFacturation(ctx, "faire un avoir");
+  const r = await faireUnAvoir(ctx, factureId, demande);
+  if (!r.ok) return { succes: false, erreur: r.refus };
+  return { succes: true, avoirId: r.avoir.id };
+}
+
+export async function declarerNonPayeeAction(factureId: string): Promise<{ succes: true } | { succes: false; erreur: string }> {
+  const ctx = await getCurrentCtx();
+  await exigerFacturation(ctx, "ranger la facture dans les non payées");
+  const r = await declarerNonPayee(ctx, factureId);
+  if (!r.ok) return { succes: false, erreur: r.refus };
+  return { succes: true };
+}
+
+export async function recuLePaiementAction(
+  factureId: string,
+  demande: { date: string; montant: string; moyen: MoyenDePaiement; numero: string | null }
+): Promise<{ succes: true } | { succes: false; erreur: string }> {
+  const ctx = await getCurrentCtx();
+  await exigerFacturation(ctx, "noter le paiement");
+  const r = await noterPaiement(ctx, factureId, demande);
+  if (!r.ok) return { succes: false, erreur: r.raison };
+  return { succes: true };
 }

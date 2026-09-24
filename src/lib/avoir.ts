@@ -79,6 +79,15 @@ export type AvoirCalcule = {
   total: boolean;
 };
 
+/**
+ * Ce que la facture vaut une fois ses avoirs retirés, en TTC : c'est sur ce
+ * total que se compte le « Net à payer » de son écran. Le même calcul que le
+ * relevé (`apresAvoirs`), réduit au TTC pour un écran qui n'a que lui.
+ */
+export function ttcApresAvoirs(totalTtc: string, avoirs: readonly { totalTtc: string }[]): string {
+  return avoirs.reduce((acc, a) => acc.minus(new Decimal(a.totalTtc)), new Decimal(totalTtc)).toFixed(2);
+}
+
 /** Un montant écrit par lui, en centimes exacts ; `null` s'il ne se lit pas. */
 export function lireMontant(texte: string): Decimal | null {
   const t = String(texte ?? "").replace(/\s/g, "").replace(",", ".");

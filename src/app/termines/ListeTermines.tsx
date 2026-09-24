@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { colors, font, surPlein } from "@/lib/design-tokens";
+import BottomSheet from "@/components/atlas/BottomSheet";
 import {
   aFacturerPartout,
   bornesDuFeuilletage,
@@ -44,8 +45,15 @@ export default function ListeTermines({
   lignes,
   retoursNonLus,
   moisCourant,
+  nonPayees,
 }: {
   lignes: LigneAffichee[];
+  /**
+   * Combien de factures il a rangées « Il ne me paiera pas », et encore dues.
+   * Zéro : la catégorie n'existe pas (sa règle du 24 septembre 2026, *« elle
+   * apparaît seulement lorsque je clique sur ça »*).
+   */
+  nonPayees: number;
   /**
    * Combien de retours d'intervention l'entreprise porte — TOUS mois confondus.
    *
@@ -211,6 +219,29 @@ export default function ListeTermines({
           Créer une facture
         </Link>
       </div>
+
+      {/* ─── LES FACTURES NON PAYÉES — sa demande du 24 septembre 2026 ──────
+          *« Dans Terminés, si je dis que mon client ne me paiera pas, il faut
+          créer une petite catégorie qui apparaît seulement lorsque je clique
+          sur ça, et qui range la facture dans factures non payées. »*
+          Planche `appli/il-ne-paiera-pas.html`. Elle disparaît d'elle-même
+          quand la dernière est payée : « non payée » se déduit du reste dû. */}
+      {nonPayees > 0 && (
+        <Link
+          href="/termines/non-payees"
+          data-atlas="categorie-non-payees"
+          className="mx-[26px] mt-3 flex min-h-12 items-center justify-between rounded-full px-[18px] text-[14px] no-underline"
+          style={{ color: colors.alert, boxShadow: `inset 0 0 0 1px ${colors.alert}` }}
+        >
+          Non payées
+          <span
+            className="grid h-6 min-w-6 place-items-center rounded-full px-1.5 text-[12.5px] font-semibold"
+            style={{ backgroundColor: colors.alert, color: surPlein }}
+          >
+            {nonPayees}
+          </span>
+        </Link>
+      )}
 
       {/* ─── AUCUN CHANTIER TERMINÉ, ET LES PORTES RESTENT — 11 septembre 2026
           Cet état vivait dans `page.tsx`, À LA PLACE de cette liste entière :
@@ -504,45 +535,111 @@ function Oeil({ ouvert, onClick }: { ouvert: boolean; onClick: () => void }) {
  * **« Facturer » ouvre l'écran de facture, il ne facture pas.** Rien ne part
  * chez un client sans un geste du patron (`docs/AGENT.md` §6).
  */
+/**
+ * La ligne d'un chantier terminé.
+ *
+ * **Facturée et partie, elle ouvre un VOLET à trois choix** — sa demande du 24
+ * septembre 2026, sur la planche `appli/avoir.html` : *« il faut pouvoir faire
+ * les deux »*, ouvrir la facture ET faire un avoir ou la ranger en non payée.
+ * « La facture » ouvre la facture définitive, en entier, comme avant.
+ *
+ * **À facturer, elle reste un lien direct** : il n'y a encore ni avoir ni
+ * impayé possible, et un volet à une seule porte serait un geste pour rien.
+ */
 function Ligne({ ligne, annee }: { ligne: LigneAffichee; annee: string }) {
+  const [volet, setVolet] = useState(false);
+  // **Aéré le 23 août 2026, à sa demande** : *« il faut aérer un peu la
+  // page parce qu'il y a énormément d'informations »*. Une ligne porte deux
+  // étages de texte et parfois une capsule de 44 px ; à 14 px de marge, le
+  // trait du dessous touchait presque le second étage, et douze lignes se
+  // lisaient comme un bloc.
+  //
+  // **LE TRAIT EST PARTI LE 26 AOÛT 2026** — *« tous les traits supprimés
+  // entre chaque ligne »*, planche `appli/termines-sans-traits.html`.
+  //
+  // **Et l'espace a dû grandir avec, ce n'est pas un retrait sec.** Le
+  // trait faisait la moitié du travail : c'est lui qui séparait le second
+  // étage d'une ligne du nom de la suivante. Retiré à marge égale, deux
+  // rangées voisines se lisent comme une seule — le nom du chantier suivant
+  // paraît appartenir à l'état du précédent. 19 px de respiration deviennent
+  // donc 24, et la PREMIÈRE ligne en garde 22 pour tenir la démarcation
+  // qu'il avait demandée le 23 août sous la phrase de compte.
+  //
+  // **L'ALIGNEMENT CHANGE LE 2 SEPTEMBRE 2026 — « le calme », sa
+  // proposition A** (`appli/termines-elegance.html`). `items-center`
+  // centrait le montant sur la HAUTEUR de la rangée : sur une rangée à deux
+  // étages — le nom, puis la date et l'état — il se posait à mi-chemin
+  // entre les deux, aligné sur rien. Douze montants d'affilée ne faisaient
+  // donc pas une colonne, alors que c'est exactement ce qu'on vient lire.
+  // En ligne de base, le montant se pose sur le NOM.
+  //
+  // **Sauf quand la rangée porte la capsule**, qui garde le centrage : une
+  // pastille de 44 px n'a pas de ligne d'écriture, et l'aligner sur une
+  // lettre la ferait descendre sous la rangée.
+  const classe = `flex w-full text-left ${ligne.aFacturer ? "items-center" : "items-baseline"} gap-3.5 py-[24px] first:pt-[22px]`;
+  if (ligne.factureStatut !== "emise") {
+    return (
+      <Link href={`/chantiers/${ligne.id}/facture`} data-atlas="ligne-terminee" className={classe} style={{ minWidth: 0 }}>
+        <ContenuLigne ligne={ligne} annee={annee} />
+      </Link>
+    );
+  }
+  const porte = (href: string, cle: string, mot: string) => (
+    <Link
+      href={href}
+      data-atlas={`volet-${cle}`}
+      className="mt-2 flex min-h-[54px] w-full items-center justify-center rounded-[12px] no-underline"
+      style={{
+        fontFamily: font.display,
+        fontSize: 19,
+        color: colors.ink,
+        backgroundColor: colors.card,
+        boxShadow: `inset 0 0 0 1px ${colors.line}`,
+      }}
+    >
+      {mot}
+    </Link>
+  );
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => setVolet(true)}
+        data-atlas="ligne-terminee"
+        className={classe}
+        style={{ minWidth: 0, background: "none", border: 0 }}
+      >
+        <ContenuLigne ligne={ligne} annee={annee} />
+      </button>
+      <BottomSheet open={volet} onBackdropClick={() => setVolet(false)}>
+        <div data-atlas="volet-choix">
+          <p
+            className="mb-2 text-center text-[11px] font-semibold uppercase"
+            style={{ letterSpacing: "0.18em", color: colors.muted }}
+          >
+            {ligne.nom}
+          </p>
+          {porte(`/chantiers/${ligne.id}/facture`, "facture", "La facture")}
+          {porte(`/chantiers/${ligne.id}/facture/avoir`, "avoir", "Je fais un avoir")}
+          {porte(`/chantiers/${ligne.id}/facture/non-payee`, "non-payee", "Il ne me paiera pas")}
+          <button
+            type="button"
+            onClick={() => setVolet(false)}
+            className="mt-3 w-full py-3 text-[14px]"
+            style={{ color: colors.muted }}
+          >
+            Annuler
+          </button>
+        </div>
+      </BottomSheet>
+    </>
+  );
+}
+
+function ContenuLigne({ ligne, annee }: { ligne: LigneAffichee; annee: string }) {
   const etat = libelleEtatLigne(ligne, annee);
   return (
-    <Link
-      href={`/chantiers/${ligne.id}/facture`}
-      data-atlas="ligne-terminee"
-      // **Aéré le 23 août 2026, à sa demande** : *« il faut aérer un peu la
-      // page parce qu'il y a énormément d'informations »*. Une ligne porte deux
-      // étages de texte et parfois une capsule de 44 px ; à 14 px de marge, le
-      // trait du dessous touchait presque le second étage, et douze lignes se
-      // lisaient comme un bloc.
-      //
-      // **LE TRAIT EST PARTI LE 26 AOÛT 2026** — *« tous les traits supprimés
-      // entre chaque ligne »*, planche `appli/termines-sans-traits.html`.
-      //
-      // **Et l'espace a dû grandir avec, ce n'est pas un retrait sec.** Le
-      // trait faisait la moitié du travail : c'est lui qui séparait le second
-      // étage d'une ligne du nom de la suivante. Retiré à marge égale, deux
-      // rangées voisines se lisent comme une seule — le nom du chantier suivant
-      // paraît appartenir à l'état du précédent. 19 px de respiration deviennent
-      // donc 24, et la PREMIÈRE ligne en garde 22 pour tenir la démarcation
-      // qu'il avait demandée le 23 août sous la phrase de compte.
-      //
-      // **L'ALIGNEMENT CHANGE LE 2 SEPTEMBRE 2026 — « le calme », sa
-      // proposition A** (`appli/termines-elegance.html`). `items-center`
-      // centrait le montant sur la HAUTEUR de la rangée : sur une rangée à deux
-      // étages — le nom, puis la date et l'état — il se posait à mi-chemin
-      // entre les deux, aligné sur rien. Douze montants d'affilée ne faisaient
-      // donc pas une colonne, alors que c'est exactement ce qu'on vient lire.
-      // En ligne de base, le montant se pose sur le NOM.
-      //
-      // **Sauf quand la rangée porte la capsule**, qui garde le centrage : une
-      // pastille de 44 px n'a pas de ligne d'écriture, et l'aligner sur une
-      // lettre la ferait descendre sous la rangée.
-      className={`flex ${
-        ligne.aFacturer ? "items-center" : "items-baseline"
-      } gap-3.5 py-[24px] first:pt-[22px]`}
-      style={{ minWidth: 0 }}
-    >
+    <>
       <span className="min-w-0 flex-1">
         <b
           className="block truncate font-normal"
@@ -625,6 +722,6 @@ function Ligne({ ligne, annee }: { ligne: LigneAffichee; annee: string }) {
           {ligne.montant === null ? "—" : formatEuros(ligne.montant)}
         </span>
       )}
-    </Link>
+    </>
   );
 }

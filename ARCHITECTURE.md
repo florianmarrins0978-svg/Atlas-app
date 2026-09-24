@@ -33203,7 +33203,17 @@ taux que le reste, déplace de quelques centimes la part de TVA de cet acompte
 déjà déclaré (encaissements). Cas rare (plusieurs taux, acompte, puis avoir) ;
 inscrit dans `TODO.md`.
 
-**Ce que ce lot ne fait pas encore** : les écrans (volet de Terminés, saisie de
-l'avoir, catégorie « Non payées », onglet « Avoirs »), l'envoi de l'avoir, et
-la mise en demeure. Rien de tout cela n'est atteignable par lui tant qu'ils ne
-sont pas codés.
+**Les écrans (lot 2)** : dans Terminés, la ligne d'une facture PARTIE ouvre un
+volet (`BottomSheet`) à trois choix, « La facture », « Je fais un avoir », « Il
+ne me paiera pas » ; une ligne à facturer reste un lien direct. Sous-pages de la
+facture : `avoir` (l'écran calcule avec `calculerAvoir`, la même fonction que
+l'enregistrement), `avoir/[avoirId]` (« C'est fait »), `non-payee`, `paiement`
+(moyen au déroulant doré, numéro du chèque), `impaye` (la question du lien doré).
+Les avoirs se lisent DANS « Règlements reçus » et le « Net à payer » descend
+(`ttcApresAvoirs`). `/termines/non-payees` et sa catégorie, qui n'existe que tant
+qu'une facture y est. L'onglet « Avoirs » de la fiche client n'existe que chez un
+client qui en a un ; `natureDeLaPiece` connaît `/api/avoirs/`, sans quoi un
+avoir se rangeait en « Fiche de chantier ». Suite : `test-avoir-et-non-payee-e2e`.
+
+**Ce qui reste (lot 3)** : l'envoi de l'avoir au client (SMS ou e-mail, page
+publique par jeton) et la mise en demeure.

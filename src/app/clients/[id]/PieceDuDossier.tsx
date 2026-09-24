@@ -42,7 +42,7 @@ import BoutonTelechargerDocument from "@/components/atlas/BoutonTelechargerDocum
  * son onglet : c'est l'adresse du client, sans en-tête de l'application.
  */
 /** Ce que l'en-tête de la visionneuse écrit au-dessus du numéro. */
-const NATURE_LISIBLE = { facture: "Facture", devis: "Devis", "fiche-chantier": "Fiche de chantier" } as const;
+const NATURE_LISIBLE = { facture: "Facture", avoir: "Avoir", devis: "Devis", "fiche-chantier": "Fiche de chantier" } as const;
 
 export default function PieceDuDossier({ piece }: { piece: PieceDuClient }) {
   const [feuilleOuverte, setFeuilleOuverte] = useState(false);

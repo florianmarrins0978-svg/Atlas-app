@@ -177,8 +177,12 @@ export function jourCourt(iso: string): string {
  * le serveur SERT. Deviner « c'est un devis » à partir d'un libellé, c'est se
  * fier à un mot que la prochaine demande peut changer.
  */
-export function natureDeLaPiece(href: string): "facture" | "devis" | "fiche-chantier" {
-  return href.includes("/api/factures/") ? "facture" : href.includes("/api/devis/") ? "devis" : "fiche-chantier";
+export function natureDeLaPiece(href: string): "facture" | "avoir" | "devis" | "fiche-chantier" {
+  if (href.includes("/api/factures/")) return "facture";
+  // Sans cette ligne, un avoir se rangerait en « Fiche de chantier » : c'est la
+  // valeur par défaut de la fonction (planche `appli/avoir.html`, §412).
+  if (href.includes("/api/avoirs/")) return "avoir";
+  return href.includes("/api/devis/") ? "devis" : "fiche-chantier";
 }
 
 /**

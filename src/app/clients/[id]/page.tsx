@@ -110,7 +110,7 @@ export default async function FicheClientPage({
     ) : (
       adresse || telephoneLu || undefined
     );
-  const { devis, fiches, factures } = fiche.pieces;
+  const { devis, fiches, factures, avoirs } = fiche.pieces;
 
   return (
     <div className="pb-[86px]">
@@ -218,6 +218,11 @@ export default async function FicheClientPage({
           { cle: "devis", libelle: "Devis", pieces: devis, rien: "Aucun devis parti" },
           { cle: "factures", libelle: "Factures", pieces: factures, rien: "Aucune facture émise" },
           { cle: "fiches", libelle: "Fiches", pieces: fiches, rien: "Aucune fiche envoyée" },
+          // **L'onglet n'existe que chez un client qui a reçu un avoir** — sa
+          // règle du 24 septembre 2026 : *« cette catégorie doit se créer
+          // seulement lorsque j'envoie un avoir, car ça risque d'être hyper
+          // rare »*. Un onglet vide chez tous les autres serait du bruit.
+          ...(avoirs.length > 0 ? [{ cle: "avoirs", libelle: "Avoirs", pieces: avoirs, rien: "" }] : []),
         ]}
       />
 

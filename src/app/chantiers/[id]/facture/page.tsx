@@ -15,6 +15,8 @@ import { getEntreprise } from "@/server/repositories/entreprises";
 import { exigibiliteDe } from "@/server/repositories/paiements-facture";
 import { dernierEnvoiFacture } from "@/server/repositories/envois-factures";
 import FactureClient from "./FactureClient";
+import SuiteDeLaFacture from "./SuiteDeLaFacture";
+import { avoirsDeLaFacture } from "@/server/repositories/avoirs";
 import { PARAM_PROVENANCE, retourDepuisLePlanning } from "@/lib/retour-au-planning";
 
 export const dynamic = "force-dynamic";
@@ -95,6 +97,7 @@ export default async function FacturePage({
     : { aJour: true as const };
 
   const origine = originePublique(await headers());
+  const avoirs = existante?.facture.statut === "emise" ? await avoirsDeLaFacture(ctx, existante.facture.id) : [];
 
   return (
     <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>
@@ -130,6 +133,7 @@ export default async function FacturePage({
           clientEmail={client?.email ?? null}
           canalClient={(client?.canalCommunication as "sms" | "email" | null) ?? null}
           jetonDejaPrepare={envoiDejaFait?.jeton ?? null}
+          avoirs={avoirs}
           initialFacture={
             existante
               ? {
@@ -177,6 +181,10 @@ export default async function FacturePage({
               : null
           }
         />
+
+        {/* Ce qui suit une facture PARTIE : ses avoirs, et ce qu'il fait quand
+            le client ne paie pas (planches du 24 septembre 2026). */}
+        {existante?.facture.statut === "emise" && <SuiteDeLaFacture ctx={ctx} chantierId={id} factureId={existante.facture.id} />}
       </div>
     </div>
   );

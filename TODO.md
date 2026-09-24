@@ -9382,8 +9382,10 @@ migration 0101, `calculerAvoir`, `faireUnAvoir` (numéro « A », PDF sur le pap
 des factures), `declarerNonPayee` et `listerFacturesNonPayees`, le reste dû et la
 TVA après avoirs partout, le rappel qui se tait, le numéro du chèque sur
 `noterPaiement`. Suites : `test-avoir`, `test-avoirs-db`, `test-rappels-db`,
-`test-exigibilite-tva`. **Reste** : lot 2 (les écrans), lot 3 (envoi de l'avoir,
-page publique, mise en demeure). **Réserve** : avoir après acompte, sur une ligne
+`test-exigibilite-tva`. **Lot 2 (les écrans) codé le même jour, sur la branche** :
+volet de Terminés, saisie de l'avoir, « Il ne me paiera pas », « Non payées »,
+« J'ai reçu le paiement », onglet « Avoirs » (§412, `test-avoir-et-non-payee-e2e`).
+**Reste** : lot 3 (envoi de l'avoir, page publique, mise en demeure). **Réserve** : avoir après acompte, sur une ligne
 d'un autre taux (§412).
 
 **LES TROIS PLANCHES** (sa demande : *« trois planches séparées »*) :

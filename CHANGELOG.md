@@ -18,6 +18,12 @@ chaque endroit qui aurait réclamé au client une somme annulée. « Il ne me pa
 pas » tait le rappel sans toucher à la facture. Aucun écran encore : pas
 atteignable. `ARCHITECTURE.md` §412.
 
+Puis les écrans (lot 2) : le volet à trois choix de Terminés, l'avoir (ligne,
+montant, motif, et le refus qui se dit), « Il ne me paiera pas » et sa
+catégorie, « J'ai reçu le paiement », l'onglet « Avoirs » du client. Un défaut
+qu'aucun compilateur ne voyait est sorti de la capture : un bloc de commentaire
+déplacé s'affichait en texte sur chaque ligne de Terminés.
+
 ### Les maquettes ne se publiaient plus depuis le 23 septembre au soir
 
 Trois contrôles de `pages.yml` (`termines`, `boutons-verts`, `porte-plein-air`)

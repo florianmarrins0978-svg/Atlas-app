@@ -32,6 +32,7 @@ import { getOuCreerDevisBrouillon, envoyerDevis } from "../src/server/repositori
 import { terminerChantier, emettreFacture, getFacturePourChantier } from "../src/server/repositories/factures";
 import { noterPaiement } from "../src/server/repositories/paiements-facture";
 import { chargerFicheClient } from "../src/server/repositories/fiche-client";
+import { faireUnAvoir } from "../src/server/repositories/avoirs";
 import { ajouterPrestation as ajouterPrestationEntretien } from "../src/server/repositories/prestations-entretien";
 import {
   ouvrirPassage,
@@ -321,9 +322,19 @@ async function main() {
     await nettoyerBase();
     const ctx = await monterEntreprise("Essai ordre");
     const client = await creerClient(ctx, { nom: "M. Martins" });
-    await chantierDate(ctx, client.id, "Ancien", [["Taille", "100.00"]], "2024-03-02");
-    await chantierDate(ctx, client.id, "Milieu", [["Tonte", "150.00"]], "2025-06-10");
-    await chantierDate(ctx, client.id, "Récent", [["Élagage", "200.00"]], "2026-07-28");
+    const anciens = [
+      await chantierDate(ctx, client.id, "Ancien", [["Taille", "100.00"]], "2024-03-02"),
+      await chantierDate(ctx, client.id, "Milieu", [["Tonte", "150.00"]], "2025-06-10"),
+      await chantierDate(ctx, client.id, "Récent", [["Élagage", "200.00"]], "2026-07-28"),
+    ];
+    // **La colonne des avoirs (§412) se trie comme les autres** : un avoir par
+    // facture, le lendemain de chacune, pour que l'ordre ait à se prouver.
+    for (const { factureId, jour } of anciens) {
+      const lendemain = new Date(`${jour}T09:00:00Z`);
+      lendemain.setUTCDate(lendemain.getUTCDate() + 1);
+      const r = await faireUnAvoir(ctx, factureId, { portee: null, montantTtc: "10", motif: "Geste commercial" }, lendemain);
+      assert.ok(r.ok, r.ok ? "" : r.refus);
+    }
     // **Les fiches ont leurs propres dates**, et ne suivent plus les chantiers :
     // depuis le 23 août 2026 la colonne porte les fiches d'entretien envoyées,
     // pas les chantiers terminés. Trois d'entre elles, pour que le tri ait

@@ -9,6 +9,7 @@ import { listerChantiersTermines } from "@/server/repositories/factures";
 import { preparer } from "@/lib/termines-par-mois";
 import { jourIso } from "@/lib/jour";
 import ListeTermines from "./ListeTermines";
+import { listerFacturesNonPayees } from "@/server/repositories/factures-non-payees";
 import { tvaDeLaPeriodeCourante } from "@/server/tva-courante";
 
 export const dynamic = "force-dynamic";
@@ -75,6 +76,7 @@ export default async function TerminesPage() {
   // agression, pas une information. L'onglet, lui, reste (`ListeTermines`).
   const abonnement = await abonnementDeLEntreprise(ctx);
   const retours = fonctionOuverte(abonnement?.formule, "retours") ? await compterLesRetours(ctx) : 0;
+  const nonPayees = await listerFacturesNonPayees(ctx);
 
   return (
     <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>
@@ -195,6 +197,7 @@ export default async function TerminesPage() {
             lignes={lignes}
             retoursNonLus={retours}
             moisCourant={moisCourant}
+            nonPayees={nonPayees.length}
           />
         </div>
 
