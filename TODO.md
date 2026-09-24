@@ -9370,9 +9370,13 @@ seulement l'avoir, c'est lui donner un geste qui le désarme, sans avertissement
 - **un onglet « Avoirs » sur la fiche client**, à côté de Devis, Factures,
   Fiches, qui n'existe **que** chez un client à qui un avoir a été envoyé
   (*« ça risque d'être hyper rare »*) ;
-- **dans Terminés, toucher la ligne ouvre un petit choix** : « La facture », « Je
-  fais un avoir », « Il ne me paiera pas » (aujourd'hui elle ouvre directement la
-  facture ; sa réponse : *« il faut pouvoir faire les deux »*) ;
+- **dans Terminés, toucher la ligne ouvre DIRECTEMENT la facture définitive**
+  (sa correction : *« je dois arriver sur la page de la facture définitive
+  directement »*, qui a retiré le petit choix essayé une heure plus tôt) ; l'avoir
+  et « Il ne me paiera pas » s'atteignent par le lien du bas de la facture ;
+- sur l'avoir, les mots sont **« Total avoir TTC »**, **« Avoir »** et
+  **« Rectification »** pour le tableau du reste dû ; l'avoir se rouvre depuis
+  l'onglet Avoirs de la fiche client, avec son PDF ;
 - **une catégorie « Non payées » dans Terminés**, qui n'apparaît que tant qu'une
   facture y est rangée par « Il ne me paiera pas », et disparaît une fois vide ;
 - « Il vous a payé » : le moyen dans un **déroulant à chevron doré**, et **le

@@ -161,19 +161,17 @@
   .onglets-fiche .neuf{animation:appel 1.6s ease-in-out infinite;border-radius:4px}
   .liste{display:flex;justify-content:space-between;align-items:baseline;margin:20px 22px 0;font-size:14px}
   .liste[hidden]{display:none}
+  button.liste{width:calc(100% - 44px);border:0;background:none;padding:6px 0;cursor:pointer;color:inherit;text-align:left;border-radius:6px}
   .liste .serif{font-size:22px}
   .barre button{border:0;background:none;padding:0;font:inherit;letter-spacing:inherit;color:inherit;cursor:default}
   .barre button.cible{cursor:pointer;color:var(--or);animation:appel 1.6s ease-in-out infinite;border-radius:4px}
-  .ecran[data-e="termines"]{position:relative}
-  .voile{position:absolute;inset:0;z-index:6;background:rgba(28,28,26,.38);display:flex;align-items:flex-end}
-  .voile[hidden]{display:none}
-  .feuille-choix{width:100%;background:var(--card);border-radius:18px 18px 0 0;padding:18px 16px 22px;
-                 box-shadow:0 -10px 30px rgba(20,18,14,.18)}
-  .feuille-choix button{display:block;width:100%;min-height:54px;margin-top:8px;border:1px solid var(--line);
-                        border-radius:12px;background:var(--cream);cursor:pointer;
-                        font:400 19px/1 ui-serif,Georgia,serif;color:var(--ink);
-                        animation:appel 1.6s ease-in-out infinite}
-  .feuille-choix button.annuler{animation:none;border:0;background:none;font:500 14px/1 ui-sans-serif,sans-serif;color:var(--muted)}
+  /* La facture définitive, recopiée de l'écran servi (capture du
+     24 septembre, /chantiers/[id]/facture d'une facture émise). */
+  .fl{display:flex;justify-content:space-between;gap:12px;padding:5px 0;font-size:15px}
+  .fl .v{color:var(--muted);white-space:nowrap}
+  .ttc-grand{margin-top:6px;font:600 34px/1 ui-serif,Georgia,serif;color:var(--or)}
+  .liens-pdf{margin-top:12px;display:flex;flex-direction:column;align-items:center;gap:10px;font-size:14px}
+  .liens-pdf span{border-bottom:1px solid var(--ink)}
   .nonpayees{display:flex;justify-content:space-between;align-items:center;width:calc(100% - 44px);
              margin:14px 22px 0;min-height:48px;padding:0 18px;border-radius:999px;cursor:pointer;
              border:1px solid var(--alerte);background:transparent;color:var(--alerte);font-size:14px}
@@ -286,41 +284,23 @@
     <div class="deux"><span class="capsule">Retours d'intervention</span><span class="capsule or">Créer une facture</span></div>
     <div class="moisnav"><span class="ch">‹</span>Octobre 2026<span class="ch eteint">›</span></div>
     <div class="compte">1 facturé</div>
-    <button type="button" class="fact cible" data-va="choix">
+    <button type="button" class="fact cible" data-va="facture">
       <span class="l1"><span>Taille de haie</span><span>1 440,00 €</span></span>
       <span class="l2">Facturé le 9 octobre, Facture n° 12</span>
     </button>
-    <!-- Sa réponse du 24 septembre : aujourd'hui la ligne ouvre la facture,
-         « il faut pouvoir faire les deux » : un petit choix, « la possibilité
-         d'envoyer un avoir ou d'arrêter une facture dans non payé ». -->
-    <div class="voile" id="voile" hidden>
-      <div class="feuille-choix">
-        <p class="caps" style="text-align:center;margin:0 0 6px">Taille de haie, M. Martin</p>
-        <button type="button" data-va="facture">La facture</button>
-        <button type="button" data-va="combien">Je fais un avoir</button>
-        <button type="button" data-va="perdue">Il ne me paiera pas</button>
-        <button type="button" class="annuler" data-va="termines">Annuler</button>
-      </div>
-    </div>
   </section>
 
   <!-- ─── 2. LA FACTURE ENVOYÉE, et le seul ajout : le lien du bas ──────── -->
   <section class="ecran" data-e="facture">
     <div class="haut"><button type="button" class="fleche" data-va="termines">‹</button><span class="bulle"></span></div>
     <div class="titre"><h1>Facture</h1><p class="sur">Taille de haie</p></div>
-    <div class="carte">
-      <div class="caps">Facture</div>
-      <div style="margin-top:8px">F2026-000012, M. Martin</div>
-      <div class="doux" style="font-size:14px;margin-top:4px">À régler avant le vendredi 24 octobre</div>
-    </div>
-    <div class="coupe">(les lignes et les totaux, comme aujourd'hui)</div>
+    <div data-corps-facture></div>
     <div class="carte">
       <div class="caps">Règlements reçus</div>
       <div class="net"><b>Net à payer</b><span class="m">1 440,00 €</span></div>
     </div>
     <div class="carte">
       <p class="arretee" style="margin:0">Facture F2026-000012 arrêtée.</p>
-      <div class="coupe" style="margin:12px 0 0">(l'envoi par SMS ou e-mail, comme aujourd'hui)</div>
       <button type="button" class="lien cible" data-va="question">Mon client ne me paie pas</button>
     </div>
   </section>
@@ -407,13 +387,13 @@
         <div class="p-totaux">
           <div class="t"><b>Total HT</b><b data-montre="totHT">- 250,00 €</b></div>
           <div class="t"><span>TVA 20 %</span><span data-montre="totTVA">- 50,00 €</span></div>
-          <div class="p-ttc"><span>Total de l'avoir TTC</span><span data-montre="totTTC">- 300,00 €</span></div>
+          <div class="p-ttc"><span>Total avoir TTC</span><span data-montre="totTTC">- 300,00 €</span></div>
         </div>
       </div>
       <table class="p-apres">
-        <tr><th class="g">Après cet avoir</th><th>HT</th><th>TVA</th><th>TTC</th></tr>
+        <tr><th class="g">Rectification</th><th>HT</th><th>TVA</th><th>TTC</th></tr>
         <tr><td class="g">Facture F2026-000012</td><td>1 200,00 €</td><td>240,00 €</td><td>1 440,00 €</td></tr>
-        <tr><td class="g">Cet avoir</td><td data-montre="apAvHT">- 250,00 €</td><td data-montre="apAvTVA">- 50,00 €</td><td data-montre="apAvTTC">- 300,00 €</td></tr>
+        <tr><td class="g">Avoir</td><td data-montre="apAvHT">- 250,00 €</td><td data-montre="apAvTVA">- 50,00 €</td><td data-montre="apAvTTC">- 300,00 €</td></tr>
         <tr class="du"><td class="g">Reste dû</td><td data-montre="duHT">950,00 €</td><td data-montre="duTVA">190,00 €</td><td data-montre="duTTC">1 140,00 €</td></tr>
       </table>
       <div class="p-page">Page 1 / 1</div>
@@ -427,11 +407,7 @@
   <section class="ecran" data-e="factureA">
     <div class="haut"><button type="button" class="fleche" data-va="termines">‹</button><span class="bulle"></span></div>
     <div class="titre"><h1>Facture</h1><p class="sur">Taille de haie</p></div>
-    <div class="carte">
-      <div class="caps">Facture</div>
-      <div style="margin-top:8px">F2026-000012, M. Martin</div>
-      <div class="doux" style="font-size:14px;margin-top:4px">À régler avant le vendredi 24 octobre</div>
-    </div>
+    <div data-corps-facture></div>
     <div class="carte">
       <div class="caps">Règlements reçus</div>
       <div class="regl"><span>Avoir A2026-000001<small>27 octobre, envoyé par SMS</small></span><span data-montre="moins">- 300,00 €</span></div>
@@ -465,8 +441,18 @@
     <div class="liste" data-l="devis" hidden><span class="serif">n° 2026-000002</span><span class="doux">9 oct. 2026 ›</span></div>
     <div class="liste" data-l="factures" hidden><span class="serif">n° F2026-000012</span><span class="doux">9 oct. 2026 ›</span></div>
     <div class="liste" data-l="fiches" hidden><span class="doux">Aucune fiche</span><span></span></div>
-    <div class="liste" data-l="avoirs"><span class="serif">n° A2026-000001</span><span class="doux">27 oct. 2026 ›</span></div>
+    <button type="button" class="liste cible" data-l="avoirs" data-va="avoirVu"><span class="serif">n° A2026-000001</span><span class="doux">27 oct. 2026 ›</span></button>
     <p class="caps" style="margin:34px 22px 0;color:var(--alerte)">Supprimer ce client</p>
+  </section>
+
+  <!-- ─── 8A. L'AVOIR, OUVERT DEPUIS SA FICHE CLIENT ──────────────────────
+       Sa demande : « montre-moi à quoi ça va ressembler dans la catégorie
+       avoir dans mes clients ». Le même papier que celui qui est parti. -->
+  <section class="ecran" data-e="avoirVu">
+    <div class="haut"><button type="button" class="fleche" data-va="ficheA">‹</button><span class="bulle"></span></div>
+    <div class="titre"><h1>Avoir</h1><p class="sur">A2026-000001, M. Martin</p></div>
+    <div id="papierFiche"></div>
+    <div class="liens-pdf" style="margin-top:18px"><span>Voir l'avoir en PDF</span><span>Télécharger (A2026-000001.pdf)</span></div>
   </section>
 
   <!-- ─── 4B. IL NE PAIERA PAS ───────────────────────────────────────────── -->
@@ -518,11 +504,7 @@
   <section class="ecran" data-e="factureB">
     <div class="haut"><button type="button" class="fleche" data-va="termines">‹</button><span class="bulle"></span></div>
     <div class="titre"><h1>Facture</h1><p class="sur">Taille de haie</p></div>
-    <div class="carte">
-      <div class="caps">Facture</div>
-      <div style="margin-top:8px">F2026-000012, M. Martin</div>
-      <div class="doux" style="font-size:14px;margin-top:4px">À régler avant le vendredi 24 octobre</div>
-    </div>
+    <div data-corps-facture></div>
     <div class="carte">
       <div class="caps">Règlements reçus</div>
       <div class="net"><b>Net à payer</b><span class="m">1 440,00 €</span></div>
@@ -572,10 +554,7 @@
   <section class="ecran" data-e="factureB2">
     <div class="haut"><button type="button" class="fleche" data-va="paye">‹</button><span class="bulle"></span></div>
     <div class="titre"><h1>Facture</h1><p class="sur">Taille de haie</p></div>
-    <div class="carte">
-      <div class="caps">Facture</div>
-      <div style="margin-top:8px">F2026-000012, M. Martin</div>
-    </div>
+    <div data-corps-facture></div>
     <div class="carte">
       <div class="caps">Règlements reçus</div>
       <div class="regl"><span>Paiement<small>12/11/2026</small></span><span class="centre"><span data-montre="moyen">chèque</span><small data-montre="numero">n° 5800755</small></span><span>1 440,00 €</span></div>
@@ -620,13 +599,13 @@
   // Le récit de chaque écran : ce qui se passe, et où poser le doigt.
   const RECIT = {
     termines: ["Vous êtes ici", "Nous sommes le <b>27 octobre</b>. M. Martin devait payer avant le 24 octobre, et Atlas vous l'a déjà signalé par une notification «&nbsp;Facture impayée&nbsp;». Vous ouvrez <b>Terminés</b>. <b>Touchez la ligne Taille de haie.</b>"],
-    choix:    ["Un petit choix", "Aujourd'hui, toucher la ligne ouvre directement la facture. Désormais un petit choix s'ouvre : <b>la facture</b>, <b>un avoir</b>, ou <b>il ne paiera pas</b>. <b>Essayez «&nbsp;Je fais un avoir&nbsp;»</b>, puis revenez avec «&nbsp;Recommencer&nbsp;» pour les deux autres."],
-    facture:  ["Sa facture", "C'est l'écran d'aujourd'hui. <b>Une seule chose s'ajoute</b>, tout en bas : le lien doré. <b>Touchez «&nbsp;Mon client ne me paie pas&nbsp;».</b>"],
+    facture:  ["Sa facture", "Toucher la ligne ouvre <b>directement la facture définitive</b>, comme aujourd'hui. <b>Descendez</b> : une seule chose s'ajoute, tout en bas, le lien doré. <b>Touchez «&nbsp;Mon client ne me paie pas&nbsp;».</b>"],
     question: ["La question", "Deux réponses, qui font l'inverse l'une de l'autre. <b>Essayez la première</b>, puis revenez avec «&nbsp;Recommencer&nbsp;» pour essayer la seconde."],
     combien:  ["Première réponse : vous faites un avoir", "Vous faites un geste commercial, ou vous réglez un désaccord. <b>Écrivez le montant</b> que vous lui retirez : Atlas vous donne tout de suite le nouveau montant de la facture. Le <b>motif</b> est écrit sur l'avoir, la loi le demande. Puis <b>«&nbsp;C'est bon&nbsp;»</b>."],
     fait:     ["L'avoir est prêt", "Atlas a fait le document, avec son propre numéro et <b>tout ce que la loi demande</b> : la facture corrigée et sa date, vos deux adresses, le motif, et le HT, la TVA et le TTC, de l'avoir et de ce qui reste dû. Il part <b>comme la facture</b>, par SMS ou par e-mail. <b>Touchez «&nbsp;Envoyer l'avoir&nbsp;».</b>"],
     factureA: ["La facture, après", "L'avoir apparaît dans les règlements, et le <b>Net à payer</b> descend. Plus de notification pour la somme enlevée. <b>Et pour le retrouver plus tard ?</b> Touchez <b>CHANTIERS</b> en bas, puis «&nbsp;Vos clients&nbsp;», puis M. Martin (ici, on saute la liste)."],
-    ficheA:   ["Sa fiche client", "Un onglet <b>Avoirs</b> est apparu, à côté de Devis, Factures et Fiches. <b>Il n'existe que chez les clients à qui vous avez envoyé un avoir</b> : chez tous les autres, rien ne change. Touchez les onglets pour comparer. Fin de la première branche."],
+    ficheA:   ["Sa fiche client", "Un onglet <b>Avoirs</b> est apparu, à côté de Devis, Factures et Fiches. <b>Il n'existe que chez les clients à qui vous avez envoyé un avoir</b> : chez tous les autres, rien ne change. <b>Touchez l'avoir.</b>"],
+    avoirVu:  ["L'avoir, retrouvé", "Le document tel qu'il est parti chez M. Martin, avec son PDF à ouvrir ou à télécharger, comme une facture. Fin de la première branche."],
     perdue:   ["Seconde réponse : il ne vous paiera pas", "Le client refuse ou a disparu. Vous gardez votre droit : <b>rien n'est annulé</b>. <b>Touchez «&nbsp;C'est noté&nbsp;».</b>"],
     termB:    ["Terminés, avec une catégorie de plus", "Une petite catégorie <b>Non payées</b> est apparue sous les deux boutons. <b>Elle n'existe que tant qu'une facture y est rangée</b> : sans facture non payée, vous ne la voyez jamais. <b>Touchez-la.</b>"],
     nonPayees:["Les factures non payées", "Toutes vos factures non payées, rangées ici. <b>Touchez celle de M. Martin.</b>"],
@@ -635,23 +614,16 @@
     factureB2:["La facture, payée", "Le «&nbsp;Non payée&nbsp;» disparaît : la facture est <b>acquittée</b>, le Net à payer tombe à zéro. <b>Touchez «&nbsp;Voir Ma TVA&nbsp;».</b>"],
     tvaB:     ["Elle entre au relevé de TVA", "Les <b>240,00 €</b> de TVA de cette facture entrent au relevé de <b>novembre</b>, le mois où il a payé, pas celui de la facture. C'est la règle de l'encaissement, et c'est déjà ce que fait votre relevé aujourd'hui. Et la catégorie <b>Non payées</b> a disparu : elle était vide. Fin de la seconde branche."],
   };
-  const ORDRE_A = ["termines","choix","combien","fait","factureA","ficheA"];
-  const ORDRE_B = ["termines","choix","perdue","termB","nonPayees","factureB","paye","factureB2","tvaB"];
-  const ORDRE_F = ["termines","choix","facture","question"];
+  const ORDRE_A = ["termines","facture","question","combien","fait","factureA","ficheA","avoirVu"];
+  const ORDRE_B = ["termines","facture","question","perdue","termB","nonPayees","factureB","paye","factureB2","tvaB"];
   let chemin = ["termines"];
 
   const ecrans = [...document.querySelectorAll(".ecran")];
   const $ = (s) => document.querySelector(s);
 
   function montrer(cle){
-    // Le choix s'ouvre PAR-DESSUS Terminés : l'écran reste, la feuille monte.
-    const ecran = cle === "choix" ? "termines" : cle;
-    ecrans.forEach((e) => e.classList.toggle("ouvert", e.dataset.e === ecran));
-    $("#voile").hidden = cle !== "choix";
-    const commun = cle === "termines" || cle === "choix";
-    const branche = !commun && ORDRE_F.includes(cle) ? ORDRE_F
-      : !commun && ORDRE_B.includes(cle) ? ORDRE_B
-      : ORDRE_A;
+    ecrans.forEach((e) => e.classList.toggle("ouvert", e.dataset.e === cle));
+    const branche = ORDRE_B.includes(cle) && !ORDRE_A.includes(cle) ? ORDRE_B : ORDRE_A;
     const rang = branche.indexOf(cle);
     $("#etape").textContent = "Étape " + (rang + 1) + " sur " + branche.length + ". " + RECIT[cle][0];
     $("#texte").innerHTML = RECIT[cle][1];
@@ -661,7 +633,13 @@
     versClients.classList.toggle("cible", cle === "factureA");
     versClients.classList.toggle("la", cle === "ficheA");
     $("#ongletTermines").classList.toggle("la", cle !== "ficheA");
-    if (cle === "fait") ajusterPapier();
+    if (cle === "avoirVu") {
+      // Le papier de l'avoir envoyé, recopié tel quel : c'est le même document.
+      const copie = $("#papier").cloneNode(true);
+      copie.id = "papierCopie"; copie.querySelector("#a4").id = "a4Copie";
+      $("#papierFiche").replaceChildren(copie);
+    }
+    if (cle === "fait" || cle === "avoirVu") ajusterPapier();
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
   function aller(cle){ chemin.push(cle); montrer(cle); }
@@ -710,6 +688,25 @@
     $('[data-montre="moins"]').textContent = "- " + euros(m);
     $('[data-montre="phrase"]').textContent = reste === 0 ? "M. Martin ne doit plus rien." : "M. Martin ne doit plus que " + euros(reste) + ".";
   }
+  // La facture définitive, la même sur chaque écran qui la montre : une seule
+  // écriture, sinon deux copies finiraient par se contredire.
+  const CORPS_FACTURE = () => `
+    <div class="carte">
+      <div class="caps">Facture</div>
+      <div style="margin-top:8px">F2026-000012, M. Martin</div>
+      <div class="doux" style="font-size:14px;margin-top:4px">À régler avant le vendredi 24 octobre</div>
+    </div>
+    <div class="carte">
+      <div class="caps">Reprise du devis 2026-000002 V1</div>
+      <div style="margin-top:10px">${LIGNES.map(([lib, q, , pu]) => `<div class="fl"><span>${lib}</span><span class="v">${fmt(pu * Number(q))}</span></div>`).join("")}</div>
+    </div>
+    <div class="carte">
+      <div class="fl"><span class="doux">Total HT</span><span>1 200,00 €</span></div>
+      <div class="fl"><span class="doux">TVA 20 %</span><span>240,00 €</span></div>
+      <div class="ttc"><div class="caps">Total TTC</div><div class="ttc-grand">1 440,00 €</div>
+        <div class="liens-pdf"><span>Voir la facture en PDF</span><span>Télécharger (F2026-000012.pdf)</span></div></div>
+    </div>`;
+
   // Les lignes de la facture de M. Martin : 1 200,00 € HT, TVA 20 %.
   const LIGNES = [
     ["Taille de haie de thuyas, trois faces", "38", "ml", 1200],
@@ -740,12 +737,16 @@
   }
   // La page A4 garde ses proportions : on la réduit à la largeur disponible.
   function ajusterPapier(){
-    const cadre = $("#papier"), page = $("#a4");
-    const r = cadre.clientWidth / 595;
-    page.style.transform = "scale(" + r + ")";
-    cadre.style.height = page.offsetHeight * r + "px";
+    document.querySelectorAll(".papier").forEach((cadre) => {
+      const page = cadre.querySelector(".a4");
+      if (!cadre.clientWidth) return;
+      const r = cadre.clientWidth / 595;
+      page.style.transform = "scale(" + r + ")";
+      cadre.style.height = page.offsetHeight * r + "px";
+    });
   }
   window.addEventListener("resize", ajusterPapier);
+  document.querySelectorAll("[data-corps-facture]").forEach((e) => { e.innerHTML = CORPS_FACTURE(); });
 
   $("#montant").addEventListener("input", poser);
   $("#motif").addEventListener("input", poser);
