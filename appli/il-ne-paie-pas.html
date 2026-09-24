@@ -138,10 +138,19 @@
                 font:600 20px/1 ui-serif,Georgia,serif}
   .saisie input::placeholder{color:var(--muted);font-weight:400}
   .refus{margin:10px 0 0;font-size:13.5px;color:var(--alerte)}
-  .moyens{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 6px}
-  .moyens button{min-height:40px;padding:0 14px;border-radius:999px;border:1px solid var(--line);
-                 background:var(--card);font-size:14px;cursor:pointer}
-  .moyens button[aria-pressed="true"]{background:var(--rust);border-color:var(--rust);color:var(--surPlein)}
+  .deroulant{width:100%;border:0;border-bottom:1px solid var(--lineSoft);background:none;cursor:pointer;
+             text-align:left;font-size:15px}
+  .deroulant .choisi{display:flex;align-items:center;gap:9px}
+  .deroulant .chevron{flex:none;overflow:visible;color:var(--or);transition:transform .18s}
+  .deroulant[aria-expanded="true"] .chevron{transform:rotate(180deg)}
+  .bandeau{margin:6px 0 4px;border:1px solid var(--line);border-radius:8px;background:var(--cream);overflow:hidden}
+  .bandeau[hidden]{display:none}
+  .bandeau button{display:flex;justify-content:space-between;align-items:center;width:100%;min-height:48px;
+                  padding:0 16px;border:0;border-bottom:1px solid var(--lineSoft);background:none;cursor:pointer;
+                  font:400 17px/1 ui-serif,Georgia,serif;color:var(--ink);text-align:left}
+  .bandeau button:last-child{border-bottom:0}
+  .bandeau button[aria-pressed="true"]{color:var(--or)}
+  .bandeau button[aria-pressed="true"]::after{content:"✓";font-size:15px}
   .fleche.rond{background:none;border:1px solid var(--line)}
   .onglets-fiche{display:flex;gap:22px;margin:26px 22px 0;border-bottom:1px solid var(--line)}
   .onglets-fiche button{border:0;background:none;padding:0 0 10px;cursor:pointer;
@@ -381,11 +390,21 @@
     <div class="haut"><button type="button" class="fleche" data-va="factureB">‹</button><span></span></div>
     <div class="titre"><h1>Il vous a payé</h1><p class="sur">F2026-000012, M. Martin</p></div>
     <div class="carte">
-      <div class="caps">Moyen</div>
-      <div class="moyens">
-        <button type="button" aria-pressed="true">Chèque</button><button type="button" aria-pressed="false">Virement</button><button type="button" aria-pressed="false">Espèces</button><button type="button" aria-pressed="false">Carte</button>
-      </div>
+      <!-- Sa demande du 24 septembre : « moyen avec un chevron doré vers le
+           bas, et là un bandeau déroulant avec les moyens les uns au-dessus
+           des autres, et on clique sur celui qu'on veut ». -->
       <div class="calc">
+        <button type="button" class="ligne deroulant" id="moyen" aria-expanded="false">
+          <span>Moyen</span>
+          <span class="choisi"><span class="v" data-montre="moyenChoisi">Chèque</span>
+            <svg class="chevron" viewBox="0 0 16 10" width="16" height="10" aria-hidden="true"><path d="M2 2l6 6 6-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        </button>
+        <div class="bandeau" id="moyens" hidden>
+          <button type="button" aria-pressed="true">Chèque</button>
+          <button type="button" aria-pressed="false">Virement</button>
+          <button type="button" aria-pressed="false">Espèces</button>
+          <button type="button" aria-pressed="false">Carte</button>
+        </div>
         <div class="ligne"><span>Le</span><span class="v">12 novembre</span></div>
         <div class="ligne"><span>Montant</span><span class="v">1 440,00 €</span></div>
       </div>
@@ -453,7 +472,7 @@
     ficheA:   ["Sa fiche client", "Un onglet <b>Avoirs</b> est apparu, à côté de Devis, Factures et Fiches. <b>Il n'existe que chez les clients à qui vous avez envoyé un avoir</b> : chez tous les autres, rien ne change. Touchez les onglets pour comparer. Fin de la première branche."],
     perdue:   ["Seconde réponse : il ne vous paiera pas", "Le client refuse ou a disparu. Vous gardez votre droit : <b>rien n'est annulé</b>. <b>Touchez «&nbsp;C'est noté&nbsp;».</b>"],
     factureB: ["La facture, après", "La facture reste entière, marquée <b>Non payée</b>. Atlas ne vous la rappelle plus. Et <b>s'il paie un jour</b> ? Touchez «&nbsp;J'ai reçu le paiement&nbsp;»."],
-    paye:     ["Il a finalement payé", "Vous notez le paiement comme n'importe quel règlement : le moyen, la date, le montant. <b>Touchez «&nbsp;C'est noté&nbsp;».</b>"],
+    paye:     ["Il a finalement payé", "Vous notez le paiement comme n'importe quel règlement. <b>Touchez «&nbsp;Moyen&nbsp;»</b> pour choisir chèque, virement, espèces ou carte, puis <b>«&nbsp;C'est noté&nbsp;»</b>."],
     factureB2:["La facture, payée", "Le «&nbsp;Non payée&nbsp;» disparaît : la facture est <b>acquittée</b>, le Net à payer tombe à zéro. <b>Touchez «&nbsp;Voir Ma TVA&nbsp;».</b>"],
     tvaB:     ["Elle entre au relevé de TVA", "Les <b>240,00 €</b> de TVA de cette facture entrent au relevé de <b>novembre</b>, le mois où il a payé, pas celui de la facture. C'est la règle de l'encaissement, et c'est déjà ce que fait votre relevé aujourd'hui. Fin de la seconde branche."],
   };
@@ -526,9 +545,17 @@
     document.querySelectorAll(".onglets-fiche button").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
     document.querySelectorAll(".liste").forEach((l) => { l.hidden = l.dataset.l !== b.dataset.o; });
   }));
-  document.querySelectorAll(".moyens button").forEach((b) => b.addEventListener("click", () => {
-    document.querySelectorAll(".moyens button").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+  $("#moyen").addEventListener("click", () => {
+    const ouvert = $("#moyen").getAttribute("aria-expanded") === "true";
+    $("#moyen").setAttribute("aria-expanded", String(!ouvert));
+    $("#moyens").hidden = ouvert;
+  });
+  document.querySelectorAll("#moyens button").forEach((b) => b.addEventListener("click", () => {
+    document.querySelectorAll("#moyens button").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+    $('[data-montre="moyenChoisi"]').textContent = b.textContent;
     $('[data-montre="moyen"]').textContent = b.textContent.toLowerCase();
+    $("#moyen").setAttribute("aria-expanded", "false");
+    $("#moyens").hidden = true;
   }));
 
   poser();
