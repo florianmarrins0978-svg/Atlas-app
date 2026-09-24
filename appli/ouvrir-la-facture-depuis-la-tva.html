@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ouvrir la facture depuis Ma TVA : Atlas</title>
+<style>
+/*
+  OUVRIR LA FACTURE DEPUIS MA TVA, 24 septembre 2026
+
+  Sa demande, capture de Ma TVA à l'appui : « pouvoir voir le pdf de la
+  facture envoyée en cliquant sur le prénom ». Puis : « le retour doit nous
+  faire revenir de là où l'on vient ».
+
+  CE QUI EXISTE DÉJÀ DANS LE CODE, et que la planche rejoue sans l'inventer :
+  la visionneuse (`src/app/documents/pdf`), en-tête « Facture » + numéro, et
+  sa flèche qui lit le journal de navigation (`src/lib/journal-de-navigation.ts`)
+  pour revenir à l'écran d'avant. Le fichier montré est celui archivé à
+  l'envoi (`api/factures/[id]/pdf`).
+
+  CE QUI EST NEUF : le prénom s'appuie, et le retour retombe à la même hauteur
+  de page. Aujourd'hui la flèche ramène au bon écran mais EN HAUT : il
+  faudrait redescendre jusqu'à la ligne.
+
+  DEUX CHOIX À ESSAYER : l'allure du prénom appuyable (A sans rien, B souligné
+  d'or), et le même geste sur « Factures en attente » (oui / non).
+
+  RIEN N'EST CODÉ. Noms, numéros et montants sont ceux de SA capture ; le
+  contenu de la page PDF est un gabarit gris, pas une facture inventée.
+*/
+:root{
+  --fond:#f5f3ee; --plage:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
+  --gris:#8a8578; --or:#B98B47; --trait:rgba(28,28,26,.12); --trait-doux:rgba(28,28,26,.07);
+  --scene:#e6e3dc; --plein:#7f9a6f; --surPlein:#fff; --papier:#ece9e1;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+[hidden]{display:none!important}
+html,body{margin:0;background:var(--scene)}
+body{font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--encre);padding:0 0 40px}
+.serif{font-family:ui-serif,Georgia,"Times New Roman",serif}
+
+.commandes{position:sticky;top:0;z-index:5;background:var(--scene);padding:8px 10px;
+  border-bottom:1px solid var(--trait);text-align:center}
+.commandes .groupe{display:inline-block;margin:0 8px}
+.commandes .mot{display:block;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--gris);margin:4px 0 2px}
+.commandes button{font:inherit;font-size:13px;padding:8px 14px;margin:2px;border:1px solid var(--trait);
+  background:var(--plage);color:var(--encre);border-radius:999px;cursor:pointer;min-height:44px}
+.commandes button[aria-pressed=true]{background:var(--encre);color:var(--fond);border-color:var(--encre)}
+
+.tete{max-width:620px;margin:0 auto;padding:18px 20px 0}
+.tete h1{font-size:26px;line-height:1.15;margin:0 0 8px}
+.tete p{margin:0 0 6px;font-size:14px;color:var(--encre-douce)}
+
+.scene{display:flex;justify-content:center;padding:14px 12px}
+.tel{width:390px;max-width:100%;height:664px;background:var(--fond);border:1px solid var(--trait);
+  border-radius:10px;overflow:hidden;position:relative}
+.ecran{position:absolute;inset:0;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.px{padding-left:24px;padding-right:24px}
+
+.barre{display:flex;justify-content:space-between;align-items:center;padding-top:14px}
+.rond{width:44px;height:44px;border-radius:999px;border:0;background:var(--papier);color:var(--encre);font-size:22px;cursor:pointer}
+.caps{font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--or);margin:18px 0 0}
+.caps.gris{color:var(--gris)}
+h2.titre{font-weight:400;font-size:32px;line-height:1.1;margin:4px 0 0}
+
+.montant{display:flex;justify-content:space-between;align-items:baseline;padding:12px 0}
+.montant .quoi{font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--gris)}
+.montant .combien{font-size:22px}
+.montant.total{border-top:1px solid var(--trait)}
+.montant.total .combien{color:var(--or)}
+
+h3.section{font-weight:400;font-size:19px;margin:0}
+.entete-section{display:flex;justify-content:space-between;align-items:baseline;margin-top:34px}
+.entete-section span{font-size:12px;color:var(--gris)}
+
+.attente{margin-top:12px;padding:12px 0;border-top:1px solid var(--trait-doux)}
+.attente .l1{display:flex;justify-content:space-between;align-items:baseline}
+.attente .reste{font-size:12px;color:var(--or)}
+.attente .petit{font-size:11.5px;color:var(--gris);margin:1px 0 0}
+.attente .boutons{display:flex;gap:14px;align-items:center;margin-top:10px}
+.attente .vert{border:0;border-radius:999px;background:var(--plein);color:var(--surPlein);font:inherit;font-size:14px;padding:10px 18px}
+.attente .seul{border:0;background:none;color:var(--encre-douce);font:inherit;font-size:14px}
+
+ul{list-style:none;margin:8px 0 0;padding:0}
+li.regl{padding:12px 0;border-top:1px solid var(--trait-doux)}
+.petit{font-size:11.5px;color:var(--gris);margin:2px 0 0}
+.paire{display:flex;justify-content:space-between;align-items:baseline;font-size:13px;margin-top:7px}
+.paire span:first-child{color:var(--gris)}
+.paire span:last-child{font-size:16px;font-family:ui-serif,Georgia,serif}
+.paire.tva span{color:var(--or)!important}
+
+/* Le prénom appuyable. Sa cible fait 44 px de haut : un doigt sur un chantier
+   ne vise pas au pixel. L'allure se choisit en haut de page. */
+.nom{display:inline-flex;align-items:center;min-height:44px;margin:-10px 0;font:inherit;font-size:15px;
+  color:var(--encre);background:none;border:0;padding:0;cursor:pointer;text-align:left}
+body.allure-B .nom.appuyable span{border-bottom:1.5px solid var(--or);padding-bottom:1px}
+.nom:not(.appuyable){cursor:default}
+li.eclaire{animation:eclat 1.4s ease-out}
+@keyframes eclat{from{background:rgba(185,139,71,.18)}to{background:transparent}}
+
+.onglets{position:sticky;bottom:0;background:var(--fond);border-top:1px solid var(--trait);display:flex;
+  justify-content:space-around;font-size:10.5px;letter-spacing:.14em;color:var(--gris);padding:16px 4px}
+.onglets b{color:var(--encre);font-weight:600}
+
+/* La visionneuse : l'en-tête de l'application, puis la page. */
+.visionneuse{background:var(--papier)}
+.visionneuse .entete{background:var(--fond);padding-bottom:14px;border-bottom:1px solid var(--trait)}
+.page{background:#fff;margin:16px;border-radius:2px;box-shadow:0 1px 4px rgba(0,0,0,.12);padding:22px 20px 40px;color:#222}
+.page .num{font-size:15px;font-weight:600;margin:0}
+.page .cli{font-size:13px;margin:14px 0 18px}
+.ombre{height:9px;background:#e8e6e0;border-radius:2px;margin:9px 0}
+</style>
+</head>
+<body class="allure-A">
+
+<div class="commandes">
+  <div class="groupe"><span class="mot">Le prénom</span>
+    <button data-allure="A" aria-pressed="true">A, sans rien</button>
+    <button data-allure="B" aria-pressed="false">B, souligné</button>
+  </div>
+  <div class="groupe"><span class="mot">Aussi en attente</span>
+    <button data-attente="oui" aria-pressed="true">Oui</button>
+    <button data-attente="non" aria-pressed="false">Non</button>
+  </div>
+</div>
+
+<div class="tete">
+  <h1 class="serif">Ouvrir la facture depuis Ma TVA</h1>
+  <p>Descendez jusqu'à la liste, appuyez sur un prénom. La facture s'ouvre ; la flèche vous ramène à la même ligne.</p>
+</div>
+
+<div class="scene">
+  <div class="tel">
+
+    <!-- Ma TVA -->
+    <div class="ecran" id="tva">
+      <div class="px">
+        <div class="barre"><button class="rond" aria-label="Retour">‹</button><button class="rond" aria-label="Assistant">✦</button></div>
+        <p class="caps">Ma TVA</p>
+        <h2 class="titre serif">3e trimestre 2026</h2>
+
+        <div style="margin-top:18px">
+          <div class="montant"><span class="quoi">TVA collectée</span><span class="combien serif">272,28 €</span></div>
+          <div class="montant"><span class="quoi">TVA déductible</span><span class="combien serif">0,00 €</span></div>
+          <div class="montant total"><span class="quoi">TVA à payer</span><span class="combien serif">272,28 €</span></div>
+        </div>
+
+        <div class="entete-section"><h3 class="section serif">Factures en attente</h3><span>1 facture</span></div>
+        <div class="attente">
+          <div class="l1">
+            <button class="nom" id="nom-attente" data-numero="F2026-000005" data-client="Martins"><span>Martins</span></button>
+            <span class="reste">Reste à payer 495,00 €</span>
+          </div>
+          <p class="petit">F2026-000005, émise le 09/09</p>
+          <p class="petit">Réception confirmée le <b>10/09</b></p>
+          <div class="boutons"><button class="vert">J'ai reçu le paiement</button><button class="seul">J'ai reçu une partie</button></div>
+          <div class="paire"><span>Acompte payé le 17/09/2026</span><span>250,00 €</span></div>
+        </div>
+
+        <div class="entete-section"><h3 class="section serif">TVA collectée</h3><span>4 règlements</span></div>
+        <p class="caps gris" style="margin-top:10px">Vos factures</p>
+        <ul id="liste"></ul>
+        <div style="height:30px"></div>
+      </div>
+      <div class="onglets"><span>CHANTIERS</span><span>PLANNING</span><b>TERMINÉS</b><span>PAYSAGE</span><span>RÉGLAGES</span></div>
+    </div>
+
+    <!-- La visionneuse -->
+    <div class="ecran visionneuse" id="pdf" hidden>
+      <div class="entete px">
+        <div class="barre"><button class="rond" id="retour" aria-label="Retour">‹</button><button class="rond" aria-label="Assistant">✦</button></div>
+        <p class="caps">Facture</p>
+        <h2 class="titre serif" id="pdf-numero"></h2>
+      </div>
+      <div class="page">
+        <p class="num">Facture <span id="pdf-numero-2"></span></p>
+        <p class="cli" id="pdf-client"></p>
+        <div class="ombre" style="width:70%"></div><div class="ombre" style="width:55%"></div>
+        <div class="ombre" style="width:85%;margin-top:26px"></div><div class="ombre"></div><div class="ombre" style="width:60%"></div>
+        <div class="ombre" style="width:40%;margin:26px 0 0 auto"></div><div class="ombre" style="width:35%;margin-left:auto"></div>
+      </div>
+      <div class="page"><div class="ombre" style="width:80%"></div><div class="ombre" style="width:50%"></div></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// Les lignes de SA capture, dans l'ordre où l'écran les montre.
+const REGLEMENTS = [
+  { client: "Julien", numero: "F2026-000012", jour: "jeudi 24 septembre", ttc: "296,00", tva: "43,39" },
+  { client: "Julien", numero: "F2026-000012", jour: "jeudi 24 septembre", ttc: "700,00", tva: "102,61" },
+  { client: "Julien", numero: "F2026-000014", jour: "mardi 22 septembre", ttc: "256,00", tva: "33,28" },
+  { client: "Frédéric", numero: "F2026-000013", jour: "jeudi 17 septembre", ttc: "558,00", tva: "93,00" },
+];
+const liste = document.getElementById("liste");
+liste.innerHTML = REGLEMENTS.map((r, i) => `
+  <li class="regl" data-i="${i}">
+    <button class="nom appuyable" data-numero="${r.numero}" data-client="${r.client}"><span>${r.client}</span></button>
+    <p class="petit">Facture n° ${r.numero}, règlement du ${r.jour}</p>
+    <div class="paire"><span>Règlement encaissé</span><span>${r.ttc} € TTC</span></div>
+    <div class="paire tva"><span>TVA collectée</span><span>${r.tva} €</span></div>
+  </li>`).join("");
+
+const tva = document.getElementById("tva"), pdf = document.getElementById("pdf");
+const nomAttente = document.getElementById("nom-attente");
+let hauteur = 0, ligneOuverte = null, attenteOui = true;
+
+function majAttente() { nomAttente.classList.toggle("appuyable", attenteOui); }
+majAttente();
+
+document.querySelector(".tel").addEventListener("click", (e) => {
+  const b = e.target.closest(".nom.appuyable");
+  if (!b) return;
+  // Ce que la flèche rendra : la hauteur de la page au moment de l'appui.
+  hauteur = tva.scrollTop;
+  ligneOuverte = b.closest("li, .attente");
+  document.getElementById("pdf-numero").textContent = b.dataset.numero;
+  document.getElementById("pdf-numero-2").textContent = b.dataset.numero;
+  document.getElementById("pdf-client").textContent = b.dataset.client;
+  tva.hidden = true; pdf.hidden = false; pdf.scrollTop = 0;
+});
+
+document.getElementById("retour").addEventListener("click", () => {
+  pdf.hidden = true; tva.hidden = false;
+  tva.scrollTop = hauteur;
+  if (ligneOuverte) { ligneOuverte.classList.remove("eclaire"); void ligneOuverte.offsetWidth; ligneOuverte.classList.add("eclaire"); }
+});
+
+document.querySelectorAll("[data-allure]").forEach((b) => b.addEventListener("click", () => {
+  document.body.className = "allure-" + b.dataset.allure;
+  document.querySelectorAll("[data-allure]").forEach((x) => x.setAttribute("aria-pressed", x === b));
+}));
+document.querySelectorAll("[data-attente]").forEach((b) => b.addEventListener("click", () => {
+  attenteOui = b.dataset.attente === "oui"; majAttente();
+  document.querySelectorAll("[data-attente]").forEach((x) => x.setAttribute("aria-pressed", x === b));
+}));
+</script>
+</body>
+</html>
