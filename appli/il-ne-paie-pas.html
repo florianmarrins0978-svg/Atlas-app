@@ -134,6 +134,11 @@
                 font:600 20px/1 ui-serif,Georgia,serif}
   .saisie input::placeholder{color:var(--muted);font-weight:400}
   .refus{margin:10px 0 0;font-size:13.5px;color:var(--alerte)}
+  .moyens{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 6px}
+  .moyens button{min-height:40px;padding:0 14px;border-radius:999px;border:1px solid var(--line);
+                 background:var(--card);font-size:14px;cursor:pointer}
+  .moyens button[aria-pressed="true"]{background:var(--rust);border-color:var(--rust);color:var(--surPlein)}
+  .cible-tva{animation:appel 1.6s ease-in-out infinite}
   .vert[disabled]{opacity:.4;cursor:default;animation:none}
 
   .vert{display:flex;align-items:center;justify-content:center;margin:26px auto 0;min-height:56px;
@@ -317,9 +322,59 @@
     <div class="carte">
       <div class="caps">Règlements reçus</div>
       <div class="net"><b>Net à payer</b><span class="m">1 440,00 €</span></div>
-      <div class="encadre"><p>Non payée<small>Depuis le 27 octobre. S'il paie un jour, notez-le ici comme un règlement.</small></p></div>
+      <div class="encadre"><p>Non payée<small>Depuis le 27 octobre.</small></p></div>
+      <!-- Sa demande du 24 septembre : « s'il paye, je dois pouvoir la marquer
+           comme payée et qu'elle entre au relevé de TVA ». Les mots sont ceux
+           du bouton qui existe déjà dans Ma TVA (EnAttenteDePaiement.tsx) :
+           un même geste ne s'appelle pas de deux façons. -->
+      <button type="button" class="vert cible" data-va="paye" style="width:100%;font-size:20px">J'ai reçu le paiement</button>
     </div>
     <div class="carte"><p class="arretee" style="margin:0">Facture F2026-000012 arrêtée.</p></div>
+  </section>
+
+  <!-- ─── 6B. IL A FINALEMENT PAYÉ ───────────────────────────────────────── -->
+  <section class="ecran" data-e="paye">
+    <div class="haut"><button type="button" class="fleche" data-va="factureB">‹</button><span></span></div>
+    <div class="titre"><h1>Il vous a payé</h1><p class="sur">F2026-000012, M. Martin</p></div>
+    <div class="carte">
+      <div class="caps">Moyen</div>
+      <div class="moyens">
+        <button type="button" aria-pressed="true">Chèque</button><button type="button" aria-pressed="false">Virement</button><button type="button" aria-pressed="false">Espèces</button><button type="button" aria-pressed="false">Carte</button>
+      </div>
+      <div class="calc">
+        <div class="ligne"><span>Le</span><span class="v">12 novembre</span></div>
+        <div class="ligne"><span>Montant</span><span class="v">1 440,00 €</span></div>
+      </div>
+    </div>
+    <button type="button" class="vert cible" data-va="factureB2">C'est noté</button>
+  </section>
+
+  <!-- ─── 7B. LA FACTURE, PAYÉE ─────────────────────────────────────────── -->
+  <section class="ecran" data-e="factureB2">
+    <div class="haut"><button type="button" class="fleche" data-va="paye">‹</button><span class="bulle"></span></div>
+    <div class="titre"><h1>Facture</h1><p class="sur">Taille de haie</p></div>
+    <div class="carte">
+      <div class="caps">Facture</div>
+      <div style="margin-top:8px">F2026-000012, M. Martin</div>
+    </div>
+    <div class="carte">
+      <div class="caps">Règlements reçus</div>
+      <div class="regl"><span>Paiement<small>12/11/2026</small></span><span data-montre="moyen">chèque</span><span>1 440,00 €</span></div>
+      <div class="net"><b>Net à payer</b><span class="m">0,00 €</span></div>
+      <div class="encadre"><p>Facture acquittée</p></div>
+    </div>
+    <button type="button" class="contour cible" data-va="tvaB">Voir Ma TVA</button>
+  </section>
+
+  <!-- ─── 8B. ELLE ENTRE AU RELEVÉ, AU MOIS OÙ IL A PAYÉ ──────────────────── -->
+  <section class="ecran" data-e="tvaB">
+    <div class="haut"><div class="titre" style="padding:0"><h1>Terminés</h1></div><span class="bulle"></span></div>
+    <div class="tva cible-tva">
+      <div><div class="caps or">Ma TVA à déclarer</div><div class="mois">Novembre 2026</div></div>
+      <div class="m">240,00 €</div>
+    </div>
+    <div class="deux"><span class="capsule">Retours d'intervention</span><span class="capsule or">Créer une facture</span></div>
+    <div class="coupe" style="margin-top:22px">(la liste des chantiers, comme aujourd'hui)</div>
   </section>
 
   <nav class="barre"><span>CHANTIERS</span><span>PLANNING</span><span class="la">TERMINÉS</span><span>PAYSAGE</span><span>RÉGLAGES</span></nav>
@@ -332,13 +387,13 @@
     <tr><td>Il doit encore</td><td>moins</td><td>tout</td></tr>
     <tr><td>Vous pouvez réclamer</td><td>non, plus jamais cette somme</td><td>oui</td></tr>
     <tr><td>Un document part</td><td>oui, l'avoir</td><td>non</td></tr>
-    <tr><td>Votre TVA</td><td>ne bouge pas</td><td>ne bouge pas</td></tr>
+    <tr><td>S'il paie après</td><td>il paie le nouveau montant</td><td>vous notez le paiement, et la TVA entre au relevé du mois où il a payé</td></tr>
+    <tr><td>Votre TVA</td><td>ne bouge pas</td><td>ne bouge pas, tant qu'il n'a pas payé</td></tr>
   </table>
-  <p style="margin-top:12px">Votre TVA ne bouge dans aucun cas : vous la payez quand le client paie, et il n'a pas payé.</p>
+  <p style="margin-top:12px">Tant qu'il n'a pas payé, votre TVA ne bouge pas : vous la payez quand le client paie, au relevé du mois où il paie.</p>
 
-  <h3>Deux questions pour vous</h3>
-  <div class="q"><b>1.</b> Avant « Il ne me paiera pas », voulez-vous qu'Atlas prépare une lettre de mise en demeure ?</div>
-  <div class="q"><b>2.</b> S'il paie après coup, on note le règlement normalement, comme sur l'écran 5 de la seconde branche. Ça vous va ?</div>
+  <h3>Une question pour vous</h3>
+  <div class="q">Avant « Il ne me paiera pas », voulez-vous qu'Atlas prépare une lettre de mise en demeure ?</div>
 </div>
 
 <script>
@@ -351,10 +406,13 @@
     fait:     ["L'avoir est prêt", "Atlas a fait le document, avec son propre numéro. Il part <b>comme la facture</b>, par SMS ou par e-mail. <b>Touchez «&nbsp;Envoyer l'avoir&nbsp;».</b>"],
     factureA: ["La facture, après", "L'avoir apparaît dans les règlements, et le <b>Net à payer</b> descend. Plus de notification pour la somme enlevée. Fin de la première branche."],
     perdue:   ["Seconde réponse : il ne vous paiera pas", "Le client refuse ou a disparu. Vous gardez votre droit : <b>rien n'est annulé</b>. <b>Touchez «&nbsp;C'est noté&nbsp;».</b>"],
-    factureB: ["La facture, après", "La facture reste entière, marquée <b>Non payée</b>. Atlas ne vous la rappelle plus. S'il paie un jour, vous le notez comme d'habitude. Fin de la seconde branche."],
+    factureB: ["La facture, après", "La facture reste entière, marquée <b>Non payée</b>. Atlas ne vous la rappelle plus. Et <b>s'il paie un jour</b> ? Touchez «&nbsp;J'ai reçu le paiement&nbsp;»."],
+    paye:     ["Il a finalement payé", "Vous notez le paiement comme n'importe quel règlement : le moyen, la date, le montant. <b>Touchez «&nbsp;C'est noté&nbsp;».</b>"],
+    factureB2:["La facture, payée", "Le «&nbsp;Non payée&nbsp;» disparaît : la facture est <b>acquittée</b>, le Net à payer tombe à zéro. <b>Touchez «&nbsp;Voir Ma TVA&nbsp;».</b>"],
+    tvaB:     ["Elle entre au relevé de TVA", "Les <b>240,00 €</b> de TVA de cette facture entrent au relevé de <b>novembre</b>, le mois où il a payé, pas celui de la facture. C'est la règle de l'encaissement, et c'est déjà ce que fait votre relevé aujourd'hui. Fin de la seconde branche."],
   };
   const ORDRE_A = ["termines","facture","question","combien","fait","factureA"];
-  const ORDRE_B = ["termines","facture","question","perdue","factureB"];
+  const ORDRE_B = ["termines","facture","question","perdue","factureB","paye","factureB2","tvaB"];
   let chemin = ["termines"];
 
   const ecrans = [...document.querySelectorAll(".ecran")];
@@ -413,6 +471,10 @@
     $('[data-montre="phrase"]').textContent = reste === 0 ? "M. Martin ne doit plus rien." : "M. Martin ne doit plus que " + euros(reste) + ".";
   }
   $("#montant").addEventListener("input", poser);
+  document.querySelectorAll(".moyens button").forEach((b) => b.addEventListener("click", () => {
+    document.querySelectorAll(".moyens button").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+    $('[data-montre="moyen"]').textContent = b.textContent.toLowerCase();
+  }));
 
   poser();
   montrer("termines");
