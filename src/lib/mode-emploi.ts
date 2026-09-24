@@ -50,6 +50,24 @@ export type FicheModeEmploi = {
   source: string;
   /** Ce qui doit se trouver dans `source` pour que la fiche reste vraie. */
   preuves: string[];
+  /**
+   * Les autres fichiers que le geste traverse. « Chantiers, Vos clients, son
+   * nom, onglet Factures » passe par trois écrans : chacun doit tenir sa part,
+   * sinon le chemin se casse à l'étape que personne ne regarde.
+   */
+  ailleurs?: { source: string; preuves: string[] }[];
+  /**
+   * Ce qui ne doit se trouver NULLE PART dans `src/`. Sert aux fiches qui
+   * disent « Atlas ne le fait pas encore » : le jour où l'écran arrive, le
+   * contrôle rougit, et la fiche se récrit au lieu de mentir.
+   */
+  absences?: string[];
+  /**
+   * La fiche dit OÙ se trouve une chose, pas comment la faire. Une question en
+   * « où » la préfère : « où sont mes factures » attend l'endroit où elles
+   * sont rangées, pas le geste qui en crée une.
+   */
+  lieu?: true;
 };
 
 const FICHE_RETRAIT =
@@ -57,11 +75,208 @@ const FICHE_RETRAIT =
   "La ligne tombe et « Annuler » reste six secondes en bas de l'écran.";
 
 export const FICHES_MODE_EMPLOI: FicheModeEmploi[] = [
+  // --- Où se trouve quoi (sa demande du 24 septembre 2026) ------------------
+  //
+  // *« S'il cherche une touche ou l'endroit où on range les devis, facture,
+  // avoir, fiche de sécurité, fiche d'intervention, n'importe quoi, il DOIT
+  // pouvoir lui répondre. »* Les fiches plus bas disent comment FAIRE ; aucune
+  // ne disait où les choses sont RANGÉES, et « où sont mes factures » rendait
+  // la création d'une facture.
+  {
+    id: "ecran-chantiers",
+    ecran: "Chantiers",
+    ou: "« Chantiers », premier onglet de la barre du bas",
+    intitule: "Trouver les chantiers en cours",
+    motsCles: ["chantiers", "cours", "accueil", "liste", "devis", "attente", "trouver", "sont", "retrouver"],
+    geste: "Touchez « Chantiers » dans la barre du bas : tous les chantiers en cours, devis compris.",
+    source: "src/components/atlas/AtlasBottomNav.tsx",
+    preuves: ['label: "Chantiers"'],
+    lieu: true,
+  },
+  {
+    id: "ecran-planning",
+    ecran: "Planning",
+    ou: "« Planning », dans la barre du bas",
+    intitule: "Ouvrir le planning, le calendrier",
+    motsCles: ["planning", "calendrier", "agenda", "jour", "semaine", "trouver", "sont"],
+    geste: "Touchez « Planning » dans la barre du bas.",
+    source: "src/components/atlas/AtlasBottomNav.tsx",
+    preuves: ['label: "Planning"'],
+    lieu: true,
+  },
+  {
+    id: "ecran-termines",
+    ecran: "Terminés",
+    ou: "« Terminés », dans la barre du bas",
+    intitule: "Retrouver les chantiers terminés, mois par mois",
+    motsCles: ["termine", "termines", "fini", "finis", "finit", "passe", "anciens", "mois", "sont", "trouver"],
+    geste:
+      "Touchez « Terminés » dans la barre du bas : les chantiers finis, facturés ou non. " +
+      "Les chevrons changent de mois.",
+    source: "src/components/atlas/AtlasBottomNav.tsx",
+    preuves: ['label: "Terminés"'],
+    ailleurs: [{ source: "src/app/termines/ListeTermines.tsx", preuves: ['"Mois précédent"'] }],
+    lieu: true,
+  },
+  {
+    id: "ecran-paysage",
+    ecran: "Paysage",
+    ou: "« Paysage », dans la barre du bas",
+    intitule: "Trouver les outils du métier : arrosage, fiche de chantier, diagnostic, fiches de sécurité",
+    motsCles: ["paysage", "outils", "outil", "arrosage", "diagnostic", "metier", "sont", "trouver"],
+    geste:
+      "Touchez « Paysage » dans la barre du bas : Plan d'arrosage automatique, Fiche de chantier, " +
+      "Diagnostic végétal et Fiches de sécurité.",
+    source: "src/app/paysage/page.tsx",
+    preuves: ["Plan d'arrosage automatique", "Fiche de chantier", "Diagnostic végétal", "Fiches de sécurité"],
+    ailleurs: [{ source: "src/components/atlas/AtlasBottomNav.tsx", preuves: ['label: "Paysage"'] }],
+    lieu: true,
+  },
+  {
+    id: "ecran-reglages",
+    ecran: "Réglages",
+    ou: "« Réglages », dernier onglet de la barre du bas",
+    intitule: "Ouvrir les réglages",
+    motsCles: ["reglages", "reglage", "parametres", "parametre", "configurer", "options", "sont", "trouver"],
+    geste: "Touchez « Réglages » dans la barre du bas.",
+    source: "src/components/atlas/AtlasBottomNav.tsx",
+    preuves: ['label: "Réglages"'],
+    lieu: true,
+  },
+  {
+    id: "ou-devis",
+    ecran: "Vos clients",
+    ou: "« Chantiers » dans la barre du bas, puis « Vos clients »",
+    intitule: "Retrouver ses devis, en cours ou déjà envoyés",
+    motsCles: ["devis", "sont", "range", "ranger", "rangement", "retrouver", "trouver", "envoye", "envoyes", "anciens", "archive"],
+    geste:
+      "Un devis en cours est sur sa ligne, dans « Chantiers ». Ceux qui sont partis : " +
+      "« Chantiers », puis « Vos clients », touchez le nom, onglet « Devis ».",
+    source: "src/app/clients/[id]/page.tsx",
+    preuves: ['libelle: "Devis"', "Aucun devis parti"],
+    ailleurs: [{ source: "src/app/EcranChantiers.tsx", preuves: ['href="/clients"', "Vos clients"] }],
+    lieu: true,
+  },
+  {
+    id: "ou-factures",
+    ecran: "Terminés",
+    ou: "« Terminés », dans la barre du bas",
+    intitule: "Retrouver ses factures",
+    motsCles: ["factures", "facture", "sont", "range", "ranger", "retrouver", "trouver", "envoyee", "envoyees", "anciennes", "archive"],
+    geste:
+      "Touchez « Terminés » dans la barre du bas, puis la ligne du chantier : sa facture s'ouvre. " +
+      "Par client : « Chantiers », « Vos clients », touchez le nom, onglet « Factures ».",
+    source: "src/app/termines/ListeTermines.tsx",
+    preuves: ["/facture`", "ligne-terminee"],
+    ailleurs: [{ source: "src/app/clients/[id]/page.tsx", preuves: ['libelle: "Factures"', "Aucune facture émise"] }],
+    lieu: true,
+  },
+  {
+    id: "ou-fiches-envoyees",
+    ecran: "Vos clients",
+    ou: "« Chantiers » dans la barre du bas, puis « Vos clients »",
+    intitule: "Retrouver les fiches de chantier envoyées à un client",
+    motsCles: ["fiches", "fiche", "chantier", "envoyee", "envoyees", "sont", "retrouver", "trouver", "range", "client"],
+    geste: "« Chantiers », puis « Vos clients », touchez le nom, onglet « Fiches ».",
+    source: "src/app/clients/[id]/page.tsx",
+    preuves: ['libelle: "Fiches"', "Aucune fiche envoyée"],
+    lieu: true,
+  },
+  {
+    id: "avoir",
+    ecran: "Facture",
+    ou: "« Terminés » dans la barre du bas, puis la ligne du chantier",
+    intitule: "Faire un avoir, retrouver ses avoirs",
+    motsCles: ["avoir", "avoirs", "rembourser", "remboursement", "rembourse"],
+    geste: "Atlas ne fait pas encore d'avoir : l'écran est dessiné, il n'est pas encore dans l'application.",
+    reserve: "Une facture envoyée ne se modifie plus. En attendant, l'avoir se fait hors d'Atlas.",
+    source: "src/app/chantiers/[id]/facture/FactureClient.tsx",
+    preuves: ["Une correction passerait par un avoir."],
+    // Les mots de sa planche `appli/il-ne-paie-pas.html` : le jour où ils
+    // entrent dans `src/`, cette fiche ment.
+    absences: ["Je fais un avoir", 'libelle: "Avoirs"'],
+    lieu: true,
+  },
+  {
+    id: "facture-payee",
+    ecran: "Ma TVA",
+    ou: "« Terminés » dans la barre du bas, puis « Ma TVA à déclarer »",
+    intitule: "Noter qu'une facture est payée, voir celles qui ne le sont pas",
+    motsCles: ["paye", "payee", "payees", "paiement", "encaisse", "encaisser", "regle", "reglement", "cheque", "virement", "attente", "impaye", "impayees"],
+    geste:
+      "« Terminés », puis « Ma TVA à déclarer » : sous « Factures en attente », " +
+      "appuyez sur « J'ai reçu le paiement », ou « J'ai reçu une partie » pour un acompte.",
+    reserve: "Une facture payée quitte cette liste et entre au relevé de TVA.",
+    source: "src/app/termines/tva/EnAttenteDePaiement.tsx",
+    preuves: ["Factures en attente", "J'ai reçu le paiement", "J&apos;ai reçu une partie"],
+    ailleurs: [{ source: "src/app/termines/page.tsx", preuves: ["Ma TVA à déclarer"] }],
+    lieu: true,
+  },
+  {
+    id: "termines-retours",
+    ecran: "Retours d'intervention",
+    ou: "« Terminés » dans la barre du bas, puis « Retours d'intervention »",
+    intitule: "Lire les retours d'intervention de l'équipe",
+    motsCles: ["retours", "retour", "intervention", "interventions", "equipe", "salarie", "compte", "rendu", "sont", "trouver"],
+    geste: "Touchez « Terminés » dans la barre du bas, puis « Retours d'intervention ».",
+    source: "src/app/termines/ListeTermines.tsx",
+    preuves: ['href="/termines/retours"', "Retours d&apos;intervention"],
+    lieu: true,
+  },
+  {
+    id: "termines-creer-facture",
+    ecran: "Terminés",
+    ou: "« Terminés », dans la barre du bas",
+    intitule: "Faire une facture sans devis, pour un dépannage",
+    motsCles: ["facture", "sans", "devis", "depannage", "direct", "directement", "creer", "rapide"],
+    geste: "Touchez « Terminés » dans la barre du bas, puis « Créer une facture » en or, à droite.",
+    source: "src/app/termines/ListeTermines.tsx",
+    preuves: ['href="/chantiers/nouveau?facture=1"', "Créer une facture"],
+  },
+  {
+    id: "planning-fiche-intervention",
+    ecran: "Planning",
+    ou: "« Planning » dans la barre du bas, puis le jour du chantier",
+    intitule: "Ouvrir la fiche d'intervention d'un chantier",
+    motsCles: ["fiche", "intervention", "chantier", "jour", "planning", "ouvrir", "trouver", "sont"],
+    geste:
+      "Touchez « Planning » dans la barre du bas, puis le nom du chantier dans sa journée : " +
+      "sa fiche d'intervention se déplie dessous.",
+    source: "src/app/planning/PlanningClient.tsx",
+    preuves: ["Fiche d&apos;intervention", 'data-atlas="nom-du-jour"'],
+    lieu: true,
+  },
+  {
+    id: "fiche-securite-remplir",
+    ecran: "Planning",
+    ou: "la fiche d'intervention, dans « Planning »",
+    intitule: "Remplir et signer la fiche de sécurité avant les travaux",
+    motsCles: ["securite", "fiche", "remplir", "signer", "elagage", "abattage", "risques", "remplit"],
+    geste:
+      "Dans « Planning », touchez le nom du chantier, puis le bandeau « Fiche de sécurité » " +
+      "et « Remplir la fiche ».",
+    reserve: "Elle existe sur tous les chantiers, et reste facultative.",
+    source: "src/app/planning/FicheDeSecurite.tsx",
+    preuves: ["Fiche de sécurité", "Remplir la fiche"],
+  },
+  {
+    id: "fiche-securite-retrouver",
+    ecran: "Fiches de sécurité",
+    ou: "« Paysage » dans la barre du bas, puis « Fiches de sécurité »",
+    intitule: "Retrouver les fiches de sécurité signées",
+    motsCles: ["securite", "fiche", "fiches", "signees", "sont", "retrouver", "trouver", "range", "anciennes"],
+    geste: "Touchez « Paysage » dans la barre du bas, puis « Fiches de sécurité ».",
+    reserve: "Elles y sont gardées deux ans.",
+    source: "src/app/paysage/page.tsx",
+    preuves: ['href: "/paysage/fiches-securite"', "Gardées deux ans."],
+    lieu: true,
+  },
+
   // --- Chantiers (l'accueil) ------------------------------------------------
   {
     id: "chantiers-retirer",
     ecran: "Chantiers",
-    ou: "la liste des chantiers, l'écran d'accueil",
+    ou: "« Chantiers », dans la barre du bas",
     intitule: "Retirer un chantier de la liste, devis pas encore écrit",
     motsCles: [
       "supprimer", "retirer", "enlever", "effacer", "virer", "chantier", "client",
@@ -88,7 +303,7 @@ export const FICHES_MODE_EMPLOI: FicheModeEmploi[] = [
   {
     id: "chantiers-ouvrir",
     ecran: "Chantiers",
-    ou: "la liste des chantiers",
+    ou: "« Chantiers », dans la barre du bas",
     intitule: "Reprendre un chantier là où on s'est arrêté",
     motsCles: ["ouvrir", "reprendre", "continuer", "chantier", "toucher", "revenir", "etape"],
     geste: "Touchez la ligne : Atlas rouvre l'écran où le travail s'est arrêté, pas la fiche.",
@@ -98,7 +313,7 @@ export const FICHES_MODE_EMPLOI: FicheModeEmploi[] = [
   {
     id: "chantiers-nouveau",
     ecran: "Chantiers",
-    ou: "la liste des chantiers",
+    ou: "« Chantiers », dans la barre du bas",
     intitule: "Créer un chantier, un devis",
     motsCles: ["creer", "nouveau", "ajouter", "devis", "chantier", "commencer", "demarrer", "client"],
     geste: "Appuyez sur « Créer un devis » en bas de la liste.",
@@ -405,20 +620,25 @@ export const FICHES_MODE_EMPLOI: FicheModeEmploi[] = [
   {
     id: "planning-poser",
     ecran: "Planning",
-    ou: "l'écran Planning",
+    ou: "« Planning », dans la barre du bas",
     intitule: "Poser un chantier sur un jour",
     motsCles: ["planning", "planifier", "poser", "jour", "date", "semaine", "ajouter", "chantier", "calendrier"],
     // **Le second temps a disparu le 9 septembre 2026** — *« si Claudette c'est
     // un chantier 1 journée, deux, ou une demi, ça doit se mettre tout seul »*.
     // La durée vient du devis ; la pose ne redemande plus rien.
-    geste: "Touchez le jour, puis « Ajouter un chantier », et touchez le nom : sa durée fait le reste.",
+    // **« Ajouter un chantier » n'existe plus** (sa planche du 18 septembre
+    // 2026) : « Ajouter » ouvre trois voies, et la preuve ne tenait plus que
+    // par un commentaire qui citait l'ancien nom.
+    geste:
+      "Touchez le jour, puis « Ajouter » et « Client en attente », et touchez le nom : " +
+      "sa durée fait le reste.",
     source: "src/app/planning/PlanningClient.tsx",
-    preuves: ["Ajouter un chantier"],
+    preuves: ['data-atlas="ajouter"', "Client en attente"],
   },
   {
     id: "planning-deplacer",
     ecran: "Planning",
-    ou: "la fiche d'un chantier du planning",
+    ou: "« Planning » dans la barre du bas, puis le nom du chantier",
     intitule: "Libérer une demi-journée d'un chantier",
     motsCles: ["deplacer", "bouger", "changer", "jour", "reporter", "decaler", "planning", "liberer", "demi"],
     // **« Déplacer » ne déplace plus rien depuis le 10 septembre 2026** : il
@@ -435,7 +655,7 @@ export const FICHES_MODE_EMPLOI: FicheModeEmploi[] = [
   {
     id: "planning-retirer",
     ecran: "Planning",
-    ou: "la fiche d'un chantier du planning",
+    ou: "« Planning » dans la barre du bas, puis le nom du chantier",
     intitule: "Retirer un chantier du planning",
     motsCles: ["retirer", "supprimer", "enlever", "planning", "annuler", "jour"],
     geste: FICHE_RETRAIT,
@@ -445,7 +665,7 @@ export const FICHES_MODE_EMPLOI: FicheModeEmploi[] = [
   {
     id: "planning-note",
     ecran: "Planning",
-    ou: "la fiche d'un chantier du planning",
+    ou: "« Planning » dans la barre du bas, puis le nom du chantier",
     intitule: "Laisser une note sur une journée",
     motsCles: ["note", "penser", "rappel", "ecrire", "memo", "journee", "planning"],
     geste: "Écrivez dans « Ma note », sur la fiche du jour. Elle s'enregistre toute seule.",
@@ -455,7 +675,7 @@ export const FICHES_MODE_EMPLOI: FicheModeEmploi[] = [
   {
     id: "planning-itineraire",
     ecran: "Planning",
-    ou: "la fiche d'un chantier du planning",
+    ou: "« Planning » dans la barre du bas, puis le nom du chantier",
     intitule: "Y aller, appeler le client, copier l'adresse",
     motsCles: ["maps", "waze", "itineraire", "route", "aller", "appeler", "telephone", "adresse", "copier"],
     geste: "Sur la fiche du chantier : « Maps », « Waze », « Appeler le client » ou « Copier l'adresse ».",
@@ -465,7 +685,7 @@ export const FICHES_MODE_EMPLOI: FicheModeEmploi[] = [
   {
     id: "planning-feuille",
     ecran: "Planning",
-    ou: "la fiche d'un chantier du planning",
+    ou: "« Planning » dans la barre du bas, puis le nom du chantier",
     intitule: "Donner la feuille de chantier à l'équipe, sans les prix",
     motsCles: ["feuille", "chantier", "equipe", "ouvrier", "papier", "prix", "sans", "pdf", "imprimer"],
     // **Le bouton « Feuille de chantier » n'existe plus depuis le 9 septembre
@@ -507,17 +727,21 @@ export const FICHES_MODE_EMPLOI: FicheModeEmploi[] = [
   {
     id: "termines-facturer",
     ecran: "Terminés",
-    ou: "l'écran Terminés",
+    ou: "« Terminés », dans la barre du bas",
     intitule: "Retrouver les chantiers finis qui ne sont pas encore facturés",
-    motsCles: ["termine", "termines", "fini", "facturer", "reste", "oublie", "impaye", "liste"],
-    geste: "Ouvrez « Terminés », puis l'onglet « À facturer ».",
+    motsCles: ["termine", "termines", "fini", "facturer", "reste", "oublie", "liste"],
+    // **L'onglet « À facturer » est parti le 13 septembre 2026** : c'est l'œil,
+    // à côté du compte, qui filtre. La fiche l'enseignait encore.
+    geste:
+      "Touchez « Terminés » dans la barre du bas, puis l'œil à côté de « à facturer » : " +
+      "il ne reste que ceux qui attendent. « À facturer » sur une ligne ouvre sa facture.",
     source: "src/app/termines/ListeTermines.tsx",
-    preuves: ["À facturer", "Pas encore facturé"],
+    preuves: ['data-atlas="oeil-a-facturer"', "À facturer"],
   },
   {
     id: "tva",
     ecran: "Ma TVA",
-    ou: "l'écran Terminés",
+    ou: "« Terminés », dans la barre du bas",
     intitule: "Savoir combien de TVA déclarer",
     motsCles: ["tva", "declarer", "declaration", "collectee", "deductible", "impot", "etat", "periode", "voir", "vois", "combien"],
     geste: "Depuis « Terminés », appuyez sur « Ma TVA à déclarer ».",
@@ -533,12 +757,17 @@ export const FICHES_MODE_EMPLOI: FicheModeEmploi[] = [
   {
     id: "clients-liste",
     ecran: "Vos clients",
-    ou: "l'écran des clients",
+    ou: "« Chantiers » dans la barre du bas, puis « Vos clients »",
     intitule: "Retrouver un client et tout ce qui le concerne",
-    motsCles: ["client", "clients", "fiche", "retrouver", "historique", "dossier", "devis", "facture"],
-    geste: "Ouvrez « Vos clients », puis touchez son nom : ses devis, factures et fiches de chantier y sont.",
+    motsCles: ["client", "clients", "fiche", "retrouver", "historique", "dossier", "devis", "facture", "liste", "carnet", "voir", "tous"],
+    // **« Fiche chantier » est devenu l'onglet « Fiches »** : la preuve ne
+    // tenait plus que par le commentaire qui racontait le changement.
+    geste:
+      "Touchez « Chantiers » dans la barre du bas, puis « Vos clients », puis son nom : " +
+      "ses devis, factures et fiches y sont, un onglet chacun.",
     source: "src/app/clients/[id]/page.tsx",
-    preuves: ["Devis", "Facture", "Fiche chantier"],
+    preuves: ['libelle: "Devis"', 'libelle: "Factures"', 'libelle: "Fiches"'],
+    ailleurs: [{ source: "src/app/EcranChantiers.tsx", preuves: ['href="/clients"', "Vos clients"] }],
   },
 
   // --- Catalogue et vocabulaire --------------------------------------------
@@ -639,6 +868,16 @@ export const FICHES_MODE_EMPLOI: FicheModeEmploi[] = [
     geste: "Ouvrez « Équipe » : le nombre de chantiers menés en même temps, vos salariés et leurs absences s'y règlent.",
     source: "src/lib/rubriques-reglages.ts",
     preuves: ["Équipe"],
+  },
+  {
+    id: "reglages-donner-acces",
+    ecran: "Équipe",
+    ou: "« Réglages » dans la barre du bas, puis Équipe",
+    intitule: "Ajouter un salarié, lui donner un accès à Atlas",
+    motsCles: ["ajouter", "salarie", "salaries", "employe", "ouvrier", "acces", "inviter", "compte", "connecter", "gars"],
+    geste: "Ouvrez « Équipe », puis « Donner un accès ».",
+    source: "src/app/reglages/equipe/QuiAAcces.tsx",
+    preuves: ['href="/reglages/equipe/nouveau"', "Donner un accès"],
   },
   {
     id: "paysage-composer-ma-fiche",
@@ -763,7 +1002,10 @@ export const FICHES_MODE_EMPLOI: FicheModeEmploi[] = [
     motsCles: ["couleur", "couleurs", "charte", "apparence", "sombre", "nuit", "theme", "clair", "mode", "fond"],
     geste: "Ouvrez « Apparence » et touchez la charte voulue. « Nuit » et « Sylve » sont sombres.",
     source: "src/app/reglages/apparence/ApparenceClient.tsx",
-    preuves: ["Votre charte", "Nuit", "Sylve"],
+    preuves: ["Votre charte"],
+    // Les noms des chartes vivent dans leur table, pas dans l'écran : ils n'y
+    // restaient prouvés que par un commentaire.
+    ailleurs: [{ source: "src/lib/chartes.ts", preuves: ['libelle: "Nuit"', 'libelle: "Sylve"'] }],
   },
 
   // --- Paysage --------------------------------------------------------------
@@ -849,10 +1091,13 @@ export const FICHES_MODE_EMPLOI: FicheModeEmploi[] = [
  * « pour », « un », « je » sont dans la moitié des fiches, et le classement se
  * décide alors sur du bruit plutôt que sur « supprimer » et « client ».
  */
+//
+// **« sans » n'y est plus** (24 septembre 2026) : « une facture sans devis »,
+// « la feuille sans les prix » — il porte la moitié de la question.
 const MOTS_VIDES = new Set([
   "je", "j", "tu", "il", "on", "me", "moi", "mon", "ma", "mes", "le", "la", "les", "l", "un", "une", "des", "du", "de",
   "d", "et", "ou", "a", "au", "aux", "en", "y", "que", "qui", "quoi", "est", "ce", "cet", "cette", "ces", "se", "sur",
-  "dans", "pour", "avec", "sans", "par", "pas", "plus", "faire", "fais", "fait", "peux", "puis", "veux", "vais",
+  "dans", "pour", "avec", "par", "pas", "plus", "faire", "fais", "fait", "peux", "puis", "veux", "vais",
   "comment", "où", "quand", "pourquoi", "est-ce", "s", "si", "son", "sa", "ses", "leur", "nous", "vous", "ils",
   "app", "appli", "application", "atlas", "page", "ecran",
 ]);
@@ -926,6 +1171,19 @@ function score(fiche: FicheModeEmploi, mots: string[]): { points: number; motsTr
 }
 
 /**
+ * La question demande-t-elle un ENDROIT ?
+ *
+ * « où » est un mot vide pour le score (il est dans toutes les questions de
+ * lieu, il ne départage rien entre elles) ; il dit pourtant CE QU'ON ATTEND.
+ * Lu sur la question brute : sans accent, « ou » veut aussi dire « ou bien ».
+ * « Je trouve pas le bouton pour envoyer » n'en est PAS une : il cherche un
+ * geste, et « trouve » y faisait gagner l'endroit où dorment les devis.
+ */
+function chercheUnLieu(question: string): boolean {
+  return /(^|[^a-zà-ÿ])où([^a-zà-ÿ]|$)|\brang[eé]/i.test(question);
+}
+
+/**
  * Les fiches qui répondent à une question, la meilleure d'abord.
  *
  * **Rend un tableau VIDE plutôt qu'une fiche au hasard.** C'est tout l'intérêt :
@@ -943,9 +1201,25 @@ export function chercherFiches(question: string, maximum = 3): FicheModeEmploi[]
   const mots = motsUtiles(question);
   if (mots.length === 0) return [];
   const exigeDeuxMots = mots.length >= 3;
+  const lieu = chercheUnLieu(question);
   return FICHES_MODE_EMPLOI.map((fiche) => ({ fiche, ...score(fiche, mots) }))
     .filter((c) => c.points >= 3 && (!exigeDeuxMots || c.motsTrouves >= 2))
+    // **Le bonus vient APRÈS le seuil** : il départage des fiches qui
+    // répondent déjà, il ne fait jamais entrer une fiche qui ne répond pas.
+    .map((c) => ({ ...c, points: c.points + (lieu && c.fiche.lieu ? 3 : 0) }))
     .sort((a, b) => b.points - a.points || a.fiche.id.localeCompare(b.fiche.id))
     .slice(0, maximum)
     .map((c) => c.fiche);
+}
+
+/**
+ * Une fiche par son identifiant, ou rien.
+ *
+ * C'est la seconde porte de l'outil : quand les mots de la question ne
+ * rencontrent aucun mot-clé (« la touche pour… », « c'est rangé où »), le
+ * modèle lit le sommaire, reconnaît la fiche, et la redemande ici. Le geste
+ * récité reste celui de la fiche ; seul le choix change de main.
+ */
+export function ficheParId(id: string): FicheModeEmploi | null {
+  return FICHES_MODE_EMPLOI.find((f) => f.id === id) ?? null;
 }

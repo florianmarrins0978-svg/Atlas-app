@@ -59,7 +59,7 @@ export const fournisseurLLMDev: FournisseurLLM = {
     // bas : le fournisseur allait lire les prestations du chantier et proposait
     // d'en retirer une. Il demandait un geste, on lui modifiait ses données.
     const estQuestionModeEmploi =
-      /\bcomment\b|\bo[uù] (est|se trouve|je (trouve|vois|clique))\b|[aà] quoi sert/i.test(texte) &&
+      /\bcomment\b|\bo[uù] (est|sont|se trouve|je (trouve|vois|clique|range))\b|[aà] quoi sert/i.test(texte) &&
       outils.some((o) => o.nom === "RechercherModeEmploi");
     if (estQuestionModeEmploi) {
       if (dernier && dernier.role === "outil" && dernier.outil === "RechercherModeEmploi") {

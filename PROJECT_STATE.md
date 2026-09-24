@@ -5,6 +5,14 @@
 
 ---
 
+## FAIT : L'ASSISTANT DIT OÙ SONT DEVIS, FACTURES, FICHES (24 septembre 2026)
+
+Seize fiches de lieu, un sommaire pour les tournures imprévues, quatre
+gestes morts corrigés (`ARCHITECTURE.md` §411). Reste à l'essayer avec un vrai
+modèle, sur son espace.
+
+---
+
 ## FAIT : LA FLÈCHE RETOUR DE LA FICHE CLIENT GARDE LA SAISIE (22 septembre 2026)
 
 *« Je remplis la fiche client, je fais retour, mais elle n'apparaît plus dans

@@ -6969,6 +6969,17 @@ a vieilli.
 **FAIT le 25 août 2026** pour l'essentiel (`ARCHITECTURE.md` §180). Ce qui reste,
 et qui ne se règle pas en une fois :
 
+- **Le 24 septembre 2026** (`ARCHITECTURE.md` §411) : les fiches de LIEU sont
+  écrites (onglets, devis, factures, avoir, paiement, fiches de sécurité et
+  d'intervention, retours), le sommaire rattrape les tournures imprévues, et
+  une preuve ne se satisfait plus d'un commentaire. **Pas vérifié ici : la
+  formulation d'un vrai modèle devant le sommaire** (aucune clé). À essayer sur
+  son espace avec « où sont mes factures », « je cherche la touche pour
+  envoyer le devis », « comment je fais un avoir ».
+- **La fiche « avoir » dit qu'Atlas ne le fait pas** : elle rougira d'elle-même
+  (`absences`) le jour où « Je fais un avoir » entre dans `src/`. Il faudra
+  alors la récrire avec le vrai geste.
+
 - **Les fiches couvrent les écrans principaux, pas encore chaque recoin.**
   Manquent notamment : le détail de l'écran Réglages → Devis & factures (chaque
   réglage un par un), les mesures de la grille de prix, l'écran d'abonnement, et

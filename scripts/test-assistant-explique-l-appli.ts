@@ -123,6 +123,26 @@ async function main() {
     assert.equal(titres.length, 1, `${titres.length} gestes dans la réponse : ${titres.join(" / ")}`);
   });
 
+  // **Sa demande du 24 septembre 2026, par la porte qu'il emprunte** : la
+  // question posée à l'assistant, depuis un écran sans chantier, jusqu'au texte
+  // qu'il lit. Avant ce lot, « où sont mes factures » répondait comment en
+  // créer une, et les avoirs ne rendaient rien du tout.
+  const OU_EST: [string, RegExp][] = [
+    ["où sont mes factures ?", /Touchez « Terminés » dans la barre du bas, puis la ligne du chantier/],
+    ["où est la fiche de sécurité ?", /« Paysage » dans la barre du bas, puis « Fiches de sécurité »/],
+    ["où est la fiche d'intervention ?", /sa fiche d'intervention se déplie/],
+    ["comment je fais un avoir ?", /Atlas ne fait pas encore d'avoir/],
+  ];
+  for (const [question, attendu] of OU_EST) {
+    await test(`« ${question} » reçoit l'endroit, depuis n'importe quel écran`, async () => {
+      const reponse = await poserQuestion(P, null, [], question);
+      assert.equal(reponse.succes, true);
+      if (!reponse.succes) return;
+      assert.match(reponse.texte, attendu);
+      assert.ok(reponse.sources.includes("RechercherModeEmploi"), "La source doit être le mode d'emploi");
+    });
+  }
+
   await test("Un geste inconnu se DIT, il ne s'invente pas", async () => {
     const reponse = await poserQuestion(P, chantier.id, [], "comment je fais pour envoyer une fusée sur la lune ?");
     assert.equal(reponse.succes, true);

@@ -11,6 +11,15 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 
 ---
 
+## L'ASSISTANT DIT OÙ LES CHOSES SONT RANGÉES — 24 septembre 2026
+
+Fiches de lieu, sommaire et preuves sans commentaires : `ARCHITECTURE.md` §411.
+**Pour ajouter une réponse de l'assistant, on ajoute une FICHE** dans
+`src/lib/mode-emploi.ts` et sa question dans `ATTENDUS`
+(`scripts/test-mode-emploi.ts`), jamais une consigne au modèle.
+
+---
+
 ## LA FLÈCHE RETOUR DE LA FICHE CLIENT ENREGISTRE — 22 septembre 2026
 
 | | |
