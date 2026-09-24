@@ -22,8 +22,13 @@
   de page. Aujourd'hui la flèche ramène au bon écran mais EN HAUT : il
   faudrait redescendre jusqu'à la ligne.
 
-  DEUX CHOIX À ESSAYER : l'allure du prénom appuyable (A sans rien, B souligné
-  d'or), et le même geste sur « Factures en attente » (oui / non).
+  SA RÉPONSE DU 24 SEPTEMBRE, qui a remplacé les deux choix du premier jet :
+  « je veux pas que le nom du client soit souligné en doré ! Je veux que ça
+  soit comme sur la page Terminés : je clique sur la zone du client et ça
+  ouvre la facture ». Donc TOUTE la zone s'appuie, sans rien qui la distingue
+  (`ListeTermines.tsx`, la rangée entière est un lien), et le geste vaut aussi
+  pour « Factures en attente ». Là, la zone s'arrête au-dessus des deux
+  boutons : eux gardent leur propre geste.
 
   RIEN N'EST CODÉ. Noms, numéros et montants sont ceux de SA capture ; le
   contenu de la page PDF est un gabarit gris, pas une facture inventée.
@@ -89,12 +94,10 @@ li.regl{padding:12px 0;border-top:1px solid var(--trait-doux)}
 .paire span:last-child{font-size:16px;font-family:ui-serif,Georgia,serif}
 .paire.tva span{color:var(--or)!important}
 
-/* Le prénom appuyable. Sa cible fait 44 px de haut : un doigt sur un chantier
-   ne vise pas au pixel. L'allure se choisit en haut de page. */
-.nom{display:inline-flex;align-items:center;min-height:44px;margin:-10px 0;font:inherit;font-size:15px;
-  color:var(--encre);background:none;border:0;padding:0;cursor:pointer;text-align:left}
-body.allure-B .nom.appuyable span{border-bottom:1.5px solid var(--or);padding-bottom:1px}
-.nom:not(.appuyable){cursor:default}
+/* La zone du client s'appuie tout entière, comme une rangée de Terminés. */
+.zone{cursor:pointer}
+.zone:active{background:var(--trait-doux)}
+.nom{font-size:15px;margin:0}
 li.eclaire{animation:eclat 1.4s ease-out}
 @keyframes eclat{from{background:rgba(185,139,71,.18)}to{background:transparent}}
 
@@ -111,22 +114,11 @@ li.eclaire{animation:eclat 1.4s ease-out}
 .ombre{height:9px;background:#e8e6e0;border-radius:2px;margin:9px 0}
 </style>
 </head>
-<body class="allure-A">
-
-<div class="commandes">
-  <div class="groupe"><span class="mot">Le prénom</span>
-    <button data-allure="A" aria-pressed="true">A, sans rien</button>
-    <button data-allure="B" aria-pressed="false">B, souligné</button>
-  </div>
-  <div class="groupe"><span class="mot">Aussi en attente</span>
-    <button data-attente="oui" aria-pressed="true">Oui</button>
-    <button data-attente="non" aria-pressed="false">Non</button>
-  </div>
-</div>
+<body>
 
 <div class="tete">
   <h1 class="serif">Ouvrir la facture depuis Ma TVA</h1>
-  <p>Descendez jusqu'à la liste, appuyez sur un prénom. La facture s'ouvre ; la flèche vous ramène à la même ligne.</p>
+  <p>Appuyez n'importe où sur un client, en attente ou dans la liste. La facture s'ouvre ; la flèche vous ramène à la même ligne.</p>
 </div>
 
 <div class="scene">
@@ -147,12 +139,14 @@ li.eclaire{animation:eclat 1.4s ease-out}
 
         <div class="entete-section"><h3 class="section serif">Factures en attente</h3><span>1 facture</span></div>
         <div class="attente">
-          <div class="l1">
-            <button class="nom" id="nom-attente" data-numero="F2026-000005" data-client="Martins"><span>Martins</span></button>
-            <span class="reste">Reste à payer 495,00 €</span>
+          <div class="zone" data-numero="F2026-000005" data-client="Martins">
+            <div class="l1">
+              <p class="nom">Martins</p>
+              <span class="reste">Reste à payer 495,00 €</span>
+            </div>
+            <p class="petit">F2026-000005, émise le 09/09</p>
+            <p class="petit">Réception confirmée le <b>10/09</b></p>
           </div>
-          <p class="petit">F2026-000005, émise le 09/09</p>
-          <p class="petit">Réception confirmée le <b>10/09</b></p>
           <div class="boutons"><button class="vert">J'ai reçu le paiement</button><button class="seul">J'ai reçu une partie</button></div>
           <div class="paire"><span>Acompte payé le 17/09/2026</span><span>250,00 €</span></div>
         </div>
@@ -195,26 +189,22 @@ const REGLEMENTS = [
 ];
 const liste = document.getElementById("liste");
 liste.innerHTML = REGLEMENTS.map((r, i) => `
-  <li class="regl" data-i="${i}">
-    <button class="nom appuyable" data-numero="${r.numero}" data-client="${r.client}"><span>${r.client}</span></button>
+  <li class="regl zone" data-numero="${r.numero}" data-client="${r.client}">
+    <p class="nom">${r.client}</p>
     <p class="petit">Facture n° ${r.numero}, règlement du ${r.jour}</p>
     <div class="paire"><span>Règlement encaissé</span><span>${r.ttc} € TTC</span></div>
     <div class="paire tva"><span>TVA collectée</span><span>${r.tva} €</span></div>
   </li>`).join("");
 
 const tva = document.getElementById("tva"), pdf = document.getElementById("pdf");
-const nomAttente = document.getElementById("nom-attente");
-let hauteur = 0, ligneOuverte = null, attenteOui = true;
-
-function majAttente() { nomAttente.classList.toggle("appuyable", attenteOui); }
-majAttente();
+let hauteur = 0, ligneOuverte = null;
 
 document.querySelector(".tel").addEventListener("click", (e) => {
-  const b = e.target.closest(".nom.appuyable");
+  const b = e.target.closest(".zone");
   if (!b) return;
   // Ce que la flèche rendra : la hauteur de la page au moment de l'appui.
   hauteur = tva.scrollTop;
-  ligneOuverte = b.closest("li, .attente");
+  ligneOuverte = b;
   document.getElementById("pdf-numero").textContent = b.dataset.numero;
   document.getElementById("pdf-numero-2").textContent = b.dataset.numero;
   document.getElementById("pdf-client").textContent = b.dataset.client;
@@ -227,14 +217,6 @@ document.getElementById("retour").addEventListener("click", () => {
   if (ligneOuverte) { ligneOuverte.classList.remove("eclaire"); void ligneOuverte.offsetWidth; ligneOuverte.classList.add("eclaire"); }
 });
 
-document.querySelectorAll("[data-allure]").forEach((b) => b.addEventListener("click", () => {
-  document.body.className = "allure-" + b.dataset.allure;
-  document.querySelectorAll("[data-allure]").forEach((x) => x.setAttribute("aria-pressed", x === b));
-}));
-document.querySelectorAll("[data-attente]").forEach((b) => b.addEventListener("click", () => {
-  attenteOui = b.dataset.attente === "oui"; majAttente();
-  document.querySelectorAll("[data-attente]").forEach((x) => x.setAttribute("aria-pressed", x === b));
-}));
 </script>
 </body>
 </html>
