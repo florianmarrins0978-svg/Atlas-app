@@ -25,6 +25,11 @@ Elle dormait dans `docs/maquettes/`, qui ne se publie pas, alors que la facture
 promet qu'« une correction passerait par un avoir » et qu'aucun avoir n'existe.
 Reprise dans `appli/il-ne-paie-pas.html`. Rien n'est codé.
 
+Refaite le même jour en **mise en situation complète**, à sa demande (*« je sais
+pas d'où je pars »*) : elle part de l'écran Terminés recopié de l'application
+servie, un bandeau dit à chaque étape où toucher, et les deux branches vont
+jusqu'à la facture d'après. Couleurs et polices : les jetons de `chartes.ts`.
+
 ## 2026-09-23
 
 ### Un garde-fou qui PLANTE ouvrait « main » en grand

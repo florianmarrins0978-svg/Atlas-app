@@ -1,290 +1,398 @@
-<title>Simple : il ne paie pas</title>
+<!doctype html>
+<html lang="fr">
+<head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Il ne paie pas</title>
 <style>
-  /*
-  REPRISE DANS appli/ LE 24 SEPTEMBRE 2026 : la 81 vivait dans docs/maquettes/,
-  qui n'est pas publié ; il n'a jamais pu l'ouvrir. Textes remis aux règles
-  d'aujourd'hui (ni tiret, ni point médian, ni flèche), rien d'autre ne bouge.
+  /* ═══ LA MISE EN SITUATION COMPLÈTE — sa demande du 24 septembre 2026 ═════
+     *« Fait moi une mise en situation complète, pask là je sais pas d'où je
+     pars ! Et mets ta planche aux couleurs et au style de l'appli ! »*
 
-    SIMPLE — un bouton, deux réponses, c'est fini.
+     La première version (la 81 du 17 août, reprise telle quelle) montrait
+     quatre écrans flottants sans dire où l'on était dans l'application.
+     Celle-ci part de l'écran Terminés, tel qu'il est AUJOURD'HUI, et suit le
+     doigt jusqu'à la facture d'après. Les deux premiers écrans sont recopiés
+     d'une capture de l'application servie (`npm run voir -- /termines`, puis
+     la facture émise d'un chantier de démonstration) ; seul le lien du bas
+     et ce qui suit sont proposés.
 
-    LE PATRON, LE 17 AOÛT 2026, devant les planches 79 et 80 :
-    « C'est trop compliqué, il faut faire quelque chose de simple, l'utilisateur
-    a besoin d'aller à l'essentiel constamment. »
+     Jetons : ceux de `facture-remplir-acquittee.html`, eux-mêmes sortis de
+     `src/lib/chartes.ts`. Rien n'est choisi à l'œil.
 
-    Il avait raison, et le défaut était de méthode : les 79 et 80 lui
-    présentaient SIX arrangements à comparer, un tableau à cinq lignes et deux
-    pages de comptabilité. Lui demander de trancher un vocabulaire de comptable
-    entre deux chantiers, c'est lui faire faire notre travail.
-
-    ————————————————————————————————————————————————————————————————
-    CE QUI A ÉTÉ RETIRÉ, ET POURQUOI CE N'EST PAS UNE PERTE.
-
-    · LE MOT « AVOIR » N'APPARAÎT NULLE PART. C'est un mot de comptable, et il
-      ne décrit rien de ce qu'il vit. Le document s'appellera bien « AVOIR »
-      quand il partira chez le client — l'écran, lui, parle sa langue.
-    · LE CHOIX ENTRE TROIS ARRANGEMENTS A DISPARU : il n'y en a plus qu'un.
-      Choisir, c'était encore du travail.
-    · LES EXPLICATIONS DE TVA ONT DISPARU. Sa TVA ne bouge pas (elle est
-      exigible au paiement, §110) : ce qui ne bouge pas n'a pas à s'afficher.
-
-    ————————————————————————————————————————————————————————————————
-    CE QUI RESTE, ET QUI NE PEUT PAS ÊTRE RETIRÉ.
-
-    LES DEUX RÉPONSES. Elles font l'inverse l'une de l'autre, et l'une est
-    irréversible :
-
-      · « je lui enlève quelque chose » → la somme n'est plus due. Il ne pourra
-        plus jamais la réclamer ;
-      · « il ne paiera pas » → la facture reste entière. Il peut encore
-        réclamer, même dans deux ans.
-
-    N'en garder qu'une serait plus simple d'un cran et lui coûterait de
-    l'argent : la seule porte deviendrait celle qui le désarme. UNE LIGNE
-    chacune suffit à les distinguer — c'est la limite du simple, pas une
-    précaution de juriste.
-
-    ————————————————————————————————————————————————————————————————
-    RIEN N'EST CODÉ : `src/` n'est pas touché (règle du §3 bis).
-    AUCUN SCRIPT : boutons radio natifs. Facture 1 440,00 € TTC ; retirer 300 €
-    laisse 1 140,00 €. Contrôle : `scripts/verifier-maquette-avoir.mjs`.
-  */
-
+     RIEN N'EST CODÉ : `src/` n'est pas touché (`CLAUDE.md` §3 bis). */
   :root{
-    --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
-    --trait:rgba(28,28,26,.13); --papier:#faf9f5; --pin:#2f3b2f;
-    --alerte:#9C3B2E; --teinte:#ece9e1;
+    --cream:#f5f3ee; --card:#faf9f5; --ink:#1c1c1a; --inkSoft:#4a4a44;
+    --muted:#8a8578; --rust:#2f3b2f; --rustTint:#ece9e1;
+    --or:#B98B47; --plein:#7d9a6d; --alerte:#9C3B2E;
+    --line:rgba(28,28,26,0.12); --lineSoft:rgba(28,28,26,0.07);
+    --surPlein:#faf9f5; --hors:#e6e3dc;
   }
-  @media (prefers-color-scheme: dark){
-    :root:not([data-theme="light"]){
-      --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
-      --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
-      --alerte:#C87058; --teinte:#252320;
-    }
-  }
-  :root[data-theme="dark"]{
-    --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
-    --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
-    --alerte:#C87058; --teinte:#252320;
-  }
-
   *{box-sizing:border-box}
-  body{margin:0;background:var(--fond);color:var(--encre);
-       font:16px/1.6 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
-       padding:26px 18px 70px}
-  .dedans{max-width:900px;margin:0 auto}
+  html,body{margin:0}
+  body{background:var(--hors);color:var(--ink);
+       font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       -webkit-text-size-adjust:100%;padding:0 0 40px}
+  button{font:inherit;color:inherit;-webkit-tap-highlight-color:transparent}
+  .serif{font-family:ui-serif,Georgia,"Iowan Old Style",serif}
 
-  h1{font-family:Georgia,"Times New Roman",serif;font-weight:400;
-     font-size:27px;line-height:1.2;margin:0 0 8px}
-  .intro{color:var(--gris);font-size:14px;line-height:1.65;margin:0 0 20px}
-  .intro b{color:var(--encre);font-weight:600}
+  /* ═══ LE RÉCIT, AU-DESSUS DU TÉLÉPHONE ═══════════════════════════════════ */
+  .recit{position:sticky;top:0;z-index:5;background:#1c1c1a;color:#f5f3ee;
+         padding:14px 18px 12px;box-shadow:0 6px 18px -10px rgba(0,0,0,.5)}
+  .recit .etape{font:600 10px/1 ui-sans-serif,sans-serif;letter-spacing:.24em;
+                text-transform:uppercase;color:#d8b77e}
+  .recit p{margin:7px 0 0;font-size:14px;line-height:1.5}
+  .recit p b{color:#fff}
+  .pas{display:flex;gap:6px;margin-top:11px;align-items:center}
+  .pas button{min-height:36px;padding:0 14px;border-radius:999px;border:1px solid rgba(245,243,238,.3);
+              background:transparent;color:#f5f3ee;font-size:13px;cursor:pointer}
+  .pas button[disabled]{opacity:.35;cursor:default}
+  .pas .points{flex:1;display:flex;gap:5px;justify-content:center}
+  .pas .points i{width:7px;height:7px;border-radius:50%;background:rgba(245,243,238,.28)}
+  .pas .points i.la{background:#d8b77e}
 
-  .etat{position:absolute;opacity:0;width:0;height:0;pointer-events:none}
-  .reglage{margin:0 0 8px}
-  .reglage .quoi{display:block;font-size:10px;letter-spacing:.13em;
-                 text-transform:uppercase;color:var(--gris);margin-bottom:7px}
-  .segments{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
-  .segments label{cursor:pointer;padding:9px 15px;border-radius:9999px;
-                  border:1px solid var(--trait);font-size:13.5px;
-                  background:var(--papier);color:var(--gris);
-                  -webkit-tap-highlight-color:transparent}
-  #e-1:checked ~ .dedans .segments label[for="e-1"],
-  #e-2:checked ~ .dedans .segments label[for="e-2"],
-  #e-3:checked ~ .dedans .segments label[for="e-3"],
-  #e-4:checked ~ .dedans .segments label[for="e-4"],
-  #m-3:checked ~ .dedans .segments label[for="m-3"],
-  #m-t:checked ~ .dedans .segments label[for="m-t"]{
-    background:var(--pin);border-color:var(--pin);color:#fff}
+  /* ═══ LE TÉLÉPHONE ═══════════════════════════════════════════════════════ */
+  .tel{position:relative;max-width:400px;margin:18px auto 0;background:var(--cream);border-radius:26px;
+       overflow:hidden;box-shadow:0 18px 46px rgba(20,18,14,.22);min-height:720px;padding-bottom:78px}
+  .ecran{display:none}
+  .ecran.ouvert{display:block}
 
-  .rangee{display:flex;gap:26px;flex-wrap:wrap;align-items:flex-start}
-  .tel{flex:none;width:390px;max-width:100%;border-radius:26px;padding:12px;
-       background:var(--teinte);
-       box-shadow:0 1px 3px rgba(20,18,14,.14),0 26px 58px rgba(20,18,14,.18)}
-  .feuille{background:var(--papier);border-radius:14px;padding:22px 20px;min-height:430px}
+  .haut{display:flex;align-items:center;justify-content:space-between;padding:22px 22px 0}
+  .fleche{width:36px;height:36px;border-radius:999px;border:0;background:var(--rustTint);color:var(--rust);
+          font-size:17px;line-height:1;cursor:pointer}
+  .bulle{width:44px;height:44px;border-radius:999px;background:var(--plein)}
+  .titre{padding:10px 22px 0}
+  .titre h1{margin:0;font:400 38px/1.05 ui-serif,Georgia,serif;letter-spacing:-0.018em}
+  .titre .sur{margin:10px 0 0;font:500 10px/1 ui-sans-serif,sans-serif;letter-spacing:.28em;
+              text-transform:uppercase;color:var(--or)}
 
-  .sur{display:block;font-size:10px;letter-spacing:.14em;text-transform:uppercase;
-       color:var(--or);margin-bottom:5px}
-  .h2{font-family:Georgia,serif;font-size:22px;margin:0 0 3px;line-height:1.25}
-  .sous{font-size:12.5px;color:var(--gris);margin:0 0 18px}
+  .carte{margin:14px 14px 0;background:var(--card);border-radius:6px;padding:20px 20px}
+  .caps{font:600 10.5px/1 ui-sans-serif,sans-serif;letter-spacing:.24em;text-transform:uppercase;color:var(--muted)}
+  .caps.or{color:var(--or)}
+  .doux{color:var(--muted)}
+  .ligne{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:4px 0;font-size:15px}
+  .ligne .v{white-space:nowrap}
 
-  .tot{display:flex;justify-content:space-between;font-size:14px;padding:4px 0}
-  .tot.gros{font-family:Georgia,serif;font-size:18px;padding-top:9px;margin-top:7px;
-            border-top:2px solid var(--encre)}
-  .tot.rouge{color:var(--alerte)}
+  /* Terminés */
+  .tva{margin:22px 22px 0;border:2px solid #dcc093;border-radius:6px;background:var(--card);
+       padding:20px 18px;display:flex;justify-content:space-between;align-items:center}
+  .tva .mois{margin-top:10px;font:400 19px/1 ui-serif,Georgia,serif}
+  .tva .m{font:400 25px/1 ui-serif,Georgia,serif;color:var(--rust)}
+  .deux{display:flex;justify-content:space-between;gap:10px;margin:22px 22px 0}
+  .capsule{min-height:44px;padding:0 18px;border-radius:999px;display:inline-flex;align-items:center;
+           font-size:14px;border:1px solid var(--line);background:var(--card);color:var(--inkSoft)}
+  .capsule.or{border-color:var(--or);color:var(--or);background:transparent}
+  .moisnav{text-align:center;margin-top:28px;font:400 30px/1 ui-serif,Georgia,serif}
+  .moisnav .ch{color:var(--or);font-size:20px;margin:0 16px;vertical-align:4px}
+  .moisnav .ch.eteint{color:var(--line)}
+  .compte{margin:26px 22px 6px;font-weight:700;font-size:20px}
+  .fact{display:block;width:calc(100% - 44px);margin:14px 22px 0;padding:10px 0;border:0;background:none;
+        text-align:left;cursor:pointer;border-radius:6px}
+  .fact .l1{display:flex;justify-content:space-between;font:400 19px/1.2 ui-serif,Georgia,serif}
+  .fact .l2{margin-top:6px;font-size:13.5px;color:var(--inkSoft)}
+  .fact.cible{animation:appel 1.6s ease-in-out infinite}
+  @keyframes appel{0%,100%{box-shadow:0 0 0 0 rgba(185,139,71,0)}50%{box-shadow:0 0 0 6px rgba(185,139,71,.28)}}
 
-  .gros-bouton{display:block;margin-top:20px;padding:15px 17px;border-radius:13px;
-               background:var(--pin);color:#fff;font-size:15.5px;text-align:center}
-  .lien-discret{display:block;margin-top:14px;text-align:center;font-size:13.5px;
-                color:var(--or)}
+  /* la facture */
+  .ttc{text-align:center;margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
+  .ttc .caps{color:var(--ink)}
+  .ttc .gros{margin-top:10px;font:600 34px/1 ui-serif,Georgia,serif;color:var(--or)}
+  .net{display:flex;justify-content:space-between;align-items:center;margin-top:14px;padding-top:14px;
+       border-top:2px solid var(--ink)}
+  .net b{font-size:17px}
+  .net .m{font:600 21px/1 ui-serif,Georgia,serif}
+  .regl{display:flex;justify-content:space-between;align-items:baseline;padding:10px 0;
+        border-bottom:1px solid var(--lineSoft);font-size:14.5px}
+  .regl small{display:block;font-size:12px;color:var(--muted)}
+  .arretee{text-align:center;font-size:15px}
+  .lien{display:block;margin:18px auto 0;border:0;background:none;padding:6px 10px;cursor:pointer;
+        color:var(--or);font-size:14.5px;text-decoration:underline;text-underline-offset:4px;
+        text-decoration-color:rgba(185,139,71,.5)}
+  .lien.cible{animation:appel 1.6s ease-in-out infinite;border-radius:6px}
+  .coupe{margin:14px 22px 0;text-align:center;font-size:12px;color:var(--muted);letter-spacing:.06em}
+  .encadre{margin-top:16px;border:1px solid var(--or);border-radius:4px;padding:12px 14px;text-align:center}
+  .encadre p{margin:0;font:600 11.5px/1.4 ui-sans-serif,sans-serif;letter-spacing:.18em;text-transform:uppercase;color:var(--or)}
+  .encadre small{display:block;margin-top:6px;font-size:13px;color:var(--inkSoft);letter-spacing:0;text-transform:none;font-weight:400}
 
-  /* Les deux réponses — le cœur de l'écran, et tout le reste s'efface. */
-  .reponse{display:block;margin-top:12px;padding:16px 17px;border-radius:13px;
-           background:var(--teinte);border:1px solid var(--trait)}
-  .reponse .nom{display:block;font-family:Georgia,serif;font-size:18px;line-height:1.25}
-  .reponse .det{display:block;font-size:12.5px;color:var(--gris);margin-top:5px;line-height:1.5}
+  /* la question */
+  .question{margin:22px 14px 0}
+  .reponse{display:block;width:100%;text-align:left;margin-top:12px;padding:18px 18px;border-radius:10px;
+           border:1px solid var(--line);background:var(--card);cursor:pointer}
+  .reponse .n{display:block;font:400 19px/1.25 ui-serif,Georgia,serif;color:var(--ink)}
+  .reponse .d{display:block;margin-top:6px;font-size:13.5px;line-height:1.45;color:var(--inkSoft)}
+  .reponse.cible{animation:appel 1.6s ease-in-out infinite}
 
-  .case{margin-top:16px;padding:14px 16px;border-radius:12px;background:var(--teinte)}
-  .case .lab{display:block;font-size:10px;letter-spacing:.13em;text-transform:uppercase;
-             color:var(--gris);margin-bottom:6px}
-  .case .val{font-family:Georgia,serif;font-size:26px}
-  .apres{margin-top:16px;border-top:1px solid var(--trait);padding-top:12px}
+  /* le montant */
+  .puces{display:flex;gap:8px;margin-top:14px}
+  .puces button{min-height:40px;padding:0 16px;border-radius:999px;border:1px solid var(--line);
+                background:var(--card);font-size:14px;cursor:pointer}
+  .puces button[aria-pressed="true"]{background:var(--rust);border-color:var(--rust);color:var(--surPlein)}
+  .champ{margin-top:16px;padding:14px 0;border-bottom:1px solid var(--line);display:flex;
+         justify-content:space-between;align-items:baseline}
+  .champ .v{font:600 24px/1 ui-serif,Georgia,serif}
 
-  .fini{text-align:center;padding-top:24px}
-  .fini .coche{display:block;font-size:34px;color:var(--pin);margin-bottom:10px}
+  .vert{display:flex;align-items:center;justify-content:center;margin:26px auto 0;min-height:56px;
+        width:78%;border:0;border-radius:999px;background:var(--plein);color:var(--surPlein);
+        font:400 22px/1 ui-serif,Georgia,serif;cursor:pointer}
+  .vert.cible{animation:appel 1.6s ease-in-out infinite}
+  .contour{display:flex;align-items:center;justify-content:center;margin:14px auto 0;min-height:48px;
+           width:78%;border:1px solid var(--or);border-radius:999px;background:none;color:var(--or);
+           font-weight:600;font-size:15px;cursor:pointer}
 
-  .ec-1,.ec-2,.ec-3,.ec-4{display:none}
-  #e-1:checked ~ .dedans .ec-1,
-  #e-2:checked ~ .dedans .ec-2,
-  #e-3:checked ~ .dedans .ec-3,
-  #e-4:checked ~ .dedans .ec-4{display:block}
-  .m3,.mt{display:none}
-  #m-3:checked ~ .dedans .m3,
-  #m-t:checked ~ .dedans .mt{display:inline}
-  /* Le réglage du montant ne sert qu'aux écrans où l'on retire une somme. */
-  .si-montant{display:none}
-  #e-3:checked ~ .dedans .si-montant,
-  #e-4:checked ~ .dedans .si-montant{display:block}
+  .envoi{display:flex;justify-content:space-between;align-items:center;margin:26px 22px 0;
+         padding-top:18px;border-top:1px solid var(--line)}
+  .onglets{display:flex;gap:18px;font-size:15px}
+  .onglets span{padding-bottom:6px}
+  .onglets span.la{border-bottom:2px solid var(--or)}
+  .au{text-align:center;margin-top:14px;font-size:14px;color:var(--muted)}
 
-  .legende{flex:1;min-width:280px;font-size:13.5px;line-height:1.7;color:var(--gris)}
-  .legende .t{display:block;font-family:Georgia,serif;font-size:19px;
-              color:var(--encre);margin-bottom:8px}
-  .legende b{color:var(--encre);font-weight:600}
-  .legende p{margin:0 0 14px}
+  .coche{width:62px;height:62px;border-radius:50%;margin:40px auto 0;background:var(--plein);color:var(--surPlein);
+         display:flex;align-items:center;justify-content:center;font-size:30px}
+  .fin h2{margin:18px 0 0;text-align:center;font:400 28px/1.2 ui-serif,Georgia,serif}
+  .fin p{margin:10px 26px 0;text-align:center;font-size:15px;color:var(--inkSoft)}
 
-  .note{margin-top:28px;padding:16px 18px;border-radius:12px;background:var(--papier);
-        font-size:13.5px;line-height:1.7;color:var(--gris)}
-  .note b{color:var(--encre);font-weight:600}
-  .note .t{display:block;font-size:11px;letter-spacing:.13em;text-transform:uppercase;
-           color:var(--or);margin-bottom:8px}
-  .note a{color:var(--or)}
+  .apercu{margin:18px 22px 0;background:#fff;border:1px solid #e3dfd6;border-radius:4px;padding:16px 16px;
+          font-size:12px;color:#5a5a52}
+  .apercu .t{font:600 13px/1 ui-sans-serif,sans-serif;letter-spacing:.2em;color:#1c1c1a}
+  .apercu .r{display:flex;justify-content:space-between;margin-top:8px}
+  .apercu .r b{color:#1c1c1a}
+
+  /* la barre du bas, comme dans l'application */
+  .barre{position:absolute;left:0;right:0;bottom:0;display:flex;justify-content:space-around;
+         padding:16px 6px 22px;border-top:1px solid var(--line);background:var(--cream);
+         font:500 10px/1 ui-sans-serif,sans-serif;letter-spacing:.16em;color:var(--muted)}
+  .barre span.la{color:var(--ink);box-shadow:0 12px 0 -10px var(--or)}
+
+  /* ═══ SOUS LE TÉLÉPHONE : ce que ça change, en trois lignes ═══════════════ */
+  .apres{max-width:400px;margin:22px auto 0;padding:0 16px;font-size:14px;line-height:1.6;color:#3a3a35}
+  .apres h3{margin:18px 0 6px;font:400 19px/1.2 ui-serif,Georgia,serif;color:#1c1c1a}
+  .apres table{width:100%;border-collapse:collapse;font-size:13.5px;background:var(--card);border-radius:8px;overflow:hidden}
+  .apres td,.apres th{padding:9px 10px;border-bottom:1px solid var(--lineSoft);text-align:left;vertical-align:top}
+  .apres th{font:600 10px/1.2 ui-sans-serif,sans-serif;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+  .apres .q{margin-top:10px;padding:12px 14px;border-left:3px solid var(--or);background:var(--card);border-radius:0 6px 6px 0}
 </style>
+</head>
+<body>
 
-<input type="radio" name="e" id="e-1" class="etat" checked>
-<input type="radio" name="e" id="e-2" class="etat">
-<input type="radio" name="e" id="e-3" class="etat">
-<input type="radio" name="e" id="e-4" class="etat">
-<input type="radio" name="m" id="m-3" class="etat" checked>
-<input type="radio" name="m" id="m-t" class="etat">
-
-<div class="dedans">
-  <h1>Simple : il ne paie pas</h1>
-  <p class="intro">
-    Un bouton sur la facture, <b>deux réponses</b>, c'est fini. Avancez d'un
-    écran à l'autre : vous verrez qu'il n'y a rien d'autre.
-  </p>
-
-  <div class="reglage">
-    <span class="quoi">Avancez</span>
-    <div class="segments">
-      <label for="e-1">1. La facture</label>
-      <label for="e-2">2. La question</label>
-      <label for="e-3">3. Combien</label>
-      <label for="e-4">4. Fini</label>
-    </div>
-  </div>
-
-  <div class="si-montant reglage">
-    <span class="quoi">Vous lui enlevez</span>
-    <div class="segments">
-      <label for="m-3">300 €</label>
-      <label for="m-t">Tout</label>
-    </div>
-  </div>
-
-  <div class="rangee">
-    <div class="tel">
-      <div class="feuille">
-
-        <!-- 1. La facture, telle qu'elle est déjà -->
-        <div class="ec-1">
-          <span class="sur">Facture F2026-0031</span>
-          <p class="h2">M. Martins</p>
-          <p class="sous">Émise le 12 juillet, 37 jours de retard</p>
-          <div class="tot"><span>Total TTC</span><span>1 440,00 €</span></div>
-          <div class="tot gros rouge"><span>Reste dû</span><span>1 440,00 €</span></div>
-          <span class="gros-bouton">J'ai reçu l'argent</span>
-          <span class="lien-discret">Il ne me paiera pas</span>
-        </div>
-
-        <!-- 2. La question, et il n'y en a qu'une -->
-        <div class="ec-2">
-          <span class="sur">F2026-0031, M. Martins</span>
-          <p class="h2">Que voulez-vous faire ?</p>
-          <p class="sous">1 440,00 € toujours dus</p>
-
-          <span class="reponse">
-            <span class="nom">Je lui enlève quelque chose</span>
-            <span class="det">Il devra moins. Un document part chez lui.</span>
-          </span>
-
-          <span class="reponse">
-            <span class="nom">Il ne paiera pas</span>
-            <span class="det">On arrête de vous le rappeler. Vous pourrez
-              toujours réclamer.</span>
-          </span>
-        </div>
-
-        <!-- 3. Combien — une case, rien d'autre -->
-        <div class="ec-3">
-          <span class="sur">F2026-0031, M. Martins</span>
-          <p class="h2">Vous lui enlevez combien ?</p>
-          <p class="sous">Sur les 1 440,00 € qu'il doit</p>
-
-          <div class="case">
-            <span class="lab">Montant retiré</span>
-            <span class="val"><span class="m3">300,00 €</span><span class="mt">1 440,00 €</span></span>
-          </div>
-
-          <div class="apres">
-            <div class="tot"><span>Il devra</span><span>
-              <span class="m3">1 140,00 €</span><span class="mt">0,00 €</span></span></div>
-          </div>
-
-          <span class="gros-bouton">C'est bon</span>
-        </div>
-
-        <!-- 4. Fini -->
-        <div class="ec-4">
-          <div class="fini">
-            <span class="coche">✓</span>
-            <p class="h2">C'est fait</p>
-            <p class="sous">
-              <span class="m3">M. Martins ne devra plus que 1 140,00 €.</span>
-              <span class="mt">M. Martins ne doit plus rien.</span><br>
-              Son document est prêt à partir.</p>
-            <span class="gros-bouton">Le lui envoyer</span>
-            <span class="lien-discret">Plus tard</span>
-          </div>
-        </div>
-
-      </div>
-    </div>
-
-    <div class="legende">
-      <span class="t">Ce que ça donne</span>
-      <p><b>Un lien discret sur la facture</b>, sous le bouton qui sert tous les
-        jours. Il ne gêne personne et se trouve quand on en a besoin.</p>
-      <p><b>Une question, deux réponses.</b> Pas de mot de comptable, pas de
-        choix de forme, pas de tableau.</p>
-      <p><b>Une case, un chiffre.</b> Vous voyez tout de suite ce qu'il devra.</p>
-
-      <span class="t" style="margin-top:22px">Pourquoi deux réponses et pas une</span>
-      <p>Elles font l'inverse l'une de l'autre. <b>Enlever une somme, c'est y
-        renoncer</b> : vous ne pourrez plus jamais la réclamer. <b>Dire qu'il ne
-        paiera pas</b> garde la facture entière et votre droit avec.</p>
-      <p>N'en garder qu'une serait plus simple d'un cran, et la seule qui
-        resterait est celle qui vous désarme. <b>Une ligne chacune</b>, c'est
-        aussi court que ça peut l'être sans vous coûter de l'argent.</p>
-    </div>
-  </div>
-
-  <div class="note">
-    <span class="t">Ce qui a été retiré depuis les planches d'avant</span>
-    Le mot « avoir » : c'est du vocabulaire de comptable, et le document le
-    portera de toute façon quand il partira. Le choix entre trois formes de
-    document : Atlas prend la bonne. Les explications de TVA : la vôtre ne bouge
-    pas, vous la payez quand le client paie. Ce qui ne bouge pas n'a rien à
-    faire à l'écran.
+<div class="recit">
+  <div class="etape" id="etape">Étape 1</div>
+  <p id="texte"></p>
+  <div class="pas">
+    <button type="button" id="avant">Retour</button>
+    <span class="points" id="points"></span>
+    <button type="button" id="recommencer">Recommencer</button>
   </div>
 </div>
+
+<div class="tel">
+
+  <!-- ─── 1. TERMINÉS, tel qu'il est aujourd'hui ─────────────────────────── -->
+  <section class="ecran" data-e="termines">
+    <div class="haut"><div class="titre" style="padding:0"><h1>Terminés</h1></div><span class="bulle"></span></div>
+    <div class="tva">
+      <div><div class="caps or">Ma TVA à déclarer</div><div class="mois">Octobre 2026</div></div>
+      <div class="m">0,00 €</div>
+    </div>
+    <div class="deux"><span class="capsule">Retours d'intervention</span><span class="capsule or">Créer une facture</span></div>
+    <div class="moisnav"><span class="ch">‹</span>Octobre 2026<span class="ch eteint">›</span></div>
+    <div class="compte">1 facturé</div>
+    <button type="button" class="fact cible" data-va="facture">
+      <span class="l1"><span>Taille de haie</span><span>1 440,00 €</span></span>
+      <span class="l2">Facturé le 9 octobre, Facture n° 12</span>
+    </button>
+  </section>
+
+  <!-- ─── 2. LA FACTURE ENVOYÉE, et le seul ajout : le lien du bas ──────── -->
+  <section class="ecran" data-e="facture">
+    <div class="haut"><button type="button" class="fleche" data-va="termines">‹</button><span class="bulle"></span></div>
+    <div class="titre"><h1>Facture</h1><p class="sur">Taille de haie</p></div>
+    <div class="carte">
+      <div class="caps">Facture</div>
+      <div style="margin-top:8px">F2026-000012, M. Martin</div>
+      <div class="doux" style="font-size:14px;margin-top:4px">À régler avant le vendredi 24 octobre</div>
+    </div>
+    <div class="coupe">(les lignes et les totaux, comme aujourd'hui)</div>
+    <div class="carte">
+      <div class="caps">Règlements reçus</div>
+      <div class="net"><b>Net à payer</b><span class="m">1 440,00 €</span></div>
+    </div>
+    <div class="carte">
+      <p class="arretee" style="margin:0">Facture F2026-000012 arrêtée.</p>
+      <div class="coupe" style="margin:12px 0 0">(l'envoi par SMS ou e-mail, comme aujourd'hui)</div>
+      <button type="button" class="lien cible" data-va="question">Mon client ne me paie pas</button>
+    </div>
+  </section>
+
+  <!-- ─── 3. LA QUESTION, et il n'y en a qu'une ─────────────────────────── -->
+  <section class="ecran" data-e="question">
+    <div class="haut"><button type="button" class="fleche" data-va="facture">‹</button><span></span></div>
+    <div class="titre"><h1>Que voulez-vous faire&nbsp;?</h1><p class="sur">M. Martin doit 1 440,00 €</p></div>
+    <div class="question">
+      <button type="button" class="reponse cible" data-va="combien">
+        <span class="n">Je lui enlève une somme</span>
+        <span class="d">Il devra moins. Un avoir part chez lui. Cette somme, vous ne pourrez plus jamais la réclamer.</span>
+      </button>
+      <button type="button" class="reponse cible" data-va="perdue">
+        <span class="n">Il ne me paiera pas</span>
+        <span class="d">La facture reste entière. Atlas ne vous la rappelle plus. Vous pourrez toujours la réclamer.</span>
+      </button>
+    </div>
+  </section>
+
+  <!-- ─── 4A. COMBIEN ────────────────────────────────────────────────────── -->
+  <section class="ecran" data-e="combien">
+    <div class="haut"><button type="button" class="fleche" data-va="question">‹</button><span></span></div>
+    <div class="titre"><h1>Vous lui enlevez combien&nbsp;?</h1><p class="sur">Sur 1 440,00 €</p></div>
+    <div class="carte">
+      <div class="caps">Montant retiré</div>
+      <div class="puces">
+        <button type="button" data-m="300" aria-pressed="true">300 €</button>
+        <button type="button" data-m="1440" aria-pressed="false">Tout</button>
+      </div>
+      <div class="champ"><span class="doux">Retiré</span><span class="v" data-montre="retire">300,00 €</span></div>
+      <div class="net"><b>Il devra</b><span class="m" data-montre="reste">1 140,00 €</span></div>
+    </div>
+    <button type="button" class="vert cible" data-va="fait">C'est bon</button>
+  </section>
+
+  <!-- ─── 5A. C'EST FAIT, et l'avoir part comme la facture ───────────────── -->
+  <section class="ecran fin" data-e="fait">
+    <div class="coche">✓</div>
+    <h2>C'est fait</h2>
+    <p data-montre="phrase">M. Martin ne doit plus que 1 140,00 €.</p>
+    <div class="apercu">
+      <div class="t">AVOIR A2026-000001</div>
+      <div class="r"><span>Sur la facture F2026-000012</span></div>
+      <div class="r"><span>Montant de l'avoir</span><b data-montre="avoir">300,00 € TTC</b></div>
+    </div>
+    <div class="envoi"><span class="caps">Envoi</span><span class="onglets"><span class="la">SMS</span><span>E-mail</span></span></div>
+    <div class="au">Au 06 79 98 45 14</div>
+    <button type="button" class="vert cible" data-va="factureA">Envoyer l'avoir</button>
+  </section>
+
+  <!-- ─── 6A. LA FACTURE, APRÈS ──────────────────────────────────────────── -->
+  <section class="ecran" data-e="factureA">
+    <div class="haut"><button type="button" class="fleche" data-va="termines">‹</button><span class="bulle"></span></div>
+    <div class="titre"><h1>Facture</h1><p class="sur">Taille de haie</p></div>
+    <div class="carte">
+      <div class="caps">Facture</div>
+      <div style="margin-top:8px">F2026-000012, M. Martin</div>
+      <div class="doux" style="font-size:14px;margin-top:4px">À régler avant le vendredi 24 octobre</div>
+    </div>
+    <div class="carte">
+      <div class="caps">Règlements reçus</div>
+      <div class="regl"><span>Avoir A2026-000001<small>27 octobre, envoyé par SMS</small></span><span data-montre="moins">moins 300,00 €</span></div>
+      <div class="net"><b>Net à payer</b><span class="m" data-montre="reste2">1 140,00 €</span></div>
+    </div>
+    <div class="carte"><p class="arretee" style="margin:0">Facture F2026-000012 arrêtée.</p></div>
+  </section>
+
+  <!-- ─── 4B. IL NE PAIERA PAS ───────────────────────────────────────────── -->
+  <section class="ecran" data-e="perdue">
+    <div class="haut"><button type="button" class="fleche" data-va="question">‹</button><span></span></div>
+    <div class="titre"><h1>Il ne vous paiera pas</h1><p class="sur">F2026-000012, M. Martin</p></div>
+    <div class="carte">
+      <div class="ligne"><span>Il vous doit toujours</span><span class="v serif" style="font-size:20px">1 440,00 €</span></div>
+      <p class="doux" style="margin:12px 0 0;font-size:14px">Rien ne part chez lui. Atlas arrête de vous le rappeler.</p>
+    </div>
+    <button type="button" class="vert cible" data-va="factureB">C'est noté</button>
+  </section>
+
+  <!-- ─── 5B. LA FACTURE, APRÈS ──────────────────────────────────────────── -->
+  <section class="ecran" data-e="factureB">
+    <div class="haut"><button type="button" class="fleche" data-va="termines">‹</button><span class="bulle"></span></div>
+    <div class="titre"><h1>Facture</h1><p class="sur">Taille de haie</p></div>
+    <div class="carte">
+      <div class="caps">Facture</div>
+      <div style="margin-top:8px">F2026-000012, M. Martin</div>
+      <div class="doux" style="font-size:14px;margin-top:4px">À régler avant le vendredi 24 octobre</div>
+    </div>
+    <div class="carte">
+      <div class="caps">Règlements reçus</div>
+      <div class="net"><b>Net à payer</b><span class="m">1 440,00 €</span></div>
+      <div class="encadre"><p>Non payée<small>Depuis le 27 octobre. S'il paie un jour, notez-le ici comme un règlement.</small></p></div>
+    </div>
+    <div class="carte"><p class="arretee" style="margin:0">Facture F2026-000012 arrêtée.</p></div>
+  </section>
+
+  <nav class="barre"><span>CHANTIERS</span><span>PLANNING</span><span class="la">TERMINÉS</span><span>PAYSAGE</span><span>RÉGLAGES</span></nav>
+</div>
+
+<div class="apres">
+  <h3>Les deux réponses font l'inverse l'une de l'autre</h3>
+  <table>
+    <tr><th></th><th>Je lui enlève une somme</th><th>Il ne me paiera pas</th></tr>
+    <tr><td>Il doit encore</td><td>moins</td><td>tout</td></tr>
+    <tr><td>Vous pouvez réclamer</td><td>non, plus jamais cette somme</td><td>oui</td></tr>
+    <tr><td>Un document part</td><td>oui, l'avoir</td><td>non</td></tr>
+    <tr><td>Votre TVA</td><td>ne bouge pas</td><td>ne bouge pas</td></tr>
+  </table>
+  <p style="margin-top:12px">Votre TVA ne bouge dans aucun cas : vous la payez quand le client paie, et il n'a pas payé.</p>
+
+  <h3>Deux questions pour vous</h3>
+  <div class="q"><b>1.</b> Avant « Il ne me paiera pas », voulez-vous qu'Atlas prépare une lettre de mise en demeure ?</div>
+  <div class="q"><b>2.</b> S'il paie après coup, on note le règlement normalement, comme sur l'écran 5 de la seconde branche. Ça vous va ?</div>
+</div>
+
+<script>
+  // Le récit de chaque écran : ce qui se passe, et où poser le doigt.
+  const RECIT = {
+    termines: ["Vous êtes ici", "Nous sommes le <b>27 octobre</b>. M. Martin devait payer avant le 24 octobre, et Atlas vous l'a déjà signalé par une notification «&nbsp;Facture impayée&nbsp;». Vous ouvrez <b>Terminés</b>. <b>Touchez sa facture.</b>"],
+    facture:  ["Sa facture", "C'est l'écran d'aujourd'hui. <b>Une seule chose s'ajoute</b>, tout en bas : le lien doré. <b>Touchez «&nbsp;Mon client ne me paie pas&nbsp;».</b>"],
+    question: ["La question", "Deux réponses, qui font l'inverse l'une de l'autre. <b>Essayez la première</b>, puis revenez avec «&nbsp;Recommencer&nbsp;» pour essayer la seconde."],
+    combien:  ["Première réponse : vous lui enlevez une somme", "Vous faites un geste commercial, ou vous réglez un désaccord. Choisissez <b>300 €</b> ou <b>Tout</b>, puis <b>«&nbsp;C'est bon&nbsp;»</b>."],
+    fait:     ["L'avoir est prêt", "Atlas a fait le document, avec son propre numéro. Il part <b>comme la facture</b>, par SMS ou par e-mail. <b>Touchez «&nbsp;Envoyer l'avoir&nbsp;».</b>"],
+    factureA: ["La facture, après", "L'avoir apparaît dans les règlements, et le <b>Net à payer</b> descend. Plus de notification pour la somme enlevée. Fin de la première branche."],
+    perdue:   ["Seconde réponse : il ne vous paiera pas", "Le client refuse ou a disparu. Vous gardez votre droit : <b>rien n'est annulé</b>. <b>Touchez «&nbsp;C'est noté&nbsp;».</b>"],
+    factureB: ["La facture, après", "La facture reste entière, marquée <b>Non payée</b>. Atlas ne vous la rappelle plus. S'il paie un jour, vous le notez comme d'habitude. Fin de la seconde branche."],
+  };
+  const ORDRE_A = ["termines","facture","question","combien","fait","factureA"];
+  const ORDRE_B = ["termines","facture","question","perdue","factureB"];
+  let chemin = ["termines"];
+
+  const ecrans = [...document.querySelectorAll(".ecran")];
+  const $ = (s) => document.querySelector(s);
+
+  function montrer(cle){
+    ecrans.forEach((e) => e.classList.toggle("ouvert", e.dataset.e === cle));
+    const branche = ORDRE_B.includes(cle) && !ORDRE_A.includes(cle) ? ORDRE_B : ORDRE_A;
+    const rang = branche.indexOf(cle);
+    $("#etape").textContent = "Étape " + (rang + 1) + " sur " + branche.length + ". " + RECIT[cle][0];
+    $("#texte").innerHTML = RECIT[cle][1];
+    $("#points").innerHTML = branche.map((_, i) => '<i class="' + (i === rang ? "la" : "") + '"></i>').join("");
+    $("#avant").disabled = chemin.length < 2;
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+  function aller(cle){ chemin.push(cle); montrer(cle); }
+
+  document.querySelectorAll("[data-va]").forEach((b) =>
+    b.addEventListener("click", () => {
+      const cle = b.dataset.va;
+      // « ‹ » revient d'un écran ; tout le reste avance.
+      if (b.classList.contains("fleche")) { chemin.pop(); if (!chemin.length) chemin = ["termines"]; montrer(chemin[chemin.length - 1]); return; }
+      if (cle === "termines") { chemin = ["termines"]; montrer("termines"); return; }
+      aller(cle);
+    }));
+  $("#avant").addEventListener("click", () => { if (chemin.length > 1) { chemin.pop(); montrer(chemin[chemin.length - 1]); } });
+  $("#recommencer").addEventListener("click", () => { chemin = ["termines"]; montrer("termines"); });
+
+  // Le montant : les chiffres sortent d'un seul calcul, affichés partout.
+  const TOTAL = 1440;
+  const euros = (n) => n.toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).replace(/ | /g, " ") + " €";
+  function poser(m){
+    const reste = TOTAL - m;
+    document.querySelectorAll(".puces button").forEach((b) => b.setAttribute("aria-pressed", String(Number(b.dataset.m) === m)));
+    $('[data-montre="retire"]').textContent = euros(m);
+    $('[data-montre="reste"]').textContent = euros(reste);
+    $('[data-montre="reste2"]').textContent = euros(reste);
+    $('[data-montre="avoir"]').textContent = euros(m) + " TTC";
+    $('[data-montre="moins"]').textContent = "moins " + euros(m);
+    $('[data-montre="phrase"]').textContent = reste === 0 ? "M. Martin ne doit plus rien." : "M. Martin ne doit plus que " + euros(reste) + ".";
+  }
+  document.querySelectorAll(".puces button").forEach((b) => b.addEventListener("click", () => poser(Number(b.dataset.m))));
+
+  poser(300);
+  montrer("termines");
+</script>
+</body>
+</html>
