@@ -19,7 +19,7 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 | **la base** | `codes_mot_de_passe` et `reinitialiser_mot_de_passe`, migration 0100 |
 | **le dépôt** | `src/server/repositories/mot-de-passe-oublie.ts` |
 | **la suite** | `scripts/test-mot-de-passe-oublie-db.ts` |
-| **ce qui reste** | la batterie (niveau 3), puis `main` : il a demandé de ne pas la lancer |
+| **ce qui reste** | un envoi réel par Brevo, à regarder sur son espace (ici, aucun e-mail ne part) |
 
 ## L'ASSISTANT DIT OÙ LES CHOSES SONT RANGÉES — 24 septembre 2026
 

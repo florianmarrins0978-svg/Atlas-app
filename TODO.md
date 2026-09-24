@@ -1,11 +1,12 @@
 # Prochaines tâches
 
-## MOT DE PASSE OUBLIÉ : CODÉ, RESTE LA BATTERIE PUIS `main` (24 septembre 2026)
+## ~~MOT DE PASSE OUBLIÉ~~ : SUR `main` LE 24 SEPTEMBRE 2026
 
 **Codé le 24 septembre** sur sa branche, après son oui à la planche
 (`ARCHITECTURE.md` §412). Suite base verte, écrans regardés, parcours joué
-dans un navigateur. **Reste** : `npm run verifier:avant-livraison` (niveau 3),
-qu'il a demandé de ne pas lancer ; le garde-fou refusera `main` sans elle.
+dans un navigateur. Batterie jouée le soir même, avec le lot de l'assistant
+(sa demande : une batterie pour plusieurs sessions) : 165/167, puis les deux
+rouges corrigés ou rejoués verts deux fois. Poussé sur `main`.
 
 Ce qui suit est l'entrée d'origine.
 
