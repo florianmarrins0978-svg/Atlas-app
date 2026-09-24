@@ -6,6 +6,30 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-09-24
+
+### Les maquettes ne se publiaient plus depuis le 23 septembre au soir
+
+Trois contrôles de `pages.yml` (`termines`, `boutons-verts`, `porte-plein-air`)
+réclamaient encore les textes d'avant le lot des tirets : un « · » dans une
+référence, « Brouillon — à faire relire », et un chiffre lu avec la virgule qui
+le suit désormais (NaN). Aucune planche n'était fausse ; toutes restaient pourtant
+hors ligne, y compris celles qu'on lui demande d'ouvrir. Les contrôles suivent le
+libellé. **Ce qu'il faut en retenir :** un lot qui réécrit des textes de
+`appli/` doit jouer les suites de `appli/package.json`, pas seulement la
+batterie de `src/`.
+
+### « Il ne paie pas » (la planche 81 de l'avoir) enfin publiée
+
+Elle dormait dans `docs/maquettes/`, qui ne se publie pas, alors que la facture
+promet qu'« une correction passerait par un avoir » et qu'aucun avoir n'existe.
+Reprise dans `appli/il-ne-paie-pas.html`. Rien n'est codé.
+
+Refaite le même jour en **mise en situation complète**, à sa demande (*« je sais
+pas d'où je pars »*) : elle part de l'écran Terminés recopié de l'application
+servie, un bandeau dit à chaque étape où toucher, et les deux branches vont
+jusqu'à la facture d'après. Couleurs et polices : les jetons de `chartes.ts`.
+
 ## 2026-09-23
 
 ### Un garde-fou qui PLANTE ouvrait « main » en grand

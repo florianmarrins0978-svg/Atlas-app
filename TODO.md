@@ -9339,7 +9339,9 @@ son application pendant ses heures de travail.
 Sa demande : *« si jamais on facture un client et qui décide de ne pas nous
 payer, il faut avoir la possibilité de créer un avoir »*.
 
-**LA PLANCHE À REGARDER EST LA 81**, `docs/maquettes/81-simple-il-ne-paie-pas.html`
+**LA PLANCHE À REGARDER EST LA 81**, publiée le 24 septembre 2026 dans
+`appli/il-ne-paie-pas.html` (elle dormait dans `docs/maquettes/`, qui n'est pas
+publié : il n'avait jamais pu l'ouvrir ; l'original y reste, avec 79 et 80)
 — un lien sur la facture, une question, deux réponses, quatre écrans. Les 79 et
 80 ont été **jugées trop compliquées par lui** (*« l'utilisateur a besoin d'aller
 à l'essentiel constamment »*) : elles restent comme raisonnement, pas comme
@@ -9355,6 +9357,22 @@ impayé ne sont pas la même chose :
 
 Ce qu'il a décrit — un client qui refuse de payer — relève du **second**. Bâtir
 seulement l'avoir, c'est lui donner un geste qui le désarme, sans avertissement.
+
+**CE QU'IL A DÉJÀ DIT, le 24 septembre 2026, sur `appli/il-ne-paie-pas.html`
+(ne pas le lui redemander) :**
+
+- le montant de l'avoir **s'écrit** dans un champ, pas « 300 € ou Tout » ;
+- le calcul se lit en entier : facture TTC, avoir TTC, **nouveau montant TTC** ;
+- l'avoir s'écrit avec le signe, **« - 250,00 € »**, jamais « moins 250 » (le
+  même `- ` que la ligne de remise, `FactureClient.tsx`, `retire`) ;
+- **un onglet « Avoirs » sur la fiche client**, à côté de Devis, Factures,
+  Fiches, qui n'existe **que** chez un client à qui un avoir a été envoyé
+  (*« ça risque d'être hyper rare »*) ;
+- une facture déclarée non payée **peut encore être payée** : « J'ai reçu le
+  paiement » la rend acquittée, et sa TVA entre au relevé du mois du paiement.
+
+Reste ouvert : faut-il préparer une mise en demeure avant « Il ne me paiera
+pas » ?
 
 **Une seule réponse à attendre de lui : la 81 lui va-t-elle ?** Le choix
 d'arrangement et le choix de forme ont été retirés — c'était précisément la
