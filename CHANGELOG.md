@@ -25,8 +25,10 @@ Le nombre était compté une fois par le serveur, au moment de nommer le client,
 puis gardé : ni les coches d'avant, ni celles d'après n'y entraient. Le serveur
 rend désormais les lignes reprises, et la phrase se refait à chaque coche
 (`constatDesCoches`). « Celles du dernier chantier » ne se dit que tant que les
-cases cochées sont exactement celles reprises. Non tranché : changer de client
-garde les coches reprises du premier (question posée au patron).
+cases cochées sont exactement celles reprises. **Changer de client décoche
+tout** puis reprend le dernier rapport du nouveau (sa règle : *« seules les
+cases du nouveau client doivent apparaître »*) ; au premier client nommé, les
+coches faites à la main restent.
 
 ### Le rapport d'entretien ouvert depuis l'application n'avait pas de retour
 

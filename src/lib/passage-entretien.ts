@@ -84,13 +84,24 @@ export function minutesValides(brut: number | null | undefined): number | null {
  * se décoche ou se coche d'un geste, puisque toutes les lignes sont là.
  *
  * **L'ordre et les lignes viennent de l'écran** : rien ne bouge sous ses doigts.
+ *
+ * **CHANGER DE CLIENT repart de zéro** — sa règle du 24 septembre 2026 :
+ * *« les cases doivent se décocher, car seules les cases du nouveau client
+ * doivent apparaître »*. Gardées, les coches du premier client partaient sur
+ * le rapport du second, pour des travaux faits ailleurs. `changeDeClient` ne
+ * vaut que pour un client REMPLACÉ ; au premier client nommé, ce qu'il a coché
+ * à la main reste.
  */
 export function cocherCommeLaDerniereFois<L extends LignePassage>(
   actuelles: readonly L[],
-  derniere: readonly { libelle: string }[]
+  derniere: readonly { libelle: string }[],
+  { changeDeClient }: { changeDeClient: boolean } = { changeDeClient: false }
 ): L[] {
   const cochees = new Set(derniere.map((l) => plie(l.libelle)));
-  return actuelles.map((l) => (l.faite || !cochees.has(plie(l.libelle)) ? l : { ...l, faite: true }));
+  return actuelles.map((l) => {
+    const faite = (!changeDeClient && l.faite) || cochees.has(plie(l.libelle));
+    return faite === l.faite ? l : { ...l, faite };
+  });
 }
 
 /**

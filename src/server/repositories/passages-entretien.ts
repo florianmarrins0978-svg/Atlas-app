@@ -234,7 +234,7 @@ export async function nommerClient(
 > {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const [p] = await tx
-      .select({ envoyeLe: passagesEntretien.envoyeLe })
+      .select({ envoyeLe: passagesEntretien.envoyeLe, clientId: passagesEntretien.clientId })
       .from(passagesEntretien)
       .where(
         and(eq(passagesEntretien.id, passageId), eq(passagesEntretien.entrepriseId, ctx.entrepriseId))
@@ -283,11 +283,18 @@ export async function nommerClient(
       .from(lignesPassage)
       .where(eq(lignesPassage.passageId, passageId));
 
-    const lignes = cocherCommeLaDerniereFois(actuelles, derniere);
-    const aCocher = lignes.filter((l, i) => l.faite && !actuelles[i].faite);
-    for (const l of aCocher) {
-      await tx.update(lignesPassage).set({ faite: true }).where(eq(lignesPassage.id, l.id));
+    const changeDeClient = p.clientId !== null && p.clientId !== clientId;
+    const lignes = cocherCommeLaDerniereFois(actuelles, derniere, { changeDeClient });
+    // Tout ce qui change s'écrit : les coches reprises, et, quand il change de
+    // client, celles du précédent qui tombent.
+    for (const [i, l] of lignes.entries()) {
+      if (l.faite !== actuelles[i].faite) {
+        await tx.update(lignesPassage).set({ faite: l.faite }).where(eq(lignesPassage.id, l.id));
+      }
     }
+    // Reprises : ce qui est coché APRÈS et ne l'était pas sur la base de
+    // départ, c'est-à-dire sur une fiche vidée quand il change de client.
+    const aCocher = lignes.filter((l, i) => l.faite && !(actuelles[i].faite && !changeDeClient));
 
     await tx
       .update(passagesEntretien)

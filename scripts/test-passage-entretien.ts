@@ -185,6 +185,21 @@ async function main() {
     assert.equal(constatDesCoches([l("a", true)], new Set()), null);
   });
 
+  await cas("CHANGER de client décoche tout ce qui venait du premier", () => {
+    // **Sa règle du 24 septembre 2026** : *« les cases doivent se décocher,
+    // car seules les cases du nouveau client doivent apparaître »*.
+    const actuelles = [
+      { famille: "E", libelle: "Tonte", ordre: 10, faite: true },
+      { famille: "E", libelle: "Haies", ordre: 20, faite: true },
+      { famille: "E", libelle: "Massifs", ordre: 30, faite: false },
+    ];
+    const lignes = cocherCommeLaDerniereFois(actuelles, [{ libelle: "Massifs" }], { changeDeClient: true });
+    assert.deepEqual(lignes.map((l) => l.faite), [false, false, true]);
+    // Au PREMIER client nommé, ce qu'il a coché à la main reste.
+    const premier = cocherCommeLaDerniereFois(actuelles, [{ libelle: "Massifs" }]);
+    assert.deepEqual(premier.map((l) => l.faite), [true, true, true]);
+  });
+
   await cas("premier passage chez un client : rien ne se coche tout seul", () => {
     const actuelles = [
       { famille: "E", libelle: "Tonte", ordre: 10, faite: false },
