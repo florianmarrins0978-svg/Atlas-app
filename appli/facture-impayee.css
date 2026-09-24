@@ -1,0 +1,277 @@
+  /* ═══ LA MISE EN SITUATION COMPLÈTE — sa demande du 24 septembre 2026 ═════
+     *« Fait moi une mise en situation complète, pask là je sais pas d'où je
+     pars ! Et mets ta planche aux couleurs et au style de l'appli ! »*
+
+     La première version (la 81 du 17 août, reprise telle quelle) montrait
+     quatre écrans flottants sans dire où l'on était dans l'application.
+     Celle-ci part de l'écran Terminés, tel qu'il est AUJOURD'HUI, et suit le
+     doigt jusqu'à la facture d'après. Les deux premiers écrans sont recopiés
+     d'une capture de l'application servie (`npm run voir -- /termines`, puis
+     la facture émise d'un chantier de démonstration) ; seul le lien du bas
+     et ce qui suit sont proposés.
+
+     Jetons : ceux de `facture-remplir-acquittee.html`, eux-mêmes sortis de
+     `src/lib/chartes.ts`. Rien n'est choisi à l'œil.
+
+     RIEN N'EST CODÉ : `src/` n'est pas touché (`CLAUDE.md` §3 bis). */
+  :root{
+    --cream:#f5f3ee; --card:#faf9f5; --ink:#1c1c1a; --inkSoft:#4a4a44;
+    --muted:#8a8578; --rust:#2f3b2f; --rustTint:#ece9e1;
+    --or:#B98B47; --plein:#7d9a6d; --alerte:#9C3B2E;
+    --line:rgba(28,28,26,0.12); --lineSoft:rgba(28,28,26,0.07);
+    --surPlein:#faf9f5; --hors:#e6e3dc;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--hors);color:var(--ink);
+       font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       -webkit-text-size-adjust:100%;padding:0 0 40px}
+  button{font:inherit;color:inherit;-webkit-tap-highlight-color:transparent}
+  .serif{font-family:ui-serif,Georgia,"Iowan Old Style",serif}
+
+  /* ═══ LE RÉCIT, AU-DESSUS DU TÉLÉPHONE ═══════════════════════════════════ */
+  .recit{position:sticky;top:0;z-index:5;background:#1c1c1a;color:#f5f3ee;
+         padding:14px 18px 12px;box-shadow:0 6px 18px -10px rgba(0,0,0,.5)}
+  .recit .etape{font:600 10px/1 ui-sans-serif,sans-serif;letter-spacing:.24em;
+                text-transform:uppercase;color:#d8b77e}
+  .recit p{margin:7px 0 0;font-size:14px;line-height:1.5}
+  .recit p b{color:#fff}
+  .pas{display:flex;gap:6px;margin-top:11px;align-items:center}
+  .pas button{min-height:36px;padding:0 14px;border-radius:999px;border:1px solid rgba(245,243,238,.3);
+              background:transparent;color:#f5f3ee;font-size:13px;cursor:pointer}
+  .pas button[disabled]{opacity:.35;cursor:default}
+  .pas .points{flex:1;display:flex;gap:5px;justify-content:center}
+  .pas .points i{width:7px;height:7px;border-radius:50%;background:rgba(245,243,238,.28)}
+  .pas .points i.la{background:#d8b77e}
+
+  /* ═══ LE TÉLÉPHONE ═══════════════════════════════════════════════════════ */
+  /* La barre du bas reste sous le pouce pendant qu'on défile, comme dans
+     l'application : `clip` et non `hidden`, sinon le téléphone devient son
+     propre défilement et la barre ne colle plus. */
+  .tel{position:relative;max-width:400px;margin:18px auto 0;background:var(--cream);border-radius:26px;
+       overflow:clip;box-shadow:0 18px 46px rgba(20,18,14,.22);min-height:720px;
+       display:flex;flex-direction:column}
+  .ecran{display:none}
+  .ecran.ouvert{display:block;flex:1;padding-bottom:26px}
+
+  .haut{display:flex;align-items:center;justify-content:space-between;padding:22px 22px 0}
+  .fleche{width:36px;height:36px;border-radius:999px;border:0;background:var(--rustTint);color:var(--rust);
+          font-size:17px;line-height:1;cursor:pointer}
+  .bulle{width:44px;height:44px;border-radius:999px;background:var(--plein)}
+  .titre{padding:10px 22px 0}
+  .titre h1{margin:0;font:400 38px/1.05 ui-serif,Georgia,serif;letter-spacing:-0.018em}
+  .titre .sur{margin:10px 0 0;font:500 10px/1 ui-sans-serif,sans-serif;letter-spacing:.28em;
+              text-transform:uppercase;color:var(--or)}
+
+  .carte{margin:14px 14px 0;background:var(--card);border-radius:6px;padding:20px 20px}
+  .caps{font:600 10.5px/1 ui-sans-serif,sans-serif;letter-spacing:.24em;text-transform:uppercase;color:var(--muted)}
+  .caps.or{color:var(--or)}
+  .doux{color:var(--muted)}
+  .ligne{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:4px 0;font-size:15px}
+  .ligne .v{white-space:nowrap}
+
+  /* Terminés */
+  .tva{margin:22px 22px 0;border:2px solid #dcc093;border-radius:6px;background:var(--card);
+       padding:20px 18px;display:flex;justify-content:space-between;align-items:center}
+  .tva .mois{margin-top:10px;font:400 19px/1 ui-serif,Georgia,serif}
+  .tva .m{font:400 25px/1 ui-serif,Georgia,serif;color:var(--rust)}
+  .deux{display:flex;justify-content:space-between;gap:10px;margin:22px 22px 0}
+  .capsule{min-height:44px;padding:0 18px;border-radius:999px;display:inline-flex;align-items:center;
+           font-size:14px;border:1px solid var(--line);background:var(--card);color:var(--inkSoft)}
+  .capsule.or{border-color:var(--or);color:var(--or);background:transparent}
+  .moisnav{text-align:center;margin-top:28px;font:400 30px/1 ui-serif,Georgia,serif}
+  .moisnav .ch{color:var(--or);font-size:20px;margin:0 16px;vertical-align:4px}
+  .moisnav .ch.eteint{color:var(--line)}
+  .compte{margin:26px 22px 6px;font-weight:700;font-size:20px}
+  .fact{display:block;width:calc(100% - 44px);margin:14px 22px 0;padding:10px 0;border:0;background:none;
+        text-align:left;cursor:pointer;border-radius:6px}
+  .fact .l1{display:flex;justify-content:space-between;font:400 19px/1.2 ui-serif,Georgia,serif}
+  .fact .l2{margin-top:6px;font-size:13.5px;color:var(--inkSoft)}
+  .fact.cible{animation:appel 1.6s ease-in-out infinite}
+  @keyframes appel{0%,100%{box-shadow:0 0 0 0 rgba(185,139,71,0)}50%{box-shadow:0 0 0 6px rgba(185,139,71,.28)}}
+
+  /* la facture */
+  .ttc{text-align:center;margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
+  .ttc .caps{color:var(--ink)}
+  .ttc .gros{margin-top:10px;font:600 34px/1 ui-serif,Georgia,serif;color:var(--or)}
+  .net{display:flex;justify-content:space-between;align-items:center;margin-top:14px;padding-top:14px;
+       border-top:2px solid var(--ink)}
+  .net b{font-size:17px}
+  .net .m{font:600 21px/1 ui-serif,Georgia,serif}
+  .regl{display:flex;justify-content:space-between;align-items:baseline;padding:10px 0;
+        border-bottom:1px solid var(--lineSoft);font-size:14.5px}
+  .regl small{display:block;font-size:12px;color:var(--muted)}
+  .arretee{text-align:center;font-size:15px}
+  .lien{display:block;margin:18px auto 0;border:0;background:none;padding:6px 10px;cursor:pointer;
+        color:var(--or);font-size:14.5px;text-decoration:underline;text-underline-offset:4px;
+        text-decoration-color:rgba(185,139,71,.5)}
+  .lien.cible{animation:appel 1.6s ease-in-out infinite;border-radius:6px}
+  .coupe{margin:14px 22px 0;text-align:center;font-size:12px;color:var(--muted);letter-spacing:.06em}
+  .encadre{margin-top:16px;border:1px solid var(--or);border-radius:4px;padding:12px 14px;text-align:center}
+  .encadre p{margin:0;font:600 11.5px/1.4 ui-sans-serif,sans-serif;letter-spacing:.18em;text-transform:uppercase;color:var(--or)}
+  .encadre small{display:block;margin-top:6px;font-size:13px;color:var(--inkSoft);letter-spacing:0;text-transform:none;font-weight:400}
+
+  /* la question */
+  .question{margin:22px 14px 0}
+  .reponse{display:block;width:100%;text-align:left;margin-top:12px;padding:18px 18px;border-radius:10px;
+           border:1px solid var(--line);background:var(--card);cursor:pointer}
+  .reponse .n{display:block;font:400 19px/1.25 ui-serif,Georgia,serif;color:var(--ink)}
+  .reponse .d{display:block;margin-top:6px;font-size:13.5px;line-height:1.45;color:var(--inkSoft)}
+  .reponse.cible{animation:appel 1.6s ease-in-out infinite}
+
+  /* Sa demande du 24 septembre : « il faut pouvoir écrire le montant qu'on
+     veut retirer, pas 300 euros ou tout ». Un champ, rien d'autre. Et le
+     calcul se lit en entier : facture moins avoir égale le nouveau TTC. */
+  .calc{margin-top:6px}
+  .calc .ligne{padding:10px 0;border-bottom:1px solid var(--lineSoft)}
+  .calc .ligne .v{font:400 19px/1 ui-serif,Georgia,serif}
+  .saisie{display:flex;align-items:baseline;gap:6px}
+  .saisie input{width:130px;border:0;border-bottom:1.5px solid var(--or);background:var(--rustTint);
+                border-radius:6px 6px 0 0;padding:8px 10px;text-align:right;outline:none;color:var(--ink);
+                font:600 20px/1 ui-serif,Georgia,serif}
+  .saisie input::placeholder{color:var(--muted);font-weight:400}
+  .refus{margin:10px 0 0;font-size:13.5px;color:var(--alerte)}
+  .deroulant{width:100%;border:0;border-bottom:1px solid var(--lineSoft);background:none;cursor:pointer;
+             text-align:left;font-size:15px}
+  #ligneCheque[hidden]{display:none}
+  .regl .centre{text-align:center}
+  .deroulant .choisi{display:flex;align-items:center;gap:9px;min-width:0;text-align:right}
+  .deroulant .choisi .v{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:190px}
+  .bandeau button{font-size:15px;line-height:1.25;padding:10px 16px}
+  .deroulant .chevron{flex:none;overflow:visible;color:var(--or);transition:transform .18s}
+  .deroulant[aria-expanded="true"] .chevron{transform:rotate(180deg)}
+  .bandeau{margin:6px 0 4px;border:1px solid var(--line);border-radius:8px;background:var(--cream);overflow:hidden}
+  .bandeau[hidden]{display:none}
+  .bandeau button{display:flex;justify-content:space-between;align-items:center;width:100%;min-height:48px;
+                  padding:0 16px;border:0;border-bottom:1px solid var(--lineSoft);background:none;cursor:pointer;
+                  font:400 17px/1 ui-serif,Georgia,serif;color:var(--ink);text-align:left}
+  .bandeau button:last-child{border-bottom:0}
+  .bandeau button[aria-pressed="true"]{color:var(--or)}
+  .bandeau button[aria-pressed="true"]::after{content:"✓";font-size:15px}
+  .fleche.rond{background:none;border:1px solid var(--line)}
+  .onglets-fiche{display:flex;gap:22px;margin:26px 22px 0;border-bottom:1px solid var(--line)}
+  .onglets-fiche button{border:0;background:none;padding:0 0 10px;cursor:pointer;
+                        font:500 11px/1 ui-sans-serif,sans-serif;letter-spacing:.24em;text-transform:uppercase;color:var(--muted)}
+  .onglets-fiche button[aria-pressed="true"]{color:var(--ink);box-shadow:0 2px 0 0 var(--or)}
+  .onglets-fiche .neuf{animation:appel 1.6s ease-in-out infinite;border-radius:4px}
+  .liste{display:flex;justify-content:space-between;align-items:baseline;margin:20px 22px 0;font-size:14px}
+  .liste[hidden]{display:none}
+  button.liste{width:calc(100% - 44px);border:0;background:none;padding:6px 0;cursor:pointer;color:inherit;text-align:left;border-radius:6px}
+  .liste .serif{font-size:22px}
+  .barre button{border:0;background:none;padding:0;font:inherit;letter-spacing:inherit;color:inherit;cursor:default}
+  .barre button.cible{cursor:pointer;color:var(--or);animation:appel 1.6s ease-in-out infinite;border-radius:4px}
+  /* La facture définitive, recopiée de l'écran servi (capture du
+     24 septembre, /chantiers/[id]/facture d'une facture émise). */
+  .fl{display:flex;justify-content:space-between;gap:12px;padding:5px 0;font-size:15px}
+  .fl .v{color:var(--muted);white-space:nowrap}
+  .ttc-grand{margin-top:6px;font:600 34px/1 ui-serif,Georgia,serif;color:var(--or)}
+  .liens-pdf{margin-top:12px;display:flex;flex-direction:column;align-items:center;gap:10px;font-size:14px}
+  .liens-pdf span{border-bottom:1px solid var(--ink)}
+  .ecran[data-e="termines"]{position:relative}
+  .voile{position:absolute;inset:0;z-index:6;background:rgba(28,28,26,.38);display:flex;align-items:flex-end}
+  .voile[hidden]{display:none}
+  .feuille-choix{width:100%;background:var(--card);border-radius:18px 18px 0 0;padding:18px 16px 22px;
+                 box-shadow:0 -10px 30px rgba(20,18,14,.18)}
+  .feuille-choix button{display:block;width:100%;min-height:54px;margin-top:8px;border:1px solid var(--line);
+                        border-radius:12px;background:var(--cream);cursor:pointer;
+                        font:400 19px/1 ui-serif,Georgia,serif;color:var(--ink);
+                        animation:appel 1.6s ease-in-out infinite}
+  .feuille-choix button.annuler{animation:none;border:0;background:none;font:500 14px/1 ui-sans-serif,sans-serif;color:var(--muted)}
+  .nonpayees{display:flex;justify-content:space-between;align-items:center;width:calc(100% - 44px);
+             margin:14px 22px 0;min-height:48px;padding:0 18px;border-radius:999px;cursor:pointer;
+             border:1px solid var(--alerte);background:transparent;color:var(--alerte);font-size:14px}
+  .nonpayees .nb{min-width:24px;height:24px;border-radius:999px;background:var(--alerte);color:var(--surPlein);
+                 display:inline-flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:600}
+  .cible-tva{animation:appel 1.6s ease-in-out infinite}
+  .vert[disabled]{opacity:.4;cursor:default;animation:none}
+
+  .vert{display:flex;align-items:center;justify-content:center;margin:26px auto 0;min-height:56px;
+        width:78%;border:0;border-radius:999px;background:var(--plein);color:var(--surPlein);
+        font:400 22px/1 ui-serif,Georgia,serif;cursor:pointer}
+  .vert.cible{animation:appel 1.6s ease-in-out infinite}
+  .contour{display:flex;align-items:center;justify-content:center;margin:14px auto 0;min-height:48px;
+           width:78%;border:1px solid var(--or);border-radius:999px;background:none;color:var(--or);
+           font-weight:600;font-size:15px;cursor:pointer}
+
+  .envoi{display:flex;justify-content:space-between;align-items:center;margin:26px 22px 0;
+         padding-top:18px;border-top:1px solid var(--line)}
+  .onglets{display:flex;gap:18px;font-size:15px}
+  .onglets span{padding-bottom:6px}
+  .onglets span.la{border-bottom:2px solid var(--or)}
+  .au{text-align:center;margin-top:14px;font-size:14px;color:var(--muted)}
+
+  .coche{width:62px;height:62px;border-radius:50%;margin:40px auto 0;background:var(--plein);color:var(--surPlein);
+         display:flex;align-items:center;justify-content:center;font-size:30px}
+  .fin h2{margin:18px 0 0;text-align:center;font:400 28px/1.2 ui-serif,Georgia,serif}
+  .fin p{margin:10px 26px 0;text-align:center;font-size:15px;color:var(--inkSoft)}
+
+  /* Le papier : construit à la largeur d'une page A4 (595 points, comme le
+     PDF), puis réduit à la largeur du téléphone, pour garder ses proportions. */
+  .papier{margin:18px 14px 0;overflow:hidden;border:1px solid #e2ded3;border-radius:3px;box-shadow:0 4px 14px rgba(20,18,14,.10)}
+  .a4{width:595px;padding:36px 36px 30px;background:#faf9f6;color:#1c1c1a;transform-origin:0 0;
+      font:9px/1.35 Inter,ui-sans-serif,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+  .a4 .serif{font-family:ui-serif,Georgia,serif}
+  .p-haut{display:flex;justify-content:space-between;align-items:flex-start}
+  .p-nom{font-size:22px;line-height:1.1}
+  .p-coord{margin-top:4px;font-size:8.5px;line-height:1.3;color:#3a3a35}
+  .p-ref{border-collapse:collapse;margin-top:10px;width:175px}
+  .p-ref th{text-align:left;font-weight:700;font-size:8.5px;padding:3px 0}
+  .p-ref td{text-align:right;font-size:9px;padding:3px 0;border-bottom:1px solid #e2ded3}
+  .p-filet{height:2px;background:#1c1c1a;margin:18px 0 14px}
+  .p-titre{display:flex;justify-content:space-between;align-items:baseline;padding-bottom:9px;border-bottom:1px solid #e2ded3;
+           font:17px/1 ui-serif,Georgia,serif;letter-spacing:.12em}
+  .p-num{font-size:11px;letter-spacing:0;color:#3a3a35}
+  .p-parties{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:11px;line-height:1.35}
+  .p-lab{font-weight:700;font-size:7.5px;letter-spacing:.14em;text-transform:uppercase;color:#b98b47;margin-bottom:5px}
+  .p-rectifie{margin-top:12px;padding:8px 10px;border:1px solid #b98b47;border-radius:2px}
+  .p-rectifie .p-lab{margin-bottom:3px}
+  .p-lignes{width:100%;border-collapse:collapse;margin-top:16px}
+  .p-lignes th{font-weight:700;font-size:7px;letter-spacing:.08em;text-transform:uppercase;text-align:right;
+               padding:0 0 6px;border-bottom:1.5px solid #1c1c1a;white-space:nowrap}
+  .p-lignes td{text-align:right;padding:9px 0 12px;border-bottom:1px solid #ebe8e1;white-space:nowrap}
+  .p-lignes td:last-child{font-weight:700}
+  .a4 table .g{text-align:left;white-space:normal}
+  .a4 table .c{text-align:center}
+  .p-bas{display:flex;justify-content:space-between;align-items:flex-start;margin-top:12px}
+  .p-tva{border-collapse:collapse;width:172px}
+  .p-tva th{font-weight:700;font-size:7px;letter-spacing:.08em;text-transform:uppercase;text-align:right;padding:4px 0;border-bottom:1.5px solid #1c1c1a}
+  .p-tva td{text-align:right;padding:5px 0;border-bottom:1px solid #e2ded3}
+  .p-totaux{width:222px}
+  .p-totaux .t{display:flex;justify-content:space-between;padding:3px 0;font-size:9.5px}
+  .p-ttc{display:flex;justify-content:space-between;margin-top:8px;padding-top:10px;border-top:2px solid #1c1c1a;
+         font:700 13px/1.2 ui-serif,Georgia,serif}
+  .p-apres{width:100%;border-collapse:collapse;margin-top:22px}
+  .p-apres th{font-weight:700;font-size:7px;letter-spacing:.08em;text-transform:uppercase;text-align:right;padding:4px 0;border-bottom:1.5px solid #1c1c1a;color:#1c1c1a}
+  .p-apres th.g{color:#b98b47}
+  .p-apres td{text-align:right;padding:5px 0;border-bottom:1px solid #e2ded3}
+  .p-apres tr.du td{font-weight:700;border-top:1.5px solid #1c1c1a;border-bottom:0}
+  .lettre p{margin:10px 0 0;font-size:10px;line-height:1.55}
+  .lettre .dest{margin-top:26px;width:175px;font-size:10px;line-height:1.45}
+  .lettre .lieu{margin:0 0 16px;text-align:right;font-size:9.5px;line-height:1.5}
+  .lettre .p-titre{margin-bottom:12px}
+  .lettre .signe{margin-top:22px;text-align:right}
+  .p-page{margin-top:26px;text-align:center;font-size:7.5px}
+  .motif{display:block;margin-top:18px}
+  .motif input{display:block;width:100%;margin-top:8px;border:0;border-bottom:1.5px solid var(--or);background:var(--rustTint);
+               border-radius:6px 6px 0 0;padding:10px 12px;font:400 16px/1.2 ui-sans-serif,sans-serif;color:var(--ink);outline:none}
+
+  /* la barre du bas, comme dans l'application */
+  .barre{position:sticky;bottom:0;z-index:4;display:flex;justify-content:space-around;
+         padding:16px 6px 22px;border-top:1px solid var(--line);background:var(--cream);
+         font:500 10px/1 ui-sans-serif,sans-serif;letter-spacing:.16em;color:var(--muted)}
+  .barre .la{color:var(--ink);box-shadow:0 12px 0 -10px var(--or)}
+
+  /* ═══ SOUS LE TÉLÉPHONE : ce que ça change, en trois lignes ═══════════════ */
+  .apres{max-width:400px;margin:22px auto 0;padding:0 16px;font-size:14px;line-height:1.6;color:#3a3a35}
+  .apres h3{margin:18px 0 6px;font:400 19px/1.2 ui-serif,Georgia,serif;color:#1c1c1a}
+  .apres table{width:100%;border-collapse:collapse;font-size:13.5px;background:var(--card);border-radius:8px;overflow:hidden}
+  .apres td,.apres th{padding:9px 10px;border-bottom:1px solid var(--lineSoft);text-align:left;vertical-align:top}
+  .apres th{font:600 10px/1.2 ui-sans-serif,sans-serif;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+  .apres .q{margin-top:10px;padding:12px 14px;border-left:3px solid var(--or);background:var(--card);border-radius:0 6px 6px 0}
+  .autres{margin:0 0 6px;font-size:13.5px;color:var(--inkSoft)}
+  .autres a{color:var(--or)}
+  .sommaire{padding-top:30px}
+  .sommaire .entree{display:block;margin-top:12px;padding:16px 18px;border-radius:10px;background:var(--card);
+                    border:1px solid var(--line);color:var(--ink);text-decoration:none}
+  .sommaire .entree b{display:block;font:400 20px/1.2 ui-serif,Georgia,serif}
+  .sommaire .entree span{display:block;margin-top:5px;font-size:14px;color:var(--inkSoft)}

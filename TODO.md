@@ -9375,6 +9375,11 @@ impayé ne sont pas la même chose :
 Ce qu'il a décrit — un client qui refuse de payer — relève du **second**. Bâtir
 seulement l'avoir, c'est lui donner un geste qui le désarme, sans avertissement.
 
+**LES TROIS PLANCHES** (sa demande : *« trois planches séparées »*) :
+`appli/avoir.html`, `appli/il-ne-paiera-pas.html`, `appli/mise-en-demeure.html`,
+sur un seul moteur (`appli/facture-impayee.js` et `.css`) ; `il-ne-paie-pas.html`
+n'est plus qu'un sommaire des trois, pour l'adresse qu'il a déjà.
+
 **CE QU'IL A DÉJÀ DIT, le 24 septembre 2026, sur `appli/il-ne-paie-pas.html`
 (ne pas le lui redemander) :**
 
