@@ -153,6 +153,17 @@ ni point médian. **Elle ne part pas seule sur `main`** : publiée, elle ferait
 accepter 39 € à tout le monde alors que l'application débite encore 29 €
 (`TODO.md`).
 
+### Terminés : « Facturé » et le montant en gras doré
+
+Sa planche A (`appli/termines-facture-en-dore.html`). Sur une ligne facturée,
+le mot « Facturé » seul et le montant passent en gras doré ; la date et le
+numéro gardent l'encre douce, qui tient au soleil ce que l'or ne tient pas.
+Le mot sort déjà séparé de `libelleEtatLigne` (`src/lib/termines-par-mois.ts`),
+là où la phrase se compose : une première version la redécoupait après coup
+par une expression régulière, deux règles pour une seule question. Retirée le
+jour même.
+Regardé à l'écran sur une base locale ; aucune batterie jouée, à sa demande.
+
 ### Les maquettes ne se publiaient plus depuis le 23 septembre au soir
 
 Trois contrôles de `pages.yml` (`termines`, `boutons-verts`, `porte-plein-air`)

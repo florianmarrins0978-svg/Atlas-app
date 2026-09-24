@@ -51,6 +51,11 @@ faussée), `test-visionneuse-pdf-e2e`, code mort, couches, pansements, tirets.
 la visionneuse (`PlanningClient.tsx`) ? `/documents/pdf` lui est fermé comme il
 l'était à la facturation ; si oui, il tombe sur un refus.
 
+## TERMINÉS, « FACTURÉ » EN GRAS DORÉ : CODÉ, PAS ENCORE SUR `main` (24 septembre 2026)
+
+Il a choisi la A ; codée le jour même dans `ListeTermines.tsx`. Il a demandé
+qu'aucune batterie ne soit lancée : le lot attend sur sa branche de session
+les contrôles que `garde-fusion-main.mjs` exigera pour `main`.
 
 ## LE GESTE « RETOUR » DU NAVIGATEUR SUR LA FICHE CLIENT PERD LA SAISIE (22 septembre 2026)
 

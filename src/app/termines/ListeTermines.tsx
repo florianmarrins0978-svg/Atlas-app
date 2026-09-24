@@ -637,7 +637,7 @@ function Ligne({ ligne, annee }: { ligne: LigneAffichee; annee: string }) {
 }
 
 function ContenuLigne({ ligne, annee }: { ligne: LigneAffichee; annee: string }) {
-  const etat = libelleEtatLigne(ligne, annee);
+  const { avant, mot, apres } = libelleEtatLigne(ligne, annee);
   return (
     <>
       <span className="min-w-0 flex-1">
@@ -673,13 +673,23 @@ function ContenuLigne({ ligne, annee }: { ligne: LigneAffichee; annee: string })
               se voit de loin, là où une teinte se devine. L'or n'a pas quitté
               l'écran : il porte toujours « 3 à facturer » au-dessus de la
               liste, en gras, où il a la place de se voir. */}
-        {etat !== "" && (
+        {avant + mot + apres !== "" && (
           <span
             className="mt-[5px] block text-[13px] leading-[1.5]"
             style={{ color: colors.inkSoft, fontVariantNumeric: "tabular-nums" }}
             data-atlas="etat-ligne"
           >
-            {etat}
+            {/* **« Facturé » en gras doré, le 24 septembre 2026** : sa planche
+                A (`appli/termines-facture-en-dore.html`). Le mot seul : la
+                date et le numéro gardent l'encre douce, qui tient au soleil
+                ce que l'or ne tient pas (voir juste au-dessus). */}
+            {avant}
+            {mot !== "" && (
+              <span style={{ color: colors.or, fontWeight: 700 }} data-atlas="mot-facture">
+                {mot}
+              </span>
+            )}
+            {apres}
           </span>
         )}
       </span>
@@ -716,7 +726,9 @@ function ContenuLigne({ ligne, annee }: { ligne: LigneAffichee; annee: string })
             lineHeight: 1.2,
             fontVariantNumeric: "tabular-nums",
             whiteSpace: "nowrap",
-            color: colors.ink,
+            // Gras doré, comme « Facturé » : sa planche A du 24 septembre 2026.
+            fontWeight: 700,
+            color: colors.or,
           }}
         >
           {ligne.montant === null ? "—" : formatEuros(ligne.montant)}

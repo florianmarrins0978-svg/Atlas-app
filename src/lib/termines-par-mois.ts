@@ -320,8 +320,7 @@ export function libelleDateChantier(jour: string | null, anneeCourante: string):
  * **Et les morceaux se JOIGNENT, ils ne se concatènent pas.** Un « · » écrit en
  * dur derrière la date restait pendu dans le vide dès que le reste manquait.
  */
-export function libelleEtatLigne(l: LigneAffichee, anneeCourante: string): string {
-  const bouts: string[] = [];
+export function libelleEtatLigne(l: LigneAffichee, anneeCourante: string): EtatLigne {
   // **La rangée FACTURÉE ne montre que sa date de planning.** Quand le chantier
   // n'en a pas, son jour est celui de la facture (`dateDuChantier`) — et
   // « Facturé le 18 septembre » le dit déjà, trois mots plus loin. Écrire les
@@ -331,22 +330,38 @@ export function libelleEtatLigne(l: LigneAffichee, anneeCourante: string): strin
     l.aFacturer ? l.dateDuChantier : l.datePlanifiee,
     anneeCourante
   );
-  if (date) bouts.push(date);
   if (l.aFacturer) {
+    const bouts = date ? [date] : [];
     if (l.montant !== null) bouts.push(`${formatEuros(l.montant)} prévus`);
-  } else {
-    // « Facturé le 20 août » reste, lui : aucun bouton ne le dit à sa place.
-    bouts.push(libelleFacturee(l));
+    return { avant: bouts.join(", "), mot: "", apres: "" };
   }
-  return bouts.join(", ");
+  // « Facturé le 20 août » reste, lui : aucun bouton ne le dit à sa place.
+  const { mot, suite } = libelleFacturee(l);
+  return { avant: date ? `${date}, ` : "", mot, apres: suite };
 }
 
-/** « Facturé le 20 août », d'après la date d'émission — ou rien si on l'ignore. */
-export function libelleFacturee(l: LigneAffichee): string {
+/**
+ * La ligne d'état en trois morceaux, dont `mot` est « Facturé » quand il y en
+ * a un : l'écran le pose en gras doré, sa planche A du 24 septembre 2026
+ * (`appli/termines-facture-en-dore.html`). **Le mot sort d'ici séparé**, là où
+ * la phrase se compose : la redécouper dans l'écran ferait deux règles pour
+ * une seule question, et la seconde se tromperait sur « Facture n° 5 ».
+ */
+export type EtatLigne = { avant: string; mot: string; apres: string };
+
+/** « Facturé » et « le 20 août », d'après la date d'émission — ou rien si on l'ignore. */
+export function libelleFacturee(l: LigneAffichee): { mot: string; suite: string } {
   const jour = l.factureDateEmission;
-  if (!jour) return l.factureNumero ? numeroCourt(l.factureNumero) : "Facturée";
-  const quand = `Facturé le ${Number(jour.slice(8, 10))} ${moisSeul(jour.slice(0, 7))}`;
-  return l.factureNumero ? `${quand}, ${numeroCourt(l.factureNumero)}` : quand;
+  if (!jour) {
+    return l.factureNumero
+      ? { mot: "", suite: numeroCourt(l.factureNumero) }
+      : { mot: "Facturée", suite: "" };
+  }
+  const quand = ` le ${Number(jour.slice(8, 10))} ${moisSeul(jour.slice(0, 7))}`;
+  return {
+    mot: "Facturé",
+    suite: l.factureNumero ? `${quand}, ${numeroCourt(l.factureNumero)}` : quand,
+  };
 }
 
 const EUROS = new Intl.NumberFormat("fr-FR", {
