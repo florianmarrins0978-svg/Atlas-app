@@ -33175,9 +33175,106 @@ l'appel direct.** Sans cette porte, une suite qui importe sa décision restait
 pendue à attendre une entrée qui ne venait jamais — et un contrôle qui ne rend
 pas la main ne prouve rien (`CLAUDE.md` §5).
 
+## §411 : L'assistant dit où les choses sont rangées : fiches de lieu, sommaire, preuves sans commentaires
+
+**Sa demande du 24 septembre 2026 :** *« si l'utilisateur a une question sur le
+fonctionnement de l'appli, qu'il puisse lui expliquer clairement et simplement
+comment faire ! S'il cherche une touche ou l'endroit où on range les devis,
+facture, avoir, fiche de sécurité, fiche d'intervention, n'importe quoi, il DOIT
+pouvoir lui répondre ! »*
+
+### Ce qui ne marchait pas, mesuré avant de toucher
+
+| La question | Ce qui sortait |
+|---|---|
+| où sont mes factures | la création d'une facture |
+| où est la fiche de sécurité | la fiche d'entretien de Paysage |
+| où est le planning | le plan d'arrosage |
+| où sont les avoirs, les réglages, les retours d'intervention | RIEN |
+
+**Trois racines, aucune dans le modèle.** Le mode d'emploi (§180) ne portait
+que des fiches de GESTE : aucune ne disait où une chose est rangée. La
+recherche par mots était le seul chemin vers une fiche : une tournure qu'aucun
+mot-clé n'avait prévue ne menait nulle part, et le modèle, obligé de ne réciter
+que ce que l'outil rend, disait alors « je ne sais pas ». Et des fiches
+enseignaient des gestes morts sans que le contrôle rougisse.
+
+### Les fiches de lieu
+
+`lieu: true` marque une fiche qui dit OÙ, pas comment. Une question qui porte
+« où » (ou « rangé ») leur donne trois points de plus, APRÈS le seuil : le
+bonus départage des fiches qui répondent déjà, il n'en fait jamais entrer une
+qui ne répond pas. « Je trouve pas le bouton pour envoyer » n'en profite pas :
+il cherche un geste, et « trouve » faisait gagner l'endroit où dorment les
+devis. Une fiche de lieu nomme l'onglet du bas par lequel on entre : il lit
+depuis n'importe quel écran.
+
+`ailleurs` : un chemin traverse plusieurs écrans (« Chantiers, Vos clients, son
+nom, onglet Factures ») ; chacun doit tenir sa part. `absences` : la fiche de
+l'avoir dit qu'Atlas ne le fait pas, et rougit le jour où l'écran arrive.
+
+**« sans » n'est plus un mot vide** : « une facture sans devis », « la feuille
+sans les prix », il porte la moitié de la question.
+
+### Le sommaire, quand les mots ne suffisent pas
+
+Sans rien trouver, l'outil rend la liste des fiches par intitulé ; le modèle
+redemande celle qui répond (`fiche` = son id). **Il choisit, il ne récrit pas** :
+le geste récité reste celui de la fiche, confrontée au code. Écarté : donner
+tout le mode d'emploi au modèle à chaque question (il réécrirait les gestes de
+mémoire) ; remplacer la recherche par le modèle seul (le fournisseur d'essai,
+et donc les suites, ne sauraient plus rien éprouver).
+
+### Une preuve ne se satisfait plus d'un commentaire
+
+Quatre fiches enseignaient un geste parti : l'onglet « À facturer » (parti le
+13 septembre), « Ajouter un chantier » (devenu « Ajouter », puis « Client en
+attente »), l'onglet « Fiche chantier » (devenu « Fiches »), et les chartes
+Nuit et Sylve, prouvées dans un écran qui ne les nomme plus. **Chaque fois, la
+preuve passait parce qu'un commentaire racontait le changement en citant
+l'ancien nom.** `test-mode-emploi.ts` blanchit désormais les commentaires
+(analyseur de TypeScript, sur place : l'imprimeur récrit « é » en « \u00E9 »,
+et toutes les preuves accentuées seraient tombées à tort).
+
+### Toutes les fonctions, pas seulement les lieux (le soir même)
+
+Sa relance : *« je veux que ce soit un vrai assistant, donc nourris-le avec
+toutes les fonctions de l'appli, qu'il soit capable de les expliquer »*.
+
+**324 fiches au lieu de 80, une zone par fichier** (`src/lib/fiches-mode-emploi/`
+: lieux, chantier, devis, facture, planning, paysage, reglages). La règle, la
+recherche et le pourquoi restent dans `src/lib/mode-emploi.ts`. Un fichier par
+zone, parce que deux sessions qui ajoutent chacune une fiche à deux écrans
+différents ne doivent pas se disputer un fichier de trois mille lignes.
+
+**36 des 64 fiches existantes étaient fausses ou floues**, et le contrôle ne
+le voyait pas : l'écran « Fiche du chantier » n'existe plus (le micro vit sur la fiche
+client), « Déplacer » et « Retirer » du planning ont changé de geste, la
+rubrique « Connexion » s'appelle « Mot de passe », « Apparence » s'appelle
+« Couleurs », le bouton est « Changer mon mot de passe », etc. Toutes récrites
+contre le code.
+
+**La recherche a dû changer avec le nombre.** À trois cents fiches, « client »,
+« devis », « facture » sont partout, et la fiche qui gagnait était celle qui
+avait le plus de mots COURANTS :
+
+| | |
+|---|---|
+| **la rareté** | un mot présent dans beaucoup de fiches pèse moins au classement (`rarete`). Le seuil de réponse, lui, reste compté sans elle : ce qui ne répondait pas ne se met pas à répondre |
+| **la même racine** | « transmets » et « transmettre » se reconnaissent (`memeRacine`) : cinq lettres communes au moins, seule la fin diffère |
+| **le mot exact d'abord** | « facture » passe devant « facturer » ; l'égalité ne se tranche plus par ordre alphabétique |
+| **cinq fiches rendues** | et le modèle peut demander le sommaire (`sommaire: true`) quand aucune ne répond |
+
+**Le contrôle** : 322 questions, au moins une par fiche
+(`scripts/_questions-mode-emploi.ts`). Les siennes (`ATTENDUS`) doivent sortir
+EN TÊTE ; celles du corpus parmi les trois premières, parce qu'une même chose a
+parfois deux portes (facturer depuis Terminés ou depuis le Planning) et que le
+modèle choisit parmi cinq. Une fiche qu'aucune question ne retrouve fait
+rougir la suite : elle ne serait jamais récitée.
+
 ---
 
-## §411 — Mot de passe oublié : un code, puis un jeton que la BASE vérifie
+## §412 — Mot de passe oublié : un code, puis un jeton que la BASE vérifie
 
 **Sa demande du 24 septembre 2026 :** *« si un utilisateur a oublié son mot de
 passe il ne pourra jamais le récupérer ou le changer ? Il faut mettre cette

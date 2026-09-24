@@ -3,7 +3,7 @@
 ## MOT DE PASSE OUBLIÉ : CODÉ, RESTE LA BATTERIE PUIS `main` (24 septembre 2026)
 
 **Codé le 24 septembre** sur sa branche, après son oui à la planche
-(`ARCHITECTURE.md` §411). Suite base verte, écrans regardés, parcours joué
+(`ARCHITECTURE.md` §412). Suite base verte, écrans regardés, parcours joué
 dans un navigateur. **Reste** : `npm run verifier:avant-livraison` (niveau 3),
 qu'il a demandé de ne pas lancer ; le garde-fou refusera `main` sans elle.
 
@@ -6992,6 +6992,30 @@ a vieilli.
 
 **FAIT le 25 août 2026** pour l'essentiel (`ARCHITECTURE.md` §180). Ce qui reste,
 et qui ne se règle pas en une fois :
+
+- **Le 24 septembre 2026** (`ARCHITECTURE.md` §411) : les fiches de LIEU sont
+  écrites (onglets, devis, factures, avoir, paiement, fiches de sécurité et
+  d'intervention, retours), le sommaire rattrape les tournures imprévues, et
+  une preuve ne se satisfait plus d'un commentaire. **Pas vérifié ici : la
+  formulation d'un vrai modèle devant le sommaire** (aucune clé). À essayer sur
+  son espace avec « où sont mes factures », « je cherche la touche pour
+  envoyer le devis », « comment je fais un avoir ».
+- **La fiche « avoir » dit qu'Atlas ne le fait pas** : elle rougira d'elle-même
+  (`absences`) le jour où « Je fais un avoir » entre dans `src/`. Il faudra
+  alors la récrire avec le vrai geste.
+- **Relevé pendant l'inventaire des 324 fiches (24 septembre 2026), non corrigé
+  parce que hors de ce lot** :
+  - **aucun « mot de passe oublié »** dans `src/app/login` : l'assistant ne
+    peut rien répondre, faute de parcours ;
+  - le micro de l'assistant dit « Appuyez à nouveau pour arrêter », mais le
+    bouton disparaît pendant qu'on parle (`AssistantSidebar.tsx`) : texte à
+    vérifier à l'écran ;
+  - « Voir la proposition de prix » (`src/app/chantiers/[id]/prix/PrixClient.tsx`) n'apparaît qu'avec
+    `?saisie=manuelle`, adresse qu'aucun lien ne produit : probablement du code
+    mort, à regarder ;
+  - pas de geste trouvé pour retirer une seule ligne de travaux
+    supplémentaires, ni pour supprimer un achat de Ma TVA, ni pour retrouver un
+    diagnostic végétal passé.
 
 - **Les fiches couvrent les écrans principaux, pas encore chaque recoin.**
   Manquent notamment : le détail de l'écran Réglages → Devis & factures (chaque

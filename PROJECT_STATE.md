@@ -11,7 +11,16 @@
 e-mail, nouveau mot de passe, et l'on entre ; les autres appareils sont
 déconnectés. Migration 0100. **Pas encore sur `main`** : niveau 3
 (authentification et migration), et il a demandé qu'aucune batterie ne soit
-lancée. `ARCHITECTURE.md` §411.
+lancée. `ARCHITECTURE.md` §412.
+
+## FAIT : L'ASSISTANT CONNAÎT TOUTES LES FONCTIONS DE L'APPLI (24 septembre 2026)
+
+324 fiches, une zone par fichier, chacune prouvée contre le code ; 36 fiches
+fausses ou floues récrites ; recherche refaite pour trois cents fiches (`ARCHITECTURE.md`
+§411). Reste à l'essayer avec un vrai modèle, sur son espace, et la batterie
+avant `main`.
+
+---
 
 ## FAIT : LA FLÈCHE RETOUR DE LA FICHE CLIENT GARDE LA SAISIE (22 septembre 2026)
 

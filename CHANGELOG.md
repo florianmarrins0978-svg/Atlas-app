@@ -15,7 +15,43 @@ rentrer. Un lien « Mot de passe oublié ? » sous le mot de passe mène à
 `/mot-de-passe-oublie` : l'adresse, le code reçu par e-mail (celui de la
 création du compte), le nouveau mot de passe, et l'on entre. Tous les autres
 appareils sont déconnectés et un e-mail prévient du changement. Migration 0100.
-`ARCHITECTURE.md` §411.
+`ARCHITECTURE.md` §412.
+
+### L'assistant sait dire OÙ les choses sont rangées
+
+Sa plainte : *« il marche mal »*, et sa demande : devis, factures, avoirs,
+fiches de sécurité, fiches d'intervention, *« n'importe quoi, il DOIT pouvoir
+lui répondre »*. Mesuré avant de toucher : « où sont mes factures » rendait la
+création d'une facture, « où est la fiche de sécurité » la fiche d'entretien de
+Paysage, et les avoirs, les retours d'intervention, les réglages ne rendaient
+RIEN.
+
+- **Seize fiches neuves** dans `src/lib/mode-emploi.ts` : les cinq onglets du
+  bas, où dorment devis, factures et fiches envoyées, l'avoir (qu'Atlas ne fait
+  pas encore, et le dit), le paiement reçu, les retours d'intervention, la
+  facture sans devis, la fiche d'intervention, la fiche de sécurité (remplir,
+  retrouver), l'accès d'un salarié.
+- **Une question en « où » préfère une fiche de lieu.**
+- **Quand les mots ne suffisent pas, le modèle lit le sommaire** et redemande la
+  fiche par son identifiant : il choisit, le geste récité reste celui de la
+  fiche.
+- **Quatre fiches enseignaient un geste mort** (l'onglet « À facturer »,
+  « Ajouter un chantier », l'onglet « Fiche chantier », les chartes) : leur
+  preuve ne tenait plus que par un COMMENTAIRE qui citait l'ancien nom. Le
+  contrôle lit désormais le code sans ses commentaires.
+
+**Ce que ça évite :** un assistant qui répond à côté, ou « je ne sais pas », à la
+question la plus simple qu'on lui pose : où est ceci.
+
+### L'assistant connaît toutes les fonctions de l'appli (324 fiches)
+
+Sa relance du soir : un vrai assistant, qui explique chaque fonction. Chaque
+écran a été inventorié bouton par bouton, et chaque fiche est prouvée contre le
+code. **36 des 64 anciennes fiches étaient fausses ou floues** (un écran disparu, des
+boutons renommés) : récrites. La recherche compte désormais la rareté d'un mot,
+reconnaît les formes d'un même verbe et préfère le mot exact. Une fiche par zone
+dans `src/lib/fiches-mode-emploi/`. **Ce que ça évite :** qu'il enseigne un
+bouton qui n'existe plus, ou qu'il ne sache rien d'un écran entier.
 
 ### Les maquettes ne se publiaient plus depuis le 23 septembre au soir
 

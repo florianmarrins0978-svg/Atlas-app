@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — L'assistant connaît toute l'application</title>
+<style>
+  :root{
+    --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
+    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
+    --accent:#2f3b2f; --alert:#b5562a; --line:rgba(28,28,26,0.13);
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#161815; --surface:#1d201c; --raised:#252924;
+      --ink:#eae7df; --ink-soft:#c2bdb1; --muted:#948f83;
+      --accent:#9fbd82; --alert:#e0885a; --line:rgba(234,231,223,0.17);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.65;}
+  main{max-width:44rem;margin:0 auto;padding:2.5rem 1.2rem 5rem;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.2;
+    text-wrap:balance;margin:2rem 0 0.6rem;scroll-margin-top:1rem;}
+  h1{font-size:2rem;margin-top:0;}
+  h2{font-size:1.5rem;padding-top:1.2rem;border-top:1px solid var(--line);}
+  h3{font-size:1.12rem;}
+  h4{font-size:1rem;}
+  p{margin:0 0 0.9rem;}
+  a{color:var(--accent);text-underline-offset:3px;}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px;}
+  ul,ol{margin:0 0 1rem;padding-left:1.3rem;}
+  li{margin-bottom:0.4rem;}
+  li::marker{color:var(--muted);}
+  /* Le sommaire : des cibles larges, confortables au doigt sur téléphone. */
+  ol li a{display:inline-block;padding:0.15rem 0;}
+  blockquote{margin:1rem 0;padding:0.85rem 1.05rem;background:var(--raised);
+    border-left:3px solid var(--accent);border-radius:0 10px 10px 0;color:var(--ink-soft);}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.87em;
+    background:var(--raised);padding:0.1rem 0.35rem;border-radius:5px;}
+  hr{border:0;border-top:1px solid var(--line);margin:2rem 0;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;
+    background:var(--surface);margin:0 0 1.2rem;}
+  table{border-collapse:collapse;width:100%;font-size:0.92rem;min-width:22rem;}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--line);
+    vertical-align:top;}
+  th{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--muted);white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .retour{display:inline-block;font-size:0.76rem;color:var(--muted);
+    text-decoration:none;margin:-0.3rem 0 1rem;}
+  .retour:hover{color:var(--accent);text-decoration:underline;}
+</style>
+</head>
+<body>
+<main>
+<h1 id="lassistant-connaît-toute-lapplication">L'assistant connaît toute l'application</h1>
+<p><strong>Lot du 24 septembre 2026.</strong> Tes deux demandes :</p>
+<ul>
+<li><em>« s'il cherche une touche ou l'endroit où on range les devis, facture, avoir, fiche de sécurité, fiche d'intervention, n'importe quoi, il DOIT pouvoir lui répondre ! »</em></li>
+<li><em>« je veux que ce soit un vrai assistant, donc nourris-le avec toutes les fonctions de l'appli, qu'il soit capable de les expliquer ! »</em></li>
+</ul>
+<h2 id="en-chiffres">En chiffres</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Avant</th>
+<th>Maintenant</th>
+</tr></thead><tbody>
+<tr>
+<td>Fiches du mode d'emploi</td>
+<td>64</td>
+<td><strong>324</strong></td>
+</tr>
+<tr>
+<td>Anciennes fiches fausses ou floues</td>
+<td>36 sur 64, sans que rien ne le signale</td>
+<td>récrites, et le contrôle les attrape désormais</td>
+</tr>
+<tr>
+<td>Questions d'essai</td>
+<td>16</td>
+<td><strong>322</strong>, au moins une par fiche</td>
+</tr>
+</tbody></table></div>
+<h2 id="ce-quil-sait-expliquer-maintenant-écran-par-écran">Ce qu'il sait expliquer maintenant, écran par écran</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Zone</th>
+<th>Fiches</th>
+<th>Exemples</th>
+</tr></thead><tbody>
+<tr>
+<td>Où se trouve quoi</td>
+<td>8</td>
+<td>les 5 onglets, où dorment devis, factures, fiches envoyées</td>
+</tr>
+<tr>
+<td>Chantiers et fiche client</td>
+<td>57</td>
+<td>créer, dicter, photos, cartes « correction demandée », « devis accepté », Informations, Prix</td>
+</tr>
+<tr>
+<td>Devis</td>
+<td>49</td>
+<td>lignes, unités, TVA, remise, acompte, dates, envoi, relance, devis refusé, ce que voit le client</td>
+</tr>
+<tr>
+<td>Facture, Terminés, Ma TVA</td>
+<td>45</td>
+<td>facture sans devis, acompte, chèque, facture acquittée, paiement reçu, ticket de caisse, ancien IBAN</td>
+</tr>
+<tr>
+<td>Planning</td>
+<td>39</td>
+<td>poser, déplacer, retirer, absences, équipes, fiche d'intervention, fiche de sécurité de bout en bout</td>
+</tr>
+<tr>
+<td>Paysage, clients, catalogue</td>
+<td>51</td>
+<td>arrosage, fiche de chantier, diagnostic, fiches de sécurité, dossier client, supprimer un client</td>
+</tr>
+<tr>
+<td>Réglages, compte, assistant</td>
+<td>75</td>
+<td>chaque rubrique, créer un compte, Face ID, agenda, équipe, IBAN, abonnement, l'assistant lui même</td>
+</tr>
+</tbody></table></div>
+<h2 id="comment-il-répond">Comment il répond</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<ol>
+<li>Il cherche les 5 fiches les plus proches de ta question.</li>
+<li>Il récite celle qui répond : le chemin depuis la barre du bas, puis le geste, avec le nom exact du bouton.</li>
+<li>Si aucune ne répond, il lit la liste de toutes les fiches et prend la bonne.</li>
+<li>S'il n'y en a vraiment aucune, il le dit. Il n'invente jamais un bouton.</li>
+</ol>
+<h2 id="trouvé-en-chemin--36-des-64-anciennes-réponses-étaient-fausses-ou-floues">Trouvé en chemin : 36 des 64 anciennes réponses étaient fausses ou floues</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Quelques exemples : l'écran « Fiche du chantier » n'existe plus (le micro est sur la fiche client) ; « Déplacer » et « Retirer » du planning ont changé ; la rubrique « Connexion » s'appelle « Mot de passe » et « Apparence » s'appelle « Couleurs » ; il n'y a pas de bouton « Enregistrer » sur la fiche client. Toutes sont corrigées, et le contrôle ne se laisse plus tromper par un commentaire du code qui citait l'ancien nom.</p>
+<h2 id="ce-qui-reste-ouvert">Ce qui reste ouvert</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Qui</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>L'avoir n'existe pas dans l'appli.</strong> La facture écrit pourtant « Une correction passerait par un avoir ». L'assistant le dit franchement</td>
+<td>toi : faire coder la planche « il ne paie pas »</td>
+</tr>
+<tr>
+<td><strong>Aucun « mot de passe oublié »</strong> à l'écran de connexion. L'assistant ne peut rien répondre</td>
+<td>toi : à décider</td>
+</tr>
+<tr>
+<td>Trois gestes introuvables : retirer une seule ligne de travaux supplémentaires, supprimer un achat dans Ma TVA, retrouver un ancien diagnostic végétal</td>
+<td>à vérifier sur ton espace</td>
+</tr>
+<tr>
+<td><strong>Pas essayé avec la vraie IA</strong> (aucune clé ici). Tout est éprouvé avec le fournisseur d'essai</td>
+<td>toi : « où sont mes factures », « je cherche la touche pour envoyer le devis », « comment je note un acompte »</td>
+</tr>
+<tr>
+<td>La plupart des fiches sont prouvées contre le code, pas regardées à l'écran une par une</td>
+<td>à regarder au fil de l'usage : une fiche fausse se corrige en une ligne</td>
+</tr>
+<tr>
+<td><strong>Batterie complète pas jouée</strong> (tu l'as demandé). Elle est obligatoire avant <code>main</code></td>
+<td>toi : me dire quand la lancer</td>
+</tr>
+</tbody></table></div>
+<h2 id="les-contrôles-joués">Les contrôles joués</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Contrôle</th>
+<th>Résultat</th>
+</tr></thead><tbody>
+<tr>
+<td><code>test-mode-emploi</code></td>
+<td>26 / 26 ; chaque fiche prouvée contre le code, 322 questions</td>
+</tr>
+<tr>
+<td><code>test-assistant-explique-l-appli</code></td>
+<td>14 / 14</td>
+</tr>
+<tr>
+<td><code>test-assistant-se-corrige</code>, <code>test-ia-02-assistant</code>, <code>test-agent-gestes</code></td>
+<td>verts</td>
+</tr>
+<tr>
+<td>types, tirets, flèches, couches, code mort, pansements</td>
+<td>verts</td>
+</tr>
+</tbody></table></div>
+</main>
+</body>
+</html>
