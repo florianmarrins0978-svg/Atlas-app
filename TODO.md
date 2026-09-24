@@ -1,5 +1,22 @@
 # Prochaines tâches
 
+## ⏳ MOT DE PASSE OUBLIÉ : AUCUN MOYEN DE RENTRER (24 septembre 2026)
+
+Sa question : *« si un utilisateur a oublié son mot de passe il ne pourra
+jamais le récupérer ou le changer ? Il faut mettre cette fonction ! »* Vrai :
+`/login` n'offre rien, et le mot de passe n'est gardé qu'en empreinte bcrypt
+(`creation-compte.ts`). Changer son mot de passe CONNECTÉ existe
+(Réglages › Connexion) ; le retrouver sans l'être, non.
+
+**Son choix : un CODE par e-mail, pas un lien** (24 septembre). On reprend
+`code-verification.ts`, `SaisieDuCode.tsx` et l'envoi Brevo déjà branchés.
+Planche : `appli/mot-de-passe-oublie.html`, en attente de son oui.
+
+À tenir au codage (niveau 3, authentification) : une adresse sans compte mène
+au même écran sans rien envoyer ; essais et renvois limités comme à la
+création ; après le changement, `deconnecterPartout` ; un compte
+Google/Apple sans mot de passe en reçoit un.
+
 ## LE GESTE « RETOUR » DU NAVIGATEUR SUR LA FICHE CLIENT PERD LA SAISIE (22 septembre 2026)
 
 La flèche, le voile et Échap enregistrent depuis le 22 septembre
