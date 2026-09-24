@@ -25,7 +25,9 @@ au même écran sans rien envoyer ; essais et renvois limités comme à la
 création ; après le changement, `deconnecterPartout` ; un compte
 Google/Apple sans mot de passe en reçoit un.
 
-## MA TVA : OUVRIR LA FACTURE DEPUIS LE CLIENT, CODÉ, PAS ENCORE SUR `main` (24 septembre 2026)
+## FAIT : MA TVA, OUVRIR LA FACTURE DEPUIS LE CLIENT, SUR `main` (24 septembre 2026)
+
+**Parti sur `main` avec la batterie commune d'une autre session** (`dad7ff5`, « Réunir le lot invoice-pdf-display-0pugox »). Ce qui suit est l'état au moment du codage.
 
 Codé sur `claude/invoice-pdf-display-0pugox`. Niveau **3** (argent et rôles) :
 il a demandé qu'**aucune batterie** ne soit lancée ce jour-là, donc
