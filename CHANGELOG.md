@@ -8,6 +8,18 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-24
 
+### Conditions générales, version 3 : les nouveaux prix, prête mais pas en service
+
+Sa décision sur `appli/abonnements-ce-qui-manque.html` : Artisan à 39 €,
+Illimité à 159 €, et Artisan sans le plan d'arrosage, le diagnostic végétal
+ni la fiche de chantier (les fiches de sécurité restent ouvertes à tous, sa
+réponse). La version 3 le dit, et corrige deux écarts avec ce que fait
+l'application : l'essai dure quinze jours, et il se termine en lecture seule,
+pas en « accès suspendu ». Le texte est déduit de la page publiée, sans tiret
+ni point médian. **Elle ne part pas seule sur `main`** : publiée, elle ferait
+accepter 39 € à tout le monde alors que l'application débite encore 29 €
+(`TODO.md`).
+
 ### Les maquettes ne se publiaient plus depuis le 23 septembre au soir
 
 Trois contrôles de `pages.yml` (`termines`, `boutons-verts`, `porte-plein-air`)

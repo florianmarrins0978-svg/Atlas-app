@@ -1,5 +1,16 @@
 # Prochaines tâches
 
+## LES NOUVEAUX PRIX : CODE ET CONDITIONS GÉNÉRALES PARTENT ENSEMBLE (24 septembre 2026)
+
+La version 3 des CGU est prête sur la branche `claude/subscription-breakdown-rcv5i7`
+(39 € et 159 €, Artisan sans les trois outils de paysage). **Elle ne va sur
+`main` qu'avec le code**, dans le même lot : `src/lib/abonnements.ts` (prix,
+`FonctionReservee` étendue à l'arrosage, au diagnostic et à la fiche de
+chantier, `COMMUN` sans le plan d'arrosage), la fermeture à l'écran Paysage et
+côté serveur (`exigerFonction`), et `test-abonnements.ts` repointé sur la
+planche `appli/abonnements-ce-qui-manque.html`. Niveau 3 (argent) : batterie
+entière, à annoncer au patron avant de la lancer. Publier la version 3 fait
+réaccepter les conditions à chaque compte à sa prochaine connexion.
 ## ⏳ MOT DE PASSE OUBLIÉ : AUCUN MOYEN DE RENTRER (24 septembre 2026)
 
 Sa question : *« si un utilisateur a oublié son mot de passe il ne pourra
