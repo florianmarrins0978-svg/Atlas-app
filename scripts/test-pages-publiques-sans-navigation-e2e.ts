@@ -58,6 +58,9 @@ async function adressesPubliques(): Promise<Array<[string, string]>> {
     // que la facture du client.
     ["la porte", "/bienvenue"],
     ["la création de compte", "/creer-un-compte"],
+    // Le mot de passe oublié (24 septembre 2026) : on y arrive précisément
+    // parce qu'on ne peut pas se connecter.
+    ["le mot de passe oublié", "/mot-de-passe-oublie"],
   ];
 
   const devis = await pool.query(`select jeton from envois_devis limit 1`);
@@ -194,6 +197,7 @@ async function main() {
       "/login",
       "/bienvenue",
       "/creer-un-compte",
+      "/mot-de-passe-oublie",
       "/devis",
       "/factures",
       "/entretien",
