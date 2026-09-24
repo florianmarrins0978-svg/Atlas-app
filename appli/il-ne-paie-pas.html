@@ -162,6 +162,11 @@
   .liste .serif{font-size:22px}
   .barre button{border:0;background:none;padding:0;font:inherit;letter-spacing:inherit;color:inherit;cursor:default}
   .barre button.cible{cursor:pointer;color:var(--or);animation:appel 1.6s ease-in-out infinite;border-radius:4px}
+  .nonpayees{display:flex;justify-content:space-between;align-items:center;width:calc(100% - 44px);
+             margin:14px 22px 0;min-height:48px;padding:0 18px;border-radius:999px;cursor:pointer;
+             border:1px solid var(--alerte);background:transparent;color:var(--alerte);font-size:14px}
+  .nonpayees .nb{min-width:24px;height:24px;border-radius:999px;background:var(--alerte);color:var(--surPlein);
+                 display:inline-flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:600}
   .cible-tva{animation:appel 1.6s ease-in-out infinite}
   .vert[disabled]{opacity:.4;cursor:default;animation:none}
 
@@ -358,10 +363,44 @@
       <div class="ligne"><span>Il vous doit toujours</span><span class="v serif" style="font-size:20px">1 440,00 €</span></div>
       <p class="doux" style="margin:12px 0 0;font-size:14px">Rien ne part chez lui. Atlas arrête de vous le rappeler.</p>
     </div>
-    <button type="button" class="vert cible" data-va="factureB">C'est noté</button>
+    <button type="button" class="vert cible" data-va="termB">C'est noté</button>
   </section>
 
   <!-- ─── 5B. LA FACTURE, APRÈS ──────────────────────────────────────────── -->
+  <!-- ─── 5B. TERMINÉS, AVEC LA CATÉGORIE « NON PAYÉES » ───────────────────
+       Sa demande du 24 septembre : « dans Terminés, si je dis que mon client
+       ne me paiera pas, il faut créer une petite catégorie qui apparaît
+       seulement lorsque je clique sur ça, et qui range la facture dans
+       factures non payées ». Elle n'existe que tant qu'une facture y est :
+       payée, la facture en sort, et la catégorie disparaît (écran 10B). -->
+  <section class="ecran" data-e="termB">
+    <div class="haut"><div class="titre" style="padding:0"><h1>Terminés</h1></div><span class="bulle"></span></div>
+    <div class="tva">
+      <div><div class="caps or">Ma TVA à déclarer</div><div class="mois">Octobre 2026</div></div>
+      <div class="m">0,00 €</div>
+    </div>
+    <div class="deux"><span class="capsule">Retours d'intervention</span><span class="capsule or">Créer une facture</span></div>
+    <button type="button" class="nonpayees cible" data-va="nonPayees">
+      <span>Non payées</span><span class="nb">1</span>
+    </button>
+    <div class="moisnav"><span class="ch">‹</span>Octobre 2026<span class="ch eteint">›</span></div>
+    <div class="compte">1 facturé</div>
+    <div class="fact" style="cursor:default">
+      <span class="l1"><span>Taille de haie</span><span>1 440,00 €</span></span>
+      <span class="l2">Facturé le 9 octobre, Facture n° 12</span>
+    </div>
+  </section>
+
+  <!-- ─── 6B. LES FACTURES NON PAYÉES ────────────────────────────────────── -->
+  <section class="ecran" data-e="nonPayees">
+    <div class="haut"><button type="button" class="fleche" data-va="termB">‹</button><span class="bulle"></span></div>
+    <div class="titre"><h1>Non payées</h1></div>
+    <button type="button" class="fact cible" data-va="factureB" style="margin-top:26px">
+      <span class="l1"><span>Taille de haie</span><span>1 440,00 €</span></span>
+      <span class="l2">M. Martin, Facture n° 12, depuis le 27 octobre</span>
+    </button>
+  </section>
+
   <section class="ecran" data-e="factureB">
     <div class="haut"><button type="button" class="fleche" data-va="termines">‹</button><span class="bulle"></span></div>
     <div class="titre"><h1>Facture</h1><p class="sur">Taille de haie</p></div>
@@ -448,7 +487,7 @@
     <tr><td>Il doit encore</td><td>moins</td><td>tout</td></tr>
     <tr><td>Vous pouvez réclamer</td><td>non, plus jamais cette somme</td><td>oui</td></tr>
     <tr><td>Un document part</td><td>oui, l'avoir</td><td>non</td></tr>
-    <tr><td>Sur sa fiche client</td><td>un onglet Avoirs apparaît</td><td>rien ne change</td></tr>
+    <tr><td>Où la retrouver</td><td>un onglet Avoirs sur sa fiche client</td><td>une catégorie Non payées dans Terminés</td></tr>
     <tr><td>S'il paie après</td><td>il paie le nouveau montant</td><td>vous notez le paiement, et la TVA entre au relevé du mois où il a payé</td></tr>
     <tr><td>Votre TVA</td><td>ne bouge pas</td><td>ne bouge pas, tant qu'il n'a pas payé</td></tr>
   </table>
@@ -469,13 +508,15 @@
     factureA: ["La facture, après", "L'avoir apparaît dans les règlements, et le <b>Net à payer</b> descend. Plus de notification pour la somme enlevée. <b>Et pour le retrouver plus tard ?</b> Touchez <b>CHANTIERS</b> en bas, puis «&nbsp;Vos clients&nbsp;», puis M. Martin (ici, on saute la liste)."],
     ficheA:   ["Sa fiche client", "Un onglet <b>Avoirs</b> est apparu, à côté de Devis, Factures et Fiches. <b>Il n'existe que chez les clients à qui vous avez envoyé un avoir</b> : chez tous les autres, rien ne change. Touchez les onglets pour comparer. Fin de la première branche."],
     perdue:   ["Seconde réponse : il ne vous paiera pas", "Le client refuse ou a disparu. Vous gardez votre droit : <b>rien n'est annulé</b>. <b>Touchez «&nbsp;C'est noté&nbsp;».</b>"],
+    termB:    ["Terminés, avec une catégorie de plus", "Une petite catégorie <b>Non payées</b> est apparue sous les deux boutons. <b>Elle n'existe que tant qu'une facture y est rangée</b> : sans facture non payée, vous ne la voyez jamais. <b>Touchez-la.</b>"],
+    nonPayees:["Les factures non payées", "Toutes vos factures non payées, rangées ici. <b>Touchez celle de M. Martin.</b>"],
     factureB: ["La facture, après", "La facture reste entière, marquée <b>Non payée</b>. Atlas ne vous la rappelle plus. Et <b>s'il paie un jour</b> ? Touchez «&nbsp;J'ai reçu le paiement&nbsp;»."],
     paye:     ["Il a finalement payé", "Vous notez le paiement comme n'importe quel règlement. <b>Touchez «&nbsp;Moyen&nbsp;»</b> pour choisir chèque, virement, espèces ou carte, puis <b>«&nbsp;C'est noté&nbsp;»</b>."],
     factureB2:["La facture, payée", "Le «&nbsp;Non payée&nbsp;» disparaît : la facture est <b>acquittée</b>, le Net à payer tombe à zéro. <b>Touchez «&nbsp;Voir Ma TVA&nbsp;».</b>"],
-    tvaB:     ["Elle entre au relevé de TVA", "Les <b>240,00 €</b> de TVA de cette facture entrent au relevé de <b>novembre</b>, le mois où il a payé, pas celui de la facture. C'est la règle de l'encaissement, et c'est déjà ce que fait votre relevé aujourd'hui. Fin de la seconde branche."],
+    tvaB:     ["Elle entre au relevé de TVA", "Les <b>240,00 €</b> de TVA de cette facture entrent au relevé de <b>novembre</b>, le mois où il a payé, pas celui de la facture. C'est la règle de l'encaissement, et c'est déjà ce que fait votre relevé aujourd'hui. Et la catégorie <b>Non payées</b> a disparu : elle était vide. Fin de la seconde branche."],
   };
   const ORDRE_A = ["termines","facture","question","combien","fait","factureA","ficheA"];
-  const ORDRE_B = ["termines","facture","question","perdue","factureB","paye","factureB2","tvaB"];
+  const ORDRE_B = ["termines","facture","question","perdue","termB","nonPayees","factureB","paye","factureB2","tvaB"];
   let chemin = ["termines"];
 
   const ecrans = [...document.querySelectorAll(".ecran")];
