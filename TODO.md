@@ -9380,6 +9380,35 @@ seulement l'avoir, c'est lui donner un geste qui le désarme, sans avertissement
 - une facture déclarée non payée **peut encore être payée** : « J'ai reçu le
   paiement » la rend acquittée, et sa TVA entre au relevé du mois du paiement.
 
+**CE QUE LA LOI EXIGE D'UN AVOIR** (recherche du 24 septembre 2026, faite par
+moteur de recherche : Legifrance, le BOFiP et douane.gouv.fr sont refusés par le
+mandataire de cet environnement. À relire à la source avant de coder) :
+
+- un avoir **est une facture rectificative** : il porte les mentions du I de
+  l'article 242 nonies A de l'annexe II au CGI, comme une facture. Le BOFiP
+  (BOI-TVA-DECLA-30-20-20-20) admet que certaines mentions puissent manquer ;
+  lesquelles exactement reste à lire à la source. Le plus sûr est de toutes les
+  porter ;
+- **une référence explicite à la facture initiale : son numéro ET sa date** ;
+- **un numéro unique, dans une suite chronologique et continue**. Une série à
+  part (préfixe « A ») est admise si elle est justifiée et tenue ; deux avoirs
+  d'une même année ne portent jamais le même numéro ;
+- sa date, l'identité de l'émetteur (nom, adresse, SIREN/SIRET, n° de TVA
+  s'il en a un), celle du client (nom, adresse) ;
+- **ce qui est corrigé et pourquoi** (la désignation), et les montants **HT,
+  taux, TVA et TTC**, taux par taux ; « TVA non applicable, art. 293 B du CGI »
+  pour une entreprise en franchise ;
+- la facture initiale **ne se modifie jamais** ;
+- les quatre mentions nouvelles de la réforme (SIREN du client s'il est une
+  entreprise, nature de l'opération, option pour les débits, adresse de
+  livraison) : 1er septembre 2026 pour les grandes entreprises et les ETI,
+  **1er septembre 2027 pour les PME et les micro-entreprises**, donc pour lui.
+  Elles valent pour l'avoir comme pour la facture.
+
+La planche ne montre aujourd'hui que le numéro, la facture visée (sans sa date)
+et le TTC. Le PDF de l'avoir doit reprendre l'en-tête de la facture
+(`document-commun.ts`) et ajouter le reste.
+
 Reste ouvert : faut-il préparer une mise en demeure avant « Il ne me paiera
 pas » ?
 
