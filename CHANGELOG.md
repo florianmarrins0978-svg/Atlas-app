@@ -8,6 +8,18 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-24
 
+### Les abonnements : 39, 59 et 159 €, Artisan sans le paysage, ce qui manque barré
+
+Codé sur la branche, pas encore sur `main` (batterie à jouer). Les cartes de
+l'écran Abonnement lisent une seule liste de lignes (`lignesDeLaFormule`) : une
+ligne dit ce qui l'ouvre, une fonction ou un plafond, et ce que la formule n'a
+pas s'affiche barré. Avant, chaque formule recopiait sa liste, et un contrôle
+devait les tenir d'accord avec ce que le code ouvrait. Les trois outils de
+paysage sont fermés à Artisan par un `layout.tsx` par outil (tous leurs écrans
+d'un coup, `src/app/paysage/OuvertParLaFormule.tsx`) et par `exigerFonction`
+dans chacune de leurs actions. La page du client qui reçoit un compte rendu
+d'entretien (`/entretien/[jeton]`) reste ouverte : il a déjà été envoyé.
+
 ### Conditions générales, version 3 : les nouveaux prix, prête mais pas en service
 
 Sa décision sur `appli/abonnements-ce-qui-manque.html` : Artisan à 39 €,

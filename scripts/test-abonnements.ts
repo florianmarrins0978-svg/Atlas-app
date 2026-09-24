@@ -15,11 +15,13 @@ import {
   formule,
   formuleChoisie,
   jourEnLettres,
+  lignesDeLaFormule,
   montantDu,
   phraseDeLaFermeture,
   placePourUnFabricant,
   roleFabrique,
   texteDuRuban,
+  type FonctionReservee,
 } from "../src/lib/abonnements";
 import { ROLES } from "../src/lib/acces-roles";
 
@@ -42,7 +44,11 @@ function cas(nom: string, f: () => void) {
   }
 }
 
-const PLANCHE = path.join(__dirname, "..", "appli", "choisir-son-abonnement.html");
+// La planche du 24 septembre 2026, qui remplace celle du 9 : 39, 59 et 159 €,
+// et ce qui manque barré.
+const PLANCHE = path.join(__dirname, "..", "appli", "abonnements-ce-qui-manque.html");
+
+const FONCTIONS: readonly FonctionReservee[] = ["arrosage", "diagnostic", "fiche-chantier", "absences", "retours"];
 
 console.log("=== Les prix du code sont ceux de sa planche ===\n");
 
@@ -56,13 +62,24 @@ cas("la planche existe encore — sans elle, ce contrôle ne mesurerait rien", (
 cas("les trois formules et leurs deux prix correspondent à la planche", () => {
   const texte = readFileSync(PLANCHE, "utf8");
   for (const f of FORMULES) {
-    // La planche écrit : { nom: "Artisan", prix: 29, an: 290, …
+    // La planche écrit : { nom: "Artisan", prix: 39, an: 390, …
     const motif = new RegExp(`nom:\\s*"${f.nom}",\\s*prix:\\s*(\\d+),\\s*an:\\s*(\\d+)`);
     const trouve = texte.match(motif);
     assert.ok(trouve, `la formule « ${f.nom} » n'est pas dans la planche`);
     assert.equal(Number(trouve[1]), f.prixMensuel, `prix mensuel de ${f.nom}`);
     assert.equal(Number(trouve[2]), f.prixAnnuel, `prix annuel de ${f.nom}`);
   }
+});
+
+cas("les lignes des cartes sont celles de la planche, mot pour mot et dans son ordre", () => {
+  const texte = readFileSync(PLANCHE, "utf8");
+  const bloc = texte.slice(texte.indexOf("var LIGNES"), texte.indexOf("];", texte.indexOf("var LIGNES")));
+  const planche = [...bloc.matchAll(/texte:\s*"([^"]+)"/g)].map((m) => m[1]);
+  assert.ok(planche.length >= 10, `seulement ${planche.length} lignes lues sur la planche`);
+  // Entreprise montre toutes les lignes : ce qu'il a, et ce qui lui manque.
+  const entreprise = formule("entreprise");
+  assert.ok(entreprise);
+  assert.deepEqual(lignesDeLaFormule(entreprise).map((l) => l.texte), planche);
 });
 
 cas("l'année vaut dix mois — deux mois offerts, comme l'annonce la bascule", () => {
@@ -76,8 +93,8 @@ console.log("\n=== Ce qui part chez le prestataire ===\n");
 cas("le montant s'envoie en centimes, exactement", () => {
   const artisan = formule("artisan");
   assert.ok(artisan);
-  assert.equal(centimes(artisan, "mensuelle"), 2900);
-  assert.equal(centimes(artisan, "annuelle"), 29000);
+  assert.equal(centimes(artisan, "mensuelle"), 3900);
+  assert.equal(centimes(artisan, "annuelle"), 39000);
 });
 
 cas("montantDu suit la périodicité", () => {
@@ -228,8 +245,7 @@ cas("« essai gratuit 15 jours » — la durée est la sienne, et la fin tombe q
 
 cas("pendant l'essai, on essaie TOUT : la formule est « Illimité », rien n'est fermé ni plafonné", () => {
   assert.equal(FORMULE_DE_LESSAI, "illimite");
-  assert.ok(fonctionOuverte(FORMULE_DE_LESSAI, "absences"));
-  assert.ok(fonctionOuverte(FORMULE_DE_LESSAI, "retours"));
+  for (const f of FONCTIONS) assert.ok(fonctionOuverte(FORMULE_DE_LESSAI, f), f);
   assert.deepEqual(placePourUnFabricant(FORMULE_DE_LESSAI, 100), { ok: true });
 });
 
@@ -303,8 +319,8 @@ cas("l'écran dit l'essai : les jours, la date, aucune carte ; puis « terminé 
 
 console.log("\n=== Ce qui se ferme à « Artisan » — « oui bloqué pour l'abonnement artisan » ===\n");
 
-cas("Artisan n'ouvre ni les absences ni les retours ; Entreprise et Illimité ouvrent les deux", () => {
-  for (const f of ["absences", "retours"] as const) {
+cas("Artisan n'ouvre ni le paysage, ni les absences, ni les retours ; Entreprise et Illimité ouvrent tout", () => {
+  for (const f of FONCTIONS) {
     assert.equal(fonctionOuverte("artisan", f), false, `Artisan ouvre ${f}`);
     assert.equal(fonctionOuverte("entreprise", f), true, `Entreprise ferme ${f}`);
     assert.equal(fonctionOuverte("illimite", f), true, `Illimité ferme ${f}`);
@@ -317,16 +333,29 @@ cas("SANS ABONNEMENT, tout est ouvert — une fermeture est la conséquence d'un
   assert.equal(fonctionOuverte("inconnue", "retours"), true);
 });
 
-cas("ce que la carte de la formule PROMET est ce que le code OUVRE — les deux listes ne divergent pas", () => {
-  for (const f of FORMULES) {
-    const promet = (mot: string) => f.compris.some((l) => l.texte.toLowerCase().includes(mot));
-    assert.equal(f.fonctions.includes("absences"), promet("absences"), `${f.nom} : les absences`);
-    assert.equal(f.fonctions.includes("retours"), promet("retours"), `${f.nom} : les retours`);
-  }
+cas("ce qui est barré est exactement ce que la formule n'ouvre pas", () => {
+  const barre = (code: string) =>
+    lignesDeLaFormule(formule(code)!).filter((l) => l.manque).map((l) => l.texte);
+  assert.deepEqual(barre("artisan"), [
+    "Le plan d’arrosage automatique",
+    "Le diagnostic végétal",
+    "Les fiches de chantier de vos entretiens",
+    "Les absences de vos équipes",
+    "Les retours d’intervention de vos salariés",
+    "Jusqu’à 5 personnes aux devis et aux factures",
+    "Autant de personnes que vous voulez aux devis et aux factures",
+  ]);
+  assert.deepEqual(barre("entreprise"), ["Autant de personnes que vous voulez aux devis et aux factures"]);
+  assert.deepEqual(barre("illimite"), []);
 });
 
-cas("la phrase de la fermeture nomme la formule qui ouvre, pour les deux fonctions", () => {
-  for (const f of ["absences", "retours"] as const) {
+cas("Illimité n'affiche pas « jusqu'à 5 » : ce serait lui reprocher d'avoir plus", () => {
+  const textes = lignesDeLaFormule(formule("illimite")!).map((l) => l.texte);
+  assert.ok(!textes.some((t) => t.startsWith("Jusqu’à 5")));
+});
+
+cas("la phrase de la fermeture nomme la formule qui ouvre, pour chaque fonction", () => {
+  for (const f of FONCTIONS) {
     const { titre, detail } = phraseDeLaFermeture(f);
     // L'espace est INSÉCABLE dans le titre : le « » ne doit jamais partir seul à la ligne.
     assert.match(titre, /« Entreprise »/);

@@ -2,6 +2,7 @@
 
 import { getCurrentCtx } from "@/server/session-ctx";
 import { estProprietaire } from "@/server/autorisation";
+import { exigerFonction } from "@/server/garde-action";
 import { PHRASE_REFUS } from "@/lib/prestations-entretien";
 import {
   ajouterPrestation,
@@ -29,6 +30,9 @@ export type Resultat = { ok: true } | { ok: false; phrase: string };
 async function contexteAutorise() {
   const ctx = await getCurrentCtx();
   if (!(await estProprietaire(ctx))) return null;
+  // La fiche de chantier est un outil d'« Entreprise » (24 septembre 2026) :
+  // composer une fiche qu'on ne peut pas ouvrir n'a pas de sens.
+  await exigerFonction(ctx, "fiche-chantier", "composer sa fiche d'entretien");
   return ctx;
 }
 

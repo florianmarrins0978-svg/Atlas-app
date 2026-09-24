@@ -1,20 +1,16 @@
 # Prochaines tâches
 
-## LES NOUVEAUX PRIX : CODE ET CONDITIONS GÉNÉRALES PARTENT ENSEMBLE (24 septembre 2026)
+## LES NOUVEAUX PRIX : CODÉS, EN ATTENTE DE LA BATTERIE (24 septembre 2026)
 
-La version 3 des CGU est prête sur la branche `claude/subscription-breakdown-rcv5i7`
-(39 € et 159 €, Artisan sans les trois outils de paysage). **Elle ne va sur
-`main` qu'avec le code**, dans le même lot : `src/lib/abonnements.ts` (prix,
-`FonctionReservee` étendue à l'arrosage, au diagnostic et à la fiche de
-chantier, `COMMUN` sans le plan d'arrosage), la fermeture à l'écran Paysage et
-côté serveur (`exigerFonction`), et `test-abonnements.ts` repointé sur la
-planche `appli/abonnements-ce-qui-manque.html`. La ligne « Vos salariés au planning, sans
-supplément » devient « Toute votre équipe a accès à l’application », ses mots :
-sa remarque, *« ça veut rien dire »*. Et partout « vos gars » devient « vos
-salariés » (retours d'intervention, accroche d'Entreprise, qui devient « Accès
-illimité à tous les outils, jusqu’à cinq personnes qui facturent. », ses mots). Niveau 3 (argent) : batterie
-entière, à annoncer au patron avant de la lancer. Publier la version 3 fait
-réaccepter les conditions à chaque compte à sa prochaine connexion.
+Sur la branche `claude/subscription-breakdown-rcv5i7`, prêts : 39 €, 59 €,
+159 € ; Artisan sans le plan d'arrosage, le diagnostic végétal ni la fiche de
+chantier (les fiches de sécurité restent ouvertes, sa réponse) ; ce qu'une
+formule n'ouvre pas s'affiche barré sur l'écran Abonnement ; les conditions
+générales version 3 disent la même chose. **Niveau 3 (argent) : la batterie
+entière avant `main`**, et il a demandé de ne pas la lancer tant qu'il ne l'a
+pas dit. À lui annoncer avant de la jouer. Publier fait réaccepter les
+conditions à chaque compte à sa prochaine connexion.
+
 ## ⏳ MOT DE PASSE OUBLIÉ : AUCUN MOYEN DE RENTRER (24 septembre 2026)
 
 Sa question : *« si un utilisateur a oublié son mot de passe il ne pourra

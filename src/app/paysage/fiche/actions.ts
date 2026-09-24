@@ -2,7 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { exigerEcran } from "@/server/garde-action";
+import { exigerEcran, exigerFonction } from "@/server/garde-action";
 import { getCurrentCtx } from "@/server/session-ctx";
 import {
   brouillonVierge,
@@ -47,6 +47,7 @@ export type Resultat = { ok: true } | { ok: false; phrase: string };
 export async function ouvrirFicheAction(jour: string): Promise<Resultat> {
   const ctx = await getCurrentCtx();
   await exigerEcran(ctx, "/paysage", "ouvrir une fiche d'entretien");
+  await exigerFonction(ctx, "fiche-chantier", "ouvrir une fiche d'entretien");
 
   const enCours = await brouillonVierge(ctx, jour);
   if (enCours) redirect(`/paysage/fiche/${enCours}`);
@@ -64,6 +65,7 @@ export async function cocherLigneAction(
 ): Promise<Resultat> {
   const ctx = await getCurrentCtx();
   await exigerEcran(ctx, "/paysage", "cocher une prestation faite");
+  await exigerFonction(ctx, "fiche-chantier", "cocher une prestation faite");
   const r = await cocherLigne(ctx, passageId, ligneId, faite);
   if (!r.ok) return { ok: false, phrase: PHRASE_REFUS_PASSAGE[r.refus] };
   return { ok: true };
@@ -75,6 +77,7 @@ export async function majPassageAction(
 ): Promise<Resultat> {
   const ctx = await getCurrentCtx();
   await exigerEcran(ctx, "/paysage", "mettre à jour un passage");
+  await exigerFonction(ctx, "fiche-chantier", "mettre à jour un passage");
   const r = await majPassage(ctx, passageId, champs);
   if (!r.ok) return { ok: false, phrase: PHRASE_REFUS_PASSAGE[r.refus] };
   return { ok: true };
@@ -96,6 +99,7 @@ export async function nommerClientAction(
 > {
   const ctx = await getCurrentCtx();
   await exigerEcran(ctx, "/paysage", "nommer le client d'un passage");
+  await exigerFonction(ctx, "fiche-chantier", "nommer le client d'un passage");
   const r = await nommerClient(ctx, passageId, clientId);
   if (!r.ok) return { ok: false, phrase: PHRASE_REFUS_PASSAGE[r.refus] };
   revalidatePath(`/paysage/fiche/${passageId}`);
@@ -116,6 +120,7 @@ export async function nommerClientAction(
 export async function supprimerFicheAction(passageId: string): Promise<Resultat> {
   const ctx = await getCurrentCtx();
   await exigerEcran(ctx, "/paysage", "supprimer un passage d'entretien");
+  await exigerFonction(ctx, "fiche-chantier", "supprimer un passage d'entretien");
   const r = await supprimerPassage(ctx, passageId);
   if (!r.ok) return { ok: false, phrase: PHRASE_REFUS_PASSAGE[r.refus] };
   revalidatePath("/paysage/fiche");
@@ -134,6 +139,7 @@ export async function envoyerFicheAction(
 ): Promise<{ ok: true; lien: string } | { ok: false; phrase: string }> {
   const ctx = await getCurrentCtx();
   await exigerEcran(ctx, "/paysage", "envoyer le retour d'intervention au client");
+  await exigerFonction(ctx, "fiche-chantier", "envoyer le retour d'intervention au client");
   const r = await figerPassage(ctx, passageId);
   if (!r.ok) return { ok: false, phrase: r.phrase };
   revalidatePath("/paysage/fiche");
