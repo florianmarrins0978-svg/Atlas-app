@@ -243,6 +243,12 @@ const OUVERT_A_LA_FACTURATION = [
   "/reglages",
   "/documents-legaux",
   "/verifier-email",
+  // La visionneuse, où s'ouvre la facture qu'elle émet (« Voir la facture en
+  // PDF ») et, depuis le 24 septembre 2026, celle d'une ligne de Ma TVA. Elle
+  // ne montre rien par elle-même : le fichier qu'on lui passe reste gardé par
+  // sa propre route, `/api/factures` ci-dessous. Fermée, l'appui menait à un
+  // refus sur un document qu'elle a le droit de lire.
+  "/documents/pdf",
   // Les documents et pièces jointes du cycle. Le PDF du devis ET celui de la
   // facture : elle envoie les deux.
   "/api/chantiers",

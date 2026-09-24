@@ -8,7 +8,7 @@ import PrimaryButton from "@/components/atlas/PrimaryButton";
 import NumeroDeDocument from "@/components/atlas/NumeroDeDocument";
 import BoutonTelechargerDocument from "@/components/atlas/BoutonTelechargerDocument";
 import { jourLisible } from "@/lib/jour";
-import { adresseDeLaVisionneuse } from "@/lib/visionneuse-pdf";
+import { visionneuseDeLaFacture } from "@/lib/visionneuse-pdf";
 import { composerMessageFacture, lienTransmission, type CanalClient } from "@/lib/message-client";
 import { useRetourDeMessagerie, marquerDepartMessagerie } from "@/lib/depart-messagerie";
 import { ouvrirAdresse } from "@/lib/ouvrir-messagerie";
@@ -691,7 +691,7 @@ export default function FactureClient({
             flèche ; le fichier reste servi par la même route
             (`src/lib/visionneuse-pdf.ts`). */}
         <Link
-          href={adresseDeLaVisionneuse(`/api/factures/${initialFacture.id}/pdf`, { surtitre: "Facture", titre: initialFacture.numeroCommercial })}
+          href={visionneuseDeLaFacture(initialFacture)}
           data-atlas="voir-facture"
           className="mt-4 block text-center text-[14px] font-medium underline underline-offset-4"
           style={{ color: colors.rust }}

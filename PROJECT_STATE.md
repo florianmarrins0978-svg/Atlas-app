@@ -5,6 +5,13 @@
 
 ---
 
+## CODÉ, PAS SUR `main` : OUVRIR LA FACTURE DEPUIS MA TVA (24 septembre 2026)
+
+Un appui sur la zone du client, en attente comme au relevé, ouvre le PDF dans
+la visionneuse ; la flèche ramène à la même hauteur. La visionneuse s'ouvre
+aussi au rôle Facturation. Branche `claude/invoice-pdf-display-0pugox`, batterie
+de niveau 3 à jouer avant `main` (`TODO.md`).
+
 ## FAIT : LA FLÈCHE RETOUR DE LA FICHE CLIENT GARDE LA SAISIE (22 septembre 2026)
 
 *« Je remplis la fiche client, je fais retour, mais elle n'apparaît plus dans
