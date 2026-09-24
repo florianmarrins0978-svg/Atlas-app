@@ -9382,6 +9382,11 @@ impayé ne sont pas la même chose :
 Ce qu'il a décrit — un client qui refuse de payer — relève du **second**. Bâtir
 seulement l'avoir, c'est lui donner un geste qui le désarme, sans avertissement.
 
+**LES TROIS PLANCHES** (sa demande : *« trois planches séparées »*) :
+`appli/avoir.html`, `appli/il-ne-paiera-pas.html`, `appli/mise-en-demeure.html`,
+sur un seul moteur (`appli/facture-impayee.js` et `.css`) ; `il-ne-paie-pas.html`
+n'est plus qu'un sommaire des trois, pour l'adresse qu'il a déjà.
+
 **CE QU'IL A DÉJÀ DIT, le 24 septembre 2026, sur `appli/il-ne-paie-pas.html`
 (ne pas le lui redemander) :**
 
@@ -9394,9 +9399,22 @@ seulement l'avoir, c'est lui donner un geste qui le désarme, sans avertissement
 - **un onglet « Avoirs » sur la fiche client**, à côté de Devis, Factures,
   Fiches, qui n'existe **que** chez un client à qui un avoir a été envoyé
   (*« ça risque d'être hyper rare »*) ;
-- **dans Terminés, toucher la ligne ouvre un petit choix** : « La facture », « Je
-  fais un avoir », « Il ne me paiera pas » (aujourd'hui elle ouvre directement la
-  facture ; sa réponse : *« il faut pouvoir faire les deux »*) ;
+- **dans Terminés, toucher la ligne ouvre un volet à trois choix** : « La
+  facture », « Je fais un avoir », « Il ne me paiera pas ». « La facture » ouvre
+  la facture DÉFINITIVE, en entier (*« directement »* voulait dire cela : un
+  retrait du volet sur ce malentendu a été annulé, *« remets le volet avec les 3
+  choix »*). Le lien du bas de la facture mène aux mêmes réponses ;
+- **avoir partiel : il CHOISIT la ligne** (sa réponse « la B ») ; la TVA de
+  l'avoir est celle de cette ligne, le montant est plafonné à son TTC. Jamais de
+  répartition au prorata par Atlas ;
+- **la mise en demeure, oui**, titrée « Mise en demeure » (pas « de payer ») :
+  un bouton sur la facture non payée, une lettre remplie par Atlas sur le papier
+  de ses factures, à télécharger et envoyer en recommandé. Délai de huit jours
+  et intérêts au taux légal : l'usage, **non vérifié dans les textes**, à faire
+  relire avant de coder ;
+- sur l'avoir, les mots sont **« Total avoir TTC »**, **« Avoir »** et
+  **« Rectification »** pour le tableau du reste dû ; l'avoir se rouvre depuis
+  l'onglet Avoirs de la fiche client, avec son PDF ;
 - **une catégorie « Non payées » dans Terminés**, qui n'apparaît que tant qu'une
   facture y est rangée par « Il ne me paiera pas », et disparaît une fois vide ;
 - « Il vous a payé » : le moyen dans un **déroulant à chevron doré**, et **le
@@ -9439,10 +9457,6 @@ collé par lui depuis bofip.impots.gouv.fr (refusé à cet environnement).
 exactement le style de nos factures pour les transformer en avoir »*),
 recopié du PDF servi : un avoir **total** reprend chaque ligne de la facture en
 négatif, un avoir **partiel** tient en une ligne, son motif.
-**QUESTION OUVERTE, à lui poser avant de coder** : une facture à PLUSIEURS taux
-de TVA (10 % et 20 %) et un avoir partiel saisi en TTC. La loi veut le HT et la
-TVA de la réduction, donc taux par taux : répartir au prorata des bases, ou lui
-faire choisir les lignes visées ? La planche n'a qu'un taux.
 **La planche montre l'avoir complet depuis le 24 septembre** (sa réponse : *« il
 faut que ça soit comme la loi le demande »*) : facture visée avec sa date, les
 deux parties, la nature, un **motif obligatoire** (sans lui, « C'est bon » se
@@ -9451,8 +9465,6 @@ Le HT se déduit du TTC saisi, la TVA est la différence, pour que HT + TVA
 retombe au centime sur le TTC écrit. Le PDF reprendra l'en-tête de la facture
 (`document-commun.ts`).
 
-Reste ouvert : faut-il préparer une mise en demeure avant « Il ne me paiera
-pas » ?
 
 **Une seule réponse à attendre de lui : la 81 lui va-t-elle ?** Le choix
 d'arrangement et le choix de forme ont été retirés — c'était précisément la
