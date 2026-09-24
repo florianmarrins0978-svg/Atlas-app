@@ -142,7 +142,9 @@
              text-align:left;font-size:15px}
   #ligneCheque[hidden]{display:none}
   .regl .centre{text-align:center}
-  .deroulant .choisi{display:flex;align-items:center;gap:9px}
+  .deroulant .choisi{display:flex;align-items:center;gap:9px;min-width:0;text-align:right}
+  .deroulant .choisi .v{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:190px}
+  .bandeau button{font-size:15px;line-height:1.25;padding:10px 16px}
   .deroulant .chevron{flex:none;overflow:visible;color:var(--or);transition:transform .18s}
   .deroulant[aria-expanded="true"] .chevron{transform:rotate(180deg)}
   .bandeau{margin:6px 0 4px;border:1px solid var(--line);border-radius:8px;background:var(--cream);overflow:hidden}
@@ -172,6 +174,16 @@
   .ttc-grand{margin-top:6px;font:600 34px/1 ui-serif,Georgia,serif;color:var(--or)}
   .liens-pdf{margin-top:12px;display:flex;flex-direction:column;align-items:center;gap:10px;font-size:14px}
   .liens-pdf span{border-bottom:1px solid var(--ink)}
+  .ecran[data-e="termines"]{position:relative}
+  .voile{position:absolute;inset:0;z-index:6;background:rgba(28,28,26,.38);display:flex;align-items:flex-end}
+  .voile[hidden]{display:none}
+  .feuille-choix{width:100%;background:var(--card);border-radius:18px 18px 0 0;padding:18px 16px 22px;
+                 box-shadow:0 -10px 30px rgba(20,18,14,.18)}
+  .feuille-choix button{display:block;width:100%;min-height:54px;margin-top:8px;border:1px solid var(--line);
+                        border-radius:12px;background:var(--cream);cursor:pointer;
+                        font:400 19px/1 ui-serif,Georgia,serif;color:var(--ink);
+                        animation:appel 1.6s ease-in-out infinite}
+  .feuille-choix button.annuler{animation:none;border:0;background:none;font:500 14px/1 ui-sans-serif,sans-serif;color:var(--muted)}
   .nonpayees{display:flex;justify-content:space-between;align-items:center;width:calc(100% - 44px);
              margin:14px 22px 0;min-height:48px;padding:0 18px;border-radius:999px;cursor:pointer;
              border:1px solid var(--alerte);background:transparent;color:var(--alerte);font-size:14px}
@@ -240,6 +252,11 @@
   .p-apres th.g{color:#b98b47}
   .p-apres td{text-align:right;padding:5px 0;border-bottom:1px solid #e2ded3}
   .p-apres tr.du td{font-weight:700;border-top:1.5px solid #1c1c1a;border-bottom:0}
+  .lettre p{margin:10px 0 0;font-size:10px;line-height:1.55}
+  .lettre .dest{margin-top:26px;width:175px;font-size:10px;line-height:1.45}
+  .lettre .lieu{margin:0 0 16px;text-align:right;font-size:9.5px;line-height:1.5}
+  .lettre .p-titre{margin-bottom:12px}
+  .lettre .signe{margin-top:22px;text-align:right}
   .p-page{margin-top:26px;text-align:center;font-size:7.5px}
   .motif{display:block;margin-top:18px}
   .motif input{display:block;width:100%;margin-top:8px;border:0;border-bottom:1.5px solid var(--or);background:var(--rustTint);
@@ -284,10 +301,25 @@
     <div class="deux"><span class="capsule">Retours d'intervention</span><span class="capsule or">Créer une facture</span></div>
     <div class="moisnav"><span class="ch">‹</span>Octobre 2026<span class="ch eteint">›</span></div>
     <div class="compte">1 facturé</div>
-    <button type="button" class="fact cible" data-va="facture">
+    <button type="button" class="fact cible" data-va="choix">
       <span class="l1"><span>Taille de haie</span><span>1 440,00 €</span></span>
       <span class="l2">Facturé le 9 octobre, Facture n° 12</span>
     </button>
+    <!-- Sa réponse du 24 septembre : aujourd'hui la ligne ouvre la facture,
+         « il faut pouvoir faire les deux » : un petit choix, « la possibilité
+         d'envoyer un avoir ou d'arrêter une facture dans non payé ». Retiré
+         une heure sur un malentendu, remis sur sa correction : « remets le
+         volet avec les 3 choix ». « La facture » ouvre la facture définitive,
+         en entier : c'était cela, « directement ». -->
+    <div class="voile" id="voile" hidden>
+      <div class="feuille-choix">
+        <p class="caps" style="text-align:center;margin:0 0 6px">Taille de haie, M. Martin</p>
+        <button type="button" data-va="facture">La facture</button>
+        <button type="button" data-va="combien">Je fais un avoir</button>
+        <button type="button" data-va="perdue">Il ne me paiera pas</button>
+        <button type="button" class="annuler" data-va="termines">Annuler</button>
+      </div>
+    </div>
   </section>
 
   <!-- ─── 2. LA FACTURE ENVOYÉE, et le seul ajout : le lien du bas ──────── -->
@@ -326,6 +358,16 @@
     <div class="carte">
       <div class="calc">
         <div class="ligne"><span>Facture TTC</span><span class="v">1 440,00 €</span></div>
+        <!-- Sa réponse du 24 septembre, la B : l'avoir partiel porte sur une
+             ligne qu'il choisit, jamais réparti par Atlas. La TVA de l'avoir
+             est alors celle de CETTE ligne, et une facture à plusieurs taux
+             n'a plus de répartition à deviner. -->
+        <button type="button" class="ligne deroulant" id="portee" aria-expanded="false">
+          <span>Sur</span>
+          <span class="choisi"><span class="v" data-montre="porteeChoisie">Toute la facture</span>
+            <svg class="chevron" viewBox="0 0 16 10" width="16" height="10" aria-hidden="true"><path d="M2 2l6 6 6-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        </button>
+        <div class="bandeau" id="portees" hidden></div>
         <label class="ligne" for="montant"><span>Avoir TTC</span>
           <span class="saisie"><input id="montant" inputmode="decimal" autocomplete="off" placeholder="0,00" value="300"><span class="serif" style="font-size:19px">€</span></span></label>
       </div>
@@ -514,8 +556,43 @@
            du bouton qui existe déjà dans Ma TVA (EnAttenteDePaiement.tsx) :
            un même geste ne s'appelle pas de deux façons. -->
       <button type="button" class="vert cible" data-va="paye" style="width:100%;font-size:20px">J'ai reçu le paiement</button>
+      <!-- Sa réponse du 24 septembre : « pour la mise en demeure, on peut la
+           faire, c'est bien ». Elle vit sur la facture non payée : il peut
+           toujours réclamer, c'est ce que « Il ne me paiera pas » préserve. -->
+      <button type="button" class="contour cible" data-va="mise" style="width:100%">Mise en demeure</button>
     </div>
     <div class="carte"><p class="arretee" style="margin:0">Facture F2026-000012 arrêtée.</p></div>
+  </section>
+
+  <!-- ─── LA MISE EN DEMEURE ─────────────────────────────────────────────
+       Le titre est « Mise en demeure » : sa remarque, « mise en demeure de
+       payer, ça veut rien dire ». L'expression est juste en droit, mais le
+       mot seul suffit, et il se lit mieux. Le papier est celui de ses
+       factures. RIEN N'EST ÉPROUVÉ EN DROIT ICI : le délai de huit jours et
+       les intérêts au taux légal sont l'usage, à faire relire avant de coder. -->
+  <section class="ecran" data-e="mise">
+    <div class="haut"><button type="button" class="fleche" data-va="factureB">‹</button><span></span></div>
+    <div class="titre"><h1>Mise en demeure</h1><p class="sur">F2026-000012, M. Martin</p></div>
+    <div class="papier"><div class="a4 lettre">
+      <div class="p-haut">
+        <div><div class="p-nom">Atelier Démo</div>
+          <div class="p-coord">10 rue des Artisans, Nantes<br>02 40 00 00 00<br>contact@atelier-demo.fr<br>SIRET 123 456 789 00012</div></div>
+        <div class="dest">M. Martin<br>5 rue des Lilas<br>Nantes</div>
+      </div>
+      <div class="p-filet"></div>
+      <div class="lieu">Nantes, le 27 octobre 2026<br><b>Lettre recommandée avec accusé de réception</b></div>
+      <div class="p-titre"><span>MISE EN DEMEURE</span><span class="p-num">Facture n° F2026-000012</span></div>
+      <p>Monsieur Martin,</p>
+      <p>Par facture n° F2026-000012 du 9 octobre 2026, je vous ai facturé les travaux réalisés au 5 rue des Lilas, à Nantes, pour un montant de <b>1 440,00 € TTC</b>, payable avant le 24 octobre 2026.</p>
+      <p>À ce jour, cette somme reste impayée.</p>
+      <p>Je vous mets en demeure de me régler la somme de <b>1 440,00 €</b> dans un délai de <b>huit jours</b> à compter de la réception de ce courrier.</p>
+      <p>Sans paiement dans ce délai, je saisirai le tribunal compétent par une procédure d'injonction de payer, sans autre avis. Les intérêts au taux légal courent à compter de la présente lettre.</p>
+      <p>Je vous prie d'agréer, Monsieur, mes salutations distinguées.</p>
+      <p class="signe">Atelier Démo</p>
+      <div class="p-page">Page 1 / 1</div>
+    </div></div>
+    <button type="button" class="vert cible">Télécharger la lettre</button>
+    <p class="au">À envoyer en recommandé avec accusé de réception.</p>
   </section>
 
   <!-- ─── 6B. IL A FINALEMENT PAYÉ ───────────────────────────────────────── -->
@@ -591,17 +668,17 @@
   </table>
   <p style="margin-top:12px">Tant qu'il n'a pas payé, votre TVA ne bouge pas : vous la payez quand le client paie, au relevé du mois où il paie.</p>
 
-  <h3>Une question pour vous</h3>
-  <div class="q">Avant « Il ne me paiera pas », voulez-vous qu'Atlas prépare une lettre de mise en demeure ?</div>
+
 </div>
 
 <script>
   // Le récit de chaque écran : ce qui se passe, et où poser le doigt.
   const RECIT = {
     termines: ["Vous êtes ici", "Nous sommes le <b>27 octobre</b>. M. Martin devait payer avant le 24 octobre, et Atlas vous l'a déjà signalé par une notification «&nbsp;Facture impayée&nbsp;». Vous ouvrez <b>Terminés</b>. <b>Touchez la ligne Taille de haie.</b>"],
-    facture:  ["Sa facture", "Toucher la ligne ouvre <b>directement la facture définitive</b>, comme aujourd'hui. <b>Descendez</b> : une seule chose s'ajoute, tout en bas, le lien doré. <b>Touchez «&nbsp;Mon client ne me paie pas&nbsp;».</b>"],
+    choix:    ["Le volet", "Toucher la ligne ouvre un volet à trois choix : <b>la facture</b>, <b>un avoir</b>, ou <b>il ne paiera pas</b>. <b>Essayez «&nbsp;Je fais un avoir&nbsp;»</b>, puis revenez avec «&nbsp;Recommencer&nbsp;» pour les deux autres."],
+    facture:  ["Sa facture", "«&nbsp;La facture&nbsp;» ouvre <b>la facture définitive</b>, en entier, comme aujourd'hui. <b>Descendez</b> : le lien doré du bas mène aux mêmes réponses que le volet. <b>Touchez «&nbsp;Mon client ne me paie pas&nbsp;».</b>"],
     question: ["La question", "Deux réponses, qui font l'inverse l'une de l'autre. <b>Essayez la première</b>, puis revenez avec «&nbsp;Recommencer&nbsp;» pour essayer la seconde."],
-    combien:  ["Première réponse : vous faites un avoir", "Vous faites un geste commercial, ou vous réglez un désaccord. <b>Écrivez le montant</b> que vous lui retirez : Atlas vous donne tout de suite le nouveau montant de la facture. Le <b>motif</b> est écrit sur l'avoir, la loi le demande. Puis <b>«&nbsp;C'est bon&nbsp;»</b>."],
+    combien:  ["Première réponse : vous faites un avoir", "Vous faites un geste commercial, ou vous réglez un désaccord. Choisissez <b>sur quelle ligne</b> porte l'avoir (ou toute la facture), puis <b>écrivez le montant</b> que vous lui retirez : Atlas vous donne tout de suite le nouveau montant de la facture. Le <b>motif</b> est écrit sur l'avoir, la loi le demande. Puis <b>«&nbsp;C'est bon&nbsp;»</b>."],
     fait:     ["L'avoir est prêt", "Atlas a fait le document, avec son propre numéro et <b>tout ce que la loi demande</b> : la facture corrigée et sa date, vos deux adresses, le motif, et le HT, la TVA et le TTC, de l'avoir et de ce qui reste dû. Il part <b>comme la facture</b>, par SMS ou par e-mail. <b>Touchez «&nbsp;Envoyer l'avoir&nbsp;».</b>"],
     factureA: ["La facture, après", "L'avoir apparaît dans les règlements, et le <b>Net à payer</b> descend. Plus de notification pour la somme enlevée. <b>Et pour le retrouver plus tard ?</b> Touchez <b>CHANTIERS</b> en bas, puis «&nbsp;Vos clients&nbsp;», puis M. Martin (ici, on saute la liste)."],
     ficheA:   ["Sa fiche client", "Un onglet <b>Avoirs</b> est apparu, à côté de Devis, Factures et Fiches. <b>Il n'existe que chez les clients à qui vous avez envoyé un avoir</b> : chez tous les autres, rien ne change. <b>Touchez l'avoir.</b>"],
@@ -609,21 +686,29 @@
     perdue:   ["Seconde réponse : il ne vous paiera pas", "Le client refuse ou a disparu. Vous gardez votre droit : <b>rien n'est annulé</b>. <b>Touchez «&nbsp;C'est noté&nbsp;».</b>"],
     termB:    ["Terminés, avec une catégorie de plus", "Une petite catégorie <b>Non payées</b> est apparue sous les deux boutons. <b>Elle n'existe que tant qu'une facture y est rangée</b> : sans facture non payée, vous ne la voyez jamais. <b>Touchez-la.</b>"],
     nonPayees:["Les factures non payées", "Toutes vos factures non payées, rangées ici. <b>Touchez celle de M. Martin.</b>"],
-    factureB: ["La facture, après", "La facture reste entière, marquée <b>Non payée</b>. Atlas ne vous la rappelle plus. Et <b>s'il paie un jour</b> ? Touchez «&nbsp;J'ai reçu le paiement&nbsp;»."],
+    factureB: ["La facture, après", "La facture reste entière, marquée <b>Non payée</b>. Atlas ne vous la rappelle plus. Deux gestes restent : la <b>mise en demeure</b>, et «&nbsp;J'ai reçu le paiement&nbsp;» s'il paie un jour. <b>Touchez «&nbsp;Mise en demeure&nbsp;».</b>"],
+    mise:     ["La mise en demeure", "La lettre officielle qui lui donne <b>huit jours pour payer</b>, avant le tribunal. Atlas la remplit seule : le client, la facture, le montant, les dates. Vous la téléchargez et l'envoyez en recommandé. Puis revenez à la facture («&nbsp;Retour&nbsp;») : <b>s'il paie</b>, touchez «&nbsp;J'ai reçu le paiement&nbsp;»."],
     paye:     ["Il a finalement payé", "Vous notez le paiement comme n'importe quel règlement. <b>Touchez «&nbsp;Moyen&nbsp;»</b> pour choisir chèque, virement, espèces ou carte. Pour un chèque, <b>son numéro</b> s'écrit dessous. Puis <b>«&nbsp;C'est noté&nbsp;»</b>."],
     factureB2:["La facture, payée", "Le «&nbsp;Non payée&nbsp;» disparaît : la facture est <b>acquittée</b>, le Net à payer tombe à zéro. <b>Touchez «&nbsp;Voir Ma TVA&nbsp;».</b>"],
     tvaB:     ["Elle entre au relevé de TVA", "Les <b>240,00 €</b> de TVA de cette facture entrent au relevé de <b>novembre</b>, le mois où il a payé, pas celui de la facture. C'est la règle de l'encaissement, et c'est déjà ce que fait votre relevé aujourd'hui. Et la catégorie <b>Non payées</b> a disparu : elle était vide. Fin de la seconde branche."],
   };
-  const ORDRE_A = ["termines","facture","question","combien","fait","factureA","ficheA","avoirVu"];
-  const ORDRE_B = ["termines","facture","question","perdue","termB","nonPayees","factureB","paye","factureB2","tvaB"];
+  const ORDRE_A = ["termines","choix","combien","fait","factureA","ficheA","avoirVu"];
+  const ORDRE_B = ["termines","choix","perdue","termB","nonPayees","factureB","mise","paye","factureB2","tvaB"];
+  const ORDRE_F = ["termines","choix","facture","question"];
   let chemin = ["termines"];
 
   const ecrans = [...document.querySelectorAll(".ecran")];
   const $ = (s) => document.querySelector(s);
 
   function montrer(cle){
-    ecrans.forEach((e) => e.classList.toggle("ouvert", e.dataset.e === cle));
-    const branche = ORDRE_B.includes(cle) && !ORDRE_A.includes(cle) ? ORDRE_B : ORDRE_A;
+    // Le volet s'ouvre PAR-DESSUS Terminés : l'écran reste, le volet monte.
+    const ecran = cle === "choix" ? "termines" : cle;
+    ecrans.forEach((e) => e.classList.toggle("ouvert", e.dataset.e === ecran));
+    $("#voile").hidden = cle !== "choix";
+    const commun = cle === "termines" || cle === "choix";
+    const branche = !commun && ORDRE_F.includes(cle) ? ORDRE_F
+      : !commun && ORDRE_B.includes(cle) ? ORDRE_B
+      : ORDRE_A;
     const rang = branche.indexOf(cle);
     $("#etape").textContent = "Étape " + (rang + 1) + " sur " + branche.length + ". " + RECIT[cle][0];
     $("#texte").innerHTML = RECIT[cle][1];
@@ -639,7 +724,7 @@
       copie.id = "papierCopie"; copie.querySelector("#a4").id = "a4Copie";
       $("#papierFiche").replaceChildren(copie);
     }
-    if (cle === "fait" || cle === "avoirVu") ajusterPapier();
+    if (cle === "fait" || cle === "avoirVu" || cle === "mise") ajusterPapier();
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
   function aller(cle){ chemin.push(cle); montrer(cle); }
@@ -672,7 +757,7 @@
     if ($("#montant").value.trim() === "") dire = "Écrivez le montant de l'avoir.";
     else if (c === null) dire = "Ce montant ne se lit pas. Exemple : 300 ou 250,50.";
     else if (c === 0) dire = "Un avoir de 0 € ne change rien.";
-    else if (c > TOTAL_C) dire = "C'est plus que la facture : " + euros(TOTAL) + " au plus.";
+    else if (c > plafond()) dire = portee < 0 ? "C'est plus que la facture : " + euros(TOTAL) + " au plus." : "C'est plus que cette ligne : " + euros(plafond() / 100) + " au plus.";
     else if ($("#motif").value.trim() === "") dire = "Écrivez le motif : la loi le demande sur l'avoir.";
     refus.hidden = !dire; refus.textContent = dire;
     $("#cestbon").disabled = !!dire;
@@ -720,6 +805,10 @@
   // Un avoir TOTAL reprend chaque ligne de la facture, en négatif ; un avoir
   // PARTIEL tient en une ligne, son motif. Dans les deux cas, les totaux se
   // lisent comme sur la facture.
+  // -1 : toute la facture ; sinon le rang de la ligne choisie.
+  let portee = -1;
+  const ttcLigne = (i) => Math.round(LIGNES[i][3] * Number(LIGNES[i][1]) * 1.2);
+  const plafond = () => (portee < 0 ? TOTAL_C : ttcLigne(portee));
   function remplirPapier(ttc, ht, tva){
     const total = ttc === TOTAL_C;
     const motif = $("#motif").value.trim();
@@ -727,7 +816,7 @@
       + "</td><td>" + signe(pu) + "</td><td>" + signe(htL) + "</td><td class=\"c\">20</td><td>" + signe(Math.round(htL * 1.2)) + "</td></tr>";
     $("#lignesAvoir").innerHTML = total
       ? LIGNES.map(([lib, q, u, pu]) => cellules(lib, q, u, pu, pu * Number(q))).join("")
-      : cellules(motif ? motif + ", sur la facture F2026-000012" : "Sur la facture F2026-000012", "1", "u", ht, ht);
+      : cellules((motif ? motif + ", sur " : "Sur ") + (portee < 0 ? "la facture F2026-000012" : LIGNES[portee][0].charAt(0).toLowerCase() + LIGNES[portee][0].slice(1)), "1", "u", ht, ht);
     $('[data-montre="motifLigne"]').textContent = motif ? "Motif : " + motif + "." : "";
     for (const [cle, v] of [["baseHT", ht], ["baseTVA", tva], ["totHT", ht], ["totTVA", tva], ["totTTC", ttc], ["apAvHT", ht], ["apAvTVA", tva], ["apAvTTC", ttc]])
       $('[data-montre="' + cle + '"]').textContent = signe(v);
@@ -750,6 +839,21 @@
 
   $("#montant").addEventListener("input", poser);
   $("#motif").addEventListener("input", poser);
+  $("#portees").innerHTML = ['<button type="button" data-i="-1" aria-pressed="true">Toute la facture</button>']
+    .concat(LIGNES.map(([lib], i) => '<button type="button" data-i="' + i + '" aria-pressed="false">' + lib + "</button>")).join("");
+  $("#portee").addEventListener("click", () => {
+    const ouvert = $("#portee").getAttribute("aria-expanded") === "true";
+    $("#portee").setAttribute("aria-expanded", String(!ouvert));
+    $("#portees").hidden = ouvert;
+  });
+  document.querySelectorAll("#portees button").forEach((b) => b.addEventListener("click", () => {
+    portee = Number(b.dataset.i);
+    document.querySelectorAll("#portees button").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+    $('[data-montre="porteeChoisie"]').textContent = portee < 0 ? "Toute la facture" : LIGNES[portee][0];
+    $("#portee").setAttribute("aria-expanded", "false");
+    $("#portees").hidden = true;
+    poser();
+  }));
   $("#versClients").addEventListener("click", () => { if ($("#versClients").classList.contains("cible")) aller("ficheA"); });
   document.querySelectorAll(".onglets-fiche button").forEach((b) => b.addEventListener("click", () => {
     document.querySelectorAll(".onglets-fiche button").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
