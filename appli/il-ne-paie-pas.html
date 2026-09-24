@@ -205,8 +205,22 @@
   .apercu{margin:18px 22px 0;background:#fff;border:1px solid #e3dfd6;border-radius:4px;padding:16px 16px;
           font-size:12px;color:#5a5a52}
   .apercu .t{font:600 13px/1 ui-sans-serif,sans-serif;letter-spacing:.2em;color:#1c1c1a}
-  .apercu .r{display:flex;justify-content:space-between;margin-top:8px}
-  .apercu .r b{color:#1c1c1a}
+  .apercu{font-size:11.5px;line-height:1.45;color:#3a3a35}
+  .apercu b{color:#1c1c1a}
+  .apercu .entete{display:flex;justify-content:space-between;gap:12px}
+  .apercu .num{margin-top:4px;font:600 12px/1.2 ui-sans-serif,sans-serif;color:#1c1c1a}
+  .apercu .qui{text-align:right;color:#5a5a52}
+  .apercu .bloc{margin-top:10px;padding-top:8px;border-top:1px solid #ebe8e1}
+  .apercu .lab{display:block;font:600 9px/1 ui-sans-serif,sans-serif;letter-spacing:.18em;text-transform:uppercase;color:#8a8578;margin-bottom:3px}
+  .apercu table{width:100%;margin-top:12px;border-collapse:collapse;font-size:11px}
+  .apercu th{font:600 9px/1 ui-sans-serif,sans-serif;letter-spacing:.08em;color:#8a8578;text-align:right;padding:4px 0}
+  .apercu td{text-align:right;padding:5px 0;border-top:1px solid #ebe8e1;white-space:nowrap}
+  .apercu td:first-child{text-align:left}
+  .apercu tr.du td{font-weight:700;color:#1c1c1a;border-top:1.5px solid #1c1c1a}
+  .apercu .pied{margin-top:8px;color:#8a8578;font-size:10px}
+  .motif{display:block;margin-top:18px}
+  .motif input{display:block;width:100%;margin-top:8px;border:0;border-bottom:1.5px solid var(--or);background:var(--rustTint);
+               border-radius:6px 6px 0 0;padding:10px 12px;font:400 16px/1.2 ui-sans-serif,sans-serif;color:var(--ink);outline:none}
 
   /* la barre du bas, comme dans l'application */
   .barre{position:sticky;bottom:0;z-index:4;display:flex;justify-content:space-around;
@@ -312,6 +326,10 @@
       </div>
       <div class="net"><b>Nouveau montant TTC</b><span class="m" data-montre="reste">1 140,00 €</span></div>
       <p class="refus" data-montre="refus" hidden></p>
+      <!-- La loi demande ce qui est corrigé (BOFiP BOI-TVA-DECLA-30-20-20-20,
+           §220 : toutes les mentions d'une facture, donc la désignation). -->
+      <label class="motif" for="motif"><span class="caps">Motif</span>
+        <input id="motif" autocomplete="off" value="Geste commercial" placeholder="Geste commercial"></label>
     </div>
     <button type="button" class="vert cible" data-va="fait" id="cestbon">C'est bon</button>
   </section>
@@ -321,12 +339,31 @@
     <div class="coche">✓</div>
     <h2>C'est fait</h2>
     <p data-montre="phrase">M. Martin ne doit plus que 1 140,00 €.</p>
+    <!-- L'AVOIR TEL QUE LA LOI LE DEMANDE — BOI-TVA-DECLA-30-20-20-20, lu à
+         la source le 24 septembre 2026 (texte collé par lui) :
+         §220 la facture visée, numéro ET date ; toutes les mentions d'une
+              facture, sauf le n° de TVA intracommunautaire et la mention
+              d'exonération, dont on peut se dispenser ;
+         §260 le HT de la réduction et sa TVA, les noms et adresses des deux
+              parties, le total HT et la TVA dus après la réduction.
+         La nature de l'opération entre dans les mentions de la réforme
+         (1er septembre 2027 pour les PME) : elle est posée d'avance.
+         L'en-tête de l'émetteur est celui de la facture (document-commun.ts). -->
     <div class="apercu">
-      <div class="t">AVOIR A2026-000001</div>
-      <div class="r"><span>Sur la facture F2026-000012</span></div>
-      <div class="r"><span>Facture TTC</span><span>1 440,00 €</span></div>
-      <div class="r"><span>Avoir TTC</span><span data-montre="avoir">- 300,00 €</span></div>
-      <div class="r" style="border-top:1px solid #e3dfd6;padding-top:8px"><span>Nouveau montant TTC</span><b data-montre="reste3">1 140,00 €</b></div>
+      <div class="entete">
+        <div><div class="t">AVOIR</div><div class="num">A2026-000001</div><div>Émis le 27 octobre 2026</div></div>
+        <div class="qui"><b>Votre entreprise</b><br>Votre adresse<br>SIRET, comme sur vos factures</div>
+      </div>
+      <div class="bloc"><span class="lab">Client</span><b>M. Martin</b><br>5 rue des Lilas</div>
+      <div class="bloc"><span class="lab">Rectifie</span>la facture <b>F2026-000012 du 9 octobre 2026</b><br>Prestation de services, taille de haie</div>
+      <div class="bloc"><span class="lab">Motif</span><span data-montre="motif">Geste commercial</span></div>
+      <table class="chiffres">
+        <tr><th></th><th>HT</th><th>TVA 20 %</th><th>TTC</th></tr>
+        <tr><td>Facture</td><td>1 200,00</td><td>240,00</td><td>1 440,00</td></tr>
+        <tr class="av"><td>Avoir</td><td data-montre="avHT">- 250,00</td><td data-montre="avTVA">- 50,00</td><td data-montre="avTTC">- 300,00</td></tr>
+        <tr class="du"><td>Reste dû</td><td data-montre="duHT">950,00</td><td data-montre="duTVA">190,00</td><td data-montre="duTTC">1 140,00</td></tr>
+      </table>
+      <div class="pied">Montants en euros.</div>
     </div>
     <div class="envoi"><span class="caps">Envoi</span><span class="onglets"><span class="la">SMS</span><span>E-mail</span></span></div>
     <div class="au">Au 06 79 98 45 14</div>
@@ -533,8 +570,8 @@
     choix:    ["Un petit choix", "Aujourd'hui, toucher la ligne ouvre directement la facture. Désormais un petit choix s'ouvre : <b>la facture</b>, <b>un avoir</b>, ou <b>il ne paiera pas</b>. <b>Essayez «&nbsp;Je fais un avoir&nbsp;»</b>, puis revenez avec «&nbsp;Recommencer&nbsp;» pour les deux autres."],
     facture:  ["Sa facture", "C'est l'écran d'aujourd'hui. <b>Une seule chose s'ajoute</b>, tout en bas : le lien doré. <b>Touchez «&nbsp;Mon client ne me paie pas&nbsp;».</b>"],
     question: ["La question", "Deux réponses, qui font l'inverse l'une de l'autre. <b>Essayez la première</b>, puis revenez avec «&nbsp;Recommencer&nbsp;» pour essayer la seconde."],
-    combien:  ["Première réponse : vous faites un avoir", "Vous faites un geste commercial, ou vous réglez un désaccord. <b>Écrivez le montant</b> que vous lui retirez : Atlas vous donne tout de suite le nouveau montant de la facture. Puis <b>«&nbsp;C'est bon&nbsp;»</b>."],
-    fait:     ["L'avoir est prêt", "Atlas a fait le document, avec son propre numéro. Il part <b>comme la facture</b>, par SMS ou par e-mail. <b>Touchez «&nbsp;Envoyer l'avoir&nbsp;».</b>"],
+    combien:  ["Première réponse : vous faites un avoir", "Vous faites un geste commercial, ou vous réglez un désaccord. <b>Écrivez le montant</b> que vous lui retirez : Atlas vous donne tout de suite le nouveau montant de la facture. Le <b>motif</b> est écrit sur l'avoir, la loi le demande. Puis <b>«&nbsp;C'est bon&nbsp;»</b>."],
+    fait:     ["L'avoir est prêt", "Atlas a fait le document, avec son propre numéro et <b>tout ce que la loi demande</b> : la facture corrigée et sa date, vos deux adresses, le motif, et le HT, la TVA et le TTC, de l'avoir et de ce qui reste dû. Il part <b>comme la facture</b>, par SMS ou par e-mail. <b>Touchez «&nbsp;Envoyer l'avoir&nbsp;».</b>"],
     factureA: ["La facture, après", "L'avoir apparaît dans les règlements, et le <b>Net à payer</b> descend. Plus de notification pour la somme enlevée. <b>Et pour le retrouver plus tard ?</b> Touchez <b>CHANTIERS</b> en bas, puis «&nbsp;Vos clients&nbsp;», puis M. Martin (ici, on saute la liste)."],
     ficheA:   ["Sa fiche client", "Un onglet <b>Avoirs</b> est apparu, à côté de Devis, Factures et Fiches. <b>Il n'existe que chez les clients à qui vous avez envoyé un avoir</b> : chez tous les autres, rien ne change. Touchez les onglets pour comparer. Fin de la première branche."],
     perdue:   ["Seconde réponse : il ne vous paiera pas", "Le client refuse ou a disparu. Vous gardez votre droit : <b>rien n'est annulé</b>. <b>Touchez «&nbsp;C'est noté&nbsp;».</b>"],
@@ -604,18 +641,34 @@
     else if (c === null) dire = "Ce montant ne se lit pas. Exemple : 300 ou 250,50.";
     else if (c === 0) dire = "Un avoir de 0 € ne change rien.";
     else if (c > TOTAL_C) dire = "C'est plus que la facture : " + euros(TOTAL) + " au plus.";
+    else if ($("#motif").value.trim() === "") dire = "Écrivez le motif : la loi le demande sur l'avoir.";
     refus.hidden = !dire; refus.textContent = dire;
     $("#cestbon").disabled = !!dire;
     const m = dire ? 0 : c / 100;
     const reste = (TOTAL_C - (dire ? 0 : c)) / 100;
     $('[data-montre="reste"]').textContent = euros(reste);
     $('[data-montre="reste2"]').textContent = euros(reste);
-    $('[data-montre="reste3"]').textContent = euros(reste);
-    $('[data-montre="avoir"]').textContent = "- " + euros(m);
+    const nombre = (c) => euros(c / 100).replace(" €", "");
+    const moins = (c) => (c === 0 ? "" : "- ") + nombre(c);
+    const avTTC = dire ? 0 : c;
+    // Le HT se déduit du TTC saisi ; la TVA est la différence, pour que
+    // HT + TVA retombe TOUJOURS sur le TTC écrit, au centime.
+    const avHT = Math.round(avTTC / 1.2);
+    const avTVA = avTTC - avHT;
+    $('[data-montre="avHT"]').textContent = moins(avHT);
+    $('[data-montre="avTVA"]').textContent = moins(avTVA);
+    $('[data-montre="avTTC"]').textContent = moins(avTTC);
+    $('[data-montre="duHT"]').textContent = nombre(120000 - avHT);
+    $('[data-montre="duTVA"]').textContent = nombre(24000 - avTVA);
+    $('[data-montre="duTTC"]').textContent = nombre(TOTAL_C - avTTC);
     $('[data-montre="moins"]').textContent = "- " + euros(m);
     $('[data-montre="phrase"]').textContent = reste === 0 ? "M. Martin ne doit plus rien." : "M. Martin ne doit plus que " + euros(reste) + ".";
   }
   $("#montant").addEventListener("input", poser);
+  $("#motif").addEventListener("input", () => {
+    $('[data-montre="motif"]').textContent = $("#motif").value.trim();
+    poser();
+  });
   $("#versClients").addEventListener("click", () => { if ($("#versClients").classList.contains("cible")) aller("ficheA"); });
   document.querySelectorAll(".onglets-fiche button").forEach((b) => b.addEventListener("click", () => {
     document.querySelectorAll(".onglets-fiche button").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));

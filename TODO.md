@@ -9411,9 +9411,13 @@ collé par lui depuis bofip.impots.gouv.fr (refusé à cet environnement).
   l'opération, option pour les débits, adresse de livraison ; 1er septembre
   2027 pour les PME selon des sites privés).
 
-La planche ne montre aujourd'hui que le numéro, la facture visée (sans sa date)
-et le TTC. Le PDF de l'avoir doit reprendre l'en-tête de la facture
-(`document-commun.ts`) et ajouter le reste.
+**La planche montre l'avoir complet depuis le 24 septembre** (sa réponse : *« il
+faut que ça soit comme la loi le demande »*) : facture visée avec sa date, les
+deux parties, la nature, un **motif obligatoire** (sans lui, « C'est bon » se
+refuse), et le tableau HT, TVA, TTC de la facture, de l'avoir et du reste dû.
+Le HT se déduit du TTC saisi, la TVA est la différence, pour que HT + TVA
+retombe au centime sur le TTC écrit. Le PDF reprendra l'en-tête de la facture
+(`document-commun.ts`).
 
 Reste ouvert : faut-il préparer une mise en demeure avant « Il ne me paiera
 pas » ?
