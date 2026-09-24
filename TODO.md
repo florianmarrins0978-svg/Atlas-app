@@ -9411,6 +9411,14 @@ collé par lui depuis bofip.impots.gouv.fr (refusé à cet environnement).
   l'opération, option pour les débits, adresse de livraison ; 1er septembre
   2027 pour les PME selon des sites privés).
 
+**L'avoir se présente sur le papier de ses factures** (sa demande : *« reprends
+exactement le style de nos factures pour les transformer en avoir »*),
+recopié du PDF servi : un avoir **total** reprend chaque ligne de la facture en
+négatif, un avoir **partiel** tient en une ligne, son motif.
+**QUESTION OUVERTE, à lui poser avant de coder** : une facture à PLUSIEURS taux
+de TVA (10 % et 20 %) et un avoir partiel saisi en TTC. La loi veut le HT et la
+TVA de la réduction, donc taux par taux : répartir au prorata des bases, ou lui
+faire choisir les lignes visées ? La planche n'a qu'un taux.
 **La planche montre l'avoir complet depuis le 24 septembre** (sa réponse : *« il
 faut que ça soit comme la loi le demande »*) : facture visée avec sa date, les
 deux parties, la nature, un **motif obligatoire** (sans lui, « C'est bon » se
