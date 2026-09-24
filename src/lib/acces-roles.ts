@@ -248,6 +248,10 @@ const OUVERT_A_LA_FACTURATION = [
   "/api/chantiers",
   "/api/devis",
   "/api/factures",
+  // **Le rapport d'entretien, relu depuis le dossier d'un client** — elle
+  // l'ouvrait déjà là, sur la page publique ; il se relit dans l'application
+  // depuis le 24 septembre 2026 (`rapport-dans-l-appli.ts`). Aucun montant.
+  "/documents/entretien",
   "/api/fichiers",
   "/api/notes-vocales",
   "/api/adresses",

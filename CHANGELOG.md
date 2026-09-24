@@ -8,6 +8,19 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-24
 
+### Le rapport d'entretien ouvert depuis l'application n'avait pas de retour
+
+Sa capture : *« j'ai aucun moyen de faire retour ! »*. « Rapports envoyés » et
+le dossier d'un client menaient à `/entretien/<jeton>`, la page que son CLIENT
+reçoit, qui n'a volontairement ni en-tête ni flèche ; le dossier l'ouvrait en
+plus dans un onglet neuf. Même panne que le PDF du 11 septembre, même réponse :
+un écran de l'application, `/documents/entretien/<jeton>`, avec sa flèche, qui
+montre la MÊME carte (`RapportEntretien`, sortie de la page du client pour ne
+pas être recopiée). « Partager » garde l'adresse publique. La facturation, qui
+ouvrait ce rapport depuis le dossier, garde cet accès (`acces-roles.ts`).
+Tenu par deux cas de `test-fiche-client-e2e.ts`, vus rouges avant la
+correction.
+
 ### Les maquettes ne se publiaient plus depuis le 23 septembre au soir
 
 Trois contrôles de `pages.yml` (`termines`, `boutons-verts`, `porte-plein-air`)

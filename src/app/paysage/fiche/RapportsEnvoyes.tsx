@@ -6,6 +6,7 @@ import { ChampRecherche } from "@/components/atlas/ChampRecherche";
 import FiltreDeDate from "@/components/atlas/FiltreDeDate";
 import { rapportsAMontrer } from "@/lib/passage-entretien";
 import { moisEnCours, porteeDeLaPeriode, titreDeLaPeriode } from "@/lib/periode";
+import { adresseDuRapportDansLAppli } from "@/lib/rapport-dans-l-appli";
 import LignePassage, { type PassageListe } from "./LignePassage";
 
 /**
@@ -56,10 +57,15 @@ export default function RapportsEnvoyes({ rapports }: { rapports: PassageListe[]
             // **Le rapport tel que le client l'a reçu**, et non la fiche à
             // cocher : sa demande du 22 septembre 2026, *« quand je clique sur
             // M. Bernard, je dois avoir le rapport envoyé au client »*. C'est
-            // l'adresse que porte déjà la fiche du client (`fiche-client.ts`).
+            // Relu DANS l'application, avec sa flèche : la page du client n'en a
+            // aucune (`rapport-dans-l-appli.ts`, 24 septembre 2026).
             // Un rapport envoyé a toujours son jeton (`figerPassage` les pose
             // ensemble) ; la fiche reste le repli d'une ligne qui n'en aurait pas.
-            <LignePassage key={p.id} passage={p} href={p.jeton ? `/entretien/${p.jeton}` : `/paysage/fiche/${p.id}`} />
+            <LignePassage
+              key={p.id}
+              passage={p}
+              href={p.jeton ? adresseDuRapportDansLAppli(p.jeton) : `/paysage/fiche/${p.id}`}
+            />
           ))}
         </div>
       )}
