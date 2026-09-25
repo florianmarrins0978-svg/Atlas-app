@@ -259,6 +259,41 @@ async function main() {
     assert.equal((await page.locator("[data-atlas='compte-photos-retour']").innerText()).trim(), "3/10");
   });
 
+  // ─── LE RETOUR ENVOYÉ SE MODIFIE — sa demande du 25 septembre 2026 ────────
+  //
+  // *« Juste en recliquant sur le bouton 1 retour envoyé, ça rouvre la même
+  // rubrique, je modifie, je renvoie, et ça modifie le retour envoyé, ça n'en
+  // envoie pas un deuxième ! »*
+  await cas("UN APPUI SUR « 2 retours envoyés » ROUVRE LE DERNIER, et le renvoyer le RÉÉCRIT", async () => {
+    await page.locator(ENVOYE).click();
+    await page.locator(ENVOYER).waitFor({ state: "visible", timeout: 20_000 });
+    await page.waitForFunction((s) => document.querySelector(s)?.textContent === "Renvoyer le retour", ENVOYER, {
+      timeout: 10_000,
+    });
+    await page.locator("[data-atlas='a-signaler']").fill("portail à reprendre");
+    await page.locator(ENVOYER).click();
+    await page.waitForFunction(
+      (s) => document.querySelector(s)?.getAttribute("aria-expanded") === "false",
+      ENVOYE,
+      { timeout: 25_000 }
+    );
+    const { rows: r } = await pool.query(
+      `SELECT a_signaler FROM retours_intervention WHERE chantier_id = $1 ORDER BY pose_le DESC`,
+      [chantierId]
+    );
+    assert.equal(r.length, 2, `${r.length} retours en base : la modification en a envoyé un de plus`);
+    assert.equal(r[0].a_signaler, "portail à reprendre", "le dernier retour n'a pas été réécrit");
+    assert.match((await page.locator(ENVOYE).innerText()).replace(/\n/g, " "), /2 retours envoyés/);
+
+    // Rouvert, il montre ce qui est parti, pas un écran vierge.
+    await page.locator(ENVOYE).click();
+    await page.waitForFunction(
+      (s) => (document.querySelector(s) as HTMLTextAreaElement | null)?.value === "portail à reprendre",
+      "[data-atlas='a-signaler']",
+      { timeout: 10_000 }
+    );
+  });
+
   await pool.end();
   await navigateur.close();
   console.log(`\n${echecs === 0 ? "✅" : "❌"} Travaux à faire — ${echecs} échec(s).`);

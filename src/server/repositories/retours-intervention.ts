@@ -1,8 +1,11 @@
-import { and, asc, count, desc, eq, inArray } from "drizzle-orm";
+import { and, asc, count, desc, eq, inArray, isNotNull, notExists, sql } from "drizzle-orm";
 import { withEntreprise } from "../db/with-entreprise";
+import type { DbOrTx } from "../db/client";
 import {
   chantiers,
   clients,
+  fichesSecuritePhotos,
+  fichiersAPurger,
   photos,
   retoursIntervention,
   retoursInterventionPhotos,
@@ -48,7 +51,8 @@ export type RetourAPoser = {
  *
  * **Chaque retour porte SES tâches et SES photos** : ce qu'il a coché ce
  * soir-là, avec les photos de ce soir-là — un retour est une preuve datée, et
- * une preuve ne se réécrit pas (sa décision du 8 septembre).
+ * une preuve ne se réécrit pas (sa décision du 8 septembre). Seul le DERNIER
+ * se corrige, sur sa demande du 25 septembre (`modifierLeDernierRetour`).
  */
 export async function poserLeRetour(
   ctx: Ctx,
@@ -66,40 +70,134 @@ export async function poserLeRetour(
       })
       .returning();
 
-    if (quoi.taches.length > 0) {
-      await tx.insert(retoursInterventionTaches).values(
-        quoi.taches.map((t, ordre) => ({
+    await poserLeContenu(tx, ctx, retour.id, chantierId, quoi);
+
+    return retour;
+  });
+}
+
+/**
+ * Les tâches et les photos d'un retour — une seule écriture pour l'envoi et
+ * pour la modification : deux façons de poser le même contenu finiraient par
+ * ne plus poser le même (`CLAUDE.md` §3).
+ */
+async function poserLeContenu(
+  tx: DbOrTx,
+  ctx: Ctx,
+  retourId: string,
+  chantierId: string,
+  quoi: RetourAPoser
+) {
+  if (quoi.taches.length > 0) {
+    await tx.insert(retoursInterventionTaches).values(
+      quoi.taches.map((t, ordre) => ({
+        entrepriseId: ctx.entrepriseId,
+        retourId,
+        libelle: t.libelle,
+        faite: t.faite,
+        ordre,
+      }))
+    );
+  }
+
+  if (quoi.photoIds.length > 0) {
+    // **Les photos sont relues, jamais crues sur parole** : une liste
+    // d'identifiants qui voyage est une liste qu'on peut changer en chemin, et
+    // la RLS ne dirait rien d'une photo d'une autre entreprise — elle la
+    // rendrait simplement introuvable, ce qui est exactement ce qu'on veut.
+    const siennes = await tx
+      .select({ id: photos.id })
+      .from(photos)
+      .where(and(eq(photos.chantierId, chantierId), inArray(photos.id, [...quoi.photoIds])));
+    if (siennes.length > 0) {
+      await tx.insert(retoursInterventionPhotos).values(
+        siennes.map((p, ordre) => ({
           entrepriseId: ctx.entrepriseId,
-          retourId: retour.id,
-          libelle: t.libelle,
-          faite: t.faite,
+          retourId,
+          photoId: p.id,
           ordre,
         }))
       );
     }
+  }
+}
 
-    if (quoi.photoIds.length > 0) {
-      // **Les photos sont relues, jamais crues sur parole** : une liste
-      // d'identifiants qui voyage est une liste qu'on peut changer en chemin, et
-      // la RLS ne dirait rien d'une photo d'une autre entreprise — elle la
-      // rendrait simplement introuvable, ce qui est exactement ce qu'on veut.
-      const siennes = await tx
-        .select({ id: photos.id })
+/**
+ * Modifier le retour déjà envoyé, au lieu d'en poser un second.
+ *
+ * **Sa demande du 25 septembre 2026 :** *« j'ai envoyé un retour sans faire
+ * exprès, il faut que je puisse le modifier […] et ça modifie le retour
+ * envoyé, ça n'en envoie pas un deuxième ! »*
+ *
+ * **Seul le DERNIER retour du chantier se modifie.** C'est celui que la fiche
+ * rouvre ; ceux des soirs d'avant restent la preuve de ce qui a été fait ce
+ * jour-là (sa décision du 8 septembre). Rend `false` sinon — ou quand le
+ * retour n'est pas de cette entreprise, ce que la RLS rend indiscernable.
+ *
+ * **Modifié, il redevient non lu** : le patron qui l'avait ouvert doit voir
+ * qu'il a changé, sinon il se fie à ce qu'il a lu avant.
+ */
+export async function modifierLeDernierRetour(
+  ctx: Ctx,
+  chantierId: string,
+  retourId: string,
+  quoi: RetourAPoser
+): Promise<boolean> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const [dernier] = await tx
+      .select({ id: retoursIntervention.id })
+      .from(retoursIntervention)
+      .where(eq(retoursIntervention.chantierId, chantierId))
+      .orderBy(desc(retoursIntervention.poseLe))
+      .limit(1);
+    if (!dernier || dernier.id !== retourId) return false;
+
+    const anciennes = await tx
+      .select({ photoId: retoursInterventionPhotos.photoId })
+      .from(retoursInterventionPhotos)
+      .where(eq(retoursInterventionPhotos.retourId, retourId));
+
+    await tx
+      .update(retoursIntervention)
+      .set({ aSignaler: quoi.aSignaler?.trim() || null })
+      .where(eq(retoursIntervention.id, retourId));
+    await tx.delete(retoursInterventionTaches).where(eq(retoursInterventionTaches.retourId, retourId));
+    await tx.delete(retoursInterventionPhotos).where(eq(retoursInterventionPhotos.retourId, retourId));
+    await tx.delete(retoursInterventionVus).where(eq(retoursInterventionVus.retourId, retourId));
+    await poserLeContenu(tx, ctx, retourId, chantierId, quoi);
+
+    // **Une photo supprimée du chantier restait gardée PARCE QUE ce retour la
+    // montrait** (`supprimerPhoto`). Décochée ici, plus rien ne la tient : son
+    // fichier part à la purge, sinon il resterait dans le rangement pour
+    // toujours, sans personne pour le voir.
+    const retirees = anciennes.map((a) => a.photoId).filter((id) => !quoi.photoIds.includes(id));
+    if (retirees.length > 0) {
+      const orphelines = await tx
+        .select({ storageKey: photos.storageKey })
         .from(photos)
-        .where(and(eq(photos.chantierId, chantierId), inArray(photos.id, [...quoi.photoIds])));
-      if (siennes.length > 0) {
-        await tx.insert(retoursInterventionPhotos).values(
-          siennes.map((p, ordre) => ({
-            entrepriseId: ctx.entrepriseId,
-            retourId: retour.id,
-            photoId: p.id,
-            ordre,
-          }))
+        .where(
+          and(
+            inArray(photos.id, retirees),
+            isNotNull(photos.deletedAt),
+            notExists(
+              tx
+                .select({ un: sql`1` })
+                .from(retoursInterventionPhotos)
+                .where(eq(retoursInterventionPhotos.photoId, photos.id))
+            ),
+            notExists(
+              tx
+                .select({ un: sql`1` })
+                .from(fichesSecuritePhotos)
+                .where(eq(fichesSecuritePhotos.photoId, photos.id))
+            )
+          )
         );
+      if (orphelines.length > 0) {
+        await tx.insert(fichiersAPurger).values(orphelines.map((o) => ({ storageKey: o.storageKey })));
       }
     }
-
-    return retour;
+    return true;
   });
 }
 

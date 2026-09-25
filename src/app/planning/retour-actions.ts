@@ -11,6 +11,7 @@ import { fonctionOuverte } from "@/lib/abonnements";
 import { listerPhotosHorsFicheDeSecurite, recevoirPhotoDeChantier } from "@/server/repositories/photos";
 import {
   dernierRetourDuChantier,
+  modifierLeDernierRetour,
   nombreDeRetoursDuChantier,
   poserLeRetour,
 } from "@/server/repositories/retours-intervention";
@@ -121,7 +122,7 @@ export async function etatDuRetourAction(chantierId: string) {
 export async function poserLeRetourAction(
   chantierId: string,
   quoi: { taches: TacheDuRetour[]; photoIds: string[]; aSignaler: string | null }
-): Promise<{ ok: true } | Refus> {
+): Promise<{ ok: true; id: string } | Refus> {
   const ctx = await garder(chantierId, "poser un retour d'intervention");
 
   // **Le seul plafond du retour : ses photos** (sa décision du 20 septembre
@@ -135,7 +136,7 @@ export async function poserLeRetourAction(
   // le patron attend encore se lit sur la fiche (`ceQuiManque`), il ne ferme
   // plus la porte. Les gardes qui restent sont celles qui comptent : le rôle,
   // la portée du chantier, l'entreprise.
-  await poserLeRetour(ctx, chantierId, {
+  const retour = await poserLeRetour(ctx, chantierId, {
     taches: quoi.taches,
     photoIds: quoi.photoIds,
     aSignaler: quoi.aSignaler,
@@ -143,6 +144,41 @@ export async function poserLeRetourAction(
 
   revalidatePath("/planning");
   // Le patron le lit dans Terminés : sans cela il verrait la liste d'hier.
+  revalidatePath("/termines");
+  revalidatePath("/termines/retours");
+  // Son identifiant revient à l'écran : c'est celui qu'un appui sur « 1 retour
+  // envoyé » modifiera, sans relire le chantier.
+  return { ok: true, id: retour.id };
+}
+
+/**
+ * Modifier le retour déjà envoyé — un appui sur « 1 retour envoyé ».
+ *
+ * **Sa demande du 25 septembre 2026 :** *« ça modifie le retour envoyé, ça
+ * n'en envoie pas un deuxième ! »* Mêmes gardes et même plafond que l'envoi :
+ * modifier, c'est écrire, et l'écran n'est pas la seule porte. Seul le dernier
+ * retour du chantier se modifie (`modifierLeDernierRetour`).
+ */
+export async function modifierLeRetourAction(
+  chantierId: string,
+  retourId: string,
+  quoi: { taches: TacheDuRetour[]; photoIds: string[]; aSignaler: string | null }
+): Promise<{ ok: true } | Refus> {
+  const ctx = await garder(chantierId, "modifier un retour d'intervention");
+
+  const tropDePhotos = refusDesPhotosDuRetour(quoi.photoIds.length);
+  if (tropDePhotos) return { ok: false, raison: tropDePhotos };
+
+  const fait = await modifierLeDernierRetour(ctx, chantierId, retourId, {
+    taches: quoi.taches,
+    photoIds: quoi.photoIds,
+    aSignaler: quoi.aSignaler,
+  });
+  // Un autre retour est parti entre-temps : c'est lui le dernier, et celui-ci
+  // est désormais la preuve d'un soir passé.
+  if (!fait) return { ok: false, raison: "Ce retour ne peut plus être modifié : un plus récent a été envoyé." };
+
+  revalidatePath("/planning");
   revalidatePath("/termines");
   revalidatePath("/termines/retours");
   return { ok: true };

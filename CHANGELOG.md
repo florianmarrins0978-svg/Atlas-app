@@ -6,6 +6,16 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-09-25
+
+### Le retour d'intervention envoyé se modifie
+
+*« J'ai envoyé un retour sans faire exprès. »* Un appui sur « 1 retour envoyé »
+rouvre la rubrique avec ce qui est parti (cases, photos, mot) ; « Renvoyer le
+retour » le réécrit au lieu d'en poser un second. Seul le dernier se modifie ;
+modifié, il redevient non lu pour le patron. Aucune migration.
+`ARCHITECTURE.md` §414.
+
 ## 2026-09-24
 
 ### L'avoir, « Il ne me paiera pas » et la mise en demeure (sur `main` le 25 septembre, avec les abonnements et « Facturé » en doré)

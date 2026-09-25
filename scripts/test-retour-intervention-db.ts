@@ -32,6 +32,8 @@ import * as chantiersRepo from "../src/server/repositories/chantiers";
 import * as photosRepo from "../src/server/repositories/photos";
 import {
   poserLeRetour,
+  modifierLeDernierRetour,
+  marquerLeRetourVu,
   dernierRetourDuChantier,
   nombreDeRetoursDuChantier,
   listerLesRetours,
@@ -222,6 +224,105 @@ async function main() {
     const avant = await nombreDeRetoursDuChantier(ctxA, chantierA.id);
     await poserLeRetour(ctxA, chantierA.id, { taches: [], photoIds: trop.slice(0, PHOTOS_MAX_PAR_RETOUR), aSignaler: null });
     assert.equal(await nombreDeRetoursDuChantier(ctxA, chantierA.id), avant + 1);
+  });
+
+  // ═══ MODIFIER LE RETOUR ENVOYÉ — sa demande du 25 septembre 2026 ═══════════
+  //
+  // *« J'ai envoyé un retour sans faire exprès, il faut que je puisse le
+  // modifier […] et ça modifie le retour envoyé, ça n'en envoie pas un
+  // deuxième ! »* Le compte ne bouge pas, le contenu change, et seul le
+  // DERNIER se modifie : un retour de la semaine dernière reste la preuve de
+  // ce soir-là.
+  await essai("modifier le dernier retour le RÉÉCRIT, il n'en crée pas un second", async () => {
+    const chantier = await chantiersRepo.creerChantier(ctxA, { nom: "Pagnol" });
+    const ajout = await photosRepo.ajouterPhoto(ctxA, chantier.id, {
+      storageKey: `chantiers/${chantier.id}/photos/modif.jpg`,
+      mimeType: "image/jpeg",
+      tailleOctets: 10,
+      checksum: "m".repeat(64),
+    });
+    assert.ok(ajout.ok, "la photo du décor a été refusée");
+    await poserLeRetour(ctxA, chantier.id, {
+      taches: [{ libelle: "Tonte", faite: false }, { libelle: "Taille", faite: false }],
+      photoIds: [],
+      aSignaler: null,
+    });
+    const avant = await dernierRetourDuChantier(ctxA, chantier.id);
+    assert.ok(avant);
+    // Le patron l'avait déjà ouvert : modifié, il doit le revoir.
+    await marquerLeRetourVu(ctxA, avant.id);
+    const nonLusAvant = await compterLesRetours(ctxA);
+
+    const fait = await modifierLeDernierRetour(ctxA, chantier.id, avant.id, {
+      taches: [{ libelle: "Tonte", faite: true }, { libelle: "Taille", faite: false }],
+      photoIds: [ajout.photo.id],
+      aSignaler: "  portail cassé  ",
+    });
+    assert.equal(fait, true, "la modification a été refusée");
+    assert.equal(await nombreDeRetoursDuChantier(ctxA, chantier.id), 1, "la modification a créé un second retour");
+    const apres = await dernierRetourDuChantier(ctxA, chantier.id);
+    assert.equal(apres?.id, avant.id, "ce n'est plus le même retour");
+    assert.deepEqual(apres?.taches.map((t) => t.faite), [true, false]);
+    assert.equal(apres?.aSignaler, "portail cassé");
+    assert.deepEqual(apres?.photos.map((p) => p.id), [ajout.photo.id]);
+    assert.equal(await compterLesRetours(ctxA), nonLusAvant + 1, "le retour modifié ne redevient pas non lu");
+
+    // Et la photo retirée du retour se retire vraiment.
+    await modifierLeDernierRetour(ctxA, chantier.id, avant.id, {
+      taches: apres!.taches,
+      photoIds: [],
+      aSignaler: null,
+    });
+    const vide = await dernierRetourDuChantier(ctxA, chantier.id);
+    assert.equal(vide?.photos.length, 0, "la photo décochée est restée sur le retour");
+    assert.equal(vide?.aSignaler, null);
+  });
+
+  await essai("un retour qui n'est PAS le dernier ne se modifie pas", async () => {
+    const chantier = await chantiersRepo.creerChantier(ctxA, { nom: "Deux soirs" });
+    await poserLeRetour(ctxA, chantier.id, { taches: [{ libelle: "Soir 1", faite: true }], photoIds: [], aSignaler: null });
+    const soir1 = await dernierRetourDuChantier(ctxA, chantier.id);
+    // `pose_le` départage : on laisse passer l'horloge.
+    await new Promise((r) => setTimeout(r, 20));
+    await poserLeRetour(ctxA, chantier.id, { taches: [{ libelle: "Soir 2", faite: true }], photoIds: [], aSignaler: null });
+    const fait = await modifierLeDernierRetour(ctxA, chantier.id, soir1!.id, {
+      taches: [{ libelle: "Soir 1", faite: false }],
+      photoIds: [],
+      aSignaler: "réécrit",
+    });
+    assert.equal(fait, false, "le retour d'hier a été réécrit");
+    const liste = (await listerLesRetours(ctxA)).filter((r) => r.chantierNom === "Deux soirs");
+    assert.equal(liste.length, 2);
+    assert.ok(!liste.some((r) => r.aSignaler === "réécrit"));
+  });
+
+  await essai("le retour d'une AUTRE entreprise ne se modifie pas", async () => {
+    const chezB = await dernierRetourDuChantier(ctxB, chantierB.id);
+    assert.ok(chezB);
+    const fait = await modifierLeDernierRetour(ctxA, chantierB.id, chezB.id, {
+      taches: [],
+      photoIds: [],
+      aSignaler: "intrus",
+    });
+    assert.equal(fait, false);
+    assert.equal((await dernierRetourDuChantier(ctxB, chantierB.id))?.aSignaler, null);
+  });
+
+  await essai("une photo supprimée puis retirée du retour part enfin à la purge", async () => {
+    const chantier = await chantiersRepo.creerChantier(ctxA, { nom: "Purge" });
+    const ajout = await photosRepo.ajouterPhoto(ctxA, chantier.id, {
+      storageKey: `chantiers/${chantier.id}/photos/purge.jpg`,
+      mimeType: "image/jpeg",
+      tailleOctets: 10,
+      checksum: "p".repeat(64),
+    });
+    assert.ok(ajout.ok);
+    await poserLeRetour(ctxA, chantier.id, { taches: [], photoIds: [ajout.photo.id], aSignaler: null });
+    const r = await dernierRetourDuChantier(ctxA, chantier.id);
+    await photosRepo.supprimerPhoto(ctxA, ajout.photo.id);
+    const avant = await combienEnPurge();
+    await modifierLeDernierRetour(ctxA, chantier.id, r!.id, { taches: [], photoIds: [], aSignaler: null });
+    assert.equal(await combienEnPurge(), avant + 1, "le fichier que plus rien ne tient est resté hors de la purge");
   });
 
   await admin.end();

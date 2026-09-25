@@ -5,6 +5,12 @@
 
 ---
 
+## CODÉ, PAS SUR `main` : LE RETOUR ENVOYÉ SE MODIFIE (25 septembre 2026)
+
+Un appui sur « 1 retour envoyé » rouvre le dernier retour ; le renvoyer le
+réécrit, sans en créer un second. Branche `claude/edit-sent-returns-cx2ka1`,
+niveau 3 (rayon de 18 écrans). `ARCHITECTURE.md` §414.
+
 ## FAIT : MOT DE PASSE OUBLIÉ (24 septembre 2026)
 
 *« Il faut mettre cette fonction ! »* Lien sous le mot de passe, code par
