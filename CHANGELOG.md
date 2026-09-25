@@ -6,6 +6,19 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-09-25
+
+### L'avoir envoyé ramène à l'accueil, avec « Avoir transmis à … »
+
+Sa demande, capture de « C'est fait » à l'appui : *« une fois envoyé il faut
+revenir sur la page d'accueil et, pareil que pour le reste, une petite phrase
+s'affiche »*. Le bandeau savait déjà dire « Avoir transmis » et l'envoi
+marquait bien le départ ; mais le retour (`useRetourDeMessagerie`) n'était
+monté que par `FactureClient`, parent que l'écran de l'avoir n'a pas. Le
+composant d'envoi (`TransmettreLaFacture`) monte désormais lui-même le retour
+qu'il arme. Tenu par `test-avoir-et-non-payee-e2e.ts`, vu rouge avant la
+correction.
+
 ## 2026-09-24
 
 ### L'avoir, « Il ne me paiera pas » et la mise en demeure (sur `main` le 25 septembre, avec les abonnements et « Facturé » en doré)

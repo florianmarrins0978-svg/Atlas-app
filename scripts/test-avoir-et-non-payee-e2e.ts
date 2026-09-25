@@ -77,6 +77,7 @@ async function main() {
   const nomImpaye = `Impayee ${suffixe}`;
   const chantierAvoir = await facturePartie(nomAvoir);
   const chantierImpaye = await facturePartie(nomImpaye);
+  let adresseAvoirFait = "";
 
   const navigateur = await lancerNavigateur();
   const page = await (await navigateur.newContext({ viewport: { width: 390, height: 844 } })).newPage();
@@ -104,9 +105,40 @@ async function main() {
     assert.match(await page.locator('[data-atlas="avoir-nouveau"]').innerText(), /1\s340,00/);
     await page.click('[data-atlas="avoir-valider"]');
     await page.waitForSelector('[data-atlas="avoir-fait"]', { timeout: 30_000 });
+    adresseAvoirFait = page.url();
     await page.goto(`${BASE}/chantiers/${chantierAvoir}/facture`, { waitUntil: "networkidle" });
     assert.equal(await page.locator('[data-atlas="avoir-de-la-facture"]').count(), 1);
     assert.match(await page.locator('[data-atlas="net-a-payer"]').innerText(), /1\s340,00/);
+  });
+
+  // **Sa demande du 25 septembre 2026, capture de « C'est fait » à l'appui :**
+  // *« une fois envoyé il faut revenir sur la page d'accueil et, pareil que
+  // pour le reste, une petite phrase s'affiche »*. L'écran marquait le départ
+  // et ne montait pas le retour : il revenait sur « C'est fait », identique.
+  await cas("l'avoir envoyé, le retour de la messagerie ramène à l'accueil avec « Avoir transmis »", async () => {
+    assert.ok(adresseAvoirFait, "l'écran « C'est fait » n'a pas été atteint");
+    await page.goto(adresseAvoirFait, { waitUntil: "networkidle" });
+    const preparer = page.getByRole("button", { name: "Envoyer l'avoir au client" });
+    if (await preparer.count()) await preparer.click();
+    const capsule = page.locator('[data-atlas="transmission-sms"]');
+    await capsule.waitFor({ state: "visible", timeout: 15_000 });
+    // Le vrai appui, sans partir : `sms:` sortirait du navigateur. Le clic
+    // passe par le geste du bouton (qui marque le départ), la navigation non.
+    await capsule.evaluate((a) => {
+      a.addEventListener("click", (e) => e.preventDefault(), { once: true });
+      (a as HTMLElement).click();
+    });
+    await page.evaluate(() => {
+      Object.defineProperty(document, "visibilityState", { value: "hidden", configurable: true });
+      document.dispatchEvent(new Event("visibilitychange"));
+      Object.defineProperty(document, "visibilityState", { value: "visible", configurable: true });
+      document.dispatchEvent(new Event("visibilitychange"));
+    });
+    await page.waitForURL(`${BASE}/`, { timeout: 15_000 });
+    await page
+      .locator('[role="status"]')
+      .getByText(new RegExp(`Avoir transmis à .*${nomAvoir}`))
+      .waitFor({ state: "visible", timeout: 10_000 });
   });
 
   await cas("« Il ne me paiera pas » : la catégorie Non payées naît, et le paiement l'efface", async () => {
