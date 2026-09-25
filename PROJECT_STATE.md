@@ -5,6 +5,14 @@
 
 ---
 
+## CODÉ, PAS SUR `main` : MA TVA À LA CALCULETTE (25 septembre 2026)
+
+Le mot « TVA collectée » ou « TVA déductible » ouvre une page à colonnes :
+montant, taux, TVA, chacune avec son total, puis le récapitulatif par taux. Le
+chiffre copie toujours. Une facture à deux taux se lit en deux lignes. Branche
+`claude/tva-collecter-verification-qlli2x`, batterie de niveau 3 à jouer avant
+`main` (`TODO.md`). `ARCHITECTURE.md` §414.
+
 ## FAIT : MOT DE PASSE OUBLIÉ (24 septembre 2026)
 
 *« Il faut mettre cette fonction ! »* Lien sous le mot de passe, code par

@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, isNotNull, isNull, or, sql } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, isNotNull, isNull, or, sql } from "drizzle-orm";
 import Decimal from "decimal.js";
 import { withEntreprise } from "../db/with-entreprise";
 import { allureDesDocuments, formatNumeroDe } from "./entreprises";
@@ -15,6 +15,7 @@ import {
   parametresChiffrage,
   acomptesDevis,
   paiementsFacture,
+  avoirs,
 } from "../db/schema";
 import { conditionsDepuisEntreprise, type ConditionsLues } from "../../lib/conditions-documents";
 import type { AcompteDevis } from "../../lib/acomptes-devis";
@@ -50,6 +51,14 @@ import {
   porteUnAutreIban,
 } from "../../lib/modalites-paiement";
 import { avecCivilite, type CiviliteChoisie } from "../../lib/civilite";
+import {
+  categoriesDeLAvoir,
+  categoriesDeLaFacture,
+  retirerLesAvoirs,
+  ventilerParTaux,
+  type CategoriePiece,
+  type PartDuTaux,
+} from "../../lib/tva-par-taux";
 
 // Fin de chantier, facture et TVA — docs/AGENT.md §2.3.
 //
@@ -1649,6 +1658,81 @@ export async function relevesSousLesDeuxRegimes(
   return {
     retenu: assemblerReleve(avecPaiements, debut, fin, regime),
     autre: assemblerReleve(avecPaiements, debut, fin, oppose),
+  };
+}
+
+/** Une ligne du relevé, et ses parts par taux. */
+export type LigneReleveParTaux = LigneReleveTva & { parts: PartDuTaux[] };
+
+/**
+ * Le relevé de la période, chaque ligne découpée par taux — la page
+ * « TVA collectée » (`termines/tva/collectee`), sa planche du 25 septembre 2026.
+ *
+ * **Le relevé reste celui de `releveTvaCollectee`**, lu tel quel : les parts ne
+ * font que répartir chaque ligne entre les taux de sa pièce
+ * (`src/lib/tva-par-taux.ts`), et retombent au centime sur elle. Le total de
+ * cette page est donc, par construction, celui de Ma TVA.
+ *
+ * Les taux se lisent sur les LIGNES de la facture et de ses avoirs : le
+ * `tauxTva` de la ligne du relevé est la moyenne de la facture entière, et sur
+ * une facture qui mêle 10 % et 20 % ce n'est pas un taux.
+ */
+export async function releveTvaCollecteeParTaux(
+  ctx: Ctx,
+  debut: string,
+  fin: string
+): Promise<{ releve: ReleveTva; lignes: LigneReleveParTaux[] }> {
+  const releve = await releveTvaCollectee(ctx, debut, fin);
+  const ids = [...new Set(releve.lignes.map((l) => l.factureId))];
+  if (ids.length === 0) return { releve, lignes: [] };
+
+  const { pieces, avoirsLus } = await withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const [pieces, lignes, avoirsLus] = await Promise.all([
+      tx
+        .select({ id: factures.id, tauxTva: factures.tauxTva, reductionPourcent: factures.reductionPourcent })
+        .from(factures)
+        .where(inArray(factures.id, ids)),
+      tx
+        .select({ factureId: lignesFacture.factureId, montant: lignesFacture.montant, tauxTva: lignesFacture.tauxTva })
+        .from(lignesFacture)
+        .where(inArray(lignesFacture.factureId, ids)),
+      tx
+        .select({ factureId: avoirs.factureId, numero: avoirs.numero, totalTva: avoirs.totalTva, lignes: avoirs.lignes })
+        .from(avoirs)
+        .where(inArray(avoirs.factureId, ids)),
+    ]);
+    const lignesPar = new Map<string, { montant: string; tauxTva: string | null }[]>();
+    for (const l of lignes) lignesPar.set(l.factureId, [...(lignesPar.get(l.factureId) ?? []), l]);
+    return {
+      pieces: new Map(
+        pieces.map((f) => [f.id, categoriesDeLaFacture(lignesPar.get(f.id) ?? [], f.tauxTva, f.reductionPourcent)])
+      ),
+      avoirsLus,
+    };
+  });
+
+  const avoirsPar = new Map<string, { numero: string; categories: CategoriePiece[] }[]>();
+  for (const a of avoirsLus) {
+    const liste = avoirsPar.get(a.factureId) ?? [];
+    liste.push({ numero: a.numero, categories: categoriesDeLAvoir(a) });
+    avoirsPar.set(a.factureId, liste);
+  }
+
+  return {
+    releve,
+    lignes: releve.lignes.map((l) => {
+      const desAvoirs = avoirsPar.get(l.factureId) ?? [];
+      // Aux débits, une ligne d'avoir se répartit sur les taux de L'AVOIR ; aux
+      // encaissements, un règlement sur ce que la facture vaut après ses avoirs,
+      // comme `entreesDuReleve` le compte.
+      const categories =
+        l.motif === "avoir"
+          ? (desAvoirs.find((a) => a.numero === l.numeroCommercial)?.categories ?? [])
+          : l.motif === "paiement"
+            ? retirerLesAvoirs(pieces.get(l.factureId) ?? [], desAvoirs.map((a) => a.categories))
+            : (pieces.get(l.factureId) ?? []);
+      return { ...l, parts: ventilerParTaux({ tva: l.totalTva, ttc: l.totalTtc }, categories) };
+    }),
   };
 }
 

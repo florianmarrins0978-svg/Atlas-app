@@ -11,6 +11,17 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 
 ---
 
+## MA TVA À LA CALCULETTE — 25 septembre 2026
+
+| | |
+|---|---|
+| **les écrans** | `src/app/termines/tva/collectee/`, `deductible/`, le tableau commun `TableauCalculette.tsx` |
+| **la porte** | `LigneMontant` avec `lien` : le mot ouvre, le chiffre copie ; sans `lien`, la rangée entière copie |
+| **la règle** | `src/lib/tva-par-taux.ts` : répartit une ligne du relevé entre les taux de sa pièce, sans jamais changer un total |
+| **le dépôt** | `releveTvaCollecteeParTaux` (`factures.ts`), qui relit `releveTvaCollectee` et le découpe |
+| **les suites** | `test-tva-par-taux`, `test-tva-par-taux-db`, `test-tva-calculette-e2e` |
+| **le piège** | `LigneReleveTva.tauxTva` est une MOYENNE sur une facture mixte : ne jamais l'afficher comme un taux |
+
 ## MOT DE PASSE OUBLIÉ — 24 septembre 2026
 
 | | |

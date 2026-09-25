@@ -33370,3 +33370,25 @@ réclame moins que son dû, jamais plus. Le commentaire de
 `src/lib/mise-en-demeure.ts` dit encore « non vérifiés » : le corriger fait
 exiger la batterie (rayon de dix écrans), il suivra le prochain lot qui la
 joue.
+
+## §414 : Ma TVA à la calculette, et le taux moyen qu'il ne fallait pas afficher
+
+**Sa demande du 25 septembre 2026**, planche
+`appli/tva-collectee-a-la-calculette.html` (la A, chiffres centrés) : un appui
+sur le mot « TVA collectée » ou « TVA déductible » ouvre une page où chaque
+colonne s'additionne, pour vérifier l'appli la calculette à la main ; *« il
+faudrait savoir c'est une TVA à combien »*.
+
+| Décision | Pourquoi |
+|---|---|
+| une part par TAUX, lue sur les lignes de la facture (`categoriesDeLaFacture`, le calcul de l'émission) | `LigneReleveTva.tauxTva` vaut TVA ÷ HT de la facture entière : 18 % sur 400 € à 20 % et 100 € à 10 %. Un taux qui n'existe pas ne se vérifie pas |
+| la ligne du relevé se RÉPARTIT, elle ne se recalcule pas (`ventilerParTaux`) | le montant au prorata du TTC de chaque taux, la TVA au prorata de la TVA de chaque taux, le centime restant au plus gros : la somme retombe sur `entreesDuReleve`, donc sur Ma TVA |
+| un règlement se répartit sur la facture APRÈS ses avoirs (`retirerLesAvoirs`) ; une ligne d'avoir aux débits, sur les lignes de L'AVOIR | un avoir sur la ligne à 10 % ne laisse plus croire que le client paie du 10 % |
+| le total de TVA vient de Ma TVA (`releve.totalTva`, `totalTvaDeductible`), pas d'une addition de la page | un seul chiffre pour une seule question (`CLAUDE.md` §3) |
+| achat sans total ni taux : « non noté », et le total payé ne compte que ce qui est noté | un zéro silencieux rendrait un total juste à la calculette et faux sur les tickets |
+| `LigneMontant` prend un `lien` : le mot est un lien, le chiffre et son carré un bouton | sa retouche : *« la page doit s'ouvrir seulement si je clique sur le mot »*. Le repère reste sur la rangée, que les suites lisent en entier |
+| une seule pièce, `TableauCalculette`, pour les deux pages | deux tableaux finiraient par ne plus s'additionner de la même façon |
+
+**Réserve** : aux encaissements, un avoir émis après un acompte change les
+parts par taux de cet acompte (pas son total), comme il change déjà sa TVA
+(`TODO.md`).

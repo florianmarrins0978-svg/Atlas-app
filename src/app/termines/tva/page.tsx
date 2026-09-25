@@ -180,8 +180,23 @@ export default async function ReleveTvaPage({
 
         {/* ─── L'addition ───────────────────────────────────────────────── */}
         <section className="mt-[22px] px-6" aria-label="Le relevé de la période">
-          <LigneMontant libelle="TVA collectée" montant={enEuros(collectee)} marque="montant-collectee" />
-          <LigneMontant libelle="TVA déductible" montant={enEuros(deductible)} marque="montant-deductible" negatif />
+          {/* **Le mot ouvre la page à la calculette, le chiffre copie** — sa
+              planche du 25 septembre 2026 (`appli/tva-collectee-a-la-calculette.html`) :
+              chaque colonne s'y additionne, avec le taux de chaque ligne. */}
+          <LigneMontant
+            libelle="TVA collectée"
+            montant={enEuros(collectee)}
+            marque="montant-collectee"
+            lien={`/termines/tva/collectee?annee=${periode.annee}&t=${periode.numero}`}
+          />
+          <LigneMontant
+            libelle="TVA déductible"
+            montant={enEuros(deductible)}
+            marque="montant-deductible"
+            negatif
+            lien={`/termines/tva/deductible?annee=${periode.annee}&t=${periode.numero}`}
+
+          />
 
           <div className="mt-3 h-px" style={{ backgroundColor: colors.line }} aria-hidden="true" />
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { colors, font } from "@/lib/design-tokens";
 
 /**
@@ -43,6 +44,7 @@ export default function LigneMontant({
   marque,
   negatif = false,
   total = false,
+  lien,
 }: {
   libelle: string;
   /** Déjà mis en forme — « 1 620,00 € ». C'est ce texte-là qui est copié. */
@@ -53,6 +55,13 @@ export default function LigneMontant({
   negatif?: boolean;
   /** La ligne du total : deux fois plus grande, intitulé en or. */
   total?: boolean;
+  /**
+   * La page qu'ouvre le MOT, et le chiffre seul copie alors. Sa retouche du
+   * 25 septembre 2026 : *« la page doit s'ouvrir seulement si je clique sur le
+   * mot TVA déductible et collectée ; si on clique sur les chiffres à côté, ça
+   * doit copier comme ça le fait déjà »*. Sans lien, la rangée entière copie.
+   */
+  lien?: string;
 }) {
   const [dit, setDit] = useState<string | null>(null);
 
@@ -69,21 +78,16 @@ export default function LigneMontant({
     setTimeout(() => setDit(null), 1600);
   }
 
-  return (
-    <button
-      type="button"
-      onClick={copier}
-      data-atlas={marque}
-      aria-label={`Copier ${libelle.toLowerCase()}`}
-      className={`grid w-full items-baseline gap-x-2.5 text-left ${total ? "pt-[15px]" : "py-[11px]"}`}
-      style={{ gridTemplateColumns: "1fr auto 24px", minHeight: 48 }}
+  const intitule = (
+    <span
+      className="text-[9.5px] font-medium uppercase tracking-[0.28em]"
+      style={{ color: dit || total ? colors.or : colors.muted }}
     >
-      <span
-        className="text-[9.5px] font-medium uppercase tracking-[0.28em]"
-        style={{ color: dit || total ? colors.or : colors.muted }}
-      >
-        {dit ?? libelle}
-      </span>
+      {dit ?? libelle}
+    </span>
+  );
+  const chiffre = (
+    <>
       <span
         className="relative justify-self-end font-medium"
         style={{
@@ -125,6 +129,46 @@ export default function LigneMontant({
         <rect x="9" y="9" width="11" height="11" rx="2.4" />
         <path d="M15 5.6A2.6 2.6 0 0 0 12.4 3H6.6A2.6 2.6 0 0 0 4 5.6v5.8A2.6 2.6 0 0 0 6.6 14" strokeLinecap="round" />
       </svg>
+    </>
+  );
+  const rangee = `grid w-full items-baseline gap-x-2.5 text-left ${total ? "pt-[15px]" : "py-[11px]"}`;
+  const colonnes = { gridTemplateColumns: "1fr auto 24px", minHeight: 48 };
+
+  if (lien) {
+    // Deux cibles sur la même rangée : le mot à gauche ouvre, le chiffre et son
+    // carré à droite copient. Le repère reste sur la rangée, que les suites
+    // lisent en entier (`test-achat-hors-periode-e2e.ts`).
+    return (
+      <div data-atlas={marque} className={rangee} style={colonnes}>
+        <Link href={lien} data-atlas={`${marque}-ouvrir`} // La cible s'étend sur toute la hauteur de la rangée : un mot de dix
+          // pixels ne se vise pas au pouce.
+          className="-my-[11px] block py-[11px]">
+          {intitule}
+        </Link>
+        <button
+          type="button"
+          onClick={copier}
+          aria-label={`Copier ${libelle.toLowerCase()}`}
+          className="col-span-2 grid items-baseline gap-x-2.5"
+          style={{ gridTemplateColumns: "auto 24px" }}
+        >
+          {chiffre}
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={copier}
+      data-atlas={marque}
+      aria-label={`Copier ${libelle.toLowerCase()}`}
+      className={rangee}
+      style={colonnes}
+    >
+      {intitule}
+      {chiffre}
     </button>
   );
 }

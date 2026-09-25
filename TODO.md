@@ -36,6 +36,28 @@ au même écran sans rien envoyer ; essais et renvois limités comme à la
 création ; après le changement, `deconnecterPartout` ; un compte
 Google/Apple sans mot de passe en reçoit un.
 
+## MA TVA À LA CALCULETTE : CODÉ, PAS ENCORE SUR `main` (25 septembre 2026)
+
+Codé sur `claude/tva-collecter-verification-qlli2x` (planche
+`appli/tva-collectee-a-la-calculette.html`, sa A). Niveau **3** (argent) : il a
+demandé qu'**aucune batterie** ne soit lancée, donc
+`npm run verifier:avant-livraison` reste à jouer avant `main`, en le prévenant.
+
+Joués ici au vert : types, lint, `test-tva-par-taux`, `test-tva-par-taux-db`
+(vu rouge sur un découpage saboté), `test-tva-calculette-e2e` (vu rouge sans le
+lien), `test-achat-hors-periode-e2e`, `test-tva-en-tete-e2e`,
+`test-exigibilite-tva`, code mort, couches, pansements, tirets, flèches, chartes.
+
+**Rouge préexistant, pas de ce lot** : `test-tva-au-paiement-e2e`, 8 cas sur 8,
+rouge à l'identique sur `origin/main` (`5dcd912`) rejoué dans une copie propre :
+l'envoi du devis mène à `/chantiers/<id>/export` et non plus à l'accueil
+qu'elle attend (`chantierRealise`). À comprendre avant de croire la suite.
+
+**Réserve connue, non traitée** : aux encaissements, un avoir émis APRÈS un
+acompte déplace les parts par taux de cet acompte déjà déclaré (même réserve
+que la TVA de l'acompte, plus bas dans ce fichier). Les totaux, eux, ne
+bougent pas.
+
 ## FAIT : MA TVA, OUVRIR LA FACTURE DEPUIS LE CLIENT, SUR `main` (24 septembre 2026)
 
 **Parti sur `main` avec la batterie commune d'une autre session** (`dad7ff5`, « Réunir le lot invoice-pdf-display-0pugox »). Ce qui suit est l'état au moment du codage.

@@ -6,6 +6,23 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-09-25
+
+### Ma TVA à la calculette : le mot ouvre la page, le chiffre copie (branche `claude/tva-collecter-verification-qlli2x`, pas encore sur `main`)
+
+Planche `appli/tva-collectee-a-la-calculette.html`, sa A. Un appui sur « TVA
+collectée » ou « TVA déductible » ouvre une page où le montant et la TVA de
+chaque ligne s'additionnent en colonnes, avec le **taux** de chaque ligne et un
+récapitulatif par taux ; un appui sur le chiffre le copie, comme avant.
+
+**Ce que ça évite** : le relevé portait par facture un taux MOYEN (TVA ÷ HT de
+la facture entière), 18 % sur une facture qui mêle 10 % et 20 %. Affiché tel
+quel, il n'aurait rien permis de vérifier. Une facture mixte se lit désormais en
+une ligne par taux, lue sur ses lignes et ses avoirs, et la somme retombe au
+centime sur Ma TVA (`src/lib/tva-par-taux.ts`). Un achat sans total ni taux se
+lit « non noté », jamais zéro. `ARCHITECTURE.md` §414.
+
+---
 ## 2026-09-24
 
 ### L'avoir, « Il ne me paiera pas » et la mise en demeure (sur `main` le 25 septembre, avec les abonnements et « Facturé » en doré)
