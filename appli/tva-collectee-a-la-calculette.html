@@ -58,6 +58,11 @@
   Un achat sans taux (le taux d'un ticket est facultatif, `achatsTva.tauxTva`)
   dit « non noté » et forme son propre groupe au récapitulatif.
 
+  SA RETOUCHE, même jour : « la page doit s'ouvrir seulement si je clique sur
+  le mot TVA déductible et collectée ; si on clique sur les chiffres à côté,
+  ça doit copier comme ça le fait déjà ». Aujourd'hui la rangée ENTIÈRE est
+  le bouton de copie (`LigneMontant.tsx`) : il faudra la couper en deux.
+
   RIEN N'EST CODÉ. Les quatre premières lignes sont celles de ses captures ;
   la cinquième est un exemple, posé pour que le total tombe sur son 1 689,52.
   Les achats sont des exemples : sa capture porte 0,00 € de déductible.
@@ -105,7 +110,11 @@ h2.titre{font-weight:400;font-size:32px;line-height:1.1;margin:16px 0 0}
 .montant.total{border-top:1px solid var(--trait)}
 .montant.total .quoi{color:var(--or)}
 .montant.total .combien{font-size:30px}
-.appui{cursor:pointer;border-radius:6px;margin:0 -8px;padding-left:8px;padding-right:8px}
+/* Sa retouche du 25 septembre : le MOT ouvre la page, le CHIFFRE copie. */
+button.quoi,button.combien{border:0;background:none;font-family:inherit;cursor:pointer;min-height:44px}
+button.combien{font-family:ui-serif,Georgia,serif;color:var(--encre);display:inline-flex;align-items:center;gap:10px;padding:0}
+.icone{color:var(--or);flex:none}
+.appui{border-radius:6px;margin:0 -8px;padding:0 8px;text-align:left}
 .appui:active{background:var(--trait-doux)}
 .doigt{animation:doigt 2.4s ease-in-out 3}
 @keyframes doigt{0%,100%{background:transparent}50%{background:rgba(185,139,71,.14)}}
@@ -148,7 +157,7 @@ tr.somme td.chiffre{font-size:17px;font-weight:700}
 
 <div class="tete">
   <h1 class="serif">Ma TVA à la calculette</h1>
-  <p>Appuyez sur « TVA collectée » ou « TVA déductible ». Chaque ligne dit son taux ; chaque colonne s'additionne.</p>
+  <p>Appuyez sur le mot « TVA collectée » ou « TVA déductible » pour ouvrir la page ; sur le chiffre, il se copie.</p>
 </div>
 
 <div class="scene">
@@ -162,13 +171,15 @@ tr.somme td.chiffre{font-size:17px;font-weight:700}
         <p class="caps">Ma TVA</p>
 
         <div style="margin-top:22px">
-          <div class="montant appui doigt" data-ouvrir="collectee" role="button" tabindex="0">
-            <span class="quoi">TVA collectée</span><span class="combien chiffre">1 689,52 €</span>
+          <div class="montant">
+            <button type="button" class="quoi appui doigt" data-ouvrir="collectee">TVA collectée</button>
+            <button type="button" class="combien chiffre copiable" data-valeur="1 689,52 €">1 689,52 €<svg class="icone" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2.4"/><path d="M15 5.6A2.6 2.6 0 0 0 12.4 3H6.6A2.6 2.6 0 0 0 4 5.6v5.8A2.6 2.6 0 0 0 6.6 14" stroke-linecap="round"/></svg></button>
           </div>
-          <div class="montant appui doigt" data-ouvrir="deductible" role="button" tabindex="0">
-            <span class="quoi">TVA déductible</span><span class="combien chiffre">&minus;&nbsp;154,09 €</span>
+          <div class="montant">
+            <button type="button" class="quoi appui doigt" data-ouvrir="deductible">TVA déductible</button>
+            <button type="button" class="combien chiffre copiable" data-valeur="154,09 €">&minus;&nbsp;154,09 €<svg class="icone" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2.4"/><path d="M15 5.6A2.6 2.6 0 0 0 12.4 3H6.6A2.6 2.6 0 0 0 4 5.6v5.8A2.6 2.6 0 0 0 6.6 14" stroke-linecap="round"/></svg></button>
           </div>
-          <div class="montant total"><span class="quoi">TVA à payer</span><span class="combien chiffre">1 535,43 €</span></div>
+          <div class="montant total"><span class="quoi">TVA à payer</span><button type="button" class="combien chiffre copiable" data-valeur="1 535,43 €">1 535,43 €<svg class="icone" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2.4"/><path d="M15 5.6A2.6 2.6 0 0 0 12.4 3H6.6A2.6 2.6 0 0 0 4 5.6v5.8A2.6 2.6 0 0 0 6.6 14" stroke-linecap="round"/></svg></button></div>
         </div>
         <div style="display:flex;gap:12px;margin-top:6px"><div class="ombre"></div><div class="ombre"></div></div>
         <div style="height:240px"></div>
@@ -282,6 +293,15 @@ const tva = document.getElementById("tva"), detail = document.getElementById("de
 document.querySelectorAll("[data-ouvrir]").forEach((b) => b.addEventListener("click", () => {
   page = b.dataset.ouvrir; dessiner();
   tva.hidden = true; detail.hidden = false; detail.scrollTop = 0;
+}));
+// Le chiffre copie, et le mot à gauche dit qu'il a copié, comme aujourd'hui
+// (`LigneMontant.tsx`).
+document.querySelectorAll(".copiable").forEach((b) => b.addEventListener("click", () => {
+  navigator.clipboard?.writeText(b.dataset.valeur);
+  const mot = b.parentElement.querySelector(".quoi");
+  if (mot.dataset.avant) return;
+  mot.dataset.avant = mot.textContent; mot.textContent = "Copié"; mot.style.color = "var(--or)";
+  setTimeout(() => { mot.textContent = mot.dataset.avant; mot.style.color = ""; delete mot.dataset.avant; }, 1600);
 }));
 document.getElementById("retour").addEventListener("click", () => { detail.hidden = true; tva.hidden = false; });
 
