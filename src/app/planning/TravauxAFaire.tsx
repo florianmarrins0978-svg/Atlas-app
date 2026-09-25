@@ -13,6 +13,7 @@ import {
 } from "@/lib/photos-plafonds";
 import {
   ceQuiManque,
+  retourModifiable,
   type ReglesDuRetour,
   type TacheDuRetour,
 } from "@/lib/retour-intervention";
@@ -77,11 +78,18 @@ import {
  * deuxième ! »* La barre ouvre le retour du jour, vierge de photos et de mot ;
  * « 1 retour envoyé » rouvre le DERNIER tel qu'il est parti, et le bouton le
  * réécrit (`modifierLeDernierRetour`).
+ *
+ * **LE JOUR MÊME, ET SEULEMENT LUI** — sa précision du même soir : *« le
+ * jour 2 ne doit pas ouvrir le rapport du jour 1 ; lorsque le jour 1 est
+ * passé on ne peut plus le modifier »*. Hors de ce jour-là, le bloc n'est
+ * plus un bouton : il dit ce qui est parti, et le retour du jour part de la
+ * barre (`retourModifiable`).
  */
 
 /** Le dernier retour parti, tel que la fiche le rouvre pour le modifier. */
 type RetourParti = {
   id: string;
+  poseLe: string;
   taches: TacheDuRetour[];
   photos: { id: string; storageKey: string }[];
   aSignaler: string | null;
@@ -90,6 +98,8 @@ export default function TravauxAFaire({
   chantierId,
   lignes,
   retoursEnvoyes,
+  dernierRetourLe,
+  jour,
 }: {
   chantierId: string;
   /**
@@ -99,6 +109,10 @@ export default function TravauxAFaire({
   lignes: readonly string[];
   /** Combien de retours ce chantier a déjà envoyés, lu avec la feuille. */
   retoursEnvoyes: number;
+  /** Quand le dernier est parti, lu avec la feuille — `null` s'il n'y en a aucun. */
+  dernierRetourLe: string | null;
+  /** La journée du planning où la fiche est ouverte. */
+  jour: string;
 }) {
   const [ouvert, setOuvert] = useState(false);
   const [charge, setCharge] = useState(false);
@@ -118,6 +132,8 @@ export default function TravauxAFaire({
   const [aFaire, setAFaire] = useState<readonly string[]>(lignes);
   const [dernier, setDernier] = useState<RetourParti | null>(null);
   const [enModification, setEnModification] = useState(false);
+  const [dernierLe, setDernierLe] = useState(dernierRetourLe);
+  const modifiable = dernierLe !== null && retourModifiable(dernierLe, jour, new Date());
   const [refus, setRefus] = useState<string | null>(null);
   const champ = useRef<HTMLInputElement>(null);
 
@@ -163,6 +179,7 @@ export default function TravauxAFaire({
         const parti = etat.retour
           ? {
               id: etat.retour.id,
+              poseLe: etat.retour.poseLe,
               taches: etat.retour.taches,
               photos: etat.retour.photos,
               aSignaler: etat.retour.aSignaler,
@@ -173,6 +190,7 @@ export default function TravauxAFaire({
         setEnvoyes(etat.envoyes);
         setAFaire(etat.aFaire);
         setDernier(parti);
+        setDernierLe(parti?.poseLe ?? null);
         remplir(enModification, parti, etat.aFaire);
         setCharge(true);
       })
@@ -197,6 +215,7 @@ export default function TravauxAFaire({
 
   /** « 1 retour envoyé » : le rouvrir pour le modifier. Un second appui referme. */
   function rouvrirLeRetour() {
+    if (!modifiable) return;
     if (ouvert && enModification) {
       setOuvert(false);
       return;
@@ -217,7 +236,7 @@ export default function TravauxAFaire({
       photoIds: [...reprises],
       aSignaler: aSignaler.trim() || null,
     };
-    const aModifier = enModification ? dernier : null;
+    const aModifier = enModification && modifiable ? dernier : null;
     const r = aModifier
       ? await modifierLeRetourAction(chantierId, aModifier.id, quoi).then((m) =>
           m.ok ? { ok: true as const, id: aModifier.id } : m
@@ -233,8 +252,11 @@ export default function TravauxAFaire({
     }
     // Ce qui vient de partir est le nouveau dernier : c'est lui qu'un appui
     // sur « 1 retour envoyé » rouvrira, sans relire le chantier.
+    const poseLe = aModifier ? aModifier.poseLe : new Date().toISOString();
+    setDernierLe(poseLe);
     setDernier({
       id: r.id,
+      poseLe,
       taches,
       photos: photos.filter((p) => reprises.has(p.id)),
       aSignaler: quoi.aSignaler,
@@ -544,13 +566,16 @@ export default function TravauxAFaire({
 
       {/* Une fois parti, on dit OÙ le retrouver — et le bandeau reste ouvert
           au lendemain : un chantier de huit jours envoie huit retours. */}
-      {/* Un appui le rouvre pour le modifier : c'est la seule porte vers le
-          retour parti, et elle est là où il le voit. */}
+      {/* Le jour même, un appui le rouvre pour le modifier : c'est la seule
+          porte vers le retour parti, et elle est là où il le voit. Un autre
+          jour, il n'est plus un bouton (`retourModifiable`). */}
       {envoyes > 0 && (
         <button
           type="button"
           data-atlas="retour-envoye"
-          aria-expanded={ouvert && enModification}
+          data-modifiable={modifiable}
+          aria-expanded={modifiable ? ouvert && enModification : undefined}
+          disabled={!modifiable}
           onClick={rouvrirLeRetour}
           className="mt-2.5 flex w-full items-center gap-3 rounded-[12px] px-4 py-2.5 text-left"
           style={{

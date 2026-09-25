@@ -294,6 +294,31 @@ async function main() {
     );
   });
 
+  // *« Lorsque le jour 1 est passé on ne peut plus le modifier, la
+  // modification peut se faire seulement lorsque c'est le jour actuel. »*
+  await cas("LE LENDEMAIN, « 2 retours envoyés » NE ROUVRE PLUS rien : le retour du jour part de la barre", async () => {
+    await pool.query(
+      `UPDATE retours_intervention SET pose_le = pose_le - interval '30 hours' WHERE chantier_id = $1`,
+      [chantierId]
+    );
+    await ouvrirLaFiche();
+    await page.locator(ENVOYE).waitFor({ state: "visible", timeout: 20_000 });
+    assert.equal(await page.locator(ENVOYE).getAttribute("data-modifiable"), "false", "le retour d'hier se rouvre encore");
+    assert.equal(await page.locator(ENVOYE).isEnabled(), false);
+    await page.locator(OUVRIR).click();
+    await page.waitForFunction((s) => document.querySelector(s)?.textContent === "Envoyer le retour du jour", ENVOYER, {
+      timeout: 20_000,
+    });
+    await page.locator(ENVOYER).click();
+    await page.waitForFunction(
+      (s) => /3 retours envoyés/.test(document.querySelector(s)?.textContent ?? ""),
+      ENVOYE,
+      { timeout: 25_000 }
+    );
+    // Celui qui vient de partir, lui, se modifie : il est d'aujourd'hui.
+    assert.equal(await page.locator(ENVOYE).getAttribute("data-modifiable"), "true");
+  });
+
   await pool.end();
   await navigateur.close();
   console.log(`\n${echecs === 0 ? "✅" : "❌"} Travaux à faire — ${echecs} échec(s).`);

@@ -296,6 +296,20 @@ async function main() {
     assert.ok(!liste.some((r) => r.aSignaler === "réécrit"));
   });
 
+  await essai("le retour d'HIER ne se modifie plus, même s'il est le dernier", async () => {
+    const chantier = await chantiersRepo.creerChantier(ctxA, { nom: "Hier" });
+    await poserLeRetour(ctxA, chantier.id, { taches: [], photoIds: [], aSignaler: "hier" });
+    const r = await dernierRetourDuChantier(ctxA, chantier.id);
+    // Envoyé il y a trente heures : quelle que soit l'heure, c'est un autre jour.
+    await admin.query("BEGIN");
+    await admin.query("SELECT set_config('app.entreprise_id', $1, true)", [ctxA.entrepriseId]);
+    await admin.query("UPDATE retours_intervention SET pose_le = now() - interval '30 hours' WHERE id = $1", [r!.id]);
+    await admin.query("COMMIT");
+    const fait = await modifierLeDernierRetour(ctxA, chantier.id, r!.id, { taches: [], photoIds: [], aSignaler: "réécrit" });
+    assert.equal(fait, false, "le retour d'hier a été réécrit");
+    assert.equal((await dernierRetourDuChantier(ctxA, chantier.id))?.aSignaler, "hier");
+  });
+
   await essai("le retour d'une AUTRE entreprise ne se modifie pas", async () => {
     const chezB = await dernierRetourDuChantier(ctxB, chantierB.id);
     assert.ok(chezB);

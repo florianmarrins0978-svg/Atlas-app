@@ -14,7 +14,8 @@ import {
   users,
 } from "../db/schema";
 import type { Ctx } from "./context";
-import type { RetourEnListe, TacheDuRetour } from "../../lib/retour-intervention";
+import { retourModifiable, type RetourEnListe, type TacheDuRetour } from "../../lib/retour-intervention";
+import { jourIso } from "../../lib/jour";
 
 /**
  * LE RETOUR D'INTERVENTION, côté base.
@@ -129,10 +130,11 @@ async function poserLeContenu(
  * exprès, il faut que je puisse le modifier […] et ça modifie le retour
  * envoyé, ça n'en envoie pas un deuxième ! »*
  *
- * **Seul le DERNIER retour du chantier se modifie.** C'est celui que la fiche
- * rouvre ; ceux des soirs d'avant restent la preuve de ce qui a été fait ce
- * jour-là (sa décision du 8 septembre). Rend `false` sinon — ou quand le
- * retour n'est pas de cette entreprise, ce que la RLS rend indiscernable.
+ * **Seul le DERNIER retour du chantier se modifie, et le jour même.** Sa règle
+ * du 25 septembre : *« lorsque le jour 1 est passé on ne peut plus le
+ * modifier »* ; chaque jour envoie le sien, et ceux des jours d'avant restent
+ * la preuve de ce jour-là (`retourModifiable`). Rend `false` sinon — ou quand
+ * le retour n'est pas de cette entreprise, ce que la RLS rend indiscernable.
  *
  * **Modifié, il redevient non lu** : le patron qui l'avait ouvert doit voir
  * qu'il a changé, sinon il se fie à ce qu'il a lu avant.
@@ -145,12 +147,17 @@ export async function modifierLeDernierRetour(
 ): Promise<boolean> {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const [dernier] = await tx
-      .select({ id: retoursIntervention.id })
+      .select({ id: retoursIntervention.id, poseLe: retoursIntervention.poseLe })
       .from(retoursIntervention)
       .where(eq(retoursIntervention.chantierId, chantierId))
       .orderBy(desc(retoursIntervention.poseLe))
       .limit(1);
     if (!dernier || dernier.id !== retourId) return false;
+    // **Le jour passé, il ne se modifie plus** (sa règle du 25 septembre). Le
+    // jour affiché est celui d'aujourd'hui : le serveur ne tient que la date
+    // d'envoi, l'écran tient la journée regardée.
+    const maintenant = new Date();
+    if (!retourModifiable(new Date(dernier.poseLe).toISOString(), jourIso(maintenant), maintenant)) return false;
 
     const anciennes = await tx
       .select({ photoId: retoursInterventionPhotos.photoId })
@@ -365,6 +372,23 @@ export async function nombreDeRetoursDuChantier(ctx: Ctx, chantierId: string): P
       .from(retoursIntervention)
       .where(eq(retoursIntervention.chantierId, chantierId));
     return Number(ligne?.n ?? 0);
+  });
+}
+
+/**
+ * Quand le dernier retour de ce chantier est parti — `null` s'il n'y en a
+ * aucun. C'est ce qui dit à la fiche, avant qu'on l'ouvre, si « 1 retour
+ * envoyé » se rouvre encore pour le modifier (le jour même seulement).
+ */
+export async function dernierEnvoiDuChantier(ctx: Ctx, chantierId: string): Promise<string | null> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const [ligne] = await tx
+      .select({ poseLe: retoursIntervention.poseLe })
+      .from(retoursIntervention)
+      .where(eq(retoursIntervention.chantierId, chantierId))
+      .orderBy(desc(retoursIntervention.poseLe))
+      .limit(1);
+    return ligne ? new Date(ligne.poseLe).toISOString() : null;
   });
 }
 

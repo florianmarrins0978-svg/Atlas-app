@@ -82,7 +82,7 @@ import type { FeuilleDuChantier } from "@/server/repositories/devis";
  * bandeau fermé, dès l’ouverture — pas seulement dans la session où l’on a
  * appuyé. Un chantier de huit jours en envoie un chaque soir (19 septembre 2026).
  */
-type FeuilleEtRetour = FeuilleDuChantier & { retours: number };
+type FeuilleEtRetour = FeuilleDuChantier & { retours: number; dernierRetourLe: string | null };
 import { NOTE_MAX } from "@/lib/note-chantier";
 // **Les types se prennent par `import type`, jamais dans l'import des actions.**
 // Un fichier « use server » réexporté par Next ne laisse survivre que des
@@ -3759,6 +3759,7 @@ function CarteDuJour({
       chantier={duJour.find((c) => c.id === feuilleIci) ?? null}
       feuille={taches[feuilleIci]}
       ecriture={ecriture}
+      jour={jour}
     />
   ) : null;
 
@@ -4383,9 +4384,12 @@ function FeuilleChantier({
   chantier,
   feuille,
   ecriture = true,
+  jour,
 }: {
   chantier: ChantierPlanning | null;
   feuille?: FeuilleEtRetour;
+  /** La journée du planning où la fiche est ouverte. */
+  jour: JourIso;
   /** Faux pour un salarié : la note se LIT, elle ne s'écrit pas (30 août 2026). */
   ecriture?: boolean;
 }) {
@@ -4502,6 +4506,8 @@ function FeuilleChantier({
           chantierId={chantier.id}
           lignes={feuille.taches}
           retoursEnvoyes={feuille.retours}
+          dernierRetourLe={feuille.dernierRetourLe}
+          jour={jour}
         />
       )}
 

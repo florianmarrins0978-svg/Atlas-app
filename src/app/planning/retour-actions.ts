@@ -157,7 +157,7 @@ export async function poserLeRetourAction(
  * **Sa demande du 25 septembre 2026 :** *« ça modifie le retour envoyé, ça
  * n'en envoie pas un deuxième ! »* Mêmes gardes et même plafond que l'envoi :
  * modifier, c'est écrire, et l'écran n'est pas la seule porte. Seul le dernier
- * retour du chantier se modifie (`modifierLeDernierRetour`).
+ * retour du chantier se modifie, et le jour même (`modifierLeDernierRetour`).
  */
 export async function modifierLeRetourAction(
   chantierId: string,
@@ -174,9 +174,9 @@ export async function modifierLeRetourAction(
     photoIds: quoi.photoIds,
     aSignaler: quoi.aSignaler,
   });
-  // Un autre retour est parti entre-temps : c'est lui le dernier, et celui-ci
-  // est désormais la preuve d'un soir passé.
-  if (!fait) return { ok: false, raison: "Ce retour ne peut plus être modifié : un plus récent a été envoyé." };
+  // Un autre retour est parti entre-temps, ou le jour est passé (la page était
+  // restée ouverte après minuit) : celui-ci est la preuve d'un jour fini.
+  if (!fait) return { ok: false, raison: "Ce retour ne se modifie plus. Envoyez le retour du jour." };
 
   revalidatePath("/planning");
   revalidatePath("/termines");

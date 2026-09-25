@@ -12,6 +12,7 @@ import {
   compteDesTaches,
   nomCherche,
   rangerLesRetours,
+  retourModifiable,
   type RetourEnListe,
 } from "../src/lib/retour-intervention";
 
@@ -231,6 +232,30 @@ essai("un nom tapé passe par-dessus la date : tous les retours du client", () =
   assert.equal(g.length, 1);
   assert.equal(g[0].retours.length, 2);
 });
+
+// ═══ LE RETOUR SE MODIFIE LE JOUR MÊME, ET SEULEMENT CE JOUR-LÀ ═══════════
+//
+// Sa règle du 25 septembre 2026 : *« il faut qu'à chaque jour je puisse
+// envoyer un nouveau rapport ; le jour 2 ne doit pas ouvrir le rapport du
+// jour 1 ; lorsque le jour 1 est passé on ne peut plus le modifier, la
+// modification peut se faire seulement lorsque c'est le jour actuel. »*
+{
+  // Vendredi 25 septembre 2026, 18 h à Paris.
+  const maintenant = new Date("2026-09-25T16:00:00.000Z");
+  essai("envoyé AUJOURD'HUI, sur la journée d'aujourd'hui : il se modifie", () => {
+    assert.equal(retourModifiable("2026-09-25T07:30:00.000Z", "2026-09-25", maintenant), true);
+  });
+  essai("envoyé HIER : il ne se modifie plus, le jour est passé", () => {
+    assert.equal(retourModifiable("2026-09-24T16:00:00.000Z", "2026-09-25", maintenant), false);
+  });
+  essai("regardé depuis le JOUR 2 du planning : le retour du jour 1 ne s'ouvre pas", () => {
+    assert.equal(retourModifiable("2026-09-25T07:30:00.000Z", "2026-09-29", maintenant), false);
+  });
+  essai("le jour se compte à PARIS : 23 h 30 UTC la veille, c'est déjà aujourd'hui", () => {
+    // 1 h 30 du matin à Paris, le 25 : en UTC c'était encore le 24.
+    assert.equal(retourModifiable("2026-09-24T23:30:00.000Z", "2026-09-25", maintenant), true);
+  });
+}
 
 console.log(`\n${echecs === 0 ? "✅" : "❌"} Le retour d'intervention — ${echecs} échec(s).`);
 process.exit(echecs === 0 ? 0 : 1);

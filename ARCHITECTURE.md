@@ -33384,6 +33384,7 @@ la révision est bornée :
 | | Ce qui est retenu | Pourquoi |
 |---|---|---|
 | ce qui se modifie | le **dernier** retour du chantier, jamais un autre (`modifierLeDernierRetour`) | c'est celui que la fiche rouvre ; ceux des soirs d'avant restent la preuve de leur soir. Un retour plus récent parti entre-temps fait refuser, et le refus se dit |
+| quand | **le jour même seulement**, envoyé aujourd'hui (Paris) ET fiche ouverte sur la journée d'aujourd'hui (`retourModifiable`) | sa précision du même soir : *« le jour 2 ne doit pas ouvrir le rapport du jour 1 ; lorsque le jour 1 est passé on ne peut plus le modifier »*. Hors de ce jour, le bloc n'est plus un bouton ; le serveur refuse un retour d'un autre jour |
 | la porte | un appui sur « N retours envoyés » ; la barre « Travaux à faire » reste le retour du jour | deux gestes, deux portes : la barre repart vide de photos et de mot, le bloc rouvre ce qui est parti |
 | le contenu | tâches, photos et mot réécrits par la MÊME écriture que l'envoi (`poserLeContenu`) | deux façons de poser un retour finiraient par ne plus poser le même (`CLAUDE.md` §3) |
 | le « vu » | effacé : modifié, il redevient non lu | le patron qui l'avait ouvert se fierait à ce qu'il a lu avant |

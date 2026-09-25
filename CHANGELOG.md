@@ -12,7 +12,8 @@ Format : le plus récent en tête.
 
 *« J'ai envoyé un retour sans faire exprès. »* Un appui sur « 1 retour envoyé »
 rouvre la rubrique avec ce qui est parti (cases, photos, mot) ; « Renvoyer le
-retour » le réécrit au lieu d'en poser un second. Seul le dernier se modifie ;
+retour » le réécrit au lieu d'en poser un second. Seul le dernier se modifie,
+et le jour même : le jour 2 d'un chantier de huit jours envoie le sien ;
 modifié, il redevient non lu pour le patron. Aucune migration.
 `ARCHITECTURE.md` §414.
 
