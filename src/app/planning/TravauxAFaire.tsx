@@ -577,7 +577,7 @@ export default function TravauxAFaire({
           aria-expanded={modifiable ? ouvert && enModification : undefined}
           disabled={!modifiable}
           onClick={rouvrirLeRetour}
-          className="mt-2.5 flex w-full items-center gap-3 rounded-[12px] px-4 py-2.5 text-left"
+          className="mt-2.5 flex w-full items-center gap-3 rounded-full px-4 py-2.5 text-left"
           style={{
             backgroundColor: voile(colors.plein, 0.16),
             boxShadow: `inset 0 0 0 1px ${colors.vertPale}`,

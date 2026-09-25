@@ -81,6 +81,16 @@ rouge à l'identique sur `origin/main` (`5dcd912`) rejoué dans une copie propre
 l'envoi du devis mène à `/chantiers/<id>/export` et non plus à l'accueil
 qu'elle attend (`chantierRealise`). À comprendre avant de croire la suite.
 
+**Batterie commune du 25 septembre** (six lots réunis sur cette branche) :
+trois rouges. `test-acces-roles` réclamait les deux pages neuves dans la liste
+des adresses fermées au commercial (ajoutées) ; `test-boutons-arrondis` a vu le
+bandeau « retour envoyé », devenu bouton dans le lot des retours modifiables,
+encore en `rounded-[12px]` (passé en `rounded-full`) ; et
+`test-deplacer-sur-le-calendrier-e2e` a rougi dix fois dans la batterie
+(`grille-mois` introuvable) mais **pas reproduit** : verte trois fois ensuite,
+seule puis avec les deux suites qui la précèdent. À surveiller à la prochaine
+batterie, pas classée « capricieuse ».
+
 **Réserve connue, non traitée** : aux encaissements, un avoir émis APRÈS un
 acompte déplace les parts par taux de cet acompte déjà déclaré (même réserve
 que la TVA de l'acompte, plus bas dans ce fichier). Les totaux, eux, ne

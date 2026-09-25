@@ -214,6 +214,10 @@ essai("le commercial atteint l'application, sauf les adresses nommées", () => {
     // page qui ne devait PAS l'hériter.
     "/termines/retours",
     "/termines/tva",
+    // **Les deux pages de Ma TVA à la calculette (25 septembre 2026)**, fermées
+    // comme Ma TVA : le commercial n'a « ni les factures, ni la TVA ».
+    "/termines/tva/collectee",
+    "/termines/tva/deductible",
   ]);
 });
 
