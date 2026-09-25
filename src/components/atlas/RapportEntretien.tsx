@@ -1,7 +1,7 @@
 import type { RapportPublic } from "@/server/repositories/passages-entretien";
 import { libelleMinutes } from "@/lib/passage-entretien";
 import { parFamilles } from "@/lib/prestations-entretien";
-import { jourLisible } from "@/lib/jour";
+import { jourEnTitre } from "@/lib/jour";
 import { couleursDocument } from "@/lib/design-tokens";
 
 /**
@@ -12,8 +12,6 @@ import { couleursDocument } from "@/lib/design-tokens";
  * (`rapport-dans-l-appli.ts`). Recopiée, la carte de l'artisan aurait fini par
  * montrer autre chose que ce que son client a lu (`CLAUDE.md` §3).
  */
-const majuscule = (t: string) => t.charAt(0).toUpperCase() + t.slice(1);
-
 export default function RapportEntretien({ rapport }: { rapport: RapportPublic }) {
   const familles = parFamilles(rapport.faites);
 
@@ -37,9 +35,12 @@ export default function RapportEntretien({ rapport }: { rapport: RapportPublic }
       </h1>
       {/* **Une phrase, en noir, le jour en gras** — sa demande du
           22 septembre 2026 : plus de point médian entre la date et le nom
-          (`CLAUDE.md` §3, « ni point médian, ni tiret : des phrases »). */}
+          (`CLAUDE.md` §3, « ni point médian, ni tiret : des phrases »).
+          **L'année y est toujours** (25 septembre 2026, « ça serait bien
+          d'avoir l'année aussi ») : le client garde ce rapport, et le relit
+          l'année suivante, où « jeudi 17 septembre » ne désigne plus rien. */}
       <p className="mt-1 text-[14px]" style={{ color: couleursDocument.encre }}>
-        <b>{majuscule(jourLisible(rapport.jour))}</b>
+        <b>{jourEnTitre(rapport.jour)}</b>
         {rapport.clientNom ? ` chez ${rapport.clientNom}` : ""}
       </p>
 
