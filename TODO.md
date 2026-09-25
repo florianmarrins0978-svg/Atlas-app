@@ -9449,7 +9449,7 @@ TVA après avoirs partout, le rappel qui se tait, le numéro du chèque sur
 `test-exigibilite-tva`. **Lot 2 (les écrans) codé le même jour, sur la branche** :
 volet de Terminés, saisie de l'avoir, « Il ne me paiera pas », « Non payées »,
 « J'ai reçu le paiement », onglet « Avoirs » (§413, `test-avoir-et-non-payee-e2e`).
-**Lot 3 codé le 24 septembre 2026, sur `main` le 25** : envoi de l'avoir par SMS ou e-mail avec le lien de la facture, l'avoir sous la facture sur la page du client, la mise en demeure (écran, lettre, PDF). **À faire vérifier par quelqu'un qui lit les textes** : le délai de huit jours et la phrase sur les intérêts au taux légal (particulier : art. 1231-6 C. civ. ; professionnel : L441-10 C. com., non cité). **Réserve** : avoir après acompte, sur une ligne
+**Lot 3 codé le 24 septembre 2026, sur `main` le 25** : envoi de l'avoir par SMS ou e-mail avec le lien de la facture, l'avoir sous la facture sur la page du client, la mise en demeure (écran, lettre, PDF). **Vérifié le 25 septembre 2026** : aucun texte ne fixe le délai, la lettre doit en écrire un raisonnable (art. 1344 C. civ.), huit jours est l'usage admis ; les intérêts au taux légal courent bien à compter de la mise en demeure (art. 1231-6, mot pour mot). **Ouvert, à sa décision** : pour un client professionnel, L441-10 C. com. donne des pénalités plus fortes dès l'échéance et 40 € d'indemnité ; la lettre réclame moins que le dû tant qu'Atlas ne sait pas qu'un client est professionnel. **Réserve** : avoir après acompte, sur une ligne
 d'un autre taux (§413).
 
 **LES TROIS PLANCHES** (sa demande : *« trois planches séparées »*) :

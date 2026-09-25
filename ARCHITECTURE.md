@@ -33361,7 +33361,12 @@ avoir se rangeait en « Fiche de chantier ». Suite : `test-avoir-et-non-payee-e
 | son papier | `genererPdfMiseEnDemeure`, moteur à part | une lettre n'a ni lignes ni totaux ; composée à la demande et datée du jour, jamais archivée : la preuve est l'accusé de réception de la Poste |
 | l'appellation | « Monsieur X », « Madame X », sinon « Madame, Monsieur » | jamais la civilité par défaut des devis : sur un recommandé, elle ne se corrige plus |
 
-**Non vérifié dans les textes** : le délai de huit jours (usage) et « les
-intérêts au taux légal courent à compter de la présente lettre » (art. 1231-6
-du Code civil pour un particulier ; un client professionnel relève de L441-10
-du Code de commerce, que la lettre ne cite pas). Inscrit dans `TODO.md`.
+**Vérifié le 25 septembre 2026** : aucun texte ne fixe le délai, la lettre doit
+en écrire un raisonnable (art. 1344 du Code civil), huit jours est l'usage
+admis ; l'intérêt au taux légal court à compter de la mise en demeure (art.
+1231-6, mot pour mot). Un client professionnel doit davantage (L441-10 du Code
+de commerce : pénalités dès l'échéance et 40 € d'indemnité) : la lettre
+réclame moins que son dû, jamais plus. Le commentaire de
+`src/lib/mise-en-demeure.ts` dit encore « non vérifiés » : le corriger fait
+exiger la batterie (rayon de dix écrans), il suivra le prochain lot qui la
+joue.

@@ -2,6 +2,10 @@ import assert from "node:assert/strict";
 import { normaliserPourRecherche } from "../src/lib/recherche-client";
 import { lancerNavigateur, DELAI_PAR_DEFAUT_MS } from "./e2e-browser";
 import type { Page } from "playwright";
+import { eq } from "drizzle-orm";
+import { db, pool } from "../src/server/db/client";
+import { users, membresEntreprise } from "../src/server/db/schema";
+import * as clientsRepo from "../src/server/repositories/clients";
 
 // **La barre de recherche des clients, éprouvée en tapant dedans.**
 //
@@ -115,8 +119,35 @@ async function nomsAffiches(page: Page): Promise<string[]> {
   return page.locator('[data-atlas="nom-client"]').allInnerTexts();
 }
 
+/**
+ * **Assez de clients pour que la liste DÉPASSE l'écran.**
+ *
+ * Sans eux, le contrôle « la barre reste atteignable quand on descend » ne
+ * mesurait rien : sur une base à peine amorcée, la page tient dans la fenêtre,
+ * `scrollTo(0, 900)` ne bouge pas, et le champ reste à sa place naturelle.
+ * Il rougissait alors en accusant l'écran (25 septembre 2026, relevé : « page
+ * descendue de 0 px, page de 664 px, fenêtre de 664 px »), et verdissait en
+ * batterie, où les autres suites avaient laissé des clients. La suite pose ce
+ * qu'elle mesure, au lieu de dépendre de ce que d'autres ont laissé.
+ */
+async function assezDeClientsPourDefiler() {
+  const [demo] = await db.select().from(users).where(eq(users.email, "demo@atlas.local")).limit(1);
+  if (!demo) throw new Error("le compte de démonstration est absent : la base n'est pas amorcée");
+  const [m] = await db
+    .select({ e: membresEntreprise.entrepriseId })
+    .from(membresEntreprise)
+    .where(eq(membresEntreprise.utilisateurId, demo.id))
+    .limit(1);
+  const ctx = { utilisateurId: demo.id, entrepriseId: m!.e };
+  const deja = await clientsRepo.listerClients(ctx);
+  for (let i = deja.length; i < 30; i++) {
+    await clientsRepo.creerClient(ctx, { nom: `Défilement ${String(i).padStart(2, "0")}` });
+  }
+}
+
 async function principal() {
   console.log("=== Chercher un client, au clavier ===\n");
+  await assezDeClientsPourDefiler();
   const nav = await lancerNavigateur();
   const page = await (await nav.newContext()).newPage();
 
@@ -337,10 +368,22 @@ async function principal() {
     await page.waitForTimeout(300);
     const boite = await champ.boundingBox();
     assert.ok(boite, "le champ a disparu de la page en descendant");
+    const { descendu, hauteur, fenetre } = await page.evaluate(() => ({
+      descendu: window.scrollY,
+      hauteur: document.documentElement.scrollHeight,
+      fenetre: window.innerHeight,
+    }));
+    // **Refuser de conclure sur une page qui n'a pas bougé** (`CLAUDE.md` §5) :
+    // le champ y serait à sa place naturelle, et l'on accuserait l'écran.
+    assert.ok(
+      descendu > 0,
+      `la page n'a pas défilé (page de ${hauteur} px, fenêtre de ${fenetre} px) : rien n'est mesuré`
+    );
     assert.ok(
       boite!.y >= 0 && boite!.y < 140,
       `le champ est à ${Math.round(boite!.y)} px du haut après avoir descendu : ` +
-        "il est parti avec le défilement, et il faut remonter toute la liste pour chercher"
+        "il est parti avec le défilement, et il faut remonter toute la liste pour chercher " +
+        `(page descendue de ${descendu} px, page de ${hauteur} px, fenêtre de ${fenetre} px)`
     );
     await page.evaluate(() => window.scrollTo(0, 0));
     await page.waitForTimeout(200);
@@ -384,6 +427,7 @@ async function principal() {
 
   await page.screenshot({ path: "/tmp/recherche-client.png", fullPage: true });
   await nav.close();
+  await pool.end();
   console.log(`\n${echecs === 0 ? "✅" : "❌"} Recherche de client au navigateur — ${echecs} échec(s).`);
   process.exit(echecs === 0 ? 0 : 1);
 }
