@@ -86,10 +86,14 @@ trois rouges. `test-acces-roles` réclamait les deux pages neuves dans la liste
 des adresses fermées au commercial (ajoutées) ; `test-boutons-arrondis` a vu le
 bandeau « retour envoyé », devenu bouton dans le lot des retours modifiables,
 encore en `rounded-[12px]` (passé en `rounded-full`) ; et
-`test-deplacer-sur-le-calendrier-e2e` a rougi dix fois dans la batterie
-(`grille-mois` introuvable) mais **pas reproduit** : verte trois fois ensuite,
-seule puis avec les deux suites qui la précèdent. À surveiller à la prochaine
-batterie, pas classée « capricieuse ».
+`test-deplacer-sur-le-calendrier-e2e` a rougi dix fois, deux batteries de
+suite, jamais seule : **défaut du test, trouvé et corrigé**. Elle cherchait
+deux jours libres sur plusieurs mois ; le 25 septembre, la base de la batterie
+n'en laissait qu'un en septembre, le second tombait le 1er octobre, et la
+grille restée sur octobre n'avait plus le 29 septembre. Reproduit en occupant
+le 28 et le 30 (rouge à l'identique), puis corrigé : deux jours du MÊME mois, et
+le dernier cas avance jusqu'au mois du jour qu'il touche après un
+rechargement. Vert dans les deux cas.
 
 **Réserve connue, non traitée** : aux encaissements, un avoir émis APRÈS un
 acompte déplace les parts par taux de cet acompte déjà déclaré (même réserve

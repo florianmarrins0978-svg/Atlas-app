@@ -86,9 +86,16 @@ async function deuxJoursLibres(page: Page): Promise<[string, string]> {
       }))
     );
 
-  const trouves: string[] = [];
+  // **Les deux jours dans le MÊME mois**, et le calendrier reste sur ce mois-là.
+  // Toute la suite touche le jour d'accueil dans la grille qui montre le jour
+  // posé. Payé le 25 septembre 2026 : un seul jour libre restait en septembre,
+  // le second tombait le 1er octobre, et la grille, restée sur octobre, n'avait
+  // plus le 29 septembre. Dix rouges dans la batterie, aucun seul : la base de
+  // la batterie a plus de jours pris.
+  let trouves: string[] = [];
   for (let mois = 0; mois < 4 && trouves.length < 2; mois++) {
     if (mois > 0) {
+      trouves = [];
       await page.click('button[aria-label="Mois suivant"]');
       await page.waitForTimeout(150);
     }
@@ -101,7 +108,7 @@ async function deuxJoursLibres(page: Page): Promise<[string, string]> {
     }
   }
   if (trouves.length < 2) {
-    throw new Error("moins de deux jours ouvrables à venir entièrement libres, sur quatre mois");
+    throw new Error("aucun mois, sur quatre, n'a deux jours ouvrables à venir entièrement libres");
   }
   return [trouves[0], trouves[1]];
 }
@@ -146,6 +153,19 @@ async function main() {
     await page.waitForSelector(`[data-atlas="carte-jour"][data-jour="${jour}"]`, { timeout: 15_000 });
     await page.waitForTimeout(400);
     return page.locator(`[data-atlas="carte-jour"][data-jour="${jour}"]`);
+  };
+
+  /**
+   * Tourner le calendrier jusqu'au mois d'un jour, SANS recharger : un
+   * rechargement ramène au mois en cours, et le jour peut être le mois suivant.
+   */
+  const montrerLeMoisDe = async (jour: string) => {
+    for (let i = 0; i < 4; i++) {
+      if ((await page.locator(`[data-atlas="grille-mois"] [data-jour="${jour}"]`).count()) > 0) return;
+      await page.click('button[aria-label="Mois suivant"]');
+      await page.waitForTimeout(150);
+    }
+    throw new Error(`le jour ${jour} n'est atteignable sur aucun des quatre mois`);
   };
 
   /** Ramener le calendrier sur un jour donné, quel que soit le mois affiché. */
@@ -605,6 +625,7 @@ async function main() {
     }
     await fermerLeTiroirDuPlanning(page);
 
+    await montrerLeMoisDe(jourB);
     await page.click(`[data-atlas="grille-mois"] [data-jour="${jourB}"]`);
     await page.waitForSelector(`[data-atlas="carte-jour"][data-jour="${jourB}"]`, { timeout: 15_000 });
     await page.waitForTimeout(400);
