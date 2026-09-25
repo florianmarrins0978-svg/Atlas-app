@@ -19,6 +19,17 @@ composant d'envoi (`TransmettreLaFacture`) monte désormais lui-même le retour
 qu'il arme. Tenu par `test-avoir-et-non-payee-e2e.ts`, vu rouge avant la
 correction.
 
+### Le paiement noté ramène à Terminés, devant la ligne du chantier
+
+Sa demande : *« une fois validé, on quitte la page de la facture et on retourne
+sur Terminés, devant la case de Monsieur Martins qui se trouvait en août »*. Le
+paiement ramenait à la facture (c'était la planche `il-ne-paiera-pas.html`),
+et Terminés s'ouvrait toujours sur le mois du jour. `PaiementClient` renvoie
+désormais à `/termines?chantier=<id>` ; l'écran ouvre le mois de ce chantier
+(`moisDuChantier`, la même règle que le rangement) et fait défiler jusqu'à sa
+ligne. Tenu par `test-avoir-et-non-payee-e2e.ts`, avec un chantier rangé deux
+mois plus tôt, et vu rouge avant la correction.
+
 ## 2026-09-24
 
 ### L'avoir, « Il ne me paiera pas » et la mise en demeure (sur `main` le 25 septembre, avec les abonnements et « Facturé » en doré)

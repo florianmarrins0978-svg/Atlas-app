@@ -48,7 +48,10 @@ const formatEuros = new Intl.NumberFormat("fr-FR", {
   maximumFractionDigits: 2,
 });
 
-export default async function TerminesPage() {
+export default async function TerminesPage({ searchParams }: { searchParams: Promise<{ chantier?: string }> }) {
+  // La ligne devant laquelle revenir, quand un écran nous y renvoie (le
+  // paiement noté, sa demande du 25 septembre 2026).
+  const { chantier: chantierDemande } = await searchParams;
   const ctx = await getCurrentCtx();
   const chantiers = await listerChantiersTermines(ctx);
   const lignes = preparer(chantiers);
@@ -198,6 +201,7 @@ export default async function TerminesPage() {
             retoursNonLus={retours}
             moisCourant={moisCourant}
             nonPayees={nonPayees.length}
+            chantierDemande={chantierDemande ?? null}
           />
         </div>
 
