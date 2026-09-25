@@ -192,13 +192,19 @@ page attribue elle-même :
 | les mortalités de jeunes tiges **de hêtre** | **le hêtre seul** |
 | feuilles, rameaux, pustules, chancres, météo, insectes, laboratoire | **les deux** — la page ne sépare pas |
 
-**La photo : le chêne la garde, le hêtre part sans.** Il a reconnu lui-même la
-feuille de chêne. Les HUIT figures d'Ephytia portent un « © » nominatif, donc
-aucune ; celle du chêne vient de Commons en domaine public (CC0), et son
-identification vient d'iNaturalist, **pas d'un laboratoire**, ce qui est écrit
-sous la photo. Aucune photo libre d'anthracnose **sur hêtre** n'a été vérifiée :
-poser celle du chêne montrerait le mauvais arbre. Une photo de son chantier
-irait.
+**Les deux photos, et ce que chacune vaut.** Les HUIT figures d'Ephytia portent
+un « © » nominatif : aucune ne sort de là, jamais.
+
+| | |
+|---|---|
+| **chêne** | Commons, domaine public (CC0). Il a reconnu lui-même la feuille. Son identification vient d'iNaturalist, **pas d'un laboratoire**, et c'est écrit sous la photo |
+| **hêtre** | *« va chercher sur internet une photo de l'anthracnose du hêtre, il faut une photo »*, 25 septembre. **Bugwood 5437607**, Nancy Gregory (université du Delaware), **CC BY 3.0 US**, vérifiée sur Commons ET sur `forestryimages.org/browse/detail.cfm?imgnum=5437607` — même maison que la photo du peuplier |
+
+**Ce qui lui est dit sur la planche du hêtre, et qu'il peut refuser :** l'arbre
+porteur enregistré par Bugwood est **Fagus grandifolia**, le hêtre d'AMÉRIQUE,
+pas le hêtre commun. Aucune image libre de la maladie sur *Fagus sylvatica* n'a
+été trouvée. Le numéro incrusté en bas à droite vient de Bugwood : l'image
+n'est pas retouchée.
 
 **Les deux différences avec le peuplier, à ne pas gommer :**
 
