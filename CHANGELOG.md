@@ -31,10 +31,21 @@ jeunes tiges au hêtre, et tout le reste aux deux. Chaque planche porte le table
 qui dit où va chaque phrase, et une `confusion` renvoie d'une fiche à l'autre :
 c'est l'arbre qui tranche.
 
-**Le hêtre part sans photo, et c'est voulu.** Les huit figures d'Ephytia portent
-un « © », aucune photo libre d'anthracnose sur hêtre n'a été vérifiée, et poser
-celle du chêne montrerait le mauvais arbre. Rien n'est codé : la fiche 003 en
-base attend son oui pour se séparer en deux (`TODO.md`).
+**Chaque arbre a sa photo, et aucune ne vient d'Ephytia** — leurs huit figures
+portent toutes un « © ». Le chêne garde la sienne, qu'il a reconnue lui-même ;
+le hêtre en reçoit une, sur sa demande du même soir : Bugwood 5437607, Nancy
+Gregory (université du Delaware), CC BY 3.0 US, vérifiée sur Commons **et** sur
+`forestryimages.org` — la même maison que la photo du peuplier. Poser celle du
+chêne sur le hêtre aurait montré le mauvais arbre.
+
+**Ce que la planche du hêtre dit d'elle-même, plutôt que de le taire :** l'arbre
+porteur enregistré par Bugwood est *Fagus grandifolia*, le hêtre d'Amérique, pas
+le hêtre commun ; aucune image libre de la maladie sur *Fagus sylvatica* n'a été
+trouvée. Une légende qui aurait écrit « hêtre » tout court aurait été vraie au
+genre et fausse à l'espèce, et c'est lui l'expert.
+
+Rien n'est codé : la fiche 003 en base attend son oui pour se séparer en deux
+(`TODO.md`).
 
 ---
 
