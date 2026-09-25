@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>TVA collectée à la calculette : Atlas</title>
+<title>Ma TVA à la calculette : Atlas</title>
 <style>
 /*
   TVA COLLECTÉE À LA CALCULETTE, 25 septembre 2026
@@ -33,8 +33,16 @@
   Aux encaissements, une ligne est un RÈGLEMENT : la colonne dit « Encaissé »,
   pas « Facture », parce qu'un acompte n'est qu'une part de sa facture.
 
+  LA MÊME PAGE POUR LA TVA DÉDUCTIBLE, sa demande du même jour : « et pareil
+  pour la TVA déductible ». Fournisseur, Payé, TVA. Un achat écrit à la main
+  peut n'avoir que sa TVA (`AchatsTva`, `achats-tva.ts`) : sa case Payé dit
+  « non noté », le total Payé ne compte que ce qui est noté, et la ligne du
+  bas dit combien d'achats n'ont pas de montant. Sans cela le total Payé
+  serait juste à la calculette et faux sur le ticket.
+
   RIEN N'EST CODÉ. Les quatre premières lignes sont celles de ses captures ;
   la cinquième est un exemple, posé pour que le total tombe sur son 1 689,52.
+  Les achats sont des exemples : sa capture porte 0,00 € de déductible.
 */
 :root{
   --fond:#f5f3ee; --plage:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
@@ -95,6 +103,7 @@ td .nom{font-size:15px;margin:0;line-height:1.25}
 td .petit{font-size:11px;color:var(--gris);margin:2px 0 0;line-height:1.3}
 td.chiffre{font-size:15.5px}
 td.tva{color:var(--or)}
+td.vide{font-family:inherit;font-size:12px;color:var(--gris);font-style:italic}
 tr.ligne{cursor:pointer}
 tr.ligne:active td{background:var(--trait-doux)}
 tr.somme td{border-top:1.5px solid var(--encre);padding-top:12px}
@@ -118,8 +127,8 @@ tr.somme td.chiffre{font-size:17px;font-weight:700}
 </div>
 
 <div class="tete">
-  <h1 class="serif">TVA collectée à la calculette</h1>
-  <p>Appuyez sur « TVA collectée ». Chaque colonne s'additionne et finit sur son total.</p>
+  <h1 class="serif">Ma TVA à la calculette</h1>
+  <p>Appuyez sur « TVA collectée » ou « TVA déductible ». Chaque colonne s'additionne et finit sur son total.</p>
 </div>
 
 <div class="scene">
@@ -133,11 +142,13 @@ tr.somme td.chiffre{font-size:17px;font-weight:700}
         <p class="caps">Ma TVA</p>
 
         <div style="margin-top:22px">
-          <div class="montant appui doigt" id="ouvrir" role="button" tabindex="0">
+          <div class="montant appui doigt" data-ouvrir="collectee" role="button" tabindex="0">
             <span class="quoi">TVA collectée</span><span class="combien chiffre">1 689,52 €</span>
           </div>
-          <div class="montant"><span class="quoi">TVA déductible</span><span class="combien chiffre">0,00 €</span></div>
-          <div class="montant total"><span class="quoi">TVA à payer</span><span class="combien chiffre">1 689,52 €</span></div>
+          <div class="montant appui doigt" data-ouvrir="deductible" role="button" tabindex="0">
+            <span class="quoi">TVA déductible</span><span class="combien chiffre">&minus;&nbsp;154,09 €</span>
+          </div>
+          <div class="montant total"><span class="quoi">TVA à payer</span><span class="combien chiffre">1 535,43 €</span></div>
         </div>
         <div style="display:flex;gap:12px;margin-top:6px"><div class="ombre"></div><div class="ombre"></div></div>
         <div style="height:240px"></div>
@@ -150,13 +161,13 @@ tr.somme td.chiffre{font-size:17px;font-weight:700}
       <div class="px">
         <div class="barre"><button class="rond" id="retour" aria-label="Retour">‹</button><button class="rond vert" aria-label="Assistant">✦</button></div>
         <h2 class="titre serif">Septembre 2026</h2>
-        <p class="caps">TVA collectée</p>
+        <p class="caps" id="surtitre"></p>
 
         <table>
           <thead><tr id="entetes"></tr></thead>
           <tbody id="lignes"></tbody>
         </table>
-        <p class="bas">5 règlements encaissés en septembre.</p>
+        <p class="bas" id="bas"></p>
         <div style="height:30px"></div>
       </div>
       <div class="onglets"><span>CHANTIERS</span><span>PLANNING</span><b>TERMINÉS</b><span>PAYSAGE</span><span>RÉGLAGES</span></div>
@@ -178,24 +189,49 @@ const REGLEMENTS = [
 ];
 const euros = (c) => (c / 100).toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).replace(/ /g, " ") + " €";
 
-let variante = "a";
+// Les achats : aucun n'est à lui (sa capture porte 0,00 €), ce sont des
+// exemples. Le dernier, écrit à la main, n'a que sa TVA : `listerAchatsTva`
+// laisse le TTC vide dans ce cas, et la page ne l'invente pas.
+const ACHATS = [
+  { client: "Pépinière",           jour: "23/09", ttc: 54000, tva: 4909 },
+  { client: "Station service",     jour: "18/09", ttc: 9240,  tva: 1540 },
+  { client: "Quincaillerie",       jour: "11/09", ttc: 17760, tva: 2960 },
+  { client: "Location mini pelle", jour: "04/09", ttc: null,  tva: 6000 },
+];
+
+// Une seule façon de dessiner les deux pages : si l'une gagnait une règle
+// que l'autre n'a pas, elles ne s'additionneraient plus de la même façon.
+const PAGES = {
+  collectee:  { surtitre: "TVA collectée",  qui: "Client",      montant: "Encaissé", lignes: REGLEMENTS },
+  deductible: { surtitre: "TVA déductible", qui: "Fournisseur", montant: "Payé",     lignes: ACHATS },
+};
+
+let variante = "a", page = "collectee";
 
 function dessiner() {
   const avecHt = variante === "b";
+  const P = PAGES[page];
+  document.getElementById("surtitre").textContent = P.surtitre;
   document.getElementById("entetes").innerHTML =
     avecHt
-      ? `<th>Client</th><th>HT</th><th class="tva">TVA</th><th>Encaissé</th>`
-      : `<th>Client</th><th>Encaissé</th><th class="tva">TVA</th>`;
+      ? `<th>${P.qui}</th><th>HT</th><th class="tva">TVA</th><th>${P.montant}</th>`
+      : `<th>${P.qui}</th><th>${P.montant}</th><th class="tva">TVA</th>`;
+
+  // Un montant absent s'écrit, il ne compte pas pour zéro en silence.
+  const case_ = (c, tva) => c === null
+    ? `<td class="chiffre vide">non noté</td>`
+    : `<td class="chiffre${tva ? " tva" : ""}">${euros(c)}</td>`;
 
   const somme = { ht: 0, tva: 0, ttc: 0 };
-  const rangs = REGLEMENTS.map((r) => {
-    const ht = r.ttc - r.tva;
-    somme.ht += ht; somme.tva += r.tva; somme.ttc += r.ttc;
+  let sansMontant = 0;
+  const rangs = P.lignes.map((r) => {
+    const ht = r.ttc === null ? null : r.ttc - r.tva;
+    if (r.ttc === null) sansMontant++; else { somme.ht += ht; somme.ttc += r.ttc; }
+    somme.tva += r.tva;
+    const sous = r.numero ? `${r.numero}<br>le ${r.jour}` : `le ${r.jour}`;
     return `<tr class="ligne">
-      <td><p class="nom">${r.client}</p><p class="petit">${r.numero}<br>le ${r.jour}</p></td>
-      ${avecHt
-        ? `<td class="chiffre">${euros(ht)}</td><td class="chiffre tva">${euros(r.tva)}</td><td class="chiffre">${euros(r.ttc)}</td>`
-        : `<td class="chiffre">${euros(r.ttc)}</td><td class="chiffre tva">${euros(r.tva)}</td>`}
+      <td><p class="nom">${r.client}</p><p class="petit">${sous}</p></td>
+      ${avecHt ? case_(ht) + case_(r.tva, true) + case_(r.ttc) : case_(r.ttc) + case_(r.tva, true)}
     </tr>`;
   }).join("");
 
@@ -204,10 +240,18 @@ function dessiner() {
       <td><span class="mot">Total</span></td>
       ${avecHt ? total(somme.ht) + total(somme.tva, true) + total(somme.ttc) : total(somme.ttc) + total(somme.tva, true)}
     </tr>`;
+
+  const n = P.lignes.length;
+  document.getElementById("bas").textContent = page === "collectee"
+    ? `${n} règlements encaissés en septembre.`
+    : `${n} achats en septembre` + (sansMontant ? `, dont ${sansMontant} sans montant payé.` : `.`);
 }
 
 const tva = document.getElementById("tva"), detail = document.getElementById("detail");
-document.getElementById("ouvrir").addEventListener("click", () => { tva.hidden = true; detail.hidden = false; detail.scrollTop = 0; });
+document.querySelectorAll("[data-ouvrir]").forEach((b) => b.addEventListener("click", () => {
+  page = b.dataset.ouvrir; dessiner();
+  tva.hidden = true; detail.hidden = false; detail.scrollTop = 0;
+}));
 document.getElementById("retour").addEventListener("click", () => { detail.hidden = true; tva.hidden = false; });
 
 detail.addEventListener("click", (e) => {
