@@ -131,7 +131,7 @@ async function main() {
     ["où sont mes factures ?", /Touchez « Terminés » dans la barre du bas, puis la ligne du chantier/],
     ["où est la fiche de sécurité ?", /« Paysage » dans la barre du bas, puis « Fiches de sécurité »/],
     ["où est la fiche d'intervention ?", /sa fiche d'intervention se déplie/],
-    ["comment je fais un avoir ?", /Atlas ne fait pas encore d'avoir/],
+    ["comment je fais un avoir ?", /puis « Je fais un avoir »/],
   ];
   for (const [question, attendu] of OU_EST) {
     await test(`« ${question} » reçoit l'endroit, depuis n'importe quel écran`, async () => {
