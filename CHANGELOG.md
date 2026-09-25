@@ -20,7 +20,7 @@ la facture entière), 18 % sur une facture qui mêle 10 % et 20 %. Affiché tel
 quel, il n'aurait rien permis de vérifier. Une facture mixte se lit désormais en
 une ligne par taux, lue sur ses lignes et ses avoirs, et la somme retombe au
 centime sur Ma TVA (`src/lib/tva-par-taux.ts`). Un achat sans total ni taux se
-lit « non noté », jamais zéro. `ARCHITECTURE.md` §414.
+lit « non noté », jamais zéro. `ARCHITECTURE.md` §415.
 
 ### L'avoir envoyé ramène à l'accueil, avec « Avoir transmis à … »
 
@@ -62,6 +62,15 @@ l'année suivante. `test-fiche-chantier-e2e.ts` exige désormais l'année sur la
 page du client ; rendu de la carte vu rouge avant, vert après. **Pas encore sur
 `main`** : niveau 3 (`/documents/entretien` n'est ouvert par aucune suite), la
 batterie reste à jouer.
+
+### Le retour d'intervention envoyé se modifie
+
+*« J'ai envoyé un retour sans faire exprès. »* Un appui sur « 1 retour envoyé »
+rouvre la rubrique avec ce qui est parti (cases, photos, mot) ; « Renvoyer le
+retour » le réécrit au lieu d'en poser un second. Seul le dernier se modifie,
+et le jour même : le jour 2 d'un chantier de huit jours envoie le sien ;
+modifié, il redevient non lu pour le patron. Aucune migration.
+`ARCHITECTURE.md` §414.
 
 ---
 ## 2026-09-24

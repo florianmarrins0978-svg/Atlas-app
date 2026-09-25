@@ -22,6 +22,16 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 | **les suites** | `test-tva-par-taux`, `test-tva-par-taux-db`, `test-tva-calculette-e2e` |
 | **le piège** | `LigneReleveTva.tauxTva` est une MOYENNE sur une facture mixte : ne jamais l'afficher comme un taux |
 
+## LE RETOUR ENVOYÉ SE MODIFIE — 25 septembre 2026
+
+| | |
+|---|---|
+| **l'écran** | `src/app/planning/TravauxAFaire.tsx` : le bloc « N retours envoyés » est un bouton qui rouvre le dernier retour |
+| **l'action** | `modifierLeRetourAction`, `src/app/planning/retour-actions.ts`, mêmes gardes que l'envoi |
+| **la règle** | `retourModifiable` (`src/lib/retour-intervention.ts`) : envoyé aujourd'hui, fiche sur aujourd'hui |
+| **le dépôt** | `modifierLeDernierRetour`, refuse tout retour qui n'est pas le dernier, ou pas d'aujourd'hui |
+| **les suites** | `test-retour-intervention-db.ts`, `test-travaux-a-faire-e2e.ts` |
+
 ## MOT DE PASSE OUBLIÉ — 24 septembre 2026
 
 | | |

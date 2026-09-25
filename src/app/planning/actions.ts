@@ -23,7 +23,7 @@ import { estUnJourValide } from "@/lib/planning-jour";
 // (le départ se dit avec le vocabulaire de la base : `Moment`)
 import { porterChantierDansAgenda } from "@/server/repositories/agenda-apple";
 import { tachesDuChantier, type FeuilleDuChantier } from "@/server/repositories/devis";
-import { nombreDeRetoursDuChantier } from "@/server/repositories/retours-intervention";
+import { dernierEnvoiDuChantier, nombreDeRetoursDuChantier } from "@/server/repositories/retours-intervention";
 import { listerClients, trouverOuCreerClient } from "@/server/repositories/clients";
 import { filtrerClientsParNom } from "@/lib/recherche-client";
 import { nomDuChantier } from "@/lib/nom-chantier";
@@ -350,7 +350,7 @@ export async function supprimerChantierAction(chantierId: string): Promise<Resul
  */
 export async function tachesDuChantierAction(
   chantierId: string
-): Promise<FeuilleDuChantier & { retours: number }> {
+): Promise<FeuilleDuChantier & { retours: number; dernierRetourLe: string | null }> {
   const ctx = await getCurrentCtx();
   await exigerChantierDansSaPortee(ctx, chantierId, "ouvrir la feuille de ce chantier");
   // **Le compte des retours se demande ICI, avec la feuille — pas à
@@ -364,11 +364,15 @@ export async function tachesDuChantierAction(
   // à cet endroit, elles sont déjà présentes dans la fiche de sécurité »*. Deux
   // fois la même rangée sur le même écran, c’est une lecture de plus à chaque
   // ouverture d’une feuille, et un doute sur ce qui les distingue.
-  const [feuille, retours] = await Promise.all([
+  // **La date du dernier envoi voyage avec le compte** : c'est elle qui dit si
+  // « 1 retour envoyé » se rouvre encore, le jour même (sa règle du
+  // 25 septembre 2026), sans attendre qu'on ouvre le bandeau.
+  const [feuille, retours, dernierRetourLe] = await Promise.all([
     tachesDuChantier(ctx, chantierId),
     nombreDeRetoursDuChantier(ctx, chantierId),
+    dernierEnvoiDuChantier(ctx, chantierId),
   ]);
-  return { ...feuille, retours };
+  return { ...feuille, retours, dernierRetourLe };
 }
 
 // ═══════════════════════════════════════════════════════════════════════════

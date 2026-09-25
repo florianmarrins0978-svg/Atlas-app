@@ -33371,7 +33371,31 @@ réclame moins que son dû, jamais plus. Le commentaire de
 exiger la batterie (rayon de dix écrans), il suivra le prochain lot qui la
 joue.
 
-## §414 : Ma TVA à la calculette, et le taux moyen qu'il ne fallait pas afficher
+## §414 — Le retour envoyé se modifie : le DERNIER, et lui seul
+
+**Sa demande du 25 septembre 2026 :** *« j'ai envoyé un retour sans faire
+exprès, il faut que je puisse le modifier juste en recliquant sur le bouton
+1 retour envoyé ; ça rouvre la même rubrique, je modifie, je renvoie, et ça
+modifie le retour envoyé, ça n'en envoie pas un deuxième ! »*
+
+Elle révise la décision du 8 septembre (« une preuve ne se réécrit pas »), et
+la révision est bornée :
+
+| | Ce qui est retenu | Pourquoi |
+|---|---|---|
+| ce qui se modifie | le **dernier** retour du chantier, jamais un autre (`modifierLeDernierRetour`) | c'est celui que la fiche rouvre ; ceux des soirs d'avant restent la preuve de leur soir. Un retour plus récent parti entre-temps fait refuser, et le refus se dit |
+| quand | **le jour même seulement**, envoyé aujourd'hui (Paris) ET fiche ouverte sur la journée d'aujourd'hui (`retourModifiable`) | sa précision du même soir : *« le jour 2 ne doit pas ouvrir le rapport du jour 1 ; lorsque le jour 1 est passé on ne peut plus le modifier »*. Hors de ce jour, le bloc n'est plus un bouton ; le serveur refuse un retour d'un autre jour |
+| la porte | un appui sur « N retours envoyés » ; la barre « Travaux à faire » reste le retour du jour | deux gestes, deux portes : la barre repart vide de photos et de mot, le bloc rouvre ce qui est parti |
+| le contenu | tâches, photos et mot réécrits par la MÊME écriture que l'envoi (`poserLeContenu`) | deux façons de poser un retour finiraient par ne plus poser le même (`CLAUDE.md` §3) |
+| le « vu » | effacé : modifié, il redevient non lu | le patron qui l'avait ouvert se fierait à ce qu'il a lu avant |
+| une photo décochée déjà supprimée du chantier | son fichier part à la purge | `supprimerPhoto` la gardait PARCE QUE ce retour la montrait ; décochée, plus rien ne la tient |
+| la date `pose_le` | inchangée, aucune migration | un retour est daté de son envoi ; une colonne « modifié le » n'a pas été demandée |
+
+Suites : `test-retour-intervention-db.ts` (réécrit sans en créer un second,
+refus sur un retour qui n'est pas le dernier, refus entre entreprises, purge)
+et `test-travaux-a-faire-e2e.ts` (l'appui, le renvoi, la base).
+
+## §415 : Ma TVA à la calculette, et le taux moyen qu'il ne fallait pas afficher
 
 **Sa demande du 25 septembre 2026**, planche
 `appli/tva-collectee-a-la-calculette.html` (la A, chiffres centrés) : un appui

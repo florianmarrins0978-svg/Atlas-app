@@ -13,12 +13,14 @@ import {
 } from "@/lib/photos-plafonds";
 import {
   ceQuiManque,
+  retourModifiable,
   type ReglesDuRetour,
   type TacheDuRetour,
 } from "@/lib/retour-intervention";
 import {
   ajouterPhotoDuRetourAction,
   etatDuRetourAction,
+  modifierLeRetourAction,
   poserLeRetourAction,
 } from "./retour-actions";
 
@@ -67,11 +69,37 @@ import {
  * écran de deux mille cinq cents lignes ; il demande donc ce qu'il lui faut à
  * l'ouverture, en une seule requête. Le dernier retour envoyé pré-coche ses
  * cases : le soir 3, il retrouve ce qu'il a coché le soir 2.
+ *
+ * ───────────────────────────────────────────────────────────────────────────
+ * **LE RETOUR ENVOYÉ SE MODIFIE — sa demande du 25 septembre 2026 :** *« j'ai
+ * envoyé un retour sans faire exprès, il faut que je puisse le modifier juste
+ * en recliquant sur le bouton 1 retour envoyé ; ça rouvre la même rubrique, je
+ * modifie, je renvoie, et ça modifie le retour envoyé, ça n'en envoie pas un
+ * deuxième ! »* La barre ouvre le retour du jour, vierge de photos et de mot ;
+ * « 1 retour envoyé » rouvre le DERNIER tel qu'il est parti, et le bouton le
+ * réécrit (`modifierLeDernierRetour`).
+ *
+ * **LE JOUR MÊME, ET SEULEMENT LUI** — sa précision du même soir : *« le
+ * jour 2 ne doit pas ouvrir le rapport du jour 1 ; lorsque le jour 1 est
+ * passé on ne peut plus le modifier »*. Hors de ce jour-là, le bloc n'est
+ * plus un bouton : il dit ce qui est parti, et le retour du jour part de la
+ * barre (`retourModifiable`).
  */
+
+/** Le dernier retour parti, tel que la fiche le rouvre pour le modifier. */
+type RetourParti = {
+  id: string;
+  poseLe: string;
+  taches: TacheDuRetour[];
+  photos: { id: string; storageKey: string }[];
+  aSignaler: string | null;
+};
 export default function TravauxAFaire({
   chantierId,
   lignes,
   retoursEnvoyes,
+  dernierRetourLe,
+  jour,
 }: {
   chantierId: string;
   /**
@@ -81,6 +109,10 @@ export default function TravauxAFaire({
   lignes: readonly string[];
   /** Combien de retours ce chantier a déjà envoyés, lu avec la feuille. */
   retoursEnvoyes: number;
+  /** Quand le dernier est parti, lu avec la feuille — `null` s'il n'y en a aucun. */
+  dernierRetourLe: string | null;
+  /** La journée du planning où la fiche est ouverte. */
+  jour: string;
 }) {
   const [ouvert, setOuvert] = useState(false);
   const [charge, setCharge] = useState(false);
@@ -97,8 +129,43 @@ export default function TravauxAFaire({
   // sur sa planche —, et en rouvrant la fiche demain, « 1 retour envoyé ».
   const [vientDePartir, setVientDePartir] = useState(false);
   const [envoi, setEnvoi] = useState(false);
+  const [aFaire, setAFaire] = useState<readonly string[]>(lignes);
+  const [dernier, setDernier] = useState<RetourParti | null>(null);
+  const [enModification, setEnModification] = useState(false);
+  const [dernierLe, setDernierLe] = useState(dernierRetourLe);
+  const modifiable = dernierLe !== null && retourModifiable(dernierLe, jour, new Date());
   const [refus, setRefus] = useState<string | null>(null);
   const champ = useRef<HTMLInputElement>(null);
+
+  // **Chargé à l'OUVERTURE, pas au montage.** La fiche d'un chantier se déplie
+  // souvent sans qu'on aille jusqu'aux travaux : charger d'office ferait une
+  // requête par chantier ouvert, sur un réseau de chantier.
+  /**
+   * Remplir la rubrique pour l'un des deux gestes. **Modifier** reprend le
+   * dernier retour tel qu'il est parti : ses cases, ses photos, son mot.
+   * **Le retour du jour** repart de ses cases, pas d'un écran vierge qui lui
+   * ferait tout recocher ; les photos et le mot, eux, sont ceux du jour — un
+   * retour est une preuve datée.
+   */
+  function remplir(modifier: boolean, parti: RetourParti | null, lignesDuDevis: readonly string[]) {
+    setRefus(null);
+    if (modifier && parti) {
+      setTaches(parti.taches.map((t) => ({ libelle: t.libelle, faite: t.faite })));
+      setReprises(new Set(parti.photos.map((p) => p.id)));
+      setASignaler(parti.aSignaler ?? "");
+      // Une photo du retour retirée du chantier depuis reste montrée : sans
+      // elle, il ne pourrait plus la décocher.
+      setPhotos((avant) => [...avant, ...parti.photos.filter((p) => !avant.some((a) => a.id === p.id))]);
+      return;
+    }
+    setTaches(
+      parti
+        ? parti.taches.map((t) => ({ libelle: t.libelle, faite: t.faite }))
+        : lignesDuDevis.map((libelle) => ({ libelle, faite: false }))
+    );
+    setReprises(new Set());
+    setASignaler("");
+  }
 
   // **Chargé à l'OUVERTURE, pas au montage.** La fiche d'un chantier se déplie
   // souvent sans qu'on aille jusqu'aux travaux : charger d'office ferait une
@@ -109,17 +176,22 @@ export default function TravauxAFaire({
     etatDuRetourAction(chantierId)
       .then((etat) => {
         if (!vivant) return;
+        const parti = etat.retour
+          ? {
+              id: etat.retour.id,
+              poseLe: etat.retour.poseLe,
+              taches: etat.retour.taches,
+              photos: etat.retour.photos,
+              aSignaler: etat.retour.aSignaler,
+            }
+          : null;
         setRegles(etat.regles);
         setPhotos(etat.photos);
         setEnvoyes(etat.envoyes);
-        if (etat.retour) {
-          // Le soir 3 repart du soir 2 : ses cases, pas un écran vierge qui
-          // lui ferait tout recocher. Les photos et le mot, eux, sont ceux
-          // du jour — un retour est une preuve datée.
-          setTaches(etat.retour.taches.map((t) => ({ libelle: t.libelle, faite: t.faite })));
-        } else {
-          setTaches(etat.aFaire.map((libelle) => ({ libelle, faite: false })));
-        }
+        setAFaire(etat.aFaire);
+        setDernier(parti);
+        setDernierLe(parti?.poseLe ?? null);
+        remplir(enModification, parti, etat.aFaire);
         setCharge(true);
       })
       .catch(() => {
@@ -128,7 +200,30 @@ export default function TravauxAFaire({
     return () => {
       vivant = false;
     };
-  }, [ouvert, charge, chantierId]);
+  }, [ouvert, charge, chantierId, enModification]);
+
+  /** La barre : le retour du jour. Un second appui referme. */
+  function basculerLaBarre() {
+    if (ouvert) {
+      setOuvert(false);
+      return;
+    }
+    setEnModification(false);
+    if (charge) remplir(false, dernier, aFaire);
+    setOuvert(true);
+  }
+
+  /** « 1 retour envoyé » : le rouvrir pour le modifier. Un second appui referme. */
+  function rouvrirLeRetour() {
+    if (!modifiable) return;
+    if (ouvert && enModification) {
+      setOuvert(false);
+      return;
+    }
+    setEnModification(true);
+    if (charge) remplir(true, dernier, aFaire);
+    setOuvert(true);
+  }
 
   const faites = taches.filter((t) => t.faite).length;
   const manques = ceQuiManque({ taches, photos: reprises.size }, regles);
@@ -136,11 +231,17 @@ export default function TravauxAFaire({
   async function envoyer() {
     setEnvoi(true);
     setRefus(null);
-    const r = await poserLeRetourAction(chantierId, {
+    const quoi = {
       taches,
       photoIds: [...reprises],
       aSignaler: aSignaler.trim() || null,
-    });
+    };
+    const aModifier = enModification && modifiable ? dernier : null;
+    const r = aModifier
+      ? await modifierLeRetourAction(chantierId, aModifier.id, quoi).then((m) =>
+          m.ok ? { ok: true as const, id: aModifier.id } : m
+        )
+      : await poserLeRetourAction(chantierId, quoi);
     setEnvoi(false);
     // **Le refus s'affiche.** Le 11 août 2026, « Impossible d'enregistrer la
     // note » ne pouvait être expliqué par personne, faute d'avoir laissé le
@@ -149,11 +250,26 @@ export default function TravauxAFaire({
       setRefus(r.raison);
       return;
     }
-    setEnvoyes((n) => n + 1);
-    setVientDePartir(true);
+    // Ce qui vient de partir est le nouveau dernier : c'est lui qu'un appui
+    // sur « 1 retour envoyé » rouvrira, sans relire le chantier.
+    const poseLe = aModifier ? aModifier.poseLe : new Date().toISOString();
+    setDernierLe(poseLe);
+    setDernier({
+      id: r.id,
+      poseLe,
+      taches,
+      photos: photos.filter((p) => reprises.has(p.id)),
+      aSignaler: quoi.aSignaler,
+    });
+    // Modifier réécrit le retour : le compte ne bouge pas.
+    if (!aModifier) {
+      setEnvoyes((n) => n + 1);
+      setVientDePartir(true);
+    }
     // Les photos et le mot repartent vides pour demain ; les cases restent.
     setReprises(new Set());
     setASignaler("");
+    setEnModification(false);
     setOuvert(false);
   }
 
@@ -228,8 +344,8 @@ export default function TravauxAFaire({
         <button
           type="button"
           data-atlas="ouvrir-travaux"
-          aria-expanded={ouvert}
-          onClick={() => setOuvert((o) => !o)}
+          aria-expanded={ouvert && !enModification}
+          onClick={basculerLaBarre}
           className="flex min-h-[54px] w-full items-center gap-2.5 pl-4 pr-3.5 text-left"
           style={{ background: voile(colors.plein, 0.16) }}
         >
@@ -428,7 +544,7 @@ export default function TravauxAFaire({
                   className="mx-auto mt-3.5 block w-max rounded-full px-6 py-3 text-[15px] disabled:opacity-45"
                   style={{ backgroundColor: colors.plein, color: surPlein, fontFamily: font.display }}
                 >
-                  {envoi ? "Un instant…" : "Envoyer le retour du jour"}
+                  {envoi ? "Un instant…" : enModification ? "Renvoyer le retour" : "Envoyer le retour du jour"}
                 </button>
 
                 {/* Ce que le patron attend encore, AVANT l'appui — un rappel,
@@ -450,10 +566,18 @@ export default function TravauxAFaire({
 
       {/* Une fois parti, on dit OÙ le retrouver — et le bandeau reste ouvert
           au lendemain : un chantier de huit jours envoie huit retours. */}
+      {/* Le jour même, un appui le rouvre pour le modifier : c'est la seule
+          porte vers le retour parti, et elle est là où il le voit. Un autre
+          jour, il n'est plus un bouton (`retourModifiable`). */}
       {envoyes > 0 && (
-        <div
+        <button
+          type="button"
           data-atlas="retour-envoye"
-          className="mt-2.5 flex items-center gap-3 rounded-[12px] px-4 py-2.5"
+          data-modifiable={modifiable}
+          aria-expanded={modifiable ? ouvert && enModification : undefined}
+          disabled={!modifiable}
+          onClick={rouvrirLeRetour}
+          className="mt-2.5 flex w-full items-center gap-3 rounded-[12px] px-4 py-2.5 text-left"
           style={{
             backgroundColor: voile(colors.plein, 0.16),
             boxShadow: `inset 0 0 0 1px ${colors.vertPale}`,
@@ -487,7 +611,7 @@ export default function TravauxAFaire({
               À retrouver dans Terminés, Retour d&apos;intervention
             </span>
           </span>
-        </div>
+        </button>
       )}
     </div>
   );

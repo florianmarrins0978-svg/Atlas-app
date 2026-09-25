@@ -28,10 +28,36 @@
  * il dit ce que le patron attend, il ne l'impose plus. `peutPoserLeRetour`,
  * qui verrouillait, est parti avec le verrou (`CLAUDE.md` §4 quinquies).
  *
- * Ni base, ni réseau, ni date.
+ * Ni base, ni réseau. Une seule date : le jour où un retour cesse de se
+ * modifier (`retourModifiable`), et l'instant lui est donné.
  */
 
 import { dansLaPeriode } from "./periode";
+import { jourIso } from "./jour";
+
+/**
+ * CE RETOUR PEUT-IL ENCORE SE MODIFIER ?
+ *
+ * **Sa règle du 25 septembre 2026 :** *« il faut qu'à chaque jour je puisse
+ * envoyer un nouveau rapport des travaux effectués ; le jour 2 ne doit pas
+ * ouvrir le rapport du jour 1 ; lorsque le jour 1 est passé on ne peut plus
+ * le modifier, la modification peut se faire seulement lorsque c'est le jour
+ * actuel. »*
+ *
+ * Deux conditions, et il les faut toutes les deux :
+ *
+ * · **envoyé aujourd'hui**, compté à Paris (`jourIso`) : à 1 h du matin l'été,
+ *   l'UTC dit encore la veille ;
+ * · **regardé depuis la journée d'aujourd'hui** au planning : depuis le jour 2
+ *   d'un chantier de huit jours, « 1 retour envoyé » ne rouvre pas le jour 1.
+ *
+ * Le serveur ne tient que la première (il ne sait pas quel jour l'écran
+ * montre) : c'est elle qui protège la preuve d'un jour passé.
+ */
+export function retourModifiable(poseLe: string, jourAffiche: string, maintenant: Date): boolean {
+  const aujourdHui = jourIso(maintenant);
+  return jourIso(new Date(poseLe)) === aujourdHui && jourAffiche === aujourdHui;
+}
 
 /** Une tâche du retour : le libellé recopié du devis, et si elle a été faite. */
 export type TacheDuRetour = {
