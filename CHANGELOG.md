@@ -8,6 +8,36 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-25
 
+### L'anthracnose se sépare en deux planches, le chêne et le hêtre
+
+**Sa correction :** *« c'est pas du chêne et du hêtre, c'est une planche pour le
+chêne et une pour le hêtre »*, puis, devant la photo : *« là la feuille c'est
+pour un chêne »*.
+
+La planche du 22 septembre tenait les deux arbres sur un seul écran. Ce n'était
+pas qu'une question de titre : `fiche-maladie.js` écrit la ligne de confiance
+d'après `taxons[0]`, donc l'écran annonçait **« Probable sur un chêne » même
+devant un hêtre**, et la seule photo était une feuille de chêne — ce qu'il a vu
+avant nous. Une fiche qui nomme deux arbres ne peut pas en désigner un seul à
+l'écran.
+
+`appli/fiche-anthracnose-du-chene.html` et `appli/fiche-anthracnose-du-hetre.html`
+remplacent la planche unique, qui est supprimée. **Aucun fait n'a bougé** : même
+page de l'INRAE, déjà relue champ par champ. Le partage suit ce que la page
+attribue elle-même — *A. quercina* et *A. errabunda*, le port en « chou fleur »
+et les glands au chêne (la page écrit que la pourriture ne semble pas constatée
+sur les faînes, donc le hêtre n'a pas de partie `fruit`), les mortalités de
+jeunes tiges au hêtre, et tout le reste aux deux. Chaque planche porte le tableau
+qui dit où va chaque phrase, et une `confusion` renvoie d'une fiche à l'autre :
+c'est l'arbre qui tranche.
+
+**Le hêtre part sans photo, et c'est voulu.** Les huit figures d'Ephytia portent
+un « © », aucune photo libre d'anthracnose sur hêtre n'a été vérifiée, et poser
+celle du chêne montrerait le mauvais arbre. Rien n'est codé : la fiche 003 en
+base attend son oui pour se séparer en deux (`TODO.md`).
+
+---
+
 ### Ma TVA à la calculette : le mot ouvre la page, le chiffre copie (sur `main` le 25 septembre, batterie commune avec cinq autres lots)
 
 Planche `appli/tva-collectee-a-la-calculette.html`, sa A. Un appui sur « TVA

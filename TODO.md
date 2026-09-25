@@ -168,41 +168,54 @@ niveau 2, et il avait demandé le soir même de ne lancer aucune batterie. À
 reprendre avec la ligne `fiche-maladie.css fiche-maladie.js` ci-dessus, dans
 le même lot d'outillage.
 
-## ⏳ UNE PLANCHE À REGARDER — FICHE 3, L'ANTHRACNOSE DU CHÊNE ET DU HÊTRE (22 septembre 2026)
+## ⏳ DEUX PLANCHES À REGARDER — FICHE 3 A LE CHÊNE, FICHE 3 B LE HÊTRE (25 septembre 2026)
 
-`appli/fiche-anthracnose-du-chene-et-du-hetre.html`, liée depuis
-`appli/essais.html`. **Sa remarque : *« l'anthracnose du chêne n'a pas été
-faite ! On a fait que le platane »*. Elle l'avait été**, le 20 août, et son
-`_lisez_moi` dit qu'il l'avait relue champ par champ — mais **aucune planche
-n'avait jamais été faite**, donc il ne l'avait jamais vue à l'écran. C'est
-exactement le cas du §1 de `CLAUDE.md` dans l'autre sens : le code faisait foi,
-et personne ne le lui avait montré.
+`appli/fiche-anthracnose-du-chene.html` et `appli/fiche-anthracnose-du-hetre.html`,
+liées depuis `appli/essais.html`. **Sa correction du 25 septembre : *« c'est pas
+du chêne et du hêtre, c'est une planche pour le chêne et une pour le hêtre »*,
+puis *« là la feuille c'est pour un chêne »*.** La planche du 22 septembre
+tenait les deux arbres sur un seul écran ; comme `fiche-maladie.js` écrit
+« Probable sur … » d'après `taxons[0]`, elle annonçait **« probable sur un
+chêne » même devant un hêtre**, et la seule photo était une feuille de chêne.
+La planche unique est supprimée, remplacée par les deux.
 
-**Ce que la planche change dans la fiche 003, et rien d'autre :** la forme
-arrêtée le 22 septembre au soir (ses blocs dans son ordre, des phrases, aucun
-tiret ni point-virgule), plus les deux champs nés ce soir-là
-(`quandCaSeVoit`, `autresEssences`, `graviteSelonLaSource`, `commentCaArrive`,
-`article`) et **une photo, qu'elle n'avait pas**. Aucun fait n'a bougé.
+**Le contenu ne bouge d'aucun fait** : même page de l'INRAE, déjà relue champ
+par champ le 22 septembre. Ce qui change est le PARTAGE, et il suit ce que la
+page attribue elle-même :
 
-**Deux différences avec le peuplier, à ne pas gommer :**
+| Ce que la page attache à un arbre | Où ça va |
+|---|---|
+| *Apiognomonia quercina* (Discula quercina) | **le chêne** ; le hêtre garde *A. errabunda* (Discula umbrinella) |
+| le port buissonnant en « chou fleur » | **le chêne seul** |
+| les glands (points noirs, pourriture brune) | **le chêne seul** — la page écrit que cela ne semble pas constaté sur les faînes, donc le hêtre n'a **pas** de partie `fruit` |
+| le manque d'eau chez certains chênes méditerranéens | **le chêne seul** |
+| les mortalités de jeunes tiges **de hêtre** | **le hêtre seul** |
+| feuilles, rameaux, pustules, chancres, météo, insectes, laboratoire | **les deux** — la page ne sépare pas |
+
+**La photo : le chêne la garde, le hêtre part sans.** Il a reconnu lui-même la
+feuille de chêne. Les HUIT figures d'Ephytia portent un « © » nominatif, donc
+aucune ; celle du chêne vient de Commons en domaine public (CC0), et son
+identification vient d'iNaturalist, **pas d'un laboratoire**, ce qui est écrit
+sous la photo. Aucune photo libre d'anthracnose **sur hêtre** n'a été vérifiée :
+poser celle du chêne montrerait le mauvais arbre. Une photo de son chantier
+irait.
+
+**Les deux différences avec le peuplier, à ne pas gommer :**
 
 | | |
 |---|---|
-| sa page **ne porte AUCUNE jauge** de fréquence, d'agressivité ni d'impact | « Est-ce grave pour l'arbre ? » ne repose que sur sa rubrique « Dégâts », et le dit. **Ne pas recopier les notes du peuplier par ressemblance** |
-| sa page **exige un laboratoire** pour confirmer | `methodeConfirmation` s'affiche dans un cadre **sous « Que faire ? »**, jamais dans les détails. C'est la règle du 20 août, et la base commune la tient |
+| cette page **ne porte AUCUNE jauge** de fréquence, d'agressivité ni d'impact | « Est-ce grave pour l'arbre ? » ne repose que sur sa rubrique « Dégâts ». **Ne pas recopier les notes du peuplier par ressemblance** |
+| cette page **exige un laboratoire** pour confirmer | `methodeConfirmation` s'affiche dans un cadre **sous « Que faire ? »**, jamais dans les détails |
 
-**La photo, et c'est la question qui lui est posée :** les HUIT figures de la
-page portent un « © » nominatif, donc aucune. Celle retenue vient de Commons,
-en domaine public (CC0), et sa description dit « Oak Anthracnose » — **mais
-cette identification vient d'iNaturalist, pas d'un laboratoire**, alors que la
-fiche elle-même exige un laboratoire. C'est écrit sous la photo et sur la
-planche. S'il dit non, la fiche part sans photo, comme elle était.
-
-**Sur son oui :** les fiches 003 et 004 entrent ensemble (003 en corrige une
-existante, donc la version de la fiche passe à 2), avec
-`anthracnose-chene-feuille.jpg` et `brunissure-peuplier-feuille.jpg` dans
-`donnees/phyto/images/`, puis `--verifier`,
+**Sur son oui :** la fiche `003-anthracnose-chene-hetre.json` se SÉPARE en deux
+fiches — une par arbre, chacune avec son `nomScientifique`, ses `hotes`, ses
+symptômes, et une `confusion` qui renvoie à l'autre (c'est l'arbre qui tranche).
+Elles entrent avec la 004 du peuplier, plus
+`anthracnose-chene-feuille.jpg` dans `donnees/phyto/images/`, puis `--verifier`,
 `npx tsx scripts/test-import-fiches-phyto.ts` et `test-diagnostic-base.ts`.
+**À vérifier au passage :** 003 est déjà en base, donc la séparation retire un
+code de fiche (`anthracnose-chene-hetre`) et en crée deux — regarder ce que
+`test-import-fiches-phyto.ts` fait d'un code disparu avant de livrer.
 
 ## LA BASE COMMUNE DES PLANCHES DE MALADIES (22 septembre 2026)
 
