@@ -3,6 +3,7 @@
 import { usePathname } from "next/navigation";
 import AtlasBottomNav from "./AtlasBottomNav";
 import AssistantSidebar from "./AssistantSidebar";
+import GesteRetour from "./GesteRetour";
 import { FournisseurAssistant } from "./assistant-contexte";
 import { estEcranSansNavigation } from "@/lib/ecrans-sans-navigation";
 import { peutUtiliserLAssistant, type Role } from "@/lib/acces-roles";
@@ -80,10 +81,14 @@ export default function CadreApplication({
     return estDevisSeul ? (
       <FournisseurAssistant disponible={assistant}>
         <main>{children}</main>
+        <GesteRetour />
         {role !== "salarie" && <AssistantSidebar />}
       </FournisseurAssistant>
     ) : (
-      <main>{children}</main>
+      <>
+        <main>{children}</main>
+        <GesteRetour />
+      </>
     );
   }
 
@@ -110,6 +115,9 @@ export default function CadreApplication({
             compris (voir globals.css) : sans navigation, cette marge laisserait
             un vide en bas de page. */}
         <main className="atlas-contenu flex-1">{children}</main>
+        {/* Glisser vers la droite appuie sur la flèche de retour de l'écran,
+            quand il en a une (`GesteRetour.tsx`). */}
+        <GesteRetour />
         <AtlasBottomNav role={role} />
         {role !== "salarie" && <AssistantSidebar />}
       </div>

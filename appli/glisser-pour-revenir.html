@@ -1,0 +1,362 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Glisser pour revenir</title>
+<style>
+/*
+  SA DEMANDE DU 25 SEPTEMBRE 2026, capture de la facture F2026-000008 à l'appui :
+  « à chaque fois qu'il y a une touche retour pour une page, qu'on puisse faire
+    retour en slidant de gauche vers la droite. Fais-moi une planche pour chaque
+    page que je puisse essayer. »
+
+  ─────────────────────────────────────────────────────────────────────────────
+  UNE SEULE PLANCHE, ET TOUTES LES PAGES DEDANS : c'est délibéré.
+
+  L'application n'a qu'UNE flèche de retour (`src/components/atlas/FlecheRetour.tsx`),
+  montée par `EnTeteEcran` sur une cinquantaine d'écrans. Le geste se posera donc
+  une seule fois, sur elle, et vaudra partout où elle est : là où il n'y a pas de
+  flèche (les cinq onglets du bas), il n'y a pas de geste. Cinquante fichiers
+  identiques au titre près ne montreraient rien de plus, et se contrediraient au
+  premier réglage. Ici chaque page existe, avec son vrai titre, et se rejoint par
+  le même chemin que dans l'application.
+
+  ─────────────────────────────────────────────────────────────────────────────
+  CE QU'IL Y A À CHOISIR : D'OÙ PART LE GESTE.
+
+  A, depuis le bord gauche (comme Safari et les réglages de l'iPhone). Rien ne se
+    déclenche en faisant défiler une liste ou en touchant un champ.
+  B, de n'importe où sur la page. Plus facile d'une main ; mais un geste de côté
+    sur un calendrier, un curseur ou une signature au doigt ne doit PAS reculer,
+    et chacun de ces écrans devra le refuser nommément.
+
+  ─────────────────────────────────────────────────────────────────────────────
+  CE QUE SAFARI FAIT DÉJÀ, et ce qui change la question.
+
+  Dans Safari, glisser depuis le bord gauche recule déjà d'une page : c'est le
+  navigateur qui le fait, avec son historique. Ce qui en manque : l'application
+  posée sur l'écran d'accueil (pas de geste du tout), et l'application iPhone
+  (Capacitor), où il faut l'allumer. Et le recul de Safari suit l'historique, pas
+  la flèche : sur la première page d'un onglet (notification ouverte à froid),
+  la flèche a une sortie, Safari n'en a pas.
+
+  Cette planche empile ses pages dans l'historique du navigateur : le geste de
+  Safari et le sien reculent donc au même endroit, sans se battre.
+
+  IL A RETENU LA B LE 25 SEPTEMBRE 2026 : codée dans `GesteRetour.tsx`
+  (`ARCHITECTURE.md` §415).
+*/
+:root{
+  --bone:#f5f3ee; --cream:#faf9f5; --paper:#ece9e1;
+  --charcoal:#1c1c1a; --charcoal-soft:#4a4a44; --muted:#8a8578;
+  --or:#B98B47; --vert:#7f9a78; --line:rgba(28,28,26,.12);
+  --ombre:rgba(0,0,0,.18); --voile:rgba(28,28,26,.10); --surPlein:#faf9f5;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --bone:#171613; --cream:#1e1c18; --paper:#2a2824; --charcoal:#e9e5dc;
+         --charcoal-soft:#c9c4b8; --muted:#8a867c; --or:#C9A15E; --vert:#9db98f;
+         --line:rgba(233,229,220,.12); --ombre:rgba(0,0,0,.5);
+         --voile:rgba(0,0,0,.35); --surPlein:#171613; }
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bone);color:var(--charcoal);
+  font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;
+  overscroll-behavior:none}
+body{overflow:hidden}
+
+#scene{position:fixed;inset:0 0 calc(64px + env(safe-area-inset-bottom)) 0;overflow:hidden}
+.ecran{position:absolute;inset:0;background:var(--bone);overflow-y:auto;
+  -webkit-overflow-scrolling:touch;touch-action:pan-y;
+  padding:18px 24px 40px;will-change:transform}
+.ecran.dessus{box-shadow:-10px 0 30px var(--ombre)}
+.ecran .voile{position:absolute;inset:0;background:var(--voile);opacity:0;pointer-events:none}
+
+.haut{height:48px;display:flex;align-items:center;justify-content:space-between}
+.retour{width:44px;height:44px;border-radius:50%;background:var(--paper);border:0;
+  display:grid;place-items:center;color:var(--charcoal);cursor:pointer}
+.bulle{width:52px;height:52px;border-radius:50%;background:var(--vert);display:grid;place-items:center}
+h1{font-family:Georgia,"Times New Roman",serif;font-weight:400;font-size:36px;
+  line-height:1.1;margin:18px 0 0}
+.sur{margin:10px 0 0;font-size:12px;letter-spacing:.28em;text-transform:uppercase;color:var(--or)}
+
+.lignes{margin-top:26px;border-top:1px solid var(--line)}
+.ligne{display:block;width:100%;text-align:left;background:none;border:0;
+  border-bottom:1px solid var(--line);padding:17px 0;font-size:16px;color:var(--charcoal);
+  font-family:inherit}
+button.ligne{cursor:pointer}
+.ligne small{display:block;margin-top:3px;font-size:13px;color:var(--muted)}
+.ligne.vide{color:var(--muted)}
+
+.feuille{margin-top:26px;background:#fff;color:#1c1c1a;padding:20px 18px;font-size:11px;line-height:1.5}
+.feuille .t{font-family:Georgia,serif;text-align:center;font-size:15px;letter-spacing:.08em;margin:12px 0}
+.feuille .r{display:flex;justify-content:space-between;border-top:1px solid #ddd;padding:6px 0}
+.feuille .ttc{font-family:Georgia,serif;font-size:15px;border-top:2px solid #1c1c1a}
+
+.choix{margin-top:22px;display:flex;gap:8px}
+.choix button{flex:1;border:1px solid var(--line);background:var(--cream);color:var(--charcoal);
+  border-radius:12px;padding:11px 8px;font-size:14px;font-family:inherit;cursor:pointer}
+.choix button[aria-pressed="true"]{background:var(--charcoal);color:var(--surPlein);border-color:var(--charcoal)}
+.aide{margin:10px 0 0;font-size:13px;color:var(--muted)}
+
+nav{position:fixed;left:0;right:0;bottom:0;height:calc(64px + env(safe-area-inset-bottom));
+  padding-bottom:env(safe-area-inset-bottom);background:var(--bone);border-top:1px solid var(--line);
+  display:flex;justify-content:space-around;align-items:center}
+nav button{background:none;border:0;font-family:inherit;font-size:10px;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--muted);padding:12px 4px;cursor:pointer}
+nav button.actif{color:var(--charcoal);box-shadow:inset 0 -2px 0 var(--or)}
+</style>
+</head>
+<body>
+<div id="scene"></div>
+<nav id="onglets"></nav>
+
+<script>
+/*
+  Les pages et leur chemin, relevés dans `src/app` le 25 septembre 2026 : chaque
+  écran qui monte la flèche de retour, avec son surtitre et son titre réels.
+  `vers` : ce qui s'ouvre depuis cette page. `lignes` : du contenu inerte.
+*/
+const PAGES = {
+  // ── Les cinq onglets : pas de flèche, donc pas de geste ──
+  chantiers:{onglet:true,sur:"Aujourd'hui",titre:"Chantiers",vers:["chantier","nouveau","clients"]},
+  planning:{onglet:true,sur:"Septembre",titre:"Planning",vers:["securite"]},
+  termines:{onglet:true,sur:"Chantiers",titre:"Terminés",vers:["nonpayees","retours","tva"]},
+  paysage:{onglet:true,sur:"Outils du métier",titre:"Paysage",vers:["arrosage","diagnostic","fiche","fichesSecurite"]},
+  reglages:{onglet:true,sur:"Atlas",titre:"Réglages",vers:["entreprise","abonnement","agenda","couleurs","compte","motdepasse","documents","donnees","equipe","ia","notifications","tarifs"]},
+
+  // ── Depuis Chantiers ──
+  chantier:{sur:"Mr. Frédéric",titre:"Poterie",vers:["informations","notevocale","transcription","prix","devis","facture"]},
+  informations:{sur:"Poterie",titre:"Informations",lignes:["Rue Denfert Rochereau, Mantes-la-Jolie","06 79 98 45 14"]},
+  notevocale:{sur:"Poterie",titre:"Note vocale",lignes:["Touchez pour dicter"]},
+  transcription:{sur:"Poterie",titre:"Transcription",lignes:["Poser une poterie en terre cuite devant l'entrée."]},
+  prix:{sur:"Poterie",titre:"Prix",lignes:["Poterie, 250,00 €"]},
+  devis:{sur:"Poterie",titre:"Devis",vers:["pdf"]},
+  pdf:{sur:"Devis",titre:"D2026-000011",lignes:["Le document"]},
+  facture:{sur:"Poterie",titre:"F2026-000008",feuille:true,vers:["paiement","avoir","impaye","ts"]},
+  paiement:{sur:"F2026-000008, Mr. Frédéric",titre:"Il vous a payé",lignes:["Virement","Chèque","Espèces"]},
+  avoir:{sur:"Mr. Frédéric",titre:"Vous lui enlevez combien ?",vers:["avoirFait"]},
+  avoirFait:{sur:"Avoir A2026-000002",titre:"C'est fait",lignes:["50,00 € enlevés"]},
+  impaye:{titre:"Que voulez-vous faire ?",vers:["miseEnDemeure","nonPaiera"]},
+  miseEnDemeure:{sur:"F2026-000008, Mr. Frédéric",titre:"Mise en demeure",lignes:["La lettre, prête à envoyer"]},
+  nonPaiera:{sur:"F2026-000008, Mr. Frédéric",titre:"Il ne vous paiera pas",lignes:["La facture part dans Non payées"]},
+  ts:{sur:"F2026-000008",titre:"Travaux en plus",lignes:["Ajouter une ligne"]},
+  nouveau:{sur:"Chantiers",titre:"Nouveau chantier",lignes:["Client","Adresse","Travaux"]},
+  clients:{titre:"Vos clients",vers:["client"]},
+  client:{sur:"Client",titre:"Mr. Frédéric",vers:["coordonnees"]},
+  coordonnees:{titre:"Ses coordonnées",lignes:["Rue Denfert Rochereau, Mantes-la-Jolie","06 79 98 45 14"]},
+
+  // ── Depuis Planning ──
+  securite:{sur:"Mardi 29 septembre",titre:"Fiche de sécurité",lignes:["Le chantier","Les risques","Signer"]},
+
+  // ── Depuis Terminés ──
+  nonpayees:{titre:"Non payées",vers:["nonPaiera"]},
+  retours:{titre:"Retours d'intervention",lignes:["Mardi 22 septembre","Jeudi 17 septembre"]},
+  tva:{sur:"Ma TVA",titre:"Septembre 2026",lignes:["Collectée, 50,00 €"]},
+
+  // ── Depuis Paysage ──
+  arrosage:{sur:"Paysage",titre:"Plan d’arrosage",lignes:["Photographier le croquis"]},
+  diagnostic:{sur:"Paysage",titre:"Diagnostic végétal",vers:["diagnosticResultat"]},
+  diagnosticResultat:{sur:"Diagnostic végétal",titre:"Anthracnose",lignes:["Probable sur un platane."]},
+  fiche:{sur:"Outils du métier",titre:"Fiche de chantier",vers:["ficheUne","composer","rapport"]},
+  ficheUne:{sur:"Outils du métier",titre:"Fiche de chantier",lignes:["Tonte, taille de haie"]},
+  composer:{titre:"Composer ma fiche",lignes:["Les cases de ma fiche"]},
+  rapport:{titre:"Rapport envoyé",lignes:["Envoyé à Mr. Frédéric"]},
+  fichesSecurite:{sur:"Paysage",titre:"Fiches de sécurité",lignes:["Mardi 22 septembre"]},
+
+  // ── Depuis Réglages ──
+  entreprise:{sur:"Réglages",titre:"Mon entreprise",lignes:["Atlas","SIRET 123 456 789 00012"]},
+  abonnement:{sur:"Mon entreprise",titre:"Abonnement",lignes:["Formule en cours"]},
+  agenda:{sur:"Réglages",titre:"Mon agenda",lignes:["Heures de travail"]},
+  couleurs:{sur:"Moi",titre:"Couleurs",lignes:["Pierre","Nuit","Sylve"]},
+  compte:{sur:"Moi",titre:"Mon compte",lignes:["Florian Martins"]},
+  motdepasse:{sur:"Moi",titre:"Mot de passe",lignes:["Changer le mot de passe"]},
+  documents:{sur:"Réglages",titre:"Devis & factures",vers:["allure","imprime","message","numero"]},
+  allure:{sur:"Devis & factures",titre:"L'allure de mes devis",lignes:["Classique"]},
+  imprime:{sur:"Devis & factures",titre:"Ce qui s'imprime",lignes:["Conditions de paiement"]},
+  message:{sur:"Devis & factures",titre:"Mon message au client",lignes:["Bonjour,"]},
+  numero:{sur:"Devis & factures",titre:"Le numéro de mes documents",lignes:["F2026-000008"]},
+  donnees:{sur:"Réglages",titre:"Mes données",lignes:["Tout télécharger"]},
+  equipe:{sur:"Réglages",titre:"Équipe",vers:["nouveauCompte"]},
+  nouveauCompte:{sur:"Équipe",titre:"Nouveau compte",lignes:["Prénom","Adresse e-mail"]},
+  ia:{sur:"Réglages",titre:"Atlas IA",vers:["vocabulaire"]},
+  vocabulaire:{sur:"Atlas IA",titre:"Mon vocabulaire",lignes:["Taille douce"]},
+  notifications:{sur:"Moi",titre:"Notifications",lignes:["Devis signé","Facture payée"]},
+  tarifs:{sur:"Réglages",titre:"Tarifs & catalogue",vers:["mesprix","catalogue"]},
+  mesprix:{sur:"Tarifs & catalogue",titre:"Mes prix",vers:["mesures"]},
+  mesures:{sur:"Mes prix",titre:"Mes mesures",lignes:["m²","ml","heure"]},
+  catalogue:{sur:"Réglages",titre:"Catalogue",lignes:["Poterie","Gazon en rouleau"]},
+};
+const ONGLETS = ["chantiers","planning","termines","paysage","reglages"];
+
+// A : depuis le bord. B : de n'importe où. Retenu d'une visite à l'autre.
+let mode = "A";
+try { mode = localStorage.getItem("glisser-mode") || "A"; } catch (e) { /* stockage refusé : A */ }
+
+const scene = document.getElementById("scene");
+let pile = [];        // [{cle, el}]
+let ongletActif = "chantiers";
+
+const CHEVRON = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M15 5l-7 7 7 7" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const BULLE = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#faf9f5" stroke-width="1.8"><path d="M4 18l1.5-3.5A7.5 7.5 0 1 1 9 18.6L4 18z" stroke-linejoin="round"/></svg>';
+
+function dessiner(cle){
+  const p = PAGES[cle];
+  const el = document.createElement("div");
+  el.className = "ecran";
+  let h = '<div class="haut">' + (p.onglet ? "<span></span>" : '<button class="retour" aria-label="Retour">' + CHEVRON + "</button>") + '<span class="bulle">' + BULLE + "</span></div>";
+  h += "<h1>" + p.titre + "</h1>";
+  if (p.sur) h += '<p class="sur">' + p.sur + "</p>";
+  if (p.onglet) {
+    h += '<div class="choix"><button data-mode="A">A. Depuis le bord</button><button data-mode="B">B. De partout</button></div>';
+    h += '<p class="aide">Ouvrez une page, puis glissez vers la droite.</p>';
+  }
+  if (p.feuille) {
+    h += '<div class="feuille"><b>Atlas</b><div class="t">FACTURE</div>Mr. Frédéric<br>Rue Denfert Rochereau 78200 Mantes-la-Jolie' +
+         '<div class="r" style="margin-top:12px"><span>Poterie</span><span>250,00 €</span></div>' +
+         '<div class="r"><span>TVA (20 %)</span><span>50,00 €</span></div>' +
+         '<div class="r ttc"><span>Total TTC</span><span>300,00 €</span></div></div>';
+  }
+  h += '<div class="lignes">';
+  (p.vers || []).forEach(c => {
+    const q = PAGES[c];
+    h += '<button class="ligne" data-vers="' + c + '">' + q.titre + (q.sur ? "<small>" + q.sur + "</small>" : "") + "</button>";
+  });
+  (p.lignes || []).forEach(t => { h += '<div class="ligne vide">' + t + "</div>"; });
+  h += '</div><div class="voile"></div>';
+  el.innerHTML = h;
+
+  el.addEventListener("click", ev => {
+    const b = ev.target.closest("button");
+    if (!b) return;
+    if (b.classList.contains("retour")) reculerAnime();
+    else if (b.dataset.vers) ouvrir(b.dataset.vers);
+    else if (b.dataset.mode) choisirMode(b.dataset.mode);
+  });
+  if (!p.onglet) brancherGeste(el);
+  return el;
+}
+
+function majChoix(){
+  document.querySelectorAll(".choix button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.mode === mode)));
+}
+function choisirMode(m){ mode = m; try { localStorage.setItem("glisser-mode", m); } catch (e) { /* sans mémoire, le choix vaut pour la visite */ } majChoix(); }
+
+function poser(el, x){ el.style.transform = x ? "translate3d(" + x + "px,0,0)" : ""; }
+function transition(el, on){ el.style.transition = on ? "transform .28s cubic-bezier(.2,.8,.2,1)" : "none"; }
+function voile(el, a){ const v = el.querySelector(".voile"); v.style.transition = el.style.transition.replace("transform","opacity"); v.style.opacity = a; }
+
+// Ouvrir une page : elle entre par la droite, celle d'en dessous recule d'un tiers.
+function ouvrir(cle, sansHistorique){
+  const dessous = pile[pile.length - 1];
+  const el = dessiner(cle);
+  el.classList.add("dessus");
+  const L = scene.clientWidth;
+  transition(el, false); poser(el, L);
+  scene.appendChild(el);
+  pile.push({ cle, el });
+  majChoix();
+  if (!sansHistorique) history.pushState({ d: pile.length - 1, o: ongletActif, pile: pile.map(x => x.cle) }, "");
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    transition(el, true); poser(el, 0);
+    if (dessous) { transition(dessous.el, true); poser(dessous.el, -L * 0.3); voile(dessous.el, 1); }
+  }));
+}
+
+// Reculer en animant, depuis la flèche ou au bout du geste.
+function reculerAnime(){
+  if (pile.length < 2) return;
+  const haut = pile.pop();
+  const dessous = pile[pile.length - 1];
+  const L = scene.clientWidth;
+  transition(haut.el, true); poser(haut.el, L);
+  transition(dessous.el, true); poser(dessous.el, 0); voile(dessous.el, 0);
+  setTimeout(() => haut.el.remove(), 300);
+  // L'historique suit, pour que le geste de Safari et le nôtre soient le même recul.
+  history.back();
+}
+
+// Le recul de Safari arrive ici : on ne rejoue pas d'animation, il a déjà la sienne.
+window.addEventListener("popstate", ev => {
+  const d = ev.state ? ev.state.d : 0;
+  while (pile.length - 1 > d) {
+    const haut = pile.pop(); haut.el.remove();
+    const dessous = pile[pile.length - 1];
+    transition(dessous.el, false); poser(dessous.el, 0); voile(dessous.el, 0);
+  }
+});
+
+function brancherGeste(el){
+  const BORD = 30;
+  let depart = null, suivi = false, refuse = false, dx = 0, t0 = 0, dernierX = 0, dernierT = 0, vitesse = 0;
+  el.addEventListener("pointerdown", e => {
+    if (pile[pile.length - 1].el !== el) return;
+    if (e.pointerType === "mouse" && e.button !== 0) return;
+    if (mode === "A" && e.clientX > BORD) return;
+    depart = { x: e.clientX, y: e.clientY }; suivi = false; refuse = false; dx = 0;
+    t0 = dernierT = e.timeStamp; dernierX = e.clientX; vitesse = 0;
+  });
+  el.addEventListener("pointermove", e => {
+    if (!depart || refuse) return;
+    const mx = e.clientX - depart.x, my = e.clientY - depart.y;
+    if (!suivi) {
+      if (Math.abs(mx) < 8 && Math.abs(my) < 8) return;
+      // Un geste d'abord vertical, ou vers la gauche, fait défiler : on le laisse.
+      if (Math.abs(my) > Math.abs(mx) || mx < 0) { refuse = true; return; }
+      suivi = true;
+      try { el.setPointerCapture(e.pointerId); } catch (x) { /* déjà relâché */ }
+      transition(el, false);
+      const d = pile[pile.length - 2]; if (d) transition(d.el, false);
+    }
+    dx = Math.max(0, mx);
+    const L = scene.clientWidth;
+    poser(el, dx);
+    const d = pile[pile.length - 2];
+    if (d) { poser(d.el, -L * 0.3 * (1 - dx / L)); voile(d.el, 1 - dx / L); }
+    vitesse = (e.clientX - dernierX) / Math.max(1, e.timeStamp - dernierT);
+    dernierX = e.clientX; dernierT = e.timeStamp;
+  });
+  const fin = () => {
+    if (!depart) return;
+    const etaitSuivi = suivi; depart = null; suivi = false;
+    if (!etaitSuivi) return;
+    const L = scene.clientWidth;
+    // Assez loin, ou lancé d'un coup sec : on recule. Sinon la page revient.
+    if (dx > L * 0.35 || vitesse > 0.5) reculerAnime();
+    else {
+      transition(el, true); poser(el, 0);
+      const d = pile[pile.length - 2];
+      if (d) { transition(d.el, true); poser(d.el, -L * 0.3); voile(d.el, 1); }
+    }
+  };
+  el.addEventListener("pointerup", fin);
+  el.addEventListener("pointercancel", fin);
+}
+
+function allerAOnglet(o){
+  ongletActif = o;
+  scene.innerHTML = ""; pile = [];
+  const el = dessiner(o);
+  scene.appendChild(el);
+  pile.push({ cle: o, el });
+  majChoix();
+  history.replaceState({ d: 0, o, pile: [o] }, "");
+  document.querySelectorAll("nav button").forEach(b => b.classList.toggle("actif", b.dataset.o === o));
+}
+
+const nav = document.getElementById("onglets");
+ONGLETS.forEach(o => {
+  const b = document.createElement("button");
+  b.dataset.o = o; b.textContent = PAGES[o].titre;
+  b.addEventListener("click", () => {
+    // Revenir à l'onglet vide l'historique de la planche jusqu'à sa racine.
+    const d = history.state ? history.state.d : 0;
+    if (d > 0) { history.go(-d); setTimeout(() => allerAOnglet(o), 60); }
+    else allerAOnglet(o);
+  });
+  nav.appendChild(b);
+});
+allerAOnglet("chantiers");
+</script>
+</body>
+</html>

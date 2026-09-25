@@ -20,7 +20,7 @@ la facture entière), 18 % sur une facture qui mêle 10 % et 20 %. Affiché tel
 quel, il n'aurait rien permis de vérifier. Une facture mixte se lit désormais en
 une ligne par taux, lue sur ses lignes et ses avoirs, et la somme retombe au
 centime sur Ma TVA (`src/lib/tva-par-taux.ts`). Un achat sans total ni taux se
-lit « non noté », jamais zéro. `ARCHITECTURE.md` §415.
+lit « non noté », jamais zéro. `ARCHITECTURE.md` §416.
 
 ### L'avoir envoyé ramène à l'accueil, avec « Avoir transmis à … »
 
@@ -71,6 +71,17 @@ retour » le réécrit au lieu d'en poser un second. Seul le dernier se modifie,
 et le jour même : le jour 2 d'un chantier de huit jours envoie le sien ;
 modifié, il redevient non lu pour le patron. Aucune migration.
 `ARCHITECTURE.md` §414.
+
+### Glisser vers la droite pour revenir, sur tout écran qui a une flèche (codé, pas encore sur `main`)
+
+Sa demande, planche `appli/glisser-pour-revenir.html`, variante **B** retenue :
+le geste part de n'importe où sur la page. Il **appuie sur la flèche** de
+l'écran (`data-geste-retour`), donc il mène exactement où elle mène ; pas de
+flèche, pas de geste. Ce qui glisse déjà de côté garde son geste : le champ où
+l'on tape, la signature, le mois du planning, une ligne dont « Retirer » est
+découvert. Le bord gauche reste à Safari dans un onglet. Un double recul
+(Chrome reculait aussi de son côté) a été vu à l'essai et corrigé avant
+livraison. `ARCHITECTURE.md` §415, `scripts/test-geste-retour-e2e.ts`.
 
 ---
 ## 2026-09-24

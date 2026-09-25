@@ -33395,7 +33395,43 @@ Suites : `test-retour-intervention-db.ts` (réécrit sans en créer un second,
 refus sur un retour qui n'est pas le dernier, refus entre entreprises, purge)
 et `test-travaux-a-faire-e2e.ts` (l'appui, le renvoi, la base).
 
-## §415 : Ma TVA à la calculette, et le taux moyen qu'il ne fallait pas afficher
+## §415 : Glisser vers la droite pour revenir, le geste appuie sur la flèche
+
+**Sa demande du 25 septembre 2026**, variante B de
+`appli/glisser-pour-revenir.html` : de n'importe où sur la page, glisser vers la
+droite recule.
+
+**Le geste ne calcule aucun retour.** `GesteRetour.tsx`, monté une fois par
+`CadreApplication`, cherche dans `main` l'élément marqué `data-geste-retour` et
+l'appuie. La destination reste celle de la flèche : journal de l'onglet et
+repli (`FlecheRetour`), enregistrement avant de sortir, feuille qui se referme
+sur place. Un second calcul de retour referait la boucle du 7 septembre 2026
+(`retour-du-devis.ts`). Une flèche neuve qui n'est pas `FlecheRetour` doit
+porter la marque, sinon son écran n'a pas de geste : `test-geste-retour-partout.ts`
+le refuse (tout élément dont le libellé commence par « Retour »). Une fenêtre
+ouverte DANS une page, avec son propre retour (la page « Ma TVA à la
+calculette » en préparation, sa mise en garde du 25 septembre), suit la même
+règle : son retour porte la marque, et la flèche de la page qu'elle recouvre
+doit être masquée, puisque le geste appuie la première flèche visible.
+
+**Ce qui garde son geste se lit sur la page, pas dans une liste** : `canvas`,
+curseur, champ EN COURS de frappe (un champ au repos ne refuse pas, sinon
+l'écran des prix, fait de champs, n'avait plus de geste), `touch-action` posé,
+bloc qui défile de côté et peut encore revenir vers la droite, tout ce qui est
+`position: fixed` ou hors de `main`.
+
+**Une fois reconnu, le geste est à nous seuls** (`preventDefault` au
+`touchmove`, écouteur non passif). Sans cela Chrome reculait aussi, et l'on
+sautait deux écrans : mesuré à l'essai. Le bord gauche (20 px) reste au
+navigateur dans un onglet, où Safari recule déjà par son historique ; posée sur
+l'écran d'accueil, l'application le reprend.
+
+**La page suit le doigt puis revient à sa place** pendant que la flèche agit :
+la garder poussée jusqu'à l'écran suivant demanderait de savoir quand il
+arrive, et certaines flèches ne changent pas d'adresse. On ne voit pas la page
+d'avant dessous, contrairement à la planche.
+
+## §416 : Ma TVA à la calculette, et le taux moyen qu'il ne fallait pas afficher
 
 **Sa demande du 25 septembre 2026**, planche
 `appli/tva-collectee-a-la-calculette.html` (la A, chiffres centrés) : un appui

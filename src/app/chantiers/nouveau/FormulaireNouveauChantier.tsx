@@ -875,6 +875,7 @@ export default function FormulaireNouveauChantier({
               type="button"
               onClick={fermerLaFeuille}
               aria-label="Retour à la liste des chantiers"
+              data-geste-retour=""
               className="-ml-1 flex h-8 w-6 flex-shrink-0 items-center justify-center"
             >
               <FlecheRetour />
@@ -908,6 +909,7 @@ export default function FormulaireNouveauChantier({
                   ? libelleRetourDesCoordonnees(reprise?.id ?? "", reprise?.provenance ?? null)
                   : "Retour aux chantiers terminés"
               }
+              data-geste-retour=""
               className="-ml-1 flex h-8 w-6 flex-shrink-0 items-center justify-center"
             >
               <FlecheRetour />

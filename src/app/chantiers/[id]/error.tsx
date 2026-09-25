@@ -22,6 +22,7 @@ export default function Erreur({
         <Link
           href="/"
           aria-label="Retour"
+          data-geste-retour=""
           className="flex h-10 w-10 items-center justify-center rounded-full"
           style={{ backgroundColor: colors.rustTint }}
         >

@@ -11,7 +11,7 @@ Le mot « TVA collectée » ou « TVA déductible » ouvre une page à colonnes 
 montant, taux, TVA, chacune avec son total, puis le récapitulatif par taux. Le
 chiffre copie toujours. Une facture à deux taux se lit en deux lignes. Branche
 `claude/tva-collecter-verification-qlli2x`, batterie de niveau 3 à jouer avant
-`main` (`TODO.md`). `ARCHITECTURE.md` §415.
+`main` (`TODO.md`). `ARCHITECTURE.md` §416.
 
 ## CODÉ, PAS SUR `main` : LE RETOUR ENVOYÉ SE MODIFIE (25 septembre 2026)
 
@@ -19,6 +19,11 @@ Un appui sur « 1 retour envoyé » rouvre le dernier retour ; le renvoyer le
 réécrit, sans en créer un second. Le jour même seulement : le lendemain, on
 envoie le retour du jour. Branche `claude/edit-sent-returns-cx2ka1`,
 niveau 3 (rayon de 18 écrans). `ARCHITECTURE.md` §414.
+
+## CODÉ, PAS SUR `main` : GLISSER VERS LA DROITE POUR REVENIR (25 septembre 2026)
+
+De n'importe où sur un écran qui a une flèche, le geste l'appuie. Batterie
+entière à jouer avant `main`. `ARCHITECTURE.md` §415.
 
 ## FAIT : MOT DE PASSE OUBLIÉ (24 septembre 2026)
 

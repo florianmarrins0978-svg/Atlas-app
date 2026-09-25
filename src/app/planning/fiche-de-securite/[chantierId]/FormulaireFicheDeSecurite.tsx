@@ -330,7 +330,7 @@ export default function FormulaireFicheDeSecurite({
   // ══════════════════ LES SIX ÉCRANS ══════════════════
   const entete = (
     <div className="flex items-center gap-1.5 px-2.5 pt-2" style={{ minHeight: 58 }}>
-      <button type="button" aria-label="Retour" data-atlas="retour-de-la-fiche" onClick={retour} className="grid h-11 w-11 flex-none place-items-center" style={{ color: colors.rust }}>
+      <button type="button" aria-label="Retour" data-atlas="retour-de-la-fiche" data-geste-retour="" onClick={retour} className="grid h-11 w-11 flex-none place-items-center" style={{ color: colors.rust }}>
         <svg width="22" height="22" viewBox="0 0 20 20" fill="none"><path d="M12.5 4 6.5 10l6 6" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" /></svg>
       </button>
       <span className="min-w-0 flex-1 leading-[1.15]">

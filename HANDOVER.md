@@ -32,6 +32,12 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 | **le dépôt** | `modifierLeDernierRetour`, refuse tout retour qui n'est pas le dernier, ou pas d'aujourd'hui |
 | **les suites** | `test-retour-intervention-db.ts`, `test-travaux-a-faire-e2e.ts` |
 
+## GLISSER POUR REVENIR — 25 septembre 2026
+
+Le geste appuie sur l'élément `data-geste-retour` de l'écran : une flèche neuve
+sans cette marque n'a pas de geste. Sur la branche `claude/swipe-back-gesture-t2ki42`,
+batterie non jouée. `ARCHITECTURE.md` §415.
+
 ## MOT DE PASSE OUBLIÉ — 24 septembre 2026
 
 | | |
