@@ -432,6 +432,13 @@ async function main() {
     assert.match(texte, /retour d'intervention/i);
     assert.match(texte, /1 h 45/, "le temps passé n'apparaît pas");
     assert.match(texte, /haie du fond/, "les observations n'apparaissent pas");
+    // **L'année s'écrit toujours** (25 septembre 2026) : le client relit ce
+    // rapport l'année suivante, et « jeudi 17 septembre » n'y désigne plus rien.
+    assert.match(
+      texte,
+      /(lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche) (1er|\d{1,2}) [a-zéû]+ 20\d\d/i,
+      "le jour du passage est écrit sans son année"
+    );
 
     // Sa décision « B » du 16 août : le client lit ce qui a été FAIT chez lui.
     // Trois lignes cochées sur vingt : les dix-sept autres n'ont rien à y faire.

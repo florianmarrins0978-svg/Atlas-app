@@ -6,6 +6,19 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-09-25
+
+### Le retour d'intervention porte l'année
+
+Sa demande : *« ça serait bien d'avoir l'année aussi sur le retour »*. La carte
+(`RapportEntretien.tsx`) écrivait le jour par `jourLisible`, qui tait l'année
+en cours ; elle passe par `jourEnTitre` (« Jeudi 17 septembre 2026 »), déjà
+employé par la fiche de chantier. Le client garde ce rapport et le relit
+l'année suivante. `test-fiche-chantier-e2e.ts` exige désormais l'année sur la
+page du client ; rendu de la carte vu rouge avant, vert après. **Pas encore sur
+`main`** : niveau 3 (`/documents/entretien` n'est ouvert par aucune suite), la
+batterie reste à jouer.
+
 ## 2026-09-24
 
 ### L'avoir, « Il ne me paiera pas » et la mise en demeure (sur `main` le 25 septembre, avec les abonnements et « Facturé » en doré)
