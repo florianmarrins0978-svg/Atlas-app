@@ -10,6 +10,7 @@ import { preparer } from "@/lib/termines-par-mois";
 import { jourIso } from "@/lib/jour";
 import ListeTermines from "./ListeTermines";
 import { listerFacturesNonPayees } from "@/server/repositories/factures-non-payees";
+import { facturesAvecPaiements } from "@/server/repositories/paiements-facture";
 import { tvaDeLaPeriodeCourante } from "@/server/tva-courante";
 
 export const dynamic = "force-dynamic";
@@ -48,7 +49,10 @@ const formatEuros = new Intl.NumberFormat("fr-FR", {
   maximumFractionDigits: 2,
 });
 
-export default async function TerminesPage() {
+export default async function TerminesPage({ searchParams }: { searchParams: Promise<{ chantier?: string }> }) {
+  // La ligne devant laquelle revenir, quand un écran nous y renvoie (le
+  // paiement noté, sa demande du 25 septembre 2026).
+  const { chantier: chantierDemande } = await searchParams;
   const ctx = await getCurrentCtx();
   const chantiers = await listerChantiersTermines(ctx);
   const lignes = preparer(chantiers);
@@ -77,6 +81,9 @@ export default async function TerminesPage() {
   const abonnement = await abonnementDeLEntreprise(ctx);
   const retours = fonctionOuverte(abonnement?.formule, "retours") ? await compterLesRetours(ctx) : 0;
   const nonPayees = await listerFacturesNonPayees(ctx);
+  // Le même « soldée » que l'écran « Il ne vous paiera pas » lit pour refuser :
+  // une seule règle décide si la porte existe et si elle s'ouvre.
+  const chantiersSoldes = (await facturesAvecPaiements(ctx)).filter((f) => f.etat === "soldee").map((f) => f.chantierId);
 
   return (
     <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>
@@ -198,6 +205,8 @@ export default async function TerminesPage() {
             retoursNonLus={retours}
             moisCourant={moisCourant}
             nonPayees={nonPayees.length}
+            chantierDemande={chantierDemande ?? null}
+            chantiersSoldes={chantiersSoldes}
           />
         </div>
 

@@ -77,6 +77,7 @@ async function main() {
   const nomImpaye = `Impayee ${suffixe}`;
   const chantierAvoir = await facturePartie(nomAvoir);
   const chantierImpaye = await facturePartie(nomImpaye);
+  let adresseAvoirFait = "";
 
   const navigateur = await lancerNavigateur();
   const page = await (await navigateur.newContext({ viewport: { width: 390, height: 844 } })).newPage();
@@ -104,9 +105,40 @@ async function main() {
     assert.match(await page.locator('[data-atlas="avoir-nouveau"]').innerText(), /1\s340,00/);
     await page.click('[data-atlas="avoir-valider"]');
     await page.waitForSelector('[data-atlas="avoir-fait"]', { timeout: 30_000 });
+    adresseAvoirFait = page.url();
     await page.goto(`${BASE}/chantiers/${chantierAvoir}/facture`, { waitUntil: "networkidle" });
     assert.equal(await page.locator('[data-atlas="avoir-de-la-facture"]').count(), 1);
     assert.match(await page.locator('[data-atlas="net-a-payer"]').innerText(), /1\s340,00/);
+  });
+
+  // **Sa demande du 25 septembre 2026, capture de « C'est fait » à l'appui :**
+  // *« une fois envoyé il faut revenir sur la page d'accueil et, pareil que
+  // pour le reste, une petite phrase s'affiche »*. L'écran marquait le départ
+  // et ne montait pas le retour : il revenait sur « C'est fait », identique.
+  await cas("l'avoir envoyé, le retour de la messagerie ramène à l'accueil avec « Avoir transmis »", async () => {
+    assert.ok(adresseAvoirFait, "l'écran « C'est fait » n'a pas été atteint");
+    await page.goto(adresseAvoirFait, { waitUntil: "networkidle" });
+    const preparer = page.getByRole("button", { name: "Envoyer l'avoir au client" });
+    if (await preparer.count()) await preparer.click();
+    const capsule = page.locator('[data-atlas="transmission-sms"]');
+    await capsule.waitFor({ state: "visible", timeout: 15_000 });
+    // Le vrai appui, sans partir : `sms:` sortirait du navigateur. Le clic
+    // passe par le geste du bouton (qui marque le départ), la navigation non.
+    await capsule.evaluate((a) => {
+      a.addEventListener("click", (e) => e.preventDefault(), { once: true });
+      (a as HTMLElement).click();
+    });
+    await page.evaluate(() => {
+      Object.defineProperty(document, "visibilityState", { value: "hidden", configurable: true });
+      document.dispatchEvent(new Event("visibilitychange"));
+      Object.defineProperty(document, "visibilityState", { value: "visible", configurable: true });
+      document.dispatchEvent(new Event("visibilitychange"));
+    });
+    await page.waitForURL(`${BASE}/`, { timeout: 15_000 });
+    await page
+      .locator('[role="status"]')
+      .getByText(new RegExp(`Avoir transmis à .*${nomAvoir}`))
+      .waitFor({ state: "visible", timeout: 10_000 });
   });
 
   await cas("« Il ne me paiera pas » : la catégorie Non payées naît, et le paiement l'efface", async () => {
@@ -129,15 +161,45 @@ async function main() {
     await page.goBack();
     await page.waitForSelector('[data-atlas="facture-non-payee"]');
 
+    // Le chantier est rangé deux mois plus tôt : c'est ce qui prouve que le
+    // retour ouvre SON mois, et pas celui du jour.
+    const ilYADeuxMois = new Date();
+    ilYADeuxMois.setDate(15);
+    ilYADeuxMois.setMonth(ilYADeuxMois.getMonth() - 2);
+    await pool.query("UPDATE chantiers SET date_planifiee = $1 WHERE id = $2", [ilYADeuxMois.toISOString().slice(0, 10), chantierImpaye]);
+
     await page.click('[data-atlas="recu-le-paiement"]');
     await page.click('[data-atlas="paiement-moyen"]');
     await page.locator("button", { hasText: "Chèque" }).last().click();
     await page.fill('[data-atlas="paiement-numero"]', "5800755");
     await page.click('[data-atlas="paiement-noter"]');
-    await page.waitForURL(new RegExp(`/chantiers/${chantierImpaye}/facture$`), { timeout: 30_000 });
+    // **Sa demande du 25 septembre 2026 :** *« une fois validé, on quitte la
+    // page de la facture et on retourne sur Terminés, devant la case de
+    // Monsieur Martins qui se trouvait en août »*. Il restait sur la facture,
+    // et Terminés rouvrait sur le mois du jour.
+    await page.waitForURL(new RegExp(`/termines\\?chantier=${chantierImpaye}$`), { timeout: 30_000 });
+    const saLigne = page.locator('[data-atlas="ligne-terminee"]', { hasText: nomImpaye });
+    await saLigne.waitFor({ state: "visible", timeout: 10_000 });
+    assert.equal(await saLigne.evaluate((el) => {
+      const r = el.getBoundingClientRect();
+      return r.top >= 0 && r.bottom <= window.innerHeight;
+    }), true, "la ligne du chantier n'est pas à l'écran : il faut la chercher");
+    await page.goto(`${BASE}/chantiers/${chantierImpaye}/facture`, { waitUntil: "networkidle" });
     assert.match(await page.locator('[data-atlas="net-a-payer"]').innerText(), /0,00/);
     await page.goto(`${BASE}/termines`, { waitUntil: "networkidle" });
     assert.equal(await page.locator('[data-atlas="categorie-non-payees"]').count(), 0, "payée, la catégorie devait disparaître");
+  });
+
+  // **Sa décision du 25 septembre 2026 :** *« une facture déjà payée, tu peux
+  // masquer Il ne me paiera pas »*. Le bouton menait à un écran qui renvoyait
+  // en silence sur la facture acquittée.
+  await cas("une facture payée ne propose plus « Il ne me paiera pas », mais garde l'avoir", async () => {
+    await page.goto(`${BASE}/termines?chantier=${chantierImpaye}`, { waitUntil: "networkidle" });
+    await page.locator('[data-atlas="ligne-terminee"]', { hasText: nomImpaye }).first().click();
+    await page.waitForSelector('[data-atlas="volet-choix"]', { timeout: 10_000 });
+    assert.equal(await page.locator('[data-atlas="volet-non-payee"]').count(), 0, "« Il ne me paiera pas » est proposé sur une facture payée");
+    assert.equal(await page.locator('[data-atlas="volet-avoir"]').count(), 1, "l'avoir a disparu du volet");
+    assert.equal(await page.locator('[data-atlas="volet-facture"]').count(), 1, "« La facture » a disparu du volet");
   });
 
   await navigateur.close();

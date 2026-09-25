@@ -44,7 +44,10 @@ export default function PaiementClient({
       setEnCours(false);
       return;
     }
-    router.push(`/chantiers/${chantierId}/facture`);
+    // **Retour à Terminés, devant sa case** — sa demande du 25 septembre 2026 :
+    // *« une fois validé, on quitte la page de la facture et on retourne sur
+    // Terminés »*. La planche ramenait à la facture ; c'est lui qui tranche.
+    router.push(`/termines?chantier=${chantierId}`);
   }
 
   const ligne = "flex items-center justify-between gap-3 py-3.5";

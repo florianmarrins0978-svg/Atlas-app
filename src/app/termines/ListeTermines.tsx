@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { colors, font, surPlein } from "@/lib/design-tokens";
 import BottomSheet from "@/components/atlas/BottomSheet";
@@ -11,6 +11,7 @@ import {
   factureesPartout,
   formatEuros,
   libelleEtatLigne,
+  moisDuChantier,
   nomDuMois,
   resumeDuMois,
   type LigneAffichee,
@@ -46,7 +47,21 @@ export default function ListeTermines({
   retoursNonLus,
   moisCourant,
   nonPayees,
+  chantierDemande,
+  chantiersSoldes,
 }: {
+  /**
+   * Les chantiers dont la facture est entièrement réglée. Leur volet ne propose
+   * plus « Il ne me paiera pas » — sa décision du 25 septembre 2026 : le bouton
+   * menait à un écran qui renvoyait en silence sur la facture acquittée.
+   */
+  chantiersSoldes: string[];
+  /**
+   * Le chantier devant lequel s'ouvrir : son mois, et sa ligne à l'écran. Sa
+   * demande du 25 septembre 2026, après un paiement noté : *« retourner sur
+   * Terminés, devant la case de Monsieur Martins qui se trouvait en août »*.
+   */
+  chantierDemande: string | null;
   lignes: LigneAffichee[];
   /**
    * Combien de factures il a rangées « Il ne me paiera pas », et encore dues.
@@ -106,7 +121,14 @@ export default function ListeTermines({
   );
   // Le mois affiché se garde en clair — un décalage relatif se recalculait à
   // chaque rendu, et le jour où l'entrée bouge il ne veut plus rien dire.
-  const [cle, setCle] = useState(entree);
+  const soldes = useMemo(() => new Set(chantiersSoldes), [chantiersSoldes]);
+  const [cle, setCle] = useState(() => moisDuChantier(lignes, chantierDemande) ?? entree);
+
+  // Sa ligne à l'écran, au milieu : en haut, l'en-tête la cacherait à moitié.
+  useEffect(() => {
+    if (!chantierDemande) return;
+    document.getElementById(`chantier-${chantierDemande}`)?.scrollIntoView({ block: "center" });
+  }, [chantierDemande]);
   const plancher = decalerMois(entree, RECUL_MAX);
   const mois = useMemo(() => resumeDuMois(lignes, cle), [lignes, cle]);
   // Un œil ouvert sur rien ne montre rien : dès que la dernière facture part,
@@ -357,7 +379,7 @@ export default function ListeTermines({
             </p>
           ) : (
             (montrerCeQuiAttend ? attente : mois.lignes).map((l) => (
-              <Ligne key={l.id} ligne={l} annee={annee} />
+              <Ligne key={l.id} ligne={l} annee={annee} soldee={soldes.has(l.id)} />
             ))
           )}
         </section>
@@ -546,7 +568,7 @@ function Oeil({ ouvert, onClick }: { ouvert: boolean; onClick: () => void }) {
  * **À facturer, elle reste un lien direct** : il n'y a encore ni avoir ni
  * impayé possible, et un volet à une seule porte serait un geste pour rien.
  */
-function Ligne({ ligne, annee }: { ligne: LigneAffichee; annee: string }) {
+function Ligne({ ligne, annee, soldee }: { ligne: LigneAffichee; annee: string; soldee: boolean }) {
   const [volet, setVolet] = useState(false);
   // **Aéré le 23 août 2026, à sa demande** : *« il faut aérer un peu la
   // page parce qu'il y a énormément d'informations »*. Une ligne porte deux
@@ -579,7 +601,7 @@ function Ligne({ ligne, annee }: { ligne: LigneAffichee; annee: string }) {
   const classe = `flex w-full text-left ${ligne.aFacturer ? "items-center" : "items-baseline"} gap-3.5 py-[24px] first:pt-[22px]`;
   if (ligne.factureStatut !== "emise") {
     return (
-      <Link href={`/chantiers/${ligne.id}/facture`} data-atlas="ligne-terminee" className={classe} style={{ minWidth: 0 }}>
+      <Link href={`/chantiers/${ligne.id}/facture`} data-atlas="ligne-terminee" id={`chantier-${ligne.id}`} className={classe} style={{ minWidth: 0 }}>
         <ContenuLigne ligne={ligne} annee={annee} />
       </Link>
     );
@@ -605,7 +627,7 @@ function Ligne({ ligne, annee }: { ligne: LigneAffichee; annee: string }) {
       <button
         type="button"
         onClick={() => setVolet(true)}
-        data-atlas="ligne-terminee"
+        data-atlas="ligne-terminee" id={`chantier-${ligne.id}`}
         className={classe}
         style={{ minWidth: 0, background: "none", border: 0 }}
       >
@@ -621,7 +643,7 @@ function Ligne({ ligne, annee }: { ligne: LigneAffichee; annee: string }) {
           </p>
           {porte(`/chantiers/${ligne.id}/facture`, "facture", "La facture")}
           {porte(`/chantiers/${ligne.id}/facture/avoir`, "avoir", "Je fais un avoir")}
-          {porte(`/chantiers/${ligne.id}/facture/non-payee`, "non-payee", "Il ne me paiera pas")}
+          {!soldee && porte(`/chantiers/${ligne.id}/facture/non-payee`, "non-payee", "Il ne me paiera pas")}
           <button
             type="button"
             onClick={() => setVolet(false)}

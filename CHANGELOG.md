@@ -22,6 +22,36 @@ une ligne par taux, lue sur ses lignes et ses avoirs, et la somme retombe au
 centime sur Ma TVA (`src/lib/tva-par-taux.ts`). Un achat sans total ni taux se
 lit « non noté », jamais zéro. `ARCHITECTURE.md` §414.
 
+### L'avoir envoyé ramène à l'accueil, avec « Avoir transmis à … »
+
+Sa demande, capture de « C'est fait » à l'appui : *« une fois envoyé il faut
+revenir sur la page d'accueil et, pareil que pour le reste, une petite phrase
+s'affiche »*. Le bandeau savait déjà dire « Avoir transmis » et l'envoi
+marquait bien le départ ; mais le retour (`useRetourDeMessagerie`) n'était
+monté que par `FactureClient`, parent que l'écran de l'avoir n'a pas. Le
+composant d'envoi (`TransmettreLaFacture`) monte désormais lui-même le retour
+qu'il arme. Tenu par `test-avoir-et-non-payee-e2e.ts`, vu rouge avant la
+correction.
+
+### Le paiement noté ramène à Terminés, devant la ligne du chantier
+
+Sa demande : *« une fois validé, on quitte la page de la facture et on retourne
+sur Terminés, devant la case de Monsieur Martins qui se trouvait en août »*. Le
+paiement ramenait à la facture (c'était la planche `il-ne-paiera-pas.html`),
+et Terminés s'ouvrait toujours sur le mois du jour. `PaiementClient` renvoie
+désormais à `/termines?chantier=<id>` ; l'écran ouvre le mois de ce chantier
+(`moisDuChantier`, la même règle que le rangement) et fait défiler jusqu'à sa
+ligne. Tenu par `test-avoir-et-non-payee-e2e.ts`, avec un chantier rangé deux
+mois plus tôt, et vu rouge avant la correction.
+
+### « Il ne me paiera pas » disparaît du volet d'une facture payée
+
+Sa décision : *« une facture déjà payée, tu peux masquer Il ne me paiera
+pas »*. Le bouton menait à un écran qui renvoyait en silence sur la facture
+acquittée. Terminés lit « soldée » avec la même règle que cet écran
+(`facturesAvecPaiements`, `etat === "soldee"`) ; « La facture » et « Je fais
+un avoir » restent. Vu rouge, puis vert, dans `test-avoir-et-non-payee-e2e.ts`.
+
 ---
 ## 2026-09-24
 

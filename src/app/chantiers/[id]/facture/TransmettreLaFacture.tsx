@@ -6,7 +6,7 @@ import { colors } from "@/lib/design-tokens";
 import { composerMessageAvoir, composerMessageFacture, lienTransmission, type CanalClient } from "@/lib/message-client";
 import { ouvrableParLeClient, phraseAdresseLocale } from "@/lib/adresse-du-client";
 import { useAdressePourLeClient } from "@/lib/use-adresse-client";
-import { marquerDepartMessagerie } from "@/lib/depart-messagerie";
+import { marquerDepartMessagerie, useRetourDeMessagerie } from "@/lib/depart-messagerie";
 import { enregistrerCoordonneeClientAction } from "../export/actions";
 import { preparerLienFactureAction } from "./actions";
 
@@ -104,6 +104,14 @@ export default function TransmettreLaFacture({
    */
   avoir?: { numero: string } | null;
 }) {
+  // **Qui marque le départ monte le retour.** Il vivait seulement dans
+  // `FactureClient` : l'écran « C'est fait » de l'avoir, qui porte ce composant
+  // sans lui, marquait le départ et laissait le patron revenir sur un écran
+  // identique. Sa demande du 25 septembre 2026 : *« une fois envoyé il faut
+  // revenir sur la page d'accueil »*. Sur la facture, les deux écoutes
+  // coexistent sans se gêner : la première efface la marque, la seconde ne
+  // trouve plus rien.
+  useRetourDeMessagerie("/");
   const [canalChoisi, setCanalChoisi] = useState<CanalClient>(canal);
   const [coordonnees, setCoordonnees] = useState<Record<CanalClient, string>>({ sms: telephone, email });
   const [saisie, setSaisie] = useState("");

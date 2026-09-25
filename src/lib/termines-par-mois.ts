@@ -191,6 +191,19 @@ export function bornesDuFeuilletage(
 }
 
 /**
+ * Le mois où vit la ligne de ce chantier, ou `null` s'il n'en a pas.
+ *
+ * Sert au retour vers Terminés « devant sa case » (sa demande du 25 septembre
+ * 2026) : l'écran s'ouvre sur CE mois, pas sur celui du jour. Lu sur la ligne
+ * préparée, donc sur la même règle que le rangement (`dateDuChantier`) ; un
+ * second calcul du mois ailleurs finirait par ouvrir le mauvais.
+ */
+export function moisDuChantier(lignes: readonly LigneAffichee[], chantierId: string | null): string | null {
+  if (!chantierId) return null;
+  return lignes.find((l) => l.id === chantierId)?.cleMois || null;
+}
+
+/**
  * « 2026-08 » reculé de `n` mois — `n` négatif avance.
  *
  * **On se déplace sur le CALENDRIER, pas sur la liste des mois qui portent
