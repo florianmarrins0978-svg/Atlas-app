@@ -1,5 +1,20 @@
 # Prochaines tâches
 
+## ⏳ UNE PLANCHE À REGARDER : GLISSER VERS LA DROITE POUR REVENIR (25 septembre 2026)
+
+Sa demande : *« à chaque fois qu'il y a une touche retour pour une page, qu'on
+puisse faire retour en slidant de gauche vers la droite »*. Planche
+`appli/glisser-pour-revenir.html` : les 52 écrans qui montent `FlecheRetour`,
+par leur vrai chemin, et deux variantes à trancher, **A** depuis le bord gauche,
+**B** de n'importe où. **Rien n'est codé.**
+
+Une fois choisi : le geste se pose UNE fois, dans `FlecheRetour` (la seule
+flèche d'Atlas), et prend la même destination qu'elle (journal de l'onglet,
+puis `repli`). En B, chaque écran qui glisse de côté (calendrier, signature de
+la fiche de sécurité, curseurs) doit le refuser nommément. Safari recule déjà
+depuis le bord par son historique ; le geste manque dans l'application posée
+sur l'écran d'accueil et dans l'application Capacitor.
+
 ## ~~LES NOUVEAUX PRIX~~ : SUR `main` LE 25 SEPTEMBRE 2026, avec l'avoir et « Facturé » en doré (une batterie pour les trois)
 
 Sur la branche `claude/subscription-breakdown-rcv5i7`, prêts : 39 €, 59 €,
