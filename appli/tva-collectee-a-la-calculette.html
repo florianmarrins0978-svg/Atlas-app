@@ -40,6 +40,24 @@
   bas dit combien d'achats n'ont pas de montant. Sans cela le total Payé
   serait juste à la calculette et faux sur le ticket.
 
+  SA RÉPONSE : « la A, mais il faudrait savoir c'est une TVA à combien ».
+  Donc la B (colonne HT) est retirée, et une colonne Taux entre entre les deux
+  montants. Chaque ligne se vérifie alors seule : à 20 %, encaissé ÷ 6 ; à
+  10 %, encaissé ÷ 11. Sous le total, un récapitulatif par taux, qui est
+  aussi ce que la déclaration demande.
+
+  PIÈGE TROUVÉ DANS LE CODE : `tauxDeLaFacture` (factures.ts) rend TVA ÷ HT de
+  la facture ENTIÈRE. Sur une facture qui mêle 10 % et 20 %, il rend une
+  moyenne (17,18 % pour ses 296 €), un taux qui n'existe pas. Le taux vrai vit
+  sur chaque ligne de facture (`lignesFacture.tauxTva`, migration 0073). La
+  page coupe donc une facture mixte en une ligne par taux, avec la même
+  référence, et c'est cela qu'il faudra coder, pas l'affichage de la moyenne.
+  Les parts à 10 % et 20 % de ses règlements sont ici des EXEMPLES, choisies
+  pour retomber au centime sur ses montants.
+
+  Un achat sans taux (le taux d'un ticket est facultatif, `achatsTva.tauxTva`)
+  dit « non noté » et forme son propre groupe au récapitulatif.
+
   RIEN N'EST CODÉ. Les quatre premières lignes sont celles de ses captures ;
   la cinquième est un exemple, posé pour que le total tombe sur son 1 689,52.
   Les achats sont des exemples : sa capture porte 0,00 € de déductible.
@@ -103,11 +121,15 @@ td .nom{font-size:15px;margin:0;line-height:1.25}
 td .petit{font-size:11px;color:var(--gris);margin:2px 0 0;line-height:1.3}
 td.chiffre{font-size:15.5px}
 td.tva{color:var(--or)}
+th.taux,td.taux{text-align:center;padding-left:6px;padding-right:0}
+td.taux{font-size:13px;color:var(--encre-douce);font-variant-numeric:tabular-nums;white-space:nowrap}
+tr.suite td{border-top:0;padding-top:0}
+tr.titre-recap td{border-top:0;padding:30px 0 6px;font-size:10.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--gris)}
 td.vide{font-family:inherit;font-size:12px;color:var(--gris);font-style:italic}
 tr.ligne{cursor:pointer}
 tr.ligne:active td{background:var(--trait-doux)}
 tr.somme td{border-top:1.5px solid var(--encre);padding-top:12px}
-tr.somme .mot{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase}
+.mot{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase}
 tr.somme td.chiffre{font-size:17px;font-weight:700}
 .copier{display:block;margin:6px 0 0 auto;border:0;background:none;color:var(--gris);font:inherit;font-size:11px;
   padding:6px 0;min-height:32px;cursor:pointer}
@@ -121,14 +143,10 @@ tr.somme td.chiffre{font-size:17px;font-weight:700}
 </head>
 <body>
 
-<div class="commandes" role="group" aria-label="Variante">
-  <button type="button" data-variante="a" aria-pressed="true">A, deux colonnes</button>
-  <button type="button" data-variante="b" aria-pressed="false">B, avec le HT</button>
-</div>
 
 <div class="tete">
   <h1 class="serif">Ma TVA à la calculette</h1>
-  <p>Appuyez sur « TVA collectée » ou « TVA déductible ». Chaque colonne s'additionne et finit sur son total.</p>
+  <p>Appuyez sur « TVA collectée » ou « TVA déductible ». Chaque ligne dit son taux ; chaque colonne s'additionne.</p>
 </div>
 
 <div class="scene">
@@ -180,23 +198,25 @@ tr.somme td.chiffre{font-size:17px;font-weight:700}
 // Le dernier encaissé en tête, comme la preuve de Ma TVA (factures.ts).
 // Montants en centimes : l'addition de la planche ne doit pas se tromper
 // d'un centime là où l'on demande justement de la vérifier.
+// Une facture qui mêle deux taux donne une ligne par taux (même numéro) :
+// la moyenne des deux n'est pas un taux, et elle ne se vérifie pas.
 const REGLEMENTS = [
-  { client: "Julien",   numero: "F2026-000012", jour: "24/09", ttc: 29600,  tva: 4339 },
-  { client: "Julien",   numero: "F2026-000012", jour: "24/09", ttc: 70000,  tva: 10261 },
-  { client: "Frédéric", numero: "F2026-000015", jour: "23/09", ttc: 850344, tva: 141724 },
-  { client: "Julien",   numero: "F2026-000014", jour: "22/09", ttc: 25600,  tva: 3328 },
-  { client: "Frédéric", numero: "F2026-000013", jour: "17/09", ttc: 55800,  tva: 9300 },
+  { client: "Julien",   numero: "F2026-000012", jour: "24/09", parts: [{ taux: 20, ttc: 21755, tva: 3626 }, { taux: 10, ttc: 7845, tva: 713 }] },
+  { client: "Julien",   numero: "F2026-000012", jour: "24/09", parts: [{ taux: 20, ttc: 51445, tva: 8574 }, { taux: 10, ttc: 18555, tva: 1687 }] },
+  { client: "Frédéric", numero: "F2026-000015", jour: "23/09", parts: [{ taux: 20, ttc: 850344, tva: 141724 }] },
+  { client: "Julien",   numero: "F2026-000014", jour: "22/09", parts: [{ taux: 20, ttc: 13210, tva: 2202 }, { taux: 10, ttc: 12390, tva: 1126 }] },
+  { client: "Frédéric", numero: "F2026-000013", jour: "17/09", parts: [{ taux: 20, ttc: 55800, tva: 9300 }] },
 ];
-const euros = (c) => (c / 100).toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).replace(/ /g, " ") + " €";
+const euros = (c) => (c / 100).toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).replace(/\u202f/g, "\u00a0") + "\u00a0€";
 
 // Les achats : aucun n'est à lui (sa capture porte 0,00 €), ce sont des
-// exemples. Le dernier, écrit à la main, n'a que sa TVA : `listerAchatsTva`
-// laisse le TTC vide dans ce cas, et la page ne l'invente pas.
+// exemples. Le dernier, écrit à la main, n'a que sa TVA : ni montant ni taux,
+// et la page ne les invente pas.
 const ACHATS = [
-  { client: "Pépinière",           jour: "23/09", ttc: 54000, tva: 4909 },
-  { client: "Station service",     jour: "18/09", ttc: 9240,  tva: 1540 },
-  { client: "Quincaillerie",       jour: "11/09", ttc: 17760, tva: 2960 },
-  { client: "Location mini pelle", jour: "04/09", ttc: null,  tva: 6000 },
+  { client: "Pépinière",           jour: "23/09", parts: [{ taux: 10,   ttc: 54000, tva: 4909 }] },
+  { client: "Station service",     jour: "18/09", parts: [{ taux: 20,   ttc: 9240,  tva: 1540 }] },
+  { client: "Quincaillerie",       jour: "11/09", parts: [{ taux: 20,   ttc: 17760, tva: 2960 }] },
+  { client: "Location mini pelle", jour: "04/09", parts: [{ taux: null, ttc: null,  tva: 6000 }] },
 ];
 
 // Une seule façon de dessiner les deux pages : si l'une gagnait une règle
@@ -206,40 +226,48 @@ const PAGES = {
   deductible: { surtitre: "TVA déductible", qui: "Fournisseur", montant: "Payé",     lignes: ACHATS },
 };
 
-let variante = "a", page = "collectee";
+let page = "collectee";
 
 function dessiner() {
-  const avecHt = variante === "b";
   const P = PAGES[page];
   document.getElementById("surtitre").textContent = P.surtitre;
   document.getElementById("entetes").innerHTML =
-    avecHt
-      ? `<th>${P.qui}</th><th>HT</th><th class="tva">TVA</th><th>${P.montant}</th>`
-      : `<th>${P.qui}</th><th>${P.montant}</th><th class="tva">TVA</th>`;
+    `<th>${P.qui}</th><th>${P.montant}</th><th class="taux">Taux</th><th class="tva">TVA</th>`;
 
   // Un montant absent s'écrit, il ne compte pas pour zéro en silence.
-  const case_ = (c, tva) => c === null
+  const montant = (c, tva) => c === null
     ? `<td class="chiffre vide">non noté</td>`
     : `<td class="chiffre${tva ? " tva" : ""}">${euros(c)}</td>`;
+  const taux = (t) => t === null ? `<td class="taux vide">non noté</td>` : `<td class="taux">${t} %</td>`;
 
-  const somme = { ht: 0, tva: 0, ttc: 0 };
+  const somme = { tva: 0, ttc: 0 };
+  const parTaux = new Map();
   let sansMontant = 0;
-  const rangs = P.lignes.map((r) => {
-    const ht = r.ttc === null ? null : r.ttc - r.tva;
-    if (r.ttc === null) sansMontant++; else { somme.ht += ht; somme.ttc += r.ttc; }
-    somme.tva += r.tva;
-    const sous = r.numero ? `${r.numero}<br>le ${r.jour}` : `le ${r.jour}`;
-    return `<tr class="ligne">
-      <td><p class="nom">${r.client}</p><p class="petit">${sous}</p></td>
-      ${avecHt ? case_(ht) + case_(r.tva, true) + case_(r.ttc) : case_(r.ttc) + case_(r.tva, true)}
-    </tr>`;
-  }).join("");
+  const rangs = P.lignes.map((r) => r.parts.map((x, k) => {
+    if (x.ttc === null) sansMontant++; else somme.ttc += x.ttc;
+    somme.tva += x.tva;
+    const g = parTaux.get(x.taux) ?? { ttc: 0, tva: 0, sansMontant: false };
+    if (x.ttc === null) g.sansMontant = true; else g.ttc += x.ttc;
+    g.tva += x.tva; parTaux.set(x.taux, g);
+    const qui = k === 0
+      ? `<p class="nom">${r.client}</p><p class="petit">${r.numero ? `${r.numero}<br>` : ``}le ${r.jour}</p>`
+      : ``;
+    return `<tr class="ligne${k > 0 ? " suite" : ""}"><td>${qui}</td>${montant(x.ttc)}${taux(x.taux)}${montant(x.tva, true)}</tr>`;
+  }).join("")).join("");
 
   const total = (c, tva) => `<td class="chiffre${tva ? " tva" : ""}">${euros(c)}<button class="copier" data-valeur="${euros(c)}">Copier</button></td>`;
+
+  // Le récapitulatif par taux : ce que la déclaration demande, et la
+  // vérification la plus rapide (à 20 %, montant ÷ 6 ; à 10 %, ÷ 11).
+  const ordre = [...parTaux.keys()].sort((a, b) => (b ?? -1) - (a ?? -1));
+  const recap = ordre.map((t) => {
+    const g = parTaux.get(t);
+    return `<tr><td><span class="mot">${t === null ? "Sans taux" : `À ${t} %`}</span></td>${g.sansMontant && g.ttc === 0 ? montant(null) : montant(g.ttc)}${t === null ? `<td class="taux"></td>` : taux(t)}${montant(g.tva, true)}</tr>`;
+  }).join("");
+
   document.getElementById("lignes").innerHTML = rangs + `<tr class="somme">
-      <td><span class="mot">Total</span></td>
-      ${avecHt ? total(somme.ht) + total(somme.tva, true) + total(somme.ttc) : total(somme.ttc) + total(somme.tva, true)}
-    </tr>`;
+      <td><span class="mot">Total</span></td>${total(somme.ttc)}<td></td>${total(somme.tva, true)}
+    </tr><tr class="titre-recap"><td colspan="4">Par taux</td></tr>` + recap;
 
   const n = P.lignes.length;
   document.getElementById("bas").textContent = page === "collectee"
@@ -262,11 +290,6 @@ detail.addEventListener("click", (e) => {
   setTimeout(() => { b.textContent = "Copier"; b.classList.remove("copie"); }, 1400);
 });
 
-document.querySelectorAll("[data-variante]").forEach((b) => b.addEventListener("click", () => {
-  variante = b.dataset.variante;
-  document.querySelectorAll("[data-variante]").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
-  dessiner();
-}));
 
 dessiner();
 </script>
