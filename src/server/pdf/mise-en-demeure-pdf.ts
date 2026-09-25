@@ -58,7 +58,7 @@ export function couperLaLettre(segments: Segment[], p: Polices, largeur: number)
   const mots: { texte: string; gras: boolean; colle: boolean }[] = [];
   // Un mot se colle au précédent quand AUCUNE espace ne les sépare, d'un
   // segment à l'autre compris : « TTC » puis « , payable » restent collés, mais
-  // l'espace qui finit « pour un montant de » sépare bien le montant en gras.
+  // l'espace qui finit « d'un montant de » sépare bien le montant en gras.
   // Coupé sur l'espace ORDINAIRE seulement : l'insécable d'un montant
   // (« 1 440,00 € ») tient ses chiffres ensemble, c'est son rôle.
   let espaceAvant = true;

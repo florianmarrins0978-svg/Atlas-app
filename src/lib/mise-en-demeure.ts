@@ -99,9 +99,9 @@ export function lettreDeMiseEnDemeure(f: FacturePourMiseEnDemeure, aujourdHui: s
   const toutReste = reste.eq(new Decimal(f.totalTtc));
 
   const travaux: Segment[] = [
-    { texte: `Par facture n° ${f.numero} du ${jourDeLettre(f.dateEmission)}, je vous ai facturé les travaux réalisés` },
+    { texte: `Le ${jourDeLettre(f.dateEmission)}, je vous ai adressé la facture n° ${f.numero} pour les travaux réalisés` },
     { texte: f.adresseChantier?.trim() ? ` à l'adresse ${f.adresseChantier.trim()},` : "," },
-    { texte: " pour un montant de " },
+    { texte: " d'un montant de " },
     { texte: `${enEuros(f.totalTtc)} TTC`, gras: true },
     { texte: f.dateEcheance ? `, payable avant le ${jourDeLettre(f.dateEcheance)}.` : "." },
   ];
