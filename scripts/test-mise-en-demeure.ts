@@ -42,7 +42,8 @@ cas("la lettre de sa planche : la facture, sa date, le montant, l'échéance, hu
   assert.equal(l.appellation, "Monsieur Martin,");
   assert.equal(l.formule, "Je vous prie d'agréer, Monsieur, mes salutations distinguées.");
   const t = texte(l);
-  assert.match(t, /Par facture n° F2026-000012 du 9 octobre 2026, je vous ai facturé les travaux réalisés à l'adresse 5 rue des Lilas, Nantes, pour un montant de 1\s440,00\s€ TTC, payable avant le 24 octobre 2026\./);
+  assert.match(t, /Le 9 octobre 2026, je vous ai adressé la facture n° F2026-000012 pour les travaux réalisés à l'adresse 5 rue des Lilas, Nantes, d'un montant de 1\s440,00\s€ TTC, payable avant le 24 octobre 2026\./);
+  assert.doesNotMatch(t, /Par facture/);
   assert.match(t, /cette somme reste impayée/);
   assert.match(t, /la somme de 1\s440,00\s€ dans un délai de huit jours/);
   assert.deepEqual(l.destinataire, ["Mr. Martin", "5 rue des Lilas, 44000 Nantes"]);
@@ -66,7 +67,7 @@ cas("sans civilité choisie, ou une société : « Madame, Monsieur », jamais u
 cas("sans ville lisible, pas de ville inventée ; sans échéance ni adresse, la phrase reste entière", () => {
   const l = lettreDeMiseEnDemeure({ ...FACTURE, entrepriseAdresse: "Chemin du bois", dateEcheance: null, adresseChantier: null }, "2026-10-01");
   assert.equal(l.lieuEtDate, "Le 1er octobre 2026");
-  assert.match(texte(l), /les travaux réalisés, pour un montant de 1\s440,00\s€ TTC\.\n/);
+  assert.match(texte(l), /les travaux réalisés, d'un montant de 1\s440,00\s€ TTC\.\n/);
   assert.equal(villeDeLAdresse("12 av. Foch\n44400 Rezé"), "Rezé");
 });
 
