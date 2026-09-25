@@ -5,7 +5,7 @@
 
 ---
 
-## CODÉ, PAS SUR `main` : MA TVA À LA CALCULETTE (25 septembre 2026)
+## FAIT : MA TVA À LA CALCULETTE, SUR `main` (25 septembre 2026)
 
 Le mot « TVA collectée » ou « TVA déductible » ouvre une page à colonnes :
 montant, taux, TVA, chacune avec son total, puis le récapitulatif par taux. Le

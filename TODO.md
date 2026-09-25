@@ -64,7 +64,12 @@ au même écran sans rien envoyer ; essais et renvois limités comme à la
 création ; après le changement, `deconnecterPartout` ; un compte
 Google/Apple sans mot de passe en reçoit un.
 
-## MA TVA À LA CALCULETTE : CODÉ, PAS ENCORE SUR `main` (25 septembre 2026)
+## FAIT : MA TVA À LA CALCULETTE, SUR `main` (25 septembre 2026)
+
+**Parti sur `main` (`5e54b4b`) avec la batterie commune de six lots** : cette
+branche, la confirmation après envoi, la mise en demeure, l'année sur le
+retour, les retours modifiables et le glisser pour revenir. Ce qui suit est
+l'état au moment du codage.
 
 Codé sur `claude/tva-collecter-verification-qlli2x` (planche
 `appli/tva-collectee-a-la-calculette.html`, sa A). Niveau **3** (argent) : il a

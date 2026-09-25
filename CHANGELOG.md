@@ -8,7 +8,7 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-25
 
-### Ma TVA à la calculette : le mot ouvre la page, le chiffre copie (branche `claude/tva-collecter-verification-qlli2x`, pas encore sur `main`)
+### Ma TVA à la calculette : le mot ouvre la page, le chiffre copie (sur `main` le 25 septembre, batterie commune avec cinq autres lots)
 
 Planche `appli/tva-collectee-a-la-calculette.html`, sa A. Un appui sur « TVA
 collectée » ou « TVA déductible » ouvre une page où le montant et la TVA de
