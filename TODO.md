@@ -7,6 +7,12 @@ entière (niveau 3, la flèche touche 58 écrans), qu'il a demandé de ne pas
 lancer ce jour-là, puis `main`. Non essayé ici : la fiche de sécurité (pas de
 fiche dans le jeu de démo) et un vrai iPhone.
 
+**Sa mise en garde du même jour** : une fenêtre avec un retour arrive, « Ma
+TVA à la calculette » (planche sur `claude/tva-collecter-verification-qlli2x`).
+Codée avec `FlecheRetour`, elle a le geste d'office ; avec un retour dessiné à
+la main, `test-geste-retour-partout.ts` exige `data-geste-retour`. Ouverte
+DANS Ma TVA, la flèche de Ma TVA doit être masquée pendant ce temps (§414).
+
 ### La demande d'origine
 
 Sa demande : *« à chaque fois qu'il y a une touche retour pour une page, qu'on

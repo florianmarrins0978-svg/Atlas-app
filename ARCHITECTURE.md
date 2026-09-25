@@ -33383,7 +33383,12 @@ l'appuie. La destination reste celle de la flèche : journal de l'onglet et
 repli (`FlecheRetour`), enregistrement avant de sortir, feuille qui se referme
 sur place. Un second calcul de retour referait la boucle du 7 septembre 2026
 (`retour-du-devis.ts`). Une flèche neuve qui n'est pas `FlecheRetour` doit
-porter la marque, sinon son écran n'a pas de geste.
+porter la marque, sinon son écran n'a pas de geste : `test-geste-retour-partout.ts`
+le refuse (tout élément dont le libellé commence par « Retour »). Une fenêtre
+ouverte DANS une page, avec son propre retour (la page « Ma TVA à la
+calculette » en préparation, sa mise en garde du 25 septembre), suit la même
+règle : son retour porte la marque, et la flèche de la page qu'elle recouvre
+doit être masquée, puisque le geste appuie la première flèche visible.
 
 **Ce qui garde son geste se lit sur la page, pas dans une liste** : `canvas`,
 curseur, champ EN COURS de frappe (un champ au repos ne refuse pas, sinon
