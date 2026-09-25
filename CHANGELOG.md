@@ -8,7 +8,7 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-24
 
-### L'avoir et « Il ne me paiera pas » : la fondation (lot 1, sur la branche)
+### L'avoir, « Il ne me paiera pas » et la mise en demeure (sur `main` le 25 septembre, avec les abonnements et « Facturé » en doré)
 
 Migration 0101 : `avoirs` (immuable, suite « A ») et `factures_non_payees`.
 L'avoir se calcule sur la ligne qu'il choisit, porte son PDF sur le papier des
@@ -131,7 +131,7 @@ défiler la page en cliquant un élément collé au bas de l'écran.
 
 ### Les abonnements : 39, 59 et 159 €, Artisan sans le paysage, ce qui manque barré
 
-Codé sur la branche, pas encore sur `main` (batterie à jouer). Les cartes de
+Sur `main` le 25 septembre 2026, dans la batterie commune avec l'avoir. Les cartes de
 l'écran Abonnement lisent une seule liste de lignes (`lignesDeLaFormule`) : une
 ligne dit ce qui l'ouvre, une fonction ou un plafond, et ce que la formule n'a
 pas s'affiche barré. Avant, chaque formule recopiait sa liste, et un contrôle
