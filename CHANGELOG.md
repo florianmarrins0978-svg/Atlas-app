@@ -30,6 +30,14 @@ désormais à `/termines?chantier=<id>` ; l'écran ouvre le mois de ce chantier
 ligne. Tenu par `test-avoir-et-non-payee-e2e.ts`, avec un chantier rangé deux
 mois plus tôt, et vu rouge avant la correction.
 
+### « Il ne me paiera pas » disparaît du volet d'une facture payée
+
+Sa décision : *« une facture déjà payée, tu peux masquer Il ne me paiera
+pas »*. Le bouton menait à un écran qui renvoyait en silence sur la facture
+acquittée. Terminés lit « soldée » avec la même règle que cet écran
+(`facturesAvecPaiements`, `etat === "soldee"`) ; « La facture » et « Je fais
+un avoir » restent. Vu rouge, puis vert, dans `test-avoir-et-non-payee-e2e.ts`.
+
 ## 2026-09-24
 
 ### L'avoir, « Il ne me paiera pas » et la mise en demeure (sur `main` le 25 septembre, avec les abonnements et « Facturé » en doré)

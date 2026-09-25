@@ -48,7 +48,14 @@ export default function ListeTermines({
   moisCourant,
   nonPayees,
   chantierDemande,
+  chantiersSoldes,
 }: {
+  /**
+   * Les chantiers dont la facture est entièrement réglée. Leur volet ne propose
+   * plus « Il ne me paiera pas » — sa décision du 25 septembre 2026 : le bouton
+   * menait à un écran qui renvoyait en silence sur la facture acquittée.
+   */
+  chantiersSoldes: string[];
   /**
    * Le chantier devant lequel s'ouvrir : son mois, et sa ligne à l'écran. Sa
    * demande du 25 septembre 2026, après un paiement noté : *« retourner sur
@@ -114,6 +121,7 @@ export default function ListeTermines({
   );
   // Le mois affiché se garde en clair — un décalage relatif se recalculait à
   // chaque rendu, et le jour où l'entrée bouge il ne veut plus rien dire.
+  const soldes = useMemo(() => new Set(chantiersSoldes), [chantiersSoldes]);
   const [cle, setCle] = useState(() => moisDuChantier(lignes, chantierDemande) ?? entree);
 
   // Sa ligne à l'écran, au milieu : en haut, l'en-tête la cacherait à moitié.
@@ -371,7 +379,7 @@ export default function ListeTermines({
             </p>
           ) : (
             (montrerCeQuiAttend ? attente : mois.lignes).map((l) => (
-              <Ligne key={l.id} ligne={l} annee={annee} />
+              <Ligne key={l.id} ligne={l} annee={annee} soldee={soldes.has(l.id)} />
             ))
           )}
         </section>
@@ -560,7 +568,7 @@ function Oeil({ ouvert, onClick }: { ouvert: boolean; onClick: () => void }) {
  * **À facturer, elle reste un lien direct** : il n'y a encore ni avoir ni
  * impayé possible, et un volet à une seule porte serait un geste pour rien.
  */
-function Ligne({ ligne, annee }: { ligne: LigneAffichee; annee: string }) {
+function Ligne({ ligne, annee, soldee }: { ligne: LigneAffichee; annee: string; soldee: boolean }) {
   const [volet, setVolet] = useState(false);
   // **Aéré le 23 août 2026, à sa demande** : *« il faut aérer un peu la
   // page parce qu'il y a énormément d'informations »*. Une ligne porte deux
@@ -635,7 +643,7 @@ function Ligne({ ligne, annee }: { ligne: LigneAffichee; annee: string }) {
           </p>
           {porte(`/chantiers/${ligne.id}/facture`, "facture", "La facture")}
           {porte(`/chantiers/${ligne.id}/facture/avoir`, "avoir", "Je fais un avoir")}
-          {porte(`/chantiers/${ligne.id}/facture/non-payee`, "non-payee", "Il ne me paiera pas")}
+          {!soldee && porte(`/chantiers/${ligne.id}/facture/non-payee`, "non-payee", "Il ne me paiera pas")}
           <button
             type="button"
             onClick={() => setVolet(false)}

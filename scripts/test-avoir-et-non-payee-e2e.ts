@@ -190,6 +190,18 @@ async function main() {
     assert.equal(await page.locator('[data-atlas="categorie-non-payees"]').count(), 0, "payée, la catégorie devait disparaître");
   });
 
+  // **Sa décision du 25 septembre 2026 :** *« une facture déjà payée, tu peux
+  // masquer Il ne me paiera pas »*. Le bouton menait à un écran qui renvoyait
+  // en silence sur la facture acquittée.
+  await cas("une facture payée ne propose plus « Il ne me paiera pas », mais garde l'avoir", async () => {
+    await page.goto(`${BASE}/termines?chantier=${chantierImpaye}`, { waitUntil: "networkidle" });
+    await page.locator('[data-atlas="ligne-terminee"]', { hasText: nomImpaye }).first().click();
+    await page.waitForSelector('[data-atlas="volet-choix"]', { timeout: 10_000 });
+    assert.equal(await page.locator('[data-atlas="volet-non-payee"]').count(), 0, "« Il ne me paiera pas » est proposé sur une facture payée");
+    assert.equal(await page.locator('[data-atlas="volet-avoir"]').count(), 1, "l'avoir a disparu du volet");
+    assert.equal(await page.locator('[data-atlas="volet-facture"]').count(), 1, "« La facture » a disparu du volet");
+  });
+
   await navigateur.close();
   console.log(`\n${echecs === 0 ? "✅" : "❌"} L'avoir et « Il ne me paiera pas » — ${echecs} échec(s).`);
   await pool.end();
