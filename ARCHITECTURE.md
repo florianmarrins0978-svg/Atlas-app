@@ -33370,3 +33370,35 @@ réclame moins que son dû, jamais plus. Le commentaire de
 `src/lib/mise-en-demeure.ts` dit encore « non vérifiés » : le corriger fait
 exiger la batterie (rayon de dix écrans), il suivra le prochain lot qui la
 joue.
+
+## §414 : Glisser vers la droite pour revenir, le geste appuie sur la flèche
+
+**Sa demande du 25 septembre 2026**, variante B de
+`appli/glisser-pour-revenir.html` : de n'importe où sur la page, glisser vers la
+droite recule.
+
+**Le geste ne calcule aucun retour.** `GesteRetour.tsx`, monté une fois par
+`CadreApplication`, cherche dans `main` l'élément marqué `data-geste-retour` et
+l'appuie. La destination reste celle de la flèche : journal de l'onglet et
+repli (`FlecheRetour`), enregistrement avant de sortir, feuille qui se referme
+sur place. Un second calcul de retour referait la boucle du 7 septembre 2026
+(`retour-du-devis.ts`). Une flèche neuve qui n'est pas `FlecheRetour` doit
+porter la marque, sinon son écran n'a pas de geste.
+
+**Ce qui garde son geste se lit sur la page, pas dans une liste** : `canvas`,
+curseur, champ EN COURS de frappe (un champ au repos ne refuse pas, sinon
+l'écran des prix, fait de champs, n'avait plus de geste), `touch-action` posé,
+bloc qui défile de côté et peut encore revenir vers la droite, tout ce qui est
+`position: fixed` ou hors de `main`.
+
+**Une fois reconnu, le geste est à nous seuls** (`preventDefault` au
+`touchmove`, écouteur non passif). Sans cela Chrome reculait aussi, et l'on
+sautait deux écrans : mesuré à l'essai. Le bord gauche (20 px) reste au
+navigateur dans un onglet, où Safari recule déjà par son historique ; posée sur
+l'écran d'accueil, l'application le reprend.
+
+**La page suit le doigt puis revient à sa place** pendant que la flèche agit :
+la garder poussée jusqu'à l'écran suivant demanderait de savoir quand il
+arrive, et certaines flèches ne changent pas d'adresse. On ne voit pas la page
+d'avant dessous, contrairement à la planche.
+

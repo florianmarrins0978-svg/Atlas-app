@@ -5,6 +5,11 @@
 
 ---
 
+## CODÉ, PAS SUR `main` : GLISSER VERS LA DROITE POUR REVENIR (25 septembre 2026)
+
+De n'importe où sur un écran qui a une flèche, le geste l'appuie. Batterie
+entière à jouer avant `main`. `ARCHITECTURE.md` §414.
+
 ## FAIT : MOT DE PASSE OUBLIÉ (24 septembre 2026)
 
 *« Il faut mettre cette fonction ! »* Lien sous le mot de passe, code par

@@ -121,6 +121,9 @@ export default function FlecheRetour({
         router.back();
       }}
       data-atlas={marque}
+      // Glisser vers la droite appuie ici (`GesteRetour.tsx`) : le geste mène
+      // donc exactement où mène la flèche.
+      data-geste-retour=""
       className="flex items-center justify-center rounded-full"
       style={{
         height: diametre,

@@ -6,6 +6,19 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-09-25
+
+### Glisser vers la droite pour revenir, sur tout écran qui a une flèche (codé, pas encore sur `main`)
+
+Sa demande, planche `appli/glisser-pour-revenir.html`, variante **B** retenue :
+le geste part de n'importe où sur la page. Il **appuie sur la flèche** de
+l'écran (`data-geste-retour`), donc il mène exactement où elle mène ; pas de
+flèche, pas de geste. Ce qui glisse déjà de côté garde son geste : le champ où
+l'on tape, la signature, le mois du planning, une ligne dont « Retirer » est
+découvert. Le bord gauche reste à Safari dans un onglet. Un double recul
+(Chrome reculait aussi de son côté) a été vu à l'essai et corrigé avant
+livraison. `ARCHITECTURE.md` §414, `scripts/test-geste-retour-e2e.ts`.
+
 ## 2026-09-24
 
 ### L'avoir, « Il ne me paiera pas » et la mise en demeure (sur `main` le 25 septembre, avec les abonnements et « Facturé » en doré)

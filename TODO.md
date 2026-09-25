@@ -1,6 +1,13 @@
 # Prochaines tâches
 
-## ⏳ UNE PLANCHE À REGARDER : GLISSER VERS LA DROITE POUR REVENIR (25 septembre 2026)
+## GLISSER VERS LA DROITE POUR REVENIR : CODÉ (B), PAS ENCORE SUR `main` (25 septembre 2026)
+
+**Il a retenu la B.** Codé : `GesteRetour.tsx`, §414. Reste : la batterie
+entière (niveau 3, la flèche touche 58 écrans), qu'il a demandé de ne pas
+lancer ce jour-là, puis `main`. Non essayé ici : la fiche de sécurité (pas de
+fiche dans le jeu de démo) et un vrai iPhone.
+
+### La demande d'origine
 
 Sa demande : *« à chaque fois qu'il y a une touche retour pour une page, qu'on
 puisse faire retour en slidant de gauche vers la droite »*. Planche
