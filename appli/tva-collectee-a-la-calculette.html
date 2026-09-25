@@ -73,6 +73,8 @@ html,body{margin:0;background:var(--scene)}
 body{font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--encre);padding:0 0 40px}
 .serif{font-family:ui-serif,Georgia,"Times New Roman",serif}
 .chiffre{font-family:ui-serif,Georgia,serif;font-variant-numeric:tabular-nums;white-space:nowrap;text-align:right}
+/* Sa retouche du 25 septembre : « centre tous les chiffres dans leur colonne ». */
+table .chiffre,table th{text-align:center}
 
 .commandes{position:sticky;top:0;z-index:5;background:var(--scene);padding:8px 10px;
   border-bottom:1px solid var(--trait);text-align:center}
@@ -112,17 +114,17 @@ h2.titre{font-weight:400;font-size:32px;line-height:1.1;margin:16px 0 0}
 /* La page ouverte : deux colonnes qui s'additionnent. */
 table{width:100%;border-collapse:collapse;margin-top:18px}
 th{font-size:10.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--gris);
-  text-align:right;padding:0 0 8px 8px;vertical-align:bottom}
+  text-align:right;padding:0 4px 8px;vertical-align:bottom}
 th:first-child{text-align:left;padding-left:0}
 th.tva{color:var(--or)}
-td{padding:11px 0 11px 8px;border-top:1px solid var(--trait-doux);vertical-align:top}
+td{padding:11px 4px;border-top:1px solid var(--trait-doux);vertical-align:top}
 td:first-child{padding-left:0}
 td .nom{font-size:15px;margin:0;line-height:1.25}
 td .petit{font-size:11px;color:var(--gris);margin:2px 0 0;line-height:1.3}
 td.chiffre{font-size:15.5px}
 td.tva{color:var(--or)}
-th.taux,td.taux{text-align:center;padding-left:6px;padding-right:0}
-td.taux{font-size:13px;color:var(--encre-douce);font-variant-numeric:tabular-nums;white-space:nowrap}
+th.taux,td.taux{text-align:center}
+td.taux{font-family:ui-serif,Georgia,serif;font-size:15px;color:var(--encre-douce);font-variant-numeric:tabular-nums;white-space:nowrap}
 tr.suite td{border-top:0;padding-top:0}
 tr.titre-recap td{border-top:0;padding:30px 0 6px;font-size:10.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--gris)}
 td.vide{font-family:inherit;font-size:12px;color:var(--gris);font-style:italic}
@@ -131,7 +133,7 @@ tr.ligne:active td{background:var(--trait-doux)}
 tr.somme td{border-top:1.5px solid var(--encre);padding-top:12px}
 .mot{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase}
 tr.somme td.chiffre{font-size:17px;font-weight:700}
-.copier{display:block;margin:6px 0 0 auto;border:0;background:none;color:var(--gris);font:inherit;font-size:11px;
+.copier{display:block;margin:6px auto 0;border:0;background:none;color:var(--gris);font:inherit;font-size:11px;
   padding:6px 0;min-height:32px;cursor:pointer}
 .copie{color:var(--plein)}
 .bas{margin:26px 0 0;font-size:12px;color:var(--encre-douce);text-align:center}
@@ -181,7 +183,8 @@ tr.somme td.chiffre{font-size:17px;font-weight:700}
         <h2 class="titre serif">Septembre 2026</h2>
         <p class="caps" id="surtitre"></p>
 
-        <table>
+        <table style="table-layout:fixed">
+          <colgroup><col style="width:33%"><col style="width:26%"><col style="width:15%"><col style="width:26%"></colgroup>
           <thead><tr id="entetes"></tr></thead>
           <tbody id="lignes"></tbody>
         </table>
