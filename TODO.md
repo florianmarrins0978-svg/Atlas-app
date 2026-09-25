@@ -1,5 +1,41 @@
 # Prochaines tâches
 
+## ⏳ UNE PLANCHE À REGARDER — FICHE 6, LA CHALAROSE DU FRÊNE (25 septembre 2026)
+
+`appli/fiche-chalarose-du-frene.html`, liée depuis `appli/essais.html`. **Sa
+demande du 25 septembre :** *« enchaîne sur les autres fiches dans l'ordre en
+respectant la forme qu'on a mis en place pour les fiches »*. L'ordre est celui
+d'Ephytia, rubrique « Champignons foliaires » : après le peuplier vient la
+chalarose du frêne (`https://ephytia.inrae.fr/fr/C/20407/`, page du 22 mai
+2025, auteurs DSF et C. Husson, lue le 25 septembre 2026).
+
+**C'est la première fiche dont les TROIS jauges sont pleines** — fréquence,
+agressivité, impact —, comptées case par case dans le tableau de la page comme
+pour le peuplier (3, 2, 1). `gravite` est donc `importante`, et
+`graviteSelonLaSource` porte les taux de mortalité de la page (30 % par an sous
+5 cm de diamètre, 10 % de 5 à 25 cm).
+
+**Deux décisions prises seul, écrites sur la planche pour qu'il puisse les
+défaire :**
+
+| | |
+|---|---|
+| `certitudeMax` à **`probable`** | la page n'exige AUCUN laboratoire (contrairement au chêne), mais elle ne donne rien qui sépare la chalarose d'un autre dépérissement sur photo. Plafond posé du côté prudent, **par nous**, et la planche le dit |
+| `impactMecanique` à **`possible`** | mortalités de branches, nécroses au collet où l'armillaire s'installe et dégrade le bois. La page ne parle pas de rupture : l'écran ne dit donc que la phrase générale sur la solidité |
+
+**La photo** vient de Commons (CC BY 4.0, Calum McLennan) et montre les
+apothécies blanchâtres sur un rachis noirci — exactement ce que la page décrit.
+Elle ne montre PAS l'arbre, et c'est la question posée : une deuxième photo (un
+rameau brun orangé, ou une coupe de rameau) est disponible sous licence OGL
+v1.0 (Food and Environment Research Agency, via Commons) s'il la veut. Le
+fichier est déjà dans `appli/diagnostic-chalarose-frene-rachis.jpg`.
+
+**Sur son oui :** `006-chalarose-frene.json` dans `donnees/phyto/fiches/` (le
+brouillon est INJECTÉ dans la planche, il ne se retape pas) plus
+`chalarose-frene-rachis.jpg` dans `donnees/phyto/images/`, puis `--verifier`,
+`npx tsx scripts/test-import-fiches-phyto.ts` et `test-diagnostic-base.ts`, et
+`PROJECT_STATE.md` passe à « 6 sur ~50 ».
+
 ## GLISSER VERS LA DROITE POUR REVENIR : CODÉ (B), PAS ENCORE SUR `main` (25 septembre 2026)
 
 **Il a retenu la B.** Codé : `GesteRetour.tsx`, §415. Reste : la batterie
