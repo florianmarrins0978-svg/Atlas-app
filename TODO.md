@@ -81,10 +81,10 @@ Joués ici au vert : types, lint, `test-tva-par-taux`, `test-tva-par-taux-db`
 lien), `test-achat-hors-periode-e2e`, `test-tva-en-tete-e2e`,
 `test-exigibilite-tva`, code mort, couches, pansements, tirets, flèches, chartes.
 
-**Rouge préexistant, pas de ce lot** : `test-tva-au-paiement-e2e`, 8 cas sur 8,
-rouge à l'identique sur `origin/main` (`5dcd912`) rejoué dans une copie propre :
-l'envoi du devis mène à `/chantiers/<id>/export` et non plus à l'accueil
-qu'elle attend (`chantierRealise`). À comprendre avant de croire la suite.
+**Corrigé le même jour** : `test-tva-au-paiement-e2e` avait été noté ici rouge
+sur `main`. C'était faux : il rougissait contre un serveur `next dev` monté à la
+main, sur `main` comme sur la branche, et il passe au vert dans la batterie, qui
+sert une version bâtie. Rien à comprendre dans le produit.
 
 **Batterie commune du 25 septembre** (six lots réunis sur cette branche) :
 trois rouges. `test-acces-roles` réclamait les deux pages neuves dans la liste
