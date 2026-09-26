@@ -8,6 +8,14 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-26
 
+### « Autre chantier » s'appelle « Nouveau devis »
+
+**Sa question** : *« faut l'appeler nouveau devis, pas autre chantier ? »*. Ce
+qu'il veut en appuyant, c'est un devis ; et à côté de « Dernier devis »,
+l'opposition se lit seule. Seul le mot change : même place, même geste (la
+fiche d'un chantier vierge, ses coordonnées déjà posées). Le mode d'emploi de
+l'assistant suit (`fiches-mode-emploi`).
+
 ### « Dernier devis » reprend l'ancien devis à SES prix, et demande avant le tarif du jour
 
 **Sa règle** : *« il faut reprendre les prix de l'ancien devis ; à la limite

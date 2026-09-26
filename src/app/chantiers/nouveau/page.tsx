@@ -12,7 +12,7 @@ import FormulaireNouveauChantier, { type ClientDeDepart } from "./FormulaireNouv
 // monte en feuille par-dessus la liste (`src/app/EcranChantiers.tsx`).
 //
 // ───────────────────────────────────────────────────────────────────────────
-// **`?client=…` — « Autre chantier », sa décision du 8 septembre 2026.**
+// **`?client=…` — « Nouveau devis » (nommé « Autre chantier » jusqu'au 26 septembre 2026), sa décision du 8 septembre 2026.**
 //
 // *« Si c'est un client déjà enregistré en tant que client on ne va pas recréer
 // une fiche client ! »* Depuis sa fiche, cet écran s'ouvre avec ses coordonnées
