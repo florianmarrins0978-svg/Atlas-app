@@ -104,7 +104,7 @@ export default function PeriodiciteTvaReglage({ initiale }: { initiale: Periodic
           Le seuil porte sur la TVA DUE, donc sur ses achats, qu'Atlas ne voit
           pas. Conseiller ici serait inventer une donnée (`CLAUDE.md` §4). */}
       <p className="pt-3 text-[12.5px] leading-[1.65]" style={{ color: colors.muted }}>
-        Le mois est le défaut ; le trimestre s&apos;obtient sous condition.
+        Le mois est le défaut. Le trimestre s&apos;obtient sous condition.
       </p>
     </section>
   );

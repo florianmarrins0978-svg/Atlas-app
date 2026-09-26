@@ -47,11 +47,19 @@ en-tête sont à réécrire en conséquence.
 
 ## ⏳ UNE PLANCHE À REGARDER : VOIR UN EXEMPLE DE FACTURE (26 septembre 2026)
 
-`appli/apercu-du-document.html`. Sa réponse attendue : **A** (bouton sous
-« Devis & factures ») ou **B** (bas de « Mon entreprise »). Rien n'est codé.
-Au codage : le vrai PDF (`src/server/pdf/`) nourri de ses réglages et de trois
-lignes factices (20, 10, 5,5 %), filigrane EXEMPLE, **aucun numéro consommé**,
-franchise en base rendue telle quelle (mention 293 B). Niveau 3 (argent).
+## VOIR UN EXEMPLE DE FACTURE : CODÉ, PAS ENCORE SUR `main` (26 septembre 2026)
+
+Planche `appli/apercu-du-document.html`, sa réponse **« A et B »** : codée sur
+la branche `claude/invoice-preview-mock-data-ti2n5y`, avec le « ; » de la
+périodicité de TVA. **Niveau 3** (le papier de facture) : la batterie entière
+est exigée avant `main`, et il a demandé qu'**aucune ne se lance sans son
+accord**. Types verts ; suites jouées une par une : `test-facture-d-exemple-db`
+(neuve, vue rougir), `test-papier-facture-db`, `test-facture-sans-devis-db`,
+couches, code mort, pansements, flèches, chartes. `test-aucun-tiret` porte
+10 rouges venus des fiches d'une autre session, identiques sans ce lot.
+
+**Pas fait, et c'est délibéré :** l'exemple du DEVIS (la planche le montrait
+aussi). Il demande son propre chemin (`devis-pdf.ts`) ; à proposer ensuite.
 
 ## MON AGENDA, EN SIMPLE : A ET C CODÉES, PAS SUR `main` (26 septembre 2026)
 

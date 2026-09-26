@@ -81,12 +81,36 @@ l'a été (9 sur 9).
 
 ### Planche : voir un exemple de facture, avant de coder
 
-`appli/apercu-du-document.html`, sa demande du 26 septembre : un bouton qui
-montre le papier avec ses réglages et trois lignes factices à 20, 10 et 5,5 %.
-Deux places à trancher (A : Devis & factures ; B : Mon entreprise). Au style et
-aux couleurs de l'application, à sa demande. Ce qui est décidé pour le code :
-l'exemple sera **le vrai PDF** fabriqué par le même code, avec EXEMPLE en
-filigrane, et **sans consommer de numéro**. Rien n'est codé.
+### Réglages : « Voir un exemple », la vraie facture avec trois lignes factices
+
+Sa demande : *« un bouton pour visualiser à quoi il ressemblera, avec deux trois
+lignes factices avec des TVA différentes »*. Planche
+`appli/apercu-du-document.html`, sa réponse : **« A et B »**. Le même bouton
+(`VoirUnExemple`) sous « Devis & factures » et en bas de « Mon entreprise ».
+
+- **Le vrai papier** : `genererPdfFactureExemple` nourrit `genererPdfFacture`
+  de l'identité, des conditions et de l'allure du moment, avec « Mr. Exemple »
+  et trois lignes à 20, 10 et 5,5 % (`src/lib/facture-d-exemple.ts`). En
+  franchise, les mêmes lignes à 0 % et la mention 293 B.
+- **EXEMPLE en travers de la page** : option `filigrane` de `document-commun.ts`,
+  absente pour tous les autres documents.
+- **Rien ne s'écrit, aucun numéro n'est pris** : le compteur se lit
+  (`numeroSansLePrendre`). Une suite de factures ne doit pas avoir de trou.
+- `donneesFacture` prend désormais ce que le papier lit (`FactureAImprimer`),
+  pas la ligne entière : sans cela il fallait inventer un identifiant et un
+  chantier à l'exemple. `conditionsDesReglages` sort de `complementsDeLaFacture`
+  pour servir aux deux.
+- Route `/api/factures/exemple/pdf`, réservée au propriétaire comme les deux
+  écrans, ouverte dans la visionneuse de l'application.
+- Suite `scripts/test-facture-d-exemple-db.ts` (sous la RLS), vue rougir contre
+  un exemple qui consommait un numéro.
+
+### Réglages : le point-virgule de la périodicité de TVA part
+
+Sa remarque, capture à l'appui : *« un ; qui sert à rien »*. « Le mois est le
+défaut. Le trimestre s'obtient sous condition. » Deux phrases, même place.
+`test-periodicite-tva-e2e` lit le fait (« mois … défaut »), pas la ponctuation.
+
 
 ### Le rappel du retour d'intervention (migration 0102)
 

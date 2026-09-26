@@ -78,6 +78,8 @@ function mentionLegaleFacture(data: FacturePdfData): string {
 export type OptionsFacturePdf = {
   allure?: Allure | null;
   logo?: LogoDocument | null;
+  /** La facture d'exemple des Réglages : EXEMPLE en travers de la page. */
+  exemple?: boolean;
 };
 
 /**
@@ -147,6 +149,7 @@ export async function composerFacturePdf(
     informations: informations(data),
     mentionLegale: () => mentionLegaleFacture(data),
     cadreSignature: false,
+    filigrane: options.exemple ? "EXEMPLE" : null,
   });
 }
 

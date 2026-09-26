@@ -33577,3 +33577,25 @@ appels, identifiants uniques ; rouge sur l'ancien code),
 `test-assistant-se-corrige`, `test-assistant-lit-factures-db`,
 `test-assistant-lit-equipes-rappels-diagnostics-db` (isolation entre
 entreprises, sous `atlas_app`).
+
+## §417 : La facture d'exemple est la vraie fabrique, et elle ne prend aucun numéro
+
+Sa demande du 26 septembre 2026 : voir à quoi ressemble le document, avec trois
+lignes factices à des taux différents (planche `appli/apercu-du-document.html`,
+sa réponse « A et B »).
+
+| Décision | Ce qu'elle évite |
+|---|---|
+| `genererPdfFactureExemple` passe par `genererPdfFacture` et `donneesFacture` | un aperçu dessiné à part, qui finirait par montrer autre chose que ce que le client reçoit |
+| `donneesFacture` prend `FactureAImprimer` (ce que le papier lit), plus la ligne entière | inventer un identifiant, un chantier, des dates de création à une facture qui n'existe pas |
+| `conditionsDesReglages`, une seule lecture pour la facture sans devis et l'exemple | deux recopies des conditions, qui dériveraient |
+| le compteur se LIT (`numeroSansLePrendre`) : même `ecrireNumero`, même `repartChaqueAnnee` | un trou dans la suite des factures à chaque aperçu |
+| `filigrane` dans `document-commun.ts`, absent partout ailleurs | un exemple imprimé ou photographié qui passerait pour une vraie facture |
+| un seul `VoirUnExemple`, monté sous « Devis & factures » et en bas de « Mon entreprise » | deux boutons qui ouvriraient deux choses |
+| route réservée au propriétaire, ouverte dans la visionneuse (`…/exemple/pdf`) | une adresse tapée par un salarié ; un onglet Safari sans retour |
+
+**Le seul morceau recopié** est la ligne « l'année a changé, donc 1 » du
+compteur : l'`UPDATE` d'`attribuerNumero` la tient en SQL, atomique, et ne peut
+pas appeler une fonction pure. `test-facture-d-exemple-db` compare le numéro
+montré à celui que reçoit ensuite la vraie facture : si les deux divergent, il
+rougit.

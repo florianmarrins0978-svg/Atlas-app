@@ -1,7 +1,7 @@
 import { adressesDuDocument } from "../../lib/adresses";
 import { phraseDuCheque } from "@/lib/modalites-paiement";
 import { ligneAttendSonPrix } from "../../lib/preparation-devis";
-import { PDFDocument, PDFFont, PDFImage, PDFPage, StandardFonts, rgb, RGB } from "pdf-lib";
+import { PDFDocument, PDFFont, PDFImage, PDFPage, StandardFonts, degrees, rgb, RGB } from "pdf-lib";
 import Decimal from "decimal.js";
 import { couleursDocument } from "@/lib/design-tokens";
 import {
@@ -768,6 +768,14 @@ export type OptionsDocument = {
    * point (`scripts/test-fiche-chantier-pdf.ts`).
    */
   sansChiffrage?: boolean;
+  /**
+   * Un mot posé en travers de chaque page, pâle, à la couleur des titres de
+   * parties : « EXEMPLE » sur la facture d'exemple des Réglages (sa planche du
+   * 26 septembre 2026, `appli/apercu-du-document.html`). Il se voit d'un coup
+   * d'œil, même imprimé, même photographié : cette feuille ne doit jamais
+   * pouvoir passer pour une vraie facture. Absent : rien ne change.
+   */
+  filigrane?: string | null;
 };
 
 
@@ -1422,6 +1430,37 @@ export async function composerDocument(
         // que la page se peignait en vert »), et les mentions sont passées à
         // l'encre le 17 septembre 2026.
         couleur: enHexa(ctx.teintes.legal),
+        gras: false,
+      });
+    });
+  }
+
+  if (options.filigrane) {
+    const mot = options.filigrane;
+    const taille = 96;
+    const largeurMot = ctx.sans.widthOfTextAtSize(mot, taille);
+    // Centré sur la page, à 35° : la diagonale traverse le tableau et les
+    // totaux, là où l'œil lit un montant.
+    const angle = (35 * Math.PI) / 180;
+    const x = LARGEUR / 2 - (Math.cos(angle) * largeurMot) / 2;
+    const yMot = HAUTEUR / 2 - (Math.sin(angle) * largeurMot) / 2;
+    ctx.pdfDoc.getPages().forEach((page, i) => {
+      page.drawText(mot, {
+        x,
+        y: yMot,
+        size: taille,
+        font: ctx.sans,
+        color: ctx.teintes.titrePartie,
+        opacity: 0.12,
+        rotate: degrees(35),
+      });
+      ctx.trace.textes.push({
+        contenu: mot,
+        x,
+        y: yMot,
+        taille,
+        page: i + 1,
+        couleur: enHexa(ctx.teintes.titrePartie),
         gras: false,
       });
     });

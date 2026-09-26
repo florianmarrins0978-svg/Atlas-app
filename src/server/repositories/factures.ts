@@ -25,6 +25,7 @@ import { lireDevisQuiFaitFoi } from "./devis";
 import { genererPdfFacture, type FacturePdfData } from "../pdf/facture-pdf";
 import { enregistrerObjet } from "../storage";
 import { jourIso } from "../../lib/jour";
+import { factureDExemple } from "../../lib/facture-d-exemple";
 import { echeanceFacture } from "../../lib/rappels";
 import { datesDeLaFactureQuiPart, validerEcheance } from "../../lib/echeance-facture";
 import { ALLURE_PAR_DEFAUT } from "../../lib/allure-documents";
@@ -1225,6 +1226,25 @@ export type ComplementsDeLaFacture = {
   reglements: ReglementRecu[];
 };
 
+/**
+ * Les conditions telles que les Réglages les disent AUJOURD'HUI — celles d'une
+ * facture née sans devis, et celles de la facture d'exemple. Une seule lecture
+ * pour les deux : l'exemple doit montrer ce que la prochaine vraie facture
+ * imprimera, pas une recopie qui dériverait.
+ */
+async function conditionsDesReglages(tx: DbOrTx, entrepriseId: string): Promise<ConditionsLues> {
+  const [e] = await tx.select().from(entreprises).where(eq(entreprises.id, entrepriseId)).limit(1);
+  const c = conditionsDepuisEntreprise(e);
+  return {
+    acomptePourcent: c.acomptePourcent,
+    delaiPaiementJours: c.delaiPaiementJours,
+    moyensPaiement: c.moyensPaiement,
+    rappelerPenalites: c.rappelerPenalites,
+    textePied: c.textePied,
+    conditionsGenerales: c.conditionsGenerales,
+  };
+}
+
 export async function complementsDeLaFacture(
   tx: DbOrTx,
   entrepriseId: string,
@@ -1251,16 +1271,7 @@ export async function complementsDeLaFacture(
       conditionsGenerales: d.conditionsGenerales,
     };
   } else {
-    const [e] = await tx.select().from(entreprises).where(eq(entreprises.id, entrepriseId)).limit(1);
-    const c = conditionsDepuisEntreprise(e);
-    conditionsReglees = {
-      acomptePourcent: c.acomptePourcent,
-      delaiPaiementJours: c.delaiPaiementJours,
-      moyensPaiement: c.moyensPaiement,
-      rappelerPenalites: c.rappelerPenalites,
-      textePied: c.textePied,
-      conditionsGenerales: c.conditionsGenerales,
-    };
+    conditionsReglees = await conditionsDesReglages(tx, entrepriseId);
   }
   const paiements = await tx
     .select()
@@ -1285,9 +1296,33 @@ export async function complementsDeLaFacture(
   };
 }
 
+/**
+ * Ce que le papier lit d'une facture, et rien de plus. **Resserré le
+ * 26 septembre 2026 pour la facture d'exemple** : elle n'a ni identifiant, ni
+ * chantier, ni date de création, et lui en inventer pour satisfaire la ligne
+ * entière aurait été fabriquer une fausse facture. La vraie, elle, passe telle
+ * quelle : sa ligne porte tous ces champs.
+ */
+export type FactureAImprimer = Pick<
+  typeof factures.$inferSelect,
+  | "numeroCommercial" | "statut" | "dateEmission" | "dateEcheance" | "mainDoeuvreHt" | "titre"
+  | "entrepriseNom" | "entrepriseRegimeTva" | "entrepriseAdresse" | "entrepriseSiret"
+  | "entrepriseTelephone" | "entrepriseEmail" | "entrepriseIban" | "entrepriseTitulaireCompte"
+  | "entrepriseFormeJuridique" | "entrepriseCapitalSocial" | "entrepriseVilleRcs"
+  | "entrepriseAssureurDecennale" | "entrepriseContratDecennale" | "entrepriseCouvertureDecennale"
+  | "entrepriseMediateurNom" | "entrepriseMediateurCoordonnees" | "entrepriseMentionsLegalesPosition"
+  | "clientNom" | "clientCivilite" | "clientAdresse" | "clientTelephone" | "adresseChantier"
+  | "conditionsPaiement" | "devise" | "tauxTva" | "reductionPourcent"
+>;
+
+export type LigneAImprimer = Pick<
+  typeof lignesFacture.$inferSelect,
+  "libelle" | "quantite" | "prixUnitaire" | "montant" | "tauxTva" | "unite" | "supplement" | "ordre"
+>;
+
 export function donneesFacture(
-  f: typeof factures.$inferSelect,
-  lignes: (typeof lignesFacture.$inferSelect)[],
+  f: FactureAImprimer,
+  lignes: readonly LigneAImprimer[],
   complements: ComplementsDeLaFacture
 ): FacturePdfData {
   const modalites = modalitesDeLaFacture(f);
@@ -1383,6 +1418,79 @@ export async function genererPdfFacturePourApercu(ctx: Ctx, factureId: string): 
     const habillage = await allureDesDocuments(tx, ctx.entrepriseId);
     return genererPdfFacture(donneesFacture(f, lignes, await complementsDeLaFacture(tx, ctx.entrepriseId, f)), habillage);
   });
+}
+
+/**
+ * LA FACTURE D'EXEMPLE — sa demande du 26 septembre 2026 : *« une fois qu'on
+ * remplit toutes les infos concernant les devis facture, on a un bouton pour
+ * visualiser à quoi il ressemblera, avec deux trois lignes factices avec des
+ * TVA différentes »* (planche `appli/apercu-du-document.html`, « A et B »).
+ *
+ * **Le vrai papier, jamais un dessin à part** : `genererPdfFacture`, nourri de
+ * l'identité, des conditions et de l'allure que les Réglages portent en ce
+ * moment — exactement ce qu'une facture créée maintenant recopierait. Seuls le
+ * client et les trois lignes sont factices (`facture-d-exemple.ts`).
+ *
+ * **Rien ne s'écrit.** Aucune ligne, aucun fichier rangé, et surtout aucun
+ * numéro pris : le compteur se LIT, il ne s'incrémente pas. Une suite de
+ * factures ne doit pas avoir de trou, et un aperçu n'a pas à en creuser un.
+ */
+export async function genererPdfFactureExemple(ctx: Ctx, maintenant: Date = new Date()): Promise<Uint8Array> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const [e] = await tx
+      .select(COLONNES_EMETTEUR)
+      .from(entreprises)
+      .where(eq(entreprises.id, ctx.entrepriseId))
+      .limit(1);
+    const identite = identiteDeLEmetteur(e);
+    const exemple = factureDExemple(identite.entrepriseRegimeTva);
+    const jour = jourIso(maintenant);
+    const f: FactureAImprimer = {
+      ...identite,
+      ...exemple.client,
+      numeroCommercial: await numeroSansLePrendre(tx, ctx.entrepriseId, maintenant),
+      // Le statut qui titre « FACTURE », comme la pièce que le client reçoit ;
+      // le mot EXEMPLE est posé par la fabrique, pas par un faux statut.
+      statut: "emise",
+      dateEmission: jour,
+      dateEcheance: null,
+      mainDoeuvreHt: null,
+      titre: null,
+      conditionsPaiement: null,
+      devise: "EUR",
+      tauxTva: exemple.tauxDuDocument,
+      reductionPourcent: null,
+    };
+    const complements: ComplementsDeLaFacture = {
+      numeroDevis: null,
+      acomptesDuDevis: [],
+      reglements: [],
+      conditionsReglees: await conditionsDesReglages(tx, ctx.entrepriseId),
+    };
+    const habillage = await allureDesDocuments(tx, ctx.entrepriseId);
+    return genererPdfFacture(donneesFacture(f, exemple.lignes, complements), { ...habillage, exemple: true });
+  });
+}
+
+/**
+ * Le numéro que porterait la prochaine facture, LU sans être pris.
+ *
+ * Même format, même remise à zéro au 1ᵉʳ janvier que `attribuerNumero` : la
+ * même fonction écrit le numéro (`ecrireNumero`), la même dit si l'année le
+ * remet à 1 (`repartChaqueAnnee`). Seul le SELECT remplace l'UPDATE.
+ */
+async function numeroSansLePrendre(tx: DbOrTx, entrepriseId: string, maintenant: Date): Promise<string> {
+  const annee = maintenant.getFullYear();
+  const mois = maintenant.getMonth() + 1;
+  const format = await formatNumeroDe(tx, entrepriseId);
+  const result: unknown = await tx.execute(sql`
+    SELECT prochain_numero_facture AS prochain, annee_facture AS annee
+    FROM entreprise_compteurs WHERE entreprise_id = ${entrepriseId}
+  `);
+  const [c] = (result as { rows: { prochain: number; annee: number | null }[] }).rows;
+  const repart = repartChaqueAnnee(format) && c?.annee !== annee;
+  const numero = !c || repart ? 1 : Number(c.prochain);
+  return ecrireNumero(format, "facture", { annee, mois, numero });
 }
 
 export async function emettreFacture(ctx: Ctx, factureId: string, maintenant: Date = new Date()) {
