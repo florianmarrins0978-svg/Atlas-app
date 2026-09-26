@@ -247,7 +247,7 @@ function instantaneDuDevis(d: typeof devis.$inferSelect): OrigineDeLaFacture {
  * l'enseigne quand le compte est ouvert au nom propre se fait refuser au
  * guichet, et rien ne le figeait jusqu'ici.
  */
-type EntreprisePourFacture = Pick<
+export type EntreprisePourFacture = Pick<
   typeof entreprises.$inferSelect,
   | "nom"
   | "adresse"
@@ -268,7 +268,7 @@ type EntreprisePourFacture = Pick<
   | "regimeTva"
 >;
 
-const COLONNES_EMETTEUR = {
+export const COLONNES_EMETTEUR = {
   nom: entreprises.nom,
   adresse: entreprises.adresse,
   siret: entreprises.siret,
@@ -288,7 +288,7 @@ const COLONNES_EMETTEUR = {
   regimeTva: entreprises.regimeTva,
 } as const;
 
-function identiteDeLEmetteur(e: EntreprisePourFacture | undefined) {
+export function identiteDeLEmetteur(e: EntreprisePourFacture | undefined) {
   return {
     // **Le nom ne peut pas être vide en base**, et une facture sans émetteur
     // n'est pas une facture : l'entreprise introuvable rend une chaîne vide
