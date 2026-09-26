@@ -110,7 +110,7 @@ export default async function EquipePage() {
             est une. */}
         {/* Sans les retours, ce réglage ne commande plus rien : ce qu'il ne
             peut plus lire, on ne le fait pas réclamer à ses gars
-            (`retour-actions.ts`, `reglesDuRetour`). */}
+            (`src/server/regles-du-retour.ts`). */}
         {retoursOuverts && (
           <FinDeChantierReglage
             initialDemande={entreprise?.retourDemande ?? false}

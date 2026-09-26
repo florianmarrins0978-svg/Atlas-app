@@ -13,6 +13,8 @@ import {
   nomCherche,
   rangerLesRetours,
   retourModifiable,
+  retourDuJourAttendu,
+  retoursPasRecus,
   type RetourEnListe,
 } from "../src/lib/retour-intervention";
 
@@ -254,6 +256,68 @@ essai("un nom tapé passe par-dessus la date : tous les retours du client", () =
   essai("le jour se compte à PARIS : 23 h 30 UTC la veille, c'est déjà aujourd'hui", () => {
     // 1 h 30 du matin à Paris, le 25 : en UTC c'était encore le 24.
     assert.equal(retourModifiable("2026-09-24T23:30:00.000Z", "2026-09-25", maintenant), true);
+  });
+}
+
+// ── LE RAPPEL DU RETOUR — sa planche du 26 septembre 2026 ──────────────────
+//
+// Ses réponses : la ligne sous le chantier (A), CHAQUE SOIR d'un chantier de
+// plusieurs jours, et la carte « Retour pas reçu » sur son accueil. Seulement
+// quand il a allumé « Demander une preuve ».
+{
+  console.log("\nLe rappel du retour");
+  essai("éteint : aucun rappel, même sans retour", () => {
+    assert.equal(retourDuJourAttendu({ demande: false, jour: "2026-09-25", aujourdHui: "2026-09-25", envoyeAujourdhui: false }), false);
+  });
+  essai("allumé, chantier du jour sans retour : le rappel parle", () => {
+    assert.equal(retourDuJourAttendu({ demande: true, jour: "2026-09-25", aujourdHui: "2026-09-25", envoyeAujourdhui: false }), true);
+  });
+  essai("le retour du jour est parti : il se tait", () => {
+    assert.equal(retourDuJourAttendu({ demande: true, jour: "2026-09-25", aujourdHui: "2026-09-25", envoyeAujourdhui: true }), false);
+  });
+  essai("un autre jour que le jour même : il se tait", () => {
+    assert.equal(retourDuJourAttendu({ demande: true, jour: "2026-09-26", aujourdHui: "2026-09-25", envoyeAujourdhui: false }), false);
+  });
+
+  const travailles = [
+    { chantierId: "terrasse", chantierNom: "Terrasse bois", jour: "2026-09-24" },
+    { chantierId: "terrasse", chantierNom: "Terrasse bois", jour: "2026-09-25" },
+    { chantierId: "cloture", chantierNom: "Pose de clôture", jour: "2026-09-25" },
+    { chantierId: "haie", chantierNom: "Taille de haie", jour: "2026-09-28" },
+  ];
+  const vide = new Map<string, string>();
+  essai("le lendemain : chaque chantier du dernier jour travaillé sans retour", () => {
+    const r = retoursPasRecus({ demande: true, travailles, retours: [], vus: vide, aujourdHui: "2026-09-26" });
+    assert.deepEqual(r.map((x) => x.chantierId).sort(), ["cloture", "terrasse"]);
+    assert.ok(r.every((x) => x.jour === "2026-09-25"));
+  });
+  essai("le week-end passé, lundi montre encore le vendredi", () => {
+    const r = retoursPasRecus({ demande: true, travailles, retours: [], vus: vide, aujourdHui: "2026-09-28" });
+    assert.deepEqual(r.map((x) => x.jour), ["2026-09-25", "2026-09-25"]);
+  });
+  essai("un retour posé ce jour-là fait taire la carte de CE chantier", () => {
+    const r = retoursPasRecus({ demande: true, travailles, retours: [{ chantierId: "terrasse", jour: "2026-09-25" }], vus: vide, aujourdHui: "2026-09-26" });
+    assert.deepEqual(r.map((x) => x.chantierId), ["cloture"]);
+  });
+  essai("un retour d'un AUTRE jour ne compte pas", () => {
+    const r = retoursPasRecus({ demande: true, travailles, retours: [{ chantierId: "terrasse", jour: "2026-09-24" }], vus: vide, aujourdHui: "2026-09-26" });
+    assert.ok(r.some((x) => x.chantierId === "terrasse"));
+  });
+  essai("« J'ai vu » après ce jour la fait taire ; un jour manqué plus tard revient", () => {
+    const vus = new Map([["terrasse", "2026-09-26"], ["cloture", "2026-09-26"]]);
+    assert.equal(retoursPasRecus({ demande: true, travailles, retours: [], vus, aujourdHui: "2026-09-27" }).length, 0);
+    const r = retoursPasRecus({ demande: true, travailles, retours: [], vus, aujourdHui: "2026-09-29" });
+    assert.deepEqual(r.map((x) => x.chantierId), ["haie"]);
+  });
+  essai("éteint : aucune carte", () => {
+    assert.equal(retoursPasRecus({ demande: false, travailles, retours: [], vus: vide, aujourdHui: "2026-09-26" }).length, 0);
+  });
+  essai("le jour même ne compte pas encore : la journée n'est pas finie", () => {
+    const r = retoursPasRecus({ demande: true, travailles, retours: [], vus: vide, aujourdHui: "2026-09-25" });
+    assert.ok(r.every((x) => x.jour === "2026-09-24"));
+  });
+  essai("aucun jour travaillé avant aujourd'hui : rien, et pas de plantage", () => {
+    assert.deepEqual(retoursPasRecus({ demande: true, travailles, retours: [], vus: vide, aujourdHui: "2026-09-01" }), []);
   });
 }
 

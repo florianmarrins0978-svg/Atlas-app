@@ -14,6 +14,7 @@ import Link from "next/link";
 import { getPlanificationEtat, trierParDatePlanifiee } from "@/lib/chantier-etat";
 import { estAuCalendrier } from "@/lib/onglet-chantier";
 import { jourIso } from "@/lib/jour";
+import { retourDuJourAttendu } from "@/lib/retour-intervention";
 import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 import { cheminAutorise, peutModifierLePlanning, type Role } from "@/lib/acces-roles";
 import { adresseDeLaVisionneuse } from "@/lib/visionneuse-pdf";
@@ -320,6 +321,7 @@ export default function PlanningClient({
   absences = [],
   role = null,
   chantierDemande = null,
+  retourDuJour = { demande: false, envoyes: [] },
 }: {
   initialChantiers: ChantierPlanning[];
   /** La CAPACITÉ : combien de chantiers tiennent dans une journée. */
@@ -374,6 +376,13 @@ export default function PlanningClient({
    * planning du jour, ce qui n'est pas une panne.
    */
   chantierDemande?: string | null;
+  /**
+   * « Retour à envoyer » sous le chantier du jour, sa planche du 26 septembre
+   * 2026 (réponse A). `demande` est déjà tranché au serveur : le réglage
+   * allumé, la formule qui porte les retours, et une personne qui peut en
+   * poser un. `envoyes` : les chantiers dont le retour d'aujourd'hui est parti.
+   */
+  retourDuJour?: { demande: boolean; envoyes: readonly string[] };
 }) {
   // Les deux portes que cet écran propose, décidées par la règle des rôles —
   // jamais par une liste écrite ici. Sans rôle (cas d'un rendu hors session),
@@ -1377,6 +1386,15 @@ export default function PlanningClient({
   const joursAvecChantiers = joursDeLaSemaine.filter((j) => chantiersDuJour(j).length > 0);
 
   /** Ce que porte une carte de journée — les mêmes gestes aux deux endroits. */
+  // La règle vit dans `retourDuJourAttendu` ; l'écran ne fait que la montrer.
+  const retourAEnvoyer = (chantierId: string, jour: JourIso) =>
+    retourDuJourAttendu({
+      demande: retourDuJour.demande,
+      jour,
+      aujourdHui,
+      envoyeAujourdhui: retourDuJour.envoyes.includes(chantierId),
+    });
+
   const gestesCarte = {
     ecriture: ouvertes.ecriture,
     nombreSalaries,
@@ -1405,6 +1423,7 @@ export default function PlanningClient({
     onPrendreMorceau: (id: string) => setMorceauEnMain((tenu) => (tenu === id ? null : id)),
     refus,
     taches,
+    retourAEnvoyer,
   };
 
   return (
@@ -1780,6 +1799,7 @@ export default function PlanningClient({
                             question après « qui » — et sur quatre clients qui
                             s'appellent Martins, c'est la seule qui distingue. */}
                         <LieuDuChantier chantier={c} />
+                  {retourAEnvoyer(c.id, jour) && <RetourAEnvoyer />}
                       </button>
                       {/* La pastille MÈNE AU JOUR au lieu d'ouvrir un choix : un
                           chantier à la journée porte deux listes d'équipes —
@@ -2264,6 +2284,23 @@ function LieuDuChantier({ chantier }: { chantier: ChantierPlanning }) {
   );
 }
 
+/**
+ * « Retour à envoyer », sous le lieu du chantier du jour — sa planche du
+ * 26 septembre 2026, réponse A. Il se tait dès que le retour du jour part.
+ */
+function RetourAEnvoyer() {
+  return (
+    <span
+      data-atlas="retour-a-envoyer"
+      className="mt-[5px] flex items-center gap-[7px] text-[12.5px] font-semibold"
+      style={{ color: colors.or }}
+    >
+      <span aria-hidden="true" className="h-[7px] w-[7px] flex-none rounded-full" style={{ backgroundColor: colors.or }} />
+      Retour à envoyer
+    </span>
+  );
+}
+
 /** La rangée de boutons qui remplace ce qu'on vient de toucher. */
 function Choisir({ children, mots }: { children: React.ReactNode; mots?: boolean }) {
   return (
@@ -2281,6 +2318,8 @@ function Choisir({ children, mots }: { children: React.ReactNode; mots?: boolean
 }
 
 type GestesCarte = {
+  /** Le retour d'aujourd'hui est-il encore attendu sur ce chantier ? */
+  retourAEnvoyer: (chantierId: string, jour: JourIso) => boolean;
   /**
    * Cette personne a-t-elle le droit de MODIFIER le planning ?
    *
@@ -3631,6 +3670,7 @@ function CarteDuJour({
   joursDeLaPastilleDe,
   fermerLeJour,
   rouvrirLeJour,
+  retourAEnvoyer,
 }: {
   cle: string;
   jour: JourIso;
@@ -3962,6 +4002,7 @@ function CarteDuJour({
                     {ditCeQuIlOccupe(c)}
                   </span>
                   <LieuDuChantier chantier={c} />
+                  {retourAEnvoyer(c.id, jour) && <RetourAEnvoyer />}
                 </button>
               )}
 

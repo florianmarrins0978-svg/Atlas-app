@@ -1,5 +1,20 @@
 # Prochaines tâches
 
+## LE RAPPEL DU RETOUR : CODÉ, LA BATTERIE RESTE À JOUER (26 septembre 2026)
+
+Codé sur la branche `claude/access-titles-r9m6l8` avec « Accès » (Réglages,
+Équipe) : `ARCHITECTURE.md` §417, migration 0102. **Niveau 3** (schéma,
+rayon de plus de dix écrans) : `npm run verifier:avant-livraison` avant `main`.
+Il a demandé qu'on ne lance aucune batterie ce jour-là ; elle attend son accord.
+
+Joué ici, un par un : la règle pure, la suite en base sous `atlas_app`, les
+contrôles du dépôt, et les trois écrans regardés (planning, accueil, réglage).
+
+**Ce qui reste ouvert, hors de ce lot :** le bouton « N autres devis à
+regarder » de l'accueil compte toutes les cartes repliées, factures impayées
+comprises, et maintenant « Retour pas reçu ». Le mot « devis » y est faux
+depuis avant ce lot ; le changer est une question d'écran à lui poser.
+
 ## ⏳ UNE PLANCHE À REGARDER — FICHE 6, LA CHALAROSE DU FRÊNE (25 septembre 2026)
 
 `appli/fiche-chalarose-du-frene.html`, liée depuis `appli/essais.html`. **Sa

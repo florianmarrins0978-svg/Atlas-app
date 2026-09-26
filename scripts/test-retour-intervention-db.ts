@@ -39,7 +39,10 @@ import {
   listerLesRetours,
   compterLesRetours,
   photoTenueParUnRetour,
+  chantiersAvecRetourDuJour,
 } from "../src/server/repositories/retours-intervention";
+import { retoursPasRecusEnCours, marquerRappelVu } from "../src/server/repositories/rappels";
+import { jourIso } from "../src/lib/jour";
 
 let echecs = 0;
 async function essai(nom: string, fn: () => Promise<void>) {
@@ -338,6 +341,53 @@ async function main() {
     await modifierLeDernierRetour(ctxA, chantier.id, r!.id, { taches: [], photoIds: [], aSignaler: null });
     assert.equal(await combienEnPurge(), avant + 1, "le fichier que plus rien ne tient est resté hors de la purge");
   });
+
+  // ═════════════════════════════════════════════════════════════════════════
+  // LE RAPPEL DU RETOUR — sa planche du 26 septembre 2026, sous `atlas_app`.
+  //
+  // `test-retour-intervention.ts` prouve la règle ; ici, que la base la nourrit
+  // à travers la RLS (`creneaux_chantier`, `retours_intervention` et
+  // `rappels_vus` sont sous FORCE RLS) et qu'un chantier voisin n'y entre pas.
+  // ═════════════════════════════════════════════════════════════════════════
+  {
+    const maintenant = new Date();
+    const aujourdHui = jourIso(maintenant);
+    const demain = new Date(maintenant.getTime() + 24 * 60 * 60 * 1000);
+    const cA = await chantiersRepo.creerChantier(ctxA, { nom: "Terrasse Rialland" });
+    const cB = await chantiersRepo.creerChantier(ctxB, { nom: "Clôture Bernard" });
+    for (const [entreprise, chantier] of [[ctxA.entrepriseId, cA.id], [ctxB.entrepriseId, cB.id]]) {
+      await admin.query("BEGIN");
+      await admin.query("SELECT set_config('app.entreprise_id', $1, true)", [entreprise]);
+      await admin.query(
+        "INSERT INTO creneaux_chantier (entreprise_id, chantier_id, jour, demi) VALUES ($1, $2, $3, 'matin')",
+        [entreprise, chantier, aujourdHui]
+      );
+      await admin.query("COMMIT");
+    }
+
+    await essai("le lendemain, le chantier travaillé sans retour remonte, jamais celui du voisin", async () => {
+      const r = await retoursPasRecusEnCours(ctxA, true, demain);
+      assert.deepEqual(r.map((x) => x.chantierId), [cA.id]);
+      assert.equal(r[0].jour, aujourdHui);
+    });
+    await essai("réglage éteint : rien", async () => {
+      assert.deepEqual(await retoursPasRecusEnCours(ctxA, false, demain), []);
+    });
+    await essai("le retour du jour posé : la ligne du planning se tait, la carte du lendemain aussi", async () => {
+      assert.ok(!(await chantiersAvecRetourDuJour(ctxA, maintenant)).includes(cA.id));
+      await poserLeRetour(ctxA, cA.id, { taches: [], photoIds: [], aSignaler: null });
+      const envoyes = await chantiersAvecRetourDuJour(ctxA, maintenant);
+      assert.ok(envoyes.includes(cA.id), "le retour posé n'est pas vu");
+      assert.ok(!envoyes.includes(cB.id), "le chantier du voisin est vu");
+      assert.deepEqual(await retoursPasRecusEnCours(ctxA, true, demain), []);
+    });
+    await essai("« J'ai vu » range la carte du voisin chez lui, et chez lui seulement", async () => {
+      assert.equal((await retoursPasRecusEnCours(ctxB, true, demain)).length, 1);
+      assert.equal(await marquerRappelVu(ctxA, "retour-pas-recu", cB.id, demain), false, "A a rangé un chantier de B");
+      assert.equal(await marquerRappelVu(ctxB, "retour-pas-recu", cB.id, demain), true);
+      assert.deepEqual(await retoursPasRecusEnCours(ctxB, true, demain), []);
+    });
+  }
 
   await admin.end();
   await pool.end();

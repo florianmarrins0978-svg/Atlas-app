@@ -33452,3 +33452,38 @@ faudrait savoir c'est une TVA à combien »*.
 **Réserve** : aux encaissements, un avoir émis après un acompte change les
 parts par taux de cet acompte (pas son total), comme il change déjà sa TVA
 (`TODO.md`).
+
+## §417 : Le rappel du retour d'intervention, et le jour qu'il vise
+
+**Sa planche du 26 septembre 2026** (`appli/rappel-du-retour.html`) et ses
+réponses : A (une ligne sous le chantier), chaque soir, la carte chez lui, et
+seulement quand « Demander une preuve » est allumé. Le sous-titre de ce réglage
+est sa phrase : « Rappelle d'envoyer le retour d'intervention à chaque fin de
+chantier ». Avant ce lot, il ne rappelait rien d'autre que de cocher, une fois
+la feuille ouverte.
+
+| | La règle | Où |
+|---|---|---|
+| **le salarié** | « Retour à envoyer » sous le chantier du jour, tant que le retour d'aujourd'hui n'est pas parti | `retourDuJourAttendu`, `PlanningClient` |
+| **le patron** | « Retour pas reçu » sur l'accueil, pour le DERNIER jour travaillé avant aujourd'hui | `retoursPasRecus`, `retoursPasRecusEnCours` |
+| **le réglage** | lu à un seul endroit, formule comprise | `src/server/regles-du-retour.ts` |
+
+**Pourquoi le dernier jour travaillé, et pas la veille ni tout l'historique.**
+La veille calendaire perdrait le vendredi dès le dimanche ; tout l'historique
+ferait surgir, le jour où il allume le réglage, chaque chantier passé que
+personne n'avait à raconter. Le dernier jour travaillé est exactement « le
+lendemain » de sa planche, et le lundi c'est encore le vendredi.
+
+**« J'ai vu » écrit dans `rappels_vus`** (genre `retour-pas-recu`, migration
+0102, qui ne fait qu'étendre la liste contrainte). Il fait taire les jours
+d'avant l'acquit ; un soir manqué plus tard revient. Ce genre n'entre PAS dans
+`GENRES_ACQUITTABLES` : ceux-là se taisent le délai réglé dans
+« Notifications », que le retour n'a pas. `GENRES_VUS` réunit les deux pour
+l'action.
+
+**Les jours travaillés se lisent comme le planning les dessine**
+(`creneauxOccupes`) : une seconde lecture annoncerait un jour que le planning
+ne montre pas.
+
+**Le téléphone ne sonne pas** : aucune notification n'existe (`TODO.md`, Web
+Push). Le rappel se voit en ouvrant l'application, et la planche le dit.

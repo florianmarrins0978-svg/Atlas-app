@@ -217,12 +217,13 @@ export function rappelFactureDu(params: {
   return params.maintenant.getTime() >= reveil;
 }
 
-/** Les quatre rappels, nommés une seule fois — écran, dépôt et base s'accordent. */
+/** Les rappels, nommés une seule fois — écran, dépôt et base s'accordent. */
 export type GenreRappel =
   | "chantier-sans-devis"
   | "devis-sans-reponse"
   | "chantier-non-facture"
-  | "facture-impayee";
+  | "facture-impayee"
+  | "retour-pas-recu";
 
 /** Les trois qui s'acquittent par « J'ai vu ». L'impayé a son propre moteur. */
 export const GENRES_ACQUITTABLES = [
@@ -233,8 +234,21 @@ export const GENRES_ACQUITTABLES = [
 
 export type GenreAcquittable = (typeof GENRES_ACQUITTABLES)[number];
 
-export function estGenreAcquittable(valeur: unknown): valeur is GenreAcquittable {
-  return GENRES_ACQUITTABLES.includes(valeur as GenreAcquittable);
+/**
+ * Ceux qui se rangent d'un « J'ai vu » écrit dans `rappels_vus` : les trois
+ * d'avant, plus « Retour pas reçu » (26 septembre 2026, migration 0102).
+ *
+ * **Le retour n'est pas dans `GENRES_ACQUITTABLES`**, et c'est voulu : ceux-là
+ * se taisent le délai réglé dans « Notifications », puis reviennent. Le retour
+ * n'a pas de délai réglé ; son « J'ai vu » fait taire les jours d'avant, et un
+ * soir manqué plus tard revient (`retoursPasRecus`).
+ */
+export const GENRES_VUS = [...GENRES_ACQUITTABLES, "retour-pas-recu"] as const;
+
+export type GenreVu = (typeof GENRES_VUS)[number];
+
+export function estGenreVu(valeur: unknown): valeur is GenreVu {
+  return GENRES_VUS.includes(valeur as GenreVu);
 }
 
 /**

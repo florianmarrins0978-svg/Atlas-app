@@ -1689,7 +1689,7 @@ export const rappelsVus = pgTable(
       .notNull()
       .references(() => chantiers.id, { onDelete: "cascade" }),
     genre: text("genre", {
-      enum: ["chantier-sans-devis", "devis-sans-reponse", "chantier-non-facture"],
+      enum: ["chantier-sans-devis", "devis-sans-reponse", "chantier-non-facture", "retour-pas-recu"],
     }).notNull(),
     vuLe: timestamp("vu_le", { withTimezone: true }).notNull().defaultNow(),
   },

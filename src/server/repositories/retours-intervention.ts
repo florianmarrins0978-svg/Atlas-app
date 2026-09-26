@@ -1,4 +1,4 @@
-import { and, asc, count, desc, eq, inArray, isNotNull, notExists, sql } from "drizzle-orm";
+import { and, asc, count, desc, eq, gt, inArray, isNotNull, lt, notExists, sql } from "drizzle-orm";
 import { withEntreprise } from "../db/with-entreprise";
 import type { DbOrTx } from "../db/client";
 import {
@@ -372,6 +372,34 @@ export async function nombreDeRetoursDuChantier(ctx: Ctx, chantierId: string): P
       .from(retoursIntervention)
       .where(eq(retoursIntervention.chantierId, chantierId));
     return Number(ligne?.n ?? 0);
+  });
+}
+
+/**
+ * Les chantiers dont le retour D'AUJOURD'HUI est parti — ce qui fait taire la
+ * ligne « Retour à envoyer » du planning (sa planche du 26 septembre 2026).
+ *
+ * Le jour se compte à Paris (`jourIso`) : une marge d'un jour en UTC de chaque
+ * côté, puis le tri, comme `retoursPasRecusEnCours`.
+ */
+export async function chantiersAvecRetourDuJour(ctx: Ctx, maintenant: Date): Promise<string[]> {
+  const aujourdHui = jourIso(maintenant);
+  const debut = new Date(`${aujourdHui}T00:00:00Z`);
+  debut.setUTCDate(debut.getUTCDate() - 1);
+  const fin = new Date(`${aujourdHui}T00:00:00Z`);
+  fin.setUTCDate(fin.getUTCDate() + 2);
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const lignes = await tx
+      .select({ chantierId: retoursIntervention.chantierId, poseLe: retoursIntervention.poseLe })
+      .from(retoursIntervention)
+      .where(
+        and(
+          eq(retoursIntervention.entrepriseId, ctx.entrepriseId),
+          gt(retoursIntervention.poseLe, debut),
+          lt(retoursIntervention.poseLe, fin)
+        )
+      );
+    return [...new Set(lignes.filter((l) => jourIso(new Date(l.poseLe)) === aujourdHui).map((l) => l.chantierId))];
   });
 }
 

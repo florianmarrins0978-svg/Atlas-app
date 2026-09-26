@@ -59,6 +59,81 @@ export function retourModifiable(poseLe: string, jourAffiche: string, maintenant
   return jourIso(new Date(poseLe)) === aujourdHui && jourAffiche === aujourdHui;
 }
 
+/**
+ * LE RETOUR DU JOUR EST-IL ENCORE ATTENDU SUR CE CHANTIER ?
+ *
+ * **Sa planche du 26 septembre 2026** (`appli/rappel-du-retour.html`), ses
+ * réponses : « A », une ligne sous le chantier dans la liste du jour ;
+ * « chaque soir » ; et seulement quand il a allumé « Demander une preuve ».
+ *
+ * Le jour même, et lui seul : un retour posé aujourd'hui décrit aujourd'hui,
+ * il ne rattrape pas la veille. La veille, c'est la carte du patron qui la
+ * dit (`retoursPasRecus`).
+ */
+export function retourDuJourAttendu(p: {
+  demande: boolean;
+  jour: string;
+  aujourdHui: string;
+  envoyeAujourdhui: boolean;
+}): boolean {
+  return p.demande && p.jour === p.aujourdHui && !p.envoyeAujourdhui;
+}
+
+/** Un chantier sur un jour où l'équipe y a travaillé. */
+export type JourTravaille = { chantierId: string; chantierNom: string; jour: string };
+
+/**
+ * Le dernier jour travaillé AVANT aujourd'hui, ou `null`.
+ *
+ * Exporté pour que le dépôt ne lise que les retours de ce jour-là : la règle
+ * qui choisit le jour reste ici, et ne s'écrit qu'une fois.
+ */
+export function dernierJourTravaille(travailles: readonly { jour: string }[], aujourdHui: string): string | null {
+  let cible: string | null = null;
+  for (const t of travailles) if (t.jour < aujourdHui && (cible === null || t.jour > cible)) cible = t.jour;
+  return cible;
+}
+
+/**
+ * LES RETOURS PAS REÇUS, pour la carte de l'accueil du patron.
+ *
+ * **Le DERNIER jour travaillé avant aujourd'hui, et lui seul.** C'est « le
+ * lendemain » de sa planche, et le lundi c'est encore le vendredi : le
+ * week-end ne travaille pas, il ne doit pas effacer la carte. Remonter plus
+ * loin ferait surgir, le jour où il allume le réglage, tous les chantiers
+ * passés que personne n'avait à raconter ; s'arrêter à la veille
+ * calendaire perdrait le vendredi dès le dimanche.
+ *
+ * **Le jour même ne compte pas** : la journée n'est pas finie, le retour part
+ * le soir.
+ *
+ * **« J'ai vu » fait taire ce chantier pour les jours d'avant l'acquit.** Un
+ * jour manqué APRÈS revient : c'est un autre soir, un autre retour.
+ */
+export function retoursPasRecus(p: {
+  demande: boolean;
+  travailles: readonly JourTravaille[];
+  retours: readonly { chantierId: string; jour: string }[];
+  /** Le jour (à Paris) du dernier « J'ai vu », par chantier. */
+  vus: ReadonlyMap<string, string>;
+  aujourdHui: string;
+}): JourTravaille[] {
+  if (!p.demande) return [];
+  const cible = dernierJourTravaille(p.travailles, p.aujourdHui);
+  if (cible === null) return [];
+  const recus = new Set(p.retours.filter((r) => r.jour === cible).map((r) => r.chantierId));
+  const vus = new Set<string>();
+  const sortie: JourTravaille[] = [];
+  for (const t of p.travailles) {
+    if (t.jour !== cible || recus.has(t.chantierId) || vus.has(t.chantierId)) continue;
+    vus.add(t.chantierId);
+    const vuLe = p.vus.get(t.chantierId);
+    if (vuLe !== undefined && vuLe > cible) continue;
+    sortie.push(t);
+  }
+  return sortie;
+}
+
 /** Une tâche du retour : le libellé recopié du devis, et si elle a été faite. */
 export type TacheDuRetour = {
   libelle: string;

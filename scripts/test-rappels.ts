@@ -24,7 +24,7 @@ import {
   rappelFactureDu,
   rappelEncoreTu,
   silenceApresVuJours,
-  estGenreAcquittable,
+  estGenreVu,
   GENRES_ACQUITTABLES,
 } from "../src/lib/rappels";
 
@@ -310,10 +310,10 @@ essai("éteint, le silence retombe sur le délai d'origine — jamais zéro", ()
 // deux mécaniques de silence de se contredire sur la même carte : la sienne
 // vit depuis le 16 août sur `chantiers.rappel_facture_repousse_le`.
 essai("l'impayé n'est pas acquittable : il garde son propre moteur", () => {
-  assert.equal(estGenreAcquittable("facture-impayee"), false);
-  assert.equal(estGenreAcquittable("devis-sans-reponse"), true);
-  assert.equal(estGenreAcquittable("chantier-sans-devis"), true);
-  assert.equal(estGenreAcquittable("chantier-non-facture"), true);
+  assert.equal(estGenreVu("facture-impayee"), false);
+  assert.equal(estGenreVu("devis-sans-reponse"), true);
+  assert.equal(estGenreVu("chantier-sans-devis"), true);
+  assert.equal(estGenreVu("chantier-non-facture"), true);
   assert.deepEqual([...GENRES_ACQUITTABLES], [
     "chantier-sans-devis",
     "devis-sans-reponse",
@@ -321,15 +321,22 @@ essai("l'impayé n'est pas acquittable : il garde son propre moteur", () => {
   ]);
 });
 
+// « Retour pas reçu » se range d'un « J'ai vu » (migration 0102), mais il n'a
+// pas de délai réglé : il ne doit jamais entrer dans la liste qui en cherche un.
+essai("le retour pas reçu se range, sans entrer chez ceux qui ont un délai", () => {
+  assert.equal(estGenreVu("retour-pas-recu"), true);
+  assert.equal((GENRES_ACQUITTABLES as readonly string[]).includes("retour-pas-recu"), false);
+});
+
 // Une adresse d'action se tape : un genre inventé ferait une ligne
 // d'acquittement qui ne correspond à aucun rappel, et que personne ne saurait
 // rallumer.
 essai("un genre inventé est refusé", () => {
-  assert.equal(estGenreAcquittable("tout"), false);
-  assert.equal(estGenreAcquittable(""), false);
-  assert.equal(estGenreAcquittable(null), false);
-  assert.equal(estGenreAcquittable(undefined), false);
-  assert.equal(estGenreAcquittable(7), false);
+  assert.equal(estGenreVu("tout"), false);
+  assert.equal(estGenreVu(""), false);
+  assert.equal(estGenreVu(null), false);
+  assert.equal(estGenreVu(undefined), false);
+  assert.equal(estGenreVu(7), false);
 });
 
 if (echecs) {

@@ -10,7 +10,9 @@ import { lieuDuChantier, lieuEstManquant } from "@/lib/nom-chantier";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { listerChantiersPourAffichage } from "@/server/repositories/chantiers";
 import { notificationsPatron, envoisCaducs } from "@/server/repositories/envois-devis";
-import { rappelsEnCours } from "@/server/repositories/rappels";
+import { rappelsEnCours, retoursPasRecusEnCours } from "@/server/repositories/rappels";
+import { reglesDuRetour } from "@/server/regles-du-retour";
+import { jourLisibleCourt } from "@/lib/mois";
 import { depuisCombien, joursEcoules } from "@/lib/rappels";
 import { enEuros } from "@/lib/euros";
 import Notifications from "./Notifications";
@@ -57,7 +59,7 @@ export default async function ChantiersPage() {
   // pour n'en rien faire coûterait un aller-retour à chaque ouverture de son
   // écran d'accueil, et laisserait croire à la prochaine lecture que la session
   // sert encore à quelque chose ici.
-  const [chantiers, notifications, caducs, rappels, receptions, abonnement] = await Promise.all([
+  const [chantiers, notifications, caducs, rappels, receptions, abonnement, retoursManques] = await Promise.all([
     listerChantiersPourAffichage(ctx),
     notificationsPatron(ctx),
     envoisCaducs(ctx),
@@ -68,6 +70,9 @@ export default async function ChantiersPage() {
     receptionsASignaler(ctx),
     // L'essai de quinze jours, s'il y en a un : `null` pour son Atlas à lui.
     abonnementDeLEntreprise(ctx),
+    // « Retour pas reçu » : sa planche du 26 septembre 2026, seulement quand
+    // il a allumé « Demander une preuve ».
+    reglesDuRetour(ctx).then((r) => retoursPasRecusEnCours(ctx, r.demande, maintenant)),
   ]);
 
   // Le ruban et le bouton éteint se décident ICI, sur le même instant que les
@@ -183,7 +188,23 @@ export default async function ChantiersPage() {
                     partielle: r.facture.resteDuCts !== r.facture.totalCts,
                   }
                 : undefined,
-            }))}
+            })).concat(
+              retoursManques.map((r) => {
+                // Midi à Paris : l'instant sert à RANGER la carte parmi les
+                // autres, jamais à l'écrire.
+                const jour = new Date(`${r.jour}T12:00:00Z`);
+                return {
+                  genre: "retour-pas-recu" as const,
+                  chantierId: r.chantierId,
+                  chantierNom: r.chantierNom,
+                  depuisTexte: depuisCombien(maintenant, jour),
+                  depuisJours: joursEcoules(maintenant, jour),
+                  quand: jour.getTime(),
+                  jourManque: jourLisibleCourt(r.jour).toLowerCase(),
+                  facture: undefined,
+                };
+              })
+            )}
           />
         </>
       }
