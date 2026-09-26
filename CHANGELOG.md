@@ -88,6 +88,22 @@ aux couleurs de l'application, à sa demande. Ce qui est décidé pour le code :
 l'exemple sera **le vrai PDF** fabriqué par le même code, avec EXEMPLE en
 filigrane, et **sans consommer de numéro**. Rien n'est codé.
 
+### Le rappel du retour d'intervention (migration 0102)
+
+Sa planche du 26 septembre 2026, ses réponses : A, chaque soir, la carte chez
+lui. Quand « Demander une preuve » est allumé, le salarié voit « Retour à
+envoyer » sous le chantier du jour au planning, jusqu'à l'envoi ; le patron
+voit « Retour pas reçu » sur son accueil pour le dernier jour travaillé sans
+retour, que « J'ai vu » range. Le sous-titre du réglage devient sa phrase.
+Évite : un réglage dont le sous-titre promettait un rappel qui n'existait pas.
+`ARCHITECTURE.md` §417.
+
+### Réglages, Équipe : « Qui a accès » devient « Accès »
+
+Sa demande du 26 septembre 2026. Seul le texte change, la liste reste à sa
+place. Les fiches du mode d'emploi qui citaient le titre le citent à jour :
+l'assistant l'aurait sinon envoyé chercher un mot qui n'est plus à l'écran.
+
 ## 2026-09-25
 
 ### L'anthracnose se sépare en deux planches, le chêne et le hêtre

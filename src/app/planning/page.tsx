@@ -5,6 +5,9 @@ import { bandeauAgendaDuPlanning } from "@/lib/agenda-externe";
 import { contextePlanning } from "@/server/contexte-planning";
 import { getRole } from "@/server/autorisation";
 import { chantierDemandeAuPlanning } from "@/lib/lien-planning";
+import { reglesDuRetour } from "@/server/regles-du-retour";
+import { chantiersAvecRetourDuJour } from "@/server/repositories/retours-intervention";
+import { peutPoserUnRetour } from "@/lib/acces-roles";
 import PlanningClient from "./PlanningClient";
 
 export const dynamic = "force-dynamic";
@@ -30,12 +33,14 @@ export default async function PlanningPage({
   // **Le même chargement que l'écran d'envoi**, depuis le 22 août 2026 : les
   // deux peignent la même journée, et deux chargements séparés finiraient par
   // ne plus lire les mêmes absences (`src/server/contexte-planning.ts`).
-  const [contexte, google, apple, masque, role] = await Promise.all([
+  const [contexte, google, apple, masque, role, regles, envoyes] = await Promise.all([
     contextePlanning(ctx, maintenant),
     etatAgenda(ctx),
     etatAgendaApple(ctx),
     rappelAgendaMasque(ctx),
     getRole(ctx),
+    reglesDuRetour(ctx),
+    chantiersAvecRetourDuJour(ctx, maintenant),
   ]);
 
   return (
@@ -52,6 +57,10 @@ export default async function PlanningPage({
       role={role}
       // Le chantier dont on vient : sa journée s'ouvre, et ses portes montent.
       chantierDemande={chantierDemande}
+      // « Retour à envoyer » : le réglage allumé, et une personne qui peut
+      // poser un retour. Sans elle, le rappel lui demanderait un geste qu'elle
+      // n'a pas.
+      retourDuJour={{ demande: regles.demande && role !== null && peutPoserUnRetour(role), envoyes }}
     />
   );
 }

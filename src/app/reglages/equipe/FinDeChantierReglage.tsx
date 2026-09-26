@@ -25,6 +25,13 @@ import { reglerLaFinDeChantierAction } from "./actions";
  * garde donc son sens — dire à l'équipe ce qu'il attend — et perd sa porte.
  *
  * ───────────────────────────────────────────────────────────────────────────
+ * **ET LE PREMIER RAPPELLE D'ENVOYER — sa planche du 26 septembre 2026.** Son
+ * sous-titre, sa phrase à lui, disait ce que l'interrupteur ne faisait pas.
+ * Allumé, il met désormais « Retour à envoyer » sous le chantier du jour au
+ * planning, chaque soir, et « Retour pas reçu » sur l'accueil du patron le
+ * lendemain (`retourDuJourAttendu`, `retoursPasRecus`).
+ *
+ * ───────────────────────────────────────────────────────────────────────────
  * **LES DEUX PARTENT ÉTEINTS**, et ce n'est pas une timidité. Les allumer
  * d'office bloquerait, dès la mise à jour, un salarié dont le téléphone est
  * mort à 18 h — sur un chantier, sans personne à qui demander. Il les allume
@@ -75,7 +82,7 @@ export default function FinDeChantierReglage({
 
       <Bascule
         titre="Demander une preuve"
-        dit="Rappelle de cocher ce qui a été fait avant d'envoyer le retour"
+        dit="Rappelle d'envoyer le retour d'intervention à chaque fin de chantier"
         actif={demande}
         enCours={enCours}
         repere="retour-demande"

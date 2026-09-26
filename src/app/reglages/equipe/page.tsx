@@ -105,12 +105,12 @@ export default async function EquipePage() {
         />
 
         {/* **Ce que le patron exige en fin de chantier — 8 septembre 2026.**
-            Il vit ICI, sous « Qui a accès » : c’est le même écran que celui où
+            Il vit ICI, sous « Accès » : c’est le même écran que celui où
             il décide de ce que ses gens peuvent faire, et cette exigence-là en
             est une. */}
         {/* Sans les retours, ce réglage ne commande plus rien : ce qu'il ne
             peut plus lire, on ne le fait pas réclamer à ses gars
-            (`retour-actions.ts`, `reglesDuRetour`). */}
+            (`src/server/regles-du-retour.ts`). */}
         {retoursOuverts && (
           <FinDeChantierReglage
             initialDemande={entreprise?.retourDemande ?? false}

@@ -5,9 +5,7 @@ import { getCurrentCtx } from "@/server/session-ctx";
 import { getRole } from "@/server/autorisation";
 import { exigerEcran, exigerChantierDansSaPortee } from "@/server/garde-action";
 import { peutPoserUnRetour } from "@/lib/acces-roles";
-import { getEntreprise } from "@/server/repositories/entreprises";
-import { abonnementDeLEntreprise } from "@/server/repositories/abonnements";
-import { fonctionOuverte } from "@/lib/abonnements";
+import { reglesDuRetour } from "@/server/regles-du-retour";
 import { listerPhotosHorsFicheDeSecurite, recevoirPhotoDeChantier } from "@/server/repositories/photos";
 import {
   dernierRetourDuChantier,
@@ -60,25 +58,6 @@ async function garder(chantierId: string, action: string) {
   }
   await exigerChantierDansSaPortee(ctx, chantierId, action);
   return ctx;
-}
-
-/**
- * CE QUE LE PATRON EXIGE EN FIN DE CHANTIER — lu à UN endroit pour les deux
- * gestes, et tenu par la formule.
- *
- * Les retours sont un plus d'« Entreprise » (sa décision du 10 septembre 2026).
- * Un « Artisan » qui avait coché « retour demandé » avant de choisir sa formule
- * ne doit pas continuer à le faire réclamer à ses gars : ce qu'il ne peut plus
- * lire, on ne le leur demande pas. La règle vit dans `fonctionOuverte` ; ici on
- * la lit, on ne la réécrit pas.
- */
-async function reglesDuRetour(ctx: Awaited<ReturnType<typeof garder>>) {
-  const [entreprise, abonnement] = await Promise.all([getEntreprise(ctx), abonnementDeLEntreprise(ctx)]);
-  const ouvert = fonctionOuverte(abonnement?.formule, "retours");
-  return {
-    demande: ouvert && (entreprise?.retourDemande ?? false),
-    photoExigee: ouvert && (entreprise?.retourPhotoExigee ?? false),
-  };
 }
 
 /**

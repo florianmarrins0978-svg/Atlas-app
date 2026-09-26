@@ -67,7 +67,7 @@ export default function QuiAAcces({
   return (
     <section className="mt-7 px-[26px]">
       <p className={`mb-1.5 ${libelleCaps}`} style={{ color: colors.inkSoft }}>
-        Qui a accès
+        Accès
       </p>
 
       <ul className="mt-1">

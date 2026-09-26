@@ -14,7 +14,7 @@ import {
   repousserRappelFactureAction,
   marquerRappelVuAction,
 } from "./actions";
-import type { GenreRappel, GenreAcquittable } from "@/lib/rappels";
+import type { GenreRappel, GenreVu } from "@/lib/rappels";
 import type { NotificationPatron, EnvoiCaduc } from "@/server/repositories/envois-devis";
 
 /** Un rappel, déjà mis en mots par le serveur — voir `src/lib/rappels.ts`. */
@@ -51,6 +51,9 @@ export type RappelAffiche = {
    * facture (sa planche du 16 août 2026, écran 1).
    */
   facture?: { id: string; numero: string; resteDu: string; total: string; partielle: boolean };
+  /** « vendredi 25 septembre », sur le seul « Retour pas reçu » : mis en mots
+   *  au serveur, comme le délai. */
+  jourManque?: string;
 };
 
 // Ce qu'est devenu un devis parti, porté au patron (docs/AGENT.md §2.2).
@@ -89,7 +92,7 @@ type Carte = {
    * Absent sur la facture impayée : celle-là se tait par `repousser`, son
    * moteur d'origine — deux mécaniques pour une idée se contrediraient.
    */
-  vu?: { genre: GenreAcquittable; chantierId: string };
+  vu?: { genre: GenreVu; chantierId: string };
   /**
    * Une réception de facture confirmée (9 septembre 2026).
    *
@@ -312,6 +315,28 @@ function rappelVersCarte(r: RappelAffiche): Carte {
       },
     };
   }
+  // **« Retour pas reçu », sa planche du 26 septembre 2026.** Il ne crie pas :
+  // le travail est fait, c'est le récit qui manque. « J'ai vu » le range
+  // (migration 0102), et la suite mène au chantier dans le planning, là où le
+  // retour se lit et s'envoie.
+  if (r.genre === "retour-pas-recu") {
+    return {
+      envoiId: `rappel-${r.genre}-${r.chantierId}`,
+      chantierId: r.chantierId,
+      chantierNom: r.chantierNom,
+      quand: r.quand,
+      urgent: false,
+      rappel: true,
+      vu: { genre: r.genre, chantierId: r.chantierId },
+      titre: "Retour pas reçu",
+      texte: `Le retour du ${r.jourManque} n'est pas arrivé.`,
+      suite: {
+        href: `/planning?chantier=${r.chantierId}`,
+        libelle: "Ouvrir le chantier",
+        reprendreAvant: false,
+      },
+    };
+  }
   return {
     // Aucun envoi derrière un rappel : la clé se fabrique, et elle porte le
     // genre — un même chantier peut dormir sur son devis un mois, puis sur sa
@@ -323,7 +348,7 @@ function rappelVersCarte(r: RappelAffiche): Carte {
     // Acquittable : ces trois-là visent un chantier, et c'est lui qu'on retient
     // (`rappels_vus`). Le genre voyage avec, car un même chantier peut dormir
     // sur son devis un mois, puis sur sa facture le mois suivant.
-    vu: { genre: r.genre as GenreAcquittable, chantierId: r.chantierId },
+    vu: { genre: r.genre as GenreVu, chantierId: r.chantierId },
     // **Les deux rappels d'origine ne crient pas.** Le fond teinté était
     // réservé à ce qui appelle une décision : un refus, un lien mort. Un rappel
     // de confort qui crierait aussi fort ferait baisser le volume des autres.
