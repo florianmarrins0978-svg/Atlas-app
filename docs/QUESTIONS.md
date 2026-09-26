@@ -52,6 +52,7 @@ relues à chaque session) :
 27. [Le format de mes numéros de facture, c'est obligatoire ?](#27-le-format-de-mes-numéros-de-facture-cest-obligatoire-)
 28. [Pourquoi la page que reçoit mon client n'a pas les couleurs de mon devis ?](#28-pourquoi-la-page-que-reçoit-mon-client-na-pas-les-couleurs-de-mon-devis-)
 29. [Mon client peut-il modifier le devis ou la facture qu'il reçoit ?](#29-mon-client-peut-il-modifier-le-devis-ou-la-facture-quil-reçoit-)
+30. [Combien de temps dois-je garder mes factures, et Atlas les garde-t-il ?](#30-combien-de-temps-dois-je-garder-mes-factures-et-atlas-les-garde-t-il-)
 
 ---
 
@@ -1963,3 +1964,60 @@ Vérifié le 11 septembre 2026 sur la version en ligne
 (`scripts/test-devis-non-modifiable.ts`, six contrôles) : le chiffrement est
 réel, pas une simple étiquette, et le contrôle le prouve sur le devis **et** sur
 la facture.
+
+---
+
+## 30. Combien de temps dois-je garder mes factures, et Atlas les garde-t-il ?
+
+*Question du 26 septembre 2026, en remontant sa TVA aux années précédentes.*
+
+### Ce que dit la loi (France)
+
+| Quoi | Combien de temps | Texte |
+|---|---|---|
+| Factures et pièces comptables, tickets d'achat compris | **10 ans** | Code de commerce, L123-22 |
+| Ce que le fisc peut vous demander de montrer | **6 ans** | Livre des procédures fiscales, L102 B |
+| Période pendant laquelle le fisc peut corriger votre TVA | **3 ans** : l'année en cours et les 3 précédentes | Livre des procédures fiscales, L169 et L176 |
+
+Ce sont les délais ordinaires. En cas de fraude ou d'activité non déclarée, ils
+s'allongent. La règle simple : **tout garder 10 ans**. Votre comptable confirme
+pour votre cas.
+
+### Ce que le code d'Atlas fait (vérifié le 26 septembre 2026)
+
+| | Verdict | Où |
+|---|---|---|
+| Une facture émise ne se supprime pas | tenu : aucun chemin du code n'efface une facture | `src/server/repositories/factures.ts` |
+| Une facture émise ne se modifie plus | tenu : ses lignes ne se retirent qu'en brouillon ; une erreur se corrige par un avoir | idem, `factureEncoreEnBrouillon` |
+| Le PDF de la facture reste celui envoyé | tenu : il est archivé à l'émission, jamais reconstruit, avec l'identité de l'entreprise figée ce jour là | idem |
+| Un achat supprimé (TVA déductible) | tenu : il est masqué, pas effacé, et sa photo reste | `src/server/repositories/achats-tva.ts` |
+| Effacer un client (RGPD) | tenu : ses factures et devis acceptés restent, et l'écran le dit | `src/server/retention.ts`, `donnees-client.ts` |
+| Rien ne s'efface tout seul avec le temps | tenu : les purges automatiques ne visent que l'audio des dictées, les photos de diagnostic et les fichiers orphelins | `src/server/retention.ts` |
+| Remonter aux années précédentes à l'écran | tenu : le calendrier de la TVA recule sans limite (sur iPhone, il ne s'ouvrait pas avant le correctif du 26 septembre) | `CalendrierPeriodes.tsx` |
+
+**Un point faible, mineur :** un règlement noté sur une facture peut être
+retiré sans limite de date (la petite croix, écran TVA). La facture reste,
+mais la date d'encaissement d'une TVA déjà déclarée peut disparaître. Inscrit
+dans `TODO.md`.
+
+### Là où ce n'est PAS tenu : l'endroit où vivent les données
+
+Le code garde tout. **Mais les données vivent aujourd'hui dans votre espace de
+travail GitHub, et il n'existe aucune sauvegarde automatique.** Un espace
+supprimé (par vous, ou par GitHub : par défaut, un espace arrêté et inutilisé
+pendant 30 jours est effacé) emporte toutes les factures avec lui.
+
+Donc, tant qu'Atlas n'est pas hébergé (Scaleway, décidé, voir
+`docs/lot-sauvegarde-cloture.md`) :
+
+1. **ne pas y mettre de vraies factures comme seule copie** ;
+2. si c'est déjà le cas : **Réglages, Télécharger mes données**, après chaque
+   série de factures, et ranger le fichier ailleurs (il contient les tables et
+   les fichiers joints, PDF et tickets compris) ;
+3. sur `github.com/settings/codespaces`, régler la durée de conservation des
+   espaces inutilisés au maximum (30 jours) et ouvrir l'espace au moins une
+   fois par mois.
+
+La sauvegarde automatique est le point 0 de `TODO.md` et figure dans
+`docs/A-FAIRE.md` : elle attend l'hébergement.
+

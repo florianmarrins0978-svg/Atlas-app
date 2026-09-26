@@ -1,5 +1,15 @@
 # Prochaines tâches
 
+## Un règlement se retire sans limite de date (26 septembre 2026)
+
+Trouvé en vérifiant la conservation sur 10 ans (`docs/QUESTIONS.md` §30).
+`retirerPaiement` (`src/server/repositories/paiements-facture.ts`) supprime la
+ligne pour de bon, sur n'importe quelle facture, à n'importe quelle date : la
+croix de l'écran TVA peut donc effacer la date d'encaissement d'une TVA déjà
+déclarée. La facture elle-même reste. Piste : refuser au-delà de la période
+déclarée, ou garder la ligne marquée « retirée » au lieu de l'effacer. Touche
+l'argent : niveau 3, sa décision avant de coder.
+
 ## ⏳ UNE PLANCHE À REGARDER — FICHE 6, LA CHALAROSE DU FRÊNE (25 septembre 2026)
 
 `appli/fiche-chalarose-du-frene.html`, liée depuis `appli/essais.html`. **Sa

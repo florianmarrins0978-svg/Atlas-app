@@ -101,6 +101,7 @@
 <li><a href="#27-le-format-de-mes-numéros-de-facture-cest-obligatoire-">Le format de mes numéros de facture, c'est obligatoire ?</a></li>
 <li><a href="#28-pourquoi-la-page-que-reçoit-mon-client-na-pas-les-couleurs-de-mon-devis-">Pourquoi la page que reçoit mon client n'a pas les couleurs de mon devis ?</a></li>
 <li><a href="#29-mon-client-peut-il-modifier-le-devis-ou-la-facture-quil-reçoit-">Mon client peut-il modifier le devis ou la facture qu'il reçoit ?</a></li>
+<li><a href="#30-combien-de-temps-dois-je-garder-mes-factures-et-atlas-les-garde-t-il-">Combien de temps dois-je garder mes factures, et Atlas les garde-t-il ?</a></li>
 </ol>
 <hr>
 <h2 id="1-le-compte-développeur-apple--qui-paie-et-combien-de-temps-">1. Le compte développeur Apple : qui paie, et combien de temps ?</h2>
@@ -1503,6 +1504,85 @@
 <h3 id="sur-quoi-ça-vaut">Sur quoi ça vaut</h3>
 <p>Les trois documents, par un seul endroit du code : <strong>le devis, la facture, et la feuille de chantier</strong>. Un document oublié ne se verrait pas — on l'apprendrait chez le client.</p>
 <p>Vérifié le 11 septembre 2026 sur la version en ligne (<code>scripts/test-devis-non-modifiable.ts</code>, six contrôles) : le chiffrement est réel, pas une simple étiquette, et le contrôle le prouve sur le devis <strong>et</strong> sur la facture.</p>
+<hr>
+<h2 id="30-combien-de-temps-dois-je-garder-mes-factures-et-atlas-les-garde-t-il-">30. Combien de temps dois-je garder mes factures, et Atlas les garde-t-il ?</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><em>Question du 26 septembre 2026, en remontant sa TVA aux années précédentes.</em></p>
+<h3 id="ce-que-dit-la-loi-france">Ce que dit la loi (France)</h3>
+<div class="tablewrap"><table><thead><tr>
+<th>Quoi</th>
+<th>Combien de temps</th>
+<th>Texte</th>
+</tr></thead><tbody>
+<tr>
+<td>Factures et pièces comptables, tickets d'achat compris</td>
+<td><strong>10 ans</strong></td>
+<td>Code de commerce, L123-22</td>
+</tr>
+<tr>
+<td>Ce que le fisc peut vous demander de montrer</td>
+<td><strong>6 ans</strong></td>
+<td>Livre des procédures fiscales, L102 B</td>
+</tr>
+<tr>
+<td>Période pendant laquelle le fisc peut corriger votre TVA</td>
+<td><strong>3 ans</strong> : l'année en cours et les 3 précédentes</td>
+<td>Livre des procédures fiscales, L169 et L176</td>
+</tr>
+</tbody></table></div>
+<p>Ce sont les délais ordinaires. En cas de fraude ou d'activité non déclarée, ils s'allongent. La règle simple : <strong>tout garder 10 ans</strong>. Votre comptable confirme pour votre cas.</p>
+<h3 id="ce-que-le-code-datlas-fait-vérifié-le-26-septembre-2026">Ce que le code d'Atlas fait (vérifié le 26 septembre 2026)</h3>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Verdict</th>
+<th>Où</th>
+</tr></thead><tbody>
+<tr>
+<td>Une facture émise ne se supprime pas</td>
+<td>tenu : aucun chemin du code n'efface une facture</td>
+<td><code>src/server/repositories/factures.ts</code></td>
+</tr>
+<tr>
+<td>Une facture émise ne se modifie plus</td>
+<td>tenu : ses lignes ne se retirent qu'en brouillon ; une erreur se corrige par un avoir</td>
+<td>idem, <code>factureEncoreEnBrouillon</code></td>
+</tr>
+<tr>
+<td>Le PDF de la facture reste celui envoyé</td>
+<td>tenu : il est archivé à l'émission, jamais reconstruit, avec l'identité de l'entreprise figée ce jour là</td>
+<td>idem</td>
+</tr>
+<tr>
+<td>Un achat supprimé (TVA déductible)</td>
+<td>tenu : il est masqué, pas effacé, et sa photo reste</td>
+<td><code>src/server/repositories/achats-tva.ts</code></td>
+</tr>
+<tr>
+<td>Effacer un client (RGPD)</td>
+<td>tenu : ses factures et devis acceptés restent, et l'écran le dit</td>
+<td><code>src/server/retention.ts</code>, <code>donnees-client.ts</code></td>
+</tr>
+<tr>
+<td>Rien ne s'efface tout seul avec le temps</td>
+<td>tenu : les purges automatiques ne visent que l'audio des dictées, les photos de diagnostic et les fichiers orphelins</td>
+<td><code>src/server/retention.ts</code></td>
+</tr>
+<tr>
+<td>Remonter aux années précédentes à l'écran</td>
+<td>tenu : le calendrier de la TVA recule sans limite (sur iPhone, il ne s'ouvrait pas avant le correctif du 26 septembre)</td>
+<td><code>CalendrierPeriodes.tsx</code></td>
+</tr>
+</tbody></table></div>
+<p><strong>Un point faible, mineur :</strong> un règlement noté sur une facture peut être retiré sans limite de date (la petite croix, écran TVA). La facture reste, mais la date d'encaissement d'une TVA déjà déclarée peut disparaître. Inscrit dans <code>TODO.md</code>.</p>
+<h3 id="là-où-ce-nest-pas-tenu--lendroit-où-vivent-les-données">Là où ce n'est PAS tenu : l'endroit où vivent les données</h3>
+<p>Le code garde tout. <strong>Mais les données vivent aujourd'hui dans votre espace de travail GitHub, et il n'existe aucune sauvegarde automatique.</strong> Un espace supprimé (par vous, ou par GitHub : par défaut, un espace arrêté et inutilisé pendant 30 jours est effacé) emporte toutes les factures avec lui.</p>
+<p>Donc, tant qu'Atlas n'est pas hébergé (Scaleway, décidé, voir <code>docs/lot-sauvegarde-cloture.md</code>) :</p>
+<ol>
+<li><strong>ne pas y mettre de vraies factures comme seule copie</strong> ;</li>
+<li>si c'est déjà le cas : <strong>Réglages, Télécharger mes données</strong>, après chaque série de factures, et ranger le fichier ailleurs (il contient les tables et les fichiers joints, PDF et tickets compris) ;</li>
+<li>sur <code>github.com/settings/codespaces</code>, régler la durée de conservation des espaces inutilisés au maximum (30 jours) et ouvrir l'espace au moins une fois par mois.</li>
+</ol>
+<p>La sauvegarde automatique est le point 0 de <code>TODO.md</code> et figure dans <code>docs/A-FAIRE.md</code> : elle attend l'hébergement.</p>
 </main>
 </body>
 </html>
