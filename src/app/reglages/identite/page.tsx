@@ -10,6 +10,7 @@ import ExigibiliteTva from "../ExigibiliteTva";
 import { libellePeriode, periodeCourante, PERIODICITE_TVA_PAR_DEFAUT } from "@/server/periode-tva";
 import { relevesSousLesDeuxRegimes } from "@/server/repositories/factures";
 import { enEuros } from "@/lib/euros";
+import VoirUnExemple from "../VoirUnExemple";
 
 export const dynamic = "force-dynamic";
 
@@ -117,6 +118,11 @@ export default async function IdentitePage() {
 
           **Il reste monté par la PAGE**, et c'est voulu : elle seule lit la
           base. Le recopier dans l'écran en aurait fait deux. */}
+      {/* En bas, après ce qu'il vient de remplir : l'exemple montre tout de
+          suite ce que son SIRET, ses mentions et sa TVA donnent sur le papier
+          (sa réponse « A et B », 26 septembre 2026, `VoirUnExemple`). */}
+      <VoirUnExemple />
+
       <div className="pb-24" />
     </div>
   );

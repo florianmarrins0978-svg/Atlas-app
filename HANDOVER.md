@@ -11,6 +11,13 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 
 ---
 
+## VOIR UN EXEMPLE DE FACTURE — 26 septembre 2026
+
+Branche `claude/invoice-preview-mock-data-ti2n5y`. `src/app/reglages/VoirUnExemple.tsx`,
+`src/app/api/factures/exemple/pdf/route.ts`, `genererPdfFactureExemple` dans
+`src/server/repositories/factures.ts`, `src/lib/facture-d-exemple.ts`. Niveau 3 : batterie
+avant `main`, **uniquement sur son accord**. Détail : `ARCHITECTURE.md` §417.
+
 ## MA TVA À LA CALCULETTE — 25 septembre 2026
 
 | | |

@@ -5,6 +5,14 @@
 
 ---
 
+## CODÉ, PAS SUR `main` : VOIR UN EXEMPLE DE FACTURE (26 septembre 2026)
+
+Bouton « Voir un exemple » sous « Devis & factures » et en bas de « Mon
+entreprise » : la vraie facture, EXEMPLE en filigrane, trois lignes à 20, 10 et
+5,5 %, aucun numéro pris (`ARCHITECTURE.md` §417). Avec le « ; » de la
+périodicité de TVA. Attend la batterie, sur son accord. L'exemple du devis
+n'est pas fait.
+
 ## FAIT : MA TVA À LA CALCULETTE, SUR `main` (25 septembre 2026)
 
 Le mot « TVA collectée » ou « TVA déductible » ouvre une page à colonnes :
