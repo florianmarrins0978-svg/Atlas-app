@@ -11,6 +11,15 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 
 ---
 
+## MON AGENDA EN SIMPLE : 26 septembre 2026
+
+Codé sur `claude/simplifier-mon-agenda-2lexkg`, **pas sur `main`** : il a
+interdit la batterie, et le lot est de niveau 3 (migration 0102). Pour livrer :
+lui demander le moment, jouer `npm run verifier:avant-livraison` dans le dossier
+du lot, puis pousser. **Piège à connaître** : débrancher Google efface ses
+identifiants ; c'est pourquoi la saisie reste accessible quand rien n'est
+configuré (§417).
+
 ## MA TVA À LA CALCULETTE — 25 septembre 2026
 
 | | |

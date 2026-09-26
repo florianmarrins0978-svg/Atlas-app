@@ -8,6 +8,27 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-26
 
+### Mon agenda en deux lignes, et la phrase du Planning qui se masque
+
+**Sa demande**, capture de Google en panne à l'appui : *« trop de mots, trop
+compliqué, il faut qu'elle soit hyper simple »*. Son choix A de
+`appli/mon-agenda-simple.html` : une ligne par agenda, son état en deux mots
+(`motsDeLAgenda`), un bouton ; pause, débrancher et écriture iCloud dans un
+volet « Gérer ». Le JSON de Google et les phrases d'explication sont partis.
+**Ce que ça évite** : lire vingt lignes pour trouver « Rebrancher ».
+
+Son choix C, après *« ceux qui vont jamais remplir leur agenda, ils vont voir la
+phrase tous les jours »* : la proposition de relier se masque pour toujours
+(`rappel_agenda_masque`, migration 0102, colonne ajoutée seule), une pause ne
+fait plus parler le Planning, une panne parle toujours et sans « Masquer ».
+**Ce que ça corrige aussi** : le bandeau ne lisait que Google, et proposait
+chaque jour de relier Google à qui avait relié iCloud (`bandeauAgendaDuPlanning`).
+
+**Codé sur la branche, PAS sur `main`** : niveau 3 (migration), et il a refusé
+toute batterie. Éprouvé ici : types, lint, `test-agenda-externe`,
+`test-mode-emploi`, la suite navigateur de l'écran (12 sur 12, vue rougir quand
+« Masquer » n'écrit plus), et les écrans regardés.
+
 ### Le retour envoyé se rouvre depuis n'importe quelle journée du planning
 
 **Sa plainte**, sur la fiche de Julien posée au lundi 28 : *« je peux pas

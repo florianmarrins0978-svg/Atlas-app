@@ -32,7 +32,12 @@ Au codage : le vrai PDF (`src/server/pdf/`) nourri de ses réglages et de trois
 lignes factices (20, 10, 5,5 %), filigrane EXEMPLE, **aucun numéro consommé**,
 franchise en base rendue telle quelle (mention 293 B). Niveau 3 (argent).
 
-## MON AGENDA, EN SIMPLE : A ET C RETENUES, À CODER (26 septembre 2026)
+## MON AGENDA, EN SIMPLE : A ET C CODÉES, PAS SUR `main` (26 septembre 2026)
+
+**Codé sur `claude/simplifier-mon-agenda-2lexkg`** (`ARCHITECTURE.md` §417).
+Niveau 3 (migration 0102). **Il a refusé toute batterie** : rien ne part sur
+`main` avant qu'il choisisse le moment de `npm run verifier:avant-livraison`.
+Déjà éprouvé : types, lint, suites rapides, `test-agenda-reglages-e2e` seule.
 
 **Sa réponse du 26 septembre : « A », et C.** Précision donnée en même temps :
 *« une fois qu'on a choisi masquer, faut pas qu'il reste de phrase »* ; rien ne
@@ -13040,7 +13045,7 @@ pourquoi sont dans `ARCHITECTURE.md` §75, la réponse en langage courant dans
 | 1 | Migration : `fournisseur IN ('google','apple')`, mot de passe chiffré, agendas lus, calendrier d'écriture | `drizzle/0035_agenda_apple.sql` |
 | 2 | CalDAV : découverte, `calendar-query`, `PUT`, `DELETE` | `src/server/agenda/apple.ts` |
 | 3 | Lecture et écriture de l'iCalendar | `src/lib/ics.ts`, `src/lib/caldav.ts` |
-| 4 | L'écran, d'après la maquette | `src/app/reglages/agenda/AgendaAppleClient.tsx` |
+| 4 | L'écran, d'après la maquette | `src/app/reglages/agenda/MonAgendaClient.tsx` (réécrit le 26 septembre 2026, §417) |
 | 5 | Les chantiers montent et redescendent avec le planning | `src/server/repositories/agenda-apple.ts` |
 
 **CE QUI RESTE, et qui ne peut pas être fait ici :** aucun échange réel avec

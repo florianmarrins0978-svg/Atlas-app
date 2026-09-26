@@ -5,6 +5,13 @@
 
 ---
 
+## CODÉ, PAS SUR `main` : MON AGENDA EN SIMPLE (26 septembre 2026)
+
+Une ligne par agenda et un volet « Gérer » ; sur le Planning, la phrase de
+l'agenda se masque pour toujours (migration 0102). Sur la branche
+`claude/simplifier-mon-agenda-2lexkg`, en attente de la batterie qu'il
+déclenchera. `ARCHITECTURE.md` §417.
+
 ## FAIT : MA TVA À LA CALCULETTE, SUR `main` (25 septembre 2026)
 
 Le mot « TVA collectée » ou « TVA déductible » ouvre une page à colonnes :
