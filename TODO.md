@@ -8,6 +8,20 @@ Au codage : le vrai PDF (`src/server/pdf/`) nourri de ses réglages et de trois
 lignes factices (20, 10, 5,5 %), filigrane EXEMPLE, **aucun numéro consommé**,
 franchise en base rendue telle quelle (mention 293 B). Niveau 3 (argent).
 
+## ⏳ UNE PLANCHE À REGARDER : MON AGENDA, EN SIMPLE (26 septembre 2026)
+
+Sa demande, capture à l'appui (Google en panne sur `invalid_grant`) : *« trop
+de mots, trop compliqué, il faut qu'elle soit hyper simple »*. Planche
+`appli/mon-agenda-simple.html` : **A**, une ligne par agenda (état en deux
+mots, un bouton) ; **B**, un seul voyant et le bouton qui répare. Pause,
+débrancher et identifiants Google passent dans un volet « Gérer » ; le JSON de
+Google quitte l'écran. **Rien n'est codé** (`src/app/reglages/agenda/`).
+
+**À vérifier avant de coder, hors planche :** `invalid_grant` à répétition est
+le symptôme classique d'un projet Google laissé en mode « Test » (jetons
+expirés au bout de sept jours). Si c'est le cas, simplifier l'écran ne
+suffira pas : la panne reviendra chaque semaine.
+
 ## ⏳ UNE PLANCHE À REGARDER — FICHE 6, LA CHALAROSE DU FRÊNE (25 septembre 2026)
 
 `appli/fiche-chalarose-du-frene.html`, liée depuis `appli/essais.html`. **Sa
