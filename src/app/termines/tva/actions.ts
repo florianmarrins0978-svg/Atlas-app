@@ -13,6 +13,7 @@ import { lireTicket, type TicketLu } from "@/server/ai/services/lire-ticket";
 import { revalidatePath } from "next/cache";
 import {
   noterPaiement,
+  remettrePaiement,
   retirerPaiement,
   soldera,
   type ResultatPaiement,
@@ -243,6 +244,7 @@ async function sansPanneMuette<T>(
 /** Ce que l'écran annonce quand l'écriture n'aboutit pas. Ses mots, au plus court. */
 const ECHEC_NOTE = "Ce règlement n’a pas pu être enregistré";
 const ECHEC_RETRAIT = "Ce règlement n’a pas pu être retiré";
+const ECHEC_REMISE = "Ce règlement n’a pas pu être remis";
 
 export async function soldeFactureAction(factureId: string, aujourdHui: string): Promise<ResultatPaiement> {
   const ctx = await getCurrentCtx();
@@ -283,6 +285,15 @@ export async function retirerPaiementAction(paiementId: string): Promise<{ ok: t
     await retirerPaiement(ctx, paiementId);
     return { ok: true as const };
   });
+  if (r.ok) revalidatePath("/termines/tva");
+  return r;
+}
+
+/** « Remettre » : le règlement retiré revient, au même mois (sa planche du 26 septembre 2026). */
+export async function remettrePaiementAction(reglementId: string): Promise<ResultatPaiement> {
+  const ctx = await getCurrentCtx();
+  await exigerFacturation(ctx, "remettre un paiement");
+  const r = await sansPanneMuette("Règlement remis", ECHEC_REMISE, () => remettrePaiement(ctx, reglementId));
   if (r.ok) revalidatePath("/termines/tva");
   return r;
 }

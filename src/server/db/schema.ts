@@ -2222,6 +2222,33 @@ export const paiementsFacture = pgTable(
   ]
 );
 
+/**
+ * Les règlements retirés d'une facture (migration 0102), gardés pour leur
+ * trace : sa planche du 26 septembre 2026, « la B ». Un règlement retiré
+ * quitte `paiements_facture`, donc aucun total ne le compte plus, et
+ * « Remettre » l'y ramène avec le même identifiant.
+ */
+export const reglementsRetires = pgTable(
+  "reglements_retires",
+  {
+    id: uuid("id").primaryKey(),
+    entrepriseId: uuid("entreprise_id").notNull(),
+    factureId: uuid("facture_id").notNull(),
+    datePaiement: date("date_paiement").notNull(),
+    montant: numeric("montant", { precision: 12, scale: 2 }).notNull(),
+    moyen: text("moyen", { enum: ["virement", "cheque", "especes", "carte", "autre"] }),
+    note: text("note"),
+    numero: text("numero"),
+    libelle: text("libelle"),
+    solde: boolean("solde").notNull().default(false),
+    origine: text("origine", { enum: ["saisi", "reprise", "banque"] }).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull(),
+    retireLe: timestamp("retire_le", { withTimezone: true }).notNull().defaultNow(),
+    retirePar: uuid("retire_par"),
+  },
+  (t) => [index("reglements_retires_facture_idx").on(t.entrepriseId, t.factureId)]
+);
+
 export const lignesFacture = pgTable(
   "lignes_facture",
   {

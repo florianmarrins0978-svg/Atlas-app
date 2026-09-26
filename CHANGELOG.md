@@ -26,6 +26,38 @@ planches de l'anthracnose du hêtre et de la chalarose, réécrits en phrases.
 affiché, donc rougissait du 27 au 31 de chaque mois ; il avance désormais au
 mois suivant comme le patron.
 
+### La croix d'un acompte barre la ligne au lieu de l'effacer
+
+*Sa planche du jour, `appli/retirer-un-acompte.html`, « la B ».* La croix
+supprimait le règlement : un acompte de juillet retiré en septembre faisait
+baisser la TVA de juillet, déjà déclarée, sans laisser de trace. Le règlement
+retiré part maintenant dans `reglements_retires` (migration 0102) : aucun
+total ne le compte plus, sans qu'aucun calcul ait à le filtrer
+(`ARCHITECTURE.md` §417). La ligne reste barrée et datée sur la facture en
+attente et dans la TVA collectée du mois ; « Remettre » la rend, refusé si la
+facture a été soldée entre-temps. Le retiré part aussi dans « Télécharger mes
+données ».
+
+Éprouvé : `test-paiements-facture-db.ts` (quatre cas neufs, rouges avant),
+`test-tva-au-paiement-e2e.ts` (son geste entier, dans le navigateur), et les
+suites voisines des règlements. **Batterie non jouée**, à sa demande.
+
+### Sur iPhone, le calendrier de la TVA rouvre les années précédentes
+
+*Sa question, capture à l'appui : « pourquoi je peux pas aller voir les
+années précédentes ? »* Toucher « 2026 » ne voilait que la bande des mois. La
+feuille du calendrier était montée DANS le rail des mois, qui défile, et
+Safari rogne un `position: fixed` à son conteneur défilant : la feuille, avec
+son « ‹ 2025 », restait hors de l'écran. Chromium ne rogne pas, donc la suite
+navigateur était verte.
+
+La feuille part désormais sous `<body>` (`createPortal`,
+`CalendrierPeriodes.tsx`). `test-periodicite-tva-e2e.ts` vérifie qu'aucun
+ancêtre de la feuille ne défile ni n'est collant : rouge avant, vert après.
+**Pas vérifiable ICI sur Safari** (aucun WebKit sur ce poste) : à regarder
+sur son iPhone. Batterie non jouée, à sa demande ; seule la suite de la TVA
+l'a été (9 sur 9).
+
 ### Planche : voir un exemple de facture, avant de coder
 
 `appli/apercu-du-document.html`, sa demande du 26 septembre : un bouton qui

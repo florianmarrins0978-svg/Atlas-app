@@ -339,7 +339,7 @@ protège la base ; elle ne la remplace pas.
 
 | | Quoi | Valeur | Si on l'oublie | Avant le 1er client ? |
 |---|---|---|---|---|
-| **SCW-01** | instance PostgreSQL gérée **①** | PG 16+ ; volume **Local Storage** *(recommandé — décision 1 bis)* | non rattrapable après création | **OUI** |
+| **SCW-01** | instance PostgreSQL gérée **①** | PG 16+ ; volume **Local Storage** *(tranché le 26 septembre 2026, décision 1 bis)* | non rattrapable après création | **OUI** |
 | **SCW-02** | autobackup **②** actif | par défaut | **tout perdu au 1er incident** | **OUI** |
 | **SCW-03** | rétention à **30 jours** | 30 (défaut 7) | un dégât vu au retour de vacances est irrécupérable | **OUI** |
 | **SCW-04** | fréquence au maximum offert | à lire en console | RPO à 24 h | recommandé |
@@ -363,10 +363,15 @@ protège la base ; elle ne la remplace pas.
 | **SCW-21** | alerte d'échec de sauvegarde | adresse réellement lue | on le découvre le jour de l'incident | **OUI** |
 | **SCW-22** | restauration d'essai complète | avant le 1er client, puis tous les 3 mois | on découvre le défaut au pire moment | **OUI** |
 | **SCW-23** | poser `ATLAS_RP_ID` et `ATLAS_PROXY_SAUTS` | dette existante | Face ID refuse de s'enregistrer | **OUI** |
+| **SCW-24** | **copie hors de Scaleway** des `.sql.gz` : une par jour, gardée 30 j, verrouillée | autre fournisseur, compartiment verrouillé (décision 2) | un compte Scaleway suspendu, piraté ou fermé emporte la base ET ses sauvegardes | **OUI** |
+| **SCW-25** | **copie hors de Scaleway** du compartiment des fichiers (PDF de factures, tickets, photos) | réplication quotidienne vers le même fournisseur | les PDF de factures n'existent qu'en un seul endroit | **OUI** |
+| **SCW-26** | **une copie par mois gardée 12 mois**, chez le second fournisseur | `atlas-mensuel-YYYYMM.sql.gz` | un dégât silencieux (un bug qui efface) remarqué après 30 jours est définitif | **OUI** |
 
-**Vingt points sont obligatoires avant le premier client** (dix-huit, plus
-SCW-15 relevé de « recommandé » et SCW-16 bis ajouté — voir ci-dessous). Aucun ne
-demande de code : ce sont des cases à cocher.
+**Vingt-quatre points sont obligatoires avant le premier client**, recomptés
+ligne par ligne le 26 septembre 2026 (le décompte d'origine disait vingt ;
+SCW-24 à SCW-26 ont été ajoutés ce jour-là, voir décision 2). SCW-24 à SCW-26
+demandent un petit script de copie planifié ; tout le reste se coche en
+console.
 
 ## Ce que la relecture de cohérence a corrigé dans cette liste
 
@@ -398,7 +403,7 @@ demande de code : ce sont des cases à cocher.
 | **Le volume de l'instance ① — Local ou Block** | vous, **avant de créer l'instance** (décision 1 bis) — non rattrapable ensuite |
 | Où va la **seconde copie** de sauvegarde | vous — autre projet Scaleway ou autre fournisseur |
 | Une écriture refusée pendant un gel reste un **message de moteur** | nous, hors de ce lot |
-| L'export d'une entreprise oublie **logo et tickets de caisse** | nous, hors de ce lot — c'est de la portabilité RGPD |
+| ~~L'export d'une entreprise oublie **logo et tickets de caisse**~~ | **réglé** : ils partent dans l'archive (`export-entreprise.ts`, « le logo et les tickets de caisse partent aussi »), constaté le 26 septembre 2026 |
 | Un refus de rôle sort en **500** au lieu de **403** sur `/api/mes-donnees` | nous, lot suivant |
 | `npm audit` : 4 alertes modérées | aucune action — dépendance de développement |
 
@@ -424,9 +429,11 @@ monter un volume sur une machine — un détour qu'aucune partie de ce lot ne fa
 il va dans un compartiment objet verrouillé. C'était déjà le montage du lot
 (SCW-12 à SCW-16) ; rien n'est à changer.
 
-### Décision 1 bis — **le volume de l'instance (①)** ⚠ à prendre avant de créer l'instance
+### Décision 1 bis — **le volume de l'instance (①)** ✓ TRANCHÉ le 26 septembre 2026 : **Local Storage**
 
-C'est la vraie question que masquait la précédente, et **elle reste ouverte**.
+*Le patron : « fais comme tu penses être le mieux pour qu'on ait 0 problème avec les sauvegardes ». Local Storage garde deux chemins de sortie des données au lieu d'un ; la souplesse du Block Storage ne vaut pas ce second chemin.*
+
+C'était la vraie question que masquait la précédente.
 
 | | Local Storage | Block Storage |
 |---|---|---|
@@ -443,7 +450,27 @@ Block Storage est préféré pour la souplesse de redimensionnement, le disposit
 tient — à la condition stricte que SCW-16 soit en place **avant** le premier
 client, ce qu'il est déjà dans cette liste.
 
-### Décision 2 — **Où va la seconde copie ?** ⚠ avant SCW-12, donc avant le premier client
+### Décision 2 — **Où va la seconde copie ?** ✓ TRANCHÉ le 26 septembre 2026 : **chez un autre fournisseur**
+
+*Même consigne du patron : « 0 problème ». La recommandation d'origine (un
+autre projet Scaleway) protège de l'erreur humaine, pas de la perte du compte :
+une carte refusée, un compte suspendu ou piraté, et la base part avec ses
+sauvegardes. C'est la seule panne qui efface tout d'un coup, et elle coûte
+quelques euros par mois à éviter.*
+
+Donc : SCW-12 reste (autre projet Scaleway, pour restaurer vite), **et**
+SCW-24 à SCW-26 posent une copie chez un second fournisseur **européen**, avec
+un compartiment verrouillé contre l'effacement. Candidat : le stockage objet
+d'OVHcloud (France). *Confiance moyenne sur son verrou d'objets : à vérifier
+en console le jour J ; s'il manque, un autre fournisseur européen qui l'offre.*
+Ce fournisseur s'ajoute au registre RGPD comme sous-traitant.
+
+**Et un trou que la liste laissait, fermé au passage (SCW-25, SCW-26) :** les
+PDF de factures et les tickets vivaient dans un seul compartiment, sans copie
+ailleurs ; et aucune sauvegarde ne dépassait 30 jours, alors qu'un bug qui
+efface en silence peut se voir plus tard.
+
+*Texte d'origine de la décision, gardé pour mémoire :*
 
 *(Contrairement à la décision 1 bis, celle-ci n'est pas liée à la création de
 l'instance, et elle se rattrape : un compartiment se recrée ailleurs.)*

@@ -7,7 +7,7 @@ import { colors, font } from "@/lib/design-tokens";
 import { jourCourt, jourEtMois, jourNumerique } from "@/lib/jour";
 import { enEuros } from "@/lib/euros";
 import { visionneuseDeLaFacture } from "@/lib/visionneuse-pdf";
-import { noterPaiementAction, retirerPaiementAction, soldeFactureAction } from "./actions";
+import { noterPaiementAction, remettrePaiementAction, retirerPaiementAction, soldeFactureAction } from "./actions";
 import { MarqueAncienIban } from "@/components/atlas/AlerteAncienIban";
 import { prevenirAction } from "@/app/prevenir-du-nouvel-iban";
 import type { FactureAPrevenir } from "@/server/repositories/factures";
@@ -22,6 +22,8 @@ export type FactureAttendue = {
   reste: string;
   etat: "en_attente" | "partielle" | "soldee";
   paiements: { id: string; date: string; montant: string; origine: "saisi" | "reprise" | "banque" }[];
+  /** Les règlements retirés, gardés pour leur trace (migration 0102). */
+  retires: { id: string; date: string; montant: string; retireLe: string }[];
 };
 
 /**
@@ -286,7 +288,7 @@ export default function EnAttenteDePaiement({
                 />
               )}
 
-              {f.paiements.length > 0 && (
+              {(f.paiements.length > 0 || f.retires.length > 0) && (
                 <ul className="mt-2.5 flex flex-col gap-1.5">
                   {f.paiements.map((p) => (
                     <li key={p.id} className="flex items-center gap-2 text-[12px]" style={{ color: colors.muted }}>
@@ -345,6 +347,44 @@ export default function EnAttenteDePaiement({
                         style={{ color: colors.muted }}
                       >
                         ×
+                      </button>
+                    </li>
+                  ))}
+                  {/* **LE RETRAIT LAISSE SA TRACE — sa planche du 26 septembre
+                      2026 (`appli/retirer-un-acompte.html`, « la B »).** La
+                      croix effaçait la ligne : un acompte de juillet retiré en
+                      septembre faisait baisser un mois déjà déclaré, et rien ne
+                      disait pourquoi. La ligne reste, barrée et datée ; aucun
+                      total ne la compte plus (`reglements_retires`). */}
+                  {f.retires.map((r) => (
+                    <li
+                      key={r.id}
+                      data-atlas="reglement-retire"
+                      className="flex items-center gap-2 text-[12px]"
+                      style={{ color: colors.muted }}
+                    >
+                      <span className="flex-1 tabular-nums line-through">
+                        Acompte du {jourCourt(r.date, aujourdHui)}, retiré le {jourCourt(r.retireLe, aujourdHui)}
+                      </span>
+                      <span className="flex-none tabular-nums line-through">{euros(r.montant)}</span>
+                      <button
+                        type="button"
+                        data-atlas="remettre-le-reglement"
+                        aria-label={`Remettre le règlement de ${euros(r.montant)} du ${enClair(r.date)}`}
+                        onClick={async () => {
+                          setErreur(null);
+                          try {
+                            const res = await remettrePaiementAction(r.id);
+                            if (!res.ok) return setErreur(res.raison);
+                          } catch {
+                            return setErreur("Votre espace n’a pas répondu. Réessayez.");
+                          }
+                          router.refresh();
+                        }}
+                        className="min-h-[36px] flex-none pl-1.5 text-[12px]"
+                        style={{ color: colors.or }}
+                      >
+                        Remettre
                       </button>
                     </li>
                   ))}

@@ -1,5 +1,26 @@
 # Prochaines tâches
 
+## Sauvegardes : la copie hors de Scaleway (26 septembre 2026)
+
+Décisions prises le 26 septembre sur sa consigne « 0 problème »
+(`docs/lot-sauvegarde-cloture.md` §13) : volume **Local Storage**, seconde copie
+**chez un autre fournisseur européen**. À écrire le jour de l'infrastructure,
+avant le premier client : le script planifié de SCW-24 à SCW-26 (copie
+quotidienne des `.sql.gz` et du compartiment des fichiers, copie mensuelle
+gardée 12 mois), éprouvé par une restauration depuis ce second fournisseur.
+
+**Question ouverte, pour plus tard :** une archive comptable annuelle (factures,
+avoirs, règlements, achats, PDF) gardée 10 ans, indépendante de la base
+vivante. Aujourd'hui les 10 ans ne tiennent que par la base elle-même.
+
+## ~~Un règlement se retire sans limite de date~~ (réglé le 26 septembre 2026)
+
+Sa planche `appli/retirer-un-acompte.html`, la B, codée sur la branche
+`claude/previous-years-access-eigwds` : le règlement retiré part dans
+`reglements_retires` (migration 0102), barré et daté à l'écran, « Remettre »
+le rend (`ARCHITECTURE.md` §417). **Pas encore sur `main`** : la batterie
+n'a pas été jouée, à sa demande ; seules les suites concernées l'ont été.
+
 ## 🔴 « DERNIER DEVIS » CHANGE LES PRIX SANS LE DIRE (26 septembre 2026)
 
 **Relevé par lui** : *« on ne peut pas reprendre un devis existant et mettre les

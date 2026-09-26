@@ -130,6 +130,39 @@ async function main() {
     assert.equal(await page.getByRole("button", { name: "Janvier", exact: true }).count(), 0);
   });
 
+  // **Sa question du 26 septembre 2026, capture d'iPhone à l'appui :**
+  // *« pourquoi je peux pas aller voir les années précédentes ? »* Il touchait
+  // « 2026 », et seule la bande des mois se voilait de gris : la feuille était
+  // posée DANS le rail qui défile, et Safari rogne un `position: fixed` à son
+  // conteneur défilant. Chromium ne rogne pas, et le cas précédent passait.
+  //
+  // On ne peut donc pas mesurer ce que Safari peint ; on mesure ce qui le
+  // provoque, et qui, lui, est le même partout : aucun ancêtre de la feuille ne
+  // doit défiler ni la rogner.
+  await test("La feuille du calendrier ne vit dans aucun conteneur qui la rogne", async () => {
+    const rogneurs = await page.evaluate(() => {
+      const lien = [...document.querySelectorAll("button")].find((b) =>
+        /Revenir à la période en cours/.test(b.textContent ?? "")
+      );
+      const trouves: string[] = [];
+      if (!lien) return ["feuille introuvable"];
+      for (let el = lien.parentElement; el && el !== document.body; el = el.parentElement) {
+        const s = getComputedStyle(el);
+        if (s.position === "fixed") {
+          for (let a = el.parentElement; a && a !== document.body; a = a.parentElement) {
+            const t = getComputedStyle(a);
+            if (t.overflowX !== "visible" || t.overflowY !== "visible" || t.position === "sticky") {
+              trouves.push(`${a.tagName.toLowerCase()}${a.dataset.atlas ? `[${a.dataset.atlas}]` : ""}`);
+            }
+          }
+          return trouves;
+        }
+      }
+      return ["aucun voile fixe au-dessus de la feuille"];
+    });
+    assert.deepEqual(rogneurs, [], `la feuille est enfermée dans : ${rogneurs.join(", ")}`);
+  });
+
   await test("Le calendrier emmène vraiment où l'on touche, sans passer par les flèches", async () => {
     await page.getByRole("button", { name: "Année précédente" }).click();
     await page.getByRole("button", { name: /^1er trimestre/ }).click();
