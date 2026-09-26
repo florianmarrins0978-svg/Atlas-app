@@ -398,7 +398,7 @@ demande de code : ce sont des cases à cocher.
 | **Le volume de l'instance ① — Local ou Block** | vous, **avant de créer l'instance** (décision 1 bis) — non rattrapable ensuite |
 | Où va la **seconde copie** de sauvegarde | vous — autre projet Scaleway ou autre fournisseur |
 | Une écriture refusée pendant un gel reste un **message de moteur** | nous, hors de ce lot |
-| L'export d'une entreprise oublie **logo et tickets de caisse** | nous, hors de ce lot — c'est de la portabilité RGPD |
+| ~~L'export d'une entreprise oublie **logo et tickets de caisse**~~ | **réglé** : ils partent dans l'archive (`export-entreprise.ts`, « le logo et les tickets de caisse partent aussi »), constaté le 26 septembre 2026 |
 | Un refus de rôle sort en **500** au lieu de **403** sur `/api/mes-donnees` | nous, lot suivant |
 | `npm audit` : 4 alertes modérées | aucune action — dépendance de développement |
 
