@@ -4,222 +4,246 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Augmenter un devis repris</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@400;500&display=swap" rel="stylesheet">
 <style>
   /*
-    AUGMENTER UN DEVIS REPRIS, sa demande du 26 septembre 2026.
+    AUGMENTER UN DEVIS REPRIS, sa demande du 26 septembre 2026. RIEN N'EST
+    CODÉ dans `src/`.
 
-    Sa question : « est-ce qu'on a une touche pour reprendre exactement le même
-    devis mais ajouter 5, 10, 30 % équitablement aux lignes ? », puis « fais
-    l'arrondi », et « cette touche seulement si on passe par Dernier devis ou
-    Reprendre le devis ». RIEN N'EST CODÉ dans `src/`.
+    La première version montrait deux téléphones abstraits et cinq cartes
+    d'explication ; sa réponse : « fais une maquette réaliste, je comprends
+    rien ». Celle-ci rejoue SON parcours sur SES écrans : la fiche du client
+    (`RepartirDeCeClient.tsx`, le bouton plein « Dernier devis » et le creux
+    « Autre chantier »), puis la feuille du devis (`DevisCompletClient.tsx`,
+    colonnes Description, Qté, P.U. HT, Montant, et « Choisir la date » en
+    bas). La barre du bas est celle de sa capture du 26 septembre. Le seul
+    élément neuf est la bande « Augmenter les prix ».
 
-    CE QUI EXISTE DÉJÀ ET QUE LA PLANCHE REPREND TEL QUEL.
-      « Dernier devis » (fiche client, `RepartirDeCeClient.tsx`) remet chaque
-      ligne de sa grille au tarif du jour (`src/lib/reprise-des-prix.ts`, sa
-      règle du 8 septembre). « Reprendre le devis » (écran d'envoi,
-      `ExportClient.tsx`) rouvre un devis expiré, lignes aux anciens prix.
-      La seule touche en pourcentage aujourd'hui est la Remise, qui baisse.
+    Les jetons sont ceux de `src/lib/chartes.ts`, repris de
+    `appli/travaux-supplementaires-sur-le-devis.html`.
 
-    TROIS DÉCISIONS PRISES ICI, à lui soumettre :
-      1. une ligne que « Dernier devis » a déjà remise au tarif du jour
-         n'augmente pas une seconde fois : sans cela, la hausse de sa grille
-         et la hausse en pourcentage s'empileraient ;
-      2. les pourcentages ne s'additionnent pas : 10 % après 5 % donne 10 %
-         de l'ancien prix, jamais 15,5 % ;
-      3. l'arrondi se fait sur le PRIX UNITAIRE, au centime, demi vers le haut ;
-         le montant de la ligne est ensuite quantité fois ce prix. Arrondir le
-         montant seul laisserait un prix unitaire à trois décimales sur le PDF,
-         que le client ne peut pas recompter.
+    LES RÈGLES DU CALCUL, tenues ici et à tenir dans le code :
+      1. le prix UNITAIRE s'arrondit au centime, demi vers le haut ; le montant
+         est la quantité fois ce prix, pour que le client puisse recompter ;
+      2. les taux ne s'ajoutent pas : 10 % après 5 % donne 10 % de l'ancien prix ;
+      3. une ligne que « Dernier devis » a déjà remise au tarif du jour ne monte
+         pas une seconde fois ;
+      4. une ligne à chiffrer reste à chiffrer ;
+      5. une décimale au plus, de 0,1 à 100 % ; au delà, rien ne bouge.
+    Le calcul se fait en centimes entiers et en dixièmes de pour cent : un seul
+    arrondi, à la fin, jamais un flottant qui décide d'un centime.
 
-    Les prestations, quantités et prix sont inventés pour la démonstration.
-    MESURÉ POUR SON TÉLÉPHONE : 390 × 664.
+    La même bande paraît quand on passe par « Reprendre le devis » sur un devis
+    expiré ; la planche ne montre que le chemin de la fiche client, pour rester
+    lisible.
+
+    Les prestations, prix et noms sont inventés pour la démonstration.
   */
   :root{
-    --etabli:#e6e3dc; --etabli-carte:#faf9f5; --etabli-trait:rgba(28,28,26,.12);
-    --etabli-encre:#1c1c1a; --etabli-doux:#4a4a44; --etabli-gris:#77726a;
-    --etabli-or:#8b6835; --etabli-pin:#2f3b2f;
-    --serif:"Playfair Display",ui-serif,Georgia,serif;
-    --sans:"Inter",ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
-
-    --fond:#f5f3ee; --plage:#faf9f5; --encre:#1c1c1a; --doux:#4a4a44;
-    --gris:#8a8578; --accent:#2f3b2f; --tuile:#ece9e1;
-    --or:#B98B47; --orTexte:#8b6835;
-    --plein:#7d9a6d; --surplein:#faf9f5;
-    --trait:rgba(28,28,26,.12); --alerte:#9C3B2E;
+    --cream:#f5f3ee; --card:#faf9f5; --ink:#1c1c1a; --inkSoft:#4a4a44;
+    --muted:#8a8578; --rust:#2f3b2f; --rustTint:#ece9e1;
+    --or:#B98B47; --orTexte:#8b6835; --plein:#7d9a6d;
+    --line:rgba(28,28,26,0.12); --lineSoft:rgba(28,28,26,0.07);
+    --alerte:#9C3B2E; --surPlein:#faf9f5;
+    --hors:#e6e3dc;
   }
-  /* Sur Nuit les pôles s'inversent : l'accent plein devient CLAIR. */
-  body.nuit{
-    --fond:#101210; --plage:#1a1d19; --encre:#e9e8de; --doux:#c1c2b6;
-    --gris:#84887b; --accent:#e9e8de; --tuile:#1f211e;
-    --or:#B98B47; --orTexte:#b98b47;
-    --plein:#e9e8de; --surplein:#1a1d19;
-    --trait:rgba(233,232,222,.12); --alerte:#e08b7d;
+  body[data-charte="nuit"]{
+    --cream:#101210; --card:#1a1d19; --ink:#e9e8de; --inkSoft:#c1c2b6;
+    --muted:#84887b; --rust:#e9e8de; --rustTint:#1f211e;
+    --or:#B98B47; --orTexte:#b98b47; --plein:#e9e8de;
+    --line:rgba(233,232,222,0.12); --lineSoft:rgba(233,232,222,0.07);
+    --alerte:#e08b7d; --surPlein:#1a1d19;
+    --hors:#0a0b0a;
   }
   *{box-sizing:border-box}
   [hidden]{display:none!important}
-  html,body{margin:0;background:var(--etabli)}
-  body{font:16px/1.5 var(--sans);color:var(--etabli-encre);
-       -webkit-text-size-adjust:100%;padding:0 0 70px}
-  :focus-visible{outline:2px solid var(--etabli-or);outline-offset:2px;border-radius:4px}
+  html,body{margin:0}
+  body{background:var(--hors);color:var(--ink);
+       font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       -webkit-text-size-adjust:100%;padding:0 0 34px}
 
-  .bandeau{background:#1c1c1a;color:#f5f3ee;padding:18px 20px;font-size:14px;line-height:1.6}
+  .bandeau{background:#1c1c1a;color:#f5f3ee;padding:14px 18px;font-size:14px;line-height:1.5}
   .bandeau b{color:#fff}
+  .choix{display:flex;gap:7px;justify-content:center;padding:12px}
+  .choix button{min-height:40px;padding:0 14px;border-radius:999px;border:1px solid var(--line);
+                background:var(--card);color:var(--ink);font:600 13px/1 ui-sans-serif,sans-serif;cursor:pointer}
 
-  .mots{max-width:560px;margin:30px auto 0;padding:0 16px;display:flex;flex-direction:column;gap:11px}
-  .mot{padding:15px 18px;background:var(--etabli-carte);border-radius:13px;
-       box-shadow:inset 0 0 0 1px var(--etabli-trait);
-       font-size:14px;line-height:1.6;color:var(--etabli-doux)}
-  .mot b{color:var(--etabli-encre)}
+  .tel{max-width:430px;margin:0 auto;background:var(--cream);border-radius:26px;overflow:hidden;
+       box-shadow:0 18px 46px rgba(20,18,14,.22)}
 
-  .etats{position:sticky;top:0;z-index:20;background:var(--etabli);
-         border-bottom:1px solid var(--etabli-trait);padding:12px 16px 13px;margin-top:26px}
-  .etats .rangee{max-width:1000px;margin:0 auto;display:flex;gap:7px}
-  .etats button{border:1px solid var(--etabli-trait);background:var(--etabli-carte);
-                color:var(--etabli-doux);border-radius:999px;padding:10px 15px;
-                font:400 13px/1 var(--sans);cursor:pointer}
-  .etats button[aria-pressed="true"]{background:var(--etabli-pin);border-color:var(--etabli-pin);color:#faf9f5}
+  .entete{padding:26px 26px 0;display:flex;align-items:flex-start;gap:12px}
+  .entete h1{margin:0;font:400 34px/1.05 ui-serif,Georgia,"Iowan Old Style",serif;letter-spacing:-0.018em}
+  .entete .sous{margin:8px 0 0;font-size:15px;line-height:1.45;color:var(--inkSoft)}
+  .entete .sur{margin:10px 0 0;font:500 9.5px/1 ui-sans-serif,sans-serif;letter-spacing:.28em;
+               text-transform:uppercase;color:var(--or)}
+  .retour{flex:none;width:36px;height:36px;border-radius:999px;border:1px solid var(--line);
+          background:var(--card);color:var(--ink);font-size:18px;line-height:1;cursor:pointer}
 
-  .planches{display:flex;flex-wrap:wrap;gap:30px;justify-content:center;
-            max-width:1360px;margin:30px auto 0;padding:0 16px}
-  .planche{width:390px;max-width:100%}
-  .planche .nom{margin:0 0 4px;font:500 19px/1.25 var(--serif)}
-  .planche .idee{margin:0 0 12px;font-size:13.5px;line-height:1.55;color:var(--etabli-doux);min-height:44px}
-  .tel{width:390px;max-width:100%;height:664px;border-radius:26px;overflow:hidden;position:relative;
-       background:var(--fond);color:var(--encre);box-shadow:0 16px 44px rgba(20,18,14,.22)}
-  .ecran{position:absolute;inset:0;display:flex;flex-direction:column;padding:22px 0 0}
-
-  .entete{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 24px}
-  .entete h1{margin:0;font:400 27px/1.05 var(--serif);white-space:nowrap}
-  .rond{width:38px;height:38px;border-radius:999px;display:grid;place-items:center;
-        background:var(--tuile);color:var(--doux);flex:0 0 auto}
-  .rond.vide{background:transparent}
-
-  .corps{flex:1;overflow:hidden;padding:18px 24px 0}
-  .etiq{display:block;font:600 10.5px/1.35 var(--sans);letter-spacing:.16em;
-        text-transform:uppercase;color:var(--gris)}
-
-  /* La touche : une rangée de pastilles, sous le « Repris du ». */
-  .dit-hausse{margin:12px 0 0;font-size:13.5px;color:var(--doux)}
-  .hausse{display:flex;flex-wrap:wrap;align-items:center;gap:7px;margin-top:7px}
-  .saisie{display:flex;align-items:center;gap:5px;border-radius:999px;background:var(--plage);
-          box-shadow:inset 0 0 0 1px var(--trait);padding:0 12px 0 4px;height:32px;flex:0 0 auto}
-  .saisie:focus-within{box-shadow:inset 0 0 0 1.5px var(--or)}
-  .saisie input{width:38px;border:0;background:transparent;color:var(--encre);text-align:right;
-                font:500 16px/1 var(--sans);font-variant-numeric:tabular-nums;padding:0}
-  .saisie input:focus{outline:none}
-  .saisie span{font:500 14px/1 var(--sans);color:var(--doux)}
-  .refus{margin:6px 0 0;font-size:12.5px;color:var(--alerte)}
-  .hausse button{border:0;border-radius:999px;background:var(--plage);color:var(--encre);
-                 box-shadow:inset 0 0 0 1px var(--trait);padding:9px 12px;white-space:nowrap;flex:0 0 auto;
-                 font:500 14px/1 var(--sans);font-variant-numeric:tabular-nums;cursor:pointer;
+  /* ─── La fiche du client ─────────────────────────────────────────────── */
+  .gestes{display:flex;gap:10px;padding:20px 26px 0}
+  .gestes button{flex:1;height:52px;border-radius:999px;display:flex;align-items:center;
+                 justify-content:center;gap:10px;cursor:pointer;border:0;
                  -webkit-tap-highlight-color:transparent}
-  .hausse button[aria-pressed="true"]{background:var(--accent);color:var(--fond);box-shadow:none}
+  .gestes .dernier{background:var(--plein);color:var(--surPlein);
+                   font:400 16px/1 ui-serif,Georgia,serif}
+  .gestes .autre{background:none;color:var(--orTexte);box-shadow:inset 0 0 0 1px var(--orTexte);
+                 font:400 15px/1 ui-sans-serif,sans-serif}
+  .passe{margin:26px 26px 0}
+  .passe .intitule{margin:0 0 8px}
+  .passe p:not(.intitule){margin:0;font-size:15px}
+  .passe .quand{font-size:13px;color:var(--muted);margin-top:2px}
+  .appui{animation:appui 1.6s ease-in-out infinite}
+  @keyframes appui{50%{box-shadow:0 0 0 6px rgba(185,139,71,.28)}}
 
-  .ligne{display:flex;align-items:baseline;justify-content:space-between;gap:12px;
-         padding:12px 0;border-bottom:1px solid var(--trait)}
-  .ligne .quoi{min-width:0;flex:1}
-  .ligne .titre{display:block;font-size:15px;line-height:1.35}
-  .ligne .detail{display:block;margin-top:2px;font-size:12.5px;color:var(--gris);
-                 font-variant-numeric:tabular-nums}
-  .ligne .somme{font-size:15px;white-space:nowrap;font-variant-numeric:tabular-nums}
-  .avant{color:var(--gris);text-decoration:line-through;margin-right:6px}
-  .monte{color:var(--orTexte)}
-  .achiffrer{color:var(--alerte)}
-  .total{display:flex;align-items:baseline;justify-content:space-between;margin-top:14px}
-  .total .mot-total{font:600 10.5px/1 var(--sans);letter-spacing:.16em;text-transform:uppercase;color:var(--gris)}
-  .total .somme{font:400 26px/1 var(--serif);font-variant-numeric:tabular-nums}
+  /* ─── La feuille du devis ────────────────────────────────────────────── */
+  .feuille{margin:18px 14px 0;background:var(--card);border-radius:10px;padding:20px 16px 24px}
+  .intitule{margin:0;font:600 10px/1 ui-sans-serif,sans-serif;letter-spacing:.16em;
+            text-transform:uppercase;color:var(--muted)}
 
-  .valider{margin:auto 0 0;padding:14px 24px 22px}
-  .valider button{width:100%;border:0;border-radius:999px;background:var(--plein);
-                  color:var(--surplein);height:56px;font:400 17px/1 var(--serif);cursor:pointer}
+  /* LE SEUL ÉLÉMENT NEUF : la bande, dessinée comme la catégorie de TVA de
+     l'écran codé (plage `rustTint`, petites capitales vert pin). Elle n'existe
+     que sur un devis repris. */
+  .hausse{margin:0 0 18px;border-radius:8px;background:var(--rustTint);padding:11px 12px 12px}
+  .hausse .titre{margin:0 0 9px;font:600 11px/1 ui-sans-serif,sans-serif;letter-spacing:.12em;
+                 text-transform:uppercase;color:var(--rust)}
+  .hausse .rangee{display:flex;flex-wrap:wrap;gap:7px;align-items:center}
+  .hausse button{border:0;border-radius:999px;background:var(--card);color:var(--ink);
+                 box-shadow:inset 0 0 0 1px var(--line);height:34px;padding:0 12px;
+                 font:500 14px/1 ui-sans-serif,sans-serif;white-space:nowrap;cursor:pointer;
+                 -webkit-tap-highlight-color:transparent}
+  .hausse button[aria-pressed="true"]{background:var(--rust);color:var(--surPlein);box-shadow:none}
+  .saisie{display:flex;align-items:center;gap:4px;height:34px;border-radius:999px;background:var(--card);
+          box-shadow:inset 0 0 0 1px var(--line);padding:0 12px 0 8px}
+  .saisie:focus-within{box-shadow:inset 0 0 0 1.5px var(--or)}
+  .saisie input{width:40px;border:0;background:transparent;color:var(--ink);text-align:right;
+                font:500 16px/1 ui-sans-serif,sans-serif;padding:0;outline:none}
+  .saisie span{font-size:14px;color:var(--inkSoft)}
+  .refus{margin:8px 0 0;font-size:13px;color:var(--alerte)}
 
-  @media (max-width:900px){ .planche{width:100%} .tel{width:100%} }
-  @media (prefers-reduced-motion:reduce){ *{transition:none!important} }
+  .colonnes,.l{display:grid;grid-template-columns:1fr 34px 70px 76px;gap:7px}
+  .colonnes{padding-bottom:6px}
+  .colonnes span{font:600 9.5px/1 ui-sans-serif,sans-serif;letter-spacing:.12em;
+                 text-transform:uppercase;color:var(--muted)}
+  .colonnes span:not(:first-child){text-align:right}
+  .l{padding:10px 0;border-bottom:1px solid var(--lineSoft);align-items:start;font-size:14.5px;line-height:1.35}
+  .l .n{text-align:right;font-variant-numeric:tabular-nums}
+  .l .ancien{display:block;font-size:12px;color:var(--muted);text-decoration:line-through}
+  .l .neuf{color:var(--orTexte)}
+  .l .vide{color:var(--or)}
+  .totaux{margin-top:16px}
+  .ligne-plate{display:flex;justify-content:space-between;padding:3px 0;font-size:15px;
+               font-variant-numeric:tabular-nums}
+  .ttc{margin-top:6px;padding-top:10px;border-top:2px solid var(--ink);display:flex;
+       align-items:center;justify-content:space-between}
+  .ttc b{font:600 17px/1 ui-sans-serif,sans-serif}
+  .ttc .valeur{font:600 20px/1 ui-serif,Georgia,serif;font-variant-numeric:tabular-nums}
+
+  .plein{display:block;width:calc(100% - 36px);margin:20px 18px 0;min-height:52px;border:0;
+         border-radius:999px;background:var(--plein);color:var(--surPlein);
+         font:400 17px/1 ui-serif,Georgia,serif;cursor:pointer}
+
+  .nav{margin-top:24px;border-top:1px solid var(--line);position:relative;
+       display:grid;grid-template-columns:repeat(5,minmax(0,1fr));padding:18px 14px 8px}
+  .nav span{padding-bottom:8px;text-align:center;font:500 8.5px/1 ui-sans-serif,sans-serif;
+            letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+  .nav span.actif{color:var(--ink)}
+  .nav i{position:absolute;bottom:8px;left:14px;width:calc((100% - 28px) / 5);height:1px;background:var(--or)}
+
+  @media (prefers-reduced-motion:reduce){ .appui{animation:none} }
 </style>
 </head>
-<body>
+<body data-charte="origine">
 
-<div class="bandeau">
-  <b>Maquette.</b> Rien n'est codé. Touchez <b>5 %</b>, <b>10 %</b> ou <b>30 %</b>, ou <b>tapez le vôtre</b> dans la case.
-  Touchez de nouveau pour annuler.
+<div class="bandeau"><b>Maquette.</b> Touchez « Dernier devis », puis augmentez les prix.</div>
+<div class="choix">
+  <button type="button" id="recommencer">Recommencer</button>
+  <button type="button" id="bascule-nuit" aria-pressed="false">Nuit</button>
 </div>
 
-<div class="mots">
-  <div class="mot"><b>La touche n'apparaît que sur un devis repris</b> : par « Dernier
-    devis » sur la fiche du client, ou par « Reprendre le devis » sur un devis expiré.
-    Sur un devis neuf, elle n'est pas là.</div>
-  <div class="mot"><b>Chaque prix est arrondi au centime.</b> 0,37 € plus 5 % donne
-    0,3885 €, donc 0,39 €. La ligne vaut ensuite la quantité fois ce prix.</div>
-  <div class="mot"><b>Les pourcentages ne s'ajoutent pas.</b> 10 % après 5 % donne
-    10 % de l'ancien prix.</div>
-  <div class="mot"><b>Avec « Dernier devis », une ligne déjà remise au tarif du jour
-    ne monte pas une deuxième fois.</b> Votre grille a déjà fait la hausse.</div>
-  <div class="mot"><b>Une ligne à chiffrer reste à chiffrer</b>, et le client ne voit
-    que les nouveaux prix.</div>
-</div>
+<div class="tel">
 
-<div class="etats" role="group" aria-label="L'écran">
-  <div class="rangee">
-    <button type="button" id="charte" aria-pressed="false">Nuit</button>
-  </div>
-</div>
+  <!-- 1. LA FICHE DU CLIENT, telle qu'elle est -->
+  <section id="ecran-client">
+    <div class="entete">
+      <div>
+        <h1>Mr. Julien</h1>
+        <p class="sous">8 allée des Tilleuls, Saint-Marc<br>06 12 34 56 78</p>
+      </div>
+    </div>
+    <div class="gestes">
+      <button type="button" class="dernier appui" id="dernier-devis">
+        <svg width="17" height="17" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M15.2 9a6.2 6.2 0 1 1-1.9-4.5M15.2 2.4V6h-3.6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Dernier devis
+      </button>
+      <button type="button" class="autre">
+        <svg width="16" height="16" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M9 3.4v11.2M3.4 9h11.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        Autre chantier
+      </button>
+    </div>
+    <div class="passe">
+      <p class="intitule">Dernière prestation</p>
+      <p>Taille de haie et tonte</p>
+      <p class="quand">14 septembre 2025</p>
+    </div>
+    <div class="nav">
+      <span class="actif">Chantiers</span><span>Planning</span><span>Terminés</span>
+      <span>Paysage</span><span>Réglages</span><i></i>
+    </div>
+  </section>
 
-<div class="planches">
-  <div class="planche">
-    <p class="nom">Par « Dernier devis »</p>
-    <p class="idee">La haie est déjà au tarif d'aujourd'hui : elle ne bouge pas.</p>
-    <div class="tel"><div class="ecran" id="dernier"></div></div>
-  </div>
-  <div class="planche">
-    <p class="nom">Par « Reprendre le devis »</p>
-    <p class="idee">Un devis expiré, toutes les lignes aux anciens prix.</p>
-    <div class="tel"><div class="ecran" id="reprendre"></div></div>
-  </div>
+  <!-- 2. LA FEUILLE DU DEVIS, avec la bande neuve -->
+  <section id="ecran-devis" hidden>
+    <div class="entete">
+      <button class="retour" type="button" id="revenir" aria-label="Revenir à la fiche du client">‹</button>
+      <div style="flex:1"><h1>Devis</h1><p class="sur">Mr. Julien</p></div>
+    </div>
+
+    <div class="feuille">
+      <div class="hausse">
+        <p class="titre">Augmenter les prix</p>
+        <div class="rangee">
+          <button type="button" data-taux="5" aria-pressed="false">+&nbsp;5&nbsp;%</button>
+          <button type="button" data-taux="10" aria-pressed="false">+&nbsp;10&nbsp;%</button>
+          <button type="button" data-taux="30" aria-pressed="false">+&nbsp;30&nbsp;%</button>
+          <label class="saisie"><input id="taux" inputmode="decimal" autocomplete="off"
+            aria-label="Autre pourcentage"><span>%</span></label>
+        </div>
+        <p class="refus" id="refus" hidden>Entre 0,1 et 100 %.</p>
+      </div>
+
+      <p style="margin:0 0 2px;font-size:13px;color:var(--muted)">Chantier</p>
+      <p style="margin:0 0 18px;font-size:15px">Entretien, 8 allée des Tilleuls</p>
+
+      <div class="colonnes"><span>Description</span><span>Qté</span><span>P.U. HT</span><span>Montant</span></div>
+      <div id="lignes"></div>
+
+      <div class="totaux">
+        <div class="ligne-plate"><span>Total HT</span><span id="ht"></span></div>
+        <div class="ligne-plate"><span>TVA (20 %)</span><span id="tva"></span></div>
+        <div class="ttc"><b>Total TTC</b><span class="valeur" id="ttc"></span></div>
+      </div>
+    </div>
+
+    <button type="button" class="plein">Choisir la date</button>
+
+    <div class="nav">
+      <span class="actif">Chantiers</span><span>Planning</span><span>Terminés</span>
+      <span>Paysage</span><span>Réglages</span><i></i>
+    </div>
+  </section>
 </div>
 
 <script>
-/*
-  Le calcul se fait en CENTIMES entiers : cents × (100 + taux) est exact, et un
-  seul arrondi, demi vers le haut, tombe à la fin. En flottants, 14,90 × 1,05
-  donne 15,645000000000001 ou 15,644999999999999 selon l'ordre des opérations,
-  et l'arrondi change d'un centime.
-*/
-const DEVIS = {
-  dernier: {
-    repris: "Repris du 14 septembre 2025",
-    lignes: [
-      { titre: "Taille de haie", qte: 40, unite: "ml", prix: 1820, tarifDuJour: true },
-      { titre: "Tonte", qte: 250, unite: "m²", prix: 37 },
-      { titre: "Évacuation des déchets verts", qte: 1, unite: "forfait", prix: 9000 },
-      { titre: "Traitement anti-mousse", aChiffrer: true },
-    ],
-  },
-  reprendre: {
-    repris: "Devis du 3 août 2025, expiré",
-    lignes: [
-      { titre: "Plantation d'arbustes", qte: 12, unite: "u", prix: 1490 },
-      { titre: "Paillage", qte: 30, unite: "m²", prix: 645 },
-      { titre: "Main d'œuvre", qte: 8, unite: "h", prix: 4200 },
-    ],
-  },
-};
-const TAUX = [5, 10, 30];
+// En centimes. `tarifDuJour` : « Dernier devis » l'a déjà remise à la grille
+// d'aujourd'hui, elle ne monte pas une seconde fois.
+const LIGNES = [
+  { libelle: "Taille de haie", qte: 40, pu: 1820, tarifDuJour: true },
+  { libelle: "Tonte", qte: 250, pu: 37 },
+  { libelle: "Évacuation des déchets verts", qte: 1, pu: 9000 },
+  { libelle: "Traitement anti-mousse", aChiffrer: true },
+];
+
 const euros = (c) =>
   (c / 100).toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €";
-
-/*
-  LE TAUX SE TAPE AUSSI, sa demande du 26 septembre 2026 : « il faut pouvoir
-  écrire le nombre de % qu'on souhaite ». Les trois pastilles restent : ce sont
-  les gestes d'un seul appui ; la case prend tout le reste.
-
-  Une décimale au plus (7,5 %), bornée à 100 % : au-delà, c'est une faute de
-  frappe bien plus souvent qu'une intention, et un devis qui double sans qu'on
-  le voie part chez le client. Le calcul reste en entiers : le taux passe en
-  dixièmes de pour cent, cents × (1000 + dixièmes) est exact, un seul arrondi.
-*/
 const augmente = (c, taux) => Math.round((c * (1000 + Math.round(taux * 10))) / 1000);
 
 function lireTaux(texte) {
@@ -229,102 +253,70 @@ function lireTaux(texte) {
   const n = Number(t);
   return n > 0 && n <= 100 ? n : null;
 }
-const ecrireTaux = (t) => t.toLocaleString("fr-FR", { maximumFractionDigits: 1 });
 
-function lignesEtTotal(d, taux) {
-  let total = 0;
-  const html = d.lignes.map((l) => {
+let taux = 0;
+const boutons = [...document.querySelectorAll(".hausse button")];
+const champ = document.getElementById("taux");
+const refus = document.getElementById("refus");
+
+function peindre() {
+  boutons.forEach((b) => b.setAttribute("aria-pressed", String(Number(b.dataset.taux) === taux)));
+  let ht = 0;
+  document.getElementById("lignes").innerHTML = LIGNES.map((l) => {
     if (l.aChiffrer) {
-      return `<div class="ligne"><span class="quoi"><span class="titre">${l.titre}</span>
-        <span class="detail achiffrer">Attend son prix</span></span>
-        <span class="somme achiffrer">À chiffrer</span></div>`;
+      return `<div class="l"><span>${l.libelle}</span><span class="n"></span><span class="n"></span>
+        <span class="n vide">à chiffrer</span></div>`;
     }
-    const monte = taux && !l.tarifDuJour;
-    const prix = monte ? augmente(l.prix, taux) : l.prix;
-    const montant = prix * l.qte;
-    total += montant;
-    const detail = monte
-      ? `${l.qte} ${l.unite} × <span class="avant">${euros(l.prix)}</span><span class="monte">${euros(prix)}</span>`
-      : `${l.qte} ${l.unite} × ${euros(prix)}${l.tarifDuJour ? ", tarif d'aujourd'hui" : ""}`;
-    const somme = monte
-      ? `<span class="avant">${euros(l.prix * l.qte)}</span>${euros(montant)}`
-      : euros(montant);
-    return `<div class="ligne"><span class="quoi"><span class="titre">${l.titre}</span>
-      <span class="detail">${detail}</span></span><span class="somme">${somme}</span></div>`;
+    const monte = taux > 0 && !l.tarifDuJour;
+    const pu = monte ? augmente(l.pu, taux) : l.pu;
+    ht += pu * l.qte;
+    const cellePu = monte
+      ? `<span class="neuf">${euros(pu)}</span><span class="ancien">${euros(l.pu)}</span>`
+      : euros(pu);
+    return `<div class="l"><span>${l.libelle}</span><span class="n">${l.qte}</span>
+      <span class="n">${cellePu}</span><span class="n${monte ? " neuf" : ""}">${euros(pu * l.qte)}</span></div>`;
   }).join("");
-  return { html, total };
+  const tva = Math.round(ht * 0.2);
+  document.getElementById("ht").textContent = euros(ht);
+  document.getElementById("tva").textContent = euros(tva);
+  document.getElementById("ttc").textContent = euros(ht + tva);
 }
 
-/*
-  L'écran se pose UNE fois ; seules les lignes et le total se redessinent.
-  Tout redessiner à chaque chiffre tapé fermerait le clavier du téléphone
-  entre le 1 et le 2 de « 12 ».
-*/
-function monter(id) {
-  const d = DEVIS[id];
-  const pastilles = TAUX.map((t) =>
-    `<button type="button" data-taux="${t}" aria-pressed="false">+&nbsp;${t}&nbsp;%</button>`
-  ).join("");
-  const ecran = document.getElementById(id);
-  ecran.innerHTML = `
-    <div class="entete">
-      <span class="rond" aria-hidden="true"><svg width="9" height="15" viewBox="0 0 9 15" fill="none"><path d="M7.5 1.5 1.5 7.5l6 6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-      <h1>Le devis</h1>
-      <span class="rond vide" aria-hidden="true"></span>
-    </div>
-    <div class="corps">
-      <span class="etiq">${d.repris}</span>
-      <p class="dit-hausse">Augmenter</p>
-      <div class="hausse" role="group" aria-label="Augmenter les prix">
-        ${pastilles}
-        <label class="saisie"><input id="taux-${id}" inputmode="decimal" autocomplete="off"
-          placeholder="…" aria-label="Autre pourcentage"><span>%</span></label>
-      </div>
-      <p class="refus" hidden>Entre 0,1 et 100 %.</p>
-      <div class="lignes" style="margin-top:6px"></div>
-      <div class="total"><span class="mot-total">Total HT</span><span class="somme"></span></div>
-    </div>
-    <div class="valider"><button type="button">Relire le devis</button></div>`;
-
-  const champ = ecran.querySelector("input");
-  const refus = ecran.querySelector(".refus");
-  const boutons = [...ecran.querySelectorAll(".hausse button")];
-
-  function appliquer(taux) {
-    boutons.forEach((b) => b.setAttribute("aria-pressed", String(Number(b.dataset.taux) === taux)));
-    const { html, total } = lignesEtTotal(d, taux);
-    ecran.querySelector(".lignes").innerHTML = html;
-    ecran.querySelector(".total .somme").textContent = euros(total);
-  }
-
-  boutons.forEach((b) => b.addEventListener("click", () => {
-    const t = Number(b.dataset.taux);
-    const actif = b.getAttribute("aria-pressed") === "true";
-    champ.value = actif ? "" : ecrireTaux(t);
-    refus.hidden = true;
-    appliquer(actif ? 0 : t);
-  }));
-
-  // Un taux illisible ne touche à rien : le devis garde le dernier taux juste,
-  // et la phrase dit pourquoi. Jamais un prix calculé sur un chiffre deviné.
-  champ.addEventListener("input", () => {
-    const t = lireTaux(champ.value);
-    refus.hidden = t !== null;
-    if (t !== null) appliquer(t);
-  });
-
-  appliquer(0);
-}
-
-monter("dernier");
-monter("reprendre");
-
-const bouton = document.getElementById("charte");
-bouton.addEventListener("click", () => {
-  const nuit = document.body.classList.toggle("nuit");
-  bouton.setAttribute("aria-pressed", String(nuit));
-  bouton.textContent = nuit ? "Origine" : "Nuit";
+boutons.forEach((b) => b.addEventListener("click", () => {
+  const t = Number(b.dataset.taux);
+  taux = taux === t ? 0 : t;
+  champ.value = taux ? String(taux) : "";
+  refus.hidden = true;
+  peindre();
+}));
+// La feuille ne se redessine pas en entier à chaque chiffre : le clavier du
+// téléphone se fermerait entre le 1 et le 2 de « 12 ».
+champ.addEventListener("input", () => {
+  const t = lireTaux(champ.value);
+  refus.hidden = t !== null;
+  if (t !== null) { taux = t; peindre(); }
 });
+
+const aller = (devis) => {
+  document.getElementById("ecran-client").hidden = devis;
+  document.getElementById("ecran-devis").hidden = !devis;
+  window.scrollTo({ top: 0 });
+};
+document.getElementById("dernier-devis").addEventListener("click", () => aller(true));
+document.getElementById("revenir").addEventListener("click", () => aller(false));
+document.getElementById("recommencer").addEventListener("click", () => {
+  taux = 0; champ.value = ""; refus.hidden = true; peindre(); aller(false);
+});
+
+const bNuit = document.getElementById("bascule-nuit");
+bNuit.addEventListener("click", () => {
+  const n = document.body.dataset.charte !== "nuit";
+  document.body.dataset.charte = n ? "nuit" : "origine";
+  bNuit.setAttribute("aria-pressed", String(n));
+  bNuit.textContent = n ? "Origine" : "Nuit";
+});
+
+peindre();
 </script>
 </body>
 </html>
