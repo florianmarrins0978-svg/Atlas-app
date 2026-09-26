@@ -6,6 +6,18 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-09-26
+
+### Le retour envoyé se rouvre depuis n'importe quelle journée du planning
+
+**Sa plainte**, sur la fiche de Julien posée au lundi 28 : *« je peux pas
+envoyer un retour d'intervention, ça devait pas être réglé ? »*. Reproduite :
+le 26, depuis la fiche du 28, un retour parti le jour même laissait « 1 retour
+envoyé » inerte, parce que `retourModifiable` exigeait aussi que la fiche soit
+ouverte sur aujourd'hui. Le serveur, lui, l'aurait accepté. La condition est
+retirée : seule la date d'envoi décide, à l'écran comme au serveur. Un retour
+d'un jour passé reste fermé. `ARCHITECTURE.md` §414.
+
 ## 2026-09-25
 
 ### L'anthracnose se sépare en deux planches, le chêne et le hêtre
