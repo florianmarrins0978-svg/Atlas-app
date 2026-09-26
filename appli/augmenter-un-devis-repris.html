@@ -6,46 +6,47 @@
 <title>Augmenter un devis repris</title>
 <style>
   /*
-    AUGMENTER UN DEVIS REPRIS, sa demande du 26 septembre 2026. RIEN N'EST
+    AUGMENTER UN DEVIS REPRIS, ses demandes du 26 septembre 2026. RIEN N'EST
     CODÉ dans `src/`.
 
-    La première version montrait deux téléphones abstraits et cinq cartes
-    d'explication ; sa réponse : « fais une maquette réaliste, je comprends
-    rien ». Celle-ci rejoue SON parcours sur SES écrans : la fiche du client
-    (`RepartirDeCeClient.tsx`, le bouton plein « Dernier devis » et le creux
-    « Autre chantier »), puis la feuille du devis (`DevisCompletClient.tsx`,
-    colonnes Description, Qté, P.U. HT, Montant, et « Choisir la date » en
-    bas). La barre du bas est celle de sa capture du 26 septembre. Le seul
-    élément neuf est la bande « Augmenter les prix ».
+    Son parcours, sur SES écrans : la fiche du client (`RepartirDeCeClient.tsx`,
+    « Dernier devis » plein, « Autre chantier » creux), puis la VRAIE page du
+    devis (`DevisCompletClient.tsx`), telle qu'elle se range sur un téléphone :
+    en-tête de l'entreprise, références, client, chantier, chaque ligne en
+    description puis Qté, Unité, Prix unitaire HT, Montant HT (`Cellule`), la
+    ligne qui glisse pour découvrir « Retirer » (`LigneRetirable`), « + Ajouter
+    une ligne », « + Ajouter une TVA » et ses catégories, « + Main d'œuvre »,
+    « + Remise » (« Remise de N % »), « + Ajouter un acompte », notes, IBAN,
+    « Aperçu du PDF », « Choisir la date ». Sa demande : « tout ce qu'on peut
+    déjà faire lorsqu'on crée un devis ».
 
-    Les jetons sont ceux de `src/lib/chartes.ts`, repris de
-    `appli/travaux-supplementaires-sur-le-devis.html`.
+    LES DEUX SEULS ÉLÉMENTS NEUFS sont en tête de feuille :
+      1. « Votre grille a changé » : l'ancien devis revient à SES prix, et rien
+         ne passe au tarif du jour sans son oui (sa règle du 26 septembre, qui
+         remplace « au prix d'aujourd'hui, la 1 » du 8 septembre) ;
+      2. « Augmenter les prix » : 5, 10, 30 % ou le taux tapé.
 
-    LES RÈGLES DU CALCUL, tenues ici et à tenir dans le code :
-      1. le prix UNITAIRE s'arrondit au centime, demi vers le haut ; le montant
-         est la quantité fois ce prix, pour que le client puisse recompter ;
-      2. les taux ne s'ajoutent pas : 10 % après 5 % donne 10 % de l'ancien prix ;
-      3. l'ancien devis revient à SES prix ; le tarif du jour ne s'applique que
-         sur son oui (sa règle du 26 septembre, qui remplace « au prix
-         d'aujourd'hui, la 1 » du 8 septembre) ; la hausse part ensuite du
-         prix affiché, sur toutes les lignes ;
-      4. une ligne à chiffrer reste à chiffrer ;
-      5. une décimale au plus, de 0,1 à 100 % ; au delà, rien ne bouge.
-    Le calcul se fait en centimes entiers et en dixièmes de pour cent : un seul
-    arrondi, à la fin, jamais un flottant qui décide d'un centime.
+    RÈGLES DE LA HAUSSE, à tenir dans le code :
+      a. elle ne touche que les lignes VENUES de l'ancien devis et jamais
+         retouchées à la main : un prix qu'il tape, ou une ligne qu'il ajoute,
+         est un prix d'aujourd'hui, et le monter serait lui reprendre la main ;
+      b. elle part du prix affiché après sa réponse à la grille ;
+      c. le prix UNITAIRE s'arrondit au centime, demi vers le haut, et le
+         montant est la quantité fois ce prix, pour que le client recompte ;
+      d. les taux ne s'ajoutent pas : 10 % après 5 % donne 10 % ;
+      e. une décimale au plus, de 0,1 à 100 % ; au delà, rien ne bouge.
+    Le calcul se fait en centimes entiers et en dixièmes de pour cent.
 
-    La même bande paraît quand on passe par « Reprendre le devis » sur un devis
-    expiré ; la planche ne montre que le chemin de la fiche client, pour rester
-    lisible.
-
-    Les prestations, prix et noms sont inventés pour la démonstration.
+    Ce que la planche simplifie : le glissement est un défilement natif comme
+    dans l'écran codé, sans son voile ; « Retirer » n'a pas ici de tiroir
+    d'annulation. Les prestations, prix, noms et numéros sont inventés.
   */
   :root{
     --cream:#f5f3ee; --card:#faf9f5; --ink:#1c1c1a; --inkSoft:#4a4a44;
     --muted:#8a8578; --rust:#2f3b2f; --rustTint:#ece9e1;
     --or:#B98B47; --orTexte:#8b6835; --plein:#7d9a6d;
     --line:rgba(28,28,26,0.12); --lineSoft:rgba(28,28,26,0.07);
-    --alerte:#9C3B2E; --surPlein:#faf9f5;
+    --voileChamp:rgba(28,28,26,0.04); --alerte:#9C3B2E; --surPlein:#faf9f5;
     --hors:#e6e3dc;
   }
   body[data-charte="nuit"]{
@@ -53,7 +54,7 @@
     --muted:#84887b; --rust:#e9e8de; --rustTint:#1f211e;
     --or:#B98B47; --orTexte:#b98b47; --plein:#e9e8de;
     --line:rgba(233,232,222,0.12); --lineSoft:rgba(233,232,222,0.07);
-    --alerte:#e08b7d; --surPlein:#1a1d19;
+    --voileChamp:rgba(233,232,222,0.06); --alerte:#e08b7d; --surPlein:#1a1d19;
     --hors:#0a0b0a;
   }
   *{box-sizing:border-box}
@@ -62,6 +63,7 @@
   body{background:var(--hors);color:var(--ink);
        font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
        -webkit-text-size-adjust:100%;padding:0 0 34px}
+  input,textarea{font:inherit;color:inherit}
 
   .bandeau{background:#1c1c1a;color:#f5f3ee;padding:14px 18px;font-size:14px;line-height:1.5}
   .bandeau b{color:#fff}
@@ -83,48 +85,37 @@
   /* ─── La fiche du client ─────────────────────────────────────────────── */
   .gestes{display:flex;gap:10px;padding:20px 26px 0}
   .gestes button{flex:1;height:52px;border-radius:999px;display:flex;align-items:center;
-                 justify-content:center;gap:10px;cursor:pointer;border:0;
-                 -webkit-tap-highlight-color:transparent}
-  .gestes .dernier{background:var(--plein);color:var(--surPlein);
-                   font:400 16px/1 ui-serif,Georgia,serif}
+                 justify-content:center;gap:10px;cursor:pointer;border:0}
+  .gestes .dernier{background:var(--plein);color:var(--surPlein);font:400 16px/1 ui-serif,Georgia,serif}
   .gestes .autre{background:none;color:var(--orTexte);box-shadow:inset 0 0 0 1px var(--orTexte);
                  font:400 15px/1 ui-sans-serif,sans-serif}
   .passe{margin:26px 26px 0}
-  .passe .intitule{margin:0 0 8px}
   .passe p:not(.intitule){margin:0;font-size:15px}
   .passe .quand{font-size:13px;color:var(--muted);margin-top:2px}
   .appui{animation:appui 1.6s ease-in-out infinite}
   @keyframes appui{50%{box-shadow:0 0 0 6px rgba(185,139,71,.28)}}
 
   /* ─── La feuille du devis ────────────────────────────────────────────── */
-  .feuille{margin:18px 14px 0;background:var(--card);border-radius:10px;padding:20px 16px 24px}
-  .intitule{margin:0;font:600 10px/1 ui-sans-serif,sans-serif;letter-spacing:.16em;
+  .feuille{margin:18px 10px 0;background:var(--card);border-radius:10px;padding:20px 16px 24px}
+  .intitule{margin:0 0 6px;font:600 11px/1 ui-sans-serif,sans-serif;letter-spacing:.12em;
             text-transform:uppercase;color:var(--muted)}
+  .bloc{margin-top:22px}
+  .nu{display:block;width:100%;border:0;background:transparent;padding:2px 0;outline:none;
+      font-size:15px;line-height:1.45;color:var(--ink)}
+  .nu:focus{background:var(--voileChamp)}
+  .nu.fort{font-weight:600}
+  textarea.nu{resize:none;overflow:hidden}
+  .ref{display:flex;justify-content:space-between;gap:16px;padding:4px 0;border-bottom:1px solid var(--lineSoft)}
+  .ref span:first-child{font:600 12px/1.6 ui-sans-serif,sans-serif;letter-spacing:.08em;
+                        text-transform:uppercase;color:var(--muted)}
+  .ref span:last-child{font-size:14px}
+  .titre-devis{margin-top:18px;font:400 22px/1.2 ui-serif,Georgia,serif}
 
-  /* LE SEUL ÉLÉMENT NEUF : la bande, dessinée comme la catégorie de TVA de
-     l'écran codé (plage `rustTint`, petites capitales vert pin). Elle n'existe
-     que sur un devis repris. */
-  .hausse{margin:0 0 18px;border-radius:8px;background:var(--rustTint);padding:11px 12px 12px}
-  .hausse .titre{margin:0 0 9px;font:600 11px/1 ui-sans-serif,sans-serif;letter-spacing:.12em;
-                 text-transform:uppercase;color:var(--rust)}
-  .hausse .rangee{display:flex;flex-wrap:wrap;gap:7px;align-items:center}
-  .hausse button{border:0;border-radius:999px;background:var(--card);color:var(--ink);
-                 box-shadow:inset 0 0 0 1px var(--line);height:34px;padding:0 12px;
-                 font:500 14px/1 ui-sans-serif,sans-serif;white-space:nowrap;cursor:pointer;
-                 -webkit-tap-highlight-color:transparent}
-  .hausse button[aria-pressed="true"]{background:var(--rust);color:var(--surPlein);box-shadow:none}
-  .saisie{display:flex;align-items:center;gap:4px;height:34px;border-radius:999px;background:var(--card);
-          box-shadow:inset 0 0 0 1px var(--line);padding:0 12px 0 8px}
-  .saisie:focus-within{box-shadow:inset 0 0 0 1.5px var(--or)}
-  .saisie input{width:40px;border:0;background:transparent;color:var(--ink);text-align:right;
-                font:500 16px/1 ui-sans-serif,sans-serif;padding:0;outline:none}
-  .saisie span{font-size:14px;color:var(--inkSoft)}
-  .refus{margin:8px 0 0;font-size:13px;color:var(--alerte)}
-
-  /* La question : un cadre or, parce qu'elle attend une réponse. */
-  .question{margin:0 0 14px;border-radius:8px;padding:12px;box-shadow:inset 0 0 0 1.5px var(--or)}
-  .question .titre{margin:0 0 8px;font:600 11px/1 ui-sans-serif,sans-serif;letter-spacing:.12em;
-                   text-transform:uppercase;color:var(--orTexte)}
+  /* Les deux cadres neufs. */
+  .question{margin:0 0 12px;border-radius:8px;padding:12px;box-shadow:inset 0 0 0 1.5px var(--or)}
+  .question .titre,.hausse .titre{margin:0 0 8px;font:600 11px/1 ui-sans-serif,sans-serif;
+                                  letter-spacing:.12em;text-transform:uppercase}
+  .question .titre{color:var(--orTexte)}
   .question .chg{margin:0;font-size:14.5px;line-height:1.5;font-variant-numeric:tabular-nums}
   .question .chg s{color:var(--muted)}
   .reponses{display:flex;gap:8px;margin-top:12px}
@@ -132,46 +123,96 @@
                    font:500 14.5px/1 ui-sans-serif,sans-serif}
   .reponses .oui{background:var(--plein);color:var(--surPlein)}
   .reponses .non{background:none;color:var(--ink);box-shadow:inset 0 0 0 1px var(--line)}
-  .reponse{margin:0 0 14px;display:flex;justify-content:space-between;align-items:center;gap:10px;
+  .reponse{margin:0 0 12px;display:flex;justify-content:space-between;align-items:center;gap:10px;
            font-size:14px;color:var(--inkSoft)}
   .reponse button{border:0;background:none;padding:0;color:var(--orTexte);cursor:pointer;
                   font:500 14px/1 ui-sans-serif,sans-serif}
+  .hausse{border-radius:8px;background:var(--rustTint);padding:11px 12px 12px}
+  .hausse .titre{color:var(--rust);margin-bottom:9px}
+  .hausse .rangee{display:flex;flex-wrap:wrap;gap:7px;align-items:center}
+  .hausse button{border:0;border-radius:999px;background:var(--card);color:var(--ink);
+                 box-shadow:inset 0 0 0 1px var(--line);height:34px;padding:0 12px;
+                 font:500 14px/1 ui-sans-serif,sans-serif;white-space:nowrap;cursor:pointer}
+  .hausse button[aria-pressed="true"]{background:var(--rust);color:var(--surPlein);box-shadow:none}
+  .saisie{display:flex;align-items:center;gap:4px;height:34px;border-radius:999px;background:var(--card);
+          box-shadow:inset 0 0 0 1px var(--line);padding:0 12px 0 8px}
+  .saisie:focus-within{box-shadow:inset 0 0 0 1.5px var(--or)}
+  .saisie input{width:40px;border:0;background:transparent;text-align:right;
+                font:500 16px/1 ui-sans-serif,sans-serif;padding:0;outline:none}
+  .saisie span{font-size:14px;color:var(--inkSoft)}
+  .refus{margin:8px 0 0;font-size:13px;color:var(--alerte)}
 
-  .colonnes,.l{display:grid;grid-template-columns:1fr 34px 70px 76px;gap:7px}
-  .colonnes{padding-bottom:6px}
-  .colonnes span{font:600 9.5px/1 ui-sans-serif,sans-serif;letter-spacing:.12em;
-                 text-transform:uppercase;color:var(--muted)}
-  .colonnes span:not(:first-child){text-align:right}
-  .l{padding:10px 0;border-bottom:1px solid var(--lineSoft);align-items:start;font-size:14.5px;line-height:1.35}
-  .l .n{text-align:right;font-variant-numeric:tabular-nums}
-  .l .ancien{display:block;font-size:12px;color:var(--muted);text-decoration:line-through}
-  .l .neuf{color:var(--orTexte)}
-  .l .vide{color:var(--or)}
-  .totaux{margin-top:16px}
-  .ligne-plate{display:flex;justify-content:space-between;padding:3px 0;font-size:15px;
-               font-variant-numeric:tabular-nums}
+  /* Une ligne du devis, rangée comme sur le téléphone : la description,
+     puis quatre rangées libellé à gauche, valeur à droite. */
+  .glisse{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;
+          border-bottom:1px solid var(--lineSoft)}
+  .glisse::-webkit-scrollbar{display:none}
+  .glisse .contenu{flex:0 0 100%;scroll-snap-align:start;padding:12px 0}
+  .glisse .retirer{flex:0 0 96px;scroll-snap-align:end;border:0;background:var(--alerte);
+                   color:#fff;font:600 14px/1 ui-sans-serif,sans-serif;cursor:pointer}
+  .cellule{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:34px}
+  .cellule span.lib{font:600 11px/1 ui-sans-serif,sans-serif;letter-spacing:.1em;text-transform:uppercase;
+                    color:var(--muted)}
+  .cellule .val{display:flex;align-items:center;gap:8px;font-variant-numeric:tabular-nums}
+  .cellule input{width:96px;border:0;border-bottom:1px solid transparent;background:transparent;
+                 text-align:right;font-size:16px;padding:4px 2px;outline:none}
+  .cellule input:focus{background:var(--voileChamp)}
+  .cellule input.vide{border-bottom-color:var(--lineSoft)}
+  .cellule .ancien{font-size:13px;color:var(--muted);text-decoration:line-through}
+  .cellule .monte{color:var(--orTexte)}
+  .cellule .achiffrer{color:var(--or)}
+
+  .cat{margin-top:18px;display:flex;align-items:center;justify-content:space-between;gap:12px;
+       border-radius:6px;padding:6px 12px;background:var(--rustTint)}
+  .cat .quoi{display:flex;align-items:center;gap:4px;font:600 11px/1 ui-sans-serif,sans-serif;
+             letter-spacing:.12em;text-transform:uppercase;color:var(--rust)}
+  .cat input{width:36px;border:0;background:transparent;padding:0;text-align:right;outline:none;font-size:16px}
+  .moins{width:26px;height:26px;flex:none;border-radius:999px;background:none;border:1px solid var(--or);
+         color:var(--or);font-size:15px;line-height:1;cursor:pointer;padding:0}
+  .sous-total{margin-top:8px;display:flex;justify-content:flex-end;gap:16px;font-size:13px;color:var(--muted)}
+  .sous-total b{font-weight:400;color:var(--ink)}
+
+  .ajout{display:block;margin-top:14px;background:none;border:0;padding:0;cursor:pointer;
+         font:500 14px/1.2 ui-sans-serif,sans-serif;color:var(--rust)}
+  .ajout.or{color:var(--or);margin-top:12px}
+  .ajout.petit{font-size:13.5px;font-weight:400}
+
+  .totaux{margin-top:26px}
+  .lp{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:6px 0;font-size:15px;
+      font-variant-numeric:tabular-nums}
+  .lp.or{color:var(--or)}
+  .lp .g{display:flex;align-items:center;gap:4px}
+  .lp input{width:36px;border:0;background:transparent;padding:0;text-align:right;outline:none;font-size:16px;color:inherit}
+  .lp input.large{width:84px}
   .ttc{margin-top:6px;padding-top:10px;border-top:2px solid var(--ink);display:flex;
        align-items:center;justify-content:space-between}
   .ttc b{font:600 17px/1 ui-sans-serif,sans-serif}
   .ttc .valeur{font:600 20px/1 ui-serif,Georgia,serif;font-variant-numeric:tabular-nums}
+  .reste{margin-top:4px}
+
+  .apercu{margin-top:34px;padding-top:22px;border-top:1px solid var(--lineSoft);text-align:center}
+  .apercu a{font-size:14px;font-weight:500;color:var(--rust)}
 
   .plein{display:block;width:calc(100% - 36px);margin:20px 18px 0;min-height:52px;border:0;
          border-radius:999px;background:var(--plein);color:var(--surPlein);
          font:400 17px/1 ui-serif,Georgia,serif;cursor:pointer}
+  .collant{position:sticky;bottom:0;padding:10px 0 12px;background:var(--cream)}
+  .collant .plein{margin-top:0}
 
-  .nav{margin-top:24px;border-top:1px solid var(--line);position:relative;
+  .nav{border-top:1px solid var(--line);position:relative;background:var(--cream);
        display:grid;grid-template-columns:repeat(5,minmax(0,1fr));padding:18px 14px 8px}
   .nav span{padding-bottom:8px;text-align:center;font:500 8.5px/1 ui-sans-serif,sans-serif;
             letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
   .nav span.actif{color:var(--ink)}
   .nav i{position:absolute;bottom:8px;left:14px;width:calc((100% - 28px) / 5);height:1px;background:var(--or)}
+  #ecran-client .nav{margin-top:24px}
 
-  @media (prefers-reduced-motion:reduce){ .appui{animation:none} }
+  @media (prefers-reduced-motion:reduce){ .appui{animation:none} .glisse{scroll-behavior:auto} }
 </style>
 </head>
 <body data-charte="origine">
 
-<div class="bandeau"><b>Maquette.</b> Touchez « Dernier devis ». Répondez à la question, puis augmentez les prix si vous voulez.</div>
+<div class="bandeau"><b>Maquette.</b> Touchez « Dernier devis ». Tout se touche : les champs, les « + », et une ligne glissée vers la gauche se retire.</div>
 <div class="choix">
   <button type="button" id="recommencer">Recommencer</button>
   <button type="button" id="bascule-nuit" aria-pressed="false">Nuit</button>
@@ -179,7 +220,7 @@
 
 <div class="tel">
 
-  <!-- 1. LA FICHE DU CLIENT, telle qu'elle est -->
+  <!-- 1. LA FICHE DU CLIENT -->
   <section id="ecran-client">
     <div class="entete">
       <div>
@@ -208,7 +249,7 @@
     </div>
   </section>
 
-  <!-- 2. LA FEUILLE DU DEVIS, avec la bande neuve -->
+  <!-- 2. LA PAGE DU DEVIS, entière -->
   <section id="ecran-devis" hidden>
     <div class="entete">
       <button class="retour" type="button" id="revenir" aria-label="Revenir à la fiche du client">‹</button>
@@ -216,8 +257,7 @@
     </div>
 
     <div class="feuille">
-      <!-- LA QUESTION, sa règle du 26 septembre 2026 : l'ancien devis revient
-           à ses anciens prix, et rien ne passe au tarif du jour sans son oui. -->
+      <!-- NEUF 1 : la question -->
       <div class="question" id="question">
         <p class="titre">Votre grille a changé</p>
         <div id="changements"></div>
@@ -229,6 +269,7 @@
       <p class="reponse" id="reponse" hidden><span id="reponse-texte"></span>
         <button type="button" id="changer">Changer</button></p>
 
+      <!-- NEUF 2 : la hausse -->
       <div class="hausse">
         <p class="titre">Augmenter les prix</p>
         <div class="rangee">
@@ -241,20 +282,51 @@
         <p class="refus" id="refus" hidden>Entre 0,1 et 100 %.</p>
       </div>
 
-      <p style="margin:0 0 2px;font-size:13px;color:var(--muted)">Chantier</p>
-      <p style="margin:0 0 18px;font-size:15px">Entretien, 8 allée des Tilleuls</p>
-
-      <div class="colonnes"><span>Description</span><span>Qté</span><span>P.U. HT</span><span>Montant</span></div>
-      <div id="lignes"></div>
-
-      <div class="totaux">
-        <div class="ligne-plate"><span>Total HT</span><span id="ht"></span></div>
-        <div class="ligne-plate"><span>TVA (20 %)</span><span id="tva"></span></div>
-        <div class="ttc"><b>Total TTC</b><span class="valeur" id="ttc"></span></div>
+      <!-- CE QUI EXISTE DÉJÀ, dans l'ordre de l'écran codé -->
+      <div class="bloc">
+        <input class="nu fort" value="Jardins Moreau" aria-label="Nom de l'entreprise">
+        <input class="nu" value="3 rue du Moulin, 44600 Saint-Nazaire" aria-label="Adresse de l'entreprise">
+        <input class="nu" value="06 45 22 18 90" aria-label="Téléphone de l'entreprise">
+        <input class="nu" value="SIRET 812 345 678 00021" aria-label="SIREN ou SIRET">
       </div>
+      <div class="bloc">
+        <div class="ref"><span>Devis n°</span><span>D2026-000031</span></div>
+        <div class="ref"><span>Date</span><span>26/09/2026</span></div>
+        <div class="ref"><span>Validité</span><span>45 jours</span></div>
+      </div>
+      <input class="nu titre-devis" placeholder="Titre (optionnel)" aria-label="Titre du devis">
+
+      <div class="bloc">
+        <p class="intitule">Client</p>
+        <input class="nu fort" value="Mr. Julien" aria-label="Nom du client">
+        <input class="nu" value="8 allée des Tilleuls, 44600 Saint-Marc" aria-label="Adresse du client">
+        <input class="nu" placeholder="E-mail" aria-label="E-mail du client">
+        <input class="nu" value="06 12 34 56 78" aria-label="Téléphone du client">
+      </div>
+      <div class="bloc">
+        <p class="intitule">Chantier</p>
+        <input class="nu" value="8 allée des Tilleuls, 44600 Saint-Marc" aria-label="Adresse du chantier">
+      </div>
+
+      <div class="bloc" id="categories"></div>
+      <button type="button" class="ajout or" id="ajouter-tva">+ Ajouter une TVA</button>
+      <button type="button" class="ajout or" id="poser-mo">+ Main d’œuvre</button>
+
+      <div class="totaux" id="totaux"></div>
+
+      <div class="bloc">
+        <p class="intitule">Notes / conditions</p>
+        <textarea class="nu" rows="2" aria-label="Notes et conditions">Accès par le portail de gauche. Déchets verts évacués en déchèterie.</textarea>
+      </div>
+      <div class="bloc">
+        <p class="intitule">Modalités de paiement</p>
+        <p style="margin:0;font-size:15px">Paiement par virement bancaire</p>
+        <input class="nu" value="IBAN : FR76 3000 4000 0312 3456 7890 143" aria-label="IBAN">
+      </div>
+      <div class="apercu"><a href="#" onclick="return false">Aperçu du PDF</a></div>
     </div>
 
-    <button type="button" class="plein">Choisir la date</button>
+    <div class="collant"><button type="button" class="plein">Choisir la date</button></div>
 
     <div class="nav">
       <span class="actif">Chantiers</span><span>Planning</span><span>Terminés</span>
@@ -264,19 +336,40 @@
 </div>
 
 <script>
-// En centimes. `pu` : le prix de l'ancien devis. `grille` : ce que sa grille
-// porte aujourd'hui pour ce libellé, quand elle le connaît.
-const LIGNES = [
-  { libelle: "Taille de haie", qte: 40, pu: 1750, grille: 1820 },
-  { libelle: "Tonte", qte: 250, pu: 37, grille: 40 },
-  { libelle: "Évacuation des déchets verts", qte: 1, pu: 9000 },
-  { libelle: "Traitement anti-mousse", aChiffrer: true },
-];
+/*
+  L'ÉTAT DU DEVIS. Les prix sont en centimes, les taux en pour cent.
+  `ancien` : le prix de l'ancien devis. `grille` : ce que sa grille porte
+  aujourd'hui pour ce libellé. `repris` : la ligne vient de l'ancien devis et
+  n'a pas été retouchée à la main ; seule une ligne reprise suit la grille et
+  la hausse. `pu` : le prix tapé, pour une ligne qui n'est plus reprise.
+*/
+const DEPART = () => ({
+  lignes: [
+    { id: 1, libelle: "Taille de haie", qte: "40", unite: "ml", ancien: 1750, grille: 1820, repris: true, tva: 20 },
+    { id: 2, libelle: "Tonte", qte: "250", unite: "m²", ancien: 37, grille: 40, repris: true, tva: 20 },
+    { id: 3, libelle: "Évacuation des déchets verts", qte: "1", unite: "forfait", ancien: 9000, repris: true, tva: 20 },
+    { id: 4, libelle: "Traitement anti-mousse", qte: "1", unite: "forfait", ancien: null, repris: false, pu: null, tva: 20 },
+  ],
+  taux: [20],
+  hausse: 0,
+  grilleOui: null,
+  remise: null,
+  mainDoeuvre: null,
+  acompte: null,
+});
+let d = DEPART();
+let prochainId = 5;
 
 const euros = (c) =>
   (c / 100).toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €";
-const augmente = (c, taux) => Math.round((c * (1000 + Math.round(taux * 10))) / 1000);
-
+const chiffre = (c) => (c / 100).toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const augmente = (c, t) => Math.round((c * (1000 + Math.round(t * 10))) / 1000);
+function lireNombre(txt) {
+  const t = String(txt).trim().replace(/\s/g, "").replace(",", ".");
+  if (t === "") return null;
+  const n = Number(t);
+  return Number.isFinite(n) ? n : NaN;
+}
 function lireTaux(texte) {
   const t = texte.trim().replace(",", ".");
   if (t === "") return 0;
@@ -285,82 +378,251 @@ function lireTaux(texte) {
   return n > 0 && n <= 100 ? n : null;
 }
 
-let taux = 0;
-/** `null` : pas encore répondu, donc les anciens prix. */
-let miseAJour = null;
-const boutons = [...document.querySelectorAll(".hausse button")];
-const champ = document.getElementById("taux");
-const refus = document.getElementById("refus");
-const aChanger = LIGNES.filter((l) => l.grille && l.grille !== l.pu);
-
-document.getElementById("changements").innerHTML = aChanger.map((l) =>
-  `<p class="chg">${l.libelle} : <s>${euros(l.pu)}</s> devient ${euros(l.grille)}</p>`
-).join("");
-
-/*
-  LA HAUSSE PART DU PRIX AFFICHÉ, sur toutes les lignes. Avant qu'il réponde à
-  la question, une ligne de sa grille pouvait monter deux fois sans qu'il le
-  sache ; maintenant c'est lui qui a dit oui ou non au tarif du jour, et les
-  +10 % s'appliquent à ce qu'il a sous les yeux, partout pareil.
-*/
-function peindre() {
-  boutons.forEach((b) => b.setAttribute("aria-pressed", String(Number(b.dataset.taux) === taux)));
-  const repondu = miseAJour !== null;
-  document.getElementById("question").hidden = repondu;
-  document.getElementById("reponse").hidden = !repondu;
-  document.getElementById("reponse-texte").textContent =
-    miseAJour ? "Prix mis à jour." : "Anciens prix gardés.";
-
-  let ht = 0;
-  document.getElementById("lignes").innerHTML = LIGNES.map((l) => {
-    if (l.aChiffrer) {
-      return `<div class="l"><span>${l.libelle}</span><span class="n"></span><span class="n"></span>
-        <span class="n vide">à chiffrer</span></div>`;
-    }
-    const base = miseAJour && l.grille ? l.grille : l.pu;
-    const pu = taux > 0 ? augmente(base, taux) : base;
-    const bouge = pu !== l.pu;
-    ht += pu * l.qte;
-    const cellePu = bouge
-      ? `<span class="neuf">${euros(pu)}</span><span class="ancien">${euros(l.pu)}</span>`
-      : euros(pu);
-    return `<div class="l"><span>${l.libelle}</span><span class="n">${l.qte}</span>
-      <span class="n">${cellePu}</span><span class="n${bouge ? " neuf" : ""}">${euros(pu * l.qte)}</span></div>`;
-  }).join("");
-  const tva = Math.round(ht * 0.2);
-  document.getElementById("ht").textContent = euros(ht);
-  document.getElementById("tva").textContent = euros(tva);
-  document.getElementById("ttc").textContent = euros(ht + tva);
+/** Le prix unitaire affiché, en centimes, ou null s'il attend son prix. */
+function prixDe(l) {
+  if (!l.repris) return l.pu;
+  const base = d.grilleOui && l.grille ? l.grille : l.ancien;
+  return d.hausse > 0 ? augmente(base, d.hausse) : base;
+}
+function montantDe(l) {
+  const pu = prixDe(l);
+  const q = lireNombre(l.qte);
+  if (pu === null || q === null || Number.isNaN(q)) return null;
+  return Math.round(pu * q);
 }
 
-document.getElementById("oui").addEventListener("click", () => { miseAJour = true; peindre(); });
-document.getElementById("non").addEventListener("click", () => { miseAJour = false; peindre(); });
-document.getElementById("changer").addEventListener("click", () => { miseAJour = null; peindre(); });
+/* ─── Les lignes, rangées par TVA ────────────────────────────────────────── */
+function celluleHtml(lib, contenu) {
+  return `<div class="cellule"><span class="lib">${lib}</span><span class="val">${contenu}</span></div>`;
+}
+function ligneHtml(l) {
+  const pu = prixDe(l);
+  const m = montantDe(l);
+  const bouge = l.repris && pu !== l.ancien;
+  const ancien = bouge ? `<span class="ancien">${chiffre(l.ancien)}</span>` : "";
+  const champPu = `<input data-id="${l.id}" data-champ="pu" inputmode="decimal" aria-label="Prix unitaire"
+    class="${bouge ? "monte" : ""} ${pu === null ? "vide" : ""}" placeholder="0,00" value="${pu === null ? "" : chiffre(pu)}">`;
+  return `<div class="glisse" data-ligne="${l.id}">
+    <div class="contenu">
+      <textarea class="nu" rows="1" data-id="${l.id}" data-champ="libelle" aria-label="Description"
+        placeholder="Ex : Élagage d'un tilleul, taille architecturée">${l.libelle}</textarea>
+      ${celluleHtml("Qté", `<input data-id="${l.id}" data-champ="qte" inputmode="decimal" aria-label="Quantité" placeholder="1" value="${l.qte}">`)}
+      ${celluleHtml("Unité", `<input data-id="${l.id}" data-champ="unite" aria-label="Unité" value="${l.unite}">`)}
+      ${celluleHtml("Prix unitaire HT", ancien + champPu)}
+      ${celluleHtml("Montant HT", m === null
+        ? `<span class="achiffrer">à chiffrer</span>`
+        : `<span class="${bouge ? "monte" : ""}" data-montant="${l.id}">${euros(m)}</span>`)}
+    </div>
+    <button type="button" class="retirer" data-retirer="${l.id}">Retirer</button>
+  </div>`;
+}
 
-boutons.forEach((b) => b.addEventListener("click", () => {
-  const t = Number(b.dataset.taux);
-  taux = taux === t ? 0 : t;
-  champ.value = taux ? String(taux) : "";
-  refus.hidden = true;
-  peindre();
-}));
-// La feuille ne se redessine pas en entier à chaque chiffre : le clavier du
-// téléphone se fermerait entre le 1 et le 2 de « 12 ».
-champ.addEventListener("input", () => {
-  const t = lireTaux(champ.value);
-  refus.hidden = t !== null;
-  if (t !== null) { taux = t; peindre(); }
+function peindreLignes() {
+  const plusieurs = d.taux.length > 1;
+  document.getElementById("categories").innerHTML = d.taux.map((t, i) => {
+    const lignes = d.lignes.filter((l) => l.tva === t);
+    const st = lignes.reduce((s, l) => s + (montantDe(l) ?? 0), 0);
+    const tete = plusieurs ? `<div class="cat"><span class="quoi">TVA
+        <input data-cat="${t}" inputmode="decimal" aria-label="Taux de TVA de la catégorie" value="${String(t).replace(".", ",")}"> %</span>
+        ${i > 0 ? `<button type="button" class="moins" data-retirer-tva="${t}" aria-label="Retirer la TVA à ${t} %">−</button>` : ""}</div>` : "";
+    const pied = plusieurs ? `<div class="sous-total"><span>Sous-total HT</span><b>${euros(st)}</b></div>` : "";
+    return tete + (lignes.length ? lignes.map(ligneHtml).join("")
+      : `<p style="margin:12px 0 0;font-size:13px;color:var(--muted)">Aucune ligne pour l'instant.</p>`) +
+      `<button type="button" class="ajout" data-ajouter="${t}">+ Ajouter une ligne</button>` + pied;
+  }).join("");
+  document.querySelectorAll("#categories textarea").forEach(grandir);
+}
+function grandir(t) { t.style.height = "auto"; t.style.height = t.scrollHeight + "px"; }
+
+/* ─── Les totaux ─────────────────────────────────────────────────────────── */
+function calcul() {
+  const parTaux = d.taux.map((t) => ({
+    t, ht: d.lignes.filter((l) => l.tva === t).reduce((s, l) => s + (montantDe(l) ?? 0), 0),
+  }));
+  const brut = parTaux.reduce((s, c) => s + c.ht, 0);
+  const r = d.remise === null ? 0 : (lireNombre(d.remise) || 0);
+  const retire = Math.round((brut * r) / 100);
+  const net = brut - retire;
+  const tvas = parTaux.map((c) => ({ t: c.t, v: Math.round((c.ht * (1 - r / 100) * c.t) / 100) }));
+  const ttc = net + tvas.reduce((s, x) => s + x.v, 0);
+  return { brut, retire, net, tvas, ttc };
+}
+
+function peindreTotaux() {
+  const c = calcul();
+  const mo = d.mainDoeuvre === null ? "" : `<div class="lp"><span>dont main d’œuvre HT</span>
+    <span class="g"><input class="large" id="mo" inputmode="decimal" placeholder="0,00" value="${d.mainDoeuvre}"> €</span></div>`;
+  const remise = d.remise === null ? "" : `
+    <div class="lp"><span>Total HT</span><span>${euros(c.brut)}</span></div>
+    <div class="lp or"><span class="g"><button type="button" class="moins" id="retirer-remise" aria-label="Retirer la remise">−</button>
+      Remise de <input id="remise" inputmode="decimal" value="${d.remise}"> %</span><span>− ${euros(c.retire)}</span></div>`;
+  const tvas = c.tvas.map((x) => d.taux.length === 1
+    ? `<div class="lp"><span class="g">TVA (<input id="taux-unique" inputmode="decimal" aria-label="Taux de TVA" value="${String(x.t).replace(".", ",")}"> %)</span><span>${euros(x.v)}</span></div>`
+    : `<div class="lp"><span>TVA (${String(x.t).replace(".", ",")} %)</span><span>${euros(x.v)}</span></div>`).join("");
+  const a = d.acompte === null ? null : (lireNombre(d.acompte) || 0);
+  const acompte = a === null ? "" : `
+    <div class="lp"><span class="g"><button type="button" class="moins" id="retirer-acompte" aria-label="Retirer l'acompte">−</button>
+      Acompte à la signature <input id="acompte" inputmode="decimal" value="${d.acompte}"> %</span>
+      <span>${euros(Math.round((c.ttc * a) / 100))}</span></div>
+    <div class="lp reste"><span>Reste à régler après acompte</span><span>${euros(c.ttc - Math.round((c.ttc * a) / 100))}</span></div>`;
+
+  document.getElementById("totaux").innerHTML = `
+    ${remise}
+    <div class="lp"><span>${d.remise === null ? "Total HT" : "Total HT après remise"}</span><span>${euros(c.net)}</span></div>
+    ${mo}${tvas}
+    <div class="ttc"><b>Total TTC</b><span class="valeur">${euros(c.ttc)}</span></div>
+    ${acompte}
+    ${d.acompte === null ? `<button type="button" class="ajout petit" id="ajouter-acompte" style="color:var(--rust)">+ Ajouter un acompte</button>` : ""}
+    ${d.remise === null ? `<button type="button" class="ajout or petit" id="poser-remise">+ Remise</button>` : ""}`;
+  document.getElementById("poser-mo").hidden = d.mainDoeuvre !== null;
+}
+
+/* ─── Les deux cadres neufs ──────────────────────────────────────────────── */
+function peindreCadres() {
+  const aChanger = d.lignes.filter((l) => l.repris && l.grille && l.grille !== l.ancien);
+  document.getElementById("changements").innerHTML = aChanger.map((l) =>
+    `<p class="chg">${l.libelle} : <s>${euros(l.ancien)}</s> devient ${euros(l.grille)}</p>`).join("");
+  const repondu = d.grilleOui !== null || aChanger.length === 0;
+  document.getElementById("question").hidden = repondu;
+  document.getElementById("reponse").hidden = !repondu || aChanger.length === 0;
+  document.getElementById("reponse-texte").textContent = d.grilleOui ? "Prix mis à jour." : "Anciens prix gardés.";
+  document.querySelectorAll(".hausse button").forEach((b) =>
+    b.setAttribute("aria-pressed", String(Number(b.dataset.taux) === d.hausse)));
+}
+
+function tout() { peindreCadres(); peindreLignes(); peindreTotaux(); }
+
+/* ─── Les gestes ─────────────────────────────────────────────────────────── */
+const ecran = document.getElementById("ecran-devis");
+
+// Une frappe ne repeint que les chiffres qui en dépendent : repeindre la
+// ligne fermerait le clavier du téléphone au milieu d'un nombre.
+ecran.addEventListener("input", (e) => {
+  const t = e.target;
+  if (t.id === "taux") {
+    const v = lireTaux(t.value);
+    document.getElementById("refus").hidden = v !== null;
+    if (v !== null) { d.hausse = v; peindreCadres(); rafraichirPrix(); peindreTotauxSansFoyer(); }
+    return;
+  }
+  const l = d.lignes.find((x) => String(x.id) === t.dataset.id);
+  if (l) {
+    if (t.dataset.champ === "libelle") { l.libelle = t.value; grandir(t); return; }
+    if (t.dataset.champ === "unite") { l.unite = t.value; return; }
+    if (t.dataset.champ === "qte") { l.qte = t.value; }
+    if (t.dataset.champ === "pu") {
+      // Un prix tapé est le sien : la ligne quitte la reprise, donc la grille
+      // et la hausse ne la touchent plus.
+      const n = lireNombre(t.value);
+      l.repris = false;
+      l.pu = n === null || Number.isNaN(n) ? null : Math.round(n * 100);
+      t.classList.remove("monte");
+      const barre = t.parentElement.querySelector(".ancien");
+      if (barre) barre.remove();
+    }
+    const cel = ecran.querySelector(`[data-ligne="${l.id}"] .cellule:last-child .val`);
+    const m = montantDe(l);
+    cel.innerHTML = m === null ? `<span class="achiffrer">à chiffrer</span>` : `<span>${euros(m)}</span>`;
+    peindreTotauxSansFoyer();
+    return;
+  }
+  if (t.id === "remise") { d.remise = t.value; peindreTotauxSansFoyer(); return; }
+  if (t.id === "acompte") { d.acompte = t.value; peindreTotauxSansFoyer(); return; }
+  if (t.id === "mo") { d.mainDoeuvre = t.value; return; }
+});
+ecran.addEventListener("change", (e) => {
+  const t = e.target;
+  if (t.dataset.cat !== undefined || t.id === "taux-unique") {
+    const avant = t.id === "taux-unique" ? d.taux[0] : Number(t.dataset.cat);
+    const n = lireNombre(t.value);
+    if (n === null || Number.isNaN(n) || n < 0 || n > 100 || (n !== avant && d.taux.includes(n))) { tout(); return; }
+    d.taux = d.taux.map((x) => (x === avant ? n : x));
+    d.lignes.forEach((l) => { if (l.tva === avant) l.tva = n; });
+    tout();
+  }
+});
+function rafraichirPrix() {
+  d.lignes.forEach((l) => {
+    const bloc = ecran.querySelector(`[data-ligne="${l.id}"]`);
+    if (!bloc || !l.repris) return;
+    const neuf = document.createElement("div");
+    neuf.innerHTML = ligneHtml(l);
+    bloc.replaceWith(neuf.firstElementChild);
+  });
+  document.querySelectorAll("#categories textarea").forEach(grandir);
+}
+function peindreTotauxSansFoyer() {
+  const actif = document.activeElement;
+  const id = actif && actif.id;
+  const pos = actif && actif.selectionStart;
+  peindreTotaux();
+  if (id && document.getElementById(id) && document.getElementById(id) !== actif) {
+    const n = document.getElementById(id);
+    n.focus();
+    try { n.setSelectionRange(pos, pos); } catch (_) { /* champ sans curseur */ }
+  }
+  // Les sous-totaux des catégories suivent aussi.
+  if (d.taux.length > 1) {
+    document.querySelectorAll("#categories .sous-total b").forEach((b, i) => {
+      b.textContent = euros(d.lignes.filter((l) => l.tva === d.taux[i]).reduce((s, l) => s + (montantDe(l) ?? 0), 0));
+    });
+  }
+}
+
+ecran.addEventListener("click", (e) => {
+  const b = e.target.closest("button");
+  if (!b) return;
+  if (b.dataset.taux) {
+    const t = Number(b.dataset.taux);
+    d.hausse = d.hausse === t ? 0 : t;
+    document.getElementById("taux").value = d.hausse ? String(d.hausse) : "";
+    document.getElementById("refus").hidden = true;
+    tout(); return;
+  }
+  if (b.dataset.retirer) { d.lignes = d.lignes.filter((l) => String(l.id) !== b.dataset.retirer); tout(); return; }
+  if (b.dataset.ajouter) {
+    d.lignes.push({ id: prochainId++, libelle: "", qte: "1", unite: "", ancien: null, repris: false, pu: null, tva: Number(b.dataset.ajouter) });
+    tout();
+    const champs = ecran.querySelectorAll(`[data-ligne="${prochainId - 1}"] textarea`);
+    if (champs[0]) champs[0].focus();
+    return;
+  }
+  if (b.dataset.retirerTva) {
+    const t = Number(b.dataset.retirerTva);
+    d.taux = d.taux.filter((x) => x !== t);
+    d.lignes.forEach((l) => { if (l.tva === t) l.tva = d.taux[0]; });
+    tout(); return;
+  }
+  switch (b.id) {
+    case "oui": d.grilleOui = true; tout(); break;
+    case "non": d.grilleOui = false; tout(); break;
+    case "changer": d.grilleOui = null; tout(); break;
+    case "ajouter-tva": {
+      const libre = [10, 5.5, 20, 2.1].find((t) => !d.taux.includes(t));
+      if (libre === undefined) break;
+      d.taux.push(libre);
+      d.lignes.push({ id: prochainId++, libelle: "", qte: "1", unite: "", ancien: null, repris: false, pu: null, tva: libre });
+      tout(); break;
+    }
+    case "poser-mo": d.mainDoeuvre = ""; peindreTotaux(); document.getElementById("mo").focus(); break;
+    case "poser-remise": d.remise = "10"; peindreTotaux(); break;
+    case "retirer-remise": d.remise = null; peindreTotaux(); break;
+    case "ajouter-acompte": d.acompte = "30"; peindreTotaux(); break;
+    case "retirer-acompte": d.acompte = null; peindreTotaux(); break;
+  }
 });
 
 const aller = (devis) => {
   document.getElementById("ecran-client").hidden = devis;
-  document.getElementById("ecran-devis").hidden = !devis;
+  ecran.hidden = !devis;
   window.scrollTo({ top: 0 });
 };
 document.getElementById("dernier-devis").addEventListener("click", () => aller(true));
 document.getElementById("revenir").addEventListener("click", () => aller(false));
 document.getElementById("recommencer").addEventListener("click", () => {
-  taux = 0; miseAJour = null; champ.value = ""; refus.hidden = true; peindre(); aller(false);
+  d = DEPART(); prochainId = 5;
+  document.getElementById("taux").value = ""; document.getElementById("refus").hidden = true;
+  tout(); aller(false);
 });
 
 const bNuit = document.getElementById("bascule-nuit");
@@ -371,7 +633,7 @@ bNuit.addEventListener("click", () => {
   bNuit.textContent = n ? "Origine" : "Nuit";
 });
 
-peindre();
+tout();
 </script>
 </body>
 </html>
