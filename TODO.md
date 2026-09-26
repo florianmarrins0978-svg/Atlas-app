@@ -23,6 +23,62 @@ déclarée. La facture elle-même reste. Piste : refuser au-delà de la période
 déclarée, ou garder la ligne marquée « retirée » au lieu de l'effacer. Touche
 l'argent : niveau 3, sa décision avant de coder.
 
+## 🔴 « DERNIER DEVIS » CHANGE LES PRIX SANS LE DIRE (26 septembre 2026)
+
+**Relevé par lui** : *« on ne peut pas reprendre un devis existant et mettre les
+prix au prix du jour sans en informer l'utilisateur »*. Il a raison, et c'est
+une promesse non tenue : `src/lib/reprise-des-prix.ts` dit « le tarif a bougé :
+on prend le neuf, on montre l'ancien » et « une ligne sans tarif garde son prix,
+et le dit ». **Rien ne le montre.** `refaireLeChantierAction` calcule
+`retarifees` et `ancienPrixUnitaire`, puis `RepartirDeCeClient.tsx` ouvre le
+devis sans lire ni l'un ni l'autre, et `lignes_prix` ne garde pas l'ancien prix.
+Constaté dans le code (confiance haute), **pas regardé à l'écran** : à confirmer
+avec `npm run voir` avant de coder. Niveau 3 (argent). Se trace avec la hausse
+en pourcentage (`appli/augmenter-un-devis-repris.html`), qui touche les mêmes
+lignes.
+
+**SA DÉCISION, le même soir, et elle REMPLACE « au prix d'aujourd'hui, la 1 »
+du 8 septembre :** *« il faut reprendre les prix de l'ancien devis ; à la limite
+demande s'il veut qu'on mette les prix à jour, il dit oui ou non, mais pas comme
+ça sans qu'il le sache »*. Donc : les lignes reviennent à leurs anciens prix ;
+une question « Votre grille a changé » liste chaque ligne qui bougerait (ancien
+barré, nouveau) avec « Mettre à jour » / « Garder les anciens » ; rien ne bouge
+sans réponse. La hausse en pourcentage part ensuite du prix affiché, sur toutes
+les lignes. Dessiné dans la planche, **pas codé**. `reprise-des-prix.ts` et son
+en-tête sont à réécrire en conséquence.
+
+## ⏳ UNE PLANCHE À REGARDER : VOIR UN EXEMPLE DE FACTURE (26 septembre 2026)
+
+`appli/apercu-du-document.html`. Sa réponse attendue : **A** (bouton sous
+« Devis & factures ») ou **B** (bas de « Mon entreprise »). Rien n'est codé.
+Au codage : le vrai PDF (`src/server/pdf/`) nourri de ses réglages et de trois
+lignes factices (20, 10, 5,5 %), filigrane EXEMPLE, **aucun numéro consommé**,
+franchise en base rendue telle quelle (mention 293 B). Niveau 3 (argent).
+
+## MON AGENDA, EN SIMPLE : A ET C RETENUES, À CODER (26 septembre 2026)
+
+**Sa réponse du 26 septembre : « A », et C.** Précision donnée en même temps :
+*« une fois qu'on a choisi masquer, faut pas qu'il reste de phrase »* ; rien ne
+reste à la place, aucun lien pour la faire revenir. Le choix « masqué » se range
+dans le compte (probablement une colonne, donc une migration : niveau 3).
+
+Sa demande, capture à l'appui (Google en panne sur `invalid_grant`) : *« trop
+de mots, trop compliqué, il faut qu'elle soit hyper simple »*. Planche
+`appli/mon-agenda-simple.html` : **A**, une ligne par agenda (état en deux
+mots, un bouton) ; **B**, un seul voyant et le bouton qui répare. Pause,
+débrancher passent dans un volet « Gérer » ; le JSON de Google quitte l'écran.
+**C**, le bandeau du Planning (`PlanningClient.tsx`, `ouvertes.agenda`) : jamais
+relié, une phrase avec « Ouvrir » et « Masquer », masquée pour toujours (le choix
+se range dans le COMPTE, pas dans le navigateur) ; en pause, rien ; en panne,
+toujours là, sans « Masquer ». **Les identifiants Google quittent l'écran** (sa
+décision du 26 septembre) : Atlas porte les siens sur le serveur, ce que
+`configurationGoogle()` sait déjà lire. **Rien n'est codé.**
+
+**À vérifier avant de coder, hors planche :** `invalid_grant` à répétition est
+le symptôme classique d'un projet Google laissé en mode « Test » (jetons
+expirés au bout de sept jours). Si c'est le cas, simplifier l'écran ne
+suffira pas : la panne reviendra chaque semaine.
+
 ## ⏳ UNE PLANCHE À REGARDER — FICHE 6, LA CHALAROSE DU FRÊNE (25 septembre 2026)
 
 `appli/fiche-chalarose-du-frene.html`, liée depuis `appli/essais.html`. **Sa

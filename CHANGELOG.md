@@ -24,6 +24,15 @@ ancêtre de la feuille ne défile ni n'est collant : rouge avant, vert après.
 sur son iPhone. Batterie non jouée, à sa demande ; seule la suite de la TVA
 l'a été (9 sur 9).
 
+### Planche : voir un exemple de facture, avant de coder
+
+`appli/apercu-du-document.html`, sa demande du 26 septembre : un bouton qui
+montre le papier avec ses réglages et trois lignes factices à 20, 10 et 5,5 %.
+Deux places à trancher (A : Devis & factures ; B : Mon entreprise). Au style et
+aux couleurs de l'application, à sa demande. Ce qui est décidé pour le code :
+l'exemple sera **le vrai PDF** fabriqué par le même code, avec EXEMPLE en
+filigrane, et **sans consommer de numéro**. Rien n'est codé.
+
 ## 2026-09-25
 
 ### L'anthracnose se sépare en deux planches, le chêne et le hêtre

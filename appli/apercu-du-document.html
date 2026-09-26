@@ -1,0 +1,330 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Voir un exemple de facture</title>
+<style>
+  /* Sa demande du 26 septembre 2026 : « une fois qu'on remplit toutes les infos
+     concernant les devis facture, on a un bouton pour visualiser à quoi il
+     ressemblera, avec deux trois lignes factices avec des TVA différentes ».
+
+     Le papier reprend celui de `le-papier-devis-et-facture.html` (codé le
+     14 septembre). Dans l'application, l'exemple ne sera PAS un second dessin :
+     ce sera le vrai PDF, fabriqué par le même code que les vrais documents,
+     avec ses vrais réglages et trois lignes factices. Un aperçu dessiné à part
+     finirait par montrer autre chose que ce que le client reçoit. */
+  :root{
+    --cream:#f5f3ee; --card:#faf9f5; --ink:#1c1c1a; --inkSoft:#4a4a44; --muted:#8a8578;
+    --rust:#2f3b2f; --plein:#7d9a6d; --or:#B98B47; --line:rgba(28,28,26,0.12); --lineSoft:rgba(28,28,26,0.07);
+    --hors:#e6e3dc; --horsTexte:#4a4a44; --horsFort:#1c1c1a;
+    --papier:#ffffff; --encre:#1c1c1a; --encreDouce:#5a5a52; --gris:#8a8578; --filet:#d9d5cc; --filetDoux:#ebe8e1;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0}
+  /* Le style de l'application, pris à ses jetons (src/lib/design-tokens.ts) :
+     le crème, l'encre, l'or des intitulés, le vert des boutons pleins, les
+     capitales espacées de ses titres de rubrique, la serif de ses valeurs. */
+  body{background:var(--cream);color:var(--ink);
+       font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,Helvetica,sans-serif;
+       -webkit-text-size-adjust:100%;padding:0 0 40px}
+  .tete{max-width:430px;margin:0 auto;padding:30px 26px 0}
+  .tete .sur{margin:0;font:500 9.5px/1 ui-sans-serif,sans-serif;letter-spacing:.3em;text-transform:uppercase;color:var(--or)}
+  .tete h1{margin:12px 0 0;font:400 30px/1.08 ui-serif,Georgia,"Times New Roman",serif;letter-spacing:-.018em}
+  .tete p{margin:12px 0 0;font-size:14px;line-height:1.6;color:var(--inkSoft)}
+  .tete p b{color:var(--ink);font-weight:600}
+
+  .choix{max-width:430px;margin:18px auto 0;padding:0 26px;display:flex;flex-direction:column;gap:8px}
+  .choix .rang{display:flex;gap:10px}
+  .choix button{flex:1;min-height:48px;padding:0 12px;border-radius:999px;
+                border:1px solid var(--line);background:var(--card);color:var(--ink);
+                font:400 15px/1.1 ui-serif,Georgia,serif;cursor:pointer}
+  .choix button[aria-pressed="true"]{background:var(--plein);border-color:var(--plein);color:var(--card)}
+  .choix button:focus-visible{outline:2px solid var(--or);outline-offset:2px}
+
+  /* Le téléphone : l'écran tel qu'il est, barre d'onglets comprise */
+  .tel{position:relative;max-width:400px;margin:22px auto 0;background:var(--cream);border-radius:30px;
+       overflow:hidden;box-shadow:0 0 0 1px var(--line),0 18px 40px -18px rgba(20,18,14,.35);padding-bottom:62px;min-height:640px}
+  .entete{padding:26px 26px 0}
+  .entete .sur{margin:0 0 10px;font:500 9.5px/1 ui-sans-serif,sans-serif;letter-spacing:.3em;text-transform:uppercase;color:var(--or)}
+  .entete h1{margin:0;font:400 32px/1.02 ui-serif,Georgia,"Times New Roman",serif;letter-spacing:-0.018em;color:var(--ink)}
+  .retour{display:inline-flex;align-items:center;gap:10px;min-height:44px;margin:0 0 6px;border:0;background:none;padding:0;
+          color:var(--inkSoft);font:inherit;font-size:14px;cursor:pointer}
+  .retour .c,.chev{width:8px;height:8px;border-right:1.5px solid var(--muted);border-top:1.5px solid var(--muted);flex:none}
+  .retour .c{transform:rotate(-135deg)}
+  .chev{transform:rotate(45deg)}
+
+  /* Le sommaire de « Devis & factures », tel qu'il est aujourd'hui */
+  .sommaire{margin:18px 26px 0}
+  .sommaire .l{display:flex;align-items:center;gap:15px;min-height:60px;padding:15px 0;border-bottom:1px solid var(--line)}
+  .sommaire .l:last-child{border-bottom:0}
+  .sommaire .nom{flex:1;font:400 18px/1.25 ui-serif,Georgia,serif}
+  .ico{flex:none;width:22px;height:22px;border:1.6px solid var(--or);border-radius:50%;opacity:.55}
+  .phrase{margin:26px 26px 0;padding-top:18px;border-top:1px solid var(--line);font-size:13px;line-height:1.6;color:var(--inkSoft)}
+
+  /* Le bas de « Mon entreprise », comme sur ses captures */
+  .champ{margin:0 26px;padding:18px 0;border-bottom:1px solid var(--line)}
+  .champ .lib{font:500 11px/1 ui-sans-serif,sans-serif;letter-spacing:.3em;text-transform:uppercase;color:var(--inkSoft)}
+  .champ .val{margin-top:12px;font:400 20px/1.2 ui-serif,Georgia,serif;color:var(--ink)}
+
+  .bouton{display:block;width:calc(100% - 52px);margin:24px 26px 0;min-height:54px;border-radius:999px;border:0;
+          background:var(--plein);color:var(--card);font:400 18px/1 ui-serif,Georgia,serif;cursor:pointer}
+  .bouton:focus-visible{outline:2px solid var(--or);outline-offset:3px}
+  .avis{margin:0 26px;font-size:12.5px;line-height:1.65;color:var(--muted)}
+
+  .onglets{position:absolute;left:0;right:0;bottom:0;height:56px;background:var(--cream);border-top:1px solid var(--line);
+           display:flex;align-items:stretch;justify-content:space-around;
+           font:500 9.5px/1 ui-sans-serif,sans-serif;letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
+  .onglets span{display:flex;align-items:center;padding:0 4px;border-bottom:2px solid transparent}
+  .onglets span.ici{color:var(--ink);border-bottom-color:var(--or)}
+
+  /* ═══ LA FEUILLE, reprise du papier du 14 septembre ═══ */
+  .feuille{background:var(--papier);color:var(--encre);margin:14px 14px 22px;padding:26px 22px 24px;
+           border-radius:4px;box-shadow:0 10px 30px -8px rgba(20,18,14,.28),0 1px 2px rgba(20,18,14,.08);
+           font:9.6px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,Helvetica,sans-serif;
+           font-variant-numeric:tabular-nums;position:relative;overflow:hidden}
+  .feuille .filigrane{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;
+                      font:700 64px/1 ui-sans-serif,sans-serif;letter-spacing:.2em;color:rgba(185,139,71,.13);transform:rotate(-28deg)}
+  .feuille .haut{display:grid;grid-template-columns:1fr auto;gap:16px;align-items:start}
+  .feuille .emetteur .nom{font:400 17px/1.15 ui-serif,Georgia,"Times New Roman",serif;color:var(--encre)}
+  .feuille .emetteur .coord{margin-top:4px;color:var(--encreDouce);font-size:8.2px;line-height:1.45}
+  .feuille .refs{font-size:8.4px;min-width:120px}
+  .feuille .refs div{display:flex;justify-content:space-between;gap:12px;padding:3px 0;border-bottom:.6px solid var(--filetDoux)}
+  .feuille .refs div:last-child{border-bottom:0}
+  .feuille .refs b{font-weight:600;color:var(--gris);font-size:7px;letter-spacing:.14em;text-transform:uppercase;align-self:center}
+  .feuille .titre{margin:20px 0 0;padding:12px 0 11px;border-top:1.2px solid var(--encre);border-bottom:.6px solid var(--filet);
+                  display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+  .feuille .titre h2{margin:0;font:400 19px/1 ui-serif,Georgia,"Times New Roman",serif;letter-spacing:.22em;text-transform:uppercase}
+  .feuille .titre .no{font:400 12px/1 ui-serif,Georgia,serif;color:var(--encreDouce)}
+  .feuille .parties{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:14px 0 16px}
+  .feuille h3{margin:0 0 4px;font:600 7px/1 ui-sans-serif,sans-serif;letter-spacing:.2em;color:var(--or);text-transform:uppercase}
+  .feuille .parties p{margin:0;line-height:1.45}
+  .feuille table{width:100%;border-collapse:collapse;font-size:8.2px;table-layout:fixed}
+  .feuille th:first-child{width:34%}
+  .feuille th{text-align:left;font-size:6.3px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--gris);
+              padding:0 2px 5px;border-bottom:1px solid var(--encre);white-space:nowrap}
+  .feuille th.n,.feuille td.n{text-align:right}
+  .feuille th.c,.feuille td.c{text-align:center}
+  .feuille th.g,.feuille td.g{font-weight:700}
+  .feuille td{padding:5px 2px;border-bottom:.6px solid var(--filetDoux);vertical-align:top}
+  .feuille td.n{white-space:nowrap}
+  .feuille .bas{display:grid;grid-template-columns:1fr 160px;gap:16px;margin-top:14px;align-items:start}
+  .feuille .tva{font-size:8.2px}
+  .feuille .tva .r{display:grid;grid-template-columns:1.2fr .8fr 1fr;gap:6px;padding:3px 0;border-bottom:.6px solid var(--filetDoux)}
+  .feuille .tva .r.h{color:var(--gris);font-size:6.6px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;border-bottom:.8px solid var(--encre)}
+  .feuille .tva .r span:nth-child(n+2){text-align:right}
+  .feuille .totaux{font-size:9px}
+  .feuille .totaux .r{display:flex;justify-content:space-between;gap:8px;padding:2.5px 0}
+  .feuille .totaux .r span:last-child{white-space:nowrap}
+  .feuille .totaux .r.gras{font-weight:700}
+  .feuille .totaux .r.ttc{margin-top:6px;padding-top:7px;border-top:1.2px solid var(--encre);font:400 13px/1.2 ui-serif,Georgia,serif}
+  .feuille .totaux .r.ttc span:last-child{font-weight:700}
+  .feuille .et{margin:18px 0 5px;font:600 7px/1 ui-sans-serif,sans-serif;letter-spacing:.2em;color:var(--or);text-transform:uppercase}
+  .feuille .notes p{margin:0 0 3px;line-height:1.45}
+  .feuille .notes p.g{font-weight:600}
+  .feuille .mention{margin-top:12px;font-size:7.6px;color:var(--encreDouce);line-height:1.45}
+  .feuille .mention p{margin:0 0 3px}
+  .feuille .pied{margin-top:16px;padding-top:8px;border-top:.6px solid var(--filetDoux);display:flex;justify-content:space-between;gap:8px;font-size:6.8px;color:var(--gris)}
+  [hidden],.choix [hidden]{display:none}
+
+  .note{max-width:430px;margin:26px auto 0;padding:0 26px;font-size:13.5px;line-height:1.65;color:var(--inkSoft)}
+  .note b{color:var(--ink);font-weight:600}
+  .note h3{margin:28px 0 8px;font:500 11px/1 ui-sans-serif,sans-serif;letter-spacing:.3em;text-transform:uppercase;color:var(--inkSoft)}
+  .note table{width:100%;border-collapse:collapse}
+  .note td{padding:10px 8px 10px 0;border-bottom:1px solid var(--line);vertical-align:top}
+  .note td:first-child{width:38%;font:400 16px/1.3 ui-serif,Georgia,serif;color:var(--ink)}
+</style>
+</head>
+<body>
+
+<div class="tete">
+  <p class="sur">Planche du 26 septembre</p>
+  <h1>Voir un exemple de facture</h1>
+  <p>Un bouton qui ouvre <b>votre papier</b>, avec vos réglages et trois lignes factices à 20 %, 10 % et 5,5 %. Touchez le bouton vert. Deux places possibles : <b>dites A ou B</b>. Rien n’est codé.</p>
+</div>
+
+<div class="choix">
+  <div class="rang" id="choix-place">
+    <button data-place="a" aria-pressed="true">A : Devis &amp; factures</button>
+    <button data-place="b" aria-pressed="false">B : Mon entreprise</button>
+  </div>
+  <div class="rang" id="choix-regime">
+    <button data-regime="assujettie" aria-pressed="true">Assujettie</button>
+    <button data-regime="franchise" aria-pressed="false">Franchise en base</button>
+  </div>
+</div>
+
+<div class="tel">
+  <!-- L'écran de réglages, avec le bouton -->
+  <div id="ecran-reglage">
+    <div id="place-a">
+      <div class="entete">
+        <p class="sur">Réglages</p>
+        <h1>Devis &amp; factures</h1>
+      </div>
+      <div class="sommaire">
+        <div class="l"><span class="ico"></span><span class="nom">Ce qui s’imprime sur le devis</span><span class="chev"></span></div>
+        <div class="l"><span class="ico"></span><span class="nom">Mon message au client</span><span class="chev"></span></div>
+        <div class="l"><span class="ico"></span><span class="nom">Le numéro de mes documents</span><span class="chev"></span></div>
+        <div class="l"><span class="ico"></span><span class="nom">L’allure de mes devis</span><span class="chev"></span></div>
+      </div>
+      <button class="bouton" type="button" data-ouvrir>Voir un exemple</button>
+      <p class="phrase">Chaque devis garde <b style="color:var(--ink);font-weight:400">ce que ces réglages disaient le jour où il a été créé</b> : les corriger aujourd’hui ne change aucun document déjà fait.</p>
+    </div>
+
+    <div id="place-b" hidden>
+      <div class="entete">
+        <p class="sur">Réglages</p>
+        <h1>Mon entreprise</h1>
+      </div>
+      <div class="champ"><div class="lib">Téléphone</div><div class="val">06 12 34 56 78</div></div>
+      <div class="champ"><div class="lib">Adresse e-mail</div><div class="val">contact@edennature.fr</div></div>
+      <div class="champ"><div class="lib">IBAN</div><div class="val">FR76 3000 1000 0000</div></div>
+      <button class="bouton" type="button" data-ouvrir>Voir un exemple</button>
+    </div>
+    <div style="height:28px"></div>
+  </div>
+
+  <!-- L'exemple ouvert -->
+  <div id="ecran-exemple" hidden>
+    <div class="entete">
+      <button class="retour" type="button" id="retour"><span class="c"></span>Retour</button>
+      <p class="sur">Exemple</p>
+      <h1 id="h1">La facture</h1>
+    </div>
+    <div class="choix" style="margin-top:16px">
+      <div class="rang" id="choix-doc">
+        <button data-doc="devis" aria-pressed="false">Devis</button>
+        <button data-doc="facture" aria-pressed="true">Facture</button>
+      </div>
+    </div>
+
+    <div class="feuille">
+      <div class="filigrane">EXEMPLE</div>
+      <div class="haut">
+        <div class="emetteur">
+          <div class="nom">Eden Nature</div>
+          <div class="coord">SAS au capital de 1 500,00 €, RCS Avignon 912 345 678<br>12 chemin des Vignes, 84000 Avignon<br>06 12 34 56 78, contact@edennature.fr<br>SIRET 912 345 678 00019<span id="coord-tva"><br>N° TVA FR12 912345678</span></div>
+        </div>
+        <div class="refs" id="refs"></div>
+      </div>
+      <div class="titre"><h2 id="titre">Facture</h2><span class="no" id="numero"></span></div>
+      <div class="parties">
+        <div><h3>Client</h3><p>Client d’exemple<br>1 rue de l’Exemple<br>84000 Avignon</p></div>
+        <div><h3>Lieu des travaux</h3><p>1 rue de l’Exemple<br>84000 Avignon</p></div>
+      </div>
+      <table>
+        <thead><tr><th>Désignation</th><th class="n">Qté</th><th class="c">Unité</th><th class="n">P.U. HT</th><th class="n">Total HT</th><th class="c" id="th-tva">TVA %</th><th class="n g" id="th-ttc">Total TTC</th></tr></thead>
+        <tbody id="lignes"></tbody>
+      </table>
+      <div class="bas">
+        <div class="tva" id="bloc-tva">
+          <div class="r h"><span>Base HT</span><span>Taux</span><span>TVA</span></div>
+          <div id="bases"></div>
+        </div>
+        <div class="totaux" id="totaux"></div>
+      </div>
+      <p class="et">Notes / conditions</p>
+      <div class="notes" id="notes"></div>
+      <div class="mention" id="mention"></div>
+      <div class="pied"><span>Eden Nature, SIRET 912 345 678 00019, IBAN FR76 3000 1000 0000 0000 0000 000</span><span>Page 1/1</span></div>
+    </div>
+    <p class="avis">Rien n’est enregistré, rien n’est envoyé, aucun numéro n’est pris.</p>
+    <div style="height:22px"></div>
+  </div>
+  <div class="onglets"><span>Chantiers</span><span>Planning</span><span>Terminés</span><span>Paysage</span><span class="ici">Réglages</span></div>
+</div>
+
+<div class="note">
+  <h3>Ce que fera le bouton</h3>
+  <table>
+    <tr><td>Vos vrais réglages</td><td>votre nom, votre logo, votre allure, vos mentions légales, votre régime de TVA, votre numérotation, vos conditions. Changez un réglage, rouvrez l’exemple : il a changé.</td></tr>
+    <tr><td>Trois lignes factices</td><td>une à 20 %, une à 10 %, une à 5,5 %, pour voir les trois bases de TVA sous le tableau. Le client s’appelle « Client d’exemple ».</td></tr>
+    <tr><td>En franchise en base</td><td>les mêmes lignes, sans TVA, avec la mention de l’article 293 B. Touchez « Franchise en base » en haut pour le voir.</td></tr>
+    <tr><td>Le vrai PDF</td><td>dans l’application, c’est le PDF que reçoit le client, fabriqué par le même code, avec EXEMPLE en filigrane. Jamais un dessin à part, qui finirait par montrer autre chose.</td></tr>
+    <tr><td>Aucun numéro pris</td><td>le numéro montré est celui que porterait le prochain document, mais il n’est pas consommé : vos factures restent numérotées sans trou.</td></tr>
+    <tr><td>Devis ou facture</td><td>les deux se regardent, puisque c’est le même papier.</td></tr>
+  </table>
+  <h3>A ou B</h3>
+  <table>
+    <tr><td>A : Devis &amp; factures</td><td>sous les quatre lignes, là où se règle ce qui s’imprime. <b>Ma préférence</b> : c’est l’écran du papier.</td></tr>
+    <tr><td>B : Mon entreprise</td><td>en bas, après l’IBAN : là où vous venez de remplir le SIRET, les mentions et la TVA.</td></tr>
+  </table>
+</div>
+
+<script>
+  // Trois lignes factices, trois taux : c'est tout ce qu'il a demandé.
+  var LIGNES = [
+    { lib: "Ligne d’exemple à 20 %", q: 1, u: "forfait", pu: 250, tva: 20 },
+    { lib: "Ligne d’exemple à 10 %", q: 12, u: "m²", pu: 15, tva: 10 },
+    { lib: "Ligne d’exemple à 5,5 %", q: 3, u: "u", pu: 40, tva: 5.5 }
+  ];
+  var REGIME = "assujettie", DOC = "facture";
+  function id(x){ return document.getElementById(x); }
+  function eur(n){ return n.toLocaleString("fr-FR",{minimumFractionDigits:2,maximumFractionDigits:2})+" €"; }
+  function nb(n){ return n.toLocaleString("fr-FR",{maximumFractionDigits:2}); }
+  function r2(n){ return Math.round(n*100)/100; }
+
+  function rendre(){
+    var franchise = REGIME === "franchise", facture = DOC === "facture";
+    id("h1").textContent = facture ? "La facture" : "Le devis";
+    id("titre").textContent = facture ? "Facture" : "Devis";
+    id("numero").textContent = facture ? "n° F2026-000022" : "n° D2026-000015";
+    id("refs").innerHTML = facture
+      ? '<div><b>Date</b><span>26/09/2026</span></div><div><b>Échéance</b><span>à réception</span></div>'
+      : '<div><b>Date</b><span>26/09/2026</span></div><div><b>Validité</b><span>30 jours</span></div>';
+    id("coord-tva").hidden = franchise;
+    id("th-tva").hidden = franchise;
+    id("th-ttc").hidden = franchise;
+    id("bloc-tva").style.visibility = franchise ? "hidden" : "visible";
+
+    var ht = 0, parTaux = {};
+    var tb = id("lignes"); tb.innerHTML = "";
+    LIGNES.forEach(function(l){
+      var t = franchise ? 0 : l.tva, lht = r2(l.q*l.pu), lttc = r2(lht*(1+t/100));
+      ht += lht; parTaux[t] = r2((parTaux[t]||0)+lht);
+      var tr = document.createElement("tr");
+      tr.innerHTML = '<td>'+(franchise ? l.lib.replace(/ à .*$/, "") : l.lib)+'</td><td class="n">'+nb(l.q)+'</td><td class="c">'+l.u+'</td><td class="n">'+eur(l.pu)+'</td><td class="n">'+eur(lht)+'</td>'
+        + (franchise ? '' : '<td class="c">'+nb(t)+'</td><td class="n g">'+eur(lttc)+'</td>');
+      tb.appendChild(tr);
+    });
+    ht = r2(ht);
+    var taux = Object.keys(parTaux).map(Number).sort(function(a,b){return b-a}).map(function(t){ return {t:t, base:parTaux[t], tva:r2(parTaux[t]*t/100)}; });
+    var tvaT = r2(taux.reduce(function(s,x){ return s+x.tva; }, 0));
+    id("bases").innerHTML = franchise ? "" : taux.map(function(x){ return '<div class="r"><span>'+eur(x.base)+'</span><span>'+nb(x.t)+' %</span><span>'+eur(x.tva)+'</span></div>'; }).join("");
+    var t = ['<div class="r gras"><span>Total HT</span><span>'+eur(ht)+'</span></div>'];
+    if (!franchise) taux.forEach(function(x){ t.push('<div class="r"><span>TVA '+nb(x.t)+' %</span><span>'+eur(x.tva)+'</span></div>'); });
+    t.push('<div class="r ttc"><span>'+(franchise ? "Total" : "Total TTC")+'</span><span>'+eur(r2(ht+tvaT))+'</span></div>');
+    id("totaux").innerHTML = t.join("");
+
+    id("notes").innerHTML = '<p class="g">Moyens de paiement acceptés : virement, chèque.</p>'
+      + (facture ? '<p class="g">En cas de retard de paiement : pénalités au taux de trois fois le taux d’intérêt légal, et indemnité forfaitaire de 40 € pour frais de recouvrement.</p>' : '');
+    id("mention").innerHTML = franchise ? '<p>TVA non applicable, art. 293 B du CGI.</p>' : '';
+  }
+
+  function presser(groupe, b){
+    document.querySelectorAll("#"+groupe+" button").forEach(function(x){ x.setAttribute("aria-pressed","false"); });
+    b.setAttribute("aria-pressed","true");
+  }
+  document.querySelectorAll("#choix-place button").forEach(function(b){
+    b.onclick = function(){
+      presser("choix-place", b);
+      id("place-a").hidden = b.dataset.place !== "a";
+      id("place-b").hidden = b.dataset.place !== "b";
+      id("ecran-reglage").hidden = false; id("ecran-exemple").hidden = true;
+    };
+  });
+  document.querySelectorAll("#choix-regime button").forEach(function(b){
+    b.onclick = function(){ presser("choix-regime", b); REGIME = b.dataset.regime; rendre(); };
+  });
+  document.querySelectorAll("#choix-doc button").forEach(function(b){
+    b.onclick = function(){ presser("choix-doc", b); DOC = b.dataset.doc; rendre(); };
+  });
+  document.querySelectorAll("[data-ouvrir]").forEach(function(b){
+    b.onclick = function(){ id("ecran-reglage").hidden = true; id("ecran-exemple").hidden = false; rendre(); window.scrollTo({top:0}); };
+  });
+  id("retour").onclick = function(){ id("ecran-reglage").hidden = false; id("ecran-exemple").hidden = true; };
+  rendre();
+</script>
+</body>
+</html>
