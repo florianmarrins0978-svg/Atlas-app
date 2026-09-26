@@ -183,6 +183,11 @@
   .ttc b{font:600 17px/1 ui-sans-serif,sans-serif}
   .ttc .valeur{font:600 20px/1 ui-serif,Georgia,serif;font-variant-numeric:tabular-nums}
 
+  .apercu{margin-top:30px;padding-top:20px;border-top:1px solid var(--lineSoft);text-align:center}
+  .apercu button{border:0;background:none;padding:8px;cursor:pointer;font:500 14px/1 ui-sans-serif,sans-serif;color:var(--rust)}
+  .feuille-pdf{margin:18px 10px 0;padding:0 0 20px}
+  .feuille-pdf img{display:block;width:100%;height:auto;border-radius:4px;box-shadow:0 6px 22px rgba(20,18,14,.18)}
+  .feuille-pdf p{margin:12px 8px 0;font-size:13px;color:var(--muted);text-align:center}
   .plein{display:block;width:calc(100% - 36px);margin:20px 18px 0;min-height:52px;border:0;
          border-radius:999px;background:var(--plein);color:var(--surPlein);
          font:400 17px/1 ui-serif,Georgia,serif;cursor:pointer}
@@ -333,11 +338,26 @@
         <div class="lp"><span>TVA 20 %</span><span id="t-tva"></span></div>
         <div class="ttc"><b>Total TTC</b><span class="valeur" id="t-ttc"></span></div>
       </div>
+      <div class="apercu"><button type="button" data-aller="apercu">Aperçu du PDF</button></div>
     </div>
 
     <div class="collant">
       <button type="button" class="plein" id="envoyer">Envoyer à Mme Costa</button>
       <p class="manque" id="manque" hidden></p>
+    </div>
+  </section>
+
+  <!-- 2 bis. L'APERÇU DU PDF : sorti du VRAI moteur des devis
+       (`composerDocument`, `src/server/pdf/document-commun.ts`), titré
+       « CONTRAT D'ENTRETIEN », sur les prix de départ de la planche. -->
+  <section id="ecran-apercu" hidden>
+    <div class="entete">
+      <button class="retour" type="button" data-aller="contrat" aria-label="Revenir au contrat">‹</button>
+      <div style="flex:1"><h1>Aperçu</h1><p class="sur">Contrat d'entretien</p></div>
+    </div>
+    <div class="feuille-pdf">
+      <img src="contrat-d-entretien-apercu.jpg" alt="Le contrat d'entretien de Mme Costa, tel qu'il part en PDF" width="1190" height="1684">
+      <p>Avec les prix de départ de l'exemple.</p>
     </div>
   </section>
 
@@ -630,7 +650,7 @@ function jourSemaine(j) {
 
 /* ─── Navigation ─────────────────────────────────────────────────────── */
 function aller(ecran) {
-  ["client", "contrat", "planning"].forEach((e) => {
+  ["client", "contrat", "apercu", "planning"].forEach((e) => {
     document.getElementById(`ecran-${e}`).hidden = e !== ecran;
   });
   if (ecran === "client") dessinerFiche();
