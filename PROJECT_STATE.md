@@ -10,7 +10,7 @@
 Une ligne par agenda et un volet « Gérer » ; sur le Planning, la phrase de
 l'agenda se masque pour toujours (migration 0102). Sur la branche
 `claude/simplifier-mon-agenda-2lexkg`, en attente de la batterie qu'il
-déclenchera. `ARCHITECTURE.md` §417.
+déclenchera. `ARCHITECTURE.md` §418.
 
 ## CODÉ, PAS SUR `main` : L'ASSISTANT DÉBRIDÉ, ET QUI SE FERME D'UN GESTE (26 septembre 2026)
 
@@ -23,7 +23,7 @@ batterie à lui demander (`TODO.md`).
 
 Bouton « Voir un exemple » sous « Devis & factures » et en bas de « Mon
 entreprise » : la vraie facture, EXEMPLE en filigrane, trois lignes à 20, 10 et
-5,5 %, aucun numéro pris (`ARCHITECTURE.md` §417). Avec le « ; » de la
+5,5 %, aucun numéro pris (`ARCHITECTURE.md` §421). Avec le « ; » de la
 périodicité de TVA. Attend la batterie, sur son accord. L'exemple du devis
 n'est pas fait.
 
@@ -33,7 +33,7 @@ n'est pas fait.
 et offre « Augmenter les prix ». Migration `drizzle/0106_hausse_du_devis_repris.sql`.
 Branche `claude/client-disappearance-no-date-f26td1`. **Niveau 3 (migration,
 argent) : la batterie n'a PAS été jouée, à sa demande** ; ce qui l'a été est
-dans `HANDOVER.md`. `ARCHITECTURE.md` §417.
+dans `HANDOVER.md`. `ARCHITECTURE.md` §423.
 
 ## FAIT : MA TVA À LA CALCULETTE, SUR `main` (25 septembre 2026)
 

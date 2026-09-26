@@ -236,7 +236,7 @@ export type GenreAcquittable = (typeof GENRES_ACQUITTABLES)[number];
 
 /**
  * Ceux qui se rangent d'un « J'ai vu » écrit dans `rappels_vus` : les trois
- * d'avant, plus « Retour pas reçu » (26 septembre 2026, migration 0102).
+ * d'avant, plus « Retour pas reçu » (26 septembre 2026, migration 0104).
  *
  * **Le retour n'est pas dans `GENRES_ACQUITTABLES`**, et c'est voulu : ceux-là
  * se taisent le délai réglé dans « Notifications », puis reviennent. Le retour

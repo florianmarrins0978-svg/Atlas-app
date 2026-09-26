@@ -293,7 +293,7 @@ export async function exporterEntreprise(
       // Ce qu'il a déclaré « Il ne me paiera pas » : sans cela, les rappels
       // qu'il a fait taire reviendraient à la restauration.
       tx.select().from(facturesNonPayees).where(eq(facturesNonPayees.entrepriseId, e)),
-      // Les règlements retirés (migration 0102) : sans eux, un mois déjà
+      // Les règlements retirés (migration 0103) : sans eux, un mois déjà
       // déclaré qui a baissé ne dirait plus pourquoi une fois restauré.
       tx.select().from(reglementsRetires).where(eq(reglementsRetires.entrepriseId, e)),
       // Le modèle de fiche d'entretien (migration 0051). C'est SA saisie —

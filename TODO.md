@@ -17,7 +17,7 @@ vivante. Aujourd'hui les 10 ans ne tiennent que par la base elle-même.
 
 Sa planche `appli/retirer-un-acompte.html`, la B, codée sur la branche
 `claude/previous-years-access-eigwds` : le règlement retiré part dans
-`reglements_retires` (migration 0102), barré et daté à l'écran, « Remettre »
+`reglements_retires` (migration 0103), barré et daté à l'écran, « Remettre »
 le rend (`ARCHITECTURE.md` §417). **Pas encore sur `main`** : la batterie
 n'a pas été jouée, à sa demande ; seules les suites concernées l'ont été.
 
@@ -25,7 +25,7 @@ n'a pas été jouée, à sa demande ; seules les suites concernées l'ont été.
 
 ## « DERNIER DEVIS » CHANGE LES PRIX SANS LE DIRE (26 septembre 2026) : CODÉ, BATTERIE À JOUER AVANT `main`
 
-**Codé le 26 septembre** sur `claude/client-disappearance-no-date-f26td1` (`ARCHITECTURE.md` §417). Niveau 3 : la batterie entière n'a pas été jouée, à sa demande ; elle se joue avant `main`. Reste : « Reprendre le devis » sur un devis expiré n'a pas la bande.
+**Codé le 26 septembre** sur `claude/client-disappearance-no-date-f26td1` (`ARCHITECTURE.md` §423). Niveau 3 : la batterie entière n'a pas été jouée, à sa demande ; elle se joue avant `main`. Reste : « Reprendre le devis » sur un devis expiré n'a pas la bande.
 
 
 **Relevé par lui** : *« on ne peut pas reprendre un devis existant et mettre les
@@ -68,7 +68,7 @@ aussi). Il demande son propre chemin (`devis-pdf.ts`) ; à proposer ensuite.
 
 ## MON AGENDA, EN SIMPLE : A ET C CODÉES, PAS SUR `main` (26 septembre 2026)
 
-**Codé sur `claude/simplifier-mon-agenda-2lexkg`** (`ARCHITECTURE.md` §417).
+**Codé sur `claude/simplifier-mon-agenda-2lexkg`** (`ARCHITECTURE.md` §418).
 Niveau 3 (migration 0102). **Il a refusé toute batterie** : rien ne part sur
 `main` avant qu'il choisisse le moment de `npm run verifier:avant-livraison`.
 Déjà éprouvé : types, lint, suites rapides, `test-agenda-reglages-e2e` seule.
@@ -98,7 +98,7 @@ suffira pas : la panne reviendra chaque semaine.
 ## LE RAPPEL DU RETOUR : CODÉ, LA BATTERIE RESTE À JOUER (26 septembre 2026)
 
 Codé sur la branche `claude/access-titles-r9m6l8` avec « Accès » (Réglages,
-Équipe) : `ARCHITECTURE.md` §417, migration 0102. **Niveau 3** (schéma,
+Équipe) : `ARCHITECTURE.md` §419, migration 0104. **Niveau 3** (schéma,
 rayon de plus de dix écrans) : `npm run verifier:avant-livraison` avant `main`.
 Il a demandé qu'on ne lance aucune batterie ce jour-là ; elle attend son accord.
 
@@ -115,7 +115,7 @@ depuis avant ce lot ; le changer est une question d'écran à lui poser.
 Codé sur `claude/is-this-normal-6jbxjy` : les champs de ses outils déclarés,
 plusieurs recherches par tour sans doublon d'identifiant, réponses à 4096
 jetons, et quatre outils de lecture (factures, équipe, rappels, diagnostics).
-`ARCHITECTURE.md` §417, `docs/assistant-debride-verdict.md`.
+`ARCHITECTURE.md` §420, `docs/assistant-debride-verdict.md`.
 
 Niveau 3 : **batterie à lui demander**, il a interdit de la lancer sans son
 accord. Suites déjà vertes ici : test-schema-outils, test-appel-fournisseurs-ia,
@@ -13124,7 +13124,7 @@ pourquoi sont dans `ARCHITECTURE.md` §75, la réponse en langage courant dans
 | 1 | Migration : `fournisseur IN ('google','apple')`, mot de passe chiffré, agendas lus, calendrier d'écriture | `drizzle/0035_agenda_apple.sql` |
 | 2 | CalDAV : découverte, `calendar-query`, `PUT`, `DELETE` | `src/server/agenda/apple.ts` |
 | 3 | Lecture et écriture de l'iCalendar | `src/lib/ics.ts`, `src/lib/caldav.ts` |
-| 4 | L'écran, d'après la maquette | `src/app/reglages/agenda/MonAgendaClient.tsx` (réécrit le 26 septembre 2026, §417) |
+| 4 | L'écran, d'après la maquette | `src/app/reglages/agenda/MonAgendaClient.tsx` (réécrit le 26 septembre 2026, §418) |
 | 5 | Les chantiers montent et redescendent avec le planning | `src/server/repositories/agenda-apple.ts` |
 
 **CE QUI RESTE, et qui ne peut pas être fait ici :** aucun échange réel avec

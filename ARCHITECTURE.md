@@ -33475,14 +33475,14 @@ septembre faisait baisser la TVA de juillet, mois déjà déclaré, sans trace.
 
 | Décision | Pourquoi |
 |---|---|
-| le règlement retiré part dans `reglements_retires` (migration 0102), avec le même identifiant | dix endroits additionnent `paiements_facture` (reste dû, état, relevé, rappels, fiche client, PDF). Une colonne « retiré le » les obligeait tous à filtrer ; en oublier un comptait un règlement retiré dans la TVA sans erreur. Déplacé, il n'existe plus pour aucun calcul |
+| le règlement retiré part dans `reglements_retires` (migration 0103), avec le même identifiant | dix endroits additionnent `paiements_facture` (reste dû, état, relevé, rappels, fiche client, PDF). Une colonne « retiré le » les obligeait tous à filtrer ; en oublier un comptait un règlement retiré dans la TVA sans erreur. Déplacé, il n'existe plus pour aucun calcul |
 | « Remettre » le ramène avec la même borne que la saisie (`refusDuPaiement`) | la facture a pu être soldée entre-temps : la remettre la ferait payer deux fois |
 | la table n'accorde pas UPDATE à `atlas_app` | une trace ne se réécrit pas ; DELETE sert seulement à « Remettre » |
 | la TVA collectée du mois montre le retiré, barré, sans le compter | c'est le mois déclaré qui baisse : c'est là qu'il faut lire pourquoi |
 | `retirerReglementRecu` et « Facture acquittée » gardent leur suppression | ils ne touchent qu'une facture en BROUILLON, jamais déclarée |
 
 
-## §417 : Mon agenda, une ligne par agenda, et la phrase du Planning qui se masque
+## §418 : Mon agenda, une ligne par agenda, et la phrase du Planning qui se masque
 
 **Sa demande du 26 septembre 2026**, planche `appli/mon-agenda-simple.html` (A
 et C retenues). Trois décisions qui ne se lisent pas dans le diff :
@@ -33505,7 +33505,7 @@ et C retenues). Trois décisions qui ne se lisent pas dans le diff :
    `"proposer"` ou `null`. La panne n'a pas de « Masquer » : ce n'est pas un
    conseil qu'on écarte, c'est un raccordement qui a lâché.
 
-## §417 : Le rappel du retour d'intervention, et le jour qu'il vise
+## §419 : Le rappel du retour d'intervention, et le jour qu'il vise
 
 **Sa planche du 26 septembre 2026** (`appli/rappel-du-retour.html`) et ses
 réponses : A (une ligne sous le chantier), chaque soir, la carte chez lui, et
@@ -33527,7 +33527,7 @@ personne n'avait à raconter. Le dernier jour travaillé est exactement « le
 lendemain » de sa planche, et le lundi c'est encore le vendredi.
 
 **« J'ai vu » écrit dans `rappels_vus`** (genre `retour-pas-recu`, migration
-0102, qui ne fait qu'étendre la liste contrainte). Il fait taire les jours
+0104, qui ne fait qu'étendre la liste contrainte). Il fait taire les jours
 d'avant l'acquit ; un soir manqué plus tard revient. Ce genre n'entre PAS dans
 `GENRES_ACQUITTABLES` : ceux-là se taisent le délai réglé dans
 « Notifications », que le retour n'a pas. `GENRES_VUS` réunit les deux pour
@@ -33540,7 +33540,7 @@ ne montre pas.
 **Le téléphone ne sonne pas** : aucune notification n'existe (`TODO.md`, Web
 Push). Le rappel se voit en ouvrant l'application, et la planche le dit.
 
-## §417 : L'assistant débridé, ses outils se DÉCLARENT et ses appels se SUIVENT
+## §420 : L'assistant débridé, ses outils se DÉCLARENT et ses appels se SUIVENT
 
 **Sa capture du 26 septembre 2026** : « Huguette Groupiron » rendait « il faut
 au moins un mot du libellé », et « comment je supprime un client » ne trouvait
@@ -33578,7 +33578,7 @@ appels, identifiants uniques ; rouge sur l'ancien code),
 `test-assistant-lit-equipes-rappels-diagnostics-db` (isolation entre
 entreprises, sous `atlas_app`).
 
-## §417 : La facture d'exemple est la vraie fabrique, et elle ne prend aucun numéro
+## §421 : La facture d'exemple est la vraie fabrique, et elle ne prend aucun numéro
 
 Sa demande du 26 septembre 2026 : voir à quoi ressemble le document, avec trois
 lignes factices à des taux différents (planche `appli/apercu-du-document.html`,
@@ -33600,7 +33600,7 @@ pas appeler une fonction pure. `test-facture-d-exemple-db` compare le numéro
 montré à celui que reçoit ensuite la vraie facture : si les deux divergent, il
 rougit.
 
-## §417 : La sauvegarde se range par client et par chantier
+## §422 : La sauvegarde se range par client et par chantier
 
 **Sa capture du 26 septembre 2026** : l'archive téléchargée montrait des
 dossiers nommés par identifiant, parce que chaque fichier y portait sa clé de
@@ -33615,7 +33615,7 @@ stockage.
 | deux fichiers de même nom sont numérotés « (2) », comparés sans la casse | l'app Fichiers et Windows confondent « Photo » et « photo » : le second écraserait le premier |
 | `versionFormat` reste 1 | un champ ajouté ne casse aucun lecteur ; rien ne lisait les chemins du zip |
 
-## §417 : Le devis repris garde ses prix, et la hausse se recalcule depuis sa base
+## §423 : Le devis repris garde ses prix, et la hausse se recalcule depuis sa base
 
 **Sa décision du 26 septembre 2026, qui retire celle du 8 septembre.** « Dernier
 devis » reprenait aux tarifs du jour (« la 1 »), et l'écran n'en disait rien :

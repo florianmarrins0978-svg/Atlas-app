@@ -293,7 +293,7 @@ export async function soldera(ctx: Ctx, factureId: string, aujourdHui: string): 
  * juillet retiré en septembre faisait baisser un mois déjà déclaré, et plus
  * rien ne disait pourquoi. Sa planche (`appli/retirer-un-acompte.html`, « la
  * B ») : la ligne reste, barrée et datée. Le règlement DÉMÉNAGE dans
- * `reglements_retires` (migration 0102) : aucun total ne le compte plus, sans
+ * `reglements_retires` (migration 0103) : aucun total ne le compte plus, sans
  * qu'aucun calcul ait à le filtrer.
  */
 export async function retirerPaiement(ctx: Ctx, paiementId: string): Promise<void> {

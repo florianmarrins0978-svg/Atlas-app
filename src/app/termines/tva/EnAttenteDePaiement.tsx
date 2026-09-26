@@ -22,7 +22,7 @@ export type FactureAttendue = {
   reste: string;
   etat: "en_attente" | "partielle" | "soldee";
   paiements: { id: string; date: string; montant: string; origine: "saisi" | "reprise" | "banque" }[];
-  /** Les règlements retirés, gardés pour leur trace (migration 0102). */
+  /** Les règlements retirés, gardés pour leur trace (migration 0103). */
   retires: { id: string; date: string; montant: string; retireLe: string }[];
 };
 

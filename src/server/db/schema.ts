@@ -2246,7 +2246,7 @@ export const paiementsFacture = pgTable(
 );
 
 /**
- * Les règlements retirés d'une facture (migration 0102), gardés pour leur
+ * Les règlements retirés d'une facture (migration 0103), gardés pour leur
  * trace : sa planche du 26 septembre 2026, « la B ». Un règlement retiré
  * quitte `paiements_facture`, donc aucun total ne le compte plus, et
  * « Remettre » l'y ramène avec le même identifiant.

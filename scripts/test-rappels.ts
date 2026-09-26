@@ -321,7 +321,7 @@ essai("l'impayé n'est pas acquittable : il garde son propre moteur", () => {
   ]);
 });
 
-// « Retour pas reçu » se range d'un « J'ai vu » (migration 0102), mais il n'a
+// « Retour pas reçu » se range d'un « J'ai vu » (migration 0104), mais il n'a
 // pas de délai réglé : il ne doit jamais entrer dans la liste qui en cherche un.
 essai("le retour pas reçu se range, sans entrer chez ceux qui ont un délai", () => {
   assert.equal(estGenreVu("retour-pas-recu"), true);

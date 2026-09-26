@@ -49,7 +49,7 @@ nouveau), **Mettre à jour** ou **Garder les anciens**. Puis **Augmenter les
 prix** : + 5, 10, 30 % ou un taux tapé, sur les lignes reprises, prix unitaire
 arrondi au centime, sans cumul, jamais sur un prix tapé à la main. Migration
 0106 (quatre colonnes nulles, expand seul). Planche
-`appli/augmenter-un-devis-repris.html`, `ARCHITECTURE.md` §417.
+`appli/augmenter-un-devis-repris.html`, `ARCHITECTURE.md` §423.
 
 ### Le retour envoyé se rouvre depuis n'importe quelle journée du planning
 
@@ -74,7 +74,7 @@ mois suivant comme le patron.
 *Sa planche du jour, `appli/retirer-un-acompte.html`, « la B ».* La croix
 supprimait le règlement : un acompte de juillet retiré en septembre faisait
 baisser la TVA de juillet, déjà déclarée, sans laisser de trace. Le règlement
-retiré part maintenant dans `reglements_retires` (migration 0102) : aucun
+retiré part maintenant dans `reglements_retires` (migration 0103) : aucun
 total ne le compte plus, sans qu'aucun calcul ait à le filtrer
 (`ARCHITECTURE.md` §417). La ligne reste barrée et datée sur la facture en
 attente et dans la TVA collectée du mois ; « Remettre » la rend, refusé si la
@@ -113,7 +113,7 @@ vocales/`, avec des noms lisibles (« Photo 2026-09-12.jpg », « Devis
 2026-000001.pdf »). Le logo va dans `Entreprise/`, les tickets dans `Tickets de
 caisse/`, un diagnostic sans chantier dans `Sans chantier/`. La clé reste dans
 `donnees.json`, à côté du nouveau `chemin` : une reprise saura relier les deux.
-Règle pure : `src/lib/rangement-sauvegarde.ts` (`ARCHITECTURE.md` §417).
+Règle pure : `src/lib/rangement-sauvegarde.ts` (`ARCHITECTURE.md` §422).
 Contrôles : `test-rangement-sauvegarde.ts`, et `test-export-entreprise.ts` et
 `test-mes-donnees-e2e.ts` vus rouges sur l'ancien code (« chantiers/65165471-… »).
 
@@ -150,7 +150,7 @@ défaut. Le trimestre s'obtient sous condition. » Deux phrases, même place.
 `test-periodicite-tva-e2e` lit le fait (« mois … défaut »), pas la ponctuation.
 
 
-### Le rappel du retour d'intervention (migration 0102)
+### Le rappel du retour d'intervention (migration 0104)
 
 Sa planche du 26 septembre 2026, ses réponses : A, chaque soir, la carte chez
 lui. Quand « Demander une preuve » est allumé, le salarié voit « Retour à
@@ -158,7 +158,7 @@ envoyer » sous le chantier du jour au planning, jusqu'à l'envoi ; le patron
 voit « Retour pas reçu » sur son accueil pour le dernier jour travaillé sans
 retour, que « J'ai vu » range. Le sous-titre du réglage devient sa phrase.
 Évite : un réglage dont le sous-titre promettait un rappel qui n'existait pas.
-`ARCHITECTURE.md` §417.
+`ARCHITECTURE.md` §419.
 
 ### Réglages, Équipe : « Qui a accès » devient « Accès »
 
@@ -182,7 +182,7 @@ l'assistant l'aurait sinon envoyé chercher un mot qui n'est plus à l'écran.
   outil (la boucle de correction en fait) portaient le même, qu'Anthropic
   refuse, et le patron lisait « indisponible ». Chaque appel garde désormais
   son identifiant et ses paramètres ; les réponses passent de 1024 à 4096
-  jetons (`ARCHITECTURE.md` §417).
+  jetons (`ARCHITECTURE.md` §420).
 - **L'assistant lit les factures, les paiements, les impayés, l'équipe, les
   absences, les rappels et les diagnostics** (`LireFactures`, `LireEquipes`,
   `LireRappels`, `LireDiagnostics`). Lecture seule ; les montants viennent du

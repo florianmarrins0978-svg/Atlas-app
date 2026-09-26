@@ -18,7 +18,7 @@ interdit la batterie, et le lot est de niveau 3 (migration 0102). Pour livrer :
 lui demander le moment, jouer `npm run verifier:avant-livraison` dans le dossier
 du lot, puis pousser. **Piège à connaître** : débrancher Google efface ses
 identifiants ; c'est pourquoi la saisie reste accessible quand rien n'est
-configuré (§417).
+configuré (§418).
 
 ## L'ASSISTANT DÉBRIDÉ — 26 septembre 2026, PAS SUR `main`
 
@@ -30,14 +30,14 @@ configuré (§417).
 | **les nouveaux outils** | `lire-factures.ts`, `lire-equipes.ts`, `lire-rappels.ts`, `lire-diagnostics.ts` |
 | **le panneau** | toucher le gris ferme, croix de 44 px, 44 px de gris toujours visibles (`AssistantSidebar.tsx`) |
 | **le piège** | un outil appelé deux fois portait le même identifiant : Anthropic refuse la requête, le patron lit « indisponible » |
-| **le détail** | `ARCHITECTURE.md` §417, `docs/assistant-debride-verdict.md` |
+| **le détail** | `ARCHITECTURE.md` §420, `docs/assistant-debride-verdict.md` |
 
 ## VOIR UN EXEMPLE DE FACTURE — 26 septembre 2026
 
 Branche `claude/invoice-preview-mock-data-ti2n5y`. `src/app/reglages/VoirUnExemple.tsx`,
 `src/app/api/factures/exemple/pdf/route.ts`, `genererPdfFactureExemple` dans
 `src/server/repositories/factures.ts`, `src/lib/facture-d-exemple.ts`. Niveau 3 : batterie
-avant `main`, **uniquement sur son accord**. Détail : `ARCHITECTURE.md` §417.
+avant `main`, **uniquement sur son accord**. Détail : `ARCHITECTURE.md` §421.
 
 ## LA HAUSSE D'UN DEVIS REPRIS — 26 septembre 2026, PAS SUR `main`
 

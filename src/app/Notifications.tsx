@@ -317,7 +317,7 @@ function rappelVersCarte(r: RappelAffiche): Carte {
   }
   // **« Retour pas reçu », sa planche du 26 septembre 2026.** Il ne crie pas :
   // le travail est fait, c'est le récit qui manque. « J'ai vu » le range
-  // (migration 0102), et la suite mène au chantier dans le planning, là où le
+  // (migration 0104), et la suite mène au chantier dans le planning, là où le
   // retour se lit et s'envoie.
   if (r.genre === "retour-pas-recu") {
     return {
