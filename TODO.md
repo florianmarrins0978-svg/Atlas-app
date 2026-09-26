@@ -1,5 +1,28 @@
 # Prochaines tâches
 
+## ⏳ UNE PLANCHE À REGARDER : LE CONTRAT D'ENTRETIEN (26 septembre 2026)
+
+`appli/contrat-d-entretien.html`, planche 128. Sa demande après la comparaison
+avec Extrabat. **Une seule question : la facturation**, A (chaque mois le même
+montant, l'arrondi sur la dernière) ou B (après chaque passage) ; je défends la
+A. Proposé sans question : pas de date fixe, les passages du mois tombent le
+1er dans « Sans date » ; le contrat part chez le client comme un devis ; les
+prestations viennent de `MODELE_FOURNI`. **Rien n'est codé.** Une fois codé :
+niveau 3 (argent, migration). Question ouverte à lui poser ensuite :
+l'attestation fiscale des services à la personne.
+
+## 🔜 BRANCHER PENNYLANE : CHAQUE ARTISAN CONNECTE SON COMPTE (26 septembre 2026)
+
+Sa décision : *« Pennylane et toutes les applis compatibles avec la nôtre.
+L'utilisateur connecte son compte de facturation à notre appli, et après elles
+communiquent entre elles lors de l'envoi de la facture. »* `ARCHITECTURE.md`
+§417, `docs/A-FAIRE.md` point 6.
+
+**Bloqué par lui** : l'accès développeur Pennylane (sans lui, rien ne s'éprouve).
+**Trois questions à lui poser au moment de coder**, pas avant : quel numéro fait
+foi (celui d'Atlas ou celui de l'outil), quel PDF part chez le client, que fait
+l'envoi quand la connexion est coupée ou révoquée.
+
 ## 🔴 « DERNIER DEVIS » CHANGE LES PRIX SANS LE DIRE (26 septembre 2026)
 
 **Relevé par lui** : *« on ne peut pas reprendre un devis existant et mettre les

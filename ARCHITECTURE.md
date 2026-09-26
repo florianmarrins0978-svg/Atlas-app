@@ -33466,3 +33466,22 @@ faudrait savoir c'est une TVA à combien »*.
 **Réserve** : aux encaissements, un avoir émis après un acompte change les
 parts par taux de cet acompte (pas son total), comme il change déjà sa TVA
 (`TODO.md`).
+
+## §417 : La facturation électronique passe par le compte de l'artisan
+
+**Sa décision du 26 septembre 2026** : *« on a dit Pennylane et toutes les
+applis compatibles avec la nôtre. L'idée, c'est que l'utilisateur connecte son
+compte de facturation à notre appli, et qu'après elles communiquent entre elles
+lors de l'envoi de la facture. »*
+
+| Décision | Pourquoi |
+|---|---|
+| chaque entreprise connecte SON compte, une fois, dans Réglages | c'est l'artisan qui émet et qui porte la responsabilité légale ; un compte Eden Nature pour tous ferait d'Atlas l'émetteur de factures qui ne sont pas les siennes |
+| la transmission part à l'envoi de la facture | le seul geste qui fait d'un brouillon une facture ; transmettre avant enverrait des brouillons à l'outil comptable |
+| Pennylane d'abord, les autres outils un par un | chaque outil a son API ; un connecteur par outil, derrière une même interface, pour que l'écran de la facture ne connaisse aucun d'eux |
+
+Ce qui ne change pas : Atlas **prépare**, l'outil **émet** (`AGENT.md` §6,
+`QUESTIONS.md` §11). Rien n'est codé. Ce que le code devra tenir, et qui relève
+de la gravité (niveau 3) : les jetons d'accès de l'artisan chiffrés en base et
+isolés par entreprise, et un envoi qui refuse en le disant quand la connexion
+est coupée, jamais une facture partie d'un seul côté en silence.

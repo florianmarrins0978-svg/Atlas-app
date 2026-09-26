@@ -776,10 +776,19 @@ c'est ce que vous lui payez.
 
 ### Où ça en est
 
-**Vous n'avez aucun logiciel de comptabilité aujourd'hui** (réponse du 8 août
-2026). La question devient donc : lequel prendre. Elle est ouverte au point 6
-de [`A-FAIRE.md`](A-FAIRE.md), avec ce que je peux préparer et ce que vous seul
-pouvez signer.
+**La réponse a changé le 26 septembre 2026.** Ce qui suit, écrit le 8 août,
+supposait qu'Atlas choisirait UN outil pour tous. Votre décision : *« Pennylane
+et toutes les applis compatibles avec la nôtre. L'utilisateur connecte son
+compte de facturation à notre appli, et après elles communiquent entre elles
+lors de l'envoi de la facture. »*
+
+Chaque artisan branche donc **son propre compte**, une fois, dans Réglages ; à
+l'envoi d'une facture, Atlas la transmet et c'est son outil qui l'émet.
+Pennylane d'abord, les autres ensuite, un par un. Ce qu'il vous reste à faire
+est au point 6 de [`A-FAIRE.md`](A-FAIRE.md).
+
+*Le 8 août :* **vous n'aviez aucun logiciel de comptabilité** ; la question
+était alors « lequel prendre ».
 
 **Ce que ça ne bloque pas** : ni l'essai d'Atlas, ni sa finition. Comme les
 autres points de `A-FAIRE.md`, cela bloque le fait de le confier à un vrai

@@ -8,6 +8,18 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-26
 
+### Le contrat d'entretien, en planche ; la facturation électronique, tranchée
+
+Planche 128, `appli/contrat-d-entretien.html` : les passages d'un contrat se
+choisissent par mois et par fréquence, sur ses prestations d'entretien, et
+tombent dans « Sans date » le 1er du mois. Rien n'est codé ; la facturation
+(chaque mois ou après chaque passage) attend sa réponse.
+
+Sa décision sur la facturation électronique : chaque artisan connecte SON
+compte Pennylane (puis d'autres outils compatibles), et Atlas lui transmet la
+facture à l'envoi. Elle remplace l'idée d'un outil choisi pour tous.
+`ARCHITECTURE.md` §417.
+
 ### Le retour envoyé se rouvre depuis n'importe quelle journée du planning
 
 **Sa plainte**, sur la fiche de Julien posée au lundi 28 : *« je peux pas

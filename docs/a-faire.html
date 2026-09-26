@@ -388,6 +388,39 @@
 <a class="retour" href="#sommaire">↑ Sommaire</a>
 <p><strong>Qui : le patron</strong>, pour le choix, le compte et la signature. Le branchement se code ensuite.</p>
 <p><em>Ajouté le 8 août 2026, après votre question « qu'est-ce que tu dois faire sur la plateforme de facturation ? ». La réponse longue est dans <a href="QUESTIONS.md" target="_blank" rel="noopener"><code>QUESTIONS.md</code></a> question 11 ; ce point ne garde que ce qui attend une décision.</em></p>
+<h3 id="tranché-le-26-septembre-2026--chaque-artisan-branche-son-compte">Tranché le 26 septembre 2026 : chaque artisan branche SON compte</h3>
+<p>Votre réponse : <em>« on a dit Pennylane et toutes les applis compatibles avec la nôtre. L'idée, c'est que l'utilisateur connecte son compte de facturation à notre appli, et qu'après elles communiquent entre elles lors de l'envoi de la facture. »</em></p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td><strong>qui choisit l'outil</strong></td>
+<td>chaque artisan, pour lui-même. Atlas ne choisit plus pour tout le monde</td>
+</tr>
+<tr>
+<td><strong>le premier branché</strong></td>
+<td>Pennylane</td>
+</tr>
+<tr>
+<td><strong>les suivants</strong></td>
+<td>les autres outils qui ont une API (Evoliz, Tiime, Sellsy, Abby…), un par un : chacun a la sienne</td>
+</tr>
+<tr>
+<td><strong>le geste de l'artisan</strong></td>
+<td>une fois, dans Réglages : « Connecter mon compte », il se connecte chez Pennylane et accepte</td>
+</tr>
+<tr>
+<td><strong>quand ça parle</strong></td>
+<td>à l'envoi de la facture : Atlas transmet, l'outil émet</td>
+</tr>
+</tbody></table></div>
+<p><strong>Ce qui reste à vous, et à vous seul :</strong></p>
+<ol>
+<li><strong>Ouvrir l'accès développeur chez Pennylane</strong> (programme partenaires ou intégrations), pour qu'Atlas ait le droit de demander à un artisan la connexion de son compte. Sans cet accès, rien ne peut se coder ni s'éprouver. <em>Je ne peux pas vérifier d'ici ce que Pennylane exige pour l'ouvrir : le réseau de cet environnement refuse leurs pages.</em></li>
+<li><strong>Le compte d'Eden Nature elle-même</strong>, pour vos propres factures : c'est aussi le compte sur lequel le branchement s'éprouvera en premier.</li>
+</ol>
+<p><strong>Ce qui est à nous, et s'inscrit dans <code>TODO.md</code> :</strong> le branchement, et trois questions qu'il faudra vous poser au moment de le coder (quel numéro fait foi, quel PDF part chez le client, que faire quand la connexion est coupée).</p>
 <h3 id="ce-qui-est-déjà-décidé-et-ne-se-rouvre-pas">Ce qui est déjà décidé, et ne se rouvre pas</h3>
 <p><strong>Atlas prépare les factures, il ne les émet pas au sens légal.</strong> Décision du 31 juillet 2026, inscrite comme définitive dans <a href="AGENT.md" target="_blank" rel="noopener"><code>AGENT.md</code></a> §6 et <a href="MVP.md" target="_blank" rel="noopener"><code>MVP.md</code></a> — « hors périmètre définitivement, pas <em>pas encore</em> ».</p>
 <p>Une facture non conforme n'est pas un défaut d'affichage : c'est un risque légal pour l'artisan, et une numérotation cassée se traîne sur tout un exercice. On se branche par <strong>API</strong> sur un outil dont c'est le métier.</p>
