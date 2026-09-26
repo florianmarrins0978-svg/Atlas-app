@@ -11,6 +11,38 @@ rouges de la même façon des deux côtés.
 | `test-aucun-tiret` | dix tirets ou points médians dans `appli/essais.html` (l. 255 à 264), `appli/fiche-anthracnose-du-hetre.html` (l. 78, 79) et `appli/fiche-chalarose-du-frene.html` (l. 46, 55, 67) : à réécrire en phrases, par la session des fiches |
 | `test-pas-la-ce-jour-e2e` | le test cherche le 1er octobre dans le calendrier du mois affiché, qui est septembre : il dépend de la date du jour et rougit en fin de mois. C'est le test qui est à corriger, pas l'écran |
 
+## ⏳ UNE PLANCHE À REGARDER : VOIR UN EXEMPLE DE FACTURE (26 septembre 2026)
+
+`appli/apercu-du-document.html`. Sa réponse attendue : **A** (bouton sous
+« Devis & factures ») ou **B** (bas de « Mon entreprise »). Rien n'est codé.
+Au codage : le vrai PDF (`src/server/pdf/`) nourri de ses réglages et de trois
+lignes factices (20, 10, 5,5 %), filigrane EXEMPLE, **aucun numéro consommé**,
+franchise en base rendue telle quelle (mention 293 B). Niveau 3 (argent).
+
+## MON AGENDA, EN SIMPLE : A ET C RETENUES, À CODER (26 septembre 2026)
+
+**Sa réponse du 26 septembre : « A », et C.** Précision donnée en même temps :
+*« une fois qu'on a choisi masquer, faut pas qu'il reste de phrase »* ; rien ne
+reste à la place, aucun lien pour la faire revenir. Le choix « masqué » se range
+dans le compte (probablement une colonne, donc une migration : niveau 3).
+
+Sa demande, capture à l'appui (Google en panne sur `invalid_grant`) : *« trop
+de mots, trop compliqué, il faut qu'elle soit hyper simple »*. Planche
+`appli/mon-agenda-simple.html` : **A**, une ligne par agenda (état en deux
+mots, un bouton) ; **B**, un seul voyant et le bouton qui répare. Pause,
+débrancher passent dans un volet « Gérer » ; le JSON de Google quitte l'écran.
+**C**, le bandeau du Planning (`PlanningClient.tsx`, `ouvertes.agenda`) : jamais
+relié, une phrase avec « Ouvrir » et « Masquer », masquée pour toujours (le choix
+se range dans le COMPTE, pas dans le navigateur) ; en pause, rien ; en panne,
+toujours là, sans « Masquer ». **Les identifiants Google quittent l'écran** (sa
+décision du 26 septembre) : Atlas porte les siens sur le serveur, ce que
+`configurationGoogle()` sait déjà lire. **Rien n'est codé.**
+
+**À vérifier avant de coder, hors planche :** `invalid_grant` à répétition est
+le symptôme classique d'un projet Google laissé en mode « Test » (jetons
+expirés au bout de sept jours). Si c'est le cas, simplifier l'écran ne
+suffira pas : la panne reviendra chaque semaine.
+
 ## ⏳ UNE PLANCHE À REGARDER — FICHE 6, LA CHALAROSE DU FRÊNE (25 septembre 2026)
 
 `appli/fiche-chalarose-du-frene.html`, liée depuis `appli/essais.html`. **Sa
