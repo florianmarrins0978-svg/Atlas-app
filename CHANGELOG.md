@@ -13,9 +13,14 @@ Format : le plus récent en tête.
 Sa demande : une vidéo courte pour commercialiser l'appli, aux paysagistes et
 élagueurs d'abord. `appli/video-promo.html` joue une animatique de 42 s en
 9:16, lisible sans le son, avec deux accroches (A, B) et le script plan par
-plan. Rien n'est tourné ni codé dans `src/`. Les écrans y sont dessinés pour
-caler le rythme ; la vraie vidéo filmera l'application sur le jeu de
-démonstration (Playwright), puis un montage en MP4.
+plan. Rien n'est tourné ni codé dans `src/`.
+
+**Corrigé le même jour, sur sa remarque** (*« les photos ne sont pas du tout
+celles de l'appli ! »*) : la première version dessinait des écrans en CSS. Les
+plans montrent désormais des captures de l'application servie
+(`appli/video-promo/`), sur un jeu de démonstration de paysagiste monté dans la
+base locale jetable de la session : dictée, vrai PDF du devis, page du client,
+planning, chantier à facturer, diagnostic du platane, vrai plan d'arrosage.
 
 ### Le retour envoyé se rouvre depuis n'importe quelle journée du planning
 

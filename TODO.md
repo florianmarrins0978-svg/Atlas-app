@@ -8,6 +8,11 @@ renvoie, et s'il fournit 3 à 4 s filmées sur un chantier. Ensuite : filmer les
 vrais écrans sur le jeu de démonstration, monter le MP4 muet, puis sa voix et
 sa musique. Pas encore sur `main`, donc pas encore publiée.
 
+Vu en capturant, à vérifier : sur le jeu de démonstration, la page du devis
+ENVOYÉ côté patron (`/chantiers/<id>/devis-complet`) affiche 0,00 € par ligne
+et au total, alors que son PDF porte 2 808,00 €. Peut venir du seed seul
+(lignes de prix non reprises) ; pas regardé plus loin.
+
 ## 🔴 « DERNIER DEVIS » CHANGE LES PRIX SANS LE DIRE (26 septembre 2026)
 
 **Relevé par lui** : *« on ne peut pas reprendre un devis existant et mettre les

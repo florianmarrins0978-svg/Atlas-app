@@ -12,19 +12,25 @@
     faudrait une vidéo assez courte pour la promouvoir ». Cible : paysagistes
     et élagueurs d'abord, « mais en vrai tout le monde peut s'en servir ».
 
-    Cette planche est l'étape 2 : le script et le story-board, joués en
-    animatique dans un cadre de téléphone. Rien n'est tourné, rien n'est codé
-    dans src/. La vraie vidéo reprendra les VRAIS écrans, filmés sur le jeu de
-    démonstration ; les écrans dessinés ici ne servent qu'à caler le rythme.
+    Étape 2 : le script et le story-board, joués en animatique dans un cadre de
+    téléphone. Vertical 9:16, 42 s, lisible SANS le son (la plupart des vidéos
+    se regardent muettes dans un fil) : les sous-titres sont incrustés.
 
-    Format retenu par défaut : vertical 9:16, 42 s, lisible SANS le son (la
-    plupart des vidéos se regardent muettes dans un fil). Les sous-titres sont
-    donc incrustés, et la voix off ne fait que doubler ce qu'on lit.
+    **LES IMAGES SONT CELLES DE L'APPLICATION, JAMAIS DESSINÉES.** Sa
+    correction du 26 septembre : « les photos ne sont pas du tout celles de
+    l'appli ! ». La première version dessinait des écrans en CSS ; celle-ci
+    montre des captures de l'application servie, sur un jeu de démonstration
+    de paysagiste (Les Jardins de Loire, clients fictifs), dans video-promo/.
+    Le devis est son vrai PDF ; le diagnostic, la capture déjà publiée ; le
+    plan d'arrosage, le vrai composant du dessin (capture-plan-arrosage.ts).
+    Deux écrans ne se produisent pas sans clé d'IA sur ce poste : le devis
+    rédigé à l'écran depuis la dictée, et le diagnostic d'une photo prise ;
+    ceux-là se filment sur son espace.
   */
   :root{
     --bone:#f5f3ee; --cream:#faf9f5; --paper:#ece9e1;
     --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
-    --pine:#2f3b2f; --pine-soft:#4f5f4c; --or:#B98B47; --line:rgba(28,28,26,.12);
+    --pine:#2f3b2f; --or:#B98B47; --line:rgba(28,28,26,.12);
   }
   @media (prefers-color-scheme: dark){
     :root{ --bone:#171613; --cream:#1e1c18; --paper:#262420; --ink:#e9e5dc;
@@ -38,7 +44,6 @@
   h1{margin:4px 0 6px;font:500 30px/1.15 Georgia,serif}
   .chapo{margin:0 0 20px;color:var(--ink-soft);font-size:14.5px}
 
-  /* Le choix de l'accroche */
   .choix{display:flex;gap:8px;margin-bottom:14px}
   .choix button{flex:1;padding:10px 8px;border:1px solid var(--line);border-radius:12px;
        background:var(--cream);color:var(--ink);font:inherit;font-size:13px;cursor:pointer}
@@ -46,105 +51,44 @@
 
   /* LE TÉLÉPHONE : un cadre 9:16, ce que verra le fil Instagram ou Facebook */
   .ecran{position:relative;width:100%;max-width:340px;aspect-ratio:9/16;margin:0 auto;
-         border-radius:28px;overflow:hidden;background:#1c1c1a;
+         border-radius:28px;overflow:hidden;background:#f5f3ee;
          box-shadow:0 18px 50px rgba(0,0,0,.28)}
   .scene{position:absolute;inset:0;opacity:0;transition:opacity .35s;display:flex;
          flex-direction:column;align-items:center;justify-content:center;padding:26px 20px}
   .scene.on{opacity:1}
   .fond-pin{background:#2f3b2f;color:#faf9f5}
-  .fond-os{background:#f5f3ee;color:#1c1c1a}
-  .fond-nuit{background:#1c1c1a;color:#faf9f5}
+  .fond-os{background:#f5f3ee;padding:0}
+  .fond-nuit{background:#1c1c1a;padding:0}
+
+  /* Une capture de l'application, à sa largeur entière et jamais rognée sur
+     les côtés : un écran coupé ne se reconnaît plus. Le bas du cadre reste au
+     fond de l'appli, sous le sous-titre. */
+  .capture{position:absolute;left:0;top:0;width:100%;height:auto}
+  .capture.puis{opacity:0}
+  .scene.on .capture.puis{animation:paraitre .5s ease both 3s}
+  /* Le devis PDF, posé comme une feuille sur le fond */
+  .feuille{position:absolute;left:12px;top:70px;width:calc(100% - 24px);border-radius:6px;
+           box-shadow:0 10px 30px rgba(0,0,0,.18)}
+  .scene.on .feuille{animation:poser .7s ease both}
+  @keyframes poser{from{opacity:0;transform:translateY(30px) scale(.96)}to{opacity:1;transform:none}}
 
   .sous-titre{position:absolute;left:14px;right:14px;bottom:26px;text-align:center;
        font:600 19px/1.3 -apple-system,"Segoe UI",Roboto,sans-serif;
-       color:#faf9f5;background:rgba(28,28,26,.78);padding:9px 12px;border-radius:12px}
+       color:#faf9f5;background:rgba(28,28,26,.82);padding:9px 12px;border-radius:12px;z-index:2}
   .scene.on .sous-titre{animation:monte .5s ease both .15s}
   @keyframes monte{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
-  @keyframes paraitre{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  @keyframes paraitre{from{opacity:0}to{opacity:1}}
 
-  /* Scène 1 : l'accroche */
   .gros{font:500 30px/1.2 Georgia,serif;text-align:center}
   .or{color:#C9A15E}
   .scene.on .apres{animation:paraitre .5s ease both 1.8s}
 
-  /* Un faux téléphone dans le téléphone : la carte d'écran d'Atlas */
-  .carte{width:100%;background:#faf9f5;border-radius:18px;padding:16px;color:#1c1c1a;
-         box-shadow:0 6px 20px rgba(0,0,0,.12)}
-  .carte h3{margin:0 0 10px;font:500 17px/1.2 Georgia,serif}
-  .etiquette{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:#8a8578;margin-bottom:6px}
-
-  /* Scène 2 : la dictée */
-  .micro{width:92px;height:92px;border-radius:50%;background:#B98B47;margin:10px auto 14px;
-         position:relative}
-  .micro::before{content:"";position:absolute;inset:-10px;border-radius:50%;
-         border:2px solid #B98B47;opacity:.5}
-  .scene.on .micro::before{animation:pouls 1.4s ease-out infinite}
-  @keyframes pouls{from{transform:scale(.9);opacity:.7}to{transform:scale(1.35);opacity:0}}
-  .micro::after{content:"";position:absolute;left:37px;top:24px;width:18px;height:30px;
-         border-radius:9px;background:#faf9f5}
-  .onde{display:flex;gap:4px;justify-content:center;align-items:center;height:34px}
-  .onde i{width:4px;border-radius:2px;background:#2f3b2f;height:8px}
-  .scene.on .onde i{animation:onde .9s ease-in-out infinite alternate}
-  .onde i:nth-child(2n){animation-delay:.2s!important}.onde i:nth-child(3n){animation-delay:.45s!important}
-  @keyframes onde{from{height:6px}to{height:30px}}
-  .dicte{font-size:13.5px;color:#4a4a44;font-style:italic;margin-top:10px;min-height:60px}
-
-  /* Scène 3 : le devis rédigé */
-  .ligne{display:flex;justify-content:space-between;gap:10px;font-size:13px;
-         padding:7px 0;border-bottom:1px solid rgba(28,28,26,.1)}
-  .ligne b{font-variant-numeric:tabular-nums;white-space:nowrap}
-  .scene.on .ligne{animation:paraitre .4s ease both}
-  .scene.on .ligne:nth-child(3){animation-delay:.5s}.scene.on .ligne:nth-child(4){animation-delay:1s}
-  .scene.on .ligne:nth-child(5){animation-delay:1.5s}.scene.on .total{animation:paraitre .4s ease both 2.1s}
-  .total{display:flex;justify-content:space-between;margin-top:10px;font:500 18px Georgia,serif}
-
-  /* Scène 4 : le client choisit */
-  .jours{display:flex;gap:8px;margin:12px 0}
-  .jour{flex:1;border:1px solid rgba(28,28,26,.15);border-radius:12px;padding:8px 4px;text-align:center;font-size:12px}
-  .jour b{display:block;font-size:18px}
-  .scene.on .jour.pris{animation:prendre .4s ease both 1.6s}
-  @keyframes prendre{to{background:#2f3b2f;color:#faf9f5;border-color:#2f3b2f}}
-  .bouton{display:block;text-align:center;background:#2f3b2f;color:#faf9f5;border-radius:12px;
-          padding:11px;font-size:14px;font-weight:600}
-  .scene.on .bouton.appui{animation:appui .3s ease 2.4s 2 alternate}
-  @keyframes appui{to{transform:scale(.95);background:#B98B47}}
-
-  /* Scène 5 : planning et facture */
-  .plan{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin-bottom:12px}
-  .plan span{height:44px;border-radius:8px;background:#ece9e1;font-size:10px;padding:4px;color:#8a8578}
-  .scene.on .plan span.ch{animation:remplir .4s ease both .6s}
-  @keyframes remplir{to{background:#2f3b2f;color:#faf9f5}}
-  .coche{display:inline-block;width:22px;height:22px;border-radius:50%;background:#B98B47;
-         vertical-align:-5px;margin-right:6px;opacity:0}
-  .scene.on .coche{animation:paraitre .3s ease both 2.8s}
-
-  /* Scène 6 : le métier */
-  .trio{display:grid;gap:10px;width:100%}
-  .tuile{display:flex;align-items:center;gap:12px;background:#faf9f5;color:#1c1c1a;
-         border-radius:14px;padding:12px}
-  .scene.on .tuile{animation:paraitre .4s ease both}
-  .scene.on .tuile:nth-child(2){animation-delay:1.3s}.scene.on .tuile:nth-child(3){animation-delay:2.6s}
-  .vignette{width:52px;height:52px;border-radius:10px;flex:none;position:relative;overflow:hidden}
-  .feuille{background:#5f7d45}
-  .feuille::before,.feuille::after{content:"";position:absolute;border-radius:50%;background:#7a5230}
-  .feuille::before{width:14px;height:10px;left:10px;top:14px}.feuille::after{width:10px;height:12px;left:28px;top:28px}
-  .plan-eau{background:#e3ebe0}
-  .plan-eau::before{content:"";position:absolute;inset:10px;border:2px solid #2f3b2f;border-radius:3px}
-  .plan-eau::after{content:"";position:absolute;left:14px;top:14px;width:24px;height:24px;border-radius:50%;
-         border:2px dashed #3d7fb0}
-  .ticket{background:#fff;border:1px solid #ddd}
-  .ticket::before{content:"";position:absolute;left:10px;right:10px;top:12px;height:28px;
-         background:repeating-linear-gradient(#bbb 0 2px,transparent 2px 7px)}
-  .tuile p{margin:0;font-size:13px;line-height:1.35}.tuile p b{display:block;font-size:14px}
-
-  /* Scène 7 : la fin */
   .marque{font:500 44px/1 Georgia,serif;letter-spacing:.02em}
   .accroche{margin:12px 0 22px;text-align:center;font-size:16px;color:#e6e1d6}
   .offre{background:#B98B47;color:#1c1c1a;border-radius:14px;padding:12px 16px;text-align:center;font-weight:600}
   .offre small{display:block;font-weight:400;font-size:13px;margin-top:2px}
   .adresse{margin-top:14px;font-size:14px;color:#C9A15E}
 
-  /* Les commandes */
   .barre{max-width:340px;margin:12px auto 0;height:4px;background:var(--paper);border-radius:2px;overflow:hidden}
   .barre i{display:block;height:100%;width:0;background:var(--or)}
   .commandes{display:flex;justify-content:center;gap:10px;margin:10px 0 24px}
@@ -152,7 +96,6 @@
        background:var(--cream);color:var(--ink);font:inherit;font-size:14px;cursor:pointer}
   .commandes .temps{align-self:center;font-variant-numeric:tabular-nums;color:var(--muted);font-size:13px}
 
-  /* Le script */
   h2{font:500 21px/1.2 Georgia,serif;margin:26px 0 10px}
   .plan-script{border:1px solid var(--line);border-radius:14px;overflow:hidden}
   .plan-script button{display:block;width:100%;text-align:left;border:0;border-bottom:1px solid var(--line);
@@ -172,7 +115,7 @@
 <div class="page">
   <p class="sur">Atlas</p>
   <h1>La vidéo, en brouillon</h1>
-  <p class="chapo">42 secondes, en vertical, lisible sans le son. Touchez une accroche, puis Lecture.</p>
+  <p class="chapo">42 secondes, en vertical, lisible sans le son. Les écrans sont ceux de l’appli. Touchez une accroche, puis Lecture.</p>
 
   <div class="choix" role="group" aria-label="Accroche">
     <button type="button" data-accroche="A" aria-pressed="true">A : le temps perdu</button>
@@ -186,56 +129,29 @@
     </section>
 
     <section class="scene fond-os" data-debut="4">
-      <div class="carte">
-        <div class="etiquette">Sur le chantier</div>
-        <div class="micro"></div>
-        <div class="onde"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
-        <p class="dicte">« Élagage d’un chêne de quinze mètres chez madame Martin, deux jours à deux, évacuation des branches. »</p>
-      </div>
+      <img class="capture" src="video-promo/dictee.jpg" alt="La transcription de la dictée dans Atlas">
       <div class="sous-titre">Vous dictez sur le chantier.</div>
     </section>
 
     <section class="scene fond-os" data-debut="11">
-      <div class="carte">
-        <div class="etiquette">Devis n° 2026 041</div>
-        <h3>Madame Martin</h3>
-        <div class="ligne"><span>Élagage d’un chêne de 15 m</span><b>1 200,00 €</b></div>
-        <div class="ligne"><span>Main d’œuvre, 2 jours à 2</span><b>960,00 €</b></div>
-        <div class="ligne"><span>Évacuation des branches</span><b>180,00 €</b></div>
-        <div class="total"><span>Total TTC</span><b>2 808,00 €</b></div>
-      </div>
+      <img class="feuille" src="video-promo/devis.jpg" alt="Le devis PDF produit par Atlas">
       <div class="sous-titre">Atlas rédige le devis.</div>
     </section>
 
     <section class="scene fond-os" data-debut="18">
-      <div class="carte">
-        <div class="etiquette">Chez votre client</div>
-        <h3>Votre devis de 2 808,00 €</h3>
-        <div class="jours">
-          <div class="jour">mar.<b>14</b>oct.</div>
-          <div class="jour pris">jeu.<b>16</b>oct.</div>
-        </div>
-        <span class="bouton appui">J’accepte</span>
-      </div>
+      <img class="capture" src="video-promo/client.jpg" alt="La page du devis chez le client">
       <div class="sous-titre">Le client accepte et choisit sa date.</div>
     </section>
 
     <section class="scene fond-os" data-debut="24">
-      <div class="carte">
-        <div class="etiquette">Planning</div>
-        <div class="plan"><span>lun.</span><span>mar.</span><span>mer.</span><span class="ch">jeu. Martin</span><span class="ch">ven. Martin</span></div>
-        <span class="bouton">Fin de chantier</span>
-        <p style="margin:12px 0 0;font-size:14px"><span class="coche"></span>Facture envoyée.</p>
-      </div>
+      <img class="capture" src="video-promo/planning.jpg" alt="Le planning d’Atlas">
+      <img class="capture puis" src="video-promo/termines.jpg" alt="Un chantier terminé à facturer">
       <div class="sous-titre">Chantier fini, la facture part en un appui.</div>
     </section>
 
-    <section class="scene fond-nuit" data-debut="30">
-      <div class="trio">
-        <div class="tuile"><div class="vignette feuille"></div><p><b>Une feuille en photo</b>Anthracnose, probable sur un platane.</p></div>
-        <div class="tuile"><div class="vignette plan-eau"></div><p><b>Un croquis en photo</b>Le plan d’arrosage et ses pièces.</p></div>
-        <div class="tuile"><div class="vignette ticket"></div><p><b>Un ticket en photo</b>La dépense est rangée.</p></div>
-      </div>
+    <section class="scene fond-os" data-debut="30">
+      <img class="capture" src="video-promo/diagnostic.jpg" alt="Le diagnostic végétal d’Atlas">
+      <img class="capture puis" src="video-promo/arrosage.jpg" alt="Le plan d’arrosage d’Atlas">
       <div class="sous-titre">Et votre métier, il le connaît.</div>
     </section>
 
@@ -258,10 +174,10 @@
   <div class="plan-script" id="plans">
     <button type="button" data-aller="0"><span class="t">0 à 4 s</span><span class="v">Fond vert, l’accroche en grand.</span><span class="vo" id="vo1">« Vingt minutes de bureau après chaque visite ? Et si ça prenait trente secondes. »</span></button>
     <button type="button" data-aller="4"><span class="t">4 à 11 s</span><span class="v">Vous, au pied d’un arbre, téléphone en main. Puis l’écran de la dictée.</span><span class="vo">« Vous dictez votre visite, sur place. »</span></button>
-    <button type="button" data-aller="11"><span class="t">11 à 18 s</span><span class="v">Le vrai devis se remplit, ligne après ligne.</span><span class="vo">« Atlas rédige le devis. Vous relisez, vous validez. »</span></button>
-    <button type="button" data-aller="18"><span class="t">18 à 24 s</span><span class="v">L’écran du client : il accepte et prend une date.</span><span class="vo">« Votre client accepte et choisit sa date. »</span></button>
-    <button type="button" data-aller="24"><span class="t">24 à 30 s</span><span class="v">Le planning se remplit, puis Fin de chantier.</span><span class="vo">« Chantier fini : la facture part en un appui. »</span></button>
-    <button type="button" data-aller="30"><span class="t">30 à 36 s</span><span class="v">Trois photos, trois réponses : un arbre malade, un croquis d’arrosage, un ticket.</span><span class="vo">« Et votre métier, il le connaît. »</span></button>
+    <button type="button" data-aller="11"><span class="t">11 à 18 s</span><span class="v">Le devis sort, avec ses prix et sa TVA.</span><span class="vo">« Atlas rédige le devis. Vous relisez, vous validez. »</span></button>
+    <button type="button" data-aller="18"><span class="t">18 à 24 s</span><span class="v">La page du client : il accepte et prend une date.</span><span class="vo">« Votre client accepte et choisit sa date. »</span></button>
+    <button type="button" data-aller="24"><span class="t">24 à 30 s</span><span class="v">Le planning rempli, puis le chantier à facturer.</span><span class="vo">« Chantier fini : la facture part en un appui. »</span></button>
+    <button type="button" data-aller="30"><span class="t">30 à 36 s</span><span class="v">Le diagnostic d’un platane, puis un plan d’arrosage.</span><span class="vo">« Et votre métier, il le connaît. »</span></button>
     <button type="button" data-aller="36"><span class="t">36 à 42 s</span><span class="v">Le nom, la phrase, l’offre d’essai, l’adresse.</span><span class="vo">« Atlas. Paysagistes, élagueurs, et tous les artisans. Quinze jours pour essayer. »</span></button>
   </div>
 
@@ -272,7 +188,7 @@
       <li>L’adresse où la vidéo renvoie : site, page d’inscription, téléphone ?</li>
       <li>Une vidéo de vous sur un chantier, 3 à 4 secondes, pour le plan 2. Sans elle, je mets l’écran seul.</li>
     </ul>
-    <p style="margin:10px 0 0">Les écrans dessinés ici calent le rythme. La vraie vidéo filme l’application, sur des clients de démonstration.</p>
+    <p style="margin:10px 0 0">Les clients sont fictifs. Dans la vraie vidéo, la dictée et le diagnostic seront filmés en train de se faire, sur votre espace, où l’IA est branchée.</p>
   </div>
 </div>
 
