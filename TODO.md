@@ -1,5 +1,19 @@
 # Prochaines tâches
 
+## 🔴 « DERNIER DEVIS » CHANGE LES PRIX SANS LE DIRE (26 septembre 2026)
+
+**Relevé par lui** : *« on ne peut pas reprendre un devis existant et mettre les
+prix au prix du jour sans en informer l'utilisateur »*. Il a raison, et c'est
+une promesse non tenue : `src/lib/reprise-des-prix.ts` dit « le tarif a bougé :
+on prend le neuf, on montre l'ancien » et « une ligne sans tarif garde son prix,
+et le dit ». **Rien ne le montre.** `refaireLeChantierAction` calcule
+`retarifees` et `ancienPrixUnitaire`, puis `RepartirDeCeClient.tsx` ouvre le
+devis sans lire ni l'un ni l'autre, et `lignes_prix` ne garde pas l'ancien prix.
+Constaté dans le code (confiance haute), **pas regardé à l'écran** : à confirmer
+avec `npm run voir` avant de coder. Niveau 3 (argent). Se trace avec la hausse
+en pourcentage (`appli/augmenter-un-devis-repris.html`), qui touche les mêmes
+lignes.
+
 ## ⏳ UNE PLANCHE À REGARDER : VOIR UN EXEMPLE DE FACTURE (26 septembre 2026)
 
 `appli/apercu-du-document.html`. Sa réponse attendue : **A** (bouton sous
