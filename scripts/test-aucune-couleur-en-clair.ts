@@ -53,6 +53,11 @@ const SURVEILLES = [
   // planche portait un gris et un or à elle, à un cheveu de ceux du produit ;
   // les recopier aurait fait vivre huit chartes et demie.
   "src/app/creer-un-compte/page.tsx",
+  // Le contrat d'entretien, écrit le 26 septembre 2026 sur ses jetons dès le
+  // premier jour : les mois cochés prennent `plein`, qui s'inverse sur Nuit.
+  "src/app/clients/[id]/contrat/page.tsx",
+  "src/app/clients/[id]/contrat/ContratClient.tsx",
+  "src/app/clients/[id]/RepartirDeCeClient.tsx",
 ];
 
 /**

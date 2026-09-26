@@ -65,6 +65,9 @@ export const CHEMINS_PUBLICS = [
   // Même mécanique et même garde-fou : l'accès est un jeton imprévisible,
   // contrôlé par une politique dédiée. Sans jeton exact, aucune ligne.
   "/entretien",
+  // Le contrat d'entretien, lu et accepté par le client sans compte
+  // (26 septembre 2026) : la mécanique du devis, par jeton exact.
+  "/contrat",
 ] as const;
 
 /** Ce chemin est-il atteignable sans compte ? */
@@ -93,7 +96,7 @@ export function estCheminPublic(chemin: string): boolean {
  * futur chemin public — une page d'aide, un mode d'emploi — deviendrait
  * « page client » sans que personne l'ait décidé.
  */
-export const CHEMINS_DU_CLIENT = ["/devis", "/factures", "/entretien"] as const;
+export const CHEMINS_DU_CLIENT = ["/devis", "/factures", "/entretien", "/contrat"] as const;
 
 /** Cette page est-elle celle que le client de l'artisan reçoit ? */
 export function estPageDuClient(chemin: string | null): boolean {

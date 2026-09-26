@@ -1,9 +1,17 @@
 # État du projet
 
 **Dernière mise à jour :** 2026-09-21 · `main`
-· dernière migration `drizzle/0100_mot_de_passe_oublie.sql`
+· dernière migration `drizzle/0101_avoirs_et_factures_non_payees.sql` sur `main`, `0102_contrats_entretien.sql` sur la branche du contrat
 
 ---
+
+## CODÉ, PAS SUR `main` : LE CONTRAT D'ENTRETIEN, LOT 1 (26 septembre 2026)
+
+Fiche client : « Contrat d'entretien » à côté de « Autre chantier ». Écran du
+contrat, PDF, envoi par lien, acceptation par le client, passages dans « Sans
+date » le 20 du mois d'avant. Migration 0102. **Pas encore** : la facture
+pré-remplie, la facturation A, l'automatisme. Batterie de niveau 3 à jouer
+avant `main`. `ARCHITECTURE.md` §418, `TODO.md`.
 
 ## FAIT : MA TVA À LA CALCULETTE, SUR `main` (25 septembre 2026)
 

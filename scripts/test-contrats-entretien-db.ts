@@ -128,7 +128,7 @@ async function main() {
     assert.equal(e1.jeton, e2.jeton);
     jeton = e1.jeton;
     const r = await enregistrerContrat(a.ctx, { id: contratId, clientId: a.clientId, saisi: SAISI });
-    assert.deepEqual(r, { ok: false, refus: "Ce contrat est parti chez le client : il ne se modifie plus." });
+    assert.deepEqual(r, { ok: false, refus: "Ce contrat est parti chez le client : il ne se modifie plus.", fige: true });
   });
 
   await cas("le client lit son contrat et son PDF par le lien", async () => {

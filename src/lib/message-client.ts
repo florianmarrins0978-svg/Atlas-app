@@ -450,6 +450,30 @@ export function composerMessageEntretien(params: {
 }
 
 /**
+ * Le message qui porte le CONTRAT D'ENTRETIEN (26 septembre 2026).
+ *
+ * **Même enveloppe que les trois autres** : le bonjour, le lien seul sur sa
+ * ligne, la signature. **Pas encore de modèle à lui dans les Réglages** : les
+ * trois messages modifiables sont ceux qu'il a décidés le 7 septembre, et en
+ * ajouter un quatrième à l'écran des réglages se lui demande (`TODO.md`).
+ */
+export function composerMessageContrat(params: {
+  clientNom: string;
+  clientCivilite?: CiviliteChoisie;
+  entrepriseNom: string;
+  lien: string;
+}): MessageClient {
+  const { clientNom, clientCivilite, entrepriseNom, lien } = params;
+  return {
+    objet: `Contrat d'entretien de ${entrepriseNom}`,
+    corps: rendreMessage(
+      enveloppe("Voici votre contrat d'entretien. Vous pouvez le lire, le télécharger et l'accepter sur cette page :"),
+      { client: nommer(clientNom, clientCivilite), document: "contrat d'entretien", lien, entreprise: entrepriseNom }
+    ),
+  };
+}
+
+/**
  * Adresse `mailto:` ou `sms:` ouvrant l'application du patron, message prêt.
  *
  * Le destinataire peut manquer : le message s'ouvre alors sans lui plutôt que

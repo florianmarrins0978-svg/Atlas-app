@@ -33485,3 +33485,20 @@ Ce qui ne change pas : Atlas **prépare**, l'outil **émet** (`AGENT.md` §6,
 de la gravité (niveau 3) : les jetons d'accès de l'artisan chiffrés en base et
 isolés par entreprise, et un envoi qui refuse en le disant quand la connexion
 est coupée, jamais une facture partie d'un seul côté en silence.
+
+## §418 : Le contrat d'entretien, lot 1 : un passage est un chantier
+
+**Sa demande du 26 septembre 2026**, planche 129 (`appli/contrat-d-entretien-vert.html`).
+
+| Décision | Pourquoi |
+|---|---|
+| les règles dans `src/lib/contrats-entretien.ts`, seules | l'écran, le serveur (`relireContrat`) et le PDF comptent avec les mêmes fonctions ; un montant calculé deux fois finit par diverger |
+| les prestations en **jsonb** sur `contrats_entretien` (0102) | un contrat envoyé se fige avec ses lignes, comme un avoir (0101) ; l'empreinte sha256 prouve ce qui est parti |
+| **un passage est un chantier** (`chantiers.contrat_entretien_id` + `contrat_passage`) | il se pose, se termine, se facture : tout ce que l'application sait déjà faire ; aucune seconde mécanique de planning |
+| l'index unique (contrat, passage) + `ON CONFLICT DO NOTHING` | l'arrivée est rejouable : deux ouvertures du planning ne posent jamais un passage deux fois (éprouvé en parallèle) |
+| l'arrivée à l'**ouverture du planning**, pour qui peut l'écrire | pas de cron à planifier chez lui ; en lecture seule (essai fini) rien n'arrive et l'écran s'ouvre |
+| un mois **fini avant l'accord** ne donne aucun passage ; fini après, il les garde | un contrat de mars accepté en juin ne déverse pas trois mois passés ; un passage dû ne disparaît pas parce que personne n'a ouvert le planning |
+| `getPlanificationEtat` : « à planifier » si devis envoyé **ou** passage de contrat ; `ongletDuChantier` : un passage sans jour vit au planning | sans la seconde, chaque passage aurait posé un « Brouillon » dans les chantiers à préparer |
+| la page `/contrat/<jeton>` : lecture par jeton exact (politique RLS), réponse une seule fois, bornée par `verifierLimite` | la mécanique du devis, déjà éprouvée |
+
+**Ce qui n'agit pas encore** : la facturation A et l'automatisme B s'enregistrent et s'impriment, sans créer de facture (`TODO.md`).

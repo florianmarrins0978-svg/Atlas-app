@@ -80,7 +80,8 @@ export async function dernierContratDuClient(ctx: Ctx, clientId: string): Promis
   });
 }
 
-export type RefusContrat = { ok: false; refus: string };
+/** `fige` : le contrat est déjà parti, et c'est la seule raison du refus. */
+export type RefusContrat = { ok: false; refus: string; fige?: true };
 
 /**
  * Enregistre le brouillon : le crée s'il n'existe pas, le remplace sinon.
@@ -122,7 +123,7 @@ export async function enregistrerContrat(
         .limit(1);
       if (!avant || avant.clientId !== params.clientId) return { ok: false as const, refus: "Ce contrat n'existe plus." };
       if (avant.statut !== "brouillon") {
-        return { ok: false as const, refus: "Ce contrat est parti chez le client : il ne se modifie plus." };
+        return { ok: false as const, refus: "Ce contrat est parti chez le client : il ne se modifie plus.", fige: true as const };
       }
       const [l] = await tx
         .update(contratsEntretien)

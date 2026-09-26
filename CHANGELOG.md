@@ -8,6 +8,15 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-26
 
+### Le contrat d'entretien, lot 1 (sur sa branche)
+
+Un client se met sous contrat depuis sa fiche : prestations, mois, passages,
+prix, durée, facturation A ou B. Le contrat part par un lien, le client
+l'accepte sans compte, et ses passages arrivent dans « Sans date » le 20 du
+mois d'avant, une seule fois chacun. Ce que ça évite : ressaisir chaque tonte
+à la main, et oublier un passage dû. La facture pré-remplie, la facturation
+mensuelle et l'envoi avec le compte rendu restent à faire. `ARCHITECTURE.md` §418.
+
 ### Le contrat d'entretien, en planche ; la facturation électronique, tranchée
 
 Planche 128, `appli/contrat-d-entretien.html` : les passages d'un contrat se

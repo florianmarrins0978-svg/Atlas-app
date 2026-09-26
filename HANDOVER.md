@@ -11,6 +11,18 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 
 ---
 
+## LE CONTRAT D'ENTRETIEN — 26 septembre 2026 (lot 1, pas sur `main`)
+
+| | |
+|---|---|
+| **les règles** | `src/lib/contrats-entretien.ts` : période, passages, totaux, mensualités, arrivée, relecture |
+| **la base** | `drizzle/0102_contrats_entretien.sql`, `contratsEntretien` et deux colonnes de `chantiers` |
+| **le dépôt** | `src/server/repositories/contrats-entretien.ts` ; le PDF `src/server/pdf/contrat-pdf.ts` |
+| **les écrans** | `src/app/clients/[id]/contrat/`, la page du client `src/app/contrat/[jeton]/`, le PDF `src/app/api/contrats/[id]/pdf` |
+| **l'arrivée** | `contextePlanning` appelle `poserLesPassagesArrives` avant de lire |
+| **les suites** | `test-contrats-entretien` (pure), `test-contrats-entretien-db` (atlas_app) |
+| **le piège** | un passage n'a pas de devis : Terminés l'annonce « À facturer » sans montant tant que le lot 2 n'est pas fait |
+
 ## MA TVA À LA CALCULETTE — 25 septembre 2026
 
 | | |

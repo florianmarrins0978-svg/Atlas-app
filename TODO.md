@@ -1,6 +1,31 @@
 # Prochaines tâches
 
-## ⏳ UNE PLANCHE À REGARDER : LE CONTRAT D'ENTRETIEN, B RETENUE (26 septembre 2026)
+## 🔜 CONTRAT D'ENTRETIEN : LOT 1 CODÉ, PAS SUR `main` (26 septembre 2026)
+
+**Sa consigne : « code ça, ne lance pas de batterie ».** Branche
+`claude/extrabat-competitor-review-7v9r8m`. Niveau 3 (migration 0102) : **la
+batterie entière est à jouer avant `main`**, elle ne l'a pas été. Document de
+retour : `docs/contrat-d-entretien-lot-1.md`. `ARCHITECTURE.md` §418.
+
+| Codé et éprouvé ici | |
+|---|---|
+| le geste « Contrat d'entretien » sur la fiche client, trois gestes sur une ligne | regardé à l'écran |
+| l'écran du contrat : prestations (modèle ou écrites), mois, + et −, prix, début, durée, reconduction, A ou B, interrupteur | regardé |
+| l'aperçu PDF (fabrique des devis) | regardé |
+| l'envoi par SMS ou e-mail, lien `/contrat/<jeton>` | refus en local regardé ; l'envoi réel est à essayer chez lui |
+| la page du client : lire, télécharger, accepter ou refuser, une seule fois | regardé |
+| l'arrivée des passages dans « Sans date » le 20 du mois d'avant, et la pose sur un jour | regardé |
+
+| Reste à faire, dans l'ordre | Pourquoi |
+|---|---|
+| **lot 2 : la facture B pré-remplie** depuis Terminés (le passage aux prix du contrat) et le **montant prévu** dans Terminés | aujourd'hui un passage fini arrive « À facturer » sans montant, et la facture s'ouvre vide (facture sans devis) |
+| **lot 2 : l'automatisme** « avec le compte rendu » | il s'enregistre, il n'agit pas encore |
+| **lot 3 : la facturation A** (mensualités le 1er du mois) | elle s'enregistre et s'imprime sur le PDF, **aucune facture mensuelle ne se crée encore** |
+| la carte d'état du contrat sur la fiche client, comme la planche | l'état se lit sur l'écran du contrat seulement |
+| le message du contrat modifiable dans Réglages, comme les trois autres | lui demander s'il le veut |
+| les passages d'un même mois regroupés sur une ligne (« 2 à poser ») comme la planche ; la poignée compte des passages, pas des clients | une ligne par passage aujourd'hui |
+
+## ⏳ (ARCHIVE) LA PLANCHE DU CONTRAT D'ENTRETIEN, B RETENUE (26 septembre 2026)
 
 `appli/contrat-d-entretien.html`, planche 128. Sa demande après la comparaison
 avec Extrabat. **Facturation tranchée le 26 septembre : B, une facture après
