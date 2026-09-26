@@ -102,10 +102,18 @@
         text-transform:uppercase;color:var(--gris)}
 
   /* La touche : une rangée de pastilles, sous le « Repris du ». */
-  .hausse{display:flex;align-items:center;gap:8px;margin-top:12px}
-  .hausse .dit{font-size:13.5px;color:var(--doux);margin-right:2px}
+  .dit-hausse{margin:12px 0 0;font-size:13.5px;color:var(--doux)}
+  .hausse{display:flex;flex-wrap:wrap;align-items:center;gap:7px;margin-top:7px}
+  .saisie{display:flex;align-items:center;gap:5px;border-radius:999px;background:var(--plage);
+          box-shadow:inset 0 0 0 1px var(--trait);padding:0 12px 0 4px;height:32px;flex:0 0 auto}
+  .saisie:focus-within{box-shadow:inset 0 0 0 1.5px var(--or)}
+  .saisie input{width:38px;border:0;background:transparent;color:var(--encre);text-align:right;
+                font:500 16px/1 var(--sans);font-variant-numeric:tabular-nums;padding:0}
+  .saisie input:focus{outline:none}
+  .saisie span{font:500 14px/1 var(--sans);color:var(--doux)}
+  .refus{margin:6px 0 0;font-size:12.5px;color:var(--alerte)}
   .hausse button{border:0;border-radius:999px;background:var(--plage);color:var(--encre);
-                 box-shadow:inset 0 0 0 1px var(--trait);padding:9px 14px;
+                 box-shadow:inset 0 0 0 1px var(--trait);padding:9px 12px;white-space:nowrap;flex:0 0 auto;
                  font:500 14px/1 var(--sans);font-variant-numeric:tabular-nums;cursor:pointer;
                  -webkit-tap-highlight-color:transparent}
   .hausse button[aria-pressed="true"]{background:var(--accent);color:var(--fond);box-shadow:none}
@@ -135,7 +143,7 @@
 <body>
 
 <div class="bandeau">
-  <b>Maquette.</b> Rien n'est codé. Touchez <b>5 %</b>, <b>10 %</b> ou <b>30 %</b>.
+  <b>Maquette.</b> Rien n'est codé. Touchez <b>5 %</b>, <b>10 %</b> ou <b>30 %</b>, ou <b>tapez le vôtre</b> dans la case.
   Touchez de nouveau pour annuler.
 </div>
 
@@ -199,15 +207,33 @@ const DEVIS = {
   },
 };
 const TAUX = [5, 10, 30];
-
 const euros = (c) =>
   (c / 100).toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €";
-const augmente = (c, taux) => Math.round((c * (100 + taux)) / 100);
 
-function dessiner(id, taux) {
-  const d = DEVIS[id];
+/*
+  LE TAUX SE TAPE AUSSI, sa demande du 26 septembre 2026 : « il faut pouvoir
+  écrire le nombre de % qu'on souhaite ». Les trois pastilles restent : ce sont
+  les gestes d'un seul appui ; la case prend tout le reste.
+
+  Une décimale au plus (7,5 %), bornée à 100 % : au-delà, c'est une faute de
+  frappe bien plus souvent qu'une intention, et un devis qui double sans qu'on
+  le voie part chez le client. Le calcul reste en entiers : le taux passe en
+  dixièmes de pour cent, cents × (1000 + dixièmes) est exact, un seul arrondi.
+*/
+const augmente = (c, taux) => Math.round((c * (1000 + Math.round(taux * 10))) / 1000);
+
+function lireTaux(texte) {
+  const t = texte.trim().replace(",", ".");
+  if (t === "") return 0;
+  if (!/^\d{1,3}(\.\d)?$/.test(t)) return null;
+  const n = Number(t);
+  return n > 0 && n <= 100 ? n : null;
+}
+const ecrireTaux = (t) => t.toLocaleString("fr-FR", { maximumFractionDigits: 1 });
+
+function lignesEtTotal(d, taux) {
   let total = 0;
-  const lignes = d.lignes.map((l) => {
+  const html = d.lignes.map((l) => {
     if (l.aChiffrer) {
       return `<div class="ligne"><span class="quoi"><span class="titre">${l.titre}</span>
         <span class="detail achiffrer">Attend son prix</span></span>
@@ -226,12 +252,21 @@ function dessiner(id, taux) {
     return `<div class="ligne"><span class="quoi"><span class="titre">${l.titre}</span>
       <span class="detail">${detail}</span></span><span class="somme">${somme}</span></div>`;
   }).join("");
+  return { html, total };
+}
 
+/*
+  L'écran se pose UNE fois ; seules les lignes et le total se redessinent.
+  Tout redessiner à chaque chiffre tapé fermerait le clavier du téléphone
+  entre le 1 et le 2 de « 12 ».
+*/
+function monter(id) {
+  const d = DEVIS[id];
   const pastilles = TAUX.map((t) =>
-    `<button type="button" data-taux="${t}" aria-pressed="${t === taux}">+ ${t} %</button>`
+    `<button type="button" data-taux="${t}" aria-pressed="false">+&nbsp;${t}&nbsp;%</button>`
   ).join("");
-
-  document.getElementById(id).innerHTML = `
+  const ecran = document.getElementById(id);
+  ecran.innerHTML = `
     <div class="entete">
       <span class="rond" aria-hidden="true"><svg width="9" height="15" viewBox="0 0 9 15" fill="none"><path d="M7.5 1.5 1.5 7.5l6 6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
       <h1>Le devis</h1>
@@ -239,24 +274,50 @@ function dessiner(id, taux) {
     </div>
     <div class="corps">
       <span class="etiq">${d.repris}</span>
+      <p class="dit-hausse">Augmenter</p>
       <div class="hausse" role="group" aria-label="Augmenter les prix">
-        <span class="dit">Augmenter</span>${pastilles}
+        ${pastilles}
+        <label class="saisie"><input id="taux-${id}" inputmode="decimal" autocomplete="off"
+          placeholder="…" aria-label="Autre pourcentage"><span>%</span></label>
       </div>
-      <div style="margin-top:6px">${lignes}</div>
-      <div class="total"><span class="mot-total">Total HT</span><span class="somme">${euros(total)}</span></div>
+      <p class="refus" hidden>Entre 0,1 et 100 %.</p>
+      <div class="lignes" style="margin-top:6px"></div>
+      <div class="total"><span class="mot-total">Total HT</span><span class="somme"></span></div>
     </div>
     <div class="valider"><button type="button">Relire le devis</button></div>`;
 
-  document.querySelectorAll(`#${id} .hausse button`).forEach((b) => {
-    b.addEventListener("click", () => {
-      const t = Number(b.dataset.taux);
-      dessiner(id, t === taux ? 0 : t);
-    });
+  const champ = ecran.querySelector("input");
+  const refus = ecran.querySelector(".refus");
+  const boutons = [...ecran.querySelectorAll(".hausse button")];
+
+  function appliquer(taux) {
+    boutons.forEach((b) => b.setAttribute("aria-pressed", String(Number(b.dataset.taux) === taux)));
+    const { html, total } = lignesEtTotal(d, taux);
+    ecran.querySelector(".lignes").innerHTML = html;
+    ecran.querySelector(".total .somme").textContent = euros(total);
+  }
+
+  boutons.forEach((b) => b.addEventListener("click", () => {
+    const t = Number(b.dataset.taux);
+    const actif = b.getAttribute("aria-pressed") === "true";
+    champ.value = actif ? "" : ecrireTaux(t);
+    refus.hidden = true;
+    appliquer(actif ? 0 : t);
+  }));
+
+  // Un taux illisible ne touche à rien : le devis garde le dernier taux juste,
+  // et la phrase dit pourquoi. Jamais un prix calculé sur un chiffre deviné.
+  champ.addEventListener("input", () => {
+    const t = lireTaux(champ.value);
+    refus.hidden = t !== null;
+    if (t !== null) appliquer(t);
   });
+
+  appliquer(0);
 }
 
-dessiner("dernier", 0);
-dessiner("reprendre", 0);
+monter("dernier");
+monter("reprendre");
 
 const bouton = document.getElementById("charte");
 bouton.addEventListener("click", () => {
