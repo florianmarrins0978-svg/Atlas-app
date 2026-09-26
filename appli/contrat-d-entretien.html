@@ -167,6 +167,8 @@
   .interrupteur[aria-checked="true"]{background:var(--plein)}
   .interrupteur[aria-checked="true"]::after{left:23px}
 
+  .auto{margin-top:12px}
+  .auto-dit{margin:2px 0 0;font-size:13.5px;color:var(--inkSoft)}
   .facturation{display:flex;flex-direction:column;gap:8px}
   .facturation button{text-align:left;border:0;cursor:pointer;border-radius:10px;padding:12px 14px;
                       background:var(--card);box-shadow:inset 0 0 0 1px var(--line)}
@@ -321,14 +323,25 @@
       <div class="bloc">
         <p class="intitule">Facturation</p>
         <div class="facturation" id="facturation">
-          <button type="button" data-fact="mois" aria-pressed="true">
+          <button type="button" data-fact="mois" aria-pressed="false">
             <span class="t"><span class="lettre">A</span>Chaque mois, le même montant</span>
             <span class="c" id="conseq-mois"></span>
           </button>
-          <button type="button" data-fact="passage" aria-pressed="false">
+          <button type="button" data-fact="passage" aria-pressed="true">
             <span class="t"><span class="lettre">B</span>Après chaque passage</span>
             <span class="c" id="conseq-passage"></span>
           </button>
+        </div>
+        <!-- L'automatisme ne part JAMAIS d'une date : seulement du compte rendu,
+             qui est lui-même son geste (`CLAUDE.md` §4, « facturer sans un
+             geste du patron »). Une facture datée partirait pour un passage
+             que la pluie a annulé. -->
+        <div id="auto" class="auto">
+          <div class="ligne-duree">
+            <span>Envoyer la facture avec le compte rendu</span>
+            <button type="button" class="interrupteur" id="avec-compte-rendu" role="switch" aria-checked="false" aria-label="Envoyer la facture avec le compte rendu"></button>
+          </div>
+          <p class="auto-dit" id="auto-dit"></p>
         </div>
       </div>
 
@@ -391,12 +404,13 @@
 </div>
 
 <div class="notes">
-  <h2>La seule chose à trancher : la facturation</h2>
+  <h2>La facturation : B, tranchée le 26 septembre</h2>
+  <p>Une facture après chaque passage. <b>Et vous pouvez l'automatiser</b> : l'interrupteur « Envoyer la facture avec le compte rendu », sous la B.</p>
   <ul>
-    <li><b>A, chaque mois le même montant.</b> Le client paie pareil en janvier qu'en juin, et vous encaissez l'hiver, quand il n'y a presque rien à tondre. C'est la forme habituelle d'un contrat d'entretien chez un particulier. <b>Ce qu'elle coûte :</b> on facture avant d'avoir fait. Un passage annulé se rend sur la dernière facture de l'année.</li>
-    <li><b>B, après chaque passage.</b> La facture colle à ce qui a été fait, rien à régulariser. <b>Ce qu'elle coûte :</b> des montants qui changent chaque mois, rien en hiver, et une facture de plus à envoyer après chaque tonte.</li>
+    <li><b>Éteint</b> : vous envoyez la facture vous-même, après le passage.</li>
+    <li><b>Allumé</b> : quand le compte rendu du passage part chez le client, la facture part avec. Un seul geste au lieu de deux.</li>
   </ul>
-  <p><b>Ce que je défends : la A.</b> Elle lisse votre trésorerie sur l'année, et c'est ce qu'un client sous contrat attend.</p>
+  <p><b>Ce qui ne s'automatise pas, et c'est voulu :</b> une facture qui partirait toute seule à une date. Un passage annulé par la pluie serait facturé quand même. Le déclencheur reste le compte rendu, c'est-à-dire un passage réellement fait.</p>
 
   <h2>Ce que je propose, sans vous le demander</h2>
   <ul>
@@ -441,7 +455,8 @@ const DEPART = () => ({
     { id: 3, famille: "Tailles", libelle: "Taille de haie automne", mois: [9], fois: 1, prix: 18000 },
     { id: 4, famille: "Propreté", libelle: "Ramassage des feuilles", mois: [10], fois: 1, prix: 6000 },
   ],
-  facturation: "mois",
+  facturation: "passage",
+  avecCompteRendu: false,
   reconduit: true,
   etat: "aucun",
   poses: {},
@@ -555,6 +570,11 @@ function dessinerTotaux() {
     : min === max ? `${montants.length} factures de ${euros(min)} HT, le jour du compte rendu.`
     : `${montants.length} factures, de ${euros(min)} à ${euros(max)} HT, le jour du compte rendu.`;
 
+  document.getElementById("auto").hidden = c.facturation !== "passage";
+  document.getElementById("avec-compte-rendu").setAttribute("aria-checked", String(c.avecCompteRendu));
+  document.getElementById("auto-dit").textContent = c.avecCompteRendu
+    ? "Un seul geste : le compte rendu part, la facture part avec."
+    : "Vous l'envoyez vous-même après chaque passage.";
   document.querySelectorAll("#facturation button").forEach((b) =>
     b.setAttribute("aria-pressed", String(b.dataset.fact === c.facturation)));
 
@@ -700,6 +720,8 @@ document.addEventListener("click", (e) => {
 
   const fact = e.target.closest("[data-fact]");
   if (fact) { c.facturation = fact.dataset.fact; dessinerTotaux(); return; }
+
+  if (e.target.closest("#avec-compte-rendu")) { c.avecCompteRendu = !c.avecCompteRendu; dessinerTotaux(); return; }
 
   if (e.target.closest("#reconduit")) {
     c.reconduit = !c.reconduit;

@@ -1,11 +1,15 @@
 # Prochaines tâches
 
-## ⏳ UNE PLANCHE À REGARDER : LE CONTRAT D'ENTRETIEN (26 septembre 2026)
+## ⏳ UNE PLANCHE À REGARDER : LE CONTRAT D'ENTRETIEN, B RETENUE (26 septembre 2026)
 
 `appli/contrat-d-entretien.html`, planche 128. Sa demande après la comparaison
-avec Extrabat. **Une seule question : la facturation**, A (chaque mois le même
-montant, l'arrondi sur la dernière) ou B (après chaque passage) ; je défends la
-A. Proposé sans question : pas de date fixe, les passages du mois tombent le
+avec Extrabat. **Facturation tranchée le 26 septembre : B, une facture après
+chaque passage** (j'avais défendu la A). Et sa question : *« il faut qu'il
+puisse l'automatiser s'il veut, non ? »* Oui, par un interrupteur du contrat,
+éteint d'office : la facture part AVEC le compte rendu du passage. Jamais à une
+date, qui facturerait un passage annulé par la pluie ; le compte rendu reste le
+geste du patron que `CLAUDE.md` §4 exige avant de facturer. Reste à regarder la
+planche entière. Proposé sans question : pas de date fixe, les passages du mois tombent le
 1er dans « Sans date » ; le contrat part chez le client comme un devis ; les
 prestations viennent de `MODELE_FOURNI`. **Rien n'est codé.** Une fois codé :
 niveau 3 (argent, migration). Question ouverte à lui poser ensuite :
