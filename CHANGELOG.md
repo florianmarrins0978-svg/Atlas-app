@@ -18,9 +18,13 @@ Format : le plus récent en tête.
   `scripts/test-schema-outils.ts` rougissait sur 18 outils avant la correction.
   Niveau 3 (17 points d'entrée) : **la batterie n'a pas été jouée, sur sa
   consigne du jour**, donc rien n'est parti sur `main`.
-- Maquette `appli/fermer-l-assistant.html` : trois façons de refermer le
-  panneau (toucher le gris, grosse croix, mot Fermer, glisser). En attente de
-  son choix.
+- **Fermer l'assistant d'un geste** (sa réponse « la A » devant
+  `appli/fermer-l-assistant.html`). Toucher le gris ferme le panneau, la croix
+  devient un rond de 44 px. Le panneau laisse toujours 44 px de gris : sur un
+  iPhone de 390 px, il n'en restait que 6. Trouvé en regardant l'écran :
+  le panneau rétréci poussait le bouton d'envoi hors de l'écran, parce que le
+  champ de saisie ne savait pas rétrécir (`min-w-0`) ; le même défaut aurait
+  frappé tout téléphone de moins de 384 px.
 
 ## 2026-09-25
 

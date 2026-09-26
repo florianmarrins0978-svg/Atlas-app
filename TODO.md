@@ -8,12 +8,14 @@ et il a interdit de la lancer ce jour-là. **La lui demander avant de la
 lancer.** Suites déjà vertes ici : test-schema-outils, test-assistant-se-corrige,
 test-ia-02-assistant, test-assistant-explique-l-appli, test-assistant-perimetre.
 
-## ⏳ UN CHOIX À FAIRE — FERMER L'ASSISTANT (26 septembre 2026)
+## ⏳ À LIVRER — FERMER L'ASSISTANT, « LA A » (26 septembre 2026)
 
-`appli/fermer-l-assistant.html` : A (toucher le gris, grosse croix ronde,
-conseillée), B (le mot Fermer), C (A plus glisser vers la droite).
-Aujourd'hui, seule une croix de 20 px ferme le panneau
-(`AssistantSidebar.tsx`), et le voile gris ne fait rien.
+Sa réponse devant `appli/fermer-l-assistant.html` : la A. CODÉ LE 26 septembre
+sur `claude/is-this-normal-6jbxjy` (`AssistantSidebar.tsx`) : toucher le gris
+ferme, la croix est un rond de 44 px, 44 px de gris restent toujours visibles,
+et le champ de saisie ne pousse plus le bouton d'envoi hors de l'écran.
+Regardé à 320, 390 et 430 px. Niveau 3 avec le lot ci-dessus : batterie
+à lui demander avant `main`.
 
 ## ⏳ UNE PLANCHE À REGARDER — FICHE 6, LA CHALAROSE DU FRÊNE (25 septembre 2026)
 
