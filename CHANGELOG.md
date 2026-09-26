@@ -104,6 +104,36 @@ Sa demande du 26 septembre 2026. Seul le texte change, la liste reste à sa
 place. Les fiches du mode d'emploi qui citaient le titre le citent à jour :
 l'assistant l'aurait sinon envoyé chercher un mot qui n'est plus à l'écran.
 
+- **L'assistant voit enfin les champs de ses outils.** Sa capture : « Huguette
+  Groupiron » rendait « il faut au moins un mot du libellé », et « comment je
+  supprime un client » ne trouvait jamais le mode d'emploi, rechargement
+  compris. `schemaJsonDeLOutil` envoyait une fiche vide (`properties: {}`) pour
+  tous les outils sauf un : le modèle devinait les noms, Zod jetait les
+  mauvais en silence. Le schéma JSON se déduit désormais du schéma Zod de
+  chaque outil (`z.toJSONSchema`), la fiche écrite à la main est retirée.
+  `scripts/test-schema-outils.ts` rougissait sur 18 outils avant la correction.
+  Niveau 3 (17 points d'entrée) : **la batterie n'a pas été jouée, sur sa
+  consigne du jour**, donc rien n'est parti sur `main`.
+- **L'assistant fait plusieurs recherches d'un coup, et un outil appelé deux
+  fois ne fait plus tomber la question.** L'historique renvoyé au fournisseur
+  donnait à chaque appel l'identifiant `outil_<Nom>` : deux appels au même
+  outil (la boucle de correction en fait) portaient le même, qu'Anthropic
+  refuse, et le patron lisait « indisponible ». Chaque appel garde désormais
+  son identifiant et ses paramètres ; les réponses passent de 1024 à 4096
+  jetons (`ARCHITECTURE.md` §417).
+- **L'assistant lit les factures, les paiements, les impayés, l'équipe, les
+  absences, les rappels et les diagnostics** (`LireFactures`, `LireEquipes`,
+  `LireRappels`, `LireDiagnostics`). Lecture seule ; les montants viennent du
+  dépôt, jamais d'une addition du modèle ; une entreprise ne voit rien de
+  l'autre.
+- **Fermer l'assistant d'un geste** (sa réponse « la A » devant
+  `appli/fermer-l-assistant.html`). Toucher le gris ferme le panneau, la croix
+  devient un rond de 44 px. Le panneau laisse toujours 44 px de gris : sur un
+  iPhone de 390 px, il n'en restait que 6. Trouvé en regardant l'écran :
+  le panneau rétréci poussait le bouton d'envoi hors de l'écran, parce que le
+  champ de saisie ne savait pas rétrécir (`min-w-0`) ; le même défaut aurait
+  frappé tout téléphone de moins de 384 px.
+
 ## 2026-09-25
 
 ### L'anthracnose se sépare en deux planches, le chêne et le hêtre

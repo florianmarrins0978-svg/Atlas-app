@@ -12,6 +12,13 @@ l'agenda se masque pour toujours (migration 0102). Sur la branche
 `claude/simplifier-mon-agenda-2lexkg`, en attente de la batterie qu'il
 déclenchera. `ARCHITECTURE.md` §417.
 
+## CODÉ, PAS SUR `main` : L'ASSISTANT DÉBRIDÉ, ET QUI SE FERME D'UN GESTE (26 septembre 2026)
+
+Les champs de ses outils déclarés, plusieurs recherches par tour, réponses non
+coupées, lecture des factures, de l'équipe, des rappels et des diagnostics.
+Le panneau se ferme en touchant le gris. Branche `claude/is-this-normal-6jbxjy`,
+batterie à lui demander (`TODO.md`).
+
 ## FAIT : MA TVA À LA CALCULETTE, SUR `main` (25 septembre 2026)
 
 Le mot « TVA collectée » ou « TVA déductible » ouvre une page à colonnes :

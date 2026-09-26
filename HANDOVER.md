@@ -20,6 +20,18 @@ du lot, puis pousser. **Piège à connaître** : débrancher Google efface ses
 identifiants ; c'est pourquoi la saisie reste accessible quand rien n'est
 configuré (§417).
 
+## L'ASSISTANT DÉBRIDÉ — 26 septembre 2026, PAS SUR `main`
+
+| | |
+|---|---|
+| **la branche** | `claude/is-this-normal-6jbxjy`, batterie non jouée (il l'a interdite sans son accord) |
+| **le schéma des outils** | `schema-outils.ts` le déduit du Zod de chaque outil. Ne jamais revenir à une fiche écrite à la main |
+| **la boucle** | `ResultatLLMAvecOutils.appels` : plusieurs appels par tour, chacun avec son `id` et ses `parametres` ; `unAppel()` pour les faux fournisseurs |
+| **les nouveaux outils** | `lire-factures.ts`, `lire-equipes.ts`, `lire-rappels.ts`, `lire-diagnostics.ts` |
+| **le panneau** | toucher le gris ferme, croix de 44 px, 44 px de gris toujours visibles (`AssistantSidebar.tsx`) |
+| **le piège** | un outil appelé deux fois portait le même identifiant : Anthropic refuse la requête, le patron lit « indisponible » |
+| **le détail** | `ARCHITECTURE.md` §417, `docs/assistant-debride-verdict.md` |
+
 ## MA TVA À LA CALCULETTE — 25 septembre 2026
 
 | | |
