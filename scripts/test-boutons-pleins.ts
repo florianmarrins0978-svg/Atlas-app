@@ -120,12 +120,6 @@ essai("aucun bouton plein n'est resté au vert pin", () => {
  */
 const APLATS_DECLARES: { fichier: string; motif: RegExp; pourquoi: string }[] = [
   {
-    fichier: "src/app/chantiers/[id]/devis-complet/RepriseDuDevis.tsx",
-    motif: /\? \{ backgroundColor: colors\.rust, color: surPlein \}/,
-    pourquoi:
-      "la pastille CHOISIE de « Augmenter les prix » (sa planche du 26 septembre 2026, `appli/augmenter-un-devis-repris.html`, qui la peint en `rust`) : elle dit le taux retenu, un état, comme un interrupteur",
-  },
-  {
     fichier: "src/app/planning/fiche-de-securite/[chantierId]/FormulaireFicheDeSecurite.tsx",
     motif: /i \+ 1 === etape \? colors\.rust/,
     pourquoi: "la barre d'avancement de la fiche de sécurité (22 septembre 2026) : le trait de l'écran en cours est un état, on ne le presse pas",

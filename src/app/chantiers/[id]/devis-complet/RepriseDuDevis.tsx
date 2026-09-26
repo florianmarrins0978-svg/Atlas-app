@@ -169,7 +169,7 @@ export default function RepriseDuDevis({
               className="h-[34px] whitespace-nowrap rounded-full px-3 text-[14px] font-medium"
               style={
                 hausse === t
-                  ? { backgroundColor: colors.rust, color: surPlein }
+                  ? { backgroundColor: colors.plein, color: surPlein }
                   : { backgroundColor: colors.card, color: colors.ink, boxShadow: `inset 0 0 0 1px ${colors.line}` }
               }
             >
