@@ -118,6 +118,8 @@ export async function listerChantiersPourAffichage(ctx: Ctx) {
         // l'artisan cherche, c'est le chantier qu'il a touché en dernier, pas
         // celui qu'il a ouvert en premier.
         majAt: chantiers.updatedAt,
+        // Un passage de contrat se range au planning (`ongletDuChantier`).
+        contratEntretienId: chantiers.contratEntretienId,
         informationsVerifieesAt: chantiers.informationsVerifieesAt,
         // **Le jalon qui manquait à la LISTE (13 août 2026).** Sans lui,
         // `getStatutAffiche` ne pouvait pas savoir qu'un devis était écrit, et
@@ -999,6 +1001,8 @@ export async function listerChantiersPourPlanning(ctx: Ctx) {
         nom: chantiers.nom,
         clientNom: clients.nom,
         devisEnvoyeAt: chantiers.devisEnvoyeAt,
+        // Un passage de contrat attend son jour sans devis (`getPlanificationEtat`).
+        contratEntretienId: chantiers.contratEntretienId,
         datePlanifiee: chantiers.datePlanifiee,
         // Le créneau et la durée réservée : lisibles par le patron seul. Deux
         // chantiers peuvent désormais tomber le même jour, et sans cette
@@ -1064,7 +1068,11 @@ export async function listerChantiersPourPlanning(ctx: Ctx) {
       .where(
         and(
           isNull(chantiers.deletedAt),
-          or(isNotNull(chantiers.devisEnvoyeAt), isNotNull(chantiers.datePlanifiee)),
+          or(
+            isNotNull(chantiers.devisEnvoyeAt),
+            isNotNull(chantiers.datePlanifiee),
+            isNotNull(chantiers.contratEntretienId)
+          ),
           or(
             isNull(chantiers.datePlanifiee),
             gte(chantiers.datePlanifiee, seuilMemoireCalendrier())

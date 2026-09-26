@@ -281,6 +281,12 @@ function jourIso(d: Date): string {
  */
 export async function poserLesPassagesArrives(ctx: Ctx, aujourdhui: string): Promise<number> {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    // **Un essai terminé met la transaction en lecture seule** (`withEntreprise`).
+    // Les passages n'arrivent pas, et le planning s'ouvre quand même : poser
+    // n'est pas ce qu'il est venu faire, et le refus ferait tomber l'écran.
+    const mode = await tx.execute(sql`SELECT current_setting('transaction_read_only') AS lecture`);
+    if (mode.rows[0]?.lecture === "on") return 0;
+
     const acceptes = await tx
       .select({
         contrat: contratsEntretien,

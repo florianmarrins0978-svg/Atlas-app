@@ -15,6 +15,8 @@ import {
   type PrestationContrat,
   type PeriodeContrat,
 } from "../src/lib/contrats-entretien";
+import { getPlanificationEtat } from "../src/lib/chantier-etat";
+import { ongletDuChantier } from "../src/lib/onglet-chantier";
 
 // Les règles du contrat d'entretien, sans base ni réseau.
 //
@@ -156,6 +158,19 @@ cas("la désignation sur le papier : une suite de mois, un mois seul, des mois �
     designationSurLePapier({ ...PLANCHE[3], mois: [3, 11] }),
     "Ramassage des feuilles, en mars et novembre"
   );
+});
+
+cas("un passage de contrat attend son jour sans devis : « Sans date », puis planifié", () => {
+  assert.equal(getPlanificationEtat({ devisEnvoyeAt: null, datePlanifiee: null, contratEntretienId: "c1" }), "a_planifier");
+  assert.equal(getPlanificationEtat({ devisEnvoyeAt: null, datePlanifiee: "2027-04-06", contratEntretienId: "c1" }), "planifie");
+  assert.equal(getPlanificationEtat({ devisEnvoyeAt: null, datePlanifiee: null }), "non_concerne");
+});
+
+cas("un passage sans jour se range au planning, pas dans les chantiers à préparer", () => {
+  assert.equal(ongletDuChantier({ statut: "brouillon", datePlanifiee: null, contratEntretienId: "c1" }, "2027-04-01"), "planning");
+  assert.equal(ongletDuChantier({ statut: "brouillon", datePlanifiee: null }, "2027-04-01"), "chantiers");
+  // Posé puis passé : Terminés, comme tout chantier.
+  assert.equal(ongletDuChantier({ statut: "planifie", datePlanifiee: "2027-03-30", contratEntretienId: "c1" }, "2027-04-01"), "termines");
 });
 
 if (echecs > 0) {
