@@ -18,23 +18,28 @@ type BlocContenuAnthropic =
 
 function construireMessagesAnthropic(historique: MessageConversation[]): { role: string; content: BlocContenuAnthropic[] | string }[] {
   const messages: { role: string; content: BlocContenuAnthropic[] | string }[] = [];
-  for (const m of historique) {
-    if (m.role === "outil") {
-      // Simplification documentée : identifiant synthétique stable par nom
-      // d'outil (suffisant pour une conversation où chaque outil n'est appelé
-      // qu'une fois — voir rapport du lot IA-02).
-      messages.push({
-        role: "assistant",
-        content: [{ type: "tool_use", id: `outil_${m.outil}`, name: m.outil, input: {} }],
-      });
-      messages.push({
-        role: "user",
-        content: [{ type: "tool_result", tool_use_id: `outil_${m.outil}`, content: JSON.stringify(m.resultat) }],
-      });
-    } else {
+  historique.forEach((m, rang) => {
+    if (m.role !== "outil") {
       messages.push({ role: m.role, content: m.contenu });
+      return;
     }
-  }
+    // **Des appels qui se suivent sont UN tour du modèle** : un message
+    // « assistant » qui porte tous les tool_use, puis un message « user » qui
+    // porte tous leurs résultats. Anthropic refuse un tool_use sans son
+    // résultat dans le message suivant.
+    //
+    // **L'identifiant vient de l'appel, jamais du nom de l'outil** : deux
+    // appels au même outil dans une question portaient le même, et la requête
+    // entière était refusée (`interface.ts`, `AppelOutil`).
+    const id = m.id ?? `outil_${rang}`;
+    const precedent = historique[rang - 1];
+    if (precedent?.role !== "outil") {
+      messages.push({ role: "assistant", content: [] }, { role: "user", content: [] });
+    }
+    const [appels, resultats] = messages.slice(-2).map((x) => x.content as BlocContenuAnthropic[]);
+    appels.push({ type: "tool_use", id, name: m.outil, input: m.parametres ?? {} });
+    resultats.push({ type: "tool_result", tool_use_id: id, content: JSON.stringify(m.resultat) });
+  });
   return messages;
 }
 
@@ -275,7 +280,9 @@ export const fournisseurLLMAnthropic: FournisseurLLM = {
         },
         body: JSON.stringify({
           model: MODELE_PAR_DEFAUT,
-          max_tokens: 1024,
+          // Le même budget qu'une rédaction : à 1024, une réponse qui résume
+          // trois recherches s'arrêtait au milieu d'une phrase.
+          max_tokens: MAX_TOKENS_TEXTE,
           system: systeme,
           messages: construireMessagesAnthropic(historique),
           tools: outils.map((o) => ({
@@ -303,9 +310,15 @@ export const fournisseurLLMAnthropic: FournisseurLLM = {
       }
 
       const donnees = (await reponse.json()) as { content?: BlocContenuAnthropic[] };
-      const blocOutil = donnees.content?.find((b): b is Extract<BlocContenuAnthropic, { type: "tool_use" }> => b.type === "tool_use");
-      if (blocOutil) {
-        return { succes: true, type: "appel_outil", outil: blocOutil.name, parametres: blocOutil.input };
+      const blocsOutil = (donnees.content ?? []).filter(
+        (b): b is Extract<BlocContenuAnthropic, { type: "tool_use" }> => b.type === "tool_use"
+      );
+      if (blocsOutil.length > 0) {
+        return {
+          succes: true,
+          type: "appel_outil",
+          appels: blocsOutil.map((b) => ({ id: b.id, outil: b.name, parametres: b.input })),
+        };
       }
       const blocTexte = donnees.content?.find((b): b is Extract<BlocContenuAnthropic, { type: "text" }> => b.type === "text");
       if (!blocTexte) {

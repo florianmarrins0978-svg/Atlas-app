@@ -4,6 +4,7 @@ import type {
   ResultatLLMAvecOutils,
   MessageConversation,
   DefinitionOutil,
+  AppelOutil,
   ImagePourLecture,
   OptionsVision,
 } from "./interface";
@@ -44,18 +45,26 @@ type ReponseChat = {
 // est le cas ici (même simplification que `anthropic.ts`, et même limite).
 function construireMessagesOpenAI(systeme: string, historique: MessageConversation[]) {
   const messages: Record<string, unknown>[] = [{ role: "system", content: systeme }];
-  for (const m of historique) {
-    if (m.role === "outil") {
-      const id = `outil_${m.outil}`;
-      messages.push({
-        role: "assistant",
-        tool_calls: [{ id, type: "function", function: { name: m.outil, arguments: "{}" } }],
-      });
-      messages.push({ role: "tool", tool_call_id: id, content: JSON.stringify(m.resultat) });
-    } else {
+  historique.forEach((m, rang) => {
+    if (m.role !== "outil") {
       messages.push({ role: m.role, content: m.contenu });
+      return;
     }
-  }
+    // Des appels qui se suivent sont UN tour du modèle : un message
+    // « assistant » qui les porte tous, puis un message « tool » par résultat.
+    // L'identifiant vient de l'appel, jamais du nom de l'outil (`interface.ts`).
+    const id = m.id ?? `outil_${rang}`;
+    if (historique[rang - 1]?.role !== "outil") {
+      messages.push({ role: "assistant", tool_calls: [] });
+    }
+    const tour = [...messages].reverse().find((x) => x.role === "assistant") as { tool_calls: unknown[] };
+    tour.tool_calls.push({
+      id,
+      type: "function",
+      function: { name: m.outil, arguments: JSON.stringify(m.parametres ?? {}) },
+    });
+    messages.push({ role: "tool", tool_call_id: id, content: JSON.stringify(m.resultat) });
+  });
   return messages;
 }
 
@@ -206,7 +215,9 @@ export const fournisseurLLMOpenAI: FournisseurLLM = {
     outils: DefinitionOutil[]
   ): Promise<ResultatLLMAvecOutils> {
     const resultat = await appeler({
-      max_tokens: 1024,
+      // Le même budget qu'une rédaction : à 1024, une réponse qui résume
+      // trois recherches s'arrêtait au milieu d'une phrase.
+      max_tokens: 4096,
       messages: construireMessagesOpenAI(systeme, historique),
       tools: outils.map((o) => ({
         type: "function",
@@ -216,19 +227,25 @@ export const fournisseurLLMOpenAI: FournisseurLLM = {
     if (!resultat.ok) return { succes: false, erreur: resultat.erreur };
 
     const message = resultat.donnees.choices?.[0]?.message;
-    const appel = message?.tool_calls?.[0];
-    if (appel?.function?.name) {
+    const appelsRecus = (message?.tool_calls ?? []).flatMap((a) =>
+      a.function?.name ? [{ id: a.id, nom: a.function.name, texte: a.function.arguments }] : []
+    );
+    if (appelsRecus.length > 0) {
       // Les paramètres arrivent en TEXTE, pas en objet — c'est la différence de
       // forme avec Anthropic, et la seule occasion de planter ici. Un JSON
       // illisible ne doit pas remonter en exception : l'appelant sait traiter
       // une erreur, il ne sait pas traiter une pile d'exécution.
-      let parametres: unknown = {};
-      try {
-        parametres = appel.function.arguments ? JSON.parse(appel.function.arguments) : {};
-      } catch {
-        return { succes: false, erreur: erreurIA("reponse_invalide", "Paramètres d'outil illisibles.") };
+      const appels: AppelOutil[] = [];
+      for (const [rang, appel] of appelsRecus.entries()) {
+        let parametres: unknown = {};
+        try {
+          parametres = appel.texte ? JSON.parse(appel.texte) : {};
+        } catch {
+          return { succes: false, erreur: erreurIA("reponse_invalide", "Paramètres d'outil illisibles.") };
+        }
+        appels.push({ id: appel.id ?? `appel_${rang}`, outil: appel.nom, parametres });
       }
-      return { succes: true, type: "appel_outil", outil: appel.function.name, parametres };
+      return { succes: true, type: "appel_outil", appels };
     }
 
     const texte = message?.content?.trim();

@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import http from "node:http";
 import { AddressInfo } from "node:net";
 import { _reinitialiserEnvPourTests } from "../src/server/env";
+import { z } from "zod";
+import type { MessageConversation } from "../src/server/ai/providers/llm/interface";
 
 // **Ce qui part réellement chez le fournisseur, et ce qu'on comprend de sa réponse.**
 //
@@ -74,7 +76,20 @@ async function main() {
   const { fournisseurLLMOpenAI } = await import("../src/server/ai/providers/llm/openai");
   const { fournisseurTranscriptionOpenAI } = await import("../src/server/ai/providers/transcription/openai");
 
-  const OUTILS = [{ nom: "ProposerModifications", description: "Propose des modifications", schema: undefined as never }];
+  // Un vrai schéma : celui qui part au modèle en est désormais DÉDUIT
+  // (`schema-outils.ts`), il ne peut plus être un leurre.
+  const OUTILS = [
+    { nom: "ProposerModifications", description: "Propose des modifications", schema: z.object({ texteIntroduction: z.string() }) },
+  ];
+
+  // **Un outil appelé deux fois dans la même question** : c'est ce que fait la
+  // boucle de correction, et « Huguette Groupiron » le demande d'elle-même.
+  const DEUX_FOIS_LE_MEME: MessageConversation[] = [
+    { role: "user", contenu: "Huguette Groupiron" },
+    { role: "outil", id: "a1", outil: "LireClients", parametres: { motCle: "Huguette" }, resultat: { clients: [] } },
+    { role: "outil", id: "a2", outil: "LireClients", parametres: { motCle: "Groupiron" }, resultat: { clients: [1] } },
+    { role: "outil", id: "a3", outil: "LireClients", parametres: { motCle: "Groupirone" }, resultat: { clients: [] } },
+  ];
 
   console.log("=== Anthropic : ce qui part, et ce qui revient ===");
 
@@ -105,8 +120,52 @@ async function main() {
     };
     const r = await fournisseurLLMAnthropic.genererAvecOutils!("s", [{ role: "user", contenu: "vas-y" }], OUTILS);
     assert.ok(r.succes && r.type === "appel_outil", "Devrait être un appel d'outil.");
-    assert.equal(r.outil, "ProposerModifications");
-    assert.deepEqual(r.parametres, { texteIntroduction: "Voici" });
+    assert.equal(r.appels[0].outil, "ProposerModifications");
+    assert.deepEqual(r.appels[0].parametres, { texteIntroduction: "Voici" });
+  });
+
+  await cas("deux recherches demandées d'un coup reviennent toutes les deux", async () => {
+    prochaine = {
+      statut: 200,
+      corps: {
+        content: [
+          { type: "tool_use", id: "t1", name: "LireClients", input: { motCle: "Groupiron" } },
+          { type: "tool_use", id: "t2", name: "RechercherLignesDevis", input: { client: "Groupiron" } },
+        ],
+      },
+    };
+    const r = await fournisseurLLMAnthropic.genererAvecOutils!("s", [{ role: "user", contenu: "x" }], OUTILS);
+    assert.ok(r.succes && r.type === "appel_outil", `Devrait être un appel d'outil : ${JSON.stringify(r)}`);
+    assert.deepEqual(
+      r.appels.map((a) => [a.id, a.outil]),
+      [["t1", "LireClients"], ["t2", "RechercherLignesDevis"]],
+      "la seconde recherche était jetée"
+    );
+  });
+
+  await cas("un outil appelé deux fois garde ses identifiants et ce qu'il a demandé", async () => {
+    prochaine = { statut: 200, corps: { content: [{ type: "text", text: "ok" }] } };
+    await fournisseurLLMAnthropic.genererAvecOutils!("s", DEUX_FOIS_LE_MEME, OUTILS);
+    const corps = JSON.parse(derniere!.corps) as { messages: { role: string; content: unknown }[] };
+    const blocs = corps.messages.flatMap((m) => (Array.isArray(m.content) ? m.content : [])) as {
+      type: string;
+      id?: string;
+      tool_use_id?: string;
+      input?: unknown;
+    }[];
+    const ids = blocs.filter((b) => b.type === "tool_use").map((b) => b.id);
+    assert.equal(new Set(ids).size, 3, `identifiants en double, refusés par Anthropic : ${ids.join(", ")}`);
+    assert.deepEqual(
+      blocs.filter((b) => b.type === "tool_use").map((b) => b.input),
+      [{ motCle: "Huguette" }, { motCle: "Groupiron" }, { motCle: "Groupirone" }],
+      "le modèle relisait ses recherches sans savoir ce qu'il avait demandé"
+    );
+    // Trois appels du même tour : UN message assistant, UN message de résultats.
+    assert.deepEqual(
+      corps.messages.map((m) => m.role),
+      ["user", "assistant", "user"],
+      "chaque appel du tour doit partir dans le même message"
+    );
   });
 
   await cas("une clé refusée est nommée pour ce qu'elle est", async () => {
@@ -158,7 +217,35 @@ async function main() {
     };
     const r = await fournisseurLLMOpenAI.genererAvecOutils!("s", [{ role: "user", contenu: "vas-y" }], OUTILS);
     assert.ok(r.succes && r.type === "appel_outil", `Devrait être un appel d'outil : ${JSON.stringify(r)}`);
-    assert.deepEqual(r.parametres, { texteIntroduction: "Voici" });
+    assert.deepEqual(r.appels[0].parametres, { texteIntroduction: "Voici" });
+  });
+
+  await cas("OpenAI : plusieurs appels d'un coup, et des identifiants qui ne se répètent pas", async () => {
+    prochaine = {
+      statut: 200,
+      corps: {
+        choices: [
+          {
+            message: {
+              tool_calls: [
+                { id: "c1", function: { name: "LireClients", arguments: '{"motCle":"Groupiron"}' } },
+                { id: "c2", function: { name: "LirePlanning", arguments: "{}" } },
+              ],
+            },
+          },
+        ],
+      },
+    };
+    const r = await fournisseurLLMOpenAI.genererAvecOutils!("s", DEUX_FOIS_LE_MEME, OUTILS);
+    assert.ok(r.succes && r.type === "appel_outil", `Devrait être un appel d'outil : ${JSON.stringify(r)}`);
+    assert.deepEqual(r.appels.map((a) => a.outil), ["LireClients", "LirePlanning"]);
+    const corps = JSON.parse(derniere!.corps) as {
+      messages: { role: string; tool_calls?: { id: string; function: { arguments: string } }[]; tool_call_id?: string }[];
+    };
+    const appels = corps.messages.flatMap((m) => m.tool_calls ?? []);
+    assert.equal(new Set(appels.map((a) => a.id)).size, 3, "identifiants en double");
+    assert.equal(appels[1].function.arguments, '{"motCle":"Groupiron"}');
+    assert.equal(corps.messages.filter((m) => m.role === "assistant").length, 1, "un seul tour pour trois appels");
   });
 
   await cas("des paramètres illisibles renvoient une erreur, jamais une exception", async () => {

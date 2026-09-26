@@ -22,9 +22,21 @@ export type ResultatLLM =
 // --- Extension additive (Lot IA-02) : usage d'outils --------------------
 // N'affecte pas genererTexte() ni ses appelants existants (extraction).
 
+/**
+ * Un appel d'outil, tel que le modèle l'a formulé.
+ *
+ * **L'identifiant et les paramètres voyagent avec le résultat** (26 septembre
+ * 2026). L'historique renvoyé au fournisseur les recopiait en `outil_<Nom>` et
+ * `{}` : un outil appelé deux fois dans la même question (ce que fait
+ * justement la boucle de correction) portait deux fois le même identifiant,
+ * qu'Anthropic refuse, et le modèle relisait ses propres recherches sans
+ * savoir ce qu'il avait demandé.
+ */
+export type AppelOutil = { id: string; outil: string; parametres: unknown };
+
 export type MessageConversation =
   | { role: "user" | "assistant"; contenu: string }
-  | { role: "outil"; outil: string; resultat: unknown };
+  | { role: "outil"; outil: string; resultat: unknown; id?: string; parametres?: unknown };
 
 export type DefinitionOutil = {
   nom: string;
@@ -34,8 +46,22 @@ export type DefinitionOutil = {
 
 export type ResultatLLMAvecOutils =
   | { succes: true; type: "texte"; texte: string }
-  | { succes: true; type: "appel_outil"; outil: string; parametres: unknown }
+  // **Plusieurs appels d'un coup** : « Huguette Groupiron » demande à la fois
+  // le client, ses chantiers et ses devis. Les servir un par un coûtait un
+  // aller-retour chacun sur un budget de huit.
+  | { succes: true; type: "appel_outil"; appels: AppelOutil[] }
   | { succes: false; erreur: ErreurIA };
+
+/**
+ * Un seul appel, pour les fournisseurs de test et d'essai qui n'en formulent
+ * jamais plusieurs. L'identifiant n'a besoin que d'être unique dans la
+ * conversation.
+ */
+let compteurAppels = 0;
+export function unAppel(outil: string, parametres: unknown): ResultatLLMAvecOutils {
+  compteurAppels++;
+  return { succes: true, type: "appel_outil", appels: [{ id: `appel_${compteurAppels}`, outil, parametres }] };
+}
 
 export interface FournisseurLLM extends FournisseurVision {
   nom: string;

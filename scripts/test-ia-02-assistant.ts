@@ -54,7 +54,7 @@ async function main() {
     assert.equal(resultat.succes, true);
     if (resultat.succes) {
       assert.equal(resultat.type, "appel_outil");
-      if (resultat.type === "appel_outil") assert.equal(resultat.outil, "LirePrestations");
+      if (resultat.type === "appel_outil") assert.equal(resultat.appels[0].outil, "LirePrestations");
     }
   });
 
