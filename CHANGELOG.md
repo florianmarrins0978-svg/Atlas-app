@@ -18,6 +18,18 @@ Format : le plus récent en tête.
   `scripts/test-schema-outils.ts` rougissait sur 18 outils avant la correction.
   Niveau 3 (17 points d'entrée) : **la batterie n'a pas été jouée, sur sa
   consigne du jour**, donc rien n'est parti sur `main`.
+- **L'assistant fait plusieurs recherches d'un coup, et un outil appelé deux
+  fois ne fait plus tomber la question.** L'historique renvoyé au fournisseur
+  donnait à chaque appel l'identifiant `outil_<Nom>` : deux appels au même
+  outil (la boucle de correction en fait) portaient le même, qu'Anthropic
+  refuse, et le patron lisait « indisponible ». Chaque appel garde désormais
+  son identifiant et ses paramètres ; les réponses passent de 1024 à 4096
+  jetons (`ARCHITECTURE.md` §417).
+- **L'assistant lit les factures, les paiements, les impayés, l'équipe, les
+  absences, les rappels et les diagnostics** (`LireFactures`, `LireEquipes`,
+  `LireRappels`, `LireDiagnostics`). Lecture seule ; les montants viennent du
+  dépôt, jamais d'une addition du modèle ; une entreprise ne voit rien de
+  l'autre.
 - **Fermer l'assistant d'un geste** (sa réponse « la A » devant
   `appli/fermer-l-assistant.html`). Toucher le gris ferme le panneau, la croix
   devient un rond de 44 px. Le panneau laisse toujours 44 px de gris : sur un

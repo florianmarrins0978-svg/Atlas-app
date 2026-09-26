@@ -33452,3 +33452,41 @@ faudrait savoir c'est une TVA à combien »*.
 **Réserve** : aux encaissements, un avoir émis après un acompte change les
 parts par taux de cet acompte (pas son total), comme il change déjà sa TVA
 (`TODO.md`).
+
+## §417 : L'assistant débridé, ses outils se DÉCLARENT et ses appels se SUIVENT
+
+**Sa capture du 26 septembre 2026** : « Huguette Groupiron » rendait « il faut
+au moins un mot du libellé », et « comment je supprime un client » ne trouvait
+jamais le mode d'emploi. Puis sa demande : *« nourris-le de tout ce qu'il est
+possible de le nourrir, je comprends pas pourquoi on dirait qu'il est
+bridé »*.
+
+| Ce qui le bridait | La décision |
+|---|---|
+| `schemaJsonDeLOutil` envoyait `properties: {}` pour 18 outils sur 21 | le schéma JSON se **déduit** du schéma Zod (`z.toJSONSchema`, `io: "input"`) ; une seule définition annonce et relit |
+| un seul appel lu par tour | le fournisseur rend `appels: AppelOutil[]`, le service les sert tous dans l'ordre |
+| l'historique recopiait chaque appel en `outil_<Nom>` avec `{}` | l'appel garde son `id` et ses `parametres` ; deux appels au même outil portaient le même identifiant, **qu'Anthropic refuse** : la question entière tombait en « indisponible » |
+| 1024 jetons par réponse | 4096, le budget d'une rédaction |
+| aucun outil sur les factures, l'équipe, les rappels, les diagnostics | `LireFactures`, `LireEquipes`, `LireRappels`, `LireDiagnostics`, chacun sur le dépôt de l'écran |
+
+**Ce qui n'a PAS bougé, et ne doit pas bouger** : il n'écrit rien sans le doigt
+du patron (26 août), et le filtre « hors métier » reste. Ce sont ses choix,
+pas des brides.
+
+**Pourquoi des outils et pas « tout dans la consigne ».** Verser toutes les
+données à chaque question serait lent, cher, et noierait le modèle. Chaque pan
+de l'application a un outil de lecture ; c'est lui qui va chercher.
+
+**Les montants ne sortent jamais d'un calcul du modèle.** `LireFactures` rend
+le reste dû de `facturesAvecPaiements` et le total par `totalRecu` : un modèle
+qui additionne trente montants de tête se trompe, et c'est ce chiffre qu'on
+répète au client.
+
+**`LireDiagnostics` rend `methodeConfirmation`** : sans lui, l'assistant dirait
+« confirmé » là où l'écran s'y refuse (sa règle du diagnostic végétal).
+
+Les suites : `test-schema-outils`, `test-appel-fournisseurs-ia` (plusieurs
+appels, identifiants uniques ; rouge sur l'ancien code),
+`test-assistant-se-corrige`, `test-assistant-lit-factures-db`,
+`test-assistant-lit-equipes-rappels-diagnostics-db` (isolation entre
+entreprises, sous `atlas_app`).
