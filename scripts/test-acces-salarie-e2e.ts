@@ -209,7 +209,7 @@ async function main() {
     });
   }
 
-  await cas("le patron le voit dans « Qui a accès », avec son rôle", async () => {
+  await cas("le patron le voit dans « Accès », avec son rôle", async () => {
     const liste = await listerAcces(ctxPatron);
     const lui = liste.find((l) => l.email === email);
     assert.ok(lui, "le salarié n'apparaît pas dans la liste des accès");

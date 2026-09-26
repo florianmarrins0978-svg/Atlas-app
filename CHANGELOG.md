@@ -6,6 +6,14 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-09-26
+
+### Réglages, Équipe : « Qui a accès » devient « Accès »
+
+Sa demande du 26 septembre 2026. Seul le texte change, la liste reste à sa
+place. Les fiches du mode d'emploi qui citaient le titre le citent à jour :
+l'assistant l'aurait sinon envoyé chercher un mot qui n'est plus à l'écran.
+
 ## 2026-09-25
 
 ### L'anthracnose se sépare en deux planches, le chêne et le hêtre
