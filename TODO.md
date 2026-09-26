@@ -1,5 +1,20 @@
 # Prochaines tâches
 
+## ⏳ À LIVRER — L'ASSISTANT VOIT LES CHAMPS DE SES OUTILS (26 septembre 2026)
+
+Codé sur `claude/is-this-normal-6jbxjy` (`schema-outils.ts`,
+`scripts/test-schema-outils.ts`). Niveau 3 : il faut la batterie avant `main`,
+et il a interdit de la lancer ce jour-là. **La lui demander avant de la
+lancer.** Suites déjà vertes ici : test-schema-outils, test-assistant-se-corrige,
+test-ia-02-assistant, test-assistant-explique-l-appli, test-assistant-perimetre.
+
+## ⏳ UN CHOIX À FAIRE — FERMER L'ASSISTANT (26 septembre 2026)
+
+`appli/fermer-l-assistant.html` : A (toucher le gris, grosse croix ronde,
+conseillée), B (le mot Fermer), C (A plus glisser vers la droite).
+Aujourd'hui, seule une croix de 20 px ferme le panneau
+(`AssistantSidebar.tsx`), et le voile gris ne fait rien.
+
 ## ⏳ UNE PLANCHE À REGARDER — FICHE 6, LA CHALAROSE DU FRÊNE (25 septembre 2026)
 
 `appli/fiche-chalarose-du-frene.html`, liée depuis `appli/essais.html`. **Sa

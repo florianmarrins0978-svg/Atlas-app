@@ -6,6 +6,22 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-09-26
+
+- **L'assistant voit enfin les champs de ses outils.** Sa capture : « Huguette
+  Groupiron » rendait « il faut au moins un mot du libellé », et « comment je
+  supprime un client » ne trouvait jamais le mode d'emploi, rechargement
+  compris. `schemaJsonDeLOutil` envoyait une fiche vide (`properties: {}`) pour
+  tous les outils sauf un : le modèle devinait les noms, Zod jetait les
+  mauvais en silence. Le schéma JSON se déduit désormais du schéma Zod de
+  chaque outil (`z.toJSONSchema`), la fiche écrite à la main est retirée.
+  `scripts/test-schema-outils.ts` rougissait sur 18 outils avant la correction.
+  Niveau 3 (17 points d'entrée) : **la batterie n'a pas été jouée, sur sa
+  consigne du jour**, donc rien n'est parti sur `main`.
+- Maquette `appli/fermer-l-assistant.html` : trois façons de refermer le
+  panneau (toucher le gris, grosse croix, mot Fermer, glisser). En attente de
+  son choix.
+
 ## 2026-09-25
 
 ### L'anthracnose se sépare en deux planches, le chêne et le hêtre
