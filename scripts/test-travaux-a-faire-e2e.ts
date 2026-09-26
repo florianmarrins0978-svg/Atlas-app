@@ -319,6 +319,32 @@ async function main() {
     assert.equal(await page.locator(ENVOYE).getAttribute("data-modifiable"), "true");
   });
 
+  // Sa plainte du 26 septembre 2026, sur la fiche de Julien ouverte au lundi
+  // 28 : *« je peux pas envoyer un retour d'intervention, ça devait pas être
+  // réglé ? »*. Le retour parti le jour même ne se rouvrait que depuis la
+  // journée d'aujourd'hui du planning : ailleurs, le bloc restait mort.
+  await cas("ENVOYÉ AUJOURD'HUI, il se rouvre aussi depuis une AUTRE journée du planning", async () => {
+    // Une autre journée du MÊME mois : le calendrier affiché est celui du mois.
+    const [a, m, j] = jourDuPatron().split("-").map(Number);
+    const autre = new Date(Date.UTC(a, m - 1, j === 1 ? 2 : j - 1)).toISOString().slice(0, 10);
+    await pool.query(`UPDATE chantiers SET date_planifiee = $2 WHERE id = $1`, [chantierId, autre]);
+    await page.goto(`${BASE}/planning`, { waitUntil: "networkidle" });
+    await page.locator(`[data-jour='${autre}']`).first().click();
+    const ligne = page.locator(`${LIGNE}:has-text("${chantierNom}")`).first();
+    await ligne.waitFor({ state: "visible", timeout: 20_000 });
+    await ligne.click();
+    await page.locator(ENVOYE).waitFor({ state: "visible", timeout: 20_000 });
+    assert.equal(
+      await page.locator(ENVOYE).getAttribute("data-modifiable"),
+      "true",
+      `depuis le ${autre}, le retour d'aujourd'hui ne se rouvre pas`
+    );
+    await page.locator(ENVOYE).click();
+    await page.waitForFunction((s) => document.querySelector(s)?.textContent === "Renvoyer le retour", ENVOYER, {
+      timeout: 20_000,
+    });
+  });
+
   await pool.end();
   await navigateur.close();
   console.log(`\n${echecs === 0 ? "✅" : "❌"} Travaux à faire — ${echecs} échec(s).`);

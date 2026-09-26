@@ -44,19 +44,21 @@ import { jourIso } from "./jour";
  * le modifier, la modification peut se faire seulement lorsque c'est le jour
  * actuel. »*
  *
- * Deux conditions, et il les faut toutes les deux :
+ * **Une seule condition : envoyé aujourd'hui**, compté à Paris (`jourIso`) :
+ * à 1 h du matin l'été, l'UTC dit encore la veille. Le jour 2 d'un chantier
+ * de huit jours, le retour du jour 1 est donc fermé : il est parti hier.
  *
- * · **envoyé aujourd'hui**, compté à Paris (`jourIso`) : à 1 h du matin l'été,
- *   l'UTC dit encore la veille ;
- * · **regardé depuis la journée d'aujourd'hui** au planning : depuis le jour 2
- *   d'un chantier de huit jours, « 1 retour envoyé » ne rouvre pas le jour 1.
- *
- * Le serveur ne tient que la première (il ne sait pas quel jour l'écran
- * montre) : c'est elle qui protège la preuve d'un jour passé.
+ * **La journée affichée au planning ne compte pas** — sa plainte du
+ * 26 septembre 2026, sur la fiche de Julien ouverte au lundi 28 : *« je peux
+ * pas envoyer un retour d'intervention, ça devait pas être réglé ? »*. La
+ * règle exigeait aussi que la fiche soit ouverte sur aujourd'hui : un retour
+ * parti le jour même depuis une autre case du planning ne se rouvrait plus,
+ * alors que le serveur l'aurait accepté. Le retour est celui du CHANTIER, pas
+ * de la case : l'écran et le serveur tiennent donc la même règle, et rien
+ * d'autre.
  */
-export function retourModifiable(poseLe: string, jourAffiche: string, maintenant: Date): boolean {
-  const aujourdHui = jourIso(maintenant);
-  return jourIso(new Date(poseLe)) === aujourdHui && jourAffiche === aujourdHui;
+export function retourModifiable(poseLe: string, maintenant: Date): boolean {
+  return jourIso(new Date(poseLe)) === jourIso(maintenant);
 }
 
 /** Une tâche du retour : le libellé recopié du devis, et si elle a été faite. */

@@ -58,6 +58,15 @@ async function main() {
     // **Dans le mois à l'écran** : ses deux voisins sont montés hors du cadre
     // depuis le 11 septembre 2026, et une case prise là-bas ne se clique pas.
     const laCase = page.locator(`${MOIS_A_L_ECRAN} button[data-jour="${jour}"]`);
+    // **Dans cinq jours, c'est parfois le mois d'après.** Le planning s'ouvre
+    // sur le mois en cours : du 27 au 31, le jour visé n'y est pas, et la suite
+    // rougissait sur un écran sain, une semaine par mois (26 septembre 2026,
+    // le 1er octobre cherché dans septembre). On avance comme lui, par
+    // « Mois suivant ».
+    for (let essai = 0; essai < 2 && (await laCase.count()) === 0; essai++) {
+      await page.getByRole("button", { name: "Mois suivant" }).click();
+      await page.waitForTimeout(400);
+    }
     assert.ok(
       (await laCase.count()) >= 1,
       `le jour ${jour} n'est pas au calendrier : rien n'est mesuré`

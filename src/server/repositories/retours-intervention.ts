@@ -15,7 +15,6 @@ import {
 } from "../db/schema";
 import type { Ctx } from "./context";
 import { retourModifiable, type RetourEnListe, type TacheDuRetour } from "../../lib/retour-intervention";
-import { jourIso } from "../../lib/jour";
 
 /**
  * LE RETOUR D'INTERVENTION, côté base.
@@ -153,11 +152,9 @@ export async function modifierLeDernierRetour(
       .orderBy(desc(retoursIntervention.poseLe))
       .limit(1);
     if (!dernier || dernier.id !== retourId) return false;
-    // **Le jour passé, il ne se modifie plus** (sa règle du 25 septembre). Le
-    // jour affiché est celui d'aujourd'hui : le serveur ne tient que la date
-    // d'envoi, l'écran tient la journée regardée.
-    const maintenant = new Date();
-    if (!retourModifiable(new Date(dernier.poseLe).toISOString(), jourIso(maintenant), maintenant)) return false;
+    // **Le jour passé, il ne se modifie plus** (sa règle du 25 septembre) :
+    // la même fonction que l'écran, qui ne regarde que la date d'envoi.
+    if (!retourModifiable(new Date(dernier.poseLe).toISOString(), new Date())) return false;
 
     const anciennes = await tx
       .select({ photoId: retoursInterventionPhotos.photoId })

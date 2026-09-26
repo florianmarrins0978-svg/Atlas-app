@@ -81,9 +81,10 @@ import {
  *
  * **LE JOUR MÊME, ET SEULEMENT LUI** — sa précision du même soir : *« le
  * jour 2 ne doit pas ouvrir le rapport du jour 1 ; lorsque le jour 1 est
- * passé on ne peut plus le modifier »*. Hors de ce jour-là, le bloc n'est
- * plus un bouton : il dit ce qui est parti, et le retour du jour part de la
- * barre (`retourModifiable`).
+ * passé on ne peut plus le modifier »*. Un retour parti avant aujourd'hui
+ * n'est plus un bouton : il dit ce qui est parti, et le retour du jour part
+ * de la barre (`retourModifiable`). La journée où la fiche est ouverte ne
+ * compte pas : le 26, depuis la fiche du 28, le retour du 26 se rouvre.
  */
 
 /** Le dernier retour parti, tel que la fiche le rouvre pour le modifier. */
@@ -99,7 +100,6 @@ export default function TravauxAFaire({
   lignes,
   retoursEnvoyes,
   dernierRetourLe,
-  jour,
 }: {
   chantierId: string;
   /**
@@ -111,8 +111,6 @@ export default function TravauxAFaire({
   retoursEnvoyes: number;
   /** Quand le dernier est parti, lu avec la feuille — `null` s'il n'y en a aucun. */
   dernierRetourLe: string | null;
-  /** La journée du planning où la fiche est ouverte. */
-  jour: string;
 }) {
   const [ouvert, setOuvert] = useState(false);
   const [charge, setCharge] = useState(false);
@@ -133,7 +131,7 @@ export default function TravauxAFaire({
   const [dernier, setDernier] = useState<RetourParti | null>(null);
   const [enModification, setEnModification] = useState(false);
   const [dernierLe, setDernierLe] = useState(dernierRetourLe);
-  const modifiable = dernierLe !== null && retourModifiable(dernierLe, jour, new Date());
+  const modifiable = dernierLe !== null && retourModifiable(dernierLe, new Date());
   const [refus, setRefus] = useState<string | null>(null);
   const champ = useRef<HTMLInputElement>(null);
 
