@@ -17,7 +17,10 @@ pages de l'appli, n'invente rien, fais quelque chose de vendeur et joli »*.
 `appli/video-promo.html` porte deux MP4 (accroches A et B), 1080 × 1920, 41 s,
 rendus image par image depuis `appli/video-promo/film/film.html`. Tout ce qui
 est dans le téléphone est une capture de l'application servie, prise en jouant
-le geste pour de vrai sur un jeu de démonstration de paysagiste : le client
+le geste pour de vrai sur un jeu de démonstration de paysagiste : la dictée
+part de « Créer un devis » (la fiche client, « Martin » tapé, la cliente
+reconnue et sa fiche reprise, le micro, l'enregistrement filmé image par
+image) ; le client
 coche le 13 octobre et accepte, la carte « Devis accepté » et le planning en
 sortent, la facture est créée depuis le devis. Le devis est son vrai PDF, le
 diagnostic la capture publiée, le plan d'arrosage le vrai composant.
@@ -25,6 +28,11 @@ diagnostic la capture publiée, le plan d'arrosage le vrai composant.
 **Aucun prix dans la vidéo, exprès** : la formule à 39 € n'ouvre ni l'arrosage
 ni le diagnostic, que le film montre (`src/lib/abonnements.ts`). L'essai de
 quinze jours, lui, ouvre tout : c'est ce que la fin annonce.
+
+**Corrigé le même soir, sur sa remarque** (*« la note vocale, c'est pas ça
+dans l'appli ! »*) : la première version montrait l'écran `note-vocale` d'un
+chantier (« Note enregistrée »), où l'on n'arrive pas en dictant. Le vrai
+chemin passe par la feuille « Créer un devis » ; c'est lui qui est filmé.
 
 ### Le retour envoyé se rouvre depuis n'importe quelle journée du planning
 
