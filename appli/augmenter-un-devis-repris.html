@@ -25,8 +25,10 @@
       1. le prix UNITAIRE s'arrondit au centime, demi vers le haut ; le montant
          est la quantité fois ce prix, pour que le client puisse recompter ;
       2. les taux ne s'ajoutent pas : 10 % après 5 % donne 10 % de l'ancien prix ;
-      3. une ligne que « Dernier devis » a déjà remise au tarif du jour ne monte
-         pas une seconde fois ;
+      3. l'ancien devis revient à SES prix ; le tarif du jour ne s'applique que
+         sur son oui (sa règle du 26 septembre, qui remplace « au prix
+         d'aujourd'hui, la 1 » du 8 septembre) ; la hausse part ensuite du
+         prix affiché, sur toutes les lignes ;
       4. une ligne à chiffrer reste à chiffrer ;
       5. une décimale au plus, de 0,1 à 100 % ; au delà, rien ne bouge.
     Le calcul se fait en centimes entiers et en dixièmes de pour cent : un seul
@@ -119,6 +121,22 @@
   .saisie span{font-size:14px;color:var(--inkSoft)}
   .refus{margin:8px 0 0;font-size:13px;color:var(--alerte)}
 
+  /* La question : un cadre or, parce qu'elle attend une réponse. */
+  .question{margin:0 0 14px;border-radius:8px;padding:12px;box-shadow:inset 0 0 0 1.5px var(--or)}
+  .question .titre{margin:0 0 8px;font:600 11px/1 ui-sans-serif,sans-serif;letter-spacing:.12em;
+                   text-transform:uppercase;color:var(--orTexte)}
+  .question .chg{margin:0;font-size:14.5px;line-height:1.5;font-variant-numeric:tabular-nums}
+  .question .chg s{color:var(--muted)}
+  .reponses{display:flex;gap:8px;margin-top:12px}
+  .reponses button{flex:1;height:42px;border-radius:999px;border:0;cursor:pointer;
+                   font:500 14.5px/1 ui-sans-serif,sans-serif}
+  .reponses .oui{background:var(--plein);color:var(--surPlein)}
+  .reponses .non{background:none;color:var(--ink);box-shadow:inset 0 0 0 1px var(--line)}
+  .reponse{margin:0 0 14px;display:flex;justify-content:space-between;align-items:center;gap:10px;
+           font-size:14px;color:var(--inkSoft)}
+  .reponse button{border:0;background:none;padding:0;color:var(--orTexte);cursor:pointer;
+                  font:500 14px/1 ui-sans-serif,sans-serif}
+
   .colonnes,.l{display:grid;grid-template-columns:1fr 34px 70px 76px;gap:7px}
   .colonnes{padding-bottom:6px}
   .colonnes span{font:600 9.5px/1 ui-sans-serif,sans-serif;letter-spacing:.12em;
@@ -153,7 +171,7 @@
 </head>
 <body data-charte="origine">
 
-<div class="bandeau"><b>Maquette.</b> Touchez « Dernier devis », puis augmentez les prix.</div>
+<div class="bandeau"><b>Maquette.</b> Touchez « Dernier devis ». Répondez à la question, puis augmentez les prix si vous voulez.</div>
 <div class="choix">
   <button type="button" id="recommencer">Recommencer</button>
   <button type="button" id="bascule-nuit" aria-pressed="false">Nuit</button>
@@ -198,6 +216,19 @@
     </div>
 
     <div class="feuille">
+      <!-- LA QUESTION, sa règle du 26 septembre 2026 : l'ancien devis revient
+           à ses anciens prix, et rien ne passe au tarif du jour sans son oui. -->
+      <div class="question" id="question">
+        <p class="titre">Votre grille a changé</p>
+        <div id="changements"></div>
+        <div class="reponses">
+          <button type="button" class="oui" id="oui">Mettre à jour</button>
+          <button type="button" class="non" id="non">Garder les anciens</button>
+        </div>
+      </div>
+      <p class="reponse" id="reponse" hidden><span id="reponse-texte"></span>
+        <button type="button" id="changer">Changer</button></p>
+
       <div class="hausse">
         <p class="titre">Augmenter les prix</p>
         <div class="rangee">
@@ -233,11 +264,11 @@
 </div>
 
 <script>
-// En centimes. `tarifDuJour` : « Dernier devis » l'a déjà remise à la grille
-// d'aujourd'hui, elle ne monte pas une seconde fois.
+// En centimes. `pu` : le prix de l'ancien devis. `grille` : ce que sa grille
+// porte aujourd'hui pour ce libellé, quand elle le connaît.
 const LIGNES = [
-  { libelle: "Taille de haie", qte: 40, pu: 1820, tarifDuJour: true },
-  { libelle: "Tonte", qte: 250, pu: 37 },
+  { libelle: "Taille de haie", qte: 40, pu: 1750, grille: 1820 },
+  { libelle: "Tonte", qte: 250, pu: 37, grille: 40 },
   { libelle: "Évacuation des déchets verts", qte: 1, pu: 9000 },
   { libelle: "Traitement anti-mousse", aChiffrer: true },
 ];
@@ -255,32 +286,56 @@ function lireTaux(texte) {
 }
 
 let taux = 0;
+/** `null` : pas encore répondu, donc les anciens prix. */
+let miseAJour = null;
 const boutons = [...document.querySelectorAll(".hausse button")];
 const champ = document.getElementById("taux");
 const refus = document.getElementById("refus");
+const aChanger = LIGNES.filter((l) => l.grille && l.grille !== l.pu);
 
+document.getElementById("changements").innerHTML = aChanger.map((l) =>
+  `<p class="chg">${l.libelle} : <s>${euros(l.pu)}</s> devient ${euros(l.grille)}</p>`
+).join("");
+
+/*
+  LA HAUSSE PART DU PRIX AFFICHÉ, sur toutes les lignes. Avant qu'il réponde à
+  la question, une ligne de sa grille pouvait monter deux fois sans qu'il le
+  sache ; maintenant c'est lui qui a dit oui ou non au tarif du jour, et les
+  +10 % s'appliquent à ce qu'il a sous les yeux, partout pareil.
+*/
 function peindre() {
   boutons.forEach((b) => b.setAttribute("aria-pressed", String(Number(b.dataset.taux) === taux)));
+  const repondu = miseAJour !== null;
+  document.getElementById("question").hidden = repondu;
+  document.getElementById("reponse").hidden = !repondu;
+  document.getElementById("reponse-texte").textContent =
+    miseAJour ? "Prix mis à jour." : "Anciens prix gardés.";
+
   let ht = 0;
   document.getElementById("lignes").innerHTML = LIGNES.map((l) => {
     if (l.aChiffrer) {
       return `<div class="l"><span>${l.libelle}</span><span class="n"></span><span class="n"></span>
         <span class="n vide">à chiffrer</span></div>`;
     }
-    const monte = taux > 0 && !l.tarifDuJour;
-    const pu = monte ? augmente(l.pu, taux) : l.pu;
+    const base = miseAJour && l.grille ? l.grille : l.pu;
+    const pu = taux > 0 ? augmente(base, taux) : base;
+    const bouge = pu !== l.pu;
     ht += pu * l.qte;
-    const cellePu = monte
+    const cellePu = bouge
       ? `<span class="neuf">${euros(pu)}</span><span class="ancien">${euros(l.pu)}</span>`
       : euros(pu);
     return `<div class="l"><span>${l.libelle}</span><span class="n">${l.qte}</span>
-      <span class="n">${cellePu}</span><span class="n${monte ? " neuf" : ""}">${euros(pu * l.qte)}</span></div>`;
+      <span class="n">${cellePu}</span><span class="n${bouge ? " neuf" : ""}">${euros(pu * l.qte)}</span></div>`;
   }).join("");
   const tva = Math.round(ht * 0.2);
   document.getElementById("ht").textContent = euros(ht);
   document.getElementById("tva").textContent = euros(tva);
   document.getElementById("ttc").textContent = euros(ht + tva);
 }
+
+document.getElementById("oui").addEventListener("click", () => { miseAJour = true; peindre(); });
+document.getElementById("non").addEventListener("click", () => { miseAJour = false; peindre(); });
+document.getElementById("changer").addEventListener("click", () => { miseAJour = null; peindre(); });
 
 boutons.forEach((b) => b.addEventListener("click", () => {
   const t = Number(b.dataset.taux);
@@ -305,7 +360,7 @@ const aller = (devis) => {
 document.getElementById("dernier-devis").addEventListener("click", () => aller(true));
 document.getElementById("revenir").addEventListener("click", () => aller(false));
 document.getElementById("recommencer").addEventListener("click", () => {
-  taux = 0; champ.value = ""; refus.hidden = true; peindre(); aller(false);
+  taux = 0; miseAJour = null; champ.value = ""; refus.hidden = true; peindre(); aller(false);
 });
 
 const bNuit = document.getElementById("bascule-nuit");

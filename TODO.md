@@ -14,6 +14,16 @@ avec `npm run voir` avant de coder. Niveau 3 (argent). Se trace avec la hausse
 en pourcentage (`appli/augmenter-un-devis-repris.html`), qui touche les mêmes
 lignes.
 
+**SA DÉCISION, le même soir, et elle REMPLACE « au prix d'aujourd'hui, la 1 »
+du 8 septembre :** *« il faut reprendre les prix de l'ancien devis ; à la limite
+demande s'il veut qu'on mette les prix à jour, il dit oui ou non, mais pas comme
+ça sans qu'il le sache »*. Donc : les lignes reviennent à leurs anciens prix ;
+une question « Votre grille a changé » liste chaque ligne qui bougerait (ancien
+barré, nouveau) avec « Mettre à jour » / « Garder les anciens » ; rien ne bouge
+sans réponse. La hausse en pourcentage part ensuite du prix affiché, sur toutes
+les lignes. Dessiné dans la planche, **pas codé**. `reprise-des-prix.ts` et son
+en-tête sont à réécrire en conséquence.
+
 ## ⏳ UNE PLANCHE À REGARDER : VOIR UN EXEMPLE DE FACTURE (26 septembre 2026)
 
 `appli/apercu-du-document.html`. Sa réponse attendue : **A** (bouton sous
