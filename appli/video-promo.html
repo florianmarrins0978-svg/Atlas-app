@@ -3,35 +3,23 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Atlas : la vidéo, script et story-board</title>
+<title>Atlas : la vidéo</title>
 <style>
   /*
-    LA VIDÉO DE PROMOTION, AVANT DE LA FABRIQUER.
+    LA VIDÉO DE PROMOTION.
 
-    Sa demande du 26 septembre 2026 : « je voudrais commercialiser l'appli, il
-    faudrait une vidéo assez courte pour la promouvoir ». Cible : paysagistes
-    et élagueurs d'abord, « mais en vrai tout le monde peut s'en servir ».
+    Sa demande du 26 septembre 2026, en trois temps : une vidéo courte pour
+    vendre l'appli (paysagistes et élagueurs d'abord) ; puis « les photos ne
+    sont pas du tout celles de l'appli ! » ; puis « mis en scène, un truc de
+    qualité, prends les vraies pages, n'invente rien, vendeur et joli ».
 
-    Étape 2 : le script et le story-board, joués en animatique dans un cadre de
-    téléphone. Vertical 9:16, 42 s, lisible SANS le son (la plupart des vidéos
-    se regardent muettes dans un fil) : les sous-titres sont incrustés.
-
-    **LES IMAGES SONT CELLES DE L'APPLICATION, JAMAIS DESSINÉES.** Sa
-    correction du 26 septembre : « les photos ne sont pas du tout celles de
-    l'appli ! ». La première version dessinait des écrans en CSS ; celle-ci
-    montre des captures de l'application servie, sur un jeu de démonstration
-    de paysagiste (Les Jardins de Loire, clients fictifs), dans video-promo/.
-    Le devis est son vrai PDF ; le diagnostic, la capture déjà publiée ; le
-    plan d'arrosage, le vrai composant du dessin (capture-plan-arrosage.ts).
-    Deux écrans ne se produisent pas sans clé d'IA sur ce poste : le devis
-    rédigé à l'écran depuis la dictée, et le diagnostic d'une photo prise ;
-    ceux-là se filment sur son espace.
+    Les deux MP4 sortent de video-promo/film/film.html, rendu image par image
+    (41 s, 1080 × 1920, 30 images par seconde). Tout ce qui est dans le
+    téléphone est une capture de l'application servie, prise en jouant le
+    geste pour de vrai ; le détail est en tête de film.html.
   */
-  :root{
-    --bone:#f5f3ee; --cream:#faf9f5; --paper:#ece9e1;
-    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
-    --pine:#2f3b2f; --or:#B98B47; --line:rgba(28,28,26,.12);
-  }
+  :root{ --bone:#f5f3ee; --cream:#faf9f5; --paper:#ece9e1; --ink:#1c1c1a; --ink-soft:#4a4a44;
+         --muted:#8a8578; --pine:#2f3b2f; --or:#B98B47; --line:rgba(28,28,26,.12); }
   @media (prefers-color-scheme: dark){
     :root{ --bone:#171613; --cream:#1e1c18; --paper:#262420; --ink:#e9e5dc;
            --ink-soft:#c9c4b8; --muted:#8a867c; --or:#C9A15E; --line:rgba(233,229,220,.16); }
@@ -42,70 +30,15 @@
   .page{max-width:460px;margin:0 auto;padding:0 16px}
   .sur{margin:0;font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:var(--or)}
   h1{margin:4px 0 6px;font:500 30px/1.15 Georgia,serif}
-  .chapo{margin:0 0 20px;color:var(--ink-soft);font-size:14.5px}
-
+  .chapo{margin:0 0 18px;color:var(--ink-soft);font-size:14.5px}
   .choix{display:flex;gap:8px;margin-bottom:14px}
   .choix button{flex:1;padding:10px 8px;border:1px solid var(--line);border-radius:12px;
        background:var(--cream);color:var(--ink);font:inherit;font-size:13px;cursor:pointer}
   .choix button[aria-pressed="true"]{background:var(--pine);color:#faf9f5;border-color:var(--pine)}
-
-  /* LE TÉLÉPHONE : un cadre 9:16, ce que verra le fil Instagram ou Facebook */
-  .ecran{position:relative;width:100%;max-width:340px;aspect-ratio:9/16;margin:0 auto;
-         border-radius:28px;overflow:hidden;background:#f5f3ee;
-         box-shadow:0 18px 50px rgba(0,0,0,.28)}
-  .scene{position:absolute;inset:0;opacity:0;transition:opacity .35s;display:flex;
-         flex-direction:column;align-items:center;justify-content:center;padding:26px 20px}
-  .scene.on{opacity:1}
-  .fond-pin{background:#2f3b2f;color:#faf9f5}
-  .fond-os{background:#f5f3ee;padding:0}
-  .fond-nuit{background:#1c1c1a;padding:0}
-
-  /* Une capture de l'application, à sa largeur entière et jamais rognée sur
-     les côtés : un écran coupé ne se reconnaît plus. Le bas du cadre reste au
-     fond de l'appli, sous le sous-titre. */
-  .capture{position:absolute;left:0;top:0;width:100%;height:auto}
-  .capture.puis{opacity:0}
-  .scene.on .capture.puis{animation:paraitre .5s ease both 3s}
-  /* Le devis PDF, posé comme une feuille sur le fond */
-  .feuille{position:absolute;left:12px;top:70px;width:calc(100% - 24px);border-radius:6px;
-           box-shadow:0 10px 30px rgba(0,0,0,.18)}
-  .scene.on .feuille{animation:poser .7s ease both}
-  @keyframes poser{from{opacity:0;transform:translateY(30px) scale(.96)}to{opacity:1;transform:none}}
-
-  .sous-titre{position:absolute;left:14px;right:14px;bottom:26px;text-align:center;
-       font:600 19px/1.3 -apple-system,"Segoe UI",Roboto,sans-serif;
-       color:#faf9f5;background:rgba(28,28,26,.82);padding:9px 12px;border-radius:12px;z-index:2}
-  .scene.on .sous-titre{animation:monte .5s ease both .15s}
-  @keyframes monte{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
-  @keyframes paraitre{from{opacity:0}to{opacity:1}}
-
-  .gros{font:500 30px/1.2 Georgia,serif;text-align:center}
-  .or{color:#C9A15E}
-  .scene.on .apres{animation:paraitre .5s ease both 1.8s}
-
-  .marque{font:500 44px/1 Georgia,serif;letter-spacing:.02em}
-  .accroche{margin:12px 0 22px;text-align:center;font-size:16px;color:#e6e1d6}
-  .offre{background:#B98B47;color:#1c1c1a;border-radius:14px;padding:12px 16px;text-align:center;font-weight:600}
-  .offre small{display:block;font-weight:400;font-size:13px;margin-top:2px}
-  .adresse{margin-top:14px;font-size:14px;color:#C9A15E}
-
-  .barre{max-width:340px;margin:12px auto 0;height:4px;background:var(--paper);border-radius:2px;overflow:hidden}
-  .barre i{display:block;height:100%;width:0;background:var(--or)}
-  .commandes{display:flex;justify-content:center;gap:10px;margin:10px 0 24px}
-  .commandes button{padding:9px 18px;border-radius:22px;border:1px solid var(--line);
-       background:var(--cream);color:var(--ink);font:inherit;font-size:14px;cursor:pointer}
-  .commandes .temps{align-self:center;font-variant-numeric:tabular-nums;color:var(--muted);font-size:13px}
-
-  h2{font:500 21px/1.2 Georgia,serif;margin:26px 0 10px}
-  .plan-script{border:1px solid var(--line);border-radius:14px;overflow:hidden}
-  .plan-script button{display:block;width:100%;text-align:left;border:0;border-bottom:1px solid var(--line);
-       background:var(--cream);color:var(--ink);font:inherit;padding:12px 14px;cursor:pointer}
-  .plan-script button:last-child{border-bottom:0}
-  .plan-script button.on{background:var(--paper)}
-  .plan-script .t{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--or)}
-  .plan-script .v{display:block;font-size:14px;margin-top:2px}
-  .plan-script .vo{display:block;font-size:13px;color:var(--ink-soft);font-style:italic;margin-top:3px}
-  .note{margin-top:22px;padding:14px 16px;background:var(--cream);border-radius:13px;
+  video{display:block;width:100%;max-width:360px;margin:0 auto;aspect-ratio:9/16;border-radius:22px;
+        background:#1f2820;box-shadow:0 18px 50px rgba(0,0,0,.28)}
+  .telecharger{display:block;text-align:center;margin:14px 0 0;color:var(--ink);font-size:14px}
+  .note{margin-top:24px;padding:14px 16px;background:var(--cream);border-radius:13px;
         font-size:13.5px;line-height:1.6;color:var(--ink-soft)}
   .note b{color:var(--ink)}
   .note ul{margin:6px 0 0;padding-left:18px}
@@ -114,138 +47,35 @@
 <body>
 <div class="page">
   <p class="sur">Atlas</p>
-  <h1>La vidéo, en brouillon</h1>
-  <p class="chapo">42 secondes, en vertical, lisible sans le son. Les écrans sont ceux de l’appli. Touchez une accroche, puis Lecture.</p>
+  <h1>La vidéo</h1>
+  <p class="chapo">41 secondes, en vertical, lisible sans le son. Tous les écrans sont ceux de l’appli.</p>
 
   <div class="choix" role="group" aria-label="Accroche">
-    <button type="button" data-accroche="A" aria-pressed="true">A : le temps perdu</button>
-    <button type="button" data-accroche="B" aria-pressed="false">B : le soir au bureau</button>
+    <button type="button" data-video="A" aria-pressed="true">A : 20 minutes de bureau</button>
+    <button type="button" data-video="B" aria-pressed="false">B : vos devis ce soir</button>
   </div>
 
-  <div class="ecran" id="ecran">
-    <section class="scene fond-pin" data-debut="0">
-      <p class="gros" id="accroche1">20 minutes de bureau après chaque visite ?</p>
-      <p class="gros or apres" id="accroche2">Et si ça prenait 30 secondes.</p>
-    </section>
-
-    <section class="scene fond-os" data-debut="4">
-      <img class="capture" src="video-promo/dictee.jpg" alt="La transcription de la dictée dans Atlas">
-      <div class="sous-titre">Vous dictez sur le chantier.</div>
-    </section>
-
-    <section class="scene fond-os" data-debut="11">
-      <img class="feuille" src="video-promo/devis.jpg" alt="Le devis PDF produit par Atlas">
-      <div class="sous-titre">Atlas rédige le devis.</div>
-    </section>
-
-    <section class="scene fond-os" data-debut="18">
-      <img class="capture" src="video-promo/client.jpg" alt="La page du devis chez le client">
-      <div class="sous-titre">Le client accepte et choisit sa date.</div>
-    </section>
-
-    <section class="scene fond-os" data-debut="24">
-      <img class="capture" src="video-promo/planning.jpg" alt="Le planning d’Atlas">
-      <img class="capture puis" src="video-promo/termines.jpg" alt="Un chantier terminé à facturer">
-      <div class="sous-titre">Chantier fini, la facture part en un appui.</div>
-    </section>
-
-    <section class="scene fond-os" data-debut="30">
-      <img class="capture" src="video-promo/diagnostic.jpg" alt="Le diagnostic végétal d’Atlas">
-      <img class="capture puis" src="video-promo/arrosage.jpg" alt="Le plan d’arrosage d’Atlas">
-      <div class="sous-titre">Et votre métier, il le connaît.</div>
-    </section>
-
-    <section class="scene fond-pin" data-debut="36">
-      <div class="marque">Atlas</div>
-      <p class="accroche">Du devis dicté à la facture,<br>sans rien retaper.</p>
-      <div class="offre">15 jours d’essai offerts<small>puis dès 39 € HT par mois</small></div>
-      <p class="adresse">[l’adresse du site]</p>
-    </section>
-  </div>
-
-  <div class="barre"><i id="avance"></i></div>
-  <div class="commandes">
-    <button type="button" id="lecture">Lecture</button>
-    <button type="button" id="rejouer">Rejouer</button>
-    <span class="temps" id="temps">0 s sur 42</span>
-  </div>
-
-  <h2>Le script, plan par plan</h2>
-  <div class="plan-script" id="plans">
-    <button type="button" data-aller="0"><span class="t">0 à 4 s</span><span class="v">Fond vert, l’accroche en grand.</span><span class="vo" id="vo1">« Vingt minutes de bureau après chaque visite ? Et si ça prenait trente secondes. »</span></button>
-    <button type="button" data-aller="4"><span class="t">4 à 11 s</span><span class="v">Vous, au pied d’un arbre, téléphone en main. Puis l’écran de la dictée.</span><span class="vo">« Vous dictez votre visite, sur place. »</span></button>
-    <button type="button" data-aller="11"><span class="t">11 à 18 s</span><span class="v">Le devis sort, avec ses prix et sa TVA.</span><span class="vo">« Atlas rédige le devis. Vous relisez, vous validez. »</span></button>
-    <button type="button" data-aller="18"><span class="t">18 à 24 s</span><span class="v">La page du client : il accepte et prend une date.</span><span class="vo">« Votre client accepte et choisit sa date. »</span></button>
-    <button type="button" data-aller="24"><span class="t">24 à 30 s</span><span class="v">Le planning rempli, puis le chantier à facturer.</span><span class="vo">« Chantier fini : la facture part en un appui. »</span></button>
-    <button type="button" data-aller="30"><span class="t">30 à 36 s</span><span class="v">Le diagnostic d’un platane, puis un plan d’arrosage.</span><span class="vo">« Et votre métier, il le connaît. »</span></button>
-    <button type="button" data-aller="36"><span class="t">36 à 42 s</span><span class="v">Le nom, la phrase, l’offre d’essai, l’adresse.</span><span class="vo">« Atlas. Paysagistes, élagueurs, et tous les artisans. Quinze jours pour essayer. »</span></button>
-  </div>
+  <video id="video" src="video-promo/atlas-A.mp4" poster="video-promo/affiche.jpg" controls playsinline preload="metadata"></video>
+  <a class="telecharger" id="telecharger" href="video-promo/atlas-A.mp4" download>Télécharger cette version</a>
 
   <div class="note">
     <b>Ce qui reste à me dire</b>
     <ul>
+      <li>A ou B ?</li>
       <li>Le nom commercial : Atlas, ou un autre ?</li>
-      <li>L’adresse où la vidéo renvoie : site, page d’inscription, téléphone ?</li>
-      <li>Une vidéo de vous sur un chantier, 3 à 4 secondes, pour le plan 2. Sans elle, je mets l’écran seul.</li>
+      <li>L’adresse où la vidéo renvoie. Elle s’ajoute sur la fin.</li>
+      <li>Votre voix et une musique, si vous en voulez.</li>
     </ul>
-    <p style="margin:10px 0 0">Les clients sont fictifs. Dans la vraie vidéo, la dictée et le diagnostic seront filmés en train de se faire, sur votre espace, où l’IA est branchée.</p>
+    <p style="margin:10px 0 0">Les clients sont fictifs. Aucun prix : la formule à 39 € n’ouvre pas l’arrosage ni le diagnostic, que la vidéo montre. L’essai de 15 jours, lui, ouvre tout.</p>
   </div>
 </div>
-
 <script>
-  // Une horloge unique : chaque scène commence à data-debut, et la dernière
-  // dure jusqu'à FIN. Relancer une scène retire puis repose sa classe, sans
-  // quoi les animations CSS ne repartiraient pas au deuxième passage.
-  const FIN = 42;
-  const scenes = [...document.querySelectorAll('.scene')];
-  const plans = [...document.querySelectorAll('#plans button')];
-  const avance = document.getElementById('avance');
-  const temps = document.getElementById('temps');
-  const lecture = document.getElementById('lecture');
-  let t = 0, enCours = false, dernier = 0, active = -1;
-
-  const ACCROCHES = {
-    A: ['20 minutes de bureau après chaque visite ?', 'Et si ça prenait 30 secondes.',
-        '« Vingt minutes de bureau après chaque visite ? Et si ça prenait trente secondes. »'],
-    B: ['Encore vos devis à taper ce soir ?', 'Dictez-les sur le chantier.',
-        '« Encore vos devis à taper ce soir ? Dictez-les sur le chantier. »'],
-  };
-  document.querySelectorAll('[data-accroche]').forEach(b => b.addEventListener('click', () => {
-    document.querySelectorAll('[data-accroche]').forEach(x => x.setAttribute('aria-pressed', x === b));
-    const [un, deux, vo] = ACCROCHES[b.dataset.accroche];
-    document.getElementById('accroche1').textContent = un;
-    document.getElementById('accroche2').textContent = deux;
-    document.getElementById('vo1').textContent = vo;
-    aller(0); jouer();
+  const video = document.getElementById('video'), lien = document.getElementById('telecharger');
+  document.querySelectorAll('[data-video]').forEach(b => b.addEventListener('click', () => {
+    document.querySelectorAll('[data-video]').forEach(x => x.setAttribute('aria-pressed', x === b));
+    const src = `video-promo/atlas-${b.dataset.video}.mp4`;
+    video.src = src; lien.href = src; video.play().catch(() => {});
   }));
-
-  function sceneA(x){ let i = 0; scenes.forEach((s, k) => { if (x >= +s.dataset.debut) i = k; }); return i; }
-  function montrer(i){
-    if (i === active) return;
-    active = i;
-    scenes.forEach((s, k) => { s.classList.remove('on'); if (k === i) { void s.offsetWidth; s.classList.add('on'); } });
-    plans.forEach((p, k) => p.classList.toggle('on', k === i));
-  }
-  function peindre(){
-    montrer(sceneA(t));
-    avance.style.width = (t / FIN * 100) + '%';
-    temps.textContent = Math.floor(t) + ' s sur ' + FIN;
-  }
-  function boucle(maintenant){
-    if (!enCours) return;
-    t += (maintenant - dernier) / 1000; dernier = maintenant;
-    if (t >= FIN) { t = FIN; arreter(); }
-    peindre();
-    if (enCours) requestAnimationFrame(boucle);
-  }
-  function jouer(){ if (t >= FIN) aller(0); enCours = true; lecture.textContent = 'Pause'; dernier = performance.now(); requestAnimationFrame(boucle); }
-  function arreter(){ enCours = false; lecture.textContent = 'Lecture'; }
-  function aller(x){ t = x; active = -1; peindre(); }
-
-  lecture.addEventListener('click', () => enCours ? arreter() : jouer());
-  document.getElementById('rejouer').addEventListener('click', () => { aller(0); jouer(); });
-  plans.forEach(p => p.addEventListener('click', () => { aller(+p.dataset.aller); jouer(); }));
-  aller(0);
 </script>
 </body>
 </html>

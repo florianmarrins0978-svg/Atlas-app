@@ -1,0 +1,343 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1080">
+<title>Atlas : le film</title>
+<link rel="stylesheet" href="polices/polices.css">
+<style>
+  /*
+    LE FILM DE PROMOTION, IMAGE PAR IMAGE.
+
+    Sa demande du 26 septembre 2026 : « mis en scène, un truc de qualité »,
+    « prends les vraies pages de l'appli, va regarder, n'invente rien », « fais
+    quelque chose de vendeur et joli ».
+
+    **Tout ce qui est dans le téléphone est une capture de l'application
+    servie**, prise en jouant le geste pour de vrai sur un jeu de démonstration
+    de paysagiste : le client a vraiment coché le 13 octobre et accepté, la
+    carte « Devis accepté » et le planning sont ceux qui en sont sortis, la
+    facture a vraiment été créée depuis le devis. Seul l'appui du doigt (le
+    cercle doré) est ajouté, posé sur le bouton que le geste a réellement
+    touché. Ce qui ne se produit pas sans clé d'IA ici (le devis rédigé depuis
+    la dictée, le diagnostic d'une photo) montre ce que l'application a produit
+    ailleurs : le PDF du devis et la capture publiée du diagnostic.
+
+    **CE QUI N'EST PAS DIT, EXPRÈS** : aucun prix. La formule à 39 € n'ouvre
+    pas le plan d'arrosage ni le diagnostic (src/lib/abonnements.ts), que le
+    film montre ; l'essai de quinze jours, lui, ouvre tout.
+
+    **UNE SEULE HORLOGE.** Rien n'est animé par CSS : `rendre(t)` pose chaque
+    élément pour l'instant t. C'est ce qui permet de fabriquer le MP4 image par
+    image sans une saccade, et de revoir n'importe quel instant à l'identique.
+    ?accroche=B change les trois premières secondes ; ?t=12.5 fige un instant.
+  */
+  :root{ --pin:#2f3b2f; --pin-fonce:#1f2820; --or:#C9A15E; --or-fonce:#B98B47; --os:#f5f3ee; --encre:#1c1c1a; }
+  *{box-sizing:border-box;margin:0}
+  html,body{width:1080px;height:1920px;overflow:hidden;background:var(--pin-fonce)}
+  #scene{position:absolute;inset:0;overflow:hidden;
+         background:radial-gradient(120% 80% at 50% 0%,#3a4a3a 0%,#2f3b2f 45%,#1f2820 100%)}
+  #lueur{position:absolute;width:1400px;height:1400px;border-radius:50%;
+         background:radial-gradient(circle,rgba(201,161,94,.22) 0%,rgba(201,161,94,0) 60%)}
+  .bloc{position:absolute;left:0;right:0;text-align:center;will-change:transform,opacity}
+  .etiquette{font:500 26px/1 'Film Sans';letter-spacing:.32em;text-transform:uppercase;color:var(--or)}
+  .titre{font:400 78px/1.12 'Film Serif';color:#faf9f5;letter-spacing:-.01em}
+  .titre .mot{display:inline-block;will-change:transform,opacity}
+  .accroche{font:400 96px/1.14 'Film Serif';color:#faf9f5;letter-spacing:-.015em}
+  .accroche.or{color:var(--or);font-style:italic}
+
+  /* LE TÉLÉPHONE */
+  #tel{position:absolute;left:0;top:0;z-index:5;width:664px;height:1386px;transform-origin:0 0;will-change:transform}
+  #coque{position:absolute;inset:0;border-radius:92px;background:#0e0f0d;
+         box-shadow:0 60px 120px rgba(0,0,0,.45),0 0 0 3px #3b3f39 inset}
+  #ecran{position:absolute;left:22px;top:22px;width:620px;height:1342px;border-radius:72px;overflow:hidden;background:var(--os)}
+  #ecran img{position:absolute;left:0;top:0;width:620px;will-change:transform,opacity}
+  #encoche{position:absolute;left:50%;top:40px;width:190px;height:52px;margin-left:-95px;border-radius:30px;background:#0e0f0d;z-index:5}
+  .appui{position:absolute;border-radius:50%;pointer-events:none;z-index:500;will-change:transform,opacity}
+  .appui.anneau{width:120px;height:120px;margin:-60px 0 0 -60px;border:5px solid var(--or)}
+  .appui.point{width:54px;height:54px;margin:-27px 0 0 -27px;background:rgba(201,161,94,.55)}
+  .repere{position:absolute;border:5px solid var(--or);border-radius:22px;z-index:500;will-change:opacity}
+
+  /* LA FEUILLE DU DEVIS */
+  #feuille{position:absolute;left:0;top:0;z-index:10;width:800px;transform-origin:50% 50%;border-radius:10px;
+           box-shadow:0 50px 110px rgba(0,0,0,.5);will-change:transform,opacity}
+  #feuille img{width:100%;display:block;border-radius:10px}
+  #feuille .repere{border-radius:14px}
+
+  /* LA FIN */
+  #fin .marque{font:400 210px/1 'Film Serif';color:#faf9f5;letter-spacing:-.02em}
+  #fin .phrase{margin-top:34px;font:400 52px/1.3 'Film Serif';font-style:italic;color:#e9e3d6}
+  .pastilles{display:flex;justify-content:center;gap:22px;margin-top:70px}
+  .pastille{padding:26px 40px;border-radius:60px;font:500 36px/1 'Film Sans';will-change:transform,opacity}
+  .pastille.pleine{background:var(--or);color:var(--encre)}
+  .pastille.vide{border:3px solid rgba(250,249,245,.5);color:#faf9f5}
+  #fin .metiers{margin-top:90px;font:500 28px/1 'Film Sans';letter-spacing:.3em;text-transform:uppercase;color:var(--or)}
+</style>
+</head>
+<body>
+<div id="scene">
+  <div id="lueur"></div>
+
+  <div class="bloc" id="acc" style="top:640px">
+    <p class="accroche" id="acc1"></p>
+    <p class="accroche or" id="acc2" style="margin-top:56px"></p>
+  </div>
+
+  <div class="bloc" id="entete" style="top:150px">
+    <p class="etiquette" id="etiquette"></p>
+    <p class="titre" id="titre" style="margin-top:30px"></p>
+  </div>
+
+  <div id="feuille"><img src="devis-pdf.jpg" alt=""><div class="repere" id="repereTotal"></div></div>
+
+  <div id="tel">
+    <div id="coque"></div>
+    <div id="ecran">
+      <div id="encoche"></div>
+      <img data-ecran="note" src="note.jpg" alt="">
+      <img data-ecran="transcription" src="transcription.jpg" alt="">
+      <img data-ecran="client" src="client.jpg" alt="">
+      <img data-ecran="client-date" src="client-date.jpg" alt="">
+      <img data-ecran="client-accepte" src="client-accepte.jpg" alt="">
+      <img data-ecran="accueil" src="accueil.jpg" alt="">
+      <img data-ecran="planning" src="planning.jpg" alt="">
+      <img data-ecran="termines" src="termines.jpg" alt="">
+      <img data-ecran="facture-avant" src="facture-avant.jpg" alt="">
+      <img data-ecran="facture" src="facture.jpg" alt="">
+      <img data-ecran="paysage" src="paysage.jpg" alt="">
+      <img data-ecran="diagnostic" src="diagnostic.jpg" alt="">
+      <img data-ecran="arrosage" src="arrosage.jpg" alt="">
+      <img id="barre" src="barre.jpg" alt="" style="top:auto;bottom:0;z-index:400">
+      <div class="appui anneau" id="anneau"></div>
+      <div class="appui point" id="point"></div>
+      <div class="repere" id="repere"></div>
+    </div>
+  </div>
+
+  <div class="bloc" id="fin" style="top:560px">
+    <p class="marque">Atlas</p>
+    <p class="phrase">Du devis dicté à la facture,<br>sans rien retaper.</p>
+    <div class="pastilles">
+      <span class="pastille pleine" id="p1">Essai gratuit 15 jours</span>
+      <span class="pastille vide" id="p2">Tous les outils ouverts</span>
+    </div>
+    <p class="metiers" id="metiers">Paysagistes, élagueurs, artisans</p>
+  </div>
+</div>
+
+<script>
+  const DUREE = 41;
+  const K = 620 / 390;                 // un pixel de l'appli, dans l'écran du téléphone
+  const HAUT_APPLI = 844;              // hauteur de l'écran capturé, en pixels de l'appli
+
+  const ACCROCHES = {
+    A: ['20 minutes de bureau<br>après chaque visite ?', 'Et si ça prenait<br>30 secondes ?'],
+    B: ['Encore vos devis<br>à taper ce soir ?', 'Dictez-les<br>sur le chantier.'],
+  };
+  const params = new URLSearchParams(location.search);
+  const acc = ACCROCHES[params.get('accroche')] || ACCROCHES.A;
+  document.getElementById('acc1').innerHTML = acc[0];
+  document.getElementById('acc2').innerHTML = acc[1];
+
+  // ─── les outils du temps ───────────────────────────────────────────────
+  const borne = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+  const lisse = x => { x = borne(x); return x * x * (3 - 2 * x); };
+  const sortie = x => { x = borne(x); return 1 - Math.pow(1 - x, 3); };
+  const ressort = x => { x = borne(x); const c = 1.35; return 1 + (c + 1) * Math.pow(x - 1, 3) + c * Math.pow(x - 1, 2); };
+  const entre = (t, a, b) => borne((t - a) / (b - a));
+  const mix = (a, b, p) => a + (b - a) * p;
+  // Une valeur qui passe par des clés [t, v] avec un lissage entre chacune.
+  function cles(t, liste, f = lisse) {
+    if (t <= liste[0][0]) return liste[0][1];
+    for (let i = 1; i < liste.length; i++) {
+      if (t <= liste[i][0]) return mix(liste[i - 1][1], liste[i][1], f(entre(t, liste[i - 1][0], liste[i][0])));
+    }
+    return liste[liste.length - 1][1];
+  }
+
+  // ─── le découpage ───────────────────────────────────────────────────────
+  // Chaque scène : son titre, et les écrans qu'elle montre (entrée, sortie,
+  // défilement en pixels de l'appli). Les appuis tombent sur les boutons que
+  // le geste a réellement touchés (mesurés sur l'écran servi, en pixels de
+  // l'appli : x, y).
+  const TITRES = [
+    { de: 3.5,  a: 9.3,  etiquette: 'Sur le chantier',         titre: 'Vous dictez.' },
+    { de: 9.3,  a: 14.7, etiquette: 'Tout est repris',          titre: 'Le devis est prêt.' },
+    { de: 14.7, a: 21.0, etiquette: 'Chez votre client',        titre: 'Il choisit sa date,<br>il accepte.' },
+    { de: 21.0, a: 25.8, etiquette: 'Sur votre téléphone',      titre: 'Vous êtes prévenu.' },
+    { de: 25.8, a: 31.6, etiquette: 'Chantier terminé',         titre: 'La facture reprend<br>le devis.' },
+    { de: 31.6, a: 36.4, etiquette: 'Les outils du métier',     titre: 'Diagnostic, arrosage,<br>sécurité.' },
+  ];
+  const ECRANS = [
+    // [nom, apparaît, disparaît, mode d'entrée]
+    ['note',           3.4, 5.9, 'fondu'],
+    ['transcription',  5.6, 14.7, 'glisse'],
+    ['client',        14.5, 16.6, 'fondu'],
+    ['client-date',   16.35, 18.4, 'net'],
+    ['client-accepte',18.15, 21.1, 'fondu'],
+    ['accueil',       20.9, 23.9, 'glisse'],
+    ['planning',      23.6, 25.9, 'fondu'],
+    ['termines',      25.7, 27.3, 'glisse'],
+    ['facture-avant', 27.0, 28.4, 'glisse'],
+    ['facture',       28.1, 31.7, 'glisse'],
+    ['paysage',       31.5, 33.0, 'glisse'],
+    ['diagnostic',    32.7, 34.7, 'glisse'],
+    ['arrosage',      34.4, 36.6, 'glisse'],
+  ];
+  const APPUIS = [
+    [5.1,  265, 406],   // « voir le texte »
+    [8.55, 195, 386],   // « Créer le devis à partir de ma dictée »
+    [16.0,  37, 293],   // le mardi 13 octobre
+    [17.75,195, 475],   // « J'accepte ce devis »
+    [26.75,299, 435],   // « À facturer », Élagage d'un chêne
+    [27.9, 195, 333],   // « Créer la facture »
+    [32.3, 183, 283],   // « Diagnostic végétal »
+  ];
+  // Des cadres dorés qui désignent sans toucher : [de, à, x, y, largeur, hauteur]
+  const REPERES = [
+    [22.0, 23.6,  34, 282, 322, 156],  // la carte « Devis accepté »
+    [24.2, 25.8,  64, 402, 50, 58],  // le 13 octobre au planning
+    [30.2, 31.6,  88, 602, 214, 58], // « Envoyer la facture », une fois la page descendue
+  ];
+
+  const els = {
+    acc: document.getElementById('acc'), acc1: document.getElementById('acc1'), acc2: document.getElementById('acc2'),
+    entete: document.getElementById('entete'), etiquette: document.getElementById('etiquette'), titre: document.getElementById('titre'),
+    tel: document.getElementById('tel'), feuille: document.getElementById('feuille'), repereTotal: document.getElementById('repereTotal'),
+    anneau: document.getElementById('anneau'), point: document.getElementById('point'), repere: document.getElementById('repere'),
+    barre: document.getElementById('barre'), fin: document.getElementById('fin'), p1: document.getElementById('p1'), p2: document.getElementById('p2'), metiers: document.getElementById('metiers'),
+    lueur: document.getElementById('lueur'),
+    ecrans: Object.fromEntries([...document.querySelectorAll('[data-ecran]')].map(i => [i.dataset.ecran, i])),
+  };
+
+  let titreCourant = -1;
+  function poserTitre(i) {
+    if (i === titreCourant) return;
+    titreCourant = i;
+    if (i < 0) { els.etiquette.textContent = ''; els.titre.innerHTML = ''; return; }
+    els.etiquette.textContent = TITRES[i].etiquette;
+    // Chaque mot devient une boîte, pour entrer l'un après l'autre.
+    els.titre.innerHTML = TITRES[i].titre.split('<br>').map(l =>
+      l.split(' ').map(m => `<span class="mot">${m}</span>`).join(' ')).join('<br>');
+  }
+
+  function rendre(t) {
+    // la lueur dérive doucement, pour que le fond vive
+    els.lueur.style.transform = `translate(${mix(-500, 200, (Math.sin(t / 6) + 1) / 2)}px, ${mix(-600, 900, t / DUREE)}px)`;
+
+    // ── l'accroche
+    const accSort = lisse(entre(t, 3.0, 3.6));
+    els.acc.style.opacity = 1 - accSort;
+    els.acc.style.transform = `translateY(${-80 * accSort}px)`;
+    const a1 = sortie(entre(t, 0.2, 0.9)), a2 = sortie(entre(t, 1.5, 2.2));
+    els.acc1.style.opacity = a1; els.acc1.style.transform = `translateY(${40 * (1 - a1)}px)`;
+    els.acc2.style.opacity = a2; els.acc2.style.transform = `translateY(${40 * (1 - a2)}px) scale(${mix(.94, 1, a2)})`;
+
+    // ── les titres
+    const i = TITRES.findIndex(s => t >= s.de && t < s.a);
+    poserTitre(i);
+    if (i >= 0) {
+      const s = TITRES[i];
+      const entree = entre(t, s.de, s.de + .5), fin = lisse(entre(t, s.a - .35, s.a));
+      els.entete.style.opacity = 1 - fin;
+      els.etiquette.style.opacity = sortie(entree);
+      els.etiquette.style.letterSpacing = `${mix(.5, .32, sortie(entree))}em`;
+      [...els.titre.querySelectorAll('.mot')].forEach((m, k) => {
+        const p = sortie(entre(t, s.de + .12 + k * .07, s.de + .62 + k * .07));
+        m.style.opacity = p; m.style.transform = `translateY(${50 * (1 - p)}px)`;
+      });
+    } else els.entete.style.opacity = 0;
+
+    // ── le téléphone : position (centre x, haut y) et échelle
+    const telY = cles(t, [[3.2, 1950], [4.1, 470], [9.4, 470], [9.9, 560], [14.3, 560], [14.8, 470], [36.3, 470], [37.0, 1950]], sortie);
+    const telX = cles(t, [[9.3, 540], [10.0, 330], [14.2, 330], [14.8, 540]]);
+    let zoom = cles(t, [[9.3, 1], [10.0, .8], [14.2, .8], [14.8, 1]]);
+    // les rapprochements : [début, fin, centre x, centre y (pixels de l'appli), échelle]
+    const RAPPROCHES = [[6.1, 7.9, 195, 250, 1.28], [18.6, 20.6, 195, 285, 1.3], [21.6, 23.4, 195, 360, 1.22], [29.0, 30.1, 195, 700, 1.1]];
+    let dx = 0, dy = 0;
+    for (const [de, a, cx, cy, e] of RAPPROCHES) {
+      const p = lisse(entre(t, de, de + .6)) * (1 - lisse(entre(t, a - .6, a)));
+      if (p <= 0) continue;
+      const echelle = mix(1, e, p);
+      zoom *= echelle;
+      // garder le point visé au même endroit de l'écran pendant qu'on s'approche
+      dx += -(22 + cx * K - 332) * (echelle - 1);
+      dy += -(22 + cy * K - 693) * (echelle - 1) * .6;
+    }
+    els.tel.style.transform = `translate(${telX - 332 * zoom + dx}px, ${telY + dy}px) scale(${zoom})`;
+
+    // ── les écrans dans le téléphone
+    for (const [nom, de, a, mode] of ECRANS) {
+      const img = els.ecrans[nom];
+      if (t < de || t > a) { img.style.opacity = 0; continue; }
+      const e = mode === 'net' ? (t >= de ? 1 : 0) : sortie(entre(t, de, de + .38));
+      let x = 0, op = 1;
+      if (mode === 'glisse') x = 620 * (1 - e);
+      else op = e;
+      let defile = 0;
+      if (nom === 'facture') defile = cles(t, [[29.9, 0], [30.6, 646]]) * K;
+      if (nom === 'diagnostic') defile = cles(t, [[33.3, 0], [34.6, 380]]) * K;
+      img.style.opacity = op;
+      img.style.transform = `translate(${x}px, ${-defile}px)`;
+      img.style.zIndex = Math.round(de * 10);
+    }
+
+    // La barre du bas reste en place quand la facture défile, comme dans l'appli.
+    els.barre.style.opacity = t >= 28.4 && t <= 31.7 ? 1 : 0;
+
+    // ── l'appui du doigt
+    const ap = APPUIS.find(([d]) => t >= d - .25 && t < d + .55);
+    if (ap) {
+      const [d, x, y] = ap;
+      const p = entre(t, d, d + .55);
+      els.anneau.style.left = els.point.style.left = `${x * K}px`;
+      els.anneau.style.top = els.point.style.top = `${y * K}px`;
+      els.point.style.opacity = t < d ? sortie(entre(t, d - .25, d)) : 1 - p;
+      els.point.style.transform = `scale(${t < d ? mix(1.4, 1, sortie(entre(t, d - .25, d))) : mix(1, .8, p)})`;
+      els.anneau.style.opacity = t < d ? 0 : 1 - p;
+      els.anneau.style.transform = `scale(${mix(.4, 1.6, sortie(p))})`;
+    } else { els.anneau.style.opacity = 0; els.point.style.opacity = 0; }
+
+    // ── les cadres dorés
+    const rp = REPERES.find(([d, a]) => t >= d && t < a);
+    if (rp) {
+      const [d, a, x, y, w, h] = rp;
+      els.repere.style.left = `${x * K}px`; els.repere.style.top = `${y * K}px`;
+      els.repere.style.width = `${w * K}px`; els.repere.style.height = `${h * K}px`;
+      els.repere.style.opacity = sortie(entre(t, d, d + .3)) * (1 - lisse(entre(t, a - .3, a)));
+    } else els.repere.style.opacity = 0;
+
+    // ── la feuille du devis, qui sort de la dictée : elle se pose en avant du
+    //    téléphone, entière dans le cadre, puis le total TTC s'encadre.
+    const fe = sortie(entre(t, 9.6, 10.5)), fs = lisse(entre(t, 14.1, 14.6));
+    const fZoom = cles(t, [[10.5, 1], [13.9, 1.04]]);
+    els.feuille.style.opacity = fe * (1 - fs);
+    els.feuille.style.transform =
+      `translate(${mix(1100, 240, fe)}px, ${mix(880, 760, fe) + 120 * fs}px) rotate(${mix(9, -2.5, fe)}deg) scale(${fZoom})`;
+    // Le total TTC, relevé sur le PDF (en pixels de la feuille de 800) : cadré à la fin.
+    els.repereTotal.style.left = '448px'; els.repereTotal.style.top = '538px';
+    els.repereTotal.style.width = '322px'; els.repereTotal.style.height = '56px';
+    els.repereTotal.style.opacity = sortie(entre(t, 12.2, 12.6));
+
+    // ── la fin
+    const fi = entre(t, 36.6, 37.4);
+    els.fin.style.opacity = sortie(fi);
+    els.fin.style.transform = `translateY(${60 * (1 - sortie(fi))}px)`;
+    const q1 = ressort(entre(t, 38.0, 38.5)), q2 = ressort(entre(t, 38.25, 38.75));
+    els.p1.style.opacity = borne(q1 * 3); els.p1.style.transform = `scale(${mix(.7, 1, q1)})`;
+    els.p2.style.opacity = borne(q2 * 3); els.p2.style.transform = `scale(${mix(.7, 1, q2)})`;
+    els.metiers.style.opacity = sortie(entre(t, 39.1, 39.7));
+  }
+
+  window.DUREE = DUREE;
+  window.rendre = rendre;
+  window.pret = Promise.all([document.fonts.ready, ...[...document.images].map(i => i.decode().catch(() => {}))]);
+  const fige = params.get('t');
+  if (fige !== null) window.pret.then(() => rendre(+fige));
+  else if (!params.has('image')) {
+    // à l'ouverture dans un navigateur : le film tourne en boucle
+    window.pret.then(() => { const debut = performance.now(); const tour = () => { rendre(((performance.now() - debut) / 1000) % DUREE); requestAnimationFrame(tour); }; tour(); });
+  }
+</script>
+</body>
+</html>

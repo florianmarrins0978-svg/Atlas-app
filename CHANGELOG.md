@@ -8,19 +8,23 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-26
 
-### La vidéo de promotion : script et story-board en planche
+### La vidéo de promotion : 41 s mises en scène, avec les vraies pages
 
-Sa demande : une vidéo courte pour commercialiser l'appli, aux paysagistes et
-élagueurs d'abord. `appli/video-promo.html` joue une animatique de 42 s en
-9:16, lisible sans le son, avec deux accroches (A, B) et le script plan par
-plan. Rien n'est tourné ni codé dans `src/`.
+Sa demande : une vidéo courte pour vendre l'appli, aux paysagistes et élagueurs
+d'abord ; puis, devant une planche aux écrans dessinés, *« prends les vraies
+pages de l'appli, n'invente rien, fais quelque chose de vendeur et joli »*.
 
-**Corrigé le même jour, sur sa remarque** (*« les photos ne sont pas du tout
-celles de l'appli ! »*) : la première version dessinait des écrans en CSS. Les
-plans montrent désormais des captures de l'application servie
-(`appli/video-promo/`), sur un jeu de démonstration de paysagiste monté dans la
-base locale jetable de la session : dictée, vrai PDF du devis, page du client,
-planning, chantier à facturer, diagnostic du platane, vrai plan d'arrosage.
+`appli/video-promo.html` porte deux MP4 (accroches A et B), 1080 × 1920, 41 s,
+rendus image par image depuis `appli/video-promo/film/film.html`. Tout ce qui
+est dans le téléphone est une capture de l'application servie, prise en jouant
+le geste pour de vrai sur un jeu de démonstration de paysagiste : le client
+coche le 13 octobre et accepte, la carte « Devis accepté » et le planning en
+sortent, la facture est créée depuis le devis. Le devis est son vrai PDF, le
+diagnostic la capture publiée, le plan d'arrosage le vrai composant.
+
+**Aucun prix dans la vidéo, exprès** : la formule à 39 € n'ouvre ni l'arrosage
+ni le diagnostic, que le film montre (`src/lib/abonnements.ts`). L'essai de
+quinze jours, lui, ouvre tout : c'est ce que la fin annonce.
 
 ### Le retour envoyé se rouvre depuis n'importe quelle journée du planning
 

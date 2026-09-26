@@ -1,17 +1,23 @@
 # Prochaines tâches
 
-## ⏳ UNE PLANCHE À REGARDER : LA VIDÉO DE PROMOTION (26 septembre 2026)
+## ⏳ UNE VIDÉO À REGARDER : LA PROMOTION D'ATLAS (26 septembre 2026)
 
-`appli/video-promo.html` : script et story-board, 42 s en vertical. Attend de
-lui : l'accroche (A ou B), le nom commercial, l'adresse vers laquelle la vidéo
-renvoie, et s'il fournit 3 à 4 s filmées sur un chantier. Ensuite : filmer les
-vrais écrans sur le jeu de démonstration, monter le MP4 muet, puis sa voix et
-sa musique. Pas encore sur `main`, donc pas encore publiée.
+`appli/video-promo.html` : deux MP4 de 41 s, accroches A et B. Attend de lui :
+A ou B, le nom commercial, l'adresse vers laquelle la vidéo renvoie (à poser
+sur la fin), sa voix et une musique s'il en veut. Pas encore sur `main`.
 
-Vu en capturant, à vérifier : sur le jeu de démonstration, la page du devis
-ENVOYÉ côté patron (`/chantiers/<id>/devis-complet`) affiche 0,00 € par ligne
-et au total, alors que son PDF porte 2 808,00 €. Peut venir du seed seul
-(lignes de prix non reprises) ; pas regardé plus loin.
+**Pour la refaire** : le jeu de démonstration de paysagiste (une variante du
+seed : Les Jardins de Loire, Mme Martin, élagage d'un chêne, dictée assortie)
+et les scripts de prise de vue ont vécu dans le dossier temporaire de la
+session du 26 septembre ; ils ne sont PAS dans le dépôt. Les images du film,
+elles, y sont (`appli/video-promo/film/`), et `film.html` se rend tel quel.
+
+Vu en capturant, à vérifier : sur le jeu de démonstration d'origine, la page du
+devis ENVOYÉ côté patron (`/chantiers/<id>/devis-complet`) affiche 0,00 € par
+ligne et au total, alors que son PDF porte le bon montant. Peut venir du seed
+seul ; pas regardé plus loin. Et l'en-tête de la facture s'écrit
+« F2026-000001 — Mme Martin » : un tiret long, que sa règle du 22 septembre
+refuse à l'écran.
 
 ## 🔴 « DERNIER DEVIS » CHANGE LES PRIX SANS LE DIRE (26 septembre 2026)
 
