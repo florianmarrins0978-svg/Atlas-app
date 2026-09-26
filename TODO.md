@@ -8,8 +8,16 @@ chaque passage** (j'avais défendu la A). Et sa question : *« il faut qu'il
 puisse l'automatiser s'il veut, non ? »* Oui, par un interrupteur du contrat,
 éteint d'office : la facture part AVEC le compte rendu du passage. Jamais à une
 date, qui facturerait un passage annulé par la pluie ; le compte rendu reste le
-geste du patron que `CLAUDE.md` §4 exige avant de facturer. Reste à regarder la
-planche entière. Proposé sans question : pas de date fixe, les passages du mois tombent le
+geste du patron que `CLAUDE.md` §4 exige avant de facturer.
+
+**Ses réponses suivantes, le même soir :**
+
+| | |
+|---|---|
+| A et B | **les deux restent sur le contrat**, l'utilisateur choisit avant d'envoyer, B cochée d'office ; le PDF suit le choix |
+| arrivée au planning | **le 20 du mois d'avant**, dans « Sans date » (le 1er était trop tard pour la première semaine) |
+| la couleur | il aime la **planche verte** (129, `appli/contrat-d-entretien-vert.html`), avec A et B en **or** comme l'origine |
+| Terminés | un passage posé et passé y arrive « À facturer », facture pré-remplie aux prix du contrat ; avec l'interrupteur, directement « Facturé » ; montré sur la 129 | Proposé sans question : pas de date fixe, les passages du mois tombent le
 1er dans « Sans date » ; le contrat part chez le client comme un devis ; les
 prestations viennent de `MODELE_FOURNI`. **Rien n'est codé.** Une fois codé :
 niveau 3 (argent, migration). Question ouverte à lui poser ensuite :

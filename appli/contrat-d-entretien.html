@@ -436,7 +436,7 @@
 
   <h2>Ce que je propose, sans vous le demander</h2>
   <ul>
-    <li><b>Les passages ne prennent pas de date fixe.</b> Le 1er du mois, ceux du mois tombent dans « Sans date », et vous les posez comme un chantier. Une date fixe (le 2e mardi) ne tient pas face à la pluie, et il faudrait la déplacer à la main à chaque fois.</li>
+    <li><b>Les passages ne prennent pas de date fixe.</b> Le 20 du mois d'avant, ceux du mois suivant arrivent dans « Sans date », et vous les posez comme un chantier. Une date fixe (le 2e mardi) ne tient pas face à la pluie, et il faudrait la déplacer à la main à chaque fois.</li>
     <li><b>Le contrat part chez le client comme un devis</b> : un lien, et il accepte. Rien n'entre au planning avant son accord.</li>
     <li><b>Les prestations viennent de votre fiche d'entretien.</b> Au passage, la fiche s'ouvre avec celles du mois déjà listées, et le compte rendu part comme aujourd'hui.</li>
   </ul>
@@ -490,7 +490,7 @@ const DEPART = () => ({
 let c = DEPART();
 let prochainId = 5;
 
-const euros = (x) => (x / 100).toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €";
+const euros = (x) => (x / 100).toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + "\u00a0€";
 function lireCentimes(txt) {
   const t = String(txt).trim().replace(/\s/g, "").replace("€", "").replace(",", ".");
   if (t === "" || !/^\d+(\.\d{0,2})?$/.test(t)) return null;
