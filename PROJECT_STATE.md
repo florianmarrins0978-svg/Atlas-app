@@ -19,10 +19,9 @@ Un appui sur « 1 retour envoyé » rouvre le dernier retour ; le renvoyer le
 réécrit, sans en créer un second. Le jour même seulement : le lendemain, on
 envoie le retour du jour. `ARCHITECTURE.md` §414.
 
-**Corrigé le 26 septembre 2026, pas encore sur `main`** : le retour envoyé
-aujourd'hui se rouvre depuis N'IMPORTE QUELLE journée du planning (il ne se
-rouvrait que depuis celle d'aujourd'hui). Branche
-`claude/intervention-return-send-issue-gxr10s`.
+**Corrigé le 26 septembre 2026, sur `main`** : le retour envoyé aujourd'hui
+se rouvre depuis N'IMPORTE QUELLE journée du planning (il ne se rouvrait que
+depuis celle d'aujourd'hui).
 
 ## CODÉ, PAS SUR `main` : GLISSER VERS LA DROITE POUR REVENIR (25 septembre 2026)
 
