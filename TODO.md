@@ -1,6 +1,9 @@
 # Prochaines tâches
 
-## 🔴 « DERNIER DEVIS » CHANGE LES PRIX SANS LE DIRE (26 septembre 2026)
+## « DERNIER DEVIS » CHANGE LES PRIX SANS LE DIRE (26 septembre 2026) : CODÉ, BATTERIE À JOUER AVANT `main`
+
+**Codé le 26 septembre** sur `claude/client-disappearance-no-date-f26td1` (`ARCHITECTURE.md` §417). Niveau 3 : la batterie entière n'a pas été jouée, à sa demande ; elle se joue avant `main`. Reste : « Reprendre le devis » sur un devis expiré n'a pas la bande.
+
 
 **Relevé par lui** : *« on ne peut pas reprendre un devis existant et mettre les
 prix au prix du jour sans en informer l'utilisateur »*. Il a raison, et c'est

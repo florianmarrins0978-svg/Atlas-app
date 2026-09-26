@@ -9,6 +9,7 @@ import { membresDuLibelle } from "../../lib/lignes-vendables";
 import { reprendreLesLignes, type LigneReprise } from "../../lib/reprise-des-prix";
 import { listerTarifs } from "./tarifs";
 import { montantDeLaLigne } from "../../lib/montant-de-ligne";
+import { memeValeur } from "../../lib/hausse-du-devis";
 
 export async function listerLignesPrix(ctx: Ctx, chantierId: string) {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, (tx) =>
@@ -43,6 +44,9 @@ export async function ajouterLignePrix(
     aChiffrer?: boolean;
     /** Le taux de sa catégorie (migration 0073). Absent : la ligne suit le devis. */
     tauxTva?: string | null;
+    /** Une ligne reprise (migration 0106) : son prix sur l'ancien devis, et le tarif du jour s'il diffère. */
+    prixAncien?: string | null;
+    prixGrille?: string | null;
   }
 ) {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
@@ -59,6 +63,8 @@ export async function ajouterLignePrix(
         unite: options?.unite ?? undefined,
         aChiffrer: options?.aChiffrer ?? false,
         tauxTva: options?.tauxTva ?? null,
+        prixAncien: options?.prixAncien ?? null,
+        prixGrille: options?.prixGrille ?? null,
         ordre: existantes.length,
       })
       .returning();
@@ -97,12 +103,12 @@ export async function modifierLignePrix(
     // tilleuls à 250 € donnaient un montant resté à 0,00 €, donc un devis à
     // zéro alors que l'écran affichait 750 €. Une ligne dont le total ne
     // correspond pas à son détail ne se rattrape que par un avoir.
-    const patch: typeof data = { ...data };
+    const patch: typeof data & { prixAncien?: null; prixGrille?: null } = { ...data };
+    const [avant] = await tx.select().from(lignesPrix).where(eq(lignesPrix.id, id)).limit(1);
     if (data.montant !== undefined && data.prixUnitaire === undefined && data.quantite === undefined) {
       patch.prixUnitaire = data.montant;
       patch.quantite = "1";
     } else if (data.montant === undefined && (data.prixUnitaire !== undefined || data.quantite !== undefined)) {
-      const [avant] = await tx.select().from(lignesPrix).where(eq(lignesPrix.id, id)).limit(1);
       if (avant) {
         // **La multiplication vit dans `src/lib/montant-de-ligne.ts`, et nulle
         // part ailleurs — 13 septembre 2026.** Elle était écrite ici ET dans le
@@ -149,6 +155,20 @@ export async function modifierLignePrix(
     // ═══════════════════════════════════════════════════════════════════════
     if (data.aChiffrer === undefined && patch.montant !== undefined && Number(patch.montant) > 0) {
       patch.aChiffrer = false;
+    }
+
+    // **UN PRIX TAPÉ SORT LA LIGNE DE LA REPRISE** (migration 0106, sa règle
+    // du 26 septembre 2026). C'est un prix d'aujourd'hui, le sien : ni le
+    // tarif du jour ni la hausse ne doivent le réécrire ensuite. On compare en
+    // valeur, pas en chaîne : l'écran renvoie le prix à chaque champ quitté,
+    // et « 17.5 » n'est pas une retouche de « 17.50 ».
+    if (
+      avant?.prixAncien != null &&
+      patch.prixUnitaire !== undefined &&
+      !memeValeur(patch.prixUnitaire, avant.prixUnitaire)
+    ) {
+      patch.prixAncien = null;
+      patch.prixGrille = null;
     }
     const [row] = await tx
       .update(lignesPrix)
@@ -451,6 +471,8 @@ export async function reprendreLesLignesPrix(
     listerTarifs(ctx),
   ]);
 
+  // **Les anciens prix, le tarif du jour PROPOSÉ** (sa règle du 26 septembre
+  // 2026) : rien ne change sans son oui, et la page du devis le lui demande.
   const reprises = reprendreLesLignes(
     anciennes.map((l) => ({
       libelle: l.libelle,
@@ -476,6 +498,9 @@ export async function reprendreLesLignesPrix(
       unite: l.unite,
       aChiffrer: l.sort === "attend-son-prix",
       tauxTva: l.tauxTva,
+      // Une ligne qui attend son prix n'a pas d'ancien prix : zéro n'en est pas un.
+      prixAncien: l.sort === "attend-son-prix" ? null : l.prixUnitaire,
+      prixGrille: l.sort === "grille-proposee" ? l.prixGrille : null,
     });
   }
 

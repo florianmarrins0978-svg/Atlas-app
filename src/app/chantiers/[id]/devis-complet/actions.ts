@@ -31,6 +31,8 @@ import { lireRetouchesDictees } from "@/server/ai/services/retouches-devis-servi
 import type { Changement } from "@/lib/retouches-devis";
 import type { Civilite } from "@/lib/civilite";
 import { tauxTvaValide } from "@/lib/reduction-devis";
+import { lireTauxDeHausse, type ReponseGrille } from "@/lib/hausse-du-devis";
+import { appliquerLaReprise } from "@/server/repositories/reprise-du-devis";
 
 // Le devis écrit à la main : chaque champ du document part vers SA source.
 //
@@ -389,4 +391,42 @@ export async function majEnTeteDevisAction(
   const devisModifie = await mettreAJourEnTeteDevis(ctx, devisId, data);
   if (devisModifie?.chantierId) revalidatePath(`/chantiers/${devisModifie.chantierId}/export`);
   return devisModifie;
+}
+
+/**
+ * Le devis repris par « Dernier devis » : « Mettre à jour » / « Garder les
+ * anciens », et « Augmenter les prix » (ses décisions du 26 septembre 2026).
+ *
+ * **Un refus se rend en valeur**, jamais en exception : le message d'une
+ * exception levée ici ne lui parviendrait pas (`AGENTS.md`).
+ */
+export async function repriseDuDevisAction(
+  chantierId: string,
+  choix: { reponse?: ReponseGrille; hausse?: string }
+): Promise<
+  | { ok: true; reponse: ReponseGrille; hausse: number; lignes: { id: string; prixUnitaire: string; montant: string }[] }
+  | { ok: false; raison: string }
+> {
+  const ctx = await getCurrentCtx();
+  await exigerGestionDevis(ctx, "reprendre les prix du devis");
+
+  // Un devis parti ne se réécrit pas : c'est ce que son client a reçu.
+  const devisCourant = await getDevisPourChantier(ctx, chantierId);
+  if (devisCourant?.statut === "envoye") {
+    return { ok: false, raison: "Ce devis est parti : ses prix ne bougent plus." };
+  }
+
+  let hausse: number | undefined;
+  if (choix.hausse !== undefined) {
+    const lu = lireTauxDeHausse(choix.hausse);
+    if (lu === null) return { ok: false, raison: "Entre 0,1 et 100 %." };
+    hausse = lu;
+  }
+  if (choix.reponse !== undefined && choix.reponse !== null && choix.reponse !== "oui" && choix.reponse !== "non") {
+    return { ok: false, raison: "Réponse inconnue." };
+  }
+
+  const r = await appliquerLaReprise(ctx, chantierId, { reponse: choix.reponse, hausse });
+  revalidatePath(`/chantiers/${chantierId}/devis-complet`);
+  return { ok: true, ...r };
 }

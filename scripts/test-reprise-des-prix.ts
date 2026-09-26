@@ -1,10 +1,13 @@
-// Reprendre un chantier aux tarifs d'aujourd'hui — la règle, sans base.
+// Reprendre un chantier : ses anciens prix, et le tarif du jour PROPOSÉ.
 //
-// **Ce que cette suite protège, et c'est de l'argent.** Reprendre un chantier
-// au prix de l'an dernier, c'est facturer une hausse de tarif qu'on ne voit
-// pas — sur chaque chantier repris, sans que rien ne le signale. C'est
-// exactement ce que le patron a tranché le 8 septembre 2026 en choisissant
-// « la 1 ».
+// **Ce que cette suite protège, et c'est de l'argent.** Le 8 septembre 2026 il
+// avait choisi « la 1 » : reprendre aux tarifs d'aujourd'hui. Le 26 septembre,
+// devant ce que ça donnait, il l'a retirée : *« il faut reprendre les prix de
+// l'ancien devis ; à la limite demande s'il veut qu'on mette les prix à jour,
+// il dit oui ou non, mais pas comme ça sans qu'il le sache »*. Un prix qui
+// change tout seul sur un devis qu'il croit recopié, c'est un devis qu'il
+// envoie sans l'avoir relu. La reprise garde donc l'ancien prix, et PROPOSE le
+// tarif du jour ; c'est l'écran qui pose la question.
 //
 // **Et le défaut d'en face compte autant** : marquer « à chiffrer » toute ligne
 // sans tarif correspondant obligerait à ressaisir presque tout le devis. Ce
@@ -50,17 +53,17 @@ const GRILLE: TarifDuJour[] = [
   { intitule: "Évacuation des déchets verts", prix: "90.00", unite: null },
 ];
 
-console.log("=== Reprendre un chantier aux tarifs d'aujourd'hui ===\n");
+console.log("=== Reprendre un chantier à ses prix, le tarif du jour proposé ===\n");
 
-essai("le tarif a monté : on prend le neuf, et l'ancien reste lisible", () => {
+essai("le tarif a monté : l'ancien prix RESTE, le neuf est seulement proposé", () => {
   const r = reprendreLaLigne(
     ligne({ libelle: "Taille de haie", quantite: "40", prixUnitaire: "17.50" }),
     GRILLE
   );
-  assert.equal(r.sort, "retarife");
-  assert.equal(r.prixUnitaire, "18.20");
-  assert.equal(r.montant, "728.00");
-  assert.equal(r.sort === "retarife" ? r.ancienPrixUnitaire : null, "17.50");
+  assert.equal(r.sort, "grille-proposee");
+  assert.equal(r.prixUnitaire, "17.50");
+  assert.equal(r.montant, "700.00");
+  assert.equal(r.sort === "grille-proposee" ? r.prixGrille : null, "18.20");
 });
 
 essai("le tarif n'a pas bougé : rien à signaler", () => {
@@ -121,8 +124,9 @@ essai("la casse et les accents ne séparent pas deux fois le même tarif", () =>
     ligne({ libelle: "evacuation des dechets verts", prixUnitaire: "80.00" }),
     GRILLE
   );
-  assert.equal(r.sort, "retarife");
-  assert.equal(r.prixUnitaire, "90.00");
+  assert.equal(r.sort, "grille-proposee");
+  assert.equal(r.prixUnitaire, "80.00");
+  assert.equal(r.sort === "grille-proposee" ? r.prixGrille : null, "90.00");
 });
 
 // Quarante mètres de haie la dernière fois n'en font pas quarante cette fois :
@@ -134,7 +138,7 @@ essai("la quantité n'est jamais recalculée", () => {
     GRILLE
   );
   assert.equal(r.quantite, "63.50");
-  assert.equal(r.montant, "1155.70");
+  assert.equal(r.montant, "1111.25");
 });
 
 essai("un libellé vide ne s'accroche pas à un tarif d'intitulé vide", () => {
@@ -173,10 +177,10 @@ essai("rien à dire quand rien n'a bougé", () => {
   assert.equal(resumeDeLaReprise(r).aQuelqueChoseADire, false);
 });
 
-essai("un prix qui a bougé, ça se dit", () => {
+essai("un tarif qui a bougé, ça se dit", () => {
   const r = reprendreLesLignes([ligne({ libelle: "Taille de haie", prixUnitaire: "17.50" })], GRILLE);
   const resume = resumeDeLaReprise(r);
-  assert.equal(resume.retarifees, 1);
+  assert.equal(resume.grillesProposees, 1);
   assert.equal(resume.aQuelqueChoseADire, true);
 });
 
@@ -199,5 +203,5 @@ essai("une grille vide ne casse rien : tous les prix sont gardés", () => {
   assert.equal(r[0].prixUnitaire, "17.50");
 });
 
-console.log(`\n${echecs === 0 ? "✅" : "❌"} Reprendre aux tarifs du jour — ${echecs} échec(s).`);
+console.log(`\n${echecs === 0 ? "✅" : "❌"} Reprendre à ses prix, tarif du jour proposé : ${echecs} échec(s).`);
 process.exit(echecs === 0 ? 0 : 1);
