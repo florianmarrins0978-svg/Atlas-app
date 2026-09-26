@@ -14,7 +14,10 @@
          plein, « Autre chantier » creux, « Dernière prestation » ;
       2. les prestations du contrat viennent de SON modèle de fiche
          d'entretien (`MODELE_FOURNI`, `src/lib/prestations-entretien.ts`),
-         libellés mot pour mot ;
+         libellés mot pour mot, ou s'écrivent à la main (sa demande du même
+         soir : « il faut pouvoir ajouter une prestation et l'écrire ») ;
+         le nombre de passages par mois se règle avec + et −, sans autre
+         plafond que les 31 jours d'un mois ;
       3. le planning : les passages du mois tombent dans le tiroir « Sans
          date » (`TiroirDuBas`, `PlanningClient.tsx`), et se posent comme un
          chantier. Aucun écran neuf dans le planning.
@@ -122,10 +125,18 @@
   .mois button[aria-pressed="true"]{background:var(--rust);color:var(--surPlein);box-shadow:none}
   .rangee{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px}
   .rangee .lib{font:600 11px/1.2 ui-sans-serif,sans-serif;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
-  .freq{display:flex;gap:5px}
-  .freq button{height:34px;padding:0 11px;border:0;border-radius:999px;cursor:pointer;white-space:nowrap;
-               background:var(--card);box-shadow:inset 0 0 0 1px var(--line);font:500 13.5px/1 ui-sans-serif,sans-serif}
-  .freq button[aria-pressed="true"]{background:var(--rust);color:var(--surPlein);box-shadow:none}
+  .compteur{display:flex;align-items:center;gap:4px}
+  .compteur button{width:36px;height:36px;border:0;border-radius:999px;cursor:pointer;padding:0;
+                   background:var(--card);box-shadow:inset 0 0 0 1px var(--line);font:500 19px/1 ui-sans-serif,sans-serif}
+  .compteur button:disabled{color:var(--muted);opacity:.5;cursor:default}
+  .compteur output{min-width:32px;text-align:center;font:600 17px/1 ui-sans-serif,sans-serif;font-variant-numeric:tabular-nums}
+  .ecrire{display:flex;gap:8px;margin:10px 0 4px}
+  .ecrire input{flex:1;min-width:0;height:42px;border:0;border-radius:8px;padding:0 12px;background:var(--card);
+                box-shadow:inset 0 0 0 1px var(--line);font-size:16px;outline:none}
+  .ecrire input:focus{box-shadow:inset 0 0 0 1.5px var(--or)}
+  .liste-modele .ecrire button{width:auto;flex:none;height:42px;padding:0 16px;border-radius:999px;border:0;
+                background:var(--plein);color:var(--surPlein);font:500 14.5px/1 ui-sans-serif,sans-serif;text-align:center}
+  .liste-modele .ecrire button:disabled{opacity:.45;color:var(--surPlein)}
   .prix{display:flex;align-items:center;gap:4px}
   .prix input{width:84px;border:0;border-bottom:1px solid var(--lineSoft);background:transparent;
               text-align:right;font-size:16px;padding:4px 2px;outline:none;font-variant-numeric:tabular-nums}
@@ -225,7 +236,7 @@
 </head>
 <body data-charte="origine">
 
-<div class="bandeau"><b>Maquette.</b> Touchez « Contrat d'entretien » sur la fiche. Tout se touche : les mois, la fréquence, les prix, la facturation. Puis envoyez, et allez au planning.</div>
+<div class="bandeau"><b>Maquette.</b> Touchez « Contrat d'entretien » sur la fiche. Tout se touche : les mois, le nombre de passages, les prix, la facturation. Puis envoyez, et allez au planning.</div>
 <div class="choix">
   <button type="button" id="recommencer">Recommencer</button>
   <button type="button" id="bascule-nuit" aria-pressed="false">Nuit</button>
@@ -387,7 +398,11 @@ const MODELE = [
 ];
 const INITIALES = ["J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D"];
 const NOMS_MOIS = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre"];
-const FREQUENCES = [[1, "1 fois"], [2, "2 fois"], [4, "4 fois"]];
+// Pas de plafond de métier : un mois compte au plus 31 jours, rien d'autre ne borne.
+const MAX_PAR_MOIS = 31;
+// Sa limite de libellé, la même que la fiche d'entretien (`MAX_LONGUEUR_LIBELLE`).
+const MAX_LIBELLE = 60;
+const echapper = (t) => String(t).replace(/[&<>"']/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[ch]);
 const AVRIL = 3;
 
 const DEPART = () => ({
@@ -461,17 +476,20 @@ function dessinerPrestations() {
   z.innerHTML = c.prestations.map((p) => `
     <div class="presta" data-id="${p.id}">
       <div class="haut">
-        <div><p class="nom">${p.libelle}</p><p class="famille">${p.famille}</p></div>
-        <button type="button" class="moins" data-retirer="${p.id}" aria-label="Retirer ${p.libelle}">−</button>
+        <div><p class="nom">${echapper(p.libelle)}</p>${p.famille ? `<p class="famille">${p.famille}</p>` : ""}</div>
+        <button type="button" class="moins" data-retirer="${p.id}" aria-label="Retirer ${echapper(p.libelle)}">−</button>
       </div>
       <div class="mois">${INITIALES.map((l, m) =>
         `<button type="button" data-mois="${m}" aria-pressed="${p.mois.includes(m)}" aria-label="${NOMS_MOIS[m]}">${l}</button>`).join("")}</div>
-      <div class="rangee"><span class="lib">Par mois</span>
-        <div class="freq">${FREQUENCES.map(([n, lib]) =>
-          `<button type="button" data-fois="${n}" aria-pressed="${p.fois === n}">${lib}</button>`).join("")}</div>
+      <div class="rangee"><span class="lib">Passages par mois</span>
+        <div class="compteur">
+          <button type="button" data-fois="-1" aria-label="Un passage de moins" ${p.fois <= 1 ? "disabled" : ""}>−</button>
+          <output data-nb-fois>${p.fois}</output>
+          <button type="button" data-fois="1" aria-label="Un passage de plus" ${p.fois >= MAX_PAR_MOIS ? "disabled" : ""}>+</button>
+        </div>
       </div>
       <div class="rangee"><span class="lib">Prix du passage HT</span>
-        <span class="prix"><input inputmode="decimal" data-prix value="${p.prix === null ? "" : (p.prix / 100).toFixed(2).replace(".", ",")}" placeholder="à chiffrer" aria-label="Prix du passage de ${p.libelle}"><span>€</span></span>
+        <span class="prix"><input inputmode="decimal" data-prix value="${p.prix === null ? "" : (p.prix / 100).toFixed(2).replace(".", ",")}" placeholder="à chiffrer" aria-label="Prix du passage de ${echapper(p.libelle)}"><span>€</span></span>
       </div>
       <p class="somme" data-somme></p>
     </div>`).join("");
@@ -525,7 +543,10 @@ function dessinerTotaux() {
 function dessinerModele() {
   const z = document.getElementById("liste-modele");
   const pris = new Set(c.prestations.map((p) => p.libelle));
-  let html = "", fam = null;
+  let html = `<div class="ecrire">
+      <input id="presta-libre" maxlength="${MAX_LIBELLE}" placeholder="Écrire une prestation" aria-label="Écrire une prestation" autocomplete="off">
+      <button type="button" id="ajouter-libre" disabled>Ajouter</button>
+    </div>`, fam = null;
   MODELE.forEach(([f, l]) => {
     if (f !== fam) { html += `<p class="fam">${f}</p>`; fam = f; }
     html += `<button type="button" data-prendre="${l}" ${pris.has(l) ? "disabled" : ""}>${l}</button>`;
@@ -624,8 +645,10 @@ document.addEventListener("click", (e) => {
     }
     const f = e.target.closest("[data-fois]");
     if (f) {
-      p.fois = Number(f.dataset.fois);
-      presta.querySelectorAll("[data-fois]").forEach((b) => b.setAttribute("aria-pressed", String(Number(b.dataset.fois) === p.fois)));
+      p.fois = Math.min(MAX_PAR_MOIS, Math.max(1, p.fois + Number(f.dataset.fois)));
+      presta.querySelector("[data-nb-fois]").textContent = p.fois;
+      presta.querySelector('[data-fois="-1"]').disabled = p.fois <= 1;
+      presta.querySelector('[data-fois="1"]').disabled = p.fois >= MAX_PAR_MOIS;
       sommeDe(p); dessinerTotaux(); return;
     }
     const r = e.target.closest("[data-retirer]");
@@ -636,6 +659,7 @@ document.addEventListener("click", (e) => {
     const l = document.getElementById("liste-modele");
     l.hidden = !l.hidden; dessinerModele(); return;
   }
+  if (e.target.closest("#ajouter-libre")) { ajouterLibre(); return; }
   const prendre = e.target.closest("[data-prendre]");
   if (prendre) {
     const [famille, libelle] = MODELE.find(([, l]) => l === prendre.dataset.prendre);
@@ -664,7 +688,24 @@ document.addEventListener("click", (e) => {
   }
 });
 
+// Le libellé tapé, nettoyé comme la fiche d'entretien le nettoie (`libelleNettoye`).
+function libelleTape() {
+  const champ = document.getElementById("presta-libre");
+  return champ ? champ.value.replace(/\s+/g, " ").trim().slice(0, MAX_LIBELLE) : "";
+}
+function ajouterLibre() {
+  const libelle = libelleTape();
+  if (!libelle) return;
+  c.prestations.push({ id: prochainId++, famille: "", libelle, mois: [], fois: 1, prix: null });
+  document.getElementById("liste-modele").hidden = true;
+  dessinerPrestations(); dessinerTotaux();
+}
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Enter" && e.target.id === "presta-libre") { e.preventDefault(); ajouterLibre(); }
+});
+
 document.addEventListener("input", (e) => {
+  if (e.target.id === "presta-libre") { document.getElementById("ajouter-libre").disabled = !libelleTape(); return; }
   if (!e.target.matches("[data-prix]")) return;
   const presta = e.target.closest(".presta");
   const p = c.prestations.find((x) => x.id === Number(presta.dataset.id));
