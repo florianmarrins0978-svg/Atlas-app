@@ -1,5 +1,29 @@
 # Prochaines tâches
 
+## 🔴 « DERNIER DEVIS » CHANGE LES PRIX SANS LE DIRE (26 septembre 2026)
+
+**Relevé par lui** : *« on ne peut pas reprendre un devis existant et mettre les
+prix au prix du jour sans en informer l'utilisateur »*. Il a raison, et c'est
+une promesse non tenue : `src/lib/reprise-des-prix.ts` dit « le tarif a bougé :
+on prend le neuf, on montre l'ancien » et « une ligne sans tarif garde son prix,
+et le dit ». **Rien ne le montre.** `refaireLeChantierAction` calcule
+`retarifees` et `ancienPrixUnitaire`, puis `RepartirDeCeClient.tsx` ouvre le
+devis sans lire ni l'un ni l'autre, et `lignes_prix` ne garde pas l'ancien prix.
+Constaté dans le code (confiance haute), **pas regardé à l'écran** : à confirmer
+avec `npm run voir` avant de coder. Niveau 3 (argent). Se trace avec la hausse
+en pourcentage (`appli/augmenter-un-devis-repris.html`), qui touche les mêmes
+lignes.
+
+**SA DÉCISION, le même soir, et elle REMPLACE « au prix d'aujourd'hui, la 1 »
+du 8 septembre :** *« il faut reprendre les prix de l'ancien devis ; à la limite
+demande s'il veut qu'on mette les prix à jour, il dit oui ou non, mais pas comme
+ça sans qu'il le sache »*. Donc : les lignes reviennent à leurs anciens prix ;
+une question « Votre grille a changé » liste chaque ligne qui bougerait (ancien
+barré, nouveau) avec « Mettre à jour » / « Garder les anciens » ; rien ne bouge
+sans réponse. La hausse en pourcentage part ensuite du prix affiché, sur toutes
+les lignes. Dessiné dans la planche, **pas codé**. `reprise-des-prix.ts` et son
+en-tête sont à réécrire en conséquence.
+
 ## ⏳ UNE PLANCHE À REGARDER : VOIR UN EXEMPLE DE FACTURE (26 septembre 2026)
 
 `appli/apercu-du-document.html`. Sa réponse attendue : **A** (bouton sous
