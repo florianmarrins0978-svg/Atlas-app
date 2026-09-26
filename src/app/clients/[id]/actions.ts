@@ -99,7 +99,7 @@ export async function refaireLeChantierAction(
   clientId: string,
   depuisChantierId: string
 ): Promise<
-  { ok: true; chantierId: string; repris: number; retarifees: number } | { ok: false; raison: string }
+  { ok: true; chantierId: string; repris: number; tarifsDuJourProposes: number } | { ok: false; raison: string }
 > {
   const ctx = await getCurrentCtx();
   await exigerEcran(ctx, "/clients", "repartir d'un chantier");
@@ -136,6 +136,6 @@ export async function refaireLeChantierAction(
     ok: true,
     chantierId: chantier.id,
     repris: reprises.length,
-    retarifees: reprises.filter((l) => l.sort === "retarife").length,
+    tarifsDuJourProposes: reprises.filter((l) => l.sort === "grille-proposee").length,
   };
 }

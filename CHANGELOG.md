@@ -29,6 +29,28 @@ toute batterie. Éprouvé ici : types, lint, `test-agenda-externe`,
 `test-mode-emploi`, la suite navigateur de l'écran (12 sur 12, vue rougir quand
 « Masquer » n'écrit plus), et les écrans regardés.
 
+### « Autre chantier » s'appelle « Nouveau devis »
+
+**Sa question** : *« faut l'appeler nouveau devis, pas autre chantier ? »*. Ce
+qu'il veut en appuyant, c'est un devis ; et à côté de « Dernier devis »,
+l'opposition se lit seule. Seul le mot change : même place, même geste (la
+fiche d'un chantier vierge, ses coordonnées déjà posées). Le mode d'emploi de
+l'assistant suit (`fiches-mode-emploi`).
+
+### « Dernier devis » reprend l'ancien devis à SES prix, et demande avant le tarif du jour
+
+**Sa règle** : *« il faut reprendre les prix de l'ancien devis ; à la limite
+demande s'il veut qu'on mette les prix à jour, il dit oui ou non, mais pas comme
+ça sans qu'il le sache »*. Jusqu'ici, « Dernier devis » passait chaque ligne de
+sa grille au tarif du jour **sans rien afficher** : un devis qu'il croyait
+recopié partait avec d'autres prix. Désormais la ligne garde son ancien prix, et
+la page du devis lui pose la question « Votre grille a changé » (ancien barré,
+nouveau), **Mettre à jour** ou **Garder les anciens**. Puis **Augmenter les
+prix** : + 5, 10, 30 % ou un taux tapé, sur les lignes reprises, prix unitaire
+arrondi au centime, sans cumul, jamais sur un prix tapé à la main. Migration
+0106 (quatre colonnes nulles, expand seul). Planche
+`appli/augmenter-un-devis-repris.html`, `ARCHITECTURE.md` §417.
+
 ### Le retour envoyé se rouvre depuis n'importe quelle journée du planning
 
 **Sa plainte**, sur la fiche de Julien posée au lundi 28 : *« je peux pas

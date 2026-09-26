@@ -51,6 +51,8 @@ import {
 } from "@/components/atlas/Remise";
 import { useEcrituresALaSuite } from "@/components/atlas/useEcrituresALaSuite";
 import DicterDansLeDevis from "./DicterDansLeDevis";
+import RepriseDuDevis from "./RepriseDuDevis";
+import { memeValeur } from "@/lib/hausse-du-devis";
 import LigneAcompte from "./LigneAcompte";
 import LigneMainDoeuvre from "./LigneMainDoeuvre";
 import ChampUnite from "./ChampUnite";
@@ -115,6 +117,10 @@ type Ligne = {
   aChiffrer?: boolean | null;
   /** Le taux de sa catégorie. `null` : la ligne suit le taux du devis (migration 0073). */
   tauxTva?: string | null;
+  /** Reprise par « Dernier devis » et jamais retouchée : son prix sur l'ancien devis (migration 0106). */
+  prixAncien?: string | null;
+  /** Le tarif du jour, quand il diffère de l'ancien prix (migration 0106). */
+  prixGrille?: string | null;
 };
 
 /**
@@ -183,6 +189,9 @@ type Props = {
   mainDoeuvreHt: string | null;
   /** Son titre, s'il en a donné un (migration 0092). */
   titre: string | null;
+  /** Sur un devis repris : sa réponse au tarif du jour, et la hausse posée (migration 0106). */
+  repriseGrille: "oui" | "non" | null;
+  hausseReprise: number;
   /** Les acomptes posés sur ce devis, taux cumulés (migration 0088). */
   acomptesInitiaux: AcompteDevis[];
   /** Le réglage recopié à la création — ce que « + Ajouter un acompte » propose d'abord. */
@@ -969,6 +978,27 @@ export default function DevisCompletClient(props: Props) {
         </div>
       )}
 
+      {/* --- Le devis repris : le tarif du jour demandé, et la hausse ------- */}
+      {!fige && (
+        <RepriseDuDevis
+          chantierId={props.chantierId}
+          lignes={lignes
+            .filter((l) => !estLigneOuverte(l.id))
+            .map((l) => ({ id: l.id, libelle: l.libelle, prixAncien: l.prixAncien ?? null, prixGrille: l.prixGrille ?? null }))}
+          reponseInitiale={props.repriseGrille}
+          hausseInitiale={props.hausseReprise}
+          ecrire={aLaSuite}
+          onPrix={(maj) =>
+            setLignes((cur) =>
+              cur.map((l) => {
+                const m = maj.find((x) => x.id === l.id);
+                return m ? { ...l, prixUnitaire: prixAEcrire(sansZerosInutiles(m.prixUnitaire)), montant: m.montant } : l;
+              })
+            )
+          }
+        />
+      )}
+
       {/* --- En-tête : l'entreprise à gauche, les références à droite -------- */}
       <header className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0 flex-1">
@@ -1301,12 +1331,29 @@ export default function DevisCompletClient(props: Props) {
                 marqueLigne={l.id}
                 aria={`Prix unitaire ${i + 1}`}
                 placeholder="0,00"
-                onChange={(v) => majLigneLocale(l.id, "prixUnitaire", v)}
+                onChange={(v) => {
+                  majLigneLocale(l.id, "prixUnitaire", v);
+                  // Un prix tapé sort la ligne de la reprise, comme en base
+                  // (`modifierLignePrix`) : ni la grille ni la hausse ne le
+                  // réécriront, et l'ancien prix barré s'efface.
+                  if (l.prixAncien != null && !memeValeur(v, l.prixUnitaire)) {
+                    setLignes((cur) => cur.map((x) => (x.id === l.id ? { ...x, prixAncien: null, prixGrille: null } : x)));
+                  }
+                }}
                 onFini={(fraiche) => {
                   void persisterLigne(l, { prixUnitaire: fraiche });
                 }}
               />
             </Cellule>
+            {/* L'ancien prix, barré, tant qu'une ligne reprise porte un autre
+                prix : le tarif du jour ou la hausse ont changé ce qu'il avait
+                écrit, et il le voit. */}
+            {!fige && l.prixAncien != null && !memeValeur(l.prixAncien, l.prixUnitaire) && (
+              <p className="-mt-1 text-right text-[12.5px] tabular-nums sm:col-span-5" data-atlas="ancien-prix">
+                <span style={{ color: colors.muted }}>Ancien prix </span>
+                <s style={{ color: colors.muted }}>{enEuros(Number(l.prixAncien))}</s>
+              </p>
+            )}
 
             <Cellule libelle="Montant HT">
               {/* **« À chiffrer » n'est pas « 0,00 € ».** Un zéro se lit

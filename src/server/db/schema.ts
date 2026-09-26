@@ -813,6 +813,14 @@ export const chantiers = pgTable(
     // planning et celle de la feuille de route, qui auraient divergé au premier
     // retrait (`CLAUDE.md` §3).
 
+    /**
+     * Ses deux réponses sur un devis repris par « Dernier devis » (migration
+     * 0106) : « oui » ou « non » au tarif du jour, et la hausse appliquée aux
+     * lignes reprises. NULL sur tout chantier qui n'est pas une reprise.
+     */
+    repriseGrille: text("reprise_grille").$type<"oui" | "non">(),
+    hausseReprise: numeric("hausse_reprise", { precision: 4, scale: 1 }),
+
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
     deletedAt: timestamp("deleted_at", { withTimezone: true }),
@@ -1035,6 +1043,14 @@ export const lignesPrix = pgTable(
      * auraient fini par diverger (`CLAUDE.md` §3).
      */
     tauxTva: numeric("taux_tva", { precision: 5, scale: 2 }),
+    /**
+     * Une ligne reprise par « Dernier devis » (migration 0106) : son prix sur
+     * l'ancien devis, et le tarif du jour quand il diffère. `prixAncien` NULL
+     * veut dire « pas reprise, ou retouchée à la main » : la hausse et la
+     * question du tarif du jour ne la touchent pas (`src/lib/hausse-du-devis.ts`).
+     */
+    prixAncien: numeric("prix_ancien", { precision: 10, scale: 2 }),
+    prixGrille: numeric("prix_grille", { precision: 10, scale: 2 }),
     ordre: integer("ordre").notNull().default(0),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),

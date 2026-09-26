@@ -39,6 +39,19 @@ Branche `claude/invoice-preview-mock-data-ti2n5y`. `src/app/reglages/VoirUnExemp
 `src/server/repositories/factures.ts`, `src/lib/facture-d-exemple.ts`. Niveau 3 : batterie
 avant `main`, **uniquement sur son accord**. Détail : `ARCHITECTURE.md` §417.
 
+## LA HAUSSE D'UN DEVIS REPRIS — 26 septembre 2026, PAS SUR `main`
+
+| | |
+|---|---|
+| **la règle** | `src/lib/hausse-du-devis.ts` : taux lu (0,1 à 100, une décimale), prix unitaire augmenté en décimal, arrondi demi vers le haut, toujours recalculé depuis la base |
+| **la reprise** | `src/lib/reprise-des-prix.ts` : l'ancien prix reste, le tarif du jour est `prixGrille` (sort « grille-proposee ») |
+| **la base** | migration 0106 : `lignes_prix.prix_ancien`, `prix_grille`, `chantiers.reprise_grille`, `hausse_reprise` |
+| **l'écriture** | `appliquerLaReprise` (`reprise-du-devis.ts`) ; `modifierLignePrix` efface `prix_ancien` au premier prix TAPÉ (comparé en valeur) |
+| **l'écran** | `RepriseDuDevis.tsx`, en tête de `DevisCompletClient`, caché sur un devis figé ou qui n'est pas une reprise |
+| **joué** | tsc, lint, suites `test-hausse-du-devis`, `test-reprise-des-prix`, `test-reprise-du-devis-db` (atlas_app, sait rougir), 8 suites base voisines, `test-repartir-du-client-e2e` seule (11/11), parcours regardé à 390 px |
+| **pas joué** | la batterie entière, à sa demande du 26 septembre : obligatoire avant `main` (niveau 3) |
+| **reste** | « Reprendre le devis » sur un devis expiré (écran d'envoi) n'a pas la bande : il rouvre le même devis, dont les lignes ne sont pas « reprises » |
+
 ## MA TVA À LA CALCULETTE — 25 septembre 2026
 
 | | |

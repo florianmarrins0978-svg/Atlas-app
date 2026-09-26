@@ -1,7 +1,7 @@
 # État du projet
 
-**Dernière mise à jour :** 2026-09-21 · `main`
-· dernière migration `drizzle/0100_mot_de_passe_oublie.sql`
+**Dernière mise à jour :** 2026-09-26 · branche `claude/client-disappearance-no-date-f26td1`
+· dernière migration `drizzle/0106_hausse_du_devis_repris.sql` (sur la branche)
 
 ---
 
@@ -26,6 +26,14 @@ entreprise » : la vraie facture, EXEMPLE en filigrane, trois lignes à 20, 10 e
 5,5 %, aucun numéro pris (`ARCHITECTURE.md` §417). Avec le « ; » de la
 périodicité de TVA. Attend la batterie, sur son accord. L'exemple du devis
 n'est pas fait.
+
+## CODÉ, PAS SUR `main` : LA HAUSSE D'UN DEVIS REPRIS (26 septembre 2026)
+
+« Dernier devis » reprend à ses anciens prix, pose la question du tarif du jour,
+et offre « Augmenter les prix ». Migration `drizzle/0106_hausse_du_devis_repris.sql`.
+Branche `claude/client-disappearance-no-date-f26td1`. **Niveau 3 (migration,
+argent) : la batterie n'a PAS été jouée, à sa demande** ; ce qui l'a été est
+dans `HANDOVER.md`. `ARCHITECTURE.md` §417.
 
 ## FAIT : MA TVA À LA CALCULETTE, SUR `main` (25 septembre 2026)
 

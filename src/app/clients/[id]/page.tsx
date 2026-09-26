@@ -142,7 +142,7 @@ export default async function FicheClientPage({
           lisait comme un TITRE : ce jeton est le vert pin de la charte, la voix
           de ce qu'on FAIT, et posée en capitales sous le nom elle nommait la
           section au lieu de l'ouvrir. L'or est la voix de ce qu'on LIT et de ce
-          qui MÈNE — c'est celui de « + Autre chantier », juste dessous.
+          qui MÈNE — c'est celui de « + Nouveau devis », juste dessous.
 
           Et surtout pas l'alerte de « Supprimer ce client » : le rouge est
           réservé à ce qui ne se défait pas. */}

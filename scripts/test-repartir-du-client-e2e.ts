@@ -18,8 +18,33 @@ import { ADRESSE } from "./_adresse";
 // Sa décision du 8 septembre 2026 : *« il faut la E car si c'est un client déjà
 // enregistré en tant que client on ne va pas recréer une fiche client ! »*, et
 // *« si on clique sur refaire il faut que ça se mette au prix d'aujourd'hui »*.
+// **Cette seconde moitié a été retirée par lui le 26 septembre 2026** : *« il
+// faut reprendre les prix de l'ancien devis ; à la limite demande s'il veut
+// qu'on mette les prix à jour, il dit oui ou non, mais pas comme ça sans qu'il
+// le sache »*. La reprise garde donc l'ancien prix, et la page du devis pose
+// la question (`src/lib/hausse-du-devis.ts`).
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+
+/**
+ * Le prix d'une ligne en base, relu jusqu'à ce qu'il porte la valeur attendue
+ * (neuf secondes au plus). L'écran répond à l'appui avant que l'écriture ne
+ * soit en base : lire tout de suite accuserait un produit qui a raison.
+ * Rend la dernière valeur lue, juste ou non, pour que l'échec dise laquelle.
+ */
+async function prixEnBase(chantierId: string | null, libelle: string, attendu: number) {
+  let lu = { prix: Number.NaN, montant: Number.NaN };
+  for (let essai = 0; essai < 30; essai++) {
+    const { rows } = await pool.query(
+      `SELECT prix_unitaire, montant FROM lignes_prix WHERE chantier_id = $1 AND libelle = $2`,
+      [chantierId, libelle]
+    );
+    lu = { prix: Number(rows[0]?.prix_unitaire), montant: Number(rows[0]?.montant) };
+    if (lu.prix === attendu) return lu;
+    await new Promise((r) => setTimeout(r, 300));
+  }
+  return lu;
+}
 const BASE = ADRESSE;
 
 let echecs = 0;
@@ -113,20 +138,20 @@ async function main() {
   // ── Sa fiche porte-t-elle les deux gestes ? ─────────────────────────────
   await page.goto(`${BASE}/clients/${clientId}`, { waitUntil: "networkidle" });
 
-  await cas("la fiche du client offre « Refaire » et « Autre chantier »", async () => {
+  await cas("la fiche du client offre « Dernier devis » et « Nouveau devis »", async () => {
     await assert.doesNotReject(
       page.getByRole("button", { name: "Dernier devis" }).waitFor({ state: "visible", timeout: 10_000 }),
       "le bouton « Dernier devis » n'est pas sur la fiche du client"
     );
     await assert.doesNotReject(
       page
-        .getByRole("button", { name: "Autre chantier" })
+        .getByRole("button", { name: "Nouveau devis" })
         .waitFor({ state: "visible", timeout: 10_000 }),
-      "le bouton « Autre chantier » n'est pas sur la fiche du client"
+      "le bouton « Nouveau devis » n'est pas sur la fiche du client"
     );
   });
 
-  // ── « Refaire » : la VRAIE page du devis, aux prix d'aujourd'hui ────────
+  // ── « Dernier devis » : la VRAIE page du devis, à ses anciens prix ──────
   let refait: string | null = null;
 
   await cas("« Refaire » ouvre la VRAIE page du devis, pas un récapitulatif", async () => {
@@ -156,14 +181,16 @@ async function main() {
     assert.equal(doublons[0].n, 1, `il existe ${doublons[0].n} fiches au nom de ${nom}`);
   });
 
-  await cas("le tarif qui a monté est repris à SON prix d'aujourd'hui", async () => {
+  await cas("le tarif qui a monté ne change RIEN sans lui : l'ancien prix reste", async () => {
     const { rows } = await pool.query(
-      `SELECT prix_unitaire, montant FROM lignes_prix WHERE chantier_id = $1 AND libelle = $2`,
+      `SELECT prix_unitaire, montant, prix_ancien, prix_grille FROM lignes_prix WHERE chantier_id = $1 AND libelle = $2`,
       [refait, intitule]
     );
     assert.equal(rows.length, 1, "la ligne du tarif n'a pas été reprise");
-    assert.equal(Number(rows[0].prix_unitaire), 18.2, "la ligne est repartie à l'ancien prix");
-    assert.equal(Number(rows[0].montant), 728, "le montant n'a pas suivi le nouveau prix");
+    assert.equal(Number(rows[0].prix_unitaire), 17.5, "le prix a changé sans qu'il le sache");
+    assert.equal(Number(rows[0].montant), 700, "le montant a changé sans qu'il le sache");
+    assert.equal(Number(rows[0].prix_ancien), 17.5, "la ligne n'est pas marquée reprise");
+    assert.equal(Number(rows[0].prix_grille), 18.2, "le tarif du jour n'est pas proposé");
   });
 
   await cas("la ligne chiffrée à la main GARDE son prix — elle n'est pas effacée", async () => {
@@ -184,10 +211,38 @@ async function main() {
     assert.equal(Number(rows[0].quantite), 40, "la quantité a été recalculée");
   });
 
-  // ── « Autre chantier » : ses coordonnées déjà posées ────────────────────
-  await cas("« Autre chantier » ouvre la fiche client avec son nom déjà écrit", async () => {
+  // Son geste, par la porte d'entrée (`CLAUDE.md` §5 quater) : il lit la
+  // question, il répond, et le prix suit.
+  await cas("la page lui DEMANDE, et « Mettre à jour » pose le tarif du jour", async () => {
+    await page.getByText("Votre grille a changé").waitFor({ timeout: 15_000 });
+    await page.getByRole("button", { name: "Mettre à jour" }).click();
+    await page.getByText("Prix mis à jour.").waitFor({ timeout: 15_000 });
+    // L'écran répond à l'appui ; l'écriture part au serveur juste derrière.
+    const ligne = await prixEnBase(refait, intitule, 18.2);
+    assert.equal(ligne.prix, 18.2, "« Mettre à jour » n'a pas posé le tarif du jour");
+    assert.equal(ligne.montant, 728, "le montant n'a pas suivi");
+  });
+
+  await cas("« + 10 % » monte les lignes reprises, arrondi au centime", async () => {
+    await page.getByRole("button", { name: "+ 10 %" }).click();
+    await page.waitForFunction(
+      () => document.querySelector('[data-atlas="hausse-reprise"] [aria-pressed="true"]') !== null,
+      null,
+      { timeout: 15_000 }
+    );
+    const { prix } = await prixEnBase(refait, intitule, 20.02);
+    assert.equal(prix, 20.02, "18,20 € plus 10 % doit donner 20,02 €");
+    const { rows: main } = await pool.query(
+      `SELECT prix_unitaire FROM lignes_prix WHERE chantier_id = $1 AND libelle = 'Traitement anti-mousse'`,
+      [refait]
+    );
+    assert.equal(Number(main[0].prix_unitaire), 132, "la ligne chiffrée à la main, reprise, monte aussi : 120 € plus 10 %");
+  });
+
+  // ── « Nouveau devis » : ses coordonnées déjà posées ────────────────────
+  await cas("« Nouveau devis » ouvre la fiche client avec son nom déjà écrit", async () => {
     await page.goto(`${BASE}/clients/${clientId}`, { waitUntil: "networkidle" });
-    await page.getByRole("button", { name: "Autre chantier" }).click();
+    await page.getByRole("button", { name: "Nouveau devis" }).click();
     await page.waitForURL(/\/chantiers\/nouveau\?client=/, { timeout: 20_000 });
     const saisi = await page.inputValue('input[placeholder="Bernard"]');
     assert.equal(saisi, nom, `la case du nom porte « ${saisi} » au lieu de « ${nom} »`);
@@ -200,7 +255,7 @@ async function main() {
     const anneau = page.locator('[data-atlas="anneau-note-vocale"], [data-atlas="dictee-envoyer"], .atlas-dictee');
     assert.ok(
       (await anneau.count()) > 0,
-      "aucun objet de dictée sur l'écran ouvert par « Autre chantier »"
+      "aucun objet de dictée sur l'écran ouvert par « Nouveau devis »"
     );
   });
 
@@ -209,7 +264,7 @@ async function main() {
       `SELECT count(*)::int AS n FROM chantiers WHERE client_id = $1 AND deleted_at IS NULL`,
       [clientId]
     );
-    // Le premier, et celui de « Refaire ». Pas un troisième : « Autre chantier »
+    // Le premier, et celui de « Refaire ». Pas un troisième : « Nouveau devis »
     // ne crée qu'au premier geste réel (`assurerChantier`).
     assert.equal(rows[0].n, 2, `${rows[0].n} chantiers chez ce client au lieu de 2`);
   });

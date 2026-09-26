@@ -1,15 +1,17 @@
 /**
- * Reprendre les lignes d'un chantier passé, AUX TARIFS D'AUJOURD'HUI.
+ * Reprendre les lignes d'un chantier passé, À SES PRIX, le tarif du jour
+ * PROPOSÉ.
  *
  * ─────────────────────────────────────────────────────────────────────────
- * **D'OÙ ÇA VIENT.** Le patron, le 8 septembre 2026, devant les deux façons
- * de faire posées côte à côte sur `appli/repartir-de-son-chantier.html` :
- * *« si on clique sur refaire il faut que ça se mette au prix d'aujourd'hui,
- * la 1 »*.
+ * **D'OÙ ÇA VIENT, ET CE QUI A CHANGÉ.** Le 8 septembre 2026, devant
+ * `appli/repartir-de-son-chantier.html`, il avait choisi « la 1 » : reprendre
+ * aux prix d'aujourd'hui. Le 26 septembre, il l'a retirée : *« il faut
+ * reprendre les prix de l'ancien devis ; à la limite demande s'il veut qu'on
+ * mette les prix à jour, il dit oui ou non, mais pas comme ça sans qu'il le
+ * sache »*. Rien ne le lui disait : le prix changeait, et l'écran se taisait.
  *
- * Recharger l'ancien devis tel quel, c'est facturer aux prix de l'an dernier —
- * et une hausse de tarif qu'on ne voit pas est de l'argent perdu à chaque
- * chantier repris, sans que rien ne le signale.
+ * La ligne garde donc son ancien prix, et porte le tarif du jour quand il
+ * diffère ; la page du devis pose la question (`src/lib/hausse-du-devis.ts`).
  *
  * ─────────────────────────────────────────────────────────────────────────
  * **CE QUI A ÉTÉ DIT ET QUI ÉTAIT FAUX, corrigé ici (`CLAUDE.md` §2 bis).**
@@ -72,15 +74,15 @@ export type TarifDuJour = {
 export type SortReprise =
   /** Le tarif existe et n'a pas bougé : rien à signaler. */
   | { sort: "inchange" }
-  /** Le tarif existe et a bougé : on prend le neuf, on montre l'ancien. */
-  | { sort: "retarife"; ancienPrixUnitaire: string }
+  /** Le tarif existe et a bougé : l'ancien prix reste, le neuf est proposé. */
+  | { sort: "grille-proposee"; prixGrille: string }
   /** Aucun tarif ne porte ce libellé : on garde son prix, et on le dit. */
   | { sort: "prix-garde" }
   /** Elle attendait déjà son prix : elle l'attend toujours. */
   | { sort: "attend-son-prix" };
 
 export type LigneReprise = LigneAReprendre & {
-  /** Le prix retenu — celui du tarif du jour, ou celui de la dernière fois. */
+  /** Le prix de la dernière fois, toujours. */
   prixUnitaire: string;
   montant: string;
 } & SortReprise;
@@ -119,7 +121,7 @@ export function montantDeLaLigne(quantite: string, prixUnitaire: string): string
  *      correspondu à un tarif, elle aurait été chiffrée la première fois ;
  *   2. **aucun tarif ne porte ce libellé** → son prix est gardé, et signalé ;
  *   3. **le tarif porte le même prix** → rien à dire ;
- *   4. **le tarif a bougé** → on prend le neuf, on montre l'ancien.
+ *   4. **le tarif a bougé** → l'ancien prix reste, le neuf est proposé.
  */
 export function reprendreLaLigne(
   ligne: LigneAReprendre,
@@ -143,13 +145,7 @@ export function reprendreLaLigne(
 
   if (memeMontant(tarif.prix, ligne.prixUnitaire)) return garde({ sort: "inchange" });
 
-  return {
-    ...ligne,
-    prixUnitaire: tarif.prix,
-    montant: montantDeLaLigne(ligne.quantite, tarif.prix),
-    sort: "retarife",
-    ancienPrixUnitaire: ligne.prixUnitaire,
-  };
+  return garde({ sort: "grille-proposee", prixGrille: tarif.prix });
 }
 
 /** Le devis entier, repris ligne à ligne, dans son ordre d'origine. */
@@ -170,18 +166,18 @@ export function reprendreLesLignes(
  * bruit, et le bruit s'apprend à être ignoré (`CLAUDE.md` §4 ter).
  */
 export function resumeDeLaReprise(lignes: readonly LigneReprise[]): {
-  retarifees: number;
+  grillesProposees: number;
   prixGardes: number;
   attendentLeurPrix: number;
   aQuelqueChoseADire: boolean;
 } {
-  const retarifees = lignes.filter((l) => l.sort === "retarife").length;
+  const grillesProposees = lignes.filter((l) => l.sort === "grille-proposee").length;
   const prixGardes = lignes.filter((l) => l.sort === "prix-garde").length;
   const attendentLeurPrix = lignes.filter((l) => l.sort === "attend-son-prix").length;
   return {
-    retarifees,
+    grillesProposees,
     prixGardes,
     attendentLeurPrix,
-    aQuelqueChoseADire: retarifees + attendentLeurPrix > 0,
+    aQuelqueChoseADire: grillesProposees + attendentLeurPrix > 0,
   };
 }

@@ -33615,3 +33615,31 @@ stockage.
 | deux fichiers de même nom sont numérotés « (2) », comparés sans la casse | l'app Fichiers et Windows confondent « Photo » et « photo » : le second écraserait le premier |
 | `versionFormat` reste 1 | un champ ajouté ne casse aucun lecteur ; rien ne lisait les chemins du zip |
 
+## §417 : Le devis repris garde ses prix, et la hausse se recalcule depuis sa base
+
+**Sa décision du 26 septembre 2026, qui retire celle du 8 septembre.** « Dernier
+devis » reprenait aux tarifs du jour (« la 1 »), et l'écran n'en disait rien :
+`retarifees` était calculé puis jeté. Sa règle : l'ancien devis revient à SES
+prix, et le tarif du jour se DEMANDE.
+
+**Quatre colonnes, pas un état d'écran** (migration 0106). La question et la
+hausse doivent survivre à un rechargement, et le prix affiché doit toujours se
+redéduire : `prix_ancien` (présent = ligne reprise et jamais retouchée),
+`prix_grille` (le tarif du jour s'il diffère), `chantiers.reprise_grille`
+(oui, non), `chantiers.hausse_reprise`. Le prix d'une ligne reprise vaut
+`augmente(oui ? prix_grille : prix_ancien, hausse)`, recalculé en entier à
+chaque geste : les taux ne s'empilent jamais.
+
+**Écarté : écrire la hausse comme un geste ponctuel** (multiplier les prix
+présents). Deux appuis auraient cumulé, et « Garder les anciens » après une
+hausse n'aurait plus su d'où repartir.
+
+**Un prix tapé sort la ligne de la reprise**, dans `modifierLignePrix` et nulle
+part ailleurs : c'est le seul chemin d'écriture des deux écrans. Comparé en
+VALEUR (`memeValeur`), parce que la page renvoie le prix à chaque champ quitté ;
+comparé en chaîne, quitter la case quantité aurait fait sortir toutes les
+lignes.
+
+**Arrondi sur le prix UNITAIRE**, au centime, demi vers le haut, en décimal :
+le client lit « 40 × 19,57 € » et doit pouvoir refaire la multiplication.
+
