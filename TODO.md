@@ -14,8 +14,13 @@ Sa demande, capture à l'appui (Google en panne sur `invalid_grant`) : *« trop
 de mots, trop compliqué, il faut qu'elle soit hyper simple »*. Planche
 `appli/mon-agenda-simple.html` : **A**, une ligne par agenda (état en deux
 mots, un bouton) ; **B**, un seul voyant et le bouton qui répare. Pause,
-débrancher et identifiants Google passent dans un volet « Gérer » ; le JSON de
-Google quitte l'écran. **Rien n'est codé** (`src/app/reglages/agenda/`).
+débrancher passent dans un volet « Gérer » ; le JSON de Google quitte l'écran.
+**C**, le bandeau du Planning (`PlanningClient.tsx`, `ouvertes.agenda`) : jamais
+relié, une phrase avec « Ouvrir » et « Masquer », masquée pour toujours (le choix
+se range dans le COMPTE, pas dans le navigateur) ; en pause, rien ; en panne,
+toujours là, sans « Masquer ». **Les identifiants Google quittent l'écran** (sa
+décision du 26 septembre) : Atlas porte les siens sur le serveur, ce que
+`configurationGoogle()` sait déjà lire. **Rien n'est codé.**
 
 **À vérifier avant de coder, hors planche :** `invalid_grant` à répétition est
 le symptôme classique d'un projet Google laissé en mode « Test » (jetons

@@ -115,6 +115,16 @@
         font-size:16px;background:var(--carte);color:var(--encre)}
   details{margin-top:16px;font-size:14px;color:var(--gris)}
   details summary{cursor:pointer}
+  /* Proposition C : la phrase du Planning, à la place exacte de l'actuelle */
+  .rappel{display:flex;align-items:center;gap:12px;padding:14px 0;border-bottom:1px solid var(--trait)}
+  .rappel-texte{flex:1;min-width:0}
+  .rappel-texte b{display:block;font:400 16px/1.3 Georgia,ui-serif,serif}
+  .rappel-texte span{display:block;font-size:13px;color:var(--gris)}
+  .rappel-boutons{display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex:0 0 auto}
+  .rappel-bouton{border:0;background:none;color:var(--or);font-size:12px;letter-spacing:.24em;text-transform:uppercase;padding:4px 0}
+  .rappel-masquer{border:0;background:none;color:var(--gris);font-size:12px;letter-spacing:.24em;text-transform:uppercase;padding:4px 0}
+  .mois{margin-top:22px;text-align:center;font-weight:600;font-size:17px;color:var(--doux)}
+  .reprendre{padding:0 26px 18px}
   .note{max-width:430px;margin:14px auto 0;padding:0 18px;font-size:12.5px;line-height:1.6;color:var(--doux)}
 </style>
 
@@ -149,7 +159,15 @@
   <div class="volet"></div>
 </div>
 
-<p class="note"><b>Dans les deux</b> : le message technique de Google disparaît de l'écran, les identifiants Google passent dans le volet « Gérer », et l'avertissement iCloud reste au-dessus du mot de passe.</p>
+<p class="note"><b>Dans les deux</b> : le message technique de Google et les identifiants Google disparaissent (Atlas porte les siens), et l'avertissement iCloud reste au-dessus du mot de passe.</p>
+
+<h2>C : En haut du Planning</h2>
+<p class="sous">Jamais relié : une phrase, « Ouvrir », « Masquer ». Masquée, elle ne revient plus. En pause : rien. En panne : toujours là.</p>
+<div class="tel" id="telC" style="min-height:0">
+  <div class="entete"><h1>Planning</h1><div class="sur">Vos journées</div></div>
+  <div class="corps" id="corpsC"></div>
+  <div class="reprendre" id="reprendreC"></div>
+</div>
 
 <script>
   // L'état est commun aux deux propositions : on compare le même cas côte à côte.
@@ -209,7 +227,29 @@
     c.innerHTML = html;
   }
 
-  function dessiner() { dessinerA(); dessinerB(); }
+  // Masquer vaut pour toujours : au codage, le choix se range dans le compte,
+  // pas dans le téléphone, sinon la phrase revient sur l'iPad.
+  let masque = false;
+  function dessinerC() {
+    const c = document.getElementById("corpsC");
+    const g = etat.google;
+    let html = "";
+    if (g === "panne") {
+      html = `<div class="rappel"><div class="rappel-texte"><b>Votre agenda n'est plus lu</b>
+        <span>Un client peut retenir un jour où vous êtes déjà pris.</span></div>
+        <button class="rappel-bouton" data-ouvrir>Ouvrir</button></div>`;
+    } else if (g === "rien" && !masque) {
+      html = `<div class="rappel"><div class="rappel-texte"><b>Vous pouvez relier votre agenda</b>
+        <span>Atlas évitera vos jours déjà pris.</span></div>
+        <div class="rappel-boutons"><button class="rappel-bouton" data-ouvrir>Ouvrir</button>
+        <button class="rappel-masquer" data-masquer>Masquer</button></div></div>`;
+    }
+    c.innerHTML = html + `<div class="mois">Septembre 2026</div>`;
+    document.getElementById("reprendreC").innerHTML = masque && g === "rien"
+      ? `<button class="lien" data-demasquer>Revoir la phrase (pour l'essai)</button>` : "";
+  }
+
+  function dessiner() { dessinerA(); dessinerB(); dessinerC(); }
 
   function ouvrir(tel, contenu) {
     tel.querySelector(".volet").innerHTML = `<div class="barre"></div>` + contenu;
@@ -226,13 +266,9 @@
     if (qui === "icloud") {
       h += `<div class="inter"><span>Écrire mes chantiers dedans</span><button class="switch" role="switch" aria-checked="${etat.ecrire}" data-ecrire></button></div>`;
     }
+    // Plus d'identifiants Google ici : sa décision du 26 septembre, Atlas porte
+    // les siens sur le serveur (configurationGoogle), l'utilisateur ne les voit jamais.
     h += `<button class="gros doux rouge" data-debrancher="${qui}">Débrancher</button><div id="conf"></div>`;
-    if (qui === "google") {
-      h += `<details><summary>Identifiants Google</summary>
-        <label>Identifiant client<input placeholder="1234-abcd.apps.googleusercontent.com"></label>
-        <label>Secret client<input type="password" placeholder="déjà enregistré"></label>
-        <button class="gros doux">Enregistrer</button></details>`;
-    }
     return h;
   }
 
@@ -270,6 +306,9 @@
       return;
     }
     if (b.dataset.oui) { etat[b.dataset.oui] = "rien"; fermer(tel); return dessiner(); }
+    if (b.hasAttribute("data-masquer")) { masque = true; return dessinerC(); }
+    if (b.hasAttribute("data-demasquer")) { masque = false; return dessinerC(); }
+    if (b.hasAttribute("data-ouvrir")) { document.getElementById("telA").scrollIntoView({ behavior: "smooth" }); return; }
     if (b.hasAttribute("data-non")) { tel.querySelector("#conf").innerHTML = ""; return; }
   });
 
