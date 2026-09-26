@@ -159,6 +159,9 @@
                        padding:9px 0;font-size:15px;border-bottom:1px solid var(--lineSoft)}
   .liste-modele button:disabled{color:var(--muted);cursor:default}
 
+  .debut{display:flex;gap:6px}
+  .debut select{height:38px;border:0;border-radius:8px;padding:0 8px;background:var(--card);color:var(--ink);
+                box-shadow:inset 0 0 0 1px var(--line);font:500 15px/1 ui-sans-serif,sans-serif}
   .ligne-duree{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:6px 0;font-size:15px}
   .interrupteur{width:48px;height:28px;flex:none;border-radius:999px;border:0;cursor:pointer;position:relative;
                 background:var(--barre)}
@@ -313,10 +316,25 @@
 
       <div class="bloc">
         <p class="intitule">Durée</p>
-        <div class="ligne-duree"><span>Du 1er mars 2027 au 29 février 2028</span></div>
         <div class="ligne-duree">
-          <span>Reconduit chaque année</span>
-          <button type="button" class="interrupteur" id="reconduit" role="switch" aria-checked="true" aria-label="Reconduit chaque année"></button>
+          <span>Début</span>
+          <span class="debut">
+            <select id="debut-mois" aria-label="Mois de début"></select>
+            <select id="debut-annee" aria-label="Année de début"></select>
+          </span>
+        </div>
+        <div class="ligne-duree">
+          <span>Durée</span>
+          <div class="compteur">
+            <button type="button" data-duree="-1" aria-label="Un mois de moins">−</button>
+            <output id="duree-mois"></output>
+            <button type="button" data-duree="1" aria-label="Un mois de plus">+</button>
+          </div>
+        </div>
+        <p class="auto-dit" id="periode"></p>
+        <div class="ligne-duree">
+          <span>Reconduit à la fin</span>
+          <button type="button" class="interrupteur" id="reconduit" role="switch" aria-checked="true" aria-label="Reconduit à la fin"></button>
         </div>
       </div>
 
@@ -346,8 +364,8 @@
       </div>
 
       <div class="totaux">
-        <div class="lp"><span>Passages par an</span><span id="t-passages"></span></div>
-        <div class="lp"><span>Total HT par an</span><span id="t-ht"></span></div>
+        <div class="lp"><span>Passages</span><span id="t-passages"></span></div>
+        <div class="lp"><span>Total HT du contrat</span><span id="t-ht"></span></div>
         <div class="lp"><span>TVA 20 %</span><span id="t-tva"></span></div>
         <div class="ttc"><b>Total TTC</b><span class="valeur" id="t-ttc"></span></div>
       </div>
@@ -458,6 +476,9 @@ const DEPART = () => ({
   facturation: "passage",
   avecCompteRendu: false,
   reconduit: true,
+  // La période : le mois de début (0 = janvier) et sa durée en mois.
+  debut: { mois: 2, annee: 2027 },
+  dureeMois: 12,
   etat: "aucun",
   poses: {},
   enMain: null,
@@ -471,8 +492,37 @@ function lireCentimes(txt) {
   if (t === "" || !/^\d+(\.\d{0,2})?$/.test(t)) return null;
   return Math.round(parseFloat(t) * 100);
 }
-const passagesDe = (p) => p.mois.length * p.fois;
-const complete = (p) => p.mois.length > 0 && p.prix !== null;
+// Pas de plafond de métier sur la durée : trois ans bornent seulement le compteur.
+const DUREE_MAX = 36;
+// Les mois de la période, dans l'ordre : un contrat de 18 mois compte deux mai.
+function moisDeLaPeriode() {
+  return Array.from({ length: c.dureeMois }, (_, i) => {
+    const n = c.debut.mois + i;
+    return { mois: n % 12, annee: c.debut.annee + Math.floor(n / 12) };
+  });
+}
+const passagesDe = (p) => moisDeLaPeriode().filter((m) => p.mois.includes(m.mois)).length * p.fois;
+const complete = (p) => passagesDe(p) > 0 && p.prix !== null;
+function finDeLaPeriode() {
+  const d = moisDeLaPeriode().at(-1);
+  return new Date(d.annee, d.mois + 1, 0);
+}
+function periodeEnLettres() {
+  const fin = finDeLaPeriode();
+  return `Du 1er ${NOMS_MOIS[c.debut.mois]} ${c.debut.annee} au ${fin.getDate() === 1 ? "1er" : fin.getDate()} ${NOMS_MOIS[fin.getMonth()]} ${fin.getFullYear()}.`;
+}
+function dessinerPeriode() {
+  const m = document.getElementById("debut-mois"), a = document.getElementById("debut-annee");
+  if (!m.options.length) {
+    m.innerHTML = NOMS_MOIS.map((n, i) => `<option value="${i}">${n}</option>`).join("");
+    a.innerHTML = [2026, 2027, 2028].map((x) => `<option value="${x}">${x}</option>`).join("");
+  }
+  m.value = String(c.debut.mois); a.value = String(c.debut.annee);
+  document.getElementById("duree-mois").textContent = `${c.dureeMois} mois`;
+  document.querySelector('[data-duree="-1"]').disabled = c.dureeMois <= 1;
+  document.querySelector('[data-duree="1"]').disabled = c.dureeMois >= DUREE_MAX;
+  document.getElementById("periode").textContent = periodeEnLettres();
+}
 
 function totaux() {
   const passages = c.prestations.reduce((s, p) => s + passagesDe(p), 0);
@@ -483,11 +533,13 @@ function totaux() {
 
 // Le montant annuel en douze : ce qui reste de l'arrondi va sur la dernière.
 function mensualites(ht) {
-  const base = Math.floor(ht / 12);
-  return { base, derniere: ht - base * 11 };
+  const n = c.dureeMois;
+  const base = Math.floor(ht / n);
+  return { n, base, derniere: ht - base * (n - 1) };
 }
 
-function passagesDuMois(m) {
+function passagesDuMois(m, annee) {
+  if (!moisDeLaPeriode().some((x) => x.mois === m && x.annee === annee)) return [];
   return c.prestations.filter((p) => complete(p) && p.mois.includes(m))
     .map((p) => ({ id: p.id, libelle: p.libelle, fois: p.fois }));
 }
@@ -510,7 +562,7 @@ function dessinerFiche() {
     z.innerHTML = `<p class="intitule">Contrat d'entretien</p>
       <button type="button" class="carte" data-aller="contrat">
         <p class="etat">Accepté le 28 septembre</p>
-        <p class="detail">${t.passages} passages par an, ${euros(t.ht)} HT. Les premiers en avril, dans le planning.</p>
+        <p class="detail">${t.passages} passages, ${euros(t.ht)} HT. ${periodeEnLettres()}</p>
       </button>`;
   }
 }
@@ -546,6 +598,7 @@ function sommeDe(p) {
   if (!el) return;
   const n = passagesDe(p);
   if (p.mois.length === 0) { el.textContent = "Aucun mois choisi"; el.classList.add("vide"); return; }
+  if (n === 0) { el.textContent = "Aucun de ces mois dans la période"; el.classList.add("vide"); return; }
   if (p.prix === null) { el.textContent = `${n} passage${n > 1 ? "s" : ""}, prix à chiffrer`; el.classList.add("vide"); return; }
   el.classList.remove("vide");
   el.textContent = `${n} passage${n > 1 ? "s" : ""}, ${euros(n * p.prix)} HT`;
@@ -558,10 +611,10 @@ function dessinerTotaux() {
   document.getElementById("t-tva").textContent = euros(t.tva);
   document.getElementById("t-ttc").textContent = euros(t.ttc);
 
-  const { base, derniere } = mensualites(t.ht);
+  const { n, base, derniere } = mensualites(t.ht);
   document.getElementById("conseq-mois").textContent = t.ht === 0 ? "Rien à facturer."
-    : derniere === base ? `12 factures de ${euros(base)} HT, le 1er de chaque mois.`
-    : `11 factures de ${euros(base)} HT et une de ${euros(derniere)}, le 1er de chaque mois.`;
+    : derniere === base ? `${n} facture${n > 1 ? "s" : ""} de ${euros(base)} HT, le 1er de chaque mois.`
+    : `${n - 1} facture${n > 2 ? "s" : ""} de ${euros(base)} HT et une de ${euros(derniere)}, le 1er de chaque mois.`;
 
   const montants = [];
   c.prestations.filter(complete).forEach((p) => { for (let i = 0; i < passagesDe(p); i++) montants.push(p.prix); });
@@ -609,7 +662,7 @@ function dessinerModele() {
 const PREMIER_JOUR = 3; // lundi 0
 function dessinerPlanning() {
   // Rien n'entre au planning avant son accord.
-  const aPoser = c.etat !== "accepte" ? [] : passagesDuMois(AVRIL).flatMap((p) =>
+  const aPoser = c.etat !== "accepte" ? [] : passagesDuMois(AVRIL, 2027).flatMap((p) =>
     Array.from({ length: p.fois }, (_, i) => ({ cle: `${p.id}-${i}`, id: p.id, libelle: p.libelle })));
   const restants = aPoser.filter((x) => !c.poses[x.cle]);
   const posesParJour = {};
@@ -674,7 +727,7 @@ function aller(ecran) {
     document.getElementById(`ecran-${e}`).hidden = e !== ecran;
   });
   if (ecran === "client") dessinerFiche();
-  if (ecran === "contrat") { dessinerPrestations(); dessinerTotaux(); }
+  if (ecran === "contrat") { dessinerPrestations(); dessinerPeriode(); dessinerTotaux(); }
   if (ecran === "planning") dessinerPlanning();
   document.querySelector(".tel").scrollIntoView({ block: "start" });
 }
@@ -721,6 +774,12 @@ document.addEventListener("click", (e) => {
   const fact = e.target.closest("[data-fact]");
   if (fact) { c.facturation = fact.dataset.fact; dessinerTotaux(); return; }
 
+  const duree = e.target.closest("[data-duree]");
+  if (duree) {
+    c.dureeMois = Math.min(DUREE_MAX, Math.max(1, c.dureeMois + Number(duree.dataset.duree)));
+    rafraichirContrat(); return;
+  }
+
   if (e.target.closest("#avec-compte-rendu")) { c.avecCompteRendu = !c.avecCompteRendu; dessinerTotaux(); return; }
 
   if (e.target.closest("#reconduit")) {
@@ -754,6 +813,16 @@ function ajouterLibre() {
 }
 document.addEventListener("keydown", (e) => {
   if (e.key === "Enter" && e.target.id === "presta-libre") { e.preventDefault(); ajouterLibre(); }
+});
+
+// Tout ce qui dépend de la période : chaque ligne, les totaux, la période écrite.
+function rafraichirContrat() {
+  c.prestations.forEach((p) => sommeDe(p));
+  dessinerPeriode(); dessinerTotaux();
+}
+document.addEventListener("change", (e) => {
+  if (e.target.id === "debut-mois") { c.debut.mois = Number(e.target.value); rafraichirContrat(); }
+  if (e.target.id === "debut-annee") { c.debut.annee = Number(e.target.value); rafraichirContrat(); }
 });
 
 document.addEventListener("input", (e) => {
