@@ -13,12 +13,15 @@ chiffre copie toujours. Une facture à deux taux se lit en deux lignes. Branche
 `claude/tva-collecter-verification-qlli2x`, batterie de niveau 3 à jouer avant
 `main` (`TODO.md`). `ARCHITECTURE.md` §416.
 
-## CODÉ, PAS SUR `main` : LE RETOUR ENVOYÉ SE MODIFIE (25 septembre 2026)
+## LE RETOUR ENVOYÉ SE MODIFIE (25 septembre 2026, sur `main`)
 
 Un appui sur « 1 retour envoyé » rouvre le dernier retour ; le renvoyer le
 réécrit, sans en créer un second. Le jour même seulement : le lendemain, on
-envoie le retour du jour. Branche `claude/edit-sent-returns-cx2ka1`,
-niveau 3 (rayon de 18 écrans). `ARCHITECTURE.md` §414.
+envoie le retour du jour. `ARCHITECTURE.md` §414.
+
+**Corrigé le 26 septembre 2026, sur `main`** : le retour envoyé aujourd'hui
+se rouvre depuis N'IMPORTE QUELLE journée du planning (il ne se rouvrait que
+depuis celle d'aujourd'hui).
 
 ## CODÉ, PAS SUR `main` : GLISSER VERS LA DROITE POUR REVENIR (25 septembre 2026)
 

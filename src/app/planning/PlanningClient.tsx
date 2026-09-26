@@ -3767,7 +3767,6 @@ function CarteDuJour({
       chantier={duJour.find((c) => c.id === feuilleIci) ?? null}
       feuille={taches[feuilleIci]}
       ecriture={ecriture}
-      jour={jour}
     />
   ) : null;
 
@@ -4392,12 +4391,9 @@ function FeuilleChantier({
   chantier,
   feuille,
   ecriture = true,
-  jour,
 }: {
   chantier: ChantierPlanning | null;
   feuille?: FeuilleEtRetour;
-  /** La journée du planning où la fiche est ouverte. */
-  jour: JourIso;
   /** Faux pour un salarié : la note se LIT, elle ne s'écrit pas (30 août 2026). */
   ecriture?: boolean;
 }) {
@@ -4515,7 +4511,6 @@ function FeuilleChantier({
           lignes={feuille.taches}
           retoursEnvoyes={feuille.retours}
           dernierRetourLe={feuille.dernierRetourLe}
-          jour={jour}
         />
       )}
 

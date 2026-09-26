@@ -242,18 +242,26 @@ essai("un nom tapé passe par-dessus la date : tous les retours du client", () =
 {
   // Vendredi 25 septembre 2026, 18 h à Paris.
   const maintenant = new Date("2026-09-25T16:00:00.000Z");
-  essai("envoyé AUJOURD'HUI, sur la journée d'aujourd'hui : il se modifie", () => {
-    assert.equal(retourModifiable("2026-09-25T07:30:00.000Z", "2026-09-25", maintenant), true);
+  essai("envoyé AUJOURD'HUI : il se modifie", () => {
+    assert.equal(retourModifiable("2026-09-25T07:30:00.000Z", maintenant), true);
   });
   essai("envoyé HIER : il ne se modifie plus, le jour est passé", () => {
-    assert.equal(retourModifiable("2026-09-24T16:00:00.000Z", "2026-09-25", maintenant), false);
+    assert.equal(retourModifiable("2026-09-24T16:00:00.000Z", maintenant), false);
   });
-  essai("regardé depuis le JOUR 2 du planning : le retour du jour 1 ne s'ouvre pas", () => {
-    assert.equal(retourModifiable("2026-09-25T07:30:00.000Z", "2026-09-29", maintenant), false);
+  // Sa plainte du 26 septembre 2026, fiche de Julien ouverte sur le lundi 28 :
+  // *« je peux pas envoyer un retour d'intervention, ça devait pas être
+  // réglé ? »*. Le retour parti le jour même ne se rouvrait pas, parce que la
+  // règle exigeait AUSSI que la fiche soit sur la journée d'aujourd'hui. Le
+  // retour est celui du chantier, pas de la case du planning : seule l'heure
+  // de l'envoi décide. La signature ne prend donc plus la journée affichée.
+  essai("envoyé aujourd'hui, rouvert depuis une AUTRE journée du planning : il se modifie", () => {
+    const deuxArguments: (poseLe: string, maintenant: Date) => boolean = retourModifiable;
+    assert.equal(deuxArguments("2026-09-25T07:30:00.000Z", maintenant), true);
+    assert.equal(retourModifiable.length, 2, "la règle dépend encore de la journée affichée");
   });
   essai("le jour se compte à PARIS : 23 h 30 UTC la veille, c'est déjà aujourd'hui", () => {
     // 1 h 30 du matin à Paris, le 25 : en UTC c'était encore le 24.
-    assert.equal(retourModifiable("2026-09-24T23:30:00.000Z", "2026-09-25", maintenant), true);
+    assert.equal(retourModifiable("2026-09-24T23:30:00.000Z", maintenant), true);
   });
 }
 

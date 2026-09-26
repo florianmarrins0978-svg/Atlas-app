@@ -6,6 +6,35 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-09-26
+
+### Le retour envoyé se rouvre depuis n'importe quelle journée du planning
+
+**Sa plainte**, sur la fiche de Julien posée au lundi 28 : *« je peux pas
+envoyer un retour d'intervention, ça devait pas être réglé ? »*. Reproduite :
+le 26, depuis la fiche du 28, un retour parti le jour même laissait « 1 retour
+envoyé » inerte, parce que `retourModifiable` exigeait aussi que la fiche soit
+ouverte sur aujourd'hui. Le serveur, lui, l'aurait accepté. La condition est
+retirée : seule la date d'envoi décide, à l'écran comme au serveur. Un retour
+d'un jour passé reste fermé. `ARCHITECTURE.md` §414.
+
+### Deux rouges de `main` corrigés
+
+`test-aucun-tiret` : dix tirets et incises dans `appli/essais.html` et les
+planches de l'anthracnose du hêtre et de la chalarose, réécrits en phrases.
+`test-pas-la-ce-jour-e2e` : il cherchait « dans cinq jours » dans le mois
+affiché, donc rougissait du 27 au 31 de chaque mois ; il avance désormais au
+mois suivant comme le patron.
+
+### Planche : voir un exemple de facture, avant de coder
+
+`appli/apercu-du-document.html`, sa demande du 26 septembre : un bouton qui
+montre le papier avec ses réglages et trois lignes factices à 20, 10 et 5,5 %.
+Deux places à trancher (A : Devis & factures ; B : Mon entreprise). Au style et
+aux couleurs de l'application, à sa demande. Ce qui est décidé pour le code :
+l'exemple sera **le vrai PDF** fabriqué par le même code, avec EXEMPLE en
+filigrane, et **sans consommer de numéro**. Rien n'est codé.
+
 ## 2026-09-25
 
 ### L'anthracnose se sépare en deux planches, le chêne et le hêtre

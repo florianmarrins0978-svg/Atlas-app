@@ -33384,7 +33384,7 @@ la révision est bornée :
 | | Ce qui est retenu | Pourquoi |
 |---|---|---|
 | ce qui se modifie | le **dernier** retour du chantier, jamais un autre (`modifierLeDernierRetour`) | c'est celui que la fiche rouvre ; ceux des soirs d'avant restent la preuve de leur soir. Un retour plus récent parti entre-temps fait refuser, et le refus se dit |
-| quand | **le jour même seulement**, envoyé aujourd'hui (Paris) ET fiche ouverte sur la journée d'aujourd'hui (`retourModifiable`) | sa précision du même soir : *« le jour 2 ne doit pas ouvrir le rapport du jour 1 ; lorsque le jour 1 est passé on ne peut plus le modifier »*. Hors de ce jour, le bloc n'est plus un bouton ; le serveur refuse un retour d'un autre jour |
+| quand | **le jour même seulement** : envoyé aujourd'hui, compté à Paris (`retourModifiable`). **La journée où la fiche est ouverte ne compte pas** (corrigé le 26 septembre 2026, voir dessous) | sa précision du même soir : *« le jour 2 ne doit pas ouvrir le rapport du jour 1 ; lorsque le jour 1 est passé on ne peut plus le modifier »*. Hors de ce jour, le bloc n'est plus un bouton ; le serveur refuse un retour d'un autre jour |
 | la porte | un appui sur « N retours envoyés » ; la barre « Travaux à faire » reste le retour du jour | deux gestes, deux portes : la barre repart vide de photos et de mot, le bloc rouvre ce qui est parti |
 | le contenu | tâches, photos et mot réécrits par la MÊME écriture que l'envoi (`poserLeContenu`) | deux façons de poser un retour finiraient par ne plus poser le même (`CLAUDE.md` §3) |
 | le « vu » | effacé : modifié, il redevient non lu | le patron qui l'avait ouvert se fierait à ce qu'il a lu avant |
@@ -33394,6 +33394,20 @@ la révision est bornée :
 Suites : `test-retour-intervention-db.ts` (réécrit sans en créer un second,
 refus sur un retour qui n'est pas le dernier, refus entre entreprises, purge)
 et `test-travaux-a-faire-e2e.ts` (l'appui, le renvoi, la base).
+
+**Corrigé le 26 septembre 2026 : la journée affichée ne décide plus.** La
+première version exigeait AUSSI que la fiche soit ouverte sur la journée
+d'aujourd'hui. Le patron, le 26, sur la fiche de Julien posée au lundi 28 :
+*« je peux pas envoyer un retour d'intervention, ça devait pas être
+réglé ? »*. Le retour parti le jour même depuis cette fiche restait un bloc
+mort. Cette seconde condition ne protégeait rien : un retour est celui du
+CHANTIER, pas d'une case du planning, et « le jour 2 n'ouvre pas le rapport du
+jour 1 » est déjà tenu par la date d'envoi. Elle faisait en outre deux règles
+pour une question, l'écran plus strict que le serveur (`CLAUDE.md` §3).
+`retourModifiable(poseLe, maintenant)` ne prend plus la journée ; la fiche ne
+reçoit plus `jour`. Suites : `test-retour-intervention.ts` et le cas « depuis
+une AUTRE journée » de `test-travaux-a-faire-e2e.ts`, vu rouge sans la
+correction.
 
 ## §415 : Glisser vers la droite pour revenir, le geste appuie sur la flèche
 
