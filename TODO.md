@@ -1,5 +1,18 @@
 # Prochaines tâches
 
+## Sauvegardes : la copie hors de Scaleway (26 septembre 2026)
+
+Décisions prises le 26 septembre sur sa consigne « 0 problème »
+(`docs/lot-sauvegarde-cloture.md` §13) : volume **Local Storage**, seconde copie
+**chez un autre fournisseur européen**. À écrire le jour de l'infrastructure,
+avant le premier client : le script planifié de SCW-24 à SCW-26 (copie
+quotidienne des `.sql.gz` et du compartiment des fichiers, copie mensuelle
+gardée 12 mois), éprouvé par une restauration depuis ce second fournisseur.
+
+**Question ouverte, pour plus tard :** une archive comptable annuelle (factures,
+avoirs, règlements, achats, PDF) gardée 10 ans, indépendante de la base
+vivante. Aujourd'hui les 10 ans ne tiennent que par la base elle-même.
+
 ## Un règlement se retire sans limite de date (26 septembre 2026)
 
 Trouvé en vérifiant la conservation sur 10 ans (`docs/QUESTIONS.md` §30).
