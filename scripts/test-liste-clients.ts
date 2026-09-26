@@ -23,7 +23,7 @@ import assert from "node:assert/strict";
 import { pool } from "../src/server/db/client";
 import { nettoyerBase } from "./_test-db";
 import { creerEntreprise } from "../src/server/repositories/entreprises";
-import { creerChantier, supprimerChantier } from "../src/server/repositories/chantiers";
+import { creerChantier, planifierChantier, supprimerChantier } from "../src/server/repositories/chantiers";
 import { creerClient } from "../src/server/repositories/clients";
 import { ajouterLignePrix } from "../src/server/repositories/lignes-prix";
 import { getOuCreerDevisBrouillon, envoyerDevis } from "../src/server/repositories/devis";
@@ -152,6 +152,34 @@ async function main() {
       `la liste n'est pas rangée du plus récent au plus ancien : ${liste
         .map((c) => `${c.nom} (${c.dernierJour})`)
         .join(", ")}`
+    );
+  });
+
+  // ── Un chantier à venir, sa capture du 26 septembre 2026 ──────────────────
+  //
+  // *« Pourquoi il y a un plus ancien ? »* Balba, devis du 20 septembre, trônait
+  // en tête de sa liste sous « PLUS ANCIEN ». Son chantier était planifié après
+  // le jour même : la date à venir passait pour la plus récente, et la bande
+  // ne sachant pas nommer un écart négatif, elle le jetait dans « plus ancien ».
+  // Sa décision (B) : la liste se range sur le dernier jour DÉJÀ PASSÉ.
+  await essai("un chantier planifié à venir ne range pas son client dans le futur", async () => {
+    await nettoyerBase();
+    const ctx = await monterEntreprise("Essai à venir");
+    const client = await creerClient(ctx, { nom: "Balba" });
+    const c = await creerChantier(ctx, { nom: "Taille à venir", clientId: client.id });
+    await ajouterLignePrix(ctx, c.id, "Taille", "400.00");
+    const devis = await getOuCreerDevisBrouillon(ctx, c.id);
+    await envoyerDevis(ctx, devis.id);
+    const dans = new Date();
+    dans.setDate(dans.getDate() + 40);
+    await planifierChantier(ctx, c.id, jourIso(dans));
+
+    const aujourdHui = jourIso(new Date());
+    const [vu] = await listerFichesClients(ctx);
+    assert.ok(vu && vu.dernierJour, "le client n'a pas de jour de rangement");
+    assert.ok(
+      vu.dernierJour <= aujourdHui,
+      `la liste range Balba au ${vu.dernierJour}, après aujourd'hui (${aujourdHui}) : il remonte en tête sous « plus ancien »`
     );
   });
 

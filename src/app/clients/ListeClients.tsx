@@ -64,7 +64,7 @@ export type FicheClientListee = {
   derniere: TraceDuClient | null;
   facture: string | number | null;
   du: string | number | null;
-  /** Le jour du chantier le plus récent : c'est l'ordre, et c'est la bande. */
+  /** Le dernier jour déjà passé chez lui : c'est l'ordre, et c'est la bande. */
   dernierJour: string | null;
 };
 
