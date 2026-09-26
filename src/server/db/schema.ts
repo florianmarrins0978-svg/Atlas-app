@@ -296,6 +296,13 @@ export const entreprises = pgTable("entreprises", {
    * retour que personne ne demande.
    */
   retourPhotoExigee: boolean("retour_photo_exigee").notNull().default(false),
+  /**
+   * Le patron a-t-il masqué, sur son Planning, la phrase qui propose de relier
+   * un agenda ? (migration 0102, sa demande du 26 septembre 2026). Masquée,
+   * elle ne revient jamais. La PANNE d'un agenda relié, elle, s'affiche quoi
+   * qu'il ait masqué : ce n'est pas la même phrase.
+   */
+  rappelAgendaMasque: boolean("rappel_agenda_masque").notNull().default(false),
   // Comment le relevé de TVA découpe l'année. **Le mois est le défaut LÉGAL**
   // (déclaration CA3 mensuelle ; le trimestre est une option sous condition de
   // TVA due), pas une préférence d'écran — voir `drizzle/0035_periodicite_tva.sql`.

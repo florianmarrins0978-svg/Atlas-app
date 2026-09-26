@@ -33481,3 +33481,26 @@ septembre faisait baisser la TVA de juillet, mois déjà déclaré, sans trace.
 | la TVA collectée du mois montre le retiré, barré, sans le compter | c'est le mois déclaré qui baisse : c'est là qu'il faut lire pourquoi |
 | `retirerReglementRecu` et « Facture acquittée » gardent leur suppression | ils ne touchent qu'une facture en BROUILLON, jamais déclarée |
 
+
+## §417 : Mon agenda, une ligne par agenda, et la phrase du Planning qui se masque
+
+**Sa demande du 26 septembre 2026**, planche `appli/mon-agenda-simple.html` (A
+et C retenues). Trois décisions qui ne se lisent pas dans le diff :
+
+1. **Les identifiants Google ne sont PAS retirés du code, seulement de la vue
+   ordinaire.** Sa décision est qu'Atlas porte les siens sur le serveur
+   (`configurationGoogle`, variables `ATLAS_GOOGLE_*`) et que personne n'ait rien
+   à coller. Mais `debrancherAgenda` SUPPRIME la ligne, identifiants compris :
+   sans la saisie, un patron qui débranche ne pourrait plus jamais se rebrancher
+   tant que le serveur n'a pas les siens. La saisie vit donc dans le volet
+   « Relier », et n'apparaît que si `etat.configure` est faux. Quand les
+   identifiants du serveur seront posés (après la validation Google,
+   `docs/A-FAIRE.md` §8), elle ne s'affichera plus pour personne.
+2. **Le masquage vit sur l'ENTREPRISE, pas dans le navigateur.** Relier l'agenda
+   est un réglage du patron ; rangé dans le téléphone, le choix se perdait sur
+   l'iPad et la phrase revenait sans raison. Colonne ajoutée seule, `NOT NULL
+   DEFAULT false` : le code d'avant tourne sur le nouveau schéma.
+3. **Une seule règle décide du bandeau** (`bandeauAgendaDuPlanning`, pure) et
+   elle lit TOUS les agendas. L'écran ne décide plus : il reçoit `"panne"`,
+   `"proposer"` ou `null`. La panne n'a pas de « Masquer » : ce n'est pas un
+   conseil qu'on écarte, c'est un raccordement qui a lâché.

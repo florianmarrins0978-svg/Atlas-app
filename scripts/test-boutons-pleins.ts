@@ -172,8 +172,8 @@ const APLATS_DECLARES: { fichier: string; motif: RegExp; pourquoi: string }[] = 
     pourquoi: "la coche d'une prestation faite",
   },
   {
-    fichier: "src/app/reglages/agenda/AgendaAppleClient.tsx",
-    motif: /etat\.ecritureActive \? colors\.rust/,
+    fichier: "src/app/reglages/agenda/MonAgendaClient.tsx",
+    motif: /allume \? colors\.rust/,
     pourquoi: "un interrupteur",
   },
   {
