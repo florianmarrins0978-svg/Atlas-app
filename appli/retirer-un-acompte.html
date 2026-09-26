@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Retirer un acompte : Atlas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/*
+  RETIRER UN ACOMPTE : la planche, 26 septembre 2026
+
+  CE QUI A ÉTÉ TROUVÉ, en vérifiant la conservation sur 10 ans
+  (docs/QUESTIONS.md §30) : sur « Terminés, Factures en attente », la croix
+  au bout de la ligne « Acompte payé le … » appelle retirerPaiement
+  (src/server/repositories/paiements-facture.ts), qui SUPPRIME la ligne pour
+  de bon, quelle que soit sa date.
+
+  CE QUE CELA FAIT, et que la planche montre : un acompte encaissé en juillet
+  entre dans la TVA collectée de JUILLET. Le retirer en septembre fait baisser
+  juillet, un mois déjà déclaré, sans laisser de trace. L'écran de juillet ne
+  correspond plus à ce qui a été déclaré, et rien ne dit pourquoi.
+
+  CE QUE LA CROIX NE TOUCHE PAS : une facture entièrement payée sort de cet
+  écran, ses règlements ne portent plus de croix. Le risque ne vaut donc que
+  pour un acompte sur une facture qui attend encore son solde.
+
+  LES TROIS PLANCHES :
+    A. Aujourd'hui : la ligne disparaît, juillet baisse.
+    B. Barré : la ligne reste, barrée, datée ; juillet baisse aussi, mais la
+       ligne barrée y reste lisible. On peut la remettre.
+    C. Refusé : le mois de l'acompte est terminé, la croix ne retire plus.
+
+  L'application ne connaît pas la date de SA déclaration : C refuse dès que le
+  mois (ou le trimestre) est fini, ce qui bloque aussi une correction faite
+  avant la déclaration, entre le 1er et le 19 du mois suivant.
+
+  Les données sont celles d'un exemple : facture F-2026-041 de 1 776,00 € TTC,
+  acompte de 300,00 € le 12/07/2026, TVA à 20 %, soit 50,00 € de TVA.
+
+  AUCUNE LIGNE DE L'APPLICATION N'A BOUGÉ (CLAUDE.md §3 bis).
+  Couleurs : src/lib/design-tokens.ts.
+*/
+:root{
+  --fond:#f5f3ee; --carte:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
+  --gris:#8a8578; --pin:#2f3b2f; --plein:#7d9a6d; --or:#B98B47;
+  --trait:rgba(28,28,26,.12); --filet:rgba(28,28,26,.08); --scene:#e6e3dc;
+  --rouge:#a4553a;
+  --serif:"Playfair Display",ui-serif,Georgia,serif;
+  --sans:"Inter",ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--scene)}
+body{font:16px/1.5 var(--sans);color:var(--encre);-webkit-text-size-adjust:100%;padding:0 0 64px}
+button:focus-visible{outline:2px solid var(--or);outline-offset:3px}
+
+.bandeau{background:var(--encre);color:var(--fond);padding:18px 20px;font-size:14px;line-height:1.6}
+.bandeau b{color:#fff}
+.bandeau .dedans{max-width:1240px;margin:0 auto}
+
+.planches{display:flex;flex-wrap:wrap;gap:34px;justify-content:center;
+          max-width:1280px;margin:30px auto 0;padding:0 20px}
+.planche{width:390px;max-width:100%}
+.planche .nom{margin:0 0 4px;font:500 19px/1.2 var(--serif)}
+.planche .idee{margin:0 0 12px;font-size:13.5px;line-height:1.5;color:var(--encre-douce);min-height:62px}
+.planche .idee b{color:var(--encre)}
+.tel{width:390px;max-width:100%;border-radius:26px;overflow:hidden;
+     box-shadow:0 16px 44px rgba(20,18,14,.22);background:var(--fond);padding:0 0 20px}
+@media (max-width:430px){
+  .planches{padding:0;gap:26px}
+  .planche .nom,.planche .idee{padding:0 20px}
+  .tel{border-radius:0}
+}
+
+.bloc{padding:22px 24px 0}
+.haut{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+.haut h2{margin:0;font:400 17px/1.25 var(--serif)}
+.haut .compte{font-size:12px;color:var(--gris);font-variant-numeric:tabular-nums}
+
+.facture{margin-top:14px;padding-top:14px;border-top:1px solid var(--filet)}
+.ligne{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+.cli{font-size:14.5px}
+.meta{display:block;font-size:11.5px;line-height:1.45;color:var(--gris)}
+.droite{text-align:right;flex:0 0 auto}
+.solde{font:400 15.5px/1.2 var(--serif);font-variant-numeric:tabular-nums}
+.solde small{font:400 11px/1 var(--sans);color:var(--gris)}
+.sur{margin:0;font-size:11px;line-height:1.45;color:var(--or)}
+
+.gestes{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-top:10px}
+.plein{border:0;border-radius:999px;background:var(--plein);color:var(--carte);
+       padding:10px 20px;font:500 14px/1 var(--sans);min-height:40px}
+.second{border:0;background:none;color:var(--gris);font:400 14px/1 var(--sans);padding:10px 8px;min-height:40px}
+
+.reglements{list-style:none;margin:10px 0 0;padding:0;display:flex;flex-direction:column;gap:6px}
+.reglements li{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--gris)}
+.reglements .quand{flex:1;font-variant-numeric:tabular-nums}
+.reglements .combien{flex:none;color:var(--encre-douce);font-variant-numeric:tabular-nums}
+.croix{flex:none;width:36px;height:36px;border:0;background:none;color:var(--gris);
+       font:400 15px/1 var(--sans);cursor:pointer;-webkit-tap-highlight-color:transparent}
+.reglements li.barre .quand,.reglements li.barre .combien{text-decoration:line-through}
+.remettre{flex:none;border:0;background:none;color:var(--or);font:400 12px/1 var(--sans);
+          padding:12px 0 12px 6px;cursor:pointer}
+.refus{margin:6px 0 0;font-size:12px;line-height:1.5;color:var(--rouge);display:none}
+.refus.visible{display:block}
+
+/* Le relevé de juillet : ce que la croix fait bouger, dans un autre mois. */
+.juillet{margin:22px 24px 0;padding:14px 16px;border-radius:14px;background:var(--carte);
+         border:1px solid var(--filet)}
+.juillet .titre{margin:0 0 8px;font:600 10px/1 var(--sans);letter-spacing:.2em;
+                text-transform:uppercase;color:var(--gris)}
+.juillet .total{display:flex;justify-content:space-between;align-items:baseline}
+.juillet .total span:first-child{font-size:13px;color:var(--encre-douce)}
+.juillet .total span:last-child{font:400 20px/1.2 var(--serif);font-variant-numeric:tabular-nums;
+                                 transition:color .2s}
+.juillet .total.bouge span:last-child{color:var(--rouge)}
+.juillet ul{list-style:none;margin:10px 0 0;padding:10px 0 0;border-top:1px solid var(--filet);
+            display:flex;flex-direction:column;gap:5px}
+.juillet li{display:flex;justify-content:space-between;font-size:12px;color:var(--gris);
+            font-variant-numeric:tabular-nums}
+.juillet li.barre span{text-decoration:line-through}
+.juillet li.parti{display:none}
+.juillet .declare{margin:10px 0 0;font-size:11.5px;color:var(--gris)}
+
+.recommencer{display:block;margin:14px auto 0;border:0;background:none;color:var(--or);
+             font:400 13px/1 var(--sans);padding:12px;cursor:pointer}
+
+.note{max-width:1240px;margin:34px auto 0;padding:0 20px;font-size:13.5px;
+      line-height:1.6;color:var(--encre-douce)}
+.note .t{display:block;font:500 15px/1.3 var(--serif);color:var(--encre);margin-bottom:6px}
+.note b{color:var(--encre)}
+.note + .note{margin-top:22px}
+</style>
+</head>
+<body>
+
+<div class="bandeau"><div class="dedans">
+  <b>La petite croix au bout d'un acompte.</b> Touchez la croix sur chaque
+  écran. Le cadre du bas montre juillet, un mois déjà déclaré. Rien ne part
+  nulle part : l'application n'a pas bougé.
+</div></div>
+
+<div class="planches" id="planches"></div>
+
+<div class="note"><span class="t">Ce que la croix touche, et ce qu'elle ne touche pas</span>
+  Elle n'existe que sur une facture qui <b>attend encore son solde</b>. Une
+  facture payée en entier sort de cet écran, et ses règlements n'ont plus de
+  croix. La facture elle-même ne s'efface jamais.</div>
+
+<div class="note"><span class="t">Pourquoi C bloque parfois trop</span>
+  L'application ne sait pas quand vous avez déclaré. C refuse donc dès que
+  juillet est fini, y compris entre le 1er et le 19 août, quand juillet n'est
+  pas encore déclaré et qu'une erreur de saisie se corrige encore.</div>
+
+<div class="note"><span class="t">Ma recommandation : B</span>
+  Une erreur de doigt se corrige toujours, et la trace reste en cas de
+  contrôle : on voit ce qui a été retiré, et quand.</div>
+
+<template id="modele">
+  <section class="planche">
+    <h3 class="nom"></h3>
+    <p class="idee"></p>
+    <div class="tel">
+      <div class="bloc">
+        <div class="haut"><h2>Factures en attente</h2><span class="compte">1 facture</span></div>
+        <div class="facture">
+          <div class="ligne">
+            <div><span class="cli">M. Durand</span><span class="meta">F-2026-041 du 03/07/2026</span></div>
+            <div class="droite">
+              <p class="solde" style="margin:0"><small>Reste à payer </small><span class="reste">1 476,00 €</span></p>
+              <p class="sur">Sur les 1 776,00 €</p>
+            </div>
+          </div>
+          <div class="gestes">
+            <button type="button" class="plein" disabled>J'ai reçu le paiement</button>
+            <button type="button" class="second" disabled>J'ai reçu une partie</button>
+          </div>
+          <ul class="reglements">
+            <li class="acompte">
+              <span class="quand">Acompte payé le 12/07/2026</span>
+              <span class="combien">300,00 €</span>
+              <button type="button" class="croix" aria-label="Retirer l'acompte de 300,00 € du 12 juillet 2026">✕</button>
+            </li>
+          </ul>
+          <p class="refus">Juillet est terminé : cet acompte ne se retire plus.</p>
+        </div>
+      </div>
+      <div class="juillet">
+        <p class="titre">Juillet 2026, TVA collectée</p>
+        <div class="total"><span>Total du mois</span><span class="montant">412,50 €</span></div>
+        <ul>
+          <li><span>F-2026-038, M. Petit</span><span>362,50 €</span></li>
+          <li class="dans-juillet"><span>F-2026-041, acompte</span><span>50,00 €</span></li>
+        </ul>
+        <p class="declare">Montant déclaré le 19/08/2026 : 412,50 €</p>
+      </div>
+      <button type="button" class="recommencer">Recommencer</button>
+    </div>
+  </section>
+</template>
+
+<script>
+const PLANCHES = [
+  { cle: "A", nom: "A. Aujourd'hui",
+    idee: "La ligne <b>disparaît</b>. Juillet passe à 362,50 € alors que 412,50 € ont été déclarés, et rien ne dit pourquoi." },
+  { cle: "B", nom: "B. Barré, avec sa date",
+    idee: "La ligne <b>reste, barrée</b>. Juillet baisse aussi, mais la ligne barrée s'y lit. On peut la remettre." },
+  { cle: "C", nom: "C. Refusé une fois le mois fini",
+    idee: "Juillet est terminé : la croix <b>refuse</b>. Rien ne bouge, mais une vraie erreur ne se corrige plus." },
+];
+
+const modele = document.getElementById("modele");
+const zone = document.getElementById("planches");
+
+for (const p of PLANCHES) {
+  const n = modele.content.cloneNode(true);
+  n.querySelector(".nom").textContent = p.nom;
+  n.querySelector(".idee").innerHTML = p.idee;
+  const planche = n.querySelector(".planche");
+  zone.appendChild(n);
+  brancher(planche, p.cle);
+}
+
+function brancher(planche, cle) {
+  const $ = (s) => planche.querySelector(s);
+  const etat0 = planche.querySelector(".tel").innerHTML;
+
+  function armer() {
+    $(".croix").addEventListener("click", () => {
+      const li = $(".acompte");
+      const juillet = $(".dans-juillet");
+      if (cle === "C") {
+        $(".refus").classList.add("visible");
+        return;
+      }
+      $(".reste").textContent = "1 776,00 €";
+      $(".total").classList.add("bouge");
+      $(".montant").textContent = "362,50 €";
+      $(".sur").style.display = "none";
+      $(".solde small").style.display = "none";
+      if (cle === "A") {
+        li.remove();
+        juillet.classList.add("parti");
+        return;
+      }
+      li.classList.add("barre");
+      li.querySelector(".quand").textContent = "Acompte du 12/07, retiré le 26/09";
+      li.querySelector(".croix").remove();
+      const r = document.createElement("button");
+      r.type = "button"; r.className = "remettre"; r.textContent = "Remettre";
+      li.appendChild(r);
+      juillet.classList.add("barre");
+      juillet.firstElementChild.textContent = "F-2026-041, acompte retiré le 26/09";
+      r.addEventListener("click", recommencer);
+    });
+    $(".recommencer").addEventListener("click", recommencer);
+  }
+  function recommencer() {
+    planche.querySelector(".tel").innerHTML = etat0;
+    armer();
+  }
+  armer();
+}
+</script>
+</body>
+</html>
