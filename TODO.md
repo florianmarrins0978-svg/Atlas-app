@@ -1,5 +1,13 @@
 # Prochaines tâches
 
+## ⏳ UNE PLANCHE À REGARDER : VOIR UN EXEMPLE DE FACTURE (26 septembre 2026)
+
+`appli/apercu-du-document.html`. Sa réponse attendue : **A** (bouton sous
+« Devis & factures ») ou **B** (bas de « Mon entreprise »). Rien n'est codé.
+Au codage : le vrai PDF (`src/server/pdf/`) nourri de ses réglages et de trois
+lignes factices (20, 10, 5,5 %), filigrane EXEMPLE, **aucun numéro consommé**,
+franchise en base rendue telle quelle (mention 293 B). Niveau 3 (argent).
+
 ## ⏳ UNE PLANCHE À REGARDER — FICHE 6, LA CHALAROSE DU FRÊNE (25 septembre 2026)
 
 `appli/fiche-chalarose-du-frene.html`, liée depuis `appli/essais.html`. **Sa
