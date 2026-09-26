@@ -21,6 +21,7 @@ import { lirePrestationsEntretien } from "./lire-prestations-entretien";
 import { rechercherLignesDevis } from "./rechercher-lignes-devis";
 import { lireClients } from "./lire-clients";
 import { lirePlanning } from "./lire-planning";
+import { lireFactures } from "./lire-factures";
 
 export const outilsDisponibles: Outil[] = [
   // **En tête, et ce n'est pas un rangement.** C'est par lui qu'on entre quand
@@ -56,6 +57,7 @@ export const outilsDisponibles: Outil[] = [
   rechercherLignesDevis,
   lireClients,
   lirePlanning,
+  lireFactures,
 ];
 
 export function getOutil(nom: string): Outil | undefined {
