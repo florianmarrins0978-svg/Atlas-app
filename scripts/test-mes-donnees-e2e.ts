@@ -1,6 +1,6 @@
 import assert from "node:assert";
 import { execFileSync } from "node:child_process";
-import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { mkdtempSync, readFileSync, readdirSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { lancerNavigateur } from "./e2e-browser";
@@ -134,6 +134,17 @@ async function main() {
     // entier, seul objet que le patron enverra réellement.
     assert.ok(!("users" in donnees.tables), "Les comptes de connexion sont dans la sauvegarde.");
     assert.doesNotMatch(brut, /passwordHash|password_hash/, "Une empreinte de mot de passe est dans la sauvegarde.");
+
+    // Sa capture du 26 septembre 2026 : trente dossiers nommés par identifiant
+    // dans l'app Fichiers. Les fichiers se rangent sous le nom du client. Le jeu
+    // de démonstration porte des PDF de devis : un dossier vide ne prouverait
+    // rien, et la suite refuse d'y conclure.
+    const racineFichiers = path.join(dossier, "sortie", "fichiers");
+    const chemins = readdirSync(racineFichiers, { recursive: true }).map(String);
+    assert.ok(chemins.some((c) => c.endsWith(".pdf")), "Aucun PDF dans la sauvegarde du compte de démonstration.");
+    const identifiant = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
+    const illisible = chemins.find((c) => identifiant.test(c));
+    assert.equal(illisible, undefined, `Un dossier porte un identifiant au lieu d'un nom : « ${illisible} ».`);
 
     console.log(`✅ Sauvegarde téléchargée (${taille} octets), ouverte, et conforme.`);
     console.log(`   ${Object.entries(donnees.compte).filter(([, n]) => n > 0).map(([t, n]) => `${t}=${n}`).join(", ")}`);

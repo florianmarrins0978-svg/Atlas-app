@@ -8,6 +8,22 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-26
 
+### La sauvegarde se range par client, plus par identifiant
+
+**Sa capture du 26 septembre**, dans l'app Fichiers : trente dossiers
+« 0b2034d5-11bb-4…a9c-bfab46c53450 ». *« Un utilisateur va rien comprendre !
+Pourquoi c'est pas rangé avec le nom des clients ? »*
+
+L'archive recopiait la clé de stockage (`chantiers/<uuid>/photos/<hash>`). Elle
+range désormais `fichiers/<client>/<chantier>/Photos|Devis|Factures|Notes
+vocales/`, avec des noms lisibles (« Photo 2026-09-12.jpg », « Devis
+2026-000001.pdf »). Le logo va dans `Entreprise/`, les tickets dans `Tickets de
+caisse/`, un diagnostic sans chantier dans `Sans chantier/`. La clé reste dans
+`donnees.json`, à côté du nouveau `chemin` : une reprise saura relier les deux.
+Règle pure : `src/lib/rangement-sauvegarde.ts` (`ARCHITECTURE.md` §417).
+Contrôles : `test-rangement-sauvegarde.ts`, et `test-export-entreprise.ts` et
+`test-mes-donnees-e2e.ts` vus rouges sur l'ancien code (« chantiers/65165471-… »).
+
 ### Planche : voir un exemple de facture, avant de coder
 
 `appli/apercu-du-document.html`, sa demande du 26 septembre : un bouton qui

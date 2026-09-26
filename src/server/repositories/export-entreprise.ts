@@ -63,6 +63,7 @@ import {
   motsCatalogue,
 } from "../db/schema";
 import type { Ctx } from "./context";
+import { rangerLesFichiers, type FichierARanger } from "@/lib/rangement-sauvegarde";
 
 // Emporter ses données, sans demander la permission à personne.
 //
@@ -100,7 +101,13 @@ export type ExportEntreprise = {
 export type FichierAJoindre = {
   storageKey: string;
   /** D'où vient ce fichier, pour le retrouver dans les données. */
-  origine: "photo" | "note-vocale" | "devis-pdf" | "facture-pdf" | "avoir-pdf" | "logo" | "ticket-tva";
+  origine: FichierARanger["origine"];
+  /**
+   * Où il se range dans l'archive : `fichiers/<client>/<chantier>/Photos/…`.
+   * Écrit ici, à côté de la clé, pour qu'une reprise sache relier l'un à
+   * l'autre (`src/lib/rangement-sauvegarde.ts`).
+   */
+  chemin: string;
 };
 
 /**
@@ -476,22 +483,42 @@ export async function exporterEntreprise(
     // et l'écrire deux fois dans l'archive produirait un doublon que certains
     // décompresseurs refusent d'extraire.
     const vus = new Set<string>();
-    const fichiers: FichierAJoindre[] = [];
-    const ajouter = (cle: string | null, origine: FichierAJoindre["origine"]) => {
+    const aRanger: FichierARanger[] = [];
+    const ajouter = (
+      cle: string | null,
+      origine: FichierARanger["origine"],
+      chantierId: string | null = null,
+      libelle: string | null = null,
+      jour: string | null = null
+    ) => {
       if (!cle || vus.has(cle)) return;
       vus.add(cle);
-      fichiers.push({ storageKey: cle, origine });
+      aRanger.push({ storageKey: cle, origine, chantierId, libelle, jour });
     };
-    for (const p of lesPhotos) ajouter(p.storageKey as string | null, "photo");
-    for (const n of lesNotes) ajouter(n.storageKey as string | null, "note-vocale");
-    for (const d of lesDevis) ajouter(d.pdfStorageKey as string | null, "devis-pdf");
-    for (const f of lesFactures) ajouter(f.pdfStorageKey as string | null, "facture-pdf");
-    for (const a of lesAvoirs) ajouter(a.pdfStorageKey, "avoir-pdf");
+    const jourDe = (d: Date | string | null | undefined) =>
+      d ? (typeof d === "string" ? d.slice(0, 10) : d.toISOString().slice(0, 10)) : null;
+
+    for (const p of lesPhotos) ajouter(p.storageKey, "photo", p.chantierId, null, jourDe(p.createdAt));
+    for (const n of lesNotes) ajouter(n.storageKey, "note-vocale", n.chantierId, null, jourDe(n.createdAt));
+    for (const d of lesDevis)
+      ajouter(
+        d.pdfStorageKey,
+        "devis-pdf",
+        d.chantierId,
+        d.numeroVersion > 1 ? `${d.numeroCommercial} version ${d.numeroVersion}` : d.numeroCommercial,
+        null
+      );
+    for (const f of lesFactures) ajouter(f.pdfStorageKey, "facture-pdf", f.chantierId, f.numeroCommercial, null);
+    const chantierDeLaFacture = new Map(lesFactures.map((f) => [f.id, f.chantierId]));
+    for (const a of lesAvoirs)
+      ajouter(a.pdfStorageKey, "avoir-pdf", chantierDeLaFacture.get(a.factureId) ?? null, a.numero, null);
     // Les photos de diagnostic partent avec le reste. Celles déjà purgées ont
     // une clé nulle : `ajouter` les ignore, plutôt que de faire échouer
     // l'archive sur un objet qui n'existe plus (c'est le cas normal après
     // 90 jours, pas une anomalie).
-    for (const p of sesPhotosDiagnostic) ajouter(p.storageKey as string | null, "photo");
+    const chantierDuDiagnostic = new Map(sesDiagnostics.map((d) => [d.id, d.chantierId]));
+    for (const p of sesPhotosDiagnostic)
+      ajouter(p.storageKey, "photo", chantierDuDiagnostic.get(p.diagnosticId) ?? null, "diagnostic", jourDe(p.createdAt));
 
     /**
      * **LE LOGO ET LES TICKETS DE CAISSE PARTENT AUSSI** — lot de clôture,
@@ -511,8 +538,21 @@ export async function exporterEntreprise(
      * tables. Il ne manquait que de les parcourir. C'est ce qui a fait juger la
      * correction sûre plutôt que disproportionnée.
      */
-    for (const a of lesAchatsTva) ajouter(a.photoCle as string | null, "ticket-tva");
-    for (const ent of entreprise) ajouter(ent.logoStorageKey as string | null, "logo");
+    for (const a of lesAchatsTva) ajouter(a.photoCle, "ticket-tva", null, a.fournisseur, jourDe(a.dateAchat));
+    for (const ent of entreprise) ajouter(ent.logoStorageKey, "logo");
+
+    // Rangés sous le nom du client et du chantier, jamais sous leur
+    // identifiant : c'est ce qu'il voit en ouvrant l'archive sur son téléphone.
+    const nomDuClient = new Map(lesClients.map((c) => [c.id, c.nom]));
+    const chantiersDeRangement = new Map(
+      lesChantiers.map((c) => [c.id, { nom: c.nom, client: c.clientId ? nomDuClient.get(c.clientId) ?? null : null }])
+    );
+    const chemins = rangerLesFichiers(aRanger, chantiersDeRangement);
+    const fichiers: FichierAJoindre[] = aRanger.map((f, i) => ({
+      storageKey: f.storageKey,
+      origine: f.origine,
+      chemin: chemins[i],
+    }));
 
     return {
       versionFormat: VERSION_FORMAT_EXPORT,

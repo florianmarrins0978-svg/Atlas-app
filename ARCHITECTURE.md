@@ -33452,3 +33452,19 @@ faudrait savoir c'est une TVA à combien »*.
 **Réserve** : aux encaissements, un avoir émis après un acompte change les
 parts par taux de cet acompte (pas son total), comme il change déjà sa TVA
 (`TODO.md`).
+
+## §417 : La sauvegarde se range par client et par chantier
+
+**Sa capture du 26 septembre 2026** : l'archive téléchargée montrait des
+dossiers nommés par identifiant, parce que chaque fichier y portait sa clé de
+stockage.
+
+| Décision | Pourquoi |
+|---|---|
+| le chemin dans le zip est `fichiers/<client>/<chantier>/<nature>/<nom>` | c'est ce qu'il voit en ouvrant l'archive sur son téléphone ; un identifiant ne se reconnaît pas |
+| une règle pure, `rangerLesFichiers` (`src/lib/rangement-sauvegarde.ts`) ; le dépôt ne fait que lire les lignes | une règle métier vit dans `lib`, testable sans base (`CLAUDE.md` §3) |
+| la clé de stockage RESTE dans `donnees.json`, avec `chemin` à côté | une reprise remettra chaque fichier à sa place d'origine : le chemin lisible ne sert qu'à l'humain |
+| `\ / : * ? " < > |` retirés des noms, 60 caractères au plus | un « / » dans un nom de client créait un dossier de plus ; Windows refuse le reste |
+| deux fichiers de même nom sont numérotés « (2) », comparés sans la casse | l'app Fichiers et Windows confondent « Photo » et « photo » : le second écraserait le premier |
+| `versionFormat` reste 1 | un champ ajouté ne casse aucun lecteur ; rien ne lisait les chemins du zip |
+

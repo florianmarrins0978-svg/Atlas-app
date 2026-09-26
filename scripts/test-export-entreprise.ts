@@ -152,7 +152,7 @@ async function main() {
     // au vert sans rien prouver (`CLAUDE.md` §5).
     assert.match(
       source,
-      /ajouter\(a\.photoCle[^)]*"ticket-tva"\)/,
+      /ajouter\(a\.photoCle,\s*"ticket-tva"/,
       "les photos de tickets de caisse ne sont pas jointes à l'archive"
     );
     assert.match(
@@ -188,6 +188,19 @@ async function main() {
     assert.ok(cles.includes("audios/A-1.webm"), "l'enregistrement manque");
     assert.equal(new Set(cles).size, cles.length, "une clé est listée deux fois");
     assert.equal(e.fichiers.find((f) => f.storageKey === "photos/A-1.jpg")?.origine, "photo");
+  });
+
+  await test("les fichiers se rangent sous le nom du client, jamais sous un identifiant", async () => {
+    // Sa capture du 26 septembre 2026 : l'app Fichiers lui montrait trente
+    // dossiers « 0b2034d5-11bb-4…a9c-bfab46c53450 ». L'archive recopiait la clé
+    // de stockage ; c'est le chemin rendu ici qui part dans le zip.
+    const e = await exporterEntreprise(A);
+    const photo = e.fichiers.find((f) => f.storageKey === "photos/A-1.jpg");
+    assert.match(photo?.chemin ?? "", /^fichiers\/Client A\/Chantier A\/Photos\/Photo \d{4}-\d{2}-\d{2}\.jpg$/);
+    const note = e.fichiers.find((f) => f.storageKey === "audios/A-1.webm");
+    assert.match(note?.chemin ?? "", /^fichiers\/Client A\/Chantier A\/Notes vocales\/Note vocale \d{4}-\d{2}-\d{2}\.webm$/);
+    const uuid = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
+    for (const f of e.fichiers) assert.doesNotMatch(f.chemin, uuid, `un identifiant dans « ${f.chemin} »`);
   });
 
   await test("AUCUNE table portant une entreprise n'est oubliée", async () => {

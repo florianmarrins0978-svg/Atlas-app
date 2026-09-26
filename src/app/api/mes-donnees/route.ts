@@ -29,9 +29,8 @@ CE QU'IL Y A DANS CE FICHIER
   donnees.json   Toutes les données de votre entreprise : clients, chantiers,
                  devis, factures, tarifs, transcriptions. Un fichier texte.
                  Il s'ouvre dans n'importe quel éditeur, sans Atlas.
-  fichiers/      Vos photos, vos enregistrements et vos PDF. Ils portent le
-                 nom sous lequel l'application les connaît ; « donnees.json »
-                 dit à quel chantier chacun appartient.
+  fichiers/      Vos photos, vos enregistrements et vos PDF, rangés par
+                 client puis par chantier.
 
 CE QU'IL CONTIENT DE SENSIBLE
 -----------------------------
@@ -115,13 +114,13 @@ export async function GET() {
     for (const fichier of donnees.fichiers) {
       try {
         const octets = await lireObjet(fichier.storageKey);
-        yield { nom: `fichiers/${fichier.storageKey}`, contenu: new Uint8Array(octets) };
+        yield { nom: fichier.chemin, contenu: new Uint8Array(octets) };
       } catch {
         // Un fichier manquant n'interrompt pas la sauvegarde. L'audio est purgé
         // après transcription (docs/RGPD.md §4) : une absence est ici le cas
         // NORMAL, et faire échouer l'export dessus reviendrait à interdire
         // toute sauvegarde à qui a laissé tourner la purge une fois.
-        introuvables.push(`${fichier.storageKey} (${fichier.origine})`);
+        introuvables.push(fichier.chemin);
       }
     }
 
