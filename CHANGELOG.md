@@ -6,6 +6,24 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-09-26
+
+### Sur iPhone, le calendrier de la TVA rouvre les années précédentes
+
+*Sa question, capture à l'appui : « pourquoi je peux pas aller voir les
+années précédentes ? »* Toucher « 2026 » ne voilait que la bande des mois. La
+feuille du calendrier était montée DANS le rail des mois, qui défile, et
+Safari rogne un `position: fixed` à son conteneur défilant : la feuille, avec
+son « ‹ 2025 », restait hors de l'écran. Chromium ne rogne pas, donc la suite
+navigateur était verte.
+
+La feuille part désormais sous `<body>` (`createPortal`,
+`CalendrierPeriodes.tsx`). `test-periodicite-tva-e2e.ts` vérifie qu'aucun
+ancêtre de la feuille ne défile ni n'est collant : rouge avant, vert après.
+**Pas vérifiable ICI sur Safari** (aucun WebKit sur ce poste) : à regarder
+sur son iPhone. Batterie non jouée, à sa demande ; seule la suite de la TVA
+l'a été (9 sur 9).
+
 ## 2026-09-25
 
 ### L'anthracnose se sépare en deux planches, le chêne et le hêtre

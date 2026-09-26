@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { colors, font, voile } from "@/lib/design-tokens";
 import BottomSheet from "@/components/atlas/BottomSheet";
@@ -85,6 +86,13 @@ export default function CalendrierPeriodes({
         </span>
       </button>
 
+      {/* **La feuille part sous `<body>`, pas là où vit le bouton.** Le bouton
+          est dans le rail des mois, qui défile ; Safari rogne alors la feuille
+          fixe à la hauteur du rail. Sur iPhone, toucher « 2026 » ne voilait que
+          la bande des mois, et les autres années restaient hors d'atteinte
+          (sa question du 26 septembre 2026). Montée seulement une fois ouverte :
+          le serveur n'a pas de `document`. */}
+      {ouvert && createPortal(
       <BottomSheet open={ouvert} onBackdropClick={() => setOuvert(false)}>
         <div className="mb-4 flex items-center justify-between">
           <button
@@ -182,7 +190,9 @@ export default function CalendrierPeriodes({
         >
           Annuler
         </button>
-      </BottomSheet>
+      </BottomSheet>,
+      document.body,
+      )}
     </>
   );
 }
