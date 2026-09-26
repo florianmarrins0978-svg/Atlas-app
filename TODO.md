@@ -1,16 +1,5 @@
 # Prochaines tâches
 
-## DEUX ROUGES SUR `main`, relevés le 26 septembre 2026 (hors de tout lot)
-
-Vus par la batterie du lot `claude/intervention-return-send-issue-gxr10s`,
-puis rejoués sur `main` (`e64d83b7`) par `verifier-rouge-prealable.ts` :
-rouges de la même façon des deux côtés.
-
-| | |
-|---|---|
-| `test-aucun-tiret` | dix tirets ou points médians dans `appli/essais.html` (l. 255 à 264), `appli/fiche-anthracnose-du-hetre.html` (l. 78, 79) et `appli/fiche-chalarose-du-frene.html` (l. 46, 55, 67) : à réécrire en phrases, par la session des fiches |
-| `test-pas-la-ce-jour-e2e` | le test cherche le 1er octobre dans le calendrier du mois affiché, qui est septembre : il dépend de la date du jour et rougit en fin de mois. C'est le test qui est à corriger, pas l'écran |
-
 ## ⏳ UNE PLANCHE À REGARDER : VOIR UN EXEMPLE DE FACTURE (26 septembre 2026)
 
 `appli/apercu-du-document.html`. Sa réponse attendue : **A** (bouton sous

@@ -18,6 +18,14 @@ ouverte sur aujourd'hui. Le serveur, lui, l'aurait accepté. La condition est
 retirée : seule la date d'envoi décide, à l'écran comme au serveur. Un retour
 d'un jour passé reste fermé. `ARCHITECTURE.md` §414.
 
+### Deux rouges de `main` corrigés
+
+`test-aucun-tiret` : dix tirets et incises dans `appli/essais.html` et les
+planches de l'anthracnose du hêtre et de la chalarose, réécrits en phrases.
+`test-pas-la-ce-jour-e2e` : il cherchait « dans cinq jours » dans le mois
+affiché, donc rougissait du 27 au 31 de chaque mois ; il avance désormais au
+mois suivant comme le patron.
+
 ### Planche : voir un exemple de facture, avant de coder
 
 `appli/apercu-du-document.html`, sa demande du 26 septembre : un bouton qui
