@@ -1,5 +1,22 @@
 # Prochaines tâches
 
+## ⏳ UNE VIDÉO À REGARDER : LA VERSION C DE LA PROMOTION (26 septembre 2026)
+
+`appli/video-promo.html`, bouton « C, avec le son » (et la même muette), à
+côté des A et B de la session voisine. Attend de lui : C, A ou B ; le nom
+commercial ; l'adresse vers laquelle la vidéo renvoie ; sa voix s'il en veut
+une ; **et son avis sur la bande son, que personne n'a pu écouter ici**. Pas
+encore sur `main` : branche `claude/app-demo-video-k5o4rz`, lot de niveau 2
+(`scripts/`), `npm run verifier:avant-fusion` avant la poussée.
+
+**Pour la refaire** : `node scripts/rendre-film.mjs appli/video-promo/film/film-C.html
+--planche /tmp/p.png` pour regarder, puis `--sortie … --sons sons.json`,
+`python3 scripts/musique-film.py --sons sons.json --sortie bande.wav`, et
+`ffmpeg -i muet.mp4 -i bande.wav -c:v copy -c:a aac -shortest atlas-C.mp4`. Les
+captures de l'appli sont dans `appli/video-promo/film/` ; le jeu de
+démonstration qui les a produites (Les Jardins de Loire, Mme Martin) n'est
+toujours pas dans le dépôt : refaire une capture demande de le reconstruire.
+
 ## 🔴 « DERNIER DEVIS » CHANGE LES PRIX SANS LE DIRE (26 septembre 2026)
 
 **Relevé par lui** : *« on ne peut pas reprendre un devis existant et mettre les

@@ -1,0 +1,554 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1080">
+<title>Atlas : le film, version C</title>
+<link rel="stylesheet" href="polices/polices.css">
+<style>
+  /*
+    LE FILM DE PROMOTION, VERSION C. Sa demande du 26 septembre 2026, devant la
+    version A : « Fais mieux ! ».
+
+    Ce qui change par rapport à A, et pourquoi :
+
+    - L'accroche se JOUE au lieu de s'afficher : « 20 minutes » se fait barrer
+      d'un trait doré, « 30 secondes » prend la place. Les deux chiffres sont
+      ceux de docs/AGENT.md §1, pas des chiffres de publicité.
+    - Ce qu'il dicte S'ÉCRIT sous ses yeux, mot après mot, pendant que
+      l'enregistrement tourne. C'est la promesse du produit, et une vidéo se
+      regarde sans le son : sans ces mots, on voit un bouton vert qui tourne.
+    - Le devis se CONSTRUIT ligne après ligne (en-tête, client, les trois
+      prestations, le total) au lieu de se poser d'un bloc : on voit que les
+      lignes sont celles qu'on vient d'entendre.
+    - Le téléphone respire (léger relief, dérive lente) et ses écrans se
+      poussent comme dans l'appli, au lieu de se fondre l'un dans l'autre.
+      Quand le devis passe devant, le téléphone recule et se floute.
+    - Une bande son (scripts/musique-film.py) : les gestes s'entendent, et le
+      film garde un rythme. Les instants sonores sortent d'ICI (window.SONS),
+      jamais d'une seconde horloge.
+
+    Ce qui ne change pas : TOUT ce qui est dans le téléphone est une capture
+    de l'application servie, prise par la session du 26 septembre en jouant le
+    geste pour de vrai (voir film.html). Aucun prix n'est dit, exprès : la
+    formule à 39 € n'ouvre ni l'arrosage ni le diagnostic, que le film montre.
+
+    UNE SEULE HORLOGE : rien n'est animé par CSS, `rendre(t)` pose chaque
+    élément pour l'instant t. ?t=12.5 fige un instant ; sans paramètre, le
+    film tourne en boucle dans un navigateur.
+  */
+  :root{ --pin:#2f3b2f; --pin-fonce:#1c251d; --or:#C9A15E; --or-fonce:#B98B47; --os:#f5f3ee; --papier:#faf9f5; --encre:#1c1c1a; }
+  *{box-sizing:border-box;margin:0}
+  html,body{width:1080px;height:1920px;overflow:hidden;background:var(--pin-fonce)}
+  #scene{position:absolute;inset:0;overflow:hidden;
+         background:radial-gradient(130% 70% at 50% -10%,#3d4d3c 0%,#2f3b2f 42%,#1c251d 100%)}
+  #lueur{position:absolute;width:1500px;height:1500px;border-radius:50%;
+         background:radial-gradient(circle,rgba(201,161,94,.26) 0%,rgba(201,161,94,0) 62%)}
+  #vignette{position:absolute;inset:0;z-index:40;pointer-events:none;
+            background:radial-gradient(85% 62% at 50% 46%,rgba(0,0,0,0) 52%,rgba(0,0,0,.46) 100%)}
+  .bloc{position:absolute;left:0;right:0;text-align:center;will-change:transform,opacity}
+  .etiquette{font:500 26px/1 'Film Sans';letter-spacing:.32em;text-transform:uppercase;color:var(--or)}
+  .titre{font:400 80px/1.12 'Film Serif';color:#faf9f5;letter-spacing:-.01em}
+  .titre .mot{display:inline-block;will-change:transform,opacity}
+  .sous{margin-top:26px;font:400 34px/1.35 'Film Sans';color:rgba(250,249,245,.78)}
+
+  /* L'ACCROCHE */
+  #accroche{top:560px}
+  #accroche .gros{font:400 190px/1 'Film Serif';color:#faf9f5;letter-spacing:-.03em;position:relative;display:inline-block}
+  #accroche .gros .mot{display:inline-block;will-change:transform,opacity}
+  #accroche .barre{position:absolute;left:-2%;top:52%;width:104%;height:12px;background:var(--or);border-radius:6px;
+                   transform-origin:0 50%;transform:scaleX(0)}
+  #accroche .sousligne{margin-top:22px;font:400 58px/1.2 'Film Serif';color:rgba(250,249,245,.85)}
+  #accroche .reponse{margin-top:70px;font:400 150px/1 'Film Serif';font-style:italic;color:var(--or);letter-spacing:-.02em}
+  #accroche .avec{margin-top:44px;font:500 28px/1 'Film Sans';letter-spacing:.42em;text-transform:uppercase;color:rgba(250,249,245,.7)}
+
+  /* LES MOTS DICTÉS */
+  #dictee{top:372px;padding:0 90px;font:400 46px/1.3 'Film Serif';color:#f3efe6;text-align:center}
+  #dictee .mot{display:inline-block;will-change:transform,opacity;margin-right:.26em}
+  #dictee .point{display:inline-block;width:18px;height:18px;border-radius:50%;background:#d9534f;margin:0 14px 6px 0;vertical-align:middle}
+
+  /* LE TÉLÉPHONE */
+  #tel{position:absolute;left:0;top:0;z-index:5;width:664px;height:1386px;transform-origin:0 0;will-change:transform,filter;perspective:2600px}
+  #tel3d{position:absolute;inset:0;transform-origin:50% 50%;will-change:transform}
+  #coque{position:absolute;inset:0;border-radius:92px;background:#0e0f0d;
+         box-shadow:0 70px 130px rgba(0,0,0,.5),0 0 0 3px #3b3f39 inset,0 0 0 1px rgba(255,255,255,.08)}
+  #ecran{position:absolute;left:22px;top:22px;width:620px;height:1342px;border-radius:72px;overflow:hidden;background:var(--os)}
+  #ecran img{position:absolute;left:0;top:0;width:620px;will-change:transform,opacity}
+  #encoche{position:absolute;left:50%;top:40px;width:190px;height:52px;margin-left:-95px;border-radius:30px;background:#0e0f0d;z-index:1000}
+  #voile{position:absolute;inset:0;background:#000;opacity:0;pointer-events:none}
+  .reflet{position:absolute;left:-60%;top:-20%;width:220%;height:140%;pointer-events:none;z-index:900;opacity:0;
+          background:linear-gradient(112deg,rgba(255,255,255,0) 42%,rgba(255,255,255,.26) 50%,rgba(255,255,255,0) 58%);will-change:transform,opacity}
+  .appui{position:absolute;border-radius:50%;pointer-events:none;z-index:500;will-change:transform,opacity}
+  .appui.anneau{width:120px;height:120px;margin:-60px 0 0 -60px;border:5px solid var(--or)}
+  .appui.point{width:54px;height:54px;margin:-27px 0 0 -27px;background:rgba(201,161,94,.55)}
+  .repere{position:absolute;border:5px solid var(--or);border-radius:22px;z-index:500;will-change:opacity;box-shadow:0 0 0 6px rgba(201,161,94,.14)}
+  #masque{position:absolute;left:0;top:0;width:0;height:0;background:var(--papier);z-index:300;border-top:3px solid var(--or)}
+
+  /* LA FEUILLE DU DEVIS, QUI SE CONSTRUIT */
+  #feuille{position:absolute;left:80px;top:660px;z-index:10;width:920px;height:680px;transform-origin:50% 72%;border-radius:12px;
+           background:var(--papier);box-shadow:0 60px 120px rgba(0,0,0,.55);overflow:hidden;will-change:transform,opacity;opacity:0}
+  #feuille .partie{position:absolute;left:0;top:0;width:920px;will-change:transform,opacity;opacity:0}
+  #feuille .repere{border-radius:12px}
+  #eclat{position:absolute;border-radius:50%;background:radial-gradient(circle,rgba(201,161,94,.55) 0%,rgba(201,161,94,0) 70%);opacity:0;will-change:opacity,transform}
+
+  /* LA FIN */
+  #fin{top:600px}
+  #fin .marque{font:400 230px/1 'Film Serif';color:#faf9f5;letter-spacing:-.02em;position:relative;display:inline-block;overflow:hidden;padding:0 30px}
+  #fin .phrase{margin-top:30px;font:400 54px/1.3 'Film Serif';font-style:italic;color:#e9e3d6}
+  .pastilles{display:flex;justify-content:center;gap:22px;margin-top:74px}
+  .pastille{padding:28px 42px;border-radius:60px;font:500 36px/1 'Film Sans';will-change:transform,opacity}
+  .pastille.pleine{background:var(--or);color:var(--encre)}
+  .pastille.vide{border:3px solid rgba(250,249,245,.5);color:#faf9f5}
+  #fin .metiers{margin-top:96px;font:500 28px/1 'Film Sans';letter-spacing:.3em;text-transform:uppercase;color:var(--or)}
+</style>
+</head>
+<body>
+<div id="scene">
+  <div id="lueur"></div>
+
+  <div class="bloc" id="accroche">
+    <p class="gros" id="gros"><span class="mot">20</span> <span class="mot">minutes</span><span class="barre" id="barre"></span></p>
+    <p class="sousligne" id="sousligne">de bureau après chaque visite ?</p>
+    <p class="reponse" id="reponse">30 secondes.</p>
+    <p class="avec" id="avec">avec Atlas</p>
+  </div>
+
+  <div class="bloc" id="entete" style="top:150px">
+    <p class="etiquette" id="etiquette"></p>
+    <p class="titre" id="titre" style="margin-top:30px"></p>
+    <p class="sous" id="sousTitre"></p>
+  </div>
+
+  <div class="bloc" id="dictee"></div>
+
+  <div id="feuille">
+    <div id="eclat"></div>
+    <div class="reflet" id="refletFeuille"></div>
+    <div class="repere" id="repereTotal"></div>
+  </div>
+
+  <div id="tel"><div id="tel3d">
+    <div id="coque"></div>
+    <div id="ecran">
+      <div id="encoche"></div>
+      <img data-ecran="accueil-avant" src="accueil-avant.jpg" alt="">
+      <img data-ecran="fiche-vide" src="fiche-vide.jpg" alt="">
+      <img data-ecran="fiche-mme" src="fiche-mme.jpg" alt="">
+      <img data-ecran="frappe-0" src="dictee/frappe-0.jpg" alt="">
+      <img data-ecran="frappe-1" src="dictee/frappe-1.jpg" alt="">
+      <img data-ecran="frappe-2" src="dictee/frappe-2.jpg" alt="">
+      <img data-ecran="frappe-3" src="dictee/frappe-3.jpg" alt="">
+      <img data-ecran="frappe-4" src="dictee/frappe-4.jpg" alt="">
+      <img data-ecran="frappe-5" src="dictee/frappe-5.jpg" alt="">
+      <img data-ecran="fiche-reconnue" src="fiche-reconnue.jpg" alt="">
+      <img data-ecran="enregistre" src="dictee/enregistre.jpg" alt="">
+      <div id="bandes"></div>
+      <img data-ecran="transcription" src="transcription.jpg" alt="">
+      <img data-ecran="client" src="client.jpg" alt="">
+      <img data-ecran="client-date" src="client-date.jpg" alt="">
+      <img data-ecran="client-accepte" src="client-accepte.jpg" alt="">
+      <img data-ecran="accueil" src="accueil.jpg" alt="">
+      <img data-ecran="planning" src="planning.jpg" alt="">
+      <img data-ecran="termines" src="termines.jpg" alt="">
+      <img data-ecran="facture-avant" src="facture-avant.jpg" alt="">
+      <img data-ecran="facture" src="facture.jpg" alt="">
+      <img data-ecran="paysage" src="paysage.jpg" alt="">
+      <img data-ecran="diagnostic" src="diagnostic.jpg" alt="">
+      <img data-ecran="arrosage" src="arrosage.jpg" alt="">
+      <img id="barreBas" src="barre.jpg" alt="" style="top:auto;bottom:0;z-index:400">
+      <div id="voile"></div>
+      <div id="masque"></div>
+      <div class="reflet" id="refletEcran"></div>
+      <div class="appui anneau" id="anneau"></div>
+      <div class="appui point" id="point"></div>
+      <div class="repere" id="repere"></div>
+    </div>
+  </div></div>
+
+  <div class="bloc" id="fin">
+    <p class="marque" id="marque">Atlas<span class="reflet" id="refletMarque" style="z-index:1"></span></p>
+    <p class="phrase" id="phrase">Du devis dicté à la facture,<br>sans rien retaper.</p>
+    <div class="pastilles">
+      <span class="pastille pleine" id="p1">Essai gratuit 15 jours</span>
+      <span class="pastille vide" id="p2">Tous les outils ouverts</span>
+    </div>
+    <p class="metiers" id="metiers">Paysagistes, élagueurs, artisans</p>
+  </div>
+
+  <div id="vignette"></div>
+</div>
+
+<script>
+  const DUREE = 41.6;
+  const K = 620 / 390;                 // un pixel de l'appli, dans l'écran du téléphone
+
+  // ─── les outils du temps ───────────────────────────────────────────────
+  const borne = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+  const lisse = x => { x = borne(x); return x * x * (3 - 2 * x); };
+  const sortie = x => { x = borne(x); return 1 - Math.pow(1 - x, 3); };
+  const entreeCubique = x => { x = borne(x); return x * x * x; };
+  const ressort = x => { x = borne(x); const c = 1.35; return 1 + (c + 1) * Math.pow(x - 1, 3) + c * Math.pow(x - 1, 2); };
+  const entre = (t, a, b) => borne((t - a) / (b - a));
+  const mix = (a, b, p) => a + (b - a) * p;
+  // Une valeur qui passe par des clés [t, v], lissée entre chacune ; une clé
+  // peut porter sa propre courbe en troisième position.
+  function cles(t, liste, f = lisse) {
+    if (t <= liste[0][0]) return liste[0][1];
+    for (let i = 1; i < liste.length; i++) {
+      if (t <= liste[i][0]) return mix(liste[i - 1][1], liste[i][1], (liste[i][2] || f)(entre(t, liste[i - 1][0], liste[i][0])));
+    }
+    return liste[liste.length - 1][1];
+  }
+
+  // ─── le découpage ───────────────────────────────────────────────────────
+  const TITRES = [
+    { de: 4.8,  a: 12.3, etiquette: 'Sur le chantier',      titre: 'Vous dictez.' },
+    { de: 12.3, a: 14.4, etiquette: 'Mot pour mot',         titre: 'C’est transcrit.' },
+    { de: 14.4, a: 20.0, etiquette: 'Tout est repris',      titre: 'Le devis est prêt.',
+      sous: 'Prestations, durée, équipe, prix.', sousDe: 18.3 },
+    { de: 20.0, a: 26.0, etiquette: 'Chez votre client',    titre: 'Il choisit sa date,<br>il accepte.' },
+    { de: 26.0, a: 30.2, etiquette: 'Sur votre téléphone',  titre: 'Vous êtes prévenu.' },
+    { de: 30.2, a: 35.0, etiquette: 'Chantier terminé',     titre: 'La facture reprend<br>le devis.' },
+    { de: 35.0, a: 38.2, etiquette: 'Les outils du métier', titre: 'Diagnostic, arrosage,<br>sécurité.' },
+  ];
+  // [nom, apparaît, disparaît, mode d'entrée]. Un écran reste sous le suivant
+  // le temps que la poussée finisse : sinon le fond os apparaît entre les deux.
+  const ECRANS = [
+    ['accueil-avant',  4.1,  6.1, 'fondu'],
+    ['fiche-vide',     5.5,  6.3, 'monte'],
+    ['fiche-mme',      6.05, 6.3, 'net'],
+    ['frappe-0',       6.2,  6.4, 'net'],
+    ['frappe-1',       6.3,  6.5, 'net'],
+    ['frappe-2',       6.4,  6.6, 'net'],
+    ['frappe-3',       6.5,  6.7, 'net'],
+    ['frappe-4',       6.6,  6.8, 'net'],
+    ['frappe-5',       6.7,  7.4, 'net'],
+    ['fiche-reconnue', 6.95, 8.0, 'fondu'],
+    ['enregistre',     7.85, 12.8, 'net'],
+    ['transcription', 12.25, 20.5, 'glisse'],
+    ['client',        20.1, 21.5, 'fondu'],
+    ['client-date',   21.25, 23.4, 'net'],
+    ['client-accepte',22.9, 26.4, 'fondu'],
+    ['accueil',       25.9, 28.7, 'glisse'],
+    ['planning',      28.2, 30.6, 'fondu'],
+    ['termines',      30.1, 31.5, 'glisse'],
+    ['facture-avant', 30.95, 32.4, 'glisse'],
+    ['facture',       31.85, 35.4, 'glisse'],
+    ['paysage',       34.9, 36.2, 'glisse'],
+    ['diagnostic',    35.65, 37.6, 'glisse'],
+    ['arrosage',      37.1, 38.9, 'glisse'],
+  ];
+  // Les appuis tombent sur les boutons que le geste a réellement touchés
+  // (mesurés sur l'écran servi, en pixels de l'appli : x, y).
+  const APPUIS = [
+    [5.4,  271, 172],   // « Créer un devis »
+    [6.0,  153, 140],   // « Mme »
+    [7.8,  195, 663],   // le micro : « Appuyez et décrivez le chantier »
+    [12.2, 343, 672],   // l'envoi de la note
+    [13.9, 195, 386],   // « Créer le devis à partir de ma dictée »
+    [21.2,  37, 293],   // le mardi 13 octobre
+    [22.8, 195, 475],   // « J'accepte ce devis »
+    [30.8, 299, 435],   // « À facturer », Élagage d'un chêne
+    [31.7, 195, 333],   // « Créer la facture »
+    [35.5, 183, 283],   // « Diagnostic végétal »
+  ];
+  // Des cadres dorés qui désignent sans toucher : [de, à, x, y, largeur, hauteur]
+  const REPERES = [
+    [7.15, 7.85, 16, 123, 358, 90],    // « Repris de sa fiche »
+    [26.6, 28.1, 34, 282, 322, 156],   // la carte « Devis accepté »
+    [28.7, 30.05, 64, 402, 50, 58],    // le 13 octobre au planning
+    [33.6, 34.9, 88, 688, 214, 58],    // « Envoyer la facture », une fois la page descendue
+  ];
+  // Ce qu'il dicte, tel que l'appli l'a transcrit (transcription.jpg), et le
+  // moment où chaque mot tombe : un mot toutes les 95 ms, un souffle après la
+  // ponctuation. Ça dure ce que dure l'enregistrement filmé, à vitesse réelle.
+  const DICTEE = 'Chez madame Martin, au 8 impasse du Moulin : élagage du grand chêne, une quinzaine de mètres, en taille douce. Deux jours à deux. On broie les branches sur place et on évacue tout.';
+  const DICTEE_DEBUT = 7.95;
+  const MOTS = [];
+  { let t = DICTEE_DEBUT;
+    for (const brut of DICTEE.split(' ')) {
+      const mot = brut === ':' ? null : brut;
+      if (mot) { MOTS.push([t, mot + (DICTEE.includes(mot + ' :') ? ' :' : '')]); t += 0.095; }
+      if (/[,.:]$/.test(brut)) t += 0.13;
+    }
+  }
+  const DICTEE_FIN = MOTS[MOTS.length - 1][0] + 0.2;   // ≈ 12.0
+
+  // La feuille du devis : les morceaux du PDF, dans l'ordre où ils se posent
+  // (pixels du PDF de 1785 de large : haut, bas), et l'instant de chacun.
+  const S_PDF = 920 / 1785;
+  const PARTIES = [
+    [0, 360, 15.0],       // l'en-tête de l'entreprise
+    [360, 500, 15.3],     // DEVIS, et son numéro
+    [500, 705, 15.6],     // le client, le lieu des travaux
+    [705, 785, 15.9],     // la tête du tableau
+    [785, 876, 16.2],     // élagage du chêne
+    [876, 966, 16.5],     // main d'œuvre
+    [966, 1058, 16.8],    // broyage et évacuation
+    [1058, 1320, 17.2],   // les totaux
+  ];
+  const TOTAL_TTC = [1015, 1228, 695, 82];  // sur le PDF : x, y, largeur, hauteur
+  const T_TOTAL = 17.7;
+
+  // Les rapprochements de caméra : [début, fin, centre x, centre y (pixels de l'appli), échelle]
+  const RAPPROCHES = [[23.4, 25.7, 195, 285, 1.3], [26.5, 28.1, 195, 360, 1.2], [32.4, 33.6, 195, 700, 1.08], [36.0, 37.0, 195, 500, 1.1]];
+  // Le reflet qui balaie : [instant, cible]
+  const REFLETS = [[17.85, 'feuille'], [23.3, 'ecran'], [39.3, 'marque']];
+
+  // ─── ce que la bande son doit savoir : les instants, et rien d'autre ─────
+  window.SONS = [
+    [0.25, 'mot'], [0.55, 'mot'], [2.2, 'barre'], [2.75, 'reponse'],
+    [4.2, 'telephone-entre'],
+    ...APPUIS.map(([t]) => [t, 'appui']),
+    ...[6.2, 6.3, 6.4, 6.5, 6.6, 6.7].map(t => [t, 'touche']),
+    [6.95, 'reconnu'], [7.9, 'micro'], [12.2, 'envoi'],
+    ...ECRANS.filter(e => e[3] === 'glisse').map(e => [e[1], 'glisse']),
+    [14.5, 'feuille-entre'], ...PARTIES.map(p => [p[2], 'partie']), [T_TOTAL, 'total'],
+    [19.55, 'feuille-sort'], [23.0, 'accepte'], [26.6, 'notification'], [28.7, 'repere'],
+    [33.6, 'repere'], [38.0, 'telephone-sort'], [38.6, 'final'], [39.6, 'pastille'], [39.85, 'pastille'],
+  ].sort((a, b) => a[0] - b[0]);
+
+  const $ = id => document.getElementById(id);
+  const els = {
+    accroche: $('accroche'), gros: $('gros'), barre: $('barre'), sousligne: $('sousligne'), reponse: $('reponse'), avec: $('avec'),
+    entete: $('entete'), etiquette: $('etiquette'), titre: $('titre'), sousTitre: $('sousTitre'),
+    dictee: $('dictee'), tel: $('tel'), tel3d: $('tel3d'), voile: $('voile'), masque: $('masque'),
+    feuille: $('feuille'), repereTotal: $('repereTotal'), eclat: $('eclat'),
+    anneau: $('anneau'), point: $('point'), repere: $('repere'), barreBas: $('barreBas'),
+    fin: $('fin'), marque: $('marque'), phrase: $('phrase'), p1: $('p1'), p2: $('p2'), metiers: $('metiers'), lueur: $('lueur'),
+    reflets: { feuille: $('refletFeuille'), ecran: $('refletEcran'), marque: $('refletMarque') },
+    ecrans: Object.fromEntries([...document.querySelectorAll('[data-ecran]')].map(i => [i.dataset.ecran, i])),
+  };
+  const motsGros = [...els.gros.querySelectorAll('.mot')];
+
+  // Les mots dictés, posés une fois pour toutes : la mise en page ne bouge
+  // pas quand ils apparaissent, seul chacun s'allume.
+  els.dictee.innerHTML = '<span class="point" id="pointRouge"></span>' + MOTS.map(([, m]) => `<span class="mot">${m}</span>`).join('');
+  const spansMots = [...els.dictee.querySelectorAll('.mot')];
+  const pointRouge = $('pointRouge');
+
+  // Les morceaux de la feuille : la même image, découpée.
+  const feuille = els.feuille;
+  const parties = PARTIES.map(([haut, bas]) => {
+    const img = new Image(); img.src = 'devis-pdf.jpg'; img.alt = ''; img.className = 'partie';
+    img.style.clipPath = `inset(${haut * S_PDF}px 0 ${Math.max(0, 1320 - bas) * S_PDF}px 0)`;
+    feuille.insertBefore(img, els.eclat); return img;
+  });
+  const [tx, ty, tw, th] = TOTAL_TTC.map(v => v * S_PDF);
+  Object.assign(els.repereTotal.style, { left: `${tx}px`, top: `${ty}px`, width: `${tw}px`, height: `${th}px`, opacity: 0 });
+  Object.assign(els.eclat.style, { left: `${tx + tw / 2 - 260}px`, top: `${ty + th / 2 - 260}px`, width: '520px', height: '520px' });
+
+  // L'enregistrement, filmé image par image sur l'écran servi (ms depuis l'appui).
+  const PRISES = [124,296,412,518,629,742,852,965,1087,1203,1328,1454,1568,1709,1839,1950,2065,2168,2297,2437,2550,2652,2776,2884,2998,3122,3241,3346,3486,3607,3720,3840,3952,4066,4185,4298];
+  const T_BANDES = 7.9;
+  const VITESSE_BANDES = (PRISES[PRISES.length - 1] / 1000) / (DICTEE_FIN - T_BANDES);   // ≈ 1 : à vitesse réelle
+  const bandes = $('bandes');
+  const BANDES = PRISES.map((_, i) => {
+    const img = new Image(); img.src = `dictee/bande-${i}.jpg`; img.alt = '';
+    img.style.cssText = `top:${600 * K}px;z-index:120;opacity:0`; bandes.appendChild(img); return img;
+  });
+
+  // Pour chaque écran poussé, celui qu'il recouvre : il recule un peu et
+  // s'assombrit pendant la poussée, comme dans l'appli.
+  const PRECEDENT = ECRANS.map((e, i) => {
+    if (e[3] !== 'glisse') return -1;
+    let p = -1;
+    ECRANS.forEach((f, j) => { if (j !== i && f[1] < e[1] && (p < 0 || f[1] > ECRANS[p][1])) p = j; });
+    return p;
+  });
+
+  let titreCourant = -1;
+  function poserTitre(i) {
+    if (i === titreCourant) return;
+    titreCourant = i;
+    if (i < 0) { els.etiquette.textContent = ''; els.titre.innerHTML = ''; els.sousTitre.textContent = ''; return; }
+    els.etiquette.textContent = TITRES[i].etiquette;
+    els.sousTitre.textContent = TITRES[i].sous || '';
+    els.titre.innerHTML = TITRES[i].titre.split('<br>').map(l =>
+      l.split(' ').map(m => `<span class="mot">${m}</span>`).join(' ')).join('<br>');
+  }
+
+  function poserReflet(el, t0) {
+    const p = entre(window.__t, t0, t0 + 0.85);
+    el.style.opacity = p > 0 && p < 1 ? 1 : 0;
+    el.style.transform = `translateX(${mix(-55, 55, p)}%)`;
+  }
+
+  function rendre(t) {
+    window.__t = t;
+    els.lueur.style.transform = `translate(${mix(-520, 220, (Math.sin(t / 6) + 1) / 2)}px, ${mix(-650, 900, t / DUREE)}px)`;
+
+    // ── l'accroche : « 20 minutes » se fait barrer, « 30 secondes » prend la place
+    const accSort = lisse(entre(t, 4.05, 4.6));
+    els.accroche.style.opacity = 1 - accSort;
+    els.accroche.style.transform = `translateY(${-90 * accSort}px)`;
+    motsGros.forEach((m, k) => {
+      const p = sortie(entre(t, 0.15 + k * 0.3, 0.85 + k * 0.3));
+      m.style.opacity = p * mix(1, .38, lisse(entre(t, 2.2, 2.8)));
+      m.style.transform = `translateY(${60 * (1 - p)}px)`;
+    });
+    const ps = sortie(entre(t, 0.9, 1.5));
+    els.sousligne.style.opacity = ps * mix(1, .45, lisse(entre(t, 2.2, 2.8)));
+    els.sousligne.style.transform = `translateY(${30 * (1 - ps)}px)`;
+    els.barre.style.transform = `scaleX(${sortie(entre(t, 2.2, 2.65))})`;
+    const pr = ressort(entre(t, 2.75, 3.3));
+    els.reponse.style.opacity = borne(pr * 3);
+    els.reponse.style.transform = `scale(${mix(.72, 1, pr)}) translateY(${20 * (1 - borne(pr))}px)`;
+    els.avec.style.opacity = sortie(entre(t, 3.35, 3.85));
+    els.avec.style.letterSpacing = `${mix(.7, .42, sortie(entre(t, 3.35, 3.85)))}em`;
+
+    // ── les titres
+    const i = TITRES.findIndex(s => t >= s.de && t < s.a);
+    poserTitre(i);
+    if (i >= 0) {
+      const s = TITRES[i];
+      const entree = entre(t, s.de, s.de + .5), fin = lisse(entre(t, s.a - .35, s.a));
+      els.entete.style.opacity = 1 - fin;
+      els.entete.style.transform = `translateY(${-24 * fin}px)`;
+      els.etiquette.style.opacity = sortie(entree);
+      els.etiquette.style.letterSpacing = `${mix(.5, .32, sortie(entree))}em`;
+      [...els.titre.querySelectorAll('.mot')].forEach((m, k) => {
+        const p = sortie(entre(t, s.de + .12 + k * .07, s.de + .62 + k * .07));
+        m.style.opacity = p; m.style.transform = `translateY(${50 * (1 - p)}px)`;
+      });
+      const pSous = s.sous ? sortie(entre(t, s.sousDe, s.sousDe + .5)) : 0;
+      els.sousTitre.style.opacity = pSous; els.sousTitre.style.transform = `translateY(${20 * (1 - pSous)}px)`;
+    } else els.entete.style.opacity = 0;
+
+    // ── les mots dictés
+    const dSort = lisse(entre(t, DICTEE_FIN + .1, DICTEE_FIN + .45));
+    els.dictee.style.opacity = 1 - dSort;
+    els.dictee.style.transform = `translateY(${-30 * dSort}px)`;
+    spansMots.forEach((sp, k) => {
+      const p = sortie(entre(t, MOTS[k][0], MOTS[k][0] + .22));
+      sp.style.opacity = p; sp.style.transform = `translateY(${10 * (1 - p)}px)`;
+    });
+    const enr = t >= T_BANDES && t <= DICTEE_FIN;
+    pointRouge.style.opacity = enr ? mix(.35, 1, (Math.sin(t * 7) + 1) / 2) : 0;
+
+    // ── le téléphone : entrée, dérive, recul quand la feuille passe devant
+    const telY = cles(t, [[4.2, 1950], [4.9, 470, sortie], [7.6, 470], [8.0, 640], [12.3, 640], [12.7, 470], [14.1, 470], [14.8, 300], [19.95, 300], [20.45, 470], [38.0, 470], [38.7, 1950, entreeCubique]]);
+    const telX = cles(t, [[14.1, 540], [14.8, 330], [19.95, 330], [20.45, 540]]);
+    let zoom = cles(t, [[14.1, 1], [14.8, .72], [19.95, .72], [20.45, 1]]);
+    const flou = cles(t, [[14.3, 0], [14.9, 3], [19.9, 3], [20.3, 0]]);
+    let dx = 0, dy = 0;
+    for (const [de, a, cx, cy, e] of RAPPROCHES) {
+      const p = lisse(entre(t, de, de + .6)) * (1 - lisse(entre(t, a - .6, a)));
+      if (p <= 0) continue;
+      const echelle = mix(1, e, p);
+      zoom *= echelle;
+      dx += -(22 + cx * K - 332) * (echelle - 1);
+      dy += -(22 + cy * K - 693) * (echelle - 1) * .6;
+    }
+    els.tel.style.transform = `translate(${telX - 332 * zoom + dx}px, ${telY + dy}px) scale(${zoom})`;
+    els.tel.style.filter = flou > 0.05 ? `blur(${flou}px)` : 'none';
+    // le relief : une dérive lente, et l'entrée qui se redresse
+    const redresse = 1 - sortie(entre(t, 4.2, 5.1));
+    const rotY = 3.2 * Math.sin(t / 4.5) * (1 - redresse), rotX = 1.1 * Math.cos(t / 6.5) + 9 * redresse;
+    els.tel3d.style.transform = `rotateY(${rotY}deg) rotateX(${rotX}deg)`;
+
+    // ── les écrans dans le téléphone
+    let voileOp = 0, voileZ = 0;
+    ECRANS.forEach(([nom, de, a, mode], k) => {
+      const img = els.ecrans[nom];
+      if (t < de || t > a) { img.style.opacity = 0; return; }
+      const e = mode === 'net' ? 1 : sortie(entre(t, de, de + .42));
+      let x = 0, y = 0, op = 1;
+      if (mode === 'glisse') x = 620 * (1 - e);
+      else if (mode === 'monte') y = 1342 * (1 - e);
+      else op = e;
+      let defile = 0;
+      if (nom === 'facture') defile = cles(t, [[32.7, 0], [33.4, 560]]) * K;
+      if (nom === 'diagnostic') defile = cles(t, [[36.1, 0], [36.9, 380]]) * K;
+      img.style.opacity = op;
+      img.style.transform = `translate(${x}px, ${y - defile}px)`;
+      img.style.zIndex = Math.round(de * 10);
+      if (mode === 'glisse' && e < 1 && PRECEDENT[k] >= 0) {
+        const prec = els.ecrans[ECRANS[PRECEDENT[k]][0]];
+        prec.style.transform = `translate(${-190 * e}px, 0)`;
+        voileOp = .3 * e; voileZ = Math.round(ECRANS[PRECEDENT[k]][1] * 10) + 1;
+      }
+    });
+    els.voile.style.opacity = voileOp; els.voile.style.zIndex = voileZ;
+
+    // l'enregistrement qui tourne : la prise la plus proche
+    const ecoule = (t - T_BANDES) * 1000 * VITESSE_BANDES;
+    let vue = -1;
+    if (t >= T_BANDES && t <= DICTEE_FIN + .25) PRISES.forEach((ms, k) => { if (ms <= ecoule) vue = k; });
+    BANDES.forEach((b, k) => { b.style.opacity = k === vue ? 1 : 0; });
+
+    // la transcription qui s'écrit : un cache couleur papier découvre la carte de haut en bas
+    const pm = entre(t, 12.7, 13.6);
+    if (t >= 12.25 && pm < 1) {
+      const haut = 178 * K, hauteur = 156 * K, avance = sortie(pm) * hauteur;
+      Object.assign(els.masque.style, { left: `${24 * K}px`, width: `${342 * K}px`, top: `${haut + avance}px`, height: `${hauteur - avance}px`, opacity: 1 });
+    } else els.masque.style.opacity = 0;
+
+    // La barre du bas reste en place quand la facture défile, comme dans l'appli.
+    els.barreBas.style.opacity = t >= 32.2 && t <= 35.2 ? 1 : 0;
+
+    // ── l'appui du doigt
+    const ap = APPUIS.find(([d]) => t >= d - .25 && t < d + .55);
+    if (ap) {
+      const [d, x, y] = ap;
+      const p = entre(t, d, d + .55);
+      els.anneau.style.left = els.point.style.left = `${x * K}px`;
+      els.anneau.style.top = els.point.style.top = `${y * K}px`;
+      els.point.style.opacity = t < d ? sortie(entre(t, d - .25, d)) : 1 - p;
+      els.point.style.transform = `scale(${t < d ? mix(1.4, 1, sortie(entre(t, d - .25, d))) : mix(1, .8, p)})`;
+      els.anneau.style.opacity = t < d ? 0 : 1 - p;
+      els.anneau.style.transform = `scale(${mix(.4, 1.6, sortie(p))})`;
+    } else { els.anneau.style.opacity = 0; els.point.style.opacity = 0; }
+
+    // ── les cadres dorés
+    const rp = REPERES.find(([d, a]) => t >= d && t < a);
+    if (rp) {
+      const [d, a, x, y, w, h] = rp;
+      els.repere.style.left = `${x * K}px`; els.repere.style.top = `${y * K}px`;
+      els.repere.style.width = `${w * K}px`; els.repere.style.height = `${h * K}px`;
+      els.repere.style.opacity = sortie(entre(t, d, d + .3)) * (1 - lisse(entre(t, a - .3, a)));
+    } else els.repere.style.opacity = 0;
+
+    // ── la feuille du devis : elle arrive vierge, puis s'écrit morceau par morceau,
+    //    et la caméra s'en rapproche : à 940 px de large, ses lignes ne se lisent pas sur un téléphone
+    const fe = sortie(entre(t, 14.5, 15.15)), fs = entreeCubique(entre(t, 19.55, 19.95));
+    els.feuille.style.opacity = fe * (1 - fs);
+    els.feuille.style.transform =
+      `translate(0, ${mix(900, 0, fe) + 260 * fs}px) rotate(${mix(7, -1.5, fe)}deg) scale(${cles(t, [[16.0, 1], [19.4, 1.25]])})`;
+    parties.forEach((img, k) => {
+      const p = sortie(entre(t, PARTIES[k][2], PARTIES[k][2] + .38));
+      img.style.opacity = p; img.style.transform = `translateY(${16 * (1 - p)}px)`;
+    });
+    els.repereTotal.style.opacity = sortie(entre(t, T_TOTAL, T_TOTAL + .35));
+    const pe = entre(t, T_TOTAL, T_TOTAL + .9);
+    els.eclat.style.opacity = pe > 0 && pe < 1 ? (1 - pe) * .9 : 0;
+    els.eclat.style.transform = `scale(${mix(.4, 1.6, sortie(pe))})`;
+
+    // ── les reflets
+    for (const [t0, cible] of REFLETS) poserReflet(els.reflets[cible], t0);
+
+    // ── la fin
+    const fi = sortie(entre(t, 38.5, 39.2));
+    els.fin.style.opacity = fi;
+    els.fin.style.transform = `translateY(${40 * (1 - fi)}px)`;
+    els.marque.style.transform = `scale(${mix(.94, 1, fi)})`;
+    const ph = sortie(entre(t, 39.0, 39.6));
+    els.phrase.style.opacity = ph; els.phrase.style.transform = `translateY(${24 * (1 - ph)}px)`;
+    const q1 = ressort(entre(t, 39.6, 40.1)), q2 = ressort(entre(t, 39.85, 40.35));
+    els.p1.style.opacity = borne(q1 * 3); els.p1.style.transform = `scale(${mix(.7, 1, q1)})`;
+    els.p2.style.opacity = borne(q2 * 3); els.p2.style.transform = `scale(${mix(.7, 1, q2)})`;
+    els.metiers.style.opacity = sortie(entre(t, 40.3, 40.9));
+  }
+
+  window.DUREE = DUREE;
+  window.rendre = rendre;
+  window.pret = Promise.all([document.fonts.ready, ...[...document.images, ...BANDES].map(i => i.decode().catch(() => {}))]);
+  const params = new URLSearchParams(location.search);
+  const fige = params.get('t');
+  if (fige !== null) window.pret.then(() => rendre(+fige));
+  else if (!params.has('image')) {
+    window.pret.then(() => { const debut = performance.now(); const tour = () => { rendre(((performance.now() - debut) / 1000) % DUREE); requestAnimationFrame(tour); }; tour(); });
+  }
+</script>
+</body>
+</html>

@@ -11,6 +11,18 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 
 ---
 
+## LA VIDÉO DE PROMOTION SE REND DEPUIS LE DÉPÔT — 26 septembre 2026
+
+Un film est une page HTML à une seule horloge (`window.rendre(t)`), rendue
+image par image : `node scripts/rendre-film.mjs appli/video-promo/film/film-C.html
+--planche /tmp/p.png` pour REGARDER une mosaïque (quinze secondes), puis
+`--sortie` pour le MP4 (quatre minutes). La bande son sort des instants que la
+page déclare (`window.SONS`, écrits par `--sons`) : `python3
+scripts/musique-film.py`, puis ffmpeg pose le WAV sur le MP4. **La première
+capture après le chargement sortait à moitié peinte** : le script attend deux
+images de composition avant chaque capture ; si une image sort fausse, la
+redemander seule (`--instants 17.0`) avant de chercher dans le film.
+
 ## MA TVA À LA CALCULETTE — 25 septembre 2026
 
 | | |

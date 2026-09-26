@@ -5,6 +5,14 @@
 
 ---
 
+## CODÉ, PAS SUR `main` : LA VIDÉO DE PROMOTION, VERSION C (26 septembre 2026)
+
+Trois versions sur `appli/video-promo.html` : A et B (session voisine, même
+montage, deux accroches) et C (« Fais mieux ! » : dictée qui s'écrit, devis
+qui se construit, bande son synthétisée, jamais écoutée). Le rendu vit dans
+le dépôt (`scripts/rendre-film.mjs`, `scripts/musique-film.py`). Attend son
+choix, le nom commercial et l'adresse de la fin (`TODO.md`).
+
 ## FAIT : MA TVA À LA CALCULETTE, SUR `main` (25 septembre 2026)
 
 Le mot « TVA collectée » ou « TVA déductible » ouvre une page à colonnes :
