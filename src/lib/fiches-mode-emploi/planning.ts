@@ -278,15 +278,17 @@ export const FICHES_PLANNING: FicheModeEmploi[] = [
   {
     id: "planning-agenda-bandeau",
     ecran: "Planning",
-    ou: "le bandeau en haut du Planning",
-    intitule: "Le bandeau de l'agenda en haut du planning",
-    motsCles: ["agenda", "google", "bandeau", "pause", "relier", "connecter", "lu", "doublon"],
+    ou: "le haut du Planning",
+    intitule: "La phrase de l'agenda en haut du planning, et la masquer",
+    motsCles: ["agenda", "google", "bandeau", "relier", "connecter", "lu", "doublon", "masquer", "cacher", "phrase", "enlever"],
     geste:
-      "Touchez le bandeau « Relier mon agenda Google », « Votre agenda est en pause » ou « Votre agenda n'est plus lu » : " +
-      "il mène à « Mon agenda ».",
-    reserve: "Il disparaît quand l'agenda est relié et lu. Réservé au patron.",
+      "« Vous pouvez relier votre agenda » : « Ouvrir » mène à « Mon agenda », « Masquer » l'enlève pour toujours. " +
+      "« Votre agenda n'est plus lu » : « Ouvrir », puis « Rebrancher ».",
+    reserve:
+      "Réservé au patron. Rien ne s'affiche quand l'agenda est relié et lu, ni quand il est en pause. " +
+      "L'alerte d'un agenda qui ne se lit plus ne se masque pas.",
     source: PC,
-    preuves: ['href="/reglages/agenda"', "Relier mon agenda Google", "Votre agenda est en pause", "Votre agenda n'est plus lu", '"Connecter"'],
+    preuves: ['href="/reglages/agenda"', "Vous pouvez relier votre agenda", "Votre agenda n'est plus lu", "Ouvrir", "Masquer"],
   },
   // --- La fiche d'intervention ----------------------------------------------
   {

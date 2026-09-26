@@ -5,8 +5,7 @@ import { estProprietaire } from "@/server/autorisation";
 import RubriqueReservee from "../RubriqueReservee";
 import { etatAgenda } from "@/server/repositories/agendas-externes";
 import { etatAgendaApple } from "@/server/repositories/agenda-apple";
-import AgendaClient from "./AgendaClient";
-import AgendaAppleClient from "./AgendaAppleClient";
+import MonAgendaClient from "./MonAgendaClient";
 
 export const dynamic = "force-dynamic";
 
@@ -77,24 +76,10 @@ export default async function AgendaPage({
           retour={{ href: "/reglages", libelle: "Retour aux réglages" }}
         />
 
-        <div className="px-[26px] pt-4">
-          <p className="text-[14px] leading-snug" style={{ color: colors.muted }}>
-            Atlas propose des dates à vos clients à partir de vos chantiers.{" "}
-            <strong>Un rendez-vous noté ailleurs, il ne le voit pas</strong>, et il peut proposer ce jour-là.
-          </p>
-        </div>
-
-        {/*
-          **Deux raccordements sur le même écran, et Google d'abord.** Ce n'est
-          pas une préférence : le raccordement Google existait, et déplacer un
-          écran qu'il connaît pour faire de la place au nouveau lui ferait
-          chercher. iCloud vient donc dessous, avec son propre en-tête.
-        */}
-        <AgendaClient etat={etat} issue={params.issue ?? null} />
-        <div className="mt-8 px-[26px]">
-          <div style={{ height: 1, backgroundColor: colors.line }} />
-        </div>
-        <AgendaAppleClient etat={etatApple} />
+        {/* **Plus de phrase d'explication, plus de titre d'état** : sa demande
+            du 26 septembre 2026, « trop de mots ». Google d'abord, iCloud
+            dessous, comme avant : il reconnaît son écran à la place des choses. */}
+        <MonAgendaClient google={etat} apple={etatApple} issue={params.issue ?? null} />
       </div>
     </div>
   );

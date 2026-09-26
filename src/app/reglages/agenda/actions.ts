@@ -4,13 +4,14 @@ import { randomBytes } from "node:crypto";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { getCurrentCtx } from "@/server/session-ctx";
-import { exigerProprietaire } from "@/server/autorisation";
+import { estProprietaire, exigerProprietaire } from "@/server/autorisation";
 import { urlDeConsentement } from "@/server/agenda/google";
 import {
   basculerAgenda,
   configurationDeLEntreprise,
   debrancherAgenda,
   enregistrerIdentifiants,
+  masquerRappelAgenda,
 } from "@/server/repositories/agendas-externes";
 import {
   basculerAgendaApple,
@@ -109,6 +110,19 @@ export async function enregistrerIdentifiantsAction(saisie: {
   }
 
   await enregistrerIdentifiants(ctx, { clientId, clientSecret: clientSecret || null, redirection });
+  return { ok: true };
+}
+
+/**
+ * Masque, pour toujours, la phrase du Planning qui propose de relier un agenda
+ * (sa demande du 26 septembre 2026). Rend une valeur au lieu de jeter : le
+ * message d'une exception n'arrive jamais jusqu'à l'écran (`HANDOVER.md`,
+ * piège 0 ter).
+ */
+export async function masquerRappelAgendaAction(): Promise<{ ok: true } | { ok: false; motif: string }> {
+  const ctx = await getCurrentCtx();
+  if (!(await estProprietaire(ctx))) return { ok: false, motif: "Réservé au patron." };
+  await masquerRappelAgenda(ctx);
   return { ok: true };
 }
 

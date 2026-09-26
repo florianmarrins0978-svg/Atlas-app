@@ -34,6 +34,8 @@ import {
   type ChantierPourAbsence,
 } from "@/lib/equipe-absente";
 import { noterAbsenceAction, retirerAbsenceAction } from "@/app/reglages/actions";
+import { masquerRappelAgendaAction } from "@/app/reglages/agenda/actions";
+import type { BandeauAgenda } from "@/lib/agenda-externe";
 
 /**
  * Une absence, telle que le PLANNING en a besoin.
@@ -188,12 +190,6 @@ export type ChantierPlanning = {
   factureEnvoyeeAt: Date | string | null;
 };
 
-export type EtatAgendaPlanning = {
-  configure: boolean;
-  relie: boolean;
-  actif: boolean;
-  enPanne: boolean;
-};
 
 // ─── Les dates, comme la planche les calcule ──────────────────────────────
 const enDate = (iso: JourIso) => new Date(`${iso}T12:00:00Z`);
@@ -316,7 +312,7 @@ export default function PlanningClient({
   nombreEquipes = 1,
   nombreSalaries = 0,
   equipesNommees = [],
-  agenda = { configure: false, relie: false, actif: false, enPanne: false },
+  bandeauAgenda = null,
   absences = [],
   role = null,
   chantierDemande = null,
@@ -334,7 +330,12 @@ export default function PlanningClient({
    */
   nombreSalaries?: number;
   equipesNommees?: { rang: number; nom: string | null }[];
-  agenda?: EtatAgendaPlanning;
+  /**
+   * Ce que le haut de l'écran dit de l'agenda, décidé par
+   * `bandeauAgendaDuPlanning` (`src/lib/agenda-externe.ts`) : une panne, une
+   * proposition de relier, ou rien.
+   */
+  bandeauAgenda?: BandeauAgenda;
   /**
    * Les équipes qui ne sont pas là (14 août 2026, `ARCHITECTURE.md` §109).
    *
@@ -378,6 +379,18 @@ export default function PlanningClient({
   // Les deux portes que cet écran propose, décidées par la règle des rôles —
   // jamais par une liste écrite ici. Sans rôle (cas d'un rendu hors session),
   // on ne retire rien : l'écran est celui d'avant ce lot.
+  // Masquée, la phrase part À L'INSTANT, sans attendre le serveur : il l'a
+  // écartée d'un doigt, la voir rester une seconde se lirait comme un refus.
+  // Le serveur l'écrit pour toujours ; s'il refuse, la raison est journalisée,
+  // et la phrase reviendra au prochain chargement, ce qui dit vrai.
+  const [rappelMasque, setRappelMasque] = useState(false);
+  const masquerLeRappel = () => {
+    setRappelMasque(true);
+    void masquerRappelAgendaAction().then((r) => {
+      if (!r.ok) console.error("[planning] masquer la phrase de l'agenda :", r.motif);
+    });
+  };
+
   const ouvertes = {
     fiche: role === null || cheminAutorise(role, "/chantiers"),
     agenda: role === null || cheminAutorise(role, "/reglages/agenda"),
@@ -1419,45 +1432,40 @@ export default function PlanningClient({
       <div className="pb-16">
         <EnTeteEcran surtitre="Vos journées" titre="Planning" />
 
-        {/* Le raccordement de l'agenda — sa demande du 9 août 2026. Il
-            disparaît quand tout va bien : un bandeau permanent sur l'écran le
-            plus consulté devient du décor, et le jour où il annonce une panne
-            personne ne le voit. La planche ne le montre pas parce qu'elle
-            n'avait pas d'agenda ; le retirer laisserait un client retenir un
-            jour où le patron est déjà pris. */}
+        {/* Le raccordement de l'agenda : sa demande du 9 août 2026, resserrée
+            le 26 septembre (planche `appli/mon-agenda-simple.html`, C). La
+            PANNE parle toujours : il se croit protégé du doublon. La
+            proposition de relier se masque pour toujours, et une pause ne dit
+            plus rien, puisque c'est lui qui l'a choisie. */}
         {/* **Pas pour un salarié** : relier l'agenda de l'entreprise est un
             réglage du patron, et le lien le renverrait ici même. Un renvoi sans
             explication se lit comme une panne. */}
-        {ouvertes.agenda && (!agenda.relie || !agenda.actif || agenda.enPanne) && (
+        {ouvertes.agenda && bandeauAgenda !== null && !rappelMasque && (
           <div className="mt-5 px-[26px]">
-            <Link
-              href="/reglages/agenda"
-              className="flex items-center justify-between py-3.5"
-              style={{ borderBottom: `1px solid ${colors.line}` }}
-            >
-              <span className="min-w-0 flex-1">
+            <div className="flex items-center justify-between py-3.5" style={{ borderBottom: `1px solid ${colors.line}` }}>
+              <Link href="/reglages/agenda" className="min-w-0 flex-1">
                 <span className="block text-[15px]" style={{ fontFamily: font.display }}>
-                  {agenda.enPanne
-                    ? "Votre agenda n'est plus lu"
-                    : !agenda.relie
-                      ? "Relier mon agenda Google"
-                      : "Votre agenda est en pause"}
+                  {bandeauAgenda === "panne" ? "Votre agenda n'est plus lu" : "Vous pouvez relier votre agenda"}
                 </span>
-                <span
-                  className="block text-[12.5px] leading-snug"
-                  style={{ color: colors.muted }}
-                >
-                  {agenda.enPanne
+                <span className="block text-[12.5px] leading-snug" style={{ color: colors.muted }}>
+                  {bandeauAgenda === "panne"
                     ? "Un client peut retenir un jour où vous êtes déjà pris."
-                    : !agenda.relie
-                      ? "Sans lui, Atlas ne voit pas les rendez-vous notés ailleurs."
-                      : "Reprendre la lecture pour éviter les doublons."}
+                    : "Atlas évitera vos jours déjà pris."}
                 </span>
+              </Link>
+              <span className="ml-4 flex flex-shrink-0 flex-col items-end gap-2">
+                <Link href="/reglages/agenda" className={libelleCaps} style={{ color: colors.or }}>
+                  Ouvrir
+                </Link>
+                {/* « Masquer » n'existe pas pour la panne : ce n'est pas un
+                    conseil qu'on écarte, c'est un raccordement qui a lâché. */}
+                {bandeauAgenda === "proposer" && (
+                  <button type="button" onClick={masquerLeRappel} className={libelleCaps} style={{ color: colors.muted }}>
+                    Masquer
+                  </button>
+                )}
               </span>
-              <span className={`ml-4 flex-shrink-0 ${libelleCaps}`} style={{ color: colors.or }}>
-                {agenda.configure ? "Ouvrir" : "Connecter"}
-              </span>
-            </Link>
+            </div>
           </div>
         )}
 
