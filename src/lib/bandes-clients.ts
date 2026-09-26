@@ -62,6 +62,28 @@ export function bandeDuClient(dernierJour: string | null, aujourdHui: string): s
 }
 
 /**
+ * Le jour qui range un client : **le plus récent qui soit DÉJÀ PASSÉ.**
+ *
+ * **Sa capture du 26 septembre 2026 :** *« pourquoi il y a un plus ancien ? »*
+ * Un client au chantier planifié en novembre passait pour le plus récent de
+ * tous, montait en tête, et s'y rangeait sous « plus ancien » : un jour à venir
+ * n'est dans aucun mois écoulé. Sa décision : la liste range ce qui s'est
+ * produit, jamais ce qui est prévu. Le chantier à venir se lit au planning.
+ *
+ * `null` : aucun jour passé, le client va avec ceux qui n'ont pas de chantier.
+ */
+export function jourDeRangement(
+  jours: readonly (string | null | undefined)[],
+  aujourdHui: string
+): string | null {
+  let garde: string | null = null;
+  for (const jour of jours) {
+    if (jour && jour <= aujourdHui && (!garde || jour > garde)) garde = jour;
+  }
+  return garde;
+}
+
+/**
  * La liste découpée en bandes, **dans l'ordre où elle arrive**.
  *
  * **Elle ne trie RIEN**, et c'est délibéré : le tri vit dans le dépôt

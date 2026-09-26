@@ -6,6 +6,26 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-09-26
+
+### Un chantier à venir ne range plus son client sous « plus ancien »
+
+**Sa question, capture à l'appui :** *« pourquoi il y a un plus ancien ? »*
+Balba, devis du 20 septembre, était en tête de la liste des clients sous
+« PLUS ANCIEN ».
+
+**La cause.** La liste se rangeait sur le jour du chantier le plus récent, et
+ce jour pouvait être une date **planifiée à venir** : le client passait pour le
+plus récent de tous. `bandeDuClient` ne nomme que des mois écoulés ; un écart
+négatif tombait dans « plus ancien ».
+
+**Sa décision (B, contre A « une bande À venir »).** La liste range sur le
+dernier jour **déjà passé** chez le client (`jourDeRangement`,
+`src/lib/bandes-clients.ts`) : facture, date posée, création du chantier ou
+dernier document parti, pourvu qu'il ne soit pas après aujourd'hui. Un chantier
+à venir se lit au planning. Tenu par `test-liste-clients.ts`, vu rouge
+(« rangé au 2026-11-05 ») avant la correction.
+
 ## 2026-09-25
 
 ### L'anthracnose se sépare en deux planches, le chêne et le hêtre
