@@ -6,6 +6,25 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-09-26
+
+### Réglages : le point-virgule de la périodicité de TVA part
+
+Sa remarque, capture à l'appui : *« un ; qui sert à rien »*. « Le mois est le
+défaut. Le trimestre s'obtient sous condition. » Deux phrases, même place.
+`test-periodicite-tva-e2e` lit le fait (« mois … défaut »), pas la ponctuation :
+il reste vert.
+
+### Planche : voir un exemple de facture, avant de coder
+
+`appli/apercu-du-document.html`, sa demande du jour : un bouton qui montre le
+papier avec ses réglages et trois lignes factices à 20, 10 et 5,5 %. Deux places
+à trancher (A : Devis & factures ; B : Mon entreprise). Ce qui est déjà décidé
+pour le code, écrit sur la planche : l'exemple sera **le vrai PDF** fabriqué par
+le même code (un aperçu dessiné à part divergerait), avec EXEMPLE en filigrane,
+et **sans consommer de numéro** (une numérotation de factures ne doit pas avoir
+de trou). Rien n'est codé.
+
 ## 2026-09-25
 
 ### L'anthracnose se sépare en deux planches, le chêne et le hêtre
