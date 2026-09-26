@@ -656,6 +656,21 @@ pièces que vous seul possédez.
 > Le rappel est armé dans `HANDOVER.md`, que chaque conversation lit en
 > arrivant.
 
+> **Mise à jour du 26 septembre 2026 : à faire plus tard, votre décision du
+> jour.** Deux choses nouvelles.
+>
+> 1. **Votre agenda Google s'est coupé** (« invalid_grant » dans Réglages, Mon
+>    agenda). Très probablement (sept chances sur dix, pas vérifié d'ici) la
+>    même cause : tant que le projet reste en mode « Test » chez Google, **l'accès
+>    se coupe tous les sept jours** et il faut rebrancher. Faire passer le projet
+>    « en production » règle ça, et c'est l'étape qui déclenche cette validation.
+> 2. **Vos utilisateurs ne verront jamais d'identifiants Google.** Atlas portera
+>    les siens sur le serveur (le code sait déjà les lire), et chacun n'aura que
+>    le bouton, la page Google, le choix de son compte. Les trois cases du point 7
+>    quittent l'écran (planche `appli/mon-agenda-simple.html`). Cela suppose
+>    **cette validation faite** : sans elle, le raccordement reste limité aux
+>    comptes inscrits à la main.
+
 ### Pourquoi c'est bloquant, et pourquoi ça ne se voit pas venir
 
 Le raccordement de l'agenda **fonctionnera parfaitement** pour vous et vos
