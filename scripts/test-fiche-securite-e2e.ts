@@ -80,6 +80,12 @@ async function main() {
     await page.locator(COMPTE).filter({ hasText: "à remplir" }).waitFor({ timeout: 15_000 });
     const texte = await page.locator(FEUILLE).innerText();
     assert.match(texte, /Fiche de sécurité/);
+    // **On attend « Travaux à faire » avant de juger sa place** (26 septembre
+    // 2026) : le bloc dit d'abord « Lecture du devis… », le temps que le devis
+    // se lise. Sous la charge de la batterie, l'ordre se mesurait pendant ce
+    // temps-là, et le bloc manquait (169 suites sur 170, joué seul : vert). S'il
+    // ne vient jamais, l'attente échoue : le contrôle n'est pas relâché.
+    await page.locator(`${FEUILLE} [data-atlas='travaux-a-faire']`).first().waitFor({ state: "attached", timeout: 30_000 });
     const ordre = await page.locator(FEUILLE).evaluate((f) => {
       const enfants = Array.from(f.querySelectorAll("[data-atlas='fiche-de-securite'], [data-atlas='travaux-a-faire']"));
       return enfants.map((e) => e.getAttribute("data-atlas"));
