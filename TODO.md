@@ -1,6 +1,11 @@
 # Prochaines tâches
 
-## ⏳ UNE PLANCHE À REGARDER : MON AGENDA, EN SIMPLE (26 septembre 2026)
+## MON AGENDA, EN SIMPLE : A ET C RETENUES, À CODER (26 septembre 2026)
+
+**Sa réponse du 26 septembre : « A », et C.** Précision donnée en même temps :
+*« une fois qu'on a choisi masquer, faut pas qu'il reste de phrase »* ; rien ne
+reste à la place, aucun lien pour la faire revenir. Le choix « masqué » se range
+dans le compte (probablement une colonne, donc une migration : niveau 3).
 
 Sa demande, capture à l'appui (Google en panne sur `invalid_grant`) : *« trop
 de mots, trop compliqué, il faut qu'elle soit hyper simple »*. Planche

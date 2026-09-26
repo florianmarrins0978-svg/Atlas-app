@@ -162,11 +162,10 @@
 <p class="note"><b>Dans les deux</b> : le message technique de Google et les identifiants Google disparaissent (Atlas porte les siens), et l'avertissement iCloud reste au-dessus du mot de passe.</p>
 
 <h2>C : En haut du Planning</h2>
-<p class="sous">Jamais relié : une phrase, « Ouvrir », « Masquer ». Masquée, elle ne revient plus. En pause : rien. En panne : toujours là.</p>
+<p class="sous">Jamais relié : une phrase, « Ouvrir », « Masquer ». Masquée, il ne reste rien, et elle ne revient plus. En pause : rien. En panne : toujours là.</p>
 <div class="tel" id="telC" style="min-height:0">
   <div class="entete"><h1>Planning</h1><div class="sur">Vos journées</div></div>
   <div class="corps" id="corpsC"></div>
-  <div class="reprendre" id="reprendreC"></div>
 </div>
 
 <script>
@@ -177,7 +176,8 @@
     if (nom === "panne") Object.assign(etat, { google: "panne", icloud: "rien" });
     if (nom === "ok") Object.assign(etat, { google: "ok", icloud: "ok" });
     if (nom === "rien") Object.assign(etat, { google: "rien", icloud: "rien" });
-    etat.pauseG = etat.pauseI = false;
+    // Pour l'essai seulement : changer d'état en haut fait revenir la phrase.
+    etat.pauseG = etat.pauseI = false; masque = false;
     document.querySelectorAll("#etats button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.etat === nom)));
     dessiner();
   }
@@ -245,8 +245,6 @@
         <button class="rappel-masquer" data-masquer>Masquer</button></div></div>`;
     }
     c.innerHTML = html + `<div class="mois">Septembre 2026</div>`;
-    document.getElementById("reprendreC").innerHTML = masque && g === "rien"
-      ? `<button class="lien" data-demasquer>Revoir la phrase (pour l'essai)</button>` : "";
   }
 
   function dessiner() { dessinerA(); dessinerB(); dessinerC(); }
@@ -307,7 +305,6 @@
     }
     if (b.dataset.oui) { etat[b.dataset.oui] = "rien"; fermer(tel); return dessiner(); }
     if (b.hasAttribute("data-masquer")) { masque = true; return dessinerC(); }
-    if (b.hasAttribute("data-demasquer")) { masque = false; return dessinerC(); }
     if (b.hasAttribute("data-ouvrir")) { document.getElementById("telA").scrollIntoView({ behavior: "smooth" }); return; }
     if (b.hasAttribute("data-non")) { tel.querySelector("#conf").innerHTML = ""; return; }
   });
