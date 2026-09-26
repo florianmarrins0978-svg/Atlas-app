@@ -29,6 +29,7 @@ import {
   paiementsFacture,
   avoirs,
   facturesNonPayees,
+  reglementsRetires,
   tranchesGrille,
   factures,
   fragmentsDocuments,
@@ -162,6 +163,7 @@ export async function exporterEntreprise(
       lesReglements,
       lesAvoirs,
       lesNonPayees,
+      lesRetires,
       sonModeleEntretien,
       sesPassages,
       sesLignesPassage,
@@ -284,6 +286,9 @@ export async function exporterEntreprise(
       // Ce qu'il a déclaré « Il ne me paiera pas » : sans cela, les rappels
       // qu'il a fait taire reviendraient à la restauration.
       tx.select().from(facturesNonPayees).where(eq(facturesNonPayees.entrepriseId, e)),
+      // Les règlements retirés (migration 0102) : sans eux, un mois déjà
+      // déclaré qui a baissé ne dirait plus pourquoi une fois restauré.
+      tx.select().from(reglementsRetires).where(eq(reglementsRetires.entrepriseId, e)),
       // Le modèle de fiche d'entretien (migration 0051). C'est SA saisie —
       // les prestations, leurs familles, leur ordre —, et rien ne la
       // reconstitue : le modèle fourni au départ n'est qu'un point de départ,
@@ -430,6 +435,7 @@ export async function exporterEntreprise(
       paiements_facture: lesReglements,
       avoirs: lesAvoirs,
       factures_non_payees: lesNonPayees,
+      reglements_retires: lesRetires,
       // Sans les jetons — voir la requête ci-dessus.
       agendas_externes: lesAgendas,
       equipes: lesEquipes,

@@ -1,6 +1,6 @@
-import { and, asc, desc, eq, sql } from "drizzle-orm";
+import { and, asc, desc, eq, gte, lte, sql } from "drizzle-orm";
 import { withEntreprise } from "../db/with-entreprise";
-import { entreprises, factures, lignesFacture, paiementsFacture } from "../db/schema";
+import { entreprises, factures, lignesFacture, paiementsFacture, reglementsRetires } from "../db/schema";
 import type { Ctx } from "./context";
 import {
   etatPaiement,
@@ -71,7 +71,12 @@ export type FactureEnAttente = {
   reste: string;
   etat: EtatPaiement;
   paiements: PaiementEnregistre[];
+  /** Les règlements retirés, pour leur trace : aucun total ne les compte. */
+  retires: ReglementRetire[];
 };
+
+/** Un règlement retiré : ce qu'il était, et quand il a été retiré. */
+export type ReglementRetire = { id: string; date: string; montant: string; retireLe: Date };
 
 /** Le régime de l'entreprise. Aucun défaut deviné : la colonne le porte. */
 export async function exigibiliteDe(ctx: Ctx): Promise<Exigibilite> {
@@ -127,6 +132,20 @@ export async function facturesAvecPaiements(ctx: Ctx): Promise<FactureEnAttente[
         .orderBy(desc(factures.dateEmission), desc(factures.numeroCommercial)),
       tx.select().from(paiementsFacture).orderBy(asc(paiementsFacture.datePaiement)),
     ]);
+    const retires = await tx
+      .select({
+        id: reglementsRetires.id,
+        factureId: reglementsRetires.factureId,
+        date: reglementsRetires.datePaiement,
+        montant: reglementsRetires.montant,
+        retireLe: reglementsRetires.retireLe,
+      })
+      .from(reglementsRetires)
+      .orderBy(asc(reglementsRetires.datePaiement), asc(reglementsRetires.retireLe));
+    const retiresParFacture = new Map<string, ReglementRetire[]>();
+    for (const { factureId, ...r } of retires) {
+      retiresParFacture.set(factureId, [...(retiresParFacture.get(factureId) ?? []), r]);
+    }
 
     const parFacture = new Map<string, PaiementEnregistre[]>();
     for (const p of regles) {
@@ -151,6 +170,7 @@ export async function facturesAvecPaiements(ctx: Ctx): Promise<FactureEnAttente[
         ...f,
         avoirs: pourTva.avoirs,
         paiements,
+        retires: retiresParFacture.get(f.id) ?? [],
         reste: resteDu(pourTva, paiements),
         etat: etatPaiement(pourTva, paiements),
       };
@@ -263,18 +283,110 @@ export async function soldera(ctx: Ctx, factureId: string, aujourdHui: string): 
 }
 
 /**
- * Défait un règlement.
+ * Défait un règlement, en gardant sa trace.
  *
  * **Sans lui, une erreur de doigt serait définitive** : une facture marquée
  * payée par mégarde déclarerait une TVA non encaissée, et rien ne permettrait
- * de revenir dessus. La ligne est supprimée pour de bon — contrairement aux
- * tranches de grille, il n'y a rien à préserver : c'est une saisie, pas une
- * donnée reçue.
+ * de revenir dessus.
+ *
+ * **Il le supprimait pour de bon jusqu'au 26 septembre 2026** : un acompte de
+ * juillet retiré en septembre faisait baisser un mois déjà déclaré, et plus
+ * rien ne disait pourquoi. Sa planche (`appli/retirer-un-acompte.html`, « la
+ * B ») : la ligne reste, barrée et datée. Le règlement DÉMÉNAGE dans
+ * `reglements_retires` (migration 0102) : aucun total ne le compte plus, sans
+ * qu'aucun calcul ait à le filtrer.
  */
 export async function retirerPaiement(ctx: Ctx, paiementId: string): Promise<void> {
   await withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const [p] = await tx.select().from(paiementsFacture).where(eq(paiementsFacture.id, paiementId));
+    // Celui d'une autre entreprise est invisible ici : la RLS a déjà répondu.
+    if (!p) return;
+    await tx.insert(reglementsRetires).values({ ...p, retirePar: ctx.utilisateurId });
     await tx.delete(paiementsFacture).where(eq(paiementsFacture.id, paiementId));
   });
+}
+
+/**
+ * Remet un règlement retiré, tel qu'il était, au même mois.
+ *
+ * **La même borne que la saisie** (`refusDuPaiement`) : entre le retrait et le
+ * retour, la facture a pu être soldée autrement, et remettre l'acompte la
+ * ferait payer deux fois. Refusé, le règlement reste dans sa trace.
+ */
+export async function remettrePaiement(ctx: Ctx, reglementId: string): Promise<ResultatPaiement> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const [r] = await tx.select().from(reglementsRetires).where(eq(reglementsRetires.id, reglementId));
+    if (!r) return { ok: false as const, raison: "Ce règlement est introuvable." };
+
+    const [facture] = await tx
+      .select({
+        id: factures.id,
+        dateEmission: factures.dateEmission,
+        totalHt: factures.totalHt,
+        totalTva: factures.totalTva,
+        totalTtc: factures.totalTtc,
+      })
+      .from(factures)
+      .where(eq(factures.id, r.factureId));
+    if (!facture) return { ok: false as const, raison: "Cette facture est introuvable." };
+
+    const dejaRegles = (
+      await tx.select().from(paiementsFacture).where(eq(paiementsFacture.factureId, r.factureId))
+    ).map((p) => ({ date: p.datePaiement, montant: p.montant }));
+    const pourTva: FacturePourTva = {
+      ...facture,
+      avoirs: (await avoirsDesFactures(tx, [r.factureId])).get(r.factureId) ?? [],
+    };
+    const refus = refusDuPaiement(pourTva, dejaRegles, { date: r.datePaiement, montant: r.montant });
+    if (refus) return { ok: false as const, raison: refus };
+
+    await tx.insert(paiementsFacture).values({
+      id: r.id,
+      entrepriseId: r.entrepriseId,
+      factureId: r.factureId,
+      datePaiement: r.datePaiement,
+      montant: r.montant,
+      moyen: r.moyen,
+      note: r.note,
+      numero: r.numero,
+      libelle: r.libelle,
+      solde: r.solde,
+      origine: r.origine,
+      createdAt: r.createdAt,
+    });
+    await tx.delete(reglementsRetires).where(eq(reglementsRetires.id, reglementId));
+
+    const tous = [...dejaRegles, { date: r.datePaiement, montant: r.montant }];
+    return { ok: true as const, reste: resteDu(pourTva, tous), etat: etatPaiement(pourTva, tous) };
+  });
+}
+
+/**
+ * Les règlements retirés dont la date tombe dans la période : ils ne comptent
+ * plus au relevé, mais le relevé les MONTRE, barrés. Sans eux, un mois déjà
+ * déclaré qui baisse ne dirait pas pourquoi (sa planche du 26 septembre 2026).
+ */
+export async function reglementsRetiresDeLaPeriode(
+  ctx: Ctx,
+  debut: string,
+  fin: string
+): Promise<(ReglementRetire & { factureId: string; numeroCommercial: string; clientNom: string | null })[]> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, (tx) =>
+    tx
+      .select({
+        id: reglementsRetires.id,
+        factureId: reglementsRetires.factureId,
+        numeroCommercial: factures.numeroCommercial,
+        clientNom: factures.clientNom,
+        date: reglementsRetires.datePaiement,
+        montant: reglementsRetires.montant,
+        retireLe: reglementsRetires.retireLe,
+      })
+      .from(reglementsRetires)
+      .innerJoin(factures, eq(factures.id, reglementsRetires.factureId))
+      .where(and(gte(reglementsRetires.datePaiement, debut), lte(reglementsRetires.datePaiement, fin)))
+      .orderBy(desc(reglementsRetires.datePaiement))
+  );
 }
 
 /** Combien de factures attendent, et depuis combien de temps la plus ancienne. */

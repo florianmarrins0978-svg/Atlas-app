@@ -3,6 +3,8 @@ import BoutonAssistant from "@/components/atlas/BoutonAssistant";
 import { colors, font } from "@/lib/design-tokens";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { releveTvaCollecteeParTaux } from "@/server/repositories/factures";
+import { reglementsRetiresDeLaPeriode } from "@/server/repositories/paiements-facture";
+import { enEuros } from "@/lib/euros";
 import { getEntreprise } from "@/server/repositories/entreprises";
 import { lirePeriode, periodeCourante, libellePeriode, PERIODICITE_TVA_PAR_DEFAUT } from "@/server/periode-tva";
 import { jourCourt, jourIso } from "@/lib/jour";
@@ -34,7 +36,10 @@ export default async function TvaCollecteePage({
   const periodicite = entreprise?.periodiciteTva ?? PERIODICITE_TVA_PAR_DEFAUT;
   const periode = lirePeriode(periodicite, annee, t) ?? periodeCourante(periodicite);
 
-  const { releve, lignes } = await releveTvaCollecteeParTaux(ctx, periode.debut, periode.fin);
+  const [{ releve, lignes }, retires] = await Promise.all([
+    releveTvaCollecteeParTaux(ctx, periode.debut, periode.fin),
+    reglementsRetiresDeLaPeriode(ctx, periode.debut, periode.fin),
+  ]);
   const aujourdHui = jourIso(new Date());
   const reglements = releve.regime === "encaissements";
 
@@ -80,6 +85,28 @@ export default async function TvaCollecteePage({
                 parts: l.parts.map((p) => ({ taux: p.taux, montant: p.ttc, tva: p.tva })),
               }))}
             />
+          )}
+
+          {/* **Un règlement retiré reste LISIBLE au mois où il était entré**
+              (sa planche du 26 septembre 2026). Il ne compte plus au total ;
+              barré ici, il dit pourquoi un mois déjà déclaré a baissé. Aux
+              débits, un règlement ne fait pas le relevé : rien à montrer. */}
+          {reglements && retires.length > 0 && (
+            <ul data-atlas="retires-du-releve" className="mt-5 flex flex-col gap-1.5">
+              {retires.map((r) => (
+                <li
+                  key={r.id}
+                  className="flex items-baseline justify-between gap-3 text-[12px]"
+                  style={{ color: colors.muted }}
+                >
+                  <span className="line-through">
+                    {r.clientNom ?? "Client non renseigné"}, {r.numeroCommercial}, acompte du{" "}
+                    {jourCourt(r.date, aujourdHui)}, retiré le {jourCourt(jourIso(r.retireLe), aujourdHui)}
+                  </span>
+                  <span className="flex-none tabular-nums line-through">{enEuros(r.montant)}</span>
+                </li>
+              ))}
+            </ul>
           )}
         </section>
       </div>

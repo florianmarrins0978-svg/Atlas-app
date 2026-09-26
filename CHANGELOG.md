@@ -8,6 +8,22 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-26
 
+### La croix d'un acompte barre la ligne au lieu de l'effacer
+
+*Sa planche du jour, `appli/retirer-un-acompte.html`, « la B ».* La croix
+supprimait le règlement : un acompte de juillet retiré en septembre faisait
+baisser la TVA de juillet, déjà déclarée, sans laisser de trace. Le règlement
+retiré part maintenant dans `reglements_retires` (migration 0102) : aucun
+total ne le compte plus, sans qu'aucun calcul ait à le filtrer
+(`ARCHITECTURE.md` §417). La ligne reste barrée et datée sur la facture en
+attente et dans la TVA collectée du mois ; « Remettre » la rend, refusé si la
+facture a été soldée entre-temps. Le retiré part aussi dans « Télécharger mes
+données ».
+
+Éprouvé : `test-paiements-facture-db.ts` (quatre cas neufs, rouges avant),
+`test-tva-au-paiement-e2e.ts` (son geste entier, dans le navigateur), et les
+suites voisines des règlements. **Batterie non jouée**, à sa demande.
+
 ### Sur iPhone, le calendrier de la TVA rouvre les années précédentes
 
 *Sa question, capture à l'appui : « pourquoi je peux pas aller voir les

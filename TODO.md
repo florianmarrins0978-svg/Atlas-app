@@ -13,15 +13,13 @@ gardée 12 mois), éprouvé par une restauration depuis ce second fournisseur.
 avoirs, règlements, achats, PDF) gardée 10 ans, indépendante de la base
 vivante. Aujourd'hui les 10 ans ne tiennent que par la base elle-même.
 
-## Un règlement se retire sans limite de date (26 septembre 2026)
+## ~~Un règlement se retire sans limite de date~~ (réglé le 26 septembre 2026)
 
-Trouvé en vérifiant la conservation sur 10 ans (`docs/QUESTIONS.md` §30).
-`retirerPaiement` (`src/server/repositories/paiements-facture.ts`) supprime la
-ligne pour de bon, sur n'importe quelle facture, à n'importe quelle date : la
-croix de l'écran TVA peut donc effacer la date d'encaissement d'une TVA déjà
-déclarée. La facture elle-même reste. Piste : refuser au-delà de la période
-déclarée, ou garder la ligne marquée « retirée » au lieu de l'effacer. Touche
-l'argent : niveau 3, sa décision avant de coder.
+Sa planche `appli/retirer-un-acompte.html`, la B, codée sur la branche
+`claude/previous-years-access-eigwds` : le règlement retiré part dans
+`reglements_retires` (migration 0102), barré et daté à l'écran, « Remettre »
+le rend (`ARCHITECTURE.md` §417). **Pas encore sur `main`** : la batterie
+n'a pas été jouée, à sa demande ; seules les suites concernées l'ont été.
 
 ## 🔴 « DERNIER DEVIS » CHANGE LES PRIX SANS LE DIRE (26 septembre 2026)
 

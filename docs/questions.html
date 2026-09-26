@@ -1573,7 +1573,7 @@
 <td><code>CalendrierPeriodes.tsx</code></td>
 </tr>
 </tbody></table></div>
-<p><strong>Un point faible, mineur :</strong> un règlement noté sur une facture peut être retiré sans limite de date (la petite croix, écran TVA). La facture reste, mais la date d'encaissement d'une TVA déjà déclarée peut disparaître. Inscrit dans <code>TODO.md</code>.</p>
+<p><strong>Un point faible, corrigé le 26 septembre 2026 :</strong> la petite croix d'un acompte (écran TVA) l'effaçait pour de bon, et la TVA d'un mois déjà déclaré baissait sans trace. Désormais la ligne reste, barrée et datée, aussi dans la TVA collectée du mois, et « Remettre » la rend (sa planche, la B). La correction attend la batterie pour arriver chez vous.</p>
 <h3 id="là-où-ce-nest-pas-tenu--lendroit-où-vivent-les-données">Là où ce n'est PAS tenu : l'endroit où vivent les données</h3>
 <p>Le code garde tout. <strong>Mais les données vivent aujourd'hui dans votre espace de travail GitHub, et il n'existe aucune sauvegarde automatique.</strong> Un espace supprimé (par vous, ou par GitHub : par défaut, un espace arrêté et inutilisé pendant 30 jours est effacé) emporte toutes les factures avec lui.</p>
 <p>Donc, tant qu'Atlas n'est pas hébergé (Scaleway, décidé, voir <code>docs/lot-sauvegarde-cloture.md</code>) :</p>

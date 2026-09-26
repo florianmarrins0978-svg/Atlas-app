@@ -33452,3 +33452,18 @@ faudrait savoir c'est une TVA à combien »*.
 **Réserve** : aux encaissements, un avoir émis après un acompte change les
 parts par taux de cet acompte (pas son total), comme il change déjà sa TVA
 (`TODO.md`).
+
+## §417 : Un règlement retiré déménage, il ne se filtre pas
+
+**Sa planche du 26 septembre 2026**, `appli/retirer-un-acompte.html` (la B) :
+la croix au bout d'un acompte le SUPPRIMAIT. Un acompte de juillet retiré en
+septembre faisait baisser la TVA de juillet, mois déjà déclaré, sans trace.
+
+| Décision | Pourquoi |
+|---|---|
+| le règlement retiré part dans `reglements_retires` (migration 0102), avec le même identifiant | dix endroits additionnent `paiements_facture` (reste dû, état, relevé, rappels, fiche client, PDF). Une colonne « retiré le » les obligeait tous à filtrer ; en oublier un comptait un règlement retiré dans la TVA sans erreur. Déplacé, il n'existe plus pour aucun calcul |
+| « Remettre » le ramène avec la même borne que la saisie (`refusDuPaiement`) | la facture a pu être soldée entre-temps : la remettre la ferait payer deux fois |
+| la table n'accorde pas UPDATE à `atlas_app` | une trace ne se réécrit pas ; DELETE sert seulement à « Remettre » |
+| la TVA collectée du mois montre le retiré, barré, sans le compter | c'est le mois déclaré qui baisse : c'est là qu'il faut lire pourquoi |
+| `retirerReglementRecu` et « Facture acquittée » gardent leur suppression | ils ne touchent qu'une facture en BROUILLON, jamais déclarée |
+

@@ -1995,10 +1995,11 @@ pour votre cas.
 | Rien ne s'efface tout seul avec le temps | tenu : les purges automatiques ne visent que l'audio des dictées, les photos de diagnostic et les fichiers orphelins | `src/server/retention.ts` |
 | Remonter aux années précédentes à l'écran | tenu : le calendrier de la TVA recule sans limite (sur iPhone, il ne s'ouvrait pas avant le correctif du 26 septembre) | `CalendrierPeriodes.tsx` |
 
-**Un point faible, mineur :** un règlement noté sur une facture peut être
-retiré sans limite de date (la petite croix, écran TVA). La facture reste,
-mais la date d'encaissement d'une TVA déjà déclarée peut disparaître. Inscrit
-dans `TODO.md`.
+**Un point faible, corrigé le 26 septembre 2026 :** la petite croix d'un
+acompte (écran TVA) l'effaçait pour de bon, et la TVA d'un mois déjà déclaré
+baissait sans trace. Désormais la ligne reste, barrée et datée, aussi dans la
+TVA collectée du mois, et « Remettre » la rend (sa planche, la B). La
+correction attend la batterie pour arriver chez vous.
 
 ### Là où ce n'est PAS tenu : l'endroit où vivent les données
 
