@@ -8,6 +8,15 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-26
 
+### La vidéo de promotion : script et story-board en planche
+
+Sa demande : une vidéo courte pour commercialiser l'appli, aux paysagistes et
+élagueurs d'abord. `appli/video-promo.html` joue une animatique de 42 s en
+9:16, lisible sans le son, avec deux accroches (A, B) et le script plan par
+plan. Rien n'est tourné ni codé dans `src/`. Les écrans y sont dessinés pour
+caler le rythme ; la vraie vidéo filmera l'application sur le jeu de
+démonstration (Playwright), puis un montage en MP4.
+
 ### Le retour envoyé se rouvre depuis n'importe quelle journée du planning
 
 **Sa plainte**, sur la fiche de Julien posée au lundi 28 : *« je peux pas

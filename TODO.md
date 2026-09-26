@@ -1,5 +1,13 @@
 # Prochaines tâches
 
+## ⏳ UNE PLANCHE À REGARDER : LA VIDÉO DE PROMOTION (26 septembre 2026)
+
+`appli/video-promo.html` : script et story-board, 42 s en vertical. Attend de
+lui : l'accroche (A ou B), le nom commercial, l'adresse vers laquelle la vidéo
+renvoie, et s'il fournit 3 à 4 s filmées sur un chantier. Ensuite : filmer les
+vrais écrans sur le jeu de démonstration, monter le MP4 muet, puis sa voix et
+sa musique. Pas encore sur `main`, donc pas encore publiée.
+
 ## 🔴 « DERNIER DEVIS » CHANGE LES PRIX SANS LE DIRE (26 septembre 2026)
 
 **Relevé par lui** : *« on ne peut pas reprendre un devis existant et mettre les

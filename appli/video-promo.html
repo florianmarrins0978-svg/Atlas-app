@@ -1,0 +1,335 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas : la vidéo, script et story-board</title>
+<style>
+  /*
+    LA VIDÉO DE PROMOTION, AVANT DE LA FABRIQUER.
+
+    Sa demande du 26 septembre 2026 : « je voudrais commercialiser l'appli, il
+    faudrait une vidéo assez courte pour la promouvoir ». Cible : paysagistes
+    et élagueurs d'abord, « mais en vrai tout le monde peut s'en servir ».
+
+    Cette planche est l'étape 2 : le script et le story-board, joués en
+    animatique dans un cadre de téléphone. Rien n'est tourné, rien n'est codé
+    dans src/. La vraie vidéo reprendra les VRAIS écrans, filmés sur le jeu de
+    démonstration ; les écrans dessinés ici ne servent qu'à caler le rythme.
+
+    Format retenu par défaut : vertical 9:16, 42 s, lisible SANS le son (la
+    plupart des vidéos se regardent muettes dans un fil). Les sous-titres sont
+    donc incrustés, et la voix off ne fait que doubler ce qu'on lit.
+  */
+  :root{
+    --bone:#f5f3ee; --cream:#faf9f5; --paper:#ece9e1;
+    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
+    --pine:#2f3b2f; --pine-soft:#4f5f4c; --or:#B98B47; --line:rgba(28,28,26,.12);
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --bone:#171613; --cream:#1e1c18; --paper:#262420; --ink:#e9e5dc;
+           --ink-soft:#c9c4b8; --muted:#8a867c; --or:#C9A15E; --line:rgba(233,229,220,.16); }
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;background:var(--bone);color:var(--ink);
+       font:16px/1.55 -apple-system,"Segoe UI",Roboto,sans-serif;padding:28px 0 60px}
+  .page{max-width:460px;margin:0 auto;padding:0 16px}
+  .sur{margin:0;font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:var(--or)}
+  h1{margin:4px 0 6px;font:500 30px/1.15 Georgia,serif}
+  .chapo{margin:0 0 20px;color:var(--ink-soft);font-size:14.5px}
+
+  /* Le choix de l'accroche */
+  .choix{display:flex;gap:8px;margin-bottom:14px}
+  .choix button{flex:1;padding:10px 8px;border:1px solid var(--line);border-radius:12px;
+       background:var(--cream);color:var(--ink);font:inherit;font-size:13px;cursor:pointer}
+  .choix button[aria-pressed="true"]{background:var(--pine);color:#faf9f5;border-color:var(--pine)}
+
+  /* LE TÉLÉPHONE : un cadre 9:16, ce que verra le fil Instagram ou Facebook */
+  .ecran{position:relative;width:100%;max-width:340px;aspect-ratio:9/16;margin:0 auto;
+         border-radius:28px;overflow:hidden;background:#1c1c1a;
+         box-shadow:0 18px 50px rgba(0,0,0,.28)}
+  .scene{position:absolute;inset:0;opacity:0;transition:opacity .35s;display:flex;
+         flex-direction:column;align-items:center;justify-content:center;padding:26px 20px}
+  .scene.on{opacity:1}
+  .fond-pin{background:#2f3b2f;color:#faf9f5}
+  .fond-os{background:#f5f3ee;color:#1c1c1a}
+  .fond-nuit{background:#1c1c1a;color:#faf9f5}
+
+  .sous-titre{position:absolute;left:14px;right:14px;bottom:26px;text-align:center;
+       font:600 19px/1.3 -apple-system,"Segoe UI",Roboto,sans-serif;
+       color:#faf9f5;background:rgba(28,28,26,.78);padding:9px 12px;border-radius:12px}
+  .scene.on .sous-titre{animation:monte .5s ease both .15s}
+  @keyframes monte{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+  @keyframes paraitre{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+  /* Scène 1 : l'accroche */
+  .gros{font:500 30px/1.2 Georgia,serif;text-align:center}
+  .or{color:#C9A15E}
+  .scene.on .apres{animation:paraitre .5s ease both 1.8s}
+
+  /* Un faux téléphone dans le téléphone : la carte d'écran d'Atlas */
+  .carte{width:100%;background:#faf9f5;border-radius:18px;padding:16px;color:#1c1c1a;
+         box-shadow:0 6px 20px rgba(0,0,0,.12)}
+  .carte h3{margin:0 0 10px;font:500 17px/1.2 Georgia,serif}
+  .etiquette{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:#8a8578;margin-bottom:6px}
+
+  /* Scène 2 : la dictée */
+  .micro{width:92px;height:92px;border-radius:50%;background:#B98B47;margin:10px auto 14px;
+         position:relative}
+  .micro::before{content:"";position:absolute;inset:-10px;border-radius:50%;
+         border:2px solid #B98B47;opacity:.5}
+  .scene.on .micro::before{animation:pouls 1.4s ease-out infinite}
+  @keyframes pouls{from{transform:scale(.9);opacity:.7}to{transform:scale(1.35);opacity:0}}
+  .micro::after{content:"";position:absolute;left:37px;top:24px;width:18px;height:30px;
+         border-radius:9px;background:#faf9f5}
+  .onde{display:flex;gap:4px;justify-content:center;align-items:center;height:34px}
+  .onde i{width:4px;border-radius:2px;background:#2f3b2f;height:8px}
+  .scene.on .onde i{animation:onde .9s ease-in-out infinite alternate}
+  .onde i:nth-child(2n){animation-delay:.2s!important}.onde i:nth-child(3n){animation-delay:.45s!important}
+  @keyframes onde{from{height:6px}to{height:30px}}
+  .dicte{font-size:13.5px;color:#4a4a44;font-style:italic;margin-top:10px;min-height:60px}
+
+  /* Scène 3 : le devis rédigé */
+  .ligne{display:flex;justify-content:space-between;gap:10px;font-size:13px;
+         padding:7px 0;border-bottom:1px solid rgba(28,28,26,.1)}
+  .ligne b{font-variant-numeric:tabular-nums;white-space:nowrap}
+  .scene.on .ligne{animation:paraitre .4s ease both}
+  .scene.on .ligne:nth-child(3){animation-delay:.5s}.scene.on .ligne:nth-child(4){animation-delay:1s}
+  .scene.on .ligne:nth-child(5){animation-delay:1.5s}.scene.on .total{animation:paraitre .4s ease both 2.1s}
+  .total{display:flex;justify-content:space-between;margin-top:10px;font:500 18px Georgia,serif}
+
+  /* Scène 4 : le client choisit */
+  .jours{display:flex;gap:8px;margin:12px 0}
+  .jour{flex:1;border:1px solid rgba(28,28,26,.15);border-radius:12px;padding:8px 4px;text-align:center;font-size:12px}
+  .jour b{display:block;font-size:18px}
+  .scene.on .jour.pris{animation:prendre .4s ease both 1.6s}
+  @keyframes prendre{to{background:#2f3b2f;color:#faf9f5;border-color:#2f3b2f}}
+  .bouton{display:block;text-align:center;background:#2f3b2f;color:#faf9f5;border-radius:12px;
+          padding:11px;font-size:14px;font-weight:600}
+  .scene.on .bouton.appui{animation:appui .3s ease 2.4s 2 alternate}
+  @keyframes appui{to{transform:scale(.95);background:#B98B47}}
+
+  /* Scène 5 : planning et facture */
+  .plan{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin-bottom:12px}
+  .plan span{height:44px;border-radius:8px;background:#ece9e1;font-size:10px;padding:4px;color:#8a8578}
+  .scene.on .plan span.ch{animation:remplir .4s ease both .6s}
+  @keyframes remplir{to{background:#2f3b2f;color:#faf9f5}}
+  .coche{display:inline-block;width:22px;height:22px;border-radius:50%;background:#B98B47;
+         vertical-align:-5px;margin-right:6px;opacity:0}
+  .scene.on .coche{animation:paraitre .3s ease both 2.8s}
+
+  /* Scène 6 : le métier */
+  .trio{display:grid;gap:10px;width:100%}
+  .tuile{display:flex;align-items:center;gap:12px;background:#faf9f5;color:#1c1c1a;
+         border-radius:14px;padding:12px}
+  .scene.on .tuile{animation:paraitre .4s ease both}
+  .scene.on .tuile:nth-child(2){animation-delay:1.3s}.scene.on .tuile:nth-child(3){animation-delay:2.6s}
+  .vignette{width:52px;height:52px;border-radius:10px;flex:none;position:relative;overflow:hidden}
+  .feuille{background:#5f7d45}
+  .feuille::before,.feuille::after{content:"";position:absolute;border-radius:50%;background:#7a5230}
+  .feuille::before{width:14px;height:10px;left:10px;top:14px}.feuille::after{width:10px;height:12px;left:28px;top:28px}
+  .plan-eau{background:#e3ebe0}
+  .plan-eau::before{content:"";position:absolute;inset:10px;border:2px solid #2f3b2f;border-radius:3px}
+  .plan-eau::after{content:"";position:absolute;left:14px;top:14px;width:24px;height:24px;border-radius:50%;
+         border:2px dashed #3d7fb0}
+  .ticket{background:#fff;border:1px solid #ddd}
+  .ticket::before{content:"";position:absolute;left:10px;right:10px;top:12px;height:28px;
+         background:repeating-linear-gradient(#bbb 0 2px,transparent 2px 7px)}
+  .tuile p{margin:0;font-size:13px;line-height:1.35}.tuile p b{display:block;font-size:14px}
+
+  /* Scène 7 : la fin */
+  .marque{font:500 44px/1 Georgia,serif;letter-spacing:.02em}
+  .accroche{margin:12px 0 22px;text-align:center;font-size:16px;color:#e6e1d6}
+  .offre{background:#B98B47;color:#1c1c1a;border-radius:14px;padding:12px 16px;text-align:center;font-weight:600}
+  .offre small{display:block;font-weight:400;font-size:13px;margin-top:2px}
+  .adresse{margin-top:14px;font-size:14px;color:#C9A15E}
+
+  /* Les commandes */
+  .barre{max-width:340px;margin:12px auto 0;height:4px;background:var(--paper);border-radius:2px;overflow:hidden}
+  .barre i{display:block;height:100%;width:0;background:var(--or)}
+  .commandes{display:flex;justify-content:center;gap:10px;margin:10px 0 24px}
+  .commandes button{padding:9px 18px;border-radius:22px;border:1px solid var(--line);
+       background:var(--cream);color:var(--ink);font:inherit;font-size:14px;cursor:pointer}
+  .commandes .temps{align-self:center;font-variant-numeric:tabular-nums;color:var(--muted);font-size:13px}
+
+  /* Le script */
+  h2{font:500 21px/1.2 Georgia,serif;margin:26px 0 10px}
+  .plan-script{border:1px solid var(--line);border-radius:14px;overflow:hidden}
+  .plan-script button{display:block;width:100%;text-align:left;border:0;border-bottom:1px solid var(--line);
+       background:var(--cream);color:var(--ink);font:inherit;padding:12px 14px;cursor:pointer}
+  .plan-script button:last-child{border-bottom:0}
+  .plan-script button.on{background:var(--paper)}
+  .plan-script .t{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--or)}
+  .plan-script .v{display:block;font-size:14px;margin-top:2px}
+  .plan-script .vo{display:block;font-size:13px;color:var(--ink-soft);font-style:italic;margin-top:3px}
+  .note{margin-top:22px;padding:14px 16px;background:var(--cream);border-radius:13px;
+        font-size:13.5px;line-height:1.6;color:var(--ink-soft)}
+  .note b{color:var(--ink)}
+  .note ul{margin:6px 0 0;padding-left:18px}
+</style>
+</head>
+<body>
+<div class="page">
+  <p class="sur">Atlas</p>
+  <h1>La vidéo, en brouillon</h1>
+  <p class="chapo">42 secondes, en vertical, lisible sans le son. Touchez une accroche, puis Lecture.</p>
+
+  <div class="choix" role="group" aria-label="Accroche">
+    <button type="button" data-accroche="A" aria-pressed="true">A : le temps perdu</button>
+    <button type="button" data-accroche="B" aria-pressed="false">B : le soir au bureau</button>
+  </div>
+
+  <div class="ecran" id="ecran">
+    <section class="scene fond-pin" data-debut="0">
+      <p class="gros" id="accroche1">20 minutes de bureau après chaque visite ?</p>
+      <p class="gros or apres" id="accroche2">Et si ça prenait 30 secondes.</p>
+    </section>
+
+    <section class="scene fond-os" data-debut="4">
+      <div class="carte">
+        <div class="etiquette">Sur le chantier</div>
+        <div class="micro"></div>
+        <div class="onde"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+        <p class="dicte">« Élagage d’un chêne de quinze mètres chez madame Martin, deux jours à deux, évacuation des branches. »</p>
+      </div>
+      <div class="sous-titre">Vous dictez sur le chantier.</div>
+    </section>
+
+    <section class="scene fond-os" data-debut="11">
+      <div class="carte">
+        <div class="etiquette">Devis n° 2026 041</div>
+        <h3>Madame Martin</h3>
+        <div class="ligne"><span>Élagage d’un chêne de 15 m</span><b>1 200,00 €</b></div>
+        <div class="ligne"><span>Main d’œuvre, 2 jours à 2</span><b>960,00 €</b></div>
+        <div class="ligne"><span>Évacuation des branches</span><b>180,00 €</b></div>
+        <div class="total"><span>Total TTC</span><b>2 808,00 €</b></div>
+      </div>
+      <div class="sous-titre">Atlas rédige le devis.</div>
+    </section>
+
+    <section class="scene fond-os" data-debut="18">
+      <div class="carte">
+        <div class="etiquette">Chez votre client</div>
+        <h3>Votre devis de 2 808,00 €</h3>
+        <div class="jours">
+          <div class="jour">mar.<b>14</b>oct.</div>
+          <div class="jour pris">jeu.<b>16</b>oct.</div>
+        </div>
+        <span class="bouton appui">J’accepte</span>
+      </div>
+      <div class="sous-titre">Le client accepte et choisit sa date.</div>
+    </section>
+
+    <section class="scene fond-os" data-debut="24">
+      <div class="carte">
+        <div class="etiquette">Planning</div>
+        <div class="plan"><span>lun.</span><span>mar.</span><span>mer.</span><span class="ch">jeu. Martin</span><span class="ch">ven. Martin</span></div>
+        <span class="bouton">Fin de chantier</span>
+        <p style="margin:12px 0 0;font-size:14px"><span class="coche"></span>Facture envoyée.</p>
+      </div>
+      <div class="sous-titre">Chantier fini, la facture part en un appui.</div>
+    </section>
+
+    <section class="scene fond-nuit" data-debut="30">
+      <div class="trio">
+        <div class="tuile"><div class="vignette feuille"></div><p><b>Une feuille en photo</b>Anthracnose, probable sur un platane.</p></div>
+        <div class="tuile"><div class="vignette plan-eau"></div><p><b>Un croquis en photo</b>Le plan d’arrosage et ses pièces.</p></div>
+        <div class="tuile"><div class="vignette ticket"></div><p><b>Un ticket en photo</b>La dépense est rangée.</p></div>
+      </div>
+      <div class="sous-titre">Et votre métier, il le connaît.</div>
+    </section>
+
+    <section class="scene fond-pin" data-debut="36">
+      <div class="marque">Atlas</div>
+      <p class="accroche">Du devis dicté à la facture,<br>sans rien retaper.</p>
+      <div class="offre">15 jours d’essai offerts<small>puis dès 39 € HT par mois</small></div>
+      <p class="adresse">[l’adresse du site]</p>
+    </section>
+  </div>
+
+  <div class="barre"><i id="avance"></i></div>
+  <div class="commandes">
+    <button type="button" id="lecture">Lecture</button>
+    <button type="button" id="rejouer">Rejouer</button>
+    <span class="temps" id="temps">0 s sur 42</span>
+  </div>
+
+  <h2>Le script, plan par plan</h2>
+  <div class="plan-script" id="plans">
+    <button type="button" data-aller="0"><span class="t">0 à 4 s</span><span class="v">Fond vert, l’accroche en grand.</span><span class="vo" id="vo1">« Vingt minutes de bureau après chaque visite ? Et si ça prenait trente secondes. »</span></button>
+    <button type="button" data-aller="4"><span class="t">4 à 11 s</span><span class="v">Vous, au pied d’un arbre, téléphone en main. Puis l’écran de la dictée.</span><span class="vo">« Vous dictez votre visite, sur place. »</span></button>
+    <button type="button" data-aller="11"><span class="t">11 à 18 s</span><span class="v">Le vrai devis se remplit, ligne après ligne.</span><span class="vo">« Atlas rédige le devis. Vous relisez, vous validez. »</span></button>
+    <button type="button" data-aller="18"><span class="t">18 à 24 s</span><span class="v">L’écran du client : il accepte et prend une date.</span><span class="vo">« Votre client accepte et choisit sa date. »</span></button>
+    <button type="button" data-aller="24"><span class="t">24 à 30 s</span><span class="v">Le planning se remplit, puis Fin de chantier.</span><span class="vo">« Chantier fini : la facture part en un appui. »</span></button>
+    <button type="button" data-aller="30"><span class="t">30 à 36 s</span><span class="v">Trois photos, trois réponses : un arbre malade, un croquis d’arrosage, un ticket.</span><span class="vo">« Et votre métier, il le connaît. »</span></button>
+    <button type="button" data-aller="36"><span class="t">36 à 42 s</span><span class="v">Le nom, la phrase, l’offre d’essai, l’adresse.</span><span class="vo">« Atlas. Paysagistes, élagueurs, et tous les artisans. Quinze jours pour essayer. »</span></button>
+  </div>
+
+  <div class="note">
+    <b>Ce qui reste à me dire</b>
+    <ul>
+      <li>Le nom commercial : Atlas, ou un autre ?</li>
+      <li>L’adresse où la vidéo renvoie : site, page d’inscription, téléphone ?</li>
+      <li>Une vidéo de vous sur un chantier, 3 à 4 secondes, pour le plan 2. Sans elle, je mets l’écran seul.</li>
+    </ul>
+    <p style="margin:10px 0 0">Les écrans dessinés ici calent le rythme. La vraie vidéo filme l’application, sur des clients de démonstration.</p>
+  </div>
+</div>
+
+<script>
+  // Une horloge unique : chaque scène commence à data-debut, et la dernière
+  // dure jusqu'à FIN. Relancer une scène retire puis repose sa classe, sans
+  // quoi les animations CSS ne repartiraient pas au deuxième passage.
+  const FIN = 42;
+  const scenes = [...document.querySelectorAll('.scene')];
+  const plans = [...document.querySelectorAll('#plans button')];
+  const avance = document.getElementById('avance');
+  const temps = document.getElementById('temps');
+  const lecture = document.getElementById('lecture');
+  let t = 0, enCours = false, dernier = 0, active = -1;
+
+  const ACCROCHES = {
+    A: ['20 minutes de bureau après chaque visite ?', 'Et si ça prenait 30 secondes.',
+        '« Vingt minutes de bureau après chaque visite ? Et si ça prenait trente secondes. »'],
+    B: ['Encore vos devis à taper ce soir ?', 'Dictez-les sur le chantier.',
+        '« Encore vos devis à taper ce soir ? Dictez-les sur le chantier. »'],
+  };
+  document.querySelectorAll('[data-accroche]').forEach(b => b.addEventListener('click', () => {
+    document.querySelectorAll('[data-accroche]').forEach(x => x.setAttribute('aria-pressed', x === b));
+    const [un, deux, vo] = ACCROCHES[b.dataset.accroche];
+    document.getElementById('accroche1').textContent = un;
+    document.getElementById('accroche2').textContent = deux;
+    document.getElementById('vo1').textContent = vo;
+    aller(0); jouer();
+  }));
+
+  function sceneA(x){ let i = 0; scenes.forEach((s, k) => { if (x >= +s.dataset.debut) i = k; }); return i; }
+  function montrer(i){
+    if (i === active) return;
+    active = i;
+    scenes.forEach((s, k) => { s.classList.remove('on'); if (k === i) { void s.offsetWidth; s.classList.add('on'); } });
+    plans.forEach((p, k) => p.classList.toggle('on', k === i));
+  }
+  function peindre(){
+    montrer(sceneA(t));
+    avance.style.width = (t / FIN * 100) + '%';
+    temps.textContent = Math.floor(t) + ' s sur ' + FIN;
+  }
+  function boucle(maintenant){
+    if (!enCours) return;
+    t += (maintenant - dernier) / 1000; dernier = maintenant;
+    if (t >= FIN) { t = FIN; arreter(); }
+    peindre();
+    if (enCours) requestAnimationFrame(boucle);
+  }
+  function jouer(){ if (t >= FIN) aller(0); enCours = true; lecture.textContent = 'Pause'; dernier = performance.now(); requestAnimationFrame(boucle); }
+  function arreter(){ enCours = false; lecture.textContent = 'Lecture'; }
+  function aller(x){ t = x; active = -1; peindre(); }
+
+  lecture.addEventListener('click', () => enCours ? arreter() : jouer());
+  document.getElementById('rejouer').addEventListener('click', () => { aller(0); jouer(); });
+  plans.forEach(p => p.addEventListener('click', () => { aller(+p.dataset.aller); jouer(); }));
+  aller(0);
+</script>
+</body>
+</html>
