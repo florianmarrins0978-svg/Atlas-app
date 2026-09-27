@@ -8,19 +8,20 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-27
 
-### La tête des gars, à côté de leur nom
+### La tête des gars, et chacun la sienne
 
-Sa réponse B du 27 septembre sur `appli/photo-des-salaries.html`. Dans
-Réglages, Équipe, le rond du rang ouvre une fiche : la photo en grand,
-« Prendre une photo » (appareil au dos), « Choisir dans la galerie », « Retirer
-la photo ». La tête suit le nom sur le planning (pastille de qui part) et dans
-les absences ; le nom reste toujours écrit. Migration 0109 (colonne nullable
-`equipes.photo_storage_key`, expand seul). L'image passe par
-`preparerPhotoEntrante` (GPS retiré, faux fichier refusé), se sert par
-`/api/fichiers` avec un filtre explicite sur l'entreprise, et « Retirer »
-supprime le fichier. Patron seul. Éprouvé : `test-equipes-repo.ts` (six cas
-neufs, isolation comprise) et le parcours joué dans un navigateur (envoi,
-planning, retrait, clé inventée en 404). **Batterie non jouée**, à sa demande.
+Sa réponse B sur `appli/photo-des-salaries.html`, puis *« chaque personne doit
+pouvoir mettre et changer sa photo de profil »*. Dans Équipe, le rond du rang
+ouvre une fiche (prendre, galerie, retirer) ; dans « Qui a accès », le patron
+dit une fois « C'est qui ? » pour chaque compte ; dans Mon compte, le rond des
+initiales ouvre la même fiche pour SA photo. La tête suit le nom au planning,
+dans les absences et dans « Qui a accès ». Migration 0109 (expand seul), route
+`/api/tetes` ouverte à tous les rôles et qui ne sert que des têtes,
+`ARCHITECTURE.md` §428. Éprouvé : `test-photo-des-personnes-db.ts` (huit cas,
+vu rouge en cassant la règle), `test-equipes-repo.ts`, `test-acces-roles.ts`,
+et le parcours joué dans un navigateur (le patron relie Kévin, Kévin pose sa
+photo, le patron la voit, Kévin voit celle du patron mais pas
+`/api/fichiers`). **Batterie non jouée**, à sa demande.
 
 ### Les dates du mois d'un contrat, validées par le client
 

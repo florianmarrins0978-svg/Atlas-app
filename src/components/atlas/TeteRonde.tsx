@@ -1,29 +1,30 @@
 import { colors, font } from "@/lib/design-tokens";
 
 /**
- * La tête d'un salarié dans un rond, ou son rang s'il n'a pas de photo.
+ * La tête d'une personne dans un rond, ou son repli s'il n'a pas de photo.
  *
  * *Sa demande du 27 septembre 2026, planche `appli/photo-des-salaries.html`,
  * proposition B.* Le même rond sert à l'écran Équipe, aux absences et au
  * planning : trois dessins écrits à la main divergeraient à la première
  * retouche (`CLAUDE.md` §3).
  *
- * **Le repli est le rang, en or**, exactement ce que la ligne montrait avant la
- * photo : un salarié sans photo ne change pas d'allure.
+ * **Le repli est le rang d'un salarié, en or**, exactement ce que la ligne
+ * montrait avant la photo : un salarié sans photo ne change pas d'allure. Pour
+ * un compte relié à aucun nom, c'est son initiale.
  */
-export default function TeteSalarie({
-  rang,
+export default function TeteRonde({
+  repli,
   photo,
   taille,
 }: {
-  rang: number;
+  repli: string | number;
   /** La clef de stockage, telle que la base la porte. */
   photo: string | null | undefined;
   taille: number;
 }) {
   return (
     <span
-      data-atlas="tete-salarie"
+      data-atlas="tete-ronde"
       className="flex flex-none items-center justify-center overflow-hidden rounded-full"
       style={{
         width: taille,
@@ -37,13 +38,14 @@ export default function TeteSalarie({
         fontVariantNumeric: "tabular-nums",
         // En fond plutôt qu'en `<img>` : l'image est décorative (le nom est
         // écrit à côté), et `next/image` n'a rien à optimiser sur une route
-        // qui vérifie la session à chaque lecture.
-        backgroundImage: photo ? `url("/api/fichiers/${photo}")` : undefined,
+        // qui vérifie la session à chaque lecture. `api/tetes`, et pas
+        // `api/fichiers` : le salarié doit voir les têtes, pas les chantiers.
+        backgroundImage: photo ? `url("/api/tetes/${photo}")` : undefined,
         backgroundSize: "cover",
         backgroundPosition: "center",
       }}
     >
-      {photo ? null : rang}
+      {photo ? null : repli}
     </span>
   );
 }

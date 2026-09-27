@@ -4,9 +4,15 @@ import Link from "next/link";
 import { useState, useTransition } from "react";
 import { colors, font, libelleCaps, surPlein, voile } from "@/lib/design-tokens";
 import { libelleRole, type PorteePlanning, type Role } from "@/lib/acces-roles";
-import { libelleSalarie } from "@/lib/equipes";
+import { libelleSalarie, salariesAffiches } from "@/lib/equipes";
+import TeteRonde from "@/components/atlas/TeteRonde";
 import ChoixRole from "./ChoixRole";
-import { changerLaPorteeAction, changerLeRoleAction, retirerUnAccesAction } from "./actions";
+import {
+  changerLaPorteeAction,
+  changerLeRoleAction,
+  relierAuSalarieAction,
+  retirerUnAccesAction,
+} from "./actions";
 
 /**
  * « QUI A ACCÈS » — la liste des comptes de l'entreprise, et ce que chacun peut.
@@ -42,6 +48,8 @@ export default function QuiAAcces({
     role: Role;
     porteePlanning: PorteePlanning;
     equipeId: string | null;
+    salarieRang: number | null;
+    photo: string | null;
   }[];
   /** L'id du compte connecté : « Vous », et le seul qu'on ne peut pas retirer. */
   moi: string;
@@ -81,6 +89,14 @@ export default function QuiAAcces({
                 className="flex w-full items-center gap-3 py-3.5 text-left"
                 aria-expanded={ouvert === p.id}
               >
+                {/* **Sa tête** (27 septembre 2026) : chacun la pose dans Mon
+                    compte. Sans photo, le numéro de son nom s'il est relié,
+                    sinon son initiale. */}
+                <TeteRonde
+                  repli={p.salarieRang ?? (p.nom ?? p.email).trim().charAt(0).toUpperCase()}
+                  photo={p.photo}
+                  taille={36}
+                />
                 <span className="min-w-0 flex-1">
                   <span className="block truncate text-[15px]" style={{ color: colors.ink }}>
                     {estMoi ? "Vous" : (p.nom ?? p.email)}
@@ -106,6 +122,16 @@ export default function QuiAAcces({
                       Un commercial voit l'application entière — lui proposer une
                       restriction laisserait croire qu'elle s'applique, et le
                       patron croirait avoir fermé quelque chose. */}
+                  {nombreSalaries > 0 && (
+                    <ChoixSalarie
+                      rang={p.salarieRang}
+                      noms={salariesAffiches(equipes, nombreSalaries)}
+                      nombreSalaries={nombreSalaries}
+                      inerte={enCours}
+                      onChoisir={(rang) => agir(() => relierAuSalarieAction(p.id, rang))}
+                    />
+                  )}
+
                   {p.role === "salarie" && (
                     <ChoixPortee
                       portee={p.porteePlanning}
@@ -163,6 +189,65 @@ export default function QuiAAcces({
         </p>
       )}
     </section>
+  );
+}
+
+/**
+ * C'EST QUI ? Le nom de salarié que ce compte EST, relié une fois par le
+ * patron : sa réponse du 27 septembre 2026. Ensuite, la photo que la personne
+ * pose dans Mon compte s'affiche partout sous ce nom.
+ *
+ * **« Personne » est un choix, pas un oubli** : un commercial n'est aucun des
+ * gars du chantier, et sa photo reste sur son compte.
+ */
+function ChoixSalarie({
+  rang,
+  noms,
+  nombreSalaries,
+  inerte,
+  onChoisir,
+}: {
+  rang: number | null;
+  noms: { rang: number; nom?: string | null }[];
+  nombreSalaries: number;
+  inerte: boolean;
+  onChoisir: (rang: number | null) => void;
+}) {
+  const pastille = (choisie: boolean) =>
+    choisie
+      ? { backgroundColor: voile(colors.ink, 0.08), color: colors.ink }
+      : { border: `1px solid ${colors.line}`, color: colors.muted };
+  return (
+    <div className="mt-4" data-atlas="c-est-qui">
+      <p className={`mb-2 ${libelleCaps}`} style={{ color: colors.inkSoft }}>
+        C&apos;est qui&nbsp;?
+      </p>
+      <div className="flex flex-wrap gap-2">
+        {noms.map((e) => (
+          <button
+            key={e.rang}
+            type="button"
+            disabled={inerte}
+            aria-pressed={e.rang === rang}
+            onClick={() => e.rang !== rang && onChoisir(e.rang)}
+            className="rounded-full px-3 py-1.5 text-[12px]"
+            style={pastille(e.rang === rang)}
+          >
+            {libelleSalarie({ rang: e.rang, nom: e.nom ?? null }, nombreSalaries) ?? `Salarié ${e.rang}`}
+          </button>
+        ))}
+        <button
+          type="button"
+          disabled={inerte}
+          aria-pressed={rang === null}
+          onClick={() => rang !== null && onChoisir(null)}
+          className="rounded-full px-3 py-1.5 text-[12px]"
+          style={pastille(rang === null)}
+        >
+          Personne
+        </button>
+      </div>
+    </div>
   );
 }
 

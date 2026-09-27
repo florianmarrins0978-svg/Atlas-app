@@ -19,7 +19,7 @@ import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 import { cheminAutorise, peutModifierLePlanning, type Role } from "@/lib/acces-roles";
 import { adresseDeLaVisionneuse } from "@/lib/visionneuse-pdf";
 import { colors, font, libelleCaps, surPlein, texteSituation, voile } from "@/lib/design-tokens";
-import TeteSalarie from "@/components/atlas/TeteSalarie";
+import TeteRonde from "@/components/atlas/TeteRonde";
 import MoisCharge, { fondDeLEtat } from "@/components/atlas/MoisCharge";
 import {
   cleCreneau,
@@ -2241,7 +2241,7 @@ function TetesQuiPartent({ tetes }: { tetes: { rang: number; photo: string }[] }
     <span className="flex -space-x-1.5" aria-hidden="true">
       {tetes.map((t) => (
         <span key={t.rang} className="rounded-full" style={{ boxShadow: `0 0 0 2px ${colors.cream}` }}>
-          <TeteSalarie rang={t.rang} photo={t.photo} taille={24} />
+          <TeteRonde repli={t.rang} photo={t.photo} taille={24} />
         </span>
       ))}
     </span>

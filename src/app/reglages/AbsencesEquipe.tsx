@@ -8,7 +8,7 @@ import BottomSheet from "@/components/atlas/BottomSheet";
 import { salariesAffiches, libelleSalarie } from "@/lib/equipes";
 import { libelleAbsence, phraseDuRefus, refusDeLAbsence } from "@/lib/absences-equipe";
 import { noterAbsenceAction, retirerAbsenceAction } from "./actions";
-import TeteSalarie from "@/components/atlas/TeteSalarie";
+import TeteRonde from "@/components/atlas/TeteRonde";
 
 /**
  * « Absences » — les jours où quelqu'un n'est pas là.
@@ -274,7 +274,7 @@ export default function AbsencesEquipe({
                   Sans photo, la pastille reste celle d'avant : rien ne change
                   pour qui n'en pose pas. */}
               {photoDuRang(a.rang) ? (
-                <TeteSalarie rang={a.rang} photo={photoDuRang(a.rang)} taille={26} />
+                <TeteRonde repli={a.rang} photo={photoDuRang(a.rang)} taille={26} />
               ) : (
                 <span
                   className="flex h-[26px] w-[26px] flex-shrink-0 items-center justify-center rounded-full text-[11.5px]"

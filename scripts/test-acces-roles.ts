@@ -110,6 +110,10 @@ const OUVERT_AU_SALARIE = [
   // encore. Ouverte comme les autres sondes — un outil de surveillance n'a pas
   // de session, et elle ne rend qu'une date et un statut.
   "/api/health/purge",
+  // Les têtes de ses collègues, sur le planning (27 septembre 2026). Cette
+  // route ne sert QUE des photos de personnes : `/api/fichiers`, qui porte
+  // celles des chantiers, reste fermée juste en dessous.
+  "/api/tetes/xxxx",
 ];
 
 console.log("=== Qui atteint quoi ===\n");

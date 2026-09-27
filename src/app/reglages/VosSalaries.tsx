@@ -1,11 +1,10 @@
 "use client";
 
-import { useRef, useState } from "react";
-import { colors, font, surPlein } from "@/lib/design-tokens";
-import { ACCEPT_PHOTOS } from "@/lib/exif";
+import { useState } from "react";
+import { colors, font } from "@/lib/design-tokens";
 import { MAX_SALARIES, phraseDesSalaries, salariesAffiches } from "@/lib/equipes";
-import BottomSheet from "@/components/atlas/BottomSheet";
-import TeteSalarie from "@/components/atlas/TeteSalarie";
+import FichePhoto from "@/components/atlas/FichePhoto";
+import TeteRonde from "@/components/atlas/TeteRonde";
 import {
   mettreAJourNombreSalariesAction,
   nommerEquipeAction,
@@ -150,140 +149,22 @@ export default function VosSalaries({
       ) : null}
 
       {fiche !== null ? (
-        <FicheSalarie
-          rang={fiche}
+        <FichePhoto
+          repli={fiche}
           nom={(noms[fiche] ?? "").trim() || `Salarié ${fiche}`}
           photo={photos[fiche] ?? null}
+          envoyer={(fichier) => {
+            const fd = new FormData();
+            fd.set("rang", String(fiche));
+            fd.set("fichier", fichier);
+            return poserPhotoSalarieAction(fd);
+          }}
+          retirer={() => retirerPhotoSalarieAction(fiche)}
           onPhoto={(cle) => setPhotos((cur) => ({ ...cur, [fiche]: cle }))}
           onFermer={() => setFiche(null)}
         />
       ) : null}
     </section>
-  );
-}
-
-/**
- * La fiche d'un salarié : sa tête en grand, et trois gestes.
- *
- * *Sa réponse B du 27 septembre 2026*, planche `appli/photo-des-salaries.html`.
- *
- * **Deux champs de fichier, et c'est voulu.** « Prendre une photo » porte
- * `capture` et ouvre l'appareil au dos : le patron photographie un de ses gars.
- * « Choisir dans la galerie » ne le porte pas, pour reprendre une photo reçue
- * par message. Un seul champ sans `capture` laisserait iOS proposer les deux,
- * mais Android ouvrirait la galerie seule, et le geste le plus fréquent
- * coûterait un détour.
- *
- * **La photo affichée est celle que le serveur a rangée**, jamais l'aperçu
- * local : un fichier refusé (format, taille) ne doit pas paraître posé.
- */
-function FicheSalarie({
-  rang,
-  nom,
-  photo,
-  onPhoto,
-  onFermer,
-}: {
-  rang: number;
-  nom: string;
-  photo: string | null;
-  onPhoto: (cle: string | null) => void;
-  onFermer: () => void;
-}) {
-  const [enCours, setEnCours] = useState(false);
-  const [refus, setRefus] = useState<string | null>(null);
-  const appareil = useRef<HTMLInputElement>(null);
-  const galerie = useRef<HTMLInputElement>(null);
-
-  async function envoyer(fichier: File | undefined) {
-    if (!fichier) return;
-    setEnCours(true);
-    setRefus(null);
-    const fd = new FormData();
-    fd.set("rang", String(rang));
-    fd.set("fichier", fichier);
-    const r = await poserPhotoSalarieAction(fd);
-    setEnCours(false);
-    if (r.ok) onPhoto(r.photo);
-    else setRefus(r.raison);
-  }
-
-  async function retirer() {
-    setEnCours(true);
-    setRefus(null);
-    const r = await retirerPhotoSalarieAction(rang);
-    setEnCours(false);
-    if (r.ok) onPhoto(null);
-    else setRefus(r.raison);
-  }
-
-  return (
-    <BottomSheet open onBackdropClick={enCours ? undefined : onFermer}>
-      <div data-atlas="fiche-salarie" className="flex flex-col items-center">
-        <TeteSalarie rang={rang} photo={photo} taille={132} />
-        <p className="mt-3 text-[22px] leading-[1.2]" style={{ fontFamily: font.display, color: colors.ink }}>
-          {nom}
-        </p>
-
-        <input
-          ref={appareil}
-          type="file"
-          accept={ACCEPT_PHOTOS}
-          capture="environment"
-          className="hidden"
-          onChange={(e) => {
-            void envoyer(e.target.files?.[0]);
-            e.target.value = "";
-          }}
-        />
-        <input
-          ref={galerie}
-          type="file"
-          accept={ACCEPT_PHOTOS}
-          className="hidden"
-          onChange={(e) => {
-            void envoyer(e.target.files?.[0]);
-            e.target.value = "";
-          }}
-        />
-
-        <button
-          type="button"
-          disabled={enCours}
-          onClick={() => appareil.current?.click()}
-          className="atlas-plein mt-5 w-full rounded-full py-[15px] text-[15px]"
-          style={{ backgroundColor: colors.plein, color: surPlein, fontFamily: font.display }}
-        >
-          {enCours ? "Un instant…" : "Prendre une photo"}
-        </button>
-        <button
-          type="button"
-          disabled={enCours}
-          onClick={() => galerie.current?.click()}
-          className="mt-2.5 w-full rounded-full py-[15px] text-[15px]"
-          style={{ color: colors.ink, boxShadow: `inset 0 0 0 1px ${colors.line}` }}
-        >
-          Choisir dans la galerie
-        </button>
-        {photo ? (
-          <button
-            type="button"
-            data-atlas="retirer-photo-salarie"
-            disabled={enCours}
-            onClick={() => void retirer()}
-            className="mt-1.5 w-full rounded-full py-3 text-[14.5px]"
-            style={{ color: colors.alert }}
-          >
-            Retirer la photo
-          </button>
-        ) : null}
-        {refus ? (
-          <p role="alert" className="mt-3 text-center text-[13px] leading-[1.5]" style={{ color: colors.alert }}>
-            {refus}
-          </p>
-        ) : null}
-      </div>
-    </BottomSheet>
   );
 }
 
@@ -335,7 +216,7 @@ function LigneNom({
         onClick={onOuvrirFiche}
         className="flex-none rounded-full"
       >
-        <TeteSalarie rang={rang} photo={photo} taille={44} />
+        <TeteRonde repli={rang} photo={photo} taille={44} />
       </button>
       <input
         type="text"

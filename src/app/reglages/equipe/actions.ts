@@ -12,6 +12,8 @@ import {
 } from "@/server/repositories/membres-entreprise";
 import type { Role } from "@/lib/acces-roles";
 import { mettreAJourEntreprise } from "@/server/repositories/entreprises";
+import { relierAuSalarie } from "@/server/repositories/photo-des-personnes";
+import { supprimerObjet } from "@/server/storage";
 
 /**
  * LES QUATRE GESTES DES ACCÈS — et les quatre commencent par la même ligne.
@@ -83,6 +85,26 @@ export async function changerLaPorteeAction(
   return { ok: true };
 }
 
+/**
+ * Relie un compte à son nom de salarié, ou le délie : sa réponse du
+ * 27 septembre 2026 (« tu relies une fois »). Ensuite, la photo que la
+ * personne pose dans Mon compte s'affiche partout sous ce nom.
+ */
+export async function relierAuSalarieAction(
+  accesId: string,
+  rang: number | null
+): Promise<{ ok: true } | { ok: false; message: string }> {
+  const ctx = await getCurrentCtx();
+  await exigerProprietaire(ctx, "relier un compte à un salarié");
+
+  const resultat = await relierAuSalarie(ctx, accesId, rang);
+  if (!resultat.ok) return { ok: false, message: resultat.raison };
+  if (resultat.aSupprimer) await supprimerObjet(resultat.aSupprimer);
+
+  revalidatePath("/reglages/equipe");
+  return { ok: true };
+}
+
 export async function retirerUnAccesAction(
   accesId: string
 ): Promise<{ ok: true } | { ok: false; message: string }> {
@@ -91,6 +113,7 @@ export async function retirerUnAccesAction(
 
   const resultat = await retirerUnAcces(ctx, accesId);
   if (!resultat.ok) return phrase(resultat.refus);
+  if (resultat.photoOrpheline) await supprimerObjet(resultat.photoOrpheline);
 
   revalidatePath("/reglages/equipe");
   return { ok: true };

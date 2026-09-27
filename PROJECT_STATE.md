@@ -4,12 +4,13 @@
 · dernière migration `drizzle/0106_hausse_du_devis_repris.sql` (sur la branche)
 
 ---
-## SUR SA BRANCHE : LA PHOTO DES SALARIÉS (27 septembre 2026)
+## SUR SA BRANCHE : LA PHOTO DE CHAQUE PERSONNE (27 septembre 2026)
 
-Réglages, Équipe : le rond du rang ouvre une fiche (prendre, galerie,
-retirer) ; la tête suit le nom au planning et dans les absences. Migration
-0109. Branche `claude/employee-profile-photo-g1mkbk`, **pas sur `main`** :
-niveau 3, batterie non jouée à sa demande.
+Chacun pose sa photo dans Mon compte ; le patron relie chaque compte à son nom
+dans « Qui a accès » et garde la main dans Équipe. La tête suit le nom au
+planning et dans les absences. Migration 0109, route `/api/tetes`, §428.
+Branche `claude/employee-profile-photo-g1mkbk`, **pas sur `main`** : niveau 3,
+batterie non jouée à sa demande.
 
 ## SUR `main` : LES DATES DU MOIS D'UN CONTRAT (27 septembre 2026)
 

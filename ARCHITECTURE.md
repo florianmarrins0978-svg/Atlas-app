@@ -33711,3 +33711,24 @@ ses passages du mois, comme les dates d'un devis. Migration 0108.
 | le déplacement s'écrit par `ecrireLesCreneaux` | le seul écrivain de « où le chantier est posé » (§322) |
 | l'envoi est gardé par `exigerEcritureSurLePlanning` ; la page du client par son jeton exact (politique `app.jeton_dates`) et `verifierLimite` | qui pose le planning envoie ses dates ; la réponse a les bornes de celle du contrat |
 | `/contrat/dates/<jeton>` sous le préfixe public `/contrat` | aucun chemin public de plus à tenir |
+
+## §428 : La photo de chaque personne : une seule vérité, une route à part
+
+Sa demande du 27 septembre 2026, planche `appli/photo-des-salaries.html`
+(réponse B), puis *« chaque personne doit pouvoir mettre et changer sa photo
+de profil »*, et ses deux réponses : le patron relie une fois chaque compte à
+son nom ; un compte qui n'est pas un gars de chantier garde la sienne, visible
+dans « Qui a accès ». Migration 0109, expand seul.
+
+| Décision | Pourquoi |
+|---|---|
+| la photo d'un nom vit sur `equipes.photo_storage_key` ; celle d'un compte relié à personne sur `membres_entreprise.photo_storage_key` | une personne n'a qu'un endroit : relié, le gars (Mon compte) et le patron (Équipe) écrivent sur la même ligne |
+| `membres_entreprise.salarie_id`, distinct d'`equipe_id` | `equipe_id` dit ce qu'une personne VOIT et vaut NULL pour qui voit tout (0065) ; s'en servir pour dire QUI elle est aurait laissé sans nom tout salarié qui voit tout |
+| un nom déjà relié à un autre compte est refusé, pas déplacé (index unique partiel) | un déplacement muet ferait perdre sa photo à quelqu'un |
+| relier transfère la photo du compte sur la ligne si la ligne n'en a pas ; sinon le fichier du compte est supprimé | il ne perd pas sa tête en étant relié, et une photo de personne ne dort pas dans le stockage |
+| `poserMaPhoto` lit sa cible dans la session, jamais dans la demande | un salarié n'atteint que sa propre ligne |
+| les têtes se servent par `/api/tetes`, pas `/api/fichiers` | le salarié doit voir les têtes au planning ; `/api/fichiers` porte aussi les photos de chantier et les notes vocales, et reste fermée au salarié (`test-acces-roles.ts`) |
+| filtre explicite sur l'entreprise dans chaque requête de la route | `membres_entreprise` laisse lire ses adhésions dans toutes ses entreprises (0012) : la leçon du logo, §`api/fichiers` |
+| « Retirer » et le retrait d'un accès suppriment le fichier | c'est la tête d'une personne |
+| image par `preparerPhotoEntrante` | GPS retiré, faux fichier refusé |
+| `TeteRonde` : un seul dessin (Équipe, Qui a accès, Mon compte, planning, absences) ; `FichePhoto` : une seule fiche (Équipe, Mon compte) | §3, jamais deux dessins d'une même chose |

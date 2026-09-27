@@ -3,7 +3,7 @@ import { and, eq, isNull } from "drizzle-orm";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { exigerOuverture } from "@/server/garde-route";
 import { withEntreprise } from "@/server/db/with-entreprise";
-import { photos, notesVocales, entreprises, equipes } from "@/server/db/schema";
+import { photos, notesVocales, entreprises } from "@/server/db/schema";
 import { lireObjet } from "@/server/storage";
 import { typeDepuisCle } from "@/lib/type-de-fichier";
 
@@ -91,16 +91,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ key: st
       .from(entreprises)
       .where(and(eq(entreprises.id, ctx.entrepriseId), eq(entreprises.logoStorageKey, storageKey)))
       .limit(1);
-    if (e) return true;
-    // **La tête d'un salarié** (migration 0109). `equipes` est sous FORCE RLS,
-    // mais le filtre explicite reste : c'est la leçon du logo juste au-dessus,
-    // une protection qui ne tient qu'à une politique se perd sans bruit.
-    const [salarie] = await tx
-      .select({ id: equipes.id })
-      .from(equipes)
-      .where(and(eq(equipes.entrepriseId, ctx.entrepriseId), eq(equipes.photoStorageKey, storageKey)))
-      .limit(1);
-    return Boolean(salarie);
+    return Boolean(e);
   });
 
   if (!autorise) {
