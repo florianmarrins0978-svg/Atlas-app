@@ -3,43 +3,51 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Terminés : l'ordre des lignes</title>
+<title>Terminés : le bouton Filtre</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@400;500&display=swap" rel="stylesheet">
 <style>
   /*
-    « TERMINÉS », L'ORDRE DES LIGNES. Sa demande du 27 septembre 2026 :
+    « TERMINÉS », L'ORDRE DES LIGNES. Deux demandes du 27 septembre 2026 :
 
       « Ordre pour les factures terminé ordre croissant / date du devis
         date de facturation. Fait une planche. »
 
-    CE QUE L'ÉCRAN FAIT AUJOURD'HUI (`preparer`, src/lib/termines-par-mois.ts) :
-    un mois à la fois, rangé par JOUR DU CHANTIER (le planning, sinon le jour de
-    la facture), du plus récent au plus ancien. Le mois se choisit toujours sur
-    le jour du chantier ; cette planche ne touche qu'à l'ordre DANS le mois.
+    puis, devant la première planche (quatre ordres figés, A à D) :
 
-    SA PHRASE SE LIT DE DEUX FAÇONS, D'OÙ QUATRE PROPOSITIONS :
-      A. croissant, sur le jour du chantier (la clé ne change pas, le sens oui) ;
-      B. croissant, sur la date du DEVIS ;
-      C. croissant, sur la date de FACTURATION ;
-      D. un choix à l'écran, entre les trois, toujours croissant.
+      « Met une note filtre on clique dessus et il y a plusieurs moyen de
+        trier. Planche ! »
 
-    CE QUE CHAQUE CLÉ NE SAIT PAS, ET OÙ LA LIGNE VA ALORS :
-      • B : une facture créée sans devis (« Créer une facture ») n'a pas de date
-        de devis ;
-      • C : une ligne « À facturer » n'a pas encore de date de facture.
-    Ces lignes vont À LA FIN, entre elles par jour du chantier. En croissant, la
-    fin est « le plus tard » : une facture pas encore faite y est à sa place.
-    Rien ne s'invente (`docs/AGENT.md` §3).
+    CE QUI EST TRANCHÉ : un bouton « Filtre », et un volet qui propose
+    plusieurs ordres. CE QUI SE CHOISIT ICI : la place du bouton (A ou B).
 
-    B DOIT MONTRER LA DATE DU DEVIS, sinon l'ordre paraît au hasard : la date
-    du chantier est remplacée par « Devis du … » en tête de la petite ligne.
-    C ne coûte aucun mot : « Facturé le … » est déjà écrit.
+    LE VOLET : cinq clés (chantier, devis, facturation, montant, client) et
+    deux sens. Le sens se nomme dans les mots de la clé : « Du plus ancien »
+    pour une date, « Du plus petit » pour un montant, « De A à Z » pour un nom.
+    Tout s'applique au toucher, sans bouton « Valider » : on voit la liste
+    bouger derrière le voile.
 
-    LES DONNÉES : les noms et montants reprennent sa capture du 24 septembre.
-    Les dates de devis sont INVENTÉES (l'écran ne les montre pas), choisies pour
-    que les quatre ordres diffèrent vraiment.
+    PAR DÉFAUT : l'ordre d'aujourd'hui (chantier, du plus récent). Quand un
+    autre ordre est choisi, le bouton se remplit, pour qu'on sache que la
+    liste n'est pas dans son ordre habituel. Le choix est retenu.
+
+    CE QUI N'A PAS LA DATE OU LE MONTANT VA À LA FIN, dans les deux sens,
+    rangé entre soi par jour du chantier : une facture faite sans devis n'a
+    pas de date de devis, un chantier pas encore facturé n'a pas de date de
+    facture. Rien ne s'invente (`docs/AGENT.md` §3).
+
+    LE NOM DU CLIENT SE RANGE SANS SA CIVILITÉ : « Mr. », « Mme », « Madame »
+    rangeraient toutes les dames ensemble, loin de leur nom.
+
+    L'ŒIL NE BOUGE PAS : il reste le filtre « À facturer », à sa place. Le
+    mot « Filtre » est le sien ; le bouton range, il ne retire rien.
+
+    LE MOIS reste choisi sur le jour du chantier ; l'ordre joue dans le mois.
+    Œil ouvert, il joue sur tout ce qui attend.
+
+    LES DONNÉES : noms et montants de sa capture du 24 septembre. Les dates de
+    devis sont INVENTÉES, choisies pour que les ordres diffèrent vraiment.
 
     RIEN N'EST CODÉ TANT QU'IL N'A PAS CHOISI (`CLAUDE.md` §3 bis).
   */
@@ -80,7 +88,7 @@
        font-size:14px;line-height:1.62;color:var(--etabli-doux);min-height:78px}
   .mot b{color:var(--etabli-encre)}
 
-  .tel{width:390px;max-width:100%;margin:18px auto 0;border-radius:26px;overflow:hidden;
+  .tel{width:390px;max-width:100%;margin:18px auto 0;border-radius:26px;overflow:hidden;position:relative;
        background:var(--fond);color:var(--encre);box-shadow:0 16px 44px rgba(20,18,14,.22);
        display:flex;flex-direction:column}
 
@@ -106,14 +114,21 @@
   .comptes .aFacturer{color:var(--or)}
   .comptes .oeil{width:44px;height:44px;margin:-10px -4px -10px -8px;display:grid;place-items:center;color:var(--or)}
 
-  /* D : le choix de l'ordre. Trois pastilles de la même famille que les
-     portes, pour ne pas inventer un objet nouveau sur cet écran. */
-  .tri{display:none;gap:6px;margin:4px 26px 6px}
-  .tel[data-prop="d"] .tri{display:flex}
-  .tri button{min-height:36px;border:0;border-radius:999px;padding:0 13px;cursor:pointer;
-              font:400 12.5px/1 var(--sans);background:transparent;color:var(--doux);
-              box-shadow:inset 0 0 0 1px var(--trait)}
-  .tri button[aria-pressed="true"]{background:var(--encre);color:var(--fond);box-shadow:none}
+  /* ── LE BOUTON FILTRE ──────────────────────────────────────────────
+     La même famille que « Retours d'intervention » : une pastille à
+     contour, 44 px de haut. Rempli quand l'ordre n'est plus celui
+     d'aujourd'hui. */
+  .filtre{min-height:44px;display:inline-flex;align-items:center;gap:7px;border:0;border-radius:999px;
+          padding:0 13px;font:400 12.5px/1 var(--sans);white-space:nowrap;cursor:pointer;
+          background:var(--plage);color:var(--doux);box-shadow:inset 0 0 0 1px var(--trait)}
+  .filtre svg{display:block}
+  .filtre[data-actif]{background:var(--encre);color:var(--fond);box-shadow:none}
+  /* A : au bout de la phrase des comptes, poussé à droite. */
+  .comptes .filtre{margin:-9px 0 -9px auto;font-weight:400}
+  /* B : sa propre rangée, sous les comptes, à droite. */
+  .rangeeFiltre{display:none;justify-content:flex-end;margin:0 26px 4px}
+  .tel[data-place="b"] .rangeeFiltre{display:flex}
+  .tel[data-place="b"] .comptes .filtre{display:none}
 
   .liste{margin:0 26px 10px}
   .rangee{display:flex;gap:14px;align-items:center;padding:24px 0}
@@ -134,29 +149,47 @@
   .barre i.actif{color:var(--encre)}
   .barre i.actif::after{content:"";position:absolute;left:0;right:0;bottom:-2px;height:1.5px;background:var(--or)}
 
+  /* ── LE VOLET : celui de l'application (BottomSheet), dans le cadre ── */
+  /* Fixé à la fenêtre, pas au cadre : le cadre dépasse la hauteur du
+     téléphone, et un volet collé à SON bas s'ouvrirait hors de vue. */
+  .voile{position:fixed;inset:0;z-index:30;background:rgba(0,0,0,.35);display:flex;align-items:flex-end;justify-content:center}
+  .voile[hidden]{display:none}
+  .volet{width:100%;max-width:390px;border-radius:26px 26px 0 0;background:var(--fond);padding:12px 24px 30px}
+  .volet .poignee{width:40px;height:4px;border-radius:999px;background:var(--trait);margin:0 auto 16px}
+  .volet .titre{margin:0 0 12px;text-align:center;font:600 11px/1 var(--sans);letter-spacing:.18em;
+                text-transform:uppercase;color:var(--gris)}
+  .cle{width:100%;min-height:54px;margin-top:8px;border:0;border-radius:999px;cursor:pointer;
+       display:flex;align-items:center;justify-content:center;
+       font:400 19px/1 var(--serif);color:var(--encre);background:var(--plage);box-shadow:inset 0 0 0 1px var(--trait)}
+  .cle[aria-pressed="true"]{background:var(--encre);color:var(--fond);box-shadow:none}
+  .sens{display:flex;gap:8px;margin-top:18px}
+  .sens button{flex:1;min-height:44px;border:0;border-radius:999px;cursor:pointer;
+               font:400 13.5px/1 var(--sans);color:var(--doux);background:transparent;
+               box-shadow:inset 0 0 0 1px var(--trait)}
+  .sens button[aria-pressed="true"]{color:var(--or);box-shadow:inset 0 0 0 1.5px var(--or);font-weight:600}
+  .fermer{width:100%;margin-top:12px;padding:12px 0;border:0;background:transparent;cursor:pointer;
+          font:400 14px/1 var(--sans);color:var(--gris)}
+
   @media (max-width:430px){ .tel{border-radius:0;box-shadow:none;width:100%} }
 </style>
 </head>
 <body>
 <div class="bandeau">
-  <b>Votre demande du 27 septembre :</b> l'ordre des lignes dans Terminés,
-  croissant, date du devis, date de facturation.
+  <b>Votre demande du 27 septembre :</b> un bouton Filtre, on appuie, et
+  plusieurs façons de trier.
 </div>
 
-<div class="etats" role="group" aria-label="La proposition">
+<div class="etats" role="group" aria-label="La place du bouton">
   <div class="rangee">
-    <button type="button" data-prop="avant" aria-pressed="false">Aujourd'hui</button>
-    <button type="button" data-prop="a" aria-pressed="true">A</button>
-    <button type="button" data-prop="b" aria-pressed="false">B</button>
-    <button type="button" data-prop="c" aria-pressed="false">C</button>
-    <button type="button" data-prop="d" aria-pressed="false">D</button>
+    <button type="button" data-place="a" aria-pressed="true">A, sur la ligne des comptes</button>
+    <button type="button" data-place="b" aria-pressed="false">B, en dessous</button>
     <button type="button" id="charte" aria-pressed="false">Nuit</button>
   </div>
 </div>
 
 <p class="mot" id="mot"></p>
 
-<section class="tel" id="tel" data-prop="a">
+<section class="tel" id="tel" data-place="a">
   <div class="enTete"><h1>Terminés</h1></div>
   <div class="carteTva"><span><span class="quoi">Ma TVA à déclarer</span>
     <span class="quand">Septembre 2026</span></span><span class="combien">1 772,85 €</span></div>
@@ -167,113 +200,144 @@
   <div class="navMois"><span class="fl">‹</span><span class="quand">Septembre 2026</span><span class="fl off">›</span></div>
   <p class="comptes"><span class="aFacturer">3 à facturer</span>
     <span class="oeil" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 20 20" fill="none"><path d="M2.2 10s2.8-5 7.8-5 7.8 5 7.8 5-2.8 5-7.8 5-7.8-5-7.8-5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><circle cx="10" cy="10" r="2.4" stroke="currentColor" stroke-width="1.6"/><path d="M3.6 16.4 16.4 3.6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></span>
-    <span>4 facturés</span></p>
-  <div class="tri" role="group" aria-label="Ranger par">
-    <button type="button" data-cle="chantier" aria-pressed="true">Chantier</button>
-    <button type="button" data-cle="devis" aria-pressed="false">Devis</button>
-    <button type="button" data-cle="facture" aria-pressed="false">Facture</button>
-  </div>
+    <span>4 facturés</span>
+    <button type="button" class="filtre" data-ouvrir>Filtre</button></p>
+  <div class="rangeeFiltre"><button type="button" class="filtre" data-ouvrir>Filtre</button></div>
   <div class="liste" id="liste"></div>
   <div class="barre" aria-hidden="true"><i>Chantiers</i><i>Planning</i><i class="actif">Terminés</i><i>Paysage</i><i>Réglages</i></div>
+
+  <div class="voile" id="voile" hidden>
+    <div class="volet" role="dialog" aria-label="Trier">
+      <div class="poignee"></div>
+      <p class="titre">Trier par</p>
+      <div id="cles"></div>
+      <div class="sens" id="sens"></div>
+      <button type="button" class="fermer" id="fermer">Fermer</button>
+    </div>
+  </div>
 </section>
 
 <script>
-  // Dates au format AAAA-MM-JJ. `plan` : le jour posé au planning (null quand
-  // la facture a été créée sans passer par lui). `devis` : null quand la
-  // facture a été créée sans devis. `fac` : null tant que rien n'est facturé.
+  // Dates AAAA-MM-JJ. `plan` : le jour du planning (null si la facture a été
+  // créée sans passer par lui). `devis` : null si la facture a été faite sans
+  // devis. `fac` : null tant que rien n'est facturé. `euros` : la facture,
+  // sinon le devis ; null quand on ne sait pas.
   const LIGNES = [
-    { nom: "Mme Costa",                 plan: "2026-09-02", devis: "2026-08-18", fac: "2026-09-18", n: 10, montant: "1 120,00 €" },
-    { nom: "Mr. Frédéric",              plan: "2026-09-08", devis: "2026-08-25", fac: "2026-09-25", n: 13, montant: "1 240,00 €" },
-    { nom: "Madame Huguette Groupiron", plan: "2026-09-12", devis: "2026-08-29", fac: null, prevu: "660,00 €" },
-    { nom: "Mr. Julien",                plan: "2026-09-15", devis: "2026-09-02", fac: "2026-09-21", n: 11, montant: "552,52 €" },
-    { nom: "Mr. Frederic",              plan: "2026-09-22", devis: null,         fac: null },
-    { nom: "Mr. Julien",                plan: "2026-09-23", devis: "2026-09-10", fac: null, prevu: "696,00 €" },
-    { nom: "Mr. Julien",                plan: null,         devis: null,         fac: "2026-09-24", n: 12, montant: "996,00 €" },
+    { nom: "Mme Costa",                 plan: "2026-09-02", devis: "2026-08-18", fac: "2026-09-18", n: 10, euros: 1120 },
+    { nom: "Mr. Frédéric",              plan: "2026-09-08", devis: "2026-08-25", fac: "2026-09-25", n: 13, euros: 1240 },
+    { nom: "Madame Huguette Groupiron", plan: "2026-09-12", devis: "2026-08-29", fac: null, euros: 660 },
+    { nom: "Mr. Julien",                plan: "2026-09-15", devis: "2026-09-02", fac: "2026-09-21", n: 11, euros: 552.52 },
+    { nom: "Mr. Frederic",              plan: "2026-09-22", devis: null,         fac: null, euros: null },
+    { nom: "Mr. Julien",                plan: "2026-09-23", devis: "2026-09-10", fac: null, euros: 696 },
+    { nom: "Mr. Julien",                plan: null,         devis: null,         fac: "2026-09-24", n: 12, euros: 996 },
   ];
 
   const MOIS = ["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"];
   const jour = (iso) => `${Number(iso.slice(8, 10))} ${MOIS[Number(iso.slice(5, 7)) - 1]}`;
-  // Le jour du chantier : le planning, sinon le jour de la facture (`dateDuChantier`).
+  const euros = (n) => new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" }).format(n);
   const duChantier = (l) => l.plan ?? l.fac;
+  // Le nom sans sa civilité : sinon toutes les « Madame » se suivent.
+  const sansCivilite = (nom) => nom.replace(/^(Mr\.?|M\.|Monsieur|Mme|Madame|Mlle)\s+/i, "").toLocaleLowerCase("fr");
 
-  /** Croissant sur la clé ; ce qui n'a pas la date va à la fin, par jour du chantier. */
-  function ranger(cle, sens) {
-    const date = { chantier: duChantier, devis: (l) => l.devis, facture: (l) => l.fac }[cle];
+  // Chaque clé : son libellé, ce qu'elle lit, et les mots de ses deux sens
+  // (le premier est « croissant »).
+  const CLES = {
+    chantier: { mot: "Date du chantier",     lit: duChantier,        sens: ["Du plus ancien", "Du plus récent"] },
+    devis:    { mot: "Date du devis",        lit: (l) => l.devis,    sens: ["Du plus ancien", "Du plus récent"] },
+    facture:  { mot: "Date de facturation",  lit: (l) => l.fac,      sens: ["Du plus ancien", "Du plus récent"] },
+    montant:  { mot: "Montant",              lit: (l) => l.euros,    sens: ["Du plus petit", "Du plus grand"] },
+    client:   { mot: "Nom du client",        lit: (l) => sansCivilite(l.nom), sens: ["De A à Z", "De Z à A"] },
+  };
+  // Par défaut, l'ordre d'aujourd'hui : chantier, du plus récent.
+  const DEFAUT = { cle: "chantier", croissant: false };
+  let choix = { ...DEFAUT };
+
+  /** Ce qui n'a pas la valeur va à la fin, dans les deux sens, par jour du chantier. */
+  function ranger() {
+    const lit = CLES[choix.cle].lit;
+    const signe = choix.croissant ? 1 : -1;
     return [...LIGNES].sort((a, b) => {
-      const da = date(a), db = date(b);
-      if (!da !== !db) return da ? -1 : 1;
-      const x = da ?? duChantier(a), y = db ?? duChantier(b);
-      if (x === y) return 0;
-      return (x < y ? -1 : 1) * sens;
+      const va = lit(a), vb = lit(b);
+      if ((va == null) !== (vb == null)) return va == null ? 1 : -1;
+      if (va == null) return duChantier(a) < duChantier(b) ? 1 : -1;
+      if (va === vb) return 0;
+      // Un nom se compare à la française : « Émile » ne part pas après « Zoé ».
+      if (choix.cle === "client") return va.localeCompare(vb, "fr") * signe;
+      return (va < vb ? -1 : 1) * signe;
     });
   }
 
-  function petiteLigne(l, cle) {
+  // La petite ligne de l'écran ; avec le tri par devis, « Devis du … » prend la
+  // place du jour du chantier, sinon l'ordre paraîtrait au hasard.
+  function petiteLigne(l) {
     const bouts = [];
-    // Sans devis, la ligne garde le jour du chantier plutôt que de rester muette.
-    if (cle === "devis" && l.devis) {
-      bouts.push(`Devis du ${jour(l.devis)}`);
-    } else if (l.plan) {
-      bouts.push(jour(l.plan));
-    }
+    if (choix.cle === "devis" && l.devis) bouts.push(`Devis du ${jour(l.devis)}`);
+    else if (l.plan) bouts.push(jour(l.plan));
     if (l.fac === null) {
-      if (l.prevu) bouts.push(`${l.prevu} prévus`);
-      return bouts.join(", ");
+      if (l.euros !== null) bouts.push(`${euros(l.euros)} prévus`);
+    } else {
+      bouts.push(`<b>Facturé</b> le ${jour(l.fac)}, Facture n° ${l.n}`);
     }
-    bouts.push(`<b>Facturé</b> le ${jour(l.fac)}, Facture n° ${l.n}`);
     return bouts.join(", ");
   }
 
-  const MOTS = {
-    avant: "<b>Votre écran aujourd'hui :</b> par jour du chantier, <b>le plus récent en haut</b>.",
-    a: "<b>A : croissant, par jour du chantier.</b> Le 2 septembre en haut, le 24 en bas. Le chantier du jour est au bas de la liste.",
-    b: "<b>B : croissant, par date du devis.</b> La petite ligne montre « Devis du … » à la place du jour du chantier, sinon l'ordre paraît au hasard. <b>Une facture faite sans devis va à la fin.</b>",
-    c: "<b>C : croissant, par date de facturation.</b> Aucun mot de plus : « Facturé le … » est déjà écrit. <b>Ce qui reste à facturer va à la fin</b>, par jour du chantier.",
-    d: "<b>D : vous choisissez à l'écran</b>, sous les comptes. Toujours croissant. L'application retient votre dernier choix.",
-  };
-
-  const tel = document.getElementById("tel");
   const liste = document.getElementById("liste");
-  const mot = document.getElementById("mot");
-  let prop = "a";
-  let cleD = "chantier";
-
-  function dessiner() {
-    const cle = prop === "b" ? "devis" : prop === "c" ? "facture" : prop === "d" ? cleD : "chantier";
-    const sens = prop === "avant" ? -1 : 1;
-    liste.innerHTML = ranger(cle, sens).map((l) => {
-      const etat = petiteLigne(l, cle);
+  function dessinerListe() {
+    liste.innerHTML = ranger().map((l) => {
+      const etat = petiteLigne(l);
       const p = etat ? `<span class="etat">${etat}</span>` : "";
       return l.fac === null
         ? `<div class="rangee"><span class="qui"><span class="nomC">${l.nom}</span>${p}</span><span class="capsule">À facturer</span></div>`
-        : `<div class="rangee" data-facturee><span class="qui"><span class="nomC">${l.nom}</span>${p}</span><span class="montant">${l.montant}</span></div>`;
+        : `<div class="rangee" data-facturee><span class="qui"><span class="nomC">${l.nom}</span>${p}</span><span class="montant">${euros(l.euros)}</span></div>`;
     }).join("");
+    const autre = choix.cle !== DEFAUT.cle || choix.croissant !== DEFAUT.croissant;
+    for (const f of document.querySelectorAll(".filtre")) {
+      if (autre) f.dataset.actif = ""; else delete f.dataset.actif;
+    }
   }
 
-  function choisir(p) {
-    prop = p;
-    tel.dataset.prop = p;
-    mot.innerHTML = MOTS[p];
-    for (const b of document.querySelectorAll(".etats button[data-prop]")) {
-      b.setAttribute("aria-pressed", String(b.dataset.prop === p));
-    }
-    dessiner();
+  function dessinerVolet() {
+    document.getElementById("cles").innerHTML = Object.entries(CLES).map(([k, c]) =>
+      `<button type="button" class="cle" data-cle="${k}" aria-pressed="${k === choix.cle}">${c.mot}</button>`).join("");
+    const [monte, descend] = CLES[choix.cle].sens;
+    document.getElementById("sens").innerHTML =
+      `<button type="button" data-croissant="1" aria-pressed="${choix.croissant}">${monte}</button>` +
+      `<button type="button" data-croissant="0" aria-pressed="${!choix.croissant}">${descend}</button>`;
   }
-  for (const b of document.querySelectorAll(".etats button[data-prop]")) {
-    b.addEventListener("click", () => choisir(b.dataset.prop));
+
+  const voile = document.getElementById("voile");
+  for (const b of document.querySelectorAll("[data-ouvrir]")) {
+    b.addEventListener("click", () => { dessinerVolet(); voile.hidden = false; });
   }
-  for (const b of document.querySelectorAll(".tri button")) {
+  voile.addEventListener("click", (e) => {
+    const cle = e.target.closest("[data-cle]");
+    const sens = e.target.closest("[data-croissant]");
+    if (cle) choix.cle = cle.dataset.cle;
+    else if (sens) choix.croissant = sens.dataset.croissant === "1";
+    else if (e.target === voile || e.target.id === "fermer") { voile.hidden = true; return; }
+    else return;
+    dessinerVolet();
+    dessinerListe();
+  });
+
+  const MOTS = {
+    a: "<b>A :</b> le bouton au bout de la ligne « 3 à facturer, 4 facturés ». <b>Appuyez dessus.</b> Tout s'applique au toucher, la liste bouge derrière.",
+    b: "<b>B :</b> le bouton sur sa propre ligne, sous les comptes, à droite. Une ligne de plus, mais la phrase des comptes reste seule.",
+  };
+  const tel = document.getElementById("tel");
+  for (const b of document.querySelectorAll(".etats button[data-place]")) {
     b.addEventListener("click", () => {
-      cleD = b.dataset.cle;
-      for (const a of document.querySelectorAll(".tri button")) a.setAttribute("aria-pressed", String(a === b));
-      dessiner();
+      tel.dataset.place = b.dataset.place;
+      document.getElementById("mot").innerHTML = MOTS[b.dataset.place];
+      for (const a of document.querySelectorAll(".etats button[data-place]")) a.setAttribute("aria-pressed", String(a === b));
     });
   }
+  document.getElementById("mot").innerHTML = MOTS.a;
   document.getElementById("charte").addEventListener("click", (e) => {
     const nuit = document.body.classList.toggle("nuit");
     e.currentTarget.setAttribute("aria-pressed", String(nuit));
   });
-  choisir("a");
+  dessinerListe();
 </script>
 </body>
 </html>

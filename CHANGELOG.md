@@ -8,13 +8,15 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-27
 
-### Planche : l'ordre des lignes de « Terminés » (`appli/termines-l-ordre.html`)
+### Planche : le bouton Filtre de « Terminés » (`appli/termines-l-ordre.html`)
 
-**Sa demande** : *« ordre pour les factures terminé ordre croissant / date du
-devis date de facturation »*. Aujourd'hui l'écran range par jour du chantier,
-le plus récent en haut (`preparer`). Quatre ordres croissants proposés : A par
-jour du chantier, B par date du devis, C par date de facturation, D au choix à
-l'écran. Le mois reste choisi sur le jour du chantier. Rien n'est codé.
+**Ses demandes** : *« ordre pour les factures terminé ordre croissant / date du
+devis date de facturation »*, puis devant la première planche (quatre ordres
+figés) : *« met une note filtre on clique dessus et il y a plusieurs moyen de
+trier »*. La planche est refaite : un bouton « Filtre » ouvre un volet, cinq
+clés (chantier, devis, facturation, montant, client) et deux sens. Par
+défaut, l'ordre d'aujourd'hui. À choisir : la place du bouton, A ou B. Rien
+n'est codé.
 
 ### Le site de vente d'Atlas (`appli/vente/`)
 
