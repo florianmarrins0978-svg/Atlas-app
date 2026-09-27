@@ -86,6 +86,13 @@ communiquent entre elles lors de l'envoi de la facture. »* `ARCHITECTURE.md`
 foi (celui d'Atlas ou celui de l'outil), quel PDF part chez le client, que fait
 l'envoi quand la connexion est coupée ou révoquée.
 
+## Site de vente : l'adresse de contact et le nom (27 septembre 2026)
+
+`appli/vente/index.html` porte `CONTACT = "contact@votre-domaine.fr"`, une
+adresse d'attente : **à lui de donner la vraie**, elle se change à cette seule
+ligne. Le nom « Atlas » y est employé alors que `PRODUCT.md` le dit non arrêté,
+et les prix n'y figurent pas tant que l'abonnement n'est pas décidé.
+
 ## Sauvegardes : la copie hors de Scaleway (26 septembre 2026)
 
 Décisions prises le 26 septembre sur sa consigne « 0 problème »
