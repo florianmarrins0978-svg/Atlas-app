@@ -200,6 +200,18 @@ const HORS_CHARTE: Array<{
     pourquoi: "vignette d'une photo qu'on reprend : un cercle rognerait l'image",
   },
   {
+    // **LES DOUZE MOIS ET LES DEUX CARTES A ET B DU CONTRAT D'ENTRETIEN** —
+    // sa planche 129 (`appli/contrat-d-entretien-vert.html`), retenue le
+    // 26 septembre 2026 : les mois sont douze CASES d'une grille, comme les
+    // tuiles d'un calendrier, et A et B sont deux CARTES de choix qui portent
+    // un titre et une phrase. En capsule, douze mois ne tiennent plus sur une
+    // ligne, et une carte de deux lignes devient un galet. Trouvé par la
+    // batterie du 27 septembre. Le motif vise leurs repères, pas le fichier.
+    motif: /^src[/\\]app[/\\]clients[/\\]\[id\][/\\]contrat[/\\]ContratClient\.tsx$/,
+    seulement: /aria-label=\{MOIS_LONGS\[i\]\}|data-atlas="choix-facturation"/,
+    pourquoi: "cases des mois et cartes A et B de sa planche 129",
+  },
+  {
     // **UNE VIGNETTE DE PHOTO, PAS UN BOUTON** — la troisième, arrivée le
     // 9 septembre 2026 avec les photos d'un retour d'intervention sur la fiche
     // du jour. Même arbitrage que les deux autres : un cercle rogne les quatre

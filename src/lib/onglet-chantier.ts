@@ -67,10 +67,15 @@ function rangement(fini: boolean, datePlanifiee: string | null | undefined, aujo
 
 /** L'onglet, depuis le statut affiché. C'est la forme dont disposent les écrans. */
 export function ongletDuChantier(
-  c: { statut: ChantierStatut; datePlanifiee?: string | null },
+  c: { statut: ChantierStatut; datePlanifiee?: string | null; contratEntretienId?: string | null },
   aujourdHui: string = jourIso(new Date())
 ): OngletChantier {
   const fini = c.statut === "facture" || c.statut === "termine";
+  // **Un passage de contrat d'entretien vit au planning, même sans jour.** Il
+  // n'a rien à préparer : ni dictée, ni devis. Le laisser dans les chantiers
+  // en cours y poserait un « Brouillon » par passage, dix-sept par an et par
+  // client, là où il ne cherche que ce qui reste à chiffrer.
+  if (!fini && !c.datePlanifiee && c.contratEntretienId) return "planning";
   // Un statut « planifié » sans date ne devrait pas exister — `getStatutAffiche`
   // ne le rend que si la date est posée. Le filet reste : il coûte une ligne, et
   // sans lui un tel chantier retomberait dans les chantiers en cours.

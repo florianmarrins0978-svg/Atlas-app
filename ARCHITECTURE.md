@@ -33643,3 +33643,71 @@ lignes.
 **Arrondi sur le prix UNITAIRE**, au centime, demi vers le haut, en décimal :
 le client lit « 40 × 19,57 € » et doit pouvoir refaire la multiplication.
 
+## §424 : La facturation électronique passe par le compte de l'artisan
+
+**Sa décision du 26 septembre 2026** : *« on a dit Pennylane et toutes les
+applis compatibles avec la nôtre. L'idée, c'est que l'utilisateur connecte son
+compte de facturation à notre appli, et qu'après elles communiquent entre elles
+lors de l'envoi de la facture. »*
+
+| Décision | Pourquoi |
+|---|---|
+| chaque entreprise connecte SON compte, une fois, dans Réglages | c'est l'artisan qui émet et qui porte la responsabilité légale ; un compte Eden Nature pour tous ferait d'Atlas l'émetteur de factures qui ne sont pas les siennes |
+| la transmission part à l'envoi de la facture | le seul geste qui fait d'un brouillon une facture ; transmettre avant enverrait des brouillons à l'outil comptable |
+| Pennylane d'abord, les autres outils un par un | chaque outil a son API ; un connecteur par outil, derrière une même interface, pour que l'écran de la facture ne connaisse aucun d'eux |
+
+Ce qui ne change pas : Atlas **prépare**, l'outil **émet** (`AGENT.md` §6,
+`QUESTIONS.md` §11). Rien n'est codé. Ce que le code devra tenir, et qui relève
+de la gravité (niveau 3) : les jetons d'accès de l'artisan chiffrés en base et
+isolés par entreprise, et un envoi qui refuse en le disant quand la connexion
+est coupée, jamais une facture partie d'un seul côté en silence.
+
+## §425 : Le contrat d'entretien, lot 1 : un passage est un chantier
+
+**Sa demande du 26 septembre 2026**, planche 129 (`appli/contrat-d-entretien-vert.html`).
+
+| Décision | Pourquoi |
+|---|---|
+| les règles dans `src/lib/contrats-entretien.ts`, seules | l'écran, le serveur (`relireContrat`) et le PDF comptent avec les mêmes fonctions ; un montant calculé deux fois finit par diverger |
+| les prestations en **jsonb** sur `contrats_entretien` (0102) | un contrat envoyé se fige avec ses lignes, comme un avoir (0101) ; l'empreinte sha256 prouve ce qui est parti |
+| **un passage est un chantier** (`chantiers.contrat_entretien_id` + `contrat_passage`) | il se pose, se termine, se facture : tout ce que l'application sait déjà faire ; aucune seconde mécanique de planning |
+| l'index unique (contrat, passage) + `ON CONFLICT DO NOTHING` | l'arrivée est rejouable : deux ouvertures du planning ne posent jamais un passage deux fois (éprouvé en parallèle) |
+| l'arrivée à l'**ouverture du planning**, pour qui peut l'écrire | pas de cron à planifier chez lui ; en lecture seule (essai fini) rien n'arrive et l'écran s'ouvre |
+| un mois **fini avant l'accord** ne donne aucun passage ; fini après, il les garde | un contrat de mars accepté en juin ne déverse pas trois mois passés ; un passage dû ne disparaît pas parce que personne n'a ouvert le planning |
+| `getPlanificationEtat` : « à planifier » si devis envoyé **ou** passage de contrat ; `ongletDuChantier` : un passage sans jour vit au planning | sans la seconde, chaque passage aurait posé un « Brouillon » dans les chantiers à préparer |
+| la page `/contrat/<jeton>` : lecture par jeton exact (politique RLS), réponse une seule fois, bornée par `verifierLimite` | la mécanique du devis, déjà éprouvée |
+
+**Ce qui n'agit pas encore** : la facturation A et l'automatisme B s'enregistrent et s'impriment, sans créer de facture (`TODO.md`).
+
+## §426 : Le contrat d'entretien, lot 2 : la facture de chaque passage
+
+**Sa consigne du 27 septembre 2026** : *« enchaîne le lot 2, ne lance pas de batterie »*.
+
+| Décision | Pourquoi |
+|---|---|
+| le passage se facture par **`terminerChantier`**, la porte du devis | c'est la porte que Terminés ouvre (« Créer la facture »), et c'est la même question : facturer le prix que le client a accepté. Elle refusait le passage (« pas de devis, rien à facturer ») |
+| **pas** par `creerFactureSansDevis` | celle-là naît vide, pour un dépannage sans prix accepté ; y mettre le passage aurait fait deux règles pour la même porte, et elle n'est atteinte que depuis la création d'un chantier |
+| une ligne : `ligneDuPassage`, « Tonte et ébarbage, passage du 25 septembre 2026 », au taux du contrat | le client recompte ; sans prix lisible, la facture naît vide plutôt que de supposer un montant |
+| `totalPrevuTtc` remplace `devisTotalTtc` dans Terminés | le montant prévu vient du devis OU du contrat ; garder le nom « devis » aurait menti sur une ligne sur deux |
+| l'automatisme **dans l'envoi de la fiche d'entretien** (`envoyerFicheAction`), par les portes ordinaires (`terminerChantier`, `emettreFacture`, `creerEnvoiFacture`) | le compte rendu est le geste du patron (`CLAUDE.md` §4) ; une date aurait facturé un passage annulé par la pluie |
+| il vise le passage du **même client, même jour**, dont le contrat a l'automatisme ; rejoué, il rend le même lien | un second appui ne fait ni seconde facture ni second lien (éprouvé) |
+| seul qui peut facturer le fait partir ; un échec **n'empêche pas** le compte rendu, et la fiche le dit en restant ouverte | la garde de la facture ne s'efface pas en passant par la fiche ; une facture qu'il croirait partie serait pire qu'un refus |
+| le lien de facture s'ajoute **en fin de message**, après son modèle | son modèle de compte rendu reste intact, et un compte rendu sans facture reste sans prix |
+
+
+## §427 : Les dates du mois d'un contrat : un lien par client et par mois
+
+Sa demande du 27 septembre 2026, planche 130 : envoyer au client les dates de
+ses passages du mois, comme les dates d'un devis. Migration 0108.
+
+| Décision | Pourquoi |
+|---|---|
+| une ligne `envois_dates_contrat` par (contrat, mois), unique | un seul SMS pour toutes les tontes du mois ; un second appui rend le même lien |
+| les dates ne sont **pas** recopiées dans l'envoi : la page du client lit les passages posés | le planning reste la seule vérité ; un passage déplacé par le patron après l'envoi se lit juste |
+| « à envoyer » et « en attente » sortent d'une fonction pure (`datesDuMois`), calculée sur la liste vivante du planning, et rejouée par le serveur avant d'envoyer | la dernière date posée ouvre l'envoi sans recharger, et l'écran ne décide de rien |
+| sans réponse, rien ne bascule : l'attente cesse quand le dernier jour est passé | sa décision : « il faut qu'elle tienne jusqu'à la date prévue » |
+| « autre date » : le mois entier à partir de demain, jours retenables seulement (`contrainteDuPlanning`, exportée, et `jourRetenable`) | la semaine seule laissait le client sans choix ; la même carte d'occupation que le devis, agenda extérieur et absences compris |
+| chaque jour changé se revérifie à la réponse, un par un, dans une transaction ; un refus la défait entière | un jour libre à l'ouverture peut s'être rempli ; deux passages déplacés doivent se voir l'un l'autre |
+| le déplacement s'écrit par `ecrireLesCreneaux` | le seul écrivain de « où le chantier est posé » (§322) |
+| l'envoi est gardé par `exigerEcritureSurLePlanning` ; la page du client par son jeton exact (politique `app.jeton_dates`) et `verifierLimite` | qui pose le planning envoie ses dates ; la réponse a les bornes de celle du contrat |
+| `/contrat/dates/<jeton>` sous le préfixe public `/contrat` | aucun chemin public de plus à tenir |

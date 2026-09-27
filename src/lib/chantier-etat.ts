@@ -347,6 +347,12 @@ export type PlanificationEtat = "a_planifier" | "planifie" | "attente_client" | 
 
 export type EtatPourPlanification = {
   devisEnvoyeAt: Date | string | null;
+  /**
+   * Le contrat d'entretien dont ce chantier est un passage (migration 0107).
+   * Un passage n'a pas de devis : c'est le contrat accepté qui l'a fait
+   * naître, et il attend son jour exactement comme un devis envoyé.
+   */
+  contratEntretienId?: string | null;
   datePlanifiee: string | null;
   envoiEnvoyeAt?: Date | string | null;
   envoiExpireAt?: Date | string | null;
@@ -371,7 +377,7 @@ export function getPlanificationEtat(
   );
   if (attendLeClient(etat)) return "attente_client";
 
-  if (c.devisEnvoyeAt) return "a_planifier";
+  if (c.devisEnvoyeAt || c.contratEntretienId) return "a_planifier";
   return "non_concerne";
 }
 

@@ -28,6 +28,8 @@ import {
   naturesGrille,
   paiementsFacture,
   avoirs,
+  contratsEntretien,
+  envoisDatesContrat,
   facturesNonPayees,
   reglementsRetires,
   tranchesGrille,
@@ -171,6 +173,8 @@ export async function exporterEntreprise(
       lesAvoirs,
       lesNonPayees,
       lesRetires,
+      sesContrats,
+      sesEnvoisDeDates,
       sonModeleEntretien,
       sesPassages,
       sesLignesPassage,
@@ -296,6 +300,11 @@ export async function exporterEntreprise(
       // Les règlements retirés (migration 0103) : sans eux, un mois déjà
       // déclaré qui a baissé ne dirait plus pourquoi une fois restauré.
       tx.select().from(reglementsRetires).where(eq(reglementsRetires.entrepriseId, e)),
+      // Ses contrats d'entretien (0107) et les envois de leurs dates (0108) :
+      // un contrat accepté porte la preuve de l'accord (empreinte, heure,
+      // adresse) et les prix que ses passages factureront. Rien ne le refait.
+      tx.select().from(contratsEntretien).where(eq(contratsEntretien.entrepriseId, e)),
+      tx.select().from(envoisDatesContrat).where(eq(envoisDatesContrat.entrepriseId, e)),
       // Le modèle de fiche d'entretien (migration 0051). C'est SA saisie —
       // les prestations, leurs familles, leur ordre —, et rien ne la
       // reconstitue : le modèle fourni au départ n'est qu'un point de départ,
@@ -443,6 +452,8 @@ export async function exporterEntreprise(
       avoirs: lesAvoirs,
       factures_non_payees: lesNonPayees,
       reglements_retires: lesRetires,
+      contrats_entretien: sesContrats,
+      envois_dates_contrat: sesEnvoisDeDates,
       // Sans les jetons — voir la requête ci-dessus.
       agendas_externes: lesAgendas,
       equipes: lesEquipes,
@@ -571,7 +582,8 @@ export async function exporterEntreprise(
   });
 }
 
-// Le jeton d'`envois_devis` est exporté, en connaissance de cause. C'est une clé
+// Le jeton d'`envois_devis` est exporté, en connaissance de cause (et, pour la
+// même raison, ceux des contrats d'entretien et de l'envoi de leurs dates). C'est une clé
 // d'accès vivante à une page publique — mais l'écarter reviendrait à produire une
 // sauvegarde d'où les envois ne pourraient pas être remis en place, pour protéger
 // un secret qui expire de lui-même. Le mode d'emploi joint à l'archive le dit en

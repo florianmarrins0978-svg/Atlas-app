@@ -9,6 +9,7 @@
 // indépendants de l'ORM utilisé pour les déclarer.
 
 import type { LigneAvoirStockee } from "../../lib/avoir";
+import type { PrestationContrat } from "../../lib/contrats-entretien";
 
 import {
   pgTable,
@@ -735,6 +736,87 @@ export const clients = pgTable(
   ]
 );
 
+// --- Contrats d'entretien (migration 0107) ---
+
+/**
+ * Le contrat d'entretien d'un client : ses prestations, sa période, sa
+ * facturation. Sa demande du 26 septembre 2026, planches 128 et 129.
+ *
+ * **Les prestations en jsonb**, tenues par `relireContrat` : un contrat envoyé
+ * se fige avec ses lignes, comme un avoir (0101). Ses passages sont des
+ * chantiers, rattachés par `chantiers.contratEntretienId`.
+ */
+export const contratsEntretien = pgTable(
+  "contrats_entretien",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    entrepriseId: uuid("entreprise_id")
+      .notNull()
+      .references(() => entreprises.id, { onDelete: "cascade" }),
+    clientId: uuid("client_id").notNull(),
+    statut: text("statut", { enum: ["brouillon", "envoye", "accepte", "refuse"] }).notNull().default("brouillon"),
+    debut: date("debut").notNull(),
+    dureeMois: integer("duree_mois").notNull(),
+    reconduit: boolean("reconduit").notNull().default(true),
+    facturation: text("facturation", { enum: ["passage", "mois"] }).notNull().default("passage"),
+    avecCompteRendu: boolean("avec_compte_rendu").notNull().default(false),
+    prestations: jsonb("prestations").$type<PrestationContrat[]>().notNull().default([]),
+    tauxTva: numeric("taux_tva", { precision: 5, scale: 2 }).notNull(),
+    jeton: text("jeton").unique(),
+    empreinte: char("empreinte", { length: 64 }),
+    envoyeLe: timestamp("envoye_le", { withTimezone: true }),
+    reponduLe: timestamp("repondu_le", { withTimezone: true }),
+    reponseAdresseIp: text("reponse_adresse_ip"),
+    reponseAgent: text("reponse_agent"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+    createdBy: uuid("created_by").references(() => users.id, { onDelete: "set null" }),
+  },
+  (t) => [
+    unique("contrats_entretien_id_entreprise_uk").on(t.id, t.entrepriseId),
+    index("contrats_entretien_client_idx").on(t.entrepriseId, t.clientId),
+    index("contrats_entretien_statut_idx").on(t.entrepriseId, t.statut),
+    foreignKey({
+      columns: [t.clientId, t.entrepriseId],
+      foreignColumns: [clients.id, clients.entrepriseId],
+      name: "contrats_entretien_client_entreprise_fk",
+    }),
+  ]
+);
+
+/**
+ * L'envoi des dates d'un mois au client d'un contrat : un lien pour tous ses
+ * passages du mois (migration 0108, planche 130). Les dates elles-mêmes sont
+ * celles des passages posés au planning ; cette ligne ne les recopie pas.
+ */
+export const envoisDatesContrat = pgTable(
+  "envois_dates_contrat",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    entrepriseId: uuid("entreprise_id")
+      .notNull()
+      .references(() => entreprises.id, { onDelete: "cascade" }),
+    contratEntretienId: uuid("contrat_entretien_id").notNull(),
+    mois: date("mois").notNull(),
+    jeton: text("jeton").notNull().unique(),
+    canal: text("canal", { enum: ["sms", "email"] }).notNull(),
+    autreDateAutorisee: boolean("autre_date_autorisee").notNull().default(true),
+    envoyeLe: timestamp("envoye_le", { withTimezone: true }).notNull().defaultNow(),
+    reponduLe: timestamp("repondu_le", { withTimezone: true }),
+    reponseAdresseIp: text("reponse_adresse_ip"),
+    reponseAgent: text("reponse_agent"),
+  },
+  (t) => [
+    unique("envois_dates_contrat_mois_uk").on(t.contratEntretienId, t.mois),
+    index("envois_dates_contrat_entreprise_idx").on(t.entrepriseId, t.mois),
+    foreignKey({
+      columns: [t.contratEntretienId, t.entrepriseId],
+      foreignColumns: [contratsEntretien.id, contratsEntretien.entrepriseId],
+      name: "envois_dates_contrat_contrat_fk",
+    }).onDelete("cascade"),
+  ]
+);
+
 // --- Chantiers ---
 
 export const chantiers = pgTable(
@@ -790,6 +872,14 @@ export const chantiers = pgTable(
      * sans qu'on perde rien — et l'invariant comptable reste entier.
      */
     rappelFactureRepousseLe: date("rappel_facture_repousse_le"),
+    /**
+     * Le contrat d'entretien dont ce chantier est un PASSAGE (migration 0107),
+     * et sa clé « prestation-année-mois-rang » (`passagesArrives`). Les deux
+     * ensemble ou aucun ; la base tient la paire unique, ce qui rend l'arrivée
+     * des passages idempotente.
+     */
+    contratEntretienId: uuid("contrat_entretien_id"),
+    contratPassage: text("contrat_passage"),
     tailleEquipe: text("taille_equipe"),
     /**
      * Le pense-bête de CE chantier — « penser à prendre le broyeur ».
@@ -838,6 +928,11 @@ export const chantiers = pgTable(
       foreignColumns: [clients.id, clients.entrepriseId],
       name: "chantiers_client_entreprise_fk",
     }).onDelete("set null"),
+    foreignKey({
+      columns: [t.contratEntretienId, t.entrepriseId],
+      foreignColumns: [contratsEntretien.id, contratsEntretien.entrepriseId],
+      name: "chantiers_contrat_entretien_fk",
+    }),
   ]
 );
 

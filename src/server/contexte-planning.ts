@@ -4,8 +4,11 @@ import { listerEquipes } from "@/server/repositories/equipes";
 import { absencesSurLaFenetre } from "@/server/repositories/absences-equipe";
 import { HORIZON_OCCUPATION_PATRON_JOURS, ajouterJours, versJourIso } from "@/lib/disponibilites";
 import type { Ctx } from "@/server/repositories/context";
-import { accesDeLaPersonne } from "@/server/autorisation";
+import { accesDeLaPersonne, getRole } from "@/server/autorisation";
+import { poserLesPassagesArrives } from "@/server/repositories/contrats-entretien";
+import { peutModifierLePlanning } from "@/lib/acces-roles";
 import { seuilMemoireCalendrier } from "@/lib/onglet-chantier";
+import { jourIso } from "@/lib/jour";
 
 /**
  * TOUT CE QU'IL FAUT POUR PEINDRE UNE JOURNÉE — chargé une seule fois, servi
@@ -32,6 +35,15 @@ import { seuilMemoireCalendrier } from "@/lib/onglet-chantier";
  * ───────────────────────────────────────────────────────────────────────────
  */
 export async function contextePlanning(ctx: Ctx, maintenant: Date) {
+  // **Les passages des contrats arrivent AVANT la lecture**, pour qu'ils soient
+  // dans « Sans date » dès cette ouverture-ci. Seul qui peut écrire le planning
+  // les fait arriver : c'est lui qui les pose, et « Sans date » n'existe que
+  // pour lui (`PlanningClient`). Rejouable : l'arrivée est idempotente.
+  const role = await getRole(ctx);
+  if (role && peutModifierLePlanning(role)) {
+    await poserLesPassagesArrives(ctx, jourIso(maintenant));
+  }
+
   const [chantiers, entreprise, equipesNommees, absences, acces] = await Promise.all([
     listerChantiersPourPlanning(ctx),
     getEntreprise(ctx),

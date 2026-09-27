@@ -1,5 +1,89 @@
 # Prochaines tâches
 
+## 🔜 LES DATES DU MOIS, VALIDÉES PAR LE CLIENT : SUR `main` LE 27 SEPTEMBRE 2026
+
+Planche 130 (`appli/contrat-dates-du-mois.html`). **Sa consigne : « code ça, ne
+lance pas de batterie ».** Niveau 3 (migration 0108) : batterie entière au
+vert le 27, sur `main` avec son accord. `ARCHITECTURE.md` §427, document de retour `docs/contrat-dates-du-mois.md`.
+
+| Codé et éprouvé ici | |
+|---|---|
+| la dernière date posée ouvre le tiroir sur « À envoyer », poignée « Prêt à envoyer à Mme Costa » | regardé |
+| interrupteur « Votre client peut proposer une autre date », allumé d'office ; canal ; bouton sous les lignes | regardé |
+| envoyé : le client passe « En attente du client » ; sans réponse, les dates tiennent | en base |
+| la page du client `/contrat/dates/<jeton>` : ses dates, « Une autre date ? » sur le mois entier, jours pris barrés, « Ces dates me vont » | regardé, et le planning a suivi en base |
+| un jour qui ne tient plus refuse toute la réponse, rien n'est écrit à moitié | en base |
+
+| Reste | Qui |
+|---|---|
+| l'envoi réel du SMS ou du courriel (ici l'adresse locale le refuse, à raison) | à essayer chez lui |
+| le trait en or pointillé « proposé » au calendrier, avant réponse : **non codé** | à coder s'il le veut |
+| le rappel du 20 sur l'accueil : **non codé** | à coder |
+| le patron n'est pas notifié quand le client valide ou déplace : le planning bouge seul | à trancher par lui |
+| un contrat dans le jeu de démonstration, pour que `test-pages-publiques-sans-navigation-e2e` ouvre vraiment `/contrat` et `/contrat/dates` | à coder |
+
+## 🔜 CONTRAT D'ENTRETIEN : LOTS 1 ET 2 SUR `main` (26 et 27 septembre 2026)
+
+**Sa consigne : « code ça, ne lance pas de batterie ».** Branche
+`claude/extrabat-competitor-review-7v9r8m`. Niveau 3 (migration 0107) : batterie
+entière au vert le 27 septembre, puis poussé sur `main` avec son accord. Document de
+retour : `docs/contrat-d-entretien-lot-1.md` et `docs/contrat-d-entretien-lot-2.md`.
+`ARCHITECTURE.md` §425 et §426. Le lot 2 a été demandé le 27 : *« enchaîne le lot 2, ne
+lance pas de batterie »*.
+
+| Codé et éprouvé ici | |
+|---|---|
+| le geste « Contrat d'entretien » sur la fiche client, trois gestes sur une ligne | regardé à l'écran |
+| l'écran du contrat : prestations (modèle ou écrites), mois, + et −, prix, début, durée, reconduction, A ou B, interrupteur | regardé |
+| l'aperçu PDF (fabrique des devis) | regardé |
+| l'envoi par SMS ou e-mail, lien `/contrat/<jeton>` | refus en local regardé ; l'envoi réel est à essayer chez lui |
+| la page du client : lire, télécharger, accepter ou refuser, une seule fois | regardé |
+| l'arrivée des passages dans « Sans date » le 20 du mois d'avant, et la pose sur un jour | regardé |
+| **lot 2** : Terminés annonce le montant prévu d'un passage (54,00 € pour 45 € HT) | regardé |
+| **lot 2** : « Créer la facture » d'un passage la bâtit au prix du contrat, une ligne datée | regardé, et en base |
+| **lot 2** : l'automatisme, la facture part avec le compte rendu du jour, une fois | en base seulement : l'envoi par la messagerie est à essayer chez lui |
+
+| Reste à faire, dans l'ordre | Pourquoi |
+|---|---|
+| **lot 3 : la facturation A** (mensualités le 1er du mois) | elle s'enregistre et s'imprime sur le PDF, **aucune facture mensuelle ne se crée encore** |
+| la carte d'état du contrat sur la fiche client, comme la planche | l'état se lit sur l'écran du contrat seulement |
+| le message du contrat modifiable dans Réglages, comme les trois autres | lui demander s'il le veut |
+| les passages d'un même mois regroupés sur une ligne (« 2 à poser ») comme la planche ; la poignée compte des passages, pas des clients | une ligne par passage aujourd'hui |
+
+## ⏳ (ARCHIVE) LA PLANCHE DU CONTRAT D'ENTRETIEN, B RETENUE (26 septembre 2026)
+
+`appli/contrat-d-entretien.html`, planche 128. Sa demande après la comparaison
+avec Extrabat. **Facturation tranchée le 26 septembre : B, une facture après
+chaque passage** (j'avais défendu la A). Et sa question : *« il faut qu'il
+puisse l'automatiser s'il veut, non ? »* Oui, par un interrupteur du contrat,
+éteint d'office : la facture part AVEC le compte rendu du passage. Jamais à une
+date, qui facturerait un passage annulé par la pluie ; le compte rendu reste le
+geste du patron que `CLAUDE.md` §4 exige avant de facturer.
+
+**Ses réponses suivantes, le même soir :**
+
+| | |
+|---|---|
+| A et B | **les deux restent sur le contrat**, l'utilisateur choisit avant d'envoyer, B cochée d'office ; le PDF suit le choix |
+| arrivée au planning | **le 20 du mois d'avant**, dans « Sans date » (le 1er était trop tard pour la première semaine) |
+| la couleur | il aime la **planche verte** (129, `appli/contrat-d-entretien-vert.html`), avec A et B en **or** comme l'origine |
+| Terminés | un passage posé et passé y arrive « À facturer », facture pré-remplie aux prix du contrat ; avec l'interrupteur, directement « Facturé » ; montré sur la 129 | Proposé sans question : pas de date fixe, les passages du mois tombent le
+1er dans « Sans date » ; le contrat part chez le client comme un devis ; les
+prestations viennent de `MODELE_FOURNI`. **Rien n'est codé.** Une fois codé :
+niveau 3 (argent, migration). Question ouverte à lui poser ensuite :
+l'attestation fiscale des services à la personne.
+
+## 🔜 BRANCHER PENNYLANE : CHAQUE ARTISAN CONNECTE SON COMPTE (26 septembre 2026)
+
+Sa décision : *« Pennylane et toutes les applis compatibles avec la nôtre.
+L'utilisateur connecte son compte de facturation à notre appli, et après elles
+communiquent entre elles lors de l'envoi de la facture. »* `ARCHITECTURE.md`
+§424, `docs/A-FAIRE.md` point 6.
+
+**Bloqué par lui** : l'accès développeur Pennylane (sans lui, rien ne s'éprouve).
+**Trois questions à lui poser au moment de coder**, pas avant : quel numéro fait
+foi (celui d'Atlas ou celui de l'outil), quel PDF part chez le client, que fait
+l'envoi quand la connexion est coupée ou révoquée.
 
 ## ⏳ UNE PLANCHE À REGARDER : VOS CLIENTS DE A À Z (27 septembre 2026)
 

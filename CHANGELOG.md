@@ -8,6 +8,22 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-27
 
+### Les dates du mois d'un contrat, validées par le client
+
+La dernière date du mois posée, le tiroir du planning propose « Envoyer les
+dates d'octobre » : un seul lien pour tous les passages du client. Il valide,
+ou choisit un autre jour libre du mois si c'est permis ; le planning suit tout
+seul. Sans réponse, les dates tiennent. Ce que ça évite : un appel par tonte
+pour caler les rendez-vous. `ARCHITECTURE.md` §427.
+
+### Le contrat d'entretien, lot 2 : chaque passage se facture
+
+Un passage fait arrive dans Terminés avec son montant prévu, et « Créer la
+facture » le facture au prix du contrat, sur une ligne datée. Si le contrat le
+demande, la facture part toute seule avec le compte rendu du passage, une
+fois. Ce que ça évite : une facture ressaisie à la main après chaque tonte, et
+un passage fait jamais facturé. `ARCHITECTURE.md` §426.
+
 ### Le site de vente d'Atlas (`appli/vente/`)
 
 **Sa demande** : *« je veux vendre mon application, j'ai besoin d'un site ;
@@ -26,6 +42,27 @@ est écrit comme l'objectif. **L'adresse de contact n'est pas donnée** :
 `CONTACT` porte une adresse d'attente, à remplacer (`TODO.md`).
 
 ## 2026-09-26
+
+### Le contrat d'entretien, lot 1
+
+Un client se met sous contrat depuis sa fiche : prestations, mois, passages,
+prix, durée, facturation A ou B. Le contrat part par un lien, le client
+l'accepte sans compte, et ses passages arrivent dans « Sans date » le 20 du
+mois d'avant, une seule fois chacun. Ce que ça évite : ressaisir chaque tonte
+à la main, et oublier un passage dû. La facture pré-remplie, la facturation
+mensuelle et l'envoi avec le compte rendu restent à faire. `ARCHITECTURE.md` §425.
+
+### Le contrat d'entretien, en planche ; la facturation électronique, tranchée
+
+Planche 128, `appli/contrat-d-entretien.html` : les passages d'un contrat se
+choisissent par mois et par fréquence, sur ses prestations d'entretien, et
+tombent dans « Sans date » le 1er du mois. Rien n'est codé ; la facturation
+(chaque mois ou après chaque passage) attend sa réponse.
+
+Sa décision sur la facturation électronique : chaque artisan connecte SON
+compte Pennylane (puis d'autres outils compatibles), et Atlas lui transmet la
+facture à l'envoi. Elle remplace l'idée d'un outil choisi pour tous.
+`ARCHITECTURE.md` §424.
 
 ### Mon agenda en deux lignes, et la phrase du Planning qui se masque
 

@@ -68,6 +68,9 @@ import {
 } from "@/lib/planning-jour";
 import { equipesMobilisees, libelleSalarie, salariesAffiches } from "@/lib/equipes";
 import TravauxAFaire from "./TravauxAFaire";
+import { avecCivilite } from "@/lib/civilite";
+import { DatesAEnvoyer, DatesEnAttente, type DonneesDatesDuMois } from "./DatesDuMois";
+import { datesDuMois as grouperLesDatesDuMois, type EnvoiDesDates } from "@/lib/dates-du-mois";
 import FicheDeSecurite from "./FicheDeSecurite";
 import LigneRetirable from "@/components/atlas/LigneRetirable";
 import { ChampRecherche } from "@/components/atlas/ChampRecherche";
@@ -189,6 +192,9 @@ export type ChantierPlanning = {
   envoiReponse: "acceptee" | "refusee" | null;
   termineAt: Date | string | null;
   factureEnvoyeeAt: Date | string | null;
+  /** Un passage de contrat d'entretien, et sa clé, qui dit son mois (0107). */
+  contratEntretienId?: string | null;
+  contratPassage?: string | null;
 };
 
 
@@ -318,6 +324,7 @@ export default function PlanningClient({
   role = null,
   chantierDemande = null,
   retourDuJour = { demande: false, envoyes: [] },
+  datesDuMois = null,
 }: {
   initialChantiers: ChantierPlanning[];
   /** La CAPACITÉ : combien de chantiers tiennent dans une journée. */
@@ -384,6 +391,12 @@ export default function PlanningClient({
    * poser un. `envoyes` : les chantiers dont le retour d'aujourd'hui est parti.
    */
   retourDuJour?: { demande: boolean; envoyes: readonly string[] };
+  /**
+   * LES DATES DU MOIS DES CONTRATS (planche 130) : les envois partis, de quoi
+   * joindre chaque client, l'adresse du lien. NULL pour qui ne pose pas le
+   * planning : rien de tout cela ne descend chez lui.
+   */
+  datesDuMois?: DonneesDatesDuMois | null;
 }) {
   // Les deux portes que cet écran propose, décidées par la règle des rôles —
   // jamais par une liste écrite ici. Sans rôle (cas d'un rendu hors session),
@@ -590,6 +603,19 @@ export default function PlanningClient({
         }))
         .filter((m) => m.combien > 0),
     [visibles]
+  );
+
+  /**
+   * LES DATES DU MOIS À ENVOYER, ET CELLES QUI ATTENDENT LE CLIENT.
+   *
+   * Calculées sur la liste VIVANTE, pas au chargement : la dernière date posée
+   * ouvre l'envoi à l'instant, sans recharger (sa demande du 27 septembre).
+   * Un envoi parti s'ajoute ici aussitôt, et le client passe en attente.
+   */
+  const [envoisDesDates, setEnvoisDesDates] = useState<EnvoiDesDates[]>(datesDuMois?.envois ?? []);
+  const lesDatesDuMois = useMemo(
+    () => grouperLesDatesDuMois(datesDuMois ? visibles : [], envoisDesDates, aujourdHui),
+    [datesDuMois, visibles, envoisDesDates, aujourdHui]
   );
 
   /** Ni posables ni oubliables : leur date se décide chez le client. */
@@ -1916,6 +1942,15 @@ export default function PlanningClient({
           retraits={retraits}
           portesOuvertes={ouvertes.fiche}
           onPortes={montrerLesPortes}
+          datesDuMois={
+            datesDuMois
+              ? {
+                  donnees: datesDuMois,
+                  ...lesDatesDuMois,
+                  onEnvoye: (e) => setEnvoisDesDates((l) => [...l, e]),
+                }
+              : null
+          }
         />
       </div>
 
@@ -4707,6 +4742,16 @@ function Geste({
  */
 const EN_ATTENTE_DU_CLIENT = "En attente du client";
 
+/** Ce que dit la poignée quand des dates du mois sont prêtes à partir. */
+function pretAEnvoyer(
+  groupes: readonly { contratEntretienId: string }[],
+  donnees: DonneesDatesDuMois | null
+): string {
+  if (groupes.length > 1) return `${groupes.length} clients prêts à envoyer`;
+  const contact = donnees?.contacts.find((c) => c.contratEntretienId === groupes[0]?.contratEntretienId);
+  return contact ? `Prêt à envoyer à ${avecCivilite(contact.clientNom, contact.clientCivilite ?? undefined)}` : "1 client prêt à envoyer";
+}
+
 /**
  * LE TIROIR DU BAS — ce qui n'a pas encore de jour, à portée du pouce.
  *
@@ -4761,6 +4806,7 @@ function TiroirDuBas({
   retraits,
   portesOuvertes,
   onPortes,
+  datesDuMois,
 }: {
   ecriture: boolean;
   sansDate: ChantierPlanning[];
@@ -4804,8 +4850,30 @@ function TiroirDuBas({
    */
   portesOuvertes: boolean;
   onPortes: (c: ChantierPlanning) => void;
+  /** Les dates du mois des contrats : à envoyer, et en attente du client. */
+  datesDuMois: {
+    donnees: DonneesDatesDuMois;
+    aEnvoyer: ReturnType<typeof grouperLesDatesDuMois<ChantierPlanning>>["aEnvoyer"];
+    enAttente: ReturnType<typeof grouperLesDatesDuMois<ChantierPlanning>>["enAttente"];
+    onEnvoye: (e: EnvoiDesDates) => void;
+  } | null;
 }) {
   const [ouvert, setOuvert] = useState(false);
+  const aEnvoyer = datesDuMois?.aEnvoyer ?? [];
+  const datesEnAttente = datesDuMois?.enAttente ?? [];
+
+  /**
+   * **LA DERNIÈRE DATE POSÉE OUVRE LE TIROIR** — sa demande du 27 septembre
+   * 2026 : *« l'onglet avec envoyer les dates s'affiche de suite, il ne faut
+   * pas avoir besoin de recliquer sur le nom du client »*. Ajusté pendant le
+   * rendu, sur le compte d'avant : un effet qui pose un état relancerait un
+   * rendu de plus pour rien.
+   */
+  const [dejaAEnvoyer, setDejaAEnvoyer] = useState(aEnvoyer.length);
+  if (aEnvoyer.length !== dejaAEnvoyer) {
+    setDejaAEnvoyer(aEnvoyer.length);
+    if (aEnvoyer.length > dejaAEnvoyer) setOuvert(true);
+  }
 
   /**
    * ═══════════════════════════════════════════════════════════════════════
@@ -4831,7 +4899,7 @@ function TiroirDuBas({
    */
   const cadre = useRef<HTMLDivElement>(null);
   const montre = (ecriture && sansDate.length > 0) || attenteClient.length > 0 ||
-    (ecriture && morceaux.length > 0);
+    (ecriture && morceaux.length > 0) || aEnvoyer.length > 0 || datesEnAttente.length > 0;
   useEffect(() => {
     const racine = document.documentElement;
     const rendre = () => racine.style.removeProperty("--atlas-tiroir");
@@ -4883,7 +4951,10 @@ function TiroirDuBas({
    * l'instant du geste emporterait « Annuler » avec lui.
    */
   const aDefaire = ecriture && poseADefaire !== null;
-  if (!aSansDate && !aAttente && !aMorceaux && !aDefaire) return null;
+  const aDates = aEnvoyer.length > 0 || datesEnAttente.length > 0;
+  if (!aSansDate && !aAttente && !aMorceaux && !aDefaire && !aDates) return null;
+  /** Ceux qui attendent le client : un devis parti, ou les dates d'un mois. */
+  const combienAttendent = attenteClient.length + datesEnAttente.length;
 
   /** Ce qui attend une place, morceaux compris — un seul compte, un seul mot. */
   const combienEnAttente =
@@ -4915,7 +4986,9 @@ function TiroirDuBas({
         // client » ne disait ni ce qui est chez lui, ni ce qu'on attend : il
         // l'a signalé le matin même, *« on comprend pas bien ! »*. La poignée
         // annonce désormais ce qu'on trouve dedans, mot pour mot.
-        aAttente ? `${attenteClient.length} ${EN_ATTENTE_DU_CLIENT.toLowerCase()}` : null,
+        // « Prêt à envoyer à Mme Costa » : le mot de sa planche 130.
+        aEnvoyer.length > 0 ? pretAEnvoyer(aEnvoyer, datesDuMois?.donnees ?? null) : null,
+        combienAttendent > 0 ? `${combienAttendent} ${EN_ATTENTE_DU_CLIENT.toLowerCase()}` : null,
       ]
         .filter(Boolean)
         .join(" · ") ||
@@ -5075,6 +5148,25 @@ function TiroirDuBas({
             </div>
           </>
         )}
+
+        {/* ─── LES DATES DU MOIS À ENVOYER — planche 130 ─────────────────────
+            **En tête du tiroir** : c'est ce que la dernière date posée vient
+            d'ouvrir, et l'écran y descend de lui-même. */}
+        {datesDuMois &&
+          aEnvoyer.map((g) => (
+            <DatesAEnvoyer
+              key={`${g.contratEntretienId}|${g.mois}`}
+              groupe={g}
+              donnees={datesDuMois.donnees}
+              titre={
+                <>
+                  <div style={{ borderTop: `1px solid ${colors.line}` }} />
+                  <TitreSection encadre aGauche>À envoyer</TitreSection>
+                </>
+              }
+              onEnvoye={datesDuMois.onEnvoye}
+            />
+          ))}
 
         {/* ─── SANS DATE — et c'est d'ici qu'on POSE ──────────────────────── */}
         {/* **RIEN N'ATTEND DE JOUR : LA SECTION N'EXISTE PAS.** Sa question du
@@ -5283,7 +5375,7 @@ function TiroirDuBas({
         )}
 
         {/* ─── EN ATTENTE DU CLIENT ───────────────────────────────────────── */}
-        {attenteClient.length > 0 && (
+        {combienAttendent > 0 && (
           <>
             <TitreSection encadre aGauche data-atlas="titre-attente-client">
               {EN_ATTENTE_DU_CLIENT}
@@ -5313,6 +5405,15 @@ function TiroirDuBas({
                   {portesOuvertes && <ChevronDesPortes chantier={c} onPortes={onPortes} />}
                 </div>
               ))}
+              {datesDuMois &&
+                datesEnAttente.map((g, i) => (
+                  <DatesEnAttente
+                    key={`${g.contratEntretienId}|${g.mois}`}
+                    groupe={g}
+                    donnees={datesDuMois.donnees}
+                    derniere={i === datesEnAttente.length - 1}
+                  />
+                ))}
             </div>
           </>
         )}

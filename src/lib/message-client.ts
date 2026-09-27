@@ -436,16 +436,70 @@ export function composerMessageEntretien(params: {
   entrepriseNom: string;
   lien: string;
   modele?: string | null;
+  /**
+   * La facture du passage, quand son contrat d'entretien l'envoie AVEC le
+   * compte rendu (26 septembre 2026). **Elle s'ajoute en fin de message**, le
+   * lien seul sur sa ligne comme l'autre : son modèle à lui reste intact, et
+   * « aucune facture évoquée » reste vrai de tout compte rendu qui n'en porte
+   * pas.
+   */
+  lienFacture?: string | null;
 }): MessageClient {
-  const { clientNom, clientCivilite, entrepriseNom, lien, modele } = params;
+  const { clientNom, clientCivilite, entrepriseNom, lien, modele, lienFacture } = params;
+  const corps = rendreMessage(modele?.trim() || MESSAGES_PAR_DEFAUT.passage, {
+    client: nommer(clientNom, clientCivilite),
+    document: motDuDocument("passage"),
+    lien,
+    entreprise: entrepriseNom,
+  });
   return {
-    objet: `Retour d'intervention de ${entrepriseNom}`,
-    corps: rendreMessage(modele?.trim() || MESSAGES_PAR_DEFAUT.passage, {
-      client: nommer(clientNom, clientCivilite),
-      document: motDuDocument("passage"),
-      lien,
-      entreprise: entrepriseNom,
-    }),
+    objet: lienFacture ? `Retour d'intervention et facture de ${entrepriseNom}` : `Retour d'intervention de ${entrepriseNom}`,
+    corps: lienFacture ? `${corps}\n\nVotre facture pour ce passage :\n\n${lienFacture}\n` : corps,
+  };
+}
+
+/**
+ * Le message qui porte le CONTRAT D'ENTRETIEN (26 septembre 2026).
+ *
+ * **Même enveloppe que les trois autres** : le bonjour, le lien seul sur sa
+ * ligne, la signature. **Pas encore de modèle à lui dans les Réglages** : les
+ * trois messages modifiables sont ceux qu'il a décidés le 7 septembre, et en
+ * ajouter un quatrième à l'écran des réglages se lui demande (`TODO.md`).
+ */
+export function composerMessageContrat(params: {
+  clientNom: string;
+  clientCivilite?: CiviliteChoisie;
+  entrepriseNom: string;
+  lien: string;
+}): MessageClient {
+  const { clientNom, clientCivilite, entrepriseNom, lien } = params;
+  return {
+    objet: `Contrat d'entretien de ${entrepriseNom}`,
+    corps: rendreMessage(
+      enveloppe("Voici votre contrat d'entretien. Vous pouvez le lire, le télécharger et l'accepter sur cette page :"),
+      { client: nommer(clientNom, clientCivilite), document: "contrat d'entretien", lien, entreprise: entrepriseNom }
+    ),
+  };
+}
+
+/**
+ * Le message des DATES DU MOIS d'un contrat (planche 130) : un seul lien pour
+ * tous les passages du mois. `duMois` vaut « d'octobre », « de novembre ».
+ */
+export function composerMessageDatesDuMois(params: {
+  clientNom: string;
+  clientCivilite?: CiviliteChoisie;
+  entrepriseNom: string;
+  duMois: string;
+  lien: string;
+}): MessageClient {
+  const { clientNom, clientCivilite, entrepriseNom, duMois, lien } = params;
+  return {
+    objet: `Vos passages ${duMois}`,
+    corps: rendreMessage(
+      enveloppe(`Voici les dates de vos passages ${duMois}. Vous pouvez les valider sur cette page :`),
+      { client: nommer(clientNom, clientCivilite), document: "dates de passage", lien, entreprise: entrepriseNom }
+    ),
   };
 }
 

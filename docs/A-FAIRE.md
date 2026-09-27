@@ -476,6 +476,35 @@ la plateforme de facturation ? ». La réponse longue est dans
 [`QUESTIONS.md`](QUESTIONS.md) question 11 ; ce point ne garde que ce qui
 attend une décision.*
 
+### Tranché le 26 septembre 2026 : chaque artisan branche SON compte
+
+Votre réponse : *« on a dit Pennylane et toutes les applis compatibles avec la
+nôtre. L'idée, c'est que l'utilisateur connecte son compte de facturation à
+notre appli, et qu'après elles communiquent entre elles lors de l'envoi de la
+facture. »*
+
+| | |
+|---|---|
+| **qui choisit l'outil** | chaque artisan, pour lui-même. Atlas ne choisit plus pour tout le monde |
+| **le premier branché** | Pennylane |
+| **les suivants** | les autres outils qui ont une API (Evoliz, Tiime, Sellsy, Abby…), un par un : chacun a la sienne |
+| **le geste de l'artisan** | une fois, dans Réglages : « Connecter mon compte », il se connecte chez Pennylane et accepte |
+| **quand ça parle** | à l'envoi de la facture : Atlas transmet, l'outil émet |
+
+**Ce qui reste à vous, et à vous seul :**
+
+1. **Ouvrir l'accès développeur chez Pennylane** (programme partenaires ou
+   intégrations), pour qu'Atlas ait le droit de demander à un artisan la
+   connexion de son compte. Sans cet accès, rien ne peut se coder ni
+   s'éprouver. *Je ne peux pas vérifier d'ici ce que Pennylane exige pour
+   l'ouvrir : le réseau de cet environnement refuse leurs pages.*
+2. **Le compte d'Eden Nature elle-même**, pour vos propres factures : c'est
+   aussi le compte sur lequel le branchement s'éprouvera en premier.
+
+**Ce qui est à nous, et s'inscrit dans `TODO.md` :** le branchement, et trois
+questions qu'il faudra vous poser au moment de le coder (quel numéro fait foi,
+quel PDF part chez le client, que faire quand la connexion est coupée).
+
 ### Ce qui est déjà décidé, et ne se rouvre pas
 
 **Atlas prépare les factures, il ne les émet pas au sens légal.** Décision du
