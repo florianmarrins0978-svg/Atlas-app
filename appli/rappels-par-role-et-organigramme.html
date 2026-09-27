@@ -94,6 +94,7 @@
   #qP:checked ~ .choix label[for="qP"], #qC:checked ~ .choix label[for="qC"],
   #qF:checked ~ .choix label[for="qF"],
   #eO:checked ~ .choix label[for="eO"], #eK:checked ~ .choix label[for="eK"],
+  #eS:checked ~ .choix label[for="eS"], #eR:checked ~ .choix label[for="eR"],
   #eJ:checked ~ .choix label[for="eJ"]{background:var(--pinTint);color:var(--encre);
                                         border-color:transparent;font-weight:600}
 
@@ -129,6 +130,17 @@
 
   /* LES TROIS VUES DE L'ÉCRAN ÉQUIPE */
   .vue{display:none}
+  #eS:checked ~ .tel .vue.o, #eR:checked ~ .tel .vue.r{display:block}
+  #eS:checked ~ .tel .patron-seul, #eR:checked ~ .tel .patron-seul{display:none}
+  #eS:checked ~ .tel .barre, #eR:checked ~ .tel .barre{grid-template-columns:repeat(2,1fr)}
+  .salarie-seul{display:none}
+  #eS:checked ~ .tel .salarie-seul, #eR:checked ~ .tel .salarie-seul{display:inline}
+  #eS:checked ~ .tel .chef{pointer-events:none}
+  .somm{padding:18px 26px 0}
+  .somm .t{margin:18px 0 4px;font-size:9.5px;letter-spacing:.28em;text-transform:uppercase;color:var(--gris)}
+  .somm label, .somm span.l{display:flex;align-items:center;justify-content:space-between;padding:15px 0;
+         border-bottom:1px solid var(--trait);font-size:15.5px;cursor:pointer}
+  .somm .neuf{font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:var(--or)}
   #eO:checked ~ .tel .vue.o, #eK:checked ~ .tel .vue.k, #eJ:checked ~ .tel .vue.j{display:block}
 
   /* L'AVATAR : la photo prend la place des initiales dès qu'elle existe. */
@@ -279,14 +291,18 @@
   </div></div>
 
   <!-- ═══ PARTIE 2 ET 3 : L'ORGANIGRAMME ═══ -->
-  <h2 class="partie"><span>2</span>L'organigramme, en haut de Réglages, Équipe</h2>
-  <p class="explique"><b>Vous seul le voyez</b> : Réglages, Équipe est déjà fermé au commercial et à la facturation. Ce qui est dessous aujourd'hui (Qui a accès, le compteur des salariés, les absences) ne bouge pas. <b>Touchez une personne</b> pour ouvrir sa feuille.</p>
+  <h2 class="partie"><span>2</span>L'organigramme, dans Réglages, pour tout le monde</h2>
+  <p class="explique"><b>Tout le monde le voit</b> : une ligne « Organigramme » s'ajoute dans Réglages, sous « L'entreprise », pour le patron, le commercial, la facturation et chaque salarié. <b>Vous seul le modifiez</b> : ajouter, retirer, nommer un chef. Réglages, Équipe ne bouge pas.</p>
 
   <input class="radio" type="radio" name="e" id="eO" checked>
+  <input class="radio" type="radio" name="e" id="eS">
+  <input class="radio" type="radio" name="e" id="eR">
   <input class="radio" type="radio" name="e" id="eK">
   <input class="radio" type="radio" name="e" id="eJ">
   <div class="choix">
-    <label for="eO">L'organigramme</label>
+    <label for="eO">Vous le voyez</label>
+    <label for="eS">Un salarié le voit</label>
+    <label for="eR">Les réglages d'un salarié</label>
     <label for="eK">Toucher Karim</label>
     <label for="eJ">Ajouter une personne</label>
   </div>
@@ -294,15 +310,15 @@
   <div class="tel"><div class="ecran"><div class="corps">
 
     <div class="vue o">
-      <div class="tete"><p class="st">Réglages</p><h2>Équipe</h2></div>
+      <div class="tete"><p class="st">Réglages</p><h2>Organigramme</h2></div>
       <div class="organi">
         <div class="rang">
-          <label class="pers haut"><span class="av photo">VO</span><span class="n">Vous</span><span class="r">Patron</span><span class="ra">Tous les rappels</span></label>
+          <label class="pers haut"><span class="av photo">VO</span><span class="n"><span class="patron-seul">Vous</span><span class="salarie-seul">Marc</span></span><span class="r">Patron</span><span class="ra patron-seul">Tous les rappels</span></label>
         </div>
         <div class="etage">Bureau<i></i></div>
         <div class="rang">
-          <label class="pers"><span class="av">JL</span><span class="n">Julien</span><span class="r">Commercial</span><span class="ra">Rappels des devis</span></label>
-          <label class="pers"><span class="av photo">SB</span><span class="n">Sophie</span><span class="r">Facturation</span><span class="ra">Rappels des factures</span></label>
+          <label class="pers"><span class="av">JL</span><span class="n">Julien</span><span class="r">Commercial</span><span class="ra patron-seul">Rappels des devis</span></label>
+          <label class="pers"><span class="av photo">SB</span><span class="n">Sophie</span><span class="r">Facturation</span><span class="ra patron-seul">Rappels des factures</span></label>
         </div>
         <div class="etage">Terrain<i></i></div>
         <div class="rang">
@@ -315,7 +331,17 @@
         </div>
         <div class="etage">Sans chef<i></i></div>
         <div class="libres"><span><span class="av">TO</span>Tom</span></div>
-        <label class="ajouter" for="eJ">+ Ajouter une personne</label>
+        <label class="ajouter patron-seul" for="eJ">+ Ajouter une personne</label>
+      </div>
+    </div>
+
+    <div class="vue r">
+      <div class="tete"><p class="st">Léo, salarié</p><h2>Réglages</h2></div>
+      <div class="somm">
+        <p class="t">L'entreprise</p>
+        <label for="eS">Organigramme<span class="neuf">nouveau</span></label>
+        <p class="t">Moi</p>
+        <span class="l">Mon compte</span><span class="l">Notifications</span><span class="l">Mot de passe</span><span class="l">Couleurs</span>
       </div>
     </div>
 
@@ -362,7 +388,7 @@
     </div>
 
   </div>
-  <div class="barre"><span>Chantiers</span><span>Planning</span><span>Terminés</span><span class="ici">Réglages</span></div>
+  <div class="barre"><span class="patron-seul">Chantiers</span><span>Planning</span><span class="patron-seul">Terminés</span><span class="ici">Réglages</span></div>
   </div></div>
 
   <div class="encadre" style="margin-top:34px">
@@ -376,10 +402,11 @@
   </div>
 
   <div class="questions">
-    <p class="t">À trancher</p>
+    <p class="t">Tranché par vous</p>
     <ol>
-      <li>Un gars ne peut avoir <b>qu'un seul chef</b>. Ça vous va ?</li>
-      <li>Le chef d'équipe <b>voit-il quelque chose de plus</b> dans Atlas (le planning de ses gars, leurs retours), ou c'est seulement un nom sur l'organigramme ?</li>
+      <li>Un gars n'a <b>qu'un seul chef</b>.</li>
+      <li>Le chef d'équipe <b>ne voit rien de plus</b> : c'est un titre sur l'organigramme.</li>
+      <li>L'organigramme est <b>visible par tout le monde</b>, modifiable par vous seul.</li>
     </ol>
   </div>
 </div>

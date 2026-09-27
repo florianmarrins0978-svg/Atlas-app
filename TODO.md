@@ -38,12 +38,12 @@ demande donc une donnée neuve (un chef par salarié, nullable).
 
 | Proposé sur la v2 | |
 |---|---|
-| organigramme en haut de Réglages, Équipe (patron seul), rien de dessous ne bouge | à confirmer |
+| organigramme : une rubrique « Organigramme » sous « L'entreprise » dans Réglages, **visible par TOUS les rôles** (sa règle du 27 septembre : « doit être visible par tout le monde »), modifiable par le patron seul ; donc une adresse ouverte à tous dans `acces-roles.ts` (liste `REGLAGES_A_SOI` ou équivalent), les gestes refusés côté serveur hors patron | tranché |
 | feuille d'une personne : photo, chef d'équipe et ses gars cochés, retirer | à confirmer |
 | ajouter une personne : il choisit salarié, commercial ou facturation (sa demande du 27 septembre) ; salarié = chef, accès facultatif ; commercial ou facturation = adresse et mot de passe, comme « Donner un accès » | demandé par lui |
 | retirer UNE personne (aujourd'hui le compteur retire toujours le dernier), sans effacer son passé au planning | à coder |
 | avatar = la photo de `photo-des-salaries.html` (autre session), jamais une seconde | attend son A ou B là-bas |
-| un seul chef par gars ? le chef voit-il plus dans Atlas ? | à trancher par lui |
+| un seul chef par gars : **oui** ; le chef d'équipe voit-il plus dans Atlas : **non**, c'est un titre (27 septembre) | tranché |
 
 ## 🔜 LES DATES DU MOIS, VALIDÉES PAR LE CLIENT : SUR `main` LE 27 SEPTEMBRE 2026
 
