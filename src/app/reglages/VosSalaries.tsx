@@ -3,7 +3,14 @@
 import { useState } from "react";
 import { colors, font } from "@/lib/design-tokens";
 import { MAX_SALARIES, phraseDesSalaries, salariesAffiches } from "@/lib/equipes";
-import { mettreAJourNombreSalariesAction, nommerEquipeAction } from "./actions";
+import FichePhoto from "@/components/atlas/FichePhoto";
+import TeteRonde from "@/components/atlas/TeteRonde";
+import {
+  mettreAJourNombreSalariesAction,
+  nommerEquipeAction,
+  poserPhotoSalarieAction,
+  retirerPhotoSalarieAction,
+} from "./actions";
 import CompteurRond from "./CompteurRond";
 
 /**
@@ -44,7 +51,7 @@ export default function VosSalaries({
 }: {
   initialNombreSalaries: number;
   /** Ce que la base porte, par rang. Un rang absent est un cas ordinaire. */
-  initialNoms: { rang: number; nom: string | null }[];
+  initialNoms: { rang: number; nom: string | null; photo: string | null }[];
 }) {
   const [nombre, setNombre] = useState(initialNombreSalaries);
   // Les noms vivent ici par RANG, pas par identifiant : l'écran montre des
@@ -53,6 +60,11 @@ export default function VosSalaries({
   const [noms, setNoms] = useState<Record<number, string>>(() =>
     Object.fromEntries(initialNoms.map((e) => [e.rang, e.nom ?? ""]))
   );
+  const [photos, setPhotos] = useState<Record<number, string | null>>(() =>
+    Object.fromEntries(initialNoms.map((e) => [e.rang, e.photo]))
+  );
+  // Le rang dont la fiche est ouverte : une seule à la fois.
+  const [fiche, setFiche] = useState<number | null>(null);
 
   async function changerNombre(valeur: number) {
     // Borné ici comme au serveur. **Le plancher est zéro**, contrairement aux
@@ -107,6 +119,8 @@ export default function VosSalaries({
               key={e.rang}
               rang={e.rang}
               valeur={noms[e.rang] ?? ""}
+              photo={photos[e.rang] ?? null}
+              onOuvrirFiche={() => setFiche(e.rang)}
               onEcrire={(v) => setNoms((cur) => ({ ...cur, [e.rang]: v }))}
               onPoser={(v) => nommerEquipeAction(e.rang, v)}
             />
@@ -133,12 +147,30 @@ export default function VosSalaries({
           ) : null}
         </div>
       ) : null}
+
+      {fiche !== null ? (
+        <FichePhoto
+          repli={fiche}
+          nom={(noms[fiche] ?? "").trim() || `Salarié ${fiche}`}
+          photo={photos[fiche] ?? null}
+          envoyer={(fichier) => {
+            const fd = new FormData();
+            fd.set("rang", String(fiche));
+            fd.set("fichier", fichier);
+            return poserPhotoSalarieAction(fd);
+          }}
+          retirer={() => retirerPhotoSalarieAction(fiche)}
+          onPhoto={(cle) => setPhotos((cur) => ({ ...cur, [fiche]: cle }))}
+          onFermer={() => setFiche(null)}
+        />
+      ) : null}
     </section>
   );
 }
 
 /**
- * Une ligne : le rang, puis le champ qui occupe tout le reste.
+ * Une ligne : le rond du rang (ou sa photo), puis le champ qui occupe tout le
+ * reste.
  *
  * **Le champ fait 17 px, jamais moins.** En dessous de 16, Safari zoome à la
  * mise au point et l'écran saute sous le doigt — le patron le vit à chaque
@@ -150,36 +182,42 @@ export default function VosSalaries({
 function LigneNom({
   rang,
   valeur,
+  photo,
+  onOuvrirFiche,
   onEcrire,
   onPoser,
 }: {
   rang: number;
   valeur: string;
+  photo: string | null;
+  onOuvrirFiche: () => void;
   onEcrire: (v: string) => void;
   onPoser: (v: string) => Promise<unknown>;
 }) {
   const [aLaMain, setALaMain] = useState(false);
+  // Un `div`, plus un `label` : le rond est devenu un bouton, et un `label`
+  // qui contient deux commandes envoie l'appui à la PREMIÈRE, donc toucher le
+  // nom aurait ouvert la fiche au lieu du champ.
   return (
-    <label
-      className="flex items-center gap-3.5 py-[13px]"
+    <div
+      className="flex items-center gap-3.5 py-[9px]"
       style={{
         borderBottom: `1px solid ${aLaMain ? colors.or : colors.line}`,
         transition: "border-color .26s",
       }}
     >
-      <span
-        className="w-5 flex-none text-center"
-        style={{
-          color: colors.or,
-          fontFamily: font.display,
-          fontSize: 15,
-          lineHeight: 1,
-          fontVariantNumeric: "tabular-nums",
-        }}
-        aria-hidden="true"
+      {/* **Le rond du rang ouvre la fiche** (sa réponse B du 27 septembre
+          2026). Il reste à la place du numéro : sans photo, il montre le même
+          chiffre en or qu'avant. 44 px, la taille d'un doigt. */}
+      <button
+        type="button"
+        data-atlas="ouvrir-fiche-salarie"
+        aria-label={`Photo du salarié ${rang}`}
+        onClick={onOuvrirFiche}
+        className="flex-none rounded-full"
       >
-        {rang}
-      </span>
+        <TeteRonde repli={rang} photo={photo} taille={44} />
+      </button>
       <input
         type="text"
         value={valeur}
@@ -197,6 +235,6 @@ function LigneNom({
         className="min-w-0 flex-1 border-0 bg-transparent p-0 outline-none"
         style={{ fontFamily: font.display, fontSize: 17, lineHeight: 1.3, color: colors.ink }}
       />
-    </label>
+    </div>
   );
 }

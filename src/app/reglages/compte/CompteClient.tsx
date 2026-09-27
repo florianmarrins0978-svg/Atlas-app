@@ -5,7 +5,9 @@ import { colors, font, libelleCaps, surPlein, texteSituation } from "@/lib/desig
 import BarreEnregistrer from "@/components/atlas/BarreEnregistrer";
 import { initialesDe, nomAffiche } from "@/lib/identite-personne";
 import { CIVILITES } from "@/lib/civilite";
-import { ecrireIdentiteAction } from "./actions";
+import FichePhoto from "@/components/atlas/FichePhoto";
+import TeteRonde from "@/components/atlas/TeteRonde";
+import { ecrireIdentiteAction, poserMaPhotoAction, retirerMaPhotoAction } from "./actions";
 
 /**
  * « Mon compte » — `maquettes/atlas-reglages-moi.html`, écran 1.
@@ -19,7 +21,14 @@ import { ecrireIdentiteAction } from "./actions";
  * n'y a pas de quoi la rattraper. L'écran le DIT plutôt que de laisser croire à
  * une panne (`TODO.md` §0 octovicies).
  */
-type Initial = { civilite: "mr" | "mme" | null; prenom: string; nom: string; email: string };
+type Initial = {
+  civilite: "mr" | "mme" | null;
+  prenom: string;
+  nom: string;
+  email: string;
+  /** Sa photo, là où elle vit (`lireMaPhoto`). */
+  photo: string | null;
+};
 
 export default function CompteClient({ initial }: { initial: Initial }) {
   const [civilite, setCivilite] = useState<"mr" | "mme" | null>(initial.civilite);
@@ -29,6 +38,8 @@ export default function CompteClient({ initial }: { initial: Initial }) {
   const [enCours, demarrer] = useTransition();
   /** Ce qui n'est pas encore écrit — le bouton du bas DIT cet état (§99). */
   const [aEcrire, setAEcrire] = useState(false);
+  const [photo, setPhoto] = useState(initial.photo);
+  const [ficheOuverte, setFicheOuverte] = useState(false);
 
   /**
    * **Ce que le champ porte prime sur l'état**, qui est celui du dernier rendu :
@@ -44,15 +55,31 @@ export default function CompteClient({ initial }: { initial: Initial }) {
   }
 
   const identite = { civilite, prenom, nom };
-  // Les initiales, à défaut d'un portrait : `users.image` existe et reste vide
-  // — personne ne téléverse une photo depuis un chantier, et un rond vide se
-  // lit comme un écran cassé.
+  // Les initiales, à défaut de photo : un rond vide se lit comme un écran
+  // cassé. **Et c'est ce rond qui porte la photo** depuis le 27 septembre 2026
+  // (« chaque personne doit pouvoir mettre et changer sa photo de profil ») :
+  // il reste à sa place, seul son contenu change.
   const initiales = initialesDe(identite, initial.email);
   const affiche = nomAffiche(identite);
 
   return (
     // `pb-40` : la barre d'enregistrement s'ajoute aux onglets.
     <div className="pb-40">
+      {ficheOuverte ? (
+        <FichePhoto
+          repli={initiales}
+          nom={affiche === "" ? initial.email : affiche}
+          photo={photo}
+          envoyer={(fichier) => {
+            const fd = new FormData();
+            fd.set("fichier", fichier);
+            return poserMaPhotoAction(fd);
+          }}
+          retirer={retirerMaPhotoAction}
+          onPhoto={setPhoto}
+          onFermer={() => setFicheOuverte(false)}
+        />
+      ) : null}
       {refus && (
         <p
           role="alert"
@@ -64,13 +91,15 @@ export default function CompteClient({ initial }: { initial: Initial }) {
       )}
 
       <div className="mx-[26px] mt-[26px] flex items-center gap-3.5">
-        <span
-          aria-hidden="true"
-          className="flex h-[52px] w-[52px] flex-none items-center justify-center rounded-full"
-          style={{ backgroundColor: colors.card, color: colors.or, fontFamily: font.display, fontSize: 19 }}
+        <button
+          type="button"
+          data-atlas="ma-photo"
+          aria-label="Ma photo"
+          onClick={() => setFicheOuverte(true)}
+          className="flex-none rounded-full"
         >
-          {initiales}
-        </span>
+          <TeteRonde repli={initiales} photo={photo} taille={52} />
+        </button>
         {/* **Le nom seul, sans « Ce compte » dessous.** Sa demande du 26 août
             2026. Un écran qui s'appelle « Mon compte » n'a pas besoin de dire
             sous chaque ligne qu'on y est. */}

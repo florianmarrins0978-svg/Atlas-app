@@ -191,6 +191,10 @@ const OUVERT_AU_SALARIE = [
   // Les polices du rendu et les sondes de santé : aucune donnée d'entreprise.
   "/api/polices",
   "/api/health",
+  // **Les têtes de ses collègues, et la sienne** (27 septembre 2026) : il les
+  // voit sur le planning. Cette route ne sert QUE des photos de personnes,
+  // jamais celles des chantiers (`api/tetes`).
+  "/api/tetes",
 ] as const;
 
 /**
@@ -270,6 +274,7 @@ const OUVERT_A_LA_FACTURATION = [
   // depuis le 24 septembre 2026 (`rapport-dans-l-appli.ts`). Aucun montant.
   "/documents/entretien",
   "/api/fichiers",
+  "/api/tetes",
   "/api/notes-vocales",
   "/api/adresses",
   "/api/polices",

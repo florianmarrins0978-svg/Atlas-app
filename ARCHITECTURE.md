@@ -33712,21 +33712,6 @@ ses passages du mois, comme les dates d'un devis. Migration 0108.
 | l'envoi est gardé par `exigerEcritureSurLePlanning` ; la page du client par son jeton exact (politique `app.jeton_dates`) et `verifierLimite` | qui pose le planning envoie ses dates ; la réponse a les bornes de celle du contrat |
 | `/contrat/dates/<jeton>` sous le préfixe public `/contrat` | aucun chemin public de plus à tenir |
 
-## §428 : Chacun ses rappels, et l'organigramme lu par tous
-
-Ses réponses du 27 septembre 2026 sur `appli/rappels-par-role-et-organigramme.html`.
-
-| Décision | Pourquoi |
-|---|---|
-| `recoitLesRappels(role, domaine)` dans `acces-roles.ts` : patron tout, commercial les devis, facturation les factures, salarié rien, « retour pas reçu » au patron seul | *« Chacun ne doit pas recevoir les rappels des autres. »* Distinct de `peutGererDevis` : un droit dit ce qu'on PEUT faire, un rappel ce qu'on ne doit pas oublier |
-| le tri se fait dans `rappelsEnCours` (réglages éteints par `reglagesPourLeRole`), pas à l'écran | l'assistant lit la même fonction ; un rappel éteint ne coûte aucune requête |
-| `/reglages/organigramme` ouvert à tous (`REGLAGES_A_TOUS`), les gestes au patron seul (`exigerProprietaire`) | *« L'organigramme doit être visible par tout le monde ! »* ; aucune adresse ni accès n'y est lu |
-| l'organigramme LIT les comptes (`membres_entreprise`) et les gars (`equipes`), il n'a pas de liste à lui | une troisième liste divergerait au premier ajout |
-| `equipes.est_chef` et `equipes.chef_id` (0110), clé étrangère portant `entreprise_id` | un titre, pas un rôle (*« le chef ne voit rien de plus »*) ; un gars n'a qu'un chef ; un chef d'ailleurs est refusé par la base |
-| les gestes désignent un gars par son RANG, comme `nommerEquipe` | un gars jamais nommé n'a pas de ligne, et doit pouvoir devenir chef |
-| « Ajouter » : un salarié monte le compteur (même geste que le +) ; commercial et facturation passent par « Nouveau compte », rôle déjà choisi | un seul chemin par sorte de personne |
-| **retirer UNE personne n'est pas codé** | le planning retrouve les gars par leur RANG (`nomEquipe`, `PlanningClient`) : sortir quelqu'un du milieu décalerait ou effacerait le nom sur ses chantiers passés. Il faut d'abord que l'historique se lise par identifiant (`TODO.md`) |
-
 ## §428 : La liste des clients va de A à Z
 
 **Sa demande du 27 septembre 2026** : *« Filtre client trier par ordre
@@ -33746,7 +33731,7 @@ il faut garder le filtre qui existe aujourd'hui »*.
 qui ne s'en sert plus. La variante B (un choix « A à Z » / « Récents ») a été
 écartée par lui.
 
-## §428 : Les jours d'une correction sont un souhait, gardés à part
+## §429 : Les jours d'une correction sont un souhait, gardés à part
 
 **Sa plainte du 27 septembre 2026** : *« quand je corrige le devis et que je lui
 renvoie, je ne vois pas les dates qu'il a proposées »*. La page publique du
@@ -33770,3 +33755,39 @@ pose d'office à la place du premier jour libre, sauf si un jour est passé ou
 sans place : on ne fait pas partir un jour que le patron n'a pas jugé. L'écran
 du devis envoyé les dit sous le message du client, quoi qu'il arrive, et la
 notification « Correction demandée » dans sa phrase (`notificationsPatron`).
+
+## §430 : La photo de chaque personne : une seule vérité, une route à part
+
+Sa demande du 27 septembre 2026, planche `appli/photo-des-salaries.html`
+(réponse B), puis *« chaque personne doit pouvoir mettre et changer sa photo
+de profil »*, et ses deux réponses : le patron relie une fois chaque compte à
+son nom ; un compte qui n'est pas un gars de chantier garde la sienne, visible
+dans « Qui a accès ». Migration 0111, expand seul.
+
+| Décision | Pourquoi |
+|---|---|
+| la photo d'un nom vit sur `equipes.photo_storage_key` ; celle d'un compte relié à personne sur `membres_entreprise.photo_storage_key` | une personne n'a qu'un endroit : relié, le gars (Mon compte) et le patron (Équipe) écrivent sur la même ligne |
+| `membres_entreprise.salarie_id`, distinct d'`equipe_id` | `equipe_id` dit ce qu'une personne VOIT et vaut NULL pour qui voit tout (0065) ; s'en servir pour dire QUI elle est aurait laissé sans nom tout salarié qui voit tout |
+| un nom déjà relié à un autre compte est refusé, pas déplacé (index unique partiel) | un déplacement muet ferait perdre sa photo à quelqu'un |
+| relier transfère la photo du compte sur la ligne si la ligne n'en a pas ; sinon le fichier du compte est supprimé | il ne perd pas sa tête en étant relié, et une photo de personne ne dort pas dans le stockage |
+| `poserMaPhoto` lit sa cible dans la session, jamais dans la demande | un salarié n'atteint que sa propre ligne |
+| les têtes se servent par `/api/tetes`, pas `/api/fichiers` | le salarié doit voir les têtes au planning ; `/api/fichiers` porte aussi les photos de chantier et les notes vocales, et reste fermée au salarié (`test-acces-roles.ts`) |
+| filtre explicite sur l'entreprise dans chaque requête de la route | `membres_entreprise` laisse lire ses adhésions dans toutes ses entreprises (0012) : la leçon du logo, §`api/fichiers` |
+| « Retirer » et le retrait d'un accès suppriment le fichier | c'est la tête d'une personne |
+| image par `preparerPhotoEntrante` | GPS retiré, faux fichier refusé |
+| `TeteRonde` : un seul dessin (Équipe, Qui a accès, Mon compte, planning, absences) ; `FichePhoto` : une seule fiche (Équipe, Mon compte) | §3, jamais deux dessins d'une même chose |
+
+## §431 : Chacun ses rappels, et l'organigramme lu par tous
+
+Ses réponses du 27 septembre 2026 sur `appli/rappels-par-role-et-organigramme.html`.
+
+| Décision | Pourquoi |
+|---|---|
+| `recoitLesRappels(role, domaine)` dans `acces-roles.ts` : patron tout, commercial les devis, facturation les factures, salarié rien, « retour pas reçu » au patron seul | *« Chacun ne doit pas recevoir les rappels des autres. »* Distinct de `peutGererDevis` : un droit dit ce qu'on PEUT faire, un rappel ce qu'on ne doit pas oublier |
+| le tri se fait dans `rappelsEnCours` (réglages éteints par `reglagesPourLeRole`), pas à l'écran | l'assistant lit la même fonction ; un rappel éteint ne coûte aucune requête |
+| `/reglages/organigramme` ouvert à tous (`REGLAGES_A_TOUS`), les gestes au patron seul (`exigerProprietaire`) | *« L'organigramme doit être visible par tout le monde ! »* ; aucune adresse ni accès n'y est lu |
+| l'organigramme LIT les comptes (`membres_entreprise`) et les gars (`equipes`), il n'a pas de liste à lui | une troisième liste divergerait au premier ajout |
+| `equipes.est_chef` et `equipes.chef_id` (0110), clé étrangère portant `entreprise_id` | un titre, pas un rôle (*« le chef ne voit rien de plus »*) ; un gars n'a qu'un chef ; un chef d'ailleurs est refusé par la base |
+| les gestes désignent un gars par son RANG, comme `nommerEquipe` | un gars jamais nommé n'a pas de ligne, et doit pouvoir devenir chef |
+| « Ajouter » : un salarié monte le compteur (même geste que le +) ; commercial et facturation passent par « Nouveau compte », rôle déjà choisi | un seul chemin par sorte de personne |
+| **retirer UNE personne n'est pas codé** | le planning retrouve les gars par leur RANG (`nomEquipe`, `PlanningClient`) : sortir quelqu'un du milieu décalerait ou effacerait le nom sur ses chantiers passés. Il faut d'abord que l'historique se lise par identifiant (`TODO.md`) |

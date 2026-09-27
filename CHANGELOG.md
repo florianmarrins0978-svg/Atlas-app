@@ -18,7 +18,7 @@ le bureau (commercial, facturation), puis le terrain rangé sous ses chefs. Le
 patron seul touche un gars (chef d'équipe, ses gars ou son chef) et ajoute une
 personne en choisissant salarié, commercial ou facturation. Migration 0110
 (expand : `est_chef`, `chef_id`). **Pas encore :** retirer une personne du
-milieu de la liste (le planning lit les gars par leur rang, §428) et les photos
+milieu de la liste (le planning lit les gars par leur rang, §431) et les photos
 (elles attendent le lot photo d'une autre session). Éprouvé :
 `test-organigramme-db.ts`, les suites des rôles et des rubriques, et les gestes
 joués dans un navigateur.
@@ -53,7 +53,22 @@ patron renvoyait le devis corrigé sans les voir, et reproposait les mêmes.
 Elles sont gardées (`jours_souhaites`, migration 0109), dites sous son message
 sur l'écran du devis envoyé, et posées d'office dans « Choisir la date » au
 renvoi quand elles tiennent encore. La notification « Correction demandée »
-les dit aussi, dans sa phrase. `ARCHITECTURE.md` §428.
+les dit aussi, dans sa phrase. `ARCHITECTURE.md` §429.
+
+### La tête des gars, et chacun la sienne
+
+Sa réponse B sur `appli/photo-des-salaries.html`, puis *« chaque personne doit
+pouvoir mettre et changer sa photo de profil »*. Dans Équipe, le rond du rang
+ouvre une fiche (prendre, galerie, retirer) ; dans « Qui a accès », le patron
+dit une fois « C'est qui ? » pour chaque compte ; dans Mon compte, le rond des
+initiales ouvre la même fiche pour SA photo. La tête suit le nom au planning,
+dans les absences et dans « Qui a accès ». Migration 0111 (expand seul), route
+`/api/tetes` ouverte à tous les rôles et qui ne sert que des têtes,
+`ARCHITECTURE.md` §430. Éprouvé : `test-photo-des-personnes-db.ts` (huit cas,
+vu rouge en cassant la règle), `test-equipes-repo.ts`, `test-acces-roles.ts`,
+et le parcours joué dans un navigateur (le patron relie Kévin, Kévin pose sa
+photo, le patron la voit, Kévin voit celle du patron mais pas
+`/api/fichiers`). **Batterie non jouée**, à sa demande.
 
 ### Les dates du mois d'un contrat, validées par le client
 

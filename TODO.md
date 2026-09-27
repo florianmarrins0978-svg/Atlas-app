@@ -6,7 +6,7 @@ Sa plainte : *« mon client a demandé une correction et proposé des dates ; qu
 je corrige et renvoie, je ne vois pas ses dates, donc je repropose les mêmes »*.
 Planche `appli/dates-du-client-au-renvoi.html`, **A retenue**. Sa consigne :
 *« lance aucune batterie »*. Niveau 3 (migration 0109, devis) : **la batterie
-reste à jouer avant `main`**. `ARCHITECTURE.md` §428.
+reste à jouer avant `main`**. `ARCHITECTURE.md` §429.
 
 | Codé et éprouvé ici | |
 |---|---|
@@ -25,7 +25,7 @@ reste à jouer avant `main`**. `ARCHITECTURE.md` §428.
 Planche `appli/rappels-par-role-et-organigramme.html`, ses réponses : le patron
 reçoit tout, chacun les siens ; un chef par gars ; le chef ne voit rien de plus ;
 l'organigramme visible par tous ; en ajoutant, il choisit salarié, commercial ou
-facturation ; photo B, et chacun change la sienne. `ARCHITECTURE.md` §428.
+facturation ; photo B, et chacun change la sienne. `ARCHITECTURE.md` §431.
 
 | Codé sur la branche `claude/rappels-commercial-facturation-5ehltt` | |
 |---|---|
@@ -124,15 +124,14 @@ communiquent entre elles lors de l'envoi de la facture. »* `ARCHITECTURE.md`
 foi (celui d'Atlas ou celui de l'outil), quel PDF part chez le client, que fait
 l'envoi quand la connexion est coupée ou révoquée.
 
-## ⏳ UNE PLANCHE À REGARDER : LA PHOTO DES SALARIÉS (27 septembre 2026)
+## La photo de chaque personne : CODÉE le 27 septembre 2026, reste à livrer
 
-Sa demande : *« dans le compte des salariés, mettre la possibilité de mettre la
-tête des gars en photo »*. Planche `appli/photo-des-salaries.html` : **A**, le
-rond du rang devient la photo (un geste) ; **B**, une fiche par salarié. La
-photo suit le nom sur le planning et les absences, le nom ne disparaît jamais.
-À trancher par lui : A ou B, et si un salarié avec un compte change sa propre
-photo. Rien n'est codé. Au codage : colonne nullable (expand), stockage comme
-le logo, « Retirer » efface le fichier, jamais visible des clients.
+Planche `appli/photo-des-salaries.html` (B), puis chacun pose la sienne dans
+Mon compte ; le patron relie chaque compte à son nom (« C'est qui ? »). Codée
+sur la branche `claude/employee-profile-photo-g1mkbk` (migration 0111,
+`ARCHITECTURE.md` §430). **Pas encore sur `main`** : niveau 3 (migration,
+route `/api/tetes`), et il a demandé de ne pas jouer la batterie. Avant la
+fusion : `npm run verifier:avant-livraison`, en le prévenant.
 
 ## VOS CLIENTS DE A À Z : CODÉ (A), PAS ENCORE SUR `main` (27 septembre 2026)
 

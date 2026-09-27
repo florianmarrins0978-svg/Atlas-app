@@ -1,4 +1,5 @@
 import { and, eq, ne } from "drizzle-orm";
+import { alias } from "drizzle-orm/pg-core";
 import { hash } from "bcryptjs";
 import { db } from "../db/client";
 import { withEntreprise } from "../db/with-entreprise";
@@ -57,8 +58,15 @@ export type Acces = {
   equipeId: string | null;
   /** Le rang de la file du planning rattachée, pour l'afficher sans second appel. */
   equipeRang: number | null;
+  /** Le rang du nom de salarié que ce compte EST, ou `null` (migration 0111). */
+  salarieRang: number | null;
+  /** Sa photo, lue là où elle vit : sur son nom s'il est relié, sinon sur l'adhésion. */
+  photo: string | null;
   createdAt: Date;
 };
+
+/** La ligne du nom relié, distincte de la file rattachée : deux jointures sur `equipes`. */
+const salarieRelie = alias(equipes, "salarie_relie");
 
 export type ResultatAcces = { ok: true } | { ok: false; refus: RefusAcces };
 
@@ -85,11 +93,18 @@ export async function listerAcces(ctx: Ctx): Promise<Acces[]> {
         porteePlanning: membresEntreprise.porteePlanning,
         equipeId: membresEntreprise.equipeId,
         equipeRang: equipes.rang,
+        salarieRang: salarieRelie.rang,
+        photoDuNom: salarieRelie.photoStorageKey,
+        photoDuCompte: membresEntreprise.photoStorageKey,
         createdAt: membresEntreprise.createdAt,
       })
       .from(membresEntreprise)
       .innerJoin(users, eq(users.id, membresEntreprise.utilisateurId))
       .leftJoin(equipes, eq(equipes.id, membresEntreprise.equipeId))
+      .leftJoin(
+        salarieRelie,
+        and(eq(salarieRelie.id, membresEntreprise.salarieId), eq(salarieRelie.entrepriseId, ctx.entrepriseId))
+      )
       .where(eq(membresEntreprise.entrepriseId, ctx.entrepriseId))
       // Le patron d'abord — c'est lui qu'on cherche en ouvrant l'écran —, puis
       // par ancienneté : l'ordre d'arrivée est celui qu'on a en tête.
@@ -99,9 +114,10 @@ export async function listerAcces(ctx: Ctx): Promise<Acces[]> {
     // migration 0077, `users.nom` est le nom de FAMILLE : l'afficher seul
     // amputerait chaque compte neuf de son prénom. `nomAffiche` sait aussi
     // retomber sur les comptes d'avant, dont `nom` porte encore le tout.
-    const composees = lignes.map(({ prenom, ...reste }) => ({
+    const composees = lignes.map(({ prenom, photoDuNom, photoDuCompte, ...reste }) => ({
       ...reste,
       nom: nomAffiche({ prenom, nom: reste.nom }) || reste.nom,
+      photo: reste.salarieRang !== null ? photoDuNom : photoDuCompte,
     }));
 
     return composees.sort((a, b) =>
@@ -286,7 +302,10 @@ export async function changerLaPortee(
  * plus nulle part — pas besoin d'invalider un jeton, l'adhésion est revalidée à
  * chaque appel (`with-entreprise.ts`).
  */
-export async function retirerUnAcces(ctx: Ctx, accesId: string): Promise<ResultatAcces> {
+export async function retirerUnAcces(
+  ctx: Ctx,
+  accesId: string
+): Promise<{ ok: true; /** Sa photo à lui, à supprimer : il n'est plus là. */ photoOrpheline: string | null } | { ok: false; refus: RefusAcces }> {
   const liste = await listerAcces(ctx);
   const cible = liste.find((l) => l.id === accesId);
   if (!cible) return { ok: false, refus: "role-inconnu" };
@@ -299,13 +318,17 @@ export async function retirerUnAcces(ctx: Ctx, accesId: string): Promise<Resulta
   });
   if (refus) return { ok: false, refus };
 
-  await withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
-    await tx
+  // **Sa photo part avec son accès** quand elle vivait sur l'adhésion. Celle
+  // d'un compte relié vit sur son NOM, qui reste dans la liste des salariés :
+  // le patron décide seul de la retirer.
+  const [retire] = await withEntreprise(ctx.utilisateurId, ctx.entrepriseId, (tx) =>
+    tx
       .delete(membresEntreprise)
-      .where(and(eq(membresEntreprise.id, accesId), eq(membresEntreprise.entrepriseId, ctx.entrepriseId)));
-  });
+      .where(and(eq(membresEntreprise.id, accesId), eq(membresEntreprise.entrepriseId, ctx.entrepriseId)))
+      .returning({ photo: membresEntreprise.photoStorageKey })
+  );
 
-  return { ok: true };
+  return { ok: true, photoOrpheline: retire?.photo ?? null };
 }
 
 /**

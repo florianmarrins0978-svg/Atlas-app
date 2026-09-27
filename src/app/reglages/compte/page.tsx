@@ -2,6 +2,7 @@ import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 import { colors, font } from "@/lib/design-tokens";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { lireCompte } from "@/server/repositories/compte";
+import { lireMaPhoto } from "@/server/repositories/photo-des-personnes";
 import CompteClient from "./CompteClient";
 
 export const dynamic = "force-dynamic";
@@ -24,7 +25,7 @@ export const dynamic = "force-dynamic";
  */
 export default async function ComptePage() {
   const ctx = await getCurrentCtx();
-  const compte = await lireCompte(ctx);
+  const [compte, maPhoto] = await Promise.all([lireCompte(ctx), lireMaPhoto(ctx)]);
 
   return (
     <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>
@@ -39,6 +40,7 @@ export default async function ComptePage() {
           prenom: compte?.prenom ?? "",
           nom: compte?.nom ?? "",
           email: compte?.email ?? "",
+          photo: maPhoto.photo,
         }}
       />
     </div>

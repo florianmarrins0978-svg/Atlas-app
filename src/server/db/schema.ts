@@ -472,6 +472,11 @@ export const equipes = pgTable(
     rang: integer("rang").notNull(),
     nom: text("nom"),
     /**
+     * La tête du salarié, dans le stockage : la base ne garde que la clef,
+     * comme pour le logo (migration 0111). NULL est l'état normal.
+     */
+    photoStorageKey: text("photo_storage_key"),
+    /**
      * Le titre de chef d'équipe (migration 0110). Un titre sur l'organigramme,
      * rien de plus : sa décision du 27 septembre 2026, « le chef ne voit rien
      * de plus ».
@@ -713,6 +718,14 @@ export const membresEntreprise = pgTable(
      * une équipe est une file du planning, pas un groupe de personnes.
      */
     equipeId: uuid("equipe_id").references(() => equipes.id, { onDelete: "set null" }),
+    /**
+     * QUI est cette personne dans la liste des salariés — posé une fois par le
+     * patron (migration 0111). Distinct d'`equipeId`, qui dit ce qu'elle VOIT.
+     * Relié, sa photo est celle de la ligne ; sinon, `photoStorageKey`.
+     */
+    salarieId: uuid("salarie_id").references(() => equipes.id, { onDelete: "set null" }),
+    /** La photo d'un compte qui n'est relié à aucun nom (patron, commercial…). */
+    photoStorageKey: text("photo_storage_key"),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [unique("membres_entreprise_uk").on(t.entrepriseId, t.utilisateurId)]

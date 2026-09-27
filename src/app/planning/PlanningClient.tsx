@@ -19,6 +19,7 @@ import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 import { cheminAutorise, peutModifierLePlanning, type Role } from "@/lib/acces-roles";
 import { adresseDeLaVisionneuse } from "@/lib/visionneuse-pdf";
 import { colors, font, libelleCaps, surPlein, texteSituation, voile } from "@/lib/design-tokens";
+import TeteRonde from "@/components/atlas/TeteRonde";
 import MoisCharge, { fondDeLEtat } from "@/components/atlas/MoisCharge";
 import {
   cleCreneau,
@@ -338,7 +339,7 @@ export default function PlanningClient({
    * n'a pas.
    */
   nombreSalaries?: number;
-  equipesNommees?: { rang: number; nom: string | null }[];
+  equipesNommees?: { rang: number; nom: string | null; photo?: string | null }[];
   /**
    * Ce que le haut de l'écran dit de l'agenda, décidé par
    * `bandeauAgendaDuPlanning` (`src/lib/agenda-externe.ts`) : une panne, une
@@ -860,6 +861,20 @@ export default function PlanningClient({
       libelleSalarie(lignesEquipes.find((e) => e.rang === rang) ?? null, nombreSalaries) ??
       `Salarié ${rang}`,
     [lignesEquipes, nombreSalaries]
+  );
+
+  /**
+   * Les têtes des salariés cochés qui en ont une, dans l'ordre des noms
+   * (planche `appli/photo-des-salaries.html`, 27 septembre 2026). Un salarié
+   * sans photo n'a rien ici : son nom suffit, comme avant.
+   */
+  const tetesDe = useCallback(
+    (rangs: readonly number[]) =>
+      rangs.flatMap((rang) => {
+        const photo = equipesNommees.find((e) => e.rang === rang)?.photo;
+        return photo ? [{ rang, photo }] : [];
+      }),
+    [equipesNommees]
   );
 
   // ─── Ce qui est ouvert : au plus une chose à la fois ────────────────────
@@ -1448,6 +1463,7 @@ export default function PlanningClient({
     setFeuille,
     sansDate,
     nomEquipe,
+    tetesDe,
     lignesEquipes,
     occupationDe,
     chantiersDuJour,
@@ -1851,6 +1867,7 @@ export default function PlanningClient({
                           avecPlus={false}
                           ecriture={ouvertes.ecriture}
                           libelle={ditQuiPart(toutes.map(nomEquipe))}
+                          tetes={tetesDe(toutes)}
                         />
                       )}
                       {/* **LE CHEVRON FAIT MONTER LES PORTES — son allure C,
@@ -2215,6 +2232,23 @@ function Petit({
 }
 
 /**
+ * Les têtes, serrées l'une contre l'autre : trois gars tiennent dans la place
+ * d'un prénom. Rien quand personne n'a de photo.
+ */
+function TetesQuiPartent({ tetes }: { tetes: { rang: number; photo: string }[] }) {
+  if (tetes.length === 0) return null;
+  return (
+    <span className="flex -space-x-1.5" aria-hidden="true">
+      {tetes.map((t) => (
+        <span key={t.rang} className="rounded-full" style={{ boxShadow: `0 0 0 2px ${colors.cream}` }}>
+          <TeteRonde repli={t.rang} photo={t.photo} taille={24} />
+        </span>
+      ))}
+    </span>
+  );
+}
+
+/**
  * QUI PART — des prénoms, et un « + » en or.
  *
  * **Le « + » qui dit qu'on peut en ajouter un autre.** Sa remarque du 21 août :
@@ -2236,8 +2270,15 @@ function PastilleEquipe({
   onClick,
   avecPlus = true,
   ecriture = true,
+  tetes = [],
 }: {
   libelle: string;
+  /**
+   * Les têtes de ceux qui partent, collées devant leurs noms : sa demande du
+   * 27 septembre 2026. **Le nom reste** : une photo ne se lit pas au soleil,
+   * un nom si.
+   */
+  tetes?: { rang: number; photo: string }[];
   vide: boolean;
   /** L'événement est transmis : l'appelant y trouve la ligne à garder immobile. */
   onClick: (e: React.MouseEvent<HTMLButtonElement>) => void;
@@ -2259,9 +2300,10 @@ function PastilleEquipe({
     return (
       <span
         data-atlas="equipe-lecture"
-        className="flex-shrink-0 whitespace-nowrap text-[14.5px]"
+        className="inline-flex flex-shrink-0 items-center gap-1.5 whitespace-nowrap text-[14.5px]"
         style={{ color: colors.ink }}
       >
+        <TetesQuiPartent tetes={tetes} />
         {libelle}
       </span>
     );
@@ -2285,6 +2327,7 @@ function PastilleEquipe({
         </>
       ) : (
         <>
+          <TetesQuiPartent tetes={tetes} />
           {libelle}
           {avecPlus && (
             <span className="text-[17px] leading-none" style={{ color: colors.or }} aria-hidden="true">
@@ -2410,6 +2453,7 @@ type GestesCarte = {
    */
   refus: string | null;
   nomEquipe: (rang: number) => string;
+  tetesDe: (rangs: readonly number[]) => { rang: number; photo: string }[];
   lignesEquipes: { rang: number; nom?: string | null }[];
   occupationDe: (jour: JourIso, demi: Demi) => { pris: readonly ChantierPlanning[]; charge: number };
   chantiersDuJour: (jour: JourIso) => ChantierPlanning[];
@@ -3694,6 +3738,7 @@ function CarteDuJour({
   setFeuille,
   sansDate,
   nomEquipe,
+  tetesDe,
   lignesEquipes,
   occupationDe,
   chantiersDuJour,
@@ -4111,6 +4156,7 @@ function CarteDuJour({
                         vide={rangs.length === 0}
                         onClick={() => undefined}
                         libelle={ditQuiPart(rangsPresents.map(nomEquipe))}
+                        tetes={tetesDe(rangsPresents)}
                       />
                     ) : choixEquipe ? (
                       // **On COCHE, on ne choisit pas une seule fois.** La liste
@@ -4172,6 +4218,7 @@ function CarteDuJour({
                       <PastilleEquipe
                         vide={rangs.length === 0}
                         libelle={ditQuiPart(rangsPresents.map(nomEquipe))}
+                        tetes={tetesDe(rangsPresents)}
                         onClick={() =>
                           setOuvert({ quoi: "equipe", cle, chantierId: c.id, demi })
                         }

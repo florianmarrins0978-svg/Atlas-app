@@ -97,7 +97,7 @@ export async function contextePlanning(ctx: Ctx, maintenant: Date) {
     // sans les deux, et la table ne porte que des noms (`ARCHITECTURE.md` §51).
     nombreEquipes: entreprise?.nombreEquipes ?? 1,
     nombreSalaries: entreprise?.nombreSalaries ?? 0,
-    equipesNommees: equipesNommees.map((e) => ({ rang: e.rang, nom: e.nom })),
+    equipesNommees: equipesNommees.map((e) => ({ rang: e.rang, nom: e.nom, photo: e.photo })),
     absences,
   };
 }

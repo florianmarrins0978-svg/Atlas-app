@@ -8,7 +8,7 @@
 
 Même branche. Réglages, Organigramme, ouvert à tous, modifiable par le patron
 (chef d'équipe, ses gars, ajouter). Migration 0110. Manquent : retirer une
-personne du milieu, les photos (§428). **Niveau 3** : batterie avec son accord.
+personne du milieu, les photos (§431). **Niveau 3** : batterie avec son accord.
 
 ## CODÉ, PAS SUR `main` : CHACUN SES RAPPELS (27 septembre 2026)
 
@@ -21,8 +21,16 @@ avec son accord avant `main`.
 
 Le client qui demande une correction garde ses dates : elles se lisent sous
 son message sur l'écran du devis envoyé, et « Choisir la date » les pose au
-renvoi. Migration 0109, `ARCHITECTURE.md` §428. Batterie pas jouée, à sa
+renvoi. Migration 0109, `ARCHITECTURE.md` §429. Batterie pas jouée, à sa
 demande : elle reste due avant `main` (niveau 3).
+
+## SUR SA BRANCHE : LA PHOTO DE CHAQUE PERSONNE (27 septembre 2026)
+
+Chacun pose sa photo dans Mon compte ; le patron relie chaque compte à son nom
+dans « Qui a accès » et garde la main dans Équipe. La tête suit le nom au
+planning et dans les absences. Migration 0111, route `/api/tetes`, §430.
+Branche `claude/employee-profile-photo-g1mkbk`, **pas sur `main`** : niveau 3,
+batterie non jouée à sa demande.
 
 ## SUR `main` : LES DATES DU MOIS D'UN CONTRAT (27 septembre 2026)
 
