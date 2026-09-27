@@ -12,7 +12,10 @@ import { verifierLimite, LIMITES } from "@/server/rate-limit";
 import { mettreAJourEntreprise } from "@/server/repositories/entreprises";
 import { reglerExigibilite } from "@/server/repositories/paiements-facture";
 import type { Exigibilite } from "@/lib/exigibilite-tva";
-import { nommerEquipe } from "@/server/repositories/equipes";
+import { nommerEquipe, poserPhotoSalarie } from "@/server/repositories/equipes";
+import { enregistrerObjet, supprimerObjet } from "@/server/storage";
+import { preparerPhotoEntrante } from "@/server/photo-entrante";
+import { logger } from "@/server/logger";
 import { noterAbsenceEquipe, retirerAbsenceEquipe } from "@/server/repositories/absences-equipe";
 import { phraseDuRefus, refusDeLAbsence } from "@/lib/absences-equipe";
 import { versionExecutee } from "@/server/version-executee";
@@ -33,6 +36,73 @@ export async function nommerEquipeAction(rang: number, nom: string) {
   await exigerProprietaire(ctx, "nommer une équipe");
   const enregistree = await nommerEquipe(ctx, rang, nom);
   return { rang: enregistree.rang, nom: enregistree.nom };
+}
+
+/**
+ * Pose la tête d'un salarié : sa demande du 27 septembre 2026, planche
+ * `appli/photo-des-salaries.html`, proposition B.
+ *
+ * **Le patron seul**, comme le nom : c'est lui qui tient la liste de ses gars.
+ * **L'image passe par la porte commune** (`preparerPhotoEntrante`) : une photo
+ * prise au téléphone porte l'endroit où elle a été prise, et un fichier qui
+ * n'est pas une image est refusé là.
+ *
+ * Le refus se rend en valeur de retour : le message d'une exception levée ici
+ * n'arriverait jamais jusqu'à lui (`AGENTS.md`).
+ */
+export async function poserPhotoSalarieAction(
+  formData: FormData
+): Promise<{ ok: true; photo: string } | { ok: false; raison: string }> {
+  const ctx = await getCurrentCtx();
+  try {
+    await exigerProprietaire(ctx, "changer la photo d'un salarié");
+    const rang = Number(formData.get("rang"));
+    const fichier = formData.get("fichier");
+    if (!Number.isInteger(rang) || rang < 1) return { ok: false, raison: "Ce salarié est introuvable." };
+    if (!(fichier instanceof File)) return { ok: false, raison: "Aucune photo reçue." };
+
+    const limite = await verifierLimite(`televersement:${ctx.entrepriseId}`, LIMITES.televersementFichier);
+    if (!limite.autorise) return { ok: false, raison: limite.message };
+
+    const prete = await preparerPhotoEntrante(fichier, "photo de salarié");
+    if (!prete.ok) return { ok: false, raison: prete.raison };
+
+    const objet = await enregistrerObjet(
+      `entreprises/${ctx.entrepriseId}/salaries`,
+      prete.photo.octets,
+      prete.photo.extension,
+      prete.photo.mimeType
+    );
+    const { avant } = await poserPhotoSalarie(ctx, rang, objet.storageKey);
+    if (avant) await supprimerObjet(avant);
+    return { ok: true, photo: objet.storageKey };
+  } catch (err) {
+    logger.error("Enregistrement de la photo d'un salarié impossible", {
+      erreur: err instanceof Error ? err.message : String(err),
+    });
+    return { ok: false, raison: "Cette photo n'a pas pu être enregistrée. Réessayez." };
+  }
+}
+
+/**
+ * Retire la tête d'un salarié. **Le fichier part avec** : une photo de
+ * personne qu'on retire doit disparaître vraiment, pas seulement de l'écran.
+ */
+export async function retirerPhotoSalarieAction(
+  rang: number
+): Promise<{ ok: true } | { ok: false; raison: string }> {
+  const ctx = await getCurrentCtx();
+  try {
+    await exigerProprietaire(ctx, "retirer la photo d'un salarié");
+    const { avant } = await poserPhotoSalarie(ctx, rang, null);
+    if (avant) await supprimerObjet(avant);
+    return { ok: true };
+  } catch (err) {
+    logger.error("Retrait de la photo d'un salarié impossible", {
+      erreur: err instanceof Error ? err.message : String(err),
+    });
+    return { ok: false, raison: "Cette photo n'a pas pu être retirée. Réessayez." };
+  }
 }
 
 export async function creerTarifAction(intitule: string, prix: string) {

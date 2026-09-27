@@ -8,7 +8,7 @@
 import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
 import { Pool } from "pg";
-import { listerEquipes, nommerEquipe, equipeParRang } from "../src/server/repositories/equipes";
+import { listerEquipes, nommerEquipe, equipeParRang, poserPhotoSalarie } from "../src/server/repositories/equipes";
 import { libelleSalarie, salariesAffiches } from "../src/lib/equipes";
 
 let echecs = 0;
@@ -125,6 +125,50 @@ async function main() {
     assert.equal(haut.rang, 20);
     const bas = await nommerEquipe(a, 0, "Trop bas");
     assert.equal(bas.rang, 1);
+  });
+
+  // ─── La tête des gars (migration 0109, 27 septembre 2026) ────────────────
+
+  await essai("retirer la photo d'un salarié sans ligne ne crée RIEN", async () => {
+    // Une ligne vide écrirait en base ce que personne n'a saisi.
+    const { avant } = await poserPhotoSalarie(b, 7, null);
+    assert.equal(avant, null);
+    assert.equal(await equipeParRang(b, 7), null);
+  });
+
+  await essai("poser une photo sur un rang jamais nommé crée la ligne, sans nom", async () => {
+    const { avant } = await poserPhotoSalarie(a, 5, "entreprises/a/salaries/une.jpg");
+    assert.equal(avant, null);
+    const ligne = await equipeParRang(a, 5);
+    assert.equal(ligne?.photo, "entreprises/a/salaries/une.jpg");
+    assert.equal(ligne?.nom, null);
+  });
+
+  await essai("changer la photo rend l'ANCIENNE clef, pour que son fichier parte", async () => {
+    const { avant } = await poserPhotoSalarie(a, 5, "entreprises/a/salaries/deux.jpg");
+    assert.equal(avant, "entreprises/a/salaries/une.jpg");
+    assert.equal((await equipeParRang(a, 5))?.photo, "entreprises/a/salaries/deux.jpg");
+  });
+
+  await essai("la photo ne touche pas au nom, ni le nom à la photo", async () => {
+    await nommerEquipe(a, 5, "Kévin");
+    const ligne = await equipeParRang(a, 5);
+    assert.equal(ligne?.nom, "Kévin");
+    assert.equal(ligne?.photo, "entreprises/a/salaries/deux.jpg");
+  });
+
+  await essai("l'isolation tient : B ne lit ni ne change la photo de A", async () => {
+    assert.equal(await equipeParRang(b, 5), null, "B lit le salarié de rang 5 de A");
+    // B écrit SON rang 5 : c'est une autre ligne, celle de A ne bouge pas.
+    const { avant } = await poserPhotoSalarie(b, 5, "entreprises/b/salaries/x.jpg");
+    assert.equal(avant, null, `B a reçu la clef de A : ${avant}`);
+    assert.equal((await equipeParRang(a, 5))?.photo, "entreprises/a/salaries/deux.jpg");
+  });
+
+  await essai("retirer la photo rend sa clef et remet NULL", async () => {
+    const { avant } = await poserPhotoSalarie(a, 5, null);
+    assert.equal(avant, "entreprises/a/salaries/deux.jpg");
+    assert.equal((await equipeParRang(a, 5))?.photo, null);
   });
 
   await pg.end();

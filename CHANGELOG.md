@@ -8,6 +8,20 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-27
 
+### La tête des gars, à côté de leur nom
+
+Sa réponse B du 27 septembre sur `appli/photo-des-salaries.html`. Dans
+Réglages, Équipe, le rond du rang ouvre une fiche : la photo en grand,
+« Prendre une photo » (appareil au dos), « Choisir dans la galerie », « Retirer
+la photo ». La tête suit le nom sur le planning (pastille de qui part) et dans
+les absences ; le nom reste toujours écrit. Migration 0109 (colonne nullable
+`equipes.photo_storage_key`, expand seul). L'image passe par
+`preparerPhotoEntrante` (GPS retiré, faux fichier refusé), se sert par
+`/api/fichiers` avec un filtre explicite sur l'entreprise, et « Retirer »
+supprime le fichier. Patron seul. Éprouvé : `test-equipes-repo.ts` (six cas
+neufs, isolation comprise) et le parcours joué dans un navigateur (envoi,
+planning, retrait, clé inventée en 404). **Batterie non jouée**, à sa demande.
+
 ### Les dates du mois d'un contrat, validées par le client
 
 La dernière date du mois posée, le tiroir du planning propose « Envoyer les

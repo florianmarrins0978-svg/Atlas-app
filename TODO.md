@@ -85,15 +85,14 @@ communiquent entre elles lors de l'envoi de la facture. »* `ARCHITECTURE.md`
 foi (celui d'Atlas ou celui de l'outil), quel PDF part chez le client, que fait
 l'envoi quand la connexion est coupée ou révoquée.
 
-## ⏳ UNE PLANCHE À REGARDER : LA PHOTO DES SALARIÉS (27 septembre 2026)
+## La photo des salariés : CODÉE le 27 septembre 2026, reste à livrer
 
-Sa demande : *« dans le compte des salariés, mettre la possibilité de mettre la
-tête des gars en photo »*. Planche `appli/photo-des-salaries.html` : **A**, le
-rond du rang devient la photo (un geste) ; **B**, une fiche par salarié. La
-photo suit le nom sur le planning et les absences, le nom ne disparaît jamais.
-À trancher par lui : A ou B, et si un salarié avec un compte change sa propre
-photo. Rien n'est codé. Au codage : colonne nullable (expand), stockage comme
-le logo, « Retirer » efface le fichier, jamais visible des clients.
+Sa réponse **B** sur `appli/photo-des-salaries.html`. Codée sur la branche
+`claude/employee-profile-photo-g1mkbk` (migration 0109). **Pas encore sur
+`main`** : le lot est de niveau 3 (migration, route des fichiers), et il a
+demandé de ne pas jouer la batterie. Avant la fusion :
+`npm run verifier:avant-livraison`, en le prévenant. Décidé sans lui, à dire :
+seul le patron change une photo (comme le nom).
 
 ## Site de vente : l'adresse de contact et le nom (27 septembre 2026)
 

@@ -471,6 +471,11 @@ export const equipes = pgTable(
     /** 1 à 20. Porte la lettre de repli (1 → A) et l'ordre d'affichage. */
     rang: integer("rang").notNull(),
     nom: text("nom"),
+    /**
+     * La tête du salarié, dans le stockage : la base ne garde que la clef,
+     * comme pour le logo (migration 0109). NULL est l'état normal.
+     */
+    photoStorageKey: text("photo_storage_key"),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },

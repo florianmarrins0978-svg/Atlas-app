@@ -4,6 +4,13 @@
 · dernière migration `drizzle/0106_hausse_du_devis_repris.sql` (sur la branche)
 
 ---
+## SUR SA BRANCHE : LA PHOTO DES SALARIÉS (27 septembre 2026)
+
+Réglages, Équipe : le rond du rang ouvre une fiche (prendre, galerie,
+retirer) ; la tête suit le nom au planning et dans les absences. Migration
+0109. Branche `claude/employee-profile-photo-g1mkbk`, **pas sur `main`** :
+niveau 3, batterie non jouée à sa demande.
+
 ## SUR `main` : LES DATES DU MOIS D'UN CONTRAT (27 septembre 2026)
 
 La dernière date d'un mois posée au planning ouvre « À envoyer » : un lien par

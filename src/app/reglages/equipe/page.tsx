@@ -127,7 +127,7 @@ export default async function EquipePage() {
             retirer du code. */}
         <VosSalaries
           initialNombreSalaries={entreprise?.nombreSalaries ?? 0}
-          initialNoms={equipes.map((e) => ({ rang: e.rang, nom: e.nom }))}
+          initialNoms={equipes.map((e) => ({ rang: e.rang, nom: e.nom, photo: e.photo }))}
         />
 
         {/* **Sous les noms, comme il l'a retenu** (`docs/maquettes/55`,
@@ -139,7 +139,7 @@ export default async function EquipePage() {
         {absencesOuvertes ? (
           <AbsencesEquipe
             nombreSalaries={entreprise?.nombreSalaries ?? 0}
-            noms={equipes.map((e) => ({ rang: e.rang, nom: e.nom }))}
+            noms={equipes.map((e) => ({ rang: e.rang, nom: e.nom, photo: e.photo }))}
             initialAbsences={absences.map((a) => ({
               id: a.id,
               rang: a.rang,

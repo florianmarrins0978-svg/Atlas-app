@@ -8,6 +8,7 @@ import BottomSheet from "@/components/atlas/BottomSheet";
 import { salariesAffiches, libelleSalarie } from "@/lib/equipes";
 import { libelleAbsence, phraseDuRefus, refusDeLAbsence } from "@/lib/absences-equipe";
 import { noterAbsenceAction, retirerAbsenceAction } from "./actions";
+import TeteSalarie from "@/components/atlas/TeteSalarie";
 
 /**
  * « Absences » — les jours où quelqu'un n'est pas là.
@@ -64,7 +65,7 @@ export default function AbsencesEquipe({
 }: {
   nombreSalaries: number;
   /** Ce que la base porte, par rang. Un rang absent est un cas ordinaire. */
-  noms: { rang: number; nom: string | null }[];
+  noms: { rang: number; nom: string | null; photo: string | null }[];
   initialAbsences: AbsenceAffichee[];
   /** Le jour d'aujourd'hui, calculé au serveur — jamais dans le navigateur. */
   aujourdHui: string;
@@ -153,6 +154,7 @@ export default function AbsencesEquipe({
   const nomDuRang = (r: number) =>
     libelleSalarie(lignesEquipes.find((e) => e.rang === r) ?? { rang: r, nom: null }, nombreSalaries) ??
     `Salarié ${r}`;
+  const photoDuRang = (r: number) => noms.find((e) => e.rang === r)?.photo ?? null;
 
   const absences = initialAbsences.filter((a) => !retirees.has(a.id));
 
@@ -268,13 +270,20 @@ export default function AbsencesEquipe({
               className="flex items-center gap-3 py-3"
               style={{ borderBottom: `1px solid ${colors.lineSoft}` }}
             >
-              <span
-                className="flex h-[26px] w-[26px] flex-shrink-0 items-center justify-center rounded-full text-[11.5px]"
-                style={{ backgroundColor: colors.rustTint, color: colors.rust }}
-                aria-hidden="true"
-              >
-                {a.rang}
-              </span>
+              {/* **Sa tête, quand il en a une** (planche du 27 septembre 2026).
+                  Sans photo, la pastille reste celle d'avant : rien ne change
+                  pour qui n'en pose pas. */}
+              {photoDuRang(a.rang) ? (
+                <TeteSalarie rang={a.rang} photo={photoDuRang(a.rang)} taille={26} />
+              ) : (
+                <span
+                  className="flex h-[26px] w-[26px] flex-shrink-0 items-center justify-center rounded-full text-[11.5px]"
+                  style={{ backgroundColor: colors.rustTint, color: colors.rust }}
+                  aria-hidden="true"
+                >
+                  {a.rang}
+                </span>
+              )}
               <span className="min-w-0 flex-1">
                 <span className="block truncate text-[15px]">{nomDuRang(a.rang)}</span>
                 {a.motif && (
