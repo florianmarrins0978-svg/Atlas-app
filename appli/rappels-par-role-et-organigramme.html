@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas : les rappels de chacun, et l'organigramme</title>
+</head>
+<body>
+<style>
+  /*
+    LES RAPPELS DU COMMERCIAL ET DE LA FACTURATION, PUIS L'ORGANIGRAMME
+
+    Sa demande du 27 septembre 2026 : « Y a-t-il des rappels pour le commercial
+    et la facturation ? Pour pas qu'il oublie de facturer ou d'envoyer un devis,
+    comme peut recevoir le patron. Et rajoute l'organigramme de l'entreprise. »
+
+    CE QUE LE CODE DIT AUJOURD'HUI (lu, pas supposé) :
+      1. Les rappels vivent sur l'ACCUEIL (src/app/page.tsx), pas sur la page
+         du chantier, qui ne fait que rediriger.
+      2. rappelsEnCours (src/server/repositories/rappels.ts) ne connaît pas le
+         rôle : commercial et facturation ouvrent « / » (acces-roles.ts) et
+         reçoivent donc TOUS les rappels de l'entreprise, sans tri.
+      3. Le commercial reçoit « À facturer » et « Facture impayée », dont le
+         bouton mène à /chantiers/<id>/facture ou /termines/tva : deux adresses
+         qui lui sont fermées (FACTURE_DU_CHANTIER, FERME_AU_COMMERCIAL). Déjà
+         relevé sur la planche accueil-ce-qui-vous-attend, jamais codé.
+      4. Aucun organigramme, aucune donnée de hiérarchie : quatre rôles
+         (proprietaire, facturation, commercial, salarie) et une équipe qui est
+         une FILE du planning (membres_entreprise.equipeId). L'organigramme
+         proposé se DÉDUIT de ces deux données ; il ne demande rien à saisir.
+
+    AUCUN SCRIPT. Tout bascule en CSS (radios cachées, :checked ~). Couleurs de
+    src/lib/design-tokens.ts. Écrans de 390 px.
+  */
+  :root{
+    --fond:#e7e3db; --cream:#f5f3ee; --card:#faf9f5; --encre:#1c1c1a;
+    --gris:#8a8578; --pin:#2f3b2f; --pinTint:#ece9e1; --or:#B98B47;
+    --alerte:#9C3B2E; --surPlein:#faf9f5;
+    --trait:rgba(28,28,26,.12); --traitDoux:rgba(28,28,26,.07);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --fond:#141310; --cream:#171613; --card:#1f1d19; --encre:#e9e5dc;
+      --gris:#8a867c; --pin:#cfd8c9; --pinTint:#26241f; --or:#C9A15E; --surPlein:#171613;
+      --trait:rgba(233,229,220,.16); --traitDoux:rgba(233,229,220,.09);
+    }
+  }
+  :root[data-theme="dark"]{
+    --fond:#141310; --cream:#171613; --card:#1f1d19; --encre:#e9e5dc;
+    --gris:#8a867c; --pin:#cfd8c9; --pinTint:#26241f; --or:#C9A15E; --surPlein:#171613;
+    --trait:rgba(233,229,220,.16); --traitDoux:rgba(233,229,220,.09);
+  }
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.6 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:38px 16px 90px;-webkit-text-size-adjust:100%}
+  .page{max-width:900px;margin:0 auto}
+  h1{margin:0 0 6px;font:400 30px/1.15 ui-serif,Georgia,serif;letter-spacing:-.02em}
+  .sur{margin:0 0 22px;font-size:10px;letter-spacing:.28em;text-transform:uppercase;color:var(--or)}
+  .chapo{margin:0 0 26px;max-width:60ch;color:var(--gris);font-size:14.5px}
+
+  .constat{margin:0 0 34px;padding:16px 18px;border-radius:14px;
+           background:var(--card);border:1px solid var(--traitDoux)}
+  .constat p{margin:0 0 10px;font-size:10px;letter-spacing:.26em;text-transform:uppercase;color:var(--gris)}
+  .constat ol{margin:0;padding-left:20px;font-size:14px}
+  .constat li{margin-bottom:6px}
+
+  .partie{margin:46px 0 14px;font:400 24px/1.2 ui-serif,Georgia,serif}
+  .partie span{display:block;font:10px/1.4 ui-sans-serif,sans-serif;letter-spacing:.28em;
+               text-transform:uppercase;color:var(--or);margin-bottom:6px}
+
+  /* Les radios, cachées, sœurs de tout ce qu'elles commandent. */
+  .radio{position:absolute;width:1px;height:1px;opacity:0;margin:0;pointer-events:none}
+
+  .choix{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 12px}
+  .choix label{display:inline-flex;align-items:center;min-height:40px;padding:0 16px;
+               border-radius:999px;border:1px solid var(--trait);font-size:13px;
+               color:var(--gris);cursor:pointer;-webkit-tap-highlight-color:transparent}
+  .choix .nom{font-size:10px;letter-spacing:.26em;text-transform:uppercase;color:var(--gris);
+              align-self:center;margin-right:4px;min-width:74px}
+  #vA:checked ~ .choix label[for="vA"], #vB:checked ~ .choix label[for="vB"],
+  #qP:checked ~ .choix label[for="qP"], #qC:checked ~ .choix label[for="qC"],
+  #qF:checked ~ .choix label[for="qF"]{background:var(--pinTint);color:var(--encre);
+                                        border-color:transparent;font-weight:600}
+
+  .explique{margin:0 0 18px;font-size:13.5px;color:var(--gris);max-width:60ch}
+  .explique b{color:var(--encre);font-weight:600}
+  .vA-txt,.vB-txt{display:none}
+  #vA:checked ~ .explique .vA-txt, #vB:checked ~ .explique .vB-txt{display:inline}
+
+  /* LE TÉLÉPHONE */
+  .tel{width:390px;max-width:100%;margin:0 auto;border-radius:26px;overflow:hidden;
+       background:var(--cream);border:1px solid var(--trait);box-shadow:0 12px 34px rgba(28,28,26,.10)}
+  .ecran{display:flex;flex-direction:column;min-height:640px}
+  .corps{flex:1;padding-bottom:18px}
+  .tete{padding:22px 26px 0}
+  .tete .st{margin:0 0 6px;font-size:9.5px;letter-spacing:.28em;text-transform:uppercase;color:var(--or)}
+  .tete h2{margin:0;font:400 32px/1.05 ui-serif,Georgia,serif;letter-spacing:-.02em}
+  .qui{display:none}
+  #qP:checked ~ .tel .qui.p, #qC:checked ~ .tel .qui.c, #qF:checked ~ .tel .qui.f{display:inline}
+
+  .barre{display:grid;grid-template-columns:repeat(4,1fr);padding:15px 14px 13px;
+         border-top:1px solid var(--trait);background:var(--cream)}
+  .barre span{text-align:center;font-size:8.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--gris)}
+  .barre span:first-child{color:var(--encre)}
+
+  /* LES CARTES DE RAPPEL, comme src/app/Notifications.tsx les dessine. */
+  .cartes{display:flex;flex-direction:column;gap:12px;padding:22px 24px 0}
+  .carte{border-radius:18px;padding:16px 20px;background:var(--card)}
+  .carte.urgent{background:var(--pinTint)}
+  .carte .sorte{margin:0 0 6px;font-size:9.5px;letter-spacing:.26em;text-transform:uppercase;color:var(--gris)}
+  .carte.urgent .sorte{color:var(--pin)}
+  .carte .titre{margin:0;font:400 16px/1.3 ui-serif,Georgia,serif}
+  .carte .texte{margin:4px 0 0;font-size:13px;color:var(--gris)}
+  .carte .chantier{margin:10px 0 0;font:400 19px/1.2 ui-serif,Georgia,serif}
+  .carte .geste{display:inline-flex;align-items:center;min-height:40px;margin-top:12px;padding:0 18px;
+                border-radius:999px;background:var(--pin);color:var(--surPlein);font-size:13px}
+  .rien{margin:26px 24px 0;font-size:14px;color:var(--gris);text-align:center}
+
+  /* Qui voit quelle carte. Une carte porte la liste de ceux qui la reçoivent,
+     et la proposition B retire au patron ce qu'un autre tient déjà. */
+  .carte{display:none}
+  #qP:checked ~ .tel .carte.p{display:block}
+  #qC:checked ~ .tel .carte.c{display:block}
+  #qF:checked ~ .tel .carte.f{display:block}
+  #vB:checked ~ #qP:checked ~ .tel .carte.p.tenue{display:none}
+  .rien{display:none}
+  #vB:checked ~ #qP:checked ~ .tel .rien.p{display:block}
+
+  /* L'ORGANIGRAMME */
+  .organi{padding:22px 20px 0}
+  .etage{margin:0 0 6px;display:flex;align-items:center;gap:12px;font-size:9.5px;
+         letter-spacing:.28em;text-transform:uppercase;color:var(--gris)}
+  .etage i{flex:1;height:1px;background:var(--trait)}
+  .rang{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;position:relative;padding:10px 0 22px}
+  .rang + .rang::before{content:"";position:absolute;left:50%;top:-14px;height:18px;width:1px;background:var(--trait)}
+  .bloc{flex:1 1 0;min-width:0;max-width:175px;padding:12px 14px;border-radius:16px;
+        background:var(--card);border:1px solid var(--traitDoux);text-align:center}
+  .bloc.haut{max-width:210px;background:var(--pinTint);border-color:transparent}
+  .bloc .n{display:block;font:400 17px/1.2 ui-serif,Georgia,serif}
+  .bloc .r{display:block;margin-top:2px;font-size:9.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--or)}
+  .bloc .ra{display:block;margin-top:6px;font-size:12px;color:var(--gris)}
+  .equipes{display:flex;gap:10px}
+  .equipe{flex:1;min-width:0;border-radius:16px;border:1px solid var(--traitDoux);padding:10px 12px 6px}
+  .equipe .en{margin:0 0 4px;font-size:9.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--or);text-align:center}
+  .equipe p{margin:0;padding:7px 0;border-top:1px solid var(--traitDoux);font-size:14px;text-align:center}
+  .equipe p:first-of-type{border-top:0}
+  .sans{margin:10px 0 0;font-size:12.5px;color:var(--gris);text-align:center}
+
+  .questions{margin:40px 0 0;padding:18px 20px;border-radius:14px;background:var(--card);border:1px solid var(--traitDoux)}
+  .questions p.t{margin:0 0 10px;font-size:10px;letter-spacing:.26em;text-transform:uppercase;color:var(--or)}
+  .questions ol{margin:0;padding-left:20px;font-size:14.5px}
+  .questions li{margin-bottom:8px}
+  .questions .note{margin:14px 0 0;font-size:13px;color:var(--gris)}
+</style>
+
+<div class="page">
+  <p class="sur">Planche, rien n'est codé</p>
+  <h1>Les rappels de chacun, et l'organigramme</h1>
+  <p class="chapo">Votre question : le commercial et la facturation ont-ils des rappels, pour ne pas oublier un devis ou une facture ?</p>
+
+  <div class="constat">
+    <p>Aujourd'hui, dans le code</p>
+    <ol>
+      <li>Les rappels sont sur l'<b>accueil</b>, pas sur la page du chantier.</li>
+      <li>Le commercial et la facturation les reçoivent <b>déjà</b>, mais <b>tous</b>, sans tri : ceux du patron, pareil.</li>
+      <li>Le commercial reçoit « À facturer » et « Facture impayée », dont le bouton mène à une page qui lui est <b>fermée</b>.</li>
+      <li>Aucun organigramme n'existe.</li>
+    </ol>
+  </div>
+
+  <!-- ═══ PARTIE 1 : LES RAPPELS PAR RÔLE ═══ -->
+  <h2 class="partie"><span>1</span>À chacun ses rappels</h2>
+
+  <input class="radio" type="radio" name="v" id="vA" checked>
+  <input class="radio" type="radio" name="v" id="vB">
+  <input class="radio" type="radio" name="q" id="qC" checked>
+  <input class="radio" type="radio" name="q" id="qF">
+  <input class="radio" type="radio" name="q" id="qP">
+
+  <div class="choix">
+    <span class="nom">Proposition</span>
+    <label for="vA">A</label>
+    <label for="vB">B</label>
+  </div>
+  <div class="choix">
+    <span class="nom">Qui ouvre</span>
+    <label for="qC">Commercial</label>
+    <label for="qF">Facturation</label>
+    <label for="qP">Patron</label>
+  </div>
+  <p class="explique">
+    <span class="vA-txt"><b>A.</b> Le commercial reçoit les devis, la facturation les factures. <b>Vous gardez tout</b>, comme aujourd'hui.</span>
+    <span class="vB-txt"><b>B.</b> Pareil pour eux. <b>Vous ne recevez plus</b> ce qu'un commercial ou une facturation tient déjà. Sans commercial dans l'entreprise, les devis vous reviennent.</span>
+  </p>
+
+  <div class="tel"><div class="ecran"><div class="corps">
+    <div class="tete">
+      <p class="st"><span class="qui c">Julien, commercial</span><span class="qui f">Sophie, facturation</span><span class="qui p">Vous, patron</span></p>
+      <h2>Ce qui attend</h2>
+    </div>
+    <div class="cartes">
+      <div class="carte urgent p c tenue">
+        <p class="sorte">Rappel</p>
+        <p class="titre">Devis en attente depuis 14 jours</p>
+        <p class="texte">Chantier ouvert il y a 14 jours, et aucun devis n'est parti.</p>
+        <p class="chantier">Jardin Martin</p>
+        <span class="geste">Faire le devis</span>
+      </div>
+      <div class="carte p c tenue">
+        <p class="sorte">Rappel</p>
+        <p class="titre">Devis sans réponse</p>
+        <p class="texte">Parti il y a 9 jours, sans un mot du client.</p>
+        <p class="chantier">Haie Dubois</p>
+        <span class="geste">Ouvrir le chantier</span>
+      </div>
+      <div class="carte p f tenue">
+        <p class="sorte">Rappel</p>
+        <p class="titre">À facturer</p>
+        <p class="texte">Chantier terminé il y a 5 jours, et aucune facture n'est partie.</p>
+        <p class="chantier">Élagage Leroy</p>
+        <span class="geste">Créer la facture</span>
+      </div>
+      <div class="carte p f tenue">
+        <p class="sorte">Rappel</p>
+        <p class="titre">Facture impayée</p>
+        <p class="texte">Échéance dépassée il y a 12 jours.</p>
+        <p class="chantier">Terrasse Moreau</p>
+        <span class="geste">J'ai reçu le paiement</span>
+      </div>
+      <div class="carte p">
+        <p class="sorte">Rappel</p>
+        <p class="titre">Retour pas reçu</p>
+        <p class="texte">Le retour du 24 septembre n'est pas arrivé.</p>
+        <p class="chantier">Tonte Petit</p>
+        <span class="geste">Ouvrir le chantier</span>
+      </div>
+      <p class="rien p">Julien et Sophie tiennent le reste.</p>
+    </div>
+  </div>
+  <div class="barre"><span>Chantiers</span><span>Planning</span><span><span class="qui c">Paysage</span><span class="qui f">Terminés</span><span class="qui p">Terminés</span></span><span>Réglages</span></div>
+  </div></div>
+
+  <!-- ═══ PARTIE 2 : L'ORGANIGRAMME ═══ -->
+  <h2 class="partie"><span>2</span>L'organigramme, dans Réglages, Équipe</h2>
+  <p class="explique">Il se dessine tout seul avec les rôles et les équipes du planning que vous avez déjà posés. <b>Rien à saisir.</b> Chacun y montre ses rappels.</p>
+
+  <div class="tel"><div class="ecran"><div class="corps">
+    <div class="tete">
+      <p class="st">Réglages</p>
+      <h2>Votre entreprise</h2>
+    </div>
+    <div class="organi">
+      <div class="rang">
+        <div class="bloc haut"><span class="n">Vous</span><span class="r">Patron</span><span class="ra">Tous les rappels</span></div>
+      </div>
+      <div class="etage">Bureau<i></i></div>
+      <div class="rang">
+        <div class="bloc"><span class="n">Julien</span><span class="r">Commercial</span><span class="ra">Rappels des devis</span></div>
+        <div class="bloc"><span class="n">Sophie</span><span class="r">Facturation</span><span class="ra">Rappels des factures</span></div>
+      </div>
+      <div class="etage">Terrain<i></i></div>
+      <div class="rang">
+        <div class="equipes" style="width:100%">
+          <div class="equipe"><p class="en">Équipe A</p><p>Karim</p><p>Léo</p></div>
+          <div class="equipe"><p class="en">Équipe B</p><p>Mathis</p><p>Hugo</p></div>
+        </div>
+      </div>
+      <p class="sans">Sans équipe : Nathan</p>
+    </div>
+  </div>
+  <div class="barre"><span>Chantiers</span><span>Planning</span><span>Terminés</span><span>Réglages</span></div>
+  </div></div>
+
+  <div class="questions">
+    <p class="t">À trancher</p>
+    <ol>
+      <li><b>A ou B</b> pour les rappels ?</li>
+      <li>L'organigramme vous va tel quel, <b>ou</b> voulez-vous nommer un <b>chef d'équipe</b> par équipe (une chose à saisir en plus) ?</li>
+    </ol>
+    <p class="note">Les noms sont des exemples. Le point 3 du constat (des boutons qui mènent à une page fermée) se corrige dans les deux propositions.</p>
+  </div>
+</div>
+</body>
+</html>

@@ -16,6 +16,23 @@ sur l'écran du devis envoyé ; 2, au renvoi, A ses jours déjà posés ou B ent
 **Rien n'est codé.** À coder après son choix : garder les jours sur la
 correction (niveau 3, devis), les lire au renvoi depuis le dernier envoi.
 
+## ⏳ RAPPELS PAR RÔLE ET ORGANIGRAMME : PLANCHE POSÉE LE 27 SEPTEMBRE 2026
+
+Planche `appli/rappels-par-role-et-organigramme.html`. **Rien n'est codé.** Sa
+question : le commercial et la facturation ont-ils des rappels ?
+
+Constat lu dans le code : `rappelsEnCours` ignore le rôle, donc commercial et
+facturation reçoivent tous les rappels de l'accueil ; le commercial reçoit « À
+facturer » et « Facture impayée », dont le bouton mène à une adresse qui lui est
+fermée (`FACTURE_DU_CHANTIER`, `/termines/tva`). Déjà relevé sur
+`accueil-ce-qui-vous-attend.html`, jamais codé. Aucun organigramme.
+
+| Attend sa réponse | |
+|---|---|
+| A (chacun les siens, le patron garde tout) ou B (le patron ne reçoit plus ce qu'un autre tient) | à trancher par lui |
+| organigramme déduit des rôles et des équipes, ou avec un chef d'équipe à saisir | à trancher par lui |
+| le tri des rappels qui ferment une porte au commercial | à coder dans les deux cas |
+
 ## 🔜 LES DATES DU MOIS, VALIDÉES PAR LE CLIENT : SUR `main` LE 27 SEPTEMBRE 2026
 
 Planche 130 (`appli/contrat-dates-du-mois.html`). **Sa consigne : « code ça, ne
