@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas : Ses dates, au renvoi du devis</title>
+</head>
+<body>
+<style>
+  /*
+    SES DATES, AU RENVOI DU DEVIS : maquette ESSAYABLE
+
+    Sa demande du 27 septembre 2026 : « Mon client a demandé une correction
+    du devis et a proposé des dates, mais quand je corrige le devis et que je
+    lui renvoie, je ne vois pas les dates qu'il a proposées, donc je lui
+    repropose les mêmes dates. »
+
+    D'où ça part, lu dans le code : la page publique du devis envoie bien
+    les dates du client avec « Une correction avant d'accepter » (un seul
+    formulaire, src/app/devis/[jeton]/formulaire.tsx), mais l'action serveur
+    rend la main AVANT de les lire (src/app/devis/[jeton]/actions.ts, branche
+    « correction »), et enregistrerReponse n'écrit que le message. Les dates
+    partent dans le vide : aucun écran ne peut les montrer, et la feuille
+    « Choisir la date » (EnvoiAuClient) s'ouvre vide au renvoi.
+
+    Ce que la planche fait choisir : OÙ il les voit, et ce que la feuille en
+    fait au renvoi. La correction côté serveur (les garder) est la même
+    quelle que soit la réponse.
+
+    Ce qui ne bouge pas : le message du client reste à sa place, sous le
+    signet ; la ligne des dates se pose juste sous lui, rien ne se déplace.
+
+    Rien n'est codé dans l'application : cette page est une maquette.
+  */
+  :root{
+    --fond:#f5f3ee; --carte:#faf9f5; --teinte:#ece9e1; --encre:#1c1c1a;
+    --doux:#4a4a44; --gris:#8a8578; --or:#B98B47; --rouille:#9C3B2E; --vert:#7d9a6d;
+    --trait:rgba(28,28,26,.12);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:#e6e3dc}
+  body{font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--encre);
+       -webkit-text-size-adjust:100%;padding:0 0 60px}
+  button{font:inherit;color:inherit;cursor:pointer}
+
+  .bandeau{background:var(--encre);color:#f2efe8;padding:14px 18px;text-align:center;font-size:13px;line-height:1.55}
+  .bandeau b{color:#fff}
+
+  .etats{max-width:430px;margin:16px auto 0;padding:0 16px;display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
+  .etats button{border:1px solid var(--trait);background:var(--carte);border-radius:999px;padding:8px 13px;font-size:13px}
+  .etats button[aria-pressed="true"]{background:var(--encre);color:#fff;border-color:var(--encre)}
+
+  h2{max-width:430px;margin:30px auto 0;padding:0 18px;font:400 22px/1.2 Georgia,ui-serif,serif}
+  .sous{max-width:430px;margin:4px auto 0;padding:0 18px;font-size:13px;color:var(--doux)}
+
+  .tel{position:relative;max-width:430px;margin:14px auto 0;background:var(--fond);border-radius:26px;
+       overflow:hidden;box-shadow:0 18px 46px rgba(20,18,14,.18)}
+  .corps{padding:22px 24px 24px}
+
+  /* L'écran « devis parti », tel qu'il est aujourd'hui, plus une ligne */
+  .signet{border-left:2px solid var(--or);padding-left:16px}
+  .signet p{margin:0;font-size:14px}
+  .signet small{display:block;margin-top:4px;font-size:13px;color:var(--gris);line-height:1.35}
+  blockquote{margin:16px 0 0;border-left:2px solid var(--rouille);padding-left:12px;font-size:14px;line-height:1.6}
+  .sesdates{margin:10px 0 0;border-left:2px solid var(--rouille);padding-left:12px;font-size:14px}
+  .sesdates b{font-weight:600}
+  .neuf{background:#fff4d6;border-radius:4px;padding:0 3px}
+  .total{margin-top:30px;text-align:center}
+  .total small{font-size:13px;color:var(--gris)}
+  .total p{margin:8px 0 0;font:400 46px/1 Georgia,ui-serif,serif;color:var(--rouille)}
+  .gros{display:block;width:100%;border:0;border-radius:999px;padding:14px 18px;font-size:15.5px;font-weight:500;margin-top:24px;
+        background:var(--rouille);color:#fff}
+
+  /* La feuille « Choisir la date » au renvoi */
+  .feuille h3{margin:0;font:400 22px/1.2 Georgia,ui-serif,serif}
+  .feuille .rappel{margin:8px 0 0;font-size:13.5px;color:var(--doux)}
+  .mois{margin:16px 0 8px;text-align:center;font-weight:600;font-size:16px;color:var(--doux)}
+  .grille{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center}
+  .grille .jsem{font-size:11px;color:var(--gris);padding-bottom:4px}
+  .jour{position:relative;aspect-ratio:1;border:0;border-radius:50%;background:none;font-size:15px;display:grid;place-items:center}
+  .jour.passe{color:#c3beb2}
+  .jour.pose{background:var(--encre);color:#fff}
+  .jour.client::after{content:"";position:absolute;inset:3px;border-radius:50%;border:2px solid var(--rouille)}
+  .jour.pose.client::after{border-color:var(--rouille)}
+  .legende{margin-top:10px;display:flex;gap:16px;justify-content:center;font-size:12.5px;color:var(--gris)}
+  .legende i{display:inline-block;width:12px;height:12px;border-radius:50%;vertical-align:-2px;margin-right:5px}
+  .legende .l-client{border:2px solid var(--rouille)}
+  .legende .l-pose{background:var(--encre)}
+  .compte{margin-top:14px;text-align:center;font-size:14px;color:var(--doux)}
+  .envoyer{display:block;width:100%;border:0;border-radius:999px;padding:14px 18px;font-size:15.5px;font-weight:500;margin-top:12px;
+           background:var(--vert);color:#fff}
+  .envoyer[disabled]{opacity:.45;cursor:default}
+  .note{max-width:430px;margin:14px auto 0;padding:0 18px;font-size:12.5px;line-height:1.6;color:var(--doux)}
+  .onglets{max-width:430px;margin:12px auto 0;padding:0 16px;display:flex;gap:6px;justify-content:center}
+  .onglets button{border:1px solid var(--trait);background:var(--carte);border-radius:999px;padding:8px 16px;font-size:14px}
+  .onglets button[aria-pressed="true"]{background:var(--or);color:#fff;border-color:var(--or)}
+</style>
+
+<div class="bandeau">
+  <b>Aujourd'hui :</b> les dates que votre client touche avant « Une correction » ne sont pas gardées. Vous ne pouvez pas les voir, et la feuille se rouvre vide.<br>
+  <b>Changez ce que le client a fait</b>, puis touchez les jours.
+</div>
+
+<div class="etats" id="etats">
+  <button data-etat="propose" aria-pressed="true">Il propose ses jours</button>
+  <button data-etat="choisi" aria-pressed="false">Il prend une de vos dates</button>
+  <button data-etat="rien" aria-pressed="false">Aucune date</button>
+</div>
+
+<h2>1. Vous lisez sa demande</h2>
+<p class="sous">L'écran du devis envoyé. Une ligne de plus sous son message, rien ne bouge.</p>
+<div class="tel">
+  <div class="corps">
+    <div class="signet">
+      <p>Correction demandée</p>
+      <small>Corrigez le devis, puis renvoyez-le.</small>
+    </div>
+    <blockquote>« Le portail fait 4 m, pas 3. »</blockquote>
+    <p class="sesdates" id="sesdates"></p>
+    <div class="total">
+      <small>Devis nº 2026-041</small>
+      <p>3 480,00 €</p>
+    </div>
+    <button class="gros" type="button">Corriger et renvoyer</button>
+  </div>
+</div>
+
+<h2>2. Vous renvoyez, et choisissez la date</h2>
+<p class="sous">La feuille « Choisir la date », après la correction. Deux façons :</p>
+<div class="onglets" id="onglets">
+  <button data-option="A" aria-pressed="true">A : ses jours déjà posés</button>
+  <button data-option="B" aria-pressed="false">B : ses jours entourés</button>
+</div>
+<div class="tel">
+  <div class="corps feuille">
+    <h3>Choisir la date</h3>
+    <p class="rappel" id="rappel"></p>
+    <div class="mois">Octobre 2026</div>
+    <div class="grille" id="grille"></div>
+    <div class="legende" id="legende"></div>
+    <p class="compte" id="compte"></p>
+    <button class="envoyer" id="envoyer" type="button">Envoyer au client</button>
+  </div>
+</div>
+
+<p class="note">
+  <b>A</b> : ses jours sont déjà choisis. Vous n'avez qu'à envoyer, ou toucher un autre jour pour les changer.<br>
+  <b>B</b> : ses jours sont entourés en rouge, rien n'est choisi. Vous touchez ses jours, ou d'autres.<br>
+  Dans les deux cas, ses dates restent aussi écrites sur l'écran du devis envoyé (1).<br>
+  Chantier de deux jours. Vos dates du premier envoi : lundi 5 et mardi 6 octobre.
+</p>
+
+<script>
+  // Chantier de deux jours ; aujourd'hui, 27 septembre 2026.
+  const DUREE = 2;
+  const JOURS_SEMAINE = ["lundi","mardi","mercredi","jeudi","vendredi","samedi","dimanche"];
+  const CAS = {
+    propose: { jours: [12, 13], ligne: "Ses dates : <b>lundi 12 et mardi 13 octobre</b>." },
+    choisi:  { jours: [5, 6],   ligne: "Il retient <b>lundi 5 et mardi 6 octobre</b>." },
+    rien:    { jours: [],       ligne: "" }
+  };
+  let etat = "propose", option = "A", poses = [];
+
+  // 1er octobre 2026 : un jeudi, donc trois cases vides avant.
+  function nomDuJour(j){ return JOURS_SEMAINE[(j + 2) % 7]; }
+  function enLettres(js){
+    if (js.length === 0) return "";
+    const noms = js.map(j => nomDuJour(j) + " " + j);
+    return noms.length === 1 ? noms[0] : noms.slice(0, -1).join(", ") + " et " + noms[noms.length - 1];
+  }
+  function ouvrable(j){ const d = (j + 2) % 7; return d < 5; }
+  // Comme la feuille d'aujourd'hui : un appui pose le chantier d'affilée,
+  // un appui sur un jour posé l'efface.
+  function poserDepuis(j){
+    const r = []; let k = j;
+    while (r.length < DUREE && k <= 31){ if (ouvrable(k)) r.push(k); k++; }
+    return r;
+  }
+
+  function repartir(){
+    poses = option === "A" ? CAS[etat].jours.slice() : [];
+    dessiner();
+  }
+
+  function dessiner(){
+    const cas = CAS[etat];
+    const ligne = document.getElementById("sesdates");
+    ligne.innerHTML = cas.ligne ? '<span class="neuf">' + cas.ligne + "</span>" : "";
+    ligne.style.display = cas.ligne ? "" : "none";
+
+    const rappel = document.getElementById("rappel");
+    if (cas.jours.length === 0) rappel.textContent = "Il n'a pas donné de date.";
+    else if (option === "A") rappel.textContent = etat === "propose" ? "Ses jours sont posés." : "Les jours qu'il a pris sont posés.";
+    else rappel.textContent = etat === "propose" ? "Ses jours sont entourés." : "Les jours qu'il a pris sont entourés.";
+
+    const g = document.getElementById("grille");
+    g.innerHTML = "";
+    ["L","M","M","J","V","S","D"].forEach(l => { const s = document.createElement("div"); s.className = "jsem"; s.textContent = l; g.appendChild(s); });
+    for (let i = 0; i < 3; i++) g.appendChild(document.createElement("div"));
+    for (let j = 1; j <= 31; j++){
+      const b = document.createElement("button");
+      b.type = "button"; b.className = "jour"; b.textContent = j;
+      if (!ouvrable(j)) b.classList.add("passe");
+      if (poses.includes(j)) b.classList.add("pose");
+      if (option === "B" && cas.jours.includes(j)) b.classList.add("client");
+      if (ouvrable(j)) b.onclick = () => {
+        poses = poses.includes(j) ? poses.filter(x => x !== j) : poserDepuis(j);
+        dessiner();
+      };
+      g.appendChild(b);
+    }
+
+    const leg = document.getElementById("legende");
+    leg.innerHTML = option === "B" && cas.jours.length
+      ? '<span><i class="l-client"></i>ses jours</span><span><i class="l-pose"></i>vos jours</span>'
+      : "";
+
+    document.getElementById("compte").textContent =
+      poses.length ? "Vous proposez " + enLettres(poses) + " octobre." : "Touchez le premier jour.";
+    document.getElementById("envoyer").disabled = poses.length === 0;
+  }
+
+  document.getElementById("etats").onclick = e => {
+    const b = e.target.closest("button"); if (!b) return;
+    etat = b.dataset.etat;
+    document.querySelectorAll("#etats button").forEach(x => x.setAttribute("aria-pressed", x === b));
+    repartir();
+  };
+  document.getElementById("onglets").onclick = e => {
+    const b = e.target.closest("button"); if (!b) return;
+    option = b.dataset.option;
+    document.querySelectorAll("#onglets button").forEach(x => x.setAttribute("aria-pressed", x === b));
+    repartir();
+  };
+  repartir();
+</script>
+</body>
+</html>

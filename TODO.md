@@ -1,5 +1,21 @@
 # Prochaines tâches
 
+## ⏳ SES DATES, PERDUES QUAND IL DEMANDE UNE CORRECTION (27 septembre 2026)
+
+Sa plainte : *« mon client a demandé une correction et proposé des dates ; quand
+je corrige et renvoie, je ne vois pas ses dates, donc je repropose les mêmes »*.
+
+**La racine, lue dans le code** : la page publique envoie les dates avec
+« Une correction » (un seul formulaire, `src/app/devis/[jeton]/formulaire.tsx`),
+mais `actions.ts` rend la main dans la branche `correction` AVANT de les lire,
+et `enregistrerReponse` (`envois-devis.ts`) n'écrit que `precisionClient`. Rien
+n'est gardé : aucun écran ne peut les montrer, et `EnvoiAuClient` s'ouvre vide.
+
+Planche `appli/dates-du-client-au-renvoi.html` : 1, une ligne sous son message
+sur l'écran du devis envoyé ; 2, au renvoi, A ses jours déjà posés ou B entourés.
+**Rien n'est codé.** À coder après son choix : garder les jours sur la
+correction (niveau 3, devis), les lire au renvoi depuis le dernier envoi.
+
 ## ⏳ RAPPELS PAR RÔLE ET ORGANIGRAMME : PLANCHE V2 DU 27 SEPTEMBRE 2026
 
 Planche `appli/rappels-par-role-et-organigramme.html`. **Rien n'est codé.**
