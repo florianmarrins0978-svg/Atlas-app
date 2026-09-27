@@ -33791,4 +33791,4 @@ Ses réponses du 27 septembre 2026 sur `appli/rappels-par-role-et-organigramme.h
 | les gestes désignent un gars par son RANG, comme `nommerEquipe` | un gars jamais nommé n'a pas de ligne, et doit pouvoir devenir chef |
 | « Ajouter » : un salarié monte le compteur (même geste que le +) ; commercial et facturation passent par « Nouveau compte », rôle déjà choisi | un seul chemin par sorte de personne |
 | **retirer UNE personne n'est pas codé** | le planning retrouve les gars par leur RANG (`nomEquipe`, `PlanningClient`) : sortir quelqu'un du milieu décalerait ou effacerait le nom sur ses chantiers passés. Il faut d'abord que l'historique se lise par identifiant (`TODO.md`) |
-| la photo d'un compte se lit par `photoDUnCompte` (`lib/organigramme.ts`), pour « Qui a accès » comme pour l'organigramme | une seule règle de la tête d'une personne (§430) |
+| la photo d'un compte se lit par `photoDUnCompte` (`src/lib/organigramme.ts`), pour « Qui a accès » comme pour l'organigramme | une seule règle de la tête d'une personne (§430) |
