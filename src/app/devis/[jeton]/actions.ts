@@ -124,26 +124,6 @@ export async function repondreAction(
   const precisionBrute = String(formData.get("precision") ?? "").trim();
   const precision = precisionBrute ? precisionBrute.slice(0, 500) : null;
 
-  if (decision === "correction") {
-    const r = await enregistrerReponse(jeton, { decision: "correction" as const, precision, ...preuve });
-    if (!r.succes) return { erreur: MESSAGES[r.motif] ?? "Impossible d'enregistrer votre demande." };
-    logger.info("Correction demandée par le client");
-    return {
-      succes: "Votre demande est transmise. Votre artisan corrigera le devis et vous le renverra.",
-    };
-  }
-
-  if (decision === "refuse") {
-    const r = await enregistrerReponse(jeton, { decision: "refuse" as const, precision, ...preuve });
-    if (!r.succes) return { erreur: MESSAGES[r.motif] ?? "Impossible d'enregistrer votre réponse." };
-    logger.info("Devis refusé par le client");
-    // Pas de revalidatePath ici : re-rendre la page la ferait basculer sur
-    // l'écran « déjà répondu » et remplacerait le formulaire AVANT que le
-    // client ait vu sa confirmation. Il la verra au prochain chargement, s'il
-    // revient — c'est le rôle de cet écran, pas celui de cet instant.
-    return { succes: "Votre réponse a bien été transmise." };
-  }
-
   // « proposee » désigne l'une des dates offertes ; « autre » bascule sur le
   // calendrier. On ne devine jamais l'intention : sans choix explicite, on
   // redemande.
@@ -167,6 +147,37 @@ export async function repondreAction(
         .sort()
     : [];
   const dateRetenue = choix === "autre" ? (joursAutres[0] ?? "") : choix;
+
+  if (decision === "correction") {
+    // **Ses dates partent AVEC la correction** — sa plainte du 27 septembre
+    // 2026 : elles étaient postées, puis jetées ici avant d'être lues, et le
+    // patron renvoyait le devis corrigé sans les avoir vues. Facultatives : une
+    // correction sans date reste une correction.
+    const r = await enregistrerReponse(jeton, {
+      decision: "correction" as const,
+      precision,
+      dateRetenue: dateRetenue || undefined,
+      joursRetenus: joursAutres.length > 0 ? joursAutres : undefined,
+      ...preuve,
+    });
+    if (!r.succes) return { erreur: MESSAGES[r.motif] ?? "Impossible d'enregistrer votre demande." };
+    logger.info("Correction demandée par le client");
+    return {
+      succes: "Votre demande est transmise. Votre artisan corrigera le devis et vous le renverra.",
+    };
+  }
+
+  if (decision === "refuse") {
+    const r = await enregistrerReponse(jeton, { decision: "refuse" as const, precision, ...preuve });
+    if (!r.succes) return { erreur: MESSAGES[r.motif] ?? "Impossible d'enregistrer votre réponse." };
+    logger.info("Devis refusé par le client");
+    // Pas de revalidatePath ici : re-rendre la page la ferait basculer sur
+    // l'écran « déjà répondu » et remplacerait le formulaire AVANT que le
+    // client ait vu sa confirmation. Il la verra au prochain chargement, s'il
+    // revient — c'est le rôle de cet écran, pas celui de cet instant.
+    return { succes: "Votre réponse a bien été transmise." };
+  }
+
   if (!dateRetenue) return { erreur: MESSAGES.date_manquante };
 
   const r = await enregistrerReponse(jeton, {

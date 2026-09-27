@@ -19,6 +19,7 @@ import {
   blocEnEvitant,
   gesteSurUnJour,
   joursManquants,
+  premiereProposition,
   toucherUnJour,
   type EtatDesPropositions,
 } from "../src/lib/propositions-de-jours";
@@ -212,6 +213,37 @@ cas("à cheval sur deux mois, chaque jour porte le sien", () => {
   assert.equal(
     joursEnToutesLettres(["2026-09-30", "2026-10-01", "2026-10-02"], en2026),
     "le mercredi 30 septembre, le jeudi 1er octobre et le vendredi 2 octobre"
+  );
+});
+
+/**
+ * **AU RENVOI, SES JOURS D'ABORD** — sa plainte du 27 septembre 2026 : *« je
+ * ne vois pas les dates qu'il a proposées, donc je lui repropose les mêmes »*.
+ * Proposition A de `appli/dates-du-client-au-renvoi.html` : ses jours sont
+ * posés d'office. Deux jours = quatre demi-journées.
+ */
+const base = { joursLibres: ["2026-10-05", "2026-10-06"], joursOccupes: [] as string[], debut: "2026-09-28", dureeDemiJournees: 4 };
+
+cas("ses jours de correction sont posés d'office, à la place du premier jour libre", () => {
+  assert.deepEqual(premiereProposition({ ...base, joursDuClient: ["2026-10-12", "2026-10-13"] }), [["2026-10-12", "2026-10-13"]]);
+});
+
+cas("sans ses jours, le premier jour libre, comme avant", () => {
+  assert.deepEqual(premiereProposition({ ...base, joursDuClient: null }), [["2026-10-05", "2026-10-06"]]);
+});
+
+cas("un de ses jours passé ou sans place : rien ne se pose en silence, on revient au premier jour libre", () => {
+  assert.deepEqual(premiereProposition({ ...base, joursDuClient: ["2026-09-24", "2026-09-25"] }), [["2026-10-05", "2026-10-06"]]);
+  assert.deepEqual(
+    premiereProposition({ ...base, joursOccupes: ["2026-10-13"], joursDuClient: ["2026-10-12", "2026-10-13"] }),
+    [["2026-10-05", "2026-10-06"]]
+  );
+});
+
+cas("la durée a changé depuis : le chantier repart d'affilée depuis son premier jour", () => {
+  assert.deepEqual(
+    premiereProposition({ ...base, dureeDemiJournees: 6, joursDuClient: ["2026-10-12", "2026-10-13"] }),
+    [["2026-10-12", "2026-10-13", "2026-10-14"]]
   );
 });
 

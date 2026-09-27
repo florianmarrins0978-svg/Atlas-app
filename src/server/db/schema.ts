@@ -1985,6 +1985,13 @@ export const envoisDevis = pgTable(
     dateRetenue: date("date_retenue"),
     dateContreProposee: boolean("date_contre_proposee").notNull().default(false),
     precisionClient: text("precision_client"),
+    /**
+     * Les jours que le client a touchés en demandant une CORRECTION : un
+     * souhait, jamais une date retenue (migration 0109). C'est ce que la
+     * feuille « Choisir la date » pose d'office au renvoi, pour que le patron
+     * ne lui repropose pas les mêmes dates sans les avoir vues.
+     */
+    joursSouhaites: jsonb("jours_souhaites").$type<string[]>(),
     demarrageAnticipe: boolean("demarrage_anticipe").notNull().default(false),
 
     adresseIp: text("adresse_ip"),

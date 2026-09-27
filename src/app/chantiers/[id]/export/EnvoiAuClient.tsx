@@ -14,9 +14,9 @@ import { ditCeQuiResteCeJour, equipesLibresCeJour } from "@/lib/planning-jour";
 import JourneeRegardee from "./JourneeRegardee";
 import {
   basculerLaSeconde,
-  blocEnEvitant,
   gesteSurUnJour,
   joursManquants,
+  premiereProposition,
   toucherUnJour,
   type EtatDesPropositions,
 } from "@/lib/propositions-de-jours";
@@ -252,22 +252,29 @@ function Contenu({
         // Le mois d'aujourd'hui, posé une seule fois : le rappel de la
         // préparation à chaque changement de durée ne doit pas ramener le
         // patron de mars à août pendant qu'il cherche une date.
-        setCurseur((c) => {
-          if (c) return c;
-          const d = new Date(`${jourIso(new Date())}T12:00:00Z`);
-          return { annee: d.getUTCFullYear(), mois: d.getUTCMonth() };
-        });
-        // Pré-sélection du premier jour libre : dans la majorité des cas c'est
-        // celui que le patron retiendra, et il reste libre de le décocher.
+        // Pré-sélection : les jours que son client a proposés avec sa
+        // correction, sinon le premier jour libre (`premiereProposition`, sa
+        // plainte du 27 septembre 2026). Il reste libre de les décocher.
         // Recalculée à chaque changement de durée : garder une date qui ne tient
         // plus l'aurait fait refuser à l'envoi, sans qu'il comprenne pourquoi.
-        // Le premier jour libre, et le bloc d'affilée derrière lui : ce que
-        // l'écran proposait déjà, écrit maintenant jour par jour.
-        setEtat(
-          p.joursLibres[0]
-            ? { ...AUCUNE_PROPOSITION, propositions: [blocEnEvitant(p.joursLibres[0], p.dureeDemiJournees, new Set())] }
-            : AUCUNE_PROPOSITION
-        );
+        const propositions = premiereProposition({
+          joursDuClient: p.joursDuClient,
+          joursLibres: p.joursLibres,
+          joursOccupes: p.joursOccupes,
+          debut: p.fenetre.debut,
+          dureeDemiJournees: p.dureeDemiJournees,
+        });
+        // Le mois du premier jour posé, sinon celui d'aujourd'hui, et une seule
+        // fois : le rappel de la préparation à chaque changement de durée ne
+        // doit pas ramener le patron de mars à août pendant qu'il cherche.
+        // Ses jours à lui peuvent tomber le mois suivant : ouvrir sur un mois
+        // où rien n'est posé les lui cacherait.
+        setCurseur((c) => {
+          if (c) return c;
+          const d = new Date(`${propositions[0]?.[0] ?? jourIso(new Date())}T12:00:00Z`);
+          return { annee: d.getUTCFullYear(), mois: d.getUTCMonth() };
+        });
+        setEtat({ ...AUCUNE_PROPOSITION, propositions });
       })
       .catch(() => {
         if (!annule) setErreur("Impossible de préparer l'envoi pour l'instant.");

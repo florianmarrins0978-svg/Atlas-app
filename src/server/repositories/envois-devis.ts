@@ -736,6 +736,29 @@ export async function pdfDevisParJeton(
   }
 }
 
+/**
+ * La durée que le chantier réserve, en demi-journées : celle qu'il porte, sinon
+ * celle de sa dictée, sinon une journée. Une seule lecture, pour l'acceptation
+ * comme pour la correction : deux calculs finiraient par étaler différemment
+ * le même jour.
+ */
+async function dureeDuChantier(
+  tx: DbOrTx,
+  envoi: { chantierId: string; entrepriseId: string }
+): Promise<number> {
+  await tx.execute(sql`SELECT set_config('app.entreprise_id', ${envoi.entrepriseId}, true)`);
+  const [chantierRow] = await tx
+    .select({ duree: chantiers.dureeDemiJournees, dureePrevue: chantiers.dureePrevue })
+    .from(chantiers)
+    .where(eq(chantiers.id, envoi.chantierId))
+    .limit(1);
+  return (
+    chantierRow?.duree ??
+    dureeEnDemiJournees(chantierRow?.dureePrevue ?? null) ??
+    DUREE_PAR_DEFAUT_DEMI_JOURNEES
+  );
+}
+
 export type ReponseClient = {
   /**
    * Ce que le client a décidé.
@@ -745,7 +768,10 @@ export type ReponseClient = {
    * « Je ne donne pas suite », et le patron lit un refus.
    */
   decision: "accepte" | "refuse" | "correction";
-  /** Requise si accepte : l'une des dates proposées, ou une contre-proposition. */
+  /**
+   * Requise si accepte : l'une des dates proposées, ou une contre-proposition.
+   * Facultative sur une correction : le souhait du client, gardé à part.
+   */
   dateRetenue?: JourIso;
   /**
    * LES JOURS QU'ELLE A POSÉS, quand elle propose les siens — sa demande du
@@ -836,22 +862,10 @@ export async function enregistrerReponse(
       return { succes: false, motif: "message_manquant" as const };
     }
 
-    if (reponse.decision !== "accepte") {
-      await tx
-        .update(envoisDevis)
-        .set({
-          reponse: reponse.decision === "correction" ? "correction" : "refusee",
-          responduAt: maintenant,
-          precisionClient: precision,
-          adresseIp: reponse.adresseIp ?? null,
-          agentUtilisateur: reponse.agentUtilisateur ?? null,
-        })
-        .where(eq(envoisDevis.jeton, jeton));
-      return { succes: true as const, dateRetenue: null, contreProposee: false };
-    }
-
+    // **Lue AVANT la décision** : une correction porte aussi les jours que le
+    // client a touchés (sa plainte du 27 septembre 2026), et ils se jugent par
+    // les mêmes règles qu'à l'acceptation, écrites une seule fois ci-dessous.
     const date = reponse.dateRetenue;
-    if (!date) return { succes: false, motif: "date_manquante" as const };
 
     /**
      * **LES JOURS QU'ELLE A POSÉS — sa demande du 20 septembre 2026.**
@@ -874,7 +888,7 @@ export async function enregistrerReponse(
       return { succes: false, motif: "date_manquante" as const };
     }
 
-    const rangProposee = envoi.datesProposees.indexOf(date);
+    const rangProposee = date ? envoi.datesProposees.indexOf(date) : -1;
     /**
      * `null`, et surtout PAS `[date]`, sur un envoi d'avant la migration 0095 :
      * une liste d'un seul jour ferait poser un chantier de deux jours sur un
@@ -900,7 +914,8 @@ export async function enregistrerReponse(
       joursProposesPourCeJour !== null &&
       joursDuClient.length === joursProposesPourCeJour.length &&
       joursDuClient.every((j, i) => j === [...joursProposesPourCeJour].sort()[i]);
-    const contreProposee = rangProposee < 0 || (joursDuClient !== null && !memesJoursQueProposes);
+    const contreProposee =
+      date !== undefined && (rangProposee < 0 || (joursDuClient !== null && !memesJoursQueProposes));
 
     // **Le refus se fait ICI, pas seulement à l'écran** (17 août 2026). La page
     // du client est publique : elle s'ouvre sans compte, et son formulaire se
@@ -927,6 +942,38 @@ export async function enregistrerReponse(
     // garde le droit de commencer l'après-midi quand le matin est pris.
     const joursChoisis = joursDuClient ?? joursProposesPourCeJour;
 
+    if (reponse.decision !== "accepte") {
+      /**
+       * **SES JOURS, GARDÉS AVEC LA CORRECTION** — sa plainte du 27 septembre
+       * 2026 : *« je ne vois pas les dates qu'il a proposées, donc je lui
+       * repropose les mêmes »*. Ils partaient avec le formulaire, et cette
+       * branche rendait la main avant de les lire. Un SOUHAIT, jamais une date
+       * retenue : rien ne se pose au planning, et `date_retenue` reste vide
+       * (migration 0109). Un refus n'en porte pas.
+       */
+      // La page est publique et son formulaire se rejoue : un souhait se garde
+      // tel quel, mais jamais autre chose qu'une liste de jours.
+      const joursSouhaites =
+        reponse.decision === "correction" && date && /^\d{4}-\d{2}-\d{2}$/.test(date)
+          ? (joursChoisis ?? joursDuBloc(date as JourIso, await dureeDuChantier(tx, envoi))).filter((j) =>
+              /^\d{4}-\d{2}-\d{2}$/.test(j)
+            )
+          : null;
+      await tx
+        .update(envoisDevis)
+        .set({
+          reponse: reponse.decision === "correction" ? "correction" : "refusee",
+          responduAt: maintenant,
+          precisionClient: precision,
+          joursSouhaites: joursSouhaites ? [...joursSouhaites] : null,
+          adresseIp: reponse.adresseIp ?? null,
+          agentUtilisateur: reponse.agentUtilisateur ?? null,
+        })
+        .where(eq(envoisDevis.jeton, jeton));
+      return { succes: true as const, dateRetenue: null, contreProposee: false };
+    }
+    if (!date) return { succes: false, motif: "date_manquante" as const };
+
     await tx.execute(sql`SELECT set_config('app.entreprise_id', ${envoi.entrepriseId}, true)`);
     const fenetre = fenetrePourDates(envoi.envoyeAt, [
       ...envoi.datesProposees,
@@ -940,15 +987,7 @@ export async function enregistrerReponse(
       periodesExterieures
     );
 
-    const [chantierRow] = await tx
-      .select({ duree: chantiers.dureeDemiJournees, dureePrevue: chantiers.dureePrevue })
-      .from(chantiers)
-      .where(eq(chantiers.id, envoi.chantierId))
-      .limit(1);
-    const duree =
-      chantierRow?.duree ??
-      dureeEnDemiJournees(chantierRow?.dureePrevue ?? null) ??
-      DUREE_PAR_DEFAUT_DEMI_JOURNEES;
+    const duree = await dureeDuChantier(tx, envoi);
 
     // **Ce que le PATRON a proposé, le client peut le prendre.**
     //

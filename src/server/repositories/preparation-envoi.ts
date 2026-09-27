@@ -1,4 +1,4 @@
-import { and, eq, gte, isNull, lte, sql } from "drizzle-orm";
+import { and, desc, eq, gte, isNull, lte, sql } from "drizzle-orm";
 import { withEntreprise } from "../db/with-entreprise";
 import { fusionnerOccupationExterne } from "../../lib/agenda-externe";
 import { fusionnerAbsences } from "../../lib/absences-equipe";
@@ -8,7 +8,7 @@ import {
   encoreEnCoursDepuis,
   equipesParChantier,
 } from "./occupation-chantiers";
-import { absencesEquipe, chantiers, clients, devis, entreprises, lignesDevis } from "../db/schema";
+import { absencesEquipe, chantiers, clients, devis, entreprises, envoisDevis, lignesDevis } from "../db/schema";
 import { devisEnvoyable } from "../../lib/devis-envoyable";
 import type { Ctx } from "./context";
 import {
@@ -82,6 +82,14 @@ export type PreparationEnvoi = {
   dureeDemiJournees: number;
   /** La durée a-t-elle été déduite de la dictée, ou faute de mieux ? */
   dureeDeduiteDeLaDictee: boolean;
+  /**
+   * Les jours que le client a proposés en demandant une correction, quand le
+   * dernier envoi en porte ; `null` sinon. Sa plainte du 27 septembre 2026 :
+   * sans eux, il renvoyait le devis corrigé avec les mêmes dates, sans avoir vu
+   * les siennes. La feuille les pose d'office (planche
+   * `appli/dates-du-client-au-renvoi.html`, proposition A).
+   */
+  joursDuClient: JourIso[] | null;
   /** Motif rendant l'envoi impossible, à afficher tel quel au patron. */
   blocage: "canal_absent" | "coordonnee_absente" | "devis_absent" | "devis_vide" | null;
 };
@@ -151,6 +159,19 @@ export async function preparerEnvoi(
       .from(devis)
       .where(and(eq(devis.chantierId, chantierId), eq(devis.entrepriseId, ctx.entrepriseId)))
       .limit(1);
+
+    // Le DERNIER envoi, et lui seul : c'est lui que le patron est en train de
+    // corriger. Une correction plus ancienne a déjà reçu sa réponse.
+    const [envoiPrecedent] = await tx
+      .select({ reponse: envoisDevis.reponse, joursSouhaites: envoisDevis.joursSouhaites })
+      .from(envoisDevis)
+      .where(and(eq(envoisDevis.chantierId, chantierId), eq(envoisDevis.entrepriseId, ctx.entrepriseId)))
+      .orderBy(desc(envoisDevis.envoyeAt))
+      .limit(1);
+    const joursDuClient =
+      envoiPrecedent?.reponse === "correction" && envoiPrecedent.joursSouhaites?.length
+        ? (envoiPrecedent.joursSouhaites as JourIso[])
+        : null;
 
     // **Compter les lignes, parce qu'un devis vide part sinon sans un mot.**
     //
@@ -314,6 +335,7 @@ export async function preparerEnvoi(
       ),
       fenetre,
       dureeDemiJournees,
+      joursDuClient,
       dureeDeduiteDeLaDictee: dureeImposee === undefined && chantier?.dureeDemiJournees == null && deduite !== null,
       blocage,
     };

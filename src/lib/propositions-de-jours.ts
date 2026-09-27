@@ -203,3 +203,38 @@ export function toucherUnJourDuClient(
   const apres = toucherUnJour(etat, jour, Math.max(1, nombreDeJours) * 2, 1);
   return [...(apres.propositions[0] ?? [])].sort();
 }
+
+/**
+ * **CE QUE LA FEUILLE POSE D'OFFICE À L'OUVERTURE.**
+ *
+ * Au renvoi d'un devis corrigé, les jours que le client a proposés avec sa
+ * correction — sa plainte du 27 septembre 2026, *« je ne vois pas les dates
+ * qu'il a proposées, donc je lui repropose les mêmes »*, proposition A de
+ * `appli/dates-du-client-au-renvoi.html`. Sinon, le premier jour libre et le
+ * chantier d'affilée derrière lui, comme toujours.
+ *
+ * **Ses jours ne se posent que s'ils tiennent encore** : un jour passé, ou où
+ * le chantier n'a plus sa place, ferait partir un envoi qu'il n'a pas jugé.
+ * On revient alors au premier jour libre, et l'écran du devis envoyé continue
+ * de lui dire ses dates. Si la durée a changé depuis, le chantier repart
+ * d'affilée depuis son premier jour.
+ */
+export function premiereProposition(entree: {
+  joursDuClient: readonly JourIso[] | null;
+  joursLibres: readonly JourIso[];
+  joursOccupes: readonly JourIso[];
+  /** Le premier jour qu'on peut proposer. */
+  debut: JourIso;
+  dureeDemiJournees: number;
+}): Propositions {
+  const siens = [...(entree.joursDuClient ?? [])].sort();
+  const occupes = new Set(entree.joursOccupes);
+  const tiennent = siens.length > 0 && siens.every((j) => j >= entree.debut && !occupes.has(j));
+  if (tiennent) {
+    return siens.length === joursDuChantier(entree.dureeDemiJournees)
+      ? [siens]
+      : [blocEnEvitant(siens[0], entree.dureeDemiJournees, new Set())];
+  }
+  const premierLibre = entree.joursLibres[0];
+  return premierLibre ? [blocEnEvitant(premierLibre, entree.dureeDemiJournees, new Set())] : [];
+}

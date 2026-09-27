@@ -169,6 +169,7 @@ export default async function ExportPage({
           initialEnvoye={devisRow.statut === "envoye"}
           etatEnvoi={etat}
           messageClient={envoi?.precisionClient ?? null}
+          joursDuClient={envoi?.reponse === "correction" ? (envoi.joursSouhaites ?? null) : null}
           lienEnvoi={envoi && !envoi.reponse ? `/devis/${envoi.jeton}` : null}
         origine={origine}
       />
