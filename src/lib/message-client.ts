@@ -483,6 +483,27 @@ export function composerMessageContrat(params: {
 }
 
 /**
+ * Le message des DATES DU MOIS d'un contrat (planche 130) : un seul lien pour
+ * tous les passages du mois. `duMois` vaut « d'octobre », « de novembre ».
+ */
+export function composerMessageDatesDuMois(params: {
+  clientNom: string;
+  clientCivilite?: CiviliteChoisie;
+  entrepriseNom: string;
+  duMois: string;
+  lien: string;
+}): MessageClient {
+  const { clientNom, clientCivilite, entrepriseNom, duMois, lien } = params;
+  return {
+    objet: `Vos passages ${duMois}`,
+    corps: rendreMessage(
+      enveloppe(`Voici les dates de vos passages ${duMois}. Vous pouvez les valider sur cette page :`),
+      { client: nommer(clientNom, clientCivilite), document: "dates de passage", lien, entreprise: entrepriseNom }
+    ),
+  };
+}
+
+/**
  * Adresse `mailto:` ou `sms:` ouvrant l'application du patron, message prêt.
  *
  * Le destinataire peut manquer : le message s'ouvre alors sans lui plutôt que

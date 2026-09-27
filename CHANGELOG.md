@@ -8,6 +8,14 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-27
 
+### Les dates du mois d'un contrat, validées par le client (sur sa branche)
+
+La dernière date du mois posée, le tiroir du planning propose « Envoyer les
+dates d'octobre » : un seul lien pour tous les passages du client. Il valide,
+ou choisit un autre jour libre du mois si c'est permis ; le planning suit tout
+seul. Sans réponse, les dates tiennent. Ce que ça évite : un appel par tonte
+pour caler les rendez-vous. `ARCHITECTURE.md` §427.
+
 ### Le contrat d'entretien, lot 2 : chaque passage se facture (sur sa branche)
 
 Un passage fait arrive dans Terminés avec son montant prévu, et « Créer la

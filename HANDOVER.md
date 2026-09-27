@@ -23,6 +23,7 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 | **les suites** | `test-contrats-entretien` (pure), `test-contrats-entretien-db` (atlas_app) |
 | **la facture (lot 2)** | `terminerChantier` bâtit celle d'un passage (`poserLaFactureDuPassage`) ; Terminés lit `totalPrevuTtc` ; l'automatisme vit dans `factureDuPassageAvecSonCompteRendu`, appelé par `envoyerFicheAction` |
 | **le piège** | la facturation A s'enregistre et s'imprime, mais ne crée aucune facture : c'est le lot 3 |
+| **les dates du mois (27 sept.)** | règles `src/lib/dates-du-mois.ts`, base `drizzle/0108_dates_du_mois.sql`, dépôt `src/server/repositories/dates-du-mois.ts`, tiroir `src/app/planning/DatesDuMois.tsx`, page du client `src/app/contrat/dates/[jeton]/` ; suites `test-dates-du-mois` et `test-dates-du-mois-db` |
 
 ## MON AGENDA EN SIMPLE : 26 septembre 2026
 

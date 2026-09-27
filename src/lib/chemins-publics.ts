@@ -66,7 +66,8 @@ export const CHEMINS_PUBLICS = [
   // contrôlé par une politique dédiée. Sans jeton exact, aucune ligne.
   "/entretien",
   // Le contrat d'entretien, lu et accepté par le client sans compte
-  // (26 septembre 2026) : la mécanique du devis, par jeton exact.
+  // (26 septembre 2026), puis les dates de ses passages du mois
+  // (`/contrat/dates`, 27 septembre) : la mécanique du devis, par jeton exact.
   "/contrat",
 ] as const;
 

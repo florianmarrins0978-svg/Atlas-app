@@ -33693,3 +33693,21 @@ est coupée, jamais une facture partie d'un seul côté en silence.
 | il vise le passage du **même client, même jour**, dont le contrat a l'automatisme ; rejoué, il rend le même lien | un second appui ne fait ni seconde facture ni second lien (éprouvé) |
 | seul qui peut facturer le fait partir ; un échec **n'empêche pas** le compte rendu, et la fiche le dit en restant ouverte | la garde de la facture ne s'efface pas en passant par la fiche ; une facture qu'il croirait partie serait pire qu'un refus |
 | le lien de facture s'ajoute **en fin de message**, après son modèle | son modèle de compte rendu reste intact, et un compte rendu sans facture reste sans prix |
+
+
+## §427 : Les dates du mois d'un contrat : un lien par client et par mois
+
+Sa demande du 27 septembre 2026, planche 130 : envoyer au client les dates de
+ses passages du mois, comme les dates d'un devis. Migration 0108.
+
+| Décision | Pourquoi |
+|---|---|
+| une ligne `envois_dates_contrat` par (contrat, mois), unique | un seul SMS pour toutes les tontes du mois ; un second appui rend le même lien |
+| les dates ne sont **pas** recopiées dans l'envoi : la page du client lit les passages posés | le planning reste la seule vérité ; un passage déplacé par le patron après l'envoi se lit juste |
+| « à envoyer » et « en attente » sortent d'une fonction pure (`datesDuMois`), calculée sur la liste vivante du planning, et rejouée par le serveur avant d'envoyer | la dernière date posée ouvre l'envoi sans recharger, et l'écran ne décide de rien |
+| sans réponse, rien ne bascule : l'attente cesse quand le dernier jour est passé | sa décision : « il faut qu'elle tienne jusqu'à la date prévue » |
+| « autre date » : le mois entier à partir de demain, jours retenables seulement (`contrainteDuPlanning`, exportée, et `jourRetenable`) | la semaine seule laissait le client sans choix ; la même carte d'occupation que le devis, agenda extérieur et absences compris |
+| chaque jour changé se revérifie à la réponse, un par un, dans une transaction ; un refus la défait entière | un jour libre à l'ouverture peut s'être rempli ; deux passages déplacés doivent se voir l'un l'autre |
+| le déplacement s'écrit par `ecrireLesCreneaux` | le seul écrivain de « où le chantier est posé » (§322) |
+| l'envoi est gardé par `exigerEcritureSurLePlanning` ; la page du client par son jeton exact (politique `app.jeton_dates`) et `verifierLimite` | qui pose le planning envoie ses dates ; la réponse a les bornes de celle du contrat |
+| `/contrat/dates/<jeton>` sous le préfixe public `/contrat` | aucun chemin public de plus à tenir |

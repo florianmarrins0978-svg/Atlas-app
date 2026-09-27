@@ -105,7 +105,7 @@ export async function joursOccupes(
  * `tx` est passé de l'extérieur parce que deux de ces chemins n'ont pas de
  * session : la page du client pose son contexte par jeton (voir `lireParJeton`).
  */
-async function contrainteDuPlanning(
+export async function contrainteDuPlanning(
   tx: DbOrTx,
   entrepriseId: string,
   fenetre: FenetreProposition,

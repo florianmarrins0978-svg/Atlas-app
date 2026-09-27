@@ -1003,6 +1003,8 @@ export async function listerChantiersPourPlanning(ctx: Ctx) {
         devisEnvoyeAt: chantiers.devisEnvoyeAt,
         // Un passage de contrat attend son jour sans devis (`getPlanificationEtat`).
         contratEntretienId: chantiers.contratEntretienId,
+        // Sa clé dit son mois : c'est elle qui groupe les dates à envoyer.
+        contratPassage: chantiers.contratPassage,
         datePlanifiee: chantiers.datePlanifiee,
         // Le créneau et la durée réservée : lisibles par le patron seul. Deux
         // chantiers peuvent désormais tomber le même jour, et sans cette

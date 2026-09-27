@@ -1,22 +1,26 @@
 # Prochaines tâches
 
-## 🔜 LES DATES DU MOIS, VALIDÉES PAR LE CLIENT : TRANCHÉ, À CODER (27 septembre 2026)
+## 🔜 LES DATES DU MOIS, VALIDÉES PAR LE CLIENT : CODÉ LE 27 SEPTEMBRE 2026, PAS SUR `main`
 
-`appli/contrat-dates-du-mois.html`, planche 130. Sa demande : *« quand je veux le
-placer sur le planning, il faudrait que je puisse lui envoyer le lien pour qu'il
-valide la date, comme lorsque j'envoie un devis seul. Tous les 20 du mois,
-j'envoie pour le mois suivant. »* Proposé : un lien par client et par mois,
-passages posés en or pointillé (proposés) jusqu'à la réponse, « En attente du
-client » comme un devis, un autre jour libre de la semaine au choix du client,
-un rappel le 20 sur l'accueil. **Tranché le 27 : sans réponse, la date tient
-jusqu'au jour prévu** (*« au pire l'utilisateur la déplacera »*), aucune bascule
-avant. **Et l'envoi s'ouvre de lui-même** dès que la dernière date (ou la seule) est
-posée : le bloc « À envoyer » passe en tête du tiroir et l'écran y descend, sans
-retoucher le nom du client (sa demande du 27). **Le bouton d'envoi est sous les
-lignes** (sa correction). **« Votre client peut proposer une autre date »** : un
-interrupteur avant l'envoi, allumé d'office, le même que le devis
-(`autreDateAutorisee`) ; permis, le client voit le mois entier, jours pris barrés,
-avec le `Calendrier` de la page du devis. Rien n'est codé.
+Planche 130 (`appli/contrat-dates-du-mois.html`). **Sa consigne : « code ça, ne
+lance pas de batterie ».** Niveau 3 (migration 0108) : batterie entière avant
+`main`. `ARCHITECTURE.md` §427, document de retour `docs/contrat-dates-du-mois.md`.
+
+| Codé et éprouvé ici | |
+|---|---|
+| la dernière date posée ouvre le tiroir sur « À envoyer », poignée « Prêt à envoyer à Mme Costa » | regardé |
+| interrupteur « Votre client peut proposer une autre date », allumé d'office ; canal ; bouton sous les lignes | regardé |
+| envoyé : le client passe « En attente du client » ; sans réponse, les dates tiennent | en base |
+| la page du client `/contrat/dates/<jeton>` : ses dates, « Une autre date ? » sur le mois entier, jours pris barrés, « Ces dates me vont » | regardé, et le planning a suivi en base |
+| un jour qui ne tient plus refuse toute la réponse, rien n'est écrit à moitié | en base |
+
+| Reste | Qui |
+|---|---|
+| l'envoi réel du SMS ou du courriel (ici l'adresse locale le refuse, à raison) | à essayer chez lui |
+| le trait en or pointillé « proposé » au calendrier, avant réponse : **non codé** | à coder s'il le veut |
+| le rappel du 20 sur l'accueil : **non codé** | à coder |
+| le patron n'est pas notifié quand le client valide ou déplace : le planning bouge seul | à trancher par lui |
+| la batterie, puis `main` | sa décision |
 
 ## 🔜 CONTRAT D'ENTRETIEN : LOTS 1 ET 2 CODÉS, PAS SUR `main` (26 et 27 septembre 2026)
 

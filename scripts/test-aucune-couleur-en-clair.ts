@@ -58,6 +58,8 @@ const SURVEILLES = [
   "src/app/clients/[id]/contrat/page.tsx",
   "src/app/clients/[id]/contrat/ContratClient.tsx",
   "src/app/clients/[id]/RepartirDeCeClient.tsx",
+  // Les dates du mois dans le tiroir du planning (27 septembre 2026).
+  "src/app/planning/DatesDuMois.tsx",
 ];
 
 /**

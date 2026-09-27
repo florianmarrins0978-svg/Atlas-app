@@ -4,6 +4,13 @@
 · dernière migration `drizzle/0106_hausse_du_devis_repris.sql` (sur la branche)
 
 ---
+## CODÉ, PAS SUR `main` : LES DATES DU MOIS D'UN CONTRAT (27 septembre 2026)
+
+La dernière date d'un mois posée au planning ouvre « À envoyer » : un lien par
+client et par mois, « autre date » permise ou non. Le client valide ou choisit
+un jour libre du mois ; le planning suit. Migration 0108, `ARCHITECTURE.md`
+§427. Pas encore : le trait « proposé », le rappel du 20. Batterie à jouer.
+
 ## CODÉ, PAS SUR `main` : LE CONTRAT D'ENTRETIEN, LOTS 1 ET 2 (26 et 27 septembre 2026)
 
 Fiche client : « Contrat d'entretien » à côté de « Nouveau devis ». Écran du

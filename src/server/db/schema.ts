@@ -784,6 +784,39 @@ export const contratsEntretien = pgTable(
   ]
 );
 
+/**
+ * L'envoi des dates d'un mois au client d'un contrat : un lien pour tous ses
+ * passages du mois (migration 0108, planche 130). Les dates elles-mêmes sont
+ * celles des passages posés au planning ; cette ligne ne les recopie pas.
+ */
+export const envoisDatesContrat = pgTable(
+  "envois_dates_contrat",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    entrepriseId: uuid("entreprise_id")
+      .notNull()
+      .references(() => entreprises.id, { onDelete: "cascade" }),
+    contratEntretienId: uuid("contrat_entretien_id").notNull(),
+    mois: date("mois").notNull(),
+    jeton: text("jeton").notNull().unique(),
+    canal: text("canal", { enum: ["sms", "email"] }).notNull(),
+    autreDateAutorisee: boolean("autre_date_autorisee").notNull().default(true),
+    envoyeLe: timestamp("envoye_le", { withTimezone: true }).notNull().defaultNow(),
+    reponduLe: timestamp("repondu_le", { withTimezone: true }),
+    reponseAdresseIp: text("reponse_adresse_ip"),
+    reponseAgent: text("reponse_agent"),
+  },
+  (t) => [
+    unique("envois_dates_contrat_mois_uk").on(t.contratEntretienId, t.mois),
+    index("envois_dates_contrat_entreprise_idx").on(t.entrepriseId, t.mois),
+    foreignKey({
+      columns: [t.contratEntretienId, t.entrepriseId],
+      foreignColumns: [contratsEntretien.id, contratsEntretien.entrepriseId],
+      name: "envois_dates_contrat_contrat_fk",
+    }).onDelete("cascade"),
+  ]
+);
+
 // --- Chantiers ---
 
 export const chantiers = pgTable(

@@ -229,6 +229,9 @@ const EXEMPTIONS: Record<string, string> = {
   "src/app/contrat/[jeton]/actions.ts#repondreContratAction":
     "Le contrat d'entretien s'accepte par un jeton, sans compte, comme le devis : le jeton EST la garde, " +
     "et la cadence est bornée par `verifierLimite` avant toute lecture (26 septembre 2026).",
+  "src/app/contrat/dates/[jeton]/actions.ts#validerDatesAction":
+    "Les dates du mois se valident par un jeton, sans compte, comme le contrat : le jeton EST la garde, " +
+    "la cadence est bornée par `verifierLimite`, et chaque jour changé se revérifie au planning (27 septembre 2026).",
   "src/app/documents-legaux/actions.ts#accepterDocumentsAction":
     "Accepter les documents légaux est la porte d'entrée : la fermer par rôle enfermerait dehors le salarié qui n'a pas encore accepté.",
   "src/app/verifier-email/actions.ts#verifierLeCodeAction":

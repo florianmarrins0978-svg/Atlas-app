@@ -8,6 +8,11 @@ import { chantierDemandeAuPlanning } from "@/lib/lien-planning";
 import { reglesDuRetour } from "@/server/regles-du-retour";
 import { chantiersAvecRetourDuJour } from "@/server/repositories/retours-intervention";
 import { peutPoserUnRetour } from "@/lib/acces-roles";
+import { datesDuMoisPourLePlanning } from "@/server/repositories/dates-du-mois";
+import { peutModifierLePlanning } from "@/lib/acces-roles";
+import { versJourIso } from "@/lib/disponibilites";
+import { originePublique } from "@/server/origine-publique";
+import { headers } from "next/headers";
 import PlanningClient from "./PlanningClient";
 
 export const dynamic = "force-dynamic";
@@ -42,6 +47,11 @@ export default async function PlanningPage({
     reglesDuRetour(ctx),
     chantiersAvecRetourDuJour(ctx, maintenant),
   ]);
+  // Les dates du mois des contrats ne s'envoient que par qui pose le planning :
+  // pour les autres, rien ne descend (ni les numéros ni les adresses des
+  // clients sous contrat).
+  const datesDuMois =
+    role && peutModifierLePlanning(role) ? await datesDuMoisPourLePlanning(ctx, versJourIso(maintenant)) : null;
 
   return (
     <PlanningClient
@@ -61,6 +71,9 @@ export default async function PlanningPage({
       // poser un retour. Sans elle, le rappel lui demanderait un geste qu'elle
       // n'a pas.
       retourDuJour={{ demande: regles.demande && role !== null && peutPoserUnRetour(role), envoyes }}
+      // L'envoi des dates du mois d'un contrat (planche 130), et l'adresse que
+      // le lien portera chez le client.
+      datesDuMois={datesDuMois ? { ...datesDuMois, origine: originePublique(await headers()) } : null}
     />
   );
 }

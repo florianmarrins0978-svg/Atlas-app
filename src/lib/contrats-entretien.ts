@@ -362,7 +362,8 @@ function estSuite(mois: readonly number[]): boolean {
   return mois.length > 2 && mois.every((m, i) => i === 0 || m === mois[i - 1] + 1);
 }
 
-function deOuD(mot: string): string {
+/** « d'octobre », « de mars » : l'élision devant une voyelle. */
+export function deOuD(mot: string): string {
   return /^[aeiouyéèêàâî]/i.test(mot) ? `d'${mot}` : `de ${mot}`;
 }
 
