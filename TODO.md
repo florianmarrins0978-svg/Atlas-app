@@ -1,5 +1,17 @@
 # Prochaines tâches
 
+## ⏳ UNE PLANCHE À REGARDER : LES DATES DU MOIS, VALIDÉES PAR LE CLIENT (27 septembre 2026)
+
+`appli/contrat-dates-du-mois.html`, planche 130. Sa demande : *« quand je veux le
+placer sur le planning, il faudrait que je puisse lui envoyer le lien pour qu'il
+valide la date, comme lorsque j'envoie un devis seul. Tous les 20 du mois,
+j'envoie pour le mois suivant. »* Proposé : un lien par client et par mois,
+passages posés en or pointillé (proposés) jusqu'à la réponse, « En attente du
+client » comme un devis, un autre jour libre de la semaine au choix du client,
+un rappel le 20 sur l'accueil. **À lui demander : sans réponse, A (les dates
+tiennent trois jours avant) ou B (elles attendent).** Je défends la A. Rien
+n'est codé.
+
 ## 🔜 CONTRAT D'ENTRETIEN : LOTS 1 ET 2 CODÉS, PAS SUR `main` (26 et 27 septembre 2026)
 
 **Sa consigne : « code ça, ne lance pas de batterie ».** Branche
