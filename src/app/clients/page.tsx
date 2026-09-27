@@ -34,14 +34,16 @@ import ListeClients, { CompteClients, FournisseurClients } from "./ListeClients"
 //      met. Le compte s'anime (`CompteClients`) et suit la frappe, là où l'œil
 //      est ; il était écrit sous le DERNIER résultat, donc hors de l'écran au
 //      moment précis où il sert.
-//   2. **Le lieu et la date descendent jusqu'à l'écran.** `adresse` était en
-//      base sans être chargée ; `dernierJour` était calculé, rendu par le dépôt,
-//      et abandonné ici — c'est lui qui commande l'ordre de la liste, et rien ne
-//      l'annonçait.
+//   2. **Le lieu descend jusqu'à l'écran.** `adresse` était en base sans être
+//      chargée.
 //   3. **Le jour se lit au SERVEUR** (`jourIso`, à l'heure de son atelier) et
 //      descend en accessoire. Le lire dans le navigateur donnerait l'horloge du
 //      téléphone : entre minuit et deux heures, l'heure d'été sépare les deux, et
-//      la bande d'août clignoterait en septembre à l'hydratation.
+//      la date de la ligne clignoterait à l'hydratation.
+//
+// **De A à Z depuis le 27 septembre 2026** : l'ordre vient du dépôt
+// (`rangerParNom`), les bandes sont des lettres. `dernierJour` ne descend plus
+// jusqu'ici : il ne sert qu'à départager deux homonymes, au dépôt.
 
 export const dynamic = "force-dynamic";
 
@@ -81,7 +83,6 @@ export default async function ClientsPage() {
               // forme vit dans `enEuros`, appelée une seule fois, à l'écran.
               facture: c.facture ?? null,
               du: c.du ?? null,
-              dernierJour: c.dernierJour,
             }))}
           >
             <EnTeteEcran

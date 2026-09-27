@@ -95,9 +95,10 @@ async function attendreVivante(page: Page) {
  * sur leurs journées. Le rouge serait tombé ailleurs, sur du code juste — c'est
  * exactement le piège payé le 26 août 2026 (`CLAUDE.md` §5).
  *
- * Un client sans chantier tombe dans la bande « sans chantier » et se range en
- * fin de liste (`bandes-clients.ts`, `listerFichesClients`) : c'est tout ce
- * qu'il faut ici, puisqu'on descend jusqu'au bout.
+ * Des clients sans chantier suffisent : la liste va de A à Z
+ * (`bandes-clients.ts`, `listerFichesClients`), et trente noms de plus la font
+ * dépasser l'écran, quelle que soit leur place. On descend jusqu'au bout et
+ * l'on ouvre le dernier, quel qu'il soit.
  */
 async function poserDesClients() {
   const { rows } = await pool.query<{ entreprise_id: string }>(

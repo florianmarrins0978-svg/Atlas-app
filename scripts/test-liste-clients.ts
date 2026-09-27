@@ -16,7 +16,7 @@
 //      comme un mauvais payeur (`CLAUDE.md` §4) ;
 //   2. ce qui reste dû suit les règlements notés, par la même règle que le
 //      relevé de TVA — deux calculs du même reste finiraient par se contredire ;
-//   3. le plus récent d'abord : c'est celui qu'il cherche ;
+//   3. de A à Z, sur le nom sans civilité (27 septembre 2026) ;
 //   4. un chantier supprimé ne pèse plus.
 
 import assert from "node:assert/strict";
@@ -135,23 +135,23 @@ async function main() {
     assert.equal(chezA.length, 1, "A ne voit plus son propre client");
   });
 
-  await essai("le plus récent d'abord — c'est celui qu'il cherche", async () => {
+  // Sa demande du 27 septembre 2026 : la liste va de A à Z, sur le nom SANS
+  // sa civilité. Créés dans l'ordre inverse, pour que l'ordre d'insertion de
+  // la base ne puisse pas passer pour un tri.
+  await essai("de A à Z, sans compter Mr. ni Mme", async () => {
     await nettoyerBase();
     const ctx = await monterEntreprise("Essai ordre");
-    const ancien = await creerClient(ctx, { nom: "M. Ledoux" });
-    const recent = await creerClient(ctx, { nom: "Mme Félicie" });
-    await chantierFacture(ctx, ancien.id, "Haie", "300.00");
-    await chantierFacture(ctx, recent.id, "Élagage", "800.00");
+    const ledoux = await creerClient(ctx, { nom: "M. Ledoux" });
+    const felicie = await creerClient(ctx, { nom: "Mme Félicie" });
+    await creerClient(ctx, { nom: "Mme Aubry" });
+    await chantierFacture(ctx, ledoux.id, "Haie", "300.00");
+    await chantierFacture(ctx, felicie.id, "Élagage", "800.00");
 
     const liste = await listerFichesClients(ctx);
-    assert.equal(liste.length, 2);
-    // Les deux factures portent le même jour : l'ordre doit rester STABLE et
-    // décroissant, jamais l'ordre d'insertion de la base.
-    assert.ok(
-      liste.every((c, i) => i === 0 || (liste[i - 1].dernierJour ?? "") >= (c.dernierJour ?? "")),
-      `la liste n'est pas rangée du plus récent au plus ancien : ${liste
-        .map((c) => `${c.nom} (${c.dernierJour})`)
-        .join(", ")}`
+    assert.deepEqual(
+      liste.map((c) => c.nom),
+      ["Mme Aubry", "Mme Félicie", "M. Ledoux"],
+      "la liste n'est pas rangée de A à Z sur le nom sans civilité"
     );
   });
 

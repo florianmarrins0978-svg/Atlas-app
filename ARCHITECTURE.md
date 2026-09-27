@@ -33726,3 +33726,22 @@ Ses réponses du 27 septembre 2026 sur `appli/rappels-par-role-et-organigramme.h
 | les gestes désignent un gars par son RANG, comme `nommerEquipe` | un gars jamais nommé n'a pas de ligne, et doit pouvoir devenir chef |
 | « Ajouter » : un salarié monte le compteur (même geste que le +) ; commercial et facturation passent par « Nouveau compte », rôle déjà choisi | un seul chemin par sorte de personne |
 | **retirer UNE personne n'est pas codé** | le planning retrouve les gars par leur RANG (`nomEquipe`, `PlanningClient`) : sortir quelqu'un du milieu décalerait ou effacerait le nom sur ses chantiers passés. Il faut d'abord que l'historique se lise par identifiant (`TODO.md`) |
+
+## §428 : La liste des clients va de A à Z
+
+**Sa demande du 27 septembre 2026** : *« Filtre client trier par ordre
+alphabétique »*, puis sur la planche `appli/clients-a-a-z.html` : *« la A, mais
+il faut garder le filtre qui existe aujourd'hui »*.
+
+| | |
+|---|---|
+| l'ordre | décidé au dépôt, `listerFichesClients` → `rangerParNom` (`src/lib/bandes-clients.ts`) ; l'écran ne trie pas |
+| la clé | le nom **sans sa civilité** (`detacherCivilite`), sans accents ni casse, en `localeCompare` français : sinon toutes les « Mme » se rangeraient ensemble, puis tous les « Mr. » |
+| deux homonymes | le plus récent devant (`dernierJour`, `jourDeRangement`), l'ordre d'avant gardé à l'intérieur du nom |
+| les bandes | des lettres (`lettreDuClient`), plus des mois ; un nom hors alphabet va sous « # », en fin de liste |
+| la recherche | inchangée (`filtrerClientsParNom`) : elle filtre la liste rangée, toujours sans bande |
+
+**Ce qui a été retiré** : les bandes de mois (`bandeDuClient`, `BANDE_PLUS_ANCIEN`,
+`BANDE_SANS_CHANTIER`) et `dernierJour` dans ce que la page transmet à l'écran,
+qui ne s'en sert plus. La variante B (un choix « A à Z » / « Récents ») a été
+écartée par lui.

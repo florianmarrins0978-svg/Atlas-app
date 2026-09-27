@@ -16,7 +16,7 @@ import {
 import type { Ctx } from "./context";
 import { composerFicheClient, type FicheClient } from "@/lib/fiche-client";
 import { resteDu } from "@/lib/exigibilite-tva";
-import { jourDeRangement } from "@/lib/bandes-clients";
+import { jourDeRangement, rangerParNom } from "@/lib/bandes-clients";
 import { jourIso } from "@/lib/jour";
 import { avoirsDesFactures } from "./avoirs";
 import { receptionEnMots, type ReceptionLisible } from "@/lib/reception-facture";
@@ -486,12 +486,12 @@ export type ClientEnListe = {
   facture: string | null;
   /** Ce qui reste dû. `null` quand rien n'est facturé. */
   du: string | null;
-  /** Le dernier jour DÉJÀ PASSÉ chez lui (`jourDeRangement`) : c'est l'ordre de la liste. */
+  /** Le dernier jour DÉJÀ PASSÉ chez lui (`jourDeRangement`) : il départage deux homonymes. */
   dernierJour: string | null;
 };
 
 /**
- * Tous ses clients, du plus récent au plus ancien.
+ * Tous ses clients, de A à Z (`rangerParNom`).
  *
  * **Sa remarque du 17 août 2026 au soir :** *« la catégorie client n'a pas été
  * créée »*. La fiche d'un client existait depuis la veille — mais **seulement
@@ -671,8 +671,8 @@ export async function listerFichesClients(ctx: Ctx): Promise<ClientEnListe[]> {
       };
     });
 
-    // Le plus récent d'abord — c'est celui qu'il cherche neuf fois sur dix. Un
-    // client sans aucun chantier passe en dernier, jamais au milieu.
-    return liste.sort((a, b) => (b.dernierJour ?? "").localeCompare(a.dernierJour ?? ""));
+    // De A à Z, sa demande du 27 septembre 2026 : quand il cherche un client,
+    // c'est par son nom. La règle vit dans `src/lib/` (`CLAUDE.md` §3).
+    return rangerParNom(liste);
   });
 }

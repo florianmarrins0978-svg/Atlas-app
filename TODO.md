@@ -130,6 +130,15 @@ photo suit le nom sur le planning et les absences, le nom ne disparaît jamais.
 photo. Rien n'est codé. Au codage : colonne nullable (expand), stockage comme
 le logo, « Retirer » efface le fichier, jamais visible des clients.
 
+## VOS CLIENTS DE A À Z : CODÉ (A), PAS ENCORE SUR `main` (27 septembre 2026)
+
+Il a retenu la planche A (`appli/clients-a-a-z.html`), avec la recherche
+d'aujourd'hui gardée telle quelle. Codé sur `claude/filtre-client-tri-alpha-1aj8xi`
+(`ARCHITECTURE.md` §428). Joués : types, lint, `test-bandes-clients`,
+`test-liste-clients` (vu rouge sans la correction), couches, code mort, tirets,
+pansements, et l'écran regardé. **Pas de batterie, à sa demande** : le contrôle
+de son niveau (2 : `npm run verifier:avant-fusion`) reste à jouer avant `main`.
+
 ## Site de vente : l'adresse de contact et le nom (27 septembre 2026)
 
 `appli/vente/index.html` porte `CONTACT = "contact@votre-domaine.fr"`, une

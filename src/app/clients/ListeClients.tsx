@@ -35,6 +35,11 @@ import {
  *      repère »* — **les bandes** (`src/lib/bandes-clients.ts`) nomment l'ordre
  *      que le dépôt appliquait déjà en silence.
  *
+ * **DE A À Z DEPUIS LE 27 SEPTEMBRE 2026**, planche A retenue
+ * (`appli/clients-a-a-z.html`) : les bandes sont des lettres, plus des mois.
+ * Sa condition : *« garder le filtre qui existe aujourd'hui »*. La recherche
+ * n'a donc pas bougé d'une ligne ; elle filtre la liste rangée.
+ *
  * **CE QUI A ÉTÉ RETIRÉ, et il l'a tranché** : le total facturé par client
  * (« 2 940,00 € facturés ») quitte la ligne. Deux montants sur une même ligne,
  * l'un gris l'autre rouge, se confondent au premier coup d'œil — et c'est le
@@ -64,8 +69,6 @@ export type FicheClientListee = {
   derniere: TraceDuClient | null;
   facture: string | number | null;
   du: string | number | null;
-  /** Le dernier jour déjà passé chez lui : c'est l'ordre, et c'est la bande. */
-  dernierJour: string | null;
 };
 
 /**
@@ -110,8 +113,9 @@ export function FournisseurClients({
    *
    * Le lire ici avec `new Date()` donnerait l'horloge du téléphone : entre
    * minuit et deux heures du matin, l'heure d'été sépare les deux, et le serveur
-   * et le navigateur ne nommeraient pas la même bande. React s'en plaindrait, et
-   * lui verrait « août » clignoter en « septembre ».
+   * et le navigateur ne compteraient pas la même année : le 31 décembre, une
+   * date perdrait ou gagnerait son « 2026 ». React s'en plaindrait, et lui la
+   * verrait clignoter.
    */
   aujourdHui: string;
   children: React.ReactNode;
@@ -170,8 +174,8 @@ export default function ListeClients() {
   }, []);
 
   const bandes = useMemo(
-    () => grouperEnBandes(visibles, aujourdHui),
-    [visibles, aujourdHui]
+    () => grouperEnBandes(visibles),
+    [visibles]
   );
 
   return (
@@ -220,9 +224,9 @@ export default function ListeClients() {
         <div className="mt-[6px]">
           {bandes.map((groupe, iBande) => (
             <section key={groupe.bande}>
-              {/* **Pendant une recherche, aucune bande.** Quatre Martins rangés
-                  sous trois mois différents feraient trois titres pour quatre
-                  lignes : le repère deviendrait le bruit qu'il devait réduire. */}
+              {/* **Pendant une recherche, aucune bande.** Sur quatre lignes
+                  trouvées, un titre de lettre au-dessus de chacune serait le
+                  bruit que le repère devait réduire. */}
               {!cherche && (
                 <p
                   className={`mx-[26px] mb-[2px] ${iBande === 0 ? "mt-[14px]" : "mt-[24px]"} ${libelleCaps}`}

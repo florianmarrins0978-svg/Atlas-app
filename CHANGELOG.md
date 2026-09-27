@@ -38,6 +38,13 @@ caducs au commercial, réception d'une facture à la facturation, « Retour pas
 reçu » au patron seul. Éprouvé : `test-rappels-db.ts` (rouge avant, vert
 après), `test-rappels.ts`, et l'accueil regardé sous les trois comptes.
 
+### La liste des clients va de A à Z
+
+Sa demande du jour, planche A retenue. L'ordre se range sur le nom **sans Mr.
+ni Mme** (sinon toutes les dames passaient ensemble), les bandes de mois
+deviennent des lettres, et la recherche ne change pas. À nom égal, le plus
+récent reste devant. `ARCHITECTURE.md` §428.
+
 ### Les dates du mois d'un contrat, validées par le client
 
 La dernière date du mois posée, le tiroir du planning propose « Envoyer les
