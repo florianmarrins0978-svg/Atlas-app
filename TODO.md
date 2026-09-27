@@ -102,6 +102,16 @@ communiquent entre elles lors de l'envoi de la facture. »* `ARCHITECTURE.md`
 foi (celui d'Atlas ou celui de l'outil), quel PDF part chez le client, que fait
 l'envoi quand la connexion est coupée ou révoquée.
 
+## ⏳ UNE PLANCHE À REGARDER : LA PHOTO DES SALARIÉS (27 septembre 2026)
+
+Sa demande : *« dans le compte des salariés, mettre la possibilité de mettre la
+tête des gars en photo »*. Planche `appli/photo-des-salaries.html` : **A**, le
+rond du rang devient la photo (un geste) ; **B**, une fiche par salarié. La
+photo suit le nom sur le planning et les absences, le nom ne disparaît jamais.
+À trancher par lui : A ou B, et si un salarié avec un compte change sa propre
+photo. Rien n'est codé. Au codage : colonne nullable (expand), stockage comme
+le logo, « Retirer » efface le fichier, jamais visible des clients.
+
 ## Site de vente : l'adresse de contact et le nom (27 septembre 2026)
 
 `appli/vente/index.html` porte `CONTACT = "contact@votre-domaine.fr"`, une
