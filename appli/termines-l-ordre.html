@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Terminés : le bouton Filtre</title>
+<title>Le bouton Filtre</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@400;500&display=swap" rel="stylesheet">
@@ -51,45 +51,65 @@
 
     RIEN N'EST CODÉ TANT QU'IL N'A PAS CHOISI (`CLAUDE.md` §3 bis).
   */
+  /* La page entière aux couleurs de l'application (design-tokens.ts) :
+     le crème du fond, le vert plein, l'or. La charte Nuit suit le téléphone,
+     et le bouton « Nuit » la force. */
   :root{
-    --etabli:#e6e3dc; --etabli-carte:#faf9f5; --etabli-trait:rgba(28,28,26,.12);
-    --etabli-encre:#1c1c1a; --etabli-doux:#4a4a44; --etabli-or:#8b6835; --etabli-pin:#2f3b2f;
     --serif:"Playfair Display",ui-serif,Georgia,serif;
     --sans:"Inter",ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
     --fond:#f5f3ee; --plage:#faf9f5; --encre:#1c1c1a; --doux:#4a4a44;
     --gris:#8a8578; --accent:#2f3b2f; --or:#B98B47; --orVoile:rgba(185,139,71,.55);
-    --plein:#7d9a6d; --surplein:#faf9f5; --trait:rgba(28,28,26,.12);
+    --orTexte:#8b6835; --plein:#7d9a6d; --surplein:#faf9f5; --trait:rgba(28,28,26,.12);
+    --page:#ece9e1; --ombre:rgba(20,18,14,.18);
   }
-  body.nuit{
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      color-scheme:dark;
+      --fond:#101210; --plage:#1a1d19; --encre:#e9e8de; --doux:#c1c2b6;
+      --gris:#84887b; --accent:#e9e8de; --orVoile:rgba(185,139,71,.6); --orTexte:#c9a15e;
+      --plein:#e9e8de; --surplein:#1a1d19; --trait:rgba(233,232,222,.12);
+      --page:#0b0c0b; --ombre:rgba(0,0,0,.5);
+    }
+  }
+  :root[data-theme="dark"]{
+    color-scheme:dark;
     --fond:#101210; --plage:#1a1d19; --encre:#e9e8de; --doux:#c1c2b6;
-    --gris:#84887b; --accent:#e9e8de; --or:#B98B47; --orVoile:rgba(185,139,71,.6);
+    --gris:#84887b; --accent:#e9e8de; --orVoile:rgba(185,139,71,.6); --orTexte:#c9a15e;
     --plein:#e9e8de; --surplein:#1a1d19; --trait:rgba(233,232,222,.12);
+    --page:#0b0c0b; --ombre:rgba(0,0,0,.5);
   }
   *{box-sizing:border-box}
-  html,body{margin:0;background:var(--etabli)}
-  body{font:16px/1.5 var(--sans);color:var(--etabli-encre);-webkit-text-size-adjust:100%;padding:0 0 70px}
+  html,body{margin:0;background:var(--page)}
+  body{font:16px/1.5 var(--sans);color:var(--encre);-webkit-text-size-adjust:100%;padding-block:0 60px}
   button{font:inherit;color:inherit;-webkit-tap-highlight-color:transparent}
-  :focus-visible{outline:2px solid var(--etabli-or);outline-offset:2px;border-radius:4px}
+  :focus-visible{outline:2px solid var(--or);outline-offset:2px;border-radius:4px}
 
-  .bandeau{background:#1c1c1a;color:#f5f3ee;padding:18px 20px;font-size:14px;line-height:1.6}
-  .bandeau b{color:#fff}
+  .tete{max-width:430px;margin:0 auto;padding:34px 24px 0}
+  .tete .sur{margin:0;font:700 10.5px/1.35 var(--sans);letter-spacing:.2em;text-transform:uppercase;color:var(--orTexte)}
+  .tete h1{margin:10px 0 0;font:400 34px/1.08 var(--serif);text-wrap:balance}
+  .tete h1 em{font-style:italic;color:var(--or)}
+  .tete p{margin:12px 0 0;font-size:14.5px;line-height:1.6;color:var(--doux)}
+  .tete p b{color:var(--encre)}
 
-  .etats{position:sticky;top:0;z-index:20;background:var(--etabli);
-         border-bottom:1px solid var(--etabli-trait);padding:12px 16px 13px}
-  .etats .rangee{max-width:560px;margin:0 auto;display:flex;flex-wrap:wrap;gap:7px}
-  .etats button{border:1px solid var(--etabli-trait);background:var(--etabli-carte);
-                color:var(--etabli-doux);border-radius:999px;padding:10px 14px;
-                font:400 13px/1 var(--sans);cursor:pointer}
-  .etats button[aria-pressed="true"]{background:var(--etabli-pin);border-color:var(--etabli-pin);color:#faf9f5}
-  .etats #charte{margin-left:auto}
+  .etats{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--page);padding:14px 24px}
+  .etats .rangee{max-width:382px;margin:0 auto;display:flex;flex-wrap:wrap;gap:8px}
+  .etats button{min-height:44px;border:0;border-radius:999px;padding:0 16px;cursor:pointer;
+                font:400 13px/1 var(--sans);color:var(--doux);background:var(--plage);
+                box-shadow:inset 0 0 0 1px var(--trait)}
+  .etats button[aria-pressed="true"]{background:var(--plein);color:var(--surplein);box-shadow:none;font-weight:600}
+  .etats #charte{margin-left:auto;background:transparent}
+  .etats #charte[aria-pressed="true"]{background:var(--encre);color:var(--fond)}
 
-  .mot{max-width:560px;width:calc(100% - 32px);margin:18px auto 0;padding:15px 18px;background:var(--etabli-carte);
-       border-radius:13px;box-shadow:inset 0 0 0 1px var(--etabli-trait);
-       font-size:14px;line-height:1.62;color:var(--etabli-doux);min-height:78px}
-  .mot b{color:var(--etabli-encre)}
+  .mot{max-width:382px;width:calc(100% - 48px);margin:4px auto 0;padding:16px 18px;background:var(--plage);
+       border-radius:4px;box-shadow:inset 0 0 0 1.5px var(--orVoile);
+       font-size:14px;line-height:1.6;color:var(--doux);min-height:80px}
+  .mot b{color:var(--encre)}
+
+  .pied{max-width:382px;width:calc(100% - 48px);margin:26px auto 0;font-size:13px;line-height:1.65;color:var(--gris)}
+  .pied b{color:var(--doux)}
 
   .tel{width:390px;max-width:100%;margin:18px auto 0;border-radius:26px;overflow:hidden;position:relative;
-       background:var(--fond);color:var(--encre);box-shadow:0 16px 44px rgba(20,18,14,.22);
+       background:var(--fond);color:var(--encre);box-shadow:0 18px 50px var(--ombre);
        display:flex;flex-direction:column}
 
   /* ── L'écran Terminés, repris du code (ListeTermines.tsx) ─────────── */
@@ -121,7 +141,7 @@
   .filtre{min-height:44px;display:inline-flex;align-items:center;gap:7px;border:0;border-radius:999px;
           padding:0 13px;font:400 12.5px/1 var(--sans);white-space:nowrap;cursor:pointer;
           background:var(--plage);color:var(--doux);box-shadow:inset 0 0 0 1px var(--trait)}
-  .filtre svg{display:block}
+  .filtre svg{display:block;flex:none}
   .filtre[data-actif]{background:var(--encre);color:var(--fond);box-shadow:none}
   /* A : au bout de la phrase des comptes, poussé à droite. */
   .comptes .filtre{margin:-9px 0 -9px auto;font-weight:400}
@@ -171,17 +191,21 @@
           font:400 14px/1 var(--sans);color:var(--gris)}
 
   @media (max-width:430px){ .tel{border-radius:0;box-shadow:none;width:100%} }
+  @media (prefers-reduced-motion:no-preference){ .volet{animation:monte .22s cubic-bezier(.2,.7,.2,1)} }
+  @keyframes monte{from{transform:translateY(24px);opacity:.6}}
 </style>
 </head>
 <body>
-<div class="bandeau">
-  <b>Votre demande du 27 septembre :</b> un bouton Filtre, on appuie, et
-  plusieurs façons de trier.
-</div>
+<header class="tete">
+  <p class="sur">Terminés, planche du 27 septembre</p>
+  <h1>Le bouton <em>Filtre</em></h1>
+  <p><b>Appuyez sur Filtre</b> dans l'écran : cinq façons de trier, et le sens.
+     La liste bouge au toucher.</p>
+</header>
 
 <div class="etats" role="group" aria-label="La place du bouton">
   <div class="rangee">
-    <button type="button" data-place="a" aria-pressed="true">A, sur la ligne des comptes</button>
+    <button type="button" data-place="a" aria-pressed="true">A, sur la ligne</button>
     <button type="button" data-place="b" aria-pressed="false">B, en dessous</button>
     <button type="button" id="charte" aria-pressed="false">Nuit</button>
   </div>
@@ -201,8 +225,8 @@
   <p class="comptes"><span class="aFacturer">3 à facturer</span>
     <span class="oeil" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 20 20" fill="none"><path d="M2.2 10s2.8-5 7.8-5 7.8 5 7.8 5-2.8 5-7.8 5-7.8-5-7.8-5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><circle cx="10" cy="10" r="2.4" stroke="currentColor" stroke-width="1.6"/><path d="M3.6 16.4 16.4 3.6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></span>
     <span>4 facturés</span>
-    <button type="button" class="filtre" data-ouvrir>Filtre</button></p>
-  <div class="rangeeFiltre"><button type="button" class="filtre" data-ouvrir>Filtre</button></div>
+    <button type="button" class="filtre" data-ouvrir><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M2 4h12M4.5 8h7M7 12h2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>Filtre</button></p>
+  <div class="rangeeFiltre"><button type="button" class="filtre" data-ouvrir><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M2 4h12M4.5 8h7M7 12h2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>Filtre</button></div>
   <div class="liste" id="liste"></div>
   <div class="barre" aria-hidden="true"><i>Chantiers</i><i>Planning</i><i class="actif">Terminés</i><i>Paysage</i><i>Réglages</i></div>
 
@@ -216,6 +240,11 @@
     </div>
   </div>
 </section>
+
+<p class="pied"><b>Par défaut</b>, l'ordre d'aujourd'hui : le chantier le plus récent en haut.
+  Dès qu'un autre ordre est choisi, le bouton se remplit. <b>Ce qui n'a pas la date</b>
+  (une facture sans devis, un chantier pas encore facturé) va à la fin.
+  Les dates de devis sont des exemples.</p>
 
 <script>
   // Dates AAAA-MM-JJ. `plan` : le jour du planning (null si la facture a été
@@ -321,7 +350,7 @@
   });
 
   const MOTS = {
-    a: "<b>A :</b> le bouton au bout de la ligne « 3 à facturer, 4 facturés ». <b>Appuyez dessus.</b> Tout s'applique au toucher, la liste bouge derrière.",
+    a: "<b>A :</b> le bouton au bout de la ligne « 3 à facturer, 4 facturés ». Rien ne s'ajoute en hauteur.",
     b: "<b>B :</b> le bouton sur sa propre ligne, sous les comptes, à droite. Une ligne de plus, mais la phrase des comptes reste seule.",
   };
   const tel = document.getElementById("tel");
@@ -334,7 +363,9 @@
   }
   document.getElementById("mot").innerHTML = MOTS.a;
   document.getElementById("charte").addEventListener("click", (e) => {
-    const nuit = document.body.classList.toggle("nuit");
+    const r = document.documentElement;
+    const nuit = r.dataset.theme !== "dark";
+    r.dataset.theme = nuit ? "dark" : "light";
     e.currentTarget.setAttribute("aria-pressed", String(nuit));
   });
   dessinerListe();
