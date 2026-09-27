@@ -193,6 +193,14 @@
   .pastilles span{display:inline-flex;align-items:center;min-height:38px;padding:0 14px;border-radius:999px;
                   border:1px solid var(--trait);font-size:13px;color:var(--gris)}
   .pastilles .oui{background:var(--pinTint);color:var(--encre);border-color:transparent;font-weight:600}
+  .pastilles.roles label{display:inline-flex;align-items:center;min-height:38px;padding:0 14px;border-radius:999px;
+                  border:1px solid var(--trait);font-size:13px;color:var(--gris);cursor:pointer;-webkit-tap-highlight-color:transparent}
+  #rS:checked ~ .champ label[for="rS"], #rC:checked ~ .champ label[for="rC"],
+  #rF:checked ~ .champ label[for="rF"]{background:var(--pinTint);color:var(--encre);border-color:transparent;font-weight:600}
+  .selon{display:none}
+  #rS:checked ~ .selon.s, #rC:checked ~ .selon.cf, #rF:checked ~ .selon.cf{display:block}
+  #rC:checked ~ .selon.cf .selon.c, #rF:checked ~ .selon.cf .selon.f{display:inline}
+  .recoit{margin:14px 0 0;font-size:13.5px;color:var(--gris)}
   .bouton{display:flex;align-items:center;justify-content:center;min-height:50px;margin-top:22px;
           border-radius:999px;background:var(--pin);color:var(--surPlein);font-size:15px}
 
@@ -331,11 +339,23 @@
       <div class="feuille">
         <div class="haut"><span class="av grand">+</span><span class="lien">Prendre sa photo</span></div>
         <div class="champ"><span class="l">Prénom</span><span class="b">Enzo</span></div>
-        <div class="champ"><span class="l">Il travaille</span>
-          <div class="pastilles"><span class="oui">Sur le terrain</span><span>Au bureau</span></div>
+        <input class="radio" type="radio" name="role" id="rS" checked>
+        <input class="radio" type="radio" name="role" id="rC">
+        <input class="radio" type="radio" name="role" id="rF">
+        <div class="champ"><span class="l">C'est</span>
+          <div class="pastilles roles"><label for="rS">Un salarié</label><label for="rC">Un commercial</label><label for="rF">La facturation</label></div>
         </div>
-        <div class="champ"><span class="l">Son chef</span>
-          <div class="pastilles"><span class="oui">Karim</span><span>Mathis</span><span>Aucun</span></div>
+        <div class="selon s">
+          <div class="champ"><span class="l">Son chef</span>
+            <div class="pastilles"><span class="oui">Karim</span><span>Mathis</span><span>Aucun</span></div>
+          </div>
+          <div class="ligne"><span>Chef d'équipe</span><span class="inter eteint"></span></div>
+          <div class="ligne"><span>Accès à Atlas</span><span class="inter eteint"></span></div>
+        </div>
+        <div class="selon cf">
+          <div class="champ"><span class="l">Son adresse mail</span><span class="b">enzo@exemple.fr</span></div>
+          <div class="champ"><span class="l">Son mot de passe</span><span class="b">••••••••</span></div>
+          <p class="recoit"><span class="selon c">Ses rappels : ceux des devis.</span><span class="selon f">Ses rappels : ceux des factures.</span></p>
         </div>
         <span class="bouton">Ajouter Enzo</span>
       </div>
@@ -348,7 +368,7 @@
   <div class="encadre" style="margin-top:34px">
     <p class="t">Ajouter, retirer</p>
     <ul>
-      <li><b>Ajouter</b> : le bouton sous l'organigramme. Pour quelqu'un du terrain, c'est le même geste que le + du compteur des salariés, avec son nom et son chef. Pour quelqu'un du bureau, il mène à « Donner un accès », qui existe déjà.</li>
+      <li><b>Ajouter</b> : le bouton sous l'organigramme. On choisit d'abord <b>salarié, commercial ou facturation</b>. Un salarié : son chef, et un accès à Atlas s'il en veut un (c'est le même geste que le + du compteur). Un commercial ou la facturation : son adresse et son mot de passe, comme « Donner un accès » aujourd'hui.</li>
       <li><b>Retirer</b> : sur sa feuille. Aujourd'hui le moins du compteur retire <b>toujours le dernier</b> : vous ne pouvez pas retirer Karim s'il est deuxième. La feuille le permettra.</li>
       <li>Un gars retiré <b>reste sur les chantiers passés</b> du planning : on ne réécrit pas qui a travaillé où.</li>
       <li>La photo est celle de la planche « La photo des salariés », qui attend votre A ou B. Une seule photo par personne, partout.</li>

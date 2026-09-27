@@ -40,6 +40,7 @@ demande donc une donnée neuve (un chef par salarié, nullable).
 |---|---|
 | organigramme en haut de Réglages, Équipe (patron seul), rien de dessous ne bouge | à confirmer |
 | feuille d'une personne : photo, chef d'équipe et ses gars cochés, retirer | à confirmer |
+| ajouter une personne : il choisit salarié, commercial ou facturation (sa demande du 27 septembre) ; salarié = chef, accès facultatif ; commercial ou facturation = adresse et mot de passe, comme « Donner un accès » | demandé par lui |
 | retirer UNE personne (aujourd'hui le compteur retire toujours le dernier), sans effacer son passé au planning | à coder |
 | avatar = la photo de `photo-des-salaries.html` (autre session), jamais une seconde | attend son A ou B là-bas |
 | un seul chef par gars ? le chef voit-il plus dans Atlas ? | à trancher par lui |
