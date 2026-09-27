@@ -20,7 +20,8 @@ lance pas de batterie ».** Niveau 3 (migration 0108) : batterie entière avant
 | le trait en or pointillé « proposé » au calendrier, avant réponse : **non codé** | à coder s'il le veut |
 | le rappel du 20 sur l'accueil : **non codé** | à coder |
 | le patron n'est pas notifié quand le client valide ou déplace : le planning bouge seul | à trancher par lui |
-| la batterie, puis `main` | sa décision |
+| `main` (batterie au vert le 27 septembre) | sa décision |
+| un contrat dans le jeu de démonstration, pour que `test-pages-publiques-sans-navigation-e2e` ouvre vraiment `/contrat` et `/contrat/dates` | à coder |
 
 ## 🔜 CONTRAT D'ENTRETIEN : LOTS 1 ET 2 CODÉS, PAS SUR `main` (26 et 27 septembre 2026)
 

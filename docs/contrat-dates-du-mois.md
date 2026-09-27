@@ -48,6 +48,8 @@ La première batterie (169/170 navigateur, 427/433 base) a rougi six fois, **tou
 | les cases des mois et les cartes A et B du contrat n'étaient pas en capsule | gardées telles que ta planche 129, exception écrite et bornée à elles |
 | les pages du contrat n'étaient pas dans le contrôle des pages publiques | ajoutées |
 
+**Une réserve** : le contrôle des pages publiques connaît désormais les pages du contrat, mais la base de la batterie n'en contenait aucun, donc il ne les a pas ouvertes. La page des dates a été regardée à la main (aucune barre de navigation) ; la couverture automatique attend un contrat dans le jeu de démonstration.
+
 ## Les chiffres des contrôles joués
 
 | Contrôle | Résultat |
@@ -58,7 +60,7 @@ La première batterie (169/170 navigateur, 427/433 base) a rougi six fois, **tou
 | contrat en base, actions gardées, messages | verts |
 | tirets, flèches, couleurs, code mort, pansements, couches | verts |
 
-**Niveau : 3** (migration 0108). La batterie entière est à jouer avant `main` ; tu m'as demandé de ne pas la lancer.
+**Niveau : 3** (migration 0108). **Batterie entière au vert le 27 septembre** : 432/433 suites base (1 non mesurable ici), 170/170 navigateur, connexion derrière un proxy.
 
 ## Ce qui reste
 
@@ -66,4 +68,4 @@ La première batterie (169/170 navigateur, 427/433 base) a rougi six fois, **tou
 |---|---|
 | essayer l'envoi réel chez toi | toi |
 | le trait « proposé », le rappel du 20, la notification | ta décision |
-| la batterie, puis `main` | ta décision |
+| `main` | ta décision |
