@@ -99,6 +99,8 @@ const OUVERT_AU_SALARIE = [
   "/reglages/notifications",
   "/reglages/connexion",
   "/reglages/apparence",
+  // L'organigramme, visible par tous depuis le 27 septembre 2026 (sa règle).
+  "/reglages/organigramme",
   "/api/chantiers/xxxx/feuille/pdf",
   "/api/polices/xxxx",
   "/api/health/live",

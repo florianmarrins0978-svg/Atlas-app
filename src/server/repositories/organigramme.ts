@@ -9,6 +9,7 @@
 // à y trouver l'adresse du commercial.
 
 import { and, asc, eq } from "drizzle-orm";
+import { alias } from "drizzle-orm/pg-core";
 import { withEntreprise } from "../db/with-entreprise";
 import { entreprises, equipes, membresEntreprise, users } from "../db/schema";
 import type { Ctx } from "./context";
@@ -16,10 +17,14 @@ import { assurerEquipeDeRang, nommerEquipe } from "./equipes";
 import { nomAffiche } from "@/lib/identite-personne";
 import { MAX_SALARIES } from "@/lib/equipes";
 import {
+  photoDUnCompte,
   peutEtreSousCeChef,
   type CompteOrganigramme,
   type SalarieOrganigramme,
 } from "@/lib/organigramme";
+
+// Le nom de salarié qu'un compte EST (`membres_entreprise.salarie_id`, 0111).
+const salarieRelie = alias(equipes, "salarie_relie");
 
 export type DonneesOrganigramme = {
   comptes: CompteOrganigramme[];
@@ -38,9 +43,16 @@ export async function lireOrganigramme(ctx: Ctx): Promise<DonneesOrganigramme> {
         prenom: users.prenom,
         nom: users.nom,
         role: membresEntreprise.role,
+        relie: salarieRelie.id,
+        photoDuNom: salarieRelie.photoStorageKey,
+        photoDuCompte: membresEntreprise.photoStorageKey,
       })
       .from(membresEntreprise)
       .innerJoin(users, eq(users.id, membresEntreprise.utilisateurId))
+      .leftJoin(
+        salarieRelie,
+        and(eq(salarieRelie.id, membresEntreprise.salarieId), eq(salarieRelie.entrepriseId, ctx.entrepriseId))
+      )
       .where(eq(membresEntreprise.entrepriseId, ctx.entrepriseId))
       .orderBy(asc(membresEntreprise.createdAt));
     const salaries = await tx
@@ -50,6 +62,7 @@ export async function lireOrganigramme(ctx: Ctx): Promise<DonneesOrganigramme> {
         nom: equipes.nom,
         estChef: equipes.estChef,
         chefId: equipes.chefId,
+        photoStorageKey: equipes.photoStorageKey,
       })
       .from(equipes)
       .where(eq(equipes.entrepriseId, ctx.entrepriseId))
@@ -62,9 +75,10 @@ export async function lireOrganigramme(ctx: Ctx): Promise<DonneesOrganigramme> {
     return {
       // Le nom se compose par la fonction du dépôt, comme dans « Qui a accès » :
       // `users.nom` est le nom de famille depuis la migration 0077.
-      comptes: lignesComptes.map(({ prenom, nom, ...reste }) => ({
+      comptes: lignesComptes.map(({ prenom, nom, relie, photoDuNom, photoDuCompte, ...reste }) => ({
         ...reste,
         nom: nomAffiche({ prenom, nom }) || nom,
+        photo: photoDUnCompte({ relie: relie !== null, photoDuNom, photoDuCompte }),
       })),
       salaries,
       nombreSalaries: entreprise?.nombreSalaries ?? 0,

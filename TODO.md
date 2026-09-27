@@ -36,7 +36,7 @@ facturation ; photo B, et chacun change la sienne. `ARCHITECTURE.md` §431.
 |---|---|
 | **la batterie** (niveau 3 : rôles, migration 0110), puis `main` | à lancer avec son accord |
 | **retirer UNE personne** du milieu de la liste : le planning lit les gars par RANG (`nomEquipe`) ; sortir quelqu'un décalerait ou effacerait son nom sur ses chantiers passés. Il faut d'abord lire l'historique par identifiant, puis une colonne `retire_le` | à coder, lot à part |
-| **les photos** dans l'organigramme : reprendre `equipes.photo_storage_key` du lot photo (branche `claude/employee-profile-photo-g1mkbk`, pas encore sur `main`) ; une photo pour les comptes du bureau ; chacun change la sienne (sa décision) | à coder quand le lot photo est sur `main` |
+| les photos dans l'organigramme | **codé le 27 septembre** (`TeteRonde`, `photoDUnCompte`) ; la photo se pose dans Équipe ou Mon compte, pas depuis l'organigramme |
 | un salarié ajouté depuis l'organigramme n'a pas de compte : « Accès à Atlas » se donne encore dans Équipe | à coder s'il le demande |
 
 ## 🔜 LES DATES DU MOIS, VALIDÉES PAR LE CLIENT : SUR `main` LE 27 SEPTEMBRE 2026

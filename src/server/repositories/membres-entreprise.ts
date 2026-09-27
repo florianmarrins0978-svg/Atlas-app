@@ -7,6 +7,7 @@ import { equipes, membresEntreprise, users } from "../db/schema";
 import type { Ctx } from "./context";
 import type { PorteePlanning, Role } from "@/lib/acces-roles";
 import { nomAffiche } from "@/lib/identite-personne";
+import { photoDUnCompte } from "@/lib/organigramme";
 import {
   adresseNormalisee,
   refusDeLAcces,
@@ -117,7 +118,7 @@ export async function listerAcces(ctx: Ctx): Promise<Acces[]> {
     const composees = lignes.map(({ prenom, photoDuNom, photoDuCompte, ...reste }) => ({
       ...reste,
       nom: nomAffiche({ prenom, nom: reste.nom }) || reste.nom,
-      photo: reste.salarieRang !== null ? photoDuNom : photoDuCompte,
+      photo: photoDUnCompte({ relie: reste.salarieRang !== null, photoDuNom, photoDuCompte }),
     }));
 
     return composees.sort((a, b) =>

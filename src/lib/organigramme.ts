@@ -20,7 +20,23 @@ import type { Role } from "./acces-roles";
 import { libelleSalarie, salariesAffiches } from "./equipes";
 
 /** Un compte de l'entreprise, tel que l'organigramme le montre : ni adresse, ni accès. */
-export type CompteOrganigramme = { membreId: string; utilisateurId: string; nom: string | null; role: Role };
+export type CompteOrganigramme = {
+  membreId: string;
+  utilisateurId: string;
+  nom: string | null;
+  role: Role;
+  /** Sa tête, par `photoDUnCompte` : la même que dans « Qui a accès ». */
+  photo: string | null;
+};
+
+/**
+ * La photo d'un compte : celle de SON NOM de salarié quand le patron l'y a
+ * relié, la sienne sinon. Une seule vérité par personne (migration 0111) ;
+ * écrite ici une fois, pour « Qui a accès » comme pour l'organigramme.
+ */
+export function photoDUnCompte(c: { relie: boolean; photoDuNom: string | null; photoDuCompte: string | null }): string | null {
+  return c.relie ? c.photoDuNom : c.photoDuCompte;
+}
 
 /** Une ligne de salarié, telle que la base la porte. */
 export type SalarieOrganigramme = {
@@ -29,9 +45,10 @@ export type SalarieOrganigramme = {
   nom: string | null;
   estChef: boolean;
   chefId: string | null;
+  photoStorageKey: string | null;
 };
 
-export type GarsAffiche = { rang: number; libelle: string };
+export type GarsAffiche = { rang: number; libelle: string; photo: string | null };
 export type ChefAffiche = GarsAffiche & { gars: GarsAffiche[] };
 
 export type Organigramme = {
@@ -59,9 +76,10 @@ export function construireOrganigramme(
   const actifs = salariesAffiches(salaries, nombreSalaries);
   const ligne = (s: SalarieOrganigramme | { rang: number; nom?: string | null }) =>
     "id" in s ? s : null;
-  const affiche = (s: { rang: number; nom?: string | null }): GarsAffiche => ({
+  const affiche = (s: SalarieOrganigramme | { rang: number; nom?: string | null }): GarsAffiche => ({
     rang: s.rang,
     libelle: libelleSalarie(s, nombreSalaries) ?? `Salarié ${s.rang}`,
+    photo: "photoStorageKey" in s ? s.photoStorageKey : null,
   });
 
   const chefsLignes = actifs.map(ligne).filter((l): l is SalarieOrganigramme => l !== null && l.estChef);

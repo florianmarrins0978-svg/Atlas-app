@@ -8,7 +8,7 @@
 
 Même branche. Réglages, Organigramme, ouvert à tous, modifiable par le patron
 (chef d'équipe, ses gars, ajouter). Migration 0110. Manquent : retirer une
-personne du milieu, les photos (§431). **Niveau 3** : batterie avec son accord.
+personne du milieu (§431). **Niveau 3** : batterie avec son accord.
 
 ## CODÉ, PAS SUR `main` : CHACUN SES RAPPELS (27 septembre 2026)
 

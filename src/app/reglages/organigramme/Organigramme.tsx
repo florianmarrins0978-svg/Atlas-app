@@ -6,6 +6,7 @@ import { colors, font, smallCaps, surPlein, voile } from "@/lib/design-tokens";
 import { libelleRole } from "@/lib/acces-roles";
 import { MAX_SALARIES } from "@/lib/equipes";
 import type { ChefAffiche, CompteOrganigramme, GarsAffiche, Organigramme as Donnees } from "@/lib/organigramme";
+import TeteRonde from "@/components/atlas/TeteRonde";
 import { ajouterSalarieAction, nommerChefAction, rangerSousChefAction } from "./actions";
 
 /**
@@ -144,16 +145,9 @@ function initiales(texte: string): string {
   return (mots.length > 1 ? mots[0][0] + mots[1][0] : texte.slice(0, 2)).toUpperCase();
 }
 
-function Avatar({ texte, taille = 44 }: { texte: string; taille?: number }) {
-  return (
-    <span
-      aria-hidden
-      className="inline-flex shrink-0 items-center justify-center rounded-full font-semibold"
-      style={{ width: taille, height: taille, backgroundColor: colors.rustTint, color: colors.rust, fontSize: taille * 0.32 }}
-    >
-      {initiales(texte)}
-    </span>
-  );
+function Avatar({ texte, photo, taille = 44 }: { texte: string; photo: string | null; taille?: number }) {
+  // La même tête qu'au planning et dans Équipe (`TeteRonde`) : un seul dessin.
+  return <TeteRonde repli={initiales(texte)} photo={photo} taille={taille} />;
 }
 
 function Etage({ titre }: { titre: string }) {
@@ -176,7 +170,7 @@ function CarteCompte({ compte, moi, haut = false }: { compte: CompteOrganigramme
       className="flex min-w-0 max-w-[190px] flex-1 flex-col items-center rounded-2xl px-2 py-3 text-center"
       style={{ backgroundColor: haut ? colors.rustTint : colors.card, border: `1px solid ${colors.lineSoft}` }}
     >
-      <Avatar texte={compte.nom ?? libelleRole(compte.role)} />
+      <Avatar texte={compte.nom ?? libelleRole(compte.role)} photo={compte.photo} />
       {nom && (
         <span className="mt-1.5 block max-w-full truncate text-[16px]" style={{ fontFamily: font.display }}>
           {nom}
@@ -194,7 +188,7 @@ function CarteChef({ chef, toucher }: { chef: ChefAffiche; toucher: (rang: numbe
   return (
     <div className="rounded-2xl px-2 pb-2 pt-3 text-center" style={{ border: `1px solid ${colors.lineSoft}` }}>
       <Touchable onClick={surChef} className="flex w-full flex-col items-center">
-        <Avatar texte={chef.libelle} />
+        <Avatar texte={chef.libelle} photo={chef.photo} />
         <span className="mt-1.5 block max-w-full truncate text-[16px]" style={{ fontFamily: font.display }}>
           {chef.libelle}
         </span>
@@ -216,7 +210,7 @@ function CarteChef({ chef, toucher }: { chef: ChefAffiche; toucher: (rang: numbe
 function PetitGars({ gars, toucher }: { gars: GarsAffiche; toucher: (() => void) | undefined }) {
   return (
     <Touchable onClick={toucher} className="flex w-[64px] flex-col items-center text-[13px]">
-      <Avatar texte={gars.libelle} taille={38} />
+      <Avatar texte={gars.libelle} photo={gars.photo} taille={38} />
       <span className="mt-1 block max-w-full truncate">{gars.libelle}</span>
     </Touchable>
   );
