@@ -28,6 +28,10 @@
     date vous arrange ? » de la page du devis (`devis/[jeton]/formulaire.tsx`),
     le vert des boutons de la planche 129.
 
+    SANS RÉPONSE, sa décision du 27 septembre 2026 : « il faut qu'elle tienne
+    jusqu'à la date prévue, au pire l'utilisateur la déplacera ». Une date
+    proposée tient jusqu'au jour du passage ; aucune bascule avant.
+
     Reconstruit d'après le code, pas photographié. Noms et dates inventés.
   */
   :root{
@@ -180,13 +184,8 @@
     <li><b>Un rappel le 20</b> sur l'accueil : « Les passages d'octobre sont arrivés : 3 clients à planifier. »</li>
   </ul>
 
-  <h2>Une question pour vous</h2>
-  <p><b>S'il ne répond pas, que deviennent les dates ?</b></p>
-  <ul>
-    <li><b>A, elles tiennent.</b> Sans réponse trois jours avant le passage, la date proposée devient retenue. La tonte se fait, et il a eu le temps de dire non.</li>
-    <li><b>B, elles attendent sa réponse.</b> Rien n'est retenu tant qu'il n'a pas validé. Sûr, mais une tonte peut sauter parce qu'il n'a pas lu son SMS.</li>
-  </ul>
-  <p><b>Ce que je défends : la A.</b> Un contrat d'entretien est déjà accepté ; le lien du mois sert à ajuster, pas à redemander l'accord. Touchez « Le client » puis revenez au planning sans rien valider pour voir la différence : c'est le réglage « Sans réponse » dans le tiroir.</p>
+  <h2>Tranché le 27 septembre : la date tient</h2>
+  <p>Votre réponse : <i>« il faut qu'elle tienne jusqu'à la date prévue, au pire l'utilisateur la déplacera »</i>. <b>Sans réponse du client, chaque date proposée tient jusqu'au jour du passage.</b> Le client peut répondre jusque-là ; vous gardez la main pour déplacer un passage au planning, comme aujourd'hui.</p>
 
   <p><b>Rien n'est codé.</b> Noms et dates inventés, planning reconstruit d'après le code.</p>
 </div>
@@ -204,7 +203,6 @@ const DEPART = () => ({
   jourTouche: null,
   canal: "sms",
   etat: "a_poser", // a_poser | envoye | valide
-  sansReponse: "A",
   enChoix: null,
 });
 let s = DEPART();
@@ -248,8 +246,7 @@ function dessinerPlanning() {
     poignee.textContent = "1 en attente du client";
     dedans.innerHTML = `<span class="titre">En attente du client</span>
       <div class="ligne inerte"><span class="nom">Mme Costa</span><span class="q">dates d'octobre envoyées<br>le 20 septembre</span></div>
-      <p class="dit">Sans réponse : ${s.sansReponse === "A" ? "les dates tiennent trois jours avant." : "rien n'est retenu."}</p>
-      <div class="canaux"><button type="button" data-sans="A" aria-pressed="${s.sansReponse === "A"}">A, elles tiennent</button><button type="button" data-sans="B" aria-pressed="${s.sansReponse === "B"}">B, elles attendent</button></div>`;
+      <p class="dit">Sans réponse, chaque date tient jusqu'au jour prévu.</p>`;
   } else {
     poignee.className = "poignee";
     poignee.textContent = "Aucun client sans date";
@@ -320,8 +317,6 @@ document.addEventListener("click", (e) => {
   const canal = t.closest("[data-canal]");
   if (canal) { s.canal = canal.dataset.canal; return dessinerPlanning(); }
   if (t.closest("#envoyer")) { s.etat = "envoye"; return dessinerPlanning(); }
-  const sans = t.closest("[data-sans]");
-  if (sans) { s.sansReponse = sans.dataset.sans; return dessinerPlanning(); }
   const ouvrir = t.closest("[data-ouvrir]");
   if (ouvrir) { s.enChoix = ouvrir.dataset.ouvrir; return dessinerClient(); }
   const autre = t.closest("[data-autre]");
