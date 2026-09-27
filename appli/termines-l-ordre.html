@@ -1,0 +1,376 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Le bouton Filtre</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  /*
+    « TERMINÉS », L'ORDRE DES LIGNES. Deux demandes du 27 septembre 2026 :
+
+      « Ordre pour les factures terminé ordre croissant / date du devis
+        date de facturation. Fait une planche. »
+
+    puis, devant la première planche (quatre ordres figés, A à D) :
+
+      « Met une note filtre on clique dessus et il y a plusieurs moyen de
+        trier. Planche ! »
+
+    CE QUI EST TRANCHÉ : un bouton « Filtre », et un volet qui propose
+    plusieurs ordres. CE QUI SE CHOISIT ICI : la place du bouton (A ou B).
+
+    LE VOLET : cinq clés (chantier, devis, facturation, montant, client) et
+    deux sens. Le sens se nomme dans les mots de la clé : « Du plus ancien »
+    pour une date, « Du plus petit » pour un montant, « De A à Z » pour un nom.
+    Tout s'applique au toucher, sans bouton « Valider » : on voit la liste
+    bouger derrière le voile.
+
+    PAR DÉFAUT : l'ordre d'aujourd'hui (chantier, du plus récent). Quand un
+    autre ordre est choisi, le bouton se remplit, pour qu'on sache que la
+    liste n'est pas dans son ordre habituel. Le choix est retenu.
+
+    CE QUI N'A PAS LA DATE OU LE MONTANT VA À LA FIN, dans les deux sens,
+    rangé entre soi par jour du chantier : une facture faite sans devis n'a
+    pas de date de devis, un chantier pas encore facturé n'a pas de date de
+    facture. Rien ne s'invente (`docs/AGENT.md` §3).
+
+    LE NOM DU CLIENT SE RANGE SANS SA CIVILITÉ : « Mr. », « Mme », « Madame »
+    rangeraient toutes les dames ensemble, loin de leur nom.
+
+    L'ŒIL NE BOUGE PAS : il reste le filtre « À facturer », à sa place. Le
+    mot « Filtre » est le sien ; le bouton range, il ne retire rien.
+
+    LE MOIS reste choisi sur le jour du chantier ; l'ordre joue dans le mois.
+    Œil ouvert, il joue sur tout ce qui attend.
+
+    LES DONNÉES : noms et montants de sa capture du 24 septembre. Les dates de
+    devis sont INVENTÉES, choisies pour que les ordres diffèrent vraiment.
+
+    B RETENUE LE 27 SEPTEMBRE 2026 (« B »), et codée le jour même :
+    `trier` dans src/lib/termines-par-mois.ts, le bouton et le volet dans
+    src/app/termines/ListeTermines.tsx.
+  */
+  /* La page entière aux couleurs de l'application (design-tokens.ts) :
+     le crème du fond, le vert plein, l'or. La charte Nuit suit le téléphone,
+     et le bouton « Nuit » la force. */
+  :root{
+    --serif:"Playfair Display",ui-serif,Georgia,serif;
+    --sans:"Inter",ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+    --fond:#f5f3ee; --plage:#faf9f5; --encre:#1c1c1a; --doux:#4a4a44;
+    --gris:#8a8578; --accent:#2f3b2f; --or:#B98B47; --orVoile:rgba(185,139,71,.55);
+    --orTexte:#8b6835; --plein:#7d9a6d; --surplein:#faf9f5; --trait:rgba(28,28,26,.12);
+    --page:#ece9e1; --ombre:rgba(20,18,14,.18);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      color-scheme:dark;
+      --fond:#101210; --plage:#1a1d19; --encre:#e9e8de; --doux:#c1c2b6;
+      --gris:#84887b; --accent:#e9e8de; --orVoile:rgba(185,139,71,.6); --orTexte:#c9a15e;
+      --plein:#e9e8de; --surplein:#1a1d19; --trait:rgba(233,232,222,.12);
+      --page:#0b0c0b; --ombre:rgba(0,0,0,.5);
+    }
+  }
+  :root[data-theme="dark"]{
+    color-scheme:dark;
+    --fond:#101210; --plage:#1a1d19; --encre:#e9e8de; --doux:#c1c2b6;
+    --gris:#84887b; --accent:#e9e8de; --orVoile:rgba(185,139,71,.6); --orTexte:#c9a15e;
+    --plein:#e9e8de; --surplein:#1a1d19; --trait:rgba(233,232,222,.12);
+    --page:#0b0c0b; --ombre:rgba(0,0,0,.5);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--page)}
+  body{font:16px/1.5 var(--sans);color:var(--encre);-webkit-text-size-adjust:100%;padding-block:0 60px}
+  button{font:inherit;color:inherit;-webkit-tap-highlight-color:transparent}
+  :focus-visible{outline:2px solid var(--or);outline-offset:2px;border-radius:4px}
+
+  .tete{max-width:430px;margin:0 auto;padding:34px 24px 0}
+  .tete .sur{margin:0;font:700 10.5px/1.35 var(--sans);letter-spacing:.2em;text-transform:uppercase;color:var(--orTexte)}
+  .tete h1{margin:10px 0 0;font:400 34px/1.08 var(--serif);text-wrap:balance}
+  .tete h1 em{font-style:italic;color:var(--or)}
+  .tete p{margin:12px 0 0;font-size:14.5px;line-height:1.6;color:var(--doux)}
+  .tete p b{color:var(--encre)}
+
+  .etats{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--page);padding:14px 24px}
+  .etats .rangee{max-width:382px;margin:0 auto;display:flex;flex-wrap:wrap;gap:8px}
+  .etats button{min-height:44px;border:0;border-radius:999px;padding:0 16px;cursor:pointer;
+                font:400 13px/1 var(--sans);color:var(--doux);background:var(--plage);
+                box-shadow:inset 0 0 0 1px var(--trait)}
+  .etats button[aria-pressed="true"]{background:var(--plein);color:var(--surplein);box-shadow:none;font-weight:600}
+  .etats #charte{margin-left:auto;background:transparent}
+  .etats #charte[aria-pressed="true"]{background:var(--encre);color:var(--fond)}
+
+  .mot{max-width:382px;width:calc(100% - 48px);margin:4px auto 0;padding:16px 18px;background:var(--plage);
+       border-radius:4px;box-shadow:inset 0 0 0 1.5px var(--orVoile);
+       font-size:14px;line-height:1.6;color:var(--doux);min-height:80px}
+  .mot b{color:var(--encre)}
+
+  .pied{max-width:382px;width:calc(100% - 48px);margin:26px auto 0;font-size:13px;line-height:1.65;color:var(--gris)}
+  .pied b{color:var(--doux)}
+
+  .tel{width:390px;max-width:100%;margin:18px auto 0;border-radius:26px;overflow:hidden;position:relative;
+       background:var(--fond);color:var(--encre);box-shadow:0 18px 50px var(--ombre);
+       display:flex;flex-direction:column}
+
+  /* ── L'écran Terminés, repris du code (ListeTermines.tsx) ─────────── */
+  .enTete{display:flex;align-items:center;justify-content:space-between;padding:26px 26px 0}
+  .enTete h1{margin:0;font:400 36px/1.02 var(--serif)}
+  .carteTva{margin:24px 26px 0;border-radius:4px;padding:20px 18px;background:var(--plage);
+            box-shadow:inset 0 0 0 1.5px var(--orVoile);display:flex;align-items:center;
+            justify-content:space-between;gap:12px}
+  .carteTva .quoi{font:700 10.5px/1.35 var(--sans);letter-spacing:.16em;text-transform:uppercase;color:var(--or)}
+  .carteTva .quand{display:block;margin-top:5px;font:400 17px/1.2 var(--serif)}
+  .carteTva .combien{font:400 21px/1 var(--serif);color:var(--accent);font-variant-numeric:tabular-nums}
+  .portes{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;margin:28px 26px 0}
+  .porte{min-height:44px;display:inline-flex;align-items:center;border-radius:999px;padding:0 12px;
+         font:400 12.5px/1 var(--sans);white-space:nowrap;background:var(--plage);color:var(--doux);
+         box-shadow:inset 0 0 0 1px var(--trait)}
+  .porte.creer{margin-left:auto;background:transparent;color:var(--or);box-shadow:inset 0 0 0 1px var(--or);padding:0 14px}
+  .navMois{display:flex;align-items:center;justify-content:center;gap:2px;margin:32px 26px 0}
+  .navMois span.fl{width:34px;height:44px;display:grid;place-items:center;font:400 22px/1 var(--serif);color:var(--or)}
+  .navMois span.fl.off{color:var(--trait)}
+  .navMois .quand{font:400 26px/1.2 var(--serif);white-space:nowrap;margin:0 2px}
+  .comptes{display:flex;align-items:center;gap:6px;margin:14px 26px 12px;font:700 17px/1.5 var(--sans);min-height:26px}
+  .comptes .aFacturer{color:var(--or)}
+  .comptes .oeil{width:44px;height:44px;margin:-10px -4px -10px -8px;display:grid;place-items:center;color:var(--or)}
+
+  /* ── LE BOUTON FILTRE ──────────────────────────────────────────────
+     La même famille que « Retours d'intervention » : une pastille à
+     contour, 44 px de haut. Rempli quand l'ordre n'est plus celui
+     d'aujourd'hui. */
+  .filtre{min-height:44px;display:inline-flex;align-items:center;gap:7px;border:0;border-radius:999px;
+          padding:0 13px;font:400 12.5px/1 var(--sans);white-space:nowrap;cursor:pointer;
+          background:var(--plage);color:var(--doux);box-shadow:inset 0 0 0 1px var(--trait)}
+  .filtre svg{display:block;flex:none}
+  .filtre[data-actif]{background:var(--encre);color:var(--fond);box-shadow:none}
+  /* A : au bout de la phrase des comptes, poussé à droite. */
+  .comptes .filtre{margin:-9px 0 -9px auto;font-weight:400}
+  /* B : sa propre rangée, sous les comptes, à droite. */
+  .rangeeFiltre{display:none;justify-content:flex-end;margin:0 26px 4px}
+  .tel[data-place="b"] .rangeeFiltre{display:flex}
+  .tel[data-place="b"] .comptes .filtre{display:none}
+
+  .liste{margin:0 26px 10px}
+  .rangee{display:flex;gap:14px;align-items:center;padding:24px 0}
+  .rangee[data-facturee]{align-items:baseline}
+  .rangee:first-child{padding-top:22px}
+  .rangee .qui{min-width:0;flex:1}
+  .rangee .nomC{display:block;font:400 17px/1.2 var(--serif);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .rangee .etat{display:block;margin-top:5px;font:400 13px/1.5 var(--sans);color:var(--doux);font-variant-numeric:tabular-nums}
+  .rangee .etat b{font-weight:700;color:var(--or)}
+  .rangee .montant{flex:0 0 auto;font:700 16px/1.2 var(--serif);white-space:nowrap;font-variant-numeric:tabular-nums;color:var(--or)}
+  .capsule{flex:0 0 auto;min-height:44px;display:inline-flex;align-items:center;border-radius:999px;
+           padding:0 17px;font:600 12.5px/1 var(--sans);letter-spacing:.12em;text-transform:uppercase;
+           background:var(--plein);color:var(--surplein)}
+  .barre{display:flex;align-items:center;justify-content:space-around;height:60px;padding:0 6px;
+         background:var(--plage);box-shadow:inset 0 1px 0 var(--trait)}
+  .barre i{position:relative;padding:8px 6px;font:500 9.5px/1 var(--sans);font-style:normal;
+           letter-spacing:.18em;text-transform:uppercase;color:var(--gris)}
+  .barre i.actif{color:var(--encre)}
+  .barre i.actif::after{content:"";position:absolute;left:0;right:0;bottom:-2px;height:1.5px;background:var(--or)}
+
+  /* ── LE VOLET : celui de l'application (BottomSheet), dans le cadre ── */
+  /* Fixé à la fenêtre, pas au cadre : le cadre dépasse la hauteur du
+     téléphone, et un volet collé à SON bas s'ouvrirait hors de vue. */
+  .voile{position:fixed;inset:0;z-index:30;background:rgba(0,0,0,.35);display:flex;align-items:flex-end;justify-content:center}
+  .voile[hidden]{display:none}
+  .volet{width:100%;max-width:390px;border-radius:26px 26px 0 0;background:var(--fond);padding:12px 24px 30px}
+  .volet .poignee{width:40px;height:4px;border-radius:999px;background:var(--trait);margin:0 auto 16px}
+  .volet .titre{margin:0 0 12px;text-align:center;font:600 11px/1 var(--sans);letter-spacing:.18em;
+                text-transform:uppercase;color:var(--gris)}
+  .cle{width:100%;min-height:54px;margin-top:8px;border:0;border-radius:999px;cursor:pointer;
+       display:flex;align-items:center;justify-content:center;
+       font:400 19px/1 var(--serif);color:var(--encre);background:var(--plage);box-shadow:inset 0 0 0 1px var(--trait)}
+  .cle[aria-pressed="true"]{background:var(--encre);color:var(--fond);box-shadow:none}
+  .sens{display:flex;gap:8px;margin-top:18px}
+  .sens button{flex:1;min-height:44px;border:0;border-radius:999px;cursor:pointer;
+               font:400 13.5px/1 var(--sans);color:var(--doux);background:transparent;
+               box-shadow:inset 0 0 0 1px var(--trait)}
+  .sens button[aria-pressed="true"]{color:var(--or);box-shadow:inset 0 0 0 1.5px var(--or);font-weight:600}
+  .fermer{width:100%;margin-top:12px;padding:12px 0;border:0;background:transparent;cursor:pointer;
+          font:400 14px/1 var(--sans);color:var(--gris)}
+
+  @media (max-width:430px){ .tel{border-radius:0;box-shadow:none;width:100%} }
+  @media (prefers-reduced-motion:no-preference){ .volet{animation:monte .22s cubic-bezier(.2,.7,.2,1)} }
+  @keyframes monte{from{transform:translateY(24px);opacity:.6}}
+</style>
+</head>
+<body>
+<header class="tete">
+  <p class="sur">Terminés, planche du 27 septembre</p>
+  <h1>Le bouton <em>Filtre</em></h1>
+  <p><b>Appuyez sur Filtre</b> dans l'écran : cinq façons de trier, et le sens.
+     La liste bouge au toucher.</p>
+</header>
+
+<div class="etats" role="group" aria-label="La place du bouton">
+  <div class="rangee">
+    <button type="button" data-place="a" aria-pressed="true">A, sur la ligne</button>
+    <button type="button" data-place="b" aria-pressed="false">B, en dessous</button>
+    <button type="button" id="charte" aria-pressed="false">Nuit</button>
+  </div>
+</div>
+
+<p class="mot" id="mot"></p>
+
+<section class="tel" id="tel" data-place="a">
+  <div class="enTete"><h1>Terminés</h1></div>
+  <div class="carteTva"><span><span class="quoi">Ma TVA à déclarer</span>
+    <span class="quand">Septembre 2026</span></span><span class="combien">1 772,85 €</span></div>
+  <div class="portes">
+    <span class="porte">Retours d'intervention</span>
+    <span class="porte creer">Créer une facture</span>
+  </div>
+  <div class="navMois"><span class="fl">‹</span><span class="quand">Septembre 2026</span><span class="fl off">›</span></div>
+  <p class="comptes"><span class="aFacturer">3 à facturer</span>
+    <span class="oeil" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 20 20" fill="none"><path d="M2.2 10s2.8-5 7.8-5 7.8 5 7.8 5-2.8 5-7.8 5-7.8-5-7.8-5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><circle cx="10" cy="10" r="2.4" stroke="currentColor" stroke-width="1.6"/><path d="M3.6 16.4 16.4 3.6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></span>
+    <span>4 facturés</span>
+    <button type="button" class="filtre" data-ouvrir><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M2 4h12M4.5 8h7M7 12h2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>Filtre</button></p>
+  <div class="rangeeFiltre"><button type="button" class="filtre" data-ouvrir><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M2 4h12M4.5 8h7M7 12h2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>Filtre</button></div>
+  <div class="liste" id="liste"></div>
+  <div class="barre" aria-hidden="true"><i>Chantiers</i><i>Planning</i><i class="actif">Terminés</i><i>Paysage</i><i>Réglages</i></div>
+
+  <div class="voile" id="voile" hidden>
+    <div class="volet" role="dialog" aria-label="Trier">
+      <div class="poignee"></div>
+      <p class="titre">Trier par</p>
+      <div id="cles"></div>
+      <div class="sens" id="sens"></div>
+      <button type="button" class="fermer" id="fermer">Fermer</button>
+    </div>
+  </div>
+</section>
+
+<p class="pied"><b>Par défaut</b>, l'ordre d'aujourd'hui : le chantier le plus récent en haut.
+  Dès qu'un autre ordre est choisi, le bouton se remplit. <b>Ce qui n'a pas la date</b>
+  (une facture sans devis, un chantier pas encore facturé) va à la fin.
+  Les dates de devis sont des exemples.</p>
+
+<script>
+  // Dates AAAA-MM-JJ. `plan` : le jour du planning (null si la facture a été
+  // créée sans passer par lui). `devis` : null si la facture a été faite sans
+  // devis. `fac` : null tant que rien n'est facturé. `euros` : la facture,
+  // sinon le devis ; null quand on ne sait pas.
+  const LIGNES = [
+    { nom: "Mme Costa",                 plan: "2026-09-02", devis: "2026-08-18", fac: "2026-09-18", n: 10, euros: 1120 },
+    { nom: "Mr. Frédéric",              plan: "2026-09-08", devis: "2026-08-25", fac: "2026-09-25", n: 13, euros: 1240 },
+    { nom: "Madame Huguette Groupiron", plan: "2026-09-12", devis: "2026-08-29", fac: null, euros: 660 },
+    { nom: "Mr. Julien",                plan: "2026-09-15", devis: "2026-09-02", fac: "2026-09-21", n: 11, euros: 552.52 },
+    { nom: "Mr. Frederic",              plan: "2026-09-22", devis: null,         fac: null, euros: null },
+    { nom: "Mr. Julien",                plan: "2026-09-23", devis: "2026-09-10", fac: null, euros: 696 },
+    { nom: "Mr. Julien",                plan: null,         devis: null,         fac: "2026-09-24", n: 12, euros: 996 },
+  ];
+
+  const MOIS = ["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"];
+  const jour = (iso) => `${Number(iso.slice(8, 10))} ${MOIS[Number(iso.slice(5, 7)) - 1]}`;
+  const euros = (n) => new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" }).format(n);
+  const duChantier = (l) => l.plan ?? l.fac;
+  // Le nom sans sa civilité : sinon toutes les « Madame » se suivent.
+  const sansCivilite = (nom) => nom.replace(/^(Mr\.?|M\.|Monsieur|Mme|Madame|Mlle)\s+/i, "").toLocaleLowerCase("fr");
+
+  // Chaque clé : son libellé, ce qu'elle lit, et les mots de ses deux sens
+  // (le premier est « croissant »).
+  const CLES = {
+    chantier: { mot: "Date du chantier",     lit: duChantier,        sens: ["Du plus ancien", "Du plus récent"] },
+    devis:    { mot: "Date du devis",        lit: (l) => l.devis,    sens: ["Du plus ancien", "Du plus récent"] },
+    facture:  { mot: "Date de facturation",  lit: (l) => l.fac,      sens: ["Du plus ancien", "Du plus récent"] },
+    montant:  { mot: "Montant",              lit: (l) => l.euros,    sens: ["Du plus petit", "Du plus grand"] },
+    client:   { mot: "Nom du client",        lit: (l) => sansCivilite(l.nom), sens: ["De A à Z", "De Z à A"] },
+  };
+  // Par défaut, l'ordre d'aujourd'hui : chantier, du plus récent.
+  const DEFAUT = { cle: "chantier", croissant: false };
+  let choix = { ...DEFAUT };
+
+  /** Ce qui n'a pas la valeur va à la fin, dans les deux sens, par jour du chantier. */
+  function ranger() {
+    const lit = CLES[choix.cle].lit;
+    const signe = choix.croissant ? 1 : -1;
+    return [...LIGNES].sort((a, b) => {
+      const va = lit(a), vb = lit(b);
+      if ((va == null) !== (vb == null)) return va == null ? 1 : -1;
+      if (va == null) return duChantier(a) < duChantier(b) ? 1 : -1;
+      if (va === vb) return 0;
+      // Un nom se compare à la française : « Émile » ne part pas après « Zoé ».
+      if (choix.cle === "client") return va.localeCompare(vb, "fr") * signe;
+      return (va < vb ? -1 : 1) * signe;
+    });
+  }
+
+  // La petite ligne de l'écran ; avec le tri par devis, « Devis du … » prend la
+  // place du jour du chantier, sinon l'ordre paraîtrait au hasard.
+  function petiteLigne(l) {
+    const bouts = [];
+    if (choix.cle === "devis" && l.devis) bouts.push(`Devis du ${jour(l.devis)}`);
+    else if (l.plan) bouts.push(jour(l.plan));
+    if (l.fac === null) {
+      if (l.euros !== null) bouts.push(`${euros(l.euros)} prévus`);
+    } else {
+      bouts.push(`<b>Facturé</b> le ${jour(l.fac)}, Facture n° ${l.n}`);
+    }
+    return bouts.join(", ");
+  }
+
+  const liste = document.getElementById("liste");
+  function dessinerListe() {
+    liste.innerHTML = ranger().map((l) => {
+      const etat = petiteLigne(l);
+      const p = etat ? `<span class="etat">${etat}</span>` : "";
+      return l.fac === null
+        ? `<div class="rangee"><span class="qui"><span class="nomC">${l.nom}</span>${p}</span><span class="capsule">À facturer</span></div>`
+        : `<div class="rangee" data-facturee><span class="qui"><span class="nomC">${l.nom}</span>${p}</span><span class="montant">${euros(l.euros)}</span></div>`;
+    }).join("");
+    const autre = choix.cle !== DEFAUT.cle || choix.croissant !== DEFAUT.croissant;
+    for (const f of document.querySelectorAll(".filtre")) {
+      if (autre) f.dataset.actif = ""; else delete f.dataset.actif;
+    }
+  }
+
+  function dessinerVolet() {
+    document.getElementById("cles").innerHTML = Object.entries(CLES).map(([k, c]) =>
+      `<button type="button" class="cle" data-cle="${k}" aria-pressed="${k === choix.cle}">${c.mot}</button>`).join("");
+    const [monte, descend] = CLES[choix.cle].sens;
+    document.getElementById("sens").innerHTML =
+      `<button type="button" data-croissant="1" aria-pressed="${choix.croissant}">${monte}</button>` +
+      `<button type="button" data-croissant="0" aria-pressed="${!choix.croissant}">${descend}</button>`;
+  }
+
+  const voile = document.getElementById("voile");
+  for (const b of document.querySelectorAll("[data-ouvrir]")) {
+    b.addEventListener("click", () => { dessinerVolet(); voile.hidden = false; });
+  }
+  voile.addEventListener("click", (e) => {
+    const cle = e.target.closest("[data-cle]");
+    const sens = e.target.closest("[data-croissant]");
+    if (cle) choix.cle = cle.dataset.cle;
+    else if (sens) choix.croissant = sens.dataset.croissant === "1";
+    else if (e.target === voile || e.target.id === "fermer") { voile.hidden = true; return; }
+    else return;
+    dessinerVolet();
+    dessinerListe();
+  });
+
+  const MOTS = {
+    a: "<b>A :</b> le bouton au bout de la ligne « 3 à facturer, 4 facturés ». Rien ne s'ajoute en hauteur.",
+    b: "<b>B :</b> le bouton sur sa propre ligne, sous les comptes, à droite. Une ligne de plus, mais la phrase des comptes reste seule.",
+  };
+  const tel = document.getElementById("tel");
+  for (const b of document.querySelectorAll(".etats button[data-place]")) {
+    b.addEventListener("click", () => {
+      tel.dataset.place = b.dataset.place;
+      document.getElementById("mot").innerHTML = MOTS[b.dataset.place];
+      for (const a of document.querySelectorAll(".etats button[data-place]")) a.setAttribute("aria-pressed", String(a === b));
+    });
+  }
+  document.getElementById("mot").innerHTML = MOTS.a;
+  document.getElementById("charte").addEventListener("click", (e) => {
+    const r = document.documentElement;
+    const nuit = r.dataset.theme !== "dark";
+    r.dataset.theme = nuit ? "dark" : "light";
+    e.currentTarget.setAttribute("aria-pressed", String(nuit));
+  });
+  dessinerListe();
+</script>
+</body>
+</html>

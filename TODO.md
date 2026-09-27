@@ -139,6 +139,12 @@ d'aujourd'hui gardée telle quelle. Codé sur `claude/filtre-client-tri-alpha-1a
 pansements, et l'écran regardé. **Pas de batterie, à sa demande** : le contrôle
 de son niveau (2 : `npm run verifier:avant-fusion`) reste à jouer avant `main`.
 
+## Terminés : le bouton Filtre (27 septembre 2026) : CODÉ, BATTERIE À JOUER AVANT `main`
+
+B retenue et codée sur `claude/factures-devis-ordre-5b7b8z`. Niveau 3 (le lot
+touche la lecture des factures) : la batterie entière n'a pas été jouée, à sa
+demande ; elle se joue avant `main`.
+
 ## Site de vente : l'adresse de contact et le nom (27 septembre 2026)
 
 `appli/vente/index.html` porte `CONTACT = "contact@votre-domaine.fr"`, une

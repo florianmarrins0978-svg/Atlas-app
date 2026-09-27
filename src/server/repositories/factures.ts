@@ -1742,6 +1742,14 @@ export async function listerChantiersTermines(ctx: Ctx, aujourdHui: string = jou
         contratPassage: chantiers.contratPassage,
         contratPrestations: contratsEntretien.prestations,
         contratTauxTva: contratsEntretien.tauxTva,
+        // Pour le tri « Date du devis » (bouton Filtre, 27 septembre 2026) :
+        // le même dernier devis envoyé que le montant prévu, sinon la ligne
+        // se rangerait sur un devis et afficherait le prix d'un autre.
+        devisDateEmission: sql<string | null>`(
+          SELECT d."date_emission"::text FROM "devis" d
+          WHERE d."chantier_id" = ${chantiers.id} AND d."statut" = 'envoye'
+          ORDER BY d."numero_version" DESC LIMIT 1
+        )`,
       })
       .from(chantiers)
       .leftJoin(clients, eq(chantiers.clientId, clients.id))
