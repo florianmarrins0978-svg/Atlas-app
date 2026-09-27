@@ -418,6 +418,39 @@ export function peutGererDevis(role: Role): boolean {
   return role === "proprietaire" || role === "facturation" || role === "commercial";
 }
 
+/** Ce dont parle un rappel de l'accueil : ce qui décide à qui il revient. */
+export type DomaineDesRappels = "devis" | "facture" | "retour";
+
+/**
+ * **Cette personne reçoit-elle les rappels de ce domaine ?**
+ *
+ * Sa règle du 27 septembre 2026 (planche `rappels-par-role-et-organigramme`) :
+ * *« Le patron doit toujours tout recevoir. Ensuite il faut filtrer pour le
+ * commercial et la facturation. Chacun ne doit pas recevoir les rappels des
+ * autres. »*
+ *
+ * **Ce n'est pas `peutGererDevis`**, et c'est voulu : la facturation a le droit
+ * de rédiger un devis, mais le rappel d'un devis qui dort est le travail du
+ * commercial. Un droit dit ce qu'on PEUT faire ; un rappel dit ce qu'on doit
+ * ne pas OUBLIER.
+ *
+ * Avant ce jour, personne ne triait : le commercial recevait « À facturer » et
+ * « Facture impayée », dont le bouton mène à une adresse qui lui est fermée
+ * (`FACTURE_DU_CHANTIER`).
+ */
+export function recoitLesRappels(role: Role, domaine: DomaineDesRappels): boolean {
+  switch (role) {
+    case "proprietaire":
+      return true;
+    case "commercial":
+      return domaine === "devis";
+    case "facturation":
+      return domaine === "facture";
+    case "salarie":
+      return false;
+  }
+}
+
 /**
  * **Cette personne peut-elle FACTURER ?**
  *

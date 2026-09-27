@@ -26,6 +26,7 @@ import {
   silenceApresVuJours,
   estGenreVu,
   GENRES_ACQUITTABLES,
+  reglagesPourLeRole,
 } from "../src/lib/rappels";
 
 let echecs = 0;
@@ -337,6 +338,19 @@ essai("un genre inventé est refusé", () => {
   assert.equal(estGenreVu(null), false);
   assert.equal(estGenreVu(undefined), false);
   assert.equal(estGenreVu(7), false);
+});
+
+// Sa règle du 27 septembre 2026 : chacun ses rappels, le patron tout.
+essai("un rappel qui ne revient pas au rôle est éteint pour lui", () => {
+  const tous = { ...RAPPELS_PAR_DEFAUT, chantierSansDevisJours: 7, devisSansReponseJours: 7, chantierNonFactureJours: 3, factureImpayeeJours: 7 };
+  assert.deepEqual(reglagesPourLeRole(tous, "proprietaire"), tous);
+  const c = reglagesPourLeRole(tous, "commercial");
+  assert.deepEqual([c.chantierSansDevisJours, c.devisSansReponseJours, c.chantierNonFactureJours, c.factureImpayeeJours], [7, 7, null, null]);
+  const f = reglagesPourLeRole(tous, "facturation");
+  assert.deepEqual([f.chantierSansDevisJours, f.devisSansReponseJours, f.chantierNonFactureJours, f.factureImpayeeJours], [null, null, 3, 7]);
+  for (const r of [reglagesPourLeRole(tous, "salarie"), reglagesPourLeRole(tous, null)]) {
+    assert.deepEqual([r.chantierSansDevisJours, r.devisSansReponseJours, r.chantierNonFactureJours, r.factureImpayeeJours], [null, null, null, null]);
+  }
 });
 
 if (echecs) {

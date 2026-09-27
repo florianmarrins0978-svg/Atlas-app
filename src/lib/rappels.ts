@@ -1,3 +1,5 @@
+import { recoitLesRappels, type DomaineDesRappels, type Role } from "./acces-roles";
+
 /**
  * Les trois rappels qu'Atlas peut vraiment tenir aujourd'hui.
  *
@@ -224,6 +226,40 @@ export type GenreRappel =
   | "chantier-non-facture"
   | "facture-impayee"
   | "retour-pas-recu";
+
+/** De quoi parle chaque rappel : c'est ce qui dit à qui il revient. */
+export function domaineDuRappel(genre: GenreRappel): DomaineDesRappels {
+  switch (genre) {
+    case "chantier-sans-devis":
+    case "devis-sans-reponse":
+      return "devis";
+    case "chantier-non-facture":
+    case "facture-impayee":
+      return "facture";
+    case "retour-pas-recu":
+      return "retour";
+  }
+}
+
+/**
+ * Les réglages, vus par une personne : un rappel qui ne lui revient pas est
+ * ÉTEINT pour elle (sa règle du 27 septembre 2026, `recoitLesRappels`).
+ *
+ * **Éteint, et non filtré après coup** : un rappel éteint ne coûte aucune
+ * requête (`rappelsEnCours`), et il ne faut pas qu'une requête jouée puis jetée
+ * passe un jour pour la preuve qu'il est envoyé. Un rôle inconnu n'en reçoit
+ * aucun : une adhésion retirée entre deux requêtes ne lit plus rien.
+ */
+export function reglagesPourLeRole(reglages: ReglagesRappels, role: Role | null): ReglagesRappels {
+  const recoit = (genre: GenreRappel) => role !== null && recoitLesRappels(role, domaineDuRappel(genre));
+  return {
+    ...reglages,
+    chantierSansDevisJours: recoit("chantier-sans-devis") ? reglages.chantierSansDevisJours : null,
+    devisSansReponseJours: recoit("devis-sans-reponse") ? reglages.devisSansReponseJours : null,
+    chantierNonFactureJours: recoit("chantier-non-facture") ? reglages.chantierNonFactureJours : null,
+    factureImpayeeJours: recoit("facture-impayee") ? reglages.factureImpayeeJours : null,
+  };
+}
 
 /** Les trois qui s'acquittent par « J'ai vu ». L'impayé a son propre moteur. */
 export const GENRES_ACQUITTABLES = [

@@ -39,6 +39,7 @@ import { declarerNonPayee } from "../src/server/repositories/factures-non-payees
 import { faireUnAvoir } from "../src/server/repositories/avoirs";
 import { mettreAJourEntreprise } from "../src/server/repositories/entreprises";
 import { withEntreprise } from "../src/server/db/with-entreprise";
+import { donnerUnAcces, listerAcces } from "../src/server/repositories/membres-entreprise";
 import { chantiers, envoisDevis } from "../src/server/db/schema";
 import { eq } from "drizzle-orm";
 
@@ -602,6 +603,53 @@ async function main() {
       1,
       "le rappel du voisin s'est tu"
     );
+  });
+
+  // ── Chacun ses rappels ────────────────────────────────────────────────────
+  //
+  // **Sa règle du 27 septembre 2026** : *« Le patron doit toujours tout
+  // recevoir. Ensuite il faut filtrer pour le commercial et la facturation.
+  // Chacun ne doit pas recevoir les rappels des autres. »* Le tri se fait dans
+  // `rappelsEnCours`, pas dans l'écran : l'assistant lit la même fonction
+  // (`lire-rappels.ts`), et un commercial ne doit pas y retrouver les factures.
+  console.log("");
+  await essai("chacun ne reçoit que ses rappels, le patron reçoit tout", async () => {
+    const { ctxA } = await monter();
+    await chantierOuvertIlYA(ctxA, "Sans devis", 6);
+    await devisPartiIlYA(ctxA, "Sans réponse", 10);
+    const termine = await creerChantier(ctxA, { nom: "Non facturé" });
+    await poserJalon(ctxA, termine.id, { termineAt: ilYA(5) });
+    await factureEnvoyeeIlYA(ctxA, "Impayée", 40);
+
+    const membre = async (email: string, role: "commercial" | "facturation" | "salarie"): Promise<Ctx> => {
+      const r = await donnerUnAcces(ctxA, {
+        nom: email,
+        email,
+        motDePasse: "un-mot-de-passe-assez-long",
+        confirmation: "un-mot-de-passe-assez-long",
+        role,
+      });
+      assert.equal(r.ok, true, `le montage n'a pas pu créer ${email}`);
+      const acces = (await listerAcces(ctxA)).find((l) => l.email === email)!;
+      return { utilisateurId: acces.utilisateurId, entrepriseId: ctxA.entrepriseId };
+    };
+    const genres = async (ctx: Ctx) => (await rappelsEnCours(ctx, MAINTENANT)).map((r) => r.genre).sort();
+
+    const tous = ["chantier-non-facture", "chantier-sans-devis", "devis-sans-reponse", "facture-impayee"];
+    // Le contrôle inverse d'abord : sans les quatre chez le patron, les refus
+    // ci-dessous seraient verts faute de matière.
+    assert.deepEqual(await genres(ctxA), tous, "le patron ne reçoit pas tout");
+    assert.deepEqual(
+      await genres(await membre("commercial@essai.local", "commercial")),
+      ["chantier-sans-devis", "devis-sans-reponse"],
+      "le commercial reçoit autre chose que les devis"
+    );
+    assert.deepEqual(
+      await genres(await membre("facturation@essai.local", "facturation")),
+      ["chantier-non-facture", "facture-impayee"],
+      "la facturation reçoit autre chose que les factures"
+    );
+    assert.deepEqual(await genres(await membre("salarie@essai.local", "salarie")), [], "un salarié reçoit des rappels");
   });
 
   console.log("");

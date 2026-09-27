@@ -8,6 +8,8 @@ import { ongletDuChantier } from "@/lib/onglet-chantier";
 import { jourIso } from "@/lib/jour";
 import { lieuDuChantier, lieuEstManquant } from "@/lib/nom-chantier";
 import { getCurrentCtx } from "@/server/session-ctx";
+import { getRole } from "@/server/autorisation";
+import { recoitLesRappels, type DomaineDesRappels } from "@/lib/acces-roles";
 import { listerChantiersPourAffichage } from "@/server/repositories/chantiers";
 import { notificationsPatron, envoisCaducs } from "@/server/repositories/envois-devis";
 import { rappelsEnCours, retoursPasRecusEnCours } from "@/server/repositories/rappels";
@@ -59,15 +61,21 @@ export default async function ChantiersPage() {
   // pour n'en rien faire coûterait un aller-retour à chaque ouverture de son
   // écran d'accueil, et laisserait croire à la prochaine lecture que la session
   // sert encore à quelque chose ici.
+  // **Chacun ses cartes, comme chacun ses rappels** (27 septembre 2026) : une
+  // réponse de client sur un devis revient au commercial, la réception d'une
+  // facture à la facturation, et tout au patron. `rappelsEnCours` trie les
+  // siens lui-même ; ces trois-là se lisent ici, sur la même règle.
+  const role = await getRole(ctx);
+  const recoit = (domaine: DomaineDesRappels) => role !== null && recoitLesRappels(role, domaine);
   const [chantiers, notifications, caducs, rappels, receptions, abonnement, retoursManques] = await Promise.all([
     listerChantiersPourAffichage(ctx),
-    notificationsPatron(ctx),
-    envoisCaducs(ctx),
+    recoit("devis") ? notificationsPatron(ctx) : [],
+    recoit("devis") ? envoisCaducs(ctx) : [],
     rappelsEnCours(ctx, maintenant),
     // Les clients qui viennent de confirmer avoir reçu leur facture — sa
     // demande du 9 septembre 2026. Vide presque toujours, et rien ne s'affiche
     // alors.
-    receptionsASignaler(ctx),
+    recoit("facture") ? receptionsASignaler(ctx) : [],
     // L'essai de quinze jours, s'il y en a un : `null` pour son Atlas à lui.
     abonnementDeLEntreprise(ctx),
     // « Retour pas reçu » : sa planche du 26 septembre 2026, seulement quand

@@ -4,6 +4,7 @@ import { chantiers, creneauxChantier, entreprises, envoisDevis, factures, rappel
 import {
   lireRappels,
   normaliserRappels,
+  reglagesPourLeRole,
   seuilAncienneté,
   echeanceFacture,
   rappelFactureDu,
@@ -15,6 +16,8 @@ import {
   type ReglagesRappels,
 } from "../../lib/rappels";
 import type { Ctx } from "./context";
+import { getRole } from "../autorisation";
+import { recoitLesRappels } from "../../lib/acces-roles";
 import { dernierJourTravaille, retoursPasRecus, type JourTravaille } from "../../lib/retour-intervention";
 import { creneauxOccupes } from "../../lib/creneaux-chantier";
 import type { Creneau, Moment } from "../../lib/disponibilites";
@@ -100,7 +103,11 @@ export type Rappel = {
  * rappel fonctionne, alors qu'il est coupé.
  */
 export async function rappelsEnCours(ctx: Ctx, maintenant: Date): Promise<Rappel[]> {
-  const reglages = await lireReglagesRappels(ctx);
+  // **Le tri par rôle se fait ICI, pas à l'écran** : l'assistant lit cette
+  // même fonction (`lire-rappels.ts`), et un commercial ne doit pas y retrouver
+  // les factures qu'on lui cache à l'accueil (27 septembre 2026).
+  const [lus, role] = await Promise.all([lireReglagesRappels(ctx), getRole(ctx)]);
+  const reglages = reglagesPourLeRole(lus, role);
   if (
     reglages.chantierSansDevisJours === null &&
     reglages.devisSansReponseJours === null &&
@@ -361,6 +368,9 @@ export async function retoursPasRecusEnCours(
   maintenant: Date
 ): Promise<JourTravaille[]> {
   if (!demande) return [];
+  // Le retour d'un chantier est l'affaire du patron seul (27 septembre 2026).
+  const role = await getRole(ctx);
+  if (role === null || !recoitLesRappels(role, "retour")) return [];
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const [lesChantiers, poses] = await Promise.all([
       tx

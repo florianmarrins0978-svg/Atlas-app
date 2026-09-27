@@ -8,6 +8,21 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-27
 
+### Chacun ses rappels : le patron tout, le commercial les devis, la facturation les factures
+
+Sa règle du 27 septembre 2026 (planche `rappels-par-role-et-organigramme`) :
+*« Le patron doit toujours tout recevoir. Ensuite il faut filtrer pour le
+commercial et la facturation. Chacun ne doit pas recevoir les rappels des
+autres. »* Jusqu'ici `rappelsEnCours` ignorait le rôle : le commercial recevait
+« À facturer » et « Facture impayée », dont le bouton mène à une adresse qui lui
+est fermée. La règle vit dans `recoitLesRappels` (`acces-roles.ts`) ; les
+rappels d'un autre domaine sont ÉTEINTS pour la personne (`reglagesPourLeRole`),
+donc aucune requête jouée pour rien, et l'assistant (`lire-rappels.ts`) trie
+pareil. Les cartes de l'accueil suivent la même règle : réponses et devis
+caducs au commercial, réception d'une facture à la facturation, « Retour pas
+reçu » au patron seul. Éprouvé : `test-rappels-db.ts` (rouge avant, vert
+après), `test-rappels.ts`, et l'accueil regardé sous les trois comptes.
+
 ### Les dates du mois d'un contrat, validées par le client
 
 La dernière date du mois posée, le tiroir du planning propose « Envoyer les

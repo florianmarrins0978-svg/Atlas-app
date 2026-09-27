@@ -4,6 +4,13 @@
 · dernière migration `drizzle/0106_hausse_du_devis_repris.sql` (sur la branche)
 
 ---
+## CODÉ, PAS SUR `main` : CHACUN SES RAPPELS (27 septembre 2026)
+
+Branche `claude/rappels-commercial-facturation-5ehltt`. Le patron reçoit tout,
+le commercial les rappels de devis, la facturation ceux des factures, le
+salarié aucun (`recoitLesRappels`). **Niveau 3** (rôles) : batterie à jouer
+avec son accord avant `main`.
+
 ## SUR `main` : LES DATES DU MOIS D'UN CONTRAT (27 septembre 2026)
 
 La dernière date d'un mois posée au planning ouvre « À envoyer » : un lien par
