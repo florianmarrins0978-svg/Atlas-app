@@ -35,7 +35,20 @@ Ta demande : *« très bien, code ça, ne lance pas de batterie »*, sur la plan
 | le rappel du 20 sur l'accueil | un autre écran, un autre lot |
 | une notification quand le client valide ou déplace | le planning bouge seul ; à toi de dire si tu veux être prévenu |
 
-## Les chiffres des contrôles joués (pas la batterie)
+## Ce que la batterie a trouvé, et que j'avais faux
+
+La première batterie (169/170 navigateur, 427/433 base) a rougi six fois, **toutes sur le contrat d'entretien et ce lot** :
+
+| Rouge | Corrigé comment |
+|---|---|
+| **le jour d'aujourd'hui se comptait en heure anglaise** sur l'écran du contrat et les dates du mois : entre minuit et 2 h, la veille | compté à ton heure partout (`jourIso`), et le contrôle attrape désormais aussi cette forme-là |
+| la sauvegarde de tes données oubliait les contrats et les envois de dates | ajoutés à l'export |
+| le PDF du contrat s'ouvrait par un lien direct : sur iPhone il s'affiche au lieu de se ranger | passe par le bouton de téléchargement de l'appli |
+| le mode d'emploi ne retrouvait plus « Nouveau devis » et « Dernier devis » | les libellés s'écrivent entiers dans le code, toujours sur deux lignes à l'écran |
+| les cases des mois et les cartes A et B du contrat n'étaient pas en capsule | gardées telles que ta planche 129, exception écrite et bornée à elles |
+| les pages du contrat n'étaient pas dans le contrôle des pages publiques | ajoutées |
+
+## Les chiffres des contrôles joués
 
 | Contrôle | Résultat |
 |---|---|

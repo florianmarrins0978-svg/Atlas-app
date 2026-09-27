@@ -2,7 +2,7 @@ import { lireDatesParJeton } from "@/server/repositories/dates-du-mois";
 import { couleursDocument } from "@/lib/design-tokens";
 import { avecCivilite } from "@/lib/civilite";
 import { duMois, fenetreDuMois } from "@/lib/dates-du-mois";
-import { versJourIso } from "@/lib/disponibilites";
+import { jourIso } from "@/lib/jour";
 import ValiderLesDates from "./ValiderLesDates";
 
 // LA PAGE DES DATES DU MOIS, telle que le CLIENT la reçoit par son lien
@@ -20,7 +20,7 @@ const OR = couleursDocument.accent;
 
 export default async function PageDatesDuMois({ params }: { params: Promise<{ jeton: string }> }) {
   const { jeton } = await params;
-  const aujourdhui = versJourIso(new Date());
+  const aujourdhui = jourIso(new Date());
   const lu = await lireDatesParJeton(jeton, aujourdhui);
 
   // Lien inconnu et contrat effacé donnent le même message : distinguer les

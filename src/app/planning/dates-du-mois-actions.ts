@@ -3,7 +3,7 @@
 import { exigerEcritureSurLePlanning } from "@/server/garde-action";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { envoyerDatesDuMois } from "@/server/repositories/dates-du-mois";
-import { versJourIso } from "@/lib/disponibilites";
+import { jourIso } from "@/lib/jour";
 
 /**
  * L'ENVOI DES DATES DU MOIS au client d'un contrat (planche 130).
@@ -22,7 +22,7 @@ export async function envoyerDatesDuMoisAction(demande: {
   const ctx = await getCurrentCtx();
   await exigerEcritureSurLePlanning(ctx, "envoyer les dates du mois");
   try {
-    return await envoyerDatesDuMois(ctx, demande, versJourIso(new Date()));
+    return await envoyerDatesDuMois(ctx, demande, jourIso(new Date()));
   } catch (err) {
     console.error("[envoyerDatesDuMoisAction] échec", { demande, err });
     return { ok: false, refus: "Les dates n'ont pas pu partir. Rien n'a été envoyé. Réessayez." };

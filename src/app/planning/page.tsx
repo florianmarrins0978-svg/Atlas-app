@@ -10,7 +10,7 @@ import { chantiersAvecRetourDuJour } from "@/server/repositories/retours-interve
 import { peutPoserUnRetour } from "@/lib/acces-roles";
 import { datesDuMoisPourLePlanning } from "@/server/repositories/dates-du-mois";
 import { peutModifierLePlanning } from "@/lib/acces-roles";
-import { versJourIso } from "@/lib/disponibilites";
+import { jourIso } from "@/lib/jour";
 import { originePublique } from "@/server/origine-publique";
 import { headers } from "next/headers";
 import PlanningClient from "./PlanningClient";
@@ -51,7 +51,7 @@ export default async function PlanningPage({
   // pour les autres, rien ne descend (ni les numéros ni les adresses des
   // clients sous contrat).
   const datesDuMois =
-    role && peutModifierLePlanning(role) ? await datesDuMoisPourLePlanning(ctx, versJourIso(maintenant)) : null;
+    role && peutModifierLePlanning(role) ? await datesDuMoisPourLePlanning(ctx, jourIso(maintenant)) : null;
 
   return (
     <PlanningClient

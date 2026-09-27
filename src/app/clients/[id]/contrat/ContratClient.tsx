@@ -676,6 +676,7 @@ function ChoixFacturation(p: { lettre: string; titre: string; actif: boolean; ch
       type="button"
       aria-pressed={p.actif}
       onClick={p.choisir}
+      data-atlas="choix-facturation"
       className="rounded-[10px] border-0 px-3.5 py-3 text-left"
       style={{
         backgroundColor: colors.card,

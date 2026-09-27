@@ -68,7 +68,11 @@ dire(
       if (e.isDirectory()) parcourir(chemin);
       else if (/\.(ts|tsx)$/.test(e.name) && !e.name.startsWith("test-jour-du-patron")) {
         const t = readFileSync(chemin, "utf8");
-        if (/new Date\(\)\.toISOString\(\)\.slice\(0, 10\)/.test(t)) enUtc.push(chemin);
+        // **`versJourIso(new Date())` est la même faute sous un autre nom**
+        // (27 septembre 2026) : `versJourIso` coupe l'instant en UTC. Il est
+        // juste pour un jour déjà écrit (« 2026-10-06T12:00Z »), faux pour
+        // AUJOURD'HUI, qui se compte à son heure (`jourIso`).
+        if (/new Date\(\)\.toISOString\(\)\.slice\(0, 10\)|versJourIso\(new Date\(\)\)/.test(t)) enUtc.push(chemin);
       }
     }
   };

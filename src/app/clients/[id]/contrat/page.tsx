@@ -1,3 +1,4 @@
+import { jourIso } from "@/lib/jour";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import EnTeteEcran from "@/components/atlas/EnTeteEcran";
@@ -62,7 +63,7 @@ export default async function ContratPage({ params }: { params: Promise<{ id: st
                 }
               : null
           }
-          aujourdhui={new Date().toISOString().slice(0, 10)}
+          aujourdhui={jourIso(new Date())}
         />
       </div>
     </div>

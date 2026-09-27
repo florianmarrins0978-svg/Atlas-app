@@ -80,6 +80,13 @@ async function adressesPubliques(): Promise<Array<[string, string]>> {
     liste.push(["le compte rendu vu par le client", `/entretien/${passage.rows[0].jeton}`]);
   }
 
+  // Le contrat d'entretien (26 septembre 2026) et les dates de ses passages
+  // du mois (27 septembre) : deux pages de plus que le client reçoit par SMS.
+  const contrat = await pool.query(`select jeton from contrats_entretien where jeton is not null limit 1`);
+  if (contrat.rows[0]) liste.push(["le contrat vu par le client", `/contrat/${contrat.rows[0].jeton}`]);
+  const dates = await pool.query(`select jeton from envois_dates_contrat limit 1`);
+  if (dates.rows[0]) liste.push(["les dates du mois vues par le client", `/contrat/dates/${dates.rows[0].jeton}`]);
+
   return liste;
 }
 
@@ -201,6 +208,7 @@ async function main() {
       "/devis",
       "/factures",
       "/entretien",
+      "/contrat",
       "/api/auth",
       "/api/cron",
       "/api/session-perimee",

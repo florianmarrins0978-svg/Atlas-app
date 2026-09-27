@@ -128,7 +128,7 @@ export default function RepartirDeCeClient({
                 strokeLinejoin="round"
               />
             </svg>
-            {enCours ? "Un instant" : <DeuxLignes haut="Dernier" bas="devis" />}
+            {enCours ? "Un instant" : <DeuxLignes libelle="Dernier devis" />}
           </button>
         )}
         <button
@@ -143,7 +143,7 @@ export default function RepartirDeCeClient({
           <svg className="flex-none" width="16" height="16" viewBox="0 0 18 18" fill="none" aria-hidden="true">
             <path d="M9 3.4v11.2M3.4 9h11.2" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
           </svg>
-          <DeuxLignes haut="Nouveau" bas="devis" />
+          <DeuxLignes libelle="Nouveau devis" />
         </button>
         <button
           type="button"
@@ -159,7 +159,7 @@ export default function RepartirDeCeClient({
             <rect x="2.6" y="3.6" width="12.8" height="11.6" rx="2" stroke="currentColor" strokeWidth="1.6" />
             <path d="M2.6 7.4h12.8M6.2 2.2v2.8M11.8 2.2v2.8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
           </svg>
-          <DeuxLignes haut="Contrat" bas="d’entretien" />
+          <DeuxLignes libelle="Contrat d’entretien" />
         </button>
       </div>
 
@@ -175,11 +175,18 @@ export default function RepartirDeCeClient({
 const CREUX =
   "flex h-14 min-w-0 flex-1 basis-0 items-center justify-center gap-1.5 rounded-full px-2 text-left text-[13.5px] leading-[1.15]";
 
-/** Un libellé sur deux lignes, dont le nom reste « haut bas » pour les lecteurs d'écran. */
-function DeuxLignes({ haut, bas }: { haut: string; bas: string }) {
+/**
+ * Un libellé sur deux lignes, coupé après son premier mot. **Il s'écrit
+ * entier** : c'est ce nom que lisent les lecteurs d'écran, et que le mode
+ * d'emploi retrouve dans ce fichier pour prouver que le geste existe
+ * (`test-mode-emploi`).
+ */
+function DeuxLignes({ libelle }: { libelle: string }) {
+  const coupure = libelle.indexOf(" ");
+  if (coupure < 0) return <span className="min-w-0">{libelle}</span>;
   return (
     <span className="min-w-0">
-      {haut} <span className="block">{bas}</span>
+      {libelle.slice(0, coupure)} <span className="block">{libelle.slice(coupure + 1)}</span>
     </span>
   );
 }

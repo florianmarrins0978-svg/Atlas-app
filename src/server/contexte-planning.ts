@@ -8,6 +8,7 @@ import { accesDeLaPersonne, getRole } from "@/server/autorisation";
 import { poserLesPassagesArrives } from "@/server/repositories/contrats-entretien";
 import { peutModifierLePlanning } from "@/lib/acces-roles";
 import { seuilMemoireCalendrier } from "@/lib/onglet-chantier";
+import { jourIso } from "@/lib/jour";
 
 /**
  * TOUT CE QU'IL FAUT POUR PEINDRE UNE JOURNÉE — chargé une seule fois, servi
@@ -40,7 +41,7 @@ export async function contextePlanning(ctx: Ctx, maintenant: Date) {
   // pour lui (`PlanningClient`). Rejouable : l'arrivée est idempotente.
   const role = await getRole(ctx);
   if (role && peutModifierLePlanning(role)) {
-    await poserLesPassagesArrives(ctx, versJourIso(maintenant));
+    await poserLesPassagesArrives(ctx, jourIso(maintenant));
   }
 
   const [chantiers, entreprise, equipesNommees, absences, acces] = await Promise.all([

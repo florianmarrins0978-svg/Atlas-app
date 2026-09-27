@@ -10,6 +10,7 @@ import {
   periodeEnLettres,
   totauxDuContrat,
 } from "@/lib/contrats-entretien";
+import BoutonTelechargerDocument from "@/components/atlas/BoutonTelechargerDocument";
 import ReponseContrat from "./ReponseContrat";
 
 // LA PAGE DU CONTRAT, telle que le CLIENT la reçoit par son lien.
@@ -105,13 +106,18 @@ export default async function PageContratClient({ params }: { params: Promise<{ 
           Les passages sont fixés d&apos;un mois à l&apos;autre selon la météo.
         </p>
 
-        <a
-          href={`/contrat/${encodeURIComponent(jeton)}/pdf?telecharger`}
+        {/* **Par la porte des documents**, jamais un lien posé à la main : sur
+            iPhone un lien direct PEINT le PDF au lieu de le ranger
+            (`test-tous-les-pdf`). */}
+        <BoutonTelechargerDocument
+          fichier={`/contrat/${encodeURIComponent(jeton)}/pdf`}
+          nom="contrat-d-entretien.pdf"
+          dataAtlas="telecharger-contrat"
           className="mt-5 inline-block text-[14px] font-medium underline"
           style={{ color: ENCRE }}
         >
           Télécharger le contrat en PDF
-        </a>
+        </BoutonTelechargerDocument>
 
         <ReponseContrat
           jeton={jeton}

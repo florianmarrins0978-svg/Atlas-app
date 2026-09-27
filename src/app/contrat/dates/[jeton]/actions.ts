@@ -7,7 +7,7 @@ import { verifierLimite, LIMITES } from "@/server/rate-limit";
 import { horsProductionReelle, sourceDuVisiteur } from "@/server/source-visiteur";
 import { SOURCE_NON_ETABLIE } from "@/lib/source-visiteur";
 import { adresseClient } from "@/lib/adresse-client";
-import { versJourIso } from "@/lib/disponibilites";
+import { jourIso } from "@/lib/jour";
 
 export type EtatDates = { erreur: string } | { succes: string } | undefined;
 
@@ -52,7 +52,7 @@ export async function validerDatesAction(_etat: EtatDates, formData: FormData): 
   const r = await validerDatesDuMois(
     jeton,
     { changements, adresseIp: adresseClient(entetes), agent: entetes.get("user-agent") },
-    versJourIso(new Date())
+    jourIso(new Date())
   );
   if (!r.ok) {
     return {
