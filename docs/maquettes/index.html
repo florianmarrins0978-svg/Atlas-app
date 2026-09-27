@@ -397,6 +397,11 @@
 
   <p class="famille">Les clients</p>
 
+  <a class="item" href="../../appli/clients-a-a-z.html">
+    <span class="no">▶</span><span class="titre">Vos clients, de A à Z, la maquette ESSAYABLE</span>
+    <span class="quoi">Sa demande du 27 septembre : trier la liste par ordre alphabétique. <b>A</b> toujours de A à Z en bandes de lettres, <b>B</b> au choix « A à Z » ou « Récents » sous la recherche. Clé de tri : le nom sans sa civilité (<code>detacherCivilite</code>), à nom égal le plus récent devant. Rien n’est codé.</span>
+  </a>
+
   <a class="item retenu" href="../../appli/vos-clients.html">
     <span class="no">▶</span><span class="titre">Vos clients, la liste — la maquette ESSAYABLE</span>
     <span class="quoi">La liste elle-même, pas la fiche. <b>Le bouton « Aujourd’hui » passe de l’écran actuel à la proposition</b>, sur les mêmes vingt et un clients, et <b>la recherche filtre pour de vrai</b> — la règle est recopiée de <code>src/lib/recherche-client.ts</code>. Ce qu’elle démontre : <b>quatre Martins que rien ne distingue</b> aujourd’hui, parce que la deuxième ligne porte des comptes d’argent au lieu du lieu. Les cinq informations d’une ligne <b>existent en base</b> ; <code>dernierJour</code> est déjà calculé par <code>listerFichesClients</code> et jamais transmis à l’écran, <code>clients.adresse</code> existe et n’est pas chargée. <b>Quatre états et les deux chartes</b> se touchent depuis le banc. <b>À trancher :</b> le total facturé par client quitte la ligne et ne se lit alors plus nulle part.</span>

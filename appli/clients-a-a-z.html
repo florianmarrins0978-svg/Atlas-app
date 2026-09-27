@@ -1,0 +1,441 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas : vos clients, de A à Z</title>
+<style>
+  /*
+    VOS CLIENTS, RANGÉS DE A À Z : proposition pour /clients.
+
+    Sa demande du 27 septembre 2026 : « Filtre client trier par ordre
+    alphabétique ».
+
+    ─────────────────────────────────────────────────────────────────────────
+    CE QUI EST DESSINÉ PART DE L'ÉCRAN CODÉ, PAS DE L'ANCIENNE PLANCHE.
+
+    src/app/clients/ListeClients.tsx : titre « Vos clients », compte dessous,
+    champ de recherche collant, bandes en petites capitales, ligne = nom,
+    adresse + dernière trace (« Devis 7 sept. »), reste dû en rouge.
+    Aujourd'hui l'ordre vient du dépôt (listerFichesClients) : le jour passé le
+    plus récent d'abord, en bandes de mois (src/lib/bandes-clients.ts).
+
+    Seul l'ORDRE change dans les deux variantes. Rien ne bouge de place
+    (CLAUDE.md §3 : une demande d'affichage change le texte, jamais la place).
+
+    ─────────────────────────────────────────────────────────────────────────
+    LA CLÉ DE TRI : LE NOM SANS SA CIVILITÉ.
+
+    Trier sur `clients.nom` tel quel rangerait tous les « Mme » ensemble, puis
+    tous les « Mr. » : l'ordre alphabétique ne servirait à rien. La clé est
+    donc le nom privé de sa civilité, par la fonction qui existe déjà
+    (`detacherCivilite`, src/lib/civilite.ts), sans accents ni casse, en
+    `localeCompare` français. « Copropriété Les Cèdres » va sous C, « Martins
+    Frères » sous M.
+
+    À nom égal (quatre Martins), le plus récent passe devant : c'est l'ordre
+    d'aujourd'hui, gardé à l'intérieur de la lettre.
+
+    Les noms, lieux et montants sont ceux de `appli/vos-clients.html`.
+  */
+
+  :root{
+    --cream:#f5f3ee; --card:#faf9f5; --ink:#1c1c1a; --inkSoft:#4a4a44;
+    --muted:#8a8578; --rust:#2f3b2f; --rustTint:#ece9e1;
+    --or:#B98B47; --alerte:#9C3B2E;
+    --line:rgba(28,28,26,.12);
+    --chevron:rgba(28,28,26,.28);
+    --marque:rgba(185,139,71,.24);
+  }
+  body[data-charte="nuit"]{
+    --cream:#101210; --card:#1a1d19; --ink:#e9e8de; --inkSoft:#c1c2b6;
+    --muted:#84887b; --rust:#e9e8de; --rustTint:#1f211e;
+    --or:#B98B47; --alerte:#cd6456;
+    --line:rgba(233,232,222,.12);
+    --chevron:rgba(233,232,222,.28);
+    --marque:rgba(185,139,71,.30);
+  }
+
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0}
+  body{background:#e7e4dd;color:#1c1c1a;
+       font:15px/1.55 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       -webkit-text-size-adjust:100%;padding:20px 16px 56px}
+  body[data-charte="nuit"]{background:#070806;color:#e9e8de}
+  a{color:inherit;text-decoration:none}
+
+  /* ══ Le banc d'essai, hors de l'écran ═════════════════════════════════ */
+  .banc{max-width:390px;margin:0 auto 14px}
+  .banc h2{margin:0;font-size:10px;font-weight:500;letter-spacing:.26em;
+           text-transform:uppercase;color:#8a8578}
+  .boutons{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+  .boutons button{font:inherit;font-size:12px;padding:8px 12px;border-radius:6px;
+                  border:1px solid rgba(28,28,26,.18);background:#faf9f5;
+                  color:#1c1c1a;cursor:pointer;min-height:36px}
+  body[data-charte="nuit"] .boutons button{background:#1a1d19;color:#e9e8de;
+                  border-color:rgba(233,232,222,.2)}
+  .boutons button[aria-pressed="true"]{background:#2f3b2f;color:#faf9f5;
+                  border-color:#2f3b2f}
+  body[data-charte="nuit"] .boutons button[aria-pressed="true"]{
+                  background:#e9e8de;color:#101210;border-color:#e9e8de}
+
+  /* ══ L'écran ═══════════════════════════════════════════════════════════ */
+  .tel{max-width:390px;margin:0 auto;background:var(--cream);color:var(--ink);
+       min-height:664px;position:relative;overflow:hidden;
+       border:1px solid rgba(28,28,26,.14);border-radius:14px}
+  body[data-charte="nuit"] .tel{border-color:rgba(233,232,222,.14)}
+  .defile{height:664px;overflow-y:auto;overscroll-behavior:contain;
+          padding-bottom:96px;scrollbar-width:thin;
+          scrollbar-color:var(--chevron) transparent}
+
+  .serif{font-family:ui-serif,Georgia,"Iowan Old Style","Palatino Linotype",serif;
+         font-weight:400;letter-spacing:-.01em}
+
+  .haut{display:flex;align-items:center;justify-content:space-between;
+        padding:26px 26px 0}
+  .rond{width:40px;height:40px;border-radius:50%;background:var(--rustTint);
+        display:flex;align-items:center;justify-content:center;flex:none}
+  .titre-ligne{display:flex;align-items:flex-start;justify-content:space-between;
+               gap:16px;padding:20px 26px 0}
+  h1{margin:0;font-size:36px;line-height:1.02;letter-spacing:-.018em}
+  .compte{display:block;margin-top:10px;min-height:14px;font-size:9.5px;
+          font-weight:500;letter-spacing:.28em;text-transform:uppercase;
+          color:var(--muted)}
+  .assistant{width:44px;height:44px;border-radius:50%;background:var(--rust);
+             display:flex;align-items:center;justify-content:center;flex:none}
+
+  .cherche-zone{position:sticky;top:0;z-index:4;background:var(--cream);
+                padding:18px 26px 14px;transition:box-shadow 180ms ease-out}
+  .cherche-zone.posee{box-shadow:0 1px 0 var(--line)}
+  .cherche{position:relative;display:flex;align-items:center;
+           background:var(--rustTint);border-radius:10px;min-height:50px;
+           padding:0 46px 0 44px}
+  .loupe{position:absolute;left:16px;top:50%;margin-top:-8px;width:14px;height:14px;
+         border:1.6px solid var(--muted);border-radius:50%;pointer-events:none}
+  .loupe::after{content:"";position:absolute;right:-5px;bottom:-3px;width:7px;
+                height:1.6px;background:var(--muted);transform:rotate(45deg)}
+  .cherche input{width:100%;border:0;background:none;outline:none;font:inherit;
+                 font-size:16px;color:var(--ink);padding:13px 0;
+                 caret-color:var(--or)}
+  .cherche input::placeholder{color:var(--inkSoft);opacity:.72}
+  .cherche:focus-within{box-shadow:inset 0 0 0 1.5px var(--or)}
+  .effacer{position:absolute;right:0;top:0;height:100%;width:46px;border:0;
+           background:none;color:var(--muted);font-size:19px;line-height:1;
+           cursor:pointer;display:none}
+  .effacer.vu{display:block}
+
+  /* ── B seulement : le choix de l'ordre, sous le champ ────────────────────
+     Deux mots, celui qui est actif souligné d'or comme l'onglet du bas : la
+     même grammaire que la barre, rien de nouveau à apprendre. Posé DANS la
+     zone collante : il reste sous le pouce quand on descend. */
+  .ordre{display:none;gap:22px;margin-top:12px;padding-left:2px}
+  body.variante-b .ordre{display:flex}
+  .ordre button{font:inherit;font-size:9.5px;font-weight:500;letter-spacing:.28em;
+                text-transform:uppercase;color:var(--muted);background:none;
+                border:0;padding:6px 0 5px;cursor:pointer;min-height:32px;
+                border-bottom:1px solid transparent}
+  .ordre button[aria-pressed="true"]{color:var(--ink);border-bottom-color:var(--or)}
+
+  .bande{margin:24px 26px 2px;font-size:9.5px;font-weight:500;
+         letter-spacing:.28em;text-transform:uppercase;color:var(--muted)}
+  .liste .bande:first-child{margin-top:14px}
+
+  .ligne{display:flex;align-items:center;gap:14px;margin:0 26px;padding:13px 0;
+         min-height:64px;border-bottom:1px solid var(--line)}
+  .liste .ligne.dernier{border-bottom:0}
+  .gauche{flex:1;min-width:0}
+  .nom{display:block;font-size:17.5px;line-height:1.25;
+       overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .dit{display:flex;align-items:baseline;margin-top:3px;font-size:12.5px;
+       line-height:1.45;color:var(--inkSoft)}
+  .dit .adr{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .dit .quand{flex:none;white-space:nowrap}
+  .droite{flex:none;text-align:right}
+  .montant{display:block;font-size:16px;line-height:1.15;font-weight:500;
+           color:var(--alerte);font-variant-numeric:tabular-nums;white-space:nowrap}
+  .etiq{display:block;margin-top:3px;font-size:9.5px;font-weight:500;
+        letter-spacing:.28em;text-transform:uppercase;color:var(--alerte)}
+  .chev{flex:none;width:8px;height:8px;transform:rotate(45deg);
+        border-right:1.5px solid var(--chevron);border-top:1.5px solid var(--chevron)}
+  mark{background:var(--marque);color:inherit;border-radius:2px;padding:0 1px}
+  .rien{margin:22px 26px 0;max-width:31ch;font-size:13px;line-height:1.6;
+        color:var(--inkSoft)}
+
+  .barre{position:absolute;left:0;right:0;bottom:0;background:var(--cream);
+         border-top:1px solid var(--line);padding:18px 14px 10px}
+  .onglets{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));position:relative}
+  .onglets span{text-align:center;font-size:8.5px;font-weight:500;
+                letter-spacing:.14em;text-transform:uppercase;color:var(--muted);
+                padding-bottom:8px}
+  .onglets span.actif{color:var(--ink);transform:translateY(-2px)}
+  .filet-onglet{position:absolute;bottom:0;left:0;height:1px;background:var(--or);
+                width:calc(100% / 5)}
+
+  /* ══ Les notes, sous l'écran ═══════════════════════════════════════════ */
+  .notes{max-width:390px;margin:20px auto 0;font-size:13.5px;
+         line-height:1.6;color:#3a3a34}
+  body[data-charte="nuit"] .notes{color:#c1c2b6}
+  .notes h3{margin:22px 0 8px;font-size:9.5px;font-weight:500;letter-spacing:.28em;
+            text-transform:uppercase;color:#8a8578}
+  .notes ul{margin:0;padding-left:18px}
+  .notes li{margin-bottom:7px}
+  .notes b{font-weight:600}
+</style>
+</head>
+<body data-charte="origine" class="variante-a">
+
+<div class="banc">
+  <h2>Vos clients, de A à Z</h2>
+  <div class="boutons">
+    <button type="button" data-variante="a" aria-pressed="true">A : toujours de A à Z</button>
+    <button type="button" data-variante="b" aria-pressed="false">B : au choix</button>
+    <button type="button" data-variante="avant" aria-pressed="false">Aujourd'hui</button>
+    <button type="button" data-frappe="martins">Je tape « martins »</button>
+    <button type="button" data-nuit aria-pressed="false">Nuit</button>
+  </div>
+</div>
+
+<div class="tel">
+  <div class="defile" id="defile">
+
+    <div class="haut">
+      <a class="rond" href="#" aria-label="Retour à la liste des chantiers">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2.4" style="color:var(--rust)">
+          <path d="M15 5l-7 7 7 7" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </a>
+      <span></span>
+    </div>
+
+    <div class="titre-ligne">
+      <div style="min-width:0">
+        <h1 class="serif">Vos clients</h1>
+        <span class="compte" id="compte">21 clients</span>
+      </div>
+      <span class="assistant" aria-hidden="true">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none"
+             stroke="var(--card)" stroke-width="1.8">
+          <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+        </svg>
+      </span>
+    </div>
+
+    <div class="cherche-zone" id="zone-cherche">
+      <div class="cherche">
+        <span class="loupe" aria-hidden="true"></span>
+        <input type="text" inputmode="search" autocomplete="off" id="champ"
+               placeholder="Chercher un client" aria-label="Chercher un client">
+        <button type="button" class="effacer" id="effacer" aria-label="Effacer la recherche">✕</button>
+      </div>
+      <div class="ordre" role="group" aria-label="Ordre de la liste">
+        <button type="button" data-ordre="alpha" aria-pressed="true">A à Z</button>
+        <button type="button" data-ordre="recents" aria-pressed="false">Récents</button>
+      </div>
+    </div>
+
+    <div class="liste" id="liste"></div>
+    <p class="rien" id="rien" hidden></p>
+
+  </div>
+
+  <nav class="barre" aria-hidden="true">
+    <div class="onglets">
+      <span class="actif">Chantiers</span><span>Planning</span><span>Terminés</span>
+      <span>Paysage</span><span>Réglages</span>
+      <i class="filet-onglet"></i>
+    </div>
+  </nav>
+</div>
+
+<div class="notes">
+  <h3>A : toujours de A à Z</h3>
+  <ul>
+    <li>La liste se range par nom, <b>sans compter Mr. ou Mme</b> : Mme Aubry sous A, Mr. Bernard sous B.</li>
+    <li>Les mois laissent la place aux <b>lettres</b>. Une lettre sans client ne s'affiche pas.</li>
+    <li>Rien d'autre ne bouge.</li>
+  </ul>
+  <h3>B : au choix</h3>
+  <ul>
+    <li>Deux mots sous la recherche : <b>A à Z</b> et <b>Récents</b>. Le choix est gardé d'une fois sur l'autre.</li>
+    <li>Coûte une ligne de plus en haut de l'écran.</li>
+  </ul>
+  <h3>Ce que je défends</h3>
+  <ul>
+    <li><b>A.</b> Récents fait doublon avec le planning et la recherche : quand vous cherchez un client, c'est par son nom.</li>
+  </ul>
+</div>
+
+<script>
+/* Les vingt et un clients de `appli/vos-clients.html`, civilité écrite comme
+   l'application l'écrit aujourd'hui (« Mr. », src/lib/civilite.ts). `quoi` :
+   la dernière trace (derniereTraceDuClient), null quand rien n'est parti. */
+const CLIENTS = [
+  {nom:"Mme Chauvin",      lieu:"Bouguenais",                     jour:"2026-09-01", quoi:"Devis 1 sept.",     du:null},
+  {nom:"Mr. Martins",      lieu:"10 rue d'Enfer, Nantes",         jour:"2026-08-28", quoi:"Facture 28 août",   du:"740,00 €"},
+  {nom:"Mme Moreau",       lieu:"Saint-Herblain",                 jour:"2026-08-24", quoi:"Devis 24 août",     du:null},
+  {nom:"Mr. Bernard",      lieu:"Rezé",                           jour:"2026-08-19", quoi:null,                du:null},
+  {nom:"Martins Frères",   lieu:"Zone de la Lande, Vertou",       jour:"2026-08-12", quoi:"Facture 12 août",   du:"1 260,00 €"},
+  {nom:"Mme Costa",        lieu:"Sainte-Luce-sur-Loire",          jour:"2026-08-06", quoi:"Devis 6 août",      du:null},
+  {nom:"Mr. Faucher",      lieu:"Carquefou",                      jour:"2026-08-02", quoi:"Facture 2 août",    du:"480,00 €"},
+  {nom:"Mme Aubry",        lieu:"Orvault",                        jour:"2026-07-29", quoi:"Facture 29 juil.",  du:null},
+  {nom:"Mr. Martins",      lieu:"4 allée des Chênes, Vertou",     jour:"2026-07-21", quoi:"Devis 21 juil.",    du:null},
+  {nom:"Mme Félicie",      lieu:"Vertou",                         jour:"2026-07-15", quoi:null,                du:null},
+  {nom:"Mr. Guérin",       lieu:"La Chapelle-sur-Erdre",          jour:"2026-07-09", quoi:"Facture 9 juil.",   du:null},
+  {nom:"Mme Renard",       lieu:"Basse-Goulaine",                 jour:"2026-07-02", quoi:"Facture 2 juil.",   du:"320,00 €"},
+  {nom:"Mme Martins",      lieu:"18 rue des Tilleuls, Rezé",      jour:"2026-06-24", quoi:"Devis 24 juin",     du:null},
+  {nom:"Mr. Pichon",       lieu:"Couëron",                        jour:"2026-06-11", quoi:null,                du:null},
+  {nom:"Mme Léger",        lieu:"Sautron",                        jour:"2026-05-28", quoi:"Facture 28 mai",    du:null},
+  {nom:"Mr. Thibault",     lieu:"Saint-Sébastien-sur-Loire",      jour:"2026-05-14", quoi:"Facture 14 mai",    du:null},
+  {nom:"Mme Vasseur",      lieu:"Thouaré-sur-Loire",              jour:"2026-04-30", quoi:null,                du:null},
+  {nom:"Copropriété Les Cèdres", lieu:"12 bd des Poilus, Nantes", jour:"2026-04-08", quoi:"Facture 8 avr.",    du:"2 150,00 €"},
+  {nom:"Mr. Ollivier",     lieu:"Les Sorinières",                 jour:"2026-03-17", quoi:null,                du:null},
+  {nom:"Mme Perrot",       lieu:"Saint-Jean-de-Boiseau",          jour:"2025-11-20", quoi:"Facture 20 nov. 2025", du:null},
+  {nom:"Mr. Delaunay",     lieu:null,                             jour:null,         quoi:null,                du:null}
+];
+
+/* ── La recherche, recopiée de src/lib/recherche-client.ts ─────────────── */
+function normChar(c){
+  const d = c.normalize("NFD").replace(/\p{Diacritic}/gu,"").toLowerCase();
+  return /[.'’\-_\s]/.test(d) ? " " : (d || " ");
+}
+function normTab(t){ return Array.from(t).map(normChar).join(""); }
+function mots(s){ return normTab(s).split(" ").filter(Boolean); }
+function echapper(t){ return t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+function nomSurligne(nom, listeMots){
+  if(!listeMots.length) return echapper(nom);
+  const plat = normTab(nom), marque = new Array(nom.length).fill(false);
+  for(const m of listeMots){
+    let i = plat.indexOf(m);
+    while(i !== -1){ for(let k=i;k<i+m.length;k++) marque[k]=true; i = plat.indexOf(m,i+1); }
+  }
+  let out="", ouvert=false; const car = Array.from(nom);
+  for(let i=0;i<car.length;i++){
+    if(marque[i] && !ouvert){ out+="<mark>"; ouvert=true; }
+    if(!marque[i] && ouvert){ out+="</mark>"; ouvert=false; }
+    out += echapper(car[i]);
+  }
+  return ouvert ? out+"</mark>" : out;
+}
+
+/* ── La clé de tri : ce que ferait `detacherCivilite` ─────────────────── */
+const CIVILITES = ["m","mr","mme","mlle","monsieur","madame","mademoiselle","dr","docteur","maitre"];
+function sansCivilite(nom){
+  const tete = nom.trim().match(/^(\p{L}+)\.?(?:[\s,]+|$)/u);
+  if(!tete) return nom.trim();
+  const mot = tete[1].normalize("NFD").replace(/\p{Diacritic}/gu,"").toLowerCase();
+  return CIVILITES.includes(mot) ? nom.trim().slice(tete[0].length).trim() : nom.trim();
+}
+function lettre(nom){
+  const l = sansCivilite(nom).normalize("NFD").replace(/\p{Diacritic}/gu,"").charAt(0).toUpperCase();
+  return /[A-Z]/.test(l) ? l : "#";
+}
+function parNom(a,b){
+  const r = sansCivilite(a.nom).localeCompare(sansCivilite(b.nom), "fr", {sensitivity:"base"});
+  // À nom égal, le plus récent devant : l'ordre d'aujourd'hui dans la lettre.
+  return r !== 0 ? r : (b.jour || "").localeCompare(a.jour || "");
+}
+
+/* ── Les mois, pour « Récents » et « Aujourd'hui » (bandes-clients.ts) ── */
+const MOIS = ["janvier","février","mars","avril","mai","juin","juillet",
+              "août","septembre","octobre","novembre","décembre"];
+const AUJOURD_HUI = "2026-09-27";
+function mois(jour){
+  if(!jour) return "sans chantier";
+  const [a,m] = jour.split("-").map(Number), [aa,am] = AUJOURD_HUI.split("-").map(Number);
+  const e = (aa-a)*12 + (am-m);
+  return e >= 0 && e <= 2 ? MOIS[m-1] : "plus ancien";
+}
+
+/* ── L'état de la planche ─────────────────────────────────────────────── */
+let variante = "a";
+let ordreB = "alpha";
+try { ordreB = localStorage.getItem("atlas-clients-ordre") || "alpha"; } catch(e) { ordreB = "alpha"; }
+
+function ordreActif(){
+  if(variante === "a") return "alpha";
+  if(variante === "b") return ordreB;
+  return "recents";
+}
+
+const champ = document.getElementById("champ");
+const liste = document.getElementById("liste");
+const rien = document.getElementById("rien");
+const compte = document.getElementById("compte");
+const effacer = document.getElementById("effacer");
+const zone = document.getElementById("zone-cherche");
+const defile = document.getElementById("defile");
+
+function dessiner(){
+  const saisie = champ.value, listeMots = mots(saisie), cherche = saisie.trim().length > 0;
+  const ordre = ordreActif();
+  let vus = CLIENTS.filter(c => { const p = normTab(c.nom); return listeMots.every(m => p.includes(m)); });
+  if(ordre === "alpha") vus = vus.slice().sort(parNom);
+
+  effacer.classList.toggle("vu", cherche);
+  const n = vus.length, mot = n === 1 ? "1 client" : n + " clients";
+  compte.textContent = cherche ? (n === 0 ? "" : mot + " trouvé" + (n>1?"s":"")) : mot;
+
+  if(n === 0){
+    liste.innerHTML = "";
+    rien.hidden = false;
+    rien.textContent = "Aucun client ne s'appelle « " + saisie.trim() + " ».";
+    return;
+  }
+  rien.hidden = true;
+
+  let html = "", bandeVue = null;
+  vus.forEach((c, rang) => {
+    const b = ordre === "alpha" ? lettre(c.nom) : mois(c.jour);
+    // Pendant une recherche, aucune bande : c'est la règle de l'écran codé.
+    if(!cherche && b !== bandeVue){ html += '<p class="bande">' + b + '</p>'; bandeVue = b; }
+    const dit = (c.lieu || c.quoi)
+      ? '<span class="dit">' +
+          (c.lieu ? '<span class="adr">' + echapper(c.lieu) + '</span>' : '') +
+          (c.quoi ? '<span class="quand">' + (c.lieu ? ", " : "") + c.quoi + '</span>' : '') +
+        '</span>'
+      : '';
+    html +=
+      '<a class="ligne' + (rang === n-1 ? " dernier" : "") + '" href="#">' +
+        '<span class="gauche"><span class="nom serif">' + nomSurligne(c.nom, listeMots) + '</span>' + dit + '</span>' +
+        (c.du ? '<span class="droite"><span class="montant">' + c.du + '</span><span class="etiq">dus</span></span>' : '') +
+        '<span class="chev" aria-hidden="true"></span>' +
+      '</a>';
+  });
+  liste.innerHTML = html;
+}
+
+function majBoutons(){
+  document.querySelectorAll("[data-variante]").forEach(b =>
+    b.setAttribute("aria-pressed", String(b.dataset.variante === variante)));
+  document.querySelectorAll("[data-ordre]").forEach(b =>
+    b.setAttribute("aria-pressed", String(b.dataset.ordre === ordreB)));
+  document.body.classList.toggle("variante-b", variante === "b");
+}
+
+champ.addEventListener("input", dessiner);
+effacer.addEventListener("click", () => { champ.value = ""; dessiner(); champ.focus(); });
+defile.addEventListener("scroll", () => zone.classList.toggle("posee", defile.scrollTop > 118));
+
+document.querySelectorAll("[data-variante]").forEach(b => b.addEventListener("click", () => {
+  variante = b.dataset.variante; champ.value = ""; majBoutons(); dessiner(); defile.scrollTop = 0;
+}));
+document.querySelectorAll("[data-ordre]").forEach(b => b.addEventListener("click", () => {
+  ordreB = b.dataset.ordre;
+  try { localStorage.setItem("atlas-clients-ordre", ordreB); } catch(e) { /* planche : le choix se perd, rien d'autre */ }
+  majBoutons(); dessiner(); defile.scrollTop = 0;
+}));
+document.querySelector("[data-frappe]").addEventListener("click", () => {
+  champ.value = "martins"; dessiner(); defile.scrollTop = 0;
+});
+document.querySelector("[data-nuit]").addEventListener("click", e => {
+  const on = document.body.dataset.charte !== "nuit";
+  document.body.dataset.charte = on ? "nuit" : "origine";
+  e.currentTarget.setAttribute("aria-pressed", String(on));
+});
+
+majBoutons();
+dessiner();
+</script>
+</body>
+</html>

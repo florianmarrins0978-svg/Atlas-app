@@ -1,6 +1,16 @@
 # Prochaines tâches
 
 
+## ⏳ UNE PLANCHE À REGARDER : VOS CLIENTS DE A À Z (27 septembre 2026)
+
+Sa demande : *« Filtre client trier par ordre alphabétique »*. Planche
+`appli/clients-a-a-z.html` : **A** toujours de A à Z (bandes de lettres au lieu
+des mois), **B** au choix « A à Z » / « Récents » sous la recherche. Défendue :
+A. Clé de tri : le nom sans civilité (`detacherCivilite`), à nom égal le plus
+récent devant. **Rien n'est codé.** À coder une fois choisie : le tri dans
+`listerFichesClients` (ou à l'écran), des bandes par lettre à côté de
+`grouperEnBandes` dans `src/lib/bandes-clients.ts`, et ses suites.
+
 ## Site de vente : l'adresse de contact et le nom (27 septembre 2026)
 
 `appli/vente/index.html` porte `CONTACT = "contact@votre-domaine.fr"`, une
