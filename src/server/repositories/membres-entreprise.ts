@@ -114,17 +114,16 @@ export async function listerAcces(ctx: Ctx): Promise<Acces[]> {
  * DONNER UN ACCÈS — c'est-à-dire créer un COMPTE, puis l'attacher.
  *
  * ───────────────────────────────────────────────────────────────────────────
- * **Deux écritures, deux tables, et elles ne peuvent pas vivre dans la même
- * transaction d'isolation.** `users` précède l'entreprise et n'a pas de contexte
- * RLS ; `membres_entreprise` en exige un. La création du compte se fait donc
- * hors `withEntreprise`, l'attachement dedans.
+ * **Deux écritures, deux tables, UNE transaction.** `users` ne porte aucune
+ * politique d'isolation et `atlas_app` y a le droit d'insérer (migration
+ * 0064) : le compte se crée donc DANS `withEntreprise`, avec son attachement.
+ * L'un refusé, l'autre l'est aussi.
  *
- * **Conséquence assumée, et écrite pour qu'on ne la découvre pas en panne :**
- * si l'attachement échoue, un compte reste en base sans aucune adhésion. Il
- * n'ouvre rien — `getCurrentCtx` refuse une session sans entreprise —, et la
- * même adresse ne pourra pas être redonnée tant qu'il traîne. C'est un défaut
- * visible et réparable ; l'alternative — désactiver l'isolation le temps
- * d'écrire deux lignes — est celle que `CLAUDE.md` §4 interdit.
+ * **Ce commentaire affirmait le contraire jusqu'au 27 septembre 2026**, et le
+ * compte se créait hors de la transaction. Au 16ᵉ jour d'un essai,
+ * l'attachement était refusé (lecture seule) et le compte, lui, restait :
+ * une adresse « déjà prise » que le patron ne pouvait plus redonner, même
+ * abonné (`test-essai-lecture-seule-db.ts`, section 6).
  *
  * ───────────────────────────────────────────────────────────────────────────
  * **POURQUOI UN MOT DE PASSE PROVISOIRE, ET PAS UNE INVITATION PAR E-MAIL.**
@@ -174,12 +173,12 @@ export async function donnerUnAcces(
   // démonstration. En changer ici rendrait ce chemin plus lent ou plus faible
   // que les autres, sans que rien ne le dise.
   const passwordHash = await hash(saisie.motDePasse, 10);
-  const [compte] = await db
-    .insert(users)
-    .values({ email, nom: saisie.nom.trim(), passwordHash })
-    .returning({ id: users.id });
 
   await withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const [compte] = await tx
+      .insert(users)
+      .values({ email, nom: saisie.nom.trim(), passwordHash })
+      .returning({ id: users.id });
     await tx.insert(membresEntreprise).values({
       entrepriseId: ctx.entrepriseId,
       utilisateurId: compte.id,
