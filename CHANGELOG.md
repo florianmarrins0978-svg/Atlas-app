@@ -6,6 +6,25 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-09-27
+
+### Le site de vente d'Atlas (`appli/vente/`)
+
+**Sa demande** : *« je veux vendre mon application, j'ai besoin d'un site ;
+sers-toi des vrais visuels de l'appli »*. Une page, publiée avec le reste
+d'`appli/`, liée depuis `essais.html`.
+
+**Les images sont des captures de l'application**, prises au navigateur à la
+taille d'un iPhone, sur une base locale amorcée avec un jeu de paysagiste
+fictif (« Jardins du Val ») ; le plan d'arrosage vient de
+`scripts/capture-plan-arrosage.ts`, donc du vrai calcul. Ce jeu n'est pas
+commité : le seed du dépôt reste celui des suites.
+
+**Ce que la page ne dit pas, délibérément** (`PRODUCT.md`) : aucun prix,
+aucun témoignage, aucun chiffre d'usage. « Vingt minutes, trente secondes » y
+est écrit comme l'objectif. **L'adresse de contact n'est pas donnée** :
+`CONTACT` porte une adresse d'attente, à remplacer (`TODO.md`).
+
 ## 2026-09-26
 
 ### Mon agenda en deux lignes, et la phrase du Planning qui se masque
