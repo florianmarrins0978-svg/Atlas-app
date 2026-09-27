@@ -42,9 +42,19 @@ export type NomIcone =
   | "couronne"
   | "bouclier"
   /** Le message au client — entrée le 7 septembre 2026 avec ses trois messages. */
-  | "bulle";
+  | "bulle"
+  /** L'organigramme, 27 septembre 2026 : un en haut, deux en dessous. */
+  | "organigramme";
 
 const TRACES: Record<NomIcone, React.ReactNode> = {
+  organigramme: (
+    <>
+      <rect x="9" y="3" width="6" height="5" rx="1" />
+      <rect x="3" y="16" width="6" height="5" rx="1" />
+      <rect x="15" y="16" width="6" height="5" rx="1" />
+      <path d="M12 8v4M6 16v-4h12v4" />
+    </>
+  ),
   compte: (
     <>
       <circle cx="12" cy="8" r="3.6" />

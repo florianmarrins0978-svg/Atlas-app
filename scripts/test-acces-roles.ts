@@ -285,15 +285,24 @@ essai("le sommaire des réglages dit exactement ce que la règle autorise", () =
   }
 });
 
-essai("un salarié ne reçoit que « Moi » dans les réglages", () => {
+// **Depuis le 27 septembre 2026, le salarié reçoit aussi l'organigramme**, et
+// lui seul de l'entreprise : sa règle, *« L'organigramme doit être visible par
+// tout le monde ! »*. Le reste de l'entreprise lui reste fermé.
+essai("un salarié ne reçoit que « Moi » et l'organigramme dans les réglages", () => {
   const ensembles = rubriquesReglages("salarie");
-  assert.deepEqual(ensembles.map((e) => e.titre), ["Moi"]);
+  assert.deepEqual(ensembles.map((e) => e.titre), ["L'entreprise", "Moi"]);
+  assert.deepEqual(ensembles[0].rubriques.map((r) => r.href), ["/reglages/organigramme"]);
   assert.deepEqual(adressesAutorisees("salarie").sort(), [
     "/reglages/apparence",
     "/reglages/compte",
     "/reglages/connexion",
     "/reglages/notifications",
+    "/reglages/organigramme",
   ]);
+});
+
+essai("tous les rôles ouvrent l'organigramme", () => {
+  for (const role of ROLES) assert.ok(cheminAutorise(role, "/reglages/organigramme"), `${role} ne l'ouvre pas`);
 });
 
 essai("un commercial reçoit l'entreprise amputée, jamais l'identité ni les accès", () => {

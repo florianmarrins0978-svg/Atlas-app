@@ -471,10 +471,30 @@ export const equipes = pgTable(
     /** 1 à 20. Porte la lettre de repli (1 → A) et l'ordre d'affichage. */
     rang: integer("rang").notNull(),
     nom: text("nom"),
+    /**
+     * Le titre de chef d'équipe (migration 0110). Un titre sur l'organigramme,
+     * rien de plus : sa décision du 27 septembre 2026, « le chef ne voit rien
+     * de plus ».
+     */
+    estChef: boolean("est_chef").notNull().default(false),
+    /**
+     * Sous qui est ce gars : UN seul chef (sa réponse du 27 septembre 2026).
+     * La clé étrangère porte l'entreprise : un chef d'ailleurs est refusé par
+     * la base.
+     */
+    chefId: uuid("chef_id"),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
-  (t) => [unique("equipes_entreprise_rang_uk").on(t.entrepriseId, t.rang)]
+  (t) => [
+    unique("equipes_entreprise_rang_uk").on(t.entrepriseId, t.rang),
+    unique("equipes_id_entreprise_uk").on(t.id, t.entrepriseId),
+    foreignKey({
+      columns: [t.chefId, t.entrepriseId],
+      foreignColumns: [t.id, t.entrepriseId],
+      name: "equipes_chef_fk",
+    }),
+  ]
 );
 
 /**

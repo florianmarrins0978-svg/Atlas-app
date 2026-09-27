@@ -168,23 +168,29 @@ essai("et AUCUNE adresse de l'entreprise ne lui est ouverte", () => {
   // Et l'on vérifie que cet ensemble existe : le jour où le titre changerait,
   // le contrôle passerait au vert en n'ayant rien regardé du tout.
   assert.ok(delEntreprise.length >= 5, `l'ensemble « L'entreprise » n'ouvre que ${delEntreprise.length} adresse(s)`);
-  const fuites = delEntreprise.filter((a) => siennes.includes(a));
+  // **Une seule exception, et elle est la sienne** (27 septembre 2026) :
+  // *« L'organigramme doit être visible par tout le monde ! »*. Toute autre
+  // adresse de l'entreprise ouverte au membre est une fuite.
+  const fuites = delEntreprise.filter((a) => siennes.includes(a) && a !== "/reglages/organigramme");
   assert.deepEqual(fuites, [], `un membre peut ouvrir : ${fuites.join(", ")}`);
 });
 
 // Un rôle inconnu — compte retiré de l'entreprise, session survivante — ne doit
 // pas retomber sur les droits du patron par défaut. `getRole` rend `null` dans
 // ce cas, et c'est un cas ordinaire, pas une anomalie.
+// **Depuis le 27 septembre 2026, le membre lit aussi l'organigramme** ; un rôle
+// inconnu, lui, n'en reçoit rien : la garde lui refuserait l'écran.
 essai("un rôle inconnu est traité comme un membre, jamais comme le patron", () => {
-  assert.deepEqual(rubriquesReglages(null), rubriquesReglages("salarie"));
+  const moiDuMembre = rubriquesReglages("salarie").find((e) => e.titre === "Moi");
+  assert.deepEqual(rubriquesReglages(null), [moiDuMembre]);
 });
 
 essai("un membre reçoit ses quatre réglages personnels, et le même ensemble", () => {
   const ensembles = rubriquesReglages("salarie");
-  assert.equal(ensembles.length, 1);
-  assert.equal(ensembles[0].titre, "Moi");
+  assert.deepEqual(ensembles.map((e) => e.titre), ["L'entreprise", "Moi"]);
+  assert.deepEqual(ensembles[0].rubriques.map((r) => r.href), ["/reglages/organigramme"]);
   assert.deepEqual(
-    ensembles[0].rubriques.map((r) => r.href),
+    ensembles[1].rubriques.map((r) => r.href),
     ["/reglages/compte", "/reglages/notifications", "/reglages/connexion", "/reglages/apparence"]
   );
 });

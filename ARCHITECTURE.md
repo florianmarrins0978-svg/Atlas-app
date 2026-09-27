@@ -33711,3 +33711,18 @@ ses passages du mois, comme les dates d'un devis. Migration 0108.
 | le déplacement s'écrit par `ecrireLesCreneaux` | le seul écrivain de « où le chantier est posé » (§322) |
 | l'envoi est gardé par `exigerEcritureSurLePlanning` ; la page du client par son jeton exact (politique `app.jeton_dates`) et `verifierLimite` | qui pose le planning envoie ses dates ; la réponse a les bornes de celle du contrat |
 | `/contrat/dates/<jeton>` sous le préfixe public `/contrat` | aucun chemin public de plus à tenir |
+
+## §428 : Chacun ses rappels, et l'organigramme lu par tous
+
+Ses réponses du 27 septembre 2026 sur `appli/rappels-par-role-et-organigramme.html`.
+
+| Décision | Pourquoi |
+|---|---|
+| `recoitLesRappels(role, domaine)` dans `acces-roles.ts` : patron tout, commercial les devis, facturation les factures, salarié rien, « retour pas reçu » au patron seul | *« Chacun ne doit pas recevoir les rappels des autres. »* Distinct de `peutGererDevis` : un droit dit ce qu'on PEUT faire, un rappel ce qu'on ne doit pas oublier |
+| le tri se fait dans `rappelsEnCours` (réglages éteints par `reglagesPourLeRole`), pas à l'écran | l'assistant lit la même fonction ; un rappel éteint ne coûte aucune requête |
+| `/reglages/organigramme` ouvert à tous (`REGLAGES_A_TOUS`), les gestes au patron seul (`exigerProprietaire`) | *« L'organigramme doit être visible par tout le monde ! »* ; aucune adresse ni accès n'y est lu |
+| l'organigramme LIT les comptes (`membres_entreprise`) et les gars (`equipes`), il n'a pas de liste à lui | une troisième liste divergerait au premier ajout |
+| `equipes.est_chef` et `equipes.chef_id` (0110), clé étrangère portant `entreprise_id` | un titre, pas un rôle (*« le chef ne voit rien de plus »*) ; un gars n'a qu'un chef ; un chef d'ailleurs est refusé par la base |
+| les gestes désignent un gars par son RANG, comme `nommerEquipe` | un gars jamais nommé n'a pas de ligne, et doit pouvoir devenir chef |
+| « Ajouter » : un salarié monte le compteur (même geste que le +) ; commercial et facturation passent par « Nouveau compte », rôle déjà choisi | un seul chemin par sorte de personne |
+| **retirer UNE personne n'est pas codé** | le planning retrouve les gars par leur RANG (`nomEquipe`, `PlanningClient`) : sortir quelqu'un du milieu décalerait ou effacerait le nom sur ses chantiers passés. Il faut d'abord que l'historique se lise par identifiant (`TODO.md`) |

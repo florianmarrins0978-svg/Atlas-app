@@ -31,13 +31,21 @@ import { donnerUnAccesAction } from "../actions";
  * `/reglages/equipe`, que `cheminAutorise` ferme à tout ce qui n'est pas patron
  * — et la page serveur le revérifie. Cet écran n'est qu'un dessin.
  */
-export default function NouveauCompte() {
+export default function NouveauCompte({
+  roleInitial = "salarie",
+  retour = "/reglages/equipe",
+}: {
+  /** Le rôle déjà choisi dans l'organigramme (27 septembre 2026) : on ne le redemande pas. */
+  roleInitial?: Role;
+  /** Où revenir : là d'où l'on vient, l'équipe ou l'organigramme. */
+  retour?: string;
+}) {
   const router = useRouter();
   const [nom, setNom] = useState("");
   const [email, setEmail] = useState("");
   const [motDePasse, setMotDePasse] = useState("");
   const [confirmation, setConfirmation] = useState("");
-  const [role, setRole] = useState<Role>("salarie");
+  const [role, setRole] = useState<Role>(roleInitial);
   const [message, setMessage] = useState<string | null>(null);
   const [enCours, demarrer] = useTransition();
 
@@ -50,7 +58,7 @@ export default function NouveauCompte() {
       if (r.ok) {
         // Retour à la liste, où il verra la ligne qu'il vient de créer. Un
         // écran de félicitations serait un appui de plus pour rien.
-        router.push("/reglages/equipe");
+        router.push(retour);
         router.refresh();
       } else {
         setMessage(r.message);
@@ -109,7 +117,7 @@ export default function NouveauCompte() {
 
       <button
         type="button"
-        onClick={() => router.push("/reglages/equipe")}
+        onClick={() => router.push(retour)}
         className="mt-1 flex w-full items-center justify-center py-3 text-[13px]"
         style={{ color: colors.muted }}
       >

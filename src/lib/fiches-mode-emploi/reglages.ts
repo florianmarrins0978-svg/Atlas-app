@@ -130,7 +130,7 @@ export const FICHES_REGLAGES: FicheModeEmploi[] = [
       "Ces rubriques appartiennent au patron. Il peut changer votre rôle dans « Réglages », puis Équipe.",
     source: "src/app/reglages/RubriqueReservee.tsx",
     preuves: ["Ces réglages appartiennent au patron de l&apos;entreprise."],
-    ailleurs: [{ source: "src/app/reglages/page.tsx", preuves: ["Rien de l&apos;entreprise ici"] }],
+    ailleurs: [{ source: "src/app/reglages/page.tsx", preuves: ["Le reste de l&apos;entreprise n&apos;est pas ici"] }],
   },
   // --- Tarifs & catalogue -----------------------------------------------------
   {

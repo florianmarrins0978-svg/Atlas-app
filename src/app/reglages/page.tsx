@@ -97,8 +97,8 @@ export default async function ReglagesPage() {
             className="mx-[26px] mt-[30px] border-t pt-[18px] text-[12px] leading-[1.75]"
             style={{ borderColor: colors.line, color: colors.inkSoft }}
           >
-            Rien de l&apos;entreprise ici, et ce n&apos;est pas un écran amputé : les tarifs, les
-            coordonnées bancaires et les documents appartiennent au patron.
+            Le reste de l&apos;entreprise n&apos;est pas ici, et ce n&apos;est pas un écran amputé : les
+            tarifs, les coordonnées bancaires et les documents appartiennent au patron.
           </p>
         )}
 

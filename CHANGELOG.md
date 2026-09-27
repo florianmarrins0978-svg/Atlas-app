@@ -8,6 +8,21 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-27
 
+### L'organigramme, visible par tous, avec ses chefs d'équipe
+
+Planche `rappels-par-role-et-organigramme`, ses réponses du 27 septembre 2026 :
+un gars n'a qu'un chef, le chef ne voit rien de plus, et *« l'organigramme doit
+être visible par tout le monde ! »*. Nouvelle rubrique **Réglages,
+Organigramme**, la seule de l'entreprise ouverte à tous les rôles : le patron,
+le bureau (commercial, facturation), puis le terrain rangé sous ses chefs. Le
+patron seul touche un gars (chef d'équipe, ses gars ou son chef) et ajoute une
+personne en choisissant salarié, commercial ou facturation. Migration 0110
+(expand : `est_chef`, `chef_id`). **Pas encore :** retirer une personne du
+milieu de la liste (le planning lit les gars par leur rang, §428) et les photos
+(elles attendent le lot photo d'une autre session). Éprouvé :
+`test-organigramme-db.ts`, les suites des rôles et des rubriques, et les gestes
+joués dans un navigateur.
+
 ### Chacun ses rappels : le patron tout, le commercial les devis, la facturation les factures
 
 Sa règle du 27 septembre 2026 (planche `rappels-par-role-et-organigramme`) :

@@ -209,6 +209,15 @@ const REGLAGES_A_SOI = [
 ] as const;
 
 /**
+ * **Les réglages de l'ENTREPRISE que tout le monde LIT.** Un seul : l'organigramme,
+ * sa règle du 27 septembre 2026 — *« L'organigramme doit être visible par tout
+ * le monde ! »*. Séparé de `REGLAGES_A_SOI`, qui dit ce qui appartient à la
+ * personne : l'organigramme ne lui appartient pas, il se lit, et seul le patron
+ * y écrit (`exigerProprietaire` dans ses actions).
+ */
+const REGLAGES_A_TOUS = ["/reglages/organigramme"] as const;
+
+/**
  * CE QUE LA FACTURATION ATTEINT, ET RIEN D'AUTRE.
  *
  * **Une liste blanche, comme le salarié, et pas une liste noire comme le
@@ -325,7 +334,7 @@ export function cheminAutorise(role: Role, chemin: string): boolean {
 function reglagesASoi(chemin: string): boolean {
   if (!sousChemin(chemin, "/reglages")) return true;
   if (chemin === "/reglages") return true;
-  return REGLAGES_A_SOI.some((h) => sousChemin(chemin, h));
+  return REGLAGES_A_SOI.some((h) => sousChemin(chemin, h)) || REGLAGES_A_TOUS.some((h) => sousChemin(chemin, h));
 }
 
 /**

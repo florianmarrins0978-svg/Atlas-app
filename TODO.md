@@ -16,34 +16,24 @@ sur l'écran du devis envoyé ; 2, au renvoi, A ses jours déjà posés ou B ent
 **Rien n'est codé.** À coder après son choix : garder les jours sur la
 correction (niveau 3, devis), les lire au renvoi depuis le dernier envoi.
 
-## ⏳ RAPPELS PAR RÔLE ET ORGANIGRAMME : PLANCHE V2 DU 27 SEPTEMBRE 2026
+## 🔜 RAPPELS PAR RÔLE ET ORGANIGRAMME : CODÉS LE 27 SEPTEMBRE 2026, PAS SUR `main`
 
-Planche `appli/rappels-par-role-et-organigramme.html`. **Rien n'est codé.**
+Planche `appli/rappels-par-role-et-organigramme.html`, ses réponses : le patron
+reçoit tout, chacun les siens ; un chef par gars ; le chef ne voit rien de plus ;
+l'organigramme visible par tous ; en ajoutant, il choisit salarié, commercial ou
+facturation ; photo B, et chacun change la sienne. `ARCHITECTURE.md` §428.
 
-**Tranché par lui le 27 septembre 2026 :** *« Le patron doit toujours tout
-recevoir. Ensuite il faut filtrer pour le commercial et la facturation. Chacun
-ne doit pas recevoir les rappels des autres. »* Donc : patron, tout ; commercial,
-`chantier-sans-devis` et `devis-sans-reponse` ; facturation, `chantier-non-facture`
-et `facture-impayee` ; `retour-pas-recu`, patron seul. Aujourd'hui
-`rappelsEnCours` ignore le rôle (le commercial reçoit deux cartes qui mènent à
-une adresse fermée). La règle se pose dans `src/lib/acces-roles.ts`, pas dans
-l'écran.
-
-**Il veut aussi :** nommer un chef d'équipe, et un avatar avec la tête de chacun.
-
-**Corrigé dans la v2 :** la v1 rangeait les gars dans « Équipe A / B ». Aucun
-groupe de personnes n'existe : `nombre_equipes` n'est qu'une capacité, les gars
-sont la table `equipes` (salariés, migration 0067). Un chef avec ses gars
-demande donc une donnée neuve (un chef par salarié, nullable).
-
-| Proposé sur la v2 | |
+| Codé sur la branche `claude/rappels-commercial-facturation-5ehltt` | |
 |---|---|
-| organigramme : une rubrique « Organigramme » sous « L'entreprise » dans Réglages, **visible par TOUS les rôles** (sa règle du 27 septembre : « doit être visible par tout le monde »), modifiable par le patron seul ; donc une adresse ouverte à tous dans `acces-roles.ts` (liste `REGLAGES_A_SOI` ou équivalent), les gestes refusés côté serveur hors patron | tranché |
-| feuille d'une personne : photo, chef d'équipe et ses gars cochés, retirer | à confirmer |
-| ajouter une personne : il choisit salarié, commercial ou facturation (sa demande du 27 septembre) ; salarié = chef, accès facultatif ; commercial ou facturation = adresse et mot de passe, comme « Donner un accès » | demandé par lui |
-| retirer UNE personne (aujourd'hui le compteur retire toujours le dernier), sans effacer son passé au planning | à coder |
-| avatar = la photo de `photo-des-salaries.html` (autre session), jamais une seconde | attend son A ou B là-bas |
-| un seul chef par gars : **oui** ; le chef d'équipe voit-il plus dans Atlas : **non**, c'est un titre (27 septembre) | tranché |
+| rappels et cartes de l'accueil triés par rôle, assistant compris | test rouge puis vert, regardé sous trois comptes |
+| Réglages, Organigramme, ouvert à tous ; chef d'équipe, ses gars, son chef ; ajouter | `test-organigramme-db.ts`, gestes joués au navigateur |
+
+| Reste | Qui |
+|---|---|
+| **la batterie** (niveau 3 : rôles, migration 0110), puis `main` | à lancer avec son accord |
+| **retirer UNE personne** du milieu de la liste : le planning lit les gars par RANG (`nomEquipe`) ; sortir quelqu'un décalerait ou effacerait son nom sur ses chantiers passés. Il faut d'abord lire l'historique par identifiant, puis une colonne `retire_le` | à coder, lot à part |
+| **les photos** dans l'organigramme : reprendre `equipes.photo_storage_key` du lot photo (branche `claude/employee-profile-photo-g1mkbk`, pas encore sur `main`) ; une photo pour les comptes du bureau ; chacun change la sienne (sa décision) | à coder quand le lot photo est sur `main` |
+| un salarié ajouté depuis l'organigramme n'a pas de compte : « Accès à Atlas » se donne encore dans Équipe | à coder s'il le demande |
 
 ## 🔜 LES DATES DU MOIS, VALIDÉES PAR LE CLIENT : SUR `main` LE 27 SEPTEMBRE 2026
 

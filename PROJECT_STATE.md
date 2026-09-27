@@ -4,6 +4,12 @@
 · dernière migration `drizzle/0106_hausse_du_devis_repris.sql` (sur la branche)
 
 ---
+## CODÉ, PAS SUR `main` : L'ORGANIGRAMME (27 septembre 2026)
+
+Même branche. Réglages, Organigramme, ouvert à tous, modifiable par le patron
+(chef d'équipe, ses gars, ajouter). Migration 0110. Manquent : retirer une
+personne du milieu, les photos (§428). **Niveau 3** : batterie avec son accord.
+
 ## CODÉ, PAS SUR `main` : CHACUN SES RAPPELS (27 septembre 2026)
 
 Branche `claude/rappels-commercial-facturation-5ehltt`. Le patron reçoit tout,

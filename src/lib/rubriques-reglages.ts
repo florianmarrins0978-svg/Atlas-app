@@ -173,6 +173,12 @@ const ENTREPRISE: Rubrique[] = [
     icone: "bouclier",
     href: "/reglages/donnees",
   },
+  // **La seule rubrique de l'entreprise ouverte à TOUS**, sa règle du
+  // 27 septembre 2026 : *« L'organigramme doit être visible par tout le
+  // monde ! »*. Le patron seul y change quelque chose ; l'écran le décide, et
+  // le serveur le refuse (`exigerProprietaire`). **En dernier**, pour ne pas
+  // s'insérer entre ses quatre priorités (`test-rubriques-reglages.ts`).
+  { nom: "Organigramme", icone: "organigramme", href: "/reglages/organigramme" },
 ];
 
 /**
@@ -219,7 +225,13 @@ export function rubriquesReglages(role: RoleReglages | null): EnsembleRubriques[
    * **Une rubrique pas encore codée (`href: null`) reste visible au patron
    * seul** — c'est le drapeau « bientôt », et il n'a de sens que pour lui.
    */
-  const entreprise = ENTREPRISE.filter((r) => (r.href === null ? effectif === "proprietaire" : visible(r)));
+  //
+  // **Un rôle illisible ne reçoit RIEN de l'entreprise**, pas même
+  // l'organigramme que le salarié lit depuis le 27 septembre 2026 : la garde
+  // refuse l'écran à qui n'a pas d'adhésion lisible, et une rubrique qui mène à
+  // un refus se lit comme une panne.
+  const entreprise =
+    role === null ? [] : ENTREPRISE.filter((r) => (r.href === null ? effectif === "proprietaire" : visible(r)));
   const moi = MOI.filter(visible);
 
   // Un salarié ne reçoit pas une liste plus courte : il reçoit une AUTRE liste.

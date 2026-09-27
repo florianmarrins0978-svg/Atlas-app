@@ -4,6 +4,7 @@ import { getCurrentCtx } from "@/server/session-ctx";
 import { estProprietaire } from "@/server/autorisation";
 import RubriqueReservee from "../../RubriqueReservee";
 import NouveauCompte from "./NouveauCompte";
+import { estRole } from "@/lib/acces-roles";
 
 export const dynamic = "force-dynamic";
 
@@ -26,8 +27,19 @@ export const dynamic = "force-dynamic";
  * pas double emploi, il fait le même travail à un cran plus près des données —
  * le jour où quelqu'un servira cette page autrement, elle se défendra seule.
  */
-export default async function NouveauComptePage() {
+export default async function NouveauComptePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ role?: string; retour?: string }>;
+}) {
   const ctx = await getCurrentCtx();
+  // **Venu de l'organigramme** (27 septembre 2026) : le rôle y est déjà choisi,
+  // et l'on y revient. Une valeur inconnue retombe sur le défaut de l'écran,
+  // jamais sur un rôle deviné ; le retour n'accepte que les deux adresses
+  // connues, jamais une adresse tapée.
+  const { role, retour } = await searchParams;
+  const roleInitial = estRole(role) && role !== "proprietaire" ? role : "salarie";
+  const adresseRetour = retour === "organigramme" ? "/reglages/organigramme" : "/reglages/equipe";
   if (!(await estProprietaire(ctx))) {
     return (
       <RubriqueReservee
@@ -42,9 +54,12 @@ export default async function NouveauComptePage() {
       <EnTeteEcran
         surtitre="Équipe"
         titre="Nouveau compte"
-        retour={{ href: "/reglages/equipe", libelle: "Retour à l'équipe" }}
+        retour={{
+          href: adresseRetour,
+          libelle: retour === "organigramme" ? "Retour à l'organigramme" : "Retour à l'équipe",
+        }}
       />
-      <NouveauCompte />
+      <NouveauCompte roleInitial={roleInitial} retour={adresseRetour} />
     </div>
   );
 }
