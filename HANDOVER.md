@@ -11,7 +11,7 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 
 ---
 
-## LE CONTRAT D'ENTRETIEN — 26 septembre 2026 (lot 1, pas sur `main`)
+## LE CONTRAT D'ENTRETIEN — 26 et 27 septembre 2026 (lots 1 et 2, pas sur `main`)
 
 | | |
 |---|---|
@@ -21,7 +21,8 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 | **les écrans** | `src/app/clients/[id]/contrat/`, la page du client `src/app/contrat/[jeton]/`, le PDF `src/app/api/contrats/[id]/pdf` |
 | **l'arrivée** | `contextePlanning` appelle `poserLesPassagesArrives` avant de lire |
 | **les suites** | `test-contrats-entretien` (pure), `test-contrats-entretien-db` (atlas_app) |
-| **le piège** | un passage n'a pas de devis : Terminés l'annonce « À facturer » sans montant tant que le lot 2 n'est pas fait |
+| **la facture (lot 2)** | `terminerChantier` bâtit celle d'un passage (`poserLaFactureDuPassage`) ; Terminés lit `totalPrevuTtc` ; l'automatisme vit dans `factureDuPassageAvecSonCompteRendu`, appelé par `envoyerFicheAction` |
+| **le piège** | la facturation A s'enregistre et s'imprime, mais ne crée aucune facture : c'est le lot 3 |
 
 ## MON AGENDA EN SIMPLE : 26 septembre 2026
 

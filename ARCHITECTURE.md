@@ -33678,3 +33678,18 @@ est coupée, jamais une facture partie d'un seul côté en silence.
 | la page `/contrat/<jeton>` : lecture par jeton exact (politique RLS), réponse une seule fois, bornée par `verifierLimite` | la mécanique du devis, déjà éprouvée |
 
 **Ce qui n'agit pas encore** : la facturation A et l'automatisme B s'enregistrent et s'impriment, sans créer de facture (`TODO.md`).
+
+## §426 : Le contrat d'entretien, lot 2 : la facture de chaque passage
+
+**Sa consigne du 27 septembre 2026** : *« enchaîne le lot 2, ne lance pas de batterie »*.
+
+| Décision | Pourquoi |
+|---|---|
+| le passage se facture par **`terminerChantier`**, la porte du devis | c'est la porte que Terminés ouvre (« Créer la facture »), et c'est la même question : facturer le prix que le client a accepté. Elle refusait le passage (« pas de devis, rien à facturer ») |
+| **pas** par `creerFactureSansDevis` | celle-là naît vide, pour un dépannage sans prix accepté ; y mettre le passage aurait fait deux règles pour la même porte, et elle n'est atteinte que depuis la création d'un chantier |
+| une ligne : `ligneDuPassage`, « Tonte et ébarbage, passage du 25 septembre 2026 », au taux du contrat | le client recompte ; sans prix lisible, la facture naît vide plutôt que de supposer un montant |
+| `totalPrevuTtc` remplace `devisTotalTtc` dans Terminés | le montant prévu vient du devis OU du contrat ; garder le nom « devis » aurait menti sur une ligne sur deux |
+| l'automatisme **dans l'envoi de la fiche d'entretien** (`envoyerFicheAction`), par les portes ordinaires (`terminerChantier`, `emettreFacture`, `creerEnvoiFacture`) | le compte rendu est le geste du patron (`CLAUDE.md` §4) ; une date aurait facturé un passage annulé par la pluie |
+| il vise le passage du **même client, même jour**, dont le contrat a l'automatisme ; rejoué, il rend le même lien | un second appui ne fait ni seconde facture ni second lien (éprouvé) |
+| seul qui peut facturer le fait partir ; un échec **n'empêche pas** le compte rendu, et la fiche le dit en restant ouverte | la garde de la facture ne s'efface pas en passant par la fiche ; une facture qu'il croirait partie serait pire qu'un refus |
+| le lien de facture s'ajoute **en fin de message**, après son modèle | son modèle de compte rendu reste intact, et un compte rendu sans facture reste sans prix |

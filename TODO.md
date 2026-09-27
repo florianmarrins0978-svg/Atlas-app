@@ -1,11 +1,13 @@
 # Prochaines tâches
 
-## 🔜 CONTRAT D'ENTRETIEN : LOT 1 CODÉ, PAS SUR `main` (26 septembre 2026)
+## 🔜 CONTRAT D'ENTRETIEN : LOTS 1 ET 2 CODÉS, PAS SUR `main` (26 et 27 septembre 2026)
 
 **Sa consigne : « code ça, ne lance pas de batterie ».** Branche
 `claude/extrabat-competitor-review-7v9r8m`. Niveau 3 (migration 0107) : **la
 batterie entière est à jouer avant `main`**, elle ne l'a pas été. Document de
-retour : `docs/contrat-d-entretien-lot-1.md`. `ARCHITECTURE.md` §425.
+retour : `docs/contrat-d-entretien-lot-1.md` et `docs/contrat-d-entretien-lot-2.md`.
+`ARCHITECTURE.md` §425 et §426. Le lot 2 a été demandé le 27 : *« enchaîne le lot 2, ne
+lance pas de batterie »*.
 
 | Codé et éprouvé ici | |
 |---|---|
@@ -15,11 +17,12 @@ retour : `docs/contrat-d-entretien-lot-1.md`. `ARCHITECTURE.md` §425.
 | l'envoi par SMS ou e-mail, lien `/contrat/<jeton>` | refus en local regardé ; l'envoi réel est à essayer chez lui |
 | la page du client : lire, télécharger, accepter ou refuser, une seule fois | regardé |
 | l'arrivée des passages dans « Sans date » le 20 du mois d'avant, et la pose sur un jour | regardé |
+| **lot 2** : Terminés annonce le montant prévu d'un passage (54,00 € pour 45 € HT) | regardé |
+| **lot 2** : « Créer la facture » d'un passage la bâtit au prix du contrat, une ligne datée | regardé, et en base |
+| **lot 2** : l'automatisme, la facture part avec le compte rendu du jour, une fois | en base seulement : l'envoi par la messagerie est à essayer chez lui |
 
 | Reste à faire, dans l'ordre | Pourquoi |
 |---|---|
-| **lot 2 : la facture B pré-remplie** depuis Terminés (le passage aux prix du contrat) et le **montant prévu** dans Terminés | aujourd'hui un passage fini arrive « À facturer » sans montant, et la facture s'ouvre vide (facture sans devis) |
-| **lot 2 : l'automatisme** « avec le compte rendu » | il s'enregistre, il n'agit pas encore |
 | **lot 3 : la facturation A** (mensualités le 1er du mois) | elle s'enregistre et s'imprime sur le PDF, **aucune facture mensuelle ne se crée encore** |
 | la carte d'état du contrat sur la fiche client, comme la planche | l'état se lit sur l'écran du contrat seulement |
 | le message du contrat modifiable dans Réglages, comme les trois autres | lui demander s'il le veut |

@@ -6,6 +6,16 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-09-27
+
+### Le contrat d'entretien, lot 2 : chaque passage se facture (sur sa branche)
+
+Un passage fait arrive dans Terminés avec son montant prévu, et « Créer la
+facture » le facture au prix du contrat, sur une ligne datée. Si le contrat le
+demande, la facture part toute seule avec le compte rendu du passage, une
+fois. Ce que ça évite : une facture ressaisie à la main après chaque tonte, et
+un passage fait jamais facturé. `ARCHITECTURE.md` §426.
+
 ## 2026-09-26
 
 ### Le contrat d'entretien, lot 1 (sur sa branche)

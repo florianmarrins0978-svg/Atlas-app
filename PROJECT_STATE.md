@@ -4,13 +4,15 @@
 · dernière migration `drizzle/0106_hausse_du_devis_repris.sql` (sur la branche)
 
 ---
-## CODÉ, PAS SUR `main` : LE CONTRAT D'ENTRETIEN, LOT 1 (26 septembre 2026)
+## CODÉ, PAS SUR `main` : LE CONTRAT D'ENTRETIEN, LOTS 1 ET 2 (26 et 27 septembre 2026)
 
-Fiche client : « Contrat d'entretien » à côté de « Autre chantier ». Écran du
+Fiche client : « Contrat d'entretien » à côté de « Nouveau devis ». Écran du
 contrat, PDF, envoi par lien, acceptation par le client, passages dans « Sans
-date » le 20 du mois d'avant. Migration 0107. **Pas encore** : la facture
-pré-remplie, la facturation A, l'automatisme. Batterie de niveau 3 à jouer
-avant `main`. `ARCHITECTURE.md` §425, `TODO.md`.
+date » le 20 du mois d'avant (lot 1). Chaque passage se facture au prix du
+contrat depuis Terminés, qui annonce son montant, et part avec le compte rendu
+quand le contrat le demande (lot 2). Migration 0107. **Pas encore** : la
+facturation A (mensualités). Batterie de niveau 3 à jouer avant `main`.
+`ARCHITECTURE.md` §425 et §426, `TODO.md`.
 
 ## CODÉ, PAS SUR `main` : MON AGENDA EN SIMPLE (26 septembre 2026)
 
