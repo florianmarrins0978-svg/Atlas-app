@@ -16,12 +16,53 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 | | |
 |---|---|
 | **les règles** | `src/lib/contrats-entretien.ts` : période, passages, totaux, mensualités, arrivée, relecture |
-| **la base** | `drizzle/0102_contrats_entretien.sql`, `contratsEntretien` et deux colonnes de `chantiers` |
+| **la base** | `drizzle/0107_contrats_entretien.sql`, `contratsEntretien` et deux colonnes de `chantiers` |
 | **le dépôt** | `src/server/repositories/contrats-entretien.ts` ; le PDF `src/server/pdf/contrat-pdf.ts` |
 | **les écrans** | `src/app/clients/[id]/contrat/`, la page du client `src/app/contrat/[jeton]/`, le PDF `src/app/api/contrats/[id]/pdf` |
 | **l'arrivée** | `contextePlanning` appelle `poserLesPassagesArrives` avant de lire |
 | **les suites** | `test-contrats-entretien` (pure), `test-contrats-entretien-db` (atlas_app) |
 | **le piège** | un passage n'a pas de devis : Terminés l'annonce « À facturer » sans montant tant que le lot 2 n'est pas fait |
+
+## MON AGENDA EN SIMPLE : 26 septembre 2026
+
+Codé sur `claude/simplifier-mon-agenda-2lexkg`, **pas sur `main`** : il a
+interdit la batterie, et le lot est de niveau 3 (migration 0102). Pour livrer :
+lui demander le moment, jouer `npm run verifier:avant-livraison` dans le dossier
+du lot, puis pousser. **Piège à connaître** : débrancher Google efface ses
+identifiants ; c'est pourquoi la saisie reste accessible quand rien n'est
+configuré (§418).
+
+## L'ASSISTANT DÉBRIDÉ — 26 septembre 2026, PAS SUR `main`
+
+| | |
+|---|---|
+| **la branche** | `claude/is-this-normal-6jbxjy`, batterie non jouée (il l'a interdite sans son accord) |
+| **le schéma des outils** | `schema-outils.ts` le déduit du Zod de chaque outil. Ne jamais revenir à une fiche écrite à la main |
+| **la boucle** | `ResultatLLMAvecOutils.appels` : plusieurs appels par tour, chacun avec son `id` et ses `parametres` ; `unAppel()` pour les faux fournisseurs |
+| **les nouveaux outils** | `lire-factures.ts`, `lire-equipes.ts`, `lire-rappels.ts`, `lire-diagnostics.ts` |
+| **le panneau** | toucher le gris ferme, croix de 44 px, 44 px de gris toujours visibles (`AssistantSidebar.tsx`) |
+| **le piège** | un outil appelé deux fois portait le même identifiant : Anthropic refuse la requête, le patron lit « indisponible » |
+| **le détail** | `ARCHITECTURE.md` §420, `docs/assistant-debride-verdict.md` |
+
+## VOIR UN EXEMPLE DE FACTURE — 26 septembre 2026
+
+Branche `claude/invoice-preview-mock-data-ti2n5y`. `src/app/reglages/VoirUnExemple.tsx`,
+`src/app/api/factures/exemple/pdf/route.ts`, `genererPdfFactureExemple` dans
+`src/server/repositories/factures.ts`, `src/lib/facture-d-exemple.ts`. Niveau 3 : batterie
+avant `main`, **uniquement sur son accord**. Détail : `ARCHITECTURE.md` §421.
+
+## LA HAUSSE D'UN DEVIS REPRIS — 26 septembre 2026, PAS SUR `main`
+
+| | |
+|---|---|
+| **la règle** | `src/lib/hausse-du-devis.ts` : taux lu (0,1 à 100, une décimale), prix unitaire augmenté en décimal, arrondi demi vers le haut, toujours recalculé depuis la base |
+| **la reprise** | `src/lib/reprise-des-prix.ts` : l'ancien prix reste, le tarif du jour est `prixGrille` (sort « grille-proposee ») |
+| **la base** | migration 0106 : `lignes_prix.prix_ancien`, `prix_grille`, `chantiers.reprise_grille`, `hausse_reprise` |
+| **l'écriture** | `appliquerLaReprise` (`reprise-du-devis.ts`) ; `modifierLignePrix` efface `prix_ancien` au premier prix TAPÉ (comparé en valeur) |
+| **l'écran** | `RepriseDuDevis.tsx`, en tête de `DevisCompletClient`, caché sur un devis figé ou qui n'est pas une reprise |
+| **joué** | tsc, lint, suites `test-hausse-du-devis`, `test-reprise-des-prix`, `test-reprise-du-devis-db` (atlas_app, sait rougir), 8 suites base voisines, `test-repartir-du-client-e2e` seule (11/11), parcours regardé à 390 px |
+| **pas joué** | la batterie entière, à sa demande du 26 septembre : obligatoire avant `main` (niveau 3) |
+| **reste** | « Reprendre le devis » sur un devis expiré (écran d'envoi) n'a pas la bande : il rouvre le même devis, dont les lignes ne sont pas « reprises » |
 
 ## MA TVA À LA CALCULETTE — 25 septembre 2026
 

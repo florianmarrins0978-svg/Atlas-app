@@ -27,7 +27,7 @@ import { lireCoordonneesDictees } from "@/server/ai/services/coordonnees-service
 
 export type CreerChantierInput = {
   /**
-   * Le client est DÉJÀ connu — on vient de sa fiche (« Autre chantier »).
+   * Le client est DÉJÀ connu — on vient de sa fiche (« Nouveau devis »).
    *
    * **Aucun rapprochement n'est alors joué, et c'est le point.** `rapprocherClient`
    * sert à retrouver un client d'après ce qu'on tape ; ici, il n'y a rien à

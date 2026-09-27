@@ -185,11 +185,15 @@ export default async function DevisCompletPage({
           // Le taux de sa catégorie : sans lui, l'écran regrouperait tout sous
           // le taux du devis et ses catégories disparaîtraient au rechargement.
           tauxTva: l.tauxTva,
+          prixAncien: l.prixAncien,
+          prixGrille: l.prixGrille,
         }))}
         tauxTva={devisRow.tauxTva}
         reductionPourcent={devisRow.reductionPourcent}
         mainDoeuvreHt={devisRow.mainDoeuvreHt}
         titre={devisRow.titre}
+        repriseGrille={chantier.repriseGrille ?? null}
+        hausseReprise={chantier.hausseReprise === null ? 0 : Number(chantier.hausseReprise)}
         acomptesInitiaux={acomptes}
         acompteReglage={devisRow.acomptePourcent}
         conditionsReglees={{

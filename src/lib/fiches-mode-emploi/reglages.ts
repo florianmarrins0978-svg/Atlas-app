@@ -480,13 +480,13 @@ export const FICHES_REGLAGES: FicheModeEmploi[] = [
   {
     id: "reglages-role",
     ecran: "Équipe",
-    ou: `${R}, puis Équipe, Qui a accès`,
+    ou: `${R}, puis Équipe, Accès`,
     intitule: "Changer le rôle d'une personne (patron, facturation, commercial, salarié)",
     motsCles: ["role", "droits", "permission", "facturation", "commercial", "salarie", "patron", "changer"],
-    geste: "Dans « Qui a accès », touchez la personne, puis le rôle voulu : Patron, Facturation, Commercial ou Salarié.",
+    geste: "Dans « Accès », touchez la personne, puis le rôle voulu : Patron, Facturation, Commercial ou Salarié.",
     reserve: "Sous les rôles, la liste dit ce que ce rôle peut faire et ce qu'il ne peut plus.",
     source: "src/app/reglages/equipe/QuiAAcces.tsx",
-    preuves: ["Qui a accès", "<ChoixRole"],
+    preuves: ["Accès", "<ChoixRole"],
     ailleurs: [
       { source: "src/app/reglages/equipe/ChoixRole.tsx", preuves: ["libelleRole(r)"] },
       { source: "src/lib/acces-roles.ts", preuves: ['return "Patron"', 'return "Facturation"', 'return "Commercial"', 'return "Salarié"'] },
@@ -495,10 +495,10 @@ export const FICHES_REGLAGES: FicheModeEmploi[] = [
   {
     id: "reglages-portee-planning",
     ecran: "Équipe",
-    ou: `${R}, puis Équipe, Qui a accès`,
+    ou: `${R}, puis Équipe, Accès`,
     intitule: "Choisir ce qu'un salarié voit du planning",
     motsCles: ["salarie", "planning", "equipe", "tout", "sienne", "limiter", "cacher", "portee"],
-    geste: "Touchez le salarié dans « Qui a accès », puis « Tout le planning » ou « Son équipe » et choisissez laquelle.",
+    geste: "Touchez le salarié dans « Accès », puis « Tout le planning » ou « Son équipe » et choisissez laquelle.",
     reserve: "Ne s'affiche que pour une personne au rôle Salarié.",
     source: "src/app/reglages/equipe/QuiAAcces.tsx",
     preuves: ["Ce qu&apos;il voit du planning", "Tout le planning", "Son équipe"],
@@ -506,10 +506,10 @@ export const FICHES_REGLAGES: FicheModeEmploi[] = [
   {
     id: "reglages-retirer-acces",
     ecran: "Équipe",
-    ou: `${R}, puis Équipe, Qui a accès`,
+    ou: `${R}, puis Équipe, Accès`,
     intitule: "Retirer l'accès d'un salarié qui part",
     motsCles: ["retirer", "supprimer", "enlever", "acces", "salarie", "depart", "bloquer", "compte"],
-    geste: "Dans « Qui a accès », touchez la personne, puis « Retirer l'accès ».",
+    geste: "Dans « Accès », touchez la personne, puis « Retirer l'accès ».",
     reserve: "Impossible sur votre propre compte.",
     source: "src/app/reglages/equipe/QuiAAcces.tsx",
     preuves: ["Retirer l&apos;accès", "!estMoi"],
@@ -554,10 +554,10 @@ export const FICHES_REGLAGES: FicheModeEmploi[] = [
     id: "reglages-fin-chantier",
     ecran: "Équipe",
     ou: `${R}, puis Équipe, bloc Fin de chantier`,
-    intitule: "Exiger une preuve ou une photo avant d'envoyer le retour de fin de chantier",
-    motsCles: ["fin", "chantier", "preuve", "photo", "retour", "cocher", "exiger", "obliger"],
+    intitule: "Rappeler aux salariés d'envoyer le retour d'intervention chaque soir",
+    motsCles: ["fin", "chantier", "preuve", "photo", "retour", "cocher", "exiger", "obliger", "rappeler", "oubli", "recu"],
     geste: "Dans « Fin de chantier », allumez « Demander une preuve », puis si besoin « Au moins une photo ».",
-    reserve: "N'apparaît qu'avec la formule Entreprise.",
+    reserve: "Le salarié voit « Retour à envoyer » sous le chantier du jour ; vous, « Retour pas reçu » sur l'accueil le lendemain. Le retour part quand même. N'apparaît qu'avec la formule Entreprise.",
     source: "src/app/reglages/equipe/FinDeChantierReglage.tsx",
     preuves: ["Fin de chantier", "Demander une preuve", "Au moins une photo"],
   },
@@ -588,19 +588,22 @@ export const FICHES_REGLAGES: FicheModeEmploi[] = [
     preuves: ["Chantier sans devis", "Devis sans réponse", "Chantier fini, pas facturé", 'role="switch"'],
   },
   // --- Mon agenda -------------------------------------------------------------
+  // Réécrit le 26 septembre 2026 avec l'écran : une ligne par agenda, un bouton,
+  // et le volet « Gérer » (planche `appli/mon-agenda-simple.html`, A).
   {
     id: "reglages-agenda",
     ecran: "Mon agenda",
     ou: `${R}, puis Mon agenda`,
     intitule: "Relier son agenda Google",
-    motsCles: ["agenda", "calendrier", "google", "relier", "connecter", "brancher", "synchroniser", "doublon"],
+    motsCles: ["agenda", "calendrier", "google", "relier", "connecter", "brancher", "synchroniser", "doublon", "rebrancher"],
     geste:
-      "Ouvrez « Mon agenda ». La première fois, touchez « Coller mes identifiants Google », collez-les, puis « Enregistrer ». " +
-      "Touchez ensuite « Relier mon agenda Google » et acceptez chez Google.",
+      "Ouvrez « Mon agenda » et touchez « Relier » sur la ligne Google Agenda, puis choisissez votre compte chez Google. " +
+      "Si la ligne dit « Ne se lit plus », touchez « Rebrancher ».",
     reserve:
       "Réservé au patron. Sans agenda relié, Atlas ne voit pas les rendez-vous notés ailleurs et peut proposer ce jour-là.",
-    source: "src/app/reglages/agenda/AgendaClient.tsx",
-    preuves: ["Coller mes identifiants Google", "Relier mon agenda Google", "Enregistrer"],
+    source: "src/app/reglages/agenda/MonAgendaClient.tsx",
+    preuves: ['"Google Agenda"', '"Relier"', '"Rebrancher"'],
+    ailleurs: [{ source: "src/lib/agenda-externe.ts", preuves: ['"Ne se lit plus"', '"Relié"'] }],
   },
   {
     id: "reglages-agenda-pause",
@@ -609,37 +612,36 @@ export const FICHES_REGLAGES: FicheModeEmploi[] = [
     intitule: "Mettre en pause ou débrancher son agenda",
     motsCles: ["pause", "debrancher", "deconnecter", "agenda", "arreter", "reprendre", "effacer", "calendrier"],
     geste:
-      "Touchez « Mettre en pause », puis « Reprendre la lecture » pour repartir. " +
-      "Pour le détacher : « Débrancher et effacer », puis « Débrancher ».",
-    source: "src/app/reglages/agenda/AgendaClient.tsx",
-    preuves: ["Mettre en pause", "Reprendre la lecture", "Débrancher et effacer", "Débrancher"],
-    ailleurs: [{ source: "src/app/reglages/agenda/AgendaAppleClient.tsx", preuves: ["Mettre en pause", "Débrancher et effacer"] }],
+      "Touchez « Gérer » sur la ligne de l'agenda. Éteignez « Lire mon agenda » pour le mettre en pause, rallumez pour repartir. " +
+      "Pour le détacher : « Débrancher », puis « Débrancher » encore.",
+    source: "src/app/reglages/agenda/MonAgendaClient.tsx",
+    preuves: ['"Gérer"', '"Lire mon agenda"', "Débrancher"],
   },
   {
     id: "reglages-agenda-apple",
     ecran: "Mon agenda",
-    ou: `${R}, puis Mon agenda, bloc iCloud`,
+    ou: `${R}, puis Mon agenda, ligne iCloud`,
     intitule: "Relier son agenda Apple, iCloud",
     motsCles: ["agenda", "calendrier", "apple", "icloud", "iphone", "relier", "connecter", "synchroniser"],
     geste:
-      "Sur account.apple.com, créez un mot de passe pour les apps. Dans « Mon agenda », écrivez votre adresse iCloud " +
-      "et ce mot de passe, puis « Relier mon agenda Apple ».",
+      "Sur account.apple.com, créez un mot de passe pour les apps. Dans « Mon agenda », touchez « Relier » sur la ligne iCloud, " +
+      "écrivez votre adresse iCloud et ce mot de passe, puis « Relier ».",
     reserve: "Réservé au patron.",
-    source: "src/app/reglages/agenda/AgendaAppleClient.tsx",
-    preuves: ["Relier mon agenda Apple", "Votre adresse iCloud", "Mot de passe pour les apps", "account.apple.com"],
+    source: "src/app/reglages/agenda/MonAgendaClient.tsx",
+    preuves: ['"Adresse iCloud"', '"Mot de passe pour les apps"', "account.apple.com", "Relier iCloud"],
   },
   {
     id: "reglages-agenda-apple-ecrire",
     ecran: "Mon agenda",
-    ou: `${R}, puis Mon agenda, bloc iCloud`,
+    ou: `${R}, puis Mon agenda, ligne iCloud, Gérer`,
     intitule: "Faire apparaître ses chantiers dans le calendrier de l'iPhone",
     motsCles: ["chantiers", "calendrier", "iphone", "apple", "ecrire", "apparaitre", "agenda", "renvoyer"],
     geste:
-      "Allumez « Écrire mes chantiers dans mon agenda » et touchez le calendrier voulu. " +
-      "« Renvoyer mes chantiers dans l'agenda » les remet tous.",
+      "Touchez « Gérer » sur la ligne iCloud, allumez « Écrire mes chantiers dedans » et touchez le calendrier voulu. " +
+      "« Renvoyer mes chantiers » les remet tous.",
     reserve: "Il faut d'abord avoir relié l'agenda Apple. Atlas ne touche jamais un rendez-vous qu'il n'a pas posé.",
-    source: "src/app/reglages/agenda/AgendaAppleClient.tsx",
-    preuves: ["Écrire mes chantiers dans mon agenda", "Dans quel calendrier", "Renvoyer mes chantiers dans l&apos;agenda"],
+    source: "src/app/reglages/agenda/MonAgendaClient.tsx",
+    preuves: ['"Écrire mes chantiers dedans"', "Dans quel calendrier", "Renvoyer mes chantiers"],
   },
   // --- Atlas IA ---------------------------------------------------------------
   {

@@ -1,17 +1,46 @@
 # État du projet
 
-**Dernière mise à jour :** 2026-09-21 · `main`
-· dernière migration `drizzle/0101_avoirs_et_factures_non_payees.sql` sur `main`, `0102_contrats_entretien.sql` sur la branche du contrat
+**Dernière mise à jour :** 2026-09-26 · branche `claude/client-disappearance-no-date-f26td1`
+· dernière migration `drizzle/0106_hausse_du_devis_repris.sql` (sur la branche)
 
 ---
-
 ## CODÉ, PAS SUR `main` : LE CONTRAT D'ENTRETIEN, LOT 1 (26 septembre 2026)
 
 Fiche client : « Contrat d'entretien » à côté de « Autre chantier ». Écran du
 contrat, PDF, envoi par lien, acceptation par le client, passages dans « Sans
-date » le 20 du mois d'avant. Migration 0102. **Pas encore** : la facture
+date » le 20 du mois d'avant. Migration 0107. **Pas encore** : la facture
 pré-remplie, la facturation A, l'automatisme. Batterie de niveau 3 à jouer
-avant `main`. `ARCHITECTURE.md` §418, `TODO.md`.
+avant `main`. `ARCHITECTURE.md` §425, `TODO.md`.
+
+## CODÉ, PAS SUR `main` : MON AGENDA EN SIMPLE (26 septembre 2026)
+
+Une ligne par agenda et un volet « Gérer » ; sur le Planning, la phrase de
+l'agenda se masque pour toujours (migration 0102). Sur la branche
+`claude/simplifier-mon-agenda-2lexkg`, en attente de la batterie qu'il
+déclenchera. `ARCHITECTURE.md` §418.
+
+## CODÉ, PAS SUR `main` : L'ASSISTANT DÉBRIDÉ, ET QUI SE FERME D'UN GESTE (26 septembre 2026)
+
+Les champs de ses outils déclarés, plusieurs recherches par tour, réponses non
+coupées, lecture des factures, de l'équipe, des rappels et des diagnostics.
+Le panneau se ferme en touchant le gris. Branche `claude/is-this-normal-6jbxjy`,
+batterie à lui demander (`TODO.md`).
+
+## CODÉ, PAS SUR `main` : VOIR UN EXEMPLE DE FACTURE (26 septembre 2026)
+
+Bouton « Voir un exemple » sous « Devis & factures » et en bas de « Mon
+entreprise » : la vraie facture, EXEMPLE en filigrane, trois lignes à 20, 10 et
+5,5 %, aucun numéro pris (`ARCHITECTURE.md` §421). Avec le « ; » de la
+périodicité de TVA. Attend la batterie, sur son accord. L'exemple du devis
+n'est pas fait.
+
+## CODÉ, PAS SUR `main` : LA HAUSSE D'UN DEVIS REPRIS (26 septembre 2026)
+
+« Dernier devis » reprend à ses anciens prix, pose la question du tarif du jour,
+et offre « Augmenter les prix ». Migration `drizzle/0106_hausse_du_devis_repris.sql`.
+Branche `claude/client-disappearance-no-date-f26td1`. **Niveau 3 (migration,
+argent) : la batterie n'a PAS été jouée, à sa demande** ; ce qui l'a été est
+dans `HANDOVER.md`. `ARCHITECTURE.md` §423.
 
 ## FAIT : MA TVA À LA CALCULETTE, SUR `main` (25 septembre 2026)
 
@@ -3043,7 +3072,7 @@ le bouton « J'ai bien reçu » horodaté sur la page du client.
 | L'espace d'essai se met à jour seul, et l'application annonce sa version | `.devcontainer/mettre-a-jour.sh` + `src/server/version-executee.ts` |
 | Créer un chantier sans rien saisir : son nom se déduit du client, de l'adresse, ou de la date | `src/lib/nom-chantier.ts` |
 | **Le devis écrit à la main, document entier** : émetteur, IBAN, client, quantités, prix unitaires, TVA, conditions | `src/app/chantiers/[id]/devis-complet/` |
-| **Emporter toutes ses données**, en un appui : un ZIP avec les 26 tables, les photos, les enregistrements et les PDF | `src/server/repositories/export-entreprise.ts` + `src/app/api/mes-donnees/` + `src/lib/archive-zip.ts` |
+| **Emporter toutes ses données**, en un appui : un ZIP avec les 26 tables, les photos, les enregistrements et les PDF, rangés par client puis par chantier (26 septembre 2026) | `src/server/repositories/export-entreprise.ts` + `src/app/api/mes-donnees/` + `src/lib/archive-zip.ts` |
 | **L'agent s'arrête et demande ce qui fait le prix** (technique, diamètre), et se tait sur le reste | `src/lib/questions-chiffrage.ts` + `drizzle/0022_precisions_chantier.sql` |
 | **Il retient ce que le patron chiffre**, et le lui rappelle sur le chantier comparable suivant | `src/lib/lecons-prix.ts` + `drizzle/0023_lecons_prix.sql` |
 | **L'adresse se propose pendant la frappe** et se choisit d'un doigt — Base Adresse Nationale, jamais Google, et le champ reste libre | `src/components/atlas/ChampAdresse.tsx` + `src/server/adresses/base-adresse-nationale.ts` |

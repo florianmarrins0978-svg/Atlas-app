@@ -16,6 +16,8 @@ import {
 import type { Ctx } from "./context";
 import { composerFicheClient, type FicheClient } from "@/lib/fiche-client";
 import { resteDu } from "@/lib/exigibilite-tva";
+import { jourDeRangement } from "@/lib/bandes-clients";
+import { jourIso } from "@/lib/jour";
 import { avoirsDesFactures } from "./avoirs";
 import { receptionEnMots, type ReceptionLisible } from "@/lib/reception-facture";
 import {
@@ -484,7 +486,7 @@ export type ClientEnListe = {
   facture: string | null;
   /** Ce qui reste dû. `null` quand rien n'est facturé. */
   du: string | null;
-  /** Le jour du chantier le plus récent : c'est l'ordre de la liste. */
+  /** Le dernier jour DÉJÀ PASSÉ chez lui (`jourDeRangement`) : c'est l'ordre de la liste. */
   dernierJour: string | null;
 };
 
@@ -629,6 +631,7 @@ export async function listerFichesClients(ctx: Ctx): Promise<ClientEnListe[]> {
       lignesParChantier.set(l.chantierId, liste);
     }
 
+    const aujourdHui = jourIso(new Date());
     const liste = sesClients.map((client) => {
       const aLui = sesChantiers.filter((c) => c.clientId === client.id);
       const composables = aLui.map((c) => {
@@ -641,6 +644,11 @@ export async function listerFichesClients(ctx: Ctx): Promise<ClientEnListe[]> {
           reste: f?.reste ?? null,
         };
       });
+      const derniere = derniereTraceDuClient({
+        devis: plusRecent.get(`devis:${client.id}`) ?? null,
+        facture: plusRecent.get(`facture:${client.id}`) ?? null,
+        fiche: plusRecent.get(`fiche:${client.id}`) ?? null,
+      });
       const fiche = composerFicheClient(
         composables,
         aLui.flatMap((c) => lignesParChantier.get(c.id) ?? [])
@@ -649,14 +657,17 @@ export async function listerFichesClients(ctx: Ctx): Promise<ClientEnListe[]> {
         id: client.id,
         nom: client.nom,
         adresse: client.adresse,
-        derniere: derniereTraceDuClient({
-          devis: plusRecent.get(`devis:${client.id}`) ?? null,
-          facture: plusRecent.get(`facture:${client.id}`) ?? null,
-          fiche: plusRecent.get(`fiche:${client.id}`) ?? null,
-        }),
+        derniere,
         facture: fiche.facture,
         du: fiche.du,
-        dernierJour: fiche.liste[0]?.jour ?? null,
+        dernierJour: jourDeRangement(
+          [
+            ...composables.map((c) => c.jour),
+            ...aLui.map((c) => c.creeLe.toISOString().slice(0, 10)),
+            derniere?.jour,
+          ],
+          aujourdHui
+        ),
       };
     });
 

@@ -1,10 +1,10 @@
 import assert from "node:assert/strict";
 import {
-  agendaPrisEnCompte,
+  bandeauAgendaDuPlanning,
   creneauxOccupesPar,
   fusionnerOccupationExterne,
   FUSEAU_ARTISAN,
-  titreEtatAgenda,
+  motsDeLAgenda,
   type EtatAffichableAgenda,
   type PeriodeOccupee,
 } from "../src/lib/agenda-externe";
@@ -272,52 +272,79 @@ cas("un chantier déjà posé n'est pas effacé par un agenda plus permissif", (
   );
 });
 
-console.log("\n=== Ce que l'écran annonce en titre ===");
+console.log("\n=== Ce que chaque agenda dit de lui-même ===");
 
 // **Ce bloc existe à cause d'une capture d'écran, pas d'un test rouge.**
 //
 // L'écran titrait « Atlas tient compte de votre agenda » et démentait trois
 // lignes plus bas par « Atlas n'arrive plus à lire votre agenda » : la panne
-// était traitée APRÈS le cas « relié et actif », donc jamais atteinte. Rien ne
-// pouvait l'attraper — la phrase vivait dans le JSX. Elle est maintenant une
-// fonction, et l'ordre des cas est une règle tenue ici.
+// était traitée APRÈS le cas « relié et actif », donc jamais atteinte. Depuis
+// le 26 septembre 2026 l'état tient en deux mots par agenda (planche A), et
+// l'ordre des cas reste la règle tenue ici.
 
-const RELIE: EtatAffichableAgenda = { configure: true, relie: true, actif: true, derniereErreur: null };
-
-cas("sans identifiants, le titre ne promet rien", () => {
-  assert.match(titreEtatAgenda({ ...RELIE, configure: false }), /pas encore disponible/);
-});
+const RELIE: EtatAffichableAgenda = { relie: true, actif: true, derniereErreur: null };
+const JAMAIS: EtatAffichableAgenda = { relie: false, actif: false, derniereErreur: null };
 
 cas("rien de relié se dit tel quel", () => {
-  assert.equal(titreEtatAgenda({ ...RELIE, relie: false }), "Aucun agenda relié");
+  assert.deepEqual(motsDeLAgenda(JAMAIS), { ton: "neutre", texte: "Non relié" });
 });
 
-cas("une panne PRIME sur « tout va bien »", () => {
-  const enPanne = { ...RELIE, derniereErreur: "Google a refusé la lecture (401)" };
-  assert.equal(
-    titreEtatAgenda(enPanne),
-    "Votre agenda n'est plus lu",
-    "le titre annonce que l'agenda est pris en compte alors que la lecture échoue"
+cas("une panne PRIME sur « relié »", () => {
+  assert.deepEqual(
+    motsDeLAgenda({ ...RELIE, derniereErreur: "Google a refusé la lecture (401)" }),
+    { ton: "mal", texte: "Ne se lit plus" },
+    "la ligne annonce un agenda lu alors que la lecture échoue"
   );
-  assert.equal(agendaPrisEnCompte(enPanne), false, "la phrase rassurante s'afficherait pendant une panne");
 });
 
 cas("une panne prime aussi sur la pause", () => {
   // L'ordre complet compte : panne, puis pause, puis nominal.
-  assert.equal(
-    titreEtatAgenda({ ...RELIE, actif: false, derniereErreur: "expiré" }),
-    "Votre agenda n'est plus lu"
-  );
+  assert.equal(motsDeLAgenda({ ...RELIE, actif: false, derniereErreur: "expiré" }).texte, "Ne se lit plus");
 });
 
 cas("la pause se dit, et se distingue du débranchement", () => {
-  assert.equal(titreEtatAgenda({ ...RELIE, actif: false }), "Agenda relié, mais en pause");
-  assert.equal(agendaPrisEnCompte({ ...RELIE, actif: false }), false);
+  assert.equal(motsDeLAgenda({ ...RELIE, actif: false }).texte, "En pause");
 });
 
-cas("tout en ordre : le titre le dit, et la promesse est tenable", () => {
-  assert.equal(titreEtatAgenda(RELIE), "Atlas tient compte de votre agenda");
-  assert.equal(agendaPrisEnCompte(RELIE), true);
+cas("tout en ordre : relié, en vert", () => {
+  assert.deepEqual(motsDeLAgenda(RELIE), { ton: "bien", texte: "Relié" });
+});
+
+console.log("\n=== Le haut du Planning ===");
+
+// **Sa remarque du 26 septembre 2026 :** « ceux qui vont jamais remplir leur
+// agenda, ils vont voir la phrase tous les jours, c'est chiant ». L'ancien
+// bandeau parlait aussi pour une pause, tous les jours, et ne lisait que
+// Google.
+
+const PANNE: EtatAffichableAgenda = { ...RELIE, derniereErreur: "invalid_grant" };
+
+cas("jamais relié, pas masqué : la phrase propose", () => {
+  assert.equal(bandeauAgendaDuPlanning([JAMAIS, JAMAIS], false), "proposer");
+});
+
+cas("jamais relié, MASQUÉ : il ne reste rien", () => {
+  assert.equal(bandeauAgendaDuPlanning([JAMAIS, JAMAIS], true), null);
+});
+
+cas("une pause ne fait plus parler le Planning", () => {
+  assert.equal(bandeauAgendaDuPlanning([{ ...RELIE, actif: false }, JAMAIS], false), null);
+});
+
+cas("tout relié et lu : rien", () => {
+  assert.equal(bandeauAgendaDuPlanning([RELIE, JAMAIS], false), null);
+});
+
+cas("une panne parle MÊME masquée : ce n'est pas la même phrase", () => {
+  assert.equal(bandeauAgendaDuPlanning([PANNE, JAMAIS], true), "panne");
+});
+
+cas("iCloud relié suffit : on ne lui propose plus de relier Google", () => {
+  assert.equal(bandeauAgendaDuPlanning([JAMAIS, RELIE], false), null);
+});
+
+cas("la panne d'iCloud se voit aussi", () => {
+  assert.equal(bandeauAgendaDuPlanning([RELIE, PANNE], false), "panne");
 });
 
 console.log(`\n${echecs === 0 ? "✅" : "❌"} Agenda extérieur — ${echecs} échec(s).`);

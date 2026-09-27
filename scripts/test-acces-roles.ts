@@ -166,6 +166,11 @@ essai("le commercial atteint l'application, sauf les adresses nommées", () => {
     // **L'avoir et la mise en demeure (24 septembre 2026)** sont des pièces de
     // la facture : ils héritent de sa fermeture, et c'est voulu.
     "/api/avoirs/xxxx/pdf",
+    // **La facture d'exemple (26 septembre 2026)** hérite du refus des
+    // factures : ses deux portes, « Devis & factures » et « Mon entreprise »,
+    // sont déjà fermées au commercial (plus bas). Une porte ouverte au bout
+    // d'un couloir fermé ne se voit pas ; l'hériter en silence, si.
+    "/api/factures/exemple/pdf",
     "/api/factures/xxxx/mise-en-demeure",
     "/api/factures/xxxx/pdf",
     "/chantiers/xxxx/facture",

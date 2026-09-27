@@ -39,7 +39,13 @@ import { refaireLeChantierAction } from "./actions";
  * donc deux boutons et **aucune phrase d'explication** : un bouton n'a pas
  * besoin qu'on décrive ce qu'il fait (`CLAUDE.md` §3).
  *
- * **« Dernier devis » porte l'aplat, « Autre chantier » est creux.** Neuf fois sur
+ * **LE MOT « NOUVEAU DEVIS » EST LE SIEN, depuis le 26 septembre 2026** :
+ * *« faut l'appeler nouveau devis, pas autre chantier ? »*. Ce qu'il veut en
+ * appuyant, c'est un devis ; le chantier n'est que le chemin. Et à côté de
+ * « Dernier devis », l'opposition se lit sans rien expliquer. Le geste, lui,
+ * n'a pas bougé : il ouvre la fiche d'un chantier vierge.
+ *
+ * **« Dernier devis » porte l'aplat, « Nouveau devis » est creux.** Neuf fois sur
  * dix il refait la même chose chez le même client ; l'écran doit dire lequel
  * des deux est le geste ordinaire, sinon il faut choisir à chaque fois.
  *
@@ -137,7 +143,7 @@ export default function RepartirDeCeClient({
           <svg className="flex-none" width="16" height="16" viewBox="0 0 18 18" fill="none" aria-hidden="true">
             <path d="M9 3.4v11.2M3.4 9h11.2" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
           </svg>
-          <DeuxLignes haut="Autre" bas="chantier" />
+          <DeuxLignes haut="Nouveau" bas="devis" />
         </button>
         <button
           type="button"

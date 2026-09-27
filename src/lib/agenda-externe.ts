@@ -224,40 +224,61 @@ export function fusionnerOccupationExterne(
 }
 
 /**
- * Ce que l'écran de l'agenda annonce en titre.
+ * Ce qu'un agenda dit de lui-même, en deux mots, sur sa ligne de « Mon agenda ».
  *
- * **Sortie du composant après avoir regardé une capture.** L'écran titrait
- * « Atlas tient compte de votre agenda » et démentait trois lignes plus bas par
- * « Atlas n'arrive plus à lire votre agenda » : la panne était traitée APRÈS le
- * cas « relié et actif », donc jamais. Aucun test ne l'avait vu, et aucun ne
- * pouvait le voir — la phrase vivait dans le JSX.
+ * **Sa demande du 26 septembre 2026 :** *« trop de mots, trop compliqué, il faut
+ * qu'elle soit hyper simple »*, et son choix de la planche
+ * `appli/mon-agenda-simple.html` (A) : une ligne par agenda, son état en deux
+ * mots, un seul bouton. Le titre, les phrases d'explication et le message de
+ * Google en JSON sont partis.
  *
- * Le titre est ce que l'artisan lit en premier, et souvent le seul. Il doit
- * porter l'état réel, pas l'intention. **L'ordre des cas EST la règle** :
- * la panne prime sur la pause, qui prime sur le fonctionnement nominal.
+ * **L'ordre des cas EST la règle, et il vient d'une capture** (août 2026) :
+ * l'écran titrait « Atlas tient compte de votre agenda » et démentait trois
+ * lignes plus bas, parce que la panne était traitée après le cas nominal. La
+ * panne prime sur la pause, qui prime sur « relié ». Google et iCloud passent
+ * par la même fonction : deux rédactions finiraient par ne plus dire la même
+ * chose du même état.
  */
 export type EtatAffichableAgenda = {
-  configure: boolean;
   relie: boolean;
   actif: boolean;
   derniereErreur: string | null;
 };
 
-export function titreEtatAgenda(etat: EtatAffichableAgenda): string {
-  if (!etat.configure) return "Le raccordement n'est pas encore disponible";
-  if (!etat.relie) return "Aucun agenda relié";
-  if (etat.derniereErreur) return "Votre agenda n'est plus lu";
-  if (!etat.actif) return "Agenda relié, mais en pause";
-  return "Atlas tient compte de votre agenda";
+export type MotsDeLAgenda = { ton: "bien" | "mal" | "neutre"; texte: string };
+
+export function motsDeLAgenda(etat: EtatAffichableAgenda): MotsDeLAgenda {
+  if (!etat.relie) return { ton: "neutre", texte: "Non relié" };
+  if (etat.derniereErreur) return { ton: "mal", texte: "Ne se lit plus" };
+  if (!etat.actif) return { ton: "neutre", texte: "En pause" };
+  return { ton: "bien", texte: "Relié" };
 }
 
 /**
- * Atlas tient-il réellement compte de l'agenda, à cette seconde ?
+ * Ce que le haut du Planning dit de l'agenda, s'il dit quelque chose.
  *
- * Sert à décider si la phrase rassurante s'affiche. Une panne doit la faire
- * taire : promettre « une demi-journée prise ne sera plus proposée » alors que
- * la lecture échoue est précisément le mensonge que cet écran doit empêcher.
+ * **Sa remarque du 26 septembre 2026 :** *« ceux qui vont jamais remplir leur
+ * agenda, ils vont voir la phrase tous les jours, c'est chiant »*. Le bandeau
+ * parlait dans trois cas (jamais relié, en pause, en panne), tous les jours.
+ * Son choix (planche, C) :
+ *
+ * | | |
+ * |---|---|
+ * | une **panne** d'un agenda relié | toujours : il se croit protégé du doublon, et ne l'est plus |
+ * | **rien de relié** | une phrase, avec « Masquer » ; masquée, **plus jamais** |
+ * | une **pause** | rien : c'est lui qui l'a choisie |
+ *
+ * **Tous les agendas comptent, pas seulement Google.** L'ancien bandeau ne
+ * lisait que Google : un artisan relié à iCloud se voyait proposer chaque jour
+ * de relier « son agenda Google ».
  */
-export function agendaPrisEnCompte(etat: EtatAffichableAgenda): boolean {
-  return etat.configure && etat.relie && etat.actif && !etat.derniereErreur;
+export type BandeauAgenda = "panne" | "proposer" | null;
+
+export function bandeauAgendaDuPlanning(
+  agendas: EtatAffichableAgenda[],
+  rappelMasque: boolean
+): BandeauAgenda {
+  if (agendas.some((a) => a.relie && a.derniereErreur)) return "panne";
+  if (!agendas.some((a) => a.relie) && !rappelMasque) return "proposer";
+  return null;
 }

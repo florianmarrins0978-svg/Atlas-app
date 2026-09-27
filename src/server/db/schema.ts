@@ -297,6 +297,13 @@ export const entreprises = pgTable("entreprises", {
    * retour que personne ne demande.
    */
   retourPhotoExigee: boolean("retour_photo_exigee").notNull().default(false),
+  /**
+   * Le patron a-t-il masqué, sur son Planning, la phrase qui propose de relier
+   * un agenda ? (migration 0102, sa demande du 26 septembre 2026). Masquée,
+   * elle ne revient jamais. La PANNE d'un agenda relié, elle, s'affiche quoi
+   * qu'il ait masqué : ce n'est pas la même phrase.
+   */
+  rappelAgendaMasque: boolean("rappel_agenda_masque").notNull().default(false),
   // Comment le relevé de TVA découpe l'année. **Le mois est le défaut LÉGAL**
   // (déclaration CA3 mensuelle ; le trimestre est une option sous condition de
   // TVA due), pas une préférence d'écran — voir `drizzle/0035_periodicite_tva.sql`.
@@ -729,7 +736,7 @@ export const clients = pgTable(
   ]
 );
 
-// --- Contrats d'entretien (migration 0102) ---
+// --- Contrats d'entretien (migration 0107) ---
 
 /**
  * Le contrat d'entretien d'un client : ses prestations, sa période, sa
@@ -833,7 +840,7 @@ export const chantiers = pgTable(
      */
     rappelFactureRepousseLe: date("rappel_facture_repousse_le"),
     /**
-     * Le contrat d'entretien dont ce chantier est un PASSAGE (migration 0102),
+     * Le contrat d'entretien dont ce chantier est un PASSAGE (migration 0107),
      * et sa clé « prestation-année-mois-rang » (`passagesArrives`). Les deux
      * ensemble ou aucun ; la base tient la paire unique, ce qui rend l'arrivée
      * des passages idempotente.
@@ -862,6 +869,14 @@ export const chantiers = pgTable(
     // La garder à côté aurait fait deux vérités sur la même question — celle du
     // planning et celle de la feuille de route, qui auraient divergé au premier
     // retrait (`CLAUDE.md` §3).
+
+    /**
+     * Ses deux réponses sur un devis repris par « Dernier devis » (migration
+     * 0106) : « oui » ou « non » au tarif du jour, et la hausse appliquée aux
+     * lignes reprises. NULL sur tout chantier qui n'est pas une reprise.
+     */
+    repriseGrille: text("reprise_grille").$type<"oui" | "non">(),
+    hausseReprise: numeric("hausse_reprise", { precision: 4, scale: 1 }),
 
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
@@ -1090,6 +1105,14 @@ export const lignesPrix = pgTable(
      * auraient fini par diverger (`CLAUDE.md` §3).
      */
     tauxTva: numeric("taux_tva", { precision: 5, scale: 2 }),
+    /**
+     * Une ligne reprise par « Dernier devis » (migration 0106) : son prix sur
+     * l'ancien devis, et le tarif du jour quand il diffère. `prixAncien` NULL
+     * veut dire « pas reprise, ou retouchée à la main » : la hausse et la
+     * question du tarif du jour ne la touchent pas (`src/lib/hausse-du-devis.ts`).
+     */
+    prixAncien: numeric("prix_ancien", { precision: 10, scale: 2 }),
+    prixGrille: numeric("prix_grille", { precision: 10, scale: 2 }),
     ordre: integer("ordre").notNull().default(0),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
@@ -1751,7 +1774,7 @@ export const rappelsVus = pgTable(
       .notNull()
       .references(() => chantiers.id, { onDelete: "cascade" }),
     genre: text("genre", {
-      enum: ["chantier-sans-devis", "devis-sans-reponse", "chantier-non-facture"],
+      enum: ["chantier-sans-devis", "devis-sans-reponse", "chantier-non-facture", "retour-pas-recu"],
     }).notNull(),
     vuLe: timestamp("vu_le", { withTimezone: true }).notNull().defaultNow(),
   },
@@ -2282,6 +2305,33 @@ export const paiementsFacture = pgTable(
     index("paiements_facture_facture_idx").on(t.entrepriseId, t.factureId),
     index("paiements_facture_date_idx").on(t.entrepriseId, t.datePaiement),
   ]
+);
+
+/**
+ * Les règlements retirés d'une facture (migration 0103), gardés pour leur
+ * trace : sa planche du 26 septembre 2026, « la B ». Un règlement retiré
+ * quitte `paiements_facture`, donc aucun total ne le compte plus, et
+ * « Remettre » l'y ramène avec le même identifiant.
+ */
+export const reglementsRetires = pgTable(
+  "reglements_retires",
+  {
+    id: uuid("id").primaryKey(),
+    entrepriseId: uuid("entreprise_id").notNull(),
+    factureId: uuid("facture_id").notNull(),
+    datePaiement: date("date_paiement").notNull(),
+    montant: numeric("montant", { precision: 12, scale: 2 }).notNull(),
+    moyen: text("moyen", { enum: ["virement", "cheque", "especes", "carte", "autre"] }),
+    note: text("note"),
+    numero: text("numero"),
+    libelle: text("libelle"),
+    solde: boolean("solde").notNull().default(false),
+    origine: text("origine", { enum: ["saisi", "reprise", "banque"] }).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull(),
+    retireLe: timestamp("retire_le", { withTimezone: true }).notNull().defaultNow(),
+    retirePar: uuid("retire_par"),
+  },
+  (t) => [index("reglements_retires_facture_idx").on(t.entrepriseId, t.factureId)]
 );
 
 export const lignesFacture = pgTable(

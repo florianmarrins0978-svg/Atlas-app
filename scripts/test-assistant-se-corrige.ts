@@ -6,7 +6,7 @@ import * as clientsRepo from "../src/server/repositories/clients";
 import { poserQuestion } from "../src/server/ai/services/assistant-service";
 import { getOutil } from "../src/server/ai/tools/registre";
 import { _reinitialiserFabriqueLLM } from "../src/server/ai/providers/llm/fabrique";
-import type { FournisseurLLM } from "../src/server/ai/providers/llm/interface";
+import { unAppel, type FournisseurLLM } from "../src/server/ai/providers/llm/interface";
 import { fermerLimiteur } from "../src/server/rate-limit";
 import { nettoyerBase } from "./_test-db";
 
@@ -66,11 +66,11 @@ function fournisseurQuiSeTrompe(champFautif: string, outilVise: string): Fournis
         if (r?.erreur && appels <= 3) {
           // **Il se reprend** — et c'est tout ce qu'on éprouve ici : le refus
           // lui est PARVENU, et il porte de quoi rappeler juste.
-          return { succes: true, type: "appel_outil", outil: outilVise, parametres: { nom: "Lucie" } };
+          return unAppel(outilVise, { nom: "Lucie" });
         }
         return { succes: true, type: "texte", texte: `Voici ce que j'ai trouvé : ${JSON.stringify(dernier.resultat)}` };
       }
-      return { succes: true, type: "appel_outil", outil: outilVise, parametres: { [champFautif]: "Lucie" } };
+      return unAppel(outilVise, { [champFautif]: "Lucie" });
     },
   };
 }
@@ -145,7 +145,7 @@ async function main() {
           return { succes: true, texte: "" };
         },
         async genererAvecOutils() {
-          return { succes: true, type: "appel_outil", outil: "RechercherChantier", parametres: { zzz: "x" } };
+          return unAppel("RechercherChantier", { zzz: "x" });
         },
       });
       const reponse = await poserQuestion(A, null, [], "Sors-moi le dernier devis de Bernard");
@@ -153,6 +153,43 @@ async function main() {
       if (reponse.succes) return;
       assert.ok(!/outil interne|schéma|paramètre/i.test(reponse.erreur), "le message parle technique au patron");
       assert.match(reponse.erreur, /nom du client ou du chantier/i, "il ne dit pas quoi faire");
+    } finally {
+      _reinitialiserFabriqueLLM(null);
+    }
+  });
+
+  await test("DEUX RECHERCHES D'UN COUP sont servies toutes les deux, chacune avec son identifiant", async () => {
+    // « Huguette Groupiron » : le modèle demande le client ET ses lignes de
+    // devis dans le même tour. La seconde était jetée sans un mot.
+    let vu: { id?: string; outil: string }[] = [];
+    try {
+      _reinitialiserFabriqueLLM({
+        nom: "deux-a-la-fois",
+        async genererTexte() {
+          return { succes: true, texte: "" };
+        },
+        async genererAvecOutils(_systeme, historique) {
+          const resultats = historique.filter((m) => m.role === "outil");
+          if (resultats.length === 0) {
+            return {
+              succes: true,
+              type: "appel_outil",
+              appels: [
+                { id: "x1", outil: "LireClients", parametres: { motCle: "Lucie" } },
+                { id: "x2", outil: "RechercherChantier", parametres: { nom: "Lucie" } },
+              ],
+            };
+          }
+          vu = resultats.map((m) => (m.role === "outil" ? { id: m.id, outil: m.outil } : { outil: "" }));
+          return { succes: true, type: "texte", texte: "Madame Lucie, un chantier." };
+        },
+      });
+      const reponse = await poserQuestion(A, null, [], "Huguette Groupiron");
+      assert.equal(reponse.succes, true, !reponse.succes ? reponse.erreur : "");
+      assert.deepEqual(vu, [
+        { id: "x1", outil: "LireClients" },
+        { id: "x2", outil: "RechercherChantier" },
+      ]);
     } finally {
       _reinitialiserFabriqueLLM(null);
     }

@@ -1,6 +1,6 @@
 import { and, desc, eq, isNull, isNotNull, lt, gt, sql } from "drizzle-orm";
 import { withEntreprise } from "../db/with-entreprise";
-import { chantiers, entreprises, envoisDevis, factures, rappelsVus } from "../db/schema";
+import { chantiers, creneauxChantier, entreprises, envoisDevis, factures, rappelsVus, retoursIntervention } from "../db/schema";
 import {
   lireRappels,
   normaliserRappels,
@@ -11,9 +11,14 @@ import {
   silenceApresVuJours,
   type GenreRappel,
   type GenreAcquittable,
+  type GenreVu,
   type ReglagesRappels,
 } from "../../lib/rappels";
 import type { Ctx } from "./context";
+import { dernierJourTravaille, retoursPasRecus, type JourTravaille } from "../../lib/retour-intervention";
+import { creneauxOccupes } from "../../lib/creneaux-chantier";
+import type { Creneau, Moment } from "../../lib/disponibilites";
+import { jourIso } from "../../lib/jour";
 import { avoirsDesFactures } from "./avoirs";
 import { apresAvoirs } from "@/lib/exigibilite-tva";
 
@@ -337,6 +342,96 @@ export async function rappelsEnCours(ctx: Ctx, maintenant: Date): Promise<Rappel
 
 
 /**
+ * « RETOUR PAS REÇU » — sa planche du 26 septembre 2026.
+ *
+ * Ce fichier lit ; la règle (quel jour, quels chantiers, ce que « J'ai vu »
+ * fait taire) vit dans `retoursPasRecus`, et s'éprouve sans base.
+ *
+ * **`demande` vient de `reglesDuRetour`**, qui tient la formule : un réglage
+ * éteint, ou une formule sans retours, ne coûte aucune requête.
+ *
+ * **Les jours travaillés se lisent comme le planning les dessine** : les
+ * demi-journées posées, et à défaut le bloc d'un seul tenant de ses trois
+ * colonnes (`creneauxOccupes`). Une seconde lecture finirait par annoncer un
+ * jour travaillé que le planning ne montre pas.
+ */
+export async function retoursPasRecusEnCours(
+  ctx: Ctx,
+  demande: boolean,
+  maintenant: Date
+): Promise<JourTravaille[]> {
+  if (!demande) return [];
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const [lesChantiers, poses] = await Promise.all([
+      tx
+        .select({
+          id: chantiers.id,
+          nom: chantiers.nom,
+          jour: chantiers.datePlanifiee,
+          moment: chantiers.creneauDebut,
+          dureeDemiJournees: chantiers.dureeDemiJournees,
+        })
+        .from(chantiers)
+        .where(and(eq(chantiers.entrepriseId, ctx.entrepriseId), isNull(chantiers.deletedAt))),
+      tx
+        .select({ chantierId: creneauxChantier.chantierId, jour: creneauxChantier.jour, demi: creneauxChantier.demi })
+        .from(creneauxChantier)
+        .where(eq(creneauxChantier.entrepriseId, ctx.entrepriseId)),
+    ]);
+
+    const posesParChantier = new Map<string, Creneau[]>();
+    for (const p of poses) {
+      const liste = posesParChantier.get(p.chantierId) ?? [];
+      liste.push({ jour: p.jour, moment: p.demi as Moment });
+      posesParChantier.set(p.chantierId, liste);
+    }
+    const travailles: JourTravaille[] = [];
+    for (const c of lesChantiers) {
+      const jours = new Set(
+        creneauxOccupes(c, posesParChantier.get(c.id) ?? []).map((creneau) => creneau.jour)
+      );
+      for (const jour of jours) travailles.push({ chantierId: c.id, chantierNom: c.nom, jour });
+    }
+
+    const aujourdHui = jourIso(maintenant);
+    const cible = dernierJourTravaille(travailles, aujourdHui);
+    if (cible === null) return [];
+
+    // **Les retours de CE jour seulement**, lus à Paris : une journée à Paris
+    // déborde d'une heure ou deux sur la veille et le lendemain en UTC, d'où
+    // la marge d'un jour de chaque côté, puis le tri par `jourIso`.
+    const debut = new Date(`${cible}T00:00:00Z`);
+    debut.setUTCDate(debut.getUTCDate() - 1);
+    const fin = new Date(`${cible}T00:00:00Z`);
+    fin.setUTCDate(fin.getUTCDate() + 2);
+    const [retours, vus] = await Promise.all([
+      tx
+        .select({ chantierId: retoursIntervention.chantierId, poseLe: retoursIntervention.poseLe })
+        .from(retoursIntervention)
+        .where(
+          and(
+            eq(retoursIntervention.entrepriseId, ctx.entrepriseId),
+            gt(retoursIntervention.poseLe, debut),
+            lt(retoursIntervention.poseLe, fin)
+          )
+        ),
+      tx
+        .select({ chantierId: rappelsVus.chantierId, vuLe: rappelsVus.vuLe })
+        .from(rappelsVus)
+        .where(and(eq(rappelsVus.entrepriseId, ctx.entrepriseId), eq(rappelsVus.genre, "retour-pas-recu"))),
+    ]);
+
+    return retoursPasRecus({
+      demande,
+      travailles,
+      retours: retours.map((r) => ({ chantierId: r.chantierId, jour: jourIso(new Date(r.poseLe)) })),
+      vus: new Map(vus.map((v) => [v.chantierId, jourIso(new Date(v.vuLe))])),
+      aujourdHui,
+    });
+  });
+}
+
+/**
  * « J'ai vu » sur un rappel — sa demande du 30 août 2026.
  *
  * *« Pour chaque notification je dois pouvoir cliquer sur vu pour les faire
@@ -352,7 +447,7 @@ export async function rappelsEnCours(ctx: Ctx, maintenant: Date): Promise<Rappel
  */
 export async function marquerRappelVu(
   ctx: Ctx,
-  genre: GenreAcquittable,
+  genre: GenreVu,
   chantierId: string,
   maintenant: Date = new Date()
 ): Promise<boolean> {

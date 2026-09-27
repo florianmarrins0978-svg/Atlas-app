@@ -251,130 +251,143 @@ export async function poserQuestion(
       return { succes: true, texte: resultat.texte, sources };
     }
 
-    // type === "appel_outil" — soit un outil de lecture, soit l'outil réservé de proposition.
-    if (resultat.outil === NOM_OUTIL_PROPOSITION) {
-      const analyse = schemaProposition.safeParse(resultat.parametres);
-      if (!analyse.success) {
+    // **Chaque appel du tour est servi, dans l'ordre**, et chacun reçoit son
+    // résultat : un appel laissé sans réponse ferait refuser la requête
+    // suivante par le fournisseur.
+    for (const appel of resultat.appels) {
+      // type === "appel_outil" — soit un outil de lecture, soit l'outil réservé de proposition.
+      if (appel.outil === NOM_OUTIL_PROPOSITION) {
+        const analyse = schemaProposition.safeParse(appel.parametres);
+        if (!analyse.success) {
+          /**
+           * **ON LE LAISSE SE REPRENDRE — c'est la MÊME faute qu'au 26 août.**
+           *
+           * **Sa capture du 28 août 2026 :** *« rajoute-moi une ligne, tu me mets
+           * des herbages des allées au chalumeau, et tu peux mettre 500 euros
+           * pour le devis actuel »* → « L'assistant n'a pas pu formuler ses
+           * propositions correctement. » Sa phrase était parfaite ; c'est le nom
+           * d'un geste qui ne tombait pas dans notre vocabulaire.
+           *
+           * Le 26 août, le même abandon avait été retiré des outils de lecture ;
+           * il était resté ici, sur le chemin qui compte le plus — celui qui
+           * ÉCRIT. Le refus part donc au modèle avec ce qui manque et la liste
+           * des gestes qu'il peut nommer, et il rappelle correctement.
+           */
+          logger.warn("Propositions mal formées, on redemande", { issues: analyse.error.issues });
+          corrections++;
+          if (corrections > MAX_CORRECTIONS) {
+            return {
+              succes: false,
+              erreur: "Je n'arrive pas à préparer ce geste. Dites-moi en une phrase ce que je dois ajouter, et sur quel chantier.",
+            };
+          }
+          historique = [
+            ...historique,
+            {
+              role: "outil",
+              id: appel.id,
+              outil: NOM_OUTIL_PROPOSITION,
+              parametres: appel.parametres,
+              resultat: {
+                erreur: "Proposition refusée : elle ne respecte pas la forme attendue.",
+                detail: analyse.error.issues.map((i) => `${i.path.join(".") || "(racine)"} : ${i.message}`),
+                // **On lui redonne la liste.** Sans elle, il redevine — et se
+                // trompe de la même façon.
+                typesPossibles: TYPES_ACTION_PROPOSEE,
+                aFaire:
+                  "Rappelle l'outil avec { texteIntroduction, propositions: [{ type, description, donnees }] }, " +
+                  "en choisissant « type » DANS la liste ci-dessus.",
+              },
+            },
+          ];
+          continue;
+        }
         /**
-         * **ON LE LAISSE SE REPRENDRE — c'est la MÊME faute qu'au 26 août.**
+         * **Une proposition sans chantier est un cas NORMAL depuis le 26 août
+         * 2026** (migration 0067). Ce refus global était là quand tout geste
+         * visait le chantier ouvert ; il rendait désormais un message technique —
+         * *« Aucun chantier dans le contexte courant »* — à qui demandait
+         * simplement « crée un chantier pour Madame Lucie » depuis l'accueil. Et
+         * il avait tort : créer un chantier ne demande aucun chantier.
          *
-         * **Sa capture du 28 août 2026 :** *« rajoute-moi une ligne, tu me mets
-         * des herbages des allées au chalumeau, et tu peux mettre 500 euros
-         * pour le devis actuel »* → « L'assistant n'a pas pu formuler ses
-         * propositions correctement. » Sa phrase était parfaite ; c'est le nom
-         * d'un geste qui ne tombait pas dans notre vocabulaire.
+         * **Trouvé à l'image, pas par un test** (`CLAUDE.md` §5).
          *
-         * Le 26 août, le même abandon avait été retiré des outils de lecture ;
-         * il était resté ici, sur le chemin qui compte le plus — celui qui
-         * ÉCRIT. Le refus part donc au modèle avec ce qui manque et la liste
-         * des gestes qu'il peut nommer, et il rappelle correctement.
+         * Ce qui garde la porte, c'est le geste lui-même : à la confirmation,
+         * celui qui VISE un chantier et n'en a pas rend un conflit en français —
+         * « ouvrez-le, ou nommez-le » (`appliquerPropositionsAction`).
          */
-        logger.warn("Propositions mal formées, on redemande", { issues: analyse.error.issues });
+        const enregistrees = await enregistrerPropositions(ctx, chantierId, analyse.data.propositions);
+        const propositionsAvecId: PropositionAvecId[] = enregistrees.map((row, i) => ({
+          ...analyse.data.propositions[i],
+          id: row.id,
+        }));
+        return { succes: true, texte: analyse.data.texteIntroduction, sources, propositions: propositionsAvecId };
+      }
+
+      const outil = getOutil(appel.outil);
+      if (!outil) {
+        return { succes: false, erreur: "L'assistant a demandé un outil inconnu." };
+      }
+
+      const parseParams = outil.schema.safeParse(appel.parametres ?? {});
+      if (!parseParams.success) {
+        /**
+         * **On le laisse se CORRIGER, on n'abandonne pas la réponse.**
+         *
+         * **Sa capture du 26 août 2026 au soir**, trois fois de suite : *« Peux-tu
+         * me sortir le devis de Lucie »* → « L'assistant a mal formé sa demande à
+         * un outil interne. Reformulez votre question. » Il reformule, même
+         * message. **Reformuler n'y pouvait rien** : ce n'était pas sa phrase qui
+         * était mauvaise, c'était le nom d'un paramètre côté modèle — et on lui
+         * demandait de réparer une chose qu'il ne voyait pas.
+         *
+         * Un outil mal appelé n'est pas une panne : c'est un aller-retour normal
+         * d'une boucle d'outils. Le refus part donc AU MODÈLE, avec ce qui
+         * manque, et il rappelle l'outil correctement. C'est ainsi qu'un agent
+         * travaille ; s'arrêter au premier écart, c'est n'en être un qu'à moitié.
+         *
+         * **Le détail reste hors de l'écran** : ce qui remonte au patron, c'est
+         * une réponse, pas une explication de schéma.
+         */
+        logger.warn("Paramètres invalides pour un outil de l'assistant, on redemande", {
+          tool: outil.nom,
+          issues: parseParams.error.issues,
+        });
         corrections++;
         if (corrections > MAX_CORRECTIONS) {
           return {
             succes: false,
-            erreur: "Je n'arrive pas à préparer ce geste. Dites-moi en une phrase ce que je dois ajouter, et sur quel chantier.",
+            erreur: "Je n'arrive pas à aller chercher cette information. Dites-moi le nom du client ou du chantier.",
           };
         }
         historique = [
           ...historique,
           {
             role: "outil",
-            outil: NOM_OUTIL_PROPOSITION,
+            id: appel.id,
+            outil: outil.nom,
+            parametres: appel.parametres,
             resultat: {
-              erreur: "Proposition refusée : elle ne respecte pas la forme attendue.",
-              detail: analyse.error.issues.map((i) => `${i.path.join(".") || "(racine)"} : ${i.message}`),
-              // **On lui redonne la liste.** Sans elle, il redevine — et se
-              // trompe de la même façon.
-              typesPossibles: TYPES_ACTION_PROPOSEE,
-              aFaire:
-                "Rappelle l'outil avec { texteIntroduction, propositions: [{ type, description, donnees }] }, " +
-                "en choisissant « type » DANS la liste ci-dessus.",
+              erreur: `Paramètres refusés par ${outil.nom}.`,
+              // Les champs attendus, dits au modèle dans SA langue de travail :
+              // c'est la seule chose qui lui permet de rappeler juste.
+              detail: parseParams.error.issues.map((i) => `${i.path.join(".") || "(racine)"} : ${i.message}`),
+              aFaire: `Rappelle ${outil.nom} avec les champs attendus.`,
             },
           },
         ];
         continue;
       }
-      /**
-       * **Une proposition sans chantier est un cas NORMAL depuis le 26 août
-       * 2026** (migration 0067). Ce refus global était là quand tout geste
-       * visait le chantier ouvert ; il rendait désormais un message technique —
-       * *« Aucun chantier dans le contexte courant »* — à qui demandait
-       * simplement « crée un chantier pour Madame Lucie » depuis l'accueil. Et
-       * il avait tort : créer un chantier ne demande aucun chantier.
-       *
-       * **Trouvé à l'image, pas par un test** (`CLAUDE.md` §5).
-       *
-       * Ce qui garde la porte, c'est le geste lui-même : à la confirmation,
-       * celui qui VISE un chantier et n'en a pas rend un conflit en français —
-       * « ouvrez-le, ou nommez-le » (`appliquerPropositionsAction`).
-       */
-      const enregistrees = await enregistrerPropositions(ctx, chantierId, analyse.data.propositions);
-      const propositionsAvecId: PropositionAvecId[] = enregistrees.map((row, i) => ({
-        ...analyse.data.propositions[i],
-        id: row.id,
-      }));
-      return { succes: true, texte: analyse.data.texteIntroduction, sources, propositions: propositionsAvecId };
-    }
+      const parametres = parseParams.data;
 
-    const outil = getOutil(resultat.outil);
-    if (!outil) {
-      return { succes: false, erreur: "L'assistant a demandé un outil inconnu." };
-    }
-
-    const parseParams = outil.schema.safeParse(resultat.parametres ?? {});
-    if (!parseParams.success) {
-      /**
-       * **On le laisse se CORRIGER, on n'abandonne pas la réponse.**
-       *
-       * **Sa capture du 26 août 2026 au soir**, trois fois de suite : *« Peux-tu
-       * me sortir le devis de Lucie »* → « L'assistant a mal formé sa demande à
-       * un outil interne. Reformulez votre question. » Il reformule, même
-       * message. **Reformuler n'y pouvait rien** : ce n'était pas sa phrase qui
-       * était mauvaise, c'était le nom d'un paramètre côté modèle — et on lui
-       * demandait de réparer une chose qu'il ne voyait pas.
-       *
-       * Un outil mal appelé n'est pas une panne : c'est un aller-retour normal
-       * d'une boucle d'outils. Le refus part donc AU MODÈLE, avec ce qui
-       * manque, et il rappelle l'outil correctement. C'est ainsi qu'un agent
-       * travaille ; s'arrêter au premier écart, c'est n'en être un qu'à moitié.
-       *
-       * **Le détail reste hors de l'écran** : ce qui remonte au patron, c'est
-       * une réponse, pas une explication de schéma.
-       */
-      logger.warn("Paramètres invalides pour un outil de l'assistant, on redemande", {
-        tool: outil.nom,
-        issues: parseParams.error.issues,
-      });
-      corrections++;
-      if (corrections > MAX_CORRECTIONS) {
-        return {
-          succes: false,
-          erreur: "Je n'arrive pas à aller chercher cette information. Dites-moi le nom du client ou du chantier.",
-        };
-      }
+      const resultatOutil = await outil.executer({ ctx, chantierId }, parametres);
+      sources.push(outil.nom);
       historique = [
         ...historique,
-        {
-          role: "outil",
-          outil: outil.nom,
-          resultat: {
-            erreur: `Paramètres refusés par ${outil.nom}.`,
-            // Les champs attendus, dits au modèle dans SA langue de travail :
-            // c'est la seule chose qui lui permet de rappeler juste.
-            detail: parseParams.error.issues.map((i) => `${i.path.join(".") || "(racine)"} : ${i.message}`),
-            aFaire: `Rappelle ${outil.nom} avec les champs attendus.`,
-          },
-        },
+        { role: "outil", id: appel.id, outil: outil.nom, parametres: appel.parametres, resultat: resultatOutil },
       ];
-      continue;
+  
     }
-    const parametres = parseParams.data;
-
-    const resultatOutil = await outil.executer({ ctx, chantierId }, parametres);
-    sources.push(outil.nom);
-    historique = [...historique, { role: "outil", outil: outil.nom, resultat: resultatOutil }];
   }
 
   return {

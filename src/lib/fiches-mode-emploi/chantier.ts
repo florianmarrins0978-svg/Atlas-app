@@ -331,14 +331,14 @@ export const FICHES_CHANTIER: FicheModeEmploi[] = [
   {
     id: "chantier-photos-derniere-fois",
     ecran: "Fiche client",
-    ou: "« Chantiers », « Vos clients », le nom du client, puis « Autre chantier »",
+    ou: "« Chantiers », « Vos clients », le nom du client, puis « Nouveau devis »",
     intitule: "Reprendre les photos du chantier précédent d'un client",
     motsCles: ["photos", "anciennes", "precedent", "derniere", "fois", "reprendre", "client", "ancien"],
     geste: "Sous « La dernière fois », touchez les photos à reprendre : elles s'allument.",
     reserve: "Une photo non touchée ne rejoint pas le nouveau chantier.",
     source: FICHE,
     preuves: ["La dernière fois", "Reprendre une photo de"],
-    ailleurs: [{ source: "src/app/clients/[id]/RepartirDeCeClient.tsx", preuves: ["Autre chantier"] }],
+    ailleurs: [{ source: "src/app/clients/[id]/RepartirDeCeClient.tsx", preuves: ["Nouveau devis"] }],
   },
   // --- La préparation du devis depuis la dictée -----------------------------
   {

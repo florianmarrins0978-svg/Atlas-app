@@ -33467,7 +33467,183 @@ faudrait savoir c'est une TVA à combien »*.
 parts par taux de cet acompte (pas son total), comme il change déjà sa TVA
 (`TODO.md`).
 
-## §417 : La facturation électronique passe par le compte de l'artisan
+## §417 : Un règlement retiré déménage, il ne se filtre pas
+
+**Sa planche du 26 septembre 2026**, `appli/retirer-un-acompte.html` (la B) :
+la croix au bout d'un acompte le SUPPRIMAIT. Un acompte de juillet retiré en
+septembre faisait baisser la TVA de juillet, mois déjà déclaré, sans trace.
+
+| Décision | Pourquoi |
+|---|---|
+| le règlement retiré part dans `reglements_retires` (migration 0103), avec le même identifiant | dix endroits additionnent `paiements_facture` (reste dû, état, relevé, rappels, fiche client, PDF). Une colonne « retiré le » les obligeait tous à filtrer ; en oublier un comptait un règlement retiré dans la TVA sans erreur. Déplacé, il n'existe plus pour aucun calcul |
+| « Remettre » le ramène avec la même borne que la saisie (`refusDuPaiement`) | la facture a pu être soldée entre-temps : la remettre la ferait payer deux fois |
+| la table n'accorde pas UPDATE à `atlas_app` | une trace ne se réécrit pas ; DELETE sert seulement à « Remettre » |
+| la TVA collectée du mois montre le retiré, barré, sans le compter | c'est le mois déclaré qui baisse : c'est là qu'il faut lire pourquoi |
+| `retirerReglementRecu` et « Facture acquittée » gardent leur suppression | ils ne touchent qu'une facture en BROUILLON, jamais déclarée |
+
+
+## §418 : Mon agenda, une ligne par agenda, et la phrase du Planning qui se masque
+
+**Sa demande du 26 septembre 2026**, planche `appli/mon-agenda-simple.html` (A
+et C retenues). Trois décisions qui ne se lisent pas dans le diff :
+
+1. **Les identifiants Google ne sont PAS retirés du code, seulement de la vue
+   ordinaire.** Sa décision est qu'Atlas porte les siens sur le serveur
+   (`configurationGoogle`, variables `ATLAS_GOOGLE_*`) et que personne n'ait rien
+   à coller. Mais `debrancherAgenda` SUPPRIME la ligne, identifiants compris :
+   sans la saisie, un patron qui débranche ne pourrait plus jamais se rebrancher
+   tant que le serveur n'a pas les siens. La saisie vit donc dans le volet
+   « Relier », et n'apparaît que si `etat.configure` est faux. Quand les
+   identifiants du serveur seront posés (après la validation Google,
+   `docs/A-FAIRE.md` §8), elle ne s'affichera plus pour personne.
+2. **Le masquage vit sur l'ENTREPRISE, pas dans le navigateur.** Relier l'agenda
+   est un réglage du patron ; rangé dans le téléphone, le choix se perdait sur
+   l'iPad et la phrase revenait sans raison. Colonne ajoutée seule, `NOT NULL
+   DEFAULT false` : le code d'avant tourne sur le nouveau schéma.
+3. **Une seule règle décide du bandeau** (`bandeauAgendaDuPlanning`, pure) et
+   elle lit TOUS les agendas. L'écran ne décide plus : il reçoit `"panne"`,
+   `"proposer"` ou `null`. La panne n'a pas de « Masquer » : ce n'est pas un
+   conseil qu'on écarte, c'est un raccordement qui a lâché.
+
+## §419 : Le rappel du retour d'intervention, et le jour qu'il vise
+
+**Sa planche du 26 septembre 2026** (`appli/rappel-du-retour.html`) et ses
+réponses : A (une ligne sous le chantier), chaque soir, la carte chez lui, et
+seulement quand « Demander une preuve » est allumé. Le sous-titre de ce réglage
+est sa phrase : « Rappelle d'envoyer le retour d'intervention à chaque fin de
+chantier ». Avant ce lot, il ne rappelait rien d'autre que de cocher, une fois
+la feuille ouverte.
+
+| | La règle | Où |
+|---|---|---|
+| **le salarié** | « Retour à envoyer » sous le chantier du jour, tant que le retour d'aujourd'hui n'est pas parti | `retourDuJourAttendu`, `PlanningClient` |
+| **le patron** | « Retour pas reçu » sur l'accueil, pour le DERNIER jour travaillé avant aujourd'hui | `retoursPasRecus`, `retoursPasRecusEnCours` |
+| **le réglage** | lu à un seul endroit, formule comprise | `src/server/regles-du-retour.ts` |
+
+**Pourquoi le dernier jour travaillé, et pas la veille ni tout l'historique.**
+La veille calendaire perdrait le vendredi dès le dimanche ; tout l'historique
+ferait surgir, le jour où il allume le réglage, chaque chantier passé que
+personne n'avait à raconter. Le dernier jour travaillé est exactement « le
+lendemain » de sa planche, et le lundi c'est encore le vendredi.
+
+**« J'ai vu » écrit dans `rappels_vus`** (genre `retour-pas-recu`, migration
+0104, qui ne fait qu'étendre la liste contrainte). Il fait taire les jours
+d'avant l'acquit ; un soir manqué plus tard revient. Ce genre n'entre PAS dans
+`GENRES_ACQUITTABLES` : ceux-là se taisent le délai réglé dans
+« Notifications », que le retour n'a pas. `GENRES_VUS` réunit les deux pour
+l'action.
+
+**Les jours travaillés se lisent comme le planning les dessine**
+(`creneauxOccupes`) : une seconde lecture annoncerait un jour que le planning
+ne montre pas.
+
+**Le téléphone ne sonne pas** : aucune notification n'existe (`TODO.md`, Web
+Push). Le rappel se voit en ouvrant l'application, et la planche le dit.
+
+## §420 : L'assistant débridé, ses outils se DÉCLARENT et ses appels se SUIVENT
+
+**Sa capture du 26 septembre 2026** : « Huguette Groupiron » rendait « il faut
+au moins un mot du libellé », et « comment je supprime un client » ne trouvait
+jamais le mode d'emploi. Puis sa demande : *« nourris-le de tout ce qu'il est
+possible de le nourrir, je comprends pas pourquoi on dirait qu'il est
+bridé »*.
+
+| Ce qui le bridait | La décision |
+|---|---|
+| `schemaJsonDeLOutil` envoyait `properties: {}` pour 18 outils sur 21 | le schéma JSON se **déduit** du schéma Zod (`z.toJSONSchema`, `io: "input"`) ; une seule définition annonce et relit |
+| un seul appel lu par tour | le fournisseur rend `appels: AppelOutil[]`, le service les sert tous dans l'ordre |
+| l'historique recopiait chaque appel en `outil_<Nom>` avec `{}` | l'appel garde son `id` et ses `parametres` ; deux appels au même outil portaient le même identifiant, **qu'Anthropic refuse** : la question entière tombait en « indisponible » |
+| 1024 jetons par réponse | 4096, le budget d'une rédaction |
+| aucun outil sur les factures, l'équipe, les rappels, les diagnostics | `LireFactures`, `LireEquipes`, `LireRappels`, `LireDiagnostics`, chacun sur le dépôt de l'écran |
+
+**Ce qui n'a PAS bougé, et ne doit pas bouger** : il n'écrit rien sans le doigt
+du patron (26 août), et le filtre « hors métier » reste. Ce sont ses choix,
+pas des brides.
+
+**Pourquoi des outils et pas « tout dans la consigne ».** Verser toutes les
+données à chaque question serait lent, cher, et noierait le modèle. Chaque pan
+de l'application a un outil de lecture ; c'est lui qui va chercher.
+
+**Les montants ne sortent jamais d'un calcul du modèle.** `LireFactures` rend
+le reste dû de `facturesAvecPaiements` et le total par `totalRecu` : un modèle
+qui additionne trente montants de tête se trompe, et c'est ce chiffre qu'on
+répète au client.
+
+**`LireDiagnostics` rend `methodeConfirmation`** : sans lui, l'assistant dirait
+« confirmé » là où l'écran s'y refuse (sa règle du diagnostic végétal).
+
+Les suites : `test-schema-outils`, `test-appel-fournisseurs-ia` (plusieurs
+appels, identifiants uniques ; rouge sur l'ancien code),
+`test-assistant-se-corrige`, `test-assistant-lit-factures-db`,
+`test-assistant-lit-equipes-rappels-diagnostics-db` (isolation entre
+entreprises, sous `atlas_app`).
+
+## §421 : La facture d'exemple est la vraie fabrique, et elle ne prend aucun numéro
+
+Sa demande du 26 septembre 2026 : voir à quoi ressemble le document, avec trois
+lignes factices à des taux différents (planche `appli/apercu-du-document.html`,
+sa réponse « A et B »).
+
+| Décision | Ce qu'elle évite |
+|---|---|
+| `genererPdfFactureExemple` passe par `genererPdfFacture` et `donneesFacture` | un aperçu dessiné à part, qui finirait par montrer autre chose que ce que le client reçoit |
+| `donneesFacture` prend `FactureAImprimer` (ce que le papier lit), plus la ligne entière | inventer un identifiant, un chantier, des dates de création à une facture qui n'existe pas |
+| `conditionsDesReglages`, une seule lecture pour la facture sans devis et l'exemple | deux recopies des conditions, qui dériveraient |
+| le compteur se LIT (`numeroSansLePrendre`) : même `ecrireNumero`, même `repartChaqueAnnee` | un trou dans la suite des factures à chaque aperçu |
+| `filigrane` dans `document-commun.ts`, absent partout ailleurs | un exemple imprimé ou photographié qui passerait pour une vraie facture |
+| un seul `VoirUnExemple`, monté sous « Devis & factures » et en bas de « Mon entreprise » | deux boutons qui ouvriraient deux choses |
+| route réservée au propriétaire, ouverte dans la visionneuse (`…/exemple/pdf`) | une adresse tapée par un salarié ; un onglet Safari sans retour |
+
+**Le seul morceau recopié** est la ligne « l'année a changé, donc 1 » du
+compteur : l'`UPDATE` d'`attribuerNumero` la tient en SQL, atomique, et ne peut
+pas appeler une fonction pure. `test-facture-d-exemple-db` compare le numéro
+montré à celui que reçoit ensuite la vraie facture : si les deux divergent, il
+rougit.
+
+## §422 : La sauvegarde se range par client et par chantier
+
+**Sa capture du 26 septembre 2026** : l'archive téléchargée montrait des
+dossiers nommés par identifiant, parce que chaque fichier y portait sa clé de
+stockage.
+
+| Décision | Pourquoi |
+|---|---|
+| le chemin dans le zip est `fichiers/<client>/<chantier>/<nature>/<nom>` | c'est ce qu'il voit en ouvrant l'archive sur son téléphone ; un identifiant ne se reconnaît pas |
+| une règle pure, `rangerLesFichiers` (`src/lib/rangement-sauvegarde.ts`) ; le dépôt ne fait que lire les lignes | une règle métier vit dans `lib`, testable sans base (`CLAUDE.md` §3) |
+| la clé de stockage RESTE dans `donnees.json`, avec `chemin` à côté | une reprise remettra chaque fichier à sa place d'origine : le chemin lisible ne sert qu'à l'humain |
+| `\ / : * ? " < > |` retirés des noms, 60 caractères au plus | un « / » dans un nom de client créait un dossier de plus ; Windows refuse le reste |
+| deux fichiers de même nom sont numérotés « (2) », comparés sans la casse | l'app Fichiers et Windows confondent « Photo » et « photo » : le second écraserait le premier |
+| `versionFormat` reste 1 | un champ ajouté ne casse aucun lecteur ; rien ne lisait les chemins du zip |
+
+## §423 : Le devis repris garde ses prix, et la hausse se recalcule depuis sa base
+
+**Sa décision du 26 septembre 2026, qui retire celle du 8 septembre.** « Dernier
+devis » reprenait aux tarifs du jour (« la 1 »), et l'écran n'en disait rien :
+`retarifees` était calculé puis jeté. Sa règle : l'ancien devis revient à SES
+prix, et le tarif du jour se DEMANDE.
+
+**Quatre colonnes, pas un état d'écran** (migration 0106). La question et la
+hausse doivent survivre à un rechargement, et le prix affiché doit toujours se
+redéduire : `prix_ancien` (présent = ligne reprise et jamais retouchée),
+`prix_grille` (le tarif du jour s'il diffère), `chantiers.reprise_grille`
+(oui, non), `chantiers.hausse_reprise`. Le prix d'une ligne reprise vaut
+`augmente(oui ? prix_grille : prix_ancien, hausse)`, recalculé en entier à
+chaque geste : les taux ne s'empilent jamais.
+
+**Écarté : écrire la hausse comme un geste ponctuel** (multiplier les prix
+présents). Deux appuis auraient cumulé, et « Garder les anciens » après une
+hausse n'aurait plus su d'où repartir.
+
+**Un prix tapé sort la ligne de la reprise**, dans `modifierLignePrix` et nulle
+part ailleurs : c'est le seul chemin d'écriture des deux écrans. Comparé en
+VALEUR (`memeValeur`), parce que la page renvoie le prix à chaque champ quitté ;
+comparé en chaîne, quitter la case quantité aurait fait sortir toutes les
+lignes.
+
+**Arrondi sur le prix UNITAIRE**, au centime, demi vers le haut, en décimal :
+le client lit « 40 × 19,57 € » et doit pouvoir refaire la multiplication.
+
+## §424 : La facturation électronique passe par le compte de l'artisan
 
 **Sa décision du 26 septembre 2026** : *« on a dit Pennylane et toutes les
 applis compatibles avec la nôtre. L'idée, c'est que l'utilisateur connecte son
@@ -33486,7 +33662,7 @@ de la gravité (niveau 3) : les jetons d'accès de l'artisan chiffrés en base e
 isolés par entreprise, et un envoi qui refuse en le disant quand la connexion
 est coupée, jamais une facture partie d'un seul côté en silence.
 
-## §418 : Le contrat d'entretien, lot 1 : un passage est un chantier
+## §425 : Le contrat d'entretien, lot 1 : un passage est un chantier
 
 **Sa demande du 26 septembre 2026**, planche 129 (`appli/contrat-d-entretien-vert.html`).
 

@@ -4,6 +4,7 @@ import path from "node:path";
 import {
   bandeDuClient,
   grouperEnBandes,
+  jourDeRangement,
   BANDE_PLUS_ANCIEN,
   BANDE_SANS_CHANTIER,
 } from "../src/lib/bandes-clients";
@@ -53,6 +54,14 @@ cas("les deux mois précédents portent le leur", () => {
 cas("au-delà de trois mois, tout se groupe", () => {
   assert.equal(bandeDuClient("2026-06-24", AUJOURD_HUI), BANDE_PLUS_ANCIEN);
   assert.equal(bandeDuClient("2025-11-20", AUJOURD_HUI), BANDE_PLUS_ANCIEN);
+});
+
+// Sa capture du 26 septembre 2026 : un chantier planifié en novembre rangeait
+// son client en tête, sous « plus ancien ».
+cas("un jour à venir ne range pas un client : c'est le dernier jour passé qui compte", () => {
+  assert.equal(jourDeRangement(["2026-11-05", "2026-08-20", null, "2026-09-02"], AUJOURD_HUI), "2026-09-02");
+  assert.equal(jourDeRangement(["2026-09-03"], AUJOURD_HUI), "2026-09-03");
+  assert.equal(jourDeRangement(["2026-10-01", undefined], AUJOURD_HUI), null);
 });
 
 cas("un client sans chantier n'a pas de date, et il a sa bande", () => {

@@ -15,7 +15,7 @@ prix, durée, facturation A ou B. Le contrat part par un lien, le client
 l'accepte sans compte, et ses passages arrivent dans « Sans date » le 20 du
 mois d'avant, une seule fois chacun. Ce que ça évite : ressaisir chaque tonte
 à la main, et oublier un passage dû. La facture pré-remplie, la facturation
-mensuelle et l'envoi avec le compte rendu restent à faire. `ARCHITECTURE.md` §418.
+mensuelle et l'envoi avec le compte rendu restent à faire. `ARCHITECTURE.md` §425.
 
 ### Le contrat d'entretien, en planche ; la facturation électronique, tranchée
 
@@ -27,7 +27,50 @@ tombent dans « Sans date » le 1er du mois. Rien n'est codé ; la facturation
 Sa décision sur la facturation électronique : chaque artisan connecte SON
 compte Pennylane (puis d'autres outils compatibles), et Atlas lui transmet la
 facture à l'envoi. Elle remplace l'idée d'un outil choisi pour tous.
-`ARCHITECTURE.md` §417.
+`ARCHITECTURE.md` §424.
+
+### Mon agenda en deux lignes, et la phrase du Planning qui se masque
+
+**Sa demande**, capture de Google en panne à l'appui : *« trop de mots, trop
+compliqué, il faut qu'elle soit hyper simple »*. Son choix A de
+`appli/mon-agenda-simple.html` : une ligne par agenda, son état en deux mots
+(`motsDeLAgenda`), un bouton ; pause, débrancher et écriture iCloud dans un
+volet « Gérer ». Le JSON de Google et les phrases d'explication sont partis.
+**Ce que ça évite** : lire vingt lignes pour trouver « Rebrancher ».
+
+Son choix C, après *« ceux qui vont jamais remplir leur agenda, ils vont voir la
+phrase tous les jours »* : la proposition de relier se masque pour toujours
+(`rappel_agenda_masque`, migration 0102, colonne ajoutée seule), une pause ne
+fait plus parler le Planning, une panne parle toujours et sans « Masquer ».
+**Ce que ça corrige aussi** : le bandeau ne lisait que Google, et proposait
+chaque jour de relier Google à qui avait relié iCloud (`bandeauAgendaDuPlanning`).
+
+**Codé sur la branche, PAS sur `main`** : niveau 3 (migration), et il a refusé
+toute batterie. Éprouvé ici : types, lint, `test-agenda-externe`,
+`test-mode-emploi`, la suite navigateur de l'écran (12 sur 12, vue rougir quand
+« Masquer » n'écrit plus), et les écrans regardés.
+
+### « Autre chantier » s'appelle « Nouveau devis »
+
+**Sa question** : *« faut l'appeler nouveau devis, pas autre chantier ? »*. Ce
+qu'il veut en appuyant, c'est un devis ; et à côté de « Dernier devis »,
+l'opposition se lit seule. Seul le mot change : même place, même geste (la
+fiche d'un chantier vierge, ses coordonnées déjà posées). Le mode d'emploi de
+l'assistant suit (`fiches-mode-emploi`).
+
+### « Dernier devis » reprend l'ancien devis à SES prix, et demande avant le tarif du jour
+
+**Sa règle** : *« il faut reprendre les prix de l'ancien devis ; à la limite
+demande s'il veut qu'on mette les prix à jour, il dit oui ou non, mais pas comme
+ça sans qu'il le sache »*. Jusqu'ici, « Dernier devis » passait chaque ligne de
+sa grille au tarif du jour **sans rien afficher** : un devis qu'il croyait
+recopié partait avec d'autres prix. Désormais la ligne garde son ancien prix, et
+la page du devis lui pose la question « Votre grille a changé » (ancien barré,
+nouveau), **Mettre à jour** ou **Garder les anciens**. Puis **Augmenter les
+prix** : + 5, 10, 30 % ou un taux tapé, sur les lignes reprises, prix unitaire
+arrondi au centime, sans cumul, jamais sur un prix tapé à la main. Migration
+0106 (quatre colonnes nulles, expand seul). Planche
+`appli/augmenter-un-devis-repris.html`, `ARCHITECTURE.md` §423.
 
 ### Le retour envoyé se rouvre depuis n'importe quelle journée du planning
 
@@ -47,14 +90,150 @@ planches de l'anthracnose du hêtre et de la chalarose, réécrits en phrases.
 affiché, donc rougissait du 27 au 31 de chaque mois ; il avance désormais au
 mois suivant comme le patron.
 
+### La croix d'un acompte barre la ligne au lieu de l'effacer
+
+*Sa planche du jour, `appli/retirer-un-acompte.html`, « la B ».* La croix
+supprimait le règlement : un acompte de juillet retiré en septembre faisait
+baisser la TVA de juillet, déjà déclarée, sans laisser de trace. Le règlement
+retiré part maintenant dans `reglements_retires` (migration 0103) : aucun
+total ne le compte plus, sans qu'aucun calcul ait à le filtrer
+(`ARCHITECTURE.md` §417). La ligne reste barrée et datée sur la facture en
+attente et dans la TVA collectée du mois ; « Remettre » la rend, refusé si la
+facture a été soldée entre-temps. Le retiré part aussi dans « Télécharger mes
+données ».
+
+Éprouvé : `test-paiements-facture-db.ts` (quatre cas neufs, rouges avant),
+`test-tva-au-paiement-e2e.ts` (son geste entier, dans le navigateur), et les
+suites voisines des règlements. **Batterie non jouée**, à sa demande.
+
+### Sur iPhone, le calendrier de la TVA rouvre les années précédentes
+
+*Sa question, capture à l'appui : « pourquoi je peux pas aller voir les
+années précédentes ? »* Toucher « 2026 » ne voilait que la bande des mois. La
+feuille du calendrier était montée DANS le rail des mois, qui défile, et
+Safari rogne un `position: fixed` à son conteneur défilant : la feuille, avec
+son « ‹ 2025 », restait hors de l'écran. Chromium ne rogne pas, donc la suite
+navigateur était verte.
+
+La feuille part désormais sous `<body>` (`createPortal`,
+`CalendrierPeriodes.tsx`). `test-periodicite-tva-e2e.ts` vérifie qu'aucun
+ancêtre de la feuille ne défile ni n'est collant : rouge avant, vert après.
+**Pas vérifiable ICI sur Safari** (aucun WebKit sur ce poste) : à regarder
+sur son iPhone. Batterie non jouée, à sa demande ; seule la suite de la TVA
+l'a été (9 sur 9).
+
+### La sauvegarde se range par client, plus par identifiant
+
+**Sa capture du 26 septembre**, dans l'app Fichiers : trente dossiers
+« 0b2034d5-11bb-4…a9c-bfab46c53450 ». *« Un utilisateur va rien comprendre !
+Pourquoi c'est pas rangé avec le nom des clients ? »*
+
+L'archive recopiait la clé de stockage (`chantiers/<uuid>/photos/<hash>`). Elle
+range désormais `fichiers/<client>/<chantier>/Photos|Devis|Factures|Notes
+vocales/`, avec des noms lisibles (« Photo 2026-09-12.jpg », « Devis
+2026-000001.pdf »). Le logo va dans `Entreprise/`, les tickets dans `Tickets de
+caisse/`, un diagnostic sans chantier dans `Sans chantier/`. La clé reste dans
+`donnees.json`, à côté du nouveau `chemin` : une reprise saura relier les deux.
+Règle pure : `src/lib/rangement-sauvegarde.ts` (`ARCHITECTURE.md` §422).
+Contrôles : `test-rangement-sauvegarde.ts`, et `test-export-entreprise.ts` et
+`test-mes-donnees-e2e.ts` vus rouges sur l'ancien code (« chantiers/65165471-… »).
+
 ### Planche : voir un exemple de facture, avant de coder
 
-`appli/apercu-du-document.html`, sa demande du 26 septembre : un bouton qui
-montre le papier avec ses réglages et trois lignes factices à 20, 10 et 5,5 %.
-Deux places à trancher (A : Devis & factures ; B : Mon entreprise). Au style et
-aux couleurs de l'application, à sa demande. Ce qui est décidé pour le code :
-l'exemple sera **le vrai PDF** fabriqué par le même code, avec EXEMPLE en
-filigrane, et **sans consommer de numéro**. Rien n'est codé.
+### Réglages : « Voir un exemple », la vraie facture avec trois lignes factices
+
+Sa demande : *« un bouton pour visualiser à quoi il ressemblera, avec deux trois
+lignes factices avec des TVA différentes »*. Planche
+`appli/apercu-du-document.html`, sa réponse : **« A et B »**. Le même bouton
+(`VoirUnExemple`) sous « Devis & factures » et en bas de « Mon entreprise ».
+
+- **Le vrai papier** : `genererPdfFactureExemple` nourrit `genererPdfFacture`
+  de l'identité, des conditions et de l'allure du moment, avec « Mr. Exemple »
+  et trois lignes à 20, 10 et 5,5 % (`src/lib/facture-d-exemple.ts`). En
+  franchise, les mêmes lignes à 0 % et la mention 293 B.
+- **EXEMPLE en travers de la page** : option `filigrane` de `document-commun.ts`,
+  absente pour tous les autres documents.
+- **Rien ne s'écrit, aucun numéro n'est pris** : le compteur se lit
+  (`numeroSansLePrendre`). Une suite de factures ne doit pas avoir de trou.
+- `donneesFacture` prend désormais ce que le papier lit (`FactureAImprimer`),
+  pas la ligne entière : sans cela il fallait inventer un identifiant et un
+  chantier à l'exemple. `conditionsDesReglages` sort de `complementsDeLaFacture`
+  pour servir aux deux.
+- Route `/api/factures/exemple/pdf`, réservée au propriétaire comme les deux
+  écrans, ouverte dans la visionneuse de l'application.
+- Suite `scripts/test-facture-d-exemple-db.ts` (sous la RLS), vue rougir contre
+  un exemple qui consommait un numéro.
+
+### Réglages : le point-virgule de la périodicité de TVA part
+
+Sa remarque, capture à l'appui : *« un ; qui sert à rien »*. « Le mois est le
+défaut. Le trimestre s'obtient sous condition. » Deux phrases, même place.
+`test-periodicite-tva-e2e` lit le fait (« mois … défaut »), pas la ponctuation.
+
+
+### Le rappel du retour d'intervention (migration 0104)
+
+Sa planche du 26 septembre 2026, ses réponses : A, chaque soir, la carte chez
+lui. Quand « Demander une preuve » est allumé, le salarié voit « Retour à
+envoyer » sous le chantier du jour au planning, jusqu'à l'envoi ; le patron
+voit « Retour pas reçu » sur son accueil pour le dernier jour travaillé sans
+retour, que « J'ai vu » range. Le sous-titre du réglage devient sa phrase.
+Évite : un réglage dont le sous-titre promettait un rappel qui n'existait pas.
+`ARCHITECTURE.md` §419.
+
+### Réglages, Équipe : « Qui a accès » devient « Accès »
+
+Sa demande du 26 septembre 2026. Seul le texte change, la liste reste à sa
+place. Les fiches du mode d'emploi qui citaient le titre le citent à jour :
+l'assistant l'aurait sinon envoyé chercher un mot qui n'est plus à l'écran.
+
+- **L'assistant voit enfin les champs de ses outils.** Sa capture : « Huguette
+  Groupiron » rendait « il faut au moins un mot du libellé », et « comment je
+  supprime un client » ne trouvait jamais le mode d'emploi, rechargement
+  compris. `schemaJsonDeLOutil` envoyait une fiche vide (`properties: {}`) pour
+  tous les outils sauf un : le modèle devinait les noms, Zod jetait les
+  mauvais en silence. Le schéma JSON se déduit désormais du schéma Zod de
+  chaque outil (`z.toJSONSchema`), la fiche écrite à la main est retirée.
+  `scripts/test-schema-outils.ts` rougissait sur 18 outils avant la correction.
+  Niveau 3 (17 points d'entrée) : **la batterie n'a pas été jouée, sur sa
+  consigne du jour**, donc rien n'est parti sur `main`.
+- **L'assistant fait plusieurs recherches d'un coup, et un outil appelé deux
+  fois ne fait plus tomber la question.** L'historique renvoyé au fournisseur
+  donnait à chaque appel l'identifiant `outil_<Nom>` : deux appels au même
+  outil (la boucle de correction en fait) portaient le même, qu'Anthropic
+  refuse, et le patron lisait « indisponible ». Chaque appel garde désormais
+  son identifiant et ses paramètres ; les réponses passent de 1024 à 4096
+  jetons (`ARCHITECTURE.md` §420).
+- **L'assistant lit les factures, les paiements, les impayés, l'équipe, les
+  absences, les rappels et les diagnostics** (`LireFactures`, `LireEquipes`,
+  `LireRappels`, `LireDiagnostics`). Lecture seule ; les montants viennent du
+  dépôt, jamais d'une addition du modèle ; une entreprise ne voit rien de
+  l'autre.
+- **Fermer l'assistant d'un geste** (sa réponse « la A » devant
+  `appli/fermer-l-assistant.html`). Toucher le gris ferme le panneau, la croix
+  devient un rond de 44 px. Le panneau laisse toujours 44 px de gris : sur un
+  iPhone de 390 px, il n'en restait que 6. Trouvé en regardant l'écran :
+  le panneau rétréci poussait le bouton d'envoi hors de l'écran, parce que le
+  champ de saisie ne savait pas rétrécir (`min-w-0`) ; le même défaut aurait
+  frappé tout téléphone de moins de 384 px.
+
+### Un chantier à venir ne range plus son client sous « plus ancien »
+
+**Sa question, capture à l'appui :** *« pourquoi il y a un plus ancien ? »*
+Balba, devis du 20 septembre, était en tête de la liste des clients sous
+« PLUS ANCIEN ».
+
+**La cause.** La liste se rangeait sur le jour du chantier le plus récent, et
+ce jour pouvait être une date **planifiée à venir** : le client passait pour le
+plus récent de tous. `bandeDuClient` ne nomme que des mois écoulés ; un écart
+négatif tombait dans « plus ancien ».
+
+**Sa décision (B, contre A « une bande À venir »).** La liste range sur le
+dernier jour **déjà passé** chez le client (`jourDeRangement`,
+`src/lib/bandes-clients.ts`) : facture, date posée, création du chantier ou
+dernier document parti, pourvu qu'il ne soit pas après aujourd'hui. Un chantier
+à venir se lit au planning. Tenu par `test-liste-clients.ts`, vu rouge
+(« rangé au 2026-11-05 ») avant la correction.
 
 ## 2026-09-25
 

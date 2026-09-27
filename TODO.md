@@ -3,9 +3,9 @@
 ## 🔜 CONTRAT D'ENTRETIEN : LOT 1 CODÉ, PAS SUR `main` (26 septembre 2026)
 
 **Sa consigne : « code ça, ne lance pas de batterie ».** Branche
-`claude/extrabat-competitor-review-7v9r8m`. Niveau 3 (migration 0102) : **la
+`claude/extrabat-competitor-review-7v9r8m`. Niveau 3 (migration 0107) : **la
 batterie entière est à jouer avant `main`**, elle ne l'a pas été. Document de
-retour : `docs/contrat-d-entretien-lot-1.md`. `ARCHITECTURE.md` §418.
+retour : `docs/contrat-d-entretien-lot-1.md`. `ARCHITECTURE.md` §425.
 
 | Codé et éprouvé ici | |
 |---|---|
@@ -53,14 +53,40 @@ l'attestation fiscale des services à la personne.
 Sa décision : *« Pennylane et toutes les applis compatibles avec la nôtre.
 L'utilisateur connecte son compte de facturation à notre appli, et après elles
 communiquent entre elles lors de l'envoi de la facture. »* `ARCHITECTURE.md`
-§417, `docs/A-FAIRE.md` point 6.
+§424, `docs/A-FAIRE.md` point 6.
 
 **Bloqué par lui** : l'accès développeur Pennylane (sans lui, rien ne s'éprouve).
 **Trois questions à lui poser au moment de coder**, pas avant : quel numéro fait
 foi (celui d'Atlas ou celui de l'outil), quel PDF part chez le client, que fait
 l'envoi quand la connexion est coupée ou révoquée.
 
+## Sauvegardes : la copie hors de Scaleway (26 septembre 2026)
+
+Décisions prises le 26 septembre sur sa consigne « 0 problème »
+(`docs/lot-sauvegarde-cloture.md` §13) : volume **Local Storage**, seconde copie
+**chez un autre fournisseur européen**. À écrire le jour de l'infrastructure,
+avant le premier client : le script planifié de SCW-24 à SCW-26 (copie
+quotidienne des `.sql.gz` et du compartiment des fichiers, copie mensuelle
+gardée 12 mois), éprouvé par une restauration depuis ce second fournisseur.
+
+**Question ouverte, pour plus tard :** une archive comptable annuelle (factures,
+avoirs, règlements, achats, PDF) gardée 10 ans, indépendante de la base
+vivante. Aujourd'hui les 10 ans ne tiennent que par la base elle-même.
+
+## ~~Un règlement se retire sans limite de date~~ (réglé le 26 septembre 2026)
+
+Sa planche `appli/retirer-un-acompte.html`, la B, codée sur la branche
+`claude/previous-years-access-eigwds` : le règlement retiré part dans
+`reglements_retires` (migration 0103), barré et daté à l'écran, « Remettre »
+le rend (`ARCHITECTURE.md` §417). **Pas encore sur `main`** : la batterie
+n'a pas été jouée, à sa demande ; seules les suites concernées l'ont été.
+
 ## 🔴 « DERNIER DEVIS » CHANGE LES PRIX SANS LE DIRE (26 septembre 2026)
+
+## « DERNIER DEVIS » CHANGE LES PRIX SANS LE DIRE (26 septembre 2026) : CODÉ, BATTERIE À JOUER AVANT `main`
+
+**Codé le 26 septembre** sur `claude/client-disappearance-no-date-f26td1` (`ARCHITECTURE.md` §423). Niveau 3 : la batterie entière n'a pas été jouée, à sa demande ; elle se joue avant `main`. Reste : « Reprendre le devis » sur un devis expiré n'a pas la bande.
+
 
 **Relevé par lui** : *« on ne peut pas reprendre un devis existant et mettre les
 prix au prix du jour sans en informer l'utilisateur »*. Il a raison, et c'est
@@ -86,13 +112,26 @@ en-tête sont à réécrire en conséquence.
 
 ## ⏳ UNE PLANCHE À REGARDER : VOIR UN EXEMPLE DE FACTURE (26 septembre 2026)
 
-`appli/apercu-du-document.html`. Sa réponse attendue : **A** (bouton sous
-« Devis & factures ») ou **B** (bas de « Mon entreprise »). Rien n'est codé.
-Au codage : le vrai PDF (`src/server/pdf/`) nourri de ses réglages et de trois
-lignes factices (20, 10, 5,5 %), filigrane EXEMPLE, **aucun numéro consommé**,
-franchise en base rendue telle quelle (mention 293 B). Niveau 3 (argent).
+## VOIR UN EXEMPLE DE FACTURE : CODÉ, PAS ENCORE SUR `main` (26 septembre 2026)
 
-## MON AGENDA, EN SIMPLE : A ET C RETENUES, À CODER (26 septembre 2026)
+Planche `appli/apercu-du-document.html`, sa réponse **« A et B »** : codée sur
+la branche `claude/invoice-preview-mock-data-ti2n5y`, avec le « ; » de la
+périodicité de TVA. **Niveau 3** (le papier de facture) : la batterie entière
+est exigée avant `main`, et il a demandé qu'**aucune ne se lance sans son
+accord**. Types verts ; suites jouées une par une : `test-facture-d-exemple-db`
+(neuve, vue rougir), `test-papier-facture-db`, `test-facture-sans-devis-db`,
+couches, code mort, pansements, flèches, chartes. `test-aucun-tiret` porte
+10 rouges venus des fiches d'une autre session, identiques sans ce lot.
+
+**Pas fait, et c'est délibéré :** l'exemple du DEVIS (la planche le montrait
+aussi). Il demande son propre chemin (`devis-pdf.ts`) ; à proposer ensuite.
+
+## MON AGENDA, EN SIMPLE : A ET C CODÉES, PAS SUR `main` (26 septembre 2026)
+
+**Codé sur `claude/simplifier-mon-agenda-2lexkg`** (`ARCHITECTURE.md` §418).
+Niveau 3 (migration 0102). **Il a refusé toute batterie** : rien ne part sur
+`main` avant qu'il choisisse le moment de `npm run verifier:avant-livraison`.
+Déjà éprouvé : types, lint, suites rapides, `test-agenda-reglages-e2e` seule.
 
 **Sa réponse du 26 septembre : « A », et C.** Précision donnée en même temps :
 *« une fois qu'on a choisi masquer, faut pas qu'il reste de phrase »* ; rien ne
@@ -115,6 +154,51 @@ décision du 26 septembre) : Atlas porte les siens sur le serveur, ce que
 le symptôme classique d'un projet Google laissé en mode « Test » (jetons
 expirés au bout de sept jours). Si c'est le cas, simplifier l'écran ne
 suffira pas : la panne reviendra chaque semaine.
+
+## LE RAPPEL DU RETOUR : CODÉ, LA BATTERIE RESTE À JOUER (26 septembre 2026)
+
+Codé sur la branche `claude/access-titles-r9m6l8` avec « Accès » (Réglages,
+Équipe) : `ARCHITECTURE.md` §419, migration 0104. **Niveau 3** (schéma,
+rayon de plus de dix écrans) : `npm run verifier:avant-livraison` avant `main`.
+Il a demandé qu'on ne lance aucune batterie ce jour-là ; elle attend son accord.
+
+Joué ici, un par un : la règle pure, la suite en base sous `atlas_app`, les
+contrôles du dépôt, et les trois écrans regardés (planning, accueil, réglage).
+
+**Ce qui reste ouvert, hors de ce lot :** le bouton « N autres devis à
+regarder » de l'accueil compte toutes les cartes repliées, factures impayées
+comprises, et maintenant « Retour pas reçu ». Le mot « devis » y est faux
+depuis avant ce lot ; le changer est une question d'écran à lui poser.
+
+## ⏳ À LIVRER — L'ASSISTANT DÉBRIDÉ (26 septembre 2026)
+
+Codé sur `claude/is-this-normal-6jbxjy` : les champs de ses outils déclarés,
+plusieurs recherches par tour sans doublon d'identifiant, réponses à 4096
+jetons, et quatre outils de lecture (factures, équipe, rappels, diagnostics).
+`ARCHITECTURE.md` §420, `docs/assistant-debride-verdict.md`.
+
+Niveau 3 : **batterie à lui demander**, il a interdit de la lancer sans son
+accord. Suites déjà vertes ici : test-schema-outils, test-appel-fournisseurs-ia,
+test-assistant-se-corrige, test-ia-02-assistant, test-assistant-explique-l-appli,
+test-assistant-perimetre, test-assistant-lit-factures-db,
+test-assistant-lit-equipes-rappels-diagnostics-db, test-agent-gestes,
+test-ia-03 à 08, test-diagnostic-base, test-rappels-db.
+
+**À la fusion** : `main` porte déjà un en-tête `## 2026-09-26` dans
+`CHANGELOG.md`, les entrées se réunissent sous lui (`CLAUDE.md` §6, C).
+
+**Pas éprouvé ici** : une vraie conversation (pas de clé d'IA sur ce poste).
+À essayer chez lui : « Huguette Groupiron », « qui me doit de l'argent »,
+« qui est absent la semaine prochaine ».
+
+## ⏳ À LIVRER — FERMER L'ASSISTANT, « LA A » (26 septembre 2026)
+
+Sa réponse devant `appli/fermer-l-assistant.html` : la A. CODÉ LE 26 septembre
+sur `claude/is-this-normal-6jbxjy` (`AssistantSidebar.tsx`) : toucher le gris
+ferme, la croix est un rond de 44 px, 44 px de gris restent toujours visibles,
+et le champ de saisie ne pousse plus le bouton d'envoi hors de l'écran.
+Regardé à 320, 390 et 430 px. Niveau 3 avec le lot ci-dessus : batterie
+à lui demander avant `main`.
 
 ## ⏳ UNE PLANCHE À REGARDER — FICHE 6, LA CHALAROSE DU FRÊNE (25 septembre 2026)
 
@@ -13100,7 +13184,7 @@ pourquoi sont dans `ARCHITECTURE.md` §75, la réponse en langage courant dans
 | 1 | Migration : `fournisseur IN ('google','apple')`, mot de passe chiffré, agendas lus, calendrier d'écriture | `drizzle/0035_agenda_apple.sql` |
 | 2 | CalDAV : découverte, `calendar-query`, `PUT`, `DELETE` | `src/server/agenda/apple.ts` |
 | 3 | Lecture et écriture de l'iCalendar | `src/lib/ics.ts`, `src/lib/caldav.ts` |
-| 4 | L'écran, d'après la maquette | `src/app/reglages/agenda/AgendaAppleClient.tsx` |
+| 4 | L'écran, d'après la maquette | `src/app/reglages/agenda/MonAgendaClient.tsx` (réécrit le 26 septembre 2026, §418) |
 | 5 | Les chantiers montent et redescendent avec le planning | `src/server/repositories/agenda-apple.ts` |
 
 **CE QUI RESTE, et qui ne peut pas être fait ici :** aucun échange réel avec

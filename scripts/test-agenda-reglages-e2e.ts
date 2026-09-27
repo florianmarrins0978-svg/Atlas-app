@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { Pool } from "pg";
 import { lancerNavigateur } from "./e2e-browser";
 import { ADRESSE } from "./_adresse";
 
@@ -67,99 +68,77 @@ async function main() {
     await page.getByRole("heading", { name: "Mon agenda" }).waitFor({ timeout: 15000 });
   });
 
-  await cas("l'écran dit le risque : un rendez-vous noté ailleurs est invisible", async () => {
+  // ─── L'écran simplifié : sa demande du 26 septembre 2026 ────────────────
+  //
+  // *« trop de mots, trop compliqué, il faut qu'elle soit hyper simple »*, et
+  // son choix A de `appli/mon-agenda-simple.html` : une ligne par agenda, son
+  // état en deux mots, un bouton. Ce que la suite tient n'est pas le texte,
+  // ce sont les règles qui ont survécu au remaniement.
+
+  await cas("une ligne par agenda, chacune dit son état", async () => {
     const texte = await page.locator("body").innerText();
-    assert.match(
-      texte,
-      /rendez-vous noté ailleurs/i,
-      "l'écran ne dit pas pourquoi il existe — l'artisan ne saura pas ce qu'il risque"
-    );
+    assert.match(texte, /Google Agenda/, "la ligne Google manque");
+    assert.match(texte, /iCloud/, "la ligne iCloud manque");
+    const nonRelies = (texte.match(/Non relié/g) ?? []).length;
+    assert.equal(nonRelies, 2, `${nonRelies} « Non relié » pour deux agendas jamais reliés`);
   });
 
-  await cas("sans identifiants, l'écran l'annonce clairement", async () => {
-    const texte = await page.locator("body").innerText();
-    assert.match(
-      texte,
-      /pas encore disponible/i,
-      `l'écran laisse croire que le raccordement est possible. Vu : ${texte.slice(0, 400)}`
-    );
+  await cas("aucune commande d'un agenda relié n'est proposée tant que rien n'est relié", async () => {
+    // Pause, débrancher et écrire n'existent qu'une fois relié : les proposer
+    // avant laisserait croire que quelque chose tourne déjà.
+    assert.equal(await page.getByRole("button", { name: "Gérer" }).count(), 0, "« Gérer » sans rien de relié");
+    assert.equal(await page.getByRole("switch").count(), 0, "un interrupteur avant tout raccordement");
   });
 
-  await cas("et il ne propose AUCUN bouton GOOGLE qui mènerait à une erreur", async () => {
-    // Le point qui compte. Un bouton « Relier » sans identifiants envoie
-    // l'artisan chez Google avec un client vide : il lit un message d'erreur en
-    // anglais et croit qu'Atlas est cassé.
-    //
-    // **Recadré sur Google le 12 août 2026**, quand iCloud est venu sur le même
-    // écran. Le compte ne portait aucun nom de fournisseur et rougissait sur le
-    // bouton « Relier mon agenda Apple » — lequel, lui, est parfaitement
-    // légitime : le raccordement iCloud ne demande aucune configuration
-    // préalable, c'est toute la différence entre les deux (`QUESTIONS.md` §14).
-    // Les commandes iCloud (pause, débrancher) n'existent qu'une fois relié :
-    // le compte reste donc à zéro ici, et il le vérifie.
-    const boutons = await page
-      .getByRole("button", { name: /mon agenda Google|Débrancher et effacer|Mettre en pause/i })
-      .count();
-    assert.equal(boutons, 0, `${boutons} bouton(s) de raccordement proposés alors que rien n'est configuré`);
-  });
-
-  await cas("mais il propose de coller ses identifiants — le geste qui débloque", async () => {
-    // **Sa demande du 9 août 2026.** Avant, les identifiants se posaient dans
-    // la configuration du serveur : il faisait sa part chez Google et restait
-    // bloqué faute de pouvoir les saisir. Trois cases, et il n'a plus besoin
-    // de personne.
+  await cas("sans identifiants, « Relier » ouvre la saisie et n'envoie PAS chez Google", async () => {
+    // Un bouton qui partirait chez Google avec un client vide ferait lire un
+    // message d'erreur en anglais, qu'il prendrait pour une panne d'Atlas.
+    // Le parcours : toucher « Relier » sur la ligne Google, et rester ici.
+    const ligneGoogle = page.locator('[data-atlas="agenda-google"]');
+    await ligneGoogle.getByRole("button", { name: "Relier" }).click();
     for (const libelle of ["Identifiant client", "Secret client", "Adresse de retour"]) {
-      await page
-        .getByLabel(libelle)
-        .waitFor({ state: "visible", timeout: 10000 })
-        .catch(() => {
-          throw new Error(`la case « ${libelle} » n'est pas proposée`);
-        });
+      await page.getByLabel(libelle).waitFor({ state: "visible", timeout: 10000 }).catch(() => {
+        throw new Error(`la case « ${libelle} » n'est pas proposée`);
+      });
     }
-    const enregistrer = await page.getByRole("button", { name: /Enregistrer/ }).count();
-    assert.equal(enregistrer, 1, "aucun bouton pour enregistrer les identifiants");
+    assert.ok(page.url().startsWith(BASE), `l'écran est parti ailleurs : ${page.url()}`);
+    assert.equal(await page.getByLabel("Secret client").getAttribute("type"), "password", "le secret s'affiche en clair");
+    assert.match(await page.locator("body").innerText(), /console\.cloud\.google\.com/i, "la console Google n'est pas nommée");
   });
 
-  await cas("le secret ne s'affiche pas en clair pendant la frappe", async () => {
-    // Ces écrans se remplissent souvent à deux, ou en visio avec quelqu'un qui
-    // aide à trouver la bonne page dans la console Google.
-    const type = await page.getByLabel("Secret client").getAttribute("type");
-    assert.equal(type, "password", "le secret client s'affiche en clair");
-  });
-
-  await cas("l'écran dit où créer les identifiants, sans faire chercher", async () => {
-    const texte = await page.locator("body").innerText();
-    assert.match(texte, /console\.cloud\.google\.com/i, "l'adresse de la console Google n'est pas donnée");
+  await cas("le bouton « Enregistrer » n'est couvert par rien", async () => {
+    // La barre du bas et la bulle d'assistance flottent au-dessus du contenu :
+    // un bouton dessous reste dans le HTML, donc vert pour un test de texte,
+    // et intouchable au doigt (`CLAUDE.md` §5).
+    const bouton = page.getByRole("button", { name: "Enregistrer" });
+    await bouton.scrollIntoViewIfNeeded();
+    await page.waitForTimeout(300);
+    const boite = await bouton.boundingBox();
+    assert.ok(boite && boite.width > 0, "le bouton « Enregistrer » n'a pas de place à l'écran");
+    const dessus = await page.evaluate(
+      `(() => {
+        var r = ${JSON.stringify(boite)};
+        var el = document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2);
+        return el ? el.tagName : "rien";
+      })()`
+    );
+    assert.match(String(dessus), /BUTTON/, `quelque chose recouvre le bouton « Enregistrer » : ${dessus}`);
+    await page.getByRole("button", { name: "Refermer" }).click();
   });
 
   // ─── iCloud : le second raccordement, et ses deux règles ────────────────
-  //
-  // Sa demande du 12 août 2026, capture du Calendrier d'Apple à l'appui, puis
-  // « code pour qu'on puisse lire et écrire dans cet agenda ». Le raccordement
-  // lui-même ne peut pas être joué ici — le réseau refuse `caldav.icloud.com` —
-  // mais l'écran, lui, est celui qu'il verra, et il porte deux règles qu'aucun
-  // test de texte ne tiendrait.
 
-  await cas("iCloud se relie sans configuration préalable, contrairement à Google", async () => {
-    await page.goto(`${BASE}/reglages/agenda`, { waitUntil: "domcontentloaded" });
-    await page.getByRole("heading", { name: "Mon agenda" }).waitFor({ timeout: 15000 });
-    await page
-      .getByRole("button", { name: /Relier mon agenda Apple/i })
-      .waitFor({ state: "visible", timeout: 15000 });
+  await cas("iCloud se relie sans configuration préalable : « Relier » ouvre ses champs", async () => {
+    const ligneApple = page.locator('[data-atlas="agenda-icloud"]');
+    await ligneApple.getByRole("button", { name: "Relier" }).click();
+    await page.getByLabel("Mot de passe pour les apps").waitFor({ state: "visible", timeout: 10000 });
   });
 
   await cas("l'avertissement est AU-DESSUS du champ, pas en dessous", async () => {
     // **La règle que cet écran ne peut pas se permettre de rater.** Le mot de
-    // passe pour les apps ouvre TOUT l'iCloud — mail, contacts, fichiers —,
-    // Apple ne sachant pas le restreindre à un service. Prévenir après la
-    // frappe, c'est prévenir trop tard.
-    //
-    // Vérifié par les POSITIONS et non par la présence du texte : une phrase
-    // juste, placée au mauvais endroit, laisse un contrôle de texte au vert.
-    const avertissement = await page
-      .locator("text=Ce mot de passe ouvre tout votre iCloud")
-      .first()
-      .boundingBox();
+    // passe pour les apps ouvre TOUT l'iCloud. Vérifié par les POSITIONS : une
+    // phrase juste, au mauvais endroit, laisse un contrôle de texte au vert.
+    const avertissement = await page.locator("text=Ce mot de passe ouvre tout votre iCloud").first().boundingBox();
     const champ = await page.getByLabel("Mot de passe pour les apps").boundingBox();
     assert.ok(avertissement && champ, "l'avertissement ou le champ manque à l'écran");
     assert.ok(
@@ -171,37 +150,8 @@ async function main() {
   await cas("le mot de passe iCloud est masqué, et ne fait pas zoomer iOS", async () => {
     const champ = page.getByLabel("Mot de passe pour les apps");
     assert.equal(await champ.getAttribute("type"), "password", "le mot de passe s'affiche en clair");
-    // En dessous de 16 px, iOS agrandit la page dès la mise au point et l'écran
-    // part de travers sous son doigt.
     const corps = await champ.evaluate((e) => parseFloat(getComputedStyle(e).fontSize));
     assert.ok(corps >= 16, `${corps} px : iOS zoomera à la mise au point`);
-  });
-
-  await cas("l'écriture n'est pas proposée tant que rien n'est relié", async () => {
-    // **Écrire est une décision**, et on ne propose pas de décider de ce qui
-    // n'existe pas encore. L'interrupteur n'apparaît qu'une fois le compte
-    // branché — sinon il laisserait croire que des chantiers partent déjà.
-    const interrupteurs = await page.getByRole("switch").count();
-    assert.equal(interrupteurs, 0, `${interrupteurs} interrupteur(s) d'écriture avant tout raccordement`);
-  });
-
-  await cas("l'avertissement se lit d'une phrase, sans mot recollé au suivant", async () => {
-    // **Trouvé sur une capture, pas par un test (12 août 2026) :** l'écran
-    // affichait « votre iCloud— pas seulement l'agenda ». Le JSX avale l'espace
-    // qui suit une balise fermante à cet endroit — l'écran de Google portait
-    // déjà un `{" "}` pour cette raison, sans que personne l'ait écrit.
-    //
-    // Le contrôle vise le TEXTE RENDU, pas la source : c'est le seul endroit où
-    // la différence se voit.
-    const phrase = await page
-      .locator("text=Ce mot de passe ouvre tout votre iCloud")
-      .first()
-      .evaluate((e) => (e.closest("p") ?? e).textContent ?? "");
-    assert.match(
-      phrase,
-      /tout votre iCloud — pas seulement l'agenda/,
-      `mot recollé au suivant : « ${phrase.slice(0, 80)} »`
-    );
   });
 
   await cas("l'écran dit où générer le mot de passe, sans faire chercher", async () => {
@@ -210,61 +160,60 @@ async function main() {
     assert.match(texte, /Mots de passe pour les apps/i, "le nom exact du réglage chez Apple manque");
   });
 
-  await cas("le planning propose de relier l'agenda, là où le manque se constate", async () => {
-    // **Sa demande, textuellement :** *« dans planning il faut un petit bouton
-    // connecter son agenda Google cliquable. »* Le laisser au fond des réglages
-    // revenait à demander à quelqu'un qui ignore le problème d'aller chercher
-    // sa solution.
-    await page.goto(`${BASE}/planning`, { waitUntil: "domcontentloaded" });
-    const lien = page.getByRole("link", { name: /Relier mon agenda Google/i });
-    await lien.waitFor({ state: "visible", timeout: 15000 });
-    await lien.click();
-    await page.getByRole("heading", { name: "Mon agenda" }).waitFor({ timeout: 15000 });
-  });
-
-  await cas("l'écran ne s'effondre pas et reste lisible sur un téléphone", async () => {
+  await cas("l'écran ne déborde pas sur un téléphone", async () => {
     await page.goto(`${BASE}/reglages/agenda`, { waitUntil: "domcontentloaded" });
     await page.getByRole("heading", { name: "Mon agenda" }).waitFor({ timeout: 15000 });
-    // `truncate` et les débordements sont du CSS : une vérification de texte
-    // reste verte sur un écran illisible. On mesure donc la page rendue.
+    // Contre la largeur RÉELLE de la fenêtre, jamais un nombre écrit à la main.
     const largeur = await page.evaluate(() => document.documentElement.scrollWidth);
-    // **Contre la largeur RÉELLE de la fenêtre, pas contre un nombre écrit à la
-    // main.** « 400 » s'accordait sept pixels de marge sur un écran de 393 — et
-    // le vrai téléphone n'en fait que 390. Une tolérance inventée finit
-    // toujours par couvrir un débordement véritable.
     const fenetre = await page.evaluate(() => document.documentElement.clientWidth);
-    assert.ok(
-      largeur <= fenetre + 1,
-      `la page déborde horizontalement (${largeur}px pour ${fenetre} disponibles)`
-    );
-    const hauteur = await page.evaluate(() => document.body.getBoundingClientRect().height);
-    assert.ok(hauteur > 300, `la page semble vide (${Math.round(hauteur)}px de haut)`);
+    assert.ok(largeur <= fenetre + 1, `la page déborde (${largeur}px pour ${fenetre})`);
   });
 
-  await cas("le bouton « Enregistrer » n'est couvert par rien", async () => {
-    // **Ce que seule une mesure attrape.** La barre de navigation et la bulle
-    // d'assistance sont en position fixe : elles flottent au-dessus du contenu.
-    // Un bouton dessous reste dans le HTML, donc vert pour toute vérification
-    // de texte — et intouchable au doigt. Trois défauts réels de ce projet
-    // étaient de cette famille (`CLAUDE.md` §5).
-    const bouton = page.getByRole("button", { name: "Enregistrer" });
-    await bouton.scrollIntoViewIfNeeded();
-    await page.waitForTimeout(300);
-    const boite = await bouton.boundingBox();
-    assert.ok(boite, "le bouton « Enregistrer » n'a pas de place à l'écran");
-    const dessus = await page.evaluate(
-      `(() => {
-        var r = ${JSON.stringify(boite)};
-        var el = document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2);
-        return el ? el.tagName + " " + String(el.className).slice(0, 60) : "rien";
-      })()`
-    );
-    assert.match(
-      String(dessus),
-      /BUTTON/,
-      `quelque chose recouvre le bouton « Enregistrer » : ${dessus}`
-    );
+  // ─── Le haut du Planning : sa demande du 26 septembre 2026 ──────────────
+  //
+  // *« ceux qui vont jamais remplir leur agenda, ils vont voir la phrase tous
+  // les jours, c'est chiant »*, puis *« une fois qu'on a choisi masquer, faut
+  // pas qu'il reste de phrase »*. La règle vit dans `bandeauAgendaDuPlanning` ;
+  // ici se prouve le GESTE, et surtout qu'il tient après un rechargement.
+
+  // La suite doit pouvoir se rejouer sur une même base : le masquage d'un
+  // passage précédent ne doit pas lui faire conclure à une phrase absente.
+  const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+  await pool.query(
+    `UPDATE entreprises SET rappel_agenda_masque = false
+      WHERE id IN (SELECT m.entreprise_id FROM membres_entreprise m JOIN users u ON u.id = m.utilisateur_id WHERE u.email = 'demo@atlas.local')`
+  );
+
+  await cas("jamais relié : la phrase propose, et « Ouvrir » mène à Mon agenda", async () => {
+    await page.goto(`${BASE}/planning`, { waitUntil: "domcontentloaded" });
+    await page.getByText("Vous pouvez relier votre agenda").waitFor({ state: "visible", timeout: 15000 });
+    await page.getByRole("link", { name: "Ouvrir" }).click();
+    await page.getByRole("heading", { name: "Mon agenda" }).waitFor({ timeout: 15000 });
   });
+
+  await cas("« Masquer » : il ne reste rien, et rien ne revient au rechargement", async () => {
+    await page.goto(`${BASE}/planning`, { waitUntil: "domcontentloaded" });
+    await page.getByText("Vous pouvez relier votre agenda").waitFor({ state: "visible", timeout: 15000 });
+    await page.getByRole("button", { name: "Masquer" }).click();
+    assert.equal(await page.getByText("Vous pouvez relier votre agenda").count(), 0, "la phrase reste après « Masquer »");
+    // Le serveur écrit en arrière-plan : on attend qu'il l'ait fait, en base,
+    // plutôt qu'un délai qui passerait sur cette machine et pas sur une autre.
+    for (let i = 0; i < 50; i++) {
+      const { rows } = await pool.query(
+        `SELECT e.rappel_agenda_masque AS m FROM entreprises e
+           JOIN membres_entreprise m ON m.entreprise_id = e.id JOIN users u ON u.id = m.utilisateur_id
+          WHERE u.email = 'demo@atlas.local'`
+      );
+      if (rows[0]?.m === true) break;
+      await page.waitForTimeout(100);
+    }
+    await page.reload({ waitUntil: "domcontentloaded" });
+    await page.getByRole("heading", { name: "Planning" }).waitFor({ timeout: 15000 });
+    assert.equal(await page.getByText("Vous pouvez relier votre agenda").count(), 0, "la phrase est revenue au rechargement");
+    assert.equal(await page.getByRole("button", { name: "Masquer" }).count(), 0, "« Masquer » est resté seul à l'écran");
+  });
+
+  await pool.end();
 
   await navigateur.close();
   console.log(`\n${echecs === 0 ? "✅" : "❌"} Écran de l'agenda — ${echecs} échec(s).`);

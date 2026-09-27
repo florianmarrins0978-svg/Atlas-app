@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Fermer l'assistant</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --etabli:#e6e3dc; --etabli-carte:#faf9f5; --etabli-trait:rgba(28,28,26,.12);
+    --etabli-encre:#1c1c1a; --etabli-doux:#4a4a44; --etabli-gris:#77726a; --etabli-or:#8b6835;
+    --serif:"Playfair Display",ui-serif,Georgia,serif;
+    --sans:"Inter",ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+    --plage:#faf9f5; --encre:#1c1c1a; --gris:#8a8578; --doux:#4a4a44; --creme:#f4f2ec;
+    --tuile:#ece9e1; --bulle:#ebe8e1; --trait:rgba(28,28,26,.12); --orTexte:#8b6835;
+    --voile:rgba(0,0,0,.25);
+  }
+  body.nuit{
+    --etabli:#0a0b0a; --etabli-carte:#1a1d19; --etabli-trait:rgba(233,232,222,.14);
+    --etabli-encre:#e9e8de; --etabli-doux:#c1c2b6; --etabli-gris:#84887b; --etabli-or:#b98b47;
+    --plage:#1a1d19; --encre:#e9e8de; --gris:#84887b; --doux:#c1c2b6; --creme:#141613;
+    --tuile:#1f211e; --bulle:#262924; --trait:rgba(233,232,222,.12); --orTexte:#b98b47;
+    --voile:rgba(0,0,0,.5);
+    color-scheme:dark;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--etabli)}
+  body{font-family:var(--sans);color:var(--etabli-encre);-webkit-font-smoothing:antialiased}
+  .page{max-width:1300px;margin:0 auto;padding:30px 16px 90px}
+  .surtitre{font:600 11.5px/1 var(--sans);letter-spacing:.18em;text-transform:uppercase;color:var(--etabli-or);margin:0 0 10px}
+  h1{font:600 30px/1.15 var(--serif);margin:0 0 10px;letter-spacing:-.01em;text-wrap:balance}
+  .chapeau{max-width:640px;color:var(--etabli-doux);font-size:15.5px;line-height:1.6;margin:0}
+  .bascule{appearance:none;border:0;cursor:pointer;font:600 12.5px/1 var(--sans);padding:11px 17px;border-radius:999px;margin:18px 0 26px;
+           background:var(--etabli-carte);color:var(--etabli-doux);box-shadow:inset 0 0 0 1px var(--etabli-trait)}
+  .rangee{display:flex;gap:30px;flex-wrap:wrap;align-items:flex-start}
+  .col{flex:0 0 auto;max-width:100%;display:flex;flex-direction:column;gap:8px}
+  .nom{font:600 15px/1.3 var(--sans);margin:0;display:flex;align-items:center;gap:9px}
+  .etiq{font:700 9.5px/1 var(--sans);letter-spacing:.1em;text-transform:uppercase;padding:4px 7px;border-radius:999px;background:var(--etabli-or);color:var(--etabli-carte)}
+  .idee{color:var(--etabli-gris);font-size:13px;line-height:1.55;margin:0 0 6px;max-width:360px}
+
+  /* Le téléphone, à sa largeur : 390 px. */
+  .tel{position:relative;width:390px;max-width:100%;height:640px;border-radius:22px;overflow:hidden;background:var(--plage);
+       box-shadow:0 2px 16px rgba(20,18,14,.13),inset 0 0 0 1px var(--etabli-trait)}
+  .ecran{padding:22px 22px 0}
+  .ecran .haut{display:flex;justify-content:space-between;align-items:center}
+  .ecran .caps{font:600 11px/1 var(--sans);letter-spacing:.18em;text-transform:uppercase;color:var(--orTexte)}
+  .ouvrir{appearance:none;border:0;cursor:pointer;font:600 13px/1 var(--sans);padding:10px 14px;border-radius:999px;background:var(--tuile);color:var(--doux)}
+  .ecran h3{font:500 34px/1.05 var(--serif);margin:16px 0 18px;color:var(--encre)}
+  .ligne{padding:14px 0;border-top:1px solid var(--trait)}
+  .ligne b{display:block;font:500 18px/1.2 var(--serif);color:var(--encre)}
+  .ligne span{font-size:13px;color:var(--gris)}
+
+  .voile{position:absolute;inset:0;display:flex;justify-content:flex-end;background:var(--voile);transition:opacity .2s}
+  .voile[hidden]{display:none}
+  .panneau{width:calc(100% - 44px);height:100%;background:var(--creme);display:flex;flex-direction:column;transition:transform .2s}
+  .tete{display:flex;align-items:center;justify-content:space-between;padding:14px 12px 14px 16px;border-bottom:1px solid var(--trait)}
+  .tete .t{font:600 16px/1 var(--serif);color:var(--encre)}
+  .tete .d{display:flex;align-items:center;gap:6px}
+  .oublier{appearance:none;border:0;background:none;cursor:pointer;font:400 13px/1 var(--sans);color:var(--gris);padding:10px 6px}
+  .croix-petite{appearance:none;border:0;background:none;cursor:pointer;font-size:20px;line-height:1;color:var(--gris);padding:0 4px}
+  .croix-ronde{appearance:none;border:0;cursor:pointer;width:44px;height:44px;border-radius:999px;background:var(--tuile);color:var(--encre);
+               font-size:24px;line-height:1;display:flex;align-items:center;justify-content:center}
+  .fermer-texte{appearance:none;border:0;cursor:pointer;height:40px;padding:0 16px;border-radius:999px;background:var(--tuile);color:var(--encre);font:600 14px/1 var(--sans)}
+  .fil{flex:1;overflow:auto;padding:14px;display:flex;flex-direction:column;gap:10px;font-size:14px;line-height:1.5}
+  .moi{align-self:flex-end;background:var(--bulle);padding:9px 12px;border-radius:6px;color:var(--encre);max-width:80%}
+  .lui{background:var(--plage);padding:10px 12px;border-radius:6px;color:var(--encre);max-width:88%}
+  .saisie{border-top:1px solid var(--trait);padding:12px 14px;color:var(--gris);font-size:14px}
+  .poignee{display:flex;justify-content:center;padding:8px 0 0}
+  .poignee[hidden]{display:none}
+  .poignee i{width:40px;height:5px;border-radius:9px;background:var(--trait)}
+  button:focus-visible{outline:2px solid var(--orTexte);outline-offset:2px}
+  @media (prefers-reduced-motion:reduce){.voile,.panneau{transition:none}}
+</style>
+</head>
+<body>
+<div class="page">
+  <p class="surtitre">Maquette</p>
+  <h1>Fermer l'assistant</h1>
+  <p class="chapeau">Aujourd'hui, il faut viser la petite croix. Trois façons plus simples. Essayez de fermer, puis rouvrez avec le bouton Assistant.</p>
+  <button class="bascule" id="bascule" type="button">Voir en Nuit</button>
+
+  <div class="rangee">
+    <div class="col">
+      <p class="nom">Aujourd'hui</p>
+      <p class="idee">La petite croix seule. Toucher le gris ne fait rien.</p>
+      <div class="tel" data-mode="avant"></div>
+    </div>
+    <div class="col">
+      <p class="nom">A <span class="etiq">conseillée</span></p>
+      <p class="idee">Toucher le gris ferme. Et la croix devient un gros rond, facile à toucher au pouce.</p>
+      <div class="tel" data-mode="a"></div>
+    </div>
+    <div class="col">
+      <p class="nom">B</p>
+      <p class="idee">Le mot Fermer à la place de la croix. Toucher le gris ferme aussi.</p>
+      <div class="tel" data-mode="b"></div>
+    </div>
+    <div class="col">
+      <p class="nom">C</p>
+      <p class="idee">Comme A, et l'on peut aussi pousser le panneau vers la droite avec le doigt.</p>
+      <div class="tel" data-mode="c"></div>
+    </div>
+  </div>
+</div>
+
+<template id="gabarit">
+  <div class="ecran">
+    <div class="haut"><span class="caps">Planning</span><button class="ouvrir" type="button">Assistant</button></div>
+    <h3>Cette semaine</h3>
+    <div class="ligne"><b>Mme Groupiron</b><span>Jeudi 25, taille de haie</span></div>
+    <div class="ligne"><b>Mme Lucie</b><span>Mercredi 24, tonte</span></div>
+    <div class="ligne"><b>Mme Fabre</b><span>Mardi 23, élagage</span></div>
+  </div>
+  <div class="voile">
+    <div class="panneau">
+      <div class="poignee" hidden><i></i></div>
+      <div class="tete"><span class="t">Assistant</span><span class="d"><button class="oublier" type="button">Oublier</button><span class="porte"></span></span></div>
+      <div class="fil">
+        <div class="moi">Qui je vois cette semaine ?</div>
+        <div class="lui">Mme Fabre mardi, Mme Lucie mercredi, Mme Groupiron jeudi.</div>
+      </div>
+      <div class="saisie">Votre question…</div>
+    </div>
+  </div>
+</template>
+
+<script>
+  var gabarit = document.getElementById("gabarit");
+  document.querySelectorAll(".tel").forEach(function (tel) {
+    var mode = tel.dataset.mode;
+    tel.appendChild(gabarit.content.cloneNode(true));
+    var voile = tel.querySelector(".voile");
+    var panneau = tel.querySelector(".panneau");
+    var porte = tel.querySelector(".porte");
+    var bouton = document.createElement("button");
+    bouton.type = "button";
+    bouton.setAttribute("aria-label", "Fermer");
+    if (mode === "avant") { bouton.className = "croix-petite"; bouton.textContent = "×"; }
+    else if (mode === "b") { bouton.className = "fermer-texte"; bouton.textContent = "Fermer"; }
+    else { bouton.className = "croix-ronde"; bouton.textContent = "×"; }
+    porte.appendChild(bouton);
+
+    function fermer() { panneau.style.transform = ""; voile.hidden = true; }
+    function ouvrir() { voile.hidden = false; }
+    bouton.addEventListener("click", fermer);
+    tel.querySelector(".ouvrir").addEventListener("click", ouvrir);
+    if (mode !== "avant") {
+      voile.addEventListener("click", function (e) { if (e.target === voile) fermer(); });
+    }
+    if (mode === "c") {
+      tel.querySelector(".poignee").hidden = false;
+      var depart = null;
+      panneau.addEventListener("pointerdown", function (e) { depart = e.clientX; panneau.style.transition = "none"; });
+      panneau.addEventListener("pointermove", function (e) {
+        if (depart === null) return;
+        var dx = Math.max(0, e.clientX - depart);
+        panneau.style.transform = "translateX(" + dx + "px)";
+      });
+      function lacher(e) {
+        if (depart === null) return;
+        var dx = e.clientX - depart;
+        depart = null;
+        panneau.style.transition = "";
+        if (dx > 80) fermer(); else panneau.style.transform = "";
+      }
+      panneau.addEventListener("pointerup", lacher);
+      panneau.addEventListener("pointercancel", lacher);
+      panneau.style.touchAction = "pan-y";
+    }
+  });
+  document.getElementById("bascule").addEventListener("click", function () {
+    var nuit = document.body.classList.toggle("nuit");
+    this.textContent = nuit ? "Voir en Jour" : "Voir en Nuit";
+  });
+</script>
+</body>
+</html>

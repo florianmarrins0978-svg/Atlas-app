@@ -356,6 +356,68 @@ async function main() {
     assert.match(parts[1] ?? "", /600,00\s*€/, `le montant ne suit pas la date : « ${parts[1]} »`);
   });
 
+  // **LA CROIX NE FAIT PLUS DISPARAÎTRE UN ACOMPTE — sa planche du
+  // 26 septembre 2026 (`appli/retirer-un-acompte.html`, « la B »).** Son geste
+  // entier, dans l'ordre : noter un acompte, le retirer, voir la ligne barrée
+  // et datée à sa place, la voir barrée aussi dans la TVA collectée, puis la
+  // remettre. Le total bouge à chaque fois du bon montant.
+  await test("LA CROIX BARRE L'ACOMPTE AU LIEU DE L'EFFACER, et « Remettre » le rend", async () => {
+    await page.goto(`${BASE}/termines/tva`, { waitUntil: "networkidle" });
+    const avant = await collectee(page);
+
+    const { chantierId } = await chantierRealise(page, "retrait");
+    const numero = await emettre(page, chantierId);
+    await page.goto(`${BASE}/termines/tva`, { waitUntil: "networkidle" });
+    const ligne = page.locator("li").filter({ hasText: numero });
+    await ligne.locator('[data-atlas="noter-un-reglement"]').click();
+    await ligne.getByLabel("Montant reçu, en euros").fill("600");
+    await ligne.getByRole("button", { name: "Enregistrer ce règlement" }).click();
+    await ligne.getByRole("button", { name: /^Retirer le règlement de 600,00/ }).waitFor({ timeout: 15_000 });
+
+    await ligne.getByRole("button", { name: /^Retirer le règlement de 600,00/ }).click();
+    const barre = ligne.locator('[data-atlas="reglement-retire"]');
+    await barre.waitFor({ timeout: 15_000 });
+    assert.match(
+      await barre.innerText(),
+      /Acompte du \d{2}\/\d{2}(\/\d{4})?, retiré le \d{2}\/\d{2}(\/\d{4})?/,
+      "la ligne retirée ne dit pas ce qu'elle était ni quand elle a été retirée"
+    );
+    assert.strictEqual(
+      await barre.locator("span").first().evaluate((e) => getComputedStyle(e).textDecorationLine),
+      "line-through",
+      "la ligne retirée n'est pas barrée"
+    );
+    await page.waitForFunction(
+      (a) => {
+        const m = document.body.innerText.match(/COLLECTÉE\s*\n?\s*([\d\s   ,.]+)\s*€/i);
+        return m ? Number(m[1].replace(/[\s   ]/g, "").replace(",", ".")) === a : false;
+      },
+      avant,
+      { timeout: 15_000 }
+    );
+
+    // La TVA collectée du mois la MONTRE, barrée, sans la compter.
+    await page.goto(`${BASE}/termines/tva/collectee`, { waitUntil: "networkidle" });
+    const trace = page.locator('[data-atlas="retires-du-releve"]');
+    await trace.waitFor({ timeout: 15_000 });
+    assert.ok((await trace.innerText()).includes(numero), "la TVA collectée du mois ne montre pas l'acompte retiré");
+
+    await page.goto(`${BASE}/termines/tva`, { waitUntil: "networkidle" });
+    await page.locator("li").filter({ hasText: numero }).locator('[data-atlas="remettre-le-reglement"]').click();
+    await page
+      .locator("li")
+      .filter({ hasText: numero })
+      .getByRole("button", { name: /^Retirer le règlement de 600,00/ })
+      .waitFor({ timeout: 15_000 });
+    assert.strictEqual(
+      await page.locator("li").filter({ hasText: numero }).locator('[data-atlas="reglement-retire"]').count(),
+      0,
+      "l'acompte remis est encore barré"
+    );
+    const apres = await collectee(page);
+    assert.strictEqual((apres - avant).toFixed(2), "100.00", `l'acompte remis a apporté ${(apres - avant).toFixed(2)} €`);
+  });
+
   await test("UN MONTANT TROP GRAND EST REFUSÉ, et le refus lui parvient", async () => {
     const { chantierId } = await chantierRealise(page, "trop");
     const numero = await emettre(page, chantierId);

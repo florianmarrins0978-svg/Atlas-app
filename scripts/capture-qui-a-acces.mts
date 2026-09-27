@@ -48,7 +48,7 @@ await page.waitForURL("http://localhost:3000/", { timeout: 60000 });
 // largeurs mesurées plus bas valent toutes zéro, et « rien n'est coupé » serait
 // un vert qui ne prouve rien (le défaut du 15 août 2026).
 await page.goto("http://localhost:3000/reglages/equipe", { waitUntil: "networkidle" });
-await page.waitForSelector("text=Qui a accès", { timeout: 60000 });
+await page.waitForSelector('text="Accès"', { timeout: 60000 });
 
 async function photographier(nom: string) {
   await page.screenshot({ path: `${dossier}/${nom}.png`, fullPage: true });

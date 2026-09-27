@@ -4,6 +4,7 @@ import { getCurrentCtx } from "@/server/session-ctx";
 import { estProprietaire } from "@/server/autorisation";
 import RubriqueReservee from "../RubriqueReservee";
 import Sommaire from "../Sommaire";
+import VoirUnExemple from "../VoirUnExemple";
 import { SOUS_RUBRIQUES_DOCUMENTS } from "@/lib/rubriques-reglages";
 
 export const dynamic = "force-dynamic";
@@ -60,6 +61,10 @@ export default async function DocumentsPage() {
             change aux deux endroits. Un seul ensemble, sans intertitre — quatre
             lignes n'ont pas de familles à séparer. */}
         <Sommaire ensembles={[{ titre: "", rubriques: SOUS_RUBRIQUES_DOCUMENTS }]} />
+
+        {/* Sous les quatre lignes, là où se règle ce qui s'imprime — sa
+            réponse « A et B » du 26 septembre 2026 (`VoirUnExemple`). */}
+        <VoirUnExemple />
 
         {/* **La phrase qui fermait l'ancien écran reste ici, et nulle part
             ailleurs.** Elle vaut pour les quatre : la répéter sur chacun ferait

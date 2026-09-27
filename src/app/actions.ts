@@ -8,7 +8,7 @@ import { marquerReponseVue } from "@/server/repositories/envois-devis";
 import { marquerReceptionVue } from "@/server/repositories/envois-factures";
 import { getOuCreerDevisBrouillon } from "@/server/repositories/devis";
 import { repousserRappelFacture, marquerRappelVu } from "@/server/repositories/rappels";
-import { estGenreAcquittable } from "@/lib/rappels";
+import { estGenreVu } from "@/lib/rappels";
 import { jourIso } from "@/lib/jour";
 
 /**
@@ -141,7 +141,7 @@ export async function marquerRappelVuAction(
 ): Promise<{ ok: true } | { ok: false; raison: string }> {
   const ctx = await getCurrentCtx();
   await exigerEcran(ctx, "/", "marquer un rappel comme vu");
-  if (!estGenreAcquittable(genre)) {
+  if (!estGenreVu(genre)) {
     return { ok: false, raison: "Ce rappel ne peut pas être acquitté. Rechargez l'écran." };
   }
   try {
