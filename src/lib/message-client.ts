@@ -436,16 +436,25 @@ export function composerMessageEntretien(params: {
   entrepriseNom: string;
   lien: string;
   modele?: string | null;
+  /**
+   * La facture du passage, quand son contrat d'entretien l'envoie AVEC le
+   * compte rendu (26 septembre 2026). **Elle s'ajoute en fin de message**, le
+   * lien seul sur sa ligne comme l'autre : son modèle à lui reste intact, et
+   * « aucune facture évoquée » reste vrai de tout compte rendu qui n'en porte
+   * pas.
+   */
+  lienFacture?: string | null;
 }): MessageClient {
-  const { clientNom, clientCivilite, entrepriseNom, lien, modele } = params;
+  const { clientNom, clientCivilite, entrepriseNom, lien, modele, lienFacture } = params;
+  const corps = rendreMessage(modele?.trim() || MESSAGES_PAR_DEFAUT.passage, {
+    client: nommer(clientNom, clientCivilite),
+    document: motDuDocument("passage"),
+    lien,
+    entreprise: entrepriseNom,
+  });
   return {
-    objet: `Retour d'intervention de ${entrepriseNom}`,
-    corps: rendreMessage(modele?.trim() || MESSAGES_PAR_DEFAUT.passage, {
-      client: nommer(clientNom, clientCivilite),
-      document: motDuDocument("passage"),
-      lien,
-      entreprise: entrepriseNom,
-    }),
+    objet: lienFacture ? `Retour d'intervention et facture de ${entrepriseNom}` : `Retour d'intervention de ${entrepriseNom}`,
+    corps: lienFacture ? `${corps}\n\nVotre facture pour ce passage :\n\n${lienFacture}\n` : corps,
   };
 }
 

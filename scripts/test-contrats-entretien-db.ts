@@ -11,7 +11,12 @@ import {
   poserLesPassagesArrives,
   pdfDuContratPourLePatron,
   pdfDuContratParJeton,
+  factureDuPassageAvecSonCompteRendu,
 } from "../src/server/repositories/contrats-entretien";
+import { planifierChantier } from "../src/server/repositories/chantiers";
+import { terminerChantier, listerChantiersTermines, getFacturePourChantier } from "../src/server/repositories/factures";
+import { ouvrirPassage, nommerClient, cocherLigne, figerPassage } from "../src/server/repositories/passages-entretien";
+import { poserModeleFourni } from "../src/server/repositories/prestations-entretien";
 import type { ContratSaisi } from "../src/lib/contrats-entretien";
 
 // Les contrats d'entretien, sous `atlas_app` : c'est ce rôle qui prouve la RLS.
@@ -181,6 +186,98 @@ async function main() {
     assert.equal(rows.length, 4);
     assert.equal(rows[0].nom, "Mme Costa, Tonte et ébarbage");
     assert.equal(rows[0].date_planifiee, null);
+  });
+
+  // ─── Lot 2 : la facture B ──────────────────────────────────────────────
+  async function passagesDuContrat(ctx: { entrepriseId: string }, id: string) {
+    const connexion = await pool.connect();
+    try {
+      await connexion.query("begin");
+      await connexion.query("select set_config('app.entreprise_id', $1, true)", [ctx.entrepriseId]);
+      const { rows } = await connexion.query<{ id: string; contrat_passage: string }>(
+        `select id, contrat_passage from chantiers where contrat_entretien_id = $1 order by contrat_passage`,
+        [id]
+      );
+      await connexion.query("commit");
+      return rows;
+    } finally {
+      connexion.release();
+    }
+  }
+
+  await cas("Terminés annonce le prix du passage, et « Fin de chantier » bâtit sa facture au prix du contrat", async () => {
+    const [premier] = await passagesDuContrat(a.ctx, contratId);
+    await planifierChantier(a.ctx, premier.id, "2027-04-06");
+    const termines = await listerChantiersTermines(a.ctx, "2027-12-31");
+    const ligne = termines.find((t) => t.id === premier.id);
+    assert.equal(ligne?.totalPrevuTtc, "54.00", "45 € HT à 20 % : 54 € prévus");
+
+    const f1 = await terminerChantier(a.ctx, premier.id);
+    const f2 = await terminerChantier(a.ctx, premier.id);
+    assert.equal(f1.id, f2.id, "un second appui ne fait pas une seconde facture");
+    assert.equal(f1.devisId, null);
+    assert.equal(f1.totalTtc, "54.00");
+    const lue = await getFacturePourChantier(a.ctx, premier.id);
+    assert.equal(lue?.lignes.length, 1);
+    assert.equal(lue?.lignes[0].libelle, "Tonte et ébarbage, passage du 6 avril 2027");
+    assert.equal(lue?.lignes[0].prixUnitaire, "45.00");
+  });
+
+  await cas("l'automatisme : le compte rendu du jour fait partir la facture du passage, une fois", async () => {
+    // Une fiche d'entretien s'ouvre sur son modèle : l'entreprise neuve pose le sien.
+    await poserModeleFourni(a.ctx);
+    const client = await creerClient(a.ctx, { nom: "Durand", civilite: "mr", telephone: "06 00 00 00 01" });
+    const r = await enregistrerContrat(a.ctx, {
+      id: null,
+      clientId: client.id,
+      saisi: { ...SAISI, avecCompteRendu: true },
+    });
+    assert.ok(r.ok);
+    if (!r.ok) return;
+    const e = await envoyerContrat(a.ctx, r.contrat.id);
+    assert.ok(e.ok);
+    if (!e.ok) return;
+    await repondreAuContrat(e.jeton, { decision: "accepte" }, new Date("2027-02-10T10:00:00Z"));
+    await poserLesPassagesArrives(a.ctx, "2027-03-20");
+    const [passage] = await passagesDuContrat(a.ctx, r.contrat.id);
+    await planifierChantier(a.ctx, passage.id, "2027-04-08");
+
+    const fiche = await ouvrirPassage(a.ctx, "2027-04-08");
+    assert.ok(fiche.ok, "la fiche d'entretien s'ouvre");
+    if (!fiche.ok) return;
+    const nomme = await nommerClient(a.ctx, fiche.id, client.id);
+    assert.ok(nomme.ok);
+    if (!nomme.ok) return;
+    await cocherLigne(a.ctx, fiche.id, nomme.lignes[0].id, true);
+    const fige = await figerPassage(a.ctx, fiche.id);
+    assert.ok(fige.ok, fige.ok ? "" : fige.phrase);
+
+    const auto1 = await factureDuPassageAvecSonCompteRendu(a.ctx, fiche.id, "sms");
+    assert.ok(auto1?.ok, auto1 && !auto1.ok ? auto1.phrase : "rien n'est parti");
+    const auto2 = await factureDuPassageAvecSonCompteRendu(a.ctx, fiche.id, "sms");
+    assert.ok(auto1?.ok && auto2?.ok && auto1.jeton === auto2.jeton, "le même lien, pas une seconde facture");
+    const lue = await getFacturePourChantier(a.ctx, passage.id);
+    assert.equal(lue?.facture.statut, "emise");
+
+    // Sans le droit de facturer, rien ne part, et la phrase le dit.
+    const refus = await factureDuPassageAvecSonCompteRendu(a.ctx, fiche.id, "sms", new Date(), false);
+    assert.equal(refus?.ok, false);
+  });
+
+  await cas("un compte rendu sans contrat sous automatisme ne facture rien", async () => {
+    const autre = await creerClient(a.ctx, { nom: "Martin", civilite: "mr", telephone: "06 00 00 00 02" });
+    const fiche = await ouvrirPassage(a.ctx, "2027-04-06");
+    assert.ok(fiche.ok);
+    if (!fiche.ok) return;
+    const nomme = await nommerClient(a.ctx, fiche.id, autre.id);
+    assert.ok(nomme.ok);
+    if (!nomme.ok) return;
+    assert.equal(await factureDuPassageAvecSonCompteRendu(a.ctx, fiche.id, "sms"), null);
+    // Le contrat de Mme Costa n'a pas l'automatisme : son compte rendu du 6 ne facture rien non plus.
+    const ficheCosta = await ouvrirPassage(a.ctx, "2027-04-06");
+    if (!ficheCosta.ok) return;
+    await nommerClient(a.ctx, ficheCosta.id, a.clientId);
+    assert.equal(await factureDuPassageAvecSonCompteRendu(a.ctx, ficheCosta.id, "sms"), null);
   });
 
   await cas("les passages d'une entreprise ne se posent pas chez l'autre", async () => {

@@ -229,7 +229,7 @@ export default function FicheChantierClient({
   useRetourDeMessagerie("/paysage/fiche");
 
   async function envoyer() {
-    const r = await envoyerFicheAction(passage.id);
+    const r = await envoyerFicheAction(passage.id, canal);
     if (!r.ok) {
       setPhrase(r.phrase);
       return;
@@ -269,7 +269,17 @@ export default function FicheChantierClient({
       entrepriseNom,
       modele: modeleMessage,
       lien: `${adresse}/entretien/${jetonNeuf}`,
+      // La facture du passage, quand son contrat l'envoie avec le compte rendu.
+      lienFacture: r.facture?.ok ? `${adresse}${r.facture.lien}` : null,
     });
+    // **Une facture qui devait partir et ne part pas se DIT**, et la fiche
+    // reste ouverte au retour pour qu'il le lise : sinon il la croirait
+    // envoyée avec le compte rendu.
+    if (r.facture && !r.facture.ok) {
+      setPhrase(r.facture.phrase);
+      ouvrirAdresse(lienTransmission({ canal, destinataire, message }), canal);
+      return;
+    }
     // **Au retour de la messagerie, la fiche se ferme** — sa demande du
     // 22 septembre 2026 : *« je dois arriver sur la page précédente avec une
     // petite mention qui dit que la fiche a bien été envoyée »*. Marqué APRÈS

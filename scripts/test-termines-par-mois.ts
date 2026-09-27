@@ -54,7 +54,7 @@ const ligne = (p: Partial<LigneTerminee> & { id: string }): LigneTerminee => ({
   factureDateEmission: null,
   factureStatut: null,
   totalTtc: null,
-  devisTotalTtc: null,
+  totalPrevuTtc: null,
   ...p,
 });
 
@@ -77,7 +77,7 @@ essai("un chantier du 20 août est un chantier d'AOÛT, facturé ou non", () => 
   // raconterait plus le mois mais deux listes empilées.
   const mois = resumeDuMois(
     preparer([
-      ligne({ id: "a", datePlanifiee: "2026-08-20", devisTotalTtc: "1240.00" }),
+      ligne({ id: "a", datePlanifiee: "2026-08-20", totalPrevuTtc: "1240.00" }),
       ligne({ id: "b", datePlanifiee: "2026-08-02", factureStatut: "emise", totalTtc: "1320.00" }),
     ]),
     "2026-08"
@@ -114,7 +114,7 @@ essai("le total du mois ne compte QUE ce qui est facturé", () => {
   const mois = resumeDuMois(
     preparer([
       ligne({ id: "a", datePlanifiee: "2026-08-02", factureStatut: "emise", totalTtc: "1320.00" }),
-      ligne({ id: "b", datePlanifiee: "2026-08-20", devisTotalTtc: "1240.00" }),
+      ligne({ id: "b", datePlanifiee: "2026-08-20", totalPrevuTtc: "1240.00" }),
     ]),
     "2026-08"
   );
@@ -125,8 +125,8 @@ essai("le total du mois ne compte QUE ce qui est facturé", () => {
 essai("le montant affiché vient de la facture, sinon du devis", () => {
   const mois = resumeDuMois(
     preparer([
-      ligne({ id: "a", datePlanifiee: "2026-08-02", factureStatut: "emise", totalTtc: "1320.00", devisTotalTtc: "9999.00" }),
-      ligne({ id: "b", datePlanifiee: "2026-08-20", devisTotalTtc: "1240.00" }),
+      ligne({ id: "a", datePlanifiee: "2026-08-02", factureStatut: "emise", totalTtc: "1320.00", totalPrevuTtc: "9999.00" }),
+      ligne({ id: "b", datePlanifiee: "2026-08-20", totalPrevuTtc: "1240.00" }),
     ]),
     "2026-08"
   );
@@ -203,8 +203,8 @@ essai("CE QUI ATTEND NE SUIT PAS LE MOIS — c'est tout l'objet de sa demande", 
   // yeux quand l'écran montre août — sinon il faudrait déjà savoir qu'il existe
   // pour aller le chercher.
   const lignes = preparer([
-    ligne({ id: "aout", datePlanifiee: "2026-08-21", devisTotalTtc: "620.00" }),
-    ligne({ id: "retard", datePlanifiee: "2026-07-14", devisTotalTtc: "890.00" }),
+    ligne({ id: "aout", datePlanifiee: "2026-08-21", totalPrevuTtc: "620.00" }),
+    ligne({ id: "retard", datePlanifiee: "2026-07-14", totalPrevuTtc: "890.00" }),
     ligne({ id: "faite", datePlanifiee: "2026-08-20", factureStatut: "emise", totalTtc: "1764.00" }),
   ]);
   const partout = aFacturerPartout(lignes);
@@ -221,7 +221,7 @@ essai("UN CHANTIER CLÔTURÉ EN AVANCE NE VIDE PAS L'ÉCRAN", () => {
   // L'écran s'ouvrait alors sur le mois prochain — vide — et tout le travail du
   // mois en cours avait disparu, sans rien qui dise pourquoi.
   const lignes = preparer([
-    ligne({ id: "ce-mois", datePlanifiee: "2026-08-16", devisTotalTtc: "300.00" }),
+    ligne({ id: "ce-mois", datePlanifiee: "2026-08-16", totalPrevuTtc: "300.00" }),
     ligne({ id: "en-avance", datePlanifiee: "2026-09-30", factureStatut: "emise", totalTtc: "500.00" }),
   ]);
   const { entree, borne } = bornesDuFeuilletage(lignes, "2026-08");
@@ -290,7 +290,7 @@ essai("le total tous mois confondus est celui de la phrase d'en-tête", () => {
   const lignes = preparer([
     ligne({ id: "a", datePlanifiee: "2026-08-02", factureStatut: "emise", totalTtc: "1320.00" }),
     ligne({ id: "j", datePlanifiee: "2026-07-28", factureStatut: "emise", totalTtc: "1860.00" }),
-    ligne({ id: "x", datePlanifiee: "2026-08-20", devisTotalTtc: "640.00" }),
+    ligne({ id: "x", datePlanifiee: "2026-08-20", totalPrevuTtc: "640.00" }),
   ]);
   assert.equal(somme(factureesPartout(lignes)), 3180);
   assert.equal(somme(aFacturerPartout(lignes)), 640);
@@ -325,7 +325,7 @@ essai("sans date au planning, on n'invente rien", () => {
 });
 
 essai("la ligne d'état porte la date puis le montant prévu", () => {
-  const [l] = preparer([ligne({ id: "a", datePlanifiee: "2026-08-12", devisTotalTtc: "360.00" })]);
+  const [l] = preparer([ligne({ id: "a", datePlanifiee: "2026-08-12", totalPrevuTtc: "360.00" })]);
   // Le montant se compare par `formatEuros`, jamais par une chaîne écrite à la
   // main : l'espace qui précède le « € » est une espace fine insécable, et deux
   // caractères invisibles qui diffèrent font rougir un contrôle juste.
@@ -336,7 +336,7 @@ essai("« Pas encore facturé » n'est plus écrit nulle part", () => {
   // Sa demande du 31 août 2026, devant la planche : la capsule « À FACTURER »
   // disait déjà la même chose, sur la même ligne, à trois centimètres.
   const lignes = preparer([
-    ligne({ id: "a", datePlanifiee: "2026-08-12", devisTotalTtc: "360.00" }),
+    ligne({ id: "a", datePlanifiee: "2026-08-12", totalPrevuTtc: "360.00" }),
     ligne({ id: "b", datePlanifiee: "2026-08-26" }),
   ]);
   for (const l of lignes) {

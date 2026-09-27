@@ -16,6 +16,7 @@ import {
   acomptesDevis,
   paiementsFacture,
   avoirs,
+  contratsEntretien,
 } from "../db/schema";
 import { conditionsDepuisEntreprise, type ConditionsLues } from "../../lib/conditions-documents";
 import type { AcompteDevis } from "../../lib/acomptes-devis";
@@ -35,6 +36,7 @@ import { montantDeLaLigne } from "../../lib/montant-de-ligne";
 import { chiffreCanonique } from "../../lib/chiffre-saisi";
 import { montantMainDoeuvreValide } from "../../lib/main-doeuvre-devis";
 import { ongletDepuisJalons } from "../../lib/onglet-chantier";
+import { ligneDuPassage, ttcDuPassage } from "../../lib/contrats-entretien";
 import {
   dansLaPeriode,
   enAttenteDeReglement,
@@ -384,6 +386,14 @@ export async function terminerChantier(ctx: Ctx, chantierId: string, maintenant:
     // dont la v1 était bel et bien partie, au motif — faux — qu'aucun devis
     // n'avait été envoyé. Voir `lireDevisQuiFaitFoi`.
     const [devisSource] = await lireDevisQuiFaitFoi(tx, chantierId);
+    // **Un passage de contrat d'entretien n'a pas de devis : son prix accepté
+    // est celui du contrat** (26 septembre 2026, facturation B). Même porte que
+    // le devis, parce que c'est la même question : facturer ce que le client a
+    // accepté. Sans elle, « Fin de chantier » refusait le passage au motif
+    // « pas de devis, rien à facturer ».
+    if (!devisSource && chantier.contratEntretienId) {
+      return poserLaFactureDuPassage(tx, ctx, chantier, maintenant);
+    }
     if (!devisSource) {
       // **Les deux refus n'appellent pas le même geste**, et le patron doit
       // savoir lequel : écrire le devis, ou l'envoyer.
@@ -414,6 +424,75 @@ export async function terminerChantier(ctx: Ctx, chantierId: string, maintenant:
 
     return facture;
   });
+}
+
+/**
+ * LA FACTURE D'UN PASSAGE DE CONTRAT : une ligne, la prestation au prix du
+ * contrat (`ligneDuPassage`), au taux du contrat. Le client se lit sur sa
+ * fiche et s'y fige, comme une facture sans devis.
+ *
+ * **Sans prix lisible, la facture naît vide** plutôt que de supposer un
+ * montant (`CLAUDE.md` §4) : il la complète à la main.
+ */
+async function poserLaFactureDuPassage(
+  tx: DbOrTx,
+  ctx: Ctx,
+  chantier: typeof chantiers.$inferSelect,
+  maintenant: Date
+) {
+  const [contrat] = await tx
+    .select({ prestations: contratsEntretien.prestations, tauxTva: contratsEntretien.tauxTva })
+    .from(contratsEntretien)
+    .where(eq(contratsEntretien.id, chantier.contratEntretienId as string))
+    .limit(1);
+  const [client] = chantier.clientId
+    ? await tx.select().from(clients).where(eq(clients.id, chantier.clientId)).limit(1)
+    : [];
+  const ligne =
+    contrat && chantier.contratPassage
+      ? ligneDuPassage(contrat.prestations, chantier.contratPassage, chantier.datePlanifiee)
+      : null;
+  const taux = contrat?.tauxTva ?? TAUX_TVA_PAR_DEFAUT;
+  const montant = ligne ? montantDeLaLigne("1", ligne.prixUnitaireHt) : null;
+  const totaux = montant ? totauxAvecReduction([{ montant, tauxTva: taux }], taux, null) : null;
+
+  const facture = await poserLaFactureBrouillon(tx, ctx, {
+    chantierId: chantier.id,
+    instantane: {
+      devisId: null,
+      reductionPourcent: null,
+      reductionMontant: null,
+      conditionsPaiement: null,
+      clientNom: client?.nom ?? null,
+      clientCivilite: client?.civilite ?? null,
+      clientAdresse: client?.adresse ?? null,
+      clientTelephone: client?.telephone ?? null,
+      clientEmail: client?.email ?? null,
+      adresseChantier: chantier.adresseChantier,
+      tauxTva: taux,
+      totalHt: totaux?.totalHt ?? "0.00",
+      totalTva: totaux?.totalTva ?? "0.00",
+      totalTtc: totaux?.totalTtc ?? "0.00",
+    },
+    maintenant,
+  });
+
+  if (ligne && montant) {
+    await tx.insert(lignesFacture).values({
+      entrepriseId: ctx.entrepriseId,
+      factureId: facture.id,
+      libelle: ligne.libelle,
+      quantite: "1",
+      unite: "passage",
+      prixUnitaire: ligne.prixUnitaireHt,
+      montant,
+      tauxTva: taux,
+      ordre: 1,
+      // Sans devis, une ligne est ordinaire, jamais un supplément (0085).
+      supplement: false,
+    });
+  }
+  return facture;
 }
 
 /**
@@ -1549,10 +1628,17 @@ export async function listerChantiersTermines(ctx: Ctx, aujourdHui: string = jou
           WHERE d."chantier_id" = ${chantiers.id} AND d."statut" = 'envoye'
           ORDER BY d."numero_version" DESC LIMIT 1
         )`,
+        // **Un passage de contrat n'a pas de devis : son prix accepté est celui
+        // du contrat** (26 septembre 2026). Sans lui, Terminés l'annonçait
+        // « À facturer » sans montant.
+        contratPassage: chantiers.contratPassage,
+        contratPrestations: contratsEntretien.prestations,
+        contratTauxTva: contratsEntretien.tauxTva,
       })
       .from(chantiers)
       .leftJoin(clients, eq(chantiers.clientId, clients.id))
       .leftJoin(factures, eq(factures.chantierId, chantiers.id))
+      .leftJoin(contratsEntretien, eq(contratsEntretien.id, chantiers.contratEntretienId))
       .where(
         and(
           isNull(chantiers.deletedAt),
@@ -1571,7 +1657,18 @@ export async function listerChantiersTermines(ctx: Ctx, aujourdHui: string = jou
       .orderBy(sql`${chantiers.datePlanifiee} DESC NULLS FIRST`)
   );
 
-  return candidats.filter((c) => ongletDepuisJalons(c, aujourdHui) === "termines");
+  return candidats
+    .filter((c) => ongletDepuisJalons(c, aujourdHui) === "termines")
+    .map(({ devisTotalTtc, contratPassage, contratPrestations, contratTauxTva, ...c }) => ({
+      ...c,
+      // Le montant PRÉVU : celui que le client a accepté, par devis ou par
+      // contrat. Un seul champ, pour que l'écran n'ait rien à choisir.
+      totalPrevuTtc:
+        devisTotalTtc ??
+        (contratPassage && contratPrestations && contratTauxTva
+          ? ttcDuPassage(contratPrestations, contratPassage, contratTauxTva)
+          : null),
+    }));
 }
 
 // --- Relevé de TVA collectée ------------------------------------------------

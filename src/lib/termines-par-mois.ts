@@ -29,14 +29,17 @@ export type LigneTerminee = {
   factureStatut: string | null;
   /** Le total de la facture, quand elle existe. */
   totalTtc: string | null;
-  /** Le total du dernier devis envoyé — le montant PRÉVU, pas encaissé. */
-  devisTotalTtc: string | null;
+  /**
+   * Le montant PRÉVU, pas encaissé : le total du dernier devis envoyé, ou le
+   * prix du passage quand le chantier vient d'un contrat d'entretien.
+   */
+  totalPrevuTtc: string | null;
 };
 
 export type LigneAffichee = LigneTerminee & {
   /** `true` tant qu'aucune facture n'a été émise pour ce chantier. */
   aFacturer: boolean;
-  /** Le montant à montrer : celui de la facture, sinon celui du devis. */
+  /** Le montant à montrer : celui de la facture, sinon le montant prévu. */
   montant: number | null;
   /** Le jour du chantier — `dateDuChantier`, et `null` quand rien ne le dit. */
   dateDuChantier: string | null;
@@ -130,7 +133,7 @@ export function preparer(lignes: readonly LigneTerminee[]): LigneAffichee[] {
       return {
         ...l,
         aFacturer: !facture,
-        montant: facture ? euros(l.totalTtc) : euros(l.devisTotalTtc),
+        montant: facture ? euros(l.totalTtc) : euros(l.totalPrevuTtc),
         dateDuChantier: jour,
         cleMois: (jour ?? "").slice(0, 7),
       };

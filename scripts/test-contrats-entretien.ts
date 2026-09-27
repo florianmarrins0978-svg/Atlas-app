@@ -9,6 +9,9 @@ import {
   jourDArrivee,
   passagesArrives,
   clePassage,
+  lirePassage,
+  ligneDuPassage,
+  ttcDuPassage,
   relireContrat,
   ceQuiManque,
   designationSurLePapier,
@@ -171,6 +174,26 @@ cas("un passage sans jour se range au planning, pas dans les chantiers à prépa
   assert.equal(ongletDuChantier({ statut: "brouillon", datePlanifiee: null }, "2027-04-01"), "chantiers");
   // Posé puis passé : Terminés, comme tout chantier.
   assert.equal(ongletDuChantier({ statut: "planifie", datePlanifiee: "2027-03-30", contratEntretienId: "c1" }, "2027-04-01"), "termines");
+});
+
+cas("la ligne de facture d'un passage : sa prestation, au prix du contrat, et son jour", () => {
+  assert.deepEqual(lirePassage("0-2027-04-2"), { prestation: 0, annee: 2027, mois: 4, rang: 2 });
+  assert.equal(lirePassage("n'importe quoi"), null);
+  assert.deepEqual(ligneDuPassage(PLANCHE, "0-2027-04-2", "2027-04-06"), {
+    libelle: "Tonte et ébarbage, passage du 6 avril 2027",
+    prixUnitaireHt: "45.00",
+  });
+  assert.equal(ligneDuPassage(PLANCHE, "0-2027-04-2", null)?.libelle, "Tonte et ébarbage, passage d'avril 2027");
+  assert.equal(ligneDuPassage(PLANCHE, "1-2027-05-1", null)?.libelle, "Taille de haie printemps, passage de mai 2027");
+  // Une prestation disparue ou sans prix ne se facture pas au hasard.
+  assert.equal(ligneDuPassage(PLANCHE, "9-2027-04-1", null), null);
+  assert.equal(ligneDuPassage([{ ...PLANCHE[0], prixPassageHt: null }], "0-2027-04-1", null), null);
+});
+
+cas("le montant prévu d'un passage, TTC : 45 € HT à 20 % font 54 €", () => {
+  assert.equal(ttcDuPassage(PLANCHE, "0-2027-04-1", "20.00"), "54.00");
+  assert.equal(ttcDuPassage(PLANCHE, "0-2027-04-1", "10.00"), "49.50");
+  assert.equal(ttcDuPassage(PLANCHE, "9-2027-04-1", "20.00"), null);
 });
 
 if (echecs > 0) {

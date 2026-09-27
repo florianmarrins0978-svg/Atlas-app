@@ -3,6 +3,9 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { exigerEcran, exigerFonction } from "@/server/garde-action";
+import { getRole } from "@/server/autorisation";
+import { peutFacturer } from "@/lib/acces-roles";
+import { factureDuPassageAvecSonCompteRendu } from "@/server/repositories/contrats-entretien";
 import { getCurrentCtx } from "@/server/session-ctx";
 import {
   brouillonVierge,
@@ -135,13 +138,41 @@ export async function supprimerFicheAction(passageId: string): Promise<Resultat>
  * le courriel avec le lien que cette action vient de créer.
  */
 export async function envoyerFicheAction(
-  passageId: string
-): Promise<{ ok: true; lien: string } | { ok: false; phrase: string }> {
+  passageId: string,
+  canal: "sms" | "email"
+): Promise<
+  | { ok: true; lien: string; facture: { ok: true; lien: string } | { ok: false; phrase: string } | null }
+  | { ok: false; phrase: string }
+> {
   const ctx = await getCurrentCtx();
   await exigerEcran(ctx, "/paysage", "envoyer le retour d'intervention au client");
   await exigerFonction(ctx, "fiche-chantier", "envoyer le retour d'intervention au client");
   const r = await figerPassage(ctx, passageId);
   if (!r.ok) return { ok: false, phrase: r.phrase };
   revalidatePath("/paysage/fiche");
-  return { ok: true, lien: `/entretien/${r.jeton}` };
+  return { ok: true, lien: `/entretien/${r.jeton}`, facture: await laFactureQuiPartAvec(ctx, passageId, canal) };
+}
+
+/**
+ * La facture du passage, si son contrat l'envoie AVEC le compte rendu
+ * (`factureDuPassageAvecSonCompteRendu`). **Seul qui peut facturer la fait
+ * partir** : la garde de la facture ne s'efface pas parce que le geste passe
+ * par la fiche. Refusé, le compte rendu part quand même, et l'écran le dit.
+ */
+async function laFactureQuiPartAvec(
+  ctx: Awaited<ReturnType<typeof getCurrentCtx>>,
+  passageId: string,
+  canal: "sms" | "email"
+): Promise<{ ok: true; lien: string } | { ok: false; phrase: string } | null> {
+  const role = await getRole(ctx);
+  const r = await factureDuPassageAvecSonCompteRendu(
+    ctx,
+    passageId,
+    canal,
+    new Date(),
+    Boolean(role && peutFacturer(role))
+  );
+  if (r === null || !r.ok) return r;
+  revalidatePath("/termines");
+  return { ok: true, lien: `/factures/${r.jeton}` };
 }

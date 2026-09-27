@@ -2,9 +2,11 @@ import { createHash, randomBytes } from "node:crypto";
 import { and, desc, eq, isNull, sql } from "drizzle-orm";
 import { db } from "../db/client";
 import { withEntreprise } from "../db/with-entreprise";
-import { chantiers, clients, contratsEntretien, entreprises, parametresChiffrage } from "../db/schema";
+import { chantiers, clients, contratsEntretien, entreprises, factures, parametresChiffrage } from "../db/schema";
 import type { Ctx } from "./context";
-import { COLONNES_EMETTEUR, identiteDeLEmetteur } from "./factures";
+import { COLONNES_EMETTEUR, emettreFacture, identiteDeLEmetteur, terminerChantier } from "./factures";
+import { creerEnvoiFacture, dernierEnvoiFacture } from "./envois-factures";
+import { lirePassage } from "./passages-entretien";
 import { allureDesDocuments } from "./entreprises";
 import { composerContratPdf } from "../pdf/contrat-pdf";
 import { nomDuChantier } from "@/lib/nom-chantier";
@@ -390,4 +392,85 @@ export async function pdfDuContratParJeton(jeton: string, maintenant: Date = new
     await tx.execute(sql`SELECT set_config('app.entreprise_id', ${l.entrepriseId}, true)`);
     return pdfDuContrat(tx, l, maintenant);
   });
+}
+
+/**
+ * L'AUTOMATISME « ENVOYER LA FACTURE AVEC LE COMPTE RENDU » (lot 2, B).
+ *
+ * Sa question du 26 septembre 2026 : *« il faut qu'il puisse l'automatiser
+ * s'il veut, non ? »* Quand le compte rendu d'un passage part chez le client,
+ * la facture du passage de CE jour, pour CE client, part avec : elle se bâtit
+ * au prix du contrat (`terminerChantier`), s'arrête (`emettreFacture`) et prend
+ * son lien (`creerEnvoiFacture`), par les mêmes portes que le geste à la main.
+ *
+ * **Le déclencheur est le compte rendu, jamais une date** : un passage que la
+ * pluie a annulé n'a pas de compte rendu, donc pas de facture. Et c'est le
+ * geste du patron que `CLAUDE.md` §4 exige avant de facturer.
+ *
+ * Rend :
+ *   · `null` — ce compte rendu n'est pas celui d'un passage sous automatisme :
+ *     rien à faire, et rien à dire ;
+ *   · `{ ok: true, jeton }` — la facture est partie avec, voici son lien ;
+ *   · `{ ok: false, phrase }` — elle aurait dû partir et ne part pas : le
+ *     compte rendu part quand même, et l'écran le DIT, sinon il croirait sa
+ *     facture envoyée.
+ */
+export async function factureDuPassageAvecSonCompteRendu(
+  ctx: Ctx,
+  passageEntretienId: string,
+  canal: "sms" | "email",
+  maintenant: Date = new Date(),
+  peutFacturer = true
+): Promise<{ ok: true; jeton: string } | { ok: false; phrase: string } | null> {
+  const compteRendu = await lirePassage(ctx, passageEntretienId);
+  if (!compteRendu?.clientId) return null;
+  const clientId = compteRendu.clientId;
+
+  const cible = await withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const [c] = await tx
+      .select({ id: chantiers.id, factureStatut: factures.statut })
+      .from(chantiers)
+      .innerJoin(contratsEntretien, eq(contratsEntretien.id, chantiers.contratEntretienId))
+      .leftJoin(factures, eq(factures.chantierId, chantiers.id))
+      .where(
+        and(
+          eq(chantiers.entrepriseId, ctx.entrepriseId),
+          eq(chantiers.clientId, clientId),
+          eq(chantiers.datePlanifiee, compteRendu.jour),
+          isNull(chantiers.deletedAt),
+          eq(contratsEntretien.facturation, "passage"),
+          eq(contratsEntretien.avecCompteRendu, true)
+        )
+      )
+      .orderBy(chantiers.contratPassage)
+      .limit(1);
+    return c ?? null;
+  });
+  if (!cible) return null;
+
+  const refus = {
+    ok: false as const,
+    phrase: "Le compte rendu part, mais sa facture n'a pas pu partir avec. Envoyez-la depuis Terminés.",
+  };
+  if (!peutFacturer) return refus;
+  try {
+    if (cible.factureStatut !== "emise") {
+      const facture = await terminerChantier(ctx, cible.id, maintenant);
+      // Une facture sans ligne (prix illisible) ne part pas toute seule : il
+      // la complète, puis l'envoie à la main.
+      if (Number(facture.totalTtc) <= 0) return refus;
+      await emettreFacture(ctx, facture.id, maintenant);
+    }
+    const [facture] = await withEntreprise(ctx.utilisateurId, ctx.entrepriseId, (tx) =>
+      tx.select({ id: factures.id }).from(factures).where(eq(factures.chantierId, cible.id)).limit(1)
+    );
+    const existant = await dernierEnvoiFacture(ctx, facture.id);
+    if (existant && existant.expireAt.getTime() > maintenant.getTime()) return { ok: true, jeton: existant.jeton };
+    const envoi = await creerEnvoiFacture(ctx, facture.id, canal, maintenant);
+    return { ok: true, jeton: envoi.jeton };
+  } catch (err) {
+    // Rendre la panne bavarde AVANT de rendre sa phrase (`AGENTS.md`).
+    console.error("[factureDuPassageAvecSonCompteRendu] échec", { passageEntretienId, chantierId: cible.id, err });
+    return refus;
+  }
 }

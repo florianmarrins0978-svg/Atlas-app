@@ -173,6 +173,46 @@ export function clePassage(p: PassageDu): string {
   return `${p.prestation}-${p.annee}-${deuxChiffres(p.mois)}-${p.rang}`;
 }
 
+/** L'inverse de `clePassage` : la prestation, le mois et le rang. NULL si la clé ne se lit pas. */
+export function lirePassage(cle: string): PassageDu | null {
+  const m = /^(\d+)-(\d{4})-(\d{2})-(\d+)$/.exec(cle);
+  if (!m) return null;
+  return { prestation: Number(m[1]), annee: Number(m[2]), mois: Number(m[3]), rang: Number(m[4]) };
+}
+
+/**
+ * LA LIGNE DE FACTURE D'UN PASSAGE (lot 2, facturation B) : sa prestation, au
+ * prix du contrat. « Tonte et ébarbage, passage du 29 septembre 2026 » quand
+ * le passage a son jour, « …, passage d'octobre 2026 » sinon.
+ *
+ * **Le prix est celui que le client a ACCEPTÉ** : c'est ce qui fait qu'une
+ * facture de passage naît remplie, là où une facture sans devis naît vide.
+ * NULL quand la clé ne désigne plus rien ou que le prix manque : on ne facture
+ * pas un montant supposé (`CLAUDE.md` §4).
+ */
+export function ligneDuPassage(
+  prestations: readonly PrestationContrat[],
+  cle: string,
+  jour: string | null
+): { libelle: string; prixUnitaireHt: string } | null {
+  const lu = lirePassage(cle);
+  const p = lu ? prestations[lu.prestation] : undefined;
+  if (!lu || !p || p.prixPassageHt === null) return null;
+  const quand = jour
+    ? `passage du ${jourEnLettres(jour)}`
+    : `passage ${deOuD(MOIS_LONGS[lu.mois - 1])} ${lu.annee}`;
+  return { libelle: `${p.libelle}, ${quand}`, prixUnitaireHt: p.prixPassageHt };
+}
+
+/** Ce qu'un passage coûtera au client, TTC : le montant PRÉVU que Terminés annonce. */
+export function ttcDuPassage(prestations: readonly PrestationContrat[], cle: string, tauxTva: string): string | null {
+  const ligne = ligneDuPassage(prestations, cle, null);
+  if (!ligne) return null;
+  const ht = new Decimal(ligne.prixUnitaireHt);
+  const tva = ht.times(new Decimal(chiffreCanonique(tauxTva) ?? "0")).dividedBy(100).toDecimalPlaces(2);
+  return ht.plus(tva).toFixed(2);
+}
+
 /** Un passage à poser : sa prestation, son mois, et son rang dans le mois. */
 export type PassageDu = { prestation: number; annee: number; mois: number; rang: number };
 
