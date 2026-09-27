@@ -6,8 +6,9 @@ import { creerChantier, listerChantiers } from "../src/server/repositories/chant
 import { abonnementDeLEntreprise, enregistrerLAbonnement } from "../src/server/repositories/abonnements";
 import { EssaiTermineError, withEntreprise } from "../src/server/db/with-entreprise";
 import { ActionRefuseeError, exigerFonction } from "../src/server/garde-action";
-import { JOURS_ESSAI, FORMULE_DE_LESSAI, enLectureSeule } from "../src/lib/abonnements";
-import { abonnements } from "../src/server/db/schema";
+import { JOURS_ESSAI, FORMULE_DE_LESSAI, enLectureSeule, etatDeLEssai } from "../src/lib/abonnements";
+import { abonnements, users } from "../src/server/db/schema";
+import { donnerUnAcces, listerAcces } from "../src/server/repositories/membres-entreprise";
 import { db, fermerPool } from "../src/server/db/client";
 import { eq, sql } from "drizzle-orm";
 import type { Ctx } from "../src/server/repositories/context";
@@ -62,6 +63,17 @@ async function vieillirLEssai(ctx: Ctx, jours: number) {
     await tx
       .update(abonnements)
       .set({ periodeFin: new Date(Date.now() - jours * 86_400_000) })
+      .where(eq(abonnements.entrepriseId, ctx.entrepriseId));
+  });
+}
+
+/** Pose la fin de l'essai à `ms` millisecondes de maintenant (négatif : déjà passée). */
+async function finDansMs(ctx: Ctx, ms: number) {
+  await db.transaction(async (tx) => {
+    await tx.execute(sql`SELECT set_config('app.entreprise_id', ${ctx.entrepriseId}, true)`);
+    await tx
+      .update(abonnements)
+      .set({ periodeFin: new Date(Date.now() + ms) })
       .where(eq(abonnements.entrepriseId, ctx.entrepriseId));
   });
 }
@@ -183,6 +195,102 @@ async function main() {
 
   await essai("sans abonnement, tout passe aussi — une fermeture est la conséquence d'une formule choisie", async () => {
     for (const f of ["arrosage", "diagnostic", "fiche-chantier", "absences", "retours"] as const) await exigerFonction(ctxAncien, f, "essai");
+  });
+
+  // Sa demande du 27 septembre 2026 : *« fais des tests pour vérifier qu'au
+  // bout de 16 jours l'appli se bloque bien, que les 15 jours d'essai
+  // fonctionnent correctement ; fais des vrais tests ! »*. Au-dessus, l'essai
+  // n'est vieilli que d'un bloc, un jour APRÈS la fin : ni les quinze jours
+  // un par un, ni la minute de la bascule, ni un second compte de la même
+  // entreprise n'étaient éprouvés contre la base.
+  console.log("\n=== 5. Les seize jours, un par un, contre la base ===\n");
+
+  let ctxJours!: Ctx;
+  await essai("un second compte par la porte, pour compter ses jours", async () => {
+    const r = await creerSonCompte({ ...SAISIE, email: "jours.essai@exemple.fr", entreprise: "Jours Paysage" });
+    assert.ok(r.ok, "la création a été refusée");
+    ctxJours = { utilisateurId: r.utilisateurId, entrepriseId: r.entrepriseId };
+  });
+
+  /** Place « maintenant » à une heure du début du jour `jour` de l'essai (1 = le jour de l'inscription). */
+  const auJour = (jour: number) => finDansMs(ctxJours, (JOURS_ESSAI - (jour - 1)) * 86_400_000 - 3_600_000);
+
+  for (let jour = 1; jour <= JOURS_ESSAI; jour++) {
+    await essai(`jour ${jour} : il crée un chantier, ${JOURS_ESSAI + 1 - jour} jour(s) restant(s)`, async () => {
+      await auJour(jour);
+      const a = await abonnementDeLEntreprise(ctxJours);
+      const etatDuJour = etatDeLEssai(a, new Date());
+      assert.equal(etatDuJour?.statut, "en-cours", `l'essai est ${etatDuJour?.statut} au jour ${jour}`);
+      if (etatDuJour?.statut === "en-cours") assert.equal(etatDuJour.joursRestants, JOURS_ESSAI + 1 - jour);
+      const c = await creerChantier(ctxJours, { nom: `Chantier du jour ${jour}` });
+      assert.ok(c?.id, `le chantier du jour ${jour} n'a pas été créé`);
+    });
+  }
+
+  await essai("jour 16 : le chantier est refusé, les quinze d'avant se relisent tous", async () => {
+    await auJour(JOURS_ESSAI + 1);
+    await assert.rejects(
+      () => creerChantier(ctxJours, { nom: "Chantier du jour 16" }),
+      (e: unknown) => e instanceof EssaiTermineError
+    );
+    assert.equal((await listerChantiers(ctxJours)).length, JOURS_ESSAI);
+  });
+
+  await essai("la bascule à la minute : une minute avant la fin il écrit, une minute après non", async () => {
+    await finDansMs(ctxJours, 60_000);
+    assert.ok((await creerChantier(ctxJours, { nom: "Dernière minute" }))?.id);
+    await finDansMs(ctxJours, -60_000);
+    await assert.rejects(
+      () => creerChantier(ctxJours, { nom: "Une minute trop tard" }),
+      (e: unknown) => e instanceof EssaiTermineError
+    );
+  });
+
+  console.log("\n=== 6. Le 16ᵉ jour ferme TOUTE l'entreprise, pas seulement son créateur ===\n");
+
+  let ctxSecond!: Ctx;
+  await essai("un second patron, ajouté pendant l'essai", async () => {
+    await finDansMs(ctxJours, 5 * 86_400_000);
+    const r = await donnerUnAcces(ctxJours, {
+      nom: "Second Patron",
+      email: "second.patron@exemple.fr",
+      motDePasse: "un mot de passe assez long",
+      confirmation: "un mot de passe assez long",
+      role: "proprietaire",
+    });
+    assert.ok(r.ok, `l'accès a été refusé pendant l'essai : ${!r.ok ? r.refus : ""}`);
+    const acces = (await listerAcces(ctxJours)).find((l) => l.email === "second.patron@exemple.fr");
+    assert.ok(acces, "le second patron est introuvable");
+    ctxSecond = { utilisateurId: acces.utilisateurId, entrepriseId: ctxJours.entrepriseId };
+  });
+
+  await essai("au 16ᵉ jour, le second patron relit tout et n'écrit rien", async () => {
+    await finDansMs(ctxJours, -3_600_000);
+    assert.ok((await listerChantiers(ctxSecond)).length > 0, "le second patron ne relit plus les chantiers");
+    await assert.rejects(
+      () => creerChantier(ctxSecond, { nom: "Par le second patron" }),
+      (e: unknown) => e instanceof EssaiTermineError
+    );
+  });
+
+  await essai("au 16ᵉ jour, donner un accès est refusé ET ne laisse aucun compte orphelin", async () => {
+    // Le compte se crée hors de l'entreprise, l'attachement se fait dedans :
+    // refusé à la seconde étape, il laisserait une adresse « déjà prise » que
+    // personne ne pourrait plus employer, même abonné.
+    const email = "apres.la.fin@exemple.fr";
+    await assert.rejects(
+      () =>
+        donnerUnAcces(ctxJours, {
+          nom: "Trop tard",
+          email,
+          motDePasse: "un mot de passe assez long",
+          confirmation: "un mot de passe assez long",
+          role: "salarie",
+        }),
+      (e: unknown) => e instanceof EssaiTermineError
+    );
+    const reste = await db.select({ id: users.id }).from(users).where(eq(users.email, email));
+    assert.equal(reste.length, 0, "un compte a été créé alors que l'accès était refusé");
   });
 
   console.log(`\n${echecs === 0 ? "✅" : "❌"} ${echecs} échec(s)\n`);
