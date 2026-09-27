@@ -34,6 +34,14 @@
     recliquer sur le nom du client ». Le bloc d'envoi passe en tête du tiroir
     et l'écran y descend.
 
+    UNE AUTRE DATE, sa demande du 27 septembre 2026 : « le mieux c'est de
+    faire comme pour les dates, un bouton on off où l'utilisateur choisit si
+    le client peut proposer ou non, et si oui il a accès au mois complet mais
+    seulement les dates dispo ». Même réglage que le devis
+    (`autreDateAutorisee`, allumé d'office) ; la semaine seule laissait le
+    client sans choix quand elle était pleine. Le bouton d'envoi passe SOUS
+    les lignes, à sa demande, et l'écran y descend toujours de lui-même.
+
     SANS RÉPONSE, sa décision du 27 septembre 2026 : « il faut qu'elle tienne
     jusqu'à la date prévue, au pire l'utilisateur la déplacera ». Une date
     proposée tient jusqu'au jour du passage ; aucune bascule avant.
@@ -109,6 +117,18 @@
   .ligne .q{flex:none;font-size:12.5px;color:var(--muted);text-align:right}
   .ligne.inerte{cursor:default}
   .rien{padding:10px 0 2px;font-size:13.5px;color:var(--muted)}
+  .reglage{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:14px;font-size:15px}
+  .interrupteur{width:48px;height:28px;flex:none;border-radius:999px;border:0;cursor:pointer;position:relative;background:var(--line)}
+  .interrupteur::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:999px;background:var(--card);transition:left .15s}
+  .interrupteur[aria-checked="true"]{background:var(--plein)}
+  .interrupteur[aria-checked="true"]::after{left:23px}
+  .mois-client{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;margin-top:10px}
+  .mois-client .ent-j{font-size:10.5px;text-align:center;color:#8a8578;text-transform:uppercase}
+  .mois-client button,.mois-client span.c{height:38px;border:0;border-radius:8px;font-size:14px}
+  .mois-client button{cursor:pointer;background:#F4EFE8;color:#1c1c1a}
+  .mois-client button[aria-pressed="true"]{background:#7d9a6d;color:#fff}
+  .mois-client span.c{display:flex;align-items:center;justify-content:center;color:#c9c4b8;text-decoration:line-through}
+  .mois-client span.v{visibility:hidden}
   .pret{margin:4px 0 0;font:400 19px/1.25 ui-serif,Georgia,serif}
   .appui{animation:appui 1.6s ease-in-out infinite}
   @keyframes appui{50%{box-shadow:0 0 0 6px rgba(185,139,71,.28)}}
@@ -190,7 +210,7 @@
   <ul>
     <li><b>Un seul lien par client et par mois.</b> Le 20, les passages d'octobre arrivent ; vous les posez, puis « Envoyer les dates d'octobre ». Le client reçoit toutes ses dates d'un coup, pas un SMS par tonte.</li>
     <li><b>Posé n'est pas retenu.</b> Tant qu'il n'a pas répondu, le trait est en or pointillé et le client est « En attente du client », comme un devis.</li>
-    <li><b>Il valide, ou il demande un autre jour pour un passage</b>, parmi vos jours libres de la même semaine. Vous n'avez rien à retoucher : le passage se déplace tout seul.</li>
+    <li><b>Il valide, ou il choisit une autre date pour un passage</b>, si vous l'avez permis : un interrupteur avant l'envoi, <b>« Votre client peut proposer une autre date »</b>, le même que pour un devis, allumé d'office. Permis, il voit le mois entier : vos jours pris sont barrés et ne répondent pas, comme sur le calendrier du devis, que le code reprendra tel quel. Vous n'avez rien à retoucher : le passage se déplace tout seul.</li>
     <li><b>Un rappel le 20</b> sur l'accueil : « Les passages d'octobre sont arrivés : 3 clients à planifier. »</li>
   </ul>
 
@@ -213,11 +233,17 @@ const DEPART = () => ({
   jourTouche: null,
   canal: "sms",
   etat: "a_poser", // a_poser | envoye | valide
+  // « Votre client peut proposer une autre date » : le même réglage que le
+  // devis, allumé d'office comme lui (`autreDateAutorisee`).
+  autreDate: true,
   enChoix: null,
 });
 let s = DEPART();
 
+// Les jours déjà pris par d'autres chantiers, pour que le client ne les voie pas libres.
+const PRIS_AILLEURS = [7, 8, 14, 15, 21, 28];
 function occupe(j) { return s.passages.filter((p) => (p.demande ?? p.jour) === j); }
+function libre(j, sauf) { return !PRIS_AILLEURS.includes(j) && occupe(j).every((p) => p.cle === sauf); }
 
 function dessinerPlanning() {
   const cases = [];
@@ -229,7 +255,7 @@ function dessinerPlanning() {
     html += `<div class="sem">${cases.slice(k, k + 7).map((j, i) => {
       if (j === null) return `<span class="jour vide"></span>`;
       const la = occupe(j);
-      const trait = la.length === 0 ? "" : s.etat === "valide" ? "retenu" : "propose";
+      const trait = la.length === 0 ? (PRIS_AILLEURS.includes(j) ? "retenu" : "") : s.etat === "valide" ? "retenu" : "propose";
       return `<button type="button" class="jour${i >= 5 ? " we" : ""}${s.jourTouche === j ? " touche" : ""}" data-jour="${j}" aria-label="${jourSemaine(j)} ${j} octobre">
         <div class="n">${j}</div><div class="b ${trait}"></div><div class="b"></div></button>`;
     }).join("")}</div>`;
@@ -253,9 +279,11 @@ function dessinerPlanning() {
     dedans.innerHTML = restants.length === 0
       ? `<span class="titre">À envoyer</span>
         <p class="pret">Mme Costa, ${s.passages.length} passage${s.passages.length > 1 ? "s" : ""} en octobre</p>
+        ${lignes}
+        <div class="reglage"><span>Votre client peut proposer une autre date</span>
+          <button type="button" class="interrupteur" id="autre-date" role="switch" aria-checked="${s.autreDate}" aria-label="Votre client peut proposer une autre date"></button></div>
         <div class="canaux"><button type="button" data-canal="sms" aria-pressed="${s.canal === "sms"}">Par SMS</button><button type="button" data-canal="email" aria-pressed="${s.canal === "email"}">Par e-mail</button></div>
-        <button type="button" class="envoyer appui" id="envoyer">Envoyer les dates d'octobre</button>
-        ${lignes}`
+        <button type="button" class="envoyer appui" id="envoyer">Envoyer les dates d'octobre</button>`
       : `<span class="titre">Sans date</span>${lignes}<p class="rien">${s.jourTouche ? "Touchez Mme Costa." : "Touchez d'abord un jour du calendrier."}</p>`;
   } else if (s.etat === "envoye") {
     poignee.className = "poignee";
@@ -271,11 +299,15 @@ function dessinerPlanning() {
   }
 }
 
-function joursLibresDeLaSemaine(j) {
-  const lundi = j - ((PREMIER_JOUR + j - 1) % 7);
-  const res = [];
-  for (let d = lundi; d < lundi + 5; d++) if (d >= 1 && d <= 31 && d !== j && occupe(d).length === 0) res.push(d);
-  return res;
+function moisDuClient(p, jour) {
+  const cases = [];
+  for (let i = 0; i < PREMIER_JOUR; i++) cases.push(`<span class="c v"></span>`);
+  for (let d = 1; d <= 31; d++) {
+    cases.push(libre(d, p.cle)
+      ? `<button type="button" data-autre="${p.cle}:${d}" aria-pressed="${d === jour}" aria-label="${jourSemaine(d)} ${d} octobre">${d}</button>`
+      : `<span class="c" aria-label="${d} octobre, pris">${d}</span>`);
+  }
+  return `<div class="mois-client">${["lu", "ma", "me", "je", "ve", "sa", "di"].map((x) => `<span class="ent-j">${x}</span>`).join("")}${cases.join("")}</div>`;
 }
 
 function dessinerClient() {
@@ -292,16 +324,15 @@ function dessinerClient() {
     return;
   }
   carte.innerHTML = `<p class="ent">Jardins du Val</p><h2>Vos passages d'octobre</h2>
-    <p class="sous">Mme Costa, voici les dates prévues. Elles vous vont ?</p>` +
+    <p class="sous">Mme Costa, voici les dates prévues.</p>` +
     s.passages.map((p) => {
       const jour = p.demande ?? p.jour;
-      const libres = joursLibresDeLaSemaine(p.jour);
       return `<div class="passage">
         <p class="quoi">${p.libelle}</p>
         <p class="quand${p.demande ? " change" : ""}">${jourSemaine(jour)} ${jour} octobre</p>
-        ${s.enChoix === p.cle
-          ? `<div class="jours">${[p.jour, ...libres].map((d) => `<button type="button" data-autre="${p.cle}:${d}" aria-pressed="${d === jour}">${jourSemaine(d)} ${d}</button>`).join("")}</div>`
-          : `<button type="button" class="autre" data-ouvrir="${p.cle}">Un autre jour cette semaine ?</button>`}
+        ${!s.autreDate ? "" : s.enChoix === p.cle
+          ? moisDuClient(p, jour)
+          : `<button type="button" class="autre" data-ouvrir="${p.cle}">Une autre date ?</button>`}
       </div>`;
     }).join("") +
     `<button type="button" class="valider" id="valider">Ces dates me vont</button>`;
@@ -340,6 +371,7 @@ document.addEventListener("click", (e) => {
   }
   const canal = t.closest("[data-canal]");
   if (canal) { s.canal = canal.dataset.canal; return dessinerPlanning(); }
+  if (t.closest("#autre-date")) { s.autreDate = !s.autreDate; return dessinerPlanning(); }
   if (t.closest("#envoyer")) { s.etat = "envoye"; return dessinerPlanning(); }
   const ouvrir = t.closest("[data-ouvrir]");
   if (ouvrir) { s.enChoix = ouvrir.dataset.ouvrir; return dessinerClient(); }

@@ -12,7 +12,11 @@ un rappel le 20 sur l'accueil. **Tranché le 27 : sans réponse, la date tient
 jusqu'au jour prévu** (*« au pire l'utilisateur la déplacera »*), aucune bascule
 avant. **Et l'envoi s'ouvre de lui-même** dès que la dernière date (ou la seule) est
 posée : le bloc « À envoyer » passe en tête du tiroir et l'écran y descend, sans
-retoucher le nom du client (sa demande du 27). Rien n'est codé.
+retoucher le nom du client (sa demande du 27). **Le bouton d'envoi est sous les
+lignes** (sa correction). **« Votre client peut proposer une autre date »** : un
+interrupteur avant l'envoi, allumé d'office, le même que le devis
+(`autreDateAutorisee`) ; permis, le client voit le mois entier, jours pris barrés,
+avec le `Calendrier` de la page du devis. Rien n'est codé.
 
 ## 🔜 CONTRAT D'ENTRETIEN : LOTS 1 ET 2 CODÉS, PAS SUR `main` (26 et 27 septembre 2026)
 
