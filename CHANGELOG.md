@@ -8,6 +8,15 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-27
 
+### Les dates du client ne se perdent plus avec sa correction
+
+Le client qui demandait une correction pouvait toucher des dates : elles
+partaient avec le formulaire, puis l'action les jetait avant de les lire. Le
+patron renvoyait le devis corrigé sans les voir, et reproposait les mêmes.
+Elles sont gardées (`jours_souhaites`, migration 0109), dites sous son message
+sur l'écran du devis envoyé, et posées d'office dans « Choisir la date » au
+renvoi quand elles tiennent encore. `ARCHITECTURE.md` §428.
+
 ### Les dates du mois d'un contrat, validées par le client
 
 La dernière date du mois posée, le tiroir du planning propose « Envoyer les

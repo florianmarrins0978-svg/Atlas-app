@@ -11,6 +11,16 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 
 ---
 
+## SES DATES AVEC LA CORRECTION : 27 septembre 2026, PAS SUR `main`
+
+| | |
+|---|---|
+| **la base** | `drizzle/0109_jours_souhaites_a_la_correction.sql`, colonne `jours_souhaites` d'`envois_devis` |
+| **l'écriture** | `enregistrerReponse` (branche non acceptée), l'action de `src/app/devis/[jeton]/actions.ts` lui passe les dates |
+| **la lecture** | `preparerEnvoi` rend `joursDuClient` ; `premiereProposition` décide ce que la feuille pose ; `ExportClient` affiche « Ses dates » |
+| **les suites** | `test-correction-devis` (base), `test-propositions-de-jours` (pure) |
+| **reste** | la batterie entière avant `main` |
+
 ## LE CONTRAT D'ENTRETIEN — 26 et 27 septembre 2026 (lots 1 et 2, pas sur `main`)
 
 | | |
