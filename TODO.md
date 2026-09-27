@@ -1,21 +1,32 @@
 # Prochaines tâches
 
-## ⏳ RAPPELS PAR RÔLE ET ORGANIGRAMME : PLANCHE POSÉE LE 27 SEPTEMBRE 2026
+## ⏳ RAPPELS PAR RÔLE ET ORGANIGRAMME : PLANCHE V2 DU 27 SEPTEMBRE 2026
 
-Planche `appli/rappels-par-role-et-organigramme.html`. **Rien n'est codé.** Sa
-question : le commercial et la facturation ont-ils des rappels ?
+Planche `appli/rappels-par-role-et-organigramme.html`. **Rien n'est codé.**
 
-Constat lu dans le code : `rappelsEnCours` ignore le rôle, donc commercial et
-facturation reçoivent tous les rappels de l'accueil ; le commercial reçoit « À
-facturer » et « Facture impayée », dont le bouton mène à une adresse qui lui est
-fermée (`FACTURE_DU_CHANTIER`, `/termines/tva`). Déjà relevé sur
-`accueil-ce-qui-vous-attend.html`, jamais codé. Aucun organigramme.
+**Tranché par lui le 27 septembre 2026 :** *« Le patron doit toujours tout
+recevoir. Ensuite il faut filtrer pour le commercial et la facturation. Chacun
+ne doit pas recevoir les rappels des autres. »* Donc : patron, tout ; commercial,
+`chantier-sans-devis` et `devis-sans-reponse` ; facturation, `chantier-non-facture`
+et `facture-impayee` ; `retour-pas-recu`, patron seul. Aujourd'hui
+`rappelsEnCours` ignore le rôle (le commercial reçoit deux cartes qui mènent à
+une adresse fermée). La règle se pose dans `src/lib/acces-roles.ts`, pas dans
+l'écran.
 
-| Attend sa réponse | |
+**Il veut aussi :** nommer un chef d'équipe, et un avatar avec la tête de chacun.
+
+**Corrigé dans la v2 :** la v1 rangeait les gars dans « Équipe A / B ». Aucun
+groupe de personnes n'existe : `nombre_equipes` n'est qu'une capacité, les gars
+sont la table `equipes` (salariés, migration 0067). Un chef avec ses gars
+demande donc une donnée neuve (un chef par salarié, nullable).
+
+| Proposé sur la v2 | |
 |---|---|
-| A (chacun les siens, le patron garde tout) ou B (le patron ne reçoit plus ce qu'un autre tient) | à trancher par lui |
-| organigramme déduit des rôles et des équipes, ou avec un chef d'équipe à saisir | à trancher par lui |
-| le tri des rappels qui ferment une porte au commercial | à coder dans les deux cas |
+| organigramme en haut de Réglages, Équipe (patron seul), rien de dessous ne bouge | à confirmer |
+| feuille d'une personne : photo, chef d'équipe et ses gars cochés, retirer | à confirmer |
+| retirer UNE personne (aujourd'hui le compteur retire toujours le dernier), sans effacer son passé au planning | à coder |
+| avatar = la photo de `photo-des-salaries.html` (autre session), jamais une seconde | attend son A ou B là-bas |
+| un seul chef par gars ? le chef voit-il plus dans Atlas ? | à trancher par lui |
 
 ## 🔜 LES DATES DU MOIS, VALIDÉES PAR LE CLIENT : SUR `main` LE 27 SEPTEMBRE 2026
 
