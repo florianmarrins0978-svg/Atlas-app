@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Terminés : l'ordre des lignes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  /*
+    « TERMINÉS », L'ORDRE DES LIGNES. Sa demande du 27 septembre 2026 :
+
+      « Ordre pour les factures terminé ordre croissant / date du devis
+        date de facturation. Fait une planche. »
+
+    CE QUE L'ÉCRAN FAIT AUJOURD'HUI (`preparer`, src/lib/termines-par-mois.ts) :
+    un mois à la fois, rangé par JOUR DU CHANTIER (le planning, sinon le jour de
+    la facture), du plus récent au plus ancien. Le mois se choisit toujours sur
+    le jour du chantier ; cette planche ne touche qu'à l'ordre DANS le mois.
+
+    SA PHRASE SE LIT DE DEUX FAÇONS, D'OÙ QUATRE PROPOSITIONS :
+      A. croissant, sur le jour du chantier (la clé ne change pas, le sens oui) ;
+      B. croissant, sur la date du DEVIS ;
+      C. croissant, sur la date de FACTURATION ;
+      D. un choix à l'écran, entre les trois, toujours croissant.
+
+    CE QUE CHAQUE CLÉ NE SAIT PAS, ET OÙ LA LIGNE VA ALORS :
+      • B : une facture créée sans devis (« Créer une facture ») n'a pas de date
+        de devis ;
+      • C : une ligne « À facturer » n'a pas encore de date de facture.
+    Ces lignes vont À LA FIN, entre elles par jour du chantier. En croissant, la
+    fin est « le plus tard » : une facture pas encore faite y est à sa place.
+    Rien ne s'invente (`docs/AGENT.md` §3).
+
+    B DOIT MONTRER LA DATE DU DEVIS, sinon l'ordre paraît au hasard : la date
+    du chantier est remplacée par « Devis du … » en tête de la petite ligne.
+    C ne coûte aucun mot : « Facturé le … » est déjà écrit.
+
+    LES DONNÉES : les noms et montants reprennent sa capture du 24 septembre.
+    Les dates de devis sont INVENTÉES (l'écran ne les montre pas), choisies pour
+    que les quatre ordres diffèrent vraiment.
+
+    RIEN N'EST CODÉ TANT QU'IL N'A PAS CHOISI (`CLAUDE.md` §3 bis).
+  */
+  :root{
+    --etabli:#e6e3dc; --etabli-carte:#faf9f5; --etabli-trait:rgba(28,28,26,.12);
+    --etabli-encre:#1c1c1a; --etabli-doux:#4a4a44; --etabli-or:#8b6835; --etabli-pin:#2f3b2f;
+    --serif:"Playfair Display",ui-serif,Georgia,serif;
+    --sans:"Inter",ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+    --fond:#f5f3ee; --plage:#faf9f5; --encre:#1c1c1a; --doux:#4a4a44;
+    --gris:#8a8578; --accent:#2f3b2f; --or:#B98B47; --orVoile:rgba(185,139,71,.55);
+    --plein:#7d9a6d; --surplein:#faf9f5; --trait:rgba(28,28,26,.12);
+  }
+  body.nuit{
+    --fond:#101210; --plage:#1a1d19; --encre:#e9e8de; --doux:#c1c2b6;
+    --gris:#84887b; --accent:#e9e8de; --or:#B98B47; --orVoile:rgba(185,139,71,.6);
+    --plein:#e9e8de; --surplein:#1a1d19; --trait:rgba(233,232,222,.12);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--etabli)}
+  body{font:16px/1.5 var(--sans);color:var(--etabli-encre);-webkit-text-size-adjust:100%;padding:0 0 70px}
+  button{font:inherit;color:inherit;-webkit-tap-highlight-color:transparent}
+  :focus-visible{outline:2px solid var(--etabli-or);outline-offset:2px;border-radius:4px}
+
+  .bandeau{background:#1c1c1a;color:#f5f3ee;padding:18px 20px;font-size:14px;line-height:1.6}
+  .bandeau b{color:#fff}
+
+  .etats{position:sticky;top:0;z-index:20;background:var(--etabli);
+         border-bottom:1px solid var(--etabli-trait);padding:12px 16px 13px}
+  .etats .rangee{max-width:560px;margin:0 auto;display:flex;flex-wrap:wrap;gap:7px}
+  .etats button{border:1px solid var(--etabli-trait);background:var(--etabli-carte);
+                color:var(--etabli-doux);border-radius:999px;padding:10px 14px;
+                font:400 13px/1 var(--sans);cursor:pointer}
+  .etats button[aria-pressed="true"]{background:var(--etabli-pin);border-color:var(--etabli-pin);color:#faf9f5}
+  .etats #charte{margin-left:auto}
+
+  .mot{max-width:560px;width:calc(100% - 32px);margin:18px auto 0;padding:15px 18px;background:var(--etabli-carte);
+       border-radius:13px;box-shadow:inset 0 0 0 1px var(--etabli-trait);
+       font-size:14px;line-height:1.62;color:var(--etabli-doux);min-height:78px}
+  .mot b{color:var(--etabli-encre)}
+
+  .tel{width:390px;max-width:100%;margin:18px auto 0;border-radius:26px;overflow:hidden;
+       background:var(--fond);color:var(--encre);box-shadow:0 16px 44px rgba(20,18,14,.22);
+       display:flex;flex-direction:column}
+
+  /* ── L'écran Terminés, repris du code (ListeTermines.tsx) ─────────── */
+  .enTete{display:flex;align-items:center;justify-content:space-between;padding:26px 26px 0}
+  .enTete h1{margin:0;font:400 36px/1.02 var(--serif)}
+  .carteTva{margin:24px 26px 0;border-radius:4px;padding:20px 18px;background:var(--plage);
+            box-shadow:inset 0 0 0 1.5px var(--orVoile);display:flex;align-items:center;
+            justify-content:space-between;gap:12px}
+  .carteTva .quoi{font:700 10.5px/1.35 var(--sans);letter-spacing:.16em;text-transform:uppercase;color:var(--or)}
+  .carteTva .quand{display:block;margin-top:5px;font:400 17px/1.2 var(--serif)}
+  .carteTva .combien{font:400 21px/1 var(--serif);color:var(--accent);font-variant-numeric:tabular-nums}
+  .portes{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;margin:28px 26px 0}
+  .porte{min-height:44px;display:inline-flex;align-items:center;border-radius:999px;padding:0 12px;
+         font:400 12.5px/1 var(--sans);white-space:nowrap;background:var(--plage);color:var(--doux);
+         box-shadow:inset 0 0 0 1px var(--trait)}
+  .porte.creer{margin-left:auto;background:transparent;color:var(--or);box-shadow:inset 0 0 0 1px var(--or);padding:0 14px}
+  .navMois{display:flex;align-items:center;justify-content:center;gap:2px;margin:32px 26px 0}
+  .navMois span.fl{width:34px;height:44px;display:grid;place-items:center;font:400 22px/1 var(--serif);color:var(--or)}
+  .navMois span.fl.off{color:var(--trait)}
+  .navMois .quand{font:400 26px/1.2 var(--serif);white-space:nowrap;margin:0 2px}
+  .comptes{display:flex;align-items:center;gap:6px;margin:14px 26px 12px;font:700 17px/1.5 var(--sans);min-height:26px}
+  .comptes .aFacturer{color:var(--or)}
+  .comptes .oeil{width:44px;height:44px;margin:-10px -4px -10px -8px;display:grid;place-items:center;color:var(--or)}
+
+  /* D : le choix de l'ordre. Trois pastilles de la même famille que les
+     portes, pour ne pas inventer un objet nouveau sur cet écran. */
+  .tri{display:none;gap:6px;margin:4px 26px 6px}
+  .tel[data-prop="d"] .tri{display:flex}
+  .tri button{min-height:36px;border:0;border-radius:999px;padding:0 13px;cursor:pointer;
+              font:400 12.5px/1 var(--sans);background:transparent;color:var(--doux);
+              box-shadow:inset 0 0 0 1px var(--trait)}
+  .tri button[aria-pressed="true"]{background:var(--encre);color:var(--fond);box-shadow:none}
+
+  .liste{margin:0 26px 10px}
+  .rangee{display:flex;gap:14px;align-items:center;padding:24px 0}
+  .rangee[data-facturee]{align-items:baseline}
+  .rangee:first-child{padding-top:22px}
+  .rangee .qui{min-width:0;flex:1}
+  .rangee .nomC{display:block;font:400 17px/1.2 var(--serif);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .rangee .etat{display:block;margin-top:5px;font:400 13px/1.5 var(--sans);color:var(--doux);font-variant-numeric:tabular-nums}
+  .rangee .etat b{font-weight:700;color:var(--or)}
+  .rangee .montant{flex:0 0 auto;font:700 16px/1.2 var(--serif);white-space:nowrap;font-variant-numeric:tabular-nums;color:var(--or)}
+  .capsule{flex:0 0 auto;min-height:44px;display:inline-flex;align-items:center;border-radius:999px;
+           padding:0 17px;font:600 12.5px/1 var(--sans);letter-spacing:.12em;text-transform:uppercase;
+           background:var(--plein);color:var(--surplein)}
+  .barre{display:flex;align-items:center;justify-content:space-around;height:60px;padding:0 6px;
+         background:var(--plage);box-shadow:inset 0 1px 0 var(--trait)}
+  .barre i{position:relative;padding:8px 6px;font:500 9.5px/1 var(--sans);font-style:normal;
+           letter-spacing:.18em;text-transform:uppercase;color:var(--gris)}
+  .barre i.actif{color:var(--encre)}
+  .barre i.actif::after{content:"";position:absolute;left:0;right:0;bottom:-2px;height:1.5px;background:var(--or)}
+
+  @media (max-width:430px){ .tel{border-radius:0;box-shadow:none;width:100%} }
+</style>
+</head>
+<body>
+<div class="bandeau">
+  <b>Votre demande du 27 septembre :</b> l'ordre des lignes dans Terminés,
+  croissant, date du devis, date de facturation.
+</div>
+
+<div class="etats" role="group" aria-label="La proposition">
+  <div class="rangee">
+    <button type="button" data-prop="avant" aria-pressed="false">Aujourd'hui</button>
+    <button type="button" data-prop="a" aria-pressed="true">A</button>
+    <button type="button" data-prop="b" aria-pressed="false">B</button>
+    <button type="button" data-prop="c" aria-pressed="false">C</button>
+    <button type="button" data-prop="d" aria-pressed="false">D</button>
+    <button type="button" id="charte" aria-pressed="false">Nuit</button>
+  </div>
+</div>
+
+<p class="mot" id="mot"></p>
+
+<section class="tel" id="tel" data-prop="a">
+  <div class="enTete"><h1>Terminés</h1></div>
+  <div class="carteTva"><span><span class="quoi">Ma TVA à déclarer</span>
+    <span class="quand">Septembre 2026</span></span><span class="combien">1 772,85 €</span></div>
+  <div class="portes">
+    <span class="porte">Retours d'intervention</span>
+    <span class="porte creer">Créer une facture</span>
+  </div>
+  <div class="navMois"><span class="fl">‹</span><span class="quand">Septembre 2026</span><span class="fl off">›</span></div>
+  <p class="comptes"><span class="aFacturer">3 à facturer</span>
+    <span class="oeil" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 20 20" fill="none"><path d="M2.2 10s2.8-5 7.8-5 7.8 5 7.8 5-2.8 5-7.8 5-7.8-5-7.8-5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><circle cx="10" cy="10" r="2.4" stroke="currentColor" stroke-width="1.6"/><path d="M3.6 16.4 16.4 3.6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></span>
+    <span>4 facturés</span></p>
+  <div class="tri" role="group" aria-label="Ranger par">
+    <button type="button" data-cle="chantier" aria-pressed="true">Chantier</button>
+    <button type="button" data-cle="devis" aria-pressed="false">Devis</button>
+    <button type="button" data-cle="facture" aria-pressed="false">Facture</button>
+  </div>
+  <div class="liste" id="liste"></div>
+  <div class="barre" aria-hidden="true"><i>Chantiers</i><i>Planning</i><i class="actif">Terminés</i><i>Paysage</i><i>Réglages</i></div>
+</section>
+
+<script>
+  // Dates au format AAAA-MM-JJ. `plan` : le jour posé au planning (null quand
+  // la facture a été créée sans passer par lui). `devis` : null quand la
+  // facture a été créée sans devis. `fac` : null tant que rien n'est facturé.
+  const LIGNES = [
+    { nom: "Mme Costa",                 plan: "2026-09-02", devis: "2026-08-18", fac: "2026-09-18", n: 10, montant: "1 120,00 €" },
+    { nom: "Mr. Frédéric",              plan: "2026-09-08", devis: "2026-08-25", fac: "2026-09-25", n: 13, montant: "1 240,00 €" },
+    { nom: "Madame Huguette Groupiron", plan: "2026-09-12", devis: "2026-08-29", fac: null, prevu: "660,00 €" },
+    { nom: "Mr. Julien",                plan: "2026-09-15", devis: "2026-09-02", fac: "2026-09-21", n: 11, montant: "552,52 €" },
+    { nom: "Mr. Frederic",              plan: "2026-09-22", devis: null,         fac: null },
+    { nom: "Mr. Julien",                plan: "2026-09-23", devis: "2026-09-10", fac: null, prevu: "696,00 €" },
+    { nom: "Mr. Julien",                plan: null,         devis: null,         fac: "2026-09-24", n: 12, montant: "996,00 €" },
+  ];
+
+  const MOIS = ["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"];
+  const jour = (iso) => `${Number(iso.slice(8, 10))} ${MOIS[Number(iso.slice(5, 7)) - 1]}`;
+  // Le jour du chantier : le planning, sinon le jour de la facture (`dateDuChantier`).
+  const duChantier = (l) => l.plan ?? l.fac;
+
+  /** Croissant sur la clé ; ce qui n'a pas la date va à la fin, par jour du chantier. */
+  function ranger(cle, sens) {
+    const date = { chantier: duChantier, devis: (l) => l.devis, facture: (l) => l.fac }[cle];
+    return [...LIGNES].sort((a, b) => {
+      const da = date(a), db = date(b);
+      if (!da !== !db) return da ? -1 : 1;
+      const x = da ?? duChantier(a), y = db ?? duChantier(b);
+      if (x === y) return 0;
+      return (x < y ? -1 : 1) * sens;
+    });
+  }
+
+  function petiteLigne(l, cle) {
+    const bouts = [];
+    // Sans devis, la ligne garde le jour du chantier plutôt que de rester muette.
+    if (cle === "devis" && l.devis) {
+      bouts.push(`Devis du ${jour(l.devis)}`);
+    } else if (l.plan) {
+      bouts.push(jour(l.plan));
+    }
+    if (l.fac === null) {
+      if (l.prevu) bouts.push(`${l.prevu} prévus`);
+      return bouts.join(", ");
+    }
+    bouts.push(`<b>Facturé</b> le ${jour(l.fac)}, Facture n° ${l.n}`);
+    return bouts.join(", ");
+  }
+
+  const MOTS = {
+    avant: "<b>Votre écran aujourd'hui :</b> par jour du chantier, <b>le plus récent en haut</b>.",
+    a: "<b>A : croissant, par jour du chantier.</b> Le 2 septembre en haut, le 24 en bas. Le chantier du jour est au bas de la liste.",
+    b: "<b>B : croissant, par date du devis.</b> La petite ligne montre « Devis du … » à la place du jour du chantier, sinon l'ordre paraît au hasard. <b>Une facture faite sans devis va à la fin.</b>",
+    c: "<b>C : croissant, par date de facturation.</b> Aucun mot de plus : « Facturé le … » est déjà écrit. <b>Ce qui reste à facturer va à la fin</b>, par jour du chantier.",
+    d: "<b>D : vous choisissez à l'écran</b>, sous les comptes. Toujours croissant. L'application retient votre dernier choix.",
+  };
+
+  const tel = document.getElementById("tel");
+  const liste = document.getElementById("liste");
+  const mot = document.getElementById("mot");
+  let prop = "a";
+  let cleD = "chantier";
+
+  function dessiner() {
+    const cle = prop === "b" ? "devis" : prop === "c" ? "facture" : prop === "d" ? cleD : "chantier";
+    const sens = prop === "avant" ? -1 : 1;
+    liste.innerHTML = ranger(cle, sens).map((l) => {
+      const etat = petiteLigne(l, cle);
+      const p = etat ? `<span class="etat">${etat}</span>` : "";
+      return l.fac === null
+        ? `<div class="rangee"><span class="qui"><span class="nomC">${l.nom}</span>${p}</span><span class="capsule">À facturer</span></div>`
+        : `<div class="rangee" data-facturee><span class="qui"><span class="nomC">${l.nom}</span>${p}</span><span class="montant">${l.montant}</span></div>`;
+    }).join("");
+  }
+
+  function choisir(p) {
+    prop = p;
+    tel.dataset.prop = p;
+    mot.innerHTML = MOTS[p];
+    for (const b of document.querySelectorAll(".etats button[data-prop]")) {
+      b.setAttribute("aria-pressed", String(b.dataset.prop === p));
+    }
+    dessiner();
+  }
+  for (const b of document.querySelectorAll(".etats button[data-prop]")) {
+    b.addEventListener("click", () => choisir(b.dataset.prop));
+  }
+  for (const b of document.querySelectorAll(".tri button")) {
+    b.addEventListener("click", () => {
+      cleD = b.dataset.cle;
+      for (const a of document.querySelectorAll(".tri button")) a.setAttribute("aria-pressed", String(a === b));
+      dessiner();
+    });
+  }
+  document.getElementById("charte").addEventListener("click", (e) => {
+    const nuit = document.body.classList.toggle("nuit");
+    e.currentTarget.setAttribute("aria-pressed", String(nuit));
+  });
+  choisir("a");
+</script>
+</body>
+</html>

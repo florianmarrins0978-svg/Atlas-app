@@ -1,6 +1,14 @@
 # Prochaines tâches
 
 
+## Terminés : l'ordre des lignes (27 septembre 2026), planche posée
+
+`appli/termines-l-ordre.html` : A, B, C ou D, tous croissants. À coder dans
+`preparer` (`src/lib/termines-par-mois.ts`) une fois choisi. **B demande une
+donnée que l'écran ne lit pas encore** : la date du dernier devis envoyé
+(`devis.date_emission`) n'est pas dans `listerChantiersTermines`. Ce qui n'a
+pas la date va à la fin, par jour du chantier.
+
 ## Site de vente : l'adresse de contact et le nom (27 septembre 2026)
 
 `appli/vente/index.html` porte `CONTACT = "contact@votre-domaine.fr"`, une

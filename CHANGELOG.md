@@ -8,6 +8,14 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-27
 
+### Planche : l'ordre des lignes de « Terminés » (`appli/termines-l-ordre.html`)
+
+**Sa demande** : *« ordre pour les factures terminé ordre croissant / date du
+devis date de facturation »*. Aujourd'hui l'écran range par jour du chantier,
+le plus récent en haut (`preparer`). Quatre ordres croissants proposés : A par
+jour du chantier, B par date du devis, C par date de facturation, D au choix à
+l'écran. Le mois reste choisi sur le jour du chantier. Rien n'est codé.
+
 ### Le site de vente d'Atlas (`appli/vente/`)
 
 **Sa demande** : *« je veux vendre mon application, j'ai besoin d'un site ;
