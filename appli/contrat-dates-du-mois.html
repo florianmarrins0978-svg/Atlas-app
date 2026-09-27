@@ -28,6 +28,12 @@
     date vous arrange ? » de la page du devis (`devis/[jeton]/formulaire.tsx`),
     le vert des boutons de la planche 129.
 
+    L'ENVOI S'OUVRE DE LUI-MÊME, sa demande du 27 septembre 2026 : « lorsqu'on
+    a ajouté la dernière date ou la seule date du passage, l'onglet avec
+    envoyer les dates s'affiche de suite, il ne faut pas avoir besoin de
+    recliquer sur le nom du client ». Le bloc d'envoi passe en tête du tiroir
+    et l'écran y descend.
+
     SANS RÉPONSE, sa décision du 27 septembre 2026 : « il faut qu'elle tienne
     jusqu'à la date prévue, au pire l'utilisateur la déplacera ». Une date
     proposée tient jusqu'au jour du passage ; aucune bascule avant.
@@ -103,6 +109,10 @@
   .ligne .q{flex:none;font-size:12.5px;color:var(--muted);text-align:right}
   .ligne.inerte{cursor:default}
   .rien{padding:10px 0 2px;font-size:13.5px;color:var(--muted)}
+  .pret{margin:4px 0 0;font:400 19px/1.25 ui-serif,Georgia,serif}
+  .appui{animation:appui 1.6s ease-in-out infinite}
+  @keyframes appui{50%{box-shadow:0 0 0 6px rgba(185,139,71,.28)}}
+  @media (prefers-reduced-motion:reduce){.appui{animation:none}}
   .envoyer{display:block;width:100%;min-height:52px;margin:14px 0 4px;border:0;border-radius:999px;cursor:pointer;
            background:var(--plein);color:var(--surPlein);font:400 17px/1.2 ui-serif,Georgia,serif}
   .canaux{display:flex;justify-content:center;gap:22px;margin-top:10px;font-size:14px}
@@ -230,17 +240,23 @@ function dessinerPlanning() {
   const poignee = document.getElementById("poignee");
   const dedans = document.getElementById("dedans");
   if (s.etat === "a_poser") {
-    poignee.className = "poignee" + (s.jourTouche && restants.length ? " or" : "");
+    poignee.className = "poignee" + ((s.jourTouche && restants.length) || !restants.length ? " or" : "");
     poignee.textContent = s.jourTouche && restants.length
       ? `À poser sur ${jourSemaine(s.jourTouche)} ${s.jourTouche} octobre`
-      : restants.length ? "1 client sans date" : "Dates d'octobre prêtes à partir";
+      : restants.length ? "1 client sans date" : "Prêt à envoyer à Mme Costa";
     const lignes = s.passages.map((p) => p.jour === null
       ? `<button type="button" class="ligne" data-poser="${p.cle}"><span class="nom">Mme Costa</span><span class="q">${p.libelle}</span></button>`
       : `<div class="ligne inerte"><span class="nom">Mme Costa</span><span class="q">${p.libelle}<br>proposé ${jourSemaine(p.jour)} ${p.jour}</span></div>`).join("");
-    dedans.innerHTML = `<span class="titre">Sans date</span>${lignes}` + (restants.length === 0 ? `
-      <div class="canaux"><button type="button" data-canal="sms" aria-pressed="${s.canal === "sms"}">Par SMS</button><button type="button" data-canal="email" aria-pressed="${s.canal === "email"}">Par e-mail</button></div>
-      <button type="button" class="envoyer" id="envoyer">Envoyer les dates d'octobre à Mme Costa</button>` :
-      `<p class="rien">${s.jourTouche ? "Touchez Mme Costa." : "Touchez d'abord un jour du calendrier."}</p>`);
+    // **La dernière date posée ouvre l'envoi, EN TÊTE du tiroir** : sa demande
+    // du 27 septembre, « il ne faut pas avoir besoin de recliquer sur le nom du
+    // client ». Posé en bas, sous les lignes, le bouton passait inaperçu.
+    dedans.innerHTML = restants.length === 0
+      ? `<span class="titre">À envoyer</span>
+        <p class="pret">Mme Costa, ${s.passages.length} passage${s.passages.length > 1 ? "s" : ""} en octobre</p>
+        <div class="canaux"><button type="button" data-canal="sms" aria-pressed="${s.canal === "sms"}">Par SMS</button><button type="button" data-canal="email" aria-pressed="${s.canal === "email"}">Par e-mail</button></div>
+        <button type="button" class="envoyer appui" id="envoyer">Envoyer les dates d'octobre</button>
+        ${lignes}`
+      : `<span class="titre">Sans date</span>${lignes}<p class="rien">${s.jourTouche ? "Touchez Mme Costa." : "Touchez d'abord un jour du calendrier."}</p>`;
   } else if (s.etat === "envoye") {
     poignee.className = "poignee";
     poignee.textContent = "1 en attente du client";
@@ -313,7 +329,15 @@ document.addEventListener("click", (e) => {
   const jour = t.closest("[data-jour]");
   if (jour && s.etat === "a_poser") { const j = Number(jour.dataset.jour); s.jourTouche = s.jourTouche === j ? null : j; return dessinerPlanning(); }
   const poser = t.closest("[data-poser]");
-  if (poser && s.jourTouche) { s.passages.find((p) => p.cle === poser.dataset.poser).jour = s.jourTouche; s.jourTouche = null; return dessinerPlanning(); }
+  if (poser && s.jourTouche) {
+    s.passages.find((p) => p.cle === poser.dataset.poser).jour = s.jourTouche;
+    s.jourTouche = null;
+    dessinerPlanning();
+    // La dernière posée : l'écran va de lui-même jusqu'au bouton d'envoi.
+    const envoyer = document.getElementById("envoyer");
+    if (envoyer) envoyer.scrollIntoView({ behavior: "smooth", block: "center" });
+    return;
+  }
   const canal = t.closest("[data-canal]");
   if (canal) { s.canal = canal.dataset.canal; return dessinerPlanning(); }
   if (t.closest("#envoyer")) { s.etat = "envoye"; return dessinerPlanning(); }

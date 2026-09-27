@@ -10,7 +10,9 @@ passages posés en or pointillé (proposés) jusqu'à la réponse, « En attente
 client » comme un devis, un autre jour libre de la semaine au choix du client,
 un rappel le 20 sur l'accueil. **Tranché le 27 : sans réponse, la date tient
 jusqu'au jour prévu** (*« au pire l'utilisateur la déplacera »*), aucune bascule
-avant. Rien n'est codé.
+avant. **Et l'envoi s'ouvre de lui-même** dès que la dernière date (ou la seule) est
+posée : le bloc « À envoyer » passe en tête du tiroir et l'écran y descend, sans
+retoucher le nom du client (sa demande du 27). Rien n'est codé.
 
 ## 🔜 CONTRAT D'ENTRETIEN : LOTS 1 ET 2 CODÉS, PAS SUR `main` (26 et 27 septembre 2026)
 
