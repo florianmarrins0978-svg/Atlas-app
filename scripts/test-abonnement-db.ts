@@ -368,6 +368,74 @@ async function main() {
     assert.equal(retour.ok, true, "on ne peut plus remettre quelqu'un salarié");
   });
 
+  console.log("\n── Les trois formules, jusqu'au compte de trop ──\n");
+
+  // Sa demande du 27 septembre 2026 : *« simule 5 comptes sur l'abonnement
+  // entreprise, puis 6, voir si ça ferme l'accès ; pareil pour les deux
+  // autres »*, après avoir appris qu'une entreprise peut avoir deux patrons.
+  // La suite d'au-dessus ne remplissait « Entreprise » qu'avec des
+  // commerciaux : un SECOND PATRON et la facturation n'y entraient jamais,
+  // alors que ce sont eux qu'il va ajouter.
+  const ROLES_QUI_FABRIQUENT = ["proprietaire", "facturation", "commercial"] as const;
+  let rang = 0;
+  const ajouter = (ctx: Ctx, role: (typeof ROLES_QUI_FABRIQUENT)[number] | "salarie") =>
+    donnerUnAcces(ctx, {
+      nom: `Compte ${++rang}`,
+      email: `formule-${rang}-${Date.now()}@t.test`,
+      motDePasse: "motdepasse-douze",
+      confirmation: "motdepasse-douze",
+      role,
+    });
+
+  for (const [code, plafond] of [
+    ["artisan", 1],
+    ["entreprise", 5],
+  ] as const) {
+    await test(`« ${code} » : ${plafond} compte(s) aux devis passent, le suivant est refusé QUEL QUE SOIT son rôle`, async () => {
+      const ctx = await contexte(`Formule ${code}`);
+      await enregistrerLAbonnement(ctx, etat({ abonnementPrestataire: `sub_F_${code}`, formule: code }));
+
+      // Le créateur est déjà patron : il occupe la première place. On remplit
+      // le reste en faisant tourner les rôles, un second patron en tête.
+      for (let i = 1; i < plafond; i++) {
+        const role = ROLES_QUI_FABRIQUENT[(i - 1) % ROLES_QUI_FABRIQUENT.length];
+        const r = await ajouter(ctx, role);
+        assert.equal(r.ok, true, `le compte ${i + 1} (${role}) a été refusé alors qu'il reste de la place`);
+      }
+      assert.equal(await compterLesFabricants(ctx), plafond);
+
+      for (const role of ROLES_QUI_FABRIQUENT) {
+        const r = await ajouter(ctx, role);
+        assert.equal(r.ok, false, `un ${role} de plus est passé au-delà de ${plafond}`);
+        if (!r.ok) assert.equal(r.refus, "plafond-atteint");
+      }
+      assert.equal(await compterLesFabricants(ctx), plafond, "le compte a bougé malgré les refus");
+
+      // Plein n'est pas fermé : un salarié entre toujours, et ne compte pas.
+      assert.equal((await ajouter(ctx, "salarie")).ok, true, "un salarié a été refusé sur une formule pleine");
+
+      // La porte de côté, pour un PATRON cette fois.
+      const gars = (await listerAcces(ctx)).find((l) => l.role === "salarie");
+      assert.ok(gars);
+      const promu = await changerLeRole(ctx, gars.id, "proprietaire");
+      assert.equal(promu.ok, false, "un salarié est devenu patron au-delà du plafond");
+      if (!promu.ok) assert.equal(promu.refus, "plafond-atteint");
+    });
+  }
+
+  await test("« illimite » : douze comptes aux devis, dont cinq patrons, passent tous", async () => {
+    const ctx = await contexte("Formule illimite");
+    await enregistrerLAbonnement(ctx, etat({ abonnementPrestataire: "sub_F_illimite", formule: "illimite" }));
+    for (let i = 1; i < 12; i++) {
+      const role = ROLES_QUI_FABRIQUENT[(i - 1) % ROLES_QUI_FABRIQUENT.length];
+      const r = await ajouter(ctx, role);
+      assert.equal(r.ok, true, `le compte ${i + 1} (${role}) a été refusé en « Illimité »`);
+    }
+    assert.equal(await compterLesFabricants(ctx), 12);
+    const patrons = (await listerAcces(ctx)).filter((l) => l.role === "proprietaire").length;
+    assert.equal(patrons, 5, "les patrons ajoutés ne sont pas tous patrons");
+  });
+
   console.log(`\n${passed} test(s) réussi(s), ${failed} échoué(s).`);
   await fermerLimiteur();
   await pool.end();
