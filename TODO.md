@@ -1,20 +1,24 @@
 # Prochaines tâches
 
-## ⏳ SES DATES, PERDUES QUAND IL DEMANDE UNE CORRECTION (27 septembre 2026)
+## 🔜 SES DATES, GARDÉES AVEC LA CORRECTION : CODÉ LE 27 SEPTEMBRE 2026, PAS SUR `main`
 
 Sa plainte : *« mon client a demandé une correction et proposé des dates ; quand
 je corrige et renvoie, je ne vois pas ses dates, donc je repropose les mêmes »*.
+Planche `appli/dates-du-client-au-renvoi.html`, **A retenue**. Sa consigne :
+*« lance aucune batterie »*. Niveau 3 (migration 0109, devis) : **la batterie
+reste à jouer avant `main`**. `ARCHITECTURE.md` §428.
 
-**La racine, lue dans le code** : la page publique envoie les dates avec
-« Une correction » (un seul formulaire, `src/app/devis/[jeton]/formulaire.tsx`),
-mais `actions.ts` rend la main dans la branche `correction` AVANT de les lire,
-et `enregistrerReponse` (`envois-devis.ts`) n'écrit que `precisionClient`. Rien
-n'est gardé : aucun écran ne peut les montrer, et `EnvoiAuClient` s'ouvre vide.
+| Codé et éprouvé ici | |
+|---|---|
+| la correction garde ses jours (`jours_souhaites`), sans rien retenir au planning | `test-correction-devis` |
+| l'écran du devis envoyé : « Ses dates : le lundi 12 octobre et le mardi 13 octobre. » sous son message | regardé |
+| « Choisir la date » au renvoi s'ouvre sur son mois, ses jours posés | regardé |
+| la notification « Correction demandée » dit ses dates, dans la même phrase (sa réponse : « Oui je veux voir ses dates ») | regardé |
+| un jour passé ou sans place : retour au premier jour libre | `test-propositions-de-jours` |
 
-Planche `appli/dates-du-client-au-renvoi.html` : 1, une ligne sous son message
-sur l'écran du devis envoyé ; 2, au renvoi, A ses jours déjà posés ou B entourés.
-**Rien n'est codé.** À coder après son choix : garder les jours sur la
-correction (niveau 3, devis), les lire au renvoi depuis le dernier envoi.
+| Reste | Qui |
+|---|---|
+| la batterie entière, puis `main` | avec son accord |
 
 ## 🔜 RAPPELS PAR RÔLE ET ORGANIGRAMME : CODÉS LE 27 SEPTEMBRE 2026, PAS SUR `main`
 

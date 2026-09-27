@@ -33745,3 +33745,28 @@ il faut garder le filtre qui existe aujourd'hui »*.
 `BANDE_SANS_CHANTIER`) et `dernierJour` dans ce que la page transmet à l'écran,
 qui ne s'en sert plus. La variante B (un choix « A à Z » / « Récents ») a été
 écartée par lui.
+
+## §428 : Les jours d'une correction sont un souhait, gardés à part
+
+**Sa plainte du 27 septembre 2026** : *« quand je corrige le devis et que je lui
+renvoie, je ne vois pas les dates qu'il a proposées »*. La page publique du
+devis n'a qu'un formulaire : les dates partaient avec « Une correction », et la
+branche `correction` de `src/app/devis/[jeton]/actions.ts` rendait la main
+avant de les lire.
+
+**Une colonne à part, `jours_souhaites` (migration 0109).** `date_retenue` et
+`jours_retenus` disent qu'une date est RETENUE : la page du client écrit
+« Intervention prévue le… » et la notification « le client a accepté » dès
+qu'elles sont remplies. Une correction ne retient rien.
+
+**Une seule règle pour les deux issues.** `enregistrerReponse` juge les jours
+avant la décision (date offerte, contre-proposition, autre date autorisée), et
+la durée se lit par `dureeDuChantier`, pour l'acceptation comme pour la
+correction. Une correction ne pose rien au planning.
+
+**Au renvoi**, `preparerEnvoi` relit les jours du DERNIER envoi s'il est une
+correction, et `premiereProposition` (`src/lib/propositions-de-jours.ts`) les
+pose d'office à la place du premier jour libre, sauf si un jour est passé ou
+sans place : on ne fait pas partir un jour que le patron n'a pas jugé. L'écran
+du devis envoyé les dit sous le message du client, quoi qu'il arrive, et la
+notification « Correction demandée » dans sa phrase (`notificationsPatron`).

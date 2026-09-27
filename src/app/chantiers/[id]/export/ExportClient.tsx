@@ -8,6 +8,7 @@ import TransmettreAuClient from "./TransmettreAuClient";
 import { etatEnvoiExplication, etatEnvoiLabel, type EtatEnvoi } from "@/lib/etat-envoi";
 import { reprendreDevisAction } from "./actions";
 import { enEuros } from "@/lib/euros";
+import { joursEnToutesLettres } from "@/lib/jour";
 import { type Civilite } from "@/lib/civilite";
 
 
@@ -27,6 +28,7 @@ export default function ExportClient({
   initialEnvoye,
   etatEnvoi,
   messageClient,
+  joursDuClient,
   lienEnvoi,
   origine,
 }: {
@@ -50,6 +52,8 @@ export default function ExportClient({
   etatEnvoi: EtatEnvoi;
   /** Ce que le client a écrit, mot pour mot. Vide s'il n'a rien dit. */
   messageClient: string | null;
+  /** Les jours qu'il a proposés avec sa correction, ou `null`. */
+  joursDuClient: string[] | null;
   /** Le lien encore actif, tant que le client n'a pas répondu. */
   lienEnvoi: string | null;
   /** Origine du site, calculée côté serveur — voir le commentaire dans page.tsx. */
@@ -194,6 +198,7 @@ export default function ExportClient({
           // (`src/lib/message-client.ts`).
           phrase={etatEnvoiExplication[etatEnvoi]}
           messageClient={messageClient}
+          joursDuClient={joursDuClient}
           numeroDevis={numeroDevis}
           totalTtc={totalTtc}
           onModifier={peutReprendre ? null : () => setAvertissementVisible(true)}
@@ -376,6 +381,7 @@ function EcranDevisParti({
   etat,
   phrase,
   messageClient,
+  joursDuClient,
   numeroDevis,
   totalTtc,
   onModifier,
@@ -387,6 +393,7 @@ function EcranDevisParti({
   etat: string;
   phrase: string;
   messageClient: string | null;
+  joursDuClient: string[] | null;
   numeroDevis: string;
   totalTtc: string;
   /** `null` quand reprendre le devis est déjà l'action principale de l'écran. */
@@ -425,6 +432,20 @@ function EcranDevisParti({
         >
           « {messageClient} »
         </blockquote>
+      )}
+
+      {/* **Ses dates, juste sous son message** — sa plainte du 27 septembre
+          2026 : *« je ne vois pas les dates qu'il a proposées, donc je lui
+          repropose les mêmes »*. Une ligne de plus, rien ne bouge au-dessus
+          (planche `appli/dates-du-client-au-renvoi.html`). */}
+      {joursDuClient && joursDuClient.length > 0 && (
+        <p
+          data-atlas="dates-du-client"
+          className="mt-2.5 pl-3 text-[14px] leading-relaxed"
+          style={{ borderLeft: `2px solid ${colors.rust}`, color: colors.ink }}
+        >
+          {joursDuClient.length > 1 ? "Ses dates" : "Sa date"} : {joursEnToutesLettres(joursDuClient)}.
+        </p>
       )}
 
       <div className="mt-8 text-center">

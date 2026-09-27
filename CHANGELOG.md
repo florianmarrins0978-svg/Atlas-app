@@ -45,6 +45,16 @@ ni Mme** (sinon toutes les dames passaient ensemble), les bandes de mois
 deviennent des lettres, et la recherche ne change pas. À nom égal, le plus
 récent reste devant. `ARCHITECTURE.md` §428.
 
+### Les dates du client ne se perdent plus avec sa correction
+
+Le client qui demandait une correction pouvait toucher des dates : elles
+partaient avec le formulaire, puis l'action les jetait avant de les lire. Le
+patron renvoyait le devis corrigé sans les voir, et reproposait les mêmes.
+Elles sont gardées (`jours_souhaites`, migration 0109), dites sous son message
+sur l'écran du devis envoyé, et posées d'office dans « Choisir la date » au
+renvoi quand elles tiennent encore. La notification « Correction demandée »
+les dit aussi, dans sa phrase. `ARCHITECTURE.md` §428.
+
 ### Les dates du mois d'un contrat, validées par le client
 
 La dernière date du mois posée, le tiroir du planning propose « Envoyer les

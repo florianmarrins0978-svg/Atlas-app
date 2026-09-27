@@ -10,6 +10,7 @@ import {
   notificationsPatron,
   dernierEnvoi,
 } from "../src/server/repositories/envois-devis";
+import { preparerEnvoi } from "../src/server/repositories/preparation-envoi";
 import { etatEnvoi, etatEnvoiLabel, demandeUneAction } from "../src/lib/etat-envoi";
 import { versJourIso, ajouterJours } from "../src/lib/disponibilites";
 import { nettoyerBase } from "./_test-db";
@@ -262,6 +263,56 @@ async function main() {
       await connexion.query("ROLLBACK").catch(() => {});
       connexion.release();
     }
+  });
+
+  /**
+   * **SES DATES NE SE PERDENT PLUS AVEC LA CORRECTION** — sa plainte du
+   * 27 septembre 2026 : *« mon client a demandé une correction et proposé des
+   * dates ; quand je corrige et renvoie, je ne vois pas ses dates, donc je
+   * repropose les mêmes »*. Elles partaient avec le formulaire, et l'action les
+   * jetait avant de les lire. Planche `appli/dates-du-client-au-renvoi.html`.
+   */
+  await test("les jours qu'il propose avec sa correction sont gardés, et relus au renvoi", async () => {
+    const { ctx, chantierId, envoi } = await contexteAvecEnvoi(`jours-${Date.now()}@t.test`);
+    const siens = [dans(14), dans(15)];
+    const r = await enregistrerReponse(
+      envoi.jeton,
+      { decision: "correction", precision: MESSAGE, dateRetenue: siens[0], joursRetenus: siens },
+      MARDI
+    );
+    assert.equal(r.succes, true, "La correction accompagnée de dates a été refusée.");
+
+    const dernier = await dernierEnvoi(ctx, chantierId);
+    assert.deepEqual(dernier?.joursSouhaites, siens, "Ses jours ne sont pas gardés avec la correction.");
+    assert.equal(dernier?.dateRetenue, null, "Une correction ne retient aucune date : le planning n'a rien à poser.");
+
+    const preparation = await preparerEnvoi(ctx, chantierId, MARDI);
+    assert.deepEqual(preparation.joursDuClient, siens, "Le renvoi ne relit pas les jours du client.");
+ 
+    // Sa réponse du 27 septembre : « Oui je veux voir ses dates » dans la
+    // notification « Correction demandée ».
+    const [notification] = await notificationsPatron(ctx);
+    assert.deepEqual(notification?.joursSouhaites, siens, "La notification ne porte pas ses dates.");
+  });
+
+  await test("la date qu'il prend parmi les vôtres est gardée, avec le chantier derrière elle", async () => {
+    const { ctx, chantierId, envoi } = await contexteAvecEnvoi(`prise-${Date.now()}@t.test`);
+    await enregistrerReponse(
+      envoi.jeton,
+      { decision: "correction", precision: MESSAGE, dateRetenue: dans(7) },
+      MARDI
+    );
+    const dernier = await dernierEnvoi(ctx, chantierId);
+    assert.equal(dernier?.joursSouhaites?.[0], dans(7), "La date offerte qu'il a prise n'est pas gardée.");
+  });
+
+  await test("sans date touchée, la correction n'en invente aucune", async () => {
+    const { ctx, chantierId, envoi } = await contexteAvecEnvoi(`sans-${Date.now()}@t.test`);
+    await enregistrerReponse(envoi.jeton, { decision: "correction", precision: MESSAGE }, MARDI);
+    const dernier = await dernierEnvoi(ctx, chantierId);
+    assert.equal(dernier?.joursSouhaites ?? null, null);
+    const preparation = await preparerEnvoi(ctx, chantierId, MARDI);
+    assert.equal(preparation.joursDuClient, null);
   });
 
   console.log(`\n${reussis} test(s) réussi(s), ${echoues} échoué(s).`);

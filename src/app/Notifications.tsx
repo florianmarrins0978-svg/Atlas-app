@@ -5,7 +5,7 @@ import { ordonnerLesCartes } from "@/lib/ordre-notifications";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { colors, font, smallCaps } from "@/lib/design-tokens";
-import { jourLisible } from "@/lib/jour";
+import { jourLisible, joursEnToutesLettres } from "@/lib/jour";
 import { suiteDeLaReponse, type SuiteDeLaReponse } from "@/lib/suite-de-la-reponse";
 import {
   marquerReponseVueAction,
@@ -178,8 +178,12 @@ function versCarte(n: NotificationPatron): Carte {
       : n.dateContreProposee
         ? "Autre date proposée"
         : "Devis accepté";
+  // Ses dates dans la même phrase, pas sur une ligne à part : sa réponse du
+  // 27 septembre 2026, « je veux voir ses dates ». La carte ne bouge pas.
   const texte = correction
-    ? "Le client veut ce devis corrigé avant de l'accepter."
+    ? n.joursSouhaites && n.joursSouhaites.length > 0
+      ? `Le client veut ce devis corrigé avant de l'accepter. ${n.joursSouhaites.length > 1 ? "Ses dates" : "Sa date"} : ${joursEnToutesLettres(n.joursSouhaites)}.`
+      : "Le client veut ce devis corrigé avant de l'accepter."
     : refus
       ? "Le client n'a pas donné suite. Le devis peut être repris et renvoyé."
       : n.dateRetenue

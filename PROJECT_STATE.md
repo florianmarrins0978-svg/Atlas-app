@@ -17,6 +17,13 @@ le commercial les rappels de devis, la facturation ceux des factures, le
 salarié aucun (`recoitLesRappels`). **Niveau 3** (rôles) : batterie à jouer
 avec son accord avant `main`.
 
+## CODÉ, PAS SUR `main` : SES DATES GARDÉES AVEC LA CORRECTION (27 septembre 2026)
+
+Le client qui demande une correction garde ses dates : elles se lisent sous
+son message sur l'écran du devis envoyé, et « Choisir la date » les pose au
+renvoi. Migration 0109, `ARCHITECTURE.md` §428. Batterie pas jouée, à sa
+demande : elle reste due avant `main` (niveau 3).
+
 ## SUR `main` : LES DATES DU MOIS D'UN CONTRAT (27 septembre 2026)
 
 La dernière date d'un mois posée au planning ouvre « À envoyer » : un lien par
