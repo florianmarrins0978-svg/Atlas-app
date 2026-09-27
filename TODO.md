@@ -85,15 +85,14 @@ communiquent entre elles lors de l'envoi de la facture. »* `ARCHITECTURE.md`
 foi (celui d'Atlas ou celui de l'outil), quel PDF part chez le client, que fait
 l'envoi quand la connexion est coupée ou révoquée.
 
-## ⏳ UNE PLANCHE À REGARDER : VOS CLIENTS DE A À Z (27 septembre 2026)
+## VOS CLIENTS DE A À Z : CODÉ (A), PAS ENCORE SUR `main` (27 septembre 2026)
 
-Sa demande : *« Filtre client trier par ordre alphabétique »*. Planche
-`appli/clients-a-a-z.html` : **A** toujours de A à Z (bandes de lettres au lieu
-des mois), **B** au choix « A à Z » / « Récents » sous la recherche. Défendue :
-A. Clé de tri : le nom sans civilité (`detacherCivilite`), à nom égal le plus
-récent devant. **Rien n'est codé.** À coder une fois choisie : le tri dans
-`listerFichesClients` (ou à l'écran), des bandes par lettre à côté de
-`grouperEnBandes` dans `src/lib/bandes-clients.ts`, et ses suites.
+Il a retenu la planche A (`appli/clients-a-a-z.html`), avec la recherche
+d'aujourd'hui gardée telle quelle. Codé sur `claude/filtre-client-tri-alpha-1aj8xi`
+(`ARCHITECTURE.md` §428). Joués : types, lint, `test-bandes-clients`,
+`test-liste-clients` (vu rouge sans la correction), couches, code mort, tirets,
+pansements, et l'écran regardé. **Pas de batterie, à sa demande** : le contrôle
+de son niveau (2 : `npm run verifier:avant-fusion`) reste à jouer avant `main`.
 
 ## Site de vente : l'adresse de contact et le nom (27 septembre 2026)
 

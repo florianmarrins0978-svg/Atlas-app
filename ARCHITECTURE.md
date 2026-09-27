@@ -33711,3 +33711,22 @@ ses passages du mois, comme les dates d'un devis. Migration 0108.
 | le déplacement s'écrit par `ecrireLesCreneaux` | le seul écrivain de « où le chantier est posé » (§322) |
 | l'envoi est gardé par `exigerEcritureSurLePlanning` ; la page du client par son jeton exact (politique `app.jeton_dates`) et `verifierLimite` | qui pose le planning envoie ses dates ; la réponse a les bornes de celle du contrat |
 | `/contrat/dates/<jeton>` sous le préfixe public `/contrat` | aucun chemin public de plus à tenir |
+
+## §428 : La liste des clients va de A à Z
+
+**Sa demande du 27 septembre 2026** : *« Filtre client trier par ordre
+alphabétique »*, puis sur la planche `appli/clients-a-a-z.html` : *« la A, mais
+il faut garder le filtre qui existe aujourd'hui »*.
+
+| | |
+|---|---|
+| l'ordre | décidé au dépôt, `listerFichesClients` → `rangerParNom` (`src/lib/bandes-clients.ts`) ; l'écran ne trie pas |
+| la clé | le nom **sans sa civilité** (`detacherCivilite`), sans accents ni casse, en `localeCompare` français : sinon toutes les « Mme » se rangeraient ensemble, puis tous les « Mr. » |
+| deux homonymes | le plus récent devant (`dernierJour`, `jourDeRangement`), l'ordre d'avant gardé à l'intérieur du nom |
+| les bandes | des lettres (`lettreDuClient`), plus des mois ; un nom hors alphabet va sous « # », en fin de liste |
+| la recherche | inchangée (`filtrerClientsParNom`) : elle filtre la liste rangée, toujours sans bande |
+
+**Ce qui a été retiré** : les bandes de mois (`bandeDuClient`, `BANDE_PLUS_ANCIEN`,
+`BANDE_SANS_CHANTIER`) et `dernierJour` dans ce que la page transmet à l'écran,
+qui ne s'en sert plus. La variante B (un choix « A à Z » / « Récents ») a été
+écartée par lui.

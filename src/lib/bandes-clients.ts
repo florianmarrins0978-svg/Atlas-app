@@ -1,68 +1,72 @@
-import { moisDuJour } from "./jour";
+import { detacherCivilite } from "./civilite";
 
 /**
- * Les bandes qui annoncent l'ordre de la liste des clients.
+ * L'ordre de la liste des clients, et les bandes qui l'annoncent.
  *
- * **Sa remarque du 3 septembre 2026, maquette en main :** *« une liste longue se
- * parcourt à l'aveugle : il n'y a ni ordre annoncé, ni repère pour sauter
- * quelque part. »*
+ * **Sa demande du 27 septembre 2026 :** *« Filtre client trier par ordre
+ * alphabétique »*, puis, planche en main (`appli/clients-a-a-z.html`) : *« la
+ * A, mais il faut garder le filtre qui existe aujourd'hui »*. La liste se range
+ * donc de A à Z, et les bandes sont des LETTRES. La recherche ne change pas :
+ * elle filtre la liste rangée, et ses résultats restent sans bande.
  *
- * **La liste ÉTAIT déjà rangée — du chantier le plus récent au plus ancien**
- * (`listerFichesClients`). Personne ne pouvait le savoir : rien ne le disait, et
- * `page.tsx` ne transmettait même pas la date qui commande ce tri. Ces bandes ne
- * changent donc pas l'ordre : elles le NOMMENT, et donnent au pouce des repères
- * où s'arrêter en descendant vingt et un noms.
+ * **Avant, du 3 au 27 septembre**, la liste allait du chantier le plus récent
+ * au plus ancien, en bandes de mois (sa remarque du 3 septembre : *« une liste
+ * longue se parcourt à l'aveugle »*). Les bandes restent pour cette raison-là :
+ * elles nomment l'ordre, et donnent au pouce des repères où s'arrêter.
  *
- * **Trois mois nommés, le reste groupé.** Un mois par bande donnerait neuf
- * bandes pour vingt et un clients : le repère deviendrait le bruit qu'il devait
- * réduire. Les trois derniers mois sont ceux dont il se souvient — au-delà, il
- * cherche par le nom, pas par la date.
- *
- * **Règle pure, hors de tout écran** (`CLAUDE.md` §3) : la même fonction range
- * la liste et se laisse éprouver sans base ni navigateur.
+ * **Règle pure, hors de tout écran** (`CLAUDE.md` §3) : le dépôt range avec
+ * `rangerParNom`, l'écran groupe avec `grouperEnBandes`, et rien d'autre ne
+ * décide de l'ordre.
  */
 
-/** Ce dont une bande a besoin d'un client : la date de son dernier chantier. */
-export type ClientDate = { dernierJour: string | null };
+/** Ce dont le rangement a besoin d'un client. */
+export type ClientRange = { nom: string; dernierJour: string | null };
 
-/** Un client sans aucun chantier : il n'a pas de date, et il passe en dernier. */
-export const BANDE_SANS_CHANTIER = "sans chantier";
-
-/** Au-delà des trois mois nommés. */
-export const BANDE_PLUS_ANCIEN = "plus ancien";
+/** Un nom qui ne commence pas par une lettre (« 3F Habitat », un nom vide). */
+export const BANDE_HORS_ALPHABET = "#";
 
 /**
- * Le nombre de mois entre deux jours « AAAA-MM-JJ ».
+ * Le nom sans sa civilité, sans accents ni casse : c'est lui qui range.
  *
- * **En mois de calendrier, jamais en jours divisés par trente.** Le 1er
- * septembre et le 31 août sont à un jour l'un de l'autre et dans deux bandes :
- * c'est voulu, ce sont deux mois. Compter en jours ferait sauter la frontière
- * d'un mois à l'autre selon la longueur de février.
+ * **Trier sur le nom brut rangerait toutes les « Mme » ensemble, puis tous les
+ * « Mr. »** : l'ordre alphabétique ne servirait à rien. La civilité se retire
+ * par la fonction qui la reconnaît déjà partout (`detacherCivilite`), jamais
+ * par une seconde liste de titres.
  */
-function moisDEcart(jour: string, aujourdHui: string): number | null {
-  const [a, m] = jour.split("-").map(Number);
-  const [aa, am] = aujourdHui.split("-").map(Number);
-  if (!a || !m || !aa || !am) return null;
-  return (aa - a) * 12 + (am - m);
+function cleDuNom(nom: string): string {
+  return detacherCivilite(nom)
+    .nom.normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .toLocaleLowerCase("fr");
+}
+
+/** La bande d'un client : la première lettre de son nom sans civilité. */
+export function lettreDuClient(nom: string): string {
+  const premiere = cleDuNom(nom).charAt(0).toUpperCase();
+  return /^[A-Z]$/.test(premiere) ? premiere : BANDE_HORS_ALPHABET;
 }
 
 /**
- * La bande d'un client, en bas de casse — l'écran la met en capitales.
+ * La liste rangée de A à Z, **sans toucher à celle reçue**.
  *
- * **Une date que l'on ne sait pas lire tombe dans « plus ancien »**, jamais dans
- * un « undefined » posé au milieu de sa liste. Elle ne se perd pas pour autant :
- * elle reste rangée à sa place par le tri, qui, lui, n'a pas besoin de la
- * comprendre.
+ * Un nom hors alphabet va en fin de liste, jamais entre deux lettres. À nom
+ * égal (quatre Martins), le plus récent passe devant : c'est celui qu'il
+ * cherche, et c'était l'ordre d'avant, gardé à l'intérieur du nom.
  */
-export function bandeDuClient(dernierJour: string | null, aujourdHui: string): string {
-  if (!dernierJour) return BANDE_SANS_CHANTIER;
-  const ecart = moisDEcart(dernierJour, aujourdHui);
-  if (ecart === null || ecart < 0 || ecart > 2) return BANDE_PLUS_ANCIEN;
-  return moisDuJour(dernierJour) ?? BANDE_PLUS_ANCIEN;
+export function rangerParNom<T extends ClientRange>(clients: readonly T[]): T[] {
+  return [...clients].sort((a, b) => {
+    const horsA = lettreDuClient(a.nom) === BANDE_HORS_ALPHABET;
+    const horsB = lettreDuClient(b.nom) === BANDE_HORS_ALPHABET;
+    if (horsA !== horsB) return horsA ? 1 : -1;
+    const parNom = cleDuNom(a.nom).localeCompare(cleDuNom(b.nom), "fr");
+    if (parNom !== 0) return parNom;
+    return (b.dernierJour ?? "").localeCompare(a.dernierJour ?? "");
+  });
 }
 
 /**
- * Le jour qui range un client : **le plus récent qui soit DÉJÀ PASSÉ.**
+ * Le jour qui départage deux clients du même nom : **le plus récent qui soit
+ * DÉJÀ PASSÉ.**
  *
  * **Sa capture du 26 septembre 2026 :** *« pourquoi il y a un plus ancien ? »*
  * Un client au chantier planifié en novembre passait pour le plus récent de
@@ -70,7 +74,10 @@ export function bandeDuClient(dernierJour: string | null, aujourdHui: string): s
  * n'est dans aucun mois écoulé. Sa décision : la liste range ce qui s'est
  * produit, jamais ce qui est prévu. Le chantier à venir se lit au planning.
  *
- * `null` : aucun jour passé, le client va avec ceux qui n'ont pas de chantier.
+ * Depuis le 27 septembre 2026 il ne range plus la liste entière (elle va de A
+ * à Z) : il départage les homonymes, les quatre Martins.
+ *
+ * `null` : aucun jour passé, le client passe après ses homonymes datés.
  */
 export function jourDeRangement(
   jours: readonly (string | null | undefined)[],
@@ -87,22 +94,21 @@ export function jourDeRangement(
  * La liste découpée en bandes, **dans l'ordre où elle arrive**.
  *
  * **Elle ne trie RIEN**, et c'est délibéré : le tri vit dans le dépôt
- * (`listerFichesClients`), qui range du plus récent au plus ancien. Retrier ici
- * ferait deux règles d'ordre pour une même liste — et c'est l'écran qui aurait
- * tort sans que rien ne le dise (`CLAUDE.md` §3).
+ * (`listerFichesClients`, par `rangerParNom`). Retrier ici ferait deux règles
+ * d'ordre pour une même liste, et c'est l'écran qui aurait tort sans que rien
+ * ne le dise (`CLAUDE.md` §3).
  *
  * Les groupes suivent donc les suites de clients qui se touchent. Sur une liste
- * rangée, une bande ne peut pas revenir deux fois ; sur une liste qui ne le
- * serait plus, elle reviendrait — et cela se verrait, ce qui vaut mieux qu'un
+ * rangée, une lettre ne peut pas revenir deux fois ; sur une liste qui ne le
+ * serait plus, elle reviendrait, et cela se verrait, ce qui vaut mieux qu'un
  * regroupement qui masquerait le désordre.
  */
-export function grouperEnBandes<T extends ClientDate>(
-  clients: readonly T[],
-  aujourdHui: string
+export function grouperEnBandes<T extends { nom: string }>(
+  clients: readonly T[]
 ): { bande: string; clients: T[] }[] {
   const groupes: { bande: string; clients: T[] }[] = [];
   for (const client of clients) {
-    const bande = bandeDuClient(client.dernierJour, aujourdHui);
+    const bande = lettreDuClient(client.nom);
     const dernier = groupes[groupes.length - 1];
     if (dernier && dernier.bande === bande) dernier.clients.push(client);
     else groupes.push({ bande, clients: [client] });
