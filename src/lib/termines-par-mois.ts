@@ -16,6 +16,8 @@
 // ses yeux en août — sinon il faudrait déjà savoir qu'il existe pour aller le
 // chercher. D'où `aFacturerPartout`, qui ignore délibérément le mois affiché.
 
+import { detacherCivilite } from "./civilite";
+
 /** Ce que l'écran reçoit du dépôt, réduit à ce dont la règle a besoin. */
 export type LigneTerminee = {
   id: string;
@@ -31,6 +33,11 @@ export type LigneTerminee = {
   totalTtc: string | null;
   /** Le total du dernier devis envoyé — le montant PRÉVU, pas encaissé. */
   devisTotalTtc: string | null;
+  /**
+   * `AAAA-MM-JJ` — la date du dernier devis envoyé, `null` pour une facture
+   * faite sans devis. Elle ne sert qu'au tri « Date du devis ».
+   */
+  devisDateEmission: string | null;
 };
 
 export type LigneAffichee = LigneTerminee & {
@@ -135,16 +142,116 @@ export function preparer(lignes: readonly LigneTerminee[]): LigneAffichee[] {
         cleMois: (jour ?? "").slice(0, 7),
       };
     })
-    .sort((a, b) => {
-      const da = a.dateDuChantier ?? "";
-      const db = b.dateDuChantier ?? "";
-      if (da === db) return 0;
-      // Un chantier sans date ne se range nulle part dans le temps : il passe
-      // devant plutôt que de se perdre au fond de la liste.
-      if (!da) return -1;
-      if (!db) return 1;
-      return da < db ? 1 : -1;
-    });
+    .sort(comparer(TRI_PAR_DEFAUT));
+}
+
+/**
+ * LE BOUTON « FILTRE » — sa demande du 27 septembre 2026, planche
+ * `appli/termines-l-ordre.html`, proposition B retenue : *« met une note
+ * filtre on clique dessus et il y a plusieurs moyen de trier »*.
+ *
+ * Cinq clés et deux sens. **Par défaut, l'ordre d'avant** : le jour du
+ * chantier, le plus récent en tête. C'est le même comparateur qui range la
+ * liste à son arrivée (`preparer`) et quand il choisit un ordre : deux
+ * comparateurs finiraient par ne plus ranger pareil (`CLAUDE.md` §3).
+ */
+export type CleDeTri = "chantier" | "devis" | "facture" | "montant" | "client";
+export type Tri = { cle: CleDeTri; croissant: boolean };
+export const TRI_PAR_DEFAUT: Tri = { cle: "chantier", croissant: false };
+
+/**
+ * Le libellé de chaque clé, et les mots de ses deux sens (croissant d'abord).
+ * Le sens se dit dans la langue de la clé : on ne range pas un nom « du plus
+ * ancien ».
+ */
+export const CLES_DE_TRI: readonly { cle: CleDeTri; libelle: string; sens: readonly [string, string] }[] = [
+  { cle: "chantier", libelle: "Date du chantier", sens: ["Du plus ancien", "Du plus récent"] },
+  { cle: "devis", libelle: "Date du devis", sens: ["Du plus ancien", "Du plus récent"] },
+  { cle: "facture", libelle: "Date de facturation", sens: ["Du plus ancien", "Du plus récent"] },
+  { cle: "montant", libelle: "Montant", sens: ["Du plus petit", "Du plus grand"] },
+  { cle: "client", libelle: "Nom du client", sens: ["De A à Z", "De Z à A"] },
+];
+
+export function estTriParDefaut(tri: Tri): boolean {
+  return tri.cle === TRI_PAR_DEFAUT.cle && tri.croissant === TRI_PAR_DEFAUT.croissant;
+}
+
+/**
+ * Un tri relu depuis le téléphone, ou l'ordre par défaut.
+ *
+ * Ce qui est rangé sur le téléphone peut dater d'une autre version de l'écran,
+ * ou avoir été abîmé : une clé qu'on ne connaît plus rend l'ordre par défaut,
+ * jamais une liste rangée sur une clé absente.
+ */
+export function lireTri(brut: string | null): Tri {
+  if (!brut) return TRI_PAR_DEFAUT;
+  let lu: unknown;
+  try {
+    lu = JSON.parse(brut);
+  } catch {
+    return TRI_PAR_DEFAUT;
+  }
+  if (typeof lu !== "object" || lu === null) return TRI_PAR_DEFAUT;
+  const { cle, croissant } = lu as Record<string, unknown>;
+  if (!CLES_DE_TRI.some((c) => c.cle === cle) || typeof croissant !== "boolean") return TRI_PAR_DEFAUT;
+  return { cle: cle as CleDeTri, croissant };
+}
+
+/** Le nom tel qu'il se range : sans « Mr. », « Mme »… qui mettraient toutes les dames ensemble. */
+function nomDeTri(l: LigneAffichee): string {
+  return detacherCivilite(l.nom).nom;
+}
+
+function valeurDeTri(l: LigneAffichee, cle: CleDeTri): string | number | null {
+  switch (cle) {
+    case "chantier": return l.dateDuChantier;
+    case "devis": return l.devisDateEmission;
+    case "facture": return estFacture(l) ? l.factureDateEmission : null;
+    case "montant": return l.montant;
+    case "client": return nomDeTri(l);
+  }
+}
+
+/**
+ * Le comparateur de la liste.
+ *
+ * **Ce qui n'a pas la valeur ne se range nulle part** : une facture faite sans
+ * devis n'a pas de date de devis, un chantier pas encore facturé n'a pas de
+ * date de facture, un montant peut être inconnu. Ces lignes vont À LA FIN,
+ * dans les deux sens, et gardent entre elles l'ordre d'arrivée — le tri est
+ * stable. Rien ne s'invente pour les placer (`docs/AGENT.md` §3).
+ *
+ * **Une exception, et elle date du 22 août 2026 : le chantier sans date passe
+ * DEVANT** sur la clé « chantier ». Là, l'absence est une anomalie à
+ * rattraper, pas un cas normal ; au fond de la liste, elle se perdrait.
+ *
+ * **Le comparateur rend 0 à valeurs égales.** Un comparateur qui répond « plus
+ * petit » dans ce cas se contredit (`a<b` et `b<a` à la fois) et le tri rend
+ * alors un ordre qu'aucune donnée n'explique : deux factures du même jour
+ * sortaient à l'envers de ce que le patron voit sur son écran. Trouvé sur la
+ * planche 90, où les deux factures du 19 août s'échangeaient.
+ */
+function comparer(tri: Tri): (a: LigneAffichee, b: LigneAffichee) => number {
+  const devant = tri.cle === "chantier" ? -1 : 1;
+  const signe = tri.croissant ? 1 : -1;
+  return (a, b) => {
+    const va = valeurDeTri(a, tri.cle);
+    const vb = valeurDeTri(b, tri.cle);
+    if (va === null && vb === null) return 0;
+    if (va === null) return devant;
+    if (vb === null) return -devant;
+    if (va === vb) return 0;
+    // Un nom se compare à la française : « Émile » ne part pas après « Zoé ».
+    if (typeof va === "string" && typeof vb === "string" && tri.cle === "client") {
+      return va.localeCompare(vb, "fr", { sensitivity: "base" }) * signe;
+    }
+    return (va < vb ? -1 : 1) * signe;
+  };
+}
+
+/** Les lignes dans l'ordre choisi. Le tri est stable : à égalité, l'ordre d'arrivée reste. */
+export function trier(lignes: readonly LigneAffichee[], tri: Tri): LigneAffichee[] {
+  return [...lignes].sort(comparer(tri));
 }
 
 /**
@@ -333,16 +440,22 @@ export function libelleDateChantier(jour: string | null, anneeCourante: string):
  * **Et les morceaux se JOIGNENT, ils ne se concatènent pas.** Un « · » écrit en
  * dur derrière la date restait pendu dans le vide dès que le reste manquait.
  */
-export function libelleEtatLigne(l: LigneAffichee, anneeCourante: string): EtatLigne {
+export function libelleEtatLigne(l: LigneAffichee, anneeCourante: string, cle: CleDeTri = TRI_PAR_DEFAUT.cle): EtatLigne {
+  // **Rangée par devis, la ligne montre la date du devis** à la place de
+  // celle du chantier : sinon l'ordre paraîtrait tiré au hasard (planche
+  // `appli/termines-l-ordre.html`). Sans devis, elle garde le jour du
+  // chantier plutôt que de rester muette.
+  const duDevis = cle === "devis" && l.devisDateEmission
+    ? libelleDateChantier(l.devisDateEmission, anneeCourante)
+    : "";
   // **La rangée FACTURÉE ne montre que sa date de planning.** Quand le chantier
   // n'en a pas, son jour est celui de la facture (`dateDuChantier`) — et
   // « Facturé le 18 septembre » le dit déjà, trois mots plus loin. Écrire les
   // deux donnerait « 18 septembre · Facturé le 18 septembre », la répétition
   // qu'il fait retirer à chaque fois (`CLAUDE.md` §3).
-  const date = libelleDateChantier(
-    l.aFacturer ? l.dateDuChantier : l.datePlanifiee,
-    anneeCourante
-  );
+  const date = duDevis
+    ? `Devis du ${duDevis}`
+    : libelleDateChantier(l.aFacturer ? l.dateDuChantier : l.datePlanifiee, anneeCourante);
   if (l.aFacturer) {
     const bouts = date ? [date] : [];
     if (l.montant !== null) bouts.push(`${formatEuros(l.montant)} prévus`);

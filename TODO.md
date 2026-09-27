@@ -1,15 +1,11 @@
 # Prochaines tâches
 
 
-## Terminés : le bouton Filtre (27 septembre 2026), planche posée
+## Terminés : le bouton Filtre (27 septembre 2026) : CODÉ, BATTERIE À JOUER AVANT `main`
 
-`appli/termines-l-ordre.html` : un volet de tri (chantier, devis, facturation,
-montant, client ; deux sens), bouton en A ou en B. À coder dans `preparer`
-(`src/lib/termines-par-mois.ts`) une fois choisi. **Le tri par devis demande
-une donnée que l'écran ne lit pas encore** : la date du dernier devis
-(`devis.date_emission`) n'est pas dans `listerChantiersTermines`. Ce qui n'a
-pas la valeur va à la fin, dans les deux sens. Le choix se retient : où
-(préférence du compte ou du téléphone) reste à décider en codant.
+B retenue et codée sur `claude/factures-devis-ordre-5b7b8z`. Niveau 3 (le lot
+touche la lecture des factures) : la batterie entière n'a pas été jouée, à sa
+demande ; elle se joue avant `main`.
 
 ## Site de vente : l'adresse de contact et le nom (27 septembre 2026)
 

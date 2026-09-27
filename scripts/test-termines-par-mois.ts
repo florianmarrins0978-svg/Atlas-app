@@ -27,6 +27,10 @@ import {
   libelleEtatLigne,
   numeroCourt,
   estFacture,
+  trier,
+  lireTri,
+  estTriParDefaut,
+  TRI_PAR_DEFAUT,
   type LigneTerminee,
 } from "../src/lib/termines-par-mois";
 
@@ -55,6 +59,7 @@ const ligne = (p: Partial<LigneTerminee> & { id: string }): LigneTerminee => ({
   factureStatut: null,
   totalTtc: null,
   devisTotalTtc: null,
+  devisDateEmission: null,
   ...p,
 });
 
@@ -471,6 +476,79 @@ essai("le tri place la facturée à SA date, pas en tête", () => {
     ligne({ id: "recent", datePlanifiee: "2026-09-20" }),
   ]);
   assert.deepEqual(lignes.map((l) => l.id), ["recent", "sans-planning", "vieux"]);
+});
+
+// ─── Le bouton Filtre — sa demande du 27 septembre 2026 ─────────────────────
+// Planche `appli/termines-l-ordre.html`, B retenue.
+
+const quatre = () => preparer([
+  ligne({ id: "costa", nom: "Mme Costa", datePlanifiee: "2026-09-02", devisDateEmission: "2026-08-18",
+    factureStatut: "emise", factureDateEmission: "2026-09-18", totalTtc: "1120.00" }),
+  ligne({ id: "frederic", nom: "Mr. Frédéric", datePlanifiee: "2026-09-08", devisDateEmission: "2026-08-25",
+    factureStatut: "emise", factureDateEmission: "2026-09-25", totalTtc: "1240.00" }),
+  ligne({ id: "huguette", nom: "Madame Huguette Aubry", datePlanifiee: "2026-09-12", devisDateEmission: "2026-08-29",
+    devisTotalTtc: "660.00" }),
+  ligne({ id: "sans-devis", nom: "Mr. Julien", datePlanifiee: "2026-09-22" }),
+]);
+const ids = (l: { id: string }[]) => l.map((x) => x.id);
+
+essai("par défaut, l'ordre d'avant : le chantier le plus récent en tête", () => {
+  const l = quatre();
+  assert.deepEqual(ids(trier(l, TRI_PAR_DEFAUT)), ids(l));
+  assert.deepEqual(ids(l), ["sans-devis", "huguette", "frederic", "costa"]);
+});
+
+essai("chantier, du plus ancien", () => {
+  assert.deepEqual(ids(trier(quatre(), { cle: "chantier", croissant: true })), ["costa", "frederic", "huguette", "sans-devis"]);
+});
+
+essai("devis : la facture sans devis va à la fin, dans les deux sens", () => {
+  assert.deepEqual(ids(trier(quatre(), { cle: "devis", croissant: true })), ["costa", "frederic", "huguette", "sans-devis"]);
+  assert.deepEqual(ids(trier(quatre(), { cle: "devis", croissant: false })), ["huguette", "frederic", "costa", "sans-devis"]);
+});
+
+essai("facturation : ce qui reste à facturer va à la fin, par jour du chantier", () => {
+  assert.deepEqual(ids(trier(quatre(), { cle: "facture", croissant: true })), ["costa", "frederic", "sans-devis", "huguette"]);
+});
+
+essai("une facture préparée mais pas émise n'a pas de date de facturation", () => {
+  const l = preparer([
+    ligne({ id: "brouillon", datePlanifiee: "2026-09-01", factureStatut: "brouillon", factureDateEmission: "2026-09-01" }),
+    ligne({ id: "emise", datePlanifiee: "2026-09-02", factureStatut: "emise", factureDateEmission: "2026-09-20" }),
+  ]);
+  assert.deepEqual(ids(trier(l, { cle: "facture", croissant: true })), ["emise", "brouillon"]);
+});
+
+essai("montant : un montant inconnu va à la fin, jamais compté zéro", () => {
+  assert.deepEqual(ids(trier(quatre(), { cle: "montant", croissant: true })), ["huguette", "costa", "frederic", "sans-devis"]);
+  assert.deepEqual(ids(trier(quatre(), { cle: "montant", croissant: false })), ["frederic", "costa", "huguette", "sans-devis"]);
+});
+
+essai("client : rangé sans la civilité, et à la française", () => {
+  const l = preparer([
+    ligne({ id: "z", nom: "Mme Zoé", datePlanifiee: "2026-09-01" }),
+    ligne({ id: "e", nom: "Mr. Émile", datePlanifiee: "2026-09-02" }),
+    ligne({ id: "b", nom: "Madame Bernard", datePlanifiee: "2026-09-03" }),
+  ]);
+  assert.deepEqual(ids(trier(l, { cle: "client", croissant: true })), ["b", "e", "z"]);
+  assert.deepEqual(ids(trier(l, { cle: "client", croissant: false })), ["z", "e", "b"]);
+});
+
+essai("rangée par devis, la ligne dit la date du devis ; sans devis, celle du chantier", () => {
+  const [sansDevis, huguette] = quatre();
+  assert.equal(lue(libelleEtatLigne(huguette, "2026", "devis")), `Devis du 29 août, ${formatEuros(660)} prévus`);
+  assert.equal(lue(libelleEtatLigne(huguette, "2026")), `12 septembre, ${formatEuros(660)} prévus`);
+  assert.equal(lue(libelleEtatLigne(sansDevis, "2026", "devis")), "22 septembre");
+});
+
+essai("un tri relu du téléphone : abîmé ou d'une autre version, l'ordre par défaut", () => {
+  assert.deepEqual(lireTri(null), TRI_PAR_DEFAUT);
+  assert.deepEqual(lireTri("pas du json"), TRI_PAR_DEFAUT);
+  assert.deepEqual(lireTri('{"cle":"couleur","croissant":true}'), TRI_PAR_DEFAUT);
+  assert.deepEqual(lireTri('{"cle":"devis"}'), TRI_PAR_DEFAUT);
+  assert.deepEqual(lireTri('{"cle":"devis","croissant":true}'), { cle: "devis", croissant: true });
+  assert.equal(estTriParDefaut(TRI_PAR_DEFAUT), true);
+  assert.equal(estTriParDefaut({ cle: "chantier", croissant: true }), false);
 });
 
 console.log(`\n${echecs === 0 ? "✅" : "❌"} « Terminés » — ${echecs} échec(s).`);

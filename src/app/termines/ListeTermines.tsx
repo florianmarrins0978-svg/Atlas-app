@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { colors, font, surPlein } from "@/lib/design-tokens";
 import BottomSheet from "@/components/atlas/BottomSheet";
@@ -15,6 +15,12 @@ import {
   nomDuMois,
   resumeDuMois,
   type LigneAffichee,
+  CLES_DE_TRI,
+  estTriParDefaut,
+  lireTri,
+  trier,
+  type CleDeTri,
+  type Tri,
 } from "@/lib/termines-par-mois";
 
 /**
@@ -134,6 +140,22 @@ export default function ListeTermines({
   // Un œil ouvert sur rien ne montre rien : dès que la dernière facture part,
   // on revient à tout — sans quoi l'écran resterait vide sous un bouton parti.
   const montrerCeQuiAttend = oeilOuvert && attente.length > 0;
+
+  /**
+   * L'ordre choisi au bouton « Filtre » — sa demande du 27 septembre 2026,
+   * planche `appli/termines-l-ordre.html`, B retenue.
+   *
+   * **Retenu sur CE téléphone.** Le serveur, qui ne le connaît pas, rend
+   * l'ordre d'origine ; `useSyncExternalStore` fait relire le téléphone après
+   * l'hydratation, sans quoi React la refuserait (le piège de `moisCourant`).
+   */
+  const triRetenu = useSyncExternalStore(sAbonnerAuTri, triDuTelephone, () => null);
+  const tri = useMemo(() => lireTri(triRetenu), [triRetenu]);
+  const [voletTri, setVoletTri] = useState(false);
+  const montrees = useMemo(
+    () => trier(montrerCeQuiAttend ? attente : mois.lignes, tri),
+    [montrerCeQuiAttend, attente, mois.lignes, tri]
+  );
 
   return (
     <div data-atlas="liste-termines">
@@ -373,13 +395,29 @@ export default function ListeTermines({
               )}
             </p>
           )}
+          {/* **LE BOUTON FILTRE, SUR SA PROPRE RANGÉE — sa proposition B du
+              27 septembre 2026.** Sous les comptes, à droite : la phrase des
+              comptes garde sa ligne pour elle. Il se REMPLIT quand l'ordre
+              n'est plus celui d'origine, pour qu'on ne lise pas une liste
+              rangée autrement sans le savoir. */}
+          {(attente.length > 0 || faites.length > 0) && (
+            <div className="-mt-1 mb-1 flex justify-end">
+              <BoutonFiltre actif={!estTriParDefaut(tri)} onClick={() => setVoletTri(true)} />
+            </div>
+          )}
+          <VoletTri
+            ouvert={voletTri}
+            tri={tri}
+            surTri={retenirTri}
+            surFermer={() => setVoletTri(false)}
+          />
           {!montrerCeQuiAttend && mois.lignes.length === 0 ? (
             <p className="mt-4 text-[13.5px] leading-[1.65]" style={{ color: colors.muted }}>
               Rien en {nomDuMois(cle).toLowerCase()}.
             </p>
           ) : (
-            (montrerCeQuiAttend ? attente : mois.lignes).map((l) => (
-              <Ligne key={l.id} ligne={l} annee={annee} soldee={soldes.has(l.id)} />
+            montrees.map((l) => (
+              <Ligne key={l.id} ligne={l} annee={annee} cle={tri.cle} soldee={soldes.has(l.id)} />
             ))
           )}
         </section>
@@ -502,6 +540,160 @@ function Fleche({
  * qui se met autour en forme de rond, supprime ça, garde vraiment que
  * l'œil »*. L'état se lit au dessin seul : la barre, ou la pupille pleine.
  */
+const CLE_DU_TRI = "atlas:termines-tri";
+
+/**
+ * Le tri de ce téléphone, tel qu'il est rangé. Gardé aussi en mémoire : quand
+ * le stockage est refusé (navigation privée), le choix vaut quand même pour
+ * l'écran ouvert, il ne sera simplement pas retrouvé à la visite suivante.
+ */
+let triEnMemoire: string | null | undefined;
+const abonnesAuTri = new Set<() => void>();
+
+function sAbonnerAuTri(prevenir: () => void): () => void {
+  abonnesAuTri.add(prevenir);
+  return () => {
+    abonnesAuTri.delete(prevenir);
+  };
+}
+
+function triDuTelephone(): string | null {
+  if (triEnMemoire === undefined) {
+    try {
+      triEnMemoire = window.localStorage.getItem(CLE_DU_TRI);
+    } catch {
+      // Stockage refusé : l'ordre d'origine, rien de perdu.
+      triEnMemoire = null;
+    }
+  }
+  return triEnMemoire;
+}
+
+/** Range le tri sur le téléphone ; `false` quand le stockage est refusé. */
+function rangerSurLeTelephone(valeur: string): boolean {
+  try {
+    window.localStorage.setItem(CLE_DU_TRI, valeur);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function retenirTri(tri: Tri): void {
+  triEnMemoire = JSON.stringify(tri);
+  // Refusé ou non, la mémoire tient l'écran ouvert : on prévient quand même.
+  rangerSurLeTelephone(triEnMemoire);
+  for (const prevenir of abonnesAuTri) prevenir();
+}
+
+/** « Filtre », et son signe à côté — sa demande du 27 septembre 2026. */
+function BoutonFiltre({ actif, onClick }: { actif: boolean; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      data-atlas="bouton-filtre"
+      data-actif={actif ? "" : undefined}
+      className="flex min-h-11 items-center gap-[7px] whitespace-nowrap rounded-full px-[13px] text-[12.5px]"
+      style={{
+        backgroundColor: actif ? colors.ink : colors.card,
+        color: actif ? colors.cream : colors.inkSoft,
+        boxShadow: actif ? "none" : `inset 0 0 0 1px ${colors.line}`,
+        WebkitTapHighlightColor: "transparent",
+      }}
+    >
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+        <path d="M2 4h12M4.5 8h7M7 12h2" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+      </svg>
+      Filtre
+    </button>
+  );
+}
+
+/**
+ * Le volet du tri : cinq clés, puis le sens dans les mots de la clé.
+ *
+ * **Tout s'applique au toucher**, sans bouton « Valider » : la liste bouge
+ * derrière le voile, et c'est ce qui dit que le geste a pris.
+ */
+function VoletTri({
+  ouvert,
+  tri,
+  surTri,
+  surFermer,
+}: {
+  ouvert: boolean;
+  tri: Tri;
+  surTri: (t: Tri) => void;
+  surFermer: () => void;
+}) {
+  const choisie = CLES_DE_TRI.find((c) => c.cle === tri.cle) ?? CLES_DE_TRI[0];
+  return (
+    <BottomSheet open={ouvert} onBackdropClick={surFermer}>
+      <div data-atlas="volet-tri">
+        <p
+          className="mb-2 text-center text-[11px] font-semibold uppercase"
+          style={{ letterSpacing: "0.18em", color: colors.muted }}
+        >
+          Trier par
+        </p>
+        {CLES_DE_TRI.map((c) => {
+          const active = c.cle === tri.cle;
+          return (
+            <button
+              key={c.cle}
+              type="button"
+              onClick={() => surTri({ ...tri, cle: c.cle })}
+              aria-pressed={active}
+              data-atlas={`tri-${c.cle}`}
+              className="mt-2 flex min-h-[54px] w-full items-center justify-center rounded-full"
+              style={{
+                fontFamily: font.display,
+                fontSize: 19,
+                color: active ? colors.cream : colors.ink,
+                backgroundColor: active ? colors.ink : colors.card,
+                boxShadow: active ? "none" : `inset 0 0 0 1px ${colors.line}`,
+              }}
+            >
+              {c.libelle}
+            </button>
+          );
+        })}
+        <div className="mt-[18px] flex gap-2">
+          {[true, false].map((croissant, i) => {
+            const actif = tri.croissant === croissant;
+            return (
+              <button
+                key={String(croissant)}
+                type="button"
+                onClick={() => surTri({ ...tri, croissant })}
+                aria-pressed={actif}
+                data-atlas={croissant ? "tri-croissant" : "tri-decroissant"}
+                className="min-h-11 flex-1 rounded-full text-[13.5px]"
+                style={{
+                  color: actif ? colors.or : colors.inkSoft,
+                  fontWeight: actif ? 600 : 400,
+                  boxShadow: `inset 0 0 0 ${actif ? 1.5 : 1}px ${actif ? colors.or : colors.line}`,
+                }}
+              >
+                {choisie.sens[i]}
+              </button>
+            );
+          })}
+        </div>
+        <button
+          type="button"
+          onClick={surFermer}
+          className="mt-3 w-full py-3 text-[14px]"
+          style={{ color: colors.muted }}
+        >
+          Fermer
+        </button>
+      </div>
+    </BottomSheet>
+  );
+}
+
 function Oeil({ ouvert, onClick }: { ouvert: boolean; onClick: () => void }) {
   return (
     <button
@@ -568,7 +760,7 @@ function Oeil({ ouvert, onClick }: { ouvert: boolean; onClick: () => void }) {
  * **À facturer, elle reste un lien direct** : il n'y a encore ni avoir ni
  * impayé possible, et un volet à une seule porte serait un geste pour rien.
  */
-function Ligne({ ligne, annee, soldee }: { ligne: LigneAffichee; annee: string; soldee: boolean }) {
+function Ligne({ ligne, annee, cle, soldee }: { ligne: LigneAffichee; annee: string; cle: CleDeTri; soldee: boolean }) {
   const [volet, setVolet] = useState(false);
   // **Aéré le 23 août 2026, à sa demande** : *« il faut aérer un peu la
   // page parce qu'il y a énormément d'informations »*. Une ligne porte deux
@@ -602,7 +794,7 @@ function Ligne({ ligne, annee, soldee }: { ligne: LigneAffichee; annee: string; 
   if (ligne.factureStatut !== "emise") {
     return (
       <Link href={`/chantiers/${ligne.id}/facture`} data-atlas="ligne-terminee" id={`chantier-${ligne.id}`} className={classe} style={{ minWidth: 0 }}>
-        <ContenuLigne ligne={ligne} annee={annee} />
+        <ContenuLigne ligne={ligne} annee={annee} cle={cle} />
       </Link>
     );
   }
@@ -631,7 +823,7 @@ function Ligne({ ligne, annee, soldee }: { ligne: LigneAffichee; annee: string; 
         className={classe}
         style={{ minWidth: 0, background: "none", border: 0 }}
       >
-        <ContenuLigne ligne={ligne} annee={annee} />
+        <ContenuLigne ligne={ligne} annee={annee} cle={cle} />
       </button>
       <BottomSheet open={volet} onBackdropClick={() => setVolet(false)}>
         <div data-atlas="volet-choix">
@@ -658,8 +850,8 @@ function Ligne({ ligne, annee, soldee }: { ligne: LigneAffichee; annee: string; 
   );
 }
 
-function ContenuLigne({ ligne, annee }: { ligne: LigneAffichee; annee: string }) {
-  const { avant, mot, apres } = libelleEtatLigne(ligne, annee);
+function ContenuLigne({ ligne, annee, cle }: { ligne: LigneAffichee; annee: string; cle: CleDeTri }) {
+  const { avant, mot, apres } = libelleEtatLigne(ligne, annee, cle);
   return (
     <>
       <span className="min-w-0 flex-1">

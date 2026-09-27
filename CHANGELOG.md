@@ -8,15 +8,31 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-27
 
-### Planche : le bouton Filtre de « Terminés » (`appli/termines-l-ordre.html`)
+### « Terminés » : le bouton Filtre, B retenue et codée
 
-**Ses demandes** : *« ordre pour les factures terminé ordre croissant / date du
-devis date de facturation »*, puis devant la première planche (quatre ordres
-figés) : *« met une note filtre on clique dessus et il y a plusieurs moyen de
-trier »*. La planche est refaite : un bouton « Filtre » ouvre un volet, cinq
-clés (chantier, devis, facturation, montant, client) et deux sens. Par
-défaut, l'ordre d'aujourd'hui. À choisir : la place du bouton, A ou B. Rien
-n'est codé.
+**Ses demandes du 27 septembre** : un ordre croissant, par date du devis ou de
+facturation, puis *« met une note filtre on clique dessus et il y a plusieurs
+moyen de trier »*, puis *« écrit filtre avec le signe à côté »*, puis **« B »**.
+Planche `appli/termines-l-ordre.html`.
+
+- Un bouton « Filtre », avec son signe, sur sa propre rangée sous les comptes,
+  à droite. Il se remplit quand l'ordre n'est plus celui d'origine.
+- Le volet : date du chantier, du devis, de facturation, montant, nom du
+  client (rangé sans la civilité), et le sens dans les mots de la clé.
+- Par défaut, l'ordre d'avant. Le choix est retenu sur le téléphone
+  (`localStorage`, lu par `useSyncExternalStore` pour ne pas casser
+  l'hydratation).
+- Ce qui n'a pas la valeur va à la fin (facture sans devis, chantier pas
+  encore facturé, montant inconnu) ; le chantier sans date reste devant sur
+  la clé « chantier », comme avant.
+- Rangée par devis, la petite ligne dit « Devis du … ».
+- `listerChantiersTermines` lit la date du dernier devis envoyé.
+
+**Éprouvé** : `test-termines-par-mois.ts` (9 cas neufs), types, lint, les
+gardes rapides, et l'écran regardé sur une base locale (tri par devis, volet,
+choix retenu après rechargement). **La batterie n'a pas été jouée, à sa
+demande** : le lot touche la facturation, il est de niveau 3, et ne part pas
+sur `main` sans elle.
 
 ### Le site de vente d'Atlas (`appli/vente/`)
 
