@@ -73,6 +73,20 @@ export const COLONNES_OBJET: readonly ColonneObjet[] = [
     raisonAbsence: "une entreprise n'est pas obligée d'avoir un logo",
   },
   {
+    table: "equipes",
+    colonne: "photo_storage_key",
+    quoi: "la photo d'un salarié",
+    absenceNormale: true,
+    raisonAbsence: "un salarié n'est pas obligé d'avoir une photo",
+  },
+  {
+    table: "membres_entreprise",
+    colonne: "photo_storage_key",
+    quoi: "la photo d'un compte qui n'est relié à aucun salarié",
+    absenceNormale: true,
+    raisonAbsence: "personne n'est obligé d'avoir une photo",
+  },
+  {
     table: "notes_vocales",
     colonne: "storage_key",
     quoi: "l'audio d'une note vocale",

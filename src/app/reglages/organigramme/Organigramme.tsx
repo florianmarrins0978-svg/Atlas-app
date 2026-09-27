@@ -150,11 +150,12 @@ function Avatar({ texte, photo, taille = 44 }: { texte: string; photo: string | 
   return <TeteRonde repli={initiales(texte)} photo={photo} taille={taille} />;
 }
 
+// Le mot seul, sans filet qui le prolonge : il les a fait retirer le 25 août
+// 2026 (`test-accueil-en-tete.ts`).
 function Etage({ titre }: { titre: string }) {
   return (
-    <div className={`mb-1 flex items-center gap-3 ${smallCaps}`} style={{ color: colors.muted }}>
+    <div className={`mb-1 ${smallCaps}`} style={{ color: colors.muted }}>
       {titre}
-      <span className="h-px flex-1" style={{ backgroundColor: colors.line }} />
     </div>
   );
 }

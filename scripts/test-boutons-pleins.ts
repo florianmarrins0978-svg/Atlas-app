@@ -187,6 +187,11 @@ const APLATS_DECLARES: { fichier: string; motif: RegExp; pourquoi: string }[] = 
     pourquoi: "un interrupteur",
   },
   {
+    fichier: "src/app/reglages/organigramme/Organigramme.tsx",
+    motif: /allume \? colors\.rust/,
+    pourquoi: "l'interrupteur « Chef d'équipe » (27 septembre 2026) : un état, pas un bouton",
+  },
+  {
     fichier: "src/app/reglages/prix/GrillesPrixClient.tsx",
     motif: /forme === f\.valeur \? colors\.rust/,
     pourquoi: "la pastille d'un choix en liste — une marque de 18 px, pas une capsule",

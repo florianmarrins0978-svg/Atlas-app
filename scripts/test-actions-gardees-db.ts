@@ -267,6 +267,10 @@ const EXEMPTIONS: Record<string, string> = {
   // ─── Ses propres réglages : elles n'écrivent que sur la personne ────────
   "src/app/reglages/compte/actions.ts#ecrireIdentiteAction":
     "Écrit la civilité, le prénom et le nom de la personne connectée, sur elle seule. « Un salarié peut changer ses notifications ou son mot de passe » (13 août 2026).",
+  "src/app/reglages/compte/actions.ts#poserMaPhotoAction":
+    "SA propre photo, sur SA ligne : « chaque personne doit pouvoir mettre et changer sa photo de profil » (27 septembre 2026). Fermer par rôle l'interdirait au salarié.",
+  "src/app/reglages/compte/actions.ts#retirerMaPhotoAction":
+    "Retire SA propre photo et son fichier. Le refuser à un rôle lui interdirait d'effacer sa propre tête.",
   "src/app/reglages/apparence/actions.ts#choisirCharteAction":
     "La charte de couleurs de la personne connectée. Aucune donnée d'entreprise, aucun autre compte touché.",
   "src/app/reglages/connexion/actions.ts#changerMotDePasseAction":
