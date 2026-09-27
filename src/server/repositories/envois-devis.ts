@@ -1183,6 +1183,8 @@ export type NotificationPatron = {
    * donné suite » sans jamais lire pourquoi.
    */
   precisionClient: string | null;
+  /** Les jours proposés avec une correction (migration 0109), ou `null`. */
+  joursSouhaites: string[] | null;
 };
 
 /**
@@ -1209,6 +1211,7 @@ export async function notificationsPatron(ctx: Ctx): Promise<NotificationPatron[
         dateRetenue: envoisDevis.dateRetenue,
         dateContreProposee: envoisDevis.dateContreProposee,
         precisionClient: envoisDevis.precisionClient,
+        joursSouhaites: envoisDevis.joursSouhaites,
       })
       .from(envoisDevis)
       .innerJoin(chantiers, eq(envoisDevis.chantierId, chantiers.id))

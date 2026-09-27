@@ -15,7 +15,8 @@ partaient avec le formulaire, puis l'action les jetait avant de les lire. Le
 patron renvoyait le devis corrigé sans les voir, et reproposait les mêmes.
 Elles sont gardées (`jours_souhaites`, migration 0109), dites sous son message
 sur l'écran du devis envoyé, et posées d'office dans « Choisir la date » au
-renvoi quand elles tiennent encore. `ARCHITECTURE.md` §428.
+renvoi quand elles tiennent encore. La notification « Correction demandée »
+les dit aussi, dans sa phrase. `ARCHITECTURE.md` §428.
 
 ### Les dates du mois d'un contrat, validées par le client
 

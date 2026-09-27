@@ -33734,5 +33734,6 @@ correction. Une correction ne pose rien au planning.
 correction, et `premiereProposition` (`src/lib/propositions-de-jours.ts`) les
 pose d'office à la place du premier jour libre, sauf si un jour est passé ou
 sans place : on ne fait pas partir un jour que le patron n'a pas jugé. L'écran
-du devis envoyé les dit sous le message du client, quoi qu'il arrive.
+du devis envoyé les dit sous le message du client, quoi qu'il arrive, et la
+notification « Correction demandée » dans sa phrase (`notificationsPatron`).
 

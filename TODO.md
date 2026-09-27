@@ -13,12 +13,12 @@ reste à jouer avant `main`**. `ARCHITECTURE.md` §428.
 | la correction garde ses jours (`jours_souhaites`), sans rien retenir au planning | `test-correction-devis` |
 | l'écran du devis envoyé : « Ses dates : le lundi 12 octobre et le mardi 13 octobre. » sous son message | regardé |
 | « Choisir la date » au renvoi s'ouvre sur son mois, ses jours posés | regardé |
+| la notification « Correction demandée » dit ses dates, dans la même phrase (sa réponse : « Oui je veux voir ses dates ») | regardé |
 | un jour passé ou sans place : retour au premier jour libre | `test-propositions-de-jours` |
 
 | Reste | Qui |
 |---|---|
 | la batterie entière, puis `main` | avec son accord |
-| la notification « Correction demandée » ne dit pas ses dates | à trancher par lui |
 
 ## ⏳ RAPPELS PAR RÔLE ET ORGANIGRAMME : PLANCHE V2 DU 27 SEPTEMBRE 2026
 

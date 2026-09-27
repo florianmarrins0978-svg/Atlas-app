@@ -288,6 +288,11 @@ async function main() {
 
     const preparation = await preparerEnvoi(ctx, chantierId, MARDI);
     assert.deepEqual(preparation.joursDuClient, siens, "Le renvoi ne relit pas les jours du client.");
+ 
+    // Sa réponse du 27 septembre : « Oui je veux voir ses dates » dans la
+    // notification « Correction demandée ».
+    const [notification] = await notificationsPatron(ctx);
+    assert.deepEqual(notification?.joursSouhaites, siens, "La notification ne porte pas ses dates.");
   });
 
   await test("la date qu'il prend parmi les vôtres est gardée, avec le chantier derrière elle", async () => {
