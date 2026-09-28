@@ -237,6 +237,13 @@ async function main() {
     ["comment ajouter un salarié", "reglages-donner-acces"],
     ["comment voir mes clients", "clients-liste"],
     ["comment on encaisse un paiement", "facture-payee"],
+    // **Sa capture du 28 septembre 2026**, mot pour mot, fautes comprises :
+    // l'assistant répondait « ce n'est pas une fonctionnalité d'Atlas,
+    // renseignez-vous auprès du support ». Aucune fiche ne disait comment
+    // l'application garde ce qu'on y met. Sa règle : *« je voulais que
+    // l'assistant puisse répondre à toutes les questions sur l'application »*.
+    ["Combien de temps tu conserve les données dans lappli ?", "donnees-conservation"],
+    ["Comment sont conserver les données ?", "donnees-conservation"],
   ];
 
   await test("Les questions telles qu'il les pose retrouvent la bonne fiche", () => {

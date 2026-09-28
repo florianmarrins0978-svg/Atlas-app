@@ -346,4 +346,12 @@ export const QUESTIONS_PAR_ZONE: Record<string, [string, string][]> = {
     ["appliquer les modifications proposées", "assistant-propositions"],
     ["fermer l'assistant", "assistant-fermer"],
   ],
+  fonctionnement: [
+    ["combien de temps mes données sont gardées", "donnees-conservation"],
+    ["est-ce que mes photos sont effacées au bout d'un moment", "donnees-conservation"],
+    ["que deviennent mes données si j'arrête atlas", "donnees-apres-resiliation"],
+    ["qui peut voir mes données", "donnees-qui-voit"],
+    ["est-ce que mes données sont protégées", "donnees-qui-voit"],
+    ["est-ce que mes dictées partent chez une intelligence artificielle", "donnees-ia"],
+  ],
 };

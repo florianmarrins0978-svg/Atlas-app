@@ -58,8 +58,13 @@ export const fournisseurLLMDev: FournisseurLLM = {
     // supprimer un client ? » tombait dans la branche des suppressions plus
     // bas : le fournisseur allait lire les prestations du chantier et proposait
     // d'en retirer une. Il demandait un geste, on lui modifiait ses données.
+    //
+    // **Et une question sur la façon dont Atlas se COMPORTE en est une aussi**
+    // (sa capture du 28 septembre 2026) : « combien de temps tu conserve les
+    // données », « qui peut voir mes données ». Elles ne commencent pas par
+    // « comment », et tombaient hors du mode d'emploi.
     const estQuestionModeEmploi =
-      /\bcomment\b|\bo[uù] (est|sont|se trouve|je (trouve|vois|clique|range))\b|[aà] quoi sert/i.test(texte) &&
+      /\bcomment\b|\bo[uù] (est|sont|se trouve|je (trouve|vois|clique|range))\b|[aà] quoi sert|combien de temps|\bqui (peut |peuvent )?voi|que deviennent/i.test(texte) &&
       outils.some((o) => o.nom === "RechercherModeEmploi");
     if (estQuestionModeEmploi) {
       if (dernier && dernier.role === "outil" && dernier.outil === "RechercherModeEmploi") {

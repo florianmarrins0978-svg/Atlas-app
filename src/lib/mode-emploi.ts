@@ -35,6 +35,7 @@ import { FICHES_FACTURE } from "./fiches-mode-emploi/facture";
 import { FICHES_PLANNING } from "./fiches-mode-emploi/planning";
 import { FICHES_PAYSAGE } from "./fiches-mode-emploi/paysage";
 import { FICHES_REGLAGES } from "./fiches-mode-emploi/reglages";
+import { FICHES_FONCTIONNEMENT } from "./fiches-mode-emploi/fonctionnement";
 
 export type FicheModeEmploi = {
   /** Stable : il sert au diagnostic et aux suites. */
@@ -91,6 +92,7 @@ export const FICHES_MODE_EMPLOI: FicheModeEmploi[] = [
   ...FICHES_PLANNING,
   ...FICHES_PAYSAGE,
   ...FICHES_REGLAGES,
+  ...FICHES_FONCTIONNEMENT,
 ];
 
 // --- La recherche ---------------------------------------------------------

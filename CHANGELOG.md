@@ -8,6 +8,21 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-28
 
+### L'assistant répond sur la façon dont Atlas garde les données
+
+Sa capture : « Combien de temps tu conserve les données dans lappli ? » rendait
+*« ce n'est pas une fonctionnalité d'Atlas, renseignez-vous auprès du
+support »*. Sa règle : l'assistant répond à **toutes** les questions sur
+l'application. Quatre fiches neuves (`src/lib/fiches-mode-emploi/fonctionnement.ts`) :
+la durée de conservation, ce que deviennent les données après l'arrêt, qui les
+voit, où partent les dictées pour l'IA. Chacune se prouve contre ce qui la rend
+vraie ; « rien ne s'efface tout seul » rougira le jour où la purge se branche.
+La consigne interdit désormais « ce n'est pas une fonctionnalité » et le
+« support » inventé : sans réponse, il donne l'adresse de `CONTACT_ATLAS`. Le
+modèle de secours local reconnaît « combien de temps », « qui peut voir »,
+« que deviennent ». **Ce que ça évite :** qu'un artisan qui s'inquiète de ses
+données soit renvoyé vers un service qui n'existe pas. `ARCHITECTURE.md` §432.
+
 ### Six lots sur `main` en une seule batterie
 
 Sa demande : *« associe-toi pour ne jouer qu'une batterie »*. Réunis : chacun

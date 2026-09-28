@@ -132,6 +132,11 @@ async function main() {
     ["où est la fiche de sécurité ?", /« Paysage » dans la barre du bas, puis « Fiches de sécurité »/],
     ["où est la fiche d'intervention ?", /sa fiche d'intervention se déplie/],
     ["comment je fais un avoir ?", /puis « Je fais un avoir »/],
+    // **Sa capture du 28 septembre 2026**, mot pour mot : « ce n'est pas une
+    // fonctionnalité d'Atlas, renseignez-vous auprès du support ».
+    ["Combien de temps tu conserve les données dans lappli ?", /reste enregistré tant que votre compte existe/],
+    ["Comment sont conserver les données ?", /Les factures se gardent dix ans/],
+    ["qui peut voir mes données ?", /une autre entreprise n'y a jamais accès/],
   ];
   for (const [question, attendu] of OU_EST) {
     await test(`« ${question} » reçoit l'endroit, depuis n'importe quel écran`, async () => {

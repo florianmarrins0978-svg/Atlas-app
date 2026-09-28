@@ -33792,3 +33792,29 @@ Ses réponses du 27 septembre 2026 sur `appli/rappels-par-role-et-organigramme.h
 | « Ajouter » : un salarié monte le compteur (même geste que le +) ; commercial et facturation passent par « Nouveau compte », rôle déjà choisi | un seul chemin par sorte de personne |
 | **retirer UNE personne n'est pas codé** | le planning retrouve les gars par leur RANG (`nomEquipe`, `PlanningClient`) : sortir quelqu'un du milieu décalerait ou effacerait le nom sur ses chantiers passés. Il faut d'abord que l'historique se lise par identifiant (`TODO.md`) |
 | la photo d'un compte se lit par `photoDUnCompte` (`src/lib/organigramme.ts`), pour « Qui a accès » comme pour l'organigramme | une seule règle de la tête d'une personne (§430) |
+
+## §432 : L'assistant dit comment Atlas se COMPORTE, pas seulement comment on fait
+
+**Sa capture du 28 septembre 2026** : « Combien de temps tu conserve les données
+dans lappli ? » rendait *« ce n'est pas une fonctionnalité d'Atlas,
+renseignez-vous auprès du support »*. Sa règle : *« je voulais que l'assistant
+puisse répondre à toutes les questions sur l'application »*.
+
+**La racine n'était pas le modèle.** Il ne dit que ce que ses outils lui rendent
+(§180, §420), et c'est juste : aucune fiche ne disait comment l'application
+garde ce qu'on y met. Le remède est donc une zone de fiches, pas un relâchement
+de la règle.
+
+| Décision | Pourquoi |
+|---|---|
+| zone `fonctionnement` : conservation, après l'arrêt, qui voit, où part la dictée | les quatre questions qu'un artisan pose sur ses données |
+| « rien ne s'efface tout seul », prouvé par `objets-stockes.ts` (« tant que le planificateur de purge n'est pas branché ») | la purge existe et **rien ne l'appelle** (`docs/DEPLOIEMENT-PURGE.md`) : annoncer « l'audio part au bout de sept jours » serait faux aujourd'hui. Le jour où elle se branche, la fiche rougit et doit dire les durées |
+| le délai après résiliation dit « pas encore fixé », prouvé par le « [À COMPLÉTER » des conditions | un chiffre de trente jours aurait été un usage, pas une règle d'Atlas |
+| la consigne interdit « ce n'est pas une fonctionnalité » et « le support » ; sans fiche, il donne `CONTACT_ATLAS` | le modèle renvoyait vers un service inexistant ; l'adresse, elle, est lue à un seul endroit |
+| le modèle de secours (`dev.ts`) reconnaît « combien de temps », « qui peut voir », « que deviennent » | ces questions ne commencent pas par « comment » : sans cela, elles n'étaient jamais éprouvées par la porte du patron |
+
+**Ce qui n'est PAS dit, et ne doit pas l'être tant que ce n'est pas vrai :**
+l'hébergeur et son pays (« [À COMPLÉTER] » dans les mentions légales), les
+durées de purge. Suites : `test-mode-emploi` (ses deux questions mot pour mot,
+rouges avant), `test-assistant-explique-l-appli` (par `poserQuestion`, rouges
+avant).

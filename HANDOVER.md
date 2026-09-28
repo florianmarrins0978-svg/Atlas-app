@@ -11,6 +11,13 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 
 ---
 
+## L'ASSISTANT RÉPOND SUR SES DONNÉES : 28 septembre 2026, PAS SUR `main`
+
+Zone `src/lib/fiches-mode-emploi/fonctionnement.ts`. **Piège** : la fiche de
+conservation dit « rien ne s'efface tout seul » parce que la purge n'est pas
+branchée ; quand elle le sera, `test-mode-emploi` rougira, et la fiche doit
+alors dire les durées de `src/server/retention.ts`. §432.
+
 ## SES DATES AVEC LA CORRECTION : 27 septembre 2026, PAS SUR `main`
 
 | | |

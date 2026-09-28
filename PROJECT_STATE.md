@@ -4,6 +4,12 @@
 · dernière migration `drizzle/0106_hausse_du_devis_repris.sql` (sur la branche)
 
 ---
+## SUR SA BRANCHE : L'ASSISTANT RÉPOND SUR SES DONNÉES (28 septembre 2026)
+
+Quatre fiches « comment Atlas se comporte » (conservation, après l'arrêt, qui
+voit, IA) ; plus de « support » inventé, l'adresse `CONTACT_ATLAS` à la place.
+Branche `claude/assistant-all-questions-ahg55r`, `ARCHITECTURE.md` §432.
+
 ## SUR `main` : L'ORGANIGRAMME (27 et 28 septembre 2026)
 
 Réglages, Organigramme, ouvert à tous, modifiable par le patron
