@@ -2059,9 +2059,39 @@ votre facture, la TVA figure bien, et vous la reversez.
 Le taux de 10 % sur les travaux ne vaut que pour les logements : jamais pour
 une mairie.
 
-**Ce qui reste à vérifier avec votre comptable :** l'autoliquidation est
-certaine pour l'aménagement paysager lié à un bâtiment ; pour l'entretien
-seul d'espaces verts, elle se discute.
+**Une société peut-elle facturer sans TVA, ou seulement un auto-entrepreneur ?**
+*Sa question du même jour, « faut être sûr à 100 % ».* Les deux cas ne
+concernent pas les mêmes :
+
+| Le cas | Qui | Les conditions |
+|---|---|---|
+| Franchise (293 B) | les petites entreprises sous le seuil, surtout les auto-entrepreneurs | sous le seuil de chiffre d'affaires |
+| Autoliquidation | **toute entreprise assujettie à la TVA, quelle que soit sa forme** : SARL, SAS, EURL, entreprise individuelle | vous êtes **sous-traitant**, votre donneur d'ordre est **assujetti**, et ce sont des **travaux liés à un bien immobilier** (construction, réparation, aménagement, entretien) |
+
+Deux conséquences :
+
+- un auto-entrepreneur **en franchise** n'autoliquide jamais : sa facture
+  porte seulement « TVA non applicable, article 293 B du CGI ». Dans
+  Atlas, l'interrupteur « Je suis son sous-traitant » ne doit donc pas
+  s'afficher pour un compte en franchise ;
+- si vous travaillez **directement** pour une entreprise ou une mairie (vous
+  n'êtes le sous-traitant de personne), la TVA est normale.
+
+**Comment ça a été vérifié, et ce qui ne l'a pas été.** Les sites officiels
+(impots.gouv.fr, BOFiP, Légifrance, service-public) sont bloqués depuis
+l'environnement de travail de l'assistant : la réponse repose sur leurs
+extraits via un moteur de recherche (fiche service-public F31983) et sur des
+cabinets comptables concordants. Règle de base : confiance très élevée.
+
+**Le seul point incertain, et c'est le vôtre : l'entretien régulier
+d'espaces verts** (tonte, taille) en sous-traitance. L'aménagement (création,
+plantations) est concerné ; pour l'entretien, une source l'exclut, les
+autres ne tranchent pas. Pour en être sûr :
+
+1. le demander à votre comptable, en citant l'article 283-2 nonies du CGI et
+   le BOFiP BOI-TVA-DECLA-10-10-20 ;
+2. s'il hésite, une **demande de rescrit** depuis votre espace professionnel
+   impots.gouv.fr : la réponse écrite engage l'administration.
 
 **À savoir aussi :** la facture électronique entre entreprises devient
 obligatoire à l'émission pour les petites entreprises le 1er septembre 2027.

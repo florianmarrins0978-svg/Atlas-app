@@ -1626,7 +1626,34 @@
 </tr>
 </tbody></table></div>
 <p>Le taux de 10 % sur les travaux ne vaut que pour les logements : jamais pour une mairie.</p>
-<p><strong>Ce qui reste à vérifier avec votre comptable :</strong> l'autoliquidation est certaine pour l'aménagement paysager lié à un bâtiment ; pour l'entretien seul d'espaces verts, elle se discute.</p>
+<p><strong>Une société peut-elle facturer sans TVA, ou seulement un auto-entrepreneur ?</strong> <em>Sa question du même jour, « faut être sûr à 100 % ».</em> Les deux cas ne concernent pas les mêmes :</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Le cas</th>
+<th>Qui</th>
+<th>Les conditions</th>
+</tr></thead><tbody>
+<tr>
+<td>Franchise (293 B)</td>
+<td>les petites entreprises sous le seuil, surtout les auto-entrepreneurs</td>
+<td>sous le seuil de chiffre d'affaires</td>
+</tr>
+<tr>
+<td>Autoliquidation</td>
+<td><strong>toute entreprise assujettie à la TVA, quelle que soit sa forme</strong> : SARL, SAS, EURL, entreprise individuelle</td>
+<td>vous êtes <strong>sous-traitant</strong>, votre donneur d'ordre est <strong>assujetti</strong>, et ce sont des <strong>travaux liés à un bien immobilier</strong> (construction, réparation, aménagement, entretien)</td>
+</tr>
+</tbody></table></div>
+<p>Deux conséquences :</p>
+<ul>
+<li>un auto-entrepreneur <strong>en franchise</strong> n'autoliquide jamais : sa facture porte seulement « TVA non applicable, article 293 B du CGI ». Dans Atlas, l'interrupteur « Je suis son sous-traitant » ne doit donc pas s'afficher pour un compte en franchise ;</li>
+<li>si vous travaillez <strong>directement</strong> pour une entreprise ou une mairie (vous n'êtes le sous-traitant de personne), la TVA est normale.</li>
+</ul>
+<p><strong>Comment ça a été vérifié, et ce qui ne l'a pas été.</strong> Les sites officiels (impots.gouv.fr, BOFiP, Légifrance, service-public) sont bloqués depuis l'environnement de travail de l'assistant : la réponse repose sur leurs extraits via un moteur de recherche (fiche service-public F31983) et sur des cabinets comptables concordants. Règle de base : confiance très élevée.</p>
+<p><strong>Le seul point incertain, et c'est le vôtre : l'entretien régulier d'espaces verts</strong> (tonte, taille) en sous-traitance. L'aménagement (création, plantations) est concerné ; pour l'entretien, une source l'exclut, les autres ne tranchent pas. Pour en être sûr :</p>
+<ol>
+<li>le demander à votre comptable, en citant l'article 283-2 nonies du CGI et le BOFiP BOI-TVA-DECLA-10-10-20 ;</li>
+<li>s'il hésite, une <strong>demande de rescrit</strong> depuis votre espace professionnel impots.gouv.fr : la réponse écrite engage l'administration.</li>
+</ol>
 <p><strong>À savoir aussi :</strong> la facture électronique entre entreprises devient obligatoire à l'émission pour les petites entreprises le 1er septembre 2027. Depuis le 1er septembre 2026, toutes doivent déjà savoir en recevoir.</p>
 <p><strong>Ce qu'Atlas ne fait pas encore (vérifié le 28 septembre 2026) :</strong> la fiche client ne distingue pas particulier, entreprise et mairie, et ne porte pas de SIRET (<code>src/server/db/schema.ts</code>, table <code>clients</code>) ; aucune mention d'autoliquidation ; pas d'envoi vers Chorus Pro. La maquette <code>appli/tva-entreprise-et-mairie.html</code> propose de quoi le faire, sur vos vrais écrans : la sous-traitance se dit sur la facture, chantier par chantier. En attendant, une mairie se facture dans Atlas à 20 %, et le PDF se dépose à la main sur chorus-pro.gouv.fr.</p>
 </main>
