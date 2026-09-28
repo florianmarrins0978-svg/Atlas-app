@@ -259,6 +259,42 @@ async function main() {
     assert.equal((await page.locator("[data-atlas='compte-photos-retour']").innerText()).trim(), "3/10");
   });
 
+  // ─── LA PHOTO S'OUVRE EN GRAND — sa capture du 28 septembre 2026 ──────────
+  //
+  // *« Impossible de cliquer pour voir les photos et pouvoir les faire défiler
+  // comme on a déjà mis en place. »* Toucher une vignette la décochait : elle
+  // ouvre maintenant la visionneuse commune, et c'est DEDANS qu'on la joint ou
+  // non au retour.
+  await cas("TOUCHER UNE VIGNETTE L'OUVRE EN GRAND, on feuillette, et l'on y choisit de la joindre", async () => {
+    // Les trois photos qu'on vient d'ajouter sont les dernières, et cochées.
+    const n = await page.locator(PHOTO_DU_RETOUR).count();
+    const vignette = page.locator(PHOTO_DU_RETOUR).nth(n - 3);
+    assert.equal(await vignette.getAttribute("aria-pressed"), "true", "la photo ajoutée n'est pas cochée au départ");
+    await vignette.click();
+    await page.locator("[data-atlas='photo-en-grand']").waitFor({ state: "visible", timeout: 10_000 });
+    assert.equal(
+      await vignette.getAttribute("aria-pressed"),
+      "true",
+      "toucher la vignette l'a décochée au lieu de l'ouvrir"
+    );
+    const rang = page.locator("[data-atlas='rang-de-la-photo']");
+    assert.equal((await rang.innerText()).trim(), `${n - 2} / ${n}`);
+    await page.getByRole("button", { name: "Photo suivante" }).click();
+    assert.equal((await rang.innerText()).trim(), `${n - 1} / ${n}`, "le chevron ne feuillette pas");
+
+    const suivante = page.locator(PHOTO_DU_RETOUR).nth(n - 2);
+    const joindre = page.locator("[data-atlas='joindre-photo-du-retour']");
+    assert.equal((await joindre.textContent())?.trim(), "Ne pas joindre");
+    await joindre.click();
+    assert.equal((await joindre.textContent())?.trim(), "Joindre");
+    assert.equal(await suivante.getAttribute("aria-pressed"), "false");
+    await joindre.click();
+    assert.equal(await suivante.getAttribute("aria-pressed"), "true");
+
+    await page.getByRole("button", { name: "Fermer" }).click();
+    await page.locator("[data-atlas='photo-en-grand']").waitFor({ state: "detached", timeout: 10_000 });
+  });
+
   // ─── LE RETOUR ENVOYÉ SE MODIFIE — sa demande du 25 septembre 2026 ────────
   //
   // *« Juste en recliquant sur le bouton 1 retour envoyé, ça rouvre la même

@@ -299,7 +299,8 @@ export const FICHES_PLANNING: FicheModeEmploi[] = [
     motsCles: ["retour", "intervention", "fait", "cocher", "travaux", "compte", "rendu", "salarie", "soir", "photo"],
     geste:
       "Touchez le nom du chantier dans sa journée, puis « Travaux à faire ». Cochez ce qui est fait, ajoutez des photos " +
-      "avec « + », écrivez sous « À signaler », puis « Envoyer le retour du jour ».",
+      "avec « + », écrivez sous « À signaler », puis « Envoyer le retour du jour ». Touchez une photo pour la voir en grand " +
+      "et faire défiler les autres : « Joindre » ou « Ne pas joindre » s'y choisit.",
     reserve:
       "Le patron peut exiger qu'une ligne soit cochée et une photo posée : Atlas dit alors ce qui manque. " +
       "Les retours se lisent dans Terminés, Retours d'intervention.",

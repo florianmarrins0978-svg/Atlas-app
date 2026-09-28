@@ -8,6 +8,15 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-28
 
+### Travaux à faire : la photo s'ouvre en grand
+
+Sa capture : *« impossible de cliquer pour voir les photos et pouvoir les faire
+défiler comme on a déjà mis en place »*. Toucher une vignette la décochait du
+retour, sans rien montrer. Elle ouvre maintenant la visionneuse commune
+(`VisionneusePhoto`) ; joindre ou non la photo au retour se choisit dedans,
+« Joindre » / « Ne pas joindre », comme « Retirer » sur la fiche de sécurité.
+Tenu par `test-travaux-a-faire-e2e.ts`, vu rouge avant la correction.
+
 ### Six lots sur `main` en une seule batterie
 
 Sa demande : *« associe-toi pour ne jouer qu'une batterie »*. Réunis : chacun

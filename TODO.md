@@ -1,5 +1,16 @@
 # Prochaines tâches
 
+## 🔜 Travaux à faire : la photo s'ouvre en grand, CODÉ le 28 septembre 2026, reste à livrer sur `main`
+
+Toucher une vignette ouvre la visionneuse commune ; « Joindre » / « Ne pas
+joindre » s'y choisit. Branche `claude/photos-consultation-issue-aiygzb`.
+
+**Vu en le regardant, et pas corrigé (hors lot)** : dans `VisionneusePhoto`, la
+rangée des vignettes ne défile pas. Au-delà de six photos environ, elle déborde
+des deux côtés de l'écran d'un téléphone et les premières ne se touchent plus
+(chevrons et glissé du doigt marchent toujours). Vaut pour la pellicule, les
+retours, la fiche de sécurité et maintenant Travaux à faire.
+
 ## ✅ SES DATES, GARDÉES AVEC LA CORRECTION : SUR `main` LE 28 SEPTEMBRE 2026
 
 Sa plainte : *« mon client a demandé une correction et proposé des dates ; quand
