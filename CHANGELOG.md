@@ -8,6 +8,20 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-28
 
+### Absent le matin, il se coche l'après-midi
+
+Son signalement du 28 septembre 2026, capture à l'appui : Julien posé absent le
+matin restait grisé sur la ligne de l'après-midi. **La racine** : l'écran ne
+demandait pas au serveur s'il pouvait cocher, il recalculait sa propre règle
+sur la JOURNÉE (`joursAbsentsDuChantier`, `absenteCeJour`), pendant que le
+serveur jugeait la demi-journée. Deux règles, et l'écran avait tort.
+`cocheRefusee` prend désormais la demi-journée (obligatoire) et c'est la seule
+que l'écran et le serveur appellent ; les deux fonctions de la règle recopiée
+sont supprimées. Éprouvé : `test-equipe-absente.ts` (rouge puis vert) et
+`test-equipes-par-jour-e2e.ts`, son cas exact, **vu rouge sans la correction**
+(« Julien est grisé l'après-midi »). **Pas sur `main`** : niveau 3 (rayon de 38
+écrans), batterie non jouée à sa demande.
+
 ### Six lots sur `main` en une seule batterie
 
 Sa demande : *« associe-toi pour ne jouer qu'une batterie »*. Réunis : chacun

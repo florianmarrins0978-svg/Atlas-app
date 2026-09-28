@@ -501,7 +501,7 @@ export async function basculerEquipeDuChantier(
     // exactement l'état qu'il a photographié.
     if (!deja) {
       const absences = await absencesDeLEquipe(tx, ctx.entrepriseId, equipeId);
-      if (cocheRefusee(rangEquipe, le, absences, false)) {
+      if (cocheRefusee(rangEquipe, le, absences, false, demi)) {
         // **On rend l'état INCHANGÉ, jamais `null` et jamais une exception.**
         // `null` veut déjà dire « ce chantier n'est pas à vous » ; le message
         // d'une exception levée par une action serveur n'arrive jamais jusqu'au

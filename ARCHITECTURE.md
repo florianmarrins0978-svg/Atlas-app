@@ -33792,3 +33792,18 @@ Ses réponses du 27 septembre 2026 sur `appli/rappels-par-role-et-organigramme.h
 | « Ajouter » : un salarié monte le compteur (même geste que le +) ; commercial et facturation passent par « Nouveau compte », rôle déjà choisi | un seul chemin par sorte de personne |
 | **retirer UNE personne n'est pas codé** | le planning retrouve les gars par leur RANG (`nomEquipe`, `PlanningClient`) : sortir quelqu'un du milieu décalerait ou effacerait le nom sur ses chantiers passés. Il faut d'abord que l'historique se lise par identifiant (`TODO.md`) |
 | la photo d'un compte se lit par `photoDUnCompte` (`src/lib/organigramme.ts`), pour « Qui a accès » comme pour l'organigramme | une seule règle de la tête d'une personne (§430) |
+
+## §432 : Une coche d'équipe se juge sur SA demi-journée, par une seule règle
+
+Son signalement du 28 septembre 2026 : absent le matin, Julien restait gris
+l'après-midi. L'écran du planning ne calculait pas le refus avec `cocheRefusee`
+mais avec sa propre formule (« absent un jour du chantier » et « pastille
+vide »), fondée sur `absenteCeJour`, qui tenait un jour pour absent dès qu'une
+moitié l'était. Le serveur, lui, jugeait la demi-journée.
+
+| Décision | Pourquoi |
+|---|---|
+| `cocheRefusee(rang, chantier, absences, dejaCochee, demi)`, `demi` obligatoire | une coche se pose toujours sur un matin ou un après-midi ; la rendre facultative laisserait revenir le jugement sur la journée |
+| l'écran appelle `cocheRefusee` (`cocheRefuseeDe`), le serveur aussi | une seule règle ; c'est la copie qui avait divergé (`CLAUDE.md` §3) |
+| `joursAbsentsDuChantier` et `absenteCeJour` supprimées | elles ne servaient qu'à la copie ; le jour entier s'obtient par `absenteCeCreneau` sans `demi` |
+
