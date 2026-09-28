@@ -8,6 +8,26 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-28
 
+### L'assistant joué par un artisan : trente et une questions sans réponse corrigées
+
+Sa demande : *« joue le rôle d'un utilisateur qui a des questions à lui poser
+et corrige à la racine celles où il n'arrive pas à répondre »*. Cent questions
+d'artisan passées dans la recherche de l'assistant, en deux tours (le second
+avec des questions neuves, pour ne pas régler la recherche sur ses propres
+réponses). Quatre racines :
+
+| Racine | Correction |
+|---|---|
+| **il ne savait pas la date** : « ce mois », « demain » se devinaient | `consigneDuJour` pose le jour de l'atelier après la consigne |
+| **aucun outil ne comptait une période** : « combien j'ai encaissé en septembre » exigeait qu'il additionne de tête | `LireFactures` prend `du` et `au` et rend `bilanDeLaPeriode` (`src/lib/bilan-periode.ts`) : facturé, avoirs retirés, et encaissé |
+| **quatorze sujets sans fiche** : internet, ordinateur, essai, prix, personnes, contact, facture électronique, comptable, contrat d'entretien, chiffre d'affaires, import de clients, IA qui se trompe, ce que fait l'assistant, langue, facture de situation | fiches neuves ; prix, essai et plafonds LUS dans `FORMULES` et `JOURS_ESSAI`, ce qu'Atlas ne fait pas tenu par `absences` |
+| **la recherche lisait mal trois tournures** : « en ligne » pris pour une ligne du devis, « pas de TVA » perdant sa négation, « le prix d'Atlas » réduit à « prix » ; et « ai » comptait comme un mot | `EXPRESSIONS` dans `mode-emploi.ts`, « ai », « as », « suis » en mots vides |
+
+**Ce que ça évite :** qu'il réponde « je n'ai pas cette information » sur une
+application qui la tient, ou qu'il invente un mois. Rouges avant, sur le code
+d'avant : 31 questions sur 33, le module de période absent, trois cas du bilan.
+`ARCHITECTURE.md` §433.
+
 ### L'assistant répond sur la façon dont Atlas garde les données
 
 Sa capture : « Combien de temps tu conserve les données dans lappli ? » rendait

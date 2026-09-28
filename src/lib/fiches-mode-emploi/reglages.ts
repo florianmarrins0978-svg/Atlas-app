@@ -5,6 +5,7 @@
  * règle, la recherche et le pourquoi vivent dans `src/lib/mode-emploi.ts`.
  */
 import type { FicheModeEmploi } from "../mode-emploi";
+import { FORMULES } from "../abonnements";
 
 const R = "« Réglages » dans la barre du bas";
 
@@ -244,7 +245,7 @@ export const FICHES_REGLAGES: FicheModeEmploi[] = [
     ecran: "Mon entreprise",
     ou: `${R}, puis Mon entreprise, bloc Votre régime de TVA`,
     intitule: "Dire si je facture la TVA ou si je suis en franchise, mon numéro de TVA",
-    motsCles: ["tva", "franchise", "assujetti", "assujettie", "regime", "293", "intracommunautaire", "numero"],
+    motsCles: ["tva", "franchise", "assujetti", "assujettie", "regime", "293", "intracommunautaire", "numero", "auto", "entrepreneur", "micro", "sans tva"],
     geste:
       "Dans « Votre régime de TVA », touchez « Franchise en base » ou « Assujettie ». " +
       "Assujettie : écrivez votre numéro de TVA intracommunautaire dessous.",
@@ -708,22 +709,27 @@ export const FICHES_REGLAGES: FicheModeEmploi[] = [
     id: "reglages-formule",
     ecran: "Abonnement",
     ou: `${R}, puis Abonnement`,
-    intitule: "S'abonner ou changer de formule, payer au mois ou à l'année",
-    motsCles: ["formule", "abonner", "offre", "entreprise", "prix", "annuel", "mois", "annee", "changer"],
+    intitule: "Le prix d'Atlas, s'abonner ou changer de formule, payer au mois ou à l'année",
+    motsCles: ["formule", "abonner", "offre", "entreprise", "prix", "annuel", "mois", "annee", "changer", "coute", "abonnement", "prix d'atlas"],
     geste:
       "Ouvrez « Abonnement », choisissez « Au mois » ou « À l’année, 2 mois offerts », " +
       "puis « S’abonner » ou « Passer à cette formule » sous la formule voulue.",
-    reserve: "Réservé au patron.",
+    // Les prix sont LUS dans `FORMULES`, jamais recopiés : l'écran les lit là
+    // aussi, et une hausse ne laissera pas l'assistant sur l'ancien tarif.
+    reserve:
+      "Réservé au patron. " +
+      FORMULES.map((f) => `${f.nom} : ${f.prixMensuel} € HT par mois, ou ${f.prixAnnuel} € HT par an`).join(". ") +
+      ".",
     source: "src/app/reglages/abonnement/AbonnementClient.tsx",
-    preuves: ["Au mois", "À l’année, 2 mois offerts", "S’abonner", "Passer à cette formule"],
+    preuves: ["Au mois", "À l’année, 2 mois offerts", "S’abonner", "Passer à cette formule", "FORMULES"],
   },
   // --- Moi ----------------------------------------------------------------------
   {
     id: "reglages-compte",
     ecran: "Mon compte",
     ou: `${R}, puis Mon compte`,
-    intitule: "Changer son prénom, son nom ou sa civilité",
-    motsCles: ["compte", "nom", "prenom", "civilite", "madame", "monsieur", "moi", "profil", "changer"],
+    intitule: "Changer son prénom, son nom ou sa civilité, et son e-mail de connexion",
+    motsCles: ["compte", "nom", "prenom", "civilite", "madame", "monsieur", "moi", "profil", "changer", "email", "connexion"],
     geste: "Ouvrez « Mon compte », corrigez la civilité, le prénom ou le nom, puis « Enregistrer ».",
     reserve: "L'e-mail sert à vous connecter et ne se modifie pas encore.",
     source: "src/app/reglages/compte/CompteClient.tsx",
@@ -868,7 +874,7 @@ export const FICHES_REGLAGES: FicheModeEmploi[] = [
     ecran: "Mon entreprise",
     ou: "Réglages, puis Mon entreprise",
     intitule: "Changer le nom, l'adresse, le SIRET, l'IBAN de l'entreprise",
-    motsCles: ["entreprise", "identite", "nom", "adresse", "siret", "iban", "tva", "coordonnees", "siege"],
+    motsCles: ["entreprise", "identite", "nom", "adresse", "siret", "iban", "tva", "coordonnees", "siege", "numero"],
     geste: "Ouvrez « Mon entreprise », corrigez le champ, puis « Enregistrer ».",
     reserve: "Ces informations figurent en tête de chaque devis et de chaque facture.",
     source: "src/app/reglages/identite/IdentiteClient.tsx",

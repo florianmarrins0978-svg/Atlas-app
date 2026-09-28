@@ -95,7 +95,7 @@ export const FICHES_DEVIS: FicheModeEmploi[] = [
     ecran: "Devis",
     ou: "un chantier, écran Devis, sous les lignes",
     intitule: "Ajouter une ligne au devis",
-    motsCles: ["ajouter", "ligne", "nouvelle", "prestation", "rajouter", "article", "poste"],
+    motsCles: ["ajouter", "ligne", "nouvelle", "prestation", "rajouter", "article", "poste", "frais", "deplacement"],
     geste: "Appuyez sur « + Ajouter une ligne » sous les lignes, puis écrivez la description, la quantité et le prix.",
     reserve: "Avec plusieurs TVA, chaque catégorie a son bouton : la ligne arrive dans celle où vous appuyez.",
     source: DC,

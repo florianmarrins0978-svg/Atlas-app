@@ -135,6 +135,35 @@ async function main() {
     assert.equal(deA.trouve, false, "A lit une facture de B");
   });
 
+  // **Sa question jouée le 28 septembre 2026 : « combien j'ai encaissé ce
+  // mois ».** Sans période, l'outil ne pouvait rien en dire, et le modèle
+  // aurait additionné de tête.
+  type Bilan = { factureTtc: string; encaisse: string; nombreFactures: number; nombreReglements: number };
+  const jour = emise(f1);
+  const centimes = (v: string) => Math.round(Number(v) * 100);
+
+  await cas("« combien j'ai facturé et encaissé ce jour-là » : les totaux de l'écran, au centime", async () => {
+    const r = (await lire(A, { du: jour, au: jour })) as Lu & { bilan: Bilan };
+    const factureAttendu = [f1, f2, f3].reduce((s, id) => s + centimes(ttc(id)), 0);
+    assert.equal(centimes(r.bilan.factureTtc), factureAttendu);
+    assert.equal(r.bilan.nombreFactures, 3);
+    assert.equal(centimes(r.bilan.encaisse), 10000 + centimes(ttc(f3)));
+    assert.equal(r.bilan.nombreReglements, 2);
+  });
+
+  await cas("une période sans rien rend un bilan à zéro, pas un refus", async () => {
+    const r = (await lire(A, { du: "2000-01-01", au: "2000-12-31" })) as Lu & { bilan: Bilan };
+    assert.equal(r.trouve, false);
+    assert.equal(r.bilan.factureTtc, "0.00");
+    assert.equal(r.bilan.encaisse, "0.00");
+  });
+
+  await cas("ISOLATION : le bilan de B ne compte rien de A", async () => {
+    const r = (await lire(B, { du: jour, au: jour })) as Lu & { bilan: Bilan };
+    assert.equal(r.bilan.nombreFactures, 1);
+    assert.equal(r.bilan.nombreReglements, 0);
+  });
+
   await pool.end();
   if (echecs > 0) {
     console.error(`\n❌ ${echecs} échec(s).`);

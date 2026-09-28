@@ -113,6 +113,11 @@ const MOTS_VIDES = new Set([
   "dans", "pour", "avec", "par", "pas", "plus", "faire", "fais", "fait", "peux", "puis", "veux", "vais",
   "comment", "où", "quand", "pourquoi", "est-ce", "s", "si", "son", "sa", "ses", "leur", "nous", "vous", "ils",
   "app", "appli", "application", "atlas", "page", "ecran",
+  // « j'ai », « tu as », « je suis » : aussi vides que « est », qui y était
+  // déjà. « ai » comptait comme un mot de la question, et « j'ai pas de TVA,
+  // comment je le dis » se voyait exiger un second mot qu'il n'avait pas
+  // (question jouée le 28 septembre 2026).
+  "ai", "as", "suis",
 ]);
 
 /** Sans accents, sans ponctuation, en minuscules — il tape comme il parle. */
@@ -125,8 +130,34 @@ export function normaliser(texte: string): string {
     .trim();
 }
 
+/**
+ * Les expressions dont le sens n'est pas celui de leurs mots.
+ *
+ * **« En ligne » n'est pas une ligne du devis** (sa question du 28 septembre
+ * 2026, jouée : « le client peut signer le devis en ligne ? » rendait la
+ * reprise d'une ligne d'un autre devis). Le mot « ligne » est dans des
+ * dizaines de fiches ; l'expression, elle, veut dire « sur internet ». Elle se
+ * soude en un seul mot, des deux côtés : la question comme la fiche.
+ *
+ * **Le mot soudé COMMENCE par ce qu'il désigne.** La recherche compare aussi
+ * les débuts de mots (`contient`) : « sanstva » commençait par « sans », et
+ * attirait toutes les fiches « sans devis », « sans date ». « franchisetva »
+ * ne rencontre que la franchise.
+ */
+const EXPRESSIONS: [RegExp, string][] = [
+  [/\bhors ligne\b/g, "internethorsligne"],
+  [/\ben ligne\b/g, "enligne"],
+  // « Pas » est un mot vide : « j'ai pas de TVA » perdait sa négation et
+  // tombait sur n'importe quelle fiche de TVA. Soudée, elle désigne la
+  // franchise (question jouée le 28 septembre 2026).
+  [/\b(pas de|sans) tva\b/g, "franchisetva"],
+  // « Atlas » est un mot vide (il est dans toutes les questions) : « le prix
+  // d'Atlas » ne gardait que « prix », qui est dans cinquante fiches de devis.
+  [/\b(prix|tarif|tarifs|cout) (d |de l |de )?(atlas|appli|application)\b/g, "abonnementprix"],
+];
+
 function motsUtiles(texte: string): string[] {
-  return normaliser(texte)
+  return EXPRESSIONS.reduce((t, [motif, mot]) => t.replace(motif, mot), normaliser(texte))
     .split(" ")
     .filter((m) => m.length > 1 && !MOTS_VIDES.has(m));
 }

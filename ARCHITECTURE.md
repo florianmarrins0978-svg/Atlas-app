@@ -33818,3 +33818,33 @@ l'hébergeur et son pays (« [À COMPLÉTER] » dans les mentions légales), les
 durées de purge. Suites : `test-mode-emploi` (ses deux questions mot pour mot,
 rouges avant), `test-assistant-explique-l-appli` (par `poserQuestion`, rouges
 avant).
+
+## §433 : L'assistant sait le jour, compte une période, et lit mieux les tournures
+
+**Sa demande du 28 septembre 2026** : *« joue le rôle d'un utilisateur qui a des
+questions à lui poser et corrige à la racine celles où il n'arrive pas à
+répondre »*. Le jeu a porté sur la recherche du mode d'emploi (ce que le vrai
+modèle reçoit) et sur les outils, faute de clé IA sur ce poste.
+
+| Décision | Pourquoi |
+|---|---|
+| `consigneDuJour(jourIso(...))`, le jour APRÈS la consigne fixe | un modèle n'a pas d'horloge ; le jour de l'atelier est `jourIso`, celui des factures. Placé en fin, le début de la consigne ne change pas d'une question à l'autre |
+| `bilanDeLaPeriode`, pure, dans `lib` ; `LireFactures` la sert avec `du` et `au` | les montants ne sortent jamais d'un calcul du modèle (§420). Deux totaux, deux questions : **facturé** (émises dans la période, moins les avoirs émis dans la période, le jour où ils sont faits) et **encaissé** (règlements datés dans la période, quelle que soit leur facture) |
+| le bilan se compte sur les factures du client filtré, pas sur celles de la période | un règlement d'octobre sur une facture de septembre est de l'argent d'octobre |
+| les fiches citent `FORMULES`, `JOURS_ESSAI`, `CONTACT_ATLAS` au lieu de recopier | une hausse de prix ne laisse pas l'assistant sur l'ancien tarif |
+| `EXPRESSIONS` : « en ligne », « hors ligne », « pas de / sans TVA », « prix d'Atlas » soudés en un mot, des deux côtés | le mot seul désignait autre chose (« ligne » du devis, « prix » d'une ligne), et « pas », « atlas » sont vides |
+| le mot soudé **commence par ce qu'il désigne** (« franchisetva », « abonnementprix », « internethorsligne ») | `contient` compare les débuts de mots : « sanstva » attirait toutes les fiches « sans devis » |
+| « ai », « as », « suis » en mots vides, comme « est » | « j'ai pas de TVA » se voyait exiger un second mot qu'il n'avait pas |
+| une facture envoyée ne se supprime pas : « annuler », « supprimer », « erreur » mènent à l'avoir | la recherche proposait d'annuler une suppression |
+
+**Deux tours de questions, pas un.** Le second était fait de questions neuves :
+une recherche réglée sur ses propres questions d'essai les réussit toutes, et
+ne prouve rien des suivantes. Il en a encore attrapé neuf.
+
+**Ce qui reste au modèle, et c'est voulu** : « comment dicter un devis » rend
+d'abord « sans dicter », « je veux mettre tous mes contacts » ne rend rien. Le
+sommaire (§180, lu quand les fiches ne répondent pas) y pourvoit ; forcer la
+recherche sur chaque tournure la rendrait bavarde à tort, et le garde-fou « une
+question qui n'en est pas une ne rend RIEN » a rougi une fois pendant ce lot
+(« combien coûte un abattage de chêne »), ce qui a fait retirer « combien » d'un
+intitulé.

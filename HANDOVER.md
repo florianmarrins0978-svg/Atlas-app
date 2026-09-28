@@ -18,6 +18,12 @@ conservation dit « rien ne s'efface tout seul » parce que la purge n'est pas
 branchée ; quand elle le sera, `test-mode-emploi` rougira, et la fiche doit
 alors dire les durées de `src/server/retention.ts`. §432.
 
+Puis la zone `artisan` de `scripts/_questions-mode-emploi.ts` : ses questions
+jouées, à enrichir plutôt qu'à réécrire. Une question qui rate se corrige par
+les mots-clés, `EXPRESSIONS` ou une fiche neuve, jamais en changeant la
+question. Le jour de l'atelier entre par `consigneDuJour` ; une période se
+compte par `bilanDeLaPeriode`, jamais par le modèle. §433.
+
 ## SES DATES AVEC LA CORRECTION : 27 septembre 2026, PAS SUR `main`
 
 | | |

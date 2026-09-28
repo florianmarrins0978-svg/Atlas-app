@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { METIER_ATLAS } from "../../../lib/metier-atlas";
 import { CONTACT_ATLAS } from "../../../lib/contact-atlas";
+import { jourIso, jourEnTitre } from "../../../lib/jour";
 import type { Ctx } from "../../repositories/context";
 import { getFournisseurLLM } from "../providers/llm/fabrique";
 import { outilsDisponibles, getOutil } from "../tools/registre";
@@ -156,6 +157,22 @@ montre-les et demande laquelle, ne choisis jamais à sa place.
 Réponds en français, de façon concise et claire, en Markdown simple. Le moins de mots possible : il lit
 sur un téléphone, souvent entre deux chantiers.`;
 
+/**
+ * La consigne, et le jour où l'on est.
+ *
+ * **Il ne savait pas la date** (sa demande du 28 septembre 2026, jouée :
+ * « combien j'ai encaissé ce mois », « qu'est-ce que j'ai demain »). Un modèle
+ * n'a pas d'horloge : il devinait « ce mois » depuis sa mémoire, et visait un
+ * autre mois sans le dire. Le jour est celui de l'atelier (`jourIso`), posé
+ * APRÈS la consigne fixe : le début ne change pas d'une question à l'autre.
+ */
+export function consigneDuJour(aujourdHui: string): string {
+  return (
+    `${SYSTEME}\n\nAUJOURD'HUI : ${jourEnTitre(aujourdHui)} (${aujourdHui}). "Demain", "cette semaine", ` +
+    `"ce mois", "cette année" se comptent depuis ce jour. Une période se donne aux outils en dates AAAA-MM-JJ.`
+  );
+}
+
 const MAX_APPELS_OUTILS = 8;
 
 /**
@@ -247,7 +264,7 @@ export async function poserQuestion(
   let corrections = 0;
 
   for (let etape = 0; etape < MAX_APPELS_OUTILS; etape++) {
-    const resultat = await fournisseur.genererAvecOutils(SYSTEME, historique, definitions);
+    const resultat = await fournisseur.genererAvecOutils(consigneDuJour(jourIso(new Date())), historique, definitions);
 
     if (!resultat.succes) {
       return { succes: false, erreur: messageErreurUtilisateur(resultat.erreur) };

@@ -19,7 +19,7 @@ export const FICHES_LIEUX: FicheModeEmploi[] = [
     ecran: "Chantiers",
     ou: "« Chantiers », premier onglet de la barre du bas",
     intitule: "Trouver les chantiers en cours",
-    motsCles: ["chantiers", "cours", "accueil", "liste", "devis", "attente", "trouver", "sont", "retrouver"],
+    motsCles: ["chantiers", "cours", "accueil", "liste", "devis", "attente", "trouver", "sont", "retrouver", "onglet"],
     geste: "Touchez « Chantiers » dans la barre du bas : tous les chantiers en cours, devis compris.",
     source: "src/components/atlas/AtlasBottomNav.tsx",
     preuves: ['label: "Chantiers"'],
@@ -30,7 +30,7 @@ export const FICHES_LIEUX: FicheModeEmploi[] = [
     ecran: "Planning",
     ou: "« Planning », dans la barre du bas",
     intitule: "Ouvrir le planning, le calendrier",
-    motsCles: ["planning", "calendrier", "agenda", "jour", "semaine", "trouver", "sont"],
+    motsCles: ["planning", "calendrier", "agenda", "jour", "semaine", "trouver", "sont", "onglet"],
     geste: "Touchez « Planning » dans la barre du bas.",
     source: "src/components/atlas/AtlasBottomNav.tsx",
     preuves: ['label: "Planning"'],
@@ -41,7 +41,7 @@ export const FICHES_LIEUX: FicheModeEmploi[] = [
     ecran: "Terminés",
     ou: "« Terminés », dans la barre du bas",
     intitule: "Retrouver les chantiers terminés, mois par mois",
-    motsCles: ["termine", "termines", "fini", "finis", "finit", "passe", "anciens", "mois", "sont", "trouver"],
+    motsCles: ["termine", "termines", "fini", "finis", "finit", "passe", "anciens", "mois", "sont", "trouver", "onglet"],
     geste:
       "Touchez « Terminés » dans la barre du bas : les chantiers finis, facturés ou non. " +
       "Les chevrons changent de mois.",
@@ -55,7 +55,7 @@ export const FICHES_LIEUX: FicheModeEmploi[] = [
     ecran: "Paysage",
     ou: "« Paysage », dans la barre du bas",
     intitule: "Trouver les outils du métier : arrosage, fiche de chantier, diagnostic, fiches de sécurité",
-    motsCles: ["paysage", "outils", "outil", "arrosage", "diagnostic", "metier", "sont", "trouver"],
+    motsCles: ["paysage", "outils", "outil", "arrosage", "diagnostic", "metier", "sont", "trouver", "onglet"],
     geste:
       "Touchez « Paysage » dans la barre du bas : Plan d'arrosage automatique, Fiche de chantier, " +
       "Diagnostic végétal et Fiches de sécurité.",
@@ -69,7 +69,7 @@ export const FICHES_LIEUX: FicheModeEmploi[] = [
     ecran: "Réglages",
     ou: "« Réglages », dernier onglet de la barre du bas",
     intitule: "Ouvrir les réglages",
-    motsCles: ["reglages", "reglage", "parametres", "parametre", "configurer", "options", "sont", "trouver"],
+    motsCles: ["reglages", "reglage", "parametres", "parametre", "configurer", "options", "sont", "trouver", "onglet"],
     geste: "Touchez « Réglages » dans la barre du bas.",
     source: "src/components/atlas/AtlasBottomNav.tsx",
     preuves: ['label: "Réglages"'],

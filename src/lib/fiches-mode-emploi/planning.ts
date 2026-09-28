@@ -49,7 +49,7 @@ export const FICHES_PLANNING: FicheModeEmploi[] = [
     ecran: "Planning",
     ou: "« Planning » dans la barre du bas, puis le nom du chantier",
     intitule: "Donner la feuille de chantier à l'équipe, le devis sans les prix",
-    motsCles: ["feuille", "equipe", "ouvrier", "papier", "prix", "sans", "pdf", "imprimer", "salarie"],
+    motsCles: ["feuille", "equipe", "ouvrier", "papier", "prix", "sans", "pdf", "imprimer", "salarie", "route", "gars", "ouvriers"],
     geste:
       "Touchez le nom du chantier dans sa journée : « Ouvrir le devis sans les prix » est au bas de sa fiche d'intervention.",
     reserve: "Le bouton n'apparaît que si le chantier a un devis.",

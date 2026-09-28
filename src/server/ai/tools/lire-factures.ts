@@ -3,6 +3,9 @@ import type { Outil } from "./types";
 import { facturesAvecPaiements } from "../../repositories/paiements-facture";
 import { listerFacturesNonPayees } from "../../repositories/factures-non-payees";
 import { totalRecu } from "@/lib/acomptes-facture";
+import { bilanDeLaPeriode } from "@/lib/bilan-periode";
+
+const JOUR = /^\d{4}-\d{2}-\d{2}$/;
 
 const LIMITE = 30;
 
@@ -28,7 +31,10 @@ export const lireFactures: Outil = {
     "Lit les factures ÉMISES de l'entreprise : numéro, date, client, montants, paiements reçus, reste dû et " +
     "état (en_attente, partielle, soldee), et si elle a été déclarée non payée. Rend aussi le total restant dû " +
     "des factures retenues. À utiliser pour « qui me doit de l'argent », « est-ce que X a payé », « combien il " +
-    "reste à encaisser », « la facture n° … ». Les brouillons pas encore émis n'y sont pas.",
+    "reste à encaisser », « la facture n° … ». Les brouillons pas encore émis n'y sont pas. " +
+    "Avec « du » et « au » (AAAA-MM-JJ), rend aussi le bilan de la période : ce qui a été facturé (avoirs " +
+    "retirés) et encaissé. À utiliser pour « combien j'ai facturé en septembre », « combien j'ai encaissé cette " +
+    "année », « mon chiffre d'affaires ». Donne ces chiffres tels quels, ne les additionne jamais toi-même.",
   schema: z.object({
     client: z.string().nullish().describe("Tout ou partie du nom du client. Vide : tous les clients."),
     numero: z.string().nullish().describe("Tout ou partie du numéro de facture."),
@@ -39,26 +45,44 @@ export const lireFactures: Outil = {
         "a_encaisser : pas encore soldées. soldees : entièrement payées. non_payees : déclarées non payées " +
           "par le patron. Vide : toutes."
       ),
+    du: z.string().regex(JOUR).nullish().describe("Premier jour de la période, compris, AAAA-MM-JJ."),
+    au: z.string().regex(JOUR).nullish().describe("Dernier jour de la période, compris, AAAA-MM-JJ."),
   }),
   async executer({ ctx }, parametres) {
-    const p = parametres as { client?: string | null; numero?: string | null; etat?: string | null };
+    const p = parametres as {
+      client?: string | null;
+      numero?: string | null;
+      etat?: string | null;
+      du?: string | null;
+      au?: string | null;
+    };
     const [toutes, declarees] = await Promise.all([facturesAvecPaiements(ctx), listerFacturesNonPayees(ctx)]);
     const nonPayees = new Set(declarees.map((f) => f.factureId));
 
     const client = (p.client ?? "").trim().toLowerCase();
     const numero = (p.numero ?? "").trim().toLowerCase();
-    const retenues = toutes.filter((f) => {
+    const duClient = toutes.filter((f) => {
       if (client && !(f.clientNom ?? "").toLowerCase().includes(client)) return false;
       if (numero && !f.numeroCommercial.toLowerCase().includes(numero)) return false;
+      return true;
+    });
+    // **Le bilan se compte sur les factures du client, pas sur celles de la
+    // période** : un règlement d'octobre sur une facture de septembre est de
+    // l'argent d'octobre (`bilanDeLaPeriode`).
+    const periode = p.du || p.au ? { du: p.du ?? "0000-01-01", au: p.au ?? "9999-12-31" } : null;
+    const bilan = periode ? bilanDeLaPeriode(duClient, periode.du, periode.au) : null;
+    const retenues = duClient.filter((f) => {
+      if (periode && (f.dateEmission < periode.du || f.dateEmission > periode.au)) return false;
       if (p.etat === "a_encaisser") return f.etat !== "soldee";
       if (p.etat === "soldees") return f.etat === "soldee";
       if (p.etat === "non_payees") return nonPayees.has(f.id);
       return true;
     });
 
-    if (retenues.length === 0) return { trouve: false, raison: "Aucune facture émise ne correspond." };
+    if (retenues.length === 0 && !bilan) return { trouve: false, raison: "Aucune facture émise ne correspond." };
     return {
-      trouve: true,
+      trouve: retenues.length > 0,
+      bilan,
       nombre: retenues.length,
       totalResteDu: totalRecu(retenues.map((f) => ({ montant: f.reste }))),
       factures: retenues.slice(0, LIMITE).map((f) => ({
