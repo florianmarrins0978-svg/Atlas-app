@@ -5,11 +5,11 @@
 Toucher une vignette ouvre la visionneuse commune ; « Joindre » / « Ne pas
 joindre » s'y choisit. Branche `claude/photos-consultation-issue-aiygzb`.
 
-**Vu en le regardant, et pas corrigé (hors lot)** : dans `VisionneusePhoto`, la
-rangée des vignettes ne défile pas. Au-delà de six photos environ, elle déborde
-des deux côtés de l'écran d'un téléphone et les premières ne se touchent plus
-(chevrons et glissé du doigt marchent toujours). Vaut pour la pellicule, les
-retours, la fiche de sécurité et maintenant Travaux à faire.
+~~La rangée de `VisionneusePhoto` débordait de l'écran passé six photos~~ :
+corrigée le même soir, à la racine (bornée à l'écran, elle défile, la photo
+ouverte vient au milieu). Batterie non jouée à sa demande : suites
+`travaux-a-faire`, `onglets-termines`, `fiche-securite` rejouées au vert. Reste
+le contrôle de niveau avant `main`.
 
 ## ✅ SES DATES, GARDÉES AVEC LA CORRECTION : SUR `main` LE 28 SEPTEMBRE 2026
 

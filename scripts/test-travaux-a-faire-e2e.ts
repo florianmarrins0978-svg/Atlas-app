@@ -279,6 +279,34 @@ async function main() {
     );
     const rang = page.locator("[data-atlas='rang-de-la-photo']");
     assert.equal((await rang.innerText()).trim(), `${n - 2} / ${n}`);
+
+    // **LA RANGÉE TIENT DANS L'ÉCRAN, ET ELLE DÉFILE** (même soir) : centrée
+    // et sans bornes, elle débordait des deux côtés passé six photos, et les
+    // premières ne se touchaient plus. Mesuré sur une rangée qui déborde
+    // vraiment, sans quoi le contrôle ne prouve rien.
+    assert.ok(n >= 8, `${n} photo(s) seulement : la rangée ne peut pas déborder, rien à mesurer`);
+    const largeurEcran = page.viewportSize()!.width;
+    const rangee = await page.locator("[data-atlas='rangee-des-photos']").evaluate((el) => {
+      const r = el.getBoundingClientRect();
+      return { gauche: r.left, droite: r.right, visible: el.clientWidth, totale: el.scrollWidth };
+    });
+    assert.ok(
+      rangee.gauche >= 0 && rangee.droite <= largeurEcran,
+      `la rangée sort de l'écran : de ${Math.round(rangee.gauche)} à ${Math.round(rangee.droite)} px sur ${largeurEcran}`
+    );
+    assert.ok(rangee.totale > rangee.visible, "la rangée ne défile pas : ses vignettes ont été écrasées");
+    const vignettes = page.locator("[data-atlas='vignette-de-la-rangee']");
+    const largeurVignette = (await vignettes.first().boundingBox())?.width ?? 0;
+    assert.ok(largeurVignette >= 55, `une vignette de la rangée ne fait que ${Math.round(largeurVignette)} px`);
+    const courante = await vignettes.nth(n - 3).boundingBox();
+    assert.ok(
+      courante && courante.x >= 0 && courante.x + courante.width <= largeurEcran,
+      "la vignette de la photo ouverte n'est pas dans l'écran"
+    );
+    await vignettes.first().click();
+    assert.equal((await rang.innerText()).trim(), `1 / ${n}`, "la première vignette de la rangée ne se touche pas");
+    await vignettes.nth(n - 3).click();
+    assert.equal((await rang.innerText()).trim(), `${n - 2} / ${n}`);
     await page.getByRole("button", { name: "Photo suivante" }).click();
     assert.equal((await rang.innerText()).trim(), `${n - 1} / ${n}`, "le chevron ne feuillette pas");
 

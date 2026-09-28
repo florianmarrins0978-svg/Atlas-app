@@ -68,6 +68,7 @@ export default function VisionneusePhoto({
   children?: React.ReactNode;
 }) {
   const depart = useRef<number | null>(null);
+  const rangee = useRef<HTMLDivElement>(null);
   const derniere = photos.length - 1;
   const precedente = () => rang > 0 && onRang(rang - 1);
   const suivante = () => rang < derniere && onRang(rang + 1);
@@ -83,6 +84,17 @@ export default function VisionneusePhoto({
     document.addEventListener("keydown", auClavier);
     return () => document.removeEventListener("keydown", auClavier);
   });
+
+  // La vignette de la photo ouverte vient au milieu de la rangée, quel que
+  // soit le chemin (chevron, doigt, clavier) : sinon on feuillette vers une
+  // photo dont la vignette est hors de vue. `scrollLeft` et non
+  // `scrollIntoView`, qui ferait aussi défiler la page sous le voile.
+  useEffect(() => {
+    const r = rangee.current;
+    const v = r?.children[rang] as HTMLElement | undefined;
+    if (!r || !v) return;
+    r.scrollLeft = v.offsetLeft - (r.clientWidth - v.offsetWidth) / 2;
+  }, [rang]);
 
   // `document` n'existe pas au rendu serveur. Le garde ne masque aucun écart
   // d'hydratation : au premier rendu, aucune photo n'est ouverte — des deux
@@ -164,8 +176,25 @@ export default function VisionneusePhoto({
             {rang + 1} / {photos.length}
           </p>
           {/* La rangée — le côté « bibliothèque » qu'il a retenu. Celle qu'on
-              regarde est cerclée d'or, les autres sont éteintes. */}
-          <div className="mt-4 flex gap-2" onClick={(e) => e.stopPropagation()}>
+              regarde est cerclée d'or, les autres sont éteintes.
+
+              **Bornée à l'écran, et elle DÉFILE** — sa capture du 28 septembre
+              2026. Centrée sans bornes, elle débordait des deux côtés passé
+              six photos : les premières sortaient à gauche, là où rien ne
+              défile, et ne se touchaient plus. `flex-none` sur les vignettes,
+              sans quoi la borne les écraserait au lieu de faire défiler. Le
+              padding garde l'anneau d'or de la première et de la dernière,
+              que le défilement couperait. */}
+          <div
+            ref={rangee}
+            className="relative mt-4 flex max-w-full gap-2 overflow-x-auto p-0.5"
+            data-atlas="rangee-des-photos"
+            onClick={(e) => e.stopPropagation()}
+            // Le doigt qui glisse dans la rangée la fait défiler : il ne doit
+            // pas feuilleter la photo en même temps.
+            onTouchStart={(e) => e.stopPropagation()}
+            onTouchEnd={(e) => e.stopPropagation()}
+          >
             {photos.map((p, i) => (
               <button
                 key={p}
@@ -174,7 +203,7 @@ export default function VisionneusePhoto({
                 aria-label={`Photo ${i + 1}`}
                 aria-current={i === rang ? "true" : undefined}
                 data-atlas="vignette-de-la-rangee"
-                className="h-14 w-14 overflow-hidden rounded-[10px] p-0"
+                className="h-14 w-14 flex-none overflow-hidden rounded-[10px] p-0"
                 style={{
                   opacity: i === rang ? 1 : 0.5,
                   boxShadow: i === rang ? `0 0 0 2px ${colors.orSurEncre}` : undefined,
