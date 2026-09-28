@@ -9,7 +9,9 @@ Planche `appli/tva-entreprise-et-mairie.html` : fiche client particulier,
 entreprise ou mairie avec SIRET (et code service Chorus Pro), facture qui
 suit, bâtie sur les vrais écrans relevés (sa demande : « une maquette réaliste
 qui reprend les vraies pages »). La sous-traitance se dit sur la facture
-(la loi regarde le chantier). Relevé en passant : une entreprise sort
+(la loi regarde le chantier). Le choix Entreprise ou Mairie et le SIRET vivent
+sur la « Fiche client » du chantier (celle de la note vocale), SANS hauteur
+ajoutée : elle déborde déjà de 81 px sur un iPhone 13 (745 pour 664). Relevé en passant : une entreprise sort
 aujourd'hui en « Mr. Jardins Ribault », écran et PDF. **Son accord attendu.** Rien n'est codé. Une fois choisi : niveau 3
 (argent, migration sur `clients`, expand d'abord), mention d'autoliquidation
 dans `facture-pdf.ts`, SIREN du client imprimé.
