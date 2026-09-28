@@ -8,6 +8,21 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-28
 
+### Trois lots sur `main` en une seule batterie
+
+Sa demande : *« regarde les sessions qui attendent de jouer leur batterie et
+associe-toi avec »*, puis *« fusionne quand c'est vert »*. Réunis : l'assistant
+qui répond à tout, la photo qui s'ouvre en grand dans Travaux à faire, l'absent
+du matin cochable l'après-midi. La rencontre a demandé de renuméroter les
+paragraphes de l'assistant (**§433** et **§434**, le §432 étant pris par la
+coche). La batterie a rendu **168/170** : deux suites qui comptaient sur l'état
+laissé par d'autres. `travaux-a-faire` exigeait huit photos sans les poser
+(accumulées dans sa session, quatre sur une base neuve) ;
+`carte-reponse-mene-au-geste` exigeait un jour libre dans le mois affiché, et
+tombait en fin de mois quand le 29 et le 30 étaient pris (reproduit, rouge puis
+vert). Rejouées par `verifier-ce-qui-a-bouge.ts` : **au vert, niveau 3**. Les
+vidéos de promotion n'y sont pas : elles attendent ses choix, pas une batterie.
+
 ### L'assistant joué par un artisan : trente et une questions sans réponse corrigées
 
 Sa demande : *« joue le rôle d'un utilisateur qui a des questions à lui poser
@@ -54,8 +69,8 @@ serveur jugeait la demi-journée. Deux règles, et l'écran avait tort.
 que l'écran et le serveur appellent ; les deux fonctions de la règle recopiée
 sont supprimées. Éprouvé : `test-equipe-absente.ts` (rouge puis vert) et
 `test-equipes-par-jour-e2e.ts`, son cas exact, **vu rouge sans la correction**
-(« Julien est grisé l'après-midi »). **Pas sur `main`** : niveau 3 (rayon de 38
-écrans), batterie non jouée à sa demande.
+(« Julien est grisé l'après-midi »). **Sur `main` le 28 septembre**, niveau 3 (rayon de 38
+écrans), par la batterie commune des trois lots.
 
 ### Travaux à faire : la photo s'ouvre en grand
 

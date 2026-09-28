@@ -11,7 +11,7 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 
 ---
 
-## L'ASSISTANT RÉPOND SUR SES DONNÉES : 28 septembre 2026, PAS SUR `main`
+## L'ASSISTANT RÉPOND SUR SES DONNÉES : 28 septembre 2026, SUR `main`
 
 Zone `src/lib/fiches-mode-emploi/fonctionnement.ts`. **Piège** : la fiche de
 conservation dit « rien ne s'efface tout seul » parce que la purge n'est pas

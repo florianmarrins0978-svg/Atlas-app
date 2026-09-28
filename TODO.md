@@ -1,13 +1,12 @@
 # Prochaines tâches
 
-## 🔜 ABSENT LE MATIN, COCHABLE L'APRÈS-MIDI : CODÉ LE 28 SEPTEMBRE 2026, PAS SUR `main`
+## ✅ ABSENT LE MATIN, COCHABLE L'APRÈS-MIDI : SUR `main` LE 28 SEPTEMBRE 2026
 
-Branche `claude/rappels-commercial-facturation-5ehltt`. `cocheRefusee` juge la
-demi-journée, l'écran l'appelle au lieu de sa propre règle (`ARCHITECTURE.md`
-§432). Niveau 3 (rayon de 38 écrans) : **la batterie reste à jouer avant
-`main`**, il a demandé de ne pas la lancer.
+`cocheRefusee` juge la demi-journée, l'écran l'appelle au lieu de sa propre
+règle (`ARCHITECTURE.md` §432). ~~La batterie reste à jouer~~ : jouée en
+commun avec les photos et l'assistant (`CHANGELOG.md`, 28 septembre).
 
-## 🔜 Travaux à faire : la photo s'ouvre en grand, CODÉ le 28 septembre 2026, reste à livrer sur `main`
+## ✅ Travaux à faire : la photo s'ouvre en grand, SUR `main` LE 28 SEPTEMBRE 2026
 
 Toucher une vignette ouvre la visionneuse commune ; « Joindre » / « Ne pas
 joindre » s'y choisit. Branche `claude/photos-consultation-issue-aiygzb`.
@@ -15,8 +14,8 @@ joindre » s'y choisit. Branche `claude/photos-consultation-issue-aiygzb`.
 ~~La rangée de `VisionneusePhoto` débordait de l'écran passé six photos~~ :
 corrigée le même soir, à la racine (bornée à l'écran, elle défile, la photo
 ouverte vient au milieu). Batterie non jouée à sa demande : suites
-`travaux-a-faire`, `onglets-termines`, `fiche-securite` rejouées au vert. Reste
-le contrôle de niveau avant `main`.
+`travaux-a-faire`, `onglets-termines`, `fiche-securite` rejouées au vert.
+~~Reste le contrôle de niveau avant `main`~~ : batterie commune du 28 septembre.
 
 ## ✅ SES DATES, GARDÉES AVEC LA CORRECTION : SUR `main` LE 28 SEPTEMBRE 2026
 
