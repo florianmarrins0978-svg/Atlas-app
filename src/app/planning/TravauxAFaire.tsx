@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import VisionneusePhoto from "@/components/atlas/VisionneusePhoto";
 import { colors, font, libelleCaps, surPlein, voile } from "@/lib/design-tokens";
 import { ACCEPT_PHOTOS } from "@/lib/exif";
 import {
@@ -133,6 +134,7 @@ export default function TravauxAFaire({
   const [dernierLe, setDernierLe] = useState(dernierRetourLe);
   const modifiable = dernierLe !== null && retourModifiable(dernierLe, new Date());
   const [refus, setRefus] = useState<string | null>(null);
+  const [rangOuvert, setRangOuvert] = useState<number | null>(null);
   const champ = useRef<HTMLInputElement>(null);
 
   // **Chargé à l'OUVERTURE, pas au montage.** La fiche d'un chantier se déplie
@@ -454,15 +456,23 @@ export default function TravauxAFaire({
                       {reprises.size}/{PHOTOS_MAX_PAR_RETOUR}
                     </span>
                   )}
-                  {photos.map((p) => {
+                  {/* **Toucher une vignette l'OUVRE, il ne la décoche plus** —
+                      sa capture du 28 septembre 2026 : *« impossible de
+                      cliquer pour voir les photos et pouvoir les faire
+                      défiler comme on a déjà mis en place »*. Le toucher
+                      était pris par la sélection ; il revient à la visionneuse
+                      commune, et joindre ou non se choisit DEDANS, photo en
+                      grand — comme « Retirer » sur la fiche de sécurité. */}
+                  {photos.map((p, i) => {
                     const prise = reprises.has(p.id);
                     return (
                       <button
                         key={p.id}
                         type="button"
                         aria-pressed={prise}
+                        aria-label={`Photo ${i + 1} en grand`}
                         data-atlas="photo-du-retour"
-                        onClick={() => basculer(p.id)}
+                        onClick={() => setRangOuvert(i)}
                         className="h-[46px] w-[46px] overflow-hidden rounded-[9px]"
                         style={{
                           opacity: prise ? 1 : 0.45,
@@ -512,6 +522,25 @@ export default function TravauxAFaire({
                     }}
                   />
                 </div>
+                {rangOuvert !== null && photos[rangOuvert] && (
+                  <VisionneusePhoto
+                    photos={photos.map((p) => p.storageKey)}
+                    rang={rangOuvert}
+                    onRang={setRangOuvert}
+                    onFermer={() => setRangOuvert(null)}
+                  >
+                    <button
+                      type="button"
+                      data-atlas="joindre-photo-du-retour"
+                      aria-pressed={reprises.has(photos[rangOuvert]!.id)}
+                      onClick={() => basculer(photos[rangOuvert]!.id)}
+                      className="flex h-11 items-center justify-center rounded-full px-4 text-[11px] font-semibold uppercase"
+                      style={{ backgroundColor: voile(surPlein, 0.12), color: colors.orSurEncre, letterSpacing: "0.26em" }}
+                    >
+                      {reprises.has(photos[rangOuvert]!.id) ? "Ne pas joindre" : "Joindre"}
+                    </button>
+                  </VisionneusePhoto>
+                )}
 
                 <textarea
                   value={aSignaler}

@@ -7,6 +7,17 @@ demi-journée, l'écran l'appelle au lieu de sa propre règle (`ARCHITECTURE.md`
 §432). Niveau 3 (rayon de 38 écrans) : **la batterie reste à jouer avant
 `main`**, il a demandé de ne pas la lancer.
 
+## 🔜 Travaux à faire : la photo s'ouvre en grand, CODÉ le 28 septembre 2026, reste à livrer sur `main`
+
+Toucher une vignette ouvre la visionneuse commune ; « Joindre » / « Ne pas
+joindre » s'y choisit. Branche `claude/photos-consultation-issue-aiygzb`.
+
+~~La rangée de `VisionneusePhoto` débordait de l'écran passé six photos~~ :
+corrigée le même soir, à la racine (bornée à l'écran, elle défile, la photo
+ouverte vient au milieu). Batterie non jouée à sa demande : suites
+`travaux-a-faire`, `onglets-termines`, `fiche-securite` rejouées au vert. Reste
+le contrôle de niveau avant `main`.
+
 ## ✅ SES DATES, GARDÉES AVEC LA CORRECTION : SUR `main` LE 28 SEPTEMBRE 2026
 
 Sa plainte : *« mon client a demandé une correction et proposé des dates ; quand

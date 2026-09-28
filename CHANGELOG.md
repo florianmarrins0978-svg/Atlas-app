@@ -57,6 +57,22 @@ sont supprimées. Éprouvé : `test-equipe-absente.ts` (rouge puis vert) et
 (« Julien est grisé l'après-midi »). **Pas sur `main`** : niveau 3 (rayon de 38
 écrans), batterie non jouée à sa demande.
 
+### Travaux à faire : la photo s'ouvre en grand
+
+Sa capture : *« impossible de cliquer pour voir les photos et pouvoir les faire
+défiler comme on a déjà mis en place »*. Toucher une vignette la décochait du
+retour, sans rien montrer. Elle ouvre maintenant la visionneuse commune
+(`VisionneusePhoto`) ; joindre ou non la photo au retour se choisit dedans,
+« Joindre » / « Ne pas joindre », comme « Retirer » sur la fiche de sécurité.
+Tenu par `test-travaux-a-faire-e2e.ts`, vu rouge avant la correction.
+
+Vu en regardant l'écran : la rangée des vignettes de la visionneuse, centrée
+sans bornes, débordait des deux côtés passé six photos (de -217 à 607 px sur un
+écran de 390) et les premières ne se touchaient plus. Corrigé dans
+`VisionneusePhoto` même, donc pour la pellicule, les retours et la fiche de
+sécurité aussi : bornée à l'écran, elle défile, et la vignette de la photo
+ouverte vient au milieu. Mesuré dans la même suite, vu rouge d'abord.
+
 ### Six lots sur `main` en une seule batterie
 
 Sa demande : *« associe-toi pour ne jouer qu'une batterie »*. Réunis : chacun
