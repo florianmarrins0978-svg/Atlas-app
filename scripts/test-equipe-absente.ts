@@ -181,5 +181,56 @@ cas("absent le matin, il se coche l'après-midi, et pas le matin", () => {
   assert.equal(cocheRefusee(1, LE_10, matin, false, "matin"), true, "le matin est accepté");
 });
 
+// ── Les autres formes d'une absence à la demi-journée (28 septembre 2026) ──
+// Sa question, après la correction : *« tu as testé les autres formes ? »*
+const deuxJours: ChantierPourAbsence = { ...LE_10, dureeDemiJournees: 4 };
+const absence = (premierJour: string, premierDemi: string, dernierJour: string, dernierDemi: string, rang = 1) =>
+  [{ rang, premierJour, dernierJour, premierDemi, dernierDemi }] as AbsenceDUneEquipe[];
+
+cas("absent l'après-midi : le matin se coche, l'après-midi non", () => {
+  const a = absence("2026-09-10", "apres_midi", "2026-09-10", "apres_midi");
+  assert.equal(cocheRefusee(1, LE_10, a, false, "matin"), false);
+  assert.equal(cocheRefusee(1, LE_10, a, false, "apres_midi"), true);
+});
+
+cas("absent la journée entière : ni le matin, ni l'après-midi", () => {
+  const a = absence("2026-09-10", "matin", "2026-09-10", "apres_midi");
+  assert.equal(cocheRefusee(1, LE_10, a, false, "matin"), true);
+  assert.equal(cocheRefusee(1, LE_10, a, false, "apres_midi"), true);
+});
+
+cas("du jeudi après-midi au vendredi matin : chaque moitié garde un jour de présence", () => {
+  const a = absence("2026-09-10", "apres_midi", "2026-09-11", "matin");
+  // Deux jours : le matin du jeudi et l'après-midi du vendredi restent.
+  assert.equal(cocheRefusee(1, deuxJours, a, false, "matin"), false);
+  assert.equal(cocheRefusee(1, deuxJours, a, false, "apres_midi"), false);
+  // Un seul jour, le jeudi : le matin reste, l'après-midi est pris.
+  assert.equal(cocheRefusee(1, LE_10, a, false, "matin"), false);
+  assert.equal(cocheRefusee(1, LE_10, a, false, "apres_midi"), true);
+});
+
+cas("absent jeudi entier et vendredi matin : le matin est refusé, l'après-midi non", () => {
+  const a = absence("2026-09-10", "matin", "2026-09-11", "matin");
+  assert.equal(cocheRefusee(1, deuxJours, a, false, "matin"), true, "aucun matin de présence");
+  assert.equal(cocheRefusee(1, deuxJours, a, false, "apres_midi"), false, "le vendredi après-midi reste");
+});
+
+cas("une absence sans borne de demi-journée vaut la journée entière, comme avant", () => {
+  assert.equal(cocheRefusee(1, LE_10, CONGE, false, "matin"), true);
+  assert.equal(cocheRefusee(1, LE_10, CONGE, false, "apres_midi"), true);
+});
+
+cas("déjà coché, on peut toujours le décocher, sur l'une ou l'autre moitié", () => {
+  const a = absence("2026-09-10", "matin", "2026-09-10", "apres_midi");
+  assert.equal(cocheRefusee(1, LE_10, a, true, "matin"), false);
+  assert.equal(cocheRefusee(1, LE_10, a, true, "apres_midi"), false);
+});
+
+cas("l'absence de Julien ne touche pas Antoine", () => {
+  const a = absence("2026-09-10", "matin", "2026-09-10", "matin", 1);
+  assert.equal(cocheRefusee(2, LE_10, a, false, "matin"), false);
+  assert.equal(cocheRefusee(2, LE_10, a, false, "apres_midi"), false);
+});
+
 console.log(echecs === 0 ? "\n✅ On ne coche pas un absent" : `\n❌ ${echecs} cas`);
 process.exit(echecs === 0 ? 0 : 1);
