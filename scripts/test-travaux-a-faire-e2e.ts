@@ -266,7 +266,21 @@ async function main() {
   // ouvre maintenant la visionneuse commune, et c'est DEDANS qu'on la joint ou
   // non au retour.
   await cas("TOUCHER UNE VIGNETTE L'OUVRE EN GRAND, on feuillette, et l'on y choisit de la joindre", async () => {
-    // Les trois photos qu'on vient d'ajouter sont les dernières, et cochées.
+    // **La rangée qui déborde se FABRIQUE ici** (batterie commune du 28
+    // septembre 2026). Le cas comptait sur les photos laissées par ses
+    // exécutions précédentes : joué en boucle dans une session, il en trouvait
+    // assez ; sur une base neuve, quatre, et il refusait de conclure. Cinq de
+    // plus, et les trois d'avant : huit au retour, sous le plafond de dix.
+    const avant = await page.locator(PHOTO_DU_RETOUR).count();
+    await page.locator("[data-atlas='travaux-a-faire'] input[type=file]").setInputFiles(
+      [4, 5, 6, 7, 8].map((k) => ({ name: `photo-${k}.jpg`, mimeType: "image/jpeg", buffer: Buffer.from(jpegDeTaille(2048)) }))
+    );
+    await page.waitForFunction(
+      ([s, total]) => document.querySelectorAll(s).length === total,
+      [PHOTO_DU_RETOUR, avant + 5] as [string, number],
+      { timeout: 30_000 }
+    );
+    // Les photos qu'on vient d'ajouter sont les dernières, et cochées.
     const n = await page.locator(PHOTO_DU_RETOUR).count();
     const vignette = page.locator(PHOTO_DU_RETOUR).nth(n - 3);
     assert.equal(await vignette.getAttribute("aria-pressed"), "true", "la photo ajoutée n'est pas cochée au départ");

@@ -207,7 +207,12 @@ async function main() {
   // (`notificationsPatron`). La carte que le patron a photographiée porte
   // d'ailleurs « AUTRE DATE PROPOSÉE » : c'est ce cas-là qu'il faut jouer.
   await page.locator('input[name="choixDate"][value="autre"]').check();
-  await page.locator('[data-jour][data-etat="choisissable"]').first().waitFor({ timeout: 20_000 });
+  // **Le calendrier posé, pas un jour libre dans CE mois** (batterie commune
+  // du 28 septembre 2026). Exiger un jour choisissable dans le mois affiché
+  // faisait tomber la suite en fin de mois, quand les deux derniers jours
+  // étaient pris par une suite jouée avant elle, alors que
+  // `unJourAutreQueLesProposees` sait déjà tourner la page.
+  await page.locator("[data-jour]").first().waitFor({ timeout: 20_000 });
   const jourLibre = await unJourAutreQueLesProposees(page, accepte.datesProposees);
   await page.locator(`[data-jour="${jourLibre}"]`).click();
   // La case se peint quand le choix est pris : l'attendre vaut mieux qu'un délai.
