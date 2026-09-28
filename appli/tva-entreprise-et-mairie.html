@@ -1,0 +1,430 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Facturer une entreprise ou une mairie</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  /*
+    FACTURER UNE ENTREPRISE OU UNE MAIRIE, sa question du 28 septembre 2026 :
+    « si je facture une entreprise, il ne paie pas la TVA, donc elle ne doit
+    pas apparaître sur la facture ; et vérifier pour les mairies ».
+
+    La prémisse était fausse et lui a été dite (docs/QUESTIONS.md, question 31) :
+    une entreprise PAIE la TVA et la récupère ; une mairie la paie et ne la
+    récupère pas. La TVA ne disparaît de la facture que dans deux cas : la
+    franchise 293 B (déjà tenue par Atlas), et l'autoliquidation du
+    sous-traitant du bâtiment (art. 283-2 nonies du CGI), qu'Atlas ne sait pas
+    faire.
+
+    La maquette montre donc :
+      1. la fiche client qui sait dire particulier, entreprise ou mairie, et
+         prend le SIRET (obligatoire sur une facture entre entreprises, et
+         pour Chorus Pro) ;
+      2. la facture telle qu'elle sortirait dans chaque cas ;
+      3. le seul vrai choix : OÙ se dit la sous-traitance. A sur la fiche du
+         client, B sur la facture. La loi regarde l'OPÉRATION, pas le client :
+         la même entreprise peut commander un chantier pour ses propres locaux
+         (TVA normale) puis vous sous-traiter un marché (autoliquidation).
+         B suit la loi ; A est plus simple et se trompe dans ce cas-là.
+
+    Les montants sont ceux d'un exemple, pas d'un calcul : 1 200 € HT à 20 %.
+    Rien n'est codé.
+  */
+  :root{
+    --etabli:#e6e3dc; --etabli-carte:#faf9f5; --etabli-trait:rgba(28,28,26,.12);
+    --etabli-encre:#1c1c1a; --etabli-doux:#4a4a44; --etabli-gris:#77726a;
+    --etabli-or:#8b6835;
+    --serif:"Playfair Display",ui-serif,Georgia,serif;
+    --sans:"Inter",ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+    --plage:#faf9f5; --encre:#1c1c1a; --gris:#8a8578; --doux:#4a4a44;
+    --tuile:#ece9e1; --plein:#7d9a6d; --surplein:#faf9f5; --orTexte:#8b6835;
+    --trait:rgba(28,28,26,.12); --or:#B98B47; --alerte:#8f3a2e;
+    --papier:#ffffff; --papier-encre:#1c1c1a; --papier-gris:#6e6a62; --papier-trait:rgba(28,28,26,.14);
+  }
+  body.nuit{
+    --etabli:#0a0b0a; --etabli-carte:#1a1d19; --etabli-trait:rgba(233,232,222,.14);
+    --etabli-encre:#e9e8de; --etabli-doux:#c1c2b6; --etabli-gris:#84887b;
+    --etabli-or:#b98b47;
+    --plage:#1a1d19; --encre:#e9e8de; --gris:#84887b; --doux:#c1c2b6;
+    --tuile:#1f211e; --plein:#e9e8de; --surplein:#1a1d19; --orTexte:#b98b47;
+    --trait:rgba(233,232,222,.12); --alerte:#d98b7d;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--etabli)}
+  body{font-family:var(--sans);color:var(--etabli-encre);-webkit-font-smoothing:antialiased}
+  .page{max-width:1000px;margin:0 auto;padding:30px 16px 90px}
+  .surtitre{font:600 11.5px/1 var(--sans);letter-spacing:.18em;text-transform:uppercase;
+            color:var(--etabli-or);margin:0 0 10px}
+  h1{font:600 30px/1.15 var(--serif);margin:0 0 10px;letter-spacing:-.01em}
+  .chapeau{max-width:640px;color:var(--etabli-doux);font-size:15.5px;line-height:1.6;margin:0 0 4px}
+  h2{font:600 22px/1.25 var(--serif);margin:44px 0 4px}
+  .dit{color:var(--etabli-gris);font-size:13.5px;line-height:1.6;margin:0 0 18px;max-width:640px}
+
+  .bascule{appearance:none;border:0;cursor:pointer;font:600 12.5px/1 var(--sans);
+           letter-spacing:.02em;padding:11px 17px;border-radius:999px;margin:18px 0 0;
+           background:var(--etabli-carte);color:var(--etabli-doux);
+           box-shadow:inset 0 0 0 1px var(--etabli-trait)}
+
+  /* Le pupitre : on change le client en haut, tout le reste suit. */
+  .pupitre{display:flex;gap:8px;flex-wrap:wrap;margin:22px 0 0}
+  .pupitre button{appearance:none;border:0;cursor:pointer;font:600 13px/1 var(--sans);
+                  padding:12px 16px;border-radius:999px;background:var(--etabli-carte);
+                  color:var(--etabli-doux);box-shadow:inset 0 0 0 1px var(--etabli-trait)}
+  .pupitre button[aria-pressed="true"]{background:var(--etabli-or);color:var(--etabli-carte);box-shadow:none}
+  .pupitre .legende{width:100%;font:600 10.5px/1 var(--sans);letter-spacing:.16em;
+                    text-transform:uppercase;color:var(--etabli-gris);margin:0 0 2px}
+
+  .rangee{display:flex;gap:26px;flex-wrap:wrap;align-items:flex-start;margin-top:22px}
+  .col{flex:0 1 390px;max-width:100%;min-width:0}
+  .nom{font:600 15px/1.3 var(--sans);margin:0 0 10px;display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+  .etiq{font:700 9.5px/1 var(--sans);letter-spacing:.1em;text-transform:uppercase;
+        padding:4px 7px;border-radius:999px;background:var(--etabli-or);color:var(--etabli-carte)}
+
+  /* L'écran, à sa largeur : 390 px. Les mots et les places sont ceux de l'appli. */
+  .tel{width:390px;max-width:100%;border-radius:22px;overflow:hidden;background:var(--plage);
+       box-shadow:0 2px 16px rgba(20,18,14,.13),inset 0 0 0 1px var(--etabli-trait);
+       padding:18px 24px 24px}
+  .entete{display:flex;align-items:center;gap:14px}
+  .fleche{width:40px;height:40px;border-radius:999px;display:flex;align-items:center;flex:0 0 auto;
+          justify-content:center;box-shadow:inset 0 0 0 1px var(--trait);color:var(--doux);font-size:17px}
+  .titreecran{font:500 24px/1.1 var(--serif);color:var(--encre)}
+  .champ{margin:14px 0 0}
+  .etiqchamp{font:600 10.5px/1 var(--sans);letter-spacing:.16em;text-transform:uppercase;color:var(--gris)}
+  .case{margin:7px 0 0;border-radius:12px;background:var(--tuile);padding:14px 15px;color:var(--encre);font-size:15.5px;
+        overflow-wrap:anywhere}
+  .case.vide{color:var(--gris)}
+  .civ{display:flex;gap:8px;margin:7px 0 0;flex-wrap:wrap}
+  .civ span{border-radius:999px;padding:11px 16px;font-size:14.5px;box-shadow:inset 0 0 0 1px var(--trait);color:var(--encre);cursor:pointer}
+  .civ span.pris{background:var(--plage);box-shadow:0 1px 4px rgba(20,18,14,.18),inset 0 0 0 1px var(--orTexte)}
+  .interrupteur{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:16px 0 0;
+                padding:14px 15px;border-radius:12px;background:var(--tuile);cursor:pointer}
+  .interrupteur .quoi{font-size:15px;color:var(--encre);line-height:1.35}
+  .interrupteur .sous{display:block;font-size:12.5px;color:var(--gris);margin-top:3px}
+  .curseur{flex:0 0 auto;width:46px;height:28px;border-radius:999px;background:var(--trait);position:relative}
+  .curseur::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:999px;
+                  background:var(--plage);box-shadow:0 1px 3px rgba(0,0,0,.25);transition:left .15s}
+  .interrupteur.oui .curseur{background:var(--plein)}
+  .interrupteur.oui .curseur::after{left:21px}
+  .plein{display:block;text-align:center;border-radius:999px;padding:15px;margin:22px 0 0;
+         background:var(--plein);color:var(--surplein);font:500 17px/1 var(--serif)}
+  .neuf{position:relative;background:rgba(185,139,71,.14);border-radius:10px;
+        padding:8px 9px 9px;margin:14px -9px 0}
+  .neuf::after{content:"NOUVEAU";position:absolute;top:-8px;right:6px;
+               font:700 8.5px/1 var(--sans);letter-spacing:.12em;
+               background:var(--orTexte);color:var(--plage);padding:3px 6px;border-radius:999px}
+  .neuf > .champ:first-child, .neuf > .interrupteur:first-child{margin-top:0}
+  [hidden], .feuille .totaux div[hidden]{display:none}
+
+  /* La facture, telle qu'elle s'imprime : toujours sur papier blanc. */
+  .feuille{width:390px;max-width:100%;background:var(--papier);color:var(--papier-encre);
+           border-radius:4px;padding:22px 22px 26px;font-size:12.5px;line-height:1.5;
+           box-shadow:0 2px 16px rgba(20,18,14,.16)}
+  .feuille .haut{display:flex;justify-content:space-between;gap:12px}
+  .feuille .emet{color:var(--papier-gris)}
+  .feuille .emet b{color:var(--papier-encre);font-size:13px}
+  .feuille .num{font:600 17px/1.2 var(--serif);text-align:right}
+  .feuille .dest{margin:18px 0 0;padding:10px 12px;border-radius:3px;box-shadow:inset 0 0 0 1px var(--papier-trait)}
+  .feuille .dest .t{font:600 9px/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--papier-gris)}
+  .feuille .dest b{display:block;margin-top:6px;font-size:13.5px}
+  .feuille table{width:100%;border-collapse:collapse;margin:16px 0 0}
+  .feuille th{font:600 9px/1 var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--papier-gris);
+              text-align:left;padding:0 0 7px;border-bottom:1px solid var(--papier-trait)}
+  .feuille td{padding:8px 0;border-bottom:1px solid var(--papier-trait);vertical-align:top}
+  .feuille .d{text-align:right;white-space:nowrap}
+  .feuille .totaux{margin:12px 0 0 auto;width:220px}
+  .feuille .totaux div{display:flex;justify-content:space-between;padding:3px 0}
+  .feuille .totaux .ttc{font-weight:700;font-size:14px;border-top:1px solid var(--papier-encre);margin-top:4px;padding-top:7px}
+  .feuille .mention{margin:16px 0 0;font-size:11px;color:var(--papier-gris)}
+  .feuille .mention b{color:var(--papier-encre)}
+  .feuille .surligne{background:rgba(185,139,71,.22);border-radius:3px;padding:0 3px;margin:0 -3px}
+
+  .envoi{margin:14px 0 0;width:390px;max-width:100%;border-radius:14px;padding:14px 16px;
+         background:var(--etabli-carte);box-shadow:inset 0 0 0 1px var(--etabli-trait);
+         font-size:13.5px;line-height:1.55;color:var(--etabli-doux)}
+  .envoi b{color:var(--etabli-encre)}
+
+  .note{margin:34px 0 0;padding:15px 17px;border-radius:4px;background:var(--etabli-carte);
+        box-shadow:inset 0 0 0 1px var(--etabli-trait);max-width:640px;
+        font-size:13.5px;line-height:1.65;color:var(--etabli-doux)}
+  .note .t{display:block;font:700 10px/1 var(--sans);letter-spacing:.1em;
+           text-transform:uppercase;color:var(--etabli-or);margin:0 0 7px}
+  .note b{color:var(--etabli-encre)}
+</style>
+</head>
+<body>
+<div class="page">
+  <p class="surtitre">À choisir</p>
+  <h1>Facturer une entreprise ou une mairie</h1>
+  <p class="chapeau">
+    Une entreprise paie la TVA, puis la récupère. Une mairie la paie aussi.
+    Elle ne disparaît de la facture que si vous êtes <b>sous-traitant</b> d’une
+    autre entreprise du bâtiment : c’est l’autoliquidation.
+  </p>
+  <button class="bascule" id="jourNuit" aria-pressed="false">Voir en mode nuit</button>
+
+  <div class="pupitre" id="pupitreClient">
+    <p class="legende">Le client</p>
+    <button data-client="particulier" aria-pressed="false">Particulier</button>
+    <button data-client="entreprise" aria-pressed="true">Entreprise</button>
+    <button data-client="soustraitance" aria-pressed="false">Entreprise, vous êtes son sous-traitant</button>
+    <button data-client="mairie" aria-pressed="false">Mairie</button>
+  </div>
+
+  <h2>1. Sa fiche</h2>
+  <p class="dit">Trois boutons à la place de Monsieur et Madame. Pour une entreprise ou une mairie, son SIRET.</p>
+
+  <div class="rangee">
+    <div class="col">
+      <div class="tel">
+        <div class="entete"><span class="fleche">‹</span><span class="titreecran">Ses coordonnées</span></div>
+
+        <div class="neuf">
+          <div class="civ" id="genre">
+            <span data-genre="particulier">Particulier</span>
+            <span data-genre="entreprise" class="pris">Entreprise</span>
+            <span data-genre="mairie">Mairie</span>
+          </div>
+        </div>
+
+        <div class="champ" id="civilite" hidden>
+          <div class="civ"><span class="pris">Monsieur</span><span>Madame</span></div>
+        </div>
+
+        <div class="champ">
+          <div class="etiqchamp" id="etiqNom">Nom de l’entreprise</div>
+          <div class="case" id="caseNom">Jardins Ribault SARL</div>
+        </div>
+
+        <div class="neuf" id="blocSiret">
+          <div class="champ">
+            <div class="etiqchamp">SIRET</div>
+            <div class="case" id="caseSiret">812 345 678 00021</div>
+          </div>
+        </div>
+
+        <div class="neuf" id="blocCodeService" hidden>
+          <div class="champ">
+            <div class="etiqchamp">Code service Chorus Pro</div>
+            <div class="case vide">Si la mairie vous l’a donné</div>
+          </div>
+        </div>
+
+        <div class="neuf" id="blocSousTraitanceA" hidden>
+          <div class="interrupteur" id="interA">
+            <span class="quoi">Je suis son sous-traitant<span class="sous">Ses factures partent sans TVA</span></span>
+            <span class="curseur"></span>
+          </div>
+        </div>
+
+        <div class="champ">
+          <div class="etiqchamp">Téléphone</div>
+          <div class="case">02 40 12 34 56</div>
+        </div>
+        <div class="champ">
+          <div class="etiqchamp" id="etiqAdresse">Son adresse</div>
+          <div class="case" id="caseAdresse">4 rue de la Garenne, Rezé</div>
+        </div>
+        <span class="plein">Enregistrer</span>
+      </div>
+    </div>
+  </div>
+
+  <h2>2. Où se dit la sous-traitance</h2>
+  <p class="dit">Le seul vrai choix. Touchez A puis B, avec « vous êtes son sous-traitant » en haut.</p>
+
+  <div class="pupitre" id="pupitrePlace">
+    <p class="legende">La place</p>
+    <button data-place="A" aria-pressed="true">A : sur sa fiche</button>
+    <button data-place="B" aria-pressed="false">B : sur la facture</button>
+  </div>
+
+  <div class="rangee">
+    <div class="col">
+      <p class="nom"><span class="etiq" id="etiqPlace">A</span><span id="nomPlace">Une fois sur sa fiche, pour toutes ses factures</span></p>
+      <p class="dit" id="ditPlace" style="margin-bottom:0">Plus simple. Mais s’il vous commande un jour un chantier pour ses propres bureaux, la TVA est due, et il faudra penser à couper l’interrupteur.</p>
+    </div>
+    <div class="col" id="telFactureB" hidden>
+      <div class="tel">
+        <div class="entete"><span class="fleche">‹</span><span class="titreecran">Nouvelle facture</span></div>
+        <div class="champ">
+          <div class="etiqchamp">Client</div>
+          <div class="case">Jardins Ribault SARL</div>
+        </div>
+        <div class="neuf">
+          <div class="interrupteur" id="interB">
+            <span class="quoi">Je suis son sous-traitant sur ce chantier<span class="sous">Cette facture part sans TVA</span></span>
+            <span class="curseur"></span>
+          </div>
+        </div>
+        <div class="champ">
+          <div class="etiqchamp">Taux de TVA</div>
+          <div class="case" id="caseTaux">Autoliquidation</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <h2>3. La facture qui sort</h2>
+  <p class="dit" id="ditFacture"></p>
+
+  <div class="rangee">
+    <div class="col">
+      <div class="feuille">
+        <div class="haut">
+          <div class="emet"><b>Votre entreprise</b><br>SIRET 901 234 567 00015<br>TVA FR12 901234567</div>
+          <div class="num">Facture<br>F2026-0142</div>
+        </div>
+        <div class="dest">
+          <span class="t">Facturé à</span>
+          <b id="fNom">Jardins Ribault SARL</b>
+          <span id="fAdresse">4 rue de la Garenne, Rezé</span>
+          <span id="fSiret"><br><span class="surligne">SIREN 812 345 678</span></span>
+          <span id="fChorus" hidden><br><span class="surligne">SIRET 214 401 432 00017</span><br><span class="surligne">N° d’engagement : 2026-BC-0318</span></span>
+        </div>
+        <table>
+          <thead><tr><th>Désignation</th><th class="d">HT</th></tr></thead>
+          <tbody>
+            <tr><td>Création de massifs, plantations</td><td class="d">1 200,00 €</td></tr>
+          </tbody>
+        </table>
+        <div class="totaux">
+          <div><span>Total HT</span><span>1 200,00 €</span></div>
+          <div id="fLigneTva"><span>TVA 20 %</span><span>240,00 €</span></div>
+          <div class="ttc"><span id="fLibTotal">Total TTC</span><span id="fTotal">1 440,00 €</span></div>
+        </div>
+        <p class="mention" id="fAutoliq" hidden><b><span class="surligne">Autoliquidation. TVA due par le preneur, art. 283-2 nonies du CGI.</span></b></p>
+        <p class="mention" id="fDelai">Paiement à réception. Tout retard entraîne des pénalités au taux de trois fois le taux d’intérêt légal et une indemnité forfaitaire de 40 € pour frais de recouvrement.</p>
+      </div>
+      <div class="envoi" id="envoi"></div>
+    </div>
+  </div>
+
+  <div class="note"><span class="t">Ce que cette page ne décide pas</span>
+    Pour une mairie, le <b>numéro d’engagement</b> change à chaque commande : il se
+    tape sur la facture, pas sur sa fiche. Ici, il s’imprime seulement.
+    <br><br>
+    Le dépôt sur Chorus Pro reste <b>à la main</b> dans cette maquette : Atlas
+    prépare le PDF, vous le déposez sur chorus-pro.gouv.fr. L’envoyer tout seul
+    demande un compte Chorus Pro relié à Atlas, et c’est un autre chantier.
+    <br><br>
+    Les montants sont un exemple. <b>Rien n’est codé.</b>
+  </div>
+</div>
+
+<script>
+  // La maquette tient trois états, et c'est tout : le client, la place de la
+  // sous-traitance, le mode nuit. Tout le reste se déduit, pour qu'aucun
+  // écran ne puisse dire autre chose que la facture d'en dessous.
+  var etat = { client: "entreprise", place: "A" };
+
+  var CLIENTS = {
+    particulier: { genre: "particulier", nom: "Bernard", etiq: "Nom du client",
+                   adresse: "12 rue des Lilas, Nantes" },
+    entreprise:  { genre: "entreprise", nom: "Jardins Ribault SARL", etiq: "Nom de l’entreprise",
+                   adresse: "4 rue de la Garenne, Rezé", siret: "812 345 678 00021" },
+    soustraitance:{ genre: "entreprise", nom: "Jardins Ribault SARL", etiq: "Nom de l’entreprise",
+                   adresse: "4 rue de la Garenne, Rezé", siret: "812 345 678 00021" },
+    mairie:      { genre: "mairie", nom: "Mairie de Rezé", etiq: "Nom de la mairie",
+                   adresse: "Place Jean-Baptiste Daviais, Rezé", siret: "214 401 432 00017" }
+  };
+
+  function $(id){ return document.getElementById(id); }
+  function montre(id, oui){ $(id).hidden = !oui; }
+
+  function rendre(){
+    var c = CLIENTS[etat.client];
+    var sousTraitant = etat.client === "soustraitance";
+
+    document.querySelectorAll("#pupitreClient button").forEach(function(b){
+      b.setAttribute("aria-pressed", b.dataset.client === etat.client);
+    });
+    document.querySelectorAll("#pupitrePlace button").forEach(function(b){
+      b.setAttribute("aria-pressed", b.dataset.place === etat.place);
+    });
+    document.querySelectorAll("#genre span").forEach(function(s){
+      s.classList.toggle("pris", s.dataset.genre === c.genre);
+    });
+
+    // La fiche
+    montre("civilite", c.genre === "particulier");
+    $("etiqNom").textContent = c.etiq;
+    $("caseNom").textContent = c.nom;
+    $("caseAdresse").textContent = c.adresse;
+    $("etiqAdresse").textContent = c.genre === "particulier" ? "Son adresse" : "Adresse de facturation";
+    montre("blocSiret", c.genre !== "particulier");
+    if (c.siret) $("caseSiret").textContent = c.siret;
+    montre("blocCodeService", c.genre === "mairie");
+    montre("blocSousTraitanceA", c.genre === "entreprise" && etat.place === "A");
+    $("interA").classList.toggle("oui", sousTraitant);
+
+    // La place
+    var a = etat.place === "A";
+    $("etiqPlace").textContent = etat.place;
+    $("nomPlace").textContent = a ? "Une fois sur sa fiche, pour toutes ses factures"
+                                  : "Sur chaque facture, chantier par chantier";
+    $("ditPlace").textContent = a
+      ? "Plus simple. Mais s’il vous commande un jour un chantier pour ses propres bureaux, la TVA est due, et il faudra penser à couper l’interrupteur."
+      : "C’est ce que dit la loi : elle regarde le chantier, pas le client. Un geste de plus à chaque facture, seulement pour une entreprise.";
+    montre("telFactureB", !a && c.genre === "entreprise");
+    $("interB").classList.toggle("oui", sousTraitant);
+    $("caseTaux").textContent = sousTraitant ? "Autoliquidation" : "20 %";
+
+    // La facture
+    $("fNom").textContent = c.nom;
+    $("fAdresse").textContent = c.adresse;
+    montre("fSiret", c.genre === "entreprise");
+    montre("fChorus", c.genre === "mairie");
+    montre("fLigneTva", !sousTraitant);
+    montre("fAutoliq", sousTraitant);
+    $("fLibTotal").textContent = sousTraitant ? "Total HT à payer" : "Total TTC";
+    $("fTotal").textContent = sousTraitant ? "1 200,00 €" : "1 440,00 €";
+    $("fDelai").textContent = c.genre === "mairie"
+      ? "Paiement sous 30 jours. Tout retard entraîne des intérêts moratoires et une indemnité forfaitaire de 40 € pour frais de recouvrement."
+      : "Paiement à réception. Tout retard entraîne des pénalités au taux de trois fois le taux d’intérêt légal et une indemnité forfaitaire de 40 € pour frais de recouvrement.";
+
+    var dits = {
+      particulier: "Rien ne change : la TVA à 20 %, comme aujourd’hui.",
+      entreprise: "La TVA à 20 %, comme pour un particulier. Seul ajout : son SIREN.",
+      soustraitance: "Plus de TVA : vous facturez le HT, et la mention d’autoliquidation remplace la ligne.",
+      mairie: "La TVA à 20 %. En plus : son SIRET et le numéro d’engagement de la commande."
+    };
+    $("ditFacture").textContent = dits[etat.client];
+
+    $("envoi").innerHTML = c.genre === "mairie"
+      ? "<b>Pas par e-mail.</b> Une mairie ne paie qu’une facture déposée sur Chorus Pro. Atlas le rappelle au moment d’envoyer."
+      : "<b>Envoyée comme aujourd’hui</b>, par e-mail ou SMS.";
+  }
+
+  $("pupitreClient").addEventListener("click", function(e){
+    var b = e.target.closest("button"); if (!b) return;
+    etat.client = b.dataset.client; rendre();
+  });
+  $("pupitrePlace").addEventListener("click", function(e){
+    var b = e.target.closest("button"); if (!b) return;
+    etat.place = b.dataset.place; rendre();
+  });
+  $("genre").addEventListener("click", function(e){
+    var s = e.target.closest("span"); if (!s) return;
+    var g = s.dataset.genre;
+    etat.client = g === "entreprise" ? (etat.client === "soustraitance" ? "soustraitance" : "entreprise") : g;
+    rendre();
+  });
+  function basculeSousTraitance(){
+    etat.client = etat.client === "soustraitance" ? "entreprise" : "soustraitance"; rendre();
+  }
+  $("interA").addEventListener("click", basculeSousTraitance);
+  $("interB").addEventListener("click", basculeSousTraitance);
+  $("jourNuit").addEventListener("click", function(){
+    var nuit = document.body.classList.toggle("nuit");
+    this.setAttribute("aria-pressed", nuit);
+    this.textContent = nuit ? "Voir en mode jour" : "Voir en mode nuit";
+  });
+
+  rendre();
+</script>
+</body>
+</html>

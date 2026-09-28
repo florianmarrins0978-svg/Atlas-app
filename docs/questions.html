@@ -102,6 +102,7 @@
 <li><a href="#28-pourquoi-la-page-que-reçoit-mon-client-na-pas-les-couleurs-de-mon-devis-">Pourquoi la page que reçoit mon client n'a pas les couleurs de mon devis ?</a></li>
 <li><a href="#29-mon-client-peut-il-modifier-le-devis-ou-la-facture-quil-reçoit-">Mon client peut-il modifier le devis ou la facture qu'il reçoit ?</a></li>
 <li><a href="#30-combien-de-temps-dois-je-garder-mes-factures-et-atlas-les-garde-t-il-">Combien de temps dois-je garder mes factures, et Atlas les garde-t-il ?</a></li>
+<li><a href="#31-si-je-facture-une-entreprise-ou-une-mairie-la-tva-disparaît-elle-de-la-facture-">Si je facture une entreprise ou une mairie, la TVA disparaît-elle de la facture ?</a></li>
 </ol>
 <hr>
 <h2 id="1-le-compte-développeur-apple--qui-paie-et-combien-de-temps-">1. Le compte développeur Apple : qui paie, et combien de temps ?</h2>
@@ -1585,6 +1586,49 @@
 <li>sur <code>github.com/settings/codespaces</code>, régler la durée de conservation des espaces inutilisés au maximum (30 jours) et ouvrir l'espace au moins une fois par mois.</li>
 </ol>
 <p>La sauvegarde automatique est le point 0 de <code>TODO.md</code> et figure dans <code>docs/A-FAIRE.md</code> : elle attend l'hébergement.</p>
+<h2 id="31-si-je-facture-une-entreprise-ou-une-mairie-la-tva-disparaît-elle-de-la-facture-">31. Si je facture une entreprise ou une mairie, la TVA disparaît-elle de la facture ?</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><em>Question du 28 septembre 2026 : « si je facture une entreprise, il ne paie pas la TVA, donc elle ne doit pas apparaître sur la facture ; et vérifier pour les mairies ».</em></p>
+<p><strong>Non.</strong> Une entreprise <strong>paie</strong> la TVA que vous lui facturez, puis elle la récupère sur sa propre déclaration. C'est pour ça que, pour elle, seul le HT compte, et que l'on entend souvent « une entreprise ne paie pas la TVA ». Sur votre facture, la TVA figure bien, et vous la reversez.</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Votre client</th>
+<th>TVA sur la facture</th>
+<th>Ce qui change</th>
+</tr></thead><tbody>
+<tr>
+<td>Un particulier</td>
+<td>oui</td>
+<td>rien</td>
+</tr>
+<tr>
+<td>Une entreprise</td>
+<td><strong>oui, 20 %</strong></td>
+<td>son numéro SIREN doit figurer sur la facture</td>
+</tr>
+<tr>
+<td>Une mairie</td>
+<td><strong>oui, 20 %</strong></td>
+<td>elle ne la récupère pas (l'État lui en rembourse une partie plus tard). La facture se dépose sur <strong>Chorus Pro</strong>, avec le SIRET de la mairie et le numéro d'engagement de la commande. Délai de paiement : 30 jours au plus</td>
+</tr>
+</tbody></table></div>
+<p><strong>Les deux seuls cas où la TVA disparaît de la facture :</strong></p>
+<div class="tablewrap"><table><thead><tr>
+<th>Le cas</th>
+<th>Ce qui s'écrit à la place</th>
+</tr></thead><tbody>
+<tr>
+<td>Vous êtes en franchise (auto-entrepreneur sous le seuil)</td>
+<td>« TVA non applicable, art. 293 B du CGI ». <strong>Atlas le fait déjà</strong></td>
+</tr>
+<tr>
+<td>Vous êtes <strong>sous-traitant</strong> d'une autre entreprise du bâtiment, sur un chantier lié à un bâtiment ou un terrain</td>
+<td>la facture est en HT, avec la mention « Autoliquidation ». C'est l'entreprise principale qui déclare la TVA (art. 283-2 nonies du CGI). <strong>Atlas ne sait pas le faire</strong></td>
+</tr>
+</tbody></table></div>
+<p>Le taux de 10 % sur les travaux ne vaut que pour les logements : jamais pour une mairie.</p>
+<p><strong>Ce qui reste à vérifier avec votre comptable :</strong> l'autoliquidation est certaine pour l'aménagement paysager lié à un bâtiment ; pour l'entretien seul d'espaces verts, elle se discute.</p>
+<p><strong>À savoir aussi :</strong> la facture électronique entre entreprises devient obligatoire à l'émission pour les petites entreprises le 1er septembre 2027. Depuis le 1er septembre 2026, toutes doivent déjà savoir en recevoir.</p>
+<p><strong>Ce qu'Atlas ne fait pas encore (vérifié le 28 septembre 2026) :</strong> la fiche client ne distingue pas particulier, entreprise et mairie, et ne porte pas de SIRET (<code>src/server/db/schema.ts</code>, table <code>clients</code>) ; aucune mention d'autoliquidation ; pas d'envoi vers Chorus Pro. La maquette <code>appli/tva-entreprise-et-mairie.html</code> propose de quoi le faire, et attend votre choix : la sous-traitance se dit sur la fiche du client (A) ou sur chaque facture (B). En attendant, une mairie se facture dans Atlas à 20 %, et le PDF se dépose à la main sur chorus-pro.gouv.fr.</p>
 </main>
 </body>
 </html>

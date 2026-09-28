@@ -1,5 +1,17 @@
 # Prochaines tâches
 
+## ⏳ UNE PLANCHE À REGARDER : FACTURER UNE ENTREPRISE OU UNE MAIRIE (28 septembre 2026)
+
+Sa question : *« si je facture une entreprise, il ne paie pas la TVA »*. Prémisse
+fausse, réponse dans `docs/QUESTIONS.md` §31 : la TVA ne part que sous
+autoliquidation (sous-traitance BTP, art. 283-2 nonies) ou en franchise.
+Planche `appli/tva-entreprise-et-mairie.html` : fiche client particulier,
+entreprise ou mairie avec SIRET (et code service Chorus Pro), facture qui
+suit. **Choix attendu** : la sous-traitance se dit sur la fiche du client (A)
+ou sur chaque facture (B). Rien n'est codé. Une fois choisi : niveau 3
+(argent, migration sur `clients`, expand d'abord), mention d'autoliquidation
+dans `facture-pdf.ts`, SIREN du client imprimé.
+
 ## ✅ ABSENT LE MATIN, COCHABLE L'APRÈS-MIDI : SUR `main` LE 28 SEPTEMBRE 2026
 
 `cocheRefusee` juge la demi-journée, l'écran l'appelle au lieu de sa propre
