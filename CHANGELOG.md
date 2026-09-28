@@ -26,7 +26,7 @@ réponses). Quatre racines :
 **Ce que ça évite :** qu'il réponde « je n'ai pas cette information » sur une
 application qui la tient, ou qu'il invente un mois. Rouges avant, sur le code
 d'avant : 31 questions sur 33, le module de période absent, trois cas du bilan.
-`ARCHITECTURE.md` §433.
+`ARCHITECTURE.md` §434.
 
 ### L'assistant répond sur la façon dont Atlas garde les données
 
@@ -41,7 +41,21 @@ La consigne interdit désormais « ce n'est pas une fonctionnalité » et le
 « support » inventé : sans réponse, il donne l'adresse de `CONTACT_ATLAS`. Le
 modèle de secours local reconnaît « combien de temps », « qui peut voir »,
 « que deviennent ». **Ce que ça évite :** qu'un artisan qui s'inquiète de ses
-données soit renvoyé vers un service qui n'existe pas. `ARCHITECTURE.md` §432.
+données soit renvoyé vers un service qui n'existe pas. `ARCHITECTURE.md` §433.
+
+### Absent le matin, il se coche l'après-midi
+
+Son signalement du 28 septembre 2026, capture à l'appui : Julien posé absent le
+matin restait grisé sur la ligne de l'après-midi. **La racine** : l'écran ne
+demandait pas au serveur s'il pouvait cocher, il recalculait sa propre règle
+sur la JOURNÉE (`joursAbsentsDuChantier`, `absenteCeJour`), pendant que le
+serveur jugeait la demi-journée. Deux règles, et l'écran avait tort.
+`cocheRefusee` prend désormais la demi-journée (obligatoire) et c'est la seule
+que l'écran et le serveur appellent ; les deux fonctions de la règle recopiée
+sont supprimées. Éprouvé : `test-equipe-absente.ts` (rouge puis vert) et
+`test-equipes-par-jour-e2e.ts`, son cas exact, **vu rouge sans la correction**
+(« Julien est grisé l'après-midi »). **Pas sur `main`** : niveau 3 (rayon de 38
+écrans), batterie non jouée à sa demande.
 
 ### Six lots sur `main` en une seule batterie
 

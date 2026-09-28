@@ -31,7 +31,7 @@ import {
 import { demiJourneesAPoser } from "@/lib/creneaux-chantier";
 import { fusionnerAbsences, type AbsenceEquipe } from "@/lib/absences-equipe";
 import {
-  joursAbsentsDuChantier,
+  cocheRefusee,
   joursDeLaPastille,
   type ChantierPourAbsence,
 } from "@/lib/equipe-absente";
@@ -697,16 +697,14 @@ export default function PlanningClient({
 
   /** Qui n'est pas là ce jour-là — par rang, avec l'`id` pour pouvoir défaire. */
   /**
-   * Les jours d'un chantier où cette personne n'est pas là — son signalement du
-   * 7 septembre 2026.
-   *
-   * **Elle regarde TOUTES les absences, pas celles du jour affiché.** Un
-   * chantier de deux jours traverse deux journées, et une coche d'équipe vaut
-   * pour le chantier entier : n'interroger que le jour ouvert laisserait
-   * cocher quelqu'un absent le lendemain (`equipe-absente.ts`).
+   * Cette personne peut-elle être cochée sur cette demi-journée du chantier ?
+   * La règle du serveur (`cocheRefusee`), sur TOUTES les absences : un
+   * chantier de deux jours traverse deux journées (son signalement du
+   * 7 septembre 2026), et une coche se juge sur sa moitié (28 septembre).
    */
-  const joursAbsentsDe = useCallback(
-    (rang: number, c: ChantierPourAbsence) => joursAbsentsDuChantier(rang, c, absencesVues),
+  const cocheRefuseeDe = useCallback(
+    (rang: number, c: ChantierPourAbsence, demi: "matin" | "apres_midi") =>
+      cocheRefusee(rang, c, absencesVues, false, demi),
     [absencesVues]
   );
 
@@ -1453,7 +1451,7 @@ export default function PlanningClient({
     ecriture: ouvertes.ecriture,
     nombreSalaries,
     absencesDuJour,
-    joursAbsentsDe,
+    cocheRefuseeDe,
     joursDeLaPastilleDe,
     fermerLeJour,
     rouvrirLeJour,
@@ -3754,7 +3752,7 @@ function CarteDuJour({
   refus,
   taches,
   absencesDuJour,
-  joursAbsentsDe,
+  cocheRefuseeDe,
   joursDeLaPastilleDe,
   fermerLeJour,
   rouvrirLeJour,
@@ -3764,8 +3762,8 @@ function CarteDuJour({
   jour: JourIso;
   /** Qui n'est pas là ce jour-là — voir §267. */
   absencesDuJour: (jour: JourIso) => AbsenceDuPlanning[];
-  /** Les jours d'un chantier où cette personne n'est pas là — voir §293. */
-  joursAbsentsDe: (rang: number, c: ChantierPourAbsence) => JourIso[];
+  /** Peut-on la cocher sur cette demi-journée — voir §293, et le 28 septembre. */
+  cocheRefuseeDe: (rang: number, c: ChantierPourAbsence, demi: "matin" | "apres_midi") => boolean;
   /** Ce que la pastille écrit sous le nom — « ven. », ou rien. Voir §295. */
   joursDeLaPastilleDe: (
     rang: number,
@@ -4179,8 +4177,10 @@ function CarteDuJour({
                           // retire pas le jour. Sans elle, la pastille
                           // annoncerait un jour de moins que la vérité.
                           const jours = joursDeLaPastilleDe(e.rang, c, demi);
-                          const absente =
-                            joursAbsentsDe(e.rang, c).length > 0 && jours === "";
+                          // **La règle du serveur, et elle seule** (28 septembre
+                          // 2026) : l'écran la recalculait sur la JOURNÉE et
+                          // grisait Julien l'après-midi d'un matin d'absence.
+                          const absente = cocheRefuseeDe(e.rang, c, demi);
                           // **Des mots, plus des pastilles — sa planche du
                           // 18 septembre 2026.** Le prénom retenu passe en
                           // noir, souligné d'or ; les autres restent en or. La

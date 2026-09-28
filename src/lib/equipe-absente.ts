@@ -91,24 +91,6 @@ export function joursDuChantier(c: ChantierPourAbsence): JourIso[] {
 }
 
 /**
- * Cette personne est-elle absente ce jour-là ? Bornes incluses.
- *
- * **Un JOUR est absent dès qu'une de ses deux moitiés l'est**, et c'est ce que
- * l'écran doit montrer : « Julien ven. » se lit sur les journées du chantier,
- * pas sur ses demi-journées. La finesse de la demi-journée sert la CAPACITÉ
- * (`absences-equipe.ts`) ; ici on répond à « quel jour n'est-il pas là ».
- */
-export function absenteCeJour(
-  rang: number,
-  jour: JourIso,
-  absences: readonly AbsenceDUneEquipe[]
-): boolean {
-  return absences.some(
-    (a) => a.rang === rang && a.premierJour <= jour && jour <= a.dernierJour
-  );
-}
-
-/**
  * ─── LES JOURS OÙ ELLE VIENT VRAIMENT, SUR CE CHANTIER ──────────────────────
  *
  * **Son choix du 8 septembre 2026 : la proposition C.** Il coche une fois,
@@ -165,21 +147,6 @@ export function absenteCeCreneau(
 }
 
 /**
- * Les jours du chantier où cette personne n'est pas là.
- *
- * **Elle rend les JOURS, pas un oui/non**, et ce n'est pas du zèle : l'écran
- * doit pouvoir dire *lequel*. « Julien n'est pas là le 10 » se corrige ; « on ne
- * peut pas » s'endure.
- */
-export function joursAbsentsDuChantier(
-  rang: number,
-  chantier: ChantierPourAbsence,
-  absences: readonly AbsenceDUneEquipe[]
-): JourIso[] {
-  return joursDuChantier(chantier).filter((j) => absenteCeJour(rang, j, absences));
-}
-
-/**
  * Peut-on cocher cette personne sur ce chantier ?
  *
  * **`dejaCochee` renverse la réponse**, et c'est la raison d'être du paramètre :
@@ -190,7 +157,8 @@ export function cocheRefusee(
   rang: number,
   chantier: ChantierPourAbsence,
   absences: readonly AbsenceDUneEquipe[],
-  dejaCochee: boolean
+  dejaCochee: boolean,
+  demi: "matin" | "apres_midi"
 ): boolean {
   if (dejaCochee) return false;
   const jours = joursDuChantier(chantier);
@@ -203,7 +171,12 @@ export function cocheRefusee(
   // « Julien vendredi mais pas jeudi » : le modèle ne savait pas le dire, donc
   // on interdisait. C ne l'interdit plus, elle l'ÉCRIT — la pastille porte les
   // jours où il vient. Le contournement tombe avec la limite qu'il contournait.
-  return joursPresentsSurLeChantier(rang, chantier, absences).length === 0;
+  //
+  // **Sur LA demi-journée qu'on coche** — son signalement du 28 septembre
+  // 2026 : absent le matin, Julien restait gris l'après-midi. Une coche se pose
+  // toujours sur un matin ou un après-midi ; la juger sur la journée entière
+  // refusait la moitié où il est là.
+  return joursPresentsSurLeChantier(rang, chantier, absences, demi).length === 0;
 }
 
 

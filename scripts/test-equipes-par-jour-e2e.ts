@@ -20,6 +20,7 @@ import {
   mettreAJourDureeEquipe,
 } from "../src/server/repositories/chantiers";
 import { nommerEquipe } from "../src/server/repositories/equipes";
+import { noterAbsenceEquipe } from "../src/server/repositories/absences-equipe";
 import { creneauxDuChantier } from "../src/lib/disponibilites";
 import type { Ctx } from "../src/server/repositories/context";
 import { ADRESSE } from "./_adresse";
@@ -186,6 +187,32 @@ async function main() {
     await carte.locator(`[data-bloc="matin"] [data-choix="${JULIEN}"]`).first().click();
     await attendre("Julien est de retour le 4e jour", async () => (await joursDeJulien()).includes(J4));
     assert.deepEqual(await joursDeJulien(), JOURS, "des jours en double ou en moins");
+  });
+
+  // **Son signalement du 28 septembre 2026**, capture à l'appui : *« J'ai mis
+  // Julien absent le matin, mais je ne peux pas le cocher l'après-midi. »*
+  // L'écran jugeait la coche sur la JOURNÉE ; le serveur, sur la demi-journée.
+  await essai("absent le matin, Julien se coche l'après-midi", async () => {
+    const r = await noterAbsenceEquipe(ctx, {
+      rang: JULIEN, premierJour: J1, dernierJour: J1, motif: null, premierDemi: "matin", dernierDemi: "matin",
+    });
+    assert.ok(r, "le décor n'a pas pu poser l'absence du matin");
+    await page.goto(`${BASE}/planning`, { waitUntil: "domcontentloaded" });
+    await toucherLeJour(J1);
+    const carte = carteDe(J1, chantier.id);
+    await carte.locator('[data-bloc="apres_midi"] [data-atlas="equipe"]').first().click();
+    const julien = carte.locator(`[data-bloc="apres_midi"] [data-choix="${JULIEN}"]`).first();
+    await julien.waitFor({ state: "visible", timeout: 15_000 });
+    assert.equal(await julien.getAttribute("data-absente"), null, "Julien est grisé l'après-midi");
+    await julien.click();
+    await attendre("Julien est coché l'après-midi", async () => {
+      const { rows } = await pool.query(
+        `SELECT 1 FROM equipes_du_chantier ec JOIN equipes e ON e.id = ec.equipe_id
+          WHERE ec.chantier_id = $1 AND ec.demi = 'apres_midi' AND e.rang = $2 AND ec.jour = $3`,
+        [chantier.id, JULIEN, J1]
+      );
+      return rows.length === 1;
+    });
   });
 
   await navigateur.close();

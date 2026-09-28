@@ -1,5 +1,12 @@
 # Prochaines tâches
 
+## 🔜 ABSENT LE MATIN, COCHABLE L'APRÈS-MIDI : CODÉ LE 28 SEPTEMBRE 2026, PAS SUR `main`
+
+Branche `claude/rappels-commercial-facturation-5ehltt`. `cocheRefusee` juge la
+demi-journée, l'écran l'appelle au lieu de sa propre règle (`ARCHITECTURE.md`
+§432). Niveau 3 (rayon de 38 écrans) : **la batterie reste à jouer avant
+`main`**, il a demandé de ne pas la lancer.
+
 ## ✅ SES DATES, GARDÉES AVEC LA CORRECTION : SUR `main` LE 28 SEPTEMBRE 2026
 
 Sa plainte : *« mon client a demandé une correction et proposé des dates ; quand

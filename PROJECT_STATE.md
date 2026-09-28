@@ -10,7 +10,7 @@ Quatre fiches « comment Atlas se comporte » (conservation, après l'arrêt, qu
 voit, IA) ; plus de « support » inventé, l'adresse `CONTACT_ATLAS` à la place.
 Puis, joué en artisan : la date du jour dans la consigne, le bilan d'une
 période (`LireFactures`), quinze fiches neuves, trois tournures mieux lues.
-Branche `claude/assistant-all-questions-ahg55r`, `ARCHITECTURE.md` §432 et §433.
+Branche `claude/assistant-all-questions-ahg55r`, `ARCHITECTURE.md` §433 et §434.
 
 ## SUR `main` : L'ORGANIGRAMME (27 et 28 septembre 2026)
 

@@ -16,13 +16,13 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 Zone `src/lib/fiches-mode-emploi/fonctionnement.ts`. **Piège** : la fiche de
 conservation dit « rien ne s'efface tout seul » parce que la purge n'est pas
 branchée ; quand elle le sera, `test-mode-emploi` rougira, et la fiche doit
-alors dire les durées de `src/server/retention.ts`. §432.
+alors dire les durées de `src/server/retention.ts`. §433.
 
 Puis la zone `artisan` de `scripts/_questions-mode-emploi.ts` : ses questions
 jouées, à enrichir plutôt qu'à réécrire. Une question qui rate se corrige par
 les mots-clés, `EXPRESSIONS` ou une fiche neuve, jamais en changeant la
 question. Le jour de l'atelier entre par `consigneDuJour` ; une période se
-compte par `bilanDeLaPeriode`, jamais par le modèle. §433.
+compte par `bilanDeLaPeriode`, jamais par le modèle. §434.
 
 ## SES DATES AVEC LA CORRECTION : 27 septembre 2026, PAS SUR `main`
 
