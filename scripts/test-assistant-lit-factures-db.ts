@@ -158,6 +158,11 @@ async function main() {
     assert.equal(r.bilan.encaisse, "0.00");
   });
 
+  await cas("une seule borne est refusée : l'outil ne devine pas l'autre", async () => {
+    assert.equal(outil!.schema.safeParse({ du: jour }).success, false);
+    assert.equal(outil!.schema.safeParse({ au: jour }).success, false);
+  });
+
   await cas("ISOLATION : le bilan de B ne compte rien de A", async () => {
     const r = (await lire(B, { du: jour, au: jour })) as Lu & { bilan: Bilan };
     assert.equal(r.bilan.nombreFactures, 1);

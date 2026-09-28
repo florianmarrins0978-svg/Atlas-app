@@ -47,7 +47,10 @@ export const lireFactures: Outil = {
       ),
     du: z.string().regex(JOUR).nullish().describe("Premier jour de la période, compris, AAAA-MM-JJ."),
     au: z.string().regex(JOUR).nullish().describe("Dernier jour de la période, compris, AAAA-MM-JJ."),
-  }),
+  })
+    // Une période a deux bornes. Une seule, et le modèle aurait laissé
+    // l'outil deviner l'autre : « depuis septembre » jusqu'à quand ?
+    .refine((v) => Boolean(v.du) === Boolean(v.au), { message: "Donne « du » ET « au », ou aucun des deux." }),
   async executer({ ctx }, parametres) {
     const p = parametres as {
       client?: string | null;
@@ -69,10 +72,9 @@ export const lireFactures: Outil = {
     // **Le bilan se compte sur les factures du client, pas sur celles de la
     // période** : un règlement d'octobre sur une facture de septembre est de
     // l'argent d'octobre (`bilanDeLaPeriode`).
-    const periode = p.du || p.au ? { du: p.du ?? "0000-01-01", au: p.au ?? "9999-12-31" } : null;
-    const bilan = periode ? bilanDeLaPeriode(duClient, periode.du, periode.au) : null;
+    const bilan = p.du && p.au ? bilanDeLaPeriode(duClient, p.du, p.au) : null;
     const retenues = duClient.filter((f) => {
-      if (periode && (f.dateEmission < periode.du || f.dateEmission > periode.au)) return false;
+      if (bilan && (f.dateEmission < bilan.du || f.dateEmission > bilan.au)) return false;
       if (p.etat === "a_encaisser") return f.etat !== "soldee";
       if (p.etat === "soldees") return f.etat === "soldee";
       if (p.etat === "non_payees") return nonPayees.has(f.id);

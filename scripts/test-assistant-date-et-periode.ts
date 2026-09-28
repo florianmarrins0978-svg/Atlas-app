@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { bilanDeLaPeriode } from "../src/lib/bilan-periode";
 import { consigneDuJour } from "../src/server/ai/services/assistant-service";
+import { pool } from "../src/server/db/client";
 
 /**
  * L'assistant sait quel jour on est, et compte une période sans calculer.
@@ -66,9 +67,12 @@ cas("les bornes sont comprises", () => {
   assert.equal(bilanDeLaPeriode(factures, "2026-09-11", "2026-09-30").nombreFactures, 0);
 });
 
-if (echecs > 0) {
-  console.error(`\n❌ ${echecs} échec(s).`);
-  process.exit(1);
-}
-console.log("\n✅ L'assistant sait le jour, et compte une période sans calculer de tête.");
-process.exit(0);
+// La consigne vit dans le service, qui ouvre la base en se chargeant : on la
+// referme, comme toute suite qui la touche.
+pool.end().then(() => {
+  if (echecs > 0) {
+    console.error(`\n❌ ${echecs} échec(s).`);
+    process.exit(1);
+  }
+  console.log("\n✅ L'assistant sait le jour, et compte une période sans calculer de tête.");
+});

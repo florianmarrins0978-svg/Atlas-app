@@ -14,7 +14,7 @@
  * résiliation est fixé, la fiche rougit et se récrit au lieu de mentir.
  */
 import type { FicheModeEmploi } from "../mode-emploi";
-import { FORMULES, FORMULE_DE_LESSAI, JOURS_ESSAI } from "../abonnements";
+import { FORMULES, JOURS_ESSAI } from "../abonnements";
 import { CONTACT_ATLAS } from "../contact-atlas";
 
 const DONNEES = "« Réglages » dans la barre du bas, puis Mes données";
@@ -62,7 +62,7 @@ export const FICHES_FONCTIONNEMENT: FicheModeEmploi[] = [
     id: "donnees-qui-voit",
     ecran: "Équipe",
     ou: "« Réglages » dans la barre du bas, puis Équipe, Accès",
-    intitule: "Qui peut voir vos données, vos devis et vos factures, et si elles sont protégées",
+    intitule: "Qui peut voir vos données, et si elles sont protégées",
     motsCles: ["voir", "securite", "securisees", "protegees", "confidentiel", "privees", "autres", "donnees", "acces"],
     geste:
       "Seuls les comptes de votre entreprise voient vos chantiers : une autre entreprise n'y a jamais accès, " +
@@ -127,11 +127,10 @@ export const FICHES_FONCTIONNEMENT: FicheModeEmploi[] = [
     intitule: "L'essai gratuit : combien de jours, et ce qui se passe après",
     motsCles: ["essai", "gratuit", "gratuitement", "tester", "essayer", "decouvrir", "fin"],
     geste:
-      `Un compte neuf a ${JOURS_ESSAI} jours d'essai gratuit, sans carte bancaire, avec toutes les fonctions de la formule ` +
-      `${FORMULES.find((f) => f.code === FORMULE_DE_LESSAI)?.nom ?? FORMULE_DE_LESSAI}. ` +
+      `Un compte neuf a ${JOURS_ESSAI} jours d'essai gratuit, sans carte bancaire, avec toutes les fonctions ouvertes. ` +
       "À la fin, vous voyez toujours tout, mais il faut choisir une formule pour créer de nouveau.",
     source: "src/lib/abonnements.ts",
-    preuves: ["export const JOURS_ESSAI", "Choisissez une formule pour créer de nouveau"],
+    preuves: ["export const JOURS_ESSAI", 'FORMULE_DE_LESSAI: FormuleCode = "illimite"', "Choisissez une formule pour créer de nouveau"],
   },
   {
     id: "abonnement-personnes",
