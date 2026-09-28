@@ -4,33 +4,33 @@
 · dernière migration `drizzle/0106_hausse_du_devis_repris.sql` (sur la branche)
 
 ---
-## CODÉ, PAS SUR `main` : L'ORGANIGRAMME (27 septembre 2026)
+## SUR `main` : L'ORGANIGRAMME (27 et 28 septembre 2026)
 
-Même branche. Réglages, Organigramme, ouvert à tous, modifiable par le patron
+Réglages, Organigramme, ouvert à tous, modifiable par le patron
 (chef d'équipe, ses gars, ajouter). Migration 0110. Manquent : retirer une
-personne du milieu (§431). **Niveau 3** : batterie avec son accord.
+personne du milieu (§431). Sur `main` le 28 septembre.
 
-## CODÉ, PAS SUR `main` : CHACUN SES RAPPELS (27 septembre 2026)
+## SUR `main` : CHACUN SES RAPPELS (27 et 28 septembre 2026)
 
 Branche `claude/rappels-commercial-facturation-5ehltt`. Le patron reçoit tout,
 le commercial les rappels de devis, la facturation ceux des factures, le
-salarié aucun (`recoitLesRappels`). **Niveau 3** (rôles) : batterie à jouer
-avec son accord avant `main`.
+salarié aucun (`recoitLesRappels`). Sur `main` le 28 septembre, avec cinq autres lots, après UNE batterie
+commune au vert (à sa demande).
 
-## CODÉ, PAS SUR `main` : SES DATES GARDÉES AVEC LA CORRECTION (27 septembre 2026)
+## SUR `main` : SES DATES GARDÉES AVEC LA CORRECTION (27 et 28 septembre 2026)
 
 Le client qui demande une correction garde ses dates : elles se lisent sous
 son message sur l'écran du devis envoyé, et « Choisir la date » les pose au
-renvoi. Migration 0109, `ARCHITECTURE.md` §429. Batterie pas jouée, à sa
-demande : elle reste due avant `main` (niveau 3).
+renvoi. Migration 0109, `ARCHITECTURE.md` §429. Sur `main` le 28 septembre,
+batterie commune des six lots au vert.
 
 ## SUR SA BRANCHE : LA PHOTO DE CHAQUE PERSONNE (27 septembre 2026)
 
 Chacun pose sa photo dans Mon compte ; le patron relie chaque compte à son nom
 dans « Qui a accès » et garde la main dans Équipe. La tête suit le nom au
 planning et dans les absences. Migration 0111, route `/api/tetes`, §430.
-Branche `claude/employee-profile-photo-g1mkbk`, **pas sur `main`** : niveau 3,
-batterie non jouée à sa demande.
+Branche `claude/employee-profile-photo-g1mkbk`, **sur `main` le 28 septembre**,
+batterie commune des six lots au vert (migration renumérotée 0111).
 
 ## SUR `main` : LES DATES DU MOIS D'UN CONTRAT (27 septembre 2026)
 

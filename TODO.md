@@ -1,12 +1,12 @@
 # Prochaines tâches
 
-## 🔜 SES DATES, GARDÉES AVEC LA CORRECTION : CODÉ LE 27 SEPTEMBRE 2026, PAS SUR `main`
+## ✅ SES DATES, GARDÉES AVEC LA CORRECTION : SUR `main` LE 28 SEPTEMBRE 2026
 
 Sa plainte : *« mon client a demandé une correction et proposé des dates ; quand
 je corrige et renvoie, je ne vois pas ses dates, donc je repropose les mêmes »*.
 Planche `appli/dates-du-client-au-renvoi.html`, **A retenue**. Sa consigne :
-*« lance aucune batterie »*. Niveau 3 (migration 0109, devis) : **la batterie
-reste à jouer avant `main`**. `ARCHITECTURE.md` §429.
+*« lance aucune batterie »*. Niveau 3 (migration 0109, devis) : sur `main` le
+28 septembre, batterie commune des six lots au vert. `ARCHITECTURE.md` §429.
 
 | Codé et éprouvé ici | |
 |---|---|
@@ -20,7 +20,7 @@ reste à jouer avant `main`**. `ARCHITECTURE.md` §429.
 |---|---|
 | la batterie entière, puis `main` | avec son accord |
 
-## 🔜 RAPPELS PAR RÔLE ET ORGANIGRAMME : CODÉS LE 27 SEPTEMBRE 2026, PAS SUR `main`
+## ✅ RAPPELS PAR RÔLE ET ORGANIGRAMME : SUR `main` LE 28 SEPTEMBRE 2026
 
 Planche `appli/rappels-par-role-et-organigramme.html`, ses réponses : le patron
 reçoit tout, chacun les siens ; un chef par gars ; le chef ne voit rien de plus ;
@@ -34,7 +34,7 @@ facturation ; photo B, et chacun change la sienne. `ARCHITECTURE.md` §431.
 
 | Reste | Qui |
 |---|---|
-| **la batterie** (niveau 3 : rôles, migration 0110), puis `main` | à lancer avec son accord |
+| la batterie, puis `main` | **fait le 28 septembre**, batterie commune des six lots |
 | **retirer UNE personne** du milieu de la liste : le planning lit les gars par RANG (`nomEquipe`) ; sortir quelqu'un décalerait ou effacerait son nom sur ses chantiers passés. Il faut d'abord lire l'historique par identifiant, puis une colonne `retire_le` | à coder, lot à part |
 | les photos dans l'organigramme | **codé le 27 septembre** (`TeteRonde`, `photoDUnCompte`) ; la photo se pose dans Équipe ou Mon compte, pas depuis l'organigramme |
 | un salarié ajouté depuis l'organigramme n'a pas de compte : « Accès à Atlas » se donne encore dans Équipe | à coder s'il le demande |
@@ -129,24 +129,23 @@ l'envoi quand la connexion est coupée ou révoquée.
 Planche `appli/photo-des-salaries.html` (B), puis chacun pose la sienne dans
 Mon compte ; le patron relie chaque compte à son nom (« C'est qui ? »). Codée
 sur la branche `claude/employee-profile-photo-g1mkbk` (migration 0111,
-`ARCHITECTURE.md` §430). **Pas encore sur `main`** : niveau 3 (migration,
-route `/api/tetes`), et il a demandé de ne pas jouer la batterie. Avant la
-fusion : `npm run verifier:avant-livraison`, en le prévenant.
+`ARCHITECTURE.md` §430). **Sur `main` le 28 septembre**, batterie commune
+des six lots au vert.
 
-## VOS CLIENTS DE A À Z : CODÉ (A), PAS ENCORE SUR `main` (27 septembre 2026)
+## ✅ VOS CLIENTS DE A À Z : SUR `main` LE 28 SEPTEMBRE 2026
 
 Il a retenu la planche A (`appli/clients-a-a-z.html`), avec la recherche
 d'aujourd'hui gardée telle quelle. Codé sur `claude/filtre-client-tri-alpha-1aj8xi`
 (`ARCHITECTURE.md` §428). Joués : types, lint, `test-bandes-clients`,
 `test-liste-clients` (vu rouge sans la correction), couches, code mort, tirets,
-pansements, et l'écran regardé. **Pas de batterie, à sa demande** : le contrôle
-de son niveau (2 : `npm run verifier:avant-fusion`) reste à jouer avant `main`.
+pansements, et l'écran regardé. Sur `main` le 28 septembre,
+batterie commune des six lots au vert.
 
-## Terminés : le bouton Filtre (27 septembre 2026) : CODÉ, BATTERIE À JOUER AVANT `main`
+## ✅ Terminés : le bouton Filtre : SUR `main` LE 28 SEPTEMBRE 2026
 
 B retenue et codée sur `claude/factures-devis-ordre-5b7b8z`. Niveau 3 (le lot
-touche la lecture des factures) : la batterie entière n'a pas été jouée, à sa
-demande ; elle se joue avant `main`.
+touche la lecture des factures) : sur `main` le 28 septembre, reposé sur le
+montant prévu du contrat (`totalPrevuTtc`), batterie commune des six lots au vert.
 
 ## Site de vente : l'adresse de contact et le nom (27 septembre 2026)
 

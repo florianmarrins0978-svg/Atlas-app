@@ -6,6 +6,22 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-09-28
+
+### Six lots sur `main` en une seule batterie
+
+Sa demande : *« associe-toi pour ne jouer qu'une batterie »*. Réunis : chacun
+ses rappels et l'organigramme, la photo de chaque personne, ses dates gardées
+avec la correction, deux patrons, les clients de A à Z, le bouton Filtre de
+Terminés. Ce que la rencontre a demandé : la migration des photos renumérotée
+**0111** (0109 était pris par les dates), les paragraphes d'`ARCHITECTURE.md`
+**428 à 431**, le Filtre reposé sur `totalPrevuTtc` (le contrat d'entretien
+l'avait renommé sur `main`), et cinq rouges de la première batterie corrigés :
+filet d'intertitre, interrupteur à déclarer, deux colonnes de photo absentes de
+`objets-stockes.ts`, les deux actions de sa propre photo déclarées ouvertes à
+tous, l'organigramme à préchauffer. Seconde batterie : **au vert**, 170/170
+suites navigateur, connexion derrière un proxy réussie.
+
 ## 2026-09-27
 
 ### L'organigramme, visible par tous, avec ses chefs d'équipe
