@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>La double vérification</title>
+<style>
+  /*
+    LA DOUBLE VÉRIFICATION, la planche avant le code.
+
+    Sa demande du 29 septembre 2026 : « Ok fait la planche », après avoir choisi
+    l'appli d'authentification plutôt que le code par e-mail.
+
+    Ce qui est décidé et ne se pose pas en question : Face ID compte déjà pour
+    deux facteurs et entre sans code ; le mot de passe seul ne suffit plus une
+    fois la double vérification activée ; dix codes de secours, chacun valable
+    une fois, sans quoi un téléphone perdu mure la porte.
+
+    Ce qui est SIMULÉ : l'appli d'authentification est dessinée à côté du
+    téléphone. Sur le vrai, c'est Google Authenticator ou une autre, et le code
+    change toutes les trente secondes comme ici. Rien n'est codé dans src/.
+  */
+  :root{
+    --etabli:#e6e3dc; --etabli-carte:#faf9f5; --etabli-encre:#1c1c1a; --etabli-doux:#4a4a44;
+    --etabli-or:#8b6835; --etabli-trait:rgba(28,28,26,.12);
+    --fond:#101210; --plage:#1a1d19; --encre:#e9e8de; --gris:#84887b; --or:#B98B47;
+    --trait:rgba(233,232,222,.14); --alerte:#e0907f; --vert:#9fbf8f;
+  }
+  *{box-sizing:border-box}
+  [hidden]{display:none!important}
+  html,body{margin:0;background:var(--etabli)}
+  body{font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--etabli-encre);
+       -webkit-text-size-adjust:100%}
+  button,input{font-family:inherit}
+  .page{max-width:900px;margin:0 auto;padding:26px 16px 80px}
+  .surtitre{font:600 11.5px/1 ui-sans-serif,sans-serif;letter-spacing:.18em;text-transform:uppercase;color:var(--etabli-or);margin:0 0 10px}
+  h1{font:600 28px/1.15 ui-serif,Georgia,serif;margin:0 0 10px}
+  .chapeau{max-width:640px;color:var(--etabli-doux);font-size:15px;line-height:1.6;margin:0 0 18px}
+
+  .onglets{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 16px}
+  .onglet{min-height:40px;padding:0 16px;border-radius:999px;border:1px solid var(--etabli-trait);
+          background:var(--etabli-carte);color:var(--etabli-doux);font-size:14px;cursor:pointer}
+  .onglet[aria-pressed="true"]{background:var(--etabli-encre);color:#faf9f5;border-color:transparent}
+
+  .scene{display:flex;flex-wrap:wrap;gap:20px;align-items:flex-start}
+  .tel{width:390px;max-width:100%;border-radius:26px;overflow:hidden;
+       box-shadow:0 1px 2px rgba(20,18,14,.16),0 14px 34px rgba(20,18,14,.14)}
+  .ecran{min-height:700px;padding:44px 26px 40px;color:var(--encre);
+         background:radial-gradient(120% 62% at 8% 4%, #3a2f18 0%, var(--plage) 40%, var(--fond) 78%)}
+
+  .sceau{width:52px;height:52px;margin:0 auto;border-radius:999px;border:1.5px solid var(--or);
+         display:grid;place-items:center;color:var(--or);font:400 20px/1 ui-serif,Georgia,serif}
+  .marque{display:block;text-align:center;margin:12px 0 30px;font:400 19px/1 ui-serif,Georgia,serif;letter-spacing:.3em}
+  h2{font:400 28px/1.1 ui-serif,Georgia,serif;margin:0 0 8px;letter-spacing:-.01em}
+  .dit{color:var(--gris);font-size:14.5px;line-height:1.5;margin:0 0 22px}
+  .champ{width:100%;border:0;border-radius:999px;background:var(--plage);color:var(--encre);
+         box-shadow:inset 0 0 0 1px var(--trait);padding:14px 20px;font-size:16px;margin:0 0 12px;outline:none}
+  .champ:focus{box-shadow:inset 0 0 0 1px var(--or)}
+  .code{text-align:center;letter-spacing:.5em;font-size:24px;font-variant-numeric:tabular-nums}
+  .plein{width:100%;border:0;border-radius:999px;background:var(--encre);color:var(--fond);
+         padding:15px 0;font:400 17px/1 ui-serif,Georgia,serif;cursor:pointer;margin-top:6px}
+  .plein:disabled{opacity:.45;cursor:default}
+  .sombre{width:100%;border:0;border-radius:999px;background:var(--plage);color:var(--encre);
+          box-shadow:inset 0 0 0 1px var(--trait);padding:14px 0;font-size:15px;cursor:pointer;margin:0 0 22px;
+          display:flex;align-items:center;justify-content:center;gap:10px}
+  .lien{display:block;margin:18px auto 0;border:0;background:none;color:var(--or);font-size:14.5px;cursor:pointer;padding:8px}
+  .refus{min-height:20px;margin:8px 0 0;text-align:center;font-size:13.5px;color:var(--alerte)}
+  .coche{display:flex;align-items:center;gap:10px;margin:14px 0 4px;font-size:14.5px;color:var(--encre);cursor:pointer}
+  .coche input{width:20px;height:20px;accent-color:var(--or)}
+  .entre{text-align:center;padding-top:120px}
+  .entre h2{font-size:32px}
+
+  .rubrique{margin:0 0 6px;font:600 10.5px/1 ui-sans-serif,sans-serif;letter-spacing:.2em;text-transform:uppercase;color:var(--or)}
+  .ligne{display:flex;align-items:center;gap:14px;padding:14px 0;border-top:1px solid var(--trait)}
+  .ligne .t{flex:1;font-size:15.5px}
+  .ligne .s{display:block;font-size:13px;color:var(--gris);margin-top:2px}
+  .inter{flex:none;width:50px;height:30px;border-radius:999px;border:0;background:#3a3d37;position:relative;cursor:pointer}
+  .inter i{position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:999px;background:var(--encre);transition:left .16s}
+  .inter[aria-pressed="true"]{background:var(--or)}
+  .inter[aria-pressed="true"] i{left:23px}
+  .etape{font:600 10.5px/1 ui-sans-serif,sans-serif;letter-spacing:.2em;text-transform:uppercase;color:var(--gris);margin:0 0 14px}
+  .qr{display:block;margin:0 auto 14px;background:#fff;border-radius:12px;padding:10px}
+  .cle{text-align:center;font:500 15px/1.4 ui-monospace,Menlo,monospace;letter-spacing:.12em;color:var(--encre);margin:0 0 20px}
+  .secours{display:grid;grid-template-columns:1fr 1fr;gap:8px 16px;margin:0 0 16px;padding:16px;border-radius:16px;
+           background:var(--plage);box-shadow:inset 0 0 0 1px var(--trait);
+           font:500 15px/1.4 ui-monospace,Menlo,monospace;letter-spacing:.06em}
+  .secours s{color:var(--gris)}
+
+  .appli{width:260px;max-width:100%;border-radius:20px;background:#fff;padding:16px 18px;
+         box-shadow:0 1px 2px rgba(20,18,14,.16),0 10px 26px rgba(20,18,14,.12);font-family:-apple-system,ui-sans-serif,sans-serif}
+  @media (max-width:800px){ .appli{order:-1;width:390px} }
+  .appli .quoi{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#77726a;margin:0 0 12px}
+  .appli .compte{font-size:13px;color:#4a4a44}
+  .appli .chiffres{font:600 32px/1.2 ui-monospace,Menlo,monospace;letter-spacing:.08em;color:#1a5fb4;margin:4px 0 8px}
+  .appli .jauge{height:4px;border-radius:4px;background:#e6e3dc;overflow:hidden}
+  .appli .jauge i{display:block;height:100%;background:#1a5fb4}
+  .appli .rien{font-size:13.5px;color:#77726a;margin:0}
+  .appli .note{font-size:12px;color:#77726a;margin:12px 0 0;line-height:1.45}
+
+  .question{max-width:640px;margin:28px 0 0;padding:16px 18px;border-radius:14px;
+            background:#1c1c1a;color:#e9e5dc;font-size:15px;line-height:1.6}
+  .question > b:first-child{display:block;margin-bottom:6px;font-size:16px;color:#fff}
+  .question .choix{margin-top:10px;padding-top:10px;border-top:1px solid rgba(233,229,220,.18)}
+  .question .choix div{display:flex;align-items:baseline;gap:10px;margin-top:6px}
+  .question .mot{flex:none;width:26px;font-weight:700;color:var(--or)}
+</style>
+</head>
+<body>
+<div class="page">
+  <p class="surtitre">Connexion</p>
+  <h1>La double vérification</h1>
+  <p class="chapeau">Commencez par l'activer dans Réglages, puis entrez par la porte. L'appli d'authentification est dessinée à part, à côté du téléphone.</p>
+
+  <div class="onglets" role="group" aria-label="Écran">
+    <button type="button" class="onglet" data-vue="reglages" aria-pressed="true">1. L'activer</button>
+    <button type="button" class="onglet" data-vue="porte" aria-pressed="false">2. Entrer</button>
+  </div>
+
+  <div class="scene">
+    <div class="tel"><div class="ecran" id="ecran"></div></div>
+    <div class="appli" aria-live="polite">
+      <p class="quoi">Votre appli d'authentification</p>
+      <div id="appli"></div>
+    </div>
+  </div>
+
+  <div class="question">
+    <b>Deux choix à me donner</b>
+    La planche montre A et « oui ». Le reste ne se discute pas : Face ID entre sans code, et les codes de secours sont obligatoires.
+    <div class="choix">
+      <div><span class="mot">A</span><span>Obligatoire pour le patron et la facturation (ils voient l'IBAN et l'export). Facultative pour les autres.</span></div>
+      <div><span class="mot">B</span><span>Obligatoire pour tout le monde, salariés compris.</span></div>
+    </div>
+    <div class="choix">
+      <div><span class="mot">Oui</span><span>« Ne plus demander sur cet appareil » : le code ne revient que tous les 30 jours.</span></div>
+      <div><span class="mot">Non</span><span>Le code à chaque connexion par mot de passe.</span></div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  // Un code qui change toutes les 30 secondes, comme dans une vraie appli.
+  // Ce n'est pas du TOTP : la planche n'a pas de secret à protéger.
+  function codeDuMoment(){
+    var tranche = Math.floor(Date.now() / 30000);
+    var x = (tranche * 2654435761) % 1000000;
+    return String((x + 1000000) % 1000000).padStart(6, "0");
+  }
+  function secondesRestantes(){ return 30 - Math.floor(Date.now() / 1000) % 30; }
+  var SECOURS = ["4F7K-9QX2","M2PD-7HCW","8RJT-3NZV","Q6WB-5KLE","T9XA-2GFM","H3CY-8PDU","V5NQ-6JRS","B7LE-4TWX","K2ZF-9MHA","P8GU-3VYC"];
+
+  var etat, vue = "reglages";
+  function depart(){
+    return {
+      active: false,        // la double vérification est-elle activée ?
+      activation: 0,        // 0 fermé, 1 scanner, 2 code, 3 codes de secours
+      scanne: false,        // l'appli a-t-elle ajouté Atlas ?
+      notes: false,
+      porte: "adresse",     // adresse, code, secours, entre
+      refus: "",
+      retenir: true,
+      appareilRetenu: false,
+      secoursUses: [],
+      commentEntre: ""
+    };
+  }
+  etat = depart();
+
+  var ecran = document.getElementById("ecran");
+  var appli = document.getElementById("appli");
+  function esc(t){ return String(t).replace(/[&<>"]/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]; }); }
+
+  function dessinerAppli(){
+    if (!etat.scanne){
+      appli.innerHTML = '<p class="rien">Aucun compte. Scannez le code affiché par Atlas pour l\'ajouter.</p>' +
+        (vue === "reglages" && etat.activation === 1 ? '<button type="button" class="onglet" id="scanner" style="margin-top:12px">Scanner</button>' : '');
+      var b = document.getElementById("scanner");
+      if (b) b.onclick = function(){ etat.scanne = true; dessiner(); };
+      return;
+    }
+    var reste = secondesRestantes();
+    appli.innerHTML = '<div class="compte">Atlas, demo@atlas.local</div>' +
+      '<div class="chiffres">' + codeDuMoment().replace(/(\d{3})(\d{3})/, "$1 $2") + '</div>' +
+      '<div class="jauge"><i style="width:' + (reste / 30 * 100) + '%"></i></div>' +
+      '<p class="note">Change dans ' + reste + ' s.</p>';
+  }
+  setInterval(dessinerAppli, 1000);
+
+  function qr(){
+    // Un motif fixe, pour la forme : il ne s'ouvre avec aucune appli.
+    var n = 21, t = 7, h = '<svg class="qr" width="' + (n * t + 20) + '" height="' + (n * t + 20) + '" viewBox="-10 -10 ' + (n * t + 20) + ' ' + (n * t + 20) + '">';
+    var graine = 7;
+    function coin(x, y){ h += '<rect x="'+x*t+'" y="'+y*t+'" width="'+7*t+'" height="'+7*t+'" fill="#111"/><rect x="'+(x+1)*t+'" y="'+(y+1)*t+'" width="'+5*t+'" height="'+5*t+'" fill="#fff"/><rect x="'+(x+2)*t+'" y="'+(y+2)*t+'" width="'+3*t+'" height="'+3*t+'" fill="#111"/>'; }
+    for (var y = 0; y < n; y++) for (var x = 0; x < n; x++){
+      graine = (graine * 1103515245 + 12345) % 2147483648;
+      var dansCoin = (x < 8 && y < 8) || (x > 12 && y < 8) || (x < 8 && y > 12);
+      if (!dansCoin && graine % 3 === 0) h += '<rect x="'+x*t+'" y="'+y*t+'" width="'+t+'" height="'+t+'" fill="#111"/>';
+    }
+    coin(0,0); coin(14,0); coin(0,14);
+    return h + '</svg>';
+  }
+
+  function tete(){ return '<div class="sceau">A</div><span class="marque">ATLAS</span>'; }
+
+  function dessinerReglages(){
+    var h = '<h2>Mot de passe</h2><p class="dit" style="margin-bottom:26px">Moi</p>';
+    h += '<p class="rubrique">Double vérification</p>';
+    h += '<div class="ligne"><span class="t">Code de l\'appli d\'authentification' +
+         (etat.active ? '<span class="s">Activée. ' + (10 - etat.secoursUses.length) + ' codes de secours restants.</span>' : '') +
+         '</span><button type="button" class="inter" id="inter" aria-pressed="' + (etat.active || etat.activation > 0) + '" aria-label="Double vérification"><i></i></button></div>';
+
+    if (etat.activation === 1){
+      h += '<div style="padding-top:16px"><p class="etape">Étape 1 sur 3</p>' +
+           '<p class="dit">Dans votre appli d\'authentification, scannez ce code.</p>' + qr() +
+           '<p class="cle">JBSW Y3DP EHPK 3PXP</p>' +
+           '<button type="button" class="plein" id="suite1"' + (etat.scanne ? '' : ' disabled') + '>Continuer</button>' +
+           (etat.scanne ? '' : '<p class="refus" style="color:var(--gris)">Appuyez sur Scanner, dans l\'appli dessinée.</p>') + '</div>';
+    } else if (etat.activation === 2){
+      h += '<div style="padding-top:16px"><p class="etape">Étape 2 sur 3</p>' +
+           '<p class="dit">Tapez le code que l\'appli affiche.</p>' +
+           '<input class="champ code" id="code" inputmode="numeric" maxlength="6" autocomplete="one-time-code" placeholder="000000">' +
+           '<button type="button" class="plein" id="suite2">Vérifier</button><p class="refus" id="refus">' + esc(etat.refus) + '</p></div>';
+    } else if (etat.activation === 3){
+      h += '<div style="padding-top:16px"><p class="etape">Étape 3 sur 3</p>' +
+           '<p class="dit">Vos codes de secours. Chacun ouvre une fois, si vous perdez votre téléphone. Notez-les sur papier.</p>' +
+           '<div class="secours">' + SECOURS.map(function(c){ return '<span>' + c + '</span>'; }).join('') + '</div>' +
+           '<button type="button" class="sombre" id="telecharger">Télécharger</button>' +
+           '<label class="coche"><input type="checkbox" id="notes"' + (etat.notes ? ' checked' : '') + '>Je les ai notés</label>' +
+           '<button type="button" class="plein" id="terminer"' + (etat.notes ? '' : ' disabled') + '>Terminer</button></div>';
+    }
+    ecran.innerHTML = h;
+
+    document.getElementById("inter").onclick = function(){
+      if (etat.active){ etat.active = false; etat.appareilRetenu = false; etat.secoursUses = []; }
+      else if (etat.activation > 0){ etat.activation = 0; }
+      else { etat.activation = 1; }
+      etat.refus = ""; dessiner();
+    };
+    var s1 = document.getElementById("suite1"); if (s1) s1.onclick = function(){ etat.activation = 2; dessiner(); document.getElementById("code").focus(); };
+    var s2 = document.getElementById("suite2");
+    if (s2) s2.onclick = function(){
+      var v = document.getElementById("code").value.replace(/\D/g, "");
+      if (v === codeDuMoment()){ etat.activation = 3; etat.refus = ""; }
+      else { etat.refus = "Ce code n'est pas le bon."; }
+      dessiner();
+    };
+    var n = document.getElementById("notes"); if (n) n.onchange = function(){ etat.notes = n.checked; dessiner(); };
+    var tl = document.getElementById("telecharger"); if (tl) tl.onclick = function(){ tl.textContent = "Téléchargé"; };
+    var tm = document.getElementById("terminer"); if (tm) tm.onclick = function(){ etat.active = true; etat.activation = 0; dessiner(); };
+  }
+
+  function dessinerPorte(){
+    var h = tete();
+    if (etat.porte === "entre"){
+      h = '<div class="entre">' + tete() + '<h2>Vous êtes entré.</h2><p class="dit">' + esc(etat.commentEntre) + '</p>' +
+          '<button type="button" class="lien" id="sortir">Se déconnecter</button></div>';
+    } else if (etat.porte === "adresse"){
+      h += '<button type="button" class="sombre" id="faceid">' +
+           '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2M9 9v1M15 9v1M12 9v4h-1M9 16c1.7 1.3 4.3 1.3 6 0"/></svg>' +
+           'Ouvrir avec Face ID</button>' +
+           '<input class="champ" value="demo@atlas.local" aria-label="Adresse">' +
+           '<input class="champ" type="password" value="bruyere-42-nord" aria-label="Mot de passe">' +
+           '<button type="button" class="plein" id="entrer">Entrer</button>';
+    } else if (etat.porte === "code"){
+      h += '<h2>Le code</h2><p class="dit">Celui de votre appli d\'authentification.</p>' +
+           '<input class="champ code" id="code" inputmode="numeric" maxlength="6" autocomplete="one-time-code" placeholder="000000">' +
+           '<label class="coche"><input type="checkbox" id="retenir"' + (etat.retenir ? ' checked' : '') + '>Ne plus demander sur cet appareil</label>' +
+           '<button type="button" class="plein" id="valider">Entrer</button><p class="refus">' + esc(etat.refus) + '</p>' +
+           '<button type="button" class="lien" id="versSecours">Utiliser un code de secours</button>';
+    } else if (etat.porte === "secours"){
+      h += '<h2>Code de secours</h2><p class="dit">Un de ceux que vous avez notés.</p>' +
+           '<input class="champ code" id="code" style="letter-spacing:.2em" placeholder="XXXX-XXXX" autocapitalize="characters">' +
+           '<button type="button" class="plein" id="valider">Entrer</button><p class="refus">' + esc(etat.refus) + '</p>' +
+           '<button type="button" class="lien" id="versCode">Utiliser l\'appli</button>';
+    }
+    ecran.innerHTML = h;
+
+    var f = document.getElementById("faceid");
+    if (f) f.onclick = function(){ entrer("Par Face ID, sans code : c'est déjà deux vérifications."); };
+    var e = document.getElementById("entrer");
+    if (e) e.onclick = function(){
+      if (!etat.active) return entrer("Double vérification éteinte : le mot de passe suffit. Allumez-la dans l'onglet 1.");
+      if (etat.appareilRetenu) return entrer("Appareil retenu : pas de code avant 30 jours.");
+      etat.porte = "code"; etat.refus = ""; dessiner(); document.getElementById("code").focus();
+    };
+    var r = document.getElementById("retenir"); if (r) r.onchange = function(){ etat.retenir = r.checked; };
+    var v = document.getElementById("valider");
+    if (v) v.onclick = function(){
+      var saisi = document.getElementById("code").value.trim().toUpperCase();
+      if (etat.porte === "code"){
+        if (saisi.replace(/\D/g, "") !== codeDuMoment()){ etat.refus = "Ce code n'est pas le bon."; return dessiner(); }
+        etat.appareilRetenu = etat.retenir;
+        return entrer(etat.retenir ? "Mot de passe et code. Cet appareil ne le redemandera pas avant 30 jours." : "Mot de passe et code.");
+      }
+      if (etat.secoursUses.indexOf(saisi) >= 0){ etat.refus = "Ce code a déjà servi."; return dessiner(); }
+      if (SECOURS.indexOf(saisi) < 0){ etat.refus = "Ce code n'est pas le bon."; return dessiner(); }
+      etat.secoursUses.push(saisi);
+      entrer("Par un code de secours. Il ne servira plus, il en reste " + (10 - etat.secoursUses.length) + ".");
+    };
+    var vs = document.getElementById("versSecours"); if (vs) vs.onclick = function(){ etat.porte = "secours"; etat.refus = ""; dessiner(); };
+    var vc = document.getElementById("versCode"); if (vc) vc.onclick = function(){ etat.porte = "code"; etat.refus = ""; dessiner(); };
+    var so = document.getElementById("sortir"); if (so) so.onclick = function(){ etat.porte = "adresse"; dessiner(); };
+  }
+
+  function entrer(comment){ etat.porte = "entre"; etat.commentEntre = comment; etat.refus = ""; dessiner(); }
+
+  function dessiner(){
+    if (vue === "reglages") dessinerReglages(); else dessinerPorte();
+    dessinerAppli();
+  }
+
+  Array.prototype.forEach.call(document.querySelectorAll(".onglet[data-vue]"), function(b){
+    b.onclick = function(){
+      vue = b.getAttribute("data-vue");
+      Array.prototype.forEach.call(document.querySelectorAll(".onglet[data-vue]"), function(o){ o.setAttribute("aria-pressed", String(o === b)); });
+      if (vue === "porte") etat.porte = "adresse";
+      etat.refus = "";
+      dessiner();
+    };
+  });
+  dessiner();
+})();
+</script>
+</body>
+</html>
