@@ -1773,6 +1773,14 @@ puis rallumer l'espace. **À barrer dès qu'il confirme que sa version a avancé
 
 ## LE PORT QUE LE RELAIS PERD — UNE HYPOTHÈSE À TRANCHER À LA RÉCIDIVE (13 septembre 2026)
 
+**RÉCIDIVE LE 29 SEPTEMBRE 2026, 14 h 46 UTC.** Sa fiche (#47) : serveur qui
+répond sur 3000, base à jour, veilleur en place, port rendu public par l'espace
+— et l'adresse publique rendant un 404 du relais (`vssaas-request-id`, avant
+Atlas). Au même moment, une version rapide neuve se construisait (servi
+`8891404`, récupéré `ef87a3f`) : la bascule reste donc suspecte, à rapprocher
+de l'heure de perte dans `/tmp/essai.log` s'il est relevé. Remède donné : le
+rallumage. Sa plainte : *« l'appli ne s'ouvre pas »*.
+
 **MESURÉ LE 13 SEPTEMBRE À 10 h 16 (08:16 UTC) — le rallumage a remis le port.**
 Sa fiche : *« Port 3000 : ouvert — Atlas répond bien à l'adresse publique
 (vérifié) »*, et lui : *« ça fonctionne »*. C'est le comportement attendu, et
