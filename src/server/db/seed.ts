@@ -146,6 +146,7 @@ async function ecrireObjetDeSeed(storageKey: string, octets: Buffer): Promise<vo
 }
 
 import { creerPrestationCatalogue } from "../repositories/catalogue-prestations";
+import { remettreLeModeleDans } from "../repositories/prestations-entretien";
 import { creerMaterielCatalogue } from "../repositories/catalogue-materiels";
 import {
   entreprises,
@@ -365,6 +366,10 @@ async function main() {
       .insert(entrepriseCompteurs)
       .values({ entrepriseId: entreprise.id, prochainNumeroDevis: 1 })
       .onConflictDoNothing();
+
+    // Comme tout compte neuf depuis le 29 septembre 2026 : le modèle de fiche
+    // d'entretien est là d'office (`creerEntreprise`, `creation-compte.ts`).
+    await remettreLeModeleDans(tx, entreprise.id);
 
     // Le compte de démonstration accepte d'emblée les documents légaux en
     // vigueur, sans quoi la garde du layout redirigerait chaque écran vers

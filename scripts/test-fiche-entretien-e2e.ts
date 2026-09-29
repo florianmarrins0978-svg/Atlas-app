@@ -84,21 +84,17 @@ async function main() {
     await page.goto(`${BASE}/paysage/fiche/composer`, { waitUntil: "networkidle" });
   });
 
-  await cas("une fiche vide PROPOSE le modèle, elle ne le pose pas", async () => {
-    // Attendre l'écran lui-même : lire le corps à l'instant où l'adresse
-    // change rendrait le contenu de la page PRÉCÉDENTE, et le contrôle
-    // accuserait un écran qu'il n'a pas encore vu.
-    await page.getByRole("button", { name: /Partir du modèle Atlas/ }).waitFor({ timeout: 20_000 });
-    const corps = await page.locator("body").innerText();
-    assert.match(corps, /vide/i, "l'écran ne dit pas que la fiche est vide");
-    // Le contenu du modèle est montré AVANT d'appuyer : il choisit en sachant.
-    assert.match(corps, /Tonte et ébarbage/, "le contenu du modèle n'est pas montré");
+  // **LE MODÈLE EST LÀ D'OFFICE, ET UNE TOUCHE LE REMET** — ses demandes du
+  // 29 septembre 2026, et sa réponse « B » : ce qui manque revient, ses lignes
+  // restent. La fiche vidée par le décor est celle d'un patron qui a tout retiré.
+  await cas("une fiche vidée ne se remplit pas en l'ouvrant, et montre « Remettre le modèle Atlas »", async () => {
+    await page.getByRole("button", { name: "Remettre le modèle Atlas" }).waitFor({ timeout: 20_000 });
     const { rows } = await pool.query(`select count(*)::int as n from prestations_entretien`);
     assert.equal(rows[0].n, 0, "des prestations ont été écrites par le simple fait d'ouvrir l'écran");
   });
 
-  await cas("« Partir du modèle Atlas » pose les prestations, une fois", async () => {
-    await page.getByRole("button", { name: /Partir du modèle Atlas/ }).click();
+  await cas("« Remettre le modèle Atlas » pose le modèle, et le bouton s'efface", async () => {
+    await page.getByRole("button", { name: "Remettre le modèle Atlas" }).click();
     await page.waitForSelector("[data-prestation]", { timeout: 30_000 });
     const combien = await page.locator("[data-prestation]").count();
     assert.equal(
@@ -106,11 +102,36 @@ async function main() {
       MODELE_FOURNI.length,
       `${combien} prestations à l'écran, ${MODELE_FOURNI.length} attendues`
     );
-    // Les familles sont là, dans l'ordre du métier — pas dans l'alphabet.
+    // Les familles sont là, dans l'ordre du métier, pas dans l'alphabet.
     const familles = await page.locator("[data-famille]").evaluateAll((n) =>
       n.map((e) => (e as HTMLInputElement).value)
     );
     assert.deepEqual(familles, ["Pelouse", "Tailles", "Massifs", "Propreté"]);
+    assert.equal(await page.locator('[data-atlas="remettre-modele"]').count(), 0, "le bouton reste alors que rien ne manque");
+  });
+
+  await cas("B : une ligne retirée revient, et « Annuler » la reprend", async () => {
+    const lignes = async () =>
+      (await pool.query<{ libelle: string }>(`select libelle from prestations_entretien order by ordre`)).rows.map(
+        (r) => r.libelle
+      );
+    await page.getByRole("button", { name: "Retirer Scarification" }).click();
+    await page.getByRole("button", { name: "Remettre le modèle Atlas" }).click();
+    await page.locator('[data-atlas="modele-remis"]').waitFor({ timeout: 20_000 });
+    let apres = await lignes();
+    assert.equal(apres.filter((l) => l === "Scarification").length, 1, "la ligne retirée n'est pas revenue une fois");
+    assert.equal(apres.length, MODELE_FOURNI.length);
+
+    await page.getByRole("button", { name: "Annuler la remise du modèle" }).click();
+    for (const essai of [1, 2, 3, 4, 5]) {
+      apres = await lignes();
+      if (!apres.includes("Scarification")) break;
+      await page.waitForTimeout(essai * 400);
+    }
+    assert.ok(!apres.includes("Scarification"), "« Annuler » n'a pas repris la ligne remise");
+    // Et on remet la fiche entière pour les cas qui suivent.
+    await page.getByRole("button", { name: "Remettre le modèle Atlas" }).click();
+    await page.waitForFunction(() => !document.querySelector('[data-atlas="remettre-modele"]'), null, { timeout: 20_000 });
   });
 
   // **SA PLACE EST SOUS LE TITRE, EN PREMIER** — sa décision du 26 août 2026 :

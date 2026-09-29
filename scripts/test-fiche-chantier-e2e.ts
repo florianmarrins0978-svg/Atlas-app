@@ -121,15 +121,17 @@ async function main() {
   const context = await browser.newContext({ viewport: { width: 390, height: 844 } });
   const page = await seConnecter(context);
 
-  await test("Le modèle se pose une fois, depuis Paysage", async () => {
+  await test("Le modèle est là, depuis Paysage", async () => {
     // `networkidle` : le bouton est un composant client, et un appui posé avant
     // l'hydratation ne déclenche rien. Sous la charge d'une batterie complète,
     // l'écart se compte en secondes — la suite passait seule et rougissait dans
     // la batterie, ce qui est le pire des deux états.
     await page.goto(`${BASE}/paysage/fiche/composer`, { waitUntil: "networkidle" });
-    const poser = page.getByRole("button", { name: "Partir du modèle Atlas" });
-    if (await poser.isVisible().catch(() => false)) {
-      await poser.click();
+    // Le compte de démonstration le porte d'office depuis le 29 septembre 2026 ;
+    // une suite voisine a pu le vider, et c'est alors son bouton qui le remet.
+    const remettre = page.getByRole("button", { name: "Remettre le modèle Atlas" });
+    if ((await page.locator("[data-prestation]").count()) === 0 && (await remettre.isVisible().catch(() => false))) {
+      await remettre.click();
     }
     // Attente qui monte, plutôt qu'un délai fixe choisi au doigt mouillé.
     for (const essai of [1, 2, 3, 4, 5]) {

@@ -7,7 +7,7 @@ import { creerClient, mettreAJourClient } from "../src/server/repositories/clien
 import {
   ajouterPrestation,
   listerPrestations,
-  poserModeleFourni,
+  remettreLeModele,
   retirerPrestation,
   renommerPrestation,
 } from "../src/server/repositories/prestations-entretien";
@@ -67,6 +67,9 @@ async function contexte(suffixe: string) {
 
 /** Une fiche minuscule, pour que les cas se lisent : quatre lignes nommées. */
 async function petitModele(ctx: { utilisateurId: string; entrepriseId: string }) {
+  // Un compte neuf porte le modèle Atlas d'office (29 septembre 2026) : le
+  // petit modèle le remplace, pour que les cas se lisent sur quatre lignes.
+  for (const p of await listerPrestations(ctx)) await retirerPrestation(ctx, p.id);
   for (const libelle of ["Tonte", "Haies", "Massifs", "Feuilles"]) {
     const r = await ajouterPrestation(ctx, { famille: "Entretien", libelle });
     assert.equal(r.ok, true, `le petit modèle n'a pas pu poser « ${libelle} »`);
@@ -268,6 +271,9 @@ async function main() {
 
   await cas("une fiche s'ouvre COPIÉE du modèle, et refuse si le modèle est vide", async () => {
     const ctx = await contexte("ouverture");
+    // Un compte neuf porte le modèle d'office (29 septembre 2026) : on le vide,
+    // comme le patron qui aurait tout retiré.
+    for (const p of await listerPrestations(ctx)) await retirerPrestation(ctx, p.id);
     // Le modèle est vide : ouvrir donnerait un écran blanc dont il ne saurait
     // rien faire. Le refus le dit, plutôt que de laisser passer.
     assert.deepEqual(await ouvrirPassage(ctx, "2026-08-18"), {
@@ -275,7 +281,7 @@ async function main() {
       refus: "modele_vide",
     });
 
-    assert.equal((await poserModeleFourni(ctx)).ok, true);
+    assert.equal((await remettreLeModele(ctx)).ok, true);
     const modele = await listerPrestations(ctx);
     const ouverte = await ouvrirPassage(ctx, "2026-08-18");
     assert.equal(ouverte.ok, true);

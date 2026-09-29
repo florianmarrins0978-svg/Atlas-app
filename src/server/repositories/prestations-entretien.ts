@@ -8,14 +8,15 @@
 // par client. Le récit est en tête de `src/lib/prestations-entretien.ts`.
 
 import { and, asc, eq, sql } from "drizzle-orm";
+import type { DbOrTx } from "../db/client";
 import { withEntreprise } from "../db/with-entreprise";
 import { prestationsEntretien } from "../db/schema";
 import type { Ctx } from "./context";
 import {
   MAX_PRESTATIONS,
-  MODELE_FOURNI,
   libelleNettoye,
   memeLibelle,
+  modeleRemis,
   type RefusPrestation,
 } from "@/lib/prestations-entretien";
 
@@ -34,10 +35,11 @@ const PAS_ORDRE = 10;
 /**
  * Le modèle de l'entreprise, dans l'ordre où il se coche.
  *
- * **Rend une liste VIDE quand rien n'a été posé**, et ne pose rien de lui-même.
- * Semer le modèle fourni au premier regard écrirait vingt lignes en base parce
- * que quelqu'un a ouvert un écran — y compris s'il ne fait pas d'entretien. La
- * pose est un geste, et elle a sa fonction (`poserModeleFourni`).
+ * **Ne pose rien de lui-même** : lire n'écrit pas. Le modèle est là parce
+ * qu'il a été posé à la création du compte (`creerEntreprise`, depuis le
+ * 29 septembre 2026, et la migration 0112 pour les comptes d'avant), ou remis
+ * par son bouton (`remettreLeModele`). Une liste vide veut dire qu'il a tout
+ * retiré.
  */
 export async function listerPrestations(ctx: Ctx): Promise<Prestation[]> {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
@@ -263,32 +265,65 @@ export async function retirerFamille(
 }
 
 /**
- * Pose le modèle fourni — **seulement si la fiche est vide**.
+ * Remet ce qui manque du modèle Atlas sur la fiche, sans toucher à ses lignes.
  *
- * La garde n'est pas une précaution : sans elle, un second appui sur le bouton
- * doublerait les vingt lignes, et le patron n'aurait aucun moyen de savoir
- * laquelle des deux « Tonte et ébarbage » il vient de cocher. L'index unique
- * refuserait d'ailleurs le doublon — mais après avoir écrit la moitié de la
- * liste, ce qui est pire qu'un refus franc.
+ * **Sa réponse « B » du 29 septembre 2026** (`modeleRemis`, la règle) : le
+ * bouton « Remettre le modèle Atlas » ramène les lignes du modèle qu'il avait
+ * retirées, chacune dans sa famille ; ce qu'il a ajouté lui-même reste. Sur une
+ * fiche vide, c'est le modèle entier : **la même écriture sert à la création
+ * d'un compte** (`creerEntreprise`), pour que le modèle soit là d'office, sa
+ * demande du même jour.
+ *
+ * **Prend une transaction où le contexte d'entreprise est déjà posé** : la
+ * table est sous FORCE RLS, et `creerEntreprise` n'a pas encore d'adhésion pour
+ * passer par `withEntreprise`.
+ *
+ * Renvoie les lignes ajoutées, pour que l'écran puisse les retirer si l'on
+ * appuie sur « Annuler ». Toutes les lignes sont renumérotées d'après la fiche
+ * remise : insérer au milieu d'une famille sans cela pourrait tomber sur un
+ * ordre déjà pris, et deux lignes se croiseraient au rechargement.
  */
-export async function poserModeleFourni(
-  ctx: Ctx
-): Promise<{ ok: true; posees: number } | { ok: false; refus: "fiche_non_vide" }> {
-  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
-    const [{ combien }] = await tx
-      .select({ combien: sql<number>`count(*)::int` })
-      .from(prestationsEntretien)
-      .where(eq(prestationsEntretien.entrepriseId, ctx.entrepriseId));
-    if (combien > 0) return { ok: false as const, refus: "fiche_non_vide" as const };
+export async function remettreLeModeleDans(
+  tx: DbOrTx,
+  entrepriseId: string
+): Promise<{ ok: true; ajoutees: Prestation[] } | { ok: false; refus: "trop_de_prestations" }> {
+  const existantes = await tx
+    .select({
+      id: prestationsEntretien.id,
+      famille: prestationsEntretien.famille,
+      libelle: prestationsEntretien.libelle,
+      ordre: prestationsEntretien.ordre,
+    })
+    .from(prestationsEntretien)
+    .where(eq(prestationsEntretien.entrepriseId, entrepriseId))
+    .orderBy(asc(prestationsEntretien.ordre), asc(prestationsEntretien.libelle));
+  const fiche = modeleRemis(existantes);
+  if (fiche.length === existantes.length) return { ok: true, ajoutees: [] };
+  if (fiche.length > MAX_PRESTATIONS) return { ok: false, refus: "trop_de_prestations" };
 
-    await tx.insert(prestationsEntretien).values(
-      MODELE_FOURNI.map((p, i) => ({
-        entrepriseId: ctx.entrepriseId,
-        famille: p.famille,
-        libelle: p.libelle,
-        ordre: (i + 1) * PAS_ORDRE,
-      }))
-    );
-    return { ok: true as const, posees: MODELE_FOURNI.length };
-  });
+  const ajoutees: Prestation[] = [];
+  for (const [i, ligne] of fiche.entries()) {
+    const ordre = (i + 1) * PAS_ORDRE;
+    if ("id" in ligne) {
+      if (ligne.ordre !== ordre) {
+        await tx.update(prestationsEntretien).set({ ordre }).where(eq(prestationsEntretien.id, ligne.id));
+      }
+      continue;
+    }
+    const [creee] = await tx
+      .insert(prestationsEntretien)
+      .values({ entrepriseId, famille: ligne.famille, libelle: ligne.libelle, ordre })
+      .returning({
+        id: prestationsEntretien.id,
+        famille: prestationsEntretien.famille,
+        libelle: prestationsEntretien.libelle,
+        ordre: prestationsEntretien.ordre,
+      });
+    ajoutees.push(creee);
+  }
+  return { ok: true, ajoutees };
+}
+
+export async function remettreLeModele(ctx: Ctx) {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, (tx) => remettreLeModeleDans(tx, ctx.entrepriseId));
 }

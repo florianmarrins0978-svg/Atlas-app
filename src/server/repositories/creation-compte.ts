@@ -11,6 +11,7 @@ import { messageRefus, verifierNouveauMotDePasse } from "@/lib/mot-de-passe";
 import { causeDeLaPanne, codeSqlDe, messageSansLesValeurs, phraseDeLaPanne } from "@/lib/panne-de-base";
 import { estBancDEssai } from "@/profil-banc";
 import { logger } from "@/server/logger";
+import { remettreLeModeleDans } from "./prestations-entretien";
 
 /**
  * CRÉER SON COMPTE ET SON ENTREPRISE — le geste de la porte.
@@ -198,6 +199,12 @@ async function ecrireLeCompte(saisie: SaisieCompte): Promise<ResultatCreation> {
       statut: "essai",
       periodeFin: finDeLEssai(new Date()),
     });
+
+    // **Le modèle de fiche d'entretien est là d'office** — sa demande du
+    // 29 septembre 2026 : *« mon modèle doit déjà être là par défaut, et ils la
+    // modifieront s'ils le souhaitent »*. La même écriture que `creerEntreprise`
+    // et que le bouton « Remettre le modèle Atlas ».
+    await remettreLeModeleDans(tx, entreprise.id);
 
     logger.info("Compte créé depuis la porte", {
       entrepriseId: entreprise.id,

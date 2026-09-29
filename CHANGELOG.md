@@ -8,6 +8,23 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-29
 
+### Le modèle de fiche d'entretien est là d'office, et une touche le remet
+
+Ses demandes : *« mon modèle doit déjà être là par défaut, et ils la
+modifieront s'ils le souhaitent »*, puis *« il doit pouvoir la remettre en
+cliquant sur une touche, comme pour les messages préremplis »*, et sa réponse
+« B » à la planche. Un compte neuf reçoit le modèle à sa création
+(`creation-compte.ts`, `creerEntreprise`, le jeu de démonstration) ; la
+migration 0112 le pose sur les comptes d'avant dont la fiche est vide, et sur
+eux seuls, entreprise par entreprise sous FORCE RLS
+(`test-migration-0112-base-habitee.ts`, vue rouge sur la version sans
+contexte). « Remettre le modèle Atlas », dessiné comme « Remettre le message
+d'Atlas », ramène ce qui manque dans sa famille, ses lignes restent, et
+« Annuler » le reprend six secondes (`modeleRemis`, `remettreLeModele`). Les
+retraits en attente s'écrivent avant (`useRetraits.fermer` rend désormais sa
+promesse), sinon le bouton aurait lu une ligne que le retrait effaçait juste
+après. L'écran « fiche vide » et `poserModeleFourni` sont retirés.
+
 ### Neuf planches : ce que fait chaque « Ajouter »
 
 Sa demande : *« fais-moi une planche pour chaque, réaliste, que je puisse

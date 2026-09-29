@@ -2,7 +2,6 @@ import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { estProprietaire } from "@/server/autorisation";
 import { listerPrestations } from "@/server/repositories/prestations-entretien";
-import { MODELE_FOURNI } from "@/lib/prestations-entretien";
 import RubriqueReservee from "../../../reglages/RubriqueReservee";
 import ComposerMaFiche from "./ComposerMaFiche";
 
@@ -56,7 +55,6 @@ export default async function ComposerMaFichePage() {
           famille: p.famille,
           libelle: p.libelle,
         }))}
-        modeleFourni={MODELE_FOURNI}
       />
     </main>
   );

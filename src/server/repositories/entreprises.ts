@@ -3,6 +3,7 @@ import { db } from "../db/client";
 import { withEntreprise } from "../db/with-entreprise";
 import { entreprises, entrepriseCompteurs, users, membresEntreprise } from "../db/schema";
 import type { Ctx } from "./context";
+import { remettreLeModeleDans } from "./prestations-entretien";
 import { normaliserConditions, type ConditionsLues } from "@/lib/conditions-documents";
 import {
   refusDuMessage,
@@ -75,6 +76,12 @@ export async function creerEntreprise(
     // idempotent si la fonction était rappelée avec la même entreprise (ne devrait
     // pas arriver en usage normal, mais sans risque de double-provisioning).
     await tx.insert(entrepriseCompteurs).values({ entrepriseId: entreprise.id }).onConflictDoNothing();
+
+    // **Le modèle de fiche d'entretien est là d'office** — sa demande du
+    // 29 septembre 2026 : *« mon modèle doit déjà être là par défaut, et ils la
+    // modifieront s'ils le souhaitent »*. La même écriture que le bouton
+    // « Remettre le modèle Atlas », sur une fiche vide.
+    await remettreLeModeleDans(tx, entreprise.id);
 
     return { entreprise, utilisateurId };
   });

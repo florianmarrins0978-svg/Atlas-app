@@ -128,8 +128,14 @@ export function useRetraits({
     [router]
   );
 
-  /** Ferme le tiroir et rend les retraits définitifs. */
-  const fermer = useCallback(() => {
+  /**
+   * Ferme le tiroir et rend les retraits définitifs.
+   *
+   * **Rend la promesse de l'écriture** : un geste qui dépend de ce qui est en
+   * base (« Remettre le modèle Atlas », 29 septembre 2026) doit l'attendre, sans
+   * quoi il lirait une ligne que le retrait effacera juste après.
+   */
+  const fermer = useCallback(async () => {
     if (minuteur.current) {
       clearTimeout(minuteur.current);
       minuteur.current = null;
@@ -138,12 +144,12 @@ export function useRetraits({
     if (aEcrire.length === 0) return;
     enAttenteRef.current = [];
     setEnAttente([]);
-    void ecrire(aEcrire);
+    await ecrire(aEcrire);
   }, [ecrire]);
 
   const armer = useCallback(() => {
     if (minuteur.current) clearTimeout(minuteur.current);
-    minuteur.current = setTimeout(fermer, delaiMs);
+    minuteur.current = setTimeout(() => void fermer(), delaiMs);
   }, [fermer, delaiMs]);
 
   const retirer = useCallback(
@@ -189,11 +195,11 @@ export function useRetraits({
   // `pagehide` plutôt que `beforeunload` : c'est le seul que Safari mobile
   // déclenche vraiment quand l'application passe en arrière-plan.
   useEffect(() => {
-    const partir = () => fermer();
+    const partir = () => void fermer();
     window.addEventListener("pagehide", partir);
     return () => {
       window.removeEventListener("pagehide", partir);
-      fermer();
+      void fermer();
     };
   }, [fermer]);
 
