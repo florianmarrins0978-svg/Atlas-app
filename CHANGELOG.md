@@ -6,6 +6,18 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-09-29
+
+### Les couleurs du planning se choisissent (migration 0113)
+
+Sa demande : changer les couleurs de rien, incomplet, complet et au-delà depuis
+le planning. « Couleurs », sous la légende, ouvre le même réglage que l'allure
+des devis : nuancier libre, quatre raccourcis, enregistré au fur et à mesure.
+Pour toute l'entreprise, le propriétaire seul. **Ce que ça évite** : une
+couleur choisie qui n'arriverait que sur certains écrans (elle passe par la
+variable que lit `fondDeLEtat`), et un noir invisible sur Nuit (éclairci juste
+assez, `ARCHITECTURE.md` §435). Rien ne bouge tant qu'il n'a rien choisi.
+
 ## 2026-09-28
 
 ### Trois lots sur `main` en une seule batterie

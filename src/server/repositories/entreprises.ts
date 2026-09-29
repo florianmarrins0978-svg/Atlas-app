@@ -12,11 +12,13 @@ import {
 } from "@/lib/message-client";
 import {
   allureDepuisColonnes,
+  couleurNettoyee,
   estLAllureParDefaut,
   normaliserAllure,
   type Allure,
 } from "@/lib/allure-documents";
 import { FORMATS_NUMERO } from "@/lib/numero-documents";
+import type { EtatDemi } from "@/lib/planning-jour";
 import { MAX_EQUIPES, MAX_SALARIES } from "@/lib/equipes";
 import { capitalEnBase } from "@/lib/mentions-legales";
 import { lireObjet } from "../storage";
@@ -228,6 +230,12 @@ export async function mettreAJourEntreprise(
      * parti chez un client ne se réécrit pas.
      */
     formatNumero?: string | null;
+    /**
+     * Les couleurs du planning (migration 0113). **Un état absent n'est pas
+     * touché** ; `null` le rend à la couleur de l'apparence. Une valeur qui
+     * n'est pas une couleur ne rentre pas (`couleurNettoyee`).
+     */
+    couleursPlanning?: Partial<Record<EtatDemi, string | null>>;
   }
 ) {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
@@ -305,6 +313,22 @@ export async function mettreAJourEntreprise(
       valeurs.docTypographie = rienDeChoisi ? null : a.typographie;
       valeurs.docFond = rienDeChoisi ? null : a.fond;
       valeurs.docAccent = rienDeChoisi ? null : a.accent;
+    }
+
+    if (data.couleursPlanning !== undefined) {
+      const colonnes: Record<EtatDemi, string> = {
+        libre: "planningRien",
+        dispo: "planningIncomplet",
+        plein: "planningComplet",
+        dela: "planningAuDela",
+      };
+      for (const [etat, couleur] of Object.entries(data.couleursPlanning) as [EtatDemi, string | null][]) {
+        if (couleur === null) valeurs[colonnes[etat]] = null;
+        else {
+          const propre = couleurNettoyee(couleur);
+          if (propre) valeurs[colonnes[etat]] = propre;
+        }
+      }
     }
 
     if (data.formatNumero !== undefined) {

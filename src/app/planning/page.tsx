@@ -74,6 +74,8 @@ export default async function PlanningPage({
       // L'envoi des dates du mois d'un contrat (planche 130), et l'adresse que
       // le lien portera chez le client.
       datesDuMois={datesDuMois ? { ...datesDuMois, origine: originePublique(await headers()) } : null}
+      couleurs={contexte.couleurs}
+      nomCharte={contexte.nomCharte}
     />
   );
 }

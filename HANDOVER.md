@@ -11,6 +11,16 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 
 ---
 
+## LES COULEURS DU PLANNING : 29 septembre 2026, PAS SUR `main`
+
+Branche `claude/couleurs-du-planning`, migration 0113. Tout passe par
+`fondDeLEtat`, qui lit `--atlas-etat-<état>` ; `CouleursDesEtats` pose ces
+variables au-dessus des trois écrans qui montrent ces états (planning, envoi,
+Réglages Équipe). **Un écran neuf qui montre rien, incomplet, complet ou
+au-delà doit être enveloppé par `CouleursDesEtats`**, sinon il garde les
+couleurs d'avant. Pourquoi : `ARCHITECTURE.md` §435. Reste : la batterie (niveau
+3), qu'il a demandé de ne pas lancer.
+
 ## L'ASSISTANT RÉPOND SUR SES DONNÉES : 28 septembre 2026, SUR `main`
 
 Zone `src/lib/fiches-mode-emploi/fonctionnement.ts`. **Piège** : la fiche de

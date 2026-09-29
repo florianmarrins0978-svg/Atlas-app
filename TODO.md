@@ -1,17 +1,13 @@
 # Prochaines tâches
 
-## ⏳ UNE PLANCHE À REGARDER : LES COULEURS DU PLANNING (29 septembre 2026)
+## ✅ LES COULEURS DU PLANNING : CODÉ LE 29 SEPTEMBRE 2026, PAS SUR `main`
 
-Sa demande : modifier les couleurs de rien, incomplet, complet, au-delà,
-depuis le planning. Planche `appli/couleurs-du-planning.html` : « Couleurs »
-sous la légende ouvre une feuille. **Sa réponse du 29 septembre : « met la
-même chose que pour les couleurs des devis »** : même réglage que `Couleur`
-(`src/app/reglages/documents/pieces.tsx`), nuancier libre, quatre raccourcis
-dont le défaut, enregistré au fur et à mesure. Sur Nuit et Sylve, la couleur
-choisie passe par `detacher` (`src/lib/chartes.ts`), sinon un sombre disparaît. **Rien n'est
-codé.** **Sa réponse du 29 septembre : « Tout l'entreprise »** : un seul
-réglage par entreprise, les salariés voient les mêmes couleurs que lui. Au codage, la couleur passe par `fondDeLEtat`
-(`src/components/atlas/MoisCharge.tsx`), seule à peindre les quatre états.
+Planche `appli/couleurs-du-planning.html`, « Parfait code ça ». Branche
+`claude/couleurs-du-planning`, migration 0113 (`ARCHITECTURE.md` §435). **Sa
+consigne : pas de batterie.** Niveau 3 (migration) : `main` attend la batterie,
+et son accord pour la lancer. Joués : types, lint, `test-couleurs-du-planning`
+(vu rouge sans l'éclaircissement), allure, couches, code mort, pansements,
+chartes lisibles ; l'écran regardé, Origine et Nuit.
 
 ## ✅ ABSENT LE MATIN, COCHABLE L'APRÈS-MIDI : SUR `main` LE 28 SEPTEMBRE 2026
 

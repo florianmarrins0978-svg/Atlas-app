@@ -9,7 +9,7 @@ import {
   type Demi,
   type EtatDemi,
 } from "@/lib/planning-jour";
-import { fondDeLEtat } from "@/components/atlas/MoisCharge";
+import { styleDuCarre } from "@/components/atlas/MoisCharge";
 import type { ChantierPlanning } from "@/app/planning/PlanningClient";
 import type { JourIso } from "@/lib/disponibilites";
 import { equipesDuJour } from "@/lib/equipes-par-jour";
@@ -264,11 +264,7 @@ function Pastille({ etat }: { etat: EtatDemi }) {
   return (
     <i
       className="inline-block h-[11px] w-[11px] flex-shrink-0 rounded-[3px]"
-      style={
-        etat === "libre"
-          ? { background: colors.card, boxShadow: `inset 0 0 0 1px ${colors.line}` }
-          : { background: fondDeLEtat(etat) }
-      }
+      style={styleDuCarre(etat)}
     />
   );
 }

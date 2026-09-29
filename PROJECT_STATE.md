@@ -1,9 +1,15 @@
 # État du projet
 
 **Dernière mise à jour :** 2026-09-26 · branche `claude/client-disappearance-no-date-f26td1`
-· dernière migration `drizzle/0106_hausse_du_devis_repris.sql` (sur la branche)
+· dernière migration `drizzle/0113_couleurs_du_planning.sql` (sur sa branche)
 
 ---
+## SUR SA BRANCHE : LES COULEURS DU PLANNING (29 septembre 2026)
+
+Rien, incomplet, complet, au-delà se choisissent sous la légende du planning,
+pour toute l'entreprise, comme l'allure des devis. Migration 0113. Branche
+`claude/couleurs-du-planning` ; la batterie n'est pas jouée, à sa demande.
+
 ## SUR `main` : L'ASSISTANT RÉPOND SUR SES DONNÉES (28 septembre 2026)
 
 Quatre fiches « comment Atlas se comporte » (conservation, après l'arrêt, qui

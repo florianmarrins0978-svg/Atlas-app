@@ -33863,3 +33863,42 @@ recherche sur chaque tournure la rendrait bavarde à tort, et le garde-fou « un
 question qui n'en est pas une ne rend RIEN » a rougi une fois pendant ce lot
 (« combien coûte un abattage de chêne »), ce qui a fait retirer « combien » d'un
 intitulé.
+
+## §435 : Les couleurs du planning passent par une variable, posée au-dessus de l'écran
+
+**Sa demande du 29 septembre 2026**, planche `appli/couleurs-du-planning.html`
+validée : changer les couleurs de rien, incomplet, complet, au-delà ; un réglage
+pour **toute l'entreprise** ; **« la même chose que pour les couleurs des
+devis »**. Migration 0113 : quatre colonnes nullables sur `entreprises`,
+`null` = la couleur de l'apparence.
+
+**Pourquoi une variable CSS et non une prop.** `fondDeLEtat` peignait déjà les
+quatre états partout (barres, légende, pastilles, journée regardée, carré de
+Réglages). Il lit désormais `var(--atlas-etat-<état>, <couleur d'avant>)`, et
+`CouleursDesEtats` (`display: contents`) pose les variables au-dessus de
+l'écran. Un écran qui montre ces états n'a qu'à être enveloppé ; faire
+descendre une prop jusqu'à chaque carré aurait laissé un écran oublié sur
+l'ancienne couleur. Sans choix, aucune variable : le repli est la couleur
+d'avant au pixel près.
+
+**Pas dans le gabarit racine** : la charte est à la PERSONNE, les couleurs à
+l'ENTREPRISE, et le gabarit ne lit que la première (sans contexte
+d'entreprise, sur toutes les pages, y compris publiques). Les trois écrans qui
+montrent ces états les reçoivent : le planning et l'envoi par
+`contextePlanning`, Réglages Équipe par sa page.
+
+**Sur Nuit et Sylve, la couleur choisie passe par `detacher`**
+(`variablesDesEtats`, `src/lib/couleurs-planning.ts`), au seuil que la charte
+applique à son propre bordeaux : un noir y devenait invisible. Un devis est du
+papier, toujours clair ; le planning, non. Sur les apparences claires, la
+couleur sort intacte.
+
+**Un seul sélecteur** : `Couleur` a quitté `src/app/reglages/documents/pieces.tsx`
+pour `src/components/atlas/Couleur.tsx`, et sert l'allure des devis comme le
+planning. **Un seul carré** : `styleDuCarre` remplace les trois copies du
+carré « rien » (légende, fiche du jour, journée regardée).
+
+**La couleur d'aujourd'hui s'écrit vide** (`choixAEcrire`), comme l'allure :
+écrite en clair, elle ne suivrait plus un changement d'apparence. Le
+propriétaire seul la change (`exigerProprietaire`) ; ses salariés la voient.
+

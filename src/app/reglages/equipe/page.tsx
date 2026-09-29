@@ -11,6 +11,9 @@ import { etatAgendaApple } from "@/server/repositories/agenda-apple";
 import { jourIso } from "@/lib/jour";
 import RubriqueReservee from "../RubriqueReservee";
 import VosEquipes from "../VosEquipes";
+import CouleursDesEtats from "@/components/atlas/CouleursDesEtats";
+import { couleursDepuisColonnes } from "@/lib/couleurs-planning";
+import { lireCharte } from "@/server/repositories/charte-personne";
 import VosSalaries from "../VosSalaries";
 import QuiAAcces from "./QuiAAcces";
 import FinDeChantierReglage from "./FinDeChantierReglage";
@@ -118,7 +121,10 @@ export default async function EquipePage() {
           />
         )}
 
-        <VosEquipes initialNombreEquipes={entreprise?.nombreEquipes ?? 1} />
+        {/* Le carré « complet » prend la couleur du planning de l'entreprise. */}
+        <CouleursDesEtats couleurs={couleursDepuisColonnes(entreprise)} nomCharte={await lireCharte()}>
+          <VosEquipes initialNombreEquipes={entreprise?.nombreEquipes ?? 1} />
+        </CouleursDesEtats>
 
         {/* **Les gens sous la capacité, et séparés d'elle** — sa demande du
             26 août 2026. Le compteur du dessus dit combien de chantiers
