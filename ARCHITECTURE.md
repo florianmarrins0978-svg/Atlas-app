@@ -33941,3 +33941,18 @@ dit en commentaire.
 choisit l'action. Migration **0114**, EXPAND seul (deux colonnes nullables) :
 l'ancien code l'ignore.
 
+**Sa règle, précisée le même soir** : *« il faut qu'il puisse l'utiliser, peu
+importe ce qu'on fera dans l'appli »*. Aucun geste de l'application n'efface
+donc un document parti chez le client : un contrat REFUSÉ glissé hors de la
+liste n'est plus effacé non plus (il ne l'était que dans la première version de
+ce lot), il est retiré comme un envoyé. Seul un brouillon, que personne n'a
+reçu, s'efface. `ligneDuContratEnCours` compare `repondu_le` à l'heure du
+retrait : retiré avant la réponse, le refus ramène la ligne ; retiré après, elle
+reste cachée.
+
+**Ce qui coupe encore un lien de devis, relevé le même jour** : la durée de vie
+du lien (`VALIDITE_LIEN_JOURS`, 45 jours, « Ce lien n'est plus valable »), et
+l'effacement des données d'un client (`effacerClient`, une obligation RGPD, qui
+doit rester). Aucun geste « annuler le lien » n'existe, et il n'en a jamais
+existé. La durée de vie est une question posée à lui (`TODO.md`).
+

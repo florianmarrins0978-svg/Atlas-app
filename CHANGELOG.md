@@ -16,7 +16,9 @@ réel : glisser un devis envoyé SUPPRIMAIT le chantier ; le lien s'ouvrait
 encore, mais une acceptation arrivée ensuite restait invisible, ni carte, ni
 planning. Désormais ce qui attend le client se retire sans rien effacer
 (migration 0114, `retire_de_la_liste_at`), et la réponse du client ramène la
-ligne avec sa carte. Le reste se supprime comme avant. Suites
+ligne avec sa carte. Le reste se supprime comme avant. Puis sa précision :
+*« il faut qu'il puisse l'utiliser, peu importe ce qu'on fera dans l'appli »* ;
+un contrat refusé glissé n'est plus effacé non plus, seul un brouillon l'est. Suites
 `test-retirer-sans-casser-le-lien-e2e` (rouge puis vert),
 `test-retirer-de-la-liste`, cas ajoutés à `test-rappels-db`,
 `test-contrats-entretien(-db)` et `test-contrat-quitte-e2e`. `ARCHITECTURE.md`

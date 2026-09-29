@@ -319,7 +319,10 @@ async function main() {
     assert.equal(await statutLu(), undefined, "accepté, il vit au planning");
   });
 
-  await cas("refusé, il reste sur l'accueil et se retire en s'effaçant", async () => {
+  // Sa règle du 29 septembre 2026 : *« il faut qu'il puisse l'utiliser, peu
+  // importe ce qu'on fera dans l'appli »*. Un contrat parti chez le client ne
+  // s'efface donc jamais par le glissement, même refusé.
+  await cas("refusé, il reste sur l'accueil, et le retirer n'efface rien", async () => {
     const client = await creerClient(a.ctx, { nom: "Morel", civilite: "mme" });
     const r = await enregistrerContrat(a.ctx, { id: null, clientId: client.id, saisi: SAISI });
     assert.ok(r.ok);
@@ -329,6 +332,18 @@ async function main() {
     if (!e.ok) return;
     await repondreAuContrat(e.jeton, { decision: "refuse" });
     assert.equal((await contratsEnCours(a.ctx)).find((c) => c.clientId === client.id)?.statut, "refuse");
+    assert.equal(await retirerContratDeLaListe(a.ctx, r.contrat.id), true);
+    const lu = (await contratsEnCours(a.ctx)).find((c) => c.clientId === client.id);
+    assert.equal(lu?.statut, "refuse", "le contrat refusé a été effacé");
+    assert.ok(lu?.retireDeLaListeAt, "l'heure du retrait n'est pas posée");
+    assert.equal((await lireContratParJeton(e.jeton))?.contrat.id, r.contrat.id, "le lien du client ne s'ouvre plus");
+  });
+
+  await cas("seul un brouillon, que personne n'a reçu, s'efface", async () => {
+    const client = await creerClient(a.ctx, { nom: "Perrin", civilite: "mr" });
+    const r = await enregistrerContrat(a.ctx, { id: null, clientId: client.id, saisi: SAISI });
+    assert.ok(r.ok);
+    if (!r.ok) return;
     assert.equal(await retirerContratDeLaListe(a.ctx, r.contrat.id), true);
     assert.equal((await contratsEnCours(a.ctx)).some((c) => c.clientId === client.id), false);
   });

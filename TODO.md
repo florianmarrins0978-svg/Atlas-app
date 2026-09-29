@@ -102,6 +102,7 @@ dans ses chantiers en cours. Corrigé à la racine (`ARCHITECTURE.md` §435,
 | Reste | Qui |
 |---|---|
 | `npm run verifier:avant-livraison`, puis `main` | lui dire quand, il l'a interdite ce jour-là |
+| le lien d'un devis meurt au bout de 45 jours (`VALIDITE_LIEN_JOURS`), contre sa règle « il doit pouvoir l'utiliser peu importe ». Le garder, l'allonger, ou le caler sur la validité écrite sur le devis ? | lui |
 
 ## 🔜 CONTRAT D'ENTRETIEN : LOTS 1 ET 2 SUR `main` (26 et 27 septembre 2026)
 

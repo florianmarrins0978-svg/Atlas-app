@@ -366,12 +366,12 @@ export function ligneDuContratEnCours(
     /** Le jour de l'envoi, « AAAA-MM-JJ ». */
     envoyeLe: string | null;
     /**
-     * Glissé hors de la liste pendant qu'il attendait le client : rien n'est
-     * effacé, son lien reste ouvert, et sa réponse (qui change le statut) le
-     * ramène. Sa règle du 29 septembre 2026, la même que pour un devis
-     * (`seRetireSansEffacer`).
+     * Glissé hors de la liste : rien n'est effacé, son lien reste ouvert (sa
+     * règle du 29 septembre 2026, la même que pour un devis). Retiré pendant
+     * qu'il attendait, sa réponse le ramène : elle arrive APRÈS le retrait.
      */
-    retireDeLaListe: boolean;
+    retireDeLaListeAt: Date | null;
+    reponduLe: Date | null;
   },
   aujourdHui: Date = new Date()
 ): { etat: string; precision: string | null } | null {
@@ -385,8 +385,12 @@ export function ligneDuContratEnCours(
   // Le jour d'envoi sous l'état, écrit comme sous « Devis envoyé » : c'est lui
   // qui dit depuis quand il attend.
   const precision = c.envoyeLe ? enCapitale(jourLisible(c.envoyeLe, aujourdHui)) : null;
-  if (c.statut === "envoye") return c.retireDeLaListe ? null : { etat: "Contrat envoyé, sans réponse", precision };
-  if (c.statut === "refuse") return { etat: "Contrat refusé", precision };
+  const retire = c.retireDeLaListeAt;
+  if (c.statut === "envoye") return retire ? null : { etat: "Contrat envoyé, sans réponse", precision };
+  if (c.statut === "refuse") {
+    const retireApresLaReponse = retire !== null && c.reponduLe !== null && c.reponduLe <= retire;
+    return retireApresLaReponse ? null : { etat: "Contrat refusé", precision };
+  }
   return null;
 }
 

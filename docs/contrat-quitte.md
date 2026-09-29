@@ -50,11 +50,24 @@
 |---|---|
 | un devis envoyé, sans réponse | il **quitte la liste**, rien n'est effacé ; le client ouvre son lien ; **s'il répond, la ligne revient** avec sa carte |
 | un contrat envoyé, sans réponse | pareil |
-| tout le reste (brouillon, devis pas encore envoyé, contrat refusé…) | supprimé, comme avant ; « Annuler » reste possible six secondes |
+| un contrat refusé | il quitte la liste, rien n'est effacé : le client relit encore son lien |
+| tout le reste (brouillon, devis pas encore envoyé…) | supprimé, comme avant ; « Annuler » reste possible six secondes. Rien de tout cela n'a été envoyé au client |
 
 Un devis retiré ne revient pas non plus par le rappel « devis sans réponse » : tu l'as retiré en sachant qu'il attendait. S'il est renvoyé, il revient.
 
 Il a fallu une colonne en base (migration 0114). Elle ne fait qu'ajouter : rien d'existant n'est modifié, et elle s'appliquera toute seule au démarrage de ton espace.
+
+## « Il doit pouvoir l'utiliser peu importe ce qu'on fera dans l'appli »
+
+**Il n'existe aucun moyen d'annuler un lien depuis l'application, et il n'en a jamais existé.** L'ancien glissement ne coupait pas le lien : il faisait disparaître la réponse du client.
+
+Ce qui peut encore empêcher un client d'utiliser son lien :
+
+| | Aujourd'hui | Ce qu'il faut décider |
+|---|---|---|
+| un contrat refusé glissé | **corrigé** : il n'est plus effacé | rien |
+| le lien d'un devis a **45 jours** de vie, puis « Ce lien n'est plus valable » | inchangé | **toi** : le garder, l'allonger, ou le caler sur la validité écrite sur le devis |
+| « Effacer les données du client » (droit à l'oubli) | le lien part avec ses données | rien : c'est une obligation légale, le client l'a demandé |
 
 ## Les preuves
 

@@ -107,6 +107,7 @@ export async function contratsEnCours(ctx: Ctx) {
         dureeMois: contratsEntretien.dureeMois,
         envoyeLe: contratsEntretien.envoyeLe,
         retireDeLaListeAt: contratsEntretien.retireDeLaListeAt,
+        reponduLe: contratsEntretien.reponduLe,
         majAt: contratsEntretien.updatedAt,
       })
       .from(contratsEntretien)
@@ -120,13 +121,14 @@ export async function contratsEnCours(ctx: Ctx) {
 }
 
 /**
- * Retire un contrat de « Vos chantiers ». Sa règle du 29 septembre 2026 : le
- * glissement ne doit pas toucher au lien envoyé au client.
+ * Retire un contrat de « Vos chantiers ». Sa règle du 29 septembre 2026 : *« il
+ * faut qu'il puisse l'utiliser, peu importe ce qu'on fera dans l'appli »*. Un
+ * contrat qui est parti chez le client ne s'efface donc JAMAIS par ce geste.
  *
  * | l'état | ce que fait le retrait |
  * |---|---|
- * | envoyé | **rien ne s'efface** : l'heure du retrait est posée, le lien reste ouvert, la réponse ramène la ligne |
- * | brouillon, refusé | effacé : rien n'attend plus personne |
+ * | envoyé, refusé | **rien ne s'efface** : l'heure du retrait est posée, le lien reste ouvert |
+ * | brouillon | effacé : personne ne l'a reçu, il n'a pas de lien |
  * | accepté | rien : il porte des passages, et n'a pas de ligne ici |
  */
 export async function retirerContratDeLaListe(ctx: Ctx, id: string): Promise<boolean> {
@@ -134,12 +136,12 @@ export async function retirerContratDeLaListe(ctx: Ctx, id: string): Promise<boo
     const masques = await tx
       .update(contratsEntretien)
       .set({ retireDeLaListeAt: new Date() })
-      .where(and(eq(contratsEntretien.id, id), eq(contratsEntretien.statut, "envoye")))
+      .where(and(eq(contratsEntretien.id, id), inArray(contratsEntretien.statut, ["envoye", "refuse"])))
       .returning({ id: contratsEntretien.id });
     if (masques.length === 1) return true;
     const effaces = await tx
       .delete(contratsEntretien)
-      .where(and(eq(contratsEntretien.id, id), inArray(contratsEntretien.statut, ["brouillon", "refuse"])))
+      .where(and(eq(contratsEntretien.id, id), eq(contratsEntretien.statut, "brouillon")))
       .returning({ id: contratsEntretien.id });
     return effaces.length === 1;
   });

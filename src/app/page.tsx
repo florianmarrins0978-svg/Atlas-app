@@ -116,7 +116,8 @@ export default async function ChantiersPage() {
         prestations: c.prestations,
         periode: { debut: c.debut, dureeMois: c.dureeMois },
         envoyeLe: c.envoyeLe ? jourIso(c.envoyeLe) : null,
-        retireDeLaListe: c.retireDeLaListeAt !== null,
+        retireDeLaListeAt: c.retireDeLaListeAt,
+        reponduLe: c.reponduLe,
       },
       maintenant
     );
