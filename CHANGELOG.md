@@ -55,6 +55,28 @@ lendemain repart du dernier retour, et Terminés le montre). La preuve n'est pas
 réécrite en base : la ligne vide ne s'affiche plus, c'est tout
 (`sansLigneVide`, `test-retour-intervention-db.ts`).
 
+### L'unité d'une ligne ne porte que la rangée : « arbre » devient « u »
+
+Sa règle, capture à l'appui : *« dans l'unité, il ne peut pas y avoir la
+mention arbre ; quand je parle d'un arbre, d'un arbuste ou d'une plante, c'est
+la mention U qui doit apparaître »*. La dictée garde le mot prononcé (« trois
+arbres » : unité « arbre ») pour comparer les prix, et le dépôt le recopiait tel
+quel sur la ligne du devis.
+
+La règle vit dans `uniteAdmise` (`src/lib/unite-de-ligne.ts`), appliquée là où
+la ligne s'écrit : `ajouterLignePrix`, `modifierLignePrix`, `majLigneDeFacture`.
+Dictée, IA, tarif repris et doigt passent tous par là. Une forme dite se ramène
+à la rangée (« m3 » : m³, « heure » : h) ; tout autre mot s'enregistre sans
+unité, donc s'imprime « u ». La case retombe sur « u » dès qu'on la quitte.
+`scripts/test-unite-de-ligne-db.ts`, vu rouge sur l'ancien code.
+
+Puis sa consigne, *« corrige à la racine »* : la migration **0112** reprend ce
+qui était déjà en base (la ligne de sa capture) : lignes de prix, lignes d'un
+devis ou d'une facture encore en brouillon. Un devis envoyé, une facture émise
+ne bougent pas : ils sont chez le client. Elle boucle par entreprise (FORCE
+RLS) ; `scripts/test-migration-0112-base-habitee.ts`, vu rouge sans elle.
+L'écran du devis ne nettoie plus l'unité lui-même : le dépôt le fait.
+
 ## 2026-09-28
 
 ### Trois lots sur `main` en une seule batterie
