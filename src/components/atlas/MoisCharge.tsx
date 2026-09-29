@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useRef, useState, type PointerEvent, type ReactNode } from "react";
+import { useMemo, useRef, useState, type CSSProperties, type PointerEvent, type ReactNode } from "react";
+import { variableDeLEtat } from "@/lib/couleurs-planning";
 import { colors, font, surPlein, voile } from "@/lib/design-tokens";
 import { grilleDuMois, moisDecale, JOURS_COURTS, MOIS_LONGS, type CaseMois } from "@/lib/mois";
 import { etatDemi, MOT_ETAT, partDeLaBarre, type EtatDemi } from "@/lib/planning-jour";
@@ -65,6 +66,7 @@ export default function MoisCharge({
   volet,
   voletDetache = false,
   reperePrefixe = "",
+  sousLaLegende,
 }: {
   curseur: Curseur;
   setCurseur: (maj: (c: Curseur) => Curseur) => void;
@@ -143,6 +145,11 @@ export default function MoisCharge({
   voletDetache?: boolean;
   /** Préfixe des repères `data-atlas`, quand deux mois cohabitent sur un écran. */
   reperePrefixe?: string;
+  /**
+   * Ce qui se pose juste sous la légende : sur le planning, « Couleurs »
+   * (sa demande du 29 septembre 2026). L'écran d'envoi n'y met rien.
+   */
+  sousLaLegende?: ReactNode;
 }) {
   const retenus = useMemo(
     () => new Set([...(jourRetenus ?? []), ...(jourRetenusSeconde ?? []), ...(jourRetenu ? [jourRetenu] : [])]),
@@ -480,6 +487,7 @@ export default function MoisCharge({
       )}
 
       <Legende />
+      {sousLaLegende}
     </div>
   );
 
@@ -626,11 +634,34 @@ function ditLaBarre(o: OccupationLue): string {
   return `${o.pris.length} chantier${o.pris.length > 1 ? "s" : ""}`;
 }
 
+/**
+ * La couleur d'un état : celle que l'entreprise a choisie, sinon celle de
+ * l'apparence.
+ *
+ * **Le choix arrive par une variable CSS** (`variablesDesEtats`,
+ * `src/lib/couleurs-planning.ts`), posée par `CouleursDesEtats` au-dessus de
+ * l'écran. Sans elle, le repli est la couleur d'avant le 29 septembre 2026, au
+ * pixel près : c'est ce qui fait que rien ne bouge tant qu'il n'a rien choisi.
+ */
 export function fondDeLEtat(etat: EtatDemi): string {
-  if (etat === "dispo") return colors.vertPale;
-  if (etat === "plein") return colors.rust;
-  if (etat === "dela") return colors.bordeaux;
-  return "transparent";
+  const repli =
+    etat === "dispo" ? colors.vertPale : etat === "plein" ? colors.rust : etat === "dela" ? colors.bordeaux : "transparent";
+  return `var(${variableDeLEtat(etat)}, ${repli})`;
+}
+
+/**
+ * Le petit carré d'un état : la légende, la pastille de la fiche du jour, celle
+ * de la journée regardée à l'envoi.
+ *
+ * **Écrit une fois.** Trois écrans le recopiaient, chacun avec son propre cas
+ * « rien » ; une couleur de « rien » choisie ne serait arrivée que sur ceux
+ * qu'on aurait pensé à retoucher. « rien » garde son filet : blanc sur blanc,
+ * le carré disparaîtrait.
+ */
+export function styleDuCarre(etat: EtatDemi): CSSProperties {
+  return etat === "libre"
+    ? { background: `var(${variableDeLEtat("libre")}, ${colors.card})`, boxShadow: `inset 0 0 0 1px ${colors.line}` }
+    : { background: fondDeLEtat(etat) };
 }
 
 /**
@@ -670,7 +701,9 @@ export function MarqueDuJour({
         <span
           data-atlas="seg"
           className="h-full"
-          style={{ width: `${partDeLaBarre(o.charge)}%`, background: fondDeLEtat(etat) }}
+          // « rien » se peint sur toute la barre : c'est la journée libre qui
+          // prend sa couleur. Sans couleur choisie, il reste transparent.
+          style={{ width: etat === "libre" ? "100%" : `${partDeLaBarre(o.charge)}%`, background: fondDeLEtat(etat) }}
         />
       </i>
     );
@@ -720,11 +753,7 @@ export function Legende() {
       data-atlas="carre"
       data-etat={etat}
       className="block h-[10px] w-[10px] flex-shrink-0 rounded-[3px]"
-      style={
-        etat === "libre"
-          ? { background: colors.card, boxShadow: `inset 0 0 0 1px ${colors.line}` }
-          : { background: fondDeLEtat(etat) }
-      }
+      style={styleDuCarre(etat)}
     />
   );
   // **Les mots viennent de `MOT_ETAT`** depuis le 31 août 2026 : le réglage des

@@ -20,7 +20,11 @@ import { cheminAutorise, peutModifierLePlanning, type Role } from "@/lib/acces-r
 import { adresseDeLaVisionneuse } from "@/lib/visionneuse-pdf";
 import { colors, font, libelleCaps, surPlein, texteSituation, voile } from "@/lib/design-tokens";
 import TeteRonde from "@/components/atlas/TeteRonde";
-import MoisCharge, { fondDeLEtat } from "@/components/atlas/MoisCharge";
+import MoisCharge, { styleDuCarre } from "@/components/atlas/MoisCharge";
+import CouleursDesEtats from "@/components/atlas/CouleursDesEtats";
+import { AUCUNE_COULEUR_CHOISIE, type CouleursPlanning } from "@/lib/couleurs-planning";
+import type { NomCharte } from "@/lib/chartes";
+import CouleursDuPlanning from "./CouleursDuPlanning";
 import {
   cleCreneau,
   creneauxPoses,
@@ -326,6 +330,8 @@ export default function PlanningClient({
   chantierDemande = null,
   retourDuJour = { demande: false, envoyes: [] },
   datesDuMois = null,
+  couleurs = AUCUNE_COULEUR_CHOISIE,
+  nomCharte = null,
 }: {
   initialChantiers: ChantierPlanning[];
   /** La CAPACITÉ : combien de chantiers tiennent dans une journée. */
@@ -398,7 +404,13 @@ export default function PlanningClient({
    * planning : rien de tout cela ne descend chez lui.
    */
   datesDuMois?: DonneesDatesDuMois | null;
+  /** Les couleurs du planning de l'entreprise (migration 0113), et l'apparence de la personne. */
+  couleurs?: CouleursPlanning;
+  nomCharte?: NomCharte | null;
 }) {
+  // **L'état vit ici** : le mois, la légende et la fiche du jour se repeignent
+  // pendant qu'il choisit, avant même que la base ait répondu.
+  const [couleursVues, setCouleursVues] = useState(couleurs);
   // Les deux portes que cet écran propose, décidées par la règle des rôles —
   // jamais par une liste écrite ici. Sans rôle (cas d'un rendu hors session),
   // on ne retire rien : l'écran est celui d'avant ce lot.
@@ -1480,6 +1492,7 @@ export default function PlanningClient({
   };
 
   return (
+    <CouleursDesEtats couleurs={couleursVues} nomCharte={nomCharte}>
     <div
       style={{
         backgroundColor: colors.cream,
@@ -1548,6 +1561,13 @@ export default function PlanningClient({
             // déjà la liste sur sa semaine, mais changer de semaine ne disait
             // rien au mois, et rien ne montrait d'où venait la liste.
             semaineLue={lundiDe(debutFenetre)}
+            // **Le patron seul** : c'est un réglage de l'entreprise, sa réponse
+            // du 29 septembre 2026. Ses salariés voient ses couleurs.
+            sousLaLegende={
+              role === "proprietaire" ? (
+                <CouleursDuPlanning couleurs={couleursVues} nomCharte={nomCharte} onChanger={setCouleursVues} />
+              ) : null
+            }
             // ─── LA FICHE DU JOUR, DANS LE MOIS ────────────────────────────
             //
             // **Sa maquette du 3 septembre 2026.** Elle s'ouvre entre la
@@ -1978,6 +1998,7 @@ export default function PlanningClient({
         onFermer={() => montrerLesPortes(null)}
       />
     </div>
+    </CouleursDesEtats>
   );
 }
 
@@ -2120,11 +2141,7 @@ function Pastille({ etat }: { etat: EtatDemi }) {
       data-atlas="pastille"
       data-etat={etat}
       className="inline-block h-[11px] w-[11px] flex-shrink-0 rounded-[3px]"
-      style={
-        etat === "libre"
-          ? { background: colors.card, boxShadow: `inset 0 0 0 1px ${colors.line}` }
-          : { background: fondDeLEtat(etat) }
-      }
+      style={styleDuCarre(etat)}
     />
   );
 }

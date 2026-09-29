@@ -220,7 +220,7 @@ function depuisTSL(t: number, s: number, l: number): string {
  * trouver, elle rend la couleur d'origine plutôt qu'une valeur extrême — un
  * signal délavé qui aurait « passé le seuil » ne dit plus rien.
  */
-function detacher(base: string, contre: string[], seuil: number, sens: 1 | -1): string {
+export function detacher(base: string, contre: string[], seuil: number, sens: 1 | -1): string {
   const [t, s, l0] = versTSL(base);
   for (let i = 0; i <= 200; i++) {
     const l = l0 + sens * i * 0.005;

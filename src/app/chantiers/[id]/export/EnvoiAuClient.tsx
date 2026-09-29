@@ -12,6 +12,8 @@ import MoisCharge from "@/components/atlas/MoisCharge";
 import { useOccupation } from "@/components/atlas/useOccupation";
 import { ditCeQuiResteCeJour, equipesLibresCeJour } from "@/lib/planning-jour";
 import JourneeRegardee from "./JourneeRegardee";
+import CouleursDesEtats from "@/components/atlas/CouleursDesEtats";
+import { AUCUNE_COULEUR_CHOISIE } from "@/lib/couleurs-planning";
 import {
   basculerLaSeconde,
   gesteSurUnJour,
@@ -451,7 +453,12 @@ function Contenu({
     preparation?.blocage === "canal_absent" || preparation?.blocage === "coordonnee_absente";
 
   return (
-    <>
+    // **Les couleurs du planning de l'entreprise**, comme au planning : le
+    // mois et la journée regardée peignent les mêmes quatre états.
+    <CouleursDesEtats
+      couleurs={preparation?.planning.couleurs ?? AUCUNE_COULEUR_CHOISIE}
+      nomCharte={preparation?.planning.nomCharte ?? null}
+    >
       <p className="mb-1 text-center text-[16px]" style={{ color: colors.ink, fontFamily: font.display }}>
         Envoyer à {clientNom}
       </p>
@@ -1189,6 +1196,6 @@ function Contenu({
           Annuler
         </button>
       </div>
-    </>
+    </CouleursDesEtats>
   );
 }

@@ -238,6 +238,14 @@ export const entreprises = pgTable("entreprises", {
   docTypographie: text("doc_typographie"),
   docFond: text("doc_fond"),
   docAccent: text("doc_accent"),
+  /**
+   * Les quatre couleurs du planning (migration 0113). `null` : celle de
+   * l'apparence. Les règles vivent dans `src/lib/couleurs-planning.ts`.
+   */
+  planningRien: text("planning_rien"),
+  planningIncomplet: text("planning_incomplet"),
+  planningComplet: text("planning_complet"),
+  planningAuDela: text("planning_au_dela"),
   /** Le logo vit dans le stockage, comme une photo — la base garde sa clef. */
   logoStorageKey: text("logo_storage_key"),
   logoMime: text("logo_mime"),

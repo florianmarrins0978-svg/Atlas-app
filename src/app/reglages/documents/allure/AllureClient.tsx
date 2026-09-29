@@ -16,7 +16,8 @@ import {
   reprendreAllurePhotoAction,
   retirerLogoAction,
 } from "../actions";
-import { Couleur, Feuille } from "../pieces";
+import { Feuille } from "../pieces";
+import { Couleur } from "@/components/atlas/Couleur";
 
 /**
  * « L'ALLURE DE MES DEVIS » — sa demande du 23 août 2026.

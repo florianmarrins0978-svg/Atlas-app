@@ -11,6 +11,15 @@ devis ou d'une facture : la ligne reçoit « u ». `uniteAdmise`, au dépôt ;
 migration 0112 pour ce qui était déjà en base. Branche
 `claude/unite-ligne-rangee-seule`, batterie non jouée (sa consigne).
 
+· dernière migration `drizzle/0113_couleurs_du_planning.sql` (sur sa branche)
+
+---
+## SUR SA BRANCHE : LES COULEURS DU PLANNING (29 septembre 2026)
+
+Rien, incomplet, complet, au-delà se choisissent sous la légende du planning,
+pour toute l'entreprise, comme l'allure des devis. Migration 0113. Branche
+`claude/couleurs-du-planning` ; la batterie n'est pas jouée, à sa demande.
+
 ## SUR `main` : L'ASSISTANT RÉPOND SUR SES DONNÉES (28 septembre 2026)
 
 Quatre fiches « comment Atlas se comporte » (conservation, après l'arrêt, qui
