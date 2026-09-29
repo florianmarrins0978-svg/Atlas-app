@@ -19,6 +19,11 @@ d'intervention, le retour du jour, la fiche de sécurité (« Le devis dit : , �
 et la fiche client, qui en portait sa propre copie. Suite :
 `scripts/test-taches-du-devis.ts`, vue rouge avant la correction.
 
+Et la quantité s'y écrit comme une quantité : « Coupe de cheveux homme, 45 u »,
+« Taille de haie, 18 ml », plus « — 45 » qui se lisait comme un prix. Même
+écriture que le papier du devis (`quantiteLisible`, `uniteDeLaLigne`) ; « 1 »
+reste tu, il n'apprend rien.
+
 ## 2026-09-28
 
 ### Trois lots sur `main` en une seule batterie

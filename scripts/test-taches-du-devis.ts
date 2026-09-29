@@ -21,24 +21,29 @@ function cas(nom: string, f: () => void) {
 cas("une ligne sans texte ne donne pas de case (sa capture)", () => {
   assert.deepEqual(
     tachesDuDevis([
-      { libelle: "", quantite: "1" },
-      { libelle: "Coupe de cheveux homme", quantite: "45" },
+      { libelle: "", quantite: "1", unite: null },
+      { libelle: "Coupe de cheveux homme", quantite: "45.00", unite: null },
     ]),
-    ["Coupe de cheveux homme — 45"]
+    ["Coupe de cheveux homme, 45 u"]
   );
 });
 
 cas("des espaces seuls ne sont pas un texte", () => {
-  assert.deepEqual(tachesDuDevis([{ libelle: "  \n ", quantite: "3" }]), []);
+  assert.deepEqual(tachesDuDevis([{ libelle: "  \n ", quantite: "3", unite: null }]), []);
 });
 
-cas("une ligne écrite reste, dans l'ordre, sa quantité quand elle apprend quelque chose", () => {
+// **Sa remarque du 29 septembre 2026 :** *« le 45 c'est la quantité, il faut
+// que ça s'affiche comme une quantité »*. « — 45 » se lisait comme un prix ; la
+// quantité s'écrit comme sur le papier du devis, avec son unité (« u » quand il
+// n'en a pas tapé, `uniteDeLaLigne`), et sans tiret (`CLAUDE.md` §3).
+cas("la quantité s'écrit avec son unité, comme sur le devis", () => {
   assert.deepEqual(
     tachesDuDevis([
-      { libelle: "Taille de haie", quantite: "18" },
-      { libelle: "Évacuation des déchets", quantite: "1" },
+      { libelle: "Taille de haie", quantite: "18.00", unite: "ml" },
+      { libelle: "Engazonnement", quantite: "12.50", unite: " m² " },
+      { libelle: "Évacuation des déchets", quantite: "1.00", unite: null },
     ]),
-    ["Taille de haie — 18", "Évacuation des déchets"]
+    ["Taille de haie, 18 ml", "Engazonnement, 12,5 m²", "Évacuation des déchets"]
   );
 });
 

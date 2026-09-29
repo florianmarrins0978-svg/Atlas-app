@@ -895,7 +895,7 @@ export async function tachesDuChantier(
     const d = await devisÀImprimer(tx, chantierId);
     if (!d) return { taches: [], avecDevis: false };
     const lignes = await tx
-      .select({ libelle: lignesDevis.libelle, quantite: lignesDevis.quantite })
+      .select({ libelle: lignesDevis.libelle, quantite: lignesDevis.quantite, unite: lignesDevis.unite })
       .from(lignesDevis)
       .where(eq(lignesDevis.devisId, d.id))
       .orderBy(lignesDevis.ordre);
