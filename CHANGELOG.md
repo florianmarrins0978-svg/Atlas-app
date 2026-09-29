@@ -8,6 +8,20 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-29
 
+### Glisser un devis ou un contrat envoyé le retire de la liste sans couper le lien du client
+
+Sa règle : *« il doit pouvoir les retirer en les slidant, mais ça ne doit pas
+impacter le lien cliquable envoyé au client »*. Elle a fait trouver un défaut
+réel : glisser un devis envoyé SUPPRIMAIT le chantier ; le lien s'ouvrait
+encore, mais une acceptation arrivée ensuite restait invisible, ni carte, ni
+planning. Désormais ce qui attend le client se retire sans rien effacer
+(migration 0114, `retire_de_la_liste_at`), et la réponse du client ramène la
+ligne avec sa carte. Le reste se supprime comme avant. Suites
+`test-retirer-sans-casser-le-lien-e2e` (rouge puis vert),
+`test-retirer-de-la-liste`, cas ajoutés à `test-rappels-db`,
+`test-contrats-entretien(-db)` et `test-contrat-quitte-e2e`. `ARCHITECTURE.md`
+§436.
+
 ### Un contrat d'entretien commencé puis quitté se retrouve dans « Vos chantiers »
 
 Sa plainte : *« lorsque j'ouvre un contrat d'entretien pour réaliser le devis,

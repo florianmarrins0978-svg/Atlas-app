@@ -13,7 +13,7 @@ import {
   pdfDuContratParJeton,
   factureDuPassageAvecSonCompteRendu,
   contratsEnCours,
-  supprimerContratEnCours,
+  retirerContratDeLaListe,
 } from "../src/server/repositories/contrats-entretien";
 import { planifierChantier } from "../src/server/repositories/chantiers";
 import { terminerChantier, listerChantiersTermines, getFacturePourChantier } from "../src/server/repositories/factures";
@@ -293,26 +293,33 @@ async function main() {
     const statutLu = async () => (await contratsEnCours(a.ctx)).find((c) => c.clientId === client.id)?.statut;
     assert.equal(await statutLu(), "brouillon");
     assert.equal((await contratsEnCours(b.ctx)).some((c) => c.clientId === client.id), false);
-    assert.equal(await supprimerContratEnCours(b.ctx, r.contrat.id), false);
+    assert.equal(await retirerContratDeLaListe(b.ctx, r.contrat.id), false);
 
     const e = await envoyerContrat(a.ctx, r.contrat.id);
     assert.ok(e.ok);
     if (!e.ok) return;
     assert.equal(await statutLu(), "envoye");
-    assert.equal(await supprimerContratEnCours(a.ctx, r.contrat.id), false, "un contrat chez le client ne s'efface pas");
+
+    // Sa règle du 29 septembre 2026 : retiré de la liste, rien ne s'efface, et
+    // le lien du client s'ouvre encore.
+    assert.equal(await retirerContratDeLaListe(a.ctx, r.contrat.id), true);
+    const retire = (await contratsEnCours(a.ctx)).find((c) => c.clientId === client.id);
+    assert.equal(retire?.statut, "envoye", "le contrat envoyé a été effacé");
+    assert.ok(retire?.retireDeLaListeAt, "l'heure du retrait n'est pas posée");
+    assert.equal((await lireContratParJeton(e.jeton))?.contrat.id, r.contrat.id, "le lien du client ne s'ouvre plus");
 
     // Repartir d'un contrat parti en fait un nouveau : la ligne suit le dernier.
     const repris = await enregistrerContrat(a.ctx, { id: null, clientId: client.id, saisi: SAISI });
     assert.ok(repris.ok);
     const lignes = (await contratsEnCours(a.ctx)).filter((c) => c.clientId === client.id);
     assert.deepEqual(lignes.map((c) => c.statut), ["brouillon"]);
-    if (repris.ok) assert.equal(await supprimerContratEnCours(a.ctx, repris.contrat.id), true);
+    if (repris.ok) assert.equal(await retirerContratDeLaListe(a.ctx, repris.contrat.id), true);
 
     await repondreAuContrat(e.jeton, { decision: "accepte" });
     assert.equal(await statutLu(), undefined, "accepté, il vit au planning");
   });
 
-  await cas("refusé, il reste sur l'accueil et peut se retirer", async () => {
+  await cas("refusé, il reste sur l'accueil et se retire en s'effaçant", async () => {
     const client = await creerClient(a.ctx, { nom: "Morel", civilite: "mme" });
     const r = await enregistrerContrat(a.ctx, { id: null, clientId: client.id, saisi: SAISI });
     assert.ok(r.ok);
@@ -322,7 +329,7 @@ async function main() {
     if (!e.ok) return;
     await repondreAuContrat(e.jeton, { decision: "refuse" });
     assert.equal((await contratsEnCours(a.ctx)).find((c) => c.clientId === client.id)?.statut, "refuse");
-    assert.equal(await supprimerContratEnCours(a.ctx, r.contrat.id), true);
+    assert.equal(await retirerContratDeLaListe(a.ctx, r.contrat.id), true);
     assert.equal((await contratsEnCours(a.ctx)).some((c) => c.clientId === client.id), false);
   });
 

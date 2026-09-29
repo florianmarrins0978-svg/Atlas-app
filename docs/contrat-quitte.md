@@ -20,8 +20,8 @@
 | le contrat s'enregistre tout seul | dès la première prestation, puis à chaque changement ; jamais deux brouillons pour un contrat | `ContratClient.tsx` |
 | il apparaît dans « Vos chantiers » | « Contrat d'entretien », le nom du client, « Contrat à compléter » ou « Contrat prêt à envoyer » ; il compte dans « En cours » | `src/app/page.tsx`, `src/lib/contrats-entretien.ts` |
 | toucher la ligne | rouvre le contrat où tu l'as laissé | `src/app/page.tsx` |
-| glisser pour retirer | efface le brouillon ou le contrat refusé ; un contrat envoyé ne s'efface pas | `src/app/actions.ts`, `src/server/repositories/contrats-entretien.ts` |
-| envoyé au client | il **reste**, « Contrat envoyé, sans réponse » et le jour d'envoi, comme un devis ; il ne se retire pas, son lien reste ouvert chez le client | `ligneDuContratEnCours` |
+| glisser pour retirer | efface le brouillon ou le contrat refusé ; un contrat envoyé quitte la liste sans s'effacer (voir plus bas) | `src/app/actions.ts`, `src/server/repositories/contrats-entretien.ts` |
+| envoyé au client | il **reste**, « Contrat envoyé, sans réponse » et le jour d'envoi, comme un devis | `ligneDuContratEnCours` |
 | refusé | il reste, « Contrat refusé », et peut se retirer | `ligneDuContratEnCours` |
 | accepté | il quitte la liste : ses passages arrivent au planning | `contratsEnCours` |
 | qui le voit | seulement ceux qui peuvent rédiger un devis | `src/app/page.tsx` |
@@ -40,6 +40,22 @@
 
 **Corrigé noir sur blanc** : la première version de ce lot faisait sortir le contrat de la liste dès l'envoi. C'était mon choix, et il était contraire à ta règle.
 
+## Glisser sans couper le lien (ta règle du même jour)
+
+> « Si l'utilisateur veut les retirer de la liste des chantiers en cours, il doit pouvoir en les slidant sur le côté, mais ça ne doit pas impacter le lien cliquable envoyé au client ! »
+
+**Ta règle a fait trouver un vrai défaut.** Glisser un devis envoyé **supprimait** le chantier. Le client ouvrait encore son lien et pouvait accepter, mais son acceptation restait invisible : pas de carte sur l'accueil, rien au planning. Reproduit par un test, qui échouait sur l'ancien code.
+
+| Ce que tu glisses | Ce qui se passe |
+|---|---|
+| un devis envoyé, sans réponse | il **quitte la liste**, rien n'est effacé ; le client ouvre son lien ; **s'il répond, la ligne revient** avec sa carte |
+| un contrat envoyé, sans réponse | pareil |
+| tout le reste (brouillon, devis pas encore envoyé, contrat refusé…) | supprimé, comme avant ; « Annuler » reste possible six secondes |
+
+Un devis retiré ne revient pas non plus par le rappel « devis sans réponse » : tu l'as retiré en sachant qu'il attendait. S'il est renvoyé, il revient.
+
+Il a fallu une colonne en base (migration 0114). Elle ne fait qu'ajouter : rien d'existant n'est modifié, et elle s'appliquera toute seule au démarrage de ton espace.
+
 ## Les preuves
 
 | Contrôle | Résultat |
@@ -47,12 +63,16 @@
 | `test-contrat-quitte-e2e` (neuf) : ta fiche client, « Contrat d'entretien », une prestation, on quitte, puis envoyé, puis accepté | **rouge sur l'ancien code**, puis rouge sur le contrat envoyé qui sortait de la liste, **vert** avec la correction |
 | `test-dashboard`, `test-repartir-du-client` (écrans voisins, et « Dernier devis » sur l'accueil) | verts |
 | `test-contrats-entretien` et `test-contrats-entretien-db` (sous `atlas_app`, donc avec l'isolation) | verts, cas ajoutés |
+| `test-retirer-sans-casser-le-lien-e2e` (neuf) : devis rédigé et envoyé à l'écran, ligne glissée, client qui ouvre son lien et accepte | **rouge sur l'ancien code** (chantier supprimé, aucune carte), **vert** avec la correction |
+| `test-glisser-supprimer`, `test-suivi-devis`, `test-accueil-se-relit-tout-seul` (le glissement et les réponses de client) | verts |
+| `test-rappels-db`, `test-retirer-de-la-liste` | verts, cas ajoutés |
+| migrations : numéros, sous RLS, banc | verts |
 | types, lint, pansements, code mort, couches, tirets, flèches | verts |
 | l'accueil et l'écran du contrat, regardés à 390 px | la ligne est là, le contrat se rouvre avec sa prestation ; envoyé, « Contrat envoyé, sans réponse » et « Dimanche 27 septembre » dessous |
 
 ## Ce qui n'a pas été fait
 
-**La batterie entière.** Tu l'as interdite. Le lot est de niveau 3 (le fichier des règles du contrat touche 102 écrans) : elle est obligatoire avant `main`.
+**La batterie entière.** Tu l'as interdite. Le lot est de niveau 3 (une migration, et le fichier des règles du contrat touche 102 écrans) : elle est obligatoire avant `main`.
 
 ## Ce qui reste ouvert
 

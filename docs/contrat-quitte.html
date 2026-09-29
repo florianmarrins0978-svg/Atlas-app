@@ -103,12 +103,12 @@
 </tr>
 <tr>
 <td>glisser pour retirer</td>
-<td>efface le brouillon ou le contrat refusé ; un contrat envoyé ne s'efface pas</td>
+<td>efface le brouillon ou le contrat refusé ; un contrat envoyé quitte la liste sans s'effacer (voir plus bas)</td>
 <td><code>src/app/actions.ts</code>, <code>src/server/repositories/contrats-entretien.ts</code></td>
 </tr>
 <tr>
 <td>envoyé au client</td>
-<td>il <strong>reste</strong>, « Contrat envoyé, sans réponse » et le jour d'envoi, comme un devis ; il ne se retire pas, son lien reste ouvert chez le client</td>
+<td>il <strong>reste</strong>, « Contrat envoyé, sans réponse » et le jour d'envoi, comme un devis</td>
 <td><code>ligneDuContratEnCours</code></td>
 </tr>
 <tr>
@@ -153,6 +153,29 @@
 </tr>
 </tbody></table></div>
 <p><strong>Corrigé noir sur blanc</strong> : la première version de ce lot faisait sortir le contrat de la liste dès l'envoi. C'était mon choix, et il était contraire à ta règle.</p>
+<h2 id="glisser-sans-couper-le-lien-ta-règle-du-même-jour">Glisser sans couper le lien (ta règle du même jour)</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<blockquote>« Si l'utilisateur veut les retirer de la liste des chantiers en cours, il doit pouvoir en les slidant sur le côté, mais ça ne doit pas impacter le lien cliquable envoyé au client ! »</blockquote>
+<p><strong>Ta règle a fait trouver un vrai défaut.</strong> Glisser un devis envoyé <strong>supprimait</strong> le chantier. Le client ouvrait encore son lien et pouvait accepter, mais son acceptation restait invisible : pas de carte sur l'accueil, rien au planning. Reproduit par un test, qui échouait sur l'ancien code.</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Ce que tu glisses</th>
+<th>Ce qui se passe</th>
+</tr></thead><tbody>
+<tr>
+<td>un devis envoyé, sans réponse</td>
+<td>il <strong>quitte la liste</strong>, rien n'est effacé ; le client ouvre son lien ; <strong>s'il répond, la ligne revient</strong> avec sa carte</td>
+</tr>
+<tr>
+<td>un contrat envoyé, sans réponse</td>
+<td>pareil</td>
+</tr>
+<tr>
+<td>tout le reste (brouillon, devis pas encore envoyé, contrat refusé…)</td>
+<td>supprimé, comme avant ; « Annuler » reste possible six secondes</td>
+</tr>
+</tbody></table></div>
+<p>Un devis retiré ne revient pas non plus par le rappel « devis sans réponse » : tu l'as retiré en sachant qu'il attendait. S'il est renvoyé, il revient.</p>
+<p>Il a fallu une colonne en base (migration 0114). Elle ne fait qu'ajouter : rien d'existant n'est modifié, et elle s'appliquera toute seule au démarrage de ton espace.</p>
 <h2 id="les-preuves">Les preuves</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
 <div class="tablewrap"><table><thead><tr>
@@ -172,6 +195,22 @@
 <td>verts, cas ajoutés</td>
 </tr>
 <tr>
+<td><code>test-retirer-sans-casser-le-lien-e2e</code> (neuf) : devis rédigé et envoyé à l'écran, ligne glissée, client qui ouvre son lien et accepte</td>
+<td><strong>rouge sur l'ancien code</strong> (chantier supprimé, aucune carte), <strong>vert</strong> avec la correction</td>
+</tr>
+<tr>
+<td><code>test-glisser-supprimer</code>, <code>test-suivi-devis</code>, <code>test-accueil-se-relit-tout-seul</code> (le glissement et les réponses de client)</td>
+<td>verts</td>
+</tr>
+<tr>
+<td><code>test-rappels-db</code>, <code>test-retirer-de-la-liste</code></td>
+<td>verts, cas ajoutés</td>
+</tr>
+<tr>
+<td>migrations : numéros, sous RLS, banc</td>
+<td>verts</td>
+</tr>
+<tr>
 <td>types, lint, pansements, code mort, couches, tirets, flèches</td>
 <td>verts</td>
 </tr>
@@ -182,7 +221,7 @@
 </tbody></table></div>
 <h2 id="ce-qui-na-pas-été-fait">Ce qui n'a pas été fait</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
-<p><strong>La batterie entière.</strong> Tu l'as interdite. Le lot est de niveau 3 (le fichier des règles du contrat touche 102 écrans) : elle est obligatoire avant <code>main</code>.</p>
+<p><strong>La batterie entière.</strong> Tu l'as interdite. Le lot est de niveau 3 (une migration, et le fichier des règles du contrat touche 102 écrans) : elle est obligatoire avant <code>main</code>.</p>
 <h2 id="ce-qui-reste-ouvert">Ce qui reste ouvert</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
 <div class="tablewrap"><table><thead><tr>

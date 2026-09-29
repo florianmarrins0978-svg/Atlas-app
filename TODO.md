@@ -91,11 +91,12 @@ vert le 27, sur `main` avec son accord. `ARCHITECTURE.md` §427, document de ret
 | le patron n'est pas notifié quand le client valide ou déplace : le planning bouge seul | à trancher par lui |
 | un contrat dans le jeu de démonstration, pour que `test-pages-publiques-sans-navigation-e2e` ouvre vraiment `/contrat` et `/contrat/dates` | à coder |
 
-## 🔜 LE CONTRAT QUITTÉ DANS « VOS CHANTIERS » : codé le 29 septembre 2026, PAS SUR `main`
+## 🔜 LE CONTRAT QUITTÉ, ET RETIRER SANS COUPER LE LIEN : codé le 29 septembre 2026, PAS SUR `main`
 
 Sa plainte : un contrat d'entretien commencé puis quitté ne se retrouvait pas
 dans ses chantiers en cours. Corrigé à la racine (`ARCHITECTURE.md` §435,
-`docs/contrat-quitte.md`). **Niveau 3, batterie interdite par lui** : elle reste
+`docs/contrat-quitte.md`), puis le glissement qui retire sans supprimer
+(§436, migration 0114). **Niveau 3, batterie interdite par lui** : elle reste
 à jouer avant `main`.
 
 | Reste | Qui |

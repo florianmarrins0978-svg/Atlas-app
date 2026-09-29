@@ -1,4 +1,4 @@
-import { and, desc, eq, isNull, isNotNull, lt, gt, sql } from "drizzle-orm";
+import { and, desc, eq, isNull, isNotNull, lt, gt, or, sql } from "drizzle-orm";
 import { withEntreprise } from "../db/with-entreprise";
 import { chantiers, creneauxChantier, entreprises, envoisDevis, factures, rappelsVus, retoursIntervention } from "../db/schema";
 import {
@@ -172,6 +172,10 @@ export async function rappelsEnCours(ctx: Ctx, maintenant: Date): Promise<Rappel
             eq(envoisDevis.entrepriseId, ctx.entrepriseId),
             isNull(envoisDevis.reponse),
             isNull(chantiers.deletedAt),
+            // **Glissé hors de la liste, il ne revient pas par un rappel** : il
+            // l'a retiré en sachant qu'il attendait. Un envoi parti APRÈS le
+            // retrait, lui, se rappelle (`retireDeLaListe`, la même frontière).
+            or(isNull(chantiers.retireDeLaListeAt), gt(envoisDevis.envoyeAt, chantiers.retireDeLaListeAt)),
             lt(envoisDevis.envoyeAt, seuil),
             // **Un lien EXPIRÉ a déjà sa propre alerte** (`EnvoiCaduc`, sur
             // l'accueil). Le rappeler ici une seconde fois ferait deux cartes

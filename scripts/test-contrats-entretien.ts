@@ -89,8 +89,12 @@ cas("une prestation à chiffrer ne pèse rien et bloque l'envoi", () => {
 });
 
 cas("la ligne d'un contrat sur l'accueil : tant que le client n'a pas accepté", () => {
-  const ligne = (statut: "brouillon" | "envoye" | "accepte" | "refuse", prestations = PLANCHE, envoyeLe: string | null = null) =>
-    ligneDuContratEnCours({ statut, prestations, periode: UN_AN, envoyeLe }, new Date("2026-09-29T12:00:00Z"));
+  const ligne = (
+    statut: "brouillon" | "envoye" | "accepte" | "refuse",
+    prestations = PLANCHE,
+    envoyeLe: string | null = null,
+    retireDeLaListe = false
+  ) => ligneDuContratEnCours({ statut, prestations, periode: UN_AN, envoyeLe, retireDeLaListe }, new Date("2026-09-29T12:00:00Z"));
   assert.deepEqual(ligne("brouillon"), { etat: "Contrat prêt à envoyer", precision: null });
   assert.equal(ligne("brouillon", [{ ...PLANCHE[0], prixPassageHt: null }])?.etat, "Contrat à compléter");
   assert.equal(ligne("brouillon", [])?.etat, "Contrat à compléter");
@@ -100,6 +104,9 @@ cas("la ligne d'un contrat sur l'accueil : tant que le client n'a pas accepté",
   assert.match(envoye?.precision ?? "", /^Samedi 26 septembre$/);
   assert.equal(ligne("refuse", PLANCHE, "2026-09-26")?.etat, "Contrat refusé");
   assert.equal(ligne("accepte", PLANCHE, "2026-09-26"), null);
+  // Glissé hors de la liste pendant qu'il attend : caché ; refusé ensuite, il revient.
+  assert.equal(ligne("envoye", PLANCHE, "2026-09-26", true), null);
+  assert.equal(ligne("refuse", PLANCHE, "2026-09-26", true)?.etat, "Contrat refusé");
 });
 
 cas("les mensualités retombent au centime sur le total, l'arrondi sur la dernière", () => {

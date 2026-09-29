@@ -1,15 +1,17 @@
 # État du projet
 
 **Dernière mise à jour :** 2026-09-26 · branche `claude/client-disappearance-no-date-f26td1`
-· dernière migration `drizzle/0106_hausse_du_devis_repris.sql` (sur la branche)
+· dernière migration `drizzle/0114_retire_de_la_liste.sql` (branche `claude/contrat-quitte-dans-chantiers`)
 
 ---
 ## SUR SA BRANCHE : LE CONTRAT QUITTÉ DANS « VOS CHANTIERS » (29 septembre 2026)
 
 L'écran du contrat d'entretien s'enregistre à chaque geste ; l'accueil liste
 les contrats tant que le client ne les a pas acceptés (brouillon, envoyé sans
-réponse, refusé), comme les devis. Branche
-`claude/contrat-quitte-dans-chantiers`, `ARCHITECTURE.md` §435. Niveau 3,
+réponse, refusé), comme les devis. Glisser un devis ou un contrat envoyé le
+retire de la liste sans rien effacer : le lien du client s'ouvre, sa réponse
+ramène la ligne (migration 0114, §436). Branche
+`claude/contrat-quitte-dans-chantiers`, `ARCHITECTURE.md` §435 et §436. Niveau 3,
 batterie interdite ce jour-là : pas sur `main`.
 
 ## SUR `main` : L'ASSISTANT RÉPOND SUR SES DONNÉES (28 septembre 2026)

@@ -3,6 +3,8 @@ import {
   getStatutAffiche,
   lienDeReprise,
   ligneEtatChantier,
+  retireDeLaListe,
+  seRetireSansEffacer,
 } from "@/lib/chantier-etat";
 import { ongletDuChantier } from "@/lib/onglet-chantier";
 import { jourIso } from "@/lib/jour";
@@ -98,7 +100,9 @@ export default async function ChantiersPage() {
   // il vit dans « Terminés » (`src/lib/onglet-chantier.ts`).
   const avecStatut = chantiers
     .map((c) => ({ ...c, statut: getStatutAffiche(c) }))
-    .filter((c) => ongletDuChantier(c) === "chantiers");
+    // Glissé hors de la liste pendant que son devis attend le client : rien
+    // n'est effacé, et sa réponse le ramène (`retireDeLaListe`).
+    .filter((c) => ongletDuChantier(c) === "chantiers" && !retireDeLaListe(c));
 
   // **Un contrat vit ici tant que le client ne l'a pas accepté, comme un
   // devis.** Sa plainte du 29 septembre 2026 (un contrat quitté avant l'envoi
@@ -112,6 +116,7 @@ export default async function ChantiersPage() {
         prestations: c.prestations,
         periode: { debut: c.debut, dureeMois: c.dureeMois },
         envoyeLe: c.envoyeLe ? jourIso(c.envoyeLe) : null,
+        retireDeLaListe: c.retireDeLaListeAt !== null,
       },
       maintenant
     );
@@ -121,7 +126,7 @@ export default async function ChantiersPage() {
     return [
       {
         id: c.id,
-        sorte: "contrat" as const,
+        retrait: "contrat" as const,
         nom: "Contrat d'entretien",
         quoi: `le contrat d'entretien ${deOuD(client)}`,
         jour,
@@ -132,9 +137,6 @@ export default async function ChantiersPage() {
         attend: true,
         reprise: `/clients/${c.clientId}/contrat`,
         enCours: true,
-        // Parti, il est chez le client : son lien doit continuer de s'ouvrir.
-        refusRetrait:
-          c.statut === "envoye" ? "Ce contrat est chez le client : il attend sa réponse." : undefined,
       },
     ];
   });
@@ -153,7 +155,7 @@ export default async function ChantiersPage() {
     });
     return {
       id: c.id,
-      sorte: "chantier",
+      retrait: seRetireSansEffacer(c.statut) ? "retirer" : "supprimer",
       nom: c.nom,
       quoi: `le chantier ${c.nom}`,
       jour,

@@ -106,6 +106,7 @@ export async function contratsEnCours(ctx: Ctx) {
         debut: contratsEntretien.debut,
         dureeMois: contratsEntretien.dureeMois,
         envoyeLe: contratsEntretien.envoyeLe,
+        retireDeLaListeAt: contratsEntretien.retireDeLaListeAt,
         majAt: contratsEntretien.updatedAt,
       })
       .from(contratsEntretien)
@@ -119,17 +120,28 @@ export async function contratsEnCours(ctx: Ctx) {
 }
 
 /**
- * Retire un contrat de « Vos chantiers ». **Un brouillon ou un refus
- * seulement** : un contrat envoyé est chez le client, son lien doit continuer
- * de s'ouvrir ; accepté, il porte des passages.
+ * Retire un contrat de « Vos chantiers ». Sa règle du 29 septembre 2026 : le
+ * glissement ne doit pas toucher au lien envoyé au client.
+ *
+ * | l'état | ce que fait le retrait |
+ * |---|---|
+ * | envoyé | **rien ne s'efface** : l'heure du retrait est posée, le lien reste ouvert, la réponse ramène la ligne |
+ * | brouillon, refusé | effacé : rien n'attend plus personne |
+ * | accepté | rien : il porte des passages, et n'a pas de ligne ici |
  */
-export async function supprimerContratEnCours(ctx: Ctx, id: string): Promise<boolean> {
+export async function retirerContratDeLaListe(ctx: Ctx, id: string): Promise<boolean> {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
-    const supprimes = await tx
+    const masques = await tx
+      .update(contratsEntretien)
+      .set({ retireDeLaListeAt: new Date() })
+      .where(and(eq(contratsEntretien.id, id), eq(contratsEntretien.statut, "envoye")))
+      .returning({ id: contratsEntretien.id });
+    if (masques.length === 1) return true;
+    const effaces = await tx
       .delete(contratsEntretien)
       .where(and(eq(contratsEntretien.id, id), inArray(contratsEntretien.statut, ["brouillon", "refuse"])))
       .returning({ id: contratsEntretien.id });
-    return supprimes.length === 1;
+    return effaces.length === 1;
   });
 }
 

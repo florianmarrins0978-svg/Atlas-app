@@ -49,7 +49,7 @@ async function brouillonEnBase(clientId: string, libelle: string): Promise<strin
 
 async function main() {
   const navigateur = await lancerNavigateur();
-  const contexte = await navigateur.newContext({ viewport: { width: 390, height: 900 } });
+  const contexte = await navigateur.newContext({ hasTouch: true, viewport: { width: 390, height: 900 } });
   const page = await contexte.newPage();
 
   await page.goto(`${BASE}/login`, { waitUntil: "networkidle" });
@@ -113,11 +113,12 @@ async function main() {
   // d'entretien, dernier devis ou autre doivent arriver là »*. Un contrat parti
   // reste sur l'accueil tant que le client n'a pas accepté, comme un devis
   // envoyé ; accepté, ses passages vivent au planning.
+  const jeton = `jeton-${Date.now()}`;
   await cas("parti chez le client, il reste, sans réponse et avec son jour d'envoi", async () => {
     assert.ok(contratId);
     await pool.query(
       `UPDATE contrats_entretien SET statut = 'envoye', jeton = $2, empreinte = repeat('0', 64), envoye_le = now() WHERE id = $1`,
-      [contratId, `jeton-${Date.now()}`]
+      [contratId, jeton]
     );
     await page.goto(`${BASE}/`, { waitUntil: "networkidle" });
     const parti = page.locator(`a.atlas-brin[href="/clients/${clientId}/contrat"]`);
@@ -125,6 +126,43 @@ async function main() {
     const texte = (await parti.innerText()).replace(/\s+/g, " ");
     assert.match(texte, /Contrat envoyé, sans réponse/i);
     assert.equal(await parti.locator('[data-atlas="precision-chantier"]').count(), 1, "le jour d'envoi manque");
+  });
+
+  // Sa règle du même jour : *« si l'utilisateur veut les retirer de la liste
+  // des chantiers en cours, il doit pouvoir en les slidant sur le côté, mais ça
+  // ne doit pas impacter le lien cliquable envoyé au client »*.
+  await cas("glissé et retiré, il quitte la liste sans que rien ne soit effacé", async () => {
+    await page.goto(`${BASE}/`, { waitUntil: "networkidle" });
+    await page.locator("[data-atlas-vivant='oui']").first().waitFor({ state: "attached", timeout: 30_000 });
+    const ligne = page.locator(".atlas-ligne", { has: page.locator(`a.atlas-brin[href="/clients/${clientId}/contrat"]`) });
+    await ligne.locator(".atlas-glisse").evaluate((el) => {
+      el.scrollTo({ left: el.scrollWidth, behavior: "instant" as ScrollBehavior });
+    });
+    await page.waitForTimeout(400);
+    await page.getByRole("button", { name: new RegExp(`^Retirer le contrat d'entretien d.*${nom}$`) }).click();
+    // Le tiroir retient la ligne six secondes : l'écriture n'a lieu qu'à sa fermeture.
+    await page.waitForTimeout(7_500);
+    await page.goto(`${BASE}/`, { waitUntil: "networkidle" });
+    assert.equal(await page.locator(`a.atlas-brin[href="/clients/${clientId}/contrat"]`).count(), 0);
+    const { rows } = await pool.query(`SELECT statut FROM contrats_entretien WHERE id = $1`, [contratId]);
+    assert.equal(rows[0]?.statut, "envoye", "le contrat a été effacé ou a changé d'état");
+  });
+
+  await cas("le client ouvre encore son lien", async () => {
+    const cotClient = await navigateur.newContext();
+    const pageClient = await cotClient.newPage();
+    const r = await pageClient.goto(`${BASE}/contrat/${jeton}`, { waitUntil: "networkidle" });
+    assert.equal(r?.status(), 200);
+    assert.match(await pageClient.locator("body").innerText(), new RegExp(prestation));
+    await cotClient.close();
+  });
+
+  await cas("le client refuse : la ligne revient, pour qu'il le sache", async () => {
+    await pool.query(`UPDATE contrats_entretien SET statut = 'refuse', repondu_le = now() WHERE id = $1`, [contratId]);
+    await page.goto(`${BASE}/`, { waitUntil: "networkidle" });
+    const revenu = page.locator(`a.atlas-brin[href="/clients/${clientId}/contrat"]`);
+    assert.equal(await revenu.count(), 1, "le refus du client ne se voit nulle part");
+    assert.match((await revenu.innerText()).replace(/\s+/g, " "), /Contrat refusé/i);
   });
 
   await cas("accepté, il quitte la liste", async () => {

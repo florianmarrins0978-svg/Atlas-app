@@ -33903,3 +33903,41 @@ retrait (son lien doit rester ouvert) ; un brouillon ou un refus se retire.
 chantier, qui reste dans la liste jusqu'à sa date (`ongletDuChantier`) ;
 `test-repartir-du-client-e2e` le tient désormais pour « Dernier devis ».
 
+## §436 : Retirer de la liste n'est pas supprimer
+
+**Sa règle du 29 septembre 2026** : *« si l'utilisateur veut les retirer de la
+liste des chantiers en cours, il doit pouvoir en les slidant sur le côté, mais
+ça ne doit pas impacter le lien cliquable envoyé au client ! Il doit quand même
+pouvoir l'ouvrir »*.
+
+**Le défaut qu'elle a fait trouver.** Glisser la ligne d'un devis envoyé
+SUPPRIMAIT le chantier (`deleted_at`). Le lien s'ouvrait encore
+(`lireParJeton` ne regarde pas `deleted_at`), le client pouvait accepter, et
+l'acceptation posait au planning un chantier supprimé : invisible au planning,
+et sans carte sur l'accueil (`notificationsPatron` écarte les chantiers
+supprimés). La réponse se perdait sans un mot. Reproduit par
+`test-retirer-sans-casser-le-lien-e2e`, rouge sur l'ancien code.
+
+**La racine : un seul geste pour deux intentions.** « Je n'ai plus rien à faire
+ici » et « ce chantier n'existe pas » étaient la même écriture. Ils sont
+séparés :
+
+| la ligne | le glissement |
+|---|---|
+| un devis qui attend le client (`seRetireSansEffacer` : envoyé, en attente, à relancer) | **retire** : `chantiers.retire_de_la_liste_at` est posé, rien n'est effacé |
+| un contrat envoyé | **retire** : `contrats_entretien.retire_de_la_liste_at` |
+| tout le reste (brouillon, devis prêt, caduc, retourné ; contrat en brouillon ou refusé) | **supprime**, comme avant |
+
+**La ligne revient d'elle-même, sans écriture** : `retireDeLaListe` la cache
+tant que le statut dit « attend le client » ET qu'aucun envoi n'est parti après
+le retrait. Une réponse change le statut, un nouvel envoi est plus récent : la
+ligne revient, avec sa carte. Le rappel « devis sans réponse » respecte la même
+frontière dans sa requête (`rappels.ts`) ; c'est la seule recopie de la règle,
+en SQL faute de pouvoir appeler la fonction pure dans un `WHERE`, et elle le
+dit en commentaire.
+
+**`BrinChantier.retrait`** (`supprimer`, `retirer`, `contrat`) remplace
+`sorte` : chaque ligne dit ce que son glissement écrit, et `EcranChantiers`
+choisit l'action. Migration **0114**, EXPAND seul (deux colonnes nullables) :
+l'ancien code l'ignore.
+

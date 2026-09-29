@@ -48,6 +48,7 @@ compte par `bilanDeLaPeriode`, jamais par le modèle. §434.
 | **le piège** | la facturation A s'enregistre et s'imprime, mais ne crée aucune facture : c'est le lot 3 |
 | **les dates du mois (27 sept.)** | règles `src/lib/dates-du-mois.ts`, base `drizzle/0108_dates_du_mois.sql`, dépôt `src/server/repositories/dates-du-mois.ts`, tiroir `src/app/planning/DatesDuMois.tsx`, page du client `src/app/contrat/dates/[jeton]/` ; suites `test-dates-du-mois` et `test-dates-du-mois-db` |
 | **le brouillon quitté (29 sept., branche `claude/contrat-quitte-dans-chantiers`)** | l'écran s'écrit à chaque geste (une file, `enregistrer()` dans `ContratClient.tsx`) ; l'accueil lit `contratsEnCours` (le dernier contrat de chaque client, tant qu'il n'est pas accepté), `BrinChantier.sorte` choisit le retrait ; suite `test-contrat-quitte-e2e`. §435 |
+| **retirer sans couper le lien (29 sept., même branche)** | migration 0114 `retire_de_la_liste_at` ; `seRetireSansEffacer` et `retireDeLaListe` (`chantier-etat.ts`) ; `BrinChantier.retrait` choisit l'action ; suite `test-retirer-sans-casser-le-lien-e2e`. **Piège** : un devis envoyé ne mène pas à une adresse portant son identifiant (sa reprise est `/planning`), on le cherche par son nom. §436 |
 
 ## MON AGENDA EN SIMPLE : 26 septembre 2026
 
