@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Le modèle par défaut</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --etabli:#e6e3dc; --etabli-carte:#faf9f5; --etabli-trait:rgba(28,28,26,.12);
+    --etabli-encre:#1c1c1a; --etabli-doux:#4a4a44; --etabli-gris:#77726a;
+    --etabli-or:#8b6835;
+    --serif:"Playfair Display",ui-serif,Georgia,serif;
+    --sans:"Inter",ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+
+    --fond:#f5f3ee; --plage:#faf9f5; --encre:#1c1c1a; --doux:#4a4a44;
+    --gris:#8a8578; --tuile:#ece9e1; --rust:#2f3b2f;
+    --or:#B98B47; --orTexte:#8b6835;
+    --plein:#7d9a6d; --surplein:#faf9f5;
+    --trait:rgba(28,28,26,.12);
+  }
+  *{box-sizing:border-box}
+  [hidden]{display:none!important}
+  html,body{margin:0;background:var(--etabli)}
+  body{font-family:var(--sans);color:var(--etabli-encre);-webkit-font-smoothing:antialiased}
+
+  .page{max-width:1240px;margin:0 auto;padding:30px 16px 90px}
+  .surtitre{font:600 11.5px/1 var(--sans);letter-spacing:.18em;text-transform:uppercase;
+            color:var(--etabli-or);margin:0 0 10px}
+  h1{font:600 30px/1.15 var(--serif);margin:0 0 10px;letter-spacing:-.01em}
+  .chapeau{max-width:680px;color:var(--etabli-doux);font-size:15.5px;line-height:1.6;margin:0 0 6px}
+
+  .barre{display:flex;gap:9px;flex-wrap:wrap;margin:22px 0 18px;align-items:center}
+  .bascule{appearance:none;border:0;cursor:pointer;font:600 12.5px/1 var(--sans);
+           letter-spacing:.02em;padding:11px 17px;border-radius:999px;
+           background:var(--etabli-carte);color:var(--etabli-doux);
+           box-shadow:inset 0 0 0 1px var(--etabli-trait)}
+  .bascule[aria-pressed="true"]{background:var(--etabli-encre);color:var(--etabli-carte);box-shadow:none}
+
+  .tel{width:390px;max-width:100%;border-radius:26px;overflow:hidden;
+       box-shadow:0 1px 2px rgba(20,18,14,.16),0 14px 34px rgba(20,18,14,.14);background:var(--fond)}
+  .ecran{height:700px;display:flex;flex-direction:column;background:var(--fond);color:var(--encre)}
+  .corps{flex:1;overflow-y:auto}
+
+  /* L'en-tête commun : la flèche, puis le titre serif sur une ligne. */
+  .entete{padding:20px 26px 0}
+  .retour{width:36px;height:36px;border-radius:999px;background:var(--plage);
+          display:grid;place-items:center;color:var(--doux);box-shadow:inset 0 0 0 1px var(--trait)}
+  .entete h2{font:600 32px/1.1 var(--serif);letter-spacing:-.018em;margin:16px 0 0;white-space:nowrap}
+
+  .contenu{padding:0 24px 40px}
+  .refus{margin:16px 0 0;font-size:14px;color:var(--rust)}
+  .famille{margin-top:24px}
+  .tete{display:flex;align-items:center;gap:12px}
+  .nomFamille{flex:1;min-width:0;background:transparent;border:0;padding:0;
+              font:600 11px/1.2 var(--sans);letter-spacing:.18em;text-transform:uppercase;color:var(--or)}
+  .retirerFamille{appearance:none;border:0;background:none;cursor:pointer;min-height:44px;
+                  margin-right:-8px;padding:0 8px;font:500 11px/1 var(--sans);
+                  letter-spacing:.28em;text-transform:uppercase;color:var(--gris);flex:none}
+  .ligne{display:flex;align-items:center;gap:12px;padding:4px 0;border-bottom:1px solid var(--trait)}
+  .ligne input{flex:1;min-height:48px;background:transparent;border:0;padding:0;
+               font:400 15px/1.3 var(--sans);color:var(--encre)}
+  .croix{appearance:none;border:0;background:none;cursor:pointer;width:44px;height:44px;flex:none;
+         font-size:18px;color:var(--gris)}
+  .lien{appearance:none;border:0;background:none;cursor:pointer;padding:0;min-height:44px;
+        font:400 14px/1.2 var(--sans);color:var(--or);text-align:left}
+  .champ{display:block;width:100%;border-radius:10px;border:1px solid var(--trait);
+         background:var(--plage);padding:12px;font:400 16px/1.3 var(--sans);color:var(--encre)}
+  .champ + .champ{margin-top:12px}
+  .capsule{appearance:none;border:0;cursor:pointer;display:block;margin:12px auto 0;
+           height:50px;padding:0 30px;border-radius:999px;background:var(--plein);
+           color:var(--surplein);font:500 16px/1 var(--serif);letter-spacing:.01em}
+  .aide{margin:8px 0 0;font-size:13px;color:var(--gris)}
+  .pied{margin:32px 0 0;font-size:13px;line-height:1.6;color:var(--gris)}
+  .pied b{color:var(--encre)}
+
+  .vide{font-size:15px;line-height:1.6;color:var(--gris);margin:18px 0 0}
+  .carte{margin-top:20px;border-radius:14px;padding:20px;background:var(--plage)}
+  .carte .petit{font:600 11px/1.2 var(--sans);letter-spacing:.18em;text-transform:uppercase;color:var(--gris);margin:0 0 10px}
+  .carte .liste{font-size:14px;line-height:1.6;color:var(--encre);margin:0}
+  .carte .note{font-size:13px;color:var(--gris);margin:12px 0 0}
+  .centre{display:block;width:100%;text-align:center;margin-top:12px}
+
+  .tiroir{flex:none;display:flex;justify-content:space-between;align-items:center;
+          margin:0 26px;border-top:1px solid var(--trait);padding:10px 0 12px}
+  .tiroir span{font-size:13px;color:var(--gris)}
+  .tiroir button{appearance:none;border:0;background:none;cursor:pointer;padding:8px;margin-right:-8px;
+                 font:500 11px/1 var(--sans);letter-spacing:.24em;text-transform:uppercase;color:var(--or)}
+
+  /* Le témoin, hors du téléphone : ce qui est dans la base, à l'instant. */
+  .temoin{width:390px;max-width:100%;margin-top:16px;background:var(--etabli-carte);
+          border-radius:16px;padding:14px 16px;box-shadow:inset 0 0 0 1px var(--etabli-trait)}
+  .temoin .t{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+  .temoin .t span{font:600 11px/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--etabli-or)}
+  .temoin .t button{appearance:none;border:0;cursor:pointer;border-radius:999px;padding:8px 13px;
+                    background:var(--etabli);color:var(--etabli-doux);font:600 12px/1 var(--sans)}
+  .journal{font-size:12.5px;line-height:1.45;color:var(--etabli-doux);margin:0 0 8px;min-height:18px}
+  .base{margin:0;padding:0;list-style:none;font-size:13px;line-height:1.5;color:var(--etabli-doux)}
+  .base .fam{margin-top:6px;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--etabli-gris)}
+  .base .fam:first-child{margin-top:0}
+  .base .neuf{background:#e9dcc2;border-radius:4px;transition:background 1.6s}
+  .rien{font-size:13px;color:var(--etabli-gris);margin:0}
+  .remettre{appearance:none;border:0;cursor:pointer;display:block;margin:26px auto 0;min-height:44px;
+            padding:0 18px;border-radius:999px;background:transparent;font:400 13.5px/1 var(--sans);
+            color:var(--gris);box-shadow:inset 0 0 0 1px var(--trait)}
+  .ajoutee input{color:var(--orTexte)}
+</style>
+</head>
+<body>
+<main class="page">
+  <p class="surtitre">Fiche paysage, Composer ma fiche</p>
+  <h1>Le modèle déjà là, et un bouton pour le remettre</h1>
+  <p class="chapeau">Retirez des lignes, ajoutez la vôtre, puis appuyez sur « Remettre le modèle Atlas ». Essayez A puis B.</p>
+
+  <div class="barre">
+    <button class="bascule" type="button" data-choix="A" aria-pressed="true">A. Tout redevient le modèle</button>
+    <button class="bascule" type="button" data-choix="B" aria-pressed="false">B. Seuls les manquants reviennent</button>
+  </div>
+
+  <div class="tel">
+    <div class="ecran">
+      <div class="corps" id="corps"></div>
+      <div class="tiroir" id="tiroir" hidden>
+        <span id="tiroirTexte"></span>
+        <button type="button" id="annuler">Annuler</button>
+      </div>
+    </div>
+  </div>
+  <p class="aide" style="max-width:390px" id="dit"></p>
+</main>
+
+<script>
+(function () {
+  // Relevé de src/lib/prestations-entretien.ts, MODELE_FOURNI, mot pour mot.
+  var MODELE = [
+    ["Pelouse","Tonte et ébarbage"],["Pelouse","Traitement pelouse"],["Pelouse","Scarification"],["Pelouse","Engrais"],
+    ["Tailles","Taille arbuste automne"],["Tailles","Taille arbuste printemps"],["Tailles","Taille de haie automne"],
+    ["Tailles","Taille de haie printemps"],["Tailles","Taille des rosiers"],
+    ["Massifs","Bêchage"],["Massifs","Bordures massifs"],["Massifs","Griffage massifs"],["Massifs","Désherbage massifs"],
+    ["Massifs","Coupe des fleurs fanées"],
+    ["Propreté","Nettoyage pied de haies"],["Propreté","Désherbant allée"],["Propreté","Lierre, liseron, liane"],
+    ["Propreté","Démoussage voirie"],["Propreté","Ramassage des feuilles"],["Propreté","Évacuation des déchets"]
+  ];
+  var choix = "A", lignes, avant = null, minuteur = null, ajoutOuvert = null, saisie = "";
+  var DIT = {
+    A: "A : vos lignes à vous partent, la fiche redevient exactement le modèle. « Annuler » la rend telle qu'elle était pendant six secondes.",
+    B: "B : ce que vous aviez retiré du modèle revient, vos lignes à vous restent."
+  };
+  function copie(l) { return l.map(function (x) { return { f: x.f, l: x.l, a: x.a }; }); }
+  function depart() { lignes = MODELE.map(function (m) { return { f: m[0], l: m[1], a: false }; }); }
+  function commeLeModele() {
+    if (lignes.length !== MODELE.length) return false;
+    return MODELE.every(function (m, i) { return lignes[i].f === m[0] && lignes[i].l === m[1]; });
+  }
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+  function familles() { var o = []; lignes.forEach(function (x) { if (o.indexOf(x.f) < 0) o.push(x.f); }); return o; }
+
+  function dessiner() {
+    var h = '<div class="entete"><div class="retour">&#8249;</div><h2>Ma fiche</h2></div><div class="contenu">';
+    familles().forEach(function (f) {
+      h += '<div class="famille"><div class="tete"><span class="nomFamille">' + esc(f) + '</span></div>';
+      lignes.forEach(function (x, i) {
+        if (x.f !== f) return;
+        h += '<div class="ligne' + (x.a ? ' ajoutee' : '') + '"><input value="' + esc(x.l) + '" readonly><button class="croix" type="button" data-retirer="' + i + '" aria-label="Retirer ' + esc(x.l) + '">&times;</button></div>';
+      });
+      if (ajoutOuvert === f) {
+        h += '<input class="champ" style="margin-top:10px" data-saisie placeholder="Nom de la prestation" value="' + esc(saisie) + '">' +
+             '<button class="capsule" type="button" data-valider="' + esc(f) + '">Ajouter à ' + esc(f) + '</button>';
+      } else {
+        h += '<button class="lien" type="button" data-ouvrir="' + esc(f) + '">+ Ajouter une prestation</button>';
+      }
+      h += '</div>';
+    });
+    if (!commeLeModele()) h += '<button class="remettre" type="button" id="remettre">Remettre le modèle Atlas</button>';
+    h += '</div>';
+    document.getElementById("corps").innerHTML = h;
+    document.getElementById("dit").textContent = DIT[choix];
+    var champ = document.querySelector("[data-saisie]");
+    if (champ) { champ.focus(); champ.addEventListener("input", function (e) { saisie = e.target.value; }); }
+  }
+
+  function tiroir(texte) {
+    clearTimeout(minuteur);
+    document.getElementById("tiroirTexte").textContent = texte;
+    document.getElementById("tiroir").hidden = false;
+    minuteur = setTimeout(function () { document.getElementById("tiroir").hidden = true; avant = null; }, 6000);
+  }
+
+  document.getElementById("corps").addEventListener("click", function (e) {
+    var t = e.target.closest("button"); if (!t) return;
+    if (t.dataset.retirer !== undefined) {
+      avant = copie(lignes); lignes.splice(Number(t.dataset.retirer), 1);
+      tiroir("Retiré à l'instant"); dessiner(); return;
+    }
+    if (t.dataset.ouvrir) { ajoutOuvert = t.dataset.ouvrir; saisie = ""; dessiner(); return; }
+    if (t.dataset.valider) {
+      var nom = saisie.trim(), f = t.dataset.valider;
+      if (nom) {
+        var dernier = -1; lignes.forEach(function (x, i) { if (x.f === f) dernier = i; });
+        lignes.splice(dernier + 1, 0, { f: f, l: nom, a: true });
+      }
+      ajoutOuvert = null; saisie = ""; dessiner(); return;
+    }
+    if (t.id === "remettre") {
+      avant = copie(lignes);
+      if (choix === "A") {
+        depart();
+      } else {
+        MODELE.forEach(function (m, i) {
+          var present = lignes.some(function (x) { return x.f === m[0] && x.l === m[1]; });
+          if (present) return;
+          var dernier = -1; lignes.forEach(function (x, j) { if (x.f === m[0]) dernier = j; });
+          lignes.splice(dernier < 0 ? lignes.length : dernier + 1, 0, { f: m[0], l: m[1], a: false });
+        });
+      }
+      tiroir("Modèle remis"); dessiner();
+    }
+  });
+  document.getElementById("annuler").addEventListener("click", function () {
+    if (avant) lignes = avant; avant = null; clearTimeout(minuteur);
+    document.getElementById("tiroir").hidden = true; dessiner();
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-choix]"), function (b) {
+    b.addEventListener("click", function () {
+      choix = b.dataset.choix;
+      Array.prototype.forEach.call(document.querySelectorAll("[data-choix]"), function (x) { x.setAttribute("aria-pressed", String(x === b)); });
+      depart(); ajoutOuvert = null; avant = null; document.getElementById("tiroir").hidden = true; dessiner();
+    });
+  });
+  depart(); dessiner();
+})();
+</script>
+</body>
+</html>

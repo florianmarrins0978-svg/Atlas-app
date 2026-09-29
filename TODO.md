@@ -1,5 +1,17 @@
 # Prochaines tâches
 
+## ⏳ UNE PLANCHE À REGARDER : LE MODÈLE DE FICHE DÉJÀ LÀ (29 septembre 2026)
+
+Sa demande : *« mon modèle doit déjà être là par défaut, et ils la modifieront
+s'ils le souhaitent »*, puis *« il doit pouvoir la remettre en cliquant sur une
+touche, comme pour les messages préremplis envoyés par SMS »* (le bouton
+« Remettre le message d'Atlas », `MessagesClient.tsx`). Planche
+`appli/fiche-paysage-modele.html` : A, « Remettre » rend exactement le modèle
+(ses lignes à lui partent, « Annuler » six secondes) ; B, seuls les manquants
+reviennent. **Rien n'est codé.** Au codage : la fiche vide d'aujourd'hui
+(`ComposerMaFiche.tsx`, « Partir du modèle Atlas » / « Je préfère composer la
+mienne ») disparaît.
+
 ## ⏳ UNE PLANCHE À REGARDER : LES COULEURS DU PLANNING (29 septembre 2026)
 
 Sa demande : modifier les couleurs de rien, incomplet, complet, au-delà,
