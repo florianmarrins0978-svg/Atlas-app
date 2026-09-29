@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas : le lien valable 45 jours</title>
+<style>
+  /*
+    LE LIEN VALABLE 45 JOURS : sa décision du 29 septembre 2026.
+
+    Sa réponse : « garder 45 jours, mais sur le message qu'il reçoit il faut
+    préciser que le lien est valide 45 jours ». Le lien d'un devis meurt au
+    bout de VALIDITE_LIEN_JOURS (src/server/repositories/envois-devis.ts), et le
+    client ne le savait pas.
+
+    LE TEXTE EST RECOPIÉ DU CODE : MESSAGES_PAR_DEFAUT.devis et enveloppe()
+    (src/lib/message-client.ts), mot pour mot. Seule la ligne des 45 jours est
+    nouvelle. L'objet de l'e-mail est celui de composerMessageClient. La page
+    d'après expiration est celle de src/app/devis/[jeton]/page.tsx.
+
+    LE PARTI : la ligne est posée par Atlas SOUS le lien, comme le lien
+    lui-même, et ne s'efface pas. Écrite dans son message modifiable, elle
+    disparaîtrait des messages qu'il a déjà réécrits, et il pourrait la retirer
+    sans le vouloir.
+
+    LA DATE : envoi le mardi 29 septembre, lien mort 45 jours plus tard, le
+    vendredi 13 novembre à la même heure (expireAt = envoi + 45 × 24 h).
+  */
+  :root{
+    --bone:#f5f3ee; --cream:#faf9f5; --paper:#ece9e1;
+    --charcoal:#1c1c1a; --charcoal-soft:#4a4a44; --muted:#8a8578;
+    --pine:#2f3b2f; --or:#B98B47; --alerte:#9C3B2E;
+    --line:rgba(28,28,26,.12); --line-soft:rgba(28,28,26,.07);
+    --display:ui-serif,Georgia,"Iowan Old Style","Palatino Linotype",serif;
+    --body:ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+    --ios:-apple-system,"SF Pro Text","Helvetica Neue",Arial,sans-serif;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;background:#d9d6cf;font-family:var(--body);color:var(--charcoal)}
+  .page{max-width:414px;margin:0 auto;min-height:100vh;background:var(--bone);padding:26px 18px 40px}
+  .surtitre{display:block;font-size:12px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--or)}
+  h1{margin:8px 0 0;font-family:var(--display);font-weight:500;font-size:30px;line-height:1.12}
+  .chapo{margin:10px 0 0;font-size:14.5px;line-height:1.5;color:var(--charcoal-soft)}
+
+  .choix{display:flex;gap:8px;margin-top:20px}
+  .choix button{flex:1;min-height:46px;border-radius:999px;border:0;font:inherit;font-size:14px;
+    background:var(--cream);color:var(--charcoal);box-shadow:inset 0 0 0 1px var(--line);cursor:pointer}
+  .choix button[aria-pressed="true"]{background:var(--or);color:#fff;box-shadow:none}
+  .choix b{font-family:var(--display);font-size:17px;margin-right:6px}
+  .canal{display:flex;gap:6px;margin-top:10px;justify-content:center}
+  .canal button{min-height:36px;padding:0 16px;border-radius:999px;border:0;font:inherit;font-size:13px;
+    background:transparent;color:var(--charcoal-soft);cursor:pointer}
+  .canal button[aria-pressed="true"]{background:var(--paper);color:var(--charcoal);font-weight:600}
+
+  .rubrique{margin:28px 0 10px;font-size:10px;font-weight:600;letter-spacing:.24em;text-transform:uppercase;color:var(--muted)}
+
+  /* ── Le téléphone du client ─────────────────────────────────────────── */
+  .tel{background:#fff;border-radius:34px;padding:10px;box-shadow:0 10px 30px rgba(0,0,0,.14),inset 0 0 0 1px #d6d3cc}
+  .ecran{border-radius:26px;overflow:hidden;background:#fff;font-family:var(--ios)}
+  .barre{display:flex;justify-content:space-between;padding:10px 22px 4px;font-size:13px;font-weight:600;color:#000}
+  .sms-tete{text-align:center;padding:6px 0 10px;border-bottom:1px solid #eee;background:#f7f7f7}
+  .avatar{width:42px;height:42px;border-radius:50%;margin:0 auto 4px;background:linear-gradient(#a7acb4,#868b93);
+    color:#fff;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:600}
+  .qui{font-size:12px;color:#000}
+  .fil{padding:14px 12px 22px;min-height:470px}
+  .heure{text-align:center;font-size:11px;color:#8e8e93;margin:0 0 8px}
+  .bulle{max-width:88%;background:#e9e9eb;color:#000;border-radius:18px;padding:9px 13px;font-size:15.5px;
+    line-height:1.33;white-space:pre-wrap;word-wrap:break-word}
+  .bulle a,.mail a{color:#0a66d8;text-decoration:underline;word-break:break-all}
+
+  .mail-tete{padding:12px 16px 12px;border-bottom:1px solid #eee}
+  .objet{font-size:19px;font-weight:700;color:#000;line-height:1.25}
+  .de{display:flex;gap:10px;align-items:center;margin-top:12px}
+  .de .avatar{margin:0;width:36px;height:36px;font-size:15px}
+  .de-nom{font-size:14.5px;font-weight:600;color:#000}
+  .de-a{font-size:12.5px;color:#8e8e93}
+  .mail{padding:16px;font-size:15.5px;line-height:1.45;color:#000;white-space:pre-wrap;min-height:430px}
+
+  .neuve{background:#fff3d6;border-radius:4px;box-shadow:0 0 0 3px #fff3d6}
+
+  /* ── Ses réglages ───────────────────────────────────────────────────── */
+  .cadre{background:var(--cream);border:1px solid var(--line);border-radius:14px;padding:15px 16px;
+    font-size:14.5px;line-height:1.6;white-space:pre-wrap}
+  .jeton{color:var(--or);font-weight:600}
+  .fixe{margin-top:10px;display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border-radius:12px;
+    background:var(--paper);font-size:14px;line-height:1.5;color:var(--charcoal-soft)}
+  .fixe svg{flex:none;margin-top:2px}
+
+  /* ── La page du client, après ────────────────────────────────────────── */
+  .apres{background:#faf9f5;border-radius:18px;padding:34px 22px;text-align:center;border:1px solid var(--line)}
+  .apres h2{margin:0;font-family:var(--display);font-weight:500;font-size:23px}
+  .apres p{margin:10px 0 0;font-size:14.5px;color:var(--charcoal-soft);line-height:1.5}
+
+  .note{margin-top:28px;padding:16px 18px;background:var(--cream);border-radius:13px;font-size:13.5px;
+    line-height:1.6;color:var(--charcoal-soft)}
+  .note b{color:var(--charcoal)}
+</style>
+</head>
+<body>
+<div class="page">
+  <span class="surtitre">Le message au client</span>
+  <h1>Le lien valable 45 jours</h1>
+  <p class="chapo">Le devis part le mardi 29 septembre. Le surligné est la seule ligne nouvelle.</p>
+
+  <div class="choix" role="group" aria-label="La ligne">
+    <button type="button" data-variante="A" aria-pressed="true"><b>A</b>avec la date</button>
+    <button type="button" data-variante="B" aria-pressed="false"><b>B</b>sans la date</button>
+  </div>
+  <div class="canal" role="group" aria-label="Le canal">
+    <button type="button" data-canal="sms" aria-pressed="true">Par SMS</button>
+    <button type="button" data-canal="mail" aria-pressed="false">Par e-mail</button>
+  </div>
+
+  <p class="rubrique">Ce que reçoit Mme Larousse</p>
+  <div class="tel">
+    <div class="ecran">
+      <div class="barre"><span>14:32</span><span>5G</span></div>
+      <div id="vue-sms">
+        <div class="sms-tete"><div class="avatar">EN</div><div class="qui">Eden Nature</div></div>
+        <div class="fil">
+          <p class="heure">Aujourd’hui 14:32</p>
+          <div class="bulle" id="bulle"></div>
+        </div>
+      </div>
+      <div id="vue-mail" hidden>
+        <div class="mail-tete">
+          <div class="objet">Votre devis de Eden Nature</div>
+          <div class="de"><div class="avatar">EN</div>
+            <div><div class="de-nom">Eden Nature</div><div class="de-a">À : Mme Larousse, aujourd’hui 14:32</div></div>
+          </div>
+        </div>
+        <div class="mail" id="mail"></div>
+      </div>
+    </div>
+  </div>
+
+  <p class="rubrique">Dans vos réglages</p>
+  <div class="cadre" id="reglage"></div>
+  <div class="fixe">
+    <svg width="14" height="16" viewBox="0 0 14 16" fill="none" aria-hidden="true"><rect x="1.5" y="7" width="11" height="8" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M4 7V5a3 3 0 0 1 6 0v2" stroke="currentColor" stroke-width="1.5"/></svg>
+    <span>Toujours ajoutée sous le lien : <span id="ligne-reglage"></span></span>
+  </div>
+
+  <p class="rubrique">Après le 13 novembre, sur son lien</p>
+  <div class="apres">
+    <h2>Ce lien n’est plus valable</h2>
+    <p>Contactez votre artisan pour en recevoir un nouveau.</p>
+  </div>
+
+  <div class="note">
+    <b>Ma proposition : A.</b> Avec la date, le client n’a rien à compter, même s’il ouvre le message trois semaines plus tard.
+    La ligne est ajoutée par Atlas, comme le lien : elle reste même si vous avez réécrit votre message.
+    <b>Rien n’est codé.</b>
+  </div>
+</div>
+
+<script>
+  // Le message par défaut du devis, recopié de src/lib/message-client.ts.
+  const LIEN = "https://eden-nature.app.github.dev/devis/7deYienbFTa4DISAZ";
+  const PHRASE = "Voici votre devis. Vous pouvez le consulter et choisir votre date d’intervention. " +
+    "Et si aucune des dates proposées ne vous convient, vous pouvez en proposer une autre. Tout se fait sur cette page :";
+  const LIGNES = {
+    A: "Ce lien est valable 45 jours, jusqu’au vendredi 13 novembre.",
+    B: "Ce lien est valable 45 jours.",
+  };
+  let variante = "A";
+  let canal = "sms";
+
+  const echapper = (t) => t.replace(/&/g, "&amp;").replace(/</g, "&lt;");
+  function message() {
+    return echapper("Bonjour Mme Larousse,\n\n" + PHRASE + "\n\n") +
+      `<a href="#" onclick="return false">${LIEN}</a>` +
+      `\n\n<span class="neuve">${echapper(LIGNES[variante])}</span>\n\n` +
+      echapper("Bien à vous,\nEden Nature");
+  }
+  function rendre() {
+    document.getElementById("bulle").innerHTML = message();
+    document.getElementById("mail").innerHTML = message();
+    document.getElementById("vue-sms").hidden = canal !== "sms";
+    document.getElementById("vue-mail").hidden = canal !== "mail";
+    document.getElementById("ligne-reglage").textContent = "« " + LIGNES[variante] + " »";
+    document.querySelectorAll("[data-variante]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.variante === variante)));
+    document.querySelectorAll("[data-canal]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.canal === canal)));
+  }
+  document.getElementById("reglage").innerHTML =
+    'Bonjour <span class="jeton">[client]</span>,\n\nVoici votre <span class="jeton">[document]</span>. ' +
+    echapper(PHRASE.replace("Voici votre devis. ", "")) +
+    '\n\n<span class="jeton">[lien]</span>\n\nBien à vous,\n<span class="jeton">[entreprise]</span>';
+  document.querySelectorAll("[data-variante]").forEach((b) => b.addEventListener("click", () => { variante = b.dataset.variante; rendre(); }));
+  document.querySelectorAll("[data-canal]").forEach((b) => b.addEventListener("click", () => { canal = b.dataset.canal; rendre(); }));
+  rendre();
+</script>
+</body>
+</html>

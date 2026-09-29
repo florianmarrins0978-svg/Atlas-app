@@ -1,5 +1,15 @@
 # Prochaines tâches
 
+
+## ⏳ UNE PLANCHE À REGARDER : LE LIEN VALABLE 45 JOURS (29 septembre 2026)
+
+Sa réponse, devant la question de la durée de vie du lien d'un devis
+(`VALIDITE_LIEN_JOURS`) : *« garder 45 jours, mais sur le message qu'il reçoit
+il faut préciser que le lien est valide 45 jours »*. Planche
+`appli/lien-valable-45-jours.html` : une ligne posée par Atlas sous le lien,
+qui reste même dans un message réécrit ; **A** avec la date, **B** sans.
+Proposition : A. **Rien n'est codé.**
+
 ## ⏳ UNE PLANCHE À REGARDER : LES COULEURS DU PLANNING (29 septembre 2026)
 
 Sa demande : modifier les couleurs de rien, incomplet, complet, au-delà,
