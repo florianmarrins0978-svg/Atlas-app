@@ -1,4 +1,5 @@
 import Decimal from "decimal.js";
+import { ligneSansTexte } from "./taches-du-devis";
 
 /**
  * Ce que l'application sait déjà d'un client — la règle, sans base.
@@ -119,7 +120,7 @@ export function composerFicheClient(
     { libelle: string; chantiers: Set<string>; total: Decimal; lignes: number }
   >();
   for (const l of lignes) {
-    if (!l.libelle.trim()) continue; // une ligne vide n'est pas une prestation
+    if (ligneSansTexte(l.libelle)) continue; // une ligne vide n'est pas une prestation
     const k = cle(l.libelle);
     const vu = parFamille.get(k) ?? {
       libelle: familleDePrestation(l.libelle),

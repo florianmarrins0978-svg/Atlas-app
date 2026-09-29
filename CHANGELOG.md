@@ -32,6 +32,29 @@ refus de la fiche (pleine) se dit et n'enlève rien au contrat. Pas de famille
 « Autres » d'office : il avait refusé « Divers » le 24 août. Planche
 `appli/contrat-prestation-dans-ma-fiche.html`, choisie le 29.
 
+### Plus de case vide dans « Travaux à faire »
+
+Sa capture : une case ronde sans texte au-dessus de « Coupe de cheveux homme ».
+Le devis garde les lignes que « + Ajouter une ligne » écrit en base avant le
+premier mot (et `peutPreparerLaPiece` laisse partir une ligne sans libellé) ;
+la fiche les recopiait toutes. La règle « une ligne sans texte n'est pas une
+tâche » vit désormais dans `src/lib/taches-du-devis.ts`, lue par la fiche
+d'intervention, le retour du jour, la fiche de sécurité (« Le devis dit : , … »)
+et la fiche client, qui en portait sa propre copie. Suite :
+`scripts/test-taches-du-devis.ts`, vue rouge avant la correction.
+
+Et la quantité s'y écrit comme une quantité : « Coupe de cheveux homme, 45 u »,
+« Taille de haie, 18 ml », plus « — 45 » qui se lisait comme un prix. Même
+écriture que le papier du devis (`quantiteLisible`, `uniteDeLaLigne`) ; « 1 »
+reste tu, il n'apprend rien.
+
+*« Je ne veux plus avoir de bulle vide »* : les deux autres chemins sont
+fermés. Le retour du jour n'écrit plus une tâche sans texte, quoi que l'écran
+envoie, et un retour envoyé avant cette règle ne la relit plus (la fiche du
+lendemain repart du dernier retour, et Terminés le montre). La preuve n'est pas
+réécrite en base : la ligne vide ne s'affiche plus, c'est tout
+(`sansLigneVide`, `test-retour-intervention-db.ts`).
+
 ## 2026-09-28
 
 ### Trois lots sur `main` en une seule batterie

@@ -20,6 +20,7 @@ import { genererPdfDevis, type DevisPdfData } from "../pdf/devis-pdf";
 import { enregistrerObjet } from "../storage";
 import { ecrireNumero, repartChaqueAnnee } from "@/lib/numero-documents";
 import { lignesEnAttenteDePrix } from "@/lib/preparation-devis";
+import { tachesDuDevis } from "@/lib/taches-du-devis";
 
 const TAUX_TVA_DEFAUT = "20.00";
 
@@ -894,21 +895,11 @@ export async function tachesDuChantier(
     const d = await devisÀImprimer(tx, chantierId);
     if (!d) return { taches: [], avecDevis: false };
     const lignes = await tx
-      .select({ libelle: lignesDevis.libelle, quantite: lignesDevis.quantite })
+      .select({ libelle: lignesDevis.libelle, quantite: lignesDevis.quantite, unite: lignesDevis.unite })
       .from(lignesDevis)
       .where(eq(lignesDevis.devisId, d.id))
       .orderBy(lignesDevis.ordre);
-    return {
-      avecDevis: true,
-      taches: lignes.map((l) => {
-        // **La quantité s'écrit quand elle apprend quelque chose.** « 1 » ne dit
-        // rien de plus que le libellé ; « 18 » dit combien de mètres de haie.
-        const q = Number(l.quantite);
-        return Number.isFinite(q) && q !== 1
-          ? `${l.libelle} — ${q.toLocaleString("fr-FR")}`
-          : l.libelle;
-      }),
-    };
+    return { avecDevis: true, taches: tachesDuDevis(lignes) };
   });
 }
 
