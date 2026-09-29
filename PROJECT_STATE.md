@@ -4,6 +4,13 @@
 · dernière migration `drizzle/0106_hausse_du_devis_repris.sql` (sur la branche)
 
 ---
+## SUR SA BRANCHE : LE CONTRAT QUITTÉ DANS « VOS CHANTIERS » (29 septembre 2026)
+
+L'écran du contrat d'entretien s'enregistre à chaque geste ; l'accueil liste
+les brouillons de contrat, les rouvre et sait les retirer. Branche
+`claude/contrat-quitte-dans-chantiers`, `ARCHITECTURE.md` §435. Niveau 3,
+batterie interdite ce jour-là : pas sur `main`.
+
 ## SUR `main` : L'ASSISTANT RÉPOND SUR SES DONNÉES (28 septembre 2026)
 
 Quatre fiches « comment Atlas se comporte » (conservation, après l'arrêt, qui

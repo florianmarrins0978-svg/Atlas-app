@@ -14,6 +14,7 @@ import {
   ttcDuPassage,
   relireContrat,
   ceQuiManque,
+  etatDuBrouillonDeContrat,
   designationSurLePapier,
   type PrestationContrat,
   type PeriodeContrat,
@@ -85,6 +86,12 @@ cas("une prestation à chiffrer ne pèse rien et bloque l'envoi", () => {
   assert.equal(ceQuiManque(sansPrix, UN_AN), "À compléter : Tonte et ébarbage.");
   assert.equal(ceQuiManque([], UN_AN), "Ajoutez une prestation.");
   assert.equal(ceQuiManque(PLANCHE, UN_AN), null);
+});
+
+cas("l'accueil dit d'un brouillon s'il peut partir, sur la même règle que l'envoi", () => {
+  assert.equal(etatDuBrouillonDeContrat(PLANCHE, UN_AN), "Contrat prêt à envoyer");
+  assert.equal(etatDuBrouillonDeContrat([{ ...PLANCHE[0], prixPassageHt: null }], UN_AN), "Contrat à compléter");
+  assert.equal(etatDuBrouillonDeContrat([], UN_AN), "Contrat à compléter");
 });
 
 cas("les mensualités retombent au centime sur le total, l'arrondi sur la dernière", () => {

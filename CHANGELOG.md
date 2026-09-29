@@ -6,6 +6,25 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-09-29
+
+### Un contrat d'entretien commencé puis quitté se retrouve dans « Vos chantiers »
+
+Sa plainte : *« lorsque j'ouvre un contrat d'entretien pour réaliser le devis,
+si je quitte, il ne s'enregistre pas dans mes chantiers en cours »*. Deux
+racines. **L'écran du contrat n'écrivait rien** avant « Aperçu du PDF » ou
+« Envoyer » : quitté, le contrat partait avec lui. Il s'enregistre désormais à
+chaque geste, dès la première prestation, dans une file qui ne crée jamais deux
+brouillons ; l'aperçu et l'envoi passent par la même écriture (la création en
+double qui vivait dans `envoyer` a disparu). **L'accueil ne lisait que des
+chantiers** : il lit aussi les brouillons de contrat (« Contrat à compléter »
+ou « Contrat prêt à envoyer »), la ligne rouvre l'écran du contrat, et le
+glissement le retire (un brouillon seulement). Parti chez le client, il quitte
+la liste. Suite neuve `test-contrat-quitte-e2e` (rouge sur l'ancien code, vert
+ensuite), cas ajoutés à `test-contrats-entretien` et `-db`. `ARCHITECTURE.md`
+§435. Niveau 3 (rayon de 102 points d'entrée) : **batterie non jouée**, il l'a
+interdite ; pas sur `main`.
+
 ## 2026-09-28
 
 ### Trois lots sur `main` en une seule batterie

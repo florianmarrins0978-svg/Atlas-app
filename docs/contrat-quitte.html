@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — Le contrat d'entretien quitté : il se retrouve dans « Vos chantiers »</title>
+<style>
+  :root{
+    --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
+    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
+    --accent:#2f3b2f; --alert:#b5562a; --line:rgba(28,28,26,0.13);
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#161815; --surface:#1d201c; --raised:#252924;
+      --ink:#eae7df; --ink-soft:#c2bdb1; --muted:#948f83;
+      --accent:#9fbd82; --alert:#e0885a; --line:rgba(234,231,223,0.17);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.65;}
+  main{max-width:44rem;margin:0 auto;padding:2.5rem 1.2rem 5rem;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.2;
+    text-wrap:balance;margin:2rem 0 0.6rem;scroll-margin-top:1rem;}
+  h1{font-size:2rem;margin-top:0;}
+  h2{font-size:1.5rem;padding-top:1.2rem;border-top:1px solid var(--line);}
+  h3{font-size:1.12rem;}
+  h4{font-size:1rem;}
+  p{margin:0 0 0.9rem;}
+  a{color:var(--accent);text-underline-offset:3px;}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px;}
+  ul,ol{margin:0 0 1rem;padding-left:1.3rem;}
+  li{margin-bottom:0.4rem;}
+  li::marker{color:var(--muted);}
+  /* Le sommaire : des cibles larges, confortables au doigt sur téléphone. */
+  ol li a{display:inline-block;padding:0.15rem 0;}
+  blockquote{margin:1rem 0;padding:0.85rem 1.05rem;background:var(--raised);
+    border-left:3px solid var(--accent);border-radius:0 10px 10px 0;color:var(--ink-soft);}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.87em;
+    background:var(--raised);padding:0.1rem 0.35rem;border-radius:5px;}
+  hr{border:0;border-top:1px solid var(--line);margin:2rem 0;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;
+    background:var(--surface);margin:0 0 1.2rem;}
+  table{border-collapse:collapse;width:100%;font-size:0.92rem;min-width:22rem;}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--line);
+    vertical-align:top;}
+  th{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--muted);white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .retour{display:inline-block;font-size:0.76rem;color:var(--muted);
+    text-decoration:none;margin:-0.3rem 0 1rem;}
+  .retour:hover{color:var(--accent);text-decoration:underline;}
+</style>
+</head>
+<body>
+<main>
+<h1 id="le-contrat-dentretien-quitté--il-se-retrouve-dans--vos-chantiers-">Le contrat d'entretien quitté : il se retrouve dans « Vos chantiers »</h1>
+<p>29 septembre 2026. Branche <code>claude/contrat-quitte-dans-chantiers</code>, <strong>pas sur <code>main</code></strong>.</p>
+<h2 id="ta-remarque">Ta remarque</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<blockquote>« Lorsque j'ouvre un contrat d'entretien pour réaliser le devis, si je quitte, il ne s'enregistre pas dans mes chantiers en cours sur la page chantier. »</blockquote>
+<p><strong>Vrai, et pour deux raisons</strong>, vérifiées dans le code puis rejouées dans un navigateur.</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>La cause</th>
+<th>Le fichier</th>
+</tr></thead><tbody>
+<tr>
+<td>1</td>
+<td>L'écran du contrat n'écrivait <strong>rien</strong> avant « Aperçu du PDF » ou « Envoyer ». Quitté, le contrat partait avec l'écran.</td>
+<td><code>src/app/clients/[id]/contrat/ContratClient.tsx</code></td>
+</tr>
+<tr>
+<td>2</td>
+<td>La page Chantiers ne lisait <strong>que des chantiers</strong>. Même enregistré, un contrat en cours n'y apparaissait jamais.</td>
+<td><code>src/app/page.tsx</code></td>
+</tr>
+</tbody></table></div>
+<h2 id="ce-qui-a-été-fait">Ce qui a été fait</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Comment</th>
+<th>Le fichier</th>
+</tr></thead><tbody>
+<tr>
+<td>le contrat s'enregistre tout seul</td>
+<td>dès la première prestation, puis à chaque changement ; jamais deux brouillons pour un contrat</td>
+<td><code>ContratClient.tsx</code></td>
+</tr>
+<tr>
+<td>il apparaît dans « Vos chantiers »</td>
+<td>« Contrat d'entretien », le nom du client, « Contrat à compléter » ou « Contrat prêt à envoyer » ; il compte dans « En cours »</td>
+<td><code>src/app/page.tsx</code>, <code>src/lib/contrats-entretien.ts</code></td>
+</tr>
+<tr>
+<td>toucher la ligne</td>
+<td>rouvre le contrat où tu l'as laissé</td>
+<td><code>src/app/page.tsx</code></td>
+</tr>
+<tr>
+<td>glisser pour retirer</td>
+<td>efface le brouillon ; un contrat déjà envoyé ne s'efface pas</td>
+<td><code>src/app/actions.ts</code>, <code>src/server/repositories/contrats-entretien.ts</code></td>
+</tr>
+<tr>
+<td>envoyé au client</td>
+<td>il quitte la liste</td>
+<td><code>brouillonsDeContrat</code></td>
+</tr>
+<tr>
+<td>qui le voit</td>
+<td>seulement ceux qui peuvent rédiger un devis</td>
+<td><code>src/app/page.tsx</code></td>
+</tr>
+</tbody></table></div>
+<p><strong>Retiré</strong> : l'envoi créait le contrat de son côté s'il n'existait pas encore. Il passe maintenant par le même enregistrement que le reste.</p>
+<h2 id="les-preuves">Les preuves</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Contrôle</th>
+<th>Résultat</th>
+</tr></thead><tbody>
+<tr>
+<td><code>test-contrat-quitte-e2e</code> (neuf) : ta fiche client, « Contrat d'entretien », une prestation, on quitte</td>
+<td><strong>rouge sur l'ancien code</strong> (4 cas sur 4), <strong>vert</strong> avec la correction</td>
+</tr>
+<tr>
+<td><code>test-dashboard</code>, <code>test-repartir-du-client</code> (écrans voisins)</td>
+<td>verts</td>
+</tr>
+<tr>
+<td><code>test-contrats-entretien</code> et <code>test-contrats-entretien-db</code> (sous <code>atlas_app</code>, donc avec l'isolation)</td>
+<td>verts, trois cas ajoutés</td>
+</tr>
+<tr>
+<td>types, lint, pansements, code mort, couches, tirets, flèches</td>
+<td>verts</td>
+</tr>
+<tr>
+<td>l'accueil et l'écran du contrat, regardés à 390 px</td>
+<td>la ligne est là, le contrat se rouvre avec sa prestation</td>
+</tr>
+</tbody></table></div>
+<h2 id="ce-qui-na-pas-été-fait">Ce qui n'a pas été fait</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>La batterie entière.</strong> Tu l'as interdite. Le lot est de niveau 3 (le fichier des règles du contrat touche 102 écrans) : elle est obligatoire avant <code>main</code>.</p>
+<h2 id="ce-qui-reste-ouvert">Ce qui reste ouvert</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Question</th>
+<th>Qui tranche</th>
+</tr></thead><tbody>
+<tr>
+<td>Un contrat <strong>envoyé</strong> sans réponse doit-il rester sur l'accueil, comme un devis envoyé ? Aujourd'hui il en sort.</td>
+<td>toi</td>
+</tr>
+<tr>
+<td>Quand jouer la batterie pour le mettre sur <code>main</code></td>
+<td>toi</td>
+</tr>
+</tbody></table></div>
+</main>
+</body>
+</html>

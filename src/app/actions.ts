@@ -8,6 +8,7 @@ import { marquerReponseVue } from "@/server/repositories/envois-devis";
 import { marquerReceptionVue } from "@/server/repositories/envois-factures";
 import { getOuCreerDevisBrouillon } from "@/server/repositories/devis";
 import { repousserRappelFacture, marquerRappelVu } from "@/server/repositories/rappels";
+import { supprimerBrouillonDeContrat } from "@/server/repositories/contrats-entretien";
 import { estGenreVu } from "@/lib/rappels";
 import { jourIso } from "@/lib/jour";
 
@@ -158,5 +159,30 @@ export async function marquerRappelVuAction(
     // à sa place, c'est réparer une panne imaginée (`AGENTS.md`).
     console.error("[accueil] rappel non marqué vu", erreur);
     return { ok: false, raison: "Impossible de ranger ce rappel pour l'instant. Réessayez." };
+  }
+}
+
+/**
+ * Retirer de « Vos chantiers » un contrat d'entretien commencé et jamais parti.
+ * La garde est celle qui le rédige (`exigerGestionDevis`) : qui ne peut pas
+ * écrire un contrat ne l'efface pas non plus.
+ */
+export async function supprimerBrouillonDeContratAction(
+  id: string
+): Promise<{ succes: true } | { succes: false; erreur: string }> {
+  const ctx = await getCurrentCtx();
+  await exigerGestionDevis(ctx, "supprimer un contrat d'entretien");
+  try {
+    if (!(await supprimerBrouillonDeContrat(ctx, id))) {
+      return { succes: false, erreur: "Ce contrat est parti chez le client, ou n'existe plus." };
+    }
+    revalidatePath("/");
+    return { succes: true };
+  } catch (err) {
+    logger.error("Suppression du brouillon de contrat impossible", {
+      id,
+      cause: err instanceof Error ? err.message : String(err),
+    });
+    return { succes: false, erreur: "Le contrat n'a pas pu être supprimé." };
   }
 }

@@ -345,6 +345,15 @@ export function ceQuiManque(prestations: readonly PrestationContrat[], periode: 
   return incompletes.length ? `À compléter : ${incompletes.join(", ")}.` : null;
 }
 
+/**
+ * L'état d'un contrat en brouillon sur la liste « Vos chantiers » — sa plainte
+ * du 29 septembre 2026 : un contrat commencé puis quitté n'y figurait pas. Le
+ * mot suit la même règle que l'envoi : prêt quand rien ne manque.
+ */
+export function etatDuBrouillonDeContrat(prestations: readonly PrestationContrat[], periode: PeriodeContrat): string {
+  return ceQuiManque(prestations, periode) === null ? "Contrat prêt à envoyer" : "Contrat à compléter";
+}
+
 /** La désignation d'une prestation sur le PDF : « Tonte et ébarbage, 2 passages par mois, d'avril à octobre ». */
 export function designationSurLePapier(p: PrestationContrat): string {
   const noms = p.mois.map((m) => MOIS_LONGS[m - 1]);

@@ -33863,3 +33863,32 @@ recherche sur chaque tournure la rendrait bavarde à tort, et le garde-fou « un
 question qui n'en est pas une ne rend RIEN » a rougi une fois pendant ce lot
 (« combien coûte un abattage de chêne »), ce qui a fait retirer « combien » d'un
 intitulé.
+
+## §435 : Un contrat d'entretien s'enregistre à chaque geste, et son brouillon vit dans « Vos chantiers »
+
+**Sa plainte du 29 septembre 2026** : un contrat commencé puis quitté ne se
+retrouvait nulle part. L'écran (`ContratClient.tsx`) tenait toute la saisie
+dans le navigateur et n'écrivait qu'à « Aperçu du PDF » ou « Envoyer ».
+
+**L'écriture suit la saisie, comme un devis.** Le brouillon naît au premier
+vrai geste (une prestation ajoutée), puis chaque changement s'écrit. Les
+écritures passent par UNE file : la première crée, les suivantes reprennent son
+identifiant, et chacune écrit la saisie la plus récente, ce qui empêche deux
+brouillons pour un seul contrat. L'aperçu et l'envoi passent par la même file :
+la création de secours qui vivait dans `envoyer` a été retirée. Une saisie qui
+ne se relit pas (un prix à moitié tapé) ne s'écrit pas : son refus est déjà
+sous le bouton. Rouvrir sans rien toucher n'écrit rien.
+
+**L'accueil lit deux sortes de lignes.** `BrinChantier.sorte` dit si la ligne
+est un chantier ou un brouillon de contrat, et `quoi` ce que le retrait nomme ;
+`EcranChantiers` choisit l'action de retrait d'après la sorte
+(`supprimerBrouillonDeContratAction` n'efface qu'un brouillon : un contrat parti
+est chez le client, son lien doit rester). Les brouillons passent en tête : ils
+ne portent pas la date de création des chantiers, et c'est le travail le plus
+récent. Qui ne rédige pas de contrat (`peutGererDevis`) n'en voit pas les
+brouillons. Le mot de l'état vient de `etatDuBrouillonDeContrat`, sur la même
+règle que l'envoi (`ceQuiManque`).
+
+**Ce qui n'y est pas, et c'est une question pour lui** : un contrat ENVOYÉ et
+sans réponse ne figure pas sur l'accueil, là où un devis envoyé y reste.
+

@@ -12,6 +12,8 @@ import {
   pdfDuContratPourLePatron,
   pdfDuContratParJeton,
   factureDuPassageAvecSonCompteRendu,
+  brouillonsDeContrat,
+  supprimerBrouillonDeContrat,
 } from "../src/server/repositories/contrats-entretien";
 import { planifierChantier } from "../src/server/repositories/chantiers";
 import { terminerChantier, listerChantiersTermines, getFacturePourChantier } from "../src/server/repositories/factures";
@@ -117,6 +119,23 @@ async function main() {
     assert.deepEqual(e, { ok: false, refus: "À compléter : Tonte et ébarbage." });
   });
 
+  // Sa plainte du 29 septembre 2026 : un contrat commencé puis quitté ne
+  // figurait pas dans « Vos chantiers ». L'accueil lit ces brouillons.
+  await cas("les brouillons se listent pour l'accueil, chez leur entreprise seulement", async () => {
+    const chezA = await brouillonsDeContrat(a.ctx);
+    assert.ok(chezA.some((c) => c.id === contratId && c.clientNom === "Costa"));
+    assert.equal((await brouillonsDeContrat(b.ctx)).length, 0);
+    assert.equal(await supprimerBrouillonDeContrat(b.ctx, contratId), false);
+  });
+
+  await cas("un brouillon se retire, et quitte la liste", async () => {
+    const r = await enregistrerContrat(a.ctx, { id: null, clientId: a.clientId, saisi: SAISI });
+    assert.ok(r.ok);
+    if (!r.ok) return;
+    assert.equal(await supprimerBrouillonDeContrat(a.ctx, r.contrat.id), true);
+    assert.ok(!(await brouillonsDeContrat(a.ctx)).some((c) => c.id === r.contrat.id));
+  });
+
   let jeton = "";
   await cas("l'aperçu PDF du brouillon se compose", async () => {
     const pdf = await pdfDuContratPourLePatron(a.ctx, contratId);
@@ -134,6 +153,11 @@ async function main() {
     jeton = e1.jeton;
     const r = await enregistrerContrat(a.ctx, { id: contratId, clientId: a.clientId, saisi: SAISI });
     assert.deepEqual(r, { ok: false, refus: "Ce contrat est parti chez le client : il ne se modifie plus.", fige: true });
+  });
+
+  await cas("parti, il quitte la liste des brouillons et ne se retire plus", async () => {
+    assert.ok(!(await brouillonsDeContrat(a.ctx)).some((c) => c.id === contratId));
+    assert.equal(await supprimerBrouillonDeContrat(a.ctx, contratId), false);
   });
 
   await cas("le client lit son contrat et son PDF par le lien", async () => {

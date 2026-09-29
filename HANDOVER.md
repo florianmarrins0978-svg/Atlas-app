@@ -34,7 +34,7 @@ compte par `bilanDeLaPeriode`, jamais par le modèle. §434.
 | **les suites** | `test-correction-devis` (base), `test-propositions-de-jours` (pure) |
 | **reste** | la batterie entière avant `main` |
 
-## LE CONTRAT D'ENTRETIEN — 26 et 27 septembre 2026 (lots 1 et 2, pas sur `main`)
+## LE CONTRAT D'ENTRETIEN — 26 et 27 septembre 2026 (lots 1 et 2, sur `main`)
 
 | | |
 |---|---|
@@ -47,6 +47,7 @@ compte par `bilanDeLaPeriode`, jamais par le modèle. §434.
 | **la facture (lot 2)** | `terminerChantier` bâtit celle d'un passage (`poserLaFactureDuPassage`) ; Terminés lit `totalPrevuTtc` ; l'automatisme vit dans `factureDuPassageAvecSonCompteRendu`, appelé par `envoyerFicheAction` |
 | **le piège** | la facturation A s'enregistre et s'imprime, mais ne crée aucune facture : c'est le lot 3 |
 | **les dates du mois (27 sept.)** | règles `src/lib/dates-du-mois.ts`, base `drizzle/0108_dates_du_mois.sql`, dépôt `src/server/repositories/dates-du-mois.ts`, tiroir `src/app/planning/DatesDuMois.tsx`, page du client `src/app/contrat/dates/[jeton]/` ; suites `test-dates-du-mois` et `test-dates-du-mois-db` |
+| **le brouillon quitté (29 sept., branche `claude/contrat-quitte-dans-chantiers`)** | l'écran s'écrit à chaque geste (une file, `enregistrer()` dans `ContratClient.tsx`) ; l'accueil lit `brouillonsDeContrat`, `BrinChantier.sorte` choisit le retrait ; suite `test-contrat-quitte-e2e`. §435 |
 
 ## MON AGENDA EN SIMPLE : 26 septembre 2026
 

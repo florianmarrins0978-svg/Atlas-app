@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import ChoixCanal from "@/components/atlas/ChoixCanal";
 import { colors, font, surPlein } from "@/lib/design-tokens";
 import { MOIS_LONGS } from "@/lib/mois";
@@ -117,7 +117,6 @@ function Editeur({
   const router = useRouter();
   const origine = useAdressePourLeClient(origineServeur);
   const [enCours, demarrer] = useTransition();
-  const [id, setId] = useState<string | null>(idDepart);
   const [refus, setRefus] = useState<string | null>(null);
   const [lignes, setLignes] = useState<Ligne[]>(() =>
     (depart?.prestations ?? []).map((p, i) => ({
@@ -175,25 +174,66 @@ function Editeur({
     setLibre("");
   }
 
-  function enregistrer(ensuite: (idEnregistre: string) => void) {
+  // **LE BROUILLON S'ENREGISTRE À CHAQUE GESTE — 29 septembre 2026.** Sa
+  // plainte : *« si je quitte, il ne s'enregistre pas dans mes chantiers en
+  // cours »*. Rien ne s'écrivait avant « Aperçu du PDF » ou « Envoyer » : tout
+  // vivait dans l'écran, et partait avec lui. Comme pour un devis, le brouillon
+  // naît au premier vrai geste (une prestation) et suit chaque changement ;
+  // l'aperçu et l'envoi passent par le MÊME enregistrement, donc jamais deux
+  // créations pour un seul contrat.
+  //
+  // Les écritures se suivent dans une file : la première crée, les suivantes
+  // reprennent son identifiant. Chacune écrit la saisie la plus récente, et
+  // celle qui n'a plus rien de neuf à écrire ne part pas.
+  const idEnregistre = useRef<string | null>(idDepart);
+  const cle = JSON.stringify(saisi);
+  const derniereCle = useRef(cle);
+  const cleDemandee = useRef(cle);
+  const saisieCourante = useRef(saisi);
+  const file = useRef<Promise<unknown>>(Promise.resolve());
+
+  function enregistrer(): Promise<{ ok: true; id: string } | { ok: false; refus: string }> {
+    // Une écriture tombée (réseau coupé) ne bloque pas la suivante : elle
+    // repart de ce que la base a vraiment reçu.
+    const ecrire = async () => {
+      const s = saisieCourante.current;
+      const cleEcrite = JSON.stringify(s);
+      if (idEnregistre.current && cleEcrite === derniereCle.current) return { ok: true as const, id: idEnregistre.current };
+      const r = await enregistrerContratAction(client.id, idEnregistre.current, s);
+      if (r.ok) {
+        idEnregistre.current = r.id;
+        derniereCle.current = cleEcrite;
+      }
+      return r;
+    };
+    const suite = file.current.then(ecrire, ecrire);
+    file.current = suite;
+    return suite;
+  }
+
+  // Une saisie qui ne se relit pas (un prix à moitié tapé) ne part pas : son
+  // refus est déjà écrit sous le bouton, et la frappe suivante l'enregistrera.
+  useEffect(() => {
+    saisieCourante.current = saisi;
+    if (cle === cleDemandee.current || !relu.ok) return;
+    if (idEnregistre.current === null && saisi.prestations.length === 0) return;
+    cleDemandee.current = cle;
+    enregistrer().then(
+      (r) => setRefus(r.ok ? null : r.refus),
+      () => setRefus("Le contrat n'a pas pu être enregistré. Réessayez.")
+    );
+  });
+
+  function apercu() {
     setRefus(null);
     demarrer(async () => {
-      const r = await enregistrerContratAction(client.id, id, saisi);
+      const r = await enregistrer();
       if (!r.ok) {
         setRefus(r.refus);
         return;
       }
-      setId(r.id);
-      ensuite(r.id);
+      router.push(adresseDeLaVisionneuse(`/api/contrats/${r.id}/pdf`, { surtitre: "Contrat d'entretien", titre: client.nom }));
     });
-  }
-
-  function apercu() {
-    enregistrer((idEnregistre) =>
-      router.push(
-        adresseDeLaVisionneuse(`/api/contrats/${idEnregistre}/pdf`, { surtitre: "Contrat d'entretien", titre: client.nom })
-      )
-    );
   }
 
   function envoyer() {
@@ -208,17 +248,12 @@ function Editeur({
     }
     setRefus(null);
     demarrer(async () => {
-      let idEnvoi = id;
-      if (!idEnvoi) {
-        const r = await enregistrerContratAction(client.id, null, saisi);
-        if (!r.ok) {
-          setRefus(r.refus);
-          return;
-        }
-        idEnvoi = r.id;
-        setId(r.id);
+      const r = await enregistrer();
+      if (!r.ok) {
+        setRefus(r.refus);
+        return;
       }
-      const e = await envoyerContratAction(client.id, idEnvoi, saisi);
+      const e = await envoyerContratAction(client.id, r.id, saisi);
       if (!e.ok) {
         setRefus(e.refus);
         return;

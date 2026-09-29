@@ -9,8 +9,11 @@ import { jourIso } from "@/lib/jour";
 import { lieuDuChantier, lieuEstManquant } from "@/lib/nom-chantier";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { getRole } from "@/server/autorisation";
-import { recoitLesRappels, type DomaineDesRappels } from "@/lib/acces-roles";
+import { peutGererDevis, recoitLesRappels, type DomaineDesRappels } from "@/lib/acces-roles";
+import { avecCivilite } from "@/lib/civilite";
+import { deOuD, etatDuBrouillonDeContrat } from "@/lib/contrats-entretien";
 import { listerChantiersPourAffichage } from "@/server/repositories/chantiers";
+import { brouillonsDeContrat } from "@/server/repositories/contrats-entretien";
 import { notificationsPatron, envoisCaducs } from "@/server/repositories/envois-devis";
 import { rappelsEnCours, retoursPasRecusEnCours } from "@/server/repositories/rappels";
 import { reglesDuRetour } from "@/server/regles-du-retour";
@@ -67,8 +70,11 @@ export default async function ChantiersPage() {
   // siens lui-même ; ces trois-là se lisent ici, sur la même règle.
   const role = await getRole(ctx);
   const recoit = (domaine: DomaineDesRappels) => role !== null && recoitLesRappels(role, domaine);
-  const [chantiers, notifications, caducs, rappels, receptions, abonnement, retoursManques] = await Promise.all([
+  const [chantiers, contrats, notifications, caducs, rappels, receptions, abonnement, retoursManques] = await Promise.all([
     listerChantiersPourAffichage(ctx),
+    // Qui ne rédige pas de contrat n'en voit pas les brouillons : il ne
+    // pourrait ni les reprendre, ni les retirer.
+    role !== null && peutGererDevis(role) ? brouillonsDeContrat(ctx) : [],
     recoit("devis") ? notificationsPatron(ctx) : [],
     recoit("devis") ? envoisCaducs(ctx) : [],
     rappelsEnCours(ctx, maintenant),
@@ -94,7 +100,29 @@ export default async function ChantiersPage() {
     .map((c) => ({ ...c, statut: getStatutAffiche(c) }))
     .filter((c) => ongletDuChantier(c) === "chantiers");
 
-  const brins: BrinChantier[] = avecStatut.map((c) => {
+  // **Un contrat commencé est un travail en cours, comme un devis** — sa
+  // plainte du 29 septembre 2026 : quitté avant l'envoi, il ne figurait nulle
+  // part. Parti chez le client, il quitte la liste ; accepté, ses passages
+  // vivent au planning.
+  const brinsDeContrat: BrinChantier[] = contrats.map((c) => {
+    const { jour, mois } = jourEtMois(c.majAt);
+    const client = avecCivilite(c.clientNom, c.clientCivilite ?? undefined);
+    return {
+      id: c.id,
+      sorte: "contrat",
+      nom: "Contrat d'entretien",
+      quoi: `le contrat d'entretien ${deOuD(client)}`,
+      jour,
+      mois,
+      lieu: client,
+      etat: etatDuBrouillonDeContrat(c.prestations, { debut: c.debut, dureeMois: c.dureeMois }),
+      attend: true,
+      reprise: `/clients/${c.clientId}/contrat`,
+      enCours: true,
+    };
+  });
+
+  const brinsDeChantier: BrinChantier[] = avecStatut.map((c) => {
     const { jour, mois } = jourEtMois(c.majAt);
     // **La date d'ENVOI, pas celle de la dernière modification.** Celle de
     // gauche est `majAt` — le chantier a pu bouger depuis pour une photo. Ce
@@ -108,7 +136,9 @@ export default async function ChantiersPage() {
     });
     return {
       id: c.id,
+      sorte: "chantier",
       nom: c.nom,
+      quoi: `le chantier ${c.nom}`,
       jour,
       mois,
       lieu,
@@ -144,7 +174,7 @@ export default async function ChantiersPage() {
 
   return (
     <EcranChantiers
-      chantiers={brins}
+      chantiers={[...brinsDeContrat, ...brinsDeChantier]}
       ruban={essai ? <RubanEssai etat={essai} /> : null}
       lectureSeule={essai?.statut === "termine" ? PHRASE_LECTURE_SEULE : null}
       bandeaux={

@@ -82,6 +82,51 @@ export async function dernierContratDuClient(ctx: Ctx, clientId: string): Promis
   });
 }
 
+/**
+ * Les contrats commencés et pas encore partis, pour « Vos chantiers » : sa
+ * plainte du 29 septembre 2026, un contrat quitté en cours de rédaction n'y
+ * figurait nulle part. Le plus récemment touché d'abord.
+ */
+export async function brouillonsDeContrat(ctx: Ctx) {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, (tx) =>
+    tx
+      .select({
+        id: contratsEntretien.id,
+        clientId: contratsEntretien.clientId,
+        clientNom: clients.nom,
+        clientCivilite: clients.civilite,
+        prestations: contratsEntretien.prestations,
+        debut: contratsEntretien.debut,
+        dureeMois: contratsEntretien.dureeMois,
+        majAt: contratsEntretien.updatedAt,
+      })
+      .from(contratsEntretien)
+      .innerJoin(clients, eq(contratsEntretien.clientId, clients.id))
+      .where(
+        and(
+          eq(contratsEntretien.entrepriseId, ctx.entrepriseId),
+          eq(contratsEntretien.statut, "brouillon"),
+          isNull(clients.deletedAt)
+        )
+      )
+      .orderBy(desc(contratsEntretien.updatedAt))
+  );
+}
+
+/**
+ * Retire un brouillon de contrat. **Un brouillon seulement** : un contrat
+ * parti est chez le client, son lien doit continuer de s'ouvrir.
+ */
+export async function supprimerBrouillonDeContrat(ctx: Ctx, id: string): Promise<boolean> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const supprimes = await tx
+      .delete(contratsEntretien)
+      .where(and(eq(contratsEntretien.id, id), eq(contratsEntretien.statut, "brouillon")))
+      .returning({ id: contratsEntretien.id });
+    return supprimes.length === 1;
+  });
+}
+
 /** `fige` : le contrat est déjà parti, et c'est la seule raison du refus. */
 export type RefusContrat = { ok: false; refus: string; fige?: true };
 
