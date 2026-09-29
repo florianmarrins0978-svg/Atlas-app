@@ -1,13 +1,15 @@
 # État du projet
 
 **Dernière mise à jour :** 2026-09-26 · branche `claude/client-disappearance-no-date-f26td1`
-· dernière migration `drizzle/0106_hausse_du_devis_repris.sql` (sur la branche)
+· dernière migration `drizzle/0112_unite_de_ligne_rangee_seule.sql` (sur la branche)
 
 ---
 ## CODÉ : L'UNITÉ D'UNE LIGNE NE PORTE QUE LA RANGÉE (29 septembre 2026)
 
 « arbre », « arbuste », « plante » ne s'écrivent plus dans la case Unité d'un
-devis ou d'une facture : la ligne reçoit « u ». `uniteAdmise`, au dépôt.
+devis ou d'une facture : la ligne reçoit « u ». `uniteAdmise`, au dépôt ;
+migration 0112 pour ce qui était déjà en base. Branche
+`claude/unite-ligne-rangee-seule`, batterie non jouée (sa consigne).
 
 ## SUR `main` : L'ASSISTANT RÉPOND SUR SES DONNÉES (28 septembre 2026)
 
