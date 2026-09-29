@@ -150,9 +150,20 @@ cas("les cinq autres unités de la liste se retrouvent aussi à l'oral", () => {
   assert.equal(uniteDictee("tonnes"), "tonne");
 });
 
-cas("une unité que la liste ignore reste la sienne", () => {
-  assert.equal(uniteDictee("stère"), "stère");
-  assert.equal(uniteDictee("arbre"), "arbre");
+// **Sa règle du 29 septembre 2026 :** *« dans l'unité, arbres et souches ne
+// doivent jamais apparaître. On a dit qu'on conservait seulement les unités
+// qu'on avait déjà mises par défaut. »* Ce qu'on compte devient « u » ; une
+// mesure qu'aucune de ses unités ne dit tombe avec sa quantité.
+cas("un objet compté devient « u », jamais « arbre » ni « souche »", () => {
+  for (const dit of ["souche", "souches", "arbre", "arbres", "sac", "plant", "unité", "unités", "pièce", "u"]) {
+    assert.equal(uniteDictee(dit), "u", `« ${dit} » n'est pas arrivé en u`);
+  }
+});
+
+cas("une mesure hors de ses unités ne s'écrit pas", () => {
+  for (const dit of ["stère", "stères", "m³", "m3", "mètres cubes", "cm", "mètres", "kg", "litres", "jours", "km"]) {
+    assert.equal(uniteDictee(dit), null, `« ${dit} » est arrivé en unité`);
+  }
 });
 
 cas("ce qui n'est pas une unité ne devient pas une unité", () => {

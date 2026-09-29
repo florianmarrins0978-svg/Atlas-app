@@ -1,5 +1,24 @@
 # Prochaines tâches
 
+## ⏳ LA FENTE SE CHIFFRE À LA HAUTEUR DE L'ARBRE, PAS DU FÛT (29 septembre 2026)
+
+Sa remarque : *« la hauteur de l'arbre, ça n'a rien à voir avec la fente du
+bois ; il faudrait qu'il demande quelle hauteur de fût »*. Aujourd'hui
+`celluleFendage` range le prix dans la case hauteur de l'ARBRE × diamètre
+(règle du 8 août) : ses 20 m de chêne servent en silence au prix de la fente.
+Le mot « fût » n'existe nulle part dans `src/`. Proposé : un axe « longueur de
+fût » à la place de la hauteur (ses prix de fente seraient à revoir), ou un
+prix à la bûche. **Sa réponse est attendue.**
+
+## ✗ DES PHRASES QUI VENDENT SOUS CHAQUE LIGNE : ÉCARTÉES LE 29 SEPTEMBRE 2026
+
+Deux planches refusées : la première ajoutait des raisons non dictées (« risque
+d'incendie », « protéger votre maison »), la seconde redisait la dictée sans
+rien apporter. *« On reviendra plus tard sur le fait de faire des belles
+phrases. »* Ne pas rouvrir sans sa demande. Sa règle, si ça revient : *« une
+belle phrase autour de ce qui a été dicté, ne me raconte pas n'importe quoi
+autour »*.
+
 ## ⏳ UNE PLANCHE À REGARDER : LE MODÈLE DE FICHE DÉJÀ LÀ (29 septembre 2026)
 
 Sa demande : *« mon modèle doit déjà être là par défaut, et ils la modifieront

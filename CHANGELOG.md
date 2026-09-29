@@ -8,6 +8,15 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-29
 
+### La dictée n'écrit plus « arbre » ni « souche » en unité
+
+Sa règle : seules ses unités par défaut. « Deux souches » s'écrit « 2 u » ; une
+mesure hors de sa liste (stère, m³) tombe avec sa quantité, plutôt que
+d'afficher « 6 u » pour six stères. Les deux invites ne donnent plus
+« souche » ni « arbre » en exemple, et le code ferme la porte quand le modèle
+désobéit (`ARCHITECTURE.md` §435). « 2 us » dans l'avertissement de quantité
+corrigé en « 2 u ».
+
 ### Neuf planches : ce que fait chaque « Ajouter »
 
 Sa demande : *« fais-moi une planche pour chaque, réaliste, que je puisse

@@ -432,11 +432,21 @@ cas("une quantité recopiée dans l'unité (« 20 mètres ») est refusée, pas 
   assert.equal(r.type === "ajouter" && r.unite, null, "« 20 × 20 mètres » aurait doublé sa haie");
 });
 
-cas("une unité de son métier que la liste ignore reste écrite telle quelle", () => {
+// Sa règle du 29 septembre 2026 : seules ses unités par défaut. Elle renverse
+// celle-ci, qui gardait « stère » tel quel.
+cas("une mesure hors de ses unités tombe, et sa quantité avec elle", () => {
   const [r] = lireRetouchesDuModele({
     retouches: [{ type: "ajouter", libelle: "Bois de chauffage fendu", quantite: "6", unite: "stère", prixUnitaire: null }],
   });
-  assert.equal(r.type === "ajouter" && r.unite, "stère");
+  // « 6 » sans unité s'écrirait « 6 u » sur le devis : six pièces, pas six stères.
+  assert.deepEqual(r.type === "ajouter" && [r.quantite, r.unite], [null, null]);
+});
+
+cas("deux souches dictées dans le devis s'écrivent « 2 u »", () => {
+  const [r] = lireRetouchesDuModele({
+    retouches: [{ type: "ajouter", libelle: "Dessouchage", quantite: "2", unite: "souche", prixUnitaire: null }],
+  });
+  assert.deepEqual(r.type === "ajouter" && [r.quantite, r.unite], ["2", "u"]);
 });
 
 cas("l'unité dictée va jusqu'au changement appliqué, sinon elle se perd en route", () => {

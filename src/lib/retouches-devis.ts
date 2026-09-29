@@ -327,7 +327,13 @@ export function lireRetouchesDuModele(brut: unknown): Retouche[] {
       case "ajouter": {
         const libelle = texte("libelle");
         if (libelle) {
-          const quantite = montantDicte(e.quantite);
+          const dite = montantDicte(e.quantite);
+          const unite = dite === null ? null : uniteDictee(e.unite);
+          // **Et la quantité tombe avec une unité refusée.** « 6 stères » n'a
+          // pas d'unité parmi les siennes (sa règle du 29 septembre 2026) :
+          // garder « 6 » seul l'écrirait « 6 u », six pièces au lieu de six
+          // stères.
+          const quantite = unite === null && typeof e.unite === "string" && e.unite.trim() !== "" ? null : dite;
           retouches.push({
             type: "ajouter",
             libelle,
@@ -336,7 +342,7 @@ export function lireRetouchesDuModele(brut: unknown): Retouche[] {
             // linéaires » sans nombre ne dit pas combien : la porter quand
             // même afficherait « 1 ml » sur le devis, c'est-à-dire un chiffre
             // que personne n'a prononcé.
-            unite: quantite === null ? null : uniteDictee(e.unite),
+            unite,
             prixUnitaire: montantDicte(e.prixUnitaire),
           });
         }

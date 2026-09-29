@@ -98,7 +98,9 @@ export function prevenirQuantiteNonMultipliee(
   // tonnage se multiplient déjà par leur prix unitaire.
   if (["ml", "m²", "m³", "tonne", "stère", "heure", "jour"].includes(unite.toLowerCase())) return null;
   return (
-    `« ${seule.libelle ?? "cette ligne"} » porte ${valeur} ${unite}${valeur > 1 ? "s" : ""} : ` +
+    // « u » est un symbole, comme « ml » : il ne prend pas de « s ». C'est
+    // l'unité qu'une dictée écrit depuis le 29 septembre 2026 pour ce qu'on compte.
+    `« ${seule.libelle ?? "cette ligne"} » porte ${valeur} ${unite}${valeur > 1 && unite !== "u" ? "s" : ""} : ` +
     "le prix de votre grille est celui d'un seul. Vérifiez s'il doit être multiplié."
   );
 }

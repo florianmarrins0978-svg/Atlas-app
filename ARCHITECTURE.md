@@ -33863,3 +33863,31 @@ recherche sur chaque tournure la rendrait bavarde à tort, et le garde-fou « un
 question qui n'en est pas une ne rend RIEN » a rougi une fois pendant ce lot
 (« combien coûte un abattage de chêne »), ce qui a fait retirer « combien » d'un
 intitulé.
+
+## §435 : Une dictée n'écrit que SES unités, et ce qu'on compte s'écrit « u »
+
+**Sa règle du 29 septembre 2026 :** *« dans l'unité, arbres et souches ne
+doivent jamais apparaître. On a dit qu'on conservait seulement les unités
+qu'on avait déjà mises par défaut. »* Elle renverse celle du 20 août, qui
+gardait tel quel un mot que la liste ignorait (« le stère, l'arbre, le sac ») ;
+les deux invites apprenaient même au modèle « deux souches » -> `"souche"`.
+
+| ce qui est dicté | ce qui s'écrit |
+|---|---|
+| une de ses unités (ml, m², heure, jour/homme, forfait, tonne) | sa graphie exacte |
+| un objet compté : souches, arbres, sacs | « u » |
+| une mesure hors de la liste : stère, m³, mètres | rien, **et la quantité tombe avec** |
+
+**Une seule règle, `uniteDictee` (`src/lib/unites-tarif.ts`), à deux portes :**
+la sortie de `extraire` (modèle ET lecture mot à mot, `sesUnites`), avant que le
+brouillon ne l'affiche et que le chiffrage ne la recopie ; et
+`lireRetouchesDuModele` pour le micro du devis. L'invite le demande au modèle,
+le code le tient quand il désobéit.
+
+**La quantité tombe avec l'unité refusée** : « 6 stères » gardé en « 6 » seul
+s'écrirait « 6 u » sur le devis, six pièces au lieu de six stères.
+
+**Ce qui n'est PAS touché, délibérément :** l'unité qu'il TAPE lui-même (ligne
+libre du bandeau, `ChoixUnite.tsx`), et les brouillons et lignes déjà
+enregistrés : un devis envoyé ne se réécrit pas.
+

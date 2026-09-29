@@ -1,12 +1,13 @@
 import { getFournisseurLLM } from "../providers/llm/fabrique";
 import { METIER_ATLAS } from "../../../lib/metier-atlas";
 import type { FournisseurLLM } from "../providers/llm/interface";
-import { PropositionExtractionSchema, type ResultatExtraction } from "../schemas/extraction";
+import { PropositionExtractionSchema, type PropositionExtraction, type ResultatExtraction } from "../schemas/extraction";
 import { erreurIA } from "../errors";
 import { estJsonTronque, lireObjetJson } from "../../../lib/json-du-modele";
 import { lireLitteralement } from "../lecture-litterale";
 import { logger } from "../../logger";
 import { NATURES } from "../../../lib/natures-prestation";
+import { uniteDictee } from "../../../lib/unites-tarif";
 
 /**
  * **Exportée pour être éprouvée, jamais pour être appelée d'ailleurs.**
@@ -45,12 +46,13 @@ Règles absolues :
   restent null.
 - "quantite" et "unite" vont TOUJOURS ensemble : jamais l'une sans l'autre. Un nombre sans unité ne veut
   rien dire : « 800 » se lit 800 mètres, 800 m² ou 800 heures selon qui le lit.
-- "unite" est l'unité de ce nombre, dans SON mot à lui : "ml", "m²", "m³", "heure", "jour", "tonne",
-  "stère", ou l'OBJET qu'il compte quand il compte des choses :
-    « deux souches »   -> "quantite": "2", "unite": "souche"
-    « trois arbres »   -> "quantite": "3", "unite": "arbre"
-  L'unité de comptage doit être l'objet explicitement prononcé. N'invente pas une unité pour un nombre
-  dont on ne sait pas ce qu'il compte : les deux restent null.
+- "unite" se choisit dans CETTE LISTE, et nulle part ailleurs : "ml", "m²", "heure", "jour/homme",
+  "forfait", "tonne", ou "u" quand il compte des objets :
+    « deux souches »   -> "quantite": "2", "unite": "u"
+    « trois arbres »   -> "quantite": "3", "unite": "u"
+  Le "u" n'est permis que si l'objet compté est explicitement prononcé. N'invente pas une unité pour un
+  nombre dont on ne sait pas ce qu'il compte, et n'en écris aucune hors de la liste (ni "souche", ni
+  "arbre", ni "stère", ni "m³") : dans ces cas, les deux restent null.
 - "nature" se choisit dans CETTE LISTE, et nulle part ailleurs :
     ${NATURES.map((n) => n.cle).join(", ")}
   Si le travail décrit n'en fait manifestement partie d'aucune, "nature" vaut null. N'invente
@@ -71,9 +73,9 @@ Règles absolues :
   Elles ne vont ni dans "quantite" (qui compte les objets), ni dans "ambiguites" (qui sert au doute).
     « démontage d'un érable de 40 cm au pied et 12 m de haut »
       -> "libelle": "Démontage d'un érable", "description": "40 cm au pied, 12 m de haut",
-         "quantite": "1", "unite": "arbre"
+         "quantite": "1", "unite": "u"
     « dessouchage de deux souches de 60 »
-      -> "libelle": "Dessouchage", "description": "souches de 60", "quantite": "2", "unite": "souche"
+      -> "libelle": "Dessouchage", "description": "souches de 60", "quantite": "2", "unite": "u"
   Recopie le nombre même si l'artisan n'a pas prononcé l'unité : « souches de 60 » se recopie tel quel,
   jamais complété ni converti.
 
@@ -184,7 +186,7 @@ export async function extraire(
       // d'en recopier le contenu dans les journaux.
       debutReponse: detail?.slice(0, 200),
     });
-    return { succes: true, proposition: lireLitteralement(texte), lecture: "litterale", motifRepli: motif };
+    return { succes: true, proposition: sesUnites(lireLitteralement(texte)), lecture: "litterale", motifRepli: motif };
   }
 
   /**
@@ -255,5 +257,25 @@ export async function extraire(
     return replier(`Réponse hors schéma : ${analyse.error.message.slice(0, 200)}`, resultat.texte);
   }
 
-  return { succes: true, proposition: analyse.data, lecture: "modele" };
+  return { succes: true, proposition: sesUnites(analyse.data), lecture: "modele" };
+}
+
+/**
+ * Chaque unité ramenée à UNE DES SIENNES, ou retirée avec sa quantité.
+ *
+ * **Sa règle du 29 septembre 2026 :** *« arbres et souches ne doivent jamais
+ * apparaître »*. L'invite le demande au modèle, mais un modèle peut désobéir,
+ * et la lecture mot à mot recopie « m3 » ou « sacs » : la porte se ferme donc
+ * ICI, à la sortie des deux lectures, avant que le brouillon ne l'affiche et
+ * que le chiffrage ne la recopie sur une ligne de devis. Une seule règle pour
+ * les deux micros : celle de `uniteDictee`.
+ */
+function sesUnites(p: PropositionExtraction): PropositionExtraction {
+  const fermer = <L extends { quantite: string | null; unite: string | null }>(l: L): L => {
+    if (l.unite === null) return l;
+    const unite = uniteDictee(l.unite);
+    // Une quantité sans unité ne veut rien dire : elle tombe avec elle.
+    return unite === null ? { ...l, quantite: null, unite: null } : { ...l, unite };
+  };
+  return { ...p, prestations: p.prestations.map(fermer), materiel: p.materiel.map(fermer) };
 }

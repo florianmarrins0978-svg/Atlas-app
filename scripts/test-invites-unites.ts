@@ -3,6 +3,8 @@ import { SYSTEME } from "../src/server/ai/services/extraction-service";
 import { systeme as systemeRetouches } from "../src/server/ai/services/retouches-devis-service";
 import { structureDeLaPrestation } from "../src/lib/prestation-structuree";
 import { NATURES } from "../src/lib/natures-prestation";
+import { extraire } from "../src/server/ai/services/extraction-service";
+import type { FournisseurLLM } from "../src/server/ai/providers/llm/interface";
 
 // **Les deux micros doivent demander la MÊME chose des unités.**
 //
@@ -25,28 +27,39 @@ import { NATURES } from "../src/lib/natures-prestation";
 
 let reussites = 0;
 let echecs = 0;
-function cas(nom: string, verifier: () => void): void {
-  try {
-    verifier();
-    console.log(`  ✓ ${nom}`);
-    reussites++;
-  } catch (e) {
-    echecs++;
-    console.error(`  ✗ ${nom}\n    ${(e as Error).message}`);
-  }
+// Les cas s'enchaînent : deux d'entre eux passent par l'extraction, qui répond
+// plus tard, et le bilan ne doit se faire qu'une fois tous rendus.
+let file: Promise<void> = Promise.resolve();
+function cas(nom: string, verifier: () => void | Promise<void>): void {
+  file = file.then(async () => {
+    try {
+      await verifier();
+      console.log(`  ✓ ${nom}`);
+      reussites++;
+    } catch (e) {
+      echecs++;
+      console.error(`  ✗ ${nom}\n    ${(e as Error).message}`);
+    }
+  });
+}
+
+function titre(t: string): void {
+  file = file.then(() => console.log(t));
 }
 
 const RETOUCHES = systemeRetouches([], null);
 
-console.log("\n=== Les deux invites disent la même chose des unités ===\n");
+titre("\n=== Les deux invites disent la même chose des unités ===\n");
 
-cas("les deux acceptent une unité de comptage prononcée", () => {
+cas("les deux comptent les objets en « u », jamais en « souche » ni en « arbre »", () => {
+  // Sa règle du 29 septembre 2026 : seules ses unités par défaut. Les
+  // invites apprenaient au modèle « deux souches » -> "souche".
   for (const [nom, invite] of [
     ["l'extraction d'une dictée", SYSTEME],
     ["la dictée dans le devis", RETOUCHES],
   ] as const) {
-    assert.match(invite, /souche/i, `${nom} ne donne aucun exemple d'objet compté`);
-    assert.match(invite, /arbre/i, `${nom} ne donne aucun exemple d'objet compté`);
+    assert.match(invite, /« deux souches »\s*->\s*"(quantite": )?"?2"?[^\n]*"u"/, `${nom} ne compte pas les souches en u`);
+    assert.doesNotMatch(invite, /("unite":\s*"|\/\s*")(souche|arbre|stère)"/i, `${nom} propose encore une unité hors de sa liste`);
   }
 });
 
@@ -69,7 +82,7 @@ cas("les deux refusent une quantité sans son unité", () => {
   }
 });
 
-console.log("\n=== La durée et l'équipe ne deviennent pas des quantités ===\n");
+titre("\n=== La durée et l'équipe ne deviennent pas des quantités ===\n");
 
 cas("l'extraction dit où vont « quatre journées » et « deux hommes »", () => {
   // Sans cette borne, « deux hommes » deviendrait une prestation de quantité 2,
@@ -83,7 +96,7 @@ cas("l'extraction dit où vont « quatre journées » et « deux hommes »", () 
   );
 });
 
-console.log("\n=== La liste des natures vient du référentiel, jamais d'une copie ===\n");
+titre("\n=== La liste des natures vient du référentiel, jamais d'une copie ===\n");
 
 cas("chaque nature du référentiel est proposée au modèle", () => {
   // **Une nature ajoutée au référentiel et oubliée dans l'invite ne serait
@@ -107,18 +120,37 @@ cas("et elle interdit d'inventer une nature", () => {
   assert.match(SYSTEME, /N'invente\s+JAMAIS un nom de nature/i);
 });
 
-console.log("\n=== Ce que le code fait d'une unité de comptage ===\n");
+titre("\n=== Ce que le code fait d'une unité de comptage ===\n");
 
-cas("« deux souches » est gardé tel quel, unité comprise", () => {
-  const s = structureDeLaPrestation({
-    libelle: "Dessouchage",
-    description: null,
-    quantite: "2",
-    unite: "souche",
-    aConfirmer: false,
+cas("un modèle qui répond « souche » est ramené à « u », la quantité gardée", async () => {
+  // Le modèle peut désobéir à l'invite : c'est le code qui ferme la porte.
+  const reponse = JSON.stringify({
+    prestations: [
+      { libelle: "Dessouchage", description: "souches de 60", quantite: "2", unite: "souche", nature: "dessouchage", espece: null, aConfirmer: false },
+      { libelle: "Démontage d'un chêne", description: null, quantite: "1", unite: "arbre", nature: "abattage", espece: "chêne", aConfirmer: false },
+      { libelle: "Fente du bois", description: null, quantite: "3", unite: "stères", nature: "fendage", espece: null, aConfirmer: false },
+    ],
+    materiel: [{ libelle: "Sacs de terreau", description: null, quantite: "4", unite: "sacs", aConfirmer: false }],
   });
-  assert.equal(s.quantite, "2.00");
-  assert.equal(s.unite, "souche", "l'unité de comptage a été normalisée ou perdue");
+  const fournisseur = { nom: "essai", genererTexte: async () => ({ succes: true as const, texte: reponse }) } as unknown as FournisseurLLM;
+  const r = await extraire("Dessouchage de deux souches de 60, démontage d'un chêne, trois stères de fente.", fournisseur);
+  assert.ok(r.succes && r.lecture === "modele", "la réponse du modèle n'a pas été lue");
+  const [souches, chene, fente] = r.proposition.prestations;
+  assert.deepEqual([souches.quantite, souches.unite], ["2", "u"]);
+  assert.deepEqual([chene.quantite, chene.unite], ["1", "u"]);
+  // Une mesure qu'aucune de ses unités ne dit tombe AVEC sa quantité : « 3 »
+  // tout seul se lirait trois de n'importe quoi.
+  assert.deepEqual([fente.quantite, fente.unite], [null, null]);
+  assert.deepEqual([r.proposition.materiel[0].quantite, r.proposition.materiel[0].unite], ["4", "u"]);
+});
+
+cas("la lecture mot à mot ne sort pas non plus d'unité hors de sa liste", async () => {
+  const sansReseau = { nom: "essai", genererTexte: async () => ({ succes: false as const, erreur: { code: "indisponible", message: "hors ligne" } }) } as unknown as FournisseurLLM;
+  const r = await extraire("pose de 3 sacs de terreau, 12 m3 de terre, 20 ml de bordure", sansReseau);
+  assert.ok(r.succes && r.lecture === "litterale");
+  const unites = [...r.proposition.prestations, ...r.proposition.materiel].map((l) => l.unite).filter(Boolean);
+  for (const u of unites) assert.ok(["u", "ml", "m²", "heure", "forfait", "tonne", "jour/homme"].includes(u!), `« ${u} » est sorti`);
+  assert.ok(unites.includes("ml"), `le mètre linéaire s'est perdu : ${JSON.stringify(unites)}`);
 });
 
 cas("un nombre dont on ne sait pas ce qu'il compte n'entre pas", () => {
@@ -133,6 +165,7 @@ cas("un nombre dont on ne sait pas ce qu'il compte n'entre pas", () => {
   assert.equal(s.unite, null);
 });
 
+void file.then(() => {
 console.log(`\n${reussites} réussite(s), ${echecs} échec(s).`);
 
 // ─── RESTE À ÉPROUVER AVEC UNE VRAIE CLÉ ───────────────────────────────────
@@ -140,8 +173,8 @@ console.log(`\n${reussites} réussite(s), ${echecs} échec(s).`);
 // Ces six dictées doivent être jouées sur l'espace du patron, où les
 // fournisseurs répondent — rien ici ne peut le faire :
 //
-//   « deux souches »                    -> quantite 2,    unite « souche »
-//   « trois arbres »                    -> quantite 3,    unite « arbre »
+//   « deux souches »                    -> quantite 2,    unite « u »
+//   « trois arbres »                    -> quantite 3,    unite « u »
 //   « quatre journées »                 -> dureePrevue, PAS une quantité
 //   « deux hommes »                     -> tailleEquipe, PAS une quantité
 //   « huit cents mètres linéaires »     -> quantite 800,  unite « ml »
@@ -152,3 +185,4 @@ console.log(
 );
 
 if (echecs > 0) process.exitCode = 1;
+});

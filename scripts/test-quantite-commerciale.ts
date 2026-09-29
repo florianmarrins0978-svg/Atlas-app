@@ -82,6 +82,13 @@ cas("deux souches à un prix de grille : la question est posée", () => {
   assert.match(avis, /multipli/i);
 });
 
+cas("deux souches comptées en « u » : la question est posée, sans « 2 us »", () => {
+  // Depuis le 29 septembre 2026, la dictée compte les souches en « u ».
+  const avis = prevenirQuantiteNonMultipliee([{ quantite: "2", unite: "u", libelle: "Dessouchage" }]);
+  assert.ok(avis, "rien n'a été signalé : le devis facturerait une souche pour deux");
+  assert.match(avis, /porte 2 u :/);
+});
+
 cas("une longueur ne pose pas la question — elle est déjà multipliée", () => {
   assert.equal(prevenirQuantiteNonMultipliee([{ quantite: "800", unite: "ml" }]), null);
   assert.equal(prevenirQuantiteNonMultipliee([{ quantite: "6", unite: "tonne" }]), null);

@@ -1,3 +1,5 @@
+import { UNITE_PAR_DEFAUT } from "./unite-de-ligne";
+
 /**
  * Les unités qu'on propose pour un tarif — et pourquoi une liste alors que la
  * case était libre.
@@ -94,23 +96,42 @@ const UNITES_DITES: readonly { dit: RegExp; valeur: string }[] = [
 const LONGUEUR_MAX_UNITE = 20;
 
 /**
- * L'unité telle qu'il la PRONONCE, ramenée à celle qu'on enregistre.
+ * Ce qu'on COMPTE à la pièce, et qui s'écrit « u » : l'unité par défaut d'une
+ * ligne (`unite-de-ligne.ts`).
+ */
+const A_LA_PIECE = /^(u|unit(?:e|é)s?|pi(?:e|è)ces?)$/i;
+
+/**
+ * Les mesures qu'aucune de ses unités ne dit. Elles ne deviennent pas « u » :
+ * « 3 stères » écrit « 3 u » tromperait sur ce qu'on vend. Elles tombent, et la
+ * quantité avec elles.
+ */
+const MESURE_HORS_LISTE =
+  /^(st(?:e|è)res?|m3|m³|m(?:e|è)tres?\s*cubes?|m|m(?:e|è)tres?|cm|centim(?:e|è)tres?|mm|km|kg|kilos?|g|grammes?|l|litres?|jours?|journ(?:e|é)es?|semaines?|mois|ares?|hectares?|ha)$/i;
+
+/**
+ * L'unité telle qu'il la PRONONCE, ramenée à UNE DE SES UNITÉS, ou rien.
  *
- * **Sa demande du 20 août 2026** : dicter le chantier dans le devis plutôt que
- * de le taper — *« j'aimerais tailler ma haie, c'est une haie qui fait quelque
- * chose comme vingt mètres linéaires »*. Personne ne dit « ml » à voix haute.
+ * **Sa règle du 29 septembre 2026 :** *« dans l'unité, arbres et souches ne
+ * doivent jamais apparaître. On a dit qu'on conservait seulement les unités
+ * qu'on avait déjà mises par défaut. »* La version d'avant gardait tel quel
+ * un mot que la liste ignorait (« le stère, l'arbre, le sac ») : c'est ainsi
+ * que « Dessouchage, 2 souche » arrivait sur ses devis.
  *
- * **Pourquoi ramener au mot exact de la liste, plutôt que de garder le sien.**
- * L'unité n'est pas décorative : « jour/homme » désigne un tarif de main
- * d'œuvre, à la lettre près (voir en tête de ce fichier). Enregistrer « jours
- * homme » parce qu'il l'a dit au pluriel produirait un tarif qui cesse de se
+ * | ce qu'il dit | ce qui s'écrit |
+ * |---|---|
+ * | une unité de la liste, à l'oral | la graphie exacte de la liste |
+ * | un objet qu'on compte : souches, arbres, sacs | « u » |
+ * | une mesure hors de la liste : stère, m³, mètres | rien, et la quantité tombe avec |
+ *
+ * **Pourquoi la graphie exacte.** L'unité n'est pas décorative : « jour/homme »
+ * désigne un tarif de main d'œuvre, à la lettre près (voir en tête de ce
+ * fichier). Enregistrer « jours homme » produirait un tarif qui cesse de se
  * multiplier, en silence, sur un devis qui part chez son client.
  *
- * **Mais la liste ne ferme rien, ici non plus.** Un mot qu'elle ignore — le
- * stère, l'arbre, le sac — est gardé tel quel : c'est une vraie unité de son
- * métier, et la refuser lui ferait perdre une quantité qu'il a bel et bien
- * dictée. Ce qui est refusé, c'est ce qui n'est pas une unité du tout : un
- * chiffre, une phrase, une longueur invraisemblable.
+ * **Ce que cela ne touche pas :** l'unité qu'il TAPE lui-même dans le bandeau
+ * (`ChoixUnite.tsx`, ligne libre). Cette fonction ne lit que ce qu'une dictée
+ * produit.
  */
 export function uniteDictee(brut: unknown): string | null {
   if (typeof brut !== "string") return null;
@@ -120,10 +141,13 @@ export function uniteDictee(brut: unknown): string | null {
   for (const { dit: motif, valeur } of UNITES_DITES) {
     if (motif.test(dit)) return valeur;
   }
+  if (A_LA_PIECE.test(dit)) return UNITE_PAR_DEFAUT;
+  if (MESURE_HORS_LISTE.test(dit)) return null;
 
   // Un chiffre dans l'unité trahit une quantité recopiée au mauvais endroit
   // (« 20 mètres ») : la garder écrirait « 20 × 20 m » sur le devis.
   if (/\d/.test(dit)) return null;
   if (dit.length > LONGUEUR_MAX_UNITE) return null;
-  return dit;
+  // Ce qui reste est un objet qu'il compte : une souche, un arbre, un sac.
+  return UNITE_PAR_DEFAUT;
 }
