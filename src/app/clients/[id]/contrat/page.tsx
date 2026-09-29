@@ -10,6 +10,9 @@ import { getClient } from "@/server/repositories/clients";
 import { getEntreprise } from "@/server/repositories/entreprises";
 import { listerPrestations } from "@/server/repositories/prestations-entretien";
 import { dernierContratDuClient } from "@/server/repositories/contrats-entretien";
+import { estProprietaire } from "@/server/autorisation";
+import { abonnementDeLEntreprise } from "@/server/repositories/abonnements";
+import { fonctionOuverte } from "@/lib/abonnements";
 import ContratClient from "./ContratClient";
 
 export const dynamic = "force-dynamic";
@@ -28,11 +31,16 @@ export default async function ContratPage({ params }: { params: Promise<{ id: st
   const client = await getClient(ctx, id);
   if (!client) notFound();
 
-  const [entreprise, modele, contrat] = await Promise.all([
+  const [entreprise, modele, contrat, proprietaire, abonnement] = await Promise.all([
     getEntreprise(ctx),
     listerPrestations(ctx),
     dernierContratDuClient(ctx, id),
+    estProprietaire(ctx),
+    abonnementDeLEntreprise(ctx),
   ]);
+  // Une prestation écrite ici entre dans sa fiche (29 septembre 2026) : les
+  // mêmes droits que « Composer ma fiche », sans quoi l'action refuserait.
+  const ficheModifiable = proprietaire && fonctionOuverte(abonnement?.formule, "fiche-chantier");
 
   return (
     <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>
@@ -54,6 +62,7 @@ export default async function ContratPage({ params }: { params: Promise<{ id: st
           entrepriseNom={entreprise?.nom ?? ""}
           origine={originePublique(await headers())}
           modele={modele.map((p) => ({ famille: p.famille, libelle: p.libelle }))}
+          ficheModifiable={ficheModifiable}
           contrat={
             contrat
               ? {

@@ -17,6 +17,21 @@ fiche de sécurité, planning, absence, achat), chacune avec son témoin
 « Enregistré » qui montre quand l'écriture part. Elles reprennent le
 comportement lu dans le code, défauts compris (`appli/ajouter-*.html`).
 
+### Une prestation écrite dans le contrat entre dans sa fiche
+
+Sa demande : *« si on ajoute une catégorie dans le contrat d'entretien ou sur
+la fiche d'entretien, que ça l'ajoute »*. Le sens fiche vers contrat existait
+déjà (le contrat lit le modèle). Dans l'autre sens, une prestation écrite à la
+main restait sur ce contrat, sans famille. Désormais « Dans quelle famille de
+votre fiche ? » apparaît sous le champ ; il touche une famille ou en crée une,
+et la prestation entre dans le contrat ET à la fin de cette famille dans
+« Composer ma fiche », par la même action que cet écran
+(`ajouterPrestationAction`, mêmes droits : propriétaire, formule avec la fiche).
+Déjà dans la fiche à la casse près : elle garde sa famille, sans doublon. Un
+refus de la fiche (pleine) se dit et n'enlève rien au contrat. Pas de famille
+« Autres » d'office : il avait refusé « Divers » le 24 août. Planche
+`appli/contrat-prestation-dans-ma-fiche.html`, choisie le 29.
+
 ## 2026-09-28
 
 ### Trois lots sur `main` en une seule batterie
