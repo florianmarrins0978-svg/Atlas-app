@@ -7,7 +7,7 @@ import ChoixCanal from "@/components/atlas/ChoixCanal";
 import { colors, font, surPlein } from "@/lib/design-tokens";
 import { MOIS_LONGS } from "@/lib/mois";
 import { enEuros } from "@/lib/euros";
-import { parFamilles } from "@/lib/prestations-entretien";
+import { memeLibelle, parFamilles } from "@/lib/prestations-entretien";
 import { adresseDeLaVisionneuse } from "@/lib/visionneuse-pdf";
 import { canalPourJoindre, composerMessageContrat, lienTransmission, type CanalClient } from "@/lib/message-client";
 import { ouvrirAdresse } from "@/lib/ouvrir-messagerie";
@@ -28,6 +28,7 @@ import {
   type FacturationContrat,
   type PrestationContrat,
 } from "@/lib/contrats-entretien";
+import { ajouterPrestationAction } from "@/app/paysage/fiche/composer/actions";
 import { enregistrerContratAction, envoyerContratAction } from "./actions";
 
 /**
@@ -67,6 +68,8 @@ type Props = {
   entrepriseNom: string;
   origine: string;
   modele: { famille: string; libelle: string }[];
+  /** Propriétaire, formule avec la fiche : ce qu'il écrit ici entre dans sa fiche. */
+  ficheModifiable: boolean;
   contrat: ContratRecu | null;
   aujourdhui: string;
 };
@@ -109,7 +112,8 @@ function Editeur({
   client,
   entrepriseNom,
   origine: origineServeur,
-  modele,
+  modele: modeleRecu,
+  ficheModifiable,
   depart,
   idDepart,
   aujourdhui,
@@ -134,6 +138,15 @@ function Editeur({
   const [avecCompteRendu, setAvecCompteRendu] = useState(depart?.avecCompteRendu ?? false);
   const [ajoutOuvert, setAjoutOuvert] = useState(false);
   const [libre, setLibre] = useState("");
+  // **Ce qu'il écrit ici entre dans SA FICHE, dans la famille qu'il touche** —
+  // sa demande du 29 septembre 2026, planche `appli/contrat-prestation-dans-
+  // ma-fiche.html`. Jamais de famille « Autres » d'office : il avait refusé ce
+  // rangement par défaut le 24 août (« Divers », `ComposerMaFiche.tsx`).
+  const [modele, setModele] = useState(modeleRecu);
+  const [familleChoisie, setFamilleChoisie] = useState<string | null>(null);
+  const [nouvelleFamille, setNouvelleFamille] = useState(false);
+  const [nomFamille, setNomFamille] = useState("");
+  const [refusFiche, setRefusFiche] = useState<string | null>(null);
   const [canal, setCanal] = useState<CanalClient | null>(canalPourJoindre(client));
 
   const periode = { debut, dureeMois };
@@ -173,6 +186,44 @@ function Editeur({
     setCleSuivante((c) => c + 1);
     setAjoutOuvert(false);
     setLibre("");
+    setFamilleChoisie(null);
+    setNouvelleFamille(false);
+    setNomFamille("");
+  }
+
+  const familles = useMemo(() => parFamilles(modele), [modele]);
+
+  // Déjà dans sa fiche, à la casse et aux accents près (`memeLibelle`, la
+  // règle du dépôt) : elle garde sa famille, et la fiche n'a pas de doublon.
+  const dejaDansLaFiche = libre.trim() ? modele.find((p) => memeLibelle(p.libelle, libre.trim())) : undefined;
+  const choisirFamille = ficheModifiable && libre.trim() !== "" && !dejaDansLaFiche;
+  const familleVisee = nouvelleFamille ? nomFamille.trim() : familleChoisie;
+
+  function ajouterLibre() {
+    const libelle = libre.trim();
+    if (!libelle) return;
+    if (dejaDansLaFiche) return ajouter(dejaDansLaFiche.famille, dejaDansLaFiche.libelle);
+    if (!ficheModifiable) return ajouter(null, libelle);
+    if (!familleVisee) return;
+    // L'orthographe déjà en place l'emporte, comme `ajouterPrestation` la
+    // retient : le contrat et la fiche disent la même famille.
+    const famille = familles.find((f) => memeLibelle(f.famille, familleVisee))?.famille ?? familleVisee;
+    ajouter(famille, libelle);
+    setRefusFiche(null);
+    demarrer(async () => {
+      // Le contrat la garde quoi que la fiche réponde : il l'a écrite pour ce
+      // client. Un refus de la fiche (pleine, par exemple) se dit, il ne
+      // retire rien.
+      const r = await ajouterPrestationAction(famille, libelle);
+      if (!r.ok) {
+        setRefusFiche(r.phrase);
+        return;
+      }
+      setModele((m) => {
+        const apres = m.map((p) => p.famille).lastIndexOf(famille) + 1 || m.length;
+        return [...m.slice(0, apres), { famille, libelle }, ...m.slice(apres)];
+      });
+    });
   }
 
   function enregistrer(ensuite: (idEnregistre: string) => void) {
@@ -235,7 +286,6 @@ function Editeur({
   }
 
   const pris = new Set(lignes.map((l) => l.libelle));
-  const familles = useMemo(() => parFamilles(modele), [modele]);
   const [annee, mois] = [Number(debut.slice(0, 4)), Number(debut.slice(5, 7))];
   const anneeCourante = Number(aujourdhui.slice(0, 4));
 
@@ -343,13 +393,18 @@ function Editeur({
       >
         + Ajouter une prestation
       </button>
+      {refusFiche && (
+        <p className="m-0 mt-1 text-[13.5px]" style={{ color: colors.rust }} role="alert">
+          {refusFiche}
+        </p>
+      )}
       {ajoutOuvert && (
         <div className="mt-2 rounded-[8px] px-3 pb-2.5 pt-1.5" style={{ backgroundColor: colors.rustTint }}>
           <form
             className="my-2.5 flex gap-2"
             onSubmit={(e) => {
               e.preventDefault();
-              if (libre.trim()) ajouter(null, libre.trim());
+              ajouterLibre();
             }}
           >
             <input
@@ -363,13 +418,72 @@ function Editeur({
             />
             <button
               type="submit"
-              disabled={!libre.trim()}
+              disabled={!libre.trim() || (choisirFamille && !familleVisee)}
               className="h-[42px] flex-none rounded-full px-4 text-[14.5px] disabled:opacity-45"
               style={{ backgroundColor: colors.plein, color: surPlein }}
             >
               Ajouter
             </button>
           </form>
+          {choisirFamille && (
+            <div className="mb-2" data-atlas="famille-de-la-fiche">
+              <p className="m-0 mb-2 text-[13.5px]" style={{ color: colors.inkSoft }}>
+                Dans quelle famille de votre fiche ?
+              </p>
+              <div className="flex flex-wrap gap-1.5">
+                {familles.map((f) => {
+                  const choisie = !nouvelleFamille && familleChoisie === f.famille;
+                  return (
+                    <button
+                      key={f.famille}
+                      type="button"
+                      aria-pressed={choisie}
+                      onClick={() => {
+                        setNouvelleFamille(false);
+                        setFamilleChoisie(f.famille);
+                      }}
+                      className="min-h-9 rounded-full border-0 px-[13px] text-[14px]"
+                      style={
+                        choisie
+                          ? { backgroundColor: colors.plein, color: surPlein }
+                          : { backgroundColor: colors.card, color: colors.ink, boxShadow: `inset 0 0 0 1px ${colors.line}` }
+                      }
+                    >
+                      {f.famille}
+                    </button>
+                  );
+                })}
+                <button
+                  type="button"
+                  aria-pressed={nouvelleFamille}
+                  onClick={() => {
+                    setNouvelleFamille(true);
+                    setFamilleChoisie(null);
+                  }}
+                  className="min-h-9 rounded-full border-0 px-[13px] text-[14px]"
+                  style={
+                    nouvelleFamille
+                      ? { backgroundColor: colors.plein, color: surPlein }
+                      : { backgroundColor: colors.card, color: colors.orTexte, boxShadow: `inset 0 0 0 1px ${colors.line}` }
+                  }
+                >
+                  + Nouvelle famille
+                </button>
+              </div>
+              {nouvelleFamille && (
+                <input
+                  autoFocus
+                  value={nomFamille}
+                  maxLength={60}
+                  onChange={(e) => setNomFamille(e.target.value)}
+                  placeholder="Nom de la famille"
+                  aria-label="Nom de la nouvelle famille"
+                  className="mt-2 block h-[42px] w-full rounded-[8px] border-0 px-3 text-[16px] outline-none"
+                  style={{ backgroundColor: colors.card, color: colors.ink, boxShadow: `inset 0 0 0 1px ${colors.line}` }}
+                />
+              )}
+            </div>
+          )}
           {familles.map((f) => (
             <div key={f.famille}>
               <p className="m-0 mb-1 mt-2.5 text-[10.5px] font-semibold uppercase tracking-[0.12em]" style={{ color: colors.muted }}>
