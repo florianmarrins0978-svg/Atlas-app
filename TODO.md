@@ -1,16 +1,15 @@
 # Prochaines tâches
 
-## ⏳ UNE PLANCHE À REGARDER : LE MODÈLE DE FICHE DÉJÀ LÀ (29 septembre 2026)
+## ✅ LE MODÈLE DE FICHE DÉJÀ LÀ : CODÉ LE 29 SEPTEMBRE 2026, sa réponse « B »
 
-Sa demande : *« mon modèle doit déjà être là par défaut, et ils la modifieront
-s'ils le souhaitent »*, puis *« il doit pouvoir la remettre en cliquant sur une
-touche, comme pour les messages préremplis envoyés par SMS »* (le bouton
-« Remettre le message d'Atlas », `MessagesClient.tsx`). Planche
-`appli/fiche-paysage-modele.html` : A, « Remettre » rend exactement le modèle
-(ses lignes à lui partent, « Annuler » six secondes) ; B, seuls les manquants
-reviennent. **Rien n'est codé.** Au codage : la fiche vide d'aujourd'hui
-(`ComposerMaFiche.tsx`, « Partir du modèle Atlas » / « Je préfère composer la
-mienne ») disparaît.
+Planche `appli/fiche-paysage-modele.html`. Le modèle est posé à la création
+du compte (`creation-compte.ts`, `creerEntreprise`, le jeu de démonstration)
+et par la migration 0116 sur les comptes d'avant dont la fiche est vide.
+« Remettre le modèle Atlas » ramène ce qui manque, chacun dans sa famille,
+ses lignes restent (`modeleRemis`, `remettreLeModele`), « Annuler » six
+secondes. La fiche vide d'avant (« Partir du modèle Atlas ») a disparu.
+**Branche `claude/modele-fiche-par-defaut`, niveau 3 (migration) : la
+batterie reste à jouer avant `main`.**
 
 ## ⚠️ « + AJOUTER UNE LIGNE » ÉCRIT ENCORE LA LIGNE VIDE SUR LA FEUILLE (29 septembre 2026)
 

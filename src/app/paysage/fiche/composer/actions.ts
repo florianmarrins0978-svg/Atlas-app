@@ -10,7 +10,7 @@ import {
   renommerPrestation,
   renommerFamille,
   retirerFamille,
-  poserModeleFourni,
+  remettreLeModele,
 } from "@/server/repositories/prestations-entretien";
 import { revalidatePath } from "next/cache";
 
@@ -36,7 +36,7 @@ async function contexteAutorise() {
   return ctx;
 }
 
-function refus(cle: keyof typeof PHRASE_REFUS): Resultat {
+function refus(cle: keyof typeof PHRASE_REFUS): { ok: false; phrase: string } {
   return { ok: false, phrase: PHRASE_REFUS[cle] };
 }
 
@@ -97,11 +97,18 @@ export async function retirerFamilleAction(famille: string): Promise<Resultat> {
   return { ok: true };
 }
 
-export async function poserModeleFourniAction(): Promise<Resultat> {
+/**
+ * « Remettre le modèle Atlas » — ce qui manque revient, ses lignes restent
+ * (sa réponse « B » du 29 septembre 2026, `remettreLeModele`). Rend les lignes
+ * posées : c'est ce que « Annuler » retirera.
+ */
+export async function remettreLeModeleAction(): Promise<
+  { ok: true; ajoutees: { id: string; famille: string; libelle: string }[] } | { ok: false; phrase: string }
+> {
   const ctx = await contexteAutorise();
   if (!ctx) return refus("non_autorise");
-  const r = await poserModeleFourni(ctx);
+  const r = await remettreLeModele(ctx);
   if (!r.ok) return refus(r.refus);
   revalidatePath("/paysage/fiche/composer");
-  return { ok: true };
+  return { ok: true, ajoutees: r.ajoutees.map(({ id, famille, libelle }) => ({ id, famille, libelle })) };
 }

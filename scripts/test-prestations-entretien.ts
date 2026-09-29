@@ -9,7 +9,7 @@ import {
   renommerPrestation,
   renommerFamille,
   retirerFamille,
-  poserModeleFourni,
+  remettreLeModele,
 } from "../src/server/repositories/prestations-entretien";
 import {
   MODELE_FOURNI,
@@ -50,6 +50,18 @@ async function contexte(suffixe: string) {
     { email: `fiche-${suffixe}-${Date.now()}@atlas.test` }
   );
   return { utilisateurId, entrepriseId: entreprise.id };
+}
+
+/**
+ * Une entreprise dont la fiche a été vidée — un compte neuf porte le modèle
+ * d'office depuis le 29 septembre 2026 : les cas qui composent une fiche de
+ * leurs mains partent donc d'une fiche vidée, comme le patron qui a tout retiré.
+ */
+async function contexteVide(suffixe: string) {
+  const ctx = await contexte(suffixe);
+  for (const g of parFamilles(await listerPrestations(ctx))) await retirerFamille(ctx, g.famille);
+  assert.deepEqual(await listerPrestations(ctx), [], "le décor est faux : la fiche n'a pas été vidée");
+  return ctx;
 }
 
 async function main() {
@@ -119,24 +131,42 @@ async function main() {
 
   const ctx = await contexte("a");
 
-  await cas("une fiche neuve est VIDE, et le modèle ne se pose pas tout seul", async () => {
-    // Semer vingt lignes parce que quelqu'un a ouvert un écran serait écrire en
-    // base pour un regard — y compris chez qui ne fait pas d'entretien.
-    assert.deepEqual(await listerPrestations(ctx), []);
+  await cas("une fiche neuve porte le modèle D'OFFICE, dans son ordre", async () => {
+    // Sa demande du 29 septembre 2026 : « mon modèle doit déjà être là par
+    // défaut, et ils la modifieront s'ils le souhaitent ». Posé à la création
+    // du compte (`creerEntreprise`), pas à l'ouverture d'un écran.
+    const lignes = await listerPrestations(ctx);
+    assert.deepEqual(
+      lignes.map((l) => l.libelle),
+      MODELE_FOURNI.map((m) => m.libelle)
+    );
   });
 
-  await cas("le modèle fourni se pose, et une seule fois", async () => {
-    const pose = await poserModeleFourni(ctx);
-    assert.deepEqual(pose, { ok: true, posees: MODELE_FOURNI.length });
-    const lignes = await listerPrestations(ctx);
-    assert.equal(lignes.length, MODELE_FOURNI.length);
-    assert.equal(lignes[0].libelle, MODELE_FOURNI[0].libelle, "l'ordre du modèle n'est pas tenu");
-
-    // Un second appui doublerait la fiche, et il ne saurait plus laquelle des
-    // deux « Tonte » il vient de cocher.
-    const encore = await poserModeleFourni(ctx);
-    assert.deepEqual(encore, { ok: false, refus: "fiche_non_vide" });
+  await cas("Remettre le modèle : rien à remettre sur une fiche intacte, et jamais de doublon", async () => {
+    assert.deepEqual(await remettreLeModele(ctx), { ok: true, ajoutees: [] });
     assert.equal((await listerPrestations(ctx)).length, MODELE_FOURNI.length);
+  });
+
+  await cas("B : la ligne retirée revient DANS SA FAMILLE, la sienne reste", async () => {
+    const autre = await contexte("remettre");
+    const avant = await listerPrestations(autre);
+    const scarif = avant.find((l) => l.libelle === "Scarification");
+    assert.ok(scarif);
+    await retirerPrestation(autre, scarif.id);
+    const sienne = await ajouterPrestation(autre, { famille: "Pelouse", libelle: "Arrosage" });
+    assert.equal(sienne.ok, true);
+
+    const r = await remettreLeModele(autre);
+    assert.ok(r.ok);
+    assert.deepEqual(r.ajoutees.map((a) => a.libelle), ["Scarification"]);
+    const pelouse = parFamilles(await listerPrestations(autre)).find((g) => g.famille === "Pelouse");
+    assert.deepEqual(
+      pelouse?.lignes.map((l) => l.libelle),
+      ["Tonte et ébarbage", "Traitement pelouse", "Engrais", "Arrosage", "Scarification"]
+    );
+    // Les ordres ne se croisent pas : chaque ligne a le sien.
+    const ordres = (await listerPrestations(autre)).map((l) => l.ordre);
+    assert.equal(new Set(ordres).size, ordres.length, "deux lignes partagent un ordre");
   });
 
   await cas("ajouter : la ligne se range dans SA famille, pas au bas de la fiche", async () => {
@@ -210,7 +240,7 @@ async function main() {
     // **Sa remarque du 24 août 2026** : cet écran sert à *« ajouter des
     // catégories, en enlever, en créer »*. « En enlever » n'existait pas — il
     // fallait retirer les lignes une par une, au pouce, avec des gants.
-    const ctx = await contexte("retirer-famille");
+    const ctx = await contexteVide("retirer-famille");
     for (const [famille, libelle] of [
       ["Pelouse", "Tonte"],
       ["Pelouse", "Engrais"],
@@ -243,8 +273,8 @@ async function main() {
   });
 
   await cas("ISOLATION : B ne retire pas la famille de A", async () => {
-    const a = await contexte("famille-a");
-    const b = await contexte("famille-b");
+    const a = await contexteVide("famille-a");
+    const b = await contexteVide("famille-b");
     assert.equal((await ajouterPrestation(a, { famille: "Pelouse", libelle: "Tonte" })).ok, true);
     assert.equal((await ajouterPrestation(b, { famille: "Pelouse", libelle: "Tonte" })).ok, true);
 
@@ -258,10 +288,12 @@ async function main() {
     // **Le seul défaut qui ne se verrait pas à l'écran** — et qui montrerait à
     // un artisan les prestations d'un autre.
     const ctxB = await contexte("b");
-    assert.deepEqual(await listerPrestations(ctxB), [], "B voit la fiche de A");
-
+    const deB = await listerPrestations(ctxB);
     const deA = await listerPrestations(ctx);
     assert.ok(deA.length > 0, "le décor est faux : A n'a aucune prestation");
+    // B a SON modèle, posé à sa création : aucune de ses lignes n'est à A.
+    assert.ok(deB.length > 0, "le décor est faux : B n'a pas reçu son modèle");
+    assert.ok(!deB.some((l) => deA.some((x) => x.id === l.id)), "B voit la fiche de A");
 
     // Viser une ligne de A par son identifiant, depuis B, ne doit RIEN faire.
     assert.deepEqual(await retirerPrestation(ctxB, deA[0].id), {
@@ -276,13 +308,14 @@ async function main() {
     const relueA = (await listerPrestations(ctx)).find((p) => p.id === deA[0].id);
     assert.equal(relueA?.libelle, deA[0].libelle, "B a modifié une prestation de A");
 
-    // B pose son propre modèle sans que celui de A bouge.
-    assert.equal((await poserModeleFourni(ctxB)).ok, true);
-    assert.equal((await listerPrestations(ctx)).length, deA.length, "poser chez B a touché A");
+    // B remet son propre modèle sans que la fiche de A bouge.
+    await retirerPrestation(ctxB, deB[0].id);
+    assert.equal((await remettreLeModele(ctxB)).ok, true);
+    assert.equal((await listerPrestations(ctx)).length, deA.length, "remettre chez B a touché A");
   });
 
   await cas("la fiche a une borne, et le refus le DIT", async () => {
-    const ctxC = await contexte("c");
+    const ctxC = await contexteVide("c");
     for (let i = 0; i < MAX_PRESTATIONS; i++) {
       const r = await ajouterPrestation(ctxC, { famille: "Divers", libelle: `Geste ${i}` });
       assert.equal(r.ok, true, `refus inattendu à la ${i + 1}ᵉ ligne`);
@@ -291,6 +324,10 @@ async function main() {
       ok: false,
       refus: "trop_de_prestations",
     });
+    // Et remettre le modèle sur une fiche pleine le refuse aussi, sans poser
+    // la moitié des lignes.
+    assert.deepEqual(await remettreLeModele(ctxC), { ok: false, refus: "trop_de_prestations" });
+    assert.equal((await listerPrestations(ctxC)).length, MAX_PRESTATIONS);
   });
 
   console.log(`\n${echecs === 0 ? "✅" : "❌"} Fiche d'entretien — ${echecs} échec(s).`);

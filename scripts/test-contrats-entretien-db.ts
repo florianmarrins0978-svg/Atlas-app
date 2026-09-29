@@ -16,7 +16,6 @@ import {
 import { planifierChantier } from "../src/server/repositories/chantiers";
 import { terminerChantier, listerChantiersTermines, getFacturePourChantier } from "../src/server/repositories/factures";
 import { ouvrirPassage, nommerClient, cocherLigne, figerPassage } from "../src/server/repositories/passages-entretien";
-import { poserModeleFourni } from "../src/server/repositories/prestations-entretien";
 import type { ContratSaisi } from "../src/lib/contrats-entretien";
 
 // Les contrats d'entretien, sous `atlas_app` : c'est ce rôle qui prouve la RLS.
@@ -224,8 +223,8 @@ async function main() {
   });
 
   await cas("l'automatisme : le compte rendu du jour fait partir la facture du passage, une fois", async () => {
-    // Une fiche d'entretien s'ouvre sur son modèle : l'entreprise neuve pose le sien.
-    await poserModeleFourni(a.ctx);
+    // Une fiche d'entretien s'ouvre sur son modèle : l'entreprise neuve le porte
+    // d'office depuis le 29 septembre 2026 (`creerEntreprise`).
     const client = await creerClient(a.ctx, { nom: "Durand", civilite: "mr", telephone: "06 00 00 00 01" });
     const r = await enregistrerContrat(a.ctx, {
       id: null,
