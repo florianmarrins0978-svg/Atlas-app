@@ -6,6 +6,19 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-09-29
+
+### Plus de case vide dans « Travaux à faire »
+
+Sa capture : une case ronde sans texte au-dessus de « Coupe de cheveux homme ».
+Le devis garde les lignes que « + Ajouter une ligne » écrit en base avant le
+premier mot (et `peutPreparerLaPiece` laisse partir une ligne sans libellé) ;
+la fiche les recopiait toutes. La règle « une ligne sans texte n'est pas une
+tâche » vit désormais dans `src/lib/taches-du-devis.ts`, lue par la fiche
+d'intervention, le retour du jour, la fiche de sécurité (« Le devis dit : , … »)
+et la fiche client, qui en portait sa propre copie. Suite :
+`scripts/test-taches-du-devis.ts`, vue rouge avant la correction.
+
 ## 2026-09-28
 
 ### Trois lots sur `main` en une seule batterie
