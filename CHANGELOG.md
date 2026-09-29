@@ -6,6 +6,17 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-09-29
+
+### Neuf planches : ce que fait chaque « Ajouter »
+
+Sa demande : *« fais-moi une planche pour chaque, réaliste, que je puisse
+essayer, parce que je comprends pas ce que tu as fait »*. Une planche par
+endroit où l'on ajoute (fiche paysage, contrat, équipe, salarié, catalogue,
+fiche de sécurité, planning, absence, achat), chacune avec son témoin
+« Enregistré » qui montre quand l'écriture part. Elles reprennent le
+comportement lu dans le code, défauts compris (`appli/ajouter-*.html`).
+
 ## 2026-09-28
 
 ### Trois lots sur `main` en une seule batterie

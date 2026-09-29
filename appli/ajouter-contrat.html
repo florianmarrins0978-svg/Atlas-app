@@ -1,0 +1,470 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ajouter une prestation au contrat</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --etabli:#e6e3dc; --etabli-carte:#faf9f5; --etabli-trait:rgba(28,28,26,.12);
+    --etabli-encre:#1c1c1a; --etabli-doux:#4a4a44; --etabli-gris:#77726a; --etabli-or:#8b6835;
+    --serif:"Playfair Display",ui-serif,Georgia,serif;
+    --sans:"Inter",ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+    --cream:#f5f3ee; --card:#faf9f5; --ink:#1c1c1a; --inkSoft:#4a4a44; --muted:#8a8578;
+    --rust:#2f3b2f; --rustTint:#ece9e1; --plein:#7d9a6d; --surPlein:#faf9f5;
+    --or:#B98B47; --orTexte:#8b6835; --alert:#9C3B2E;
+    --line:rgba(28,28,26,.12); --lineSoft:rgba(28,28,26,.07);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--etabli)}
+  body{font-family:var(--sans);color:var(--etabli-encre);-webkit-font-smoothing:antialiased}
+  button{font-family:inherit;cursor:pointer}
+  button:disabled{cursor:default}
+  .page{max-width:1240px;margin:0 auto;padding:30px 16px 90px}
+  .surtitre{font:600 11.5px/1 var(--sans);letter-spacing:.18em;text-transform:uppercase;color:var(--etabli-or);margin:0 0 10px}
+  h1{font:600 30px/1.15 var(--serif);margin:0 0 10px;letter-spacing:-.01em}
+  .chapeau{max-width:680px;color:var(--etabli-doux);font-size:15.5px;line-height:1.6;margin:0 0 22px}
+
+  .tel{width:390px;max-width:100%;border-radius:26px;overflow:hidden;
+       box-shadow:0 1px 2px rgba(20,18,14,.16),0 14px 34px rgba(20,18,14,.14);background:var(--cream)}
+  .ecran{height:720px;overflow-y:auto;background:var(--cream);color:var(--ink);padding-bottom:40px}
+
+  .ent{padding:28px 26px 0}
+  .retour{width:34px;height:34px;border-radius:999px;background:var(--card);border:0;
+          display:grid;place-items:center;color:var(--inkSoft);box-shadow:inset 0 0 0 1px var(--line);font-size:18px;line-height:1}
+  .ent .st{margin:20px 0 13px;font:500 9.5px/1 var(--sans);text-transform:uppercase;letter-spacing:.28em;color:var(--or)}
+  .ent h2{margin:0;font:400 33px/1.1 var(--serif);letter-spacing:-.018em}
+
+  .feuille{margin:18px 10px 0;border-radius:10px;padding:20px 16px 24px;background:var(--card)}
+  .intit{margin:0 0 6px;font:600 11px/1.2 var(--sans);text-transform:uppercase;letter-spacing:.12em;color:var(--muted)}
+  .presta{padding:16px 0;border-bottom:1px solid var(--lineSoft)}
+  .haut{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+  .lib{margin:0;font:400 18px/1.25 var(--serif)}
+  .fam{margin:2px 0 0;font-size:12.5px;color:var(--muted)}
+  .retirer{width:28px;height:28px;flex:none;border-radius:999px;border:1px solid var(--or);color:var(--or);background:none;font-size:15px;line-height:1;padding:0}
+  .mois{margin-top:12px;display:grid;grid-template-columns:repeat(12,1fr);gap:3px}
+  .mois button{height:34px;border:0;border-radius:6px;padding:0;font:600 12px/1 var(--sans);
+               background:var(--cream);color:var(--muted);box-shadow:inset 0 0 0 1px var(--lineSoft)}
+  .mois button.coche{background:var(--plein);color:var(--surPlein);box-shadow:none}
+  .rangee{margin-top:12px;min-height:38px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .rlib{font:600 11px/1.2 var(--sans);text-transform:uppercase;letter-spacing:.1em;color:var(--muted)}
+  .rtxt{font-size:15px}
+  .cpt{display:flex;align-items:center;gap:4px}
+  .cpt button{width:36px;height:36px;border-radius:999px;border:0;font-size:19px;background:var(--card);box-shadow:inset 0 0 0 1px var(--line);color:var(--ink)}
+  .cpt button:disabled{opacity:.5}
+  .cpt output{min-width:32px;text-align:center;font-size:17px;font-weight:600;font-variant-numeric:tabular-nums}
+  .prix{display:flex;align-items:center;gap:4px}
+  .prix input{width:84px;border:0;background:transparent;padding:4px 2px;text-align:right;font:16px var(--sans);outline:none;border-bottom:1px solid var(--lineSoft);color:var(--ink)}
+  .prix span{font-size:14px;color:var(--inkSoft)}
+  .bilan{margin:10px 0 0;text-align:right;font-size:13.5px;color:var(--inkSoft)}
+  .bilan.or{color:var(--or)}
+
+  .ajouter{margin-top:14px;min-height:36px;border:0;background:transparent;padding:0;font-size:14px;font-weight:500;color:var(--rust)}
+  .panneau{margin-top:8px;border-radius:8px;padding:6px 12px 10px;background:var(--rustTint)}
+  .panneau form{margin:10px 0;display:flex;gap:8px}
+  .panneau input{height:42px;min-width:0;flex:1;border:0;border-radius:8px;padding:0 12px;font:16px var(--sans);outline:none;background:var(--card);color:var(--ink);box-shadow:inset 0 0 0 1px var(--line)}
+  .panneau form button{height:42px;flex:none;border:0;border-radius:999px;padding:0 16px;font-size:14.5px;background:var(--plein);color:var(--surPlein)}
+  .panneau form button:disabled{opacity:.45}
+  .pfam{margin:10px 0 4px;font:600 10.5px/1 var(--sans);text-transform:uppercase;letter-spacing:.12em;color:var(--muted)}
+  .pmod{display:block;width:100%;border:0;background:transparent;padding:9px 0;text-align:left;font-size:15px;color:var(--ink);border-bottom:1px solid var(--lineSoft)}
+  .pmod:disabled{color:var(--muted)}
+
+  .bloc{margin-top:26px}
+  .phr{margin:2px 0 0;font-size:13.5px;color:var(--inkSoft)}
+  select{height:38px;border:0;border-radius:8px;padding:0 8px;font:15px var(--sans);background:var(--card);color:var(--ink);box-shadow:inset 0 0 0 1px var(--line)}
+  .inter{position:relative;width:48px;height:28px;flex:none;border:0;border-radius:999px;background:var(--line)}
+  .inter.on{background:var(--plein)}
+  .inter i{position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:999px;background:var(--card);transition:left .15s}
+  .inter.on i{left:23px}
+  .choix{display:flex;flex-direction:column;gap:8px}
+  .fact{border:0;border-radius:10px;padding:12px 14px;text-align:left;background:var(--card);color:var(--ink);box-shadow:inset 0 0 0 1px var(--line)}
+  .fact.actif{box-shadow:inset 0 0 0 1.5px var(--or)}
+  .fact .t{display:block;font-size:15px;font-weight:500;line-height:1.3}
+  .fact .l{margin-right:6px;font-weight:600;color:var(--or)}
+  .fact .c{display:block;margin-top:4px;font-size:13.5px;color:var(--inkSoft);font-variant-numeric:tabular-nums}
+  .tot{display:flex;justify-content:space-between;gap:10px;padding:6px 0;font-size:15px;font-variant-numeric:tabular-nums}
+  .ttc{margin-top:6px;padding-top:10px;display:flex;justify-content:space-between;align-items:center;border-top:2px solid var(--ink)}
+  .ttc b{font-size:17px;font-weight:600}
+  .ttc span{font:600 20px var(--serif);font-variant-numeric:tabular-nums}
+  .apercu{margin-top:30px;padding-top:20px;text-align:center;border-top:1px solid var(--lineSoft)}
+  .lien{border:0;background:transparent;padding:8px;font-size:14px;font-weight:500;color:var(--rust)}
+  .lien:disabled{opacity:.45}
+  .canaux{margin:16px 0 10px;padding-top:10px;display:flex;justify-content:center;gap:16px}
+  .canal{min-height:34px;border:0;background:none;padding:6px 10px;font-size:14px;color:var(--muted);border-radius:2px}
+  .canal.actif{color:var(--ink);box-shadow:inset 0 -1.5px 0 var(--or)}
+  .envoyer{display:block;width:100%;min-height:52px;border:0;border-radius:999px;font:17px var(--serif);background:var(--plein);color:var(--surPlein)}
+  .envoyer:disabled{opacity:.45}
+  .refus{margin:6px 0 0;text-align:center;font-size:13px;color:var(--alert)}
+
+  .fiche{margin:22px 10px 0;border-radius:10px;padding:18px 16px;background:var(--card)}
+  .fiche p{margin:0 0 4px;font-size:14px;color:var(--inkSoft)}
+  .fiche .lien{padding:12px 0 0}
+  .papier{margin:18px 14px 0;background:#fff;border-radius:4px;padding:20px 18px;box-shadow:0 1px 3px rgba(0,0,0,.12);font-size:12.5px;line-height:1.5;color:#1c1c1a}
+  .papier h4{margin:0 0 10px;font:600 17px var(--serif)}
+  .papier div{display:flex;justify-content:space-between;gap:10px;border-bottom:1px solid #eee;padding:5px 0}
+
+  .dessous{width:390px;max-width:100%;margin-top:16px}
+  .temoin{border-radius:14px;padding:14px 16px;background:var(--etabli-carte);box-shadow:inset 0 0 0 1px var(--etabli-trait);transition:box-shadow .3s}
+  .temoin.flash{box-shadow:inset 0 0 0 2px var(--plein)}
+  .temoin .t{margin:0 0 8px;font:600 11px/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--etabli-or)}
+  .temoin .vide{margin:0;font-size:13.5px;color:var(--etabli-gris)}
+  .temoin .c{margin:10px 0 4px;font-size:13.5px;font-weight:500}
+  .temoin .c:first-of-type{margin-top:0}
+  .temoin ul{margin:0;padding-left:18px;font-size:13px;line-height:1.55;color:var(--etabli-doux)}
+  .temoin .per{margin:4px 0 0;font-size:12.5px;color:var(--etabli-gris)}
+  .recommencer{margin-top:12px;border:0;border-radius:999px;padding:10px 18px;font-size:13px;font-weight:600;background:var(--etabli-carte);color:var(--etabli-doux);box-shadow:inset 0 0 0 1px var(--etabli-trait)}
+</style>
+</head>
+<body>
+<main class="page">
+  <p class="surtitre">Contrat d'entretien</p>
+  <h1>Ajouter une prestation au contrat</h1>
+  <p class="chapeau">Appuyez sur « Ajouter une prestation », puis revenez à la fiche avec la flèche.</p>
+
+  <div class="tel"><div class="ecran" id="ecran"></div></div>
+
+  <div class="dessous">
+    <div class="temoin" id="temoin"></div>
+    <button class="recommencer" type="button" id="recommencer">Recommencer</button>
+  </div>
+</main>
+
+<script>
+(function () {
+  var MOIS = ["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"];
+  var INITIALES = ["J","F","M","A","M","J","J","A","S","O","N","D"];
+  var MODELE = [
+    ["Pelouse","Tonte et ébarbage"],["Pelouse","Traitement pelouse"],["Pelouse","Scarification"],["Pelouse","Engrais"],
+    ["Tailles","Taille arbuste automne"],["Tailles","Taille arbuste printemps"],["Tailles","Taille de haie automne"],["Tailles","Taille de haie printemps"],["Tailles","Taille des rosiers"],
+    ["Massifs","Bêchage"],["Massifs","Bordures massifs"],["Massifs","Griffage massifs"],["Massifs","Désherbage massifs"],["Massifs","Coupe des fleurs fanées"],
+    ["Propreté","Nettoyage pied de haies"],["Propreté","Désherbant allée"],["Propreté","Lierre, liseron, liane"],["Propreté","Démoussage voirie"],["Propreté","Ramassage des feuilles"],["Propreté","Évacuation des déchets"]
+  ];
+  var CLIENT = "Mme Lefèvre";
+  var TAUX = 20;
+  var FMT = new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" });
+  function euros(n) { return FMT.format(n).replace(/ /g, " "); }
+  function esc(s) { return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+  function nettoye(s) { var p = String(s || "").replace(/ /g, " ").replace(/\s+/g, " ").trim(); return p === "" ? null : p.slice(0, 60); }
+
+  var base, etat;
+
+  function editeurDepuis(depart, idDepart) {
+    return {
+      vue: "editeur", id: idDepart,
+      lignes: (depart ? depart.prestations : []).map(function (p, i) {
+        return { cle: i, libelle: p.libelle, famille: p.famille, mois: p.mois.slice(), fois: p.fois, prixSaisi: p.prix === null ? "" : p.prix.replace(".", ",") };
+      }),
+      cleSuivante: depart ? depart.prestations.length : 0,
+      debut: depart ? depart.debut : "2026-10-01",
+      duree: depart ? depart.duree : 12,
+      reconduit: depart ? depart.reconduit : true,
+      facturation: depart ? depart.facturation : "passage",
+      avecCR: depart ? depart.avecCR : false,
+      ajoutOuvert: false, libre: "", refus: null, canal: "sms", modifier: false
+    };
+  }
+
+  function dernier() { return base.length ? base[base.length - 1] : null; }
+
+  function ouvrirLEcran() {
+    var c = dernier();
+    if (c && c.statut !== "brouillon") { etat = editeurDepuis(null, null); etat.vue = "parti"; return; }
+    etat = editeurDepuis(c, c ? c.id : null);
+  }
+
+  function reset() { base = []; ouvrirLEcran(); rendre(); }
+
+  function moisPeriode(debut, duree) {
+    var a = Number(debut.slice(0, 4)), m = Number(debut.slice(5, 7)), r = [];
+    for (var i = 0; i < duree; i++) { var n = m - 1 + i; r.push({ annee: a + Math.floor(n / 12), mois: (n % 12) + 1 }); }
+    return r;
+  }
+  function jourLettres(annee, mois, jour) { return (jour === 1 ? "1er" : jour) + " " + MOIS[mois - 1] + " " + annee; }
+  function periodeLettres(debut, duree) {
+    var l = moisPeriode(debut, duree), f = l[l.length - 1];
+    var dj = new Date(f.annee, f.mois, 0).getDate();
+    return "Du " + jourLettres(Number(debut.slice(0, 4)), Number(debut.slice(5, 7)), 1) + " au " + jourLettres(f.annee, f.mois, dj);
+  }
+  function passages(p, debut, duree) {
+    return moisPeriode(debut, duree).filter(function (m) { return p.mois.indexOf(m.mois) >= 0; }).length * p.fois;
+  }
+  function lirePrix(s) {
+    var t = String(s).replace(/\s/g, "").replace(",", ".");
+    return /^\d+(\.\d+)?$/.test(t) ? Number(t).toFixed(2) : null;
+  }
+
+  // La même relecture que relireContrat : un prix illisible refuse tout le contrat.
+  function relire() {
+    var ps = [];
+    for (var i = 0; i < etat.lignes.length; i++) {
+      var l = etat.lignes[i], lib = nettoye(l.libelle);
+      if (lib === null) return { ok: false, refus: "Une prestation n'a pas de nom." };
+      var prix = null;
+      if (l.prixSaisi.trim() !== "") {
+        prix = lirePrix(l.prixSaisi);
+        if (prix === null) return { ok: false, refus: "Le prix de « " + lib + " » ne se lit pas." };
+      }
+      ps.push({ libelle: lib, famille: l.famille, mois: l.mois.slice().sort(function (a, b) { return a - b; }), fois: l.fois, prix: prix });
+    }
+    return { ok: true, prestations: ps };
+  }
+  function manqueDe(ps) {
+    if (ps.length === 0) return "Ajoutez une prestation.";
+    var inc = ps.filter(function (p) { return passages(p, etat.debut, etat.duree) === 0 || p.prix === null; }).map(function (p) { return p.libelle; });
+    return inc.length ? "À compléter : " + inc.join(", ") + "." : null;
+  }
+
+  function enregistrer(ps, statut) {
+    var c = { statut: statut, prestations: JSON.parse(JSON.stringify(ps)), debut: etat.debut, duree: etat.duree, reconduit: etat.reconduit, facturation: etat.facturation, avecCR: etat.facturation === "passage" && etat.avecCR };
+    var ex = etat.id ? base.filter(function (b) { return b.id === etat.id; })[0] : null;
+    if (ex) { c.id = ex.id; base[base.indexOf(ex)] = c; }
+    else { c.id = "c" + (base.length + 1); base.push(c); }
+    etat.id = c.id;
+    flash();
+  }
+
+  function flash() {
+    var t = document.getElementById("temoin");
+    t.classList.add("flash");
+    setTimeout(function () { t.classList.remove("flash"); }, 900);
+  }
+
+  function entete(surtitre, titre) {
+    return '<div class="ent"><button class="retour" type="button" data-a="retour" aria-label="Retour">‹</button>' +
+      '<p class="st">' + esc(surtitre) + '</p><h2>' + esc(titre) + '</h2></div>';
+  }
+
+  function vueEditeur() {
+    var relu = relire();
+    var ps = relu.ok ? relu.prestations : [];
+    var manque = relu.ok ? manqueDe(ps) : relu.refus;
+    var nPass = 0, ht = 0, montants = [];
+    ps.forEach(function (p) {
+      var n = passages(p, etat.debut, etat.duree);
+      nPass += n;
+      if (p.prix !== null) { ht += Number(p.prix) * n; for (var k = 0; k < n; k++) montants.push(Number(p.prix)); }
+    });
+    ht = Math.round(ht * 100) / 100;
+    var tva = Math.round(ht * TAUX) / 100;
+    var h = entete(CLIENT, "Contrat d'entretien") + '<div class="feuille"><p class="intit">Prestations</p>';
+
+    etat.lignes.forEach(function (l) {
+      var p = ps.filter(function (x) { return x.libelle === l.libelle.trim(); })[0] || null;
+      var n = p ? passages(p, etat.debut, etat.duree) : 0;
+      var montant = p && p.prix !== null ? Number(p.prix) * n : null;
+      var bilan = l.mois.length === 0 ? "Aucun mois choisi"
+        : n === 0 ? "Aucun de ces mois dans la période"
+        : montant === null ? n + " passage" + (n > 1 ? "s" : "") + ", prix à chiffrer"
+        : n + " passage" + (n > 1 ? "s" : "") + ", " + euros(montant) + " HT";
+      h += '<div class="presta"><div class="haut"><div><p class="lib">' + esc(l.libelle) + '</p>' +
+        (l.famille ? '<p class="fam">' + esc(l.famille) + '</p>' : '') + '</div>' +
+        '<button class="retirer" type="button" data-a="retirer" data-cle="' + l.cle + '" aria-label="Retirer ' + esc(l.libelle) + '">−</button></div>' +
+        '<div class="mois">' + INITIALES.map(function (ini, i) {
+          return '<button type="button" data-a="mois" data-cle="' + l.cle + '" data-m="' + (i + 1) + '" aria-label="' + MOIS[i] + '" class="' + (l.mois.indexOf(i + 1) >= 0 ? "coche" : "") + '">' + ini + '</button>';
+        }).join("") + '</div>' +
+        '<div class="rangee"><span class="rlib">Passages par mois</span><div class="cpt">' +
+        '<button type="button" data-a="fois-" data-cle="' + l.cle + '"' + (l.fois <= 1 ? " disabled" : "") + ' aria-label="Un passage de moins">−</button>' +
+        '<output>' + l.fois + '</output>' +
+        '<button type="button" data-a="fois+" data-cle="' + l.cle + '"' + (l.fois >= 31 ? " disabled" : "") + ' aria-label="Un passage de plus">+</button></div></div>' +
+        '<div class="rangee"><span class="rlib">Prix du passage HT</span><span class="prix"><input inputmode="decimal" placeholder="à chiffrer" data-a="prix" data-cle="' + l.cle + '" data-focus="prix' + l.cle + '" value="' + esc(l.prixSaisi) + '"><span>€</span></span></div>' +
+        '<p class="bilan' + (n === 0 || montant === null ? " or" : "") + '">' + bilan + '</p></div>';
+    });
+
+    h += '<button class="ajouter" type="button" data-a="ouvrir">+ Ajouter une prestation</button>';
+    if (etat.ajoutOuvert) {
+      var pris = etat.lignes.map(function (l) { return l.libelle; });
+      h += '<div class="panneau"><form data-a="libre"><input data-a="saisie" data-focus="libre" maxlength="60" placeholder="Écrire une prestation" aria-label="Écrire une prestation" value="' + esc(etat.libre) + '">' +
+        '<button type="submit" id="btnLibre"' + (etat.libre.trim() ? "" : " disabled") + '>Ajouter</button></form>';
+      var fam = null;
+      MODELE.forEach(function (m, i) {
+        if (m[0] !== fam) { fam = m[0]; h += '<p class="pfam">' + esc(fam) + '</p>'; }
+        h += '<button class="pmod" type="button" data-a="modele" data-i="' + i + '"' + (pris.indexOf(m[1]) >= 0 ? " disabled" : "") + '>' + esc(m[1]) + '</button>';
+      });
+      h += '</div>';
+    }
+
+    var an = Number(etat.debut.slice(0, 4)), mo = Number(etat.debut.slice(5, 7));
+    h += '<div class="bloc"><p class="intit">Durée</p>' +
+      '<div class="rangee"><span class="rtxt">Début</span><span style="display:flex;gap:6px"><select data-a="moisDebut" aria-label="Mois de début">' +
+      MOIS.map(function (nm, i) { return '<option value="' + (i + 1) + '"' + (i + 1 === mo ? " selected" : "") + '>' + nm + '</option>'; }).join("") +
+      '</select><select data-a="anDebut" aria-label="Année de début">' +
+      [2025, 2026, 2027, 2028].map(function (x) { return '<option' + (x === an ? " selected" : "") + '>' + x + '</option>'; }).join("") +
+      '</select></span></div>' +
+      '<div class="rangee"><span class="rtxt">Durée</span><div class="cpt"><button type="button" data-a="duree-"' + (etat.duree <= 1 ? " disabled" : "") + ' aria-label="Un mois de moins">−</button><output>' + etat.duree + ' mois</output><button type="button" data-a="duree+"' + (etat.duree >= 36 ? " disabled" : "") + ' aria-label="Un mois de plus">+</button></div></div>' +
+      '<p class="phr">' + periodeLettres(etat.debut, etat.duree) + '.</p>' +
+      '<div class="rangee"><span class="rtxt">Reconduit à la fin</span><button type="button" class="inter' + (etat.reconduit ? " on" : "") + '" data-a="reconduit" aria-label="Reconduit à la fin"><i></i></button></div></div>';
+
+    var consA;
+    if (ht === 0) consA = "Rien à facturer.";
+    else {
+      var mens = Math.floor(ht * 100 / etat.duree) / 100, der = Math.round((ht - mens * (etat.duree - 1)) * 100) / 100;
+      consA = mens === der
+        ? etat.duree + " facture" + (etat.duree > 1 ? "s" : "") + " de " + euros(mens) + " HT, le 1er de chaque mois."
+        : (etat.duree - 1) + " factures de " + euros(mens) + " HT et une de " + euros(der) + ", le 1er de chaque mois.";
+    }
+    var consB = montants.length === 0 ? "Rien à facturer."
+      : Math.min.apply(null, montants) === Math.max.apply(null, montants)
+        ? montants.length + " factures de " + euros(montants[0]) + " HT, le jour du compte rendu."
+        : montants.length + " factures, de " + euros(Math.min.apply(null, montants)) + " à " + euros(Math.max.apply(null, montants)) + " HT, le jour du compte rendu.";
+    h += '<div class="bloc"><p class="intit">Facturation</p><div class="choix">' +
+      '<button type="button" class="fact' + (etat.facturation === "mois" ? " actif" : "") + '" data-a="factA"><span class="t"><span class="l">A</span>Chaque mois, le même montant</span><span class="c">' + consA + '</span></button>' +
+      '<button type="button" class="fact' + (etat.facturation === "passage" ? " actif" : "") + '" data-a="factB"><span class="t"><span class="l">B</span>Après chaque passage</span><span class="c">' + consB + '</span></button></div>';
+    if (etat.facturation === "passage") {
+      h += '<div style="margin-top:12px"><div class="rangee"><span class="rtxt">Envoyer la facture avec le compte rendu</span><button type="button" class="inter' + (etat.avecCR ? " on" : "") + '" data-a="cr" aria-label="Envoyer la facture avec le compte rendu"><i></i></button></div>' +
+        '<p class="phr" style="margin:0">' + (etat.avecCR ? "Un seul geste : le compte rendu part, la facture part avec." : "Vous l'envoyez vous-même après chaque passage.") + '</p></div>';
+    }
+    h += '</div>';
+
+    h += '<div class="bloc"><div class="tot"><span>Passages</span><span>' + nPass + '</span></div>' +
+      '<div class="tot"><span>Total HT du contrat</span><span>' + euros(ht) + '</span></div>' +
+      '<div class="tot"><span>TVA 20 %</span><span>' + euros(tva) + '</span></div>' +
+      '<div class="ttc"><b>Total TTC</b><span>' + euros(ht + tva) + '</span></div></div>';
+
+    h += '<div class="apercu"><button class="lien" type="button" data-a="apercu"' + (etat.lignes.length === 0 ? " disabled" : "") + '>Aperçu du PDF</button></div>';
+    var msg = etat.refus || manque;
+    h += '<div class="canaux"><button type="button" class="canal' + (etat.canal === "sms" ? " actif" : "") + '" data-a="sms">Par SMS</button><button type="button" class="canal' + (etat.canal === "email" ? " actif" : "") + '" data-a="email">Par e-mail</button></div>' +
+      '<button class="envoyer" type="button" data-a="envoyer"' + (manque !== null ? " disabled" : "") + '>Envoyer à ' + CLIENT + '</button>' +
+      (msg ? '<p class="refus">' + esc(msg) + '</p>' : '') + '</div>';
+    return h;
+  }
+
+  function vueFiche() {
+    return entete("Client", CLIENT) + '<div class="fiche"><p>12 chemin des Tilleuls, 69440 Mornant</p><p>06 41 27 88 30</p>' +
+      '<button class="lien" type="button" data-a="ouvrirContrat">Contrat d\'entretien</button></div>';
+  }
+
+  function vuePdf() {
+    var c = dernier();
+    var h = entete("Contrat d'entretien", CLIENT) + '<div class="papier"><h4>Contrat d\'entretien</h4>';
+    c.prestations.forEach(function (p) {
+      var n = passages(p, c.debut, c.duree);
+      h += '<div><span>' + esc(p.libelle) + '</span><span>' + n + ' passage' + (n > 1 ? "s" : "") + '</span></div>';
+    });
+    return h + '<p style="margin:10px 0 0;color:#666">' + periodeLettres(c.debut, c.duree) + '.</p></div>';
+  }
+
+  function vueParti() {
+    var c = dernier(), ht = 0;
+    var h = entete(CLIENT, "Contrat d'entretien") + '<div class="feuille"><p class="lib" style="font-size:20px">Envoyé le 29 septembre</p>' +
+      '<p class="phr" style="color:var(--orTexte);margin-top:4px">En attente de sa réponse.</p><div style="margin-top:20px">';
+    c.prestations.forEach(function (p) {
+      var n = passages(p, c.debut, c.duree);
+      ht += Number(p.prix) * n;
+      h += '<div class="tot" style="border-bottom:1px solid var(--lineSoft);padding:10px 0"><span>' + esc(p.libelle) + '</span><span style="color:var(--inkSoft);font-size:13.5px">' + n + ' passage' + (n > 1 ? "s" : "") + '</span></div>';
+    });
+    ht = Math.round(ht * 100) / 100;
+    h += '</div><p class="phr" style="margin-top:12px">' + periodeLettres(c.debut, c.duree) + '.</p>' +
+      '<div style="margin-top:16px"><div class="tot"><span>Total HT du contrat</span><span>' + euros(ht) + '</span></div>' +
+      '<div class="tot"><span>Total TTC</span><span>' + euros(ht + Math.round(ht * TAUX) / 100) + '</span></div></div>' +
+      '<div style="margin-top:24px;display:flex;flex-direction:column;align-items:center;gap:12px">' +
+      '<button class="lien" type="button" data-a="pdfParti">Voir le contrat en PDF</button>' +
+      '<button class="lien" type="button" data-a="nouveau" style="color:var(--or)">+ Nouveau contrat</button></div></div>';
+    return h;
+  }
+
+  function rendreTemoin() {
+    var t = document.getElementById("temoin");
+    var h = '<p class="t">Enregistré</p>';
+    if (!base.length) { t.innerHTML = h + '<p class="vide">Rien.</p>'; return; }
+    base.forEach(function (c) {
+      h += '<p class="c">' + (c.statut === "brouillon" ? "Contrat en brouillon" : "Contrat envoyé le 29 septembre") + '</p><ul>';
+      c.prestations.forEach(function (p) {
+        var mois = p.mois.length ? p.mois.map(function (m) { return MOIS[m - 1]; }).join(", ") : "aucun mois";
+        h += '<li>' + esc(p.libelle) + ' : ' + mois + ', ' + p.fois + ' par mois, ' + (p.prix === null ? "prix à chiffrer" : euros(Number(p.prix)) + " HT le passage") + '.</li>';
+      });
+      if (!c.prestations.length) h += '<li>aucune prestation</li>';
+      h += '</ul><p class="per">' + periodeLettres(c.debut, c.duree) + ', ' + (c.facturation === "mois" ? "facturé chaque mois" : "facturé après chaque passage") + '.</p>';
+    });
+    t.innerHTML = h;
+  }
+
+  function rendre() {
+    var el = document.getElementById("ecran");
+    var actif = document.activeElement, cle = actif && actif.getAttribute && actif.getAttribute("data-focus");
+    var pos = cle && actif.selectionStart;
+    var haut = el.scrollTop;
+    el.innerHTML = etat.vue === "editeur" ? vueEditeur() : etat.vue === "fiche" ? vueFiche() : etat.vue === "pdf" ? vuePdf() : vueParti();
+    el.scrollTop = haut;
+    if (cle) {
+      var n = el.querySelector('[data-focus="' + cle + '"]');
+      if (n) { n.focus(); try { n.setSelectionRange(pos, pos); } catch (e) { n.focus(); } }
+    }
+    rendreTemoin();
+  }
+
+  function ligne(cle) { return (etat.lignes || []).filter(function (l) { return String(l.cle) === String(cle); })[0]; }
+  function ajouter(famille, libelle) {
+    etat.lignes.push({ cle: etat.cleSuivante++, libelle: libelle, famille: famille, mois: [], fois: 1, prixSaisi: "" });
+    etat.ajoutOuvert = false; etat.libre = "";
+  }
+
+  var ecran = document.getElementById("ecran");
+  ecran.addEventListener("click", function (e) {
+    var b = e.target.closest("[data-a]");
+    if (!b || b.disabled || b.tagName === "INPUT" || b.tagName === "SELECT" || b.tagName === "FORM") return;
+    var a = b.getAttribute("data-a"), l = ligne(b.getAttribute("data-cle"));
+    if (a === "retour") { if (etat.vue === "pdf") ouvrirLEcran(); else etat = { vue: "fiche" }; }
+    else if (a === "ouvrirContrat") { ouvrirLEcran(); }
+    else if (a === "ouvrir") { etat.ajoutOuvert = !etat.ajoutOuvert; }
+    else if (a === "modele") { var m = MODELE[Number(b.getAttribute("data-i"))]; ajouter(m[0], m[1]); }
+    else if (a === "retirer") { etat.lignes = etat.lignes.filter(function (x) { return x !== l; }); }
+    else if (a === "mois") { var mm = Number(b.getAttribute("data-m")); l.mois = l.mois.indexOf(mm) >= 0 ? l.mois.filter(function (x) { return x !== mm; }) : l.mois.concat(mm).sort(function (x, y) { return x - y; }); }
+    else if (a === "fois-") { l.fois = Math.max(1, l.fois - 1); }
+    else if (a === "fois+") { l.fois = Math.min(31, l.fois + 1); }
+    else if (a === "duree-") { etat.duree = Math.max(1, etat.duree - 1); }
+    else if (a === "duree+") { etat.duree = Math.min(36, etat.duree + 1); }
+    else if (a === "reconduit") { etat.reconduit = !etat.reconduit; }
+    else if (a === "factA") { etat.facturation = "mois"; etat.avecCR = false; }
+    else if (a === "factB") { etat.facturation = "passage"; }
+    else if (a === "cr") { etat.avecCR = !etat.avecCR; }
+    else if (a === "sms" || a === "email") { etat.canal = a; }
+    else if (a === "apercu") {
+      etat.refus = null;
+      var r = relire();
+      if (!r.ok) { etat.refus = r.refus; }
+      else { enregistrer(r.prestations, "brouillon"); etat = { vue: "pdf" }; }
+    }
+    else if (a === "envoyer") {
+      etat.refus = null;
+      var r2 = relire();
+      if (!r2.ok) { etat.refus = r2.refus; }
+      else { enregistrer(r2.prestations, "envoye"); etat = { vue: "parti" }; }
+    }
+    else if (a === "pdfParti") { etat = { vue: "pdf", depuisParti: true }; }
+    else if (a === "nouveau") { etat = editeurDepuis(dernier(), null); }
+    else return;
+    rendre();
+  });
+  ecran.addEventListener("input", function (e) {
+    var a = e.target.getAttribute("data-a");
+    if (a === "saisie") {
+      etat.libre = e.target.value;
+      var btn = document.getElementById("btnLibre");
+      if (btn) btn.disabled = !etat.libre.trim();
+    } else if (a === "prix") {
+      ligne(e.target.getAttribute("data-cle")).prixSaisi = e.target.value;
+      rendre();
+    }
+  });
+  ecran.addEventListener("change", function (e) {
+    var a = e.target.getAttribute("data-a");
+    var an = etat.debut.slice(0, 4), mo = etat.debut.slice(5, 7);
+    if (a === "moisDebut") etat.debut = an + "-" + String(e.target.value).padStart(2, "0") + "-01";
+    else if (a === "anDebut") etat.debut = e.target.value + "-" + mo + "-01";
+    else return;
+    rendre();
+  });
+  ecran.addEventListener("submit", function (e) {
+    e.preventDefault();
+    if (etat.libre.trim()) { ajouter(null, etat.libre.trim()); rendre(); }
+  });
+  document.getElementById("recommencer").addEventListener("click", reset);
+
+  reset();
+})();
+</script>
+</body>
+</html>
