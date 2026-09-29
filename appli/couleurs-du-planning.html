@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Couleurs du planning : Atlas</title>
+<style>
+/*
+  CHOISIR LES COULEURS DU PLANNING
+
+  Sa demande du 29 septembre 2026 : pouvoir modifier le code couleur qui dit
+  « rien », « incomplet », « complet », « au-delà », à partir du planning.
+
+  Ce qui existe (lu dans le code, et l'écran regardé le 29 septembre) :
+  - les quatre états : `EtatDemi` et `MOT_ETAT`, src/lib/planning-jour.ts ;
+  - leur couleur, écrite UNE fois : `fondDeLEtat`, src/components/atlas/MoisCharge.tsx
+    (rien = transparent, incomplet = vertPale, complet = rust, au-delà = bordeaux) ;
+  - la même fonction peint la légende, les barres du mois, la pastille de la
+    fiche du jour (PlanningClient.tsx) et la journée exportée : changer la
+    couleur à un endroit la change partout, c'est ce qu'on veut garder.
+
+  Couleurs de départ recopiées de src/lib/chartes.ts (Origine et Nuit).
+  Sur Nuit, « complet » vaut l'encre claire #e9e8de : les pôles s'inversent,
+  d'où une valeur claire ET une valeur sombre pour chaque pastille.
+*/
+:root{
+  --fond:#f5f3ee; --plage:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
+  --gris:#8a8578; --or:#B98B47; --accent:#2f3b2f; --bouton:#7d9a6d;
+  --trait:rgba(28,28,26,.12); --scene:#e6e3dc; --weekend:#ebe8e2;
+}
+body.nuit{
+  --fond:#101210; --plage:#1a1d19; --encre:#e9e8de; --encre-douce:#c1c2b6;
+  --gris:#84887b; --or:#B98B47; --accent:#e9e8de; --bouton:#7d9a6d;
+  --trait:rgba(233,232,222,.12); --scene:#070908; --weekend:#171a16;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--scene)}
+body{font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+  color:var(--encre);-webkit-text-size-adjust:100%;padding:0 0 60px}
+
+.commandes{position:sticky;top:0;z-index:20;background:var(--scene);
+  padding:12px 16px;border-bottom:1px solid var(--trait);text-align:center}
+.commandes button{font:inherit;font-size:13.5px;padding:9px 16px;margin:3px;
+  border:1px solid var(--trait);background:var(--plage);color:var(--encre);
+  border-radius:999px;cursor:pointer;min-height:44px}
+.commandes button[aria-pressed=true]{background:var(--encre);color:var(--fond);border-color:var(--encre)}
+
+.tete{max-width:740px;margin:0 auto;padding:26px 16px 4px}
+.tete h1{font-family:ui-serif,Georgia,"Times New Roman",serif;font-size:30px;line-height:1.12;margin:0 0 12px}
+.tete p{margin:0 0 10px;font-size:14.5px;line-height:1.65;color:var(--encre-douce)}
+
+/* le téléphone */
+.tel{position:relative;width:390px;max-width:calc(100vw - 32px);margin:22px auto;
+  background:var(--fond);border-radius:34px;overflow:hidden;
+  box-shadow:0 0 0 9px #1c1c1a,0 20px 50px rgba(0,0,0,.25);min-height:760px}
+.ecran{padding:26px 18px 30px}
+.titre-ecran{font-family:ui-serif,Georgia,serif;font-size:40px;line-height:1;margin:6px 0 6px}
+.sur-titre{font-size:11px;letter-spacing:.32em;color:var(--or);margin:0 0 22px}
+.mois{display:flex;align-items:center;justify-content:space-between;margin:0 0 14px}
+.mois b{font-size:17px}
+.rond{width:42px;height:42px;border-radius:50%;border:1px solid var(--trait);background:var(--plage);
+  display:grid;place-items:center;color:var(--encre);font-size:19px}
+.grille{display:grid;grid-template-columns:repeat(7,1fr);gap:4px 3px}
+.jsem{font-size:10.5px;letter-spacing:.08em;text-align:center;color:var(--gris);font-weight:600;padding-bottom:4px}
+.case{display:flex;flex-direction:column;align-items:center;gap:5px;padding:6px 0 8px;border-radius:12px;min-height:58px}
+.case.we{background:var(--weekend)}
+.case .n{font-family:ui-serif,Georgia,serif;font-size:19px;line-height:1}
+.case.we .n{color:var(--gris)}
+.case.auj{box-shadow:inset 0 0 0 1.5px var(--or)}
+.case.auj .n{color:var(--or);font-weight:600}
+.marque{display:flex;flex-direction:column;gap:2.5px;width:24px}
+.barre{display:flex;height:6px;border-radius:2px;overflow:hidden;background:var(--plage);box-shadow:inset 0 0 0 1px var(--trait)}
+.barre span{height:100%}
+
+.legende{margin-top:16px;display:flex;flex-wrap:nowrap;justify-content:center;gap:9px;font-size:10.5px;color:var(--gris)}
+.legende span{display:flex;align-items:center;gap:5px;white-space:nowrap}
+.carre{display:block;width:11px;height:11px;border-radius:3px;flex:none}
+.modifier{display:block;margin:14px auto 0;background:none;border:0;color:var(--or);
+  font:inherit;font-size:11px;letter-spacing:.28em;text-transform:uppercase;cursor:pointer;min-height:44px;padding:0 12px}
+
+/* la feuille */
+.voile{position:absolute;inset:0;background:rgba(0,0,0,.32);opacity:0;pointer-events:none;transition:opacity .2s}
+.feuille{position:absolute;left:0;right:0;bottom:0;background:var(--plage);border-radius:22px 22px 0 0;
+  border-top:2px solid var(--or);padding:10px 18px 22px;transform:translateY(105%);transition:transform .25s}
+.tel.ouverte .voile{opacity:1;pointer-events:auto}
+.tel.ouverte .feuille{transform:none}
+.poignee{width:40px;height:4px;border-radius:2px;background:var(--trait);margin:0 auto 12px}
+.feuille h2{font-size:17px;margin:0 0 6px}
+.ligne{padding:12px 0;border-bottom:1px solid var(--trait)}
+.ligne:last-of-type{border-bottom:0}
+.ligne .nom{display:flex;align-items:center;gap:10px;font-size:15px;margin-bottom:9px}
+.ligne .nom .barre{width:46px;height:9px}
+.pastilles{display:flex;flex-wrap:wrap;gap:6px}
+.pastilles button{width:29px;height:29px;border-radius:9px;border:0;padding:0;cursor:pointer;position:relative}
+.pastilles button[aria-pressed=true]{box-shadow:0 0 0 2px var(--plage),0 0 0 4px var(--encre)}
+.pastilles button:disabled{opacity:.4;cursor:not-allowed}
+.pastilles button:disabled::after{content:"";position:absolute;inset:0;border-radius:inherit;
+  background:linear-gradient(135deg,transparent 45%,var(--plage) 45%,var(--plage) 55%,transparent 55%)}
+.pastilles .vide{background:var(--plage)!important;box-shadow:inset 0 0 0 1px var(--gris)}
+.pastilles .vide[aria-pressed=true]{box-shadow:inset 0 0 0 1px var(--gris),0 0 0 2px var(--plage),0 0 0 4px var(--encre)}
+.bas{display:flex;align-items:center;justify-content:space-between;margin-top:14px;gap:10px}
+.origine{background:none;border:0;color:var(--gris);font:inherit;font-size:13.5px;text-decoration:underline;cursor:pointer;min-height:44px;padding:0}
+.enregistrer{background:var(--bouton);color:#fff;border:0;border-radius:999px;font:inherit;font-size:15px;
+  padding:0 24px;min-height:46px;cursor:pointer}
+
+.notes{max-width:740px;margin:30px auto 0;padding:0 16px}
+.notes h2{font-family:ui-serif,Georgia,serif;font-size:22px;margin:26px 0 10px}
+.notes p,.notes li{font-size:14.5px;line-height:1.65;color:var(--encre-douce)}
+.notes table{width:100%;border-collapse:collapse;font-size:14px}
+.notes td,.notes th{border-bottom:1px solid var(--trait);padding:8px 6px;text-align:left;vertical-align:top}
+.notes th{color:var(--gris);font-weight:600}
+</style>
+</head>
+<body>
+
+<div class="commandes">
+  <button type="button" data-charte="origine" aria-pressed="true">Origine</button>
+  <button type="button" data-charte="nuit" aria-pressed="false">Voir sur Nuit</button>
+</div>
+
+<header class="tete">
+  <h1>Les couleurs du planning</h1>
+  <p>Votre demande du 29 septembre : changer les couleurs de <b>rien</b>, <b>incomplet</b>, <b>complet</b> et <b>au-delà</b>, depuis le planning.</p>
+  <p><b>Touchez « Couleurs »</b> sous la légende, choisissez, et le mois se repeint sous vos doigts. <b>Enregistrer</b> garde le choix ; fermer sans enregistrer rend les couleurs d’avant. <b>Rien n’est codé.</b></p>
+</header>
+
+<div class="tel" id="tel">
+  <div class="ecran">
+    <div class="titre-ecran">Planning</div>
+    <div class="sur-titre">VOS JOURNÉES</div>
+    <div class="mois"><span class="rond">‹</span><b>octobre 2026</b><span class="rond">›</span></div>
+    <div class="grille" id="grille"></div>
+    <div class="legende" id="legende"></div>
+    <button type="button" class="modifier" id="ouvrir">Couleurs</button>
+  </div>
+
+  <div class="voile" id="voile"></div>
+  <div class="feuille" role="dialog" aria-label="Couleurs du planning">
+    <div class="poignee"></div>
+    <h2>Couleurs du planning</h2>
+    <div id="lignes"></div>
+    <div class="bas">
+      <button type="button" class="origine" id="remettre">Couleurs d’origine</button>
+      <button type="button" class="enregistrer" id="enregistrer">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<section class="notes">
+  <h2>Trois choix faits pour vous, à dire si ça ne va pas</h2>
+  <table>
+    <tr><th>Le choix</th><th>Pourquoi</th></tr>
+    <tr><td><b>Huit couleurs au choix</b>, pas un nuancier libre.</td>
+        <td>Vous avez sept apparences, dont deux sombres (Nuit, Sylve). Chaque pastille a sa version claire et sa version sombre, réglées pour rester lisibles sur les sept. Une couleur libre serait juste sur une apparence et illisible sur une autre : c’est la panne du 22 août, « le mode nuit est illisible ». Touchez « Voir sur Nuit » pour le constater. Pas de gris : il se confondrait avec les week-ends.</td></tr>
+    <tr><td><b>Deux états ne peuvent pas prendre la même couleur.</b> Une couleur déjà prise est pâlie et ne se touche pas.</td>
+        <td>Si « complet » et « au-delà » avaient la même couleur, le planning ne dirait plus lequel des deux.</td></tr>
+    <tr><td><b>« Sans couleur » seulement pour rien.</b></td>
+        <td>Une journée prise sans couleur se lirait comme vide.</td></tr>
+  </table>
+
+  <h2>Ce que ça change ailleurs</h2>
+  <p>La couleur choisie suit partout où ces quatre états se montrent : les barres du mois, la légende, la petite pastille dans la fiche du jour, la journée exportée, et le carré « complet » de Réglages. Aujourd’hui une seule fonction les peint toutes ; elle continuera, pour qu’aucun écran ne garde l’ancienne couleur.</p>
+
+  <h2>La seule question</h2>
+  <p><b>Le choix vaut pour toute l’entreprise</b> (vos salariés voient les mêmes couleurs que vous), <b>ou pour chaque personne</b> ? Je vous conseille <b>toute l’entreprise</b> : quand vous dites « regarde, c’est rouge jeudi », tout le monde voit la même chose.</p>
+</section>
+
+<script>
+/* Les pastilles : [clair, sombre]. Les quatre de départ sont celles de
+   src/lib/chartes.ts (vertPale, rust, bordeaux) pour Origine et Nuit. */
+const PASTILLES = {
+  vide:     null,
+  vertPale: ["#b9c6b4", "#738b6a"],
+  vertBtn:  ["#7d9a6d", "#8fae7e"],
+  pin:      ["#2f3b2f", "#e9e8de"],
+  or:       ["#B98B47", "#B98B47"],
+  orange:   ["#d0782a", "#e08f45"],
+  rouge:    ["#b8322a", "#dd5a50"],
+  bordeaux: ["#6E2433", "#b53b54"],
+  bleu:     ["#3b6ea5", "#6f9fd4"],
+};
+const ORIGINE = { libre: "vide", dispo: "vertPale", plein: "pin", dela: "bordeaux" };
+const MOTS = { libre: "rien", dispo: "incomplet", plein: "complet", dela: "au-delà" };
+const ETATS = ["libre", "dispo", "plein", "dela"];
+
+let enregistre = { ...ORIGINE };
+let brouillon = { ...ORIGINE };
+let sombre = false;
+
+function teinte(cle) {
+  const p = PASTILLES[cle];
+  return p ? p[sombre ? 1 : 0] : "transparent";
+}
+
+/* Octobre 2026 commence un jeudi. Deux équipes : une prise = incomplet (50 %),
+   deux = complet, trois = au-delà. [matin, après-midi]. */
+const CHARGES = {
+  1:[1,1], 2:[2,2], 5:[2,1], 6:[0,0], 7:[1,0], 8:[2,2], 9:[3,2],
+  12:[2,2], 13:[2,2], 14:[1,1], 15:[0,1], 16:[2,3],
+  19:[1,0], 20:[0,0], 21:[2,2], 22:[1,2], 23:[0,0],
+  26:[3,3], 27:[2,2], 28:[1,1], 29:[0,0], 30:[1,0],
+};
+function etatDe(n) { return n === 0 ? "libre" : n < 2 ? "dispo" : n === 2 ? "plein" : "dela"; }
+
+function barre(n) {
+  const etat = etatDe(n);
+  const part = Math.round(Math.min(n / 2, 1) * 100);
+  return `<i class="barre"><span style="width:${part}%;background:${teinte(brouillon[etat])}"></span></i>`;
+}
+function barreEntiere(etat) {
+  return `<i class="barre"><span style="width:100%;background:${teinte(brouillon[etat])}"></span></i>`;
+}
+
+function peindre() {
+  const g = document.getElementById("grille");
+  let h = ["LUN","MAR","MER","JEU","VEN","SAM","DIM"].map(j => `<div class="jsem">${j}</div>`).join("");
+  for (let i = 0; i < 3; i++) h += `<div></div>`;
+  for (let d = 1; d <= 31; d++) {
+    const jourSem = (d + 2) % 7; // 0 = lundi
+    const we = jourSem >= 5;
+    const c = CHARGES[d] || [0, 0];
+    h += `<div class="case${we ? " we" : ""}${d === 1 ? " auj" : ""}"><span class="n">${d}</span>` +
+         (we ? "" : `<span class="marque">${barre(c[0])}${barre(c[1])}</span>`) + `</div>`;
+  }
+  g.innerHTML = h;
+
+  document.getElementById("legende").innerHTML = ETATS.map(e => {
+    const cle = brouillon[e];
+    const style = cle === "vide"
+      ? "background:var(--plage);box-shadow:inset 0 0 0 1px var(--trait)"
+      : `background:${teinte(cle)}`;
+    return `<span><i class="carre" style="${style}"></i>${MOTS[e]}</span>`;
+  }).join("");
+
+  document.getElementById("lignes").innerHTML = ETATS.map(e => {
+    const prises = ETATS.filter(x => x !== e).map(x => brouillon[x]);
+    const boutons = Object.keys(PASTILLES)
+      .filter(cle => cle !== "vide" || e === "libre")
+      .map(cle => {
+        const choisie = brouillon[e] === cle;
+        const prise = prises.includes(cle);
+        const fond = cle === "vide" ? "" : `background:${teinte(cle)}`;
+        return `<button type="button" class="${cle === "vide" ? "vide" : ""}" style="${fond}"
+          data-etat="${e}" data-cle="${cle}" aria-pressed="${choisie}" ${prise ? "disabled" : ""}
+          aria-label="${MOTS[e]}, ${cle === "vide" ? "sans couleur" : cle}"></button>`;
+      }).join("");
+    return `<div class="ligne"><div class="nom">${barreEntiere(e)}${MOTS[e]}</div><div class="pastilles">${boutons}</div></div>`;
+  }).join("");
+}
+
+document.getElementById("lignes").addEventListener("click", ev => {
+  const b = ev.target.closest("button[data-cle]");
+  if (!b || b.disabled) return;
+  brouillon[b.dataset.etat] = b.dataset.cle;
+  peindre();
+});
+const tel = document.getElementById("tel");
+document.getElementById("ouvrir").onclick = () => tel.classList.add("ouverte");
+document.getElementById("voile").onclick = () => { brouillon = { ...enregistre }; tel.classList.remove("ouverte"); peindre(); };
+document.getElementById("enregistrer").onclick = () => { enregistre = { ...brouillon }; tel.classList.remove("ouverte"); };
+document.getElementById("remettre").onclick = () => { brouillon = { ...ORIGINE }; peindre(); };
+
+document.querySelectorAll(".commandes button").forEach(b => b.onclick = () => {
+  sombre = b.dataset.charte === "nuit";
+  document.body.classList.toggle("nuit", sombre);
+  document.querySelectorAll(".commandes button").forEach(x => x.setAttribute("aria-pressed", x === b));
+  peindre();
+});
+
+peindre();
+</script>
+</body>
+</html>

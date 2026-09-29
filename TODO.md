@@ -1,5 +1,15 @@
 # Prochaines tâches
 
+## ⏳ UNE PLANCHE À REGARDER : LES COULEURS DU PLANNING (29 septembre 2026)
+
+Sa demande : modifier les couleurs de rien, incomplet, complet, au-delà,
+depuis le planning. Planche `appli/couleurs-du-planning.html` : « Couleurs »
+sous la légende ouvre une feuille, huit pastilles par état (claire ET sombre,
+pour les sept chartes), deux états jamais de la même couleur. **Rien n'est
+codé.** Sa réponse attendue : le choix vaut pour l'entreprise ou pour chaque
+personne. Au codage, la couleur passe par `fondDeLEtat`
+(`src/components/atlas/MoisCharge.tsx`), seule à peindre les quatre états.
+
 ## ✅ ABSENT LE MATIN, COCHABLE L'APRÈS-MIDI : SUR `main` LE 28 SEPTEMBRE 2026
 
 `cocheRefusee` juge la demi-journée, l'écran l'appelle au lieu de sa propre
