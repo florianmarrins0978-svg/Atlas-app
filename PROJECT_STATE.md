@@ -1,7 +1,8 @@
 # État du projet
 
-**Dernière mise à jour :** 2026-09-26 · branche `claude/client-disappearance-no-date-f26td1`
-· dernière migration `drizzle/0112_unite_de_ligne_rangee_seule.sql` (sur la branche)
+**Dernière mise à jour :** 2026-09-29, branche `claude/batterie-commune-29-septembre`
+(huit lots réunis pour une seule batterie), dernière migration
+`drizzle/0116_modele_de_fiche_d_office.sql`
 
 ---
 ## CODÉ : L'UNITÉ D'UNE LIGNE NE PORTE QUE LA RANGÉE (29 septembre 2026)
