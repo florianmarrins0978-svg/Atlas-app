@@ -18,9 +18,16 @@ attaquant. Ce qui manquait était ailleurs : douze caractères laissaient passer
 quand aucun n'apporte rien (mot connu, suite du clavier, répétition, année).
 Une phrase de plusieurs mots passe toujours. Comme la longueur, la règle ne
 vaut qu'à la création et au changement : aucun compte existant n'est mis
-dehors. Non comparé au nom ni à l'adresse du compte, et pas aux fuites
-publiques. **Batterie non jouée, à sa demande** : seules les suites pures du
-domaine et les types l'ont été.
+dehors.
+
+**Le nom et l'adresse du compte aussi**, dans la foulée : « marrins2026! » ou
+« florian.marrins » sont refusés (« Ce mot de passe reprend votre nom ou votre
+adresse. »). Les mots du compte sont un paramètre OBLIGATOIRE de la règle :
+sur les sept endroits qui l'appellent, un oubli ne compile pas. L'écran et le
+serveur d'un même geste donnent la même liste ; le mot de passe oublié n'a que
+l'adresse, car son écran n'est pas connecté et ne doit pas révéler de nom.
+Pas comparé aux fuites publiques. **Batterie non jouée, à sa demande** (une
+seule à la fin) : seules les suites pures du domaine et les types l'ont été.
 
 ### Neuf planches : ce que fait chaque « Ajouter »
 

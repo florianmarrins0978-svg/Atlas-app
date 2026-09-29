@@ -42,6 +42,8 @@ export type RefusMotDePasse =
   | "trop-court"
   /** Assez long, mais fait de ce qu'un attaquant essaie en premier. */
   | "trop-courant"
+  /** Assez long, mais fait du nom ou de l'adresse du compte. */
+  | "trop-personnel"
   /** La confirmation ne redit pas la même chose. */
   | "confirmation-differente"
   /** Le nouveau est l'ancien : le geste n'aurait rien fait. */
@@ -60,10 +62,12 @@ export type RefusMotDePasse =
 export function verifierNouveauMotDePasse(
   nouveau: string,
   confirmation: string,
+  personnel: Personnel,
   actuel?: string
 ): RefusMotDePasse | null {
   if (nouveau.length < LONGUEUR_MINIMALE) return "trop-court";
-  if (estTropCourant(nouveau)) return "trop-courant";
+  const faiblesse = faiblesseDe(nouveau, personnel);
+  if (faiblesse) return faiblesse;
   if (actuel !== undefined && actuel !== "" && nouveau === actuel) return "sans-changement";
   // La confirmation se compare TELLE QUELLE, espaces compris : un mot de passe
   // qui commence par une espace est un mot de passe valable, et le rogner ici
@@ -79,6 +83,8 @@ export function messageRefus(refus: RefusMotDePasse): string {
       return `Il faut au moins ${LONGUEUR_MINIMALE} caractères.`;
     case "trop-courant":
       return "Ce mot de passe est trop courant.";
+    case "trop-personnel":
+      return "Ce mot de passe reprend votre nom ou votre adresse.";
     case "confirmation-differente":
       return "Les deux saisies ne sont pas identiques.";
     case "sans-changement":
@@ -105,13 +111,13 @@ export function messageRefus(refus: RefusMotDePasse): string {
  * `null` tant que le champ est vide : une exigence affichée avant la première
  * touche est exactement la phrase qu'il a fait retirer.
  */
-export function etatNouveau(nouveau: string): { message: string } | null {
+export function etatNouveau(nouveau: string, personnel: Personnel): { message: string } | null {
   if (nouveau === "") return null;
   if (nouveau.length < LONGUEUR_MINIMALE) return { message: messageRefus("trop-court") };
   // Sans cette ligne, le bouton resterait éteint sur « 123456789012 » sans
   // qu'aucune phrase ne dise pourquoi : la même faute que celle du 31 août.
-  if (estTropCourant(nouveau)) return { message: messageRefus("trop-courant") };
-  return null;
+  const faiblesse = faiblesseDe(nouveau, personnel);
+  return faiblesse ? { message: messageRefus(faiblesse) } : null;
 }
 
 /**
@@ -146,10 +152,23 @@ export function etatConfirmation(
 // découpage le voit, et il accepte « chantier vert pelouse » parce que deux de
 // ses mots n'apportent pas rien.
 //
-// **Ce que ce contrôle NE fait PAS** : il ne compare pas au nom ni à l'adresse
-// du compte (les sept appelants devraient les fournir), et il ne connaît pas
-// les fuites publiques (il faudrait un service extérieur). Il ne s'applique,
-// comme la longueur, qu'à la création et au changement.
+// **Le nom et l'adresse du compte, depuis le même jour** : « marrins2026! » ne
+// contient aucun mot de la liste, et c'est pourtant le premier essai de qui a
+// lu un devis. `personnel` est OBLIGATOIRE, et c'est délibéré : sept endroits
+// appellent cette règle, et un paramètre facultatif se serait oublié en
+// silence dans l'un d'eux. L'écran et le serveur d'un même geste doivent
+// donner la MÊME liste, sans quoi le bouton s'allume sur ce que le serveur
+// refuse.
+//
+// **Ce que ce contrôle NE fait PAS** : il ne connaît pas les fuites publiques
+// (il faudrait un service extérieur). Il ne s'applique, comme la longueur,
+// qu'à la création et au changement.
+
+/**
+ * Ce que l'on sait de la personne : prénom, nom, adresse. Une case vide ou
+ * absente est permise, elle n'apporte simplement rien à refuser.
+ */
+export type Personnel = readonly (string | null | undefined)[];
 
 /**
  * Les racines qu'on retrouve en tête de toutes les listes de mots de passe
@@ -197,28 +216,80 @@ function estUneRepetition(morceau: string): boolean {
   return false;
 }
 
-function morceauSansApport(morceau: string): boolean {
-  if (/^[^a-z0-9]+$/.test(morceau)) return true; // des signes seuls
-  if (/^[0-9]{1,4}$/.test(morceau)) return true; // une année, un « 12 »
-  if (RACINES_COURANTES.has(morceau)) return true;
-  if (estUneRepetition(morceau)) return true;
+function dansUneSuite(morceau: string): boolean {
   return SUITES.some((suite) => suite.includes(morceau));
 }
 
-/** Vrai quand le mot de passe n'est fait que de ce qui s'essaie en premier. */
-export function estTropCourant(motDePasse: string): boolean {
-  const ramene = motDePasse
+/**
+ * Vrai quand le morceau se découpe tout entier en mots connus : « marrinsflorian »
+ * est fait de deux mots du compte, « azertymotdepasse » de deux racines. Un mot
+ * honnête ne se découpe presque jamais ainsi jusqu'à sa dernière lettre.
+ */
+function faitDeMotsConnus(morceau: string, connus: ReadonlySet<string>): boolean {
+  const atteint = [true, ...Array<boolean>(morceau.length).fill(false)];
+  for (let fin = 1; fin <= morceau.length; fin++) {
+    for (let debut = 0; debut < fin && !atteint[fin]; debut++) {
+      if (!atteint[debut]) continue;
+      const mot = morceau.slice(debut, fin);
+      atteint[fin] = connus.has(mot) || (mot.length >= 3 && dansUneSuite(mot));
+    }
+  }
+  return atteint[morceau.length];
+}
+
+function morceauSansApport(morceau: string, connus: ReadonlySet<string>): boolean {
+  if (/^[^a-z0-9]+$/.test(morceau)) return true; // des signes seuls
+  if (/^[0-9]{1,4}$/.test(morceau)) return true; // une année, un « 12 »
+  if (connus.has(morceau)) return true;
+  if (estUneRepetition(morceau)) return true;
+  if (dansUneSuite(morceau)) return true;
+  return /^[a-z]+$/.test(morceau) && faitDeMotsConnus(morceau, connus);
+}
+
+/** Sans accent ni majuscule, « p4ssw0rd » redevenu « password ». */
+function ramener(texte: string): string {
+  return texte
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase()
     // « p4ssw0rd » : un chiffre pris entre deux lettres redevient la lettre
     // qu'il déguise, sinon le découpage le couperait en cinq morceaux.
     .replace(/(?<=[a-z])[0134578@$](?=[a-z])/g, (c) => CHIFFRES_DEGUISES[c]);
+}
 
+/**
+ * Les mots du compte : « florian.marrins85@gmail.com » donne florian, marrins,
+ * 85 (trop court, déjà sans apport), gmail, com. Moins de trois lettres, un
+ * mot n'est pas retenu : « Le » ou « Ba » refuseraient des phrases honnêtes.
+ */
+function motsDuCompte(personnel: Personnel): Set<string> {
+  const mots = new Set<string>();
+  for (const valeur of personnel) {
+    for (const mot of ramener(valeur ?? "").match(/[a-z]+|[0-9]+/g) ?? []) {
+      if (mot.length >= 3) mots.add(mot);
+    }
+  }
+  return mots;
+}
+
+function sansApport(ramene: string, connus: ReadonlySet<string>): boolean {
   if (new Set(ramene).size < 4) return true;
   if (estUneRepetition(ramene)) return true;
-  if (SUITES.some((suite) => suite.includes(ramene))) return true;
-
+  if (dansUneSuite(ramene)) return true;
   const morceaux = ramene.match(/[a-z]+|[0-9]+|[^a-z0-9]+/g) ?? [];
-  return morceaux.every(morceauSansApport);
+  return morceaux.every((morceau) => morceauSansApport(morceau, connus));
+}
+
+/**
+ * Ce qui rend le mot de passe trop facile à deviner, ou `null`.
+ *
+ * **« Trop courant » se juge d'abord, sans le compte** : « motdepasse12 » est
+ * faible pour tout le monde, et la phrase doit le dire ainsi plutôt que de
+ * parler d'un nom qu'il ne contient pas.
+ */
+function faiblesseDe(motDePasse: string, personnel: Personnel): "trop-courant" | "trop-personnel" | null {
+  const ramene = ramener(motDePasse);
+  if (sansApport(ramene, RACINES_COURANTES)) return "trop-courant";
+  const connus = new Set([...RACINES_COURANTES, ...motsDuCompte(personnel)]);
+  return sansApport(ramene, connus) ? "trop-personnel" : null;
 }

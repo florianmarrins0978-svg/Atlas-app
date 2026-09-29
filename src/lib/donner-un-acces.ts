@@ -26,6 +26,8 @@ export type RefusAcces =
   | "mot-de-passe-trop-court"
   /** Assez long, mais fait de ce qu'un attaquant essaie en premier. */
   | "mot-de-passe-trop-courant"
+  /** Assez long, mais fait du nom ou de l'adresse du salarié. */
+  | "mot-de-passe-trop-personnel"
   /** La seconde saisie ne redit pas la première. */
   | "mot-de-passe-confirmation"
   /** Le dernier patron ne peut ni se rétrograder ni se retirer. */
@@ -110,9 +112,10 @@ export function refusDeLAcces(saisie: {
    * `actuel` est laissé vide : il n'y a pas d'ancien mot de passe à comparer
    * pour un compte qui n'existe pas encore.
    */
-  const refusMdp = verifierNouveauMotDePasse(saisie.motDePasse, saisie.confirmation);
+  const refusMdp = verifierNouveauMotDePasse(saisie.motDePasse, saisie.confirmation, [saisie.nom, saisie.email]);
   if (refusMdp === "trop-court") return "mot-de-passe-trop-court";
   if (refusMdp === "trop-courant") return "mot-de-passe-trop-courant";
+  if (refusMdp === "trop-personnel") return "mot-de-passe-trop-personnel";
   if (refusMdp === "confirmation-differente") return "mot-de-passe-confirmation";
 
   if (saisie.emailDejaPris) return "email-deja-pris";
@@ -196,6 +199,8 @@ export function messageRefusAcces(refus: RefusAcces): string {
       return messageRefus("trop-court");
     case "mot-de-passe-trop-courant":
       return messageRefus("trop-courant");
+    case "mot-de-passe-trop-personnel":
+      return messageRefus("trop-personnel");
     case "mot-de-passe-confirmation":
       return messageRefus("confirmation-differente");
     case "dernier-patron":

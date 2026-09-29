@@ -190,7 +190,11 @@ export async function poserLeNouveauMotDePasse(
   nouveau: string,
   confirmation: string
 ): Promise<ResultatNouveauMotDePasse> {
-  const refus = verifierNouveauMotDePasse(nouveau, confirmation);
+  // **L'adresse seule, pas le nom** : l'écran qui choisit ce mot de passe
+  // n'est pas connecté et ne connaît que l'adresse tapée. Lui donner le nom
+  // révélerait à qui tape une adresse le nom de son titulaire ; le prendre ici
+  // seulement allumerait le bouton sur un refus.
+  const refus = verifierNouveauMotDePasse(nouveau, confirmation, [email]);
   if (refus) return { ok: false, refus };
 
   const utilisateurId = await identifiantPourEmailProuve(email);
