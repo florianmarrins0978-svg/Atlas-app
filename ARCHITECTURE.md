@@ -33877,11 +33877,31 @@ rend désormais `modeleMessage`, relu en base au départ comme le canal et le
 destinataire, et `ouvrirLaMessagerie` l'EXIGE : un appelant qui l'oublie ne
 compile plus.
 
-**Le second défaut, laissé ouvert et écrit** : la phrase « Et si aucune des
-dates proposées ne vous convient, vous pouvez en proposer une autre » vit dans
-son texte modifiable, et `composerMessageClient` ignore
-`autre_date_autorisee`. Case décochée, le client la lit quand même ; la page du
-devis, elle, cache bien le choix. La corriger change l'affichage de son message
-dans Réglages : maquette d'abord (`CLAUDE.md` §3 bis), `TODO.md`. Son test
-rouge attend dans `scripts/en-attente/`, que les deux lanceurs ne lisent pas.
+**Le second défaut, et la décision qui l'a suivi.** La phrase « Et si aucune
+des dates proposées ne vous convient, vous pouvez en proposer une autre » vivait
+dans son texte modifiable, et rien ne savait qu'elle dépendait de la case
+`autre_date_autorisee`. Case décochée, le SMS la portait ; la page du devis, elle,
+obéissait déjà. Sa planche du même jour (`appli/lien-valable-45-jours.html`, A)
+ajoute la durée du lien sous le lien. Les deux deviennent des **morceaux
+dorés** qu'Atlas remplit, comme l'échéance d'une facture :
 
+| morceau | ce qu'il rend | règle |
+|---|---|---|
+| `[autre-date]` | la phrase avec son espace, ou rien | `clauseAutreDate`, selon la case de l'envoi |
+| `[validite]` | « Ce lien est valable 45 jours, jusqu'au … Passé ce délai … il faudra appeler … » | `clauseValidite`, sur le jour d'`expire_at` ; **obligatoire** dans un message de devis (`refusDuMessage(modele, genre)`) |
+
+**La racine est la même que pour le modèle** : `composerMessageClient` exige
+`envoi: EnvoiDuDevis` (le jour où le lien meurt, la case), lu sur l'envoi par
+les deux chemins, l'action du premier envoi et la page de relance. Un appelant
+qui l'oublie ne compile plus. `VALIDITE_LIEN_JOURS` est descendu dans
+`src/lib/etat-envoi.ts`, puisque le message le dit ; et `segmentsDuModele` déduit sa
+découpe de `PASTILLES` au lieu d'en tenir une copie, qui aurait affiché
+`[validite]` en clair.
+
+**Ses messages déjà réécrits** : migration 0115, qui remplace la phrase par
+`[autre-date]` quand elle y est MOT POUR MOT et pose `[validite]` sous le
+premier `[lien]`. Une phrase qu'il a reformulée reste la sienne ; un message à
+la borne des 2 000 caractères reste tel quel, et l'écran le refusera en disant
+pourquoi. `entreprises` n'est pas sous RLS, et la migration compte quand même
+ce qu'elle touche. Éprouvée sur une base habitée
+(`test-migration-0115-base-habitee`), et vue rougir contre une migration vide.

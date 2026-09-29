@@ -9,6 +9,7 @@ import { etatEnvoiExplication, etatEnvoiLabel, type EtatEnvoi } from "@/lib/etat
 import { reprendreDevisAction } from "./actions";
 import { enEuros } from "@/lib/euros";
 import { joursEnToutesLettres } from "@/lib/jour";
+import type { EnvoiDuDevis } from "@/lib/message-client";
 import { type Civilite } from "@/lib/civilite";
 
 
@@ -29,7 +30,7 @@ export default function ExportClient({
   etatEnvoi,
   messageClient,
   joursDuClient,
-  lienEnvoi,
+  envoiOuvert,
   origine,
 }: {
   chantierId: string;
@@ -54,8 +55,12 @@ export default function ExportClient({
   messageClient: string | null;
   /** Les jours qu'il a proposés avec sa correction, ou `null`. */
   joursDuClient: string[] | null;
-  /** Le lien encore actif, tant que le client n'a pas répondu. */
-  lienEnvoi: string | null;
+  /**
+   * L'envoi encore ouvert, tant que le client n'a pas répondu : son chemin, et
+   * ce que le message de relance doit dire (le jour où le lien meurt, la case
+   * « autre date »), lus sur l'envoi lui-même.
+   */
+  envoiOuvert: { chemin: string; envoiDuDevis: EnvoiDuDevis } | null;
   /** Origine du site, calculée côté serveur — voir le commentaire dans page.tsx. */
   origine: string;
 }) {
@@ -141,7 +146,6 @@ export default function ExportClient({
   // après, c'est transmettre. Jamais les deux.
   const peutReprendre =
     etatEnvoi === "retourne" || etatEnvoi === "a_corriger" || etatEnvoi === "caduc";
-  const lienAMontrer = lienEnvoi;
 
   /**
    * Rouvre le devis pour le modifier, puis mène à l'écran qui le porte.
@@ -205,7 +209,7 @@ export default function ExportClient({
           lienPdf={`/api/devis/${devisId}/pdf`}
           nomFichierPdf={nomFichierDevis}
           transmission={
-            lienAMontrer ? (
+            envoiOuvert ? (
               <TransmettreAuClient
                 clientId={clientId}
                 clientNom={clientNom}
@@ -215,7 +219,8 @@ export default function ExportClient({
                 canal={canalClient}
                 telephone={clientTelephone}
                 email={clientEmail}
-                lien={lienComplet(lienAMontrer)}
+                lien={lienComplet(envoiOuvert.chemin)}
+                envoi={envoiOuvert.envoiDuDevis}
                 // `initialEnvoye` et non `envoye` : juste après le premier
                 // envoi, l'écran dit « Devis prêt » et le geste est bien un
                 // PREMIER envoi. Confondre les deux ferait proposer de

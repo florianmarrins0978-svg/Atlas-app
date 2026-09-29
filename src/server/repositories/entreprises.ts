@@ -286,7 +286,7 @@ export async function mettreAJourEntreprise(
       // l'entreprise sur la version du jour : une correction ultérieure ne
       // l'atteindrait plus, et personne ne s'en apercevrait.
       if (texte === "" || texte === MESSAGES_PAR_DEFAUT[genre].trim()) valeurs[colonne] = null;
-      else if (refusDuMessage(texte) === null) valeurs[colonne] = texte;
+      else if (refusDuMessage(texte, genre) === null) valeurs[colonne] = texte;
       // Sinon : on n'écrit rien. Le réglage reste celui d'avant, et l'écran a
       // déjà dit pourquoi — lever ici rendrait un identifiant opaque au patron.
     }

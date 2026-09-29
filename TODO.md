@@ -1,12 +1,22 @@
 # Prochaines tâches
 
 
-## 🔜 LE MESSAGE DU DEVIS : UN DÉFAUT CORRIGÉ, UN AUTRE À MAQUETTER (29 septembre 2026)
+## 🔜 LE MESSAGE DU DEVIS : codé le 29 septembre 2026, PAS SUR `main`
 
-| | |
+Branche `claude/message-du-premier-envoi`. Planche
+`appli/lien-valable-45-jours.html`, **A retenue**. `ARCHITECTURE.md` §437.
+
+| Codé et éprouvé ici | |
 |---|---|
-| **corrigé**, branche `claude/message-du-premier-envoi` | le premier envoi porte SON message (§437). Niveau 3 : batterie avant `main` |
-| **à faire après sa maquette** | case « autre date » décochée, le SMS dit encore « si aucune des dates proposées ne vous convient… ». Le test qui le prouve est écrit et rougit : `scripts/en-attente/test-message-sans-autre-date-e2e.ts`, hors de portée de la batterie tant que la correction n'est pas faite ; il remonte dans `scripts/` avec elle. La planche est `appli/lien-valable-45-jours.html` (même message) |
+| le premier envoi porte SON message, plus celui d'Atlas | `test-message-du-premier-envoi-e2e`, rouge puis vert |
+| case « autre date » décochée : la phrase ne part plus | `test-message-sans-autre-date-e2e`, rouge puis vert |
+| sous le lien : 45 jours, la date, et qu'après il faudra appeler | même suite, et `test-message-client` |
+| le message par défaut de Réglages porte les deux morceaux, en doré | regardé à l'écran |
+| ses messages déjà réécrits, par la migration 0115 | `test-migration-0115-base-habitee` |
+
+| Reste | Qui |
+|---|---|
+| `npm run verifier:avant-livraison`, puis `main` (niveau 3 : une migration, et le devis) | lui dire quand, il l'a interdite ce jour-là |
 
 ## ⏳ UNE PLANCHE À REGARDER : LE MODÈLE DE FICHE DÉJÀ LÀ (29 septembre 2026)
 

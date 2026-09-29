@@ -1,6 +1,6 @@
 "use client";
 
-import { composerMessageClient, lienTransmission } from "@/lib/message-client";
+import { composerMessageClient, lienTransmission, type EnvoiDuDevis } from "@/lib/message-client";
 import { ouvrableParLeClient } from "./adresse-du-client";
 import type { CiviliteChoisie } from "@/lib/civilite";
 
@@ -34,6 +34,8 @@ export type OuvertureMessagerie = {
    * premier envoi, sans que rien ne le signale (29 septembre 2026).
    */
   modele: string | null;
+  /** Ce que l'envoi vient de fixer : le jour où le lien meurt, la case « autre date ». */
+  envoi: EnvoiDuDevis;
 };
 
 /**
@@ -85,6 +87,7 @@ export function ouvrirLaMessagerie({
   clientCivilite,
   entrepriseNom,
   modele,
+  envoi,
 }: OuvertureMessagerie): VerdictOuverture {
   const destinataire = canalClient === "sms" ? clientTelephone : clientEmail;
   // Sans coordonnée, il n'y a rien à ouvrir — l'écran de repli la demande.
@@ -108,6 +111,7 @@ export function ouvrirLaMessagerie({
     entrepriseNom,
     lien: `${origine}${chemin}`,
     modele,
+    envoi,
   });
   // **Aucune marque de départ ici, et c'est mesuré, pas supposé.** Le bandeau
   // « Devis transmis à … » s'arme sur le bouton de l'écran suivant, où le

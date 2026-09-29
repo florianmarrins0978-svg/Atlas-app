@@ -17,6 +17,8 @@
 // pas par retour de courrier.
 
 import { avecCivilite, type CiviliteChoisie } from "./civilite";
+import { VALIDITE_LIEN_JOURS } from "./etat-envoi";
+import { jourLisible } from "./jour";
 
 export type CanalClient = "sms" | "email";
 
@@ -86,7 +88,9 @@ export const PASTILLES = [
   "[document]",
   "[numero]",
   "[echeance]",
+  "[autre-date]",
   "[lien]",
+  "[validite]",
   "[entreprise]",
 ] as const;
 
@@ -102,7 +106,7 @@ export type GenreDocument = (typeof GENRES)[number];
  * l'un d'eux dirait « Bien à vous » et l'autre « Cordialement », sans que
  * personne ne l'ait décidé.
  */
-function enveloppe(phrase: string): string {
+function enveloppe(phrase: string, sousLeLien: string[] = []): string {
   return [
     "Bonjour [client],",
     "",
@@ -114,6 +118,7 @@ function enveloppe(phrase: string): string {
     "",
     "[lien]",
     "",
+    ...sousLeLien.flatMap((ligne) => [ligne, ""]),
     "Bien à vous,",
     "[entreprise]",
   ].join("\n");
@@ -139,10 +144,16 @@ function enveloppe(phrase: string): string {
  * le seul à avoir changé — les identifiants du code gardent « passage ».*
  */
 export const MESSAGES_PAR_DEFAUT: Record<GenreDocument, string> = {
+  // **Deux morceaux d'Atlas depuis le 29 septembre 2026**, et sa planche
+  // `appli/lien-valable-45-jours.html`, A retenue. `[autre-date]` n'est posé
+  // que si la case « Votre client peut proposer une autre date » est cochée :
+  // la phrase était dans le texte, et le client la lisait case décochée.
+  // `[validite]` dit jusqu'à quand le lien répond, et qu'ensuite il faudra
+  // appeler.
   devis: enveloppe(
     "Voici votre [document]. Vous pouvez le consulter et choisir votre date " +
-      "d'intervention. Et si aucune des dates proposées ne vous convient, vous " +
-      "pouvez en proposer une autre. Tout se fait sur cette page :"
+      "d'intervention.[autre-date] Tout se fait sur cette page :",
+    ["[validite]"]
   ),
   facture: enveloppe(
     "Voici votre [document] [numero][echeance]. Vous pouvez la consulter et la " +
@@ -181,7 +192,7 @@ export const MESSAGE_MAX = 2000;
  * règles pour un seul refus finiraient par diverger, et il verrait un bouton
  * allumé sur un message que le serveur rejette.
  */
-export function refusDuMessage(modele: string): string | null {
+export function refusDuMessage(modele: string, genre: GenreDocument): string | null {
   const texte = modele.trim();
   if (!texte) return "Écrivez votre message : il ne peut pas être vide.";
   if (modele.length > MESSAGE_MAX) {
@@ -211,7 +222,55 @@ export function refusDuMessage(modele: string): string | null {
       "document ni choisir sa date. Reposez-le pour enregistrer."
     );
   }
+  /**
+   * **LA DURÉE DU LIEN NE SE RETIRE PAS NON PLUS** — sa planche du 29 septembre
+   * 2026 : elle reste *« même si vous avez réécrit votre message »*. Passé ce
+   * délai le client ne peut plus répondre, et c'est le seul endroit où il
+   * l'apprend avant de tomber sur « Ce lien n'est plus valable ».
+   */
+  if (genre === "devis" && !modele.includes("[validite]")) {
+    return (
+      "La durée du lien est obligatoire : sans elle, votre client ne sait pas " +
+      "jusqu'à quand il peut répondre. Reposez-la pour enregistrer."
+    );
+  }
   return null;
+}
+
+/**
+ * LA PHRASE « AUTRE DATE », AVEC SON ESPACE — ou rien.
+ *
+ * **Elle suit la case de l'envoi, jamais le texte.** Sa demande du 29 septembre
+ * 2026 : *« vérifie vraiment que si je décoche la possibilité de laisser le
+ * client me proposer une date, le message qu'il voit ne contient pas la
+ * mention »*. Il la contenait : la phrase était écrite dans le modèle, et
+ * aucun code ne savait qu'elle dépendait de la case. La page du devis, elle,
+ * obéissait déjà (`formulaire.tsx`). L'espace de tête est dans la phrase, comme
+ * la virgule de l'échéance : absente, elle ne laisse pas deux espaces.
+ */
+export function clauseAutreDate(autreDateAutorisee: boolean): string {
+  return autreDateAutorisee
+    ? " Et si aucune des dates proposées ne vous convient, vous pouvez en proposer une autre."
+    : "";
+}
+
+/**
+ * JUSQU'À QUAND LE LIEN RÉPOND, et ce qu'il faudra faire après.
+ *
+ * Sa décision du 29 septembre 2026 : *« garder 45 jours, mais sur le message
+ * qu'il reçoit il faut préciser que le lien est valide 45 jours »*, avec la
+ * date (A), puis *« faut dire que passé ce délai ils ne pourront plus prévenir
+ * l'artisan via l'appli, il faudra l'appeler »*. Le nom de l'entreprise, et pas
+ * « nous » ni « moi » : il vaut qu'on travaille seul ou non.
+ *
+ * `expireLe` est le jour où le lien meurt (« AAAA-MM-JJ »), lu sur l'envoi :
+ * jamais recalculé ici, sinon une relance dirait une autre date que le lien.
+ */
+export function clauseValidite(expireLe: string, entreprise: string, aujourdHui: Date = new Date()): string {
+  return (
+    `Ce lien est valable ${VALIDITE_LIEN_JOURS} jours, jusqu'au ${jourLisible(expireLe, aujourdHui)}. ` +
+    `Passé ce délai, vous ne pourrez plus répondre depuis ce lien : il faudra appeler ${entreprise}.`
+  );
 }
 
 /**
@@ -269,7 +328,11 @@ export function rendreMessage(
     numero?: string;
     /** L'échéance AVEC ses mots, ou vide (voir `clauseEcheance`). */
     echeance?: string;
+    /** La phrase « autre date » AVEC son espace, ou vide (voir `clauseAutreDate`). */
+    autreDate?: string;
     lien: string;
+    /** Jusqu'à quand le lien répond (voir `clauseValidite`), ou vide hors devis. */
+    validite?: string;
     entreprise: string;
   }
 ): string {
@@ -278,7 +341,9 @@ export function rendreMessage(
     .replace(/\[document\]/g, valeurs.document)
     .replace(/\[numero\]/g, valeurs.numero ?? "")
     .replace(/\[echeance\]/g, valeurs.echeance ?? "")
+    .replace(/\[autre-date\]/g, valeurs.autreDate ?? "")
     .replace(/\[lien\]/g, valeurs.lien)
+    .replace(/\[validite\]/g, valeurs.validite ?? "")
     .replace(/\[entreprise\]/g, valeurs.entreprise);
 
   // **UN CLIENT SANS NOM NE DOIT PAS DONNER « Bonjour , ».**
@@ -304,6 +369,13 @@ function nommer(clientNom: string, clientCivilite?: CiviliteChoisie): string {
   return clientNom.trim() ? avecCivilite(clientNom, clientCivilite) : "";
 }
 
+/** Ce que l'envoi d'un devis a fixé et que son message dit : le jour où le lien meurt, et la case « autre date ». */
+export type EnvoiDuDevis = {
+  /** « AAAA-MM-JJ », le jour de `expire_at`. */
+  expireLe: string;
+  autreDateAutorisee: boolean;
+};
+
 /**
  * Compose le message remettant le devis au client.
  *
@@ -322,8 +394,14 @@ export function composerMessageClient(params: {
   numeroDevis?: string | null;
   /** SON message de devis, s'il en a écrit un. Absent : celui d'Atlas. */
   modele?: string | null;
+  /**
+   * Ce que l'envoi a fixé, et que le message doit dire tel quel. **Obligatoire** :
+   * c'est son absence qui laissait partir la phrase « autre date » case
+   * décochée (29 septembre 2026).
+   */
+  envoi: EnvoiDuDevis;
 }): MessageClient {
-  const { clientNom, clientCivilite, entrepriseNom, numeroDevis, lien, modele } = params;
+  const { clientNom, clientCivilite, entrepriseNom, numeroDevis, lien, modele, envoi } = params;
   return {
     // **L'objet ne se règle pas, et c'est délibéré.** Il ne se lit que par
     // courriel — jamais par SMS —, il doit rester reconnaissable dans une boîte
@@ -334,7 +412,9 @@ export function composerMessageClient(params: {
       client: nommer(clientNom, clientCivilite),
       document: motDuDocument("devis"),
       numero: numeroDevis ?? "",
+      autreDate: clauseAutreDate(envoi.autreDateAutorisee),
       lien,
+      validite: clauseValidite(envoi.expireLe, entrepriseNom),
       entreprise: entrepriseNom,
     }),
   };

@@ -10,13 +10,13 @@ import {
   notificationsPatron,
   envoisCaducs,
   marquerReponseVue,
-  VALIDITE_LIEN_JOURS,
 } from "../src/server/repositories/envois-devis";
 import {
   etatEnvoi,
   attendLeClient,
   demandeUneAction,
   RELANCE_APRES_JOURS,
+  VALIDITE_LIEN_JOURS,
 } from "../src/lib/etat-envoi";
 import { getStatutAffiche, getPlanificationEtat, chantierEnCours } from "../src/lib/chantier-etat";
 import { versJourIso, ajouterJours } from "../src/lib/disponibilites";

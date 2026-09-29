@@ -31,6 +31,7 @@ import {
   enregistrerCoordonneeClientAction,
 } from "./actions";
 import type { VerdictJour } from "@/server/repositories/preparation-envoi";
+import type { EnvoiDuDevis } from "@/lib/message-client";
 import BandeDuree from "../BandeDuree";
 
 // L'unique arrêt avant l'envoi (docs/AGENT.md §2.2). Le patron vient de valider
@@ -133,6 +134,7 @@ type Props = {
     canal: "sms" | "email";
     destinataire: string | null;
     modeleMessage: string | null;
+    envoiDuDevis: EnvoiDuDevis;
   }) => void;
 };
 
@@ -416,7 +418,13 @@ function Contenu({
         setErreur(r.erreur);
         return;
       }
-      onEnvoye({ lien: r.lien, canal: r.canal, destinataire: r.destinataire, modeleMessage: r.modeleMessage });
+      onEnvoye({
+        lien: r.lien,
+        canal: r.canal,
+        destinataire: r.destinataire,
+        modeleMessage: r.modeleMessage,
+        envoiDuDevis: r.envoiDuDevis,
+      });
     } catch (e) {
       // **La phrase de secours, et seulement elle.** L'action rend désormais sa
       // raison plutôt que de lancer (`actions.ts`) : arriver ici signifie que

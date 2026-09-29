@@ -4,6 +4,13 @@
 · dernière migration `drizzle/0106_hausse_du_devis_repris.sql` (sur la branche)
 
 ---
+## SUR SA BRANCHE : LE MESSAGE DU DEVIS (29 septembre 2026)
+
+Le SMS suit la case « autre date », dit la durée du lien (45 jours, la date,
+puis appeler), et le premier envoi porte SON message. Branche
+`claude/message-du-premier-envoi`, migration 0115, `ARCHITECTURE.md` §437.
+Niveau 3, batterie interdite ce jour-là : pas sur `main`.
+
 ## SUR `main` : L'ASSISTANT RÉPOND SUR SES DONNÉES (28 septembre 2026)
 
 Quatre fiches « comment Atlas se comporte » (conservation, après l'arrêt, qui

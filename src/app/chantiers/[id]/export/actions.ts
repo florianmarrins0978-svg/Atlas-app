@@ -10,6 +10,8 @@ import { preparerEnvoi, verifierJourPropose } from "@/server/repositories/prepar
 import { creerEnvoi, DatesProposeesInvalidesError } from "@/server/repositories/envois-devis";
 import { mettreAJourClient } from "@/server/repositories/clients";
 import { getEntreprise } from "@/server/repositories/entreprises";
+import { jourIso } from "@/lib/jour";
+import type { EnvoiDuDevis } from "@/lib/message-client";
 import { MOTIF_DEVIS_VIDE } from "@/lib/devis-envoyable";
 import { datesHorsFenetre, motifDatesRefusees } from "@/lib/dates-envoi";
 import { fenetrePatron } from "@/lib/disponibilites";
@@ -145,6 +147,8 @@ export type ResultatEnvoiClient =
        * source, relue en base, pour tout ce qui part chez le client.
        */
       modeleMessage: string | null;
+      /** Ce que l'envoi a fixé et que le message dit : le jour où le lien meurt, la case « autre date ». */
+      envoiDuDevis: EnvoiDuDevis;
     }
   | { succes: false; erreur: string };
 
@@ -315,6 +319,7 @@ export async function envoyerAuClientAction(
       canal: preparation.canal,
       destinataire: preparation.destinataire,
       modeleMessage: (await getEntreprise(ctx))?.messageClient ?? null,
+      envoiDuDevis: { expireLe: jourIso(envoi.expireAt), autreDateAutorisee: envoi.autreDateAutorisee },
     };
   } catch (err) {
     if (err instanceof DatesProposeesInvalidesError) {

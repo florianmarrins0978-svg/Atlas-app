@@ -11,6 +11,17 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 
 ---
 
+
+## LE MESSAGE DU DEVIS : 29 septembre 2026, branche `claude/message-du-premier-envoi`, PAS SUR `main`
+
+| | |
+|---|---|
+| **les règles** | `src/lib/message-client.ts` : `[autre-date]` (`clauseAutreDate`), `[validite]` (`clauseValidite`, obligatoire en devis), `EnvoiDuDevis` exigé par `composerMessageClient` |
+| **les deux chemins** | premier envoi : `envoyerAuClientAction` rend `modeleMessage` et `envoiDuDevis`, `ouvrirLaMessagerie` les exige ; relance : `export/page.tsx` lit l'envoi (`envoiOuvert`) |
+| **la base** | migration 0115, ses messages réécrits (éprouvée sur base habitée) |
+| **le piège** | une suite qui écrit SON message en base ne le retire pas : une suite d'envoi qui compte sur le message d'Atlas doit le remettre elle-même |
+| **le détail** | `ARCHITECTURE.md` §437, `docs/message-du-devis.md` |
+
 ## L'ASSISTANT RÉPOND SUR SES DONNÉES : 28 septembre 2026, SUR `main`
 
 Zone `src/lib/fiches-mode-emploi/fonctionnement.ts`. **Piège** : la fiche de

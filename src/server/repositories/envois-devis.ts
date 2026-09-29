@@ -11,6 +11,7 @@ import { configurationGoogle } from "../agenda/google";
 import { periodesOccupeesExterieures } from "./agendas-externes";
 import { absencesEquipe, chantiers, devis, entreprises, envoisDevis, lignesDevis } from "../db/schema";
 import { datesHorsFenetre, type RefusDate } from "../../lib/dates-envoi";
+import { VALIDITE_LIEN_JOURS } from "../../lib/etat-envoi";
 import type { Ctx } from "./context";
 import {
   creneauxParChantier,
@@ -45,8 +46,6 @@ import {
 // Envoi d'un devis au client et recueil de sa réponse — docs/AGENT.md §2.1
 // à §2.2 ter.
 
-/** Durée de vie d'un lien. Au-delà, la page ne répond plus. */
-export const VALIDITE_LIEN_JOURS = 45;
 
 /**
  * Jeton du lien public : 256 bits d'aléa cryptographique, encodés sans
