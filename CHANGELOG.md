@@ -33,7 +33,10 @@ deux copies, l'une juste (le calcul du prix), l'autre non (l'outil) ; elle
 vit désormais une fois, `src/lib/tarifs-correspondants.ts`
 (`test-tarif-vide-assistant-db.ts`, vue rouge avant). Prestations et matériel
 (Informations) écrivent aussi une ligne vide, mais tous leurs écrans et
-documents la filtrent déjà. Le reste des « + Ajouter » attend le premier mot.
+documents la filtrent déjà. Les acomptes s'écrivent dès l'appui, mais jamais
+vides : 30 % (ou le taux des Réglages), puis 50, puis 75 (`acompteSuivantPropose`,
+`test-acomptes-devis-e2e.ts`). Le reste des « + Ajouter » n'écrit rien avant le
+premier mot.
 Ce qui reste ouvert est dans `TODO.md`.
 
 ## 2026-09-28
