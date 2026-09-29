@@ -8,6 +8,18 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-29
 
+### Le premier envoi d'un devis porte le message qu'il a écrit
+
+Trouvé en vérifiant, à sa demande, ce que lit le client quand la case « Votre
+client peut proposer une autre date » est décochée. Deux défauts. Le premier,
+corrigé ici : l'appui sur « Envoyer le devis » ouvrait la messagerie avec le
+texte d'Atlas, jamais celui qu'il a écrit dans Réglages ; seule la relance le
+prenait. `envoyerAuClientAction` rend désormais son message avec le canal et le
+destinataire, et `ouvrirLaMessagerie` l'exige. Suite
+`test-message-du-premier-envoi-e2e`, rouge puis verte. Le second (la phrase
+« si aucune des dates proposées… » part même case décochée) attend sa
+maquette : `TODO.md`. `ARCHITECTURE.md` §437.
+
 ### Neuf planches : ce que fait chaque « Ajouter »
 
 Sa demande : *« fais-moi une planche pour chaque, réaliste, que je puisse

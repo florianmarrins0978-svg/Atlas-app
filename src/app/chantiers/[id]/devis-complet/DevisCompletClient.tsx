@@ -1928,6 +1928,7 @@ export default function DevisCompletClient(props: Props) {
             clientNom: client.nom,
             clientCivilite: client.civilite,
             entrepriseNom: emetteur.nom,
+            modele: envoi.modeleMessage,
           });
 
           // **UNE ADRESSE LOCALE NE RAMÈNE PAS À L'ACCUEIL — posé le 24 août

@@ -33863,3 +33863,25 @@ recherche sur chaque tournure la rendrait bavarde à tort, et le garde-fou « un
 question qui n'en est pas une ne rend RIEN » a rougi une fois pendant ce lot
 (« combien coûte un abattage de chêne »), ce qui a fait retirer « combien » d'un
 intitulé.
+
+## §437 : Ce qui part chez le client se relit au départ, en une seule source
+
+**Trouvé le 29 septembre 2026**, en vérifiant à sa demande le SMS d'un devis :
+le premier envoi (`DevisCompletClient`, par `ouvrirLaMessagerie`) composait le
+message sans son modèle, donc toujours avec le texte d'Atlas ; la relance
+(`TransmettreAuClient`) le prenait. Deux chemins pour écrire au client, un seul
+branché sur ses réglages.
+
+**La racine** : le paramètre `modele` était facultatif. `envoyerAuClientAction`
+rend désormais `modeleMessage`, relu en base au départ comme le canal et le
+destinataire, et `ouvrirLaMessagerie` l'EXIGE : un appelant qui l'oublie ne
+compile plus.
+
+**Le second défaut, laissé ouvert et écrit** : la phrase « Et si aucune des
+dates proposées ne vous convient, vous pouvez en proposer une autre » vit dans
+son texte modifiable, et `composerMessageClient` ignore
+`autre_date_autorisee`. Case décochée, le client la lit quand même ; la page du
+devis, elle, cache bien le choix. La corriger change l'affichage de son message
+dans Réglages : maquette d'abord (`CLAUDE.md` §3 bis), `TODO.md`. Son test
+rouge attend dans `scripts/en-attente/`, que les deux lanceurs ne lisent pas.
+

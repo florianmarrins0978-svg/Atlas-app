@@ -1,5 +1,13 @@
 # Prochaines tâches
 
+
+## 🔜 LE MESSAGE DU DEVIS : UN DÉFAUT CORRIGÉ, UN AUTRE À MAQUETTER (29 septembre 2026)
+
+| | |
+|---|---|
+| **corrigé**, branche `claude/message-du-premier-envoi` | le premier envoi porte SON message (§437). Niveau 3 : batterie avant `main` |
+| **à faire après sa maquette** | case « autre date » décochée, le SMS dit encore « si aucune des dates proposées ne vous convient… ». Le test qui le prouve est écrit et rougit : `scripts/en-attente/test-message-sans-autre-date-e2e.ts`, hors de portée de la batterie tant que la correction n'est pas faite ; il remonte dans `scripts/` avec elle. La planche est `appli/lien-valable-45-jours.html` (même message) |
+
 ## ⏳ UNE PLANCHE À REGARDER : LE MODÈLE DE FICHE DÉJÀ LÀ (29 septembre 2026)
 
 Sa demande : *« mon modèle doit déjà être là par défaut, et ils la modifieront

@@ -28,6 +28,12 @@ export type OuvertureMessagerie = {
   clientNom: string;
   clientCivilite: CiviliteChoisie;
   entrepriseNom: string;
+  /**
+   * SON message de devis, ou `null` : celui d'Atlas. **Obligatoire, et c'est
+   * voulu** : absent, ce paramètre a fait partir le texte d'Atlas à chaque
+   * premier envoi, sans que rien ne le signale (29 septembre 2026).
+   */
+  modele: string | null;
 };
 
 /**
@@ -78,6 +84,7 @@ export function ouvrirLaMessagerie({
   clientNom,
   clientCivilite,
   entrepriseNom,
+  modele,
 }: OuvertureMessagerie): VerdictOuverture {
   const destinataire = canalClient === "sms" ? clientTelephone : clientEmail;
   // Sans coordonnée, il n'y a rien à ouvrir — l'écran de repli la demande.
@@ -100,6 +107,7 @@ export function ouvrirLaMessagerie({
     clientCivilite,
     entrepriseNom,
     lien: `${origine}${chemin}`,
+    modele,
   });
   // **Aucune marque de départ ici, et c'est mesuré, pas supposé.** Le bandeau
   // « Devis transmis à … » s'arme sur le bouton de l'écran suivant, où le
