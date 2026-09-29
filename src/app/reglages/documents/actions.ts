@@ -104,7 +104,7 @@ export async function majMessagesAction(
     for (const genre of GENRES) {
       const texte = saisie[genre];
       if (texte === undefined) continue;
-      const refus = refusDuMessage(texte.trim() || MESSAGES_PAR_DEFAUT[genre]);
+      const refus = refusDuMessage(texte.trim() || MESSAGES_PAR_DEFAUT[genre], genre);
       if (refus) return { ok: false, raison: refus };
     }
     await mettreAJourEntreprise(ctx, { messages: saisie });

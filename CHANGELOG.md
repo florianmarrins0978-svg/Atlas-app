@@ -25,6 +25,29 @@ retraits en attente s'écrivent avant (`useRetraits.fermer` rend désormais sa
 promesse), sinon le bouton aurait lu une ligne que le retrait effaçait juste
 après. L'écran « fiche vide » et `poserModeleFourni` sont retirés.
 
+### Le message du devis dit ce que l'envoi a fixé, et part avec SON texte
+
+Sa demande : *« vérifie vraiment que si je décoche la possibilité de laisser le
+client me proposer une date, le message qu'il voit ne contient pas la
+mention »*. Vérifié par un test dans le navigateur : la page du devis était
+juste, **le SMS non**, la phrase était écrite dans son texte. Et un second
+défaut trouvé en chemin : **le premier envoi partait avec le texte d'Atlas**,
+jamais le sien ; seule la relance le prenait. Puis sa décision sur la planche
+`appli/lien-valable-45-jours.html`, A : sous le lien, *« Ce lien est valable 45
+jours, jusqu'au … Passé ce délai, vous ne pourrez plus répondre depuis ce lien :
+il faudra appeler … »*, et que ce soit le message par défaut de Réglages.
+
+Deux morceaux dorés, `[autre-date]` (posé selon la case) et `[validite]`
+(obligatoire dans un message de devis, comme le lien). Le message ne se compose
+plus sans ce que l'envoi a fixé (`EnvoiDuDevis`, obligatoire), ni sans son
+modèle, au premier envoi comme à la relance. `VALIDITE_LIEN_JOURS` descend dans
+`lib`, la découpe des morceaux dorés se déduit de leur liste au lieu de la
+recopier. Migration 0115 pour ses messages déjà réécrits, éprouvée sur une base
+habitée (et vue rougir). Suites `test-message-sans-autre-date-e2e`,
+`test-message-du-premier-envoi-e2e`, `test-migration-0115-base-habitee`, cas
+ajoutés à `test-message-client`. **Batterie non jouée**, il l'a interdite.
+`ARCHITECTURE.md` §438.
+
 ### Neuf planches : ce que fait chaque « Ajouter »
 
 Sa demande : *« fais-moi une planche pour chaque, réaliste, que je puisse

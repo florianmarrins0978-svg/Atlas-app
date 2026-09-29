@@ -2,6 +2,26 @@
 
 ## ✅ LE MODÈLE DE FICHE DÉJÀ LÀ : CODÉ LE 29 SEPTEMBRE 2026, sa réponse « B »
 
+
+## 🔜 LE MESSAGE DU DEVIS : codé le 29 septembre 2026, PAS SUR `main`
+
+Branche `claude/message-du-premier-envoi`. Planche
+`appli/lien-valable-45-jours.html`, **A retenue**. `ARCHITECTURE.md` §438.
+
+| Codé et éprouvé ici | |
+|---|---|
+| le premier envoi porte SON message, plus celui d'Atlas | `test-message-du-premier-envoi-e2e`, rouge puis vert |
+| case « autre date » décochée : la phrase ne part plus | `test-message-sans-autre-date-e2e`, rouge puis vert |
+| sous le lien : 45 jours, la date, et qu'après il faudra appeler | même suite, et `test-message-client` |
+| le message par défaut de Réglages porte les deux morceaux, en doré | regardé à l'écran |
+| ses messages déjà réécrits, par la migration 0115 | `test-migration-0115-base-habitee` |
+
+| Reste | Qui |
+|---|---|
+| `npm run verifier:avant-livraison`, puis `main` (niveau 3 : une migration, et le devis) | lui dire quand, il l'a interdite ce jour-là |
+
+## ⏳ UNE PLANCHE À REGARDER : LE MODÈLE DE FICHE DÉJÀ LÀ (29 septembre 2026)
+
 Planche `appli/fiche-paysage-modele.html`. Le modèle est posé à la création
 du compte (`creation-compte.ts`, `creerEntreprise`, le jeu de démonstration)
 et par la migration 0116 sur les comptes d'avant dont la fiche est vide.

@@ -33,6 +33,7 @@ import {
   enregistrerCoordonneeClientAction,
 } from "./actions";
 import type { VerdictJour } from "@/server/repositories/preparation-envoi";
+import type { EnvoiDuDevis } from "@/lib/message-client";
 import BandeDuree from "../BandeDuree";
 
 // L'unique arrêt avant l'envoi (docs/AGENT.md §2.2). Le patron vient de valider
@@ -130,7 +131,13 @@ type Props = {
    * 2026 : le patron avait choisi l'e-mail sur la fiche de son client, et
    * c'est le SMS qui s'ouvrait.
    */
-  onEnvoye: (envoi: { lien: string; canal: "sms" | "email"; destinataire: string | null }) => void;
+  onEnvoye: (envoi: {
+    lien: string;
+    canal: "sms" | "email";
+    destinataire: string | null;
+    modeleMessage: string | null;
+    envoiDuDevis: EnvoiDuDevis;
+  }) => void;
 };
 
 // La feuille ne fait que monter et démonter son contenu. C'est ce qui garantit
@@ -413,7 +420,13 @@ function Contenu({
         setErreur(r.erreur);
         return;
       }
-      onEnvoye({ lien: r.lien, canal: r.canal, destinataire: r.destinataire });
+      onEnvoye({
+        lien: r.lien,
+        canal: r.canal,
+        destinataire: r.destinataire,
+        modeleMessage: r.modeleMessage,
+        envoiDuDevis: r.envoiDuDevis,
+      });
     } catch (e) {
       // **La phrase de secours, et seulement elle.** L'action rend désormais sa
       // raison plutôt que de lancer (`actions.ts`) : arriver ici signifie que

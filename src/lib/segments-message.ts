@@ -14,14 +14,16 @@ export type SegmentMessage =
   /** Une pastille — remplie par Atlas, jamais modifiable (« en doré »). */
   | { type: "jeton"; valeur: string };
 
+const DECOUPE = new RegExp(`(${PASTILLES.map((p) => p.replace(/[[\]]/g, "\\$&")).join("|")})`);
+
 /** Le modèle, coupé sur ses pastilles. Les morceaux vides sont écartés. */
 export function segmentsDuModele(modele: string): SegmentMessage[] {
   return modele
-    // **La liste suit `PASTILLES`, et il faut y penser en ajoutant un jeton.**
-    // Le 7 septembre 2026, `[numero]` et `[echeance]` sont entrés : oubliés
-    // ici, ils se seraient affichés en clair — « [numero] » — dans son cadre,
-    // et il les aurait effacés en croyant à une coquille.
-    .split(/(\[client\]|\[document\]|\[numero\]|\[echeance\]|\[lien\]|\[entreprise\])/)
+    // **La découpe se DÉDUIT de `PASTILLES`, elle ne se recopie plus.** Le
+    // 7 septembre 2026, `[numero]` et `[echeance]` ont failli s'afficher en
+    // clair faute d'avoir été recopiés ici ; le 29 septembre, `[autre-date]` et
+    // `[validite]` entraient à leur tour. Une seule liste, une seule vérité.
+    .split(DECOUPE)
     .filter((bout) => bout !== "")
     .map((bout) =>
       (PASTILLES as readonly string[]).includes(bout)
