@@ -24,6 +24,13 @@ Et la quantité s'y écrit comme une quantité : « Coupe de cheveux homme, 45 u
 écriture que le papier du devis (`quantiteLisible`, `uniteDeLaLigne`) ; « 1 »
 reste tu, il n'apprend rien.
 
+*« Je ne veux plus avoir de bulle vide »* : les deux autres chemins sont
+fermés. Le retour du jour n'écrit plus une tâche sans texte, quoi que l'écran
+envoie, et un retour envoyé avant cette règle ne la relit plus (la fiche du
+lendemain repart du dernier retour, et Terminés le montre). La preuve n'est pas
+réécrite en base : la ligne vide ne s'affiche plus, c'est tout
+(`sansLigneVide`, `test-retour-intervention-db.ts`).
+
 ## 2026-09-28
 
 ### Trois lots sur `main` en une seule batterie

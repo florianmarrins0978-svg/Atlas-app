@@ -16,6 +16,7 @@ import {
 import type { Ctx } from "./context";
 import { retourModifiable, type RetourEnListe, type TacheDuRetour } from "../../lib/retour-intervention";
 import { jourIso } from "../../lib/jour";
+import { sansLigneVide } from "../../lib/taches-du-devis";
 
 /**
  * LE RETOUR D'INTERVENTION, côté base.
@@ -89,9 +90,12 @@ async function poserLeContenu(
   chantierId: string,
   quoi: RetourAPoser
 ) {
-  if (quoi.taches.length > 0) {
+  // Les tâches viennent de l'écran : une case sans texte ne s'écrit pas, quoi
+  // qu'il envoie (`sansLigneVide`).
+  const taches = sansLigneVide(quoi.taches);
+  if (taches.length > 0) {
     await tx.insert(retoursInterventionTaches).values(
-      quoi.taches.map((t, ordre) => ({
+      taches.map((t, ordre) => ({
         entrepriseId: ctx.entrepriseId,
         retourId,
         libelle: t.libelle,
@@ -250,7 +254,10 @@ export async function dernierRetourDuChantier(ctx: Ctx, chantierId: string) {
       // dans une équipe, et « Julien » tient là où « Julien Marchand » coupe.
       posePar: retour.posePrenom?.trim() || retour.posePar?.trim() || null,
       aSignaler: retour.aSignaler,
-      taches,
+      // Un retour envoyé avant le 29 septembre 2026 peut porter une tâche
+      // vide : elle ne se relit pas, sans quoi la fiche du lendemain, qui
+      // repart de ce retour, remontrerait la bulle vide chaque soir.
+      taches: sansLigneVide(taches),
       photos: sesPhotos,
     };
   });
@@ -328,7 +335,7 @@ export async function listerLesRetours(ctx: Ctx, maximum = 2000): Promise<Retour
     // **Deux requêtes, pas une par retour.** Cent retours en donneraient deux
     // cents, et la page du soir mettrait dix secondes à s'ouvrir.
     const parRetour = new Map<string, TacheDuRetour[]>();
-    for (const t of taches) {
+    for (const t of sansLigneVide(taches)) {
       const siennes = parRetour.get(t.retourId);
       if (siennes) siennes.push({ libelle: t.libelle, faite: t.faite });
       else parRetour.set(t.retourId, [{ libelle: t.libelle, faite: t.faite }]);

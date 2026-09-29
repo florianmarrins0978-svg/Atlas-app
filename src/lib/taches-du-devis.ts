@@ -20,12 +20,19 @@ export function ligneSansTexte(libelle: string): boolean {
   return libelle.trim() === "";
 }
 
+/**
+ * Les mêmes lignes, sans celles qui n'ont pas de texte. Vaut pour le devis
+ * comme pour un retour déjà parti : *« je ne veux plus avoir de bulle vide »*
+ * (29 septembre 2026), et un retour envoyé avant cette règle en porte encore.
+ */
+export function sansLigneVide<T extends { libelle: string }>(lignes: readonly T[]): T[] {
+  return lignes.filter((l) => !ligneSansTexte(l.libelle));
+}
+
 export function tachesDuDevis(
   lignes: readonly { libelle: string; quantite: string; unite: string | null }[]
 ): string[] {
-  return lignes
-    .filter((l) => !ligneSansTexte(l.libelle))
-    .map((l) => {
+  return sansLigneVide(lignes).map((l) => {
       // **La quantité s'écrit quand elle apprend quelque chose.** « 1 » ne dit
       // rien de plus que le libellé ; « 18 ml » dit combien de mètres de haie.
       // Elle s'écrit comme sur le papier du devis, unité comprise : *« le 45

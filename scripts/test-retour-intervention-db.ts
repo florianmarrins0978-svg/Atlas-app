@@ -281,6 +281,34 @@ async function main() {
     assert.equal(vide?.aSignaler, null);
   });
 
+  // **Sa règle du 29 septembre 2026 :** *« je ne veux plus avoir de bulle
+  // vide »*. Une tâche sans texte ne s'écrit plus, et celle qu'un retour
+  // d'avant porte encore ne se relit pas : la fiche du lendemain repart du
+  // dernier retour, et la case vide y reviendrait sinon chaque soir.
+  await essai("une tâche sans texte ne s'écrit pas, et ne se relit pas", async () => {
+    const chantier = await chantiersRepo.creerChantier(ctxA, { nom: "Bulle vide" });
+    await poserLeRetour(ctxA, chantier.id, {
+      taches: [{ libelle: " ", faite: false }, { libelle: "Coupe", faite: true }],
+      photoIds: [],
+      aSignaler: null,
+    });
+    const pose = await dernierRetourDuChantier(ctxA, chantier.id);
+    assert.deepEqual(pose?.taches, [{ libelle: "Coupe", faite: true }], "la tâche vide a été écrite");
+
+    // Un retour envoyé avant la correction la porte en base : on l'y remet.
+    await admin.query("BEGIN");
+    await admin.query("SELECT set_config('app.entreprise_id', $1, true)", [ctxA.entrepriseId]);
+    await admin.query(
+      "INSERT INTO retours_intervention_taches (entreprise_id, retour_id, libelle, faite, ordre) VALUES ($1, $2, '', false, 5)",
+      [ctxA.entrepriseId, pose!.id]
+    );
+    await admin.query("COMMIT");
+    const relu = await dernierRetourDuChantier(ctxA, chantier.id);
+    assert.deepEqual(relu?.taches, [{ libelle: "Coupe", faite: true }], "la fiche relit la tâche vide");
+    const liste = (await listerLesRetours(ctxA)).find((r) => r.chantierNom === "Bulle vide");
+    assert.deepEqual(liste?.taches, [{ libelle: "Coupe", faite: true }], "Terminés relit la tâche vide");
+  });
+
   await essai("un retour qui n'est PAS le dernier ne se modifie pas", async () => {
     const chantier = await chantiersRepo.creerChantier(ctxA, { nom: "Deux soirs" });
     await poserLeRetour(ctxA, chantier.id, { taches: [{ libelle: "Soir 1", faite: true }], photoIds: [], aSignaler: null });
