@@ -8,6 +8,22 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-29
 
+### « Comment fonctionne le planning » reçoit le planning entier
+
+Sa colère : *« pourquoi il est incapable d'expliquer comment fonctionne le
+planning ? »* Les fiches existaient toutes (poser un client, autre chose, un
+client en attente, les absences, les salariés d'un chantier, les couleurs).
+**La racine** : la recherche n'en rendait que quelques-unes, et la consigne
+n'en laisse réciter qu'UNE : il répondait « Touchez Planning ». Une question
+« comment fonctionne X », « explique-moi X », « à quoi sert X » demande
+désormais la **visite** de l'écran (`visiteDemandee`, `fichesDeLEcran`) : l'outil
+rend toutes ses fiches, la consigne autorise à les présenter ensemble. Et
+**« au-delà »** : la fiche des couleurs dit enfin ce que veut dire chaque mot
+(rien, de la place, toutes les équipes prises, plus de chantiers que
+d'équipes), qu'un absent compte comme un chantier, et où régler le nombre
+d'équipes ; la recherche lisait « au dela » comme le début de « délai ».
+Rouges avant, par la porte de l'assistant. `ARCHITECTURE.md` §436.
+
 ### L'assistant interrogé sur la sécurité et sur les astuces : 400 questions tenues
 
 Sa demande : *« repose-lui plein de questions sur le fonctionnement, la

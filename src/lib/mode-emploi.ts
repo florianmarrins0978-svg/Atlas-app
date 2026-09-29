@@ -159,6 +159,10 @@ const EXPRESSIONS: [RegExp, string][] = [
   // « Écrire son devis sans dicter » répondait à « comment ma dictée devient
   // un devis » : « dicter » y comptait comme s'il était voulu.
   [/\bsans dicter\b/g, "mainsansdicter"],
+  // « Au-delà » s'écrit « au dela » une fois normalisé : « au » est vide, et
+  // « dela » est le début de « délai ». « Que signifie au-delà » rendait les
+  // délais de paiement (sa question du 29 septembre 2026).
+  [/\bau dela\b/g, "audela"],
   // « Atlas » est un mot vide (il est dans toutes les questions) : « le prix
   // d'Atlas » ne gardait que « prix », qui est dans cinquante fiches de devis.
   [/\b(prix|tarif|tarifs|cout) (d |de l |de )?(atlas|appli|application)\b/g, "abonnementprix"],
@@ -337,4 +341,41 @@ export function chercherFiches(question: string, maximum = 3): FicheModeEmploi[]
  */
 export function ficheParId(id: string): FicheModeEmploi | null {
   return FICHES_MODE_EMPLOI.find((f) => f.id === id) ?? null;
+}
+
+// --- La visite d'un écran --------------------------------------------------
+
+/**
+ * « Comment fonctionne le planning », « explique-moi le planning » : une
+ * demande de VISITE, pas d'un geste.
+ *
+ * **Sa colère du 29 septembre 2026 :** *« pourquoi il est incapable
+ * d'expliquer comment fonctionne le planning ? »* Les fiches existaient
+ * toutes (poser un client, autre chose, les absences, les équipes, les
+ * couleurs), mais la recherche n'en rend que quelques-unes et la consigne
+ * n'en laisse réciter qu'une : il répondait « Touchez Planning ». Une
+ * question sur l'écran entier reçoit l'écran entier.
+ *
+ * Lue sur la question normalisée mais ENTIÈRE : « fonctionne » et « marche »
+ * sont des mots vides pour le classement, pas pour comprendre ce qu'on
+ * demande. Normalisée, parce que `\b` ne voit pas la frontière d'un « à ».
+ */
+const DEMANDE_DE_VISITE = / (comment (ca )?(fonctionnent|fonctionne|marchent|marche)|expliqu[a-z]*|a quoi sert|present[a-z]*) /;
+
+/** L'écran dont la question demande la visite, ou `null`. */
+export function visiteDemandee(question: string): string | null {
+  const q = ` ${normaliser(question)} `;
+  if (!DEMANDE_DE_VISITE.test(q)) return null;
+  let retenu: string | null = null;
+  for (const ecran of new Set(FICHES_MODE_EMPLOI.map((f) => f.ecran))) {
+    // « Ma TVA » se demande « la TVA » : le possessif de l'écran ne se dit pas.
+    const nom = normaliser(ecran).replace(/^(ma|mon|mes) /, "");
+    if (nom && q.includes(` ${nom} `) && (!retenu || nom.length > normaliser(retenu).length)) retenu = ecran;
+  }
+  return retenu;
+}
+
+/** Toutes les fiches d'un écran, dans l'ordre où elles sont écrites. */
+export function fichesDeLEcran(ecran: string): FicheModeEmploi[] {
+  return FICHES_MODE_EMPLOI.filter((f) => f.ecran === ecran);
 }

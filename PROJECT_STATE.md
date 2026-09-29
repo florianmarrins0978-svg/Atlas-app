@@ -9,7 +9,9 @@
 Neuf fiches neuves (sécurité, mot de passe, oubli, double authentification,
 carte, lien client, RGPD, usage des données, astuces) ; la liste des 400
 questions tenues, engendrée : `docs/assistant-questions-reponses.md`.
-Branche `claude/assistant-all-questions-ahg55r`, `ARCHITECTURE.md` §435.
+Puis « comment fonctionne le planning » : la visite d'un écran entier, et le
+sens de « au-delà » (§436).
+Branche `claude/assistant-all-questions-ahg55r`, `ARCHITECTURE.md` §435 et §436.
 Niveau 3 (fiches de devis et de facture touchées) : batterie à jouer avant `main`.
 
 ## SUR `main` : L'ASSISTANT RÉPOND SUR SES DONNÉES (28 septembre 2026)

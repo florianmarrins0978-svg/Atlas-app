@@ -33883,3 +33883,17 @@ liste des questions et réponses.
 l'endroit (la fiche de lieu), pas une explication ; le modèle complète par le
 sommaire. « Prévenir mon client que j'arrive » ne rend rien : la fonction
 n'existe pas.
+
+## §436 : Une question sur un écran entier reçoit l'écran entier
+
+**Sa colère du 29 septembre 2026** : *« pourquoi il est incapable d'expliquer
+comment fonctionne le planning ? »*
+
+| Décision | Pourquoi |
+|---|---|
+| `visiteDemandee(question)` reconnaît « comment fonctionne / marche », « explique », « à quoi sert », « présente » suivis d'un nom d'écran | les fiches existaient ; c'est la FORME de la question qui n'avait pas de réponse. La recherche par mots rendait la fiche de lieu, et la consigne « une seule fiche » faisait le reste |
+| lue sur la question normalisée, pas sur les mots utiles | « fonctionne » et « marche » sont vides pour le classement (§435), pas pour comprendre qu'on demande une visite ; `\b` ne voit pas la frontière d'un « à » |
+| l'outil rend `visite` et toutes les fiches de l'écran, AVANT la recherche | une visite n'est pas une recherche ratée : le sommaire de toute l'application serait trop large, une fiche seule trop étroite |
+| la consigne garde « une seule fiche » pour un geste, et l'écarte pour une visite | trois gestes pour une question l'égarent (25 août) ; mais « comment marche le planning » EST une question à plusieurs gestes |
+| la fiche des couleurs dit le SENS de chaque état, prouvé par `etatDemi` et `occupationDemi` | « au-delà » compare les équipes prises (absences comprises) au nombre d'équipes réglé ; sans cela, il ne savait ni ce que c'était ni où le régler |
+| « au dela » soudé en `audela` | « dela » est le début de « délai » : « que signifie au-delà » rendait les délais de paiement |

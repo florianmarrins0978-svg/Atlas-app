@@ -441,4 +441,21 @@ export const QUESTIONS_PAR_ZONE: Record<string, [string, string][]> = {
     ["est-ce que je peux travailler depuis mon ordinateur au bureau", "atlas-ordinateur-telephone"],
     ["comment utiliser atlas sur ipad", "atlas-ordinateur-telephone"],
   ],
+  // **Sa colère du 29 septembre 2026 :** *« pourquoi il est incapable
+  // d'expliquer comment fonctionne le planning ? »* Ses questions, dans ses
+  // mots. « Au-delà » se lisait comme le début de « délai ».
+  planningExplique: [
+    ["comment on ajoute un client au planning", "planning-ajouter-un-client"],
+    ["comment ajouter un client en attente", "planning-poser-depuis-le-bas"],
+    ["comment ajouter autre chose au planning", "planning-ajouter-autre-chose"],
+    ["comment mettre un salarié absent", "planning-absence"],
+    ["comment enlever un salarié des absences", "planning-absence-retirer"],
+    ["comment affilier un salarié à un chantier", "planning-equipe-cocher"],
+    ["que veulent dire les couleurs du planning", "planning-couleurs"],
+    ["que signifie au-delà", "planning-couleurs"],
+    ["que veut dire au-delà sur le planning", "planning-couleurs"],
+    ["pourquoi le jour est en au-delà", "planning-couleurs"],
+    ["comment faire pour que au-delà soit à partir de deux chantiers", "reglages-nombre-chantiers"],
+    ["comment faire pour que au-delà soit à partir de trois chantiers", "reglages-nombre-chantiers"],
+  ],
 };

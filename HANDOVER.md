@@ -18,6 +18,10 @@ scripts/engendrer-questions-reponses.ts`) : ne jamais la corriger à la main.
 Une question ajoutée à `scripts/_questions-mode-emploi.ts` y entre à la
 prochaine génération. §435.
 
+« Comment fonctionne X » ne passe pas par la recherche : `visiteDemandee` rend
+l'écran, `fichesDeLEcran` ses fiches, dans l'ordre du fichier. Une fiche mal
+rangée (mauvais `ecran`) manque donc à la visite. §436.
+
 ## L'ASSISTANT RÉPOND SUR SES DONNÉES : 28 septembre 2026, SUR `main`
 
 Zone `src/lib/fiches-mode-emploi/fonctionnement.ts`. **Piège** : la fiche de

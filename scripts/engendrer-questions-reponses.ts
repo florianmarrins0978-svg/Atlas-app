@@ -1,6 +1,6 @@
 import { writeFileSync } from "node:fs";
 import path from "node:path";
-import { chercherFiches, ficheParId } from "../src/lib/mode-emploi";
+import { chercherFiches, ficheParId, fichesDeLEcran, visiteDemandee } from "../src/lib/mode-emploi";
 import { QUESTIONS_PAR_ZONE } from "./_questions-mode-emploi";
 
 /**
@@ -23,6 +23,7 @@ const TITRES: Record<string, string> = {
   securite: "La sécurité",
   fonctionnement: "Vos données",
   exploiter: "Tirer le maximum d'Atlas",
+  planningExplique: "Le planning expliqué",
   artisan: "Questions d'artisan",
   lieux: "Où se trouve chaque chose",
   chantier: "Les chantiers et la dictée",
@@ -60,6 +61,18 @@ for (const zone of zones) {
   const lignes = questions.map(([q, id]) => `| ${q.charAt(0).toUpperCase()}${q.slice(1)} | ${reponse(id)} |`);
   sections.push(`## ${TITRES[zone] ?? zone}\n\n| Question | Réponse de l'assistant |\n|---|---|\n${lignes.join("\n")}`);
 }
+
+// **« Comment fonctionne le planning »** reçoit l'écran entier (sa colère du
+// 29 septembre 2026) : l'assistant en présente les gestes, puis détaille celui
+// qu'on lui redemande. La question passe par `visiteDemandee`, comme chez lui.
+const VISITES = ["comment fonctionne le planning", "comment fonctionnent les chantiers", "comment fonctionne le devis", "comment fonctionne la facture", "comment fonctionne la tva", "comment fonctionne l'onglet terminés"];
+const visites = VISITES.map((q) => {
+  const ecran = visiteDemandee(q);
+  if (!ecran) throw new Error(`« ${q} » n'ouvre plus de visite`);
+  const gestes = fichesDeLEcran(ecran).map((f) => `- ${f.intitule}`).join("\n");
+  return `### « ${q.charAt(0).toUpperCase()}${q.slice(1)} ? »\n\nIl présente l'écran ${ecran}, geste par geste, puis détaille celui qu'on lui redemande :\n\n${gestes}`;
+});
+sections.unshift(`## Comment fonctionne un écran\n\n${visites.join("\n\n")}`);
 
 const texte = `# Ce que l'assistant sait répondre
 

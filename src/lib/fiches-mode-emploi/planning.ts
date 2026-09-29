@@ -85,13 +85,24 @@ export const FICHES_PLANNING: FicheModeEmploi[] = [
     ecran: "Planning",
     ou: "« Planning » dans la barre du bas, le calendrier du mois",
     intitule: "Comprendre les couleurs des jours du calendrier",
-    motsCles: ["couleur", "couleurs", "legende", "carre", "complet", "incomplet", "plein", "barre", "veut", "dire"],
+    motsCles: ["couleur", "couleurs", "legende", "carre", "complet", "incomplet", "plein", "barre", "veut", "dire", "au-delà", "signifie"],
+    // **Ce que chaque mot VEUT DIRE, pas seulement qu'il existe** (sa colère du
+    // 29 septembre 2026). La fiche nommait les quatre états sans dire qu'ils
+    // comparent les équipes prises au nombre d'équipes réglé : « au-delà »
+    // restait une énigme, et l'on ne savait pas où le régler.
     geste:
-      "Chaque jour porte deux barres, le matin en haut et l'après-midi en bas. La légende sous le calendrier dit " +
-      "« rien », « incomplet », « complet » ou « au-delà » de vos équipes.",
+      "Chaque jour porte deux barres, le matin en haut et l'après-midi en bas. « Rien » : aucun chantier. " +
+      "« Incomplet » : il reste de la place. « Complet » : toutes vos équipes sont prises. « Au-delà » : plus de " +
+      "chantiers que d'équipes. Un salarié absent compte comme un chantier.",
+    reserve:
+      "Le nombre d'équipes se règle dans Réglages, Équipe, « Combien de chantiers par jour ? » : avec 2, " +
+      "« au-delà » commence au troisième chantier.",
     source: "src/components/atlas/MoisCharge.tsx",
     preuves: ['data-atlas="legende"', "MOT_ETAT[etat]"],
-    ailleurs: [{ source: "src/lib/planning-jour.ts", preuves: ['libre: "rien"', 'dispo: "incomplet"', 'plein: "complet"', 'dela: "au-delà"'] }],
+    ailleurs: [
+      { source: "src/lib/planning-jour.ts", preuves: ['libre: "rien"', 'dispo: "incomplet"', 'plein: "complet"', 'dela: "au-delà"', 'return o.charge === 1 ? "plein" : "dela";', "equipesAbsentes"] },
+      { source: "src/app/reglages/VosEquipes.tsx", preuves: ["Combien de chantiers par jour&nbsp;?"] },
+    ],
     lieu: true,
   },
   // --- Ajouter --------------------------------------------------------------
@@ -194,7 +205,7 @@ export const FICHES_PLANNING: FicheModeEmploi[] = [
     ecran: "Planning",
     ou: "« Planning » dans la barre du bas, puis le jour du chantier",
     intitule: "Choisir quels salariés vont sur un chantier",
-    motsCles: ["salarie", "salaries", "equipe", "affecter", "qui", "gars", "ouvrier", "cocher", "envoyer"],
+    motsCles: ["salarie", "salaries", "equipe", "affecter", "qui", "gars", "ouvrier", "cocher", "envoyer", "affilier", "attribuer"],
     geste:
       "Ouvrez le jour, touchez « + Salarié » ou les noms en face du matin ou de l'après-midi, " +
       "touchez les noms à cocher ou décocher, puis « Fermer ».",

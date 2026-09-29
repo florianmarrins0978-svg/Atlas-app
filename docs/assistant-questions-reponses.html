@@ -59,8 +59,155 @@
 <main>
 <h1 id="ce-que-lassistant-sait-répondre">Ce que l'assistant sait répondre</h1>
 <p><em>Engendré le 2026-09-29 par <code>npx tsx scripts/engendrer-questions-reponses.ts</code>. Ne pas corriger à la main : corriger la fiche, puis relancer.</em></p>
-<p><strong>400 questions</strong>, posées comme un artisan les pose. Pour chacune, la réponse est la fiche que l'assistant trouve et récite. Chaque fiche est confrontée au code de l'application : le jour où un bouton change de nom, le contrôle rougit au lieu de laisser l'assistant enseigner un geste mort.</p>
+<p><strong>412 questions</strong>, posées comme un artisan les pose. Pour chacune, la réponse est la fiche que l'assistant trouve et récite. Chaque fiche est confrontée au code de l'application : le jour où un bouton change de nom, le contrôle rougit au lieu de laisser l'assistant enseigner un geste mort.</p>
 <p>Ce qui n'est pas dans cette liste, il le cherche dans le sommaire de ses fiches. S'il ne trouve rien, il le dit, et donne l'adresse à qui écrire. Il répond aussi sur vos données (qui vous doit, ce que vous avez encaissé, votre planning), qu'il lit dans l'application : ces réponses-là changent chaque jour, elles ne sont donc pas ici.</p>
+<h2 id="comment-fonctionne-un-écran">Comment fonctionne un écran</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<h3 id="-comment-fonctionne-le-planning--">« Comment fonctionne le planning ? »</h3>
+<p>Il présente l'écran Planning, geste par geste, puis détaille celui qu'on lui redemande :</p>
+<ul>
+<li>Ouvrir le planning, le calendrier</li>
+<li>Déplacer un chantier à un autre jour, ou seulement sa matinée ou son après-midi</li>
+<li>Enlever un chantier d'un jour du planning, sans le supprimer</li>
+<li>Donner la feuille de chantier à l'équipe, le devis sans les prix</li>
+<li>Changer de mois dans le calendrier</li>
+<li>Voir ce qui est posé un jour donné, le matin et l'après-midi</li>
+<li>Comprendre les couleurs des jours du calendrier</li>
+<li>Poser directement un client sur un jour, sans devis</li>
+<li>Bloquer du temps pour autre chose qu'un chantier : banque, livraison, formation</li>
+<li>Poser un client sans date depuis la liste du bas</li>
+<li>Annuler la pose qu'on vient de faire</li>
+<li>Supprimer un chantier qui attend une date</li>
+<li>Reposer une demi-journée de chantier qui attend</li>
+<li>Voir les clients qui choisissent eux-mêmes leur date</li>
+<li>Choisir quels salariés vont sur un chantier</li>
+<li>Noter qu'un salarié, ou soi même, est absent un jour</li>
+<li>Enlever une absence notée par erreur</li>
+<li>Pourquoi un salarié ne peut pas modifier le planning</li>
+<li>Ouvrir le devis, la fiche client ou la facture d'un chantier depuis le planning</li>
+<li>Facturer un chantier fini depuis le planning</li>
+<li>La phrase de l'agenda en haut du planning, et la masquer</li>
+<li>Envoyer le retour d'intervention du jour : ce qui est fait, photos, remarques</li>
+<li>Ouvrir la fiche d'intervention d'un chantier</li>
+<li>Remplir et signer la fiche de sécurité avant les travaux</li>
+<li>Poser un chantier sur un jour</li>
+<li>Laisser une note sur une journée</li>
+<li>Y aller, appeler le client, copier l'adresse</li>
+<li>Voir les sept jours d'avant ou d'après</li>
+<li>Passer de la journée aux sept jours</li>
+</ul>
+<h3 id="-comment-fonctionnent-les-chantiers--">« Comment fonctionnent les chantiers ? »</h3>
+<p>Il présente l'écran Chantiers, geste par geste, puis détaille celui qu'on lui redemande :</p>
+<ul>
+<li>Trouver les chantiers en cours</li>
+<li>Créer un chantier, un devis</li>
+<li>Compléter l'adresse ou les coordonnées d'un chantier depuis la liste</li>
+<li>Savoir où en est un chantier, si le devis est parti</li>
+<li>Le client demande une correction du devis</li>
+<li>Le client a accepté le devis, ou proposé une autre date</li>
+<li>Le devis est retourné ou caduc, sans réponse du client</li>
+<li>Le client a confirmé avoir reçu la facture</li>
+<li>Rappel de facture impayée : dire qu'on a été payé</li>
+<li>Rappels : devis en attente, devis sans réponse, chantier à facturer</li>
+<li>Faire disparaître une carte de réponse ou de rappel</li>
+<li>Voir toutes les réponses de clients et les rappels</li>
+<li>Retirer un chantier de la liste, devis pas encore écrit</li>
+<li>Annuler une suppression qu'on vient de faire</li>
+<li>Reprendre un chantier là où on s'est arrêté</li>
+</ul>
+<h3 id="-comment-fonctionne-le-devis--">« Comment fonctionne le devis ? »</h3>
+<p>Il présente l'écran Devis, geste par geste, puis détaille celui qu'on lui redemande :</p>
+<ul>
+<li>Changer le taux de TVA d'un devis</li>
+<li>Proposer une ou deux dates d'intervention au client</li>
+<li>Envoyer le devis au client</li>
+<li>Modifier un devis déjà envoyé</li>
+<li>Télécharger le PDF d'un devis envoyé</li>
+<li>Ajouter une ligne au devis</li>
+<li>Corriger la description, la quantité ou le prix d'une ligne</li>
+<li>Choisir l'unité d'une ligne : mètre, m², heure, forfait</li>
+<li>Poser le prix d'une ligne marquée à chiffrer</li>
+<li>Reprendre le prix d'un chantier comparable</li>
+<li>Donner un titre au devis</li>
+<li>Mettre deux taux de TVA sur un même devis</li>
+<li>Passer une ligne d'une TVA à l'autre</li>
+<li>Retirer une catégorie de TVA</li>
+<li>Indiquer la part de main d'œuvre</li>
+<li>Demander un acompte sur le devis</li>
+<li>Corriger le nom, l'adresse, l'e-mail ou le téléphone du client sur le devis</li>
+<li>Rattacher un client à un devis qui n'en a pas</li>
+<li>Corriger l'adresse des travaux sur le devis</li>
+<li>Corriger le nom, l'adresse, le SIRET de mon entreprise sur le devis</li>
+<li>Mettre mon IBAN sur le devis</li>
+<li>Ajouter une note ou des conditions sur le devis</li>
+<li>Corriger le devis à la voix</li>
+<li>Répondre aux questions d'Atlas avant le chiffrage</li>
+<li>Le devis ne se modifie plus, que faire</li>
+<li>Proposer deux dates au choix du client</li>
+<li>Laisser ou non le client proposer une autre date</li>
+<li>Changer la durée du chantier avant d'envoyer</li>
+<li>Voir si l'équipe est libre un jour donné</li>
+<li>Enlever ou déplacer un jour proposé</li>
+<li>Envoyer à un client sans téléphone ni e-mail enregistré</li>
+<li>Fermer la feuille d'envoi sans rien envoyer</li>
+<li>Savoir si le client a répondu au devis</li>
+<li>Relancer le client qui n'a pas répondu</li>
+<li>Envoyer par e-mail plutôt que par SMS, ou l'inverse</li>
+<li>Traiter une correction demandée par le client</li>
+<li>Reprendre un devis refusé ou dont le lien a expiré</li>
+<li>Retirer une ligne du devis</li>
+<li>Voir le devis tel que le client le recevra</li>
+<li>Le lien du devis envoyé au client est-il sûr</li>
+</ul>
+<h3 id="-comment-fonctionne-la-facture--">« Comment fonctionne la facture ? »</h3>
+<p>Il présente l'écran Facture, geste par geste, puis détaille celui qu'on lui redemande :</p>
+<ul>
+<li>Facturer un chantier terminé</li>
+<li>Donner un titre à la facture</li>
+<li>Mettre la facture à jour après avoir renvoyé un devis corrigé</li>
+<li>Écrire les lignes d'une facture faite sans devis</li>
+<li>Marquer la facture acquittée, tout est déjà payé</li>
+<li>Télécharger la facture, la garder sur le téléphone</li>
+<li>Envoyer la facture au client</li>
+<li>Renvoyer une facture déjà envoyée, ou l'envoyer par l'autre moyen</li>
+<li>Envoyer la facture à un client sans numéro ou sans e-mail</li>
+<li>Modifier ou corriger une facture</li>
+<li>Faire un avoir, retrouver ses avoirs, annuler une facture envoyée</li>
+<li>Envoyer une mise en demeure</li>
+<li>Changer la date d'échéance d'une facture</li>
+<li>Voir la facture en PDF</li>
+<li>La facture électronique obligatoire, la plateforme agréée</li>
+<li>Faire une facture de situation, facturer en plusieurs fois</li>
+</ul>
+<h3 id="-comment-fonctionne-la-tva--">« Comment fonctionne la tva ? »</h3>
+<p>Il présente l'écran Ma TVA, geste par geste, puis détaille celui qu'on lui redemande :</p>
+<ul>
+<li>Savoir si le client a ouvert ou reçu sa facture</li>
+<li>Voir la TVA d'un autre mois, trimestre ou année</li>
+<li>Passer la déclaration de TVA de mensuelle à trimestrielle</li>
+<li>Copier le montant de TVA à payer</li>
+<li>Comprendre « Crédit de TVA »</li>
+<li>Scanner un ticket de caisse pour la TVA déductible</li>
+<li>Ajouter un achat à la main pour la TVA déductible</li>
+<li>Voir les factures et les achats comptés dans la TVA</li>
+<li>Noter qu'une facture envoyée est payée, voir celles qui ne le sont pas</li>
+<li>Noter un acompte reçu sur une facture déjà envoyée</li>
+<li>Retirer un paiement noté par erreur</li>
+<li>Voir toutes les factures pas encore payées</li>
+<li>Prévenir un client que votre IBAN a changé</li>
+<li>Savoir combien de TVA déclarer</li>
+</ul>
+<h3 id="-comment-fonctionne-longlet-terminés--">« Comment fonctionne l'onglet terminés ? »</h3>
+<p>Il présente l'écran Terminés, geste par geste, puis détaille celui qu'on lui redemande :</p>
+<ul>
+<li>Retrouver les chantiers terminés, mois par mois</li>
+<li>Retrouver ses factures</li>
+<li>Faire une facture sans devis, pour un dépannage</li>
+<li>Savoir quand un chantier arrive dans Terminés</li>
+<li>Voir le montant facturé d'un chantier</li>
+<li>Ranger une facture que le client ne paiera pas</li>
+<li>Retrouver les chantiers finis qui ne sont pas encore facturés</li>
+</ul>
 <h2 id="la-sécurité">La sécurité</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
 <div class="tablewrap"><table><thead><tr>
@@ -252,6 +399,61 @@
 <tr>
 <td>Comment utiliser atlas sur ipad</td>
 <td>Atlas s'ouvre dans le navigateur, sur téléphone comme sur ordinateur, avec le même compte. Pour l'avoir sur l'écran du téléphone : sur iPhone, dans Safari, touchez Partager puis « Sur l'écran d'accueil » ; sur Android, dans Chrome, menu puis « Ajouter à l'écran d'accueil ».</td>
+</tr>
+</tbody></table></div>
+<h2 id="le-planning-expliqué">Le planning expliqué</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Question</th>
+<th>Réponse de l'assistant</th>
+</tr></thead><tbody>
+<tr>
+<td>Comment on ajoute un client au planning</td>
+<td><em>« Planning » dans la barre du bas, puis le jour.</em> Ouvrez le jour, appuyez sur « Ajouter » puis « Un client ». Tapez son nom et touchez-le s'il est proposé, choisissez « Matin », « Après-midi » ou « Journée », puis « Poser ». Un nom inconnu crée sa fiche : Atlas demande alors téléphone, e-mail et adresse du chantier. « Annuler » ramène aux trois choix.</td>
+</tr>
+<tr>
+<td>Comment ajouter un client en attente</td>
+<td>Touchez d'abord le jour dans le calendrier, ouvrez la barre du bas (« À poser sur… »), puis touchez le nom du client. Sans jour touché, la liste montre les clients « en attente d'un jour » sans pouvoir les poser.</td>
+</tr>
+<tr>
+<td>Comment ajouter autre chose au planning</td>
+<td><em>« Planning » dans la barre du bas, puis le jour.</em> Ouvrez le jour, appuyez sur « Ajouter » puis « Autre chose ». Écrivez ce que c'est, choisissez le moment, puis « Poser ».</td>
+</tr>
+<tr>
+<td>Comment mettre un salarié absent</td>
+<td><em>« Planning » dans la barre du bas, puis le jour.</em> Ouvrez le jour, appuyez sur « Salarié absent ? » puis sur son nom. Il est absent toute la journée : touchez « Matin » ou « Après-midi » pour réduire. Seul, sans salarié, le bouton s'appelle « Absent ? ». Pour plusieurs jours d'affilée : Réglages, Équipe.</td>
+</tr>
+<tr>
+<td>Comment enlever un salarié des absences</td>
+<td><em>« Planning » dans la barre du bas, puis le jour.</em> Ouvrez le jour : sur la ligne « Absent », appuyez sur la croix à droite. Ou « Salarié absent ? » puis « son nom, annuler ».</td>
+</tr>
+<tr>
+<td>Comment affilier un salarié à un chantier</td>
+<td><em>« Planning » dans la barre du bas, puis le jour du chantier.</em> Ouvrez le jour, touchez « + Salarié » ou les noms en face du matin ou de l'après-midi, touchez les noms à cocher ou décocher, puis « Fermer ». Il faut des salariés déclarés dans Réglages, Équipe. Un salarié absent ce jour-là est grisé.</td>
+</tr>
+<tr>
+<td>Que veulent dire les couleurs du planning</td>
+<td>Chaque jour porte deux barres, le matin en haut et l'après-midi en bas. « Rien » : aucun chantier. « Incomplet » : il reste de la place. « Complet » : toutes vos équipes sont prises. « Au-delà » : plus de chantiers que d'équipes. Un salarié absent compte comme un chantier. Le nombre d'équipes se règle dans Réglages, Équipe, « Combien de chantiers par jour ? » : avec 2, « au-delà » commence au troisième chantier.</td>
+</tr>
+<tr>
+<td>Que signifie au-delà</td>
+<td>Chaque jour porte deux barres, le matin en haut et l'après-midi en bas. « Rien » : aucun chantier. « Incomplet » : il reste de la place. « Complet » : toutes vos équipes sont prises. « Au-delà » : plus de chantiers que d'équipes. Un salarié absent compte comme un chantier. Le nombre d'équipes se règle dans Réglages, Équipe, « Combien de chantiers par jour ? » : avec 2, « au-delà » commence au troisième chantier.</td>
+</tr>
+<tr>
+<td>Que veut dire au-delà sur le planning</td>
+<td>Chaque jour porte deux barres, le matin en haut et l'après-midi en bas. « Rien » : aucun chantier. « Incomplet » : il reste de la place. « Complet » : toutes vos équipes sont prises. « Au-delà » : plus de chantiers que d'équipes. Un salarié absent compte comme un chantier. Le nombre d'équipes se règle dans Réglages, Équipe, « Combien de chantiers par jour ? » : avec 2, « au-delà » commence au troisième chantier.</td>
+</tr>
+<tr>
+<td>Pourquoi le jour est en au-delà</td>
+<td>Chaque jour porte deux barres, le matin en haut et l'après-midi en bas. « Rien » : aucun chantier. « Incomplet » : il reste de la place. « Complet » : toutes vos équipes sont prises. « Au-delà » : plus de chantiers que d'équipes. Un salarié absent compte comme un chantier. Le nombre d'équipes se règle dans Réglages, Équipe, « Combien de chantiers par jour ? » : avec 2, « au-delà » commence au troisième chantier.</td>
+</tr>
+<tr>
+<td>Comment faire pour que au-delà soit à partir de deux chantiers</td>
+<td><em>« Réglages » dans la barre du bas, puis Équipe.</em> Sous « Combien de chantiers par jour », touchez « + » ou « − ». C'est votre nombre d'équipes : au planning, un jour qui en demande plus passe en « au-delà ».</td>
+</tr>
+<tr>
+<td>Comment faire pour que au-delà soit à partir de trois chantiers</td>
+<td><em>« Réglages » dans la barre du bas, puis Équipe.</em> Sous « Combien de chantiers par jour », touchez « + » ou « − ». C'est votre nombre d'équipes : au planning, un jour qui en demande plus passe en « au-delà ».</td>
 </tr>
 </tbody></table></div>
 <h2 id="questions-dartisan">Questions d'artisan</h2>
@@ -1026,7 +1228,7 @@
 </tr>
 <tr>
 <td>Que veulent dire les couleurs du calendrier</td>
-<td>Chaque jour porte deux barres, le matin en haut et l'après-midi en bas. La légende sous le calendrier dit « rien », « incomplet », « complet » ou « au-delà » de vos équipes.</td>
+<td>Chaque jour porte deux barres, le matin en haut et l'après-midi en bas. « Rien » : aucun chantier. « Incomplet » : il reste de la place. « Complet » : toutes vos équipes sont prises. « Au-delà » : plus de chantiers que d'équipes. Un salarié absent compte comme un chantier. Le nombre d'équipes se règle dans Réglages, Équipe, « Combien de chantiers par jour ? » : avec 2, « au-delà » commence au troisième chantier.</td>
 </tr>
 <tr>
 <td>Comment ajouter un nouveau client directement au planning sans devis</td>
@@ -1512,7 +1714,7 @@
 </tr>
 <tr>
 <td>Combien de chantiers par jour</td>
-<td><em>« Réglages » dans la barre du bas, puis Équipe.</em> Sous « Combien de chantiers par jour », touchez « + » ou « − ».</td>
+<td><em>« Réglages » dans la barre du bas, puis Équipe.</em> Sous « Combien de chantiers par jour », touchez « + » ou « − ». C'est votre nombre d'équipes : au planning, un jour qui en demande plus passe en « au-delà ».</td>
 </tr>
 <tr>
 <td>Donner un nom à mes salariés</td>

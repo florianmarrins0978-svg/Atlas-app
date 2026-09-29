@@ -3,7 +3,7 @@
 *Engendré le 2026-09-29 par `npx tsx scripts/engendrer-questions-reponses.ts`.
 Ne pas corriger à la main : corriger la fiche, puis relancer.*
 
-**400 questions**, posées comme un artisan les pose. Pour chacune, la
+**412 questions**, posées comme un artisan les pose. Pour chacune, la
 réponse est la fiche que l'assistant trouve et récite. Chaque fiche est
 confrontée au code de l'application : le jour où un bouton change de nom, le
 contrôle rougit au lieu de laisser l'assistant enseigner un geste mort.
@@ -13,6 +13,159 @@ fiches. S'il ne trouve rien, il le dit, et donne l'adresse à qui écrire. Il
 répond aussi sur vos données (qui vous doit, ce que vous avez encaissé, votre
 planning), qu'il lit dans l'application : ces réponses-là changent chaque jour,
 elles ne sont donc pas ici.
+
+## Comment fonctionne un écran
+
+### « Comment fonctionne le planning ? »
+
+Il présente l'écran Planning, geste par geste, puis détaille celui qu'on lui redemande :
+
+- Ouvrir le planning, le calendrier
+- Déplacer un chantier à un autre jour, ou seulement sa matinée ou son après-midi
+- Enlever un chantier d'un jour du planning, sans le supprimer
+- Donner la feuille de chantier à l'équipe, le devis sans les prix
+- Changer de mois dans le calendrier
+- Voir ce qui est posé un jour donné, le matin et l'après-midi
+- Comprendre les couleurs des jours du calendrier
+- Poser directement un client sur un jour, sans devis
+- Bloquer du temps pour autre chose qu'un chantier : banque, livraison, formation
+- Poser un client sans date depuis la liste du bas
+- Annuler la pose qu'on vient de faire
+- Supprimer un chantier qui attend une date
+- Reposer une demi-journée de chantier qui attend
+- Voir les clients qui choisissent eux-mêmes leur date
+- Choisir quels salariés vont sur un chantier
+- Noter qu'un salarié, ou soi même, est absent un jour
+- Enlever une absence notée par erreur
+- Pourquoi un salarié ne peut pas modifier le planning
+- Ouvrir le devis, la fiche client ou la facture d'un chantier depuis le planning
+- Facturer un chantier fini depuis le planning
+- La phrase de l'agenda en haut du planning, et la masquer
+- Envoyer le retour d'intervention du jour : ce qui est fait, photos, remarques
+- Ouvrir la fiche d'intervention d'un chantier
+- Remplir et signer la fiche de sécurité avant les travaux
+- Poser un chantier sur un jour
+- Laisser une note sur une journée
+- Y aller, appeler le client, copier l'adresse
+- Voir les sept jours d'avant ou d'après
+- Passer de la journée aux sept jours
+
+### « Comment fonctionnent les chantiers ? »
+
+Il présente l'écran Chantiers, geste par geste, puis détaille celui qu'on lui redemande :
+
+- Trouver les chantiers en cours
+- Créer un chantier, un devis
+- Compléter l'adresse ou les coordonnées d'un chantier depuis la liste
+- Savoir où en est un chantier, si le devis est parti
+- Le client demande une correction du devis
+- Le client a accepté le devis, ou proposé une autre date
+- Le devis est retourné ou caduc, sans réponse du client
+- Le client a confirmé avoir reçu la facture
+- Rappel de facture impayée : dire qu'on a été payé
+- Rappels : devis en attente, devis sans réponse, chantier à facturer
+- Faire disparaître une carte de réponse ou de rappel
+- Voir toutes les réponses de clients et les rappels
+- Retirer un chantier de la liste, devis pas encore écrit
+- Annuler une suppression qu'on vient de faire
+- Reprendre un chantier là où on s'est arrêté
+
+### « Comment fonctionne le devis ? »
+
+Il présente l'écran Devis, geste par geste, puis détaille celui qu'on lui redemande :
+
+- Changer le taux de TVA d'un devis
+- Proposer une ou deux dates d'intervention au client
+- Envoyer le devis au client
+- Modifier un devis déjà envoyé
+- Télécharger le PDF d'un devis envoyé
+- Ajouter une ligne au devis
+- Corriger la description, la quantité ou le prix d'une ligne
+- Choisir l'unité d'une ligne : mètre, m², heure, forfait
+- Poser le prix d'une ligne marquée à chiffrer
+- Reprendre le prix d'un chantier comparable
+- Donner un titre au devis
+- Mettre deux taux de TVA sur un même devis
+- Passer une ligne d'une TVA à l'autre
+- Retirer une catégorie de TVA
+- Indiquer la part de main d'œuvre
+- Demander un acompte sur le devis
+- Corriger le nom, l'adresse, l'e-mail ou le téléphone du client sur le devis
+- Rattacher un client à un devis qui n'en a pas
+- Corriger l'adresse des travaux sur le devis
+- Corriger le nom, l'adresse, le SIRET de mon entreprise sur le devis
+- Mettre mon IBAN sur le devis
+- Ajouter une note ou des conditions sur le devis
+- Corriger le devis à la voix
+- Répondre aux questions d'Atlas avant le chiffrage
+- Le devis ne se modifie plus, que faire
+- Proposer deux dates au choix du client
+- Laisser ou non le client proposer une autre date
+- Changer la durée du chantier avant d'envoyer
+- Voir si l'équipe est libre un jour donné
+- Enlever ou déplacer un jour proposé
+- Envoyer à un client sans téléphone ni e-mail enregistré
+- Fermer la feuille d'envoi sans rien envoyer
+- Savoir si le client a répondu au devis
+- Relancer le client qui n'a pas répondu
+- Envoyer par e-mail plutôt que par SMS, ou l'inverse
+- Traiter une correction demandée par le client
+- Reprendre un devis refusé ou dont le lien a expiré
+- Retirer une ligne du devis
+- Voir le devis tel que le client le recevra
+- Le lien du devis envoyé au client est-il sûr
+
+### « Comment fonctionne la facture ? »
+
+Il présente l'écran Facture, geste par geste, puis détaille celui qu'on lui redemande :
+
+- Facturer un chantier terminé
+- Donner un titre à la facture
+- Mettre la facture à jour après avoir renvoyé un devis corrigé
+- Écrire les lignes d'une facture faite sans devis
+- Marquer la facture acquittée, tout est déjà payé
+- Télécharger la facture, la garder sur le téléphone
+- Envoyer la facture au client
+- Renvoyer une facture déjà envoyée, ou l'envoyer par l'autre moyen
+- Envoyer la facture à un client sans numéro ou sans e-mail
+- Modifier ou corriger une facture
+- Faire un avoir, retrouver ses avoirs, annuler une facture envoyée
+- Envoyer une mise en demeure
+- Changer la date d'échéance d'une facture
+- Voir la facture en PDF
+- La facture électronique obligatoire, la plateforme agréée
+- Faire une facture de situation, facturer en plusieurs fois
+
+### « Comment fonctionne la tva ? »
+
+Il présente l'écran Ma TVA, geste par geste, puis détaille celui qu'on lui redemande :
+
+- Savoir si le client a ouvert ou reçu sa facture
+- Voir la TVA d'un autre mois, trimestre ou année
+- Passer la déclaration de TVA de mensuelle à trimestrielle
+- Copier le montant de TVA à payer
+- Comprendre « Crédit de TVA »
+- Scanner un ticket de caisse pour la TVA déductible
+- Ajouter un achat à la main pour la TVA déductible
+- Voir les factures et les achats comptés dans la TVA
+- Noter qu'une facture envoyée est payée, voir celles qui ne le sont pas
+- Noter un acompte reçu sur une facture déjà envoyée
+- Retirer un paiement noté par erreur
+- Voir toutes les factures pas encore payées
+- Prévenir un client que votre IBAN a changé
+- Savoir combien de TVA déclarer
+
+### « Comment fonctionne l'onglet terminés ? »
+
+Il présente l'écran Terminés, geste par geste, puis détaille celui qu'on lui redemande :
+
+- Retrouver les chantiers terminés, mois par mois
+- Retrouver ses factures
+- Faire une facture sans devis, pour un dépannage
+- Savoir quand un chantier arrive dans Terminés
+- Voir le montant facturé d'un chantier
+- Ranger une facture que le client ne paiera pas
+- Retrouver les chantiers finis qui ne sont pas encore facturés
 
 ## La sécurité
 
@@ -71,6 +224,23 @@ elles ne sont donc pas ici.
 | Comment faire payer un acompte avant de commencer | Appuyez sur « + Ajouter un acompte », puis touchez le pourcentage pour le changer. Le « − » devant l'acompte le retire. Le reste à régler se calcule sous les acomptes. Le bouton disparaît quand il n'y a plus d'acompte à poser. |
 | Est-ce que je peux travailler depuis mon ordinateur au bureau | Atlas s'ouvre dans le navigateur, sur téléphone comme sur ordinateur, avec le même compte. Pour l'avoir sur l'écran du téléphone : sur iPhone, dans Safari, touchez Partager puis « Sur l'écran d'accueil » ; sur Android, dans Chrome, menu puis « Ajouter à l'écran d'accueil ». |
 | Comment utiliser atlas sur ipad | Atlas s'ouvre dans le navigateur, sur téléphone comme sur ordinateur, avec le même compte. Pour l'avoir sur l'écran du téléphone : sur iPhone, dans Safari, touchez Partager puis « Sur l'écran d'accueil » ; sur Android, dans Chrome, menu puis « Ajouter à l'écran d'accueil ». |
+
+## Le planning expliqué
+
+| Question | Réponse de l'assistant |
+|---|---|
+| Comment on ajoute un client au planning | *« Planning » dans la barre du bas, puis le jour.* Ouvrez le jour, appuyez sur « Ajouter » puis « Un client ». Tapez son nom et touchez-le s'il est proposé, choisissez « Matin », « Après-midi » ou « Journée », puis « Poser ». Un nom inconnu crée sa fiche : Atlas demande alors téléphone, e-mail et adresse du chantier. « Annuler » ramène aux trois choix. |
+| Comment ajouter un client en attente | Touchez d'abord le jour dans le calendrier, ouvrez la barre du bas (« À poser sur… »), puis touchez le nom du client. Sans jour touché, la liste montre les clients « en attente d'un jour » sans pouvoir les poser. |
+| Comment ajouter autre chose au planning | *« Planning » dans la barre du bas, puis le jour.* Ouvrez le jour, appuyez sur « Ajouter » puis « Autre chose ». Écrivez ce que c'est, choisissez le moment, puis « Poser ». |
+| Comment mettre un salarié absent | *« Planning » dans la barre du bas, puis le jour.* Ouvrez le jour, appuyez sur « Salarié absent ? » puis sur son nom. Il est absent toute la journée : touchez « Matin » ou « Après-midi » pour réduire. Seul, sans salarié, le bouton s'appelle « Absent ? ». Pour plusieurs jours d'affilée : Réglages, Équipe. |
+| Comment enlever un salarié des absences | *« Planning » dans la barre du bas, puis le jour.* Ouvrez le jour : sur la ligne « Absent », appuyez sur la croix à droite. Ou « Salarié absent ? » puis « son nom, annuler ». |
+| Comment affilier un salarié à un chantier | *« Planning » dans la barre du bas, puis le jour du chantier.* Ouvrez le jour, touchez « + Salarié » ou les noms en face du matin ou de l'après-midi, touchez les noms à cocher ou décocher, puis « Fermer ». Il faut des salariés déclarés dans Réglages, Équipe. Un salarié absent ce jour-là est grisé. |
+| Que veulent dire les couleurs du planning | Chaque jour porte deux barres, le matin en haut et l'après-midi en bas. « Rien » : aucun chantier. « Incomplet » : il reste de la place. « Complet » : toutes vos équipes sont prises. « Au-delà » : plus de chantiers que d'équipes. Un salarié absent compte comme un chantier. Le nombre d'équipes se règle dans Réglages, Équipe, « Combien de chantiers par jour ? » : avec 2, « au-delà » commence au troisième chantier. |
+| Que signifie au-delà | Chaque jour porte deux barres, le matin en haut et l'après-midi en bas. « Rien » : aucun chantier. « Incomplet » : il reste de la place. « Complet » : toutes vos équipes sont prises. « Au-delà » : plus de chantiers que d'équipes. Un salarié absent compte comme un chantier. Le nombre d'équipes se règle dans Réglages, Équipe, « Combien de chantiers par jour ? » : avec 2, « au-delà » commence au troisième chantier. |
+| Que veut dire au-delà sur le planning | Chaque jour porte deux barres, le matin en haut et l'après-midi en bas. « Rien » : aucun chantier. « Incomplet » : il reste de la place. « Complet » : toutes vos équipes sont prises. « Au-delà » : plus de chantiers que d'équipes. Un salarié absent compte comme un chantier. Le nombre d'équipes se règle dans Réglages, Équipe, « Combien de chantiers par jour ? » : avec 2, « au-delà » commence au troisième chantier. |
+| Pourquoi le jour est en au-delà | Chaque jour porte deux barres, le matin en haut et l'après-midi en bas. « Rien » : aucun chantier. « Incomplet » : il reste de la place. « Complet » : toutes vos équipes sont prises. « Au-delà » : plus de chantiers que d'équipes. Un salarié absent compte comme un chantier. Le nombre d'équipes se règle dans Réglages, Équipe, « Combien de chantiers par jour ? » : avec 2, « au-delà » commence au troisième chantier. |
+| Comment faire pour que au-delà soit à partir de deux chantiers | *« Réglages » dans la barre du bas, puis Équipe.* Sous « Combien de chantiers par jour », touchez « + » ou « − ». C'est votre nombre d'équipes : au planning, un jour qui en demande plus passe en « au-delà ». |
+| Comment faire pour que au-delà soit à partir de trois chantiers | *« Réglages » dans la barre du bas, puis Équipe.* Sous « Combien de chantiers par jour », touchez « + » ou « − ». C'est votre nombre d'équipes : au planning, un jour qui en demande plus passe en « au-delà ». |
 
 ## Questions d'artisan
 
@@ -280,7 +450,7 @@ elles ne sont donc pas ici.
 | Comment je donne la feuille sans les prix à mes gars | *« Planning » dans la barre du bas, puis le nom du chantier.* Touchez le nom du chantier dans sa journée : « Ouvrir le devis sans les prix » est au bas de sa fiche d'intervention. Le bouton n'apparaît que si le chantier a un devis. |
 | Comment passer au mois suivant | *« Planning » dans la barre du bas, en haut de l'écran.* Appuyez sur les chevrons de part et d'autre du nom du mois, ou balayez le calendrier du doigt. |
 | Comment je vois ce qui est posé un jour | *« Planning » dans la barre du bas.* Touchez le jour dans le calendrier : sa carte s'ouvre dessous, avec le matin, l'après-midi et les chantiers posés. Touchez-le à nouveau pour la fermer. |
-| Que veulent dire les couleurs du calendrier | Chaque jour porte deux barres, le matin en haut et l'après-midi en bas. La légende sous le calendrier dit « rien », « incomplet », « complet » ou « au-delà » de vos équipes. |
+| Que veulent dire les couleurs du calendrier | Chaque jour porte deux barres, le matin en haut et l'après-midi en bas. « Rien » : aucun chantier. « Incomplet » : il reste de la place. « Complet » : toutes vos équipes sont prises. « Au-delà » : plus de chantiers que d'équipes. Un salarié absent compte comme un chantier. Le nombre d'équipes se règle dans Réglages, Équipe, « Combien de chantiers par jour ? » : avec 2, « au-delà » commence au troisième chantier. |
 | Comment ajouter un nouveau client directement au planning sans devis | *« Planning » dans la barre du bas, puis le jour.* Ouvrez le jour, appuyez sur « Ajouter » puis « Un client ». Tapez son nom et touchez-le s'il est proposé, choisissez « Matin », « Après-midi » ou « Journée », puis « Poser ». Un nom inconnu crée sa fiche : Atlas demande alors téléphone, e-mail et adresse du chantier. « Annuler » ramène aux trois choix. |
 | Comment bloquer du temps pour la banque | *« Planning » dans la barre du bas, puis le jour.* Ouvrez le jour, appuyez sur « Ajouter » puis « Autre chose ». Écrivez ce que c'est, choisissez le moment, puis « Poser ». |
 | Comment je pose un client sans date | Touchez d'abord le jour dans le calendrier, ouvrez la barre du bas (« À poser sur… »), puis touchez le nom du client. Sans jour touché, la liste montre les clients « en attente d'un jour » sans pouvoir les poser. |
@@ -408,7 +578,7 @@ elles ne sont donc pas ici.
 | Changer le rôle d'un salarié en facturation | *« Réglages » dans la barre du bas, puis Équipe, Accès.* Dans « Accès », touchez la personne, puis le rôle voulu : Patron, Facturation, Commercial ou Salarié. Sous les rôles, la liste dit ce que ce rôle peut faire et ce qu'il ne peut plus. |
 | Limiter ce que le salarié voit du planning | *« Réglages » dans la barre du bas, puis Équipe, Accès.* Touchez le salarié dans « Accès », puis « Tout le planning » ou « Son équipe » et choisissez laquelle. Ne s'affiche que pour une personne au rôle Salarié. |
 | Retirer l'accès d'un salarié | *« Réglages » dans la barre du bas, puis Équipe, Accès.* Dans « Accès », touchez la personne, puis « Retirer l'accès ». Impossible sur votre propre compte. |
-| Combien de chantiers par jour | *« Réglages » dans la barre du bas, puis Équipe.* Sous « Combien de chantiers par jour », touchez « + » ou « − ». |
+| Combien de chantiers par jour | *« Réglages » dans la barre du bas, puis Équipe.* Sous « Combien de chantiers par jour », touchez « + » ou « − ». C'est votre nombre d'équipes : au planning, un jour qui en demande plus passe en « au-delà ». |
 | Donner un nom à mes salariés | *« Réglages » dans la barre du bas, puis Équipe.* Sous « Combien de salariés », touchez « + » ou « − », puis écrivez le nom de chacun sur sa ligne. |
 | Noter un congé d'un salarié | *« Réglages » dans la barre du bas, puis Équipe, bloc Absences.* Touchez « + Noter une absence », choisissez qui, le premier et le dernier jour, puis « Noter l’absence ». Pour l'effacer, touchez la croix sur sa ligne. Il faut au moins un salarié : seul, posez vos congés dans votre agenda relié. Les absences demandent la formule Entreprise. |
 | Exiger une photo en fin de chantier | *« Réglages » dans la barre du bas, puis Équipe, bloc Fin de chantier.* Dans « Fin de chantier », allumez « Demander une preuve », puis si besoin « Au moins une photo ». Le salarié voit « Retour à envoyer » sous le chantier du jour ; vous, « Retour pas reçu » sur l'accueil le lendemain. Le retour part quand même. N'apparaît qu'avec la formule Entreprise. |
