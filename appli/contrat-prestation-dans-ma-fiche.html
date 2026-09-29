@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Prestation du contrat dans ma fiche</title>
+<style>
+  /*
+    SA DEMANDE DU 29 SEPTEMBRE 2026 : « si on ajoute une catégorie dans le
+    contrat d'entretien ou sur la fiche d'entretien, que ça l'ajoute ».
+
+    Ce qui existe déjà : ce qu'il ajoute dans « Composer ma fiche » apparaît
+    dans la liste du contrat (`src/app/clients/[id]/contrat/page.tsx` lit
+    `listerPrestations`). Ce qui manque : une prestation ÉCRITE à la main dans
+    le contrat reste sur ce contrat, sans famille, et n'entre pas dans sa fiche.
+
+    Sa réponse à la question : « Je choisis la famille ». Pas de famille
+    « Autres » par défaut : il l'avait déjà refusée le 24 août (« Divers »,
+    en tête de `ComposerMaFiche.tsx`).
+
+    Donc ici : il écrit, touche une famille (ou en crée une), puis « Ajouter ».
+    La prestation entre dans le contrat ET dans sa fiche, à la fin de cette
+    famille. L'onglet « Ma fiche » en haut montre qu'elle y est.
+
+    Reconstruit d'après `ContratClient.tsx` et `MODELE_FOURNI`, pas
+    photographié. RIEN N'EST CODÉ.
+  */
+  :root{
+    --cream:#f5f3ee; --card:#faf9f5; --ink:#1c1c1a; --inkSoft:#4a4a44;
+    --muted:#8a8578; --rust:#2f3b2f; --rustTint:#ece9e1;
+    --plein:#7d9a6d; --surPlein:#faf9f5;
+    --line:rgba(28,28,26,0.12); --lineSoft:rgba(28,28,26,0.07); --hors:#e6e3dc;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --cream:#101210; --card:#1a1d19; --ink:#e9e8de; --inkSoft:#c1c2b6;
+      --muted:#84887b; --rust:#e9e8de; --rustTint:#1f211e;
+      --plein:#e9e8de; --surPlein:#1a1d19;
+      --line:rgba(233,232,222,0.12); --lineSoft:rgba(233,232,222,0.07); --hors:#0a0b0a;
+    }
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  [hidden]{display:none!important}
+  html,body{margin:0}
+  body{background:var(--hors);color:var(--ink);
+       font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       -webkit-text-size-adjust:100%;padding:0 0 34px}
+  .ecran{max-width:430px;margin:0 auto;background:var(--cream);min-height:100vh}
+  .choix{display:flex;gap:7px;justify-content:center;padding:12px;background:var(--hors)}
+  .choix button{min-height:40px;padding:0 14px;border-radius:999px;border:1px solid var(--line);
+    background:var(--card);color:var(--ink);font:500 14px/1 inherit;cursor:pointer}
+  .choix button[aria-pressed="true"]{background:var(--ink);color:var(--cream)}
+  .entete{padding:22px 26px 6px}
+  .entete .sur{margin:0;font:500 9.5px/1 ui-sans-serif,sans-serif;letter-spacing:.28em;
+    text-transform:uppercase;color:var(--muted)}
+  .entete h1{margin:8px 0 0;font:400 30px/1.1 ui-serif,Georgia,serif}
+  .corps{padding:10px 26px 30px}
+  .intitule{margin:18px 0 6px;font:600 11px/1 ui-sans-serif,sans-serif;letter-spacing:.12em;
+    text-transform:uppercase;color:var(--muted)}
+  .presta{padding:12px 0;border-bottom:1px solid var(--lineSoft)}
+  .presta .nom{margin:0;font:400 18px/1.25 ui-serif,Georgia,serif}
+  .presta .famille{margin:2px 0 0;font-size:12.5px;color:var(--muted)}
+  .neuve .nom{color:var(--rust)}
+  .ajout{display:block;margin-top:14px;background:none;border:0;padding:0;cursor:pointer;
+    min-height:36px;font:500 14px/1 inherit;color:var(--rust)}
+  .tiroir{margin-top:8px;border-radius:8px;padding:6px 12px 10px;background:var(--rustTint)}
+  .ecrire{display:flex;gap:8px;margin:10px 0}
+  .ecrire input,.nouvelle input{height:42px;min-width:0;flex:1;border:0;border-radius:8px;padding:0 12px;
+    font-size:16px;background:var(--card);color:var(--ink);box-shadow:inset 0 0 0 1px var(--line);outline:none}
+  .plein{height:42px;flex:none;border:0;border-radius:999px;padding:0 16px;font-size:14.5px;
+    background:var(--plein);color:var(--surPlein);cursor:pointer}
+  .plein:disabled{opacity:.45;cursor:default}
+  .ou{margin:4px 0 6px;font-size:13px;color:var(--inkSoft)}
+  .pastilles{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px}
+  .pastilles button{min-height:36px;padding:0 13px;border-radius:999px;border:1px solid var(--line);
+    background:var(--card);color:var(--ink);font-size:14px;cursor:pointer}
+  .pastilles button[aria-pressed="true"]{background:var(--plein);color:var(--surPlein);border-color:transparent}
+  .nouvelle{display:flex;gap:8px;margin:4px 0 8px}
+  .fam{margin:12px 0 4px;font:600 10.5px/1 ui-sans-serif,sans-serif;letter-spacing:.12em;
+    text-transform:uppercase;color:var(--muted)}
+  .ligne{display:block;width:100%;text-align:left;border:0;border-bottom:1px solid var(--lineSoft);
+    background:none;padding:9px 0;font-size:15px;color:var(--ink);cursor:pointer}
+  .ligne:disabled{color:var(--muted);cursor:default}
+  .modele .ligne{cursor:default}
+  .modele .neuve{color:var(--rust);font-weight:500}
+</style>
+</head>
+<body>
+<div class="ecran">
+  <div class="choix" role="tablist">
+    <button type="button" data-vue="contrat" aria-pressed="true">Contrat</button>
+    <button type="button" data-vue="fiche" aria-pressed="false">Ma fiche</button>
+  </div>
+
+  <section id="vue-contrat">
+    <div class="entete">
+      <p class="sur">Madame Durand</p>
+      <h1>Contrat d'entretien</h1>
+    </div>
+    <div class="corps">
+      <p class="intitule">Prestations</p>
+      <div id="contrat"></div>
+      <button type="button" class="ajout" id="ouvrir">+ Ajouter une prestation</button>
+      <div class="tiroir" id="tiroir" hidden>
+        <form class="ecrire" id="form">
+          <input id="libre" maxlength="60" placeholder="Écrire une prestation" aria-label="Écrire une prestation" autocomplete="off">
+          <button type="submit" class="plein" id="ajouter" disabled>Ajouter</button>
+        </form>
+        <div id="choix-famille" hidden>
+          <p class="ou">Dans quelle famille de votre fiche ?</p>
+          <div class="pastilles" id="pastilles"></div>
+          <div class="nouvelle" id="nouvelle" hidden>
+            <input id="nom-famille" maxlength="60" placeholder="Nom de la famille" aria-label="Nom de la famille" autocomplete="off">
+          </div>
+        </div>
+        <div id="liste"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="vue-fiche" hidden>
+    <div class="entete">
+      <p class="sur">Réglages</p>
+      <h1>Composer ma fiche</h1>
+    </div>
+    <div class="corps modele" id="fiche"></div>
+  </section>
+</div>
+
+<script>
+// Libellés recopiés de MODELE_FOURNI (src/lib/prestations-entretien.ts).
+const modele = [
+  ["Pelouse","Tonte et ébarbage"],["Pelouse","Traitement pelouse"],["Pelouse","Scarification"],["Pelouse","Engrais"],
+  ["Tailles","Taille arbuste automne"],["Tailles","Taille arbuste printemps"],["Tailles","Taille de haie automne"],
+  ["Tailles","Taille de haie printemps"],["Tailles","Taille des rosiers"],
+  ["Massifs","Bêchage"],["Massifs","Bordures massifs"],["Massifs","Griffage massifs"],["Massifs","Désherbage massifs"],
+  ["Massifs","Coupe des fleurs fanées"],
+  ["Propreté","Nettoyage pied de haies"],["Propreté","Désherbant allée"],["Propreté","Lierre, liseron, liane"],
+  ["Propreté","Démoussage voirie"],["Propreté","Ramassage des feuilles"],["Propreté","Évacuation des déchets"],
+].map(([famille, libelle]) => ({ famille, libelle, neuve: false }));
+const contrat = [{ famille: "Tailles", libelle: "Taille arbuste automne" }];
+let famille = null, nouvelle = false;
+
+const $ = (id) => document.getElementById(id);
+const esc = (t) => t.replace(/[&<>"]/g, (c) => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c]));
+const plie = (t) => t.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/\s+/g, " ").trim();
+const familles = () => [...new Set(modele.map((p) => p.famille))];
+
+function dessinerContrat() {
+  $("contrat").innerHTML = contrat.map((p) =>
+    `<div class="presta${p.neuve ? " neuve" : ""}"><p class="nom">${esc(p.libelle)}</p><p class="famille">${esc(p.famille)}</p></div>`).join("");
+}
+function parFamilles(rendu) {
+  let html = "", f = null;
+  for (const p of modele) {
+    if (p.famille !== f) { html += `<p class="fam">${esc(p.famille)}</p>`; f = p.famille; }
+    html += rendu(p);
+  }
+  return html;
+}
+function dessinerListe() {
+  const pris = new Set(contrat.map((p) => plie(p.libelle)));
+  $("liste").innerHTML = parFamilles((p) =>
+    `<button type="button" class="ligne" data-prendre="${esc(p.libelle)}" ${pris.has(plie(p.libelle)) ? "disabled" : ""}>${esc(p.libelle)}</button>`);
+}
+function dessinerFiche() {
+  $("fiche").innerHTML = parFamilles((p) =>
+    `<div class="ligne${p.neuve ? " neuve" : ""}">${esc(p.libelle)}</div>`);
+}
+function dessinerPastilles() {
+  $("pastilles").innerHTML = familles().map((f) =>
+    `<button type="button" data-famille="${esc(f)}" aria-pressed="${!nouvelle && famille === f}">${esc(f)}</button>`).join("")
+    + `<button type="button" data-famille="" aria-pressed="${nouvelle}">+ Nouvelle famille</button>`;
+}
+function etat() {
+  const libre = $("libre").value.trim();
+  const deja = modele.find((p) => plie(p.libelle) === plie(libre));
+  // Une prestation déjà dans la fiche garde sa famille : rien à choisir.
+  $("choix-famille").hidden = !libre || !!deja;
+  $("nouvelle").hidden = !nouvelle;
+  const fam = nouvelle ? $("nom-famille").value.trim() : famille;
+  $("ajouter").disabled = !libre || (!deja && !fam);
+}
+function toutDessiner() { dessinerContrat(); dessinerListe(); dessinerFiche(); dessinerPastilles(); etat(); }
+
+$("ouvrir").onclick = () => { $("tiroir").hidden = !$("tiroir").hidden; };
+$("libre").oninput = etat;
+$("nom-famille").oninput = etat;
+$("pastilles").onclick = (e) => {
+  const b = e.target.closest("[data-famille]"); if (!b) return;
+  if (b.dataset.famille === "") { nouvelle = true; famille = null; setTimeout(() => $("nom-famille").focus()); }
+  else { nouvelle = false; famille = b.dataset.famille; }
+  dessinerPastilles(); etat();
+};
+$("liste").onclick = (e) => {
+  const b = e.target.closest("[data-prendre]"); if (!b) return;
+  const p = modele.find((x) => x.libelle === b.dataset.prendre);
+  contrat.push({ famille: p.famille, libelle: p.libelle });
+  $("tiroir").hidden = true; toutDessiner();
+};
+$("form").onsubmit = (e) => {
+  e.preventDefault();
+  const libre = $("libre").value.trim(); if (!libre) return;
+  const deja = modele.find((p) => plie(p.libelle) === plie(libre));
+  if (deja) {
+    contrat.push({ famille: deja.famille, libelle: deja.libelle });
+  } else {
+    const fam = nouvelle ? $("nom-famille").value.trim() : famille; if (!fam) return;
+    // À la fin de sa famille, comme « Composer ma fiche » l'ajoute.
+    const dernier = modele.map((p) => p.famille).lastIndexOf(fam);
+    const ligne = { famille: fam, libelle: libre, neuve: true };
+    if (dernier === -1) modele.push(ligne); else modele.splice(dernier + 1, 0, ligne);
+    contrat.push({ famille: fam, libelle: libre, neuve: true });
+  }
+  $("libre").value = ""; $("nom-famille").value = ""; famille = null; nouvelle = false;
+  $("tiroir").hidden = true; toutDessiner();
+};
+document.querySelector(".choix").onclick = (e) => {
+  const b = e.target.closest("[data-vue]"); if (!b) return;
+  document.querySelectorAll(".choix button").forEach((x) => x.setAttribute("aria-pressed", x === b));
+  $("vue-contrat").hidden = b.dataset.vue !== "contrat";
+  $("vue-fiche").hidden = b.dataset.vue !== "fiche";
+};
+toutDessiner();
+</script>
+</body>
+</html>
