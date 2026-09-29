@@ -10,7 +10,10 @@ il faut préciser que le lien est valide 45 jours »*. Planche
 qui reste même dans un message réécrit, et qui dit qu'après le délai le client
 ne pourra plus répondre par le lien et devra l'appeler (sa précision du même
 jour) ; **A** avec la date, **B** sans.
-Proposition : A. **Rien n'est codé.**
+Proposition : A. La même planche montre la case « autre date » : éteinte, la
+phrase « si aucune des dates proposées… » quitte le message (défaut vérifié le
+29 septembre, test rouge dans `scripts/en-attente/` sur la branche
+`claude/message-du-premier-envoi`). **Rien n'est codé.**
 
 ## ⏳ UNE PLANCHE À REGARDER : LES COULEURS DU PLANNING (29 septembre 2026)
 

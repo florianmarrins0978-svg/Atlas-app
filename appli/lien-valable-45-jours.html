@@ -21,6 +21,14 @@
     PASSÉ LE DÉLAI : sa précision du même jour, « faut dire que passé ce délai
     ils ne pourront plus prévenir l'artisan via l'appli, il faudra l'appeler ».
 
+    LA CASE « AUTRE DATE » : sa demande du même soir, « vérifie vraiment que si
+    je décoche la possibilité de laisser le client me proposer une date, le
+    message qu'il voit ne contient pas la mention ». Vérifié par un test : il
+    la contient (la page du devis, elle, est juste). La phrase quitte donc son
+    texte modifiable et devient, comme la ligne des 45 jours, un morceau
+    qu'Atlas pose ou retire selon la case : dans ses réglages elle s'écrit en
+    doré, comme ce qui se remplit tout seul.
+
     LE PARTI : la ligne est posée par Atlas SOUS le lien, comme le lien
     lui-même, et ne s'efface pas. Écrite dans son message modifiable, elle
     disparaîtrait des messages qu'il a déjà réécrits, et il pourrait la retirer
@@ -55,6 +63,15 @@
     background:transparent;color:var(--charcoal-soft);cursor:pointer}
   .canal button[aria-pressed="true"]{background:var(--paper);color:var(--charcoal);font-weight:600}
 
+  .case{display:flex;align-items:center;gap:12px;margin-top:12px;padding:12px 16px;border-radius:16px;
+    background:var(--cream);border:1px solid var(--line-soft);font-size:14.5px}
+  .case span:first-child{flex:1}
+  .case button{position:relative;width:48px;height:28px;border-radius:999px;border:0;flex:none;cursor:pointer;
+    background:#B5563A}
+  .case button[aria-checked="false"]{background:rgba(28,28,26,.12)}
+  .case button span{position:absolute;top:3px;left:23px;width:22px;height:22px;border-radius:50%;background:#fff;transition:left .15s}
+  .case button[aria-checked="false"] span{left:3px}
+  .or-auto{color:var(--or);font-weight:600}
   .rubrique{margin:28px 0 10px;font-size:10px;font-weight:600;letter-spacing:.24em;text-transform:uppercase;color:var(--muted)}
 
   /* ── Le téléphone du client ─────────────────────────────────────────── */
@@ -103,11 +120,15 @@
 <div class="page">
   <span class="surtitre">Le message au client</span>
   <h1>Le lien valable 45 jours</h1>
-  <p class="chapo">Le devis part le mardi 29 septembre. Le surligné est le seul texte nouveau.</p>
+  <p class="chapo">Le devis part le mardi 29 septembre. Le surligné est ce qu’Atlas pose ou retire tout seul.</p>
 
   <div class="choix" role="group" aria-label="La ligne">
     <button type="button" data-variante="A" aria-pressed="true"><b>A</b>avec la date</button>
     <button type="button" data-variante="B" aria-pressed="false"><b>B</b>sans la date</button>
+  </div>
+  <div class="case">
+    <span>Votre client peut proposer une autre date</span>
+    <button type="button" role="switch" id="autre" aria-checked="true" aria-label="Votre client peut proposer une autre date"><span></span></button>
   </div>
   <div class="canal" role="group" aria-label="Le canal">
     <button type="button" data-canal="sms" aria-pressed="true">Par SMS</button>
@@ -141,7 +162,7 @@
   <div class="cadre" id="reglage"></div>
   <div class="fixe">
     <svg width="14" height="16" viewBox="0 0 14 16" fill="none" aria-hidden="true"><rect x="1.5" y="7" width="11" height="8" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M4 7V5a3 3 0 0 1 6 0v2" stroke="currentColor" stroke-width="1.5"/></svg>
-    <span>Toujours ajoutée sous le lien : <span id="ligne-reglage"></span></span>
+    <span>La phrase en doré suit la case « autre date ». Toujours ajoutée sous le lien : <span id="ligne-reglage"></span></span>
   </div>
 
   <p class="rubrique">Après le 13 novembre, sur son lien</p>
@@ -153,6 +174,7 @@
   <div class="note">
     <b>Ma proposition : A.</b> Avec la date, le client n’a rien à compter, même s’il ouvre le message trois semaines plus tard.
     La ligne est ajoutée par Atlas, comme le lien : elle reste même si vous avez réécrit votre message.
+    Éteignez la case : la phrase sur une autre date disparaît du message, comme elle disparaît déjà de la page du devis.
     <b>Rien n’est codé.</b>
   </div>
 </div>
@@ -160,8 +182,11 @@
 <script>
   // Le message par défaut du devis, recopié de src/lib/message-client.ts.
   const LIEN = "https://eden-nature.app.github.dev/devis/7deYienbFTa4DISAZ";
-  const PHRASE = "Voici votre devis. Vous pouvez le consulter et choisir votre date d’intervention. " +
-    "Et si aucune des dates proposées ne vous convient, vous pouvez en proposer une autre. Tout se fait sur cette page :";
+  const DEBUT = "Voici votre devis. Vous pouvez le consulter et choisir votre date d’intervention.";
+  // Posée par Atlas seulement si la case est cochée.
+  const AUTRE = " Et si aucune des dates proposées ne vous convient, vous pouvez en proposer une autre.";
+  const FIN = " Tout se fait sur cette page :";
+  let autre = true;
   // Sa précision du 29 septembre : « faut dire que passé ce délai, ils ne
   // pourront plus prévenir l'artisan via l'appli, il faudra l'appeler ».
   // Le nom de l'entreprise, et pas « nous » ni « moi » : il en a un, qu'il
@@ -176,7 +201,9 @@
 
   const echapper = (t) => t.replace(/&/g, "&amp;").replace(/</g, "&lt;");
   function message() {
-    return echapper("Bonjour Mme Larousse,\n\n" + PHRASE + "\n\n") +
+    return echapper("Bonjour Mme Larousse,\n\n" + DEBUT) +
+      (autre ? `<span class="neuve">${echapper(AUTRE)}</span>` : "") +
+      echapper(FIN + "\n\n") +
       `<a href="#" onclick="return false">${LIEN}</a>` +
       `\n\n<span class="neuve">${echapper(LIGNES[variante])}</span>\n\n` +
       echapper("Bien à vous,\nEden Nature");
@@ -189,13 +216,16 @@
     document.getElementById("ligne-reglage").textContent = "« " + LIGNES[variante] + " »";
     document.querySelectorAll("[data-variante]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.variante === variante)));
     document.querySelectorAll("[data-canal]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.canal === canal)));
+    document.getElementById("autre").setAttribute("aria-checked", String(autre));
   }
   document.getElementById("reglage").innerHTML =
     'Bonjour <span class="jeton">[client]</span>,\n\nVoici votre <span class="jeton">[document]</span>. ' +
-    echapper(PHRASE.replace("Voici votre devis. ", "")) +
+    echapper(DEBUT.replace("Voici votre devis. ", "")) +
+    '<span class="or-auto">' + echapper(AUTRE) + "</span>" + echapper(FIN) +
     '\n\n<span class="jeton">[lien]</span>\n\nBien à vous,\n<span class="jeton">[entreprise]</span>';
   document.querySelectorAll("[data-variante]").forEach((b) => b.addEventListener("click", () => { variante = b.dataset.variante; rendre(); }));
   document.querySelectorAll("[data-canal]").forEach((b) => b.addEventListener("click", () => { canal = b.dataset.canal; rendre(); }));
+  document.getElementById("autre").addEventListener("click", () => { autre = !autre; rendre(); });
   rendre();
 </script>
 </body>
