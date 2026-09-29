@@ -8,6 +8,23 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-29
 
+### L'assistant interrogé sur la sécurité et sur les astuces : 400 questions tenues
+
+Sa demande : *« repose-lui plein de questions sur le fonctionnement, la
+sécurité, comment l'exploiter au maximum ; vois celles où il bute et
+apporte-lui les réponses ; sors-moi la liste des questions et réponses »*.
+Cent vingt-quatre questions jouées en deux tours, le second neuf. Ce qui
+butait : « est-ce qu'Atlas est sécurisé » rendait la fiche de sécurité d'un
+CHANTIER ; aucune fiche sur le mot de passe, la double authentification, la
+carte bancaire, le lien du client, le RGPD, la revente des données, ni sur les
+astuces ; « comment **fonctionne** le planning » tombait sur la fiche de l'IA ;
+« comment ma dictée devient un devis » tombait sur « écrire sans dicter ».
+**Neuf fiches neuves**, chaque chiffre lu dans le code (12 caractères, 5 essais,
+15 minutes, 43 caractères de lien) ; « fonctionne » et « marche » en mots
+vides ; « sans dicter » soudé. Rouges avant : 28 questions. La liste,
+engendrée des fiches : `docs/assistant-questions-reponses.md`
+(`npx tsx scripts/engendrer-questions-reponses.ts`). `ARCHITECTURE.md` §435.
+
 ### Neuf planches : ce que fait chaque « Ajouter »
 
 Sa demande : *« fais-moi une planche pour chaque, réaliste, que je puisse

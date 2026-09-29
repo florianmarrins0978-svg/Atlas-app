@@ -33863,3 +33863,23 @@ recherche sur chaque tournure la rendrait bavarde à tort, et le garde-fou « un
 question qui n'en est pas une ne rend RIEN » a rougi une fois pendant ce lot
 (« combien coûte un abattage de chêne »), ce qui a fait retirer « combien » d'un
 intitulé.
+
+## §435 : La sécurité se dit avec ses chiffres, et la liste des réponses s'engendre
+
+**Sa demande du 29 septembre 2026** : interroger l'assistant sur le
+fonctionnement, la sécurité et les astuces, corriger ce qui bute, et sortir la
+liste des questions et réponses.
+
+| Décision | Pourquoi |
+|---|---|
+| les chiffres de sécurité sont LUS : `LONGUEUR_MINIMALE`, `SEUIL_AVANT_TEMPORISATION`, `PALIERS_MS` | un réglage durci demain ne laisse pas l'assistant annoncer l'ancien |
+| « chiffré » ne vise que ce qui est prouvé : https (`Strict-Transport-Security`), l'empreinte bcrypt du mot de passe | le chiffrement sur disque dépend d'un hébergeur pas encore désigné ; la fiche le dit en réserve |
+| la double authentification, le contrat de sous-traitance RGPD : dits comme absents, tenus par `absences` et par le « [À COMPLÉTER » des conditions | le jour où ils arrivent, la fiche rougit au lieu de mentir |
+| « fonctionne », « fonctionnent », « fonctionnement », « marche », « marchent » en mots vides | mots-clés de la fiche de l'IA, ils lui faisaient gagner toute question « comment fonctionne X » |
+| « sans dicter » soudé en `mainsansdicter` | « dicter » y comptait comme voulu, et « comment ma dictée devient un devis » rendait « écrire sans dicter » |
+| `docs/assistant-questions-reponses.md` ENGENDRÉ par `scripts/engendrer-questions-reponses.ts` | une liste recopiée divergerait de l'assistant à la première fiche corrigée ; elle ne retient que les questions dont la fiche sort vraiment |
+
+**Ce qui reste partiel, et c'est dit** : « comment fonctionne le planning » rend
+l'endroit (la fiche de lieu), pas une explication ; le modèle complète par le
+sommaire. « Prévenir mon client que j'arrive » ne rend rien : la fonction
+n'existe pas.

@@ -11,6 +11,13 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 
 ---
 
+## LA LISTE DES RÉPONSES DE L'ASSISTANT : 29 septembre 2026, PAS SUR `main`
+
+`docs/assistant-questions-reponses.md` s'ENGENDRE (`npx tsx
+scripts/engendrer-questions-reponses.ts`) : ne jamais la corriger à la main.
+Une question ajoutée à `scripts/_questions-mode-emploi.ts` y entre à la
+prochaine génération. §435.
+
 ## L'ASSISTANT RÉPOND SUR SES DONNÉES : 28 septembre 2026, SUR `main`
 
 Zone `src/lib/fiches-mode-emploi/fonctionnement.ts`. **Piège** : la fiche de

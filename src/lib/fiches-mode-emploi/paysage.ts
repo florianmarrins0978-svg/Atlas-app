@@ -584,8 +584,8 @@ export const FICHES_PAYSAGE: FicheModeEmploi[] = [
     id: "clients-supprimer",
     ecran: "Client",
     ou: "« Chantiers », « Vos clients », puis son nom, tout en bas",
-    intitule: "Supprimer un client",
-    motsCles: ["supprimer", "effacer", "enlever", "virer", "retirer", "client", "definitivement", "rgpd"],
+    intitule: "Supprimer un client, effacer ses données",
+    motsCles: ["supprimer", "effacer", "enlever", "virer", "retirer", "client", "definitivement", "rgpd", "donnees", "droit"],
     geste:
       "Tout en bas de sa fiche, touchez « Supprimer ce client ». S'il a des documents, cochez « J’ai sauvegardé ces documents ailleurs », puis « Supprimer ».",
     reserve:

@@ -118,6 +118,11 @@ const MOTS_VIDES = new Set([
   // comment je le dis » se voyait exiger un second mot qu'il n'avait pas
   // (question jouée le 28 septembre 2026).
   "ai", "as", "suis",
+  // « Comment FONCTIONNE le planning », « comment MARCHE la TVA » : le verbe
+  // est dans la moitié des questions et ne désigne rien, c'est le mot qui
+  // suit qui compte. Mots-clés d'une fiche de l'IA, il lui faisait gagner
+  // toutes ces questions (jouées le 29 septembre 2026).
+  "fonctionne", "fonctionnent", "fonctionnement", "marche", "marchent",
 ]);
 
 /** Sans accents, sans ponctuation, en minuscules — il tape comme il parle. */
@@ -151,6 +156,9 @@ const EXPRESSIONS: [RegExp, string][] = [
   // tombait sur n'importe quelle fiche de TVA. Soudée, elle désigne la
   // franchise (question jouée le 28 septembre 2026).
   [/\b(pas de|sans) tva\b/g, "franchisetva"],
+  // « Écrire son devis sans dicter » répondait à « comment ma dictée devient
+  // un devis » : « dicter » y comptait comme s'il était voulu.
+  [/\bsans dicter\b/g, "mainsansdicter"],
   // « Atlas » est un mot vide (il est dans toutes les questions) : « le prix
   // d'Atlas » ne gardait que « prix », qui est dans cinquante fiches de devis.
   [/\b(prix|tarif|tarifs|cout) (d |de l |de )?(atlas|appli|application)\b/g, "abonnementprix"],

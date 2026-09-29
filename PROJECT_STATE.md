@@ -4,6 +4,14 @@
 · dernière migration `drizzle/0106_hausse_du_devis_repris.sql` (sur la branche)
 
 ---
+## SUR SA BRANCHE : L'ASSISTANT SUR LA SÉCURITÉ ET LES ASTUCES (29 septembre 2026)
+
+Neuf fiches neuves (sécurité, mot de passe, oubli, double authentification,
+carte, lien client, RGPD, usage des données, astuces) ; la liste des 400
+questions tenues, engendrée : `docs/assistant-questions-reponses.md`.
+Branche `claude/assistant-all-questions-ahg55r`, `ARCHITECTURE.md` §435.
+Niveau 3 (fiches de devis et de facture touchées) : batterie à jouer avant `main`.
+
 ## SUR `main` : L'ASSISTANT RÉPOND SUR SES DONNÉES (28 septembre 2026)
 
 Quatre fiches « comment Atlas se comporte » (conservation, après l'arrêt, qui

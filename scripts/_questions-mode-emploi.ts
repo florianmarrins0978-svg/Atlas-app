@@ -394,4 +394,51 @@ export const QUESTIONS_PAR_ZONE: Record<string, [string, string][]> = {
     ["comment ajouter mon numéro de siret", "reglages-identite"],
     ["comment envoyer la feuille de route à mes gars", "planning-feuille"],
   ],
+  // **Sa demande du 29 septembre 2026 :** *« repose-lui plein de questions sur
+  // le fonctionnement de l'application, mais également sur la sécurité, sur
+  // comment il peut l'exploiter au maximum »*. Celles-ci ne trouvaient pas de
+  // réponse, ou une fiche à côté (« est-ce que Atlas est sécurisé » rendait la
+  // fiche de sécurité d'un CHANTIER).
+  securite: [
+    ["est-ce que atlas est sécurisé", "atlas-securite"],
+    ["mes données sont-elles chiffrées", "atlas-securite"],
+    ["mon mot de passe est-il protégé", "mot-de-passe-protege"],
+    ["atlas connaît mon mot de passe ?", "mot-de-passe-protege"],
+    ["combien de caractères pour le mot de passe", "mot-de-passe-protege"],
+    ["que se passe-t-il si quelqu'un essaie de deviner mon mot de passe", "mot-de-passe-protege"],
+    ["j'ai oublié mon mot de passe", "mot-de-passe-oublie"],
+    ["est-ce qu'il y a une double authentification", "atlas-double-authentification"],
+    ["mes concurrents peuvent-ils voir mes clients", "donnees-qui-voit"],
+    ["est-ce que atlas revend mes données", "donnees-usage"],
+    ["est-ce que atlas est conforme rgpd", "atlas-rgpd"],
+    ["mon client peut demander à effacer ses données ?", "clients-supprimer"],
+    ["atlas garde ma carte bancaire ?", "abonnement-carte"],
+    ["le lien envoyé au client est-il sécurisé", "lien-client"],
+    ["quelqu'un d'autre peut ouvrir le lien du devis ?", "lien-client"],
+    ["mes dictées sont-elles écoutées par quelqu'un", "donnees-ia"],
+    ["que devient l'enregistrement audio de ma dictée", "donnees-ia"],
+  ],
+  exploiter: [
+    ["comment l'appli transforme ma dictée en devis", "fiche-note-vocale"],
+    ["comment faire un devis en dictant seulement", "fiche-note-vocale"],
+    ["comment passer du devis à la facture", "facture-creer"],
+    ["comment fonctionne le planning", "ecran-planning"],
+    ["comment gagner du temps sur mes devis", "atlas-astuces"],
+    ["quelles sont les astuces pour aller plus vite", "atlas-astuces"],
+    ["comment ne jamais oublier de relancer un client", "chantiers-carte-rappels"],
+    ["comment suivre ce que mes clients me doivent", "tva-toutes-en-attente"],
+    ["comment organiser la semaine de mes équipes", "ecran-planning"],
+    ["comment gérer les absences de mes gars", "reglages-absence"],
+    ["comment ranger mes photos de chantier", "photos-ajouter"],
+    ["qu'est-ce que je peux demander à l'assistant", "assistant-ce-qu-il-fait"],
+    ["l'assistant peut-il me dire qui me doit de l'argent", "assistant-ce-qu-il-fait"],
+    // Second tour, des questions neuves : celles-ci ratèrent encore.
+    ["qui peut lire mes devis", "donnees-qui-voit"],
+    ["comment atlas écrit mon devis", "fiche-note-vocale"],
+    ["quels conseils pour bien utiliser atlas", "atlas-astuces"],
+    ["comment savoir où sont mes équipes aujourd'hui", "ecran-planning"],
+    ["comment faire payer un acompte avant de commencer", "devis-acompte"],
+    ["est-ce que je peux travailler depuis mon ordinateur au bureau", "atlas-ordinateur-telephone"],
+    ["comment utiliser atlas sur ipad", "atlas-ordinateur-telephone"],
+  ],
 };
