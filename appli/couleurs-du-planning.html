@@ -20,8 +20,13 @@
     couleur à un endroit la change partout, c'est ce qu'on veut garder.
 
   Couleurs de départ recopiées de src/lib/chartes.ts (Origine et Nuit).
-  Sur Nuit, « complet » vaut l'encre claire #e9e8de : les pôles s'inversent,
-  d'où une valeur claire ET une valeur sombre pour chaque pastille.
+
+  Seconde version, même jour : sa réponse « met la même chose que pour les
+  couleurs des devis ». Le réglage recopie donc `Couleur`
+  (src/app/reglages/documents/pieces.tsx) : nuancier libre, valeur, quatre
+  raccourcis dont le premier est le défaut, enregistré au fur et à mesure.
+  Ajout de notre fait : sur une charte sombre, une couleur choisie passe par
+  le même `detacher` que le bordeaux d'origine, sinon elle disparaît sur Nuit.
 */
 :root{
   --fond:#f5f3ee; --plage:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
@@ -78,30 +83,24 @@ body{font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
 .modifier{display:block;margin:14px auto 0;background:none;border:0;color:var(--or);
   font:inherit;font-size:11px;letter-spacing:.28em;text-transform:uppercase;cursor:pointer;min-height:44px;padding:0 12px}
 
-/* la feuille */
+/* la feuille, recopiée de Réglages, L'allure de mes devis (Couleur, src/app/reglages/documents/pieces.tsx) */
 .voile{position:absolute;inset:0;background:rgba(0,0,0,.32);opacity:0;pointer-events:none;transition:opacity .2s}
-.feuille{position:absolute;left:0;right:0;bottom:0;background:var(--plage);border-radius:22px 22px 0 0;
-  border-top:2px solid var(--or);padding:10px 18px 22px;transform:translateY(105%);transition:transform .25s}
+.feuille{position:absolute;left:0;right:0;bottom:0;background:var(--fond);border-radius:22px 22px 0 0;
+  border-top:2px solid var(--or);padding:10px 20px 18px;transform:translateY(105%);transition:transform .25s}
 .tel.ouverte .voile{opacity:1;pointer-events:auto}
 .tel.ouverte .feuille{transform:none}
-.poignee{width:40px;height:4px;border-radius:2px;background:var(--trait);margin:0 auto 12px}
-.feuille h2{font-size:17px;margin:0 0 6px}
-.ligne{padding:12px 0;border-bottom:1px solid var(--trait)}
-.ligne:last-of-type{border-bottom:0}
-.ligne .nom{display:flex;align-items:center;gap:10px;font-size:15px;margin-bottom:9px}
-.ligne .nom .barre{width:46px;height:9px}
-.pastilles{display:flex;flex-wrap:wrap;gap:6px}
-.pastilles button{width:29px;height:29px;border-radius:9px;border:0;padding:0;cursor:pointer;position:relative}
-.pastilles button[aria-pressed=true]{box-shadow:0 0 0 2px var(--plage),0 0 0 4px var(--encre)}
-.pastilles button:disabled{opacity:.4;cursor:not-allowed}
-.pastilles button:disabled::after{content:"";position:absolute;inset:0;border-radius:inherit;
-  background:linear-gradient(135deg,transparent 45%,var(--plage) 45%,var(--plage) 55%,transparent 55%)}
-.pastilles .vide{background:var(--plage)!important;box-shadow:inset 0 0 0 1px var(--gris)}
-.pastilles .vide[aria-pressed=true]{box-shadow:inset 0 0 0 1px var(--gris),0 0 0 2px var(--plage),0 0 0 4px var(--encre)}
-.bas{display:flex;align-items:center;justify-content:space-between;margin-top:14px;gap:10px}
-.origine{background:none;border:0;color:var(--gris);font:inherit;font-size:13.5px;text-decoration:underline;cursor:pointer;min-height:44px;padding:0}
-.enregistrer{background:var(--bouton);color:#fff;border:0;border-radius:999px;font:inherit;font-size:15px;
-  padding:0 24px;min-height:46px;cursor:pointer}
+.poignee{width:40px;height:4px;border-radius:2px;background:var(--trait);margin:0 auto 16px}
+.couleur{margin-bottom:18px}
+.caps{font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.28em;color:var(--encre-douce);margin:0 0 8px}
+.rangee{display:flex;align-items:center;gap:10px}
+.rangee input[type=color]{width:54px;height:44px;flex:none;border:0;padding:0;background:transparent;cursor:pointer;border-radius:8px}
+.rangee .hexa{font-size:13px;color:var(--gris);font-variant-numeric:tabular-nums}
+.rapides{margin-left:auto;display:flex;gap:6px}
+.rapides button{width:34px;height:34px;border-radius:50%;border:0;padding:0;cursor:pointer;box-shadow:inset 0 0 0 1px var(--trait)}
+.rapides button[aria-pressed=true]{box-shadow:0 0 0 2px var(--fond),0 0 0 4px var(--or)}
+.rapides button.vide{background:var(--plage)}
+.pareil{font-size:13px;line-height:1.5;color:var(--encre-douce);margin:6px 0 0}
+.fur{font-size:13px;line-height:1.5;color:var(--encre-douce);margin:4px 0 0}
 
 .notes{max-width:740px;margin:30px auto 0;padding:0 16px}
 .notes h2{font-family:ui-serif,Georgia,serif;font-size:22px;margin:26px 0 10px}
@@ -121,7 +120,7 @@ body{font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
 <header class="tete">
   <h1>Les couleurs du planning</h1>
   <p>Votre demande du 29 septembre : changer les couleurs de <b>rien</b>, <b>incomplet</b>, <b>complet</b> et <b>au-delà</b>, depuis le planning.</p>
-  <p><b>Touchez « Couleurs »</b> sous la légende, choisissez, et le mois se repeint sous vos doigts. <b>Enregistrer</b> garde le choix ; fermer sans enregistrer rend les couleurs d’avant. <b>Rien n’est codé.</b></p>
+  <p><b>Votre réponse : « la même chose que pour les couleurs des devis ».</b> C’est donc le même réglage que dans Réglages, L’allure de mes devis : le carré ouvre le nuancier du téléphone, n’importe quelle couleur, et quatre ronds de raccourci, le premier étant la couleur d’aujourd’hui. Enregistré au fur et à mesure, comme là-bas. <b>Touchez « Couleurs »</b> sous la légende : le mois se repeint sous vos doigts. <b>Rien n’est codé.</b></p>
 </header>
 
 <div class="tel" id="tel">
@@ -137,60 +136,81 @@ body{font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
   <div class="voile" id="voile"></div>
   <div class="feuille" role="dialog" aria-label="Couleurs du planning">
     <div class="poignee"></div>
-    <h2>Couleurs du planning</h2>
     <div id="lignes"></div>
-    <div class="bas">
-      <button type="button" class="origine" id="remettre">Couleurs d’origine</button>
-      <button type="button" class="enregistrer" id="enregistrer">Enregistrer</button>
-    </div>
+    <p class="fur">Enregistré au fur et à mesure.</p>
   </div>
 </div>
 
 <section class="notes">
-  <h2>Trois choix faits pour vous, à dire si ça ne va pas</h2>
+  <h2>Ce qui change par rapport à la première version</h2>
   <table>
-    <tr><th>Le choix</th><th>Pourquoi</th></tr>
-    <tr><td><b>Huit couleurs au choix</b>, pas un nuancier libre.</td>
-        <td>Vous avez sept apparences, dont deux sombres (Nuit, Sylve). Chaque pastille a sa version claire et sa version sombre, réglées pour rester lisibles sur les sept. Une couleur libre serait juste sur une apparence et illisible sur une autre : c’est la panne du 22 août, « le mode nuit est illisible ». Touchez « Voir sur Nuit » pour le constater. Pas de gris : il se confondrait avec les week-ends.</td></tr>
-    <tr><td><b>Deux états ne peuvent pas prendre la même couleur.</b> Une couleur déjà prise est pâlie et ne se touche pas.</td>
-        <td>Si « complet » et « au-delà » avaient la même couleur, le planning ne dirait plus lequel des deux.</td></tr>
-    <tr><td><b>« Sans couleur » seulement pour rien.</b></td>
-        <td>Une journée prise sans couleur se lirait comme vide.</td></tr>
+    <tr><th>Avant</th><th>Maintenant, comme les devis</th></tr>
+    <tr><td>Huit pastilles fixes</td><td><b>N’importe quelle couleur</b>, par le nuancier du téléphone, et quatre raccourcis</td></tr>
+    <tr><td>Un bouton Enregistrer</td><td><b>Enregistré au fur et à mesure</b></td></tr>
+    <tr><td>Couleur déjà prise barrée</td><td>Plus rien de barré : si deux états ont la même couleur, une ligne le dit sous le second, sans rien bloquer</td></tr>
   </table>
 
-  <h2>Ce que ça change ailleurs</h2>
-  <p>La couleur choisie suit partout où ces quatre états se montrent : les barres du mois, la légende, la petite pastille dans la fiche du jour, la journée exportée, et le carré « complet » de Réglages. Aujourd’hui une seule fonction les peint toutes ; elle continuera, pour qu’aucun écran ne garde l’ancienne couleur.</p>
+  <h2>Une chose que j’ai ajoutée, et pourquoi</h2>
+  <p><b>Sur Nuit et Sylve, une couleur trop sombre est éclaircie juste assez pour se voir</b>, et seulement là. Un devis est du papier, toujours clair ; le planning, lui, s’affiche aussi sur fond noir, et un bordeaux foncé y disparaît. L’application le fait déjà aujourd’hui pour le bordeaux et le vert pâle d’origine : c’est le même traitement, appliqué à votre couleur. Sur les cinq apparences claires, c’est exactement la couleur choisie. Choisissez un bordeaux foncé, puis touchez « Voir sur Nuit ».</p>
 
-  <h2>La seule question</h2>
-  <p><b>Le choix vaut pour toute l’entreprise</b> (vos salariés voient les mêmes couleurs que vous), <b>ou pour chaque personne</b> ? Je vous conseille <b>toute l’entreprise</b> : quand vous dites « regarde, c’est rouge jeudi », tout le monde voit la même chose.</p>
+  <h2>Ce que ça change ailleurs</h2>
+  <p>La couleur suit partout où ces quatre états se montrent : les barres du mois, la légende, la pastille dans la fiche du jour, la journée exportée, et le carré « complet » de Réglages. <b>Un seul réglage pour toute l’entreprise</b>, votre réponse du 29 septembre.</p>
 </section>
 
 <script>
-/* Les pastilles : [clair, sombre]. Les quatre de départ sont celles de
+/* Les couleurs « d'aujourd'hui » dépendent de l'apparence : recopiées de
    src/lib/chartes.ts (vertPale, rust, bordeaux) pour Origine et Nuit. */
-const PASTILLES = {
-  vide:     null,
-  vertPale: ["#b9c6b4", "#738b6a"],
-  vertBtn:  ["#7d9a6d", "#8fae7e"],
-  pin:      ["#2f3b2f", "#e9e8de"],
-  or:       ["#B98B47", "#B98B47"],
-  orange:   ["#d0782a", "#e08f45"],
-  rouge:    ["#b8322a", "#dd5a50"],
-  bordeaux: ["#6E2433", "#b53b54"],
-  bleu:     ["#3b6ea5", "#6f9fd4"],
+const DEFAUT = {
+  clair:  { libre: null, dispo: "#b9c6b4", plein: "#2f3b2f", dela: "#6e2433" },
+  sombre: { libre: null, dispo: "#738b6a", plein: "#e9e8de", dela: "#b53b54" },
 };
-const ORIGINE = { libre: "vide", dispo: "vertPale", plein: "pin", dela: "bordeaux" };
+const FOND = { clair: ["#f5f3ee", "#faf9f5"], sombre: ["#101210", "#1a1d19"] };
+/* Les trois autres raccourcis de chaque état. */
+const RAPIDES = {
+  libre: [["#ffffff", "Blanc"], ["#e3eadf", "Vert très pâle"], ["#e8e8e6", "Gris clair"]],
+  dispo: [["#7d9a6d", "Vert"], ["#b98b47", "Doré"], ["#d0782a", "Orange"]],
+  plein: [["#22456d", "Bleu nuit"], ["#1c1c1a", "Noir"], ["#7d9a6d", "Vert"]],
+  dela:  [["#b8322a", "Rouge"], ["#d0782a", "Orange"], ["#1c1c1a", "Noir"]],
+};
 const MOTS = { libre: "rien", dispo: "incomplet", plein: "complet", dela: "au-delà" };
 const ETATS = ["libre", "dispo", "plein", "dela"];
 
-let enregistre = { ...ORIGINE };
-let brouillon = { ...ORIGINE };
+/* null = la couleur d'aujourd'hui, celle de l'apparence. */
+const choix = { libre: null, dispo: null, plein: null, dela: null };
 let sombre = false;
 
-function teinte(cle) {
-  const p = PASTILLES[cle];
-  return p ? p[sombre ? 1 : 0] : "transparent";
+/* Éclaircir juste assez sur fond sombre : même geste que `detacher`
+   (src/lib/chartes.ts), seuil 3 contre le fond et la plage. */
+function rvb(h) { const n = h.replace("#", ""); return [0, 2, 4].map(i => parseInt(n.slice(i, i + 2), 16) / 255); }
+function lum(h) { return rvb(h).map(c => c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4).reduce((t, c, i) => t + c * [0.2126, 0.7152, 0.0722][i], 0); }
+function contraste(a, b) { const x = lum(a), y = lum(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); }
+function versTSL(h) {
+  const [r, g, b] = rvb(h), max = Math.max(r, g, b), min = Math.min(r, g, b), l = (max + min) / 2;
+  if (max === min) return [0, 0, l];
+  const d = max - min, s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+  const t = max === r ? (g - b) / d + (g < b ? 6 : 0) : max === g ? (b - r) / d + 2 : (r - g) / d + 4;
+  return [t / 6, s, l];
 }
+function depuisTSL(t, s, l) {
+  const f = n => { const k = (n + t * 12) % 12, a = s * Math.min(l, 1 - l); return l - a * Math.max(-1, Math.min(k - 3, 9 - k, 1)); };
+  return "#" + [0, 8, 4].map(n => Math.round(f(n) * 255).toString(16).padStart(2, "0")).join("");
+}
+function detacher(h) {
+  const [t, s, l0] = versTSL(h);
+  for (let i = 0; i <= 200; i++) {
+    const l = l0 + i * 0.005; if (l > 0.98) break;
+    const essai = depuisTSL(t, s, l);
+    if (Math.min(...FOND.sombre.map(c => contraste(essai, c))) >= 3) return essai;
+  }
+  return h;
+}
+
+function teinte(e) {
+  const v = choix[e] ?? DEFAUT[sombre ? "sombre" : "clair"][e];
+  if (!v) return null;
+  return sombre && choix[e] ? detacher(v) : v;
+}
+function fondBarre(e) { return teinte(e) ?? "transparent"; }
 
 /* Octobre 2026 commence un jeudi. Deux équipes : une prise = incomplet (50 %),
    deux = complet, trois = au-delà. [matin, après-midi]. */
@@ -201,64 +221,75 @@ const CHARGES = {
   26:[3,3], 27:[2,2], 28:[1,1], 29:[0,0], 30:[1,0],
 };
 function etatDe(n) { return n === 0 ? "libre" : n < 2 ? "dispo" : n === 2 ? "plein" : "dela"; }
-
 function barre(n) {
-  const etat = etatDe(n);
-  const part = Math.round(Math.min(n / 2, 1) * 100);
-  return `<i class="barre"><span style="width:${part}%;background:${teinte(brouillon[etat])}"></span></i>`;
-}
-function barreEntiere(etat) {
-  return `<i class="barre"><span style="width:100%;background:${teinte(brouillon[etat])}"></span></i>`;
+  const e = etatDe(n);
+  /* « rien » coloré remplit la barre entière : c'est la journée libre qui se peint. */
+  const part = e === "libre" ? 100 : Math.round(Math.min(n / 2, 1) * 100);
+  return `<i class="barre"><span style="width:${part}%;background:${fondBarre(e)}"></span></i>`;
 }
 
-function peindre() {
-  const g = document.getElementById("grille");
+function peindreMois() {
   let h = ["LUN","MAR","MER","JEU","VEN","SAM","DIM"].map(j => `<div class="jsem">${j}</div>`).join("");
   for (let i = 0; i < 3; i++) h += `<div></div>`;
   for (let d = 1; d <= 31; d++) {
-    const jourSem = (d + 2) % 7; // 0 = lundi
-    const we = jourSem >= 5;
+    const we = (d + 2) % 7 >= 5;
     const c = CHARGES[d] || [0, 0];
     h += `<div class="case${we ? " we" : ""}${d === 1 ? " auj" : ""}"><span class="n">${d}</span>` +
          (we ? "" : `<span class="marque">${barre(c[0])}${barre(c[1])}</span>`) + `</div>`;
   }
-  g.innerHTML = h;
-
+  document.getElementById("grille").innerHTML = h;
   document.getElementById("legende").innerHTML = ETATS.map(e => {
-    const cle = brouillon[e];
-    const style = cle === "vide"
-      ? "background:var(--plage);box-shadow:inset 0 0 0 1px var(--trait)"
-      : `background:${teinte(cle)}`;
+    const t = teinte(e);
+    const style = t ? `background:${t}` : "background:var(--plage);box-shadow:inset 0 0 0 1px var(--trait)";
     return `<span><i class="carre" style="${style}"></i>${MOTS[e]}</span>`;
-  }).join("");
-
-  document.getElementById("lignes").innerHTML = ETATS.map(e => {
-    const prises = ETATS.filter(x => x !== e).map(x => brouillon[x]);
-    const boutons = Object.keys(PASTILLES)
-      .filter(cle => cle !== "vide" || e === "libre")
-      .map(cle => {
-        const choisie = brouillon[e] === cle;
-        const prise = prises.includes(cle);
-        const fond = cle === "vide" ? "" : `background:${teinte(cle)}`;
-        return `<button type="button" class="${cle === "vide" ? "vide" : ""}" style="${fond}"
-          data-etat="${e}" data-cle="${cle}" aria-pressed="${choisie}" ${prise ? "disabled" : ""}
-          aria-label="${MOTS[e]}, ${cle === "vide" ? "sans couleur" : cle}"></button>`;
-      }).join("");
-    return `<div class="ligne"><div class="nom">${barreEntiere(e)}${MOTS[e]}</div><div class="pastilles">${boutons}</div></div>`;
   }).join("");
 }
 
-document.getElementById("lignes").addEventListener("click", ev => {
-  const b = ev.target.closest("button[data-cle]");
-  if (!b || b.disabled) return;
-  brouillon[b.dataset.etat] = b.dataset.cle;
+function peindreFeuille() {
+  const vus = {};
+  document.getElementById("lignes").innerHTML = ETATS.map(e => {
+    const t = teinte(e);
+    const hexa = t ? t.toUpperCase() : "AUCUNE";
+    const aujourdhui = DEFAUT[sombre ? "sombre" : "clair"][e];
+    const rapides = [[null, "Celle d’aujourd’hui"], ...RAPIDES[e]].map(([v, nom]) => {
+      const fond = v ?? aujourdhui;
+      return `<button type="button" class="${fond ? "" : "vide"}" style="${fond ? `background:${fond}` : ""}"
+        aria-label="${nom}" aria-pressed="${choix[e] === v}" data-etat="${e}" data-v="${v ?? ""}"></button>`;
+    }).join("");
+    const doublon = t && vus[t];
+    if (t) vus[t] = vus[t] || MOTS[e];
+    return `<div class="couleur"><p class="caps">${MOTS[e]}</p>
+      <div class="rangee">
+        <input type="color" value="${t ?? "#faf9f5"}" data-etat="${e}" aria-label="${MOTS[e]}">
+        <span class="hexa">${hexa}</span>
+        <span class="rapides">${rapides}</span>
+      </div>
+      ${doublon ? `<p class="pareil">Même couleur que ${doublon}.</p>` : ""}</div>`;
+  }).join("");
+}
+function peindre() { peindreMois(); peindreFeuille(); }
+
+const lignes = document.getElementById("lignes");
+lignes.addEventListener("click", ev => {
+  const b = ev.target.closest("button[data-etat]");
+  if (!b) return;
+  choix[b.dataset.etat] = b.dataset.v || null;
   peindre();
 });
+/* Le nuancier repeint le mois pendant qu'on glisse, sans refaire la feuille :
+   la refaire fermerait le nuancier sous le doigt. */
+lignes.addEventListener("input", ev => {
+  const i = ev.target.closest("input[type=color]");
+  if (!i) return;
+  choix[i.dataset.etat] = i.value;
+  i.nextElementSibling.textContent = teinte(i.dataset.etat).toUpperCase();
+  peindreMois();
+});
+lignes.addEventListener("change", () => peindreFeuille());
+
 const tel = document.getElementById("tel");
 document.getElementById("ouvrir").onclick = () => tel.classList.add("ouverte");
-document.getElementById("voile").onclick = () => { brouillon = { ...enregistre }; tel.classList.remove("ouverte"); peindre(); };
-document.getElementById("enregistrer").onclick = () => { enregistre = { ...brouillon }; tel.classList.remove("ouverte"); };
-document.getElementById("remettre").onclick = () => { brouillon = { ...ORIGINE }; peindre(); };
+document.getElementById("voile").onclick = () => tel.classList.remove("ouverte");
 
 document.querySelectorAll(".commandes button").forEach(b => b.onclick = () => {
   sombre = b.dataset.charte === "nuit";
