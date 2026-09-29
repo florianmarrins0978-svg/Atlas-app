@@ -1,6 +1,6 @@
 # Ce que l'assistant sait répondre
 
-*Engendré le 2026-09-29 par `npx tsx scripts/engendrer-questions-reponses.ts`.
+*Engendré le 2026-09-30 par `npx tsx scripts/engendrer-questions-reponses.ts`.
 Ne pas corriger à la main : corriger la fiche, puis relancer.*
 
 **412 questions**, posées comme un artisan les pose. Pour chacune, la
@@ -350,8 +350,8 @@ Il présente l'écran Terminés, geste par geste, puis détaille celui qu'on lui
 | Comment ajouter une ligne au devis | Appuyez sur « + Ajouter une ligne » sous les lignes, puis écrivez la description, la quantité et le prix. Avec plusieurs TVA, chaque catégorie a son bouton : la ligne arrive dans celle où vous appuyez. |
 | Je veux rajouter une prestation sur le devis | Appuyez sur « + Ajouter une ligne » sous les lignes, puis écrivez la description, la quantité et le prix. Avec plusieurs TVA, chaque catégorie a son bouton : la ligne arrive dans celle où vous appuyez. |
 | Comment je change la quantite d'une ligne | Touchez directement la description, la quantité ou le prix unitaire et tapez : le montant se recalcule. Un devis déjà parti ne se modifie plus : voir « Modifier un devis déjà envoyé ». |
-| Comment mettre en metre lineaire ou en m2 | Touchez la case « Unité » de la ligne, puis une pastille : u, ml, m², m³, kg, h ou forfait. Vous pouvez aussi l'écrire. |
-| Mettre une ligne au forfait | Touchez la case « Unité » de la ligne, puis une pastille : u, ml, m², m³, kg, h ou forfait. Vous pouvez aussi l'écrire. |
+| Comment mettre en metre lineaire ou en m2 | Touchez la case « Unité » de la ligne, puis une pastille : u, ml, m², m³, kg, h ou forfait. Un arbre, un arbuste ou une plante se compte en u. |
+| Mettre une ligne au forfait | Touchez la case « Unité » de la ligne, puis une pastille : u, ml, m², m³, kg, h ou forfait. Un arbre, un arbuste ou une plante se compte en u. |
 | Une ligne est a chiffrer comment poser le prix | Appuyez sur « Poser le prix » en bas du devis : Atlas vous amène sur la case du prix qui manque. Tant qu'une ligne est à chiffrer, le devis ne peut pas partir. |
 | Pourquoi le bouton choisir la date a disparu, il manque un prix | Appuyez sur « Poser le prix » en bas du devis : Atlas vous amène sur la case du prix qui manque. Tant qu'une ligne est à chiffrer, le devis ne peut pas partir. |
 | Reprendre le prix de la derniere fois | Sous la ligne, appuyez sur « Reprendre ce prix ». Ne s'affiche que si Atlas connaît un travail comparable sur un autre chantier. |
@@ -512,7 +512,7 @@ Il présente l'écran Terminés, geste par geste, puis détaille celui qu'on lui
 | Supprimer une fiche brouillon | *« Paysage », Fiche de chantier, liste En cours.* Sous « En cours », touchez la croix au bout de la ligne. « Annuler » reste quelques secondes en bas pour se raviser. Seules les fiches marquées « Brouillon » se suppriment ; un rapport envoyé reste. |
 | Reprendre une fiche commencee | *« Paysage », Fiche de chantier, liste En cours.* Sous « En cours », touchez la ligne marquée « Brouillon ». |
 | Ou sont les rapports envoyes | Descendez à « Rapports envoyés » : touchez le jour, le mois ou l'année pour choisir la période, ou tapez un nom de client, puis touchez la ligne. |
-| Ou est composer ma fiche | *« Paysage » dans la barre du bas, Fiche de chantier, puis la carte « Composer ma fiche » sous le titre.* Ouvrez « Composer ma fiche », partez du modèle Atlas ou composez la vôtre. Réservé au patron. La modifier ne change aucun rapport déjà envoyé. |
+| Ou est composer ma fiche | *« Paysage » dans la barre du bas, Fiche de chantier, puis la carte « Composer ma fiche » sous le titre.* Ouvrez « Composer ma fiche » : le modèle Atlas y est déjà, modifiez-le. S'il vous manque une ligne du modèle, « Remettre le modèle Atlas » la fait revenir. Réservé au patron. La modifier ne change aucun rapport déjà envoyé. |
 | Ajouter une prestation sur ma fiche d'entretien | *« Paysage », Fiche de chantier, puis Composer ma fiche.* Sous la famille voulue, touchez « + Ajouter une prestation », écrivez son nom, puis « Ajouter à » suivi du nom de la famille. |
 | Creer une nouvelle famille de prestations | En bas, touchez « + Ajouter une famille », écrivez son nom et sa première prestation, puis « Créer la famille ». |
 | Renommer une prestation de ma fiche | *« Paysage », Fiche de chantier, puis Composer ma fiche.* Touchez le nom de la prestation ou de la famille et corrigez-le : c'est enregistré dès que vous quittez la case. Cela ne change aucun rapport déjà envoyé. |

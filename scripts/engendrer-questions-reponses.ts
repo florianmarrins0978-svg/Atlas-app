@@ -2,6 +2,7 @@ import { writeFileSync } from "node:fs";
 import path from "node:path";
 import { chercherFiches, ficheParId, fichesDeLEcran, visiteDemandee } from "../src/lib/mode-emploi";
 import { QUESTIONS_PAR_ZONE } from "./_questions-mode-emploi";
+import { jourIso } from "../src/lib/jour";
 
 /**
  * La liste des questions auxquelles l'assistant sait répondre, et sa réponse.
@@ -76,7 +77,7 @@ sections.unshift(`## Comment fonctionne un écran\n\n${visites.join("\n\n")}`);
 
 const texte = `# Ce que l'assistant sait répondre
 
-*Engendré le ${new Date().toISOString().slice(0, 10)} par \`npx tsx scripts/engendrer-questions-reponses.ts\`.
+*Engendré le ${jourIso(new Date())} par \`npx tsx scripts/engendrer-questions-reponses.ts\`.
 Ne pas corriger à la main : corriger la fiche, puis relancer.*
 
 **${total} questions**, posées comme un artisan les pose. Pour chacune, la

@@ -676,10 +676,15 @@ export const FICHES_PAYSAGE: FicheModeEmploi[] = [
     ou: "« Paysage » dans la barre du bas, Fiche de chantier, puis la carte « Composer ma fiche » sous le titre",
     intitule: "Composer la fiche qu'on coche sur un chantier d'entretien",
     motsCles: ["fiche", "entretien", "modele", "composer", "famille", "prestation", "cocher", "tonte", "rubrique"],
-    geste: "Ouvrez « Composer ma fiche », partez du modèle Atlas ou composez la vôtre.",
+    // **Le modèle est posé d'office depuis le 29 septembre 2026** (sa réponse
+    // « B ») : les deux boutons « Partir du modèle Atlas » et « Je préfère
+    // composer la mienne » sont partis avec la fiche vide qu'ils servaient.
+    geste:
+      "Ouvrez « Composer ma fiche » : le modèle Atlas y est déjà, modifiez-le. " +
+      "S'il vous manque une ligne du modèle, « Remettre le modèle Atlas » la fait revenir.",
     reserve: "Réservé au patron. La modifier ne change aucun rapport déjà envoyé.",
     source: "src/app/paysage/fiche/composer/ComposerMaFiche.tsx",
-    preuves: ["Partir du modèle Atlas", "Je préfère composer la mienne"],
+    preuves: ["Remettre le modèle Atlas", "+ Ajouter une famille"],
     ailleurs: [{ source: "src/app/paysage/fiche/page.tsx", preuves: ["Composer ma fiche"] }],
   },
   {

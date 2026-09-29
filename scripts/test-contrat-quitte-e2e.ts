@@ -74,6 +74,11 @@ async function main() {
   const prestation = `Tonte ${Date.now()}`;
   await page.getByRole("button", { name: "+ Ajouter une prestation" }).click();
   await page.getByLabel("Écrire une prestation").fill(prestation);
+  // **Une prestation écrite entre aussi dans sa fiche** (sa demande du
+  // 29 septembre 2026, `ContratClient.tsx`) : « Ajouter » attend qu'une famille
+  // de la fiche soit choisie : le patron de démonstration peut modifier sa
+  // fiche, l'écran la lui demande donc toujours. C'est son geste.
+  await page.locator('[data-atlas="famille-de-la-fiche"] button').first().click();
   await page.getByRole("button", { name: "Ajouter", exact: true }).click();
   await page.locator('[aria-label="avril"]').first().click();
 

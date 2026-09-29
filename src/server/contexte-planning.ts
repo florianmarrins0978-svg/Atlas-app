@@ -10,7 +10,7 @@ import { peutModifierLePlanning } from "@/lib/acces-roles";
 import { seuilMemoireCalendrier } from "@/lib/onglet-chantier";
 import { jourIso } from "@/lib/jour";
 import { couleursDepuisColonnes } from "@/lib/couleurs-planning";
-import { lireCharte } from "@/server/repositories/charte-personne";
+import { charteDeLaPersonne } from "@/server/repositories/charte-personne";
 
 /**
  * TOUT CE QU'IL FAUT POUR PEINDRE UNE JOURNÉE — chargé une seule fois, servi
@@ -62,7 +62,7 @@ export async function contextePlanning(ctx: Ctx, maintenant: Date) {
       versJourIso(ajouterJours(maintenant, HORIZON_OCCUPATION_PATRON_JOURS))
     ),
     accesDeLaPersonne(ctx),
-    lireCharte(),
+    charteDeLaPersonne(ctx.utilisateurId),
   ]);
 
   /**
