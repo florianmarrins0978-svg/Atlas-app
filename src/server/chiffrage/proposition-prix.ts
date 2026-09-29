@@ -32,19 +32,13 @@ import {
 import { mesuresResolues, reserveDeContradiction, type MesuresResolues } from "../../lib/mesures-prestation";
 import { prixConnusDe } from "../repositories/grille-prix";
 import { lireGrilles } from "../repositories/grilles-reglables";
+import { tarifsCorrespondants, type TarifCandidat } from "../../lib/tarifs-correspondants";
 import { listerPrecisions } from "../repositories/precisions-chantier";
 
 // Origine du prix — même taxonomie que l'orchestrateur (SourcePrix), volontairement
 // réutilisée plutôt que redéfinie : les deux chemins doivent raconter la même
 // chose au patron, qu'il passe par l'assistant ou par l'écran Prix.
 export type OriginePrix = SourcePrix;
-
-export type TarifCandidat = {
-  tarifId: string;
-  intitule: string;
-  prix: string;
-  unite: string | null;
-};
 
 /** Une ligne telle qu'elle sera écrite au détail — et lue par le client. */
 export type LigneProposee = {
@@ -106,29 +100,6 @@ export type PropositionPrix = {
     ambiguites: string[];
   };
 };
-
-// Rapproche un tarif d'une prestation par correspondance d'intitulé, dans les
-// deux sens (le tarif « Élagage » couvre « élagage du sapin », et inversement).
-// Même règle que l'outil RechercherTarifsCompatibles — jamais de rapprochement
-// approximatif au-delà de l'inclusion littérale.
-function tarifsCorrespondants(
-  tarifs: { id: string; intitule: string; prix: string; unite: string | null }[],
-  libelles: string[]
-): TarifCandidat[] {
-  const trouves = new Map<string, TarifCandidat>();
-  for (const libelle of libelles) {
-    const l = libelle.trim().toLowerCase();
-    if (!l) continue;
-    for (const t of tarifs) {
-      const i = t.intitule.trim().toLowerCase();
-      if (!i) continue;
-      if (l.includes(i) || i.includes(l)) {
-        trouves.set(t.id, { tarifId: t.id, intitule: t.intitule, prix: t.prix, unite: t.unite });
-      }
-    }
-  }
-  return [...trouves.values()];
-}
 
 // Construit la proposition de prix d'un chantier à partir des seules données
 // réellement enregistrées et confirmées. Ne décide jamais à la place du patron :

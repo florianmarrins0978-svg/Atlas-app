@@ -20,6 +20,22 @@ reste sur la feuille, où il écrit, et ne passe plus au document :
 texte effacé). Une ligne sans libellé mais chiffrée, ou « à chiffrer », part
 toujours. Suite : `scripts/test-devis-sans-ligne-vide-db.ts`, vue rouge avant.
 
+**La facture aussi**, sur sa demande : la ligne laissée vide s'efface à
+l'émission (avant le PDF archivé et le trigger qui fige la pièce), et
+l'aperçu du brouillon ne la montre plus. Elle ne revient donc plus en choix
+blanc dans l'avoir (`test-facture-sans-devis-db.ts`).
+
+**Et le relevé de tous les « + Ajouter »** (*« va vérifier tous les endroits
+où on peut rajouter des lignes ou des choses »*) a trouvé un vrai défaut : le
+tarif que « + Ajouter un tarif » écrit vide, à 0 €, était proposé par
+l'assistant pour n'importe quel travail. La règle de rapprochement vivait en
+deux copies, l'une juste (le calcul du prix), l'autre non (l'outil) ; elle
+vit désormais une fois, `src/lib/tarifs-correspondants.ts`
+(`test-tarif-vide-assistant-db.ts`, vue rouge avant). Prestations et matériel
+(Informations) écrivent aussi une ligne vide, mais tous leurs écrans et
+documents la filtrent déjà. Le reste des « + Ajouter » attend le premier mot.
+Ce qui reste ouvert est dans `TODO.md`.
+
 ## 2026-09-28
 
 ### Trois lots sur `main` en une seule batterie
