@@ -6,6 +6,20 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-09-29
+
+### Une ligne sans rien ne part plus sur le devis
+
+Sa réponse, *« Oui »* : la ligne que « + Ajouter une ligne » écrit sur la
+feuille avant le premier mot, laissée vide, partait sur le devis (une rangée
+blanche sur le PDF du client, une case vide sur la fiche de l'équipe). Elle
+reste sur la feuille, où il écrit, et ne passe plus au document :
+`lignesDuDocument` (`src/lib/preparation-devis.ts`), appelée par
+`getOuCreerDevisBrouillon`, par où passent les quatre gestes qui en posent une
+(« + Ajouter une ligne » du devis et de l'écran Prix, « Ajouter une TVA », un
+texte effacé). Une ligne sans libellé mais chiffrée, ou « à chiffrer », part
+toujours. Suite : `scripts/test-devis-sans-ligne-vide-db.ts`, vue rouge avant.
+
 ## 2026-09-28
 
 ### Trois lots sur `main` en une seule batterie

@@ -205,6 +205,26 @@ export function montantEstNul(valeur: string): boolean {
   return !Number.isFinite(n) || n === 0;
 }
 
+/**
+ * Les lignes de la feuille qui partent sur le document.
+ *
+ * **Sa réponse du 29 septembre 2026, *« Oui »***, à la question : une ligne
+ * ouverte par « + Ajouter une ligne » et laissée vide doit-elle partir sur le
+ * devis ? Elle y partait : une rangée blanche sur le PDF du client, et une case
+ * ronde sans texte sur la fiche d'intervention de l'équipe.
+ *
+ * **Une ligne sans rien, c'est sans texte ET sans montant.** Une ligne sans
+ * libellé mais chiffrée reste, c'est au patron d'en juger (le commentaire de
+ * `peutPreparerLaPiece`). Une ligne « à chiffrer » reste aussi : c'est elle qui
+ * arrête l'envoi tant qu'elle n'a pas son prix.
+ *
+ * La feuille, elle, garde la ligne : c'est là qu'il écrit, et la retirer sous
+ * ses doigts effacerait la case où il allait taper.
+ */
+export function lignesDuDocument<T extends LignePrix>(lignes: readonly T[]): T[] {
+  return lignes.filter((l) => l.libelle.trim() !== "" || !montantEstNul(l.montant) || Boolean(l.aChiffrer));
+}
+
 export function prixAEcrire(prixUnitaire: string): string {
   return montantEstNul(prixUnitaire) ? "" : prixUnitaire;
 }
