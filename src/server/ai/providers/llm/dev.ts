@@ -64,7 +64,7 @@ export const fournisseurLLMDev: FournisseurLLM = {
     // données », « qui peut voir mes données ». Elles ne commencent pas par
     // « comment », et tombaient hors du mode d'emploi.
     const estQuestionModeEmploi =
-      /\bcomment\b|\bo[uù] (est|sont|se trouve|je (trouve|vois|clique|range))\b|[aà] quoi sert|combien de temps|\bqui (peut |peuvent )?voi|que deviennent/i.test(texte) &&
+      /\bcomment\b|\bo[uù] (est|sont|se trouve|je (trouve|vois|clique|range))\b|[aà] quoi sert|combien de temps|\bqui (peut |peuvent )?voi|que deviennent|que (veut|veulent) dire|signifie/i.test(texte) &&
       outils.some((o) => o.nom === "RechercherModeEmploi");
     if (estQuestionModeEmploi) {
       if (dernier && dernier.role === "outil" && dernier.outil === "RechercherModeEmploi") {
@@ -587,11 +587,16 @@ function expliquerSuiviWorkflow(resultat: unknown, texteMinuscule: string): stri
 function expliquerModeEmploi(resultat: unknown): string {
   const r = resultat as {
     trouve?: boolean;
+    visite?: string;
     fiches?: { ecran: string; ou: string; intitule: string; geste: string; reserve: string | null }[];
   };
   if (!r.trouve || !r.fiches || r.fiches.length === 0) {
     return "Je ne connais pas ce geste. Je préfère le dire plutôt que d'en inventer un.";
   }
+  // **La visite d'un écran : ses gestes, un par ligne** (29 septembre 2026).
+  // Le vrai modèle les résume ; ici, les intitulés suffisent à prouver que
+  // l'écran entier est arrivé jusqu'à la réponse.
+  if (r.visite) return [`**${r.visite}**`, ...r.fiches.map((f) => `${f.intitule}.`)].join("\n");
   // **UNE fiche, pas trois.** Vu à l'image le 25 août 2026 : la réponse à
   // « comment je supprime un client ? » enchaînait le retrait, la création d'un
   // chantier et la saisie du client — trois gestes pour une question. Sa règle

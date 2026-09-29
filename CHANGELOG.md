@@ -48,6 +48,39 @@ habitée (et vue rougir). Suites `test-message-sans-autre-date-e2e`,
 ajoutés à `test-message-client`. **Batterie non jouée**, il l'a interdite.
 `ARCHITECTURE.md` §438.
 
+### « Comment fonctionne le planning » reçoit le planning entier
+
+Sa colère : *« pourquoi il est incapable d'expliquer comment fonctionne le
+planning ? »* Les fiches existaient toutes (poser un client, autre chose, un
+client en attente, les absences, les salariés d'un chantier, les couleurs).
+**La racine** : la recherche n'en rendait que quelques-unes, et la consigne
+n'en laisse réciter qu'UNE : il répondait « Touchez Planning ». Une question
+« comment fonctionne X », « explique-moi X », « à quoi sert X » demande
+désormais la **visite** de l'écran (`visiteDemandee`, `fichesDeLEcran`) : l'outil
+rend toutes ses fiches, la consigne autorise à les présenter ensemble. Et
+**« au-delà »** : la fiche des couleurs dit enfin ce que veut dire chaque mot
+(rien, de la place, toutes les équipes prises, plus de chantiers que
+d'équipes), qu'un absent compte comme un chantier, et où régler le nombre
+d'équipes ; la recherche lisait « au dela » comme le début de « délai ».
+Rouges avant, par la porte de l'assistant. `ARCHITECTURE.md` §440.
+
+### L'assistant interrogé sur la sécurité et sur les astuces : 400 questions tenues
+
+Sa demande : *« repose-lui plein de questions sur le fonctionnement, la
+sécurité, comment l'exploiter au maximum ; vois celles où il bute et
+apporte-lui les réponses ; sors-moi la liste des questions et réponses »*.
+Cent vingt-quatre questions jouées en deux tours, le second neuf. Ce qui
+butait : « est-ce qu'Atlas est sécurisé » rendait la fiche de sécurité d'un
+CHANTIER ; aucune fiche sur le mot de passe, la double authentification, la
+carte bancaire, le lien du client, le RGPD, la revente des données, ni sur les
+astuces ; « comment **fonctionne** le planning » tombait sur la fiche de l'IA ;
+« comment ma dictée devient un devis » tombait sur « écrire sans dicter ».
+**Neuf fiches neuves**, chaque chiffre lu dans le code (12 caractères, 5 essais,
+15 minutes, 43 caractères de lien) ; « fonctionne » et « marche » en mots
+vides ; « sans dicter » soudé. Rouges avant : 28 questions. La liste,
+engendrée des fiches : `docs/assistant-questions-reponses.md`
+(`npx tsx scripts/engendrer-questions-reponses.ts`). `ARCHITECTURE.md` §439.
+
 ### Neuf planches : ce que fait chaque « Ajouter »
 
 Sa demande : *« fais-moi une planche pour chaque, réaliste, que je puisse

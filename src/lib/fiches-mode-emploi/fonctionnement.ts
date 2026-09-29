@@ -16,6 +16,8 @@
 import type { FicheModeEmploi } from "../mode-emploi";
 import { FORMULES, JOURS_ESSAI } from "../abonnements";
 import { CONTACT_ATLAS } from "../contact-atlas";
+import { LONGUEUR_MINIMALE } from "../mot-de-passe";
+import { PALIERS_MS, SEUIL_AVANT_TEMPORISATION } from "../tentatives-connexion";
 
 const DONNEES = "« Réglages » dans la barre du bas, puis Mes données";
 const CONDITIONS = "src/server/documents-legaux/versions.ts";
@@ -63,7 +65,7 @@ export const FICHES_FONCTIONNEMENT: FicheModeEmploi[] = [
     ecran: "Équipe",
     ou: "« Réglages » dans la barre du bas, puis Équipe, Accès",
     intitule: "Qui peut voir vos données, et si elles sont protégées",
-    motsCles: ["voir", "securite", "securisees", "protegees", "confidentiel", "privees", "autres", "donnees", "acces"],
+    motsCles: ["voir", "securite", "securisees", "protegees", "confidentiel", "privees", "autres", "donnees", "acces", "concurrents", "entreprises", "lire"],
     geste:
       "Seuls les comptes de votre entreprise voient vos chantiers : une autre entreprise n'y a jamais accès, " +
       "le cloisonnement est fait dans la base elle-même. Dans votre équipe, chacun voit ce que son rôle permet. " +
@@ -78,13 +80,15 @@ export const FICHES_FONCTIONNEMENT: FicheModeEmploi[] = [
     ecran: "Atlas IA",
     ou: "« Réglages » dans la barre du bas, puis Atlas IA",
     intitule: "Où partent vos dictées et vos photos quand l'IA travaille",
-    motsCles: ["ia", "intelligence", "transmis", "partent", "fournisseur", "fournisseurs", "confidentialite", "envoye"],
+    motsCles: ["ia", "intelligence", "transmis", "partent", "fournisseur", "fournisseurs", "confidentialite", "envoye", "ecoute", "ecoutees", "audio", "enregistrement"],
     geste:
       "Pour transcrire une dictée, rédiger un devis ou regarder une photo, Atlas envoie ce contenu à ses " +
       "fournisseurs d'intelligence artificielle. Ne dictez pas ce que vous ne voulez pas voir transmis, comme " +
-      "une information de santé.",
+      "une information de santé. L'enregistrement reste sur la fiche du chantier : vous pouvez le réécouter " +
+      "ou le remplacer.",
     source: CONDITIONS,
     preuves: ["est transmis aux fournisseurs listés dans la politique de confidentialité"],
+    ailleurs: [{ source: "src/app/chantiers/[id]/note-vocale/NoteVocaleClient.tsx", preuves: ["Remplacer la note"] }],
   },
 
   // --- Ses questions jouées le 28 septembre 2026 ------------------------------
@@ -98,7 +102,7 @@ export const FICHES_FONCTIONNEMENT: FicheModeEmploi[] = [
     ecran: "Atlas",
     ou: "partout",
     intitule: "Utiliser Atlas sans internet, hors ligne",
-    motsCles: ["internet", "hors ligne", "reseau", "connexion", "wifi", "campagne", "capte", "marche"],
+    motsCles: ["internet", "hors ligne", "reseau", "connexion", "wifi", "campagne", "capte"],
     geste:
       "Atlas a besoin d'internet pour s'ouvrir et pour enregistrer : il n'a pas encore de mode hors ligne. " +
       "Sans réseau, attendez d'en retrouver avant de valider.",
@@ -112,7 +116,7 @@ export const FICHES_FONCTIONNEMENT: FicheModeEmploi[] = [
     ecran: "Atlas",
     ou: "le navigateur, Safari ou Chrome",
     intitule: "Ouvrir Atlas sur un ordinateur, l'installer sur l'écran d'accueil du téléphone",
-    motsCles: ["ordinateur", "pc", "mac", "tablette", "installer", "installation", "telecharger", "android", "iphone", "icone", "raccourci", "accueil"],
+    motsCles: ["ordinateur", "pc", "mac", "tablette", "installer", "installation", "telecharger", "android", "iphone", "icone", "raccourci", "accueil", "ipad", "bureau"],
     geste:
       "Atlas s'ouvre dans le navigateur, sur téléphone comme sur ordinateur, avec le même compte. " +
       "Pour l'avoir sur l'écran du téléphone : sur iPhone, dans Safari, touchez Partager puis « Sur l'écran d'accueil » ; " +
@@ -205,7 +209,7 @@ export const FICHES_FONCTIONNEMENT: FicheModeEmploi[] = [
     ecran: "Assistant",
     ou: "l'assistant, depuis n'importe quel écran",
     intitule: "Voir son chiffre d'affaires, ce qu'on a facturé ou encaissé sur une période",
-    motsCles: ["chiffre", "affaires", "encaisse", "encaissement", "gagne", "total", "bilan", "mois", "annee"],
+    motsCles: ["chiffre", "affaires", "gagne", "total", "bilan", "mois", "annee"],
     geste:
       "Atlas n'a pas d'écran de chiffre d'affaires : demandez-le à l'assistant, par exemple « combien j'ai facturé " +
       "en septembre » ou « combien j'ai encaissé cette année ».",
@@ -243,10 +247,12 @@ export const FICHES_FONCTIONNEMENT: FicheModeEmploi[] = [
     ecran: "Assistant",
     ou: "l'assistant, depuis n'importe quel écran",
     intitule: "Ce que l'assistant peut faire à votre place, et ce qu'il ne fait jamais",
-    motsCles: ["assistant", "place", "peut", "capable", "sait", "envoyer", "creer", "tout", "seul"],
+    motsCles: ["assistant", "place", "capable", "sait", "envoyer", "creer", "tout", "seul", "demander", "doit", "argent"],
     geste:
-      "L'assistant lit vos chantiers, devis, factures, planning et tarifs, et prépare des modifications que vous " +
-      "cochez puis validez. Il n'envoie jamais un devis, ne facture jamais, et n'écrit rien sans votre validation.",
+      "L'assistant lit vos chantiers, devis, factures, planning et tarifs. Demandez-lui par exemple « qui me doit " +
+      "de l'argent », « combien j'ai encaissé en septembre », « qu'est-ce que j'ai demain » ou « crée un chantier " +
+      "pour Martin » : il prépare, vous cochez puis validez. Il n'envoie jamais un devis, ne facture jamais, et " +
+      "n'écrit rien sans votre validation.",
     source: "src/server/ai/services/assistant-service.ts",
     preuves: ["Ne valide, n'envoie et ne facture jamais un devis.", "JAMAIS écrire toi-même dans les données"],
   },
@@ -274,5 +280,153 @@ export const FICHES_FONCTIONNEMENT: FicheModeEmploi[] = [
     preuves: ["+ Ajouter un acompte"],
     ailleurs: [{ source: "src/app/chantiers/[id]/facture/ReglementsRecus.tsx", preuves: ['aria-label="Ce que ce règlement est"'] }],
     absences: ["factureDeSituation", "facture de situation"],
+  },
+
+  // --- La sécurité, et tirer le maximum d'Atlas (29 septembre 2026) ----------
+  //
+  // *« Repose-lui plein de questions sur le fonctionnement, la sécurité, et
+  // comment l'exploiter au maximum. »* « Est-ce que Atlas est sécurisé »
+  // rendait la fiche de sécurité d'un CHANTIER. Chaque affirmation ci-dessous
+  // est prouvée par le fichier qui la rend vraie ; ce qui n'est pas encore
+  // décidé (l'hébergeur, le contrat de sous-traitance) se dit comme tel.
+  {
+    id: "atlas-securite",
+    ecran: "Atlas",
+    ou: "partout",
+    intitule: "Atlas est-il sécurisé : ce qui protège votre compte et vos données",
+    motsCles: ["securise", "securisee", "protege", "chiffre", "chiffrees", "pirate", "piratage", "hacker", "https", "fiable"],
+    geste:
+      "Les échanges avec Atlas sont toujours chiffrés (https). Chaque entreprise est cloisonnée dans la base " +
+      "elle-même : aucune autre n'y a accès. Votre mot de passe est gardé chiffré, les essais répétés sont " +
+      "freinés, et vous pouvez entrer avec Face ID.",
+    reserve: "Le chiffrement des données sur le disque dépend de l'hébergeur, qui n'est pas encore désigné.",
+    source: "next.config.ts",
+    preuves: ["Strict-Transport-Security"],
+    ailleurs: [
+      { source: CONDITIONS, preuves: ["cloisonnement des entreprises appliqué au niveau de la base de données", "Hébergeur : [À COMPLÉTER"] },
+      { source: "src/server/repositories/compte.ts", preuves: ['from "bcryptjs"'] },
+    ],
+  },
+  {
+    id: "mot-de-passe-protege",
+    ecran: "Mot de passe",
+    ou: "« Réglages » dans la barre du bas, puis Mot de passe",
+    intitule: "Comment votre mot de passe est protégé",
+    motsCles: ["mot", "passe", "motdepasse", "protege", "connait", "clair", "caracteres", "longueur", "deviner", "essais", "tentatives", "bloque"],
+    geste:
+      `Votre mot de passe fait au moins ${LONGUEUR_MINIMALE} caractères. Atlas ne le garde jamais en clair : ` +
+      "seule une empreinte chiffrée est enregistrée, personne ne peut le relire. " +
+      `Après ${SEUIL_AVANT_TEMPORISATION} essais ratés, chaque nouvel essai doit attendre, jusqu'à ` +
+      `${Math.max(...PALIERS_MS) / 60_000} minutes.`,
+    source: "src/lib/mot-de-passe.ts",
+    preuves: ["export const LONGUEUR_MINIMALE"],
+    ailleurs: [
+      { source: "src/server/repositories/compte.ts", preuves: ['from "bcryptjs"'] },
+      { source: "src/lib/tentatives-connexion.ts", preuves: ["export const PALIERS_MS", "export const SEUIL_AVANT_TEMPORISATION"] },
+    ],
+  },
+  {
+    id: "mot-de-passe-oublie",
+    ecran: "Connexion",
+    ou: "l'écran de connexion",
+    intitule: "Mot de passe oublié : en choisir un nouveau",
+    motsCles: ["oublie", "perdu", "retrouver", "reinitialiser", "mot", "passe", "motdepasse", "souviens"],
+    geste:
+      "Sur l'écran de connexion, touchez « Mot de passe oublié ? », écrivez votre adresse, puis « Recevoir un " +
+      "code ». Entrez le code reçu, choisissez le nouveau mot de passe, puis « Enregistrer ».",
+    source: "src/app/login/FormulaireConnexion.tsx",
+    preuves: ["Mot de passe oublié&nbsp;?"],
+    ailleurs: [
+      {
+        source: "src/app/mot-de-passe-oublie/EcranMotDePasseOublie.tsx",
+        preuves: ["Recevoir un code", "<SaisieDuCode", "Nouveau mot de passe", '"Enregistrer"'],
+      },
+    ],
+  },
+  {
+    id: "atlas-double-authentification",
+    ecran: "Mot de passe",
+    ou: "« Réglages » dans la barre du bas, puis Mot de passe",
+    intitule: "La double authentification, un code en plus du mot de passe",
+    motsCles: ["double", "authentification", "deux", "etapes", "facteurs", "2fa", "verification"],
+    geste:
+      "Atlas n'a pas encore de code en deux étapes. Ce qui protège en plus du mot de passe : Face ID sur vos " +
+      "appareils, et « Me déconnecter partout » si un téléphone est perdu.",
+    source: "src/app/reglages/connexion/ConnexionClient.tsx",
+    preuves: ["Me déconnecter partout"],
+    // Un code à usage unique passerait par TOTP.
+    absences: ["totp", "TOTP", "otplib"],
+  },
+  {
+    id: "donnees-usage",
+    ecran: "Atlas",
+    ou: "les conditions d'utilisation, acceptées à l'inscription",
+    intitule: "Ce qu'Atlas fait de vos données, s'il les revend",
+    motsCles: ["revend", "revendre", "vendre", "vend", "publicite", "exploite", "utilise", "commercial", "usage"],
+    geste:
+      "Atlas ne se sert de vos données que pour faire tourner le service : les afficher, les sauvegarder, les " +
+      "transmettre à ses sous-traitants, fabriquer vos documents. Les conditions d'utilisation limitent cet usage " +
+      "à ce qui est strictement nécessaire.",
+    source: CONDITIONS,
+    preuves: ["strictement nécessaire à l’exécution du service"],
+  },
+  {
+    id: "atlas-rgpd",
+    ecran: "Atlas",
+    ou: "« Réglages » dans la barre du bas, puis Mes données",
+    intitule: "Atlas et le RGPD",
+    motsCles: ["rgpd", "conforme", "conformite", "cnil", "reglementation", "personnelles", "protection"],
+    geste:
+      "Vos données sont cloisonnées et se téléchargent dans Mes données. Un client s'efface de sa fiche, ses " +
+      "factures restant gardées dix ans comme la loi l'impose. Ce qui part à l'IA est dit dans les conditions.",
+    reserve: "Le contrat de sous-traitance prévu par le RGPD pour les données de vos clients n'est pas encore rédigé.",
+    source: CONDITIONS,
+    preuves: ["document distinct, à faire rédiger]", "est transmis aux fournisseurs listés"],
+    ailleurs: [
+      { source: "src/app/reglages/donnees/BoutonTelecharger.tsx", preuves: ["Télécharger mes données"] },
+      { source: "src/app/clients/[id]/SupprimerCeClient.tsx", preuves: ["Conservé par la loi"] },
+    ],
+  },
+  {
+    id: "abonnement-carte",
+    ecran: "Abonnement",
+    ou: "« Réglages » dans la barre du bas, puis Abonnement",
+    intitule: "Atlas garde-t-il ma carte bancaire",
+    motsCles: ["carte", "bancaire", "cb", "garde", "stocke", "numero", "prelevement"],
+    geste:
+      "Non. Votre carte se saisit sur les pages sécurisées du prestataire de paiement, qui seul la garde : " +
+      "Atlas ne la voit jamais.",
+    source: CONDITIONS,
+    preuves: ["ne collecte ni ne conserve aucune donnée de carte bancaire"],
+  },
+  {
+    id: "lien-client",
+    ecran: "Devis",
+    ou: "le lien envoyé au client par SMS ou par e-mail",
+    intitule: "Le lien du devis envoyé au client est-il sûr",
+    motsCles: ["lien", "securise", "ouvrir", "autre", "transferer", "deviner", "partage", "jeton"],
+    geste:
+      "Chaque devis part avec son propre lien, fait de 43 caractères tirés au hasard : impossible à deviner. " +
+      "Seul celui qui l'a reçu peut l'ouvrir, sauf s'il le transfère.",
+    source: "src/server/repositories/envois-devis.ts",
+    // 32 octets en base64url font 43 caractères : la phrase et le code se tiennent.
+    preuves: ['randomBytes(32).toString("base64url")'],
+  },
+  {
+    id: "atlas-astuces",
+    ecran: "Atlas",
+    ou: "partout",
+    intitule: "Gagner du temps : les gestes qui font le plus",
+    motsCles: ["astuce", "astuces", "vite", "rapide", "rapidement", "temps", "gagner", "conseil", "maximum", "efficace", "utiliser"],
+    geste:
+      "Dictez le chantier au lieu de le taper : Atlas écrit le devis. Pour un client déjà venu, « Dernier devis » " +
+      "sur sa fiche reprend le précédent. Posez vos prix une fois dans vos tarifs, ils reviennent dans chaque " +
+      "devis. Et demandez à l'assistant : « qui me doit de l'argent », « crée un chantier pour Martin ».",
+    source: "src/app/chantiers/[id]/AnneauNoteVocale.tsx",
+    preuves: ['aria-label="Dicter une note vocale"'],
+    ailleurs: [
+      { source: "src/app/clients/[id]/RepartirDeCeClient.tsx", preuves: ['libelle="Dernier devis"'] },
+      { source: "src/app/reglages/ReglagesClient.tsx", preuves: ["+ Ajouter un tarif"] },
+    ],
   },
 ];

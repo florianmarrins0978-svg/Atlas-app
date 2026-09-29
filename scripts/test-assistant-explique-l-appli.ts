@@ -137,6 +137,13 @@ async function main() {
     ["Combien de temps tu conserve les données dans lappli ?", /reste enregistré tant que votre compte existe/],
     ["Comment sont conserver les données ?", /Les factures se gardent dix ans/],
     ["qui peut voir mes données ?", /une autre entreprise n'y a jamais accès/],
+    // **Sa colère du 29 septembre 2026** : « comment fonctionne le planning »
+    // rendait « Touchez Planning dans la barre du bas », et rien d'autre.
+    [
+      "comment fonctionne le planning ?",
+      /^(?=[\s\S]*Poser directement un client sur un jour)(?=[\s\S]*est absent un jour)(?=[\s\S]*Choisir quels salariés vont sur un chantier)(?=[\s\S]*couleurs)/,
+    ],
+    ["que signifie au-delà ?", /« Au-delà » : plus de chantiers que d'équipes/],
   ];
   for (const [question, attendu] of OU_EST) {
     await test(`« ${question} » reçoit l'endroit, depuis n'importe quel écran`, async () => {

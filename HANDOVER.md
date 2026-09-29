@@ -32,6 +32,17 @@ couleurs d'avant. Pourquoi : `ARCHITECTURE.md` §435. Reste : la batterie (nivea
 | **le piège** | une suite qui écrit SON message en base ne le retire pas : une suite d'envoi qui compte sur le message d'Atlas doit le remettre elle-même |
 | **le détail** | `ARCHITECTURE.md` §438, `docs/message-du-devis.md` |
 
+## LA LISTE DES RÉPONSES DE L'ASSISTANT : 29 septembre 2026, PAS SUR `main`
+
+`docs/assistant-questions-reponses.md` s'ENGENDRE (`npx tsx
+scripts/engendrer-questions-reponses.ts`) : ne jamais la corriger à la main.
+Une question ajoutée à `scripts/_questions-mode-emploi.ts` y entre à la
+prochaine génération. §439.
+
+« Comment fonctionne X » ne passe pas par la recherche : `visiteDemandee` rend
+l'écran, `fichesDeLEcran` ses fiches, dans l'ordre du fichier. Une fiche mal
+rangée (mauvais `ecran`) manque donc à la visite. §440.
+
 ## L'ASSISTANT RÉPOND SUR SES DONNÉES : 28 septembre 2026, SUR `main`
 
 Zone `src/lib/fiches-mode-emploi/fonctionnement.ts`. **Piège** : la fiche de

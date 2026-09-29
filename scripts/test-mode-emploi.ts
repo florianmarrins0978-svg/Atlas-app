@@ -2,7 +2,7 @@ import assert from "node:assert";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 import ts from "typescript";
-import { FICHES_MODE_EMPLOI, chercherFiches, type FicheModeEmploi } from "../src/lib/mode-emploi";
+import { FICHES_MODE_EMPLOI, chercherFiches, fichesDeLEcran, visiteDemandee, type FicheModeEmploi } from "../src/lib/mode-emploi";
 import { rechercherModeEmploi } from "../src/server/ai/tools/rechercher-mode-emploi";
 import { QUESTIONS_PAR_ZONE } from "./_questions-mode-emploi";
 
@@ -281,6 +281,24 @@ async function main() {
     // toujours quelque chose, et l'on cesserait de le croire.
     for (const hors of ["quel temps fait-il à Nantes", "combien coûte un abattage de chêne", "bonjour"]) {
       assert.deepEqual(chercherFiches(hors), [], `« ${hors} » ne devrait rien trouver`);
+    }
+  });
+
+  // **Sa colère du 29 septembre 2026 :** *« pourquoi il est incapable
+  // d'expliquer comment fonctionne le planning ? »* L'outil ne savait rendre
+  // que des fiches isolées, et la consigne n'en laisse réciter qu'UNE : à
+  // « comment fonctionne le planning », il répondait « Touchez Planning ».
+  await test("« Comment fonctionne le planning » demande la VISITE de l'écran entier", () => {
+    for (const q of ["comment fonctionne le planning", "explique-moi le planning", "à quoi sert le planning ?", "comment ça marche le planning", "tu peux m'expliquer le planning"]) {
+      assert.equal(visiteDemandee(q), "Planning", `« ${q} » devrait ouvrir la visite du planning`);
+    }
+    assert.equal(visiteDemandee("comment fonctionne la tva"), "Ma TVA");
+    for (const q of ["comment je déplace un chantier sur le planning", "où est le planning", "comment mettre un salarié absent"]) {
+      assert.equal(visiteDemandee(q), null, `« ${q} » demande un geste, pas une visite`);
+    }
+    const ids = fichesDeLEcran("Planning").map((f) => f.id);
+    for (const id of ["planning-ajouter-un-client", "planning-poser-depuis-le-bas", "planning-ajouter-autre-chose", "planning-absence", "planning-absence-retirer", "planning-equipe-cocher", "planning-couleurs"]) {
+      assert.ok(ids.includes(id), `la visite du planning oublie ${id}`);
     }
   });
 

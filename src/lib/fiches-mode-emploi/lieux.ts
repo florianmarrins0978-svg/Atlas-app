@@ -30,7 +30,7 @@ export const FICHES_LIEUX: FicheModeEmploi[] = [
     ecran: "Planning",
     ou: "« Planning », dans la barre du bas",
     intitule: "Ouvrir le planning, le calendrier",
-    motsCles: ["planning", "calendrier", "agenda", "jour", "semaine", "trouver", "sont", "onglet"],
+    motsCles: ["planning", "calendrier", "agenda", "jour", "semaine", "trouver", "sont", "onglet", "organiser", "aujourd", "equipes"],
     geste: "Touchez « Planning » dans la barre du bas.",
     source: "src/components/atlas/AtlasBottomNav.tsx",
     preuves: ['label: "Planning"'],

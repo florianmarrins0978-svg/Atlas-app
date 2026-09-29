@@ -1,7 +1,7 @@
 # État du projet
 
 **Dernière mise à jour :** 2026-09-29, branche `claude/batterie-commune-29-septembre`
-(huit lots réunis pour une seule batterie), dernière migration
+(neuf lots de six sessions, réunis pour une seule batterie), dernière migration
 `drizzle/0116_modele_de_fiche_d_office.sql`
 
 ---
@@ -40,6 +40,16 @@ Le SMS suit la case « autre date », dit la durée du lien (45 jours, la date,
 puis appeler), et le premier envoi porte SON message. Branche
 `claude/message-du-premier-envoi`, migration 0115, `ARCHITECTURE.md` §438.
 Niveau 3, batterie interdite ce jour-là : pas sur `main`.
+
+## SUR SA BRANCHE : L'ASSISTANT SUR LA SÉCURITÉ ET LES ASTUCES (29 septembre 2026)
+
+Neuf fiches neuves (sécurité, mot de passe, oubli, double authentification,
+carte, lien client, RGPD, usage des données, astuces) ; la liste des 400
+questions tenues, engendrée : `docs/assistant-questions-reponses.md`.
+Puis « comment fonctionne le planning » : la visite d'un écran entier, et le
+sens de « au-delà » (§440).
+Branche `claude/assistant-all-questions-ahg55r`, `ARCHITECTURE.md` §439 et §440.
+Niveau 3 (fiches de devis et de facture touchées) : batterie à jouer avant `main`.
 
 ## SUR `main` : L'ASSISTANT RÉPOND SUR SES DONNÉES (28 septembre 2026)
 

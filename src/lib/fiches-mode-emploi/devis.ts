@@ -207,7 +207,7 @@ export const FICHES_DEVIS: FicheModeEmploi[] = [
     ecran: "Devis",
     ou: "un chantier, écran Devis, sous le Total TTC",
     intitule: "Demander un acompte sur le devis",
-    motsCles: ["acompte", "avance", "arrhes", "paiement", "echeance", "pourcentage", "commande"],
+    motsCles: ["acompte", "avance", "arrhes", "paiement", "echeance", "pourcentage", "commande", "commencer"],
     geste: "Appuyez sur « + Ajouter un acompte », puis touchez le pourcentage pour le changer. Le « − » devant l'acompte le retire.",
     reserve: "Le reste à régler se calcule sous les acomptes. Le bouton disparaît quand il n'y a plus d'acompte à poser.",
     source: DC,
