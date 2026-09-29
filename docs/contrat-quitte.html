@@ -103,13 +103,23 @@
 </tr>
 <tr>
 <td>glisser pour retirer</td>
-<td>efface le brouillon ; un contrat déjà envoyé ne s'efface pas</td>
+<td>efface le brouillon ou le contrat refusé ; un contrat envoyé ne s'efface pas</td>
 <td><code>src/app/actions.ts</code>, <code>src/server/repositories/contrats-entretien.ts</code></td>
 </tr>
 <tr>
 <td>envoyé au client</td>
-<td>il quitte la liste</td>
-<td><code>brouillonsDeContrat</code></td>
+<td>il <strong>reste</strong>, « Contrat envoyé, sans réponse » et le jour d'envoi, comme un devis ; il ne se retire pas, son lien reste ouvert chez le client</td>
+<td><code>ligneDuContratEnCours</code></td>
+</tr>
+<tr>
+<td>refusé</td>
+<td>il reste, « Contrat refusé », et peut se retirer</td>
+<td><code>ligneDuContratEnCours</code></td>
+</tr>
+<tr>
+<td>accepté</td>
+<td>il quitte la liste : ses passages arrivent au planning</td>
+<td><code>contratsEnCours</code></td>
 </tr>
 <tr>
 <td>qui le voit</td>
@@ -118,6 +128,31 @@
 </tr>
 </tbody></table></div>
 <p><strong>Retiré</strong> : l'envoi créait le contrat de son côté s'il n'existait pas encore. Il passe maintenant par le même enregistrement que le reste.</p>
+<h2 id="ta-règle-du-même-jour">Ta règle du même jour</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<blockquote>« Tout ce qui est devis, contrat d'entretien, dernier devis ou autre doivent arriver là. »</blockquote>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Avant</th>
+<th>Maintenant</th>
+</tr></thead><tbody>
+<tr>
+<td>Nouveau devis</td>
+<td>dans Chantiers jusqu'à l'acceptation</td>
+<td>inchangé, et déjà tenu par <code>test-dashboard</code></td>
+</tr>
+<tr>
+<td>Dernier devis</td>
+<td>dans Chantiers jusqu'à l'acceptation</td>
+<td>inchangé, désormais tenu par <code>test-repartir-du-client</code></td>
+</tr>
+<tr>
+<td>Contrat d'entretien</td>
+<td>nulle part, puis seulement en brouillon</td>
+<td>dans Chantiers jusqu'à l'acceptation, comme un devis</td>
+</tr>
+</tbody></table></div>
+<p><strong>Corrigé noir sur blanc</strong> : la première version de ce lot faisait sortir le contrat de la liste dès l'envoi. C'était mon choix, et il était contraire à ta règle.</p>
 <h2 id="les-preuves">Les preuves</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
 <div class="tablewrap"><table><thead><tr>
@@ -125,16 +160,16 @@
 <th>Résultat</th>
 </tr></thead><tbody>
 <tr>
-<td><code>test-contrat-quitte-e2e</code> (neuf) : ta fiche client, « Contrat d'entretien », une prestation, on quitte</td>
-<td><strong>rouge sur l'ancien code</strong> (4 cas sur 4), <strong>vert</strong> avec la correction</td>
+<td><code>test-contrat-quitte-e2e</code> (neuf) : ta fiche client, « Contrat d'entretien », une prestation, on quitte, puis envoyé, puis accepté</td>
+<td><strong>rouge sur l'ancien code</strong>, puis rouge sur le contrat envoyé qui sortait de la liste, <strong>vert</strong> avec la correction</td>
 </tr>
 <tr>
-<td><code>test-dashboard</code>, <code>test-repartir-du-client</code> (écrans voisins)</td>
+<td><code>test-dashboard</code>, <code>test-repartir-du-client</code> (écrans voisins, et « Dernier devis » sur l'accueil)</td>
 <td>verts</td>
 </tr>
 <tr>
 <td><code>test-contrats-entretien</code> et <code>test-contrats-entretien-db</code> (sous <code>atlas_app</code>, donc avec l'isolation)</td>
-<td>verts, trois cas ajoutés</td>
+<td>verts, cas ajoutés</td>
 </tr>
 <tr>
 <td>types, lint, pansements, code mort, couches, tirets, flèches</td>
@@ -142,7 +177,7 @@
 </tr>
 <tr>
 <td>l'accueil et l'écran du contrat, regardés à 390 px</td>
-<td>la ligne est là, le contrat se rouvre avec sa prestation</td>
+<td>la ligne est là, le contrat se rouvre avec sa prestation ; envoyé, « Contrat envoyé, sans réponse » et « Dimanche 27 septembre » dessous</td>
 </tr>
 </tbody></table></div>
 <h2 id="ce-qui-na-pas-été-fait">Ce qui n'a pas été fait</h2>
@@ -154,10 +189,6 @@
 <th>Question</th>
 <th>Qui tranche</th>
 </tr></thead><tbody>
-<tr>
-<td>Un contrat <strong>envoyé</strong> sans réponse doit-il rester sur l'accueil, comme un devis envoyé ? Aujourd'hui il en sort.</td>
-<td>toi</td>
-</tr>
 <tr>
 <td>Quand jouer la batterie pour le mettre sur <code>main</code></td>
 <td>toi</td>

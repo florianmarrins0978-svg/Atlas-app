@@ -10,7 +10,7 @@ import TiroirDesRetires from "@/components/atlas/TiroirDesRetires";
 import { useRetraits } from "@/components/atlas/useRetraits";
 import FormulaireNouveauChantier, { type FermetureDeLaFeuille } from "./chantiers/nouveau/FormulaireNouveauChantier";
 import { supprimerChantierAction } from "./planning/actions";
-import { supprimerBrouillonDeContratAction } from "./actions";
+import { supprimerContratEnCoursAction } from "./actions";
 import ListeChantiers, { type BrinChantier } from "./ListeChantiers";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -127,11 +127,11 @@ export default function EcranChantiers({
   // l'écriture faite, ici comme sur les sept autres listes qui suppriment. La
   // recopie qui vivait ici ne tenait que cet écran-ci — et le planning, lui,
   // ne l'avait pas (12 septembre 2026).
-  // Un brouillon de contrat se retire comme un chantier, mais ce n'en est pas
-  // un : chaque ligne dit ce qu'elle efface.
+  // Un contrat se retire comme un chantier, mais ce n'en est pas un : chaque
+  // ligne dit ce qu'elle efface.
   const contrats = new Set(chantiers.filter((c) => c.sorte === "contrat").map((c) => c.id));
   const retraits = useRetraits({
-    valider: (id) => (contrats.has(id) ? supprimerBrouillonDeContratAction(id) : supprimerChantierAction(id)),
+    valider: (id) => (contrats.has(id) ? supprimerContratEnCoursAction(id) : supprimerChantierAction(id)),
   });
 
   // **Le décompte suit ce qui reste, sans attendre le serveur.** Un « 8 »

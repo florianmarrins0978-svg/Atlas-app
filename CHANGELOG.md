@@ -20,8 +20,13 @@ double qui vivait dans `envoyer` a disparu). **L'accueil ne lisait que des
 chantiers** : il lit aussi les brouillons de contrat (« Contrat à compléter »
 ou « Contrat prêt à envoyer »), la ligne rouvre l'écran du contrat, et le
 glissement le retire (un brouillon seulement). Parti chez le client, il quitte
-la liste. Suite neuve `test-contrat-quitte-e2e` (rouge sur l'ancien code, vert
-ensuite), cas ajoutés à `test-contrats-entretien` et `-db`. `ARCHITECTURE.md`
+la liste. Puis sa règle du même jour : *« tout ce qui est devis, contrat d'entretien,
+dernier devis ou autre doivent arriver là »*. Un contrat envoyé reste sur
+l'accueil, « Contrat envoyé, sans réponse » avec son jour d'envoi, jusqu'à ce
+que le client l'accepte ; refusé, il y reste aussi, comme un devis. Suite neuve
+`test-contrat-quitte-e2e` (rouge sur l'ancien code à chaque étape, vert
+ensuite), cas ajoutés à `test-contrats-entretien`, `-db` et
+`test-repartir-du-client-e2e`. `ARCHITECTURE.md`
 §435. Niveau 3 (rayon de 102 points d'entrée) : **batterie non jouée**, il l'a
 interdite ; pas sur `main`.
 

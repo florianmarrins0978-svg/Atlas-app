@@ -33889,6 +33889,17 @@ récent. Qui ne rédige pas de contrat (`peutGererDevis`) n'en voit pas les
 brouillons. Le mot de l'état vient de `etatDuBrouillonDeContrat`, sur la même
 règle que l'envoi (`ceQuiManque`).
 
-**Ce qui n'y est pas, et c'est une question pour lui** : un contrat ENVOYÉ et
-sans réponse ne figure pas sur l'accueil, là où un devis envoyé y reste.
+**Puis sa règle du même jour, et elle a tranché la question** : *« tout ce qui
+est devis, contrat d'entretien, dernier devis ou autre doivent arriver là »*.
+Un contrat vit donc sur l'accueil **tant que le client ne l'a pas accepté**,
+exactement comme un devis : brouillon, « Contrat envoyé, sans réponse » avec
+son jour d'envoi, « Contrat refusé ». Accepté, ses passages vivent au planning
+et il n'a plus de ligne (`ligneDuContratEnCours`, qui remplace
+`etatDuBrouillonDeContrat`). `contratsEnCours` ne lit que le DERNIER contrat
+de chaque client, celui que l'écran rouvre : sinon un contrat refusé puis
+repris aurait une ligne qui mène au brouillon. Un contrat envoyé refuse le
+retrait (son lien doit rester ouvert) ; un brouillon ou un refus se retire.
+« Dernier devis » et « Nouveau devis » n'avaient rien à changer : ils créent un
+chantier, qui reste dans la liste jusqu'à sa date (`ongletDuChantier`) ;
+`test-repartir-du-client-e2e` le tient désormais pour « Dernier devis ».
 

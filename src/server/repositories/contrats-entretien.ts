@@ -1,5 +1,5 @@
 import { createHash, randomBytes } from "node:crypto";
-import { and, desc, eq, isNull, sql } from "drizzle-orm";
+import { and, desc, eq, inArray, isNull, sql } from "drizzle-orm";
 import { db } from "../db/client";
 import { withEntreprise } from "../db/with-entreprise";
 import { chantiers, clients, contratsEntretien, entreprises, factures, parametresChiffrage } from "../db/schema";
@@ -83,45 +83,51 @@ export async function dernierContratDuClient(ctx: Ctx, clientId: string): Promis
 }
 
 /**
- * Les contrats commencés et pas encore partis, pour « Vos chantiers » : sa
- * plainte du 29 septembre 2026, un contrat quitté en cours de rédaction n'y
- * figurait nulle part. Le plus récemment touché d'abord.
+ * Les contrats qui attendent encore quelque chose, pour « Vos chantiers » :
+ * un brouillon à finir, un envoi sans réponse, un refus à reprendre. Sa règle
+ * du 29 septembre 2026 : *« tout ce qui est devis, contrat d'entretien,
+ * dernier devis ou autre doivent arriver là »*.
+ *
+ * **Le DERNIER contrat de chaque client, et lui seul** : c'est celui que
+ * l'écran du contrat rouvre (`dernierContratDuClient`). Un ancien contrat
+ * refusé, repris depuis en brouillon, aurait sinon une ligne qui mène au
+ * brouillon. Le plus récemment touché d'abord.
  */
-export async function brouillonsDeContrat(ctx: Ctx) {
-  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, (tx) =>
+export async function contratsEnCours(ctx: Ctx) {
+  const derniers = await withEntreprise(ctx.utilisateurId, ctx.entrepriseId, (tx) =>
     tx
-      .select({
+      .selectDistinctOn([contratsEntretien.clientId], {
         id: contratsEntretien.id,
         clientId: contratsEntretien.clientId,
         clientNom: clients.nom,
         clientCivilite: clients.civilite,
+        statut: contratsEntretien.statut,
         prestations: contratsEntretien.prestations,
         debut: contratsEntretien.debut,
         dureeMois: contratsEntretien.dureeMois,
+        envoyeLe: contratsEntretien.envoyeLe,
         majAt: contratsEntretien.updatedAt,
       })
       .from(contratsEntretien)
       .innerJoin(clients, eq(contratsEntretien.clientId, clients.id))
-      .where(
-        and(
-          eq(contratsEntretien.entrepriseId, ctx.entrepriseId),
-          eq(contratsEntretien.statut, "brouillon"),
-          isNull(clients.deletedAt)
-        )
-      )
-      .orderBy(desc(contratsEntretien.updatedAt))
+      .where(and(eq(contratsEntretien.entrepriseId, ctx.entrepriseId), isNull(clients.deletedAt)))
+      .orderBy(contratsEntretien.clientId, desc(contratsEntretien.createdAt))
   );
+  return derniers
+    .filter((c) => c.statut !== "accepte")
+    .sort((a, b) => b.majAt.getTime() - a.majAt.getTime());
 }
 
 /**
- * Retire un brouillon de contrat. **Un brouillon seulement** : un contrat
- * parti est chez le client, son lien doit continuer de s'ouvrir.
+ * Retire un contrat de « Vos chantiers ». **Un brouillon ou un refus
+ * seulement** : un contrat envoyé est chez le client, son lien doit continuer
+ * de s'ouvrir ; accepté, il porte des passages.
  */
-export async function supprimerBrouillonDeContrat(ctx: Ctx, id: string): Promise<boolean> {
+export async function supprimerContratEnCours(ctx: Ctx, id: string): Promise<boolean> {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const supprimes = await tx
       .delete(contratsEntretien)
-      .where(and(eq(contratsEntretien.id, id), eq(contratsEntretien.statut, "brouillon")))
+      .where(and(eq(contratsEntretien.id, id), inArray(contratsEntretien.statut, ["brouillon", "refuse"])))
       .returning({ id: contratsEntretien.id });
     return supprimes.length === 1;
   });

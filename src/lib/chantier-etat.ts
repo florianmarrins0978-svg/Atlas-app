@@ -109,7 +109,7 @@ const DEVIS_PARTI_SANS_REPONSE: ChantierStatut[] = ["devis_envoye", "en_attente_
  * lettre accentuée aujourd'hui, mais une chaîne vide ou une lettre hors ASCII
  * ne doit pas rendre autre chose qu'elle-même.
  */
-function enCapitale(texte: string): string {
+export function enCapitale(texte: string): string {
   return texte ? texte[0].toLocaleUpperCase("fr") + texte.slice(1) : texte;
 }
 

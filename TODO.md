@@ -101,7 +101,6 @@ dans ses chantiers en cours. Corrigé à la racine (`ARCHITECTURE.md` §435,
 | Reste | Qui |
 |---|---|
 | `npm run verifier:avant-livraison`, puis `main` | lui dire quand, il l'a interdite ce jour-là |
-| un contrat ENVOYÉ sans réponse doit-il rester sur l'accueil, comme un devis envoyé ? | lui |
 
 ## 🔜 CONTRAT D'ENTRETIEN : LOTS 1 ET 2 SUR `main` (26 et 27 septembre 2026)
 

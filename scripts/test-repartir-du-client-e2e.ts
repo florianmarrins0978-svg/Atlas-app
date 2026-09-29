@@ -269,6 +269,18 @@ async function main() {
     assert.equal(rows[0].n, 2, `${rows[0].n} chantiers chez ce client au lieu de 2`);
   });
 
+  // Sa règle du 29 septembre 2026 : *« tout ce qui est devis, contrat
+  // d'entretien, dernier devis ou autre doivent arriver là »*. Le devis de
+  // « Dernier devis » se retrouve dans « Vos chantiers », comme les autres.
+  await cas("le devis de « Dernier devis » est dans « Vos chantiers »", async () => {
+    await page.goto(`${BASE}/`, { waitUntil: "networkidle" });
+    assert.equal(
+      await page.locator(`a.atlas-brin[href*="${refait}"]`).count(),
+      1,
+      "le chantier de « Dernier devis » n'est pas sur l'accueil"
+    );
+  });
+
   await contexte.close();
   await navigateur.close();
   await pool.end();

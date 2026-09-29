@@ -109,12 +109,26 @@ async function main() {
     assert.equal(brouillons[0].n, 1);
   });
 
-  await cas("parti chez le client, il quitte la liste", async () => {
+  // **Sa règle du 29 septembre 2026** : *« tout ce qui est devis, contrat
+  // d'entretien, dernier devis ou autre doivent arriver là »*. Un contrat parti
+  // reste sur l'accueil tant que le client n'a pas accepté, comme un devis
+  // envoyé ; accepté, ses passages vivent au planning.
+  await cas("parti chez le client, il reste, sans réponse et avec son jour d'envoi", async () => {
     assert.ok(contratId);
     await pool.query(
       `UPDATE contrats_entretien SET statut = 'envoye', jeton = $2, empreinte = repeat('0', 64), envoye_le = now() WHERE id = $1`,
       [contratId, `jeton-${Date.now()}`]
     );
+    await page.goto(`${BASE}/`, { waitUntil: "networkidle" });
+    const parti = page.locator(`a.atlas-brin[href="/clients/${clientId}/contrat"]`);
+    assert.equal(await parti.count(), 1, "le contrat envoyé a quitté l'accueil");
+    const texte = (await parti.innerText()).replace(/\s+/g, " ");
+    assert.match(texte, /Contrat envoyé, sans réponse/i);
+    assert.equal(await parti.locator('[data-atlas="precision-chantier"]').count(), 1, "le jour d'envoi manque");
+  });
+
+  await cas("accepté, il quitte la liste", async () => {
+    await pool.query(`UPDATE contrats_entretien SET statut = 'accepte', repondu_le = now() WHERE id = $1`, [contratId]);
     await page.goto(`${BASE}/`, { waitUntil: "networkidle" });
     assert.equal(await page.locator(`a.atlas-brin[href="/clients/${clientId}/contrat"]`).count(), 0);
   });

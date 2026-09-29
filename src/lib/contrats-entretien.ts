@@ -1,6 +1,8 @@
 import { Decimal } from "decimal.js";
 import { chiffreCanonique } from "./chiffre-saisi";
 import { MOIS_LONGS } from "./mois";
+import { jourLisible } from "./jour";
+import { enCapitale } from "./chantier-etat";
 import { libelleNettoye } from "./prestations-entretien";
 
 /**
@@ -346,12 +348,39 @@ export function ceQuiManque(prestations: readonly PrestationContrat[], periode: 
 }
 
 /**
- * L'état d'un contrat en brouillon sur la liste « Vos chantiers » — sa plainte
- * du 29 septembre 2026 : un contrat commencé puis quitté n'y figurait pas. Le
- * mot suit la même règle que l'envoi : prêt quand rien ne manque.
+ * La ligne d'un contrat sur « Vos chantiers », comme celle d'un devis.
+ *
+ * Sa plainte du 29 septembre 2026 : un contrat commencé puis quitté ne
+ * figurait nulle part. Puis sa règle, le même jour : *« tout ce qui est devis,
+ * contrat d'entretien, dernier devis ou autre doivent arriver là »*. Un
+ * contrat y vit donc tant que le client ne l'a pas accepté ; accepté, ses
+ * passages vivent au planning, et il n'a plus de ligne ici.
+ *
+ * `null` : le contrat n'a rien à faire sur l'accueil.
  */
-export function etatDuBrouillonDeContrat(prestations: readonly PrestationContrat[], periode: PeriodeContrat): string {
-  return ceQuiManque(prestations, periode) === null ? "Contrat prêt à envoyer" : "Contrat à compléter";
+export function ligneDuContratEnCours(
+  c: {
+    statut: "brouillon" | "envoye" | "accepte" | "refuse";
+    prestations: readonly PrestationContrat[];
+    periode: PeriodeContrat;
+    /** Le jour de l'envoi, « AAAA-MM-JJ ». */
+    envoyeLe: string | null;
+  },
+  aujourdHui: Date = new Date()
+): { etat: string; precision: string | null } | null {
+  if (c.statut === "brouillon") {
+    return {
+      // Le mot suit la même règle que l'envoi : prêt quand rien ne manque.
+      etat: ceQuiManque(c.prestations, c.periode) === null ? "Contrat prêt à envoyer" : "Contrat à compléter",
+      precision: null,
+    };
+  }
+  // Le jour d'envoi sous l'état, écrit comme sous « Devis envoyé » : c'est lui
+  // qui dit depuis quand il attend.
+  const precision = c.envoyeLe ? enCapitale(jourLisible(c.envoyeLe, aujourdHui)) : null;
+  if (c.statut === "envoye") return { etat: "Contrat envoyé, sans réponse", precision };
+  if (c.statut === "refuse") return { etat: "Contrat refusé", precision };
+  return null;
 }
 
 /** La désignation d'une prestation sur le PDF : « Tonte et ébarbage, 2 passages par mois, d'avril à octobre ». */

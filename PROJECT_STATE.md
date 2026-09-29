@@ -7,7 +7,8 @@
 ## SUR SA BRANCHE : LE CONTRAT QUITTÉ DANS « VOS CHANTIERS » (29 septembre 2026)
 
 L'écran du contrat d'entretien s'enregistre à chaque geste ; l'accueil liste
-les brouillons de contrat, les rouvre et sait les retirer. Branche
+les contrats tant que le client ne les a pas acceptés (brouillon, envoyé sans
+réponse, refusé), comme les devis. Branche
 `claude/contrat-quitte-dans-chantiers`, `ARCHITECTURE.md` §435. Niveau 3,
 batterie interdite ce jour-là : pas sur `main`.
 

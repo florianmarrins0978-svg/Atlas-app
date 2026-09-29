@@ -12,8 +12,8 @@ import {
   pdfDuContratPourLePatron,
   pdfDuContratParJeton,
   factureDuPassageAvecSonCompteRendu,
-  brouillonsDeContrat,
-  supprimerBrouillonDeContrat,
+  contratsEnCours,
+  supprimerContratEnCours,
 } from "../src/server/repositories/contrats-entretien";
 import { planifierChantier } from "../src/server/repositories/chantiers";
 import { terminerChantier, listerChantiersTermines, getFacturePourChantier } from "../src/server/repositories/factures";
@@ -119,23 +119,6 @@ async function main() {
     assert.deepEqual(e, { ok: false, refus: "À compléter : Tonte et ébarbage." });
   });
 
-  // Sa plainte du 29 septembre 2026 : un contrat commencé puis quitté ne
-  // figurait pas dans « Vos chantiers ». L'accueil lit ces brouillons.
-  await cas("les brouillons se listent pour l'accueil, chez leur entreprise seulement", async () => {
-    const chezA = await brouillonsDeContrat(a.ctx);
-    assert.ok(chezA.some((c) => c.id === contratId && c.clientNom === "Costa"));
-    assert.equal((await brouillonsDeContrat(b.ctx)).length, 0);
-    assert.equal(await supprimerBrouillonDeContrat(b.ctx, contratId), false);
-  });
-
-  await cas("un brouillon se retire, et quitte la liste", async () => {
-    const r = await enregistrerContrat(a.ctx, { id: null, clientId: a.clientId, saisi: SAISI });
-    assert.ok(r.ok);
-    if (!r.ok) return;
-    assert.equal(await supprimerBrouillonDeContrat(a.ctx, r.contrat.id), true);
-    assert.ok(!(await brouillonsDeContrat(a.ctx)).some((c) => c.id === r.contrat.id));
-  });
-
   let jeton = "";
   await cas("l'aperçu PDF du brouillon se compose", async () => {
     const pdf = await pdfDuContratPourLePatron(a.ctx, contratId);
@@ -153,11 +136,6 @@ async function main() {
     jeton = e1.jeton;
     const r = await enregistrerContrat(a.ctx, { id: contratId, clientId: a.clientId, saisi: SAISI });
     assert.deepEqual(r, { ok: false, refus: "Ce contrat est parti chez le client : il ne se modifie plus.", fige: true });
-  });
-
-  await cas("parti, il quitte la liste des brouillons et ne se retire plus", async () => {
-    assert.ok(!(await brouillonsDeContrat(a.ctx)).some((c) => c.id === contratId));
-    assert.equal(await supprimerBrouillonDeContrat(a.ctx, contratId), false);
   });
 
   await cas("le client lit son contrat et son PDF par le lien", async () => {
@@ -302,6 +280,50 @@ async function main() {
     if (!ficheCosta.ok) return;
     await nommerClient(a.ctx, ficheCosta.id, a.clientId);
     assert.equal(await factureDuPassageAvecSonCompteRendu(a.ctx, ficheCosta.id, "sms"), null);
+  });
+
+  // Sa règle du 29 septembre 2026 : *« tout ce qui est devis, contrat
+  // d'entretien, dernier devis ou autre doivent arriver là »*. Un contrat vit
+  // sur l'accueil tant que le client ne l'a pas accepté.
+  await cas("l'accueil lit le dernier contrat de chaque client, tant qu'il n'est pas accepté", async () => {
+    const client = await creerClient(a.ctx, { nom: "Vidal", civilite: "mr" });
+    const r = await enregistrerContrat(a.ctx, { id: null, clientId: client.id, saisi: SAISI });
+    assert.ok(r.ok);
+    if (!r.ok) return;
+    const statutLu = async () => (await contratsEnCours(a.ctx)).find((c) => c.clientId === client.id)?.statut;
+    assert.equal(await statutLu(), "brouillon");
+    assert.equal((await contratsEnCours(b.ctx)).some((c) => c.clientId === client.id), false);
+    assert.equal(await supprimerContratEnCours(b.ctx, r.contrat.id), false);
+
+    const e = await envoyerContrat(a.ctx, r.contrat.id);
+    assert.ok(e.ok);
+    if (!e.ok) return;
+    assert.equal(await statutLu(), "envoye");
+    assert.equal(await supprimerContratEnCours(a.ctx, r.contrat.id), false, "un contrat chez le client ne s'efface pas");
+
+    // Repartir d'un contrat parti en fait un nouveau : la ligne suit le dernier.
+    const repris = await enregistrerContrat(a.ctx, { id: null, clientId: client.id, saisi: SAISI });
+    assert.ok(repris.ok);
+    const lignes = (await contratsEnCours(a.ctx)).filter((c) => c.clientId === client.id);
+    assert.deepEqual(lignes.map((c) => c.statut), ["brouillon"]);
+    if (repris.ok) assert.equal(await supprimerContratEnCours(a.ctx, repris.contrat.id), true);
+
+    await repondreAuContrat(e.jeton, { decision: "accepte" });
+    assert.equal(await statutLu(), undefined, "accepté, il vit au planning");
+  });
+
+  await cas("refusé, il reste sur l'accueil et peut se retirer", async () => {
+    const client = await creerClient(a.ctx, { nom: "Morel", civilite: "mme" });
+    const r = await enregistrerContrat(a.ctx, { id: null, clientId: client.id, saisi: SAISI });
+    assert.ok(r.ok);
+    if (!r.ok) return;
+    const e = await envoyerContrat(a.ctx, r.contrat.id);
+    assert.ok(e.ok);
+    if (!e.ok) return;
+    await repondreAuContrat(e.jeton, { decision: "refuse" });
+    assert.equal((await contratsEnCours(a.ctx)).find((c) => c.clientId === client.id)?.statut, "refuse");
+    assert.equal(await supprimerContratEnCours(a.ctx, r.contrat.id), true);
+    assert.equal((await contratsEnCours(a.ctx)).some((c) => c.clientId === client.id), false);
   });
 
   await cas("les passages d'une entreprise ne se posent pas chez l'autre", async () => {

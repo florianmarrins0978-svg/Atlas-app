@@ -11,9 +11,9 @@ import { getCurrentCtx } from "@/server/session-ctx";
 import { getRole } from "@/server/autorisation";
 import { peutGererDevis, recoitLesRappels, type DomaineDesRappels } from "@/lib/acces-roles";
 import { avecCivilite } from "@/lib/civilite";
-import { deOuD, etatDuBrouillonDeContrat } from "@/lib/contrats-entretien";
+import { deOuD, ligneDuContratEnCours } from "@/lib/contrats-entretien";
 import { listerChantiersPourAffichage } from "@/server/repositories/chantiers";
-import { brouillonsDeContrat } from "@/server/repositories/contrats-entretien";
+import { contratsEnCours } from "@/server/repositories/contrats-entretien";
 import { notificationsPatron, envoisCaducs } from "@/server/repositories/envois-devis";
 import { rappelsEnCours, retoursPasRecusEnCours } from "@/server/repositories/rappels";
 import { reglesDuRetour } from "@/server/regles-du-retour";
@@ -72,9 +72,9 @@ export default async function ChantiersPage() {
   const recoit = (domaine: DomaineDesRappels) => role !== null && recoitLesRappels(role, domaine);
   const [chantiers, contrats, notifications, caducs, rappels, receptions, abonnement, retoursManques] = await Promise.all([
     listerChantiersPourAffichage(ctx),
-    // Qui ne rédige pas de contrat n'en voit pas les brouillons : il ne
-    // pourrait ni les reprendre, ni les retirer.
-    role !== null && peutGererDevis(role) ? brouillonsDeContrat(ctx) : [],
+    // Qui ne rédige pas de contrat n'en voit pas : il ne pourrait ni les
+    // reprendre, ni les retirer.
+    role !== null && peutGererDevis(role) ? contratsEnCours(ctx) : [],
     recoit("devis") ? notificationsPatron(ctx) : [],
     recoit("devis") ? envoisCaducs(ctx) : [],
     rappelsEnCours(ctx, maintenant),
@@ -100,26 +100,43 @@ export default async function ChantiersPage() {
     .map((c) => ({ ...c, statut: getStatutAffiche(c) }))
     .filter((c) => ongletDuChantier(c) === "chantiers");
 
-  // **Un contrat commencé est un travail en cours, comme un devis** — sa
-  // plainte du 29 septembre 2026 : quitté avant l'envoi, il ne figurait nulle
-  // part. Parti chez le client, il quitte la liste ; accepté, ses passages
-  // vivent au planning.
-  const brinsDeContrat: BrinChantier[] = contrats.map((c) => {
+  // **Un contrat vit ici tant que le client ne l'a pas accepté, comme un
+  // devis.** Sa plainte du 29 septembre 2026 (un contrat quitté avant l'envoi
+  // ne figurait nulle part), puis sa règle du même jour : *« tout ce qui est
+  // devis, contrat d'entretien, dernier devis ou autre doivent arriver là »*.
+  // Accepté, ses passages vivent au planning (`ligneDuContratEnCours`).
+  const brinsDeContrat: BrinChantier[] = contrats.flatMap((c) => {
+    const ligne = ligneDuContratEnCours(
+      {
+        statut: c.statut,
+        prestations: c.prestations,
+        periode: { debut: c.debut, dureeMois: c.dureeMois },
+        envoyeLe: c.envoyeLe ? jourIso(c.envoyeLe) : null,
+      },
+      maintenant
+    );
+    if (!ligne) return [];
     const { jour, mois } = jourEtMois(c.majAt);
     const client = avecCivilite(c.clientNom, c.clientCivilite ?? undefined);
-    return {
-      id: c.id,
-      sorte: "contrat",
-      nom: "Contrat d'entretien",
-      quoi: `le contrat d'entretien ${deOuD(client)}`,
-      jour,
-      mois,
-      lieu: client,
-      etat: etatDuBrouillonDeContrat(c.prestations, { debut: c.debut, dureeMois: c.dureeMois }),
-      attend: true,
-      reprise: `/clients/${c.clientId}/contrat`,
-      enCours: true,
-    };
+    return [
+      {
+        id: c.id,
+        sorte: "contrat" as const,
+        nom: "Contrat d'entretien",
+        quoi: `le contrat d'entretien ${deOuD(client)}`,
+        jour,
+        mois,
+        lieu: client,
+        etat: ligne.etat,
+        precision: ligne.precision,
+        attend: true,
+        reprise: `/clients/${c.clientId}/contrat`,
+        enCours: true,
+        // Parti, il est chez le client : son lien doit continuer de s'ouvrir.
+        refusRetrait:
+          c.statut === "envoye" ? "Ce contrat est chez le client : il attend sa réponse." : undefined,
+      },
+    ];
   });
 
   const brinsDeChantier: BrinChantier[] = avecStatut.map((c) => {
