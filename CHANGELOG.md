@@ -135,6 +135,44 @@ couleur choisie qui n'arriverait que sur certains écrans (elle passe par la
 variable que lit `fondDeLEtat`), et un noir invisible sur Nuit (éclairci juste
 assez, `ARCHITECTURE.md` §435). Rien ne bouge tant qu'il n'a rien choisi.
 
+### Glisser un devis ou un contrat envoyé le retire de la liste sans couper le lien du client
+
+Sa règle : *« il doit pouvoir les retirer en les slidant, mais ça ne doit pas
+impacter le lien cliquable envoyé au client »*. Elle a fait trouver un défaut
+réel : glisser un devis envoyé SUPPRIMAIT le chantier ; le lien s'ouvrait
+encore, mais une acceptation arrivée ensuite restait invisible, ni carte, ni
+planning. Désormais ce qui attend le client se retire sans rien effacer
+(migration 0114, `retire_de_la_liste_at`), et la réponse du client ramène la
+ligne avec sa carte. Le reste se supprime comme avant. Puis sa précision :
+*« il faut qu'il puisse l'utiliser, peu importe ce qu'on fera dans l'appli »* ;
+un contrat refusé glissé n'est plus effacé non plus, seul un brouillon l'est. Suites
+`test-retirer-sans-casser-le-lien-e2e` (rouge puis vert),
+`test-retirer-de-la-liste`, cas ajoutés à `test-rappels-db`,
+`test-contrats-entretien(-db)` et `test-contrat-quitte-e2e`. `ARCHITECTURE.md`
+§437.
+
+### Un contrat d'entretien commencé puis quitté se retrouve dans « Vos chantiers »
+
+Sa plainte : *« lorsque j'ouvre un contrat d'entretien pour réaliser le devis,
+si je quitte, il ne s'enregistre pas dans mes chantiers en cours »*. Deux
+racines. **L'écran du contrat n'écrivait rien** avant « Aperçu du PDF » ou
+« Envoyer » : quitté, le contrat partait avec lui. Il s'enregistre désormais à
+chaque geste, dès la première prestation, dans une file qui ne crée jamais deux
+brouillons ; l'aperçu et l'envoi passent par la même écriture (la création en
+double qui vivait dans `envoyer` a disparu). **L'accueil ne lisait que des
+chantiers** : il lit aussi les brouillons de contrat (« Contrat à compléter »
+ou « Contrat prêt à envoyer »), la ligne rouvre l'écran du contrat, et le
+glissement le retire (un brouillon seulement). Parti chez le client, il quitte
+la liste. Puis sa règle du même jour : *« tout ce qui est devis, contrat d'entretien,
+dernier devis ou autre doivent arriver là »*. Un contrat envoyé reste sur
+l'accueil, « Contrat envoyé, sans réponse » avec son jour d'envoi, jusqu'à ce
+que le client l'accepte ; refusé, il y reste aussi, comme un devis. Suite neuve
+`test-contrat-quitte-e2e` (rouge sur l'ancien code à chaque étape, vert
+ensuite), cas ajoutés à `test-contrats-entretien`, `-db` et
+`test-repartir-du-client-e2e`. `ARCHITECTURE.md`
+§436. Niveau 3 (rayon de 102 points d'entrée) : **batterie non jouée**, il l'a
+interdite ; pas sur `main`.
+
 ## 2026-09-28
 
 ### Trois lots sur `main` en une seule batterie

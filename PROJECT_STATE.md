@@ -20,6 +20,19 @@ Rien, incomplet, complet, au-delà se choisissent sous la légende du planning,
 pour toute l'entreprise, comme l'allure des devis. Migration 0113. Branche
 `claude/couleurs-du-planning` ; la batterie n'est pas jouée, à sa demande.
 
+· dernière migration `drizzle/0114_retire_de_la_liste.sql` (branche `claude/contrat-quitte-dans-chantiers`)
+
+---
+## SUR SA BRANCHE : LE CONTRAT QUITTÉ DANS « VOS CHANTIERS » (29 septembre 2026)
+
+L'écran du contrat d'entretien s'enregistre à chaque geste ; l'accueil liste
+les contrats tant que le client ne les a pas acceptés (brouillon, envoyé sans
+réponse, refusé), comme les devis. Glisser un devis ou un contrat envoyé le
+retire de la liste sans rien effacer : le lien du client s'ouvre, sa réponse
+ramène la ligne (migration 0114, §437). Branche
+`claude/contrat-quitte-dans-chantiers`, `ARCHITECTURE.md` §436 et §437. Niveau 3,
+batterie interdite ce jour-là : pas sur `main`.
+
 ## SUR `main` : L'ASSISTANT RÉPOND SUR SES DONNÉES (28 septembre 2026)
 
 Quatre fiches « comment Atlas se comporte » (conservation, après l'arrêt, qui

@@ -33902,3 +33902,95 @@ carré « rien » (légende, fiche du jour, journée regardée).
 écrite en clair, elle ne suivrait plus un changement d'apparence. Le
 propriétaire seul la change (`exigerProprietaire`) ; ses salariés la voient.
 
+## §436 : Un contrat d'entretien s'enregistre à chaque geste, et son brouillon vit dans « Vos chantiers »
+
+**Sa plainte du 29 septembre 2026** : un contrat commencé puis quitté ne se
+retrouvait nulle part. L'écran (`ContratClient.tsx`) tenait toute la saisie
+dans le navigateur et n'écrivait qu'à « Aperçu du PDF » ou « Envoyer ».
+
+**L'écriture suit la saisie, comme un devis.** Le brouillon naît au premier
+vrai geste (une prestation ajoutée), puis chaque changement s'écrit. Les
+écritures passent par UNE file : la première crée, les suivantes reprennent son
+identifiant, et chacune écrit la saisie la plus récente, ce qui empêche deux
+brouillons pour un seul contrat. L'aperçu et l'envoi passent par la même file :
+la création de secours qui vivait dans `envoyer` a été retirée. Une saisie qui
+ne se relit pas (un prix à moitié tapé) ne s'écrit pas : son refus est déjà
+sous le bouton. Rouvrir sans rien toucher n'écrit rien.
+
+**L'accueil lit deux sortes de lignes.** `BrinChantier.sorte` dit si la ligne
+est un chantier ou un brouillon de contrat, et `quoi` ce que le retrait nomme ;
+`EcranChantiers` choisit l'action de retrait d'après la sorte
+(`supprimerBrouillonDeContratAction` n'efface qu'un brouillon : un contrat parti
+est chez le client, son lien doit rester). Les brouillons passent en tête : ils
+ne portent pas la date de création des chantiers, et c'est le travail le plus
+récent. Qui ne rédige pas de contrat (`peutGererDevis`) n'en voit pas les
+brouillons. Le mot de l'état vient de `etatDuBrouillonDeContrat`, sur la même
+règle que l'envoi (`ceQuiManque`).
+
+**Puis sa règle du même jour, et elle a tranché la question** : *« tout ce qui
+est devis, contrat d'entretien, dernier devis ou autre doivent arriver là »*.
+Un contrat vit donc sur l'accueil **tant que le client ne l'a pas accepté**,
+exactement comme un devis : brouillon, « Contrat envoyé, sans réponse » avec
+son jour d'envoi, « Contrat refusé ». Accepté, ses passages vivent au planning
+et il n'a plus de ligne (`ligneDuContratEnCours`, qui remplace
+`etatDuBrouillonDeContrat`). `contratsEnCours` ne lit que le DERNIER contrat
+de chaque client, celui que l'écran rouvre : sinon un contrat refusé puis
+repris aurait une ligne qui mène au brouillon. Un contrat envoyé refuse le
+retrait (son lien doit rester ouvert) ; un brouillon ou un refus se retire.
+« Dernier devis » et « Nouveau devis » n'avaient rien à changer : ils créent un
+chantier, qui reste dans la liste jusqu'à sa date (`ongletDuChantier`) ;
+`test-repartir-du-client-e2e` le tient désormais pour « Dernier devis ».
+
+## §437 : Retirer de la liste n'est pas supprimer
+
+**Sa règle du 29 septembre 2026** : *« si l'utilisateur veut les retirer de la
+liste des chantiers en cours, il doit pouvoir en les slidant sur le côté, mais
+ça ne doit pas impacter le lien cliquable envoyé au client ! Il doit quand même
+pouvoir l'ouvrir »*.
+
+**Le défaut qu'elle a fait trouver.** Glisser la ligne d'un devis envoyé
+SUPPRIMAIT le chantier (`deleted_at`). Le lien s'ouvrait encore
+(`lireParJeton` ne regarde pas `deleted_at`), le client pouvait accepter, et
+l'acceptation posait au planning un chantier supprimé : invisible au planning,
+et sans carte sur l'accueil (`notificationsPatron` écarte les chantiers
+supprimés). La réponse se perdait sans un mot. Reproduit par
+`test-retirer-sans-casser-le-lien-e2e`, rouge sur l'ancien code.
+
+**La racine : un seul geste pour deux intentions.** « Je n'ai plus rien à faire
+ici » et « ce chantier n'existe pas » étaient la même écriture. Ils sont
+séparés :
+
+| la ligne | le glissement |
+|---|---|
+| un devis qui attend le client (`seRetireSansEffacer` : envoyé, en attente, à relancer) | **retire** : `chantiers.retire_de_la_liste_at` est posé, rien n'est effacé |
+| un contrat envoyé | **retire** : `contrats_entretien.retire_de_la_liste_at` |
+| tout le reste (brouillon, devis prêt, caduc, retourné ; contrat en brouillon ou refusé) | **supprime**, comme avant |
+
+**La ligne revient d'elle-même, sans écriture** : `retireDeLaListe` la cache
+tant que le statut dit « attend le client » ET qu'aucun envoi n'est parti après
+le retrait. Une réponse change le statut, un nouvel envoi est plus récent : la
+ligne revient, avec sa carte. Le rappel « devis sans réponse » respecte la même
+frontière dans sa requête (`rappels.ts`) ; c'est la seule recopie de la règle,
+en SQL faute de pouvoir appeler la fonction pure dans un `WHERE`, et elle le
+dit en commentaire.
+
+**`BrinChantier.retrait`** (`supprimer`, `retirer`, `contrat`) remplace
+`sorte` : chaque ligne dit ce que son glissement écrit, et `EcranChantiers`
+choisit l'action. Migration **0114**, EXPAND seul (deux colonnes nullables) :
+l'ancien code l'ignore.
+
+**Sa règle, précisée le même soir** : *« il faut qu'il puisse l'utiliser, peu
+importe ce qu'on fera dans l'appli »*. Aucun geste de l'application n'efface
+donc un document parti chez le client : un contrat REFUSÉ glissé hors de la
+liste n'est plus effacé non plus (il ne l'était que dans la première version de
+ce lot), il est retiré comme un envoyé. Seul un brouillon, que personne n'a
+reçu, s'efface. `ligneDuContratEnCours` compare `repondu_le` à l'heure du
+retrait : retiré avant la réponse, le refus ramène la ligne ; retiré après, elle
+reste cachée.
+
+**Ce qui coupe encore un lien de devis, relevé le même jour** : la durée de vie
+du lien (`VALIDITE_LIEN_JOURS`, 45 jours, « Ce lien n'est plus valable »), et
+l'effacement des données d'un client (`effacerClient`, une obligation RGPD, qui
+doit rester). Aucun geste « annuler le lien » n'existe, et il n'en a jamais
+existé. La durée de vie est une question posée à lui (`TODO.md`).
+

@@ -809,6 +809,9 @@ export const contratsEntretien = pgTable(
     reponduLe: timestamp("repondu_le", { withTimezone: true }),
     reponseAdresseIp: text("reponse_adresse_ip"),
     reponseAgent: text("reponse_agent"),
+    // Retiré de « Vos chantiers » par un glissement, sans rien effacer : le
+    // lien du client reste ouvert (migration 0114).
+    retireDeLaListeAt: timestamp("retire_de_la_liste_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
     createdBy: uuid("created_by").references(() => users.id, { onDelete: "set null" }),
@@ -951,6 +954,11 @@ export const chantiers = pgTable(
      */
     repriseGrille: text("reprise_grille").$type<"oui" | "non">(),
     hausseReprise: numeric("hausse_reprise", { precision: 4, scale: 1 }),
+
+    // Retiré de « Vos chantiers » par un glissement quand son devis attend le
+    // client : rien n'est effacé, le lien reste ouvert, et la ligne revient à
+    // sa réponse (migration 0114, `retireDeLaListe`).
+    retireDeLaListeAt: timestamp("retire_de_la_liste_at", { withTimezone: true }),
 
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),

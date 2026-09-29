@@ -113,6 +113,19 @@ vert le 27, sur `main` avec son accord. `ARCHITECTURE.md` §427, document de ret
 | le patron n'est pas notifié quand le client valide ou déplace : le planning bouge seul | à trancher par lui |
 | un contrat dans le jeu de démonstration, pour que `test-pages-publiques-sans-navigation-e2e` ouvre vraiment `/contrat` et `/contrat/dates` | à coder |
 
+## 🔜 LE CONTRAT QUITTÉ, ET RETIRER SANS COUPER LE LIEN : codé le 29 septembre 2026, PAS SUR `main`
+
+Sa plainte : un contrat d'entretien commencé puis quitté ne se retrouvait pas
+dans ses chantiers en cours. Corrigé à la racine (`ARCHITECTURE.md` §436,
+`docs/contrat-quitte.md`), puis le glissement qui retire sans supprimer
+(§437, migration 0114). **Niveau 3, batterie interdite par lui** : elle reste
+à jouer avant `main`.
+
+| Reste | Qui |
+|---|---|
+| `npm run verifier:avant-livraison`, puis `main` | lui dire quand, il l'a interdite ce jour-là |
+| ~~le lien d'un devis meurt au bout de 45 jours~~ tranché le 29 septembre : on garde 45 jours, et le message au client le dit (planche `appli/lien-valable-45-jours.html`, branche `claude/maquette-lien-45-jours`) | fait |
+
 ## 🔜 CONTRAT D'ENTRETIEN : LOTS 1 ET 2 SUR `main` (26 et 27 septembre 2026)
 
 **Sa consigne : « code ça, ne lance pas de batterie ».** Branche
