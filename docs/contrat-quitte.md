@@ -66,7 +66,7 @@ Ce qui peut encore empêcher un client d'utiliser son lien :
 | | Aujourd'hui | Ce qu'il faut décider |
 |---|---|---|
 | un contrat refusé glissé | **corrigé** : il n'est plus effacé | rien |
-| le lien d'un devis a **45 jours** de vie, puis « Ce lien n'est plus valable » | inchangé | **toi** : le garder, l'allonger, ou le caler sur la validité écrite sur le devis |
+| le lien d'un devis a **45 jours** de vie, puis « Ce lien n'est plus valable » | inchangé | **tranché** : on garde 45 jours, et le message le dira (maquette à part) |
 | « Effacer les données du client » (droit à l'oubli) | le lien part avec ses données | rien : c'est une obligation légale, le client l'a demandé |
 
 ## Les preuves
