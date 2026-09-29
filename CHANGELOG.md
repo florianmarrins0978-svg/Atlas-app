@@ -6,6 +6,27 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-09-29
+
+### L'unité d'une ligne ne porte que la rangée : « arbre » devient « u »
+
+Sa règle, capture à l'appui : *« dans l'unité, il ne peut pas y avoir la
+mention arbre ; quand je parle d'un arbre, d'un arbuste ou d'une plante, c'est
+la mention U qui doit apparaître »*. La dictée garde le mot prononcé (« trois
+arbres » : unité « arbre ») pour comparer les prix, et le dépôt le recopiait tel
+quel sur la ligne du devis.
+
+La règle vit dans `uniteAdmise` (`src/lib/unite-de-ligne.ts`), appliquée là où
+la ligne s'écrit : `ajouterLignePrix`, `modifierLignePrix`, `majLigneDeFacture`.
+Dictée, IA, tarif repris et doigt passent tous par là. Une forme dite se ramène
+à la rangée (« m3 » : m³, « heure » : h) ; tout autre mot s'enregistre sans
+unité, donc s'imprime « u ». La case retombe sur « u » dès qu'on la quitte.
+`scripts/test-unite-de-ligne-db.ts`, vu rouge sur l'ancien code.
+
+**Non touché** : une ligne déjà enregistrée avec « arbre » le garde jusqu'à ce
+qu'on touche sa case (aucune réécriture de ses données) ; « passage » des
+factures de contrat d'entretien reste tel quel.
+
 ## 2026-09-28
 
 ### Trois lots sur `main` en une seule batterie

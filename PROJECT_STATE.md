@@ -4,6 +4,11 @@
 · dernière migration `drizzle/0106_hausse_du_devis_repris.sql` (sur la branche)
 
 ---
+## CODÉ : L'UNITÉ D'UNE LIGNE NE PORTE QUE LA RANGÉE (29 septembre 2026)
+
+« arbre », « arbuste », « plante » ne s'écrivent plus dans la case Unité d'un
+devis ou d'une facture : la ligne reçoit « u ». `uniteAdmise`, au dépôt.
+
 ## SUR `main` : L'ASSISTANT RÉPOND SUR SES DONNÉES (28 septembre 2026)
 
 Quatre fiches « comment Atlas se comporte » (conservation, après l'arrêt, qui

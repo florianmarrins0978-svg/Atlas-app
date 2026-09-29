@@ -53,6 +53,7 @@ import {
   modalitesDePaiement,
   porteUnAutreIban,
 } from "../../lib/modalites-paiement";
+import { uniteAdmise } from "../../lib/unite-de-ligne";
 import { avecCivilite, type CiviliteChoisie } from "../../lib/civilite";
 import {
   categoriesDeLAvoir,
@@ -1070,7 +1071,7 @@ export async function majLigneDeFacture(
         quantite: quantite.valeur,
         prixUnitaire: prixUnitaire.valeur,
         montant,
-        ...(champs.unite !== undefined ? { unite: champs.unite?.trim() || null } : {}),
+        ...(champs.unite !== undefined ? { unite: uniteAdmise(champs.unite) } : {}),
         // `undefined` : on ne touche pas au taux. `null` : on le RETIRE, et la
         // ligne retombe sur celui de la facture. Les confondre effacerait le
         // taux à chaque correction de libellé.

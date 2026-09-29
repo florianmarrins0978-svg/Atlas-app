@@ -10,6 +10,7 @@ import { reprendreLesLignes, type LigneReprise } from "../../lib/reprise-des-pri
 import { listerTarifs } from "./tarifs";
 import { montantDeLaLigne } from "../../lib/montant-de-ligne";
 import { memeValeur } from "../../lib/hausse-du-devis";
+import { uniteAdmise } from "../../lib/unite-de-ligne";
 
 export async function listerLignesPrix(ctx: Ctx, chantierId: string) {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, (tx) =>
@@ -60,7 +61,7 @@ export async function ajouterLignePrix(
         montant,
         quantite: options?.quantite ?? "1",
         prixUnitaire: options?.prixUnitaire ?? montant,
-        unite: options?.unite ?? undefined,
+        unite: uniteAdmise(options?.unite),
         aChiffrer: options?.aChiffrer ?? false,
         tauxTva: options?.tauxTva ?? null,
         prixAncien: options?.prixAncien ?? null,
@@ -104,6 +105,7 @@ export async function modifierLignePrix(
     // zéro alors que l'écran affichait 750 €. Une ligne dont le total ne
     // correspond pas à son détail ne se rattrape que par un avoir.
     const patch: typeof data & { prixAncien?: null; prixGrille?: null } = { ...data };
+    if (data.unite !== undefined) patch.unite = uniteAdmise(data.unite);
     const [avant] = await tx.select().from(lignesPrix).where(eq(lignesPrix.id, id)).limit(1);
     if (data.montant !== undefined && data.prixUnitaire === undefined && data.quantite === undefined) {
       patch.prixUnitaire = data.montant;

@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import { colors } from "@/lib/design-tokens";
-import { uniteDeLaLigne } from "@/lib/unite-de-ligne";
+import { UNITES_USUELLES, uniteAdmise, uniteDeLaLigne } from "@/lib/unite-de-ligne";
 import { toutSelectionner } from "./ChampsDuDevis";
 
 /**
@@ -16,10 +16,13 @@ import { toutSelectionner } from "./ChampsDuDevis";
  * montre ni la saisisse. Une dictée pouvait la poser, un doigt ne le pouvait pas.
  *
  * **Les unités usuelles viennent sous le champ quand il prend le doigt**, pour
- * ne pas taper « m³ » sur un clavier de téléphone. Ce qu'il tape reste
- * possible : la rangée propose, elle n'impose rien.
+ * ne pas taper « m³ » sur un clavier de téléphone.
+ *
+ * **Et la rangée est la seule permise — sa règle du 29 septembre 2026** : *« il
+ * ne peut pas y avoir la mention arbre »*. Taper reste possible (« m3 »,
+ * « heure » se ramènent à la rangée), mais un mot hors d'elle retombe sur
+ * « u » dès la case quittée, comme en base (`uniteAdmise`).
  */
-export const UNITES_USUELLES = ["u", "ml", "m²", "m³", "kg", "h", "forfait"] as const;
 
 export default function ChampUnite({
   valeur,
@@ -71,7 +74,9 @@ export default function ChampUnite({
         onBlur={(e) => {
           setOuvert(false);
           entrant.current = false;
-          onFini(e.currentTarget.value);
+          const retenue = uniteAdmise(e.currentTarget.value) ?? "";
+          onChange(retenue);
+          onFini(retenue);
         }}
         className="w-16 border-0 bg-transparent px-1 text-right outline-none focus:bg-[var(--voile-champ)] sm:w-full"
         style={{
