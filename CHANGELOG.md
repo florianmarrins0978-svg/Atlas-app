@@ -8,6 +8,20 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-29
 
+### Les mots de passe que tout le monde essaie sont refusés
+
+Sa question : exiger une majuscule et un caractère spécial. Refusé, parce que
+« Motdepasse1! » respecte cette règle et fait partie des premiers essais d'un
+attaquant. Ce qui manquait était ailleurs : douze caractères laissaient passer
+« 123456789012 », « azertyuiopqs » ou « motdepasse12 ». `estTropCourant`
+(`src/lib/mot-de-passe.ts`) découpe le mot de passe en morceaux et le refuse
+quand aucun n'apporte rien (mot connu, suite du clavier, répétition, année).
+Une phrase de plusieurs mots passe toujours. Comme la longueur, la règle ne
+vaut qu'à la création et au changement : aucun compte existant n'est mis
+dehors. Non comparé au nom ni à l'adresse du compte, et pas aux fuites
+publiques. **Batterie non jouée, à sa demande** : seules les suites pures du
+domaine et les types l'ont été.
+
 ### Neuf planches : ce que fait chaque « Ajouter »
 
 Sa demande : *« fais-moi une planche pour chaque, réaliste, que je puisse

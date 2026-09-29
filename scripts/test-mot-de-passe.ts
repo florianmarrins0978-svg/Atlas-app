@@ -52,9 +52,11 @@ essai("ce qui passait avant — huit caractères — est désormais refusé", ()
 });
 
 essai("la limite annoncée à l'écran est CELLE-CI, pas une autre", () => {
-  const juste = "x".repeat(LONGUEUR_MINIMALE);
+  // Pas « xxxxxxxxxxxx » : depuis le 29 septembre 2026, une répétition est
+  // refusée pour ce qu'elle est, et l'essai mesurerait la mauvaise règle.
+  const juste = "bruyere-nord-sud-est".slice(0, LONGUEUR_MINIMALE);
   assert.equal(verifierNouveauMotDePasse(juste, juste), null);
-  const court = "x".repeat(LONGUEUR_MINIMALE - 1);
+  const court = juste.slice(0, -1);
   assert.equal(verifierNouveauMotDePasse(court, court), "trop-court");
 });
 
@@ -98,7 +100,7 @@ essai("une espace finale fait une confirmation différente", () => {
 // d'alerte (`AGENTS.md`). Ce qui compte est ailleurs : la phrase ne doit pas
 // ÊTRE le code, et elle doit se lire.
 essai("chaque refus porte une phrase, jamais un code", () => {
-  for (const r of ["trop-court", "confirmation-differente", "sans-changement", "actuel-faux"] as const) {
+  for (const r of ["trop-court", "trop-courant", "confirmation-differente", "sans-changement", "actuel-faux"] as const) {
     const m = messageRefus(r);
     assert.ok(m.length > 12, `« ${r} » rend « ${m} »`);
     assert.notEqual(m, r, `« ${r} » se rend tel quel à l'écran`);
@@ -155,7 +157,66 @@ essai("trop court, elle le dit — et avec les mots du refus serveur", () => {
 
 essai("assez long, elle se tait", () => {
   assert.equal(etatNouveau("bruyere-42-nord"), null);
-  assert.equal(etatNouveau("a".repeat(LONGUEUR_MINIMALE)), null);
+  assert.equal(etatNouveau("bruyere-nord-sud-est".slice(0, LONGUEUR_MINIMALE)), null);
+});
+
+// ─── Les mots de passe que tout le monde essaie ──────────────────────────────
+//
+// **Sa question du 29 septembre 2026 :** *« il faudrait peut-être demander un
+// mot de passe très sécurisé, avec un caractère spécial, une majuscule »*.
+// Réponse : non à la grammaire (« Motdepasse1! » la respecte, et c'est le
+// premier essayé), oui au refus de ce qu'un attaquant essaie en premier. Douze
+// caractères laissaient passer « 123456789012 ».
+essai("les suites, les répétitions et les mots connus sont refusés", () => {
+  for (const m of [
+    "123456789012",
+    "987654321098",
+    "azertyuiopqs",
+    "qwertyuiop12",
+    "abcdefghijkl",
+    "111111111111",
+    "abababababab",
+    "motdepasse12",
+    "Motdepasse1!",
+    "P4ssw0rd2026",
+    "password1234",
+    "azerty123456",
+    "soleilsoleil",
+    "Bonjour2026!!",
+    "abcabcabcabc",
+    "12345678azerty",
+  ]) {
+    assert.equal(verifierNouveauMotDePasse(m, m), "trop-courant", `« ${m} » est accepté`);
+  }
+});
+
+// Le contrôle ne doit pas refuser à tort : un refus qui tombe sur une phrase
+// honnête apprend à contourner la règle, pas à la respecter.
+essai("une phrase de plusieurs mots passe, même simple", () => {
+  for (const m of [
+    "chantier vert pelouse",
+    "bruyere-42-nord",
+    "tondeuse du lundi",
+    "Chene tordu 1987",
+    "x".repeat(4) + "yzw" + "12345",
+  ]) {
+    assert.equal(verifierNouveauMotDePasse(m, m), null, `« ${m} » est refusé`);
+  }
+});
+
+// L'ordre de la saisie : trop court se dit avant trop courant, sans quoi
+// « azerty » recevrait une phrase qui ne dit pas ce qui manque.
+essai("sur un mot connu ET trop court, c'est la longueur qui est nommée", () => {
+  assert.equal(verifierNouveauMotDePasse("azerty", "azerty"), "trop-court");
+});
+
+essai("pendant la frappe, l'écran dit « trop courant » avec les mots du serveur", () => {
+  assert.deepEqual(etatNouveau("123456789012"), { message: messageRefus("trop-courant") });
+});
+
+essai("la phrase du refus se lit comme une phrase", () => {
+  const m = messageRefus("trop-courant");
+  assert.ok(m.includes(" ") && /[.!]$/.test(m), m);
 });
 
 console.log("");

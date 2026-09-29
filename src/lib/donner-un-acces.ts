@@ -24,6 +24,8 @@ export type RefusAcces =
   | "role-inconnu"
   /** Le mot de passe provisoire ne tient pas la règle du dépôt. */
   | "mot-de-passe-trop-court"
+  /** Assez long, mais fait de ce qu'un attaquant essaie en premier. */
+  | "mot-de-passe-trop-courant"
   /** La seconde saisie ne redit pas la première. */
   | "mot-de-passe-confirmation"
   /** Le dernier patron ne peut ni se rétrograder ni se retirer. */
@@ -110,6 +112,7 @@ export function refusDeLAcces(saisie: {
    */
   const refusMdp = verifierNouveauMotDePasse(saisie.motDePasse, saisie.confirmation);
   if (refusMdp === "trop-court") return "mot-de-passe-trop-court";
+  if (refusMdp === "trop-courant") return "mot-de-passe-trop-courant";
   if (refusMdp === "confirmation-differente") return "mot-de-passe-confirmation";
 
   if (saisie.emailDejaPris) return "email-deja-pris";
@@ -191,6 +194,8 @@ export function messageRefusAcces(refus: RefusAcces): string {
     // l'impression de deux applications.
     case "mot-de-passe-trop-court":
       return messageRefus("trop-court");
+    case "mot-de-passe-trop-courant":
+      return messageRefus("trop-courant");
     case "mot-de-passe-confirmation":
       return messageRefus("confirmation-differente");
     case "dernier-patron":

@@ -40,6 +40,8 @@ export const LONGUEUR_MINIMALE = 12;
 export type RefusMotDePasse =
   /** Plus court que `LONGUEUR_MINIMALE`. */
   | "trop-court"
+  /** Assez long, mais fait de ce qu'un attaquant essaie en premier. */
+  | "trop-courant"
   /** La confirmation ne redit pas la même chose. */
   | "confirmation-differente"
   /** Le nouveau est l'ancien : le geste n'aurait rien fait. */
@@ -61,6 +63,7 @@ export function verifierNouveauMotDePasse(
   actuel?: string
 ): RefusMotDePasse | null {
   if (nouveau.length < LONGUEUR_MINIMALE) return "trop-court";
+  if (estTropCourant(nouveau)) return "trop-courant";
   if (actuel !== undefined && actuel !== "" && nouveau === actuel) return "sans-changement";
   // La confirmation se compare TELLE QUELLE, espaces compris : un mot de passe
   // qui commence par une espace est un mot de passe valable, et le rogner ici
@@ -74,6 +77,8 @@ export function messageRefus(refus: RefusMotDePasse): string {
   switch (refus) {
     case "trop-court":
       return `Il faut au moins ${LONGUEUR_MINIMALE} caractères.`;
+    case "trop-courant":
+      return "Ce mot de passe est trop courant.";
     case "confirmation-differente":
       return "Les deux saisies ne sont pas identiques.";
     case "sans-changement":
@@ -101,8 +106,12 @@ export function messageRefus(refus: RefusMotDePasse): string {
  * touche est exactement la phrase qu'il a fait retirer.
  */
 export function etatNouveau(nouveau: string): { message: string } | null {
-  if (nouveau === "" || nouveau.length >= LONGUEUR_MINIMALE) return null;
-  return { message: messageRefus("trop-court") };
+  if (nouveau === "") return null;
+  if (nouveau.length < LONGUEUR_MINIMALE) return { message: messageRefus("trop-court") };
+  // Sans cette ligne, le bouton resterait éteint sur « 123456789012 » sans
+  // qu'aucune phrase ne dise pourquoi : la même faute que celle du 31 août.
+  if (estTropCourant(nouveau)) return { message: messageRefus("trop-courant") };
+  return null;
 }
 
 /**
@@ -120,4 +129,96 @@ export function etatConfirmation(
   return confirmation === nouveau
     ? { identiques: true, message: "Les deux sont identiques ✓" }
     : { identiques: false, message: "Les deux saisies ne sont pas identiques." };
+}
+
+// ─── Ce qu'un attaquant essaie en premier ────────────────────────────────────
+//
+// **Sa question du 29 septembre 2026** : exiger une majuscule et un caractère
+// spécial. Refusé, et la raison est dans l'en-tête : « Motdepasse1! » respecte
+// cette grammaire, et c'est l'un des premiers essais de n'importe quel outil
+// d'attaque. Ce qui manquait vraiment, c'est l'inverse : douze caractères
+// laissaient passer « 123456789012 » et « motdepasse12 ».
+//
+// **Le principe : un mot de passe se découpe en morceaux** (lettres, chiffres,
+// le reste), et il est refusé quand AUCUN morceau n'apporte rien : un mot de la
+// liste, une suite du clavier ou de l'alphabet, une répétition, une année. Une
+// liste brute de mots de passe fuités ne verrait pas « Motdepasse2026!! » ; le
+// découpage le voit, et il accepte « chantier vert pelouse » parce que deux de
+// ses mots n'apportent pas rien.
+//
+// **Ce que ce contrôle NE fait PAS** : il ne compare pas au nom ni à l'adresse
+// du compte (les sept appelants devraient les fournir), et il ne connaît pas
+// les fuites publiques (il faudrait un service extérieur). Il ne s'applique,
+// comme la longueur, qu'à la création et au changement.
+
+/**
+ * Les racines qu'on retrouve en tête de toutes les listes de mots de passe
+ * fuités, en France d'abord. Écrites sans accent ni majuscule : la
+ * comparaison se fait après les avoir retirés.
+ */
+const RACINES_COURANTES = new Set([
+  "motdepasse", "motdepass", "mdp", "password", "passwd", "passe", "pass",
+  "azerty", "qwerty", "qwertz", "azertyuiop", "qwertyuiop",
+  "admin", "administrateur", "root", "user", "utilisateur", "login", "test",
+  "bonjour", "bonsoir", "salut", "coucou", "hello", "welcome", "bienvenue",
+  "soleil", "loulou", "doudou", "chouchou", "cheri", "cherie", "amour",
+  "jetaime", "iloveyou", "love", "princesse", "chocolat", "nicolas", "julien",
+  "marseille", "paris", "lyon", "toulouse", "france", "psg", "om", "olympique",
+  "football", "foot", "monkey", "dragon", "master", "sunshine", "shadow",
+  "superman", "batman", "pokemon", "starwars", "secret", "letmein", "abc",
+  "atlas", "jardin", "jardinier", "paysage", "paysagiste", "chantier",
+  "entreprise", "societe", "google", "apple", "facebook", "orange", "free",
+]);
+
+/**
+ * Les suites qu'on tape sans réfléchir, écrites deux fois pour qu'un morceau
+ * qui « fait le tour » (« 890123 ») s'y trouve encore.
+ */
+const SUITES = [
+  "0123456789", "abcdefghijklmnopqrstuvwxyz",
+  "azertyuiopqsdfghjklmwxcvbn", "qwertyuiopasdfghjklzxcvbnm",
+  "azertyuiop", "qsdfghjklm", "wxcvbn", "asdfghjkl", "zxcvbnm",
+  "aqwzsxedcrfvtgbyhnujikolpm", "&é\"'(-è_çà",
+].flatMap((suite) => {
+  const tour = suite + suite;
+  return [tour, [...tour].reverse().join("")];
+});
+
+/** Les chiffres qui déguisent une lettre, quand ils sont pris entre deux. */
+const CHIFFRES_DEGUISES: Record<string, string> = {
+  "0": "o", "1": "i", "3": "e", "4": "a", "5": "s", "7": "t", "8": "b", "@": "a", "$": "s",
+};
+
+function estUneRepetition(morceau: string): boolean {
+  for (let pas = 1; pas <= morceau.length / 2; pas++) {
+    if (morceau.length % pas !== 0) continue;
+    if (morceau.slice(0, pas).repeat(morceau.length / pas) === morceau) return true;
+  }
+  return false;
+}
+
+function morceauSansApport(morceau: string): boolean {
+  if (/^[^a-z0-9]+$/.test(morceau)) return true; // des signes seuls
+  if (/^[0-9]{1,4}$/.test(morceau)) return true; // une année, un « 12 »
+  if (RACINES_COURANTES.has(morceau)) return true;
+  if (estUneRepetition(morceau)) return true;
+  return SUITES.some((suite) => suite.includes(morceau));
+}
+
+/** Vrai quand le mot de passe n'est fait que de ce qui s'essaie en premier. */
+export function estTropCourant(motDePasse: string): boolean {
+  const ramene = motDePasse
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    // « p4ssw0rd » : un chiffre pris entre deux lettres redevient la lettre
+    // qu'il déguise, sinon le découpage le couperait en cinq morceaux.
+    .replace(/(?<=[a-z])[0134578@$](?=[a-z])/g, (c) => CHIFFRES_DEGUISES[c]);
+
+  if (new Set(ramene).size < 4) return true;
+  if (estUneRepetition(ramene)) return true;
+  if (SUITES.some((suite) => suite.includes(ramene))) return true;
+
+  const morceaux = ramene.match(/[a-z]+|[0-9]+|[^a-z0-9]+/g) ?? [];
+  return morceaux.every(morceauSansApport);
 }

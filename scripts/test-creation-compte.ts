@@ -159,10 +159,13 @@ test("le total annoncé ne monte JAMAIS en cours de route", () => {
 });
 
 test("mot de passe : la règle du produit, jamais une seconde", () => {
-  const court = "a".repeat(LONGUEUR_MINIMALE - 1);
+  // Pas « aaaaaaaaaaaa » : depuis le 29 septembre 2026, une répétition est
+  // refusée pour ce qu'elle est, et la porte doit le refuser comme le reste.
+  const bon = "bruyere-nord-sud-est".slice(0, LONGUEUR_MINIMALE);
+  const court = bon.slice(0, -1);
   assert.ok(refusDe(q("mdp"), { mdp: court, confirm: court }), "un mot de passe trop court est accepté");
-  const bon = "a".repeat(LONGUEUR_MINIMALE);
   assert.equal(refusDe(q("mdp"), { mdp: bon, confirm: bon }), null);
+  assert.ok(refusDe(q("mdp"), { mdp: "123456789012", confirm: "123456789012" }), "une suite de chiffres est acceptée");
   assert.ok(refusDe(q("mdp"), { mdp: bon, confirm: `${bon}!` }), "deux saisies différentes sont acceptées");
 });
 
