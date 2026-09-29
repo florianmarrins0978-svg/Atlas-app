@@ -229,6 +229,33 @@ async function main() {
     assert.equal(emise.totalTtc, "170.00");
   });
 
+  // **Sa demande du 29 septembre 2026, après la case vide de son planning :**
+  // *« fais la même correction »* sur la facture. « + Ajouter une ligne » et
+  // « Ajouter une TVA » écrivent la ligne dès l'appui ; laissée vide, elle
+  // s'imprimait pour toujours sur la facture émise, et revenait comme un choix
+  // blanc dans l'avoir. Elle s'en va à l'émission, et seulement elle.
+  await test("une ligne laissée vide ne part pas sur la facture émise", async () => {
+    const { chantier } = await commeSurLaFiche(ctx, "M. Vide");
+    const facture = await creerFactureSansDevis(ctx, chantier.id);
+    const pleine = await ajouterLigneDeFacture(ctx, facture.id);
+    assert.ok(pleine.ok);
+    await majLigneDeFacture(ctx, facture.id, pleine.ligne.id, { libelle: "Taille", quantite: "1", prixUnitaire: "80.00" });
+    const vide = await ajouterLigneDeFacture(ctx, facture.id);
+    const tvaVide = await ajouterLigneDeFacture(ctx, facture.id, "10.00");
+    const sansLibelle = await ajouterLigneDeFacture(ctx, facture.id);
+    assert.ok(vide.ok && tvaVide.ok && sansLibelle.ok);
+    await majLigneDeFacture(ctx, facture.id, sansLibelle.ligne.id, { libelle: " ", quantite: "1", prixUnitaire: "20.00" });
+
+    const emise = await emettreFacture(ctx, facture.id);
+    assert.equal(emise.totalHt, "100.00");
+    const restent = await lignesDe(ctx, facture.id);
+    assert.deepEqual(
+      restent.map((l) => [l.libelle.trim(), l.montant]),
+      [["Taille", "80.00"], ["", "20.00"]],
+      "la facture émise porte encore sa ligne vide"
+    );
+  });
+
   await test("son PDF ne cite AUCUN devis, et ne parle pas de suppléments", async () => {
     const { chantier } = await commeSurLaFiche(ctx, "M. Vidal");
     const facture = await creerFactureSansDevis(ctx, chantier.id);

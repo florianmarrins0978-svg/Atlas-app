@@ -3,6 +3,7 @@ import Decimal from "decimal.js";
 import { withEntreprise } from "../db/with-entreprise";
 import { allureDesDocuments, formatNumeroDe } from "./entreprises";
 import { ecrireNumero, repartChaqueAnnee } from "@/lib/numero-documents";
+import { lignesDuDocument } from "@/lib/preparation-devis";
 import type { DbOrTx } from "../db/client";
 import {
   chantiers,
@@ -1460,8 +1461,9 @@ export function donneesFacture(
     // sur l'ancien HT donnerait un « Total HT après remise » qui ne serait la
     // différence de rien — le raisonnement était déjà écrit à l'émission.
     reductionMontant: totaux.reductionMontant,
-    lignes: lignes
-      .slice()
+    // L'aperçu du brouillon montre ce qui partira : sans la ligne laissée
+    // vide, que l'émission efface (`emettreFacture`).
+    lignes: lignesDuDocument(lignes)
       .sort((a, b) => a.ordre - b.ordre)
       .map((l) => ({
         libelle: l.libelle,
@@ -1579,10 +1581,19 @@ export async function emettreFacture(ctx: Ctx, factureId: string, maintenant: Da
     if (!avant) throw new Error("Facture introuvable");
     if (avant.statut === "emise") throw new FactureDejaEmiseError();
 
-    const lignes = await tx
+    const toutes = await tx
       .select()
       .from(lignesFacture)
       .where(eq(lignesFacture.factureId, factureId));
+    // **Une ligne sans rien ne part pas — 29 septembre 2026.** « + Ajouter une
+    // ligne » et « Ajouter une TVA » l'écrivent dès l'appui ; laissée vide, elle
+    // s'imprimait pour toujours sur la pièce émise, et revenait en choix blanc
+    // dans l'avoir. Le brouillon est encore à lui : elle s'efface ici, avant le
+    // PDF et avant que le trigger ne fige la facture (`lignesDuDocument`, la
+    // règle du devis).
+    const lignes = lignesDuDocument(toutes);
+    const sansRien = toutes.filter((l) => !lignes.includes(l)).map((l) => l.id);
+    if (sansRien.length > 0) await tx.delete(lignesFacture).where(inArray(lignesFacture.id, sansRien));
 
     // **La même règle que le devis, appelée et non réécrite.** Le patron a
     // choisi l'arrangement B : la réduction n'est pas une ligne, donc ce

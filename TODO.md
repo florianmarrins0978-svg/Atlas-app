@@ -12,6 +12,19 @@ reviennent. **Rien n'est codé.** Au codage : la fiche vide d'aujourd'hui
 (`ComposerMaFiche.tsx`, « Partir du modèle Atlas » / « Je préfère composer la
 mienne ») disparaît.
 
+## ⚠️ « + AJOUTER UNE LIGNE » ÉCRIT ENCORE LA LIGNE VIDE SUR LA FEUILLE (29 septembre 2026)
+
+Elle ne part plus sur aucun document (devis : `getOuCreerDevisBrouillon` ;
+facture : `emettreFacture`, `lignesDuDocument`), mais elle existe en base
+dès l'appui, sur le devis, l'écran Prix et la facture. **Le risque qui reste**,
+lu dans l'en-tête de `src/lib/ligne-ouverte-devis.ts` et pas reproduit : une
+seule ligne vide fait croire « le devis a déjà des lignes » à
+`devis-depuis-dictee.ts` (ligne `listerLignesPrix(...).length === 0`), et la
+dictée qui arrive ensuite ne s'y écrit pas. La racine : faire vivre la ligne
+ajoutée dans l'écran jusqu'au premier mot, comme la ligne ouverte d'avance.
+Travail dans l'écran du devis (identifiant qui ne change pas, ordre des
+écritures), donc un lot à lui, de niveau 3.
+
 ## ⏳ UNE PLANCHE À REGARDER : LES COULEURS DU PLANNING (29 septembre 2026)
 
 Sa demande : modifier les couleurs de rien, incomplet, complet, au-delà,

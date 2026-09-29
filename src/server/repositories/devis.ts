@@ -19,7 +19,7 @@ import type { Ctx } from "./context";
 import { genererPdfDevis, type DevisPdfData } from "../pdf/devis-pdf";
 import { enregistrerObjet } from "../storage";
 import { ecrireNumero, repartChaqueAnnee } from "@/lib/numero-documents";
-import { lignesEnAttenteDePrix } from "@/lib/preparation-devis";
+import { lignesDuDocument, lignesEnAttenteDePrix } from "@/lib/preparation-devis";
 import { tachesDuDevis } from "@/lib/taches-du-devis";
 
 const TAUX_TVA_DEFAUT = "20.00";
@@ -233,7 +233,12 @@ export async function getOuCreerDevisBrouillon(ctx: Ctx, chantierId: string) {
       ? (await tx.select().from(clients).where(eq(clients.id, chantier.clientId)).limit(1))[0]
       : null;
 
-    const lignesPrixActuelles = await tx.select().from(lignesPrix).where(eq(lignesPrix.chantierId, chantierId));
+    // **Une ligne sans rien reste sur la feuille, jamais sur le devis**
+    // (`lignesDuDocument`) : ni sur le PDF du client, ni dans ses totaux, ni sur
+    // la fiche de l'équipe. Tous les gestes qui en posent une passent par ici.
+    const lignesPrixActuelles = lignesDuDocument(
+      await tx.select().from(lignesPrix).where(eq(lignesPrix.chantierId, chantierId))
+    );
 
     const [dernier] = await tx
       .select()

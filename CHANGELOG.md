@@ -77,6 +77,37 @@ ne bougent pas : ils sont chez le client. Elle boucle par entreprise (FORCE
 RLS) ; `scripts/test-migration-0112-base-habitee.ts`, vu rouge sans elle.
 L'écran du devis ne nettoie plus l'unité lui-même : le dépôt le fait.
 
+### Une ligne sans rien ne part plus sur le devis
+
+Sa réponse, *« Oui »* : la ligne que « + Ajouter une ligne » écrit sur la
+feuille avant le premier mot, laissée vide, partait sur le devis (une rangée
+blanche sur le PDF du client, une case vide sur la fiche de l'équipe). Elle
+reste sur la feuille, où il écrit, et ne passe plus au document :
+`lignesDuDocument` (`src/lib/preparation-devis.ts`), appelée par
+`getOuCreerDevisBrouillon`, par où passent les quatre gestes qui en posent une
+(« + Ajouter une ligne » du devis et de l'écran Prix, « Ajouter une TVA », un
+texte effacé). Une ligne sans libellé mais chiffrée, ou « à chiffrer », part
+toujours. Suite : `scripts/test-devis-sans-ligne-vide-db.ts`, vue rouge avant.
+
+**La facture aussi**, sur sa demande : la ligne laissée vide s'efface à
+l'émission (avant le PDF archivé et le trigger qui fige la pièce), et
+l'aperçu du brouillon ne la montre plus. Elle ne revient donc plus en choix
+blanc dans l'avoir (`test-facture-sans-devis-db.ts`).
+
+**Et le relevé de tous les « + Ajouter »** (*« va vérifier tous les endroits
+où on peut rajouter des lignes ou des choses »*) a trouvé un vrai défaut : le
+tarif que « + Ajouter un tarif » écrit vide, à 0 €, était proposé par
+l'assistant pour n'importe quel travail. La règle de rapprochement vivait en
+deux copies, l'une juste (le calcul du prix), l'autre non (l'outil) ; elle
+vit désormais une fois, `src/lib/tarifs-correspondants.ts`
+(`test-tarif-vide-assistant-db.ts`, vue rouge avant). Prestations et matériel
+(Informations) écrivent aussi une ligne vide, mais tous leurs écrans et
+documents la filtrent déjà. Les acomptes s'écrivent dès l'appui, mais jamais
+vides : 30 % (ou le taux des Réglages), puis 50, puis 75 (`acompteSuivantPropose`,
+`test-acomptes-devis-e2e.ts`). Le reste des « + Ajouter » n'écrit rien avant le
+premier mot.
+Ce qui reste ouvert est dans `TODO.md`.
+
 ## 2026-09-28
 
 ### Trois lots sur `main` en une seule batterie
