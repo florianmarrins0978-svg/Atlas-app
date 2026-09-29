@@ -7,7 +7,7 @@ Planche `appli/couleurs-du-planning.html`, « Parfait code ça ». Branche
 consigne : pas de batterie.** Niveau 3 (migration) : `main` attend la batterie,
 et son accord pour la lancer. Joués : types, lint, `test-couleurs-du-planning`
 (vu rouge sans l'éclaircissement), allure, couches, code mort, pansements,
-chartes lisibles ; l'écran regardé, Origine et Nuit.
+chartes lisibles ; regardés : le planning (Origine et Nuit), le calendrier et la fiche du jour quand il propose une date, le carré « complet » de Réglages Équipe.
 
 ## ✅ ABSENT LE MATIN, COCHABLE L'APRÈS-MIDI : SUR `main` LE 28 SEPTEMBRE 2026
 
