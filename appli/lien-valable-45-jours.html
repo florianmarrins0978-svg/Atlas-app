@@ -18,6 +18,9 @@
     nouvelle. L'objet de l'e-mail est celui de composerMessageClient. La page
     d'après expiration est celle de src/app/devis/[jeton]/page.tsx.
 
+    PASSÉ LE DÉLAI : sa précision du même jour, « faut dire que passé ce délai
+    ils ne pourront plus prévenir l'artisan via l'appli, il faudra l'appeler ».
+
     LE PARTI : la ligne est posée par Atlas SOUS le lien, comme le lien
     lui-même, et ne s'efface pas. Écrite dans son message modifiable, elle
     disparaîtrait des messages qu'il a déjà réécrits, et il pourrait la retirer
@@ -100,7 +103,7 @@
 <div class="page">
   <span class="surtitre">Le message au client</span>
   <h1>Le lien valable 45 jours</h1>
-  <p class="chapo">Le devis part le mardi 29 septembre. Le surligné est la seule ligne nouvelle.</p>
+  <p class="chapo">Le devis part le mardi 29 septembre. Le surligné est le seul texte nouveau.</p>
 
   <div class="choix" role="group" aria-label="La ligne">
     <button type="button" data-variante="A" aria-pressed="true"><b>A</b>avec la date</button>
@@ -159,9 +162,14 @@
   const LIEN = "https://eden-nature.app.github.dev/devis/7deYienbFTa4DISAZ";
   const PHRASE = "Voici votre devis. Vous pouvez le consulter et choisir votre date d’intervention. " +
     "Et si aucune des dates proposées ne vous convient, vous pouvez en proposer une autre. Tout se fait sur cette page :";
+  // Sa précision du 29 septembre : « faut dire que passé ce délai, ils ne
+  // pourront plus prévenir l'artisan via l'appli, il faudra l'appeler ».
+  // Le nom de l'entreprise, et pas « nous » ni « moi » : il en a un, qu'il
+  // travaille seul ou non.
+  const APRES = " Passé ce délai, vous ne pourrez plus répondre depuis ce lien : il faudra appeler Eden Nature.";
   const LIGNES = {
-    A: "Ce lien est valable 45 jours, jusqu’au vendredi 13 novembre.",
-    B: "Ce lien est valable 45 jours.",
+    A: "Ce lien est valable 45 jours, jusqu’au vendredi 13 novembre." + APRES,
+    B: "Ce lien est valable 45 jours." + APRES,
   };
   let variante = "A";
   let canal = "sms";

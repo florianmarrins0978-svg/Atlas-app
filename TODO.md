@@ -7,7 +7,9 @@ Sa réponse, devant la question de la durée de vie du lien d'un devis
 (`VALIDITE_LIEN_JOURS`) : *« garder 45 jours, mais sur le message qu'il reçoit
 il faut préciser que le lien est valide 45 jours »*. Planche
 `appli/lien-valable-45-jours.html` : une ligne posée par Atlas sous le lien,
-qui reste même dans un message réécrit ; **A** avec la date, **B** sans.
+qui reste même dans un message réécrit, et qui dit qu'après le délai le client
+ne pourra plus répondre par le lien et devra l'appeler (sa précision du même
+jour) ; **A** avec la date, **B** sans.
 Proposition : A. **Rien n'est codé.**
 
 ## ⏳ UNE PLANCHE À REGARDER : LES COULEURS DU PLANNING (29 septembre 2026)
