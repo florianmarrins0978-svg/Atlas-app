@@ -1,0 +1,434 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sur ordinateur</title>
+<style>
+  /*
+    L'APPLICATION SUR ORDINATEUR, la planche avant le code.
+
+    Sa demande du 30 septembre 2026 : « il faut que ça prenne l'entièreté de
+    l'ordinateur ». Aujourd'hui tout l'écran vit dans une colonne de 448 px
+    centrée (CadreApplication.tsx, AtlasBottomNav.tsx : max-w-md), et aucun
+    écran de src/ ne porte de règle pour les grands écrans.
+
+    Ce qui est proposé, à partir de 1024 px de large :
+      la barre du bas devient une colonne à gauche ;
+      Chantiers et Clients s'ouvrent en deux panneaux (liste, puis fiche) ;
+      le planning prend toute la largeur, les clients sans date à droite ;
+      l'assistant s'ouvre en panneau à droite au lieu de couvrir l'écran ;
+      un devis garde sa largeur de feuille.
+    En dessous de 1024 px, la même page redevient l'application du téléphone,
+    et c'est voulu : une seule application, qui change de forme.
+
+    Ce qui est SIMULÉ : les textes viennent du jeu de démonstration (Atelier
+    Démo, ses quatre chantiers, ses quatre clients), relevés à l'écran le
+    30 septembre. Les jours posés sur le planning, les lignes du devis et deux
+    numéros de téléphone sont
+    inventés pour montrer la place : la démo n'en a pas. Rien n'est codé dans
+    src/.
+  */
+  :root{
+    --paper:#f5f3ee; --card:#faf9f5; --bloc:#ebe8e1; --ink:#1c1c1a; --doux:#4a4a44;
+    --muted:#8a8578; --or:#b98b47; --pine:#2f3b2f; --sage:#7d9a6d;
+    --line:rgba(28,28,26,.12); --line-doux:rgba(28,28,26,.07);
+    --serif:ui-serif,Georgia,"Iowan Old Style","Palatino Linotype",serif;
+    --sans:ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+  }
+  *{box-sizing:border-box}
+  [hidden]{display:none!important}
+  html,body{margin:0;height:100%}
+  body{display:flex;flex-direction:column;height:100dvh;background:#e6e3dc;color:var(--ink);font:16px/1.5 var(--sans);-webkit-text-size-adjust:100%}
+  button{font-family:inherit;color:inherit}
+
+  /* Le ruban de la planche, seul élément qui n'est pas l'application. */
+  .ruban{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 16px;
+         background:#1c1c1a;color:#faf9f5;font-size:13.5px}
+  .ruban b{font-weight:600;margin-right:6px}
+  .ruban button{min-height:34px;padding:0 14px;border-radius:999px;border:1px solid rgba(250,249,245,.25);
+                background:transparent;color:#faf9f5;cursor:pointer;font-size:13.5px}
+  .ruban button[aria-pressed="true"]{background:#faf9f5;color:#1c1c1a;border-color:transparent}
+  .ruban .conseil{margin-left:auto;color:rgba(250,249,245,.6)}
+
+  /* ───────── l'application ───────── */
+  .app{flex:1;min-height:0;width:100%;display:flex;background:var(--paper);overflow:hidden;position:relative}
+  .app.etroit{max-width:448px;margin:0 auto;box-shadow:0 0 0 1px var(--line)}
+
+  .cote{display:none}
+  .app.large .cote{display:flex;flex-direction:column;width:220px;flex:0 0 220px;padding:34px 0 24px;
+                   border-right:1px solid var(--line);background:var(--card)}
+  .marque{font:400 22px/1 var(--serif);letter-spacing:.3em;padding:0 28px;margin:0 0 40px}
+  .cote nav{display:flex;flex-direction:column}
+  .cote nav button{all:unset;cursor:pointer;padding:14px 28px;font-size:12px;letter-spacing:.2em;
+                   text-transform:uppercase;color:var(--muted);border-left:2px solid transparent}
+  .cote nav button:hover{color:var(--ink)}
+  .cote nav button[aria-current="page"]{color:var(--ink);border-left-color:var(--or);background:var(--paper)}
+  .cote .qui{margin-top:auto;padding:0 28px;font-size:13px;color:var(--muted)}
+
+  .centre{flex:1;min-width:0;display:flex;overflow:hidden}
+  .ecran{flex:1;min-width:0;display:flex;overflow:hidden}
+
+  .bas{position:absolute;left:0;right:0;bottom:0;display:grid;grid-template-columns:repeat(5,1fr);
+       background:var(--card);border-top:1px solid var(--line);padding:16px 8px 14px}
+  .app.large .bas{display:none}
+  .bas button{all:unset;cursor:pointer;text-align:center;font-size:9.5px;letter-spacing:.14em;
+              text-transform:uppercase;color:var(--muted);padding-bottom:6px;border-bottom:2px solid transparent}
+  .bas button[aria-current="page"]{color:var(--ink);border-bottom-color:var(--or)}
+
+  .defile{overflow-y:auto;scrollbar-width:none}
+  .defile::-webkit-scrollbar{display:none}
+
+  /* En-tête d'écran, comme dans l'application. */
+  .tete{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin:0 0 30px}
+  h1{font:400 44px/1.05 var(--serif);margin:0;letter-spacing:-.02em}
+  .sous{display:inline-block;margin-top:14px;font-size:12px;letter-spacing:.3em;text-transform:uppercase;color:var(--or)}
+  button.sous{all:unset;cursor:pointer;margin-top:14px;font-size:12px;letter-spacing:.3em;text-transform:uppercase;color:var(--or)}
+  .rond{flex:0 0 auto;width:48px;height:48px;border-radius:999px;border:0;background:var(--sage);
+        display:grid;place-items:center;cursor:pointer}
+  .rond svg{width:20px;height:20px;stroke:#faf9f5;fill:none;stroke-width:1.8}
+
+  /* Chantiers */
+  .liste{width:100%;padding:44px 26px 110px}
+  .app.large .liste{width:440px;flex:0 0 440px;border-right:1px solid var(--line);padding:44px 34px 40px}
+  .creer{display:flex;align-items:center;justify-content:center;gap:16px;margin:0 0 30px;
+         font-size:13px;font-weight:600;letter-spacing:.3em;text-transform:uppercase}
+  .creer span.plus{width:44px;height:44px;border-radius:999px;border:1.5px solid var(--or);color:var(--or);
+                   display:grid;place-items:center;box-shadow:0 0 0 6px rgba(185,139,71,.14)}
+  .carte{background:var(--bloc);border-radius:22px;padding:22px 24px;margin:0 0 20px}
+  .carte .eti{font-size:11.5px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--pine)}
+  .carte .t{font:400 20px/1.3 var(--serif);margin:8px 0 6px}
+  .carte p{margin:0 0 12px;color:var(--muted);font-size:14.5px}
+  .carte blockquote{margin:0 0 16px;padding:2px 0 2px 14px;border-left:3px solid var(--pine);font-size:15px}
+  .carte .gestes{display:flex;gap:26px;font-size:15px}
+  .autres{text-align:center;font-size:15px;color:var(--doux);margin:0 0 32px}
+  .rubrique{font-size:12px;letter-spacing:.3em;text-transform:uppercase;margin:0 0 10px}
+  .rubrique b{letter-spacing:0;margin-left:12px;font-size:14px}
+  .ligne{all:unset;box-sizing:border-box;cursor:pointer;display:grid;grid-template-columns:54px 1fr;gap:18px;
+         width:100%;padding:16px 12px;border-radius:16px}
+  .ligne:hover{background:rgba(28,28,26,.035)}
+  .ligne[aria-current="true"]{background:var(--card);box-shadow:0 0 0 1px var(--line)}
+  .ligne .j{text-align:center;font:400 22px/1 var(--serif);color:var(--muted)}
+  .ligne .j small{display:block;margin-top:6px;font:500 10px/1 var(--sans);letter-spacing:.2em;text-transform:uppercase}
+  .ligne .n{font:400 20px/1.2 var(--serif)}
+  .ligne .a{font-size:14px;color:var(--muted);margin-top:2px}
+  .ligne .e{font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--or);margin-top:6px}
+
+  /* Le détail, à droite, sur ordinateur seulement. */
+  .detail{display:none}
+  .app.large .detail{display:block;flex:1;min-width:0;container-type:inline-size;padding:34px 40px 60px;background:#ece9e2}
+  .feuille{max-width:760px;margin:0 auto;background:var(--card);border-radius:18px;padding:40px 48px 44px;
+           box-shadow:0 1px 2px rgba(20,18,14,.08),0 10px 30px rgba(20,18,14,.06)}
+  .feuille .ent{font:400 22px/1.3 var(--serif);margin:0 0 6px}
+  .feuille .coord{font-size:14px;line-height:1.7;color:var(--doux)}
+  .meta{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px;margin:26px 0 22px;padding:14px 0;
+        border-top:1px solid var(--line);border-bottom:2px solid var(--ink)}
+  .meta span{display:block;font-size:10.5px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
+  .titre-devis{text-align:center;font:400 26px/1 var(--serif);letter-spacing:.06em;margin:10px 0 6px}
+  .titre-devis + p{text-align:center;margin:0 0 24px;color:var(--muted);font:italic 16px/1.4 var(--serif)}
+  .deux{display:grid;grid-template-columns:1fr 1fr;gap:30px;margin:0 0 26px;font-size:14.5px}
+  .deux .eti{font-size:10.5px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+  table{width:100%;border-collapse:collapse;font-size:14.5px}
+  th{text-align:left;font-size:10.5px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);
+     padding:0 0 10px;border-bottom:1px solid var(--line)}
+  td{padding:12px 0;border-bottom:1px solid var(--line-doux)}
+  th.n,td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap;padding-left:14px}
+  .app.large.ouvert .liste{width:380px;flex-basis:380px}
+  @container (max-width:640px){
+    .feuille{padding:30px 28px}
+    .meta{grid-template-columns:1fr 1fr}
+    .deux{grid-template-columns:1fr;gap:16px}
+    .ajouts{flex-wrap:wrap;gap:8px 18px}
+  }
+  .ajouts{display:flex;gap:22px;margin:14px 0 26px;font-size:14px;color:var(--or)}
+  .ajouts span:first-child{color:var(--ink)}
+  .totaux{margin-left:auto;width:280px;font-size:14.5px}
+  .totaux div{display:flex;justify-content:space-between;padding:6px 0}
+  .totaux .ttc{border-top:2px solid var(--ink);margin-top:6px;padding-top:10px;font-weight:600}
+  .totaux .ttc span:last-child{font:600 18px/1 var(--serif)}
+  .choisir{display:block;width:100%;margin:30px 0 0;border:0;border-radius:999px;background:var(--sage);color:#faf9f5;
+           padding:14px 0;font:400 17px/1 var(--serif);cursor:pointer}
+
+  /* Le panneau de l'assistant. */
+  .assistant{display:none;flex-direction:column;background:var(--card);border-left:1px solid var(--line)}
+  .app.ouvert .assistant{display:flex}
+  .app.large .assistant{width:360px;flex:0 0 360px}
+  .app:not(.large) .assistant{position:absolute;inset:0;z-index:5}
+  .assistant header{display:flex;justify-content:space-between;align-items:center;padding:22px 22px 14px;
+                    border-bottom:1px solid var(--line)}
+  .assistant header b{font:400 20px/1 var(--serif)}
+  .assistant header button{all:unset;cursor:pointer;font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
+  .fil{flex:1;padding:18px 22px}
+  .bulle{background:var(--bloc);border-radius:16px;padding:12px 14px;font-size:14.5px;margin:0 0 10px;max-width:90%}
+  .bulle.moi{margin-left:auto;background:var(--pine);color:#faf9f5}
+  .saisie{margin:0 16px 16px;border-radius:999px;box-shadow:inset 0 0 0 1px var(--line);padding:13px 18px;
+          color:var(--muted);font-size:15px;background:var(--paper)}
+
+  /* Planning */
+  .planning{flex:1;min-width:0;padding:44px 26px 110px}
+  .app.large .planning{padding:44px 40px 40px}
+  .mois{display:flex;align-items:center;justify-content:space-between;margin:0 0 18px}
+  .mois b{font-size:20px}
+  .mois button{width:44px;height:44px;border-radius:999px;border:1px solid var(--line);background:var(--card);cursor:pointer;font-size:18px}
+  .grille{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
+  .grille .jn{text-align:center;font-size:11.5px;font-weight:600;letter-spacing:.14em;color:var(--muted);padding-bottom:4px}
+  .jour{min-height:62px;border-radius:14px;padding:8px 6px;text-align:center;font:400 20px/1 var(--serif)}
+  .jour.we{background:#ecebe6;color:var(--muted)}
+  .jour.auj{box-shadow:inset 0 0 0 2px var(--or);color:var(--or)}
+  .jour .pas{display:block;height:6px;margin:10px auto 0;width:60%;border-radius:4px;box-shadow:inset 0 0 0 1px var(--line)}
+  .jour .pose{display:none}
+  .app.large .jour{min-height:112px;text-align:left;padding:10px 10px;font-size:18px;background:var(--card);
+                   box-shadow:inset 0 0 0 1px var(--line-doux)}
+  .app.large .jour.we{background:#ecebe6}
+  .app.large .jour.auj{box-shadow:inset 0 0 0 2px var(--or)}
+  .app.large .jour .pas{display:none}
+  .app.large .jour .pose{display:block;margin-top:8px;padding:5px 8px;border-radius:8px;background:rgba(125,154,109,.18);
+                         color:var(--pine);font:500 12.5px/1.3 var(--sans);text-align:left}
+  .sansdate{display:none}
+  .app.large .sansdate{display:block;width:300px;flex:0 0 300px;padding:44px 26px;border-left:1px solid var(--line);background:var(--card)}
+  .sansdate h2{font:400 20px/1.2 var(--serif);margin:0 0 18px}
+  .sansdate .c{padding:14px 0;border-top:1px solid var(--line)}
+  .sansdate .c b{display:block;font:400 17px/1.3 var(--serif);font-weight:400}
+  .sansdate .c span{font-size:13.5px;color:var(--muted)}
+  .tiroir{position:absolute;left:0;right:0;bottom:62px;background:var(--card);border-top:2px solid var(--or);
+          border-radius:20px 20px 0 0;padding:16px 22px;font-weight:600}
+  .app.large .tiroir{display:none}
+
+  /* Clients */
+  .lettre{font:400 14px/1 var(--serif);color:var(--or);margin:22px 0 4px 12px}
+  .fiche h2{font:400 34px/1.1 var(--serif);margin:6px 0 10px}
+  .fiche .eti{font-size:12px;letter-spacing:.3em;text-transform:uppercase;color:var(--or)}
+  .fiche .tel{font-size:16px;margin:0 0 6px}
+  .fiche .lien{font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
+  .tuiles{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:28px 0}
+  .tuiles div{background:var(--bloc);border-radius:18px;padding:22px;font:400 18px/1.25 var(--serif)}
+  .onglets-fiche{display:flex;gap:28px;border-bottom:1px solid var(--line);font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
+  .onglets-fiche span{padding-bottom:10px}
+  .onglets-fiche span:first-child{color:var(--ink);border-bottom:2px solid var(--or)}
+  .vide{color:var(--muted);padding:26px 0}
+
+  .rien{flex:1;display:grid;place-items:center;color:var(--muted);font-size:15px;padding:40px}
+
+  /* Sur le téléphone, une fiche ouverte prend l'écran entier. */
+  .retour{display:none}
+  .app:not(.large).dedans .liste{display:none}
+  .app:not(.large).dedans .detail{display:block;flex:1;padding:18px 14px 110px;overflow-y:auto}
+  .app:not(.large).dedans .retour{display:block;all:unset;cursor:pointer;font-size:22px;padding:6px 10px;margin:0 0 8px}
+  .app:not(.large) .feuille{padding:26px 22px}
+  .app:not(.large) .deux{grid-template-columns:1fr}
+</style>
+</head>
+<body>
+
+<div class="ruban">
+  <b>Sur ordinateur</b>
+  <button type="button" data-vue="propose" aria-pressed="true">Proposé</button>
+  <button type="button" data-vue="aujourdhui" aria-pressed="false">Aujourd’hui</button>
+  <span class="conseil" id="conseil">À ouvrir sur l’ordinateur, fenêtre en grand.</span>
+</div>
+
+<div class="app large" id="app">
+
+  <aside class="cote">
+    <div class="marque">ATLAS</div>
+    <nav>
+      <button type="button" data-onglet="chantiers" aria-current="page">Chantiers</button>
+      <button type="button" data-onglet="planning">Planning</button>
+      <button type="button" data-onglet="termines">Terminés</button>
+      <button type="button" data-onglet="paysage">Paysage</button>
+      <button type="button" data-onglet="reglages">Réglages</button>
+    </nav>
+    <div class="qui">Atelier Démo</div>
+  </aside>
+
+  <div class="centre">
+
+    <!-- CHANTIERS -->
+    <section class="ecran" data-ecran="chantiers">
+      <div class="liste defile">
+        <div class="tete">
+          <div><h1>Vos chantiers</h1><button type="button" class="sous" data-onglet="clients">Vos clients</button></div>
+          <button type="button" class="rond" data-assistant aria-label="Assistant"><svg viewBox="0 0 24 24"><path d="M12 3a8.5 8.5 0 0 0-7.4 12.7L3.5 20.5l4.9-1.1A8.5 8.5 0 1 0 12 3z"/></svg></button>
+        </div>
+        <div class="creer">Créer un devis <span class="plus">+</span></div>
+        <div class="carte">
+          <div class="eti">Correction demandée</div>
+          <div class="t">Reprise de toiture</div>
+          <p>Le client veut ce devis corrigé avant de l’accepter.</p>
+          <blockquote>« Pouvez-vous retirer l’évacuation des gravats ? Je m’en occupe. »</blockquote>
+          <div class="gestes"><span>Corriger le devis</span><span>J’ai vu</span></div>
+        </div>
+        <div class="autres">3 autres devis à regarder</div>
+        <div class="rubrique">En cours <b>4</b></div>
+        <div id="lignes"></div>
+      </div>
+      <div class="detail defile">
+        <button type="button" class="retour" data-retour aria-label="Retour">‹</button>
+        <div class="feuille" id="feuille"></div>
+      </div>
+    </section>
+
+    <!-- CLIENTS -->
+    <section class="ecran" data-ecran="clients" hidden>
+      <div class="liste defile">
+        <div class="tete">
+          <div><h1>Vos clients</h1><span class="sous">4 clients</span></div>
+          <button type="button" class="rond" data-assistant aria-label="Assistant"><svg viewBox="0 0 24 24"><path d="M12 3a8.5 8.5 0 0 0-7.4 12.7L3.5 20.5l4.9-1.1A8.5 8.5 0 1 0 12 3z"/></svg></button>
+        </div>
+        <div id="clients"></div>
+      </div>
+      <div class="detail defile">
+        <button type="button" class="retour" data-retour aria-label="Retour">‹</button>
+        <div class="feuille fiche" id="fiche"></div>
+      </div>
+    </section>
+
+    <!-- PLANNING -->
+    <section class="ecran" data-ecran="planning" hidden>
+      <div class="planning defile">
+        <div class="tete">
+          <div><h1>Planning</h1><span class="sous">Vos journées</span></div>
+          <button type="button" class="rond" data-assistant aria-label="Assistant"><svg viewBox="0 0 24 24"><path d="M12 3a8.5 8.5 0 0 0-7.4 12.7L3.5 20.5l4.9-1.1A8.5 8.5 0 1 0 12 3z"/></svg></button>
+        </div>
+        <div class="mois"><button type="button" aria-label="Mois précédent">‹</button><b>septembre 2026</b><button type="button" aria-label="Mois suivant">›</button></div>
+        <div class="grille" id="grille"></div>
+      </div>
+      <aside class="sansdate">
+        <h2>1 client sans date</h2>
+        <div class="c"><b>Pose de clôture</b><span>Mme Aubry, Vertou</span></div>
+      </aside>
+      <div class="tiroir">1 client sans date</div>
+    </section>
+
+    <section class="ecran" data-ecran="autre" hidden>
+      <div class="rien">Pas dessiné sur cette planche.</div>
+    </section>
+
+    <aside class="assistant">
+      <header><b>Assistant</b><button type="button" data-fermer>Fermer</button></header>
+      <div class="fil">
+        <div class="bulle moi">Combien de devis attendent une réponse ?</div>
+        <div class="bulle">Trois, et un client demande une correction sur Reprise de toiture.</div>
+      </div>
+      <div class="saisie">Écrire à l’assistant</div>
+    </aside>
+  </div>
+
+  <nav class="bas">
+    <button type="button" data-onglet="chantiers" aria-current="page">Chantiers</button>
+    <button type="button" data-onglet="planning">Planning</button>
+    <button type="button" data-onglet="termines">Terminés</button>
+    <button type="button" data-onglet="paysage">Paysage</button>
+    <button type="button" data-onglet="reglages">Réglages</button>
+  </nav>
+</div>
+
+<script>
+  // Le jeu de démonstration, relevé à l'écran le 30 septembre 2026. Les lignes
+  // de devis sont inventées pour montrer la place : la démo n'en porte aucune.
+  const CHANTIERS = [
+    { n: 'Pose de clôture', a: '2 route de Vertou, Vertou', j: '26', m: 'juil.', e: 'Brouillon, sans photo', cl: 'Mme Aubry',
+      l: [['Grillage rigide, hauteur 1,50 m', '24 ml', '1 080,00 €'], ['Poteaux et scellement', '13', '520,00 €'], ['Main d’œuvre', '2 j', '760,00 €']] },
+    { n: 'Rénovation salle de bain', a: '12 rue des Lilas, Nantes', j: '24', m: 'juil.', e: 'À vérifier, 6 photos', cl: 'M. Bernard',
+      l: [['Dépose de l’existant', '1', '450,00 €'], ['Faïence murale', '18 m²', '1 260,00 €'], ['Main d’œuvre', '4 j', '1 520,00 €']] },
+    { n: 'Terrasse bois', a: '5 allée des Tilleuls, Nantes', j: '22', m: 'juil.', e: 'Vérifié, 3 photos', cl: 'Mme Costa',
+      l: [['Lames pin traité classe 4', '32 m²', '1 920,00 €'], ['Lambourdes et plots', '32 m²', '640,00 €'], ['Main d’œuvre', '3 j', '1 140,00 €']] },
+    { n: 'Reprise de toiture', a: '8 impasse du Moulin, Rezé', j: '18', m: 'juil.', e: 'Correction demandée, 9 photos', cl: 'M. Faucher',
+      l: [['Tuiles de remplacement', '60', '420,00 €'], ['Évacuation des gravats', '1', '180,00 €'], ['Main d’œuvre', '2 j', '760,00 €']] },
+  ];
+  const CLIENTS = [
+    { n: 'Mme Aubry', t: '06 11 22 33 44', d: 'Aucun devis parti' },
+    { n: 'M. Bernard', t: '06 12 34 56 78', d: 'Aucun devis parti' },
+    { n: 'Mme Costa', t: '06 98 76 54 32', d: 'Aucun devis parti' },
+    { n: 'M. Faucher', t: '06 55 44 33 22', d: 'Devis du 25 juil.' },
+  ];
+  const euros = (x) => x.toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + ' €';
+  const nombre = (s) => parseFloat(s.replace(/[\s €]/g, '').replace(',', '.'));
+  const app = document.getElementById('app');
+  let vue = 'propose', onglet = 'chantiers', choixChantier = 2, choixClient = 1;
+
+  function feuille(i) {
+    const c = CHANTIERS[i];
+    const ht = c.l.reduce((s, x) => s + nombre(x[2]), 0);
+    document.getElementById('feuille').innerHTML = `
+      <div class="ent">Atelier Démo</div>
+      <div class="coord">10 rue des Artisans, Nantes<br>02 40 00 00 00<br>contact@atelier-demo.fr</div>
+      <div class="meta"><div><span>Devis n°</span>2026-00000${i + 1}</div><div><span>Date</span>30/09/2026</div><div><span>Validité</span>30 jours</div></div>
+      <div class="titre-devis">DEVIS</div><p>${c.n}</p>
+      <div class="deux"><div><div class="eti">Client</div>${c.cl}<br>${c.a}</div><div><div class="eti">Chantier</div>${c.a}</div></div>
+      <table><thead><tr><th>Désignation</th><th class="n">Quantité</th><th class="n">Montant HT</th></tr></thead>
+      <tbody>${c.l.map((x) => `<tr><td>${x[0]}</td><td class="n">${x[1]}</td><td class="n">${x[2]}</td></tr>`).join('')}</tbody></table>
+      <div class="ajouts"><span>+ Ajouter une ligne</span><span>+ Ajouter une TVA</span><span>+ Main d’œuvre</span></div>
+      <div class="totaux"><div><span>Total HT</span><span>${euros(ht)}</span></div><div><span>TVA (20 %)</span><span>${euros(ht * 0.2)}</span></div>
+      <div class="ttc"><span>Total TTC</span><span>${euros(ht * 1.2)}</span></div></div>
+      <button type="button" class="choisir">Choisir la date</button>`;
+  }
+  function lignes() {
+    document.getElementById('lignes').innerHTML = CHANTIERS.map((c, i) => `
+      <button type="button" class="ligne" data-ch="${i}" aria-current="${app.classList.contains('large') && i === choixChantier}">
+        <div class="j">${c.j}<small>${c.m}</small></div>
+        <div><div class="n">${c.n}</div><div class="a">${c.a}</div><div class="e">${c.e}</div></div>
+      </button>`).join('');
+  }
+  function clients() {
+    document.getElementById('clients').innerHTML = CLIENTS.map((c, i) => `
+      <div class="lettre">${c.n.split(' ')[1][0]}</div>
+      <button type="button" class="ligne" data-cl="${i}" aria-current="${app.classList.contains('large') && i === choixClient}" style="grid-template-columns:1fr">
+        <div><div class="n">${c.n}</div>${c.d !== 'Aucun devis parti' ? `<div class="a">${c.d}</div>` : ''}</div>
+      </button>`).join('');
+    const c = CLIENTS[choixClient];
+    document.getElementById('fiche').innerHTML = `
+      <div class="eti">Client</div><h2>${c.n}</h2><p class="tel">${c.t}</p><span class="lien">Modifier ses coordonnées</span>
+      <div class="tuiles"><div>Nouveau devis</div><div>Contrat d’entretien</div></div>
+      <div class="onglets-fiche"><span>Devis</span><span>Factures</span><span>Fiches</span></div>
+      <div class="vide">${c.d}</div>`;
+  }
+  function grille() {
+    // Septembre 2026 commence un mardi. Les poses sont inventées pour la place.
+    const poses = { 8: 'Terrasse bois', 9: 'Terrasse bois', 10: 'Terrasse bois', 15: 'Rénovation salle de bain',
+                    16: 'Rénovation salle de bain', 22: 'Reprise de toiture', 23: 'Reprise de toiture' };
+    let h = ['LUN', 'MAR', 'MER', 'JEU', 'VEN', 'SAM', 'DIM'].map((j) => `<div class="jn">${j}</div>`).join('');
+    h += '<div></div>';
+    for (let d = 1; d <= 30; d++) {
+      const col = (d) % 7; // 1 = mardi
+      const we = col === 5 || col === 6;
+      h += `<div class="jour${we ? ' we' : ''}${d === 30 ? ' auj' : ''}">${d}${we ? '' : '<span class="pas"></span>'}${poses[d] ? `<span class="pose">${poses[d]}</span>` : ''}</div>`;
+    }
+    document.getElementById('grille').innerHTML = h;
+  }
+
+  function rendre() {
+    const large = vue === 'propose' && innerWidth >= 1024;
+    app.classList.toggle('large', large);
+    app.classList.toggle('etroit', vue === 'aujourdhui');
+    document.getElementById('conseil').hidden = innerWidth >= 1024;
+    const ecran = ['chantiers', 'planning', 'clients'].includes(onglet) ? onglet : 'autre';
+    document.querySelectorAll('[data-ecran]').forEach((s) => (s.hidden = s.dataset.ecran !== ecran));
+    const actif = onglet === 'clients' ? 'chantiers' : onglet;
+    document.querySelectorAll('[data-onglet]').forEach((b) => {
+      if (!b.classList.contains('sous')) b.setAttribute('aria-current', b.dataset.onglet === actif ? 'page' : 'false');
+    });
+    lignes(); clients(); feuille(choixChantier);
+  }
+
+  document.addEventListener('click', (e) => {
+    const t = e.target.closest('button');
+    if (!t) return;
+    if (t.dataset.vue) {
+      vue = t.dataset.vue;
+      document.querySelectorAll('[data-vue]').forEach((b) => b.setAttribute('aria-pressed', b === t));
+      app.classList.remove('dedans');
+    }
+    if (t.dataset.onglet) { onglet = t.dataset.onglet; app.classList.remove('dedans'); }
+    if (t.dataset.ch) { choixChantier = +t.dataset.ch; app.classList.add('dedans'); }
+    if (t.dataset.cl) { choixClient = +t.dataset.cl; app.classList.add('dedans'); }
+    if ('retour' in t.dataset) app.classList.remove('dedans');
+    if ('assistant' in t.dataset) app.classList.toggle('ouvert');
+    if ('fermer' in t.dataset) app.classList.remove('ouvert');
+    rendre();
+  });
+  addEventListener('resize', rendre);
+  grille(); rendre();
+</script>
+</body>
+</html>

@@ -1,5 +1,26 @@
 # Prochaines tâches
 
+## ⏳ SUR ORDINATEUR : la planche attend son choix (30 septembre 2026)
+
+Sa demande : *« il faut que ça prenne l'entièreté de l'ordinateur »*. Le site
+servira les ordinateurs (installable depuis Chrome ou Edge, sans magasin),
+l'App Store les téléphones : **une seule application qui change de forme**, pas
+un second logiciel.
+
+La cause est connue : tout vit dans `max-w-md` (448 px), posé par
+`CadreApplication.tsx` et `AtlasBottomNav.tsx`, et aucun écran de `src/` n'a de
+règle pour les grands écrans (29 `max-w-md` au total).
+
+Planche : `appli/sur-ordinateur.html`. Quand il aura choisi, trois lots dans
+cet ordre, chacun de niveau 3 (le cadre touche tous les écrans) :
+
+1. le cadre et la navigation à gauche au-dessus de 1024 px ;
+2. les deux panneaux de Chantiers et de Clients ;
+3. le planning pleine largeur, clients sans date à droite.
+
+Le téléphone ne doit pas bouger d'un pixel : chaque lot compare ses captures
+à 390 px avant et après.
+
 ## 🔜 `test-poser-une-date-e2e` ROUGE LE 30 SEPTEMBRE 2026, SUR `main` AUSSI
 
 « aucun jour d'accueil ouvrable au calendrier » : rouge de la même façon sur
