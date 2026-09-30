@@ -16,6 +16,14 @@
     fois la double vérification activée ; dix codes de secours, chacun valable
     une fois, sans quoi un téléphone perdu mure la porte.
 
+    Sa question du 30 septembre : « comment il clique sur scanner dans l'appli
+    s'il est pas encore dans l'appli ? ». Il avait raison deux fois : Scanner
+    était un bouton de l'AUTRE appli, dessinée sans le dire ; et depuis son
+    téléphone, un artisan ne peut pas scanner son propre écran. D'où les deux
+    chemins : sur le téléphone, un lien otpauth:// ouvre l'appli et y ajoute
+    Atlas ; sur un ordinateur, le code carré. La clé à recopier reste en
+    secours dans les deux.
+
     Ce qui est SIMULÉ : l'appli d'authentification est dessinée à côté du
     téléphone. Sur le vrai, c'est Google Authenticator ou une autre, et le code
     change toutes les trente secondes comme ici. Rien n'est codé dans src/.
@@ -109,11 +117,16 @@
 <div class="page">
   <p class="surtitre">Connexion</p>
   <h1>La double vérification</h1>
-  <p class="chapeau">Commencez par l'activer dans Réglages, puis entrez par la porte. L'appli d'authentification est dessinée à part, à côté du téléphone.</p>
+  <p class="chapeau">Commencez par l'activer, puis entrez par la porte. La carte blanche est l'appli d'authentification (Google Authenticator, par exemple), une autre appli que l'artisan installe une fois sur son téléphone.</p>
 
   <div class="onglets" role="group" aria-label="Écran">
     <button type="button" class="onglet" data-vue="reglages" aria-pressed="true">1. L'activer</button>
     <button type="button" class="onglet" data-vue="porte" aria-pressed="false">2. Entrer</button>
+  </div>
+
+  <div class="onglets" role="group" aria-label="Il active depuis">
+    <button type="button" class="onglet" data-appareil="telephone" aria-pressed="true">Depuis son téléphone</button>
+    <button type="button" class="onglet" data-appareil="ordinateur" aria-pressed="false">Depuis un ordinateur</button>
   </div>
 
   <div class="scene">
@@ -162,6 +175,7 @@
       retenir: true,
       appareilRetenu: false,
       secoursUses: [],
+      appareil: "telephone", // d'où il active : son téléphone, ou un ordinateur
       commentEntre: ""
     };
   }
@@ -173,10 +187,7 @@
 
   function dessinerAppli(){
     if (!etat.scanne){
-      appli.innerHTML = '<p class="rien">Aucun compte. Scannez le code affiché par Atlas pour l\'ajouter.</p>' +
-        (vue === "reglages" && etat.activation === 1 ? '<button type="button" class="onglet" id="scanner" style="margin-top:12px">Scanner</button>' : '');
-      var b = document.getElementById("scanner");
-      if (b) b.onclick = function(){ etat.scanne = true; dessiner(); };
+      appli.innerHTML = '<p class="rien">Aucun compte pour l\'instant.</p>';
       return;
     }
     var reste = secondesRestantes();
@@ -211,11 +222,17 @@
          '</span><button type="button" class="inter" id="inter" aria-pressed="' + (etat.active || etat.activation > 0) + '" aria-label="Double vérification"><i></i></button></div>';
 
     if (etat.activation === 1){
-      h += '<div style="padding-top:16px"><p class="etape">Étape 1 sur 3</p>' +
-           '<p class="dit">Dans votre appli d\'authentification, scannez ce code.</p>' + qr() +
+      h += '<div style="padding-top:16px"><p class="etape">Étape 1 sur 3</p>';
+      if (etat.appareil === "telephone"){
+        h += '<p class="dit">Il vous faut une appli d\'authentification, comme Google Authenticator.</p>' +
+             '<button type="button" class="sombre" id="ajouter">' + (etat.scanne ? 'Ajouté à votre appli' : 'Ajouter à mon appli d\'authentification') + '</button>';
+      } else {
+        h += '<p class="dit">Scannez ce code avec l\'appli d\'authentification de votre téléphone.</p>' + qr() +
+             (etat.scanne ? '' : '<button type="button" class="sombre" id="ajouter">Simuler le scan</button>');
+      }
+      h += '<p class="dit" style="margin:0 0 6px;text-align:center">Ou tapez cette clé dans l\'appli :</p>' +
            '<p class="cle">JBSW Y3DP EHPK 3PXP</p>' +
-           '<button type="button" class="plein" id="suite1"' + (etat.scanne ? '' : ' disabled') + '>Continuer</button>' +
-           (etat.scanne ? '' : '<p class="refus" style="color:var(--gris)">Appuyez sur Scanner, dans l\'appli dessinée.</p>') + '</div>';
+           '<button type="button" class="plein" id="suite1"' + (etat.scanne ? '' : ' disabled') + '>Continuer</button></div>';
     } else if (etat.activation === 2){
       h += '<div style="padding-top:16px"><p class="etape">Étape 2 sur 3</p>' +
            '<p class="dit">Tapez le code que l\'appli affiche.</p>' +
@@ -237,6 +254,7 @@
       else { etat.activation = 1; }
       etat.refus = ""; dessiner();
     };
+    var aj = document.getElementById("ajouter"); if (aj) aj.onclick = function(){ etat.scanne = true; dessiner(); };
     var s1 = document.getElementById("suite1"); if (s1) s1.onclick = function(){ etat.activation = 2; dessiner(); document.getElementById("code").focus(); };
     var s2 = document.getElementById("suite2");
     if (s2) s2.onclick = function(){
@@ -316,6 +334,14 @@
       Array.prototype.forEach.call(document.querySelectorAll(".onglet[data-vue]"), function(o){ o.setAttribute("aria-pressed", String(o === b)); });
       if (vue === "porte") etat.porte = "adresse";
       etat.refus = "";
+      dessiner();
+    };
+  });
+  Array.prototype.forEach.call(document.querySelectorAll(".onglet[data-appareil]"), function(b){
+    b.onclick = function(){
+      etat.appareil = b.getAttribute("data-appareil");
+      Array.prototype.forEach.call(document.querySelectorAll(".onglet[data-appareil]"), function(o){ o.setAttribute("aria-pressed", String(o === b)); });
+      if (!etat.active) etat.scanne = false;
       dessiner();
     };
   });
