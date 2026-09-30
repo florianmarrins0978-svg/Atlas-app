@@ -5,7 +5,7 @@ import {
   questionsAvantChiffrage,
   type LignePourQuestions,
 } from "../src/lib/questions-chiffrage";
-import { diametreLu, hauteurLue, mesuresArbre } from "../src/lib/mesures-arbre";
+import { diametreLu, futLu, mesuresArbre } from "../src/lib/mesures-arbre";
 
 // Ce que cette suite tient, et pourquoi elle vaut plus qu'un test de fonction.
 //
@@ -97,21 +97,20 @@ cas("« 20 m linéaires » compte comme une longueur, comme « de long »", () =
   }
 });
 
-cas("SE TAIRE : le billonnage et le fendage ne déclenchent rien", () => {
+cas("SE TAIRE : le billonnage ne déclenche rien, la fente ne demande que son fût", () => {
   // Le billonnage est compris dans l'abattage : il ne porte aucune variable de
   // prix, et le questionner allongerait l'arrêt pour rien.
   //
-  // **La fente, elle, en porte deux depuis le 8 août 2026** — la hauteur et le
-  // diamètre désignent une case de sa grille. Si elle ne demande rien ICI,
-  // c'est que sa dictée les donne déjà : la hauteur sur la ligne du chêne, le
-  // diamètre par la question posée à l'abattage. Le silence vient de ce que
-  // tout est su, pas de ce que rien ne compte (voir le bloc « La fente » en fin
-  // de suite).
+  // **La fente demande la hauteur de FÛT depuis le 29 septembre 2026**, et
+  // rien d'autre : le diamètre est demandé sur le chêne, et les « 20 mètres de
+  // haut » du chêne ne disent rien du bois à fendre (voir le bloc « La fente »
+  // en fin de suite).
   const q = questionsAvantChiffrage(DICTEE_DU_PATRON);
-  const parasites = q.filter(
-    (x) => x.libellePrestation.includes("Billonnage") || x.libellePrestation.includes("Fendage")
+  assert.deepEqual(q.filter((x) => x.libellePrestation.includes("Billonnage")), []);
+  assert.deepEqual(
+    q.filter((x) => x.libellePrestation.includes("Fendage")).map((x) => x.question),
+    ["Quelle hauteur de fût ?"]
   );
-  assert.deepEqual(parasites, [], `questions de trop : ${parasites.map((x) => x.question).join(" / ")}`);
 });
 
 cas("l'arrêt reste franchissable : jamais plus de trois questions sur sa dictée", () => {
@@ -314,24 +313,68 @@ cas("une prestation sans libellé ne produit rien", () => {
   assert.deepEqual(questionsAvantChiffrage([]), []);
 });
 
-console.log("\n=== La fente : hauteur et diamètre, sans redemander deux fois ===");
+console.log("\n=== La fente : hauteur de fût et diamètre, sans redemander deux fois ===");
 
-// Le patron, le 8 août 2026 : *« pour la fente ils devraient demander la
-// hauteur de l'arbre et son diamètre, et on crée une liste de prix en fonction
-// de la hauteur et du diamètre, comme ça il n'invente rien. »*
+// **Sa règle du 29 septembre 2026**, qui remplace celle du 8 août (« la
+// hauteur de l'arbre et son diamètre ») : *« la hauteur de l'arbre, c'est pour
+// la hauteur de l'arbre, ça n'a rien à voir avec la fente du bois. Pour la
+// fente, il faudrait qu'il demande quelle hauteur de fût : s'il y a 10 mètres
+// de fût coupé en 50, il peut procéder à un calcul. »* Sur un chêne de 20 m,
+// les branches partent au broyeur ; seul le fût se fend.
 //
-// Ce que ces cas tiennent, et qui n'est pas évident : **ces deux mesures
-// appartiennent à l'arbre, pas à la ligne de devis.** Les redemander sur la
-// ligne de la fente quand l'abattage les porte déjà ferait répéter au patron ce
-// qu'il vient de dire — et l'arrêt cesserait d'être franchissable.
+// Elle ne contredit pas sa règle du 7 septembre (« cette case-là ne doit
+// jamais comporter de hauteur, c'est pour un arbre ») : ce qu'il refusait
+// sous la fente, c'était la hauteur de l'ARBRE. Le fût, lui, est le bois
+// qu'on fend, et c'est lui qui a demandé qu'on le demande là.
 
-cas("une fente seule, sans rien de dit, demande les deux mesures", () => {
+cas("une fente seule, sans rien de dit, demande son fût et son diamètre", () => {
   const q = questionsAvantChiffrage([{ libelle: "Fendage du bois" }]);
   assert.deepEqual(
     q.map((x) => x.id.split("#")[0]).sort(),
-    ["fendage.diametre", "fendage.hauteur"],
-    `attendu la hauteur et le diamètre, vu : ${q.map((x) => x.id).join(", ") || "rien"}`
+    ["fendage.diametre", "fendage.fut"],
+    `attendu le fût et le diamètre, vu : ${q.map((x) => x.id).join(", ") || "rien"}`
   );
+});
+
+cas("sa dictée du 29 septembre : 20 m de haut ne répondent pas à la hauteur de fût", () => {
+  const q = questionsAvantChiffrage([
+    { libelle: "Démontage d'un chêne mort", description: "20 m de haut, 80 cm de diamètre", nature: "abattage" },
+    { libelle: "Broyage des branches", nature: "broyage" },
+    { libelle: "Fente du bois", description: "fût coupé en 50, laissé sur place", nature: "fendage" },
+  ]);
+  const surLaFente = q.filter((x) => x.libellePrestation === "Fente du bois");
+  assert.deepEqual(surLaFente.map((x) => x.question), ["Quelle hauteur de fût ?"]);
+  assert.equal(surLaFente[0].unite, "m");
+  // Et la hauteur de l'arbre ne se demande plus nulle part : elle ne décide
+  // d'aucun prix.
+  assert.deepEqual(q.filter((x) => /hauteur(?! de fût)/i.test(x.question)), []);
+});
+
+cas("un fût dit dans la dictée ne se redemande pas", () => {
+  for (const dit of ["10 mètres de fût", "fût de 10 m", "hauteur de fût 10 m", "dix mètres de fût"]) {
+    const q = questionsAvantChiffrage([
+      { libelle: "Démontage d'un chêne mort", description: `20 m de haut, ${dit}`, nature: "abattage" },
+      { libelle: "Fente du bois", nature: "fendage" },
+    ]);
+    assert.equal(q.filter((x) => x.id.startsWith("fendage.fut")).length, 0, `« ${dit} » redemandé`);
+  }
+});
+
+cas("« coupé en 50 » est la longueur des bûches, pas celle du fût", () => {
+  assert.equal(futLu("on coupe le fût en 50, on le fend"), null);
+  assert.equal(futLu("fût coupé en 50 cm"), null);
+  assert.equal(futLu("10 m de fût coupé en 50"), 10);
+});
+
+cas("une hauteur répondue avant le 29 septembre ne tient pas lieu de fût", () => {
+  // Ses réponses « fendage.hauteur » et « abattage.hauteur » disaient la
+  // hauteur de l'ARBRE : les relire comme un fût rangerait le prix dans la
+  // case d'à côté.
+  const q = questionsAvantChiffrage(
+    [{ libelle: "Abattage d'un chêne" }, { libelle: "Fendage du bois" }],
+    new Set(["fendage.hauteur#1", "abattage.hauteur#0"])
+  );
+  assert.equal(q.filter((x) => x.id.startsWith("fendage.fut")).length, 1);
 });
 
 cas("le diamètre ne se demande qu'une fois quand un abattage l'accompagne", () => {
@@ -351,90 +394,17 @@ cas("le diamètre ne se demande qu'une fois quand un abattage l'accompagne", () 
   );
 });
 
-cas("la hauteur dite ailleurs dans la dictée ne se redemande pas", () => {
-  const q = questionsAvantChiffrage([
-    { libelle: "Abattage d'un chêne mort", description: "20 mètres de haut" },
-    { libelle: "Fendage du bois" },
-  ]);
-  assert.equal(
-    q.filter((x) => x.id.startsWith("fendage.hauteur")).length,
-    0,
-    "« vingt mètres de haut » était dans la dictée : la redemander rend l'arrêt pénible"
-  );
-});
-
-// **La hauteur a CHANGÉ DE LIGNE le 7 septembre 2026, elle n'a pas disparu.**
-//
-// Sa règle : *« il m'a proposé la hauteur pour la fente — cette case-là ne
-// doit jamais comporter de hauteur, c'est de la fente. La hauteur, c'est pour
-// un arbre. »* Le cas qui vivait ici exigeait l'inverse : il demandait que la
-// hauteur soit posée sur la FENTE, et il aurait donc empêché sa correction.
-//
-// Ce qu'il défendait reste défendu, et c'est le seul point qui compte : sans
-// hauteur, aucune case de la grille de fendage ne peut être désignée, et la
-// fente n'a plus de prix. On vérifie donc qu'elle est TOUJOURS demandée —
-// une fois, et sur l'arbre (`CLAUDE.md` §5 bis).
-cas("la hauteur se demande toujours, mais sur l'ARBRE et jamais sur la fente", () => {
-  const q = questionsAvantChiffrage([
-    { libelle: "Abattage d'un chêne mort" },
-    { libelle: "Fendage du bois" },
-  ]);
-  assert.equal(
-    q.filter((x) => x.id.startsWith("fendage.hauteur")).length,
-    0,
-    "la fente n'a pas de hauteur : c'est l'arbre qui en a une"
-  );
-  assert.equal(
-    q.filter((x) => x.id.startsWith("abattage.hauteur")).length,
-    1,
-    "sans hauteur, aucune case de la grille ne peut être désignée — la fente resterait sans prix"
-  );
-  assert.equal(
-    q.find((x) => x.id.startsWith("abattage.hauteur"))!.libellePrestation,
-    "Abattage d'un chêne mort",
-    "la question doit s'afficher sous l'arbre, pas sous la fente"
-  );
-});
-
-// **Sans arbre, la fente redemande — sinon elle n'aurait plus de prix.**
-// C'est la borne de la règle ci-dessus : elle déplace la question, elle ne la
-// supprime pas. Un fendage dicté seul (le bois est déjà à terre) n'a personne
-// à qui la poser, et un plan muet vaut un plan faux (`CLAUDE.md` §4 ter).
-cas("un fendage SANS arbre dicté garde ses deux questions", () => {
-  const q = questionsAvantChiffrage([{ libelle: "Fendage du bois" }]);
-  assert.equal(q.filter((x) => x.id.startsWith("fendage.hauteur")).length, 1);
-  assert.equal(q.filter((x) => x.id.startsWith("fendage.diametre")).length, 1);
-});
-
-// **Et le cas exact du 7 septembre 2026, de bout en bout.** Sa dictée portait
-// un chêne mort à démonter et du gros bois à fendre ; l'écran lui a demandé
-// « Quelle hauteur ? » et « Quel diamètre ? » sous le titre
-// « Fente du gros bois ». Plus une seule question ne doit y apparaître.
-cas("sa dictée du 7 septembre : la fente ne demande plus rien", () => {
-  const q = questionsAvantChiffrage([
-    { libelle: "Rabattage de haie de laurier", nature: "haie", quantite: "50", unite: "ml" },
-    { libelle: "Fente du gros bois", nature: "fendage" },
-    { libelle: "Démontage d'un chêne mort", nature: "abattage" },
-  ]);
-  assert.deepEqual(
-    q.filter((x) => x.libellePrestation === "Fente du gros bois"),
-    [],
-    "la fente ne porte plus aucune question"
-  );
-});
-
 cas("les réponses s'écrivent sous la forme que le chiffrage sait relire", () => {
-  // **Ce cas protège un défaut invisible.** Si « ⌀ 45 cm » devenait « 45 cm de
-  // diamètre du tronc », rien ne casserait : la question serait posée, la
-  // réponse enregistrée, le devis produit — et la case de la grille
-  // introuvable. La fente n'aurait simplement jamais de prix.
-  const hauteur = questionsAvantChiffrage([{ libelle: "Fendage du bois" }]).find((x) =>
-    x.id.startsWith("fendage.hauteur")
+  // **Ce cas protège un défaut invisible.** Si « fût de 10 m » s'écrivait
+  // autrement, rien ne casserait : la question serait posée, la réponse
+  // enregistrée, le devis produit, et la case de la grille introuvable.
+  const fut = questionsAvantChiffrage([{ libelle: "Fendage du bois" }]).find((x) =>
+    x.id.startsWith("fendage.fut")
   )!;
   const diametre = questionsAvantChiffrage([{ libelle: "Fendage du bois" }]).find((x) =>
     x.id.startsWith("fendage.diametre")
   )!;
-  assert.equal(hauteurLue(precisionLisible(hauteur, "12")), 12);
+  assert.equal(futLu(precisionLisible(fut, "10")), 10);
   assert.equal(diametreLu(precisionLisible(diametre, "45")), 45);
 });
 

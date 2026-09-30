@@ -5,6 +5,14 @@
 `drizzle/0116_modele_de_fiche_d_office.sql`
 
 ---
+## SUR SA BRANCHE : LA FENTE SE CHIFFRE AU FÛT (30 septembre 2026)
+
+La fente demande « Quelle hauteur de fût ? » et sa grille se lit en hauteur de
+fût ; la hauteur de l'arbre ne décide plus d'aucun prix (`ARCHITECTURE.md`
+§441). Aucune migration. Branche `claude/fente-au-fut` ; batterie non jouée,
+en attente de son accord.
+
+---
 ## CODÉ : L'UNITÉ D'UNE LIGNE NE PORTE QUE LA RANGÉE (29 septembre 2026)
 
 « arbre », « arbuste », « plante » ne s'écrivent plus dans la case Unité d'un

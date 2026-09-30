@@ -34069,3 +34069,42 @@ comment fonctionne le planning ? »*
 | la consigne garde « une seule fiche » pour un geste, et l'écarte pour une visite | trois gestes pour une question l'égarent (25 août) ; mais « comment marche le planning » EST une question à plusieurs gestes |
 | la fiche des couleurs dit le SENS de chaque état, prouvé par `etatDemi` et `occupationDemi` | « au-delà » compare les équipes prises (absences comprises) au nombre d'équipes réglé ; sans cela, il ne savait ni ce que c'était ni où le régler |
 | « au dela » soudé en `audela` | « dela » est le début de « délai » : « que signifie au-delà » rendait les délais de paiement |
+
+## §441 : La fente se chiffre à la hauteur de FÛT, jamais à celle de l'arbre
+
+**Sa règle du 29 septembre 2026**, qui corrige celle du 8 août : *« la hauteur
+de l'arbre, c'est pour la hauteur de l'arbre, ça n'a rien à voir avec la fente
+du bois. Pour la fente, il faudrait qu'il demande quelle hauteur de fût : s'il
+y a 10 mètres de fût coupé en 50, il peut procéder à un calcul. »*
+
+**Le défaut était muet.** La case de la grille de fendage se désignait par la
+hauteur de l'ARBRE × diamètre : « un chêne mort de 20 m » rangeait la fente dans
+la tranche 20 à 25 m, alors que la moitié de l'arbre part au broyeur. Et quand
+la dictée ne donnait pas de hauteur, on la demandait sur l'arbre (§7 septembre),
+pour la même mauvaise raison.
+
+| | avant | depuis le 29 septembre |
+|---|---|---|
+| ce qui désigne la case | hauteur de l'arbre (`hauteurM`) | hauteur de fût (`futM`) |
+| la question | « Quelle hauteur fait l'arbre ? », sous l'arbre | « Quelle hauteur de fût ? », sous la fente |
+| sa réponse | `fendage.hauteur`, `abattage.hauteur` | `fendage.fut`, écrite « fût de 10 m » |
+| la hauteur de l'arbre | décidait la fente | ne décide plus d'aucun prix |
+
+**Une seule lecture, `futLu`** (`mesures-arbre.ts`) : « 10 m de fût », « fût de
+10 m », « hauteur de fût 10 m ». **L'unité est exigée** : « coupé en 50 » est la
+longueur des bûches, et la lire comme un fût de 50 m désignerait la dernière
+case.
+
+**Ce qui ne bouge pas, délibérément :**
+
+- l'axe s'appelle toujours `hauteur` en base (`tranches_grille.axe`, clés `h0`,
+  `h5`…) : le renommer demanderait une migration pour un mot que personne ne lit.
+  Ce qu'il mesure est le fût, et l'écran le dit (« Fût 10 à 15 m », « Hauteurs de
+  fût ») ;
+- **ses prix de fente déjà posés restent dans leurs cases**, maintenant lues
+  comme des hauteurs de fût. Ils avaient été posés en pensant à l'arbre : à
+  revoir par lui, rien ne peut le faire à sa place ;
+- ses anciennes réponses `fendage.hauteur` et `abattage.hauteur` restent la
+  hauteur de l'arbre (`hauteurM`) : les relire comme un fût rangerait le prix
+  dans la case d'à côté. La question du fût se repose donc sur ces chantiers.
+

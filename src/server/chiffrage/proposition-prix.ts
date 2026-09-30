@@ -676,7 +676,7 @@ async function prixDeLaLigne(
   const mesures = mesuresResolues(ligne.prestations, [...reponses, ...ligne.membres, ...textesChantier]);
   const reserves = [
     reserveDeContradiction("le diamètre du tronc", mesures.diametreCm),
-    reserveDeContradiction("la hauteur de l'arbre", mesures.hauteurM),
+    reserveDeContradiction("la hauteur de fût", mesures.futM),
     reserveDeContradiction("la longueur de haie", mesures.longueurMl),
     reserveDeContradiction("le tonnage des grumes", mesures.tonnageT),
     // Ce qu'on ne décide pas à sa place — « deux souches » à un prix de grille.
@@ -696,7 +696,9 @@ async function prixDeLaLigne(
   // **Le dessouchage : le diamètre, et rien d'autre.** La hauteur de l'arbre ne
   // dit plus rien une fois qu'il est à terre.
   const diametreCm = mesures.diametreCm.valeur;
-  const hauteurM = mesures.hauteurM.valeur;
+  // **Le fût, pas l'arbre** (sa règle du 29 septembre 2026) : la hauteur de
+  // l'arbre ne décide plus d'aucune case.
+  const futM = mesures.futM.valeur;
 
   if (ligne.cle === "dessouchage") {
     return avecReserves(
@@ -708,9 +710,9 @@ async function prixDeLaLigne(
 
   if (ligne.cle === "fendage") {
     return avecReserves(
-      await prixDepuisCase(ctx, "fendage", celluleFendage(hauteurM, diametreCm, axes), ligne, {
+      await prixDepuisCase(ctx, "fendage", celluleFendage(futM, diametreCm, axes), ligne, {
         manquant: [
-          hauteurM === null ? "la hauteur de l'arbre" : null,
+          futM === null ? "la hauteur de fût" : null,
           diametreCm === null ? "le diamètre du tronc" : null,
         ].filter((x): x is string => x !== null),
       })
@@ -866,7 +868,7 @@ async function prixDepuisCase(
     if (options.silencieuxSiVide) return { prix: null, calcul: [], donneesManquantes: [] };
     const manque = options.manquant?.length
       ? options.manquant
-      : ["la hauteur de l'arbre ou le diamètre du tronc"];
+      : ["la hauteur de fût ou le diamètre du tronc"];
     return {
       prix: null,
       calcul: [],

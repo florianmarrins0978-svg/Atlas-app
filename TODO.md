@@ -1,5 +1,13 @@
 # Prochaines tâches
 
+## ⏳ LA FENTE AU FÛT : SES PRIX DE FENTE À REVOIR (30 septembre 2026)
+
+Codé sur `claude/fente-au-fut` (`ARCHITECTURE.md` §441). **Ce que le code ne
+peut pas faire à sa place** : les prix qu'il avait posés dans sa grille de
+fente l'avaient été par hauteur d'ARBRE ; ils sont désormais lus comme des
+hauteurs de fût (Réglages, Mes prix, Fendre le bois). À lui dire au moment de
+la livraison.
+
 ## 🔜 `test-poser-une-date-e2e` ROUGE LE 30 SEPTEMBRE 2026, SUR `main` AUSSI
 
 « aucun jour d'accueil ouvrable au calendrier » : rouge de la même façon sur

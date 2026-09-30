@@ -49,9 +49,15 @@ cas("⌀ 45 cm structuré = « ⌀ 45 cm » dans le libellé", () => {
   assert.equal(mesuresResolues([], ["Érable — démontage, ⌀ 45 cm"]).diametreCm.valeur, 45);
 });
 
-cas("12 m de haut structurés = « 12 m de haut » dans le libellé", () => {
-  assert.equal(mesuresResolues([{ hauteurM: 12 }], []).hauteurM.valeur, 12);
-  assert.equal(mesuresResolues([], ["un chêne de 12 m de haut"]).hauteurM.valeur, 12);
+// La fente se chiffre au fût depuis le 29 septembre 2026 : c'est lui que le
+// chiffrage résout, et la hauteur de l'arbre n'y entre plus.
+cas("10 m de fût structurés = « 10 m de fût » dans le libellé", () => {
+  assert.equal(mesuresResolues([{ futM: 10 }], []).futM.valeur, 10);
+  assert.equal(mesuresResolues([], ["un chêne de 20 m de haut, 10 m de fût"]).futM.valeur, 10);
+});
+
+cas("la hauteur de l'arbre ne se prend jamais pour un fût", () => {
+  assert.equal(mesuresResolues([{ hauteurM: 20 }], ["un chêne de 20 m de haut"]).futM.valeur, null);
 });
 
 cas("6 tonnes structurées = « 6 tonnes » dans le libellé", () => {
@@ -109,16 +115,16 @@ cas("la réserve nomme LES DEUX valeurs, pour qu'il sache laquelle corriger", ()
 });
 
 cas("une contradiction sur une mesure n'empoisonne pas les autres", () => {
-  const m = mesuresResolues([{ diametreCm: 45, hauteurM: 12 }], ["⌀ 70 cm, 12 m de haut"]);
+  const m = mesuresResolues([{ diametreCm: 45, futM: 12 }], ["⌀ 70 cm, 12 m de fût"]);
   assert.equal(m.diametreCm.origine, "contradiction");
-  assert.equal(m.hauteurM.valeur, 12, "la hauteur, elle, était d'accord");
+  assert.equal(m.futM.valeur, 12, "le fût, lui, était d'accord");
 });
 
 console.log("\n=== Aucune source fiable : refus, jamais invention ===\n");
 
 cas("ni structure ni libellé : la mesure reste inconnue", () => {
   const m = mesuresResolues([], ["Abattage d'un érable"]);
-  for (const cle of ["diametreCm", "hauteurM", "longueurMl", "tonnageT"] as const) {
+  for (const cle of ["diametreCm", "futM", "longueurMl", "tonnageT"] as const) {
     assert.equal(m[cle].valeur, null, `${cle} a été inventé`);
     assert.equal(m[cle].origine, "aucune");
   }

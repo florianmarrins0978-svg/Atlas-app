@@ -43,7 +43,7 @@
 // pour que le prix suive.
 
 import type { Caracteristiques } from "./prestation-structuree";
-import { diametreLu, hauteurLue, longueurHaieLue, tonnageLu } from "./mesures-arbre";
+import { diametreLu, futLu, longueurHaieLue, tonnageLu } from "./mesures-arbre";
 import { lireCaracteristiques } from "./prestation-structuree";
 import { caracteristiqueDeLaQuantite } from "./natures-prestation";
 
@@ -135,7 +135,8 @@ function lireSource(brut: unknown): { mesures: Caracteristiques; faitFoi: boolea
 
 export type MesuresResolues = {
   diametreCm: MesureResolue;
-  hauteurM: MesureResolue;
+  /** La hauteur de fût, seule mesure de longueur qui fasse un prix de fente (29 septembre 2026). */
+  futM: MesureResolue;
   longueurMl: MesureResolue;
   tonnageT: MesureResolue;
 };
@@ -172,7 +173,7 @@ export function mesuresResolues(
 
   return {
     diametreCm: pour("diametreCm", diametreLu),
-    hauteurM: pour("hauteurM", hauteurLue),
+    futM: pour("futM", futLu),
     longueurMl: pour("longueurMl", longueurHaieLue),
     tonnageT: pour("tonnageT", tonnageLu),
   };

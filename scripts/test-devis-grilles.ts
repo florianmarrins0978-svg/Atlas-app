@@ -49,14 +49,18 @@ async function test(nom: string, fn: () => Promise<void>) {
   }
 }
 
-/** Sa dictée du 7 août, telle qu'un modèle la lit — la hauteur dans la description. */
+/**
+ * Sa dictée du 7 août, telle qu'un modèle la lit, les mesures dans la
+ * description. Le fût y est dit depuis le 29 septembre 2026 : c'est lui, et
+ * non les 20 m de l'arbre, qui désigne la case de fendage.
+ */
 function dicteeDuChene() {
   return {
     ...brouillonVide(),
     prestations: [
       {
         libelle: "Abattage d'un chêne mort",
-        description: "20 mètres de haut",
+        description: "20 mètres de haut, 17 mètres de fût",
         quantite: "1",
         unite: "u",
         aConfirmer: false,
@@ -162,13 +166,13 @@ async function main() {
     const manquantes = p!.explication.donneesManquantes.join(" | ");
     assert.match(
       manquantes,
-      /grille de fendage n'a pas de prix pour 15 à 20 m de haut, tronc de ⌀ 40 à 50 cm/,
+      /grille de fendage n'a pas de prix pour 15 à 20 m de fût, tronc de ⌀ 40 à 50 cm/,
       `la case manquante n'est pas nommée : ${manquantes}`
     );
   });
 
   await test("Grille remplie : le prix de la fente en sort, et le reste est allégé d'autant", async () => {
-    // La case du chêne : 20 m de haut (tranche « 15 à 20 m »), ⌀ 45 (« 40 à 50 »).
+    // La case du chêne : 17 m de fût (tranche « 15 à 20 m »), ⌀ 45 (« 40 à 50 »).
     await poserPrixGrille(A, "fendage", "h15|d40", "250", "saisi");
     const chantier = await chantierDuChene(A, "Chêne grille pleine", { diametreCm: "45" });
     const p = await preparerPropositionPrix(A, chantier.id);
@@ -194,7 +198,7 @@ async function main() {
     const contenu = {
       ...brouillonVide(),
       prestations: [
-        { libelle: "Abattage d'un bouleau", description: "8 mètres de haut", quantite: "1", unite: "u", aConfirmer: false },
+        { libelle: "Abattage d'un bouleau", description: "8 mètres de haut, 6 mètres de fût", quantite: "1", unite: "u", aConfirmer: false },
         { libelle: "Fendage du bois", description: null, quantite: null, unite: null, aConfirmer: false },
       ],
     };
@@ -211,7 +215,32 @@ async function main() {
     assert.equal(p!.lignes[1].montant, null, "un prix a été deviné depuis une case voisine");
   });
 
-  await test("Sans hauteur ni diamètre, on dit ce qui manque — on ne devine pas", async () => {
+  await test("Sa dictée du 29 septembre : 20 m de haut ne chiffrent pas la fente", async () => {
+    // *« La hauteur de l'arbre, ça n'a rien à voir avec la fente du bois. »*
+    // Avant, ces 20 m rangeaient la fente dans la case « 20 à 25 m » alors
+    // que la moitié de l'arbre part au broyeur. Sans fût, pas de case.
+    await poserPrixGrille(A, "fendage", "h20|d70", "400", "saisi");
+    const chantier = await chantiersRepo.creerChantier(A, { nom: "Chêne sans fût" });
+    const contenu = {
+      ...brouillonVide(),
+      prestations: [
+        { libelle: "Démontage d'un chêne mort", description: "20 m de haut, 80 cm de diamètre", quantite: "1", unite: "u", aConfirmer: false },
+        { libelle: "Fente du bois", description: "fût coupé en 50", quantite: null, unite: null, aConfirmer: false },
+      ],
+    };
+    for (const p of contenu.prestations) await prestationsRepo.ajouterPrestation(A, chantier.id, p.libelle);
+    await brouillonsRepo.enregistrerGeneration(A, chantier.id, contenu, "dictée");
+    await brouillonsRepo.marquerConfirme(A, chantier.id);
+    await chantiersRepo.mettreAJourDureeEquipe(A, chantier.id, { dureePrevue: "1 jour", tailleEquipe: "2 hommes" });
+
+    const p = await preparerPropositionPrix(A, chantier.id);
+    const fente = p!.lignes.find((l) => /Fente/.test(l.libelle));
+    assert.ok(fente, `pas de ligne de fente : ${p!.lignes.map((l) => l.libelle).join(" || ")}`);
+    assert.equal(fente!.montant, null, "la hauteur de l'arbre a encore désigné une case de fendage");
+    assert.match(p!.explication.donneesManquantes.join(" | "), /la hauteur de fût/);
+  });
+
+  await test("Sans fût ni diamètre, on dit ce qui manque — on ne devine pas", async () => {
     const chantier = await chantiersRepo.creerChantier(A, { nom: "Fente sans mesures" });
     const contenu = {
       ...brouillonVide(),
@@ -227,7 +256,7 @@ async function main() {
 
     const p = await preparerPropositionPrix(A, chantier.id);
     const manquantes = p!.explication.donneesManquantes.join(" | ");
-    assert.match(manquantes, /la hauteur de l'arbre et le diamètre du tronc/, manquantes);
+    assert.match(manquantes, /la hauteur de fût et le diamètre du tronc/, manquantes);
   });
 
   // === 3. Les lignes sont réellement écrites au détail =====================
@@ -368,7 +397,7 @@ async function main() {
       ...brouillonVide(),
       prestations: [
         { libelle: "Taille de haie de laurier", description: null, quantite: "20", unite: "ml", aConfirmer: false },
-        { libelle: "Abattage d'un chêne mort", description: "20 mètres de haut", quantite: "1", unite: "u", aConfirmer: false },
+        { libelle: "Abattage d'un chêne mort", description: "20 mètres de haut, 17 mètres de fût", quantite: "1", unite: "u", aConfirmer: false },
         { libelle: "Coupe en 50 cm", description: null, quantite: null, unite: null, aConfirmer: false },
         { libelle: "Fendage du bois", description: null, quantite: null, unite: null, aConfirmer: false },
       ],

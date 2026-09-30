@@ -24,7 +24,7 @@
 // on pose celles qui portent de l'argent. Ce module a autant pour rôle de
 // **taire** les autres que de poser celles-là.
 
-import { diametreLu, hauteurLue } from "./mesures-arbre";
+import { diametreLu, futLu } from "./mesures-arbre";
 import { TECHNIQUES_PAR_DEFAUT, type Technique } from "./grille-prix";
 import { lireCaracteristiques } from "./prestation-structuree";
 
@@ -148,9 +148,9 @@ function contientDiametre(ligne: LignePourQuestions): boolean {
   return diametreLu(toutLeTexte(ligne)) !== null;
 }
 
-function contientHauteur(ligne: LignePourQuestions): boolean {
-  if (lireCaracteristiques(ligne.caracteristiques).hauteurM !== undefined) return true;
-  return hauteurLue(toutLeTexte(ligne)) !== null;
+function contientFut(ligne: LignePourQuestions): boolean {
+  if (lireCaracteristiques(ligne.caracteristiques).futM !== undefined) return true;
+  return futLu(toutLeTexte(ligne)) !== null;
 }
 
 export type LignePourQuestions = {
@@ -239,43 +239,25 @@ export function questionsAvantChiffrage(
   // chose. C'est pourquoi cette liste ne se confond pas avec le référentiel.
   const abattageDansLaDictee = prestations.some((l) => estDeNature(l, ["abattage", "dessouchage"], ABATTAGE));
 
-  // La hauteur aussi appartient à l'arbre, et la dictée la donne souvent sur la
-  // ligne de l'abattage — *« un chêne mort de vingt mètres de haut »*. La
-  // redemander sur la ligne de la fente serait faire répéter au patron ce qu'il
-  // vient de dire.
+  // **LA FENTE SE CHIFFRE AU FÛT, PAS À L'ARBRE — sa règle du 29 septembre
+  // 2026.** *« La hauteur de l'arbre, c'est pour la hauteur de l'arbre, ça n'a
+  // rien à voir avec la fente du bois. Pour la fente, il faudrait qu'il demande
+  // quelle hauteur de fût : s'il y a 10 mètres de fût coupé en 50, il peut
+  // procéder à un calcul. »*
   //
-  // **Ce n'est tenable que parce que le chiffrage lit les mêmes textes.**
-  // `preparerPropositionPrix` passe les lignes de la dictée — libellés ET
-  // descriptions — à `mesuresArbre`. Si l'un des deux lisait moins que l'autre,
-  // la question serait tue et la case de la grille resterait introuvable : la
-  // fente n'aurait jamais de prix, sans qu'aucune erreur ne le signale.
-  const hauteurDansLaDictee = prestations.some((l) => contientHauteur(l));
-
-  // **LA HAUTEUR APPARTIENT À L'ARBRE — sa règle du 7 septembre 2026.**
+  // Jusque-là, la hauteur de l'ARBRE désignait la case de la grille de
+  // fendage (règle du 8 août) : les « vingt mètres de haut » d'un chêne dont
+  // la moitié part au broyeur rangeaient la fente deux cases trop haut, sans
+  // un mot. Et quand la dictée ne la donnait pas, on la demandait sur l'arbre
+  // (règle du 7 septembre), pour la même mauvaise raison.
   //
-  // *« Il m'a proposé la hauteur pour la fente. Cette case-là ne doit jamais
-  // comporter de hauteur, c'est de la fente. La hauteur, c'est pour un
-  // arbre. »*
-  //
-  // Elle se demandait sur la ligne du FENDAGE depuis le 8 août 2026, parce
-  // que c'est le fendage qui la CONSOMME — sa grille est « hauteur ×
-  // diamètre ». Mais on la lui demandait sous le titre « Fente du gros
-  // bois » : sur un objet qui n'a pas de hauteur, et sa réponse partait
-  // ensuite grossir le libellé de la fente sur le devis du client.
-  //
-  // **Elle n'est pas supprimée pour autant — elle change de ligne.** La
-  // retirer purement laisserait la fente sans case dans sa grille, donc sans
-  // prix, et rien ne le dirait (`CLAUDE.md` §4 ter : ce qui n'est pas
-  // calculé se dit). C'est l'arbre qui la porte quand il y en a un ; la
-  // fente ne la demande plus que s'il n'y a aucun arbre à qui la demander.
-  const arbrePorteurDeLaHauteur = prestations.some(
-    (l) => estDeNature(l, ["abattage"], ABATTAGE) && !estDessouchage(l)
-  );
-
-  // Le fendage est le seul à avoir besoin de la hauteur. Sur un abattage
-  // seul, elle ne décide de rien — et une question qui ne décide de rien rend
-  // l'arrêt pénible, ce que le produit paie plus cher qu'un champ vide.
-  const fendageDansLaDictee = prestations.some((l) => estDeNature(l, ["fendage"], FENDAGE));
+  // **Le fût se demande sur la FENTE**, là où il l'a demandé : c'est le bois
+  // qu'on fend. Sa règle du 7 septembre (« cette case-là ne doit jamais
+  // comporter de hauteur, c'est pour un arbre ») visait la hauteur de l'arbre,
+  // qui ne s'y demande plus. Et comme le diamètre, le fût dit n'importe où dans
+  // la dictée compte : « un chêne de 20 m, 10 m de fût » le porte sur la ligne
+  // de l'arbre.
+  const futDansLaDictee = prestations.some((l) => contientFut(l));
 
   // **Le diamètre aussi, et il a fallu qu'il le voie pour qu'on le corrige.**
   //
@@ -286,7 +268,8 @@ export function questionsAvantChiffrage(
   // CE QUI SE PASSAIT. La lecture découpe une phrase à la virgule. « Il y a un
   // dessouchage, deux souches de soixante centimètres de diamètre » donne DEUX
   // prestations : la première déclenche la question, la seconde porte la
-  // réponse. Or la question ne regardait que SA ligne — quand la hauteur, elle,
+  // réponse. Or la question ne regardait que SA ligne — quand la hauteur (le fût depuis
+  // le 29 septembre), elle,
   // était déjà cherchée dans toute la dictée depuis le premier jour. La même
   // asymétrie que celle qui vient d'être corrigée plus haut : deux règles
   // voisines, une seule relue.
@@ -304,21 +287,20 @@ export function questionsAvantChiffrage(
     const libelle = ligne.libelle.trim();
     if (!libelle) return;
 
-    // --- La fente : hauteur ET diamètre, parce que c'est du VOLUME ---------
+    // --- La fente : fût ET diamètre, parce que c'est du VOLUME -------------
     //
-    // Le patron, le 8 août 2026 : *« pour la fente ils devraient demander la
-    // hauteur de l'arbre et son diamètre, et on crée une liste de prix en
-    // fonction de la hauteur et du diamètre, comme ça il n'invente rien. »*
-    //
-    // Les deux mesures, et pas une : le volume d'un tronc va comme le carré du
-    // diamètre multiplié par la hauteur. Un chêne de 60 cm fait quatre fois le
-    // bois d'un chêne de 30 cm à hauteur égale — et c'est ce bois-là qu'on fend.
+    // Le volume d'un tronc va comme le carré du diamètre multiplié par sa
+    // longueur. Un chêne de 60 cm fait quatre fois le bois d'un chêne de 30 cm
+    // à fût égal, et c'est ce bois-là qu'on fend (sa grille « fût × diamètre »).
     if (estDeNature(ligne, ["fendage"], FENDAGE)) {
-      if (!hauteurDansLaDictee && !arbrePorteurDeLaHauteur) {
+      if (!futDansLaDictee) {
         questions.push({
-          id: `fendage.hauteur#${rang}`,
+          id: `fendage.fut#${rang}`,
           libellePrestation: libelle,
-          question: "Quelle hauteur ?",
+          // Ses mots : « quelle hauteur de fût ». Elle nomme sa mesure, comme
+          // le diamètre : sous un titre, « Quelle hauteur ? » ne dit pas DE
+          // QUOI, et c'est la confusion qu'il a vécue le 7 septembre.
+          question: "Quelle hauteur de fût ?",
           options: null,
           unite: "m",
         });
@@ -356,23 +338,6 @@ export function questionsAvantChiffrage(
           question: "Comment s'abat-il ?",
           options: optionsTechnique,
           unite: null,
-        });
-      }
-
-      // **La hauteur de l'arbre, et seulement quand du bois sera fendu.**
-      // Voir `arbrePorteurDeLaHauteur` plus haut : c'est la même règle, prise
-      // par son autre bout. Une souche n'en a pas — l'arbre n'est plus là.
-      if (!souche && fendageDansLaDictee && !hauteurDansLaDictee) {
-        questions.push({
-          id: `abattage.hauteur#${rang}`,
-          libellePrestation: libelle,
-          // Elle nomme sa mesure ET son objet, comme le diamètre juste en
-          // dessous : c'est son arbitrage du test téléphone, et il vaut ici
-          // pour la même raison — sous un titre, « Quelle hauteur ? » ne dit
-          // pas DE QUOI, et c'est précisément la confusion qu'il a vécue.
-          question: "Quelle hauteur fait l'arbre ?",
-          options: null,
-          unite: "m",
         });
       }
 
@@ -486,6 +451,8 @@ function precisionLisibleParId(
     return `⌀ ${valeur} ${unite ?? ""}`.trim();
   }
   if (sujet.endsWith(".hauteur")) return `${valeur} ${unite ?? "m"} de haut`.trim();
+  // « fût de 10 m » : la forme exacte que `futLu` relit.
+  if (sujet.endsWith(".fut")) return `fût de ${valeur} ${unite ?? "m"}`.trim();
   return `${valeur} ${unite ?? ""}`.trim();
 }
 

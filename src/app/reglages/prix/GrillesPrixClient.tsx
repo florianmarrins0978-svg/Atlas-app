@@ -363,7 +363,7 @@ function rangeesDe(nature: Nature, grilles: Grilles): { cle: string; titre: stri
       axe: "technique" as const,
     }));
   }
-  return grilles.axes.hauteurs.map((h) => ({ cle: h.cle, titre: `Arbre ${h.libelle}`, axe: "hauteur" as const }));
+  return grilles.axes.hauteurs.map((h) => ({ cle: h.cle, titre: `Fût ${h.libelle}`, axe: "hauteur" as const }));
 }
 
 /**

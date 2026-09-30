@@ -244,6 +244,31 @@ export function hauteurLue(texte: string): number | null {
   return premiereMesure(texte, HAUTEUR);
 }
 
+/**
+ * La hauteur de FÛT, en mètres : le bois qu'on fend, pas l'arbre entier.
+ *
+ * **Sa règle du 29 septembre 2026 :** *« la hauteur de l'arbre, ça n'a rien à
+ * voir avec la fente du bois ; il faudrait qu'il demande quelle hauteur de
+ * fût. »* Un chêne de 20 m peut n'avoir que 10 m de fût : le reste part au
+ * broyeur.
+ *
+ * « 10 m de fût », « dix mètres de fût », « fût de 10 m », « hauteur de fût
+ * 10 m ». **L'unité est exigée** : « on coupe le fût en 50 » donne la longueur
+ * des bûches, en centimètres, et la prendre pour un fût de 50 m désignerait la
+ * dernière case de sa grille. La transcription écrit parfois « fut » sans
+ * accent : les deux se lisent.
+ */
+const FUT = [
+  /(\d{1,2}(?:[.,]\d)?)\s*m(?:[èe]tres?)?\s*de\s*f[ûu]t\b/i,
+  /f[ûu]t\s*(?:de\s*)?(\d{1,2}(?:[.,]\d)?)\s*m(?:[èe]tres?)?\b/i,
+  /hauteur\s*de\s*f[ûu]t\s*(?:de\s*)?(\d{1,2}(?:[.,]\d)?)\s*m(?:[èe]tres?)?\b/i,
+];
+
+/** La hauteur de fût en mètres, lue dans un texte. `null` s'il n'y est pas. */
+export function futLu(texte: string): number | null {
+  return premiereMesure(texte, FUT);
+}
+
 export type MesuresArbre = { hauteurM: number | null; diametreCm: number | null };
 
 /**

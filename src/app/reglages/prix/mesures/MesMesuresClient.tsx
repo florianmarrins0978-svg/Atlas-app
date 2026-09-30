@@ -46,7 +46,7 @@ export default function MesMesuresClient({
     },
     {
       axe: "hauteur",
-      titre: "Hauteurs d'arbre",
+      titre: "Hauteurs de fût",
       aide: sert("hauteur", grilles),
       lignes: grilles.axes.hauteurs.map((t) => ({ cle: t.cle, libelle: t.libelle })),
     },

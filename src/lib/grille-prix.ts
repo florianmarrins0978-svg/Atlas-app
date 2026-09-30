@@ -6,6 +6,12 @@
 // Puis, sur une première proposition à 3 × 3 cases : *« par contre il faut
 // faire plus de tranche. »*
 //
+// **Le 29 septembre 2026, il a corrigé la première mesure** : *« la hauteur de
+// l'arbre, ça n'a rien à voir avec la fente du bois ; il faudrait qu'il
+// demande quelle hauteur de fût. »* L'axe s'appelle toujours `hauteur` en base
+// (`tranches_grille.axe`, ses clés `h0`, `h5`…) : le renommer demanderait une
+// migration pour un mot que personne ne lit. Ce qu'il MESURE est le fût.
+//
 // **Et le 14 août 2026 :** *« je dois pouvoir ajouter ou retirer des cases. »*
 // Les tranches ci-dessous ne sont donc plus la grille : elles en sont le
 // **point de départ**, celui d'une entreprise qui n'a encore rien réglé. Ce
@@ -21,7 +27,7 @@
 //
 // **Pourquoi ces deux mesures, et pas le temps passé.** Ce qu'on fend, c'est du
 // volume de bois. Le volume d'un tronc va comme le carré du diamètre multiplié
-// par la hauteur : deux troncs de même hauteur, l'un de 30 cm et l'autre de
+// par sa longueur : deux fûts de même longueur, l'un de 30 cm et l'autre de
 // 60 cm, ne font pas le double de bois mais le quadruple. Une grille à deux
 // entrées suit cette réalité de bien plus près qu'une durée dictée à la louche.
 //
@@ -46,7 +52,7 @@
 //   1. **à la main**, depuis les réglages : le patron pose le prix d'une case
 //      avant même d'avoir eu le chantier ;
 //   2. **toute seule**, quand il écrit un prix de fendage sur un devis dont la
-//      hauteur et le diamètre sont connus. C'est sa décision qui s'y range, pas
+//      fût et le diamètre sont connus. C'est sa décision qui s'y range, pas
 //      une moyenne.
 //
 // **Aucune interpolation, jamais.** Une case vide entourée de cases remplies
@@ -107,7 +113,8 @@ export const DIAMETRES_PAR_DEFAUT: readonly Tranche[] = [
 ];
 
 /**
- * Les tranches de hauteur d'origine, en mètres.
+ * Les tranches de hauteur d'origine, en mètres : la hauteur de FÛT depuis le
+ * 29 septembre 2026 (voir en tête de fichier).
  *
  * Cinq mètres est la maille qu'un élagueur estime à l'œil sans se tromper — au
  * mètre près, il devrait mesurer, et la question deviendrait pénible là où elle
@@ -340,7 +347,7 @@ export const NATURES_PAR_DEFAUT: readonly Nature[] = [
   {
     cle: "fendage",
     titre: "Fendre le bois",
-    aide: "Par hauteur d'arbre et par diamètre : c'est le volume de bois qui décide.",
+    aide: "Par hauteur de fût et par diamètre : c'est le volume de bois qui décide.",
     axe: "Diamètre du tronc",
     forme: "hauteur-diametre",
     integree: true,
@@ -407,7 +414,7 @@ export type Cellule = {
   /** Le premier axe — hauteur, technique, ou le rôle tenu par la case unique. */
   hauteur: Tranche;
   diametre: Tranche;
-  /** Ce que le patron lit : « 10 à 15 m de haut, tronc de 40 à 50 cm ». */
+  /** Ce que le patron lit : « 10 à 15 m de fût, tronc de 40 à 50 cm ». */
   libelle: string;
 };
 
@@ -415,19 +422,19 @@ export type Cellule = {
 export type CelluleFendage = Cellule;
 
 /**
- * La case de la grille qui correspond à un arbre.
+ * La case de la grille de fendage : la hauteur de fût, puis le diamètre.
  *
  * Rend `null` dès qu'une des deux mesures manque : **sans les deux, il n'y a pas
  * de case**, et donc pas de prix à aller chercher. C'est le cas normal au début
  * d'une dictée, pas une anomalie — il déclenche la question.
  */
 export function celluleFendage(
-  hauteurM: number | null,
+  futM: number | null,
   diametreCm: number | null,
   axes: Axes
 ): Cellule | null {
-  if (hauteurM === null || diametreCm === null) return null;
-  const hauteur = trancheDe(hauteurM, axes.hauteurs);
+  if (futM === null || diametreCm === null) return null;
+  const hauteur = trancheDe(futM, axes.hauteurs);
   const diametre = trancheDe(diametreCm, axes.diametres);
   if (!hauteur || !diametre) return null;
   return celluleCroisee(hauteur, diametre);
@@ -438,7 +445,7 @@ function celluleCroisee(hauteur: Tranche, diametre: Tranche): Cellule {
     cle: `${hauteur.cle}|${diametre.cle}`,
     hauteur,
     diametre,
-    libelle: `${hauteur.libelle} de haut, tronc de ⌀ ${diametre.libelle}`,
+    libelle: `${hauteur.libelle} de fût, tronc de ⌀ ${diametre.libelle}`,
   };
 }
 

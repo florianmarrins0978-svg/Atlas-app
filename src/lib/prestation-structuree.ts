@@ -14,7 +14,7 @@
 // contaminerait le regroupement des lignes de devis.
 
 import type { LigneExtraite } from "../server/ai/schemas/extraction";
-import { diametreLu, hauteurLue } from "./mesures-arbre";
+import { diametreLu, futLu, hauteurLue } from "./mesures-arbre";
 import { nature } from "./natures-prestation";
 
 export type PrestationStructuree = {
@@ -168,6 +168,8 @@ function mesuresDeLaDictee(ligne: LigneExtraite): Record<string, number> | null 
   if (diametre !== null) mesures.diametreCm = diametre;
   const hauteur = hauteurLue(texte);
   if (hauteur !== null) mesures.hauteurM = hauteur;
+  const fut = futLu(texte);
+  if (fut !== null) mesures.futM = fut;
   // `null` plutôt qu'un objet vide : `{}` en base se relit comme « on a
   // regardé et il n'y a rien », alors que NULL dit « on ne sait pas ». La
   // nuance compte le jour où une autre source viendra compléter la ligne.
@@ -184,8 +186,9 @@ function mesuresDeLaDictee(ligne: LigneExtraite): Record<string, number> | null 
  * donnée déjà certaine — pas en fabriquer une.
  *
  * Les sujets sont ceux que produit `questions-chiffrage.ts`, `<sujet>#<rang>` :
- * `abattage.technique`, `abattage.diametre`, `fendage.hauteur`,
- * `fendage.diametre`, `haie.longueur`. **Ils sont persistés** — les renommer
+ * `abattage.technique`, `abattage.diametre`, `fendage.fut`,
+ * `fendage.diametre`, `haie.longueur` (et `fendage.hauteur`, `abattage.hauteur`,
+ * posés avant le 29 septembre 2026). **Ils sont persistés** — les renommer
  * reposerait au patron des questions déjà répondues.
  */
 export function structureDepuisPrecisions(
@@ -206,6 +209,9 @@ export function structureDepuisPrecisions(
     // l'arbre, qu'il ait été demandé pour l'abattage ou pour la fente.
     if (sujet.endsWith(".diametre")) mesures.diametreCm = valeur;
     else if (sujet.endsWith(".hauteur")) mesures.hauteurM = valeur;
+    // `fendage.fut` depuis le 29 septembre 2026 : la hauteur de FÛT. Les
+    // anciennes réponses `.hauteur` restent la hauteur de l'arbre, jamais un fût.
+    else if (sujet.endsWith(".fut")) mesures.futM = valeur;
     else if (sujet.endsWith(".longueur")) mesures.longueurMl = valeur;
   }
 
@@ -238,15 +244,17 @@ export function structureDepuisPrecisions(
 export type Caracteristiques = {
   /** Diamètre du tronc, en centimètres — l'unité des tranches de la grille. */
   diametreCm?: number;
-  /** Hauteur de l'arbre, en mètres. */
+  /** Hauteur de l'arbre, en mètres. Ne décide d'aucun prix. */
   hauteurM?: number;
+  /** Hauteur de fût, en mètres : le bois qu'on fend (sa règle du 29 septembre 2026). */
+  futM?: number;
   /** Longueur de haie, en mètres linéaires. */
   longueurMl?: number;
   /** Poids des grumes, en tonnes. */
   tonnageT?: number;
 };
 
-const MESURES_CONNUES = ["diametreCm", "hauteurM", "longueurMl", "tonnageT"] as const;
+const MESURES_CONNUES = ["diametreCm", "hauteurM", "futM", "longueurMl", "tonnageT"] as const;
 
 /**
  * Relit un objet de caractéristiques venu de la base, et refuse ce qui n'en est

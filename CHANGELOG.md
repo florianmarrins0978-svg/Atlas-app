@@ -8,6 +8,15 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-29
 
+### La fente se chiffre à la hauteur de fût, plus à celle de l'arbre
+
+Sa remarque : les 20 m d'un chêne n'ont rien à voir avec le bois qu'on fend.
+Ils rangeaient pourtant la fente dans la case « 20 à 25 m » de sa grille, sans
+un mot. Désormais la fente demande « Quelle hauteur de fût ? », lit « 10 m de
+fût » dans la dictée, et la hauteur de l'arbre ne décide plus d'aucun prix
+(`ARCHITECTURE.md` §441). Ses prix de fente déjà posés sont à revoir : ils
+avaient été pensés pour la hauteur de l'arbre.
+
 ### Le modèle de fiche d'entretien est là d'office, et une touche le remet
 
 Ses demandes : *« mon modèle doit déjà être là par défaut, et ils la

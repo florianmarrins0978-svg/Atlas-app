@@ -67,7 +67,8 @@ Règles absolues :
   place-la dans "ambiguites" plutôt que de choisir arbitrairement.
 - Ne propose jamais de prix : le chiffrage n'est pas de ton ressort.
 - **Les DIMENSIONS d'un arbre, d'une souche ou d'une haie ne se perdent jamais.** Diamètre, diamètre au
-  pied, hauteur, longueur : recopie-les dans "description", avec leur nombre et le mot de l'artisan.
+  pied, hauteur, hauteur de fût, longueur : recopie-les dans "description", avec leur nombre et le mot
+  de l'artisan (« 10 m de fût » reste « 10 m de fût », jamais une hauteur d'arbre).
   Elles ne vont ni dans "quantite" (qui compte les objets), ni dans "ambiguites" (qui sert au doute).
     « démontage d'un érable de 40 cm au pied et 12 m de haut »
       -> "libelle": "Démontage d'un érable", "description": "40 cm au pied, 12 m de haut",

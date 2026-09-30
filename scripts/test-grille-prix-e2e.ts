@@ -69,32 +69,32 @@ async function main() {
   // accuser l'écran de n'annoncer aucun décompte.
   //
   // **Le motif désigne le REPLI, avec son décompte.** Depuis le 14 août 2026 la
-  // rangée porte aussi une croix « Retirer Arbre 10 à 15 m » : un motif lâche
+  // rangée porte aussi une croix « Retirer Fût 10 à 15 m » : un motif lâche
   // en trouvait deux, et l'échec accusait l'écran de ne plus afficher sa
   // rangée — alors qu'il en affichait une de plus.
-  await page.getByRole("button", { name: /^Arbre 10 à 15 m \d+ \/ \d+$/ }).waitFor({ timeout: 30_000 });
+  await page.getByRole("button", { name: /^Fût 10 à 15 m \d+ \/ \d+$/ }).waitFor({ timeout: 30_000 });
   const decompteAvant = await lireDecompte(page);
 
   // --- 2. Un prix saisi survit au rechargement -----------------------------
   //
   // Le bloc « 10 à 15 m », le diamètre « 40 à 50 cm » : la case qu'un chêne
   // ordinaire désigne.
-  await page.getByRole("button", { name: /^Arbre 10 à 15 m \d+ \/ \d+$/ }).click();
+  await page.getByRole("button", { name: /^Fût 10 à 15 m \d+ \/ \d+$/ }).click();
   // **Le nom accessible porte la grille ET la rangée.** Depuis l'arrivée du
   // dessouchage, « 40 à 50 cm » désigne deux cases à l'écran : un tronc à fendre
   // et une souche à arracher. Viser le libellé court seul rendrait ce contrôle
   // ambigu — et, le jour où il choisirait la mauvaise, il vérifierait le prix
   // d'une souche en croyant vérifier celui d'une fente.
-  const champ = page.getByLabel("Fendre le bois — Arbre 10 à 15 m — 40 à 50 cm");
+  const champ = page.getByLabel("Fendre le bois — Fût 10 à 15 m — 40 à 50 cm");
   await champ.fill("270");
   // Le prix part au serveur quand le champ perd le focus — comme sur le devis.
-  await page.getByRole("button", { name: /^Arbre 10 à 15 m \d+ \/ \d+$/ }).click();
+  await page.getByRole("button", { name: /^Fût 10 à 15 m \d+ \/ \d+$/ }).click();
   await page.waitForTimeout(1200);
 
   await page.reload({ waitUntil: "networkidle" });
-  await page.getByRole("button", { name: /^Arbre 10 à 15 m \d+ \/ \d+$/ }).click();
+  await page.getByRole("button", { name: /^Fût 10 à 15 m \d+ \/ \d+$/ }).click();
   assert.equal(
-    await page.getByLabel("Fendre le bois — Arbre 10 à 15 m — 40 à 50 cm").inputValue(),
+    await page.getByLabel("Fendre le bois — Fût 10 à 15 m — 40 à 50 cm").inputValue(),
     "270",
     "Le prix ne survit pas au rechargement : le patron croirait avoir mal tapé."
   );
@@ -168,11 +168,11 @@ async function main() {
   //
   // Se corriger doit être possible. Une case qu'on vide redevient une question
   // posée ; un zéro enregistré se proposerait sur un devis.
-  await page.getByLabel("Fendre le bois — Arbre 10 à 15 m — 40 à 50 cm").fill("");
-  await page.getByRole("button", { name: /^Arbre 10 à 15 m \d+ \/ \d+$/ }).click();
+  await page.getByLabel("Fendre le bois — Fût 10 à 15 m — 40 à 50 cm").fill("");
+  await page.getByRole("button", { name: /^Fût 10 à 15 m \d+ \/ \d+$/ }).click();
   await page.waitForTimeout(1200);
   await page.reload({ waitUntil: "networkidle" });
-  await page.getByRole("button", { name: /^Arbre 10 à 15 m \d+ \/ \d+$/ }).waitFor({ timeout: 30_000 });
+  await page.getByRole("button", { name: /^Fût 10 à 15 m \d+ \/ \d+$/ }).waitFor({ timeout: 30_000 });
   // **On revient au décompte de DÉPART, pas à zéro.** Attendre « Aucune case
   // remplie » supposait encore que ce contrôle est seul à écrire dans cette
   // grille — or toute suite qui chiffre un devis avant lui y range un prix.

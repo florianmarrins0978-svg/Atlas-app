@@ -190,7 +190,7 @@ export async function apprendrePrixGrille(
             mesures.diametreCm.valeur,
             axes
           )
-        : celluleFendage(mesures.hauteurM.valeur, mesures.diametreCm.valeur, axes);
+        : celluleFendage(mesures.futM.valeur, mesures.diametreCm.valeur, axes);
 
   // Sans les mesures qu'il faut, on ne sait pas dans quelle case ranger ce prix.
   // On ne le range nulle part — un prix dans la mauvaise case reviendrait plus
