@@ -1,9 +1,18 @@
 # Prochaines tâches
 
+## 🔜 `test-poser-une-date-e2e` ROUGE LE 30 SEPTEMBRE 2026, SUR `main` AUSSI
+
+« aucun jour d'accueil ouvrable au calendrier » : rouge de la même façon sur
+`main` seul (`verifier-rouge-prealable.ts`, base `bdc2228b`), donc pas un défaut
+des lots livrés ce jour-là. Hypothèse non vérifiée : la grille du mois affiché
+n'a plus de jour ouvrable après le chantier en fin de mois. Reproduire en
+figeant la date, test rouge, puis corriger la suite (le produit n'est pas mis
+en cause à ce stade).
+
 ## ✅ LE MODÈLE DE FICHE DÉJÀ LÀ : CODÉ LE 29 SEPTEMBRE 2026, sa réponse « B »
 
 
-## 🔜 LE MESSAGE DU DEVIS : codé le 29 septembre 2026, PAS SUR `main`
+## ✅ LE MESSAGE DU DEVIS : codé le 29 septembre 2026, SUR `main` LE 30 SEPTEMBRE 2026
 
 Branche `claude/message-du-premier-envoi`. Planche
 `appli/lien-valable-45-jours.html`, **A retenue**. `ARCHITECTURE.md` §438.
@@ -18,7 +27,7 @@ Branche `claude/message-du-premier-envoi`. Planche
 
 | Reste | Qui |
 |---|---|
-| `npm run verifier:avant-livraison`, puis `main` (niveau 3 : une migration, et le devis) | lui dire quand, il l'a interdite ce jour-là |
+| ~~batterie, puis `main`~~ batterie commune jouée le 30 septembre, sur `main` le 30 | fait |
 
 ## ⏳ UNE PLANCHE À REGARDER : LE MODÈLE DE FICHE DÉJÀ LÀ (29 septembre 2026)
 
@@ -46,7 +55,7 @@ Travail dans l'écran du devis (identifiant qui ne change pas, ordre des
 
 ## ⏳ UNE PLANCHE À REGARDER : LES COULEURS DU PLANNING (29 septembre 2026)
 
-## ✅ LES COULEURS DU PLANNING : CODÉ LE 29 SEPTEMBRE 2026, PAS SUR `main`
+## ✅ LES COULEURS DU PLANNING : CODÉ LE 29 SEPTEMBRE 2026, SUR `main` LE 30 SEPTEMBRE 2026
 
 Planche `appli/couleurs-du-planning.html`, « Parfait code ça ». Branche
 `claude/couleurs-du-planning`, migration 0113 (`ARCHITECTURE.md` §435). **Sa
@@ -133,7 +142,7 @@ vert le 27, sur `main` avec son accord. `ARCHITECTURE.md` §427, document de ret
 | le patron n'est pas notifié quand le client valide ou déplace : le planning bouge seul | à trancher par lui |
 | un contrat dans le jeu de démonstration, pour que `test-pages-publiques-sans-navigation-e2e` ouvre vraiment `/contrat` et `/contrat/dates` | à coder |
 
-## 🔜 LE CONTRAT QUITTÉ, ET RETIRER SANS COUPER LE LIEN : codé le 29 septembre 2026, PAS SUR `main`
+## ✅ LE CONTRAT QUITTÉ, ET RETIRER SANS COUPER LE LIEN : codé le 29 septembre 2026, SUR `main` LE 30 SEPTEMBRE 2026
 
 Sa plainte : un contrat d'entretien commencé puis quitté ne se retrouvait pas
 dans ses chantiers en cours. Corrigé à la racine (`ARCHITECTURE.md` §436,
@@ -143,7 +152,7 @@ dans ses chantiers en cours. Corrigé à la racine (`ARCHITECTURE.md` §436,
 
 | Reste | Qui |
 |---|---|
-| `npm run verifier:avant-livraison`, puis `main` | lui dire quand, il l'a interdite ce jour-là |
+| ~~batterie, puis `main`~~ batterie commune jouée le 30 septembre, sur `main` le 30 | fait |
 | ~~le lien d'un devis meurt au bout de 45 jours~~ tranché le 29 septembre : on garde 45 jours, et le message au client le dit (planche `appli/lien-valable-45-jours.html`, branche `claude/maquette-lien-45-jours`) | fait |
 
 ## 🔜 CONTRAT D'ENTRETIEN : LOTS 1 ET 2 SUR `main` (26 et 27 septembre 2026)

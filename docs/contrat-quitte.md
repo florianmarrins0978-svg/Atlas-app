@@ -1,6 +1,6 @@
 # Le contrat d'entretien quitté : il se retrouve dans « Vos chantiers »
 
-29 septembre 2026. Branche `claude/contrat-quitte-dans-chantiers`, **pas sur `main`**.
+29 septembre 2026. Branche `claude/contrat-quitte-dans-chantiers`. **Sur `main` le 30 septembre 2026**, après une batterie commune.
 
 ## Ta remarque
 
@@ -83,12 +83,10 @@ Ce qui peut encore empêcher un client d'utiliser son lien :
 | types, lint, pansements, code mort, couches, tirets, flèches | verts |
 | l'accueil et l'écran du contrat, regardés à 390 px | la ligne est là, le contrat se rouvre avec sa prestation ; envoyé, « Contrat envoyé, sans réponse » et « Dimanche 27 septembre » dessous |
 
-## Ce qui n'a pas été fait
+## La batterie
 
-**La batterie entière.** Tu l'as interdite. Le lot est de niveau 3 (une migration, et le fichier des règles du contrat touche 102 écrans) : elle est obligatoire avant `main`.
+Jouée le 30 septembre, commune à sept lots prêts : 445 suites base sur 446 (une non mesurable ici), 173 suites navigateur sur 174. Le seul rouge, `test-poser-une-date-e2e`, est rouge de la même façon sur `main` sans nos lots : il ne vient pas d'ici. Il semble tomber en fin de mois, quand le calendrier affiché n’a plus de jour libre après le chantier (à confirmer, noté dans `TODO.md`).
 
 ## Ce qui reste ouvert
 
-| Question | Qui tranche |
-|---|---|
-| Quand jouer la batterie pour le mettre sur `main` | toi |
+Rien à trancher. Redémarre ton espace : les migrations s'appliquent toutes seules.

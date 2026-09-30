@@ -24,7 +24,7 @@ pour toute l'entreprise, comme l'allure des devis. Migration 0113. Branche
 · dernière migration `drizzle/0114_retire_de_la_liste.sql` (branche `claude/contrat-quitte-dans-chantiers`)
 
 ---
-## SUR SA BRANCHE : LE CONTRAT QUITTÉ DANS « VOS CHANTIERS » (29 septembre 2026)
+## SUR `main` LE 30 SEPTEMBRE 2026 : LE CONTRAT QUITTÉ DANS « VOS CHANTIERS » (29 septembre 2026)
 
 L'écran du contrat d'entretien s'enregistre à chaque geste ; l'accueil liste
 les contrats tant que le client ne les a pas acceptés (brouillon, envoyé sans

@@ -11,18 +11,18 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 
 ---
 
-## LES COULEURS DU PLANNING : 29 septembre 2026, PAS SUR `main`
+## LES COULEURS DU PLANNING : 29 septembre 2026, sur `main` le 30
 
 Branche `claude/couleurs-du-planning`, migration 0113. Tout passe par
 `fondDeLEtat`, qui lit `--atlas-etat-<état>` ; `CouleursDesEtats` pose ces
 variables au-dessus des trois écrans qui montrent ces états (planning, envoi,
 Réglages Équipe). **Un écran neuf qui montre rien, incomplet, complet ou
 au-delà doit être enveloppé par `CouleursDesEtats`**, sinon il garde les
-couleurs d'avant. Pourquoi : `ARCHITECTURE.md` §435. Reste : la batterie (niveau
-3), qu'il a demandé de ne pas lancer.
+couleurs d'avant. Pourquoi : `ARCHITECTURE.md` §435. Batterie commune jouée, sur `main` le 30
+septembre.
 
 
-## LE MESSAGE DU DEVIS : 29 septembre 2026, branche `claude/message-du-premier-envoi`, PAS SUR `main`
+## LE MESSAGE DU DEVIS : 29 septembre 2026, sur `main` le 30
 
 | | |
 |---|---|
@@ -32,7 +32,7 @@ couleurs d'avant. Pourquoi : `ARCHITECTURE.md` §435. Reste : la batterie (nivea
 | **le piège** | une suite qui écrit SON message en base ne le retire pas : une suite d'envoi qui compte sur le message d'Atlas doit le remettre elle-même |
 | **le détail** | `ARCHITECTURE.md` §438, `docs/message-du-devis.md` |
 
-## LA LISTE DES RÉPONSES DE L'ASSISTANT : 29 septembre 2026, PAS SUR `main`
+## LA LISTE DES RÉPONSES DE L'ASSISTANT : 29 septembre 2026, sur `main` le 30
 
 `docs/assistant-questions-reponses.md` s'ENGENDRE (`npx tsx
 scripts/engendrer-questions-reponses.ts`) : ne jamais la corriger à la main.

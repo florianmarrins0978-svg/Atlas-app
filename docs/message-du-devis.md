@@ -1,6 +1,6 @@
 # Le message du devis
 
-29 septembre 2026. Branche `claude/message-du-premier-envoi`, **pas sur `main`**.
+29 septembre 2026. Branche `claude/message-du-premier-envoi`. **Sur `main` le 30 septembre 2026**, après une batterie commune.
 
 ## Ce que tu as demandé
 
@@ -56,12 +56,10 @@ Case décochée, la phrase « Et si aucune des dates… » disparaît.
 
 **Corrigé noir sur blanc** : un ancien test exigeait qu'aucun « pourrez » n'apparaisse dans le message. Ta phrase des 45 jours en contient un, à juste titre. Le test garde sa règle sur la phrase qui propose la date, et seulement là.
 
-## Ce qui n'a pas été fait
+## La batterie
 
-**La batterie entière**, tu l'as interdite. Le lot est de niveau 3 (une migration, et le devis) : elle est obligatoire avant `main`.
+Jouée le 30 septembre, commune à sept lots prêts : 445 suites base sur 446 (une non mesurable ici), 173 suites navigateur sur 174. Le seul rouge, `test-poser-une-date-e2e`, est rouge de la même façon sur `main` sans nos lots : il ne vient pas d'ici. Il semble tomber en fin de mois, quand le calendrier affiché n’a plus de jour libre après le chantier (à confirmer, noté dans `TODO.md`).
 
 ## Ce qui reste ouvert
 
-| Question | Qui tranche |
-|---|---|
-| Quand jouer la batterie pour le mettre sur `main` | toi |
+Rien à trancher. Redémarre ton espace : les migrations s'appliquent toutes seules.
