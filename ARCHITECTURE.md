@@ -34089,3 +34089,19 @@ Les autres trous relevés le même jour (adresse du client, date des travaux,
 l'envoi) sont dans `docs/lot-mentions-facture-devis.md` et `TODO.md` : ils
 changent ce qui s'imprime ou ce qui bloque, donc ils passent par une maquette.
 
+## §442 : Une pièce en règle se vérifie aux portes, et la sous-traitance réécrit les taux
+
+**Le 3 octobre 2026**, ses choix 1A à 6A (`docs/lot-mentions-facture-devis.md`).
+
+| Décision | Pourquoi |
+|---|---|
+| ce qui manque se calcule dans une règle pure (`mentions-manquantes.ts`), lue par l'écran ET par le refus | une seule réponse à « peut-elle partir ? » (`CLAUDE.md` §3) |
+| le refus vit aux portes du patron (envoyer le devis, émettre la facture), pas dans le dépôt | 43 suites base et 39 navigateur créent des entreprises minimales ; bloquer le dépôt les aurait fait rougir sur un refus juste, sans rien protéger de plus : seul le patron envoie |
+| à l'émission, une adresse de client ou de chantier VIDE se complète depuis la fiche (`adressesDuJour`) | sinon le refus ne se lèverait jamais : la facture figeait le vide à sa création |
+| la sous-traitance met les taux de la pièce à 0 EN BASE, et garde ceux d'avant (`taux_avant_autoliquidation`) | écran, PDF, page du client, paiements, avoirs et relevé lisent tous les taux des lignes ; un drapeau relu à chaque endroit en aurait oublié un, et c'est celui-là qui aurait réclamé la TVA |
+| tant qu'elle est active, une ligne ajoutée naît à 0 % et un taux posé ne prend pas ; une reprise du devis repasse sans TVA | une seule source de vérité : le drapeau ne survit jamais à côté d'un taux qui le contredit |
+| refusée en franchise | la pièce porterait 293 B et l'autoliquidation, deux mentions qui se contredisent |
+| la date des travaux se propose au dernier jour posé (`dateDesTravauxProposee`), sinon au jour de la facture | le seul fait connu ; il la change d'un geste |
+| « aucune » ne cache plus les mentions d'une société (`positionEffective`) | elles sont obligatoires (R123-237) ; une valeur restée en base s'imprime sous le nom |
+| une référence trop longue pour sa ligne passe dessous (`document-commun.ts`) | « Début des travaux » chevauchait sa valeur ; la colonne ne mesurait rien |
+

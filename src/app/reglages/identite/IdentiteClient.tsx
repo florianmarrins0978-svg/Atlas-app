@@ -10,7 +10,6 @@ import BarreEnregistrer from "@/components/atlas/BarreEnregistrer";
 import DemanderPreuve from "@/components/atlas/DemanderPreuve";
 import { sirenDepuisSiret } from "@/lib/siren";
 import { formeADuCapital } from "@/lib/formes-juridiques";
-import type { PositionMentionsLegales } from "@/lib/mentions-legales";
 import AlerteAncienIban from "@/components/atlas/AlerteAncienIban";
 import { listerAPrevenirAction, prevenirAction } from "@/app/prevenir-du-nouvel-iban";
 import type { FactureAPrevenir } from "@/server/repositories/factures";
@@ -50,7 +49,7 @@ type Identite = {
   couvertureDecennale: string;
   mediateurNom: string;
   mediateurCoordonnees: string;
-  mentionsLegalesPosition: PositionMentionsLegales;
+  mentionsLegalesPosition: "sous_nom" | "bas";
 };
 
 export default function IdentiteClient({
@@ -260,15 +259,6 @@ export default function IdentiteClient({
           onChoix={() => {
             ecrire("mentionsLegalesPosition", "bas");
             enregistrer({ mentionsLegalesPosition: "bas" });
-          }}
-        />
-        <Choix
-          nom="Ne pas les imprimer"
-          detail="Rien ne s'imprime. La forme, le capital et le RCS restent enregistrés."
-          pris={valeurs.mentionsLegalesPosition === "aucune"}
-          onChoix={() => {
-            ecrire("mentionsLegalesPosition", "aucune");
-            enregistrer({ mentionsLegalesPosition: "aucune" });
           }}
         />
       </Bloc>

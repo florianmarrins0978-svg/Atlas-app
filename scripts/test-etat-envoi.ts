@@ -317,7 +317,7 @@ async function main() {
       { chantierId, devisId, canal: "sms", datesProposees: [dans(10)], contenuDevis: "d" },
       ilYA(2)
     );
-    await enregistrerReponse(envoi.jeton, { decision: "accepte" as const, dateRetenue: dans(10) }, ilYA(1));
+    await enregistrerReponse(envoi.jeton, { decision: "accepte" as const, demarrageAnticipe: true, dateRetenue: dans(10) }, ilYA(1));
 
     const notifs = await notificationsPatron(ctx);
     assert.strictEqual(notifs.length, 1, "un chantier gagné ne s'apprend pas en ouvrant une fiche");
@@ -338,7 +338,7 @@ async function main() {
     );
     // Le client retient un autre jour libre : l'agenda du patron change sans
     // qu'il ait rien décidé.
-    await enregistrerReponse(envoi.jeton, { decision: "accepte" as const, dateRetenue: dans(15) }, ilYA(1));
+    await enregistrerReponse(envoi.jeton, { decision: "accepte" as const, demarrageAnticipe: true, dateRetenue: dans(15) }, ilYA(1));
 
     const notifs = await notificationsPatron(ctx);
     assert.strictEqual(notifs.length, 1);

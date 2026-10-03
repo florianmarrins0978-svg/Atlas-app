@@ -256,3 +256,24 @@ export function deplacerCeQueLeJourPorte(
 
   return { creneaux: [...restants, ...arrivants].sort(comparerCreneaux) };
 }
+
+/**
+ * LA DATE DES TRAVAUX QU'UNE FACTURE PROPOSE — son choix 6A du 3 octobre 2026 :
+ * *« Atlas la remplit d'après le planning, et vous pouvez la changer »*.
+ *
+ * Le dernier jour où le chantier est posé : c'est le jour où le travail
+ * facturé s'achève. Sans pose, ou posé plus tard qu'aujourd'hui (il a fini en
+ * avance), le jour où il le facture : c'est le seul fait connu, et il le
+ * corrige d'un geste s'il le faut. Rien n'est cherché ailleurs.
+ */
+export function dateDesTravauxProposee(
+  chantier: ChantierPose,
+  poses: readonly Creneau[],
+  aujourdHui: JourIso
+): JourIso {
+  const dernier = creneauxOccupes(chantier, poses).reduce<JourIso | null>(
+    (max, c) => (max === null || c.jour > max ? c.jour : max),
+    null
+  );
+  return dernier !== null && dernier <= aujourdHui ? dernier : aujourdHui;
+}

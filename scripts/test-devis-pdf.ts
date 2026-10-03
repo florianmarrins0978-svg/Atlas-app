@@ -6,6 +6,7 @@ import {
   type DevisPdfData,
   type TraceDevis,
 } from "../src/server/pdf/devis-pdf";
+import { TITRE_FORMULAIRE } from "../src/lib/retractation";
 import { couleursDocument } from "../src/lib/design-tokens";
 
 // Le devis d'Atlas doit être celui d'Arborea (`appli/devis-modele.html`).
@@ -158,7 +159,11 @@ async function main() {
     }
     const mention = textes.find((t) => t.startsWith("Devis établi par"));
     assert.ok(mention, "La mention légale ne commence pas comme celle du modèle.");
-    const pied = textes.filter((t) => t.startsWith("Devis établi") || t.includes("précédé")).join(" ");
+    // La mention se lit d'un tenant, à partir de son début : la largeur coupe
+    // ses lignes où elle veut, et la durée de validité nommée (3 octobre 2026)
+    // a déplacé la coupure. Un contrôle d'accents ne doit pas dépendre d'elle.
+    const debut = textes.findIndex((t) => t.startsWith("Devis établi"));
+    const pied = textes.slice(debut, debut + 4).join(" ");
     assert.match(pied, /précédé/, "« précédé » a perdu ses accents.");
     assert.match(pied, /daté et signé/, "« daté et signé » a perdu ses accents.");
   });
@@ -408,13 +413,17 @@ async function main() {
     assert.ok(numeros.includes(`Page 1 / ${trace.pages}`), "La numérotation ne dit pas le total.");
   });
 
-  await cas("un devis d'une page ne porte pas de numéro de page", async () => {
+  // **Le formulaire de rétractation suit sur sa propre page** — 3 octobre
+  // 2026 (L221-5, annexe de R221-1). Le devis lui-même tient toujours sur la
+  // première ; c'est ce que ce contrôle défendait, et il le défend encore.
+  await cas("un devis court tient sur une page, et le formulaire sur la suivante", async () => {
     const { trace } = await composerDevisPdf(DEVIS);
-    assert.equal(trace.pages, 1, "Ce devis devrait tenir sur une page.");
-    assert.ok(
-      !contenus(trace).some((t) => t.startsWith("Page ")),
-      "Le modèle ne numérote pas : « Page 1 / 1 » est un ornement en trop."
-    );
+    assert.equal(trace.pages, 2, "Le devis et son formulaire devraient tenir sur deux pages.");
+    const titre = trace.textes.find((t) => t.contenu.includes(TITRE_FORMULAIRE));
+    assert.ok(titre, "le formulaire de rétractation manque");
+    assert.equal(titre.page, 2, "le formulaire n'est pas sur sa propre page");
+    const total = trace.textes.find((t) => t.contenu === "Total TTC");
+    assert.equal(total?.page, 1, "le devis lui-même déborde sur une seconde page");
   });
 
   await cas("le PDF produit est un vrai PDF, non vide", async () => {

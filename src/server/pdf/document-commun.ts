@@ -24,7 +24,8 @@ import {
   totauxAvecReduction,
   TITRE_TRAVAUX_SUPPLEMENTAIRES,
 } from "@/lib/reduction-devis";
-import { lignesMentionsLegales, type PositionMentionsLegales } from "@/lib/mentions-legales";
+import { lignesMentionsLegales, positionEffective, type PositionMentionsLegales } from "@/lib/mentions-legales";
+import { nomAvecForme } from "@/lib/formes-juridiques";
 import { lignesMentionsObligatoires } from "@/lib/mentions-obligatoires";
 import { lignesDuPapier, quantiteLisible, tauxCourt } from "@/lib/lignes-du-papier";
 import { uniteDeLaLigne } from "@/lib/unite-de-ligne";
@@ -520,6 +521,8 @@ export type DonneesDocument = {
   clientCivilite?: "mr" | "mme" | null;
   clientAdresse?: string | null;
   clientTelephone?: string | null;
+  /** Le numéro de TVA du donneur d'ordre, en sous-traitance (migration 0118). */
+  clientNumeroTva?: string | null;
   adresseChantier?: string | null;
   conditionsPaiement?: string | null;
   devise: string;
@@ -732,6 +735,12 @@ export type OptionsDocument = {
    * TTC » sur un avoir (sa demande du 24 septembre 2026). Absent : « Total TTC ».
    */
   libelleTotalTtc?: string;
+  /**
+   * Aucune ligne de TVA, ni ses bases : une facture en sous-traitance
+   * (autoliquidation) ne porte pas de TVA, et « TVA 0 % » sous le total se
+   * lirait comme une TVA à zéro, pas comme une TVA due par l'autre.
+   */
+  sansTva?: boolean;
   /** « Acquittée le 21/09/2026 » — encadré d'or sous le net, quand tout est reçu. */
   tampon?: string | null;
   /** Des lignes d'information sous les notes, en petit : la main d'œuvre TTC. */
@@ -750,12 +759,13 @@ export type OptionsDocument = {
    */
   notesEnGras?: string[];
   /**
-   * Une annexe après le bon pour accord — ses conditions générales de vente
-   * et de règlement (13 septembre 2026). Elle ouvre TOUJOURS une page neuve :
-   * le devis se lit et se signe sur ses pages ; les conditions se lisent
-   * derrière, comme au dos d'un devis papier. `null` : rien.
+   * Les annexes après le bon pour accord : ses conditions générales de vente
+   * et de règlement (13 septembre 2026), puis le formulaire de rétractation
+   * (3 octobre 2026). Chacune ouvre une page neuve : le devis se lit et se
+   * signe sur ses pages, le reste se lit derrière, comme au dos d'un devis
+   * papier, et le formulaire se détache seul. Vide : rien.
    */
-  annexe?: { titre: string; paragraphes: string[] } | null;
+  annexes?: readonly { titre: string; paragraphes: string[] }[];
   /**
    * Le document ne porte AUCUN chiffre : ni colonnes de prix, ni totaux, ni TVA.
    *
@@ -787,9 +797,17 @@ export type OptionsDocument = {
 
 
 export async function composerDocument(
-  data: DonneesDocument,
+  donnees: DonneesDocument,
   options: OptionsDocument
 ): Promise<{ pdf: Uint8Array; trace: TraceDocument }> {
+  // **Le nom de l'émetteur se compose UNE fois, ici** : l'en-tête, la mention du
+  // pied et l'ordre du chèque le lisent tous. Un entrepreneur individuel y
+  // reçoit « EI » (R526-27, choix 4A du 3 octobre 2026), sur le devis, la
+  // facture et l'avoir à la fois.
+  const data: DonneesDocument = {
+    ...donnees,
+    entrepriseNom: nomAvecForme(donnees.entrepriseNom, donnees.entrepriseFormeJuridique),
+  };
   const pdfDoc = await PDFDocument.create();
   // **`registerFontkit` inconditionnellement**, même sans typographie choisie :
   // l'oublier ne se verrait qu'au premier document d'un patron qui en a réglé
@@ -839,18 +857,16 @@ export async function composerDocument(
   // l'e-mail tenaient sur la même ligne, séparés d'un tiret cadratin — c'est
   // lisible sur un écran large, c'est un pâté sur un devis imprimé.
   //
-  // **La forme juridique, le capital et le RCS s'y glissent selon SON choix**
-  // (migration 0072) : sous le nom, avec le reste des coordonnées, ou nulle
-  // part. `lignesMentionsLegales` rend déjà zéro ligne quand rien n'a été
-  // réglé — les documents d'avant la migration ressortent identiques à eux-
-  // mêmes, sans qu'il ait fallu un `if` de plus ici.
-  const positionMentions = data.entrepriseMentionsLegalesPosition ?? "aucune";
+  // **La forme juridique, le capital et le RCS d'une société s'y glissent
+  // selon SON choix** (migration 0072) : sous le nom, ou avec le reste des
+  // coordonnées. Plus jamais nulle part : elles sont obligatoires (choix 4A du
+  // 3 octobre 2026, `positionEffective`).
+  const positionMentions = positionEffective(data.entrepriseMentionsLegalesPosition);
   const mentionsLegales = lignesMentionsLegales({
     formeJuridique: data.entrepriseFormeJuridique,
     capitalSocial: data.entrepriseCapitalSocial,
     villeRcs: data.entrepriseVilleRcs,
     siret: data.entrepriseSiret,
-    position: positionMentions,
   });
 
   let yCoord = y - 15;
@@ -880,6 +896,13 @@ export async function composerDocument(
   let yRef = yEnTete;
   for (const [libelle, valeur] of references) {
     ecrire(ctx, libelle, DROITE - 175, yRef, { taille: 8.5, police: ctx.sansGras, couleur: ctx.teintes.etiquette });
+    // **Une valeur qui ne tient pas à côté de son libellé passe dessous**,
+    // calée à droite. « Début des travaux » et « sous 30 jours après
+    // l'accord » (3 octobre 2026) se chevauchaient : la colonne ne mesurait
+    // rien, et toute référence longue l'aurait refait.
+    const largeur =
+      ctx.sansGras.widthOfTextAtSize(libelle, 8.5) + 8 + ctx.sans.widthOfTextAtSize(valeur, 9);
+    if (largeur > 175) yRef -= 12;
     ecrireADroite(ctx, valeur, DROITE, yRef, { taille: 9 });
     trait(ctx, yRef - 4, 0.5, ctx.teintes.traitClair, DROITE - 105, DROITE);
     yRef -= 17;
@@ -945,6 +968,7 @@ export async function composerDocument(
     avecCivilite(data.clientNom, data.clientCivilite),
     adresses.adresseClient,
     data.clientTelephone,
+    data.clientNumeroTva ? `TVA intracommunautaire ${data.clientNumeroTva}` : null,
   ]
     .filter((l): l is string => !!l)
     .flatMap((l) => enLignes(l, ctx.sans, 9, largeurColonne));
@@ -1110,7 +1134,7 @@ export async function composerDocument(
   // du 1er septembre, puis sa planche du 14. La ventilation se DEMANDE à la
   // règle commune : c'est elle qui répartit la remise au prorata et place le
   // centime résiduel (`CLAUDE.md` §3).
-  const parTaux = papier.parTaux;
+  const parTaux = options.sansTva ? [] : papier.parTaux;
 
   const apresTotal = options.apresTotal ?? [];
   const sousLeTotalHt = options.sousLeTotalHt ?? [];
@@ -1219,7 +1243,7 @@ export async function composerDocument(
 
   // ─── Les bases par taux, à gauche du bloc — BASE HT · TAUX · TVA ────────
   // Le client refait le calcul de SA TVA sans additionner les lignes lui-même.
-  {
+  if (parTaux.length > 0) {
     const droiteBases = MARGE + 170;
     const enTeteBase: Style = { taille: 7, police: ctx.sansGras, couleur: ctx.teintes.etiquette };
     let yb = yHautTotaux;
@@ -1398,11 +1422,11 @@ export async function composerDocument(
   // dernière page du devis, et lit les conditions derrière — comme le dos d'un
   // devis papier. En petit, comme ce genre de texte, et replié par `place` :
   // onze articles font une page, parfois deux.
-  if (options.annexe) {
+  for (const annexe of options.annexes ?? []) {
     y = pageSuivante(ctx);
-    ecrireEspace(ctx, options.annexe.titre, MARGE, y, APPROCHE_ETIQUETTE, etiquetteBloc);
+    ecrireEspace(ctx, annexe.titre, MARGE, y, APPROCHE_ETIQUETTE, etiquetteBloc);
     y -= 18;
-    for (const paragraphe of options.annexe.paragraphes) {
+    for (const paragraphe of annexe.paragraphes) {
       for (const l of enLignes(paragraphe, ctx.sans, 8.5, DROITE - MARGE)) {
         place(11);
         ecrire(ctx, l, MARGE, y, { taille: 8.5 });

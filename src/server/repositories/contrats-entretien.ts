@@ -1,3 +1,4 @@
+import { nomAvecForme } from "@/lib/formes-juridiques";
 import { createHash, randomBytes } from "node:crypto";
 import { and, desc, eq, inArray, isNull, sql } from "drizzle-orm";
 import { db } from "../db/client";
@@ -288,10 +289,15 @@ export async function lireContratParJeton(jeton: string): Promise<ContratPourCli
       .from(clients)
       .where(eq(clients.id, l.clientId))
       .limit(1);
-    const [e] = await tx.select({ nom: entreprises.nom }).from(entreprises).where(eq(entreprises.id, l.entrepriseId)).limit(1);
+    const [e] = await tx
+      .select({ nom: entreprises.nom, formeJuridique: entreprises.formeJuridique })
+      .from(entreprises)
+      .where(eq(entreprises.id, l.entrepriseId))
+      .limit(1);
     return {
       contrat: versContrat(l),
-      entrepriseNom: e?.nom ?? "",
+      // « … EI » pour un entrepreneur individuel (R526-27).
+      entrepriseNom: e ? nomAvecForme(e.nom, e.formeJuridique) : "",
       clientNom: client?.nom ?? "",
       clientCivilite: client?.civilite ?? null,
     };

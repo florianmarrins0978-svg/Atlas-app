@@ -1,3 +1,6 @@
+import { MENTION_FRANCHISE, sousFranchise } from "@/lib/franchise-tva";
+import { DEBUT_DES_TRAVAUX, TITRE_FORMULAIRE, paragraphesFormulaire } from "@/lib/retractation";
+import { nomAvecForme } from "@/lib/formes-juridiques";
 import {
   composerDocument,
   PALETTE_DOCUMENT,
@@ -79,6 +82,16 @@ export type DevisPdfData = DonneesDocument & {
   mainDoeuvreHt?: string | null;
   /** Son titre, s'il en a donné un (migration 0092). Vide : rien ne s'imprime. */
   titre?: string | null;
+  /**
+   * Le régime de TVA figé sur le devis (migration 0118). En franchise, la
+   * mention de l'article 293 B s'imprime au pied, comme sur la facture.
+   */
+  regimeTva?: "assujettie" | "franchise" | null;
+  /**
+   * La durée estimée des travaux, lue du chantier (« 2 jours »). Absente : rien
+   * ne s'imprime, plutôt qu'une durée inventée (`CLAUDE.md` §4).
+   */
+  dureeEstimee?: string | null;
 };
 
 /**
@@ -181,7 +194,7 @@ function blocNotes(data: DevisPdfData, sansPrix: boolean): { sien: string | null
  */
 function annexeConditionsGenerales(data: DevisPdfData, sansPrix: boolean) {
   // Un devis d'avant la 0064 n'a pas de conditions figées du tout : il sort
-  // identique à lui-même, sans annexe — la règle de `conditionsReglees`.
+  // sans cette annexe — la règle de `conditionsReglees`.
   if (sansPrix || !data.conditionsReglees) return null;
   // **Les articles 9 et 11 se remplissent ici** (migration 0094) : l'assureur et
   // le médiateur sont saisis une fois dans Mon entreprise, et ce sont ceux
@@ -198,6 +211,39 @@ function annexeConditionsGenerales(data: DevisPdfData, sansPrix: boolean) {
     })
   );
   return paragraphes.length ? { titre: TITRE_CONDITIONS_GENERALES, paragraphes } : null;
+}
+
+/**
+ * Le formulaire de rétractation, en dernière page — obligatoire pour un devis
+ * accepté à distance ou chez le client (L221-5, L221-9 ; choix du 3 octobre
+ * 2026). Jamais sur la feuille de chantier : elle ne s'accepte pas.
+ */
+function annexeFormulaire(data: DevisPdfData, sansPrix: boolean) {
+  if (sansPrix) return null;
+  return {
+    titre: TITRE_FORMULAIRE,
+    paragraphes: paragraphesFormulaire({
+      nom: nomAvecForme(data.entrepriseNom, data.entrepriseFormeJuridique),
+      adresse: data.entrepriseAdresse,
+      email: data.entrepriseEmail,
+      numeroDevis: data.numeroCommercial,
+      dateDevis: jourNumerique(data.dateEmission),
+    }),
+  };
+}
+
+/**
+ * La phrase du pied d'un devis. La validité n'y est nommée que si elle
+ * s'imprime : « valable selon la durée indiquée ci-dessus » restait écrit sur
+ * un devis dont il avait retiré la durée, et renvoyait à une ligne absente.
+ */
+function mentionDuDevis(d: DevisPdfData): string {
+  const validite = libelleValiditeDevis(d.validiteJours);
+  const base =
+    `Devis établi par ${d.entrepriseNom}` +
+    (validite ? `, valable ${validite}. ` : ". ") +
+    "Bon pour accord précédé de la mention manuscrite, daté et signé par le client.";
+  return sousFranchise(d.regimeTva, d.tauxTva) ? `${base} ${MENTION_FRANCHISE}` : base;
 }
 
 /**
@@ -235,7 +281,10 @@ export async function composerDevisPdf(
     // L'échéancier sous le total ; `sansChiffrage` le saute avec les totaux.
     apresTotal: lignesApresTotal(data),
     // Ses conditions générales, après le bon pour accord.
-    annexe: annexeConditionsGenerales(data, sansPrix),
+    // Ses conditions générales, puis le formulaire de rétractation.
+    annexes: [annexeConditionsGenerales(data, sansPrix), annexeFormulaire(data, sansPrix)].filter(
+      (a): a is { titre: string; paragraphes: string[] } => a !== null
+    ),
     // **Sa décision du 23 août : le devis et la facture SEULEMENT.** La feuille
     // de chantier sort de la même fabrique, avec `sansChiffrage` — sans ce
     // filtre, elle aurait pris l'allure réglée pour les documents du client
@@ -269,6 +318,10 @@ export async function composerDevisPdf(
       ...(libelleValiditeDevis(data.validiteJours)
         ? ([["Validité", libelleValiditeDevis(data.validiteJours) as string]] as [string, string][])
         : []),
+      // Le début des travaux, obligatoire pour un particulier (L111-1, 2A) ; la
+      // durée, quand le chantier la connaît. Rien sur la feuille de travail.
+      ...(sansPrix ? [] : ([["Début des travaux", DEBUT_DES_TRAVAUX]] as [string, string][])),
+      ...(!sansPrix && data.dureeEstimee ? ([["Durée estimée", data.dureeEstimee]] as [string, string][]) : []),
     ],
     titreNotes: "NOTES / CONDITIONS",
     // **Ni « bon pour accord » ni cadre à signer sur la feuille de travail.**
@@ -279,8 +332,7 @@ export async function composerDevisPdf(
       sansPrix
         ? `Feuille de travail établie par ${d.entrepriseNom} d'après le devis ` +
           "correspondant. Elle ne vaut ni devis ni facture, et n'appelle aucun paiement."
-        : `Devis établi par ${d.entrepriseNom}, valable selon la durée indiquée ci-dessus. ` +
-          "Bon pour accord précédé de la mention manuscrite, daté et signé par le client.",
+        : mentionDuDevis({ ...data, entrepriseNom: d.entrepriseNom }),
     cadreSignature: !sansPrix,
   });
 }

@@ -1,3 +1,5 @@
+import { MENTION_FRANCHISE, sousFranchise } from "@/lib/franchise-tva";
+import { MENTION_AUTOLIQUIDATION } from "@/lib/autoliquidation";
 import {
   composerDocument,
   type DonneesDocument,
@@ -63,6 +65,10 @@ export type FacturePdfData = DonneesDocument & {
   reglements?: readonly ReglementRecu[] | null;
   /** Les conditions figées sur le devis d'origine — ou celles des Réglages, sans devis. */
   conditionsReglees?: ConditionsLues | null;
+  /** La date des travaux (migration 0118). Nulle sur les factures d'avant : rien ne s'imprime. */
+  dateTravaux?: string | null;
+  /** Sous-traitance du bâtiment, sans TVA (`src/lib/autoliquidation.ts`). */
+  autoliquidation?: boolean;
 };
 
 function mentionLegaleFacture(data: FacturePdfData): string {
@@ -70,9 +76,11 @@ function mentionLegaleFacture(data: FacturePdfData): string {
     "En cas de retard de paiement, une pénalité au taux de trois fois le taux d'intérêt légal " +
     "est exigible, ainsi qu'une indemnité forfaitaire pour frais de recouvrement de 40 €. " +
     "Pas d'escompte pour paiement anticipé.";
-  const enFranchise =
-    data.regimeTva != null ? data.regimeTva === "franchise" : Number(data.tauxTva) === 0;
-  return enFranchise ? `${base} TVA non applicable, art. 293 B du CGI.` : base;
+  // L'autoliquidation passe AVANT la lecture du taux : à 0 % sur une facture
+  // d'avant 0039 (régime nul), `sousFranchise` répondrait « franchise », et la
+  // pièce porterait deux mentions qui se contredisent.
+  if (data.autoliquidation) return `${base} ${MENTION_AUTOLIQUIDATION}`;
+  return sousFranchise(data.regimeTva, data.tauxTva) ? `${base} ${MENTION_FRANCHISE}` : base;
 }
 
 export type OptionsFacturePdf = {
@@ -132,6 +140,7 @@ export async function composerFacturePdf(
   // titre (sa planche).
   const references: [string, string][] = [["Date", jourNumerique(data.dateEmission)]];
   if (data.dateEcheance) references.push(["Échéance", jourNumerique(data.dateEcheance)]);
+  if (data.dateTravaux) references.push(["Travaux réalisés", jourNumerique(data.dateTravaux)]);
   if (data.numeroDevis) references.push(["Devis", data.numeroDevis]);
 
   return composerDocument(data, {
@@ -145,6 +154,10 @@ export async function composerFacturePdf(
     notesEnGras: notesEnGras(data),
     sousLeTotalHt: data.mainDoeuvreHt ? [{ libelle: LIBELLE_MAIN_DOEUVRE, montant: data.mainDoeuvreHt }] : [],
     apresTotal: lignesApresTotal(data),
+    // Sous-traitance : la maquette du 3 octobre 2026, ni ligne de TVA ni
+    // « TTC » là où il n'y a pas de taxe.
+    sansTva: !!data.autoliquidation,
+    libelleTotalTtc: data.autoliquidation ? "Total à payer" : undefined,
     tampon: tamponAcquittee(data.totalTtc, data.reglements ?? []),
     informations: informations(data),
     mentionLegale: () => mentionLegaleFacture(data),

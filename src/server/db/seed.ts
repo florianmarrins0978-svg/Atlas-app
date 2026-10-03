@@ -315,6 +315,17 @@ async function main() {
         telephone: "02 40 00 00 00",
         email: "contact@atelier-demo.fr",
         iban: "FR76 3000 1000 0000 0000 0000 000",
+        // **Une identité EN RÈGLE** : depuis le 3 octobre 2026, un devis ou une
+        // facture qui manque d'une mention obligatoire ne part plus
+        // (`src/lib/mentions-manquantes.ts`). Une démonstration incomplète
+        // bloquerait tous les parcours d'essai sur un refus juste.
+        formeJuridique: "EI",
+        numeroTva: "FR12123456789",
+        mediateurNom: "Médiateur de démonstration",
+        mediateurCoordonnees: "1 place de la Médiation, Nantes",
+        assureurDecennale: "Assureur de démonstration",
+        contratDecennale: "0000000",
+        couvertureDecennale: "France métropolitaine",
       })
       .returning();
 

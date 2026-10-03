@@ -191,7 +191,7 @@ export async function mettreAJourEntreprise(
     mediateurNom?: string | null;
     mediateurCoordonnees?: string | null;
     /** Où — ou si — les trois mentions s'impriment. Par défaut « aucune ». */
-    mentionsLegalesPosition?: "sous_nom" | "bas" | "aucune";
+    mentionsLegalesPosition?: "sous_nom" | "bas";
     /**
      * Les conditions imprimées sur le devis (migration 0040).
      *

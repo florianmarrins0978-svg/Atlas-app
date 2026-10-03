@@ -49,6 +49,9 @@ async function main() {
   await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
   await page.fill('input[placeholder="Bernard"]', client);
   await page.fill('input[placeholder="06 12 34 56 78"]', "0612345678");
+  // **L'adresse du chantier est une mention de la facture** (242 nonies A,
+  // I-2°) : sans elle, l'émission refuse depuis le 3 octobre 2026.
+  await page.fill('input[placeholder="12 rue des Lilas, Nantes"]', "10 rue des Lilas, Nantes");
   const idChantier = await creerPuisFiche(page);
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 15000 });
   const chantierId = idChantier;

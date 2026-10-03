@@ -50,7 +50,7 @@ export async function majIdentiteAction(data: {
   /** Migration 0071 — voir `src/lib/mentions-legales.ts`. */
   capitalSocial?: string;
   villeRcs?: string;
-  mentionsLegalesPosition?: "sous_nom" | "bas" | "aucune";
+  mentionsLegalesPosition?: "sous_nom" | "bas";
   /** Migration 0094 — voir `src/lib/mentions-obligatoires.ts`. */
   assureurDecennale?: string;
   contratDecennale?: string;

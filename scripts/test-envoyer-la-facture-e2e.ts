@@ -68,6 +68,9 @@ async function main() {
   // La création passe par l'aide PARTAGÉE : le bouton a déjà changé de nom une
   // fois (`action-dicter` → `action-ecrire`), et une suite qui le recopie
   // rougit alors sur la création au lieu de ce qu'elle éprouve.
+  // **L'adresse du chantier est une mention de la facture** (242 nonies A,
+  // I-2°) : sans elle, l'émission refuse depuis le 3 octobre 2026.
+  await page.fill('input[placeholder="12 rue des Lilas, Nantes"]', "10 rue des Lilas, Nantes");
   const chantierId = await creerPuisFiche(page, BASE);
 
   // Une ligne de prix, sans quoi la facture serait à zéro euro.

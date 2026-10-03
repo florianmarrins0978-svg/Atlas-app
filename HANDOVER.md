@@ -11,6 +11,22 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 
 ---
 
+## LA FACTURE ET LE DEVIS EN RÈGLE : 3 octobre 2026, PAS SUR `main`
+
+Branche `claude/tva-invoices-business-municipalities-lk2sjy`, migrations 0117
+et 0118. Trois choses à savoir avant de toucher une facture ou un envoi :
+
+- **Une suite qui envoie un devis ou émet une facture par la porte du patron**
+  doit avoir une entreprise en règle (`scripts/_entreprise-en-regle.ts`) et,
+  pour la facture, une adresse de client ou de chantier ;
+- **un client qui accepte une date dans ses 14 jours** doit cocher la demande
+  expresse (`demarrageAnticipe`), sinon `enregistrerReponse` refuse ;
+- **la sous-traitance vit dans les taux** : `factures.autoliquidation` vrai
+  veut dire taux à 0 en base. Ne jamais écrire un taux sur une telle facture
+  sans passer par `majAutoliquidationFacture`.
+
+Pourquoi : `ARCHITECTURE.md` §442. Batterie à jouer avec son accord.
+
 ## LES COULEURS DU PLANNING : 29 septembre 2026, sur `main` le 30
 
 Branche `claude/couleurs-du-planning`, migration 0113. Tout passe par

@@ -8,6 +8,26 @@ Format : le plus récent en tête.
 ---
 ## 2026-10-03
 
+### Le devis et la facture ne partent plus sans leurs mentions obligatoires
+
+Ses choix du 3 octobre 2026 sur `appli/documents-en-regle-a-choisir.html`.
+**1A** : un devis ou une facture à qui il manque une mention obligatoire ne
+part plus ; l'écran liste ce qui manque, chaque ligne avec « Compléter »
+(`src/lib/mentions-manquantes.ts`). **2A** : « Début des travaux : sous
+30 jours après l'accord » et la durée estimée sur le devis, avec le formulaire
+de rétractation en dernière page. **3A** : une date dans les 14 jours n'est
+plus acceptée sans la demande expresse du client ; le délai était compté un
+jour trop court (`dansDelaiRetractation`, vu rouge). **4A** : « EI » collé au
+nom, la forme d'une société toujours imprimée. **5B** : « Sous-traitance, sans
+TVA » sur la facture, le numéro du donneur d'ordre retenu sur sa fiche et
+modifiable, la mention d'autoliquidation, ni ligne de TVA ni « TTC » sur le
+papier. **6A** : la date des travaux, tirée du planning et modifiable. La
+mention 293 B part aussi sur le devis d'un compte en franchise, et « Facture
+acquittée » prend un cadre doré. Migration 0118 (expand seul). En regardant le
+PDF, un libellé et sa valeur se superposaient dans les références : corrigé dans
+la mise en page, pour toute référence longue. Le détail, ce qui a été refusé et
+ce qui reste ouvert : `docs/lot-mentions-facture-devis.md`.
+
 ### Le numéro de TVA de l'artisan part enfin sur ses factures
 
 Saisi dans Réglages depuis la création du compte, il n'apparaissait sur

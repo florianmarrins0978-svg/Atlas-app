@@ -1,3 +1,4 @@
+import { positionEffective } from "@/lib/mentions-legales";
 import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 import { colors, font } from "@/lib/design-tokens";
 import { getCurrentCtx } from "@/server/session-ctx";
@@ -83,7 +84,8 @@ export default async function IdentitePage() {
           couvertureDecennale: e?.couvertureDecennale ?? "",
           mediateurNom: e?.mediateurNom ?? "",
           mediateurCoordonnees: e?.mediateurCoordonnees ?? "",
-          mentionsLegalesPosition: e?.mentionsLegalesPosition ?? "aucune",
+          // « aucune » ne se propose plus : une société imprime ses mentions (4A).
+          mentionsLegalesPosition: positionEffective(e?.mentionsLegalesPosition),
         }}
         aPrevenir={aPrevenir}
         declarations={

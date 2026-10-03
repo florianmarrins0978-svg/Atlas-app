@@ -1,3 +1,4 @@
+import { manquesDuDevis, type Manque } from "@/lib/mentions-manquantes";
 import { and, asc, desc, eq, sql } from "drizzle-orm";
 import { jourIso } from "@/lib/jour";
 import { withEntreprise } from "../db/with-entreprise";
@@ -7,6 +8,7 @@ import { totauxAvecReduction, pourcentValide, tauxTvaValide } from "@/lib/reduct
 import { montantMainDoeuvreValide } from "@/lib/main-doeuvre-devis";
 import type { DbOrTx } from "../db/client";
 import { devis, lignesDevis, lignesPrix, chantiers, clients, entreprises, acomptesDevis } from "../db/schema";
+import { dureeDuChantier, dureeEnDemiJournees, libelleDuree } from "@/lib/disponibilites";
 import {
   ACOMPTES_MAX,
   acompteDOffice,
@@ -288,6 +290,9 @@ export async function getOuCreerDevisBrouillon(ctx: Ctx, chantierId: string) {
       entrepriseMediateurNom: entreprise.mediateurNom,
       entrepriseMediateurCoordonnees: entreprise.mediateurCoordonnees,
       entrepriseMentionsLegalesPosition: entreprise.mentionsLegalesPosition,
+      // Le régime au jour du devis (migration 0118), comme sur la facture : la
+      // mention 293 B s'imprime au pied d'un devis en franchise.
+      entrepriseRegimeTva: entreprise.regimeTva,
       clientNom: client?.nom,
       // Recopiée comme le nom : le document dit comment on s'adressait à son
       // destinataire CE JOUR-LÀ (migration 0038).
@@ -578,7 +583,8 @@ function donneesPdfDuDevis(
   d: typeof devis.$inferSelect,
   lignes: (typeof lignesDevis.$inferSelect)[],
   acomptes: readonly AcompteDevis[],
-  statut: "brouillon" | "envoye"
+  statut: "brouillon" | "envoye",
+  dureeEstimee: string | null
 ): DevisPdfData {
   return {
     numeroCommercial: d.numeroCommercial,
@@ -604,6 +610,8 @@ function donneesPdfDuDevis(
     entrepriseMediateurNom: d.entrepriseMediateurNom,
     entrepriseMediateurCoordonnees: d.entrepriseMediateurCoordonnees,
     entrepriseMentionsLegalesPosition: d.entrepriseMentionsLegalesPosition,
+    regimeTva: d.entrepriseRegimeTva,
+    dureeEstimee,
     clientNom: d.clientNom,
     clientCivilite: d.clientCivilite,
     clientAdresse: d.clientAdresse,
@@ -650,6 +658,52 @@ function donneesPdfDuDevis(
   };
 }
 
+/**
+ * La durée estimée du chantier, telle qu'elle s'imprime sur le devis.
+ *
+ * Lue sur le chantier — la durée réservée, à défaut celle qu'il a dictée —, et
+ * NULLE quand ni l'une ni l'autre n'existe : la durée par défaut du planning
+ * (`DUREE_PAR_DEFAUT_DEMI_JOURNEES`) sert à réserver, pas à engager l'artisan
+ * auprès de son client (`CLAUDE.md` §4).
+ */
+async function dureeEstimeeDuChantier(tx: DbOrTx, chantierId: string): Promise<string | null> {
+  const [c] = await tx
+    .select({ dureeDemiJournees: chantiers.dureeDemiJournees, dureePrevue: chantiers.dureePrevue })
+    .from(chantiers)
+    .where(eq(chantiers.id, chantierId))
+    .limit(1);
+  if (!c || (c.dureeDemiJournees == null && dureeEnDemiJournees(c.dureePrevue) == null)) return null;
+  return libelleDuree(dureeDuChantier(c));
+}
+
+/**
+ * Ce qui manque au devis tel qu'il PARTIRAIT — sa photographie, pas
+ * l'entreprise d'aujourd'hui (choix 1A du 3 octobre 2026). Une seule règle
+ * pour l'écran et pour l'envoi : `manquesDuDevis`.
+ */
+export async function manquesDuDevisAEnvoyer(ctx: Ctx, devisId: string): Promise<Manque[]> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const [d] = await tx.select().from(devis).where(eq(devis.id, devisId)).limit(1);
+    if (!d) return [];
+    return manquesDuDevis(
+      {
+        nom: d.entrepriseNom,
+        adresse: d.entrepriseAdresse,
+        siret: d.entrepriseSiret,
+        formeJuridique: d.entrepriseFormeJuridique,
+        capitalSocial: d.entrepriseCapitalSocial,
+        villeRcs: d.entrepriseVilleRcs,
+        mediateurNom: d.entrepriseMediateurNom,
+        assureurDecennale: d.entrepriseAssureurDecennale,
+        regimeTva: d.entrepriseRegimeTva,
+        numeroTva: null,
+      },
+      { nom: d.clientNom, adresse: d.clientAdresse, adresseChantier: d.adresseChantier },
+      d.conditionsGenerales
+    );
+  });
+}
+
 // Génère le PDF pour un devis (brouillon ou envoyé) sans jamais persister la
 // clé de stockage pour un brouillon (seul le PDF du devis réellement envoyé est
 // conservé comme référence officielle — voir envoyerDevis).
@@ -660,7 +714,13 @@ export async function genererPdfPourApercu(ctx: Ctx, devisId: string): Promise<U
     const lignes = await tx.select().from(lignesDevis).where(eq(lignesDevis.devisId, devisId));
     const habillage = await allureDesDocuments(tx, ctx.entrepriseId);
     return genererPdfDevis(
-      donneesPdfDuDevis(d, lignes, await lireAcomptes(tx, devisId), d.statut as "brouillon" | "envoye"),
+      donneesPdfDuDevis(
+        d,
+        lignes,
+        await lireAcomptes(tx, devisId),
+        d.statut as "brouillon" | "envoye",
+        await dureeEstimeeDuChantier(tx, d.chantierId)
+      ),
       habillage
     );
   });
@@ -701,7 +761,13 @@ export async function envoyerDevis(ctx: Ctx, devisId: string) {
     }
     const habillage = await allureDesDocuments(tx, ctx.entrepriseId);
     const pdfBytes = await genererPdfDevis(
-      donneesPdfDuDevis(avant, lignes, await lireAcomptes(tx, devisId), "envoye"),
+      donneesPdfDuDevis(
+        avant,
+        lignes,
+        await lireAcomptes(tx, devisId),
+        "envoye",
+        await dureeEstimeeDuChantier(tx, avant.chantierId)
+      ),
       habillage
     );
 
@@ -857,7 +923,8 @@ export async function genererDevisSansPrix(
     // décide de ce qui ne s'imprime pas (prix, totaux, acomptes, IBAN,
     // conditions), pas une copie amputée de ce bloc.
     return genererPdfDevis(
-      donneesPdfDuDevis(d, lignes, await lireAcomptes(tx, d.id), d.statut as "brouillon" | "envoye"),
+      // La feuille de travail n'imprime ni début ni durée : rien à lire.
+      donneesPdfDuDevis(d, lignes, await lireAcomptes(tx, d.id), d.statut as "brouillon" | "envoye", null),
       { sansChiffrage: true, ...habillage }
     );
   });

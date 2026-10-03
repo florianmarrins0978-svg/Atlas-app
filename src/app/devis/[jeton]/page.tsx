@@ -1,3 +1,4 @@
+import { DROIT_DE_RETRACTATION } from "@/lib/retractation";
 import { lireParJeton } from "@/server/repositories/envois-devis";
 import { aujourdHuiIso } from "@/server/repositories/envois-devis";
 import FormulaireReponse from "./formulaire";
@@ -266,6 +267,13 @@ export default async function PageDevisClient({ params }: { params: Promise<{ je
           >
             Télécharger mon devis
           </BoutonTelechargerDocument>
+          {/* **Son droit, dit là où il accepte** — choix du 3 octobre 2026.
+              L'information sur la rétractation fait partie de ce que la loi
+              impose avant l'accord (L221-5) ; le formulaire, lui, est la
+              dernière page du devis qu'il vient de télécharger. */}
+          <p className="mt-2 text-[12.5px] leading-snug" style={{ color: colors.muted }}>
+            {DROIT_DE_RETRACTATION}
+          </p>
         </header>
 
         <FormulaireReponse envoi={envoi} aujourdHui={aujourdHuiIso()} />

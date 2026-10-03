@@ -27,7 +27,12 @@ import {
   preparerLienFactureAction,
   majEcheanceFactureAction,
   reprendreLeDevisAction,
+  majDateTravauxFactureAction,
+  majAutoliquidationFactureAction,
+  majTvaClientFactureAction,
 } from "./actions";
+import ListeDesManques from "@/components/atlas/ListeDesManques";
+import type { Manque } from "@/lib/mentions-manquantes";
 import { avecCivilite } from "@/lib/civilite";
 import { peutPreparerLaPiece } from "@/lib/preparation-devis";
 import { ECHEANCE_MAX_JOURS } from "@/lib/echeance-facture";
@@ -62,6 +67,11 @@ export type FacturePourEcran = {
   /** La date de la facture — borne basse de l'échéance modifiable. */
   dateEmission: string;
   dateEcheance: string | null;
+  /** La date des travaux, proposée d'après le planning (migration 0118). */
+  dateTravaux: string | null;
+  /** Sous-traitance du bâtiment, sans TVA (`src/lib/autoliquidation.ts`). */
+  autoliquidation: boolean;
+  clientNumeroTva: string | null;
   /** Le devis dont ces lignes viennent — le PDF le nomme, l'écran doit le nommer aussi. */
   numeroDevis: string | null;
   versionDevis: number | null;
@@ -146,9 +156,11 @@ export default function FactureClient({
   canalClient,
   jetonDejaPrepare = null,
   regimeTva,
+  enFranchise,
   reprise,
   avoirs,
 }: {
+  enFranchise: boolean;
   /** Ses avoirs (§413), lus parmi les règlements ; vide tant qu'elle n'est pas partie. */
   avoirs: readonly { id: string; numero: string; dateEmission: string; totalTtc: string }[];
   chantierId: string;
@@ -214,6 +226,53 @@ export default function FactureClient({
   const [dateEcheance, setDateEcheance] = useState<string | null>(initialFacture?.dateEcheance ?? null);
   const [refusEcheance, setRefusEcheance] = useState<string | null>(null);
   const [echeanceEnCours, setEcheanceEnCours] = useState(false);
+
+  // La date des travaux (son choix 6A) : proposée d'après le planning, il la
+  // change ici tant que la facture n'est pas partie.
+  const [dateTravaux, setDateTravaux] = useState<string | null>(initialFacture?.dateTravaux ?? null);
+  const [refusTravaux, setRefusTravaux] = useState<string | null>(null);
+
+  async function changerDateTravaux(valeur: string) {
+    if (!initialFacture) return;
+    setRefusTravaux(null);
+    const r = await majDateTravauxFactureAction(initialFacture.id, valeur);
+    if (r.succes) setDateTravaux(r.dateTravaux);
+    else setRefusTravaux(r.erreur);
+  }
+
+  // Sous-traitance, sans TVA (son bouton du 3 octobre 2026). Les taux changent
+  // EN BASE : l'écran se relit, et les totaux suivent par le même calcul.
+  const [sousTraitance, setSousTraitance] = useState(initialFacture?.autoliquidation ?? false);
+  const [tvaClient, setTvaClient] = useState(initialFacture?.clientNumeroTva ?? "");
+  const [refusSousTraitance, setRefusSousTraitance] = useState<string | null>(null);
+  const [sousTraitanceEnCours, setSousTraitanceEnCours] = useState(false);
+  const [manques, setManques] = useState<Manque[]>([]);
+
+  async function basculerSousTraitance() {
+    if (!initialFacture) return;
+    setSousTraitanceEnCours(true);
+    setRefusSousTraitance(null);
+    try {
+      const r = await majAutoliquidationFactureAction(initialFacture.id, !sousTraitance);
+      if (!r.succes) {
+        setRefusSousTraitance(r.erreur);
+        return;
+      }
+      setSousTraitance(r.autoliquidation);
+      setTvaClient(r.clientNumeroTva ?? "");
+      router.refresh();
+    } finally {
+      setSousTraitanceEnCours(false);
+    }
+  }
+
+  async function enregistrerTvaClient(valeur: string) {
+    if (!initialFacture || valeur.trim() === (initialFacture.clientNumeroTva ?? "")) return;
+    setRefusSousTraitance(null);
+    const r = await majTvaClientFactureAction(initialFacture.id, valeur);
+    if (r.succes) setTvaClient(r.clientNumeroTva);
+    else setRefusSousTraitance(r.erreur);
+  }
 
   async function changerEcheance(valeur: string) {
     if (!initialFacture) return;
@@ -323,9 +382,17 @@ export default function FactureClient({
     setEnCours(true);
     setErreur(null);
     try {
+      setManques([]);
       const emission = await emettreFactureAction(initialFacture.id);
       if (!emission.succes) {
-        setErreur(emission.erreur);
+        // Ce qui manque se LISTE, chaque ligne avec sa porte (son choix 1A) ;
+        // la phrase seule l'enverrait chercher Réglages sans lien.
+        if (emission.manques?.length) {
+          setManques(emission.manques);
+          setErreur("Il manque une mention obligatoire.");
+        } else {
+          setErreur(emission.erreur);
+        }
         return;
       }
       setEmise(true);
@@ -512,6 +579,43 @@ export default function FactureClient({
             )}
           </div>
         )}
+        {/* LA DATE DES TRAVAUX — mention de la pièce (242 nonies A), proposée
+            d'après le planning, modifiable tant qu'elle n'est pas partie. */}
+        {dateTravaux && (
+          <div className="mt-1.5">
+            {emise ? (
+              <p className="text-[13px]" style={{ color: colors.muted }}>
+                Travaux réalisés le {jourLisible(dateTravaux)}
+              </p>
+            ) : (
+              <>
+                <label className="flex flex-wrap items-center gap-2 text-[13px]" style={{ color: colors.muted }}>
+                  Travaux réalisés le
+                  <input
+                    type="date"
+                    data-atlas="date-travaux-facture"
+                    value={dateTravaux}
+                    onChange={(e) => {
+                      if (e.target.value) void changerDateTravaux(e.target.value);
+                    }}
+                    className="rounded-[4px] px-2 py-1"
+                    style={{
+                      fontSize: 16,
+                      backgroundColor: colors.cream,
+                      color: colors.ink,
+                      border: `1px solid ${refusTravaux ? colors.alert : colors.line}`,
+                    }}
+                  />
+                </label>
+                {refusTravaux && (
+                  <p role="alert" className="mt-1 text-[12px]" style={{ color: colors.alert }}>
+                    {refusTravaux}
+                  </p>
+                )}
+              </>
+            )}
+          </div>
+        )}
       </div>
 
       {/* ── LA FACTURE NE SUIT PLUS LE DEVIS ────────────────────────────────
@@ -625,6 +729,64 @@ export default function FactureClient({
           </div>
         ))}
 
+      {/* ── SOUS-TRAITANCE, SANS TVA ─────────────────────────────────────
+          Son bouton du 3 octobre 2026, dans son cadre doré. Ne s'offre ni en
+          franchise (déjà sans TVA), ni sur une facture partie. */}
+      {!emise && !enFranchise && (
+        <div
+          className="rounded-[4px] px-5 py-4"
+          data-atlas="carte-sous-traitance"
+          style={{ backgroundColor: colors.card, boxShadow: `0 0 0 2px ${colors.or}`, borderRadius: 14 }}
+        >
+          <div className="flex items-center justify-between gap-3 text-[15px]" style={{ color: colors.ink }}>
+            <span>
+              Sous-traitance, sans TVA
+              <small className="block text-[12.5px]" style={{ color: colors.muted }}>
+                La mention « Autoliquidation » s’imprime
+              </small>
+            </span>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={sousTraitance}
+              aria-label="Sous-traitance, sans TVA"
+              data-atlas="sous-traitance"
+              disabled={sousTraitanceEnCours}
+              onClick={() => void basculerSousTraitance()}
+              className="relative h-7 w-[46px] flex-none rounded-full"
+              style={{ backgroundColor: sousTraitance ? colors.rust : colors.line }}
+            >
+              <span
+                className="absolute top-[3px] h-[22px] w-[22px] rounded-full transition-[left]"
+                style={{ left: sousTraitance ? 21 : 3, backgroundColor: colors.card }}
+              />
+            </button>
+          </div>
+          {sousTraitance && (
+            <label className="mt-3 flex flex-col gap-1.5">
+              <span className="text-[11px] font-semibold uppercase tracking-[0.18em]" style={{ color: colors.muted }}>
+                N° TVA de l’entreprise qui vous sous-traite
+              </span>
+              <input
+                type="text"
+                data-atlas="tva-client"
+                className="atlas-case"
+                placeholder="FR suivi de 11 chiffres"
+                value={tvaClient}
+                onChange={(e) => setTvaClient(e.target.value)}
+                onBlur={(e) => void enregistrerTvaClient(e.currentTarget.value)}
+                style={{ color: colors.ink }}
+              />
+            </label>
+          )}
+          {refusSousTraitance && (
+            <p role="alert" className="mt-2 text-[12px]" style={{ color: colors.alert }}>
+              {refusSousTraitance}
+            </p>
+          )}
+        </div>
+      )}
+
       <div className="rounded-[4px] px-5 py-5" style={{ backgroundColor: colors.card }}>
         {/* ── LE TOTAL SE RECOMPOSE À LA MAIN, LIGNE À LIGNE ─────────────────
             **Deux choses manquaient ici, et le papier les imprimait toutes les
@@ -653,19 +815,23 @@ export default function FactureClient({
             {ligneMainDoeuvre}
           </>
         )}
-        {totaux.parTaux.map((categorie) => (
-          <Ligne
-            key={categorie.taux}
-            label={`TVA ${tauxLisible(categorie.taux)} %`}
-            valeur={categorie.tva}
-          />
-        ))}
+        {initialFacture.autoliquidation ? (
+          <Ligne label="TVA, autoliquidation" valeur="0" />
+        ) : (
+          totaux.parTaux.map((categorie) => (
+            <Ligne
+              key={categorie.taux}
+              label={`TVA ${tauxLisible(categorie.taux)} %`}
+              valeur={categorie.tva}
+            />
+          ))
+        )}
         <div className="mt-3 border-t pt-3 text-center" style={{ borderColor: colors.line }}>
           {/* **En noir, pas en gris** — sa demande du 24 août 2026, capture à
               l'appui. C'est l'intitulé du montant qu'il vérifie ; en gris, il
               passait pour une mention de bas de page. */}
           <p className={smallCaps} style={{ color: colors.ink, marginBottom: 6 }}>
-            Total TTC
+            {initialFacture.autoliquidation ? "Total à payer" : "Total TTC"}
           </p>
           <p
             className="text-[32px] font-semibold leading-none"
@@ -756,6 +922,11 @@ export default function FactureClient({
           {erreur}
         </p>
       )}
+      <ListeDesManques
+        manques={manques}
+        lienEntreprise="/reglages/identite"
+        lienClient={`/chantiers/${chantierId}/coordonnees`}
+      />
 
       {emise ? (
         <div className="rounded-[4px] px-5 py-5" style={{ backgroundColor: colors.card }}>

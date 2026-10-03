@@ -1,47 +1,27 @@
 # Prochaines tâches
 
-## ⏳ LES MENTIONS OBLIGATOIRES DE LA FACTURE ET DU DEVIS (3 octobre 2026)
+## ⏳ LA FACTURE ET LE DEVIS EN RÈGLE : CODÉS, LA BATTERIE ATTEND SON ACCORD (3 octobre 2026)
 
 Sa demande : *« va vérifier qu'il manque rien sur la facture qui est
-obligatoire, vérifie aussi le devis ! Je veux aucune erreur ! »*. Audit complet
-dans `docs/lot-mentions-facture-devis.md`.
+obligatoire, vérifie aussi le devis ! Je veux aucune erreur ! »*, puis ses
+choix 1A, 2A, 3A, 4A, 5B, 6A et le bouton « Sous-traitance, sans TVA ». Le
+document de retour est `docs/lot-mentions-facture-devis.md`.
 
-- ✅ **Numéro de TVA sur la facture** : codé (migration 0117, §441), suite
-  `test-numero-tva-sur-la-facture-db` rouge puis verte. **Niveau 3 : `main`
-  attend la batterie. Sa consigne du 3 octobre : « ne lance aucune batterie ».
-  La correction reste sur la branche tant qu'il ne l'a pas autorisée.**
-- ⏳ **Restent, chacun par une maquette, dans l'ordre proposé** : formulaire de
-  rétractation joint au devis d'un particulier ; une vérification avant l'envoi
-  qui dit ce qui manque ; date des travaux sur la facture et date de début sur
-  le devis ; « EI » à côté du nom et forme juridique d'office pour une société ;
-  les crochets `[...]` imprimés tels quels sur le devis. **Son ordre attendu.**
-- **Ses choix du 3 octobre** sur `appli/documents-en-regle-a-choisir.html` :
-  1A (une fenêtre à l'envoi, qui **bloque** tant qu'il manque un prix ou une
-  mention obligatoire), 3A (le client coche s'il veut commencer dans ses
-  14 jours), 4A (« EI » collé au nom, forme de la société sous le nom), 5B
-  (numéro de TVA du donneur d'ordre retenu pour ce client, **modifiable**),
-  6A (date des travaux tirée du planning, modifiable). **Le 2 reste à
-  trancher** (délai ou date proposée), après ses questions sur la loi.
-
-## ⏳ UNE PLANCHE À REGARDER : FACTURE AVEC OU SANS TVA (28 septembre, revue le 2 octobre 2026)
-
-Sa question : *« si je facture une entreprise, il ne paie pas la TVA »*. Prémisse
-fausse, réponse dans `docs/QUESTIONS.md` §31 : la TVA ne part qu'en
-autoliquidation (sous-traitance BTP, art. 283-2 nonies) ou en franchise.
-
-**Sa décision du 2 octobre** : *« juste un bouton on off sur la facture ; pas
-besoin de créer une fiche client pour entreprise ou mairie »*. Les versions
-Particulier, Entreprise, Mairie avec SIRET sont écartées (historique git de la
-planche). Planche `appli/tva-entreprise-et-mairie.html`, bâtie sur les vrais
-écrans. **Son accord attendu pour coder.** Une fois codé : niveau 3 (argent,
-migration expand sur `factures`) ; le bouton s'appelle « Sous-traitance, sans
-TVA », éteint par défaut, absent pour un compte en franchise, et imprime la
-mention d'autoliquidation dans `facture-pdf.ts`.
-Sa demande du 3 octobre : « Facture acquittée » prend le même cadre doré que
-le bouton de sous-traitance, à la même place.
-
-À part, relevé en relevant les écrans : la facture et son PDF écrivent
-« Mr. Jardins Ribault » alors qu'aucune civilité n'est cochée sur la fiche.
+- ✅ **Tout est codé sur la branche** (migrations 0117 et 0118, §441 et §442).
+  Contrôles neufs vus rouges puis verts ; 149 suites base rejouées au vert.
+- ⏳ **Niveau 3 (migration, argent) : la batterie complète avant `main`.** Sa
+  consigne : *« on fait toutes les corrections et ensuite on jouera une seule
+  batterie pour l'ensemble »*. **Son accord attendu pour la lancer.**
+- ⏳ Une facture et un devis d'essai, dont une en sous-traitance, relus par
+  son comptable.
+- ⏳ Le relevé de TVA écrit « À 0 % » pour une facture en sous-traitance.
+  Faut-il la nommer « autoliquidation » (ligne 05 de la déclaration) ? Une
+  planche, si oui.
+- ⏳ Les factures de contrat d'entretien, émises sans geste du patron, ne
+  passent pas par la vérification des mentions : aucun écran où lister ce qui
+  manque. À trancher avec lui.
+- ⏳ Une facture à une entreprise sans civilité cochée s'écrit encore
+  « Mr. Jardins Ribault » (relevé en regardant le PDF, hors de ce lot).
 
 ## ⏳ SUR ORDINATEUR : la planche attend son choix (30 septembre 2026)
 

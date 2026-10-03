@@ -114,7 +114,13 @@ const dire = (bon: boolean, quoi: string) => {
 // empreinte est inchangée. C'est la méthode du relevé du 30 août, faute de
 // pouvoir ouvrir un PDF à l'œil dans cet environnement (`CLAUDE.md` §5).
 const EMPREINTE_FACTURE = "930faf494840c0075cb50da535e3b03e60813fe1409b9947fce0b0541eba9ae6";
-const EMPREINTE_DEVIS = "bb47afb09d38ba8f4c982055569dcf404926ca89e2f0ec41cee94ff4716be7a6";
+// **RELEVÉ DE NOUVEAU LE 3 OCTOBRE 2026** (ses choix 2A, 4A, et le formulaire
+// de rétractation) : « Début des travaux » dans les références, la validité
+// nommée dans la mention, la page du formulaire. Le PDF a été REGARDÉ, rendu
+// en image, avant ce relevé ; c'est ce regard qui a trouvé le libellé et la
+// valeur superposés, corrigés dans `document-commun.ts`. La facture ne bouge
+// pas : son empreinte est inchangée.
+const EMPREINTE_DEVIS = "f0d12df75a3096fe79600a3712b383419aad94633844b9459ca4fa943be4fce6";
 
 const DOCUMENT: FacturePdfData = {
   numeroCommercial: "F-2026-0004",

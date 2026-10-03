@@ -1,5 +1,6 @@
 "use client";
 
+import { DEBUT_DES_TRAVAUX } from "@/lib/retractation";
 import Link from "next/link";
 import { ligneAttendSonPrix, lignesEnAttenteDePrix, prixAEcrire } from "@/lib/preparation-devis";
 import {
@@ -1050,6 +1051,8 @@ export default function DevisCompletClient(props: Props) {
           <Reference libelle="Devis n°" valeur={<NumeroDeDocument valeur={props.numeroCommercial} />} />
           <Reference libelle="Date" valeur={jourNumerique(props.dateEmission)} />
           <Reference libelle="Validité" valeur={props.validite} />
+          {/* Le même délai que le PDF (L111-1, choix 2A du 3 octobre 2026). */}
+          <Reference libelle="Début des travaux" valeur={DEBUT_DES_TRAVAUX} />
         </div>
       </header>
 

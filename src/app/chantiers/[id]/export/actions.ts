@@ -3,7 +3,8 @@
 import { exigerGestionDevis, exigerMontants } from "@/server/garde-action";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { contextePlanning } from "@/server/contexte-planning";
-import { getOuCreerDevisBrouillon, envoyerDevis } from "@/server/repositories/devis";
+import { getOuCreerDevisBrouillon, envoyerDevis, manquesDuDevisAEnvoyer } from "@/server/repositories/devis";
+import { phraseDesManques } from "@/lib/mentions-manquantes";
 import { listerPrestations } from "@/server/repositories/prestations";
 import { ingererDevis } from "@/server/documents/ingestion";
 import { preparerEnvoi, verifierJourPropose } from "@/server/repositories/preparation-envoi";
@@ -32,6 +33,11 @@ export async function chargerDevisAction(chantierId: string) {
 export async function envoyerDevisAction(devisId: string) {
   const ctx = await getCurrentCtx();
   await exigerGestionDevis(ctx, "envoyer le devis");
+  // **Une mention obligatoire qui manque, le devis ne part pas** (choix 1A du
+  // 3 octobre 2026). L'écran d'envoi le dit avant (`preparerEnvoi`) ; ce refus
+  // tient la règle quand l'action est appelée autrement.
+  const manques = await manquesDuDevisAEnvoyer(ctx, devisId);
+  if (manques.length > 0) throw new Error(phraseDesManques(manques));
   const resultat = await envoyerDevis(ctx, devisId);
   try {
     // Base documentaire (lot IA-07) : rend le devis envoyé recherchable par
@@ -229,6 +235,9 @@ export async function envoyerAuClientAction(
   // diverger (`CLAUDE.md` §3).
   if (preparation.blocage === "devis_vide") {
     return { succes: false, erreur: MOTIF_DEVIS_VIDE };
+  }
+  if (preparation.blocage === "mentions_manquantes") {
+    return { succes: false, erreur: phraseDesManques(preparation.manques) };
   }
 
   if (preparation.blocage === "canal_absent") {

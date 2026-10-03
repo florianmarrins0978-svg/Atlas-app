@@ -1,3 +1,5 @@
+import { nomAvecForme } from "@/lib/formes-juridiques";
+import { dansDelaiRetractation, jourIso } from "@/lib/jour";
 import { randomBytes, createHash } from "node:crypto";
 import { and, asc, desc, eq, gte, isNull, lte, sql } from "drizzle-orm";
 import { db, type DbOrTx } from "../db/client";
@@ -658,7 +660,8 @@ export async function lireParJeton(
         totalTva: d.totalTva,
         totalTtc: d.totalTtc,
         tauxTva: d.tauxTva,
-        entrepriseNom: d.entrepriseNom,
+        // « … EI » pour un entrepreneur individuel (R526-27), comme sur le PDF.
+        entrepriseNom: nomAvecForme(d.entrepriseNom, d.entrepriseFormeJuridique),
         clientNom: d.clientNom,
         clientCivilite: d.clientCivilite,
         adresseChantier: d.adresseChantier,
@@ -809,7 +812,12 @@ export type ResultatReponse =
         | "jours_incomplets"
         | "message_manquant"
         /** Le patron n'a pas autorisé d'autre date sur CET envoi (17 août 2026). */
-        | "autre_date_refusee";
+        | "autre_date_refusee"
+        /**
+         * La date tombe dans ses 14 jours de rétractation et il n'a pas coché la
+         * demande expresse (L221-25, son choix 3A du 3 octobre 2026).
+         */
+        | "demarrage_non_demande";
     };
 
 /**
@@ -924,6 +932,21 @@ export async function enregistrerReponse(
     // règle dupliquée entre l'affichage et la vérification (`CLAUDE.md` §3).
     if (contreProposee && !envoi.autreDateAutorisee) {
       return { succes: false, motif: "autre_date_refusee" as const };
+    }
+
+    // **La demande expresse BLOQUE, elle ne se contente plus d'être notée** —
+    // son choix 3A du 3 octobre 2026. La case existait, et un client pouvait
+    // accepter une date dans ses 14 jours sans la cocher : l'artisan ne pouvait
+    // alors pas commencer sans s'exposer à une rétractation après travaux. La
+    // même règle que celle qui montre la case (`dansDelaiRetractation`), au même
+    // jour : celui de l'accord.
+    if (
+      reponse.decision === "accepte" &&
+      date &&
+      dansDelaiRetractation(date, jourIso(maintenant)) &&
+      !reponse.demarrageAnticipe
+    ) {
+      return { succes: false, motif: "demarrage_non_demande" as const };
     }
 
     // Revérification côté serveur — la seule qui fasse foi.

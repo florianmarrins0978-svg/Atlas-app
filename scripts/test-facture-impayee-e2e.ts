@@ -72,6 +72,9 @@ async function chantierFacturable(page: Page): Promise<string> {
   await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
   await page.fill('input[placeholder="Bernard"]', `Impaye ${Date.now()}`);
   await page.fill('input[placeholder="06 12 34 56 78"]', "06 12 34 56 78");
+  // **L'adresse du chantier est une mention de la facture** (242 nonies A,
+  // I-2°) : sans elle, l'émission refuse depuis le 3 octobre 2026.
+  await page.fill('input[placeholder="12 rue des Lilas, Nantes"]', "10 rue des Lilas, Nantes");
   const chantierId = await creerPuisFiche(page);
   // L'adresse se bâtit sur l'identifiant rendu : la relire dans le navigateur
   // donnait « devis-complet » depuis que la fiche du chantier est retirée

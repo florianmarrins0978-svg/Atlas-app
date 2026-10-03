@@ -5,6 +5,7 @@ import Link from "next/link";
 import { colors, font, smallCaps, texteSituation } from "@/lib/design-tokens";
 import { DUREES } from "@/lib/durees-chantier";
 import BottomSheet from "@/components/atlas/BottomSheet";
+import ListeDesManques from "@/components/atlas/ListeDesManques";
 import PrimaryButton from "@/components/atlas/PrimaryButton";
 import ChoixCanal from "@/components/atlas/ChoixCanal";
 import { jourIso, jourLisible } from "@/lib/jour";
@@ -74,6 +75,8 @@ const MESSAGES_BLOCAGE: Record<string, string> = {
   // à démonter »*. Le texte vient de `src/lib/devis-envoyable.ts` — la même
   // phrase qu'emploie le refus du serveur, jamais une recopie qui divergerait.
   devis_vide: MOTIF_DEVIS_VIDE,
+  // La liste et ses portes suivent (`ListeDesManques`), choix 1A du 3 octobre 2026.
+  mentions_manquantes: "Il manque une mention obligatoire.",
 };
 
 /** Le rang d'un jour dans sa proposition — « 1er jour », « 2e jour ». */
@@ -493,6 +496,14 @@ function Contenu({
         <p className="mb-3 mt-4 text-center text-[13px]" style={{ color: colors.ink }}>
           {blocage}
         </p>
+      )}
+
+      {preparation?.blocage === "mentions_manquantes" && (
+        <ListeDesManques
+          manques={preparation.manques}
+          lienEntreprise="/reglages/identite"
+          lienClient={`/chantiers/${chantierId}/coordonnees`}
+        />
       )}
 
       {/* ═══════════════════════════════════════════════════════════════════

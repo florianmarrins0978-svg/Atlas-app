@@ -757,6 +757,13 @@ export const clients = pgTable(
     telephone: text("telephone"),
     adresse: text("adresse"),
     email: text("email"),
+    /**
+     * Le numéro de TVA d'une entreprise cliente (migration 0118). Retenu ici
+     * pour être proposé sur sa prochaine facture en sous-traitance, et toujours
+     * modifiable sur la facture (son choix 5B du 3 octobre 2026). NUL : un
+     * particulier, ou un numéro jamais donné.
+     */
+    numeroTva: text("numero_tva"),
     // Canal convenu avec le client pour l'envoi du devis (docs/AGENT.md §2.1).
     // Sans lui, l'envoi est impossible : mieux vaut bloquer qu'envoyer dans le vide.
     canalCommunication: text("canal_communication", { enum: ["sms", "email"] }),
@@ -1342,6 +1349,12 @@ export const devis = pgTable(
     entrepriseMentionsLegalesPosition: text("entreprise_mentions_legales_position", {
       enum: ["sous_nom", "bas", "aucune"],
     }),
+    /**
+     * Le régime de TVA au jour du devis (migration 0118), comme sur la facture
+     * (0039). En franchise, la mention de l'article 293 B s'imprime au pied ;
+     * nul sur les devis d'avant, qui se lisent à leur taux (`sousFranchise`).
+     */
+    entrepriseRegimeTva: text("entreprise_regime_tva", { enum: ["assujettie", "franchise"] }),
     /**
      * La décennale et le médiateur AU JOUR DU DOCUMENT (migration 0094).
      *
@@ -2213,6 +2226,27 @@ export const factures = pgTable(
 
     dateEmission: date("date_emission").notNull(),
     dateEcheance: date("date_echeance"),
+    /**
+     * La date des travaux (migration 0118), mention obligatoire quand elle
+     * diffère de la date de la facture (CGI, ann. II, art. 242 nonies A).
+     * Remplie d'après le planning à la création, modifiable en brouillon : son
+     * choix 6A du 3 octobre 2026. NUL sur les factures d'avant.
+     */
+    dateTravaux: date("date_travaux"),
+    /**
+     * Sous-traitance du bâtiment, sans TVA : l'autoliquidation (CGI,
+     * art. 283-2 nonies), migration 0118. Basculer met les taux de la pièce à
+     * zéro, EN BASE, et range ceux d'avant dans `tauxAvantAutoliquidation` :
+     * tout ce qui lit une facture (écran, PDF, page du client, paiements,
+     * avoirs, relevé) la lit donc sans TVA sans avoir à connaître ce drapeau.
+     */
+    autoliquidation: boolean("autoliquidation").notNull().default(false),
+    /** Le numéro de TVA du donneur d'ordre, imprimé sous son nom (242 nonies A, I-4°). */
+    clientNumeroTva: text("client_numero_tva"),
+    tauxAvantAutoliquidation: jsonb("taux_avant_autoliquidation").$type<{
+      facture: string;
+      lignes: Record<string, string | null>;
+    }>(),
     conditionsPaiement: text("conditions_paiement"),
     devise: char("devise", { length: 3 }).notNull().default("EUR"),
 
