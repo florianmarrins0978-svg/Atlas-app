@@ -1,6 +1,6 @@
 # Prochaines tâches
 
-## ⏳ RETIRER PAR UNE CROIX : la planche attend son choix (3 octobre 2026)
+## ✅ RETIRER PAR UNE CROIX : sa réponse « A », codée par une autre session (3 octobre 2026)
 
 Sa demande en essayant la version ordinateur : *« pour retirer une ligne il
 faut mettre une petite croix en plus du slide »*. Une souris ne glisse pas :
@@ -9,6 +9,17 @@ faut mettre une petite croix en plus du slide »*. Une souris ne glisse pas :
 C au survol. Elle rouvre en partie son choix du 10 août (une seule façon de
 retirer) ; le glissement reste dans les trois. Quand il aura choisi, la croix
 vit dans `LigneRetirable`, donc sur tous les écrans qui l'emploient.
+
+**Il a répondu « A » (la croix partout), et a demandé de ne pas faire deux fois
+la même chose** : la session `013KcmGGosfFVLdRbad4RZSv` avait posé sa propre
+planche (`appli/retirer-une-ligne-du-devis.html`, branche
+`claude/planche-retirer-une-ligne`) et codé sa réponse « A » sur le devis,
+branche `claude/ligne-du-devis-retiree-en-saisie` (« Poser une croix au bout
+de chaque ligne du devis »). C'est CETTE version qui vaut, pour le téléphone
+comme pour l'ordinateur : un seul code sert les deux (`ARCHITECTURE.md` §441).
+`appli/retirer-par-une-croix.html` ne se code pas. Reste ouvert : la croix sur
+les AUTRES écrans qui retirent par glissement (informations, prix, note vocale,
+planning, tarifs), que sa demande visait sur le devis seul.
 
 ## ⏳ SUR ORDINATEUR : la planche attend son choix (30 septembre 2026)
 
