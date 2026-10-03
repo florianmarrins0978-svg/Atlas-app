@@ -15,6 +15,13 @@ dans `docs/lot-mentions-facture-devis.md`.
   qui dit ce qui manque ; date des travaux sur la facture et date de début sur
   le devis ; « EI » à côté du nom et forme juridique d'office pour une société ;
   les crochets `[...]` imprimés tels quels sur le devis. **Son ordre attendu.**
+- **Ses choix du 3 octobre** sur `appli/documents-en-regle-a-choisir.html` :
+  1A (une fenêtre à l'envoi, qui **bloque** tant qu'il manque un prix ou une
+  mention obligatoire), 3A (le client coche s'il veut commencer dans ses
+  14 jours), 4A (« EI » collé au nom, forme de la société sous le nom), 5B
+  (numéro de TVA du donneur d'ordre retenu pour ce client, **modifiable**),
+  6A (date des travaux tirée du planning, modifiable). **Le 2 reste à
+  trancher** (délai ou date proposée), après ses questions sur la loi.
 
 ## ⏳ UNE PLANCHE À REGARDER : FACTURE AVEC OU SANS TVA (28 septembre, revue le 2 octobre 2026)
 
