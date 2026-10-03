@@ -459,6 +459,19 @@ body:not(:has(.atlas-nav-basse)) .atlas-contenu {
   display: none;
 }
 
+/* **Tant qu'il écrit dans la ligne, elle ne s'ouvre pas** — sa plainte du
+ * 3 octobre 2026 : *« une ligne s'est supprimée sans que je sache pourquoi »*.
+ * Sur iPhone, entrer dans un champ fait défiler ses conteneurs pour montrer le
+ * curseur, et cette colonne en est un : toucher la quantité entrouvrait la
+ * ligne, et « Retirer », haut comme toute la ligne, venait se poser sur le
+ * prix qu'il touchait ensuite. `clip` ôte le défilement lui-même, y compris
+ * celui que le navigateur lance seul ; `hidden` le laisserait faire.
+ * Le bouton « Retirer », hors du volet, garde son accès au clavier.
+ * `scripts/test-saisie-ne-retire-pas-la-ligne-e2e.ts`. */
+.atlas-glisse:has(.atlas-volet :is(input, textarea, select, [contenteditable]):focus) {
+  overflow-x: clip;
+}
+
 .atlas-volet {
   flex: 0 0 100%;
   scroll-snap-align: start;
