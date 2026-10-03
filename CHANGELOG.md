@@ -18,6 +18,10 @@ l'ordinateur. Évite deux versions d'une même page qui divergeraient. Le
 téléphone est inchangé au pixel près (49 écrans comparés) ;
 `test-sur-ordinateur-e2e` le tient.
 
+Les écrans d'avant le compte (accueil, création, mot de passe oublié, code)
+gardent la largeur d'un téléphone sur ordinateur : son premier essai montrait
+« Créer un compte » étiré sur tout l'écran.
+
 ## 2026-09-29
 
 ### Le modèle de fiche d'entretien est là d'office, et une touche le remet

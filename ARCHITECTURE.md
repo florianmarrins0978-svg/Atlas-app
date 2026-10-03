@@ -34098,3 +34098,11 @@ après, comparés pixel à pixel ; les seuls écarts venaient des données de la
 qui avaient changé entre les deux passages (une transcription terminée), et de
 l'animation de l'accueil. `scripts/test-sur-ordinateur-e2e.ts` tient les deux
 moitiés, rouge sur l'ancien cadre (9 échecs à 1440 px, téléphone vert).
+
+**Les écrans d'avant le compte gardent la largeur d'un téléphone** (sa capture
+du même jour : *« le bouton est trop grand »*, « Créer un compte » étiré sur
+toute l'accueil). L'accueil, la création de compte, le mot de passe oublié et
+le code n'ont pas de cadre : ils s'étiraient d'eux-mêmes. La colonne vit dans
+`PorteDeNuit`, que tous partagent sauf l'accueil, qui la pose sur ses boutons ;
+le fond, lui, couvre l'écran. Tenu par trois cas de `test-sur-ordinateur-e2e`,
+rouges sur l'ancienne version.

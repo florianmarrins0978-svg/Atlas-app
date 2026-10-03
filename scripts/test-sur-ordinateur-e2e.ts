@@ -156,6 +156,30 @@ async function main() {
     });
   }
 
+  // **Les écrans d'avant le compte gardent la largeur d'un téléphone** (sa
+  // capture du 3 octobre 2026 : « le bouton est trop grand », « Créer un
+  // compte » étiré sur toute la largeur de l'accueil). Le fond couvre
+  // l'écran, le bouton non.
+  for (const [chemin, libelle] of [
+    ["/bienvenue", "Créer un compte"],
+    ["/creer-un-compte", "Continuer"],
+    ["/mot-de-passe-oublie", "Recevoir un code"],
+  ] as const) {
+    await cas(`ordinateur, ${chemin} : « ${libelle} » garde la largeur d'un téléphone`, async () => {
+      const contexte = await navigateur.newContext(ordinateur);
+      const page = await contexte.newPage();
+      await page.goto(`${BASE}${chemin}`, { waitUntil: "networkidle" });
+      const bouton = page.getByText(libelle, { exact: true }).first();
+      await bouton.waitFor({ timeout: 30_000 });
+      const boite = await bouton.boundingBox();
+      await contexte.close();
+      if (!boite || boite.width < 20) throw new Error(`« ${libelle} » introuvable ou plat : rien n'est mesuré`);
+      if (boite.width > 448 + TOLERANCE_PX) {
+        throw new Error(`« ${libelle} » fait ${Math.round(boite.width)} px de large sur un écran de 1440`);
+      }
+    });
+  }
+
   await navigateur.close();
   console.log(echecs ? `\n❌ ${echecs} échec(s).` : "\n✅ Les mêmes écrans, sur ordinateur comme sur téléphone.");
   process.exit(echecs ? 1 : 0);
