@@ -21,6 +21,15 @@ cet ordre, chacun de niveau 3 (le cadre touche tous les écrans) :
 Le téléphone ne doit pas bouger d'un pixel : chaque lot compare ses captures
 à 390 px avant et après.
 
+**Téléphone et ordinateur reliés : sa condition du 3 octobre 2026.** *« ce qui
+sera fait sur l'appli téléphone doit être relié à celui de l'ordi »*. C'est vrai
+de l'application Next.js (une base, un compte). **Ce n'est PAS vrai de la coque
+iPhone telle qu'elle est configurée** : `appli/capacitor.config.json` n'a pas de
+`server.url` et empaquette les pages de `appli/`, qui gardent leurs données
+dans le téléphone (`appli/PRINCIPES.md`, « local-first »). Avant toute
+soumission à l'App Store, la coque doit ouvrir l'adresse hébergée de
+l'application, sans quoi les deux appareils ne partageraient rien.
+
 ## 🔜 `test-poser-une-date-e2e` ROUGE LE 30 SEPTEMBRE 2026, SUR `main` AUSSI
 
 « aucun jour d'accueil ouvrable au calendrier » : rouge de la même façon sur
