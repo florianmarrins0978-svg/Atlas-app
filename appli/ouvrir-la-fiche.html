@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Ouvrir la fiche d’intervention</title>
+<!--
+  ════════════════════════════════════════════════════════════════════════════
+  SA REMARQUE DU 3 OCTOBRE 2026, capture du planning à l'appui (mercredi 14,
+  Mr. Lala, fiche ouverte) :
+
+  *« Le fait de cliquer pour faire apparaître la fiche chantier n'est pas
+  intuitif. »*
+
+  Aujourd'hui (`PlanningClient.tsx`, bouton `data-atlas="nom-du-jour"`) : on
+  touche un jour, la carte du jour s'ouvre, et la fiche d'intervention reste
+  FERMÉE. Elle ne s'ouvre qu'en touchant le NOM du chantier, et rien ne dit
+  que ce nom se touche : pas de chevron, pas de soulignement, le même serif
+  qu'un titre.
+
+  ─── LES TROIS PROPOSITIONS ─────────────────────────────────────────────
+  A · un seul chantier ce jour-là : la fiche est ouverte d'office. Plusieurs :
+      comme aujourd'hui (rien n'indique le geste).
+  B · un chevron à droite de chaque nom, qui pivote quand la fiche s'ouvre ;
+      la fiche reste fermée au départ. Le même chevron que la ligne des
+      planifiés : un sens, pas une décoration (CLAUDE.md §3, les flèches).
+  C · A et B : ouverte d'office quand il est seul, le chevron sur chaque nom
+      pour la refermer ou ouvrir l'autre.
+
+  Le mercredi 14 porte UN chantier, le jeudi 15 en porte DEUX : c'est là que
+  les trois se distinguent.
+
+  La fiche est celle qui est codée (la sixième planche, du 20 septembre),
+  sans les gestes de « Travaux à faire » : ce n'est pas l'objet de la planche.
+
+  RIEN N'EST CODÉ.
+  ════════════════════════════════════════════════════════════════════════════
+-->
+<style>
+  :root{
+    --scene:#e6e3dc; --fond:#f5f3ee; --carte:#faf9f5; --teinte:#ece9e1; --encre:#1c1c1a;
+    --encre-douce:#4a4a44; --gris:#8a8578; --or:#B98B47; --or-texte:#8b6835;
+    --pin:#2f3b2f; --vert-pale:#b9c6b4; --bordeaux:#6b2a35; --trait:rgba(28,28,26,.12); --trait-doux:rgba(28,28,26,.07);
+    --ombre:rgba(28,28,26,.07); --ombre-forte:rgba(20,18,14,.18); --or-voile:rgba(185,139,71,.10);
+    --or-papier:rgba(185,139,71,.13); --vert-voile:rgba(125,154,109,.16);
+  }
+  body.nuit{
+    --scene:#070908; --fond:#101210; --carte:#1a1d19; --teinte:#151814; --encre:#e9e8de;
+    --encre-douce:#c1c2b6; --gris:#84887b; --or:#C9A05E; --or-texte:#d9b676;
+    --pin:#b9c6b4; --vert-pale:#4f5f4c; --bordeaux:#c58a93; --trait:rgba(233,232,222,.14); --trait-doux:rgba(233,232,222,.08);
+    --ombre:rgba(0,0,0,.35); --ombre-forte:rgba(0,0,0,.6); --or-voile:rgba(201,160,94,.14);
+    --or-papier:rgba(201,160,94,.16); --vert-voile:rgba(185,198,180,.12);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;background:var(--scene)}
+  body{font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--encre);
+       -webkit-text-size-adjust:100%;padding:0 0 48px;font-variant-numeric:tabular-nums}
+  button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;text-align:left}
+  button:focus-visible,textarea:focus-visible{outline:2px solid var(--or);outline-offset:3px;border-radius:4px}
+
+  .commandes{display:flex;justify-content:center;gap:8px;padding:16px 16px 0;flex-wrap:wrap}
+  .commandes button{min-height:44px;min-width:44px;padding:0 14px;border-radius:999px;font-size:14px;
+                    color:var(--encre-douce);background:var(--carte);box-shadow:inset 0 0 0 1px var(--trait)}
+  .commandes button[aria-pressed="true"]{color:var(--carte);background:var(--encre);box-shadow:none;font-weight:600}
+  .petites{display:flex;justify-content:center;gap:22px;padding:6px 16px 0;font-size:13px}
+  .petites button{min-height:40px;color:var(--gris)}
+  .petites button[aria-pressed="true"]{color:var(--encre);text-decoration:underline;text-decoration-color:var(--or);text-underline-offset:6px}
+  .dit{max-width:390px;margin:8px auto 0;padding:0 20px;text-align:center;font-size:13.5px;color:var(--encre-douce);min-height:42px}
+
+  .tel{width:calc(100% - 32px);max-width:390px;height:780px;margin:10px auto 0;background:var(--fond);
+       border-radius:30px;overflow:hidden;box-shadow:0 18px 46px var(--ombre-forte);display:flex;flex-direction:column}
+  .ecran{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;padding:18px 12px 24px}
+
+  /* ─── la semaine ─── */
+  .jours{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center}
+  .jours .nomj{font-size:10px;letter-spacing:.14em;color:var(--gris);padding-bottom:6px}
+  .jour{display:flex;flex-direction:column;align-items:center;gap:5px;min-height:62px;padding:8px 0 6px;border-radius:12px;
+        font:400 19px/1 ui-serif,Georgia,serif;box-shadow:inset 0 0 0 2px transparent}
+  .jour.choisi{box-shadow:inset 0 0 0 2px var(--encre)}
+  .jour.repos{background:var(--teinte);color:var(--gris)}
+  .traits{display:flex;flex-direction:column;gap:3px;width:62%}
+  .traits i{display:block;height:5px;border-radius:2px}
+  .t-libre{background:var(--carte);box-shadow:inset 0 0 0 1px var(--trait)}
+  .t-vert{background:var(--vert-pale)}
+  .t-bordeaux{background:var(--bordeaux)}
+
+  /* ─── la carte du jour, comme aujourd'hui ─── */
+  .carte{margin-top:14px;background:var(--carte);border-radius:16px;border:1px solid var(--trait-doux);
+         box-shadow:0 6px 20px var(--ombre);padding:16px 14px 10px}
+  .carte .titre{margin:0;text-align:center;font:700 12px/1 inherit;letter-spacing:.2em;text-transform:uppercase}
+  .filet{margin:14px 0 4px;border:0;border-top:1px solid var(--trait)}
+  .absent{display:block;margin:6px auto 10px;min-height:44px;color:var(--or);font-size:15px}
+  .equipe{margin:0;font-size:15px;color:var(--or)}
+  .equipe span{margin-right:16px}
+
+  .bloc{padding-top:8px}
+  .bloc + .bloc{margin-top:10px;border-top:1px solid var(--trait-doux);padding-top:14px}
+  .nom-du-jour{display:flex;width:100%;align-items:flex-start;gap:10px;min-height:44px}
+  .nom-du-jour .texte{flex:1;min-width:0}
+  .nom-du-jour .nom{display:block;font:400 21px/1.2 ui-serif,Georgia,serif}
+  .nom-du-jour .duree{display:block;margin-top:3px;font-size:13px;color:var(--or)}
+  .nom-du-jour .lieu{display:block;margin-top:2px;font-size:13px;color:var(--gris)}
+  /* le chevron : un vrai sens (ouvert, fermé), comme sur la ligne des planifiés */
+  .chev{flex:none;display:grid;place-items:center;width:40px;height:40px;margin-top:-4px;border-radius:50%;
+        color:var(--or);background:var(--or-voile);transition:transform .28s cubic-bezier(.2,.7,.2,1)}
+  .ouverte .chev{transform:rotate(180deg)}
+  @media (prefers-reduced-motion:reduce){.chev{transition:none}}
+
+  .demi{display:flex;min-height:46px;align-items:center;gap:16px;font:600 11px/1 inherit;letter-spacing:.16em;text-transform:uppercase}
+  .demi .a{display:flex;align-items:center;gap:12px;min-width:118px}
+  .demi .b{font:400 15px/1.4 inherit;letter-spacing:0;text-transform:none}
+  .demi .b .plus{color:var(--or);margin-left:6px}
+  .pastille{width:16px;height:16px;border-radius:4px;flex:none;background:var(--vert-pale)}
+  .actions{display:flex;justify-content:flex-end;gap:14px;min-height:44px;align-items:center;font:700 15px/1 inherit}
+
+  /* ─── la fiche d'intervention, telle qu'elle est codée ─── */
+  .feuille{margin:10px 0 6px;padding:16px 12px 14px;border-radius:14px;background:var(--carte);
+           border:2px solid var(--or);box-shadow:0 2px 10px var(--ombre)}
+  .feuille .sur{margin:0;text-align:center;font:700 10.5px/1 inherit;letter-spacing:.22em;text-transform:uppercase;color:var(--or)}
+  .feuille .qui{margin:10px 0 0;text-align:center;font:400 22px/1.15 ui-serif,Georgia,serif}
+  .barre-gestes{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-top:14px}
+  .cellule{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;min-height:78px;
+           padding:8px 4px;border-radius:12px;background:var(--teinte);box-shadow:inset 0 0 0 1px var(--trait-doux);
+           font-size:11.5px;line-height:1.15;text-align:center}
+  .cellule .d-vert{color:var(--pin)} .cellule .d-or{color:var(--or)}
+  .part{margin:14px 0 0;padding-top:14px;border-top:1px solid var(--trait-doux)}
+  .etiquette{margin:0 0 8px;font:600 10px/1 inherit;letter-spacing:.16em;text-transform:uppercase;color:var(--encre)}
+  .note-cadre{display:block;width:100%;min-height:70px;padding:10px 12px;border:0;border-radius:10px;resize:none;
+              background:var(--or-papier);box-shadow:inset 0 0 0 1px rgba(185,139,71,.22);color:var(--encre);
+              font-family:inherit;font-size:16px;line-height:1.45}
+  .bandeau{margin-top:14px;display:flex;align-items:center;gap:10px;min-height:54px;padding:0 14px 0 16px;border-radius:12px;
+           background:var(--vert-voile);box-shadow:inset 0 0 0 1px var(--trait)}
+  .bandeau .m{flex:1;font:400 16px/1.2 ui-serif,Georgia,serif;color:var(--pin)}
+  .bandeau .c{font-size:12.5px;font-weight:600;color:var(--pin)}
+  .pdf{display:block;width:max-content;margin:10px auto 0;padding:8px 12px 2px;font-size:14px;font-weight:700}
+
+  .barre{flex:none;display:grid;grid-template-columns:repeat(5,1fr);height:64px;background:var(--carte);
+         border-top:1px solid var(--trait);padding-bottom:6px}
+  .barre span{display:flex;align-items:end;justify-content:center;padding-bottom:12px;font-size:10.5px;letter-spacing:.1em;color:var(--gris)}
+  .barre span.actif{color:var(--encre);font-weight:600}
+
+  .note{max-width:430px;margin:26px auto 0;padding:0 22px;font-size:13.5px;line-height:1.6;color:var(--encre-douce)}
+  .note h2{font:400 20px/1.2 ui-serif,Georgia,serif;color:var(--encre);margin:20px 0 8px}
+  .note p{margin:0 0 10px}
+  .note b{color:var(--encre)}
+  .note table{border-collapse:collapse;width:100%;margin:0 0 12px}
+  .note td{padding:6px 8px 6px 0;vertical-align:top;border-top:1px solid var(--trait-doux)}
+  .note td:first-child{color:var(--encre);font-weight:600;width:22%}
+  @media (max-width:420px){.tel{border-radius:22px}}
+</style>
+</head>
+<body>
+
+<div class="commandes" role="group" aria-label="La proposition">
+  <button type="button" data-v="0">Aujourd’hui</button>
+  <button type="button" data-v="A">A</button>
+  <button type="button" data-v="B">B</button>
+  <button type="button" data-v="C" aria-pressed="true">C</button>
+</div>
+<p class="dit" id="dit"></p>
+<div class="petites">
+  <button type="button" id="nuit" aria-pressed="false">Voir sur Nuit</button>
+  <button type="button" id="rejouer">Recommencer</button>
+</div>
+
+<div class="tel"><div class="ecran" id="ecran"></div>
+  <div class="barre" aria-hidden="true"><span>Chantiers</span><span class="actif">Planning</span><span>Terminés</span><span>Paysage</span><span>Réglages</span></div>
+</div>
+
+<div class="note">
+  <h2>Ce qu’il faut essayer</h2>
+  <p>Pour chaque lettre : touchez le <b>14</b> (un seul chantier), puis le <b>15</b> (deux chantiers).</p>
+  <table>
+    <tr><td>Aujourd’hui</td><td>la fiche reste fermée. Elle s’ouvre en touchant le nom, et rien ne le montre.</td></tr>
+    <tr><td>A</td><td>un seul chantier : la fiche est ouverte tout de suite. Deux chantiers : comme aujourd’hui.</td></tr>
+    <tr><td>B</td><td>un rond doré avec un chevron à droite de chaque nom. On le touche, la fiche s’ouvre et le chevron se retourne.</td></tr>
+    <tr><td>C</td><td>A et B ensemble : ouverte tout de suite quand il est seul, et le chevron sur chaque nom pour la refermer ou ouvrir l’autre.</td></tr>
+  </table>
+  <p><b>Rien n’est codé.</b> Dites la lettre, ou ce qui ne va pas.</p>
+</div>
+
+<script>
+const DIT = {
+  "0": "Comme dans l’application : il faut deviner qu’on touche le nom.",
+  A: "Seul ce jour-là : la fiche s’ouvre toute seule.",
+  B: "Un chevron sur chaque nom, la fiche fermée au départ.",
+  C: "Ouverte toute seule s’il est seul, et un chevron sur chaque nom.",
+};
+const T = (d, t = 22) => `<svg width="${t}" height="${t}" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+const DESSIN = {
+  maps: `<path d="M10 17.5s-5.5-5-5.5-9a5.5 5.5 0 0 1 11 0c0 4-5.5 9-5.5 9z"/><circle cx="10" cy="8.5" r="2"/>`,
+  waze: `<path d="M16.5 3.5 3.5 9l6 1.5 1.5 6z"/>`,
+  copier: `<rect x="7" y="7" width="9.5" height="9.5" rx="2"/><path d="M13 7V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/>`,
+  appeler: `<path d="M4 3.5h3l1.5 3.5-2 1.2a9 9 0 0 0 5.3 5.3l1.2-2 3.5 1.5v3a1.5 1.5 0 0 1-1.6 1.5A13 13 0 0 1 2.5 5.1 1.5 1.5 0 0 1 4 3.5z"/>`,
+};
+const CHEV = `<svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5 8l5 5 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+
+const CHANTIERS = {
+  lala: { nom: "Mr. Lala", fiche: "Lala", lieu: "Paris", duree: "une journée", matin: "Julien", aprem: "Antoine", lignes: 3 },
+  pagnol: { nom: "Pagnol", fiche: "Pagnol", lieu: "Mantes-la-Jolie", duree: "une demi-journée", matin: "Antoine", aprem: null, lignes: 4 },
+  juju: { nom: "Mme Durand", fiche: "Durand", lieu: "Vernouillet", duree: "une demi-journée", matin: null, aprem: "Julien", lignes: 2 },
+};
+// la semaine de sa capture : le 14 a un chantier, le 15 en a deux
+const SEMAINE = [
+  { n: 12, traits: ["t-vert", "t-libre"] }, { n: 13, traits: ["t-bordeaux", "t-bordeaux"] },
+  { n: 14, traits: ["t-vert", "t-libre"], titre: "Mercredi 14 octobre", ids: ["lala"] },
+  { n: 15, traits: ["t-vert", "t-vert"], titre: "Jeudi 15 octobre", ids: ["pagnol", "juju"] },
+  { n: 16, traits: ["t-libre", "t-libre"] }, { n: 17, repos: true }, { n: 18, repos: true },
+];
+
+let variante = "C", jour = null, ouverte = null;
+
+function fiche(c) {
+  return `<section class="feuille" aria-label="Fiche d’intervention">
+    <p class="sur">Fiche d’intervention</p><p class="qui">${c.fiche}</p>
+    <div class="barre-gestes">
+      <button type="button" class="cellule"><span class="d-vert">${T(DESSIN.maps)}</span>Maps</button>
+      <button type="button" class="cellule"><span class="d-vert">${T(DESSIN.waze)}</span>Waze</button>
+      <button type="button" class="cellule"><span class="d-or">${T(DESSIN.copier)}</span>Copier l’adresse</button>
+      <button type="button" class="cellule"><span class="d-vert">${T(DESSIN.appeler)}</span>Appeler le client</button>
+    </div>
+    <div class="part"><p class="etiquette">Ma note</p><textarea class="note-cadre" rows="2" placeholder="Penser à prendre le broyeur."></textarea></div>
+    <div class="bandeau"><span class="m">Travaux à faire</span><span class="c">${c.lignes} lignes</span></div>
+    <button type="button" class="pdf">Ouvrir le PDF sans les prix</button>
+  </section>`;
+}
+
+function dessiner() {
+  document.querySelectorAll(".commandes button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.v === variante)));
+  document.getElementById("dit").textContent = DIT[variante];
+  const chevron = variante === "B" || variante === "C";
+
+  let h = `<div class="jours">${["LUN","MAR","MER","JEU","VEN","SAM","DIM"].map((x) => `<span class="nomj">${x}</span>`).join("")}`;
+  SEMAINE.forEach((j, i) => {
+    const cls = "jour" + (j.repos ? " repos" : "") + (jour === i ? " choisi" : "");
+    const traits = j.traits ? `<span class="traits">${j.traits.map((t) => `<i class="${t}"></i>`).join("")}</span>` : "";
+    h += j.titre ? `<button type="button" class="${cls}" data-jour="${i}">${j.n}${traits}</button>` : `<span class="${cls}">${j.n}${traits}</span>`;
+  });
+  h += `</div>`;
+
+  if (jour === null) {
+    h += `<p class="dit" style="margin-top:30px">Touchez le 14, puis le 15.</p>`;
+  } else {
+    const j = SEMAINE[jour];
+    h += `<div class="carte"><p class="titre">${j.titre}</p><hr class="filet">
+      <button type="button" class="absent">+ Salarié absent ?</button>`;
+    j.ids.forEach((id) => {
+      const c = CHANTIERS[id], ouv = ouverte === id;
+      h += `<div class="bloc${ouv ? " ouverte" : ""}">
+        <button type="button" class="nom-du-jour" data-chantier="${id}" aria-expanded="${ouv}">
+          <span class="texte"><span class="nom">${c.nom}</span><span class="duree">${c.duree}</span><span class="lieu">${c.lieu}</span></span>
+          ${chevron ? `<span class="chev">${CHEV}</span>` : ""}
+        </button>
+        ${c.matin ? `<div class="demi"><span class="a"><span class="pastille"></span>Matin</span><span class="b">${c.matin}<span class="plus">+</span></span></div>` : ""}
+        ${c.aprem ? `<div class="demi"><span class="a"><span class="pastille"></span>Après-midi</span><span class="b">${c.aprem}<span class="plus">+</span></span></div>` : ""}
+        <div class="actions"><span>Déplacer</span><span>Retirer</span></div>
+        ${ouv ? fiche(c) : ""}
+      </div>`;
+    });
+    h += `</div>`;
+  }
+  const e = document.getElementById("ecran");
+  e.innerHTML = h;
+  e.querySelectorAll("[data-jour]").forEach((b) => (b.onclick = () => choisirJour(+b.dataset.jour)));
+  e.querySelectorAll("[data-chantier]").forEach((b) => (b.onclick = () => {
+    ouverte = ouverte === b.dataset.chantier ? null : b.dataset.chantier; dessiner();
+  }));
+}
+
+function choisirJour(i) {
+  jour = i;
+  const ids = SEMAINE[i].ids;
+  // A et C : un seul chantier ce jour-là, sa fiche est ouverte d'office
+  ouverte = (variante === "A" || variante === "C") && ids.length === 1 ? ids[0] : null;
+  dessiner();
+}
+
+document.querySelectorAll(".commandes button").forEach((b) => (b.onclick = () => {
+  variante = b.dataset.v;
+  if (jour !== null) choisirJour(jour); else dessiner();
+}));
+document.getElementById("rejouer").onclick = () => { jour = null; ouverte = null; dessiner(); };
+document.getElementById("nuit").onclick = () => {
+  const on = document.body.classList.toggle("nuit");
+  document.getElementById("nuit").setAttribute("aria-pressed", String(on));
+};
+dessiner();
+</script>
+</body>
+</html>
