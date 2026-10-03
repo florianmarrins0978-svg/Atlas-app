@@ -1,5 +1,26 @@
 # Prochaines tâches
 
+## ✅ RETIRER PAR UNE CROIX : sa réponse « A », codée par une autre session (3 octobre 2026)
+
+Sa demande en essayant la version ordinateur : *« pour retirer une ligne il
+faut mettre une petite croix en plus du slide »*. Une souris ne glisse pas :
+`LigneRetirable` n'est atteignable sur ordinateur qu'au pavé tactile. Planche
+`appli/retirer-par-une-croix.html` : A partout, B sur ordinateur seulement,
+C au survol. Elle rouvre en partie son choix du 10 août (une seule façon de
+retirer) ; le glissement reste dans les trois. Quand il aura choisi, la croix
+vit dans `LigneRetirable`, donc sur tous les écrans qui l'emploient.
+
+**Il a répondu « A » (la croix partout), et a demandé de ne pas faire deux fois
+la même chose** : la session `013KcmGGosfFVLdRbad4RZSv` avait posé sa propre
+planche (`appli/retirer-une-ligne-du-devis.html`, branche
+`claude/planche-retirer-une-ligne`) et codé sa réponse « A » sur le devis,
+branche `claude/ligne-du-devis-retiree-en-saisie` (« Poser une croix au bout
+de chaque ligne du devis »). C'est CETTE version qui vaut, pour le téléphone
+comme pour l'ordinateur : un seul code sert les deux (`ARCHITECTURE.md` §441).
+`appli/retirer-par-une-croix.html` ne se code pas. Reste ouvert : la croix sur
+les AUTRES écrans qui retirent par glissement (informations, prix, note vocale,
+planning, tarifs), que sa demande visait sur le devis seul.
+
 ## ⏳ SUR ORDINATEUR : la planche attend son choix (30 septembre 2026)
 
 Sa demande : *« il faut que ça prenne l'entièreté de l'ordinateur »*. Le site
@@ -82,6 +103,30 @@ dictée qui arrive ensuite ne s'y écrit pas. La racine : faire vivre la ligne
 ajoutée dans l'écran jusqu'au premier mot, comme la ligne ouverte d'avance.
 Travail dans l'écran du devis (identifiant qui ne change pas, ordre des
 écritures), donc un lot à lui, de niveau 3.
+
+## ⏳ UNE PLANCHE À REGARDER : DIRE QUE LE MICRO RÉDIGE LE DEVIS (3 octobre 2026)
+
+**Sa remarque :** *« sur la fiche client on comprend pas que la note vocale
+permet de rédiger le devis par la voix, il faudrait mettre une phrase
+au-dessus »*. Écran regardé (`/chantiers/nouveau?client=…`) : sous le grand
+micro, seulement « Appuyez et décrivez le chantier » en 11 px gris
+(`AnneauNoteVocale.tsx`). Planche `appli/dicter-le-devis-dire-ce-que-ca-fait.html` :
+**A** « Devis à la voix » en capitales, **B** « Dictez les travaux, Atlas rédige
+le devis. » (recommandée), **C** B et l'indice raccourci en « Appuyez pour
+commencer ». **Rien n'est codé.** À savoir : le petit micro en haut à droite
+(`DicterCoordonnees`) remplit les coordonnées, pas le devis ; deux micros sur
+un écran peuvent entretenir la confusion.
+
+## ⏳ UNE PLANCHE À REGARDER : OUVRIR LA FICHE D'INTERVENTION (3 octobre 2026)
+
+**Sa remarque, capture du planning à l'appui :** *« le fait de cliquer pour
+faire apparaître la fiche chantier n'est pas intuitif »*. Aujourd'hui la fiche
+ne s'ouvre qu'en touchant le nom du chantier (`data-atlas="nom-du-jour"`,
+`PlanningClient.tsx`), et rien ne le montre. Planche
+`appli/ouvrir-la-fiche.html` : **A** ouverte d'office quand le chantier est
+seul ce jour-là, **B** un chevron sur chaque nom, **C** les deux (recommandée).
+**Rien n'est codé.** Si c'est A ou C, la règle « seul ce jour-là » vit dans
+`src/lib/` (`rangDeLaFiche` est à côté), pas dans l'écran.
 
 ## ⏳ UNE PLANCHE À REGARDER : LES COULEURS DU PLANNING (29 septembre 2026)
 
