@@ -93,9 +93,15 @@ type Ligne = PrestationContrat & { cle: number; prixSaisi: string };
 
 export default function ContratClient(props: Props) {
   const { contrat } = props;
-  const [modifier, setModifier] = useState(!contrat || contrat.statut === "brouillon");
-  if (contrat && contrat.statut !== "brouillon" && !modifier) {
-    return <ContratParti {...props} contrat={contrat} repartir={() => setModifier(true)} />;
+  // **Ce qu'il a choisi, c'est de repartir de CE contrat-là — 3 octobre 2026.**
+  // L'écran retenait un simple « en saisie », figé à son ouverture : un
+  // brouillon envoyé revenait de la base « envoyé », et la saisie restait
+  // affichée comme si rien n'était parti (*« l'appli reste bloquée sur la page
+  // d'envoi »*). Retenir l'identifiant laisse l'état du contrat décider : le
+  // contrat qui vient de partir n'est pas celui dont il a voulu repartir.
+  const [repartiDe, setRepartiDe] = useState<string | null>(null);
+  if (contrat && contrat.statut !== "brouillon" && repartiDe !== contrat.id) {
+    return <ContratParti {...props} contrat={contrat} repartir={() => setRepartiDe(contrat.id)} />;
   }
   return (
     <Editeur

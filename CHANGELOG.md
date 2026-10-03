@@ -8,6 +8,20 @@ Format : le plus récent en tête.
 ---
 ## 2026-10-03
 
+### Un contrat envoyé quitte l'écran de saisie
+
+Sa plainte : *« je viens d'envoyer le contrat mais l'appli reste bloquée sur la
+page d'envoi »*. Le contrat partait bien (message ouvert, lien valable), mais
+l'écran retenait « en saisie » depuis son ouverture et ne relisait jamais l'état
+du contrat revenu « envoyé ». Il retient désormais l'identifiant du contrat dont
+le patron a choisi de repartir : celui qui vient de partir s'affiche « Envoyé
+le… ». `test-contrat-quitte-e2e.ts` posait l'envoi en base à la main ; il appuie
+maintenant sur « Envoyer », et a rougi avant la correction.
+
+La page « Une erreur » vue à 22 h 32 sur le lien du client n'a pas été
+reproduite : le lien s'ouvre ici, et sa fiche montrait une bascule de version en
+cours à 22 h 29. Non reproduit, donc non déclaré corrigé.
+
 ### Un devis parti qui attend le client rouvre l'écran du devis, plus le planning
 
 Sa plainte : *« j'ai voulu envoyer un devis, au moment d'ouvrir le message
