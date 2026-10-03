@@ -6,6 +6,27 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-10-03
+
+### Un devis parti qui attend le client rouvre l'écran du devis, plus le planning
+
+Sa plainte : *« j'ai voulu envoyer un devis, au moment d'ouvrir le message
+j'ai annulé, le chantier a disparu […] impossible de retourner sur la page du
+devis »* (Mr Lolo). Rejoué ici : « Envoyer le devis » fige le devis et crée
+son lien AVANT que Messages s'ouvre ; annuler dans Messages ne défait rien,
+et Atlas ne peut pas le savoir. Le chantier restait bien à l'accueil (« Devis
+envoyé, sans réponse »), mais le toucher menait au planning, où un chantier
+dont le client choisit sa date n'est pas « à planifier » : il dort replié sous
+« en attente du client », sans son nom. Aucune porte visible vers « Relancer
+par SMS ». `lienDeReprise` mène désormais à `/chantiers/[id]/export` dans ce
+cas (`getPlanificationEtat` = `attente_client`) ; un devis parti dont le
+patron pose la date garde le planning. Tenu par
+`test-reprendre-ou-il-en-etait.ts`, vu rouge avant la correction.
+
+**Ce qui reste vrai et n'est pas changé ici** : le bouton s'appelle « Relancer
+par SMS » alors que, dans ce cas, le client n'a rien reçu. Le libellé est une
+demande d'affichage, donc une planche d'abord (`CLAUDE.md` §3 bis).
+
 ## 2026-09-29
 
 ### Le modèle de fiche d'entretien est là d'office, et une touche le remet

@@ -182,6 +182,7 @@ export type NextActionKey =
   | "prix"
   | "devis-preparer"
   | "devis-consulter"
+  | "devis-attente"
   | "planifier";
 
 export type NextAction = {
@@ -200,6 +201,11 @@ export type EtatChantierPourAction = {
   devisGenereAt: Date | string | null;
   devisEnvoyeAt: Date | string | null;
   datePlanifiee: string | null;
+  // Le dernier envoi : sans lui, un devis qui attend le client ne se distingue
+  // pas d'un devis « à planifier » (`getPlanificationEtat`).
+  envoiEnvoyeAt?: Date | string | null;
+  envoiExpireAt?: Date | string | null;
+  envoiReponse?: "acceptee" | "refusee" | "correction" | null;
 };
 
 export function getNextAction(c: EtatChantierPourAction): NextAction | null {
@@ -237,6 +243,13 @@ export function getNextAction(c: EtatChantierPourAction): NextAction | null {
   // ─────────────────────────────────────────────────────────────────────────
 
   if (c.datePlanifiee) return null; // Planifié : plus rien à faire ici.
+  // **Le client choisit sa date : il n'y a rien à planifier.** Sa plainte du
+  // 3 octobre 2026 : un devis figé, son message annulé dans Messages, et le
+  // chantier qui menait au planning, où il dort replié sous « en attente du
+  // client ». La reprise est l'écran du devis parti, qui porte la relance.
+  if (c.devisEnvoyeAt && getPlanificationEtat(c) === "attente_client") {
+    return { key: "devis-attente", label: "Relancer le client" };
+  }
   if (c.devisEnvoyeAt) return { key: "planifier", label: "Planifier le chantier" };
   // **Le libellé dit ce qui reste à faire, pas où l'on va.** « Consulter le
   // devis » décrivait une lecture ; ce qui l'attend est un envoi, et c'est le
@@ -308,6 +321,8 @@ export function getNextActionHref(id: string, action: NextAction): string {
     case "devis-preparer":
     case "devis-consulter":
       return `/chantiers/${id}/devis-complet`;
+    case "devis-attente":
+      return `/chantiers/${id}/export`;
     case "planifier":
       return `/planning`;
   }
@@ -541,6 +556,7 @@ export function retireDeLaListe(c: {
  * | Ce qui reste à faire | Où l'on reprend | Pourquoi celui-là |
  * |---|---|---|
  * | des photos, une dictée | `/chantiers/[id]/coordonnees` | la pellicule et l'anneau y sont depuis le 31 août — c'était le doublon qu'il refusait |
+ * | attendre le client | `/chantiers/[id]/export` | le devis parti et sa relance : au planning il n'est pas « à planifier », il dort replié (3 octobre 2026) |
  * | poser une date | `/planning` | ce que `getNextActionHref` rendait déjà : le chantier est dans « À planifier », et sa ligne y porte ses portes |
  * | rien : la date est posée | `/planning?chantier=[id]` | **sa journée**, portes levées — sa réponse du 4 septembre |
  *
