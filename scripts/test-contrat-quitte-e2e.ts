@@ -165,6 +165,17 @@ async function main() {
     assert.equal((await telecharger.innerText()).trim(), "Télécharger mon contrat");
     const fond = await telecharger.evaluate((el) => getComputedStyle(el).backgroundColor);
     assert.doesNotMatch(fond, /rgba\(0, 0, 0, 0\)|transparent/, "le téléchargement n'est pas un bouton plein");
+
+    // Les boutons du devis, refus compris (même jour) : ne pas donner suite
+    // ouvre la confirmation, il n'envoie rien d'un seul appui.
+    await pageClient.locator('[data-atlas="ne-pas-donner-suite"]').click();
+    await pageClient.getByText("Vous ne donnez pas suite").waitFor({ timeout: 5_000 });
+    const { rows: avant } = await pool.query(`SELECT statut FROM contrats_entretien WHERE id = $1`, [contratId]);
+    assert.equal(avant[0]?.statut, "envoye", "un seul appui a refusé le contrat, sans confirmation");
+    await pageClient.locator('[data-atlas="refuser-contrat"]').click();
+    await pageClient.locator('[data-atlas="reponse-contrat-faite"]').waitFor({ timeout: 15_000 });
+    const { rows: apres } = await pool.query(`SELECT statut FROM contrats_entretien WHERE id = $1`, [contratId]);
+    assert.equal(apres[0]?.statut, "refuse", "la confirmation n'a pas enregistré le refus");
     await cotClient.close();
   });
 
