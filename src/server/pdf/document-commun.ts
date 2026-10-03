@@ -468,6 +468,13 @@ export type DonneesDocument = {
   entrepriseNom: string;
   entrepriseAdresse?: string | null;
   entrepriseSiret?: string | null;
+  /**
+   * Le numéro de TVA intracommunautaire, figé sur la facture (migration 0117).
+   * Obligatoire sur la facture d'un assujetti (CGI, ann. II, art. 242 nonies A,
+   * I-4°) ; absent du devis, que la loi n'y oblige pas. Vide : rien ne
+   * s'imprime.
+   */
+  entrepriseNumeroTva?: string | null;
   entrepriseTelephone?: string | null;
   entrepriseEmail?: string | null;
   entrepriseIban?: string | null;
@@ -860,6 +867,7 @@ export async function composerDocument(
     data.entrepriseTelephone,
     data.entrepriseEmail,
     data.entrepriseSiret ? `SIRET ${data.entrepriseSiret}` : null,
+    data.entrepriseNumeroTva ? `TVA intracommunautaire ${data.entrepriseNumeroTva}` : null,
   ].filter((l): l is string => !!l);
 
   for (const ligne of coordonnees) {

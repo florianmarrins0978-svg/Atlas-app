@@ -271,6 +271,7 @@ export type EntreprisePourFacture = Pick<
   | "mediateurCoordonnees"
   | "mentionsLegalesPosition"
   | "regimeTva"
+  | "numeroTva"
 >;
 
 export const COLONNES_EMETTEUR = {
@@ -291,6 +292,7 @@ export const COLONNES_EMETTEUR = {
   mediateurCoordonnees: entreprises.mediateurCoordonnees,
   mentionsLegalesPosition: entreprises.mentionsLegalesPosition,
   regimeTva: entreprises.regimeTva,
+  numeroTva: entreprises.numeroTva,
 } as const;
 
 export function identiteDeLEmetteur(e: EntreprisePourFacture | undefined) {
@@ -320,7 +322,26 @@ export function identiteDeLEmetteur(e: EntreprisePourFacture | undefined) {
     // Le régime au jour de l'émission (migration 0039) : il était déjà lu ici,
     // et il rejoint simplement le reste de l'identité.
     entrepriseRegimeTva: e?.regimeTva ?? null,
+    // Saisi dans Réglages depuis la création du compte, et oublié ici jusqu'au
+    // 3 octobre 2026 : aucune facture ne le portait (migration 0117).
+    entrepriseNumeroTva: e?.numeroTva ?? null,
   };
+}
+
+/**
+ * L'émetteur tel qu'il est AUJOURD'HUI — ce qu'un brouillon portera en partant.
+ *
+ * Une seule lecture pour l'émission et pour l'aperçu du brouillon : ce qu'il
+ * regarde avant d'envoyer est ce qui part, et deux lectures finiraient par
+ * diverger (`CLAUDE.md` §3).
+ */
+async function emetteurDuJour(tx: DbOrTx, entrepriseId: string) {
+  const [e] = await tx
+    .select(COLONNES_EMETTEUR)
+    .from(entreprises)
+    .where(eq(entreprises.id, entrepriseId))
+    .limit(1);
+  return identiteDeLEmetteur(e);
 }
 
 /** Les lignes de la facture, recopiées de celles du devis. */
@@ -1392,6 +1413,7 @@ export type FactureAImprimer = Pick<
   | "entrepriseFormeJuridique" | "entrepriseCapitalSocial" | "entrepriseVilleRcs"
   | "entrepriseAssureurDecennale" | "entrepriseContratDecennale" | "entrepriseCouvertureDecennale"
   | "entrepriseMediateurNom" | "entrepriseMediateurCoordonnees" | "entrepriseMentionsLegalesPosition"
+  | "entrepriseNumeroTva"
   | "clientNom" | "clientCivilite" | "clientAdresse" | "clientTelephone" | "adresseChantier"
   | "conditionsPaiement" | "devise" | "tauxTva" | "reductionPourcent"
 >;
@@ -1424,6 +1446,7 @@ export function donneesFacture(
     regimeTva: f.entrepriseRegimeTva,
     entrepriseAdresse: f.entrepriseAdresse,
     entrepriseSiret: f.entrepriseSiret,
+    entrepriseNumeroTva: f.entrepriseNumeroTva,
     entrepriseTelephone: f.entrepriseTelephone,
     entrepriseEmail: f.entrepriseEmail,
     // **LES MÊMES FONCTIONS QUE LA PAGE DU CLIENT** (`modalites-paiement.ts`) :
@@ -1498,7 +1521,10 @@ export async function genererPdfFacturePourApercu(ctx: Ctx, factureId: string): 
       .from(lignesFacture)
       .where(eq(lignesFacture.factureId, factureId));
     const habillage = await allureDesDocuments(tx, ctx.entrepriseId);
-    return genererPdfFacture(donneesFacture(f, lignes, await complementsDeLaFacture(tx, ctx.entrepriseId, f)), habillage);
+    // Un brouillon s'affiche avec l'émetteur qu'il emportera (`emettreFacture`) ;
+    // une pièce émise, avec celui qu'elle porte, et rien d'autre.
+    const papier = f.statut === "brouillon" ? { ...f, ...(await emetteurDuJour(tx, ctx.entrepriseId)) } : f;
+    return genererPdfFacture(donneesFacture(papier, lignes, await complementsDeLaFacture(tx, ctx.entrepriseId, f)), habillage);
   });
 }
 
@@ -1611,6 +1637,14 @@ export async function emettreFacture(ctx: Ctx, factureId: string, maintenant: Da
     // et c'est celui-là que le client garde (`datesDeLaFactureQuiPart`).
     const dates = datesDeLaFactureQuiPart(jourIso(maintenant), avant);
 
+    // **ET SON ÉMETTEUR AUSSI, PAR LA MÊME RAISON — 3 octobre 2026.** Lue à la
+    // création du brouillon, l'identité restait celle de ce jour-là : un
+    // brouillon ouvert avant la migration 0117 serait parti sans le numéro de
+    // TVA, mention obligatoire, et un IBAN changé entre-temps serait parti
+    // périmé. La pièce porte ce qui est vrai le jour où elle part ; c'est la
+    // règle que la reprise du devis applique déjà au brouillon.
+    const emetteur = await emetteurDuJour(tx, ctx.entrepriseId);
+
     // La pièce est figée au moment de l'émission, jamais régénérée ensuite :
     // une facture émise est immuable (trigger PostgreSQL), et un PDF reconstruit
     // depuis les données du jour ne serait plus celui que le client a reçu.
@@ -1624,7 +1658,7 @@ export async function emettreFacture(ctx: Ctx, factureId: string, maintenant: Da
     // une facture aux totaux faux. Seul le STATUT reste forcé : la pièce
     // archivée doit dire « émise » alors que la ligne ne le sera qu'après.
     const pdfBytes = await genererPdfFacture(
-      donneesFacture({ ...avant, ...dates, statut: "emise" }, lignes, complements),
+      donneesFacture({ ...avant, ...emetteur, ...dates, statut: "emise" }, lignes, complements),
       habillage2
     );
 
@@ -1650,6 +1684,7 @@ export async function emettreFacture(ctx: Ctx, factureId: string, maintenant: Da
       .set({
         statut: "emise",
         emiseLe: maintenant,
+        ...emetteur,
         ...dates,
         docTypographie: allureFigee.typographie,
         docFond: allureFigee.fond,

@@ -2139,6 +2139,20 @@ export const factures = pgTable(
      * sur le taux appliqué, exactement comme avant.
      */
     entrepriseRegimeTva: text("entreprise_regime_tva", { enum: ["assujettie", "franchise"] }),
+    /**
+     * Le numéro de TVA intracommunautaire de l'émetteur, **au jour de
+     * l'émission** (migration 0117).
+     *
+     * Mention obligatoire de toute facture d'un assujetti (CGI, ann. II,
+     * art. 242 nonies A, I-4°). Il se saisissait dans Réglages depuis la
+     * création du compte et ne partait sur AUCUNE facture : `identiteDeLEmetteur`
+     * ne le recopiait pas. Constaté le 3 octobre 2026 en vérifiant la facture en
+     * autoliquidation, où il est doublement attendu.
+     *
+     * NUL sur les factures d'avant : elles sont émises, donc immuables, et rien
+     * ne s'imprime de plus sur elles.
+     */
+    entrepriseNumeroTva: text("entreprise_numero_tva"),
     entrepriseEmail: text("entreprise_email"),
     entrepriseTelephone: text("entreprise_telephone"),
     entrepriseIban: text("entreprise_iban"),

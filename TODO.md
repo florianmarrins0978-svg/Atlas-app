@@ -1,5 +1,20 @@
 # Prochaines tâches
 
+## ⏳ LES MENTIONS OBLIGATOIRES DE LA FACTURE ET DU DEVIS (3 octobre 2026)
+
+Sa demande : *« va vérifier qu'il manque rien sur la facture qui est
+obligatoire, vérifie aussi le devis ! Je veux aucune erreur ! »*. Audit complet
+dans `docs/lot-mentions-facture-devis.md`.
+
+- ✅ **Numéro de TVA sur la facture** : codé (migration 0117, §441), suite
+  `test-numero-tva-sur-la-facture-db` rouge puis verte. **Niveau 3 : `main`
+  attend la batterie, et son accord pour la lancer.**
+- ⏳ **Restent, chacun par une maquette, dans l'ordre proposé** : formulaire de
+  rétractation joint au devis d'un particulier ; une vérification avant l'envoi
+  qui dit ce qui manque ; date des travaux sur la facture et date de début sur
+  le devis ; « EI » à côté du nom et forme juridique d'office pour une société ;
+  les crochets `[...]` imprimés tels quels sur le devis. **Son ordre attendu.**
+
 ## ⏳ UNE PLANCHE À REGARDER : FACTURE AVEC OU SANS TVA (28 septembre, revue le 2 octobre 2026)
 
 Sa question : *« si je facture une entreprise, il ne paie pas la TVA »*. Prémisse

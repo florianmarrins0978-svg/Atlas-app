@@ -34069,3 +34069,23 @@ comment fonctionne le planning ? »*
 | la consigne garde « une seule fiche » pour un geste, et l'écarte pour une visite | trois gestes pour une question l'égarent (25 août) ; mais « comment marche le planning » EST une question à plusieurs gestes |
 | la fiche des couleurs dit le SENS de chaque état, prouvé par `etatDemi` et `occupationDemi` | « au-delà » compare les équipes prises (absences comprises) au nombre d'équipes réglé ; sans cela, il ne savait ni ce que c'était ni où le régler |
 | « au dela » soudé en `audela` | « dela » est le début de « délai » : « que signifie au-delà » rendait les délais de paiement |
+
+## §441 : La facture prend son émetteur le jour où elle part
+
+**Trouvé le 3 octobre 2026** en vérifiant la facture en autoliquidation : le
+numéro de TVA intracommunautaire, mention obligatoire d'un assujetti, ne partait
+sur aucune facture (migration 0117).
+
+| Décision | Pourquoi |
+|---|---|
+| `entreprise_numero_tva` figé sur la facture, comme le SIRET et le régime | une pièce garde ce qu'elle portait le jour où elle est partie ; le lire en direct réécrirait le passé |
+| `emettreFacture` relit l'émetteur (`emetteurDuJour`) avant le PDF, comme elle recalcule déjà les dates | lue à la création du brouillon, l'identité restait celle de ce jour-là : un brouillon d'avant 0117 serait parti sans le numéro, et un IBAN changé entre-temps serait parti périmé |
+| l'aperçu d'un brouillon passe par la même `emetteurDuJour` | ce qu'il regarde avant d'envoyer est ce qui part ; deux lectures divergeraient |
+| rien sur le devis | la loi ne l'y impose pas |
+| le PDF imprime le numéro dès qu'il est saisi, sans regarder le régime | une règle de régime ici doublerait celle de `facture-pdf.ts` ; un franchisé qui a un numéro peut le porter |
+
+Les autres trous relevés le même jour (adresse du client, date des travaux,
+« EI », forme juridique, formulaire de rétractation, aucune garde avant
+l'envoi) sont dans `docs/lot-mentions-facture-devis.md` et `TODO.md` : ils
+changent ce qui s'imprime ou ce qui bloque, donc ils passent par une maquette.
+

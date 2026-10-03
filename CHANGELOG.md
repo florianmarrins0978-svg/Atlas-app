@@ -6,6 +6,21 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-10-03
+
+### Le numéro de TVA de l'artisan part enfin sur ses factures
+
+Saisi dans Réglages depuis la création du compte, il n'apparaissait sur
+**aucune** facture : `identiteDeLEmetteur` ne le recopiait pas, alors que c'est
+une mention obligatoire pour un assujetti (CGI, ann. II, art. 242 nonies A).
+Migration 0117 (`factures.entreprise_numero_tva`). Le numéro s'imprime sous le
+SIRET. Une facture reprend désormais l'émetteur **du jour où elle part**, comme
+elle reprenait déjà sa date : un brouillon ouvert avant la correction ne partira
+pas sans le numéro. Les factures déjà émises restent telles quelles
+(immuables). Suite `test-numero-tva-sur-la-facture-db`, vue rouge sur l'ancien
+code. L'audit complet des mentions de la facture et du devis est dans
+`docs/lot-mentions-facture-devis.md`.
+
 ## 2026-09-29
 
 ### Le modèle de fiche d'entretien est là d'office, et une touche le remet
