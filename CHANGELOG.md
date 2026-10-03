@@ -6,6 +6,19 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-10-03
+
+### « Devis à la voix » au-dessus du micro de la fiche client
+
+Sa remarque : *« on comprend pas que la note vocale permet de rédiger le devis
+par la voix »*. Planche `appli/dicter-le-devis-dire-ce-que-ca-fait.html`, sa
+réponse : « la A ». Un libellé en capitales au-dessus du grand micro
+(`FormulaireNouveauChantier.tsx`, `data-atlas="devis-a-la-voix"`), dans la voix
+de « Photos » ; rien ne bouge, l'indice dessous reste. Posé dans la fiche et non
+dans `AnneauNoteVocale`. Regardé à l'écran ; joués : types, lint,
+`test-aucun-tiret`, `test-pas-de-pansement`. **Sa consigne : pas de batterie.**
+Niveau 2 : `main` attend `verifier:avant-fusion` et son accord pour le lancer.
+
 ## 2026-09-29
 
 ### Le modèle de fiche d'entretien est là d'office, et une touche le remet
