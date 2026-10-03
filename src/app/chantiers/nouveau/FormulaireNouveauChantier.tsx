@@ -1438,6 +1438,27 @@ export default function FormulaireNouveauChantier({
               rien ne le dise. */}
           {pourLeDevis && (
           <div>
+            {/* **CE QUE LE MICRO PRODUIT, DIT AU-DESSUS — « la A », sa réponse
+                du 3 octobre 2026** (`appli/dicter-le-devis-dire-ce-que-ca-fait.html`).
+                Sa remarque : *« on comprend pas que la note vocale permet de
+                rédiger le devis par la voix »*. Seul l'indice gris de 11 px
+                parlait, et il disait « décrivez le chantier », pas « devis ».
+
+                **Un libellé, pas une phrase** : la voix de « Photos » et de
+                « La dernière fois » juste au-dessus, donc une section de plus
+                dans le même rythme. Il reste pendant la dictée, parce qu'il
+                nomme l'objet ; c'est l'indice qui s'efface.
+
+                **Ici, et pas dans `AnneauNoteVocale`** : c'est la fiche client
+                qui prête à confusion, avec son second micro en tête qui, lui,
+                remplit les coordonnées (`DicterCoordonnees`). */}
+            <p
+              className={`mb-2 mt-2 text-center ${libelleCaps}`}
+              style={{ color: colors.muted }}
+              data-atlas="devis-a-la-voix"
+            >
+              Devis à la voix
+            </p>
             <AnneauNoteVocale
               chantierId={reprise?.id ?? chantierCree}
               assurerChantier={assurerChantier}
