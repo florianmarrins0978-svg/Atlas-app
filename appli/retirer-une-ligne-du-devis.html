@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Retirer une ligne du devis</title>
+<!--
+  ════════════════════════════════════════════════════════════════════════════
+  SA DEMANDE DU 3 OCTOBRE 2026, après la ligne de tonte partie toute seule :
+
+  *« Est-ce qu'il faudrait pas mettre des petites croix pour supprimer les
+  lignes, ça serait plus simple ? On peut laisser le slide aussi. Fais une
+  planche. »*
+
+  Aujourd'hui (`DevisCompletClient.tsx`, `LigneRetirable`) : la ligne glisse
+  vers la gauche, « Retirer » se découvre à droite, sur toute la hauteur de la
+  ligne. C'est ce bouton qui se posait sous son doigt quand il visait le prix
+  (branche claude/ligne-du-devis-retiree-en-saisie, pas encore sur main).
+
+  ─── LES TROIS PROPOSITIONS ─────────────────────────────────────────────
+  A · une croix grise au bout de la description, à droite. Le glissement reste.
+  B · un « − » rond, or, AVANT la description : celui que portent déjà, sur ce
+      même écran, l'acompte, le prix accordé et la TVA. Le glissement reste.
+  C · le glissement seul, comme aujourd'hui (corrigé).
+
+  Dans les trois, la ligne retirée revient avec « Annuler » pendant six
+  secondes, comme partout dans l'application.
+
+  Ce qui tient pour A et B : la croix vit sur la rangée de la DESCRIPTION, loin
+  de la colonne des chiffres. Un doigt qui vise la quantité ou le prix ne peut
+  pas la rencontrer.
+
+  Pas de JavaScript métier : les montants sont écrits en dur, ce n'est pas le
+  calcul (CLAUDE.md §3 ter). RIEN N'EST CODÉ.
+  ════════════════════════════════════════════════════════════════════════════
+-->
+<style>
+  :root{
+    --scene:#e6e3dc; --fond:#f5f3ee; --carte:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
+    --gris:#8a8578; --or:#B98B47; --trait:rgba(28,28,26,.12); --trait-doux:rgba(28,28,26,.07);
+    --ombre-forte:rgba(20,18,14,.18);
+  }
+  body.nuit{
+    --scene:#070908; --fond:#101210; --carte:#1a1d19; --encre:#e9e8de; --encre-douce:#c1c2b6;
+    --gris:#84887b; --or:#C9A05E; --trait:rgba(233,232,222,.14); --trait-doux:rgba(233,232,222,.08);
+    --ombre-forte:rgba(0,0,0,.6);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;background:var(--scene)}
+  body{font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--encre);
+       -webkit-text-size-adjust:100%;padding:0 0 48px;font-variant-numeric:tabular-nums}
+  button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;text-align:left}
+  button:focus-visible,input:focus-visible{outline:2px solid var(--or);outline-offset:3px;border-radius:4px}
+
+  .commandes{display:flex;justify-content:center;gap:8px;padding:16px 16px 0;flex-wrap:wrap}
+  .commandes button{min-height:44px;min-width:44px;padding:0 16px;border-radius:999px;font-size:14px;
+                    color:var(--encre-douce);background:var(--carte);box-shadow:inset 0 0 0 1px var(--trait)}
+  .commandes button[aria-pressed="true"]{color:var(--carte);background:var(--encre);box-shadow:none;font-weight:600}
+  .petites{display:flex;justify-content:center;gap:22px;padding:6px 16px 0;font-size:13px}
+  .petites button{min-height:40px;color:var(--gris)}
+  .petites button[aria-pressed="true"]{color:var(--encre);text-decoration:underline;text-decoration-color:var(--or);text-underline-offset:6px}
+  .dit{max-width:390px;margin:8px auto 0;padding:0 20px;text-align:center;font-size:13.5px;color:var(--encre-douce);min-height:42px}
+
+  .tel{width:calc(100% - 32px);max-width:390px;height:760px;margin:10px auto 0;background:var(--carte);
+       border-radius:30px;overflow:hidden;box-shadow:0 18px 46px var(--ombre-forte);display:flex;flex-direction:column}
+  .ecran{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;padding:22px 20px 24px}
+
+  .caps{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--gris)}
+  .client{margin:6px 0 22px;line-height:1.7}
+
+  /* La ligne : même mécanique que l'application, un défilement natif. */
+  .ligne{overflow:hidden;max-height:420px;transition:max-height .44s .2s cubic-bezier(.4,0,.2,1)}
+  .ligne.partie{max-height:0}
+  .chute{transition:transform .44s cubic-bezier(.4,0,.6,1),opacity .34s .1s}
+  .ligne.partie .chute{transform:translateY(46px);opacity:0}
+  .glisse{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;margin-left:-16px;
+          -webkit-mask-image:linear-gradient(90deg,transparent 0,#000 16px);mask-image:linear-gradient(90deg,transparent 0,#000 16px)}
+  .glisse::-webkit-scrollbar{display:none}
+  .glisse:has(input:focus){overflow-x:clip}
+  .volet{flex:0 0 100%;scroll-snap-align:start;padding-left:16px;min-width:0}
+  .decouvre{flex:0 0 92px;scroll-snap-align:end;display:flex;align-items:center;justify-content:flex-end;
+            font-size:11px;font-weight:600;letter-spacing:.26em;text-transform:uppercase;color:var(--or)}
+  .corps{padding:14px 0;border-bottom:1px solid var(--trait-doux)}
+
+  .tete{display:flex;align-items:flex-start;gap:10px;min-height:44px}
+  .tete .desc{flex:1;font-size:16px;line-height:1.45;padding-top:9px}
+  /* A : la croix, au bout de la description. 44 px de cible, dessinée petite. */
+  .croix{flex:none;width:44px;height:44px;margin:0 -10px 0 0;display:flex;align-items:center;justify-content:center;
+         color:var(--gris);font-size:22px;line-height:1}
+  /* B : le « − » de l'acompte, avant la description. */
+  .moins{flex:none;width:44px;height:44px;margin-left:-9px;margin-right:-8px;display:flex;align-items:center;justify-content:center}
+  .moins span{width:26px;height:26px;border-radius:50%;border:1px solid var(--or);color:var(--or);
+              display:flex;align-items:center;justify-content:center;font-size:15px;line-height:1}
+
+  .cellule{display:flex;justify-content:space-between;align-items:baseline;gap:12px;min-height:46px}
+  .cellule input{width:96px;border:0;background:transparent;text-align:right;font:inherit;font-size:16px;color:var(--encre);
+                 padding:8px 4px;border-bottom:1px solid transparent;outline:none}
+  .cellule input.vide{border-bottom-color:var(--trait)}
+  .a-chiffrer{color:var(--or)}
+
+  .tiroir{display:flex;justify-content:space-between;align-items:center;margin:14px 0 0;min-height:44px;font-size:14px;color:var(--gris)}
+  .tiroir[hidden]{display:none}
+  .tiroir button{min-height:44px;font-size:11px;font-weight:600;letter-spacing:.26em;text-transform:uppercase;color:var(--or)}
+  .ajouter{margin-top:16px;font-size:14px;font-weight:500;color:var(--encre);min-height:44px}
+  .totaux{margin-top:22px;border-top:1px solid var(--trait);padding-top:14px;display:flex;justify-content:space-between;font-size:16px}
+  .remettre{display:block;margin:12px auto 0;font-size:13px;color:var(--gris);min-height:40px;text-decoration:underline;text-underline-offset:4px}
+</style>
+</head>
+<body>
+  <div class="commandes" role="group" aria-label="Proposition">
+    <button type="button" data-p="A" aria-pressed="true">A</button>
+    <button type="button" data-p="B" aria-pressed="false">B</button>
+    <button type="button" data-p="C" aria-pressed="false">C</button>
+  </div>
+  <div class="petites" role="group" aria-label="Charte">
+    <button type="button" data-c="jour" aria-pressed="true">Jour</button>
+    <button type="button" data-c="nuit" aria-pressed="false">Nuit</button>
+  </div>
+  <p class="dit" id="dit"></p>
+
+  <div class="tel">
+    <div class="ecran" id="ecran"></div>
+  </div>
+  <button type="button" class="remettre" id="remettre">Remettre les lignes</button>
+
+<script>
+  // Ce que dit chaque proposition, en une phrase.
+  const DIT = {
+    A: "Une croix au bout de la description. Vous pouvez aussi glisser la ligne vers la gauche.",
+    B: "Le même « − » que l'acompte et le prix accordé, avant la description. Le glissement reste.",
+    C: "Comme aujourd'hui : glisser la ligne vers la gauche, puis toucher « Retirer ».",
+  };
+  const LIGNES = [
+    { desc: "Taille de haie de thuya", qte: "50", unite: "ml", prix: "300", montant: "15 000,00 €" },
+    { desc: "Tonte de pelouse", qte: "500", unite: "m²", prix: "", montant: null },
+  ];
+  let proposition = "A";
+  let retirees = new Set();
+  let minuteur = null;
+
+  function ligneHtml(l, i) {
+    const avant = proposition === "B"
+      ? `<button type="button" class="moins" aria-label="Retirer « ${l.desc} »" data-retirer="${i}"><span>−</span></button>` : "";
+    const apres = proposition === "A"
+      ? `<button type="button" class="croix" aria-label="Retirer « ${l.desc} »" data-retirer="${i}">×</button>` : "";
+    const montant = l.montant ?? `<span class="a-chiffrer">à chiffrer</span>`;
+    return `
+    <div class="ligne${retirees.has(i) ? " partie" : ""}" data-ligne="${i}">
+      <div class="chute"><div class="glisse">
+        <div class="volet"><div class="corps">
+          <div class="tete">${avant}<div class="desc">${l.desc}</div>${apres}</div>
+          <div class="cellule"><span class="caps">Qté</span><input inputmode="decimal" value="${l.qte}" aria-label="Quantité ${i + 1}"></div>
+          <div class="cellule"><span class="caps">Unité</span><input value="${l.unite}" aria-label="Unité ${i + 1}"></div>
+          <div class="cellule"><span class="caps">Prix unitaire HT</span><input inputmode="decimal" class="${l.prix ? "" : "vide"}" placeholder="0,00" value="${l.prix}" aria-label="Prix unitaire ${i + 1}"></div>
+          <div class="cellule"><span class="caps">Montant HT</span><span>${montant}</span></div>
+        </div></div>
+        <button type="button" class="decouvre" aria-label="Retirer « ${l.desc} »" data-retirer="${i}">Retirer</button>
+      </div></div>
+    </div>`;
+  }
+
+  function total() {
+    return retirees.has(0) ? "0,00 €" : "15 000,00 €";
+  }
+
+  function rendre() {
+    document.getElementById("dit").textContent = DIT[proposition];
+    document.getElementById("ecran").innerHTML = `
+      <div class="caps">Client</div>
+      <div class="client">Mr. Lolo<br>0631466585</div>
+      ${LIGNES.map(ligneHtml).join("")}
+      <button type="button" class="ajouter">+ Ajouter une ligne</button>
+      <div class="tiroir" id="tiroir" hidden><span id="tiroir-texte">Retiré à l'instant</span><button type="button" id="annuler">Annuler</button></div>
+      <div class="totaux"><span>Total HT</span><span>${total()}</span></div>`;
+  }
+
+  function retirer(i) {
+    retirees.add(i);
+    const el = document.querySelector(`[data-ligne="${i}"]`);
+    el.classList.add("partie");
+    document.querySelector(".totaux span:last-child").textContent = total();
+    const tiroir = document.getElementById("tiroir");
+    tiroir.hidden = false;
+    tiroir.dataset.dernier = i;
+    clearTimeout(minuteur);
+    minuteur = setTimeout(() => { tiroir.hidden = true; }, 6000);
+  }
+
+  document.getElementById("ecran").addEventListener("click", (e) => {
+    const r = e.target.closest("[data-retirer]");
+    if (r) { retirer(Number(r.dataset.retirer)); return; }
+    if (e.target.closest("#annuler")) {
+      const tiroir = document.getElementById("tiroir");
+      retirees.delete(Number(tiroir.dataset.dernier));
+      clearTimeout(minuteur);
+      rendre();
+    }
+  });
+
+  document.querySelectorAll("[data-p]").forEach((b) => b.addEventListener("click", () => {
+    proposition = b.dataset.p;
+    document.querySelectorAll("[data-p]").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+    retirees = new Set();
+    rendre();
+  }));
+  document.querySelectorAll("[data-c]").forEach((b) => b.addEventListener("click", () => {
+    document.body.classList.toggle("nuit", b.dataset.c === "nuit");
+    document.querySelectorAll("[data-c]").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+  }));
+  document.getElementById("remettre").addEventListener("click", () => { retirees = new Set(); rendre(); });
+
+  rendre();
+</script>
+</body>
+</html>
