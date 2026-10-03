@@ -126,6 +126,17 @@ ajoutée dans l'écran jusqu'au premier mot, comme la ligne ouverte d'avance.
 Travail dans l'écran du devis (identifiant qui ne change pas, ordre des
 écritures), donc un lot à lui, de niveau 3.
 
+## ⏳ UNE PLANCHE À REGARDER : OUVRIR LA FICHE D'INTERVENTION (3 octobre 2026)
+
+**Sa remarque, capture du planning à l'appui :** *« le fait de cliquer pour
+faire apparaître la fiche chantier n'est pas intuitif »*. Aujourd'hui la fiche
+ne s'ouvre qu'en touchant le nom du chantier (`data-atlas="nom-du-jour"`,
+`PlanningClient.tsx`), et rien ne le montre. Planche
+`appli/ouvrir-la-fiche.html` : **A** ouverte d'office quand le chantier est
+seul ce jour-là, **B** un chevron sur chaque nom, **C** les deux (recommandée).
+**Rien n'est codé.** Si c'est A ou C, la règle « seul ce jour-là » vit dans
+`src/lib/` (`rangDeLaFiche` est à côté), pas dans l'écran.
+
 ## ⏳ UNE PLANCHE À REGARDER : LES COULEURS DU PLANNING (29 septembre 2026)
 
 ## ✅ LES COULEURS DU PLANNING : CODÉ LE 29 SEPTEMBRE 2026, SUR `main` LE 30 SEPTEMBRE 2026
