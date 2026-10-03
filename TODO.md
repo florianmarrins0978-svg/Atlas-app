@@ -1,20 +1,22 @@
 # Prochaines tâches
 
-## ⏳ UNE PLANCHE À REGARDER : FACTURER UNE ENTREPRISE OU UNE MAIRIE (28 septembre 2026)
+## ⏳ UNE PLANCHE À REGARDER : FACTURE AVEC OU SANS TVA (28 septembre, revue le 2 octobre 2026)
 
 Sa question : *« si je facture une entreprise, il ne paie pas la TVA »*. Prémisse
-fausse, réponse dans `docs/QUESTIONS.md` §31 : la TVA ne part que sous
+fausse, réponse dans `docs/QUESTIONS.md` §31 : la TVA ne part qu'en
 autoliquidation (sous-traitance BTP, art. 283-2 nonies) ou en franchise.
-Planche `appli/tva-entreprise-et-mairie.html` : fiche client particulier,
-entreprise ou mairie avec SIRET (et code service Chorus Pro), facture qui
-suit, bâtie sur les vrais écrans relevés (sa demande : « une maquette réaliste
-qui reprend les vraies pages »). La sous-traitance se dit sur la facture
-(la loi regarde le chantier). Le choix Entreprise ou Mairie et le SIRET vivent
-sur la « Fiche client » du chantier (celle de la note vocale), SANS hauteur
-ajoutée : elle déborde déjà de 81 px sur un iPhone 13 (745 pour 664). Relevé en passant : une entreprise sort
-aujourd'hui en « Mr. Jardins Ribault », écran et PDF. **Son accord attendu.** Rien n'est codé. Une fois choisi : niveau 3
-(argent, migration sur `clients`, expand d'abord), mention d'autoliquidation
-dans `facture-pdf.ts`, SIREN du client imprimé.
+
+**Sa décision du 2 octobre** : *« juste un bouton on off sur la facture ; pas
+besoin de créer une fiche client pour entreprise ou mairie »*. Les versions
+Particulier, Entreprise, Mairie avec SIRET sont écartées (historique git de la
+planche). Planche `appli/tva-entreprise-et-mairie.html`, bâtie sur les vrais
+écrans. **Son accord attendu pour coder.** Une fois codé : niveau 3 (argent,
+migration expand sur `factures`) ; le bouton s'appelle « Sous-traitance, sans
+TVA », éteint par défaut, absent pour un compte en franchise, et imprime la
+mention d'autoliquidation dans `facture-pdf.ts`.
+
+À part, relevé en relevant les écrans : la facture et son PDF écrivent
+« Mr. Jardins Ribault » alors qu'aucune civilité n'est cochée sur la fiche.
 
 ## ✅ ABSENT LE MATIN, COCHABLE L'APRÈS-MIDI : SUR `main` LE 28 SEPTEMBRE 2026
 

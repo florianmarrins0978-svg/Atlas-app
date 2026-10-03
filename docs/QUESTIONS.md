@@ -2102,5 +2102,6 @@ client ne distingue pas particulier, entreprise et mairie, et ne porte pas de
 SIRET (`src/server/db/schema.ts`, table `clients`) ; aucune mention
 d'autoliquidation ; pas d'envoi vers Chorus Pro. La maquette
 `appli/tva-entreprise-et-mairie.html` propose de quoi le faire, sur vos vrais
-écrans : la sous-traitance se dit sur la facture, chantier par chantier. En attendant, une mairie se facture dans Atlas à 20 %, et le PDF
+écrans. **Votre décision du 2 octobre 2026** : un seul bouton sur la facture,
+« Sous-traitance, sans TVA », sans rien changer à la fiche client. En attendant, une mairie se facture dans Atlas à 20 %, et le PDF
 se dépose à la main sur chorus-pro.gouv.fr.
