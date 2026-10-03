@@ -61,6 +61,7 @@ import {
 import {
   blocsDeLaJournee,
   rangDeLaFiche,
+  ficheOuverteDOffice,
   DEMIS,
   ditLeCompteDemi,
   ditLaDuree,
@@ -1121,7 +1122,11 @@ export default function PlanningClient({
       return;
     }
     setOuvert(null);
-    setFeuille(null);
+    // **Seul ce jour-là, sa fiche s'ouvre avec la journée** — sa réponse du
+    // 3 octobre 2026, « la C » (`appli/ouvrir-la-fiche.html`). Refermer le
+    // jour referme tout.
+    const seul = jourTouche === jour ? null : ficheOuverteDOffice(chantiersDuJour(jour));
+    setFeuille(seul ? { chantierId: seul, cle: "jour" } : null);
     setCarteListe(null);
     const d = enDate(jour);
     if (d.getUTCFullYear() !== curseur.annee || d.getUTCMonth() !== curseur.mois) {
@@ -4077,8 +4082,10 @@ function CarteDuJour({
                   onClick={() =>
                     setFeuille(feuilleIci === c.id ? null : { chantierId: c.id, cle })
                   }
-                  className="w-full cursor-pointer border-0 bg-transparent p-0 text-left"
+                  aria-expanded={feuilleIci === c.id}
+                  className="flex w-full cursor-pointer items-start gap-2.5 border-0 bg-transparent p-0 text-left"
                 >
+                  <span className="min-w-0 flex-1">
                   <span
                     className="block"
                     style={{
@@ -4105,6 +4112,27 @@ function CarteDuJour({
                   </span>
                   <LieuDuChantier chantier={c} />
                   {retourAEnvoyer(c.id, jour) && <RetourAEnvoyer />}
+                  </span>
+                  {/* **LE CHEVRON DIT QUE LA FICHE S'OUVRE** — sa réponse du
+                      3 octobre 2026, « la C » : *« le fait de cliquer pour
+                      faire apparaître la fiche chantier n'est pas intuitif »*.
+                      Il pivote quand elle est ouverte : un sens, pas une
+                      décoration. */}
+                  <span
+                    data-atlas="chevron-fiche"
+                    aria-hidden="true"
+                    className="mt-[-2px] grid h-10 w-10 flex-none place-items-center rounded-full"
+                    style={{
+                      color: colors.or,
+                      background: voile(colors.or, 0.1),
+                      transform: feuilleIci === c.id ? "rotate(180deg)" : undefined,
+                      transition: "transform 0.28s cubic-bezier(.2,.7,.2,1)",
+                    }}
+                  >
+                    <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
+                      <path d="M5 8l5 5 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </span>
                 </button>
               )}
 
