@@ -6,6 +6,18 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-10-03
+
+### La fiche d'intervention s'ouvre sans deviner le geste
+
+Sa remarque : *« le fait de cliquer pour faire apparaître la fiche chantier
+n'est pas intuitif »*. Elle ne s'ouvrait qu'en touchant le nom du chantier,
+et rien ne le montrait. Sa réponse sur `appli/ouvrir-la-fiche.html` : « la C ».
+Seul ce jour-là, la fiche s'ouvre avec la journée (`ficheOuverteDOffice`,
+`src/lib/planning-jour.ts`, éprouvée par `test-planning-jour.ts`) ; à deux ou
+trois, aucune, et chaque nom porte un chevron qui pivote quand sa fiche est
+ouverte (`data-atlas="chevron-fiche"`). Refermer le jour referme la fiche.
+
 ## 2026-09-29
 
 ### Le modèle de fiche d'entretien est là d'office, et une touche le remet

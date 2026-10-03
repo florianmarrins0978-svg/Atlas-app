@@ -28,6 +28,7 @@ import {
   occupationDemi,
   partDeLaBarre,
   rangDeLaFiche,
+  ficheOuverteDOffice,
   type Demi,
 } from "../src/lib/planning-jour";
 
@@ -344,6 +345,24 @@ essai("un chantier sans demi-journée laisse la fiche en queue", () => {
   const a: Faux = { id: "a", demis: ["matin"] };
   const blocs = blocsDeLaJournee([a], occupePar);
   assert.equal(rangDeLaFiche(blocs, "fantome"), blocs.length - 1);
+});
+
+// ─── LA FICHE S'OUVRE D'OFFICE QUAND LE CHANTIER EST SEUL ──────────────────
+//
+// **Sa réponse du 3 octobre 2026, « la C »**, sur `appli/ouvrir-la-fiche.html`
+// : *« le fait de cliquer pour faire apparaître la fiche chantier n'est pas
+// intuitif »*. Seul ce jour-là, sa fiche est ouverte en touchant le jour ; à
+// deux ou trois, aucune ne l'est (trois fiches ouvertes feraient une page
+// interminable), et le chevron de chaque nom dit qu'elle s'ouvre.
+essai("un seul chantier ce jour-là : sa fiche s'ouvre d'office", () => {
+  assert.equal(ficheOuverteDOffice([{ id: "lala" }]), "lala");
+});
+essai("deux ou trois chantiers : aucune fiche d'office", () => {
+  assert.equal(ficheOuverteDOffice([{ id: "a" }, { id: "b" }]), null);
+  assert.equal(ficheOuverteDOffice([{ id: "a" }, { id: "b" }, { id: "c" }]), null);
+});
+essai("aucun chantier : aucune fiche", () => {
+  assert.equal(ficheOuverteDOffice([]), null);
 });
 
 console.log(`\n${echecs === 0 ? "✅" : "❌"} Règles de la journée — ${echecs} échec(s).`);
