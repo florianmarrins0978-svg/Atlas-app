@@ -24,6 +24,10 @@ entier. `test-saisie-ne-retire-pas-la-ligne-e2e.ts`, vu rouge avant. Le
 défilement de Safari lui-même n'est pas reproductible ici (Chromium seul) : la
 suite le pose à la main, comme lui.
 
+Et une croix au bout de chaque description, sa réponse « A » à la planche
+`appli/retirer-une-ligne-du-devis.html` : sur la rangée du texte, loin des
+chiffres, le glissement restant. Même retrait, donc même « Annuler ».
+
 ## 2026-09-29
 
 ### Le modèle de fiche d'entretien est là d'office, et une touche le remet

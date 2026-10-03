@@ -126,10 +126,30 @@ async function main() {
     await page.waitForTimeout(600);
     assert.ok((await decalage()) > 0, "le geste de retrait ne s'ouvre plus du tout");
     assert.equal(
-      await page.getByRole("button", { name: "Retirer « Tonte de pelouse »" }).isVisible(),
+      await colonne.locator(".atlas-decouvre").isVisible(),
       true,
       "« Retirer » n'est pas découvert"
     );
+  });
+
+  await cas("la croix au bout de la description retire la ligne, et « Annuler » la rend", async () => {
+    await colonne.evaluate((g) => {
+      g.scrollLeft = 0;
+    });
+    await page.waitForTimeout(400);
+    const croix = page.locator('[data-atlas="croix-ligne"]');
+    assert.equal(await croix.count(), 1, "pas de croix sur la ligne");
+    await croix.tap();
+    await page.waitForTimeout(600);
+    // La ligne se replie à hauteur zéro : ses champs gardent une boîte, et
+    // `isVisible` les dirait encore là. C'est l'état de la ligne qui se lit.
+    const etat = () => croix.evaluate((b) => b.closest(".atlas-ligne")?.getAttribute("data-retiree"));
+    assert.equal(await etat(), "oui", "la ligne est toujours là");
+    await page.getByRole("button", { name: /^Annuler/i }).tap();
+    await page.waitForTimeout(7000);
+    const { rows } = await pool.query(`SELECT 1 FROM lignes_prix WHERE chantier_id = $1`, [chantierId]);
+    assert.equal(rows.length, 1, "« Annuler » n'a pas rendu la ligne");
+    assert.equal(await etat(), "non", "la ligne n'est pas revenue à l'écran");
   });
 
   await contexte.close();
