@@ -22,6 +22,10 @@ Les écrans d'avant le compte (accueil, création, mot de passe oublié, code)
 gardent la largeur d'un téléphone sur ordinateur : son premier essai montrait
 « Créer un compte » étiré sur tout l'écran.
 
+Sur ordinateur, la molette fait défiler Chantiers, Mot de passe et Export même
+posée dans les marges, à côté de la colonne : elle ne trouvait rien à faire
+défiler et l'écran semblait bloqué.
+
 ## 2026-09-29
 
 ### Le modèle de fiche d'entretien est là d'office, et une touche le remet

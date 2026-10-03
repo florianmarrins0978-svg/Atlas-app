@@ -34106,3 +34106,16 @@ le code n'ont pas de cadre : ils s'étiraient d'eux-mêmes. La colonne vit dans
 `PorteDeNuit`, que tous partagent sauf l'accueil, qui la pose sur ses boutons ;
 le fond, lui, couvre l'écran. Tenu par trois cas de `test-sur-ordinateur-e2e`,
 rouges sur l'ancienne version.
+
+**La molette fait défiler l'écran où qu'elle soit** (sa capture suivante :
+*« je peux pas slider pour descendre »*). Chantiers, Mot de passe et Export ne
+font pas défiler la page mais une zone intérieure (`.atlas-fil-defile`,
+`.atlas-colonne-defile`), large comme la colonne : dans les marges, la souris ne
+trouvait rien à faire défiler. Sur ordinateur, la zone déborde jusqu'à la barre
+et au bord de l'écran et rend ce débord en marge intérieure, si bien que le
+contenu ne bouge pas ; `.atlas-ecran` ne coupe plus qu'en hauteur
+(`overflow-y: clip`), sans quoi il recoupait le débord. La marge d'Export passe
+par `--atlas-defile-marge` au lieu de `px-6`, que le débord aurait écrasé.
+**Piège payé en chemin** : la règle posée dans le premier bloc « ordinateur »
+perdait contre `.atlas-ecran`, écrit plus bas à force égale ; elle vit
+désormais juste après les règles qu'elle complète.

@@ -156,6 +156,36 @@ async function main() {
     });
   }
 
+  // **La molette fait défiler l'écran où qu'elle soit** (sa capture du
+  // 3 octobre 2026 : « je peux pas slider pour descendre »). L'écran des
+  // chantiers fait défiler une zone intérieure ; posée dans la marge, à côté de
+  // la colonne, la souris ne trouvait rien à faire défiler.
+  await cas("ordinateur, / : la molette posée dans la marge fait défiler la liste", async () => {
+    const contexte = await navigateur.newContext({ viewport: { width: 1366, height: 620 } });
+    const page = await contexte.newPage();
+    await page.goto(`${BASE}/login`, { waitUntil: "networkidle" });
+    await page.fill('input[name="email"]', "demo@atlas.local");
+    await page.fill('input[name="password"]', "demo1234");
+    await page.click('button[type="submit"]');
+    await page.waitForURL(`${BASE}/`, { timeout: 30_000 });
+    await page.waitForSelector(".atlas-fil-defile", { timeout: 45_000 });
+    await page.waitForTimeout(400);
+    const avant = await page.evaluate(() => {
+      const fil = document.querySelector<HTMLElement>(".atlas-fil-defile")!;
+      const colonne = document.querySelector("main.atlas-contenu")!.getBoundingClientRect();
+      return { haut: fil.scrollTop, aDefiler: fil.scrollHeight - fil.clientHeight, gaucheColonne: colonne.left };
+    });
+    // Une liste qui tient dans l'écran ne prouve rien : on refuse de conclure.
+    if (avant.aDefiler < 50) throw new Error(`la liste ne dépasse que de ${avant.aDefiler} px : rien à faire défiler`);
+    if (avant.gaucheColonne < 280) throw new Error("aucune marge à gauche de la colonne : le cas ne se pose pas");
+    await page.mouse.move(avant.gaucheColonne - 20, 400);
+    await page.mouse.wheel(0, 600);
+    await page.waitForTimeout(500);
+    const apres = await page.evaluate(() => document.querySelector<HTMLElement>(".atlas-fil-defile")!.scrollTop);
+    await contexte.close();
+    if (apres <= avant.haut) throw new Error(`la liste n'a pas bougé (${avant.haut} px puis ${apres} px)`);
+  });
+
   // **Les écrans d'avant le compte gardent la largeur d'un téléphone** (sa
   // capture du 3 octobre 2026 : « le bouton est trop grand », « Créer un
   // compte » étiré sur toute la largeur de l'accueil). Le fond couvre

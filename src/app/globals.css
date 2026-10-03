@@ -408,6 +408,7 @@ body:not(:has(.atlas-nav-basse)) .atlas-contenu {
 .atlas-colonne-defile {
   flex: 1;
   min-height: 0;
+  padding-inline: var(--atlas-defile-marge, 0px);
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
@@ -444,6 +445,36 @@ body:not(:has(.atlas-nav-basse)) .atlas-contenu {
 }
 .atlas-fil-defile::-webkit-scrollbar {
   display: none;
+}
+
+/* Sur ordinateur (`globals.css`, « L'ORDINATEUR »). Écrit APRÈS les règles de
+ * `.atlas-ecran` et des deux zones : à force égale, la dernière règle décide,
+ * et posée plus haut celle-ci perdait sans rien dire. */
+@media (min-width: 1024px) {
+  /* **Les zones qui défilent s'étendent jusqu'aux bords** (sa capture du
+   * 3 octobre 2026 : « je peux pas slider pour descendre »). Chantiers, Mot de
+   * passe et Export ne font pas défiler la page mais une zone intérieure, large
+   * comme la colonne : la molette posée dans les marges, de part et d'autre,
+   * ne trouvait rien à faire défiler. La zone déborde donc de la colonne
+   * jusqu'à la barre et au bord de l'écran, et rend ce débord en marge
+   * intérieure : son contenu ne bouge pas d'un pixel, mais la marge d'une zone
+   * qui défile fait partie de la zone. Le débord se calcule sur la place à
+   * droite de la barre ; ces écrans ne font jamais défiler la page, donc
+   * aucune barre de défilement n'entre dans `100vw`. */
+  /* L'écran qui les porte coupait ce débord : il ne coupe plus qu'en hauteur,
+   * là où il sert (rien ne doit faire défiler la page). `clip`, et non
+   * `hidden`, est la seule valeur qui laisse l'autre axe visible. */
+  .atlas-ecran {
+    overflow-x: visible;
+    overflow-y: clip;
+  }
+
+  .atlas-fil-defile,
+  .atlas-colonne-defile {
+    --atlas-debord: calc((100vw - var(--atlas-cote) - 100%) / 2);
+    margin-inline: calc(-1 * var(--atlas-debord));
+    padding-inline: calc(var(--atlas-debord) + var(--atlas-defile-marge, 0px));
+  }
 }
 
 /* La marge de fin est portée par le FIL, jamais par le cadre qui défile : posée
