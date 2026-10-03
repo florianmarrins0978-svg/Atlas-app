@@ -331,7 +331,7 @@ function AvertissementModification({
         className="absolute inset-0 h-full w-full"
       />
       <div
-        className="relative w-full rounded-t-[16px] px-6 pb-8 pt-6"
+        className="atlas-feuille relative rounded-t-[16px] px-6 pb-8 pt-6"
         style={{ backgroundColor: colors.cream }}
       >
         <p className="text-[19px]" style={{ fontFamily: font.display, color: colors.ink }}>

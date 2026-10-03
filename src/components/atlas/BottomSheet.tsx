@@ -25,7 +25,7 @@ export default function BottomSheet({
           arrive dès que la liste des jours libres est longue sur un petit
           téléphone. */}
       <div
-        className="w-full overflow-y-auto rounded-t-[26px] px-6 pb-9 pt-3"
+        className="atlas-feuille overflow-y-auto rounded-t-[26px] px-6 pb-9 pt-3"
         style={{ backgroundColor: colors.cream, maxHeight: "88svh" }}
         onClick={(e) => e.stopPropagation()}
       >

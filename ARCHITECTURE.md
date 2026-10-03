@@ -34069,3 +34069,32 @@ comment fonctionne le planning ? »*
 | la consigne garde « une seule fiche » pour un geste, et l'écarte pour une visite | trois gestes pour une question l'égarent (25 août) ; mais « comment marche le planning » EST une question à plusieurs gestes |
 | la fiche des couleurs dit le SENS de chaque état, prouvé par `etatDemi` et `occupationDemi` | « au-delà » compare les équipes prises (absences comprises) au nombre d'équipes réglé ; sans cela, il ne savait ni ce que c'était ni où le régler |
 | « au dela » soudé en `audela` | « dela » est le début de « délai » : « que signifie au-delà » rendait les délais de paiement |
+
+## §441 : Sur ordinateur, les mêmes écrans ; seul le cadre change de forme
+
+**Sa demande du 30 septembre 2026 :** *« il faut que ça prenne l'entièreté de
+l'ordinateur »*. Puis le 3 octobre : *« les pages doivent être EXACTEMENT les
+mêmes, n'invente rien »* et *« quand je fais une modif sur l'appli tel, qu'elle
+s'applique automatiquement sur l'appli PC »*.
+
+**La cause** : tout l'écran vivait dans `max-w-md` (448 px), posé par
+`CadreApplication`, par la barre, et recopié par chaque élément flottant (la
+barre Enregistrer, l'annulation, le tiroir du planning, la veille du serveur,
+les couleurs du planning, la feuille des chantiers). Aucun écran de `src/` ne
+portait de règle pour un grand écran.
+
+| Décision | Pourquoi |
+|---|---|
+| **aucun écran propre à l'ordinateur** : seul le cadre change, dans `globals.css` (« L'ORDINATEUR ») | sa seconde phrase : une page écrite deux fois finit par diverger, et une modification faite pour le téléphone n'arriverait pas sur l'ordinateur |
+| trois variables, une source : `--atlas-cote` (la barre à gauche), `--atlas-largeur` (448 px, puis 1024 px au-delà de 1024 px d'écran), `--atlas-barre` (zéro sur ordinateur) | le cadre (`.atlas-cadre`, `.atlas-colonne`), tout ce qui flotte (`.atlas-colonne-fixe`) et les feuilles montantes (`.atlas-feuille`) lisent les mêmes ; sept copies de `max-w-md` deviennent une règle |
+| la barre est le MÊME composant, rangée en bas ou en colonne par la feuille de style | ses colonnes et la place du trait passent de valeurs en ligne à deux variables (`--atlas-onglets`, `--atlas-onglet-rang`) : un style en ligne aurait eu le dernier mot, et `!important` est refusé (§4 quater) |
+| la barre publie la place qu'elle prend EN BAS, lue sur elle-même (étroite, elle est à gauche : zéro) | publier sa hauteur sur ordinateur aurait réservé un écran entier de vide sous chaque page ; lire sa forme évite de recopier en JavaScript la largeur qui en décide |
+| le contenu reste une colonne de 1024 px, centrée dans la place à droite de la barre | une ligne de formulaire étirée sur 1 200 px ne se lit plus ; 1024 px, c'est plus du double d'avant et l'écran entier d'un petit portable |
+| les deux panneaux de la planche (`appli/sur-ordinateur.html`), liste et fiche côte à côte, **ne sont pas faits** | ils demandaient des écrans que le téléphone n'a pas, donc l'inverse de sa règle du 3 octobre ; c'est à lui de les redemander |
+| l'assistant reste un panneau qui glisse de la droite, sur un voile | c'est déjà sa forme sur le téléphone ; la planche le montrait poussant le contenu, autre invention écartée |
+
+**Le téléphone n'a pas bougé** : 49 écrans photographiés à 390 px avant et
+après, comparés pixel à pixel ; les seuls écarts venaient des données de la démo
+qui avaient changé entre les deux passages (une transcription terminée), et de
+l'animation de l'accueil. `scripts/test-sur-ordinateur-e2e.ts` tient les deux
+moitiés, rouge sur l'ancien cadre (9 échecs à 1440 px, téléphone vert).

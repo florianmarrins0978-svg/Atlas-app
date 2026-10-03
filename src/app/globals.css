@@ -186,6 +186,143 @@ body {
 
 .atlas-nav-basse {
   padding-bottom: env(safe-area-inset-bottom);
+  border-top: 1px solid var(--line);
+}
+
+/* Les colonnes suivent le nombre d'onglets (un salarié n'en voit que deux), et
+ * le trait fait la largeur d'UNE colonne, marges déduites : le composant pose
+ * les deux nombres, la forme se décide ici. Ce sont les valeurs d'avant le
+ * 3 octobre 2026, au caractère près. */
+.atlas-nav-onglets {
+  grid-template-columns: repeat(var(--atlas-onglets), minmax(0, 1fr));
+}
+
+.atlas-nav-trait {
+  width: calc((100% - 1.75rem) / var(--atlas-onglets));
+  top: var(--atlas-onglet-haut, auto);
+  transform: translateX(calc(var(--atlas-onglet-rang) * 100%));
+  transition: transform 540ms cubic-bezier(0.34, 1.4, 0.5, 1);
+}
+
+.atlas-nav-trait > span {
+  height: var(--atlas-onglet-hauteur, 1px);
+  border-radius: var(--atlas-onglet-rayon, 0);
+  background-color: var(--atlas-onglet-fond, var(--atlas-or, #b98b47));
+}
+
+/* --- L'ORDINATEUR : les mêmes écrans, un cadre plus large ------------------
+ *
+ * **Sa demande du 30 septembre 2026 :** *« il faut que ça prenne l'entièreté
+ * de l'ordinateur »*, puis le 3 octobre : *« les pages doivent être EXACTEMENT
+ * les mêmes »* et *« quand je fais une modif sur l'appli tel, qu'elle
+ * s'applique automatiquement sur l'appli PC »*.
+ *
+ * D'où la forme de la solution : **aucun écran propre à l'ordinateur.** Seul le
+ * CADRE change avec la largeur, ici et nulle part ailleurs. Un écran écrit pour
+ * le téléphone arrive donc sur l'ordinateur sans qu'on y touche, et il ne peut
+ * pas exister deux versions d'une même page qui divergeraient.
+ *
+ * Trois mesures, une seule source :
+ *   `--atlas-cote`    la place de la barre quand elle passe à gauche ;
+ *   `--atlas-largeur` la colonne du contenu (448 px sur téléphone, comme le
+ *                     `max-w-md` d'avant, au pixel près) ;
+ *   `--atlas-barre`   tombe à zéro : plus rien n'est réservé en bas.
+ * Le cadre (`.atlas-colonne`) et tout ce qui flotte au-dessus de lui
+ * (`.atlas-colonne-fixe` : la barre Enregistrer, l'annulation, le tiroir du
+ * planning…) lisent les mêmes : un élément flottant qui se calerait ailleurs
+ * que le contenu se verrait décalé dès la première capture.
+ *
+ * **Pourquoi 1024 px.** C'est la largeur d'une tablette tenue à l'horizontale
+ * et du plus petit portable courant : en dessous, une barre à gauche mangerait
+ * le quart de l'écran. */
+:root {
+  --atlas-cote: 0px;
+  --atlas-largeur: 28rem;
+}
+
+.atlas-colonne {
+  width: 100%;
+  max-width: var(--atlas-largeur);
+  margin-inline: auto;
+}
+
+.atlas-colonne-fixe {
+  position: fixed;
+  left: var(--atlas-cote);
+  right: 0;
+  max-width: var(--atlas-largeur);
+  margin-inline: auto;
+}
+
+/* Une feuille qui monte du bas (choisir une date, envoyer, la note vocale…)
+ * se pose sous la colonne du contenu, pas sur toute la largeur : sur
+ * ordinateur, la barre de gauche reste visible et la feuille reste en face de
+ * l'écran qui l'a ouverte. Le voile, lui, couvre toujours tout. */
+.atlas-feuille {
+  width: 100%;
+  max-width: var(--atlas-largeur);
+  margin-inline: auto;
+  translate: calc(var(--atlas-cote) / 2) 0;
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --atlas-largeur: 64rem;
+  }
+
+  /* La barre n'occupe la gauche que là où elle est montée : le devis seul,
+   * qui n'en a pas, garde toute la largeur. */
+  body:has(.atlas-nav-basse) {
+    --atlas-cote: 13.75rem;
+    --atlas-barre: 0px;
+  }
+
+  /* Le cadre se range à droite de la barre ; son contenu reste une colonne
+   * lisible, centrée dans la place qui reste et non dans l'écran entier. */
+  .atlas-cadre {
+    max-width: none;
+    margin-left: var(--atlas-cote);
+  }
+
+  .atlas-nav-basse {
+    top: 0;
+    right: auto;
+    width: var(--atlas-cote);
+    max-width: none;
+    margin: 0;
+    padding-bottom: 0;
+    border-top: 0;
+    border-right: 1px solid var(--line);
+  }
+
+  /* Les onglets s'empilent ; le trait d'or devient un filet vertical qui
+   * glisse d'un onglet à l'autre, avec la même courbe qu'en bas. */
+  .atlas-nav-onglets {
+    grid-template-columns: minmax(0, 1fr);
+    grid-auto-rows: 3rem;
+    padding: 6.5rem 0 0;
+  }
+
+  .atlas-nav-onglet {
+    display: flex;
+    align-items: center;
+    padding: 0 1.75rem;
+    text-align: left;
+    font-size: 0.75rem;
+  }
+
+  .atlas-nav-trait {
+    top: 6.5rem;
+    bottom: auto;
+    left: 0;
+    width: 2px;
+    height: 3rem;
+    transform: translateY(calc(var(--atlas-onglet-rang) * 100%));
+  }
+
+  .atlas-nav-trait > span {
+    height: 100%;
+  }
 }
 
 /* LES ÉCRANS D'AVANT LE COMPTE — la porte et la création — n'ont pas de barre

@@ -11,6 +11,15 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 
 ---
 
+## L'APPLICATION SUR ORDINATEUR : 3 octobre 2026, PAS ENCORE SUR `main`
+
+**À savoir avant de toucher à un écran** : il n'existe pas de version
+ordinateur d'une page. Le cadre seul change au-delà de 1024 px, dans
+`globals.css` (« L'ORDINATEUR »). Un élément qui flotte au-dessus du contenu
+prend `.atlas-colonne-fixe`, une feuille qui monte du bas `.atlas-feuille`,
+jamais `fixed inset-x-0 mx-auto max-w-md` : sur ordinateur il se poserait sous
+la barre de gauche. `ARCHITECTURE.md` §441, `test-sur-ordinateur-e2e`.
+
 ## LES COULEURS DU PLANNING : 29 septembre 2026, sur `main` le 30
 
 Branche `claude/couleurs-du-planning`, migration 0113. Tout passe par

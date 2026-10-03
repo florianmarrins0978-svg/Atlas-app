@@ -6,6 +6,18 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-10-03
+
+### L'application prend tout l'écran d'un ordinateur, avec les mêmes écrans
+
+Au-delà de 1024 px de large, la barre d'onglets passe en colonne à gauche et le
+contenu s'ouvre sur 1024 px au lieu de 448. Aucun écran n'est écrit pour
+l'ordinateur : seul le cadre change (`globals.css`, `ARCHITECTURE.md` §441), si
+bien qu'une modification faite pour le téléphone arrive d'elle-même sur
+l'ordinateur. Évite deux versions d'une même page qui divergeraient. Le
+téléphone est inchangé au pixel près (49 écrans comparés) ;
+`test-sur-ordinateur-e2e` le tient.
+
 ## 2026-09-29
 
 ### Le modèle de fiche d'entretien est là d'office, et une touche le remet

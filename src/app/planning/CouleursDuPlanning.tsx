@@ -71,7 +71,7 @@ export default function CouleursDuPlanning({
             role="dialog"
             aria-label="Couleurs du planning"
             data-atlas="feuille-couleurs"
-            className="fixed inset-x-0 z-[30] mx-auto max-w-md rounded-t-[22px] px-5 pb-5 pt-2.5"
+            className="atlas-colonne-fixe z-[30] rounded-t-[22px] px-5 pb-5 pt-2.5"
             style={{ bottom: "var(--atlas-barre)", background: colors.cream, borderTop: `2px solid ${colors.or}` }}
           >
             <button
