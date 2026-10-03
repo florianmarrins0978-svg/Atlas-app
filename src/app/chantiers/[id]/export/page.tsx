@@ -8,6 +8,7 @@ import { getEntreprise } from "@/server/repositories/entreprises";
 import { getChantier } from "@/server/repositories/chantiers";
 import { getClient } from "@/server/repositories/clients";
 import { canalPourJoindre } from "@/lib/message-client";
+import { jourIso } from "@/lib/jour";
 import { getOuCreerDevisBrouillon, chargerDevisPourEcran } from "@/server/repositories/devis";
 import { dernierEnvoi } from "@/server/repositories/envois-devis";
 import { etatEnvoi } from "@/lib/etat-envoi";
@@ -170,7 +171,14 @@ export default async function ExportPage({
           etatEnvoi={etat}
           messageClient={envoi?.precisionClient ?? null}
           joursDuClient={envoi?.reponse === "correction" ? (envoi.joursSouhaites ?? null) : null}
-          lienEnvoi={envoi && !envoi.reponse ? `/devis/${envoi.jeton}` : null}
+          envoiOuvert={
+            envoi && !envoi.reponse
+              ? {
+                  chemin: `/devis/${envoi.jeton}`,
+                  envoiDuDevis: { expireLe: jourIso(envoi.expireAt), autreDateAutorisee: envoi.autreDateAutorisee },
+                }
+              : null
+          }
         origine={origine}
       />
     </div>

@@ -18,6 +18,7 @@ import { lancerNavigateur } from "./e2e-browser";
 import { Pool } from "pg";
 import { composerMessageClient } from "../src/lib/message-client";
 import { avecCivilite } from "../src/lib/civilite";
+import { jourIso } from "../src/lib/jour";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
 
 const dossier = process.argv[2];
@@ -63,7 +64,7 @@ await page.getByRole("button", { name: /Envoyer le devis/i }).click();
 await page.waitForTimeout(3500);
 
 const { rows } = await pool.query(
-  `SELECT e.jeton FROM envois_devis e JOIN devis d ON d.id = e.devis_id WHERE d.chantier_id = $1`,
+  `SELECT e.jeton, e.expire_at, e.autre_date_autorisee FROM envois_devis e JOIN devis d ON d.id = e.devis_id WHERE d.chantier_id = $1`,
   [chantierId]
 );
 if (!rows[0]) {
@@ -106,6 +107,7 @@ const message = composerMessageClient({
   clientNom: CLIENT,
   entrepriseNom: "Atelier Démo",
   lien: `${BASE}/devis/${rows[0].jeton}`,
+  envoi: { expireLe: jourIso(new Date(rows[0].expire_at)), autreDateAutorisee: rows[0].autre_date_autorisee },
 });
 console.log("\n─── Le message tout prêt ───────────────────────────────────────");
 console.log(message.corps);

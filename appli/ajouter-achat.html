@@ -1,0 +1,441 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ajouter un achat à la TVA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --etabli:#e6e3dc; --etabli-carte:#faf9f5; --etabli-trait:rgba(28,28,26,.12);
+    --etabli-encre:#1c1c1a; --etabli-doux:#4a4a44; --etabli-gris:#77726a; --etabli-or:#8b6835;
+    --serif:"Playfair Display",ui-serif,Georgia,serif;
+    --sans:"Inter",ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+
+    --cream:#f5f3ee; --card:#faf9f5; --ink:#1c1c1a; --inkSoft:#4a4a44; --muted:#8a8578;
+    --rust:#2f3b2f; --rustTint:#ece9e1; --plein:#7d9a6d; --alert:#9C3B2E;
+    --or:#B98B47; --line:rgba(28,28,26,.12); --lineSoft:rgba(28,28,26,.07);
+  }
+  *{box-sizing:border-box}
+  [hidden]{display:none!important}
+  html,body{margin:0;background:var(--etabli)}
+  body{font-family:var(--sans);color:var(--etabli-encre);-webkit-font-smoothing:antialiased}
+  button,input{font-family:inherit}
+
+  .page{max-width:1240px;margin:0 auto;padding:30px 16px 90px}
+  .surtitre{font:600 11.5px/1 var(--sans);letter-spacing:.18em;text-transform:uppercase;color:var(--etabli-or);margin:0 0 10px}
+  h1{font:600 30px/1.15 var(--serif);margin:0 0 10px;letter-spacing:-.01em}
+  .chapeau{max-width:680px;color:var(--etabli-doux);font-size:15.5px;line-height:1.6;margin:0 0 22px}
+
+  .tel{position:relative;width:390px;max-width:100%;border-radius:26px;overflow:hidden;
+       box-shadow:0 1px 2px rgba(20,18,14,.16),0 14px 34px rgba(20,18,14,.14);background:var(--cream)}
+  .ecran{height:720px;overflow-y:auto;background:var(--cream);color:var(--ink);padding-bottom:40px}
+
+  .entete{padding:18px 24px 0}
+  .retour{width:34px;height:34px;border-radius:999px;background:var(--card);display:grid;place-items:center;
+          color:var(--inkSoft);box-shadow:inset 0 0 0 1px var(--line)}
+  .caps{font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.28em}
+  .entete .caps{color:var(--or);margin:16px 0 0}
+  .entete h2{font:500 28px/1.15 var(--serif);margin:6px 0 0}
+
+  .frise{margin-top:20px;display:flex;gap:2px;overflow-x:auto;padding:0 24px;scrollbar-width:none}
+  .frise button{flex:none;border:0;background:none;padding:12px 9px 0;min-height:44px;cursor:pointer;
+                font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.13em;color:var(--muted)}
+  .frise button span{display:inline-block;padding-bottom:7px;border-bottom:1.5px solid transparent}
+  .frise button[aria-current] {color:var(--ink)}
+  .frise button[aria-current] span{border-bottom-color:var(--or)}
+  .rythme{margin:10px 24px 0;font-size:12px;line-height:1.55;color:var(--muted)}
+  .rythme u{color:var(--ink);text-decoration-color:var(--or);text-underline-offset:3px}
+
+  .addition{margin-top:22px;padding:0 24px}
+  .lm{display:grid;grid-template-columns:1fr auto 24px;align-items:baseline;column-gap:10px;min-height:48px;padding:11px 0}
+  .lm .mot{font-size:9.5px;font-weight:500;text-transform:uppercase;letter-spacing:.28em;color:var(--muted)}
+  .lm .chiffre{position:relative;justify-self:end;font:500 20px/1.2 var(--serif);font-variant-numeric:tabular-nums lining-nums}
+  .lm .moins{position:absolute;right:100%;margin-right:7px;color:var(--muted);font-weight:400}
+  .lm.total{padding:15px 0 0}
+  .lm.total .mot{color:var(--or)}
+  .lm.total .chiffre{font-size:34px;letter-spacing:-.01em}
+  .lm svg{justify-self:end;align-self:center}
+  .trait{margin-top:12px;height:1px;background:var(--line)}
+
+  .gestes{margin-top:4px;display:flex;gap:10px}
+  .geste{flex:1;display:flex;flex-direction:column;align-items:center;gap:7px;padding:13px 8px;border-radius:999px;
+         background:var(--card);border:1px solid var(--line);color:var(--ink);font-size:12.5px;cursor:pointer}
+  .geste:disabled{cursor:default}
+
+  .preuve{margin-top:34px;padding:0 24px}
+  .preuve .haut{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+  .preuve h3{font:400 19px/1.25 var(--serif);margin:0}
+  .preuve .compte{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+  .preuve .caps{margin-top:10px;color:var(--muted)}
+  .vide{margin-top:16px;text-align:center;font-size:13px;color:var(--inkSoft)}
+  .liste{list-style:none;margin:8px 0 0;padding:0}
+  .liste li{padding:12px 0;border-top:1px solid var(--lineSoft)}
+  .liste .qui{font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .liste .quand{margin-top:2px;font-size:11.5px;color:var(--muted)}
+  .paire{margin-top:7px;display:flex;align-items:baseline;justify-content:space-between;gap:10px;font-size:13px}
+  .paire span:first-child{color:var(--muted)}
+  .paire span:last-child{white-space:nowrap;font:400 16px/1.2 var(--serif);font-variant-numeric:tabular-nums}
+  .paire.tva span{color:var(--or)!important}
+  .liste li.somme{display:flex;justify-content:flex-end;align-items:baseline;gap:14px;padding:12px 0 0;border-top:1px solid var(--line)}
+  .somme .caps{margin:0;font-weight:700;color:var(--ink)}
+  .somme b{font:700 18px/1.2 var(--serif);color:var(--or);font-variant-numeric:tabular-nums}
+
+  .mention{margin:40px 32px 0;text-align:center;font-size:12px;line-height:1.55;color:var(--inkSoft)}
+
+  /* La feuille du bas, posée dans le téléphone. */
+  .voile{position:absolute;inset:0;z-index:40;display:flex;align-items:flex-end;background:rgba(0,0,0,.35)}
+  .feuille{width:100%;max-height:88%;overflow-y:auto;border-radius:26px 26px 0 0;padding:12px 24px 36px;background:var(--cream)}
+  .poignee{margin:0 auto 20px;width:40px;height:4px;border-radius:999px;background:var(--line)}
+  .feuille .caps{text-align:center;color:var(--or);margin:0}
+  .feuille .titre{margin:8px 0 14px;text-align:center;font:400 20px/1.2 var(--serif)}
+  .champs{display:flex;flex-direction:column;gap:1px;overflow:hidden;border-radius:12px;background:var(--lineSoft)}
+  .champs label{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 15px;background:var(--card)}
+  .champs label.accent{background:var(--rustTint)}
+  .champs label > span{flex:none;font-size:13px;color:var(--muted)}
+  .champs label.accent > span{color:var(--or)}
+  .champs input{width:100%;min-width:0;border:0;background:transparent;text-align:right;font-size:15.5px;
+                color:var(--ink);outline:none;font-variant-numeric:tabular-nums}
+  .encart{margin-top:10px;border-radius:12px;padding:12px 14px;font-size:12.5px;line-height:1.5;
+          background:rgba(185,139,71,.1);color:var(--or)}
+  .encart b{color:var(--ink);font-weight:500}
+  .refus{margin-top:10px;text-align:center;font-size:13px;color:var(--alert)}
+  .ajouter{margin-top:12px;width:100%;border:0;border-radius:999px;padding:15px 0;font:400 15px/1 var(--serif);
+           background:var(--plein);color:var(--card);cursor:pointer}
+  .ajouter:disabled{opacity:.35;cursor:default}
+  .annuler{margin-top:6px;width:100%;border:0;background:none;border-radius:999px;padding:12px 0;font-size:14.5px;color:var(--muted);cursor:pointer}
+
+  .temoin{width:390px;max-width:100%;margin-top:18px;background:var(--etabli-carte);border-radius:16px;padding:14px 16px;
+          box-shadow:inset 0 0 0 1px var(--etabli-trait)}
+  .temoin .t{display:flex;justify-content:space-between;align-items:center;gap:10px;
+             font:600 11px/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--etabli-or)}
+  .temoin ul{list-style:none;margin:10px 0 0;padding:0;font-size:13px;line-height:1.5;color:var(--etabli-doux)}
+  .temoin li{padding:6px 0;border-top:1px solid var(--etabli-trait)}
+  .temoin li.neuf{animation:neuf 1.4s ease-out}
+  @keyframes neuf{from{background:rgba(185,139,71,.28)}to{background:transparent}}
+  .temoin .rien{color:var(--etabli-gris)}
+  .recommencer{appearance:none;border:0;cursor:pointer;font:600 12px/1 var(--sans);padding:9px 14px;border-radius:999px;
+               background:var(--etabli-encre);color:var(--etabli-carte);letter-spacing:.02em;text-transform:none}
+</style>
+</head>
+<body>
+<main class="page">
+  <p class="surtitre">Ma TVA, les achats</p>
+  <h1>Ajouter un achat</h1>
+  <p class="chapeau">Appuyez sur Écrire à la main, puis quittez sans rien écrire.</p>
+
+  <div class="tel">
+    <div class="ecran" id="ecran">
+      <div class="entete">
+        <span class="retour" aria-hidden="true">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M15 5l-7 7 7 7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+        <p class="caps">Ma TVA</p>
+        <h2 id="titrePeriode">Septembre 2026</h2>
+      </div>
+
+      <div class="frise" id="frise"></div>
+      <p class="rythme">Déclaration <u>mensuelle</u></p>
+
+      <section class="addition">
+        <div class="lm"><span class="mot">TVA collectée</span><span class="chiffre" id="mCollectee"></span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#B98B47" stroke-width="1.6"><rect x="9" y="9" width="11" height="11" rx="2.4"/><path d="M15 5.6A2.6 2.6 0 0 0 12.4 3H6.6A2.6 2.6 0 0 0 4 5.6v5.8A2.6 2.6 0 0 0 6.6 14" stroke-linecap="round"/></svg></div>
+        <div class="lm"><span class="mot">TVA déductible</span><span class="chiffre"><span class="moins">−</span><span id="mDeductible"></span></span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#B98B47" stroke-width="1.6"><rect x="9" y="9" width="11" height="11" rx="2.4"/><path d="M15 5.6A2.6 2.6 0 0 0 12.4 3H6.6A2.6 2.6 0 0 0 4 5.6v5.8A2.6 2.6 0 0 0 6.6 14" stroke-linecap="round"/></svg></div>
+        <div class="trait"></div>
+        <div class="lm total"><span class="mot" id="motReste">TVA à payer</span><span class="chiffre" id="mReste"></span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#B98B47" stroke-width="1.6"><rect x="9" y="9" width="11" height="11" rx="2.4"/><path d="M15 5.6A2.6 2.6 0 0 0 12.4 3H6.6A2.6 2.6 0 0 0 4 5.6v5.8A2.6 2.6 0 0 0 6.6 14" stroke-linecap="round"/></svg></div>
+
+        <div class="gestes">
+          <button class="geste" type="button" id="scanner">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2f3b2f" stroke-width="1.6"><path d="M4 8.4V6.2A2.2 2.2 0 0 1 6.2 4h2.2M15.6 4h2.2A2.2 2.2 0 0 1 20 6.2v2.2M20 15.6v2.2a2.2 2.2 0 0 1-2.2 2.2h-2.2M8.4 20H6.2A2.2 2.2 0 0 1 4 17.8v-2.2" stroke-linecap="round"/><path d="M4 12h16" stroke-linecap="round"/></svg>
+            <span id="motScanner">Scanner un ticket</span>
+          </button>
+          <button class="geste" type="button" id="main">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2f3b2f" stroke-width="1.6"><path d="M4 20h4.2L19 9.2a2 2 0 0 0 0-2.8l-1.4-1.4a2 2 0 0 0-2.8 0L4 15.8V20z" stroke-linejoin="round"/><path d="M13.6 6.6l3.8 3.8" stroke-linecap="round"/></svg>
+            Écrire à la main
+          </button>
+        </div>
+      </section>
+
+      <section class="preuve">
+        <div class="haut"><h3>TVA collectée</h3><span class="compte" id="compteFactures"></span></div>
+        <p class="caps">Vos factures</p>
+        <div id="factures"></div>
+      </section>
+
+      <section class="preuve">
+        <div class="haut"><h3>TVA déductible</h3><span class="compte" id="compteAchats"></span></div>
+        <p class="caps">Vos achats</p>
+        <div id="achats"></div>
+      </section>
+
+      <p class="mention">Ce relevé est préparé par Atlas à partir de vos règlements. Il ne vaut pas déclaration : celle-ci reste à faire par votre outil comptable.</p>
+    </div>
+
+    <div class="voile" id="voile" hidden>
+      <div class="feuille" id="feuille">
+        <div class="poignee"></div>
+        <p class="caps" id="fCaps">Écrire un achat</p>
+        <p class="titre" id="fTitre">À la main</p>
+        <div class="champs">
+          <label><span>Où</span><input id="cOu" placeholder="Station, magasin…"></label>
+          <label><span>Date</span><input id="cDate" type="date"></label>
+          <label><span>Total payé</span><input id="cTtc" inputmode="decimal" placeholder="0,00 €"></label>
+          <label><span>Taux</span><input id="cTaux" inputmode="decimal" placeholder="20"></label>
+          <label class="accent"><span>TVA déductible</span><input id="cTva" inputmode="decimal" placeholder="calculée"></label>
+        </div>
+        <p class="encart" id="fAide"></p>
+        <p class="encart" id="fAilleurs" hidden></p>
+        <p class="refus" id="fRefus" role="alert" hidden></p>
+        <button class="ajouter" type="button" id="fAjouter">Ajouter aux achats</button>
+        <button class="annuler" type="button" id="fAnnuler">Annuler</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="temoin">
+    <div class="t"><span>Enregistré</span><button class="recommencer" type="button" id="recommencer">Recommencer</button></div>
+    <ul id="temoin"></ul>
+  </div>
+</main>
+
+<script>
+(function () {
+  var AUJOURDHUI = "2026-09-29";
+  var MOIS = ["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"];
+  var COURT = ["Janv.","Févr.","Mars","Avril","Mai","Juin","Juil.","Août","Sept.","Oct.","Nov.","Déc."];
+
+  // Ce que ses clients lui ont versé, par mois (données de démonstration).
+  var REGLEMENTS = {
+    9: [
+      { client: "Mme Lefèvre", numero: "F-2026-041", date: "2026-09-08", ttc: 2160, tva: 360 },
+      { client: "Résidence Les Tilleuls", numero: "F-2026-044", date: "2026-09-19", ttc: 4284, tva: 714 }
+    ],
+    8: [ { client: "M. Garnier", numero: "F-2026-037", date: "2026-08-12", ttc: 1560, tva: 260 } ]
+  };
+
+  var etat;
+  function neuf() {
+    return { vue: 9, achats: [], photos: [], ouverte: false, enCours: false, refus: null,
+             photoCle: null, lecture: null, tvaEcrite: false, dernier: null, nPhotos: 0 };
+  }
+
+  var $ = function (id) { return document.getElementById(id); };
+  var fmt = new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" });
+  function euros(n) { return fmt.format(n).replace(/ /g, " "); }
+  function jourEtMois(iso) { var p = iso.split("-").map(Number); return (p[2] === 1 ? "1er" : p[2]) + " " + MOIS[p[1] - 1]; }
+  function jourLisible(iso) { var p = iso.split("-").map(Number); return (p[2] === 1 ? "1er" : p[2]) + " " + MOIS[p[1] - 1] + " " + p[0]; }
+  function libelle(m) { var n = MOIS[m - 1]; return n.charAt(0).toUpperCase() + n.slice(1) + " 2026"; }
+  function moisDe(iso) { return /^2026-\d{2}-\d{2}$/.test(iso) ? Number(iso.slice(5, 7)) : null; }
+
+  // Recopie de src/lib/achat-tva.ts : montantSaisi et tvaDepuisTtc.
+  function montantSaisi(texte) {
+    if (texte === null || texte === undefined) return null;
+    var propre = texte.replace(/ /g, " ").replace(/[^\d,.\-]/g, "").replace(/\s/g, "").replace(",", ".");
+    if (propre === "" || propre === "-" || propre === ".") return null;
+    var n = Number(propre);
+    if (!isFinite(n)) return null;
+    return Math.round(n * 100) / 100;
+  }
+  function tvaDepuisTtc(ttc, taux) {
+    if (ttc === null || taux === null) return null;
+    if (taux <= 0 || ttc < 0) return null;
+    return Math.round((ttc - ttc / (1 + taux / 100)) * 100) / 100;
+  }
+  function virgule(n) { return n.toFixed(2).replace(".", ","); }
+
+  // ─── L'écran ────────────────────────────────────────────────────────
+  function dessinerEcran() {
+    $("titrePeriode").textContent = libelle(etat.vue);
+    var f = $("frise"); f.innerHTML = "";
+    for (var m = 1; m <= 12; m++) {
+      var b = document.createElement("button");
+      b.type = "button";
+      if (m === etat.vue) b.setAttribute("aria-current", "page");
+      b.innerHTML = "<span>" + COURT[m - 1] + "</span>";
+      b.onclick = (function (mm) { return function () { etat.vue = mm; dessinerEcran(); }; })(m);
+      f.appendChild(b);
+    }
+    var cur = f.querySelector("[aria-current]");
+    if (cur) f.scrollLeft = Math.max(0, cur.offsetLeft - f.clientWidth / 2 + cur.offsetWidth / 2);
+
+    var regl = REGLEMENTS[etat.vue] || [];
+    var achats = etat.achats.filter(function (a) { return moisDe(a.date) === etat.vue; });
+    var collectee = regl.reduce(function (s, r) { return s + r.tva; }, 0);
+    var deductible = Math.round(achats.reduce(function (s, a) { return s + a.tva; }, 0) * 100) / 100;
+    var reste = Math.round((collectee - deductible) * 100) / 100;
+    $("mCollectee").textContent = euros(collectee);
+    $("mDeductible").textContent = euros(deductible);
+    $("mReste").textContent = euros(Math.abs(reste));
+    $("motReste").textContent = reste < 0 ? "Crédit de TVA" : "TVA à payer";
+
+    $("compteFactures").textContent = regl.length ? regl.length + " règlement" + (regl.length > 1 ? "s" : "") : "";
+    var h = "";
+    if (!regl.length) h = '<p class="vide">Aucun règlement reçu sur cette période.</p>';
+    else {
+      h = '<ul class="liste">';
+      regl.forEach(function (r) {
+        h += "<li><p class=\"qui\">" + r.client + "</p><p class=\"quand\">Facture n° " + r.numero + ", règlement du " + jourLisible(r.date) + "</p>" +
+             '<p class="paire"><span>Règlement encaissé</span><span>' + euros(r.ttc) + " TTC</span></p>" +
+             '<p class="paire tva"><span>TVA collectée</span><span>' + euros(r.tva) + "</span></p></li>";
+      });
+      h += '<li class="somme"><span class="caps">Total collectée</span><b>' + euros(collectee) + "</b></li></ul>";
+    }
+    $("factures").innerHTML = h;
+
+    $("compteAchats").textContent = achats.length ? achats.length + " achat" + (achats.length > 1 ? "s" : "") : "";
+    h = "";
+    if (!achats.length) h = '<p class="vide">Rien encore. Scannez un ticket, ou écrivez-le.</p>';
+    else {
+      h = '<ul class="liste">';
+      achats.forEach(function (a) {
+        h += "<li><p class=\"qui\"></p><p class=\"quand\">" + jourEtMois(a.date) + "</p>" +
+             (a.ttc !== null ? '<p class="paire"><span>Montant</span><span>' + euros(a.ttc) + " TTC</span></p>" : "") +
+             '<p class="paire tva"><span>TVA déductible</span><span>' + euros(a.tva) + "</span></p></li>";
+      });
+      h += '<li class="somme"><span class="caps">Total déductible</span><b>' + euros(deductible) + "</b></li></ul>";
+    }
+    $("achats").innerHTML = h;
+    // Le nom du fournisseur est écrit par lui : posé en texte, jamais en HTML.
+    var noms = $("achats").querySelectorAll(".qui");
+    achats.forEach(function (a, i) { noms[i].textContent = a.fournisseur; });
+
+    $("motScanner").textContent = etat.enCours && !etat.ouverte ? "Envoi…" : "Scanner un ticket";
+    $("scanner").disabled = etat.enCours;
+  }
+
+  // ─── La feuille ─────────────────────────────────────────────────────
+  function ouvrir(cle, lu, mot) {
+    $("cOu").value = lu ? lu.fournisseur : "";
+    $("cDate").value = lu ? lu.date : AUJOURDHUI;
+    $("cTtc").value = lu ? String(lu.ttc).replace(".", ",") : "";
+    $("cTaux").value = lu ? String(lu.taux) : "20";
+    $("cTva").value = lu ? virgule(lu.tva) : "";
+    etat.tvaEcrite = !!lu;
+    etat.refus = null;
+    etat.lecture = mot || null;
+    etat.photoCle = cle;
+    etat.ouverte = true;
+    dessinerFeuille();
+  }
+
+  function recalculer() {
+    if (etat.tvaEcrite) return;
+    var c = tvaDepuisTtc(montantSaisi($("cTtc").value), montantSaisi($("cTaux").value));
+    $("cTva").value = c === null ? "" : virgule(c);
+  }
+
+  function dessinerFeuille() {
+    $("voile").hidden = !etat.ouverte;
+    if (!etat.ouverte) return;
+    $("fCaps").textContent = etat.photoCle ? "Ticket photographié" : "Écrire un achat";
+    $("fTitre").textContent = etat.photoCle ? "Ses montants" : "À la main";
+    $("fAide").textContent = etat.photoCle
+      ? (etat.lecture ? etat.lecture + " " : "Ticket lu. Vérifiez les montants avant d’ajouter. ") + "Gardez le papier, la photo ne le remplace pas."
+      : "La TVA se calcule depuis le total et le taux. Si votre ticket en affiche une autre, écrivez la sienne : c’est elle qui fait foi.";
+
+    var date = $("cDate").value;
+    var m = moisDe(date);
+    var ailleurs = m !== null && m !== etat.vue;
+    $("fAilleurs").hidden = !ailleurs;
+    if (ailleurs) {
+      $("fAilleurs").innerHTML = "Ce ticket est daté du " + jourEtMois(date) + " : il ira dans <b>" + libelle(m) +
+        "</b>, pas dans " + libelle(etat.vue) + ". L’écran vous y emmènera.";
+    }
+    $("fRefus").hidden = !etat.refus;
+    $("fRefus").textContent = etat.refus || "";
+
+    // La garde « armé » de AchatsTva.tsx, ligne 190 : le fournisseur et une TVA lisible.
+    var arme = $("cOu").value.trim() !== "" && montantSaisi($("cTva").value) !== null && !etat.enCours;
+    $("fAjouter").disabled = !arme;
+    $("fAjouter").textContent = etat.enCours ? "Enregistrement…" : "Ajouter aux achats";
+  }
+
+  function fermer() { etat.ouverte = false; dessinerFeuille(); dessinerEcran(); }
+
+  // Ce que fait ajouterAchatAction côté serveur (actions.ts, lignes 37 à 105).
+  function serveurAjoute(d) {
+    var fournisseur = d.fournisseur.trim();
+    var tva = montantSaisi(d.tva);
+    if (!(fournisseur !== "" && tva !== null && tva >= 0)) return { ok: false, raison: "Il manque le fournisseur ou le montant de TVA." };
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(d.date)) return { ok: false, raison: "La date n'est pas lisible." };
+    var achat = { fournisseur: fournisseur, date: d.date, ttc: montantSaisi(d.ttc), taux: montantSaisi(d.taux),
+                  tva: tva, saisie: d.photoCle ? "scan" : "main", photo: d.photoCle };
+    etat.achats.push(achat);
+    etat.dernier = achat;
+    return { ok: true };
+  }
+
+  function enregistrer() {
+    etat.enCours = true; etat.refus = null; dessinerFeuille();
+    var d = { fournisseur: $("cOu").value, date: $("cDate").value, ttc: $("cTtc").value,
+              taux: $("cTaux").value, tva: $("cTva").value, photoCle: etat.photoCle };
+    setTimeout(function () {
+      var r = serveurAjoute(d);
+      etat.enCours = false;
+      if (!r.ok) { etat.refus = r.raison; dessinerFeuille(); dessinerTemoin(); return; }
+      etat.ouverte = false;
+      var m = moisDe(d.date);
+      if (m !== null && m !== etat.vue) etat.vue = m;
+      dessinerFeuille(); dessinerEcran(); dessinerTemoin();
+      $("ecran").scrollTo({ top: $("achats").offsetTop - 120, behavior: "smooth" });
+    }, 450);
+  }
+
+  // Le scan : la photo est rangée AVANT la lecture (actions.ts, rangerTicketAction).
+  function scanner() {
+    etat.enCours = true; dessinerEcran();
+    setTimeout(function () {
+      etat.enCours = false;
+      etat.nPhotos += 1;
+      var cle = "ticket-" + etat.nPhotos;
+      etat.photos.push(cle);
+      etat.dernier = cle;
+      dessinerTemoin();
+      ouvrir(cle, { fournisseur: "Station du Pont-Neuf", date: "2026-09-24", ttc: 86.4, taux: 20, tva: 14.4 }, null);
+      dessinerEcran();
+    }, 700);
+  }
+
+  // ─── Le témoin ──────────────────────────────────────────────────────
+  function dessinerTemoin() {
+    var ul = $("temoin"); ul.innerHTML = "";
+    if (!etat.achats.length && !etat.photos.length) {
+      var li = document.createElement("li"); li.className = "rien"; li.textContent = "Rien pour l’instant."; ul.appendChild(li); return;
+    }
+    etat.achats.forEach(function (a) {
+      var li = document.createElement("li");
+      li.textContent = "Achat : " + a.fournisseur + ", le " + jourEtMois(a.date) + ", TVA " + euros(a.tva) +
+        (a.ttc !== null ? ", total " + euros(a.ttc) : ", sans total") + (a.photo ? ", avec sa photo" : ", écrit à la main") + ".";
+      if (a === etat.dernier) li.className = "neuf";
+      ul.appendChild(li);
+    });
+    etat.photos.forEach(function (cle, i) {
+      var lie = etat.achats.some(function (a) { return a.photo === cle; });
+      if (lie) return;
+      var li = document.createElement("li");
+      li.textContent = "Photo du ticket " + (i + 1) + " gardée, sans achat.";
+      if (cle === etat.dernier) li.className = "neuf";
+      ul.appendChild(li);
+    });
+  }
+
+  // ─── Les gestes ─────────────────────────────────────────────────────
+  $("main").onclick = function () { ouvrir(null, null, null); };
+  $("scanner").onclick = scanner;
+  $("fAnnuler").onclick = fermer;
+  $("voile").onclick = function (e) { if (e.target === $("voile")) fermer(); };
+  $("fAjouter").onclick = enregistrer;
+  $("cOu").oninput = dessinerFeuille;
+  $("cDate").oninput = dessinerFeuille;
+  $("cTtc").oninput = function () { recalculer(); dessinerFeuille(); };
+  $("cTaux").oninput = function () { recalculer(); dessinerFeuille(); };
+  $("cTva").oninput = function () { etat.tvaEcrite = true; dessinerFeuille(); };
+  $("recommencer").onclick = function () { etat = neuf(); dessinerFeuille(); dessinerEcran(); dessinerTemoin(); $("ecran").scrollTop = 0; };
+
+  etat = neuf();
+  dessinerEcran(); dessinerFeuille(); dessinerTemoin();
+})();
+</script>
+</body>
+</html>

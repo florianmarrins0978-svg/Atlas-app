@@ -3,14 +3,19 @@ import {
   getStatutAffiche,
   lienDeReprise,
   ligneEtatChantier,
+  retireDeLaListe,
+  seRetireSansEffacer,
 } from "@/lib/chantier-etat";
 import { ongletDuChantier } from "@/lib/onglet-chantier";
 import { jourIso } from "@/lib/jour";
 import { lieuDuChantier, lieuEstManquant } from "@/lib/nom-chantier";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { getRole } from "@/server/autorisation";
-import { recoitLesRappels, type DomaineDesRappels } from "@/lib/acces-roles";
+import { peutGererDevis, recoitLesRappels, type DomaineDesRappels } from "@/lib/acces-roles";
+import { avecCivilite } from "@/lib/civilite";
+import { deOuD, ligneDuContratEnCours } from "@/lib/contrats-entretien";
 import { listerChantiersPourAffichage } from "@/server/repositories/chantiers";
+import { contratsEnCours } from "@/server/repositories/contrats-entretien";
 import { notificationsPatron, envoisCaducs } from "@/server/repositories/envois-devis";
 import { rappelsEnCours, retoursPasRecusEnCours } from "@/server/repositories/rappels";
 import { reglesDuRetour } from "@/server/regles-du-retour";
@@ -67,8 +72,11 @@ export default async function ChantiersPage() {
   // siens lui-même ; ces trois-là se lisent ici, sur la même règle.
   const role = await getRole(ctx);
   const recoit = (domaine: DomaineDesRappels) => role !== null && recoitLesRappels(role, domaine);
-  const [chantiers, notifications, caducs, rappels, receptions, abonnement, retoursManques] = await Promise.all([
+  const [chantiers, contrats, notifications, caducs, rappels, receptions, abonnement, retoursManques] = await Promise.all([
     listerChantiersPourAffichage(ctx),
+    // Qui ne rédige pas de contrat n'en voit pas : il ne pourrait ni les
+    // reprendre, ni les retirer.
+    role !== null && peutGererDevis(role) ? contratsEnCours(ctx) : [],
     recoit("devis") ? notificationsPatron(ctx) : [],
     recoit("devis") ? envoisCaducs(ctx) : [],
     rappelsEnCours(ctx, maintenant),
@@ -92,9 +100,49 @@ export default async function ChantiersPage() {
   // il vit dans « Terminés » (`src/lib/onglet-chantier.ts`).
   const avecStatut = chantiers
     .map((c) => ({ ...c, statut: getStatutAffiche(c) }))
-    .filter((c) => ongletDuChantier(c) === "chantiers");
+    // Glissé hors de la liste pendant que son devis attend le client : rien
+    // n'est effacé, et sa réponse le ramène (`retireDeLaListe`).
+    .filter((c) => ongletDuChantier(c) === "chantiers" && !retireDeLaListe(c));
 
-  const brins: BrinChantier[] = avecStatut.map((c) => {
+  // **Un contrat vit ici tant que le client ne l'a pas accepté, comme un
+  // devis.** Sa plainte du 29 septembre 2026 (un contrat quitté avant l'envoi
+  // ne figurait nulle part), puis sa règle du même jour : *« tout ce qui est
+  // devis, contrat d'entretien, dernier devis ou autre doivent arriver là »*.
+  // Accepté, ses passages vivent au planning (`ligneDuContratEnCours`).
+  const brinsDeContrat: BrinChantier[] = contrats.flatMap((c) => {
+    const ligne = ligneDuContratEnCours(
+      {
+        statut: c.statut,
+        prestations: c.prestations,
+        periode: { debut: c.debut, dureeMois: c.dureeMois },
+        envoyeLe: c.envoyeLe ? jourIso(c.envoyeLe) : null,
+        retireDeLaListeAt: c.retireDeLaListeAt,
+        reponduLe: c.reponduLe,
+      },
+      maintenant
+    );
+    if (!ligne) return [];
+    const { jour, mois } = jourEtMois(c.majAt);
+    const client = avecCivilite(c.clientNom, c.clientCivilite ?? undefined);
+    return [
+      {
+        id: c.id,
+        retrait: "contrat" as const,
+        nom: "Contrat d'entretien",
+        quoi: `le contrat d'entretien ${deOuD(client)}`,
+        jour,
+        mois,
+        lieu: client,
+        etat: ligne.etat,
+        precision: ligne.precision,
+        attend: true,
+        reprise: `/clients/${c.clientId}/contrat`,
+        enCours: true,
+      },
+    ];
+  });
+
+  const brinsDeChantier: BrinChantier[] = avecStatut.map((c) => {
     const { jour, mois } = jourEtMois(c.majAt);
     // **La date d'ENVOI, pas celle de la dernière modification.** Celle de
     // gauche est `majAt` — le chantier a pu bouger depuis pour une photo. Ce
@@ -108,7 +156,9 @@ export default async function ChantiersPage() {
     });
     return {
       id: c.id,
+      retrait: seRetireSansEffacer(c.statut) ? "retirer" : "supprimer",
       nom: c.nom,
+      quoi: `le chantier ${c.nom}`,
       jour,
       mois,
       lieu,
@@ -144,7 +194,7 @@ export default async function ChantiersPage() {
 
   return (
     <EcranChantiers
-      chantiers={brins}
+      chantiers={[...brinsDeContrat, ...brinsDeChantier]}
       ruban={essai ? <RubanEssai etat={essai} /> : null}
       lectureSeule={essai?.statut === "termine" ? PHRASE_LECTURE_SEULE : null}
       bandeaux={

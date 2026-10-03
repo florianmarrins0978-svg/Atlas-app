@@ -14,6 +14,7 @@ import {
   ttcDuPassage,
   relireContrat,
   ceQuiManque,
+  ligneDuContratEnCours,
   designationSurLePapier,
   type PrestationContrat,
   type PeriodeContrat,
@@ -85,6 +86,35 @@ cas("une prestation à chiffrer ne pèse rien et bloque l'envoi", () => {
   assert.equal(ceQuiManque(sansPrix, UN_AN), "À compléter : Tonte et ébarbage.");
   assert.equal(ceQuiManque([], UN_AN), "Ajoutez une prestation.");
   assert.equal(ceQuiManque(PLANCHE, UN_AN), null);
+});
+
+cas("la ligne d'un contrat sur l'accueil : tant que le client n'a pas accepté", () => {
+  const ligne = (
+    statut: "brouillon" | "envoye" | "accepte" | "refuse",
+    prestations = PLANCHE,
+    envoyeLe: string | null = null,
+    retireDeLaListeAt: Date | null = null,
+    reponduLe: Date | null = null
+  ) =>
+    ligneDuContratEnCours(
+      { statut, prestations, periode: UN_AN, envoyeLe, retireDeLaListeAt, reponduLe },
+      new Date("2026-09-29T12:00:00Z")
+    );
+  assert.deepEqual(ligne("brouillon"), { etat: "Contrat prêt à envoyer", precision: null });
+  assert.equal(ligne("brouillon", [{ ...PLANCHE[0], prixPassageHt: null }])?.etat, "Contrat à compléter");
+  assert.equal(ligne("brouillon", [])?.etat, "Contrat à compléter");
+  // Le jour d'envoi s'écrit comme sous « Devis envoyé ».
+  const envoye = ligne("envoye", PLANCHE, "2026-09-26");
+  assert.equal(envoye?.etat, "Contrat envoyé, sans réponse");
+  assert.match(envoye?.precision ?? "", /^Samedi 26 septembre$/);
+  assert.equal(ligne("refuse", PLANCHE, "2026-09-26")?.etat, "Contrat refusé");
+  assert.equal(ligne("accepte", PLANCHE, "2026-09-26"), null);
+  // Glissé hors de la liste pendant qu'il attend : caché ; refusé ensuite, il
+  // revient ; glissé une fois refusé, il se cache aussi, sans rien effacer.
+  const retrait = new Date("2026-09-28T10:00:00Z");
+  assert.equal(ligne("envoye", PLANCHE, "2026-09-26", retrait), null);
+  assert.equal(ligne("refuse", PLANCHE, "2026-09-26", retrait, new Date("2026-09-29T08:00:00Z"))?.etat, "Contrat refusé");
+  assert.equal(ligne("refuse", PLANCHE, "2026-09-26", retrait, new Date("2026-09-27T08:00:00Z")), null);
 });
 
 cas("les mensualités retombent au centime sur le total, l'arrondi sur la dernière", () => {

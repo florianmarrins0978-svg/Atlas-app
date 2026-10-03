@@ -8,6 +8,13 @@
 // Voir docs/AGENT.md §2.2 : tant que le client n'a pas répondu, le chantier est
 // BLOQUÉ. Ni planifié, ni facturable, ni à planifier soi-même.
 
+/**
+ * Durée de vie du lien d'un devis. Au-delà, la page ne répond plus. Elle vit
+ * ici, avec les autres règles de l'envoi, parce que le MESSAGE la dit au client
+ * (`clauseValidite`) : une règle pure ne peut pas la lire dans un dépôt.
+ */
+export const VALIDITE_LIEN_JOURS = 45;
+
 /** Au bout de combien de jours sans réponse le patron doit songer à relancer. */
 export const RELANCE_APRES_JOURS = 7;
 

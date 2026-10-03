@@ -46,8 +46,22 @@ export function JourDuBrin({ jour, mois }: { jour: string; mois: string }) {
 
 export type BrinChantier = {
   id: string;
-  /** Le nom affiché — sert aussi au libellé de retrait. */
+  /**
+   * Ce que le glissement fait de la ligne — sa règle du 29 septembre 2026 :
+   * *« il doit pouvoir les retirer en les slidant, mais ça ne doit pas
+   * impacter le lien cliquable envoyé au client »*.
+   *
+   * - `supprimer` : un chantier qui n'attend personne, supprimé comme avant ;
+   * - `retirer` : un chantier dont le devis attend le client, retiré de la
+   *   liste sans rien effacer (`seRetireSansEffacer`) ;
+   * - `contrat` : un contrat d'entretien, dont le serveur décide selon son état
+   *   (`retirerContratDeLaListe`).
+   */
+  retrait: "supprimer" | "retirer" | "contrat";
+  /** Le nom affiché. */
   nom: string;
+  /** Ce que le retrait nomme : « le chantier Haie », « le contrat d'entretien de M. Roux ». */
+  quoi: string;
   /** Le quantième, sur deux chiffres : « 26 ». */
   jour: string;
   /** Le mois abrégé, sous le quantième : « juil. ». */
@@ -248,9 +262,9 @@ export default function ListeChantiers({
       {chantiers.map((c) => (
         <LigneRetirable
           key={c.id}
-          libelle={`le chantier ${c.nom}`}
+          libelle={c.quoi}
           retiree={estRetire(c.id)}
-          onRetirer={() => onRetirer(c.id, `le chantier ${c.nom}`)}
+          onRetirer={() => onRetirer(c.id, c.quoi)}
           refus={c.refusRetrait}
           avant={<JourDuBrin jour={c.jour} mois={c.mois} />}
           // 21 px, et non 17 : sa demande du 2 septembre 2026. Le fil porte

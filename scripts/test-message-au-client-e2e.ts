@@ -35,6 +35,11 @@ const pool = new Pool({ connectionString: process.env.DATABASE_URL });
  * posée par Atlas à l'endroit du `[document]` ; ce jeton n'y pose plus que le
  * mot, et c'est lui qui écrit autour. C'est exactement ce que ce lot rend
  * possible, donc c'est ce que cette suite doit éprouver.
+ *
+ * **Il porte `[validite]` depuis le 29 septembre 2026** : la durée du lien est
+ * obligatoire dans un message de devis, comme le lien (`refusDuMessage`), sa
+ * planche `appli/lien-valable-45-jours.html`. Un message sans elle est refusé,
+ * et c'est voulu.
  */
 const SIEN = [
   "Salut [client] !",
@@ -42,6 +47,8 @@ const SIEN = [
   "Voici votre [document] à regarder tranquillement.",
   "",
   "[lien]",
+  "",
+  "[validite]",
   "",
   "Bonne journée, [entreprise] — Eden Nature",
 ].join("\n");

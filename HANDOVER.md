@@ -11,6 +11,38 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 
 ---
 
+## LES COULEURS DU PLANNING : 29 septembre 2026, sur `main` le 30
+
+Branche `claude/couleurs-du-planning`, migration 0113. Tout passe par
+`fondDeLEtat`, qui lit `--atlas-etat-<état>` ; `CouleursDesEtats` pose ces
+variables au-dessus des trois écrans qui montrent ces états (planning, envoi,
+Réglages Équipe). **Un écran neuf qui montre rien, incomplet, complet ou
+au-delà doit être enveloppé par `CouleursDesEtats`**, sinon il garde les
+couleurs d'avant. Pourquoi : `ARCHITECTURE.md` §435. Batterie commune jouée, sur `main` le 30
+septembre.
+
+
+## LE MESSAGE DU DEVIS : 29 septembre 2026, sur `main` le 30
+
+| | |
+|---|---|
+| **les règles** | `src/lib/message-client.ts` : `[autre-date]` (`clauseAutreDate`), `[validite]` (`clauseValidite`, obligatoire en devis), `EnvoiDuDevis` exigé par `composerMessageClient` |
+| **les deux chemins** | premier envoi : `envoyerAuClientAction` rend `modeleMessage` et `envoiDuDevis`, `ouvrirLaMessagerie` les exige ; relance : `src/app/chantiers/[id]/export/page.tsx` lit l'envoi (`envoiOuvert`) |
+| **la base** | migration 0115, ses messages réécrits (éprouvée sur base habitée) |
+| **le piège** | une suite qui écrit SON message en base ne le retire pas : une suite d'envoi qui compte sur le message d'Atlas doit le remettre elle-même |
+| **le détail** | `ARCHITECTURE.md` §438, `docs/message-du-devis.md` |
+
+## LA LISTE DES RÉPONSES DE L'ASSISTANT : 29 septembre 2026, sur `main` le 30
+
+`docs/assistant-questions-reponses.md` s'ENGENDRE (`npx tsx
+scripts/engendrer-questions-reponses.ts`) : ne jamais la corriger à la main.
+Une question ajoutée à `scripts/_questions-mode-emploi.ts` y entre à la
+prochaine génération. §439.
+
+« Comment fonctionne X » ne passe pas par la recherche : `visiteDemandee` rend
+l'écran, `fichesDeLEcran` ses fiches, dans l'ordre du fichier. Une fiche mal
+rangée (mauvais `ecran`) manque donc à la visite. §440.
+
 ## L'ASSISTANT RÉPOND SUR SES DONNÉES : 28 septembre 2026, SUR `main`
 
 Zone `src/lib/fiches-mode-emploi/fonctionnement.ts`. **Piège** : la fiche de
@@ -34,7 +66,7 @@ compte par `bilanDeLaPeriode`, jamais par le modèle. §434.
 | **les suites** | `test-correction-devis` (base), `test-propositions-de-jours` (pure) |
 | **reste** | la batterie entière avant `main` |
 
-## LE CONTRAT D'ENTRETIEN — 26 et 27 septembre 2026 (lots 1 et 2, pas sur `main`)
+## LE CONTRAT D'ENTRETIEN — 26 et 27 septembre 2026 (lots 1 et 2, sur `main`)
 
 | | |
 |---|---|
@@ -47,6 +79,8 @@ compte par `bilanDeLaPeriode`, jamais par le modèle. §434.
 | **la facture (lot 2)** | `terminerChantier` bâtit celle d'un passage (`poserLaFactureDuPassage`) ; Terminés lit `totalPrevuTtc` ; l'automatisme vit dans `factureDuPassageAvecSonCompteRendu`, appelé par `envoyerFicheAction` |
 | **le piège** | la facturation A s'enregistre et s'imprime, mais ne crée aucune facture : c'est le lot 3 |
 | **les dates du mois (27 sept.)** | règles `src/lib/dates-du-mois.ts`, base `drizzle/0108_dates_du_mois.sql`, dépôt `src/server/repositories/dates-du-mois.ts`, tiroir `src/app/planning/DatesDuMois.tsx`, page du client `src/app/contrat/dates/[jeton]/` ; suites `test-dates-du-mois` et `test-dates-du-mois-db` |
+| **le brouillon quitté (29 sept., branche `claude/contrat-quitte-dans-chantiers`)** | l'écran s'écrit à chaque geste (une file, `enregistrer()` dans `ContratClient.tsx`) ; l'accueil lit `contratsEnCours` (le dernier contrat de chaque client, tant qu'il n'est pas accepté), `BrinChantier.sorte` choisit le retrait ; suite `test-contrat-quitte-e2e`. §436 |
+| **retirer sans couper le lien (29 sept., même branche)** | migration 0114 `retire_de_la_liste_at` ; `seRetireSansEffacer` et `retireDeLaListe` (`chantier-etat.ts`) ; `BrinChantier.retrait` choisit l'action ; suite `test-retirer-sans-casser-le-lien-e2e`. **Piège** : un devis envoyé ne mène pas à une adresse portant son identifiant (sa reprise est `/planning`), on le cherche par son nom. §437 |
 
 ## MON AGENDA EN SIMPLE : 26 septembre 2026
 

@@ -21,7 +21,7 @@ import assert from "node:assert/strict";
 import { pool } from "../src/server/db/client";
 import { nettoyerBase } from "./_test-db";
 import { creerEntreprise } from "../src/server/repositories/entreprises";
-import { creerChantier } from "../src/server/repositories/chantiers";
+import { creerChantier, getChantier, retirerChantierDeLaListe } from "../src/server/repositories/chantiers";
 import { getOuCreerDevisBrouillon, envoyerDevis } from "../src/server/repositories/devis";
 import { ajouterLignePrix } from "../src/server/repositories/lignes-prix";
 import { creerEnvoi } from "../src/server/repositories/envois-devis";
@@ -460,6 +460,32 @@ async function main() {
       (await rappelsEnCours(ctxA, MAINTENANT)).filter((r) => r.genre === "facture-impayee"),
       []
     );
+  });
+
+  // ── Retiré de la liste, sans rien effacer — sa règle du 29 septembre 2026 ──
+  // *« il doit pouvoir les retirer en les slidant, mais ça ne doit pas impacter
+  // le lien cliquable envoyé au client »*. Retiré en sachant qu'il attendait,
+  // le devis ne revient pas par un rappel.
+  await essai("un devis retiré de la liste ne se rappelle plus, et rien n'est effacé", async () => {
+    const { ctxA } = await monter();
+    const chantier = await devisPartiIlYA(ctxA, "Haie de charmille", 10);
+    assert.equal(await retirerChantierDeLaListe(ctxA, chantier.id), true);
+    assert.deepEqual(
+      (await rappelsEnCours(ctxA, MAINTENANT)).filter((r) => r.genre === "devis-sans-reponse"),
+      []
+    );
+    // Lu sous `atlas_app`, par la porte des écrans : un chantier supprimé n'y
+    // serait plus.
+    const relu = await getChantier(ctxA, chantier.id);
+    assert.ok(relu, "le chantier a été supprimé");
+    assert.ok(relu.retireDeLaListeAt, "l'heure du retrait n'est pas posée");
+  });
+
+  await essai("et l'entreprise voisine ne retire pas ses chantiers", async () => {
+    const { ctxA, ctxB } = await monter();
+    const chantier = await devisPartiIlYA(ctxA, "Haie de charmille", 10);
+    assert.equal(await retirerChantierDeLaListe(ctxB, chantier.id), false);
+    assert.equal((await rappelsEnCours(ctxA, MAINTENANT)).filter((r) => r.genre === "devis-sans-reponse").length, 1);
   });
 
   // ───────────────────────────────────────────────────────────────────────

@@ -1,14 +1,14 @@
 "use client";
 
-import { useState } from "react";
-import { colors, libelleCaps, smallCaps } from "@/lib/design-tokens";
+import { useRef, useState } from "react";
+import { colors, libelleCaps, smallCaps, texteSituation } from "@/lib/design-tokens";
 import PrimaryButton from "@/components/atlas/PrimaryButton";
 import TiroirDesRetires from "@/components/atlas/TiroirDesRetires";
 import { useRetraits } from "@/components/atlas/useRetraits";
-import { parFamilles, type PrestationModele } from "@/lib/prestations-entretien";
+import { modeleManquant, modeleRemis, parFamilles } from "@/lib/prestations-entretien";
 import {
   ajouterPrestationAction,
-  poserModeleFourniAction,
+  remettreLeModeleAction,
   renommerFamilleAction,
   renommerPrestationAction,
   retirerFamilleAction,
@@ -56,11 +56,8 @@ const PREFIXE_FAMILLE = "famille:";
 
 export default function FicheEntretienClient({
   prestationsInitiales,
-  modeleFourni,
 }: {
   prestationsInitiales: PrestationAffichee[];
-  /** Ce que « Partir du modèle Atlas » poserait — montré avant d'appuyer. */
-  modeleFourni: readonly PrestationModele[];
 }) {
   const [prestations, setPrestations] = useState(prestationsInitiales);
   const [phrase, setPhrase] = useState<string | null>(null);
@@ -68,6 +65,10 @@ export default function FicheEntretienClient({
   const [saisie, setSaisie] = useState("");
   /** Le nom de la catégorie qu'il est en train de créer — vide le reste du temps. */
   const [saisieFamille, setSaisieFamille] = useState("");
+
+  /** Les lignes que « Remettre le modèle Atlas » vient de poser, le temps d'« Annuler ». */
+  const [remises, setRemises] = useState<string[] | null>(null);
+  const minuteurRemis = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const retraits = useRetraits({
     valider: async (id) => {
@@ -142,6 +143,60 @@ export default function FicheEntretienClient({
     location.reload();
   }
 
+  /**
+   * « Remettre le modèle Atlas » — sa réponse « B » du 29 septembre 2026 : ce
+   * qui manque du modèle revient dans sa famille, ses lignes à lui restent.
+   *
+   * **Les retraits en attente s'écrivent d'abord.** Sinon le serveur verrait
+   * encore la ligne qu'il vient de retirer, ne la remettrait pas, et le retrait
+   * l'effacerait juste après : le bouton aurait menti.
+   *
+   * La fiche remise se recompose ICI avec la même règle que le dépôt
+   * (`modeleRemis`), les identifiants venant du serveur : un rechargement
+   * emporterait le « Annuler », qui vit dans cet écran.
+   */
+  async function remettre() {
+    // La fiche telle qu'il la voit : sans les lignes du tiroir, qui vont
+    // s'écrire. `prestations` lu après l'attente serait celui d'avant.
+    const avant = visibles;
+    await retraits.fermer();
+    const r = await remettreLeModeleAction();
+    if (!r.ok) {
+      setPhrase(r.phrase);
+      return;
+    }
+    setPhrase(null);
+    if (r.ajoutees.length === 0) return;
+    // Chaque ligne remise retrouve son identifiant par son libellé. S'il en
+    // manquait un, l'écran et la base ne diraient plus la même chose : la page
+    // se relit plutôt que d'afficher une ligne qu'aucun « × » ne pourrait viser.
+    const fiche = modeleRemis(avant);
+    const complete = fiche.map((l) => ("id" in l ? l : r.ajoutees.find((a) => a.libelle === l.libelle)));
+    if (complete.some((l) => l === undefined)) {
+      location.reload();
+      return;
+    }
+    setPrestations(complete.filter((l): l is PrestationAffichee => l !== undefined));
+    if (minuteurRemis.current) clearTimeout(minuteurRemis.current);
+    setRemises(r.ajoutees.map((a) => a.id));
+    minuteurRemis.current = setTimeout(() => setRemises(null), 6000);
+  }
+
+  /** « Annuler » : les lignes remises repartent, et elles seules. */
+  async function annulerRemise() {
+    const ids = remises ?? [];
+    if (minuteurRemis.current) clearTimeout(minuteurRemis.current);
+    setRemises(null);
+    for (const id of ids) {
+      const r = await retirerPrestationAction(id);
+      if (!r.ok) {
+        setPhrase(r.phrase);
+        return;
+      }
+    }
+    setPrestations((cur) => cur.filter((p) => !ids.includes(p.id)));
+  }
+
   async function renommer(id: string, avant: string, apres: string) {
     if (apres.trim() === "" || apres === avant) return;
     const r = await renommerPrestationAction(id, apres);
@@ -163,98 +218,6 @@ export default function FicheEntretienClient({
     setPhrase(null);
     setPrestations((cur) =>
       cur.map((p) => (p.famille === ancienne ? { ...p, famille: nouvelle } : p))
-    );
-  }
-
-  // ─── La fiche vide : on propose, on ne pose pas ────────────────────────────
-  //
-  // Semer vingt lignes parce qu'il a ouvert un écran serait écrire en base pour
-  // un regard. Il voit donc ce que le modèle contient, et il appuie — ou non.
-  if (prestations.length === 0) {
-    return (
-      <div className="px-6 pb-10">
-        <p className="text-[15px] leading-relaxed" style={{ color: colors.muted }}>
-          Votre fiche d&apos;entretien est vide. C&apos;est la liste que vous cocherez sur un
-          chantier, et dont votre client recevra le rapport.
-        </p>
-
-        <div className="mt-5 rounded-[14px] p-5" style={{ backgroundColor: colors.card }}>
-          <p className={smallCaps} style={{ color: colors.muted, marginBottom: 10 }}>
-            Le modèle Atlas, {modeleFourni.length} prestations
-          </p>
-          <p className="text-[14px] leading-relaxed" style={{ color: colors.ink }}>
-            {modeleFourni.map((p) => p.libelle).join(", ")}
-          </p>
-          <p className="mt-3 text-[13px]" style={{ color: colors.muted }}>
-            Rien n&apos;est figé : vous retirez, ajoutez et renommez ce que vous voulez ensuite.
-          </p>
-        </div>
-
-        {phrase && (
-          <p
-            className="mt-4 text-[14px]"
-            style={{ color: colors.rust }}
-            role="alert"
-            data-refus
-          >
-            {phrase}
-          </p>
-        )}
-
-        <div className="mt-5">
-          <PrimaryButton
-            onClick={async () => {
-              const r = await poserModeleFourniAction();
-              if (!r.ok) setPhrase(r.phrase);
-              else location.reload();
-            }}
-          >
-            Partir du modèle Atlas
-          </PrimaryButton>
-        </div>
-
-        <button
-          type="button"
-          className="mt-3 block w-full text-center text-[14px]"
-          style={{ color: colors.or }}
-          onClick={() => {
-            setSaisie("");
-            setSaisieFamille("");
-            setAjoutOuvert("__neuve__");
-          }}
-        >
-          Je préfère composer la mienne
-        </button>
-
-        {/* La toute première ligne se range dans une famille qu'il NOMME, comme
-            toutes celles d'après : le faire tomber dans « Divers » lui donnerait
-            un mot qui n'est pas le sien sur la première chose qu'il écrit. */}
-        {ajoutOuvert && (
-          <div className="mt-4">
-            <input
-              autoFocus
-              value={saisieFamille}
-              onChange={(e) => setSaisieFamille(e.target.value)}
-              placeholder="Pelouse"
-              aria-label="Nom de la première famille"
-              data-nouvelle-famille
-              className="w-full rounded-[10px] px-3 py-3 text-[16px]"
-              style={{ border: `1px solid ${colors.line}`, color: colors.ink }}
-            />
-            <input
-              value={saisie}
-              onChange={(e) => setSaisie(e.target.value)}
-              placeholder="Tonte et ébarbage"
-              aria-label="Nom de la première prestation"
-              className="mt-3 w-full rounded-[10px] px-3 py-3 text-[16px]"
-              style={{ border: `1px solid ${colors.line}`, color: colors.ink }}
-            />
-            <div className="mt-3">
-              <PrimaryButton onClick={creerFamille}>Ajouter</PrimaryButton>
-            </div>
-          </div>
-        )}
-      </div>
     );
   }
 
@@ -427,9 +390,49 @@ export default function FicheEntretienClient({
         </button>
       )}
 
+      {/* **Le bouton des messages préremplis, pour la fiche** — sa demande du
+          29 septembre 2026 : *« il doit pouvoir la remettre en cliquant sur une
+          touche, comme on fait pour les messages préremplis envoyés par SMS »*.
+          Même dessin que « Remettre le message d'Atlas » (`MessagesClient.tsx`),
+          et, comme lui, montré seulement quand il y a quelque chose à remettre. */}
+      {modeleManquant(visibles).length > 0 && (
+        <button
+          type="button"
+          data-atlas="remettre-modele"
+          onClick={() => void remettre()}
+          className="mt-8 block min-h-[44px] rounded-full px-4 text-[13.5px]"
+          style={{ color: colors.muted, boxShadow: `inset 0 0 0 1px ${colors.line}` }}
+        >
+          Remettre le modèle Atlas
+        </button>
+      )}
+
       <p className="mt-8 text-[13px] leading-relaxed" style={{ color: colors.muted }}>
         Modifier cette fiche ne change <b style={{ color: colors.ink }}>aucun rapport déjà envoyé</b>.
       </p>
+
+      {remises && (
+        <div
+          className="atlas-tiroir mx-[26px]"
+          data-ouvert="oui"
+          data-atlas="modele-remis"
+          style={{ borderTopColor: colors.line }}
+          aria-live="polite"
+        >
+          <span className={texteSituation} style={{ color: colors.muted }}>
+            Modèle remis
+          </span>
+          <button
+            type="button"
+            onClick={() => void annulerRemise()}
+            aria-label="Annuler la remise du modèle"
+            className={`-mr-2 px-2 py-2 ${libelleCaps}`}
+            style={{ color: colors.or, letterSpacing: "0.24em" }}
+          >
+            Annuler
+          </button>
+        </div>
+      )}
 
       <TiroirDesRetires
         dernier={retraits.dernier}

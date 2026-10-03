@@ -12,11 +12,12 @@ import {
   pdfDuContratPourLePatron,
   pdfDuContratParJeton,
   factureDuPassageAvecSonCompteRendu,
+  contratsEnCours,
+  retirerContratDeLaListe,
 } from "../src/server/repositories/contrats-entretien";
 import { planifierChantier } from "../src/server/repositories/chantiers";
 import { terminerChantier, listerChantiersTermines, getFacturePourChantier } from "../src/server/repositories/factures";
 import { ouvrirPassage, nommerClient, cocherLigne, figerPassage } from "../src/server/repositories/passages-entretien";
-import { poserModeleFourni } from "../src/server/repositories/prestations-entretien";
 import type { ContratSaisi } from "../src/lib/contrats-entretien";
 
 // Les contrats d'entretien, sous `atlas_app` : c'est ce rôle qui prouve la RLS.
@@ -224,8 +225,8 @@ async function main() {
   });
 
   await cas("l'automatisme : le compte rendu du jour fait partir la facture du passage, une fois", async () => {
-    // Une fiche d'entretien s'ouvre sur son modèle : l'entreprise neuve pose le sien.
-    await poserModeleFourni(a.ctx);
+    // Une fiche d'entretien s'ouvre sur son modèle : l'entreprise neuve le porte
+    // d'office depuis le 29 septembre 2026 (`creerEntreprise`).
     const client = await creerClient(a.ctx, { nom: "Durand", civilite: "mr", telephone: "06 00 00 00 01" });
     const r = await enregistrerContrat(a.ctx, {
       id: null,
@@ -278,6 +279,72 @@ async function main() {
     if (!ficheCosta.ok) return;
     await nommerClient(a.ctx, ficheCosta.id, a.clientId);
     assert.equal(await factureDuPassageAvecSonCompteRendu(a.ctx, ficheCosta.id, "sms"), null);
+  });
+
+  // Sa règle du 29 septembre 2026 : *« tout ce qui est devis, contrat
+  // d'entretien, dernier devis ou autre doivent arriver là »*. Un contrat vit
+  // sur l'accueil tant que le client ne l'a pas accepté.
+  await cas("l'accueil lit le dernier contrat de chaque client, tant qu'il n'est pas accepté", async () => {
+    const client = await creerClient(a.ctx, { nom: "Vidal", civilite: "mr" });
+    const r = await enregistrerContrat(a.ctx, { id: null, clientId: client.id, saisi: SAISI });
+    assert.ok(r.ok);
+    if (!r.ok) return;
+    const statutLu = async () => (await contratsEnCours(a.ctx)).find((c) => c.clientId === client.id)?.statut;
+    assert.equal(await statutLu(), "brouillon");
+    assert.equal((await contratsEnCours(b.ctx)).some((c) => c.clientId === client.id), false);
+    assert.equal(await retirerContratDeLaListe(b.ctx, r.contrat.id), false);
+
+    const e = await envoyerContrat(a.ctx, r.contrat.id);
+    assert.ok(e.ok);
+    if (!e.ok) return;
+    assert.equal(await statutLu(), "envoye");
+
+    // Sa règle du 29 septembre 2026 : retiré de la liste, rien ne s'efface, et
+    // le lien du client s'ouvre encore.
+    assert.equal(await retirerContratDeLaListe(a.ctx, r.contrat.id), true);
+    const retire = (await contratsEnCours(a.ctx)).find((c) => c.clientId === client.id);
+    assert.equal(retire?.statut, "envoye", "le contrat envoyé a été effacé");
+    assert.ok(retire?.retireDeLaListeAt, "l'heure du retrait n'est pas posée");
+    assert.equal((await lireContratParJeton(e.jeton))?.contrat.id, r.contrat.id, "le lien du client ne s'ouvre plus");
+
+    // Repartir d'un contrat parti en fait un nouveau : la ligne suit le dernier.
+    const repris = await enregistrerContrat(a.ctx, { id: null, clientId: client.id, saisi: SAISI });
+    assert.ok(repris.ok);
+    const lignes = (await contratsEnCours(a.ctx)).filter((c) => c.clientId === client.id);
+    assert.deepEqual(lignes.map((c) => c.statut), ["brouillon"]);
+    if (repris.ok) assert.equal(await retirerContratDeLaListe(a.ctx, repris.contrat.id), true);
+
+    await repondreAuContrat(e.jeton, { decision: "accepte" });
+    assert.equal(await statutLu(), undefined, "accepté, il vit au planning");
+  });
+
+  // Sa règle du 29 septembre 2026 : *« il faut qu'il puisse l'utiliser, peu
+  // importe ce qu'on fera dans l'appli »*. Un contrat parti chez le client ne
+  // s'efface donc jamais par le glissement, même refusé.
+  await cas("refusé, il reste sur l'accueil, et le retirer n'efface rien", async () => {
+    const client = await creerClient(a.ctx, { nom: "Morel", civilite: "mme" });
+    const r = await enregistrerContrat(a.ctx, { id: null, clientId: client.id, saisi: SAISI });
+    assert.ok(r.ok);
+    if (!r.ok) return;
+    const e = await envoyerContrat(a.ctx, r.contrat.id);
+    assert.ok(e.ok);
+    if (!e.ok) return;
+    await repondreAuContrat(e.jeton, { decision: "refuse" });
+    assert.equal((await contratsEnCours(a.ctx)).find((c) => c.clientId === client.id)?.statut, "refuse");
+    assert.equal(await retirerContratDeLaListe(a.ctx, r.contrat.id), true);
+    const lu = (await contratsEnCours(a.ctx)).find((c) => c.clientId === client.id);
+    assert.equal(lu?.statut, "refuse", "le contrat refusé a été effacé");
+    assert.ok(lu?.retireDeLaListeAt, "l'heure du retrait n'est pas posée");
+    assert.equal((await lireContratParJeton(e.jeton))?.contrat.id, r.contrat.id, "le lien du client ne s'ouvre plus");
+  });
+
+  await cas("seul un brouillon, que personne n'a reçu, s'efface", async () => {
+    const client = await creerClient(a.ctx, { nom: "Perrin", civilite: "mr" });
+    const r = await enregistrerContrat(a.ctx, { id: null, clientId: client.id, saisi: SAISI });
+    assert.ok(r.ok);
+    if (!r.ok) return;
+    assert.equal(await retirerContratDeLaListe(a.ctx, r.contrat.id), true);
+    assert.equal((await contratsEnCours(a.ctx)).some((c) => c.clientId === client.id), false);
   });
 
   await cas("les passages d'une entreprise ne se posent pas chez l'autre", async () => {

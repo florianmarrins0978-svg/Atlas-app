@@ -27,6 +27,8 @@ export async function enregistrerContratAction(
     const r = await enregistrerContrat(ctx, { id, clientId, saisi });
     if (!r.ok) return { ok: false, refus: r.refus };
     revalidatePath(`/clients/${clientId}`);
+    // Le brouillon vit aussi dans « Vos chantiers » : l'accueil se relit.
+    revalidatePath("/");
     return { ok: true, id: r.contrat.id };
   } catch (err) {
     console.error("[enregistrerContratAction] échec", { clientId, id, err });
@@ -49,6 +51,7 @@ export async function envoyerContratAction(
     const e = await envoyerContrat(ctx, id);
     if (!e.ok) return { ok: false, refus: e.refus };
     revalidatePath(`/clients/${clientId}`);
+    revalidatePath("/");
     return e;
   } catch (err) {
     console.error("[envoyerContratAction] échec", { clientId, id, err });

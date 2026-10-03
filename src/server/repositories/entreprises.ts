@@ -3,6 +3,7 @@ import { db } from "../db/client";
 import { withEntreprise } from "../db/with-entreprise";
 import { entreprises, entrepriseCompteurs, users, membresEntreprise } from "../db/schema";
 import type { Ctx } from "./context";
+import { remettreLeModeleDans } from "./prestations-entretien";
 import { normaliserConditions, type ConditionsLues } from "@/lib/conditions-documents";
 import {
   refusDuMessage,
@@ -12,11 +13,13 @@ import {
 } from "@/lib/message-client";
 import {
   allureDepuisColonnes,
+  couleurNettoyee,
   estLAllureParDefaut,
   normaliserAllure,
   type Allure,
 } from "@/lib/allure-documents";
 import { FORMATS_NUMERO } from "@/lib/numero-documents";
+import type { EtatDemi } from "@/lib/planning-jour";
 import { MAX_EQUIPES, MAX_SALARIES } from "@/lib/equipes";
 import { capitalEnBase } from "@/lib/mentions-legales";
 import { lireObjet } from "../storage";
@@ -75,6 +78,12 @@ export async function creerEntreprise(
     // idempotent si la fonction était rappelée avec la même entreprise (ne devrait
     // pas arriver en usage normal, mais sans risque de double-provisioning).
     await tx.insert(entrepriseCompteurs).values({ entrepriseId: entreprise.id }).onConflictDoNothing();
+
+    // **Le modèle de fiche d'entretien est là d'office** — sa demande du
+    // 29 septembre 2026 : *« mon modèle doit déjà être là par défaut, et ils la
+    // modifieront s'ils le souhaitent »*. La même écriture que le bouton
+    // « Remettre le modèle Atlas », sur une fiche vide.
+    await remettreLeModeleDans(tx, entreprise.id);
 
     return { entreprise, utilisateurId };
   });
@@ -228,6 +237,12 @@ export async function mettreAJourEntreprise(
      * parti chez un client ne se réécrit pas.
      */
     formatNumero?: string | null;
+    /**
+     * Les couleurs du planning (migration 0113). **Un état absent n'est pas
+     * touché** ; `null` le rend à la couleur de l'apparence. Une valeur qui
+     * n'est pas une couleur ne rentre pas (`couleurNettoyee`).
+     */
+    couleursPlanning?: Partial<Record<EtatDemi, string | null>>;
   }
 ) {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
@@ -286,7 +301,7 @@ export async function mettreAJourEntreprise(
       // l'entreprise sur la version du jour : une correction ultérieure ne
       // l'atteindrait plus, et personne ne s'en apercevrait.
       if (texte === "" || texte === MESSAGES_PAR_DEFAUT[genre].trim()) valeurs[colonne] = null;
-      else if (refusDuMessage(texte) === null) valeurs[colonne] = texte;
+      else if (refusDuMessage(texte, genre) === null) valeurs[colonne] = texte;
       // Sinon : on n'écrit rien. Le réglage reste celui d'avant, et l'écran a
       // déjà dit pourquoi — lever ici rendrait un identifiant opaque au patron.
     }
@@ -305,6 +320,22 @@ export async function mettreAJourEntreprise(
       valeurs.docTypographie = rienDeChoisi ? null : a.typographie;
       valeurs.docFond = rienDeChoisi ? null : a.fond;
       valeurs.docAccent = rienDeChoisi ? null : a.accent;
+    }
+
+    if (data.couleursPlanning !== undefined) {
+      const colonnes: Record<EtatDemi, string> = {
+        libre: "planningRien",
+        dispo: "planningIncomplet",
+        plein: "planningComplet",
+        dela: "planningAuDela",
+      };
+      for (const [etat, couleur] of Object.entries(data.couleursPlanning) as [EtatDemi, string | null][]) {
+        if (couleur === null) valeurs[colonnes[etat]] = null;
+        else {
+          const propre = couleurNettoyee(couleur);
+          if (propre) valeurs[colonnes[etat]] = propre;
+        }
+      }
     }
 
     if (data.formatNumero !== undefined) {

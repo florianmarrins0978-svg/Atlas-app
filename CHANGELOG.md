@@ -6,6 +6,229 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-09-29
+
+### Le modèle de fiche d'entretien est là d'office, et une touche le remet
+
+Ses demandes : *« mon modèle doit déjà être là par défaut, et ils la
+modifieront s'ils le souhaitent »*, puis *« il doit pouvoir la remettre en
+cliquant sur une touche, comme pour les messages préremplis »*, et sa réponse
+« B » à la planche. Un compte neuf reçoit le modèle à sa création
+(`creation-compte.ts`, `creerEntreprise`, le jeu de démonstration) ; la
+migration 0116 le pose sur les comptes d'avant dont la fiche est vide, et sur
+eux seuls, entreprise par entreprise sous FORCE RLS
+(`test-migration-0116-base-habitee.ts`, vue rouge sur la version sans
+contexte). « Remettre le modèle Atlas », dessiné comme « Remettre le message
+d'Atlas », ramène ce qui manque dans sa famille, ses lignes restent, et
+« Annuler » le reprend six secondes (`modeleRemis`, `remettreLeModele`). Les
+retraits en attente s'écrivent avant (`useRetraits.fermer` rend désormais sa
+promesse), sinon le bouton aurait lu une ligne que le retrait effaçait juste
+après. L'écran « fiche vide » et `poserModeleFourni` sont retirés.
+
+### Le message du devis dit ce que l'envoi a fixé, et part avec SON texte
+
+Sa demande : *« vérifie vraiment que si je décoche la possibilité de laisser le
+client me proposer une date, le message qu'il voit ne contient pas la
+mention »*. Vérifié par un test dans le navigateur : la page du devis était
+juste, **le SMS non**, la phrase était écrite dans son texte. Et un second
+défaut trouvé en chemin : **le premier envoi partait avec le texte d'Atlas**,
+jamais le sien ; seule la relance le prenait. Puis sa décision sur la planche
+`appli/lien-valable-45-jours.html`, A : sous le lien, *« Ce lien est valable 45
+jours, jusqu'au … Passé ce délai, vous ne pourrez plus répondre depuis ce lien :
+il faudra appeler … »*, et que ce soit le message par défaut de Réglages.
+
+Deux morceaux dorés, `[autre-date]` (posé selon la case) et `[validite]`
+(obligatoire dans un message de devis, comme le lien). Le message ne se compose
+plus sans ce que l'envoi a fixé (`EnvoiDuDevis`, obligatoire), ni sans son
+modèle, au premier envoi comme à la relance. `VALIDITE_LIEN_JOURS` descend dans
+`lib`, la découpe des morceaux dorés se déduit de leur liste au lieu de la
+recopier. Migration 0115 pour ses messages déjà réécrits, éprouvée sur une base
+habitée (et vue rougir). Suites `test-message-sans-autre-date-e2e`,
+`test-message-du-premier-envoi-e2e`, `test-migration-0115-base-habitee`, cas
+ajoutés à `test-message-client`. **Batterie non jouée**, il l'a interdite.
+`ARCHITECTURE.md` §438.
+
+### « Comment fonctionne le planning » reçoit le planning entier
+
+Sa colère : *« pourquoi il est incapable d'expliquer comment fonctionne le
+planning ? »* Les fiches existaient toutes (poser un client, autre chose, un
+client en attente, les absences, les salariés d'un chantier, les couleurs).
+**La racine** : la recherche n'en rendait que quelques-unes, et la consigne
+n'en laisse réciter qu'UNE : il répondait « Touchez Planning ». Une question
+« comment fonctionne X », « explique-moi X », « à quoi sert X » demande
+désormais la **visite** de l'écran (`visiteDemandee`, `fichesDeLEcran`) : l'outil
+rend toutes ses fiches, la consigne autorise à les présenter ensemble. Et
+**« au-delà »** : la fiche des couleurs dit enfin ce que veut dire chaque mot
+(rien, de la place, toutes les équipes prises, plus de chantiers que
+d'équipes), qu'un absent compte comme un chantier, et où régler le nombre
+d'équipes ; la recherche lisait « au dela » comme le début de « délai ».
+Rouges avant, par la porte de l'assistant. `ARCHITECTURE.md` §440.
+
+### L'assistant interrogé sur la sécurité et sur les astuces : 400 questions tenues
+
+Sa demande : *« repose-lui plein de questions sur le fonctionnement, la
+sécurité, comment l'exploiter au maximum ; vois celles où il bute et
+apporte-lui les réponses ; sors-moi la liste des questions et réponses »*.
+Cent vingt-quatre questions jouées en deux tours, le second neuf. Ce qui
+butait : « est-ce qu'Atlas est sécurisé » rendait la fiche de sécurité d'un
+CHANTIER ; aucune fiche sur le mot de passe, la double authentification, la
+carte bancaire, le lien du client, le RGPD, la revente des données, ni sur les
+astuces ; « comment **fonctionne** le planning » tombait sur la fiche de l'IA ;
+« comment ma dictée devient un devis » tombait sur « écrire sans dicter ».
+**Neuf fiches neuves**, chaque chiffre lu dans le code (12 caractères, 5 essais,
+15 minutes, 43 caractères de lien) ; « fonctionne » et « marche » en mots
+vides ; « sans dicter » soudé. Rouges avant : 28 questions. La liste,
+engendrée des fiches : `docs/assistant-questions-reponses.md`
+(`npx tsx scripts/engendrer-questions-reponses.ts`). `ARCHITECTURE.md` §439.
+
+### Neuf planches : ce que fait chaque « Ajouter »
+
+Sa demande : *« fais-moi une planche pour chaque, réaliste, que je puisse
+essayer, parce que je comprends pas ce que tu as fait »*. Une planche par
+endroit où l'on ajoute (fiche paysage, contrat, équipe, salarié, catalogue,
+fiche de sécurité, planning, absence, achat), chacune avec son témoin
+« Enregistré » qui montre quand l'écriture part. Elles reprennent le
+comportement lu dans le code, défauts compris (`appli/ajouter-*.html`).
+
+### Une prestation écrite dans le contrat entre dans sa fiche
+
+Sa demande : *« si on ajoute une catégorie dans le contrat d'entretien ou sur
+la fiche d'entretien, que ça l'ajoute »*. Le sens fiche vers contrat existait
+déjà (le contrat lit le modèle). Dans l'autre sens, une prestation écrite à la
+main restait sur ce contrat, sans famille. Désormais « Dans quelle famille de
+votre fiche ? » apparaît sous le champ ; il touche une famille ou en crée une,
+et la prestation entre dans le contrat ET à la fin de cette famille dans
+« Composer ma fiche », par la même action que cet écran
+(`ajouterPrestationAction`, mêmes droits : propriétaire, formule avec la fiche).
+Déjà dans la fiche à la casse près : elle garde sa famille, sans doublon. Un
+refus de la fiche (pleine) se dit et n'enlève rien au contrat. Pas de famille
+« Autres » d'office : il avait refusé « Divers » le 24 août. Planche
+`appli/contrat-prestation-dans-ma-fiche.html`, choisie le 29.
+
+### Plus de case vide dans « Travaux à faire »
+
+Sa capture : une case ronde sans texte au-dessus de « Coupe de cheveux homme ».
+Le devis garde les lignes que « + Ajouter une ligne » écrit en base avant le
+premier mot (et `peutPreparerLaPiece` laisse partir une ligne sans libellé) ;
+la fiche les recopiait toutes. La règle « une ligne sans texte n'est pas une
+tâche » vit désormais dans `src/lib/taches-du-devis.ts`, lue par la fiche
+d'intervention, le retour du jour, la fiche de sécurité (« Le devis dit : , … »)
+et la fiche client, qui en portait sa propre copie. Suite :
+`scripts/test-taches-du-devis.ts`, vue rouge avant la correction.
+
+Et la quantité s'y écrit comme une quantité : « Coupe de cheveux homme, 45 u »,
+« Taille de haie, 18 ml », plus « — 45 » qui se lisait comme un prix. Même
+écriture que le papier du devis (`quantiteLisible`, `uniteDeLaLigne`) ; « 1 »
+reste tu, il n'apprend rien.
+
+*« Je ne veux plus avoir de bulle vide »* : les deux autres chemins sont
+fermés. Le retour du jour n'écrit plus une tâche sans texte, quoi que l'écran
+envoie, et un retour envoyé avant cette règle ne la relit plus (la fiche du
+lendemain repart du dernier retour, et Terminés le montre). La preuve n'est pas
+réécrite en base : la ligne vide ne s'affiche plus, c'est tout
+(`sansLigneVide`, `test-retour-intervention-db.ts`).
+
+### L'unité d'une ligne ne porte que la rangée : « arbre » devient « u »
+
+Sa règle, capture à l'appui : *« dans l'unité, il ne peut pas y avoir la
+mention arbre ; quand je parle d'un arbre, d'un arbuste ou d'une plante, c'est
+la mention U qui doit apparaître »*. La dictée garde le mot prononcé (« trois
+arbres » : unité « arbre ») pour comparer les prix, et le dépôt le recopiait tel
+quel sur la ligne du devis.
+
+La règle vit dans `uniteAdmise` (`src/lib/unite-de-ligne.ts`), appliquée là où
+la ligne s'écrit : `ajouterLignePrix`, `modifierLignePrix`, `majLigneDeFacture`.
+Dictée, IA, tarif repris et doigt passent tous par là. Une forme dite se ramène
+à la rangée (« m3 » : m³, « heure » : h) ; tout autre mot s'enregistre sans
+unité, donc s'imprime « u ». La case retombe sur « u » dès qu'on la quitte.
+`scripts/test-unite-de-ligne-db.ts`, vu rouge sur l'ancien code.
+
+Puis sa consigne, *« corrige à la racine »* : la migration **0112** reprend ce
+qui était déjà en base (la ligne de sa capture) : lignes de prix, lignes d'un
+devis ou d'une facture encore en brouillon. Un devis envoyé, une facture émise
+ne bougent pas : ils sont chez le client. Elle boucle par entreprise (FORCE
+RLS) ; `scripts/test-migration-0112-base-habitee.ts`, vu rouge sans elle.
+L'écran du devis ne nettoie plus l'unité lui-même : le dépôt le fait.
+
+### Une ligne sans rien ne part plus sur le devis
+
+Sa réponse, *« Oui »* : la ligne que « + Ajouter une ligne » écrit sur la
+feuille avant le premier mot, laissée vide, partait sur le devis (une rangée
+blanche sur le PDF du client, une case vide sur la fiche de l'équipe). Elle
+reste sur la feuille, où il écrit, et ne passe plus au document :
+`lignesDuDocument` (`src/lib/preparation-devis.ts`), appelée par
+`getOuCreerDevisBrouillon`, par où passent les quatre gestes qui en posent une
+(« + Ajouter une ligne » du devis et de l'écran Prix, « Ajouter une TVA », un
+texte effacé). Une ligne sans libellé mais chiffrée, ou « à chiffrer », part
+toujours. Suite : `scripts/test-devis-sans-ligne-vide-db.ts`, vue rouge avant.
+
+**La facture aussi**, sur sa demande : la ligne laissée vide s'efface à
+l'émission (avant le PDF archivé et le trigger qui fige la pièce), et
+l'aperçu du brouillon ne la montre plus. Elle ne revient donc plus en choix
+blanc dans l'avoir (`test-facture-sans-devis-db.ts`).
+
+**Et le relevé de tous les « + Ajouter »** (*« va vérifier tous les endroits
+où on peut rajouter des lignes ou des choses »*) a trouvé un vrai défaut : le
+tarif que « + Ajouter un tarif » écrit vide, à 0 €, était proposé par
+l'assistant pour n'importe quel travail. La règle de rapprochement vivait en
+deux copies, l'une juste (le calcul du prix), l'autre non (l'outil) ; elle
+vit désormais une fois, `src/lib/tarifs-correspondants.ts`
+(`test-tarif-vide-assistant-db.ts`, vue rouge avant). Prestations et matériel
+(Informations) écrivent aussi une ligne vide, mais tous leurs écrans et
+documents la filtrent déjà. Les acomptes s'écrivent dès l'appui, mais jamais
+vides : 30 % (ou le taux des Réglages), puis 50, puis 75 (`acompteSuivantPropose`,
+`test-acomptes-devis-e2e.ts`). Le reste des « + Ajouter » n'écrit rien avant le
+premier mot.
+Ce qui reste ouvert est dans `TODO.md`.
+
+### Les couleurs du planning se choisissent (migration 0113)
+
+Sa demande : changer les couleurs de rien, incomplet, complet et au-delà depuis
+le planning. « Couleurs », sous la légende, ouvre le même réglage que l'allure
+des devis : nuancier libre, quatre raccourcis, enregistré au fur et à mesure.
+Pour toute l'entreprise, le propriétaire seul. **Ce que ça évite** : une
+couleur choisie qui n'arriverait que sur certains écrans (elle passe par la
+variable que lit `fondDeLEtat`), et un noir invisible sur Nuit (éclairci juste
+assez, `ARCHITECTURE.md` §435). Rien ne bouge tant qu'il n'a rien choisi.
+
+### Glisser un devis ou un contrat envoyé le retire de la liste sans couper le lien du client
+
+Sa règle : *« il doit pouvoir les retirer en les slidant, mais ça ne doit pas
+impacter le lien cliquable envoyé au client »*. Elle a fait trouver un défaut
+réel : glisser un devis envoyé SUPPRIMAIT le chantier ; le lien s'ouvrait
+encore, mais une acceptation arrivée ensuite restait invisible, ni carte, ni
+planning. Désormais ce qui attend le client se retire sans rien effacer
+(migration 0114, `retire_de_la_liste_at`), et la réponse du client ramène la
+ligne avec sa carte. Le reste se supprime comme avant. Puis sa précision :
+*« il faut qu'il puisse l'utiliser, peu importe ce qu'on fera dans l'appli »* ;
+un contrat refusé glissé n'est plus effacé non plus, seul un brouillon l'est. Suites
+`test-retirer-sans-casser-le-lien-e2e` (rouge puis vert),
+`test-retirer-de-la-liste`, cas ajoutés à `test-rappels-db`,
+`test-contrats-entretien(-db)` et `test-contrat-quitte-e2e`. `ARCHITECTURE.md`
+§437.
+
+### Un contrat d'entretien commencé puis quitté se retrouve dans « Vos chantiers »
+
+Sa plainte : *« lorsque j'ouvre un contrat d'entretien pour réaliser le devis,
+si je quitte, il ne s'enregistre pas dans mes chantiers en cours »*. Deux
+racines. **L'écran du contrat n'écrivait rien** avant « Aperçu du PDF » ou
+« Envoyer » : quitté, le contrat partait avec lui. Il s'enregistre désormais à
+chaque geste, dès la première prestation, dans une file qui ne crée jamais deux
+brouillons ; l'aperçu et l'envoi passent par la même écriture (la création en
+double qui vivait dans `envoyer` a disparu). **L'accueil ne lisait que des
+chantiers** : il lit aussi les brouillons de contrat (« Contrat à compléter »
+ou « Contrat prêt à envoyer »), la ligne rouvre l'écran du contrat, et le
+glissement le retire (un brouillon seulement). Parti chez le client, il quitte
+la liste. Puis sa règle du même jour : *« tout ce qui est devis, contrat d'entretien,
+dernier devis ou autre doivent arriver là »*. Un contrat envoyé reste sur
+l'accueil, « Contrat envoyé, sans réponse » avec son jour d'envoi, jusqu'à ce
+que le client l'accepte ; refusé, il y reste aussi, comme un devis. Suite neuve
+`test-contrat-quitte-e2e` (rouge sur l'ancien code à chaque étape, vert
+ensuite), cas ajoutés à `test-contrats-entretien`, `-db` et
+`test-repartir-du-client-e2e`. `ARCHITECTURE.md`
+§436. Niveau 3 (rayon de 102 points d'entrée) : **batterie non jouée**, il l'a
+interdite ; pas sur `main`.
+
 ## 2026-09-28
 
 ### Trois lots sur `main` en une seule batterie

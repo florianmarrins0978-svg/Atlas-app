@@ -520,8 +520,9 @@ export const FICHES_REGLAGES: FicheModeEmploi[] = [
     ecran: "Équipe",
     ou: `${R}, puis Équipe`,
     intitule: "Régler combien de chantiers partent le même jour",
-    motsCles: ["combien", "chantiers", "jour", "equipes", "meme", "temps", "parallele", "nombre"],
+    motsCles: ["combien", "chantiers", "jour", "equipes", "meme", "temps", "parallele", "nombre", "au-delà"],
     geste: "Sous « Combien de chantiers par jour », touchez « + » ou « − ».",
+    reserve: "C'est votre nombre d'équipes : au planning, un jour qui en demande plus passe en « au-delà ».",
     source: "src/app/reglages/VosEquipes.tsx",
     preuves: ["Combien de chantiers par jour", "Une équipe de plus", "Une équipe de moins"],
   },
@@ -540,7 +541,7 @@ export const FICHES_REGLAGES: FicheModeEmploi[] = [
     ecran: "Équipe",
     ou: `${R}, puis Équipe, bloc Absences`,
     intitule: "Noter l'absence d'un salarié (congé, arrêt, déplacement)",
-    motsCles: ["absence", "absent", "conge", "conges", "vacances", "arret", "maladie", "noter", "indisponible"],
+    motsCles: ["absence", "absent", "conge", "conges", "vacances", "arret", "maladie", "noter", "indisponible", "gars"],
     geste:
       "Touchez « + Noter une absence », choisissez qui, le premier et le dernier jour, puis « Noter l’absence ». " +
       "Pour l'effacer, touchez la croix sur sa ligne.",
@@ -650,7 +651,7 @@ export const FICHES_REGLAGES: FicheModeEmploi[] = [
     ecran: "Atlas IA",
     ou: `${R}, puis Atlas IA`,
     intitule: "Voir ce que l'IA d'Atlas sait faire aujourd'hui",
-    motsCles: ["ia", "intelligence", "artificielle", "sait", "marche", "dictee", "branchee", "fonctionne"],
+    motsCles: ["ia", "intelligence", "artificielle", "sait", "dictee", "branchee"],
     geste: "Ouvrez « Atlas IA » : chaque ligne dit « Oui » ou « Pas encore ».",
     reserve: "Réservé au patron. Rien à faire de votre côté pour ce qui n'est pas encore branché.",
     source: "src/app/reglages/ia/page.tsx",

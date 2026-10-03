@@ -120,6 +120,8 @@ export async function listerChantiersPourAffichage(ctx: Ctx) {
         majAt: chantiers.updatedAt,
         // Un passage de contrat se range au planning (`ongletDuChantier`).
         contratEntretienId: chantiers.contratEntretienId,
+        // Glissé hors de la liste sans rien effacer (`retireDeLaListe`).
+        retireDeLaListeAt: chantiers.retireDeLaListeAt,
         informationsVerifieesAt: chantiers.informationsVerifieesAt,
         // **Le jalon qui manquait à la LISTE (13 août 2026).** Sans lui,
         // `getStatutAffiche` ne pouvait pas savoir qu'un devis était écrit, et
@@ -1228,6 +1230,23 @@ export async function supprimerChantier(ctx: Ctx, chantierId: string): Promise<v
       .update(chantiers)
       .set({ deletedAt: new Date(), updatedBy: ctx.utilisateurId, updatedAt: new Date() })
       .where(eq(chantiers.id, chantierId));
+  });
+}
+
+/**
+ * Retire un chantier de « Vos chantiers » SANS l'effacer : son devis attend le
+ * client, dont le lien doit rester ouvert, et dont la réponse doit revenir.
+ * Sa règle du 29 septembre 2026 ; qui se retire ainsi, c'est
+ * `seRetireSansEffacer` qui le dit, pas ce dépôt.
+ */
+export async function retirerChantierDeLaListe(ctx: Ctx, chantierId: string): Promise<boolean> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const touches = await tx
+      .update(chantiers)
+      .set({ retireDeLaListeAt: new Date(), updatedBy: ctx.utilisateurId })
+      .where(and(eq(chantiers.id, chantierId), isNull(chantiers.deletedAt)))
+      .returning({ id: chantiers.id });
+    return touches.length === 1;
   });
 }
 

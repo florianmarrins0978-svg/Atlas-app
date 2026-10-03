@@ -698,8 +698,9 @@ export default function DevisCompletClient(props: Props) {
         libelle: ligne.libelle,
         quantite: normaliser(ligne.quantite, "1"),
         prixUnitaire: normaliser(ligne.prixUnitaire, "0"),
-        // Vide : aucune unité, et le papier n'écrit que la quantité.
-        unite: (ligne.unite ?? "").trim() || null,
+        // Ce qui est hors de la rangée, vide compris, le dépôt le rend sans
+        // unité (`uniteAdmise`) : la règle ne se redit pas ici.
+        unite: ligne.unite ?? null,
       })
     );
   }
@@ -1928,6 +1929,8 @@ export default function DevisCompletClient(props: Props) {
             clientNom: client.nom,
             clientCivilite: client.civilite,
             entrepriseNom: emetteur.nom,
+            modele: envoi.modeleMessage,
+            envoi: envoi.envoiDuDevis,
           });
 
           // **UNE ADRESSE LOCALE NE RAMÈNE PAS À L'ACCUEIL — posé le 24 août

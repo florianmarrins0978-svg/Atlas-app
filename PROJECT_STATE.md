@@ -1,9 +1,56 @@
 # État du projet
 
-**Dernière mise à jour :** 2026-09-26 · branche `claude/client-disappearance-no-date-f26td1`
-· dernière migration `drizzle/0106_hausse_du_devis_repris.sql` (sur la branche)
+**Dernière mise à jour :** 2026-09-29, branche `claude/batterie-commune-29-septembre`
+(neuf lots de six sessions, réunis pour une seule batterie), dernière migration
+`drizzle/0116_modele_de_fiche_d_office.sql`
 
 ---
+## CODÉ : L'UNITÉ D'UNE LIGNE NE PORTE QUE LA RANGÉE (29 septembre 2026)
+
+« arbre », « arbuste », « plante » ne s'écrivent plus dans la case Unité d'un
+devis ou d'une facture : la ligne reçoit « u ». `uniteAdmise`, au dépôt ;
+migration 0112 pour ce qui était déjà en base. Branche
+`claude/unite-ligne-rangee-seule`, batterie non jouée (sa consigne).
+
+· dernière migration `drizzle/0113_couleurs_du_planning.sql` (sur sa branche)
+
+---
+## SUR SA BRANCHE : LES COULEURS DU PLANNING (29 septembre 2026)
+
+Rien, incomplet, complet, au-delà se choisissent sous la légende du planning,
+pour toute l'entreprise, comme l'allure des devis. Migration 0113. Branche
+`claude/couleurs-du-planning` ; la batterie n'est pas jouée, à sa demande.
+
+· dernière migration `drizzle/0114_retire_de_la_liste.sql` (branche `claude/contrat-quitte-dans-chantiers`)
+
+---
+## SUR `main` LE 30 SEPTEMBRE 2026 : LE CONTRAT QUITTÉ DANS « VOS CHANTIERS » (29 septembre 2026)
+
+L'écran du contrat d'entretien s'enregistre à chaque geste ; l'accueil liste
+les contrats tant que le client ne les a pas acceptés (brouillon, envoyé sans
+réponse, refusé), comme les devis. Glisser un devis ou un contrat envoyé le
+retire de la liste sans rien effacer : le lien du client s'ouvre, sa réponse
+ramène la ligne (migration 0114, §437). Branche
+`claude/contrat-quitte-dans-chantiers`, `ARCHITECTURE.md` §436 et §437. Niveau 3,
+batterie interdite ce jour-là : pas sur `main`.
+
+## SUR SA BRANCHE : LE MESSAGE DU DEVIS (29 septembre 2026)
+
+Le SMS suit la case « autre date », dit la durée du lien (45 jours, la date,
+puis appeler), et le premier envoi porte SON message. Branche
+`claude/message-du-premier-envoi`, migration 0115, `ARCHITECTURE.md` §438.
+Niveau 3, batterie interdite ce jour-là : pas sur `main`.
+
+## SUR SA BRANCHE : L'ASSISTANT SUR LA SÉCURITÉ ET LES ASTUCES (29 septembre 2026)
+
+Neuf fiches neuves (sécurité, mot de passe, oubli, double authentification,
+carte, lien client, RGPD, usage des données, astuces) ; la liste des 400
+questions tenues, engendrée : `docs/assistant-questions-reponses.md`.
+Puis « comment fonctionne le planning » : la visite d'un écran entier, et le
+sens de « au-delà » (§440).
+Branche `claude/assistant-all-questions-ahg55r`, `ARCHITECTURE.md` §439 et §440.
+Niveau 3 (fiches de devis et de facture touchées) : batterie à jouer avant `main`.
+
 ## SUR `main` : L'ASSISTANT RÉPOND SUR SES DONNÉES (28 septembre 2026)
 
 Quatre fiches « comment Atlas se comporte » (conservation, après l'arrêt, qui

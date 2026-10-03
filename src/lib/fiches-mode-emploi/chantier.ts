@@ -148,7 +148,7 @@ export const FICHES_CHANTIER: FicheModeEmploi[] = [
     ecran: "Chantiers",
     ou: "« Chantiers », la carte en haut de la liste",
     intitule: "Rappels : devis en attente, devis sans réponse, chantier à facturer",
-    motsCles: ["rappel", "rappels", "attente", "relance", "relancer", "facturer", "oublie", "reponse"],
+    motsCles: ["rappel", "rappels", "attente", "relance", "relancer", "facturer", "oublie", "reponse", "oublier", "jamais"],
     geste:
       "Touchez le lien de la carte : « Faire le devis » sur « Devis en attente », « Ouvrir le chantier » " +
       "sur « Devis sans réponse », « Créer la facture » sur « À facturer ».",
@@ -197,7 +197,7 @@ export const FICHES_CHANTIER: FicheModeEmploi[] = [
     ecran: "Fiche client",
     ou: OU_FICHE_CLIENT,
     intitule: "Écrire son devis soi-même, sans dicter",
-    motsCles: ["rediger", "ecrire", "main", "taper", "manuel", "manuellement", "sans", "dicter", "devis"],
+    motsCles: ["rediger", "ecrire", "main", "taper", "manuel", "manuellement", "sans dicter", "devis"],
     geste: "Touchez « Je rédige à la main », en bas de la fiche client : le devis s'ouvre, vide.",
     reserve: "Le bouton disparaît pendant qu'on dicte.",
     source: FICHE,
@@ -263,7 +263,7 @@ export const FICHES_CHANTIER: FicheModeEmploi[] = [
     ecran: "Fiche client",
     ou: OU_FICHE_CLIENT,
     intitule: "Dicter le chantier pour qu'Atlas écrive le devis",
-    motsCles: ["dicter", "dictee", "vocal", "vocale", "note", "micro", "parler", "enregistrer", "voix"],
+    motsCles: ["dicter", "dictee", "dictant", "vocal", "vocale", "note", "micro", "parler", "enregistrer", "voix", "transforme", "ecrit"],
     geste:
       "Touchez le micro au centre, décrivez le chantier, puis touchez l'avion à droite : " +
       "Atlas prépare le devis et l'ouvre.",
@@ -297,7 +297,7 @@ export const FICHES_CHANTIER: FicheModeEmploi[] = [
     ecran: "Fiche client",
     ou: OU_FICHE_CLIENT,
     intitule: "Ajouter des photos au chantier",
-    motsCles: ["photo", "photos", "image", "ajouter", "pellicule", "appareil", "prendre", "galerie"],
+    motsCles: ["photo", "photos", "image", "ajouter", "pellicule", "appareil", "prendre", "galerie", "ranger"],
     geste: "Sous « Photos », touchez le carré « + » puis prenez ou choisissez les photos.",
     reserve: "Au plus 15 photos à la fois, et 30 par chantier.",
     source: PELLICULE,

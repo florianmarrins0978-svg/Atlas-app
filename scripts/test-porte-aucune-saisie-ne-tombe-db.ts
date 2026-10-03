@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import { creerSonCompte, type SaisieCompte } from "../src/server/repositories/creation-compte";
 import { FORMES_JURIDIQUES } from "../src/lib/formes-juridiques";
 import { phraseDeLaPanne } from "../src/lib/panne-de-base";
+import { MODELE_FOURNI } from "../src/lib/prestations-entretien";
+import { listerPrestations } from "../src/server/repositories/prestations-entretien";
 
 /**
  * AUCUNE FAÇON DE REMPLIR LA PORTE NE DOIT FAIRE TOMBER L'APPLICATION.
@@ -118,6 +120,25 @@ async function main() {
       echecs += 1;
       console.error(`  ✗ ${v.nom}\n    ${(e as Error).message.split("\n")[0]}`);
     }
+  }
+
+  // **Le compte ouvert par la porte porte le modèle de fiche d'entretien
+  // d'office** — sa demande du 29 septembre 2026 : *« mon modèle doit déjà être
+  // là par défaut »*. C'est ce chemin-ci que prend un vrai artisan, pas
+  // `creerEntreprise`, qui ne sert qu'aux suites et à la démonstration.
+  try {
+    const r = await creerSonCompte({ ...BASE, email: `porte-modele-${Date.now()}@exemple.fr` });
+    assert.ok(r.ok, "le compte de référence n'a pas pu s'ouvrir");
+    const fiche = await listerPrestations({ utilisateurId: r.utilisateurId, entrepriseId: r.entrepriseId });
+    assert.deepEqual(
+      fiche.map((l) => l.libelle),
+      MODELE_FOURNI.map((m) => m.libelle),
+      "le compte neuf n'a pas le modèle de fiche d'entretien"
+    );
+    console.log("  ✓ le compte ouvert porte le modèle de fiche d'entretien");
+  } catch (e) {
+    echecs += 1;
+    console.error(`  ✗ le compte ouvert porte le modèle de fiche d'entretien\n    ${(e as Error).message.split("\n")[0]}`);
   }
 
   // Un contrôle qui ne mesure rien n'est pas un contrôle (`CLAUDE.md` §5) :

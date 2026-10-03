@@ -20,6 +20,100 @@ le bouton de sous-traitance, à la même place.
 À part, relevé en relevant les écrans : la facture et son PDF écrivent
 « Mr. Jardins Ribault » alors qu'aucune civilité n'est cochée sur la fiche.
 
+## ⏳ SUR ORDINATEUR : la planche attend son choix (30 septembre 2026)
+
+Sa demande : *« il faut que ça prenne l'entièreté de l'ordinateur »*. Le site
+servira les ordinateurs (installable depuis Chrome ou Edge, sans magasin),
+l'App Store les téléphones : **une seule application qui change de forme**, pas
+un second logiciel.
+
+La cause est connue : tout vit dans `max-w-md` (448 px), posé par
+`CadreApplication.tsx` et `AtlasBottomNav.tsx`, et aucun écran de `src/` n'a de
+règle pour les grands écrans (29 `max-w-md` au total).
+
+Planche : `appli/sur-ordinateur.html`. Quand il aura choisi, trois lots dans
+cet ordre, chacun de niveau 3 (le cadre touche tous les écrans) :
+
+1. le cadre et la navigation à gauche au-dessus de 1024 px ;
+2. les deux panneaux de Chantiers et de Clients ;
+3. le planning pleine largeur, clients sans date à droite.
+
+Le téléphone ne doit pas bouger d'un pixel : chaque lot compare ses captures
+à 390 px avant et après.
+
+**Téléphone et ordinateur reliés : sa condition du 3 octobre 2026.** *« ce qui
+sera fait sur l'appli téléphone doit être relié à celui de l'ordi »*. C'est vrai
+de l'application Next.js (une base, un compte). **Ce n'est PAS vrai de la coque
+iPhone telle qu'elle est configurée** : `appli/capacitor.config.json` n'a pas de
+`server.url` et empaquette les pages de `appli/`, qui gardent leurs données
+dans le téléphone (`appli/PRINCIPES.md`, « local-first »). Avant toute
+soumission à l'App Store, la coque doit ouvrir l'adresse hébergée de
+l'application, sans quoi les deux appareils ne partageraient rien.
+
+## 🔜 `test-poser-une-date-e2e` ROUGE LE 30 SEPTEMBRE 2026, SUR `main` AUSSI
+
+« aucun jour d'accueil ouvrable au calendrier » : rouge de la même façon sur
+`main` seul (`verifier-rouge-prealable.ts`, base `bdc2228b`), donc pas un défaut
+des lots livrés ce jour-là. Hypothèse non vérifiée : la grille du mois affiché
+n'a plus de jour ouvrable après le chantier en fin de mois. Reproduire en
+figeant la date, test rouge, puis corriger la suite (le produit n'est pas mis
+en cause à ce stade).
+
+## ✅ LE MODÈLE DE FICHE DÉJÀ LÀ : CODÉ LE 29 SEPTEMBRE 2026, sa réponse « B »
+
+
+## ✅ LE MESSAGE DU DEVIS : codé le 29 septembre 2026, SUR `main` LE 30 SEPTEMBRE 2026
+
+Branche `claude/message-du-premier-envoi`. Planche
+`appli/lien-valable-45-jours.html`, **A retenue**. `ARCHITECTURE.md` §438.
+
+| Codé et éprouvé ici | |
+|---|---|
+| le premier envoi porte SON message, plus celui d'Atlas | `test-message-du-premier-envoi-e2e`, rouge puis vert |
+| case « autre date » décochée : la phrase ne part plus | `test-message-sans-autre-date-e2e`, rouge puis vert |
+| sous le lien : 45 jours, la date, et qu'après il faudra appeler | même suite, et `test-message-client` |
+| le message par défaut de Réglages porte les deux morceaux, en doré | regardé à l'écran |
+| ses messages déjà réécrits, par la migration 0115 | `test-migration-0115-base-habitee` |
+
+| Reste | Qui |
+|---|---|
+| ~~batterie, puis `main`~~ batterie commune jouée le 30 septembre, sur `main` le 30 | fait |
+
+## ⏳ UNE PLANCHE À REGARDER : LE MODÈLE DE FICHE DÉJÀ LÀ (29 septembre 2026)
+
+Planche `appli/fiche-paysage-modele.html`. Le modèle est posé à la création
+du compte (`creation-compte.ts`, `creerEntreprise`, le jeu de démonstration)
+et par la migration 0116 sur les comptes d'avant dont la fiche est vide.
+« Remettre le modèle Atlas » ramène ce qui manque, chacun dans sa famille,
+ses lignes restent (`modeleRemis`, `remettreLeModele`), « Annuler » six
+secondes. La fiche vide d'avant (« Partir du modèle Atlas ») a disparu.
+**Branche `claude/modele-fiche-par-defaut`, niveau 3 (migration) : la
+batterie reste à jouer avant `main`.**
+
+## ⚠️ « + AJOUTER UNE LIGNE » ÉCRIT ENCORE LA LIGNE VIDE SUR LA FEUILLE (29 septembre 2026)
+
+Elle ne part plus sur aucun document (devis : `getOuCreerDevisBrouillon` ;
+facture : `emettreFacture`, `lignesDuDocument`), mais elle existe en base
+dès l'appui, sur le devis, l'écran Prix et la facture. **Le risque qui reste**,
+lu dans l'en-tête de `src/lib/ligne-ouverte-devis.ts` et pas reproduit : une
+seule ligne vide fait croire « le devis a déjà des lignes » à
+`devis-depuis-dictee.ts` (ligne `listerLignesPrix(...).length === 0`), et la
+dictée qui arrive ensuite ne s'y écrit pas. La racine : faire vivre la ligne
+ajoutée dans l'écran jusqu'au premier mot, comme la ligne ouverte d'avance.
+Travail dans l'écran du devis (identifiant qui ne change pas, ordre des
+écritures), donc un lot à lui, de niveau 3.
+
+## ⏳ UNE PLANCHE À REGARDER : LES COULEURS DU PLANNING (29 septembre 2026)
+
+## ✅ LES COULEURS DU PLANNING : CODÉ LE 29 SEPTEMBRE 2026, SUR `main` LE 30 SEPTEMBRE 2026
+
+Planche `appli/couleurs-du-planning.html`, « Parfait code ça ». Branche
+`claude/couleurs-du-planning`, migration 0113 (`ARCHITECTURE.md` §435). **Sa
+consigne : pas de batterie.** Niveau 3 (migration) : `main` attend la batterie,
+et son accord pour la lancer. Joués : types, lint, `test-couleurs-du-planning`
+(vu rouge sans l'éclaircissement), allure, couches, code mort, pansements,
+chartes lisibles ; regardés : le planning (Origine et Nuit), le calendrier et la fiche du jour quand il propose une date, le carré « complet » de Réglages Équipe.
+
 ## ✅ ABSENT LE MATIN, COCHABLE L'APRÈS-MIDI : SUR `main` LE 28 SEPTEMBRE 2026
 
 `cocheRefusee` juge la demi-journée, l'écran l'appelle au lieu de sa propre
@@ -97,6 +191,19 @@ vert le 27, sur `main` avec son accord. `ARCHITECTURE.md` §427, document de ret
 | le rappel du 20 sur l'accueil : **non codé** | à coder |
 | le patron n'est pas notifié quand le client valide ou déplace : le planning bouge seul | à trancher par lui |
 | un contrat dans le jeu de démonstration, pour que `test-pages-publiques-sans-navigation-e2e` ouvre vraiment `/contrat` et `/contrat/dates` | à coder |
+
+## ✅ LE CONTRAT QUITTÉ, ET RETIRER SANS COUPER LE LIEN : codé le 29 septembre 2026, SUR `main` LE 30 SEPTEMBRE 2026
+
+Sa plainte : un contrat d'entretien commencé puis quitté ne se retrouvait pas
+dans ses chantiers en cours. Corrigé à la racine (`ARCHITECTURE.md` §436,
+`docs/contrat-quitte.md`), puis le glissement qui retire sans supprimer
+(§437, migration 0114). **Niveau 3, batterie interdite par lui** : elle reste
+à jouer avant `main`.
+
+| Reste | Qui |
+|---|---|
+| ~~batterie, puis `main`~~ batterie commune jouée le 30 septembre, sur `main` le 30 | fait |
+| ~~le lien d'un devis meurt au bout de 45 jours~~ tranché le 29 septembre : on garde 45 jours, et le message au client le dit (planche `appli/lien-valable-45-jours.html`, branche `claude/maquette-lien-45-jours`) | fait |
 
 ## 🔜 CONTRAT D'ENTRETIEN : LOTS 1 ET 2 SUR `main` (26 et 27 septembre 2026)
 

@@ -109,7 +109,7 @@ const DEVIS_PARTI_SANS_REPONSE: ChantierStatut[] = ["devis_envoye", "en_attente_
  * lettre accentuée aujourd'hui, mais une chaîne vide ou une lettre hors ASCII
  * ne doit pas rendre autre chose qu'elle-même.
  */
-function enCapitale(texte: string): string {
+export function enCapitale(texte: string): string {
   return texte ? texte[0].toLocaleUpperCase("fr") + texte.slice(1) : texte;
 }
 
@@ -473,6 +473,35 @@ export function trierParDatePlanifiee<T extends { datePlanifiee?: string | null 
     if (!b.datePlanifiee) return -1;
     return a.datePlanifiee < b.datePlanifiee ? -1 : a.datePlanifiee > b.datePlanifiee ? 1 : 0;
   });
+}
+
+/**
+ * **Glisser la ligne d'un devis qui attend le client la RETIRE de la liste,
+ * sans rien effacer.** Sa règle du 29 septembre 2026 : *« il doit pouvoir les
+ * retirer en les slidant sur le côté, mais ça ne doit pas impacter le lien
+ * cliquable envoyé au client ! Il doit quand même pouvoir l'ouvrir »*.
+ *
+ * Le glissement supprimait le chantier : le lien s'ouvrait encore, mais une
+ * acceptation arrivée ensuite posait au planning un chantier supprimé, donc
+ * invisible, et sans notification. Tout le reste se supprime comme avant.
+ */
+export function seRetireSansEffacer(statut: ChantierStatut): boolean {
+  return DEVIS_PARTI_SANS_REPONSE.includes(statut);
+}
+
+/**
+ * La ligne est-elle retirée de « Vos chantiers » ? Oui tant que le client n'a
+ * pas répondu : sa réponse change le statut, et la ligne revient avec la
+ * carte qui l'annonce. Un NOUVEL envoi parti après le retrait la remet aussi :
+ * c'est un autre devis qui attend.
+ */
+export function retireDeLaListe(c: {
+  statut: ChantierStatut;
+  retireDeLaListeAt: Date | null;
+  envoiEnvoyeAt?: Date | string | null;
+}): boolean {
+  if (!c.retireDeLaListeAt || !seRetireSansEffacer(c.statut)) return false;
+  return !c.envoiEnvoyeAt || new Date(c.envoiEnvoyeAt) <= c.retireDeLaListeAt;
 }
 
 /**

@@ -21,7 +21,20 @@ export async function lireCharte(): Promise<NomCharte | null> {
   const session = await auth();
   const utilisateurId = session?.user?.id;
   if (!utilisateurId) return null;
+  return charteDeLaPersonne(utilisateurId);
+}
 
+/**
+ * La charte d'une personne déjà identifiée par le serveur (`ctx.utilisateurId`,
+ * tiré de sa session par `getCurrentCtx`, jamais de l'écran).
+ *
+ * **Pourquoi elle existe à part** : `contextePlanning` reçoit la personne en
+ * paramètre et sert aussi hors d'une requête (les suites, un cron). Y relire la
+ * session par `auth()` le faisait tomber sur « `headers` was called outside a
+ * request scope » (`test-planning-portee-db`, 29 septembre 2026) : une
+ * fonction qui connaît déjà la personne ne va pas la redemander au navigateur.
+ */
+export async function charteDeLaPersonne(utilisateurId: string): Promise<NomCharte | null> {
   const [ligne] = await db
     .select({ charte: users.charte })
     .from(users)

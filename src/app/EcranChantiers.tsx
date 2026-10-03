@@ -10,6 +10,7 @@ import TiroirDesRetires from "@/components/atlas/TiroirDesRetires";
 import { useRetraits } from "@/components/atlas/useRetraits";
 import FormulaireNouveauChantier, { type FermetureDeLaFeuille } from "./chantiers/nouveau/FormulaireNouveauChantier";
 import { supprimerChantierAction } from "./planning/actions";
+import { retirerChantierDeLaListeAction, retirerContratDeLaListeAction } from "./actions";
 import ListeChantiers, { type BrinChantier } from "./ListeChantiers";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -126,7 +127,18 @@ export default function EcranChantiers({
   // l'écriture faite, ici comme sur les sept autres listes qui suppriment. La
   // recopie qui vivait ici ne tenait que cet écran-ci — et le planning, lui,
   // ne l'avait pas (12 septembre 2026).
-  const retraits = useRetraits({ valider: (id) => supprimerChantierAction(id) });
+  // Chaque ligne dit ce que son glissement fait (`BrinChantier.retrait`) :
+  // un devis ou un contrat chez le client se retire sans rien effacer, son
+  // lien reste ouvert.
+  const retraitDe = new Map(chantiers.map((c) => [c.id, c.retrait]));
+  const retraits = useRetraits({
+    valider: (id) => {
+      const retrait = retraitDe.get(id);
+      if (retrait === "contrat") return retirerContratDeLaListeAction(id);
+      if (retrait === "retirer") return retirerChantierDeLaListeAction(id);
+      return supprimerChantierAction(id);
+    },
+  });
 
   // **Le décompte suit ce qui reste, sans attendre le serveur.** Un « 8 »
   // au-dessus de sept lignes ferait douter que le retrait ait eu lieu.

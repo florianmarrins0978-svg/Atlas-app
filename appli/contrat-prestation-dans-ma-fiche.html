@@ -1,0 +1,384 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Prestation du contrat dans ma fiche</title>
+<style>
+  /*
+    SA DEMANDE DU 29 SEPTEMBRE 2026 : « si on ajoute une catégorie dans le
+    contrat d'entretien ou sur la fiche d'entretien, que ça l'ajoute ».
+    Puis, devant la première version : « fais une maquette réaliste ».
+
+    Ce qui existe déjà : ce qu'il ajoute dans « Composer ma fiche » apparaît
+    dans la liste du contrat (`src/app/clients/[id]/contrat/page.tsx` lit
+    `listerPrestations`). Ce qui manque : une prestation ÉCRITE à la main dans
+    le contrat reste sur ce contrat, sans famille, et n'entre pas dans sa fiche.
+
+    Sa réponse : « Je choisis la famille ». Pas de famille « Autres » par
+    défaut : il l'avait déjà refusée le 24 août (« Divers », en tête de
+    `ComposerMaFiche.tsx`).
+
+    RECONSTRUIT D'APRÈS LE CODE, mesures comprises : l'écran du contrat
+    d'après `ContratClient.tsx` (carte, grille des douze mois, compteur,
+    prix, tiroir d'ajout), l'en-tête d'après `EnTeteEcran.tsx` (titre, puis
+    surtitre doré dessous), « Composer ma fiche » d'après `ComposerMaFiche.tsx`
+    (famille en petites capitales dorées, « Retirer la famille », croix des
+    lignes, « + Ajouter une prestation » doré). Libellés de `MODELE_FOURNI`.
+    Le nom du client et les prix sont inventés.
+
+    CE QUI EST NEUF, et rien d'autre : la rangée « Dans quelle famille de
+    votre fiche ? » sous le champ, et l'entrée de la prestation dans la fiche.
+    Une prestation déjà dans la fiche (même casse ou accents près, comme
+    `memeLibelle`) ne demande pas de famille : elle garde la sienne.
+
+    RIEN N'EST CODÉ.
+  */
+  :root{
+    --cream:#f5f3ee; --card:#faf9f5; --ink:#1c1c1a; --inkSoft:#4a4a44;
+    --muted:#8a8578; --rust:#2f3b2f; --rustTint:#ece9e1;
+    --or:#B98B47; --orTexte:#8b6835; --plein:#7d9a6d; --surPlein:#faf9f5;
+    --line:rgba(28,28,26,0.12); --lineSoft:rgba(28,28,26,0.07);
+    --voileChamp:rgba(28,28,26,0.04); --hors:#e6e3dc; --neuve:rgba(185,139,71,0.14);
+  }
+  body[data-charte="nuit"]{
+    --cream:#101210; --card:#1a1d19; --ink:#e9e8de; --inkSoft:#c1c2b6;
+    --muted:#84887b; --rust:#e9e8de; --rustTint:#1f211e;
+    --or:#B98B47; --orTexte:#b98b47; --plein:#e9e8de; --surPlein:#1a1d19;
+    --line:rgba(233,232,222,0.12); --lineSoft:rgba(233,232,222,0.07);
+    --voileChamp:rgba(233,232,222,0.06); --hors:#0a0b0a; --neuve:rgba(185,139,71,0.18);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  [hidden]{display:none!important}
+  html,body{margin:0}
+  body{background:var(--hors);color:var(--ink);
+       font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       -webkit-text-size-adjust:100%;padding:0 0 34px}
+  input,button,select{font:inherit;color:inherit}
+
+  .bandeau{background:#1c1c1a;color:#f5f3ee;padding:14px 18px;font-size:14px;line-height:1.5}
+  .bandeau b{color:#fff}
+  .choix{display:flex;gap:7px;justify-content:center;flex-wrap:wrap;padding:12px}
+  .choix button{min-height:40px;padding:0 14px;border-radius:999px;border:1px solid var(--line);
+                background:var(--card);color:var(--ink);font:600 13px/1 ui-sans-serif,sans-serif;cursor:pointer}
+  .choix button[aria-pressed="true"]{background:var(--ink);color:var(--cream)}
+
+  .tel{position:relative;max-width:430px;margin:0 auto;background:var(--cream);border-radius:26px;overflow:hidden;
+       box-shadow:0 18px 46px rgba(20,18,14,.22)}
+
+  /* En-tête : EnTeteEcran, allure commune. */
+  .haut-retour{padding:28px 26px 0}
+  .retour{width:40px;height:40px;border-radius:999px;border:0;background:var(--card);color:var(--ink);
+          box-shadow:inset 0 0 0 1px var(--line);font-size:20px;line-height:1;cursor:default}
+  .entete{padding:20px 26px 0}
+  .entete h1{margin:0;font:400 36px/1.02 ui-serif,Georgia,"Iowan Old Style",serif;letter-spacing:-0.018em}
+  .entete .sur{margin:12px 0 0;font:500 9.5px/1 ui-sans-serif,sans-serif;letter-spacing:.28em;
+               text-transform:uppercase;color:var(--or)}
+
+  /* L'écran du contrat : ContratClient. */
+  .feuille{margin:18px 10px 0;background:var(--card);border-radius:10px;padding:20px 16px 24px}
+  .intitule{margin:0 0 6px;font:600 11px/1 ui-sans-serif,sans-serif;letter-spacing:.12em;
+            text-transform:uppercase;color:var(--muted)}
+  .presta{padding:16px 0;border-bottom:1px solid var(--lineSoft);transition:background .6s}
+  .presta.neuve{background:var(--neuve);margin:0 -16px;padding:16px}
+  .presta .h{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+  .presta .nom{margin:0;font:400 18px/1.25 ui-serif,Georgia,serif}
+  .presta .famille{margin:2px 0 0;font-size:12.5px;color:var(--muted)}
+  .moins{width:28px;height:28px;flex:none;border-radius:999px;background:none;border:1px solid var(--or);
+         color:var(--or);font-size:15px;line-height:1;cursor:pointer;padding:0}
+  .mois{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:3px;margin-top:12px}
+  .mois button{height:34px;border:0;border-radius:6px;padding:0;cursor:pointer;
+               background:var(--cream);color:var(--muted);font:600 12px/1 ui-sans-serif,sans-serif;
+               box-shadow:inset 0 0 0 1px var(--lineSoft)}
+  .mois button[aria-pressed="true"]{background:var(--plein);color:var(--surPlein);box-shadow:none}
+  .rangee{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px;min-height:38px}
+  .rangee .lib{font:600 11px/1.2 ui-sans-serif,sans-serif;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+  .compteur{display:flex;align-items:center;gap:4px}
+  .compteur button{width:36px;height:36px;border:0;border-radius:999px;cursor:pointer;padding:0;
+                   background:var(--card);box-shadow:inset 0 0 0 1px var(--line);font:400 19px/1 ui-sans-serif,sans-serif}
+  .compteur button:disabled{opacity:.5;cursor:default}
+  .compteur output{min-width:32px;text-align:center;font:600 17px/1 ui-sans-serif,sans-serif;font-variant-numeric:tabular-nums}
+  .prix{display:flex;align-items:center;gap:4px}
+  .prix input{width:84px;border:0;border-bottom:1px solid var(--lineSoft);background:transparent;
+              text-align:right;font-size:16px;padding:4px 2px;outline:none;font-variant-numeric:tabular-nums}
+  .prix span{font-size:14px;color:var(--inkSoft)}
+  .somme{margin:10px 0 0;font-size:13.5px;color:var(--inkSoft);text-align:right;font-variant-numeric:tabular-nums}
+  .somme.vide{color:var(--or)}
+
+  .ajout{display:block;margin-top:14px;background:none;border:0;padding:0;cursor:pointer;min-height:36px;
+         font:500 14px/1.2 ui-sans-serif,sans-serif;color:var(--rust)}
+  .tiroir-ajout{margin-top:8px;border-radius:8px;background:var(--rustTint);padding:6px 12px 10px}
+  .ecrire{display:flex;gap:8px;margin:10px 0}
+  .ecrire input{flex:1;min-width:0;height:42px;border:0;border-radius:8px;padding:0 12px;background:var(--card);
+                box-shadow:inset 0 0 0 1px var(--line);font-size:16px;outline:none}
+  .ecrire .vert{flex:none;height:42px;padding:0 16px;border-radius:999px;border:0;cursor:pointer;
+                background:var(--plein);color:var(--surPlein);font:500 14.5px/1 ui-sans-serif,sans-serif}
+  .ecrire .vert:disabled{opacity:.45;cursor:default}
+
+  /* NEUF : le choix de la famille. */
+  .quelle{margin:2px 0 8px}
+  .quelle .q{margin:0 0 8px;font-size:13.5px;color:var(--inkSoft)}
+  .pastilles{display:flex;flex-wrap:wrap;gap:6px}
+  .pastilles button{min-height:36px;padding:0 13px;border-radius:999px;border:0;cursor:pointer;
+                    background:var(--card);box-shadow:inset 0 0 0 1px var(--line);font-size:14px}
+  .pastilles button[aria-pressed="true"]{background:var(--plein);color:var(--surPlein);box-shadow:none}
+  .pastilles .creer{color:var(--orTexte)}
+  .quelle input{display:block;width:100%;height:42px;margin-top:8px;border:0;border-radius:8px;padding:0 12px;
+                background:var(--card);box-shadow:inset 0 0 0 1px var(--line);font-size:16px;outline:none}
+
+  .fam{margin:12px 0 4px;font:600 10.5px/1 ui-sans-serif,sans-serif;letter-spacing:.12em;
+       text-transform:uppercase;color:var(--muted)}
+  .prendre{display:block;width:100%;text-align:left;border:0;background:none;cursor:pointer;
+           padding:9px 0;font-size:15px;border-bottom:1px solid var(--lineSoft)}
+  .prendre:disabled{color:var(--muted);cursor:default}
+
+  .bloc{margin-top:26px}
+  .ligne-duree{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:38px;font-size:15px}
+  .ligne-duree .val{height:38px;display:flex;align-items:center;border-radius:8px;padding:0 10px;
+                    background:var(--card);box-shadow:inset 0 0 0 1px var(--line);font:500 15px/1 ui-sans-serif,sans-serif}
+  .lp{display:flex;justify-content:space-between;gap:10px;padding:6px 0;font-size:15px;font-variant-numeric:tabular-nums}
+  .ttc{margin-top:6px;padding-top:10px;border-top:2px solid var(--ink);display:flex;align-items:center;justify-content:space-between}
+  .ttc b{font:600 17px/1 ui-sans-serif,sans-serif}
+  .ttc span{font:600 20px/1 ui-serif,Georgia,serif;font-variant-numeric:tabular-nums}
+
+  /* « Composer ma fiche » : ComposerMaFiche. */
+  .composer{padding:0 24px 40px}
+  .composer section{margin-top:24px}
+  .composer .tete{display:flex;align-items:center;gap:12px}
+  .composer .nomfam{flex:1;min-width:0;margin:0;font:600 11px/1 ui-sans-serif,sans-serif;letter-spacing:.14em;
+                    text-transform:uppercase;color:var(--or)}
+  .composer .retirer-fam{min-height:44px;border:0;background:none;padding:0 2px;cursor:default;
+                         font:600 10px/1 ui-sans-serif,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+  .composer .l{display:flex;align-items:center;gap:12px;min-height:48px;border-bottom:1px solid var(--line);
+               font-size:15px;transition:background .6s}
+  .composer .l span{flex:1}
+  .composer .l i{width:44px;text-align:center;font-style:normal;font-size:18px;color:var(--muted)}
+  .composer .l.neuve{background:var(--neuve);margin:0 -24px;padding:0 24px}
+  .composer .plus{display:block;margin-top:12px;min-height:44px;border:0;background:none;padding:0;
+                  font-size:14px;color:var(--or);cursor:default}
+
+  .nav{border-top:1px solid var(--line);position:relative;background:var(--cream);
+       display:grid;grid-template-columns:repeat(5,minmax(0,1fr));padding:18px 14px 8px}
+  .nav span{padding:0 0 8px;text-align:center;font:500 8.5px/1 ui-sans-serif,sans-serif;
+            letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+  .nav span.actif{color:var(--ink)}
+  .nav i{position:absolute;bottom:8px;left:14px;width:calc((100% - 28px) / 5);height:1px;background:var(--or)}
+  .nav i.p4{left:calc(14px + 3 * (100% - 28px) / 5)}
+</style>
+</head>
+<body data-charte="origine">
+
+<div class="bandeau"><b>Maquette.</b> Touchez « + Ajouter une prestation » et écrivez la vôtre. Choisissez sa famille, puis « Ajouter ». Ouvrez « Ma fiche » : elle y est.</div>
+<div class="choix">
+  <button type="button" data-vue="contrat" aria-pressed="true">Le contrat</button>
+  <button type="button" data-vue="fiche" aria-pressed="false">Ma fiche</button>
+  <button type="button" id="nuit" aria-pressed="false">Nuit</button>
+  <button type="button" id="recommencer">Recommencer</button>
+</div>
+
+<div class="tel">
+  <section id="vue-contrat">
+    <div class="haut-retour"><button type="button" class="retour" tabindex="-1" aria-label="Retour à la fiche du client">‹</button></div>
+    <div class="entete">
+      <h1>Contrat d'entretien</h1>
+      <p class="sur">Mme Costa</p>
+    </div>
+    <div class="feuille">
+      <p class="intitule">Prestations</p>
+      <div id="contrat"></div>
+      <button type="button" class="ajout" id="ouvrir">+ Ajouter une prestation</button>
+      <div class="tiroir-ajout" id="tiroir" hidden>
+        <form class="ecrire" id="form">
+          <input id="libre" maxlength="60" placeholder="Écrire une prestation" aria-label="Écrire une prestation" autocomplete="off">
+          <button type="submit" class="vert" id="ajouter" disabled>Ajouter</button>
+        </form>
+        <div class="quelle" id="quelle" hidden>
+          <p class="q">Dans quelle famille de votre fiche ?</p>
+          <div class="pastilles" id="pastilles"></div>
+          <input id="nom-famille" maxlength="60" placeholder="Nom de la famille" aria-label="Nom de la nouvelle famille" autocomplete="off" hidden>
+        </div>
+        <div id="liste"></div>
+      </div>
+
+      <div class="bloc">
+        <p class="intitule">Durée</p>
+        <div class="ligne-duree"><span>Début</span><span class="val">Avril 2027</span></div>
+        <div class="ligne-duree"><span>Durée</span><span class="val">1 an</span></div>
+      </div>
+
+      <div class="bloc" id="totaux"></div>
+    </div>
+    <div style="height:22px"></div>
+    <nav class="nav"><span class="actif">Chantiers</span><span>Planning</span><span>Terminés</span><span>Paysage</span><span>Réglages</span><i></i></nav>
+  </section>
+
+  <section id="vue-fiche" hidden>
+    <div class="haut-retour"><button type="button" class="retour" tabindex="-1" aria-label="Retour">‹</button></div>
+    <div class="entete"><h1>Composer ma fiche</h1></div>
+    <div class="composer" id="fiche"></div>
+    <nav class="nav"><span>Chantiers</span><span>Planning</span><span>Terminés</span><span class="actif">Paysage</span><span>Réglages</span><i class="p4"></i></nav>
+  </section>
+</div>
+
+<script>
+const INITIALES = ["J","F","M","A","M","J","J","A","S","O","N","D"];
+const MOIS = ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"];
+// Libellés recopiés de MODELE_FOURNI (src/lib/prestations-entretien.ts).
+const MODELE = [
+  ["Pelouse","Tonte et ébarbage"],["Pelouse","Traitement pelouse"],["Pelouse","Scarification"],["Pelouse","Engrais"],
+  ["Tailles","Taille arbuste automne"],["Tailles","Taille arbuste printemps"],["Tailles","Taille de haie automne"],
+  ["Tailles","Taille de haie printemps"],["Tailles","Taille des rosiers"],
+  ["Massifs","Bêchage"],["Massifs","Bordures massifs"],["Massifs","Griffage massifs"],["Massifs","Désherbage massifs"],
+  ["Massifs","Coupe des fleurs fanées"],
+  ["Propreté","Nettoyage pied de haies"],["Propreté","Désherbant allée"],["Propreté","Lierre, liseron, liane"],
+  ["Propreté","Démoussage voirie"],["Propreté","Ramassage des feuilles"],["Propreté","Évacuation des déchets"],
+];
+let modele, contrat, famille, creer, derniere;
+function depart() {
+  modele = MODELE.map(([famille, libelle]) => ({ famille, libelle }));
+  contrat = [{ famille: "Tailles", libelle: "Taille arbuste automne", mois: [10, 11], fois: 2, prix: "580,00" }];
+  famille = null; creer = false; derniere = null;
+}
+
+const $ = (id) => document.getElementById(id);
+const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c]));
+const plie = (t) => t.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/\s+/g, " ").trim();
+const euros = (c) => (c / 100).toLocaleString("fr-FR", { minimumFractionDigits: 2 }) + " €";
+const centimes = (s) => { const n = Number(String(s).replace(/\s/g, "").replace(",", ".")); return s !== "" && isFinite(n) ? Math.round(n * 100) : null; };
+const familles = () => [...new Set(modele.map((p) => p.famille))];
+const dansLaFiche = (l) => modele.find((p) => plie(p.libelle) === plie(l));
+
+function dessinerContrat() {
+  $("contrat").innerHTML = contrat.map((p, i) => {
+    const n = p.mois.length * p.fois, c = centimes(p.prix);
+    const somme = p.mois.length === 0 ? "Aucun mois choisi"
+      : c === null ? `${n} passage${n > 1 ? "s" : ""}, prix à chiffrer`
+      : `${n} passage${n > 1 ? "s" : ""}, ${euros(c * n)} HT`;
+    return `<div class="presta${p === derniere ? " neuve" : ""}">
+      <div class="h"><div><p class="nom">${esc(p.libelle)}</p><p class="famille">${esc(p.famille)}</p></div>
+        <button type="button" class="moins" data-retirer="${i}" aria-label="Retirer ${esc(p.libelle)}">−</button></div>
+      <div class="mois">${INITIALES.map((x, m) => `<button type="button" data-mois="${i}:${m + 1}" aria-label="${MOIS[m]}" aria-pressed="${p.mois.includes(m + 1)}">${x}</button>`).join("")}</div>
+      <div class="rangee"><span class="lib">Passages par mois</span>
+        <div class="compteur"><button type="button" data-fois="${i}:-1" ${p.fois <= 1 ? "disabled" : ""} aria-label="Un passage de moins">−</button><output>${p.fois}</output><button type="button" data-fois="${i}:1" aria-label="Un passage de plus">+</button></div></div>
+      <div class="rangee"><span class="lib">Prix du passage HT</span>
+        <span class="prix"><input inputmode="decimal" data-prix="${i}" value="${esc(p.prix)}" placeholder="à chiffrer" aria-label="Prix du passage"><span>€</span></span></div>
+      <p class="somme${p.mois.length === 0 || c === null ? " vide" : ""}">${somme}</p>
+    </div>`;
+  }).join("");
+  dessinerTotaux();
+}
+function dessinerTotaux() {
+  let ht = 0;
+  for (const p of contrat) { const c = centimes(p.prix); if (c !== null) ht += c * p.mois.length * p.fois; }
+  const tva = Math.round(ht * 0.2);
+  $("totaux").innerHTML = `<div class="lp"><span>Total HT</span><span>${euros(ht)}</span></div>
+    <div class="lp"><span>TVA 20 %</span><span>${euros(tva)}</span></div>
+    <div class="ttc"><b>Total TTC</b><span>${euros(ht + tva)}</span></div>`;
+}
+function parFamilles(rendu) {
+  let html = "", f = null;
+  for (const p of modele) {
+    if (p.famille !== f) { html += `<p class="fam">${esc(p.famille)}</p>`; f = p.famille; }
+    html += rendu(p);
+  }
+  return html;
+}
+function dessinerListe() {
+  const pris = new Set(contrat.map((p) => plie(p.libelle)));
+  $("liste").innerHTML = parFamilles((p) =>
+    `<button type="button" class="prendre" data-prendre="${esc(p.libelle)}" ${pris.has(plie(p.libelle)) ? "disabled" : ""}>${esc(p.libelle)}</button>`);
+}
+function dessinerPastilles() {
+  $("pastilles").innerHTML = familles().map((f) =>
+    `<button type="button" data-famille="${esc(f)}" aria-pressed="${!creer && famille === f}">${esc(f)}</button>`).join("")
+    + `<button type="button" class="creer" data-famille="" aria-pressed="${creer}">+ Nouvelle famille</button>`;
+}
+function dessinerFiche() {
+  let html = "";
+  for (const f of familles()) {
+    html += `<section><div class="tete"><p class="nomfam">${esc(f)}</p><button type="button" class="retirer-fam" tabindex="-1">Retirer la famille</button></div>`;
+    for (const p of modele.filter((x) => x.famille === f))
+      html += `<div class="l${p.neuve ? " neuve" : ""}"><span>${esc(p.libelle)}</span><i>×</i></div>`;
+    html += `<button type="button" class="plus" tabindex="-1">+ Ajouter une prestation</button></section>`;
+  }
+  $("fiche").innerHTML = html;
+}
+function etat() {
+  const libre = $("libre").value.trim();
+  const deja = libre && dansLaFiche(libre);
+  $("quelle").hidden = !libre || !!deja;
+  $("nom-famille").hidden = !creer;
+  const fam = creer ? $("nom-famille").value.trim() : famille;
+  $("ajouter").disabled = !libre || (!deja && !fam);
+}
+function tout() { dessinerContrat(); dessinerListe(); dessinerPastilles(); dessinerFiche(); etat(); }
+function fermer() {
+  $("libre").value = ""; $("nom-famille").value = ""; famille = null; creer = false; $("tiroir").hidden = true;
+}
+
+$("ouvrir").onclick = () => { $("tiroir").hidden = !$("tiroir").hidden; if (!$("tiroir").hidden) $("libre").focus(); };
+$("libre").oninput = etat;
+$("nom-famille").oninput = etat;
+$("pastilles").onclick = (e) => {
+  const b = e.target.closest("[data-famille]"); if (!b) return;
+  if (b.dataset.famille === "") { creer = true; famille = null; }
+  else { creer = false; famille = b.dataset.famille; }
+  dessinerPastilles(); etat();
+  if (creer) $("nom-famille").focus();
+};
+$("liste").onclick = (e) => {
+  const b = e.target.closest("[data-prendre]"); if (!b) return;
+  const p = modele.find((x) => x.libelle === b.dataset.prendre);
+  derniere = { famille: p.famille, libelle: p.libelle, mois: [], fois: 1, prix: "" };
+  contrat.push(derniere); fermer(); tout();
+};
+$("form").onsubmit = (e) => {
+  e.preventDefault();
+  const libre = $("libre").value.trim(); if (!libre) return;
+  const deja = dansLaFiche(libre);
+  let fam;
+  if (deja) fam = deja.famille;
+  else {
+    fam = creer ? $("nom-famille").value.trim() : famille; if (!fam) return;
+    const existante = familles().find((f) => plie(f) === plie(fam)); if (existante) fam = existante;
+    // À la fin de sa famille, comme « Composer ma fiche » l'ajoute.
+    const i = modele.map((p) => p.famille).lastIndexOf(fam);
+    const ligne = { famille: fam, libelle: libre, neuve: true };
+    if (i === -1) modele.push(ligne); else modele.splice(i + 1, 0, ligne);
+  }
+  derniere = { famille: fam, libelle: deja ? deja.libelle : libre, mois: [], fois: 1, prix: "" };
+  contrat.push(derniere); fermer(); tout();
+};
+$("contrat").onclick = (e) => {
+  const r = e.target.closest("[data-retirer]"), m = e.target.closest("[data-mois]"), f = e.target.closest("[data-fois]");
+  if (r) contrat.splice(Number(r.dataset.retirer), 1);
+  else if (m) { const [i, mo] = m.dataset.mois.split(":").map(Number); const p = contrat[i];
+    p.mois = p.mois.includes(mo) ? p.mois.filter((x) => x !== mo) : [...p.mois, mo].sort((a, b) => a - b); }
+  else if (f) { const [i, d] = f.dataset.fois.split(":").map(Number); contrat[i].fois = Math.max(1, contrat[i].fois + d); }
+  else return;
+  dessinerContrat(); dessinerListe();
+};
+$("contrat").oninput = (e) => {
+  const x = e.target.closest("[data-prix]"); if (!x) return;
+  const p = contrat[Number(x.dataset.prix)]; p.prix = x.value;
+  const c = centimes(p.prix), n = p.mois.length * p.fois, s = x.closest(".presta").querySelector(".somme");
+  s.textContent = p.mois.length === 0 ? "Aucun mois choisi" : c === null ? `${n} passage${n > 1 ? "s" : ""}, prix à chiffrer` : `${n} passage${n > 1 ? "s" : ""}, ${euros(c * n)} HT`;
+  s.classList.toggle("vide", p.mois.length === 0 || c === null);
+  dessinerTotaux();
+};
+document.querySelectorAll("[data-vue]").forEach((b) => b.onclick = () => {
+  document.querySelectorAll("[data-vue]").forEach((x) => x.setAttribute("aria-pressed", x === b));
+  $("vue-contrat").hidden = b.dataset.vue !== "contrat";
+  $("vue-fiche").hidden = b.dataset.vue !== "fiche";
+  window.scrollTo(0, 0);
+});
+$("nuit").onclick = () => {
+  const nuit = document.body.dataset.charte !== "nuit";
+  document.body.dataset.charte = nuit ? "nuit" : "origine";
+  $("nuit").setAttribute("aria-pressed", nuit);
+};
+$("recommencer").onclick = () => { depart(); fermer(); tout(); document.querySelector("[data-vue='contrat']").click(); };
+depart(); tout();
+</script>
+</body>
+</html>

@@ -15,6 +15,7 @@ import {
   users,
 } from "../db/schema";
 import type { Ctx } from "./context";
+import { ligneSansTexte } from "@/lib/taches-du-devis";
 import {
   appliquerLaMemoire,
   contenuVide,
@@ -136,7 +137,7 @@ export async function contexteDuChantier(ctx: Ctx, chantierId: string): Promise<
       adresse: c.adresse,
       datePlanifiee: c.datePlanifiee,
       numeroDevis: dernierDevis?.numero ?? null,
-      lignesDuDevis: lignes.map((l) => l.libelle),
+      lignesDuDevis: lignes.map((l) => l.libelle).filter((l) => !ligneSansTexte(l)),
       client: c.clientNom ? { nom: c.clientNom, telephone: c.clientTelephone } : null,
       equipes: nomsDEquipes,
       entreprise: { nom: entreprise?.nom ?? "", telephone: entreprise?.telephone ?? null },

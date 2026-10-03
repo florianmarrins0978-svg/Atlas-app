@@ -3,7 +3,7 @@
 import { useState } from "react";
 import PrimaryButton from "@/components/atlas/PrimaryButton";
 import { colors } from "@/lib/design-tokens";
-import { composerMessageClient, lienTransmission, type CanalClient } from "@/lib/message-client";
+import { composerMessageClient, lienTransmission, type CanalClient, type EnvoiDuDevis } from "@/lib/message-client";
 import { ouvrableParLeClient, phraseAdresseLocale } from "@/lib/adresse-du-client";
 import { useLienPourLeClient } from "@/lib/use-adresse-client";
 import { destinataireLisible } from "@/lib/numero-lisible";
@@ -65,6 +65,8 @@ type Props = {
   telephone: string;
   email: string;
   lien: string;
+  /** Ce que l'envoi a fixé et que la relance redit tel quel : le jour où le lien meurt, la case « autre date ». */
+  envoi: EnvoiDuDevis;
   /** Le devis est-il DÉJÀ chez le client ? Commande le libellé du bouton. */
   relance: boolean;
 };
@@ -108,6 +110,7 @@ export default function TransmettreAuClient({
   telephone,
   email,
   lien,
+  envoi,
   relance,
 }: Props) {
   const [erreur, setErreur] = useState<string | null>(null);
@@ -141,6 +144,7 @@ export default function TransmettreAuClient({
     entrepriseNom,
     lien: lienOuvrable,
     modele: modeleMessage,
+    envoi,
   });
   const autre: CanalClient = canalChoisi === "sms" ? "email" : "sms";
   const destinataire = coordonnees[canalChoisi];

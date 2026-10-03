@@ -29,7 +29,7 @@ export const FICHES_FACTURE: FicheModeEmploi[] = [
     ecran: "Facture",
     ou: "« Terminés » dans la barre du bas, puis « À facturer » sur la ligne du chantier",
     intitule: "Facturer un chantier terminé",
-    motsCles: ["facturer", "facture", "creer", "faire", "preparer", "fin", "termine", "realise", "chantier", "fini"],
+    motsCles: ["facturer", "facture", "creer", "faire", "preparer", "fin", "termine", "realise", "chantier", "fini", "passer", "transformer", "devis"],
     geste:
       "Touchez la ligne du chantier, puis « Créer la facture » : Atlas la prépare à partir du devis. Rien ne part encore.",
     source: F,
@@ -506,7 +506,7 @@ export const FICHES_FACTURE: FicheModeEmploi[] = [
     ecran: "Ma TVA",
     ou: OU_TVA,
     intitule: "Voir toutes les factures pas encore payées",
-    motsCles: ["toutes", "impayees", "impaye", "attente", "liste", "voir", "plus"],
+    motsCles: ["toutes", "impayees", "impaye", "attente", "liste", "voir", "plus", "doivent", "doit", "suivre"],
     geste: "Sous les trois premières factures en attente, appuyez sur « Voir toutes les factures en attente ».",
     reserve: "La liste n'existe que si votre TVA est déclarée aux encaissements.",
     source: ATT,

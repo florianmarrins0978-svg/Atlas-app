@@ -1,6 +1,6 @@
 import { z } from "zod";
 import type { Outil } from "./types";
-import { FICHES_MODE_EMPLOI, chercherFiches, ficheParId, type FicheModeEmploi } from "@/lib/mode-emploi";
+import { FICHES_MODE_EMPLOI, chercherFiches, ficheParId, fichesDeLEcran, visiteDemandee, type FicheModeEmploi } from "@/lib/mode-emploi";
 
 /** Toutes les fiches par leur intitulé : de quoi choisir, rien à réciter. */
 function sommaire() {
@@ -35,7 +35,8 @@ export const rechercherModeEmploi: Outil = {
   description:
     "Explique COMMENT on fait quelque chose dans Atlas, et OÙ se trouve chaque chose : le geste exact, " +
     "écran par écran. À utiliser pour toute question du type « comment je fais pour… », « où est… », " +
-    "« où sont rangés… », « je cherche le bouton… », « à quoi sert… ». Donne « question » telle qu'il l'a " +
+    "« où sont rangés… », « je cherche le bouton… », « à quoi sert… », « comment fonctionne… », " +
+    "« explique-moi… ». Donne « question » telle qu'il l'a " +
     "posée. Si aucune des fiches rendues ne répond vraiment, rappelle avec « sommaire » = true pour lire " +
     "la liste de toutes les fiches, puis redemande celle qui répond avec « fiche » (son id). " +
     "Ne lit aucune donnée de chantier : c'est le mode d'emploi de l'application, pas son contenu.",
@@ -60,6 +61,20 @@ export const rechercherModeEmploi: Outil = {
       const fiche = ficheParId(p.fiche.trim());
       if (fiche) return { trouve: true, fiches: [lue(fiche)] };
       return { trouve: false, consigne: "Cet identifiant n'est pas au sommaire. N'invente jamais un geste." };
+    }
+    // **La visite passe avant la recherche** (sa colère du 29 septembre 2026) :
+    // « comment fonctionne le planning » demande l'écran entier, et la
+    // recherche par mots n'en rendait que la fiche qui dit où il se trouve.
+    const ecran = visiteDemandee(p.question ?? p.motCle ?? "");
+    if (ecran) {
+      return {
+        trouve: true,
+        visite: ecran,
+        consigne:
+          "Il demande comment marche tout l'écran. Présente-le en quelques lignes : une par geste principal, " +
+          "avec les mots des fiches. Ne récite pas tous les gestes en entier.",
+        fiches: fichesDeLEcran(ecran).map(lue),
+      };
     }
     const fiches = chercherFiches(p.question ?? p.motCle ?? "", 5);
     if (fiches.length === 0) {

@@ -9,6 +9,8 @@ import { poserLesPassagesArrives } from "@/server/repositories/contrats-entretie
 import { peutModifierLePlanning } from "@/lib/acces-roles";
 import { seuilMemoireCalendrier } from "@/lib/onglet-chantier";
 import { jourIso } from "@/lib/jour";
+import { couleursDepuisColonnes } from "@/lib/couleurs-planning";
+import { charteDeLaPersonne } from "@/server/repositories/charte-personne";
 
 /**
  * TOUT CE QU'IL FAUT POUR PEINDRE UNE JOURNÉE — chargé une seule fois, servi
@@ -44,7 +46,7 @@ export async function contextePlanning(ctx: Ctx, maintenant: Date) {
     await poserLesPassagesArrives(ctx, jourIso(maintenant));
   }
 
-  const [chantiers, entreprise, equipesNommees, absences, acces] = await Promise.all([
+  const [chantiers, entreprise, equipesNommees, absences, acces, nomCharte] = await Promise.all([
     listerChantiersPourPlanning(ctx),
     getEntreprise(ctx),
     listerEquipes(ctx),
@@ -60,6 +62,7 @@ export async function contextePlanning(ctx: Ctx, maintenant: Date) {
       versJourIso(ajouterJours(maintenant, HORIZON_OCCUPATION_PATRON_JOURS))
     ),
     accesDeLaPersonne(ctx),
+    charteDeLaPersonne(ctx.utilisateurId),
   ]);
 
   /**
@@ -99,6 +102,11 @@ export async function contextePlanning(ctx: Ctx, maintenant: Date) {
     nombreSalaries: entreprise?.nombreSalaries ?? 0,
     equipesNommees: equipesNommees.map((e) => ({ rang: e.rang, nom: e.nom, photo: e.photo })),
     absences,
+    // **Les couleurs de l'entreprise ET l'apparence de la personne** (sa
+    // demande du 29 septembre 2026) : la seconde décide si la couleur choisie
+    // doit s'éclaircir pour se voir sur fond sombre (`variablesDesEtats`).
+    couleurs: couleursDepuisColonnes(entreprise),
+    nomCharte,
   };
 }
 

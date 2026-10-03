@@ -33863,3 +33863,209 @@ recherche sur chaque tournure la rendrait bavarde à tort, et le garde-fou « un
 question qui n'en est pas une ne rend RIEN » a rougi une fois pendant ce lot
 (« combien coûte un abattage de chêne »), ce qui a fait retirer « combien » d'un
 intitulé.
+
+## §435 : Les couleurs du planning passent par une variable, posée au-dessus de l'écran
+
+**Sa demande du 29 septembre 2026**, planche `appli/couleurs-du-planning.html`
+validée : changer les couleurs de rien, incomplet, complet, au-delà ; un réglage
+pour **toute l'entreprise** ; **« la même chose que pour les couleurs des
+devis »**. Migration 0113 : quatre colonnes nullables sur `entreprises`,
+`null` = la couleur de l'apparence.
+
+**Pourquoi une variable CSS et non une prop.** `fondDeLEtat` peignait déjà les
+quatre états partout (barres, légende, pastilles, journée regardée, carré de
+Réglages). Il lit désormais `var(--atlas-etat-<état>, <couleur d'avant>)`, et
+`CouleursDesEtats` (`display: contents`) pose les variables au-dessus de
+l'écran. Un écran qui montre ces états n'a qu'à être enveloppé ; faire
+descendre une prop jusqu'à chaque carré aurait laissé un écran oublié sur
+l'ancienne couleur. Sans choix, aucune variable : le repli est la couleur
+d'avant au pixel près.
+
+**Pas dans le gabarit racine** : la charte est à la PERSONNE, les couleurs à
+l'ENTREPRISE, et le gabarit ne lit que la première (sans contexte
+d'entreprise, sur toutes les pages, y compris publiques). Les trois écrans qui
+montrent ces états les reçoivent : le planning et l'envoi par
+`contextePlanning`, Réglages Équipe par sa page.
+
+**Sur Nuit et Sylve, la couleur choisie passe par `detacher`**
+(`variablesDesEtats`, `src/lib/couleurs-planning.ts`), au seuil que la charte
+applique à son propre bordeaux : un noir y devenait invisible. Un devis est du
+papier, toujours clair ; le planning, non. Sur les apparences claires, la
+couleur sort intacte.
+
+**Un seul sélecteur** : `Couleur` a quitté `src/app/reglages/documents/pieces.tsx`
+pour `src/components/atlas/Couleur.tsx`, et sert l'allure des devis comme le
+planning. **Un seul carré** : `styleDuCarre` remplace les trois copies du
+carré « rien » (légende, fiche du jour, journée regardée).
+
+**La couleur d'aujourd'hui s'écrit vide** (`choixAEcrire`), comme l'allure :
+écrite en clair, elle ne suivrait plus un changement d'apparence. Le
+propriétaire seul la change (`exigerProprietaire`) ; ses salariés la voient.
+
+## §436 : Un contrat d'entretien s'enregistre à chaque geste, et son brouillon vit dans « Vos chantiers »
+
+**Sa plainte du 29 septembre 2026** : un contrat commencé puis quitté ne se
+retrouvait nulle part. L'écran (`ContratClient.tsx`) tenait toute la saisie
+dans le navigateur et n'écrivait qu'à « Aperçu du PDF » ou « Envoyer ».
+
+**L'écriture suit la saisie, comme un devis.** Le brouillon naît au premier
+vrai geste (une prestation ajoutée), puis chaque changement s'écrit. Les
+écritures passent par UNE file : la première crée, les suivantes reprennent son
+identifiant, et chacune écrit la saisie la plus récente, ce qui empêche deux
+brouillons pour un seul contrat. L'aperçu et l'envoi passent par la même file :
+la création de secours qui vivait dans `envoyer` a été retirée. Une saisie qui
+ne se relit pas (un prix à moitié tapé) ne s'écrit pas : son refus est déjà
+sous le bouton. Rouvrir sans rien toucher n'écrit rien.
+
+**L'accueil lit deux sortes de lignes.** `BrinChantier.sorte` dit si la ligne
+est un chantier ou un brouillon de contrat, et `quoi` ce que le retrait nomme ;
+`EcranChantiers` choisit l'action de retrait d'après la sorte
+(`supprimerBrouillonDeContratAction` n'efface qu'un brouillon : un contrat parti
+est chez le client, son lien doit rester). Les brouillons passent en tête : ils
+ne portent pas la date de création des chantiers, et c'est le travail le plus
+récent. Qui ne rédige pas de contrat (`peutGererDevis`) n'en voit pas les
+brouillons. Le mot de l'état vient de `etatDuBrouillonDeContrat`, sur la même
+règle que l'envoi (`ceQuiManque`).
+
+**Puis sa règle du même jour, et elle a tranché la question** : *« tout ce qui
+est devis, contrat d'entretien, dernier devis ou autre doivent arriver là »*.
+Un contrat vit donc sur l'accueil **tant que le client ne l'a pas accepté**,
+exactement comme un devis : brouillon, « Contrat envoyé, sans réponse » avec
+son jour d'envoi, « Contrat refusé ». Accepté, ses passages vivent au planning
+et il n'a plus de ligne (`ligneDuContratEnCours`, qui remplace
+`etatDuBrouillonDeContrat`). `contratsEnCours` ne lit que le DERNIER contrat
+de chaque client, celui que l'écran rouvre : sinon un contrat refusé puis
+repris aurait une ligne qui mène au brouillon. Un contrat envoyé refuse le
+retrait (son lien doit rester ouvert) ; un brouillon ou un refus se retire.
+« Dernier devis » et « Nouveau devis » n'avaient rien à changer : ils créent un
+chantier, qui reste dans la liste jusqu'à sa date (`ongletDuChantier`) ;
+`test-repartir-du-client-e2e` le tient désormais pour « Dernier devis ».
+
+## §437 : Retirer de la liste n'est pas supprimer
+
+**Sa règle du 29 septembre 2026** : *« si l'utilisateur veut les retirer de la
+liste des chantiers en cours, il doit pouvoir en les slidant sur le côté, mais
+ça ne doit pas impacter le lien cliquable envoyé au client ! Il doit quand même
+pouvoir l'ouvrir »*.
+
+**Le défaut qu'elle a fait trouver.** Glisser la ligne d'un devis envoyé
+SUPPRIMAIT le chantier (`deleted_at`). Le lien s'ouvrait encore
+(`lireParJeton` ne regarde pas `deleted_at`), le client pouvait accepter, et
+l'acceptation posait au planning un chantier supprimé : invisible au planning,
+et sans carte sur l'accueil (`notificationsPatron` écarte les chantiers
+supprimés). La réponse se perdait sans un mot. Reproduit par
+`test-retirer-sans-casser-le-lien-e2e`, rouge sur l'ancien code.
+
+**La racine : un seul geste pour deux intentions.** « Je n'ai plus rien à faire
+ici » et « ce chantier n'existe pas » étaient la même écriture. Ils sont
+séparés :
+
+| la ligne | le glissement |
+|---|---|
+| un devis qui attend le client (`seRetireSansEffacer` : envoyé, en attente, à relancer) | **retire** : `chantiers.retire_de_la_liste_at` est posé, rien n'est effacé |
+| un contrat envoyé | **retire** : `contrats_entretien.retire_de_la_liste_at` |
+| tout le reste (brouillon, devis prêt, caduc, retourné ; contrat en brouillon ou refusé) | **supprime**, comme avant |
+
+**La ligne revient d'elle-même, sans écriture** : `retireDeLaListe` la cache
+tant que le statut dit « attend le client » ET qu'aucun envoi n'est parti après
+le retrait. Une réponse change le statut, un nouvel envoi est plus récent : la
+ligne revient, avec sa carte. Le rappel « devis sans réponse » respecte la même
+frontière dans sa requête (`rappels.ts`) ; c'est la seule recopie de la règle,
+en SQL faute de pouvoir appeler la fonction pure dans un `WHERE`, et elle le
+dit en commentaire.
+
+**`BrinChantier.retrait`** (`supprimer`, `retirer`, `contrat`) remplace
+`sorte` : chaque ligne dit ce que son glissement écrit, et `EcranChantiers`
+choisit l'action. Migration **0114**, EXPAND seul (deux colonnes nullables) :
+l'ancien code l'ignore.
+
+**Sa règle, précisée le même soir** : *« il faut qu'il puisse l'utiliser, peu
+importe ce qu'on fera dans l'appli »*. Aucun geste de l'application n'efface
+donc un document parti chez le client : un contrat REFUSÉ glissé hors de la
+liste n'est plus effacé non plus (il ne l'était que dans la première version de
+ce lot), il est retiré comme un envoyé. Seul un brouillon, que personne n'a
+reçu, s'efface. `ligneDuContratEnCours` compare `repondu_le` à l'heure du
+retrait : retiré avant la réponse, le refus ramène la ligne ; retiré après, elle
+reste cachée.
+
+**Ce qui coupe encore un lien de devis, relevé le même jour** : la durée de vie
+du lien (`VALIDITE_LIEN_JOURS`, 45 jours, « Ce lien n'est plus valable »), et
+l'effacement des données d'un client (`effacerClient`, une obligation RGPD, qui
+doit rester). Aucun geste « annuler le lien » n'existe, et il n'en a jamais
+existé. La durée de vie est une question posée à lui (`TODO.md`).
+
+## §438 : Ce qui part chez le client se relit au départ, en une seule source
+
+**Trouvé le 29 septembre 2026**, en vérifiant à sa demande le SMS d'un devis :
+le premier envoi (`DevisCompletClient`, par `ouvrirLaMessagerie`) composait le
+message sans son modèle, donc toujours avec le texte d'Atlas ; la relance
+(`TransmettreAuClient`) le prenait. Deux chemins pour écrire au client, un seul
+branché sur ses réglages.
+
+**La racine** : le paramètre `modele` était facultatif. `envoyerAuClientAction`
+rend désormais `modeleMessage`, relu en base au départ comme le canal et le
+destinataire, et `ouvrirLaMessagerie` l'EXIGE : un appelant qui l'oublie ne
+compile plus.
+
+**Le second défaut, et la décision qui l'a suivi.** La phrase « Et si aucune
+des dates proposées ne vous convient, vous pouvez en proposer une autre » vivait
+dans son texte modifiable, et rien ne savait qu'elle dépendait de la case
+`autre_date_autorisee`. Case décochée, le SMS la portait ; la page du devis, elle,
+obéissait déjà. Sa planche du même jour (`appli/lien-valable-45-jours.html`, A)
+ajoute la durée du lien sous le lien. Les deux deviennent des **morceaux
+dorés** qu'Atlas remplit, comme l'échéance d'une facture :
+
+| morceau | ce qu'il rend | règle |
+|---|---|---|
+| `[autre-date]` | la phrase avec son espace, ou rien | `clauseAutreDate`, selon la case de l'envoi |
+| `[validite]` | « Ce lien est valable 45 jours, jusqu'au … Passé ce délai … il faudra appeler … » | `clauseValidite`, sur le jour d'`expire_at` ; **obligatoire** dans un message de devis (`refusDuMessage(modele, genre)`) |
+
+**La racine est la même que pour le modèle** : `composerMessageClient` exige
+`envoi: EnvoiDuDevis` (le jour où le lien meurt, la case), lu sur l'envoi par
+les deux chemins, l'action du premier envoi et la page de relance. Un appelant
+qui l'oublie ne compile plus. `VALIDITE_LIEN_JOURS` est descendu dans
+`src/lib/etat-envoi.ts`, puisque le message le dit ; et `segmentsDuModele` déduit sa
+découpe de `PASTILLES` au lieu d'en tenir une copie, qui aurait affiché
+`[validite]` en clair.
+
+**Ses messages déjà réécrits** : migration 0115, qui remplace la phrase par
+`[autre-date]` quand elle y est MOT POUR MOT et pose `[validite]` sous le
+premier `[lien]`. Une phrase qu'il a reformulée reste la sienne ; un message à
+la borne des 2 000 caractères reste tel quel, et l'écran le refusera en disant
+pourquoi. `entreprises` n'est pas sous RLS, et la migration compte quand même
+ce qu'elle touche. Éprouvée sur une base habitée
+(`test-migration-0115-base-habitee`), et vue rougir contre une migration vide.
+
+## §439 : La sécurité se dit avec ses chiffres, et la liste des réponses s'engendre
+
+**Sa demande du 29 septembre 2026** : interroger l'assistant sur le
+fonctionnement, la sécurité et les astuces, corriger ce qui bute, et sortir la
+liste des questions et réponses.
+
+| Décision | Pourquoi |
+|---|---|
+| les chiffres de sécurité sont LUS : `LONGUEUR_MINIMALE`, `SEUIL_AVANT_TEMPORISATION`, `PALIERS_MS` | un réglage durci demain ne laisse pas l'assistant annoncer l'ancien |
+| « chiffré » ne vise que ce qui est prouvé : https (`Strict-Transport-Security`), l'empreinte bcrypt du mot de passe | le chiffrement sur disque dépend d'un hébergeur pas encore désigné ; la fiche le dit en réserve |
+| la double authentification, le contrat de sous-traitance RGPD : dits comme absents, tenus par `absences` et par le « [À COMPLÉTER » des conditions | le jour où ils arrivent, la fiche rougit au lieu de mentir |
+| « fonctionne », « fonctionnent », « fonctionnement », « marche », « marchent » en mots vides | mots-clés de la fiche de l'IA, ils lui faisaient gagner toute question « comment fonctionne X » |
+| « sans dicter » soudé en `mainsansdicter` | « dicter » y comptait comme voulu, et « comment ma dictée devient un devis » rendait « écrire sans dicter » |
+| `docs/assistant-questions-reponses.md` ENGENDRÉ par `scripts/engendrer-questions-reponses.ts` | une liste recopiée divergerait de l'assistant à la première fiche corrigée ; elle ne retient que les questions dont la fiche sort vraiment |
+
+**Ce qui reste partiel, et c'est dit** : « comment fonctionne le planning » rend
+l'endroit (la fiche de lieu), pas une explication ; le modèle complète par le
+sommaire. « Prévenir mon client que j'arrive » ne rend rien : la fonction
+n'existe pas.
+
+## §440 : Une question sur un écran entier reçoit l'écran entier
+
+**Sa colère du 29 septembre 2026** : *« pourquoi il est incapable d'expliquer
+comment fonctionne le planning ? »*
+
+| Décision | Pourquoi |
+|---|---|
+| `visiteDemandee(question)` reconnaît « comment fonctionne / marche », « explique », « à quoi sert », « présente » suivis d'un nom d'écran | les fiches existaient ; c'est la FORME de la question qui n'avait pas de réponse. La recherche par mots rendait la fiche de lieu, et la consigne « une seule fiche » faisait le reste |
+| lue sur la question normalisée, pas sur les mots utiles | « fonctionne » et « marche » sont vides pour le classement (§439), pas pour comprendre qu'on demande une visite ; `\b` ne voit pas la frontière d'un « à » |
+| l'outil rend `visite` et toutes les fiches de l'écran, AVANT la recherche | une visite n'est pas une recherche ratée : le sommaire de toute l'application serait trop large, une fiche seule trop étroite |
+| la consigne garde « une seule fiche » pour un geste, et l'écarte pour une visite | trois gestes pour une question l'égarent (25 août) ; mais « comment marche le planning » EST une question à plusieurs gestes |
+| la fiche des couleurs dit le SENS de chaque état, prouvé par `etatDemi` et `occupationDemi` | « au-delà » compare les équipes prises (absences comprises) au nombre d'équipes réglé ; sans cela, il ne savait ni ce que c'était ni où le régler |
+| « au dela » soudé en `audela` | « dela » est le début de « délai » : « que signifie au-delà » rendait les délais de paiement |

@@ -100,7 +100,10 @@ async function main() {
   // message du devis avec une facture.
 
   await test("le message s'écrit, se relit, et le lien y est obligatoire", async () => {
-    const sien = "Salut [client] !\n[document]\n[lien]\nÀ bientôt, [entreprise]";
+    // **`[validite]` depuis le 29 septembre 2026** : la durée du lien est
+    // obligatoire dans un message de devis, comme le lien (`refusDuMessage`).
+    // Sans elle, le message n'est pas écrit, et c'est voulu.
+    const sien = "Salut [client] !\n[document]\n[lien]\n[validite]\nÀ bientôt, [entreprise]";
     await entreprisesRepo.mettreAJourEntreprise(A, { messages: { devis: sien } });
     assert.strictEqual((await entreprisesRepo.getEntreprise(A))?.messageClient, sien);
 
@@ -133,17 +136,17 @@ async function main() {
   });
 
   await test("le message d'une AUTRE entreprise reste hors de portée", async () => {
-    const sien = "Bonjour [client], voici votre [document] : [lien] — [entreprise]";
+    const sien = "Bonjour [client], voici votre [document] : [lien] [validite] — [entreprise]";
     await entreprisesRepo.mettreAJourEntreprise(A, { messages: { devis: sien } });
     await entreprisesRepo.mettreAJourEntreprise(B, {
-      messages: { devis: "Message de B, votre [document] : [lien]" },
+      messages: { devis: "Message de B, votre [document] : [lien] [validite]" },
     });
 
     assert.strictEqual((await entreprisesRepo.getEntreprise(A))?.messageClient, sien,
       "le message de A a été touché par B");
     assert.strictEqual(
       (await entreprisesRepo.getEntreprise(B))?.messageClient,
-      "Message de B, votre [document] : [lien]"
+      "Message de B, votre [document] : [lien] [validite]"
     );
   });
 
@@ -155,13 +158,13 @@ async function main() {
     // payer.
     await entreprisesRepo.mettreAJourEntreprise(A, {
       messages: {
-        devis: "D : votre [document], [lien]",
+        devis: "D : votre [document], [lien] [validite]",
         facture: "F : votre [document] [numero][echeance], [lien]",
         passage: "P : le [document], [lien]",
       },
     });
     const e = await entreprisesRepo.getEntreprise(A);
-    assert.strictEqual(e?.messageClient, "D : votre [document], [lien]");
+    assert.strictEqual(e?.messageClient, "D : votre [document], [lien] [validite]");
     assert.strictEqual(e?.messageClientFacture, "F : votre [document] [numero][echeance], [lien]");
     assert.strictEqual(e?.messageClientPassage, "P : le [document], [lien]");
 
@@ -172,7 +175,7 @@ async function main() {
       messages: { facture: "F bis : votre [document], [lien]" },
     });
     const apres = await entreprisesRepo.getEntreprise(A);
-    assert.strictEqual(apres?.messageClient, "D : votre [document], [lien]",
+    assert.strictEqual(apres?.messageClient, "D : votre [document], [lien] [validite]",
       "corriger la facture a touché le devis");
     assert.strictEqual(apres?.messageClientPassage, "P : le [document], [lien]",
       "corriger la facture a touché le compte rendu");

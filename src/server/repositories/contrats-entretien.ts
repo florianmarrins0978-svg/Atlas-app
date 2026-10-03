@@ -1,5 +1,5 @@
 import { createHash, randomBytes } from "node:crypto";
-import { and, desc, eq, isNull, sql } from "drizzle-orm";
+import { and, desc, eq, inArray, isNull, sql } from "drizzle-orm";
 import { db } from "../db/client";
 import { withEntreprise } from "../db/with-entreprise";
 import { chantiers, clients, contratsEntretien, entreprises, factures, parametresChiffrage } from "../db/schema";
@@ -79,6 +79,71 @@ export async function dernierContratDuClient(ctx: Ctx, clientId: string): Promis
       .orderBy(desc(contratsEntretien.createdAt))
       .limit(1);
     return l ? versContrat(l) : null;
+  });
+}
+
+/**
+ * Les contrats qui attendent encore quelque chose, pour « Vos chantiers » :
+ * un brouillon à finir, un envoi sans réponse, un refus à reprendre. Sa règle
+ * du 29 septembre 2026 : *« tout ce qui est devis, contrat d'entretien,
+ * dernier devis ou autre doivent arriver là »*.
+ *
+ * **Le DERNIER contrat de chaque client, et lui seul** : c'est celui que
+ * l'écran du contrat rouvre (`dernierContratDuClient`). Un ancien contrat
+ * refusé, repris depuis en brouillon, aurait sinon une ligne qui mène au
+ * brouillon. Le plus récemment touché d'abord.
+ */
+export async function contratsEnCours(ctx: Ctx) {
+  const derniers = await withEntreprise(ctx.utilisateurId, ctx.entrepriseId, (tx) =>
+    tx
+      .selectDistinctOn([contratsEntretien.clientId], {
+        id: contratsEntretien.id,
+        clientId: contratsEntretien.clientId,
+        clientNom: clients.nom,
+        clientCivilite: clients.civilite,
+        statut: contratsEntretien.statut,
+        prestations: contratsEntretien.prestations,
+        debut: contratsEntretien.debut,
+        dureeMois: contratsEntretien.dureeMois,
+        envoyeLe: contratsEntretien.envoyeLe,
+        retireDeLaListeAt: contratsEntretien.retireDeLaListeAt,
+        reponduLe: contratsEntretien.reponduLe,
+        majAt: contratsEntretien.updatedAt,
+      })
+      .from(contratsEntretien)
+      .innerJoin(clients, eq(contratsEntretien.clientId, clients.id))
+      .where(and(eq(contratsEntretien.entrepriseId, ctx.entrepriseId), isNull(clients.deletedAt)))
+      .orderBy(contratsEntretien.clientId, desc(contratsEntretien.createdAt))
+  );
+  return derniers
+    .filter((c) => c.statut !== "accepte")
+    .sort((a, b) => b.majAt.getTime() - a.majAt.getTime());
+}
+
+/**
+ * Retire un contrat de « Vos chantiers ». Sa règle du 29 septembre 2026 : *« il
+ * faut qu'il puisse l'utiliser, peu importe ce qu'on fera dans l'appli »*. Un
+ * contrat qui est parti chez le client ne s'efface donc JAMAIS par ce geste.
+ *
+ * | l'état | ce que fait le retrait |
+ * |---|---|
+ * | envoyé, refusé | **rien ne s'efface** : l'heure du retrait est posée, le lien reste ouvert |
+ * | brouillon | effacé : personne ne l'a reçu, il n'a pas de lien |
+ * | accepté | rien : il porte des passages, et n'a pas de ligne ici |
+ */
+export async function retirerContratDeLaListe(ctx: Ctx, id: string): Promise<boolean> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const masques = await tx
+      .update(contratsEntretien)
+      .set({ retireDeLaListeAt: new Date() })
+      .where(and(eq(contratsEntretien.id, id), inArray(contratsEntretien.statut, ["envoye", "refuse"])))
+      .returning({ id: contratsEntretien.id });
+    if (masques.length === 1) return true;
+    const effaces = await tx
+      .delete(contratsEntretien)
+      .where(and(eq(contratsEntretien.id, id), eq(contratsEntretien.statut, "brouillon")))
+      .returning({ id: contratsEntretien.id });
+    return effaces.length === 1;
   });
 }
 

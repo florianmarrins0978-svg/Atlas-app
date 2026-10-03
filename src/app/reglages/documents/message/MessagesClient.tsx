@@ -8,8 +8,12 @@ import {
   clauseEcheance,
   motDuDocument,
   refusDuMessage,
+  clauseAutreDate,
+  clauseValidite,
   type GenreDocument,
 } from "@/lib/message-client";
+import { VALIDITE_LIEN_JOURS } from "@/lib/etat-envoi";
+import { jourIso } from "@/lib/jour";
 import { majMessagesAction } from "../actions";
 import BarreEnregistrer from "@/components/atlas/BarreEnregistrer";
 import EditeurMessage from "../EditeurMessage";
@@ -65,6 +69,8 @@ export default function MessagesClient({
     passage: initiaux.passage ?? MESSAGES_PAR_DEFAUT.passage,
   }));
   const [aEcrire, setAEcrire] = useState(false);
+  // Le jour où mourrait un lien envoyé aujourd'hui : l'exemple dit une vraie date.
+  const [expireLeDExemple] = useState(() => jourIso(new Date(Date.now() + VALIDITE_LIEN_JOURS * 86_400_000)));
   const [refusServeur, setRefusServeur] = useState<string | null>(null);
   const [enCours, demarrer] = useTransition();
 
@@ -75,7 +81,7 @@ export default function MessagesClient({
    */
   const refus = useMemo(
     () =>
-      GENRES.map((g) => ({ genre: g, raison: refusDuMessage(messages[g]) })).filter(
+      GENRES.map((g) => ({ genre: g, raison: refusDuMessage(messages[g], g) })).filter(
         (r): r is { genre: GenreDocument; raison: string } => r.raison !== null
       ),
     [messages]
@@ -121,15 +127,15 @@ export default function MessagesClient({
         <p className={`${texteSituation} mb-2`} style={{ color: colors.inkSoft }}>
           Les mots en doré se remplissent tout seuls.{" "}
           <b style={{ color: colors.ink, fontWeight: 400 }}>
-            Le lien et le mot du document (devis, facture, retour d&apos;intervention) ne peuvent pas être
-            retirés.
+            Le lien, sa durée et le mot du document (devis, facture, retour d&apos;intervention) ne peuvent
+            pas être retirés.
           </b>{" "}
           Tout le reste se modifie.
         </p>
       </section>
 
       {DOCUMENTS.map(({ genre, titre, numero, echeance }) => {
-        const raison = refusDuMessage(messages[genre]);
+        const raison = refusDuMessage(messages[genre], genre);
         return (
           <section
             key={genre}
@@ -155,7 +161,12 @@ export default function MessagesClient({
                 // retirer de l'affichage ferait lire « F2026-0008 à régler… »
                 // là où le client lira « F2026-0008, à régler… ».
                 "[echeance]": clauseEcheance(echeance),
+                // **Les deux morceaux du devis s'écrivent en entier**, comme le
+                // client les lira : la phrase « autre date » case cochée, et la
+                // durée du lien comptée depuis aujourd'hui (29 septembre 2026).
+                "[autre-date]": clauseAutreDate(true),
                 "[lien]": "https://…",
+                "[validite]": clauseValidite(expireLeDExemple, entrepriseNom || "votre entreprise"),
                 "[entreprise]": entrepriseNom || "votre entreprise",
               }}
               invalide={raison !== null}

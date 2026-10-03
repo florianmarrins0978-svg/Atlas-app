@@ -9,6 +9,9 @@ import { ingererDevis } from "@/server/documents/ingestion";
 import { preparerEnvoi, verifierJourPropose } from "@/server/repositories/preparation-envoi";
 import { creerEnvoi, DatesProposeesInvalidesError } from "@/server/repositories/envois-devis";
 import { mettreAJourClient } from "@/server/repositories/clients";
+import { getEntreprise } from "@/server/repositories/entreprises";
+import { jourIso } from "@/lib/jour";
+import type { EnvoiDuDevis } from "@/lib/message-client";
 import { MOTIF_DEVIS_VIDE } from "@/lib/devis-envoyable";
 import { datesHorsFenetre, motifDatesRefusees } from "@/lib/dates-envoi";
 import { fenetrePatron } from "@/lib/disponibilites";
@@ -131,7 +134,22 @@ export async function verifierJourProposeAction(
 }
 
 export type ResultatEnvoiClient =
-  | { succes: true; lien: string; canal: "sms" | "email"; destinataire: string | null }
+  | {
+      succes: true;
+      lien: string;
+      canal: "sms" | "email";
+      destinataire: string | null;
+      /**
+       * SON message de devis, relu au moment du départ, ou `null` s'il n'en a
+       * pas écrit. **Trouvé le 29 septembre 2026** : le premier envoi ouvrait
+       * la messagerie avec le texte d'Atlas, jamais le sien ; seule la relance
+       * le prenait. Rendu ici avec le canal et le destinataire : une seule
+       * source, relue en base, pour tout ce qui part chez le client.
+       */
+      modeleMessage: string | null;
+      /** Ce que l'envoi a fixé et que le message dit : le jour où le lien meurt, la case « autre date ». */
+      envoiDuDevis: EnvoiDuDevis;
+    }
   | { succes: false; erreur: string };
 
 /**
@@ -300,6 +318,8 @@ export async function envoyerAuClientAction(
       lien: `/devis/${envoi.jeton}`,
       canal: preparation.canal,
       destinataire: preparation.destinataire,
+      modeleMessage: (await getEntreprise(ctx))?.messageClient ?? null,
+      envoiDuDevis: { expireLe: jourIso(envoi.expireAt), autreDateAutorisee: envoi.autreDateAutorisee },
     };
   } catch (err) {
     if (err instanceof DatesProposeesInvalidesError) {
