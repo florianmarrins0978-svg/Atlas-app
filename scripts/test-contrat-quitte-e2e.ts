@@ -159,6 +159,12 @@ async function main() {
     const r = await pageClient.goto(`${BASE}/contrat/${jeton}`, { waitUntil: "networkidle" });
     assert.equal(r?.status(), 200);
     assert.match(await pageClient.locator("body").innerText(), new RegExp(prestation));
+    // Le bouton du devis, en plein (sa demande du 3 octobre 2026) : un lien
+    // souligné se perdait dans le texte.
+    const telecharger = pageClient.locator('[data-atlas="telecharger-contrat"]');
+    assert.equal((await telecharger.innerText()).trim(), "Télécharger mon contrat");
+    const fond = await telecharger.evaluate((el) => getComputedStyle(el).backgroundColor);
+    assert.doesNotMatch(fond, /rgba\(0, 0, 0, 0\)|transparent/, "le téléchargement n'est pas un bouton plein");
     await cotClient.close();
   });
 

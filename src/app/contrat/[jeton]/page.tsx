@@ -1,5 +1,5 @@
 import { lireContratParJeton } from "@/server/repositories/contrats-entretien";
-import { couleursDocument } from "@/lib/design-tokens";
+import { colors, couleursDocument, surPlein } from "@/lib/design-tokens";
 import { avecCivilite } from "@/lib/civilite";
 import { enEuros } from "@/lib/euros";
 import {
@@ -108,15 +108,20 @@ export default async function PageContratClient({ params }: { params: Promise<{ 
 
         {/* **Par la porte des documents**, jamais un lien posé à la main : sur
             iPhone un lien direct PEINT le PDF au lieu de le ranger
-            (`test-tous-les-pdf`). */}
+            (`test-tous-les-pdf`).
+            **Le bouton du devis, en plein — sa demande du 3 octobre 2026** :
+            *« mets un bouton pour télécharger le contrat comme avec le
+            devis »*. Un lien souligné se lisait comme le texte qui l'entoure ;
+            mêmes jetons et même mot que « Télécharger mon devis »
+            (`BoutonTelechargerDevis.tsx`). */}
         <BoutonTelechargerDocument
           fichier={`/contrat/${encodeURIComponent(jeton)}/pdf`}
           nom="contrat-d-entretien.pdf"
           dataAtlas="telecharger-contrat"
-          className="mt-5 inline-block text-[14px] font-medium underline"
-          style={{ color: ENCRE }}
+          className="mt-5 block w-full rounded-full py-3 text-center text-[15px] font-medium"
+          style={{ backgroundColor: colors.plein, color: surPlein }}
         >
-          Télécharger le contrat en PDF
+          Télécharger mon contrat
         </BoutonTelechargerDocument>
 
         <ReponseContrat

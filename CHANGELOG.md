@@ -8,6 +8,14 @@ Format : le plus récent en tête.
 ---
 ## 2026-10-03
 
+### Le client télécharge son contrat par un bouton, comme son devis
+
+Sa demande : *« mets un bouton pour télécharger le contrat comme avec le
+devis »*. La page du contrat portait un lien souligné « Télécharger le contrat
+en PDF », perdu dans le texte. Il devient le bouton plein du devis, avec le
+même mot : « Télécharger mon contrat », à la même place. La suite du contrat
+vérifie le libellé et le fond plein.
+
 ### Un devis parti qui attend le client rouvre l'écran du devis, plus le planning
 
 Sa plainte : *« j'ai voulu envoyer un devis, au moment d'ouvrir le message
