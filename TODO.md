@@ -8,7 +8,8 @@ dans `docs/lot-mentions-facture-devis.md`.
 
 - ✅ **Numéro de TVA sur la facture** : codé (migration 0117, §441), suite
   `test-numero-tva-sur-la-facture-db` rouge puis verte. **Niveau 3 : `main`
-  attend la batterie, et son accord pour la lancer.**
+  attend la batterie. Sa consigne du 3 octobre : « ne lance aucune batterie ».
+  La correction reste sur la branche tant qu'il ne l'a pas autorisée.**
 - ⏳ **Restent, chacun par une maquette, dans l'ordre proposé** : formulaire de
   rétractation joint au devis d'un particulier ; une vérification avant l'envoi
   qui dit ce qui manque ; date des travaux sur la facture et date de début sur
