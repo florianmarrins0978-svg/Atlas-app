@@ -34069,3 +34069,22 @@ comment fonctionne le planning ? »*
 | la consigne garde « une seule fiche » pour un geste, et l'écarte pour une visite | trois gestes pour une question l'égarent (25 août) ; mais « comment marche le planning » EST une question à plusieurs gestes |
 | la fiche des couleurs dit le SENS de chaque état, prouvé par `etatDemi` et `occupationDemi` | « au-delà » compare les équipes prises (absences comprises) au nombre d'équipes réglé ; sans cela, il ne savait ni ce que c'était ni où le régler |
 | « au dela » soudé en `audela` | « dela » est le début de « délai » : « que signifie au-delà » rendait les délais de paiement |
+
+## §441 : La facture directe ne passe jamais devant un devis qui attend
+
+*« Il ne reprend pas le devis du client »* (3 octobre 2026). La facture sans
+devis (`creerFactureSansDevis`) n'existe que pour ce qui n'a jamais eu de
+devis ; le bouton « Faire la facture » de la fiche client l'employait pourtant
+pour tout client, même reconnu avec un devis envoyé sur un autre chantier.
+
+| | |
+|---|---|
+| la question | posée AVANT de créer le chantier, sinon le doublon est déjà né |
+| les candidats | chantiers du client, devis `envoye`, aucune facture `emise` (`chantierDuClientAFacturer`) |
+| le choix | pur, dans `src/lib/chantier-a-facturer.ts` : un seul, ou un seul à l'adresse saisie ; plusieurs, on refuse |
+| un devis en brouillon | n'en fait pas un candidat : le client n'a vu aucun prix |
+| la date de fin | n'entre pas en jeu, comme pour « Fin de chantier » (§33) |
+
+Écarté : choisir le plus récent quand plusieurs devis attendent. Facturer un
+client sur le mauvais prix coûte un avoir ; le refus coûte d'ouvrir le chantier.
+

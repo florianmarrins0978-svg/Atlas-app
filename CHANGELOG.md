@@ -6,6 +6,21 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-10-03
+
+### « Faire la facture » reprend le devis du client qui en a un
+
+Sa remarque : *« j'ai voulu créer une facture avant la date de fin de chantier,
+sauf qu'il ne reprend pas le devis du client »*. Depuis Terminés, la fiche
+reconnaissait le client, puis ouvrait un chantier NEUF et une facture VIDE : le
+prix accepté restait sur l'autre chantier, et un doublon naissait. Désormais,
+avant toute création, `chantierDuClientAFacturer` cherche les chantiers de ce
+client qui portent un devis envoyé et aucune facture émise ; un seul (ou un
+seul à l'adresse saisie) se facture par `terminerChantier`, plusieurs sans que
+l'adresse tranche se refusent en le disant. Aucun devis : facture directe,
+comme avant. Éprouvé : `test-facture-sans-devis-db.ts` (rouge sur l'ancien
+comportement, puis vert) et `test-facture-sans-devis-e2e.ts`, par son geste.
+
 ## 2026-09-29
 
 ### Le modèle de fiche d'entretien est là d'office, et une touche le remet

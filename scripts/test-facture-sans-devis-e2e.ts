@@ -1,7 +1,13 @@
 import assert from "node:assert";
 import type { Page, BrowserContext } from "playwright";
 import { lancerNavigateur } from "./e2e-browser";
-import { pool } from "../src/server/db/client";
+import { eq } from "drizzle-orm";
+import { pool, db } from "../src/server/db/client";
+import { users, membresEntreprise } from "../src/server/db/schema";
+import * as clientsRepo from "../src/server/repositories/clients";
+import * as chantiersRepo from "../src/server/repositories/chantiers";
+import * as devisRepo from "../src/server/repositories/devis";
+import * as prixRepo from "../src/server/repositories/lignes-prix";
 import { ADRESSE } from "./_adresse";
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -524,6 +530,57 @@ async function main() {
     );
     assert.strictEqual(apres.rows[0].reduction_pourcent, null, "la remise retirée dort en base");
     assert.strictEqual(apres.rows[0].reduction_montant, null, "le montant retiré dort en base");
+  });
+
+  // ── UN CLIENT DONT LE DEVIS ATTEND — 3 octobre 2026 ─────────────────────
+
+  await test("RÉGRESSION — « Faire la facture » reprend le devis envoyé du client reconnu", async () => {
+    // *« J'ai voulu créer une facture avant la date de fin de chantier, sauf
+    // qu'il ne reprend pas le devis du client. »* Le client et son devis
+    // existent d'avance (c'est l'état de sa base) ; le GESTE, lui, est le sien :
+    // Terminés, son nom tapé, Atlas le reconnaît, « Faire la facture ».
+    const [demo] = await db.select().from(users).where(eq(users.email, "demo@atlas.local")).limit(1);
+    if (!demo) throw new Error("le compte de démonstration est absent : la base n'est pas amorcée");
+    const [m] = await db
+      .select({ e: membresEntreprise.entrepriseId })
+      .from(membresEntreprise)
+      .where(eq(membresEntreprise.utilisateurId, demo.id))
+      .limit(1);
+    const ctx = { utilisateurId: demo.id, entrepriseId: m!.e };
+    const nom = `Lala ${Date.now()}`;
+    const client = await clientsRepo.creerClient(ctx, { nom, telephone: "0631466585" });
+    const chantier = await chantiersRepo.creerChantier(ctx, {
+      nom: `Chez ${nom}`,
+      adresseChantier: ADRESSE_CHANTIER,
+      clientId: client.id,
+    });
+    await prixRepo.ajouterLignePrix(ctx, chantier.id, "Taille de haie", "640.00");
+    await devisRepo.envoyerDevis(ctx, (await devisRepo.getOuCreerDevisBrouillon(ctx, chantier.id)).id);
+
+    await page.goto(`${BASE}/termines`, { waitUntil: "networkidle" });
+    await page.click('[data-atlas="creer-une-facture"]');
+    await page.waitForURL(/\/chantiers\/nouveau/, { timeout: 15000 });
+    await page.waitForLoadState("networkidle");
+    await page.fill('input[placeholder="Bernard"]', nom);
+    await page.waitForSelector('[data-atlas="client-reconnu"]', { timeout: 15000 });
+    await page.click('[data-atlas="action-facture-directe"]');
+    await page.waitForURL(new RegExp(`/chantiers/${chantier.id}/facture$`), { timeout: 20000 });
+    await page.waitForSelector('[data-atlas="envoyer-la-facture"]', { timeout: 20000 });
+
+    const { rows } = await pool.query(
+      `SELECT f.devis_id, l.libelle FROM factures f JOIN lignes_facture l ON l.facture_id = f.id
+        WHERE f.chantier_id = $1`,
+      [chantier.id]
+    );
+    assert.strictEqual(rows.length, 1, "la facture ne porte pas la ligne du devis");
+    assert.ok(rows[0].devis_id, "la facture n'est pas née du devis");
+    assert.strictEqual(rows[0].libelle, "Taille de haie");
+
+    const autres = await pool.query(
+      "SELECT count(*)::int AS n FROM chantiers WHERE client_id = $1 AND deleted_at IS NULL",
+      [client.id]
+    );
+    assert.strictEqual(autres.rows[0].n, 1, "un chantier en double est né à côté de celui du devis");
   });
 
   await context.close();
