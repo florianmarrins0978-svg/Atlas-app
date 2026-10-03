@@ -14,6 +14,8 @@ planche). Planche `appli/tva-entreprise-et-mairie.html`, bâtie sur les vrais
 migration expand sur `factures`) ; le bouton s'appelle « Sous-traitance, sans
 TVA », éteint par défaut, absent pour un compte en franchise, et imprime la
 mention d'autoliquidation dans `facture-pdf.ts`.
+Sa demande du 3 octobre : « Facture acquittée » prend le même cadre doré que
+le bouton de sous-traitance, à la même place.
 
 À part, relevé en relevant les écrans : la facture et son PDF écrivent
 « Mr. Jardins Ribault » alors qu'aucune civilité n'est cochée sur la fiche.
