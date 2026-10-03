@@ -104,6 +104,19 @@ ajoutée dans l'écran jusqu'au premier mot, comme la ligne ouverte d'avance.
 Travail dans l'écran du devis (identifiant qui ne change pas, ordre des
 écritures), donc un lot à lui, de niveau 3.
 
+## ⏳ UNE PLANCHE À REGARDER : DIRE QUE LE MICRO RÉDIGE LE DEVIS (3 octobre 2026)
+
+**Sa remarque :** *« sur la fiche client on comprend pas que la note vocale
+permet de rédiger le devis par la voix, il faudrait mettre une phrase
+au-dessus »*. Écran regardé (`/chantiers/nouveau?client=…`) : sous le grand
+micro, seulement « Appuyez et décrivez le chantier » en 11 px gris
+(`AnneauNoteVocale.tsx`). Planche `appli/dicter-le-devis-dire-ce-que-ca-fait.html` :
+**A** « Devis à la voix » en capitales, **B** « Dictez les travaux, Atlas rédige
+le devis. » (recommandée), **C** B et l'indice raccourci en « Appuyez pour
+commencer ». **Rien n'est codé.** À savoir : le petit micro en haut à droite
+(`DicterCoordonnees`) remplit les coordonnées, pas le devis ; deux micros sur
+un écran peuvent entretenir la confusion.
+
 ## ⏳ UNE PLANCHE À REGARDER : OUVRIR LA FICHE D'INTERVENTION (3 octobre 2026)
 
 **Sa remarque, capture du planning à l'appui :** *« le fait de cliquer pour
