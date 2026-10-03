@@ -1,5 +1,15 @@
 # Prochaines tâches
 
+## ⏳ RETIRER PAR UNE CROIX : la planche attend son choix (3 octobre 2026)
+
+Sa demande en essayant la version ordinateur : *« pour retirer une ligne il
+faut mettre une petite croix en plus du slide »*. Une souris ne glisse pas :
+`LigneRetirable` n'est atteignable sur ordinateur qu'au pavé tactile. Planche
+`appli/retirer-par-une-croix.html` : A partout, B sur ordinateur seulement,
+C au survol. Elle rouvre en partie son choix du 10 août (une seule façon de
+retirer) ; le glissement reste dans les trois. Quand il aura choisi, la croix
+vit dans `LigneRetirable`, donc sur tous les écrans qui l'emploient.
+
 ## ⏳ SUR ORDINATEUR : la planche attend son choix (30 septembre 2026)
 
 Sa demande : *« il faut que ça prenne l'entièreté de l'ordinateur »*. Le site
