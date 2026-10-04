@@ -34088,3 +34088,34 @@ pour tout client, même reconnu avec un devis envoyé sur un autre chantier.
 Écarté : choisir le plus récent quand plusieurs devis attendent. Facturer un
 client sur le mauvais prix coûte un avoir ; le refus coûte d'ouvrir le chantier.
 
+
+## §442 : Le film de promotion est un moteur, et il se paie à l'image capturée
+
+*« On dirait un PowerPoint »* (4 octobre 2026), devant la version C : un
+téléphone plat au centre, un titre au-dessus de chaque écran, une caméra fixe.
+La version D sépare ce qui est commun à tout film (`appli/video-promo/film/moteur-D.js`)
+de ce que chaque film décide (son découpage, dans sa page). Une seule horloge
+toujours : `window.rendre(t)` pose, le rendu capture (§ du 26 septembre,
+`scripts/rendre-film.mjs`).
+
+| | |
+|---|---|
+| le téléphone | CSS 3D, épais : quatre faces posées HORS du rectangle sur leurs arêtes et rabattues (la normale vers l'extérieur, sinon `backface-visibility` les cache), quatre coins en tranches ; lumière, reflet et ombre calculés depuis l'angle |
+| pas WebGL | le rendu tourne dans un Chromium sans carte graphique ; un verre en WebGL y coûterait dix fois plus par image pour un gain invisible à cette taille |
+| la caméra | une transformation du monde entier (regarder un point, zoomer, tourner), jamais chaque élément déplacé à la main |
+| le raccord | un morceau d'une capture, copié hors du téléphone, qui voyage et se fond dans un morceau d'une autre capture (`creerMorceau`) : un élément DEVIENT le suivant |
+| le flou de mouvement | des sous-images moyennées par ffmpeg (`--obturateur N`, obturateur à 180°), pas un filtre CSS |
+| le grain | ffmpeg, à graine fixe (`--grain N`) ; en page, en `mix-blend-mode`, il coûtait 450 ms par image |
+
+**Ce qui coûte, mesuré le 4 octobre 2026** (une image de 1080 × 1920 capturée
+par Playwright, composition logicielle) : 94 ms pour une page vide ; chaque
+calque plein cadre composé, 100 à 170 ms ; dix-huit tranches pleines pour le
+chant du téléphone, 900 ms ; une ombre en `filter: blur`, 100 ms. De 2 s par
+image à 0,65 s en changeant la forme, pas l'image. À 60 images par seconde et
+deux sous-images, huit secondes de film coûtent dix minutes ; le film entier
+coûtera une heure. Réduire encore passerait par moins de calques plein cadre
+(la lueur, l'étalonnage, la vignette), jamais par moins d'images.
+
+Écarté : rendre en temps réel et capturer l'écran (saccades, non reproductible,
+§ du 26 septembre) ; faire le film entier avant son choix (la maquette d'abord,
+`CLAUDE.md` §3 bis).

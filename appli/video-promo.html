@@ -12,14 +12,19 @@
     vendre l'appli (paysagistes et élagueurs d'abord) ; puis « les photos ne
     sont pas du tout celles de l'appli ! » ; puis « mis en scène, un truc de
     qualité, prends les vraies pages, n'invente rien, vendeur et joli » ; puis,
-    devant la version A : « Fais mieux ! ».
+    devant la version A : « Fais mieux ! ». Puis, devant la version C, le
+    4 octobre : « On dirait un PowerPoint. »
 
-    Trois versions, donc. A et B (accroches différentes, même montage) sortent
-    de video-promo/film/film.html ; C sort de film-C.html : accroche jouée,
-    dictée qui s'écrit mot à mot, devis qui se construit ligne à ligne, bande
-    son. Toutes rendues image par image par scripts/rendre-film.mjs (41 s,
-    1080 × 1920). Tout ce qui est dans le téléphone est une capture de
+    D'où la version D : trois DIRECTIONS de huit secondes, l'accroche et le
+    premier raccord, à choisir avant de monter le film entier. L'objet (un
+    téléphone en 3D dans la lumière), le coup de poing (des coupes sur le
+    temps, des mots énormes), la journée (une horloge, du soir au matin).
+    Toutes sortent de video-promo/film/essai-D-*.html, rendues image par
+    image par scripts/rendre-film.mjs (60 images par seconde, flou de
+    mouvement, grain). Tout ce qui est dans le téléphone est une capture de
     l'application servie, prise en jouant le geste pour de vrai.
+
+    Les versions d'avant (C, A, B) restent en bas de la page.
   */
   :root{ --bone:#f5f3ee; --cream:#faf9f5; --paper:#ece9e1; --ink:#1c1c1a; --ink-soft:#4a4a44;
          --muted:#8a8578; --pine:#2f3b2f; --or:#B98B47; --line:rgba(28,28,26,.12); }
@@ -33,8 +38,10 @@
   .page{max-width:460px;margin:0 auto;padding:0 16px}
   .sur{margin:0;font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:var(--or)}
   h1{margin:4px 0 6px;font:500 30px/1.15 Georgia,serif}
+  h2{margin:34px 0 8px;font:500 22px/1.2 Georgia,serif}
   .chapo{margin:0 0 18px;color:var(--ink-soft);font-size:14.5px}
-  .choix{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+  .choix{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px}
+  .choix.deux{grid-template-columns:1fr 1fr}
   .choix button{padding:10px 8px;border:1px solid var(--line);border-radius:12px;
        background:var(--cream);color:var(--ink);font:inherit;font-size:13px;cursor:pointer;text-align:left}
   .choix button b{display:block;font-size:14px}
@@ -42,57 +49,77 @@
   .choix button[aria-pressed="true"]{background:var(--pine);color:#faf9f5;border-color:var(--pine)}
   .choix button[aria-pressed="true"] span{color:rgba(250,249,245,.7)}
   video{display:block;width:100%;max-width:360px;margin:0 auto;aspect-ratio:9/16;border-radius:22px;
-        background:#1f2820;box-shadow:0 18px 50px rgba(0,0,0,.28)}
-  .telecharger{display:block;text-align:center;margin:14px 0 0;color:var(--ink);font-size:14px}
+        background:#0b0e0c;box-shadow:0 18px 50px rgba(0,0,0,.28)}
+  .son{display:flex;justify-content:center;gap:16px;margin:10px 0 0;font-size:13px}
+  .son a{color:var(--ink)}
   .note{margin-top:24px;padding:14px 16px;background:var(--cream);border-radius:13px;
         font-size:13.5px;line-height:1.6;color:var(--ink-soft)}
   .note b{color:var(--ink)}
   .note ul{margin:6px 0 0;padding-left:18px}
+  .note p{margin:10px 0 0}
 </style>
 </head>
 <body>
 <div class="page">
   <p class="sur">Atlas</p>
   <h1>La vidéo</h1>
-  <p class="chapo">41 secondes, en vertical. Tous les écrans sont ceux de l’appli.</p>
+  <p class="chapo">Trois directions de 8 secondes : l’accroche et le premier raccord. Choisissez-en une, le film entier se monte dessus.</p>
 
-  <div class="choix" role="group" aria-label="Version">
-    <button type="button" data-video="C" aria-pressed="true"><b>C, avec le son</b><span>la nouvelle</span></button>
-    <button type="button" data-video="C-muet" aria-pressed="false"><b>C, sans le son</b><span>la même, muette</span></button>
-    <button type="button" data-video="A" aria-pressed="false"><b>A</b><span>20 minutes de bureau</span></button>
-    <button type="button" data-video="B" aria-pressed="false"><b>B</b><span>vos devis ce soir</span></button>
+  <div class="choix" role="group" aria-label="Direction">
+    <button type="button" data-video="essai-D-apple" aria-pressed="true"><b>L’objet</b><span>un téléphone dans la lumière, lent</span></button>
+    <button type="button" data-video="essai-D-nerveuse" aria-pressed="false"><b>Le coup de poing</b><span>des coupes sur le temps, des mots énormes</span></button>
+    <button type="button" data-video="essai-D-recit" aria-pressed="false"><b>La journée</b><span>une horloge, du soir au matin</span></button>
   </div>
 
-  <video id="video" src="video-promo/atlas-C.mp4" poster="video-promo/affiche-C.jpg" controls playsinline preload="metadata"></video>
-  <a class="telecharger" id="telecharger" href="video-promo/atlas-C.mp4" download>Télécharger cette version</a>
+  <video id="video" src="video-promo/essai-D-apple.mp4" poster="video-promo/affiche-D-apple.jpg" controls playsinline preload="metadata"></video>
+  <p class="son"><a id="avec" href="video-promo/essai-D-apple.mp4" download>Avec le son de travail</a><a id="sans" href="video-promo/essai-D-apple-muet.mp4" download>Muette</a></p>
 
   <div class="note">
-    <b>Ce que C change</b>
+    <b>Ce que les trois ont en commun, et que C n’avait pas</b>
     <ul>
-      <li>L’accroche se joue : « 20 minutes » est barré, « 30 secondes » prend la place.</li>
-      <li>Ce que vous dictez s’écrit mot à mot pendant l’enregistrement.</li>
-      <li>Le devis se construit ligne à ligne, puis la caméra s’en approche.</li>
-      <li>Les écrans se poussent comme dans l’appli, le téléphone respire.</li>
-      <li>Une bande son : chaque geste s’entend. Elle est fabriquée note à note, personne ne l’a écoutée avant vous : dites si elle vous plaît.</li>
+      <li>Un téléphone en vraie 3D, épais, avec une lumière qui balaie le verre et une ombre qui suit.</li>
+      <li>Une caméra qui vit : elle entre dans l’écran, elle s’approche, elle bouge.</li>
+      <li>Un raccord : les mots dictés deviennent la première ligne du devis.</li>
+      <li>Soixante images par seconde, du flou de mouvement, un grain de pellicule.</li>
     </ul>
+    <b style="display:block;margin-top:12px">Ma recommandation</b>
+    <p>Le coup de poing pour l’accroche (il arrête le pouce avant la troisième seconde, sans le son), puis l’objet pour les quatre piliers. Le détail est dans le document de retour.</p>
     <b style="display:block;margin-top:12px">Ce qui reste à me dire</b>
     <ul>
-      <li>C, A ou B ?</li>
-      <li>Le nom commercial : Atlas, ou un autre ?</li>
-      <li>L’adresse où la vidéo renvoie. Elle s’ajoute sur la fin.</li>
-      <li>Votre voix, si vous en voulez une.</li>
+      <li>La direction : l’objet, le coup de poing, ou la journée.</li>
+      <li>Le nom commercial : Atlas, ou un autre.</li>
+      <li>L’adresse où la vidéo renvoie, pour la fin.</li>
+      <li>Votre voix, si vous en voulez une : un texte de 30 secondes est proposé.</li>
+      <li>Le son : personne n’a pu l’écouter ici. La bande est fabriquée note à note, elle donne le rythme, pas la musique finale.</li>
     </ul>
-    <p style="margin:10px 0 0">Les clients sont fictifs. Aucun prix : la formule à 39 € n’ouvre pas l’arrosage ni le diagnostic, que la vidéo montre. L’essai de 15 jours, lui, ouvre tout.</p>
+    <p>Tout ce qui est dans le téléphone est une capture de l’application. Les chiffres (20 minutes, 30 secondes) sont ceux du cadrage du produit. Aucun prix.</p>
   </div>
+
+  <h2>Les versions d’avant</h2>
+  <p class="chapo">41 secondes, en vertical. C est celle qui « ressemble à un PowerPoint ».</p>
+  <div class="choix deux" role="group" aria-label="Version">
+    <button type="button" data-ancienne="C" aria-pressed="true"><b>C, avec le son</b><span>dictée qui s’écrit, devis qui se construit</span></button>
+    <button type="button" data-ancienne="C-muet" aria-pressed="false"><b>C, sans le son</b><span>la même, muette</span></button>
+    <button type="button" data-ancienne="A" aria-pressed="false"><b>A</b><span>20 minutes de bureau</span></button>
+    <button type="button" data-ancienne="B" aria-pressed="false"><b>B</b><span>vos devis ce soir</span></button>
+  </div>
+  <video id="ancienne" src="video-promo/atlas-C.mp4" poster="video-promo/affiche-C.jpg" controls playsinline preload="metadata"></video>
 </div>
 <script>
-  const video = document.getElementById('video'), lien = document.getElementById('telecharger');
-  const affiche = { C: 'affiche-C', 'C-muet': 'affiche-C', A: 'affiche', B: 'affiche' };
+  const video = document.getElementById('video'), avec = document.getElementById('avec'), sans = document.getElementById('sans');
   document.querySelectorAll('[data-video]').forEach(b => b.addEventListener('click', () => {
     document.querySelectorAll('[data-video]').forEach(x => x.setAttribute('aria-pressed', x === b));
-    const src = `video-promo/atlas-${b.dataset.video}.mp4`;
-    video.poster = `video-promo/${affiche[b.dataset.video]}.jpg`;
-    video.src = src; lien.href = src; video.play().catch(() => {});
+    const nom = b.dataset.video;
+    video.poster = `video-promo/affiche-D-${nom.replace('essai-D-', '')}.jpg`;
+    video.src = `video-promo/${nom}.mp4`; avec.href = `video-promo/${nom}.mp4`; sans.href = `video-promo/${nom}-muet.mp4`;
+    video.play().catch(() => {});
+  }));
+  const ancienne = document.getElementById('ancienne');
+  const affiche = { C: 'affiche-C', 'C-muet': 'affiche-C', A: 'affiche', B: 'affiche' };
+  document.querySelectorAll('[data-ancienne]').forEach(b => b.addEventListener('click', () => {
+    document.querySelectorAll('[data-ancienne]').forEach(x => x.setAttribute('aria-pressed', x === b));
+    ancienne.poster = `video-promo/${affiche[b.dataset.ancienne]}.jpg`;
+    ancienne.src = `video-promo/atlas-${b.dataset.ancienne}.mp4`; ancienne.play().catch(() => {});
   }));
 </script>
 </body>

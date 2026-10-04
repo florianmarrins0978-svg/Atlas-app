@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1080">
+<title>Atlas, film D, direction nerveuse</title>
+<link rel="stylesheet" href="polices/polices.css">
+<style>
+  /*
+    DIRECTION « NERVEUSE » : des coupes sur le temps, une typographie massive.
+
+    Huit secondes à 128 à la noire : une coupe par temps, jamais de fondu.
+    Chaque mot de la douleur du soir FRAPPE l'écran, en noir sur papier, en
+    or sur vert pin, en blanc sur noir ; un temps de silence ; puis le
+    téléphone entre en claquant, « 30 secondes » derrière lui, et la caméra
+    saute dans l'écran par à-coups. Les mots dictés tombent au quart de
+    temps. Le raccord est un panoramique filé vers la ligne du devis.
+
+    Même histoire que les deux autres directions ; même matière (captures de
+    l'application servie) ; seul le traitement change.
+  */
+  *{box-sizing:border-box;margin:0}
+  html,body{width:1080px;height:1920px;overflow:hidden;background:#06070a}
+  #scene{position:absolute;inset:0;overflow:hidden;background:#06070a}
+  #fond{position:absolute;inset:0;z-index:0}
+  #monde{position:absolute;left:0;top:0}
+  .carte{position:absolute;left:0;right:0;top:0;height:1920px;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:0 60px;text-align:center;opacity:0;will-change:transform,opacity}
+  .carte .masse{font:400 300px/.9 'Film Masse';text-transform:uppercase;letter-spacing:-.01em}
+  .carte .masse.deux{font-size:230px}
+  .carte .etroit{font:700 64px/1.1 'Film Etroit';text-transform:uppercase;letter-spacing:.08em;margin-top:30px}
+  .noir{color:#f3efe6} .encre{color:#1c1c1a} .or{color:#C9A15E} .pin{color:#2f3b2f}
+  #trente{position:absolute;left:0;right:0;top:120px;text-align:center;font:400 760px/.85 'Film Masse';color:#C9A15E;opacity:0;will-change:transform,opacity;letter-spacing:-.04em}
+  #secondes{position:absolute;left:0;right:0;top:1560px;text-align:center;font:400 190px/1 'Film Masse';color:#f3efe6;opacity:0;will-change:transform,opacity}
+  #dictee{position:absolute;left:0;right:0;top:0;height:1920px;display:flex;flex-wrap:wrap;align-content:center;justify-content:center;gap:0 26px;padding:0 70px;font:400 96px/1.05 'Film Masse';text-transform:uppercase;color:#f3efe6;opacity:0}
+  #dictee span{display:inline-block;will-change:transform,opacity}
+  #devisMot{position:absolute;left:0;right:0;top:760px;text-align:center;font:400 330px/.9 'Film Masse';color:#C9A15E;opacity:0;will-change:transform,opacity}
+  #pretMot{position:absolute;left:0;right:0;top:1130px;text-align:center;font:400 330px/.9 'Film Masse';color:#f3efe6;opacity:0;will-change:transform,opacity}
+  #eclair{position:absolute;inset:0;background:#fff;opacity:0;z-index:70;pointer-events:none}
+</style>
+</head>
+<body>
+<div id="scene">
+  <div id="fond"></div>
+  <div id="monde">
+    <div id="lueur"></div>
+    <div class="carte" id="c0"><p class="masse noir">Le soir.</p></div>
+    <div class="carte" id="c1"><p class="masse encre">Les devis</p><p class="etroit encre">à retaper.</p></div>
+    <div class="carte" id="c2"><p class="masse or">La TVA.</p></div>
+    <div class="carte" id="c3"><p class="masse noir deux">Les gars qui appellent.</p></div>
+    <div class="carte" id="c4"><p class="masse encre deux">20 minutes</p><p class="etroit encre">de bureau après chaque visite de chantier.</p></div>
+    <p id="trente">30</p>
+    <p id="secondes">secondes.</p>
+    <div id="dictee"></div>
+    <div id="objets"></div>
+    <p id="devisMot">Devis.</p>
+    <p id="pretMot">Prêt.</p>
+  </div>
+  <div id="eclair"></div>
+  <div id="etalonnage"></div>
+  <div id="vignette"></div>
+</div>
+<script src="moteur-D.js"></script>
+<script>
+  const M = window.MoteurD;
+  const { entre, mix, cles, lisse, sortie, sortieForte, expo, coup, borne, $ } = M;
+  const DUREE = 8.0;
+  const BPM = 128, TEMPS = 60 / BPM;        // 0,469 s
+  // L'instant du temps n, CALÉ SUR UNE IMAGE (un soixantième de seconde). Une
+  // coupe posée entre deux sous-images de l'obturateur donnait une image
+  // grise, moitié noir moitié papier : vu sur le premier rendu, image 28.
+  const b = n => Math.round(n * TEMPS * 60) / 60;
+
+  const scene = M.creerScene();
+  const matiere = M.creerMatiere();
+  const tel = M.creerTelephone({
+    parent: $('objets'), teinte: 'graphite',
+    ecrans: [
+      { nom: 'accueil-avant', src: 'accueil-avant.jpg' },
+      { nom: 'fiche-reconnue', src: 'fiche-reconnue.jpg' },
+      { nom: 'enregistre', src: 'dictee/enregistre.jpg' },
+    ],
+  });
+  const PRISES = [124,296,412,518,629,742,852,965,1087,1203,1328,1454,1568,1709,1839,1950,2065,2168,2297,2437,2550,2652,2776,2884,2998,3122,3241,3346,3486,3607,3720,3840,3952,4066,4185,4298];
+  const BANDES = PRISES.map((_, i) => {
+    const img = new Image(); img.src = `dictee/bande-${i}.jpg`; img.alt = '';
+    img.style.cssText = `position:absolute;left:0;top:${600 * M.K}px;width:620px;z-index:1500;opacity:0`;
+    tel.ecran.appendChild(img); return img;
+  });
+
+  // ─── le découpage, sur les temps ────────────────────────────────────────
+  // [temps de début, temps de fin, fond, carte]
+  const COUPES = [
+    [0, 1, '#06070a', 'c0'],
+    [1, 2, '#f5f3ee', 'c1'],
+    [2, 3, '#2f3b2f', 'c2'],
+    [3, 4, '#06070a', 'c3'],
+    [4, 5, '#f5f3ee', 'c4'],
+    [5, 6, '#06070a', null],        // un temps de silence
+  ];
+  const T_TEL = b(6);          // le téléphone claque
+  const T_SECONDES = b(7);
+  const T_SAUT = b(8);         // la caméra saute dans l'écran, en trois crans
+  const T_CREER = b(8) + .2;
+  const T_FICHE = b(9);
+  const T_MICRO = b(10);
+  const T_DICTEE = b(11);
+  const T_FILE = b(14);        // le panoramique filé
+  const T_DEVIS = b(15);
+  const T_PRET = b(16);
+
+  const ECRANS = [
+    ['accueil-avant', T_TEL - .1, T_FICHE, 'net'],
+    ['fiche-reconnue', T_FICHE, T_MICRO + .35, 'net'],
+    ['enregistre', T_MICRO + .12, DUREE, 'net'],
+  ];
+  const APPUIS = [[T_CREER, 271, 172], [T_MICRO, 195, 663]];
+
+  const DICTEE = 'Chez madame Martin, au 8 impasse du Moulin : élagage du grand chêne, une quinzaine de mètres, en taille douce.';
+  const MOTS = [];
+  { let k = 0;
+    for (const brut of DICTEE.split(' ')) {
+      if (brut === ':') continue;
+      MOTS.push([T_DICTEE + k * TEMPS / 4, brut.replace(/[,:.]$/, '')]); k++;
+    } }
+  const dictee = $('dictee');
+  dictee.innerHTML = MOTS.map(([, m]) => `<span>${m}</span>`).join('');
+  const spansMots = [...dictee.querySelectorAll('span')];
+
+  // Le raccord : la ligne du devis arrive par un filé, en pleine largeur.
+  const ligne = M.creerMorceau({
+    parent: $('objets'),
+    de: { src: 'devis-pdf.jpg', zone: [40, 775, 1705, 118], largeurSource: 1785 },
+    vers: { src: 'devis-pdf.jpg', zone: [40, 775, 1705, 118], largeurSource: 1785 },
+  });
+
+  const cartes = COUPES.map(c => c[3] ? $(c[3]) : null);
+  const mots = cartes.map(c => c ? M.decouper(c.querySelector('.masse'), 'mots') : []);
+
+  // ─── la carte des temps forts ───────────────────────────────────────────
+  window.SONS = [
+    ...COUPES.filter(c => c[3]).map(c => [b(c[0]), 'coup']),
+    [b(5), 'nappe-monte'],
+    [T_TEL, 'coup'], [T_TEL + .05, 'telephone-entre'], [T_SECONDES, 'coup'],
+    [T_SAUT, 'glisse'], [T_SAUT + TEMPS / 3, 'glisse'], [T_SAUT + 2 * TEMPS / 3, 'glisse'],
+    [T_CREER, 'appui'], [T_FICHE, 'glisse'], [T_MICRO, 'appui'], [T_MICRO + .1, 'micro'],
+    ...MOTS.map(([t]) => [t, 'touche']),
+    [T_FILE, 'barre'], [T_DEVIS, 'coup'], [T_PRET, 'coup'], [T_PRET + .05, 'total'],
+  ].sort((a, b) => a[0] - b[0]);
+  window.MUSIQUE = {
+    style: 'nerveuse', bpm: BPM, tonalite: 'D', duree: DUREE,
+    sections: [
+      { de: 0, accord: 'Bm', couches: ['pulsation'] },
+      { de: b(5), accord: 'Bm', couches: ['silence'] },
+      { de: T_TEL, accord: 'D', couches: ['pulsation', 'charley'] },
+      { de: T_DICTEE, accord: 'G', couches: ['pulsation', 'charley', 'arpege'] },
+      { de: T_DEVIS, accord: 'D', couches: ['nappe', 'pulsation'] },
+    ],
+  };
+
+  const fond = $('fond'), eclair = $('eclair');
+
+  function rendre(t) {
+    // ── le fond : la couleur de la coupe en cours, sans transition
+    const coupe = COUPES.find(c => t >= b(c[0]) && t < b(c[1]));
+    fond.style.background = t >= T_TEL ? '#06070a' : (coupe ? coupe[2] : '#06070a');
+
+    // ── les cartes de mots : chacune frappe sur son temps
+    COUPES.forEach((c, k) => {
+      const el = cartes[k]; if (!el) return;
+      const de = b(c[0]), a = b(c[1]);
+      const visible = t >= de && t < a;
+      el.style.opacity = visible ? '1' : '0';
+      if (!visible) return;
+      M.animer(mots[k], t, { debut: de, pas: .04, duree: .22, mode: 'coup' });
+      const sous = el.querySelector('.etroit');
+      if (sous) { const p = sortie(entre(t, de + .12, de + .3)); sous.style.opacity = String(p); sous.style.transform = `translateY(${18 * (1 - p)}px)`; }
+      // un léger glissement pendant le temps : la carte ne reste jamais immobile
+      el.style.transform = `translateX(${mix(0, -26, (t - de) / (a - de))}px)`;
+    });
+
+    // ── « 30 » et « secondes. » : derrière le téléphone, puis sous lui
+    const p30 = coup(entre(t, T_TEL, T_TEL + .28));
+    $('trente').style.opacity = String(t >= T_TEL && t < T_SAUT + .3 ? 1 : 0);
+    $('trente').style.transform = `scale(${mix(1.5, 1, p30)}) translateY(${mix(60, 0, p30)}px)`;
+    const ps = coup(entre(t, T_SECONDES, T_SECONDES + .25));
+    $('secondes').style.opacity = String(t >= T_SECONDES && t < T_SAUT + .6 ? 1 : 0);
+    $('secondes').style.transform = `translateY(${mix(120, 0, ps)}px) scale(${mix(1.3, 1, ps)})`;
+
+    // ── le téléphone : il claque de la droite, et ne tient jamais tout à fait droit
+    const entreeTel = expo(entre(t, T_TEL, T_TEL + .34));
+    const entre3D = t >= T_TEL;
+    tel.poser({
+      x: mix(1700, 560, entreeTel), y: 930, rx: mix(-6, 3, entreeTel), ry: mix(48, -9, entreeTel), rz: mix(-16, -4, entreeTel),
+      echelle: .86, hauteurSol: 120, lumiere: 150, force: 1, allume: 1, opacite: entre3D ? 1 : 0,
+      balaye: t > T_TEL + .1 && t < T_TEL + .7 ? (t - T_TEL - .1) / .6 : null,
+    });
+    tel.poserEcrans(t, ECRANS);
+    tel.poserAppui(t, APPUIS);
+    const ecoule = (t - (T_MICRO + .15)) * 1000;
+    let vue = -1;
+    if (t >= T_MICRO + .15) PRISES.forEach((ms, k) => { if (ms <= ecoule) vue = k; });
+    BANDES.forEach((bd, k) => { bd.style.opacity = k === vue ? '1' : '0'; });
+
+    // ── la caméra : un coup à chaque coupe, trois crans pour entrer, un filé pour sortir
+    let zoom = 1, cx = 540, cy = 960, rz = 0;
+    if (t < T_TEL) {
+      const de = coupe ? b(coupe[0]) : 0;
+      const punch = expo(entre(t, de, de + .3));
+      zoom = mix(1.14, 1, punch); rz = mix(coupe && coupe[0] % 2 ? 1.6 : -1.6, 0, punch);
+    } else if (t < T_SAUT) {
+      const punch = expo(entre(t, T_TEL, T_TEL + .3));
+      zoom = mix(1.1, 1, punch);
+    } else if (t < T_FILE) {
+      // trois crans sur un temps, sans courbe : des sauts
+      const cran = Math.min(3, Math.floor((t - T_SAUT) / (TEMPS / 3)) + 1);
+      const cible = tel.pointDeLAppli(195, 420);
+      zoom = [1, 1.25, 1.55, 1.9][cran];
+      cx = mix(540, cible.x, [0, .4, .75, 1][cran]); cy = mix(960, cible.y, [0, .4, .75, 1][cran]);
+      if (t >= T_MICRO && t < T_DICTEE) {
+        // macro sur le micro, puis retour
+        const m = tel.pointDeLAppli(195, 663);
+        const pm = expo(entre(t, T_MICRO, T_MICRO + .2));
+        zoom = mix(1.9, 2.6, pm); cx = mix(cx, m.x, pm); cy = mix(cy, m.y, pm);
+      } else if (t >= T_DICTEE) {
+        const pd = expo(entre(t, T_DICTEE, T_DICTEE + .35));
+        const m = tel.pointDeLAppli(195, 663);
+        zoom = mix(2.6, 1.0, pd); cx = mix(m.x, 540, pd); cy = mix(m.y, 960, pd);
+      }
+    } else {
+      // le filé : la caméra part à droite d'un coup, la ligne du devis arrive de la gauche
+      const file = expo(entre(t, T_FILE, T_FILE + .4));
+      cx = 540 + 900 * Math.sin(file * Math.PI);
+      const punch = expo(entre(t, T_DEVIS, T_DEVIS + .3));
+      zoom = t >= T_DEVIS ? mix(1.12, 1, punch) : 1;
+    }
+    scene.poser({ x: cx, y: cy, zoom, rz, secousse: t >= T_TEL ? .6 : 0, t });
+    // Pendant le filé, un flou sur le monde entier : deux sous-images ne
+    // suffisent pas à fondre un déplacement de cinquante pixels par image, et
+    // l'œil voyait les mots en double (vu sur le premier rendu, image 395).
+    const vitesseFile = t >= T_FILE && t < T_FILE + .4 ? Math.sin(entre(t, T_FILE, T_FILE + .4) * Math.PI) : 0;
+    $('monde').style.filter = vitesseFile > .05 ? `blur(${10 * vitesseFile}px)` : 'none';
+
+    // ── les mots dictés : au quart de temps, en masse, sur le noir
+    const dictVisible = t >= T_DICTEE && t < T_FILE + .2;
+    dictee.style.opacity = dictVisible ? '1' : '0';
+    if (dictVisible) {
+      spansMots.forEach((sp, k) => {
+        const p = coup(entre(t, MOTS[k][0], MOTS[k][0] + .18));
+        sp.style.opacity = String(t >= MOTS[k][0] ? 1 : 0);
+        sp.style.transform = `scale(${mix(1.6, 1, p)})`;
+        sp.style.color = /chêne|élagage|Élagage/.test(MOTS[k][1]) ? '#C9A15E' : '#f3efe6';
+      });
+    }
+    // pendant la dictée, le téléphone recule sous les mots
+    if (t >= T_DICTEE) {
+      const pd = expo(entre(t, T_DICTEE, T_DICTEE + .35));
+      const sort = expo(entre(t, T_FILE, T_FILE + .3));
+      tel.poser({ x: 560, y: mix(1000, 1500, pd) + 1200 * sort, rx: 3, ry: -9, rz: -4, echelle: mix(1, .8, pd), hauteurSol: 120, lumiere: 150, allume: 1, flou: 2 * pd, opacite: 1 - sort });
+      tel.poserEcrans(t, ECRANS);
+    }
+
+    // ── le raccord : la ligne du devis claque en pleine largeur après le filé
+    const pl = coup(entre(t, T_FILE + .3, T_FILE + .5));
+    ligne.poser({ x: 540, y: 560, largeur: 1040, rz: -2, p: 1, opacite: t >= T_FILE + .3 ? 1 : 0, ombre: .8 });
+    ligne.el.style.transform += ` scale(${mix(1.3, 1, pl)})`;
+    const pdv = coup(entre(t, T_DEVIS, T_DEVIS + .25));
+    $('devisMot').style.opacity = String(t >= T_DEVIS ? 1 : 0);
+    $('devisMot').style.transform = `scale(${mix(1.8, 1, pdv)}) rotate(${mix(-6, -2, pdv)}deg)`;
+    const ppr = coup(entre(t, T_PRET, T_PRET + .25));
+    $('pretMot').style.opacity = String(t >= T_PRET ? 1 : 0);
+    $('pretMot').style.transform = `scale(${mix(1.8, 1, ppr)}) rotate(${mix(4, 1.5, ppr)}deg)`;
+
+    // ── l'éclair : une image blanche sur les deux coups les plus forts
+    const flash = Math.max(1 - entre(t, T_TEL, T_TEL + .08), 1 - entre(t, T_DEVIS, T_DEVIS + .06)) * (t >= T_TEL ? 1 : 0);
+    // Deux images blanches, pas cinq : au-delà, l'éclair se lit comme un voile gris.
+    eclair.style.opacity = String(t >= T_TEL && t < T_TEL + 2 / 60 ? .75 : (t >= T_DEVIS && t < T_DEVIS + 2 / 60 ? .6 : 0));
+    void flash;
+
+    matiere.poser(t, {
+      vignetteForce: coupe && coupe[2] === '#f5f3ee' ? .22 : .45,
+      lueurX: 540, lueurY: 1000, lueurForce: t >= T_TEL ? .22 : 0,
+      teinte: 'rgba(47,59,47,.12)', teinte2: 'rgba(201,161,94,.1)',
+    });
+  }
+
+  M.demarrer({ duree: DUREE, rendre, pret: Promise.all(BANDES.map(i => i.decode().catch(() => {}))) });
+</script>
+</body>
+</html>

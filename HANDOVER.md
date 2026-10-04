@@ -11,6 +11,18 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 
 ---
 
+## LA VIDÉO, VERSION D : 4 octobre 2026, PAS SUR `main`
+
+| | |
+|---|---|
+| **le moteur** | `appli/video-promo/film/moteur-D.js` : horloge, téléphone en CSS 3D (quatre faces, quatre coins, lumière calculée), caméra, matière, texte cinétique, morceau d'écran qui voyage (le raccord) |
+| **les directions** | `essai-D-apple.html`, `essai-D-nerveuse.html`, `essai-D-recit.html` : 8 s, même histoire, trois traitements ; les MP4 dans `appli/video-promo/` |
+| **le rendu** | `scripts/rendre-film.mjs --ips 60 --obturateur 2 --grain 8 --sons sons.json` ; une image capturée coûte 0,65 s (mesuré : les calques plein cadre coûtent 100 ms chacun en composition logicielle, le grain en page 450 ms) |
+| **le son** | `window.SONS` et `window.MUSIQUE` dans chaque page, écrits par `--sons`, lus par `scripts/musique-film.py` (tempo, sections, couches : nappe, arpège, rythme, pulsation, charley, silence) |
+| **le jeu de démonstration** | `scripts/_jeu-du-film.ts`, `scripts/preparer-jeu-du-film.mts` (gestes joués dans un navigateur), `scripts/capturer-ecrans-du-film.mts` (échelle 3, PDF à 300 ppp) |
+| **le piège** | une face du chant posée DANS le rectangle et rabattue a sa normale vers l'intérieur : `backface-visibility` la cache, le téléphone paraît sans épaisseur. Les faces se posent hors du rectangle, sur l'arête |
+| **ce qui attend** | sa direction (`TODO.md`), puis le film entier. `docs/video-promo-D.md` est le document de retour |
+
 ## LES COULEURS DU PLANNING : 29 septembre 2026, sur `main` le 30
 
 Branche `claude/couleurs-du-planning`, migration 0113. Tout passe par

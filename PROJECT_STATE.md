@@ -5,6 +5,17 @@
 `drizzle/0116_modele_de_fiche_d_office.sql`
 
 ---
+## SUR SA BRANCHE : LA VIDÉO, VERSION D, TROIS DIRECTIONS À CHOISIR (4 octobre 2026)
+
+Son verdict sur C (« on dirait un PowerPoint ») a donné un moteur de film en
+CSS 3D (`appli/video-promo/film/moteur-D.js`) et trois directions de huit
+secondes en MP4 (l'objet, le coup de poing, la journée), sur
+`appli/video-promo.html`. Le film entier attend son choix. Le jeu de
+démonstration du film est désormais rejouable (`scripts/preparer-jeu-du-film.mts`)
+et les captures manquantes (fiche d'intervention, facture et TVA) sont prises.
+Branche `claude/new-session-3ab8dh`, niveau 2, `docs/video-promo-D.md`.
+
+---
 ## CODÉ : L'UNITÉ D'UNE LIGNE NE PORTE QUE LA RANGÉE (29 septembre 2026)
 
 « arbre », « arbuste », « plante » ne s'écrivent plus dans la case Unité d'un

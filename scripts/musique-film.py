@@ -19,7 +19,15 @@ script imprime la crête et le niveau moyen de chaque couche.
     python3 scripts/musique-film.py --sons sons.json --sortie bande.wav [--sans-musique]
 
 Ré majeur, 100 à la noire, une mesure de 2,4 s : les changements d'accord
-tombent sur les changements de scène (4,8 s, 14,4 s, 26,4 s, 38,4 s).
+tombent sur les changements de scène (4,8 s, 14,4 s, 26,4 s, 38,4 s). C'est
+la carte du film C, gardée telle quelle quand la page n'en déclare pas.
+
+DEPUIS LES FILMS D (4 octobre 2026), LA CARTE VIENT DE LA PAGE. `window.MUSIQUE`
+dit le tempo, la tonalité et les sections : à quel instant quel accord, avec
+quelles couches (nappe, arpège, rythme, charley, silence). `rendre-film.mjs
+--sons` l'écrit à côté des instants ; ici, elle remplace les constantes
+ci-dessous. Une seule horloge, donc : un film au tempo nerveux et un film
+lent n'ont pas deux scripts, ils ont deux cartes.
 """
 import argparse
 import json
@@ -225,47 +233,94 @@ def accord_de_la_mesure(m):
     return PROGRESSION[m % len(PROGRESSION)]
 
 
-def musique(duree):
-    p_nappe, p_arpege, p_rythme = Piste(duree + 2), Piste(duree + 2), Piste(duree + 2)
-    rng = np.random.default_rng(7)
+def carte_du_film_c(duree):
+    """La carte de la version C, écrite comme une page la déclarerait."""
+    sections = []
     mesures = int(math.ceil(duree / MESURE))
     for m in range(mesures):
         t0 = m * MESURE
         if t0 >= duree:
             break
-        nom = "D" if t0 >= T_FINAL - 1e-6 else accord_de_la_mesure(m)
-        acc = ACCORDS[nom]
-        finale = t0 >= T_FINAL - 1e-6
-        tenue = (duree - t0) if finale else MESURE
-        # la nappe : chaque note, un peu à gauche ou à droite
-        for k, midi in enumerate(acc["nappe"]):
-            gain = 0.16 if t0 < T_ARPEGE else 0.19
-            p_nappe.ajouter(t0, nappe(midi, tenue), pan=(-0.5 + k / 3), gain=gain)
+        if t0 >= T_FINAL - 1e-6:
+            sections.append(dict(de=t0, accord="D", couches=["nappe", "finale"]))
+            continue
+        couches = ["nappe"]
+        if t0 >= T_ARPEGE:
+            couches.append("arpege")
+        if t0 >= T_RYTHME:
+            couches.append("rythme")
+        if t0 >= T_CHARLEY:
+            couches.append("charley")
+        sections.append(dict(de=t0, accord=accord_de_la_mesure(m), couches=couches))
+    return dict(bpm=BPM, sections=sections)
+
+
+def musique(duree, carte=None):
+    """La musique, mesure par mesure, d'après une carte : tempo et sections.
+
+    Une section dit à partir de quel instant quel accord sonne, et quelles
+    couches jouent. Les mesures suivent le tempo de la carte ; chaque mesure
+    prend la section en cours à son premier temps.
+    """
+    carte = carte or carte_du_film_c(duree)
+    bpm = float(carte.get("bpm", BPM))
+    noire = 60 / bpm
+    mesure = 4 * noire
+    sections = sorted(carte["sections"], key=lambda s: s["de"])
+    p_nappe, p_arpege, p_rythme = Piste(duree + 2), Piste(duree + 2), Piste(duree + 2)
+    rng = np.random.default_rng(7)
+    mesures = int(math.ceil(duree / mesure))
+
+    def section_a(t):
+        courante = None
+        for s in sections:
+            if s["de"] <= t + 1e-6:
+                courante = s
+        return courante
+
+    for m in range(mesures):
+        t0 = m * mesure
+        if t0 >= duree:
+            break
+        s = section_a(t0)
+        if s is None or "silence" in s["couches"]:
+            continue
+        acc = ACCORDS[s["accord"]]
+        couches = s["couches"]
+        finale = "finale" in couches
+        tenue = (duree - t0) if finale else mesure
+        if "nappe" in couches:
+            gain = 0.19 if "arpege" in couches else 0.16
+            for k, midi in enumerate(acc["nappe"]):
+                p_nappe.ajouter(t0, nappe(midi, tenue), pan=(-0.5 + k / 3), gain=gain)
         if finale:
             for k, midi in enumerate(acc["nappe"][1:]):
                 p_nappe.ajouter(t0 + 0.6 + 0.25 * k, nappe(midi + 12, tenue - 0.6), pan=(0.4 - 0.4 * k), gain=0.05)
             continue
-        # l'arpège, à la croche
-        if t0 >= T_ARPEGE:
+        if "arpege" in couches:
             motif = [0, 2, 3, 4, 3, 2, 1, 2]
             for c in range(8):
-                tc = t0 + c * NOIRE / 2
-                if tc >= T_FINAL:
-                    break
+                tc = t0 + c * noire / 2
                 force = (0.9 if c % 2 == 0 else 0.62) * rng.uniform(0.9, 1.05)
                 p_arpege.ajouter(tc, pince(acc["arpege"][motif[c]], force=force), pan=rng.uniform(-0.35, 0.35), gain=0.20)
-        # la basse et la grosse caisse, aux temps 1 et 3
-        if t0 >= T_RYTHME:
+        if "rythme" in couches:
             for temps_fort in (0, 2):
-                tb = t0 + temps_fort * NOIRE
+                tb = t0 + temps_fort * noire
                 p_rythme.ajouter(tb, basse(acc["basse"]), gain=0.30)
                 p_rythme.ajouter(tb, grosse_caisse(), gain=0.32)
-        if t0 >= T_CHARLEY:
+        if "pulsation" in couches:
+            # Un battement à chaque temps, et une basse tenue : le rythme
+            # d'une direction nerveuse, où les coupes tombent sur les temps.
+            for temps in range(4):
+                tb = t0 + temps * noire
+                p_rythme.ajouter(tb, grosse_caisse(force=1.0 if temps % 2 == 0 else 0.7), gain=0.34)
+                p_rythme.ajouter(tb, basse(acc["basse"], duree=noire * 0.9), gain=0.26)
+        if "charley" in couches:
             for c in range(8):
-                tc = t0 + c * NOIRE / 2
+                tc = t0 + c * noire / 2
                 p_rythme.ajouter(tc, charley(force=0.55 if c % 2 else 0.35, graine=int(tc * 100)), pan=0.3, gain=0.09)
             for temps_faible in (1, 3):
-                p_rythme.ajouter(t0 + temps_faible * NOIRE, charley(force=1.0, duree=0.02, graine=int(t0 * 10) + temps_faible), pan=-0.25, gain=0.14)
+                p_rythme.ajouter(t0 + temps_faible * noire, charley(force=1.0, duree=0.02, graine=int(t0 * 10) + temps_faible), pan=-0.25, gain=0.14)
     # le grave de la nappe s'adoucit ; on filtre une fois, pas par note
     p_nappe.g = passe_bas_rapide(p_nappe.g, 1900)
     p_nappe.d = passe_bas_rapide(p_nappe.d, 1900)
@@ -325,6 +380,16 @@ def bruitages(duree, sons):
                 p.ajouter(t + 0.07 * k, cloche(midi, 3.0), gain=0.19)
         elif genre == "pastille":
             p.ajouter(t, glissando(760, 640, 0.07, 0.9), gain=0.16)
+        elif genre == "coup":
+            # Un impact sourd : le mot qui frappe (direction nerveuse).
+            p.ajouter(t, grosse_caisse(force=1.3), gain=0.42)
+            p.ajouter(t, souffle(0.12, g, 3000, 300) * np.exp(-temps(0.12) / 0.03), gain=0.25)
+        elif genre == "nappe-monte":
+            # Une montée de souffle qui prépare un coup.
+            p.ajouter(t, souffle(1.2, g, 300, 6000) * (temps(1.2) / 1.2) ** 2, gain=0.2)
+        elif genre == "tic":
+            # Le tic d'une horloge (direction récit).
+            p.ajouter(t, clic(900, 0.02, graine=g), gain=0.14)
         else:
             print(f"  (instant {t} : genre inconnu « {genre} », ignoré)")
     return p
@@ -370,12 +435,13 @@ def principal():
         charge = json.load(f)
     duree = float(charge["duree"])
     sons = charge["sons"]
-    print(f"{duree} s, {len(sons)} instants sonores")
+    carte = charge.get("musique") or None
+    print(f"{duree} s, {len(sons)} instants sonores" + (f", carte musicale de la page ({carte.get('bpm')} à la noire)" if carte else ", carte de la version C"))
 
     total_g = np.zeros(int((duree + 2) * FE))
     total_d = np.zeros_like(total_g)
     if not args.sans_musique:
-        p_nappe, p_arpege, p_rythme = musique(duree)
+        p_nappe, p_arpege, p_rythme = musique(duree, carte)
         for nom, piste in (("nappe", p_nappe), ("arpège", p_arpege), ("rythme", p_rythme)):
             piste.stats(nom)
             total_g += piste.g

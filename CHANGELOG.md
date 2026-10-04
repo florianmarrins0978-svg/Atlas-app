@@ -9,6 +9,36 @@ Format : le plus récent en tête.
 
 ## 2026-10-04
 
+### La vidéo, version D : trois directions de huit secondes, à choisir avant le film
+
+**Son verdict sur la version C** : *« On dirait un PowerPoint. »* Un téléphone
+plat au centre pendant 35 secondes, un titre au-dessus de chaque écran, une
+scène toutes les cinq secondes, une caméra fixe. **Ce qui change** : un moteur
+commun (`appli/video-promo/film/moteur-D.js`) avec un téléphone en vraie 3D
+(épaisseur modelée en quatre faces et quatre coins, lumière calculée, reflet,
+ombre), une caméra qui entre dans l'écran, des raccords (un morceau d'écran qui
+voyage et devient autre chose), le flou de mouvement et le grain au rendu.
+
+**Trois directions, même histoire, huit secondes chacune, en vrai MP4** :
+l'objet (`essai-D-apple`), le coup de poing (`essai-D-nerveuse`), la journée
+(`essai-D-recit`), sur `appli/video-promo.html`. **Le film entier n'est pas
+fait** : la maquette d'abord, il choisit. Recommandation et cahier du son dans
+`docs/video-promo-D.md`. **Ce que ça évite** : une journée de rendu jetée si
+la direction n'est pas la sienne.
+
+**Le jeu de démonstration du film est dans le dépôt** (`scripts/preparer-jeu-du-film.mts`,
+qui joue les gestes dans un vrai navigateur, et `scripts/capturer-ecrans-du-film.mts`) :
+les captures qui manquaient (la fiche d'intervention des gars, vue aussi par
+un salarié ; la facture et sa TVA, écran et PDF ; la calculette de TVA) sont
+prises à l'échelle 3. C'était la dette laissée par C.
+
+**Le rendu** : `rendre-film.mjs --obturateur N` (sous-images moyennées par
+ffmpeg), `--grain N` (bruit de pellicule à graine fixe), et la carte musicale
+de la page (`window.MUSIQUE`) lue par `musique-film.py`, qui n'a plus les
+constantes de C en dur. **Mesuré, pas supposé** : une image capturée coûtait
+2 s ; sans le grain en page (450 ms), l'ombre floutée (100 ms) et dix-huit
+tranches pleines (900 ms), elle coûte 0,65 s.
+
 ### « Remettre le modèle » touché juste après une croix ne fait plus effacer la ligne
 
 Trouvé par la batterie commune du 3 octobre : `test-fiche-entretien-e2e.ts`

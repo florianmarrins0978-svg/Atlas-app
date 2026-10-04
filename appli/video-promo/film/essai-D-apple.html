@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1080">
+<title>Atlas, film D, direction Apple</title>
+<link rel="stylesheet" href="polices/polices.css">
+<style>
+  /*
+    DIRECTION « APPLE » : l'objet, la lumière, le silence.
+
+    Huit secondes : l'accroche, la bascule, le premier raccord. Même histoire
+    que les deux autres directions (le soir, les vingt minutes, le téléphone,
+    le micro, les mots dictés qui deviennent une ligne du devis), traitée
+    comme un lancement de produit : un seul objet dans le noir, une lumière
+    qui le révèle, des titres rares et grands, une caméra lente qui finit par
+    entrer dans l'écran. Rien ne bouge vite ; tout a du poids.
+
+    Tout ce qui est dans le téléphone est une capture de l'application servie
+    (voir film-C.html). Les chiffres viennent de docs/AGENT.md §1.
+  */
+  *{box-sizing:border-box;margin:0}
+  html,body{width:1080px;height:1920px;overflow:hidden;background:#06070a}
+  #scene{position:absolute;inset:0;overflow:hidden;background:radial-gradient(120% 60% at 50% -15%,#1a211b 0%,#0b0e0c 45%,#040506 100%)}
+  #monde{position:absolute;left:0;top:0}
+  .bloc{position:absolute;left:0;right:0;text-align:center;will-change:transform,opacity}
+  #vingt{top:700px;font:500 230px/1 'Film Editorial';color:#f3efe6;letter-spacing:-.035em}
+  #vingt span{display:inline-block}
+  #bureau{top:960px;font:400 42px/1.35 'Film Sans';color:rgba(243,239,230,.62);letter-spacing:.01em}
+  #trente{top:290px;font:italic 500 170px/1 'Film Editorial';color:#C9A15E;letter-spacing:-.03em}
+  #avec{top:500px;font:500 26px/1 'Film Sans';letter-spacing:.46em;text-transform:uppercase;color:rgba(243,239,230,.6)}
+  #dictee{top:120px;padding:0 100px;font:500 56px/1.28 'Film Editorial';color:#f3efe6;text-align:center}
+  #dictee span{display:inline-block;margin-right:.24em}
+  #dictee .point{width:18px;height:18px;border-radius:50%;background:#d9534f;margin:0 16px 8px 0;vertical-align:middle}
+  #ecrit{top:190px;font:400 30px/1 'Film Sans';letter-spacing:.4em;text-transform:uppercase;color:#C9A15E}
+</style>
+</head>
+<body>
+<div id="scene">
+  <div id="monde">
+    <div id="lueur"></div>
+    <p class="bloc" id="vingt">20 minutes</p>
+    <p class="bloc" id="bureau">de bureau après chaque visite de chantier.</p>
+    <p class="bloc" id="trente">30 secondes.</p>
+    <p class="bloc" id="avec">avec Atlas</p>
+    <div class="bloc" id="dictee"></div>
+    <p class="bloc" id="ecrit">Le devis s’écrit</p>
+    <div id="objets"></div>
+  </div>
+  <div id="etalonnage"></div>
+  <div id="vignette"></div>
+</div>
+<script src="moteur-D.js"></script>
+<script>
+  const M = window.MoteurD;
+  const { entre, mix, cles, lisse, sortie, sortieForte, expo, fenetre, coup, $ } = M;
+  const DUREE = 8.0;
+
+  const scene = M.creerScene();
+  const matiere = M.creerMatiere();
+  const tel = M.creerTelephone({
+    parent: $('objets'), teinte: 'titane',
+    ecrans: [
+      { nom: 'accueil-avant', src: 'accueil-avant.jpg' },
+      { nom: 'fiche-reconnue', src: 'fiche-reconnue.jpg' },
+      { nom: 'enregistre', src: 'dictee/enregistre.jpg' },
+    ],
+  });
+  // L'enregistrement qui tourne : les prises filmées sur l'écran servi.
+  const PRISES = [124,296,412,518,629,742,852,965,1087,1203,1328,1454,1568,1709,1839,1950,2065,2168,2297,2437,2550,2652,2776,2884,2998,3122,3241,3346,3486,3607,3720,3840,3952,4066,4185,4298];
+  const BANDES = PRISES.map((_, i) => {
+    const img = new Image(); img.src = `dictee/bande-${i}.jpg`; img.alt = '';
+    img.style.cssText = `position:absolute;left:0;top:${600 * M.K}px;width:620px;z-index:1500;opacity:0`;
+    tel.ecran.appendChild(img); return img;
+  });
+
+  // ─── le découpage ───────────────────────────────────────────────────────
+  const T_TEL = 1.9;          // le téléphone monte du noir
+  const T_ALLUME = 3.0;       // l'écran s'éveille
+  const T_PLONGEE = 3.9;      // la caméra entre
+  const T_CREER = 4.55;       // « Créer un devis »
+  const T_MICRO = 5.35;       // le micro
+  const T_DICTEE = 5.6;       // les mots
+  const T_RACCORD = 7.05;     // les mots deviennent la ligne du devis
+
+  const ECRANS = [
+    ['accueil-avant', T_ALLUME - .2, T_CREER + .6, 'net'],
+    ['fiche-reconnue', T_CREER + .12, T_MICRO + .5, 'monte'],
+    ['enregistre', T_MICRO + .12, DUREE, 'net'],
+  ];
+  const APPUIS = [[T_CREER, 271, 172], [T_MICRO, 195, 663]];
+
+  // Ce qu'il dicte, tel que l'appli l'a transcrit (transcription.jpg).
+  const DICTEE = 'Chez madame Martin, au 8 impasse du Moulin : élagage du grand chêne, une quinzaine de mètres, en taille douce.';
+  const MOTS = [];
+  { let t = T_DICTEE;
+    for (const brut of DICTEE.split(' ')) {
+      if (brut === ':') { t += .1; continue; }
+      MOTS.push([t, brut + (DICTEE.includes(brut + ' :') ? ' :' : '')]); t += .105;
+      if (/[,.:]$/.test(brut)) t += .14;
+    } }
+  const dictee = $('dictee');
+  dictee.innerHTML = '<span class="point" id="pointRouge"></span>' + MOTS.map(([, m]) => `<span>${m}</span>`).join('');
+  const spansMots = [...dictee.querySelectorAll('span:not(.point)')];
+  const pointRouge = $('pointRouge');
+
+  // Le raccord : la première ligne du devis, telle que le PDF l'imprime
+  // (devis-pdf.jpg, 1785 px de large), sort des mots dictés.
+  // Le raccord : la feuille du devis (devis-pdf.jpg, 1785 px de large) monte
+  // du bas, en perspective, et sa première ligne est celle qu'on vient d'entendre.
+  const feuille = M.creerMorceau({
+    parent: $('objets'),
+    de: { src: 'devis-pdf.jpg', zone: [0, 0, 1785, 900], largeurSource: 1785 },
+    vers: { src: 'devis-pdf.jpg', zone: [0, 0, 1785, 900], largeurSource: 1785 },
+  });
+  const cadreLigne = document.createElement('div');
+  // Le cadre vit dans les unités du morceau : 1000 de large pour 1785 px
+  // d'image, soit 0,56 unité par pixel ; la ligne va de 775 à 893 px.
+  cadreLigne.style.cssText = 'position:absolute;left:20px;top:432px;width:960px;height:68px;border:4px solid #C9A15E;border-radius:10px;box-shadow:0 0 0 6px rgba(201,161,94,.14);opacity:0';
+  feuille.el.appendChild(cadreLigne);
+
+  const lettresVingt = M.decouper($('vingt'), 'lettres');
+  const motsBureau = M.decouper($('bureau'), 'mots');
+  const lettresTrente = M.decouper($('trente'), 'lettres');
+  const motsEcrit = M.decouper($('ecrit'), 'mots');
+
+  // ─── la carte des temps forts, pour la bande son ────────────────────────
+  window.SONS = [
+    [0.35, 'mot'], [1.05, 'mot'],
+    [T_TEL + .2, 'telephone-entre'], [T_ALLUME, 'reconnu'], [T_ALLUME + .15, 'reponse'],
+    [T_CREER, 'appui'], [T_MICRO, 'appui'], [T_MICRO + .1, 'micro'],
+    [T_RACCORD, 'glisse'], [T_RACCORD + .5, 'total'],
+  ].sort((a, b) => a[0] - b[0]);
+  window.MUSIQUE = {
+    style: 'apple', bpm: 72, tonalite: 'D', duree: DUREE,
+    sections: [
+      { de: 0, accord: 'Bm', couches: ['silence'] },
+      { de: T_TEL, accord: 'D', couches: ['nappe'] },
+      { de: T_DICTEE, accord: 'G', couches: ['nappe', 'arpege'] },
+    ],
+  };
+
+  function rendre(t) {
+    const sortieRaccord = lisse(entre(t, T_RACCORD, T_RACCORD + .7));
+    // ── l'accroche : « 20 minutes » sort du flou, puis s'enfonce dans la profondeur
+    const recul = lisse(entre(t, T_TEL, T_TEL + .9));
+    M.animer(lettresVingt, t, { debut: .3, pas: .045, duree: .7, mode: 'flou' });
+    const vingt = $('vingt');
+    vingt.style.transform = `scale(${mix(1, .82, recul)}) translateY(${-40 * recul}px)`;
+    vingt.style.opacity = String(1 - recul * .92);
+    vingt.style.filter = recul > 0 ? `blur(${10 * recul}px)` : 'none';
+    vingt.style.letterSpacing = `${mix(.02, -.035, sortie(entre(t, .3, 1.4)))}em`;
+    M.animer(motsBureau, t, { debut: 1.05, pas: .06, duree: .55, mode: 'monte', decalage: 26 });
+    const bureau = $('bureau');
+    bureau.style.opacity = String((1 - recul) * (t > 1 ? 1 : 0));
+    bureau.style.transform = `translateY(${-30 * recul}px)`;
+
+    // ── « 30 secondes. » au-dessus du téléphone éveillé
+    M.animer(lettresTrente, t, { debut: T_ALLUME + .05, pas: .03, duree: .6, mode: 'flou', fin: T_PLONGEE + .35, dureeSortie: .45 });
+    M.animer([$('avec')], t, { debut: T_ALLUME + .55, pas: 0, duree: .5, mode: 'monte', decalage: 16, fin: T_PLONGEE + .3 });
+
+    // ── le téléphone : il monte du noir, incliné, attrape la lumière, se redresse
+    const monte = expo(entre(t, T_TEL, T_TEL + 1.6));
+    const redresse = lisse(entre(t, T_PLONGEE - .2, T_PLONGEE + 1.1));
+    // Pendant la dictée, le téléphone descend un peu : les mots dictés
+    // vivent au-dessus de lui, dans le noir, et la caméra recule pour les lire.
+    const dicte = lisse(entre(t, T_MICRO - .3, T_MICRO + .5));
+    const y = mix(2900, 1180, monte) + mix(0, -200, redresse) + mix(0, 180, dicte) + mix(0, 120, sortieRaccord);
+    const ry = mix(-38, -17, monte) * (1 - redresse) + 2.5 * M.derive(t * .6, 1) * redresse;
+    const rx = mix(14, 6, monte) * (1 - redresse) + 1.2 * M.derive(t * .5, 4) * redresse;
+    const rz = mix(9, 4, monte) * (1 - redresse);
+    const balaye = (t - (T_TEL + .55)) / 1.1;
+    tel.poser({
+      x: 540 + mix(-60, 0, redresse), y, rx, ry, rz, echelle: mix(1, .9, sortieRaccord),
+      hauteurSol: mix(260, 90, redresse), lumiere: 118,
+      opacite: t < T_TEL ? 0 : 1,
+      flou: 3.5 * sortieRaccord,
+      allume: sortie(entre(t, T_ALLUME, T_ALLUME + .4)),
+      balaye: balaye > 0 && balaye < 1 ? balaye : (t > T_ALLUME + .3 && t < T_ALLUME + 1.4 ? (t - T_ALLUME - .3) / 1.1 : null),
+    });
+    tel.poserEcrans(t, ECRANS);
+    tel.poserAppui(t, APPUIS);
+    // l'enregistrement qui tourne : la prise la plus proche, à vitesse réelle
+    const ecoule = (t - (T_MICRO + .15)) * 1000;
+    let vue = -1;
+    if (t >= T_MICRO + .15) PRISES.forEach((ms, k) => { if (ms <= ecoule) vue = k; });
+    BANDES.forEach((b, k) => { b.style.opacity = k === vue ? '1' : '0'; });
+
+    // ── la caméra : fixe sur l'accroche, puis une plongée lente vers l'écran
+    const cible = tel.pointDeLAppli(195, 330);
+    // Un lent rapprochement pendant l'accroche : rien n'est jamais tout à fait immobile.
+    const zoom = cles(t, [[0, 1.0], [T_TEL, 1.05], [T_PLONGEE, 1.05], [T_PLONGEE + 1.5, 1.62, expo], [T_MICRO - .3, 1.62], [T_MICRO + .6, 1.22], [T_RACCORD, 1.22], [T_RACCORD + .9, 1.0, expo]]);
+    const cx = cles(t, [[T_PLONGEE, 540], [T_PLONGEE + 1.5, cible.x, expo], [T_MICRO - .3, cible.x], [T_MICRO + .6, 540]]);
+    const cy = cles(t, [[T_PLONGEE, 960], [T_PLONGEE + 1.5, cible.y + 60, expo], [T_MICRO - .3, cible.y + 60], [T_MICRO + .6, 760], [T_RACCORD, 760], [T_RACCORD + .9, 1000, expo]]);
+    scene.poser({ x: cx, y: cy, zoom, rz: 0, t });
+
+    // ── les mots dictés, dans le noir au-dessus du téléphone
+    const dSort = sortieRaccord;
+    dictee.style.opacity = String(1 - dSort);
+    dictee.style.transform = `translateY(${-60 * dSort}px) scale(${mix(1, .92, dSort)})`;
+    dictee.style.filter = dSort > 0 ? `blur(${8 * dSort}px)` : 'none';
+    spansMots.forEach((sp, k) => {
+      const p = sortie(entre(t, MOTS[k][0], MOTS[k][0] + .26));
+      sp.style.opacity = String(p); sp.style.transform = `translateY(${12 * (1 - p)}px)`;
+      sp.style.color = /chêne|élagage/.test(MOTS[k][1]) && t > T_RACCORD - .5 ? '#C9A15E' : '#f3efe6';
+    });
+    pointRouge.style.opacity = String(t >= T_MICRO + .15 ? mix(.35, 1, (Math.sin(t * 7) + 1) / 2) : 0);
+
+    // ── le raccord : la ligne du devis naît des mots, se pose devant le téléphone
+    const pr = expo(entre(t, T_RACCORD + .1, T_RACCORD + .9));
+    feuille.poser({
+      x: 540, y: mix(2300, 1120, pr), largeur: 940, rx: mix(42, 6, pr), rz: mix(-4, -1.5, pr), p: 1,
+      opacite: t > T_RACCORD + .1 ? 1 : 0,
+    });
+    cadreLigne.style.opacity = String(sortie(entre(t, T_RACCORD + .55, T_RACCORD + .85)));
+    M.animer(motsEcrit, t, { debut: T_RACCORD + .5, pas: .08, duree: .45, mode: 'monte', decalage: 18 });
+
+    // ── la matière : une lumière haute, qui descend sur le téléphone quand il monte
+    matiere.poser(t, {
+      vignetteForce: .55,
+      lueurX: 540 + 120 * M.derive(t * .3, 2), lueurY: mix(-200, 500, monte), lueurForce: mix(.14, .3, monte),
+      teinte: 'rgba(47,59,47,.18)', teinte2: 'rgba(201,161,94,.1)',
+    });
+  }
+
+  M.demarrer({ duree: DUREE, rendre, pret: Promise.all(BANDES.map(i => i.decode().catch(() => {}))) });
+</script>
+</body>
+</html>

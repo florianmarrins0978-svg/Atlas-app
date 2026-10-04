@@ -344,22 +344,32 @@ Sa planche `appli/retirer-un-acompte.html`, la B, codée sur la branche
 le rend (`ARCHITECTURE.md` §417). **Pas encore sur `main`** : la batterie
 n'a pas été jouée, à sa demande ; seules les suites concernées l'ont été.
 
-## ⏳ UNE VIDÉO À REGARDER : LA VERSION C DE LA PROMOTION (26 septembre 2026)
+## ⏳ UNE DIRECTION À CHOISIR : LA VIDÉO, VERSION D (4 octobre 2026)
 
-`appli/video-promo.html`, bouton « C, avec le son » (et la même muette), à
-côté des A et B de la session voisine. Attend de lui : C, A ou B ; le nom
-commercial ; l'adresse vers laquelle la vidéo renvoie ; sa voix s'il en veut
-une ; **et son avis sur la bande son, que personne n'a pu écouter ici**. Pas
-encore sur `main` : branche `claude/app-demo-video-k5o4rz`, lot de niveau 2
-(`scripts/`), `npm run verifier:avant-fusion` avant la poussée.
+`appli/video-promo.html` : trois directions de huit secondes (l'objet, le coup
+de poing, la journée), l'accroche et le premier raccord, en vrai MP4 avec une
+bande de travail et une version muette. Attend de lui : **la direction**, le
+nom commercial, l'adresse de la fin, sa voix s'il en veut une (texte proposé
+dans `docs/video-promo-D.md` §6), et son avis sur le rythme de la bande, que
+personne n'a pu écouter ici. Recommandation : le coup de poing pour l'accroche,
+l'objet pour les piliers (`docs/video-promo-D.md` §4).
 
-**Pour la refaire** : `node scripts/rendre-film.mjs appli/video-promo/film/film-C.html
---planche /tmp/p.png` pour regarder, puis `--sortie … --sons sons.json`,
-`python3 scripts/musique-film.py --sons sons.json --sortie bande.wav`, et
-`ffmpeg -i muet.mp4 -i bande.wav -c:v copy -c:a aac -shortest atlas-C.mp4`. Les
-captures de l'appli sont dans `appli/video-promo/film/` ; le jeu de
-démonstration qui les a produites (Les Jardins de Loire, Mme Martin) n'est
-toujours pas dans le dépôt : refaire une capture demande de le reconstruire.
+**Ensuite** : le film entier (32 à 40 s) dans la direction choisie, avec les
+quatre piliers (devis, planning, fiche d'intervention des gars, facture et
+TVA), puis la déclinaison 1920 × 1080. Rendu : une heure par film
+(`rendre-film.mjs --ips 60 --obturateur 2 --grain 8`, 0,65 s par image capturée).
+
+Pas encore sur `main` : branche `claude/new-session-3ab8dh`, lot de niveau 2
+(`scripts/`), `npm run verifier:avant-fusion` avant la poussée. La version C
+reste sur la page, en bas, avec A et B.
+
+**Pour refaire une direction** : `node scripts/rendre-film.mjs appli/video-promo/film/essai-D-apple.html
+--planche /tmp/p.png --pas 0.25` pour regarder, puis `--ips 60 --obturateur 2
+--grain 8 --sons sons.json --sortie muet.mp4`, `python3 scripts/musique-film.py
+--sons sons.json --sortie bande.wav`, et `ffmpeg -i muet.mp4 -i bande.wav -c:v
+copy -c:a aac -shortest essai.mp4`. Le jeu de démonstration se reconstruit
+(`scripts/preparer-jeu-du-film.mts`) et les captures se reprennent
+(`scripts/capturer-ecrans-du-film.mts`).
 
 ## 🔴 « DERNIER DEVIS » CHANGE LES PRIX SANS LE DIRE (26 septembre 2026)
 

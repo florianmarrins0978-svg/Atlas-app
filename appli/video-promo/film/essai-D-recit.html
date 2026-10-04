@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1080">
+<title>Atlas, film D, direction récit</title>
+<link rel="stylesheet" href="polices/polices.css">
+<style>
+  /*
+    DIRECTION « RÉCIT » : une journée de chantier, du soir au matin.
+
+    Huit secondes tenues par une HORLOGE. Le film commence tard : 21 h 40,
+    une lumière froide, le téléphone posé à plat, et la phrase de la douleur.
+    Puis l'heure roule, la lumière se réchauffe, et c'est le lendemain sur le
+    chantier : 8 h 05, le téléphone dans la main, le micro, les mots dictés.
+    À 8 h 06 le devis est prêt : la transcription DEVIENT la ligne du devis.
+
+    Ce que cette direction promet et que les deux autres ne disent pas : le
+    temps. Chaque pilier du film complet serait une heure de la journée
+    (le devis au matin, le planning à midi, la fiche des gars le lendemain à
+    7 h, la facture le soir du chantier), jusqu'au téléphone posé à 18 h.
+
+    Même matière que les autres directions : des captures de l'application
+    servie, et les chiffres de docs/AGENT.md §1.
+  */
+  *{box-sizing:border-box;margin:0}
+  html,body{width:1080px;height:1920px;overflow:hidden;background:#0d1117}
+  #scene{position:absolute;inset:0;overflow:hidden}
+  #ciel{position:absolute;inset:0;z-index:0}
+  #monde{position:absolute;left:0;top:0}
+  #horloge{position:absolute;left:0;right:0;top:150px;text-align:center;font:500 250px/1 'Film Editorial';color:#f3efe6;letter-spacing:-.03em;will-change:transform,opacity}
+  #horloge .col{display:inline-block;height:250px;overflow:hidden;vertical-align:top;position:relative;width:.62em}
+  #horloge .col .roule{will-change:transform}
+  #horloge .col .roule span{display:block;height:250px;line-height:250px}
+  #horloge .sep{display:inline-block;font-size:150px;line-height:250px;vertical-align:top;margin:0 .06em;color:#C9A15E;font-style:italic}
+  #phrase{position:absolute;left:0;right:0;top:450px;text-align:center;font:italic 500 66px/1.25 'Film Editorial';color:rgba(243,239,230,.9);padding:0 90px;will-change:transform,opacity}
+  #lieu{position:absolute;left:0;right:0;top:450px;text-align:center;font:500 26px/1 'Film Sans';letter-spacing:.44em;text-transform:uppercase;color:#C9A15E;opacity:0;will-change:transform,opacity}
+  #dictee{position:absolute;left:0;right:0;top:530px;padding:0 100px;font:400 48px/1.3 'Film Serif';color:#f3efe6;text-align:center;opacity:0}
+  #dictee span{display:inline-block;margin-right:.24em;will-change:transform,opacity}
+  #dictee .point{width:16px;height:16px;border-radius:50%;background:#d9534f;margin:0 14px 6px 0;vertical-align:middle}
+  #pret{position:absolute;left:0;right:0;top:560px;text-align:center;font:italic 500 90px/1.1 'Film Editorial';color:#f3efe6;opacity:0;will-change:transform,opacity}
+  #trait{position:absolute;left:140px;top:1880px;height:3px;background:#C9A15E;transform-origin:0 50%;opacity:.9}
+</style>
+</head>
+<body>
+<div id="scene">
+  <div id="ciel"></div>
+  <div id="monde">
+    <div id="lueur"></div>
+    <div id="horloge"></div>
+    <p id="phrase">Encore un devis à retaper.</p>
+    <p id="lieu">sur le chantier</p>
+    <div id="dictee"></div>
+    <p id="pret">Le devis est prêt.</p>
+    <div id="objets"></div>
+    <div id="trait"></div>
+  </div>
+  <div id="etalonnage"></div>
+  <div id="vignette"></div>
+</div>
+<script src="moteur-D.js"></script>
+<script>
+  const M = window.MoteurD;
+  const { entre, mix, cles, lisse, sortie, sortieForte, expo, borne, $ } = M;
+  const DUREE = 8.0;
+
+  const scene = M.creerScene();
+  const matiere = M.creerMatiere();
+  const tel = M.creerTelephone({
+    parent: $('objets'), teinte: 'graphite',
+    ecrans: [
+      { nom: 'accueil-avant', src: 'accueil-avant.jpg' },
+      { nom: 'fiche-reconnue', src: 'fiche-reconnue.jpg' },
+      { nom: 'enregistre', src: 'dictee/enregistre.jpg' },
+      { nom: 'transcription', src: 'transcription.jpg' },
+    ],
+  });
+  const PRISES = [124,296,412,518,629,742,852,965,1087,1203,1328,1454,1568,1709,1839,1950,2065,2168,2297,2437,2550,2652,2776,2884,2998,3122,3241,3346,3486,3607,3720,3840,3952,4066,4185,4298];
+  const BANDES = PRISES.map((_, i) => {
+    const img = new Image(); img.src = `dictee/bande-${i}.jpg`; img.alt = '';
+    img.style.cssText = `position:absolute;left:0;top:${600 * M.K}px;width:620px;z-index:1500;opacity:0`;
+    tel.ecran.appendChild(img); return img;
+  });
+
+  // ─── l'horloge : quatre colonnes de chiffres qui roulent ────────────────
+  // Les heures en minutes depuis minuit : 21 h 40 = 1300, 8 h 05 = 485 (+ 1440
+  // pour passer par minuit). Chaque colonne montre un chiffre, et roule quand
+  // la valeur passe entre deux ; en roulant vite, c'est la nuit qui passe.
+  const horloge = $('horloge');
+  // Chaque colonne porte une SUITE de chiffres, indexée par la valeur qui la
+  // fait rouler : les heures de 0 à 24 pour les deux colonnes des heures (la
+  // suite dit elle-même « 2, 3, 0 » au passage de minuit), les minutes pour
+  // les deux autres. Entre deux entiers, la colonne glisse ; au repos, elle
+  // montre un chiffre exact.
+  // La colonne est la FENÊTRE (250 px, débordement caché) ; ce qui roule est
+  // un rouleau à l'intérieur. Déplacer la fenêtre elle-même emporterait le
+  // chiffre hors de vue : c'est ce qu'a montré la première planche.
+  function colonne(suite) {
+    const c = document.createElement('span'); c.className = 'col';
+    const r = document.createElement('span'); r.className = 'roule'; r.style.display = 'block';
+    for (const v of suite) { const s = document.createElement('span'); s.textContent = String(v); r.appendChild(s); }
+    c.appendChild(r); horloge.appendChild(c); return { fenetre: c, rouleau: r };
+  }
+  const heures = Array.from({ length: 25 }, (_, h) => h % 24);
+  const colHeuresDizaines = colonne(heures.map(h => Math.floor(h / 10)));
+  const colHeuresUnites = colonne(heures.map(h => h % 10));
+  const sep = document.createElement('span'); sep.className = 'sep'; sep.textContent = 'h'; horloge.appendChild(sep);
+  const colMinutesDizaines = colonne([0, 1, 2, 3, 4, 5, 0]);
+  const colMinutesUnites = colonne([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0]);
+  function poserHorloge(minutes) {
+    const m = ((minutes % 1440) + 1440) % 1440;
+    const H = Math.floor(m / 60), MIN = m % 60;
+    const unites = MIN % 10;
+    const retenueMinutes = Math.max(0, unites - 9);
+    const dizaines = Math.floor(MIN / 10) + retenueMinutes;
+    const retenueHeures = Math.max(0, MIN - 59);
+    const Hf = H + retenueHeures;
+    colHeuresDizaines.rouleau.style.transform = `translateY(${-Hf * 250}px)`;
+    colHeuresUnites.rouleau.style.transform = `translateY(${-Hf * 250}px)`;
+    colMinutesDizaines.rouleau.style.transform = `translateY(${-dizaines * 250}px)`;
+    colMinutesUnites.rouleau.style.transform = `translateY(${-unites * 250}px)`;
+    // Avant 10 h, pas de zéro devant : « 8 h 05 », comme on l'écrit.
+    colHeuresDizaines.fenetre.style.width = Hf < 10 ? '0px' : '.62em';
+  }
+
+  // ─── le découpage ───────────────────────────────────────────────────────
+  const T_NUIT = 0;            // 21 h 40, la lumière froide
+  const T_ROULE = 2.0;         // l'heure roule jusqu'au matin
+  const T_MATIN = 3.0;         // 8 h 05, lumière chaude, le téléphone dans la main
+  const T_CREER = 3.55;
+  const T_FICHE = T_CREER + .15;
+  const T_MICRO = 4.3;
+  const T_DICTEE = 4.55;
+  const T_RACCORD = 6.4;       // 8 h 06 : la transcription devient le devis
+  const T_PRET = 7.1;
+
+  const ECRANS = [
+    ['accueil-avant', T_MATIN - .3, T_FICHE + .5, 'net'],
+    ['fiche-reconnue', T_FICHE, T_MICRO + .5, 'monte'],
+    ['enregistre', T_MICRO + .12, T_RACCORD + .3, 'net'],
+    ['transcription', T_RACCORD - .1, DUREE, 'glisse'],
+  ];
+  const APPUIS = [[T_CREER, 271, 172], [T_MICRO, 195, 663]];
+
+  const DICTEE = 'Chez madame Martin, au 8 impasse du Moulin : élagage du grand chêne, une quinzaine de mètres, en taille douce.';
+  const MOTS = [];
+  { let t = T_DICTEE;
+    for (const brut of DICTEE.split(' ')) {
+      if (brut === ':') { t += .1; continue; }
+      MOTS.push([t, brut + (DICTEE.includes(brut + ' :') ? ' :' : '')]); t += .1;
+      if (/[,.:]$/.test(brut)) t += .13;
+    } }
+  const dictee = $('dictee');
+  dictee.innerHTML = '<span class="point" id="pointRouge"></span>' + MOTS.map(([, m]) => `<span>${m}</span>`).join('');
+  const spansMots = [...dictee.querySelectorAll('span:not(.point)')];
+  const pointRouge = $('pointRouge');
+
+  // Le raccord : le texte de la transcription (transcription.jpg) DEVIENT la
+  // première ligne du devis (devis-pdf.jpg), par un seul morceau qui change
+  // de forme et d'image en voyageant.
+  const raccord = M.creerMorceau({
+    parent: $('objets'),
+    de: { src: 'transcription.jpg', zone: [133, 595, 900, 336], largeurSource: 1170 },
+    vers: { src: 'devis-pdf.jpg', zone: [40, 775, 1705, 118], largeurSource: 1785 },
+  });
+
+  const motsPhrase = M.decouper($('phrase'), 'mots');
+  const motsPret = M.decouper($('pret'), 'mots');
+
+  // ─── la carte des temps forts ───────────────────────────────────────────
+  window.SONS = [
+    [0.4, 'tic'], [1.4, 'tic'],
+    [T_ROULE, 'barre'], [T_MATIN - .2, 'reconnu'], [T_MATIN, 'reponse'],
+    [T_CREER, 'appui'], [T_FICHE, 'glisse'], [T_MICRO, 'appui'], [T_MICRO + .1, 'micro'],
+    [T_RACCORD, 'tic'], [T_RACCORD + .1, 'glisse'], [T_RACCORD + .7, 'total'], [T_PRET, 'accepte'],
+  ].sort((a, b) => a[0] - b[0]);
+  window.MUSIQUE = {
+    style: 'recit', bpm: 92, tonalite: 'D', duree: DUREE,
+    sections: [
+      { de: 0, accord: 'Bm', couches: ['nappe'] },
+      { de: T_MATIN, accord: 'D', couches: ['nappe', 'arpege'] },
+      { de: T_RACCORD, accord: 'G', couches: ['nappe', 'arpege', 'rythme'] },
+    ],
+  };
+
+  const ciel = $('ciel');
+
+  function rendre(t) {
+    // ── le temps qui passe : 21 h 40, puis la nuit roule jusqu'à 8 h 05, puis 8 h 06
+    const roule = M.entreeSortie(entre(t, T_ROULE, T_MATIN));
+    const minutes = t < T_ROULE ? 1300 : t < T_MATIN ? mix(1300, 1440 + 485, roule) : (t < T_RACCORD ? 485 : 485 + sortie(entre(t, T_RACCORD, T_RACCORD + .4)));
+    poserHorloge(minutes);
+    const matin = lisse(entre(t, T_ROULE + .3, T_MATIN + .2));
+
+    // ── la lumière : froide la nuit, chaude le matin
+    ciel.style.background = `radial-gradient(120% 70% at 50% -10%, ${matin < .5 ? '#2a3442' : '#5a4a2b'} 0%, ${matin < .5 ? '#121820' : '#2b2416'} 45%, #07080a 100%)`;
+    ciel.style.opacity = '1';
+    const lueurCouleur = matin < .5 ? '150,175,215' : '255,196,110';
+
+    // ── la phrase de la douleur, puis « sur le chantier »
+    M.animer(motsPhrase, t, { debut: .5, pas: .09, duree: .55, mode: 'monte', decalage: 24, fin: T_ROULE - .2, dureeSortie: .4 });
+    const lieu = $('lieu');
+    const pl = sortie(entre(t, T_MATIN - .1, T_MATIN + .4)) * (1 - lisse(entre(t, T_DICTEE - .2, T_DICTEE + .2)));
+    lieu.style.opacity = String(pl); lieu.style.transform = `translateY(${16 * (1 - pl)}px)`;
+    lieu.style.letterSpacing = `${mix(.7, .44, pl)}em`;
+
+    // ── le téléphone : posé à plat sur la table la nuit, dans la main le matin
+    const leve = lisse(entre(t, T_ROULE + .4, T_MATIN + .3));
+    const dicte = lisse(entre(t, T_MICRO - .3, T_MICRO + .5));
+    const fin = lisse(entre(t, T_RACCORD, T_RACCORD + .8));
+    tel.poser({
+      x: mix(540, 560, leve), y: mix(1420, 1230, leve) + mix(0, 150, dicte) + mix(0, 160, fin),
+      rx: mix(62, 4, leve), ry: mix(-6, -11, leve) + 1.5 * M.derive(t * .7, 2) * leve, rz: mix(-14, -3, leve),
+      echelle: mix(.78, 1, leve) * mix(1, .92, fin), hauteurSol: mix(10, 110, leve), lumiere: mix(60, 125, matin), force: mix(.7, 1, matin),
+      allume: sortie(entre(t, T_MATIN - .3, T_MATIN + .1)) * .98 + .02 * (1 - leve),
+      flou: 2.5 * fin,
+      balaye: t > T_MATIN - .5 && t < T_MATIN + .5 ? (t - T_MATIN + .5) : null,
+    });
+    tel.poserEcrans(t, ECRANS);
+    tel.poserAppui(t, APPUIS);
+    const ecoule = (t - (T_MICRO + .15)) * 1000;
+    let vue = -1;
+    if (t >= T_MICRO + .15 && t < T_RACCORD) PRISES.forEach((ms, k) => { if (ms <= ecoule) vue = k; });
+    BANDES.forEach((bd, k) => { bd.style.opacity = k === vue ? '1' : '0'; });
+
+    // ── la caméra : haute et lointaine la nuit, elle descend vers l'écran le matin
+    const cible = tel.pointDeLAppli(195, 300);
+    const zoom = cles(t, [[0, 1.0], [T_ROULE, 1.04], [T_MATIN + .4, 1.22, expo], [T_CREER, 1.22], [T_CREER + .6, 1.5, expo], [T_MICRO - .2, 1.5], [T_MICRO + .6, 1.12], [T_RACCORD, 1.12], [T_RACCORD + .8, 1.0]]);
+    const cx = cles(t, [[T_CREER, 540], [T_CREER + .6, cible.x, expo], [T_MICRO - .2, cible.x], [T_MICRO + .6, 540]]);
+    const cy = cles(t, [[0, 1000], [T_MATIN, 960], [T_CREER, 960], [T_CREER + .6, cible.y + 40, expo], [T_MICRO - .2, cible.y + 40], [T_MICRO + .6, 900], [T_RACCORD, 900], [T_RACCORD + .8, 960]]);
+    scene.poser({ x: cx, y: cy, zoom, rz: 0, t });
+
+    // ── les mots dictés, sous l'horloge
+    const dSort = lisse(entre(t, T_RACCORD, T_RACCORD + .4));
+    dictee.style.opacity = String((t >= T_DICTEE - .1 ? 1 : 0) * (1 - dSort));
+    dictee.style.transform = `translateY(${-24 * dSort}px)`;
+    spansMots.forEach((sp, k) => {
+      const p = sortie(entre(t, MOTS[k][0], MOTS[k][0] + .24));
+      sp.style.opacity = String(p); sp.style.transform = `translateY(${10 * (1 - p)}px)`;
+    });
+    pointRouge.style.opacity = String(t >= T_MICRO + .15 && t < T_RACCORD ? mix(.35, 1, (Math.sin(t * 7) + 1) / 2) : 0);
+
+    // ── le trait des trente secondes : il grandit pendant la dictée
+    const trait = $('trait');
+    trait.style.width = `${800 * entre(t, T_DICTEE, T_RACCORD)}px`;
+    trait.style.opacity = String(t >= T_DICTEE && t < T_RACCORD + .5 ? .9 : 0);
+
+    // ── le raccord : la transcription devient la ligne du devis
+    const pr = expo(entre(t, T_RACCORD + .1, T_RACCORD + .95));
+    const depart = tel.pointDeLAppli(195, 255);
+    raccord.poser({
+      x: mix(depart.x, 540, pr), y: mix(depart.y, 760, pr), largeur: mix(560, 1000, pr), rz: mix(0, -2, pr), rx: mix(0, 8, pr), p: pr,
+      opacite: t >= T_RACCORD + .1 ? 1 : 0, ombre: pr,
+    });
+    M.animer(motsPret, t, { debut: T_PRET, pas: .1, duree: .5, mode: 'monte', decalage: 22 });
+
+    matiere.poser(t, {
+      vignetteForce: .5,
+      lueurX: mix(760, 540, matin), lueurY: mix(1500, 200, matin), lueurForce: mix(.18, .32, matin), lueurCouleur,
+      teinte: matin < .5 ? 'rgba(40,60,90,.3)' : 'rgba(80,60,30,.25)', teinte2: matin < .5 ? 'rgba(120,150,200,.12)' : 'rgba(201,161,94,.18)',
+    });
+  }
+
+  M.demarrer({ duree: DUREE, rendre, pret: Promise.all(BANDES.map(i => i.decode().catch(() => {}))) });
+</script>
+</body>
+</html>
