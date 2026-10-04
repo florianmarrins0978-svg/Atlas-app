@@ -77,6 +77,25 @@ Puis ses choix sur la planche `appli/documents-en-regle-a-choisir.html` :
 | 6 suites navigateur de la facture | leur chantier a une adresse, mention obligatoire |
 | Le jeu de démonstration | une identité complète : forme EI, numéro de TVA, médiateur, décennale |
 
+## Le 4 octobre : Mr, Mme ou Entreprise, et le devis en sous-traitance
+
+| Point | Verdict | Où |
+|---|---|---|
+| « Mr. Jardins Ribault » sur les devis et factures d'une entreprise | **corrigé** : la fiche a trois pastilles, Mr, Mme, **Entreprise** ; Entreprise écrit le nom seul | `src/lib/civilite.ts`, `ChoixCivilite.tsx`, migration 0119 |
+| Ce qu'il faut remplir pour une entreprise | **codé** : en touchant Entreprise, le SIRET et le numéro de TVA apparaissent ; ils s'impriment sous son nom, sur le devis et la facture | `SesCoordonnees.tsx`, `document-commun.ts` |
+| Ses entreprises à part | **codé** : « Vos clients » montre les particuliers, la porte « Vos entreprises › » ouvre la même liste, rangée et cherchable | `src/app/clients/page.tsx` |
+| Le devis en sous-traitance, **B : décoché d'office** | **codé** pour un client Entreprise : prix HT, mention d'autoliquidation, ni TVA ni formulaire de rétractation ; la page du client ne demande plus la case des 14 jours ; la facture qui en naît est déjà sans TVA, et ne se rallume pas | `majAutoliquidationDevis` (`devis.ts`), `DevisCompletClient.tsx` |
+
+**Ce qui a été fait autrement que la planche, et pourquoi :** la pastille
+choisie garde la couleur des deux autres pastilles de l'application (fond
+clair, contour doré), pas le vert de la planche ; c'est le composant existant
+qui fait foi.
+
+**Ce qui a été corrigé en route :** un contrôle de ce lot ne regardait que
+l'absence de « Mr. » ; en cassant volontairement la règle, le papier écrivait
+« undefined Jardins Ribault » et le contrôle restait vert. Il exige maintenant
+le nom seul sur sa ligne, et rougit sur la casse.
+
 ## Ce qui reste ouvert
 
 | | Qui |

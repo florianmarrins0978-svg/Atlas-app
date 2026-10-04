@@ -5,6 +5,7 @@ import { Pool } from "pg";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
 import { ADRESSE } from "./_adresse";
 import { joursAProposer, retenirAuCalendrier } from "./_calendrier-e2e";
+import { cocherLaDemandeExpresse } from "./_demande-expresse-e2e";
 import { adresseDeTelechargement, nomAnnonceParLeServeur } from "../src/lib/remise-de-fichier";
 
 // **« La facture s'affiche partie, mais le client ne la reçoit pas. »**
@@ -105,6 +106,7 @@ async function main() {
   await page.goto(`${BASE}/devis/${jetonDevis}`, { waitUntil: "networkidle" });
   // La date se choisit avant d'accepter — c'est le parcours réel du client.
   await page.locator('input[name="choixDate"]').first().check();
+  await cocherLaDemandeExpresse(page);
   await page.click('button:has-text("J\'accepte ce devis")');
   await page.waitForSelector("text=Votre artisan est prévenu", { timeout: 15000 });
 

@@ -16,7 +16,7 @@ import fontkit from "@pdf-lib/fontkit";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { logger } from "@/server/logger";
-import { avecCivilite } from "@/lib/civilite";
+import { avecCivilite, type CiviliteClient } from "@/lib/civilite";
 import {
   libelleReduction,
   lignesParBloc,
@@ -518,11 +518,13 @@ export type DonneesDocument = {
   entrepriseMentionsLegalesPosition?: PositionMentionsLegales | null;
   clientNom?: string | null;
   /** Recopiée sur le document au moment où il est établi (migration 0038). */
-  clientCivilite?: "mr" | "mme" | null;
+  clientCivilite?: CiviliteClient | null;
   clientAdresse?: string | null;
   clientTelephone?: string | null;
   /** Le numéro de TVA du donneur d'ordre, en sous-traitance (migration 0118). */
   clientNumeroTva?: string | null;
+  /** Le SIRET d'une entreprise cliente (migration 0119). */
+  clientSiret?: string | null;
   adresseChantier?: string | null;
   conditionsPaiement?: string | null;
   devise: string;
@@ -968,6 +970,7 @@ export async function composerDocument(
     avecCivilite(data.clientNom, data.clientCivilite),
     adresses.adresseClient,
     data.clientTelephone,
+    data.clientSiret ? `SIRET ${data.clientSiret}` : null,
     data.clientNumeroTva ? `TVA intracommunautaire ${data.clientNumeroTva}` : null,
   ]
     .filter((l): l is string => !!l)

@@ -1,4 +1,5 @@
 import { nomAvecForme } from "@/lib/formes-juridiques";
+import type { CiviliteClient } from "../../lib/civilite";
 import { dansDelaiRetractation, jourIso } from "@/lib/jour";
 import { randomBytes, createHash } from "node:crypto";
 import { and, asc, desc, eq, gte, isNull, lte, sql } from "drizzle-orm";
@@ -460,10 +461,12 @@ export type EnvoiPourClient = {
     totalTva: string;
     totalTtc: string;
     tauxTva: string;
+    /** En sous-traitance, sans TVA (migration 0119) : ni ligne de TVA, ni 14 jours. */
+    autoliquidation: boolean;
     entrepriseNom: string;
     clientNom: string | null;
     /** Recopiée sur le devis à son établissement (migration 0038). */
-    clientCivilite: "mr" | "mme" | null;
+    clientCivilite: CiviliteClient | null;
     adresseChantier: string | null;
     lignes: { libelle: string; quantite: string; prixUnitaire: string; montant: string }[];
   };
@@ -660,6 +663,7 @@ export async function lireParJeton(
         totalTva: d.totalTva,
         totalTtc: d.totalTtc,
         tauxTva: d.tauxTva,
+        autoliquidation: d.autoliquidation,
         // « … EI » pour un entrepreneur individuel (R526-27), comme sur le PDF.
         entrepriseNom: nomAvecForme(d.entrepriseNom, d.entrepriseFormeJuridique),
         clientNom: d.clientNom,
@@ -833,6 +837,12 @@ export type ResultatReponse =
  * autant côté produit : l'appelant doit redemander une date, le prix ne
  * dépendant pas du calendrier (docs/AGENT.md §2.2 bis).
  */
+/** Le devis de cet envoi est-il en sous-traitance (migration 0119) ? */
+async function devisEnSousTraitance(tx: DbOrTx, devisId: string): Promise<boolean> {
+  const [d] = await tx.select({ autoliquidation: devis.autoliquidation }).from(devis).where(eq(devis.id, devisId)).limit(1);
+  return d?.autoliquidation ?? false;
+}
+
 export async function enregistrerReponse(
   jeton: string,
   reponse: ReponseClient,
@@ -940,11 +950,17 @@ export async function enregistrerReponse(
     // alors pas commencer sans s'exposer à une rétractation après travaux. La
     // même règle que celle qui montre la case (`dansDelaiRetractation`), au même
     // jour : celui de l'accord.
+    //
+    // **Sauf en sous-traitance** (migration 0119) : l'entreprise qui le
+    // sous-traite achète dans son propre métier, elle n'a pas les 14 jours du
+    // consommateur. Lui faire cocher une demande qui ne la concerne pas
+    // bloquerait un accord valable.
     if (
       reponse.decision === "accepte" &&
       date &&
       dansDelaiRetractation(date, jourIso(maintenant)) &&
-      !reponse.demarrageAnticipe
+      !reponse.demarrageAnticipe &&
+      !(await devisEnSousTraitance(tx, envoi.devisId))
     ) {
       return { succes: false, motif: "demarrage_non_demande" as const };
     }

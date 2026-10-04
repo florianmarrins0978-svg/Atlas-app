@@ -4,6 +4,9 @@ import { pool } from "../src/server/db/client";
 import * as entreprisesRepo from "../src/server/repositories/entreprises";
 import * as chantiersRepo from "../src/server/repositories/chantiers";
 import * as clientsRepo from "../src/server/repositories/clients";
+import * as devisRepo from "../src/server/repositories/devis";
+import * as prixRepo from "../src/server/repositories/lignes-prix";
+import { listerFichesClients } from "../src/server/repositories/fiche-client";
 import {
   ajouterLigneDeFacture,
   creerFactureSansDevis,
@@ -15,6 +18,7 @@ import {
   majLigneDeFacture,
   majTvaClientFacture,
   manquesDeLaFactureAEmettre,
+  terminerChantier,
 } from "../src/server/repositories/factures";
 import { withEntreprise } from "../src/server/db/with-entreprise";
 import { chantiers, clients } from "../src/server/db/schema";
@@ -197,6 +201,105 @@ async function main() {
     const { facture } = await factureDuChantier(ctx, "Paysages Sans Numéro");
     await majAutoliquidationFacture(ctx, facture.id, true);
     assert.deepEqual((await manquesDeLaFactureAEmettre(ctx, facture.id)).map((m) => m.cle), ["tva-client"]);
+  });
+
+  // ── 4 OCTOBRE : MR, MME OU ENTREPRISE ──────────────────────────────────
+
+  /** Un client Entreprise, son chantier, une ligne à 10 % et une ligne au taux du devis. */
+  async function chantierEntreprise(nom = "Paysages Lebrun") {
+    const client = await clientsRepo.creerClient(ctx, { nom, adresse: "12 allée des Chênes, Orvault" });
+    await clientsRepo.mettreAJourClient(ctx, client.id, {
+      civilite: "entreprise",
+      siret: "812 345 678 00021",
+      numeroTva: "FR00812345678",
+    });
+    const chantier = await chantiersRepo.creerChantier(ctx, { nom: `Chez ${nom}`, clientId: client.id });
+    await prixRepo.ajouterLignePrix(ctx, chantier.id, "Création de massifs", "1000.00");
+    await prixRepo.ajouterLignePrix(ctx, chantier.id, "Taille", "200.00", { tauxTva: "10.00" });
+    const brouillon = await devisRepo.getOuCreerDevisBrouillon(ctx, chantier.id);
+    return { client, chantier, brouillon };
+  }
+
+  await test("Entreprise : le devis écrit le nom seul, avec son SIRET", async () => {
+    const { brouillon } = await chantierEntreprise("Jardins Ribault");
+    const brut = texteDuPdf(await devisRepo.genererPdfPourApercu(ctx, brouillon.id));
+    const texte = brut.replace(/\s+/g, " ");
+    // Le nom SEUL sur sa ligne : ni « Mr. », ni un mot fabriqué devant.
+    assert.ok(
+      brut.split("\n").some((l) => l.trim() === "Jardins Ribault"),
+      "le bloc client n'écrit pas le nom seul"
+    );
+    assert.match(texte, /SIRET 812 345 678 00021/);
+  });
+
+  await test("la liste range l'entreprise derrière sa porte, et SARL y entre sans choix", async () => {
+    await clientsRepo.creerClient(ctx, { nom: "Vert Bocage SARL" });
+    await clientsRepo.creerClient(ctx, { nom: "Bernard" });
+    const liste = await listerFichesClients(ctx);
+    const de = (nom: string) => liste.find((c) => c.nom === nom)?.entreprise;
+    assert.equal(de("Vert Bocage SARL"), true);
+    assert.equal(de("Bernard"), false);
+    // Plusieurs « Jardins Ribault » d'essai : celui marqué Entreprise est rangé à part.
+    assert.ok(liste.some((c) => c.nom === "Jardins Ribault" && c.entreprise));
+    assert.ok(liste.some((c) => c.nom === "Jardins Ribault" && !c.entreprise));
+  });
+
+  // ── 4 OCTOBRE : LE DEVIS EN SOUS-TRAITANCE (B, décoché d'office) ────────
+
+  await test("décoché d'office ; refusé pour un particulier", async () => {
+    const { chantier } = await chantierEntreprise("Lebrun décoché");
+    const lu = await chantiersRepo.getChantier(ctx, chantier.id);
+    assert.equal(lu?.autoliquidation, false, "la sous-traitance est cochée d'office");
+
+    const client = await clientsRepo.creerClient(ctx, { nom: "Bernard" });
+    const particulier = await chantiersRepo.creerChantier(ctx, { nom: "Chez Bernard", clientId: client.id });
+    await prixRepo.ajouterLignePrix(ctx, particulier.id, "Taille", "100.00");
+    await devisRepo.getOuCreerDevisBrouillon(ctx, particulier.id);
+    assert.equal((await devisRepo.majAutoliquidationDevis(ctx, particulier.id, true)).ok, false);
+  });
+
+  await test("allumée : devis sans TVA, papier sans formulaire ; éteinte, la ligne à 10 % revient", async () => {
+    const { chantier } = await chantierEntreprise("Lebrun allumé");
+    const on = await devisRepo.majAutoliquidationDevis(ctx, chantier.id, true);
+    assert.ok(on.ok, on.ok ? "" : on.raison);
+
+    // Une ligne ajoutée « dans la catégorie à 20 % » pendant : aucun taux ne prend.
+    const ajoutee = await prixRepo.ajouterLignePrix(ctx, chantier.id, "Paillage", "50.00", { tauxTva: "20.00" });
+    assert.equal(ajoutee.tauxTva, null);
+
+    const d = await devisRepo.getOuCreerDevisBrouillon(ctx, chantier.id);
+    assert.equal(d.autoliquidation, true);
+    assert.equal(d.totalTva, "0.00");
+    assert.equal(d.totalTtc, "1250.00");
+    assert.equal(d.clientNumeroTva, "FR00812345678");
+    const texte = texteDuPdf(await devisRepo.genererPdfPourApercu(ctx, d.id)).replace(/\s+/g, " ");
+    assert.match(texte, /Autoliquidation : TVA due par le preneur/);
+    assert.match(texte, /Total à payer/);
+    assert.match(texte, /TVA intracommunautaire FR00812345678/);
+    assert.doesNotMatch(texte, /FORMULAIRE DE RÉTRACTATION/, "un sous-traitant n'a pas les 14 jours");
+
+    const off = await devisRepo.majAutoliquidationDevis(ctx, chantier.id, false);
+    assert.ok(off.ok);
+    const apres = await devisRepo.getOuCreerDevisBrouillon(ctx, chantier.id);
+    assert.equal(apres.autoliquidation, false);
+    assert.notEqual(apres.totalTva, "0.00");
+    const lignes = await prixRepo.listerLignesPrix(ctx, chantier.id);
+    assert.equal(lignes.find((l) => l.libelle === "Taille")?.tauxTva, "10.00", "la ligne à 10 % n'est pas revenue");
+  });
+
+  await test("la facture du devis en sous-traitance l'est aussi, et ne se rallume pas en TVA", async () => {
+    const { chantier } = await chantierEntreprise("Lebrun facturé");
+    await devisRepo.majAutoliquidationDevis(ctx, chantier.id, true);
+    const d = await devisRepo.getOuCreerDevisBrouillon(ctx, chantier.id);
+    await devisRepo.envoyerDevis(ctx, d.id);
+    const facture = await terminerChantier(ctx, chantier.id);
+    assert.equal(facture.autoliquidation, true);
+    assert.equal(facture.tauxTva, "0.00");
+    assert.equal(facture.clientSiret, "812 345 678 00021");
+    const off = await majAutoliquidationFacture(ctx, facture.id, false);
+    assert.equal(off.ok, false, "la facture remet la TVA sur un prix accepté sans");
+    const emise = await emettreFacture(ctx, facture.id);
+    assert.equal(emise.totalTva, "0.00");
   });
 
   console.log(`\n${passed} réussi(s), ${failed} échoué(s).`);

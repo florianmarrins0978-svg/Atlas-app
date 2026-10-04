@@ -229,6 +229,36 @@
 <td>une identité complète : forme EI, numéro de TVA, médiateur, décennale</td>
 </tr>
 </tbody></table></div>
+<h2 id="le-4-octobre--mr-mme-ou-entreprise-et-le-devis-en-sous-traitance">Le 4 octobre : Mr, Mme ou Entreprise, et le devis en sous-traitance</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Point</th>
+<th>Verdict</th>
+<th>Où</th>
+</tr></thead><tbody>
+<tr>
+<td>« Mr. Jardins Ribault » sur les devis et factures d'une entreprise</td>
+<td><strong>corrigé</strong> : la fiche a trois pastilles, Mr, Mme, <strong>Entreprise</strong> ; Entreprise écrit le nom seul</td>
+<td><code>src/lib/civilite.ts</code>, <code>ChoixCivilite.tsx</code>, migration 0119</td>
+</tr>
+<tr>
+<td>Ce qu'il faut remplir pour une entreprise</td>
+<td><strong>codé</strong> : en touchant Entreprise, le SIRET et le numéro de TVA apparaissent ; ils s'impriment sous son nom, sur le devis et la facture</td>
+<td><code>SesCoordonnees.tsx</code>, <code>document-commun.ts</code></td>
+</tr>
+<tr>
+<td>Ses entreprises à part</td>
+<td><strong>codé</strong> : « Vos clients » montre les particuliers, la porte « Vos entreprises › » ouvre la même liste, rangée et cherchable</td>
+<td><code>src/app/clients/page.tsx</code></td>
+</tr>
+<tr>
+<td>Le devis en sous-traitance, <strong>B : décoché d'office</strong></td>
+<td><strong>codé</strong> pour un client Entreprise : prix HT, mention d'autoliquidation, ni TVA ni formulaire de rétractation ; la page du client ne demande plus la case des 14 jours ; la facture qui en naît est déjà sans TVA, et ne se rallume pas</td>
+<td><code>majAutoliquidationDevis</code> (<code>devis.ts</code>), <code>DevisCompletClient.tsx</code></td>
+</tr>
+</tbody></table></div>
+<p><strong>Ce qui a été fait autrement que la planche, et pourquoi :</strong> la pastille choisie garde la couleur des deux autres pastilles de l'application (fond clair, contour doré), pas le vert de la planche ; c'est le composant existant qui fait foi.</p>
+<p><strong>Ce qui a été corrigé en route :</strong> un contrôle de ce lot ne regardait que l'absence de « Mr. » ; en cassant volontairement la règle, le papier écrivait « undefined Jardins Ribault » et le contrôle restait vert. Il exige maintenant le nom seul sur sa ligne, et rougit sur la casse.</p>
 <h2 id="ce-qui-reste-ouvert">Ce qui reste ouvert</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
 <div class="tablewrap"><table><thead><tr>

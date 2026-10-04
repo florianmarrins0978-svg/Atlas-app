@@ -1,5 +1,6 @@
 "use client";
 
+import type { CiviliteClient } from "@/lib/civilite";
 import { useState } from "react";
 import PrimaryButton from "@/components/atlas/PrimaryButton";
 import { colors } from "@/lib/design-tokens";
@@ -77,7 +78,7 @@ export default function TransmettreLaFacture({
   factureId: string;
   clientId: string | null;
   clientNom: string;
-  clientCivilite: "mr" | "mme" | null;
+  clientCivilite: CiviliteClient | null;
   entrepriseNom: string;
   /**
    * Son gabarit de message, écrit dans « Devis & factures ». `null` : Atlas.

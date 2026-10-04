@@ -20,6 +20,7 @@ import { jourDeRangement, rangerParNom } from "@/lib/bandes-clients";
 import { jourIso } from "@/lib/jour";
 import { avoirsDesFactures } from "./avoirs";
 import { receptionEnMots, type ReceptionLisible } from "@/lib/reception-facture";
+import { estUneEntreprise } from "../../lib/civilite";
 import {
   dernierePrestation,
   derniereTraceDuClient,
@@ -457,6 +458,8 @@ export async function chargerFicheClient(ctx: Ctx, clientId: string): Promise<Fi
 export type ClientEnListe = {
   id: string;
   nom: string;
+  /** Une entreprise cliente : elle vit derrière la porte « Vos entreprises ». */
+  entreprise: boolean;
   /**
    * Là où il habite — **ce qui distingue quatre clients du même nom**.
    *
@@ -512,7 +515,7 @@ export async function listerFichesClients(ctx: Ctx): Promise<ClientEnListe[]> {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const [sesClients, sesChantiers] = await Promise.all([
       tx
-        .select({ id: clients.id, nom: clients.nom, adresse: clients.adresse })
+        .select({ id: clients.id, nom: clients.nom, adresse: clients.adresse, civilite: clients.civilite })
         .from(clients)
         .where(eq(clients.entrepriseId, ctx.entrepriseId)),
       tx
@@ -657,6 +660,9 @@ export async function listerFichesClients(ctx: Ctx): Promise<ClientEnListe[]> {
         id: client.id,
         nom: client.nom,
         adresse: client.adresse,
+        // La porte « Vos entreprises » (4 octobre 2026) : la même règle que
+        // le « Mr. » retiré et la sous-traitance du devis.
+        entreprise: estUneEntreprise(client.nom, client.civilite),
         derniere,
         facture: fiche.facture,
         du: fiche.du,

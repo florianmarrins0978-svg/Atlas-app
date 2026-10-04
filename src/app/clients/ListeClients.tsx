@@ -137,14 +137,16 @@ export function FournisseurClients({
  * ligne se vidait, disparaissait, et le champ de saisie remontait de vingt-
  * quatre pixels sous le doigt. À chaque frappe qui ne trouve pas.
  */
-export function CompteClients() {
+export function CompteClients({ entreprises = false }: { entreprises?: boolean }) {
   const { saisie, total, visibles } = useRecherche();
   const cherche = saisie.trim().length > 0;
   const n = cherche ? visibles.length : total;
-  const mot = n === 1 ? "1 client" : `${n} clients`;
+  const nom = entreprises ? "entreprise" : "client";
+  const mot = n === 1 ? `1 ${nom}` : `${n} ${nom}s`;
   // Rien trouvé : la phrase juste en dessous le dit déjà, en citant sa frappe.
   // Le redire ici en capitales serait la redite qu'il nous reproche.
-  const texte = cherche && n === 0 ? "" : cherche ? `${mot} trouvé${n > 1 ? "s" : ""}` : mot;
+  const accord = entreprises ? "trouvée" : "trouvé";
+  const texte = cherche && n === 0 ? "" : cherche ? `${mot} ${accord}${n > 1 ? "s" : ""}` : mot;
   return (
     <span className="block min-h-[14px]" data-atlas="compte-clients">
       {texte}
@@ -152,7 +154,7 @@ export function CompteClients() {
   );
 }
 
-export default function ListeClients() {
+export default function ListeClients({ entreprises = false }: { entreprises?: boolean }) {
   const { saisie, poser, visibles, aujourdHui } = useRecherche();
   const cherche = saisie.trim().length > 0;
 
@@ -203,7 +205,7 @@ export default function ListeClients() {
         <ChampRecherche
           valeur={saisie}
           onChange={poser}
-          placeholder="Chercher un client"
+          placeholder={entreprises ? "Chercher une entreprise" : "Chercher un client"}
           ariaLabel="Chercher un client"
           dataAtlas="chercher-client"
         />

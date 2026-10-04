@@ -2,7 +2,7 @@ import { and, count, eq, inArray, isNull } from "drizzle-orm";
 import { withEntreprise } from "../db/with-entreprise";
 import { chantiers, clients } from "../db/schema";
 import type { Ctx } from "./context";
-import type { Civilite } from "@/lib/civilite";
+import type { CiviliteClient } from "@/lib/civilite";
 import {
   rapprocherClient,
   complementsPourFiche,
@@ -60,7 +60,7 @@ function clientsQuOnPeutReconnaitre(ctx: Ctx) {
 export type ClientReconnu = {
   id: string;
   nom: string;
-  civilite: Civilite | null;
+  civilite: CiviliteClient | null;
   telephone: string | null;
   email: string | null;
   adresse: string | null;
@@ -124,7 +124,7 @@ export async function reconnaitreLeClient(
     return {
       id: retrouve.id,
       nom: retrouve.nom,
-      civilite: retrouve.civilite as Civilite | null,
+      civilite: retrouve.civilite as CiviliteClient | null,
       telephone: retrouve.telephone,
       email: retrouve.email,
       adresse: retrouve.adresse,
@@ -178,7 +178,7 @@ export async function trouverOuCreerClient(
   ctx: Ctx,
   data: {
     nom: string;
-    civilite?: Civilite;
+    civilite?: CiviliteClient;
     telephone?: string;
     adresse?: string;
     email?: string;
@@ -249,7 +249,7 @@ export async function completerLaFiche(
   ctx: Ctx,
   existante: FicheDejaConnue,
   saisie: {
-    civilite?: Civilite;
+    civilite?: CiviliteClient;
     telephone?: string;
     email?: string;
     adresse?: string;
@@ -276,7 +276,7 @@ export async function creerClient(
   data: {
     nom: string;
     /** « Mr » / « Mme », ou absent : les trois états (migration 0038). */
-    civilite?: Civilite;
+    civilite?: CiviliteClient;
     telephone?: string;
     adresse?: string;
     email?: string;
@@ -306,11 +306,14 @@ export async function mettreAJourClient(
   id: string,
   data: {
     nom?: string;
-    civilite?: Civilite | null;
+    civilite?: CiviliteClient | null;
     telephone?: string | null;
     adresse?: string | null;
     email?: string | null;
     canalCommunication?: CanalClient | null;
+    /** Une entreprise cliente (migration 0119) ; déjà lus par `siretLu` et `numeroTvaLu`. */
+    siret?: string | null;
+    numeroTva?: string | null;
   }
 ) {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {

@@ -67,7 +67,10 @@ async function main() {
   );
   assert.ok(demo[0]?.entreprise_id, "le compte de démonstration est absent : la base n'est pas amorcée");
   const entrepriseId: string = demo[0].entreprise_id;
-  const { rows: avant } = await pool.query(`SELECT conditions_generales FROM entreprises WHERE id = $1`, [entrepriseId]);
+  const { rows: avant } = await pool.query(
+    `SELECT conditions_generales, assureur_decennale, mediateur_nom FROM entreprises WHERE id = $1`,
+    [entrepriseId]
+  );
 
   try {
     await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
@@ -160,6 +163,11 @@ async function main() {
     });
 
     await cas("Réglages → Ce qui s'imprime : ses conditions générales, remplies d'office, deux crochets à remplir", async () => {
+      // **Un compte qui n'a encore rien saisi** : la démonstration porte un
+      // assureur et un médiateur depuis le 3 octobre 2026 (un devis sans eux ne
+      // part plus), et leurs crochets se remplissent alors tout seuls. Le cas
+      // éprouvé ici est celui d'avant la saisie ; ils sont rendus à la fin.
+      await pool.query(`UPDATE entreprises SET assureur_decennale = NULL, mediateur_nom = NULL WHERE id = $1`, [entrepriseId]);
       await page.goto(`${BASE}/reglages/documents/conditions`, { waitUntil: "networkidle" });
       const champ = page.locator('textarea[aria-label="Conditions générales de vente et de règlement"]');
       await champ.waitFor({ timeout: 10_000 });
@@ -183,7 +191,10 @@ async function main() {
       assert.equal(await page.locator('[data-atlas="crochets-a-remplir"]').count(), 0);
     });
   } finally {
-    await pool.query(`UPDATE entreprises SET conditions_generales = $2 WHERE id = $1`, [entrepriseId, avant[0]?.conditions_generales ?? null]);
+    await pool.query(
+      `UPDATE entreprises SET conditions_generales = $2, assureur_decennale = $3, mediateur_nom = $4 WHERE id = $1`,
+      [entrepriseId, avant[0]?.conditions_generales ?? null, avant[0]?.assureur_decennale ?? null, avant[0]?.mediateur_nom ?? null]
+    );
     await navigateur.close();
     await pool.end();
   }

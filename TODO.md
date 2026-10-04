@@ -20,29 +20,19 @@ document de retour est `docs/lot-mentions-facture-devis.md`.
 - ⏳ Les factures de contrat d'entretien, émises sans geste du patron, ne
   passent pas par la vérification des mentions : aucun écran où lister ce qui
   manque. À trancher avec lui.
-- ⏳ **UNE PLANCHE À REGARDER : MR, MME OU ENTREPRISE (4 octobre 2026).** Une
-  entreprise cliente sans civilité cochée s'écrit « Mr. Jardins Ribault » sur
-  la fiche, le devis et la facture (`avecCivilite` met « Mr. » par défaut).
-  Planche `appli/ni-mr-ni-mme.html` : un troisième choix « Entreprise » sur
-  la fiche (son choix du 4 octobre, plutôt que « Aucune »), qui fait
-  apparaître le SIRET et le numéro de TVA ; ce numéro est celui que la
-  facture en sous-traitance retient (`clients.numero_tva`). **Son accord
-  attendu sur la planche.**
-- ⏳ **UNE PLANCHE À REGARDER : LE DEVIS EN SOUS-TRAITANCE (4 octobre
-  2026).** Le devis affiche aujourd'hui TVA et TTC même en sous-traitance. Sa
-  demande : client « Entreprise » sur la fiche, le devis porte l'interrupteur
-  « Sous-traitance, sans TVA ». Planche `appli/devis-sous-traitance.html` :
-  coché d'office (A) ou décoché d'office (B). Recommandé : B, une entreprise
-  en direct payant la TVA (`docs/QUESTIONS.md` §31). **Son choix attendu.**
-- ⏳ **UNE PLANCHE À REGARDER : LES ENTREPRISES DANS « VOS CLIENTS » (4 octobre
-  2026).** Sa demande, reprise le même jour : *« mets pas particulier et
-  entreprise, on est d'office sur les particuliers, rajoute juste une porte
-  pour aller sur l'entreprise »*. Planche `appli/entreprises-clientes.html` :
-  « Vos clients » ne montre plus que les particuliers, la porte « Vos
-  entreprises › » (celle de « Vos clients › » sur Chantiers) ouvre la même
-  page, par ordre alphabétique, avec la recherche. Une entreprise est un
-  client dont la fiche porte « Entreprise », ou dont le nom porte SARL,
-  Mairie… **Son accord attendu sur la planche.**
+- ✅ **SES CHOIX DU 4 OCTOBRE 2026, CODÉS SUR LA BRANCHE** (migration 0119,
+  `ARCHITECTURE.md` §443), dans le même lot et la même batterie :
+  - **Mr, Mme ou Entreprise** sur la fiche, avec SIRET et numéro de TVA
+    imprimés sous le nom du client ;
+  - **Vos entreprises** derrière une porte dans « Vos clients » ;
+  - **le devis en sous-traitance**, décoché d'office (B).
+- ⏳ La porte « Vos entreprises » et la civilité Entreprise ne sont posées
+  que sur « Ses coordonnées » (`/clients/[id]/coordonnees`) pour le SIRET et
+  la TVA ; le formulaire de création d'un chantier a les trois pastilles, sans
+  les deux cases. À lui proposer s'il les veut aussi à la création.
+- ⏳ La carte « Sous-traitance, sans TVA » de la FACTURE s'offre pour tout
+  client hors franchise (lot du 3 octobre) ; celle du devis seulement pour un
+  client Entreprise. À aligner s'il le souhaite.
 
 ## ⏳ SUR ORDINATEUR : la planche attend son choix (30 septembre 2026)
 

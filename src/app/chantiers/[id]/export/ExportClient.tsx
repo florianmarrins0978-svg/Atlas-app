@@ -10,7 +10,7 @@ import { reprendreDevisAction } from "./actions";
 import { enEuros } from "@/lib/euros";
 import { joursEnToutesLettres } from "@/lib/jour";
 import type { EnvoiDuDevis } from "@/lib/message-client";
-import { type Civilite } from "@/lib/civilite";
+import { type CiviliteClient } from "@/lib/civilite";
 
 
 export default function ExportClient({
@@ -39,7 +39,7 @@ export default function ExportClient({
   clientId: string | null;
   clientNom: string;
   /** Ce qu'il a choisi au-dessus du nom, recopié sur le devis. */
-  clientCivilite: Civilite | null;
+  clientCivilite: CiviliteClient | null;
   clientTelephone: string;
   clientEmail: string;
   entrepriseNom: string;

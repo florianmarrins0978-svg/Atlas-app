@@ -1,4 +1,5 @@
 import { nomAvecForme } from "@/lib/formes-juridiques";
+import type { CiviliteClient } from "../../lib/civilite";
 import { createHash, randomBytes } from "node:crypto";
 import { and, desc, eq, inArray, isNull, sql } from "drizzle-orm";
 import { db } from "../db/client";
@@ -267,7 +268,7 @@ export type ContratPourClient = {
   contrat: ContratEntretien;
   entrepriseNom: string;
   clientNom: string;
-  clientCivilite: "mr" | "mme" | null;
+  clientCivilite: CiviliteClient | null;
 };
 
 /**

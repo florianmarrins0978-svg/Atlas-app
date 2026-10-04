@@ -9,6 +9,8 @@ import {
 } from "../src/lib/autoliquidation";
 import { dateDesTravauxProposee } from "../src/lib/creneaux-chantier";
 import { totauxAvecReduction } from "../src/lib/reduction-devis";
+import { avecCivilite, estUneEntreprise } from "../src/lib/civilite";
+import { siretLu } from "../src/lib/siren";
 
 // ═══════════════════════════════════════════════════════════════════════════
 // LE DEVIS ET LA FACTURE EN RÈGLE — ses choix du 3 octobre 2026
@@ -169,6 +171,30 @@ cas("les créneaux morcelés l'emportent sur le bloc", () => {
 cas("jamais posé, ou posé plus tard qu'aujourd'hui : le jour où il facture", () => {
   assert.equal(dateDesTravauxProposee({ jour: null, moment: null, dureeDemiJournees: null }, [], "2026-10-03"), "2026-10-03");
   assert.equal(dateDesTravauxProposee({ jour: "2026-10-20", moment: "matin", dureeDemiJournees: 2 }, [], "2026-10-03"), "2026-10-03");
+});
+
+console.log("— Mr, Mme ou Entreprise (4 octobre 2026) —");
+
+cas("Entreprise écrit le nom seul ; Mr et Mme restent ce qu'ils étaient", () => {
+  assert.equal(avecCivilite("Jardins Ribault", "entreprise"), "Jardins Ribault");
+  assert.equal(avecCivilite("Jardins Ribault", null), "Mr. Jardins Ribault");
+  assert.equal(avecCivilite("Roux", "mme"), "Mme Roux");
+});
+
+cas("une entreprise : son choix d'abord, sinon un mot de société dans le nom", () => {
+  assert.equal(estUneEntreprise("Jardins Ribault", "entreprise"), true);
+  assert.equal(estUneEntreprise("Vert Bocage SARL", null), true);
+  assert.equal(estUneEntreprise("Mairie de Rezé", undefined), true);
+  assert.equal(estUneEntreprise("SARL Untel", "mr"), false, "son choix « Mr » doit primer");
+  assert.equal(estUneEntreprise("Bernard", null), false);
+  assert.equal(estUneEntreprise("Mme Roux", null), false, "une civilité n'est pas une société");
+});
+
+cas("un SIRET se lit en quatorze chiffres, ou se refuse", () => {
+  assert.equal(siretLu("81234567800021"), "812 345 678 00021");
+  assert.equal(siretLu(" 812 345 678 00021 "), "812 345 678 00021");
+  assert.equal(siretLu(""), "");
+  assert.equal(siretLu("812 345 678"), null, "un SIREN seul n'est pas un SIRET");
 });
 
 console.log(`\n${ok} vérifications vertes.`);

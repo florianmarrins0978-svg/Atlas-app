@@ -7,8 +7,9 @@
 ---
 ## SUR SA BRANCHE : LA FACTURE ET LE DEVIS EN RÈGLE (3 octobre 2026)
 
-Branche `claude/tva-invoices-business-municipalities-lk2sjy`, migrations 0117
-et 0118. Numéro de TVA sur la facture, vérification des mentions avant
+Branche `claude/tva-invoices-business-municipalities-lk2sjy`, migrations 0117,
+0118 et 0119 (le 4 octobre : Mr, Mme ou Entreprise sur la fiche, « Vos
+entreprises » derrière une porte, le devis en sous-traitance décoché d'office). Numéro de TVA sur la facture, vérification des mentions avant
 l'envoi et l'émission, début des travaux et formulaire de rétractation sur le
 devis, refus d'une date dans les 14 jours sans demande expresse, « EI » collé
 au nom, sous-traitance sans TVA, date des travaux. **Batterie non jouée (sa

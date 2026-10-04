@@ -5,7 +5,7 @@ import { getCurrentCtx } from "@/server/session-ctx";
 import { getChantier, reprendreChantier } from "@/server/repositories/chantiers";
 import { trouverOuCreerClient, mettreAJourClient, type CanalClient } from "@/server/repositories/clients";
 import { nomDuChantier } from "@/lib/nom-chantier";
-import type { Civilite } from "@/lib/civilite";
+import type { CiviliteClient } from "@/lib/civilite";
 import { jourIso } from "@/lib/jour";
 import { revalidatePath } from "next/cache";
 
@@ -33,7 +33,7 @@ import { revalidatePath } from "next/cache";
  */
 export type ReprendreChantierInput = {
   nomClient?: string;
-  civilite?: Civilite;
+  civilite?: CiviliteClient;
   telephone?: string;
   email?: string;
   canal?: CanalClient;

@@ -18,6 +18,7 @@ import { rappelDePrix } from "@/lib/lecons-prix";
 import DevisCompletClient from "./DevisCompletClient";
 import { PARAM_PROVENANCE } from "@/lib/retour-au-planning";
 import { retourDuDevis } from "@/lib/retour-du-devis";
+import { estUneEntreprise } from "@/lib/civilite";
 import PreparationDictee from "./PreparationDictee";
 
 // **Une page où il n'y a que le devis.**
@@ -132,7 +133,17 @@ export default async function DevisCompletPage({
       {aPreparer && <PreparationDictee chantierId={id} />}
 
       <DevisCompletClient
+        // **Basculer la sous-traitance réécrit les taux en base** : la clé fait
+        // repartir l'écran des lignes réelles, au lieu de garder l'état d'avant
+        // dans ses `useState` (la même raison que la facture, `page.tsx`).
+        key={`${devisRow.id}-${chantier.autoliquidation ? "sans-tva" : "tva"}`}
         chantierId={id}
+        sousTraitance={chantier.autoliquidation}
+        // Pour un client Entreprise, hors franchise : son choix B, décoché
+        // d'office. La règle de « Entreprise » est celle de `civilite.ts`.
+        sousTraitancePossible={
+          entreprise?.regimeTva !== "franchise" && estUneEntreprise(client?.nom, client?.civilite ?? null)
+        }
         devisId={devisRow.id}
         numeroCommercial={devisRow.numeroCommercial}
         dateEmission={devisRow.dateEmission}

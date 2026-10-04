@@ -2,6 +2,7 @@ import { lancerNavigateur } from "./e2e-browser";
 import assert from "node:assert";
 import { pool } from "../src/server/db/client";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
+import { cocherLaDemandeExpresse } from "./_demande-expresse-e2e";
 import { ADRESSE } from "./_adresse";
 
 /**
@@ -109,6 +110,7 @@ async function main() {
   await dateProposee.waitFor({ state: "visible", timeout: 15_000 });
   await dateProposee.check();
   await pageClient.waitForTimeout(400);
+  await cocherLaDemandeExpresse(pageClient);
   await bouton.click();
   await pageClient.waitForTimeout(2500);
 

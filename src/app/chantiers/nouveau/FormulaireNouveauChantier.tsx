@@ -31,7 +31,7 @@ import ChoixCivilite from "@/components/atlas/ChoixCivilite";
 import Pellicule, { type VignettePhoto } from "../[id]/Pellicule";
 import AnneauNoteVocale from "../[id]/AnneauNoteVocale";
 import DevisDepuisDictee from "../[id]/DevisDepuisDictee";
-import type { Civilite } from "@/lib/civilite";
+import type { CiviliteClient } from "@/lib/civilite";
 import { espacerNumero, numeroEnregistre } from "@/lib/numero-telephone";
 import { saisieAEnregistrer } from "@/lib/saisie-fiche-client";
 
@@ -127,7 +127,7 @@ export type ChantierRepris = {
    */
   aUneNote: boolean;
   nomClient: string;
-  civilite: Civilite | null;
+  civilite: CiviliteClient | null;
   telephone: string;
   email: string;
   canal: "sms" | "email" | null;
@@ -151,7 +151,7 @@ export type ChantierRepris = {
 export type ClientDeDepart = {
   clientId: string;
   nomClient: string;
-  civilite: Civilite | null;
+  civilite: CiviliteClient | null;
   telephone: string;
   email: string;
   canal: "sms" | "email" | null;
@@ -219,7 +219,7 @@ export default function FormulaireNouveauChantier({
    */
   const pourLeDevis = pour === "devis";
   const [nomClient, setNomClient] = useState(depart?.nomClient ?? "");
-  const [civilite, setCivilite] = useState<Civilite | null>(depart?.civilite ?? null);
+  const [civilite, setCivilite] = useState<CiviliteClient | null>(depart?.civilite ?? null);
   const [telephone, setTelephone] = useState(depart?.telephone ?? "");
   const [email, setEmail] = useState(depart?.email ?? "");
   const [canalChoisi, setCanalChoisi] = useState<"sms" | "email" | null>(depart?.canal ?? null);

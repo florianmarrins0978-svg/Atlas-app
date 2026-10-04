@@ -1,4 +1,3 @@
-import { DROIT_DE_RETRACTATION } from "@/lib/retractation";
 import { lireParJeton } from "@/server/repositories/envois-devis";
 import { aujourdHuiIso } from "@/server/repositories/envois-devis";
 import FormulaireReponse from "./formulaire";
@@ -210,10 +209,14 @@ export default async function PageDevisClient({ params }: { params: Promise<{ je
               <dt>Total HT</dt>
               <dd className="tabular-nums">{euros(d.totalHt)}</dd>
             </div>
-            <div className="flex justify-between" style={{ color: colors.muted }}>
-              <dt>TVA ({Number(d.tauxTva)} %)</dt>
-              <dd className="tabular-nums">{euros(d.totalTva)}</dd>
-            </div>
+            {/* En sous-traitance, la TVA est due par l'entreprise qui le
+                sous-traite : pas de ligne, la mention du papier suffit. */}
+            {!d.autoliquidation && (
+              <div className="flex justify-between" style={{ color: colors.muted }}>
+                <dt>TVA ({Number(d.tauxTva)} %)</dt>
+                <dd className="tabular-nums">{euros(d.totalTva)}</dd>
+              </div>
+            )}
             {/* **Le TTC est le chiffre sur lequel il s'engage** : il doit être
                 le plus fort de la carte. En gris et en corps courant, il se
                 lisait comme une ligne de détail — vu sur la planche. */}
@@ -221,7 +224,7 @@ export default async function PageDevisClient({ params }: { params: Promise<{ je
               className="flex justify-between text-[16px]"
               style={{ fontFamily: font.display, color: colors.ink }}
             >
-              <dt>Total TTC</dt>
+              <dt>{d.autoliquidation ? "Total à payer" : "Total TTC"}</dt>
               <dd className="tabular-nums">{euros(d.totalTtc)}</dd>
             </div>
           </dl>
@@ -267,13 +270,6 @@ export default async function PageDevisClient({ params }: { params: Promise<{ je
           >
             Télécharger mon devis
           </BoutonTelechargerDocument>
-          {/* **Son droit, dit là où il accepte** — choix du 3 octobre 2026.
-              L'information sur la rétractation fait partie de ce que la loi
-              impose avant l'accord (L221-5) ; le formulaire, lui, est la
-              dernière page du devis qu'il vient de télécharger. */}
-          <p className="mt-2 text-[12.5px] leading-snug" style={{ color: colors.muted }}>
-            {DROIT_DE_RETRACTATION}
-          </p>
         </header>
 
         <FormulaireReponse envoi={envoi} aujourdHui={aujourdHuiIso()} />

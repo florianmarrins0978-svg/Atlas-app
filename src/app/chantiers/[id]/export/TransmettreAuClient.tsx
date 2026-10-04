@@ -9,7 +9,7 @@ import { useLienPourLeClient } from "@/lib/use-adresse-client";
 import { destinataireLisible } from "@/lib/numero-lisible";
 import { marquerDepartMessagerie, useRetourDeMessagerie } from "@/lib/depart-messagerie";
 import { enregistrerCoordonneeClientAction } from "./actions";
-import type { Civilite } from "@/lib/civilite";
+import type { CiviliteClient } from "@/lib/civilite";
 
 // Ouvre l'application de messagerie du patron, message prêt à partir, **au bon
 // destinataire**.
@@ -45,7 +45,7 @@ type Props = {
   clientId: string | null;
   clientNom: string;
   /** Ce qu'il a choisi au-dessus du nom (migration 0038). */
-  clientCivilite: Civilite | null;
+  clientCivilite: CiviliteClient | null;
   entrepriseNom: string;
   /**
    * Le gabarit qu'il a écrit dans « Devis & factures ». `null` : celui d'Atlas.

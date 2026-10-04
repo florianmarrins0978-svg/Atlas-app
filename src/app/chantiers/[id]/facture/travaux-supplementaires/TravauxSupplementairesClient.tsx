@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 import PrimaryButton from "@/components/atlas/PrimaryButton";
 import { colors, font, smallCaps } from "@/lib/design-tokens";
-import { avecCivilite } from "@/lib/civilite";
+import { avecCivilite, type CiviliteClient } from "@/lib/civilite";
 import { ligneAttendSonPrix, prixAEcrire } from "@/lib/preparation-devis";
 import {
   LIGNE_OUVERTE,
@@ -142,7 +142,7 @@ export default function TravauxSupplementairesClient({
    */
   statutFacture: string;
   clientNom: string | null;
-  clientCivilite: "mr" | "mme" | null;
+  clientCivilite: CiviliteClient | null;
   numeroDevis: string | null;
   /** Le devis dont elle vient. `null` : faite SANS devis (migration 0086) —
    *  aucune de ses lignes n'a été acceptée d'avance, donc aucune à protéger. */

@@ -1,4 +1,5 @@
 import { MENTION_FRANCHISE, sousFranchise } from "@/lib/franchise-tva";
+import { MENTION_AUTOLIQUIDATION } from "@/lib/autoliquidation";
 import { DEBUT_DES_TRAVAUX, TITRE_FORMULAIRE, paragraphesFormulaire } from "@/lib/retractation";
 import { nomAvecForme } from "@/lib/formes-juridiques";
 import {
@@ -92,6 +93,13 @@ export type DevisPdfData = DonneesDocument & {
    * ne s'imprime, plutôt qu'une durée inventée (`CLAUDE.md` §4).
    */
   dureeEstimee?: string | null;
+  /**
+   * En sous-traitance, sans TVA (migration 0119, son choix B du 4 octobre
+   * 2026) : ses lignes sont déjà à 0 %. Le papier ne porte ni ligne de TVA ni
+   * « TTC », mais la mention d'autoliquidation ; et pas de formulaire de
+   * rétractation, qui ne protège qu'un consommateur.
+   */
+  autoliquidation?: boolean;
 };
 
 /**
@@ -219,7 +227,7 @@ function annexeConditionsGenerales(data: DevisPdfData, sansPrix: boolean) {
  * 2026). Jamais sur la feuille de chantier : elle ne s'accepte pas.
  */
 function annexeFormulaire(data: DevisPdfData, sansPrix: boolean) {
-  if (sansPrix) return null;
+  if (sansPrix || data.autoliquidation) return null;
   return {
     titre: TITRE_FORMULAIRE,
     paragraphes: paragraphesFormulaire({
@@ -243,6 +251,9 @@ function mentionDuDevis(d: DevisPdfData): string {
     `Devis établi par ${d.entrepriseNom}` +
     (validite ? `, valable ${validite}. ` : ". ") +
     "Bon pour accord précédé de la mention manuscrite, daté et signé par le client.";
+  // L'autoliquidation passe avant le taux : à 0 % sur un devis d'avant 0118,
+  // `sousFranchise` répondrait « franchise » (la même garde que la facture).
+  if (d.autoliquidation) return `${base} ${MENTION_AUTOLIQUIDATION}`;
   return sousFranchise(d.regimeTva, d.tauxTva) ? `${base} ${MENTION_FRANCHISE}` : base;
 }
 
@@ -280,6 +291,8 @@ export async function composerDevisPdf(
       : [],
     // L'échéancier sous le total ; `sansChiffrage` le saute avec les totaux.
     apresTotal: lignesApresTotal(data),
+    sansTva: !!data.autoliquidation,
+    libelleTotalTtc: data.autoliquidation ? "Total à payer" : undefined,
     // Ses conditions générales, après le bon pour accord.
     // Ses conditions générales, puis le formulaire de rétractation.
     annexes: [annexeConditionsGenerales(data, sansPrix), annexeFormulaire(data, sansPrix)].filter(

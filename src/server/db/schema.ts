@@ -753,7 +753,7 @@ export const clients = pgTable(
     // ni « Mr » ni « Mme », et un client saisi à la volée n'a pas toujours eu
     // droit à un appui de plus. Ce que NULL vaut à l'écran est décidé dans
     // `src/lib/civilite.ts`, jamais ici (migration 0038).
-    civilite: text("civilite", { enum: ["mr", "mme"] }),
+    civilite: text("civilite", { enum: ["mr", "mme", "entreprise"] }),
     telephone: text("telephone"),
     adresse: text("adresse"),
     email: text("email"),
@@ -764,6 +764,8 @@ export const clients = pgTable(
      * particulier, ou un numéro jamais donné.
      */
     numeroTva: text("numero_tva"),
+    /** Le SIRET d'une entreprise cliente (migration 0119), recopié sous son nom. */
+    siret: text("siret"),
     // Canal convenu avec le client pour l'envoi du devis (docs/AGENT.md §2.1).
     // Sans lui, l'envoi est impossible : mieux vaut bloquer qu'envoyer dans le vide.
     canalCommunication: text("canal_communication", { enum: ["sms", "email"] }),
@@ -900,6 +902,17 @@ export const chantiers = pgTable(
     prixValideAt: timestamp("prix_valide_at", { withTimezone: true }),
     devisGenereAt: timestamp("devis_genere_at", { withTimezone: true }),
     devisEnvoyeAt: timestamp("devis_envoye_at", { withTimezone: true }),
+    /**
+     * Le chantier en sous-traitance, sans TVA (migration 0119) — son choix B
+     * du 4 octobre 2026 : décoché d'office. Basculer met à zéro les taux de
+     * ses lignes de prix et du devis, et garde ceux d'avant
+     * (`tauxAvantAutoliquidation`) ; chaque version du devis en repart.
+     */
+    autoliquidation: boolean("autoliquidation").notNull().default(false),
+    tauxAvantAutoliquidation: jsonb("taux_avant_autoliquidation").$type<{
+      facture: string;
+      lignes: Record<string, string | null>;
+    }>(),
     datePlanifiee: date("date_planifiee"), // non-null = "planifié"
     // Le moment où l'intervention commence, et sa durée réservée en
     // demi-journées. NULL sur tout chantier planifié avant la migration 0019 :
@@ -1374,7 +1387,16 @@ export const devis = pgTable(
     // Recopiée comme le nom : un document dit comment on s'adressait à son
     // destinataire LE JOUR OÙ il a été établi. Corriger une fiche client ne
     // doit pas réécrire un devis déjà parti (migration 0038).
-    clientCivilite: text("client_civilite", { enum: ["mr", "mme"] }),
+    clientCivilite: text("client_civilite", { enum: ["mr", "mme", "entreprise"] }),
+    /** Le SIRET d'une entreprise cliente, figé comme son nom (migration 0119). */
+    clientSiret: text("client_siret"),
+    /**
+     * Le devis en sous-traitance, sans TVA (migration 0119), et le numéro du
+     * donneur d'ordre, figés au jour du devis. Les taux de ses lignes sont
+     * déjà à zéro : l'état vit sur le chantier (`chantiers.autoliquidation`).
+     */
+    autoliquidation: boolean("autoliquidation").notNull().default(false),
+    clientNumeroTva: text("client_numero_tva"),
     clientAdresse: text("client_adresse"),
     clientTelephone: text("client_telephone"),
     clientEmail: text("client_email"),
@@ -2217,7 +2239,9 @@ export const factures = pgTable(
     // Recopiée comme le nom : un document dit comment on s'adressait à son
     // destinataire LE JOUR OÙ il a été établi. Corriger une fiche client ne
     // doit pas réécrire un devis déjà parti (migration 0038).
-    clientCivilite: text("client_civilite", { enum: ["mr", "mme"] }),
+    clientCivilite: text("client_civilite", { enum: ["mr", "mme", "entreprise"] }),
+    /** Le SIRET d'une entreprise cliente, figé comme son nom (migration 0119). */
+    clientSiret: text("client_siret"),
     clientAdresse: text("client_adresse"),
     clientTelephone: text("client_telephone"),
     clientEmail: text("client_email"),

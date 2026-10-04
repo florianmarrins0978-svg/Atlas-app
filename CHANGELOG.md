@@ -6,6 +6,26 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-10-04
+
+### Mr, Mme ou Entreprise ; ses entreprises derrière une porte ; le devis en sous-traitance
+
+Ses choix du 4 octobre 2026. **La fiche du client** porte trois pastilles,
+Mr, Mme et Entreprise (`appli/ni-mr-ni-mme.html`) : « Entreprise » écrit le
+nom seul, sans le « Mr. » que recevait « Jardins Ribault », et fait apparaître
+le SIRET et le numéro de TVA, imprimés sous le nom du client sur le devis et la
+facture. **« Vos clients »** ne montre plus que les particuliers ; la porte
+« Vos entreprises › » (celle de « Vos clients › » sur Chantiers) ouvre la même
+liste, rangée et cherchable (`appli/entreprises-clientes.html`). **Le devis**
+d'un client Entreprise porte « Sous-traitance, sans TVA », **décoché d'office**
+(son choix B, `appli/devis-sous-traitance.html`) : allumé, le prix est HT, le
+papier porte la mention d'autoliquidation, ni ligne de TVA ni formulaire de
+rétractation, et la page du client ne demande plus la case des 14 jours ; la
+facture qui en naît est déjà en sous-traitance, et ne se rallume pas en TVA.
+Une entreprise est un client marqué Entreprise, ou dont le nom porte SARL,
+Mairie… (`estUneEntreprise`). Migration 0119 (expand seul : contraintes de
+civilité élargies, colonnes neuves). Pourquoi : `ARCHITECTURE.md` §443.
+
 ## 2026-10-03
 
 ### Le devis et la facture ne partent plus sans leurs mentions obligatoires

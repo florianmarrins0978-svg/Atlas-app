@@ -11,7 +11,7 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 
 ---
 
-## LA FACTURE ET LE DEVIS EN RÈGLE : 3 octobre 2026, PAS SUR `main`
+## LA FACTURE ET LE DEVIS EN RÈGLE : 3 et 4 octobre 2026, PAS SUR `main`
 
 Branche `claude/tva-invoices-business-municipalities-lk2sjy`, migrations 0117
 et 0118. Trois choses à savoir avant de toucher une facture ou un envoi :
@@ -24,6 +24,13 @@ et 0118. Trois choses à savoir avant de toucher une facture ou un envoi :
 - **la sous-traitance vit dans les taux** : `factures.autoliquidation` vrai
   veut dire taux à 0 en base. Ne jamais écrire un taux sur une telle facture
   sans passer par `majAutoliquidationFacture`.
+- **sur le devis, elle vit sur le chantier** (`chantiers.autoliquidation`,
+  migration 0119) : ses lignes de prix suivent le taux du devis, à zéro. Tout
+  écrivain de lignes de prix passe par `lignes-prix.ts`, dont la garde
+  `sansTvaSurLeChantier` refuse les taux ;
+- **« Entreprise » est une civilité** (`CiviliteClient`), et
+  `estUneEntreprise` dit qui est une entreprise, pour la porte « Vos
+  entreprises » comme pour la sous-traitance.
 
 Pourquoi : `ARCHITECTURE.md` §442. Batterie à jouer avec son accord.
 

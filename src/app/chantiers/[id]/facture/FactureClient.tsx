@@ -33,7 +33,7 @@ import {
 } from "./actions";
 import ListeDesManques from "@/components/atlas/ListeDesManques";
 import type { Manque } from "@/lib/mentions-manquantes";
-import { avecCivilite } from "@/lib/civilite";
+import { avecCivilite, type CiviliteClient } from "@/lib/civilite";
 import { peutPreparerLaPiece } from "@/lib/preparation-devis";
 import { ECHEANCE_MAX_JOURS } from "@/lib/echeance-facture";
 import { jourIso } from "@/lib/jour";
@@ -63,7 +63,7 @@ export type FacturePourEcran = {
   statut: "brouillon" | "emise";
   clientNom: string | null;
   /** Recopiée sur la facture à son établissement (migration 0038). */
-  clientCivilite: "mr" | "mme" | null;
+  clientCivilite: CiviliteClient | null;
   /** La date de la facture — borne basse de l'échéance modifiable. */
   dateEmission: string;
   dateEcheance: string | null;

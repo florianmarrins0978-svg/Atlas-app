@@ -93,10 +93,13 @@ function manquesDuClient(c: ClientAVerifier, avecAdresse: boolean): Manque[] {
 export function manquesDuDevis(
   e: EmetteurAVerifier,
   client: ClientAVerifier,
-  conditionsGenerales: string | null | undefined
+  conditionsGenerales: string | null | undefined,
+  sousTraitance = false
 ): Manque[] {
   const m = manquesDeLEmetteur(e);
-  if (vide(e.mediateurNom)) {
+  // **Le médiateur ne protège qu'un consommateur** (L616-1) : un devis en
+  // sous-traitance va à une entreprise, il n'en a pas besoin.
+  if (!sousTraitance && vide(e.mediateurNom)) {
     m.push({ cle: "mediateur", libelle: "Votre médiateur de la consommation", ou: "entreprise" });
   }
   if (vide(e.assureurDecennale) && (conditionsGenerales ?? "").includes(CROCHET_DECENNALE)) {

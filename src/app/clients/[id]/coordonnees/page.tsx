@@ -41,6 +41,8 @@ export default async function SesCoordonneesPage({
         telephone: client.telephone ?? "",
         email: client.email ?? "",
         adresse: client.adresse ?? "",
+        siret: client.siret ?? "",
+        numeroTva: client.numeroTva ?? "",
       }}
       retour={{ href: `/clients/${client.id}`, libelle: "Retour à sa fiche" }}
     />

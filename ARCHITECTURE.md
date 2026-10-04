@@ -34105,3 +34105,21 @@ changent ce qui s'imprime ou ce qui bloque, donc ils passent par une maquette.
 | « aucune » ne cache plus les mentions d'une société (`positionEffective`) | elles sont obligatoires (R123-237) ; une valeur restée en base s'imprime sous le nom |
 | une référence trop longue pour sa ligne passe dessous (`document-commun.ts`) | « Début des travaux » chevauchait sa valeur ; la colonne ne mesurait rien |
 
+## §443 : « Entreprise » est une civilité, et la sous-traitance du devis vit sur le chantier
+
+**Le 4 octobre 2026**, ses choix sur trois planches (`appli/ni-mr-ni-mme.html`,
+`appli/entreprises-clientes.html`, `appli/devis-sous-traitance.html`).
+
+| Décision | Pourquoi |
+|---|---|
+| « Entreprise » est une troisième valeur de `civilite` (clients, devis, factures), pas une colonne à part | c'est la même question, « comment le nommer », et elle se fige déjà sur chaque document (0038) ; une colonne de plus aurait demandé une copie figée de plus, et deux réponses à une seule question |
+| `Civilite` (une personne : le compte) et `CiviliteClient` (Mr, Mme, Entreprise) restent deux types | une entreprise n'a pas de sens pour le compte de l'artisan |
+| `estUneEntreprise` : son choix d'abord, sinon les mots de société qui retiraient déjà « Mr. » | la porte « Vos entreprises » et la sous-traitance du devis posent la même question ; une seconde liste de mots aurait rangé « SARL Untel » chez les particuliers tout en lui retirant son « Mr. » |
+| la porte est un paramètre (`/clients?vue=entreprises`), pas un second écran | la même liste, la même recherche, rien à tenir deux fois |
+| la sous-traitance du devis vit sur le CHANTIER (`chantiers.autoliquidation`), et le devis la fige | ses lignes de prix vivent sur le chantier et chaque version du devis en repart ; un drapeau sur le devis seul se serait perdu à la version suivante |
+| allumée, les lignes suivent le taux du devis (`null`) et le devis passe à 0 ; les taux d'avant sont gardés sur le chantier | même principe que la facture (§442) : tout ce qui lit les taux rend une pièce sans TVA ; et une ligne ajoutée ensuite suit le taux du devis sans qu'on ait à lui en poser un |
+| une seule garde dans `lignes-prix.ts` (`sansTvaSurLeChantier`) pour tous les écrivains | tous les ajouts passent par `ajouterLignePrix` ; une ligne à 20 % glissée sous un devis en sous-traitance réclamerait une TVA que le client ne paie pas |
+| décochée d'office (son choix B) | une entreprise en direct paie la TVA (`docs/QUESTIONS.md` §31) : l'oubli de cocher coûte une correction, l'oubli de décocher coûterait la TVA due |
+| la facture née d'un devis en sous-traitance ne se rallume pas en TVA | le client a accepté ce prix sans TVA, et les taux d'avant sont sur le chantier, pas sur la facture : les deviner rendrait 20 % à une ligne à 10 % |
+| en sous-traitance, ni formulaire de rétractation, ni case des 14 jours, ni médiateur exigé | l'entreprise qui le sous-traite achète dans son métier : ces protections sont celles du consommateur. Une entreprise cliente EN DIRECT les garde (une petite entreprise hors de son métier peut en bénéficier, L221-3) |
+

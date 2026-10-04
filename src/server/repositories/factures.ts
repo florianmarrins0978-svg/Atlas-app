@@ -65,7 +65,7 @@ import {
   tauxRendus,
   tauxSousAutoliquidation,
 } from "../../lib/autoliquidation";
-import { avecCivilite, type CiviliteChoisie } from "../../lib/civilite";
+import { avecCivilite, type CiviliteChoisie, type CiviliteClient } from "../../lib/civilite";
 import {
   categoriesDeLAvoir,
   categoriesDeLaFacture,
@@ -202,6 +202,9 @@ type OrigineDeLaFacture = Pick<
   | "devisId"
   | "clientNom"
   | "clientCivilite"
+  | "clientSiret"
+  | "autoliquidation"
+  | "clientNumeroTva"
   | "clientAdresse"
   | "clientTelephone"
   | "clientEmail"
@@ -223,6 +226,12 @@ function instantaneDuDevis(d: typeof devis.$inferSelect): OrigineDeLaFacture {
     devisId: d.id,
     clientNom: d.clientNom,
     clientCivilite: d.clientCivilite,
+    clientSiret: d.clientSiret,
+    // **La sous-traitance suit le devis accepté** (son choix B du 4 octobre
+    // 2026) : ses lignes arrivent déjà sans TVA, et le client a accepté ce
+    // prix-là. Le numéro du donneur d'ordre vient avec.
+    autoliquidation: d.autoliquidation,
+    clientNumeroTva: d.clientNumeroTva,
     clientAdresse: d.clientAdresse,
     clientTelephone: d.clientTelephone,
     clientEmail: d.clientEmail,
@@ -528,6 +537,7 @@ async function poserLaFactureDuPassage(
       conditionsPaiement: null,
       clientNom: client?.nom ?? null,
       clientCivilite: client?.civilite ?? null,
+      clientSiret: client?.siret ?? null,
       clientAdresse: client?.adresse ?? null,
       clientTelephone: client?.telephone ?? null,
       clientEmail: client?.email ?? null,
@@ -764,6 +774,7 @@ export async function creerFactureSansDevis(
         conditionsPaiement: null,
         clientNom: client?.nom ?? null,
         clientCivilite: client?.civilite ?? null,
+        clientSiret: client?.siret ?? null,
         clientAdresse: client?.adresse ?? null,
         clientTelephone: client?.telephone ?? null,
         clientEmail: client?.email ?? null,
@@ -903,11 +914,17 @@ export async function reprendreLeDevisSurLaFacture(
       .limit(1);
     await tx
       .update(factures)
-      .set({ ...instantaneDuDevis(d), ...identiteDeLEmetteur(entrepriseCourante) })
+      .set({
+        ...instantaneDuDevis(d),
+        ...identiteDeLEmetteur(entrepriseCourante),
+        // La sous-traitance posée sur la facture ne se perd pas à la reprise.
+        autoliquidation: d.autoliquidation || f.autoliquidation,
+        clientNumeroTva: d.clientNumeroTva ?? f.clientNumeroTva,
+      })
       .where(eq(factures.id, f.id));
     // Les prix du devis reviennent avec ses taux : en sous-traitance, ils
     // repassent sans TVA, et ce sont eux qu'il retrouvera s'il l'enlève.
-    if (f.autoliquidation) await poserLesTauxSansTva(tx, f.id);
+    if (f.autoliquidation && !d.autoliquidation) await poserLesTauxSansTva(tx, f.id);
 
     return { ok: true, numeroDevis: d.numeroCommercial };
   });
@@ -1412,6 +1429,7 @@ export async function majAutoliquidationFacture(
     const [f] = await tx
       .select({
         chantierId: factures.chantierId,
+        devisId: factures.devisId,
         autoliquidation: factures.autoliquidation,
         clientNumeroTva: factures.clientNumeroTva,
         tauxTva: factures.tauxTva,
@@ -1447,6 +1465,16 @@ export async function majAutoliquidationFacture(
         .set({ autoliquidation: true, clientNumeroTva: numero })
         .where(eq(factures.id, factureId));
       return { ok: true, autoliquidation: true, clientNumeroTva: numero };
+    }
+
+    // **Une sous-traitance venue du devis ne s'enlève pas ici.** Le client a
+    // accepté ce prix sans TVA, et les taux d'avant vivent sur le chantier,
+    // pas sur cette facture : les deviner rendrait 20 % à une ligne à 10 %.
+    const [duDevis] = f.devisId
+      ? await tx.select({ autoliquidation: devis.autoliquidation }).from(devis).where(eq(devis.id, f.devisId)).limit(1)
+      : [];
+    if (duDevis?.autoliquidation) {
+      return { ok: false, raison: "Le devis accepté est en sous-traitance : faites un nouveau devis pour remettre la TVA." };
     }
 
     const lignes = await tx
@@ -1683,7 +1711,7 @@ export type FactureAImprimer = Pick<
   | "entrepriseFormeJuridique" | "entrepriseCapitalSocial" | "entrepriseVilleRcs"
   | "entrepriseAssureurDecennale" | "entrepriseContratDecennale" | "entrepriseCouvertureDecennale"
   | "entrepriseMediateurNom" | "entrepriseMediateurCoordonnees" | "entrepriseMentionsLegalesPosition"
-  | "entrepriseNumeroTva" | "dateTravaux" | "autoliquidation" | "clientNumeroTva"
+  | "entrepriseNumeroTva" | "dateTravaux" | "autoliquidation" | "clientNumeroTva" | "clientSiret"
   | "clientNom" | "clientCivilite" | "clientAdresse" | "clientTelephone" | "adresseChantier"
   | "conditionsPaiement" | "devise" | "tauxTva" | "reductionPourcent"
 >;
@@ -1742,6 +1770,7 @@ export function donneesFacture(
     entrepriseMentionsLegalesPosition: f.entrepriseMentionsLegalesPosition,
     clientNom: f.clientNom,
     clientCivilite: f.clientCivilite,
+    clientSiret: f.clientSiret,
     clientAdresse: f.clientAdresse,
     clientTelephone: f.clientTelephone,
     // Seulement en sous-traitance : ailleurs, il n'a rien à faire sur la pièce.
@@ -1842,6 +1871,7 @@ export async function genererPdfFactureExemple(ctx: Ctx, maintenant: Date = new 
       dateTravaux: jour,
       autoliquidation: false,
       clientNumeroTva: null,
+      clientSiret: null,
       mainDoeuvreHt: null,
       titre: null,
       conditionsPaiement: null,
@@ -1996,7 +2026,7 @@ export type ChantierTermine = {
   id: string;
   nom: string;
   clientNom: string | null;
-  clientCivilite: "mr" | "mme" | null;
+  clientCivilite: CiviliteClient | null;
   datePlanifiee: string | null;
   termineAt: Date | null;
   factureEnvoyeeAt: Date | null;

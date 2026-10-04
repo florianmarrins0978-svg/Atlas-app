@@ -332,7 +332,8 @@ export async function preparerEnvoi(
       ? manquesDuDevis(
           entreprise,
           { nom: client?.nom, adresse: client?.adresse, adresseChantier: chantier?.adresseChantier },
-          conditionsDepuisEntreprise(entreprise).conditionsGenerales
+          conditionsDepuisEntreprise(entreprise).conditionsGenerales,
+          chantier?.autoliquidation ?? false
         )
       : [];
     const blocage: PreparationEnvoi["blocage"] = !devisRow

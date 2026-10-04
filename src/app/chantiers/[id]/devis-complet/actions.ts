@@ -24,12 +24,14 @@ import {
   poserAcompteSuivant,
   changerTauxAcompte,
   retirerAcompte,
+  majAutoliquidationDevis,
 } from "@/server/repositories/devis";
+import { logger } from "@/server/logger";
 import { verifierLimite, LIMITES } from "@/server/rate-limit";
 import { preparerAudioEntrant } from "@/server/audio-entrant";
 import { lireRetouchesDictees } from "@/server/ai/services/retouches-devis-service";
 import type { Changement } from "@/lib/retouches-devis";
-import type { Civilite } from "@/lib/civilite";
+import type { CiviliteClient } from "@/lib/civilite";
 import { tauxTvaValide } from "@/lib/reduction-devis";
 import { lireTauxDeHausse, type ReponseGrille } from "@/lib/hausse-du-devis";
 import { appliquerLaReprise } from "@/server/repositories/reprise-du-devis";
@@ -57,7 +59,7 @@ export async function majEmetteurAction(data: {
 
 export async function majClientDuDevisAction(
   clientId: string,
-  data: { nom?: string; civilite?: Civilite | null; adresse?: string; telephone?: string; email?: string }
+  data: { nom?: string; civilite?: CiviliteClient | null; adresse?: string; telephone?: string; email?: string }
 ) {
   const ctx = await getCurrentCtx();
   await exigerGestionDevis(ctx, "modifier le client du devis");
@@ -429,4 +431,24 @@ export async function repriseDuDevisAction(
   const r = await appliquerLaReprise(ctx, chantierId, { reponse: choix.reponse, hausse });
   revalidatePath(`/chantiers/${chantierId}/devis-complet`);
   return { ok: true, ...r };
+}
+
+/**
+ * Sous-traitance, sans TVA, sur le devis — son choix B du 4 octobre 2026.
+ * Le refus revient en VALEUR, avec ses mots (`AGENTS.md`).
+ */
+export async function majAutoliquidationDevisAction(
+  chantierId: string,
+  active: boolean
+): Promise<{ ok: true; autoliquidation: boolean } | { ok: false; raison: string }> {
+  const ctx = await getCurrentCtx();
+  await exigerGestionDevis(ctx, "facturer en sous-traitance");
+  try {
+    const r = await majAutoliquidationDevis(ctx, chantierId, active);
+    if (r.ok) revalidatePath(`/chantiers/${chantierId}/devis-complet`);
+    return r;
+  } catch (err) {
+    logger.error("Sous-traitance du devis non enregistrée", { erreur: err instanceof Error ? err.message : String(err) });
+    return { ok: false, raison: "Le changement n'a pas pu être enregistré. Réessayez." };
+  }
 }

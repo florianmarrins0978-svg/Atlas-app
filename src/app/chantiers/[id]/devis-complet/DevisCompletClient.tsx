@@ -33,7 +33,7 @@ import LigneRetirable from "@/components/atlas/LigneRetirable";
 import NumeroDeDocument from "@/components/atlas/NumeroDeDocument";
 import TiroirDesRetires from "@/components/atlas/TiroirDesRetires";
 import { useRetraits } from "@/components/atlas/useRetraits";
-import { CIVILITES, type Civilite } from "@/lib/civilite";
+import { CIVILITES, type CiviliteClient } from "@/lib/civilite";
 import type { Changement } from "@/lib/retouches-devis";
 import {
   LIBELLE_REDUCTION,
@@ -68,6 +68,7 @@ import PrimaryButton from "@/components/atlas/PrimaryButton";
 import EnvoiAuClient from "../export/EnvoiAuClient";
 import { ouvrirLaMessagerie } from "@/lib/ouvrir-messagerie";
 import {
+  majAutoliquidationDevisAction,
   appliquerRetouchesAction,
   majEmetteurAction,
   majClientDuDevisAction,
@@ -138,6 +139,13 @@ const CLE_REDUCTION = "prix-accorde-au-client";
 
 type Props = {
   chantierId: string;
+  /**
+   * Le chantier est-il en sous-traitance, sans TVA (migration 0119) ? Et
+   * l'interrupteur s'offre-t-il : un client Entreprise, hors franchise — son
+   * choix B du 4 octobre 2026, décoché d'office.
+   */
+  sousTraitance: boolean;
+  sousTraitancePossible: boolean;
   devisId: string;
   numeroCommercial: string;
   dateEmission: string;
@@ -169,7 +177,7 @@ type Props = {
    * est entré et qu'un écran ne décide de rien (`CLAUDE.md` §3).
    */
   retour: { href: string; libelle: string };
-  client: { nom: string; civilite: Civilite | null; adresse: string; telephone: string; email: string };
+  client: { nom: string; civilite: CiviliteClient | null; adresse: string; telephone: string; email: string };
   /**
    * Par où l'on écrit au client, et depuis quelle adresse.
    *
@@ -227,6 +235,22 @@ type Props = {
 export default function DevisCompletClient(props: Props) {
   const fige = props.statut === "envoye";
   const router = useRouter();
+  const [sousTraitanceEnCours, setSousTraitanceEnCours] = useState(false);
+  const [refusSousTraitance, setRefusSousTraitance] = useState<string | null>(null);
+  // Les taux viennent d'être réécrits côté serveur : la page se relit, et la
+  // clé de l'écran (`page.tsx`) le fait repartir des lignes réelles plutôt que
+  // de l'état d'avant.
+  async function basculerSousTraitance() {
+    setSousTraitanceEnCours(true);
+    setRefusSousTraitance(null);
+    try {
+      const r = await majAutoliquidationDevisAction(props.chantierId, !props.sousTraitance);
+      if (!r.ok) setRefusSousTraitance(r.raison);
+      else router.refresh();
+    } finally {
+      setSousTraitanceEnCours(false);
+    }
+  }
 
   /**
    * La feuille des dates, ouverte ICI et non deux écrans plus loin.
@@ -1118,7 +1142,7 @@ export default function DevisCompletClient(props: Props) {
                 fige={fige}
                 placeholder="Nom complet"
                 aria="Nom du client"
-                prefixe={client.civilite ? CIVILITES[client.civilite] : ""}
+                prefixe={client.civilite && client.civilite !== "entreprise" ? CIVILITES[client.civilite] : ""}
                 onChange={(v) => setClient({ ...client, nom: v })}
                 onFini={(duChamp) => majClientDuDevisAction(props.clientId!, { nom: duChamp })} />
               {/* **L'ordre est celui d'une lettre, et le patron l'a demandé
@@ -1427,7 +1451,8 @@ export default function DevisCompletClient(props: Props) {
 
         {/* **« Ajouter une TVA » — le geste qu'il a décrit.** Discret et sous
             le tableau, même vocabulaire que « + Ajouter une ligne ». */}
-        {!fige && (
+        {/* En sous-traitance, il n'y a aucune TVA à ajouter. */}
+        {!fige && !props.sousTraitance && (
           <button
             type="button"
             onClick={() => void ajouterUneTva()}
@@ -1459,6 +1484,48 @@ export default function DevisCompletClient(props: Props) {
           className="mt-4 !mx-0"
         />
       </section>
+
+      {/* ── SOUS-TRAITANCE, SANS TVA — son choix B du 4 octobre 2026 ─────────
+          Pour un client Entreprise, décoché d'office : une entreprise en
+          direct paie la TVA (`docs/QUESTIONS.md` §31). Le même cadre doré que
+          sur la facture. Les taux changent EN BASE, et l'écran se relit. */}
+      {props.sousTraitancePossible && !fige && (
+        <div
+          className="mt-8 px-4 py-3.5"
+          data-atlas="carte-sous-traitance-devis"
+          style={{ backgroundColor: colors.card, boxShadow: `0 0 0 2px ${colors.or}`, borderRadius: 14 }}
+        >
+          <div className="flex items-center justify-between gap-3 text-[15px]" style={{ color: colors.ink }}>
+            <span>
+              Sous-traitance, sans TVA
+              <small className="block text-[12.5px]" style={{ color: colors.muted }}>
+                La mention « Autoliquidation » s’imprime
+              </small>
+            </span>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={props.sousTraitance}
+              aria-label="Sous-traitance, sans TVA"
+              data-atlas="sous-traitance-devis"
+              disabled={sousTraitanceEnCours}
+              onClick={() => void basculerSousTraitance()}
+              className="relative h-7 w-[46px] flex-none rounded-full"
+              style={{ backgroundColor: props.sousTraitance ? colors.rust : colors.line }}
+            >
+              <span
+                className="absolute top-[3px] h-[22px] w-[22px] rounded-full transition-[left]"
+                style={{ left: props.sousTraitance ? 21 : 3, backgroundColor: colors.card }}
+              />
+            </button>
+          </div>
+          {refusSousTraitance && (
+            <p role="alert" className="mt-2 text-[12px]" style={{ color: colors.alert }}>
+              {refusSousTraitance}
+            </p>
+          )}
+        </div>
+      )}
 
       {/* --- Les totaux, alignés à droite comme sur le papier ---------------- */}
       <section className="mt-8 flex justify-end">
@@ -1530,7 +1597,12 @@ export default function DevisCompletClient(props: Props) {
               dans le titre de sa catégorie — le laisser modifiable aux deux
               endroits aurait donné deux façons de changer la même chose, dont
               une qui écrase silencieusement l'autre. */}
-          {plusieursTva ? (
+          {props.sousTraitance ? (
+            <div className="flex items-center justify-between py-1.5">
+              <span className="text-[15px]">TVA, autoliquidation</span>
+              <span className="text-[15px]">{enEuros(0)}</span>
+            </div>
+          ) : plusieursTva ? (
             totaux.parTaux.map((categorie) => (
               <div key={categorie.taux} className="flex items-center justify-between py-1.5">
                 <span className="text-[15px]">TVA ({tauxLisible(categorie.taux)} %)</span>
@@ -1559,7 +1631,7 @@ export default function DevisCompletClient(props: Props) {
             </div>
           )}
           <div className="mt-1 flex items-center justify-between pt-2.5" style={{ borderTop: `2px solid ${colors.ink}` }}>
-            <span className="text-[17px] font-semibold">Total TTC</span>
+            <span className="text-[17px] font-semibold">{props.sousTraitance ? "Total à payer" : "Total TTC"}</span>
             <span className="text-[20px] font-semibold" style={{ fontFamily: font.display }}>
               {enEuros(totalHt + totalTva)}
             </span>
