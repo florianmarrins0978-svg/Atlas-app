@@ -116,7 +116,12 @@ async function main() {
         (r) => r.libelle
       );
     await page.getByRole("button", { name: "Retirer Scarification" }).click();
-    await page.getByRole("button", { name: "Remettre le modèle Atlas" }).click();
+    // **Un seul appui, sans réessai — 4 octobre 2026.** Le bouton disparaît
+    // dès que la fiche est complète, c'est-à-dire en réponse à CET appui.
+    // `click()` le croyait alors détaché avant d'avoir cliqué, et réessayait
+    // quarante-cinq secondes sur un bouton parti : la suite rougissait une fois
+    // sur deux, alors que la remise avait eu lieu.
+    await page.locator('[data-atlas="remettre-modele"]').dispatchEvent("click");
     await page.locator('[data-atlas="modele-remis"]').waitFor({ timeout: 20_000 });
     let apres = await lignes();
     assert.equal(apres.filter((l) => l === "Scarification").length, 1, "la ligne retirée n'est pas revenue une fois");
@@ -130,8 +135,36 @@ async function main() {
     }
     assert.ok(!apres.includes("Scarification"), "« Annuler » n'a pas repris la ligne remise");
     // Et on remet la fiche entière pour les cas qui suivent.
-    await page.getByRole("button", { name: "Remettre le modèle Atlas" }).click();
+    await page.locator('[data-atlas="remettre-modele"]').dispatchEvent("click");
     await page.waitForFunction(() => !document.querySelector('[data-atlas="remettre-modele"]'), null, { timeout: 20_000 });
+  });
+
+  // **UN RETRAIT SUIVI AUSSITÔT DE « REMETTRE » S'ÉCRIT D'ABORD — 4 octobre
+  // 2026.** Trouvé par la batterie commune : ce contrôle-ci rougissait une fois
+  // sur deux. `fermer()` lisait les retraits en attente dans une copie que
+  // l'écran ne mettait à jour qu'APRÈS son rendu ; touché dans la foulée,
+  // « Remettre » ne voyait donc aucun retrait, le serveur trouvait la fiche
+  // complète, et le retrait partait six secondes plus tard : la ligne que le
+  // bouton promettait de remettre était effacée. Les deux appuis se jouent ici
+  // dans le même instant, pour que la course ne dépende plus de la machine.
+  await cas("un retrait aussitôt suivi de « Remettre » est écrit AVANT, et la ligne revient", async () => {
+    await pool.query(`delete from prestations_entretien where libelle = 'Engrais'`);
+    await page.reload({ waitUntil: "networkidle" });
+    await page.getByRole("button", { name: "Remettre le modèle Atlas" }).waitFor({ timeout: 20_000 });
+    // En chaîne, pas en fonction : `tsx` renomme les fonctions (`__name`), et
+    // le helper n'existe pas dans la page (`e2e-browser.ts`).
+    await page.evaluate(`
+      document.querySelector('button[aria-label="Retirer Scarification"]').click();
+      document.querySelector('[data-atlas="remettre-modele"]').click();
+    `);
+    await page.locator('[data-atlas="modele-remis"]').waitFor({ timeout: 20_000 });
+    // Au-delà du délai du tiroir : un retrait oublié se serait écrit entre-temps.
+    await page.waitForTimeout(7_000);
+    const { rows } = await pool.query<{ libelle: string }>(`select libelle from prestations_entretien`);
+    const libelles = rows.map((r) => r.libelle);
+    assert.ok(libelles.includes("Scarification"), "« Remettre » a été suivi de l'effacement de la ligne qu'il remettait");
+    assert.ok(libelles.includes("Engrais"), "la ligne manquante n'a pas été remise");
+    assert.equal(libelles.length, MODELE_FOURNI.length);
   });
 
   // **SA PLACE EST SOUS LE TITRE, EN PREMIER** — sa décision du 26 août 2026 :

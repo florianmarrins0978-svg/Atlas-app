@@ -6,6 +6,20 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-10-04
+
+### « Remettre le modèle » touché juste après une croix ne fait plus effacer la ligne
+
+Trouvé par la batterie commune du 3 octobre : `test-fiche-entretien-e2e.ts`
+rougissait une fois sur deux. Deux causes. Dans `useRetraits`, la pile des
+retraits en attente n'était recopiée dans sa référence qu'après le rendu : un
+second appui dans la foulée appelait `fermer()` sur une pile vide, le retrait
+ne s'écrivait pas avant la remise et partait six secondes plus tard, effaçant
+la ligne que le bouton remettait. La référence s'écrit désormais au moment du
+geste (cas « un retrait aussitôt suivi de Remettre », rouge avant). Et le cas
+B cliquait « Remettre » par `click()`, qui réessayait quarante-cinq secondes
+sur un bouton parti avec la remise : un seul appui, sans réessai.
+
 ## 2026-10-03
 
 ### Un devis parti qui attend le client rouvre l'écran du devis, plus le planning
