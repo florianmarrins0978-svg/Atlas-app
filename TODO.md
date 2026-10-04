@@ -23,8 +23,12 @@ document de retour est `docs/lot-mentions-facture-devis.md`.
 - ⏳ **UNE PLANCHE À REGARDER : NI MR NI MME (4 octobre 2026).** Une
   entreprise cliente sans civilité cochée s'écrit « Mr. Jardins Ribault » sur
   la fiche, le devis et la facture (`avecCivilite` met « Mr. » par défaut).
-  Planche `appli/ni-mr-ni-mme.html` : un troisième choix sur la fiche, libellé
-  « Aucune » (A) ou « Entreprise » (B). **Son choix attendu.**
+  Planche `appli/ni-mr-ni-mme.html` : un troisième choix « Entreprise » sur
+  la fiche (son choix du 4 octobre, plutôt que « Aucune »), qui fait
+  apparaître le SIRET et le numéro de TVA ; ce numéro est celui que la
+  facture en sous-traitance retient (`clients.numero_tva`). **Son accord
+  attendu sur la planche.** Proposé aussi : l'interrupteur « Sous-traitance,
+  sans TVA » sur le devis, qui affiche aujourd'hui TVA et TTC.
 
 ## ⏳ SUR ORDINATEUR : la planche attend son choix (30 septembre 2026)
 
