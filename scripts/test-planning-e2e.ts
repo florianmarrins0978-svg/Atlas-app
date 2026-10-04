@@ -623,8 +623,16 @@ async function main() {
 
   // ─── LA FEUILLE DE CHANTIER — le devis sans les prix ────────────────────
 
-  await essai("le nom du client ouvre la feuille de chantier", async () => {
-    await page.locator('[data-atlas="nom-du-jour"]').first().click();
+  // **Seul ce jour-là, elle est DÉJÀ ouverte** — sa réponse du 3 octobre
+  // 2026, « la C » (`appli/ouvrir-la-fiche.html`) : toucher le nom la
+  // refermerait. À plusieurs, c'est le nom (et son chevron) qui l'ouvre.
+  await essai("la feuille de chantier s'ouvre seule, ou par le nom du client", async () => {
+    const noms = page.locator('[data-atlas="nom-du-jour"]');
+    assert.ok(
+      (await page.locator('[data-atlas="chevron-fiche"]').count()) === (await noms.count()),
+      "un nom sans chevron : rien ne dit que la fiche s'ouvre"
+    );
+    if ((await noms.count()) > 1) await noms.first().click();
     await page.waitForSelector('[data-atlas="feuille"]', { timeout: 15_000 });
   });
 
