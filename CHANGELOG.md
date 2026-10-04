@@ -29,6 +29,20 @@ maintenant sur « Envoyer », et a rougi avant la correction.
 La page « Une erreur » vue à 22 h 32 sur le lien du client n'a pas été
 reproduite : le lien s'ouvre ici, et sa fiche montrait une bascule de version en
 cours à 22 h 29. Non reproduit, donc non déclaré corrigé.
+### Le client télécharge son contrat par un bouton, comme son devis
+
+Sa demande : *« mets un bouton pour télécharger le contrat comme avec le
+devis »*. La page du contrat portait un lien souligné « Télécharger le contrat
+en PDF », perdu dans le texte. Il devient le bouton plein du devis, avec le
+même mot : « Télécharger mon contrat », à la même place. La suite du contrat
+vérifie le libellé et le fond plein.
+
+Puis, même soir : *« mets les mêmes boutons que pour le devis, même pour
+refuser »*. « J'accepte le contrat » prend le bouton plein du devis, et le
+« Je refuse » souligné, qui refusait d'un seul appui, devient « Je ne donne pas
+suite » : une capsule qui ouvre la même feuille de confirmation que le devis.
+La suite vérifie qu'un seul appui n'écrit rien, et que la confirmation écrit
+le refus.
 
 ### Un devis parti qui attend le client rouvre l'écran du devis, plus le planning
 
