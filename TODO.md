@@ -27,8 +27,13 @@ document de retour est `docs/lot-mentions-facture-devis.md`.
   la fiche (son choix du 4 octobre, plutôt que « Aucune »), qui fait
   apparaître le SIRET et le numéro de TVA ; ce numéro est celui que la
   facture en sous-traitance retient (`clients.numero_tva`). **Son accord
-  attendu sur la planche.** Proposé aussi : l'interrupteur « Sous-traitance,
-  sans TVA » sur le devis, qui affiche aujourd'hui TVA et TTC.
+  attendu sur la planche.**
+- ⏳ **UNE PLANCHE À REGARDER : LE DEVIS EN SOUS-TRAITANCE (4 octobre
+  2026).** Le devis affiche aujourd'hui TVA et TTC même en sous-traitance. Sa
+  demande : client « Entreprise » sur la fiche, le devis porte l'interrupteur
+  « Sous-traitance, sans TVA ». Planche `appli/devis-sous-traitance.html` :
+  coché d'office (A) ou décoché d'office (B). Recommandé : B, une entreprise
+  en direct payant la TVA (`docs/QUESTIONS.md` §31). **Son choix attendu.**
 
 ## ⏳ SUR ORDINATEUR : la planche attend son choix (30 septembre 2026)
 
