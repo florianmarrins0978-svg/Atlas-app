@@ -1275,9 +1275,9 @@ var etat={client:&quot;entreprise&quot;,st:true,defaut:&quot;A&quot;};
 function $(i){return document.getElementById(i)}
 function voir(el,oui){if(el) el.style.display=oui?&quot;&quot;:&quot;none&quot;}
 function pilule(b,oui){b.setAttribute(&quot;aria-pressed&quot;,oui);
-  b.style.backgroundColor=oui?&quot;var(--atlas-plein, #7d9a6d)&quot;:&quot;var(--atlas-card, #faf9f5)&quot;;
-  b.style.color=oui?&quot;var(--atlas-card, #faf9f5)&quot;:&quot;var(--atlas-ink, #1c1c1a)&quot;;
-  b.style.boxShadow=oui?&quot;none&quot;:&quot;inset 0 0 0 1px var(--atlas-line, rgba(28,28,26,0.12))&quot;;}
+  b.style.backgroundColor=oui?&quot;var(--atlas-rustTint, #ece9e1)&quot;:&quot;var(--atlas-card, #faf9f5)&quot;;
+  b.style.color=&quot;var(--atlas-ink, #1c1c1a)&quot;;
+  b.style.boxShadow=&quot;inset 0 0 0 1px &quot;+(oui?&quot;var(--atlas-or, #B98B47)&quot;:&quot;var(--atlas-line, rgba(28,28,26,0.12))&quot;);}
 function dire(){parent.postMessage({st:etat},&quot;*&quot;)}
 window.addEventListener(&quot;message&quot;,function(e){if(e.data&amp;&amp;e.data.st){etat=e.data.st;peindre();}});
 
@@ -2549,9 +2549,9 @@ var etat={client:&quot;entreprise&quot;,st:true,defaut:&quot;A&quot;};
 function $(i){return document.getElementById(i)}
 function voir(el,oui){if(el) el.style.display=oui?&quot;&quot;:&quot;none&quot;}
 function pilule(b,oui){b.setAttribute(&quot;aria-pressed&quot;,oui);
-  b.style.backgroundColor=oui?&quot;var(--atlas-plein, #7d9a6d)&quot;:&quot;var(--atlas-card, #faf9f5)&quot;;
-  b.style.color=oui?&quot;var(--atlas-card, #faf9f5)&quot;:&quot;var(--atlas-ink, #1c1c1a)&quot;;
-  b.style.boxShadow=oui?&quot;none&quot;:&quot;inset 0 0 0 1px var(--atlas-line, rgba(28,28,26,0.12))&quot;;}
+  b.style.backgroundColor=oui?&quot;var(--atlas-rustTint, #ece9e1)&quot;:&quot;var(--atlas-card, #faf9f5)&quot;;
+  b.style.color=&quot;var(--atlas-ink, #1c1c1a)&quot;;
+  b.style.boxShadow=&quot;inset 0 0 0 1px &quot;+(oui?&quot;var(--atlas-or, #B98B47)&quot;:&quot;var(--atlas-line, rgba(28,28,26,0.12))&quot;);}
 function dire(){parent.postMessage({st:etat},&quot;*&quot;)}
 window.addEventListener(&quot;message&quot;,function(e){if(e.data&amp;&amp;e.data.st){etat=e.data.st;peindre();}});
 
@@ -2571,7 +2571,7 @@ $(&quot;interST&quot;).addEventListener(&quot;click&quot;,function(){etat.st=!et
 peindre();
 &lt;/script&gt;&lt;/body&gt;&lt;/html&gt;"></iframe></div>
   </div>
-  <p class="attention"><b>À savoir avant de choisir.</b> Une entreprise ou une mairie qui vous fait travailler en direct paie la TVA. Seule la sous-traitance d’un chantier de bâtiment se fait sans TVA. Avec A, chaque devis en direct à une entreprise demande de décocher, sinon il part sans TVA, et cette TVA, c’est vous qui la devez. Rien n’est codé.</p>
+  <p class="attention"><b>À savoir avant de choisir.</b> Une entreprise ou une mairie qui vous fait travailler en direct paie la TVA. Seule la sous-traitance d’un chantier de bâtiment se fait sans TVA. Avec A, chaque devis en direct à une entreprise demande de décocher, sinon il part sans TVA, et cette TVA, c’est vous qui la devez. Il a choisi B : codé, pas encore livré.</p>
 </div>
 <script>
   var etat={client:"entreprise",st:true,defaut:"A"};

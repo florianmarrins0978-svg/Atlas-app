@@ -1267,9 +1267,9 @@ var etat={civ:null};
 function peindre(){
   document.querySelectorAll(&quot;[data-civ]&quot;).forEach(function(b){
     var oui=b.dataset.civ===etat.civ; b.setAttribute(&quot;aria-pressed&quot;,oui);
-    b.style.backgroundColor=oui?&quot;var(--atlas-plein, #7d9a6d)&quot;:&quot;var(--atlas-card, #faf9f5)&quot;;
-    b.style.color=oui?&quot;var(--atlas-card, #faf9f5)&quot;:&quot;var(--atlas-ink, #1c1c1a)&quot;;
-    b.style.boxShadow=oui?&quot;none&quot;:&quot;inset 0 0 0 1px var(--atlas-line, rgba(28,28,26,0.12))&quot;;});
+    b.style.backgroundColor=oui?&quot;var(--atlas-rustTint, #ece9e1)&quot;:&quot;var(--atlas-card, #faf9f5)&quot;;
+    b.style.color=&quot;var(--atlas-ink, #1c1c1a)&quot;;
+    b.style.boxShadow=&quot;inset 0 0 0 1px &quot;+(oui?&quot;var(--atlas-or, #B98B47)&quot;:&quot;var(--atlas-line, rgba(28,28,26,0.12))&quot;);});
   document.getElementById(&quot;pro&quot;).style.display=etat.civ===&quot;aucune&quot;?&quot;&quot;:&quot;none&quot;;
 }
 document.addEventListener(&quot;click&quot;,function(e){var b=e.target.closest(&quot;[data-civ]&quot;);if(!b)return;e.preventDefault();
@@ -1283,7 +1283,7 @@ peindre();
       <p class="gris" id="explique">Rien de coché : Atlas met « Mr. » comme aujourd’hui.</p>
     </div>
   </div>
-  <p class="dit" style="margin-top:24px">Un nom avec SARL, SAS, Mairie, Entreprise… reste écrit sans Mr ni Mme, comme aujourd’hui, sans rien toucher. Le choix sert pour les autres, comme « Jardins Ribault ». Le numéro de TVA tapé ici est celui que la facture en sous-traitance reprend, et l’inverse. Rien n’est codé.</p>
+  <p class="dit" style="margin-top:24px">Un nom avec SARL, SAS, Mairie, Entreprise… reste écrit sans Mr ni Mme, comme aujourd’hui, sans rien toucher. Le choix sert pour les autres, comme « Jardins Ribault ». Le numéro de TVA tapé ici est celui que la facture en sous-traitance reprend, et l’inverse. Codé, pas encore livré.</p>
 </div>
 <script>
   var cadre=document.querySelector("iframe");
