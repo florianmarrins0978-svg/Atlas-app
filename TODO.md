@@ -35,11 +35,14 @@ document de retour est `docs/lot-mentions-facture-devis.md`.
   coché d'office (A) ou décoché d'office (B). Recommandé : B, une entreprise
   en direct payant la TVA (`docs/QUESTIONS.md` §31). **Son choix attendu.**
 - ⏳ **UNE PLANCHE À REGARDER : LES ENTREPRISES DANS « VOS CLIENTS » (4 octobre
-  2026).** Sa demande : un onglet « Entreprises », par ordre alphabétique,
-  avec la même recherche. Planche `appli/entreprises-clientes.html` : A
-  « Particuliers et Entreprises » (deux listes séparées), B « Tous et
-  Entreprises ». Une entreprise est un client dont la fiche porte
-  « Entreprise », ou dont le nom porte SARL, Mairie… **Son choix attendu.**
+  2026).** Sa demande, reprise le même jour : *« mets pas particulier et
+  entreprise, on est d'office sur les particuliers, rajoute juste une porte
+  pour aller sur l'entreprise »*. Planche `appli/entreprises-clientes.html` :
+  « Vos clients » ne montre plus que les particuliers, la porte « Vos
+  entreprises › » (celle de « Vos clients › » sur Chantiers) ouvre la même
+  page, par ordre alphabétique, avec la recherche. Une entreprise est un
+  client dont la fiche porte « Entreprise », ou dont le nom porte SARL,
+  Mairie… **Son accord attendu sur la planche.**
 
 ## ⏳ SUR ORDINATEUR : la planche attend son choix (30 septembre 2026)
 
