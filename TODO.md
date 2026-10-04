@@ -34,6 +34,12 @@ document de retour est `docs/lot-mentions-facture-devis.md`.
   « Sous-traitance, sans TVA ». Planche `appli/devis-sous-traitance.html` :
   coché d'office (A) ou décoché d'office (B). Recommandé : B, une entreprise
   en direct payant la TVA (`docs/QUESTIONS.md` §31). **Son choix attendu.**
+- ⏳ **UNE PLANCHE À REGARDER : LES ENTREPRISES DANS « VOS CLIENTS » (4 octobre
+  2026).** Sa demande : un onglet « Entreprises », par ordre alphabétique,
+  avec la même recherche. Planche `appli/entreprises-clientes.html` : A
+  « Particuliers et Entreprises » (deux listes séparées), B « Tous et
+  Entreprises ». Une entreprise est un client dont la fiche porte
+  « Entreprise », ou dont le nom porte SARL, Mairie… **Son choix attendu.**
 
 ## ⏳ SUR ORDINATEUR : la planche attend son choix (30 septembre 2026)
 
