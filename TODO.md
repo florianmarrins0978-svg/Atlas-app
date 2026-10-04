@@ -14,6 +14,12 @@ document de retour est `docs/lot-mentions-facture-devis.md`.
   batterie pour l'ensemble »*. **Son accord attendu pour la lancer.**
 - ⏳ Une facture et un devis d'essai, dont une en sous-traitance, relus par
   son comptable.
+- ⏳ **Le check-up légal du 4 octobre** (`docs/check-up-legal-documents.md`) :
+  dix défauts relevés, aucun corrigé, ses choix attendus. Les plus sûrs :
+  l'adresse de l'assureur (loi 96-603, 22-2), l'attestation décennale jointe
+  (L243-2), l'acompte avant 7 jours hors établissement (L221-10), la clause
+  « aucune réclamation ultérieure » (R212-1, 6°), les 40 € réclamés à un
+  particulier (L441-10).
 - ⏳ Le relevé de TVA écrit « À 0 % » pour une facture en sous-traitance.
   Faut-il la nommer « autoliquidation » (ligne 05 de la déclaration) ? Une
   planche, si oui.
