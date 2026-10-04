@@ -26,6 +26,25 @@ patron pose la date garde le planning. Tenu par
 **Ce qui reste vrai et n'est pas changé ici** : le bouton s'appelle « Relancer
 par SMS » alors que, dans ce cas, le client n'a rien reçu. Le libellé est une
 demande d'affichage, donc une planche d'abord (`CLAUDE.md` §3 bis).
+### Une ligne du devis ne part plus quand il touche ses chiffres
+
+Sa plainte : *« plusieurs fois une ligne s'est supprimée sans que je sache
+pourquoi ; je crois que c'est lorsque je clique sur la quantité quand aucun prix
+n'est inscrit »*. Mesuré : une ligne entrouverte pose « Retirer » (92 px, toute
+la hauteur de la ligne) exactement sur la colonne quantité, unité, prix ; le
+doigt posé sur le prix retire la ligne, et le tiroir « Retiré à l'instant »
+s'affiche sous la ligne, hors de vue. Sur iPhone, entrer dans un champ fait
+défiler ses conteneurs pour montrer le curseur : toucher la quantité entrouvre
+la ligne, et l'appui suivant sur le prix vide tombe sur « Retirer ». Tant
+qu'un champ de la ligne a le doigt, la colonne ne défile plus
+(`overflow-x: clip`, `globals.css`) ; sans champ actif, le glissement reste
+entier. `test-saisie-ne-retire-pas-la-ligne-e2e.ts`, vu rouge avant. Le
+défilement de Safari lui-même n'est pas reproductible ici (Chromium seul) : la
+suite le pose à la main, comme lui.
+
+Et une croix au bout de chaque description, sa réponse « A » à la planche
+`appli/retirer-une-ligne-du-devis.html` : sur la rangée du texte, loin des
+chiffres, le glissement restant. Même retrait, donc même « Annuler ».
 
 ## 2026-09-29
 
