@@ -33,7 +33,7 @@ import LigneRetirable from "@/components/atlas/LigneRetirable";
 import NumeroDeDocument from "@/components/atlas/NumeroDeDocument";
 import TiroirDesRetires from "@/components/atlas/TiroirDesRetires";
 import { useRetraits } from "@/components/atlas/useRetraits";
-import { CIVILITES, type CiviliteClient } from "@/lib/civilite";
+import { CIVILITES, estUneEntreprise, type CiviliteClient } from "@/lib/civilite";
 import type { Changement } from "@/lib/retouches-devis";
 import {
   LIBELLE_REDUCTION,
@@ -601,7 +601,8 @@ export default function DevisCompletClient(props: Props) {
   const conditionsImprimees = lignesConditionsDevis(
     lireConditions(props.conditionsReglees),
     totalHt + totalTva,
-    phrasesAcomptes(echeancier)
+    phrasesAcomptes(echeancier),
+    estUneEntreprise(props.client.nom, props.client.civilite)
   );
 
   // ─── Les catégories de TVA (migration 0073) ──────────────────────────────

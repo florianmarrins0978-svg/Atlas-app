@@ -1544,6 +1544,8 @@ export async function manquesDeLaFactureAEmettre(ctx: Ctx, factureId: string): P
         assureurDecennale: e.entrepriseAssureurDecennale,
         regimeTva: e.entrepriseRegimeTva,
         numeroTva: e.entrepriseNumeroTva,
+        telephone: e.entrepriseTelephone,
+        email: e.entrepriseEmail,
       },
       { nom: f.clientNom, adresse: adresses.clientAdresse, adresseChantier: adresses.adresseChantier },
       { active: f.autoliquidation, numeroTvaClient: f.clientNumeroTva }

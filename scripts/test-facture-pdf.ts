@@ -106,12 +106,16 @@ async function main() {
   await cas("elle porte les mentions légales de retard de paiement", async () => {
     const { trace } = await composerFacturePdf(FACTURE);
     const pied = contenus(trace).join(" ");
-    // Obligatoires, et attendues d'un particulier comme d'un professionnel.
     assert.match(pied, /pénalité/, "La pénalité de retard n'est pas mentionnée.");
     assert.match(pied, /trois fois le taux d'intérêt légal/, "Le taux de pénalité n'est pas dit.");
-    assert.match(pied, /indemnité forfaitaire/, "L'indemnité de recouvrement n'est pas mentionnée.");
-    assert.match(pied, /40 €/, "Le montant de l'indemnité n'est pas dit.");
     assert.match(pied, /Pas d'escompte/, "L'absence d'escompte n'est pas mentionnée.");
+    // **Les 40 € ne se réclament qu'à un professionnel** (C. com. L441-10,
+    // D441-5 ; check-up légal du 4 octobre 2026) : obligatoires pour lui, dus
+    // par personne d'autre.
+    const particulier = { ...FACTURE, clientCivilite: "mr" as const };
+    assert.doesNotMatch(contenus((await composerFacturePdf(particulier)).trace).join(" "), /40 €/, "Les 40 € sont réclamés à un particulier.");
+    const pro = contenus((await composerFacturePdf({ ...FACTURE, clientCivilite: "entreprise" })).trace).join(" ");
+    assert.match(pro, /indemnité forfaitaire pour frais de recouvrement de 40 €/, "L'indemnité manque sur la facture d'une entreprise.");
   });
 
   await cas("la franchise de TVA ne s'imprime que si la TVA est nulle", async () => {

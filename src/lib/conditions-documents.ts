@@ -212,7 +212,15 @@ export function lignesConditionsDevis(
    * *« il reste visible dans les notes et conditions quoi qu'il arrive »*
    * (12 septembre 2026), même quand la ligne des totaux a été retirée.
    */
-  phrasesAcomptes?: readonly string[]
+  phrasesAcomptes?: readonly string[],
+  /**
+   * Un client professionnel : seul lui doit l'indemnité de 40 € (C. com.
+   * L441-10 et D441-5, achats « pour une activité professionnelle »). La
+   * réclamer à un particulier, c'est lui demander ce qu'il ne doit pas
+   * (`docs/check-up-legal-documents.md`, point 5). Faute de le savoir, le
+   * particulier : c'est le client d'Atlas le plus courant.
+   */
+  clientProfessionnel = false
 ): string[] {
   const lignes: string[] = [];
 
@@ -248,8 +256,10 @@ export function lignesConditionsDevis(
     // Le TEXTE de la facture, rappelé mot pour mot : deux formulations
     // différentes pour la même pénalité se lisent comme deux pénalités.
     lignes.push(
-      "En cas de retard de paiement : pénalités au taux de trois fois le taux d'intérêt légal, " +
-        "et indemnité forfaitaire de 40 € pour frais de recouvrement."
+      clientProfessionnel
+        ? "En cas de retard de paiement : pénalités au taux de trois fois le taux d'intérêt légal, " +
+            "et indemnité forfaitaire de 40 € pour frais de recouvrement."
+        : "En cas de retard de paiement : pénalités au taux de trois fois le taux d'intérêt légal."
     );
   }
 

@@ -8,6 +8,33 @@ Format : le plus récent en tête.
 ---
 ## 2026-10-04
 
+### Le check-up légal : les conditions d'origine, les 40 €, le téléphone et le courriel
+
+Sa demande : *« un check-up complet, sourcé, aucune erreur »* sur le devis et
+la facture, du particulier et de la sous-traitance
+(`docs/check-up-legal-documents.md`). Corrigé, points 3 à 8 :
+
+- **les conditions générales d'origine** (`src/lib/conditions-generales.ts`) :
+  plus d'acompte avant sept jours pour un devis signé hors établissement
+  (C. conso L221-10), plus de « aucune réclamation ultérieure » (clause noire,
+  R212-1 6°), plus de délai « indicatif » sans annulation possible (L216-1),
+  les 40 € réservés au client professionnel, et les garanties légales
+  nommées (R111-1) ;
+- **les copies figées de l'ancien texte** : l'écran des réglages en rangeait
+  une copie, qui ne suivait plus aucune correction. Le texte d'origine
+  enregistré tel quel est désormais rangé `NULL` (« celui d'Atlas »), et la
+  migration 0120 rend les copies EXACTES à celui-ci. Un texte retouché reste
+  le sien. Éprouvée sur une base habitée
+  (`scripts/test-migration-0120-base-habitee.ts`) ;
+- **l'indemnité de 40 €** ne s'imprime plus que pour un client Entreprise, sur
+  la facture, le devis et son écran (C. com. L441-10, D441-5) ;
+- **le téléphone et le courriel** de l'entreprise arrêtent le devis d'un
+  particulier tant qu'ils manquent (R111-1, 1°) ; pas en sous-traitance.
+
+Restent ouverts : l'adresse de l'assureur et l'attestation décennale jointe
+(planche), la phrase sous le bouton de sous-traitance (planche), et la mention
+de la TVA à 10 % (texte officiel du BOFiP inaccessible d'ici, à recopier).
+
 ### Mr, Mme ou Entreprise ; ses entreprises derrière une porte ; le devis en sous-traitance
 
 Ses choix du 4 octobre 2026. **La fiche du client** porte trois pastilles,

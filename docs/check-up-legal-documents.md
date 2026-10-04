@@ -19,8 +19,18 @@ aucune erreur. »*
    droit du particulier** : l'acompte à la commande, « aucune réclamation
    ultérieure », le délai « indicatif ». Et la facture du particulier lui
    réclame une indemnité de 40 € qu'il ne doit pas.
-5. **Rien n'est corrigé** : c'est un relevé. Les corrections attendent son
-   choix, et deux points relèvent du comptable.
+5. **Les points 3 à 8 sont corrigés** sur la branche ; 1, 2 et 10 attendent
+   une planche, 9 attend le texte officiel (voir ci-dessous).
+
+## Où en sont les corrections
+
+| Point | État |
+|---|---|
+| 3, 4, 6, 8 : conditions générales d'origine | **corrigé**. Les entreprises qui gardaient une copie exacte de l'ancien texte reçoivent le nouveau (migration 0120) ; un texte qu'il a retouché reste le sien, **à relire par lui** |
+| 5 : 40 € | **corrigé** : imprimés seulement pour un client Entreprise, sur la facture, le devis et l'écran du devis |
+| 7 : téléphone et courriel | **corrigé** : le devis d'un particulier ne part plus sans eux |
+| 1, 2, 10 : adresse de l'assureur, attestation jointe, phrase sous le bouton | **planche**, son choix attendu |
+| 9 : TVA à 10 % | **bloqué** : la mention officielle (BOI-LETTRE-000280) doit être recopiée mot pour mot du BOFiP, inaccessible d'ici, et les sites qui la citent se contredisent |
 
 ## Comment ça a été vérifié, et la limite
 

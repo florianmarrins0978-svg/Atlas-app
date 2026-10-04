@@ -34124,3 +34124,25 @@ changent ce qui s'imprime ou ce qui bloque, donc ils passent par une maquette.
 | à la création d'un chantier, le SIRET et le n° TVA s'offrent pour une entreprise, et complètent la fiche par `completerLaFiche` (le vide seul) | une seule règle pour « ce qu'il tape entre dans sa fiche » ; en reprise, l'écran enregistre par une autre porte, et les cases ne s'y montrent pas plutôt que de ne rien enregistrer |
 | en sous-traitance, ni formulaire de rétractation, ni case des 14 jours, ni médiateur exigé | l'entreprise qui le sous-traite achète dans son métier : ces protections sont celles du consommateur. Une entreprise cliente EN DIRECT les garde (une petite entreprise hors de son métier peut en bénéficier, L221-3) |
 
+## §444 : Le texte d'origine se range vide, jamais en copie
+
+Les conditions générales d'origine vivent dans le code
+(`TEXTE_ORIGINE_CONDITIONS_GENERALES`) et `NULL` en base veut dire « celui
+d'Atlas ». Mais l'écran des réglages rangeait le texte AFFICHÉ dès qu'on
+quittait le champ ou rallumait la case : une copie, qui ne suivait plus les
+corrections du texte d'origine. C'est ce qui aurait gardé, le 4 octobre 2026,
+quatre clauses contraires au droit du particulier sur les devis de ceux qui
+avaient seulement ouvert leurs réglages.
+
+**La racine est à l'écriture** (`mettreAJourEntreprise`) : le texte d'origine
+retapé à l'identique se range `NULL`, comme les messages (même règle, même
+raison). La migration 0120 rend les copies EXACTES de l'ancien texte ; un
+texte retouché, même d'une virgule, reste le sien et ne se réécrit pas sans
+lui. Les devis envoyés gardent leur copie figée : c'est ce qui a été accepté.
+
+**Les 40 € suivent le client**, pas le réglage : `estUneEntreprise` (la même
+règle que la fiche et la sous-traitance) décide de leur impression, sur la
+facture, le devis et l'écran du devis. Le particulier est le défaut : c'est
+le client le plus courant, et lui réclamer ce qu'il ne doit pas est la faute
+la plus visible.
+

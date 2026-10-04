@@ -1,5 +1,6 @@
 import { MENTION_FRANCHISE, sousFranchise } from "@/lib/franchise-tva";
 import { MENTION_AUTOLIQUIDATION } from "@/lib/autoliquidation";
+import { estUneEntreprise } from "@/lib/civilite";
 import {
   composerDocument,
   type DonneesDocument,
@@ -72,10 +73,15 @@ export type FacturePdfData = DonneesDocument & {
 };
 
 function mentionLegaleFacture(data: FacturePdfData): string {
-  const base =
-    "En cas de retard de paiement, une pénalité au taux de trois fois le taux d'intérêt légal " +
-    "est exigible, ainsi qu'une indemnité forfaitaire pour frais de recouvrement de 40 €. " +
-    "Pas d'escompte pour paiement anticipé.";
+  // **Les 40 € ne se réclament qu'à un professionnel** (C. com. L441-10,
+  // D441-5) : sur la facture d'un particulier, ils lui demandaient ce qu'il ne
+  // doit pas (`docs/check-up-legal-documents.md`, point 5).
+  const base = estUneEntreprise(data.clientNom, data.clientCivilite)
+    ? "En cas de retard de paiement, une pénalité au taux de trois fois le taux d'intérêt légal " +
+      "est exigible, ainsi qu'une indemnité forfaitaire pour frais de recouvrement de 40 €. " +
+      "Pas d'escompte pour paiement anticipé."
+    : "En cas de retard de paiement, une pénalité au taux de trois fois le taux d'intérêt légal " +
+      "est exigible. Pas d'escompte pour paiement anticipé.";
   // L'autoliquidation passe AVANT la lecture du taux : à 0 % sur une facture
   // d'avant 0039 (régime nul), `sousFranchise` répondrait « franchise », et la
   // pièce porterait deux mentions qui se contredisent.

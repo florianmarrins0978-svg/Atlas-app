@@ -291,7 +291,7 @@ export default function ConditionsClient({
               Mentions légales de la facture
             </span>
             <span className={`mt-1 block ${texteSituation}`} style={{ color: colors.inkSoft }}>
-              Pénalités de retard, indemnité forfaitaire de 40 €, et la franchise de
+              Pénalités de retard, indemnité de 40 € pour une entreprise, et la franchise de
               l&apos;article 293 B quand vous n&apos;êtes pas assujetti.
             </span>
           </span>

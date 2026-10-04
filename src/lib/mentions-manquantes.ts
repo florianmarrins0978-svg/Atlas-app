@@ -18,6 +18,7 @@
  * | forme juridique (pour « EI » ou la forme de la société) | oui | oui | Code de commerce, R526-27 et R123-237 |
  * | capital et ville du RCS d'une société | oui | oui | R123-237 |
  * | médiateur de la consommation | oui | non | L616-1 |
+ * | téléphone et courriel de l'entreprise | oui, sauf sous-traitance | non | Code de la consommation, R111-1, 1° |
  * | décennale, quand ses conditions la citent | oui | non | Code des assurances, L243-2 |
  * | numéro de TVA d'un assujetti | non | oui | 242 nonies A, I-4° |
  * | nom du client | oui | oui | |
@@ -51,6 +52,8 @@ export type EmetteurAVerifier = {
   assureurDecennale: string | null | undefined;
   regimeTva: "assujettie" | "franchise" | null | undefined;
   numeroTva: string | null | undefined;
+  telephone: string | null | undefined;
+  email: string | null | undefined;
 };
 
 export type ClientAVerifier = {
@@ -101,6 +104,17 @@ export function manquesDuDevis(
   // sous-traitance va à une entreprise, il n'en a pas besoin.
   if (!sousTraitance && vide(e.mediateurNom)) {
     m.push({ cle: "mediateur", libelle: "Votre médiateur de la consommation", ou: "entreprise" });
+  }
+  // **Le particulier doit pouvoir le joindre avant de signer** (R111-1, 1° :
+  // « son numéro de téléphone et son adresse électronique »). Le papier les
+  // imprimait quand ils étaient remplis, mais rien ne les réclamait
+  // (`docs/check-up-legal-documents.md`, point 7). Même borne que le
+  // médiateur : le droit de la consommation ne suit pas la sous-traitance.
+  if (!sousTraitance && vide(e.telephone)) {
+    m.push({ cle: "telephone", libelle: "Votre numéro de téléphone", ou: "entreprise" });
+  }
+  if (!sousTraitance && vide(e.email)) {
+    m.push({ cle: "email", libelle: "Votre adresse e-mail", ou: "entreprise" });
   }
   if (vide(e.assureurDecennale) && (conditionsGenerales ?? "").includes(CROCHET_DECENNALE)) {
     m.push({ cle: "decennale", libelle: "Votre assurance décennale", ou: "entreprise" });

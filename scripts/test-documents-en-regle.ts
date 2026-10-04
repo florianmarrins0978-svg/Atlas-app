@@ -11,6 +11,8 @@ import { dateDesTravauxProposee } from "../src/lib/creneaux-chantier";
 import { totauxAvecReduction } from "../src/lib/reduction-devis";
 import { avecCivilite, estUneEntreprise } from "../src/lib/civilite";
 import { siretLu } from "../src/lib/siren";
+import { TEXTE_ORIGINE_CONDITIONS_GENERALES } from "../src/lib/conditions-generales";
+import { lignesConditionsDevis, lireConditions } from "../src/lib/conditions-documents";
 
 // ═══════════════════════════════════════════════════════════════════════════
 // LE DEVIS ET LA FACTURE EN RÈGLE — ses choix du 3 octobre 2026
@@ -39,6 +41,8 @@ const EN_REGLE: EmetteurAVerifier = {
   assureurDecennale: null,
   regimeTva: "assujettie",
   numeroTva: "FR12123456789",
+  telephone: "02 40 00 00 00",
+  email: "contact@atelier-demo.fr",
 };
 const CLIENT = { nom: "Bernard", adresse: "4 rue de la Garenne, Rezé", adresseChantier: null };
 const SANS = { active: false, numeroTvaClient: null };
@@ -195,6 +199,31 @@ cas("un SIRET se lit en quatorze chiffres, ou se refuse", () => {
   assert.equal(siretLu(" 812 345 678 00021 "), "812 345 678 00021");
   assert.equal(siretLu(""), "");
   assert.equal(siretLu("812 345 678"), null, "un SIREN seul n'est pas un SIRET");
+});
+
+console.log("— Le check-up légal du 4 octobre 2026 —");
+
+cas("le devis d'un particulier exige le téléphone et le courriel ; en sous-traitance, non", () => {
+  const sans = { ...EN_REGLE, telephone: " ", email: null };
+  assert.deepEqual(manquesDuDevis(sans, CLIENT, "").map((x) => x.cle), ["telephone", "email"]);
+  assert.deepEqual(manquesDuDevis(sans, CLIENT, "", true), []);
+  assert.deepEqual(manquesDeLaFacture(sans, CLIENT, SANS), [], "R111-1 vise l'information avant le contrat, pas la facture");
+});
+
+cas("les 40 € ne se réclament qu'à un client professionnel", () => {
+  const c = lireConditions({ rappelerPenalites: true });
+  assert.ok(!lignesConditionsDevis(c).some((l) => l.includes("40 €")), "réclamés à un particulier");
+  assert.ok(lignesConditionsDevis(c, undefined, undefined, true).some((l) => l.includes("40 €")));
+});
+
+cas("les conditions d'origine ne portent plus les quatre clauses contraires au droit", () => {
+  const t = TEXTE_ORIGINE_CONDITIONS_GENERALES;
+  assert.ok(!t.includes("aucune réclamation"), "clause noire R212-1 6°");
+  assert.ok(!t.includes("à titre indicatif"), "délai indicatif");
+  assert.ok(!t.includes("annulation de la commande"), "report sans annulation");
+  assert.match(t, /aucun paiement n’est reçu avant sept jours \(art\. L221-10/);
+  assert.match(t, /pour un client professionnel, une indemnité forfaitaire de 40 €/);
+  assert.match(t, /garantie légale de conformité/);
 });
 
 console.log(`\n${ok} vérifications vertes.`);

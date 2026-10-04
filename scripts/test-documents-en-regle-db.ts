@@ -21,7 +21,8 @@ import {
   terminerChantier,
 } from "../src/server/repositories/factures";
 import { withEntreprise } from "../src/server/db/with-entreprise";
-import { chantiers, clients } from "../src/server/db/schema";
+import { chantiers, clients, entreprises } from "../src/server/db/schema";
+import { TEXTE_ORIGINE_CONDITIONS_GENERALES } from "../src/lib/conditions-generales";
 import { nettoyerBase } from "./_test-db";
 import { texteDuPdf } from "./_lecteur-pdf-protege";
 import { IDENTITE_EN_REGLE } from "./_entreprise-en-regle";
@@ -317,6 +318,26 @@ async function main() {
     const facture = await terminerChantier(ctx, chantier.id);
     assert.equal(facture.autoliquidation, false);
     assert.equal((await majAutoliquidationFacture(ctx, facture.id, true)).ok, false);
+  });
+
+  // ── LE CHECK-UP LÉGAL DU 4 OCTOBRE 2026 ──────────────────────────────────
+
+  await test("le texte d'origine enregistré tel quel reste « celui d'Atlas », et suit ses corrections", async () => {
+    // L'écran des réglages range le texte affiché en quittant le champ : rangé
+    // en copie, il ne suivait plus les corrections du texte d'origine.
+    await entreprisesRepo.mettreAJourEntreprise(ctx, { conditions: { conditionsGenerales: TEXTE_ORIGINE_CONDITIONS_GENERALES } });
+    const [e] = await withEntreprise(ctx.utilisateurId, ctx.entrepriseId, (tx) =>
+      tx.select({ c: entreprises.conditionsGenerales }).from(entreprises).where(eq(entreprises.id, ctx.entrepriseId))
+    );
+    assert.equal(e!.c, null);
+    // Le sien, même retouché d'un mot, reste le sien.
+    const sien = TEXTE_ORIGINE_CONDITIONS_GENERALES.replace("1. Commande.", "1. Commande,");
+    await entreprisesRepo.mettreAJourEntreprise(ctx, { conditions: { conditionsGenerales: sien } });
+    const [f] = await withEntreprise(ctx.utilisateurId, ctx.entrepriseId, (tx) =>
+      tx.select({ c: entreprises.conditionsGenerales }).from(entreprises).where(eq(entreprises.id, ctx.entrepriseId))
+    );
+    assert.equal(f!.c, sien);
+    await entreprisesRepo.mettreAJourEntreprise(ctx, { conditions: { conditionsGenerales: TEXTE_ORIGINE_CONDITIONS_GENERALES } });
   });
 
   console.log(`\n${passed} réussi(s), ${failed} échoué(s).`);

@@ -17,4 +17,7 @@ export const IDENTITE_EN_REGLE = {
   assureurDecennale: "Assureur d'essai",
   contratDecennale: "0000000",
   couvertureDecennale: "France métropolitaine",
+  // R111-1, 1° : le particulier doit pouvoir le joindre (check-up du 4 octobre 2026).
+  telephone: "02 40 00 00 00",
+  email: "contact@en-regle.test",
 } as const;

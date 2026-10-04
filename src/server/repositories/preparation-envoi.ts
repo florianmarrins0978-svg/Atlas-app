@@ -254,6 +254,8 @@ export async function preparerEnvoi(
         assureurDecennale: entreprises.assureurDecennale,
         regimeTva: entreprises.regimeTva,
         numeroTva: entreprises.numeroTva,
+        telephone: entreprises.telephone,
+        email: entreprises.email,
         // Ses conditions générales, pour savoir si elles citent la décennale.
         conditionsGenerales: entreprises.conditionsGenerales,
       })

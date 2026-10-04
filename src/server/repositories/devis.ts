@@ -715,6 +715,8 @@ export async function manquesDuDevisAEnvoyer(ctx: Ctx, devisId: string): Promise
         assureurDecennale: d.entrepriseAssureurDecennale,
         regimeTva: d.entrepriseRegimeTva,
         numeroTva: null,
+        telephone: d.entrepriseTelephone,
+        email: d.entrepriseEmail,
       },
       { nom: d.clientNom, adresse: d.clientAdresse, adresseChantier: d.adresseChantier },
       d.conditionsGenerales,

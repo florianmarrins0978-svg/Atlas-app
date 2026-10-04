@@ -5,6 +5,7 @@ import { entreprises, entrepriseCompteurs, users, membresEntreprise } from "../d
 import type { Ctx } from "./context";
 import { remettreLeModeleDans } from "./prestations-entretien";
 import { normaliserConditions, type ConditionsLues } from "@/lib/conditions-documents";
+import { TEXTE_ORIGINE_CONDITIONS_GENERALES } from "@/lib/conditions-generales";
 import {
   refusDuMessage,
   GENRES,
@@ -278,7 +279,15 @@ export async function mettreAJourEntreprise(
       if (c.moyensPaiement !== undefined) valeurs.moyensPaiement = c.moyensPaiement;
       if (c.rappelerPenalites !== undefined) valeurs.rappelerPenalitesDevis = c.rappelerPenalites;
       if (c.textePied !== undefined) valeurs.textePiedDocuments = c.textePied;
-      if (c.conditionsGenerales !== undefined) valeurs.conditionsGenerales = c.conditionsGenerales;
+      // **Le texte d'origine retapé à l'identique reste « celui d'Atlas »**,
+      // comme les messages plus bas : rangé en copie, il ne suivait plus les
+      // corrections du texte d'origine, et quatre clauses contraires au droit
+      // du particulier seraient restées sur ses devis (check-up du 4 octobre
+      // 2026, migration 0120).
+      if (c.conditionsGenerales !== undefined) {
+        valeurs.conditionsGenerales =
+          c.conditionsGenerales === TEXTE_ORIGINE_CONDITIONS_GENERALES ? null : c.conditionsGenerales;
+      }
     }
 
     // **Le message est REFUSÉ ici aussi, pas seulement à l'écran.** La même
