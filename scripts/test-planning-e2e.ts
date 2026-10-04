@@ -20,6 +20,7 @@
 import { lancerNavigateur } from "./e2e-browser";
 import { ouvrirLeTiroirDuPlanning } from "./_tiroir-planning-e2e";
 import assert from "node:assert";
+import type { Locator } from "playwright";
 import { Pool } from "pg";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
 import { ADRESSE } from "./_adresse";
@@ -1262,11 +1263,19 @@ async function main() {
   // marche toujours ; c'est l'enregistrement qui casse en silence, et il ne se
   // voit qu'en revenant. Une note perdue sans un mot, c'est le broyeur oublié
   // alors qu'il croit l'avoir noté.
+  // **La fiche peut être DÉJÀ ouverte** : seule ce jour-là, elle s'ouvre avec
+  // la journée (« la C », 3 octobre 2026). Toucher le nom la refermerait.
+  const ouvrirLaFiche = async (carte: Locator) => {
+    if ((await carte.locator('[data-atlas="feuille"]').count()) === 0) {
+      await carte.locator('[data-atlas="nom-du-jour"]').first().click();
+    }
+  };
+
   await essai("la note de la feuille s'écrit et survit au rechargement", async () => {
     await allerAuPlanning();
     await toucherLeJour(JOUR);
     const carte = page.locator(`[data-atlas="carte-jour"][data-jour="${JOUR}"]`);
-    await carte.locator('[data-atlas="nom-du-jour"]').first().click();
+    await ouvrirLaFiche(carte);
     const champ = page.locator('[data-atlas="note-chantier"]').first();
     await champ.waitFor({ state: "visible", timeout: 15_000 });
 
@@ -1287,7 +1296,7 @@ async function main() {
 
     await allerAuPlanning();
     await toucherLeJour(JOUR);
-    await carte.locator('[data-atlas="nom-du-jour"]').first().click();
+    await ouvrirLaFiche(carte);
     const relu = page.locator('[data-atlas="note-chantier"]').first();
     await relu.waitFor({ state: "visible", timeout: 15_000 });
     assert.equal(
