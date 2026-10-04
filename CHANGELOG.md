@@ -6,6 +6,7 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+
 ## 2026-10-04
 
 ### « Remettre le modèle » touché juste après une croix ne fait plus effacer la ligne
@@ -30,6 +31,7 @@ rien, et « Relancer » mentait. « Rouvrir le SMS » et « Rouvrir l’e-mail �
 sont vrais dans les deux cas, sans faire croire à un second devis (le défaut
 d'« Ouvrir le SMS tout prêt », écarté sur la maquette 34). Codé sans planche,
 à sa demande. Les fiches du mode d'emploi et deux suites suivent le mot.
+
 ### Un contrat envoyé quitte l'écran de saisie
 
 Sa plainte : *« je viens d'envoyer le contrat mais l'appli reste bloquée sur la
@@ -43,6 +45,7 @@ maintenant sur « Envoyer », et a rougi avant la correction.
 La page « Une erreur » vue à 22 h 32 sur le lien du client n'a pas été
 reproduite : le lien s'ouvre ici, et sa fiche montrait une bascule de version en
 cours à 22 h 29. Non reproduit, donc non déclaré corrigé.
+
 ### Le client télécharge son contrat par un bouton, comme son devis
 
 Sa demande : *« mets un bouton pour télécharger le contrat comme avec le
@@ -76,6 +79,7 @@ patron pose la date garde le planning. Tenu par
 **Ce qui reste vrai et n'est pas changé ici** : le bouton s'appelle « Relancer
 par SMS » alors que, dans ce cas, le client n'a rien reçu. Le libellé est une
 demande d'affichage, donc une planche d'abord (`CLAUDE.md` §3 bis).
+
 ### Une ligne du devis ne part plus quand il touche ses chiffres
 
 Sa plainte : *« plusieurs fois une ligne s'est supprimée sans que je sache
@@ -95,6 +99,7 @@ suite le pose à la main, comme lui.
 Et une croix au bout de chaque description, sa réponse « A » à la planche
 `appli/retirer-une-ligne-du-devis.html` : sur la rangée du texte, loin des
 chiffres, le glissement restant. Même retrait, donc même « Annuler ».
+
 ### « Faire la facture » reprend le devis du client qui en a un
 
 Sa remarque : *« j'ai voulu créer une facture avant la date de fin de chantier,
