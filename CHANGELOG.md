@@ -621,6 +621,43 @@ arrondi au centime, sans cumul, jamais sur un prix tapé à la main. Migration
 0106 (quatre colonnes nulles, expand seul). Planche
 `appli/augmenter-un-devis-repris.html`, `ARCHITECTURE.md` §423.
 
+### La vidéo de promotion, version C : « Fais mieux ! »
+
+Sa réponse à la version A (41 s, les vraies pages dans un téléphone, muette,
+coupes sèches) : *« je veux que ça soit vendeur, je veux qu'après qu'on ait
+regardé la vidéo on ait envie de la télécharger ! Fais mieux ! »*.
+
+`appli/video-promo/film/film-C.html`, rendu dans `appli/video-promo/atlas-C.mp4`
+(et `atlas-C-muet.mp4`), même page `appli/video-promo.html` que A et B. Mêmes
+captures de l'appli, prises par la session voisine en jouant le geste ; ce qui
+change est la mise en scène : l'accroche se joue (« 20 minutes » barré d'un
+trait doré, « 30 secondes » à la place, les deux chiffres de `docs/AGENT.md`
+§1) ; ce qu'il dicte s'écrit mot à mot pendant que l'enregistrement tourne, à
+vitesse réelle ; la transcription se découvre ligne à ligne ; le devis arrive
+vierge et se construit morceau par morceau (en-tête, client, les trois
+prestations, le total encadré), puis la caméra s'en approche pour qu'on lise
+les lignes ; les écrans se poussent comme dans l'appli, le téléphone a un
+léger relief et se floute quand la feuille passe devant ; une bande son.
+
+**La bande son est fabriquée note à note** (`scripts/musique-film.py`, ré
+majeur, 100 à la noire, les accords changent avec les scènes) parce que rien
+ne peut être écouté ici et qu'un morceau pris sur l'étagère pose une question
+de droits. **Personne ne l'a entendue** : la page le dit, et la version muette
+est à côté. Ce qui a été mesuré : crête à −1 dBFS, niveau moyen −14,6 dBFS.
+
+**Ce que la version A n'avait pas laissé dans le dépôt, C le laisse** : le
+rendu (`scripts/rendre-film.mjs`, Playwright vers ffmpeg image par image,
+avec `--planche` pour regarder une mosaïque avant de rendre quarante secondes
+et `--instants` pour une image en pleine taille) et la bande son. Le jeu de
+démonstration qui a servi aux captures, lui, reste hors dépôt (`TODO.md`).
+
+**Attrapé en regardant, pas en compilant** : la première capture après le
+chargement de la page sortait à moitié peinte (la feuille en morceaux, le
+téléphone coupé), et le même instant redemandé juste après était juste. Le
+rendu attend désormais deux images de composition avant chaque capture, avec
+une capture d'échauffement au départ. Et à 940 px de large, les lignes du PDF
+ne se lisaient pas sur un téléphone : d'où le rapprochement de la caméra.
+
 ### Le retour envoyé se rouvre depuis n'importe quelle journée du planning
 
 **Sa plainte**, sur la fiche de Julien posée au lundi 28 : *« je peux pas

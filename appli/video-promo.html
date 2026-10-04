@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas : la vidéo</title>
+<style>
+  /*
+    LA VIDÉO DE PROMOTION.
+
+    Sa demande du 26 septembre 2026, en quatre temps : une vidéo courte pour
+    vendre l'appli (paysagistes et élagueurs d'abord) ; puis « les photos ne
+    sont pas du tout celles de l'appli ! » ; puis « mis en scène, un truc de
+    qualité, prends les vraies pages, n'invente rien, vendeur et joli » ; puis,
+    devant la version A : « Fais mieux ! ».
+
+    Trois versions, donc. A et B (accroches différentes, même montage) sortent
+    de video-promo/film/film.html ; C sort de film-C.html : accroche jouée,
+    dictée qui s'écrit mot à mot, devis qui se construit ligne à ligne, bande
+    son. Toutes rendues image par image par scripts/rendre-film.mjs (41 s,
+    1080 × 1920). Tout ce qui est dans le téléphone est une capture de
+    l'application servie, prise en jouant le geste pour de vrai.
+  */
+  :root{ --bone:#f5f3ee; --cream:#faf9f5; --paper:#ece9e1; --ink:#1c1c1a; --ink-soft:#4a4a44;
+         --muted:#8a8578; --pine:#2f3b2f; --or:#B98B47; --line:rgba(28,28,26,.12); }
+  @media (prefers-color-scheme: dark){
+    :root{ --bone:#171613; --cream:#1e1c18; --paper:#262420; --ink:#e9e5dc;
+           --ink-soft:#c9c4b8; --muted:#8a867c; --or:#C9A15E; --line:rgba(233,229,220,.16); }
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;background:var(--bone);color:var(--ink);
+       font:16px/1.55 -apple-system,"Segoe UI",Roboto,sans-serif;padding:28px 0 60px}
+  .page{max-width:460px;margin:0 auto;padding:0 16px}
+  .sur{margin:0;font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:var(--or)}
+  h1{margin:4px 0 6px;font:500 30px/1.15 Georgia,serif}
+  .chapo{margin:0 0 18px;color:var(--ink-soft);font-size:14.5px}
+  .choix{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+  .choix button{padding:10px 8px;border:1px solid var(--line);border-radius:12px;
+       background:var(--cream);color:var(--ink);font:inherit;font-size:13px;cursor:pointer;text-align:left}
+  .choix button b{display:block;font-size:14px}
+  .choix button span{color:var(--muted);font-size:12px}
+  .choix button[aria-pressed="true"]{background:var(--pine);color:#faf9f5;border-color:var(--pine)}
+  .choix button[aria-pressed="true"] span{color:rgba(250,249,245,.7)}
+  video{display:block;width:100%;max-width:360px;margin:0 auto;aspect-ratio:9/16;border-radius:22px;
+        background:#1f2820;box-shadow:0 18px 50px rgba(0,0,0,.28)}
+  .telecharger{display:block;text-align:center;margin:14px 0 0;color:var(--ink);font-size:14px}
+  .note{margin-top:24px;padding:14px 16px;background:var(--cream);border-radius:13px;
+        font-size:13.5px;line-height:1.6;color:var(--ink-soft)}
+  .note b{color:var(--ink)}
+  .note ul{margin:6px 0 0;padding-left:18px}
+</style>
+</head>
+<body>
+<div class="page">
+  <p class="sur">Atlas</p>
+  <h1>La vidéo</h1>
+  <p class="chapo">41 secondes, en vertical. Tous les écrans sont ceux de l’appli.</p>
+
+  <div class="choix" role="group" aria-label="Version">
+    <button type="button" data-video="C" aria-pressed="true"><b>C, avec le son</b><span>la nouvelle</span></button>
+    <button type="button" data-video="C-muet" aria-pressed="false"><b>C, sans le son</b><span>la même, muette</span></button>
+    <button type="button" data-video="A" aria-pressed="false"><b>A</b><span>20 minutes de bureau</span></button>
+    <button type="button" data-video="B" aria-pressed="false"><b>B</b><span>vos devis ce soir</span></button>
+  </div>
+
+  <video id="video" src="video-promo/atlas-C.mp4" poster="video-promo/affiche-C.jpg" controls playsinline preload="metadata"></video>
+  <a class="telecharger" id="telecharger" href="video-promo/atlas-C.mp4" download>Télécharger cette version</a>
+
+  <div class="note">
+    <b>Ce que C change</b>
+    <ul>
+      <li>L’accroche se joue : « 20 minutes » est barré, « 30 secondes » prend la place.</li>
+      <li>Ce que vous dictez s’écrit mot à mot pendant l’enregistrement.</li>
+      <li>Le devis se construit ligne à ligne, puis la caméra s’en approche.</li>
+      <li>Les écrans se poussent comme dans l’appli, le téléphone respire.</li>
+      <li>Une bande son : chaque geste s’entend. Elle est fabriquée note à note, personne ne l’a écoutée avant vous : dites si elle vous plaît.</li>
+    </ul>
+    <b style="display:block;margin-top:12px">Ce qui reste à me dire</b>
+    <ul>
+      <li>C, A ou B ?</li>
+      <li>Le nom commercial : Atlas, ou un autre ?</li>
+      <li>L’adresse où la vidéo renvoie. Elle s’ajoute sur la fin.</li>
+      <li>Votre voix, si vous en voulez une.</li>
+    </ul>
+    <p style="margin:10px 0 0">Les clients sont fictifs. Aucun prix : la formule à 39 € n’ouvre pas l’arrosage ni le diagnostic, que la vidéo montre. L’essai de 15 jours, lui, ouvre tout.</p>
+  </div>
+</div>
+<script>
+  const video = document.getElementById('video'), lien = document.getElementById('telecharger');
+  const affiche = { C: 'affiche-C', 'C-muet': 'affiche-C', A: 'affiche', B: 'affiche' };
+  document.querySelectorAll('[data-video]').forEach(b => b.addEventListener('click', () => {
+    document.querySelectorAll('[data-video]').forEach(x => x.setAttribute('aria-pressed', x === b));
+    const src = `video-promo/atlas-${b.dataset.video}.mp4`;
+    video.poster = `video-promo/${affiche[b.dataset.video]}.jpg`;
+    video.src = src; lien.href = src; video.play().catch(() => {});
+  }));
+</script>
+</body>
+</html>
