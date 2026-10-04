@@ -20,8 +20,11 @@ document de retour est `docs/lot-mentions-facture-devis.md`.
 - ⏳ Les factures de contrat d'entretien, émises sans geste du patron, ne
   passent pas par la vérification des mentions : aucun écran où lister ce qui
   manque. À trancher avec lui.
-- ⏳ Une facture à une entreprise sans civilité cochée s'écrit encore
-  « Mr. Jardins Ribault » (relevé en regardant le PDF, hors de ce lot).
+- ⏳ **UNE PLANCHE À REGARDER : NI MR NI MME (4 octobre 2026).** Une
+  entreprise cliente sans civilité cochée s'écrit « Mr. Jardins Ribault » sur
+  la fiche, le devis et la facture (`avecCivilite` met « Mr. » par défaut).
+  Planche `appli/ni-mr-ni-mme.html` : un troisième choix sur la fiche, libellé
+  « Aucune » (A) ou « Entreprise » (B). **Son choix attendu.**
 
 ## ⏳ SUR ORDINATEUR : la planche attend son choix (30 septembre 2026)
 
