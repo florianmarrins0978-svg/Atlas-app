@@ -8,6 +8,15 @@ Format : le plus récent en tête.
 ---
 ## 2026-10-03
 
+### « Rouvrir le SMS » remplace « Relancer par SMS »
+
+Sa décision, le soir même du défaut Mr Lolo. Atlas ne sait pas si le message
+est vraiment parti : annulé dans Messages, le devis est figé et le client n'a
+rien, et « Relancer » mentait. « Rouvrir le SMS » et « Rouvrir l’e-mail »
+sont vrais dans les deux cas, sans faire croire à un second devis (le défaut
+d'« Ouvrir le SMS tout prêt », écarté sur la maquette 34). Codé sans planche,
+à sa demande. Les fiches du mode d'emploi et deux suites suivent le mot.
+
 ### Un devis parti qui attend le client rouvre l'écran du devis, plus le planning
 
 Sa plainte : *« j'ai voulu envoyer un devis, au moment d'ouvrir le message

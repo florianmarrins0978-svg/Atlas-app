@@ -76,13 +76,18 @@ type Props = {
 // premier envoi ; devant un devis que le client a déjà en main, il fait croire
 // qu'on va lui en envoyer un second. C'est « relancer » — le même lien, tel
 // quel — et c'est le mot que le patron a retenu sur la maquette 34.
+//
+// **« Rouvrir », depuis le 3 octobre 2026.** Atlas ne sait pas si le message
+// est vraiment parti : annulé dans Messages, le devis est figé et son client
+// n'a rien. « Relancer » mentait alors (Mr Lolo). « Rouvrir » est vrai dans
+// les deux cas, et ne fait pas croire à un second devis. Sa décision.
 const LIBELLE: Record<
   CanalClient,
   { bouton: string; relance: string; bascule: string; champ: string; exemple: string; manque: string; invite: string }
 > = {
   sms: {
     bouton: "Ouvrir le SMS tout prêt",
-    relance: "Relancer par SMS",
+    relance: "Rouvrir le SMS",
     bascule: "Plutôt par SMS",
     champ: "Numéro de téléphone",
     exemple: "06 12 34 56 78",
@@ -91,7 +96,7 @@ const LIBELLE: Record<
   },
   email: {
     bouton: "Ouvrir l'e-mail tout prêt",
-    relance: "Relancer par e-mail",
+    relance: "Rouvrir l’e-mail",
     bascule: "Plutôt par e-mail",
     champ: "Adresse e-mail",
     exemple: "client@exemple.fr",
