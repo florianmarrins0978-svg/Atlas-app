@@ -107,8 +107,9 @@ Travail dans l'écran du devis (identifiant qui ne change pas, ordre des
 ## ✅ DIRE QUE LE MICRO RÉDIGE LE DEVIS : « LA A », CODÉE LE 3 OCTOBRE 2026, PAS ENCORE SUR `main`
 
 **Sa réponse : « la A », et pas de batterie.** Libellé « Devis à la voix »
-au-dessus du micro. Niveau 2 : `main` attend `npm run verifier:avant-fusion`,
-et son accord pour le lancer.
+au-dessus du micro, branche `claude/devis-a-la-voix`. Niveau 2 : `main` attend
+un contrôle joué au vert. **Sa consigne du 4 octobre : rien ne se lance avant
+qu'il dise « on joue la batterie »** ; ce lot part alors avec elle.
 
 La planche, pour mémoire :
 

@@ -32,7 +32,7 @@ réponse : « la A ». Un libellé en capitales au-dessus du grand micro
 de « Photos » ; rien ne bouge, l'indice dessous reste. Posé dans la fiche et non
 dans `AnneauNoteVocale`. Regardé à l'écran ; joués : types, lint,
 `test-aucun-tiret`, `test-pas-de-pansement`. **Sa consigne : pas de batterie.**
-Niveau 2 : `main` attend `verifier:avant-fusion` et son accord pour le lancer.
+Niveau 2 : `main` attend un contrôle au vert, que l'on jouera quand il le dira.
 
 ### « Rouvrir le SMS » remplace « Relancer par SMS »
 
