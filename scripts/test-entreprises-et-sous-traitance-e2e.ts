@@ -98,6 +98,16 @@ async function principal() {
     await page.locator('[data-atlas="siret-client"]').waitFor({ state: "detached", timeout: DELAI_PAR_DEFAUT_MS });
   });
 
+  await cas("à la création, Entreprise fait apparaître le SIRET et le n° TVA", async () => {
+    await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "domcontentloaded" });
+    const pastille = page.locator('[data-atlas="civilite-entreprise"]');
+    await pastille.waitFor({ timeout: DELAI_PAR_DEFAUT_MS });
+    assert.equal(await page.locator('input[aria-label="SIRET"]').count(), 0, "le SIRET s'affiche pour un particulier");
+    await pastille.click();
+    await page.locator('input[aria-label="SIRET"]').waitFor({ timeout: DELAI_PAR_DEFAUT_MS });
+    assert.equal(await page.locator('input[aria-label="N° TVA intracommunautaire"]').count(), 1);
+  });
+
   await cas("le devis d'une entreprise : la sous-traitance est là, décochée ; allumée, plus de TVA", async () => {
     await page.goto(`${BASE}/chantiers/${chantier.id}/devis-complet`, { waitUntil: "domcontentloaded" });
     const interrupteur = page.locator('[data-atlas="sous-traitance-devis"]');

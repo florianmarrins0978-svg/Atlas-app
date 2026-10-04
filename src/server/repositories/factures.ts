@@ -58,6 +58,7 @@ import {
 import { uniteAdmise } from "../../lib/unite-de-ligne";
 import { dateDesTravauxProposee } from "../../lib/creneaux-chantier";
 import { manquesDeLaFacture, type Manque } from "../../lib/mentions-manquantes";
+import { estUneEntreprise } from "../../lib/civilite";
 import type { Creneau } from "../../lib/disponibilites";
 import {
   numeroTvaLu,
@@ -915,16 +916,13 @@ export async function reprendreLeDevisSurLaFacture(
     await tx
       .update(factures)
       .set({
+        // La sous-traitance vient du devis repris, avec ses taux : la facture
+        // suit le devis, elle ne la décide pas (4 octobre 2026).
         ...instantaneDuDevis(d),
         ...identiteDeLEmetteur(entrepriseCourante),
-        // La sous-traitance posée sur la facture ne se perd pas à la reprise.
-        autoliquidation: d.autoliquidation || f.autoliquidation,
-        clientNumeroTva: d.clientNumeroTva ?? f.clientNumeroTva,
+        tauxAvantAutoliquidation: null,
       })
       .where(eq(factures.id, f.id));
-    // Les prix du devis reviennent avec ses taux : en sous-traitance, ils
-    // repassent sans TVA, et ce sont eux qu'il retrouvera s'il l'enlève.
-    if (f.autoliquidation && !d.autoliquidation) await poserLesTauxSansTva(tx, f.id);
 
     return { ok: true, numeroDevis: d.numeroCommercial };
   });
@@ -1373,16 +1371,14 @@ export async function majDateTravauxFacture(
 }
 
 /**
- * Met les taux de la pièce à zéro, et garde ceux d'avant.
+ * Met les taux de la pièce à zéro, et garde ceux d'avant pour les rendre.
  *
- * Les taux déjà gardés l'emportent sur ceux qu'on lit : une ligne passée sans
- * TVA par une bascule précédente porte « 0 », et c'est son taux d'AVANT qu'il
- * retrouvera en l'enlevant. Le taux de la facture, lui, se relit toujours :
- * après une reprise du devis, c'est celui du devis.
+ * Seule une facture faite SANS devis bascule ici (4 octobre 2026) : celle qui
+ * vient d'un devis en reprend la sous-traitance, taux compris.
  */
 async function poserLesTauxSansTva(tx: DbOrTx, factureId: string) {
   const [f] = await tx
-    .select({ tauxTva: factures.tauxTva, avant: factures.tauxAvantAutoliquidation })
+    .select({ tauxTva: factures.tauxTva })
     .from(factures)
     .where(eq(factures.id, factureId))
     .limit(1);
@@ -1392,16 +1388,9 @@ async function poserLesTauxSansTva(tx: DbOrTx, factureId: string) {
     .from(lignesFacture)
     .where(eq(lignesFacture.factureId, factureId));
   const sans = tauxSousAutoliquidation({ tauxTva: f.tauxTva, lignes });
-  const dejaGardes = Object.fromEntries(
-    Object.entries(f.avant?.lignes ?? {}).filter(([id]) => lignes.some((l) => l.id === id))
-  );
-  const facture = f.tauxTva === TAUX_SANS_TVA && f.avant ? f.avant.facture : sans.avant.facture;
   await tx
     .update(factures)
-    .set({
-      tauxTva: sans.tauxTva,
-      tauxAvantAutoliquidation: { facture, lignes: { ...sans.avant.lignes, ...dejaGardes } },
-    })
+    .set({ tauxTva: sans.tauxTva, tauxAvantAutoliquidation: sans.avant })
     .where(eq(factures.id, factureId));
   if (lignes.length > 0) {
     await tx.update(lignesFacture).set({ tauxTva: TAUX_SANS_TVA }).where(eq(lignesFacture.factureId, factureId));
@@ -1430,6 +1419,8 @@ export async function majAutoliquidationFacture(
       .select({
         chantierId: factures.chantierId,
         devisId: factures.devisId,
+        clientNom: factures.clientNom,
+        clientCivilite: factures.clientCivilite,
         autoliquidation: factures.autoliquidation,
         clientNumeroTva: factures.clientNumeroTva,
         tauxTva: factures.tauxTva,
@@ -1442,6 +1433,13 @@ export async function majAutoliquidationFacture(
     if (f.autoliquidation === active) {
       return { ok: true, autoliquidation: active, clientNumeroTva: f.clientNumeroTva };
     }
+    // **Une facture née d'un devis SUIT le devis, dans les deux sens** — sa
+    // remarque du 4 octobre 2026, *« le bouton sur la facture ne sert plus à
+    // rien »*. Le client a accepté un prix avec ou sans TVA ; la facture ne le
+    // contredit pas. Le bouton ne vit plus que sur une facture faite sans devis.
+    if (f.devisId) {
+      return { ok: false, raison: "La sous-traitance suit le devis : c'est sur le devis qu'elle se change." };
+    }
 
     if (active) {
       const [e] = await tx
@@ -1451,6 +1449,9 @@ export async function majAutoliquidationFacture(
         .limit(1);
       if (e?.regimeTva === "franchise") {
         return { ok: false, raison: "En franchise de TVA, vos factures sont déjà sans TVA." };
+      }
+      if (!estUneEntreprise(f.clientNom, f.clientCivilite)) {
+        return { ok: false, raison: "La sous-traitance se fait pour une entreprise : choisissez Entreprise sur sa fiche." };
       }
       const [fiche] = await tx
         .select({ numeroTva: clients.numeroTva })
@@ -1465,16 +1466,6 @@ export async function majAutoliquidationFacture(
         .set({ autoliquidation: true, clientNumeroTva: numero })
         .where(eq(factures.id, factureId));
       return { ok: true, autoliquidation: true, clientNumeroTva: numero };
-    }
-
-    // **Une sous-traitance venue du devis ne s'enlève pas ici.** Le client a
-    // accepté ce prix sans TVA, et les taux d'avant vivent sur le chantier,
-    // pas sur cette facture : les deviner rendrait 20 % à une ligne à 10 %.
-    const [duDevis] = f.devisId
-      ? await tx.select({ autoliquidation: devis.autoliquidation }).from(devis).where(eq(devis.id, f.devisId)).limit(1)
-      : [];
-    if (duDevis?.autoliquidation) {
-      return { ok: false, raison: "Le devis accepté est en sous-traitance : faites un nouveau devis pour remettre la TVA." };
     }
 
     const lignes = await tx

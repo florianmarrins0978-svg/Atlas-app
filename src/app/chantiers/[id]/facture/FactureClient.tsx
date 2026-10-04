@@ -33,7 +33,7 @@ import {
 } from "./actions";
 import ListeDesManques from "@/components/atlas/ListeDesManques";
 import type { Manque } from "@/lib/mentions-manquantes";
-import { avecCivilite, type CiviliteClient } from "@/lib/civilite";
+import { avecCivilite, estUneEntreprise, type CiviliteClient } from "@/lib/civilite";
 import { peutPreparerLaPiece } from "@/lib/preparation-devis";
 import { ECHEANCE_MAX_JOURS } from "@/lib/echeance-facture";
 import { jourIso } from "@/lib/jour";
@@ -731,8 +731,13 @@ export default function FactureClient({
 
       {/* ── SOUS-TRAITANCE, SANS TVA ─────────────────────────────────────
           Son bouton du 3 octobre 2026, dans son cadre doré. Ne s'offre ni en
-          franchise (déjà sans TVA), ni sur une facture partie. */}
-      {!emise && !enFranchise && (
+          franchise (déjà sans TVA), ni sur une facture partie, et **plus sur
+          une facture née d'un devis** (4 octobre 2026) : elle suit le devis,
+          coché ou non. Reste celle faite sans devis, pour une entreprise. */}
+      {!emise &&
+        !enFranchise &&
+        initialFacture.devisId === null &&
+        estUneEntreprise(initialFacture.clientNom, initialFacture.clientCivilite) && (
         <div
           className="rounded-[4px] px-5 py-4"
           data-atlas="carte-sous-traitance"

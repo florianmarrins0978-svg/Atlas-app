@@ -256,6 +256,16 @@
 <td><strong>codé</strong> pour un client Entreprise : prix HT, mention d'autoliquidation, ni TVA ni formulaire de rétractation ; la page du client ne demande plus la case des 14 jours ; la facture qui en naît est déjà sans TVA, et ne se rallume pas</td>
 <td><code>majAutoliquidationDevis</code> (<code>devis.ts</code>), <code>DevisCompletClient.tsx</code></td>
 </tr>
+<tr>
+<td>SIRET et n° TVA <strong>à la création d'un chantier</strong></td>
+<td><strong>codé</strong> : « Entreprise » les fait apparaître, sur une rangée ; ils complètent sa fiche. Pas en reprise d'un chantier existant : là, ils se corrigent sur sa fiche</td>
+<td><code>FormulaireNouveauChantier.tsx</code>, <code>completerLaFiche</code></td>
+</tr>
+<tr>
+<td>Le bouton de la facture</td>
+<td><strong>retiré quand la facture vient d'un devis</strong> : elle suit le devis, coché ou non (sa remarque). Gardé sur une facture faite sans devis, pour une entreprise</td>
+<td><code>FactureClient.tsx</code>, <code>majAutoliquidationFacture</code></td>
+</tr>
 </tbody></table></div>
 <p><strong>Ce qui a été fait autrement que la planche, et pourquoi :</strong> la pastille choisie garde la couleur des deux autres pastilles de l'application (fond clair, contour doré), pas le vert de la planche ; c'est le composant existant qui fait foi.</p>
 <p><strong>Ce qui a été corrigé en route :</strong> un contrôle de ce lot ne regardait que l'absence de « Mr. » ; en cassant volontairement la règle, le papier écrivait « undefined Jardins Ribault » et le contrôle restait vert. Il exige maintenant le nom seul sur sa ligne, et rougit sur la casse.</p>

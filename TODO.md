@@ -26,13 +26,10 @@ document de retour est `docs/lot-mentions-facture-devis.md`.
     imprimés sous le nom du client ;
   - **Vos entreprises** derrière une porte dans « Vos clients » ;
   - **le devis en sous-traitance**, décoché d'office (B).
-- ⏳ La porte « Vos entreprises » et la civilité Entreprise ne sont posées
-  que sur « Ses coordonnées » (`/clients/[id]/coordonnees`) pour le SIRET et
-  la TVA ; le formulaire de création d'un chantier a les trois pastilles, sans
-  les deux cases. À lui proposer s'il les veut aussi à la création.
-- ⏳ La carte « Sous-traitance, sans TVA » de la FACTURE s'offre pour tout
-  client hors franchise (lot du 3 octobre) ; celle du devis seulement pour un
-  client Entreprise. À aligner s'il le souhaite.
+- ✅ **Ses décisions du 4 octobre au soir, codées** : SIRET et n° TVA à la
+  création d'un chantier pour une entreprise ; la facture née d'un devis
+  suit le devis, son bouton ne reste que sur une facture faite sans devis
+  (`ARCHITECTURE.md` §443).
 
 ## ⏳ SUR ORDINATEUR : la planche attend son choix (30 septembre 2026)
 

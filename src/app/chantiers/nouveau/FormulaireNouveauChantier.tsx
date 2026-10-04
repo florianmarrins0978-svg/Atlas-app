@@ -33,6 +33,8 @@ import AnneauNoteVocale from "../[id]/AnneauNoteVocale";
 import DevisDepuisDictee from "../[id]/DevisDepuisDictee";
 import type { CiviliteClient } from "@/lib/civilite";
 import { espacerNumero, numeroEnregistre } from "@/lib/numero-telephone";
+import { siretLu } from "@/lib/siren";
+import { numeroTvaLu } from "@/lib/autoliquidation";
 import { saisieAEnregistrer } from "@/lib/saisie-fiche-client";
 
 // Intégration réelle : la création passe désormais par une Server Action
@@ -222,6 +224,10 @@ export default function FormulaireNouveauChantier({
   const [civilite, setCivilite] = useState<CiviliteClient | null>(depart?.civilite ?? null);
   const [telephone, setTelephone] = useState(depart?.telephone ?? "");
   const [email, setEmail] = useState(depart?.email ?? "");
+  // Une entreprise cliente : son SIRET et son n° TVA, comme sur sa fiche
+  // (sa demande du 4 octobre 2026, « faut ajouter le siret aussi »).
+  const [siret, setSiret] = useState("");
+  const [numeroTva, setNumeroTva] = useState("");
   const [canalChoisi, setCanalChoisi] = useState<"sms" | "email" | null>(depart?.canal ?? null);
   const [adresseChantier, setAdresseChantier] = useState(reprise?.adresseChantier ?? "");
   // **L'adresse du CLIENT sert d'adresse de chantier par défaut quand on vient
@@ -557,6 +563,8 @@ export default function FormulaireNouveauChantier({
       civilite: civilite ?? undefined,
       telephone: numeroEnregistre(telephone),
       email,
+      siret,
+      numeroTva,
       canal: canal ?? undefined,
       adresseChantier,
       adresseClient,
@@ -1093,6 +1101,44 @@ export default function FormulaireNouveauChantier({
               pas besoin d'un `onBlur` (`scripts/test-valeur-du-champ.ts`). */}
           {propositions.length > 0 && (
             <ClientsProposes liste={propositions} onChoisir={choisirLeClient} />
+          )}
+
+          {/* **Entreprise : le SIRET et le n° TVA, sur une seule rangée** — sa
+              demande du 4 octobre 2026, les mêmes cases que sa fiche. Une
+              rangée et non deux : l'écran doit tenir dans une page (sa règle du
+              30 août), et il ne grandit que pour une entreprise. Un numéro mal
+              tapé se signale sous sa case, par la même lecture que le serveur,
+              qui ne l'écrit pas. **À la création seulement** : en reprise, cet
+              écran enregistre par une autre porte, qui ne les connaît pas ;
+              ils se corrigent alors sur sa fiche (« Ses coordonnées »). */}
+          {civilite === "entreprise" && !reprise && (
+            <div>
+              <div className="flex gap-3">
+                <div className="min-w-0 flex-1">
+                  <div className={`mb-1 ${libelleCaps}`} style={{ color: colors.muted }}>
+                    SIRET
+                  </div>
+                  <Field label="SIRET" placeholder="812 345 678 00021" value={siret} onChange={setSiret} sansLibelle />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className={`mb-1 ${libelleCaps}`} style={{ color: colors.muted }}>
+                    N° TVA
+                  </div>
+                  <Field
+                    label="N° TVA intracommunautaire"
+                    placeholder="FR00812345678"
+                    value={numeroTva}
+                    onChange={setNumeroTva}
+                    sansLibelle
+                  />
+                </div>
+              </div>
+              {(siretLu(siret) === null || (numeroTva.trim() !== "" && numeroTvaLu(numeroTva) === null)) && (
+                <p role="alert" className="mt-1 text-[12px]" style={{ color: colors.alert }}>
+                  {siretLu(siret) === null ? "Le SIRET a 14 chiffres." : "Le n° TVA : FR suivi de 11 chiffres."}
+                </p>
+              )}
+            </div>
           )}
 
           {/* ═══════════════════════════════════════════════════════════════

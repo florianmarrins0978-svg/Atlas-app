@@ -63,7 +63,9 @@ async function contexte(suffixe: string, enRegle = true): Promise<Ctx> {
 
 /** Une facture directe, sur un chantier posé jeudi et vendredi derniers. */
 async function factureDuChantier(ctx: Ctx, nom = "Jardins Ribault", adresse: string | null = "4 rue de la Garenne, Rezé") {
-  const client = await clientsRepo.creerClient(ctx, { nom, adresse: adresse ?? undefined });
+  // **Une entreprise** : la sous-traitance d'une facture sans devis ne s'offre
+  // qu'à elle depuis le 4 octobre 2026.
+  const client = await clientsRepo.creerClient(ctx, { nom, adresse: adresse ?? undefined, civilite: "entreprise" });
   const chantier = await chantiersRepo.creerChantier(ctx, { nom: `Chez ${nom}`, clientId: client.id });
   // Posé par la base : l'application ne propose que des dates à venir, et un
   // chantier facturé est derrière soi.
@@ -124,6 +126,13 @@ async function main() {
     lue = (await getFacturePourChantier(ctx, chantier.id))!;
     assert.equal(lue.facture.tauxTva, facture.tauxTva);
     assert.deepEqual(lue.lignes.map((l) => l.tauxTva), ["10.00", null]);
+  });
+
+  await test("sans devis, la sous-traitance se refuse à un particulier", async () => {
+    const client = await clientsRepo.creerClient(ctx, { nom: "Bernard", adresse: "Nantes", civilite: "mr" });
+    const chantier = await chantiersRepo.creerChantier(ctx, { nom: "Chez Bernard", clientId: client.id });
+    const facture = await creerFactureSansDevis(ctx, chantier.id);
+    assert.equal((await majAutoliquidationFacture(ctx, facture.id, true)).ok, false);
   });
 
   await test("en franchise, le bouton se refuse", async () => {
@@ -239,9 +248,8 @@ async function main() {
     const de = (nom: string) => liste.find((c) => c.nom === nom)?.entreprise;
     assert.equal(de("Vert Bocage SARL"), true);
     assert.equal(de("Bernard"), false);
-    // Plusieurs « Jardins Ribault » d'essai : celui marqué Entreprise est rangé à part.
+    // « Jardins Ribault » n'a aucun mot de société : seul son choix Entreprise le range à part.
     assert.ok(liste.some((c) => c.nom === "Jardins Ribault" && c.entreprise));
-    assert.ok(liste.some((c) => c.nom === "Jardins Ribault" && !c.entreprise));
   });
 
   // ── 4 OCTOBRE : LE DEVIS EN SOUS-TRAITANCE (B, décoché d'office) ────────
@@ -300,6 +308,15 @@ async function main() {
     assert.equal(off.ok, false, "la facture remet la TVA sur un prix accepté sans");
     const emise = await emettreFacture(ctx, facture.id);
     assert.equal(emise.totalTva, "0.00");
+  });
+
+  await test("la facture d'un devis avec TVA ne passe pas en sous-traitance : elle suit le devis", async () => {
+    const { chantier } = await chantierEntreprise("Lebrun en direct");
+    const d = await devisRepo.getOuCreerDevisBrouillon(ctx, chantier.id);
+    await devisRepo.envoyerDevis(ctx, d.id);
+    const facture = await terminerChantier(ctx, chantier.id);
+    assert.equal(facture.autoliquidation, false);
+    assert.equal((await majAutoliquidationFacture(ctx, facture.id, true)).ok, false);
   });
 
   console.log(`\n${passed} réussi(s), ${failed} échoué(s).`);

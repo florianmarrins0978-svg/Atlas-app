@@ -85,6 +85,8 @@ Puis ses choix sur la planche `appli/documents-en-regle-a-choisir.html` :
 | Ce qu'il faut remplir pour une entreprise | **codé** : en touchant Entreprise, le SIRET et le numéro de TVA apparaissent ; ils s'impriment sous son nom, sur le devis et la facture | `SesCoordonnees.tsx`, `document-commun.ts` |
 | Ses entreprises à part | **codé** : « Vos clients » montre les particuliers, la porte « Vos entreprises › » ouvre la même liste, rangée et cherchable | `src/app/clients/page.tsx` |
 | Le devis en sous-traitance, **B : décoché d'office** | **codé** pour un client Entreprise : prix HT, mention d'autoliquidation, ni TVA ni formulaire de rétractation ; la page du client ne demande plus la case des 14 jours ; la facture qui en naît est déjà sans TVA, et ne se rallume pas | `majAutoliquidationDevis` (`devis.ts`), `DevisCompletClient.tsx` |
+| SIRET et n° TVA **à la création d'un chantier** | **codé** : « Entreprise » les fait apparaître, sur une rangée ; ils complètent sa fiche. Pas en reprise d'un chantier existant : là, ils se corrigent sur sa fiche | `FormulaireNouveauChantier.tsx`, `completerLaFiche` |
+| Le bouton de la facture | **retiré quand la facture vient d'un devis** : elle suit le devis, coché ou non (sa remarque). Gardé sur une facture faite sans devis, pour une entreprise | `FactureClient.tsx`, `majAutoliquidationFacture` |
 
 **Ce qui a été fait autrement que la planche, et pourquoi :** la pastille
 choisie garde la couleur des deux autres pastilles de l'application (fond

@@ -214,6 +214,9 @@ export type FicheDejaConnue = {
   adresse: string | null;
   canalCommunication: string | null;
   creeLe: Date | string;
+  /** Une entreprise cliente (migration 0119) ; absents sur les fiches d'avant. */
+  siret?: string | null;
+  numeroTva?: string | null;
 };
 
 /**
@@ -254,6 +257,9 @@ export async function completerLaFiche(
     email?: string;
     adresse?: string;
     canalCommunication?: CanalClient;
+    /** Déjà lus par `siretLu` et `numeroTvaLu` : seule une valeur valable arrive ici. */
+    siret?: string;
+    numeroTva?: string;
   }
 ): Promise<typeof clients.$inferSelect> {
   const aEcrire: Parameters<typeof mettreAJourClient>[2] = complementsPourFiche(
@@ -264,6 +270,10 @@ export async function completerLaFiche(
   if (saisie.canalCommunication && !existante.canalCommunication) {
     aEcrire.canalCommunication = saisie.canalCommunication;
   }
+  // Le SIRET et le n° TVA d'une entreprise (4 octobre 2026) : la même règle,
+  // le vide se complète, rien ne s'écrase.
+  if (saisie.siret && !existante.siret) aEcrire.siret = saisie.siret;
+  if (saisie.numeroTva && !existante.numeroTva) aEcrire.numeroTva = saisie.numeroTva;
 
   // Rien à compléter : on ne touche pas `updated_at` pour rien — sa fiche
   // porterait une date de modification qu'aucune modification n'explique.

@@ -26,6 +26,12 @@ Une entreprise est un client marqué Entreprise, ou dont le nom porte SARL,
 Mairie… (`estUneEntreprise`). Migration 0119 (expand seul : contraintes de
 civilité élargies, colonnes neuves). Pourquoi : `ARCHITECTURE.md` §443.
 
+Le soir même, deux retouches à sa demande : à la création d'un chantier,
+« Entreprise » fait aussi apparaître le SIRET et le n° TVA ; et la facture
+née d'un devis n'a plus de bouton de sous-traitance, elle suit le devis,
+coché ou non. Le bouton reste sur une facture faite sans devis, pour une
+entreprise.
+
 ## 2026-10-03
 
 ### Le devis et la facture ne partent plus sans leurs mentions obligatoires
