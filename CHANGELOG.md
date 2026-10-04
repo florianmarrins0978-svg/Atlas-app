@@ -45,6 +45,18 @@ suite le pose à la main, comme lui.
 Et une croix au bout de chaque description, sa réponse « A » à la planche
 `appli/retirer-une-ligne-du-devis.html` : sur la rangée du texte, loin des
 chiffres, le glissement restant. Même retrait, donc même « Annuler ».
+### « Faire la facture » reprend le devis du client qui en a un
+
+Sa remarque : *« j'ai voulu créer une facture avant la date de fin de chantier,
+sauf qu'il ne reprend pas le devis du client »*. Depuis Terminés, la fiche
+reconnaissait le client, puis ouvrait un chantier NEUF et une facture VIDE : le
+prix accepté restait sur l'autre chantier, et un doublon naissait. Désormais,
+avant toute création, `chantierDuClientAFacturer` cherche les chantiers de ce
+client qui portent un devis envoyé et aucune facture émise ; un seul (ou un
+seul à l'adresse saisie) se facture par `terminerChantier`, plusieurs sans que
+l'adresse tranche se refusent en le disant. Aucun devis : facture directe,
+comme avant. Éprouvé : `test-facture-sans-devis-db.ts` (rouge sur l'ancien
+comportement, puis vert) et `test-facture-sans-devis-e2e.ts`, par son geste.
 
 ## 2026-09-29
 
