@@ -100,39 +100,39 @@
   const T_REDIGE = 9.5;          // « Je rédige à la main » : l'éditeur de lignes s'ouvre
   const T_EDITEUR = T_REDIGE + .15;
   const T_RETOUR = 11.5;         // retour sur la fiche : l'autre chemin, le micro
-  const T_MICRO = 12.5;
-  const T_DICTEE = 12.9;
-  const T_RACCORD = 15.3;        // 8 h 06 : la transcription, puis la ligne du devis
+  const T_MICRO = 13.5;
+  const T_DICTEE = 13.9;
+  const T_RACCORD = 16.3;        // 8 h 06 : la transcription, puis la ligne du devis
   const T_LIGNE = T_RACCORD + .5;
-  const T_PRET = 16.4;
-  const T_CLIENT = 18.4;         // 12 h 30 : le téléphone du client
-  const T_DATE = 19.6;
-  const T_ACCEPTE = 20.1;
+  const T_PRET = 17.4;
+  const T_CLIENT = 19.4;         // 12 h 30 : le téléphone du client
+  const T_DATE = 20.6;
+  const T_ACCEPTE = 21.1;
   const T_NOTE = T_ACCEPTE + .15;
-  const T_PREVENU = 21.5;        // 12 h 31 : votre accueil, « devis accepté »
-  const T_VOL = 23.1;            // la carte s'envole
-  const T_PLANNING = 23.95;      // elle se pose sur le planning
-  const T_AU_PLANNING = 24.5;
-  const T_GARS = 27.4;           // 7 h 10, le lendemain : le planning de Julien
-  const T_OUVRE = 28.4;
+  const T_PREVENU = 22.5;        // 12 h 31 : votre accueil, « devis accepté »
+  const T_VOL = 24.1;            // la carte s'envole
+  const T_PLANNING = 24.95;      // elle se pose sur le planning
+  const T_AU_PLANNING = 25.5;
+  const T_GARS = 28.4;           // 7 h 10, le lendemain : le planning de Julien
+  const T_OUVRE = 29.4;
   const T_FICHE_G = T_OUVRE + .15;
-  const T_ADRESSE = 29.6;        // la fiche défile vers Mme Martin, Maps, Waze
-  const T_TRAVAUX = 31.0;        // puis vers « Travaux à faire »
-  const T_SANS = 32.3;
-  const T_SOIR = 35.2;           // 18 h 20 : chantier terminé
-  const T_FACTURE = 36.2;
+  const T_ADRESSE = 30.6;        // la fiche défile vers Mme Martin, Maps, Waze
+  const T_TRAVAUX = 32;        // puis vers « Travaux à faire »
+  const T_SANS = 33.3;
+  const T_SOIR = 36.2;           // 18 h 20 : chantier terminé
+  const T_FACTURE = 37.2;
   const T_FACT_GL = T_FACTURE + .15;
-  const T_REPREND = 37.0;
-  const T_TOTAUX = 37.9;         // la facture défile vers ses totaux
-  const T_TVA = 39.3;            // la ligne de TVA devient la table du PDF
-  const T_TAUX = 39.9;
-  const T_DECLARE = 41.5;        // 18 h 21 : la table devient « Ma TVA à déclarer »
-  const T_PRETE = 42.7;
-  const T_POSE = 44.2;           // le téléphone se pose, l'écran s'éteint
-  const T_SIGN = 47.0;
-  const T_DEVISE = 47.9;
-  const T_ESSAI = 48.8;
-  const DUREE = 50.3;
+  const T_REPREND = 38;
+  const T_TOTAUX = 38.9;         // la facture défile vers ses totaux
+  const T_TVA = 40.3;            // la ligne de TVA devient la table du PDF
+  const T_TAUX = 40.9;
+  const T_DECLARE = 42.5;        // 18 h 21 : la table devient « Ma TVA à déclarer »
+  const T_PRETE = 43.7;
+  const T_POSE = 45.2;           // le téléphone se pose, l'écran s'éteint
+  const T_SIGN = 48;
+  const T_DEVISE = 48.9;
+  const T_ESSAI = 49.8;
+  const DUREE = 51.3;
 
   const scene = M.creerScene();
   const matiere = M.creerMatiere();
@@ -219,7 +219,7 @@
   // Chacun attend que l'horloge soit rangée dans le coin (elle y est une
   // seconde après chaque changement d'heure) et s'efface avant le zoom qui suit.
   const LIEUX = [
-    [T_MATIN + .9, T_CREER - .05, 'sur le chantier'],
+    [T_MATIN + .9, T_BAS + .3, 'sur le chantier'],
     [T_CLIENT + 1.0, T_DATE - .35, 'votre client'],
     [T_PREVENU - .1, T_VOL - .9, 'vous êtes prévenu'],
     [T_GARS + 1.0, T_OUVRE - .05, 'vos gars, le lendemain'],
@@ -240,7 +240,7 @@
 
   const PHRASES = [
     ['pSoir1', .4, 2.2], ['pSoir2', 2.7, T_BASCULE - .1],
-    ['pRedigez', T_EDITEUR + .3, T_RETOUR - .1], ['pDictez', T_RETOUR + .2, T_MICRO + .1], ['pPret', T_PRET, T_CLIENT - 1.7], ['pPlanning', T_AU_PLANNING, T_GARS - 1.6],
+    ['pRedigez', T_EDITEUR + .3, T_RETOUR - .5], ['pDictez', T_RETOUR + .1, T_MICRO - .6], ['pPret', T_PRET, T_CLIENT - 1.7], ['pPlanning', T_AU_PLANNING, T_GARS - 1.6],
     ['pGars', T_SANS, T_SOIR - 1.6], ['pReprend', T_REPREND, T_TOTAUX], ['pTaux', T_TAUX, T_DECLARE - .3], ['pPrete', T_PRETE, T_POSE - .3],
   ].map(([id, de, a]) => [M.decouper($(id), 'mots'), de, a]);
   const lettresAtlas = M.decouper($('atlas'), 'lettres');
@@ -322,17 +322,17 @@
   // téléphone), puis la caméra s'approche, puis revient.
   const W = (x, y) => () => ({ x, y });
   const A = (x, y, dy = 0) => () => { const p = tel.pointDeLAppli(x, y); return { x: p.x, y: p.y + dy }; };
-  const ENTIER = W(540, 1000);
+  const ENTIER = W(540, 960);
   const R = C.REGARDS;
   const REGARDS = [
-    [0, 1.0, W(540, 1000)],
+    [0, 1.0, W(540, 960)],
     [T_MATIN, 1.0, ENTIER],
     [T_BAS, 1.0, ENTIER],
     [T_BAS + .5, 1.45, A(195, 700), expo],
     [T_REDIGE + .2, 1.45, A(195, 700)],
     [T_REDIGE + .8, 1.0, ENTIER, entreeSortie],
-    [T_RETOUR + .3, 1.0, ENTIER],
-    [T_RETOUR + .8, 1.45, A(195, 700), expo],
+    [T_MICRO - .7, 1.0, ENTIER],
+    [T_MICRO - .2, 1.45, A(195, 700), expo],
     [T_MICRO + .3, 1.45, A(195, 700)],
     [T_MICRO + .9, 1.0, ENTIER, entreeSortie],
     [T_RACCORD, 1.0, ENTIER],
@@ -375,7 +375,7 @@
     [T_PRETE - .1, 1.4, A(...R.carteTva)],
     [T_PRETE + .5, 1.0, ENTIER, expo],
     [T_POSE, 1.0, ENTIER],
-    [T_POSE + 1.4, 1.0, W(540, 1000)],
+    [T_POSE + 1.4, 1.0, W(540, 960)],
     [T_SIGN, 1.0, W(540, 960)],
   ];
 
@@ -469,7 +469,7 @@
       const pr = expo(entre(t, T_LIGNE, T_LIGNE + .85));
       const dep = tel.pointDeLAppli(...R.transcription);
       raccordDevis.poser({
-        x: mix(dep.x, 540, pr), y: mix(dep.y, 760, pr), largeur: mix(560, 1000, pr), rz: mix(0, -2, pr), rx: mix(0, 8, pr), p: pr,
+        x: mix(dep.x, 540, pr), y: mix(dep.y, 560, pr), largeur: mix(560, 1000, pr), rz: mix(0, -2, pr), rx: mix(0, 8, pr), p: pr,
         opacite: t >= T_LIGNE ? 1 - lisse(entre(t, T_CLIENT - .7, T_CLIENT - .3)) : 0, ombre: pr,
       });
     }

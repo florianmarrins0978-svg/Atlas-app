@@ -17,7 +17,7 @@ toute l'appli, et on ne voit pas qu'on peut dicter ou rédiger le devis : la
 dictée du devis est un point essentiel. »* J'avais lu « nerveuse et récit »
 comme un mélange. **Ce qui change** : deux films, `film-D-nerveuse.html`
 (37 s, 128 à la noire de bout en bout, les mots dans deux bandes, la caméra
-qui saute par crans) et `film-D-recit.html` (50 s, 92 à la noire, l'horloge
+qui saute par crans) et `film-D-recit.html` (51 s, 92 à la noire, l'horloge
 grande aux changements d'heure et rangée dans le coin pendant les piliers) ;
 chaque écran y est montré ENTIER avant tout zoom ; la fiche client montre le
 micro et « Je rédige à la main », qui ouvre pour de vrai l'éditeur de lignes
@@ -35,6 +35,17 @@ dans le monde** : dans le monde, la caméra qui entre dans l'écran les coupait
 au bord ; dans le cadre sans voile, le blanc de l'écran passait sous le mot
 blanc. **Le nom de la cliente du jeu** perd sa civilité, bouton à part sur la
 fiche : l'éditeur écrivait « Mme Mme Martin ».
+
+**Une seconde lecture des planches, bande par bande, avant le rendu de la
+journée** : le monde était posé 40 pixels trop haut (les repères de lieu et
+la dictée mordaient sur l'horloge du coin) ; deux phrases se chevauchaient ;
+la ligne du devis atterrissait sur le titre « Transcription » ; la capture
+de l'éditeur avait été prise après que la ligne saisie eut fait défiler la
+page (le script la remonte avant la photo) ; et « Ou dictez. » sortait du
+cadre dès que la caméra plongeait sur le micro, lisible un quart de seconde.
+La suite du film est décalée d'une seconde pour que la phrase s'écrive sur la
+fiche entière avant que la caméra descende. **Ce que ça évite** : livrer le
+point qu'il a dit essentiel, la dictée, sans qu'on ait le temps de le lire.
 
 ### La vidéo, version D : le film entier, sur la courbe qu'il a choisie
 

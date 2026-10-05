@@ -325,6 +325,10 @@ async function main() {
         await page.getByLabel("Prix unitaire 1").fill(premiere.prix);
         await page.getByLabel("Prix unitaire 1").blur();
         await page.waitForTimeout(600);
+        // Taper la ligne a fait défiler la page : l'écran se reprend du haut,
+        // sans quoi l'en-tête du devis passe sous l'encoche du téléphone.
+        await page.evaluate(() => window.scrollTo(0, 0));
+        await page.waitForTimeout(300);
         await photographier(page, "devis-redige", true);
         await photographier(page, "devis-redige-ecran", false);
       });

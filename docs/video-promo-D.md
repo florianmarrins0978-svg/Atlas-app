@@ -11,7 +11,7 @@ devis : la dictée du devis est un point essentiel. »*
 **État :** deux films entiers, un par direction, rendus en vrai MP4 avec
 leur bande de travail et leur version muette, en tête de
 `appli/video-promo.html` : **le coup de poing** (`atlas-D-nerveuse.mp4`,
-37 s) et **la journée** (`atlas-D-recit.mp4`, 50 s). Le mélange monté
+37 s) et **la journée** (`atlas-D-recit.mp4`, 51 s). Le mélange monté
 d'abord (`atlas-D.mp4`), les trois directions de 8 s et les versions C, A, B
 restent en bas de la page. Rien n'est sur `main` : branche
 `claude/new-session-3ab8dh`, lot de niveau 2.
@@ -36,7 +36,7 @@ restent en bas de la page. Rien n'est sur `main` : branche
 | | |
 |---|---|
 | **Le film** | Lequel des deux, ou les deux (l'un pour les réseaux, l'autre pour le site). Et votre verdict seconde par seconde si quelque chose cloche : les tableaux des §3 et §4 donnent les instants |
-| **La longueur de la journée** | 50 s, parce que chaque écran y est tenu entier. Si c'est trop long, dites ce qui saute (le client, ou la fiche des gars) |
+| **La longueur de la journée** | 51 s, parce que chaque écran y est tenu entier. Si c'est trop long, dites ce qui saute (le client, ou la fiche des gars) |
 | **Le nom** | Atlas, ou un autre. Il est écrit à la fin des deux films |
 | **L'adresse de la fin** | où la vidéo renvoie. Elle s'ajoute sous « Essai gratuit 15 jours » |
 | **La voix** | une voix off, ou le film muet avec sa musique. Un texte de 30 s est proposé en §7 |
@@ -97,7 +97,7 @@ chose à la fois** avec l'appli ; et le temps rendu en chiffres à la fin,
 
 ## 4. La journée, seconde par seconde
 
-`appli/video-promo/film/film-D-recit.html`, 50 s, 92 à la noire, 1080 × 1920,
+`appli/video-promo/film/film-D-recit.html`, 51 s, 92 à la noire, 1080 × 1920,
 60 images par seconde. Une seule horloge tient tout : le soir elle avance
 pendant que les phrases de la douleur passent, le lendemain elle n'avance
 que d'une minute par geste. Grande aux changements d'heure, elle se range
@@ -111,25 +111,25 @@ dans le coin pendant les piliers, pour laisser le téléphone entier.
 | 5,9 à 7,3 | 8 h 05 | « sur le chantier » : l'accueil, entier ; l'horloge se range dans le coin |
 | 7,3 à 9,5 | 8 h 05 | Créer un devis ; la fiche client, entière ; la caméra descend sur le micro et **« Je rédige à la main »**, cerné d'or |
 | 9,5 à 11,5 | 8 h 05 | on le touche : **l'éditeur de lignes s'ouvre**, la première ligne tapée. « Rédigez à la main. » |
-| 11,5 à 12,9 | 8 h 05 | retour sur la fiche : « Ou dictez. » ; le micro cerné d'or, l'appui, l'enregistrement commence dans le téléphone |
-| 12,9 à 15,3 | 8 h 05 | le téléphone entier enregistre (le compteur, l'onde) ; les mots dictés s'écrivent au-dessus ; le trait d'or des trente secondes grandit |
-| 15,3 à 16,4 | **8 h 06** | la transcription, entière, puis le texte **devient** la ligne du devis |
-| 16,4 à 17,7 | 8 h 06 | « Le devis est prêt. » |
-| 17,7 à 19,0 | 8 h 06 à 12 h 30 | l'horloge grandit, roule ; le téléphone tourne : c'est celui du client |
-| 19,0 à 21,5 | 12 h 30 | « votre client » : sa page entière ; « le mardi 13 octobre », l'appui ; « J'accepte ce devis », l'appui ; « C'est noté. Votre artisan est prévenu. » |
-| 21,5 à 23,1 | **12 h 31** | le téléphone revient vers vous : l'accueil entier, « Devis accepté, retenu le mardi 13 octobre » ; la caméra s'approche de la carte |
-| 23,1 à 24,5 | 12 h 31 | la carte **s'envole** et devient la carte « mardi 13 octobre » du planning |
-| 24,5 à 26,8 | 12 h 31 | « Au planning. », le planning entier, le 13 et ses deux bandes |
-| 26,8 à 27,4 | 12 h 31 à 7 h 10 | l'écran s'éteint, l'heure roule jusqu'au lendemain, lumière d'aube, l'écran se rallume |
-| 27,4 à 29,6 | 7 h 10 | « vos gars, le lendemain » : le planning de Julien, entier ; l'appui ; la fiche d'intervention monte, entière |
-| 29,6 à 32,3 | 7 h 10 | la fiche défile : Mme Martin, Maps, Waze, Copier l'adresse, Appeler le client ; puis Travaux à faire, les trois lignes en cases |
-| 32,3 à 34.6 | 7 h 10 | « Sans vous appeler. », le téléphone entier |
-| 34,6 à 35,2 | 7 h 10 à 18 h 20 | l'écran s'éteint, l'heure roule, lumière du soir, l'écran se rallume |
-| 35,2 à 37,9 | 18 h 20 | « chantier terminé » : « Le chantier est réalisé ? », entier ; l'appui ; la facture glisse, entière. « La facture reprend le devis. » |
-| 37,9 à 41,5 | 18 h 20 | la facture défile jusqu'à ses totaux ; la ligne « TVA 20 % 468,00 € » **devient** la table du PDF. « La TVA, taux par taux. » |
-| 41,5 à 44,2 | **18 h 21** | la table **devient** « Ma TVA à déclarer » dans le téléphone, entier. « Prête à déclarer. » |
-| 44,2 à 47,0 | 18 h 21 | le téléphone se pose à plat, l'écran s'éteint, la lumière tombe, l'horloge s'efface. **Pas de phrase** |
-| 47,0 à 50,3 | | **Atlas.** Du devis dicté à la facture. Essai gratuit 15 jours |
+| 11,5 à 13,9 | 8 h 05 | retour sur la fiche : « Ou dictez. » ; le micro cerné d'or, l'appui, l'enregistrement commence dans le téléphone |
+| 13,9 à 16,3 | 8 h 05 | le téléphone entier enregistre (le compteur, l'onde) ; les mots dictés s'écrivent au-dessus ; le trait d'or des trente secondes grandit |
+| 16,3 à 17,4 | **8 h 06** | la transcription, entière, puis le texte **devient** la ligne du devis |
+| 17,4 à 18,7 | 8 h 06 | « Le devis est prêt. » |
+| 18,7 à 20,0 | 8 h 06 à 12 h 30 | l'horloge grandit, roule ; le téléphone tourne : c'est celui du client |
+| 20,0 à 22,5 | 12 h 30 | « votre client » : sa page entière ; « le mardi 13 octobre », l'appui ; « J'accepte ce devis », l'appui ; « C'est noté. Votre artisan est prévenu. » |
+| 22,5 à 24,1 | **12 h 31** | le téléphone revient vers vous : l'accueil entier, « Devis accepté, retenu le mardi 13 octobre » ; la caméra s'approche de la carte |
+| 24,1 à 25,5 | 12 h 31 | la carte **s'envole** et devient la carte « mardi 13 octobre » du planning |
+| 25,5 à 27,8 | 12 h 31 | « Au planning. », le planning entier, le 13 et ses deux bandes |
+| 27,8 à 28,4 | 12 h 31 à 7 h 10 | l'écran s'éteint, l'heure roule jusqu'au lendemain, lumière d'aube, l'écran se rallume |
+| 28,4 à 30,6 | 7 h 10 | « vos gars, le lendemain » : le planning de Julien, entier ; l'appui ; la fiche d'intervention monte, entière |
+| 30,6 à 33,3 | 7 h 10 | la fiche défile : Mme Martin, Maps, Waze, Copier l'adresse, Appeler le client ; puis Travaux à faire, les trois lignes en cases |
+| 33,3 à 35,6 | 7 h 10 | « Sans vous appeler. », le téléphone entier |
+| 35,6 à 36,2 | 7 h 10 à 18 h 20 | l'écran s'éteint, l'heure roule, lumière du soir, l'écran se rallume |
+| 36,2 à 38,9 | 18 h 20 | « chantier terminé » : « Le chantier est réalisé ? », entier ; l'appui ; la facture glisse, entière. « La facture reprend le devis. » |
+| 38,9 à 42,5 | 18 h 20 | la facture défile jusqu'à ses totaux ; la ligne « TVA 20 % 468,00 € » **devient** la table du PDF. « La TVA, taux par taux. » |
+| 42,5 à 45,2 | **18 h 21** | la table **devient** « Ma TVA à déclarer » dans le téléphone, entier. « Prête à déclarer. » |
+| 45,2 à 48,0 | 18 h 21 | le téléphone se pose à plat, l'écran s'éteint, la lumière tombe, l'horloge s'efface. **Pas de phrase** |
+| 48,0 à 51,3 | | **Atlas.** Du devis dicté à la facture. Essai gratuit 15 jours |
 
 ---
 
@@ -257,7 +257,7 @@ table « par taux » n'a qu'une ligne. Rien n'a été inventé pour en montrer d
 
 | Le brief, ou votre demande | Ce qui a été fait |
 |---|---|
-| « 30 à 40 secondes » | le coup de poing fait 37 s ; la journée fait 50 s, parce que chaque écran y est tenu entier, et que vous avez demandé de voir toute l'appli. Ce qui peut sauter si c'est trop long : la page du client (3 s), ou la fiche des gars (7 s) |
+| « 30 à 40 secondes » | le coup de poing fait 37 s ; la journée fait 51 s, parce que chaque écran y est tenu entier, et que vous avez demandé de voir toute l'appli. Ce qui peut sauter si c'est trop long : la page du client (3 s), ou la fiche des gars (7 s) |
 | « Three.js ou CSS 3D » | CSS 3D. Le rendu se fait dans un Chromium sans carte graphique ; un téléphone en WebGL y aurait coûté dix fois plus par image |
 | « flou de mouvement », « grain » | rendus pour de vrai au rendu : deux sous-images par image, moyennées ; un grain à graine fixe (`rendre-film.mjs --obturateur 2 --grain 8`) |
 | « 1920 × 1080 si le temps le permet » | pas fait : votre verdict sur les films verticaux d'abord |
@@ -277,6 +277,22 @@ disparaissait derrière le téléphone entier ; « 20 minutes » sur deux lignes
 ne se laissait pas rayer. Et dans les deux : une fiche client qui revient
 après l'éditeur restait éteinte, parce que le moteur ne savait pas qu'un
 écran peut revenir plus loin dans le découpage.
+
+**Et ce qu'une seconde lecture, bande par bande, a encore trouvé dans la
+journée** : le monde entier était posé 40 pixels trop haut, si bien que les
+repères de lieu et la dictée venaient mordre sur l'horloge rangée dans le coin
+(la caméra vise désormais le centre exact du cadre quand elle ne zoome pas) ;
+« Rédigez à la main. » et « Ou dictez. » se chevauchaient une demi-seconde ;
+la ligne du devis, en quittant la transcription, atterrissait sur le titre
+« Transcription » de l'écran suivant (elle se pose plus haut) ; et la capture
+de l'éditeur avait été prise après que la ligne saisie eut fait défiler la
+page de 39 pixels, ce qui coupait le haut de l'écran (la page est remontée
+avant la photo, et c'est écrit dans le script de capture). Puis, sur la
+planche rendue après ces corrections : « Ou dictez. » sortait du cadre dès
+que la caméra plongeait sur le micro, lisible un quart de seconde, alors que
+la dictée est le point que vous avez dit essentiel. La suite du film est
+décalée d'une seconde (51 s au lieu de 50) : la phrase s'écrit sur la fiche
+entière, le micro cerné d'or sous elle, et la caméra ne descend qu'ensuite.
 
 ---
 
