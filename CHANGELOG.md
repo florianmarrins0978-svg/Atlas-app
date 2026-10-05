@@ -7,6 +7,19 @@ Format : le plus récent en tête.
 
 ---
 
+## 2026-10-05
+
+### Une planche pour le bouton « Créer un devis » de l'accueil
+
+Sa remarque : le bouton manque de style. `appli/creer-un-devis-trois-boutons.html`
+montre trois formes qui ne se ressemblent pas, à la même place : un disque
+plein (A), la phrase en lettres de titre avec un signe d'or qui se trace (B),
+une glissière à pousser au bout (C). Chacune se joue au doigt, vibre, et fait
+monter la feuille. La planche porte les huit chartes du code, lues en
+exécutant `chartes.ts` plutôt qu'à l'œil, un interrupteur « Plein soleil » qui
+délave l'écran comme une dalle à midi, et une bande de contrastes recalculée à
+chaque bascule. Rien dans `src/` : il choisit d'abord.
+
 ## 2026-10-04
 
 ### « Remettre le modèle » touché juste après une croix ne fait plus effacer la ligne
