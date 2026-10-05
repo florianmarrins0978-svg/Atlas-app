@@ -13,11 +13,13 @@
        l'assureur » sur chaque devis et chaque facture. Un champ de plus.
     2. L'attestation décennale jointe : C. assurances L243-2. A : jointe à
        tous les devis et factures dès qu'elle est déposée. B : jointe quand il
-       coche « Travaux soumis à la décennale » sur le devis.
+       coche « Travaux soumis à la décennale » sur le devis. Son choix : A
+       (5 octobre 2026), la planche ne montre plus que lui.
     10. La phrase sous le bouton de sous-traitance : le TEXTE change, la place
        reste (CLAUDE.md §3).
 
-    Écrans relevés sur l'application lancée le 4 octobre 2026. Rien n'est codé.
+    Écrans relevés sur l'application lancée le 4 octobre 2026. Codé le
+    5 octobre 2026 (migration 0121).
   */
   :root{--fond:#e6e3dc;--encre:#1c1c1a;--doux:#4a4a44;--or:#8b6835;--carte:#faf9f5;--trait:rgba(28,28,26,.12)}
   *{box-sizing:border-box}
@@ -45,11 +47,7 @@
 <div class="page">
   <h1>Assurance et sous-traitance</h1>
   <p class="dit">Ce que la loi demande encore. Le cadre doré montre ce qui change.</p>
-  <p class="dit" style="margin-top:12px"><b>L’attestation décennale</b>, jointe quand ?</p>
-  <div class="pupitre">
-    <button type="button" data-choix="A" aria-pressed="true">A : toujours, dès qu’elle est déposée</button>
-    <button type="button" data-choix="B" aria-pressed="false">B : quand vous cochez sur le devis</button>
-  </div>
+  <p class="dit" style="margin-top:12px">Votre choix <b>A</b> : l’attestation part avec tous vos devis et factures dès qu’elle est déposée.</p>
   <div class="rangee">
     <div class="col"><p class="etape">1. Réglages, Mon entreprise. Touchez « Ajouter le PDF ».</p><iframe title="Mon entreprise" srcdoc="&lt;!doctype html&gt;&lt;html lang=&quot;fr&quot; style=&quot;--atlas-barre: 48px;&quot;&gt;&lt;head&gt;&lt;meta charset=&quot;utf-8&quot;&gt;&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width,initial-scale=1&quot;&gt;&lt;style&gt;@layer properties {
   @supports (((-webkit-hyphens: none)) and (not (margin-trim: inline))) or ((-moz-orient: inline) and (not (color: rgb(from red r g b)))) {
