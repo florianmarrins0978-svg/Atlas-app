@@ -27,6 +27,7 @@ restent en bas de la page. Rien n'est sur `main` : branche
 7. [Le cahier du son](#7-le-cahier-du-son)
 8. [Les captures, et les deux écrans retenus](#8-les-captures-et-les-deux-écrans-retenus)
 9. [Ce qui a été fait autrement que le brief, et pourquoi](#9-ce-qui-a-été-fait-autrement-que-le-brief-et-pourquoi)
+9 bis. [Le film récit remonté, 5 octobre 2026](#9-bis-le-film-récit-remonté-5-octobre-2026)
 10. [Ce qui reste, et qui peut le trancher](#10-ce-qui-reste-et-qui-peut-le-trancher)
 
 ---
@@ -322,6 +323,43 @@ de `FactureClient.tsx`, pas du film, et le contrôle des tirets ne le voit pas
 parce qu'il suit un composant. Il est noté dans `TODO.md` pour un lot à
 part ; le film le montre tel quel tant que l'écran n'est pas corrigé et
 recapturé.
+
+---
+
+## 9 bis. Le film récit remonté, 5 octobre 2026
+
+Sa liste, point par point, et ce qui a été fait. Le film nerveuse n'a pas
+bougé : il garde ses captures du dossier `film/`, les nouvelles vivent dans
+`film/recit/` et le contenu propre au récit dans `film-D-recit-contenu.js`.
+
+| Sa demande | Ce qui a été fait |
+|---|---|
+| 18 h 45 « Encore un devis à retaper », 19 h 30 « planifier le chantier pour demain », 20 h 30 « les factures, la TVA » | trois heures au lieu de deux ; l'horloge roule de l'une à l'autre avant chaque phrase |
+| accueil : « 62 jours » devient « 3 jours » | le seed date ses chantiers de fin juillet : le jeu les ramène sur les trois derniers jours, et règle le rappel « chantier sans devis » à trois jours (Réglages l'offre, de 1 à 90 ; le défaut est quatre) |
+| adresse et numéro qui n'existent pas | numéro dans la tranche que l'ARCEP réserve à la fiction (06 39 98 xx xx) ; adresses à numéros qu'aucune impasse ne porte, pour la cliente, l'entreprise et les trois chantiers du seed visibles à l'accueil. **Non vérifié contre la Base Adresse Nationale** : le mandataire de l'environnement ne la joint pas |
+| fiche client sans l'encadré « Repris de sa fiche », page rehaussée | le client du film est nouveau, donc l'encadré n'apparaît pas (il apparaît dans l'application quand le client existe déjà) ; tout le contenu monte d'environ 110 pixels |
+| l'accent sur la dictée, après avoir montré la main | « Rédigez à la main » reste (cadre doré, éditeur), puis « Ou dictez le devis », la dictée mot pour mot, et « Atlas le rédige pour vous » sur le devis |
+| l'exemple : haie de laurier 50 ml, érable | la dictée est la sienne, mot pour mot ; **les prix (700 € et 380 €) sont ceux d'une démonstration, la dictée n'en porte aucun** |
+| la caméra remonte vers le texte dicté, puis le devis, ses lignes, ce qu'il sait faire | la caméra monte pendant la dictée ; la page du devis s'ouvre, serre sur les deux lignes, puis désigne un à un « Ajouter une TVA », « Main d'œuvre », « Ajouter un acompte », « Remise » |
+| plus de page transcription (elle n'existe pas) | retirée du film |
+| « Choisir la date » : le client ne comprend pas que c'est ce qu'il reçoit | on voit la proposition partir (la feuille des dates, le 13 touché), puis la page du devis telle que le client la reçoit, en entier et sa première ligne, avec « Votre client reçoit le devis », puis son téléphone, « chez votre client » |
+| la facture : montrer la page | la ligne de TVA devient la facture en entier, puis sa table taux par taux |
+| la TVA : montrer le relevé | la carte « Ma TVA à déclarer » s'ouvre sur la page du relevé de TVA |
+
+**Durée : 53,3 s devient 67,9 s (+14,6 s).** Presque tout vient de ce que vous
+avez demandé de montrer : la dictée plus longue (32 mots), le devis et ses
+options, la feuille que reçoit le client, la facture entière, le relevé.
+
+**Ce qui reste à vous : l'adresse.** Les adresses du jeu sont choisies pour
+ne pas exister, pas vérifiées. Un contrôle de trente secondes sur
+adresse.data.gouv.fr (« 148 impasse des Pervenches, Rezé », « 214 impasse des
+Mésanges, Nantes ») le fait. Le nom « Les Jardins de Loire » n'a pas été
+cherché non plus.
+
+**Les captures se reprennent** avec `preparer-jeu-du-film.mts --capturer`, puis
+`capturer-ecrans-du-film.mts`, puis `preparer-jeu-du-film.mts --facturer
+--capturer`, puis `capturer-ecrans-du-film.mts facture` (serveur et base en
+place). Elles écrivent dans `film/recit/`.
 
 ---
 

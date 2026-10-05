@@ -28,12 +28,17 @@
 // un compteur, dater une facture à la fin du chantier) passe par les dépôts
 // sous `withEntreprise`, ou par une écriture directe nommée ici, avec sa raison.
 // ═══════════════════════════════════════════════════════════════════════════
-import type { Page } from "playwright";
+import { execFileSync } from "node:child_process";
+import { mkdirSync, renameSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import path from "node:path";
+import { devices, type Page } from "playwright";
 import { fermerPool, pool } from "../src/server/db/client";
 import { garderSeed, phraseDeRefus } from "../src/lib/garde-seed";
 import type { Ctx } from "../src/server/repositories/context";
 import { mettreAJourEntreprise } from "../src/server/repositories/entreprises";
 import { effacerClient } from "../src/server/repositories/donnees-client";
+import { ecrireReglagesRappels } from "../src/server/repositories/rappels";
 import { nommerEquipe } from "../src/server/repositories/equipes";
 import { basculerEquipeDuChantier } from "../src/server/repositories/chantiers";
 import { donnerUnAcces, listerAcces } from "../src/server/repositories/membres-entreprise";
@@ -47,6 +52,7 @@ import { ACCUEIL_EXACT, ADRESSE } from "./_adresse";
 // Ce que le film montre, mot pour mot, vit dans `_jeu-du-film.ts` : la capture
 // et la préparation lisent les mêmes valeurs, et rien ici n'est inventé.
 import {
+  ADRESSES_DU_SEED,
   CHANTIER_NOM,
   CLIENTE,
   COMPTE_DEMO,
@@ -79,6 +85,76 @@ if (!verdict.ok) {
 }
 
 const facturer = process.argv.includes("--facturer");
+
+// ─── Les captures qui ne se prennent qu'EN CHEMIN ──────────────────────────
+// Le devis envoyé, la page de la cliente avant et après son accord, l'accueil
+// « Devis accepté » : chacun n'existe qu'un instant du jeu, et le rejouer coûte
+// tout le jeu. `--capturer` les photographie au passage, à l'échelle des
+// premières captures (iPhone 13, 390 × 844 à l'échelle 3, JPEG à 92).
+// `capturer-ecrans-du-film.mts` prend, lui, ce qui se prend à tout moment.
+const capturer = process.argv.includes("--capturer");
+// `--accueil` : reprendre la seule capture de l'accueil d'avant, sans rejouer le jeu.
+const seulementLAccueil = process.argv.includes("--accueil");
+// Dans recit/ : les captures du film récit, que le film nerveuse ne partage pas.
+const DOSSIER_FILM = "appli/video-promo/film/recit";
+const ECRAN_DU_FILM = { ...devices["iPhone 13"], viewport: { width: 390, height: 844 } };
+const reperesPris: Record<string, unknown> = {};
+if (capturer) mkdirSync(path.join(DOSSIER_FILM, "dictee"), { recursive: true });
+
+async function photographier(page: Page, nom: string, entier = false) {
+  if (!capturer) return;
+  await page.waitForTimeout(500);
+  // L'indicateur du serveur de développement se peint dans le coin : il n'est
+  // pas dans l'application que le patron ouvre.
+  await page.addStyleTag({ content: "nextjs-portal { display: none !important }" });
+  // Une page entière peint chaque élément fixe là où l'écran l'avait au moment
+  // de la prise, au milieu de l'image : la barre du bas, « Choisir la date ».
+  const fixes = entier
+    ? await page.evaluate(() => {
+        const marques: string[] = [];
+        document.querySelectorAll<HTMLElement>("body *").forEach((el, i) => {
+          const position = getComputedStyle(el).position;
+          if (position === "fixed" || position === "sticky") {
+            el.setAttribute("data-film-fixe", String(i));
+            el.style.visibility = "hidden";
+            marques.push(String(i));
+          }
+        });
+        return marques;
+      })
+    : [];
+  await page.screenshot({ path: path.join(DOSSIER_FILM, `${nom}.jpg`), type: "jpeg", quality: 92, fullPage: entier });
+  if (fixes.length > 0) {
+    await page.evaluate(() => {
+      document.querySelectorAll<HTMLElement>("[data-film-fixe]").forEach((el) => {
+        el.style.visibility = "";
+        el.removeAttribute("data-film-fixe");
+      });
+    });
+  }
+  dire(`capture ${nom}.jpg${entier ? " (page entière)" : ""}`);
+}
+
+async function reperer(page: Page, selecteur: string) {
+  return page.locator(selecteur).first().evaluate((el) => {
+    const b = el.getBoundingClientRect();
+    return { x: Math.round(b.left * 10) / 10, y: Math.round((b.top + window.scrollY) * 10) / 10, largeur: Math.round(b.width * 10) / 10, hauteur: Math.round(b.height * 10) / 10 };
+  });
+}
+
+/** Un PDF servi par l'application, rendu à 300 dpi, page 1 : ce que la cliente télécharge. */
+async function rendreLePdf(page: Page, chemin: string, nom: string) {
+  if (!capturer) return;
+  const reponse = await page.request.get(`${BASE}${chemin}`);
+  if (reponse.status() !== 200 || !(reponse.headers()["content-type"] ?? "").includes("application/pdf")) {
+    throw new Error(`${chemin} ne rend pas un PDF (${reponse.status()})`);
+  }
+  const pdf = path.join(tmpdir(), `${nom}.pdf`);
+  writeFileSync(pdf, await reponse.body());
+  execFileSync("pdftoppm", ["-jpeg", "-r", "300", "-f", "1", "-l", "1", "-singlefile", "-jpegopt", "quality=92", pdf, path.join(tmpdir(), nom)]);
+  renameSync(path.join(tmpdir(), `${nom}.jpg`), path.join(DOSSIER_FILM, `${nom}.jpg`));
+  dire(`capture ${nom}.jpg (PDF, page 1)`);
+}
 
 function dire(message: string) {
   console.log(`→ ${message}`);
@@ -208,18 +284,73 @@ async function libererLePremierNumero(ctx: Ctx) {
   );
 }
 
-/** La fiche client, remplie comme le patron la remplit, puis « Je rédige mon devis ». */
+/**
+ * « Devis en attente depuis N jours » : le seed date ses chantiers de la fin
+ * juillet, et le compte grossit chaque jour (62 jours sur la première capture,
+ * 75 un mois plus tard). La carte de l'accueil montre le plus ancien : le film
+ * montre trois jours, la valeur d'un patron à jour. Les chantiers du seed sont
+ * donc ramenés sur les trois derniers jours, dans leur ordre. Aucun écran ne
+ * date un chantier : écriture directe, dans le contexte d'isolation.
+ */
+async function rajeunirLeRappel(ctx: Ctx) {
+  const { rows } = await pool.query<{ id: string }>(
+    `SELECT id FROM chantiers WHERE entreprise_id = $1 AND nom <> $2 AND deleted_at IS NULL AND devis_envoye_at IS NULL ORDER BY created_at, id`,
+    [ctx.entrepriseId, CHANTIER_NOM]
+  );
+  for (const [rang, { id }] of rows.entries()) {
+    const jours = Math.max(3 - rang, 0);
+    const depuis = new Date(Date.now() - jours * 86_400_000 - 60_000 * rang);
+    await ecrireSousContexte(ctx, `UPDATE chantiers SET created_at = $2, updated_at = $2 WHERE id = $1`, [id, depuis], 1);
+  }
+  for (const [nom, adresse] of Object.entries(ADRESSES_DU_SEED)) {
+    await ecrireSousContexte(
+      ctx,
+      `UPDATE chantiers SET adresse_chantier = $3 WHERE entreprise_id = $1 AND nom = $2`,
+      [ctx.entrepriseId, nom, adresse],
+      1
+    );
+  }
+  // Le rappel « chantier sans devis » part à quatre jours par défaut. Trois est
+  // un réglage que Réglages offre (de 1 à 90), pas une valeur forcée.
+  await ecrireReglagesRappels(ctx, { chantierSansDevisJours: 3 });
+  dire(`${rows.length} chantiers du seed sans devis ramenés sur les trois derniers jours, rappel réglé à trois jours`);
+}
+
+/**
+ * La fiche client, remplie comme le patron la remplit, puis « Je rédige mon
+ * devis ». Elle s'ouvre depuis l'accueil, comme chez lui : la fiche est une
+ * feuille posée sur l'accueil, et c'est ce que le film montre.
+ */
 async function creerLeChantier(page: Page): Promise<string> {
-  await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "domcontentloaded" });
+  await page.goto(`${BASE}/`, { waitUntil: "domcontentloaded" });
+  await page.waitForSelector("text=Créer un devis");
+  await photographier(page, "accueil-avant");
+  await page.getByText("Créer un devis").first().click();
   await page.waitForSelector('[data-atlas="civilite-mme"]');
   await page.click('[data-atlas="civilite-mme"]');
   await page.getByLabel(/Nom du client/i).fill(CLIENTE.nom);
   await page.fill('input[placeholder="06 12 34 56 78"]', CLIENTE.telephone);
   const adresse = page.getByRole("combobox", { name: "Adresse du chantier" });
   await adresse.fill(CLIENTE.adresse);
-  // La liste des adresses proposées s'ouvre sous le champ : on la referme sans
-  // rien choisir, l'adresse tapée reste telle quelle.
-  await page.keyboard.press("Escape");
+  // La liste des adresses proposées se referme en quittant le champ. Échap
+  // fermerait la feuille entière, et le brouillon partirait au classement.
+  await adresse.blur();
+  await page.waitForTimeout(600);
+  await photographier(page, "fiche-reconnue");
+  if (capturer) {
+    reperesPris.ficheClient = {
+      micro: await reperer(page, '[aria-label="Dicter une note vocale"]'),
+      jeRedige: await reperer(page, '[data-atlas="action-ecrire"]'),
+    };
+    // L'enregistrement, tel qu'il s'ouvre : on jette la note aussitôt, rien
+    // ne part. Le micro est celui, fictif, que le navigateur du film simule.
+    await page.click('[aria-label="Dicter une note vocale"]');
+    await page.waitForSelector('[data-atlas="dictee-jeter"]');
+    await photographier(page, "dictee/enregistre");
+    await page.click('[data-atlas="dictee-jeter"]');
+    await page.waitForSelector('[data-atlas="action-ecrire"]');
+    await page.waitForTimeout(400);
+  }
   return creerPuisFiche(page);
 }
 
@@ -245,6 +376,7 @@ async function ecrireLesLignes(page: Page, chantierId: string) {
   }
   await page.goto(`${BASE}/chantiers/${chantierId}/devis-complet`, { waitUntil: "domcontentloaded" });
   await page.waitForSelector("text=Total TTC", { timeout: 60_000 });
+  await photographier(page, "devis-vide");
   for (const [i, ligne] of LIGNES.entries()) {
     const rang = i + 1;
     if ((await page.getByLabel(`Description ${rang}`).count()) === 0) {
@@ -258,8 +390,31 @@ async function ecrireLesLignes(page: Page, chantierId: string) {
     await page.getByLabel(`Prix unitaire ${rang}`).fill(ligne.prix);
     await page.getByLabel(`Prix unitaire ${rang}`).blur();
     await page.waitForTimeout(600);
+    if (i === 0) {
+      // Taper la ligne a fait défiler la page : l'écran se reprend du haut.
+      await page.evaluate(() => window.scrollTo(0, 0));
+      await photographier(page, "devis-redige", true);
+      await photographier(page, "devis-redige-ecran");
+    }
   }
   await attendreEnBase("les lignes du devis", () => lignesEnregistrees(chantierId), lignesConformes);
+  await page.evaluate(() => window.scrollTo(0, 0));
+  if (capturer) {
+    // Ce que le devis sait faire, en pixels de la page : le film y désigne chaque lien.
+    const lien = (nom: string) => reperer(page, `text=${nom}`);
+    reperesPris.devis = {
+      ajouterUneLigne: await lien("+ Ajouter une ligne"),
+      ajouterUneTva: await lien("+ Ajouter une TVA"),
+      mainDOeuvre: await lien("+ Main d’œuvre"),
+      ajouterUnAcompte: await lien("+ Ajouter un acompte"),
+      remise: await lien("+ Remise"),
+      totalTtc: await lien("Total TTC"),
+      description1: await reperer(page, '[aria-label="Description 1"]'),
+      description2: await reperer(page, '[aria-label="Description 2"]'),
+    };
+  }
+  await photographier(page, "devis-rempli", true);
+  await photographier(page, "devis-rempli-ecran");
   dire(`${LIGNES.length} lignes écrites sur le devis`);
 }
 
@@ -273,6 +428,7 @@ async function envoyerLeDevis(page: Page, chantierId: string): Promise<string> {
   await page.waitForSelector('[data-atlas="invite-dates"]');
   await page.click(`[data-jour="${JOUR_DU_CHANTIER}"]`);
   await page.waitForSelector('[data-atlas="proposition-1"]');
+  await photographier(page, "date-proposee");
   await page.getByRole("button", { name: "Envoyer le devis" }).click();
   // L'envoi ramène à l'accueil chez le patron ; sur une adresse locale, le lien
   // SMS ne peut pas se composer et l'écran dépose sur l'export du chantier
@@ -312,7 +468,7 @@ async function envoyerLeDevis(page: Page, chantierId: string): Promise<string> {
  */
 async function laClienteAccepte(jeton: string, chantierId: string) {
   const navigateur = await lancerNavigateur();
-  const contexte = await navigateur.newContext();
+  const contexte = await navigateur.newContext(capturer ? ECRAN_DU_FILM : undefined);
   const page = await contexte.newPage();
   try {
     await page.goto(`${BASE}/devis/${jeton}`, { waitUntil: "domcontentloaded" });
@@ -324,8 +480,12 @@ async function laClienteAccepte(jeton: string, chantierId: string) {
     // veut : c'est sa date.
     const retractation = page.locator('input[name="demarrageAnticipe"]');
     if ((await retractation.count()) > 0) await retractation.check();
+    await photographier(page, "client-date");
+    // Le PDF que « Télécharger mon devis » remet à la cliente.
+    await rendreLePdf(page, `/devis/${jeton}/pdf`, "devis-pdf");
     await page.click('button:has-text("J\'accepte ce devis")');
     await page.waitForSelector("text=Votre artisan est prévenu", { timeout: 30_000 });
+    await photographier(page, "client-accepte");
   } finally {
     await contexte.close();
     await navigateur.close();
@@ -387,6 +547,23 @@ async function donnerLAccesAuSalarie(ctx: Ctx) {
   dire(`compte salarié ${COMPTE_SALARIE.email} (mot de passe : ${COMPTE_SALARIE.motDePasse})`);
 }
 
+/** La facture telle qu'elle s'ouvre, avant son envoi : c'est l'écran que le film montre. */
+async function photographierLeBrouillon(chantierId: string) {
+  if (!capturer) return;
+  const navigateur = await lancerNavigateur();
+  const contexte = await navigateur.newContext(ECRAN_DU_FILM);
+  const page = await contexte.newPage();
+  try {
+    await seConnecter(page);
+    await page.goto(`${BASE}/chantiers/${chantierId}/facture`, { waitUntil: "domcontentloaded" });
+    await page.waitForSelector("text=Reprise du devis", { timeout: 30_000 });
+    await photographier(page, "facture", true);
+  } finally {
+    await contexte.close();
+    await navigateur.close();
+  }
+}
+
 /** Fin de chantier, facture émise, réglée : ce que « Terminés » et « Ma TVA » montrent. */
 async function facturerLeChantier(ctx: Ctx, chantierId: string) {
   const existante = await pool.query<{ id: string; statut: string }>(`SELECT id, statut FROM factures WHERE chantier_id = $1`, [chantierId]);
@@ -395,6 +572,7 @@ async function facturerLeChantier(ctx: Ctx, chantierId: string) {
     const brouillon = await terminerChantier(ctx, chantierId, FIN_DU_CHANTIER);
     factureId = brouillon.id;
     dire(`chantier terminé le ${FIN_DU_CHANTIER.toISOString().slice(0, 10)}, facture ${brouillon.numeroCommercial} préparée`);
+    await photographierLeBrouillon(chantierId);
   }
   if (existante.rows[0]?.statut !== "emise") {
     const emise = await emettreFacture(ctx, factureId, FIN_DU_CHANTIER);
@@ -430,12 +608,32 @@ async function main() {
   await mettreAJourEntreprise(ctx, { nom: ENTREPRISE.nom, adresse: ENTREPRISE.adresse, nombreSalaries: SALARIES.length });
   dire(`entreprise « ${ENTREPRISE.nom} », ${ENTREPRISE.adresse}, ${SALARIES.length} salariés`);
 
+  await rajeunirLeRappel(ctx);
+  if (seulementLAccueil) {
+    await libererLePremierNumero(ctx);
+    const navigateur = await lancerNavigateur();
+    const contexte = await navigateur.newContext(ECRAN_DU_FILM);
+    const page = await contexte.newPage();
+    try {
+      await seConnecter(page);
+      await page.goto(`${BASE}/`, { waitUntil: "domcontentloaded" });
+      await page.waitForSelector("text=Créer un devis");
+      await photographier(page, "accueil-avant");
+    } finally {
+      await contexte.close();
+      await navigateur.close();
+    }
+    return;
+  }
   let film = await chantierDuFilm(ctx);
   if (film?.reponse === "acceptee" && film.date_planifiee === JOUR_DU_CHANTIER) {
     dire(`le chantier « ${CHANTIER_NOM} » est déjà accepté et posé le ${JOUR_DU_CHANTIER} : rien à recréer`);
   } else {
-    const navigateur = await lancerNavigateur();
-    const contexte = await navigateur.newContext();
+    // Au film, un micro fictif : la dictée s'ouvre sans rien enregistrer.
+    const navigateur = await lancerNavigateur(
+      capturer ? { args: ["--use-fake-device-for-media-stream", "--use-fake-ui-for-media-stream"] } : {}
+    );
+    const contexte = await navigateur.newContext(capturer ? ECRAN_DU_FILM : undefined);
     const page = await contexte.newPage();
     try {
       await seConnecter(page);
@@ -456,11 +654,17 @@ async function main() {
         jeton = await envoyerLeDevis(page, chantierId);
       }
       if (film?.reponse !== "acceptee") await laClienteAccepte(jeton, chantierId);
+      if (capturer) {
+        await page.goto(`${BASE}/`, { waitUntil: "domcontentloaded" });
+        await page.waitForSelector("text=Devis accepté");
+        await photographier(page, "accueil");
+      }
     } finally {
       await contexte.close();
       await navigateur.close();
     }
     film = await chantierDuFilm(ctx);
+    if (Object.keys(reperesPris).length > 0) console.log(`\nRepères pris : ${JSON.stringify(reperesPris, null, 2)}`);
     if (!film?.devis_id || film.date_planifiee !== JOUR_DU_CHANTIER) {
       throw new Error("le chantier du film n'est pas retrouvé posé au planning après sa création");
     }

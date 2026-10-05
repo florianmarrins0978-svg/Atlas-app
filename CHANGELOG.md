@@ -9,6 +9,28 @@ Format : le plus récent en tête.
 
 ## 2026-10-05
 
+### Le film récit remonté : un autre exemple, des données qui n'existent pas, toutes les pages montrées
+
+**Sa liste du 5 octobre 2026** : trois heures le soir (18 h 45, 19 h 30,
+20 h 30), un accueil à « trois jours », une cliente sans adresse ni numéro
+réels, une fiche client sans « Repris de sa fiche », plus d'écran de
+transcription (il n'existe pas dans l'application), la dictée « haie de
+laurier, érable », le devis entier et ce qu'il sait faire, la feuille que le
+client reçoit, la facture et le relevé de TVA en pages entières. **Ce qui
+change** : `film-D-recit.html` (53 s devient 68 s) et son contenu propre
+`film-D-recit-contenu.js` ; les captures vivent dans `film/recit/`, car le
+film nerveuse, qu'elle a dit de ne pas toucher, garde celles de `film/` et ses
+zones mesurées dessus ; le jeu de démonstration (`_jeu-du-film.ts`,
+`preparer-jeu-du-film.mts --capturer`) prend maintenant lui-même les captures
+qui n'existent qu'en chemin (accueil d'avant, fiche, enregistrement, devis
+rempli, feuille des dates, page du client, PDF, facture en brouillon). Le
+morceau animé gagne un zoom (`zoneVers`) que les autres films ignorent.
+**Ce que ça évite** : un film dont l'exemple, les adresses et les écrans
+disent autre chose que ce que l'application fait. **Ce qui reste ouvert** :
+les adresses sont choisies pour ne pas exister, non vérifiées (la Base Adresse
+Nationale n'est pas joignable d'ici) ; les prix du devis (700 € et 380 €) sont
+ceux d'une démonstration. Voir `docs/video-promo-D.md` §9 bis.
+
 ### La vidéo, version D : deux films distincts, le téléphone entier, les deux chemins du devis
 
 **Sa précision, après le premier montage** : *« Je voulais que tu me fasses

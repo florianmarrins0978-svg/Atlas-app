@@ -37,7 +37,7 @@ import { CHANTIER_NOM, CLIENTE, COMPTE_DEMO, COMPTE_SALARIE, JOUR_DU_CHANTIER, L
 const args = process.argv.slice(2);
 const serie = args.includes("facture") ? "facture" : args.includes("editeur") ? "editeur" : "planning";
 const rangDossier = args.indexOf("--dossier");
-const DOSSIER = rangDossier >= 0 && args[rangDossier + 1] ? args[rangDossier + 1] : "appli/video-promo/film";
+const DOSSIER = rangDossier >= 0 && args[rangDossier + 1] ? args[rangDossier + 1] : "appli/video-promo/film/recit";
 const BASE = ADRESSE;
 
 // L'écran du film : celui des premières captures (1170 × 2532), et non les
@@ -92,6 +92,9 @@ async function photographier(page: Page, nom: string, entier: boolean) {
   // Les transitions de l'écran (le pli des travaux, la fiche qui s'ouvre)
   // durent 300 ms : on les laisse finir, sinon l'image les fige à moitié.
   await page.waitForTimeout(450);
+  // L'indicateur du serveur de développement se peint dans le coin de l'écran :
+  // il n'est pas dans l'application que le patron ouvre.
+  await page.addStyleTag({ content: "nextjs-portal { display: none !important }" });
   // **La barre du bas est fixe** (`AtlasBottomNav`) : une capture de la page
   // entière la peint là où était l'écran au moment de la prise, c'est-à-dire
   // au milieu de l'image, par-dessus la fiche. On la retire de ces captures-là
@@ -337,6 +340,10 @@ async function main() {
         await seConnecter(page, COMPTE_DEMO);
         const chantierId = await serieDuPlanning(page, { planning: "planning-jour", fiche: "fiche-intervention" }, true);
         await rendreLePdf(page, `/api/chantiers/${chantierId}/feuille/pdf`, "feuille-sans-prix");
+        // « Le chantier est réalisé ? » : la facture n'existe pas encore, l'écran
+        // ne s'atteint qu'ici, avant `preparer-jeu-du-film.mts --facturer`.
+        await ouvrir(page, `/chantiers/${chantierId}/facture`);
+        await photographier(page, "facture-avant", false);
       });
       await avecUnePage(navigateur, async (page) => {
         await seConnecter(page, COMPTE_SALARIE);

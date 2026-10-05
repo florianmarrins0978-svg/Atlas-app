@@ -71,6 +71,9 @@
 <li><a href="#7-le-cahier-du-son">Le cahier du son</a></li>
 <li><a href="#8-les-captures-et-les-deux-écrans-retenus">Les captures, et les deux écrans retenus</a></li>
 <li><a href="#9-ce-qui-a-été-fait-autrement-que-le-brief-et-pourquoi">Ce qui a été fait autrement que le brief, et pourquoi</a></li>
+</ol>
+<p>9 bis. <a href="#9-bis-le-film-récit-remonté-5-octobre-2026">Le film récit remonté, 5 octobre 2026</a></p>
+<ol>
 <li><a href="#10-ce-qui-reste-et-qui-peut-le-trancher">Ce qui reste, et qui peut le trancher</a></li>
 </ol>
 <hr>
@@ -530,6 +533,62 @@
 <p><strong>Puis une relecture hostile, bande par bande, sur la planche de la journée (vingt et une bandes lues, chaque constat rejoué en pleine taille)</strong> : l'horloge s'éclipsait pendant son passage à 8 h 06, parce que la minute roulait au moment même où le zoom la range (elle roule maintenant avant) ; la ligne du devis, en montant, couvrait l'encoche et le titre « Transcription » un quart de seconde (le téléphone recule pendant qu'elle monte) ; la page du client, qui n'a pas la marge des écrans de l'appli, passait sous l'encoche (descendue de 60 points, la bande découverte de la couleur de la page) ; « Le devis est prêt. » restait lisible 0,3 s et le repère « votre client » ne s'affichait jamais, sa fenêtre étant inversée (deux secondes rendues à ce passage : la journée fait 53 s). Les constats sur l'encoche qui cache le contenu qui défile dessous n'ont pas été retenus : c'est ce que fait un vrai téléphone.</p>
 <p><strong>Et dans le coup de poing, relu à la main sur les mêmes bandes</strong> : le « 30 » de « 30 secondes » était posé derrière le téléphone, qui en cachait le bas (il tient maintenant au-dessus) ; les mots de l'ouverture frappaient à une taille qui touchait les deux bords (« LES GARS. ») ; « SECONDES. » débordait du cadre pendant son coup d'entrée ; « LE SOIR. » de la fin se levait derrière le téléphone posé (il se pose maintenant après la phrase) ; et la table de TVA arrivait pendant que la caméra était encore dans l'écran, donc une fois et demie trop grande et coupée sur trois côtés (la caméra ressort d'abord).</p>
 <p><strong>Un défaut vu dans le film, mais qui est dans l'application</strong> : l'en-tête de la facture écrit « F2026-000001 — Mme Martin », avec un tiret. Il vient de <code>FactureClient.tsx</code>, pas du film, et le contrôle des tirets ne le voit pas parce qu'il suit un composant. Il est noté dans <code>TODO.md</code> pour un lot à part ; le film le montre tel quel tant que l'écran n'est pas corrigé et recapturé.</p>
+<hr>
+<h2 id="9-bis-le-film-récit-remonté-5-octobre-2026">9 bis. Le film récit remonté, 5 octobre 2026</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Sa liste, point par point, et ce qui a été fait. Le film nerveuse n'a pas bougé : il garde ses captures du dossier <code>film/</code>, les nouvelles vivent dans <code>film/recit/</code> et le contenu propre au récit dans <code>film-D-recit-contenu.js</code>.</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Sa demande</th>
+<th>Ce qui a été fait</th>
+</tr></thead><tbody>
+<tr>
+<td>18 h 45 « Encore un devis à retaper », 19 h 30 « planifier le chantier pour demain », 20 h 30 « les factures, la TVA »</td>
+<td>trois heures au lieu de deux ; l'horloge roule de l'une à l'autre avant chaque phrase</td>
+</tr>
+<tr>
+<td>accueil : « 62 jours » devient « 3 jours »</td>
+<td>le seed date ses chantiers de fin juillet : le jeu les ramène sur les trois derniers jours, et règle le rappel « chantier sans devis » à trois jours (Réglages l'offre, de 1 à 90 ; le défaut est quatre)</td>
+</tr>
+<tr>
+<td>adresse et numéro qui n'existent pas</td>
+<td>numéro dans la tranche que l'ARCEP réserve à la fiction (06 39 98 xx xx) ; adresses à numéros qu'aucune impasse ne porte, pour la cliente, l'entreprise et les trois chantiers du seed visibles à l'accueil. <strong>Non vérifié contre la Base Adresse Nationale</strong> : le mandataire de l'environnement ne la joint pas</td>
+</tr>
+<tr>
+<td>fiche client sans l'encadré « Repris de sa fiche », page rehaussée</td>
+<td>le client du film est nouveau, donc l'encadré n'apparaît pas (il apparaît dans l'application quand le client existe déjà) ; tout le contenu monte d'environ 110 pixels</td>
+</tr>
+<tr>
+<td>l'accent sur la dictée, après avoir montré la main</td>
+<td>« Rédigez à la main » reste (cadre doré, éditeur), puis « Ou dictez le devis », la dictée mot pour mot, et « Atlas le rédige pour vous » sur le devis</td>
+</tr>
+<tr>
+<td>l'exemple : haie de laurier 50 ml, érable</td>
+<td>la dictée est la sienne, mot pour mot ; <strong>les prix (700 € et 380 €) sont ceux d'une démonstration, la dictée n'en porte aucun</strong></td>
+</tr>
+<tr>
+<td>la caméra remonte vers le texte dicté, puis le devis, ses lignes, ce qu'il sait faire</td>
+<td>la caméra monte pendant la dictée ; la page du devis s'ouvre, serre sur les deux lignes, puis désigne un à un « Ajouter une TVA », « Main d'œuvre », « Ajouter un acompte », « Remise »</td>
+</tr>
+<tr>
+<td>plus de page transcription (elle n'existe pas)</td>
+<td>retirée du film</td>
+</tr>
+<tr>
+<td>« Choisir la date » : le client ne comprend pas que c'est ce qu'il reçoit</td>
+<td>on voit la proposition partir (la feuille des dates, le 13 touché), puis la page du devis telle que le client la reçoit, en entier et sa première ligne, avec « Votre client reçoit le devis », puis son téléphone, « chez votre client »</td>
+</tr>
+<tr>
+<td>la facture : montrer la page</td>
+<td>la ligne de TVA devient la facture en entier, puis sa table taux par taux</td>
+</tr>
+<tr>
+<td>la TVA : montrer le relevé</td>
+<td>la carte « Ma TVA à déclarer » s'ouvre sur la page du relevé de TVA</td>
+</tr>
+</tbody></table></div>
+<p><strong>Durée : 53,3 s devient 67,9 s (+14,6 s).</strong> Presque tout vient de ce que vous avez demandé de montrer : la dictée plus longue (32 mots), le devis et ses options, la feuille que reçoit le client, la facture entière, le relevé.</p>
+<p><strong>Ce qui reste à vous : l'adresse.</strong> Les adresses du jeu sont choisies pour ne pas exister, pas vérifiées. Un contrôle de trente secondes sur adresse.data.gouv.fr (« 148 impasse des Pervenches, Rezé », « 214 impasse des Mésanges, Nantes ») le fait. Le nom « Les Jardins de Loire » n'a pas été cherché non plus.</p>
+<p><strong>Les captures se reprennent</strong> avec <code>preparer-jeu-du-film.mts --capturer</code>, puis <code>capturer-ecrans-du-film.mts</code>, puis <code>preparer-jeu-du-film.mts --facturer --capturer</code>, puis <code>capturer-ecrans-du-film.mts facture</code> (serveur et base en place). Elles écrivent dans <code>film/recit/</code>.</p>
 <hr>
 <h2 id="10-ce-qui-reste-et-qui-peut-le-trancher">10. Ce qui reste, et qui peut le trancher</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
