@@ -76,6 +76,8 @@ cas("le médiateur manque au devis, jamais à la facture", () => {
 cas("la décennale ne bloque que si ses conditions la citent encore entre crochets", () => {
   assert.deepEqual(manquesDuDevis(EN_REGLE, CLIENT, "9. Assurances.").map((x) => x.cle), []);
   assert.deepEqual(manquesDuDevis(EN_REGLE, CLIENT, `9. ${CROCHET_DECENNALE}.`).map((x) => x.cle), ["decennale"]);
+  // Sa règle du 5 octobre 2026 : non enregistrée, la décennale n'est pas « incomplète ».
+  assert.deepEqual(manquesDuDevis(EN_REGLE, CLIENT, TEXTE_ORIGINE_CONDITIONS_GENERALES).map((x) => x.cle), []);
 });
 
 cas("un devis dicté sans adresse de client part quand même", () => {

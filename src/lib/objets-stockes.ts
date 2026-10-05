@@ -4,7 +4,7 @@
 // **POURQUOI CE FICHIER EXISTE.**
 //
 // Atlas range ses octets dans un stockage objet (S3), et la base ne garde que
-// la CLÉ qui y mène. Onze colonnes, réparties sur dix tables, portent une de ces
+// la CLÉ qui y mène. Dix-sept colonnes, réparties sur quatorze tables, portent une de ces
 // clés. Personne ne peut deviner cette liste : ni PostgreSQL, ni l'hébergeur, ni
 // un outil de sauvegarde. C'est la seule chose, dans tout le sujet
 // « sauvegarde », que le produit doit savoir à la place de sa machine.
@@ -56,7 +56,7 @@ export type ColonneObjet = {
 };
 
 /**
- * Les onze colonnes, dans l'ordre où on les lit dans `schema.ts`.
+ * Les dix-sept colonnes, dans l'ordre où on les lit dans `schema.ts`.
  *
  * **Cette liste se vérifie contre le schéma**, elle ne se maintient pas à la
  * main : `scripts/test-objets-stockes.ts` relit `schema.ts` et refuse toute
@@ -111,6 +111,27 @@ export const COLONNES_OBJET: readonly ColonneObjet[] = [
     quoi: "un objet en attente de purge",
     absenceNormale: true,
     raisonAbsence: "la file peut nommer un objet déjà retiré par une purge précédente",
+  },
+  {
+    table: "entreprises",
+    colonne: "attestation_decennale_cle",
+    quoi: "l'attestation d'assurance décennale déposée",
+    absenceNormale: true,
+    raisonAbsence: "une entreprise dont les travaux ne relèvent pas de la décennale n'en dépose pas",
+  },
+  {
+    table: "devis",
+    colonne: "entreprise_attestation_decennale_cle",
+    quoi: "l'attestation décennale jointe à un devis",
+    absenceNormale: true,
+    raisonAbsence: "un devis d'avant la migration 0121, ou d'une entreprise sans décennale, n'en porte pas",
+  },
+  {
+    table: "factures",
+    colonne: "entreprise_attestation_decennale_cle",
+    quoi: "l'attestation décennale jointe à une facture",
+    absenceNormale: true,
+    raisonAbsence: "même raison que le devis",
   },
   {
     table: "devis",

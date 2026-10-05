@@ -503,9 +503,10 @@ export const FICHES_PAYSAGE: FicheModeEmploi[] = [
     intitule: "Chercher un client par son nom",
     motsCles: ["chercher", "rechercher", "client", "nom", "trouver", "retrouver", "filtrer"],
     geste: "En haut de « Vos clients », tapez une partie de son nom dans « Chercher un client ».",
-    reserve: "La recherche porte sur le nom du client.",
+    // Ses entreprises vivent derrière leur porte depuis le 4 octobre 2026.
+    reserve: "La recherche porte sur le nom du client. Une entreprise se cherche dans « Vos entreprises ».",
     source: "src/app/clients/ListeClients.tsx",
-    preuves: ['placeholder="Chercher un client"', "filtrerClientsParNom(clients, saisie)"],
+    preuves: ['"Chercher un client"', '"Chercher une entreprise"', "filtrerClientsParNom(clients, saisie)"],
     ailleurs: [{ source: "src/app/EcranChantiers.tsx", preuves: ['href="/clients"', "Vos clients"] }],
   },
   {

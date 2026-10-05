@@ -34175,3 +34175,13 @@ soumis à la décennale : c'est lui qui rend l'adresse et l'attestation
 obligatoires, sur le devis et la facture, sous-traitance comprise (ni l'une ni
 l'autre ne relève du droit de la consommation).
 
+**Ajouté le même jour, sa règle :** *« la décennale ne doit pas apparaître
+comme étant incomplète tant qu'elle n'est pas enregistrée dans les
+réglages »*. L'assureur ENREGISTRÉ décide de tout, jamais le champ en cours de
+frappe. Et sans lui, la moitié décennale de l'article 9 (écrite une seule fois,
+`MOITIE_DECENNALE`) se retire du texte d'origine : ce n'est pas un crochet « à
+remplir », c'est une assurance qu'il n'a pas. Le blocage regarde ce qui
+s'IMPRIMERAIT (`conditionsGeneralesRemplies`), pas le texte brut : un crochet
+resté dans ses propres phrases arrête encore l'envoi, parce qu'on ne réécrit
+pas un texte qu'on n'a pas écrit.
+

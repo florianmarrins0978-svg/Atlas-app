@@ -5,7 +5,8 @@ import { colors, font, libelleCaps, texteSituation } from "@/lib/design-tokens";
 import ChampAdresse from "@/components/atlas/ChampAdresse";
 import ChampTelephone from "./ChampTelephone";
 import ChampFormeJuridique from "./ChampFormeJuridique";
-import { majIdentiteAction, deposerAttestationAction, retirerAttestationAction } from "./actions";
+import { majIdentiteAction } from "./actions";
+import { deposerAttestationAction, retirerAttestationAction } from "./attestation-actions";
 import { ATTESTATION_FORMATS, refusDeLAttestation } from "@/lib/attestation-decennale";
 import BarreEnregistrer from "@/components/atlas/BarreEnregistrer";
 import DemanderPreuve from "@/components/atlas/DemanderPreuve";
@@ -121,6 +122,15 @@ export default function IdentiteClient({
     null
   );
 
+  /**
+   * **L'assureur tel que le SERVEUR l'a enregistré** — sa règle du 5 octobre
+   * 2026 : *« la décennale ne doit pas apparaître comme étant incomplète tant
+   * qu'elle n'est pas enregistrée dans les réglages »*. Rien ne rougit pendant
+   * qu'il tape ; l'adresse et l'attestation ne se réclament qu'une fois
+   * l'assureur rangé, comme le refus d'envoi qui en découle.
+   */
+  const [assureurEnregistre, setAssureurEnregistre] = useState(initial.assureurDecennale.trim());
+
   function enregistrer(partiel: Partial<Identite>) {
     demarrer(async () => {
       const r = await majIdentiteAction(partiel);
@@ -142,6 +152,7 @@ export default function IdentiteClient({
         setASignaler(restantes);
         setPremierJour(restantes.length > 0);
       }
+      if (r.ok && partiel.assureurDecennale !== undefined) setAssureurEnregistre(partiel.assureurDecennale.trim());
       if (r.ok) {
         setAEcrire((a) => {
           const reste = { ...a };
@@ -383,8 +394,6 @@ export default function IdentiteClient({
           placeholder="AXA, Groupama, MMA…"
           onChange={(v) => ecrire("assureurDecennale", v)}
           onFini={(duChamp) => enregistrer({ assureurDecennale: duChamp })}
-          manquant={valeurs.assureurDecennale.trim() === ""}
-          empeche="Sans elle, vos devis partent sans une mention que la loi y attend."
         />
         {/* **Son choix A du 5 octobre 2026** (`appli/assurance-et-sous-traitance.html`) :
             la loi veut les coordonnées de l'assureur sur chaque devis et chaque
@@ -396,7 +405,7 @@ export default function IdentiteClient({
           placeholder="Sur votre attestation"
           onChange={(v) => ecrire("adresseAssureurDecennale", v)}
           onFini={(duChamp) => enregistrer({ adresseAssureurDecennale: duChamp })}
-          manquant={valeurs.assureurDecennale.trim() !== "" && valeurs.adresseAssureurDecennale.trim() === ""}
+          manquant={assureurEnregistre !== "" && valeurs.adresseAssureurDecennale.trim() === ""}
           empeche="Sans elle, vos devis et vos factures ne partent pas."
         />
         <Champ
@@ -415,7 +424,7 @@ export default function IdentiteClient({
         />
         <Attestation
           initiale={attestationDeposee}
-          exigee={valeurs.assureurDecennale.trim() !== ""}
+          exigee={assureurEnregistre !== ""}
         />
       </Bloc>
 

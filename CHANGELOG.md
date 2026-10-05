@@ -29,6 +29,22 @@ points 1, 2 et 10) :
 - sous le bouton « Sous-traitance, sans TVA » : *« Seulement si votre client a
   lui-même le chantier d'un autre. »* (le texte change, la place reste).
 
+**Sa règle du même jour :** *« la décennale ne doit pas apparaître comme étant
+incomplète tant qu'elle n'est pas enregistrée dans les réglages »*. Donc :
+
+- le champ Assureur vide ne rougit plus ;
+- l'adresse et l'attestation ne se réclament qu'une fois l'assureur
+  **enregistré** par le serveur, jamais pendant la frappe ;
+- sans décennale enregistrée, l'article 9 des conditions d'origine perd sa
+  moitié décennale (« L'entreprise est titulaire d'une assurance responsabilité
+  civile professionnelle. ») au lieu d'imprimer un crochet, et le devis part.
+  Un crochet gardé dans SES phrases reste, et l'envoi le lui dit.
+
+Trouvé en route, et corrigé : trois suites rouges depuis le lot du 4 octobre
+(l'interrupteur de sous-traitance non déclaré dans `test-boutons-pleins.ts`,
+deux fiches du mode d'emploi qui citaient « Ne pas les imprimer » et l'ancien
+champ de recherche), annoncées à tort comme « non mesurables ».
+
 ## 2026-10-04
 
 ### Le check-up légal : les conditions d'origine, les 40 €, le téléphone et le courriel

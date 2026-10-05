@@ -113,7 +113,14 @@ const dire = (bon: boolean, quoi: string) => {
 // longueur, la phrase étant centrée. La facture, elle, ne bouge pas : son
 // empreinte est inchangée. C'est la méthode du relevé du 30 août, faute de
 // pouvoir ouvrir un PDF à l'œil dans cet environnement (`CLAUDE.md` §5).
-const EMPREINTE_FACTURE = "930faf494840c0075cb50da535e3b03e60813fe1409b9947fce0b0541eba9ae6";
+//
+// **LA FACTURE, RELEVÉE DE NOUVEAU LE 5 OCTOBRE 2026** (check-up légal, point 5) :
+// les 40 € de recouvrement ne se réclament plus à un particulier (C. com.
+// L441-10, D441-5). Trace comparée ligne à ligne à celle d'avant, sur un
+// arbre de travail séparé : sur 70 lignes, deux deviennent une, « légal est
+// exigible. Pas d'escompte pour paiement anticipé. », à la même place. Rien
+// d'autre ne bouge.
+const EMPREINTE_FACTURE = "fb23d34e9939f3466cfefde92e91eab94cb9e2d87958e0c17ad32070e371b3c8";
 // **RELEVÉ DE NOUVEAU LE 3 OCTOBRE 2026** (ses choix 2A, 4A, et le formulaire
 // de rétractation) : « Début des travaux » dans les références, la validité
 // nommée dans la mention, la page du formulaire. Le PDF a été REGARDÉ, rendu

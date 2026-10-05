@@ -27,12 +27,13 @@
  * | numéro de TVA du donneur d'ordre, en autoliquidation | non | oui | 242 nonies A, I-4° |
  *
  * **La décennale ne bloque que si SES conditions générales la citent encore
- * entre crochets.** Atlas ne sait pas si ses travaux y sont soumis (un
+ * entre crochets** une fois remplies (le texte d'origine ne la cite plus quand
+ * rien n'est enregistré, 5 octobre 2026). Atlas ne sait pas si ses travaux y sont soumis (un
  * entretien de jardin ne l'est pas, une terrasse l'est) ; un crochet resté
  * vide, lui, partirait tel quel chez le client.
  */
 import { formeADuCapital } from "./formes-juridiques";
-import { CROCHET_DECENNALE } from "./conditions-generales";
+import { CROCHET_DECENNALE, conditionsGeneralesRemplies } from "./conditions-generales";
 
 /**
  * Où il complète : l'écran de son entreprise, la fiche du client, ou la pièce
@@ -139,7 +140,12 @@ export function manquesDuDevis(
   if (!sousTraitance && vide(e.email)) {
     m.push({ cle: "email", libelle: "Votre adresse e-mail", ou: "entreprise" });
   }
-  if (vide(e.assureurDecennale) && (conditionsGenerales ?? "").includes(CROCHET_DECENNALE)) {
+  // **Ce qui compte, c'est ce qui s'IMPRIMERAIT** : sans décennale
+  // enregistrée, le texte d'origine perd sa moitié décennale, et rien ne manque
+  // (sa règle du 5 octobre 2026). Seul un crochet resté dans SES phrases
+  // partirait tel quel chez le client.
+  const imprimees = conditionsGeneralesRemplies(conditionsGenerales, { assureurDecennale: e.assureurDecennale });
+  if (vide(e.assureurDecennale) && imprimees.includes(CROCHET_DECENNALE)) {
     m.push({ cle: "decennale", libelle: "Votre assurance décennale", ou: "entreprise" });
   }
   return [...m, ...manquesDuClient(client, false)];
