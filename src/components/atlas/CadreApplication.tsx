@@ -103,7 +103,7 @@ export default function CadreApplication({
     // rend aucun élément.
     <FournisseurAssistant disponible={assistant}>
       <div
-        className="mx-auto flex max-w-md flex-col bg-paper"
+        className="atlas-cadre mx-auto flex max-w-md flex-col bg-paper"
         // **Plus aucun nombre écrit à la main ici — 31 août 2026.** C'était
         // `calc(100dvh - 40px)` pour un bandeau qui en mesure 48, et qui grandit
         // encore avec sa barre de progression. Le bandeau publie désormais sa
@@ -114,7 +114,7 @@ export default function CadreApplication({
         {/* `atlas-contenu` réserve la hauteur de la barre, indicateur d'accueil
             compris (voir globals.css) : sans navigation, cette marge laisserait
             un vide en bas de page. */}
-        <main className="atlas-contenu flex-1">{children}</main>
+        <main className="atlas-contenu atlas-colonne flex-1">{children}</main>
         {/* Glisser vers la droite appuie sur la flèche de retour de l'écran,
             quand il en a une (`GesteRetour.tsx`). */}
         <GesteRetour />

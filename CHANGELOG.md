@@ -280,6 +280,23 @@ l'adresse tranche se refusent en le disant. Aucun devis : facture directe,
 comme avant. Éprouvé : `test-facture-sans-devis-db.ts` (rouge sur l'ancien
 comportement, puis vert) et `test-facture-sans-devis-e2e.ts`, par son geste.
 
+### L'application prend tout l'écran d'un ordinateur, avec les mêmes écrans
+
+Au-delà de 1024 px de large, la barre d'onglets passe en colonne à gauche et le
+contenu s'ouvre sur 1024 px au lieu de 448. Aucun écran n'est écrit pour
+l'ordinateur : seul le cadre change (`globals.css`, `ARCHITECTURE.md` §447), si
+bien qu'une modification faite pour le téléphone arrive d'elle-même sur
+l'ordinateur. Évite deux versions d'une même page qui divergeraient. Le
+téléphone est inchangé au pixel près (49 écrans comparés) ;
+`test-sur-ordinateur-e2e` le tient.
+
+Les écrans d'avant le compte (accueil, création, mot de passe oublié, code)
+gardent la largeur d'un téléphone sur ordinateur : son premier essai montrait
+« Créer un compte » étiré sur tout l'écran.
+
+Sur ordinateur, la molette fait défiler Chantiers, Mot de passe et Export même
+posée dans les marges, à côté de la colonne : elle ne trouvait rien à faire
+défiler et l'écran semblait bloqué.
 
 ## 2026-09-29
 

@@ -643,7 +643,7 @@ export default function EcranChantiers({
         // En absolu elle passait dessous, et sa dernière ligne — celle qui
         // prévient que les coordonnées ne seront plus modifiables — se
         // retrouvait cachée derrière les onglets.
-        className="fixed inset-x-0 bottom-0 top-[60px] z-[50] mx-auto flex max-w-md flex-col overflow-hidden"
+        className="atlas-colonne-fixe bottom-0 top-[60px] z-[50] flex flex-col overflow-hidden"
         style={{
           backgroundColor: colors.cream,
           borderRadius: "26px 26px 0 0",

@@ -89,12 +89,14 @@ planche (`appli/retirer-une-ligne-du-devis.html`, branche
 `claude/planche-retirer-une-ligne`) et codé sa réponse « A » sur le devis,
 branche `claude/ligne-du-devis-retiree-en-saisie` (« Poser une croix au bout
 de chaque ligne du devis »). C'est CETTE version qui vaut, pour le téléphone
-comme pour l'ordinateur : un seul code sert les deux (`ARCHITECTURE.md` §441).
+comme pour l'ordinateur : un seul code sert les deux (`ARCHITECTURE.md` §447).
 `appli/retirer-par-une-croix.html` ne se code pas. Reste ouvert : la croix sur
 les AUTRES écrans qui retirent par glissement (informations, prix, note vocale,
 planning, tarifs), que sa demande visait sur le devis seul.
 
 ## ⏳ SUR ORDINATEUR : la planche attend son choix (30 septembre 2026)
+
+## ✅ SUR ORDINATEUR : CODÉ LE 3 OCTOBRE 2026 (`ARCHITECTURE.md` §447)
 
 Sa demande : *« il faut que ça prenne l'entièreté de l'ordinateur »*. Le site
 servira les ordinateurs (installable depuis Chrome ou Edge, sans magasin),
@@ -105,15 +107,16 @@ La cause est connue : tout vit dans `max-w-md` (448 px), posé par
 `CadreApplication.tsx` et `AtlasBottomNav.tsx`, et aucun écran de `src/` n'a de
 règle pour les grands écrans (29 `max-w-md` au total).
 
-Planche : `appli/sur-ordinateur.html`. Quand il aura choisi, trois lots dans
-cet ordre, chacun de niveau 3 (le cadre touche tous les écrans) :
+Sa réponse du 3 octobre : *« les pages doivent être EXACTEMENT les mêmes,
+n'invente rien »*, et une modification du téléphone doit arriver d'elle-même
+sur l'ordinateur. **Codé** : seul le cadre change au-delà de 1024 px (barre à
+gauche, contenu sur 1024 px), aucun écran propre à l'ordinateur. Le téléphone
+est inchangé au pixel (49 écrans comparés), `test-sur-ordinateur-e2e` le tient.
 
-1. le cadre et la navigation à gauche au-dessus de 1024 px ;
-2. les deux panneaux de Chantiers et de Clients ;
-3. le planning pleine largeur, clients sans date à droite.
-
-Le téléphone ne doit pas bouger d'un pixel : chaque lot compare ses captures
-à 390 px avant et après.
+| Reste | Qui |
+|---|---|
+| la batterie entière (niveau 3 : `globals.css`, le cadre), puis `main` | session, avec son accord avant de lancer |
+| les deux panneaux de la planche (liste et fiche côte à côte) | **pas faits** : ce seraient des écrans que le téléphone n'a pas. À lui de les redemander |
 
 **Téléphone et ordinateur reliés : sa condition du 3 octobre 2026.** *« ce qui
 sera fait sur l'appli téléphone doit être relié à celui de l'ordi »*. C'est vrai

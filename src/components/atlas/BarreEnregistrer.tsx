@@ -82,7 +82,7 @@ export default function BarreEnregistrer({
   return (
     <div
       data-atlas="barre-enregistrer"
-      className="fixed inset-x-0 z-10 mx-auto max-w-md border-t px-[26px] pb-4 pt-3.5"
+      className="atlas-colonne-fixe z-10 border-t px-[26px] pb-4 pt-3.5"
       style={{ bottom: "var(--atlas-barre)", backgroundColor: colors.cream, borderColor: colors.line }}
     >
       <button

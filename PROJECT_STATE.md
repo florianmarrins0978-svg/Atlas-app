@@ -16,6 +16,14 @@ au nom, sous-traitance sans TVA, date des travaux. **Batterie non jouée (sa
 consigne : une seule pour l'ensemble, avec son accord).** Détail :
 `docs/lot-mentions-facture-devis.md`, `ARCHITECTURE.md` §442 et §443.
 
+## SUR SA BRANCHE : L'APPLICATION SUR ORDINATEUR (3 octobre 2026)
+
+Au-delà de 1024 px, la barre passe à gauche et le contenu s'ouvre sur 1024 px ;
+les écrans sont les mêmes que sur le téléphone, seul le cadre change
+(`ARCHITECTURE.md` §447). Branche `claude/app-sur-ordinateur`. Types, lint, les
+suites de garde et sept suites navigateur de la barre au vert ; **la batterie
+entière reste à jouer** (niveau 3), puis `main`.
+
 ## CODÉ : L'UNITÉ D'UNE LIGNE NE PORTE QUE LA RANGÉE (29 septembre 2026)
 
 « arbre », « arbuste », « plante » ne s'écrivent plus dans la case Unité d'un

@@ -5092,7 +5092,7 @@ function TiroirDuBas({
       ref={cadre}
       data-atlas="tiroir-planning"
       data-ouvert={ouvert ? "1" : "0"}
-      className="fixed inset-x-0 z-[19] mx-auto max-w-md"
+      className="atlas-colonne-fixe z-[19]"
       style={{
         // **Juste au-dessus de la barre du bas, et mesuré par elle.**
         // `--atlas-barre` est sa hauteur réelle, indicateur d'accueil compris
