@@ -168,6 +168,16 @@ dans `AnneauNoteVocale`. Regardé à l'écran ; joués : types, lint,
 `test-aucun-tiret`, `test-pas-de-pansement`. **Sa consigne : pas de batterie.**
 Niveau 2 : `main` attend un contrôle au vert, que l'on jouera quand il le dira.
 
+### La fiche d'intervention s'ouvre sans deviner le geste
+
+Sa remarque : *« le fait de cliquer pour faire apparaître la fiche chantier
+n'est pas intuitif »*. Elle ne s'ouvrait qu'en touchant le nom du chantier,
+et rien ne le montrait. Sa réponse sur `appli/ouvrir-la-fiche.html` : « la C ».
+Seul ce jour-là, la fiche s'ouvre avec la journée (`ficheOuverteDOffice`,
+`src/lib/planning-jour.ts`, éprouvée par `test-planning-jour.ts`) ; à deux ou
+trois, aucune, et chaque nom porte un chevron qui pivote quand sa fiche est
+ouverte (`data-atlas="chevron-fiche"`). Refermer le jour referme la fiche.
+
 ### « Rouvrir le SMS » remplace « Relancer par SMS »
 
 Sa décision, le soir même du défaut Mr Lolo. Atlas ne sait pas si le message
