@@ -120,7 +120,12 @@ const dire = (bon: boolean, quoi: string) => {
 // arbre de travail séparé : sur 70 lignes, deux deviennent une, « légal est
 // exigible. Pas d'escompte pour paiement anticipé. », à la même place. Rien
 // d'autre ne bouge.
-const EMPREINTE_FACTURE = "fb23d34e9939f3466cfefde92e91eab94cb9e2d87958e0c17ad32070e371b3c8";
+//
+// **ET LE MÊME JOUR, LA CERTIFICATION** : sa ligne est à 10 %, elle porte
+// comme le devis la mention du BOI-LETTRE-000280 (« le même mode de
+// fonctionnement »). Trace comparée : quatre lignes ajoutées sous les notes,
+// les trois du paiement descendues d'autant, rien d'autre.
+const EMPREINTE_FACTURE = "970796912dfadbb3e91634076ed2bfa5e5b2bbe69c97f4e1ec7598dec28ecb92";
 // **RELEVÉ DE NOUVEAU LE 3 OCTOBRE 2026** (ses choix 2A, 4A, et le formulaire
 // de rétractation) : « Début des travaux » dans les références, la validité
 // nommée dans la mention, la page du formulaire. Le PDF a été REGARDÉ, rendu

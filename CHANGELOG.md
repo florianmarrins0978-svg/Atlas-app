@@ -13,7 +13,8 @@ Format : le plus récent en tête.
 Il a recopié le BOI-LETTRE-000280 depuis le site des impôts, bloqué ici. Dès
 qu'une ligne du devis est à **10 %** (§1) ou à **5,5 %** (§10), la mention
 « Je soussigné(e)… certifie… » s'imprime **mot pour mot** dans « Notes /
-conditions », que le client signe avec le devis (`src/lib/tva-reduite.ts`).
+conditions », sur le devis **et sur la facture**, sa règle : *« ça doit être
+le même mode de fonctionnement »* (`src/lib/tva-reduite.ts`).
 Elle remplace l'attestation Cerfa supprimée en 2025 ; sans elle, le taux réduit
 peut être remis en cause. Sans seuil de montant : celui du BOFiP n'a pas été
 relu, et une mention de trop ne coûte rien.

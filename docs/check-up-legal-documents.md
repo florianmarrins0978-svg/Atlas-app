@@ -19,8 +19,7 @@ aucune erreur. »*
    droit du particulier** : l'acompte à la commande, « aucune réclamation
    ultérieure », le délai « indicatif ». Et la facture du particulier lui
    réclame une indemnité de 40 € qu'il ne doit pas.
-5. **Les dix points sont corrigés** sur la branche. Reste ouvert : la
-   certification TVA d'une facture faite sans devis (comptable).
+5. **Les dix points sont corrigés** sur la branche.
 
 ## Où en sont les corrections
 
@@ -30,7 +29,7 @@ aucune erreur. »*
 | 5 : 40 € | **corrigé** : imprimés seulement pour un client Entreprise, sur la facture, le devis et l'écran du devis |
 | 7 : téléphone et courriel | **corrigé** : le devis d'un particulier ne part plus sans eux |
 | 1, 2, 10 : adresse de l'assureur, attestation jointe, phrase sous le bouton | **corrigé**, son choix A du 5 octobre : l'attestation part avec tous les devis et factures dès qu'elle est déposée. Un assureur nommé sans adresse ni attestation arrête la pièce |
-| 9 : TVA à 10 % | **corrigé** : le texte officiel (BOI-LETTRE-000280), recopié par lui, s'imprime sur le devis dès qu'une ligne est à 10 % ou 5,5 %. Reste ouvert : la facture faite sans devis, à voir avec le comptable |
+| 9 : TVA à 10 % | **corrigé** : le texte officiel (BOI-LETTRE-000280), recopié par lui, s'imprime sur le devis et la facture dès qu'une ligne est à 10 % ou 5,5 % |
 
 ## Comment ça a été vérifié, et la limite
 

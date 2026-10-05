@@ -400,6 +400,22 @@ async function main() {
     assert.doesNotMatch(texteDuPdf(await devisRepo.genererPdfPourApercu(ctx, d2.id)), /soussigné/);
   });
 
+  await test("la facture à 10 % porte la même certification que le devis ; à 20 %, rien", async () => {
+    // Sa règle du 5 octobre 2026 : « ça doit être le même mode de fonctionnement ».
+    const { facture } = await factureDuChantier(ctx, "Roux facture");
+    const a = await ajouterLigneDeFacture(ctx, facture.id, "10.00");
+    assert.ok(a.ok);
+    await majLigneDeFacture(ctx, facture.id, a.ligne.id, { libelle: "Allée d'accès", prixUnitaire: "800" });
+    const texte = texteDuPdf(await genererPdfFacturePourApercu(ctx, facture.id)).replace(/\s+/g, " ");
+    assert.match(texte, /Je soussigné\(e\)\.+ \(Nom, prénom\) certifie, en qualité de preneur de la prestation/);
+
+    const { facture: normale } = await factureDuChantier(ctx, "Roux facture bis");
+    const b = await ajouterLigneDeFacture(ctx, normale.id, "20.00");
+    assert.ok(b.ok);
+    await majLigneDeFacture(ctx, normale.id, b.ligne.id, { libelle: "Massifs", prixUnitaire: "800" });
+    assert.doesNotMatch(texteDuPdf(await genererPdfFacturePourApercu(ctx, normale.id)), /soussigné/);
+  });
+
   console.log(`\n${passed} réussi(s), ${failed} échoué(s).`);
   await pool.end();
   if (failed > 0) process.exit(1);

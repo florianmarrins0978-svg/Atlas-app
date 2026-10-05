@@ -14,9 +14,9 @@
  * reformule : un mot changé, et ce n'est plus le modèle de l'administration.
  * `scripts/test-documents-en-regle.ts` porte le §1 en entier.
  *
- * **Sur le devis, parce qu'il se signe** : la formule commence par « Je
- * soussigné(e) », et le devis porte déjà le cadre « Bon pour accord,
- * signature du client ».
+ * **Sur le devis ET sur la facture**, sa règle du 5 octobre 2026 : *« ça
+ * doit être le même mode de fonctionnement »*. Une facture faite sans devis
+ * n'a pas d'autre pièce où le client certifie.
  */
 
 /** §1 : travaux de rénovation, taux de 10 % (CGI 279-0 bis). */
