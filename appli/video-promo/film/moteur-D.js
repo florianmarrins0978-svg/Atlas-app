@@ -453,12 +453,17 @@
       cadre.appendChild(img); return img;
     };
     const imgDe = faire(de), imgVers = faire(vers);
-    const hauteurDe = 1000 * de.zone[3] / de.zone[2], hauteurVers = 1000 * vers.zone[3] / vers.zone[2];
+    const hauteurDe = 1000 * de.zone[3] / de.zone[2];
     return {
       el: cadre,
       // Pose le morceau : son CENTRE au point (x, y) du monde, sa largeur
       // affichée, sa rotation, et p (0 : image de départ, 1 : image d'arrivée).
-      poser({ x, y, largeur, rz = 0, rx = 0, ry = 0, p = 0, opacite = 1, ombre = 1 }) {
+      // `zoneVers` (facultatif) fait glisser la zone d'arrivée : un zoom DANS
+      // l'image d'arrivée, sans second morceau.
+      poser({ x, y, largeur, rz = 0, rx = 0, ry = 0, p = 0, opacite = 1, ombre = 1, zoneVers = vers.zone }) {
+        const hauteurVers = 1000 * zoneVers[3] / zoneVers[2];
+        const kv = 1000 / zoneVers[2];
+        css(imgVers, { left: `${-zoneVers[0] * kv}px`, top: `${-zoneVers[1] * kv}px`, width: `${vers.largeurSource * kv}px` });
         const h = mix(hauteurDe, hauteurVers, p);
         const echelle = largeur / 1000;
         css(cadre, { height: `${h}px`, opacity: String(opacite), boxShadow: `0 ${40 * ombre}px ${90 * ombre}px rgba(0,0,0,${.45 * ombre})`, transform: `translate(${x}px, ${y}px) perspective(2200px) rotateX(${rx}deg) rotateY(${ry}deg) rotate(${rz}deg) scale(${echelle}) translate(-500px, ${-h / 2}px)` });

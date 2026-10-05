@@ -105,6 +105,9 @@
   const T_RACCORD = 16.3;        // 8 h 06 : la transcription, puis la ligne du devis
   const T_LIGNE = T_RACCORD + .5;
   const T_PRET = 17.4;
+  const T_PAGE_ENTIERE = T_LIGNE + .7;   // la page du devis est posée en entier
+  const T_ZOOM = T_PRET + .7;            // puis la caméra serre sur la ligne
+  const PAGE_DEVIS = { src: 'devis-pdf.jpg', zone: [0, 0, 1785, 1320], largeurSource: 1785 };
   const T_CLIENT = 20.4;         // 12 h 30 : le téléphone du client
   const T_DATE = 22.6;
   const T_ACCEPTE = 23.1;
@@ -249,7 +252,7 @@
 
   // ─── les raccords ───────────────────────────────────────────────────────
   const Z = C.ZONES;
-  const raccordDevis = M.creerMorceau({ parent: $('objets'), de: Z.transcription, vers: Z.ligneDuDevis });
+  const raccordDevis = M.creerMorceau({ parent: $('objets'), de: Z.transcription, vers: PAGE_DEVIS });
   const raccordPlanning = M.creerMorceau({ parent: $('objets'), de: Z.notification, vers: Z.cartePlanning });
   const raccordTva = M.creerMorceau({ parent: $('objets'), de: Z.ligneTva, vers: Z.tableTva });
   const raccordDeclare = M.creerMorceau({ parent: $('objets'), de: Z.tableTva, vers: Z.carteTva });
@@ -287,7 +290,7 @@
     [0.4, 'tic'], [1.4, 'tic'], [2.4, 'tic'], [2.7, 'barre'], [3.7, 'tic'],
     [T_BASCULE, 'barre'], [T_MATIN - .2, 'reconnu'], [T_MATIN, 'reponse'],
     [T_CREER, 'appui'], [T_FICHE, 'glisse'], [T_BAS + .3, 'repere'], [T_REDIGE, 'appui'], [T_EDITEUR, 'glisse'], [T_RETOUR, 'glisse'], [T_RETOUR + .5, 'repere'], [T_MICRO, 'appui'], [T_MICRO + .1, 'micro'],
-    [T_RACCORD, 'tic'], [T_RACCORD - .1, 'glisse'], [T_LIGNE + .6, 'total'], [T_PRET, 'accepte'],
+    [T_RACCORD, 'tic'], [T_RACCORD - .1, 'glisse'], [T_ZOOM + .6, 'total'], [T_PRET, 'accepte'],
     [T_CLIENT - .5, 'barre'], [T_DATE, 'appui'], [T_ACCEPTE, 'appui'], [T_NOTE, 'glisse'], [T_NOTE + .2, 'accepte'],
     [T_PREVENU, 'notification'], [T_VOL, 'feuille-entre'], [T_PLANNING, 'repere'], [T_PLANNING + .1, 'total'],
     [T_GARS - .6, 'barre'], [T_GARS, 'tic'], [T_OUVRE, 'appui'], [T_FICHE_G, 'glisse'], [T_ADRESSE + .1, 'glisse'], [T_TRAVAUX + .1, 'glisse'], [T_SANS, 'accepte'],
@@ -466,10 +469,13 @@
 
     // ── raccord 1 : la transcription devient la ligne du devis
     {
-      const pr = expo(entre(t, T_LIGNE, T_LIGNE + .85));
+      const pr = expo(entre(t, T_LIGNE, T_PAGE_ENTIERE));
+      const zm = expo(entre(t, T_ZOOM, T_ZOOM + .8));
+      const L = Z.ligneDuDevis.zone;
       const dep = tel.pointDeLAppli(...R.transcription);
       raccordDevis.poser({
-        x: mix(dep.x, 540, pr), y: mix(dep.y, 505, pr), largeur: mix(560, 1000, pr), rz: mix(0, -2, pr), rx: mix(0, 8, pr), p: pr,
+        x: mix(dep.x, 540, pr), y: mix(mix(dep.y, 700, pr), 505, zm), largeur: mix(mix(560, 860, pr), 1000, zm), rz: mix(0, -2, pr) * (1 - zm), rx: mix(0, 8, pr) * (1 - zm), p: pr,
+        zoneVers: PAGE_DEVIS.zone.map((v, i) => mix(v, L[i], zm)),
         opacite: t >= T_LIGNE ? 1 - lisse(entre(t, T_CLIENT - .7, T_CLIENT - .3)) : 0, ombre: pr,
       });
     }
