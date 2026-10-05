@@ -162,7 +162,7 @@ async function main() {
       assert.ok(!texte.includes("Prix accordé"), "l'ancien mot est encore là");
     });
 
-    await cas("Réglages → Ce qui s'imprime : ses conditions générales, remplies d'office, deux crochets à remplir", async () => {
+    await cas("Réglages → Ce qui s'imprime : ses conditions générales, remplies d'office, le crochet du médiateur à remplir", async () => {
       // **Un compte qui n'a encore rien saisi** : la démonstration porte un
       // assureur et un médiateur depuis le 3 octobre 2026 (un devis sans eux ne
       // part plus), et leurs crochets se remplissent alors tout seuls. Le cas
@@ -172,7 +172,11 @@ async function main() {
       const champ = page.locator('textarea[aria-label="Conditions générales de vente et de règlement"]');
       await champ.waitFor({ timeout: 10_000 });
       assert.equal(await champ.inputValue(), TEXTE_ORIGINE_CONDITIONS_GENERALES);
-      assert.match(await page.locator('[data-atlas="crochets-a-remplir"]').innerText(), /2 crochets/);
+      // **Un seul crochet depuis le 5 octobre 2026**, sa règle : *« la décennale
+      // ne doit pas apparaître comme étant incomplète tant qu'elle n'est pas
+      // enregistrée »*. Sans assureur, l'article 9 perd sa moitié décennale ;
+      // seul le médiateur, obligatoire pour tout particulier, reste à remplir.
+      assert.match(await page.locator('[data-atlas="crochets-a-remplir"]').innerText(), /1 crochet à remplir/);
       await page.screenshot({ path: `${CAPTURES}/planche-b-conditions-generales.png`, fullPage: true });
     });
 
