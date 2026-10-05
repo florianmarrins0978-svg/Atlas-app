@@ -112,7 +112,12 @@ async function main() {
 
   await test("le chantier réalisé apparaît dans l'onglet Terminés, et mène à sa facture", async () => {
     const { nom, chantierId } = await chantierRealise(page, "onglet");
-    await page.goto(`${BASE}/termines`, { waitUntil: "networkidle" });
+    // **Sur SON mois, désigné par `?chantier=`.** Terminés s'ouvre sur le mois
+    // le plus récent qui porte un chantier ; celui-ci est posé trois jours en
+    // arrière, donc le mois d'avant du 1er au 3. Dès qu'une autre suite avait
+    // laissé un chantier du mois courant, l'écran s'ouvrait dessus et ce cas
+    // rougissait sur du code juste (batterie du 3 octobre 2026, deux fois).
+    await page.goto(`${BASE}/termines?chantier=${chantierId}`, { waitUntil: "networkidle" });
 
     assert.ok(await page.locator(`text=${nom}`).first().isVisible(), "le chantier n'apparaît pas");
     // **La touche ne vit plus ici**, et c'est la maquette du 10 août 2026 :

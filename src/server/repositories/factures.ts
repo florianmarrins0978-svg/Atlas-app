@@ -39,6 +39,7 @@ import { montantDeLaLigne } from "../../lib/montant-de-ligne";
 import { chiffreCanonique } from "../../lib/chiffre-saisi";
 import { montantMainDoeuvreValide } from "../../lib/main-doeuvre-devis";
 import { ongletDepuisJalons } from "../../lib/onglet-chantier";
+import { chantierAFacturer, type ChantierAFacturer } from "../../lib/chantier-a-facturer";
 import { ligneDuPassage, ttcDuPassage } from "../../lib/contrats-entretien";
 import {
   dansLaPeriode,
@@ -686,6 +687,36 @@ async function poserLaFactureBrouillon(
     .where(eq(chantiers.id, chantierId));
 
   return facture;
+}
+
+/**
+ * LE CHANTIER DONT UN CLIENT ATTEND SA FACTURE — 3 octobre 2026.
+ *
+ * Ceux de ce client qui portent un devis ENVOYÉ et aucune facture émise : la
+ * même question que `terminerChantier` (« quel prix a-t-il accepté ? »), posée
+ * avant de créer quoi que ce soit. Aucune barrière de date, comme « Fin de
+ * chantier » : c'est le patron qui sait quand un chantier est fait. Le choix
+ * entre plusieurs vit dans `chantierAFacturer`.
+ */
+export async function chantierDuClientAFacturer(
+  ctx: Ctx,
+  clientId: string,
+  adresseSaisie: string
+): Promise<ChantierAFacturer> {
+  const candidats = await withEntreprise(ctx.utilisateurId, ctx.entrepriseId, (tx) =>
+    tx
+      .select({ id: chantiers.id, adresseChantier: chantiers.adresseChantier })
+      .from(chantiers)
+      .where(
+        and(
+          eq(chantiers.clientId, clientId),
+          isNull(chantiers.deletedAt),
+          sql`EXISTS (SELECT 1 FROM ${devis} WHERE ${devis.chantierId} = ${chantiers.id} AND ${devis.statut} = 'envoye')`,
+          sql`NOT EXISTS (SELECT 1 FROM ${factures} WHERE ${factures.chantierId} = ${chantiers.id} AND ${factures.statut} = 'emise')`
+        )
+      )
+  );
+  return chantierAFacturer(candidats, adresseSaisie);
 }
 
 /** Ce qui bloque une facture directe, et le geste que chaque refus appelle. */

@@ -14,7 +14,7 @@ l'envoi et l'émission, début des travaux et formulaire de rétractation sur le
 devis, refus d'une date dans les 14 jours sans demande expresse, « EI » collé
 au nom, sous-traitance sans TVA, date des travaux. **Batterie non jouée (sa
 consigne : une seule pour l'ensemble, avec son accord).** Détail :
-`docs/lot-mentions-facture-devis.md`, `ARCHITECTURE.md` §441 et §442.
+`docs/lot-mentions-facture-devis.md`, `ARCHITECTURE.md` §442 et §443.
 
 ## CODÉ : L'UNITÉ D'UNE LIGNE NE PORTE QUE LA RANGÉE (29 septembre 2026)
 

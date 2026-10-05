@@ -7,7 +7,7 @@ obligatoire, vérifie aussi le devis ! Je veux aucune erreur ! »*, puis ses
 choix 1A, 2A, 3A, 4A, 5B, 6A et le bouton « Sous-traitance, sans TVA ». Le
 document de retour est `docs/lot-mentions-facture-devis.md`.
 
-- ✅ **Tout est codé sur la branche** (migrations 0117 et 0118, §441 et §442).
+- ✅ **Tout est codé sur la branche** (migrations 0117 et 0118, §442 et §443).
   Contrôles neufs vus rouges puis verts ; 149 suites base rejouées au vert.
 - ⏳ **Niveau 3 (migration, argent) : la batterie complète avant `main`.** Sa
   consigne : *« on fait toutes les corrections et ensuite on jouera une seule
@@ -18,7 +18,7 @@ document de retour est `docs/lot-mentions-facture-devis.md`.
   - ✅ points 3 à 8 corrigés sur la branche (conditions d'origine, migration
     0120, 40 € au seul professionnel, téléphone et courriel) ;
   - ✅ points 1, 2 et 10, **son choix A** du 5 octobre, codés sur la branche
-    (migration 0121, `ARCHITECTURE.md` §445). **À lui dire avant `main`** :
+    (migration 0121, `ARCHITECTURE.md` §446). **À lui dire avant `main`** :
     s'il a nommé un assureur, ses devis et factures ne partiront plus tant que
     l'adresse de l'assureur et l'attestation ne sont pas dans Mon entreprise ;
   - ⏳ point 9, la certification du taux réduit : **posée puis retirée le
@@ -47,7 +47,7 @@ document de retour est `docs/lot-mentions-facture-devis.md`.
   passent pas par la vérification des mentions : aucun écran où lister ce qui
   manque. À trancher avec lui.
 - ✅ **SES CHOIX DU 4 OCTOBRE 2026, CODÉS SUR LA BRANCHE** (migration 0119,
-  `ARCHITECTURE.md` §443), dans le même lot et la même batterie :
+  `ARCHITECTURE.md` §444), dans le même lot et la même batterie :
   - **Mr, Mme ou Entreprise** sur la fiche, avec SIRET et numéro de TVA
     imprimés sous le nom du client ;
   - **Vos entreprises** derrière une porte dans « Vos clients » ;
@@ -55,7 +55,28 @@ document de retour est `docs/lot-mentions-facture-devis.md`.
 - ✅ **Ses décisions du 4 octobre au soir, codées** : SIRET et n° TVA à la
   création d'un chantier pour une entreprise ; la facture née d'un devis
   suit le devis, son bouton ne reste que sur une facture faite sans devis
-  (`ARCHITECTURE.md` §443).
+  (`ARCHITECTURE.md` §444).
+
+## ✅ RETIRER PAR UNE CROIX : sa réponse « A », codée par une autre session (3 octobre 2026)
+
+Sa demande en essayant la version ordinateur : *« pour retirer une ligne il
+faut mettre une petite croix en plus du slide »*. Une souris ne glisse pas :
+`LigneRetirable` n'est atteignable sur ordinateur qu'au pavé tactile. Planche
+`appli/retirer-par-une-croix.html` : A partout, B sur ordinateur seulement,
+C au survol. Elle rouvre en partie son choix du 10 août (une seule façon de
+retirer) ; le glissement reste dans les trois. Quand il aura choisi, la croix
+vit dans `LigneRetirable`, donc sur tous les écrans qui l'emploient.
+
+**Il a répondu « A » (la croix partout), et a demandé de ne pas faire deux fois
+la même chose** : la session `013KcmGGosfFVLdRbad4RZSv` avait posé sa propre
+planche (`appli/retirer-une-ligne-du-devis.html`, branche
+`claude/planche-retirer-une-ligne`) et codé sa réponse « A » sur le devis,
+branche `claude/ligne-du-devis-retiree-en-saisie` (« Poser une croix au bout
+de chaque ligne du devis »). C'est CETTE version qui vaut, pour le téléphone
+comme pour l'ordinateur : un seul code sert les deux (`ARCHITECTURE.md` §441).
+`appli/retirer-par-une-croix.html` ne se code pas. Reste ouvert : la croix sur
+les AUTRES écrans qui retirent par glissement (informations, prix, note vocale,
+planning, tarifs), que sa demande visait sur le devis seul.
 
 ## ⏳ SUR ORDINATEUR : la planche attend son choix (30 septembre 2026)
 
@@ -139,6 +160,19 @@ dictée qui arrive ensuite ne s'y écrit pas. La racine : faire vivre la ligne
 ajoutée dans l'écran jusqu'au premier mot, comme la ligne ouverte d'avance.
 Travail dans l'écran du devis (identifiant qui ne change pas, ordre des
 écritures), donc un lot à lui, de niveau 3.
+
+## ⏳ UNE PLANCHE À REGARDER : DIRE QUE LE MICRO RÉDIGE LE DEVIS (3 octobre 2026)
+
+**Sa remarque :** *« sur la fiche client on comprend pas que la note vocale
+permet de rédiger le devis par la voix, il faudrait mettre une phrase
+au-dessus »*. Écran regardé (`/chantiers/nouveau?client=…`) : sous le grand
+micro, seulement « Appuyez et décrivez le chantier » en 11 px gris
+(`AnneauNoteVocale.tsx`). Planche `appli/dicter-le-devis-dire-ce-que-ca-fait.html` :
+**A** « Devis à la voix » en capitales, **B** « Dictez les travaux, Atlas rédige
+le devis. » (recommandée), **C** B et l'indice raccourci en « Appuyez pour
+commencer ». **Rien n'est codé.** À savoir : le petit micro en haut à droite
+(`DicterCoordonnees`) remplit les coordonnées, pas le devis ; deux micros sur
+un écran peuvent entretenir la confusion.
 
 ## ⏳ UNE PLANCHE À REGARDER : OUVRIR LA FICHE D'INTERVENTION (3 octobre 2026)
 

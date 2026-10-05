@@ -53,12 +53,12 @@ export const FICHES_DEVIS: FicheModeEmploi[] = [
       "Votre messagerie s'ouvre avec le message tout prêt : c'est vous qui l'envoyez.",
     reserve:
       "Tant qu'une ligne est à chiffrer, « Choisir la date » est remplacé par « Poser le prix ». " +
-      "Si la messagerie ne s'ouvre pas, rouvrez le chantier et appuyez sur « Relancer par SMS » ou « Relancer par e-mail ».",
+      "Si la messagerie ne s'ouvre pas, rouvrez le chantier et appuyez sur « Rouvrir le SMS » ou « Rouvrir l’e-mail ».",
     source: ENVOI,
     preuves: ["Envoyer le devis", "Par SMS", "Par e-mail"],
     ailleurs: [
       { source: DC, preuves: ["Choisir la date", '"Poser le prix"', "ouvrirLaMessagerie"] },
-      { source: TRANSMETTRE, preuves: ['relance: "Relancer par SMS"', 'relance: "Relancer par e-mail"'] },
+      { source: TRANSMETTRE, preuves: ['relance: "Rouvrir le SMS"', 'relance: "Rouvrir l’e-mail"'] },
     ],
   },
   {
@@ -429,10 +429,10 @@ export const FICHES_DEVIS: FicheModeEmploi[] = [
     ou: "un chantier dont le devis est parti, écran Devis, en bas",
     intitule: "Relancer le client qui n'a pas répondu",
     motsCles: ["relancer", "relance", "rappeler", "renvoyer", "lien", "nouvelles", "reponse"],
-    geste: "Appuyez sur « Relancer par SMS » ou « Relancer par e-mail » : le message s'ouvre avec le lien du devis.",
+    geste: "Appuyez sur « Rouvrir le SMS » ou « Rouvrir l’e-mail » : le message s'ouvre avec le lien du devis.",
     reserve: "Le bouton n'est là que tant que le client n'a pas répondu.",
     source: TRANSMETTRE,
-    preuves: ['relance: "Relancer par SMS"', 'relance: "Relancer par e-mail"'],
+    preuves: ['relance: "Rouvrir le SMS"', 'relance: "Rouvrir l’e-mail"'],
   },
   {
     id: "devis-changer-canal",

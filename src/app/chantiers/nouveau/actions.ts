@@ -6,9 +6,11 @@ import { getCurrentCtx } from "@/server/session-ctx";
 import { logger } from "@/server/logger";
 import { creerChantier, getChantier } from "@/server/repositories/chantiers";
 import {
+  chantierDuClientAFacturer,
   creerFactureSansDevis,
   FactureDirecteImpossibleError,
 } from "@/server/repositories/factures";
+import type { ChantierAFacturer } from "@/lib/chantier-a-facturer";
 import { recopierPhotos } from "@/server/repositories/photos";
 import {
   trouverOuCreerClient,
@@ -314,6 +316,25 @@ export async function reconnaitreLeClientAction(saisie: {
   // savoir qui est déjà chez lui.
   await exigerEcran(ctx, "/chantiers", "reconnaître un client");
   return reconnaitreLeClient(ctx, saisie);
+}
+
+/**
+ * AVANT LA FACTURE DIRECTE : CE CLIENT A-T-IL UN DEVIS QUI ATTEND ? — 3 octobre
+ * 2026.
+ *
+ * *« Il ne reprend pas le devis du client »* : la fiche ouvrait un chantier
+ * neuf et une facture vide pour un client dont le devis envoyé attendait
+ * ailleurs. Cette lecture se fait AVANT toute création, pour qu'aucun chantier
+ * en double ne naisse (`chantierAFacturer`).
+ */
+export async function chantierDuClientAFacturerAction(
+  clientId: string,
+  adresseSaisie: string
+): Promise<ChantierAFacturer> {
+  const ctx = await getCurrentCtx();
+  await exigerEcran(ctx, "/chantiers", "créer une facture");
+  await exigerFacturation(ctx, "créer une facture");
+  return chantierDuClientAFacturer(ctx, clientId, adresseSaisie);
 }
 
 /**

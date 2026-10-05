@@ -314,6 +314,27 @@ cas("un devis parti va au planning, un chantier posé À SA JOURNÉE", () => {
   );
 });
 
+cas("un devis parti qui ATTEND LE CLIENT rouvre l'écran du devis, pas le planning", () => {
+  // **Sa plainte du 3 octobre 2026 :** *« j'ai voulu envoyer un devis, au
+  // moment d'ouvrir le message j'ai annulé, le chantier a disparu […]
+  // impossible de retourner sur la page du devis »*. Le devis était figé et
+  // son lien créé ; toucher « Mr. Lolo » à l'accueil menait au planning, où
+  // le chantier n'est pas « à planifier » mais replié sous « en attente du
+  // client ». Il ne restait aucune porte visible vers « Relancer par SMS ».
+  const envoye = new Date(Date.now() - 60_000);
+  const expire = new Date(Date.now() + 30 * 24 * 3600_000);
+  assert.equal(
+    lienDeReprise(CHANTIER, {
+      ...NEUF,
+      devisEnvoyeAt: envoye,
+      envoiEnvoyeAt: envoye,
+      envoiExpireAt: expire,
+      envoiReponse: null,
+    }),
+    `/chantiers/${CHANTIER}/export`
+  );
+});
+
 cas("la reprise ne renvoie JAMAIS sur la fiche retirée", () => {
   // **Le contrôle qui empêche la boucle de renaître.** La route
   // `/chantiers/[id]` ne rend plus qu'une redirection, et elle interroge

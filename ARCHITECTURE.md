@@ -34070,7 +34070,25 @@ comment fonctionne le planning ? »*
 | la fiche des couleurs dit le SENS de chaque état, prouvé par `etatDemi` et `occupationDemi` | « au-delà » compare les équipes prises (absences comprises) au nombre d'équipes réglé ; sans cela, il ne savait ni ce que c'était ni où le régler |
 | « au dela » soudé en `audela` | « dela » est le début de « délai » : « que signifie au-delà » rendait les délais de paiement |
 
-## §441 : La facture prend son émetteur le jour où elle part
+## §441 : La facture directe ne passe jamais devant un devis qui attend
+
+*« Il ne reprend pas le devis du client »* (3 octobre 2026). La facture sans
+devis (`creerFactureSansDevis`) n'existe que pour ce qui n'a jamais eu de
+devis ; le bouton « Faire la facture » de la fiche client l'employait pourtant
+pour tout client, même reconnu avec un devis envoyé sur un autre chantier.
+
+| | |
+|---|---|
+| la question | posée AVANT de créer le chantier, sinon le doublon est déjà né |
+| les candidats | chantiers du client, devis `envoye`, aucune facture `emise` (`chantierDuClientAFacturer`) |
+| le choix | pur, dans `src/lib/chantier-a-facturer.ts` : un seul, ou un seul à l'adresse saisie ; plusieurs, on refuse |
+| un devis en brouillon | n'en fait pas un candidat : le client n'a vu aucun prix |
+| la date de fin | n'entre pas en jeu, comme pour « Fin de chantier » (§33) |
+
+Écarté : choisir le plus récent quand plusieurs devis attendent. Facturer un
+client sur le mauvais prix coûte un avoir ; le refus coûte d'ouvrir le chantier.
+
+## §442 : La facture prend son émetteur le jour où elle part
 
 **Trouvé le 3 octobre 2026** en vérifiant la facture en autoliquidation : le
 numéro de TVA intracommunautaire, mention obligatoire d'un assujetti, ne partait
@@ -34089,7 +34107,7 @@ Les autres trous relevés le même jour (adresse du client, date des travaux,
 l'envoi) sont dans `docs/lot-mentions-facture-devis.md` et `TODO.md` : ils
 changent ce qui s'imprime ou ce qui bloque, donc ils passent par une maquette.
 
-## §442 : Une pièce en règle se vérifie aux portes, et la sous-traitance réécrit les taux
+## §443 : Une pièce en règle se vérifie aux portes, et la sous-traitance réécrit les taux
 
 **Le 3 octobre 2026**, ses choix 1A à 6A (`docs/lot-mentions-facture-devis.md`).
 
@@ -34105,7 +34123,7 @@ changent ce qui s'imprime ou ce qui bloque, donc ils passent par une maquette.
 | « aucune » ne cache plus les mentions d'une société (`positionEffective`) | elles sont obligatoires (R123-237) ; une valeur restée en base s'imprime sous le nom |
 | une référence trop longue pour sa ligne passe dessous (`document-commun.ts`) | « Début des travaux » chevauchait sa valeur ; la colonne ne mesurait rien |
 
-## §443 : « Entreprise » est une civilité, et la sous-traitance du devis vit sur le chantier
+## §444 : « Entreprise » est une civilité, et la sous-traitance du devis vit sur le chantier
 
 **Le 4 octobre 2026**, ses choix sur trois planches (`appli/ni-mr-ni-mme.html`,
 `appli/entreprises-clientes.html`, `appli/devis-sous-traitance.html`).
@@ -34117,14 +34135,14 @@ changent ce qui s'imprime ou ce qui bloque, donc ils passent par une maquette.
 | `estUneEntreprise` : son choix d'abord, sinon les mots de société qui retiraient déjà « Mr. » | la porte « Vos entreprises » et la sous-traitance du devis posent la même question ; une seconde liste de mots aurait rangé « SARL Untel » chez les particuliers tout en lui retirant son « Mr. » |
 | la porte est un paramètre (`/clients?vue=entreprises`), pas un second écran | la même liste, la même recherche, rien à tenir deux fois |
 | la sous-traitance du devis vit sur le CHANTIER (`chantiers.autoliquidation`), et le devis la fige | ses lignes de prix vivent sur le chantier et chaque version du devis en repart ; un drapeau sur le devis seul se serait perdu à la version suivante |
-| allumée, les lignes suivent le taux du devis (`null`) et le devis passe à 0 ; les taux d'avant sont gardés sur le chantier | même principe que la facture (§442) : tout ce qui lit les taux rend une pièce sans TVA ; et une ligne ajoutée ensuite suit le taux du devis sans qu'on ait à lui en poser un |
+| allumée, les lignes suivent le taux du devis (`null`) et le devis passe à 0 ; les taux d'avant sont gardés sur le chantier | même principe que la facture (§443) : tout ce qui lit les taux rend une pièce sans TVA ; et une ligne ajoutée ensuite suit le taux du devis sans qu'on ait à lui en poser un |
 | une seule garde dans `lignes-prix.ts` (`sansTvaSurLeChantier`) pour tous les écrivains | tous les ajouts passent par `ajouterLignePrix` ; une ligne à 20 % glissée sous un devis en sous-traitance réclamerait une TVA que le client ne paie pas |
 | décochée d'office (son choix B) | une entreprise en direct paie la TVA (`docs/QUESTIONS.md` §31) : l'oubli de cocher coûte une correction, l'oubli de décocher coûterait la TVA due |
 | **une facture née d'un devis SUIT le devis, dans les deux sens** ; son bouton ne vit plus que sur une facture faite sans devis, pour une entreprise (sa remarque du 4 octobre au soir) | le client a accepté un prix avec ou sans TVA, et la facture ne le contredit pas ; et les taux d'avant sont sur le chantier : les deviner rendrait 20 % à une ligne à 10 % |
 | à la création d'un chantier, le SIRET et le n° TVA s'offrent pour une entreprise, et complètent la fiche par `completerLaFiche` (le vide seul) | une seule règle pour « ce qu'il tape entre dans sa fiche » ; en reprise, l'écran enregistre par une autre porte, et les cases ne s'y montrent pas plutôt que de ne rien enregistrer |
 | en sous-traitance, ni formulaire de rétractation, ni case des 14 jours, ni médiateur exigé | l'entreprise qui le sous-traite achète dans son métier : ces protections sont celles du consommateur. Une entreprise cliente EN DIRECT les garde (une petite entreprise hors de son métier peut en bénéficier, L221-3) |
 
-## §444 : Le texte d'origine se range vide, jamais en copie
+## §445 : Le texte d'origine se range vide, jamais en copie
 
 Les conditions générales d'origine vivent dans le code
 (`TEXTE_ORIGINE_CONDITIONS_GENERALES`) et `NULL` en base veut dire « celui
@@ -34146,7 +34164,7 @@ facture, le devis et l'écran du devis. Le particulier est le défaut : c'est
 le client le plus courant, et lui réclamer ce qu'il ne doit pas est la faute
 la plus visible.
 
-## §445 : L'attestation décennale se fige sur la pièce, et son absence l'arrête
+## §446 : L'attestation décennale se fige sur la pièce, et son absence l'arrête
 
 Son choix A du 5 octobre 2026 : l'attestation est jointe à tous les devis et
 factures dès qu'elle est déposée (C. ass. L243-2), l'adresse de l'assureur

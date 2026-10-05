@@ -1157,7 +1157,7 @@ export async function getLigneDevisPourCopie(
  * chaque version du devis en repart. L'allumer met les lignes au taux du devis
  * (`null`) et le devis à zéro, en gardant les taux d'avant : l'éteindre les
  * rend, une ligne à 10 % redevient à 10 %. Même principe que la facture
- * (`ARCHITECTURE.md` §442) : écran, PDF, page du client et facture lisent les
+ * (`ARCHITECTURE.md` §443) : écran, PDF, page du client et facture lisent les
  * taux, aucun ne peut réclamer la TVA par oubli.
  *
  * Refusé en franchise (déjà sans TVA), pour un client qui n'est pas une

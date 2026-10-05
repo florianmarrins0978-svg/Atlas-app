@@ -32,7 +32,7 @@ et 0118. Trois choses à savoir avant de toucher une facture ou un envoi :
   `estUneEntreprise` dit qui est une entreprise, pour la porte « Vos
   entreprises » comme pour la sous-traitance.
 
-Pourquoi : `ARCHITECTURE.md` §442. Batterie à jouer avec son accord.
+Pourquoi : `ARCHITECTURE.md` §443. Batterie à jouer avec son accord.
 
 ## LES COULEURS DU PLANNING : 29 septembre 2026, sur `main` le 30
 

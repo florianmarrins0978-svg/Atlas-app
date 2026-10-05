@@ -1276,14 +1276,13 @@ export default function DevisCompletClient(props: Props) {
 
         {categorie.lignes.map((l) => {
           const i = lignes.indexOf(l);
+          const nomDeLaLigne = l.libelle ? `« ${l.libelle.split("\n")[0]} »` : `la ligne ${i + 1}`;
           return (
           <LigneRetirable
             key={l.id}
-            libelle={l.libelle ? `« ${l.libelle.split("\n")[0]} »` : `la ligne ${i + 1}`}
+            libelle={nomDeLaLigne}
             retiree={retraits.estRetire(l.id)}
-            onRetirer={() =>
-              retraits.retirer(l.id, l.libelle ? `« ${l.libelle.split("\n")[0]} »` : `la ligne ${i + 1}`)
-            }
+            onRetirer={() => retraits.retirer(l.id, nomDeLaLigne)}
             // Une ligne de devis porte un libellé sur plusieurs lignes, une
             // quantité, un prix : elle monte bien au-delà des 170 px par défaut,
             // et l'enveloppe la tronquerait au repos.
@@ -1315,18 +1314,37 @@ export default function DevisCompletClient(props: Props) {
                 (« abattage / broyage / évacuation »). Compter les retours à la
                 ligne ne suffisait pas : un seul travail au libellé long en
                 occupe deux à l'écran. Voir `ZoneQuiGrandit`. */}
-            <ZoneQuiGrandit
-              valeur={l.libelle}
-              fige={fige}
-              aria={`Description ${i + 1}`}
-              placeholder="Ex : Élagage d'un tilleul, taille architecturée"
-              onChange={(v) => majLigneLocale(l.id, "libelle", v)}
-              onFini={(fraiche) => {
-                void persisterLigne(l, { libelle: fraiche });
-              }}
-              className="block w-full resize-none overflow-hidden border-0 bg-transparent p-0 outline-none focus:bg-[var(--voile-champ)]"
-              style={{ color: colors.ink, fontSize: "16px", lineHeight: 1.45 }}
-            />
+            <div className="flex items-start gap-2">
+              <ZoneQuiGrandit
+                valeur={l.libelle}
+                fige={fige}
+                aria={`Description ${i + 1}`}
+                placeholder="Ex : Élagage d'un tilleul, taille architecturée"
+                onChange={(v) => majLigneLocale(l.id, "libelle", v)}
+                onFini={(fraiche) => {
+                  void persisterLigne(l, { libelle: fraiche });
+                }}
+                className="block w-full resize-none overflow-hidden border-0 bg-transparent p-0 outline-none focus:bg-[var(--voile-champ)]"
+                style={{ color: colors.ink, fontSize: "16px", lineHeight: 1.45 }}
+              />
+              {/* **La croix, au bout de la description — sa réponse « A » du
+                  3 octobre 2026**, le glissement restant. Sur la rangée du
+                  TEXTE, jamais sur celle des chiffres : c'est sur la quantité
+                  et le prix que « Retirer » se posait sous son doigt. Même
+                  retrait que le glissement, donc même « Annuler ». */}
+              {!fige && (
+                <button
+                  type="button"
+                  aria-label={`Retirer ${nomDeLaLigne}`}
+                  data-atlas="croix-ligne"
+                  onClick={() => retraits.retirer(l.id, nomDeLaLigne)}
+                  className="-mr-2.5 -mt-2.5 flex h-11 w-11 flex-none items-center justify-center text-[22px] leading-none"
+                  style={{ color: colors.muted }}
+                >
+                  ×
+                </button>
+              )}
+            </div>
 
             <Cellule libelle="Qté">
               <ChiffreSaisi

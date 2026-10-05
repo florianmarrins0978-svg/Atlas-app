@@ -15,12 +15,14 @@ import DicterCoordonnees from "./DicterCoordonnees";
 import { champsARemplir, type CoordonneesDictees } from "@/lib/coordonnees-dictees";
 import {
   reprendreLesPhotosAction,
+  chantierDuClientAFacturerAction,
   creerFactureSansDevisAction,
   creerChantierAction,
   reconnaitreLeClientAction,
 } from "./actions";
 import type { ClientReconnu } from "@/server/repositories/clients";
 import { reprendreChantierAction } from "../[id]/coordonnees/actions";
+import { terminerChantierAction } from "../[id]/facture/actions";
 import { oublierCetEcran } from "@/components/atlas/journal-navigateur";
 import {
   libelleRetourDesCoordonnees,
@@ -535,6 +537,9 @@ export default function FormulaireNouveauChantier({
    */
   const chantierDeCetEcran = useRef<Promise<string> | null>(null);
 
+  /** Le client tenu par son identifiant : venu de sa fiche, ou reconnu ici. */
+  const clientConnu = depuisClient?.clientId ?? reconnu?.id;
+
   /**
    * Fait exister le chantier, maintenant, avec ce qui est saisi.
    *
@@ -558,7 +563,7 @@ export default function FormulaireNouveauChantier({
       // cette ligne, l'écran aurait montré « Repris de sa fiche » et
       // l'enregistrement serait quand même reparti chercher un homonyme — deux
       // vérités pour une seule question (`CLAUDE.md` §3).
-      clientId: depuisClient?.clientId ?? reconnu?.id,
+      clientId: clientConnu,
       nomClient,
       civilite: civilite ?? undefined,
       telephone: numeroEnregistre(telephone),
@@ -719,6 +724,30 @@ export default function FormulaireNouveauChantier({
     if (enCours) return;
     setEnCoursVers(vers);
     setErreur(null);
+
+    // **UN CLIENT DONT LE DEVIS ATTEND SE FACTURE SUR CE DEVIS — 3 octobre
+    // 2026.** *« Il ne reprend pas le devis du client »* : on créait ici un
+    // chantier neuf et une facture vide, et le prix accepté restait sur
+    // l'autre chantier. La question se pose AVANT d'enregistrer, sans quoi le
+    // chantier en double serait déjà né (`chantierAFacturer`).
+    if (vers === "facture" && !reprise && clientConnu) {
+      const aFacturer = await chantierDuClientAFacturerAction(clientConnu, adresseChantier);
+      if (aFacturer.type === "plusieurs") {
+        setErreur("Ce client a plusieurs devis à facturer : ouvrez le chantier concerné.");
+        setEnCoursVers(null);
+        return;
+      }
+      if (aFacturer.type === "un") {
+        const r = await terminerChantierAction(aFacturer.chantierId);
+        if (!r.succes) {
+          setErreur(r.erreur);
+          setEnCoursVers(null);
+          return;
+        }
+        router.push(`/chantiers/${aFacturer.chantierId}/facture`);
+        return;
+      }
+    }
 
     const enregistre = await enregistrerLaSaisie();
     if (!enregistre.ok) {
