@@ -1500,7 +1500,7 @@ export default function DevisCompletClient(props: Props) {
             <span>
               Sous-traitance, sans TVA
               <small className="block text-[12.5px]" style={{ color: colors.muted }}>
-                La mention « Autoliquidation » s’imprime
+                Seulement si votre client a lui-même le chantier d’un autre.
               </small>
             </span>
             <button

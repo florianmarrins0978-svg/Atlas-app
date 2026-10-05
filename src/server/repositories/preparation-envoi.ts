@@ -256,6 +256,8 @@ export async function preparerEnvoi(
         numeroTva: entreprises.numeroTva,
         telephone: entreprises.telephone,
         email: entreprises.email,
+        adresseAssureurDecennale: entreprises.adresseAssureurDecennale,
+        attestationDecennaleCle: entreprises.attestationDecennaleCle,
         // Ses conditions générales, pour savoir si elles citent la décennale.
         conditionsGenerales: entreprises.conditionsGenerales,
       })
@@ -332,7 +334,7 @@ export async function preparerEnvoi(
     // on corrige ce que le document dit, puis l'adresse où il part.
     const manques = entreprise
       ? manquesDuDevis(
-          entreprise,
+          { ...entreprise, attestationDecennale: !!entreprise.attestationDecennaleCle },
           { nom: client?.nom, adresse: client?.adresse, adresseChantier: chantier?.adresseChantier },
           conditionsDepuisEntreprise(entreprise).conditionsGenerales,
           chantier?.autoliquidation ?? false

@@ -6,6 +6,29 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-10-05
+
+### L'assurance décennale en règle, et la phrase de la sous-traitance
+
+Son choix **A** sur `appli/assurance-et-sous-traitance.html` (check-up légal,
+points 1, 2 et 10) :
+
+- **l'adresse de l'assureur**, un champ de Mon entreprise, imprimée après son
+  nom sur chaque devis et chaque facture (loi 96-603, art. 22-2) ;
+- **l'attestation décennale**, déposée en PDF ou en photo, **jointe en
+  dernières pages de tous les devis et factures** dès qu'elle est déposée
+  (C. ass. L243-2). Figée sur chaque pièce comme le reste de l'identité
+  (migration 0121) ; l'ancien fichier n'est jamais supprimé, les pièces parties
+  le citent. Un PDF déposé se vérifie (en-tête, mot de passe, quatre pages au
+  plus) et perd ses annotations ; une photo perd ses métadonnées ;
+- **un assureur nommé exige l'adresse et l'attestation** : sans elles, le devis
+  et la facture ne partent pas, et l'écran dit quoi compléter. Sans assureur,
+  rien n'est réclamé : Atlas ne sait pas si ses travaux y sont soumis ;
+- **une attestation illisible arrête la pièce** au lieu de la laisser partir
+  sans elle ;
+- sous le bouton « Sous-traitance, sans TVA » : *« Seulement si votre client a
+  lui-même le chantier d'un autre. »* (le texte change, la place reste).
+
 ## 2026-10-04
 
 ### Le check-up légal : les conditions d'origine, les 40 €, le téléphone et le courriel

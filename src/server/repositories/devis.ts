@@ -4,7 +4,7 @@ import { estUneEntreprise } from "@/lib/civilite";
 import { and, asc, desc, eq, sql } from "drizzle-orm";
 import { jourIso } from "@/lib/jour";
 import { withEntreprise } from "../db/with-entreprise";
-import { allureDesDocuments, formatNumeroDe } from "./entreprises";
+import { allureDesDocuments, attestationLue, formatNumeroDe } from "./entreprises";
 import { conditionsDepuisEntreprise } from "@/lib/conditions-documents";
 import { totauxAvecReduction, pourcentValide, tauxTvaValide } from "@/lib/reduction-devis";
 import { montantMainDoeuvreValide } from "@/lib/main-doeuvre-devis";
@@ -287,6 +287,11 @@ export async function getOuCreerDevisBrouillon(ctx: Ctx, chantierId: string) {
       // contrat d'assurance change, et c'est cette pièce qui prouve la
       // couverture au moment du chantier.
       entrepriseAssureurDecennale: entreprise.assureurDecennale,
+      // Ses coordonnées et l'attestation (migration 0121) : c'est l'attestation
+      // du jour de la pièce qui prouve la couverture du chantier.
+      entrepriseAdresseAssureurDecennale: entreprise.adresseAssureurDecennale,
+      entrepriseAttestationDecennaleCle: entreprise.attestationDecennaleCle,
+      entrepriseAttestationDecennaleMime: entreprise.attestationDecennaleMime,
       entrepriseContratDecennale: entreprise.contratDecennale,
       entrepriseCouvertureDecennale: entreprise.couvertureDecennale,
       entrepriseMediateurNom: entreprise.mediateurNom,
@@ -620,6 +625,7 @@ function donneesPdfDuDevis(
     // Relues sur le DOCUMENT, pas sur l'entreprise (migration 0094) : c'est ce
     // qui était vrai le jour où il est parti.
     entrepriseAssureurDecennale: d.entrepriseAssureurDecennale,
+    entrepriseAdresseAssureurDecennale: d.entrepriseAdresseAssureurDecennale,
     entrepriseContratDecennale: d.entrepriseContratDecennale,
     entrepriseCouvertureDecennale: d.entrepriseCouvertureDecennale,
     entrepriseMediateurNom: d.entrepriseMediateurNom,
@@ -717,12 +723,30 @@ export async function manquesDuDevisAEnvoyer(ctx: Ctx, devisId: string): Promise
         numeroTva: null,
         telephone: d.entrepriseTelephone,
         email: d.entrepriseEmail,
+        adresseAssureurDecennale: d.entrepriseAdresseAssureurDecennale,
+        attestationDecennale: !!d.entrepriseAttestationDecennaleCle,
       },
       { nom: d.clientNom, adresse: d.clientAdresse, adresseChantier: d.adresseChantier },
       d.conditionsGenerales,
       d.autoliquidation
     );
   });
+}
+
+/**
+ * L'allure, le logo, et l'attestation FIGÉE sur ce devis (son choix A du
+ * 5 octobre 2026). La feuille de chantier n'en a pas besoin : elle garde
+ * `allureDesDocuments` seul.
+ */
+async function habillageDuDevis(
+  tx: Parameters<typeof allureDesDocuments>[0],
+  entrepriseId: string,
+  d: { entrepriseAttestationDecennaleCle: string | null; entrepriseAttestationDecennaleMime: string | null }
+) {
+  return {
+    ...(await allureDesDocuments(tx, entrepriseId)),
+    attestation: await attestationLue(d.entrepriseAttestationDecennaleCle, d.entrepriseAttestationDecennaleMime),
+  };
 }
 
 // Génère le PDF pour un devis (brouillon ou envoyé) sans jamais persister la
@@ -733,7 +757,7 @@ export async function genererPdfPourApercu(ctx: Ctx, devisId: string): Promise<U
     const [d] = await tx.select().from(devis).where(eq(devis.id, devisId)).limit(1);
     if (!d) throw new Error("Devis introuvable");
     const lignes = await tx.select().from(lignesDevis).where(eq(lignesDevis.devisId, devisId));
-    const habillage = await allureDesDocuments(tx, ctx.entrepriseId);
+    const habillage = await habillageDuDevis(tx, ctx.entrepriseId, d);
     return genererPdfDevis(
       donneesPdfDuDevis(
         d,
@@ -780,7 +804,7 @@ export async function envoyerDevis(ctx: Ctx, devisId: string) {
           "Posez leur montant sur l'écran du devis, puis revenez ici."
       );
     }
-    const habillage = await allureDesDocuments(tx, ctx.entrepriseId);
+    const habillage = await habillageDuDevis(tx, ctx.entrepriseId, avant);
     const pdfBytes = await genererPdfDevis(
       donneesPdfDuDevis(
         avant,

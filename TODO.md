@@ -17,9 +17,10 @@ document de retour est `docs/lot-mentions-facture-devis.md`.
 - ⏳ **Le check-up légal du 4 octobre** (`docs/check-up-legal-documents.md`) :
   - ✅ points 3 à 8 corrigés sur la branche (conditions d'origine, migration
     0120, 40 € au seul professionnel, téléphone et courriel) ;
-  - ⏳ points 1, 2 et 10 : planche `appli/assurance-et-sous-traitance.html`,
-    son choix attendu (adresse de l'assureur, attestation jointe, phrase sous
-    le bouton de sous-traitance) ;
+  - ✅ points 1, 2 et 10, **son choix A** du 5 octobre, codés sur la branche
+    (migration 0121, `ARCHITECTURE.md` §445). **À lui dire avant `main`** :
+    s'il a nommé un assureur, ses devis et factures ne partiront plus tant que
+    l'adresse de l'assureur et l'attestation ne sont pas dans Mon entreprise ;
   - ⏳ point 9, TVA à 10 % : il facture parfois à 10 %. La mention du
     BOI-LETTRE-000280 doit être recopiée MOT POUR MOT du BOFiP, inaccessible
     d'ici ; les sites qui la citent se contredisent. Ne pas l'écrire de

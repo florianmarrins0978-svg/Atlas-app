@@ -10,6 +10,7 @@ import { enregistrerObjet } from "../storage";
 import { mkdir, writeFile } from "node:fs/promises";
 import { deflateSync } from "node:zlib";
 import path from "node:path";
+import { PDFDocument, StandardFonts } from "pdf-lib";
 /**
  * Une image PNG d'une seule couleur, fabriquée sans aucune dépendance.
  *
@@ -139,6 +140,21 @@ function audioDeDemonstration(secondes: number): Buffer {
  * produit mais pas ici : le seed doit pouvoir réécrire la même clé à chaque
  * amorçage, sinon chaque passage laisse un fichier orphelin de plus.
  */
+const CLE_ATTESTATION_DEMO = "demo/attestation-decennale.pdf";
+
+/** Une attestation d'une page, marquée comme ce qu'elle est : une démonstration. */
+async function attestationDeDemonstration(): Promise<Buffer> {
+  const doc = await PDFDocument.create();
+  const page = doc.addPage([595.28, 841.89]);
+  page.drawText("Attestation d'assurance de responsabilité décennale (démonstration)", {
+    x: 50,
+    y: 780,
+    size: 12,
+    font: await doc.embedFont(StandardFonts.Helvetica),
+  });
+  return Buffer.from(await doc.save());
+}
+
 async function ecrireObjetDeSeed(storageKey: string, octets: Buffer): Promise<void> {
   const chemin = path.join(process.cwd(), ".storage", storageKey);
   await mkdir(path.dirname(chemin), { recursive: true });
@@ -306,6 +322,10 @@ async function main() {
     `);
 
     console.log("Création de l'entreprise et de l'utilisateur de démonstration...");
+    // **L'attestation décennale de démonstration** (son choix A du 5 octobre
+    // 2026) : un assureur nommé l'exige, et sans elle aucun devis d'essai ne
+    // partirait. Une page, à une clé FIXE, réécrite à chaque amorçage.
+    await ecrireObjetDeSeed(CLE_ATTESTATION_DEMO, await attestationDeDemonstration());
     const [entreprise] = await tx
       .insert(entreprises)
       .values({
@@ -324,6 +344,9 @@ async function main() {
         mediateurNom: "Médiateur de démonstration",
         mediateurCoordonnees: "1 place de la Médiation, Nantes",
         assureurDecennale: "Assureur de démonstration",
+        adresseAssureurDecennale: "1 rue de l'Exemple, 44000 Nantes",
+        attestationDecennaleCle: CLE_ATTESTATION_DEMO,
+        attestationDecennaleMime: "application/pdf",
         contratDecennale: "0000000",
         couvertureDecennale: "France métropolitaine",
       })

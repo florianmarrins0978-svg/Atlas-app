@@ -34146,3 +34146,32 @@ facture, le devis et l'écran du devis. Le particulier est le défaut : c'est
 le client le plus courant, et lui réclamer ce qu'il ne doit pas est la faute
 la plus visible.
 
+## §445 : L'attestation décennale se fige sur la pièce, et son absence l'arrête
+
+Son choix A du 5 octobre 2026 : l'attestation est jointe à tous les devis et
+factures dès qu'elle est déposée (C. ass. L243-2), l'adresse de l'assureur
+s'imprime avec son nom (loi 96-603, art. 22-2).
+
+**La clé du fichier se fige sur le devis et la facture** (migration 0121),
+comme le SIRET : c'est l'attestation du jour de la pièce qui prouve la
+couverture du chantier. D'où la seconde règle : **un fichier d'attestation ne
+se supprime jamais**, à l'inverse du logo. Retirer ou remplacer l'attestation
+ne touche que les pièces suivantes.
+
+**Le composeur ne lit rien**, comme pour le logo : le dépôt lit l'attestation
+figée (`attestationLue`) et la passe en option. Mais **une attestation
+illisible LÈVE**, là où un logo illisible se tait : un devis sans logo reste en
+règle, un devis sans l'attestation qu'il doit porter ne l'est plus, et
+personne ne le verrait partir.
+
+**Elle se joint après la numérotation et avant le scellé** : « Page 2 / 2 »
+compte le devis, l'attestation le suit telle que l'assureur l'a émise, et part
+protégée avec lui. **Ses annotations ne la suivent pas** (`sansAnnotations`) :
+un fichier venu d'ailleurs ne fait pas porter à un devis d'Atlas un lien ou une
+action que personne n'a vus.
+
+**Un assureur nommé est le seul signe** qu'Atlas ait que ses travaux sont
+soumis à la décennale : c'est lui qui rend l'adresse et l'attestation
+obligatoires, sur le devis et la facture, sous-traitance comprise (ni l'une ni
+l'autre ne relève du droit de la consommation).
+

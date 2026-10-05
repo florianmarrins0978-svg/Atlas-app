@@ -13,6 +13,8 @@ import { avecCivilite, estUneEntreprise } from "../src/lib/civilite";
 import { siretLu } from "../src/lib/siren";
 import { TEXTE_ORIGINE_CONDITIONS_GENERALES } from "../src/lib/conditions-generales";
 import { lignesConditionsDevis, lireConditions } from "../src/lib/conditions-documents";
+import { contenuDecennale } from "../src/lib/mentions-obligatoires";
+import { refusDeLAttestation } from "../src/lib/attestation-decennale";
 
 // ═══════════════════════════════════════════════════════════════════════════
 // LE DEVIS ET LA FACTURE EN RÈGLE — ses choix du 3 octobre 2026
@@ -43,6 +45,8 @@ const EN_REGLE: EmetteurAVerifier = {
   numeroTva: "FR12123456789",
   telephone: "02 40 00 00 00",
   email: "contact@atelier-demo.fr",
+  adresseAssureurDecennale: null,
+  attestationDecennale: false,
 };
 const CLIENT = { nom: "Bernard", adresse: "4 rue de la Garenne, Rezé", adresseChantier: null };
 const SANS = { active: false, numeroTvaClient: null };
@@ -224,6 +228,44 @@ cas("les conditions d'origine ne portent plus les quatre clauses contraires au d
   assert.match(t, /aucun paiement n’est reçu avant sept jours \(art\. L221-10/);
   assert.match(t, /pour un client professionnel, une indemnité forfaitaire de 40 €/);
   assert.match(t, /garantie légale de conformité/);
+});
+
+console.log("— L'assurance décennale : son choix A du 5 octobre 2026 —");
+
+cas("l'adresse de l'assureur s'imprime après son nom (loi 96-603, art. 22-2)", () => {
+  assert.equal(
+    contenuDecennale({
+      assureurDecennale: "Assureur d'essai",
+      adresseAssureurDecennale: "1 rue de l'Exemple, 44000 Nantes",
+      contratDecennale: "0000000",
+      couvertureDecennale: "France métropolitaine",
+    }),
+    "Assureur d'essai, 1 rue de l'Exemple, 44000 Nantes, contrat n° 0000000, France métropolitaine"
+  );
+});
+
+cas("un assureur nommé exige son adresse et l'attestation, sur le devis comme sur la facture", () => {
+  const assure = { ...EN_REGLE, assureurDecennale: "Assureur d'essai" };
+  const attendu = [["decennale-adresse", "entreprise"], ["decennale-attestation", "entreprise"]];
+  assert.deepEqual(manquesDuDevis(assure, CLIENT, "").map((x) => [x.cle, x.ou]), attendu);
+  assert.deepEqual(manquesDeLaFacture(assure, CLIENT, SANS).map((x) => [x.cle, x.ou]), attendu);
+  assert.deepEqual(manquesDuDevis(assure, CLIENT, "", true).map((x) => x.cle), attendu.map((x) => x[0]), "la sous-traitance aussi : 22-2 vise tout devis");
+  const complet = { ...assure, adresseAssureurDecennale: "1 rue de l'Exemple", attestationDecennale: true };
+  assert.deepEqual(manquesDuDevis(complet, CLIENT, ""), []);
+  assert.deepEqual(manquesDeLaFacture(complet, CLIENT, SANS), []);
+});
+
+cas("sans assureur nommé, rien n'est exigé : Atlas ne sait pas si ses travaux y sont soumis", () => {
+  assert.deepEqual(manquesDuDevis(EN_REGLE, CLIENT, ""), []);
+});
+
+cas("l'attestation : un PDF, une photo JPEG ou PNG, de moins de 5 Mo", () => {
+  assert.equal(refusDeLAttestation("application/pdf", 200_000), null);
+  assert.equal(refusDeLAttestation("image/jpeg", 200_000), null);
+  assert.equal(refusDeLAttestation("image/png", 200_000), null);
+  assert.ok(refusDeLAttestation("image/gif", 200_000));
+  assert.ok(refusDeLAttestation("application/pdf", 6 * 1024 * 1024));
+  assert.ok(refusDeLAttestation("application/pdf", 0));
 });
 
 console.log(`\n${ok} vérifications vertes.`);

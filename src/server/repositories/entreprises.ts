@@ -24,7 +24,7 @@ import type { EtatDemi } from "@/lib/planning-jour";
 import { MAX_EQUIPES, MAX_SALARIES } from "@/lib/equipes";
 import { capitalEnBase } from "@/lib/mentions-legales";
 import { lireObjet } from "../storage";
-import type { LogoDocument } from "../pdf/document-commun";
+import type { AttestationDocument, LogoDocument } from "../pdf/document-commun";
 import { logger } from "../logger";
 
 /**
@@ -187,8 +187,16 @@ export async function mettreAJourEntreprise(
      * s'impriment en bas des documents (`src/lib/mentions-obligatoires.ts`).
      */
     assureurDecennale?: string | null;
+    /** Ses coordonnées (loi 96-603, art. 22-2), migration 0121. */
+    adresseAssureurDecennale?: string | null;
     contratDecennale?: string | null;
     couvertureDecennale?: string | null;
+    /**
+     * L'attestation déposée (C. ass. L243-2), migration 0121 : la clé et le
+     * format. `null` la retire des pièces SUIVANTES ; le fichier, lui, reste,
+     * parce que les pièces déjà parties le citent.
+     */
+    attestationDecennale?: { cle: string; mime: string } | null;
     mediateurNom?: string | null;
     mediateurCoordonnees?: string | null;
     /** Où — ou si — les trois mentions s'impriment. Par défaut « aucune ». */
@@ -252,7 +260,7 @@ export async function mettreAJourEntreprise(
     for (const champ of [
       "adresse", "siret", "telephone", "email", "iban",
       "formeJuridique", "numeroTva", "titulaireCompte", "villeRcs",
-      "assureurDecennale", "contratDecennale", "couvertureDecennale",
+      "assureurDecennale", "adresseAssureurDecennale", "contratDecennale", "couvertureDecennale",
       "mediateurNom", "mediateurCoordonnees",
     ] as const) {
       // Une chaîne vide vaut « effacé », pas « inchangé » : le patron doit
@@ -358,6 +366,10 @@ export async function mettreAJourEntreprise(
     if (data.logo !== undefined) {
       valeurs.logoStorageKey = data.logo?.storageKey ?? null;
       valeurs.logoMime = data.logo?.mime ?? null;
+    }
+    if (data.attestationDecennale !== undefined) {
+      valeurs.attestationDecennaleCle = data.attestationDecennale?.cle ?? null;
+      valeurs.attestationDecennaleMime = data.attestationDecennale?.mime ?? null;
     }
 
     // Le régime n'est PAS traité comme les autres : il n'a pas de « vide ». Une
@@ -493,6 +505,30 @@ export async function formatNumeroDe(
     .where(eq(entreprises.id, entrepriseId))
     .limit(1);
   return e?.format ?? null;
+}
+
+/**
+ * L'attestation figée sur une pièce, lue pour être jointe à son PDF.
+ *
+ * **Une attestation illisible ARRÊTE la pièce, à l'inverse du logo.** Un devis
+ * sans logo reste en règle ; un devis sans l'attestation qu'il annonce part
+ * sans une pièce que la loi exige (C. ass. L243-2), et personne ne le verrait.
+ * Le défaut se dit donc, et se journalise, au lieu de se taire.
+ */
+export async function attestationLue(
+  cle: string | null,
+  mime: string | null
+): Promise<AttestationDocument | null> {
+  if (!cle || !mime) return null;
+  try {
+    return { octets: await lireObjet(cle), mime };
+  } catch (err) {
+    logger.error("Attestation décennale illisible : la pièce n'est pas composée", {
+      cle,
+      erreur: err instanceof Error ? err.message : String(err),
+    });
+    throw new Error("Votre attestation d'assurance est illisible. Déposez-la de nouveau dans Mon entreprise.");
+  }
 }
 
 async function logoLu(

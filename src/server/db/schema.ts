@@ -133,6 +133,13 @@ export const entreprises = pgTable("entreprises", {
    * prouve rien (`src/lib/mentions-obligatoires.ts`).
    */
   assureurDecennale: text("assureur_decennale"),
+  // Migration 0121, son choix A du 5 octobre 2026 : les coordonnées de
+  // l'assureur (loi 96-603, art. 22-2) et l'attestation jointe à chaque devis
+  // et facture (C. ass. L243-2). La clé désigne un fichier qu'on ne supprime
+  // jamais : les pièces déjà parties la citent.
+  adresseAssureurDecennale: text("adresse_assureur_decennale"),
+  attestationDecennaleCle: text("attestation_decennale_cle"),
+  attestationDecennaleMime: text("attestation_decennale_mime"),
   contratDecennale: text("contrat_decennale"),
   couvertureDecennale: text("couverture_decennale"),
   mediateurNom: text("mediateur_nom"),
@@ -1378,6 +1385,11 @@ export const devis = pgTable(
      * Nuls sur tout ce qui existait avant : rien de plus ne s'imprime.
      */
     entrepriseAssureurDecennale: text("entreprise_assureur_decennale"),
+    // Figées avec l'assureur (migration 0121) : c'est l'attestation du jour de
+    // la pièce qui prouve la couverture du chantier.
+    entrepriseAdresseAssureurDecennale: text("entreprise_adresse_assureur_decennale"),
+    entrepriseAttestationDecennaleCle: text("entreprise_attestation_decennale_cle"),
+    entrepriseAttestationDecennaleMime: text("entreprise_attestation_decennale_mime"),
     entrepriseContratDecennale: text("entreprise_contrat_decennale"),
     entrepriseCouvertureDecennale: text("entreprise_couverture_decennale"),
     entrepriseMediateurNom: text("entreprise_mediateur_nom"),
@@ -2230,6 +2242,11 @@ export const factures = pgTable(
      * Nuls sur tout ce qui existait avant : rien de plus ne s'imprime.
      */
     entrepriseAssureurDecennale: text("entreprise_assureur_decennale"),
+    // Figées avec l'assureur (migration 0121) : c'est l'attestation du jour de
+    // la pièce qui prouve la couverture du chantier.
+    entrepriseAdresseAssureurDecennale: text("entreprise_adresse_assureur_decennale"),
+    entrepriseAttestationDecennaleCle: text("entreprise_attestation_decennale_cle"),
+    entrepriseAttestationDecennaleMime: text("entreprise_attestation_decennale_mime"),
     entrepriseContratDecennale: text("entreprise_contrat_decennale"),
     entrepriseCouvertureDecennale: text("entreprise_couverture_decennale"),
     entrepriseMediateurNom: text("entreprise_mediateur_nom"),

@@ -6,6 +6,7 @@ import {
   type DonneesDocument,
   type LigneDocument,
   type TraceDocument,
+  type AttestationDocument,
   type LogoDocument,
 } from "./document-commun";
 import { jourNumerique } from "../../lib/jour";
@@ -92,6 +93,8 @@ function mentionLegaleFacture(data: FacturePdfData): string {
 export type OptionsFacturePdf = {
   allure?: Allure | null;
   logo?: LogoDocument | null;
+  /** L'attestation décennale figée sur cette facture, lue par le dépôt. */
+  attestation?: AttestationDocument | null;
   /** La facture d'exemple des Réglages : EXEMPLE en travers de la page. */
   exemple?: boolean;
 };
@@ -152,6 +155,7 @@ export async function composerFacturePdf(
   return composerDocument(data, {
     allure: options.allure ?? null,
     logo: options.logo ?? null,
+    attestation: options.attestation ?? null,
     titre: data.statut === "brouillon" ? "FACTURE (BROUILLON)" : "FACTURE",
     numero: data.numeroCommercial,
     titreLibre: data.titre,

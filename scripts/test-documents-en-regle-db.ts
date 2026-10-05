@@ -25,7 +25,7 @@ import { chantiers, clients, entreprises } from "../src/server/db/schema";
 import { TEXTE_ORIGINE_CONDITIONS_GENERALES } from "../src/lib/conditions-generales";
 import { nettoyerBase } from "./_test-db";
 import { texteDuPdf } from "./_lecteur-pdf-protege";
-import { IDENTITE_EN_REGLE } from "./_entreprise-en-regle";
+import { mettreEnRegle } from "./_entreprise-en-regle";
 
 // ═══════════════════════════════════════════════════════════════════════════
 // LA FACTURE EN RÈGLE, EN BASE — ses choix du 3 octobre 2026
@@ -58,7 +58,7 @@ async function contexte(suffixe: string, enRegle = true): Promise<Ctx> {
     { email: `en-regle-${suffixe}-${Date.now()}@t.test` }
   );
   const ctx = { utilisateurId, entrepriseId: entreprise.id };
-  if (enRegle) await entreprisesRepo.mettreAJourEntreprise(ctx, IDENTITE_EN_REGLE);
+  if (enRegle) await mettreEnRegle(ctx);
   return ctx;
 }
 
@@ -338,6 +338,51 @@ async function main() {
     );
     assert.equal(f!.c, sien);
     await entreprisesRepo.mettreAJourEntreprise(ctx, { conditions: { conditionsGenerales: TEXTE_ORIGINE_CONDITIONS_GENERALES } });
+  });
+
+  // ── 5 OCTOBRE : L'ASSURANCE DÉCENNALE, SON CHOIX A ───────────────────────
+
+  /** Les pages d'un PDF protégé : ses dictionnaires ne sont pas chiffrés, seuls ses textes. */
+  const pages = (pdf: Uint8Array) => (Buffer.from(pdf).toString("latin1").match(/\/Type\s*\/Page(?![s\w])/g) ?? []).length;
+
+  await test("l'attestation part en dernière page du devis et de la facture, avec l'adresse de l'assureur", async () => {
+    const { brouillon, chantier } = await chantierEntreprise("Paysages Attestés");
+    const devisPdf = await devisRepo.genererPdfPourApercu(ctx, brouillon.id);
+    const texte = texteDuPdf(devisPdf).replace(/\s+/g, " ");
+    assert.match(texte, /Assurance décennale : Assureur d'essai, 1 rue de l'Exemple, 44000 Nantes, contrat n° 0000000/);
+    assert.match(texte, /Attestation d'assurance de responsabilité décennale \(essai\)/, "l'attestation manque au devis");
+    assert.equal((await devisRepo.manquesDuDevisAEnvoyer(ctx, brouillon.id)).length, 0);
+
+    const facture = await creerFactureSansDevis(ctx, (await chantiersRepo.creerChantier(ctx, { nom: "Bis", clientId: chantier.clientId! })).id);
+    const a = await ajouterLigneDeFacture(ctx, facture.id);
+    assert.ok(a.ok);
+    await majLigneDeFacture(ctx, facture.id, a.ligne.id, { libelle: "Massifs", prixUnitaire: "100" });
+    const apercu = await genererPdfFacturePourApercu(ctx, facture.id);
+    assert.match(texteDuPdf(apercu), /Attestation d'assurance de responsabilité décennale \(essai\)/, "l'attestation manque à la facture");
+    const sans = await contexte("sans-attestation");
+    await entreprisesRepo.mettreAJourEntreprise(sans, { attestationDecennale: null });
+    const { facture: nue } = await factureDuChantier(sans, "Lebrun nu");
+    const b = await ajouterLigneDeFacture(sans, nue.id);
+    assert.ok(b.ok);
+    await majLigneDeFacture(sans, nue.id, b.ligne.id, { libelle: "Massifs", prixUnitaire: "100" });
+    assert.equal(pages(apercu), pages(await genererPdfFacturePourApercu(sans, nue.id)) + 1, "une page de plus, pas davantage");
+  });
+
+  await test("un assureur nommé sans attestation ni adresse : la pièce ne part pas", async () => {
+    const sans = await contexte("assure-incomplet");
+    await entreprisesRepo.mettreAJourEntreprise(sans, { attestationDecennale: null, adresseAssureurDecennale: "" });
+    const { facture } = await factureDuChantier(sans, "Lebrun incomplet");
+    const cles = (await manquesDeLaFactureAEmettre(sans, facture.id)).map((m) => m.cle);
+    assert.deepEqual(cles, ["decennale-adresse", "decennale-attestation"]);
+  });
+
+  await test("une attestation illisible arrête la pièce au lieu de la laisser partir sans elle", async () => {
+    const perdue = await contexte("attestation-perdue");
+    await entreprisesRepo.mettreAJourEntreprise(perdue, {
+      attestationDecennale: { cle: `entreprises/${perdue.entrepriseId}/attestation-decennale/absente.pdf`, mime: "application/pdf" },
+    });
+    const { facture } = await factureDuChantier(perdue, "Lebrun perdu");
+    await assert.rejects(() => genererPdfFacturePourApercu(perdue, facture.id), /attestation d'assurance est illisible/);
   });
 
   console.log(`\n${passed} réussi(s), ${failed} échoué(s).`);

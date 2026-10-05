@@ -15,7 +15,7 @@ import { versJourIso, ajouterJours, fenetreProposition, compterOccupation } from
 // durée par défaut — c'est-à-dire exactement leur hypothèse d'origine.
 const UNE_JOURNEE = 2;
 const RIEN_DE_PLANIFIE = { occupation: compterOccupation([], 1), nombreEquipes: 1, dureeDemiJournees: UNE_JOURNEE };
-import { IDENTITE_EN_REGLE } from "./_entreprise-en-regle";
+import { mettreEnRegle } from "./_entreprise-en-regle";
 import { nettoyerBase } from "./_test-db";
 
 let passed = 0;
@@ -42,7 +42,7 @@ async function contexte(email: string) {
     { email }
   );
   const ctx = { utilisateurId, entrepriseId: entreprise.id };
-  await entreprisesRepo.mettreAJourEntreprise(ctx, IDENTITE_EN_REGLE);
+  await mettreEnRegle(ctx);
   return ctx;
 }
 

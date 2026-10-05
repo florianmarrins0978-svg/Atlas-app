@@ -10,6 +10,7 @@ import {
   type DonneesDocument,
   type LigneDocument,
   type TraceDocument,
+  type AttestationDocument,
   type LogoDocument,
 } from "./document-commun";
 import { jourNumerique } from "../../lib/jour";
@@ -152,6 +153,8 @@ export type OptionsDevisPdf = {
   allure?: Allure | null;
   /** Son logo, lu par le dépôt. Suit exactement le sort de l'allure. */
   logo?: LogoDocument | null;
+  /** L'attestation décennale figée sur ce devis, lue par le dépôt. */
+  attestation?: AttestationDocument | null;
 };
 
 /**
@@ -214,6 +217,7 @@ function annexeConditionsGenerales(data: DevisPdfData, sansPrix: boolean) {
   const paragraphes = paragraphesConditionsGenerales(
     conditionsGeneralesRemplies(lireConditions(data.conditionsReglees).conditionsGenerales, {
       assureurDecennale: data.entrepriseAssureurDecennale,
+      adresseAssureurDecennale: data.entrepriseAdresseAssureurDecennale,
       contratDecennale: data.entrepriseContratDecennale,
       couvertureDecennale: data.entrepriseCouvertureDecennale,
       mediateurNom: data.entrepriseMediateurNom,
@@ -309,6 +313,8 @@ export async function composerDevisPdf(
     // feuille de chantier est interne : elle n'a pas à porter la marque qu'on
     // met sur ce que le client garde, et il ne l'a pas demandé.
     logo: sansPrix ? null : options.logo,
+    // La feuille de chantier ne s'envoie pas au client : rien à y prouver.
+    attestation: sansPrix ? null : options.attestation,
     // **Sans les prix, ce n'est plus un devis : c'est la feuille de travail.**
     // Garder le titre « DEVIS » sur un document qu'un salarié emporte ferait
     // croire à un devis amputé — et le client à qui on le montrerait par erreur

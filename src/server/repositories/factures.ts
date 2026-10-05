@@ -1,7 +1,7 @@
 import { and, asc, desc, eq, inArray, isNotNull, isNull, or, sql } from "drizzle-orm";
 import Decimal from "decimal.js";
 import { withEntreprise } from "../db/with-entreprise";
-import { allureDesDocuments, formatNumeroDe } from "./entreprises";
+import { allureDesDocuments, attestationLue, formatNumeroDe } from "./entreprises";
 import { ecrireNumero, repartChaqueAnnee } from "@/lib/numero-documents";
 import { lignesDuDocument } from "@/lib/preparation-devis";
 import type { DbOrTx } from "../db/client";
@@ -285,6 +285,9 @@ export type EntreprisePourFacture = Pick<
   | "capitalSocial"
   | "villeRcs"
   | "assureurDecennale"
+  | "adresseAssureurDecennale"
+  | "attestationDecennaleCle"
+  | "attestationDecennaleMime"
   | "contratDecennale"
   | "couvertureDecennale"
   | "mediateurNom"
@@ -306,6 +309,9 @@ export const COLONNES_EMETTEUR = {
   capitalSocial: entreprises.capitalSocial,
   villeRcs: entreprises.villeRcs,
   assureurDecennale: entreprises.assureurDecennale,
+  adresseAssureurDecennale: entreprises.adresseAssureurDecennale,
+  attestationDecennaleCle: entreprises.attestationDecennaleCle,
+  attestationDecennaleMime: entreprises.attestationDecennaleMime,
   contratDecennale: entreprises.contratDecennale,
   couvertureDecennale: entreprises.couvertureDecennale,
   mediateurNom: entreprises.mediateurNom,
@@ -334,6 +340,10 @@ export function identiteDeLEmetteur(e: EntreprisePourFacture | undefined) {
     entrepriseVilleRcs: e?.villeRcs ?? null,
     // Figées au jour de l'émission, comme le SIRET (migration 0094).
     entrepriseAssureurDecennale: e?.assureurDecennale ?? null,
+    // Ses coordonnées et l'attestation du jour (migration 0121).
+    entrepriseAdresseAssureurDecennale: e?.adresseAssureurDecennale ?? null,
+    entrepriseAttestationDecennaleCle: e?.attestationDecennaleCle ?? null,
+    entrepriseAttestationDecennaleMime: e?.attestationDecennaleMime ?? null,
     entrepriseContratDecennale: e?.contratDecennale ?? null,
     entrepriseCouvertureDecennale: e?.couvertureDecennale ?? null,
     entrepriseMediateurNom: e?.mediateurNom ?? null,
@@ -1546,6 +1556,8 @@ export async function manquesDeLaFactureAEmettre(ctx: Ctx, factureId: string): P
         numeroTva: e.entrepriseNumeroTva,
         telephone: e.entrepriseTelephone,
         email: e.entrepriseEmail,
+        adresseAssureurDecennale: e.entrepriseAdresseAssureurDecennale,
+        attestationDecennale: !!e.entrepriseAttestationDecennaleCle,
       },
       { nom: f.clientNom, adresse: adresses.clientAdresse, adresseChantier: adresses.adresseChantier },
       { active: f.autoliquidation, numeroTvaClient: f.clientNumeroTva }
@@ -1702,7 +1714,7 @@ export type FactureAImprimer = Pick<
   | "entrepriseNom" | "entrepriseRegimeTva" | "entrepriseAdresse" | "entrepriseSiret"
   | "entrepriseTelephone" | "entrepriseEmail" | "entrepriseIban" | "entrepriseTitulaireCompte"
   | "entrepriseFormeJuridique" | "entrepriseCapitalSocial" | "entrepriseVilleRcs"
-  | "entrepriseAssureurDecennale" | "entrepriseContratDecennale" | "entrepriseCouvertureDecennale"
+  | "entrepriseAssureurDecennale" | "entrepriseAdresseAssureurDecennale" | "entrepriseContratDecennale" | "entrepriseCouvertureDecennale"
   | "entrepriseMediateurNom" | "entrepriseMediateurCoordonnees" | "entrepriseMentionsLegalesPosition"
   | "entrepriseNumeroTva" | "dateTravaux" | "autoliquidation" | "clientNumeroTva" | "clientSiret"
   | "clientNom" | "clientCivilite" | "clientAdresse" | "clientTelephone" | "adresseChantier"
@@ -1756,6 +1768,7 @@ export function donneesFacture(
     // Relues sur le DOCUMENT, pas sur l'entreprise (migration 0094) : c'est ce
     // qui était vrai le jour où il est parti.
     entrepriseAssureurDecennale: f.entrepriseAssureurDecennale,
+    entrepriseAdresseAssureurDecennale: f.entrepriseAdresseAssureurDecennale,
     entrepriseContratDecennale: f.entrepriseContratDecennale,
     entrepriseCouvertureDecennale: f.entrepriseCouvertureDecennale,
     entrepriseMediateurNom: f.entrepriseMediateurNom,
@@ -1808,6 +1821,21 @@ export function donneesFacture(
  * celle-là qui fait foi. Un brouillon régénéré à chaque ouverture ne peut pas
  * être pris pour la facture officielle.
  */
+/**
+ * L'allure, le logo, et l'attestation FIGÉE sur la pièce (son choix A du
+ * 5 octobre 2026) : celle du jour où elle part, jamais celle d'aujourd'hui.
+ */
+async function habillageDeLaFacture(
+  tx: Parameters<typeof allureDesDocuments>[0],
+  entrepriseId: string,
+  f: { entrepriseAttestationDecennaleCle: string | null; entrepriseAttestationDecennaleMime: string | null }
+) {
+  return {
+    ...(await allureDesDocuments(tx, entrepriseId)),
+    attestation: await attestationLue(f.entrepriseAttestationDecennaleCle, f.entrepriseAttestationDecennaleMime),
+  };
+}
+
 export async function genererPdfFacturePourApercu(ctx: Ctx, factureId: string): Promise<Uint8Array> {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const [f] = await tx.select().from(factures).where(eq(factures.id, factureId)).limit(1);
@@ -1816,13 +1844,13 @@ export async function genererPdfFacturePourApercu(ctx: Ctx, factureId: string): 
       .select()
       .from(lignesFacture)
       .where(eq(lignesFacture.factureId, factureId));
-    const habillage = await allureDesDocuments(tx, ctx.entrepriseId);
     // Un brouillon s'affiche avec l'émetteur qu'il emportera (`emettreFacture`) ;
     // une pièce émise, avec celui qu'elle porte, et rien d'autre.
     const papier =
       f.statut === "brouillon"
         ? { ...f, ...(await emetteurDuJour(tx, ctx.entrepriseId)), ...(await adressesDuJour(tx, f)) }
         : f;
+    const habillage = await habillageDeLaFacture(tx, ctx.entrepriseId, papier);
     return genererPdfFacture(donneesFacture(papier, lignes, await complementsDeLaFacture(tx, ctx.entrepriseId, f)), habillage);
   });
 }
@@ -1878,7 +1906,9 @@ export async function genererPdfFactureExemple(ctx: Ctx, maintenant: Date = new 
       reglements: [],
       conditionsReglees: await conditionsDesReglages(tx, ctx.entrepriseId),
     };
-    const habillage = await allureDesDocuments(tx, ctx.entrepriseId);
+    // L'attestation des Réglages, comme le reste de l'identité : l'exemple
+    // montre ce qu'une facture créée maintenant emporterait.
+    const habillage = await habillageDeLaFacture(tx, ctx.entrepriseId, identite);
     return genererPdfFacture(donneesFacture(f, exemple.lignes, complements), { ...habillage, exemple: true });
   });
 }
@@ -1954,7 +1984,7 @@ export async function emettreFacture(ctx: Ctx, factureId: string, maintenant: Da
     // depuis les données du jour ne serait plus celui que le client a reçu.
     const complements = await complementsDeLaFacture(tx, ctx.entrepriseId, avant);
 
-    const habillage2 = await allureDesDocuments(tx, ctx.entrepriseId);
+    const habillage2 = await habillageDeLaFacture(tx, ctx.entrepriseId, emetteur);
     // **Les quatre totaux ne se repassent plus ici — 10 septembre 2026.**
     // `donneesFacture` les calcule elle-même depuis ces mêmes lignes, avec cette
     // même fonction. Les lui imposer était la moitié d'une duplication dont

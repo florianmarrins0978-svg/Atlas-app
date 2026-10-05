@@ -80,6 +80,7 @@ export default async function IdentitePage() {
           capitalSocial: e?.capitalSocial ? String(Number(e.capitalSocial)) : "",
           villeRcs: e?.villeRcs ?? "",
           assureurDecennale: e?.assureurDecennale ?? "",
+          adresseAssureurDecennale: e?.adresseAssureurDecennale ?? "",
           contratDecennale: e?.contratDecennale ?? "",
           couvertureDecennale: e?.couvertureDecennale ?? "",
           mediateurNom: e?.mediateurNom ?? "",
@@ -88,6 +89,7 @@ export default async function IdentitePage() {
           mentionsLegalesPosition: positionEffective(e?.mentionsLegalesPosition),
         }}
         aPrevenir={aPrevenir}
+        attestationDeposee={!!e?.attestationDecennaleCle}
         declarations={
           <>
             <PeriodiciteTvaReglage initiale={periodicite} />

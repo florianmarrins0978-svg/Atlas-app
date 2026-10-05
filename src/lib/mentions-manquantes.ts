@@ -20,6 +20,7 @@
  * | médiateur de la consommation | oui | non | L616-1 |
  * | téléphone et courriel de l'entreprise | oui, sauf sous-traitance | non | Code de la consommation, R111-1, 1° |
  * | décennale, quand ses conditions la citent | oui | non | Code des assurances, L243-2 |
+ * | adresse de l'assureur et attestation, quand un assureur est nommé | oui | oui | loi 96-603, art. 22-2 ; L243-2 |
  * | numéro de TVA d'un assujetti | non | oui | 242 nonies A, I-4° |
  * | nom du client | oui | oui | |
  * | adresse du client (à défaut celle du chantier) | non | oui | 242 nonies A, I-2° |
@@ -54,6 +55,9 @@ export type EmetteurAVerifier = {
   numeroTva: string | null | undefined;
   telephone: string | null | undefined;
   email: string | null | undefined;
+  adresseAssureurDecennale: string | null | undefined;
+  /** Une attestation déposée ; ce qui compte ici, c'est qu'elle existe. */
+  attestationDecennale: boolean;
 };
 
 export type ClientAVerifier = {
@@ -63,6 +67,25 @@ export type ClientAVerifier = {
 };
 
 const vide = (v: string | number | null | undefined) => String(v ?? "").trim() === "";
+
+/**
+ * **Un assureur nommé dit que ses travaux y sont soumis**, et c'est le seul
+ * signe qu'Atlas en ait. La loi veut alors, sur chaque devis et chaque facture,
+ * les coordonnées de l'assureur (loi 96-603, art. 22-2) et l'attestation jointe
+ * (C. ass. L243-2), sous-traitance comprise : ni l'une ni l'autre n'est du droit
+ * de la consommation (`docs/check-up-legal-documents.md`, points 1 et 2).
+ */
+function manquesDeLAssurance(e: EmetteurAVerifier): Manque[] {
+  if (vide(e.assureurDecennale)) return [];
+  const m: Manque[] = [];
+  if (vide(e.adresseAssureurDecennale)) {
+    m.push({ cle: "decennale-adresse", libelle: "L'adresse de votre assureur décennal", ou: "entreprise" });
+  }
+  if (!e.attestationDecennale) {
+    m.push({ cle: "decennale-attestation", libelle: "Votre attestation d'assurance décennale", ou: "entreprise" });
+  }
+  return m;
+}
 
 function manquesDeLEmetteur(e: EmetteurAVerifier): Manque[] {
   const m: Manque[] = [];
@@ -75,7 +98,7 @@ function manquesDeLEmetteur(e: EmetteurAVerifier): Manque[] {
     if (vide(e.capitalSocial)) m.push({ cle: "capital", libelle: "Le capital de votre société", ou: "entreprise" });
     if (vide(e.villeRcs)) m.push({ cle: "rcs", libelle: "La ville de votre RCS", ou: "entreprise" });
   }
-  return m;
+  return [...m, ...manquesDeLAssurance(e)];
 }
 
 function manquesDuClient(c: ClientAVerifier, avecAdresse: boolean): Manque[] {

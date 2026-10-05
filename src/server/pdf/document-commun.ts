@@ -30,6 +30,7 @@ import { lignesMentionsObligatoires } from "@/lib/mentions-obligatoires";
 import { lignesDuPapier, quantiteLisible, tauxCourt } from "@/lib/lignes-du-papier";
 import { uniteDeLaLigne } from "@/lib/unite-de-ligne";
 import { protegerContreModification } from "./proteger-pdf";
+import { sansAnnotations } from "./attestation-deposee";
 import { annoncerLaLongueurDesPolices } from "./polices-embarquees";
 import { pourLePapier } from "@/lib/texte-pdf";
 
@@ -511,6 +512,8 @@ export type DonneesDocument = {
    * Absents ou vides : rien ne s'imprime, jamais une phrase à trou.
    */
   entrepriseAssureurDecennale?: string | null;
+  /** Ses coordonnées (loi 96-603, art. 22-2), migration 0121. */
+  entrepriseAdresseAssureurDecennale?: string | null;
   entrepriseContratDecennale?: string | null;
   entrepriseCouvertureDecennale?: string | null;
   entrepriseMediateurNom?: string | null;
@@ -662,6 +665,12 @@ async function policesDu(
  */
 export type LogoDocument = { octets: Uint8Array; mime: string };
 
+/**
+ * L'attestation d'assurance décennale, déjà lue : un PDF dont on recopie les
+ * pages, ou une photo JPEG ou PNG posée sur une page (`src/lib/attestation-decennale.ts`).
+ */
+export type AttestationDocument = { octets: Uint8Array; mime: string };
+
 export type OptionsDocument = {
   /** « DEVIS », « FACTURE », ou leur variante brouillon. */
   titre: string;
@@ -682,6 +691,12 @@ export type OptionsDocument = {
    * introuvable.
    */
   logo?: LogoDocument | null;
+  /**
+   * L'attestation décennale, jointe en dernières pages — son choix A du
+   * 5 octobre 2026 : à tous les devis et factures dès qu'elle est déposée
+   * (C. ass. L243-2). Lue par le dépôt, comme le logo.
+   */
+  attestation?: AttestationDocument | null;
   /** Le bloc de références en haut à droite : libellé et valeur. */
   references: [string, string][];
   /** Intertitre du bloc de notes — le devis y met aussi ses conditions. */
@@ -1378,6 +1393,7 @@ export async function composerDocument(
     options.mentionLegale(data),
     ...lignesMentionsObligatoires({
       assureurDecennale: data.entrepriseAssureurDecennale,
+      adresseAssureurDecennale: data.entrepriseAdresseAssureurDecennale,
       contratDecennale: data.entrepriseContratDecennale,
       couvertureDecennale: data.entrepriseCouvertureDecennale,
       mediateurNom: data.entrepriseMediateurNom,
@@ -1506,6 +1522,11 @@ export async function composerDocument(
   // ce que le patron a eu trois fois sous les yeux (`polices-embarquees.ts`).
   // `flush` matérialise les polices dans le contexte ; l'entrée se pose donc
   // ici, entre la composition et le scellé.
+  // **Après la numérotation** : « Page 2 / 2 » compte le devis, et
+  // l'attestation le suit comme l'annexe qu'elle est, telle que l'assureur l'a
+  // émise. **Avant le scellé** : elle part protégée avec le reste.
+  if (options.attestation) await joindreLAttestation(pdfDoc, options.attestation);
+
   await pdfDoc.flush();
   annoncerLaLongueurDesPolices(pdfDoc.context);
 
@@ -1514,6 +1535,32 @@ export async function composerDocument(
   // oublié ne se verrait pas — c'est chez le client qu'on l'apprendrait, comme
   // le 31 août 2026 (`src/server/pdf/proteger-pdf.ts`).
   return { pdf: await protegerContreModification(await pdfDoc.save()), trace: ctx.trace };
+}
+
+/**
+ * Les pages de l'attestation, à la suite du document.
+ *
+ * Un PDF se recopie page pour page, tel que l'assureur l'a émis. Une photo se
+ * pose sur une page A4, entière et à proportion gardée : réduite, jamais
+ * agrandie au-delà de la page, pour qu'elle se lise sans se déformer.
+ */
+async function joindreLAttestation(pdfDoc: PDFDocument, attestation: AttestationDocument): Promise<void> {
+  if (attestation.mime === "application/pdf") {
+    const source = await PDFDocument.load(attestation.octets, { updateMetadata: false });
+    const pages = await pdfDoc.copyPages(source, source.getPageIndices());
+    pages.forEach((p) => {
+      sansAnnotations(p);
+      pdfDoc.addPage(p);
+    });
+    return;
+  }
+  const image =
+    attestation.mime === "image/png" ? await pdfDoc.embedPng(attestation.octets) : await pdfDoc.embedJpg(attestation.octets);
+  const page = pdfDoc.addPage([LARGEUR, HAUTEUR]);
+  const echelle = Math.min((LARGEUR - 2 * MARGE) / image.width, (HAUTEUR - 2 * MARGE) / image.height, 1);
+  const largeur = image.width * echelle;
+  const hauteur = image.height * echelle;
+  page.drawImage(image, { x: (LARGEUR - largeur) / 2, y: (HAUTEUR - hauteur) / 2, width: largeur, height: hauteur });
 }
 
 /** Le bas réservé au pied de page, pour que les contrôles parlent des mêmes chiffres. */
