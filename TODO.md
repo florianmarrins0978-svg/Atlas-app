@@ -161,7 +161,14 @@ ajoutée dans l'écran jusqu'au premier mot, comme la ligne ouverte d'avance.
 Travail dans l'écran du devis (identifiant qui ne change pas, ordre des
 écritures), donc un lot à lui, de niveau 3.
 
-## ⏳ UNE PLANCHE À REGARDER : DIRE QUE LE MICRO RÉDIGE LE DEVIS (3 octobre 2026)
+## ✅ DIRE QUE LE MICRO RÉDIGE LE DEVIS : « LA A », CODÉE LE 3 OCTOBRE 2026, PAS ENCORE SUR `main`
+
+**Sa réponse : « la A », et pas de batterie.** Libellé « Devis à la voix »
+au-dessus du micro, branche `claude/devis-a-la-voix`. Niveau 2 : `main` attend
+un contrôle joué au vert. **Sa consigne du 4 octobre : rien ne se lance avant
+qu'il dise « on joue la batterie »** ; ce lot part alors avec elle.
+
+La planche, pour mémoire :
 
 **Sa remarque :** *« sur la fiche client on comprend pas que la note vocale
 permet de rédiger le devis par la voix, il faudrait mettre une phrase

@@ -157,6 +157,17 @@ pas sans le numéro. Les factures déjà émises restent telles quelles
 code. L'audit complet des mentions de la facture et du devis est dans
 `docs/lot-mentions-facture-devis.md`.
 
+### « Devis à la voix » au-dessus du micro de la fiche client
+
+Sa remarque : *« on comprend pas que la note vocale permet de rédiger le devis
+par la voix »*. Planche `appli/dicter-le-devis-dire-ce-que-ca-fait.html`, sa
+réponse : « la A ». Un libellé en capitales au-dessus du grand micro
+(`FormulaireNouveauChantier.tsx`, `data-atlas="devis-a-la-voix"`), dans la voix
+de « Photos » ; rien ne bouge, l'indice dessous reste. Posé dans la fiche et non
+dans `AnneauNoteVocale`. Regardé à l'écran ; joués : types, lint,
+`test-aucun-tiret`, `test-pas-de-pansement`. **Sa consigne : pas de batterie.**
+Niveau 2 : `main` attend un contrôle au vert, que l'on jouera quand il le dira.
+
 ### « Rouvrir le SMS » remplace « Relancer par SMS »
 
 Sa décision, le soir même du défaut Mr Lolo. Atlas ne sait pas si le message
