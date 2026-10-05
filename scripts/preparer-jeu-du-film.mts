@@ -446,7 +446,7 @@ async function main() {
         // Le nom d'un chantier se déduit du client (`nom-chantier.ts`), aucun
         // écran ne le tape : celui du film s'écrit ici, une fois.
         await ecrireSousContexte(ctx, `UPDATE chantiers SET nom = $1 WHERE id = $2`, [CHANTIER_NOM, chantierId], 1);
-        dire(`chantier « ${CHANTIER_NOM} » créé pour ${CLIENTE.nom}, ${CLIENTE.adresse}`);
+        dire(`chantier « ${CHANTIER_NOM} » créé pour ${CLIENTE.civilite} ${CLIENTE.nom}, ${CLIENTE.adresse}`);
       } else {
         dire(`le chantier « ${CHANTIER_NOM} » existe (devis ${film?.devis_statut ?? "absent"}) : on reprend où il en est`);
       }

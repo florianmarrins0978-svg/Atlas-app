@@ -313,11 +313,15 @@
       // Un écran reste sous le suivant le temps que la poussée finisse.
       poserEcrans(t, ECRANS) {
         let voileOp = 0, voileZ = 0;
+        // Un même écran peut revenir plus loin dans le découpage (la fiche
+        // client, après l'éditeur de lignes) : une entrée hors de son temps
+        // n'éteint pas l'image qu'une autre entrée, elle, montre.
+        const actifs = new Set(ECRANS.filter(([, de, a]) => t >= de && t <= a).map(([nom]) => nom));
         ECRANS.forEach((e, k) => {
           const [nom, de, a, mode] = e;
           const img = images[nom];
           if (!img) return;
-          if (t < de || t > a) { img.style.opacity = '0'; return; }
+          if (t < de || t > a) { if (!actifs.has(nom)) img.style.opacity = '0'; return; }
           const p = mode === 'net' ? 1 : sortieForte(entre(t, de, de + .42));
           let x = 0, y = 0, op = 1;
           if (mode === 'glisse') x = ecranLargeur * (1 - p);

@@ -11,7 +11,10 @@
  * (appli/video-promo/film/devis-pdf.jpg, facture.jpg, planning.jpg).
  */
 export const ENTREPRISE = { nom: "Les Jardins de Loire", adresse: "10 rue des Tilleuls, Nantes" };
-export const CLIENTE = { nom: "Mme Martin", telephone: "07 11 22 33 44", adresse: "8 impasse du Moulin, Rezé" };
+// La civilité est un bouton à part sur la fiche client : le nom se tape sans
+// elle, sans quoi l'écran du devis écrit « Mme Mme Martin » (vu sur la
+// capture de l'éditeur, 5 octobre 2026).
+export const CLIENTE = { civilite: "Mme", nom: "Martin", telephone: "07 11 22 33 44", adresse: "8 impasse du Moulin, Rezé" };
 export const CHANTIER_NOM = "Élagage d'un chêne";
 export const LIGNES = [
   { libelle: "Élagage d'un chêne de 15 m, taille douce", prix: "1200", montant: "1200.00" },

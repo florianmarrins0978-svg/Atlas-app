@@ -101,8 +101,9 @@
   <div id="vignette"></div>
 </div>
 <script src="moteur-D.js"></script>
+<script src="film-D-contenu.js"></script>
 <script>
-  const M = window.MoteurD;
+  const M = window.MoteurD, C = window.ContenuD;
   const { entre, mix, cles, lisse, sortie, sortieForte, expo, coup, borne, entreeSortie, entreeCubique, $ } = M;
   const lineaire = x => borne(x);
   const DUREE = 37.0;
@@ -161,25 +162,8 @@
   const DEF_FICHE_TRAVAUX = 740; // Travaux à faire, les trois lignes
   const DEF_FACTURE = 440;       // Total HT, TVA 20 %, Total TTC
 
-  const tel = M.creerTelephone({
-    parent: $('objets'), teinte: 'graphite',
-    ecrans: [
-      { nom: 'accueil-avant', src: 'accueil-avant.jpg' },
-      { nom: 'fiche-reconnue', src: 'fiche-reconnue.jpg' },
-      { nom: 'enregistre', src: 'dictee/enregistre.jpg' },
-      { nom: 'transcription', src: 'transcription.jpg' },
-      { nom: 'client-date', src: 'client-date.jpg' },
-      { nom: 'client-accepte', src: 'client-accepte.jpg' },
-      { nom: 'accueil', src: 'accueil.jpg' },
-      { nom: 'planning', src: 'planning-jour-entier.jpg' },
-      { nom: 'planning-salarie', src: 'planning-salarie.jpg' },
-      { nom: 'fiche-salarie', src: 'fiche-intervention-salarie.jpg' },
-      { nom: 'facture-avant', src: 'facture-avant.jpg' },
-      { nom: 'facture', src: 'facture.jpg' },
-      { nom: 'termines', src: 'termines-apres.jpg' },
-    ],
-  });
-  const PRISES = [124,296,412,518,629,742,852,965,1087,1203,1328,1454,1568,1709,1839,1950,2065,2168,2297,2437,2550,2652,2776,2884,2998,3122,3241,3346,3486,3607,3720,3840,3952,4066,4185,4298];
+  const tel = M.creerTelephone({ parent: $('objets'), teinte: 'graphite', ecrans: C.ECRANS });
+  const PRISES = C.PRISES;
   const BANDES = PRISES.map((_, i) => {
     const img = new Image(); img.src = `dictee/bande-${i}.jpg`; img.alt = '';
     img.style.cssText = `position:absolute;left:0;top:${600 * M.K}px;width:620px;z-index:1500;opacity:0`;
@@ -287,7 +271,7 @@
     [T_SOIR - .1, T_FACTURE - .05, 'chantier terminé'],
   ];
 
-  const DICTEE = 'Chez madame Martin, au 8 impasse du Moulin : élagage du grand chêne, une quinzaine de mètres, en taille douce.';
+  const DICTEE = C.DICTEE;
   const MOTS = [];
   { let t = T_DICTEE;
     for (const brut of DICTEE.split(' ')) {
@@ -310,33 +294,13 @@
   const essai = $('essai');
 
   // ─── les raccords : un morceau d'écran qui devient autre chose ─────────
-  // Les zones sont en pixels de l'IMAGE (échelle 3) ; relevées sur les
-  // captures, jamais devinées.
-  const ZONE_NOTIF = [72, 844, 1024, 460];              // accueil.jpg : la carte « devis accepté »
-  const ZONE_CARTE_PLANNING = [42, 1380, 1092, 492];    // planning-jour-entier.jpg : « mardi 13 octobre »
-  const ZONE_TVA_LIGNE = [74, 1800, 1022, 64];          // facture.jpg : « TVA 20 %  468,00 € »
-  const ZONE_TVA_TABLE = [120, 1510, 740, 160];         // facture-pdf.jpg : BASE HT, TAUX, TVA
-  const ZONE_TVA_CARTE = [78, 310, 1014, 252];          // termines-apres.jpg : « Ma TVA à déclarer »
-  const raccordDevis = M.creerMorceau({
-    parent: $('objets'),
-    de: { src: 'transcription.jpg', zone: [133, 595, 900, 336], largeurSource: 1170 },
-    vers: { src: 'devis-pdf.jpg', zone: [40, 775, 1705, 118], largeurSource: 1785 },
-  });
-  const raccordPlanning = M.creerMorceau({
-    parent: $('objets'),
-    de: { src: 'accueil.jpg', zone: ZONE_NOTIF, largeurSource: 1170 },
-    vers: { src: 'planning-jour-entier.jpg', zone: ZONE_CARTE_PLANNING, largeurSource: 1170 },
-  });
-  const raccordTva = M.creerMorceau({
-    parent: $('objets'),
-    de: { src: 'facture.jpg', zone: ZONE_TVA_LIGNE, largeurSource: 1170 },
-    vers: { src: 'facture-pdf.jpg', zone: ZONE_TVA_TABLE, largeurSource: 2481 },
-  });
-  const raccordDeclare = M.creerMorceau({
-    parent: $('objets'),
-    de: { src: 'facture-pdf.jpg', zone: ZONE_TVA_TABLE, largeurSource: 2481 },
-    vers: { src: 'termines-apres.jpg', zone: ZONE_TVA_CARTE, largeurSource: 1170 },
-  });
+  // Les zones vivent dans film-D-contenu.js, relevées sur les captures.
+  const ZONE_NOTIF = C.ZONES.notification.zone, ZONE_CARTE_PLANNING = C.ZONES.cartePlanning.zone;
+  const ZONE_TVA_LIGNE = C.ZONES.ligneTva.zone, ZONE_TVA_CARTE = C.ZONES.carteTva.zone;
+  const raccordDevis = M.creerMorceau({ parent: $('objets'), de: C.ZONES.transcription, vers: C.ZONES.ligneDuDevis });
+  const raccordPlanning = M.creerMorceau({ parent: $('objets'), de: C.ZONES.notification, vers: C.ZONES.cartePlanning });
+  const raccordTva = M.creerMorceau({ parent: $('objets'), de: C.ZONES.ligneTva, vers: C.ZONES.tableTva });
+  const raccordDeclare = M.creerMorceau({ parent: $('objets'), de: C.ZONES.tableTva, vers: C.ZONES.carteTva });
   // Le centre d'une zone dans l'appli, et sa largeur dans le monde.
   const centreZone = (zone, defile = 0) => ({ x: (zone[0] + zone[2] / 2) / 3, y: (zone[1] + zone[3] / 2) / 3 - defile });
   const largeurZone = zone => zone[2] / 3 * M.K * tel.pose.echelle;

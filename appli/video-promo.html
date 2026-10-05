@@ -16,17 +16,18 @@
     4 octobre : « On dirait un PowerPoint. »
 
     D'où trois DIRECTIONS de huit secondes le 4 octobre, et son choix le 5 :
-    « J'aime bien nerveuse et récit. L'idée de nerveuse qu'il faudrait
-    accentuer, c'est qu'avant d'utiliser l'appli on se sent stressé, tout va
-    vite, on perd du temps ; et avec l'appli on en gagne. » Le film D entier
-    est monté sur cette courbe : le stress qui accélère (une horloge qui
-    court), un noir, puis le calme (l'horloge n'avance que d'une minute par
-    geste). Il sort de video-promo/film/film-D.html, rendu image par image
-    par scripts/rendre-film.mjs (60 images par seconde, flou de mouvement,
-    grain). Tout ce qui est dans le téléphone est une capture de
+    « J'aime bien nerveuse et récit », DEUX films distincts, l'un dans chaque
+    direction, avec deux reproches au premier montage (qui mélangeait les
+    deux) : le téléphone n'était pas montré en entier, et l'on ne voyait pas
+    qu'on peut dicter OU rédiger le devis. Les deux films montrent chaque
+    écran entier, le micro et « Je rédige à la main ». Ils sortent de
+    video-promo/film/film-D-nerveuse.html et film-D-recit.html, rendus image
+    par image par scripts/rendre-film.mjs (60 images par seconde, flou de
+    mouvement, grain). Tout ce qui est dans le téléphone est une capture de
     l'application servie, prise en jouant le geste pour de vrai.
 
-    Les trois directions, puis les versions d'avant (C, A, B), restent en bas.
+    Le mélange monté d'abord, les trois directions, puis les versions d'avant
+    (C, A, B) restent en bas.
   */
   :root{ --bone:#f5f3ee; --cream:#faf9f5; --paper:#ece9e1; --ink:#1c1c1a; --ink-soft:#4a4a44;
          --muted:#8a8578; --pine:#2f3b2f; --or:#B98B47; --line:rgba(28,28,26,.12); }
@@ -62,33 +63,54 @@
   table{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}
   td{padding:5px 6px;border-top:1px solid var(--line);vertical-align:top}
   td:first-child{color:var(--muted);white-space:nowrap;width:52px}
+  .film[hidden]{display:none}
 </style>
 </head>
 <body>
 <div class="page">
   <p class="sur">Atlas</p>
   <h1>La vidéo</h1>
-  <p class="chapo">Le film D entier, 37 secondes, sur la courbe que vous avez choisie : le stress qui accélère, puis le temps rendu.</p>
+  <p class="chapo">Deux films, un par direction. Chaque écran est montré en entier ; le micro et « Je rédige à la main » sont les deux chemins du devis.</p>
 
-  <video id="film" src="video-promo/atlas-D.mp4" poster="video-promo/affiche-D.jpg" controls playsinline preload="metadata"></video>
-  <p class="son"><a href="video-promo/atlas-D.mp4" download>Avec le son de travail</a><a href="video-promo/atlas-D-muet.mp4" download>Muette</a></p>
+  <div class="choix deux" role="group" aria-label="Film">
+    <button type="button" data-film="nerveuse" aria-pressed="true"><b>Le coup de poing</b><span>37 s, 128 à la noire, le stress puis le temps rendu</span></button>
+    <button type="button" data-film="recit" aria-pressed="false"><b>La journée</b><span>50 s, une horloge, du soir au soir</span></button>
+  </div>
+
+  <video id="video" src="video-promo/atlas-D-nerveuse.mp4" poster="video-promo/affiche-D-nerveuse-film.jpg" controls playsinline preload="metadata"></video>
+  <p class="son"><a id="avec" href="video-promo/atlas-D-nerveuse.mp4" download>Avec le son de travail</a><a id="sans" href="video-promo/atlas-D-nerveuse-muet.mp4" download>Muette</a></p>
+
+  <div class="note film" id="noteNerveuse">
+    <b>Le coup de poing, seconde par seconde</b>
+    <table>
+      <tr><td>0 à 5 s</td><td>Le soir. Les devis à retaper. La TVA. Les gars qui appellent. Les papiers. 20 minutes. Une coupe par temps, puis par demi-temps, puis par quart de temps ; la caméra tremble. Un noir.</td></tr>
+      <tr><td>5 à 9 s</td><td>« 30 » claque, le téléphone claque, entier. Créer un devis. La fiche client entière : le micro et « Je rédige à la main ». RÉDIGEZ : l’éditeur de lignes s’ouvre. OU DICTEZ : le micro.</td></tr>
+      <tr><td>9 à 13 s</td><td>Les mots dictés frappent au quart de temps pendant que le téléphone enregistre. La transcription. Un filé : la ligne du devis claque. DEVIS. PRÊT.</td></tr>
+      <tr><td>14 à 18 s</td><td>LE CLIENT : le mardi 13 octobre, J’accepte. PRÉVENU : votre accueil. La carte s’envole et se pose sur le planning. PLANNING.</td></tr>
+      <tr><td>19 à 23 s</td><td>LES GARS : le planning de Julien, la fiche d’intervention, L’ADRESSE, LES TRAVAUX. SANS VOUS APPELER.</td></tr>
+      <tr><td>23 à 29 s</td><td>FACTURE. REPREND LE DEVIS. LA TVA : la ligne devient la table du PDF, TAUX PAR TAUX, puis « Ma TVA à déclarer ». À DÉCLARER.</td></tr>
+      <tr><td>29 à 33 s</td><td>Un noir. 20 minutes, barré. 30 secondes. Le soir : le téléphone posé, éteint.</td></tr>
+      <tr><td>33 à 37 s</td><td>Atlas. Du devis dicté à la facture. Essai gratuit 15 jours.</td></tr>
+    </table>
+  </div>
+  <div class="note film" id="noteRecit" hidden>
+    <b>La journée, seconde par seconde</b>
+    <table>
+      <tr><td>0 à 6 s</td><td>21 h 40 : « Encore un devis à retaper. » 22 h 50 : « La TVA, les papiers, les gars qui appellent. » L’heure roule jusqu’au lendemain, la lumière se réchauffe, le téléphone se lève dans la main.</td></tr>
+      <tr><td>6 à 15 s</td><td>8 h 05, sur le chantier : Créer un devis, la fiche client entière. « Je rédige à la main » ouvre l’éditeur de lignes : « Rédigez à la main. » Retour à la fiche : « Ou dictez. » Le micro, l’enregistrement, les mots dictés.</td></tr>
+      <tr><td>15 à 18 s</td><td>8 h 06 : la transcription, qui devient la ligne du devis. « Le devis est prêt. »</td></tr>
+      <tr><td>18 à 24 s</td><td>12 h 30, votre client : le mardi 13 octobre, J’accepte. 12 h 31, vous êtes prévenu : la carte s’envole et devient la carte du planning. « Au planning. »</td></tr>
+      <tr><td>27 à 34 s</td><td>7 h 10 le lendemain, vos gars : le planning de Julien, la fiche d’intervention, Maps, Waze, Appeler, les travaux à faire. « Sans vous appeler. »</td></tr>
+      <tr><td>35 à 44 s</td><td>18 h 20, chantier terminé : Créer la facture. « La facture reprend le devis. » La ligne de TVA devient la table du PDF, taux par taux, puis « Ma TVA à déclarer ». 18 h 21 : « Prête à déclarer. »</td></tr>
+      <tr><td>44 à 47 s</td><td>Le téléphone se pose, l’écran s’éteint, la lumière tombe. Pas de phrase.</td></tr>
+      <tr><td>47 à 50 s</td><td>Atlas. Du devis dicté à la facture. Essai gratuit 15 jours.</td></tr>
+    </table>
+  </div>
 
   <div class="note">
-    <b>Ce qui se passe, seconde par seconde</b>
-    <table>
-      <tr><td>0 à 5 s</td><td>Le soir. Les devis à retaper. La TVA. Les gars qui appellent. Les papiers. 20 minutes. Une coupe par temps, puis par demi-temps, puis par quart de temps ; l’horloge court de 21 h 40 à 23 h 10 ; la caméra tremble. Puis un noir, un silence.</td></tr>
-      <tr><td>5 à 7 s</td><td>L’heure roule jusqu’à 8 h 05, la lumière se réchauffe, le téléphone se lève dans la main.</td></tr>
-      <tr><td>7 à 12 s</td><td>Sur le chantier : créer un devis, le micro, les mots dictés. À 8 h 06, la transcription devient la ligne du devis. « Le devis est prêt. »</td></tr>
-      <tr><td>12 à 16 s</td><td>12 h 30, votre client : il touche le mardi 13 octobre, il accepte. 12 h 31 : vous êtes prévenu.</td></tr>
-      <tr><td>16 à 18 s</td><td>La carte « devis accepté » s’envole et devient la carte du planning. « Au planning. »</td></tr>
-      <tr><td>18 à 23 s</td><td>7 h 10 le lendemain, vos gars : Julien ouvre le chantier, la fiche d’intervention, Maps, Waze, Appeler, les travaux à faire. « Sans vous appeler. »</td></tr>
-      <tr><td>23 à 31 s</td><td>18 h 20, chantier terminé : créer la facture, elle reprend le devis ; la ligne de TVA devient la table du PDF, taux par taux, puis « Ma TVA à déclarer ». 18 h 21 : « Prête à déclarer. »</td></tr>
-      <tr><td>31 à 34 s</td><td>Le téléphone se pose, l’écran s’éteint, la lumière tombe. Pas de phrase.</td></tr>
-      <tr><td>34 à 37 s</td><td>Atlas. Du devis dicté à la facture. Essai gratuit 15 jours.</td></tr>
-    </table>
-    <b style="display:block;margin-top:12px">Ce qui reste à me dire</b>
+    <b>Ce qui reste à me dire</b>
     <ul>
-      <li>Votre verdict sur le film, seconde par seconde si quelque chose cloche.</li>
+      <li>Votre verdict sur chacun des deux, à la seconde près si quelque chose cloche.</li>
       <li>Le nom commercial : Atlas, ou un autre.</li>
       <li>L’adresse où la vidéo renvoie, pour la fin.</li>
       <li>Votre voix, si vous en voulez une : le texte de 30 secondes est dans le document de retour.</li>
@@ -97,8 +119,13 @@
     <p>Tout ce qui est dans le téléphone est une capture de l’application. Les chiffres (20 minutes, 30 secondes, 15 jours) viennent du cadrage du produit et de l’abonnement. Aucun prix.</p>
   </div>
 
+  <h2>Le mélange, monté d’abord</h2>
+  <p class="chapo">37 secondes : le stress de la nerveuse, puis le calme du récit. Monté avant votre précision ; il reste pour comparer.</p>
+  <video id="melange" src="video-promo/atlas-D.mp4" poster="video-promo/affiche-D.jpg" controls playsinline preload="metadata"></video>
+  <p class="son"><a href="video-promo/atlas-D.mp4" download>Avec le son de travail</a><a href="video-promo/atlas-D-muet.mp4" download>Muette</a></p>
+
   <h2>Les trois directions</h2>
-  <p class="chapo">Les essais de 8 secondes du 4 octobre. Vous avez retenu le coup de poing pour le stress et la journée pour le reste.</p>
+  <p class="chapo">Les essais de 8 secondes du 4 octobre.</p>
 
   <div class="choix" role="group" aria-label="Direction">
     <button type="button" data-video="essai-D-nerveuse" aria-pressed="true"><b>Le coup de poing</b><span>des coupes sur le temps, des mots énormes</span></button>
@@ -106,8 +133,8 @@
     <button type="button" data-video="essai-D-apple" aria-pressed="false"><b>L’objet</b><span>un téléphone dans la lumière, lent</span></button>
   </div>
 
-  <video id="video" src="video-promo/essai-D-nerveuse.mp4" poster="video-promo/affiche-D-nerveuse.jpg" controls playsinline preload="metadata"></video>
-  <p class="son"><a id="avec" href="video-promo/essai-D-nerveuse.mp4" download>Avec le son de travail</a><a id="sans" href="video-promo/essai-D-nerveuse-muet.mp4" download>Muette</a></p>
+  <video id="essai" src="video-promo/essai-D-nerveuse.mp4" poster="video-promo/affiche-D-nerveuse.jpg" controls playsinline preload="metadata"></video>
+  <p class="son"><a id="essaiAvec" href="video-promo/essai-D-nerveuse.mp4" download>Avec le son de travail</a><a id="essaiSans" href="video-promo/essai-D-nerveuse-muet.mp4" download>Muette</a></p>
 
   <h2>Les versions d’avant</h2>
   <p class="chapo">41 secondes, en vertical. C est celle qui « ressemble à un PowerPoint ».</p>
@@ -121,12 +148,22 @@
 </div>
 <script>
   const video = document.getElementById('video'), avec = document.getElementById('avec'), sans = document.getElementById('sans');
+  const notes = { nerveuse: document.getElementById('noteNerveuse'), recit: document.getElementById('noteRecit') };
+  document.querySelectorAll('[data-film]').forEach(b => b.addEventListener('click', () => {
+    document.querySelectorAll('[data-film]').forEach(x => x.setAttribute('aria-pressed', x === b));
+    const nom = b.dataset.film;
+    video.poster = `video-promo/affiche-D-${nom}-film.jpg`;
+    video.src = `video-promo/atlas-D-${nom}.mp4`; avec.href = `video-promo/atlas-D-${nom}.mp4`; sans.href = `video-promo/atlas-D-${nom}-muet.mp4`;
+    for (const k in notes) notes[k].hidden = k !== nom;
+    video.play().catch(() => {});
+  }));
+  const essai = document.getElementById('essai'), essaiAvec = document.getElementById('essaiAvec'), essaiSans = document.getElementById('essaiSans');
   document.querySelectorAll('[data-video]').forEach(b => b.addEventListener('click', () => {
     document.querySelectorAll('[data-video]').forEach(x => x.setAttribute('aria-pressed', x === b));
     const nom = b.dataset.video;
-    video.poster = `video-promo/affiche-D-${nom.replace('essai-D-', '')}.jpg`;
-    video.src = `video-promo/${nom}.mp4`; avec.href = `video-promo/${nom}.mp4`; sans.href = `video-promo/${nom}-muet.mp4`;
-    video.play().catch(() => {});
+    essai.poster = `video-promo/affiche-D-${nom.replace('essai-D-', '')}.jpg`;
+    essai.src = `video-promo/${nom}.mp4`; essaiAvec.href = `video-promo/${nom}.mp4`; essaiSans.href = `video-promo/${nom}-muet.mp4`;
+    essai.play().catch(() => {});
   }));
   const ancienne = document.getElementById('ancienne');
   const affiche = { C: 'affiche-C', 'C-muet': 'affiche-C', A: 'affiche', B: 'affiche' };

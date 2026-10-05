@@ -8,6 +8,7 @@
 //
 //   npx tsx scripts/capturer-ecrans-du-film.mts            → le planning et la fiche d'intervention
 //   npx tsx scripts/capturer-ecrans-du-film.mts facture    → la facture et la TVA
+//   npx tsx scripts/capturer-ecrans-du-film.mts editeur    → le devis rédigé à la main (l'éditeur de lignes)
 //   … --dossier <où>                                        → ailleurs que dans le film
 //
 // L'ordre compte : la première série se prend AVANT
@@ -31,10 +32,10 @@ import { devices, type Browser, type Page } from "playwright";
 import { lancerNavigateur } from "./e2e-browser";
 import { ADRESSE } from "./_adresse";
 import { fichierDemandeALaVisionneuse } from "../src/lib/visionneuse-pdf";
-import { CHANTIER_NOM, COMPTE_DEMO, COMPTE_SALARIE, JOUR_DU_CHANTIER, LIGNES, PERIODE_TVA } from "./_jeu-du-film";
+import { CHANTIER_NOM, CLIENTE, COMPTE_DEMO, COMPTE_SALARIE, JOUR_DU_CHANTIER, LIGNES, PERIODE_TVA } from "./_jeu-du-film";
 
 const args = process.argv.slice(2);
-const serie = args.includes("facture") ? "facture" : "planning";
+const serie = args.includes("facture") ? "facture" : args.includes("editeur") ? "editeur" : "planning";
 const rangDossier = args.indexOf("--dossier");
 const DOSSIER = rangDossier >= 0 && args[rangDossier + 1] ? args[rangDossier + 1] : "appli/video-promo/film";
 const BASE = ADRESSE;
@@ -294,7 +295,40 @@ async function avecUnePage(navigateur: Browser, fn: (page: Page) => Promise<void
 async function main() {
   const navigateur = await lancerNavigateur();
   try {
-    if (serie === "planning") {
+    if (serie === "editeur") {
+      // « Je rédige à la main », sous le micro de la fiche client, ouvre
+      // l'éditeur de lignes (/chantiers/<id>/devis-complet). Le film doit
+      // montrer qu'on peut dicter OU rédiger (sa remarque du 5 octobre 2026) :
+      // voici l'écran où l'on rédige, vide puis avec la première ligne tapée,
+      // par les mêmes gestes que preparer-jeu-du-film.mts. Le devis de
+      // démonstration, lui, est parti chez la cliente et ne se modifie plus :
+      // son écran n'est plus un éditeur.
+      await avecUnePage(navigateur, async (page) => {
+        await seConnecter(page, COMPTE_DEMO);
+        await ouvrir(page, "/chantiers/nouveau");
+        await page.waitForSelector('[data-atlas="civilite-mme"]');
+        await page.click('[data-atlas="civilite-mme"]');
+        await page.getByLabel(/Nom du client/i).fill(CLIENTE.nom);
+        await page.fill('input[placeholder="06 12 34 56 78"]', CLIENTE.telephone);
+        await page.getByRole("combobox", { name: "Adresse du chantier" }).fill(CLIENTE.adresse);
+        await page.keyboard.press("Escape");
+        await page.click('[data-atlas="action-ecrire"]');
+        await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}\/devis-complet/, { timeout: 30_000 });
+        await page.waitForSelector("text=Total TTC", { timeout: 60_000 });
+        await page.getByLabel("Description 1").waitFor();
+        await photographier(page, "devis-vide", false);
+        const premiere = LIGNES[0];
+        await page.getByLabel("Description 1").fill(premiere.libelle);
+        await page.getByLabel("Description 1").blur();
+        await page.getByLabel("Quantité 1").fill("1");
+        await page.getByLabel("Quantité 1").blur();
+        await page.getByLabel("Prix unitaire 1").fill(premiere.prix);
+        await page.getByLabel("Prix unitaire 1").blur();
+        await page.waitForTimeout(600);
+        await photographier(page, "devis-redige", true);
+        await photographier(page, "devis-redige-ecran", false);
+      });
+    } else if (serie === "planning") {
       await avecUnePage(navigateur, async (page) => {
         await seConnecter(page, COMPTE_DEMO);
         const chantierId = await serieDuPlanning(page, { planning: "planning-jour", fiche: "fiche-intervention" }, true);

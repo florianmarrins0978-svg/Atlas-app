@@ -1,0 +1,531 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1080">
+<title>Atlas, film D, la journée</title>
+<link rel="stylesheet" href="polices/polices.css">
+<style>
+  /*
+    LE FILM D, VERSION « LA JOURNÉE » (le récit) : une horloge, du soir au soir.
+
+    Sa demande du 5 octobre 2026 : deux films distincts, l'un dans la
+    direction nerveuse, l'autre dans la direction récit ; et deux reproches
+    au premier montage : « on ne voit pas le téléphone en grand, donc pas
+    toute l'appli », et « on ne voit pas qu'on peut dicter ou rédiger le
+    devis, la dictée est un point essentiel ».
+
+    Ce film-ci est le récit, de bout en bout, calme : 92 à la noire, une
+    caméra lente, et UNE horloge qui tient tout. Le soir elle avance pendant
+    que les phrases de la douleur passent ; le lendemain, 8 h 05, elle
+    n'avance plus que d'une minute par geste (8 h 06 le devis est prêt,
+    12 h 31 vous êtes prévenu, 18 h 21 la TVA est prête). Grande aux
+    changements d'heure, elle se range dans le coin pendant les piliers,
+    pour laisser le téléphone EN ENTIER au milieu du cadre.
+
+    Ce qui répond à ses deux reproches :
+      · chaque écran est d'abord montré ENTIER, à l'échelle 1, et tenu ; la
+        caméra ne s'approche qu'ensuite, et revient ;
+      · les deux chemins du devis se voient DANS le téléphone : « Je rédige
+        à la main » ouvre l'éditeur de lignes (la première ligne tapée), puis
+        l'autre chemin, le micro « Appuyez et décrivez le chantier »,
+        l'enregistrement avec son onde, la transcription, qui devient la
+        ligne du devis. Chaque bouton est désigné par un cadre d'or avant
+        d'être touché.
+
+    Tout ce qui est dans le téléphone est une capture de l'application servie
+    (film-D-contenu.js dit lesquelles). Les chiffres viennent de
+    docs/AGENT.md §1 et de src/lib/abonnements.ts. Aucun prix.
+  */
+  *{box-sizing:border-box;margin:0}
+  html,body{width:1080px;height:1920px;overflow:hidden;background:#0d1117}
+  #scene{position:absolute;inset:0;overflow:hidden}
+  #ciel{position:absolute;inset:0;z-index:0}
+  #monde{position:absolute;left:0;top:0}
+  #horloge{position:absolute;left:0;right:0;top:150px;z-index:40;text-align:center;font:500 250px/1 'Film Editorial';color:#f3efe6;letter-spacing:-.03em;transform-origin:50% 0;will-change:transform,opacity}
+  #horloge .col{display:inline-block;height:250px;overflow:hidden;vertical-align:top;position:relative;width:.62em}
+  #horloge .col .roule{will-change:transform}
+  #horloge .col .roule span{display:block;height:250px;line-height:250px}
+  #horloge .sep{display:inline-block;font-size:150px;line-height:250px;vertical-align:top;margin:0 .06em;color:#C9A15E;font-style:italic}
+  #lieu{position:absolute;left:0;right:0;top:215px;text-align:center;font:500 26px/1 'Film Sans';letter-spacing:.44em;text-transform:uppercase;color:#C9A15E;opacity:0;will-change:transform,opacity}
+  .phrase{position:absolute;left:0;right:0;top:268px;text-align:center;font:italic 500 66px/1.15 'Film Editorial';color:#f3efe6;padding:0 80px;will-change:transform,opacity}
+  .phrase.soir{top:470px;font-size:72px;color:rgba(243,239,230,.9)}
+  #dictee{position:absolute;left:0;right:0;top:212px;padding:0 90px;font:400 46px/1.3 'Film Serif';color:#f3efe6;text-align:center;opacity:0}
+  #dictee span{display:inline-block;margin-right:.24em;will-change:transform,opacity}
+  #dictee .point{width:16px;height:16px;border-radius:50%;background:#d9534f;margin:0 14px 6px 0;vertical-align:middle}
+  #trait{position:absolute;left:140px;top:1880px;height:3px;background:#C9A15E;transform-origin:0 50%;opacity:0}
+  #signature{position:absolute;left:0;right:0;top:0;height:1920px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:0 80px}
+  #atlas{font:500 300px/1 'Film Editorial';color:#f3efe6;letter-spacing:-.02em}
+  #devise{font:italic 500 58px/1.25 'Film Editorial';color:rgba(243,239,230,.88);margin-top:44px}
+  #essai{font:500 30px/1 'Film Sans';letter-spacing:.44em;text-transform:uppercase;color:#C9A15E;margin-top:90px}
+</style>
+</head>
+<body>
+<div id="scene">
+  <div id="ciel"></div>
+  <div id="monde">
+    <div id="lueur"></div>
+    <p class="phrase soir" id="pSoir1">Encore un devis à retaper.</p>
+    <p class="phrase soir" id="pSoir2">La TVA, les papiers, les gars qui appellent.</p>
+    <p id="lieu"></p>
+    <div id="dictee"></div>
+    <p class="phrase" id="pRedigez">Rédigez à la main.</p>
+    <p class="phrase" id="pDictez">Ou dictez.</p>
+    <p class="phrase" id="pPret">Le devis est prêt.</p>
+    <p class="phrase" id="pPlanning">Au planning.</p>
+    <p class="phrase" id="pGars">Sans vous appeler.</p>
+    <p class="phrase" id="pReprend">La facture reprend le devis.</p>
+    <p class="phrase" id="pTaux">La TVA, taux par taux.</p>
+    <p class="phrase" id="pPrete">Prête à déclarer.</p>
+    <div id="objets"></div>
+    <div id="trait"></div>
+    <div id="signature"><p id="atlas">Atlas</p><p id="devise">Du devis dicté à la facture.</p><p id="essai">Essai gratuit 15 jours</p></div>
+  </div>
+  <div id="horloge"></div>
+  <div id="etalonnage"></div>
+  <div id="vignette"></div>
+</div>
+<script src="moteur-D.js"></script>
+<script src="film-D-contenu.js"></script>
+<script>
+  const M = window.MoteurD, C = window.ContenuD;
+  const { entre, mix, cles, lisse, sortie, sortieForte, expo, borne, entreeSortie, fenetre, $ } = M;
+
+  // ─── le découpage ───────────────────────────────────────────────────────
+  const T_BASCULE = 4.6;         // 23 h 10 : l'heure roule jusqu'au matin
+  const T_MATIN = 5.9;           // 8 h 05, le téléphone dans la main, entier
+  const T_CREER = 7.3;
+  const T_FICHE = T_CREER + .15;
+  const T_BAS = 8.5;             // la caméra descend sur le micro et le bouton
+  const T_REDIGE = 9.5;          // « Je rédige à la main » : l'éditeur de lignes s'ouvre
+  const T_EDITEUR = T_REDIGE + .15;
+  const T_RETOUR = 11.5;         // retour sur la fiche : l'autre chemin, le micro
+  const T_MICRO = 12.5;
+  const T_DICTEE = 12.9;
+  const T_RACCORD = 15.3;        // 8 h 06 : la transcription, puis la ligne du devis
+  const T_LIGNE = T_RACCORD + .5;
+  const T_PRET = 16.4;
+  const T_CLIENT = 18.4;         // 12 h 30 : le téléphone du client
+  const T_DATE = 19.6;
+  const T_ACCEPTE = 20.1;
+  const T_NOTE = T_ACCEPTE + .15;
+  const T_PREVENU = 21.5;        // 12 h 31 : votre accueil, « devis accepté »
+  const T_VOL = 23.1;            // la carte s'envole
+  const T_PLANNING = 23.95;      // elle se pose sur le planning
+  const T_AU_PLANNING = 24.5;
+  const T_GARS = 27.4;           // 7 h 10, le lendemain : le planning de Julien
+  const T_OUVRE = 28.4;
+  const T_FICHE_G = T_OUVRE + .15;
+  const T_ADRESSE = 29.6;        // la fiche défile vers Mme Martin, Maps, Waze
+  const T_TRAVAUX = 31.0;        // puis vers « Travaux à faire »
+  const T_SANS = 32.3;
+  const T_SOIR = 35.2;           // 18 h 20 : chantier terminé
+  const T_FACTURE = 36.2;
+  const T_FACT_GL = T_FACTURE + .15;
+  const T_REPREND = 37.0;
+  const T_TOTAUX = 37.9;         // la facture défile vers ses totaux
+  const T_TVA = 39.3;            // la ligne de TVA devient la table du PDF
+  const T_TAUX = 39.9;
+  const T_DECLARE = 41.5;        // 18 h 21 : la table devient « Ma TVA à déclarer »
+  const T_PRETE = 42.7;
+  const T_POSE = 44.2;           // le téléphone se pose, l'écran s'éteint
+  const T_SIGN = 47.0;
+  const T_DEVISE = 47.9;
+  const T_ESSAI = 48.8;
+  const DUREE = 50.3;
+
+  const scene = M.creerScene();
+  const matiere = M.creerMatiere();
+  const tel = M.creerTelephone({ parent: $('objets'), teinte: 'graphite', ecrans: C.ECRANS });
+  const BANDES = C.PRISES.map((_, i) => {
+    const img = new Image(); img.src = `dictee/bande-${i}.jpg`; img.alt = '';
+    img.style.cssText = `position:absolute;left:0;top:${600 * M.K}px;width:620px;z-index:1500;opacity:0`;
+    tel.ecran.appendChild(img); return img;
+  });
+  // Le téléphone ENTIER : centré, à l'échelle 1, sous l'horloge rangée dans
+  // le coin. 412 px en haut, 1798 en bas : tout l'écran de l'appli est là.
+  const TEL_X = 560, TEL_Y = 1105;
+
+  // ─── l'horloge ──────────────────────────────────────────────────────────
+  const horloge = $('horloge');
+  function colonne(suite) {
+    const c = document.createElement('span'); c.className = 'col';
+    const r = document.createElement('span'); r.className = 'roule'; r.style.display = 'block';
+    for (const v of suite) { const s = document.createElement('span'); s.textContent = String(v); r.appendChild(s); }
+    c.appendChild(r); horloge.appendChild(c); return { fenetre: c, rouleau: r };
+  }
+  const heures = Array.from({ length: 25 }, (_, h) => h % 24);
+  const colHeuresDizaines = colonne(heures.map(h => Math.floor(h / 10)));
+  const colHeuresUnites = colonne(heures.map(h => h % 10));
+  const sep = document.createElement('span'); sep.className = 'sep'; sep.textContent = 'h'; horloge.appendChild(sep);
+  const colMinutesDizaines = colonne([0, 1, 2, 3, 4, 5, 0]);
+  const colMinutesUnites = colonne([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0]);
+  function poserHorloge(minutes) {
+    const m = ((minutes % 1440) + 1440) % 1440;
+    const H = Math.floor(m / 60), MIN = m % 60;
+    const unites = MIN % 10;
+    const retenueMinutes = Math.max(0, unites - 9);
+    const dizaines = Math.floor(MIN / 10) + retenueMinutes;
+    const retenueHeures = Math.max(0, MIN - 59);
+    const Hf = H + retenueHeures;
+    colHeuresDizaines.rouleau.style.transform = `translateY(${-Hf * 250}px)`;
+    colHeuresUnites.rouleau.style.transform = `translateY(${-Hf * 250}px)`;
+    colMinutesDizaines.rouleau.style.transform = `translateY(${-dizaines * 250}px)`;
+    colMinutesUnites.rouleau.style.transform = `translateY(${-unites * 250}px)`;
+    colHeuresDizaines.fenetre.style.width = Hf < 10 ? '0px' : '.62em';
+  }
+  // Les minutes depuis minuit, jamais en arrière : 21 h 40 = 1300, 8 h 05 le
+  // lendemain = 1440 + 485, 7 h 10 le surlendemain = 2880 + 430.
+  const MINUTES = [
+    [0, 1300], [2.3, 1300], [2.7, 1370, entreeSortie], [T_BASCULE, 1370], [T_MATIN - .05, 1925, entreeSortie],
+    [T_RACCORD, 1925], [T_RACCORD + .4, 1926, sortie],
+    [T_CLIENT - .5, 1926], [T_CLIENT, 2190, entreeSortie],
+    [T_PREVENU - .3, 2190], [T_PREVENU, 2191, sortie],
+    [T_GARS - .7, 2191], [T_GARS, 3310, entreeSortie],
+    [T_SOIR - .7, 3310], [T_SOIR, 3980, entreeSortie],
+    [T_DECLARE - .3, 3980], [T_DECLARE, 3981, sortie],
+  ];
+  // Grande aux changements d'heure, petite dans le coin pendant les piliers.
+  const petite = t => fenetre(t, T_MATIN + .4, T_CLIENT - .6, .5, .6) + fenetre(t, T_CLIENT + .5, T_GARS - .7, .5, .5)
+    + fenetre(t, T_GARS + .5, T_SOIR - .7, .5, .5) + fenetre(t, T_SOIR + .5, T_POSE + .9, .5, .6);
+
+  // ─── les écrans, les appuis, les repères ────────────────────────────────
+  const D = C.DEFILEMENTS;
+  const ECRANS = [
+    ['accueil-avant', T_MATIN - .3, T_FICHE + .5, 'net'],
+    ['fiche-reconnue', T_FICHE, T_EDITEUR + .5, 'monte'],
+    ['devis-redige', T_EDITEUR, T_RETOUR, 'glisse'],
+    ['fiche-reconnue', T_RETOUR, T_MICRO + .5, 'net'],
+    ['enregistre', T_MICRO + .12, T_RACCORD + .3, 'net'],
+    ['transcription', T_RACCORD - .1, T_CLIENT - .25, 'glisse'],
+    ['client-date', T_CLIENT - .25, T_NOTE + .5, 'net'],
+    ['client-accepte', T_NOTE, T_PREVENU - .2, 'glisse'],
+    ['accueil', T_PREVENU - .2, T_VOL + .9, 'net'],
+    ['planning', T_VOL + .45, T_GARS - .4, 'glisse', [[0, D.planning]]],
+    ['planning-salarie', T_GARS - .4, T_FICHE_G + .5, 'net'],
+    ['fiche-salarie', T_FICHE_G, T_SOIR - .4, 'monte', [[T_FICHE_G, D.ficheAuPlanning], [T_ADRESSE, D.ficheAuPlanning], [T_ADRESSE + .6, D.ficheAdresse, entreeSortie], [T_TRAVAUX, D.ficheAdresse], [T_TRAVAUX + .6, D.ficheTravaux, entreeSortie]]],
+    ['facture-avant', T_SOIR - .4, T_FACT_GL + .5, 'net'],
+    ['facture', T_FACT_GL, T_DECLARE + .3, 'glisse', [[T_TOTAUX, 0], [T_TOTAUX + .7, D.factureTotaux, entreeSortie]]],
+    ['termines', T_DECLARE - .3, DUREE, 'glisse'],
+  ];
+  const P = C.POINTS;
+  const APPUIS = [
+    [T_CREER, ...P.creerUnDevis], [T_REDIGE, ...P.jeRedige], [T_MICRO, ...P.micro],
+    [T_DATE, ...P.leMardi13], [T_ACCEPTE, ...P.jAccepte],
+    [T_OUVRE, ...P.chantierDeJulien], [T_FACTURE, ...P.creerLaFacture],
+  ];
+  // « Je rédige à la main », puis le micro : désignés avant d'être touchés.
+  const REPERES = [[T_BAS + .3, T_REDIGE - .05, ...C.REPERES.jeRedige], [T_RETOUR + .5, T_MICRO - .05, ...C.REPERES.micro]];
+  // Chacun attend que l'horloge soit rangée dans le coin (elle y est une
+  // seconde après chaque changement d'heure) et s'efface avant le zoom qui suit.
+  const LIEUX = [
+    [T_MATIN + .9, T_CREER - .05, 'sur le chantier'],
+    [T_CLIENT + 1.0, T_DATE - .35, 'votre client'],
+    [T_PREVENU - .1, T_VOL - .9, 'vous êtes prévenu'],
+    [T_GARS + 1.0, T_OUVRE - .05, 'vos gars, le lendemain'],
+    [T_SOIR + 1.0, T_FACTURE - .05, 'chantier terminé'],
+  ];
+
+  const MOTS = [];
+  { let t = T_DICTEE;
+    for (const brut of C.DICTEE.split(' ')) {
+      if (brut === ':') { t += .1; continue; }
+      MOTS.push([t, brut + (C.DICTEE.includes(brut + ' :') ? ' :' : '')]); t += .1;
+      if (/[,.:]$/.test(brut)) t += .13;
+    } }
+  const dictee = $('dictee');
+  dictee.innerHTML = '<span class="point" id="pointRouge"></span>' + MOTS.map(([, m]) => `<span>${m}</span>`).join('');
+  const spansMots = [...dictee.querySelectorAll('span:not(.point)')];
+  const pointRouge = $('pointRouge');
+
+  const PHRASES = [
+    ['pSoir1', .4, 2.2], ['pSoir2', 2.7, T_BASCULE - .1],
+    ['pRedigez', T_EDITEUR + .3, T_RETOUR - .1], ['pDictez', T_RETOUR + .2, T_MICRO + .1], ['pPret', T_PRET, T_CLIENT - 1.7], ['pPlanning', T_AU_PLANNING, T_GARS - 1.6],
+    ['pGars', T_SANS, T_SOIR - 1.6], ['pReprend', T_REPREND, T_TOTAUX], ['pTaux', T_TAUX, T_DECLARE - .3], ['pPrete', T_PRETE, T_POSE - .3],
+  ].map(([id, de, a]) => [M.decouper($(id), 'mots'), de, a]);
+  const lettresAtlas = M.decouper($('atlas'), 'lettres');
+  const motsDevise = M.decouper($('devise'), 'mots');
+  const essai = $('essai');
+
+  // ─── les raccords ───────────────────────────────────────────────────────
+  const Z = C.ZONES;
+  const raccordDevis = M.creerMorceau({ parent: $('objets'), de: Z.transcription, vers: Z.ligneDuDevis });
+  const raccordPlanning = M.creerMorceau({ parent: $('objets'), de: Z.notification, vers: Z.cartePlanning });
+  const raccordTva = M.creerMorceau({ parent: $('objets'), de: Z.ligneTva, vers: Z.tableTva });
+  const raccordDeclare = M.creerMorceau({ parent: $('objets'), de: Z.tableTva, vers: Z.carteTva });
+  const centreZone = (z, defile = 0) => ({ x: (z.zone[0] + z.zone[2] / 2) / 3, y: (z.zone[1] + z.zone[3] / 2) / 3 - defile });
+  const largeurZone = z => z.zone[2] / 3 * M.K * tel.pose.echelle;
+
+  // ─── la lumière du jour ─────────────────────────────────────────────────
+  const NUIT = ['#2a3442', '#121820', '150,175,215', 60];
+  const MATIN = ['#5a4a2b', '#2b2416', '255,196,110', 125];
+  const MIDI = ['#6b5c38', '#302a1a', '255,220,150', 95];
+  const AUBE = ['#4a3a4e', '#1f1a24', '220,170,190', 150];
+  const SOIR = ['#7a4a22', '#2e1c10', '255,160,80', 25];
+  const CREPUSCULE = ['#3a2a22', '#15100c', '255,140,70', 15];
+  const NOIR = ['#06070a', '#06070a', '0,0,0', 15];
+  const CIEL = [
+    [T_BASCULE, NUIT], [T_MATIN + .2, MATIN], [T_CLIENT - .5, MATIN], [T_CLIENT + .2, MIDI],
+    [T_GARS - .7, MIDI], [T_GARS, AUBE], [T_SOIR - .7, AUBE], [T_SOIR, SOIR],
+    [T_POSE, SOIR], [T_POSE + 1.6, CREPUSCULE], [T_SIGN - .5, CREPUSCULE], [T_SIGN, NOIR],
+  ];
+  const melangeRgb = (a, b, p) => a.split(',').map((v, i) => Math.round(mix(+v, +b.split(',')[i], p))).join(',');
+  function lumiereDuJour(t) {
+    if (t <= CIEL[0][0]) return CIEL[0][1];
+    for (let i = 1; i < CIEL.length; i++) {
+      if (t <= CIEL[i][0]) {
+        const p = lisse(entre(t, CIEL[i - 1][0], CIEL[i][0]));
+        const [a, b] = [CIEL[i - 1][1], CIEL[i][1]];
+        return [M.melange(a[0], b[0], p), M.melange(a[1], b[1], p), melangeRgb(a[2], b[2], p), mix(a[3], b[3], p)];
+      }
+    }
+    return CIEL[CIEL.length - 1][1];
+  }
+
+  // ─── la carte des temps forts ───────────────────────────────────────────
+  window.SONS = [
+    [0.4, 'tic'], [1.4, 'tic'], [2.4, 'tic'], [2.7, 'barre'], [3.7, 'tic'],
+    [T_BASCULE, 'barre'], [T_MATIN - .2, 'reconnu'], [T_MATIN, 'reponse'],
+    [T_CREER, 'appui'], [T_FICHE, 'glisse'], [T_BAS + .3, 'repere'], [T_REDIGE, 'appui'], [T_EDITEUR, 'glisse'], [T_RETOUR, 'glisse'], [T_RETOUR + .5, 'repere'], [T_MICRO, 'appui'], [T_MICRO + .1, 'micro'],
+    [T_RACCORD, 'tic'], [T_RACCORD - .1, 'glisse'], [T_LIGNE + .6, 'total'], [T_PRET, 'accepte'],
+    [T_CLIENT - .5, 'barre'], [T_DATE, 'appui'], [T_ACCEPTE, 'appui'], [T_NOTE, 'glisse'], [T_NOTE + .2, 'accepte'],
+    [T_PREVENU, 'notification'], [T_VOL, 'feuille-entre'], [T_PLANNING, 'repere'], [T_PLANNING + .1, 'total'],
+    [T_GARS - .6, 'barre'], [T_GARS, 'tic'], [T_OUVRE, 'appui'], [T_FICHE_G, 'glisse'], [T_ADRESSE + .1, 'glisse'], [T_TRAVAUX + .1, 'glisse'], [T_SANS, 'accepte'],
+    [T_SOIR - .6, 'barre'], [T_SOIR, 'tic'], [T_FACTURE, 'appui'], [T_FACT_GL, 'glisse'], [T_TOTAUX + .1, 'glisse'],
+    [T_TVA, 'feuille-entre'], [T_TVA + .6, 'total'], [T_DECLARE - .2, 'glisse'], [T_DECLARE, 'tic'], [T_DECLARE + .7, 'repere'], [T_PRETE, 'accepte'],
+    [T_POSE + 1.2, 'telephone-sort'],
+    [T_SIGN + .1, 'final'],
+  ].sort((a, b) => a[0] - b[0]);
+  window.MUSIQUE = {
+    style: 'recit', bpm: 92, tonalite: 'D', duree: DUREE,
+    sections: [
+      { de: 0, bpm: 92, accord: 'Bm', couches: ['nappe'] },
+      { de: T_MATIN, bpm: 92, accord: 'D', couches: ['nappe', 'arpege'] },
+      { de: T_RACCORD, bpm: 92, accord: 'G', couches: ['nappe', 'arpege', 'rythme'] },
+      { de: T_CLIENT, bpm: 92, accord: 'A', couches: ['nappe', 'arpege'] },
+      { de: T_PREVENU, bpm: 92, accord: 'D', couches: ['nappe', 'arpege', 'rythme'] },
+      { de: T_GARS, bpm: 92, accord: 'Bm', couches: ['nappe', 'arpege'] },
+      { de: T_SANS, bpm: 92, accord: 'G', couches: ['nappe', 'arpege', 'rythme'] },
+      { de: T_SOIR, bpm: 92, accord: 'D', couches: ['nappe', 'arpege', 'rythme', 'charley'] },
+      { de: T_DECLARE, bpm: 92, accord: 'A', couches: ['nappe', 'arpege', 'rythme', 'charley'] },
+      { de: T_POSE, bpm: 92, accord: 'D', couches: ['nappe'] },
+      { de: T_SIGN - .6, bpm: 92, accord: 'D', couches: ['silence'] },
+      { de: T_SIGN, bpm: 92, accord: 'D', couches: ['nappe', 'finale'] },
+    ],
+  };
+
+  const ciel = $('ciel'), lieu = $('lieu'), trait = $('trait');
+
+  // ─── la caméra : un regard = [instant, zoom, point visé, courbe] ──────────
+  // Le point est un point du monde, ou un point de l'appli (il suit le
+  // téléphone). Chaque écran est d'abord vu ENTIER (zoom 1, centre du
+  // téléphone), puis la caméra s'approche, puis revient.
+  const W = (x, y) => () => ({ x, y });
+  const A = (x, y, dy = 0) => () => { const p = tel.pointDeLAppli(x, y); return { x: p.x, y: p.y + dy }; };
+  const ENTIER = W(540, 1000);
+  const R = C.REGARDS;
+  const REGARDS = [
+    [0, 1.0, W(540, 1000)],
+    [T_MATIN, 1.0, ENTIER],
+    [T_BAS, 1.0, ENTIER],
+    [T_BAS + .5, 1.45, A(195, 700), expo],
+    [T_REDIGE + .2, 1.45, A(195, 700)],
+    [T_REDIGE + .8, 1.0, ENTIER, entreeSortie],
+    [T_RETOUR + .3, 1.0, ENTIER],
+    [T_RETOUR + .8, 1.45, A(195, 700), expo],
+    [T_MICRO + .3, 1.45, A(195, 700)],
+    [T_MICRO + .9, 1.0, ENTIER, entreeSortie],
+    [T_RACCORD, 1.0, ENTIER],
+    [T_RACCORD + .4, 1.18, A(...R.transcription, 60), expo],
+    [T_LIGNE + .3, 1.18, A(...R.transcription, 60)],
+    [T_LIGNE + .9, 1.0, W(540, 980), expo],
+    [T_CLIENT - .4, 1.0, W(540, 980)],
+    [T_CLIENT, 1.0, ENTIER],
+    [T_DATE - .5, 1.0, ENTIER],
+    [T_DATE - .1, 1.5, A(120, 300), expo],
+    [T_ACCEPTE - .15, 1.5, A(120, 300)],
+    [T_ACCEPTE + .25, 1.4, A(195, 440), expo],
+    [T_NOTE + .35, 1.4, A(195, 440)],
+    [T_NOTE + .9, 1.0, ENTIER, expo],
+    [T_PREVENU + .8, 1.0, ENTIER],
+    [T_PREVENU + 1.3, 1.5, A(...R.notification), expo],
+    [T_VOL, 1.5, A(...R.notification)],
+    [T_VOL + .5, 1.0, W(540, 920), entreeSortie],
+    [T_PLANNING - .3, 1.0, W(540, 920)],
+    [T_PLANNING + .1, 1.3, A(...R.cartePlanning), entreeSortie],
+    [T_AU_PLANNING - .05, 1.3, A(...R.cartePlanning)],
+    [T_AU_PLANNING + .5, 1.0, ENTIER, expo],
+    [T_OUVRE - .2, 1.0, ENTIER],
+    [T_OUVRE + .3, 1.2, A(195, 420), expo],
+    [T_FICHE_G + .6, 1.2, A(195, 420)],
+    [T_FICHE_G + 1.0, 1.0, ENTIER, expo],
+    [T_ADRESSE + .2, 1.0, ENTIER],
+    [T_ADRESSE + .8, 1.6, A(...R.boutonsDeLaFiche), expo],
+    [T_TRAVAUX, 1.6, A(...R.boutonsDeLaFiche)],
+    [T_TRAVAUX + .7, 1.5, A(...R.lignesDesTravaux), entreeSortie],
+    [T_SANS - .1, 1.5, A(...R.lignesDesTravaux)],
+    [T_SANS + .5, 1.0, ENTIER, expo],
+    [T_FACT_GL + .4, 1.0, ENTIER],
+    [T_TOTAUX + .2, 1.0, ENTIER],
+    [T_TOTAUX + .8, 1.5, A(...R.ligneTva), expo],
+    [T_TVA, 1.5, A(...R.ligneTva)],
+    [T_TVA + .7, 1.0, W(540, 920), entreeSortie],
+    [T_DECLARE - .2, 1.0, W(540, 920)],
+    [T_DECLARE + .6, 1.4, A(...R.carteTva), entreeSortie],
+    [T_PRETE - .1, 1.4, A(...R.carteTva)],
+    [T_PRETE + .5, 1.0, ENTIER, expo],
+    [T_POSE, 1.0, ENTIER],
+    [T_POSE + 1.4, 1.0, W(540, 1000)],
+    [T_SIGN, 1.0, W(540, 960)],
+  ];
+
+  function rendre(t) {
+    // ── l'horloge, le fil du film : une minute se lit, puis bascule
+    const minutesLues = cles(t, MINUTES);
+    poserHorloge(Math.floor(minutesLues) + lisse(entre(minutesLues - Math.floor(minutesLues), .6, 1)));
+    const p = petite(t);
+    horloge.style.transform = `translate(${mix(0, -340, p)}px, ${mix(0, -70, p)}px) scale(${mix(1, .42, p)})`;
+
+    // ── la lumière
+    const [cielHaut, cielMilieu, lueurCouleur, angleLumiere] = lumiereDuJour(t);
+    ciel.style.background = `radial-gradient(120% 70% at 50% -10%, ${cielHaut} 0%, ${cielMilieu} 45%, #07080a 100%)`;
+    const matin = lisse(entre(t, T_BASCULE + .3, T_MATIN + .2));
+
+    // ── le téléphone : posé à plat la nuit, entier dans la main le jour, posé à la fin
+    const leve = lisse(entre(t, T_BASCULE + .2, T_MATIN + .1));
+    const finDevis = lisse(entre(t, T_LIGNE - .2, T_LIGNE + .6)) * (1 - lisse(entre(t, T_PRET + .9, T_CLIENT - .3)));
+    const client = lisse(entre(t, T_CLIENT - .5, T_CLIENT)) * (1 - lisse(entre(t, T_PREVENU - .45, T_PREVENU + .05)));
+    const vol = lisse(entre(t, T_VOL, T_VOL + .4)) * (1 - lisse(entre(t, T_PLANNING - .45, T_PLANNING - .05)));
+    const tva = lisse(entre(t, T_TVA, T_TVA + .5)) * (1 - lisse(entre(t, T_DECLARE - .5, T_DECLARE)));
+    // Au départ et à l'arrivée d'un raccord, le téléphone fait face à la
+    // caméra : le point visé ignore sa rotation, et le morceau se pose juste.
+    const face = Math.max(
+      lisse(entre(t, T_VOL - .5, T_VOL)) * (1 - lisse(entre(t, T_PLANNING + .5, T_PLANNING + 1.1))),
+      lisse(entre(t, T_TVA - .5, T_TVA)) * (1 - lisse(entre(t, T_TVA + .3, T_TVA + .9))),
+      lisse(entre(t, T_DECLARE - .4, T_DECLARE)) * (1 - lisse(entre(t, T_DECLARE + 1.0, T_DECLARE + 1.6))),
+    );
+    const pose = lisse(entre(t, T_POSE, T_POSE + 1.4));
+    let x = mix(540, TEL_X, leve), y = mix(1420, TEL_Y, leve) + 160 * finDevis + 60 * vol + 140 * tva;
+    let rx = mix(62, 4, leve) * (1 - face), ry = (mix(-6, -11, leve) + 1.5 * M.derive(t * .7, 2) * leve + 23 * client) * (1 - face), rz = (mix(-14, -3, leve) + 6 * client) * (1 - face * .7);
+    let echelle = mix(.78, 1, leve) * mix(1, .92, finDevis) * mix(1, .96, vol) * mix(1, .9, tva);
+    let hauteurSol = mix(10, 110, leve);
+    x = mix(x, 540, pose); y = mix(y, 1420, pose); rx = mix(rx, 62, pose); ry = mix(ry, -6, pose); rz = mix(rz, -14, pose);
+    echelle = mix(echelle, .78, pose); hauteurSol = mix(hauteurSol, 10, pose);
+    tel.poser({
+      x, y, rx, ry, rz, echelle, hauteurSol,
+      lumiere: angleLumiere, force: mix(.7, 1, matin),
+      // Quand le jour change, l'écran s'éteint et se rallume pendant que
+      // l'heure roule : le téléphone a été rangé, puis repris.
+      allume: sortie(entre(t, T_MATIN - .3, T_MATIN + .1)) * (1 - lisse(entre(t, T_POSE + 1.0, T_POSE + 1.6)))
+        * (1 - Math.sin(Math.PI * entre(t, T_GARS - .65, T_GARS - .15))) * (1 - Math.sin(Math.PI * entre(t, T_SOIR - .65, T_SOIR - .15))),
+      opacite: 1 - lisse(entre(t, T_SIGN - .5, T_SIGN)),
+      flou: 2.5 * finDevis + 1.5 * vol + 2.5 * tva,
+      balaye: t > T_MATIN - .5 && t < T_MATIN + .5 ? (t - T_MATIN + .5) : null,
+    });
+    tel.poserEcrans(t, ECRANS);
+    tel.poserAppui(t, APPUIS);
+    tel.poserRepere(t, REPERES);
+    const ecoule = (t - (T_MICRO + .15)) * 1000;
+    let vue = -1;
+    if (t >= T_MICRO + .15 && t < T_RACCORD) C.PRISES.forEach((ms, k) => { if (ms <= ecoule) vue = k; });
+    BANDES.forEach((bd, k) => { bd.style.opacity = k === vue ? '1' : '0'; });
+
+    // ── la caméra
+    const zoom = cles(t, REGARDS.map(r => [r[0], r[1], r[3]]));
+    const cx = cles(t, REGARDS.map(r => [r[0], r[2]().x, r[3]]));
+    const cy = cles(t, REGARDS.map(r => [r[0], r[2]().y, r[3]]));
+    scene.poser({ x: cx, y: cy, zoom, rz: 0, t });
+    // Rangée dans le coin, l'horloge n'existe que sur les plans où le
+    // téléphone est entier : dès que la caméra s'approche, l'écran blanc
+    // passerait dessous et la rendrait illisible.
+    horloge.style.opacity = String(sortie(entre(t, .05, .4)) * (1 - lisse(entre(t, T_POSE + 1.6, T_POSE + 2.4))) * (1 - p * lisse(entre(zoom, 1.03, 1.15))));
+
+    // ── les repères de lieu
+    const lx = LIEUX.find(([de, a]) => t >= de && t < a);
+    if (lx) {
+      lieu.textContent = lx[2];
+      const pl = sortie(entre(t, lx[0], lx[0] + .5)) * (1 - lisse(entre(t, lx[1] - .4, lx[1])));
+      lieu.style.opacity = String(pl); lieu.style.transform = `translateY(${16 * (1 - pl)}px)`;
+      lieu.style.letterSpacing = `${mix(.7, .44, pl)}em`;
+    } else lieu.style.opacity = '0';
+
+    // ── les mots dictés, et le trait des trente secondes
+    const dSort = lisse(entre(t, T_RACCORD, T_RACCORD + .4));
+    dictee.style.opacity = String((t >= T_DICTEE - .1 ? 1 : 0) * (1 - dSort));
+    dictee.style.transform = `translateY(${-24 * dSort}px)`;
+    spansMots.forEach((sp, k) => {
+      const pm = sortie(entre(t, MOTS[k][0], MOTS[k][0] + .24));
+      sp.style.opacity = String(pm); sp.style.transform = `translateY(${10 * (1 - pm)}px)`;
+    });
+    pointRouge.style.opacity = String(t >= T_MICRO + .15 && t < T_RACCORD ? mix(.35, 1, (Math.sin(t * 7) + 1) / 2) : 0);
+    trait.style.width = `${800 * entre(t, T_DICTEE, T_RACCORD)}px`;
+    trait.style.opacity = String(t >= T_DICTEE && t < T_RACCORD + .5 ? .9 : 0);
+
+    // ── les phrases
+    for (const [mots, de, a] of PHRASES) M.animer(mots, t, { debut: de, pas: .1, duree: .5, mode: 'monte', decalage: 22, fin: a, dureeSortie: .4 });
+
+    // ── raccord 1 : la transcription devient la ligne du devis
+    {
+      const pr = expo(entre(t, T_LIGNE, T_LIGNE + .85));
+      const dep = tel.pointDeLAppli(...R.transcription);
+      raccordDevis.poser({
+        x: mix(dep.x, 540, pr), y: mix(dep.y, 760, pr), largeur: mix(560, 1000, pr), rz: mix(0, -2, pr), rx: mix(0, 8, pr), p: pr,
+        opacite: t >= T_LIGNE ? 1 - lisse(entre(t, T_CLIENT - .7, T_CLIENT - .3)) : 0, ombre: pr,
+      });
+    }
+    // ── raccord 2 : la carte « devis accepté » s'envole et se pose sur le planning
+    {
+      const monte = entreeSortie(entre(t, T_VOL, T_VOL + .45));
+      const descend = entreeSortie(entre(t, T_VOL + .45, T_PLANNING));
+      const dep = centreZone(Z.notification), arr = centreZone(Z.cartePlanning, D.planning);
+      const pDep = tel.pointDeLAppli(dep.x, dep.y), pArr = tel.pointDeLAppli(arr.x, arr.y);
+      const apex = { x: 540, y: 820 };
+      const enHaut = t >= T_VOL + .45;
+      raccordPlanning.poser({
+        x: enHaut ? mix(apex.x, pArr.x, descend) : mix(pDep.x, apex.x, monte),
+        y: enHaut ? mix(apex.y, pArr.y, descend) : mix(pDep.y, apex.y, monte),
+        largeur: enHaut ? mix(900, largeurZone(Z.cartePlanning), descend) : mix(largeurZone(Z.notification), 900, monte),
+        rx: enHaut ? mix(10, 0, descend) : mix(0, 10, monte),
+        p: entre(t, T_VOL + .2, T_PLANNING - .15),
+        opacite: t >= T_VOL && t < T_PLANNING + .03 ? 1 : 0,
+        ombre: monte * (1 - descend),
+      });
+    }
+    // ── raccord 3 : la ligne de TVA devient la table du PDF, taux par taux
+    {
+      const a1 = entreeSortie(entre(t, T_TVA, T_TVA + .7));
+      const dep = centreZone(Z.ligneTva, D.factureTotaux);
+      const pDep = tel.pointDeLAppli(dep.x, dep.y);
+      raccordTva.poser({
+        x: mix(pDep.x, 540, a1), y: mix(pDep.y, 760, a1), largeur: mix(largeurZone(Z.ligneTva), 900, a1), rx: mix(0, 6, a1),
+        p: entre(t, T_TVA + .15, T_TVA + .6), opacite: t >= T_TVA && t < T_DECLARE ? 1 : 0, ombre: a1,
+      });
+    }
+    // ── raccord 4 : la table devient « Ma TVA à déclarer », dans le téléphone
+    {
+      const b1 = entreeSortie(entre(t, T_DECLARE, T_DECLARE + .7));
+      const arr = centreZone(Z.carteTva);
+      const pArr = tel.pointDeLAppli(arr.x, arr.y);
+      raccordDeclare.poser({
+        x: mix(540, pArr.x, b1), y: mix(760, pArr.y, b1), largeur: mix(900, largeurZone(Z.carteTva), b1), rx: mix(6, 0, b1),
+        p: entre(t, T_DECLARE + .1, T_DECLARE + .55), opacite: t >= T_DECLARE && t < T_DECLARE + .73 ? 1 : 0, ombre: 1 - b1,
+      });
+    }
+
+    // ── la signature
+    M.animer(lettresAtlas, t, { debut: T_SIGN + .1, pas: .06, duree: .7, mode: 'flou' });
+    M.animer(motsDevise, t, { debut: T_DEVISE, pas: .08, duree: .5, mode: 'monte', decalage: 22 });
+    const pe = sortie(entre(t, T_ESSAI, T_ESSAI + .6));
+    essai.style.opacity = String(pe); essai.style.letterSpacing = `${mix(.7, .44, pe)}em`;
+
+    matiere.poser(t, {
+      vignetteForce: .5,
+      lueurX: mix(760, 540, matin), lueurY: mix(1500, 200, matin), lueurForce: mix(.18, .32, matin) * (1 - lisse(entre(t, T_SIGN - .5, T_SIGN))), lueurCouleur,
+      teinte: matin < .5 ? 'rgba(40,60,90,.3)' : 'rgba(80,60,30,.25)', teinte2: matin < .5 ? 'rgba(120,150,200,.12)' : 'rgba(201,161,94,.18)',
+    });
+  }
+
+  M.demarrer({ duree: DUREE, rendre, pret: Promise.all(BANDES.map(i => i.decode().catch(() => {}))) });
+</script>
+</body>
+</html>
