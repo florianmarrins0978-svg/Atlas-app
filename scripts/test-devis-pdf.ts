@@ -267,6 +267,10 @@ async function main() {
   await cas("un champ absent laisse sa place vide, sans rien inventer", async () => {
     const { trace } = await composerDevisPdf({
       ...DEVIS,
+      // À 20 % : à 10 %, la certification du client ouvre le bloc des notes
+      // (BOI-LETTRE-000280), et ce n'est pas ce que ce cas éprouve.
+      tauxTva: "20.00",
+      lignes: DEVIS.lignes.map((l) => ({ ...l, tauxTva: null })),
       entrepriseIban: null,
       entrepriseSiret: null,
       conditionsPaiement: null,

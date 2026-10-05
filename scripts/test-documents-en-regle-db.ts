@@ -385,6 +385,21 @@ async function main() {
     await assert.rejects(() => genererPdfFacturePourApercu(perdue, facture.id), /attestation d'assurance est illisible/);
   });
 
+  await test("une ligne à 10 % : le devis porte la certification du client, mot pour mot ; à 20 %, rien", async () => {
+    const client = await clientsRepo.creerClient(ctx, { nom: "Roux", adresse: "4 rue des Lilas, Nantes", civilite: "mme" });
+    const reduit = await chantiersRepo.creerChantier(ctx, { nom: "Chez Roux", clientId: client.id });
+    await prixRepo.ajouterLignePrix(ctx, reduit.id, "Allée d'accès", "800.00", { tauxTva: "10.00" });
+    const d = await devisRepo.getOuCreerDevisBrouillon(ctx, reduit.id);
+    const texte = texteDuPdf(await devisRepo.genererPdfPourApercu(ctx, d.id)).replace(/\s+/g, " ");
+    assert.match(texte, /Je soussigné\(e\)\.+ \(Nom, prénom\) certifie, en qualité de preneur de la prestation/);
+    assert.match(texte, /supérieure à 10 %\./);
+
+    const normal = await chantiersRepo.creerChantier(ctx, { nom: "Chez Roux bis", clientId: client.id });
+    await prixRepo.ajouterLignePrix(ctx, normal.id, "Massifs", "800.00");
+    const d2 = await devisRepo.getOuCreerDevisBrouillon(ctx, normal.id);
+    assert.doesNotMatch(texteDuPdf(await devisRepo.genererPdfPourApercu(ctx, d2.id)), /soussigné/);
+  });
+
   console.log(`\n${passed} réussi(s), ${failed} échoué(s).`);
   await pool.end();
   if (failed > 0) process.exit(1);

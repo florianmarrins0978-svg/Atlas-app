@@ -127,7 +127,13 @@ const EMPREINTE_FACTURE = "fb23d34e9939f3466cfefde92e91eab94cb9e2d87958e0c17ad32
 // en image, avant ce relevé ; c'est ce regard qui a trouvé le libellé et la
 // valeur superposés, corrigés dans `document-commun.ts`. La facture ne bouge
 // pas : son empreinte est inchangée.
-const EMPREINTE_DEVIS = "f0d12df75a3096fe79600a3712b383419aad94633844b9459ca4fa943be4fce6";
+//
+// **LE DEVIS, RELEVÉ DE NOUVEAU LE 5 OCTOBRE 2026** : sa ligne est à 10 %, il
+// porte donc la certification du client (BOI-LETTRE-000280, texte transmis
+// par lui). Trace comparée ligne à ligne : quatre lignes ajoutées sous
+// « NOTES / CONDITIONS », les trois du paiement descendues d'autant, rien
+// d'autre. Le rendu a été REGARDÉ en image.
+const EMPREINTE_DEVIS = "0c7973a7722ebfacd9753eedce053398ce25bcd1f67712061605e7be56930d0e";
 
 const DOCUMENT: FacturePdfData = {
   numeroCommercial: "F-2026-0004",

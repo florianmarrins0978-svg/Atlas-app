@@ -8,6 +8,17 @@ Format : le plus récent en tête.
 ---
 ## 2026-10-05
 
+### La certification du client pour la TVA réduite
+
+Il a recopié le BOI-LETTRE-000280 depuis le site des impôts, bloqué ici. Dès
+qu'une ligne du devis est à **10 %** (§1) ou à **5,5 %** (§10), la mention
+« Je soussigné(e)… certifie… » s'imprime **mot pour mot** dans « Notes /
+conditions », que le client signe avec le devis (`src/lib/tva-reduite.ts`).
+Elle remplace l'attestation Cerfa supprimée en 2025 ; sans elle, le taux réduit
+peut être remis en cause. Sans seuil de montant : celui du BOFiP n'a pas été
+relu, et une mention de trop ne coûte rien.
+
+
 ### L'assurance décennale en règle, et la phrase de la sous-traitance
 
 Son choix **A** sur `appli/assurance-et-sous-traitance.html` (check-up légal,

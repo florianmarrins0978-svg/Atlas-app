@@ -21,10 +21,11 @@ document de retour est `docs/lot-mentions-facture-devis.md`.
     (migration 0121, `ARCHITECTURE.md` §445). **À lui dire avant `main`** :
     s'il a nommé un assureur, ses devis et factures ne partiront plus tant que
     l'adresse de l'assureur et l'attestation ne sont pas dans Mon entreprise ;
-  - ⏳ point 9, TVA à 10 % : il facture parfois à 10 %. La mention du
-    BOI-LETTRE-000280 doit être recopiée MOT POUR MOT du BOFiP, inaccessible
-    d'ici ; les sites qui la citent se contredisent. Ne pas l'écrire de
-    mémoire.
+  - ✅ point 9, TVA à 10 % : le texte du BOI-LETTRE-000280, recopié par lui
+    le 5 octobre, s'imprime sur le devis dès qu'une ligne est à 10 ou 5,5 %.
+    ⏳ Une facture faite SANS devis à 10 % ne la porte pas : la formule « Je
+    soussigné(e) » demande une signature, qu'une facture n'a pas. À trancher
+    avec son comptable.
 - ⏳ Le relevé de TVA écrit « À 0 % » pour une facture en sous-traitance.
   Faut-il la nommer « autoliquidation » (ligne 05 de la déclaration) ? Une
   planche, si oui.

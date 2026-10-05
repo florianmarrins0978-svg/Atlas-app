@@ -15,6 +15,7 @@ import { TEXTE_ORIGINE_CONDITIONS_GENERALES } from "../src/lib/conditions-genera
 import { lignesConditionsDevis, lireConditions } from "../src/lib/conditions-documents";
 import { contenuDecennale } from "../src/lib/mentions-obligatoires";
 import { refusDeLAttestation } from "../src/lib/attestation-decennale";
+import { mentionsDeCertification } from "../src/lib/tva-reduite";
 
 // ═══════════════════════════════════════════════════════════════════════════
 // LE DEVIS ET LA FACTURE EN RÈGLE — ses choix du 3 octobre 2026
@@ -268,6 +269,31 @@ cas("l'attestation : un PDF, une photo JPEG ou PNG, de moins de 5 Mo", () => {
   assert.ok(refusDeLAttestation("image/gif", 200_000));
   assert.ok(refusDeLAttestation("application/pdf", 6 * 1024 * 1024));
   assert.ok(refusDeLAttestation("application/pdf", 0));
+});
+
+console.log("— La TVA réduite : la mention du BOI-LETTRE-000280, transmise par lui le 5 octobre 2026 —");
+
+const CERTIFICATION_10 =
+  "Je soussigné(e)............................ (Nom, prénom) certifie, en qualité de preneur de la prestation, que les travaux réalisés concernent des locaux à usage d’habitation achevés depuis plus de deux ans et qu’ils n’ont pas eu pour effet, sur une période de deux ans au plus, de concourir à la production d’un immeuble neuf au sens du 2° du 2 du I de l’article 257 du CGI, ni d’entraîner une augmentation de la surface de plancher des locaux existants supérieure à 10 %.";
+
+cas("une ligne à 10 % : la mention du BOFiP, mot pour mot", () => {
+  assert.deepEqual(mentionsDeCertification(["20.00", "10.00"]), [CERTIFICATION_10]);
+});
+
+cas("une ligne à 5,5 % : la mention de la rénovation énergétique, qui finit sur sa nature", () => {
+  const m = mentionsDeCertification(["5.50"]);
+  assert.equal(m.length, 1);
+  assert.match(m[0]!, /^Je soussigné\(e\)/);
+  assert.match(m[0]!, /supérieure à 10 % et qu’ils ont la nature de travaux de rénovation énergétique\.$/);
+});
+
+cas("à 20 % seulement, ou sans TVA, rien ne s'imprime", () => {
+  assert.deepEqual(mentionsDeCertification(["20.00"]), []);
+  assert.deepEqual(mentionsDeCertification(["0.00"]), []);
+});
+
+cas("10 et 5,5 % sur le même devis : les deux mentions, chacune une fois", () => {
+  assert.equal(mentionsDeCertification(["10.00", "5.50", "10"]).length, 2);
 });
 
 console.log(`\n${ok} vérifications vertes.`);
