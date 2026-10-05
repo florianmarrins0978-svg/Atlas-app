@@ -57,6 +57,22 @@ document de retour est `docs/lot-mentions-facture-devis.md`.
   suit le devis, son bouton ne reste que sur une facture faite sans devis
   (`ARCHITECTURE.md` §444).
 
+## ⏳ PAS DE TRADUCTION AUTOMATIQUE : codé, il ne manque que la batterie (4 octobre 2026)
+
+Sur le téléphone Android d'une amie, Chrome traduisait le devis du client du
+français vers le français : « Quelle date vous arrangez ? », « votre artisan la
+lire. ». Le code est juste ; son iPhone l'affiche tel quel. La correction est
+sur la branche **`claude/sans-traduction`** : `translate="no"` sur `<html>` et
+`<meta name="google" content="notranslate">` dans `src/app/layout.tsx`, gardés
+par `test-detection-automatique-e2e` (vu rouge, puis vert). Types, lint,
+mémoire, tirets, pansements : verts.
+
+**Reste, et seulement ça** : la batterie (niveau 3, gabarit racine), qu'il a
+refusé de jouer dans la session du 3 octobre, puis la poussée sur `main` avec
+son accord. Ensuite, lui demander de vérifier sur le téléphone de son amie.
+**Ne pas retoucher le texte de la page du devis** : il est juste, et il a
+demandé de le garder tel quel.
+
 ## ✅ RETIRER PAR UNE CROIX : sa réponse « A », codée par une autre session (3 octobre 2026)
 
 Sa demande en essayant la version ordinateur : *« pour retirer une ligne il

@@ -206,6 +206,18 @@ suite » : une capsule qui ouvre la même feuille de confirmation que le devis.
 La suite vérifie qu'un seul appui n'écrit rien, et que la confirmation écrit
 le refus.
 
+### Le navigateur du client ne traduit plus la page d'Atlas
+
+Sur le téléphone Android d'une amie du patron, le devis s'affichait avec des
+fautes qu'Atlas n'a jamais écrites : « Quelle date vous arrangez ? », « votre
+artisan la lire. », « TVA ( 20 %) ». Le code servi portait « arrange », « lira »
+et « TVA (20 %) », et son iPhone affichait juste : Chrome traduisait la page du
+français vers le français. Le gabarit racine pose désormais `translate="no"` sur
+`<html>` et `<meta name="google" content="notranslate">`. Gardé par
+`test-detection-automatique-e2e`, vu rouge puis vert. **Non reproduit ici**
+(Chromium sans compte Google ne traduit pas) : la disparition des fautes se
+constate sur un téléphone Android.
+
 ### Un devis parti qui attend le client rouvre l'écran du devis, plus le planning
 
 Sa plainte : *« j'ai voulu envoyer un devis, au moment d'ouvrir le message

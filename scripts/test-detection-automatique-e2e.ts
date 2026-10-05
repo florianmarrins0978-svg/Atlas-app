@@ -96,6 +96,38 @@ async function main() {
     });
   }
 
+  // **La traduction automatique réécrivait le devis du client — 3 octobre 2026.**
+  //
+  // Le patron envoie la capture d'un devis ouvert sur le téléphone Android
+  // d'une amie : « Quelle date vous arrangez ? », « votre artisan la lire. »,
+  // « TVA ( 20 %) ». Le code servi (957cb97) porte « arrange », « lira » et
+  // « TVA (20 %) » ; son propre iPhone affiche juste. Ces fautes n'ont existé
+  // dans aucune version du dépôt : le navigateur traduisait du français vers le
+  // français, en reprenant les verbes pour de l'anglais et en redécoupant la
+  // ponctuation. Sur une page qui engage le client, c'est inacceptable.
+  //
+  // Le refus se pose dans le gabarit racine, comme `format-detection` : sur
+  // `<html>` (`translate="no"`, la norme, lue par tous les navigateurs) et en
+  // `<meta name="google" content="notranslate">`, que Chrome lit pour taire sa
+  // proposition. Comme plus haut, Chromium sans compte Google ne traduit pas :
+  // la panne d'origine ne se rejoue pas ici, seul le refus se vérifie.
+  for (const chemin of ["/factures/jeton-inconnu", "/devis/jeton-inconnu", "/login"]) {
+    await cas(`${chemin} refuse la traduction automatique`, async () => {
+      await page.goto(`${BASE}${chemin}`, { waitUntil: "domcontentloaded" });
+      assert.equal(
+        await page.locator("html").getAttribute("translate"),
+        "no",
+        `${chemin} : <html> ne porte plus translate="no", la traduction automatique ` +
+          "peut de nouveau réécrire le texte sous les yeux du client"
+      );
+      assert.equal(
+        await page.locator('head meta[name="google"]').getAttribute("content", { timeout: 10_000 }),
+        "notranslate",
+        `${chemin} : <meta name="google" content="notranslate"> a disparu`
+      );
+    });
+  }
+
   // **Le témoin : ces pages portent-elles encore un numéro dans leur titre ?**
   //
   // Le jour où ces deux pages entoureraient elles-mêmes leur numéro d'un lien —

@@ -75,6 +75,14 @@ export const metadata: Metadata = {
     address: false,
     email: false,
   },
+
+  // **La traduction automatique réécrivait le devis du client — 3 octobre
+  // 2026.** Sur un Android, Chrome traduisait la page du français vers le
+  // français : « Quelle date vous arrangez ? », « votre artisan la lire ». Ce
+  // `<meta name="google" content="notranslate">` tait Chrome ; `translate="no"`
+  // sur `<html>`, plus bas, tient les autres navigateurs. Une page qui engage
+  // le client se lit telle qu'Atlas l'écrit (`test-detection-automatique-e2e`).
+  other: { google: "notranslate" },
 };
 
 export const viewport: Viewport = {
@@ -202,7 +210,7 @@ export default async function RootLayout({
     // alimenter les classes Tailwind. Posées sur le corps, elles auraient été
     // invisibles de là, et la moitié de l'écran serait restée dans l'ancienne
     // charte : vu sur une capture, la bande sous la barre de navigation.
-    <html lang="fr" style={charteChoisie ? (variablesEnStyle(charteChoisie) as React.CSSProperties) : undefined}>
+    <html lang="fr" translate="no" style={charteChoisie ? (variablesEnStyle(charteChoisie) as React.CSSProperties) : undefined}>
       <body className="font-body antialiased">
         {/* Redirige vers l'écran d'acceptation tant qu'un document requis n'a
             pas été accepté. Rendu avant le contenu : la redirection intervient
