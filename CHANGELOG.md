@@ -29,7 +29,9 @@ morceau animé gagne un zoom (`zoneVers`) que les autres films ignorent.
 disent autre chose que ce que l'application fait. **Ce qui reste ouvert** :
 les adresses sont choisies pour ne pas exister, non vérifiées (la Base Adresse
 Nationale n'est pas joignable d'ici) ; les prix du devis (700 € et 380 €) sont
-ceux d'une démonstration. Voir `docs/video-promo-D.md` §9 bis.
+ceux d'une démonstration. Les deux MP4 du récit (avec et sans son, 67,9 s, 60 images par seconde) sont
+refaits, rendus en quatre morceaux en parallèle puis recollés, raccords
+regardés image par image. Voir `docs/video-promo-D.md` §9 bis.
 
 ### La vidéo, version D : deux films distincts, le téléphone entier, les deux chemins du devis
 
