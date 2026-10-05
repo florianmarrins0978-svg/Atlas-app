@@ -58,6 +58,13 @@ passait sous l'encoche (le moteur sait descendre une capture dans l'écran,
 restait lisible 0,3 s et le repère « votre client » ne s'affichait jamais,
 sa fenêtre étant inversée (deux secondes rendues à ce passage : 53 s).
 **Ce que ça évite** : un film relu seulement par celui qui l'a monté.
+Dans le coup de poing, relu à la main sur les mêmes bandes : le « 30 » de
+« 30 secondes » posé derrière le téléphone, les mots de l'ouverture qui
+touchaient les bords, « SECONDES. » qui débordait pendant son coup d'entrée,
+« LE SOIR. » qui se levait derrière le téléphone posé, et la table de TVA
+qui arrivait caméra encore dans l'écran, une fois et demie trop grande. Un
+tiret vu dans l'en-tête de la facture est dans l'APPLI, pas dans le film
+(`TODO.md`).
 
 ### La vidéo, version D : le film entier, sur la courbe qu'il a choisie
 

@@ -366,6 +366,12 @@ bandes, que personne n'a pu écouter ici.
 caméra ; une demi-heure de rendu par film), et le vrai son sur les cartes des
 temps forts (`sons.json`).
 
+**Vu dans le film, mais dans l'APPLI** : l'en-tête de la facture écrit
+« F2026-000001 — Mme Martin » (`FactureClient.tsx`, le tiret après
+`NumeroDeDocument`), et `test-aucun-tiret.ts` ne le voit pas parce qu'il suit
+un composant, pas un mot. À corriger dans un lot à part (c'est un écran de
+`src/`, pas le film), puis recapturer `facture.jpg` et `facture-avant.jpg`.
+
 Pas encore sur `main` : branche `claude/new-session-3ab8dh`, lot de niveau 2
 (`scripts/`), `npm run verifier:avant-fusion` avant la poussée. Les trois
 directions et les versions C, A, B restent sur la page, en bas.

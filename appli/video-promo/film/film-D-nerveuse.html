@@ -45,11 +45,12 @@
   .carte{position:absolute;left:0;right:0;top:0;height:1920px;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:0 60px;text-align:center;opacity:0;will-change:transform,opacity}
   .carte .masse{font:400 300px/.9 'Film Masse';text-transform:uppercase;letter-spacing:-.01em}
   .carte .masse.deux{font-size:230px}
-  #flash .masse{font-size:210px}
+  #flash .masse{font-size:180px}
   #vingt{font-size:175px;white-space:nowrap}
+  #trenteSecondes{font-size:190px}
   .carte .etroit{font:700 64px/1.1 'Film Etroit';text-transform:uppercase;letter-spacing:.08em;margin-top:30px}
   .noir{color:#f3efe6} .encre{color:#1c1c1a} .or{color:#C9A15E}
-  #trente{position:absolute;left:0;right:0;top:30px;text-align:center;font:400 560px/.85 'Film Masse';color:#C9A15E;opacity:0;will-change:transform,opacity;letter-spacing:-.04em}
+  #trente{position:absolute;left:0;right:0;top:0;text-align:center;font:400 400px/.85 'Film Masse';color:#C9A15E;opacity:0;will-change:transform,opacity;letter-spacing:-.04em}
   #secondes{position:absolute;left:0;right:0;top:1640px;text-align:center;font:400 190px/1 'Film Masse';color:#f3efe6;opacity:0;will-change:transform,opacity}
   /* Les mots des piliers : la bande du haut (deux lignes au plus), la bande du bas (une ou deux lignes, plus petites). */
   .haut{position:absolute;left:0;right:0;top:0;height:400px;padding-top:34px;z-index:45;background:linear-gradient(180deg,rgba(6,7,10,.94) 0%,rgba(6,7,10,.9) 72%,rgba(6,7,10,0) 100%);display:flex;align-items:center;justify-content:center;text-align:center;padding:0 40px;font:400 185px/.9 'Film Masse';text-transform:uppercase;letter-spacing:-.01em;opacity:0;will-change:transform,opacity}
@@ -77,7 +78,7 @@
     <div class="carte" id="c5"><p class="masse or deux">20 minutes</p><p class="etroit noir">de bureau après chaque visite de chantier.</p></div>
     <div class="carte" id="flash"><p class="masse deux"></p></div>
     <div class="carte" id="cVingt"><p class="masse encre" id="vingt">20 minutes</p><div id="barre"></div></div>
-    <div class="carte" id="cTrente"><p class="masse or deux">30 secondes.</p></div>
+    <div class="carte" id="cTrente"><p class="masse or deux" id="trenteSecondes">30 secondes.</p></div>
     <div class="carte" id="cSoir"><p class="masse noir">Le soir.</p></div>
     <p id="trente">30</p>
     <p id="secondes">secondes.</p>
@@ -263,7 +264,7 @@
     [T_GARS, 'coup'], [T_OUVRE, 'appui'], [T_FICHE_G, 'glisse'], [T_ADRESSE, 'glisse'], [T_ADRESSE + .3, 'coup'], [T_TRAVAUX, 'glisse'], [T_TRAVAUX + .3, 'coup'], [T_SANS, 'coup'], [T_SANS + .05, 'accepte'],
     [T_SOIR, 'coup'], [T_FACTURE, 'appui'], [T_FACT_GL, 'glisse'], [T_REPREND, 'coup'], [T_TOTAUX, 'glisse'], [T_LA_TVA, 'coup'],
     [T_TVA, 'feuille-entre'], [T_TAUX, 'coup'], [T_DECLARE - .2, 'glisse'], [T_DECLARE + .45, 'repere'], [T_A_DECLARER, 'coup'], [T_A_DECLARER + .05, 'total'],
-    [T_NOIR_2, 'coup'], [T_VINGT, 'coup'], [T_VINGT + TEMPS / 2, 'barre'], [T_TRENTE, 'coup'], [T_TRENTE + .05, 'accepte'], [T_SOIR_2, 'coup'], [T_SOIR_2 + .3, 'telephone-sort'],
+    [T_NOIR_2, 'coup'], [T_VINGT, 'coup'], [T_VINGT + TEMPS / 2, 'barre'], [T_TRENTE, 'coup'], [T_TRENTE + .05, 'accepte'], [T_SOIR_2, 'coup'], [T_SOIR_2 + .45, 'telephone-sort'],
     [T_SIGN, 'coup'], [T_SIGN + .05, 'final'],
   ].sort((a, b) => a[0] - b[0]);
   window.MUSIQUE = {
@@ -325,7 +326,7 @@
     [T_TRAVAUX + TEMPS / 2, 1.5, A(...R.lignesDesTravaux), saut],
     [T_SANS, 1.0, ENTIER, saut],
     [T_TOTAUX + TEMPS / 2, 1.5, A(...R.ligneTva), saut],
-    [T_TVA + .3, 1.0, W(540, 980), saut],
+    [T_TVA, 1.0, W(540, 980), saut],   // la table partait zoomée 1,5 et débordait du cadre
     [T_DECLARE + TEMPS, 1.4, A(...R.carteTva), saut],
     [T_A_DECLARER + TEMPS, 1.0, ENTIER, saut],
     [T_NOIR_2, 1.0, W(540, 960), saut],
@@ -363,7 +364,7 @@
 
     // ── « 30 » et « secondes. » : derrière le téléphone, puis sous lui
     const p30 = coup(entre(t, T_TEL, T_TEL + .28));
-    $('trente').style.opacity = String(t >= T_TEL && t < T_SAUT + .3 ? 1 : 0);
+    $('trente').style.opacity = String(t >= T_TEL && t < T_SAUT ? 1 : 0);   // le saut dans l'écran le couperait au bord
     $('trente').style.transform = `scale(${mix(1.5, 1, p30)}) translateY(${mix(60, 0, p30)}px)`;
     const ps = coup(entre(t, T_SECONDES, T_SECONDES + .25));
     $('secondes').style.opacity = String(t >= T_SECONDES && t < T_SAUT + .6 ? 1 : 0);
@@ -382,7 +383,8 @@
     const pose = t >= T_SOIR_2;
     tel.poser(pose ? {
       x: 540, y: 1180, rx: 62, ry: -6, rz: -14, echelle: .72, hauteurSol: 10, lumiere: 20, force: .9, allume: 0,
-      opacite: t < T_SIGN ? 1 : 0,
+      // Il se pose une fois « Le soir. » remonté : avant, il le cachait.
+      opacite: t >= T_SOIR_2 + .45 && t < T_SIGN ? 1 : 0,
     } : {
       x: mix(1700, 540, entreeTel), y: TEL_Y + 60 * vol + 120 * tva,
       rx: mix(-6, 3, entreeTel) * (1 - face), ry: (mix(48, -9, entreeTel) + 22 * client) * (1 - face), rz: (mix(-16, -4, entreeTel) + 6 * client) * (1 - face * .7),

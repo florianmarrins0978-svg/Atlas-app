@@ -178,7 +178,7 @@
   // lendemain = 1440 + 485, 7 h 10 le surlendemain = 2880 + 430.
   const MINUTES = [
     [0, 1300], [2.3, 1300], [2.7, 1370, entreeSortie], [T_BASCULE, 1370], [T_MATIN - .05, 1925, entreeSortie],
-    [T_RACCORD - .4, 1925], [T_RACCORD, 1926, sortie],   // la minute roule AVANT le zoom, qui range l'horloge
+    [T_RACCORD - .8, 1925], [T_RACCORD - .4, 1926, sortie],   // la minute roule AVANT le zoom, qui range l'horloge
     [T_CLIENT - .5, 1926], [T_CLIENT, 2190, entreeSortie],
     [T_PREVENU - .3, 2190], [T_PREVENU, 2191, sortie],
     [T_GARS - .7, 2191], [T_GARS, 3310, entreeSortie],
@@ -469,7 +469,7 @@
       const pr = expo(entre(t, T_LIGNE, T_LIGNE + .85));
       const dep = tel.pointDeLAppli(...R.transcription);
       raccordDevis.poser({
-        x: mix(dep.x, 540, pr), y: mix(dep.y, 560, pr), largeur: mix(560, 1000, pr), rz: mix(0, -2, pr), rx: mix(0, 8, pr), p: pr,
+        x: mix(dep.x, 540, pr), y: mix(dep.y, 505, pr), largeur: mix(560, 1000, pr), rz: mix(0, -2, pr), rx: mix(0, 8, pr), p: pr,
         opacite: t >= T_LIGNE ? 1 - lisse(entre(t, T_CLIENT - .7, T_CLIENT - .3)) : 0, ombre: pr,
       });
     }

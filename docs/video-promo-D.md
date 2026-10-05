@@ -307,6 +307,22 @@ jamais, sa fenêtre étant inversée (deux secondes rendues à ce passage : la
 journée fait 53 s). Les constats sur l'encoche qui cache le contenu qui défile
 dessous n'ont pas été retenus : c'est ce que fait un vrai téléphone.
 
+**Et dans le coup de poing, relu à la main sur les mêmes bandes** : le « 30 »
+de « 30 secondes » était posé derrière le téléphone, qui en cachait le bas
+(il tient maintenant au-dessus) ; les mots de l'ouverture frappaient à une
+taille qui touchait les deux bords (« LES GARS. ») ; « SECONDES. » débordait
+du cadre pendant son coup d'entrée ; « LE SOIR. » de la fin se levait derrière
+le téléphone posé (il se pose maintenant après la phrase) ; et la table de TVA
+arrivait pendant que la caméra était encore dans l'écran, donc une fois et
+demie trop grande et coupée sur trois côtés (la caméra ressort d'abord).
+
+**Un défaut vu dans le film, mais qui est dans l'application** : l'en-tête
+de la facture écrit « F2026-000001 — Mme Martin », avec un tiret. Il vient
+de `FactureClient.tsx`, pas du film, et le contrôle des tirets ne le voit pas
+parce qu'il suit un composant. Il est noté dans `TODO.md` pour un lot à
+part ; le film le montre tel quel tant que l'écran n'est pas corrigé et
+recapturé.
+
 ---
 
 ## 10. Ce qui reste, et qui peut le trancher
