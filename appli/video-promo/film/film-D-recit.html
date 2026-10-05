@@ -267,7 +267,7 @@
 
   const PHRASES = [
     ['pSoir1', .4, 1.7], ['pSoir2', 2.15, 3.3], ['pSoir3', 3.75, T_BASCULE - .1],
-    ['pRedigez', T_EDITEUR + .3, T_RETOUR - .5], ['pDictez', T_RETOUR + .1, T_MICRO - .6], ['pPret', T_LIGNES + .1, T_OPTIONS - .2], ['pOptions', T_OPTIONS + .2, T_DATE_PATRON - .2], ['pRecoit', T_PDF + .3, T_CLIENT - .7], ['pPlanning', T_AU_PLANNING, T_GARS - 1.6],
+    ['pRedigez', T_EDITEUR + .3, T_RETOUR - .5], ['pDictez', T_RETOUR + .1, T_MICRO - .6], ['pPret', T_LIGNES + .1, T_OPTIONS - .2], ['pOptions', T_OPTIONS + .2, T_DATE_PATRON - .2], ['pRecoit', T_PDF + .3, T_CLIENT - 1.5], ['pPlanning', T_AU_PLANNING, T_GARS - 1.6],
     ['pGars', T_SANS, T_SOIR - 1.6], ['pReprend', T_REPREND, T_TOTAUX], ['pFacture', T_TVA + .7, T_TAUX - .2], ['pTaux', T_TAUX, T_DECLARE - .3], ['pPrete', T_PRETE, T_POSE - .3],
   ].map(([id, de, a]) => [M.decouper($(id), 'mots'), de, a]);
   const lettresAtlas = M.decouper($('atlas'), 'lettres');
