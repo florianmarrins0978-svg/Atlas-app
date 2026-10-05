@@ -35,6 +35,10 @@ document de retour est `docs/lot-mentions-facture-devis.md`.
     I de l'article 257 du CGI, ni d'entraîner une augmentation de la surface de
     plancher des locaux existants supérieure à 10 %. » Le §10 (5,5 %) ajoute
     « et qu'ils ont la nature de travaux de rénovation énergétique ».
+  - ⏳ `scripts/test-recherche-client-e2e.ts` vise encore le port 3000 en dur,
+    comme le faisait `test-entreprises-et-sous-traitance-e2e.ts` (corrigé le
+    5 octobre) : quand la batterie prend un autre atelier, il vise un autre
+    serveur que le sien. Hors de ce lot, à corriger par `ADRESSE`.
   - ⏳ **Plantes à 10 % et plantation** : les sources se contredisent. Plantes
     vendues seules : 10 % (CGI 278 bis). Plantes fournies ET plantées : 20 %
     pour le tout selon certaines, 10 % sur les plantes si elles sont

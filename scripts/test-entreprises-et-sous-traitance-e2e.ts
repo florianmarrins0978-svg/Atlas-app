@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { lancerNavigateur, DELAI_PAR_DEFAUT_MS } from "./e2e-browser";
 import type { Page } from "playwright";
+import { ADRESSE } from "./_adresse";
 import { eq } from "drizzle-orm";
 import { db, pool } from "../src/server/db/client";
 import { users, membresEntreprise } from "../src/server/db/schema";
@@ -18,7 +19,10 @@ import * as devisRepo from "../src/server/repositories/devis";
 // garantit est éprouvé sous `atlas_app` (`test-documents-en-regle-db.ts`) ;
 // ici, on vérifie qu'il PEUT l'atteindre, et ce qu'il voit.
 
-const BASE = process.env.BASE_URL ?? "http://127.0.0.1:3000";
+// L'adresse de SON atelier (`_adresse.ts`), jamais le port 3000 en dur : la
+// batterie prend un autre port quand le 3000 est tenu, et cette suite visait
+// alors un autre serveur que le sien (5 octobre 2026).
+const BASE = ADRESSE;
 
 let echecs = 0;
 async function cas(nom: string, f: () => Promise<void>) {
