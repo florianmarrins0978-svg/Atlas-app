@@ -21,10 +21,25 @@ document de retour est `docs/lot-mentions-facture-devis.md`.
     (migration 0121, `ARCHITECTURE.md` §445). **À lui dire avant `main`** :
     s'il a nommé un assureur, ses devis et factures ne partiront plus tant que
     l'adresse de l'assureur et l'attestation ne sont pas dans Mon entreprise ;
-  - ✅ point 9, TVA à 10 % : le texte du BOI-LETTRE-000280, recopié par lui
-    le 5 octobre, s'imprime sur le devis dès qu'une ligne est à 10 ou 5,5 %.
-    Et sur la facture aussi, sa règle du même jour : « le même mode de
-    fonctionnement ».
+  - ⏳ point 9, la certification du taux réduit : **posée puis retirée le
+    5 octobre**. Le 10 % de ses lignes, c'est la vente de plantes (CGI 278 bis),
+    pas des travaux dans un logement : la phrase « locaux à usage
+    d'habitation » ne doit JAMAIS sortir d'un taux. Si un jour il fait des
+    travaux dans une maison à 10 %, il faudra un geste à lui (une case sur le
+    devis), sur planche. Le texte officiel, recopié par lui du
+    BOI-LETTRE-000280, §1 : « Je soussigné(e)............................ (Nom,
+    prénom) certifie, en qualité de preneur de la prestation, que les travaux
+    réalisés concernent des locaux à usage d'habitation achevés depuis plus de
+    deux ans et qu'ils n'ont pas eu pour effet, sur une période de deux ans au
+    plus, de concourir à la production d'un immeuble neuf au sens du 2° du 2 du
+    I de l'article 257 du CGI, ni d'entraîner une augmentation de la surface de
+    plancher des locaux existants supérieure à 10 %. » Le §10 (5,5 %) ajoute
+    « et qu'ils ont la nature de travaux de rénovation énergétique ».
+  - ⏳ **Plantes à 10 % et plantation** : les sources se contredisent. Plantes
+    vendues seules : 10 % (CGI 278 bis). Plantes fournies ET plantées : 20 %
+    pour le tout selon certaines, 10 % sur les plantes si elles sont
+    facturées sur une ligne à part selon d'autres. **À trancher par son
+    comptable**, puisqu'il facture des plantes à 10 %.
 - ⏳ Le relevé de TVA écrit « À 0 % » pour une facture en sous-traitance.
   Faut-il la nommer « autoliquidation » (ligne 05 de la déclaration) ? Une
   planche, si oui.

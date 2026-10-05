@@ -1,7 +1,6 @@
 import { MENTION_FRANCHISE, sousFranchise } from "@/lib/franchise-tva";
 import { MENTION_AUTOLIQUIDATION } from "@/lib/autoliquidation";
 import { estUneEntreprise } from "@/lib/civilite";
-import { mentionsDeCertification } from "@/lib/tva-reduite";
 import {
   composerDocument,
   type DonneesDocument,
@@ -125,14 +124,7 @@ function notesEnGras(data: FacturePdfData): string[] {
   const mode = data.acomptesDuDevis?.length
     ? modeDeReglement(echeancierDevis(data.acomptesDuDevis, data.totalTtc))
     : null;
-  return [
-    ...lignesConditionsFacture(conditions, mode, phraseMontantsVerses(data.reglements ?? [])),
-    // **La même certification que le devis**, par la même fonction — sa règle
-    // du 5 octobre 2026 : *« ça doit être le même mode de fonctionnement »*.
-    // Une facture faite sans devis n'a pas d'autre pièce où le client certifie
-    // les conditions du taux réduit (BOI-LETTRE-000280).
-    ...mentionsDeCertification(data.lignes.map((l) => l.tauxTva ?? data.tauxTva)),
-  ];
+  return lignesConditionsFacture(conditions, mode, phraseMontantsVerses(data.reglements ?? []));
 }
 
 /**

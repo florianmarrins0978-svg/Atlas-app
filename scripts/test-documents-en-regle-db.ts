@@ -385,35 +385,23 @@ async function main() {
     await assert.rejects(() => genererPdfFacturePourApercu(perdue, facture.id), /attestation d'assurance est illisible/);
   });
 
-  await test("une ligne à 10 % : le devis porte la certification du client, mot pour mot ; à 20 %, rien", async () => {
+  await test("des plantes à 10 % : aucune déclaration de logement sur le devis ni sur la facture", async () => {
+    // **Sa question du 5 octobre 2026 :** *« quand on vend des plantes c'est pas
+    // 10 aussi ? »* Si : au titre des produits de l'horticulture (CGI 278 bis),
+    // qui n'ont rien à voir avec un logement. La certification du
+    // BOI-LETTRE-000280 (« locaux à usage d'habitation ») s'imprimait dès
+    // qu'une ligne était à 10 % : son client aurait signé une déclaration fausse.
     const client = await clientsRepo.creerClient(ctx, { nom: "Roux", adresse: "4 rue des Lilas, Nantes", civilite: "mme" });
-    const reduit = await chantiersRepo.creerChantier(ctx, { nom: "Chez Roux", clientId: client.id });
-    await prixRepo.ajouterLignePrix(ctx, reduit.id, "Allée d'accès", "800.00", { tauxTva: "10.00" });
-    const d = await devisRepo.getOuCreerDevisBrouillon(ctx, reduit.id);
-    const texte = texteDuPdf(await devisRepo.genererPdfPourApercu(ctx, d.id)).replace(/\s+/g, " ");
-    assert.match(texte, /Je soussigné\(e\)\.+ \(Nom, prénom\) certifie, en qualité de preneur de la prestation/);
-    assert.match(texte, /supérieure à 10 %\./);
+    const plantes = await chantiersRepo.creerChantier(ctx, { nom: "Chez Roux", clientId: client.id });
+    await prixRepo.ajouterLignePrix(ctx, plantes.id, "Trois photinias en conteneur", "120.00", { tauxTva: "10.00" });
+    const d = await devisRepo.getOuCreerDevisBrouillon(ctx, plantes.id);
+    assert.doesNotMatch(texteDuPdf(await devisRepo.genererPdfPourApercu(ctx, d.id)), /soussigné|habitation/);
 
-    const normal = await chantiersRepo.creerChantier(ctx, { nom: "Chez Roux bis", clientId: client.id });
-    await prixRepo.ajouterLignePrix(ctx, normal.id, "Massifs", "800.00");
-    const d2 = await devisRepo.getOuCreerDevisBrouillon(ctx, normal.id);
-    assert.doesNotMatch(texteDuPdf(await devisRepo.genererPdfPourApercu(ctx, d2.id)), /soussigné/);
-  });
-
-  await test("la facture à 10 % porte la même certification que le devis ; à 20 %, rien", async () => {
-    // Sa règle du 5 octobre 2026 : « ça doit être le même mode de fonctionnement ».
     const { facture } = await factureDuChantier(ctx, "Roux facture");
     const a = await ajouterLigneDeFacture(ctx, facture.id, "10.00");
     assert.ok(a.ok);
-    await majLigneDeFacture(ctx, facture.id, a.ligne.id, { libelle: "Allée d'accès", prixUnitaire: "800" });
-    const texte = texteDuPdf(await genererPdfFacturePourApercu(ctx, facture.id)).replace(/\s+/g, " ");
-    assert.match(texte, /Je soussigné\(e\)\.+ \(Nom, prénom\) certifie, en qualité de preneur de la prestation/);
-
-    const { facture: normale } = await factureDuChantier(ctx, "Roux facture bis");
-    const b = await ajouterLigneDeFacture(ctx, normale.id, "20.00");
-    assert.ok(b.ok);
-    await majLigneDeFacture(ctx, normale.id, b.ligne.id, { libelle: "Massifs", prixUnitaire: "800" });
-    assert.doesNotMatch(texteDuPdf(await genererPdfFacturePourApercu(ctx, normale.id)), /soussigné/);
+    await majLigneDeFacture(ctx, facture.id, a.ligne.id, { libelle: "Trois photinias", prixUnitaire: "120" });
+    assert.doesNotMatch(texteDuPdf(await genererPdfFacturePourApercu(ctx, facture.id)), /soussigné|habitation/);
   });
 
   console.log(`\n${passed} réussi(s), ${failed} échoué(s).`);

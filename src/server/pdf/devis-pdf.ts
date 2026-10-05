@@ -1,7 +1,6 @@
 import { MENTION_FRANCHISE, sousFranchise } from "@/lib/franchise-tva";
 import { MENTION_AUTOLIQUIDATION } from "@/lib/autoliquidation";
 import { estUneEntreprise } from "@/lib/civilite";
-import { mentionsDeCertification } from "@/lib/tva-reduite";
 import { DEBUT_DES_TRAVAUX, TITRE_FORMULAIRE, paragraphesFormulaire } from "@/lib/retractation";
 import { nomAvecForme } from "@/lib/formes-juridiques";
 import {
@@ -198,11 +197,7 @@ function blocNotes(data: DevisPdfData, sansPrix: boolean): { sien: string | null
     phrasesAcomptes(echeancierDevis(data.acomptes ?? [], data.totalTtc)),
     estUneEntreprise(data.clientNom, data.clientCivilite)
   );
-  // **La certification du taux réduit**, que le client signe avec le devis
-  // (BOI-LETTRE-000280) : ici et non au pied, parce que ce bloc s'allonge
-  // avec son texte, quand le pied n'a la place que de quelques lignes.
-  const certification = mentionsDeCertification(data.lignes.map((l) => l.tauxTva ?? data.tauxTva));
-  return { sien, reglees: [...reglees, ...certification] };
+  return { sien, reglees };
 }
 
 /**

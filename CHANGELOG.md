@@ -8,17 +8,17 @@ Format : le plus récent en tête.
 ---
 ## 2026-10-05
 
-### La certification du client pour la TVA réduite
+### La certification de TVA réduite, posée puis RETIRÉE le même jour
 
-Il a recopié le BOI-LETTRE-000280 depuis le site des impôts, bloqué ici. Dès
-qu'une ligne du devis est à **10 %** (§1) ou à **5,5 %** (§10), la mention
-« Je soussigné(e)… certifie… » s'imprime **mot pour mot** dans « Notes /
-conditions », sur le devis **et sur la facture**, sa règle : *« ça doit être
-le même mode de fonctionnement »* (`src/lib/tva-reduite.ts`).
-Elle remplace l'attestation Cerfa supprimée en 2025 ; sans elle, le taux réduit
-peut être remis en cause. Sans seuil de montant : celui du BOFiP n'a pas été
-relu, et une mention de trop ne coûte rien.
-
+Posée d'après le BOI-LETTRE-000280 qu'il avait recopié : « Je soussigné(e)…
+certifie… locaux à usage d'habitation… », imprimée dès qu'une ligne était à
+10 % ou 5,5 %. **Retirée sur sa question :** *« quand on vend des plantes
+c'est pas 10 aussi ? »* Si, au titre des produits de l'horticulture (CGI
+278 bis), sans aucun rapport avec un logement : son client aurait signé une
+déclaration fausse sur chaque vente de plantes. Le taux seul ne dit pas
+POURQUOI une ligne est à 10 %. `test-documents-en-regle-db.ts` garde le cas
+(des plantes à 10 %, aucune déclaration de logement), vu rouge sur la
+version posée. Le texte officiel reste dans `TODO.md`.
 
 ### L'assurance décennale en règle, et la phrase de la sous-traitance
 
