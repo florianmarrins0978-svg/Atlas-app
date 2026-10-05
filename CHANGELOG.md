@@ -9,6 +9,33 @@ Format : le plus récent en tête.
 
 ## 2026-10-05
 
+### La vidéo, version D : deux films distincts, le téléphone entier, les deux chemins du devis
+
+**Sa précision, après le premier montage** : *« Je voulais que tu me fasses
+les deux versions différentes. On ne voit pas le téléphone en grand, donc pas
+toute l'appli, et on ne voit pas qu'on peut dicter ou rédiger le devis : la
+dictée du devis est un point essentiel. »* J'avais lu « nerveuse et récit »
+comme un mélange. **Ce qui change** : deux films, `film-D-nerveuse.html`
+(37 s, 128 à la noire de bout en bout, les mots dans deux bandes, la caméra
+qui saute par crans) et `film-D-recit.html` (50 s, 92 à la noire, l'horloge
+grande aux changements d'heure et rangée dans le coin pendant les piliers) ;
+chaque écran y est montré ENTIER avant tout zoom ; la fiche client montre le
+micro et « Je rédige à la main », qui ouvre pour de vrai l'éditeur de lignes
+(capturé sur l'appli servie, série `editeur` de `capturer-ecrans-du-film.mts`),
+puis l'enregistrement et la transcription dans le téléphone. **Ce que ça
+évite** : un film qui montre des bouts d'écran à quelqu'un qui veut voir
+l'application, et une dictée qu'on devine sans la voir.
+
+**Ce qui est partagé vit une fois** (`film-D-contenu.js` : écrans, zones
+relevées, points touchés, repères), le mélange monté d'abord le lit aussi et
+ses images ne changent pas. Le moteur laisse un écran revenir plus loin dans
+le découpage (la fiche après l'éditeur) sans qu'une entrée hors de son temps
+n'éteigne l'autre. **Les mots et l'horloge rangée vivent dans le CADRE, pas
+dans le monde** : dans le monde, la caméra qui entre dans l'écran les coupait
+au bord ; dans le cadre sans voile, le blanc de l'écran passait sous le mot
+blanc. **Le nom de la cliente du jeu** perd sa civilité, bouton à part sur la
+fiche : l'éditeur écrivait « Mme Mme Martin ».
+
 ### La vidéo, version D : le film entier, sur la courbe qu'il a choisie
 
 **Son choix** : *« J'aime bien nerveuse et récit. L'idée de nerveuse qu'il

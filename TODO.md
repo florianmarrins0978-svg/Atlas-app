@@ -344,25 +344,27 @@ Sa planche `appli/retirer-un-acompte.html`, la B, codée sur la branche
 le rend (`ARCHITECTURE.md` §417). **Pas encore sur `main`** : la batterie
 n'a pas été jouée, à sa demande ; seules les suites concernées l'ont été.
 
-## ⏳ LE FILM D ENTIER À REGARDER : LA VIDÉO (5 octobre 2026)
+## ⏳ DEUX FILMS D À REGARDER : LA VIDÉO (5 octobre 2026)
 
-Son choix du 5 octobre : *« J'aime bien nerveuse et récit. L'idée de nerveuse
-qu'il faudrait accentuer, c'est qu'avant d'utiliser l'appli on se sent
-stressé, tout va vite, on perd du temps ; et avec l'appli on en gagne. »*
-**Codé et rendu le jour même** : `appli/video-promo/film/film-D.html`, 37 s,
-`appli/video-promo/atlas-D.mp4` et `atlas-D-muet.mp4`, en tête de
-`appli/video-promo.html`. Une horloge tient tout : elle court pendant le
-stress (128 à la noire, coupes qui accélèrent), elle n'avance que d'une minute
-par geste ensuite (92 à la noire, les quatre piliers, quatre raccords).
+Sa précision du 5 octobre, après un premier montage qui mélangeait les deux
+directions : *« Je voulais que tu me fasses les deux versions différentes.
+On ne voit pas le téléphone en grand, donc pas toute l'appli, et on ne voit
+pas qu'on peut dicter ou rédiger le devis : la dictée du devis est un point
+essentiel. »* **Codés et rendus le jour même** : `film-D-nerveuse.html`
+(`atlas-D-nerveuse.mp4`, 37 s) et `film-D-recit.html` (`atlas-D-recit.mp4`,
+50 s), en tête de `appli/video-promo.html`, chaque écran montré entier, le
+micro ET « Je rédige à la main » (l'éditeur de lignes s'ouvre pour de vrai).
+Le mélange (`atlas-D.mp4`) reste en bas pour comparer.
 
-Attend de lui : **son verdict sur le film** (le tableau seconde par seconde
-est dans `docs/video-promo-D.md` §2), le nom commercial, l'adresse de la fin,
-sa voix s'il en veut une (texte en §7), et son avis sur le rythme de la bande,
-que personne n'a pu écouter ici.
+Attend de lui : **son verdict sur les deux films** (tableaux seconde par
+seconde dans `docs/video-promo-D.md` §3 et §4), **la longueur de la journée**
+(50 s : ce qui peut sauter est nommé en §9), le nom commercial, l'adresse de
+la fin, sa voix s'il en veut une (texte en §7), et son avis sur le rythme des
+bandes, que personne n'a pu écouter ici.
 
 **Ensuite** : la déclinaison 1920 × 1080 (même page, autre mise en place de la
-caméra ; une heure de rendu), et le vrai son sur la carte des temps forts
-(`sons.json`).
+caméra ; une demi-heure de rendu par film), et le vrai son sur les cartes des
+temps forts (`sons.json`).
 
 Pas encore sur `main` : branche `claude/new-session-3ab8dh`, lot de niveau 2
 (`scripts/`), `npm run verifier:avant-fusion` avant la poussée. Les trois

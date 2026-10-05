@@ -34145,3 +34145,20 @@ avant de lancer le rendu, qui se compte en dizaines de minutes.
 Écarté : un chiffre de temps gagné à l'écran (inventé) ; une phrase sur le
 payoff (le brief demandait une image, et le téléphone posé suffit) ; le
 1920 × 1080 avant son verdict sur le vertical.
+
+**Le même jour, sa précision a fait DEUX films de ce mélange** (*« je
+voulais les deux versions différentes »*), et deux règles de plus, qui
+valent pour tout film de l'application :
+
+| | |
+|---|---|
+| **le téléphone ENTIER** | chaque écran est d'abord montré entier, au milieu du cadre, et tenu ; la caméra ne s'approche qu'ensuite, et revient. Un film qui ne montre que des bouts d'écran ne montre pas l'application |
+| **les deux chemins du devis** | le micro ET « Je rédige à la main », qui ouvre pour de vrai l'éditeur de lignes ; l'enregistrement et la transcription se voient DANS le téléphone, pas seulement par les mots autour |
+| **ce qui est montré vit une fois** | `film-D-contenu.js` : écrans, zones relevées au pixel, points touchés, repères. Deux films (et le mélange) le lisent ; une zone mesurée trois fois finit par diverger |
+| **les mots et l'horloge rangée vivent dans le CADRE** | posés dans le monde, la caméra qui entre dans l'écran les coupe au bord ; dans le cadre, ils restent lisibles, sur un voile sombre (l'écran blanc du téléphone zoomé passait sous le mot blanc) |
+| **un écran peut revenir** | `poserEcrans` n'éteint plus une image dont une autre entrée est en cours : la fiche client revient après l'éditeur |
+
+Écarté : raccourcir la journée sous 50 s en coupant un écran (c'est son
+choix, nommé dans le document de retour) ; montrer l'éditeur de lignes du
+devis de démonstration, qui est parti chez la cliente et ne se modifie plus
+(l'éditeur est capturé sur un devis neuf, pour la même cliente).

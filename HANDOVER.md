@@ -11,19 +11,22 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 
 ---
 
-## LA VIDÉO, VERSION D : le film entier le 5 octobre 2026, PAS SUR `main`
+## LA VIDÉO, VERSION D : deux films le 5 octobre 2026, PAS SUR `main`
 
 | | |
 |---|---|
 | **le moteur** | `appli/video-promo/film/moteur-D.js` : horloge, téléphone en CSS 3D (quatre faces, quatre coins, lumière calculée), caméra, matière, texte cinétique, morceau d'écran qui voyage (le raccord) |
-| **le film** | `appli/video-promo/film/film-D.html`, 37 s, rendu dans `appli/video-promo/atlas-D.mp4` (et `-muet`). Son choix du 5 octobre : le stress de la direction nerveuse (128 à la noire, coupes qui accélèrent, l'horloge qui court), puis le calme du récit (92, l'horloge n'avance que d'une minute par geste). Quatre raccords : transcription vers ligne du devis, carte de l'accueil vers carte du planning, ligne de TVA vers table du PDF, table vers « Ma TVA à déclarer » |
+| **les deux films** | `film-D-nerveuse.html` (`atlas-D-nerveuse.mp4`, 37 s, 128 à la noire, les mots dans deux bandes du cadre, la caméra qui saute par crans) et `film-D-recit.html` (`atlas-D-recit.mp4`, 50 s, 92 à la noire, l'horloge grande aux changements d'heure et rangée dans le coin pendant les piliers). Sa règle du 5 octobre : chaque écran ENTIER avant tout zoom ; le micro ET « Je rédige à la main », qui ouvre l'éditeur de lignes. Ce qu'ils montrent vit une fois dans `film-D-contenu.js` |
+| **le mélange** | `film-D.html` (`atlas-D.mp4`, 37 s), monté d'abord sur une mauvaise lecture de « nerveuse et récit » ; il reste en bas de la page pour comparer, et lit le même contenu |
+| **le piège des mots dans le monde** | un mot ou une horloge posés dans `#monde` sont emportés par la caméra : coupés au bord dès qu'elle entre dans l'écran. Ils vivent dans `#scene` (le cadre), et sur un voile sombre, sans quoi l'écran blanc du téléphone zoomé passe sous le texte blanc |
+| **le piège d'un écran qui revient** | `poserEcrans` éteint une image dont l'entrée est hors de son temps ; si le même écran revient plus loin (la fiche après l'éditeur), la seconde entrée éteignait la première. Une entrée hors de son temps n'éteint plus une image qu'une autre entrée montre |
 | **les directions** | `essai-D-apple.html`, `essai-D-nerveuse.html`, `essai-D-recit.html` : 8 s, même histoire, trois traitements ; les MP4 dans `appli/video-promo/` |
 | **le rendu** | `scripts/rendre-film.mjs --ips 60 --obturateur 2 --grain 8 --sons sons.json` ; une image capturée coûte 0,65 s (mesuré : les calques plein cadre coûtent 100 ms chacun en composition logicielle, le grain en page 450 ms) |
 | **le son** | `window.SONS` et `window.MUSIQUE` dans chaque page, écrits par `--sons`, lus par `scripts/musique-film.py` (sections avec leur propre tempo, couches : nappe, arpège, rythme, pulsation, charley, silence, finale) |
 | **le jeu de démonstration** | `scripts/_jeu-du-film.ts`, `scripts/preparer-jeu-du-film.mts` (gestes joués dans un navigateur), `scripts/capturer-ecrans-du-film.mts` (échelle 3, PDF à 300 ppp) |
 | **le piège** | une face du chant posée DANS le rectangle et rabattue a sa normale vers l'intérieur : `backface-visibility` la cache, le téléphone paraît sans épaisseur. Les faces se posent hors du rectangle, sur l'arête |
 | **ce qu'on regarde avant de rendre** | la planche (`--planche --pas 0.25`), puis les raccords en pleine taille (`--instants`). La première planche du film a attrapé quatre défauts qu'aucun test ne voit : l'horloge entre deux chiffres, les repères coupés par le zoom, un fondu fantôme, une phrase coupée |
-| **ce qui attend** | son verdict sur le film (`TODO.md`), puis le 1920 × 1080 et le vrai son. `docs/video-promo-D.md` est le document de retour |
+| **ce qui attend** | son verdict sur les deux films et la longueur de la journée (`TODO.md`), puis le 1920 × 1080 et le vrai son. `docs/video-promo-D.md` est le document de retour |
 
 ## LES COULEURS DU PLANNING : 29 septembre 2026, sur `main` le 30
 
