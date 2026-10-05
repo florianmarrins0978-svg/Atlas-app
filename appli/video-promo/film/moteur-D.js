@@ -210,9 +210,14 @@
     // par poserEcrans(t, ECRANS) selon le même découpage que la version C
     // (mode : fondu, glisse, monte, net) ; chacune peut défiler.
     const images = {};
-    for (const { nom, src, haut } of ecrans) {
+    // `haut` descend la capture dans l'écran, et `fond` peint la bande
+    // découverte : la page publique du client n'a pas la marge de sécurité
+    // des écrans de l'appli, et son en-tête passait sous l'encoche. Une marge
+    // intérieure plutôt qu'un `top` : l'opacité et le défilement de l'image
+    // emportent la bande avec elle.
+    for (const { nom, src, haut, fond } of ecrans) {
       const img = new Image(); img.src = src; img.alt = ''; img.dataset.ecran = nom;
-      css(img, { position: 'absolute', left: '0', top: `${haut || 0}px`, width: `${ecranLargeur}px`, willChange: 'transform,opacity', opacity: '0' });
+      css(img, { position: 'absolute', left: '0', top: '0', paddingTop: `${haut || 0}px`, background: fond || 'transparent', boxSizing: 'content-box', width: `${ecranLargeur}px`, willChange: 'transform,opacity', opacity: '0' });
       ecran.appendChild(img); images[nom] = img;
     }
     const voile = document.createElement('div');

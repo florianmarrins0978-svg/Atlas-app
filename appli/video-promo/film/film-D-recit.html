@@ -105,34 +105,34 @@
   const T_RACCORD = 16.3;        // 8 h 06 : la transcription, puis la ligne du devis
   const T_LIGNE = T_RACCORD + .5;
   const T_PRET = 17.4;
-  const T_CLIENT = 19.4;         // 12 h 30 : le téléphone du client
-  const T_DATE = 20.6;
-  const T_ACCEPTE = 21.1;
+  const T_CLIENT = 20.4;         // 12 h 30 : le téléphone du client
+  const T_DATE = 22.6;
+  const T_ACCEPTE = 23.1;
   const T_NOTE = T_ACCEPTE + .15;
-  const T_PREVENU = 22.5;        // 12 h 31 : votre accueil, « devis accepté »
-  const T_VOL = 24.1;            // la carte s'envole
-  const T_PLANNING = 24.95;      // elle se pose sur le planning
-  const T_AU_PLANNING = 25.5;
-  const T_GARS = 28.4;           // 7 h 10, le lendemain : le planning de Julien
-  const T_OUVRE = 29.4;
+  const T_PREVENU = 24.5;        // 12 h 31 : votre accueil, « devis accepté »
+  const T_VOL = 26.1;            // la carte s'envole
+  const T_PLANNING = 26.95;      // elle se pose sur le planning
+  const T_AU_PLANNING = 27.5;
+  const T_GARS = 30.4;           // 7 h 10, le lendemain : le planning de Julien
+  const T_OUVRE = 31.4;
   const T_FICHE_G = T_OUVRE + .15;
-  const T_ADRESSE = 30.6;        // la fiche défile vers Mme Martin, Maps, Waze
-  const T_TRAVAUX = 32;        // puis vers « Travaux à faire »
-  const T_SANS = 33.3;
-  const T_SOIR = 36.2;           // 18 h 20 : chantier terminé
-  const T_FACTURE = 37.2;
+  const T_ADRESSE = 32.6;        // la fiche défile vers Mme Martin, Maps, Waze
+  const T_TRAVAUX = 34;        // puis vers « Travaux à faire »
+  const T_SANS = 35.3;
+  const T_SOIR = 38.2;           // 18 h 20 : chantier terminé
+  const T_FACTURE = 39.2;
   const T_FACT_GL = T_FACTURE + .15;
-  const T_REPREND = 38;
-  const T_TOTAUX = 38.9;         // la facture défile vers ses totaux
-  const T_TVA = 40.3;            // la ligne de TVA devient la table du PDF
-  const T_TAUX = 40.9;
-  const T_DECLARE = 42.5;        // 18 h 21 : la table devient « Ma TVA à déclarer »
-  const T_PRETE = 43.7;
-  const T_POSE = 45.2;           // le téléphone se pose, l'écran s'éteint
-  const T_SIGN = 48;
-  const T_DEVISE = 48.9;
-  const T_ESSAI = 49.8;
-  const DUREE = 51.3;
+  const T_REPREND = 40;
+  const T_TOTAUX = 40.9;         // la facture défile vers ses totaux
+  const T_TVA = 42.3;            // la ligne de TVA devient la table du PDF
+  const T_TAUX = 42.9;
+  const T_DECLARE = 44.5;        // 18 h 21 : la table devient « Ma TVA à déclarer »
+  const T_PRETE = 45.7;
+  const T_POSE = 47.2;           // le téléphone se pose, l'écran s'éteint
+  const T_SIGN = 50;
+  const T_DEVISE = 50.9;
+  const T_ESSAI = 51.8;
+  const DUREE = 53.3;
 
   const scene = M.creerScene();
   const matiere = M.creerMatiere();
@@ -178,7 +178,7 @@
   // lendemain = 1440 + 485, 7 h 10 le surlendemain = 2880 + 430.
   const MINUTES = [
     [0, 1300], [2.3, 1300], [2.7, 1370, entreeSortie], [T_BASCULE, 1370], [T_MATIN - .05, 1925, entreeSortie],
-    [T_RACCORD, 1925], [T_RACCORD + .4, 1926, sortie],
+    [T_RACCORD - .4, 1925], [T_RACCORD, 1926, sortie],   // la minute roule AVANT le zoom, qui range l'horloge
     [T_CLIENT - .5, 1926], [T_CLIENT, 2190, entreeSortie],
     [T_PREVENU - .3, 2190], [T_PREVENU, 2191, sortie],
     [T_GARS - .7, 2191], [T_GARS, 3310, entreeSortie],
@@ -337,13 +337,13 @@
     [T_MICRO + .9, 1.0, ENTIER, entreeSortie],
     [T_RACCORD, 1.0, ENTIER],
     [T_RACCORD + .4, 1.18, A(...R.transcription, 60), expo],
-    [T_LIGNE + .3, 1.18, A(...R.transcription, 60)],
-    [T_LIGNE + .9, 1.0, W(540, 980), expo],
+    [T_LIGNE, 1.18, A(...R.transcription, 60)],
+    [T_LIGNE + .6, 1.0, W(540, 980), expo],   // le téléphone recule pendant que la ligne monte, sinon elle couvre le titre
     [T_CLIENT - .4, 1.0, W(540, 980)],
     [T_CLIENT, 1.0, ENTIER],
     [T_DATE - .5, 1.0, ENTIER],
-    [T_DATE - .1, 1.5, A(120, 300), expo],
-    [T_ACCEPTE - .15, 1.5, A(120, 300)],
+    [T_DATE - .1, 1.5, A(120, 360), expo],
+    [T_ACCEPTE - .15, 1.5, A(120, 360)],
     [T_ACCEPTE + .25, 1.4, A(195, 440), expo],
     [T_NOTE + .35, 1.4, A(195, 440)],
     [T_NOTE + .9, 1.0, ENTIER, expo],

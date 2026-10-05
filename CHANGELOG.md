@@ -17,7 +17,7 @@ toute l'appli, et on ne voit pas qu'on peut dicter ou rédiger le devis : la
 dictée du devis est un point essentiel. »* J'avais lu « nerveuse et récit »
 comme un mélange. **Ce qui change** : deux films, `film-D-nerveuse.html`
 (37 s, 128 à la noire de bout en bout, les mots dans deux bandes, la caméra
-qui saute par crans) et `film-D-recit.html` (51 s, 92 à la noire, l'horloge
+qui saute par crans) et `film-D-recit.html` (53 s, 92 à la noire, l'horloge
 grande aux changements d'heure et rangée dans le coin pendant les piliers) ;
 chaque écran y est montré ENTIER avant tout zoom ; la fiche client montre le
 micro et « Je rédige à la main », qui ouvre pour de vrai l'éditeur de lignes
@@ -46,6 +46,18 @@ cadre dès que la caméra plongeait sur le micro, lisible un quart de seconde.
 La suite du film est décalée d'une seconde pour que la phrase s'écrive sur la
 fiche entière avant que la caméra descende. **Ce que ça évite** : livrer le
 point qu'il a dit essentiel, la dictée, sans qu'on ait le temps de le lire.
+
+**Puis une relecture hostile de la planche, vingt et une bandes et chaque
+constat rejoué en pleine taille**, a trouvé cinq défauts de plus dans la
+journée : l'horloge s'éclipsait pendant son passage à 8 h 06 (la minute roule
+maintenant avant le zoom qui la range) ; la ligne du devis couvrait le titre
+« Transcription » un quart de seconde (le téléphone recule pendant qu'elle
+monte) ; la page publique du client, sans la marge des écrans de l'appli,
+passait sous l'encoche (le moteur sait descendre une capture dans l'écran,
+`haut`, et peindre la bande découverte, `fond`) ; « Le devis est prêt. »
+restait lisible 0,3 s et le repère « votre client » ne s'affichait jamais,
+sa fenêtre étant inversée (deux secondes rendues à ce passage : 53 s).
+**Ce que ça évite** : un film relu seulement par celui qui l'a monté.
 
 ### La vidéo, version D : le film entier, sur la courbe qu'il a choisie
 

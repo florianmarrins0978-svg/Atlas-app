@@ -352,13 +352,13 @@ On ne voit pas le téléphone en grand, donc pas toute l'appli, et on ne voit
 pas qu'on peut dicter ou rédiger le devis : la dictée du devis est un point
 essentiel. »* **Codés et rendus le jour même** : `film-D-nerveuse.html`
 (`atlas-D-nerveuse.mp4`, 37 s) et `film-D-recit.html` (`atlas-D-recit.mp4`,
-51 s), en tête de `appli/video-promo.html`, chaque écran montré entier, le
+53 s), en tête de `appli/video-promo.html`, chaque écran montré entier, le
 micro ET « Je rédige à la main » (l'éditeur de lignes s'ouvre pour de vrai).
 Le mélange (`atlas-D.mp4`) reste en bas pour comparer.
 
 Attend de lui : **son verdict sur les deux films** (tableaux seconde par
 seconde dans `docs/video-promo-D.md` §3 et §4), **la longueur de la journée**
-(51 s : ce qui peut sauter est nommé en §9), le nom commercial, l'adresse de
+(53 s : ce qui peut sauter est nommé en §9), le nom commercial, l'adresse de
 la fin, sa voix s'il en veut une (texte en §7), et son avis sur le rythme des
 bandes, que personne n'a pu écouter ici.
 

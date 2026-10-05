@@ -23,8 +23,10 @@
       { nom: 'enregistre', src: 'dictee/enregistre.jpg' },
       { nom: 'devis-redige', src: 'devis-redige-ecran.jpg' },
       { nom: 'transcription', src: 'transcription.jpg' },
-      { nom: 'client-date', src: 'client-date.jpg' },
-      { nom: 'client-accepte', src: 'client-accepte.jpg' },
+      // La page publique du client n'a pas de marge sous l'encoche : descendue
+      // de 60 points (95 px d'écran), la bande découverte de la couleur de la page.
+      { nom: 'client-date', src: 'client-date.jpg', haut: 95, fond: '#f4f3ee' },
+      { nom: 'client-accepte', src: 'client-accepte.jpg', haut: 95, fond: '#f4f3ee' },
       { nom: 'accueil', src: 'accueil.jpg' },
       { nom: 'planning', src: 'planning-jour-entier.jpg' },
       { nom: 'planning-salarie', src: 'planning-salarie.jpg' },
@@ -54,7 +56,7 @@
     // Les points touchés, en pixels d'appli (x, y).
     POINTS: {
       creerUnDevis: [271, 172], micro: [195, 663], jeRedige: [195, 764], creerDepuisLaDictee: [195, 386],
-      leMardi13: [60, 293], jAccepte: [195, 476],
+      leMardi13: [60, 353], jAccepte: [195, 536],
       chantierDeJulien: [195, 330], creerLaFacture: [195, 333],
     },
     // Les repères (cadre doré qui désigne sans toucher) : [x, y, largeur, hauteur].
