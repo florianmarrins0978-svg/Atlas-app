@@ -24,7 +24,8 @@ la carte du film C, gardée telle quelle quand la page n'en déclare pas.
 
 DEPUIS LES FILMS D (4 octobre 2026), LA CARTE VIENT DE LA PAGE. `window.MUSIQUE`
 dit le tempo, la tonalité et les sections : à quel instant quel accord, avec
-quelles couches (nappe, arpège, rythme, charley, silence). `rendre-film.mjs
+quelles couches (nappe, arpège, rythme, pulsation, charley, silence, finale),
+et, depuis le film D, le tempo propre à chaque section. `rendre-film.mjs
 --sons` l'écrit à côté des instants ; ici, elle remplace les constantes
 ci-dessous. Une seule horloge, donc : un film au tempo nerveux et un film
 lent n'ont pas deux scripts, ils ont deux cartes.
@@ -259,68 +260,73 @@ def musique(duree, carte=None):
     """La musique, mesure par mesure, d'après une carte : tempo et sections.
 
     Une section dit à partir de quel instant quel accord sonne, et quelles
-    couches jouent. Les mesures suivent le tempo de la carte ; chaque mesure
-    prend la section en cours à son premier temps.
+    couches jouent. Les mesures partent du début de chaque section et suivent
+    SON tempo (`bpm` de la section, sinon celui de la carte) : le film D passe
+    de 128 à la noire (le stress) à 92 (le calme) sans qu'une mesure ne
+    chevauche la bascule. Rien d'une section ne sonne après la suivante : un
+    battement qui déborderait dans un silence n'est pas joué.
     """
     carte = carte or carte_du_film_c(duree)
-    bpm = float(carte.get("bpm", BPM))
-    noire = 60 / bpm
-    mesure = 4 * noire
     sections = sorted(carte["sections"], key=lambda s: s["de"])
     p_nappe, p_arpege, p_rythme = Piste(duree + 2), Piste(duree + 2), Piste(duree + 2)
     rng = np.random.default_rng(7)
-    mesures = int(math.ceil(duree / mesure))
 
-    def section_a(t):
-        courante = None
-        for s in sections:
-            if s["de"] <= t + 1e-6:
-                courante = s
-        return courante
-
-    for m in range(mesures):
-        t0 = m * mesure
-        if t0 >= duree:
-            break
-        s = section_a(t0)
-        if s is None or "silence" in s["couches"]:
+    for i, s in enumerate(sections):
+        fin = sections[i + 1]["de"] if i + 1 < len(sections) else duree
+        fin = min(fin, duree)
+        if "silence" in s["couches"] or s["de"] >= fin:
             continue
+        noire = 60 / float(s.get("bpm", carte.get("bpm", BPM)))
+        mesure = 4 * noire
         acc = ACCORDS[s["accord"]]
         couches = s["couches"]
         finale = "finale" in couches
-        tenue = (duree - t0) if finale else mesure
-        if "nappe" in couches:
-            gain = 0.19 if "arpege" in couches else 0.16
-            for k, midi in enumerate(acc["nappe"]):
-                p_nappe.ajouter(t0, nappe(midi, tenue), pan=(-0.5 + k / 3), gain=gain)
-        if finale:
-            for k, midi in enumerate(acc["nappe"][1:]):
-                p_nappe.ajouter(t0 + 0.6 + 0.25 * k, nappe(midi + 12, tenue - 0.6), pan=(0.4 - 0.4 * k), gain=0.05)
-            continue
-        if "arpege" in couches:
-            motif = [0, 2, 3, 4, 3, 2, 1, 2]
-            for c in range(8):
-                tc = t0 + c * noire / 2
-                force = (0.9 if c % 2 == 0 else 0.62) * rng.uniform(0.9, 1.05)
-                p_arpege.ajouter(tc, pince(acc["arpege"][motif[c]], force=force), pan=rng.uniform(-0.35, 0.35), gain=0.20)
-        if "rythme" in couches:
-            for temps_fort in (0, 2):
-                tb = t0 + temps_fort * noire
-                p_rythme.ajouter(tb, basse(acc["basse"]), gain=0.30)
-                p_rythme.ajouter(tb, grosse_caisse(), gain=0.32)
-        if "pulsation" in couches:
-            # Un battement à chaque temps, et une basse tenue : le rythme
-            # d'une direction nerveuse, où les coupes tombent sur les temps.
-            for temps in range(4):
-                tb = t0 + temps * noire
-                p_rythme.ajouter(tb, grosse_caisse(force=1.0 if temps % 2 == 0 else 0.7), gain=0.34)
-                p_rythme.ajouter(tb, basse(acc["basse"], duree=noire * 0.9), gain=0.26)
-        if "charley" in couches:
-            for c in range(8):
-                tc = t0 + c * noire / 2
-                p_rythme.ajouter(tc, charley(force=0.55 if c % 2 else 0.35, graine=int(tc * 100)), pan=0.3, gain=0.09)
-            for temps_faible in (1, 3):
-                p_rythme.ajouter(t0 + temps_faible * noire, charley(force=1.0, duree=0.02, graine=int(t0 * 10) + temps_faible), pan=-0.25, gain=0.14)
+        dans = lambda te: te < fin - 1e-6
+        t0 = float(s["de"])
+        while t0 < fin - 1e-6:
+            tenue = (duree - t0) if finale else min(mesure, fin - t0 + 0.4)
+            if "nappe" in couches:
+                gain = 0.19 if "arpege" in couches else 0.16
+                for k, midi in enumerate(acc["nappe"]):
+                    p_nappe.ajouter(t0, nappe(midi, tenue), pan=(-0.5 + k / 3), gain=gain)
+            if finale:
+                for k, midi in enumerate(acc["nappe"][1:]):
+                    p_nappe.ajouter(t0 + 0.6 + 0.25 * k, nappe(midi + 12, tenue - 0.6), pan=(0.4 - 0.4 * k), gain=0.05)
+                break
+            if "arpege" in couches:
+                motif = [0, 2, 3, 4, 3, 2, 1, 2]
+                for c in range(8):
+                    tc = t0 + c * noire / 2
+                    if not dans(tc):
+                        continue
+                    force = (0.9 if c % 2 == 0 else 0.62) * rng.uniform(0.9, 1.05)
+                    p_arpege.ajouter(tc, pince(acc["arpege"][motif[c]], force=force), pan=rng.uniform(-0.35, 0.35), gain=0.20)
+            if "rythme" in couches:
+                for temps_fort in (0, 2):
+                    tb = t0 + temps_fort * noire
+                    if not dans(tb):
+                        continue
+                    p_rythme.ajouter(tb, basse(acc["basse"]), gain=0.30)
+                    p_rythme.ajouter(tb, grosse_caisse(), gain=0.32)
+            if "pulsation" in couches:
+                # Un battement à chaque temps, et une basse tenue : le rythme
+                # du stress, où les coupes tombent sur les temps.
+                for temps in range(4):
+                    tb = t0 + temps * noire
+                    if not dans(tb):
+                        continue
+                    p_rythme.ajouter(tb, grosse_caisse(force=1.0 if temps % 2 == 0 else 0.7), gain=0.34)
+                    p_rythme.ajouter(tb, basse(acc["basse"], duree=noire * 0.9), gain=0.26)
+            if "charley" in couches:
+                for c in range(8):
+                    tc = t0 + c * noire / 2
+                    if dans(tc):
+                        p_rythme.ajouter(tc, charley(force=0.55 if c % 2 else 0.35, graine=int(tc * 100)), pan=0.3, gain=0.09)
+                for temps_faible in (1, 3):
+                    tb = t0 + temps_faible * noire
+                    if dans(tb):
+                        p_rythme.ajouter(tb, charley(force=1.0, duree=0.02, graine=int(t0 * 10) + temps_faible), pan=-0.25, gain=0.14)
+            t0 += mesure
     # le grave de la nappe s'adoucit ; on filtre une fois, pas par note
     p_nappe.g = passe_bas_rapide(p_nappe.g, 1900)
     p_nappe.d = passe_bas_rapide(p_nappe.d, 1900)

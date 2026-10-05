@@ -7,6 +7,42 @@ Format : le plus récent en tête.
 
 ---
 
+## 2026-10-05
+
+### La vidéo, version D : le film entier, sur la courbe qu'il a choisie
+
+**Son choix** : *« J'aime bien nerveuse et récit. L'idée de nerveuse qu'il
+faudrait accentuer, c'est qu'avant d'utiliser l'appli on se sent stressé,
+tout va vite, on perd du temps ; et avec l'appli on en gagne. »* Le film
+(`appli/video-promo/film/film-D.html`, 37 s, `appli/video-promo/atlas-D.mp4`)
+est monté sur cette courbe, tenue par une seule horloge : pendant le stress
+elle court (21 h 40 à 23 h 10 en quatre secondes, 128 à la noire, une coupe
+par temps puis par demi-temps puis par quart de temps, la caméra qui tremble
+de plus en plus), un noir, puis elle n'avance que d'une minute par geste
+(8 h 05 devient 8 h 06 quand le devis est prêt, 12 h 30 devient 12 h 31 quand
+le client a accepté, 18 h 20 devient 18 h 21 quand la TVA est prête). **Ce que
+ça évite** : affirmer un chiffre de temps gagné qu'aucune source ne donne. Le
+temps gagné se lit, il ne s'affirme pas.
+
+**Quatre raccords**, un par pilier : la transcription devient la ligne du
+devis ; la carte « devis accepté » de l'accueil s'envole et devient la carte
+« mardi 13 octobre » du planning ; la ligne « TVA 20 % » de la facture devient
+la table BASE HT / TAUX / TVA du PDF ; la table devient « Ma TVA à déclarer ».
+Au départ et à l'arrivée d'un raccord, le téléphone fait face à la caméra : le
+point visé est alors exact et le morceau se pose sans sauter. Quand le jour
+change, l'écran s'éteint et se rallume pendant que l'heure roule ; quand on
+passe au téléphone du client, l'objet tourne et l'écran change d'un coup au
+milieu de la rotation (un fondu montrait l'une des pages en fantôme sous
+l'autre).
+
+**La bande son suit deux tempos** : `scripts/musique-film.py` lit désormais le
+`bpm` de chaque section et part ses mesures du début de la section, sans
+qu'un battement ne déborde dans un silence. **Regardé avant de rendre** : la
+planche à 0,25 s a attrapé l'horloge toujours entre deux chiffres (elle avance
+par crans), les repères de lieu coupés par le zoom qui suivait, et une phrase
+coupée sur les bords ; les raccords ont été vérifiés en pleine taille.
+Document de retour : `docs/video-promo-D.md`.
+
 ## 2026-10-04
 
 ### La vidéo, version D : trois directions de huit secondes, à choisir avant le film

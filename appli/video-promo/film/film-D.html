@@ -1,0 +1,655 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1080">
+<title>Atlas, film D</title>
+<link rel="stylesheet" href="polices/polices.css">
+<style>
+  /*
+    LE FILM D, EN ENTIER : le stress, puis le temps rendu.
+
+    Sa décision du 5 octobre 2026, devant les trois directions : « J'aime bien
+    nerveuse et récit. L'idée de nerveuse qu'il faudrait accentuer, c'est
+    qu'avant d'utiliser l'appli on se sent stressé, tout va vite, on perd du
+    temps ; et avec l'appli on en gagne. »
+
+    Le film est donc UNE COURBE, tenue par une seule horloge :
+
+      · 0 à 4,7 s, LE STRESS : 128 à la noire, une coupe par temps, puis par
+        demi-temps, puis par quart de temps. Les mots de la douleur frappent
+        (le soir, les devis à retaper, la TVA, les gars qui appellent, les
+        papiers, 20 minutes), et l'horloge COURT : 21 h 40, 22 h 10, 23 h 10.
+        Plus ça va, plus ça va vite, et plus la caméra tremble ;
+      · un noir, un silence ;
+      · 5,6 s, LA BASCULE : l'heure roule jusqu'à 8 h 05, la lumière se
+        réchauffe, le téléphone se lève dans la main. À partir de là, le
+        traitement du récit : 92 à la noire, caméra lente, chaque pilier est
+        une heure de la journée, et l'horloge n'avance que d'UNE minute par
+        geste. C'est ça, le temps gagné : il se lit sur l'horloge ;
+      · 8 h 05, le devis dicté (la transcription DEVIENT la ligne du devis) ;
+        12 h 30, le client accepte ; 12 h 31, vous êtes prévenu, et la carte
+        de l'accueil S'ENVOLE pour devenir la carte du planning ; 7 h 10 le
+        lendemain, vos gars ouvrent leur fiche ; 18 h 20, la facture reprend
+        le devis, la ligne de TVA DEVIENT la table du PDF, qui DEVIENT la TVA
+        à déclarer ; 18 h 21, c'est fait ;
+      · le téléphone se pose, l'écran s'éteint, la lumière tombe : l'image de
+        la fin, sans phrase ;
+      · la signature.
+
+    Tout ce qui est dans le téléphone est une capture de l'application servie
+    (scripts/capturer-ecrans-du-film.mts). Les chiffres (20 minutes, 30
+    secondes) viennent de docs/AGENT.md §1 ; « essai gratuit 15 jours » de
+    src/lib/abonnements.ts. Aucun prix. Le moteur est dans moteur-D.js.
+  */
+  *{box-sizing:border-box;margin:0}
+  html,body{width:1080px;height:1920px;overflow:hidden;background:#06070a}
+  #scene{position:absolute;inset:0;overflow:hidden;background:#06070a}
+  #ciel{position:absolute;inset:0;z-index:0}
+  #fond{position:absolute;inset:0;z-index:0;background:#06070a}
+  #monde{position:absolute;left:0;top:0}
+  #horloge{position:absolute;left:0;right:0;top:150px;text-align:center;font:500 250px/1 'Film Editorial';color:#f3efe6;letter-spacing:-.03em;will-change:transform,opacity}
+  #horloge .col{display:inline-block;height:250px;overflow:hidden;vertical-align:top;position:relative;width:.62em}
+  #horloge .col .roule{will-change:transform}
+  #horloge .col .roule span{display:block;height:250px;line-height:250px}
+  #horloge .sep{display:inline-block;font-size:150px;line-height:250px;vertical-align:top;margin:0 .06em;color:#C9A15E;font-style:italic}
+  .carte{position:absolute;left:0;right:0;top:0;height:1920px;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:0 60px;text-align:center;opacity:0;will-change:transform,opacity}
+  .carte .masse{font:400 300px/.9 'Film Masse';text-transform:uppercase;letter-spacing:-.01em}
+  .carte .masse.deux{font-size:230px}
+  #flash .masse{font-size:210px}
+  .carte .etroit{font:700 64px/1.1 'Film Etroit';text-transform:uppercase;letter-spacing:.08em;margin-top:30px}
+  .noir{color:#f3efe6} .encre{color:#1c1c1a} .or{color:#C9A15E}
+  #lieu{position:absolute;left:0;right:0;top:430px;text-align:center;font:500 26px/1 'Film Sans';letter-spacing:.44em;text-transform:uppercase;color:#C9A15E;opacity:0;will-change:transform,opacity}
+  #dictee{position:absolute;left:0;right:0;top:530px;padding:0 100px;font:400 48px/1.3 'Film Serif';color:#f3efe6;text-align:center;opacity:0}
+  #dictee span{display:inline-block;margin-right:.24em;will-change:transform,opacity}
+  #dictee .point{width:16px;height:16px;border-radius:50%;background:#d9534f;margin:0 14px 6px 0;vertical-align:middle}
+  .phrase{position:absolute;left:0;right:0;top:490px;text-align:center;font:italic 500 70px/1.1 'Film Editorial';color:#f3efe6;padding:0 70px;will-change:transform,opacity}
+  #trait{position:absolute;left:140px;top:1880px;height:3px;background:#C9A15E;transform-origin:0 50%;opacity:0}
+  #signature{position:absolute;left:0;right:0;top:0;height:1920px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:0 80px}
+  #atlas{font:500 300px/1 'Film Editorial';color:#f3efe6;letter-spacing:-.02em}
+  #devise{font:italic 500 58px/1.25 'Film Editorial';color:rgba(243,239,230,.88);margin-top:44px}
+  #essai{font:500 30px/1 'Film Sans';letter-spacing:.44em;text-transform:uppercase;color:#C9A15E;margin-top:90px}
+</style>
+</head>
+<body>
+<div id="scene">
+  <div id="ciel"></div>
+  <div id="fond"></div>
+  <div id="monde">
+    <div id="lueur"></div>
+    <div id="horloge"></div>
+    <div class="carte" id="c0"><p class="masse noir">Le soir.</p></div>
+    <div class="carte" id="c1"><p class="masse encre">Les devis</p><p class="etroit encre">à retaper.</p></div>
+    <div class="carte" id="c2"><p class="masse or">La TVA.</p></div>
+    <div class="carte" id="c3"><p class="masse noir">Les gars</p><p class="etroit noir">qui appellent.</p></div>
+    <div class="carte" id="c4"><p class="masse encre">Les papiers.</p></div>
+    <div class="carte" id="c5"><p class="masse or deux">20 minutes</p><p class="etroit noir">de bureau après chaque visite de chantier.</p></div>
+    <div class="carte" id="flash"><p class="masse deux"></p></div>
+    <p id="lieu"></p>
+    <div id="dictee"></div>
+    <p class="phrase" id="pPret">Le devis est prêt.</p>
+    <p class="phrase" id="pPlanning">Au planning.</p>
+    <p class="phrase" id="pGars">Sans vous appeler.</p>
+    <p class="phrase" id="pReprend">La facture reprend le devis.</p>
+    <p class="phrase" id="pTaux">La TVA, taux par taux.</p>
+    <p class="phrase" id="pPrete">Prête à déclarer.</p>
+    <div id="objets"></div>
+    <div id="trait"></div>
+    <div id="signature"><p id="atlas">Atlas</p><p id="devise">Du devis dicté à la facture.</p><p id="essai">Essai gratuit 15 jours</p></div>
+  </div>
+  <div id="etalonnage"></div>
+  <div id="vignette"></div>
+</div>
+<script src="moteur-D.js"></script>
+<script>
+  const M = window.MoteurD;
+  const { entre, mix, cles, lisse, sortie, sortieForte, expo, coup, borne, entreeSortie, entreeCubique, $ } = M;
+  const lineaire = x => borne(x);
+  const DUREE = 37.0;
+
+  // ─── le temps ───────────────────────────────────────────────────────────
+  // L'acte du stress est à 128 à la noire ; ses coupes sont CALÉES sur une
+  // image (un soixantième), sans quoi l'obturateur rend une image grise à
+  // cheval sur deux fonds (vu sur la direction nerveuse).
+  const BPM = 128, TEMPS = 60 / BPM;
+  const b = n => Math.round(n * TEMPS * 60) / 60;
+
+  const T_NOIR = b(10);          // 4,68 s : noir, silence
+  const T_BASCULE = b(12);       // 5,63 s : l'heure roule, la lumière se réchauffe
+  const T_MATIN = 6.75;          // 8 h 05, le téléphone dans la main
+  const T_CREER = 7.4;
+  const T_FICHE = T_CREER + .15;
+  const T_MICRO = 8.3;
+  const T_DICTEE = 8.55;
+  const T_RACCORD = 10.95;       // 8 h 06 : la transcription devient la ligne du devis
+  const T_PRET = 11.65;
+  const T_CLIENT = 12.7;         // 12 h 30 : l'écran du client
+  const T_DATE = 13.45;          // il touche « le mardi 13 octobre »
+  const T_ACCEPTE = 13.95;       // il touche « J'accepte ce devis »
+  const T_NOTE = T_ACCEPTE + .15;
+  const T_PREVENU = 15.0;        // 12 h 31 : l'accueil, « devis accepté »
+  const T_VOL = 15.9;            // la carte s'envole
+  const T_PLANNING = 16.75;      // elle se pose sur le planning
+  const T_AU_PLANNING = 17.0;
+  const T_GARS = 18.4;           // 7 h 10, le lendemain : le planning de Julien
+  const T_OUVRE = 19.1;
+  const T_FICHE_G = T_OUVRE + .15;
+  const T_ADRESSE = 19.8;        // la fiche défile vers Mme Martin, Maps, Waze
+  const T_TRAVAUX = 21.1;        // puis vers « Travaux à faire »
+  const T_SANS = 21.8;
+  const T_SOIR = 23.5;           // 18 h 20 : chantier terminé
+  const T_FACTURE = 24.3;
+  const T_FACT_GL = T_FACTURE + .15;
+  const T_REPREND = 24.8;
+  const T_TOTAUX = 25.4;         // la facture défile vers ses totaux
+  const T_TVA = 26.8;            // la ligne de TVA devient la table du PDF
+  const T_TAUX = 27.4;
+  const T_DECLARE = 28.6;        // 18 h 21 : la table devient « Ma TVA à déclarer »
+  const T_PRETE = 29.6;
+  const T_POSE = 31.0;           // le téléphone se pose, l'écran s'éteint
+  const T_SIGN = 33.8;
+  const T_DEVISE = 34.7;
+  const T_ESSAI = 35.6;
+
+  const scene = M.creerScene();
+  const matiere = M.creerMatiere();
+  // Les défilements, en pixels d'appli : où chaque longue capture est posée
+  // dans l'écran pour montrer ce qu'il faut.
+  const DEF_PLANNING = 300;      // la carte « mardi 13 octobre » en haut
+  const DEF_FICHE_0 = 98;        // la fiche de Julien, calée sur son planning
+  const DEF_FICHE_ADRESSE = 520; // Mme Martin, Maps, Waze, Appeler
+  const DEF_FICHE_TRAVAUX = 740; // Travaux à faire, les trois lignes
+  const DEF_FACTURE = 440;       // Total HT, TVA 20 %, Total TTC
+
+  const tel = M.creerTelephone({
+    parent: $('objets'), teinte: 'graphite',
+    ecrans: [
+      { nom: 'accueil-avant', src: 'accueil-avant.jpg' },
+      { nom: 'fiche-reconnue', src: 'fiche-reconnue.jpg' },
+      { nom: 'enregistre', src: 'dictee/enregistre.jpg' },
+      { nom: 'transcription', src: 'transcription.jpg' },
+      { nom: 'client-date', src: 'client-date.jpg' },
+      { nom: 'client-accepte', src: 'client-accepte.jpg' },
+      { nom: 'accueil', src: 'accueil.jpg' },
+      { nom: 'planning', src: 'planning-jour-entier.jpg' },
+      { nom: 'planning-salarie', src: 'planning-salarie.jpg' },
+      { nom: 'fiche-salarie', src: 'fiche-intervention-salarie.jpg' },
+      { nom: 'facture-avant', src: 'facture-avant.jpg' },
+      { nom: 'facture', src: 'facture.jpg' },
+      { nom: 'termines', src: 'termines-apres.jpg' },
+    ],
+  });
+  const PRISES = [124,296,412,518,629,742,852,965,1087,1203,1328,1454,1568,1709,1839,1950,2065,2168,2297,2437,2550,2652,2776,2884,2998,3122,3241,3346,3486,3607,3720,3840,3952,4066,4185,4298];
+  const BANDES = PRISES.map((_, i) => {
+    const img = new Image(); img.src = `dictee/bande-${i}.jpg`; img.alt = '';
+    img.style.cssText = `position:absolute;left:0;top:${600 * M.K}px;width:620px;z-index:1500;opacity:0`;
+    tel.ecran.appendChild(img); return img;
+  });
+
+  // ─── l'horloge : quatre colonnes de chiffres qui roulent ────────────────
+  // Même mécanique que la direction récit : chaque colonne est une fenêtre,
+  // et c'est le rouleau à l'intérieur qui glisse. Les minutes depuis minuit
+  // ne reculent JAMAIS : on passe par minuit en avançant (1440 par jour), et
+  // la suite des heures dit elle-même « 23, 0 ».
+  const horloge = $('horloge');
+  function colonne(suite) {
+    const c = document.createElement('span'); c.className = 'col';
+    const r = document.createElement('span'); r.className = 'roule'; r.style.display = 'block';
+    for (const v of suite) { const s = document.createElement('span'); s.textContent = String(v); r.appendChild(s); }
+    c.appendChild(r); horloge.appendChild(c); return { fenetre: c, rouleau: r };
+  }
+  const heures = Array.from({ length: 25 }, (_, h) => h % 24);
+  const colHeuresDizaines = colonne(heures.map(h => Math.floor(h / 10)));
+  const colHeuresUnites = colonne(heures.map(h => h % 10));
+  const sep = document.createElement('span'); sep.className = 'sep'; sep.textContent = 'h'; horloge.appendChild(sep);
+  const colMinutesDizaines = colonne([0, 1, 2, 3, 4, 5, 0]);
+  const colMinutesUnites = colonne([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0]);
+  function poserHorloge(minutes) {
+    const m = ((minutes % 1440) + 1440) % 1440;
+    const H = Math.floor(m / 60), MIN = m % 60;
+    const unites = MIN % 10;
+    const retenueMinutes = Math.max(0, unites - 9);
+    const dizaines = Math.floor(MIN / 10) + retenueMinutes;
+    const retenueHeures = Math.max(0, MIN - 59);
+    const Hf = H + retenueHeures;
+    colHeuresDizaines.rouleau.style.transform = `translateY(${-Hf * 250}px)`;
+    colHeuresUnites.rouleau.style.transform = `translateY(${-Hf * 250}px)`;
+    colMinutesDizaines.rouleau.style.transform = `translateY(${-dizaines * 250}px)`;
+    colMinutesUnites.rouleau.style.transform = `translateY(${-unites * 250}px)`;
+    colHeuresDizaines.fenetre.style.width = Hf < 10 ? '0px' : '.62em';
+  }
+  // 21 h 40 = 1300 ; 8 h 05 le lendemain = 1440 + 485 ; 7 h 10 le surlendemain = 2880 + 430.
+  const MINUTES = [
+    [0, 1300], [b(5), 1312, lineaire], [b(7), 1330, lineaire], [T_NOIR, 1390, entreeCubique],
+    [T_BASCULE, 1390], [T_MATIN - .05, 1925, entreeSortie],
+    [T_RACCORD, 1925], [T_RACCORD + .4, 1926, sortie],
+    [T_CLIENT - .6, 1926], [T_CLIENT, 2190, entreeSortie],
+    [T_PREVENU - .3, 2190], [T_PREVENU, 2191, sortie],
+    [T_GARS - .7, 2191], [T_GARS, 3310, entreeSortie],
+    [T_SOIR - .7, 3310], [T_SOIR, 3980, entreeSortie],
+    [T_DECLARE - .3, 3980], [T_DECLARE, 3981, sortie],
+  ];
+
+  // ─── l'acte du stress : coupes, flashs ──────────────────────────────────
+  // [temps de début, temps de fin, fond, carte]
+  const COUPES = [
+    [0, 1, '#06070a', 'c0'],
+    [1, 2, '#f5f3ee', 'c1'],
+    [2, 3, '#2f3b2f', 'c2'],
+    [3, 4, '#06070a', 'c3'],
+    [4, 5, '#f5f3ee', 'c4'],
+    [5, 7, '#2f3b2f', 'c5'],
+  ];
+  // Puis les mêmes mots reviennent, de plus en plus vite : huit au demi-temps,
+  // quatre au quart de temps. [début, fin, fond, couleur, mot]
+  const FLASHES = [];
+  { const mots = ['Retaper.', 'La TVA.', 'Les gars.', 'Les papiers.'];
+    const fonds = [['#06070a', '#f3efe6'], ['#f5f3ee', '#1c1c1a'], ['#2f3b2f', '#C9A15E']];
+    let k = 0;
+    for (let n = 7; n < 9; n += .5) { FLASHES.push([b(n), b(n + .5), ...fonds[k % 3], mots[k % 4]]); k++; }
+    for (let n = 9; n < 10; n += .25) { FLASHES.push([b(n), b(n + .25), ...fonds[k % 3], mots[k % 4]]); k++; }
+  }
+  const cartes = COUPES.map(c => $(c[3]));
+  const motsCartes = cartes.map(c => M.decouper(c.querySelector('.masse'), 'mots'));
+  const flash = $('flash'), flashMot = flash.querySelector('.masse');
+  const couleurHorloge = fond => fond === '#f5f3ee' ? '#1c1c1a' : fond === '#2f3b2f' ? '#C9A15E' : '#f3efe6';
+
+  // ─── l'acte du calme : écrans, appuis, repères ──────────────────────────
+  const ECRANS = [
+    ['accueil-avant', T_MATIN - .3, T_FICHE + .5, 'net'],
+    ['fiche-reconnue', T_FICHE, T_MICRO + .5, 'monte'],
+    ['enregistre', T_MICRO + .12, T_RACCORD + .3, 'net'],
+    ['transcription', T_RACCORD - .1, T_CLIENT - .25, 'glisse'],
+    ['client-date', T_CLIENT - .25, T_NOTE + .5, 'net'],
+    ['client-accepte', T_NOTE, T_PREVENU - .2, 'glisse'],
+    ['accueil', T_PREVENU - .2, T_VOL + .9, 'net'],
+    ['planning', T_VOL + .45, T_GARS - .4, 'glisse', [[0, DEF_PLANNING]]],
+    ['planning-salarie', T_GARS - .4, T_FICHE_G + .5, 'net'],
+    ['fiche-salarie', T_FICHE_G, T_SOIR - .4, 'monte', [[T_FICHE_G, DEF_FICHE_0], [T_ADRESSE, DEF_FICHE_0], [T_ADRESSE + .6, DEF_FICHE_ADRESSE, entreeSortie], [T_TRAVAUX, DEF_FICHE_ADRESSE], [T_TRAVAUX + .6, DEF_FICHE_TRAVAUX, entreeSortie]]],
+    ['facture-avant', T_SOIR - .4, T_FACT_GL + .5, 'net'],
+    ['facture', T_FACT_GL, T_DECLARE + .3, 'glisse', [[T_TOTAUX, 0], [T_TOTAUX + .8, DEF_FACTURE, entreeSortie]]],
+    ['termines', T_DECLARE - .3, DUREE, 'glisse'],
+  ];
+  const APPUIS = [
+    [T_CREER, 271, 172], [T_MICRO, 195, 663],
+    [T_DATE, 60, 293], [T_ACCEPTE, 195, 476],
+    [T_OUVRE, 195, 330],
+    [T_FACTURE, 195, 333],
+  ];
+  // Où sont les boutons et les lignes, en pixels d'appli, une fois la
+  // capture défilée : relevé sur les images (zones/ dans le dossier de travail).
+  // Chacun s'efface AVANT le zoom qui suit : coupé en haut du cadre, un repère
+  // se lit comme une faute (vu sur la première planche, à 7,75 s et 19,5 s).
+  const LIEUX = [
+    [T_MATIN - .1, T_CREER + .35, 'sur le chantier'],
+    [T_CLIENT - .1, T_DATE - .1, 'votre client'],
+    [T_GARS - .1, T_OUVRE - .05, 'vos gars, le lendemain'],
+    [T_SOIR - .1, T_FACTURE - .05, 'chantier terminé'],
+  ];
+
+  const DICTEE = 'Chez madame Martin, au 8 impasse du Moulin : élagage du grand chêne, une quinzaine de mètres, en taille douce.';
+  const MOTS = [];
+  { let t = T_DICTEE;
+    for (const brut of DICTEE.split(' ')) {
+      if (brut === ':') { t += .1; continue; }
+      MOTS.push([t, brut + (DICTEE.includes(brut + ' :') ? ' :' : '')]); t += .1;
+      if (/[,.:]$/.test(brut)) t += .13;
+    } }
+  const dictee = $('dictee');
+  dictee.innerHTML = '<span class="point" id="pointRouge"></span>' + MOTS.map(([, m]) => `<span>${m}</span>`).join('');
+  const spansMots = [...dictee.querySelectorAll('span:not(.point)')];
+  const pointRouge = $('pointRouge');
+
+  // Les phrases, une par pilier : [élément, apparaît, disparaît]
+  const PHRASES = [
+    ['pPret', T_PRET, T_CLIENT - .7], ['pPlanning', T_AU_PLANNING, T_GARS - .7], ['pGars', T_SANS, T_SOIR - .7],
+    ['pReprend', T_REPREND, T_TOTAUX], ['pTaux', T_TAUX, T_DECLARE - .3], ['pPrete', T_PRETE, T_POSE + .3],
+  ].map(([id, de, a]) => [M.decouper($(id), 'mots'), de, a]);
+  const lettresAtlas = M.decouper($('atlas'), 'lettres');
+  const motsDevise = M.decouper($('devise'), 'mots');
+  const essai = $('essai');
+
+  // ─── les raccords : un morceau d'écran qui devient autre chose ─────────
+  // Les zones sont en pixels de l'IMAGE (échelle 3) ; relevées sur les
+  // captures, jamais devinées.
+  const ZONE_NOTIF = [72, 844, 1024, 460];              // accueil.jpg : la carte « devis accepté »
+  const ZONE_CARTE_PLANNING = [42, 1380, 1092, 492];    // planning-jour-entier.jpg : « mardi 13 octobre »
+  const ZONE_TVA_LIGNE = [74, 1800, 1022, 64];          // facture.jpg : « TVA 20 %  468,00 € »
+  const ZONE_TVA_TABLE = [120, 1510, 740, 160];         // facture-pdf.jpg : BASE HT, TAUX, TVA
+  const ZONE_TVA_CARTE = [78, 310, 1014, 252];          // termines-apres.jpg : « Ma TVA à déclarer »
+  const raccordDevis = M.creerMorceau({
+    parent: $('objets'),
+    de: { src: 'transcription.jpg', zone: [133, 595, 900, 336], largeurSource: 1170 },
+    vers: { src: 'devis-pdf.jpg', zone: [40, 775, 1705, 118], largeurSource: 1785 },
+  });
+  const raccordPlanning = M.creerMorceau({
+    parent: $('objets'),
+    de: { src: 'accueil.jpg', zone: ZONE_NOTIF, largeurSource: 1170 },
+    vers: { src: 'planning-jour-entier.jpg', zone: ZONE_CARTE_PLANNING, largeurSource: 1170 },
+  });
+  const raccordTva = M.creerMorceau({
+    parent: $('objets'),
+    de: { src: 'facture.jpg', zone: ZONE_TVA_LIGNE, largeurSource: 1170 },
+    vers: { src: 'facture-pdf.jpg', zone: ZONE_TVA_TABLE, largeurSource: 2481 },
+  });
+  const raccordDeclare = M.creerMorceau({
+    parent: $('objets'),
+    de: { src: 'facture-pdf.jpg', zone: ZONE_TVA_TABLE, largeurSource: 2481 },
+    vers: { src: 'termines-apres.jpg', zone: ZONE_TVA_CARTE, largeurSource: 1170 },
+  });
+  // Le centre d'une zone dans l'appli, et sa largeur dans le monde.
+  const centreZone = (zone, defile = 0) => ({ x: (zone[0] + zone[2] / 2) / 3, y: (zone[1] + zone[3] / 2) / 3 - defile });
+  const largeurZone = zone => zone[2] / 3 * M.K * tel.pose.echelle;
+
+  // ─── la lumière du jour ─────────────────────────────────────────────────
+  // [instant, haut du ciel, milieu, lueur (r,g,b), angle de la lumière]
+  const NUIT = ['#2a3442', '#121820', '150,175,215', 60];
+  const MATIN = ['#5a4a2b', '#2b2416', '255,196,110', 125];
+  const MIDI = ['#6b5c38', '#302a1a', '255,220,150', 95];
+  const AUBE = ['#4a3a4e', '#1f1a24', '220,170,190', 150];
+  const SOIR = ['#7a4a22', '#2e1c10', '255,160,80', 25];
+  const CREPUSCULE = ['#3a2a22', '#15100c', '255,140,70', 15];
+  const NOIR = ['#06070a', '#06070a', '0,0,0', 15];
+  const CIEL = [
+    [T_BASCULE, NUIT], [T_MATIN + .2, MATIN], [T_CLIENT - .5, MATIN], [T_CLIENT + .2, MIDI],
+    [T_GARS - .7, MIDI], [T_GARS, AUBE], [T_SOIR - .7, AUBE], [T_SOIR, SOIR],
+    [T_POSE, SOIR], [T_POSE + 1.6, CREPUSCULE], [T_SIGN - .5, CREPUSCULE], [T_SIGN, NOIR],
+  ];
+  const melangeRgb = (a, b, p) => a.split(',').map((v, i) => Math.round(mix(+v, +b.split(',')[i], p))).join(',');
+  function lumiereDuJour(t) {
+    if (t <= CIEL[0][0]) return CIEL[0][1];
+    for (let i = 1; i < CIEL.length; i++) {
+      if (t <= CIEL[i][0]) {
+        const p = lisse(entre(t, CIEL[i - 1][0], CIEL[i][0]));
+        const [a, b] = [CIEL[i - 1][1], CIEL[i][1]];
+        return [M.melange(a[0], b[0], p), M.melange(a[1], b[1], p), melangeRgb(a[2], b[2], p), mix(a[3], b[3], p)];
+      }
+    }
+    return CIEL[CIEL.length - 1][1];
+  }
+
+  // ─── la carte des temps forts ───────────────────────────────────────────
+  window.SONS = [
+    ...COUPES.map(c => [b(c[0]), 'coup']),
+    ...FLASHES.map(f => [f[0], f[1] - f[0] > TEMPS / 3 ? 'coup' : 'touche']),
+    [b(7), 'nappe-monte'], [T_NOIR, 'coup'],
+    [T_BASCULE, 'barre'], [T_MATIN - .2, 'reconnu'], [T_MATIN, 'reponse'],
+    [T_CREER, 'appui'], [T_FICHE, 'glisse'], [T_MICRO, 'appui'], [T_MICRO + .1, 'micro'],
+    [T_RACCORD, 'tic'], [T_RACCORD + .1, 'glisse'], [T_RACCORD + .7, 'total'], [T_PRET, 'accepte'],
+    [T_CLIENT - .5, 'barre'], [T_DATE, 'appui'], [T_ACCEPTE, 'appui'], [T_NOTE, 'glisse'], [T_NOTE + .2, 'accepte'],
+    [T_PREVENU, 'notification'], [T_VOL, 'feuille-entre'], [T_PLANNING, 'repere'], [T_PLANNING + .1, 'total'],
+    [T_GARS - .6, 'barre'], [T_GARS, 'tic'], [T_OUVRE, 'appui'], [T_FICHE_G, 'glisse'], [T_ADRESSE + .1, 'glisse'], [T_TRAVAUX + .1, 'glisse'], [T_SANS, 'accepte'],
+    [T_SOIR - .6, 'barre'], [T_SOIR, 'tic'], [T_FACTURE, 'appui'], [T_FACT_GL, 'glisse'], [T_TOTAUX + .1, 'glisse'],
+    [T_TVA, 'feuille-entre'], [T_TVA + .6, 'total'], [T_DECLARE - .2, 'glisse'], [T_DECLARE, 'tic'], [T_DECLARE + .7, 'repere'], [T_PRETE, 'accepte'],
+    [T_POSE + 1.2, 'telephone-sort'],
+    [T_SIGN + .1, 'final'],
+  ].sort((a, b) => a[0] - b[0]);
+  window.MUSIQUE = {
+    style: 'stress-puis-calme', bpm: BPM, tonalite: 'D', duree: DUREE,
+    sections: [
+      { de: 0, bpm: 128, accord: 'Bm', couches: ['pulsation'] },
+      { de: b(7), bpm: 128, accord: 'Bm', couches: ['pulsation', 'charley'] },
+      { de: T_NOIR, bpm: 128, accord: 'Bm', couches: ['silence'] },
+      { de: T_BASCULE, bpm: 92, accord: 'Bm', couches: ['nappe'] },
+      { de: T_MATIN, bpm: 92, accord: 'D', couches: ['nappe', 'arpege'] },
+      { de: T_RACCORD, bpm: 92, accord: 'G', couches: ['nappe', 'arpege', 'rythme'] },
+      { de: T_CLIENT, bpm: 92, accord: 'A', couches: ['nappe', 'arpege'] },
+      { de: T_PREVENU, bpm: 92, accord: 'D', couches: ['nappe', 'arpege', 'rythme'] },
+      { de: T_GARS, bpm: 92, accord: 'Bm', couches: ['nappe', 'arpege'] },
+      { de: T_SANS, bpm: 92, accord: 'G', couches: ['nappe', 'arpege', 'rythme'] },
+      { de: T_SOIR, bpm: 92, accord: 'D', couches: ['nappe', 'arpege', 'rythme', 'charley'] },
+      { de: T_DECLARE, bpm: 92, accord: 'A', couches: ['nappe', 'arpege', 'rythme', 'charley'] },
+      { de: T_POSE, bpm: 92, accord: 'D', couches: ['nappe'] },
+      { de: T_SIGN - .6, bpm: 92, accord: 'D', couches: ['silence'] },
+      { de: T_SIGN, bpm: 92, accord: 'D', couches: ['nappe', 'finale'] },
+    ],
+  };
+
+  const ciel = $('ciel'), fond = $('fond'), lieu = $('lieu'), trait = $('trait');
+
+  // ─── la caméra de l'acte du calme ───────────────────────────────────────
+  // Un regard : [instant, zoom, point visé, courbe]. Le point est un point du
+  // monde, ou un point de l'appli (il suit le téléphone).
+  const W = (x, y) => () => ({ x, y });
+  const A = (x, y, dy = 0) => () => { const p = tel.pointDeLAppli(x, y); return { x: p.x, y: p.y + dy }; };
+  const REGARDS = [
+    [T_BASCULE, 1.0, W(540, 1000)],
+    [T_MATIN, 1.02, W(540, 980)],
+    [T_MATIN + .5, 1.22, W(540, 980), expo],
+    [T_CREER, 1.22, W(540, 980)],
+    [T_CREER + .6, 1.5, A(195, 300, 40), expo],
+    [T_MICRO - .2, 1.5, A(195, 300, 40)],
+    [T_MICRO + .6, 1.12, W(540, 900)],
+    [T_RACCORD, 1.12, W(540, 900)],
+    [T_RACCORD + .8, 1.0, W(540, 960)],
+    [T_CLIENT - .4, 1.0, W(540, 960)],
+    [T_CLIENT + .3, 1.3, A(195, 330), expo],
+    [T_DATE - .2, 1.3, A(195, 330)],
+    [T_DATE + .3, 1.6, A(120, 300), expo],
+    [T_ACCEPTE - .2, 1.6, A(120, 300)],
+    [T_ACCEPTE + .3, 1.5, A(195, 440), expo],
+    [T_NOTE + .4, 1.5, A(195, 440)],
+    [T_NOTE + .9, 1.3, A(195, 290), expo],
+    [T_PREVENU - .3, 1.3, A(195, 290)],
+    [T_PREVENU + .4, 1.55, A(195, 358), expo],
+    [T_VOL, 1.55, A(195, 358)],
+    [T_VOL + .5, 1.0, W(540, 900), entreeSortie],
+    [T_PLANNING - .3, 1.0, W(540, 900)],
+    [T_PLANNING + .1, 1.35, A(196, 242), entreeSortie],
+    [T_AU_PLANNING - .05, 1.35, A(196, 242)],
+    [T_AU_PLANNING + .6, 1.1, W(540, 980), expo],
+    [T_GARS - .6, 1.1, W(540, 980)],
+    [T_GARS, 1.0, W(540, 960)],
+    [T_OUVRE - .3, 1.0, W(540, 960)],
+    [T_OUVRE + .3, 1.3, A(195, 330), expo],
+    [T_ADRESSE, 1.3, A(195, 330)],
+    [T_ADRESSE + .7, 1.9, A(195, 147), expo],
+    [T_TRAVAUX, 1.9, A(195, 147)],
+    [T_TRAVAUX + .7, 1.7, A(195, 187), entreeSortie],
+    [T_SANS - .1, 1.7, A(195, 187)],
+    [T_SANS + .6, 1.1, W(540, 980), expo],
+    [T_SOIR - .6, 1.1, W(540, 980)],
+    [T_SOIR, 1.0, W(540, 960)],
+    [T_FACTURE - .3, 1.0, W(540, 960)],
+    [T_FACTURE + .3, 1.3, A(195, 333), expo],
+    [T_FACT_GL + .3, 1.3, A(195, 333)],
+    [T_REPREND - .1, 1.15, W(540, 980), expo],
+    [T_TOTAUX, 1.15, W(540, 980)],
+    [T_TOTAUX + .8, 1.6, A(195, 170), expo],
+    [T_TVA, 1.6, A(195, 170)],
+    [T_TVA + .7, 1.0, W(540, 900), entreeSortie],
+    [T_DECLARE - .2, 1.0, W(540, 900)],
+    [T_DECLARE + .6, 1.4, A(195, 145), entreeSortie],
+    [T_PRETE - .1, 1.4, A(195, 145)],
+    [T_PRETE + .6, 1.1, W(540, 980), expo],
+    [T_POSE, 1.1, W(540, 980)],
+    [T_POSE + 1.4, 1.0, W(540, 1000)],
+    [T_SIGN, 1.0, W(540, 960)],
+  ];
+
+  function rendre(t) {
+    const stress = t < T_BASCULE;
+    const coupe = COUPES.find(c => t >= b(c[0]) && t < b(c[1]));
+    const fl = FLASHES.find(f => t >= f[0] && t < f[1]);
+    const fondCoupe = coupe ? coupe[2] : fl ? fl[2] : '#06070a';
+
+    // ── l'horloge, le fil du film. Une minute SE LIT : le chiffre tient, puis
+    // bascule sur le dernier tiers de la minute. Lue en continu, la colonne des
+    // unités restait toujours entre deux chiffres (vu sur la première planche).
+    const minutesLues = cles(t, MINUTES);
+    poserHorloge(Math.floor(minutesLues) + lisse(entre(minutesLues - Math.floor(minutesLues), .6, 1)));
+    horloge.style.color = stress ? couleurHorloge(fondCoupe) : '#f3efe6';
+    horloge.style.opacity = String(sortie(entre(t, .05, .3)) * (t < T_BASCULE ? mix(1, .55, entre(t, T_NOIR, T_NOIR + .4)) : 1) * (1 - lisse(entre(t, T_POSE + 1.5, T_POSE + 2.3))));
+
+    // ── l'acte du stress : le fond change d'un coup, les mots frappent
+    fond.style.background = fondCoupe;
+    fond.style.opacity = String(1 - lisse(entre(t, T_BASCULE, T_BASCULE + .7)));
+    COUPES.forEach((c, k) => {
+      const el = cartes[k];
+      const de = b(c[0]), a = b(c[1]);
+      const visible = t >= de && t < a;
+      el.style.opacity = visible ? '1' : '0';
+      if (!visible) return;
+      M.animer(motsCartes[k], t, { debut: de, pas: .04, duree: .22, mode: 'coup' });
+      const sous = el.querySelector('.etroit');
+      if (sous) { const p = sortie(entre(t, de + .12, de + .3)); sous.style.opacity = String(p); sous.style.transform = `translateY(${18 * (1 - p)}px)`; }
+      el.style.transform = `translateX(${mix(0, -26, (t - de) / (a - de))}px)`;
+    });
+    flash.style.opacity = fl ? '1' : '0';
+    if (fl) {
+      flashMot.textContent = fl[4]; flashMot.style.color = fl[3];
+      const p = coup(entre(t, fl[0], fl[0] + .1));
+      const k = FLASHES.indexOf(fl);
+      flash.style.transform = `scale(${mix(1.22, 1, p)}) rotate(${k % 2 ? 1.5 : -1.5}deg)`;
+    }
+
+    // ── la lumière : les fonds du stress, puis le ciel du jour
+    const [cielHaut, cielMilieu, lueurCouleur, angleLumiere] = lumiereDuJour(t);
+    ciel.style.background = `radial-gradient(120% 70% at 50% -10%, ${cielHaut} 0%, ${cielMilieu} 45%, #07080a 100%)`;
+    const matin = lisse(entre(t, T_BASCULE + .3, T_MATIN + .2));
+
+    // ── le téléphone : il se lève dans la main à la bascule, et se pose à la fin
+    const leve = lisse(entre(t, T_BASCULE + .3, T_MATIN + .3));
+    const dicte = lisse(entre(t, T_MICRO - .3, T_MICRO + .5)) * (1 - lisse(entre(t, T_PRET + .8, T_CLIENT - .2)));
+    const finDevis = lisse(entre(t, T_RACCORD, T_RACCORD + .8)) * (1 - lisse(entre(t, T_PRET + .8, T_CLIENT - .2)));
+    const client = lisse(entre(t, T_CLIENT - .5, T_CLIENT)) * (1 - lisse(entre(t, T_PREVENU - .45, T_PREVENU + .05)));
+    const vol = lisse(entre(t, T_VOL, T_VOL + .4)) * (1 - lisse(entre(t, T_PLANNING - .45, T_PLANNING - .05)));
+    const tva = lisse(entre(t, T_TVA, T_TVA + .5)) * (1 - lisse(entre(t, T_DECLARE - .5, T_DECLARE)));
+    // Au départ et à l'arrivée d'un raccord, le téléphone fait face à la
+    // caméra : le point de l'appli visé est alors exact, et le morceau se
+    // détache ou se pose sans sauter.
+    const face = Math.max(
+      lisse(entre(t, T_VOL - .5, T_VOL)) * (1 - lisse(entre(t, T_PLANNING + .5, T_PLANNING + 1.1))),
+      lisse(entre(t, T_TVA - .5, T_TVA)) * (1 - lisse(entre(t, T_TVA + .3, T_TVA + .9))),
+      lisse(entre(t, T_DECLARE - .4, T_DECLARE)) * (1 - lisse(entre(t, T_DECLARE + 1.0, T_DECLARE + 1.6))),
+    );
+    const pose = lisse(entre(t, T_POSE, T_POSE + 1.4));
+    let x = mix(540, 560, leve), y = mix(1420, 1320, leve) + 150 * dicte + 160 * finDevis + 60 * vol + 140 * tva;
+    let rx = mix(62, 4, leve) * (1 - face), ry = (mix(-6, -11, leve) + 1.5 * M.derive(t * .7, 2) * leve + 23 * client) * (1 - face), rz = (mix(-14, -3, leve) + 6 * client) * (1 - face * .7);
+    let echelle = mix(.78, 1, leve) * mix(1, .92, finDevis) * mix(1, .96, vol) * mix(1, .9, tva);
+    let hauteurSol = mix(10, 110, leve);
+    x = mix(x, 540, pose); y = mix(y, 1420, pose); rx = mix(rx, 62, pose); ry = mix(ry, -6, pose); rz = mix(rz, -14, pose);
+    echelle = mix(echelle, .78, pose); hauteurSol = mix(hauteurSol, 10, pose);
+    tel.poser({
+      x, y, rx, ry, rz, echelle, hauteurSol,
+      lumiere: angleLumiere, force: mix(.7, 1, matin),
+      // Quand le jour change, l'écran s'éteint et se rallume : la coupe d'un
+      // écran à l'autre se fait dans le noir, et l'on comprend que le
+      // téléphone a été rangé puis repris.
+      allume: sortie(entre(t, T_MATIN - .3, T_MATIN + .1)) * (1 - lisse(entre(t, T_POSE + 1.0, T_POSE + 1.6)))
+        * (1 - Math.sin(Math.PI * entre(t, T_GARS - .65, T_GARS - .15))) * (1 - Math.sin(Math.PI * entre(t, T_SOIR - .65, T_SOIR - .15))),
+      opacite: stress ? 0 : sortie(entre(t, T_BASCULE, T_BASCULE + .6)) * (1 - lisse(entre(t, T_SIGN - .5, T_SIGN))),
+      flou: 2.5 * finDevis + 1.5 * vol + 2.5 * tva,
+      balaye: t > T_MATIN - .5 && t < T_MATIN + .5 ? (t - T_MATIN + .5) : null,
+    });
+    tel.poserEcrans(t, ECRANS);
+    tel.poserAppui(t, APPUIS);
+    const ecoule = (t - (T_MICRO + .15)) * 1000;
+    let vue = -1;
+    if (t >= T_MICRO + .15 && t < T_RACCORD) PRISES.forEach((ms, k) => { if (ms <= ecoule) vue = k; });
+    BANDES.forEach((bd, k) => { bd.style.opacity = k === vue ? '1' : '0'; });
+
+    // ── la caméra : des coups pendant le stress, des regards lents ensuite
+    if (stress) {
+      const de = coupe ? b(coupe[0]) : fl ? fl[0] : T_NOIR;
+      const punch = expo(entre(t, de, de + (fl ? .12 : .3)));
+      const force = fl ? .2 : .14;
+      const zoom = t < T_NOIR ? mix(1 + force, 1, punch) : 1;
+      const rz = t < T_NOIR ? mix((Math.round(de * 60) % 2 ? 1.6 : -1.6) * (fl ? 1.6 : 1), 0, punch) : 0;
+      scene.poser({ x: 540, y: 960, zoom, rz, secousse: t < T_NOIR ? 1.6 * entre(t, b(6), T_NOIR) : 0, t });
+    } else {
+      const zoom = cles(t, REGARDS.map(r => [r[0], r[1], r[3]]));
+      const cx = cles(t, REGARDS.map(r => [r[0], r[2]().x, r[3]]));
+      const cy = cles(t, REGARDS.map(r => [r[0], r[2]().y, r[3]]));
+      scene.poser({ x: cx, y: cy, zoom, rz: 0, t });
+    }
+
+    // ── les repères de lieu, en petites capitales
+    const lx = LIEUX.find(([de, a]) => t >= de && t < a);
+    if (lx) {
+      lieu.textContent = lx[2];
+      const pl = sortie(entre(t, lx[0], lx[0] + .5)) * (1 - lisse(entre(t, lx[1] - .4, lx[1])));
+      lieu.style.opacity = String(pl); lieu.style.transform = `translateY(${16 * (1 - pl)}px)`;
+      lieu.style.letterSpacing = `${mix(.7, .44, pl)}em`;
+    } else lieu.style.opacity = '0';
+
+    // ── les mots dictés, sous l'horloge, et le trait des trente secondes
+    const dSort = lisse(entre(t, T_RACCORD, T_RACCORD + .4));
+    dictee.style.opacity = String((t >= T_DICTEE - .1 ? 1 : 0) * (1 - dSort));
+    dictee.style.transform = `translateY(${-24 * dSort}px)`;
+    spansMots.forEach((sp, k) => {
+      const p = sortie(entre(t, MOTS[k][0], MOTS[k][0] + .24));
+      sp.style.opacity = String(p); sp.style.transform = `translateY(${10 * (1 - p)}px)`;
+    });
+    pointRouge.style.opacity = String(t >= T_MICRO + .15 && t < T_RACCORD ? mix(.35, 1, (Math.sin(t * 7) + 1) / 2) : 0);
+    trait.style.width = `${800 * entre(t, T_DICTEE, T_RACCORD)}px`;
+    trait.style.opacity = String(t >= T_DICTEE && t < T_RACCORD + .5 ? .9 : 0);
+
+    // ── les phrases
+    for (const [mots, de, a] of PHRASES) M.animer(mots, t, { debut: de, pas: .1, duree: .5, mode: 'monte', decalage: 22, fin: a, dureeSortie: .4 });
+
+    // ── raccord 1 : la transcription devient la ligne du devis
+    const pr = expo(entre(t, T_RACCORD + .1, T_RACCORD + .95));
+    const depart = tel.pointDeLAppli(195, 255);
+    raccordDevis.poser({
+      x: mix(depart.x, 540, pr), y: mix(depart.y, 760, pr), largeur: mix(560, 1000, pr), rz: mix(0, -2, pr), rx: mix(0, 8, pr), p: pr,
+      opacite: t >= T_RACCORD + .1 ? 1 - lisse(entre(t, T_CLIENT - .7, T_CLIENT - .3)) : 0, ombre: pr,
+    });
+
+    // ── raccord 2 : la carte « devis accepté » s'envole et se pose sur le planning
+    {
+      const monte = entreeSortie(entre(t, T_VOL, T_VOL + .45));
+      const descend = entreeSortie(entre(t, T_VOL + .45, T_PLANNING));
+      const dep = centreZone(ZONE_NOTIF), arr = centreZone(ZONE_CARTE_PLANNING, DEF_PLANNING);
+      const pDep = tel.pointDeLAppli(dep.x, dep.y), pArr = tel.pointDeLAppli(arr.x, arr.y);
+      const apex = { x: 540, y: 820 };
+      const enHaut = t >= T_VOL + .45;
+      raccordPlanning.poser({
+        x: enHaut ? mix(apex.x, pArr.x, descend) : mix(pDep.x, apex.x, monte),
+        y: enHaut ? mix(apex.y, pArr.y, descend) : mix(pDep.y, apex.y, monte),
+        largeur: enHaut ? mix(900, largeurZone(ZONE_CARTE_PLANNING), descend) : mix(largeurZone(ZONE_NOTIF), 900, monte),
+        rx: enHaut ? mix(10, 0, descend) : mix(0, 10, monte),
+        p: entre(t, T_VOL + .2, T_PLANNING - .15),
+        opacite: t >= T_VOL && t < T_PLANNING + .03 ? 1 : 0,
+        ombre: monte * (1 - descend),
+      });
+    }
+
+    // ── raccord 3 : la ligne de TVA devient la table du PDF, taux par taux
+    {
+      const a1 = entreeSortie(entre(t, T_TVA, T_TVA + .7));
+      const dep = centreZone(ZONE_TVA_LIGNE, DEF_FACTURE);
+      const pDep = tel.pointDeLAppli(dep.x, dep.y);
+      raccordTva.poser({
+        x: mix(pDep.x, 540, a1), y: mix(pDep.y, 760, a1), largeur: mix(largeurZone(ZONE_TVA_LIGNE), 900, a1), rx: mix(0, 6, a1),
+        p: entre(t, T_TVA + .15, T_TVA + .6), opacite: t >= T_TVA && t < T_DECLARE ? 1 : 0, ombre: a1,
+      });
+    }
+    // ── raccord 4 : la table devient « Ma TVA à déclarer », dans le téléphone
+    {
+      const b1 = entreeSortie(entre(t, T_DECLARE, T_DECLARE + .7));
+      const arr = centreZone(ZONE_TVA_CARTE);
+      const pArr = tel.pointDeLAppli(arr.x, arr.y);
+      raccordDeclare.poser({
+        x: mix(540, pArr.x, b1), y: mix(760, pArr.y, b1), largeur: mix(900, largeurZone(ZONE_TVA_CARTE), b1), rx: mix(6, 0, b1),
+        p: entre(t, T_DECLARE + .1, T_DECLARE + .55), opacite: t >= T_DECLARE && t < T_DECLARE + .73 ? 1 : 0, ombre: 1 - b1,
+      });
+    }
+
+    // ── la signature
+    M.animer(lettresAtlas, t, { debut: T_SIGN + .1, pas: .06, duree: .7, mode: 'flou' });
+    M.animer(motsDevise, t, { debut: T_DEVISE, pas: .08, duree: .5, mode: 'monte', decalage: 22 });
+    const pe = sortie(entre(t, T_ESSAI, T_ESSAI + .6));
+    essai.style.opacity = String(pe); essai.style.letterSpacing = `${mix(.7, .44, pe)}em`;
+
+    matiere.poser(t, {
+      vignetteForce: stress ? (fondCoupe === '#f5f3ee' ? .22 : .45) : .5,
+      lueurX: mix(760, 540, matin), lueurY: mix(1500, 200, matin), lueurForce: stress ? 0 : mix(.18, .32, matin) * (1 - lisse(entre(t, T_SIGN - .5, T_SIGN))), lueurCouleur,
+      teinte: matin < .5 ? 'rgba(40,60,90,.3)' : 'rgba(80,60,30,.25)', teinte2: matin < .5 ? 'rgba(120,150,200,.12)' : 'rgba(201,161,94,.18)',
+    });
+  }
+
+  M.demarrer({ duree: DUREE, rendre, pret: Promise.all(BANDES.map(i => i.decode().catch(() => {}))) });
+</script>
+</body>
+</html>

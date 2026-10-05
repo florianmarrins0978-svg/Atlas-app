@@ -344,30 +344,36 @@ Sa planche `appli/retirer-un-acompte.html`, la B, codée sur la branche
 le rend (`ARCHITECTURE.md` §417). **Pas encore sur `main`** : la batterie
 n'a pas été jouée, à sa demande ; seules les suites concernées l'ont été.
 
-## ⏳ UNE DIRECTION À CHOISIR : LA VIDÉO, VERSION D (4 octobre 2026)
+## ⏳ LE FILM D ENTIER À REGARDER : LA VIDÉO (5 octobre 2026)
 
-`appli/video-promo.html` : trois directions de huit secondes (l'objet, le coup
-de poing, la journée), l'accroche et le premier raccord, en vrai MP4 avec une
-bande de travail et une version muette. Attend de lui : **la direction**, le
-nom commercial, l'adresse de la fin, sa voix s'il en veut une (texte proposé
-dans `docs/video-promo-D.md` §6), et son avis sur le rythme de la bande, que
-personne n'a pu écouter ici. Recommandation : le coup de poing pour l'accroche,
-l'objet pour les piliers (`docs/video-promo-D.md` §4).
+Son choix du 5 octobre : *« J'aime bien nerveuse et récit. L'idée de nerveuse
+qu'il faudrait accentuer, c'est qu'avant d'utiliser l'appli on se sent
+stressé, tout va vite, on perd du temps ; et avec l'appli on en gagne. »*
+**Codé et rendu le jour même** : `appli/video-promo/film/film-D.html`, 37 s,
+`appli/video-promo/atlas-D.mp4` et `atlas-D-muet.mp4`, en tête de
+`appli/video-promo.html`. Une horloge tient tout : elle court pendant le
+stress (128 à la noire, coupes qui accélèrent), elle n'avance que d'une minute
+par geste ensuite (92 à la noire, les quatre piliers, quatre raccords).
 
-**Ensuite** : le film entier (32 à 40 s) dans la direction choisie, avec les
-quatre piliers (devis, planning, fiche d'intervention des gars, facture et
-TVA), puis la déclinaison 1920 × 1080. Rendu : une heure par film
-(`rendre-film.mjs --ips 60 --obturateur 2 --grain 8`, 0,65 s par image capturée).
+Attend de lui : **son verdict sur le film** (le tableau seconde par seconde
+est dans `docs/video-promo-D.md` §2), le nom commercial, l'adresse de la fin,
+sa voix s'il en veut une (texte en §7), et son avis sur le rythme de la bande,
+que personne n'a pu écouter ici.
+
+**Ensuite** : la déclinaison 1920 × 1080 (même page, autre mise en place de la
+caméra ; une heure de rendu), et le vrai son sur la carte des temps forts
+(`sons.json`).
 
 Pas encore sur `main` : branche `claude/new-session-3ab8dh`, lot de niveau 2
-(`scripts/`), `npm run verifier:avant-fusion` avant la poussée. La version C
-reste sur la page, en bas, avec A et B.
+(`scripts/`), `npm run verifier:avant-fusion` avant la poussée. Les trois
+directions et les versions C, A, B restent sur la page, en bas.
 
-**Pour refaire une direction** : `node scripts/rendre-film.mjs appli/video-promo/film/essai-D-apple.html
---planche /tmp/p.png --pas 0.25` pour regarder, puis `--ips 60 --obturateur 2
---grain 8 --sons sons.json --sortie muet.mp4`, `python3 scripts/musique-film.py
---sons sons.json --sortie bande.wav`, et `ffmpeg -i muet.mp4 -i bande.wav -c:v
-copy -c:a aac -shortest essai.mp4`. Le jeu de démonstration se reconstruit
+**Pour refaire le film** : `node scripts/rendre-film.mjs appli/video-promo/film/film-D.html
+--planche /tmp/p.png --pas 0.25` pour REGARDER (la première planche a attrapé
+quatre défauts), puis `--ips 60 --obturateur 2 --grain 8 --sons sons.json
+--sortie atlas-D-muet.mp4`, `python3 scripts/musique-film.py --sons sons.json
+--sortie bande.wav`, et `ffmpeg -i atlas-D-muet.mp4 -i bande.wav -c:v copy
+-c:a aac -shortest atlas-D.mp4`. Le jeu de démonstration se reconstruit
 (`scripts/preparer-jeu-du-film.mts`) et les captures se reprennent
 (`scripts/capturer-ecrans-du-film.mts`).
 

@@ -34119,3 +34119,29 @@ coûtera une heure. Réduire encore passerait par moins de calques plein cadre
 Écarté : rendre en temps réel et capturer l'écran (saccades, non reproductible,
 § du 26 septembre) ; faire le film entier avant son choix (la maquette d'abord,
 `CLAUDE.md` §3 bis).
+
+## §443 : Le film D tient sur une horloge, et la bande son suit deux tempos
+
+**Sa décision du 5 octobre 2026** devant les trois directions : le stress de
+la direction nerveuse, le calme du récit, et le contraste à accentuer (*« avant
+l'appli on est stressé, tout va vite, on perd du temps ; avec l'appli on en
+gagne »*).
+
+| | |
+|---|---|
+| **le fil** | une seule horloge, du premier plan au dernier. Pendant le stress elle court (une heure et demie en quatre secondes) ; avec l'appli elle n'avance que d'UNE minute par geste. Le temps gagné se lit sur elle, aucun chiffre ne l'affirme : aucune source n'en donne |
+| **la courbe** | 128 à la noire, coupes au temps, au demi-temps, au quart de temps, la caméra qui tremble de plus en plus ; un noir ; 92 à la noire, caméra lente. `window.MUSIQUE` porte le tempo de CHAQUE section, et `musique-film.py` part ses mesures du début de chaque section, en refusant qu'un battement déborde dans la suivante |
+| **les raccords** | quatre, un par pilier (`creerMorceau`) ; au départ et à l'arrivée, le téléphone fait face à la caméra (`face`), parce que `pointDeLAppli` ignore la rotation : sans cela le morceau se pose à côté de sa place |
+| **les coupes d'écran** | un autre jour : l'écran s'éteint et se rallume pendant que l'heure roule. Un autre téléphone : l'objet tourne et l'écran change d'un coup au milieu de la rotation. Jamais un fondu entre deux pages : l'une se voit en fantôme sous l'autre |
+| **l'horloge se lit** | une minute tient, puis bascule sur son dernier tiers. Lue en continu, la colonne des unités restait toujours entre deux chiffres : vu sur la première planche, pas dans le code |
+
+**Ce que la planche a attrapé, et qu'aucun test ne voit** (`rendre-film.mjs
+--planche --pas 0.25`, puis `--instants` en pleine taille sur chaque
+raccord) : l'horloge entre deux chiffres, trois repères de lieu coupés en haut
+du cadre par le zoom qui suivait, un fondu fantôme, une phrase coupée sur les
+bords. C'est la règle du §5 de `CLAUDE.md` appliquée à un film : on regarde
+avant de lancer le rendu, qui se compte en dizaines de minutes.
+
+Écarté : un chiffre de temps gagné à l'écran (inventé) ; une phrase sur le
+payoff (le brief demandait une image, et le téléphone posé suffit) ; le
+1920 × 1080 avant son verdict sur le vertical.

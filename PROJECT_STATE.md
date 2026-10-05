@@ -5,14 +5,17 @@
 `drizzle/0116_modele_de_fiche_d_office.sql`
 
 ---
-## SUR SA BRANCHE : LA VIDÉO, VERSION D, TROIS DIRECTIONS À CHOISIR (4 octobre 2026)
+## SUR SA BRANCHE : LA VIDÉO, VERSION D, LE FILM ENTIER À REGARDER (5 octobre 2026)
 
 Son verdict sur C (« on dirait un PowerPoint ») a donné un moteur de film en
 CSS 3D (`appli/video-promo/film/moteur-D.js`) et trois directions de huit
-secondes en MP4 (l'objet, le coup de poing, la journée), sur
-`appli/video-promo.html`. Le film entier attend son choix. Le jeu de
-démonstration du film est désormais rejouable (`scripts/preparer-jeu-du-film.mts`)
-et les captures manquantes (fiche d'intervention, facture et TVA) sont prises.
+secondes le 4 octobre ; son choix du 5 (« nerveuse et récit : avant l'appli on
+est stressé, tout va vite, on perd du temps ; avec l'appli on en gagne ») a
+donné le film entier, `appli/video-promo/film/film-D.html`, 37 s, rendu dans
+`appli/video-promo/atlas-D.mp4`, en tête de `appli/video-promo.html`. Une
+horloge tient la courbe : elle court pendant le stress, elle n'avance que
+d'une minute par geste avec l'appli. Il attend son verdict. Le jeu de
+démonstration du film est rejouable (`scripts/preparer-jeu-du-film.mts`).
 Branche `claude/new-session-3ab8dh`, niveau 2, `docs/video-promo-D.md`.
 
 ---
