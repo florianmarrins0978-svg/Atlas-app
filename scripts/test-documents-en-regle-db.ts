@@ -26,6 +26,8 @@ import { TEXTE_ORIGINE_CONDITIONS_GENERALES } from "../src/lib/conditions-genera
 import { nettoyerBase } from "./_test-db";
 import { texteDuPdf } from "./_lecteur-pdf-protege";
 import { mettreEnRegle } from "./_entreprise-en-regle";
+import { aujourdHuiIso } from "../src/server/repositories/envois-devis";
+import { jourIso } from "../src/lib/jour";
 
 // ═══════════════════════════════════════════════════════════════════════════
 // LA FACTURE EN RÈGLE, EN BASE — ses choix du 3 octobre 2026
@@ -402,6 +404,16 @@ async function main() {
     assert.ok(a.ok);
     await majLigneDeFacture(ctx, facture.id, a.ligne.id, { libelle: "Trois photinias", prixUnitaire: "120" });
     assert.doesNotMatch(texteDuPdf(await genererPdfFacturePourApercu(ctx, facture.id)), /soussigné|habitation/);
+  });
+
+  await test("la page du client et le serveur ont la même date du jour, même passé minuit à Paris", async () => {
+    // Trouvé par la batterie commune du 5 octobre 2026, à 1 h 30 du matin : la
+    // page comptait les 14 jours en temps universel, le refus à l'heure de
+    // Paris. Entre minuit et 2 h, un client au 14ᵉ jour n'avait pas la case à
+    // cocher, et son accord était refusé quand même.
+    const minuitPasse = new Date("2026-10-05T23:30:00Z");
+    assert.equal(aujourdHuiIso(minuitPasse), "2026-10-06");
+    assert.equal(aujourdHuiIso(minuitPasse), jourIso(minuitPasse));
   });
 
   console.log(`\n${passed} réussi(s), ${failed} échoué(s).`);

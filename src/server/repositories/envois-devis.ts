@@ -1341,7 +1341,15 @@ export async function marquerReponseVue(ctx: Ctx, envoiId: string, maintenant: D
   });
 }
 
-/** Jour du jour, au format des dates de la base — utile aux appelants. */
+/**
+ * Le jour du jour, celui du patron : à l'heure de Paris (`jourIso`).
+ *
+ * **Le même jour que le refus de l'accord** (`enregistrerReponse`), et c'est
+ * tout ce qui compte. En temps universel, la page du client comptait les 14
+ * jours de rétractation avec un jour de retard entre minuit et 2 h : la case à
+ * cocher ne s'affichait pas, et l'accord était refusé quand même. Trouvé par
+ * la batterie commune du 5 octobre 2026, jouée à 1 h 30.
+ */
 export function aujourdHuiIso(maintenant: Date = new Date()): JourIso {
-  return versJourIso(maintenant);
+  return jourIso(maintenant) as JourIso;
 }

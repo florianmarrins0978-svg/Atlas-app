@@ -8,6 +8,18 @@ Format : le plus récent en tête.
 ---
 ## 2026-10-05
 
+### La page du devis et le serveur comptent les 14 jours du même jour
+
+Trouvé par la batterie commune, jouée à 1 h 30 du matin : la page du client
+comptait les 14 jours de rétractation en temps universel (`aujourdHuiIso`),
+le refus de l'accord à l'heure de Paris (`jourIso`). Entre minuit et 2 h, un
+client qui choisissait une date au 14ᵉ jour ne voyait pas la case de la
+demande expresse, et son accord était refusé quand même : bloqué jusqu'au
+matin. Le défaut venait du lot du 3 octobre (3A), qui a rendu ce refus
+bloquant. `aujourdHuiIso` rend désormais le jour de Paris ; contrôle vu rouge
+puis vert, et `test-devis-client-e2e` rejoué vert à 1 h 34.
+
+
 ### La certification de TVA réduite, posée puis RETIRÉE le même jour
 
 Posée d'après le BOI-LETTRE-000280 qu'il avait recopié : « Je soussigné(e)…
