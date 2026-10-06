@@ -34252,3 +34252,24 @@ par `--atlas-defile-marge` au lieu de `px-6`, que le débord aurait écrasé.
 **Piège payé en chemin** : la règle posée dans le premier bloc « ordinateur »
 perdait contre `.atlas-ecran`, écrit plus bas à force égale ; elle vit
 désormais juste après les règles qu'elle complète.
+
+## §448 : Le bouton « Créer un devis » est une phrase, pas un anneau
+
+Son choix du 6 octobre 2026 sur `appli/creer-un-devis-trois-boutons.html` :
+la B, « la signature ». La phrase se lit dans la police des titres à
+l'encre (`.atlas-phrase`, `var(--ink)`), et le seul signal d'or est une croix
+de deux traits qui se tracent (`.atlas-plume`, `stroke-dasharray`). Aucune
+couleur en clair : l'encre et l'or viennent des jetons, donc les huit chartes
+suivent sans règle de plus.
+
+**Ce qui n'a pas bougé, et c'est délibéré** : la place du bouton, son repère
+`data-atlas="nouveau-chantier"`, les onze grains, et la demi-seconde avant la
+feuille (`data-geste="part"`). Les suites qui défendent la place de la porte
+(`test-accueil-vide-porte-e2e`) mesurent désormais le centre de la plume,
+là où elles mesuraient l'anneau.
+
+**Ce que la suite du bouton ne défend plus** : la graisse ≥ 700 venue de la
+planche 67. Son choix est un romain ; garder le seuil aurait rendu son écran
+impossible à poser (`CLAUDE.md` §5 bis). Elle garde la taille (≥ 24 px), la
+phrase entière à 360 px, et le tour du signe pendant le geste.
+

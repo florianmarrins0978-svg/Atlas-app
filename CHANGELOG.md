@@ -6,6 +6,19 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-10-06
+
+### Le bouton « Créer un devis » devient une signature
+
+Son choix sur `appli/creer-un-devis-trois-boutons.html` : la B. Le mot en
+capitales et l'anneau qui battait sont remplacés par la phrase dans la police
+des titres, 27 px, à l'encre, et une croix d'or dont les deux traits se tracent
+toutes les 3,4 s. Au toucher, la croix tourne et les onze grains partent comme
+avant ; la feuille monte toujours après une demi-seconde. Les classes
+`.atlas-mot`, `.atlas-rond`, `.atlas-cerne`, `.atlas-pouls` et l'animation
+`atlas-battement` sont retirées avec elles ; `test-bouton-nouveau-chantier-e2e`
+ne réclame plus une graisse de 700, puisque son choix est un romain.
+
 ## 2026-10-05
 
 ### La page du devis et le serveur comptent les 14 jours du même jour

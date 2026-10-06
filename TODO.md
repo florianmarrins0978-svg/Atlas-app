@@ -1,21 +1,17 @@
 # Prochaines tâches
 
-## ⏳ UNE PLANCHE À REGARDER : LE BOUTON « CRÉER UN DEVIS » (5 octobre 2026)
+## ✅ LE BOUTON « CRÉER UN DEVIS » : LA B, CODÉE LE 6 OCTOBRE 2026 (5 octobre 2026)
 
 **Sa remarque :** *« le bouton "Créer un devis" de l'écran Chantiers manque de
-style »*, avec sa demande de trois propositions vraiment différentes. Écran
-regardé (`npm run voir -- /`) : le mot en capitales 13 px et l'anneau d'or de
-32 px, trois ondes (`atlas-geste-nouveau`, `EcranChantiers.tsx`,
-`globals.css`). Planche `appli/creer-un-devis-trois-boutons.html` : **A** le
-sceau, un disque plein de 58 px en `--plein` avec le signe en `surPlein` ;
-**B** la signature, la phrase en serif 27 px à l'encre et un signe d'or qui se
-trace ; **C** la glissière, pleine largeur, un bouton plein qu'on pousse au
-bout ou qu'on touche. « Aujourd'hui » en référence, les HUIT chartes (Brume
-comprise), un « Plein soleil » qui délave l'écran, la vibration au toucher, et
-une bande de contrastes recalculée par charte. **Rien n'est codé.** Même
-place, même mot, mêmes onze grains, même demi-seconde avant la feuille. À
-savoir : sur Origine, le signe clair sur le vert D tient 2,97 (comme tous les
-boutons pleins depuis le 3 septembre) ; sur les sept autres, 9,8 et plus.
+style »*. Planche `appli/creer-un-devis-trois-boutons.html` (A le sceau, B la
+signature, C la glissière). **Son choix du 6 octobre : *« je veux la deuxième,
+c'est la B signature »*.** Codée : la phrase en lettres de titre, 27 px, à
+l'encre (`.atlas-phrase`), et la croix d'or qui se trace toute seule
+(`.atlas-plume`) ; même place, mêmes onze grains, même demi-seconde avant la
+feuille (`EcranChantiers.tsx`, `globals.css`, `ARCHITECTURE.md` §448). Reste :
+la batterie entière (`globals.css` est un plancher), puis `main` avec son
+accord.
+
 ## ✅ LA FACTURE ET LE DEVIS EN RÈGLE : SUR `main` LE 6 OCTOBRE 2026 (3 octobre 2026)
 
 Sa demande : *« va vérifier qu'il manque rien sur la facture qui est

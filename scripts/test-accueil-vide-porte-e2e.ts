@@ -64,15 +64,15 @@ async function cas(nom: string, fn: () => Promise<void>) {
   }
 }
 
-/** Le centre de l'anneau, en fraction de la hauteur du téléphone. */
+/** Le centre de la plume, en fraction de la hauteur du téléphone. */
 async function placeDeLaPorte(page: import("playwright").Page): Promise<number> {
-  const anneau = page.locator('[data-atlas="nouveau-chantier"] .atlas-rond');
+  const anneau = page.locator('[data-atlas="nouveau-chantier"] .atlas-plume');
   await anneau.waitFor({ state: "visible", timeout: 30_000 });
   const boite = await anneau.boundingBox();
   const vue = page.viewportSize();
   // Une boîte de zéro pixel n'est pas une mesure : la rendre verte est le
   // défaut du 15 août 2026 (`CLAUDE.md` §5).
-  assert.ok(boite && boite.height > 1, "l'anneau ne se mesure pas : rien n'a été éprouvé");
+  assert.ok(boite && boite.height > 1, "la plume ne se mesure pas : rien n'a été éprouvé");
   assert.ok(vue && vue.height > 1, "la fenêtre n'a pas de hauteur : rien n'a été éprouvé");
   return (boite.y + boite.height / 2) / vue.height;
 }
