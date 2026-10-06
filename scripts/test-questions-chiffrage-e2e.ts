@@ -126,7 +126,15 @@ async function main() {
     // `data-atlas` survit au prochain remaniement de texte.
     const combien = await page.locator('[data-atlas="question-chiffrage"]').count();
     assert.ok(combien >= 1, "aucune question à l'écran : l'arrêt n'a rien demandé.");
-    assert.ok(combien <= 3, `${combien} questions posées : l'arrêt devient un formulaire, il le contournera.`);
+    // **Quatre au plus depuis le 29 septembre 2026**, et pour une seule raison :
+    // la hauteur de fût, qu'il a demandée (*« pour la fente, il faudrait qu'il
+    // demande quelle hauteur de fût »*), sans qu'aucune autre question ne
+    // parte. Le quatrième n'apparaît qu'en recopie, où la longueur de haie se
+    // pose aussi ; avec un modèle, elles sont trois. Une cinquième voudrait
+    // dire qu'une question s'est ajoutée sans qu'il l'ait voulu.
+    assert.ok(combien <= 4, `${combien} questions posées : l'arrêt devient un formulaire, il le contournera.`);
+    assert.match(texte, /Quelle hauteur de fût\s*\?/, "la fente ne demande pas son fût");
+    assert.doesNotMatch(texte, /Quelle hauteur fait l'arbre/, "la hauteur de l'arbre se demande encore");
 
     // --- Il répond d'un pouce -----------------------------------------------
     // Le bouton, pas le paragraphe. « démontage avec rétention » figure aussi

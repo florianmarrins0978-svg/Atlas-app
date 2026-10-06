@@ -115,7 +115,8 @@ async function main() {
   // --- 4. « Mes mesures » : les trois axes, et ce qu'ils portent -----------
   await page.goto(`${BASE}/reglages/prix/mesures`, { waitUntil: "networkidle" });
   const mesures = await page.locator("body").innerText();
-  for (const bloc of ["Diamètres", "Hauteurs d'arbre", "Façons d'abattre"]) {
+  // « Hauteurs de fût » depuis le 29 septembre 2026 : la fente se chiffre au fût.
+  for (const bloc of ["Diamètres", "Hauteurs de fût", "Façons d'abattre"]) {
     assert.ok(mesures.includes(bloc), `« ${bloc} » manque à l'écran des mesures.`);
   }
   assert.match(mesures, /Sert à \d+ grilles?/, "L'écran ne dit pas à quelles grilles un axe sert.");
