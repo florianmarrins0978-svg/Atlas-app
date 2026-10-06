@@ -1,6 +1,6 @@
 # Prochaines tâches
 
-## ⏳ LA FACTURE ET LE DEVIS EN RÈGLE : CODÉS, LA BATTERIE ATTEND SON ACCORD (3 octobre 2026)
+## ✅ LA FACTURE ET LE DEVIS EN RÈGLE : SUR `main` LE 6 OCTOBRE 2026 (3 octobre 2026)
 
 Sa demande : *« va vérifier qu'il manque rien sur la facture qui est
 obligatoire, vérifie aussi le devis ! Je veux aucune erreur ! »*, puis ses
@@ -9,9 +9,11 @@ document de retour est `docs/lot-mentions-facture-devis.md`.
 
 - ✅ **Tout est codé sur la branche** (migrations 0117 et 0118, §442 et §443).
   Contrôles neufs vus rouges puis verts ; 149 suites base rejouées au vert.
-- ⏳ **Niveau 3 (migration, argent) : la batterie complète avant `main`.** Sa
-  consigne : *« on fait toutes les corrections et ensuite on jouera une seule
-  batterie pour l'ensemble »*. **Son accord attendu pour la lancer.**
+- ✅ **La batterie commune, puis `main` le 6 octobre 2026**, avec
+  `devis-a-la-voix`, `sans-traduction`, `ouvrir-la-fiche` et
+  `app-sur-ordinateur` : 452 suites base, 177 navigateur, connexion derrière
+  un proxy, tout vert. Elle a trouvé un vrai défaut, corrigé : la page du
+  devis comptait les 14 jours en temps universel (CHANGELOG du 5 octobre).
 - ⏳ Une facture et un devis d'essai, dont une en sous-traitance, relus par
   son comptable.
 - ⏳ **Le check-up légal du 4 octobre** (`docs/check-up-legal-documents.md`) :
@@ -61,7 +63,7 @@ document de retour est `docs/lot-mentions-facture-devis.md`.
   suit le devis, son bouton ne reste que sur une facture faite sans devis
   (`ARCHITECTURE.md` §444).
 
-## ⏳ PAS DE TRADUCTION AUTOMATIQUE : codé, il ne manque que la batterie (4 octobre 2026)
+## ✅ PAS DE TRADUCTION AUTOMATIQUE : sur `main` le 6 octobre 2026 (4 octobre 2026)
 
 Sur le téléphone Android d'une amie, Chrome traduisait le devis du client du
 français vers le français : « Quelle date vous arrangez ? », « votre artisan la
@@ -184,7 +186,7 @@ ajoutée dans l'écran jusqu'au premier mot, comme la ligne ouverte d'avance.
 Travail dans l'écran du devis (identifiant qui ne change pas, ordre des
 écritures), donc un lot à lui, de niveau 3.
 
-## ✅ DIRE QUE LE MICRO RÉDIGE LE DEVIS : « LA A », CODÉE LE 3 OCTOBRE 2026, PAS ENCORE SUR `main`
+## ✅ DIRE QUE LE MICRO RÉDIGE LE DEVIS : « LA A », CODÉE LE 3 OCTOBRE 2026, SUR `main` LE 6
 
 **Sa réponse : « la A », et pas de batterie.** Libellé « Devis à la voix »
 au-dessus du micro, branche `claude/devis-a-la-voix`. Niveau 2 : `main` attend
@@ -204,7 +206,7 @@ commencer ». **Rien n'est codé.** À savoir : le petit micro en haut à droite
 (`DicterCoordonnees`) remplit les coordonnées, pas le devis ; deux micros sur
 un écran peuvent entretenir la confusion.
 
-## ✅ OUVRIR LA FICHE D'INTERVENTION : « LA C », CODÉE LE 3 OCTOBRE 2026, PAS ENCORE SUR `main`
+## ✅ OUVRIR LA FICHE D'INTERVENTION : « LA C », CODÉE LE 3 OCTOBRE 2026, SUR `main` LE 6
 
 **Sa remarque, capture du planning à l'appui :** *« le fait de cliquer pour
 faire apparaître la fiche chantier n'est pas intuitif »*. Aujourd'hui la fiche

@@ -11,7 +11,7 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 
 ---
 
-## LA FACTURE ET LE DEVIS EN RÈGLE : 3 et 4 octobre 2026, PAS SUR `main`
+## LA FACTURE ET LE DEVIS EN RÈGLE : 3 au 5 octobre 2026, SUR `main` LE 6
 
 Branche `claude/tva-invoices-business-municipalities-lk2sjy`, migrations 0117
 et 0118. Trois choses à savoir avant de toucher une facture ou un envoi :
@@ -34,7 +34,7 @@ et 0118. Trois choses à savoir avant de toucher une facture ou un envoi :
 
 Pourquoi : `ARCHITECTURE.md` §443. Batterie à jouer avec son accord.
 
-## L'APPLICATION SUR ORDINATEUR : 3 octobre 2026, PAS ENCORE SUR `main`
+## L'APPLICATION SUR ORDINATEUR : 3 octobre 2026, SUR `main` LE 6
 
 **À savoir avant de toucher à un écran** : il n'existe pas de version
 ordinateur d'une page. Le cadre seul change au-delà de 1024 px, dans

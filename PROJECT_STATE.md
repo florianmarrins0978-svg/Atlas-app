@@ -5,7 +5,7 @@
 `drizzle/0116_modele_de_fiche_d_office.sql`
 
 ---
-## SUR SA BRANCHE : LA FACTURE ET LE DEVIS EN RÈGLE (3 octobre 2026)
+## SUR `main` DEPUIS LE 6 OCTOBRE : LA FACTURE ET LE DEVIS EN RÈGLE (3 octobre 2026)
 
 Branche `claude/tva-invoices-business-municipalities-lk2sjy`, migrations 0117,
 0118 et 0119 (le 4 octobre : Mr, Mme ou Entreprise sur la fiche, « Vos
@@ -16,7 +16,7 @@ au nom, sous-traitance sans TVA, date des travaux. **Batterie non jouée (sa
 consigne : une seule pour l'ensemble, avec son accord).** Détail :
 `docs/lot-mentions-facture-devis.md`, `ARCHITECTURE.md` §442 et §443.
 
-## SUR SA BRANCHE : L'APPLICATION SUR ORDINATEUR (3 octobre 2026)
+## SUR `main` DEPUIS LE 6 OCTOBRE : L'APPLICATION SUR ORDINATEUR (3 octobre 2026)
 
 Au-delà de 1024 px, la barre passe à gauche et le contenu s'ouvre sur 1024 px ;
 les écrans sont les mêmes que sur le téléphone, seul le cadre change
