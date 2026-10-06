@@ -8,6 +8,15 @@ Format : le plus récent en tête.
 ---
 ## 2026-10-06
 
+### La suite de la fiche d'entretien ne défait plus la remise d'avant
+
+`test-fiche-entretien-e2e` rougissait aussi sur `main` seul, deux passages sur
+trois, sur trois cas à la fois. Le bandeau « modèle remis » du cas précédent
+reste six secondes : encore affiché au début du cas B, il répondait à
+l'attente avant la nouvelle remise, et « Annuler » défaisait l'ancienne. Le
+cas attend désormais que ce bandeau soit parti. Le produit n'était pas en
+cause.
+
 ### Le bouton « Créer un devis » devient une signature
 
 Son choix sur `appli/creer-un-devis-trois-boutons.html` : la B. Le mot en

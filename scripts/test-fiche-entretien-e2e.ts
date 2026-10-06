@@ -115,6 +115,13 @@ async function main() {
       (await pool.query<{ libelle: string }>(`select libelle from prestations_entretien order by ordre`)).rows.map(
         (r) => r.libelle
       );
+    // **Le bandeau du cas précédent doit être parti — 6 octobre 2026.** Il
+    // reste six secondes ; encore là, il répondait à l'attente ci-dessous
+    // avant que CETTE remise ait eu lieu, et « Annuler » défaisait la remise
+    // d'avant : deux lignes de Pelouse effacées, « Cette prestation n'existe
+    // plus », et les deux cas suivants rouges en cascade. Vu rouge sur `main`
+    // seul, deux passages sur trois.
+    await page.locator('[data-atlas="modele-remis"]').waitFor({ state: "detached", timeout: 20_000 });
     await page.getByRole("button", { name: "Retirer Scarification" }).click();
     // **Un seul appui, sans réessai — 4 octobre 2026.** Le bouton disparaît
     // dès que la fiche est complète, c'est-à-dire en réponse à CET appui.
