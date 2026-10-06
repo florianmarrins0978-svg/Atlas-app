@@ -34088,3 +34088,167 @@ pour tout client, même reconnu avec un devis envoyé sur un autre chantier.
 Écarté : choisir le plus récent quand plusieurs devis attendent. Facturer un
 client sur le mauvais prix coûte un avoir ; le refus coûte d'ouvrir le chantier.
 
+## §442 : La facture prend son émetteur le jour où elle part
+
+**Trouvé le 3 octobre 2026** en vérifiant la facture en autoliquidation : le
+numéro de TVA intracommunautaire, mention obligatoire d'un assujetti, ne partait
+sur aucune facture (migration 0117).
+
+| Décision | Pourquoi |
+|---|---|
+| `entreprise_numero_tva` figé sur la facture, comme le SIRET et le régime | une pièce garde ce qu'elle portait le jour où elle est partie ; le lire en direct réécrirait le passé |
+| `emettreFacture` relit l'émetteur (`emetteurDuJour`) avant le PDF, comme elle recalcule déjà les dates | lue à la création du brouillon, l'identité restait celle de ce jour-là : un brouillon d'avant 0117 serait parti sans le numéro, et un IBAN changé entre-temps serait parti périmé |
+| l'aperçu d'un brouillon passe par la même `emetteurDuJour` | ce qu'il regarde avant d'envoyer est ce qui part ; deux lectures divergeraient |
+| rien sur le devis | la loi ne l'y impose pas |
+| le PDF imprime le numéro dès qu'il est saisi, sans regarder le régime | une règle de régime ici doublerait celle de `facture-pdf.ts` ; un franchisé qui a un numéro peut le porter |
+
+Les autres trous relevés le même jour (adresse du client, date des travaux,
+« EI », forme juridique, formulaire de rétractation, aucune garde avant
+l'envoi) sont dans `docs/lot-mentions-facture-devis.md` et `TODO.md` : ils
+changent ce qui s'imprime ou ce qui bloque, donc ils passent par une maquette.
+
+## §443 : Une pièce en règle se vérifie aux portes, et la sous-traitance réécrit les taux
+
+**Le 3 octobre 2026**, ses choix 1A à 6A (`docs/lot-mentions-facture-devis.md`).
+
+| Décision | Pourquoi |
+|---|---|
+| ce qui manque se calcule dans une règle pure (`mentions-manquantes.ts`), lue par l'écran ET par le refus | une seule réponse à « peut-elle partir ? » (`CLAUDE.md` §3) |
+| le refus vit aux portes du patron (envoyer le devis, émettre la facture), pas dans le dépôt | 43 suites base et 39 navigateur créent des entreprises minimales ; bloquer le dépôt les aurait fait rougir sur un refus juste, sans rien protéger de plus : seul le patron envoie |
+| à l'émission, une adresse de client ou de chantier VIDE se complète depuis la fiche (`adressesDuJour`) | sinon le refus ne se lèverait jamais : la facture figeait le vide à sa création |
+| la sous-traitance met les taux de la pièce à 0 EN BASE, et garde ceux d'avant (`taux_avant_autoliquidation`) | écran, PDF, page du client, paiements, avoirs et relevé lisent tous les taux des lignes ; un drapeau relu à chaque endroit en aurait oublié un, et c'est celui-là qui aurait réclamé la TVA |
+| tant qu'elle est active, une ligne ajoutée naît à 0 % et un taux posé ne prend pas ; une reprise du devis repasse sans TVA | une seule source de vérité : le drapeau ne survit jamais à côté d'un taux qui le contredit |
+| refusée en franchise | la pièce porterait 293 B et l'autoliquidation, deux mentions qui se contredisent |
+| la date des travaux se propose au dernier jour posé (`dateDesTravauxProposee`), sinon au jour de la facture | le seul fait connu ; il la change d'un geste |
+| « aucune » ne cache plus les mentions d'une société (`positionEffective`) | elles sont obligatoires (R123-237) ; une valeur restée en base s'imprime sous le nom |
+| une référence trop longue pour sa ligne passe dessous (`document-commun.ts`) | « Début des travaux » chevauchait sa valeur ; la colonne ne mesurait rien |
+
+## §444 : « Entreprise » est une civilité, et la sous-traitance du devis vit sur le chantier
+
+**Le 4 octobre 2026**, ses choix sur trois planches (`appli/ni-mr-ni-mme.html`,
+`appli/entreprises-clientes.html`, `appli/devis-sous-traitance.html`).
+
+| Décision | Pourquoi |
+|---|---|
+| « Entreprise » est une troisième valeur de `civilite` (clients, devis, factures), pas une colonne à part | c'est la même question, « comment le nommer », et elle se fige déjà sur chaque document (0038) ; une colonne de plus aurait demandé une copie figée de plus, et deux réponses à une seule question |
+| `Civilite` (une personne : le compte) et `CiviliteClient` (Mr, Mme, Entreprise) restent deux types | une entreprise n'a pas de sens pour le compte de l'artisan |
+| `estUneEntreprise` : son choix d'abord, sinon les mots de société qui retiraient déjà « Mr. » | la porte « Vos entreprises » et la sous-traitance du devis posent la même question ; une seconde liste de mots aurait rangé « SARL Untel » chez les particuliers tout en lui retirant son « Mr. » |
+| la porte est un paramètre (`/clients?vue=entreprises`), pas un second écran | la même liste, la même recherche, rien à tenir deux fois |
+| la sous-traitance du devis vit sur le CHANTIER (`chantiers.autoliquidation`), et le devis la fige | ses lignes de prix vivent sur le chantier et chaque version du devis en repart ; un drapeau sur le devis seul se serait perdu à la version suivante |
+| allumée, les lignes suivent le taux du devis (`null`) et le devis passe à 0 ; les taux d'avant sont gardés sur le chantier | même principe que la facture (§443) : tout ce qui lit les taux rend une pièce sans TVA ; et une ligne ajoutée ensuite suit le taux du devis sans qu'on ait à lui en poser un |
+| une seule garde dans `lignes-prix.ts` (`sansTvaSurLeChantier`) pour tous les écrivains | tous les ajouts passent par `ajouterLignePrix` ; une ligne à 20 % glissée sous un devis en sous-traitance réclamerait une TVA que le client ne paie pas |
+| décochée d'office (son choix B) | une entreprise en direct paie la TVA (`docs/QUESTIONS.md` §31) : l'oubli de cocher coûte une correction, l'oubli de décocher coûterait la TVA due |
+| **une facture née d'un devis SUIT le devis, dans les deux sens** ; son bouton ne vit plus que sur une facture faite sans devis, pour une entreprise (sa remarque du 4 octobre au soir) | le client a accepté un prix avec ou sans TVA, et la facture ne le contredit pas ; et les taux d'avant sont sur le chantier : les deviner rendrait 20 % à une ligne à 10 % |
+| à la création d'un chantier, le SIRET et le n° TVA s'offrent pour une entreprise, et complètent la fiche par `completerLaFiche` (le vide seul) | une seule règle pour « ce qu'il tape entre dans sa fiche » ; en reprise, l'écran enregistre par une autre porte, et les cases ne s'y montrent pas plutôt que de ne rien enregistrer |
+| en sous-traitance, ni formulaire de rétractation, ni case des 14 jours, ni médiateur exigé | l'entreprise qui le sous-traite achète dans son métier : ces protections sont celles du consommateur. Une entreprise cliente EN DIRECT les garde (une petite entreprise hors de son métier peut en bénéficier, L221-3) |
+
+## §445 : Le texte d'origine se range vide, jamais en copie
+
+Les conditions générales d'origine vivent dans le code
+(`TEXTE_ORIGINE_CONDITIONS_GENERALES`) et `NULL` en base veut dire « celui
+d'Atlas ». Mais l'écran des réglages rangeait le texte AFFICHÉ dès qu'on
+quittait le champ ou rallumait la case : une copie, qui ne suivait plus les
+corrections du texte d'origine. C'est ce qui aurait gardé, le 4 octobre 2026,
+quatre clauses contraires au droit du particulier sur les devis de ceux qui
+avaient seulement ouvert leurs réglages.
+
+**La racine est à l'écriture** (`mettreAJourEntreprise`) : le texte d'origine
+retapé à l'identique se range `NULL`, comme les messages (même règle, même
+raison). La migration 0120 rend les copies EXACTES de l'ancien texte ; un
+texte retouché, même d'une virgule, reste le sien et ne se réécrit pas sans
+lui. Les devis envoyés gardent leur copie figée : c'est ce qui a été accepté.
+
+**Les 40 € suivent le client**, pas le réglage : `estUneEntreprise` (la même
+règle que la fiche et la sous-traitance) décide de leur impression, sur la
+facture, le devis et l'écran du devis. Le particulier est le défaut : c'est
+le client le plus courant, et lui réclamer ce qu'il ne doit pas est la faute
+la plus visible.
+
+## §446 : L'attestation décennale se fige sur la pièce, et son absence l'arrête
+
+Son choix A du 5 octobre 2026 : l'attestation est jointe à tous les devis et
+factures dès qu'elle est déposée (C. ass. L243-2), l'adresse de l'assureur
+s'imprime avec son nom (loi 96-603, art. 22-2).
+
+**La clé du fichier se fige sur le devis et la facture** (migration 0121),
+comme le SIRET : c'est l'attestation du jour de la pièce qui prouve la
+couverture du chantier. D'où la seconde règle : **un fichier d'attestation ne
+se supprime jamais**, à l'inverse du logo. Retirer ou remplacer l'attestation
+ne touche que les pièces suivantes.
+
+**Le composeur ne lit rien**, comme pour le logo : le dépôt lit l'attestation
+figée (`attestationLue`) et la passe en option. Mais **une attestation
+illisible LÈVE**, là où un logo illisible se tait : un devis sans logo reste en
+règle, un devis sans l'attestation qu'il doit porter ne l'est plus, et
+personne ne le verrait partir.
+
+**Elle se joint après la numérotation et avant le scellé** : « Page 2 / 2 »
+compte le devis, l'attestation le suit telle que l'assureur l'a émise, et part
+protégée avec lui. **Ses annotations ne la suivent pas** (`sansAnnotations`) :
+un fichier venu d'ailleurs ne fait pas porter à un devis d'Atlas un lien ou une
+action que personne n'a vus.
+
+**Un assureur nommé est le seul signe** qu'Atlas ait que ses travaux sont
+soumis à la décennale : c'est lui qui rend l'adresse et l'attestation
+obligatoires, sur le devis et la facture, sous-traitance comprise (ni l'une ni
+l'autre ne relève du droit de la consommation).
+
+**Ajouté le même jour, sa règle :** *« la décennale ne doit pas apparaître
+comme étant incomplète tant qu'elle n'est pas enregistrée dans les
+réglages »*. L'assureur ENREGISTRÉ décide de tout, jamais le champ en cours de
+frappe. Et sans lui, la moitié décennale de l'article 9 (écrite une seule fois,
+`MOITIE_DECENNALE`) se retire du texte d'origine : ce n'est pas un crochet « à
+remplir », c'est une assurance qu'il n'a pas. Le blocage regarde ce qui
+s'IMPRIMERAIT (`conditionsGeneralesRemplies`), pas le texte brut : un crochet
+resté dans ses propres phrases arrête encore l'envoi, parce qu'on ne réécrit
+pas un texte qu'on n'a pas écrit.
+
+## §447 : Sur ordinateur, les mêmes écrans ; seul le cadre change de forme
+
+**Sa demande du 30 septembre 2026 :** *« il faut que ça prenne l'entièreté de
+l'ordinateur »*. Puis le 3 octobre : *« les pages doivent être EXACTEMENT les
+mêmes, n'invente rien »* et *« quand je fais une modif sur l'appli tel, qu'elle
+s'applique automatiquement sur l'appli PC »*.
+
+**La cause** : tout l'écran vivait dans `max-w-md` (448 px), posé par
+`CadreApplication`, par la barre, et recopié par chaque élément flottant (la
+barre Enregistrer, l'annulation, le tiroir du planning, la veille du serveur,
+les couleurs du planning, la feuille des chantiers). Aucun écran de `src/` ne
+portait de règle pour un grand écran.
+
+| Décision | Pourquoi |
+|---|---|
+| **aucun écran propre à l'ordinateur** : seul le cadre change, dans `globals.css` (« L'ORDINATEUR ») | sa seconde phrase : une page écrite deux fois finit par diverger, et une modification faite pour le téléphone n'arriverait pas sur l'ordinateur |
+| trois variables, une source : `--atlas-cote` (la barre à gauche), `--atlas-largeur` (448 px, puis 1024 px au-delà de 1024 px d'écran), `--atlas-barre` (zéro sur ordinateur) | le cadre (`.atlas-cadre`, `.atlas-colonne`), tout ce qui flotte (`.atlas-colonne-fixe`) et les feuilles montantes (`.atlas-feuille`) lisent les mêmes ; sept copies de `max-w-md` deviennent une règle |
+| la barre est le MÊME composant, rangée en bas ou en colonne par la feuille de style | ses colonnes et la place du trait passent de valeurs en ligne à deux variables (`--atlas-onglets`, `--atlas-onglet-rang`) : un style en ligne aurait eu le dernier mot, et `!important` est refusé (§4 quater) |
+| la barre publie la place qu'elle prend EN BAS, lue sur elle-même (étroite, elle est à gauche : zéro) | publier sa hauteur sur ordinateur aurait réservé un écran entier de vide sous chaque page ; lire sa forme évite de recopier en JavaScript la largeur qui en décide |
+| le contenu reste une colonne de 1024 px, centrée dans la place à droite de la barre | une ligne de formulaire étirée sur 1 200 px ne se lit plus ; 1024 px, c'est plus du double d'avant et l'écran entier d'un petit portable |
+| les deux panneaux de la planche (`appli/sur-ordinateur.html`), liste et fiche côte à côte, **ne sont pas faits** | ils demandaient des écrans que le téléphone n'a pas, donc l'inverse de sa règle du 3 octobre ; c'est à lui de les redemander |
+| l'assistant reste un panneau qui glisse de la droite, sur un voile | c'est déjà sa forme sur le téléphone ; la planche le montrait poussant le contenu, autre invention écartée |
+
+**Le téléphone n'a pas bougé** : 49 écrans photographiés à 390 px avant et
+après, comparés pixel à pixel ; les seuls écarts venaient des données de la démo
+qui avaient changé entre les deux passages (une transcription terminée), et de
+l'animation de l'accueil. `scripts/test-sur-ordinateur-e2e.ts` tient les deux
+moitiés, rouge sur l'ancien cadre (9 échecs à 1440 px, téléphone vert).
+
+**Les écrans d'avant le compte gardent la largeur d'un téléphone** (sa capture
+du même jour : *« le bouton est trop grand »*, « Créer un compte » étiré sur
+toute l'accueil). L'accueil, la création de compte, le mot de passe oublié et
+le code n'ont pas de cadre : ils s'étiraient d'eux-mêmes. La colonne vit dans
+`PorteDeNuit`, que tous partagent sauf l'accueil, qui la pose sur ses boutons ;
+le fond, lui, couvre l'écran. Tenu par trois cas de `test-sur-ordinateur-e2e`,
+rouges sur l'ancienne version.
+
+**La molette fait défiler l'écran où qu'elle soit** (sa capture suivante :
+*« je peux pas slider pour descendre »*). Chantiers, Mot de passe et Export ne
+font pas défiler la page mais une zone intérieure (`.atlas-fil-defile`,
+`.atlas-colonne-defile`), large comme la colonne : dans les marges, la souris ne
+trouvait rien à faire défiler. Sur ordinateur, la zone déborde jusqu'à la barre
+et au bord de l'écran et rend ce débord en marge intérieure, si bien que le
+contenu ne bouge pas ; `.atlas-ecran` ne coupe plus qu'en hauteur
+(`overflow-y: clip`), sans quoi il recoupait le débord. La marge d'Export passe
+par `--atlas-defile-marge` au lieu de `px-6`, que le débord aurait écrasé.
+**Piège payé en chemin** : la règle posée dans le premier bloc « ordinateur »
+perdait contre `.atlas-ecran`, écrit plus bas à force égale ; elle vit
+désormais juste après les règles qu'elle complète.

@@ -89,7 +89,7 @@ async function main() {
     const lu = await lireParJeton(envoi.jeton, MARDI);
     assert.deepEqual(lu?.joursProposes, [[LE_18, LE_22]], "La page du client ne reçoit pas les jours proposés.");
 
-    const r = await enregistrerReponse(envoi.jeton, { decision: "accepte", dateRetenue: LE_18 }, MARDI);
+    const r = await enregistrerReponse(envoi.jeton, { decision: "accepte", demarrageAnticipe: true, dateRetenue: LE_18 }, MARDI);
     assert.equal(r.succes, true, "L'acceptation a été refusée.");
     const poses = await chantiersRepo.creneauxDunChantier(ctx, c.chantierId);
     assert.deepEqual(
@@ -120,7 +120,7 @@ async function main() {
       },
       MARDI
     );
-    const r = await enregistrerReponse(envoi.jeton, { decision: "accepte", dateRetenue: LE_18 }, MARDI);
+    const r = await enregistrerReponse(envoi.jeton, { decision: "accepte", demarrageAnticipe: true, dateRetenue: LE_18 }, MARDI);
     assert.equal(r.succes, true);
     const poses = await chantiersRepo.creneauxDunChantier(ctx, c.chantierId);
     assert.deepEqual(new Set(poses.map((p) => p.jour)), new Set([LE_18, LE_19]));
@@ -143,7 +143,7 @@ async function main() {
       },
       MARDI
     );
-    const r = await enregistrerReponse(envoi.jeton, { decision: "accepte", dateRetenue: LE_23 }, MARDI);
+    const r = await enregistrerReponse(envoi.jeton, { decision: "accepte", demarrageAnticipe: true, dateRetenue: LE_23 }, MARDI);
     assert.equal(r.succes, true, "L'acceptation de la seconde a été refusée.");
     const poses = await chantiersRepo.creneauxDunChantier(ctx, c.chantierId);
     assert.deepEqual(new Set(poses.map((p) => p.jour)), new Set([LE_23, LE_25]));
@@ -164,7 +164,7 @@ async function main() {
       },
       MARDI
     );
-    const r = await enregistrerReponse(envoi.jeton, { decision: "accepte", dateRetenue: LE_18 }, MARDI);
+    const r = await enregistrerReponse(envoi.jeton, { decision: "accepte", demarrageAnticipe: true, dateRetenue: LE_18 }, MARDI);
     assert.equal(r.succes, true);
     const poses = await chantiersRepo.creneauxDunChantier(ctx, c.chantierId);
     assert.deepEqual(
@@ -185,7 +185,7 @@ async function main() {
       { chantierId: c.chantierId, devisId: c.devisId, canal: "email", datesProposees: [LE_18], contenuDevis: "E" },
       MARDI
     );
-    const r = await enregistrerReponse(envoi.jeton, { decision: "accepte", dateRetenue: LE_18 }, MARDI);
+    const r = await enregistrerReponse(envoi.jeton, { decision: "accepte", demarrageAnticipe: true, dateRetenue: LE_18 }, MARDI);
     assert.equal(r.succes, true);
     const poses = await chantiersRepo.creneauxDunChantier(ctx, c.chantierId);
     assert.deepEqual(new Set(poses.map((p) => p.jour)), new Set([LE_18, LE_19]));

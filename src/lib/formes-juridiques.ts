@@ -86,3 +86,27 @@ export function formeADuCapital(formeJuridique: string | null | undefined): bool
   const connue = formeConnue(valeur);
   return connue ? connue.capital : true;
 }
+
+/**
+ * L'ENTREPRENEUR INDIVIDUEL SIGNE « … EI » — CHOIX 4A DU 3 OCTOBRE 2026.
+ *
+ * Depuis le 15 mai 2022, un entrepreneur individuel exerce sous une
+ * dénomination qui porte son nom suivi de « EI » ou « entrepreneur
+ * individuel », sur tous ses documents professionnels (Code de commerce,
+ * art. R526-27), sous peine d'amende. Atlas ne l'imprimait nulle part. Il a
+ * choisi la forme collée au nom : « Atelier Démo EI ».
+ *
+ * **Seules l'EI et la micro-entreprise sont concernées** : les deux formes
+ * dont on sait qu'elles n'ont pas de capital (`formeConnue`). Une forme tapée
+ * à la main ne reçoit rien, faute de savoir ce qu'elle est.
+ *
+ * Un nom qui le porte déjà ne le reçoit pas une seconde fois : plusieurs
+ * l'ont tapé eux-mêmes depuis 2022.
+ */
+export function nomAvecForme(nom: string, formeJuridique: string | null | undefined): string {
+  const connue = formeConnue(formeJuridique);
+  if (!connue || connue.capital) return nom;
+  if (/(^|\s)(EI|entrepreneur individuel)(\s|$)/i.test(nom.trim())) return nom;
+  return `${nom.trim()} EI`;
+}
+

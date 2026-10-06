@@ -352,6 +352,21 @@ export function rangDeLaFiche<C extends { id: string }>(
 }
 
 /**
+ * LA FICHE OUVERTE EN TOUCHANT LE JOUR — sa réponse du 3 octobre 2026, « la C »
+ * (`appli/ouvrir-la-fiche.html`).
+ *
+ * Seul ce jour-là, le chantier ouvre sa fiche avec la journée : il n'y a rien
+ * à choisir, donc rien à toucher de plus. À deux ou trois, aucune : les ouvrir
+ * toutes ferait une page interminable, et le chevron de chaque nom dit déjà
+ * qu'elle s'ouvre.
+ */
+export function ficheOuverteDOffice<C extends { id: string }>(
+  chantiers: readonly C[]
+): string | null {
+  return chantiers.length === 1 ? chantiers[0].id : null;
+}
+
+/**
  * Un jour écrit « 2026-08-31 », et rien d'autre.
  *
  * **Écrit ici, avec le reste de la règle du planning.** L'agent conversationnel

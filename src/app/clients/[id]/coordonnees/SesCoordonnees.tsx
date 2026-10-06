@@ -7,7 +7,7 @@ import ChoixCivilite from "@/components/atlas/ChoixCivilite";
 import ChampAdresse from "@/components/atlas/ChampAdresse";
 import PrimaryButton from "@/components/atlas/PrimaryButton";
 import { colors, smallCaps } from "@/lib/design-tokens";
-import type { Civilite } from "@/lib/civilite";
+import type { CiviliteClient } from "@/lib/civilite";
 import { enregistrerSesCoordonneesAction } from "./actions";
 
 /**
@@ -33,15 +33,25 @@ export default function SesCoordonnees({
   retour,
 }: {
   clientId: string;
-  depart: { nom: string; civilite: Civilite | null; telephone: string; email: string; adresse: string };
+  depart: {
+    nom: string;
+    civilite: CiviliteClient | null;
+    telephone: string;
+    email: string;
+    adresse: string;
+    siret: string;
+    numeroTva: string;
+  };
   retour: { href: string; libelle: string };
 }) {
   const router = useRouter();
   const [nom, setNom] = useState(depart.nom);
-  const [civilite, setCivilite] = useState<Civilite | null>(depart.civilite);
+  const [civilite, setCivilite] = useState<CiviliteClient | null>(depart.civilite);
   const [telephone, setTelephone] = useState(depart.telephone);
   const [email, setEmail] = useState(depart.email);
   const [adresse, setAdresse] = useState(depart.adresse);
+  const [siret, setSiret] = useState(depart.siret);
+  const [numeroTva, setNumeroTva] = useState(depart.numeroTva);
   const [refus, setRefus] = useState<string | null>(null);
   const [enCours, demarrer] = useTransition();
 
@@ -54,6 +64,8 @@ export default function SesCoordonnees({
         telephone,
         email,
         adresse,
+        siret,
+        numeroTva,
       });
       if (!r.ok) {
         setRefus(r.raison);
@@ -80,6 +92,23 @@ export default function SesCoordonnees({
         <ChoixCivilite valeur={civilite} onChange={setCivilite} sansLegende />
 
         <Case libelle="Nom du client" valeur={nom} onChange={setNom} placeholder="Bernard" />
+        {/* **Entreprise : deux cases de plus**, sous son nom — sa demande du
+            4 octobre 2026, *« des lignes en plus pour remplir ce qu'il faut »*.
+            Elles s'impriment sous le nom du client, sur le devis et la facture.
+            Repassé sur Mr ou Mme, elles se cachent sans rien effacer : un appui
+            de travers ne perd pas un numéro. */}
+        {civilite === "entreprise" && (
+          <>
+            <Case libelle="SIRET" valeur={siret} onChange={setSiret} placeholder="812 345 678 00021" repere="siret-client" />
+            <Case
+              libelle="N° TVA intracommunautaire"
+              valeur={numeroTva}
+              onChange={setNumeroTva}
+              placeholder="FR suivi de 11 chiffres"
+              repere="tva-client-fiche"
+            />
+          </>
+        )}
         <Case
           libelle="Téléphone"
           valeur={telephone}
@@ -125,12 +154,14 @@ function Case({
   onChange,
   placeholder,
   type = "text",
+  repere,
 }: {
   libelle: string;
   valeur: string;
   onChange: (v: string) => void;
   placeholder: string;
   type?: "text" | "tel" | "email";
+  repere?: string;
 }) {
   return (
     <label className="flex flex-col gap-1.5">
@@ -142,6 +173,7 @@ function Case({
         value={valeur}
         placeholder={placeholder}
         onChange={(e) => onChange(e.target.value)}
+        data-atlas={repere}
         className="atlas-case"
         style={{ color: colors.ink }}
       />

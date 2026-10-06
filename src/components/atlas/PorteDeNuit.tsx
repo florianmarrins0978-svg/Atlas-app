@@ -74,7 +74,14 @@ export default function PorteDeNuit({
         } as React.CSSProperties
       }
     >
-      {children}
+      {/* **Le fond couvre l'écran, le contenu garde la largeur d'un
+          téléphone** (3 octobre 2026). Sur ordinateur, sa capture : *« le
+          bouton est trop grand »*, « Continuer » étiré sur 1 400 px. Ces
+          écrans précèdent le compte et ne portent que quelques champs : ils
+          n'ont rien à gagner à s'élargir. La colonne reprend la hauteur et
+          le sens de la porte, si bien que les `flex-1` de chaque écran
+          poussent toujours leur bouton en bas, comme sur le téléphone. */}
+      <div className="mx-auto flex w-full max-w-md flex-1 flex-col">{children}</div>
     </div>
   );
 }

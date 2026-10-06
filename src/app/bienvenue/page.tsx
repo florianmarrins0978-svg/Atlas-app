@@ -81,7 +81,9 @@ export default function BienvenuePage() {
         </span>
       </div>
 
-      <div className="relative z-[2]">
+      {/* La photo couvre l'écran ; les boutons gardent la largeur d'un
+          téléphone, comme la porte de nuit (`PorteDeNuit`). */}
+      <div className="relative z-[2] mx-auto w-full max-w-md">
         {/* La phrase, et non une case à cocher : point 3 de la planche, encore
             à trancher par lui. En attendant, c'est la forme qu'elle porte. */}
         <p className="mb-[14px] text-center text-[11.5px] leading-[1.5] text-white/[.88]">

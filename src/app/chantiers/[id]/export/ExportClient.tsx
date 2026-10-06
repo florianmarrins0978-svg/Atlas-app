@@ -10,7 +10,7 @@ import { reprendreDevisAction } from "./actions";
 import { enEuros } from "@/lib/euros";
 import { joursEnToutesLettres } from "@/lib/jour";
 import type { EnvoiDuDevis } from "@/lib/message-client";
-import { type Civilite } from "@/lib/civilite";
+import { type CiviliteClient } from "@/lib/civilite";
 
 
 export default function ExportClient({
@@ -39,7 +39,7 @@ export default function ExportClient({
   clientId: string | null;
   clientNom: string;
   /** Ce qu'il a choisi au-dessus du nom, recopié sur le devis. */
-  clientCivilite: Civilite | null;
+  clientCivilite: CiviliteClient | null;
   clientTelephone: string;
   clientEmail: string;
   entrepriseNom: string;
@@ -331,7 +331,7 @@ function AvertissementModification({
         className="absolute inset-0 h-full w-full"
       />
       <div
-        className="relative w-full rounded-t-[16px] px-6 pb-8 pt-6"
+        className="atlas-feuille relative rounded-t-[16px] px-6 pb-8 pt-6"
         style={{ backgroundColor: colors.cream }}
       >
         <p className="text-[19px]" style={{ fontFamily: font.display, color: colors.ink }}>
@@ -416,7 +416,13 @@ function EcranDevisParti({
     // ici ; `atlas-ecran` la donne (voir `page.tsx`, et les deux tentatives
     // fausses qui l'ont précédée).
     <div data-atlas="devis-parti" className="flex min-h-0 flex-1 flex-col">
-      <div className="atlas-colonne-defile px-6 pt-5">
+      {/* Sa marge passe par `--atlas-defile-marge`, pas par `px-6` : sur
+          ordinateur, la zone qui défile s'étend jusqu'aux bords de l'écran et
+          ajoute cette marge à son débord (`globals.css`, « L'ORDINATEUR »). */}
+      <div
+        className="atlas-colonne-defile pt-5"
+        style={{ "--atlas-defile-marge": "1.5rem" } as React.CSSProperties}
+      >
       {/* Le signet : un filet d'or, l'état en encre, la phrase en gris. */}
       <div className="pl-4" style={{ borderLeft: `2px solid ${colors.or}` }}>
         <p className="text-[14px]" style={{ color: colors.ink }}>

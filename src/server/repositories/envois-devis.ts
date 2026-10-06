@@ -1,3 +1,6 @@
+import { nomAvecForme } from "@/lib/formes-juridiques";
+import type { CiviliteClient } from "../../lib/civilite";
+import { dansDelaiRetractation, jourIso } from "@/lib/jour";
 import { randomBytes, createHash } from "node:crypto";
 import { and, asc, desc, eq, gte, isNull, lte, sql } from "drizzle-orm";
 import { db, type DbOrTx } from "../db/client";
@@ -458,10 +461,12 @@ export type EnvoiPourClient = {
     totalTva: string;
     totalTtc: string;
     tauxTva: string;
+    /** En sous-traitance, sans TVA (migration 0119) : ni ligne de TVA, ni 14 jours. */
+    autoliquidation: boolean;
     entrepriseNom: string;
     clientNom: string | null;
     /** Recopiée sur le devis à son établissement (migration 0038). */
-    clientCivilite: "mr" | "mme" | null;
+    clientCivilite: CiviliteClient | null;
     adresseChantier: string | null;
     lignes: { libelle: string; quantite: string; prixUnitaire: string; montant: string }[];
   };
@@ -658,7 +663,9 @@ export async function lireParJeton(
         totalTva: d.totalTva,
         totalTtc: d.totalTtc,
         tauxTva: d.tauxTva,
-        entrepriseNom: d.entrepriseNom,
+        autoliquidation: d.autoliquidation,
+        // « … EI » pour un entrepreneur individuel (R526-27), comme sur le PDF.
+        entrepriseNom: nomAvecForme(d.entrepriseNom, d.entrepriseFormeJuridique),
         clientNom: d.clientNom,
         clientCivilite: d.clientCivilite,
         adresseChantier: d.adresseChantier,
@@ -809,7 +816,12 @@ export type ResultatReponse =
         | "jours_incomplets"
         | "message_manquant"
         /** Le patron n'a pas autorisé d'autre date sur CET envoi (17 août 2026). */
-        | "autre_date_refusee";
+        | "autre_date_refusee"
+        /**
+         * La date tombe dans ses 14 jours de rétractation et il n'a pas coché la
+         * demande expresse (L221-25, son choix 3A du 3 octobre 2026).
+         */
+        | "demarrage_non_demande";
     };
 
 /**
@@ -825,6 +837,12 @@ export type ResultatReponse =
  * autant côté produit : l'appelant doit redemander une date, le prix ne
  * dépendant pas du calendrier (docs/AGENT.md §2.2 bis).
  */
+/** Le devis de cet envoi est-il en sous-traitance (migration 0119) ? */
+async function devisEnSousTraitance(tx: DbOrTx, devisId: string): Promise<boolean> {
+  const [d] = await tx.select({ autoliquidation: devis.autoliquidation }).from(devis).where(eq(devis.id, devisId)).limit(1);
+  return d?.autoliquidation ?? false;
+}
+
 export async function enregistrerReponse(
   jeton: string,
   reponse: ReponseClient,
@@ -924,6 +942,27 @@ export async function enregistrerReponse(
     // règle dupliquée entre l'affichage et la vérification (`CLAUDE.md` §3).
     if (contreProposee && !envoi.autreDateAutorisee) {
       return { succes: false, motif: "autre_date_refusee" as const };
+    }
+
+    // **La demande expresse BLOQUE, elle ne se contente plus d'être notée** —
+    // son choix 3A du 3 octobre 2026. La case existait, et un client pouvait
+    // accepter une date dans ses 14 jours sans la cocher : l'artisan ne pouvait
+    // alors pas commencer sans s'exposer à une rétractation après travaux. La
+    // même règle que celle qui montre la case (`dansDelaiRetractation`), au même
+    // jour : celui de l'accord.
+    //
+    // **Sauf en sous-traitance** (migration 0119) : l'entreprise qui le
+    // sous-traite achète dans son propre métier, elle n'a pas les 14 jours du
+    // consommateur. Lui faire cocher une demande qui ne la concerne pas
+    // bloquerait un accord valable.
+    if (
+      reponse.decision === "accepte" &&
+      date &&
+      dansDelaiRetractation(date, jourIso(maintenant)) &&
+      !reponse.demarrageAnticipe &&
+      !(await devisEnSousTraitance(tx, envoi.devisId))
+    ) {
+      return { succes: false, motif: "demarrage_non_demande" as const };
     }
 
     // Revérification côté serveur — la seule qui fasse foi.
@@ -1302,7 +1341,15 @@ export async function marquerReponseVue(ctx: Ctx, envoiId: string, maintenant: D
   });
 }
 
-/** Jour du jour, au format des dates de la base — utile aux appelants. */
+/**
+ * Le jour du jour, celui du patron : à l'heure de Paris (`jourIso`).
+ *
+ * **Le même jour que le refus de l'accord** (`enregistrerReponse`), et c'est
+ * tout ce qui compte. En temps universel, la page du client comptait les 14
+ * jours de rétractation avec un jour de retard entre minuit et 2 h : la case à
+ * cocher ne s'affichait pas, et l'accord était refusé quand même. Trouvé par
+ * la batterie commune du 5 octobre 2026, jouée à 1 h 30.
+ */
 export function aujourdHuiIso(maintenant: Date = new Date()): JourIso {
-  return versJourIso(maintenant);
+  return jourIso(maintenant) as JourIso;
 }

@@ -21,7 +21,7 @@
  * qu'il rend.
  */
 import { chiffrerNombresDictes } from "./nombres-dictes";
-import { detacherCivilite, type Civilite } from "./civilite";
+import { detacherCivilite, type CiviliteClient } from "./civilite";
 
 export type CoordonneesDictees = {
   nom: string | null;
@@ -33,7 +33,7 @@ export type CoordonneesDictees = {
    * cette case-là »*, et le mot entendu doit sélectionner la pastille du haut.
    * Le mot n'est donc pas jeté : il change de champ.
    */
-  civilite: Civilite | null;
+  civilite: CiviliteClient | null;
   telephone: string | null;
   email: string | null;
   adresse: string | null;
@@ -413,7 +413,7 @@ export function coordonneesVides(c: CoordonneesDictees): boolean {
  */
 export type FicheEnCours = {
   nom: string;
-  civilite: Civilite | null;
+  civilite: CiviliteClient | null;
   telephone: string;
   email: string;
   adresse: string;

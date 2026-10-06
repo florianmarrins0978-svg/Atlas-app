@@ -4,7 +4,9 @@ import { revalidatePath } from "next/cache";
 import { exigerEcran } from "@/server/garde-action";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { getClient, mettreAJourClient } from "@/server/repositories/clients";
-import type { Civilite } from "@/lib/civilite";
+import { siretLu } from "@/lib/siren";
+import { numeroTvaLu } from "@/lib/autoliquidation";
+import type { CiviliteClient } from "@/lib/civilite";
 
 /**
  * ─── MODIFIER UN CLIENT DEPUIS SA PROPRE FICHE ──────────────────────────────
@@ -32,10 +34,13 @@ import type { Civilite } from "@/lib/civilite";
  */
 export type SesCoordonnees = {
   nom: string;
-  civilite: Civilite | null;
+  civilite: CiviliteClient | null;
   telephone: string;
   email: string;
   adresse: string;
+  /** Pour une entreprise cliente (son choix du 4 octobre 2026). */
+  siret: string;
+  numeroTva: string;
 };
 
 export type ResultatCoordonnees = { ok: true } | { ok: false; raison: string };
@@ -58,6 +63,15 @@ export async function enregistrerSesCoordonneesAction(
     return { ok: false, raison: "Le nom ne peut pas être vide." };
   }
 
+  // **Un numéro mal tapé se refuse ici, avec ses mots** : il partirait tel
+  // quel sous le nom du client, sur le devis et la facture.
+  const siret = siretLu(data.siret);
+  if (siret === null) return { ok: false, raison: "Le SIRET a 14 chiffres." };
+  const numeroTva = data.numeroTva.trim() === "" ? "" : numeroTvaLu(data.numeroTva);
+  if (numeroTva === null) {
+    return { ok: false, raison: "Ce numéro de TVA n'a pas la bonne forme : FR suivi de 11 chiffres en France." };
+  }
+
   const existant = await getClient(ctx, clientId);
   if (!existant) {
     return { ok: false, raison: "Ce client n'existe plus." };
@@ -69,6 +83,8 @@ export async function enregistrerSesCoordonneesAction(
     telephone: data.telephone.trim() || null,
     email: data.email.trim() || null,
     adresse: data.adresse.trim() || null,
+    siret: siret || null,
+    numeroTva: numeroTva || null,
   });
 
   // **`mettreAJourClient` rend `null` quand rien n'a été touché**, et ce n'est

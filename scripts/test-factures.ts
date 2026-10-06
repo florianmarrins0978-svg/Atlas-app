@@ -290,7 +290,12 @@ async function main() {
     assert.ok(emise.pdfStorageKey, "la facture émise n'a pas de PDF archivé");
     const texte = texteDuPdf(new Uint8Array(await lireObjet(emise.pdfStorageKey!)));
     assert.ok(texte.includes("22/09/2026"), "le papier du client ne porte pas le jour de l'envoi");
-    assert.ok(!texte.includes("21/09/2026"), "le papier du client porte encore la date du brouillon");
+    // **Le 21 reste écrit UNE fois, et c'est juste** : la date des travaux
+    // (migration 0118, son choix 6A) est le jour où le chantier a été terminé.
+    // Ce que ce contrôle défend, c'est la date DE LA FACTURE.
+    const sansLesTravaux = texte.replace(/\s+/g, " ").replace(/Travaux réalisés 21\/09\/2026/, "");
+    assert.ok(/Travaux réalisés/.test(texte), "la date des travaux manque au papier");
+    assert.ok(!sansLesTravaux.includes("21/09/2026"), "le papier du client porte encore la date du brouillon");
   });
 
   // L'échéance qu'il a posée À LA MAIN garde le délai qu'il a accordé : la

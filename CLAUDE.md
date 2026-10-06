@@ -519,6 +519,13 @@ retransmet — un document périmé le ferait travailler sur une version disparu
   facture → » : vingt-huit libellés en portaient encore une. La règle ne vit
   donc plus seulement ici — `scripts/test-aucune-fleche.ts` les refuse, et une
   flèche qui porte une vraie fonction s'y déclare **avec sa raison**.
+- **Aucun écran propre à l'ordinateur.** Sa règle du 3 octobre 2026 : *« les
+  pages doivent être EXACTEMENT les mêmes »*, et *« quand je fais une modif sur
+  l'appli tel, qu'elle s'applique automatiquement sur l'appli PC »*. Au-delà de
+  1024 px, seul le CADRE change (`globals.css`, « L'ORDINATEUR » ;
+  `ARCHITECTURE.md` §447). Ce qui flotte au-dessus du contenu prend
+  `.atlas-colonne-fixe`, une feuille montante `.atlas-feuille`, jamais un
+  `fixed inset-x-0 mx-auto max-w-md` recopié. `test-sur-ordinateur-e2e` le tient.
 - **Les règles métier vivent dans des fonctions pures**, dans `src/lib/`,
   testables sans base. Un écran ne décide de rien : il affiche le résultat.
 - **Jamais de règle dupliquée entre l'affichage et la vérification.** La même

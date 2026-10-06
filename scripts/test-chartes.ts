@@ -202,14 +202,20 @@ essai("la barre du bas garde le trait doré en REPLI", () => {
   // autres chartes perdraient leur trait — et rien ne le dirait avant une
   // capture.
   const nav = readFileSync(new URL("../src/components/atlas/AtlasBottomNav.tsx", import.meta.url), "utf8");
+  // **Le trait vit dans `globals.css` depuis le 3 octobre 2026** (`.atlas-nav-
+  // trait`, ARCHITECTURE.md §447) : sur ordinateur, sa forme change avec la
+  // barre, et une règle CSS se lit selon la largeur, pas un style en ligne. Le
+  // repli doré y est l'accent de la charte (`--atlas-or`), comme `colors.or`.
+  const css = readFileSync(new URL("../src/app/globals.css", import.meta.url), "utf8");
   for (const [variable, repli] of [
-    ["--atlas-onglet-fond", "colors.or"],
+    ["--atlas-onglet-fond", "var(--atlas-or"],
     ["--atlas-onglet-hauteur", "1px"],
     ["--atlas-onglet-haut", "auto"],
     ["--atlas-onglet-rayon", "0"],
   ]) {
+    const attendu = `var(${variable}, ${repli}`;
     assert.ok(
-      new RegExp(`var\\(${variable},\\s*\\$?\\{?${repli.replace(".", "\\.")}`).test(nav),
+      css.includes(attendu),
       `${variable} n'a pas « ${repli} » pour repli : les autres chartes perdraient leur trait`
     );
   }

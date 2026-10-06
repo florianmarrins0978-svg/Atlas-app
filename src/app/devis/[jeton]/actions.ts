@@ -30,6 +30,10 @@ const MESSAGES: Record<string, string> = {
   // sans accuser le client, et le renvoie vers ce qu'il peut faire.
   autre_date_refusee:
     "Votre artisan propose des dates précises pour ce chantier. Choisissez-en une, ou demandez-lui une correction en un mot.",
+  // La case est sous ses yeux, juste au-dessus : la phrase dit pourquoi elle
+  // compte, et ce qu'il peut faire s'il ne veut pas la cocher.
+  demarrage_non_demande:
+    "Cette date tombe dans vos 14 jours de rétractation : cochez la case pour demander que les travaux commencent plus tôt, ou choisissez une date plus lointaine.",
   message_manquant: "Dites en un mot ce qui doit être corrigé : sans cela, votre artisan ne saura pas quoi reprendre.",
 };
 

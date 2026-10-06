@@ -116,8 +116,16 @@ export default function AtlasBottomNav({ role = null }: { role?: Role | null }) 
       rendre();
       return;
     }
-    const publier = () =>
-      racine.style.setProperty("--atlas-barre", `${Math.round(noeud.getBoundingClientRect().height)}px`);
+    // **Ce qu'elle publie, c'est la place qu'elle PREND EN BAS.** Sur
+    // ordinateur elle passe à gauche sur toute la hauteur (`globals.css`) :
+    // publier sa hauteur réserverait un écran entier de vide sous chaque page.
+    // Sa forme se lit sur elle-même (étroite, elle est à gauche), sans recopier
+    // ici la largeur d'écran qui en décide.
+    const publier = () => {
+      const boite = noeud.getBoundingClientRect();
+      const enBas = boite.width > window.innerWidth / 2;
+      racine.style.setProperty("--atlas-barre", `${enBas ? Math.round(boite.height) : 0}px`);
+    };
     publier();
     const oeil = new ResizeObserver(publier);
     oeil.observe(noeud);
@@ -153,7 +161,7 @@ export default function AtlasBottomNav({ role = null }: { role?: Role | null }) 
       ref={cadre}
       className="atlas-nav-basse fixed inset-x-0 bottom-0 z-20 mx-auto max-w-md"
       aria-label="Navigation principale"
-      style={{ backgroundColor: colors.cream, borderTop: `1px solid ${colors.line}` }}
+      style={{ backgroundColor: colors.cream }}
     >
       {/* **Le nombre de colonnes suit le nombre d'onglets**, il n'est plus écrit
           en dur à cinq. Un salarié n'en voit que deux : figées à cinq, ses deux
@@ -162,8 +170,11 @@ export default function AtlasBottomNav({ role = null }: { role?: Role | null }) 
           Moins d'onglets élargit les colonnes — la mesure de
           `verifier-barre-basse.mjs` reste donc valable, elle vise le pire cas. */}
       <div
-        className="relative grid px-3.5 pb-2 pt-[18px]"
-        style={{ gridTemplateColumns: `repeat(${onglets.length}, minmax(0, 1fr))` }}
+        className="atlas-nav-onglets relative grid px-3.5 pb-2 pt-[18px]"
+        // **Des variables, plus des valeurs** : la forme de la barre (une
+        // rangée en bas, une colonne à gauche sur ordinateur) se décide dans
+        // `globals.css`, et un style en ligne y aurait le dernier mot.
+        style={{ "--atlas-onglets": onglets.length, "--atlas-onglet-rang": indexActif } as React.CSSProperties}
       >
         {onglets.map((t, i) => {
           const actif = i === indexActif;
@@ -176,7 +187,7 @@ export default function AtlasBottomNav({ role = null }: { role?: Role | null }) 
               // document. Tant qu'il faisait un trait d'un pixel au ras du bas,
               // l'ordre était sans conséquence ; devenu pastille, il passerait
               // PAR-DESSUS le libellé et le rendrait illisible.
-              className="relative z-[1] pb-2 text-center text-[8.5px] font-medium uppercase"
+              className="atlas-nav-onglet relative z-[1] pb-2 text-center text-[8.5px] font-medium uppercase"
               style={{
                 // Le repli EST la valeur d'aujourd'hui : une charte qui ne dit
                 // rien laisse l'encre en place, au caractère près.
@@ -204,25 +215,11 @@ export default function AtlasBottomNav({ role = null }: { role?: Role | null }) 
             lui, ne bouge pas : c'est un choix qu'il a déjà fait en le voyant. */}
         <span
           aria-hidden="true"
-          className="pointer-events-none absolute bottom-2 left-3.5 z-0"
-          style={{
-            // La largeur d'UNE colonne, marges déduites — et le diviseur suit le
-            // nombre d'onglets réellement dessinés, sans quoi le trait viserait
-            // un cinquième là où la colonne fait un demi.
-            width: `calc((100% - 1.75rem) / ${onglets.length})`,
-            top: "var(--atlas-onglet-haut, auto)",
-            transform: `translateX(${indexActif * 100}%)`,
-            transition: "transform 540ms cubic-bezier(0.34,1.4,0.5,1)",
-          }}
+          // Sa largeur, sa place et sa couleur sont dans `globals.css`
+          // (`.atlas-nav-trait`) : elles changent avec la forme de la barre.
+          className="atlas-nav-trait pointer-events-none absolute bottom-2 left-3.5 z-0"
         >
-          <span
-            className="block"
-            style={{
-              height: "var(--atlas-onglet-hauteur, 1px)",
-              borderRadius: "var(--atlas-onglet-rayon, 0)",
-              backgroundColor: `var(--atlas-onglet-fond, ${colors.or})`,
-            }}
-          />
+          <span className="block" />
         </span>
       </div>
     </nav>

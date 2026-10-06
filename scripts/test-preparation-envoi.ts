@@ -15,6 +15,7 @@ import { versJourIso, ajouterJours, fenetreProposition, compterOccupation } from
 // durée par défaut — c'est-à-dire exactement leur hypothèse d'origine.
 const UNE_JOURNEE = 2;
 const RIEN_DE_PLANIFIE = { occupation: compterOccupation([], 1), nombreEquipes: 1, dureeDemiJournees: UNE_JOURNEE };
+import { mettreEnRegle } from "./_entreprise-en-regle";
 import { nettoyerBase } from "./_test-db";
 
 let passed = 0;
@@ -40,7 +41,9 @@ async function contexte(email: string) {
     { nom: "Atelier" },
     { email }
   );
-  return { utilisateurId, entrepriseId: entreprise.id };
+  const ctx = { utilisateurId, entrepriseId: entreprise.id };
+  await mettreEnRegle(ctx);
+  return ctx;
 }
 
 async function main() {
@@ -367,7 +370,7 @@ async function main() {
     const r = await enregistrerReponse(
       envoi.jeton,
       {
-        decision: "accepte",
+        decision: "accepte", demarrageAnticipe: true,
         dateRetenue: dans(10),
         precision: null,
         adresseIp: null,
@@ -414,7 +417,7 @@ async function main() {
     await chantiersRepo.planifierChantier(ctx, long.id, dans(0));
 
     const r = await enregistrerReponse(envoi.jeton, {
-      decision: "accepte",
+      decision: "accepte", demarrageAnticipe: true,
       dateRetenue: dans(2),
       precision: null,
       adresseIp: null,
@@ -465,7 +468,7 @@ async function main() {
     const r = await enregistrerReponse(
       envoi.jeton,
       {
-        decision: "accepte",
+        decision: "accepte", demarrageAnticipe: true,
         dateRetenue: dans(10),
         precision: null,
         adresseIp: null,

@@ -33,8 +33,10 @@ import ChoixCivilite from "@/components/atlas/ChoixCivilite";
 import Pellicule, { type VignettePhoto } from "../[id]/Pellicule";
 import AnneauNoteVocale from "../[id]/AnneauNoteVocale";
 import DevisDepuisDictee from "../[id]/DevisDepuisDictee";
-import type { Civilite } from "@/lib/civilite";
+import type { CiviliteClient } from "@/lib/civilite";
 import { espacerNumero, numeroEnregistre } from "@/lib/numero-telephone";
+import { siretLu } from "@/lib/siren";
+import { numeroTvaLu } from "@/lib/autoliquidation";
 import { saisieAEnregistrer } from "@/lib/saisie-fiche-client";
 
 // Intégration réelle : la création passe désormais par une Server Action
@@ -129,7 +131,7 @@ export type ChantierRepris = {
    */
   aUneNote: boolean;
   nomClient: string;
-  civilite: Civilite | null;
+  civilite: CiviliteClient | null;
   telephone: string;
   email: string;
   canal: "sms" | "email" | null;
@@ -153,7 +155,7 @@ export type ChantierRepris = {
 export type ClientDeDepart = {
   clientId: string;
   nomClient: string;
-  civilite: Civilite | null;
+  civilite: CiviliteClient | null;
   telephone: string;
   email: string;
   canal: "sms" | "email" | null;
@@ -221,9 +223,13 @@ export default function FormulaireNouveauChantier({
    */
   const pourLeDevis = pour === "devis";
   const [nomClient, setNomClient] = useState(depart?.nomClient ?? "");
-  const [civilite, setCivilite] = useState<Civilite | null>(depart?.civilite ?? null);
+  const [civilite, setCivilite] = useState<CiviliteClient | null>(depart?.civilite ?? null);
   const [telephone, setTelephone] = useState(depart?.telephone ?? "");
   const [email, setEmail] = useState(depart?.email ?? "");
+  // Une entreprise cliente : son SIRET et son n° TVA, comme sur sa fiche
+  // (sa demande du 4 octobre 2026, « faut ajouter le siret aussi »).
+  const [siret, setSiret] = useState("");
+  const [numeroTva, setNumeroTva] = useState("");
   const [canalChoisi, setCanalChoisi] = useState<"sms" | "email" | null>(depart?.canal ?? null);
   const [adresseChantier, setAdresseChantier] = useState(reprise?.adresseChantier ?? "");
   // **L'adresse du CLIENT sert d'adresse de chantier par défaut quand on vient
@@ -562,6 +568,8 @@ export default function FormulaireNouveauChantier({
       civilite: civilite ?? undefined,
       telephone: numeroEnregistre(telephone),
       email,
+      siret,
+      numeroTva,
       canal: canal ?? undefined,
       adresseChantier,
       adresseClient,
@@ -1124,6 +1132,44 @@ export default function FormulaireNouveauChantier({
             <ClientsProposes liste={propositions} onChoisir={choisirLeClient} />
           )}
 
+          {/* **Entreprise : le SIRET et le n° TVA, sur une seule rangée** — sa
+              demande du 4 octobre 2026, les mêmes cases que sa fiche. Une
+              rangée et non deux : l'écran doit tenir dans une page (sa règle du
+              30 août), et il ne grandit que pour une entreprise. Un numéro mal
+              tapé se signale sous sa case, par la même lecture que le serveur,
+              qui ne l'écrit pas. **À la création seulement** : en reprise, cet
+              écran enregistre par une autre porte, qui ne les connaît pas ;
+              ils se corrigent alors sur sa fiche (« Ses coordonnées »). */}
+          {civilite === "entreprise" && !reprise && (
+            <div>
+              <div className="flex gap-3">
+                <div className="min-w-0 flex-1">
+                  <div className={`mb-1 ${libelleCaps}`} style={{ color: colors.muted }}>
+                    SIRET
+                  </div>
+                  <Field label="SIRET" placeholder="812 345 678 00021" value={siret} onChange={setSiret} sansLibelle />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className={`mb-1 ${libelleCaps}`} style={{ color: colors.muted }}>
+                    N° TVA
+                  </div>
+                  <Field
+                    label="N° TVA intracommunautaire"
+                    placeholder="FR00812345678"
+                    value={numeroTva}
+                    onChange={setNumeroTva}
+                    sansLibelle
+                  />
+                </div>
+              </div>
+              {(siretLu(siret) === null || (numeroTva.trim() !== "" && numeroTvaLu(numeroTva) === null)) && (
+                <p role="alert" className="mt-1 text-[12px]" style={{ color: colors.alert }}>
+                  {siretLu(siret) === null ? "Le SIRET a 14 chiffres." : "Le n° TVA : FR suivi de 11 chiffres."}
+                </p>
+              )}
+            </div>
+          )}
+
           {/* ═══════════════════════════════════════════════════════════════
               **LES QUATRE CASES PORTENT DE NOUVEAU LEUR NOM — son choix du
               2 septembre 2026**, planche « A — Épurée »
@@ -1438,6 +1484,27 @@ export default function FormulaireNouveauChantier({
               rien ne le dise. */}
           {pourLeDevis && (
           <div>
+            {/* **CE QUE LE MICRO PRODUIT, DIT AU-DESSUS — « la A », sa réponse
+                du 3 octobre 2026** (`appli/dicter-le-devis-dire-ce-que-ca-fait.html`).
+                Sa remarque : *« on comprend pas que la note vocale permet de
+                rédiger le devis par la voix »*. Seul l'indice gris de 11 px
+                parlait, et il disait « décrivez le chantier », pas « devis ».
+
+                **Un libellé, pas une phrase** : la voix de « Photos » et de
+                « La dernière fois » juste au-dessus, donc une section de plus
+                dans le même rythme. Il reste pendant la dictée, parce qu'il
+                nomme l'objet ; c'est l'indice qui s'efface.
+
+                **Ici, et pas dans `AnneauNoteVocale`** : c'est la fiche client
+                qui prête à confusion, avec son second micro en tête qui, lui,
+                remplit les coordonnées (`DicterCoordonnees`). */}
+            <p
+              className={`mb-2 mt-2 text-center ${libelleCaps}`}
+              style={{ color: colors.muted }}
+              data-atlas="devis-a-la-voix"
+            >
+              Devis à la voix
+            </p>
             <AnneauNoteVocale
               chantierId={reprise?.id ?? chantierCree}
               assurerChantier={assurerChantier}

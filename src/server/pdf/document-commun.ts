@@ -16,7 +16,7 @@ import fontkit from "@pdf-lib/fontkit";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { logger } from "@/server/logger";
-import { avecCivilite } from "@/lib/civilite";
+import { avecCivilite, type CiviliteClient } from "@/lib/civilite";
 import {
   libelleReduction,
   lignesParBloc,
@@ -24,11 +24,13 @@ import {
   totauxAvecReduction,
   TITRE_TRAVAUX_SUPPLEMENTAIRES,
 } from "@/lib/reduction-devis";
-import { lignesMentionsLegales, type PositionMentionsLegales } from "@/lib/mentions-legales";
+import { lignesMentionsLegales, positionEffective, type PositionMentionsLegales } from "@/lib/mentions-legales";
+import { nomAvecForme } from "@/lib/formes-juridiques";
 import { lignesMentionsObligatoires } from "@/lib/mentions-obligatoires";
 import { lignesDuPapier, quantiteLisible, tauxCourt } from "@/lib/lignes-du-papier";
 import { uniteDeLaLigne } from "@/lib/unite-de-ligne";
 import { protegerContreModification } from "./proteger-pdf";
+import { sansAnnotations } from "./attestation-deposee";
 import { annoncerLaLongueurDesPolices } from "./polices-embarquees";
 import { pourLePapier } from "@/lib/texte-pdf";
 
@@ -468,6 +470,13 @@ export type DonneesDocument = {
   entrepriseNom: string;
   entrepriseAdresse?: string | null;
   entrepriseSiret?: string | null;
+  /**
+   * Le numéro de TVA intracommunautaire, figé sur la facture (migration 0117).
+   * Obligatoire sur la facture d'un assujetti (CGI, ann. II, art. 242 nonies A,
+   * I-4°) ; absent du devis, que la loi n'y oblige pas. Vide : rien ne
+   * s'imprime.
+   */
+  entrepriseNumeroTva?: string | null;
   entrepriseTelephone?: string | null;
   entrepriseEmail?: string | null;
   entrepriseIban?: string | null;
@@ -503,6 +512,8 @@ export type DonneesDocument = {
    * Absents ou vides : rien ne s'imprime, jamais une phrase à trou.
    */
   entrepriseAssureurDecennale?: string | null;
+  /** Ses coordonnées (loi 96-603, art. 22-2), migration 0121. */
+  entrepriseAdresseAssureurDecennale?: string | null;
   entrepriseContratDecennale?: string | null;
   entrepriseCouvertureDecennale?: string | null;
   entrepriseMediateurNom?: string | null;
@@ -510,9 +521,13 @@ export type DonneesDocument = {
   entrepriseMentionsLegalesPosition?: PositionMentionsLegales | null;
   clientNom?: string | null;
   /** Recopiée sur le document au moment où il est établi (migration 0038). */
-  clientCivilite?: "mr" | "mme" | null;
+  clientCivilite?: CiviliteClient | null;
   clientAdresse?: string | null;
   clientTelephone?: string | null;
+  /** Le numéro de TVA du donneur d'ordre, en sous-traitance (migration 0118). */
+  clientNumeroTva?: string | null;
+  /** Le SIRET d'une entreprise cliente (migration 0119). */
+  clientSiret?: string | null;
   adresseChantier?: string | null;
   conditionsPaiement?: string | null;
   devise: string;
@@ -650,6 +665,12 @@ async function policesDu(
  */
 export type LogoDocument = { octets: Uint8Array; mime: string };
 
+/**
+ * L'attestation d'assurance décennale, déjà lue : un PDF dont on recopie les
+ * pages, ou une photo JPEG ou PNG posée sur une page (`src/lib/attestation-decennale.ts`).
+ */
+export type AttestationDocument = { octets: Uint8Array; mime: string };
+
 export type OptionsDocument = {
   /** « DEVIS », « FACTURE », ou leur variante brouillon. */
   titre: string;
@@ -670,6 +691,12 @@ export type OptionsDocument = {
    * introuvable.
    */
   logo?: LogoDocument | null;
+  /**
+   * L'attestation décennale, jointe en dernières pages — son choix A du
+   * 5 octobre 2026 : à tous les devis et factures dès qu'elle est déposée
+   * (C. ass. L243-2). Lue par le dépôt, comme le logo.
+   */
+  attestation?: AttestationDocument | null;
   /** Le bloc de références en haut à droite : libellé et valeur. */
   references: [string, string][];
   /** Intertitre du bloc de notes — le devis y met aussi ses conditions. */
@@ -725,6 +752,12 @@ export type OptionsDocument = {
    * TTC » sur un avoir (sa demande du 24 septembre 2026). Absent : « Total TTC ».
    */
   libelleTotalTtc?: string;
+  /**
+   * Aucune ligne de TVA, ni ses bases : une facture en sous-traitance
+   * (autoliquidation) ne porte pas de TVA, et « TVA 0 % » sous le total se
+   * lirait comme une TVA à zéro, pas comme une TVA due par l'autre.
+   */
+  sansTva?: boolean;
   /** « Acquittée le 21/09/2026 » — encadré d'or sous le net, quand tout est reçu. */
   tampon?: string | null;
   /** Des lignes d'information sous les notes, en petit : la main d'œuvre TTC. */
@@ -743,12 +776,13 @@ export type OptionsDocument = {
    */
   notesEnGras?: string[];
   /**
-   * Une annexe après le bon pour accord — ses conditions générales de vente
-   * et de règlement (13 septembre 2026). Elle ouvre TOUJOURS une page neuve :
-   * le devis se lit et se signe sur ses pages ; les conditions se lisent
-   * derrière, comme au dos d'un devis papier. `null` : rien.
+   * Les annexes après le bon pour accord : ses conditions générales de vente
+   * et de règlement (13 septembre 2026), puis le formulaire de rétractation
+   * (3 octobre 2026). Chacune ouvre une page neuve : le devis se lit et se
+   * signe sur ses pages, le reste se lit derrière, comme au dos d'un devis
+   * papier, et le formulaire se détache seul. Vide : rien.
    */
-  annexe?: { titre: string; paragraphes: string[] } | null;
+  annexes?: readonly { titre: string; paragraphes: string[] }[];
   /**
    * Le document ne porte AUCUN chiffre : ni colonnes de prix, ni totaux, ni TVA.
    *
@@ -780,9 +814,17 @@ export type OptionsDocument = {
 
 
 export async function composerDocument(
-  data: DonneesDocument,
+  donnees: DonneesDocument,
   options: OptionsDocument
 ): Promise<{ pdf: Uint8Array; trace: TraceDocument }> {
+  // **Le nom de l'émetteur se compose UNE fois, ici** : l'en-tête, la mention du
+  // pied et l'ordre du chèque le lisent tous. Un entrepreneur individuel y
+  // reçoit « EI » (R526-27, choix 4A du 3 octobre 2026), sur le devis, la
+  // facture et l'avoir à la fois.
+  const data: DonneesDocument = {
+    ...donnees,
+    entrepriseNom: nomAvecForme(donnees.entrepriseNom, donnees.entrepriseFormeJuridique),
+  };
   const pdfDoc = await PDFDocument.create();
   // **`registerFontkit` inconditionnellement**, même sans typographie choisie :
   // l'oublier ne se verrait qu'au premier document d'un patron qui en a réglé
@@ -832,18 +874,16 @@ export async function composerDocument(
   // l'e-mail tenaient sur la même ligne, séparés d'un tiret cadratin — c'est
   // lisible sur un écran large, c'est un pâté sur un devis imprimé.
   //
-  // **La forme juridique, le capital et le RCS s'y glissent selon SON choix**
-  // (migration 0072) : sous le nom, avec le reste des coordonnées, ou nulle
-  // part. `lignesMentionsLegales` rend déjà zéro ligne quand rien n'a été
-  // réglé — les documents d'avant la migration ressortent identiques à eux-
-  // mêmes, sans qu'il ait fallu un `if` de plus ici.
-  const positionMentions = data.entrepriseMentionsLegalesPosition ?? "aucune";
+  // **La forme juridique, le capital et le RCS d'une société s'y glissent
+  // selon SON choix** (migration 0072) : sous le nom, ou avec le reste des
+  // coordonnées. Plus jamais nulle part : elles sont obligatoires (choix 4A du
+  // 3 octobre 2026, `positionEffective`).
+  const positionMentions = positionEffective(data.entrepriseMentionsLegalesPosition);
   const mentionsLegales = lignesMentionsLegales({
     formeJuridique: data.entrepriseFormeJuridique,
     capitalSocial: data.entrepriseCapitalSocial,
     villeRcs: data.entrepriseVilleRcs,
     siret: data.entrepriseSiret,
-    position: positionMentions,
   });
 
   let yCoord = y - 15;
@@ -860,6 +900,7 @@ export async function composerDocument(
     data.entrepriseTelephone,
     data.entrepriseEmail,
     data.entrepriseSiret ? `SIRET ${data.entrepriseSiret}` : null,
+    data.entrepriseNumeroTva ? `TVA intracommunautaire ${data.entrepriseNumeroTva}` : null,
   ].filter((l): l is string => !!l);
 
   for (const ligne of coordonnees) {
@@ -872,6 +913,13 @@ export async function composerDocument(
   let yRef = yEnTete;
   for (const [libelle, valeur] of references) {
     ecrire(ctx, libelle, DROITE - 175, yRef, { taille: 8.5, police: ctx.sansGras, couleur: ctx.teintes.etiquette });
+    // **Une valeur qui ne tient pas à côté de son libellé passe dessous**,
+    // calée à droite. « Début des travaux » et « sous 30 jours après
+    // l'accord » (3 octobre 2026) se chevauchaient : la colonne ne mesurait
+    // rien, et toute référence longue l'aurait refait.
+    const largeur =
+      ctx.sansGras.widthOfTextAtSize(libelle, 8.5) + 8 + ctx.sans.widthOfTextAtSize(valeur, 9);
+    if (largeur > 175) yRef -= 12;
     ecrireADroite(ctx, valeur, DROITE, yRef, { taille: 9 });
     trait(ctx, yRef - 4, 0.5, ctx.teintes.traitClair, DROITE - 105, DROITE);
     yRef -= 17;
@@ -937,6 +985,8 @@ export async function composerDocument(
     avecCivilite(data.clientNom, data.clientCivilite),
     adresses.adresseClient,
     data.clientTelephone,
+    data.clientSiret ? `SIRET ${data.clientSiret}` : null,
+    data.clientNumeroTva ? `TVA intracommunautaire ${data.clientNumeroTva}` : null,
   ]
     .filter((l): l is string => !!l)
     .flatMap((l) => enLignes(l, ctx.sans, 9, largeurColonne));
@@ -1102,7 +1152,7 @@ export async function composerDocument(
   // du 1er septembre, puis sa planche du 14. La ventilation se DEMANDE à la
   // règle commune : c'est elle qui répartit la remise au prorata et place le
   // centime résiduel (`CLAUDE.md` §3).
-  const parTaux = papier.parTaux;
+  const parTaux = options.sansTva ? [] : papier.parTaux;
 
   const apresTotal = options.apresTotal ?? [];
   const sousLeTotalHt = options.sousLeTotalHt ?? [];
@@ -1211,7 +1261,7 @@ export async function composerDocument(
 
   // ─── Les bases par taux, à gauche du bloc — BASE HT · TAUX · TVA ────────
   // Le client refait le calcul de SA TVA sans additionner les lignes lui-même.
-  {
+  if (parTaux.length > 0) {
     const droiteBases = MARGE + 170;
     const enTeteBase: Style = { taille: 7, police: ctx.sansGras, couleur: ctx.teintes.etiquette };
     let yb = yHautTotaux;
@@ -1343,6 +1393,7 @@ export async function composerDocument(
     options.mentionLegale(data),
     ...lignesMentionsObligatoires({
       assureurDecennale: data.entrepriseAssureurDecennale,
+      adresseAssureurDecennale: data.entrepriseAdresseAssureurDecennale,
       contratDecennale: data.entrepriseContratDecennale,
       couvertureDecennale: data.entrepriseCouvertureDecennale,
       mediateurNom: data.entrepriseMediateurNom,
@@ -1390,11 +1441,11 @@ export async function composerDocument(
   // dernière page du devis, et lit les conditions derrière — comme le dos d'un
   // devis papier. En petit, comme ce genre de texte, et replié par `place` :
   // onze articles font une page, parfois deux.
-  if (options.annexe) {
+  for (const annexe of options.annexes ?? []) {
     y = pageSuivante(ctx);
-    ecrireEspace(ctx, options.annexe.titre, MARGE, y, APPROCHE_ETIQUETTE, etiquetteBloc);
+    ecrireEspace(ctx, annexe.titre, MARGE, y, APPROCHE_ETIQUETTE, etiquetteBloc);
     y -= 18;
-    for (const paragraphe of options.annexe.paragraphes) {
+    for (const paragraphe of annexe.paragraphes) {
       for (const l of enLignes(paragraphe, ctx.sans, 8.5, DROITE - MARGE)) {
         place(11);
         ecrire(ctx, l, MARGE, y, { taille: 8.5 });
@@ -1471,6 +1522,11 @@ export async function composerDocument(
   // ce que le patron a eu trois fois sous les yeux (`polices-embarquees.ts`).
   // `flush` matérialise les polices dans le contexte ; l'entrée se pose donc
   // ici, entre la composition et le scellé.
+  // **Après la numérotation** : « Page 2 / 2 » compte le devis, et
+  // l'attestation le suit comme l'annexe qu'elle est, telle que l'assureur l'a
+  // émise. **Avant le scellé** : elle part protégée avec le reste.
+  if (options.attestation) await joindreLAttestation(pdfDoc, options.attestation);
+
   await pdfDoc.flush();
   annoncerLaLongueurDesPolices(pdfDoc.context);
 
@@ -1479,6 +1535,32 @@ export async function composerDocument(
   // oublié ne se verrait pas — c'est chez le client qu'on l'apprendrait, comme
   // le 31 août 2026 (`src/server/pdf/proteger-pdf.ts`).
   return { pdf: await protegerContreModification(await pdfDoc.save()), trace: ctx.trace };
+}
+
+/**
+ * Les pages de l'attestation, à la suite du document.
+ *
+ * Un PDF se recopie page pour page, tel que l'assureur l'a émis. Une photo se
+ * pose sur une page A4, entière et à proportion gardée : réduite, jamais
+ * agrandie au-delà de la page, pour qu'elle se lise sans se déformer.
+ */
+async function joindreLAttestation(pdfDoc: PDFDocument, attestation: AttestationDocument): Promise<void> {
+  if (attestation.mime === "application/pdf") {
+    const source = await PDFDocument.load(attestation.octets, { updateMetadata: false });
+    const pages = await pdfDoc.copyPages(source, source.getPageIndices());
+    pages.forEach((p) => {
+      sansAnnotations(p);
+      pdfDoc.addPage(p);
+    });
+    return;
+  }
+  const image =
+    attestation.mime === "image/png" ? await pdfDoc.embedPng(attestation.octets) : await pdfDoc.embedJpg(attestation.octets);
+  const page = pdfDoc.addPage([LARGEUR, HAUTEUR]);
+  const echelle = Math.min((LARGEUR - 2 * MARGE) / image.width, (HAUTEUR - 2 * MARGE) / image.height, 1);
+  const largeur = image.width * echelle;
+  const hauteur = image.height * echelle;
+  page.drawImage(image, { x: (LARGEUR - largeur) / 2, y: (HAUTEUR - hauteur) / 2, width: largeur, height: hauteur });
 }
 
 /** Le bas réservé au pied de page, pour que les contrôles parlent des mêmes chiffres. */

@@ -1,12 +1,16 @@
+import { manquesDuDevis, type Manque } from "@/lib/mentions-manquantes";
+import { TAUX_SANS_TVA, tauxRendus, tauxSousAutoliquidation } from "@/lib/autoliquidation";
+import { estUneEntreprise } from "@/lib/civilite";
 import { and, asc, desc, eq, sql } from "drizzle-orm";
 import { jourIso } from "@/lib/jour";
 import { withEntreprise } from "../db/with-entreprise";
-import { allureDesDocuments, formatNumeroDe } from "./entreprises";
+import { allureDesDocuments, attestationLue, formatNumeroDe } from "./entreprises";
 import { conditionsDepuisEntreprise } from "@/lib/conditions-documents";
 import { totauxAvecReduction, pourcentValide, tauxTvaValide } from "@/lib/reduction-devis";
 import { montantMainDoeuvreValide } from "@/lib/main-doeuvre-devis";
 import type { DbOrTx } from "../db/client";
 import { devis, lignesDevis, lignesPrix, chantiers, clients, entreprises, acomptesDevis } from "../db/schema";
+import { dureeDuChantier, dureeEnDemiJournees, libelleDuree } from "@/lib/disponibilites";
 import {
   ACOMPTES_MAX,
   acompteDOffice,
@@ -283,15 +287,28 @@ export async function getOuCreerDevisBrouillon(ctx: Ctx, chantierId: string) {
       // contrat d'assurance change, et c'est cette pièce qui prouve la
       // couverture au moment du chantier.
       entrepriseAssureurDecennale: entreprise.assureurDecennale,
+      // Ses coordonnées et l'attestation (migration 0121) : c'est l'attestation
+      // du jour de la pièce qui prouve la couverture du chantier.
+      entrepriseAdresseAssureurDecennale: entreprise.adresseAssureurDecennale,
+      entrepriseAttestationDecennaleCle: entreprise.attestationDecennaleCle,
+      entrepriseAttestationDecennaleMime: entreprise.attestationDecennaleMime,
       entrepriseContratDecennale: entreprise.contratDecennale,
       entrepriseCouvertureDecennale: entreprise.couvertureDecennale,
       entrepriseMediateurNom: entreprise.mediateurNom,
       entrepriseMediateurCoordonnees: entreprise.mediateurCoordonnees,
       entrepriseMentionsLegalesPosition: entreprise.mentionsLegalesPosition,
+      // Le régime au jour du devis (migration 0118), comme sur la facture : la
+      // mention 293 B s'imprime au pied d'un devis en franchise.
+      entrepriseRegimeTva: entreprise.regimeTva,
       clientNom: client?.nom,
       // Recopiée comme le nom : le document dit comment on s'adressait à son
       // destinataire CE JOUR-LÀ (migration 0038).
       clientCivilite: client?.civilite ?? null,
+      clientSiret: client?.siret ?? null,
+      // La sous-traitance du CHANTIER, figée sur le devis (migration 0119) :
+      // un devis parti garde ce qu'il disait, même si le chantier bascule.
+      autoliquidation: chantier.autoliquidation,
+      clientNumeroTva: chantier.autoliquidation ? (client?.numeroTva ?? null) : null,
       clientAdresse: client?.adresse,
       clientTelephone: client?.telephone,
       clientEmail: client?.email,
@@ -301,7 +318,15 @@ export async function getOuCreerDevisBrouillon(ctx: Ctx, chantierId: string) {
     // Le taux de TVA appartient au DOCUMENT : le patron peut l'avoir corrigé
     // sur son devis (10 % en rénovation, 20 % en neuf). Recalculer au taux par
     // défaut effacerait sa correction à la première ligne ajoutée.
-    const taux = dernier && dernier.statut === "brouillon" ? dernier.tauxTva : TAUX_TVA_DEFAUT;
+    //
+    // **En sous-traitance, le document est à zéro** (migration 0119), y compris
+    // pour une nouvelle version après un envoi : sans cela, elle repartait à
+    // 20 % sur des lignes qui suivent le taux du devis.
+    const taux = chantier.autoliquidation
+      ? TAUX_SANS_TVA
+      : dernier && dernier.statut === "brouillon"
+        ? dernier.tauxTva
+        : TAUX_TVA_DEFAUT;
     // **La réduction survit à la régénération**, exactement comme le taux de
     // TVA juste au-dessus. Elle a été accordée au client ; ajouter une ligne au
     // devis ne la révoque pas, et la perdre en silence lui ferait renvoyer un
@@ -382,7 +407,7 @@ export async function getOuCreerDevisBrouillon(ctx: Ctx, chantierId: string) {
         // minuit portait la date de la veille — et la définition unique du
         // jour ne servait à rien, puisque celui-ci passait à côté.
         dateEmission: jourIso(new Date()),
-        tauxTva: TAUX_TVA_DEFAUT,
+        tauxTva: taux,
         ...totaux,
         createdBy: ctx.utilisateurId,
       })
@@ -578,7 +603,8 @@ function donneesPdfDuDevis(
   d: typeof devis.$inferSelect,
   lignes: (typeof lignesDevis.$inferSelect)[],
   acomptes: readonly AcompteDevis[],
-  statut: "brouillon" | "envoye"
+  statut: "brouillon" | "envoye",
+  dureeEstimee: string | null
 ): DevisPdfData {
   return {
     numeroCommercial: d.numeroCommercial,
@@ -599,13 +625,19 @@ function donneesPdfDuDevis(
     // Relues sur le DOCUMENT, pas sur l'entreprise (migration 0094) : c'est ce
     // qui était vrai le jour où il est parti.
     entrepriseAssureurDecennale: d.entrepriseAssureurDecennale,
+    entrepriseAdresseAssureurDecennale: d.entrepriseAdresseAssureurDecennale,
     entrepriseContratDecennale: d.entrepriseContratDecennale,
     entrepriseCouvertureDecennale: d.entrepriseCouvertureDecennale,
     entrepriseMediateurNom: d.entrepriseMediateurNom,
     entrepriseMediateurCoordonnees: d.entrepriseMediateurCoordonnees,
     entrepriseMentionsLegalesPosition: d.entrepriseMentionsLegalesPosition,
+    regimeTva: d.entrepriseRegimeTva,
+    dureeEstimee,
+    autoliquidation: d.autoliquidation,
     clientNom: d.clientNom,
     clientCivilite: d.clientCivilite,
+    clientSiret: d.clientSiret,
+    clientNumeroTva: d.autoliquidation ? d.clientNumeroTva : null,
     clientAdresse: d.clientAdresse,
     clientTelephone: d.clientTelephone,
     adresseChantier: d.adresseChantier,
@@ -650,6 +682,73 @@ function donneesPdfDuDevis(
   };
 }
 
+/**
+ * La durée estimée du chantier, telle qu'elle s'imprime sur le devis.
+ *
+ * Lue sur le chantier — la durée réservée, à défaut celle qu'il a dictée —, et
+ * NULLE quand ni l'une ni l'autre n'existe : la durée par défaut du planning
+ * (`DUREE_PAR_DEFAUT_DEMI_JOURNEES`) sert à réserver, pas à engager l'artisan
+ * auprès de son client (`CLAUDE.md` §4).
+ */
+async function dureeEstimeeDuChantier(tx: DbOrTx, chantierId: string): Promise<string | null> {
+  const [c] = await tx
+    .select({ dureeDemiJournees: chantiers.dureeDemiJournees, dureePrevue: chantiers.dureePrevue })
+    .from(chantiers)
+    .where(eq(chantiers.id, chantierId))
+    .limit(1);
+  if (!c || (c.dureeDemiJournees == null && dureeEnDemiJournees(c.dureePrevue) == null)) return null;
+  return libelleDuree(dureeDuChantier(c));
+}
+
+/**
+ * Ce qui manque au devis tel qu'il PARTIRAIT — sa photographie, pas
+ * l'entreprise d'aujourd'hui (choix 1A du 3 octobre 2026). Une seule règle
+ * pour l'écran et pour l'envoi : `manquesDuDevis`.
+ */
+export async function manquesDuDevisAEnvoyer(ctx: Ctx, devisId: string): Promise<Manque[]> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const [d] = await tx.select().from(devis).where(eq(devis.id, devisId)).limit(1);
+    if (!d) return [];
+    return manquesDuDevis(
+      {
+        nom: d.entrepriseNom,
+        adresse: d.entrepriseAdresse,
+        siret: d.entrepriseSiret,
+        formeJuridique: d.entrepriseFormeJuridique,
+        capitalSocial: d.entrepriseCapitalSocial,
+        villeRcs: d.entrepriseVilleRcs,
+        mediateurNom: d.entrepriseMediateurNom,
+        assureurDecennale: d.entrepriseAssureurDecennale,
+        regimeTva: d.entrepriseRegimeTva,
+        numeroTva: null,
+        telephone: d.entrepriseTelephone,
+        email: d.entrepriseEmail,
+        adresseAssureurDecennale: d.entrepriseAdresseAssureurDecennale,
+        attestationDecennale: !!d.entrepriseAttestationDecennaleCle,
+      },
+      { nom: d.clientNom, adresse: d.clientAdresse, adresseChantier: d.adresseChantier },
+      d.conditionsGenerales,
+      d.autoliquidation
+    );
+  });
+}
+
+/**
+ * L'allure, le logo, et l'attestation FIGÉE sur ce devis (son choix A du
+ * 5 octobre 2026). La feuille de chantier n'en a pas besoin : elle garde
+ * `allureDesDocuments` seul.
+ */
+async function habillageDuDevis(
+  tx: Parameters<typeof allureDesDocuments>[0],
+  entrepriseId: string,
+  d: { entrepriseAttestationDecennaleCle: string | null; entrepriseAttestationDecennaleMime: string | null }
+) {
+  return {
+    ...(await allureDesDocuments(tx, entrepriseId)),
+    attestation: await attestationLue(d.entrepriseAttestationDecennaleCle, d.entrepriseAttestationDecennaleMime),
+  };
+}
+
 // Génère le PDF pour un devis (brouillon ou envoyé) sans jamais persister la
 // clé de stockage pour un brouillon (seul le PDF du devis réellement envoyé est
 // conservé comme référence officielle — voir envoyerDevis).
@@ -658,9 +757,15 @@ export async function genererPdfPourApercu(ctx: Ctx, devisId: string): Promise<U
     const [d] = await tx.select().from(devis).where(eq(devis.id, devisId)).limit(1);
     if (!d) throw new Error("Devis introuvable");
     const lignes = await tx.select().from(lignesDevis).where(eq(lignesDevis.devisId, devisId));
-    const habillage = await allureDesDocuments(tx, ctx.entrepriseId);
+    const habillage = await habillageDuDevis(tx, ctx.entrepriseId, d);
     return genererPdfDevis(
-      donneesPdfDuDevis(d, lignes, await lireAcomptes(tx, devisId), d.statut as "brouillon" | "envoye"),
+      donneesPdfDuDevis(
+        d,
+        lignes,
+        await lireAcomptes(tx, devisId),
+        d.statut as "brouillon" | "envoye",
+        await dureeEstimeeDuChantier(tx, d.chantierId)
+      ),
       habillage
     );
   });
@@ -699,9 +804,15 @@ export async function envoyerDevis(ctx: Ctx, devisId: string) {
           "Posez leur montant sur l'écran du devis, puis revenez ici."
       );
     }
-    const habillage = await allureDesDocuments(tx, ctx.entrepriseId);
+    const habillage = await habillageDuDevis(tx, ctx.entrepriseId, avant);
     const pdfBytes = await genererPdfDevis(
-      donneesPdfDuDevis(avant, lignes, await lireAcomptes(tx, devisId), "envoye"),
+      donneesPdfDuDevis(
+        avant,
+        lignes,
+        await lireAcomptes(tx, devisId),
+        "envoye",
+        await dureeEstimeeDuChantier(tx, avant.chantierId)
+      ),
       habillage
     );
 
@@ -789,8 +900,14 @@ export async function mettreAJourEnTeteDevis(
       // vivait ici en `Math.min(100, Math.max(0, …))` ; depuis que l'écran des
       // catégories valide lui aussi des taux, deux validations séparées
       // auraient fini par accepter deux choses différentes (`CLAUDE.md` §3).
+      // En sous-traitance, le taux du document reste à zéro (migration 0119).
+      const [c] = await tx
+        .select({ autoliquidation: chantiers.autoliquidation })
+        .from(chantiers)
+        .where(eq(chantiers.id, cible.chantierId))
+        .limit(1);
       const taux = tauxTvaValide(data.tauxTva);
-      if (taux !== null) valeurs.tauxTva = taux;
+      if (taux !== null && !c?.autoliquidation) valeurs.tauxTva = taux;
     }
     if (data.conditionsPaiement !== undefined) valeurs.conditionsPaiement = data.conditionsPaiement;
     // **Le prix accordé au client passe par la MÊME borne que l'écran**
@@ -857,7 +974,8 @@ export async function genererDevisSansPrix(
     // décide de ce qui ne s'imprime pas (prix, totaux, acomptes, IBAN,
     // conditions), pas une copie amputée de ce bloc.
     return genererPdfDevis(
-      donneesPdfDuDevis(d, lignes, await lireAcomptes(tx, d.id), d.statut as "brouillon" | "envoye"),
+      // La feuille de travail n'imprime ni début ni durée : rien à lire.
+      donneesPdfDuDevis(d, lignes, await lireAcomptes(tx, d.id), d.statut as "brouillon" | "envoye", null),
       { sansChiffrage: true, ...habillage }
     );
   });
@@ -1027,5 +1145,91 @@ export async function getLigneDevisPourCopie(
       .where(eq(lignesDevis.id, ligneId))
       .limit(1);
     return ligne ?? null;
+  });
+}
+
+/**
+ * LE DEVIS EN SOUS-TRAITANCE, SANS TVA — son choix B du 4 octobre 2026
+ * (`appli/devis-sous-traitance.html`) : l'interrupteur, décoché d'office, sur
+ * le devis d'un client Entreprise.
+ *
+ * **L'état vit sur le CHANTIER**, parce que ses lignes de prix y vivent et que
+ * chaque version du devis en repart. L'allumer met les lignes au taux du devis
+ * (`null`) et le devis à zéro, en gardant les taux d'avant : l'éteindre les
+ * rend, une ligne à 10 % redevient à 10 %. Même principe que la facture
+ * (`ARCHITECTURE.md` §443) : écran, PDF, page du client et facture lisent les
+ * taux, aucun ne peut réclamer la TVA par oubli.
+ *
+ * Refusé en franchise (déjà sans TVA), pour un client qui n'est pas une
+ * entreprise (une sous-traitance se fait pour une entreprise), et sur un devis
+ * parti (il ne change plus).
+ */
+export async function majAutoliquidationDevis(
+  ctx: Ctx,
+  chantierId: string,
+  active: boolean
+): Promise<{ ok: true; autoliquidation: boolean } | { ok: false; raison: string }> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    // Le verrou du rendu du brouillon : joué en même temps, il réécrirait le
+    // taux d'avant par-dessus (`mettreAJourEnTeteDevis`).
+    await tx.execute(sql`SELECT pg_advisory_xact_lock(hashtext(${chantierId}))`);
+    const [c] = await tx.select().from(chantiers).where(eq(chantiers.id, chantierId)).limit(1);
+    if (!c) return { ok: false, raison: "Ce chantier est introuvable." };
+    if (c.autoliquidation === active) return { ok: true, autoliquidation: active };
+
+    const [brouillon] = await tx
+      .select()
+      .from(devis)
+      .where(eq(devis.chantierId, chantierId))
+      .orderBy(desc(devis.numeroVersion))
+      .limit(1);
+    if (!brouillon || brouillon.statut !== "brouillon") {
+      return { ok: false, raison: "Le devis est parti : il ne change plus." };
+    }
+
+    if (active) {
+      const [e] = await tx
+        .select({ regimeTva: entreprises.regimeTva })
+        .from(entreprises)
+        .where(eq(entreprises.id, ctx.entrepriseId))
+        .limit(1);
+      if (e?.regimeTva === "franchise") {
+        return { ok: false, raison: "En franchise de TVA, vos devis sont déjà sans TVA." };
+      }
+      const [client] = c.clientId
+        ? await tx.select().from(clients).where(eq(clients.id, c.clientId)).limit(1)
+        : [];
+      if (!estUneEntreprise(client?.nom, client?.civilite)) {
+        return { ok: false, raison: "La sous-traitance se fait pour une entreprise : choisissez Entreprise sur sa fiche." };
+      }
+    }
+
+    const lignes = await tx
+      .select({ id: lignesPrix.id, tauxTva: lignesPrix.tauxTva })
+      .from(lignesPrix)
+      .where(eq(lignesPrix.chantierId, chantierId));
+
+    if (active) {
+      const sans = tauxSousAutoliquidation({ tauxTva: brouillon.tauxTva, lignes });
+      await tx
+        .update(chantiers)
+        .set({ autoliquidation: true, tauxAvantAutoliquidation: sans.avant })
+        .where(eq(chantiers.id, chantierId));
+      // Les lignes SUIVENT le devis (`null`), à zéro : une ligne ajoutée ensuite
+      // le suit aussi, sans taux à poser.
+      await tx.update(lignesPrix).set({ tauxTva: null, updatedAt: new Date() }).where(eq(lignesPrix.chantierId, chantierId));
+      await tx.update(devis).set({ tauxTva: TAUX_SANS_TVA }).where(eq(devis.id, brouillon.id));
+    } else {
+      const rendus = tauxRendus({ tauxTva: brouillon.tauxTva, lignes }, c.tauxAvantAutoliquidation, TAUX_TVA_DEFAUT);
+      await tx
+        .update(chantiers)
+        .set({ autoliquidation: false, tauxAvantAutoliquidation: null })
+        .where(eq(chantiers.id, chantierId));
+      for (const l of rendus.lignes) {
+        await tx.update(lignesPrix).set({ tauxTva: l.tauxTva, updatedAt: new Date() }).where(eq(lignesPrix.id, l.id));
+      }
+      await tx.update(devis).set({ tauxTva: rendus.tauxTva }).where(eq(devis.id, brouillon.id));
+    }
+    return { ok: true, autoliquidation: active };
   });
 }

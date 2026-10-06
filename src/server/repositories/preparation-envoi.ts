@@ -1,3 +1,5 @@
+import { manquesDuDevis, type Manque } from "@/lib/mentions-manquantes";
+import { conditionsDepuisEntreprise } from "@/lib/conditions-documents";
 import { and, desc, eq, gte, isNull, lte, sql } from "drizzle-orm";
 import { withEntreprise } from "../db/with-entreprise";
 import { fusionnerOccupationExterne } from "../../lib/agenda-externe";
@@ -90,8 +92,19 @@ export type PreparationEnvoi = {
    * `appli/dates-du-client-au-renvoi.html`, proposition A).
    */
   joursDuClient: JourIso[] | null;
+  /**
+   * Les mentions obligatoires qui manquent, chacune avec l'écran où la poser
+   * (son choix 1A du 3 octobre 2026, `manquesDuDevis`). Vide : rien ne manque.
+   */
+  manques: Manque[];
   /** Motif rendant l'envoi impossible, à afficher tel quel au patron. */
-  blocage: "canal_absent" | "coordonnee_absente" | "devis_absent" | "devis_vide" | null;
+  blocage:
+    | "canal_absent"
+    | "coordonnee_absente"
+    | "devis_absent"
+    | "devis_vide"
+    | "mentions_manquantes"
+    | null;
 };
 
 /**
@@ -227,7 +240,27 @@ export async function preparerEnvoi(
         creneaux: creneauxPoses.get(r.id) ?? null,
       }));
     const [entreprise] = await tx
-      .select({ nombreEquipes: entreprises.nombreEquipes })
+      .select({
+        nombreEquipes: entreprises.nombreEquipes,
+        // Ce que le devis portera en partant : il se recompose depuis
+        // l'entreprise au moment de l'envoi (`getOuCreerDevisBrouillon`).
+        nom: entreprises.nom,
+        adresse: entreprises.adresse,
+        siret: entreprises.siret,
+        formeJuridique: entreprises.formeJuridique,
+        capitalSocial: entreprises.capitalSocial,
+        villeRcs: entreprises.villeRcs,
+        mediateurNom: entreprises.mediateurNom,
+        assureurDecennale: entreprises.assureurDecennale,
+        regimeTva: entreprises.regimeTva,
+        numeroTva: entreprises.numeroTva,
+        telephone: entreprises.telephone,
+        email: entreprises.email,
+        adresseAssureurDecennale: entreprises.adresseAssureurDecennale,
+        attestationDecennaleCle: entreprises.attestationDecennaleCle,
+        // Ses conditions générales, pour savoir si elles citent la décennale.
+        conditionsGenerales: entreprises.conditionsGenerales,
+      })
       .from(entreprises)
       .where(eq(entreprises.id, ctx.entrepriseId))
       .limit(1);
@@ -297,11 +330,23 @@ export async function preparerEnvoi(
     // **Le devis vide passe AVANT le canal**, et l'ordre n'est pas un détail :
     // à quoi bon lui faire choisir comment joindre sa cliente pour lui envoyer
     // un document qui n'énonce rien ? On corrige le contenu, puis l'adresse.
+    // **Les mentions avant le canal**, par la même logique que le devis vide :
+    // on corrige ce que le document dit, puis l'adresse où il part.
+    const manques = entreprise
+      ? manquesDuDevis(
+          { ...entreprise, attestationDecennale: !!entreprise.attestationDecennaleCle },
+          { nom: client?.nom, adresse: client?.adresse, adresseChantier: chantier?.adresseChantier },
+          conditionsDepuisEntreprise(entreprise).conditionsGenerales,
+          chantier?.autoliquidation ?? false
+        )
+      : [];
     const blocage: PreparationEnvoi["blocage"] = !devisRow
       ? "devis_absent"
       : devisEnvoyable({ nombreLignes: compte?.n ?? 0 })
         ? "devis_vide"
-        : !canal
+        : manques.length > 0
+          ? "mentions_manquantes"
+          : !canal
           ? "canal_absent"
           : !destinataire
             ? "coordonnee_absente"
@@ -337,6 +382,7 @@ export async function preparerEnvoi(
       dureeDemiJournees,
       joursDuClient,
       dureeDeduiteDeLaDictee: dureeImposee === undefined && chantier?.dureeDemiJournees == null && deduite !== null,
+      manques,
       blocage,
     };
   });

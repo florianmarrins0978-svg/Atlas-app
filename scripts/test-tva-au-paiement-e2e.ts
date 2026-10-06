@@ -65,6 +65,9 @@ async function chantierRealise(page: Page, suffixe: string) {
   const client = `M. Bernard ${suffixe} ${Date.now()}`;
   await page.fill('input[placeholder="Bernard"]', client);
   await page.fill('input[placeholder="06 12 34 56 78"]', "06 12 34 56 78");
+  // **L'adresse du chantier est une mention de la facture** (242 nonies A,
+  // I-2°) : sans elle, l'émission refuse depuis le 3 octobre 2026.
+  await page.fill('input[placeholder="12 rue des Lilas, Nantes"]', "10 rue des Lilas, Nantes");
   // L'adresse se bâtit sur l'identifiant que l'aide rend : la relire dans
   // le navigateur donnait « devis-complet » depuis que la fiche du chantier
   // est retirée (`ARCHITECTURE.md` §254).

@@ -53,6 +53,7 @@ relues à chaque session) :
 28. [Pourquoi la page que reçoit mon client n'a pas les couleurs de mon devis ?](#28-pourquoi-la-page-que-reçoit-mon-client-na-pas-les-couleurs-de-mon-devis-)
 29. [Mon client peut-il modifier le devis ou la facture qu'il reçoit ?](#29-mon-client-peut-il-modifier-le-devis-ou-la-facture-quil-reçoit-)
 30. [Combien de temps dois-je garder mes factures, et Atlas les garde-t-il ?](#30-combien-de-temps-dois-je-garder-mes-factures-et-atlas-les-garde-t-il-)
+31. [Si je facture une entreprise ou une mairie, la TVA disparaît-elle de la facture ?](#31-si-je-facture-une-entreprise-ou-une-mairie-la-tva-disparaît-elle-de-la-facture-)
 
 ---
 
@@ -2031,3 +2032,76 @@ Donc, tant qu'Atlas n'est pas hébergé (Scaleway, décidé, voir
 La sauvegarde automatique est le point 0 de `TODO.md` et figure dans
 `docs/A-FAIRE.md` : elle attend l'hébergement.
 
+## 31. Si je facture une entreprise ou une mairie, la TVA disparaît-elle de la facture ?
+
+*Question du 28 septembre 2026 : « si je facture une entreprise, il ne paie pas
+la TVA, donc elle ne doit pas apparaître sur la facture ; et vérifier pour les
+mairies ».*
+
+**Non.** Une entreprise **paie** la TVA que vous lui facturez, puis elle la
+récupère sur sa propre déclaration. C'est pour ça que, pour elle, seul le HT
+compte, et que l'on entend souvent « une entreprise ne paie pas la TVA ». Sur
+votre facture, la TVA figure bien, et vous la reversez.
+
+| Votre client | TVA sur la facture | Ce qui change |
+|---|---|---|
+| Un particulier | oui | rien |
+| Une entreprise | **oui, 20 %** | son numéro SIREN doit figurer sur la facture |
+| Une mairie | **oui, 20 %** | elle ne la récupère pas (l'État lui en rembourse une partie plus tard). La facture se dépose sur **Chorus Pro**, avec le SIRET de la mairie et le numéro d'engagement de la commande. Délai de paiement : 30 jours au plus |
+
+**Les deux seuls cas où la TVA disparaît de la facture :**
+
+| Le cas | Ce qui s'écrit à la place |
+|---|---|
+| Vous êtes en franchise (auto-entrepreneur sous le seuil) | « TVA non applicable, art. 293 B du CGI ». **Atlas le fait déjà** |
+| Vous êtes **sous-traitant** d'une autre entreprise du bâtiment, sur un chantier lié à un bâtiment ou un terrain | la facture est en HT, avec la mention « Autoliquidation ». C'est l'entreprise principale qui déclare la TVA (art. 283-2 nonies du CGI). **Atlas ne sait pas le faire** |
+
+Le taux de 10 % sur les travaux ne vaut que pour les logements : jamais pour
+une mairie.
+
+**Une société peut-elle facturer sans TVA, ou seulement un auto-entrepreneur ?**
+*Sa question du même jour, « faut être sûr à 100 % ».* Les deux cas ne
+concernent pas les mêmes :
+
+| Le cas | Qui | Les conditions |
+|---|---|---|
+| Franchise (293 B) | les petites entreprises sous le seuil, surtout les auto-entrepreneurs | sous le seuil de chiffre d'affaires |
+| Autoliquidation | **toute entreprise assujettie à la TVA, quelle que soit sa forme** : SARL, SAS, EURL, entreprise individuelle | vous êtes **sous-traitant**, votre donneur d'ordre est **assujetti**, et ce sont des **travaux liés à un bien immobilier** (construction, réparation, aménagement, entretien) |
+
+Deux conséquences :
+
+- un auto-entrepreneur **en franchise** n'autoliquide jamais : sa facture
+  porte seulement « TVA non applicable, article 293 B du CGI ». Dans
+  Atlas, l'interrupteur « Je suis son sous-traitant » ne doit donc pas
+  s'afficher pour un compte en franchise ;
+- si vous travaillez **directement** pour une entreprise ou une mairie (vous
+  n'êtes le sous-traitant de personne), la TVA est normale.
+
+**Comment ça a été vérifié, et ce qui ne l'a pas été.** Les sites officiels
+(impots.gouv.fr, BOFiP, Légifrance, service-public) sont bloqués depuis
+l'environnement de travail de l'assistant : la réponse repose sur leurs
+extraits via un moteur de recherche (fiche service-public F31983) et sur des
+cabinets comptables concordants. Règle de base : confiance très élevée.
+
+**Le seul point incertain, et c'est le vôtre : l'entretien régulier
+d'espaces verts** (tonte, taille) en sous-traitance. L'aménagement (création,
+plantations) est concerné ; pour l'entretien, une source l'exclut, les
+autres ne tranchent pas. Pour en être sûr :
+
+1. le demander à votre comptable, en citant l'article 283-2 nonies du CGI et
+   le BOFiP BOI-TVA-DECLA-10-10-20 ;
+2. s'il hésite, une **demande de rescrit** depuis votre espace professionnel
+   impots.gouv.fr : la réponse écrite engage l'administration.
+
+**À savoir aussi :** la facture électronique entre entreprises devient
+obligatoire à l'émission pour les petites entreprises le 1er septembre 2027.
+Depuis le 1er septembre 2026, toutes doivent déjà savoir en recevoir.
+
+**Ce qu'Atlas ne fait pas encore (vérifié le 28 septembre 2026) :** la fiche
+client ne distingue pas particulier, entreprise et mairie, et ne porte pas de
+SIRET (`src/server/db/schema.ts`, table `clients`) ; aucune mention
+d'autoliquidation ; pas d'envoi vers Chorus Pro. La maquette
+`appli/tva-entreprise-et-mairie.html` propose de quoi le faire, sur vos vrais
+écrans. **Votre décision du 2 octobre 2026** : un seul bouton sur la facture,
+« Sous-traitance, sans TVA », sans rien changer à la fiche client. En attendant, une mairie se facture dans Atlas à 20 %, et le PDF
+se dépose à la main sur chorus-pro.gouv.fr.
