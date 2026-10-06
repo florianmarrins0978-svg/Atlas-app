@@ -121,14 +121,19 @@ async function main() {
     assert.ok(texte.includes("AXA"), "l'article 9 n'a pas été rempli");
   });
 
-  await cas("SANS assureur figé, le crochet RESTE : un manque se voit", async () => {
-    // Le faire disparaître à vide laisserait « d'une assurance décennale : . »
-    // chez un client — une phrase fausse à la place d'un manque visible.
+  await cas("SANS assureur figé, l'article 9 ne parle que de la responsabilité civile", async () => {
+    // **Sa règle du 5 octobre 2026** : *« la décennale ne doit pas apparaître
+    // comme étant incomplète tant qu'elle n'est pas enregistrée dans les
+    // réglages »*. Ni crochet, ni phrase à trou « d'une assurance décennale : . » :
+    // la moitié décennale de l'article s'en va entière.
     const { trace } = await composerDevisPdf({
       ...DEVIS,
       conditionsReglees: { conditionsGenerales: TEXTE_ORIGINE_CONDITIONS_GENERALES },
     });
-    assert.ok(papier(trace).includes("[assureur"), "le crochet vide a été effacé sans être rempli");
+    const texte = papier(trace);
+    assert.ok(!texte.includes("[assureur"), "un crochet de décennale part chez le client");
+    assert.ok(!texte.includes("décennale"), "la décennale s'imprime sans être enregistrée");
+    assert.ok(texte.includes("responsabilité civile professionnelle."), "l'article 9 a perdu sa première moitié");
   });
 
   await cas("UN DEVIS D'AVANT garde son propre assureur, pas celui d'aujourd'hui", async () => {

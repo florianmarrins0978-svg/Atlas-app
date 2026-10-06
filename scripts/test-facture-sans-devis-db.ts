@@ -8,6 +8,7 @@ import * as devisRepo from "../src/server/repositories/devis";
 import * as prixRepo from "../src/server/repositories/lignes-prix";
 import {
   ajouterLigneDeFacture,
+  chantierDuClientAFacturer,
   creerFactureSansDevis,
   emettreFacture,
   FactureDirecteImpossibleError,
@@ -460,6 +461,82 @@ async function main() {
     const restantes = await lignesDe(ctx, facture.id);
     assert.equal(restantes.length, 1, "la ligne du devis a disparu avec les suppléments");
     assert.equal(restantes[0].supplement, false);
+  });
+
+  // ── UN CLIENT DONT LE DEVIS ATTEND — 3 octobre 2026 ─────────────────────
+  //
+  // *« J'ai voulu créer une facture avant la date de fin de chantier, sauf
+  // qu'il ne reprend pas le devis du client. »* La fiche reconnaissait le
+  // client, puis posait une facture VIDE sur un chantier neuf. C'est la
+  // question qu'elle pose désormais avant de créer quoi que ce soit.
+
+  /** Un client, un chantier PRÉVU (fin à venir), son devis envoyé. */
+  async function devisQuiAttend(c: Ctx, adresse = "12 Rue Lecourbe 75015 Paris") {
+    const client = await clientsRepo.creerClient(c, { nom: "M. Lala", telephone: "0631466585" });
+    const chantier = await chantiersRepo.creerChantier(c, {
+      nom: "Chez M. Lala",
+      adresseChantier: adresse,
+      clientId: client.id,
+    });
+    await prixRepo.ajouterLignePrix(c, chantier.id, "Taille de haie", "640.00");
+    const brouillon = await devisRepo.getOuCreerDevisBrouillon(c, chantier.id);
+    await devisRepo.envoyerDevis(c, brouillon.id);
+    return { client, chantier };
+  }
+
+  await test("RÉGRESSION — « Faire la facture » trouve le devis envoyé du client reconnu", async () => {
+    const c = await contexte("attend");
+    const { client, chantier } = await devisQuiAttend(c);
+    const choix = await chantierDuClientAFacturer(c, client.id, "12 Rue Lecourbe 75015 Paris");
+    assert.deepEqual(choix, { type: "un", chantierId: chantier.id }, "le devis du client n'est pas repris");
+
+    // Le geste qui suit : la facture de CE chantier, lignes du devis comprises.
+    const facture = await terminerChantier(c, chantier.id);
+    assert.ok(facture.devisId, "la facture n'est pas née du devis");
+    const lignes = await lignesDe(c, facture.id);
+    assert.deepEqual(lignes.map((l) => l.libelle), ["Taille de haie"]);
+  });
+
+  await test("un devis en BROUILLON ne détourne pas la facture directe", async () => {
+    const c = await contexte("brouillon");
+    const client = await clientsRepo.creerClient(c, { nom: "Mme Brouillon" });
+    const chantier = await chantiersRepo.creerChantier(c, { nom: "Chez elle", clientId: client.id });
+    await prixRepo.ajouterLignePrix(c, chantier.id, "Tonte", "90.00");
+    await devisRepo.getOuCreerDevisBrouillon(c, chantier.id);
+    assert.deepEqual(await chantierDuClientAFacturer(c, client.id, ""), { type: "aucun" });
+  });
+
+  await test("une facture ÉMISE ferme le chantier : le dépannage suivant reste direct", async () => {
+    const c = await contexte("emise");
+    const { client, chantier } = await devisQuiAttend(c);
+    const facture = await terminerChantier(c, chantier.id);
+    await emettreFacture(c, facture.id);
+    assert.deepEqual(await chantierDuClientAFacturer(c, client.id, ""), { type: "aucun" });
+  });
+
+  await test("deux devis qui attendent : l'adresse départage, sinon on ne choisit pas", async () => {
+    const c = await contexte("deux");
+    const { client } = await devisQuiAttend(c, "12 Rue Lecourbe 75015 Paris");
+    const second = await chantiersRepo.creerChantier(c, {
+      nom: "Résidence",
+      adresseChantier: "3 avenue Foch, Paris",
+      clientId: client.id,
+    });
+    await prixRepo.ajouterLignePrix(c, second.id, "Élagage", "300.00");
+    await devisRepo.envoyerDevis(c, (await devisRepo.getOuCreerDevisBrouillon(c, second.id)).id);
+
+    assert.deepEqual(await chantierDuClientAFacturer(c, client.id, "3 Avenue Foch,  Paris"), {
+      type: "un",
+      chantierId: second.id,
+    });
+    assert.deepEqual(await chantierDuClientAFacturer(c, client.id, "ailleurs"), { type: "plusieurs" });
+  });
+
+  await test("le client d'une AUTRE entreprise ne se lit pas", async () => {
+    const a = await contexte("isolA");
+    const b = await contexte("isolB");
+    const { client } = await devisQuiAttend(a);
+    assert.deepEqual(await chantierDuClientAFacturer(b, client.id, ""), { type: "aucun" });
   });
 }
 

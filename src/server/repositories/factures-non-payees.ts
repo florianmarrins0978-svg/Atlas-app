@@ -1,3 +1,4 @@
+import { nomAvecForme } from "@/lib/formes-juridiques";
 import { and, eq, isNull } from "drizzle-orm";
 import { withEntreprise } from "../db/with-entreprise";
 import { chantiers, factures, facturesNonPayees } from "../db/schema";
@@ -129,5 +130,5 @@ export async function miseEnDemeure(ctx: Ctx, factureId: string, aujourdHui: str
   ]
     .map((l) => l.trim())
     .filter(Boolean);
-  return { ok: true, lettre, entete: { entrepriseNom: f.entrepriseNom, coordonnees }, numero: f.numeroCommercial, chantierId: f.chantierId };
+  return { ok: true, lettre, entete: { entrepriseNom: nomAvecForme(f.entrepriseNom, f.entrepriseFormeJuridique), coordonnees }, numero: f.numeroCommercial, chantierId: f.chantierId };
 }

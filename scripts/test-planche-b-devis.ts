@@ -8,6 +8,7 @@ import {
   paragraphesConditionsGenerales,
 } from "../src/lib/conditions-generales";
 import { conditionsDepuisEntreprise, lireConditions, normaliserConditions } from "../src/lib/conditions-documents";
+import { TITRE_FORMULAIRE } from "../src/lib/retractation";
 import { composerDevisPdf } from "../src/server/pdf/devis-pdf";
 
 /**
@@ -208,18 +209,23 @@ async function main() {
     const trace = await composer({
       conditionsReglees: { conditionsGenerales: TEXTE_ORIGINE_CONDITIONS_GENERALES },
     });
-    assert.equal(trace.pages, 2, `${trace.pages} page(s)`);
+    // Trois pages depuis le 3 octobre 2026 : le devis, ses conditions, puis
+    // le formulaire de rétractation (L221-5), qui ferme toujours la pièce.
+    assert.equal(trace.pages, 3, `${trace.pages} page(s)`);
     const titre = trace.textes.find((t) => t.contenu === TITRE_CONDITIONS_GENERALES);
     assert.ok(titre && titre.page === 2, "le titre n'ouvre pas la page 2");
     const cadre = trace.cadres[trace.cadres.length - 1];
     assert.equal(cadre.page, 1, "le bon pour accord n'est plus sur la page du devis");
     assert.ok(trace.textes.some((t) => t.page === 2 && t.contenu.startsWith("11. Médiation")), "le dernier article manque");
-    assert.ok(trace.textes.some((t) => t.page === 2 && t.contenu.startsWith("Page 2 / 2")), "la pagination ne compte pas l'annexe");
+    assert.ok(trace.textes.some((t) => t.page === 2 && t.contenu.startsWith("Page 2 / 3")), "la pagination ne compte pas l'annexe");
+    const formulaire = trace.textes.find((t) => t.contenu === TITRE_FORMULAIRE);
+    assert.equal(formulaire?.page, 3, "le formulaire ne vient pas après les conditions");
   });
 
+  // La seule page qui reste est celle du formulaire de rétractation.
   await cas("effacées : ni page, ni titre — et un devis d'avant la 0064 non plus", async () => {
-    assert.equal((await composer({ conditionsReglees: { conditionsGenerales: "" } })).pages, 1);
-    assert.equal((await composer({})).pages, 1);
+    assert.equal((await composer({ conditionsReglees: { conditionsGenerales: "" } })).pages, 2);
+    assert.equal((await composer({})).pages, 2);
   });
 
   await cas("pas sur la feuille de chantier : elle ne s'accepte pas", async () => {

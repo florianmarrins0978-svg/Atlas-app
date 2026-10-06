@@ -118,6 +118,9 @@ export default async function FacturePage({
           key={existante?.facture.id ?? "sans-facture"}
           chantierId={id}
           regimeTva={regimeTva}
+          // En franchise, la facture est déjà sans TVA : la sous-traitance n'a
+          // rien à y changer, et son interrupteur ne s'offre pas.
+          enFranchise={entreprise?.regimeTva === "franchise"}
           reprise={reprise}
           origine={origine}
           entrepriseNom={entreprise?.nom ?? ""}
@@ -152,6 +155,9 @@ export default async function FacturePage({
                   clientCivilite: existante.facture.clientCivilite,
                   dateEmission: existante.facture.dateEmission,
                   dateEcheance: existante.facture.dateEcheance,
+                  dateTravaux: existante.facture.dateTravaux,
+                  autoliquidation: existante.facture.autoliquidation,
+                  clientNumeroTva: existante.facture.clientNumeroTva,
                   tauxTva: existante.facture.tauxTva,
                   // **Le prix accordé au client voyage jusqu'à l'écran.** Sans
                   // lui, la somme des lignes affichées ne faisait pas le Total

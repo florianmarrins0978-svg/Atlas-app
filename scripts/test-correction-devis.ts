@@ -146,7 +146,7 @@ async function main() {
     const { ctx, envoi } = await contexteAvecEnvoi(`accept-${Date.now()}@t.test`);
     await enregistrerReponse(
       envoi.jeton,
-      { decision: "accepte", dateRetenue: dans(7), precision: "Plutôt le matin si possible." },
+      { decision: "accepte", demarrageAnticipe: true, dateRetenue: dans(7), precision: "Plutôt le matin si possible." },
       MARDI
     );
 
@@ -165,7 +165,7 @@ async function main() {
   // chantier gagné ne s'apprend pas en ouvrant une fiche.
   await test("une acceptation muette remonte AUSSI — sa règle du 7 septembre", async () => {
     const { ctx, envoi } = await contexteAvecEnvoi(`muet-${Date.now()}@t.test`);
-    await enregistrerReponse(envoi.jeton, { decision: "accepte", dateRetenue: dans(7) }, MARDI);
+    await enregistrerReponse(envoi.jeton, { decision: "accepte", demarrageAnticipe: true, dateRetenue: dans(7) }, MARDI);
 
     const notifications = await notificationsPatron(ctx);
     assert.equal(notifications.length, 1, "Une acceptation doit être portée au patron.");
@@ -195,7 +195,7 @@ async function main() {
     );
 
     const retenue = dans(7);
-    const r = await enregistrerReponse(envoi.jeton, { decision: "accepte", dateRetenue: retenue }, MARDI);
+    const r = await enregistrerReponse(envoi.jeton, { decision: "accepte", demarrageAnticipe: true, dateRetenue: retenue }, MARDI);
     assert.equal(r.succes, true, "l'acceptation a été refusée");
 
     const apres = await ouEstPose(ctx, chantierId);
@@ -227,7 +227,7 @@ async function main() {
   await test("on ne répond pas deux fois, correction comprise", async () => {
     const { envoi } = await contexteAvecEnvoi(`double-${Date.now()}@t.test`);
     await enregistrerReponse(envoi.jeton, { decision: "correction", precision: MESSAGE }, MARDI);
-    const second = await enregistrerReponse(envoi.jeton, { decision: "accepte", dateRetenue: dans(7) }, MARDI);
+    const second = await enregistrerReponse(envoi.jeton, { decision: "accepte", demarrageAnticipe: true, dateRetenue: dans(7) }, MARDI);
     assert.equal(second.succes, false);
     if (!second.succes) assert.equal(second.motif, "deja_repondu");
   });

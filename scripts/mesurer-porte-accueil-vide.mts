@@ -77,7 +77,7 @@ await page.goto(`${BASE}/`, { waitUntil: "networkidle" });
 await page.waitForTimeout(600);
 
 const lignes = await page.locator(".atlas-ligne").count();
-const anneau = page.locator('[data-atlas="nouveau-chantier"] .atlas-rond');
+const anneau = page.locator('[data-atlas="nouveau-chantier"] .atlas-plume');
 const boite = await anneau.boundingBox();
 const vue = page.viewportSize();
 await page.screenshot({ path: "/tmp/atlas-vu/accueil-vide.png" }).catch(() => {});
@@ -85,7 +85,7 @@ await page.screenshot({ path: "/tmp/atlas-vu/accueil-vide.png" }).catch(() => {}
 if (lignes > 0) {
   console.error(`❌ ${lignes} chantier(s) à l'écran : ce serveur traverse la RLS, la mesure ne veut rien dire.`);
 } else if (!boite || boite.height < 1 || !vue) {
-  console.error("❌ l'anneau ne se mesure pas : rien n'a été éprouvé.");
+  console.error("❌ la plume ne se mesure pas : rien n'a été éprouvé.");
 } else {
   const place = (boite.y + boite.height / 2) / vue.height;
   const verdict = Math.abs(place - CIBLE) <= 0.04 ? "✅" : "❌";

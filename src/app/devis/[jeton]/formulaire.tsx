@@ -4,6 +4,7 @@ import { useActionState, useRef, useState } from "react";
 import { repondreAction } from "./actions";
 import type { EnvoiPourClient } from "@/server/repositories/envois-devis";
 import { joursEnToutesLettres, dansDelaiRetractation } from "@/lib/jour";
+import { DROIT_DE_RETRACTATION } from "@/lib/retractation";
 import {
   libelleAutreDate,
   libelleRetenir,
@@ -175,7 +176,9 @@ export default function FormulaireReponse({
     if (choixDate === valeur) setChoixDate("");
   };
   const libelleProposition = (d: string) => joursEnToutesLettres(joursDe(d));
-  const montrerRetractation = premierJour !== "" && dansDelaiRetractation(premierJour, aujourdHui);
+  // La même règle que le refus du serveur, sous-traitance comprise (0119).
+  const montrerRetractation =
+    !envoi.devis.autoliquidation && premierJour !== "" && dansDelaiRetractation(premierJour, aujourdHui);
 
   if (etat && "succes" in etat) {
     return (
@@ -477,6 +480,17 @@ export default function FormulaireReponse({
           **Le délai se compte sur le PREMIER jour** : c'est celui où les
           travaux commencent, et le seul qui puisse tomber avant la fin des
           quatorze jours. */}
+      {/* **Son droit, dit là où il accepte** — choix du 3 octobre 2026
+          (L221-5). La phrase et la case ne s'empilent JAMAIS : la case dit
+          déjà le délai, et la page tient dans un écran sans un pixel de marge
+          (`test-devis-client-e2e`, sa règle du 31 août). Posée sous le
+          bouton de téléchargement, la phrase poussait la page de 40 px.
+          Ni l'une ni l'autre en sous-traitance (migration 0119). */}
+      {!montrerRetractation && !envoi.devis.autoliquidation && (
+        <p className="text-[12.5px] leading-snug" style={{ color: colors.muted }}>
+          {DROIT_DE_RETRACTATION}
+        </p>
+      )}
       {montrerRetractation && (
         <section
           className="rounded-2xl p-2"

@@ -271,7 +271,7 @@ async function main() {
   //
   // **Le contrôle suit donc SON chemin, pas une porte de service**
   // (`CLAUDE.md` §5 quater) : le signet qu'il a gardé sur l'ancienne fiche.
-  await cas("un devis parti reste joignable, par le planning", async () => {
+  await cas("un devis parti reste joignable, par sa reprise et par le planning", async () => {
     // **LE DEVIS PART POUR DE BON, il ne se DÉCLARE plus parti.**
     //
     // Ce cas posait `devis_envoye_at` sur le chantier — et le planning, lui,
@@ -321,13 +321,18 @@ async function main() {
     });
 
     // Son signet d'hier sur la fiche retirée : il ne rend pas un 404, il mène
-    // là où le travail en est — le planning, où ce chantier attend sa date.
+    // là où le travail en est. Le client choisit sa date : ce n'est pas le
+    // planning (il y dort replié, sans son nom), c'est l'écran du devis parti
+    // et sa relance. Sa plainte du 3 octobre 2026, Mr Lolo
+    // (`test-reprendre-ou-il-en-etait.ts`).
     await page.goto(`${BASE}/chantiers/${chantierId}`, { waitUntil: "networkidle" });
-    assert.match(
-      page.url(),
-      /\/planning/,
-      `l'ancienne adresse ne mène pas au planning — ${page.url()}`
+    assert.ok(
+      page.url().includes(`/chantiers/${chantierId}/export`),
+      `l'ancienne adresse ne mène pas à l'écran du devis parti — ${page.url()}`
     );
+
+    // Le planning garde sa porte vers ce devis.
+    await page.goto(`${BASE}/planning`, { waitUntil: "networkidle" });
 
     // Et sa ligne y porte une porte vers son devis. Sans elle, un chantier
     // sans date serait un cul-de-sac : « À planifier » n'avait AUCUN lien

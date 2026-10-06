@@ -18,6 +18,15 @@
  *
  * **Une seule source.** L'écran des réglages, le devis et son PDF lisent ce
  * fichier ; le texte d'origine n'est recopié nulle part ailleurs.
+ *
+ * **Corrigé le 4 octobre 2026** après le check-up légal
+ * (`docs/check-up-legal-documents.md`, points 3 à 8) : plus d'acompte avant
+ * sept jours hors établissement (C. conso L221-10), plus de « aucune
+ * réclamation ultérieure » (clause noire, R212-1 6°), plus de délai
+ * « indicatif » sans annulation possible (L216-1), les 40 € réservés au
+ * client professionnel (C. com. L441-10), et les garanties légales nommées
+ * (R111-1). Les copies figées de l'ancien texte sont rendues à celui-ci par
+ * la migration 0120.
  */
 
 import { contenuDecennale, contenuMediateur, type DonneesMentionsObligatoires } from "./mentions-obligatoires";
@@ -35,17 +44,26 @@ export const TITRE_CONDITIONS_GENERALES = "CONDITIONS GÉNÉRALES DE VENTE ET DE
 export const CROCHET_DECENNALE = "[assureur, n° de contrat, couverture géographique]";
 export const CROCHET_MEDIATEUR = "[nom et coordonnées]";
 
+/**
+ * La moitié décennale de l'article 9, écrite UNE fois : le texte d'origine la
+ * compose, et `conditionsGeneralesRemplies` la retire quand aucune décennale
+ * n'est enregistrée — sa règle du 5 octobre 2026, *« la décennale ne doit pas
+ * apparaître comme étant incomplète tant qu'elle n'est pas enregistrée dans
+ * les réglages »*. Un entretien de jardin n'y est pas soumis.
+ */
+const MOITIE_DECENNALE = " et, pour les travaux qui y sont soumis, d’une assurance décennale : " + CROCHET_DECENNALE;
+
 export const TEXTE_ORIGINE_CONDITIONS_GENERALES = [
   "L’acceptation de nos devis implique l’adhésion aux conditions générales de vente et de règlement ci-après, qui prévalent sur toute autre condition, sauf dérogation écrite et expresse de notre part.",
   "1. Commande. Le devis, retourné daté et signé avec la mention « bon pour accord », vaut commande ferme des travaux qu’il décrit. Toute prestation non prévue fait l’objet d’un devis complémentaire accepté avant exécution.",
   "2. Prix et validité. Les prix sont établis selon les conditions économiques connues à la date du devis. Ils sont fermes pendant la durée de validité indiquée en tête ; au-delà, ils sont révisables.",
-  "3. Règlement. Acompte à la commande selon le pourcentage indiqué, solde à réception de la facture. Aucun escompte n’est accordé pour paiement anticipé. Tout retard entraîne de plein droit des pénalités au taux de trois fois le taux d’intérêt légal et une indemnité forfaitaire de 40 € pour frais de recouvrement (art. L441-10 du code de commerce).",
-  "4. Délai d’exécution. Le délai indiqué sur le devis est donné à titre indicatif ; il est prolongé de plein droit en cas d’intempéries, de sol impraticable ou de cause indépendante de l’entreprise, sans que ce report puisse justifier l’annulation de la commande.",
+  "3. Règlement. Acompte à la commande selon le pourcentage indiqué, solde à réception de la facture. Pour un devis signé hors de l’établissement de l’entreprise par un client particulier, aucun paiement n’est reçu avant sept jours (art. L221-10 du code de la consommation). Aucun escompte n’est accordé pour paiement anticipé. Tout retard entraîne de plein droit des pénalités au taux de trois fois le taux d’intérêt légal et, pour un client professionnel, une indemnité forfaitaire de 40 € pour frais de recouvrement (art. L441-10 du code de commerce).",
+  "4. Délai d’exécution. Les travaux sont exécutés dans le délai indiqué sur le devis. Ce délai est prolongé en cas d’intempéries, de sol impraticable ou de cause indépendante de l’entreprise.",
   "5. Chantier. Le client assure l’accès au chantier, signale les réseaux enterrés et fait exécuter, sauf mention contraire au devis, les travaux relevant d’autres corps de métier. Les pertes de temps dues à des causes qui ne nous sont pas imputables font l’objet d’un supplément sur devis.",
-  "6. Réception. La réception des travaux est faite par le client, ou son représentant, à la fin du chantier et en présence de l’entreprise. Les réserves sont formulées par écrit à ce moment ; aucune réclamation sur l’aspect des travaux n’est admise ultérieurement.",
-  "7. Végétaux. Les végétaux fournis sont garantis à la plantation. Leur reprise dépend de l’arrosage et de l’entretien assurés par le client après réception. La garantie légale des vices cachés (art. 1641 et suivants du code civil) s’applique aux fournitures.",
+  "6. Réception. La réception des travaux est faite par le client, ou son représentant, à la fin du chantier et en présence de l’entreprise. Les réserves sont formulées par écrit à ce moment.",
+  "7. Végétaux. Les végétaux fournis sont garantis à la plantation. Leur reprise dépend de l’arrosage et de l’entretien assurés par le client après réception. La garantie légale de conformité (art. L217-3 et suivants du code de la consommation) et la garantie légale des vices cachés (art. 1641 et suivants du code civil) s’appliquent aux fournitures. Les ouvrages bénéficient des garanties des articles 1792 et suivants du code civil.",
   "8. Réserve de propriété. Les fournitures et végétaux restent la propriété de l’entreprise jusqu’au paiement intégral, en principal et intérêts. Nonobstant les articles 551 et 552 du code civil, l’entreprise demeure propriétaire de l’ouvrage exécuté jusqu’à complet paiement.",
-  "9. Assurances. L’entreprise est titulaire d’une assurance responsabilité civile professionnelle et, pour les travaux qui y sont soumis, d’une assurance décennale : " + CROCHET_DECENNALE + ".",
+  "9. Assurances. L’entreprise est titulaire d’une assurance responsabilité civile professionnelle" + MOITIE_DECENNALE + ".",
   "10. Rétractation. Pour un devis signé hors de l’établissement de l’entreprise, le client particulier dispose d’un délai de rétractation de 14 jours (art. L221-18 du code de la consommation). Les travaux commencés avant ce terme le sont à sa demande écrite.",
   "11. Médiation et litiges. En cas de litige, le client particulier peut saisir gratuitement le médiateur de la consommation : " + CROCHET_MEDIATEUR + ". À défaut d’accord, les tribunaux compétents sont ceux désignés par le code de procédure civile.",
 ].join("\n\n");
@@ -84,7 +102,9 @@ export function crochetsRestants(texte: string | null | undefined): number {
  * fois, et les articles 9 et 11 se remplissent tout seuls — comme le SIRET, qui
  * ne se retape pas sur chaque devis.
  *
- * **Un crochet dont la valeur manque RESTE un crochet**, et c'est délibéré :
+ * **Un crochet dont la valeur manque RESTE un crochet** (sauf la moitié
+ * décennale du texte d'origine, retirée quand rien n'est enregistré), et c'est
+ * délibéré :
  * l'écran des réglages le compte (`crochetsRestants`) et le dit tant qu'il y en
  * a. Le faire disparaître à vide laisserait partir « d'une assurance
  * décennale : . » chez un client, c'est-à-dire une phrase fausse à la place
@@ -102,7 +122,11 @@ export function conditionsGeneralesRemplies(
   if (!texte) return "";
   const decennale = contenuDecennale(mentions);
   const mediateur = contenuMediateur(mentions);
-  return texte
+  // **Sans décennale enregistrée, sa moitié de l'article 9 s'en va** : elle
+  // n'est pas « à remplir », elle n'existe pas. Seule la phrase d'origine se
+  // retire ; un crochet qu'il a gardé dans SES phrases reste, parce qu'on ne
+  // réécrit pas un texte qu'on n'a pas écrit, et l'envoi le lui dira.
+  return (decennale === null ? texte.split(MOITIE_DECENNALE).join("") : texte)
     .split(CROCHET_DECENNALE)
     .join(decennale ?? CROCHET_DECENNALE)
     .split(CROCHET_MEDIATEUR)

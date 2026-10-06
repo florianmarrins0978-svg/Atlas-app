@@ -10,6 +10,7 @@ import * as prixRepo from "../src/server/repositories/lignes-prix";
 import { creerEnvoi, lireParJeton, genererJeton } from "../src/server/repositories/envois-devis";
 import { fenetreProposition, versJourIso, ajouterJours } from "../src/lib/disponibilites";
 import { ADRESSE } from "./_adresse";
+import { cocherLaDemandeExpresse } from "./_demande-expresse-e2e";
 import { adresseDeTelechargement } from "../src/lib/remise-de-fichier";
 
 // Parcours réel de la page publique de réponse au devis (docs/AGENT.md §2.2 bis).
@@ -467,6 +468,7 @@ async function main() {
     await page
       .locator(`input[name="choixDate"][value="${versJourIso(ajouterJours(maintenant, 15))}"]`)
       .check();
+    await cocherLaDemandeExpresse(page);
     await page.click('button:has-text("J\'accepte ce devis")');
     await page.waitForSelector("text=Votre artisan est prévenu", { timeout: 10000 });
 
@@ -670,6 +672,7 @@ async function main() {
     await page
       .locator(`input[name="choixDate"][value="${versJourIso(ajouterJours(maintenant, 8))}"]`)
       .check();
+    await cocherLaDemandeExpresse(page);
     await page.click('button:has-text("J\'accepte ce devis")');
     await page.waitForSelector("text=Votre artisan est prévenu", { timeout: 10000 });
 

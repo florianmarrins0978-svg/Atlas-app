@@ -1,0 +1,613 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas : créer un devis, trois boutons</title>
+<style>
+/*
+  « CRÉER UN DEVIS », TROIS BOUTONS, pour l'accueil (src/app/EcranChantiers.tsx,
+  classe `atlas-geste-nouveau`, animations dans globals.css).
+
+  Sa remarque du 5 octobre 2026 : le bouton manque de style. Trois propositions
+  qui ne sont pas trois variantes du même bouton, et « Aujourd'hui » en
+  référence pour comparer au même endroit.
+
+  ══════════════════════════════════════════════════════════════════════════
+  TOUT CE QUI EST DESSINÉ ICI VIENT DU DÉPÔT.
+
+    . Les huit chartes sont celles de `src/lib/chartes.ts`, relevées en
+      EXÉCUTANT le fichier (`variablesCharte`), jeton par jeton. Il y en a
+      huit, pas sept : Brume moderne s'est ajoutée le 24 août 2026.
+    . `--plein` est la couleur des boutons qu'on appuie : le vert D sur
+      Origine (sa décision du 3 septembre), l'accent de chaque charte ailleurs.
+      Ce qu'on pose dessus est `surPlein`, c'est à dire `card`
+      (`design-tokens.ts`). Sur Nuit et Sylve l'accent est CLAIR et la carte
+      est SOMBRE : rien n'est écrit en dur, les pôles s'inversent seuls.
+    . Le mot, 13 px graisse 800 et 0,22 em, est celui de l'écran. Les onze
+      grains et leur retard sont `GRAINS` d'EcranChantiers.tsx, recopiés.
+    . La demi-seconde avant la feuille, le tour du signe en 0,56 s, le
+      battement toutes les 3,4 s : les mesures de globals.css.
+    . L'écran autour (titre, Vos clients, bandeau, En cours, la barre) est
+      celui que `npm run voir -- /` a rendu le 5 octobre 2026.
+
+  AUCUNE COULEUR EN DUR DANS LES BOUTONS : seulement les variables de la
+  charte. Le pilote et la bande de mesure, hors du téléphone, ont les leurs.
+
+  LA PLACE NE BOUGE PAS. Le bloc est le même, entre « Vos clients » et le
+  premier bandeau, centré, à 22 px du haut et 2 px du bas. Seul son contenu
+  change.
+
+  ÇA SE SERT AU DOIGT. Touchez le bouton : vibration (sur Android ; Safari
+  d'iPhone ne la donne à aucune page web, voir le-bouton-qui-repond.html),
+  le geste part, la feuille monte une demi-seconde plus tard. Sur la C, on
+  peut aussi faire glisser le bouton jusqu'au bout.
+
+  LA BANDE DE MESURE SE RECALCULE à chaque bascule : elle lit les variables
+  de la charte posée, elle ne récite pas des chiffres écrits à la main.
+*/
+
+/* ─── Les jetons, au caractère près (variablesCharte, 5 octobre 2026) ──── */
+.origine{ --cream:#f5f3ee; --card:#faf9f5; --ink:#1c1c1a; --inkSoft:#4a4a44; --muted:#8a8578; --rust:#2f3b2f; --rustTint:#ece9e1; --or:#B98B47; --orTexte:#8b6835; --line:rgba(28,28,26,.12); --plein:#7d9a6d; }
+.brume{   --cream:#f4f7fb; --card:#ffffff; --ink:#111823; --inkSoft:#3a434e; --muted:#78838f; --rust:#22456d; --rustTint:#e4e7ec; --or:#B98B47; --orTexte:#8f6b36; --line:rgba(17,24,35,.12); --plein:#22456d; }
+.pierre{  --cream:#e8e8e3; --card:#f4f4f0; --ink:#1b1d19; --inkSoft:#454741; --muted:#83867c; --rust:#1b1d19; --rustTint:#dadad5; --or:#B98B47; --orTexte:#826231; --line:rgba(27,29,25,.12); --plein:#1b1d19; }
+.beurre{  --cream:#efe7cf; --card:#f8f3e4; --ink:#26221a; --inkSoft:#4e4939; --muted:#8b8368; --rust:#26221a; --rustTint:#e1d9c2; --or:#B98B47; --orTexte:#826231; --line:rgba(38,34,26,.12); --plein:#26221a; }
+.moka{    --cream:#e6ded5; --card:#f2ece5; --ink:#2b241e; --inkSoft:#524941; --muted:#8d8175; --rust:#2b241e; --rustTint:#d9d1c8; --or:#B98B47; --orTexte:#7c5d2f; --line:rgba(43,36,30,.12); --plein:#2b241e; }
+.prune{   --cream:#efe6ea; --card:#f9f2f5; --ink:#23131c; --inkSoft:#4d3a44; --muted:#8c7481; --rust:#3d1730; --rustTint:#e1d7dc; --or:#B98B47; --orTexte:#846332; --line:rgba(35,19,28,.12); --plein:#3d1730; }
+.sylve{   --cream:#16241c; --card:#1e3026; --ink:#e6e6da; --inkSoft:#c2caba; --muted:#8ba189; --rust:#e6e6da; --rustTint:#253229; --or:#B98B47; --orTexte:#b98b47; --line:rgba(230,230,218,.12); --plein:#e6e6da; }
+.nuit{    --cream:#101210; --card:#1a1d19; --ink:#e9e8de; --inkSoft:#c1c2b6; --muted:#84887b; --rust:#e9e8de; --rustTint:#1f211e; --or:#B98B47; --orTexte:#b98b47; --line:rgba(233,232,222,.12); --plein:#e9e8de; }
+
+:root{
+  --serif: ui-serif, Georgia, "Iowan Old Style", "Palatino Linotype", serif;
+  --sans: ui-sans-serif, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --pilote-encre:#3a382f; --pilote-gris:#6f6a5e; --pilote-fond:#e7e4dc;
+}
+*{ box-sizing:border-box; }
+html,body{ margin:0; }
+body{
+  font-family:var(--sans); background:var(--pilote-fond); color:#1c1c1a;
+  padding:0 0 44px; -webkit-text-size-adjust:100%;
+}
+::selection{ background:#B98B47; color:#f5f3ee; }
+
+/* ─── Le pilote, hors du téléphone ─────────────────────────────────────── */
+.pilote{
+  position:sticky; top:0; z-index:60; background:var(--pilote-fond);
+  border-bottom:1px solid rgba(28,28,26,.14); padding:9px 10px 8px;
+}
+/* Serré exprès : collé en haut de SON téléphone, chaque pixel du pilote est
+   pris sur l'écran qu'il vient regarder. */
+.pilote h1{ display:flex; align-items:baseline; gap:10px; font:400 15px/1.2 var(--serif); margin:0 0 7px; letter-spacing:-.012em; }
+.pilote h1 small{
+  font:500 8.5px/1.5 var(--sans); letter-spacing:.2em;
+  text-transform:uppercase; color:var(--pilote-gris);
+}
+.rang{ display:flex; flex-wrap:wrap; gap:4px; margin-bottom:4px; align-items:center; }
+.rang b{
+  font:500 8px/1 var(--sans); letter-spacing:.18em; text-transform:uppercase;
+  color:var(--pilote-gris); width:46px; flex:none;
+}
+.pilote button{
+  font:500 10.5px/1 var(--sans); letter-spacing:.03em; border:1px solid rgba(28,28,26,.22);
+  background:transparent; color:var(--pilote-encre); border-radius:3px;
+  padding:7px 8px; cursor:pointer; min-height:30px;
+}
+.pilote button:focus-visible{ outline:2px solid #B98B47; outline-offset:2px; }
+.pilote button[aria-pressed="true"]{ background:#1c1c1a; color:#f5f3ee; border-color:#1c1c1a; }
+
+/* ─── Le téléphone : 390 × 664, sa mesure ───────────────────────────────── */
+.cadre{
+  width:390px; height:664px; margin:16px auto 0; position:relative; overflow:hidden;
+  outline:1px solid rgba(28,28,26,.18); background:var(--cream); color:var(--ink);
+  font-family:var(--sans);
+}
+@media (max-width:414px){ .cadre{ width:100%; outline:none; } }
+.ecran{
+  height:596px; display:flex; flex-direction:column; overflow:hidden;
+  transform-origin:50% 44%;
+  transition:transform .56s cubic-bezier(.22,.61,.36,1), filter .56s;
+}
+.cadre[data-feuille="oui"] .ecran{ transform:scale(.93) translateY(-10px); filter:brightness(.78); }
+/* Le soleil : une dalle délavée, le contraste qui s'effondre. C'est ce qu'il
+   voit sur un chantier à midi, et c'est là que le bouton doit encore se lire. */
+.cadre[data-soleil="oui"] .ecran{ filter:contrast(.58) brightness(1.32) saturate(.8); }
+.cadre[data-soleil="oui"][data-feuille="oui"] .ecran{ filter:contrast(.58) brightness(1.1) saturate(.8); }
+
+/* ─── L'en-tête, tel que l'écran le rend ────────────────────────────────── */
+.entete{ padding:58px 26px 0; }
+.titrage{ display:flex; align-items:flex-start; justify-content:space-between; gap:16px; }
+.titre{ margin:0; font:400 40px/1.02 var(--serif); letter-spacing:-.018em; white-space:nowrap; }
+.assistant{
+  flex:none; width:44px; height:44px; border-radius:9999px; border:0;
+  background:var(--plein); color:var(--card); display:grid; place-items:center; cursor:pointer;
+}
+.assistant svg{ width:19px; height:19px; }
+.clients{
+  display:inline-flex; align-items:center; margin-top:12px; min-height:44px;
+  text-decoration:none; font:500 11px/1.5 var(--sans); letter-spacing:.28em;
+  text-transform:uppercase; color:var(--orTexte);
+}
+.clients i{ margin-left:5px; font-style:normal; letter-spacing:0; font-size:19px; font-weight:700; line-height:1; position:relative; top:-1px; }
+
+/* ─── LA PLACE DU BOUTON : elle ne bouge pas ────────────────────────────── */
+.action{ display:flex; flex-direction:column; align-items:center; padding:22px 26px 2px; }
+.geste{
+  display:flex; align-items:center; justify-content:center; gap:13px;
+  background:none; border:0; padding:6px 0; cursor:pointer; color:var(--ink);
+  -webkit-tap-highlight-color:transparent; touch-action:manipulation; font-family:var(--sans);
+  user-select:none; -webkit-user-select:none; position:relative;
+}
+.geste:focus-visible{ outline:2px solid var(--or); outline-offset:6px; border-radius:6px; }
+.mot{
+  font-size:13px; font-weight:800; letter-spacing:.22em; text-transform:uppercase;
+  white-space:nowrap; transition:letter-spacing .62s cubic-bezier(.22,.61,.36,1);
+}
+.geste[data-part="oui"] .mot{ letter-spacing:.32em; }
+
+/* Les onze grains, communs aux quatre : `--k` les porte plus loin quand le
+   support est plus grand, pour qu'ils naissent au bord et non au centre. */
+.gerbe{ position:absolute; inset:0; z-index:3; pointer-events:none; --k:1; }
+.gerbe i{
+  position:absolute; left:50%; top:50%; width:var(--l); height:var(--l);
+  margin:calc(var(--l) / -2) 0 0 calc(var(--l) / -2); border-radius:9999px;
+  background:var(--or); opacity:0;
+}
+.geste[data-part="oui"] .gerbe i{ animation:grain .56s cubic-bezier(.16,.68,.3,1) both; animation-delay:var(--t); }
+@keyframes grain{
+  0%{ transform:translate(calc(var(--x) * var(--k) * .46), calc(var(--y) * var(--k) * .46)) scale(.4); opacity:0; }
+  16%{ opacity:1; } 64%{ opacity:1; }
+  100%{ transform:translate(calc(var(--x) * var(--k)), calc(var(--y) * var(--k))) scale(.7); opacity:0; }
+}
+@keyframes tour{ 0%{ transform:rotate(0); } 14%{ transform:rotate(120deg); } 100%{ transform:rotate(1080deg); } }
+
+/* Un seul marquage par bouton, et seul celui de l'état choisi se montre. */
+.bouton{ display:none; }
+.cadre[data-bouton="0"] .bouton-0,
+.cadre[data-bouton="a"] .bouton-a,
+.cadre[data-bouton="b"] .bouton-b,
+.cadre[data-bouton="c"] .bouton-c{ display:flex; }
+
+/* ═══ 0, AUJOURD'HUI : le mot et l'anneau de 32 px, cerne d'or, trois ondes ═══ */
+.rond{ position:relative; display:grid; place-items:center; width:32px; height:32px; border-radius:9999px; transition:transform .14s cubic-bezier(.2,.7,.3,1); }
+.geste:active .rond{ transform:scale(.92); }
+.cerne{ position:absolute; inset:0; z-index:2; border-radius:9999px; border:1px solid var(--or); }
+.signe{ position:relative; z-index:4; display:block; width:15px; height:15px; }
+.pouls{ position:absolute; inset:0; z-index:1; border-radius:9999px; border:1px solid var(--or); opacity:0; animation:onde 3.4s cubic-bezier(.16,.7,.3,1) infinite; }
+.pouls-2{ animation-delay:.42s; } .pouls-3{ animation-delay:.84s; }
+@keyframes onde{ 0%{ transform:scale(1); opacity:0; } 6%{ opacity:.62; } 52%{ transform:scale(1.9); opacity:0; } 100%{ transform:scale(1.9); opacity:0; } }
+.geste[data-part="oui"] .pouls{ animation:none; opacity:0; }
+.geste[data-part="oui"] .signe{ animation:tour .56s cubic-bezier(.16,.74,.22,1) both; }
+
+/* ═══ A, LE SCEAU : un disque PLEIN de 58 px, le signe en clair dessus ═══════
+   Ce qui se lit au soleil, c'est une masse, pas un trait de 1 px. Le disque
+   prend la couleur des boutons qu'on appuie (`--plein`) ; le signe prend
+   `surPlein`. Un fil d'or à l'intérieur rappelle l'anneau d'aujourd'hui. Le
+   battement devient une respiration : un halo de la même couleur qui s'élargit,
+   et le disque qui gonfle d'un cheveu. Au doigt, le disque s'enfonce, le signe
+   fait son tour, les grains partent du bord. */
+.sceau{ position:relative; display:grid; place-items:center; width:58px; height:58px; border-radius:9999px; background:var(--plein); transition:transform .14s cubic-bezier(.2,.7,.3,1); animation:respire 3.4s ease-in-out infinite; }
+.bouton-a:active .sceau{ transform:scale(.9); }
+.sceau .fil{ position:absolute; inset:4px; border-radius:9999px; border:1px solid var(--or); opacity:.75; z-index:2; }
+.sceau .signe{ width:24px; height:24px; }
+.sceau .halo{ position:absolute; inset:0; z-index:0; border-radius:9999px; background:var(--plein); opacity:0; animation:halo 3.4s cubic-bezier(.16,.7,.3,1) infinite; }
+@keyframes halo{ 0%{ transform:scale(1); opacity:0; } 8%{ opacity:.28; } 60%{ transform:scale(1.7); opacity:0; } 100%{ transform:scale(1.7); opacity:0; } }
+@keyframes respire{ 0%,100%{ transform:scale(1); } 10%{ transform:scale(1.035); } 40%{ transform:scale(1); } }
+.bouton-a .gerbe{ --k:1.45; }
+.bouton-a[data-part="oui"] .sceau{ animation:none; }
+.bouton-a[data-part="oui"] .halo{ animation:none; opacity:0; }
+.bouton-a[data-part="oui"] .signe{ animation:tour .56s cubic-bezier(.16,.74,.22,1) both; }
+
+/* ═══ B, LA SIGNATURE : la phrase en serif, comme un titre qu'on touche ═══════
+   Plus d'anneau, plus de capitales, plus de boîte. « Créer un devis » dans la
+   police des titres, à 27 px, à l'encre : le texte le plus lisible de tout
+   l'écran (15 de contraste sur Origine). À côté, un signe d'or de 22 px qui se
+   TRACE, comme une plume qui l'écrit, toutes les 3,4 s. Au doigt, la phrase
+   se resserre d'un cheveu, le signe fait son tour, les grains partent. */
+.bouton-b{ gap:14px; min-height:56px; padding:4px 10px; }
+.phrase{ font:400 27px/1.1 var(--serif); letter-spacing:-.014em; color:var(--ink); white-space:nowrap; transition:letter-spacing .62s cubic-bezier(.22,.61,.36,1), transform .3s; }
+.bouton-b[data-part="oui"] .phrase{ letter-spacing:0; transform:translateY(-1px); }
+.plume{ position:relative; width:30px; height:30px; display:grid; place-items:center; }
+.plume svg{ width:22px; height:22px; display:block; }
+.plume path{ stroke:var(--or); stroke-width:1.6; stroke-linecap:round; stroke-dasharray:24; stroke-dashoffset:0; animation:trace 3.4s cubic-bezier(.3,.6,.2,1) infinite; }
+.plume path.v{ animation-delay:.32s; }
+@keyframes trace{ 0%{ stroke-dashoffset:24; opacity:0; } 4%{ opacity:1; } 22%{ stroke-dashoffset:0; opacity:1; } 72%{ stroke-dashoffset:0; opacity:1; } 86%{ opacity:0; stroke-dashoffset:0; } 100%{ stroke-dashoffset:24; opacity:0; } }
+.bouton-b[data-part="oui"] .plume path{ animation:none; stroke-dashoffset:0; opacity:1; }
+.bouton-b[data-part="oui"] .plume svg{ animation:tour .56s cubic-bezier(.16,.74,.22,1) both; }
+.bouton-b .gerbe{ --k:1.1; left:auto; right:0; width:30px; }
+
+/* ═══ C, LA GLISSIÈRE : pleine largeur, un bouton plein qu'on pousse au bout ══
+   Une piste de 58 px sur toute la largeur, le mot dedans, et à gauche un
+   bouton plein de 50 px avec le signe. On le fait glisser jusqu'au bout, ou
+   on touche la piste : il y va seul. Le battement devient un reflet d'or qui
+   parcourt la piste, et le bouton qui avance de quelques pixels, comme une
+   invitation. Quand il arrive, les grains partent de lui et la feuille monte. */
+.bouton-c{ width:100%; padding:0; }
+.piste{
+  position:relative; width:100%; height:58px; border-radius:9999px; background:var(--card);
+  box-shadow:inset 0 0 0 1px var(--line); overflow:hidden; display:flex; align-items:center;
+}
+.piste .mot{ position:absolute; left:58px; right:16px; text-align:center; font-size:12px; letter-spacing:.2em; transition:opacity .3s, letter-spacing .62s cubic-bezier(.22,.61,.36,1); }
+.bouton-c[data-part="oui"] .piste .mot{ opacity:.35; }
+.reflet{
+  position:absolute; top:0; bottom:0; width:38%; left:-40%; z-index:1; pointer-events:none;
+  background:linear-gradient(90deg, transparent 0, var(--or) 50%, transparent 100%);
+  opacity:0; animation:reflet 3.4s cubic-bezier(.3,.5,.3,1) infinite;
+}
+@keyframes reflet{ 0%{ left:-40%; opacity:0; } 8%{ opacity:.22; } 48%{ left:100%; opacity:.22; } 52%{ opacity:0; } 100%{ left:100%; opacity:0; } }
+.curseur{
+  position:absolute; top:4px; left:4px; z-index:2; width:50px; height:50px; border-radius:9999px;
+  background:var(--plein); display:grid; place-items:center; touch-action:none;
+  transform:translateX(var(--d, 0px)); transition:transform .42s cubic-bezier(.22,.61,.36,1);
+  animation:invite 3.4s ease-in-out infinite;
+}
+.curseur.saisi{ transition:none; animation:none; }
+.bouton-c[data-part="oui"] .curseur{ animation:none; }
+@keyframes invite{ 0%,100%{ translate:0 0; } 10%{ translate:7px 0; } 30%{ translate:0 0; } }
+.curseur .signe{ width:22px; height:22px; }
+.bouton-c[data-part="oui"] .curseur .signe{ animation:tour .56s cubic-bezier(.16,.74,.22,1) both; }
+.bouton-c .gerbe{ --k:1.55; left:auto; right:0; width:58px; }
+.bouton-c[data-part="oui"] .reflet{ animation:none; opacity:0; }
+
+/* ─── Le bandeau, En cours, la ligne, la barre : l'écran autour ─────────── */
+.bandeaux{ display:flex; flex-direction:column; gap:12px; margin:16px 24px 0; }
+.bandeau{ border-radius:18px; padding:14px 18px; background:var(--rustTint); }
+.bandeau .quoi{ margin:0 0 6px; font:600 11px/1.5 var(--sans); letter-spacing:.18em; text-transform:uppercase; color:var(--rust); }
+.bandeau .qui{ margin:0; font:400 16px/1.5 var(--serif); color:var(--ink); letter-spacing:-.01em; }
+.bandeau .dit{ margin:4px 0 0; font-size:13px; line-height:1.5; color:var(--muted); }
+.bandeau blockquote{ margin:12px 0 0; padding-left:12px; border-left:2px solid var(--rust); font-size:15px; line-height:1.5; color:var(--ink); }
+.bandeau .gestes{ display:flex; align-items:center; gap:16px; margin-top:12px; }
+.bandeau .gestes span{ font-size:15px; }
+.bandeau .faire{ color:var(--rust); }
+.bandeau .vu{ color:var(--muted); }
+.autres{ margin:18px 0 0; text-align:center; font-size:14px; color:var(--ink); }
+.compte{ display:flex; align-items:baseline; gap:10px; margin:26px 26px 6px; font:500 11px/1.5 var(--sans); letter-spacing:.28em; text-transform:uppercase; color:var(--inkSoft); }
+.compte b{ font-weight:700; font-size:13.5px; letter-spacing:.06em; color:var(--ink); }
+.grille{ position:relative; display:grid; grid-template-columns:47px 1fr; column-gap:26px; padding:21px 0; margin:0 26px; }
+.trait{ position:absolute; top:0; bottom:0; left:47px; width:1px; background:var(--line); }
+.perle{ position:absolute; left:47px; top:23px; width:7px; height:7px; margin:-3.5px 0 0 -3.5px; border-radius:9999px; background:var(--or); box-shadow:0 0 0 4px var(--cream); }
+.jour{ padding-right:13px; text-align:right; font:500 11px/1.5 var(--sans); letter-spacing:.28em; text-transform:uppercase; color:var(--inkSoft); }
+.jour b{ display:block; font:400 19px/1 var(--serif); color:var(--ink); letter-spacing:-.01em; }
+.nom{ margin:0; font:400 19px/1.15 var(--serif); letter-spacing:-.01em; }
+.lieu{ margin:3px 0 0; font-size:14px; line-height:1.5; color:var(--inkSoft); }
+.etat{ margin:7px 0 0; font:500 12px/1.5 var(--sans); letter-spacing:.14em; text-transform:uppercase; color:var(--orTexte); }
+.barre{ position:absolute; inset-inline:0; bottom:0; height:68px; z-index:20; background:var(--cream); border-top:1px solid var(--line); }
+.onglets{ position:relative; display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); padding:18px 14px 8px; }
+.onglets span{ position:relative; z-index:1; padding-bottom:8px; text-align:center; font:500 8.5px/1.5 var(--sans); letter-spacing:.14em; text-transform:uppercase; color:var(--muted); }
+.onglets span[aria-current="page"]{ color:var(--ink); transform:translateY(-2px); }
+.marque-onglet{ position:absolute; bottom:8px; left:14px; width:calc((100% - 28px) / 5); height:1px; background:var(--or); }
+
+/* ─── Le voile et la feuille ────────────────────────────────────────────── */
+.voile{ position:absolute; inset:0; z-index:45; border:0; padding:0; cursor:pointer; background:rgba(20,18,14,.12); opacity:0; visibility:hidden; transition:opacity .46s, visibility 0s .46s; }
+.cadre[data-feuille="oui"] .voile{ opacity:1; visibility:visible; transition:opacity .46s, visibility 0s 0s; }
+.feuille{
+  position:absolute; inset-inline:0; bottom:0; top:60px; z-index:50; background:var(--cream);
+  border-radius:26px 26px 0 0; box-shadow:0 -22px 50px rgba(20,18,14,.22);
+  transform:translateY(100%); visibility:hidden;
+  transition:transform .56s cubic-bezier(.22,.61,.36,1), visibility 0s .56s; padding:22px 26px;
+}
+.cadre[data-feuille="oui"] .feuille{ transform:translateY(0); visibility:visible; transition:transform .56s cubic-bezier(.22,.61,.36,1), visibility 0s 0s; }
+.feuille .haut{ display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; }
+.feuille h2{ margin:0; font:400 26px/1.1 var(--serif); letter-spacing:-.016em; }
+.feuille .fermer{ background:none; border:0; cursor:pointer; padding:10px 0 10px 12px; min-height:44px; font:500 11px/1 var(--sans); letter-spacing:.24em; text-transform:uppercase; color:var(--inkSoft); }
+.feuille label{ display:block; font:500 11px/1 var(--sans); letter-spacing:.28em; text-transform:uppercase; color:var(--inkSoft); margin:0 0 8px; }
+.feuille input{ width:100%; min-height:48px; padding:0 14px; margin-bottom:18px; border:1px solid var(--line); border-radius:4px; background:var(--card); font:400 16px/1 var(--sans); color:var(--ink); }
+.feuille .plein{ width:100%; min-height:52px; border:0; border-radius:4px; cursor:pointer; background:var(--plein); color:var(--card); font:600 13px/1 var(--sans); letter-spacing:.16em; text-transform:uppercase; }
+
+/* ─── La bande de mesure et la note, sous l'écran ───────────────────────── */
+.mesures{ max-width:390px; margin:14px auto 0; border-top:1px solid rgba(28,28,26,.16); }
+.mesures table{ width:100%; border-collapse:collapse; }
+.mesures th, .mesures td{ padding:7px 2px; text-align:left; vertical-align:baseline; border-bottom:1px solid rgba(28,28,26,.07); }
+.mesures th{ font:500 8.5px/1.5 var(--sans); letter-spacing:.2em; text-transform:uppercase; color:var(--pilote-gris); font-weight:500; }
+.mesures td{ font:400 13px/1.35 var(--sans); color:#26251f; }
+.mesures td b{ font-weight:600; font-variant-numeric:tabular-nums; }
+.mesures td em{ font-style:normal; color:#8a5a2a; }
+.mesures caption{ caption-side:bottom; padding-top:10px; text-align:left; font:400 12px/1.5 var(--sans); color:var(--pilote-gris); }
+.note{ max-width:390px; margin:22px auto 0; padding:0 12px; font:400 13px/1.6 var(--sans); color:#3a382f; }
+.note h2{ font:500 8.5px/1.5 var(--sans); letter-spacing:.2em; text-transform:uppercase; color:var(--pilote-gris); margin:20px 0 6px; }
+.note p{ margin:0 0 8px; }
+.note b{ font-weight:600; }
+
+@media (prefers-reduced-motion: reduce){
+  .pouls, .halo, .sceau, .plume path, .reflet, .curseur,
+  .geste[data-part="oui"] .signe, .geste[data-part="oui"] .gerbe i, .bouton-b[data-part="oui"] .plume svg{ animation:none; }
+  .plume path{ stroke-dashoffset:0; opacity:1; }
+  .ecran, .feuille, .voile, .mot, .phrase, .curseur{ transition:none; }
+}
+</style>
+</head>
+<body>
+
+<div class="pilote">
+  <h1>Créer un devis, trois boutons
+    <small>Proposition : rien n'est codé</small>
+  </h1>
+  <div class="rang"><b>Bouton</b>
+    <button data-k="bouton" data-v="0">Aujourd'hui</button>
+    <button data-k="bouton" data-v="a">A, le sceau</button>
+    <button data-k="bouton" data-v="b">B, la signature</button>
+    <button data-k="bouton" data-v="c">C, la glissière</button>
+    <button data-k="soleil" data-v="oui" id="soleil">Plein soleil</button>
+  </div>
+  <div class="rang"><b>Charte</b>
+    <button data-k="charte" data-v="origine">Origine</button>
+    <button data-k="charte" data-v="brume">Brume</button>
+    <button data-k="charte" data-v="pierre">Pierre</button>
+    <button data-k="charte" data-v="beurre">Beurre</button>
+    <button data-k="charte" data-v="moka">Moka</button>
+    <button data-k="charte" data-v="prune">Prune</button>
+    <button data-k="charte" data-v="sylve">Sylve</button>
+    <button data-k="charte" data-v="nuit">Nuit</button>
+  </div>
+</div>
+
+<div class="cadre origine" id="cadre" data-bouton="a" data-soleil="non" data-feuille="non">
+  <div class="ecran">
+    <div class="entete">
+      <div class="titrage">
+        <h1 class="titre">Vos chantiers</h1>
+        <button class="assistant" type="button" aria-label="Ouvrir l'assistant">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M12 3.6c-4.2 0-7.6 2.9-7.6 6.5 0 2 1.1 3.9 2.8 5.1v3.2l3-1.6c.6.1 1.2.2 1.8.2 4.2 0 7.6-2.9 7.6-6.5S16.2 3.6 12 3.6Z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+      <a class="clients" href="#clients">Vos clients<i aria-hidden="true">›</i></a>
+    </div>
+
+    <div class="action">
+
+      <button class="geste bouton bouton-0" type="button" data-part="non">
+        <span class="mot">Créer un devis</span>
+        <span class="rond">
+          <span class="pouls" aria-hidden="true"></span>
+          <span class="pouls pouls-2" aria-hidden="true"></span>
+          <span class="pouls pouls-3" aria-hidden="true"></span>
+          <span class="cerne" aria-hidden="true"></span>
+          <span class="gerbe" aria-hidden="true"></span>
+          <svg class="signe" viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M16 9.6v12.8M9.6 16h12.8" stroke="var(--or)" stroke-width="1.25"/></svg>
+        </span>
+      </button>
+
+      <button class="geste bouton bouton-a" type="button" data-part="non">
+        <span class="mot">Créer un devis</span>
+        <span class="sceau">
+          <span class="halo" aria-hidden="true"></span>
+          <span class="fil" aria-hidden="true"></span>
+          <span class="gerbe" aria-hidden="true"></span>
+          <svg class="signe" viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M16 8.5v15M8.5 16h15" stroke="var(--card)" stroke-width="1.9" stroke-linecap="round"/></svg>
+        </span>
+      </button>
+
+      <button class="geste bouton bouton-b" type="button" data-part="non">
+        <span class="phrase">Créer un devis</span>
+        <span class="plume">
+          <span class="gerbe" aria-hidden="true"></span>
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path class="h" d="M3 12h18"/>
+            <path class="v" d="M12 3v18"/>
+          </svg>
+        </span>
+      </button>
+
+      <button class="geste bouton bouton-c" type="button" data-part="non">
+        <span class="piste">
+          <span class="reflet" aria-hidden="true"></span>
+          <span class="mot">Créer un devis</span>
+          <span class="curseur" id="curseur">
+            <span class="gerbe" aria-hidden="true"></span>
+            <svg class="signe" viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M16 8.5v15M8.5 16h15" stroke="var(--card)" stroke-width="1.9" stroke-linecap="round"/></svg>
+          </span>
+        </span>
+      </button>
+
+    </div>
+
+    <div class="bandeaux">
+      <div class="bandeau">
+        <p class="quoi">Correction demandée</p>
+        <p class="qui">Reprise de toiture</p>
+        <p class="dit">Le client veut ce devis corrigé avant de l'accepter.</p>
+        <blockquote>« Pouvez-vous retirer l'évacuation des gravats ? Je m'en occupe. »</blockquote>
+        <div class="gestes"><span class="faire">Corriger le devis</span><span class="vu">J'ai vu</span></div>
+      </div>
+    </div>
+    <p class="autres">3 autres devis à regarder</p>
+
+    <div class="compte"><span>En cours</span><b>4</b></div>
+    <div class="grille">
+      <span class="trait" aria-hidden="true"></span><span class="perle" aria-hidden="true"></span>
+      <div class="jour"><b>26</b><span>juil.</span></div>
+      <div>
+        <p class="nom">Pose de clôture</p>
+        <p class="lieu">2 route de Vertou, Vertou</p>
+        <p class="etat">Brouillon, sans photo</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="barre">
+    <div class="onglets">
+      <span aria-current="page">Chantiers</span><span>Planning</span><span>Terminés</span><span>Paysage</span><span>Réglages</span>
+      <span class="marque-onglet" aria-hidden="true"></span>
+    </div>
+  </div>
+
+  <button class="voile" id="voile" type="button" aria-label="Fermer"></button>
+  <div class="feuille" aria-hidden="true">
+    <div class="haut"><h2>Nouveau devis</h2><button class="fermer" id="fermer" type="button">Fermer</button></div>
+    <label for="client">Client</label>
+    <input id="client" type="text" placeholder="Nom ou téléphone">
+    <button class="plein" type="button">Continuer</button>
+  </div>
+</div>
+
+<div class="mesures">
+  <table>
+    <thead><tr><th>Ce qu'on lit</th><th>Sur quoi</th><th>Contraste</th></tr></thead>
+    <tbody id="lignes"></tbody>
+    <caption id="legende"></caption>
+  </table>
+</div>
+
+<div class="note">
+  <h2>Ce qui change</h2>
+  <p><b>A, le sceau.</b> L'anneau devient un disque plein de 58 px, de la couleur des boutons qu'on appuie, le signe en clair dessus. Une masse se lit au soleil, un trait de 1 px non. Le mot ne bouge pas.</p>
+  <p><b>B, la signature.</b> Plus d'anneau ni de capitales : la phrase dans la police des titres, à l'encre, et un signe d'or qui se trace tout seul. Le plus lisible des trois, et le plus discret.</p>
+  <p><b>C, la glissière.</b> Toute la largeur. Le bouton plein se pousse au bout, ou la piste se touche et il y va seul. Le seul des trois qui change de forme sous le doigt.</p>
+  <h2>Ce qui ne change pas</h2>
+  <p>La place, le mot, les onze grains d'or, la demi-seconde avant la feuille, la vibration au toucher. Aucune couleur écrite en dur : chaque charte pose les siennes, et Nuit et Sylve inversent les pôles d'elles-mêmes.</p>
+  <p id="vibre"></p>
+</div>
+
+<script>
+/* ═══ Les onze grains, recopiés d'EcranChantiers.tsx ═══════════════════ */
+const GRAINS = [
+  [7.7,-36.9,2.3,9],[17.0,-44.8,1.6,43],[34.9,-22.6,1.7,22],[35.2,2.1,1.8,0],
+  [35.0,29.0,1.9,34],[9.5,38.0,2.0,13],[-18.7,45.7,2.2,47],[-36.7,22.4,2.3,26],
+  [-36.5,-3.1,2.4,5],[-45.5,-11.3,1.6,39],[-25.9,-31.2,1.8,18],
+];
+document.querySelectorAll(".gerbe").forEach((g) => {
+  g.innerHTML = GRAINS.map(([x,y,l,t]) => `<i style="--x:${x}px;--y:${y}px;--l:${l}px;--t:${t}ms"></i>`).join("");
+});
+
+const cadre = document.getElementById("cadre");
+const etat = { bouton:"a", charte:"origine", soleil:"non" };
+const CHARTES = ["origine","brume","pierre","beurre","moka","prune","sylve","nuit"];
+const moinsDeMouvement = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/* ═══ La vibration : 14 ms, comme src/lib/vibration.ts ═══════════════════
+   Safari d'iPhone ne donne pas `navigator.vibrate` aux pages web ; la ligne
+   sous la planche le dit pour CE téléphone plutôt que de le laisser deviner. */
+const aVibrate = typeof navigator.vibrate === "function";
+function vibrer(){ if (!aVibrate) return; try { navigator.vibrate(14); } catch { /* un refus du navigateur ne casse pas le geste */ } }
+document.getElementById("vibre").textContent = aVibrate
+  ? "Sur ce téléphone, le toucher vibre."
+  : "Sur ce téléphone, rien ne vibre : le navigateur ne le permet pas (Safari d'iPhone). Sur Android, oui.";
+
+/* ═══ Le pilote ═══════════════════════════════════════════════════════════ */
+document.querySelectorAll(".pilote button").forEach((b) => {
+  b.addEventListener("click", () => {
+    /* Le soleil est un interrupteur : le même bouton l'allume et l'éteint. */
+    etat[b.dataset.k] = b.dataset.k === "soleil" && etat.soleil === "oui" ? "non" : b.dataset.v;
+    dessiner();
+  });
+});
+function dessiner(){
+  cadre.className = "cadre " + etat.charte;
+  cadre.dataset.bouton = etat.bouton;
+  cadre.dataset.soleil = etat.soleil;
+  document.querySelectorAll(".pilote button").forEach((b) => {
+    b.setAttribute("aria-pressed", etat[b.dataset.k] === b.dataset.v ? "true" : "false");
+  });
+  mesurer();
+}
+
+/* ═══ Le geste : il part, la feuille monte une demi-seconde après ═══════ */
+let enCours = false;
+function partir(bouton){
+  if (enCours) return;
+  enCours = true;
+  bouton.dataset.part = "oui";
+  const attente = moinsDeMouvement ? 0 : 520;
+  setTimeout(() => { cadre.dataset.feuille = "oui"; cadre.querySelector(".feuille").setAttribute("aria-hidden","false"); }, attente);
+}
+function fermer(){
+  cadre.dataset.feuille = "non";
+  cadre.querySelector(".feuille").setAttribute("aria-hidden","true");
+  document.querySelectorAll(".geste").forEach((g) => { g.dataset.part = "non"; });
+  curseur.style.setProperty("--d", "0px");
+  enCours = false;
+}
+document.getElementById("voile").addEventListener("click", fermer);
+document.getElementById("fermer").addEventListener("click", fermer);
+
+/* `pointerdown` pour la vibration : le retour arrive quand le doigt ARRIVE.
+   Le geste lui-même part au `click`, pour qu'un doigt qui défile ne crée rien. */
+document.querySelectorAll(".bouton-0, .bouton-a, .bouton-b").forEach((b) => {
+  b.addEventListener("pointerdown", (e) => { if (e.pointerType !== "mouse" || e.button === 0) vibrer(); });
+  b.addEventListener("click", () => partir(b));
+});
+
+/* ═══ C : la glissière ════════════════════════════════════════════════════
+   Deux façons d'y arriver, et une seule règle : le bouton atteint le bout.
+   Glissé, il suit le doigt (capture du pointeur) et se lâche après 80 % du
+   chemin ; sinon il revient. Touché sans glisser, il y va seul. */
+const boutonC = document.querySelector(".bouton-c");
+const piste = boutonC.querySelector(".piste");
+const curseur = document.getElementById("curseur");
+const course = () => piste.clientWidth - curseur.offsetWidth - 8;
+let saisie = null;
+curseur.addEventListener("pointerdown", (e) => {
+  if (enCours) return;
+  if (e.pointerType === "mouse" && e.button !== 0) return;
+  vibrer();
+  saisie = { x:e.clientX, d:0, bouge:false };
+  curseur.classList.add("saisi");
+  try { curseur.setPointerCapture(e.pointerId); } catch { /* le geste tient sans */ }
+  e.stopPropagation();
+});
+curseur.addEventListener("pointermove", (e) => {
+  if (!saisie) return;
+  saisie.d = Math.max(0, Math.min(course(), e.clientX - saisie.x));
+  if (saisie.d > 4) saisie.bouge = true;
+  curseur.style.setProperty("--d", saisie.d + "px");
+});
+function lacher(){
+  if (!saisie) return;
+  const s = saisie; saisie = null;
+  curseur.classList.remove("saisi");
+  if (!s.bouge || s.d >= course() * .8) { arriver(); return; }
+  curseur.style.setProperty("--d", "0px");
+}
+curseur.addEventListener("pointerup", lacher);
+curseur.addEventListener("pointercancel", lacher);
+function arriver(){
+  if (enCours) return;
+  curseur.style.setProperty("--d", course() + "px");
+  partir(boutonC);
+}
+piste.addEventListener("pointerdown", (e) => { if (e.pointerType !== "mouse" || e.button === 0) vibrer(); });
+piste.addEventListener("click", (e) => { if (!e.target.closest("#curseur")) arriver(); });
+curseur.addEventListener("click", (e) => e.stopPropagation());
+
+/* ═══ La bande de mesure : lue dans la charte posée, jamais recopiée ═════ */
+function lum(c){
+  const n = c.trim();
+  let r, g, b, a = 1;
+  if (n[0] === "#"){ r = parseInt(n.slice(1,3),16); g = parseInt(n.slice(3,5),16); b = parseInt(n.slice(5,7),16); }
+  else { const m = n.match(/[\d.]+/g).map(Number); [r,g,b] = m; if (m.length > 3) a = m[3]; }
+  return { r, g, b, a };
+}
+function surFond(c, fond){ /* une couleur à alpha, posée sur un fond opaque */
+  return { r:c.r*c.a + fond.r*(1-c.a), g:c.g*c.a + fond.g*(1-c.a), b:c.b*c.a + fond.b*(1-c.a), a:1 };
+}
+function L(c){
+  const f = (v) => { v /= 255; return v <= .03928 ? v/12.92 : Math.pow((v+.055)/1.055, 2.4); };
+  return .2126*f(c.r) + .7152*f(c.g) + .0722*f(c.b);
+}
+function contraste(a, b){ const x = L(a), y = L(b); return (Math.max(x,y)+.05)/(Math.min(x,y)+.05); }
+function jeton(nom){ return getComputedStyle(cadre).getPropertyValue("--" + nom); }
+
+function mesurer(){
+  const v = (n) => lum(jeton(n));
+  const cream = v("cream"), card = v("card");
+  const lignes = {
+    "0": [["le mot", "le fond", v("ink"), cream, "mot"], ["l'anneau d'or", "le fond", v("or"), cream, "trait"]],
+    "a": [["le mot", "le fond", v("ink"), cream, "mot"], ["le signe", "le disque", surFond(card, cream), v("plein"), "trait"], ["le disque", "le fond", v("plein"), cream, "trait"]],
+    "b": [["la phrase", "le fond", v("ink"), cream, "mot"], ["le signe d'or", "le fond", v("or"), cream, "trait"]],
+    "c": [["le mot", "la piste", v("ink"), card, "mot"], ["le signe", "le bouton", card, v("plein"), "trait"], ["le bouton", "la piste", v("plein"), card, "trait"]],
+  }[etat.bouton];
+  document.getElementById("lignes").innerHTML = lignes.map(([quoi, sur, a, b, genre]) => {
+    const c = contraste(a, b);
+    const seuil = genre === "mot" ? 4.5 : 3;
+    const verdict = c >= seuil ? `<b>${c.toFixed(2)}</b>` : `<em>${c.toFixed(2)}</em>`;
+    return `<tr><td>${quoi}</td><td>${sur}</td><td>${verdict}</td></tr>`;
+  }).join("");
+  document.getElementById("legende").textContent =
+    `Charte ${etat.charte}. Un mot demande 4,5, un trait ou une forme 3. En cuivre : en dessous.`;
+}
+
+dessiner();
+</script>
+</body>
+</html>

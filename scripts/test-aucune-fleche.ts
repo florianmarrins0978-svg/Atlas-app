@@ -100,6 +100,14 @@ const AUTORISEES: { fichier: string; motif: RegExp; pourquoi: string }[] = [
       "n'est pas une exception, c'est un trou : il s'écrit désormais en toutes " +
       "lettres, et il se déclare ici",
   },
+  {
+    fichier: "src/app/clients/page.tsx",
+    motif: /^\s*›\s*$/,
+    pourquoi:
+      "« Vos entreprises › » — sa consigne du 4 octobre 2026, « rajoute juste une " +
+      "porte pour aller sur l'entreprise ». La porte reprend trait pour trait celle " +
+      "de « Vos clients › » : le seul mot de l'en-tête qui mène ailleurs",
+  },
 ];
 
 /** Les fichiers qui ne s'affichent jamais : consignes envoyées à l'IA, journal du serveur. */

@@ -6,11 +6,12 @@ import ChampAdresse from "@/components/atlas/ChampAdresse";
 import ChampTelephone from "./ChampTelephone";
 import ChampFormeJuridique from "./ChampFormeJuridique";
 import { majIdentiteAction } from "./actions";
+import { deposerAttestationAction, retirerAttestationAction } from "./attestation-actions";
+import { ATTESTATION_FORMATS, refusDeLAttestation } from "@/lib/attestation-decennale";
 import BarreEnregistrer from "@/components/atlas/BarreEnregistrer";
 import DemanderPreuve from "@/components/atlas/DemanderPreuve";
 import { sirenDepuisSiret } from "@/lib/siren";
 import { formeADuCapital } from "@/lib/formes-juridiques";
-import type { PositionMentionsLegales } from "@/lib/mentions-legales";
 import AlerteAncienIban from "@/components/atlas/AlerteAncienIban";
 import { listerAPrevenirAction, prevenirAction } from "@/app/prevenir-du-nouvel-iban";
 import type { FactureAPrevenir } from "@/server/repositories/factures";
@@ -46,19 +47,24 @@ type Identite = {
   villeRcs: string;
   /** La décennale et le médiateur (migration 0094) — voir `src/lib/mentions-obligatoires.ts`. */
   assureurDecennale: string;
+  /** Migration 0121 : ses coordonnées (loi 96-603, art. 22-2). */
+  adresseAssureurDecennale: string;
   contratDecennale: string;
   couvertureDecennale: string;
   mediateurNom: string;
   mediateurCoordonnees: string;
-  mentionsLegalesPosition: PositionMentionsLegales;
+  mentionsLegalesPosition: "sous_nom" | "bas";
 };
 
 export default function IdentiteClient({
   initial,
   aPrevenir,
   declarations,
+  attestationDeposee,
 }: {
   initial: Identite;
+  /** Une attestation décennale est-elle déposée (migration 0121) ? */
+  attestationDeposee: boolean;
   /**
    * **Les factures parties avec l'ancien IBAN** — sa demande du 8 septembre
    * 2026. C'est ICI que l'alerte vit, tant qu'il n'a pas prévenu : sa question
@@ -116,6 +122,15 @@ export default function IdentiteClient({
     null
   );
 
+  /**
+   * **L'assureur tel que le SERVEUR l'a enregistré** — sa règle du 5 octobre
+   * 2026 : *« la décennale ne doit pas apparaître comme étant incomplète tant
+   * qu'elle n'est pas enregistrée dans les réglages »*. Rien ne rougit pendant
+   * qu'il tape ; l'adresse et l'attestation ne se réclament qu'une fois
+   * l'assureur rangé, comme le refus d'envoi qui en découle.
+   */
+  const [assureurEnregistre, setAssureurEnregistre] = useState(initial.assureurDecennale.trim());
+
   function enregistrer(partiel: Partial<Identite>) {
     demarrer(async () => {
       const r = await majIdentiteAction(partiel);
@@ -137,6 +152,7 @@ export default function IdentiteClient({
         setASignaler(restantes);
         setPremierJour(restantes.length > 0);
       }
+      if (r.ok && partiel.assureurDecennale !== undefined) setAssureurEnregistre(partiel.assureurDecennale.trim());
       if (r.ok) {
         setAEcrire((a) => {
           const reste = { ...a };
@@ -262,15 +278,6 @@ export default function IdentiteClient({
             enregistrer({ mentionsLegalesPosition: "bas" });
           }}
         />
-        <Choix
-          nom="Ne pas les imprimer"
-          detail="Rien ne s'imprime. La forme, le capital et le RCS restent enregistrés."
-          pris={valeurs.mentionsLegalesPosition === "aucune"}
-          onChoix={() => {
-            ecrire("mentionsLegalesPosition", "aucune");
-            enregistrer({ mentionsLegalesPosition: "aucune" });
-          }}
-        />
       </Bloc>
 
       <Bloc titre="Votre régime de TVA">
@@ -387,8 +394,19 @@ export default function IdentiteClient({
           placeholder="AXA, Groupama, MMA…"
           onChange={(v) => ecrire("assureurDecennale", v)}
           onFini={(duChamp) => enregistrer({ assureurDecennale: duChamp })}
-          manquant={valeurs.assureurDecennale.trim() === ""}
-          empeche="Sans elle, vos devis partent sans une mention que la loi y attend."
+        />
+        {/* **Son choix A du 5 octobre 2026** (`appli/assurance-et-sous-traitance.html`) :
+            la loi veut les coordonnées de l'assureur sur chaque devis et chaque
+            facture (loi 96-603, art. 22-2), et l'attestation jointe (L243-2).
+            Un assureur nommé les exige ; sans lui, rien n'est réclamé. */}
+        <Champ
+          etiquette="Adresse de l’assureur"
+          valeur={valeurs.adresseAssureurDecennale}
+          placeholder="Sur votre attestation"
+          onChange={(v) => ecrire("adresseAssureurDecennale", v)}
+          onFini={(duChamp) => enregistrer({ adresseAssureurDecennale: duChamp })}
+          manquant={assureurEnregistre !== "" && valeurs.adresseAssureurDecennale.trim() === ""}
+          empeche="Sans elle, vos devis et vos factures ne partent pas."
         />
         <Champ
           etiquette="N° de contrat"
@@ -403,6 +421,10 @@ export default function IdentiteClient({
           placeholder="France métropolitaine"
           onChange={(v) => ecrire("couvertureDecennale", v)}
           onFini={(duChamp) => enregistrer({ couvertureDecennale: duChamp })}
+        />
+        <Attestation
+          initiale={attestationDeposee}
+          exigee={assureurEnregistre !== ""}
         />
       </Bloc>
 
@@ -528,6 +550,95 @@ function Bloc({ titre, children }: { titre?: string; children: React.ReactNode }
 }
 
 /** Une ligne de saisie : étiquette, valeur en serif, filet dessous. */
+/**
+ * L'attestation décennale : un PDF, ou une photo, jointe à chaque devis et
+ * facture dès qu'elle est déposée. Refusée ICI avec la même fonction que le
+ * serveur : la laisser partir pour se la voir refuser après le téléversement
+ * le ferait attendre pour rien, sur un forfait de chantier.
+ */
+function Attestation({ initiale, exigee }: { initiale: boolean; exigee: boolean }) {
+  const [deposee, setDeposee] = useState(initiale);
+  const [refus, setRefus] = useState<string | null>(null);
+  const [enCours, demarrer] = useTransition();
+  const manquant = exigee && !deposee;
+  return (
+    <div
+      data-atlas="attestation-decennale"
+      className="block border-b py-[13px]"
+      style={{ borderColor: manquant ? colors.alert : colors.line }}
+    >
+      <span className={`mb-[5px] block ${libelleCaps}`} style={{ color: manquant ? colors.alert : colors.inkSoft }}>
+        Attestation
+      </span>
+      <input
+        id="attestation-fichier"
+        type="file"
+        accept={ATTESTATION_FORMATS.join(",")}
+        className="hidden"
+        data-atlas="attestation-fichier"
+        onChange={(e) => {
+          const f = e.target.files?.[0];
+          e.target.value = "";
+          if (!f) return;
+          const r = refusDeLAttestation(f.type, f.size);
+          if (r) {
+            setRefus(r);
+            return;
+          }
+          setRefus(null);
+          const formulaire = new FormData();
+          formulaire.append("fichier", f);
+          demarrer(async () => {
+            const resultat = await deposerAttestationAction(formulaire);
+            if (resultat.ok) setDeposee(true);
+            else setRefus(resultat.raison);
+          });
+        }}
+      />
+      {deposee ? (
+        <span className="flex items-center justify-between">
+          <span style={{ fontFamily: font.display, fontSize: 17, color: colors.ink }}>Déposée</span>
+          <button
+            type="button"
+            data-atlas="attestation-retirer"
+            disabled={enCours}
+            onClick={() =>
+              demarrer(async () => {
+                const resultat = await retirerAttestationAction();
+                if (resultat.ok) setDeposee(false);
+                else setRefus(resultat.raison);
+              })
+            }
+            className={libelleCaps}
+            style={{ color: colors.or }}
+          >
+            Retirer
+          </button>
+        </span>
+      ) : (
+        <label
+          htmlFor="attestation-fichier"
+          data-atlas="attestation-ajouter"
+          className="cursor-pointer text-[14px] font-medium"
+          style={{ color: colors.or }}
+        >
+          {enCours ? "Envoi…" : "+ Ajouter le PDF"}
+        </label>
+      )}
+      {manquant && !refus && (
+        <span className={`mt-1.5 block ${texteSituation}`} style={{ color: colors.alert }}>
+          Sans elle, vos devis et vos factures ne partent pas.
+        </span>
+      )}
+      {refus && (
+        <span className={`mt-1.5 block ${texteSituation}`} style={{ color: colors.alert }}>
+          {refus}
+        </span>
+      )}
+    </div>
+  );
+}
+
 function Champ({
   etiquette, valeur, onChange, onFini, placeholder, long, manquant, empeche, sous,
 }: {

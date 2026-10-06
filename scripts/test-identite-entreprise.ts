@@ -140,12 +140,18 @@ async function main() {
       "et une facture à 20 % ne l'avait pas");
   });
 
-  await test("les pénalités et l'indemnité de 40 € s'impriment dans tous les cas", async () => {
+  // **Les 40 € ne se réclament qu'à un professionnel** (C. com. L441-10,
+  // D441-5 ; check-up légal du 4 octobre 2026). Le régime de TVA, lui, n'y
+  // change rien : ni l'un ni l'autre ne doit les faire disparaître.
+  await test("les pénalités s'impriment dans tous les cas, les 40 € pour une entreprise", async () => {
     for (const regime of ["assujettie", "franchise", null]) {
-      const { trace } = await composerFacturePdf(facture({ regimeTva: regime }) as never);
+      const { trace } = await composerFacturePdf(facture({ regimeTva: regime, clientCivilite: "entreprise" }) as never);
       const pied = mots(trace);
       assert.ok(/40 €/.test(pied), `l'indemnité manque (régime : ${regime})`);
       assert.ok(/trois fois le taux/.test(pied), `les pénalités manquent (régime : ${regime})`);
+      const { trace: duParticulier } = await composerFacturePdf(facture({ regimeTva: regime, clientCivilite: "mme" }) as never);
+      assert.ok(!/40 €/.test(mots(duParticulier)), `les 40 € réclamés à un particulier (régime : ${regime})`);
+      assert.ok(/trois fois le taux/.test(mots(duParticulier)), `les pénalités manquent au particulier (régime : ${regime})`);
     }
   });
 

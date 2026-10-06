@@ -118,13 +118,43 @@ async function main() {
   // d'entretien, dernier devis ou autre doivent arriver là »*. Un contrat parti
   // reste sur l'accueil tant que le client n'a pas accepté, comme un devis
   // envoyé ; accepté, ses passages vivent au planning.
-  const jeton = `jeton-${Date.now()}`;
-  await cas("parti chez le client, il reste, sans réponse et avec son jour d'envoi", async () => {
+  // **L'ENVOI PAR SON GESTE, pas par la base — 3 octobre 2026.** Sa plainte :
+  // *« je viens d'envoyer le contrat mais l'appli reste bloquée sur la page
+  // d'envoi »*. Cette suite posait l'état « envoyé » à la main : elle éprouvait
+  // l'accueil, jamais le bouton (`CLAUDE.md` §5 quater). Le contrat partait,
+  // et l'écran restait sur la saisie, prêt à être renvoyé.
+  let jeton = "";
+  await cas("« Envoyer » ouvre la messagerie, puis l'écran montre le contrat parti", async () => {
     assert.ok(contratId);
-    await pool.query(
-      `UPDATE contrats_entretien SET statut = 'envoye', jeton = $2, empreinte = repeat('0', 64), envoye_le = now() WHERE id = $1`,
-      [contratId, jeton]
-    );
+    // Le canal se lit sur la fiche du client : sans téléphone, rien ne part.
+    await pool.query(`UPDATE clients SET telephone = '0612345678' WHERE id = $1`, [clientId]);
+    await page.goto(`${BASE}/clients/${clientId}/contrat`, { waitUntil: "networkidle" });
+    await page.getByLabel(`Prix du passage de ${prestation}`).fill("45");
+    await page.locator('[data-atlas="envoyer-contrat"]').click();
+
+    const porte = page.locator("a[data-transmission-directe]");
+    await porte.waitFor({ state: "attached", timeout: 30_000 });
+    const adresse = decodeURIComponent((await porte.getAttribute("href")) ?? "");
+    assert.match(adresse, /^sms:/, `l'appui n'a ouvert aucune messagerie (« ${adresse.slice(0, 40)} »)`);
+
+    const { rows } = await pool.query(`SELECT statut, jeton FROM contrats_entretien WHERE id = $1`, [contratId]);
+    assert.equal(rows[0]?.statut, "envoye", "le contrat n'est pas parti");
+    jeton = rows[0].jeton as string;
+    assert.ok(adresse.includes(`/contrat/${jeton}`), "le message ne porte pas le lien du contrat");
+
+    const parti = await page
+      .locator('[data-atlas="contrat-parti"]')
+      .waitFor({ timeout: 15_000 })
+      .then(
+        () => true,
+        () => false
+      );
+    assert.ok(parti, "l'écran est resté sur la saisie après l'envoi : il croit que rien n'est parti");
+    assert.equal(await page.locator('[data-atlas="envoyer-contrat"]').count(), 0, "le bouton d'envoi est encore là");
+  });
+
+  await cas("parti chez le client, il reste, sans réponse et avec son jour d'envoi", async () => {
+    assert.ok(jeton, "le contrat n'est pas parti : rien à lire sur l'accueil");
     await page.goto(`${BASE}/`, { waitUntil: "networkidle" });
     const parti = page.locator(`a.atlas-brin[href="/clients/${clientId}/contrat"]`);
     assert.equal(await parti.count(), 1, "le contrat envoyé a quitté l'accueil");
@@ -159,6 +189,23 @@ async function main() {
     const r = await pageClient.goto(`${BASE}/contrat/${jeton}`, { waitUntil: "networkidle" });
     assert.equal(r?.status(), 200);
     assert.match(await pageClient.locator("body").innerText(), new RegExp(prestation));
+    // Le bouton du devis, en plein (sa demande du 3 octobre 2026) : un lien
+    // souligné se perdait dans le texte.
+    const telecharger = pageClient.locator('[data-atlas="telecharger-contrat"]');
+    assert.equal((await telecharger.innerText()).trim(), "Télécharger mon contrat");
+    const fond = await telecharger.evaluate((el) => getComputedStyle(el).backgroundColor);
+    assert.doesNotMatch(fond, /rgba\(0, 0, 0, 0\)|transparent/, "le téléchargement n'est pas un bouton plein");
+
+    // Les boutons du devis, refus compris (même jour) : ne pas donner suite
+    // ouvre la confirmation, il n'envoie rien d'un seul appui.
+    await pageClient.locator('[data-atlas="ne-pas-donner-suite"]').click();
+    await pageClient.getByText("Vous ne donnez pas suite").waitFor({ timeout: 5_000 });
+    const { rows: avant } = await pool.query(`SELECT statut FROM contrats_entretien WHERE id = $1`, [contratId]);
+    assert.equal(avant[0]?.statut, "envoye", "un seul appui a refusé le contrat, sans confirmation");
+    await pageClient.locator('[data-atlas="refuser-contrat"]').click();
+    await pageClient.locator('[data-atlas="reponse-contrat-faite"]').waitFor({ timeout: 15_000 });
+    const { rows: apres } = await pool.query(`SELECT statut FROM contrats_entretien WHERE id = $1`, [contratId]);
+    assert.equal(apres[0]?.statut, "refuse", "la confirmation n'a pas enregistré le refus");
     await cotClient.close();
   });
 

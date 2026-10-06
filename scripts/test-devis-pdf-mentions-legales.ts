@@ -48,7 +48,11 @@ async function main() {
     assert.ok(!textes.some((t) => t.includes("RCS")));
   });
 
-  await cas('« aucune » retient tout, même les trois mentions remplies', async () => {
+  // **« aucune » ne retient plus rien — son choix 4A du 3 octobre 2026.** Ces
+  // mentions sont obligatoires pour une société (R123-237) : le réglage qui
+  // les cachait a disparu des Réglages, et une valeur restée en base s'imprime
+  // sous le nom, comme le réglage par défaut (`positionEffective`).
+  await cas('« aucune », resté en base, s\'imprime sous le nom', async () => {
     const { trace } = await composerDevisPdf({
       ...BASE,
       entrepriseFormeJuridique: "SASU",
@@ -57,8 +61,8 @@ async function main() {
       entrepriseMentionsLegalesPosition: "aucune",
     });
     const textes = contenus(trace);
-    assert.ok(!textes.some((t) => t.includes("SASU")));
-    assert.ok(!textes.some((t) => t.includes("RCS")));
+    assert.ok(textes.some((t) => t.includes("SASU au capital de")), "la forme d'une société est encore cachée");
+    assert.ok(textes.some((t) => t.includes("RCS Versailles")), "le RCS d'une société est encore caché");
   });
 
   await cas('« sous_nom » : les deux lignes sont dessinées, entre le nom et l\'adresse', async () => {
@@ -99,7 +103,9 @@ async function main() {
     assert.ok(adresse!.y > siret!.y, "l'adresse précède le SIRET, en dernier");
   });
 
-  await cas("une entreprise individuelle ne montre rien, même réglée sur « sous_nom »", async () => {
+  // Une EI n'a ni capital ni RCS : sa seule mention est « EI », collée au nom
+  // (son choix 4A, R526-27), jamais une ligne de société.
+  await cas("une entreprise individuelle signe « EI », sans ligne de capital ni de RCS", async () => {
     const { trace } = await composerDevisPdf({
       ...BASE,
       entrepriseFormeJuridique: "EI",
@@ -108,7 +114,8 @@ async function main() {
       entrepriseMentionsLegalesPosition: "sous_nom",
     });
     const textes = contenus(trace);
-    assert.ok(!textes.some((t) => t.includes("EI")), "une EI n'a pas de capital ni de RCS");
+    assert.ok(textes.includes("Atlas EI"), "le nom d'une EI ne porte pas « EI »");
+    assert.ok(!textes.some((t) => t.includes("capital")), "une EI n'a pas de capital");
     assert.ok(!textes.some((t) => t.includes("RCS")));
   });
 

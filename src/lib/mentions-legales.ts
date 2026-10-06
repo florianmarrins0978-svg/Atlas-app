@@ -3,31 +3,34 @@ import { sirenDepuisSiret } from "./siren";
 import { enEuros } from "./euros";
 
 /**
- * Où — ou si — la forme juridique, le capital et le RCS s'impriment sur le
+ * Où la forme juridique, le capital et le RCS d'une société s'impriment sur le
  * devis et la facture (migration 0072).
  *
- * **Le défaut est « aucune ».** Ces mentions existaient déjà en base sans
- * jamais s'imprimer (`formeJuridique`, depuis la migration 0039) : les faire
- * apparaître d'un coup sur le prochain devis d'un artisan qui l'avait saisie
- * sans le savoir serait une surprise sur une pièce que son client garde.
- * L'artisan choisit d'abord où — ou s'il — les affiche.
+ * **« aucune » n'éteint plus rien — choix 4A du 3 octobre 2026.** Ces mentions
+ * sont obligatoires sur les documents d'une société (Code de commerce,
+ * R123-237), et le défaut « aucune » faisait partir sans elles les devis de
+ * toute société qui n'avait pas touché au réglage. Il a choisi « sous le
+ * nom » ; la valeur reste en base pour les comptes qui la portent
+ * (`.claude/rules/deployment-safety.md`), et se lit comme « sous le nom »
+ * (`positionEffective`). L'écran ne la propose plus.
  */
 export type PositionMentionsLegales = "sous_nom" | "bas" | "aucune";
+
+/** La place où les mentions s'impriment vraiment : jamais nulle part. */
+export function positionEffective(position: PositionMentionsLegales | null | undefined): "sous_nom" | "bas" {
+  return position === "bas" ? "bas" : "sous_nom";
+}
 
 export type DonneesMentionsLegales = {
   formeJuridique: string | null | undefined;
   capitalSocial: string | null | undefined;
   villeRcs: string | null | undefined;
   siret: string | null | undefined;
-  position: PositionMentionsLegales;
 };
 
 /**
- * Les lignes telles qu'elles s'impriment — zéro, une, ou deux.
- *
- * **Un seul geste éteint tout.** `position === "aucune"` retire les deux
- * mentions ensemble : c'est le même réglage que celui qui les affiche, il
- * n'y a pas deux interrupteurs à retenir pour un artisan qui change d'avis.
+ * Les lignes telles qu'elles s'impriment — zéro, une, ou deux. La position ne
+ * décide plus que de la PLACE (`positionEffective`) ; elle ne les retire plus.
  *
  * **Le numéro du RCS n'est JAMAIS ressaisi** : c'est le SIREN, les neuf
  * premiers chiffres du SIRET déjà affiché dans Identité
@@ -41,7 +44,6 @@ export type DonneesMentionsLegales = {
  * … »).
  */
 export function lignesMentionsLegales(d: DonneesMentionsLegales): string[] {
-  if (d.position === "aucune") return [];
   if (!formeADuCapital(d.formeJuridique)) return [];
 
   const forme = (d.formeJuridique ?? "").trim();

@@ -142,6 +142,16 @@ const APLATS_DECLARES: { fichier: string; motif: RegExp; pourquoi: string }[] = 
       "le chiffre ENTOURÉ d'un jour proposé — « la B », sa planche du 17 septembre 2026 : une marque sur le calendrier, on ne l'appuie pas",
   },
   {
+    fichier: "src/app/chantiers/[id]/devis-complet/DevisCompletClient.tsx",
+    motif: /props\.sousTraitance \? colors\.rust/,
+    pourquoi: "l'interrupteur « Sous-traitance, sans TVA » du devis (son choix B du 4 octobre 2026) : un état, pas un bouton",
+  },
+  {
+    fichier: "src/app/chantiers/[id]/facture/FactureClient.tsx",
+    motif: /sousTraitance \? colors\.rust/,
+    pourquoi: "le même interrupteur sur la facture faite sans devis : un état, pas un bouton",
+  },
+  {
     fichier: "src/app/chantiers/[id]/facture/ReglementsRecus.tsx",
     motif: /acquittee \? colors\.rust/,
     pourquoi: "l'interrupteur « Facture acquittée » (sa planche du 14 septembre 2026) : un état, pas un bouton",

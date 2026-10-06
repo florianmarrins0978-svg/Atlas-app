@@ -396,8 +396,21 @@ async function main() {
      * **On compte sur le TEXTE RENDU, pas sur un repère** : c'est ce que son
      * œil lit, et cela survit à tout remaniement de la carte.
      */
-    const carte = page.locator(`[data-atlas="carte-jour"][data-jour="${jourA}"]`);
-    const lu = await carte.innerText();
+    // **Hors de la fiche d'intervention** : seul ce jour-là, elle est ouverte
+    // d'office depuis le 3 octobre 2026 (« la C »), et elle porte le nom du
+    // client en titre par sa planche du 20 septembre. Ce cas défend la
+    // CONSIGNE de déplacement, pas la fiche.
+    const lu = await page.evaluate((jour) => {
+      const carte = document.querySelector(`[data-atlas="carte-jour"][data-jour="${jour}"]`) as HTMLElement;
+      const copie = carte.cloneNode(true) as HTMLElement;
+      copie.querySelectorAll('[data-atlas="feuille"]').forEach((f) => f.remove());
+      copie.style.position = "absolute";
+      copie.style.left = "-9999px";
+      document.body.appendChild(copie);
+      const texte = copie.innerText;
+      copie.remove();
+      return texte;
+    }, jourA);
     const fois = lu.split(NOM).length - 1;
     if (fois !== 1) {
       throw new Error(

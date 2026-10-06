@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Retirer par une croix</title>
+<style>
+  /*
+    RETIRER UNE LIGNE PAR UNE CROIX, la planche avant le code.
+
+    Sa demande du 3 octobre 2026, en essayant l'application sur ordinateur :
+    « pour retirer une ligne il faut mettre une petite croix en plus du
+    slide ». Sur ordinateur, une souris ne glisse pas : le geste du 10 août
+    (LigneRetirable, le texte glisse et découvre « Retirer ») n'y est
+    atteignable qu'au pavé tactile.
+
+    Ce qui est en jeu : le 10 août 2026 il avait gardé UNE seule façon de
+    retirer, le glissement, parmi trois (dont la croix nue). La croix revient
+    donc en plus, et la planche lui pose la question de l'endroit.
+
+    Ce qui est SIMULÉ : les quatre lignes sont celles de son essai du
+    3 octobre (devis de M. Faucher, sur l'espace d'essai). Le glissement se
+    joue vraiment ici (au doigt, ou au pavé tactile sur ordinateur). « Annuler »
+    ramène la ligne, comme dans l'application. Rien n'est codé dans src/.
+  */
+  :root{
+    --etabli:#e6e3dc; --carte:#faf9f5; --papier:#f5f3ee; --encre:#1c1c1a; --doux:#4a4a44;
+    --gris:#8a8578; --or:#b98b47; --trait:rgba(28,28,26,.12); --trait-doux:rgba(28,28,26,.07);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--etabli)}
+  body{font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--encre);-webkit-text-size-adjust:100%}
+  button{font-family:inherit;color:inherit}
+  .page{max-width:1240px;margin:0 auto;padding:26px 16px 80px}
+  .surtitre{font:600 11.5px/1 ui-sans-serif,sans-serif;letter-spacing:.18em;text-transform:uppercase;color:#8b6835;margin:0 0 10px}
+  h1{font:600 28px/1.15 ui-serif,Georgia,serif;margin:0 0 18px}
+  .onglets{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 20px}
+  .onglet{min-height:40px;padding:0 16px;border-radius:999px;border:1px solid var(--trait);
+          background:var(--carte);color:var(--doux);font-size:14px;cursor:pointer}
+  .onglet[aria-pressed="true"]{background:var(--encre);color:#faf9f5;border-color:transparent}
+  .dit{margin:0 0 18px;color:var(--doux);font-size:15px}
+
+  .scene{display:flex;gap:24px;align-items:flex-start;flex-wrap:wrap}
+  .cadre{display:flex;flex-direction:column;gap:8px}
+  .cadre > span{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--gris)}
+  .ordi{flex:1;min-width:0;overflow-x:auto}
+  .ordi .feuille{min-width:640px}
+  .tel{width:390px;max-width:100%}
+
+  .feuille{background:var(--carte);border-radius:16px;padding:26px 30px 30px;
+           box-shadow:0 1px 2px rgba(20,18,14,.1),0 12px 30px rgba(20,18,14,.08)}
+  .tel .feuille{padding:22px 18px 26px}
+
+  .tete,.ligne .contenu{display:grid;grid-template-columns:minmax(0,1fr) 54px 54px 110px 100px;gap:10px;align-items:center}
+  .tel .tete,.tel .ligne .contenu{grid-template-columns:minmax(0,1fr) 74px 74px}
+  .tel .tete{font-size:9.5px;letter-spacing:.1em}
+  .scene:not([data-choix="partout"]) .tel .tete{padding-right:0}
+  .tete{padding-right:42px;font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--gris);
+        padding:0 0 10px;border-bottom:1px solid var(--encre)}
+  .tete span:nth-child(n+2), .contenu span:nth-child(n+2){text-align:right;font-variant-numeric:tabular-nums}
+  .tel .tete .o, .tel .contenu .o{display:none}
+
+  /* La ligne : son texte glisse et découvre « Retirer », comme LigneRetirable. */
+  .ligne{display:flex;align-items:center;border-bottom:1px solid var(--trait-doux);overflow:hidden;
+         max-height:90px;transition:max-height .32s ease, opacity .32s ease}
+  .ligne.partie{max-height:0;opacity:0;border-bottom-color:transparent}
+  .glisse{flex:1;min-width:0;display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none}
+  .glisse::-webkit-scrollbar{display:none}
+  .contenu{flex:0 0 100%;scroll-snap-align:start;padding:14px 0;font-size:15px}
+  .decouvre{flex:0 0 112px;scroll-snap-align:end;border:0;background:none;cursor:pointer;
+            color:var(--or);font-size:11px;font-weight:600;letter-spacing:.26em;text-transform:uppercase}
+
+  /* La croix : petite, grise, au bout de la ligne. */
+  .croix{flex:0 0 auto;width:36px;height:36px;margin-left:6px;border:0;border-radius:999px;background:none;
+         display:grid;place-items:center;cursor:pointer;color:var(--gris)}
+  .croix:hover{background:rgba(28,28,26,.06);color:var(--encre)}
+  .croix svg{width:14px;height:14px;stroke:currentColor;stroke-width:1.8;fill:none}
+  .scene[data-choix="survol"] .ordi .croix{opacity:0;transition:opacity .15s}
+  .scene[data-choix="survol"] .ordi .ligne:hover .croix,
+  .scene[data-choix="survol"] .ordi .croix:focus-visible{opacity:1}
+  .scene[data-choix="ordinateur"] .tel .croix,
+  .scene[data-choix="survol"] .tel .croix{display:none}
+
+  .ajouts{display:flex;flex-direction:column;gap:8px;margin:16px 0 0;font-size:14px}
+  .ajouts span:nth-child(n+2){color:var(--or)}
+
+  .annuler{position:sticky;bottom:16px;margin:20px auto 0;width:max-content;max-width:100%;display:flex;gap:18px;align-items:center;
+           background:var(--encre);color:#faf9f5;border-radius:999px;padding:10px 12px 10px 20px;font-size:14px}
+  .annuler[hidden]{display:none}
+  .annuler button{border:0;background:none;color:var(--or);font-size:12px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;cursor:pointer;padding:6px 8px}
+  .note{margin-top:26px;max-width:720px;color:var(--doux);font-size:14px;line-height:1.6}
+</style>
+</head>
+<body>
+<div class="page">
+  <p class="surtitre">Planche</p>
+  <h1>Retirer une ligne par une croix</h1>
+
+  <div class="onglets" role="group" aria-label="Où mettre la croix">
+    <button type="button" class="onglet" data-choix="partout" aria-pressed="false">A. Partout</button>
+    <button type="button" class="onglet" data-choix="ordinateur" aria-pressed="true">B. Sur ordinateur</button>
+    <button type="button" class="onglet" data-choix="survol" aria-pressed="false">C. Sur ordinateur, au survol</button>
+  </div>
+  <p class="dit" id="dit"></p>
+
+  <div class="scene" id="scene" data-choix="ordinateur">
+    <div class="cadre ordi"><span>Ordinateur</span><div class="feuille" data-feuille></div></div>
+    <div class="cadre tel"><span>Téléphone</span><div class="feuille" data-feuille></div></div>
+  </div>
+
+  <div class="annuler" id="annuler" hidden><span>Retiré à l’instant</span><button type="button" id="defaire">Annuler</button></div>
+
+  <p class="note">Le glissement reste partout, comme aujourd’hui. Sur ordinateur, il se fait au pavé tactile, à deux doigts.</p>
+</div>
+
+<script>
+  const LIGNES = [
+    ['Main d’œuvre, 2 hommes × 2 jours', '1', 'u', '0,00', '0,00 €'],
+    ['Dépose carrelage, 8 m²', '1', 'u', '0,00', '0,00 €'],
+    ['Pose faïence, 8 m²', '1', 'u', '0,00', '0,00 €'],
+    ['Forfait déplacement', '1', 'u', '0,00', '0,00 €'],
+  ];
+  const DIT = {
+    partout: 'La croix au bout de chaque ligne, sur le téléphone comme sur l’ordinateur.',
+    ordinateur: 'La croix sur ordinateur seulement. Le téléphone garde le glissement seul.',
+    survol: 'La croix apparaît quand la souris passe sur la ligne. Le téléphone garde le glissement seul.',
+  };
+  const retirees = new Set();
+  let derniere = null;
+  const croix = '<svg viewBox="0 0 14 14" aria-hidden="true"><path d="M2 2l10 10M12 2L2 12"/></svg>';
+
+  function rendre() {
+    document.querySelectorAll('[data-feuille]').forEach((f) => {
+      f.innerHTML = `
+        <div class="tete"><span>Description</span><span class="o">Qté</span><span class="o">Unité</span><span>Prix unitaire HT</span><span>Montant HT</span></div>
+        ${LIGNES.map((l, i) => `
+          <div class="ligne${retirees.has(i) ? ' partie' : ''}">
+            <div class="glisse">
+              <div class="contenu"><span>${l[0]}</span><span class="o">${l[1]}</span><span class="o">${l[2]}</span><span>${l[3]}</span><span>${l[4]}</span></div>
+              <button type="button" class="decouvre" data-retirer="${i}">Retirer</button>
+            </div>
+            <button type="button" class="croix" data-retirer="${i}" aria-label="Retirer ${l[0]}">${croix}</button>
+          </div>`).join('')}
+        <div class="ajouts"><span>+ Ajouter une ligne</span><span>+ Ajouter une TVA</span><span>+ Main d’œuvre</span></div>`;
+    });
+    document.getElementById('annuler').hidden = derniere === null;
+  }
+
+  function choisir(c) {
+    document.getElementById('scene').dataset.choix = c;
+    document.getElementById('dit').textContent = DIT[c];
+    document.querySelectorAll('[data-choix].onglet').forEach((b) => b.setAttribute('aria-pressed', b.dataset.choix === c));
+  }
+
+  document.addEventListener('click', (e) => {
+    const b = e.target.closest('button');
+    if (!b) return;
+    if (b.dataset.choix) choisir(b.dataset.choix);
+    if (b.dataset.retirer !== undefined) { derniere = +b.dataset.retirer; retirees.add(derniere); rendre(); }
+    if (b.id === 'defaire' && derniere !== null) { retirees.delete(derniere); derniere = null; rendre(); }
+  });
+  choisir('ordinateur');
+  rendre();
+</script>
+</body>
+</html>

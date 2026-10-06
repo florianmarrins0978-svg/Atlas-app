@@ -1,7 +1,7 @@
 import { and, asc, desc, eq, inArray, isNotNull, isNull, or, sql } from "drizzle-orm";
 import Decimal from "decimal.js";
 import { withEntreprise } from "../db/with-entreprise";
-import { allureDesDocuments, formatNumeroDe } from "./entreprises";
+import { allureDesDocuments, attestationLue, formatNumeroDe } from "./entreprises";
 import { ecrireNumero, repartChaqueAnnee } from "@/lib/numero-documents";
 import { lignesDuDocument } from "@/lib/preparation-devis";
 import type { DbOrTx } from "../db/client";
@@ -18,6 +18,7 @@ import {
   paiementsFacture,
   avoirs,
   contratsEntretien,
+  creneauxChantier,
 } from "../db/schema";
 import { conditionsDepuisEntreprise, type ConditionsLues } from "../../lib/conditions-documents";
 import type { AcompteDevis } from "../../lib/acomptes-devis";
@@ -38,6 +39,7 @@ import { montantDeLaLigne } from "../../lib/montant-de-ligne";
 import { chiffreCanonique } from "../../lib/chiffre-saisi";
 import { montantMainDoeuvreValide } from "../../lib/main-doeuvre-devis";
 import { ongletDepuisJalons } from "../../lib/onglet-chantier";
+import { chantierAFacturer, type ChantierAFacturer } from "../../lib/chantier-a-facturer";
 import { ligneDuPassage, ttcDuPassage } from "../../lib/contrats-entretien";
 import {
   dansLaPeriode,
@@ -55,7 +57,17 @@ import {
   porteUnAutreIban,
 } from "../../lib/modalites-paiement";
 import { uniteAdmise } from "../../lib/unite-de-ligne";
-import { avecCivilite, type CiviliteChoisie } from "../../lib/civilite";
+import { dateDesTravauxProposee } from "../../lib/creneaux-chantier";
+import { manquesDeLaFacture, type Manque } from "../../lib/mentions-manquantes";
+import { estUneEntreprise } from "../../lib/civilite";
+import type { Creneau } from "../../lib/disponibilites";
+import {
+  numeroTvaLu,
+  TAUX_SANS_TVA,
+  tauxRendus,
+  tauxSousAutoliquidation,
+} from "../../lib/autoliquidation";
+import { avecCivilite, type CiviliteChoisie, type CiviliteClient } from "../../lib/civilite";
 import {
   categoriesDeLAvoir,
   categoriesDeLaFacture,
@@ -192,6 +204,9 @@ type OrigineDeLaFacture = Pick<
   | "devisId"
   | "clientNom"
   | "clientCivilite"
+  | "clientSiret"
+  | "autoliquidation"
+  | "clientNumeroTva"
   | "clientAdresse"
   | "clientTelephone"
   | "clientEmail"
@@ -213,6 +228,12 @@ function instantaneDuDevis(d: typeof devis.$inferSelect): OrigineDeLaFacture {
     devisId: d.id,
     clientNom: d.clientNom,
     clientCivilite: d.clientCivilite,
+    clientSiret: d.clientSiret,
+    // **La sous-traitance suit le devis accepté** (son choix B du 4 octobre
+    // 2026) : ses lignes arrivent déjà sans TVA, et le client a accepté ce
+    // prix-là. Le numéro du donneur d'ordre vient avec.
+    autoliquidation: d.autoliquidation,
+    clientNumeroTva: d.clientNumeroTva,
     clientAdresse: d.clientAdresse,
     clientTelephone: d.clientTelephone,
     clientEmail: d.clientEmail,
@@ -265,12 +286,16 @@ export type EntreprisePourFacture = Pick<
   | "capitalSocial"
   | "villeRcs"
   | "assureurDecennale"
+  | "adresseAssureurDecennale"
+  | "attestationDecennaleCle"
+  | "attestationDecennaleMime"
   | "contratDecennale"
   | "couvertureDecennale"
   | "mediateurNom"
   | "mediateurCoordonnees"
   | "mentionsLegalesPosition"
   | "regimeTva"
+  | "numeroTva"
 >;
 
 export const COLONNES_EMETTEUR = {
@@ -285,12 +310,16 @@ export const COLONNES_EMETTEUR = {
   capitalSocial: entreprises.capitalSocial,
   villeRcs: entreprises.villeRcs,
   assureurDecennale: entreprises.assureurDecennale,
+  adresseAssureurDecennale: entreprises.adresseAssureurDecennale,
+  attestationDecennaleCle: entreprises.attestationDecennaleCle,
+  attestationDecennaleMime: entreprises.attestationDecennaleMime,
   contratDecennale: entreprises.contratDecennale,
   couvertureDecennale: entreprises.couvertureDecennale,
   mediateurNom: entreprises.mediateurNom,
   mediateurCoordonnees: entreprises.mediateurCoordonnees,
   mentionsLegalesPosition: entreprises.mentionsLegalesPosition,
   regimeTva: entreprises.regimeTva,
+  numeroTva: entreprises.numeroTva,
 } as const;
 
 export function identiteDeLEmetteur(e: EntreprisePourFacture | undefined) {
@@ -312,6 +341,10 @@ export function identiteDeLEmetteur(e: EntreprisePourFacture | undefined) {
     entrepriseVilleRcs: e?.villeRcs ?? null,
     // Figées au jour de l'émission, comme le SIRET (migration 0094).
     entrepriseAssureurDecennale: e?.assureurDecennale ?? null,
+    // Ses coordonnées et l'attestation du jour (migration 0121).
+    entrepriseAdresseAssureurDecennale: e?.adresseAssureurDecennale ?? null,
+    entrepriseAttestationDecennaleCle: e?.attestationDecennaleCle ?? null,
+    entrepriseAttestationDecennaleMime: e?.attestationDecennaleMime ?? null,
     entrepriseContratDecennale: e?.contratDecennale ?? null,
     entrepriseCouvertureDecennale: e?.couvertureDecennale ?? null,
     entrepriseMediateurNom: e?.mediateurNom ?? null,
@@ -320,6 +353,54 @@ export function identiteDeLEmetteur(e: EntreprisePourFacture | undefined) {
     // Le régime au jour de l'émission (migration 0039) : il était déjà lu ici,
     // et il rejoint simplement le reste de l'identité.
     entrepriseRegimeTva: e?.regimeTva ?? null,
+    // Saisi dans Réglages depuis la création du compte, et oublié ici jusqu'au
+    // 3 octobre 2026 : aucune facture ne le portait (migration 0117).
+    entrepriseNumeroTva: e?.numeroTva ?? null,
+  };
+}
+
+/**
+ * L'émetteur tel qu'il est AUJOURD'HUI — ce qu'un brouillon portera en partant.
+ *
+ * Une seule lecture pour l'émission et pour l'aperçu du brouillon : ce qu'il
+ * regarde avant d'envoyer est ce qui part, et deux lectures finiraient par
+ * diverger (`CLAUDE.md` §3).
+ */
+async function emetteurDuJour(tx: DbOrTx, entrepriseId: string) {
+  const [e] = await tx
+    .select(COLONNES_EMETTEUR)
+    .from(entreprises)
+    .where(eq(entreprises.id, entrepriseId))
+    .limit(1);
+  return identiteDeLEmetteur(e);
+}
+
+/**
+ * L'adresse du client et celle du chantier, complétées depuis sa fiche si la
+ * facture n'en portait pas.
+ *
+ * **Seulement ce qui est VIDE**, et seulement sur un brouillon : l'adresse est
+ * une mention obligatoire de la facture (242 nonies A, I-2°), et le refus
+ * d'émettre l'envoie la compléter sur la fiche du client. Sans cette relecture,
+ * la facture garderait le vide figé à sa création, et le refus ne se lèverait
+ * jamais. Ce qui était rempli ne bouge pas : c'est ce que le devis portait.
+ */
+async function adressesDuJour(
+  tx: DbOrTx,
+  f: { chantierId: string; clientAdresse: string | null; adresseChantier: string | null }
+) {
+  if (f.clientAdresse?.trim() && f.adresseChantier?.trim()) {
+    return { clientAdresse: f.clientAdresse, adresseChantier: f.adresseChantier };
+  }
+  const [fiche] = await tx
+    .select({ adresse: clients.adresse, adresseChantier: chantiers.adresseChantier })
+    .from(chantiers)
+    .leftJoin(clients, eq(clients.id, chantiers.clientId))
+    .where(eq(chantiers.id, f.chantierId))
+    .limit(1);
+  return {
+    clientAdresse: f.clientAdresse?.trim() ? f.clientAdresse : (fiche?.adresse ?? null),
+    adresseChantier: f.adresseChantier?.trim() ? f.adresseChantier : (fiche?.adresseChantier ?? null),
   };
 }
 
@@ -468,6 +549,7 @@ async function poserLaFactureDuPassage(
       conditionsPaiement: null,
       clientNom: client?.nom ?? null,
       clientCivilite: client?.civilite ?? null,
+      clientSiret: client?.siret ?? null,
       clientAdresse: client?.adresse ?? null,
       clientTelephone: client?.telephone ?? null,
       clientEmail: client?.email ?? null,
@@ -547,6 +629,30 @@ async function poserLaFactureBrouillon(
     .limit(1);
 
   const numeroCommercial = await attribuerNumeroFacture(tx, ctx.entrepriseId);
+
+  // **La date des travaux se propose d'après le planning** (son choix 6A du
+  // 3 octobre 2026), et il la change sur l'écran s'il le faut. Le repli des
+  // créneaux est celui du planning (`creneauxOccupes`) : un chantier jamais
+  // morcelé vaut son bloc.
+  const [pose] = await tx
+    .select({
+      jour: chantiers.datePlanifiee,
+      moment: chantiers.creneauDebut,
+      dureeDemiJournees: chantiers.dureeDemiJournees,
+    })
+    .from(chantiers)
+    .where(eq(chantiers.id, chantierId))
+    .limit(1);
+  const poses = await tx
+    .select({ jour: creneauxChantier.jour, demi: creneauxChantier.demi })
+    .from(creneauxChantier)
+    .where(eq(creneauxChantier.chantierId, chantierId));
+  const dateTravaux = dateDesTravauxProposee(
+    pose ?? { jour: null, moment: null, dureeDemiJournees: null },
+    poses.map((l) => ({ jour: l.jour, moment: l.demi }) as Creneau),
+    jourIso(maintenant)
+  );
+
   // Son délai réglé quand il en a posé un (0 = comptant), 30 jours à défaut.
   const echeance = echeanceFacture(
     maintenant,
@@ -566,6 +672,7 @@ async function poserLaFactureBrouillon(
       ...identiteDeLEmetteur(entrepriseCourante),
       dateEmission: jourIso(maintenant),
       dateEcheance: jourIso(echeance),
+      dateTravaux,
       createdBy: ctx.utilisateurId,
     })
     .returning();
@@ -580,6 +687,36 @@ async function poserLaFactureBrouillon(
     .where(eq(chantiers.id, chantierId));
 
   return facture;
+}
+
+/**
+ * LE CHANTIER DONT UN CLIENT ATTEND SA FACTURE — 3 octobre 2026.
+ *
+ * Ceux de ce client qui portent un devis ENVOYÉ et aucune facture émise : la
+ * même question que `terminerChantier` (« quel prix a-t-il accepté ? »), posée
+ * avant de créer quoi que ce soit. Aucune barrière de date, comme « Fin de
+ * chantier » : c'est le patron qui sait quand un chantier est fait. Le choix
+ * entre plusieurs vit dans `chantierAFacturer`.
+ */
+export async function chantierDuClientAFacturer(
+  ctx: Ctx,
+  clientId: string,
+  adresseSaisie: string
+): Promise<ChantierAFacturer> {
+  const candidats = await withEntreprise(ctx.utilisateurId, ctx.entrepriseId, (tx) =>
+    tx
+      .select({ id: chantiers.id, adresseChantier: chantiers.adresseChantier })
+      .from(chantiers)
+      .where(
+        and(
+          eq(chantiers.clientId, clientId),
+          isNull(chantiers.deletedAt),
+          sql`EXISTS (SELECT 1 FROM ${devis} WHERE ${devis.chantierId} = ${chantiers.id} AND ${devis.statut} = 'envoye')`,
+          sql`NOT EXISTS (SELECT 1 FROM ${factures} WHERE ${factures.chantierId} = ${chantiers.id} AND ${factures.statut} = 'emise')`
+        )
+      )
+  );
+  return chantierAFacturer(candidats, adresseSaisie);
 }
 
 /** Ce qui bloque une facture directe, et le geste que chaque refus appelle. */
@@ -679,6 +816,7 @@ export async function creerFactureSansDevis(
         conditionsPaiement: null,
         clientNom: client?.nom ?? null,
         clientCivilite: client?.civilite ?? null,
+        clientSiret: client?.siret ?? null,
         clientAdresse: client?.adresse ?? null,
         clientTelephone: client?.telephone ?? null,
         clientEmail: client?.email ?? null,
@@ -818,7 +956,13 @@ export async function reprendreLeDevisSurLaFacture(
       .limit(1);
     await tx
       .update(factures)
-      .set({ ...instantaneDuDevis(d), ...identiteDeLEmetteur(entrepriseCourante) })
+      .set({
+        // La sous-traitance vient du devis repris, avec ses taux : la facture
+        // suit le devis, elle ne la décide pas (4 octobre 2026).
+        ...instantaneDuDevis(d),
+        ...identiteDeLEmetteur(entrepriseCourante),
+        tauxAvantAutoliquidation: null,
+      })
       .where(eq(factures.id, f.id));
 
     return { ok: true, numeroDevis: d.numeroCommercial };
@@ -921,9 +1065,9 @@ type Refus = { ok: false; raison: string };
 async function factureEncoreEnBrouillon(
   tx: DbOrTx,
   factureId: string
-): Promise<{ ok: true; devisId: string | null } | Refus> {
+): Promise<{ ok: true; devisId: string | null; autoliquidation: boolean } | Refus> {
   const [f] = await tx
-    .select({ statut: factures.statut, devisId: factures.devisId })
+    .select({ statut: factures.statut, devisId: factures.devisId, autoliquidation: factures.autoliquidation })
     .from(factures)
     .where(eq(factures.id, factureId))
     .limit(1);
@@ -933,7 +1077,7 @@ async function factureEncoreEnBrouillon(
   if (f.statut !== "brouillon") {
     return { ok: false, raison: "La facture est déjà arrêtée : elle ne se réécrit plus." };
   }
-  return { ok: true, devisId: f.devisId };
+  return { ok: true, devisId: f.devisId, autoliquidation: f.autoliquidation };
 }
 
 /**
@@ -986,7 +1130,9 @@ export async function ajouterLigneDeFacture(
         quantite: "1",
         prixUnitaire: "0",
         montant: "0",
-        tauxTva: taux ?? null,
+        // Sous-traitance sans TVA : une ligne neuve naît sans TVA, quel que soit
+        // le taux de la catégorie où il l'ajoute (`src/lib/autoliquidation.ts`).
+        tauxTva: garde.autoliquidation ? TAUX_SANS_TVA : (taux ?? null),
         ordre: (dernier?.ordre ?? 0) + 1,
         // **Sur une facture directe, c'est une ligne ORDINAIRE** (migration
         // 0085). La marquer « supplément » ferait imprimer au client le titre
@@ -1076,7 +1222,8 @@ export async function majLigneDeFacture(
         // `undefined` : on ne touche pas au taux. `null` : on le RETIRE, et la
         // ligne retombe sur celui de la facture. Les confondre effacerait le
         // taux à chaque correction de libellé.
-        ...(champs.tauxTva !== undefined ? { tauxTva: champs.tauxTva } : {}),
+        // Sous-traitance sans TVA : aucun taux ne s'y pose tant qu'elle l'est.
+        ...(champs.tauxTva !== undefined && !garde.autoliquidation ? { tauxTva: champs.tauxTva } : {}),
       })
       .where(eq(lignesFacture.id, ligneId));
 
@@ -1241,6 +1388,214 @@ export async function majTitreDeFacture(
   });
 }
 
+/**
+ * Corrige la date des travaux d'une facture encore en brouillon — son choix 6A.
+ *
+ * Vide se refuse : la date est une mention de la pièce, et c'est le planning
+ * qui l'a proposée. Une date qui n'en est pas une aussi, avec ses mots.
+ */
+export async function majDateTravauxFacture(
+  ctx: Ctx,
+  factureId: string,
+  date: string
+): Promise<{ ok: true; dateTravaux: string } | Refus> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const garde = await factureEncoreEnBrouillon(tx, factureId);
+    if (!garde.ok) return garde;
+    const jour = date.trim();
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(jour) || Number.isNaN(Date.parse(`${jour}T12:00:00Z`))) {
+      return { ok: false, raison: "Choisissez la date des travaux." };
+    }
+    await tx.update(factures).set({ dateTravaux: jour }).where(eq(factures.id, factureId));
+    return { ok: true, dateTravaux: jour };
+  });
+}
+
+/**
+ * Met les taux de la pièce à zéro, et garde ceux d'avant pour les rendre.
+ *
+ * Seule une facture faite SANS devis bascule ici (4 octobre 2026) : celle qui
+ * vient d'un devis en reprend la sous-traitance, taux compris.
+ */
+async function poserLesTauxSansTva(tx: DbOrTx, factureId: string) {
+  const [f] = await tx
+    .select({ tauxTva: factures.tauxTva })
+    .from(factures)
+    .where(eq(factures.id, factureId))
+    .limit(1);
+  if (!f) return;
+  const lignes = await tx
+    .select({ id: lignesFacture.id, tauxTva: lignesFacture.tauxTva })
+    .from(lignesFacture)
+    .where(eq(lignesFacture.factureId, factureId));
+  const sans = tauxSousAutoliquidation({ tauxTva: f.tauxTva, lignes });
+  await tx
+    .update(factures)
+    .set({ tauxTva: sans.tauxTva, tauxAvantAutoliquidation: sans.avant })
+    .where(eq(factures.id, factureId));
+  if (lignes.length > 0) {
+    await tx.update(lignesFacture).set({ tauxTva: TAUX_SANS_TVA }).where(eq(lignesFacture.factureId, factureId));
+  }
+}
+
+/**
+ * SOUS-TRAITANCE, SANS TVA — le bouton de la facture (`src/lib/autoliquidation.ts`).
+ *
+ * **Refusé en franchise** : un artisan en franchise ne facture déjà aucune TVA,
+ * et sa pièce porte « art. 293 B » ; l'autoliquidation est une mécanique
+ * d'assujetti. Les deux mentions côte à côte se contrediraient.
+ *
+ * En l'activant, le numéro de TVA du donneur d'ordre se reprend de sa fiche
+ * s'il y est (son choix 5B) ; il reste modifiable sur la facture.
+ */
+export async function majAutoliquidationFacture(
+  ctx: Ctx,
+  factureId: string,
+  active: boolean
+): Promise<{ ok: true; autoliquidation: boolean; clientNumeroTva: string | null } | Refus> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const garde = await factureEncoreEnBrouillon(tx, factureId);
+    if (!garde.ok) return garde;
+    const [f] = await tx
+      .select({
+        chantierId: factures.chantierId,
+        devisId: factures.devisId,
+        clientNom: factures.clientNom,
+        clientCivilite: factures.clientCivilite,
+        autoliquidation: factures.autoliquidation,
+        clientNumeroTva: factures.clientNumeroTva,
+        tauxTva: factures.tauxTva,
+        avant: factures.tauxAvantAutoliquidation,
+      })
+      .from(factures)
+      .where(eq(factures.id, factureId))
+      .limit(1);
+    if (!f) return { ok: false, raison: "Cette facture est introuvable." };
+    if (f.autoliquidation === active) {
+      return { ok: true, autoliquidation: active, clientNumeroTva: f.clientNumeroTva };
+    }
+    // **Une facture née d'un devis SUIT le devis, dans les deux sens** — sa
+    // remarque du 4 octobre 2026, *« le bouton sur la facture ne sert plus à
+    // rien »*. Le client a accepté un prix avec ou sans TVA ; la facture ne le
+    // contredit pas. Le bouton ne vit plus que sur une facture faite sans devis.
+    if (f.devisId) {
+      return { ok: false, raison: "La sous-traitance suit le devis : c'est sur le devis qu'elle se change." };
+    }
+
+    if (active) {
+      const [e] = await tx
+        .select({ regimeTva: entreprises.regimeTva })
+        .from(entreprises)
+        .where(eq(entreprises.id, ctx.entrepriseId))
+        .limit(1);
+      if (e?.regimeTva === "franchise") {
+        return { ok: false, raison: "En franchise de TVA, vos factures sont déjà sans TVA." };
+      }
+      if (!estUneEntreprise(f.clientNom, f.clientCivilite)) {
+        return { ok: false, raison: "La sous-traitance se fait pour une entreprise : choisissez Entreprise sur sa fiche." };
+      }
+      const [fiche] = await tx
+        .select({ numeroTva: clients.numeroTva })
+        .from(chantiers)
+        .innerJoin(clients, eq(clients.id, chantiers.clientId))
+        .where(eq(chantiers.id, f.chantierId))
+        .limit(1);
+      const numero = f.clientNumeroTva ?? fiche?.numeroTva ?? null;
+      await poserLesTauxSansTva(tx, factureId);
+      await tx
+        .update(factures)
+        .set({ autoliquidation: true, clientNumeroTva: numero })
+        .where(eq(factures.id, factureId));
+      return { ok: true, autoliquidation: true, clientNumeroTva: numero };
+    }
+
+    const lignes = await tx
+      .select({ id: lignesFacture.id, tauxTva: lignesFacture.tauxTva })
+      .from(lignesFacture)
+      .where(eq(lignesFacture.factureId, factureId));
+    const [reglage] = await tx
+      .select({ taux: parametresChiffrage.tauxTvaDefaut })
+      .from(parametresChiffrage)
+      .where(eq(parametresChiffrage.entrepriseId, ctx.entrepriseId))
+      .limit(1);
+    const rendus = tauxRendus({ tauxTva: f.tauxTva, lignes }, f.avant, reglage?.taux ?? TAUX_TVA_PAR_DEFAUT);
+    await tx
+      .update(factures)
+      .set({ autoliquidation: false, tauxTva: rendus.tauxTva, tauxAvantAutoliquidation: null })
+      .where(eq(factures.id, factureId));
+    for (const l of rendus.lignes) {
+      await tx.update(lignesFacture).set({ tauxTva: l.tauxTva }).where(eq(lignesFacture.id, l.id));
+    }
+    return { ok: true, autoliquidation: false, clientNumeroTva: f.clientNumeroTva };
+  });
+}
+
+/**
+ * Le numéro de TVA du donneur d'ordre — retenu sur la facture ET sur sa fiche
+ * (son choix 5B : *« mais avec la possibilité de modifier »*). La facture
+ * suivante de ce client le reprendra ; il le corrige ici quand il change.
+ */
+export async function majTvaClientFacture(
+  ctx: Ctx,
+  factureId: string,
+  saisi: string
+): Promise<{ ok: true; clientNumeroTva: string } | Refus> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const garde = await factureEncoreEnBrouillon(tx, factureId);
+    if (!garde.ok) return garde;
+    const numero = numeroTvaLu(saisi);
+    if (numero === null) {
+      return { ok: false, raison: "Ce numéro de TVA n'a pas la bonne forme : FR suivi de 11 chiffres en France." };
+    }
+    const [f] = await tx
+      .update(factures)
+      .set({ clientNumeroTva: numero })
+      .where(eq(factures.id, factureId))
+      .returning({ chantierId: factures.chantierId });
+    const [c] = f
+      ? await tx.select({ clientId: chantiers.clientId }).from(chantiers).where(eq(chantiers.id, f.chantierId)).limit(1)
+      : [];
+    if (c?.clientId) {
+      await tx.update(clients).set({ numeroTva: numero, updatedAt: new Date() }).where(eq(clients.id, c.clientId));
+    }
+    return { ok: true, clientNumeroTva: numero };
+  });
+}
+
+/**
+ * Ce qui manque à la facture pour partir en règle — son choix 1A du 3 octobre
+ * 2026. Lu sur l'émetteur DU JOUR, celui que la pièce portera en partant
+ * (`emetteurDuJour`), et sur le client figé sur la facture.
+ */
+export async function manquesDeLaFactureAEmettre(ctx: Ctx, factureId: string): Promise<Manque[]> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const [f] = await tx.select().from(factures).where(eq(factures.id, factureId)).limit(1);
+    if (!f) return [];
+    const e = await emetteurDuJour(tx, ctx.entrepriseId);
+    const adresses = await adressesDuJour(tx, f);
+    return manquesDeLaFacture(
+      {
+        nom: e.entrepriseNom,
+        adresse: e.entrepriseAdresse,
+        siret: e.entrepriseSiret,
+        formeJuridique: e.entrepriseFormeJuridique,
+        capitalSocial: e.entrepriseCapitalSocial,
+        villeRcs: e.entrepriseVilleRcs,
+        mediateurNom: e.entrepriseMediateurNom,
+        assureurDecennale: e.entrepriseAssureurDecennale,
+        regimeTva: e.entrepriseRegimeTva,
+        numeroTva: e.entrepriseNumeroTva,
+        telephone: e.entrepriseTelephone,
+        email: e.entrepriseEmail,
+        adresseAssureurDecennale: e.entrepriseAdresseAssureurDecennale,
+        attestationDecennale: !!e.entrepriseAttestationDecennaleCle,
+      },
+      { nom: f.clientNom, adresse: adresses.clientAdresse, adresseChantier: adresses.adresseChantier },
+      { active: f.autoliquidation, numeroTvaClient: f.clientNumeroTva }
+    );
+  });
+}
+
 export class FactureDejaEmiseError extends Error {
   constructor() {
     super("Cette facture a déjà été émise.");
@@ -1390,8 +1745,9 @@ export type FactureAImprimer = Pick<
   | "entrepriseNom" | "entrepriseRegimeTva" | "entrepriseAdresse" | "entrepriseSiret"
   | "entrepriseTelephone" | "entrepriseEmail" | "entrepriseIban" | "entrepriseTitulaireCompte"
   | "entrepriseFormeJuridique" | "entrepriseCapitalSocial" | "entrepriseVilleRcs"
-  | "entrepriseAssureurDecennale" | "entrepriseContratDecennale" | "entrepriseCouvertureDecennale"
+  | "entrepriseAssureurDecennale" | "entrepriseAdresseAssureurDecennale" | "entrepriseContratDecennale" | "entrepriseCouvertureDecennale"
   | "entrepriseMediateurNom" | "entrepriseMediateurCoordonnees" | "entrepriseMentionsLegalesPosition"
+  | "entrepriseNumeroTva" | "dateTravaux" | "autoliquidation" | "clientNumeroTva" | "clientSiret"
   | "clientNom" | "clientCivilite" | "clientAdresse" | "clientTelephone" | "adresseChantier"
   | "conditionsPaiement" | "devise" | "tauxTva" | "reductionPourcent"
 >;
@@ -1413,6 +1769,8 @@ export function donneesFacture(
     statut: f.statut as "brouillon" | "emise",
     dateEmission: f.dateEmission,
     dateEcheance: f.dateEcheance,
+    dateTravaux: f.dateTravaux,
+    autoliquidation: f.autoliquidation,
     numeroDevis: complements.numeroDevis,
     // Le même papier que le devis (migration 0092).
     mainDoeuvreHt: f.mainDoeuvreHt,
@@ -1424,6 +1782,7 @@ export function donneesFacture(
     regimeTva: f.entrepriseRegimeTva,
     entrepriseAdresse: f.entrepriseAdresse,
     entrepriseSiret: f.entrepriseSiret,
+    entrepriseNumeroTva: f.entrepriseNumeroTva,
     entrepriseTelephone: f.entrepriseTelephone,
     entrepriseEmail: f.entrepriseEmail,
     // **LES MÊMES FONCTIONS QUE LA PAGE DU CLIENT** (`modalites-paiement.ts`) :
@@ -1440,6 +1799,7 @@ export function donneesFacture(
     // Relues sur le DOCUMENT, pas sur l'entreprise (migration 0094) : c'est ce
     // qui était vrai le jour où il est parti.
     entrepriseAssureurDecennale: f.entrepriseAssureurDecennale,
+    entrepriseAdresseAssureurDecennale: f.entrepriseAdresseAssureurDecennale,
     entrepriseContratDecennale: f.entrepriseContratDecennale,
     entrepriseCouvertureDecennale: f.entrepriseCouvertureDecennale,
     entrepriseMediateurNom: f.entrepriseMediateurNom,
@@ -1447,8 +1807,11 @@ export function donneesFacture(
     entrepriseMentionsLegalesPosition: f.entrepriseMentionsLegalesPosition,
     clientNom: f.clientNom,
     clientCivilite: f.clientCivilite,
+    clientSiret: f.clientSiret,
     clientAdresse: f.clientAdresse,
     clientTelephone: f.clientTelephone,
+    // Seulement en sous-traitance : ailleurs, il n'a rien à faire sur la pièce.
+    clientNumeroTva: f.autoliquidation ? f.clientNumeroTva : null,
     adresseChantier: f.adresseChantier,
     conditionsPaiement: f.conditionsPaiement,
     devise: f.devise,
@@ -1489,6 +1852,21 @@ export function donneesFacture(
  * celle-là qui fait foi. Un brouillon régénéré à chaque ouverture ne peut pas
  * être pris pour la facture officielle.
  */
+/**
+ * L'allure, le logo, et l'attestation FIGÉE sur la pièce (son choix A du
+ * 5 octobre 2026) : celle du jour où elle part, jamais celle d'aujourd'hui.
+ */
+async function habillageDeLaFacture(
+  tx: Parameters<typeof allureDesDocuments>[0],
+  entrepriseId: string,
+  f: { entrepriseAttestationDecennaleCle: string | null; entrepriseAttestationDecennaleMime: string | null }
+) {
+  return {
+    ...(await allureDesDocuments(tx, entrepriseId)),
+    attestation: await attestationLue(f.entrepriseAttestationDecennaleCle, f.entrepriseAttestationDecennaleMime),
+  };
+}
+
 export async function genererPdfFacturePourApercu(ctx: Ctx, factureId: string): Promise<Uint8Array> {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const [f] = await tx.select().from(factures).where(eq(factures.id, factureId)).limit(1);
@@ -1497,8 +1875,14 @@ export async function genererPdfFacturePourApercu(ctx: Ctx, factureId: string): 
       .select()
       .from(lignesFacture)
       .where(eq(lignesFacture.factureId, factureId));
-    const habillage = await allureDesDocuments(tx, ctx.entrepriseId);
-    return genererPdfFacture(donneesFacture(f, lignes, await complementsDeLaFacture(tx, ctx.entrepriseId, f)), habillage);
+    // Un brouillon s'affiche avec l'émetteur qu'il emportera (`emettreFacture`) ;
+    // une pièce émise, avec celui qu'elle porte, et rien d'autre.
+    const papier =
+      f.statut === "brouillon"
+        ? { ...f, ...(await emetteurDuJour(tx, ctx.entrepriseId)), ...(await adressesDuJour(tx, f)) }
+        : f;
+    const habillage = await habillageDeLaFacture(tx, ctx.entrepriseId, papier);
+    return genererPdfFacture(donneesFacture(papier, lignes, await complementsDeLaFacture(tx, ctx.entrepriseId, f)), habillage);
   });
 }
 
@@ -1536,6 +1920,10 @@ export async function genererPdfFactureExemple(ctx: Ctx, maintenant: Date = new 
       statut: "emise",
       dateEmission: jour,
       dateEcheance: null,
+      dateTravaux: jour,
+      autoliquidation: false,
+      clientNumeroTva: null,
+      clientSiret: null,
       mainDoeuvreHt: null,
       titre: null,
       conditionsPaiement: null,
@@ -1549,7 +1937,9 @@ export async function genererPdfFactureExemple(ctx: Ctx, maintenant: Date = new 
       reglements: [],
       conditionsReglees: await conditionsDesReglages(tx, ctx.entrepriseId),
     };
-    const habillage = await allureDesDocuments(tx, ctx.entrepriseId);
+    // L'attestation des Réglages, comme le reste de l'identité : l'exemple
+    // montre ce qu'une facture créée maintenant emporterait.
+    const habillage = await habillageDeLaFacture(tx, ctx.entrepriseId, identite);
     return genererPdfFacture(donneesFacture(f, exemple.lignes, complements), { ...habillage, exemple: true });
   });
 }
@@ -1611,12 +2001,21 @@ export async function emettreFacture(ctx: Ctx, factureId: string, maintenant: Da
     // et c'est celui-là que le client garde (`datesDeLaFactureQuiPart`).
     const dates = datesDeLaFactureQuiPart(jourIso(maintenant), avant);
 
+    // **ET SON ÉMETTEUR AUSSI, PAR LA MÊME RAISON — 3 octobre 2026.** Lue à la
+    // création du brouillon, l'identité restait celle de ce jour-là : un
+    // brouillon ouvert avant la migration 0117 serait parti sans le numéro de
+    // TVA, mention obligatoire, et un IBAN changé entre-temps serait parti
+    // périmé. La pièce porte ce qui est vrai le jour où elle part ; c'est la
+    // règle que la reprise du devis applique déjà au brouillon.
+    const emetteur = await emetteurDuJour(tx, ctx.entrepriseId);
+    const adresses = await adressesDuJour(tx, avant);
+
     // La pièce est figée au moment de l'émission, jamais régénérée ensuite :
     // une facture émise est immuable (trigger PostgreSQL), et un PDF reconstruit
     // depuis les données du jour ne serait plus celui que le client a reçu.
     const complements = await complementsDeLaFacture(tx, ctx.entrepriseId, avant);
 
-    const habillage2 = await allureDesDocuments(tx, ctx.entrepriseId);
+    const habillage2 = await habillageDeLaFacture(tx, ctx.entrepriseId, emetteur);
     // **Les quatre totaux ne se repassent plus ici — 10 septembre 2026.**
     // `donneesFacture` les calcule elle-même depuis ces mêmes lignes, avec cette
     // même fonction. Les lui imposer était la moitié d'une duplication dont
@@ -1624,7 +2023,7 @@ export async function emettreFacture(ctx: Ctx, factureId: string, maintenant: Da
     // une facture aux totaux faux. Seul le STATUT reste forcé : la pièce
     // archivée doit dire « émise » alors que la ligne ne le sera qu'après.
     const pdfBytes = await genererPdfFacture(
-      donneesFacture({ ...avant, ...dates, statut: "emise" }, lignes, complements),
+      donneesFacture({ ...avant, ...emetteur, ...adresses, ...dates, statut: "emise" }, lignes, complements),
       habillage2
     );
 
@@ -1650,6 +2049,8 @@ export async function emettreFacture(ctx: Ctx, factureId: string, maintenant: Da
       .set({
         statut: "emise",
         emiseLe: maintenant,
+        ...emetteur,
+        ...adresses,
         ...dates,
         docTypographie: allureFigee.typographie,
         docFond: allureFigee.fond,
@@ -1679,7 +2080,7 @@ export type ChantierTermine = {
   id: string;
   nom: string;
   clientNom: string | null;
-  clientCivilite: "mr" | "mme" | null;
+  clientCivilite: CiviliteClient | null;
   datePlanifiee: string | null;
   termineAt: Date | null;
   factureEnvoyeeAt: Date | null;

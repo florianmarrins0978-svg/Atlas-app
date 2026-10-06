@@ -486,16 +486,12 @@ export default function EcranChantiers({
             }}
             className="atlas-geste-nouveau"
           >
-            <span className="atlas-mot">Créer un devis</span>
-            <span className="atlas-rond">
-              {/* **Trois ondes depuis le 6 septembre 2026** — sa décision sur
-                  la planche, « le 2, l'anneau resserré ». Les deux suivantes ne
-                  diffèrent que du retard (`globals.css`) : une seule règle
-                  d'animation pour les trois, donc une seule à corriger. */}
-              <span className="atlas-pouls" aria-hidden="true" />
-              <span className="atlas-pouls atlas-pouls-2" aria-hidden="true" />
-              <span className="atlas-pouls atlas-pouls-3" aria-hidden="true" />
-              <span className="atlas-cerne" aria-hidden="true" />
+            {/* **La B, la signature** (son choix du 6 octobre 2026,
+                `appli/creer-un-devis-trois-boutons.html`) : la phrase en lettres
+                de titre, et un signe d'or qui se trace. Le style vit dans
+                `globals.css`, « Le bouton Créer un devis ». */}
+            <span className="atlas-phrase">Créer un devis</span>
+            <span className="atlas-plume">
               <span className="atlas-gerbe" aria-hidden="true">
                 {GRAINS.map(({ x, y, l, t }) => (
                   <i
@@ -511,8 +507,9 @@ export default function EcranChantiers({
                   />
                 ))}
               </span>
-              <svg className="atlas-signe" viewBox="0 0 32 32" fill="none" aria-hidden="true">
-                <path d="M16 9.6v12.8M9.6 16h12.8" stroke={colors.or} strokeWidth="1.25" />
+              <svg className="atlas-signe" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path className="atlas-trait-h" d="M3 12h18" />
+                <path className="atlas-trait-v" d="M12 3v18" />
               </svg>
             </span>
           </Link>
@@ -643,7 +640,7 @@ export default function EcranChantiers({
         // En absolu elle passait dessous, et sa dernière ligne — celle qui
         // prévient que les coordonnées ne seront plus modifiables — se
         // retrouvait cachée derrière les onglets.
-        className="fixed inset-x-0 bottom-0 top-[60px] z-[50] mx-auto flex max-w-md flex-col overflow-hidden"
+        className="atlas-colonne-fixe bottom-0 top-[60px] z-[50] flex flex-col overflow-hidden"
         style={{
           backgroundColor: colors.cream,
           borderRadius: "26px 26px 0 0",

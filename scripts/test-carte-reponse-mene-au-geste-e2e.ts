@@ -1,6 +1,7 @@
 import { lancerNavigateur } from "./e2e-browser";
 import { Pool } from "pg";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
+import { cocherLaDemandeExpresse } from "./_demande-expresse-e2e";
 import { ADRESSE } from "./_adresse";
 
 // **La carte de réponse mène là où est le geste — et le geste y est vraiment.**
@@ -225,6 +226,7 @@ async function main() {
   // sous un bouton de calendrier — un faux coupable pour une étape sautée.
   await page.getByRole("button", { name: "Retenir cette date" }).click();
   await page.locator('[data-jour]').first().waitFor({ state: "hidden", timeout: 20_000 });
+  await cocherLaDemandeExpresse(page);
   await page.click('button:has-text("J\'accepte ce devis")');
   await page.waitForSelector("text=Votre artisan est prévenu", { timeout: 20_000 });
 

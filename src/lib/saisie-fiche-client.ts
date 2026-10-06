@@ -1,4 +1,4 @@
-import type { Civilite } from "./civilite";
+import type { CiviliteClient } from "./civilite";
 
 /**
  * La fiche client porte-t-elle une saisie à ENREGISTRER avant d'en sortir ?
@@ -23,7 +23,7 @@ import type { Civilite } from "./civilite";
  */
 export type SaisieFicheClient = {
   nomClient: string;
-  civilite: Civilite | null;
+  civilite: CiviliteClient | null;
   telephone: string;
   email: string;
   canal: "sms" | "email" | null;

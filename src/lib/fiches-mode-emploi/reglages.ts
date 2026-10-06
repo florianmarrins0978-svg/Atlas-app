@@ -236,9 +236,12 @@ export const FICHES_REGLAGES: FicheModeEmploi[] = [
     ou: `${R}, puis Mon entreprise, bloc Mentions légales`,
     intitule: "Choisir où s'impriment la forme juridique, le capital et le RCS",
     motsCles: ["mentions", "legales", "imprimer", "capital", "rcs", "forme", "position", "nom", "bas"],
-    geste: "Dans « Mentions légales », touchez « Sous le nom », « En bas, avec le SIRET » ou « Ne pas les imprimer ».",
+    geste: "Dans « Mentions légales », touchez « Sous le nom » ou « En bas, avec le SIRET ».",
+    // « Ne pas les imprimer » est parti le 3 octobre 2026 (son choix 4A) : la
+    // loi les veut sur chaque pièce (C. com. R526-27, R123-237).
+    reserve: "Elles s'impriment toujours : la loi les exige.",
     source: "src/app/reglages/identite/IdentiteClient.tsx",
-    preuves: ["Mentions légales", "Sous le nom", "En bas, avec le SIRET", "Ne pas les imprimer"],
+    preuves: ["Mentions légales", "Sous le nom", "En bas, avec le SIRET"],
   },
   {
     id: "reglages-regime-tva",

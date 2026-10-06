@@ -84,16 +84,26 @@ export function useRetraits({
   // (départ de page, démontage) s'exécutent hors rendu et ne peuvent pas lire
   // un état React.
   //
-  // Les deux références se synchronisent dans un effet, jamais pendant le
-  // rendu ni dans une fonction de mise à jour : celles-ci doivent rester pures,
-  // React se réservant le droit de les rejouer.
+  // **La pile s'écrit dans la référence AU MOMENT DU GESTE — 4 octobre 2026.**
+  // Elle y était recopiée depuis l'état par un effet, donc APRÈS le rendu : un
+  // second appui dans la foulée (« Remettre le modèle Atlas » juste après une
+  // croix) appelait `fermer()` sur une pile encore vide. Le retrait ne
+  // s'écrivait pas avant la remise, et partait six secondes plus tard : la
+  // ligne que le bouton remettait était effacée. La référence est donc la
+  // source, et l'état n'en est que la copie peinte. Ni le rendu ni une
+  // fonction de mise à jour n'y touchent : seuls les gestes l'écrivent
+  // (`test-fiche-entretien-e2e.ts`, le retrait aussitôt suivi de « Remettre »).
   const minuteur = useRef<ReturnType<typeof setTimeout> | null>(null);
   const enAttenteRef = useRef<Retrait[]>([]);
   const validerRef = useRef(valider);
   useEffect(() => {
     validerRef.current = valider;
-    enAttenteRef.current = enAttente;
   });
+
+  const poserLaPile = useCallback((pile: Retrait[]) => {
+    enAttenteRef.current = pile;
+    setEnAttente(pile);
+  }, []);
 
   const ecrire = useCallback(
     async (aEcrire: Retrait[]) => {
@@ -142,10 +152,9 @@ export function useRetraits({
     }
     const aEcrire = enAttenteRef.current;
     if (aEcrire.length === 0) return;
-    enAttenteRef.current = [];
-    setEnAttente([]);
+    poserLaPile([]);
     await ecrire(aEcrire);
-  }, [ecrire]);
+  }, [ecrire, poserLaPile]);
 
   const armer = useCallback(() => {
     if (minuteur.current) clearTimeout(minuteur.current);
@@ -161,10 +170,10 @@ export function useRetraits({
         delete suite[id];
         return suite;
       });
-      setEnAttente((cur) => [...cur.filter((r) => r.id !== id), { id, libelle }]);
+      poserLaPile([...enAttenteRef.current.filter((r) => r.id !== id), { id, libelle }]);
       armer();
     },
-    [armer]
+    [armer, poserLaPile]
   );
 
   /**
@@ -175,18 +184,16 @@ export function useRetraits({
    * tiroir porte l'identifiant du dernier retrait, et non un libellé général.
    */
   const annuler = useCallback(() => {
-    setEnAttente((cur) => cur.slice(0, -1));
-  }, []);
-
-  // Le tiroir vidé — par « Annuler » sur le dernier — n'a plus rien à écrire :
-  // le minuteur doit s'éteindre, sinon il ferme un tiroir déjà fermé et, pire,
-  // un retrait ultérieur hériterait d'un délai déjà entamé.
-  useEffect(() => {
-    if (enAttente.length === 0 && minuteur.current) {
+    const pile = enAttenteRef.current.slice(0, -1);
+    poserLaPile(pile);
+    // Le tiroir vidé n'a plus rien à écrire : le minuteur doit s'éteindre,
+    // sinon il ferme un tiroir déjà fermé et, pire, un retrait ultérieur
+    // hériterait d'un délai déjà entamé.
+    if (pile.length === 0 && minuteur.current) {
       clearTimeout(minuteur.current);
       minuteur.current = null;
     }
-  }, [enAttente.length]);
+  }, [poserLaPile]);
 
   const estRetire = useCallback((id: string) => enAttente.some((r) => r.id === id), [enAttente]);
 

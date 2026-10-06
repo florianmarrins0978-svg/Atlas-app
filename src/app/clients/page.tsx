@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { colors, font } from "@/lib/design-tokens";
 import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 import { getCurrentCtx } from "@/server/session-ctx";
@@ -45,21 +46,43 @@ import ListeClients, { CompteClients, FournisseurClients } from "./ListeClients"
 // (`rangerParNom`), les bandes sont des lettres. `dernierJour` ne descend plus
 // jusqu'ici : il ne sert qu'à départager deux homonymes, au dépôt.
 
+//
+// **SES ENTREPRISES DERRIÈRE UNE PORTE — sa consigne du 4 octobre 2026 :**
+// *« mets pas particulier et entreprise, on est d'office sur les particuliers,
+// rajoute juste une porte pour aller sur l'entreprise »*
+// (`appli/entreprises-clientes.html`). Une entreprise est un client dont la
+// fiche porte « Entreprise », ou dont le nom porte SARL, Mairie…
+// (`estUneEntreprise`). La porte reprend celle de « Vos clients › » sur
+// l'écran Chantiers ; derrière, la même liste, la même recherche.
+
 export const dynamic = "force-dynamic";
 
-export default async function ClientsPage() {
+/** L'adresse de la liste des entreprises : un paramètre, pas un second écran à tenir. */
+const VUE_ENTREPRISES = "entreprises";
+
+export default async function ClientsPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
   const ctx = await getCurrentCtx();
-  const clients = await listerFichesClients(ctx);
+  const entreprises = (await searchParams).vue === VUE_ENTREPRISES;
+  const tous = await listerFichesClients(ctx);
+  const clients = tous.filter((c) => c.entreprise === entreprises);
+  const titre = entreprises ? "Vos entreprises" : "Vos clients";
+  // Des entreprises, il y en a peut-être : la porte s'offre dès qu'il y en a une.
+  const porte = !entreprises && tous.some((c) => c.entreprise);
+  const retour = entreprises
+    ? { href: "/clients", libelle: "Retour à vos clients" }
+    : { href: "/", libelle: "Retour à la liste des chantiers" };
 
   return (
     <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>
       <div className="pb-[86px]">
         {clients.length === 0 ? (
           <>
-            <EnTeteEcran
-              retour={{ href: "/", libelle: "Retour à la liste des chantiers" }}
-              titre="Vos clients"
-            />
+            <EnTeteEcran retour={retour} titre={titre} />
+            {porte && <PorteEntreprises />}
             {/* **Deux phrases, plus trois.** La troisième — « le premier que
                 vous créerez apparaîtra ici » — redisait la deuxième avec
                 d'autres mots. Ce qui reste enseigne ce qui ne se devine pas :
@@ -68,7 +91,7 @@ export default async function ClientsPage() {
               className="mx-[26px] mt-[26px] max-w-[31ch] text-[13px] leading-[1.6]"
               style={{ color: colors.inkSoft }}
             >
-              Aucun client pour l&apos;instant. Ils naissent avec vos chantiers.
+              {entreprises ? "Aucune entreprise pour l'instant." : "Aucun client pour l'instant. Ils naissent avec vos chantiers."}
             </p>
           </>
         ) : (
@@ -85,15 +108,39 @@ export default async function ClientsPage() {
               du: c.du ?? null,
             }))}
           >
-            <EnTeteEcran
-              retour={{ href: "/", libelle: "Retour à la liste des chantiers" }}
-              titre="Vos clients"
-              precision={<CompteClients />}
-            />
-            <ListeClients />
+            <EnTeteEcran retour={retour} titre={titre} precision={<CompteClients entreprises={entreprises} />} />
+            {porte && <PorteEntreprises />}
+            <ListeClients entreprises={entreprises} />
           </FournisseurClients>
         )}
       </div>
+    </div>
+  );
+}
+
+/**
+ * « VOS ENTREPRISES › » — la porte de « Vos clients › » sur l'écran Chantiers,
+ * trait pour trait : le mot doré en capitales espacées, le chevron qui dit
+ * qu'il mène ailleurs, 44 px de cible pour un pouce ganté.
+ */
+function PorteEntreprises() {
+  return (
+    <div className="px-[26px]">
+      <Link
+        href={`/clients?vue=${VUE_ENTREPRISES}`}
+        data-atlas="porte-entreprises"
+        className="inline-flex min-h-[44px] items-center text-[11px] font-medium uppercase"
+        style={{ color: colors.or, letterSpacing: "0.28em" }}
+      >
+        Vos entreprises
+        <span
+          aria-hidden="true"
+          className="ml-[5px] text-[19px] font-bold leading-none"
+          style={{ letterSpacing: 0, position: "relative", top: -1 }}
+        >
+          ›
+        </span>
+      </Link>
     </div>
   );
 }

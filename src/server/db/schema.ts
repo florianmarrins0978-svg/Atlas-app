@@ -133,6 +133,13 @@ export const entreprises = pgTable("entreprises", {
    * prouve rien (`src/lib/mentions-obligatoires.ts`).
    */
   assureurDecennale: text("assureur_decennale"),
+  // Migration 0121, son choix A du 5 octobre 2026 : les coordonnées de
+  // l'assureur (loi 96-603, art. 22-2) et l'attestation jointe à chaque devis
+  // et facture (C. ass. L243-2). La clé désigne un fichier qu'on ne supprime
+  // jamais : les pièces déjà parties la citent.
+  adresseAssureurDecennale: text("adresse_assureur_decennale"),
+  attestationDecennaleCle: text("attestation_decennale_cle"),
+  attestationDecennaleMime: text("attestation_decennale_mime"),
   contratDecennale: text("contrat_decennale"),
   couvertureDecennale: text("couverture_decennale"),
   mediateurNom: text("mediateur_nom"),
@@ -753,10 +760,19 @@ export const clients = pgTable(
     // ni « Mr » ni « Mme », et un client saisi à la volée n'a pas toujours eu
     // droit à un appui de plus. Ce que NULL vaut à l'écran est décidé dans
     // `src/lib/civilite.ts`, jamais ici (migration 0038).
-    civilite: text("civilite", { enum: ["mr", "mme"] }),
+    civilite: text("civilite", { enum: ["mr", "mme", "entreprise"] }),
     telephone: text("telephone"),
     adresse: text("adresse"),
     email: text("email"),
+    /**
+     * Le numéro de TVA d'une entreprise cliente (migration 0118). Retenu ici
+     * pour être proposé sur sa prochaine facture en sous-traitance, et toujours
+     * modifiable sur la facture (son choix 5B du 3 octobre 2026). NUL : un
+     * particulier, ou un numéro jamais donné.
+     */
+    numeroTva: text("numero_tva"),
+    /** Le SIRET d'une entreprise cliente (migration 0119), recopié sous son nom. */
+    siret: text("siret"),
     // Canal convenu avec le client pour l'envoi du devis (docs/AGENT.md §2.1).
     // Sans lui, l'envoi est impossible : mieux vaut bloquer qu'envoyer dans le vide.
     canalCommunication: text("canal_communication", { enum: ["sms", "email"] }),
@@ -893,6 +909,17 @@ export const chantiers = pgTable(
     prixValideAt: timestamp("prix_valide_at", { withTimezone: true }),
     devisGenereAt: timestamp("devis_genere_at", { withTimezone: true }),
     devisEnvoyeAt: timestamp("devis_envoye_at", { withTimezone: true }),
+    /**
+     * Le chantier en sous-traitance, sans TVA (migration 0119) — son choix B
+     * du 4 octobre 2026 : décoché d'office. Basculer met à zéro les taux de
+     * ses lignes de prix et du devis, et garde ceux d'avant
+     * (`tauxAvantAutoliquidation`) ; chaque version du devis en repart.
+     */
+    autoliquidation: boolean("autoliquidation").notNull().default(false),
+    tauxAvantAutoliquidation: jsonb("taux_avant_autoliquidation").$type<{
+      facture: string;
+      lignes: Record<string, string | null>;
+    }>(),
     datePlanifiee: date("date_planifiee"), // non-null = "planifié"
     // Le moment où l'intervention commence, et sa durée réservée en
     // demi-journées. NULL sur tout chantier planifié avant la migration 0019 :
@@ -1343,6 +1370,12 @@ export const devis = pgTable(
       enum: ["sous_nom", "bas", "aucune"],
     }),
     /**
+     * Le régime de TVA au jour du devis (migration 0118), comme sur la facture
+     * (0039). En franchise, la mention de l'article 293 B s'imprime au pied ;
+     * nul sur les devis d'avant, qui se lisent à leur taux (`sousFranchise`).
+     */
+    entrepriseRegimeTva: text("entreprise_regime_tva", { enum: ["assujettie", "franchise"] }),
+    /**
      * La décennale et le médiateur AU JOUR DU DOCUMENT (migration 0094).
      *
      * Figés comme le SIRET, et pour une raison qui compte davantage : un numéro
@@ -1352,6 +1385,11 @@ export const devis = pgTable(
      * Nuls sur tout ce qui existait avant : rien de plus ne s'imprime.
      */
     entrepriseAssureurDecennale: text("entreprise_assureur_decennale"),
+    // Figées avec l'assureur (migration 0121) : c'est l'attestation du jour de
+    // la pièce qui prouve la couverture du chantier.
+    entrepriseAdresseAssureurDecennale: text("entreprise_adresse_assureur_decennale"),
+    entrepriseAttestationDecennaleCle: text("entreprise_attestation_decennale_cle"),
+    entrepriseAttestationDecennaleMime: text("entreprise_attestation_decennale_mime"),
     entrepriseContratDecennale: text("entreprise_contrat_decennale"),
     entrepriseCouvertureDecennale: text("entreprise_couverture_decennale"),
     entrepriseMediateurNom: text("entreprise_mediateur_nom"),
@@ -1361,7 +1399,16 @@ export const devis = pgTable(
     // Recopiée comme le nom : un document dit comment on s'adressait à son
     // destinataire LE JOUR OÙ il a été établi. Corriger une fiche client ne
     // doit pas réécrire un devis déjà parti (migration 0038).
-    clientCivilite: text("client_civilite", { enum: ["mr", "mme"] }),
+    clientCivilite: text("client_civilite", { enum: ["mr", "mme", "entreprise"] }),
+    /** Le SIRET d'une entreprise cliente, figé comme son nom (migration 0119). */
+    clientSiret: text("client_siret"),
+    /**
+     * Le devis en sous-traitance, sans TVA (migration 0119), et le numéro du
+     * donneur d'ordre, figés au jour du devis. Les taux de ses lignes sont
+     * déjà à zéro : l'état vit sur le chantier (`chantiers.autoliquidation`).
+     */
+    autoliquidation: boolean("autoliquidation").notNull().default(false),
+    clientNumeroTva: text("client_numero_tva"),
     clientAdresse: text("client_adresse"),
     clientTelephone: text("client_telephone"),
     clientEmail: text("client_email"),
@@ -2139,6 +2186,20 @@ export const factures = pgTable(
      * sur le taux appliqué, exactement comme avant.
      */
     entrepriseRegimeTva: text("entreprise_regime_tva", { enum: ["assujettie", "franchise"] }),
+    /**
+     * Le numéro de TVA intracommunautaire de l'émetteur, **au jour de
+     * l'émission** (migration 0117).
+     *
+     * Mention obligatoire de toute facture d'un assujetti (CGI, ann. II,
+     * art. 242 nonies A, I-4°). Il se saisissait dans Réglages depuis la
+     * création du compte et ne partait sur AUCUNE facture : `identiteDeLEmetteur`
+     * ne le recopiait pas. Constaté le 3 octobre 2026 en vérifiant la facture en
+     * autoliquidation, où il est doublement attendu.
+     *
+     * NUL sur les factures d'avant : elles sont émises, donc immuables, et rien
+     * ne s'imprime de plus sur elles.
+     */
+    entrepriseNumeroTva: text("entreprise_numero_tva"),
     entrepriseEmail: text("entreprise_email"),
     entrepriseTelephone: text("entreprise_telephone"),
     entrepriseIban: text("entreprise_iban"),
@@ -2181,6 +2242,11 @@ export const factures = pgTable(
      * Nuls sur tout ce qui existait avant : rien de plus ne s'imprime.
      */
     entrepriseAssureurDecennale: text("entreprise_assureur_decennale"),
+    // Figées avec l'assureur (migration 0121) : c'est l'attestation du jour de
+    // la pièce qui prouve la couverture du chantier.
+    entrepriseAdresseAssureurDecennale: text("entreprise_adresse_assureur_decennale"),
+    entrepriseAttestationDecennaleCle: text("entreprise_attestation_decennale_cle"),
+    entrepriseAttestationDecennaleMime: text("entreprise_attestation_decennale_mime"),
     entrepriseContratDecennale: text("entreprise_contrat_decennale"),
     entrepriseCouvertureDecennale: text("entreprise_couverture_decennale"),
     entrepriseMediateurNom: text("entreprise_mediateur_nom"),
@@ -2190,7 +2256,9 @@ export const factures = pgTable(
     // Recopiée comme le nom : un document dit comment on s'adressait à son
     // destinataire LE JOUR OÙ il a été établi. Corriger une fiche client ne
     // doit pas réécrire un devis déjà parti (migration 0038).
-    clientCivilite: text("client_civilite", { enum: ["mr", "mme"] }),
+    clientCivilite: text("client_civilite", { enum: ["mr", "mme", "entreprise"] }),
+    /** Le SIRET d'une entreprise cliente, figé comme son nom (migration 0119). */
+    clientSiret: text("client_siret"),
     clientAdresse: text("client_adresse"),
     clientTelephone: text("client_telephone"),
     clientEmail: text("client_email"),
@@ -2199,6 +2267,27 @@ export const factures = pgTable(
 
     dateEmission: date("date_emission").notNull(),
     dateEcheance: date("date_echeance"),
+    /**
+     * La date des travaux (migration 0118), mention obligatoire quand elle
+     * diffère de la date de la facture (CGI, ann. II, art. 242 nonies A).
+     * Remplie d'après le planning à la création, modifiable en brouillon : son
+     * choix 6A du 3 octobre 2026. NUL sur les factures d'avant.
+     */
+    dateTravaux: date("date_travaux"),
+    /**
+     * Sous-traitance du bâtiment, sans TVA : l'autoliquidation (CGI,
+     * art. 283-2 nonies), migration 0118. Basculer met les taux de la pièce à
+     * zéro, EN BASE, et range ceux d'avant dans `tauxAvantAutoliquidation` :
+     * tout ce qui lit une facture (écran, PDF, page du client, paiements,
+     * avoirs, relevé) la lit donc sans TVA sans avoir à connaître ce drapeau.
+     */
+    autoliquidation: boolean("autoliquidation").notNull().default(false),
+    /** Le numéro de TVA du donneur d'ordre, imprimé sous son nom (242 nonies A, I-4°). */
+    clientNumeroTva: text("client_numero_tva"),
+    tauxAvantAutoliquidation: jsonb("taux_avant_autoliquidation").$type<{
+      facture: string;
+      lignes: Record<string, string | null>;
+    }>(),
     conditionsPaiement: text("conditions_paiement"),
     devise: char("devise", { length: 3 }).notNull().default("EUR"),
 

@@ -6,9 +6,11 @@ import { getCurrentCtx } from "@/server/session-ctx";
 import { logger } from "@/server/logger";
 import { creerChantier, getChantier } from "@/server/repositories/chantiers";
 import {
+  chantierDuClientAFacturer,
   creerFactureSansDevis,
   FactureDirecteImpossibleError,
 } from "@/server/repositories/factures";
+import type { ChantierAFacturer } from "@/lib/chantier-a-facturer";
 import { recopierPhotos } from "@/server/repositories/photos";
 import {
   trouverOuCreerClient,
@@ -19,10 +21,12 @@ import {
   type ReconnaissanceClient,
 } from "@/server/repositories/clients";
 import { nomDuChantier } from "@/lib/nom-chantier";
-import type { Civilite } from "@/lib/civilite";
+import type { CiviliteClient } from "@/lib/civilite";
 import { jourIso } from "@/lib/jour";
 import { verifierLimite, LIMITES } from "@/server/rate-limit";
 import { preparerAudioEntrant } from "@/server/audio-entrant";
+import { siretLu } from "@/lib/siren";
+import { numeroTvaLu } from "@/lib/autoliquidation";
 import { lireCoordonneesDictees } from "@/server/ai/services/coordonnees-service";
 
 export type CreerChantierInput = {
@@ -42,9 +46,12 @@ export type CreerChantierInput = {
   nomClient?: string;
   /** « Mr » ou « Mme », s'il l'a choisi. Absent : il n'a rien dit, et ce
    *  silence se garde tel quel (migration 0038). */
-  civilite?: Civilite;
+  civilite?: CiviliteClient;
   telephone?: string;
   email?: string;
+  /** Pour une entreprise cliente (4 octobre 2026) : complètent sa fiche s'ils sont valables. */
+  siret?: string;
+  numeroTva?: string;
   /** Canal convenu avec le client pour recevoir son devis (docs/AGENT.md §2.1). */
   canal?: CanalClient;
   adresseChantier?: string;
@@ -135,6 +142,17 @@ export async function creerChantierAction(data: CreerChantierInput): Promise<{ i
       refuseLeRapprochement: data.refuseLeRapprochement,
     });
     clientId = client.id;
+  }
+
+  // **Le SIRET et le n° TVA d'une entreprise** (sa demande du 4 octobre 2026),
+  // par la même porte que le reste : `completerLaFiche`, le vide seul. Une
+  // valeur qui n'en est pas une ne s'écrit pas ; l'écran l'a déjà signalée
+  // sous sa case, par la même lecture (`siretLu`, `numeroTvaLu`).
+  const siret = siretLu(data.siret) || undefined;
+  const numeroTva = numeroTvaLu(data.numeroTva) ?? undefined;
+  if (clientId && data.civilite === "entreprise" && (siret || numeroTva)) {
+    const fiche = await getClient(ctx, clientId);
+    if (fiche) await completerLaFiche(ctx, { ...fiche, creeLe: fiche.createdAt }, { siret, numeroTva });
   }
 
   // Le nom se DÉDUIT de ce que le patron a donné : il n'a plus à en trouver un.
@@ -298,6 +316,25 @@ export async function reconnaitreLeClientAction(saisie: {
   // savoir qui est déjà chez lui.
   await exigerEcran(ctx, "/chantiers", "reconnaître un client");
   return reconnaitreLeClient(ctx, saisie);
+}
+
+/**
+ * AVANT LA FACTURE DIRECTE : CE CLIENT A-T-IL UN DEVIS QUI ATTEND ? — 3 octobre
+ * 2026.
+ *
+ * *« Il ne reprend pas le devis du client »* : la fiche ouvrait un chantier
+ * neuf et une facture vide pour un client dont le devis envoyé attendait
+ * ailleurs. Cette lecture se fait AVANT toute création, pour qu'aucun chantier
+ * en double ne naisse (`chantierAFacturer`).
+ */
+export async function chantierDuClientAFacturerAction(
+  clientId: string,
+  adresseSaisie: string
+): Promise<ChantierAFacturer> {
+  const ctx = await getCurrentCtx();
+  await exigerEcran(ctx, "/chantiers", "créer une facture");
+  await exigerFacturation(ctx, "créer une facture");
+  return chantierDuClientAFacturer(ctx, clientId, adresseSaisie);
 }
 
 /**

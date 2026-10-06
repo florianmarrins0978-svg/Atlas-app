@@ -208,5 +208,9 @@ export function dansDelaiRetractation(iso: string, aujourdHui: string): boolean 
   const cible = Date.parse(`${iso}T00:00:00Z`);
   const base = Date.parse(`${aujourdHui}T00:00:00Z`);
   if (Number.isNaN(cible) || Number.isNaN(base)) return false;
-  return cible - base < DELAI_RETRACTATION_JOURS * 86400_000;
+  // **`<=`, et le jour compte — corrigé le 3 octobre 2026.** Le délai court à
+  // partir du lendemain de l'accord (L221-19) : accepté le 3, il s'achève le
+  // 17 au soir. Le `<` d'avant laissait le 17 hors du délai, donc sans la case
+  // (`scripts/test-retractation.ts`).
+  return cible - base <= DELAI_RETRACTATION_JOURS * 86400_000;
 }

@@ -1,10 +1,14 @@
 "use client";
 
 import { colors, smallCaps } from "@/lib/design-tokens";
-import { CIVILITES, type Civilite, type CiviliteChoisie } from "@/lib/civilite";
+import { PASTILLES_CIVILITE, type CiviliteClient, type CiviliteChoisie } from "@/lib/civilite";
 
 /**
- * « Mr » / « Mme », deux pastilles au-dessus du nom.
+ * « Mr » / « Mme » / « Entreprise », trois pastilles au-dessus du nom.
+ *
+ * **La troisième depuis le 4 octobre 2026** (`appli/ni-mr-ni-mme.html`, son
+ * « Ok ») : une entreprise cliente recevait « Mr. » sur ses devis. Le second
+ * appui qui désélectionne reste : ne rien choisir garde la règle d'avant.
  *
  * ───────────────────────────────────────────────────────────────────────────
  * **Le patron, le 13 août 2026 :** *« il faut intégrer une case
@@ -59,7 +63,7 @@ export default function ChoixCivilite({
   sansLegende = false,
 }: {
   valeur: CiviliteChoisie;
-  onChange: (v: Civilite | null) => void;
+  onChange: (v: CiviliteClient | null) => void;
   /** Un devis parti ne se modifie plus : les pastilles s'affichent, éteintes. */
   fige?: boolean;
   /**
@@ -86,7 +90,7 @@ export default function ChoixCivilite({
         </legend>
       )}
       <div className="flex gap-2">
-        {(Object.keys(CIVILITES) as Civilite[]).map((cle) => {
+        {(Object.keys(PASTILLES_CIVILITE) as CiviliteClient[]).map((cle) => {
           const actif = valeur === cle;
           return (
             <button
@@ -124,7 +128,7 @@ export default function ChoixCivilite({
               {/* « Mr », sans point, comme il l'a écrit. Le point n'apparaît
                   que devant le nom (`CIVILITES`), là où il se lit comme une
                   abréviation et non comme une étiquette. */}
-              {cle === "mr" ? "Mr" : "Mme"}
+              {PASTILLES_CIVILITE[cle]}
             </button>
           );
         })}

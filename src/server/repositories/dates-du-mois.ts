@@ -1,3 +1,4 @@
+import { nomAvecForme } from "@/lib/formes-juridiques";
 import { randomBytes } from "node:crypto";
 import { and, asc, eq, gte, isNull, sql } from "drizzle-orm";
 import { db, type DbOrTx } from "../db/client";
@@ -231,7 +232,12 @@ export async function lireDatesParJeton(jeton: string, aujourdhui: string): Prom
     await tx.execute(sql`SELECT set_config('app.entreprise_id', ${envoi.entrepriseId}, true)`);
 
     const [c] = await tx
-      .select({ clientNom: clients.nom, clientCivilite: clients.civilite, entrepriseNom: entreprises.nom })
+      .select({
+        clientNom: clients.nom,
+        clientCivilite: clients.civilite,
+        entrepriseNom: entreprises.nom,
+        formeJuridique: entreprises.formeJuridique,
+      })
       .from(contratsEntretien)
       .innerJoin(clients, eq(clients.id, contratsEntretien.clientId))
       .innerJoin(entreprises, eq(entreprises.id, contratsEntretien.entrepriseId))
@@ -259,7 +265,8 @@ export async function lireDatesParJeton(jeton: string, aujourdhui: string): Prom
     }
 
     return {
-      entrepriseNom: c.entrepriseNom,
+      // « … EI » pour un entrepreneur individuel (R526-27).
+      entrepriseNom: nomAvecForme(c.entrepriseNom, c.formeJuridique),
       clientNom: c.clientNom,
       clientCivilite: (c.clientCivilite ?? null) as CiviliteChoisie | null,
       mois: envoi.mois,

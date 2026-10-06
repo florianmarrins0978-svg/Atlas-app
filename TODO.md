@@ -2,11 +2,155 @@
 
 ## ⏳ LA FENTE AU FÛT : SES PRIX DE FENTE À REVOIR (30 septembre 2026)
 
-Codé sur `claude/fente-au-fut` (`ARCHITECTURE.md` §441). **Ce que le code ne
+Codé sur `claude/fente-au-fut` (`ARCHITECTURE.md` §449). **Ce que le code ne
 peut pas faire à sa place** : les prix qu'il avait posés dans sa grille de
 fente l'avaient été par hauteur d'ARBRE ; ils sont désormais lus comme des
 hauteurs de fût (Réglages, Mes prix, Fendre le bois). À lui dire au moment de
 la livraison.
+## ✅ LE BOUTON « CRÉER UN DEVIS » : LA B, CODÉE LE 6 OCTOBRE 2026 (5 octobre 2026)
+
+**Sa remarque :** *« le bouton "Créer un devis" de l'écran Chantiers manque de
+style »*. Planche `appli/creer-un-devis-trois-boutons.html` (A le sceau, B la
+signature, C la glissière). **Son choix du 6 octobre : *« je veux la deuxième,
+c'est la B signature »*.** Codée : la phrase en lettres de titre, 27 px, à
+l'encre (`.atlas-phrase`), et la croix d'or qui se trace toute seule
+(`.atlas-plume`) ; même place, mêmes onze grains, même demi-seconde avant la
+feuille (`EcranChantiers.tsx`, `globals.css`, `ARCHITECTURE.md` §448). Reste :
+la batterie entière (`globals.css` est un plancher), puis `main` avec son
+accord.
+
+## ✅ LA FACTURE ET LE DEVIS EN RÈGLE : SUR `main` LE 6 OCTOBRE 2026 (3 octobre 2026)
+
+Sa demande : *« va vérifier qu'il manque rien sur la facture qui est
+obligatoire, vérifie aussi le devis ! Je veux aucune erreur ! »*, puis ses
+choix 1A, 2A, 3A, 4A, 5B, 6A et le bouton « Sous-traitance, sans TVA ». Le
+document de retour est `docs/lot-mentions-facture-devis.md`.
+
+- ✅ **Tout est codé sur la branche** (migrations 0117 et 0118, §442 et §443).
+  Contrôles neufs vus rouges puis verts ; 149 suites base rejouées au vert.
+- ✅ **La batterie commune, puis `main` le 6 octobre 2026**, avec
+  `devis-a-la-voix`, `sans-traduction`, `ouvrir-la-fiche` et
+  `app-sur-ordinateur` : 452 suites base, 177 navigateur, connexion derrière
+  un proxy, tout vert. Elle a trouvé un vrai défaut, corrigé : la page du
+  devis comptait les 14 jours en temps universel (CHANGELOG du 5 octobre).
+- ⏳ Une facture et un devis d'essai, dont une en sous-traitance, relus par
+  son comptable.
+- ⏳ **Le check-up légal du 4 octobre** (`docs/check-up-legal-documents.md`) :
+  - ✅ points 3 à 8 corrigés sur la branche (conditions d'origine, migration
+    0120, 40 € au seul professionnel, téléphone et courriel) ;
+  - ✅ points 1, 2 et 10, **son choix A** du 5 octobre, codés sur la branche
+    (migration 0121, `ARCHITECTURE.md` §446). **À lui dire avant `main`** :
+    s'il a nommé un assureur, ses devis et factures ne partiront plus tant que
+    l'adresse de l'assureur et l'attestation ne sont pas dans Mon entreprise ;
+  - ⏳ point 9, la certification du taux réduit : **posée puis retirée le
+    5 octobre**. Le 10 % de ses lignes, c'est la vente de plantes (CGI 278 bis),
+    pas des travaux dans un logement : la phrase « locaux à usage
+    d'habitation » ne doit JAMAIS sortir d'un taux. Si un jour il fait des
+    travaux dans une maison à 10 %, il faudra un geste à lui (une case sur le
+    devis), sur planche. Le texte officiel, recopié par lui du
+    BOI-LETTRE-000280, §1 : « Je soussigné(e)............................ (Nom,
+    prénom) certifie, en qualité de preneur de la prestation, que les travaux
+    réalisés concernent des locaux à usage d'habitation achevés depuis plus de
+    deux ans et qu'ils n'ont pas eu pour effet, sur une période de deux ans au
+    plus, de concourir à la production d'un immeuble neuf au sens du 2° du 2 du
+    I de l'article 257 du CGI, ni d'entraîner une augmentation de la surface de
+    plancher des locaux existants supérieure à 10 %. » Le §10 (5,5 %) ajoute
+    « et qu'ils ont la nature de travaux de rénovation énergétique ».
+  - ⏳ `scripts/test-recherche-client-e2e.ts` vise encore le port 3000 en dur,
+    comme le faisait `test-entreprises-et-sous-traitance-e2e.ts` (corrigé le
+    5 octobre) : quand la batterie prend un autre atelier, il vise un autre
+    serveur que le sien. Hors de ce lot, à corriger par `ADRESSE`.
+  - ⏳ **Plantes à 10 % et plantation** : les sources se contredisent. Plantes
+    vendues seules : 10 % (CGI 278 bis). Plantes fournies ET plantées : 20 %
+    pour le tout selon certaines, 10 % sur les plantes si elles sont
+    facturées sur une ligne à part selon d'autres. **À trancher par son
+    comptable**, puisqu'il facture des plantes à 10 %.
+- ⏳ Le relevé de TVA écrit « À 0 % » pour une facture en sous-traitance.
+  Faut-il la nommer « autoliquidation » (ligne 05 de la déclaration) ? Une
+  planche, si oui.
+- ⏳ Les factures de contrat d'entretien, émises sans geste du patron, ne
+  passent pas par la vérification des mentions : aucun écran où lister ce qui
+  manque. À trancher avec lui.
+- ✅ **SES CHOIX DU 4 OCTOBRE 2026, CODÉS SUR LA BRANCHE** (migration 0119,
+  `ARCHITECTURE.md` §444), dans le même lot et la même batterie :
+  - **Mr, Mme ou Entreprise** sur la fiche, avec SIRET et numéro de TVA
+    imprimés sous le nom du client ;
+  - **Vos entreprises** derrière une porte dans « Vos clients » ;
+  - **le devis en sous-traitance**, décoché d'office (B).
+- ✅ **Ses décisions du 4 octobre au soir, codées** : SIRET et n° TVA à la
+  création d'un chantier pour une entreprise ; la facture née d'un devis
+  suit le devis, son bouton ne reste que sur une facture faite sans devis
+  (`ARCHITECTURE.md` §444).
+
+## ✅ PAS DE TRADUCTION AUTOMATIQUE : sur `main` le 6 octobre 2026 (4 octobre 2026)
+
+Sur le téléphone Android d'une amie, Chrome traduisait le devis du client du
+français vers le français : « Quelle date vous arrangez ? », « votre artisan la
+lire. ». Le code est juste ; son iPhone l'affiche tel quel. La correction est
+sur la branche **`claude/sans-traduction`** : `translate="no"` sur `<html>` et
+`<meta name="google" content="notranslate">` dans `src/app/layout.tsx`, gardés
+par `test-detection-automatique-e2e` (vu rouge, puis vert). Types, lint,
+mémoire, tirets, pansements : verts.
+
+**Reste, et seulement ça** : la batterie (niveau 3, gabarit racine), qu'il a
+refusé de jouer dans la session du 3 octobre, puis la poussée sur `main` avec
+son accord. Ensuite, lui demander de vérifier sur le téléphone de son amie.
+**Ne pas retoucher le texte de la page du devis** : il est juste, et il a
+demandé de le garder tel quel.
+
+## ✅ RETIRER PAR UNE CROIX : sa réponse « A », codée par une autre session (3 octobre 2026)
+
+Sa demande en essayant la version ordinateur : *« pour retirer une ligne il
+faut mettre une petite croix en plus du slide »*. Une souris ne glisse pas :
+`LigneRetirable` n'est atteignable sur ordinateur qu'au pavé tactile. Planche
+`appli/retirer-par-une-croix.html` : A partout, B sur ordinateur seulement,
+C au survol. Elle rouvre en partie son choix du 10 août (une seule façon de
+retirer) ; le glissement reste dans les trois. Quand il aura choisi, la croix
+vit dans `LigneRetirable`, donc sur tous les écrans qui l'emploient.
+
+**Il a répondu « A » (la croix partout), et a demandé de ne pas faire deux fois
+la même chose** : la session `013KcmGGosfFVLdRbad4RZSv` avait posé sa propre
+planche (`appli/retirer-une-ligne-du-devis.html`, branche
+`claude/planche-retirer-une-ligne`) et codé sa réponse « A » sur le devis,
+branche `claude/ligne-du-devis-retiree-en-saisie` (« Poser une croix au bout
+de chaque ligne du devis »). C'est CETTE version qui vaut, pour le téléphone
+comme pour l'ordinateur : un seul code sert les deux (`ARCHITECTURE.md` §447).
+`appli/retirer-par-une-croix.html` ne se code pas. Reste ouvert : la croix sur
+les AUTRES écrans qui retirent par glissement (informations, prix, note vocale,
+planning, tarifs), que sa demande visait sur le devis seul.
+
+## ⏳ SUR ORDINATEUR : la planche attend son choix (30 septembre 2026)
+
+## ✅ SUR ORDINATEUR : CODÉ LE 3 OCTOBRE 2026 (`ARCHITECTURE.md` §447)
+
+Sa demande : *« il faut que ça prenne l'entièreté de l'ordinateur »*. Le site
+servira les ordinateurs (installable depuis Chrome ou Edge, sans magasin),
+l'App Store les téléphones : **une seule application qui change de forme**, pas
+un second logiciel.
+
+La cause est connue : tout vit dans `max-w-md` (448 px), posé par
+`CadreApplication.tsx` et `AtlasBottomNav.tsx`, et aucun écran de `src/` n'a de
+règle pour les grands écrans (29 `max-w-md` au total).
+
+Sa réponse du 3 octobre : *« les pages doivent être EXACTEMENT les mêmes,
+n'invente rien »*, et une modification du téléphone doit arriver d'elle-même
+sur l'ordinateur. **Codé** : seul le cadre change au-delà de 1024 px (barre à
+gauche, contenu sur 1024 px), aucun écran propre à l'ordinateur. Le téléphone
+est inchangé au pixel (49 écrans comparés), `test-sur-ordinateur-e2e` le tient.
+
+| Reste | Qui |
+|---|---|
+| la batterie entière (niveau 3 : `globals.css`, le cadre), puis `main` | session, avec son accord avant de lancer |
+| les deux panneaux de la planche (liste et fiche côte à côte) | **pas faits** : ce seraient des écrans que le téléphone n'a pas. À lui de les redemander |
+
+**Téléphone et ordinateur reliés : sa condition du 3 octobre 2026.** *« ce qui
+sera fait sur l'appli téléphone doit être relié à celui de l'ordi »*. C'est vrai
+de l'application Next.js (une base, un compte). **Ce n'est PAS vrai de la coque
+iPhone telle qu'elle est configurée** : `appli/capacitor.config.json` n'a pas de
+`server.url` et empaquette les pages de `appli/`, qui gardent leurs données
+dans le téléphone (`appli/PRINCIPES.md`, « local-first »). Avant toute
+soumission à l'App Store, la coque doit ouvrir l'adresse hébergée de
+l'application, sans quoi les deux appareils ne partageraient rien.
 
 ## 🔜 `test-poser-une-date-e2e` ROUGE LE 30 SEPTEMBRE 2026, SUR `main` AUSSI
 
@@ -60,6 +204,38 @@ dictée qui arrive ensuite ne s'y écrit pas. La racine : faire vivre la ligne
 ajoutée dans l'écran jusqu'au premier mot, comme la ligne ouverte d'avance.
 Travail dans l'écran du devis (identifiant qui ne change pas, ordre des
 écritures), donc un lot à lui, de niveau 3.
+
+## ✅ DIRE QUE LE MICRO RÉDIGE LE DEVIS : « LA A », CODÉE LE 3 OCTOBRE 2026, SUR `main` LE 6
+
+**Sa réponse : « la A », et pas de batterie.** Libellé « Devis à la voix »
+au-dessus du micro, branche `claude/devis-a-la-voix`. Niveau 2 : `main` attend
+un contrôle joué au vert. **Sa consigne du 4 octobre : rien ne se lance avant
+qu'il dise « on joue la batterie »** ; ce lot part alors avec elle.
+
+La planche, pour mémoire :
+
+**Sa remarque :** *« sur la fiche client on comprend pas que la note vocale
+permet de rédiger le devis par la voix, il faudrait mettre une phrase
+au-dessus »*. Écran regardé (`/chantiers/nouveau?client=…`) : sous le grand
+micro, seulement « Appuyez et décrivez le chantier » en 11 px gris
+(`AnneauNoteVocale.tsx`). Planche `appli/dicter-le-devis-dire-ce-que-ca-fait.html` :
+**A** « Devis à la voix » en capitales, **B** « Dictez les travaux, Atlas rédige
+le devis. » (recommandée), **C** B et l'indice raccourci en « Appuyez pour
+commencer ». **Rien n'est codé.** À savoir : le petit micro en haut à droite
+(`DicterCoordonnees`) remplit les coordonnées, pas le devis ; deux micros sur
+un écran peuvent entretenir la confusion.
+
+## ✅ OUVRIR LA FICHE D'INTERVENTION : « LA C », CODÉE LE 3 OCTOBRE 2026, SUR `main` LE 6
+
+**Sa remarque, capture du planning à l'appui :** *« le fait de cliquer pour
+faire apparaître la fiche chantier n'est pas intuitif »*. Aujourd'hui la fiche
+ne s'ouvre qu'en touchant le nom du chantier (`data-atlas="nom-du-jour"`,
+`PlanningClient.tsx`), et rien ne le montre. Planche
+`appli/ouvrir-la-fiche.html` : **A** ouverte d'office quand le chantier est
+seul ce jour-là, **B** un chevron sur chaque nom, **C** les deux (recommandée).
+**Sa réponse : « la C ».** Codée : `ficheOuverteDOffice` (`planning-jour.ts`),
+le chevron `chevron-fiche` sur `nom-du-jour`. Niveau 3 (rayon de 54 points
+d'entrée) : la batterie entière attend son accord avant `main`.
 
 ## ⏳ UNE PLANCHE À REGARDER : LES COULEURS DU PLANNING (29 septembre 2026)
 

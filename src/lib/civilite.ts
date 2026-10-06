@@ -46,8 +46,27 @@ export const CIVILITES = { mr: "Mr.", mme: "Mme" } as const;
 
 export type Civilite = keyof typeof CIVILITES;
 
-/** Ce qu'il a choisi, ou `null` s'il n'a rien choisi. Les trois états. */
-export type CiviliteChoisie = Civilite | null | undefined;
+/**
+ * La civilité d'un CLIENT : Mr, Mme, ou **Entreprise** — son choix du
+ * 4 octobre 2026 (`appli/ni-mr-ni-mme.html`). Une entreprise cliente sans
+ * mot-repère dans son nom (« Jardins Ribault ») recevait « Mr. » par défaut,
+ * sur la fiche, le devis et la facture. « Entreprise » est un choix comme les
+ * deux autres : le nom s'écrit seul.
+ *
+ * `Civilite` reste celle d'une PERSONNE (le compte de l'artisan) : une
+ * entreprise n'y a pas de sens.
+ */
+export type CiviliteClient = Civilite | "entreprise";
+
+/** Le mot de chaque pastille de la fiche, sans point (« Mr », comme il l'écrit). */
+export const PASTILLES_CIVILITE: Record<CiviliteClient, string> = {
+  mr: "Mr",
+  mme: "Mme",
+  entreprise: "Entreprise",
+};
+
+/** Ce qu'il a choisi, ou `null` s'il n'a rien choisi. */
+export type CiviliteChoisie = CiviliteClient | null | undefined;
 
 /**
  * Le mot posé devant un nom nu **quand il n'a rien choisi**. Un seul endroit
@@ -201,6 +220,23 @@ export function porteDejaSonAppellation(nom: string): boolean {
 }
 
 /**
+ * CE CLIENT EST-IL UNE ENTREPRISE ? — la porte « Vos entreprises » et le
+ * devis en sous-traitance (4 octobre 2026) posent la même question.
+ *
+ * **Son choix d'abord** : « Entreprise » coché, oui ; « Mr » ou « Mme », non,
+ * même si le nom contient un mot de société (c'est lui qui sait). **Sans
+ * choix**, le nom tranche, par les mêmes mots que ceux qui retirent déjà le
+ * « Mr. » (SARL, Mairie…) : une même liste pour les deux questions, sinon
+ * « SARL Untel » s'écrirait sans Mr et resterait rangé chez les particuliers.
+ */
+export function estUneEntreprise(nom: string | null | undefined, civilite?: CiviliteChoisie): boolean {
+  if (civilite === "entreprise") return true;
+  if (civilite) return false;
+  const mots = aplati((nom ?? "").trim()).split(/[^0-9a-z]+/).filter(Boolean);
+  return mots.some((mot) => MARQUEURS_SOCIETE.includes(mot));
+}
+
+/**
  * « Martins » → « Mr. Martins », ou « Mme Martins » s'il l'a choisi.
  *
  * **Idempotente** : l'appliquer deux fois donne le même résultat. C'est ce qui
@@ -225,6 +261,8 @@ export function avecCivilite(nom: string | null | undefined, civilite?: Civilite
   const propre = nom?.trim() ?? "";
   if (propre === "") return "";
   if (aDejaUneCivilite(propre)) return propre;
+  // Une entreprise ne reçoit ni Mr ni Mme : c'est tout le sens du choix.
+  if (civilite === "entreprise") return propre;
   if (civilite) return `${CIVILITES[civilite]} ${propre}`;
   if (porteDejaSonAppellation(propre)) return propre;
   return `${CIVILITE_PAR_DEFAUT} ${propre}`;

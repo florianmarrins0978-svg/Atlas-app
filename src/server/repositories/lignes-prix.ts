@@ -3,7 +3,7 @@ import Decimal from "decimal.js";
 import { withEntreprise } from "../db/with-entreprise";
 import type { DbOrTx } from "../db/client";
 import { and, asc as _asc } from "drizzle-orm";
-import { lignesPrix, lignesPrixPrestations, prestations } from "../db/schema";
+import { chantiers, lignesPrix, lignesPrixPrestations, prestations } from "../db/schema";
 import type { Ctx } from "./context";
 import { membresDuLibelle } from "../../lib/lignes-vendables";
 import { reprendreLesLignes, type LigneReprise } from "../../lib/reprise-des-prix";
@@ -33,6 +33,24 @@ export async function listerLignesPrix(ctx: Ctx, chantierId: string) {
  * NULL — mais le drapeau dit que ce zéro n'est pas un prix, et le devis ne peut
  * pas partir tant qu'il est levé.
  */
+/**
+ * LE CHANTIER EST-IL EN SOUS-TRAITANCE, SANS TVA ? (migration 0119)
+ *
+ * Tant qu'il l'est, ses lignes suivent le taux du devis, à zéro : aucun taux ne
+ * s'y pose, ni par « Ajouter une TVA », ni par une catégorie, ni par la
+ * reprise d'un ancien devis. **Une seule garde, ici, pour tous les écrivains
+ * des lignes de prix** : une ligne à 20 % glissée sous un devis en
+ * sous-traitance réclamerait une TVA que le client ne paie pas.
+ */
+async function sansTvaSurLeChantier(tx: DbOrTx, chantierId: string): Promise<boolean> {
+  const [c] = await tx
+    .select({ autoliquidation: chantiers.autoliquidation })
+    .from(chantiers)
+    .where(eq(chantiers.id, chantierId))
+    .limit(1);
+  return c?.autoliquidation ?? false;
+}
+
 export async function ajouterLignePrix(
   ctx: Ctx,
   chantierId: string,
@@ -52,6 +70,7 @@ export async function ajouterLignePrix(
 ) {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const existantes = await tx.select().from(lignesPrix).where(eq(lignesPrix.chantierId, chantierId));
+    const sansTva = await sansTvaSurLeChantier(tx, chantierId);
     const [row] = await tx
       .insert(lignesPrix)
       .values({
@@ -63,7 +82,7 @@ export async function ajouterLignePrix(
         prixUnitaire: options?.prixUnitaire ?? montant,
         unite: uniteAdmise(options?.unite),
         aChiffrer: options?.aChiffrer ?? false,
-        tauxTva: options?.tauxTva ?? null,
+        tauxTva: sansTva ? null : (options?.tauxTva ?? null),
         prixAncien: options?.prixAncien ?? null,
         prixGrille: options?.prixGrille ?? null,
         ordre: existantes.length,
@@ -107,6 +126,9 @@ export async function modifierLignePrix(
     const patch: typeof data & { prixAncien?: null; prixGrille?: null } = { ...data };
     if (data.unite !== undefined) patch.unite = uniteAdmise(data.unite);
     const [avant] = await tx.select().from(lignesPrix).where(eq(lignesPrix.id, id)).limit(1);
+    if (data.tauxTva !== undefined && avant && (await sansTvaSurLeChantier(tx, avant.chantierId))) {
+      delete patch.tauxTva;
+    }
     if (data.montant !== undefined && data.prixUnitaire === undefined && data.quantite === undefined) {
       patch.prixUnitaire = data.montant;
       patch.quantite = "1";
@@ -356,6 +378,7 @@ export async function changerTauxCategorie(
   const suitLeDevis = new Decimal(tauxDuDevis).toFixed(2) === avant;
 
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    if (await sansTvaSurLeChantier(tx, chantierId)) return;
     const lignes = await tx.select().from(lignesPrix).where(eq(lignesPrix.chantierId, chantierId));
     for (const ligne of lignes) {
       const sien = ligne.tauxTva === null ? (suitLeDevis ? avant : null) : new Decimal(ligne.tauxTva).toFixed(2);
@@ -421,6 +444,7 @@ export async function deplacerLigneVersCategorie(
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const [ligne] = await tx.select().from(lignesPrix).where(eq(lignesPrix.id, ligneId)).limit(1);
     if (!ligne) return null;
+    if (await sansTvaSurLeChantier(tx, ligne.chantierId)) return ligne;
 
     const soeurs = await tx
       .select()

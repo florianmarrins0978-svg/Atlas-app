@@ -1,3 +1,4 @@
+import { nomAvecForme } from "@/lib/formes-juridiques";
 import { randomBytes } from "node:crypto";
 import { and, eq, inArray, isNotNull, isNull, sql } from "drizzle-orm";
 import { db } from "../db/client";
@@ -279,7 +280,8 @@ export async function factureParJeton(
       .orderBy(avoirs.numero);
     return {
       numeroCommercial: f.numeroCommercial,
-      entrepriseNom: f.entrepriseNom,
+      // « … EI » pour un entrepreneur individuel (R526-27), comme sur le PDF.
+      entrepriseNom: nomAvecForme(f.entrepriseNom, f.entrepriseFormeJuridique),
       totalTtc: f.totalTtc,
       echeanceLe: f.dateEcheance ?? null,
       accuseLe: envoi.accuseAt,

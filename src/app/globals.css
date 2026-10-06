@@ -186,6 +186,143 @@ body {
 
 .atlas-nav-basse {
   padding-bottom: env(safe-area-inset-bottom);
+  border-top: 1px solid var(--line);
+}
+
+/* Les colonnes suivent le nombre d'onglets (un salarié n'en voit que deux), et
+ * le trait fait la largeur d'UNE colonne, marges déduites : le composant pose
+ * les deux nombres, la forme se décide ici. Ce sont les valeurs d'avant le
+ * 3 octobre 2026, au caractère près. */
+.atlas-nav-onglets {
+  grid-template-columns: repeat(var(--atlas-onglets), minmax(0, 1fr));
+}
+
+.atlas-nav-trait {
+  width: calc((100% - 1.75rem) / var(--atlas-onglets));
+  top: var(--atlas-onglet-haut, auto);
+  transform: translateX(calc(var(--atlas-onglet-rang) * 100%));
+  transition: transform 540ms cubic-bezier(0.34, 1.4, 0.5, 1);
+}
+
+.atlas-nav-trait > span {
+  height: var(--atlas-onglet-hauteur, 1px);
+  border-radius: var(--atlas-onglet-rayon, 0);
+  background-color: var(--atlas-onglet-fond, var(--atlas-or, #b98b47));
+}
+
+/* --- L'ORDINATEUR : les mêmes écrans, un cadre plus large ------------------
+ *
+ * **Sa demande du 30 septembre 2026 :** *« il faut que ça prenne l'entièreté
+ * de l'ordinateur »*, puis le 3 octobre : *« les pages doivent être EXACTEMENT
+ * les mêmes »* et *« quand je fais une modif sur l'appli tel, qu'elle
+ * s'applique automatiquement sur l'appli PC »*.
+ *
+ * D'où la forme de la solution : **aucun écran propre à l'ordinateur.** Seul le
+ * CADRE change avec la largeur, ici et nulle part ailleurs. Un écran écrit pour
+ * le téléphone arrive donc sur l'ordinateur sans qu'on y touche, et il ne peut
+ * pas exister deux versions d'une même page qui divergeraient.
+ *
+ * Trois mesures, une seule source :
+ *   `--atlas-cote`    la place de la barre quand elle passe à gauche ;
+ *   `--atlas-largeur` la colonne du contenu (448 px sur téléphone, comme le
+ *                     `max-w-md` d'avant, au pixel près) ;
+ *   `--atlas-barre`   tombe à zéro : plus rien n'est réservé en bas.
+ * Le cadre (`.atlas-colonne`) et tout ce qui flotte au-dessus de lui
+ * (`.atlas-colonne-fixe` : la barre Enregistrer, l'annulation, le tiroir du
+ * planning…) lisent les mêmes : un élément flottant qui se calerait ailleurs
+ * que le contenu se verrait décalé dès la première capture.
+ *
+ * **Pourquoi 1024 px.** C'est la largeur d'une tablette tenue à l'horizontale
+ * et du plus petit portable courant : en dessous, une barre à gauche mangerait
+ * le quart de l'écran. */
+:root {
+  --atlas-cote: 0px;
+  --atlas-largeur: 28rem;
+}
+
+.atlas-colonne {
+  width: 100%;
+  max-width: var(--atlas-largeur);
+  margin-inline: auto;
+}
+
+.atlas-colonne-fixe {
+  position: fixed;
+  left: var(--atlas-cote);
+  right: 0;
+  max-width: var(--atlas-largeur);
+  margin-inline: auto;
+}
+
+/* Une feuille qui monte du bas (choisir une date, envoyer, la note vocale…)
+ * se pose sous la colonne du contenu, pas sur toute la largeur : sur
+ * ordinateur, la barre de gauche reste visible et la feuille reste en face de
+ * l'écran qui l'a ouverte. Le voile, lui, couvre toujours tout. */
+.atlas-feuille {
+  width: 100%;
+  max-width: var(--atlas-largeur);
+  margin-inline: auto;
+  translate: calc(var(--atlas-cote) / 2) 0;
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --atlas-largeur: 64rem;
+  }
+
+  /* La barre n'occupe la gauche que là où elle est montée : le devis seul,
+   * qui n'en a pas, garde toute la largeur. */
+  body:has(.atlas-nav-basse) {
+    --atlas-cote: 13.75rem;
+    --atlas-barre: 0px;
+  }
+
+  /* Le cadre se range à droite de la barre ; son contenu reste une colonne
+   * lisible, centrée dans la place qui reste et non dans l'écran entier. */
+  .atlas-cadre {
+    max-width: none;
+    margin-left: var(--atlas-cote);
+  }
+
+  .atlas-nav-basse {
+    top: 0;
+    right: auto;
+    width: var(--atlas-cote);
+    max-width: none;
+    margin: 0;
+    padding-bottom: 0;
+    border-top: 0;
+    border-right: 1px solid var(--line);
+  }
+
+  /* Les onglets s'empilent ; le trait d'or devient un filet vertical qui
+   * glisse d'un onglet à l'autre, avec la même courbe qu'en bas. */
+  .atlas-nav-onglets {
+    grid-template-columns: minmax(0, 1fr);
+    grid-auto-rows: 3rem;
+    padding: 6.5rem 0 0;
+  }
+
+  .atlas-nav-onglet {
+    display: flex;
+    align-items: center;
+    padding: 0 1.75rem;
+    text-align: left;
+    font-size: 0.75rem;
+  }
+
+  .atlas-nav-trait {
+    top: 6.5rem;
+    bottom: auto;
+    left: 0;
+    width: 2px;
+    height: 3rem;
+    transform: translateY(calc(var(--atlas-onglet-rang) * 100%));
+  }
+
+  .atlas-nav-trait > span {
+    height: 100%;
+  }
 }
 
 /* LES ÉCRANS D'AVANT LE COMPTE — la porte et la création — n'ont pas de barre
@@ -271,6 +408,7 @@ body:not(:has(.atlas-nav-basse)) .atlas-contenu {
 .atlas-colonne-defile {
   flex: 1;
   min-height: 0;
+  padding-inline: var(--atlas-defile-marge, 0px);
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
@@ -307,6 +445,36 @@ body:not(:has(.atlas-nav-basse)) .atlas-contenu {
 }
 .atlas-fil-defile::-webkit-scrollbar {
   display: none;
+}
+
+/* Sur ordinateur (`globals.css`, « L'ORDINATEUR »). Écrit APRÈS les règles de
+ * `.atlas-ecran` et des deux zones : à force égale, la dernière règle décide,
+ * et posée plus haut celle-ci perdait sans rien dire. */
+@media (min-width: 1024px) {
+  /* **Les zones qui défilent s'étendent jusqu'aux bords** (sa capture du
+   * 3 octobre 2026 : « je peux pas slider pour descendre »). Chantiers, Mot de
+   * passe et Export ne font pas défiler la page mais une zone intérieure, large
+   * comme la colonne : la molette posée dans les marges, de part et d'autre,
+   * ne trouvait rien à faire défiler. La zone déborde donc de la colonne
+   * jusqu'à la barre et au bord de l'écran, et rend ce débord en marge
+   * intérieure : son contenu ne bouge pas d'un pixel, mais la marge d'une zone
+   * qui défile fait partie de la zone. Le débord se calcule sur la place à
+   * droite de la barre ; ces écrans ne font jamais défiler la page, donc
+   * aucune barre de défilement n'entre dans `100vw`. */
+  /* L'écran qui les porte coupait ce débord : il ne coupe plus qu'en hauteur,
+   * là où il sert (rien ne doit faire défiler la page). `clip`, et non
+   * `hidden`, est la seule valeur qui laisse l'autre axe visible. */
+  .atlas-ecran {
+    overflow-x: visible;
+    overflow-y: clip;
+  }
+
+  .atlas-fil-defile,
+  .atlas-colonne-defile {
+    --atlas-debord: calc((100vw - var(--atlas-cote) - 100%) / 2);
+    margin-inline: calc(-1 * var(--atlas-debord));
+    padding-inline: calc(var(--atlas-debord) + var(--atlas-defile-marge, 0px));
+  }
 }
 
 /* La marge de fin est portée par le FIL, jamais par le cadre qui défile : posée
@@ -457,6 +625,19 @@ body:not(:has(.atlas-nav-basse)) .atlas-contenu {
 }
 .atlas-glisse::-webkit-scrollbar {
   display: none;
+}
+
+/* **Tant qu'il écrit dans la ligne, elle ne s'ouvre pas** — sa plainte du
+ * 3 octobre 2026 : *« une ligne s'est supprimée sans que je sache pourquoi »*.
+ * Sur iPhone, entrer dans un champ fait défiler ses conteneurs pour montrer le
+ * curseur, et cette colonne en est un : toucher la quantité entrouvrait la
+ * ligne, et « Retirer », haut comme toute la ligne, venait se poser sur le
+ * prix qu'il touchait ensuite. `clip` ôte le défilement lui-même, y compris
+ * celui que le navigateur lance seul ; `hidden` le laisserait faire.
+ * Le bouton « Retirer », hors du volet, garde son accès au clavier.
+ * `scripts/test-saisie-ne-retire-pas-la-ligne-e2e.ts`. */
+.atlas-glisse:has(.atlas-volet :is(input, textarea, select, [contenteditable]):focus) {
+  overflow-x: clip;
 }
 
 .atlas-volet {
@@ -664,150 +845,90 @@ body:not(:has(.atlas-nav-basse)) .atlas-contenu {
 }
 .atlas-ajouter:active { transform: scale(0.96); }
 
-/* ═══ Le bouton « Nouveau chantier » ══════════════════════════════════════
+/* ═══ Le bouton « Créer un devis » ═════════════════════════════════════════
  *
- * **Il remplace l'aplat vert**, refusé par le patron le 11 août 2026 : « ce
- * gros bouton en plein milieu, ça ne fait pas très luxe ». Ce qui suit a été
- * arrêté par lui après onze maquettes, et chaque mesure est chiffrée dans
- * `docs/maquettes/24-le-bouton-retenu.html` — c'est lui qui a resserré l'onde,
- * réduit le rond et ramené la gerbe de seize grains à onze.
+ * **« LA B, LA SIGNATURE » — son choix du 6 octobre 2026**, sur la planche
+ * `appli/creer-un-devis-trois-boutons.html`, après sa remarque *« le bouton
+ * manque de style »*. Plus d'anneau ni de capitales : la phrase dans la police
+ * des titres, à 27 px, à l'encre (le texte le plus lisible de l'écran), et un
+ * signe d'or de 22 px qui se TRACE tout seul, comme une plume, toutes les
+ * 3,4 s. L'anneau, ses trois ondes et le mot en capitales sont partis avec
+ * leur règle : rien ne les dessine plus.
  *
- * **LE MOT A GROSSI LE 16 AOÛT 2026, ET C'EST LUI QUI EST REVENU DESSUS.**
- * *« Le nouveau chantier fait le plus gros et en gras »*, puis, la planche
- * `docs/maquettes/67-le-nouveau-chantier-plus-gros.html` en main : **« les
- * capitales, gros et très gras »**. Le libellé passe donc de 9 à 13 px, de la
- * graisse 500 à 800, son interlettrage se resserre de 0,28 à 0,22 em — au-delà,
- * un mot de seize capitales n'est plus un mot mais une frise —, et le rond
- * suit, de 38 à 42 px. **Le signe reste à 20 px** : c'est le rapport de la
- * planche, et l'agrandir aurait rempli l'anneau.
+ * **Ce qui ne bouge pas**, et que lui a réglé avant : la place, le mot, les
+ * onze grains d'or et leur portée, le tour du signe, et la demi-seconde avant
+ * la feuille (`EcranChantiers.tsx`).
  *
- * Ce sont les valeurs du cran « Gros » de la planche 67, pas des chiffres
- * approchés à l'œil. Elles y sont mesurées : 13 px de capitales à 0,22 em font
- * 182 px, plus 13 d'écart et 42 de rond — 237 px, quand l'écran le plus étroit
- * du patron (360 px, moins deux marges de 26) en laisse 308. **La marge n'est
- * donc pas là par hasard : c'est ce qui garantit que « Nouveau chantier » ne
- * finira jamais en « … ».** `scripts/test-bouton-nouveau-chantier-e2e.ts` le
- * mesure à chaque batterie.
+ * Trois choses à ne pas défaire :
  *
- * Le geste, dans l'ordre : l'anneau BAT tant qu'on ne l'a pas touché ; à
- * l'appui il s'enfonce, le signe part en trois tours freinés, onze grains d'or
- * sont projetés depuis le bord ; la feuille monte 520 ms plus tard.
- *
- * Quatre choses à ne pas défaire :
- *
- *   1. **L'enfoncement est immédiat** (140 ms), bien avant la fin du tour. Une
- *      demi-seconde sans réponse se lit comme une panne, et on appuie deux
- *      fois — deux chantiers au lieu d'un.
- *   2. **Le battement s'arrête net à l'appui.** Un objet qui continue
- *      d'appeler alors qu'on l'a déjà pris n'écoute pas.
- *   3. **Les grains naissent au BORD de l'anneau** (46 % de leur course), pas
- *      du centre : partis du milieu, les trois quarts restent cachés derrière
- *      le signe. Défaut vu sur une capture, jamais par un contrôle.
- *   4. **Ils gardent leur plein jusqu'à 64 % de leur course**, puis s'éteignent
- *      d'un coup. Pâlis dès le départ, ils sont invisibles — même défaut, même
- *      capture. */
+ *   1. **La cible fait 56 px de haut**, au-delà des 44 qu'on vise au doigt :
+ *      c'est le geste qu'il fait vingt fois par jour.
+ *   2. **Le tracé s'arrête net à l'appui**, et le signe fait son tour : un
+ *      objet qui continue d'appeler alors qu'on l'a pris n'écoute pas.
+ *   3. **La phrase ne se coupe jamais** : 27 px de titre font environ 180 px,
+ *      plus 14 d'écart et 30 de signe, quand son écran le plus étroit (360 px,
+ *      moins deux marges de 26) en laisse 308.
+ *      `scripts/test-bouton-nouveau-chantier-e2e.ts` le mesure. */
 .atlas-geste-nouveau {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 13px;
+  gap: 14px;
+  min-height: 56px;
+  padding: 4px 10px;
   text-decoration: none;
   color: var(--ink);
   -webkit-tap-highlight-color: transparent;
-  /* **Six pixels autour, pour que la CIBLE fasse 44 — 6 septembre 2026.**
-   * L'anneau est descendu de 42 à 32 px ce jour-là ; sans ce rembourrage, le
-   * geste qu'il fait vingt fois par jour se viserait sur 32 px. Les six pixels
-   * sont invisibles : rien de ce qu'il regarde ne bouge. */
-  padding: 6px 0;
 }
-.atlas-geste-nouveau .atlas-mot {
-  font-size: 13px;
-  font-weight: 800;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
+.atlas-geste-nouveau .atlas-phrase {
+  font-family: var(--font-display);
+  font-size: 27px;
+  font-weight: 400;
+  line-height: 1.1;
+  letter-spacing: -0.014em;
+  color: var(--ink);
   white-space: nowrap;
-  transition: letter-spacing 0.62s cubic-bezier(0.22, 0.61, 0.36, 1);
+  transition: letter-spacing 0.62s cubic-bezier(0.22, 0.61, 0.36, 1), transform 0.3s;
 }
-/* L'écart de départ reste le même — +0,10 em — pour que le mot s'ouvre d'autant
-   qu'avant sous le doigt, sans que le geste change de caractère. */
-[data-geste="part"] .atlas-mot { letter-spacing: 0.32em; }
+/* Au doigt, la phrase se resserre d'un cheveu : elle répond avant la feuille. */
+[data-geste="part"] .atlas-phrase { letter-spacing: 0; transform: translateY(-1px); }
 
-/* **L'ANNEAU RESSERRÉ — sa décision du 6 septembre 2026**, sur la planche
- * `appli/l-accueil-a-bout-de-bras.html` où cinq formes se pressaient au doigt :
- * ***« le 2, l'anneau resserré »***. Il l'avait demandé en ces termes :
- * *« sur une, fais le rond plus petit en doré avec plus d'onde de choc »*.
- *
- * Trois choses changent, et rien d'autre : 42 px → **32**, le cerne passe du
- * gris à **l'or**, et le battement porte **trois ondes** au lieu d'une, plus
- * amples (1,9 fois le rond au lieu de 1,42).
- *
- * **Ce qui ne bouge pas :** le mot à 13 px graisse 800, les onze grains et
- * leur portée de 46 px — qu'il a réglés lui-même en août —, la demi-seconde
- * avant la feuille, et le tour du signe. */
-.atlas-rond {
+.atlas-plume {
   position: relative;
   display: grid;
   place-items: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 9999px;
-  transition: transform 0.14s cubic-bezier(0.2, 0.7, 0.3, 1);
+  width: 30px;
+  height: 30px;
 }
-.atlas-geste-nouveau:active .atlas-rond { transform: scale(0.92); }
-.atlas-rond .atlas-cerne {
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  border-radius: 9999px;
-  /* L'or, et non le gris du trait : c'est ce qui fait tenir un anneau plus
-   * petit. Sur les deux chartes sombres, l'or ne bouge pas — il y tient
-   * 6,14 de contraste, contre 2,77 sur le crème. Un CERNE n'est pas un mot :
-   * c'est le seuil d'un trait qui s'applique, pas celui d'un texte. */
-  border: 1px solid var(--or);
-}
-.atlas-rond .atlas-signe {
+.atlas-plume .atlas-signe {
   position: relative;
   z-index: 4;
   display: block;
-  width: 15px;
-  height: 15px;
+  width: 22px;
+  height: 22px;
 }
-
-/* Le battement d'attente : une onde d'or qui naît du bord et se dissout, toutes
- * les 3,4 s. Ce n'est PAS un clignotement — allumé/éteint est un signal
- * d'alarme, et un écran qui alerte dix fois par jour finit par être ignoré. Le
- * patron l'a lui-même ramenée de 1,85 à 1,42 fois le rond : au-delà, l'onde
- * partait si loin qu'elle n'appartenait plus à l'objet. */
-.atlas-rond .atlas-pouls {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  border-radius: 9999px;
-  border: 1px solid var(--or);
-  opacity: 0;
-  animation: atlas-battement 3.4s cubic-bezier(0.16, 0.7, 0.3, 1) infinite;
+/* Le signe se TRACE, puis s'efface, toutes les 3,4 s : le battement de
+ * l'anneau devenu une plume. Ce n'est pas un clignotement, refusé ici depuis
+ * le début : un écran qui alerte dix fois par jour finit par être ignoré. Le
+ * trait vertical part un tiers de seconde après l'horizontal. */
+.atlas-plume path {
+  stroke: var(--or);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-dasharray: 24;
+  stroke-dashoffset: 0;
+  animation: atlas-trace 3.4s cubic-bezier(0.3, 0.6, 0.2, 1) infinite;
 }
-/* **TROIS ONDES, ET ELLES VONT PLUS LOIN — 6 septembre 2026.** Sa demande :
- * *« plus d'onde de choc »*. Une seule onde sur un anneau de 32 px se voyait à
- * peine ; trois, décalées d'un tiers de seconde, font un battement qui se
- * remarque sans clignoter — et le clignotement reste ce qu'on refuse ici, un
- * écran qui alerte dix fois par jour finit par être ignoré.
- *
- * 1,9 fois le rond au lieu de 1,42 : sur un anneau plus petit, la même
- * proportion partait moins loin en pixels qu'avant. Mesuré : 32 × 1,9 = 61 px,
- * contre 42 × 1,42 = 60 px. **L'onde occupe donc la même place à l'écran
- * qu'avant** — c'est l'anneau qui a maigri, pas le geste. */
-@keyframes atlas-battement {
-  0% { transform: scale(1); opacity: 0; }
-  6% { opacity: 0.62; }
-  52% { transform: scale(1.9); opacity: 0; }
-  100% { transform: scale(1.9); opacity: 0; }
+.atlas-plume .atlas-trait-v { animation-delay: 0.32s; }
+@keyframes atlas-trace {
+  0% { stroke-dashoffset: 24; opacity: 0; }
+  4% { opacity: 1; }
+  22% { stroke-dashoffset: 0; opacity: 1; }
+  72% { stroke-dashoffset: 0; opacity: 1; }
+  86% { opacity: 0; stroke-dashoffset: 0; }
+  100% { stroke-dashoffset: 24; opacity: 0; }
 }
-/* Les deux ondes qui suivent la première. Elles portent la même animation —
- * une seule règle à corriger le jour venu — et ne diffèrent que du retard. */
-.atlas-rond .atlas-pouls-2 { animation-delay: 0.42s; }
-.atlas-rond .atlas-pouls-3 { animation-delay: 0.84s; }
-[data-geste="part"] .atlas-pouls { animation: none; opacity: 0; }
+[data-geste="part"] .atlas-plume path { animation: none; stroke-dashoffset: 0; opacity: 1; }
 
 [data-geste="part"] .atlas-signe {
   animation: atlas-tour 0.56s cubic-bezier(0.16, 0.74, 0.22, 1) both;
@@ -818,13 +939,13 @@ body:not(:has(.atlas-nav-basse)) .atlas-contenu {
   100% { transform: rotate(1080deg); }
 }
 
-.atlas-rond .atlas-gerbe {
+.atlas-plume .atlas-gerbe {
   position: absolute;
   inset: 0;
   z-index: 3;
   pointer-events: none;
 }
-.atlas-rond .atlas-gerbe i {
+.atlas-plume .atlas-gerbe i {
   position: absolute;
   left: 50%;
   top: 50%;
@@ -854,13 +975,13 @@ body:not(:has(.atlas-nav-basse)) .atlas-contenu {
    * la feuille s'ouvre alors TOUT DE SUITE (voir `EcranChantiers.tsx`).
    * Attendre une demi-seconde une animation qui ne joue pas ferait passer un
    * réglage d'accessibilité pour une lenteur. */
-  .atlas-rond .atlas-pouls,
+  .atlas-plume path,
   [data-geste="part"] .atlas-signe,
   [data-geste="part"] .atlas-gerbe i {
     animation: none;
   }
-  .atlas-rond .atlas-gerbe { display: none; }
-  .atlas-rond { transition: none; }
+  .atlas-plume .atlas-gerbe { display: none; }
+  .atlas-geste-nouveau .atlas-phrase { transition: none; }
   .atlas-vue,
   .atlas-ajouter,
   .atlas-scene-fiche {

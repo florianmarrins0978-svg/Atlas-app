@@ -76,6 +76,9 @@ async function chantierRealise(page: Page, suffixe: string) {
   const nom = avecCivilite(client);
   await page.fill('input[placeholder="Bernard"]', client);
   await page.fill('input[placeholder="06 12 34 56 78"]', "06 12 34 56 78");
+  // **L'adresse du chantier est une mention de la facture** (242 nonies A,
+  // I-2°) : sans elle, l'émission refuse depuis le 3 octobre 2026.
+  await page.fill('input[placeholder="12 rue des Lilas, Nantes"]', "10 rue des Lilas, Nantes");
   // L'adresse se bâtit sur l'identifiant que l'aide rend : la relire dans
   // le navigateur donnait « devis-complet » depuis que la fiche du chantier
   // est retirée (`ARCHITECTURE.md` §254).
@@ -109,7 +112,12 @@ async function main() {
 
   await test("le chantier réalisé apparaît dans l'onglet Terminés, et mène à sa facture", async () => {
     const { nom, chantierId } = await chantierRealise(page, "onglet");
-    await page.goto(`${BASE}/termines`, { waitUntil: "networkidle" });
+    // **Sur SON mois, désigné par `?chantier=`.** Terminés s'ouvre sur le mois
+    // le plus récent qui porte un chantier ; celui-ci est posé trois jours en
+    // arrière, donc le mois d'avant du 1er au 3. Dès qu'une autre suite avait
+    // laissé un chantier du mois courant, l'écran s'ouvrait dessus et ce cas
+    // rougissait sur du code juste (batterie du 3 octobre 2026, deux fois).
+    await page.goto(`${BASE}/termines?chantier=${chantierId}`, { waitUntil: "networkidle" });
 
     assert.ok(await page.locator(`text=${nom}`).first().isVisible(), "le chantier n'apparaît pas");
     // **La touche ne vit plus ici**, et c'est la maquette du 10 août 2026 :

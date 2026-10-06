@@ -604,7 +604,7 @@ export default function NoteVocaleClient({
 
       {etatAffiche === "confirmation" && (
         <div className="fixed inset-0 z-40 flex items-end" style={{ backgroundColor: "rgba(0,0,0,0.35)" }}>
-          <div className="w-full rounded-t-[26px] px-6 pb-9 pt-3" style={{ backgroundColor: colors.cream }}>
+          <div className="atlas-feuille rounded-t-[26px] px-6 pb-9 pt-3" style={{ backgroundColor: colors.cream }}>
             <div className="mx-auto mb-5 h-1 w-10 rounded-full" style={{ backgroundColor: colors.line }} />
             {/* Il ne reste QUE le remplacement. Et il garde sa question, à
                 dessein : contrairement au retrait, il ne détruit rien au moment

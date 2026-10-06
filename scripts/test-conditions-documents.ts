@@ -154,7 +154,10 @@ async function main() {
     assert.ok(lignes.some((l) => l.startsWith("Solde restant à régler") && l.includes("436,00")), lignes.join(" | "));
     assert.ok(lignes.some((l) => l.includes("45 jours")));
     assert.ok(lignes.some((l) => l.includes("virement, chèque")));
-    assert.ok(lignes.some((l) => /40 €/.test(l)));
+    // Les 40 € ne se réclament qu'à un professionnel (C. com. L441-10, D441-5) :
+    // le particulier, client par défaut, lit la pénalité seule.
+    assert.ok(lignes.some((l) => /trois fois le taux/.test(l)));
+    assert.ok(!lignes.some((l) => /40 €/.test(l)), "les 40 € réclamés à un particulier");
     assert.ok(lignes.some((l) => l.includes("Évacuation")));
   });
 

@@ -1,3 +1,4 @@
+import { positionEffective } from "@/lib/mentions-legales";
 import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 import { colors, font } from "@/lib/design-tokens";
 import { getCurrentCtx } from "@/server/session-ctx";
@@ -79,13 +80,16 @@ export default async function IdentitePage() {
           capitalSocial: e?.capitalSocial ? String(Number(e.capitalSocial)) : "",
           villeRcs: e?.villeRcs ?? "",
           assureurDecennale: e?.assureurDecennale ?? "",
+          adresseAssureurDecennale: e?.adresseAssureurDecennale ?? "",
           contratDecennale: e?.contratDecennale ?? "",
           couvertureDecennale: e?.couvertureDecennale ?? "",
           mediateurNom: e?.mediateurNom ?? "",
           mediateurCoordonnees: e?.mediateurCoordonnees ?? "",
-          mentionsLegalesPosition: e?.mentionsLegalesPosition ?? "aucune",
+          // « aucune » ne se propose plus : une société imprime ses mentions (4A).
+          mentionsLegalesPosition: positionEffective(e?.mentionsLegalesPosition),
         }}
         aPrevenir={aPrevenir}
+        attestationDeposee={!!e?.attestationDecennaleCle}
         declarations={
           <>
             <PeriodiciteTvaReglage initiale={periodicite} />

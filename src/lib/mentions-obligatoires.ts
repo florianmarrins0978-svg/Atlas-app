@@ -28,6 +28,8 @@
 
 export type DonneesMentionsObligatoires = {
   assureurDecennale?: string | null;
+  /** Ses coordonnées, que la loi 96-603 (art. 22-2) veut sur chaque devis et facture. */
+  adresseAssureurDecennale?: string | null;
   contratDecennale?: string | null;
   couvertureDecennale?: string | null;
   mediateurNom?: string | null;
@@ -48,7 +50,12 @@ export function contenuDecennale(d: DonneesMentionsObligatoires): string | null 
   const assureur = propre(d.assureurDecennale);
   if (assureur === "") return null;
   const contrat = propre(d.contratDecennale);
-  return [assureur, contrat === "" ? "" : `contrat n° ${contrat}`, propre(d.couvertureDecennale)]
+  return [
+    assureur,
+    propre(d.adresseAssureurDecennale),
+    contrat === "" ? "" : `contrat n° ${contrat}`,
+    propre(d.couvertureDecennale),
+  ]
     .filter(Boolean)
     .join(", ");
 }

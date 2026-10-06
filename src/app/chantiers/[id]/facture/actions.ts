@@ -13,6 +13,10 @@ import {
   retirerLignesDeFacture,
   majTitreDeFacture,
   majMainDoeuvreDeFacture,
+  majDateTravauxFacture,
+  majAutoliquidationFacture,
+  majTvaClientFacture,
+  manquesDeLaFactureAEmettre,
   FactureDejaEmiseError,
   FinChantierImpossibleError,
 } from "@/server/repositories/factures";
@@ -30,6 +34,7 @@ import { declarerNonPayee } from "@/server/repositories/factures-non-payees";
 import type { MoyenDePaiement } from "@/lib/acomptes-facture";
 import { jourIso } from "@/lib/jour";
 import { logger } from "@/server/logger";
+import { phraseDesManques, type Manque } from "@/lib/mentions-manquantes";
 import {
   creerEnvoiFacture,
   dernierEnvoiFacture,
@@ -65,7 +70,9 @@ export async function terminerChantierAction(chantierId: string): Promise<Result
   }
 }
 
-export type ResultatEmission = { succes: true; numero: string } | { succes: false; erreur: string };
+export type ResultatEmission =
+  | { succes: true; numero: string }
+  | { succes: false; erreur: string; manques?: Manque[] };
 
 /**
  * Fige la facture et la porte au relevé de TVA.
@@ -77,6 +84,10 @@ export type ResultatEmission = { succes: true; numero: string } | { succes: fals
 export async function emettreFactureAction(factureId: string): Promise<ResultatEmission> {
   const ctx = await getCurrentCtx();
   await exigerFacturation(ctx, "émettre la facture");
+  // **Une mention obligatoire absente arrête la pièce** (son choix 1A) : une
+  // facture émise ne se corrige plus que par un avoir.
+  const manques = await manquesDeLaFactureAEmettre(ctx, factureId);
+  if (manques.length > 0) return { succes: false, erreur: phraseDesManques(manques), manques };
   try {
     const facture = await emettreFacture(ctx, factureId);
     return { succes: true, numero: facture.numeroCommercial };
@@ -419,4 +430,57 @@ export async function recuLePaiementAction(
   const r = await noterPaiement(ctx, factureId, demande);
   if (!r.ok) return { succes: false, erreur: r.raison };
   return { succes: true };
+}
+
+// ─── LES MENTIONS DE LA FACTURE — ses choix du 3 octobre 2026 ──────────────
+// La date des travaux (6A) et la sous-traitance sans TVA (5B). Chaque refus
+// revient en VALEUR, avec ses mots (`AGENTS.md`).
+
+export async function majDateTravauxFactureAction(
+  factureId: string,
+  date: string
+): Promise<{ succes: true; dateTravaux: string } | { succes: false; erreur: string }> {
+  const ctx = await getCurrentCtx();
+  await exigerFacturation(ctx, "corriger la date des travaux");
+  try {
+    const r = await majDateTravauxFacture(ctx, factureId, date);
+    return r.ok ? { succes: true, dateTravaux: r.dateTravaux } : { succes: false, erreur: r.raison };
+  } catch (err) {
+    logger.error("Date des travaux non enregistrée", { erreur: err instanceof Error ? err.message : String(err) });
+    return { succes: false, erreur: "La date n'a pas pu être enregistrée. Réessayez." };
+  }
+}
+
+export async function majAutoliquidationFactureAction(
+  factureId: string,
+  active: boolean
+): Promise<
+  { succes: true; autoliquidation: boolean; clientNumeroTva: string | null } | { succes: false; erreur: string }
+> {
+  const ctx = await getCurrentCtx();
+  await exigerFacturation(ctx, "facturer en sous-traitance");
+  try {
+    const r = await majAutoliquidationFacture(ctx, factureId, active);
+    return r.ok
+      ? { succes: true, autoliquidation: r.autoliquidation, clientNumeroTva: r.clientNumeroTva }
+      : { succes: false, erreur: r.raison };
+  } catch (err) {
+    logger.error("Sous-traitance non enregistrée", { erreur: err instanceof Error ? err.message : String(err) });
+    return { succes: false, erreur: "Le changement n'a pas pu être enregistré. Réessayez." };
+  }
+}
+
+export async function majTvaClientFactureAction(
+  factureId: string,
+  numero: string
+): Promise<{ succes: true; clientNumeroTva: string } | { succes: false; erreur: string }> {
+  const ctx = await getCurrentCtx();
+  await exigerFacturation(ctx, "noter le numéro de TVA du client");
+  try {
+    const r = await majTvaClientFacture(ctx, factureId, numero);
+    return r.ok ? { succes: true, clientNumeroTva: r.clientNumeroTva } : { succes: false, erreur: r.raison };
+  } catch (err) {
+    logger.error("Numéro de TVA du client non enregistré", { erreur: err instanceof Error ? err.message : String(err) });
+    return { succes: false, erreur: "Le numéro n'a pas pu être enregistré. Réessayez." };
+  }
 }

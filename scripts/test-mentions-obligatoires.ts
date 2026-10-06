@@ -87,13 +87,29 @@ cas("les deux crochets disparaissent quand les champs sont là", () => {
   assert.ok(rempli.includes("le médiateur de la consommation : CM2C, 49 rue de Ponthieu, 75008 Paris."));
 });
 
-cas("un crochet dont la valeur MANQUE reste un crochet", () => {
-  // C'est ce qui le rend visible dans les réglages. Le faire disparaître à vide
-  // laisserait partir « d'une assurance décennale : . » chez un client.
+cas("sans décennale enregistrée, l'article 9 ne parle que de la responsabilité civile", () => {
+  // **Sa règle du 5 octobre 2026** : *« la décennale ne doit pas apparaître
+  // comme étant incomplète tant qu'elle n'est pas enregistrée dans les
+  // réglages »*. Un entretien de jardin n'y est pas soumis : le texte d'origine
+  // perd sa moitié décennale, sans crochet ni phrase à trou.
   const vide = conditionsGeneralesRemplies(TEXTE_ORIGINE_CONDITIONS_GENERALES, {});
-  assert.equal(crochetsRestants(vide), 2);
-  assert.ok(vide.includes(CROCHET_DECENNALE));
+  assert.ok(!vide.includes(CROCHET_DECENNALE));
+  assert.ok(!vide.includes("décennale"), "la décennale s'imprime sans être enregistrée");
+  assert.ok(vide.includes("9. Assurances. L’entreprise est titulaire d’une assurance responsabilité civile professionnelle."));
+});
+
+cas("le médiateur, lui, reste un crochet tant qu'il manque", () => {
+  // Il est obligatoire pour tout devis à un particulier : le crochet le rend
+  // visible dans les réglages. Le faire disparaître à vide laisserait partir
+  // « le médiateur de la consommation : . » chez un client.
+  const vide = conditionsGeneralesRemplies(TEXTE_ORIGINE_CONDITIONS_GENERALES, {});
+  assert.equal(crochetsRestants(vide), 1);
   assert.ok(vide.includes(CROCHET_MEDIATEUR));
+});
+
+cas("dans SON texte, un crochet de décennale qu'il a gardé reste : on ne réécrit pas ses phrases", () => {
+  const sien = `9. Mon assurance : ${CROCHET_DECENNALE}.`;
+  assert.equal(conditionsGeneralesRemplies(sien, {}), sien);
 });
 
 cas("l'un rempli, l'autre non : un seul crochet reste", () => {

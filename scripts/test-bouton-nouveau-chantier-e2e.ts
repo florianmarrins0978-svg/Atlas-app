@@ -75,35 +75,29 @@ async function main() {
   const bouton = page.locator('[data-atlas="nouveau-chantier"]');
   await bouton.waitFor({ state: "visible", timeout: 5_000 });
 
-  const rond = bouton.locator(".atlas-rond");
-  const boite = await rond.boundingBox();
-  assert.ok(boite, "L'anneau doit être mesurable");
+  // La plume : le signe qui se trace, posé à droite de la phrase. Petite et
+  // ronde, jamais un aplat qui barre l'écran.
+  const plume = bouton.locator(".atlas-plume");
+  const boite = await plume.boundingBox();
+  assert.ok(boite, "La plume doit être mesurable");
   assert.ok(
     boite.width <= 60 && Math.abs(boite.width - boite.height) < 2,
-    `L'anneau doit être rond et petit, pas un aplat qui barre l'écran ` +
+    `La plume doit rester petite et carrée, pas un aplat qui barre l'écran ` +
       `(mesuré ${Math.round(boite.width)} × ${Math.round(boite.height)})`,
   );
 
-  // ── Le mot : gros, très gras, et entier ──────────────────────────────────
+  // ── La phrase : grande, en romain, et entière ────────────────────────────
   //
-  // Les valeurs viennent de la planche 67, pas d'une appréciation : c'est le
-  // cran « Gros » et la graisse « Très gras » qu'il a désignés. On mesure large
-  // (≥ 12 px, ≥ 700) plutôt qu'au pixel près — figer 13 et 800 rendrait rouge
-  // le jour où il demande un cran de plus, alors que la suite doit attraper le
-  // retour au libellé minuscule, pas un réglage qu'il aura voulu.
-  const mot = bouton.locator(".atlas-mot");
-  const ecriture = await mot.evaluate((n) => {
-    const s = getComputedStyle(n);
-    return { taille: Number.parseFloat(s.fontSize), poids: Number.parseInt(s.fontWeight, 10) };
-  });
+  // Son choix du 6 octobre 2026 sur `appli/creer-un-devis-trois-boutons.html`
+  // est la B, « signature » : une phrase en caractères d'écriture, de graisse
+  // normale. Le seuil de graisse d'avant (≥ 700, planche 67) n'a donc plus
+  // lieu d'être ; ce qui reste à défendre, c'est la taille. On mesure large
+  // (≥ 24 px) pour ne pas rougir le jour où il demande un cran de moins.
+  const mot = bouton.locator(".atlas-phrase");
+  const ecriture = await mot.evaluate((n) => Number.parseFloat(getComputedStyle(n).fontSize));
   assert.ok(
-    ecriture.taille >= 12,
-    `Le mot doit rester gros — mesuré ${ecriture.taille} px, il en faut au moins 12 ` +
-      `(le patron est revenu sur son resserrage le 16 août 2026)`,
-  );
-  assert.ok(
-    ecriture.poids >= 700,
-    `Le mot doit rester très gras — mesuré ${ecriture.poids}, il en faut au moins 700`,
+    ecriture >= 24,
+    `La phrase doit rester grande : mesuré ${ecriture} px, il en faut au moins 24`,
   );
 
   // Et sur son écran le plus étroit, il ne doit pas se couper. Une boîte de

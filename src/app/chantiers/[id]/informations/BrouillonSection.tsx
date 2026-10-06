@@ -430,7 +430,7 @@ export default function BrouillonSection({
           // les chartes, pas les couleurs qu'un écran écrit lui-même.
           style={{ backgroundColor: voile(colors.ink, 0.35) }}
         >
-          <div className="w-full rounded-t-[26px] px-[26px] pb-9 pt-3" style={{ backgroundColor: colors.cream }}>
+          <div className="atlas-feuille rounded-t-[26px] px-[26px] pb-9 pt-3" style={{ backgroundColor: colors.cream }}>
             <div className="mx-auto mb-6 h-1 w-10 rounded-full" style={{ backgroundColor: colors.line }} />
             <p
               className="mb-2 text-center text-[19px] leading-[1.15]"

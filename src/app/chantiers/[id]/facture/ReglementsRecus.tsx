@@ -356,9 +356,13 @@ export default function ReglementsRecus({
           à zéro, et sa place est juste en dessous, là où la réponse se lit
           dans le même mouvement. */}
       {acquittement && (
+        // **Dans un cadre doré** — sa demande du 3 octobre 2026 : *« une
+        // bordure dorée autour de facture acquittée comme pour sous-traitance »*.
+        // Les deux interrupteurs qui changent ce que la pièce dit se repèrent
+        // pareil.
         <div
-          className="mt-3 flex items-center justify-between gap-3 pt-3 text-[15px]"
-          style={{ borderTop: `1px solid ${colors.lineSoft}`, color: colors.ink }}
+          className="-mx-2 mt-4 flex items-center justify-between gap-3 px-3 py-3.5 text-[15px]"
+          style={{ boxShadow: `0 0 0 2px ${colors.or}`, borderRadius: 14, color: colors.ink }}
         >
           <span>
             Facture acquittée
