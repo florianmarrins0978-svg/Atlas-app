@@ -5,12 +5,13 @@
 `drizzle/0116_modele_de_fiche_d_office.sql`
 
 ---
-## SUR SA BRANCHE : LA FENTE SE CHIFFRE AU FÛT (30 septembre 2026)
+## SUR `main` : LA FENTE SE CHIFFRE AU FÛT (6 octobre 2026)
 
 La fente demande « Quelle hauteur de fût ? » et sa grille se lit en hauteur de
 fût ; la hauteur de l'arbre ne décide plus d'aucun prix (`ARCHITECTURE.md`
-§449). Aucune migration. Branche `claude/fente-au-fut` ; batterie non jouée,
-en attente de son accord.
+§449). Aucune migration. Batterie jouée le 6 octobre : 175/177, les deux
+rouges venaient du lot (un libellé, le compte des questions) et ont été
+rejoués verts.
 
 ---
 ## SUR `main` DEPUIS LE 6 OCTOBRE : LA FACTURE ET LE DEVIS EN RÈGLE (3 octobre 2026)
