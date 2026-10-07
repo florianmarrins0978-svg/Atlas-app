@@ -1,0 +1,35 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": [
+          "appli/poser-a-sa-place.html"
+        ],
+        "createdAt": "2026-10-07T05:24:09.017Z",
+        "reason": "Planche Atlas: reproduit les jetons et tailles de l'écran réel (src/lib/chartes.ts, tiroir du planning) et la convention des planches appli/; CLAUDE.md §3 bis"
+      },
+      {
+        "rule": "kicker-above-heading",
+        "value": "*",
+        "files": [
+          "appli/poser-a-sa-place.html"
+        ],
+        "createdAt": "2026-10-07T05:24:09.026Z",
+        "reason": "Planche Atlas: reproduit les jetons et tailles de l'écran réel (src/lib/chartes.ts, tiroir du planning) et la convention des planches appli/; CLAUDE.md §3 bis"
+      },
+      {
+        "rule": "undersized-ui-text",
+        "value": "*",
+        "files": [
+          "appli/poser-a-sa-place.html"
+        ],
+        "createdAt": "2026-10-07T05:24:09.035Z",
+        "reason": "Planche Atlas: reproduit les jetons et tailles de l'écran réel (src/lib/chartes.ts, tiroir du planning) et la convention des planches appli/; CLAUDE.md §3 bis"
+      }
+    ]
+  }
+}
