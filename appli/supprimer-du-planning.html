@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Supprimer du planning</title>
+<style>
+  /* La planche : trois téléphones côte à côte, chacun recopie l'écran Planning tel qu'il est servi. */
+  :root{
+    --etabli:#e6e3dc; --etabli-carte:#faf9f5; --etabli-encre:#1c1c1a; --etabli-doux:#4a4a44; --etabli-gris:#77726a; --etabli-or:#8b6835;
+    --cream:#f5f3ee; --card:#faf9f5; --ink:#1c1c1a; --muted:#8a8578; --or:#B98B47; --line:rgba(28,28,26,.12);
+    --plein:#2f3b2f; --vert:#7d9a6d; --alerte:#9C3B2E; --surAlerte:#faf9f5; --tuile:#ecebe6; --bande:#efede8; --voile:rgba(0,0,0,.35);
+    --display:ui-serif,Georgia,"Iowan Old Style","Palatino Linotype",serif;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --etabli:#0a0b0a; --etabli-carte:#1a1d19; --etabli-encre:#e9e8de; --etabli-doux:#c1c2b6; --etabli-gris:#84887b; --etabli-or:#b98b47;
+      color-scheme:dark;
+    }
+  }
+  :root[data-theme="dark"]{
+    --etabli:#0a0b0a; --etabli-carte:#1a1d19; --etabli-encre:#e9e8de; --etabli-doux:#c1c2b6; --etabli-gris:#84887b; --etabli-or:#b98b47;
+    color-scheme:dark;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--etabli);color:var(--etabli-encre);font-family:var(--sans);-webkit-font-smoothing:antialiased}
+  .page{max-width:1260px;margin:0 auto;padding-block:30px 90px;padding-inline:16px}
+  .surtitre{font:600 11.5px/1 var(--sans);letter-spacing:.18em;text-transform:uppercase;color:var(--etabli-or);margin:0 0 10px}
+  h1{font:600 30px/1.15 var(--display);margin:0 0 10px;text-wrap:balance}
+  .chapeau{max-width:640px;color:var(--etabli-doux);font-size:15.5px;line-height:1.6;margin:0}
+  .rangee{margin-top:30px;display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start}
+  .prop{flex:0 1 390px;min-width:0;max-width:100%}
+  .nom{font:600 15.5px/1.3 var(--sans);margin:0 0 3px;display:flex;align-items:center;gap:9px}
+  .lettre{font:700 11px/1 var(--sans);background:var(--etabli-encre);color:var(--etabli-carte);width:22px;height:22px;border-radius:999px;display:grid;place-items:center}
+  .idee{color:var(--etabli-gris);font-size:13px;line-height:1.55;margin:0 0 12px;min-height:60px}
+  .rejouer{margin-top:10px;appearance:none;border:0;background:transparent;color:var(--etabli-or);font:600 12.5px/1 var(--sans);cursor:pointer;padding:6px 0}
+
+  /* ─── Le téléphone : les couleurs de la charte claire, comme l'écran servi. ─── */
+  .tel{width:100%;max-width:390px;border-radius:30px;overflow:hidden;box-shadow:0 1px 2px rgba(20,18,14,.16),0 14px 34px rgba(20,18,14,.16)}
+  .ecran{position:relative;height:780px;background:var(--cream);color:var(--ink);display:flex;flex-direction:column;overflow:hidden;color-scheme:light}
+  .defile{flex:1;overflow-y:auto;padding-bottom:12px}
+  .tete{display:flex;justify-content:space-between;align-items:flex-start;padding:36px 26px 0}
+  .tete h3{font:400 44px/1 var(--display);margin:0;letter-spacing:-.01em}
+  .tete .sur{margin-top:12px;font:500 10px/1 var(--sans);letter-spacing:.32em;color:var(--or)}
+  .bulle{width:46px;height:46px;border-radius:999px;background:var(--vert);display:grid;place-items:center;color:#faf9f5}
+  .agenda{margin:34px 26px 0;padding-bottom:18px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:10px}
+  .agenda b{display:block;font:400 15.5px/1.2 var(--display)}
+  .agenda span{display:block;margin-top:5px;font-size:12px;color:var(--muted)}
+  .agenda .mots{text-align:right;font:500 10px/1 var(--sans);letter-spacing:.32em;color:var(--or)}
+  .agenda .mots i{display:block;font-style:normal;margin-top:12px;color:var(--muted)}
+  .nav{margin:20px 13px 0;display:flex;align-items:center;justify-content:space-between}
+  .rond{width:42px;height:42px;border-radius:999px;background:var(--card);box-shadow:inset 0 0 0 1px var(--line);display:grid;place-items:center;color:var(--ink)}
+  .nav b{font:700 16px/1 var(--sans)}
+  .jours{margin:22px 13px 0;display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center;font:600 9.5px/1 var(--sans);letter-spacing:.12em;color:var(--muted)}
+  .jours span:nth-child(n+6){opacity:.7}
+  .semaine{margin:4px 13px 0;display:grid;grid-template-columns:repeat(7,1fr);gap:4px;border-radius:12px;padding:0}
+  .semaine.touchee{background:var(--bande)}
+  .case{appearance:none;border:0;background:transparent;font:400 17px/1 var(--display);color:var(--ink);height:52px;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding-top:9px;gap:5px;cursor:pointer;font-family:var(--display)}
+  .case.we{background:var(--tuile);color:var(--muted)}
+  .case.vide{visibility:hidden}
+  .case.aujourdhui{box-shadow:inset 0 0 0 1.5px var(--or);color:var(--or)}
+  .case.choisi{box-shadow:inset 0 0 0 1.5px var(--ink)}
+  .barres{display:flex;flex-direction:column;gap:2px}
+  .barres i{display:block;width:24px;height:5px;border-radius:3px;box-shadow:inset 0 0 0 1px rgba(28,28,26,.14);background:var(--card)}
+  .barres i.plein{background:var(--plein);box-shadow:none}
+  .case.we .barres{visibility:hidden}
+
+  /* La fiche du jour : celle qui s'ouvre sous la semaine touchée. */
+  .fiche{margin:6px 13px 0;background:var(--card);border-radius:18px;box-shadow:0 1px 2px rgba(28,28,26,.06),0 6px 18px rgba(28,28,26,.07);padding:0 16px 14px;position:relative}
+  .fiche:before{content:"";position:absolute;top:-6px;right:58px;width:12px;height:12px;background:var(--card);transform:rotate(45deg);border-radius:2px}
+  .fiche .date{padding:15px 0 13px;text-align:center;font:700 12px/1 var(--sans);letter-spacing:.2em;border-bottom:1px solid var(--line)}
+  .absent{text-align:center;margin-top:18px;font-size:14px;color:var(--or)}
+  .chantier{margin-top:20px}
+  .chantier .l1{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+  .chantier .nomc{font:400 19px/1.2 var(--display)}
+  .chantier .duree{margin-top:3px;font-size:12.5px;color:var(--or)}
+  .chantier .lieu{margin-top:2px;font-size:11.5px;color:var(--muted)}
+  .chev{width:40px;height:40px;flex:none;border-radius:999px;background:rgba(185,139,71,.1);color:var(--or);display:grid;place-items:center}
+  .demi{margin-top:8px;display:flex;align-items:center;gap:8px;font:600 10px/1.15 var(--sans);letter-spacing:.06em;text-transform:uppercase}
+  .demi i{width:11px;height:11px;border-radius:3px;background:var(--plein)}
+  .libre{display:flex;justify-content:flex-end;font-size:12.5px;color:var(--muted);margin-top:14px}
+  .actes{margin-top:10px;display:flex;justify-content:flex-end;gap:14px;flex-wrap:wrap}
+  .mot{appearance:none;border:0;background:transparent;padding:11px 0;font:700 13.5px/1 var(--sans);color:var(--ink);cursor:pointer}
+  .mot.neuf{color:var(--alerte)}
+  .ajouter{text-align:center;margin-top:16px;font-size:14px;color:var(--or)}
+
+  /* Le tiroir du bas : « 1 client sans date », bordé d'or. */
+  .tiroirBas{border-top:1.5px solid var(--or);border-radius:20px 20px 0 0;background:var(--card);margin:0 -1px;box-shadow:0 -6px 16px rgba(28,28,26,.05)}
+  .poignee{appearance:none;border:0;background:transparent;width:100%;display:flex;justify-content:space-between;align-items:center;padding:17px 20px;font:700 15px/1 var(--sans);color:var(--ink);cursor:pointer;text-align:left}
+  .poignee svg{color:var(--muted);transition:transform .2s}
+  .tiroirBas.ouvert .poignee svg{transform:rotate(180deg)}
+  .liste{border-top:1px solid var(--line);padding:14px 20px 10px}
+  .consigne{font-size:12.5px;color:var(--ink);margin:0 0 6px}
+  .ligne{position:relative;overflow:hidden;height:52px}
+  .glisse{position:absolute;inset:0;display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--card);transition:transform .25s;cursor:pointer}
+  .ligne.ouverte .glisse{transform:translateX(-86px)}
+  .glisse .nomc{font:400 17px/1.2 var(--display)}
+  .glisse .att{font-size:12.5px;color:var(--muted)}
+  .retirerCaps{position:absolute;right:0;top:0;bottom:0;appearance:none;border:0;background:transparent;font:500 11px/1 var(--sans);letter-spacing:.28em;color:var(--or);cursor:pointer;padding:0 0 0 10px}
+  .retires{border-top:1px solid var(--line);margin:0 26px;padding:12px 0 14px;display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--muted);position:relative}
+  .retires button{appearance:none;border:0;background:transparent;font:500 11px/1 var(--sans);letter-spacing:.24em;color:var(--or);cursor:pointer;padding:8px}
+  .retires .barre6{position:absolute;left:0;bottom:0;height:2px;background:var(--or);width:100%}
+  .onglets{display:flex;justify-content:space-around;border-top:1px solid var(--line);background:var(--cream);padding:14px 4px 16px;font:500 9px/1 var(--sans);letter-spacing:.14em;color:var(--muted)}
+  .onglets b{color:var(--ink);font-weight:500;border-bottom:1.5px solid var(--or);padding-bottom:12px}
+
+  /* La feuille de la maison : BottomSheet, coins de 26 px, trait de prise. */
+  .voile{position:absolute;inset:0;background:var(--voile);display:flex;align-items:flex-end;z-index:5}
+  .feuille{width:100%;background:var(--cream);border-radius:26px 26px 0 0;padding:12px 24px 36px}
+  .prise{margin:0 auto 20px;width:40px;height:4px;border-radius:999px;background:var(--line)}
+  .feuille .t{text-align:center;font-size:17px;color:var(--ink);margin:0 0 8px}
+  .feuille .m{text-align:center;font-size:13px;line-height:1.5;color:var(--muted);margin:0 0 24px}
+  .confirmer{appearance:none;border:0;width:100%;height:54px;border-radius:999px;background:var(--alerte);color:var(--surAlerte);font:600 15px/1 var(--sans);cursor:pointer}
+  .renoncer{appearance:none;border:0;background:transparent;width:100%;margin-top:16px;font-size:13px;color:var(--muted);cursor:pointer}
+  button:focus-visible{outline:2px solid var(--or);outline-offset:2px}
+  @media (prefers-reduced-motion: reduce){ .glisse,.barre6{transition:none!important} }
+</style>
+</head>
+<body>
+
+<div class="page">
+  <p class="surtitre">Planche du 7 octobre 2026</p>
+  <h1>Supprimer du planning</h1>
+  <p class="chapeau">M. Faucher a accepté son devis par erreur pour le samedi 10 octobre. Les trois téléphones partent de ton écran Planning tel qu’il est aujourd’hui. Touche les mots en gras.</p>
+
+  <div class="rangee">
+    <div class="prop">
+      <div class="nom">Aujourd’hui</div>
+      <p class="idee">Retirer, puis ouvrir « 1 client sans date », toucher la ligne et Retirer. Aucune question. Et quand c’est le seul client sans date, Annuler n’apparaît pas.</p>
+      <div class="tel"><div class="ecran" data-variante="actuel"></div></div>
+      <button class="rejouer" type="button" data-rejouer>Recommencer</button>
+    </div>
+    <div class="prop">
+      <div class="nom"><span class="lettre">A</span>Supprimer, avec une question</div>
+      <p class="idee">Supprimer s’ajoute à côté de Déplacer et Retirer. Une question, puis c’est supprimé. La même question sur Retirer dans « sans date ».</p>
+      <div class="tel"><div class="ecran" data-variante="A"></div></div>
+      <button class="rejouer" type="button" data-rejouer>Recommencer</button>
+    </div>
+    <div class="prop">
+      <div class="nom"><span class="lettre">B</span>La question, puis 6 secondes</div>
+      <p class="idee">Comme A, et « Retiré à l’instant, Annuler » reste 6 secondes en bas, même quand il n’y a plus personne sans date.</p>
+      <div class="tel"><div class="ecran" data-variante="B"></div></div>
+      <button class="rejouer" type="button" data-rejouer>Recommencer</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var CHEV_BAS = '<svg width="16" height="16" viewBox="0 0 20 20" fill="none"><path d="M5 8l5 5 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  var CHEV_HAUT = '<svg width="16" height="16" viewBox="0 0 20 20" fill="none"><path d="M5 12l5-5 5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+  function caseJour(n, cls, plein){
+    var b = '<span class="barres"><i class="' + (plein ? 'plein' : '') + '"></i><i class="' + (plein ? 'plein' : '') + '"></i></span>';
+    return '<button type="button" class="case ' + (cls || '') + '">' + n + b + '</button>';
+  }
+  function semaine(debut, fin, opts){
+    opts = opts || {};
+    var h = '<div class="semaine ' + (opts.touchee ? 'touchee' : '') + '">';
+    for (var i = 0; i < 7; i++){
+      var n = debut + i;
+      if (debut < 1 && n < 1){ h += '<span class="case vide"></span>'; continue; }
+      if (n > fin){ h += '<span class="case vide"></span>'; continue; }
+      var cls = (i >= 5 ? 'we ' : '') + (n === 7 ? 'aujourdhui ' : '') + (n === 10 && opts.touchee ? 'choisi' : '');
+      h += caseJour(n, cls, n === 10 && opts.plein);
+    }
+    return h + '</div>';
+  }
+
+  function monter(ecran){
+    var v = ecran.dataset.variante;
+    var etat = { pose: true, sansDate: false, ouvert: false, supprime: false };
+
+    ecran.innerHTML =
+      '<div class="defile">'
+      + '<div class="tete"><div><h3>Planning</h3><div class="sur">VOS JOURNÉES</div></div>'
+      + '<span class="bulle"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 19l1.4-4A8 8 0 1 1 9 18.6L4 19z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></span></div>'
+      + '<div class="agenda"><div><b>Vous pouvez relier votre agenda</b><span>Atlas évitera vos jours déjà pris.</span></div><div class="mots">OUVRIR<i>MASQUER</i></div></div>'
+      + '<div class="nav"><span class="rond"><svg width="14" height="14" viewBox="0 0 20 20" fill="none"><path d="M12 5l-5 5 5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><b>octobre 2026</b><span class="rond"><svg width="14" height="14" viewBox="0 0 20 20" fill="none"><path d="M8 5l5 5-5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>'
+      + '<div class="jours"><span>LUN</span><span>MAR</span><span>MER</span><span>JEU</span><span>VEN</span><span>SAM</span><span>DIM</span></div>'
+      + semaine(-2, 31)
+      + '<div data-semaine></div>'
+      + '<div class="fiche" data-fiche></div>'
+      + semaine(12, 31) + semaine(19, 31) + semaine(26, 31)
+      + '</div>'
+      + '<div data-bas></div>'
+      + '<div class="onglets"><span>CHANTIERS</span><b>PLANNING</b><span>TERMINÉS</span><span>PAYSAGE</span><span>RÉGLAGES</span></div>';
+
+    var zoneSemaine = ecran.querySelector('[data-semaine]');
+    var fiche = ecran.querySelector('[data-fiche]');
+    var bas = ecran.querySelector('[data-bas]');
+
+    function question(siOui){
+      var voile = document.createElement('div');
+      voile.className = 'voile';
+      voile.innerHTML = '<div class="feuille" role="dialog" aria-modal="true"><div class="prise"></div>'
+        + '<p class="t">Supprimer Reprise de toiture ?</p>'
+        + '<p class="m">M. Faucher quitte le planning. Il reste dans vos clients.</p>'
+        + '<button type="button" class="confirmer">Supprimer</button>'
+        + '<button type="button" class="renoncer">Annuler</button></div>';
+      voile.querySelector('.confirmer').onclick = function(){ voile.remove(); siOui(); };
+      voile.querySelector('.renoncer').onclick = function(){ voile.remove(); };
+      voile.onclick = function(e){ if (e.target === voile) voile.remove(); };
+      ecran.appendChild(voile);
+      voile.querySelector('.confirmer').focus();
+    }
+
+    function supprimer(){
+      etat.supprime = true; etat.pose = false; etat.sansDate = false;
+      dessiner();
+      if (v === 'B') annonceRetrait();
+    }
+
+    function annonceRetrait(){
+      var r = document.createElement('div');
+      r.className = 'retires';
+      r.innerHTML = '<span>Retiré à l’instant</span><button type="button">ANNULER</button><i class="barre6"></i>';
+      bas.prepend(r);
+      var barre = r.querySelector('.barre6');
+      requestAnimationFrame(function(){ requestAnimationFrame(function(){ barre.style.transition = 'width 6s linear'; barre.style.width = '0%'; }); });
+      var fin = setTimeout(function(){ r.remove(); }, 6000);
+      r.querySelector('button').onclick = function(){
+        clearTimeout(fin); r.remove();
+        etat.supprime = false; etat.pose = true; dessiner();
+      };
+    }
+
+    function dessiner(){
+      zoneSemaine.innerHTML = semaine(5, 31, { touchee: true, plein: etat.pose });
+      var h = '<div class="date">SAMEDI 10 OCTOBRE</div><div class="absent">+&nbsp;&nbsp;Absent ?</div>';
+      if (etat.pose){
+        h += '<div class="chantier"><div class="l1"><div><div class="nomc">Reprise de toiture</div><div class="duree">une journée</div><div class="lieu">Rezé</div></div><span class="chev">' + CHEV_BAS + '</span></div>'
+          + '<div class="demi"><i></i>Matin</div><div class="demi"><i></i>Après-midi</div>'
+          + '<div class="actes"><button type="button" class="mot" data-g="deplacer">Déplacer</button><button type="button" class="mot" data-g="retirer">Retirer</button>'
+          + (v === 'actuel' ? '' : '<button type="button" class="mot neuf" data-g="supprimer">Supprimer</button>')
+          + '</div></div>';
+      } else {
+        h += '<div class="libre">libre</div><div class="libre">libre</div>';
+      }
+      h += '<div class="ajouter">Ajouter</div>';
+      fiche.innerHTML = h;
+
+      var r = fiche.querySelector('[data-g="retirer"]');
+      if (r) r.onclick = function(){ etat.pose = false; etat.sansDate = true; dessiner(); };
+      var s = fiche.querySelector('[data-g="supprimer"]');
+      if (s) s.onclick = function(){ question(supprimer); };
+
+      var garde = bas.querySelector('.retires');
+      bas.innerHTML = '';
+      if (garde) bas.appendChild(garde);
+      if (etat.sansDate){
+        var t = document.createElement('div');
+        t.className = 'tiroirBas' + (etat.ouvert ? ' ouvert' : '');
+        t.innerHTML = '<button type="button" class="poignee">1 client sans date' + CHEV_HAUT + '</button>'
+          + (etat.ouvert ? '<div class="liste"><p class="consigne">Touchez d’abord un jour du calendrier</p>'
+            + '<div class="ligne"><div class="glisse"><span class="nomc">Reprise de toiture</span><span class="att">en attente d’un jour</span></div>'
+            + '<button type="button" class="retirerCaps">RETIRER</button></div></div>' : '');
+        bas.appendChild(t);
+        t.querySelector('.poignee').onclick = function(){ etat.ouvert = !etat.ouvert; dessiner(); };
+        var ligne = t.querySelector('.ligne');
+        if (ligne){
+          ligne.querySelector('.glisse').onclick = function(){ ligne.classList.toggle('ouverte'); };
+          ligne.querySelector('.retirerCaps').onclick = function(){
+            if (v === 'actuel'){
+              // Aujourd'hui : le tiroir disparaît avec la dernière ligne, et son Annuler avec lui.
+              etat.sansDate = false; etat.supprime = true; dessiner();
+            } else {
+              question(supprimer);
+            }
+          };
+        }
+      }
+    }
+    dessiner();
+  }
+
+  document.querySelectorAll('.ecran').forEach(monter);
+  document.querySelectorAll('[data-rejouer]').forEach(function(b){
+    b.onclick = function(){ monter(b.parentNode.querySelector('.ecran')); };
+  });
+})();
+</script>
+</body>
+</html>

@@ -42,6 +42,25 @@ bloque ». Une erreur de la formule doit coûter une ligne rouge, jamais un devi
 Le n° TVA ruisselle déjà de la fiche au devis (`devis.ts`) puis à la facture
 (`instantaneDuDevis`) ; `test-documents-en-regle-db.ts` le tient.
 
+## SUPPRIMER DU PLANNING : 7 octobre 2026
+
+Branche `claude/supprimer-du-planning`. Avant de toucher une suppression au
+planning :
+
+- **`QuestionDeSuppression` n'écrit rien** : elle rend la main à
+  `retraits.retirer`. Ne pas y brancher `supprimerChantierAction`, les six
+  secondes d'annulation en dépendent.
+- **`aRetire` tient le tiroir du bas** tant qu'un retrait attend : sans lui,
+  « Annuler » part avec le dernier client sans date.
+- **`acceptations_defaites` ne se réécrit pas** : `atlas_app` n'y a ni
+  UPDATE ni DELETE (migration 0123). Une suite qui doit la nettoyer le fait
+  sous `postgres`.
+- **Défaire une acceptation passe par `deplanifierDansLaTransaction`** :
+  ne pas recopier le retrait du planning.
+- **Un serveur de développement sans `ATLAS_URL_PUBLIQUE` bloque l'envoi des
+  devis** (adresse locale) : les suites du devis rougissent alors sans défaut.
+  `run-e2e-tests.ts` la pose ; à la main, la poser aussi.
+
 ## POSER UN CLIENT À SA PLACE : 7 octobre 2026, SUR `main` LE 7
 
 Branche `claude/add-quote-client-to-schedule-ve9xn7`, migration 0122. Avant de

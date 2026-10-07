@@ -83,6 +83,7 @@ import { ChampRecherche } from "@/components/atlas/ChampRecherche";
 import PortesDuChantier from "./PortesDuChantier";
 import { chantierDemandeAuPlanning, PARAM_CHANTIER_PLANNING } from "@/lib/lien-planning";
 import TiroirDesRetires from "@/components/atlas/TiroirDesRetires";
+import QuestionDeSuppression from "./QuestionDeSuppression";
 import { useRetraits } from "@/components/atlas/useRetraits";
 import { lienAppel, liensItineraire } from "@/lib/itineraire";
 import type { FeuilleDuChantier } from "@/server/repositories/devis";
@@ -567,6 +568,11 @@ export default function PlanningClient({
       // Les tarifs, les photos et les lignes de prix le font déjà : c'est
       // l'écran qui garde une liste qui la tient à jour.
       if (resultat.succes) setChantiers((liste) => liste.filter((c) => c.id !== id));
+      // **Un refus sur un chantier POSÉ se dit sous le calendrier** (7 octobre
+      // 2026). Dans « Sans date », la ligne revient et porte son motif ; sur la
+      // fiche du jour, le chantier reviendrait sans un mot (une facture émise
+      // l'interdit, `supprimerChantier`).
+      else if (chantiers.some((c) => c.id === id && c.datePlanifiee)) setRefus(resultat.erreur);
       return resultat;
     },
   });
@@ -1256,6 +1262,8 @@ export default function PlanningClient({
    * de la liste au lieu d'être un second état à tenir à jour.
    */
   const [dernierPose, setDernierPose] = useState<{ id: string; jour: JourIso } | null>(null);
+  /** Le chantier dont on demande s'il faut le supprimer, le temps de la question. */
+  const [aSupprimer, setASupprimer] = useState<ChantierPlanning | null>(null);
   const PAGE_VIEILLIE = "Rien n'est parti. Rechargez la page.";
 
   /**
@@ -1541,6 +1549,7 @@ export default function PlanningClient({
     morceauEnMain,
     deplacerLeJour,
     retirerDuJour,
+    demanderSuppression: setASupprimer,
     poser,
     poserUnClient,
     attenteClient,
@@ -2024,6 +2033,18 @@ export default function PlanningClient({
         </div>
 
         {/* ─── CE QUI N'A PAS ENCORE DE JOUR — dans le tiroir du bas ────── */}
+        <QuestionDeSuppression
+          chantier={aSupprimer}
+          onRenoncer={() => setASupprimer(null)}
+          onConfirmer={(c) => {
+            setASupprimer(null);
+            // La fiche ouverte sur lui se referme : elle parlerait d'un chantier
+            // qui vient de quitter le jour.
+            setOuvert(null);
+            setFeuille(null);
+            retraits.retirer(c.id, `le chantier ${c.nom}`);
+          }}
+        />
         <TiroirDuBas
           ecriture={ouvertes.ecriture}
           sansDate={sansDate}
@@ -2039,6 +2060,7 @@ export default function PlanningClient({
             retirerDuJour(id);
           }}
           retraits={retraits}
+          demanderSuppression={setASupprimer}
           portesOuvertes={ouvertes.fiche}
           onPortes={montrerLesPortes}
           datesDuMois={
@@ -2564,6 +2586,8 @@ type GestesCarte = {
   /** Reposer le morceau tenu au doigt sur la demi-journée touchée. */
   reposer: (chantierId: string, jour: JourIso, demi: Demi) => void;
   retirerDuJour: (chantierId: string) => void;
+  /** Ouvre la question avant de supprimer — la B de sa planche du 7 octobre 2026. */
+  demanderSuppression: (c: ChantierPlanning) => void;
   poser: (chantierId: string, jour: JourIso) => void;
   taches: Record<string, FeuilleEtRetour>;
 };
@@ -2793,10 +2817,12 @@ const MOT_ARRIVEE: Record<MomentDArrivee, string> = {
 function MotDuGeste({
   children,
   onClick,
+  alerte = false,
   ...reste
 }: {
   children: React.ReactNode;
   onClick: () => void;
+  alerte?: boolean;
 } & Record<string, unknown>) {
   return (
     <button
@@ -2804,7 +2830,7 @@ function MotDuGeste({
       onClick={onClick}
       {...reste}
       className="flex-shrink-0 cursor-pointer border-0 bg-transparent px-0 py-[11px] text-[13.5px] font-bold"
-      style={{ color: colors.ink, WebkitTapHighlightColor: "transparent" }}
+      style={{ color: alerte ? colors.alert : colors.ink, WebkitTapHighlightColor: "transparent" }}
     >
       {children}
     </button>
@@ -3983,6 +4009,7 @@ function CarteDuJour({
   morceauEnMain,
   deplacerLeJour,
   retirerDuJour,
+  demanderSuppression,
   poser,
   poserUnClient,
   attenteClient,
@@ -4578,6 +4605,14 @@ function CarteDuJour({
                       <MotDuGeste data-atlas="retirer" onClick={() => retirerDuJour(c.id)}>
                         Retirer
                       </MotDuGeste>
+                      {/* **SUPPRIMER SUR LE JOUR MÊME, la B de sa planche du
+                          7 octobre 2026.** Un client qui a accepté par erreur
+                          demandait deux gestes : Retirer, puis le glisser dans
+                          « Sans date ». Le mot vit à côté des deux autres, à
+                          leur place ; en rouge parce qu'il ne se repose pas. */}
+                      <MotDuGeste data-atlas="supprimer" alerte onClick={() => demanderSuppression(c)}>
+                        Supprimer
+                      </MotDuGeste>
                     </>
                   )}
                 </div>
@@ -5117,6 +5152,7 @@ function TiroirDuBas({
   poseADefaire,
   defairePose,
   retraits,
+  demanderSuppression,
   portesOuvertes,
   onPortes,
   datesDuMois,
@@ -5144,6 +5180,8 @@ function TiroirDuBas({
    * d'annulation se serait mis à recevoir autre chose que ce qu'il attend.
    */
   retraits: ReturnType<typeof useRetraits>;
+  /** La question avant de supprimer, la même que sur la fiche du jour. */
+  demanderSuppression: (c: ChantierPlanning) => void;
   /**
    * ─── LES DEUX LISTES DU BAS ONT DES PORTES, ELLES AUSSI — 4 sept. 2026 ──
    *
@@ -5189,6 +5227,18 @@ function TiroirDuBas({
   }
 
   /**
+   * **UN RETRAIT OUVRE LE TIROIR** — la B de sa planche du 7 octobre 2026 :
+   * « Retiré à l'instant, Annuler » reste six secondes en bas. Supprimé depuis
+   * la fiche du jour, le tiroir était fermé, et « Annuler » vivait dedans, à
+   * hauteur zéro. Même ajustement pendant le rendu que la date posée.
+   */
+  const [dejaRetires, setDejaRetires] = useState(retraits.nombre);
+  if (retraits.nombre !== dejaRetires) {
+    setDejaRetires(retraits.nombre);
+    if (retraits.nombre > dejaRetires) setOuvert(true);
+  }
+
+  /**
    * ═══════════════════════════════════════════════════════════════════════
    * LE TIROIR PUBLIE SA HAUTEUR — 10 septembre 2026
    * ═══════════════════════════════════════════════════════════════════════
@@ -5212,7 +5262,8 @@ function TiroirDuBas({
    */
   const cadre = useRef<HTMLDivElement>(null);
   const montre = (ecriture && sansDate.length > 0) || attenteClient.length > 0 ||
-    (ecriture && morceaux.length > 0) || aEnvoyer.length > 0 || datesEnAttente.length > 0;
+    (ecriture && morceaux.length > 0) || aEnvoyer.length > 0 || datesEnAttente.length > 0 ||
+    (ecriture && retraits.nombre > 0);
   useEffect(() => {
     const racine = document.documentElement;
     const rendre = () => racine.style.removeProperty("--atlas-tiroir");
@@ -5264,8 +5315,17 @@ function TiroirDuBas({
    * l'instant du geste emporterait « Annuler » avec lui.
    */
   const aDefaire = ecriture && poseADefaire !== null;
+  /**
+   * **Un retrait qui attend tient le tiroir, lui aussi — 7 octobre 2026.** La
+   * même règle que la pose juste au-dessus, qui avait oublié son pendant :
+   * retirer le SEUL client de « Sans date » vidait la liste, le tiroir se
+   * démontait, et « Annuler » partait avec lui. L'écriture, elle, tombait six
+   * secondes plus tard : un client accepté par erreur, supprimé sans retour
+   * (`test-supprimer-du-planning-e2e`).
+   */
+  const aRetire = ecriture && retraits.nombre > 0;
   const aDates = aEnvoyer.length > 0 || datesEnAttente.length > 0;
-  if (!aSansDate && !aAttente && !aMorceaux && !aDefaire && !aDates) return null;
+  if (!aSansDate && !aAttente && !aMorceaux && !aDefaire && !aRetire && !aDates) return null;
   /** Ceux qui attendent le client : un devis parti, ou les dates d'un mois. */
   const combienAttendent = attenteClient.length + datesEnAttente.length;
 
@@ -5546,7 +5606,7 @@ function TiroirDuBas({
                   key={c.id}
                   libelle={`le chantier ${c.nom}`}
                   retiree={retraits.estRetire(c.id)}
-                  onRetirer={() => retraits.retirer(c.id, `le chantier ${c.nom}`)}
+                  onRetirer={() => demanderSuppression(c)}
                   hauteurMax={64}
                   className="flex"
                 >
@@ -5683,6 +5743,7 @@ function TiroirDuBas({
             dernier={retraits.dernier}
             nombre={retraits.nombre}
             onAnnuler={retraits.annuler}
+            compteARebours={retraits.compteARebours}
             className="mt-6"
           />
         )}

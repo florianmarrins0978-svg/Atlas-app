@@ -2139,6 +2139,37 @@ export const envoisDevis = pgTable(
 // que le planificateur — qui n'a le contexte d'aucune — puisse adopter celui de
 // chacune avant d'écrire dans notes_vocales, sans jamais contourner
 // l'isolation.
+/**
+ * Une acceptation de devis que le patron a défaite — son choix 3 du 7 octobre
+ * 2026. L'acceptation effacée de `envois_devis` se recopie ici d'abord : c'est
+ * la seule preuve qu'un accord a existé (migration 0123). `atlas_app` n'y a ni
+ * UPDATE ni DELETE.
+ */
+export const acceptationsDefaites = pgTable(
+  "acceptations_defaites",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    entrepriseId: uuid("entreprise_id")
+      .notNull()
+      .references(() => entreprises.id, { onDelete: "cascade" }),
+    envoiId: uuid("envoi_id")
+      .notNull()
+      .references(() => envoisDevis.id, { onDelete: "cascade" }),
+    chantierId: uuid("chantier_id").notNull(),
+    vers: text("vers", { enum: ["attente", "refusee"] }).notNull(),
+    responduAt: timestamp("repondu_at", { withTimezone: true }).notNull(),
+    dateRetenue: date("date_retenue"),
+    joursRetenus: jsonb("jours_retenus").$type<string[]>(),
+    demarrageAnticipe: boolean("demarrage_anticipe").notNull(),
+    accordSurPapier: boolean("accord_sur_papier").notNull(),
+    adresseIp: text("adresse_ip"),
+    agentUtilisateur: text("agent_utilisateur"),
+    defaitePar: uuid("defaite_par").notNull(),
+    defaiteAt: timestamp("defaite_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("acceptations_defaites_entreprise_envoi_idx").on(t.entrepriseId, t.envoiId)]
+);
+
 export const audiosAPurger = pgTable(
   "audios_a_purger",
   {

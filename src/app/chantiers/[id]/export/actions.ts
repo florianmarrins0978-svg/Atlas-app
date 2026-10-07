@@ -16,6 +16,8 @@ import type { EnvoiDuDevis } from "@/lib/message-client";
 import { MOTIF_DEVIS_VIDE } from "@/lib/devis-envoyable";
 import { datesHorsFenetre, motifDatesRefusees } from "@/lib/dates-envoi";
 import { fenetrePatron } from "@/lib/disponibilites";
+import { defaireLAcceptation, AcceptationNonDefaite } from "@/server/repositories/acceptation-defaite";
+import { porterChantierDansAgenda } from "@/server/repositories/agenda-apple";
 
 export async function chargerDevisAction(chantierId: string) {
   const ctx = await getCurrentCtx();
@@ -65,6 +67,35 @@ export async function reprendreDevisAction(chantierId: string) {
   await exigerGestionDevis(ctx, "reprendre le devis");
   const devis = await getOuCreerDevisBrouillon(ctx, chantierId);
   return { devisId: devis.id, numeroVersion: devis.numeroVersion };
+}
+
+/**
+ * « Le client s'est trompé » — son choix 3 du 7 octobre 2026. La règle et son
+ * pourquoi vivent dans le dépôt (`acceptation-defaite.ts`) ; ici, la garde, le
+ * refus rendu EN VALEUR (`AGENTS.md`, piège 0 ter), et l'agenda de son
+ * téléphone, qui ne doit pas garder un chantier que le planning a perdu.
+ */
+const REFUS_ACCEPTATION: Record<AcceptationNonDefaite["motif"], string> = {
+  pas_accepte: "Ce devis n'est plus accepté. Rechargez la page.",
+  facture_preparee: "Sa facture est déjà préparée : une correction passe par un avoir.",
+};
+
+export type ResultatAcceptationDefaite = { succes: true } | { succes: false; erreur: string };
+
+export async function defaireLAcceptationAction(
+  chantierId: string,
+  vers: "attente" | "refusee"
+): Promise<ResultatAcceptationDefaite> {
+  const ctx = await getCurrentCtx();
+  await exigerGestionDevis(ctx, "défaire l'acceptation du devis");
+  try {
+    await defaireLAcceptation(ctx, chantierId, vers);
+  } catch (err) {
+    if (err instanceof AcceptationNonDefaite) return { succes: false, erreur: REFUS_ACCEPTATION[err.motif] };
+    throw err;
+  }
+  await porterChantierDansAgenda(ctx, chantierId);
+  return { succes: true };
 }
 
 // --- Envoi au client : la seule question posée au patron (docs/AGENT.md §2.2) ---

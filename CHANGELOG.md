@@ -43,6 +43,26 @@ relisent. La clé TVA se vérifie à part, et sans bloquer (ci-dessous).
 - **Un n° TVA français mal tapé se signale, et le bon se propose** (sa planche du 7 octobre 2026, `appli/verifier-la-tva.html`, B). La clé se recalcule sur le SIREN ; un numéro qui ne colle pas au SIRET de la fiche se dit aussi. **La clé ne bloque pas**, c'était sa condition : la ligne rouge ne se relit pas au serveur, et le bon numéro ne se pose que s'il le touche (`avisSurLeNumeroTva`, `AvisNumeroTva.tsx`). Clé en lettres et numéro étranger ne se vérifient pas.
 - **Le n° TVA d'une entreprise cliente porte « FR » d'office**, à la création, sur sa fiche et sur la facture en sous-traitance (avec la même alerte sur la clé) (sa demande du 7 octobre 2026). Il s'efface pour une entreprise étrangère. « FR » laissé seul se lit comme une case vide (`numeroTvaVide`, `src/lib/autoliquidation.ts`), à l'écran comme au serveur : sans cela, la forme FR exigée juste au-dessus aurait bloqué tout devis d'une entreprise sans numéro.
 
+### Défaire un devis que le client a accepté par erreur
+
+Sur la page Devis, « Le client s'est trompé » sous le montant : une autre date
+(le devis repart en attente, le client répond avec le même lien) ou plus de
+devis (noté refusé). Six secondes pour annuler, avec une barre qui diminue ;
+la même barre arrive sur le planning. **Ce que ça évite** : un accord cliqué
+par erreur restait accepté pour toujours, et occupait le planning.
+L'acceptation effacée est gardée en trace, que l'application ne peut ni
+réécrire ni effacer (`ARCHITECTURE.md` §452, migration 0123).
+
+### Supprimer du planning un client qui a accepté par erreur
+
+« Supprimer » s'ajoute sur la fiche du jour, à côté de « Déplacer » et
+« Retirer ». Une question d'abord, puis six secondes pour annuler ; la même
+question devant « Retirer » dans « Sans date ». **Ce que ça évite** : un client
+qui accepte par erreur se pose seul, et l'en sortir prenait deux gestes sans
+question. **Et un défaut corrigé** : retirer le seul client sans date faisait
+disparaître « Annuler », la suppression partait sans retour possible
+(`ARCHITECTURE.md` §451).
+
 ### Poser au planning un client qui n'arrive pas à choisir ses dates
 
 Un client qui reçoit le lien du devis sans réussir à choisir ses dates ne

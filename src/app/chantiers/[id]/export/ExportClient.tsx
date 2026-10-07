@@ -1,12 +1,15 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useRef, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { colors, font } from "@/lib/design-tokens";
 import BoutonTelechargerDocument from "@/components/atlas/BoutonTelechargerDocument";
 import TransmettreAuClient from "./TransmettreAuClient";
 import { etatEnvoiExplication, etatEnvoiLabel, type EtatEnvoi } from "@/lib/etat-envoi";
-import { reprendreDevisAction } from "./actions";
+import { defaireLAcceptationAction, reprendreDevisAction } from "./actions";
+import ErreurDuClient from "./ErreurDuClient";
+import TiroirDesRetires from "@/components/atlas/TiroirDesRetires";
+import { useRetraits } from "@/components/atlas/useRetraits";
 import { enEuros } from "@/lib/euros";
 import { joursEnToutesLettres } from "@/lib/jour";
 import type { EnvoiDuDevis } from "@/lib/message-client";
@@ -117,6 +120,27 @@ export default function ExportClient({
   // dépôt (`CLAUDE.md` §4 — rien ne part et rien ne s'engage sans un geste).
   const [avertissementVisible, setAvertissementVisible] = useState(false);
 
+  /**
+   * « LE CLIENT S'EST TROMPÉ » — son choix 3 du 7 octobre 2026, avec la barre
+   * des six secondes. La question choisit la suite ; le tiroir la retient six
+   * secondes, et c'est sa fermeture qui l'écrit (`useRetraits`, le même
+   * mécanisme que « Supprimer » au planning, pour qu'« Annuler » ne mente pas).
+   *
+   * Le choix vit dans une référence ET dans un état : la référence pour
+   * l'écriture, qui part hors rendu (minuteur, départ de page) ; l'état pour
+   * ce que la page montre pendant les six secondes.
+   */
+  const [erreurOuverte, setErreurOuverte] = useState(false);
+  const [vers, setVers] = useState<"attente" | "refusee">("attente");
+  const versRef = useRef<"attente" | "refusee">("attente");
+  const defaite = useRetraits({ valider: () => defaireLAcceptationAction(chantierId, versRef.current) });
+  const enSuspens = defaite.estRetire(chantierId);
+  // **Ce que la page dit pendant les six secondes, c'est ce qu'elle dira
+  // après** : l'état vers lequel il va, lu dans les mêmes libellés que le
+  // serveur (`etat-envoi.ts`). « Annuler » rend l'état d'avant.
+  const etatAffiche: EtatEnvoi = enSuspens ? (vers === "attente" ? "en_attente" : "retourne") : etatEnvoi;
+  const refusDefaite = defaite.refuses[chantierId] ?? null;
+
   function lienComplet(chemin: string) {
     return `${origine}${chemin}`;
   }
@@ -144,8 +168,10 @@ export default function ExportClient({
   // La règle qu'il a retenue (maquette 40, proposition B) : **un seul bouton à
   // chaque instant**, celui du moment. Avant l'envoi, reprendre EST le geste ;
   // après, c'est transmettre. Jamais les deux.
+  // Pendant les six secondes, rien ne se reprend : la reprise lirait un devis
+  // que la fermeture du tiroir n'a pas encore réécrit.
   const peutReprendre =
-    etatEnvoi === "retourne" || etatEnvoi === "a_corriger" || etatEnvoi === "caduc";
+    !enSuspens && (etatEnvoi === "retourne" || etatEnvoi === "a_corriger" || etatEnvoi === "caduc");
 
   /**
    * Rouvre le devis pour le modifier, puis mène à l'écran qui le porte.
@@ -194,18 +220,29 @@ export default function ExportClient({
           si on y retouche, jamais de mémoire. */}
       {envoye ? (
         <EcranDevisParti
-          etat={etatEnvoiLabel[etatEnvoi]}
+          etat={etatEnvoiLabel[etatAffiche]}
           // La même civilité que la synthèse ci-dessous : lire « Mr. Martins »
           // avant l'envoi et « Martins » juste après ferait douter qu'il
           // s'agisse du même client. Le message qui part chez le client
           // l'aborde de la même façon depuis le 13 août au soir
           // (`src/lib/message-client.ts`).
-          phrase={etatEnvoiExplication[etatEnvoi]}
+          phrase={etatEnvoiExplication[etatAffiche]}
+          refus={refusDefaite}
           messageClient={messageClient}
           joursDuClient={joursDuClient}
           numeroDevis={numeroDevis}
           totalTtc={totalTtc}
-          onModifier={peutReprendre ? null : () => setAvertissementVisible(true)}
+          onModifier={peutReprendre || enSuspens ? null : () => setAvertissementVisible(true)}
+          onErreurDuClient={etatEnvoi === "accepte" && !enSuspens ? () => setErreurOuverte(true) : null}
+          tiroir={
+            <TiroirDesRetires
+              dernier={defaite.dernier}
+              nombre={defaite.nombre}
+              onAnnuler={defaite.annuler}
+              compteARebours={defaite.compteARebours}
+              situation={vers === "attente" ? "Remis en attente à l'instant" : "Noté refusé à l'instant"}
+            />
+          }
           lienPdf={`/api/devis/${devisId}/pdf`}
           nomFichierPdf={nomFichierDevis}
           transmission={
@@ -259,6 +296,19 @@ export default function ExportClient({
           Ce qu'il dit est vérifié dans le dépôt, pas supposé : la page publique
           sert `envoi.devis`, donc la version que le client a reçue. Créer une
           nouvelle version n'annule pas l'envoi en cours. */}
+      <ErreurDuClient
+        ouvert={erreurOuverte}
+        clientNom={clientNom}
+        clientCivilite={clientCivilite}
+        onRenoncer={() => setErreurOuverte(false)}
+        onChoisir={(choix) => {
+          setErreurOuverte(false);
+          versRef.current = choix;
+          setVers(choix);
+          defaite.retirer(chantierId, "l'acceptation du devis");
+        }}
+      />
+
       <AvertissementModification
         ouvert={avertissementVisible}
         enCours={reprise}
@@ -390,6 +440,9 @@ function EcranDevisParti({
   numeroDevis,
   totalTtc,
   onModifier,
+  onErreurDuClient,
+  refus,
+  tiroir,
   lienPdf,
   nomFichierPdf,
   transmission,
@@ -403,6 +456,12 @@ function EcranDevisParti({
   totalTtc: string;
   /** `null` quand reprendre le devis est déjà l'action principale de l'écran. */
   onModifier: (() => void) | null;
+  /** « Le client s'est trompé » : seulement sur un devis accepté. */
+  onErreurDuClient: (() => void) | null;
+  /** Le refus du serveur, quand l'acceptation n'a pas pu être défaite. */
+  refus: string | null;
+  /** Le tiroir des six secondes, au-dessus du geste du bas. */
+  tiroir: ReactNode;
   lienPdf: string;
   nomFichierPdf: string;
   transmission: ReactNode;
@@ -481,10 +540,32 @@ function EcranDevisParti({
             Modifier mon devis
           </button>
         )}
+        {/* **Sous « Modifier mon devis », en rouge** — la place de sa planche
+            du 7 octobre 2026 : un mot de plus sous le total, rien ne bouge
+            au-dessus. Rouge parce qu'il défait ce que le client a signé. */}
+        {onErreurDuClient && (
+          <button
+            type="button"
+            data-atlas="le-client-s-est-trompe"
+            onClick={onErreurDuClient}
+            className="mt-2 block w-full text-[14px] font-medium"
+            style={{ color: colors.alert }}
+          >
+            Le client s’est trompé
+          </button>
+        )}
+        {refus && (
+          <p role="alert" className="mt-3 text-[13px] leading-[1.5]" style={{ color: colors.alert }}>
+            {refus}
+          </p>
+        )}
       </div>
 
       </div>
 
+      {/* Hors de la marge du pied : le tiroir porte la sienne (26 px), celle
+          de tous les écrans qui retirent. */}
+      {tiroir}
       <div className="px-6 pb-2 pt-5">
         {transmission}
         {/* Quand aucun lien n'est encore actif — un devis caduc, par exemple — il

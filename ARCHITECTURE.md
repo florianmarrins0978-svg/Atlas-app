@@ -403,7 +403,6 @@ test et de dériver avec elle.
 en désignant le bon coupable. Le premier jet cherchait « EUR » n'importe où dans
 le document : il accusait « ÉMETTEUR », qui se termine par ces trois lettres.
 
-
 ---
 
 ## 17. Ce qui n'est pas joignable d'ici se fait relever par une machine
@@ -443,7 +442,6 @@ la moitié basse du devis, que la capture du patron ne montrait pas — mention
 légale `#7a7a6a`, légende de signature `#6b6b5c`, total final en Playfair 600,
 en-têtes de colonnes `#6b6b5c` en Inter 700. Le devis d'Atlas s'y conformait
 déjà. Et le 404 à la racine, qui a permis de dater l'écart de couleur.
-
 
 ---
 
@@ -486,7 +484,6 @@ portant son nom ; Atlas par une barre basse, pensée pour le pouce et pour une
 application installée sur l'écran d'accueil. Remplacer l'une par l'autre est une
 décision d'usage, pas de couleur : elle n'a pas été prise seule. Voir `TODO.md`.
 
-
 ---
 
 ## 19. Devis et facture partagent une seule mise en page
@@ -525,7 +522,6 @@ après extraction du moteur est identique **au pixel près** (même empreinte
 SHA-256 de l'image). Un moteur partagé qui déplace un trait de deux points
 abîmerait une pièce déjà éprouvée sans qu'aucun test ne le dise.
 
-
 ---
 
 ## 20. Les copies de `appli/` sont conformes à leur source, et c'est vérifié
@@ -556,7 +552,6 @@ mesure, et le contrôle se rejoue.
 **Ce que cela ne dit pas.** Le PDF n'est pas le modèle : c'est sa transposition.
 Les polices diffèrent (§16), un PDF n'ayant pas accès à Playfair Display ni à
 Inter. La conformité porte sur la source, pas sur le rendu.
-
 
 ---
 
@@ -1426,7 +1421,6 @@ qu'il sache pourquoi. La reprise par le modèle reste ouverte — `TODO.md`
 | Les montants, les colonnes, le rapprochement — sans base | `scripts/test-import-tarifs.ts` |
 | Que lire n'écrit rien, et que l'import d'une entreprise ne déborde pas | `scripts/test-import-tarifs-db.ts` |
 | **Que la touche existe**, et que rien n'entre avant son appui | `scripts/test-import-tarifs-e2e.ts` |
-
 
 ---
 
@@ -6736,7 +6730,6 @@ cassée, où la ligne scellée portait un interrupteur — exactement ce qu'elle
 interdit. **Regarder l'écran suppose de savoir quelle exécution l'a écrit :**
 relancer le contrôle sur le fichier sain avant de conclure.
 
-
 ### Les planches portent désormais la charte de l'application, valeur pour valeur
 
 **Sa consigne, le 13 août 2026 :** *« toujours en respectant le style de l'appli
@@ -6780,7 +6773,6 @@ et Inter rapatriées par `next/font` (faux depuis le 10 août : polices du
 système), et la terre cuite `#B25A2E` sur les documents (faux depuis le 10 août :
 l'or). Le code fait foi, `CLAUDE.md` §1.
 
-
 ### Le gros plan : une loupe, jamais un téléphone élargi
 
 **Sa demande, le 13 août 2026 :** *« fais-moi les planches en gros plan que je
@@ -6814,7 +6806,6 @@ plaque en haut ; le décalage qui l'aligne sur le **surtitre** de l'écran — e
 non sur le bord du cadre — se calcule à 37 px multipliés par la loupe, puisque
 celle-ci agrandit le téléphone et pas la colonne de texte. Deux contrôles neufs
 tiennent l'un et l'autre.
-
 
 ### « Le style de toutes les pages, pas du devis et facture »
 
@@ -6863,7 +6854,6 @@ coque avait été posée avant `.tel{padding:11px}` : à spécificité égale, l
 dernière déclaration l'emporte, et l'écran restait à 368 px. Le contrôle a
 désigné le bon coupable en une ligne — « 368 px » — parce qu'il mesurait la
 largeur au lieu de vérifier la présence de la règle.
-
 
 ---
 
@@ -6943,7 +6933,6 @@ choisie, mesurait 0 px et faisait rougir un écran sain. Une ligne qu'on ne peut
 pas toucher n'a pas de cible à tenir. Une alerte qui accuse à tort coûte plus
 cher que pas d'alerte (`AGENTS.md`).
 
-
 ### Le premier jour d'un artisan : six faits qui rendent ce lot urgent
 
 **Sa remarque du 13 août 2026 :** *« quand l'application sera commercialisée, le
@@ -6996,7 +6985,6 @@ Deux écrans de plus dans `atlas-reglages-identite.html` :
 saisit qu'au détour d'un devis manuel, Atlas ne peut pas être confié à un
 artisan : son premier document partirait irrégulier. `TODO.md` §0 quatervicies
 le porte, et c'est désormais le point le plus lourd de la série.
-
 
 ---
 
@@ -7089,7 +7077,6 @@ la règle vaut pour les trois planches.
 Corrigé au passage : le titre disait « ce que ça ouvre » au-dessus d'une liste
 qui contient aussi des refus. Il dit « ce que ça change ».
 
-
 ---
 
 ## 89. Tarifs et catalogue : trois familles, et ce qui n'appartient pas à l'artisan
@@ -7149,7 +7136,6 @@ et pas seulement l'écart. Sans cette précaution il accusait à tort sur une
 planche saine — et une alerte qui désigne le mauvais coupable coûte plus cher
 que pas d'alerte (`AGENTS.md`).
 
-
 ### Ajouter et supprimer un tarif — et ce que la suppression ne casse pas
 
 **Sa demande du 13 août 2026 :** *« pouvoir aussi ajouter ou supprimer du
@@ -7181,7 +7167,6 @@ touchés : ils gardent le prix qu'ils portaient le jour où ils ont été écrit
 **Le taire aurait suffi à bloquer l'artisan** — personne n'ose supprimer un
 tarif dans le doute, et il aurait gardé une liste qui grossit sans jamais
 maigrir.
-
 
 ### « L'IA se servira de ces infos pour constituer les devis ? » — oui, et quatre chiffres invisibles avec
 
@@ -7239,7 +7224,6 @@ replie sur deux lignes et le gras se retrouve plus haut — le contrôle laissai
 donc passer exactement ce qu'il devait attraper. Il mesure désormais le
 **chevauchement vertical**, et il a été confronté à la version cassée pour
 qu'on sache qu'il rougit.
-
 
 ---
 
@@ -7302,7 +7286,6 @@ pourrait apprendre à la place de le demander*. Les cinq grilles sont le modèle
 elles ne se saisissent pas, elles se remplissent. Un réglage qu'on peut déduire
 d'un geste déjà fait ne devrait pas être un champ de formulaire.
 
-
 ---
 
 ## 91. Les documents : ce qui se règle, et le modèle qu'on ne remplace pas
@@ -7359,7 +7342,6 @@ fondre en un seul champ produirait un texte imprimé deux fois, ou nulle part.
 certains clients le lisent comme une méfiance. Un défaut choisi se justifie —
 sans quoi il passe pour un oubli.
 
-
 ---
 
 ## 92. Les notifications : huit familles, et une seule qui existe
@@ -7404,7 +7386,6 @@ l'éteindre, c'est accepter de ne plus savoir qu'on n'est pas payé.
 de l'accueil restent, c'est seulement Atlas qui cesse de déranger. Sans cette
 phrase, un artisan qui veut le calme croirait avoir tout perdu et rallumerait au
 hasard.
-
 
 ---
 
@@ -7458,7 +7439,6 @@ serait le premier appel au secours ; l'écran le dit sur place.
 | Documents | `atlas-reglages-documents.html` | rien (§91) |
 | Notifications | `atlas-reglages-notifications.html` | une famille sur huit (§92) |
 | IA, intégrations, apparence, sécurité, abonnement | `atlas-reglages-reste.html` | IA et intégrations partiels |
-
 
 ---
 
@@ -7532,7 +7512,6 @@ accusait la facture ; le coupable était le test.
 
 La suite a ensuite été confrontée à l'ancien code — la déduction par le taux
 remise en place — et elle rougit sur les deux cas exacts que ce lot corrige.
-
 
 ### Et deux défauts vus sur l'écran RÉEL, que les planches interdisaient déjà
 
@@ -8373,7 +8352,6 @@ vérifie aussi que l'écran d'après l'envoi garde SON geste : sans cela, on
 passerait au vert en retirant le lien partout, et le patron n'aurait plus
 d'issue du tout.
 
-
 ## 105. Ses tranches et ses travaux, au lieu des nôtres
 
 **Sa demande, le 14 août 2026**, capture de l'écran « Mes prix » à l'appui :
@@ -8908,7 +8886,6 @@ de sens que si le télescopage se produit vraiment. **Question posée au patron 
 14 août, sans réponse à ce jour.**
 
 ---
-
 
 ---
 
@@ -9655,7 +9632,6 @@ pas été demandée : sans elle, une remise dictée par erreur ne pourrait pas �
 retirée sans redicter, et l'installation sans clé d'IA ne saurait pas en poser.
 Elle ouvre à 5 %, qu'il corrige.
 
-
 ---
 
 ## 117. Deux demi-journées qui font une journée — et la route, pas le vol d'oiseau
@@ -10165,7 +10141,6 @@ défaire cela. Consigné dans `TODO.md`, à lui poser.
   trouvait dans « 45**0,00 €** ». Une erreur qui accuse à tort coûte plus cher
   que pas de contrôle (`CLAUDE.md` §5).
 
-
 ---
 
 ## 122. « C'est monsieur Martins » : retrouver un client au lieu d'en refaire un
@@ -10438,7 +10413,6 @@ couleur ; une distinction qui n'en porte aucun ne fait que semer le doute.
 charte qui changerait de valeur passerait au travers d'un contrôle qui ne
 regarde que la règle CSS (`test-catalogue-mes-mots-e2e.ts`). Rouge en remettant
 l'or, et son message donne les deux couleurs lues.
-
 
 ## 124. « Adresse non renseignée » devient une porte — et rien d'autre ne bouge
 
@@ -11662,7 +11636,6 @@ qui prend ses captures en passant (`ATLAS_CAPTURES`). C'est là qu'on voit ce
 qu'aucune suite base ne peut voir : que l'écran appelle bien les règles, et que
 le client ne reçoit pas les dix-sept lignes qu'il n'a pas payées.
 
-
 ## 134. Le troisième document : une option dans le moteur, pas un moteur de plus
 
 *Sa demande du 20 août 2026 : « fais en sorte que les fiches chantiers soient au
@@ -12237,7 +12210,6 @@ la photo qui tranche, quoi que la base porte d'autre.
 recopiait à la main le `resultat` qu'affiche l'écran de diagnostic, champ par
 champ — la règle dupliquée entre l'affichage et la vérification qu'interdit
 `CLAUDE.md` §3. `composerResultat` est désormais exportée, et la suite l'appelle.
-
 
 ---
 
@@ -13211,7 +13183,6 @@ rendus faux :
   3,2 bar, où la même buse est retenue, contre les pressions réellement
   reçues.
 
-
 ## 148. Le temps passé se masque au client — et ce qui est masqué ne sort pas du serveur
 
 **Sa demande du 22 août 2026**, capture de la fiche d'entretien à l'appui :
@@ -13436,7 +13407,6 @@ une règle éprouvée sur un seul cas n'est pas éprouvée (§146).
 posent chacune son arroseur sur l'arête commune. Le cas n'est pas soluble ici :
 elles sont sur des vannes différentes, donc l'une ne peut pas remplacer l'autre.
 C'est un coup de bêche à décaler sur place, et le plan le **dit** en réserve.
-
 
 ---
 
@@ -13924,7 +13894,6 @@ du tout (`CLAUDE.md` §5).
 **La consigne au modèle a été reprise en conséquence.** « Tu ne devines jamais »
 ne s'applique PAS aux places : une cote se LIT (illisible = null), une place se
 MESURE sur l'image et se voit toujours dès que la zone est dessinée.
-
 
 ## 157. Ouvrir une fiche referme une autre — et la ligne touchée doit rester sous le doigt
 
@@ -14795,7 +14764,6 @@ texte vide, JSON noyé dans de la prose, consigne hors liste.
 après une lecture de croquis, donc avec une clé de vision que cet environnement
 n'a pas (`AGENTS.md`). Premier essai à faire sur son banc.
 
-
 ## 168. La fiche en cours se supprime — et l'endroit où elle se compose cesse de disparaître
 
 **Ses deux phrases du 24 août 2026**, sur une capture de « Fiche de chantier » :
@@ -15048,7 +15016,6 @@ le partage natif joint le fichier mais n'a pas de champ destinataire.
 
 Le destinataire prérempli est ce qu'il a demandé le 3 août. Revenir au PDF, ce
 serait le rendre. **La question lui est posée, elle n'est pas tranchée ici.**
-
 
 ---
 
@@ -16110,7 +16077,6 @@ plus. `confirmerDoublon` est la seconde intention explicite qui débloque.
 
 Deux fiches pour un même jardin, c'est un désordre qu'on ne défait plus — et
 c'est exactement ce qu'un modèle serviable ferait sans cette garde.
-
 
 ---
 
@@ -18190,7 +18156,6 @@ dépôt, et le planning a sa règle propre (§208).
    eux-mêmes. C'est la moitié qui vaut dans six mois.
 
 Vu rouge en retirant la garde d'émission de facture : il la nomme.
-
 
 ## 208. Un salarié consulte son planning ; il n'y écrit rien
 
@@ -20822,7 +20787,6 @@ ailleurs** : sous shell les arguments sont ré-interprétés, et l'activer parto
 changerait le comportement d'étapes qui marchent depuis des mois pour un défaut
 qui ne s'y produit pas.
 
-
 ## §233. La note vocale « en tasse » : une matière fixe dans une charte qui bouge
 
 *Ses choix du 2 septembre 2026, après huit séries de dessins et quatre
@@ -21871,7 +21835,6 @@ seule place pour la fiche ouverte depuis le calendrier — reste acquis.
   d'office, pour répondre sans un geste à « qu'est-ce que je fais aujourd'hui ».
   La capture l'a démentie : il ne restait plus qu'une semaine à l'écran, soit
   l'inverse de sa règle du 21 août — *« je veux un accès au mois »*.
-
 
 ## §244. Une attente ne vaut que ce que vaut son témoin
 
@@ -22974,7 +22937,6 @@ avec un bouton qui n'occupe que le milieu se contredit — vu à la capture.
 écartée PAR LUI**, et sa raison tient : c'est ici qu'il relit ce qu'il engage.
 Elle traînait dans `TODO.md` comme si elle était tranchée ; elle ne l'était pas
 (`docs/QUESTIONS.md` §23 se terminait sur la question). **Ne pas la rouvrir.**
-
 
 ---
 
@@ -24557,7 +24519,6 @@ version. **Le défaut ne se reproduit donc pas ici, et le correctif ne s'y
 éprouve pas.** Ce qui s'y prouve : que la règle est appliquée par les cinq
 routes, que l'aperçu n'a pas changé, et qu'un vrai appui fait bien descendre un
 fichier.
-
 
 ## §280. La dictée de la fiche client : trois défauts, une seule racine
 
@@ -26736,7 +26697,6 @@ retours d'affilée, le rechargement, et la sortie déclarée à froid
 erreurs ci-dessus, et son message rend le journal de l'onglet en clair — sans
 quoi elle n'aurait dit qu'« délai dépassé ».
 
-
 ---
 
 ## §312 — Le geste d'une absence : ce qui remplace le cerne, c'est le +
@@ -27188,9 +27148,6 @@ rouvrirait).
 | la planche | `appli/absence-l-ordre.html`, validée le 10 septembre |
 | le contrôle | `scripts/test-pas-la-ce-jour-e2e.ts` — l'interrupteur, son effacement, et « Annuler » derrière le + |
 
-
-
-
 ## §319 — L'abonnement : le prix ne vit qu'à UN endroit, et Stripe le recopie
 
 **Sa demande du 9 septembre 2026** : *« et que si on clique sur s'abonner qu'on
@@ -27374,7 +27331,6 @@ Le composant du sceau — la feuille, la rose des vents, le mot — qui vivait s
 (`CLAUDE.md` §4 quinquies). Sont partis avec lui l'animation
 `.atlas-sceau-en-marche` et la classe `.atlas-champ-ligne`, le champ souligné
 que les gélules remplacent. L'historique git les garde.
-
 
 ---
 
@@ -27580,9 +27536,6 @@ n'existait plus nulle part.
 | le dépôt | `libererDemiJournee`, `reposerDemiJournee` — `src/server/repositories/chantiers.ts` |
 | l'écran | `BasculeDemi`, `LigneLibre`, `TiroirDuBas` — `src/app/planning/PlanningClient.tsx` |
 | les contrôles | `scripts/test-creneaux-chantier.ts` (les règles), `scripts/test-deplacer-sur-le-calendrier-e2e.ts` (renommée le 17 septembre 2026) (**son geste**, de bout en bout) |
-
-
-
 
 ## §323 — Poser un CLIENT sur un jour : la voie qui part du planning et remonte
 
@@ -29388,7 +29341,6 @@ appels éprouve la règle, chercher une tournure éprouvait la formulation
 (`CLAUDE.md` §5 bis). `test-ouvrir-port.ts` tient la condition dans le texte du
 script, et `test-verdict-port.ts` que la fiche donne les deux gestes.
 
-
 ---
 
 ## §346 — Un espace qui se répare ne coûte pas les chantiers qu'il porte
@@ -29456,7 +29408,6 @@ rouge contre le `preparer.sh` de la veille.
 **Ce qui reste vrai, et qu'il faut dire :** une reconstruction reste un geste
 qui touche la machine. Avant, `npm run sauvegarder:banc` écrit une copie
 emportable — il existe depuis le 10 août, précisément pour cela.
-
 
 ---
 
@@ -29554,7 +29505,6 @@ qu'il vient de jeter, et l'emmènerait sur un devis qu'il n'a plus demandé.
 destructeur — laisser le tiroir se fermer — n'est éprouvé que sur l'écran Note
 vocale, qui emploie la même action et le même crochet. L'éprouver aussi ici
 détruirait la note du jeu de démonstration dont les suites voisines ont besoin.
-
 
 ## §348 — La planche B du devis : « Remise », « dont main d'œuvre », les conditions en gras, et ses conditions générales au dos
 
@@ -31070,7 +31020,6 @@ hors de l'écran (mesuré).
 migration qui rend `factures.devis_id` facultatif. Quand il arrivera, le rapport
 des ressorts se **remesure** — deux anneaux au lieu d'un déplacent le centre.
 
-
 ---
 
 ## §373 — « Déplacer » déplace pour de bon : le calendrier, puis le moment
@@ -31422,7 +31371,6 @@ produit (la demi-heure du 26 août 2026).
 La base de son espace. Elle se remet d'aplomb en rallumant l'espace ; si une
 migration refuse encore de passer, c'est désormais l'ÉCRAN qui le dira — au lieu
 d'un « Réessayez » qui envoie chercher dans le produit.
-
 
 ## §380 — Le garde-fou de `main` comparait des DATES : c'est le CONTENU qui décide
 
@@ -31841,8 +31789,6 @@ endroit coûte plus cher que pas d'erreur du tout (`AGENTS.md`).
 **Ce qui reste ouvert, et qui n'est pas de ce lot** : `creer-un-compte` porte le
 même libellé trompeur sur un seuil tenu par adresse seule. Inscrit dans
 `TODO.md`.
-
-
 
 ## §387 — La batterie entière prouve un LOT, jamais une rencontre
 
@@ -33481,7 +33427,6 @@ septembre faisait baisser la TVA de juillet, mois déjà déclaré, sans trace.
 | la TVA collectée du mois montre le retiré, barré, sans le compter | c'est le mois déclaré qui baisse : c'est là qu'il faut lire pourquoi |
 | `retirerReglementRecu` et « Facture acquittée » gardent leur suppression | ils ne touchent qu'une facture en BROUILLON, jamais déclarée |
 
-
 ## §418 : Mon agenda, une ligne par agenda, et la phrase du Planning qui se masque
 
 **Sa demande du 26 septembre 2026**, planche `appli/mon-agenda-simple.html` (A
@@ -33693,7 +33638,6 @@ est coupée, jamais une facture partie d'un seul côté en silence.
 | il vise le passage du **même client, même jour**, dont le contrat a l'automatisme ; rejoué, il rend le même lien | un second appui ne fait ni seconde facture ni second lien (éprouvé) |
 | seul qui peut facturer le fait partir ; un échec **n'empêche pas** le compte rendu, et la fiche le dit en restant ouverte | la garde de la facture ne s'efface pas en passant par la fiche ; une facture qu'il croirait partie serait pire qu'un refus |
 | le lien de facture s'ajoute **en fin de message**, après son modèle | son modèle de compte rendu reste intact, et un compte rendu sans facture reste sans prix |
-
 
 ## §427 : Les dates du mois d'un contrat : un lien par client et par mois
 
@@ -34403,4 +34347,96 @@ attestation, puis une photo quelconque.
 
 Tenu par `test-documents-en-regle.ts` (vu rougir contre l'ancienne règle),
 `test-attestation-lue.ts` (vu rougir) et `test-documents-en-regle-db.ts`.
+
+---
+
+## §451 : Supprimer du planning demande une question, puis garde ses six secondes
+
+**Sa demande du 7 octobre 2026 :** *« si un client valide un devis sans faire
+exprès [...] qu'on puisse les supprimer. Avec une protection, ce n'est pas un
+clic qu'on supprime »*. Mesuré avant de coder, au navigateur et sur un devis
+réellement accepté par la page du client : le chantier se pose seul sur sa
+date, et l'en sortir demandait deux gestes sans question (« Retirer », puis le
+glisser dans « Sans date »).
+
+**Son choix B** (`appli/supprimer-du-planning.html`, recopiée de l'écran servi) :
+
+| | |
+|---|---|
+| la fiche du jour | « Supprimer » à côté de « Déplacer » et « Retirer », en rouge |
+| « Retirer » de « Sans date » | la même question |
+| la question | `QuestionDeSuppression.tsx` : le nom du chantier, celui du client, « Supprimer » ou « Annuler » |
+| après | `useRetraits`, inchangé : six secondes, « Retiré à l'instant, Annuler » |
+
+**Il revient sur le 10 août sans l'annuler.** La réversibilité après reste
+entière ; la question s'ajoute devant. La feuille n'écrit rien elle-même :
+elle rend la main à `retraits.retirer`, le seul chemin d'écriture.
+
+**Le défaut trouvé en chemin, et corrigé à la racine.** `TiroirDuBas` rendait
+`null` quand plus rien n'attendait : retirer le SEUL client de « Sans date »
+démontait le tiroir, et `TiroirDesRetires` avec lui. L'écriture partait quand
+même six secondes plus tard, sans aucun « Annuler ». La pose avait déjà sa
+règle (`aDefaire`, « un tiroir qui disparaît à l'instant du geste emporterait
+Annuler ») ; le retrait ne l'avait pas. `aRetire` la complète, et un retrait
+OUVRE le tiroir comme une date posée le fait, sinon « Annuler » vivrait dans
+un tiroir fermé, à hauteur zéro.
+
+**Un refus sur un chantier posé se dit sous le calendrier** (`setRefus`) : dans
+« Sans date », la ligne revient avec son motif ; sur la fiche du jour, le
+chantier serait revenu sans un mot (une facture émise l'interdit).
+
+**Ce qui reste ouvert, et c'est à lui** : le devis reste « accepté » dans
+`envois_devis` (aucun geste pour le remettre en attente ou le noter refusé) ;
+une absence d'équipe s'efface toujours d'un seul appui. `TODO.md`.
+
+`scripts/test-supprimer-du-planning-e2e.ts` : rouge sur la version d'avant
+(six cas), vert après.
+
+---
+
+## §452 : « Le client s'est trompé » défait une acceptation, et la garde
+
+**Sa demande du 7 octobre 2026** (le « 2 oui » de la suite de §451) : un devis
+accepté par erreur doit pouvoir se défaire. **Son choix 3**
+(`appli/devis-accepte-par-erreur.html`, recopiée de la page Devis servie dans
+ses trois états) : un seul mot rouge sous « Modifier mon devis », une question
+qui propose les deux suites, puis **la barre qui diminue en six secondes avec
+« Annuler »**.
+
+| | l'envoi | son lien | le planning |
+|---|---|---|---|
+| « veut une autre date » | sans réponse | de nouveau répondable | retiré |
+| « ne veut plus du devis » | refusé, vu par le patron | fermé, « Devis retourné » | retiré |
+
+**Une seule transaction** (`acceptation-defaite.ts`) : la trace, l'envoi, le
+planning. Le retrait du planning est `deplanifierDansLaTransaction`, sorti de
+`deplanifierChantier` pour la même raison que `planifierDansLaTransaction`
+(§450) : il ne se recopie pas. Une facture préparée refuse tout, par lui.
+
+**L'acceptation effacée se garde** : `acceptations_defaites` (migration 0123,
+expand seul) recopie la date, les jours, l'adresse et l'appareil du clic avant
+de les effacer. C'est la seule preuve qu'un accord a existé ; `atlas_app` n'y
+a ni UPDATE ni DELETE (`REVOKE`, `ALTER DEFAULT PRIVILEGES` les donnant
+d'office), et `test-acceptation-defaite-db` rougit si on les lui rend.
+
+**`reponse` et `repondu_at` vides ENSEMBLE** : la contrainte
+`envois_devis_reponse_datee` l'exige, et c'est ce que lit `deja_repondu`.
+
+**Les six secondes passent par `useRetraits`**, comme « Supprimer » au
+planning : la feuille n'écrit rien, la page montre l'état d'arrivée pendant le
+délai (`etatAffiche`, mêmes libellés que `etat-envoi.ts`), « Annuler » rend
+l'état d'avant sans rien avoir écrit.
+
+**La barre qui diminue** (`BarreQuiDiminue`, `TiroirDesRetires`) lit le
+minuteur lui-même (`compteARebours` de `useRetraits`) : elle repart quand un
+second retrait le réarme, et ne peut pas finir avant ou après l'écriture. Elle
+corrige aussi un écart du lot §451 : la planche B la dessinait, le code ne
+l'avait pas. **Elle n'est branchée que sur le planning et la page Devis** ; les
+autres écrans qui retirent ne l'ont pas, et c'est **son « non » du 7 octobre 2026** : ne pas l'étendre.
+
+**Le sujet de la question se lit dans la civilité** : « Il » pour Mr, « Elle »
+pour Mme, « Le client » sinon. Jamais deviné sur le nom.
+
+`scripts/test-acceptation-defaite-db.ts` (sept cas, sous `atlas_app`) et
+`scripts/test-le-client-s-est-trompe-e2e.ts` (son chemin, puis la base).
 

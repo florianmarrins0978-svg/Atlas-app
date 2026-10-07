@@ -1,12 +1,33 @@
 # Prochaines tâches
 
-
 ## Éprouver sur son espace la lecture de l'attestation décennale (7 octobre 2026)
 
 Pas vérifiable ici, faute de clé. Dans Réglages : déposer une vraie attestation
 (PDF), puis une photo quelconque. Attendu : rien sous « Déposée » pour la
 première, « Votre attestation ne ressemble pas à une attestation décennale. »
 pour la seconde. Le format `file` d'OpenAI pour un PDF n'a jamais été joué.
+
+## ✅ SUPPRIMER DU PLANNING UN DEVIS ACCEPTÉ PAR ERREUR : LA B, CODÉE LE 7 OCTOBRE 2026
+
+**Sa demande :** *« si un client valide un devis sans faire exprès [...] qu'on
+puisse supprimer, avec une protection »*. Planche
+`appli/supprimer-du-planning.html` ; **son choix : « La B »**. Codée :
+« Supprimer » sur la fiche du jour, une question, puis les six secondes ; la
+même question dans « Sans date ». Le défaut d'« Annuler » qui disparaissait
+avec le dernier client sans date est corrigé (`ARCHITECTURE.md` §451). Reste :
+`main`, avec son accord.
+
+**Ouvert, à lui de trancher :**
+
+- ~~le devis reste « accepté » pour toujours~~ : **son choix 3, CODÉ LE
+  7 OCTOBRE 2026** (« Le client s'est trompé », la barre des six secondes,
+  `ARCHITECTURE.md` §452, migration 0123). Reste : la batterie (niveau 3),
+  puis `main` avec son accord ;
+- la barre qui diminue reste sur le planning et la page Devis SEULEMENT :
+  **son « non » du 7 octobre 2026** pour les autres écrans qui retirent. Ne
+  pas l'étendre ;
+- une absence d'équipe s'efface d'un seul appui, sans question : **son « non »
+  du 7 octobre 2026**, elle reste ainsi. Ne pas y ajouter de question.
 
 ## ⏳ LES TRAVAUX D'UN CLIENT POSÉ SANS DEVIS : UNE PLANCHE À REGARDER (7 octobre 2026)
 
@@ -203,7 +224,6 @@ figeant la date, test rouge, puis corriger la suite (le produit n'est pas mis
 en cause à ce stade).
 
 ## ✅ LE MODÈLE DE FICHE DÉJÀ LÀ : CODÉ LE 29 SEPTEMBRE 2026, sa réponse « B »
-
 
 ## ✅ LE MESSAGE DU DEVIS : codé le 29 septembre 2026, SUR `main` LE 30 SEPTEMBRE 2026
 
@@ -499,7 +519,6 @@ n'a pas été jouée, à sa demande ; seules les suites concernées l'ont été.
 ## « DERNIER DEVIS » CHANGE LES PRIX SANS LE DIRE (26 septembre 2026) : CODÉ, BATTERIE À JOUER AVANT `main`
 
 **Codé le 26 septembre** sur `claude/client-disappearance-no-date-f26td1` (`ARCHITECTURE.md` §423). Niveau 3 : la batterie entière n'a pas été jouée, à sa demande ; elle se joue avant `main`. Reste : « Reprendre le devis » sur un devis expiré n'a pas la bande.
-
 
 **Relevé par lui** : *« on ne peut pas reprendre un devis existant et mettre les
 prix au prix du jour sans en informer l'utilisateur »*. Il a raison, et c'est
@@ -1187,7 +1206,6 @@ non plus »* — « Il ne reste que 0,00 € à recevoir » sous un Total TTC de
 restée à zéro. Corrigé à la racine : il calcule, comme l'écran et le PDF.
 `ARCHITECTURE.md` §405.
 
-
 ## 🔧 `test-repartir-du-client-e2e` TOMBE DANS LA BATTERIE, JAMAIS SEULE (20 septembre 2026)
 
 Elle rougit sur `le chantier n'a aucun devis à envoyer` — l'`UPDATE devis`
@@ -1341,7 +1359,6 @@ gauche. **Aucune correction : il n'y avait pas de défaut.**
 tous. Si une régression arrive un jour sur ce chemin, c'est ce tableau qui dit
 ce qui marchait le 17 septembre 2026.
 
-
 ## ⏳ « Trop d'essais depuis cet appareil » ment encore à la CRÉATION DE COMPTE
 
 Corrigé sur la connexion le 17 septembre 2026 (`ARCHITECTURE.md` §386) ;
@@ -1353,7 +1370,6 @@ cinq essais, et celle qui est refusée cherche du côté de son téléphone.
 créer des comptes en rafale est précisément ce qu'un tel seuil doit borner, donc
 la question « faut-il rendre la place d'une création réussie ? » ne se tranche
 pas de la même façon. Le libellé, lui, est faux dans les deux cas.
-
 
 ## ~~CINQ CONNEXIONS RÉUSSIES ET LE SIXIÈME EST DEHORS~~ — CORRIGÉ LE 17 SEPTEMBRE 2026
 
@@ -1500,7 +1516,6 @@ lot qui croise deux fusions à repayer la batterie pour un numéro de paragraphe
 Non fait ici : c'est le lot d'une autre session (`CLAUDE.md` §5, hors
 périmètre).
 
-
 ## ⏳ `test-accueil-vide-porte-e2e` dépend de l'état que la base a gardé
 
 **Mesuré le 17 septembre 2026, des deux côtés.** Jouée seule, elle passe ; jouée
@@ -1516,7 +1531,6 @@ chaque batterie et le garde-fou doit la départager à chaque fusion.
 **Et son second cas est un vrai désaccord** : la porte du devis se pose à 26 %
 de la hauteur, il la veut à 33 %. Le réglage des deux ressorts ne la déplace
 pas — essayé, mesuré, rendu. La racine est ailleurs.
-
 
 ## 🔧 `DATABASE_APP_URL` N'EST POSÉE PAR PERSONNE — une suite rougit hors du rang 0 (17 septembre 2026)
 
@@ -2325,7 +2339,6 @@ une faute de §3 bis ; il a choisi ensuite, et le code est revenu avec le cercle
 | ~~**la décennale et le médiateur dans Mon entreprise**~~ | ~~`appli/decennale-et-mediateur.html`~~ — **CODÉ le 16 septembre 2026** (migration 0094, `ARCHITECTURE.md` §368) |
 | **la batterie complète** | suites pures, base et navigateur du lot vertes (14 septembre au soir, après redémarrage de la machine — la construction mourait faute de mémoire, 58 Go engagés sur 61). Reste la batterie entière avant `main` |
 
-
 **Sa demande :** *« la page du devis diffère de la page facture : quand on crée
 une facture on ne peut pas rajouter la main d’œuvre et les acomptes. Je vais
 t’envoyer 3 vraies factures de pro, inspire-toi et fais-moi une maquette »*.
@@ -2528,7 +2541,6 @@ ne ramenait plus à la feuille du planning (`ARCHITECTURE.md` §362), et deux
 **Ce qui reste vrai, et qu'il ne faut pas croire éteint :** ces reprises ont été
 faites une par une, chacune vérifiée seule puis en batterie. Un rouge qui
 reviendrait n'est pas « capricieux » — il se regarde (`ARCHITECTURE.md` §353).
-
 
 **Batterie complète jouée dans un atelier à un seul occupant** — dossier, port,
 base et verrou vérifiés libres avant de lancer : **131/150** aux suites
@@ -2875,7 +2887,6 @@ fusionné) : 112/143. Aux dix-huit s’ajoutent `bloquer-sans-devis`,
 `ia-03`, `ia-04`, `liberer-une-demi-journee`, `ligne-du-client`, `pas-la-ce-jour`,
 `poser-une-date`, `reduction-devis`, `reste-equipes`, `tva-multiple` — et
 `onglets-termines` en est SORTI. Pas de « avant » joué ce matin-là : à départager.
-
 
 **Ce n'est pas un lot qui les a cassées, et c'est mesuré :** la batterie a été
 jouée deux fois le 11 septembre, avant et après le lot des polices embarquées.
@@ -4423,7 +4434,6 @@ s'écrire (`CLAUDE.md` §3 bis), et ça ne se vérifie pas sans son espace.
 
 ---
 
-
 ## ✅ ~~Le ⌀ sur « souches de 60 cm » ?~~ — **OUI, le 7 septembre 2026**
 
 **Sa réponse le jour même :** *« Lorsque l'on parle de diamètre, mets le
@@ -5176,8 +5186,6 @@ journal du 10 septembre :
 
 La liste ci-dessous, elle, tient toujours pour les suites de dates.
 
-
-
 **Mesuré**, arbre remis à nu (`git stash`) : `test-bandeau-banc-e2e`,
 `test-carte-reponse-mene-au-geste-e2e`, `test-date-lointaine-e2e`,
 `test-deux-dates-calendrier-e2e`, `test-face-id-e2e`, `test-fiche-client-e2e`,
@@ -5356,7 +5364,6 @@ prix lui avait été dit avant.
 **Ce qui reste ouvert, et qui n'attend que lui :** rien sur cet écran. S'il
 trouve le lieu trop discret ou les bandes bavardes, les deux se règlent d'une
 ligne — mais ne rien changer sans qu'il le demande.
-
 
 ## ~~EN ATTENTE DE SA RÉPONSE : la matière de la note vocale sur tous les boutons verts~~ — CODÉ le 3 septembre 2026
 
@@ -6064,7 +6071,6 @@ renoncer, et celui qui part en correction va changer.
 
 **Qui peut le trancher :** le patron. Deux lignes si sa réponse est l'inverse.
 
-
 ---
 
 ## Le délai avant une date proposée n'est réglable nulle part (31 août 2026)
@@ -6610,7 +6616,6 @@ est clos.
 
 Le texte d'origine, gardé parce qu'il dit comment le symptôme trompait :
 
-
 **Établi, pas supposé** : la suite échoue à l'identique sur `main` (`a23bf24`),
 jouée SEULE, sans aucun commit par-dessus. Ce n'est donc ni une collision entre
 suites, ni le manque de mémoire du ticket ci-dessous.
@@ -6880,7 +6885,6 @@ visible d'ici : `dates_proposees` est un `date[]`, le pilote rend des objets
 bas, section « La fin de mois faisait rougir deux suites sur du code sain ».
 
 Le diagnostic d'origine, conservé parce qu'il est exact :
-
 
 **Constaté le 27 août 2026, vers 2 h.** Le cas *« accepté : la carte mène au
 devis VALIDÉ »* tombe : *« aucune carte de réponse pour le chantier … à
@@ -8066,7 +8070,6 @@ chacun et des renvois faux partout.
 six seconds, corriger les renvois, et poser un contrôle qui refuse un numéro
 déjà pris — sans quoi la même dérive recommence dès la semaine suivante.
 
-
 ## ⚠ `verifier-maquette-message-et-allure` est ROUGE sur main (24 août 2026)
 
 ```
@@ -8084,7 +8087,6 @@ aucune modification locale — il tombe déjà. Il porte sur les planches
 planche qui a raison. Signalé ici plutôt que corrigé au jugé : toucher à l'allure
 d'une planche qu'on n'a pas dessinée, c'est risquer de défaire un choix du patron
 qu'on ne connaît pas.
-
 
 ## ~~Supprimer une fiche en cours, et retrouver où la fiche se compose~~ (fait le 24 août 2026)
 
@@ -8262,7 +8264,6 @@ traités évite de les rouvrir.
 
 ---
 
-
 ## ⏳ `verifier-maquette-message-et-allure.mjs` est rouge, et ce n'est pas l'arrosage
 
 Constaté le 23 août 2026 au soir, sur `main` :
@@ -8283,7 +8284,6 @@ cette maquette-là. La deviner ferait passer un contrôle au vert sur la mauvais
 couleur, ce qui est pire que rouge.
 
 ---
-
 
 ## ~~Arrosage : l'interface pour discuter le plan~~ — **FAIT le 23 août 2026** (`ARCHITECTURE.md` §167)
 
@@ -8334,7 +8334,6 @@ rouge sur son symptôme exact.
 cliente pourra faire. Il l'a découvert en ouvrant le lien, et n'avait aucun moyen
 de savoir s'il avait mal visé ou si l'application était en panne. Une maquette
 avant de toucher à l'écran (`CLAUDE.md` §3 bis).
-
 
 ## Arrosage : lire les positions sur une vraie photo (23 août 2026)
 
@@ -9929,8 +9928,6 @@ passaient par « Je dicte mon devis » passent par `scripts/_creer-chantier-e2e.
 
 **Ce qui reste de la liste d'origine :**
 
-
-
 1. ~~porter l'anneau et la pellicule sur `chantiers/nouveau`~~ — **fait** ;
 2. ~~au second appui de l'anneau, **enregistrer**~~ — **fait** : la note part au
    second appui et le chantier existe dès cet instant ;
@@ -10009,7 +10006,6 @@ un délai qu'on allonge cache la lenteur au lieu de la montrer.
 
 ---
 
-
 ### `test-pastille-equipe-e2e.ts` est tombée une fois — 20 août
 
 Pendant la batterie du 20 août, un seul cas rouge : *« Depuis la feuille du
@@ -10021,7 +10017,6 @@ Même piste que la suite du 18 août ci-dessous : les suites navigateur partagen
 une base semée une seule fois. Si elle retombe, chercher quelle suite touche aux
 équipes de démonstration avant elle, plutôt que de la rejouer en croyant que ça
 suffit.
-
 
 ### `test-devis-doublon-e2e.ts` est tombé une fois, et une seule — 18 août
 
@@ -10271,7 +10266,6 @@ refuse), et le tableau HT, TVA, TTC de la facture, de l'avoir et du reste dû.
 Le HT se déduit du TTC saisi, la TVA est la différence, pour que HT + TVA
 retombe au centime sur le TTC écrit. Le PDF reprendra l'en-tête de la facture
 (`document-commun.ts`).
-
 
 **Une seule réponse à attendre de lui : la 81 lui va-t-elle ?** Le choix
 d'arrangement et le choix de forme ont été retirés — c'était précisément la
@@ -11175,7 +11169,6 @@ plutôt que d'attendre un nombre de millisecondes.
 Écrit ici pour qu'elle ne reparte pas de zéro, et pour que personne ne conclue
 au hasard.
 
-
 ### 0 unquadragies. ~~Montrer ce que l'application sait déjà d'un client~~ — **CODÉE le 16 août 2026 (fiche B)**
 
 ### 0 quattuorquadragies. ~~Le « petit moins » du prix accordé~~ — **CODÉ le 17 août 2026 (proposition B)**
@@ -11204,7 +11197,6 @@ prix plein affiché dès l'appui. `ARCHITECTURE.md` §120.
 0 % retire la remise pour de bon, et la dictée aussi.
 
 ### 0 unquadragies. Montrer ce que l'application sait déjà d'un client
-
 
 **Sa question du 16 août 2026**, photo d'un « graphe de connaissances » à
 l'appui : *« tu peux m'expliquer et me dire si ça peut me servir pour mon
@@ -11451,7 +11443,6 @@ compte rendu d'entretien garde son allure, ce qu'il a demandé.
   jamais été écrit — une pile d'appels au lieu de « neuf au lieu de dix ». Tout
   le corps est sous filet : une panne devient un souci comme un autre, et le
   verdict s'écrit toujours.
-
 
 **Sa demande du 23 août 2026**, en deux morceaux : *« y a-t-il un endroit dans
 les réglages où l'utilisateur peut rédiger ce message automatique ? S'il n'y en
@@ -11855,7 +11846,6 @@ voisines. Ne PAS la déclarer instable en la retirant — un contrôle qu'on
 neutralise est un contrôle perdu, et celui-ci tient la pièce maîtresse d'un
 écran que le patron a dessiné lui-même.
 
-
 ### 0 septvicies. La fiche d'entretien — **DEUX MAQUETTES POSÉES, sa décision attendue**
 
 **Sa réponse du 16 août 2026 : « B et B »**, plus deux ajouts.
@@ -12085,7 +12075,6 @@ un **montant** au lieu d'un pourcentage (« fais-moi 50 € ») — pas dans sa
 demande, donc pas ajouté ; et un **bouton** sur l'écran du devis en plus de la
 voix.
 
-
 ### 0 novivicies. ~~Le devis qui tarde~~ — **CODÉ le 16 août 2026 (B, 4 jours, « Chantier sans devis »)**
 
 *Planche : `docs/maquettes/56-le-devis-qui-tarde.html`. Code : `src/lib/rappels.ts`,
@@ -12227,7 +12216,6 @@ session suivante corriger ce qui n'était pas cassé.
 rouge, relever ce que la page DIT avant d'écrire une cause. Une hypothèse
 consignée dans les tâches se lit ensuite comme un fait.
 
-
 ### ~~0 tricies octies. Marquer une facture PAYÉE~~ — **FAIT les 15 et 16 août 2026**
 
 *Écrit le 14 août en codant « Notifications », quand rien dans Atlas
@@ -12311,7 +12299,6 @@ la refonte du planning, le calcul restant en place. Détail et pourquoi :
   jamais une mauvaise décision. Une colonne de plus serait à tenir à jour à
   chaque correction d'adresse.
 
-
 ### 0 quatervicies. Des suites navigateur tombent en batterie et passent seules
 
 **Constaté le 16 août 2026.** En batterie : *« le serveur de banc n'a jamais
@@ -12352,11 +12339,9 @@ une soirée le 16 août.
 demeure : une batterie qui ment une fois sur dix finit par être crue quand elle
 dit vrai. La piste ci-dessus — un seul serveur Next partagé — vaut pour les deux.
 
-
 ### 0 duovicies. `/chantiers/<id>/facture` ne répond plus en fin de batterie
 
 ### 0 undetricies. ~~L'absence d'une équipe~~ — **CODÉE le 14 août 2026 (proposition A)**
-
 
 **Sa question :** *« Comment on fait si jamais il y a une équipe qui doit partir
 en déplacement pour cinq jours ? »* Réponse complète dans `docs/QUESTIONS.md`
@@ -12662,7 +12647,6 @@ Les largeurs sont **mesurées à l'écran**, pas estimées : ATLAS et GUNZI font
 97 px, GUNZY 105, GOONZI 118. Cinq lettres ne veut pas dire la même largeur.
 ### ~~0 octovicies (d'origine). Mon compte et Connexion : dessinés, avec DEUX QUESTIONS~~
 
-
 *`maquettes/atlas-reglages-moi.html`, le 14 août 2026 — quatre écrans, 53
 contrôles. **Les onze autres rubriques du sommaire ont leur planche ; c'étaient
 les deux dernières.***
@@ -12846,7 +12830,6 @@ soit écrire l'acompte deux fois sur un devis qui part chez un client.
 conditions doivent-elles aussi descendre sur la **facture** ? Aujourd'hui elle
 ne porte que ses mentions légales obligatoires.
 
-
 `ARCHITECTURE.md` §102 : la rubrique « Devis & factures » règle six conditions,
 mais **seule la validité s'imprime**. L'acompte, le délai de paiement, les
 moyens de paiement, le rappel des pénalités et le texte de pied sont
@@ -12860,7 +12843,6 @@ d'un devis déjà parti.
 **Le piège à ne pas rouvrir :** `devis.conditions_paiement` porte déjà un texte
 que le patron peut écrire à la main. Le remplacer d'office effacerait sa saisie ;
 les deux doivent cohabiter.
-
 
 - **Le champ de prix d'une grille fait 14 px, et iOS agrandit alors la page.**
   Relevé le 14 août 2026 en regardant l'écran « Mes prix » sur un iPhone 13 : le
@@ -13379,7 +13361,6 @@ carré ailleurs fait toujours rougir le contrôle.
 chevron, sur lequel il ne s'est pas prononcé — et qui n'est pas un bouton
 d'action, d'où l'hésitation.
 
-
 ### 0 quinvicies. Deux migrations portent le même numéro — à ranger avant que ça morde
 
 **Constaté le 13 août 2026, en fusionnant.** `drizzle/` contient deux `0035` et
@@ -13579,7 +13560,6 @@ l'or, en gras, un peu plus gros.
 bouton quitte la page ; B : un seul bouton par moment) montrées dans les DEUX
 moments, plus trois dosages de la ligne dorée. **En attente de sa lettre et de
 son numéro. Rien n'est posé dans `src/`.**
-
 
 ### 0 unvicies. ~~Relier l'agenda iCloud~~ — **codé le 12 août 2026**, reste à éprouver chez lui
 
@@ -13996,7 +13976,6 @@ est **perdue** quand l'envoi échoue — il faut tout redicter. La garder en loc
 (IndexedDB) et la reproposer au retour serait le vrai confort ; ce n'est pas
 fait, et ce n'est pas un détail pour quelqu'un qui dicte debout sur un chantier.
 
-
 ### ~~0 bis. Si le fil accroche ENCORE chez le patron : le masque, sur iOS~~ — **close le 2026-08-11 par le patron lui-même**
 
 **Ouvert puis refermé le même soir, et c'est le refermer qui compte.** Le
@@ -14132,7 +14111,6 @@ signée d'un utilisateur sans adhésion.
 **En attendant**, le contournement est écrit dans `docs/ESSAYER.md` : ouvrir en
 navigation privée, ou rejouer le seed.
 
-
 ### 0. Le banc d'essai tient debout — ~~à faire~~ **fait le 9 août 2026**
 
 Veilleur qui relance le serveur mort, préchauffage de seize écrans, garde contre
@@ -14155,7 +14133,6 @@ un second serveur, et construction possible sans les secrets de production.
   connecter ».
 - **Les PDF et la dictée ne sont pas mesurés** — le premier exige un vrai
   stockage, la seconde un appel facturé. Dit plutôt que supposé.
-
 
 ### 0. La sauvegarde des données — À FAIRE, dans cet ordre
 
@@ -14606,7 +14583,6 @@ l'espace de travail**, qui est jetable par construction. Tout ce qui s'apprend
 ne sera durable qu'une fois l'hébergement choisi (point 3 de `A-FAIRE.md`).
 Construire l'apprentissage sur le banc reste utile pour l'éprouver ; ce qui s'y
 accumule ne doit pas être présenté comme conservé.
-
 
 ### 1. Agenda Google — au choix de chaque artisan
 

@@ -62,6 +62,14 @@ export type Retrait = { id: string; libelle: string };
 
 export type ResultatValidation = { succes: boolean; erreur?: string } | void;
 
+/**
+ * Ce que dure le tiroir, et ce que la barre qui diminue doit montrer : quand
+ * le minuteur a été armé, et pour combien de temps. Lu sur le minuteur lui-même,
+ * jamais recalculé à part : une barre qui finirait avant ou après l'écriture
+ * mentirait sur le seul moment qui compte.
+ */
+export type CompteARebours = { depuis: number; dureeMs: number };
+
 export function useRetraits({
   valider,
   delaiMs = 6000,
@@ -78,6 +86,7 @@ export function useRetraits({
   const [erreur, setErreur] = useState<string | null>(null);
   /** Ce que la validation a refusé : la ligne revient, et dit pourquoi. */
   const [refuses, setRefuses] = useState<Record<string, string>>({});
+  const [compteARebours, setCompteARebours] = useState<CompteARebours | null>(null);
   const router = useRouter();
 
   // Le minuteur et la pile vivent aussi en référence : les sorties de secours
@@ -150,6 +159,7 @@ export function useRetraits({
       clearTimeout(minuteur.current);
       minuteur.current = null;
     }
+    setCompteARebours(null);
     const aEcrire = enAttenteRef.current;
     if (aEcrire.length === 0) return;
     poserLaPile([]);
@@ -159,6 +169,7 @@ export function useRetraits({
   const armer = useCallback(() => {
     if (minuteur.current) clearTimeout(minuteur.current);
     minuteur.current = setTimeout(() => void fermer(), delaiMs);
+    setCompteARebours({ depuis: Date.now(), dureeMs: delaiMs });
   }, [fermer, delaiMs]);
 
   const retirer = useCallback(
@@ -192,6 +203,7 @@ export function useRetraits({
     if (pile.length === 0 && minuteur.current) {
       clearTimeout(minuteur.current);
       minuteur.current = null;
+      setCompteARebours(null);
     }
   }, [poserLaPile]);
 
@@ -223,6 +235,8 @@ export function useRetraits({
     /** Le retrait que le tiroir désigne, ou `null` quand il est fermé. */
     dernier,
     nombre: enAttente.length,
+    /** Pour la barre qui diminue : le minuteur armé, ou `null`. */
+    compteARebours,
     /** Motif d'un refus du serveur, par identifiant. La ligne est revenue. */
     refuses,
     erreur,
