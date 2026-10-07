@@ -34402,9 +34402,12 @@ sur leur ligne. Ne pas rouvrir sans lui : l'autre choix (une remise unique pour
 toute la facture) lui faisait offrir ce qu'il n'avait pas promis, ou refacturer
 le devis plein tarif.
 
-**Ce qui reste à trancher avec lui** : le rappel d'impayé compte encore depuis
-le délai des Réglages et le jour de l'envoi (sa règle « A plus B » du 16 août),
-pas depuis l'échéance imprimée sur la facture. Inscrit dans `TODO.md`.
+**Le rappel d'impayé compte depuis l'échéance écrite sur la facture** (sa
+décision du même jour, qui remplace « A plus B » du 16 août) : le délai des
+Réglages n'est pas celui de chaque facture, et le rappel tombait un mois trop
+tard sur une facture comptant, ou relançait un client à 60 jours qui n'était
+pas en retard. L'écran Réglages, Notifications le dit : « L'échéance écrite sur
+la facture est passée ». `rappelsEnCours`, `test-rappels-db`.
 
 Contrôles : `test-facture-suit-le-devis` (base, le chemin de l'écran),
 `test-acomptes-nouvelle-version`, `test-reduction-devis`,

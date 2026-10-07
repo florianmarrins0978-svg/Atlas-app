@@ -26,6 +26,10 @@ les factures ». Le check-up (`docs/check-up-devis-facture.md`) a relevé neuf
 
 Migration 0123 (expand seul) : `devis.entreprise_numero_tva`.
 
+**Le rappel d'impayé compte depuis l'échéance écrite sur la facture**, et non
+plus depuis le délai des Réglages (sa décision, qui remplace « A plus B » du
+16 août). L'écran Notifications le dit.
+
 ### Un acompte retiré du devis ne se réclame plus dans les notes
 
 Il avait retiré l'acompte de 30 % d'un devis ; les notes et conditions

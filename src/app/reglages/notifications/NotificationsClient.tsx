@@ -129,14 +129,15 @@ export default function NotificationsClient({ initial }: { initial: ReglagesRapp
             chaque jour jusqu'au paiement (`ARCHITECTURE.md`). */}
         <Rappel
           nom="Facture impayée"
-          dit="L'échéance est passée et le règlement n'est pas arrivé"
+          dit="L'échéance écrite sur la facture est passée, et le règlement n'est pas arrivé"
           unite="jours"
           valeur={reglages.factureImpayeeJours}
           bornes={BORNES_RAPPELS.factureImpayeeJours}
           enCours={enCours}
           onChange={(v) => ecrire({ factureImpayeeJours: v })}
-          // Le délai se compte depuis l'ÉCHÉANCE, pas depuis l'envoi : c'est
-          // le « A plus B » qu'il a tranché le 16 août 2026.
+          // Le délai se compte depuis l'échéance ÉCRITE SUR LA FACTURE, pas
+          // depuis l'envoi ni depuis les Réglages : sa décision du 7 octobre
+          // 2026, qui a demandé que l'écran le dise.
           apres="après l'échéance"
           rythme={{
             valeur: reglages.factureImpayeeRythmeJours,

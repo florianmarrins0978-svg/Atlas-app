@@ -45,11 +45,20 @@ Suites jouées au vert dans ce lot : `test-facture-suit-le-devis` (9 cas, dont
 chacun a été vu rouge sur l'ancien code), `test-acomptes-nouvelle-version`
 (8), `test-reduction-devis`, `test-papier-devis-facture`, et les suites base
 de la facture, de la remise, des travaux en plus, de la TVA, des avoirs, des
-règlements et du devis. **La batterie entière n'a pas été jouée.**
+règlements et du devis, plus `test-rappels-db`. Neuf suites navigateur des
+écrans du devis et de la facture : **9 sur 9**. **La batterie entière n'a pas
+été jouée.**
+
+## Décidé ensuite : le rappel d'impayé
+
+Il comptait depuis le délai des Réglages. **Il compte maintenant depuis
+l'échéance écrite sur la facture**, et l'écran Réglages, Notifications le dit :
+« L'échéance écrite sur la facture est passée, et le règlement n'est pas
+arrivé ». Le nombre de jours réglé compte toujours après cette date. Regardé à
+l'écran, dans un vrai navigateur.
 
 ## Ce qui reste ouvert
 
 | | Qui tranche |
 |---|---|
-| Le rappel d'impayé compte depuis le délai des Réglages (sa règle du 16 août), pas depuis l'échéance imprimée | lui |
 | La batterie entière, avant que rien parte sur `main` | à lancer avec son accord |
