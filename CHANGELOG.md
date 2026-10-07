@@ -63,6 +63,15 @@ question. **Et un défaut corrigé** : retirer le seul client sans date faisait
 disparaître « Annuler », la suppression partait sans retour possible
 (`ARCHITECTURE.md` §451).
 
+### Écrire les travaux d'un client posé sans devis
+
+Un client se posait au planning sans devis, mais la fiche d'intervention
+n'avait alors rien à faire cocher : « Travaux à faire » ne lisait que le
+devis. Les travaux s'écrivent désormais sur la fiche (« Ajouter un travail »,
+une croix pour enlever) et partent dans le retour du jour. Quand le devis
+part, ses lignes les remplacent (son choix 1). Migration 0123,
+`ARCHITECTURE.md` §451.
+
 ### Poser au planning un client qui n'arrive pas à choisir ses dates
 
 Un client qui reçoit le lien du devis sans réussir à choisir ses dates ne

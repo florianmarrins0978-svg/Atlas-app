@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import VisionneusePhoto from "@/components/atlas/VisionneusePhoto";
 import { colors, font, libelleCaps, surPlein, voile } from "@/lib/design-tokens";
 import { ACCEPT_PHOTOS } from "@/lib/exif";
+import { TRAVAIL_MAX } from "@/lib/taches-du-devis";
 import {
   PHOTOS_MAX_PAR_CHANTIER,
   PHOTOS_MAX_PAR_RETOUR,
@@ -13,6 +14,7 @@ import {
   refusDesPhotosDuRetour,
 } from "@/lib/photos-plafonds";
 import {
+  casesDuJour,
   ceQuiManque,
   retourModifiable,
   type ReglesDuRetour,
@@ -24,6 +26,7 @@ import {
   modifierLeRetourAction,
   poserLeRetourAction,
 } from "./retour-actions";
+import { ajouterTravailAction, enleverTravailAction } from "./actions";
 
 /**
  * « TRAVAUX À FAIRE » — le bandeau qui se déplie sur la fiche d'intervention.
@@ -101,6 +104,8 @@ export default function TravauxAFaire({
   lignes,
   retoursEnvoyes,
   dernierRetourLe,
+  aLaMain,
+  travauxChanges,
 }: {
   chantierId: string;
   /**
@@ -112,6 +117,14 @@ export default function TravauxAFaire({
   retoursEnvoyes: number;
   /** Quand le dernier est parti, lu avec la feuille — `null` s'il n'y en a aucun. */
   dernierRetourLe: string | null;
+  /**
+   * La liste s'écrit-elle ici ? Vrai pour un client posé sans devis, tant
+   * qu'aucun devis n'est parti, et pour qui écrit sur le planning — sa réponse
+   * du 7 octobre 2026 (`appli/travaux-sans-devis.html`).
+   */
+  aLaMain: boolean;
+  /** La liste écrite à la main a changé : la feuille la garde pour la prochaine ouverture. */
+  travauxChanges: (liste: string[]) => void;
 }) {
   const [ouvert, setOuvert] = useState(false);
   const [charge, setCharge] = useState(false);
@@ -158,11 +171,7 @@ export default function TravauxAFaire({
       setPhotos((avant) => [...avant, ...parti.photos.filter((p) => !avant.some((a) => a.id === p.id))]);
       return;
     }
-    setTaches(
-      parti
-        ? parti.taches.map((t) => ({ libelle: t.libelle, faite: t.faite }))
-        : lignesDuDevis.map((libelle) => ({ libelle, faite: false }))
-    );
+    setTaches(casesDuJour(lignesDuDevis, parti?.taches ?? null));
     setReprises(new Set());
     setASignaler("");
   }
@@ -225,6 +234,37 @@ export default function TravauxAFaire({
     setOuvert(true);
   }
 
+  const [nouveau, setNouveau] = useState("");
+  const [ecritureEnCours, setEcritureEnCours] = useState(false);
+
+  /**
+   * Ajouter ou enlever un travail écrit à la main. Le serveur rend la liste
+   * entière : c'est elle qui fait foi, et les cases déjà cochées le restent.
+   */
+  async function changerLesTravaux(geste: () => ReturnType<typeof ajouterTravailAction>) {
+    setEcritureEnCours(true);
+    setRefus(null);
+    const r = await geste();
+    setEcritureEnCours(false);
+    if (!r.ok) {
+      setRefus(r.raison);
+      return false;
+    }
+    setAFaire(r.taches);
+    setTaches((avant) => casesDuJour(r.taches, avant));
+    travauxChanges(r.taches);
+    return true;
+  }
+
+  async function ajouterLeTravail() {
+    const libelle = nouveau.trim();
+    if (!libelle || ecritureEnCours) return;
+    if (await changerLesTravaux(() => ajouterTravailAction(chantierId, libelle))) setNouveau("");
+  }
+
+  // Les travaux ne se changent que sur le retour du jour : modifier celui
+  // d'hier ne réécrit pas la liste du chantier.
+  const ecrireIci = aLaMain && !enModification;
   const faites = taches.filter((t) => t.faite).length;
   const manques = ceQuiManque({ taches, photos: reprises.size }, regles);
 
@@ -394,14 +434,14 @@ export default function TravauxAFaire({
               </p>
             ) : charge ? (
               <div className="pb-3.5 pt-2.5">
-                {taches.length === 0 ? (
+                {taches.length === 0 && !ecrireIci ? (
                   <p className="m-0 text-[13.5px] leading-[1.5]" style={{ color: colors.muted }}>
                     Aucune ligne sur le devis. Vous pouvez quand même poser une photo et un mot.
                   </p>
                 ) : (
                   taches.map((t, rang) => (
+                    <div key={`${t.libelle}-${rang}`} className="flex items-start">
                     <button
-                      key={`${t.libelle}-${rang}`}
                       type="button"
                       aria-pressed={t.faite}
                       data-atlas="tache-du-retour"
@@ -442,7 +482,58 @@ export default function TravauxAFaire({
                         {t.libelle}
                       </span>
                     </button>
+                    {ecrireIci && (
+                      <button
+                        type="button"
+                        data-atlas="enlever-travail"
+                        aria-label={`Enlever ${t.libelle}`}
+                        disabled={ecritureEnCours}
+                        onClick={() => changerLesTravaux(() => enleverTravailAction(chantierId, rang, t.libelle))}
+                        className="-mr-2.5 grid h-11 w-11 flex-none place-items-center rounded-full"
+                        style={{ color: colors.muted }}
+                      >
+                        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                          <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+                        </svg>
+                      </button>
+                    )}
+                    </div>
                   ))
+                )}
+
+                {/* **Le champ vit sous les lignes qu'il a déjà posées** — sa
+                    planche du 7 octobre 2026. Entrée sur le clavier du
+                    téléphone ajoute, comme le bouton. */}
+                {ecrireIci && (
+                  <form
+                    data-atlas="ajouter-travail"
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      void ajouterLeTravail();
+                    }}
+                    className="mt-1.5 flex items-center gap-2 rounded-[12px] py-1 pl-3.5 pr-1"
+                    style={{ background: colors.rustTint, boxShadow: `inset 0 0 0 1px ${colors.lineSoft}` }}
+                  >
+                    <input
+                      type="text"
+                      value={nouveau}
+                      onChange={(e) => setNouveau(e.target.value)}
+                      placeholder="Ajouter un travail"
+                      aria-label="Ajouter un travail"
+                      enterKeyHint="done"
+                      maxLength={TRAVAIL_MAX}
+                      className="h-11 min-w-0 flex-1 bg-transparent text-[16px] outline-none"
+                      style={{ color: colors.ink }}
+                    />
+                    <button
+                      type="submit"
+                      disabled={nouveau.trim() === "" || ecritureEnCours}
+                      className="min-h-10 flex-none rounded-full px-3.5 text-[14.5px] disabled:opacity-40"
+                      style={{ background: colors.plein, color: surPlein, fontFamily: font.display }}
+                    >
+                      Ajouter
+                    </button>
+                  </form>
                 )}
 
                 <div className="mt-2 flex flex-wrap items-center gap-[7px]">

@@ -1558,6 +1558,11 @@ export default function PlanningClient({
     onPrendreMorceau: (id: string) => setMorceauEnMain((tenu) => (tenu === id ? null : id)),
     refus,
     taches,
+    // **Les travaux écrits à la main remontent dans le cache de la feuille** :
+    // sans cela, la refermer puis la rouvrir montrerait la liste d'avant
+    // l'ajout, chargée « une fois, jamais deux ».
+    travauxChanges: (chantierId: string, liste: string[]) =>
+      setTaches((t) => (t[chantierId] ? { ...t, [chantierId]: { ...t[chantierId], taches: liste } } : t)),
     retourAEnvoyer,
   };
 
@@ -2590,6 +2595,7 @@ type GestesCarte = {
   demanderSuppression: (c: ChantierPlanning) => void;
   poser: (chantierId: string, jour: JourIso) => void;
   taches: Record<string, FeuilleEtRetour>;
+  travauxChanges: (chantierId: string, liste: string[]) => void;
 };
 
 /**
@@ -4018,6 +4024,7 @@ function CarteDuJour({
   onPrendreMorceau,
   refus,
   taches,
+  travauxChanges,
   absencesDuJour,
   cocheRefuseeDe,
   joursDeLaPastilleDe,
@@ -4152,6 +4159,7 @@ function CarteDuJour({
       chantier={duJour.find((c) => c.id === feuilleIci) ?? null}
       feuille={taches[feuilleIci]}
       ecriture={ecriture}
+      travauxChanges={(liste) => travauxChanges(feuilleIci, liste)}
     />
   ) : null;
 
@@ -4815,11 +4823,13 @@ function FeuilleChantier({
   chantier,
   feuille,
   ecriture = true,
+  travauxChanges,
 }: {
   chantier: ChantierPlanning | null;
   feuille?: FeuilleEtRetour;
   /** Faux pour un salarié : la note se LIT, elle ne s'écrit pas (30 août 2026). */
   ecriture?: boolean;
+  travauxChanges: (liste: string[]) => void;
 }) {
   // **`key={chantier.id}` là où elle est rendue** : changer de chantier remonte
   // le composant, et « Adresse copiée » repart à zéro sans qu'un effet ait à le
@@ -4933,6 +4943,8 @@ function FeuilleChantier({
         <TravauxAFaire
           chantierId={chantier.id}
           lignes={feuille.taches}
+          aLaMain={feuille.aLaMain && ecriture}
+          travauxChanges={travauxChanges}
           retoursEnvoyes={feuille.retours}
           dernierRetourLe={feuille.dernierRetourLe}
         />

@@ -61,6 +61,20 @@ planning :
   devis** (adresse locale) : les suites du devis rougissent alors sans défaut.
   `run-e2e-tests.ts` la pose ; à la main, la poser aussi.
 
+## LES TRAVAUX D'UN CLIENT POSÉ SANS DEVIS : 7 octobre 2026, SUR LA BRANCHE
+
+Branche `claude/travaux-sans-devis`, migration 0123. Avant de toucher
+« Travaux à faire » :
+
+- **`travauxAffiches`** décide seule d'où vient la liste (devis envoyé, sinon
+  travaux à la main, sinon brouillon). Ne pas relire le devis ailleurs.
+- **`casesDuJour`** construit les cases depuis la liste DU JOUR, cochées comme
+  le dernier retour. Ne pas revenir aux cases du dernier retour.
+- **Pas encore sur `main`** : la batterie n'a pas été jouée (sa demande). Elle
+  est exigée (niveau 3).
+
+---
+
 ## POSER UN CLIENT À SA PLACE : 7 octobre 2026, SUR `main` LE 7
 
 Branche `claude/add-quote-client-to-schedule-ve9xn7`, migration 0122. Avant de

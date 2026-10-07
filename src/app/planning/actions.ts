@@ -22,7 +22,13 @@ import type { EquipesDuChantier } from "@/lib/equipes-par-jour";
 import { estUnJourValide } from "@/lib/planning-jour";
 // (le départ se dit avec le vocabulaire de la base : `Moment`)
 import { porterChantierDansAgenda } from "@/server/repositories/agenda-apple";
-import { tachesDuChantier, type FeuilleDuChantier } from "@/server/repositories/devis";
+import {
+  ajouterTravailALaMain,
+  enleverTravailALaMain,
+  tachesDuChantier,
+  type FeuilleDuChantier,
+  type ResultatTravaux,
+} from "@/server/repositories/devis";
 import { dernierEnvoiDuChantier, nombreDeRetoursDuChantier } from "@/server/repositories/retours-intervention";
 import { listerClients, trouverOuCreerClient } from "@/server/repositories/clients";
 import { filtrerClientsParNom } from "@/lib/recherche-client";
@@ -311,6 +317,30 @@ export async function ecrireNoteChantierAction(
   const row = await ecrireNoteChantier(ctx, chantierId, note);
   if (!row) return { succes: false, erreur: "Ce chantier n'existe plus." };
   return { succes: true, note: row.note };
+}
+
+/**
+ * Ajouter un travail, écrit à la main, à un client posé sans devis — sa
+ * réponse du 7 octobre 2026 (`appli/travaux-sans-devis.html`). Mêmes gardes que
+ * le pense-bête : c'est écrire sur le planning, sur un chantier de sa portée.
+ */
+export async function ajouterTravailAction(chantierId: string, libelle: string): Promise<ResultatTravaux> {
+  const ctx = await getCurrentCtx();
+  await exigerEcritureSurLePlanning(ctx, "écrire les travaux de ce chantier");
+  await exigerChantierDansSaPortee(ctx, chantierId, "écrire les travaux de ce chantier");
+  return ajouterTravailALaMain(ctx, chantierId, libelle);
+}
+
+export async function enleverTravailAction(
+  chantierId: string,
+  rang: number,
+  libelle: string
+): Promise<ResultatTravaux> {
+  const ctx = await getCurrentCtx();
+  await exigerEcritureSurLePlanning(ctx, "écrire les travaux de ce chantier");
+  await exigerChantierDansSaPortee(ctx, chantierId, "écrire les travaux de ce chantier");
+  if (!Number.isInteger(rang) || rang < 0) return { ok: false, raison: "Ce travail n'existe plus." };
+  return enleverTravailALaMain(ctx, chantierId, rang, libelle);
 }
 
 /**
