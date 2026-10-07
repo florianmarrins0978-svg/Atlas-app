@@ -1,5 +1,12 @@
 import assert from "node:assert/strict";
-import { manquesDeLaFacture, manquesDuDevis, phraseDesManques, type EmetteurAVerifier } from "../src/lib/mentions-manquantes";
+import {
+  manquesDeLaFacture,
+  manquesDuDevis,
+  phraseDesManques,
+  rappelsDeLaFacture,
+  rappelsDuDevis,
+  type EmetteurAVerifier,
+} from "../src/lib/mentions-manquantes";
 import { CROCHET_DECENNALE } from "../src/lib/conditions-generales";
 import {
   MENTION_AUTOLIQUIDATION,
@@ -50,6 +57,7 @@ const EN_REGLE: EmetteurAVerifier = {
 };
 const CLIENT = { nom: "Bernard", adresse: "4 rue de la Garenne, Rezé", adresseChantier: null };
 const SANS = { active: false, numeroTvaClient: null };
+const JOUR = "2026-10-07";
 
 console.log("— Ce qui manque au devis —");
 
@@ -67,17 +75,21 @@ cas("une société sans capital ni ville du RCS ne part pas", () => {
   assert.deepEqual(m.map((x) => x.cle), ["capital", "rcs"]);
 });
 
-cas("le médiateur manque au devis, jamais à la facture", () => {
+cas("le médiateur se rappelle au devis sans le bloquer, jamais à la facture (7 octobre 2026)", () => {
   const sansMediateur = { ...EN_REGLE, mediateurNom: "" };
-  assert.deepEqual(manquesDuDevis(sansMediateur, CLIENT, "").map((x) => x.cle), ["mediateur"]);
+  assert.deepEqual(manquesDuDevis(sansMediateur, CLIENT, ""), [], "le médiateur ne bloque plus le devis");
+  assert.deepEqual(rappelsDuDevis(sansMediateur, "", JOUR).map((x) => x.cle), ["mediateur"]);
+  assert.deepEqual(rappelsDuDevis(sansMediateur, "", JOUR, true), [], "la sous-traitance n'en a pas besoin");
   assert.deepEqual(manquesDeLaFacture(sansMediateur, CLIENT, SANS), []);
+  assert.deepEqual(rappelsDeLaFacture(sansMediateur, JOUR), []);
 });
 
-cas("la décennale ne bloque que si ses conditions la citent encore entre crochets", () => {
-  assert.deepEqual(manquesDuDevis(EN_REGLE, CLIENT, "9. Assurances.").map((x) => x.cle), []);
-  assert.deepEqual(manquesDuDevis(EN_REGLE, CLIENT, `9. ${CROCHET_DECENNALE}.`).map((x) => x.cle), ["decennale"]);
+cas("la décennale ne se rappelle que si ses conditions la citent encore entre crochets, sans bloquer", () => {
+  assert.deepEqual(rappelsDuDevis(EN_REGLE, "9. Assurances.", JOUR).map((x) => x.cle), []);
+  assert.deepEqual(rappelsDuDevis(EN_REGLE, `9. ${CROCHET_DECENNALE}.`, JOUR).map((x) => x.cle), ["decennale"]);
+  assert.deepEqual(manquesDuDevis(EN_REGLE, CLIENT, `9. ${CROCHET_DECENNALE}.`), [], "la décennale ne bloque plus le devis");
   // Sa règle du 5 octobre 2026 : non enregistrée, la décennale n'est pas « incomplète ».
-  assert.deepEqual(manquesDuDevis(EN_REGLE, CLIENT, TEXTE_ORIGINE_CONDITIONS_GENERALES).map((x) => x.cle), []);
+  assert.deepEqual(rappelsDuDevis(EN_REGLE, TEXTE_ORIGINE_CONDITIONS_GENERALES, JOUR).map((x) => x.cle), []);
 });
 
 cas("un devis dicté sans adresse de client part quand même", () => {
@@ -246,19 +258,23 @@ cas("l'adresse de l'assureur s'imprime après son nom (loi 96-603, art. 22-2)", 
   );
 });
 
-cas("un assureur nommé exige son adresse et l'attestation, sur le devis comme sur la facture", () => {
+cas("un assureur nommé rappelle son adresse et l'attestation, sans bloquer le devis ni la facture", () => {
   const assure = { ...EN_REGLE, assureurDecennale: "Assureur d'essai" };
   const attendu = [["decennale-adresse", "entreprise"], ["decennale-attestation", "entreprise"]];
-  assert.deepEqual(manquesDuDevis(assure, CLIENT, "").map((x) => [x.cle, x.ou]), attendu);
-  assert.deepEqual(manquesDeLaFacture(assure, CLIENT, SANS).map((x) => [x.cle, x.ou]), attendu);
-  assert.deepEqual(manquesDuDevis(assure, CLIENT, "", true).map((x) => x.cle), attendu.map((x) => x[0]), "la sous-traitance aussi : 22-2 vise tout devis");
+  assert.deepEqual(rappelsDuDevis(assure, "", JOUR).map((x) => [x.cle, x.ou]), attendu);
+  assert.deepEqual(rappelsDeLaFacture(assure, JOUR).map((x) => [x.cle, x.ou]), attendu);
+  assert.deepEqual(rappelsDuDevis(assure, "", JOUR, true).map((x) => x.cle), attendu.map((x) => x[0]), "la sous-traitance aussi : 22-2 vise tout devis");
+  // Sa règle du 7 octobre 2026 : un rappel, jamais un refus.
+  assert.deepEqual(manquesDuDevis(assure, CLIENT, ""), []);
+  assert.deepEqual(manquesDeLaFacture(assure, CLIENT, SANS), []);
   const complet = { ...assure, adresseAssureurDecennale: "1 rue de l'Exemple", attestationDecennale: true };
-  assert.deepEqual(manquesDuDevis(complet, CLIENT, ""), []);
-  assert.deepEqual(manquesDeLaFacture(complet, CLIENT, SANS), []);
+  assert.deepEqual(rappelsDuDevis(complet, "", JOUR), []);
+  assert.deepEqual(rappelsDeLaFacture(complet, JOUR), []);
 });
 
 cas("sans assureur nommé, rien n'est exigé : Atlas ne sait pas si ses travaux y sont soumis", () => {
   assert.deepEqual(manquesDuDevis(EN_REGLE, CLIENT, ""), []);
+  assert.deepEqual(rappelsDuDevis(EN_REGLE, "", JOUR), []);
 });
 
 cas("l'attestation : un PDF, une photo JPEG ou PNG, de moins de 5 Mo", () => {

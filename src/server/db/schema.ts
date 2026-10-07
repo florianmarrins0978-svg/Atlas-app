@@ -9,6 +9,7 @@
 // indépendants de l'ORM utilisé pour les déclarer.
 
 import type { LigneAvoirStockee } from "../../lib/avoir";
+import type { AttestationLue } from "../../lib/attestation-lue";
 import type { PrestationContrat } from "../../lib/contrats-entretien";
 
 import {
@@ -140,6 +141,9 @@ export const entreprises = pgTable("entreprises", {
   adresseAssureurDecennale: text("adresse_assureur_decennale"),
   attestationDecennaleCle: text("attestation_decennale_cle"),
   attestationDecennaleMime: text("attestation_decennale_mime"),
+  // Migration 0123 : ce que l'IA a lu sur ce fichier, au dépôt. `null` : rien
+  // n'a été lu (pas de clé, fichier déposé avant). Ne bloque jamais rien.
+  attestationDecennaleLue: jsonb("attestation_decennale_lue").$type<AttestationLue>(),
   contratDecennale: text("contrat_decennale"),
   couvertureDecennale: text("couverture_decennale"),
   mediateurNom: text("mediateur_nom"),

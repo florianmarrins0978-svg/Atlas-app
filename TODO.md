@@ -1,5 +1,13 @@
 # Prochaines tâches
 
+
+## Éprouver sur son espace la lecture de l'attestation décennale (7 octobre 2026)
+
+Pas vérifiable ici, faute de clé. Dans Réglages : déposer une vraie attestation
+(PDF), puis une photo quelconque. Attendu : rien sous « Déposée » pour la
+première, « Votre attestation ne ressemble pas à une attestation décennale. »
+pour la seconde. Le format `file` d'OpenAI pour un PDF n'a jamais été joué.
+
 ## ⏳ LES TRAVAUX D'UN CLIENT POSÉ SANS DEVIS : UNE PLANCHE À REGARDER (7 octobre 2026)
 
 **Sa demande :** *« on peut ajouter un client au planning alors qu'on n'a pas

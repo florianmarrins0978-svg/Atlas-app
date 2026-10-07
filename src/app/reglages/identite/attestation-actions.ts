@@ -9,6 +9,10 @@ import { enregistrerObjet } from "@/server/storage";
 import { verifierLimite, LIMITES } from "@/server/rate-limit";
 import { preparerPhotoEntrante } from "@/server/photo-entrante";
 import { logger } from "@/server/logger";
+import { lireAttestation } from "@/server/ai/services/lire-attestation";
+import { remarquesSurLAttestation, type AttestationLue } from "@/lib/attestation-lue";
+import { jourIso } from "@/lib/jour";
+import { getEntreprise } from "@/server/repositories/entreprises";
 
 /**
  * DÉPOSER L'ATTESTATION DÉCENNALE — son choix A du 5 octobre 2026
@@ -24,7 +28,7 @@ import { logger } from "@/server/logger";
  */
 export async function deposerAttestationAction(
   formData: FormData
-): Promise<{ ok: true } | { ok: false; raison: string }> {
+): Promise<{ ok: true; remarques: string[] } | { ok: false; raison: string }> {
   const ctx = await getCurrentCtx();
   try {
     await exigerProprietaire(ctx, "déposer l'attestation d'assurance");
@@ -43,11 +47,13 @@ export async function deposerAttestationAction(
 
     const dossier = `entreprises/${ctx.entrepriseId}/attestation-decennale`;
     let rangee: { cle: string; mime: string };
+    let lus: Buffer;
     if (mime === "application/pdf") {
       const octets = new Uint8Array(await fichier.arrayBuffer());
       const refusPdf = await refusDuPdfDepose(octets);
       if (refusPdf) return { ok: false, raison: refusPdf };
-      const objet = await enregistrerObjet(dossier, Buffer.from(octets), ".pdf", mime);
+      lus = Buffer.from(octets);
+      const objet = await enregistrerObjet(dossier, lus, ".pdf", mime);
       rangee = { cle: objet.storageKey, mime };
     } else {
       const prete = await preparerPhotoEntrante(fichier, "attestation décennale");
@@ -56,10 +62,24 @@ export async function deposerAttestationAction(
         return { ok: false, raison: "Cette photo ne se joint pas à un devis. Prenez-la en JPEG ou en PNG." };
       }
       const objet = await enregistrerObjet(dossier, prete.photo.octets, prete.photo.extension, prete.photo.mimeType);
+      lus = Buffer.from(prete.photo.octets);
       rangee = { cle: objet.storageKey, mime: prete.photo.mimeType };
     }
-    await mettreAJourEntreprise(ctx, { attestationDecennale: rangee });
-    return { ok: true };
+    // **La lecture ne fait jamais échouer le dépôt** (sa règle du 7 octobre
+    // 2026, « jamais de blocage ») : sans elle, l'attestation est rangée comme
+    // avant, simplement sans remarque.
+    let lue: AttestationLue | null = null;
+    try {
+      lue = await lireAttestation(lus.toString("base64"), rangee.mime);
+    } catch (err) {
+      logger.error("Lecture de l'attestation décennale impossible", {
+        erreur: err instanceof Error ? err.message : String(err),
+      });
+    }
+    await mettreAJourEntreprise(ctx, { attestationDecennale: { ...rangee, lue } });
+    const entreprise = await getEntreprise(ctx);
+    const remarques = remarquesSurLAttestation(lue, entreprise?.assureurDecennale, jourIso(new Date()));
+    return { ok: true, remarques: remarques.map((r) => r.libelle) };
   } catch (err) {
     logger.error("Dépôt de l'attestation décennale impossible", {
       erreur: err instanceof Error ? err.message : String(err),

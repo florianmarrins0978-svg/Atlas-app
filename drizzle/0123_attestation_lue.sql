@@ -1,0 +1,11 @@
+-- CE QUE L'IA A LU SUR L'ATTESTATION DÉCENNALE — sa demande du 7 octobre 2026.
+--
+-- Le dépôt ne vérifie que le format : une photo quelconque y passait. Au dépôt,
+-- l'IA lit le fichier (est-ce une attestation décennale, quel assureur, quelle
+-- fin de validité) ; ce qu'elle trouve se RAPPELLE, et ne bloque jamais rien
+-- (`src/lib/attestation-lue.ts`).
+--
+-- Expand seul : une colonne nullable, aucune ligne réécrite, aucune contrainte.
+-- L'ancien code l'ignore ; une attestation déposée avant n'a pas de lecture, et
+-- rien ne lui est reproché (`.claude/rules/deployment-safety.md`).
+ALTER TABLE "entreprises" ADD COLUMN IF NOT EXISTS "attestation_decennale_lue" jsonb;

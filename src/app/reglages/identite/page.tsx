@@ -12,6 +12,8 @@ import { libellePeriode, periodeCourante, PERIODICITE_TVA_PAR_DEFAUT } from "@/s
 import { relevesSousLesDeuxRegimes } from "@/server/repositories/factures";
 import { enEuros } from "@/lib/euros";
 import VoirUnExemple from "../VoirUnExemple";
+import { remarquesSurLAttestation } from "@/lib/attestation-lue";
+import { jourIso } from "@/lib/jour";
 
 export const dynamic = "force-dynamic";
 
@@ -90,6 +92,11 @@ export default async function IdentitePage() {
         }}
         aPrevenir={aPrevenir}
         attestationDeposee={!!e?.attestationDecennaleCle}
+        remarquesAttestation={
+          e?.attestationDecennaleCle
+            ? remarquesSurLAttestation(e.attestationDecennaleLue, e.assureurDecennale, jourIso(new Date())).map((r) => r.libelle)
+            : []
+        }
         declarations={
           <>
             <PeriodiciteTvaReglage initiale={periodicite} />

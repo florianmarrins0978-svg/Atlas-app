@@ -160,10 +160,12 @@ export const fournisseurLLMOpenAI: FournisseurLLM = {
           role: "user",
           content: [
             { type: "text", text: consigne },
-            ...images.map((image) => ({
-              type: "image_url",
-              image_url: { url: `data:${image.mimeType};base64,${image.base64}` },
-            })),
+            // Un PDF part comme un FICHIER : `image_url` ne lit que des images.
+            ...images.map((image) =>
+              image.mimeType === "application/pdf"
+                ? { type: "file", file: { filename: "document.pdf", file_data: `data:application/pdf;base64,${image.base64}` } }
+                : { type: "image_url", image_url: { url: `data:${image.mimeType};base64,${image.base64}` } }
+            ),
           ],
         },
       ],

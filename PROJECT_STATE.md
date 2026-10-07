@@ -5,6 +5,15 @@
 `drizzle/0116_modele_de_fiche_d_office.sql`
 
 ---
+## SUR `main` : LA DÉCENNALE ET LE MÉDIATEUR RAPPELLENT (7 octobre 2026)
+
+Ils ne bloquent plus ni le devis ni la facture : la feuille d'envoi du devis
+les rappelle (`rappelsDuDevis`, `ARCHITECTURE.md` §451). Ne pas les remettre
+dans `manquesDuDevis` : c'est sa règle. Migration 0123 : l'attestation déposée
+est lue par l'IA (`attestation-lue.ts`, `lire-attestation.ts`), et ce qu'elle
+trouve se rappelle. Lecture réelle non éprouvée ici (aucune clé).
+
+---
 ## SUR `main` : POSER UN CLIENT À SA PLACE (7 octobre 2026)
 
 Branche `claude/add-quote-client-to-schedule-ve9xn7`, migration 0122. Son

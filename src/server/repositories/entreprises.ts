@@ -1,4 +1,5 @@
 import { eq, sql } from "drizzle-orm";
+import type { AttestationLue } from "@/lib/attestation-lue";
 import { db } from "../db/client";
 import { withEntreprise } from "../db/with-entreprise";
 import { entreprises, entrepriseCompteurs, users, membresEntreprise } from "../db/schema";
@@ -196,7 +197,7 @@ export async function mettreAJourEntreprise(
      * format. `null` la retire des pièces SUIVANTES ; le fichier, lui, reste,
      * parce que les pièces déjà parties le citent.
      */
-    attestationDecennale?: { cle: string; mime: string } | null;
+    attestationDecennale?: { cle: string; mime: string; lue?: AttestationLue | null } | null;
     mediateurNom?: string | null;
     mediateurCoordonnees?: string | null;
     /** Où — ou si — les trois mentions s'impriment. Par défaut « aucune ». */
@@ -370,6 +371,9 @@ export async function mettreAJourEntreprise(
     if (data.attestationDecennale !== undefined) {
       valeurs.attestationDecennaleCle = data.attestationDecennale?.cle ?? null;
       valeurs.attestationDecennaleMime = data.attestationDecennale?.mime ?? null;
+      // La lecture suit SON fichier : un dépôt neuf ou un retrait efface celle
+      // du fichier d'avant, qui ne dirait rien du nouveau (migration 0123).
+      valeurs.attestationDecennaleLue = data.attestationDecennale?.lue ?? null;
     }
 
     // Le régime n'est PAS traité comme les autres : il n'a pas de « vide ». Une

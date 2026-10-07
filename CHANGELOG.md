@@ -8,6 +8,27 @@ Format : le plus récent en tête.
 ---
 ## 2026-10-07
 
+### La décennale et le médiateur rappellent, ils ne bloquent plus
+
+Sa règle du 7 octobre : *« il ne faut pas que ces éléments bloquent les devis,
+il faut que ça rappelle à l'utilisateur qu'il faut qu'il y souscrive »*. Un
+assureur nommé sans adresse ni attestation, un médiateur absent, un crochet de
+décennale resté dans ses conditions : le devis et la facture partent, la
+feuille d'envoi du devis les rappelle avec leur porte « Compléter », et
+Réglages dit « Obligatoire sur vos devis et vos factures. ». Évite de bloquer
+un artisan sur une mention que le blocage ne vérifiait d'ailleurs pas (une
+photo quelconque déposée comme attestation le levait). SIRET, forme, TVA,
+téléphone, courriel et adresse du client bloquent toujours.
+
+**Et l'attestation déposée se lit** (migration 0123) : au dépôt, l'IA dit si le
+fichier est une attestation décennale, quel assureur, quelle fin de validité.
+« Ne ressemble pas à une attestation », « a expiré le … », « est au nom de X,
+et vous avez saisi Y » se rappellent dans Réglages et sur la feuille d'envoi,
+jamais en blocage. Évite qu'une photo quelconque parte en dernière page de
+chaque devis sans que personne ne le remarque. Les PDF passent désormais au
+fournisseur de vision comme documents (Anthropic, OpenAI).
+`ARCHITECTURE.md` §451.
+
 ### Poser au planning un client qui n'arrive pas à choisir ses dates
 
 Un client qui reçoit le lien du devis sans réussir à choisir ses dates ne
