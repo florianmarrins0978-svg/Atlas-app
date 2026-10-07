@@ -396,6 +396,28 @@ export function getPlanificationEtat(
   return "non_concerne";
 }
 
+/**
+ * POSÉ AU PLANNING, MAIS LE DEVIS N'EST PAS SIGNÉ — son choix B du 7 octobre
+ * 2026.
+ *
+ * Le patron a posé lui-même un client qui n'arrivait pas à choisir ses dates :
+ * la place est prise, l'accord attend encore son lien. Le planning le dit sous
+ * le nom (« Pas encore signé »), pour qu'un chantier posé ne se lise jamais
+ * comme un chantier vendu.
+ *
+ * La même lecture de l'envoi que `getPlanificationEtat` : deux façons de dire
+ * « il attend le client » finiraient par se contredire (`CLAUDE.md` §3).
+ */
+export function poseSansAccord(c: EtatPourPlanification, maintenant: Date = new Date()): boolean {
+  if (!c.datePlanifiee || c.envoiEnvoyeAt === undefined) return false;
+  return attendLeClient(
+    etatEnvoi(
+      { envoyeAt: c.envoiEnvoyeAt, expireAt: c.envoiExpireAt ?? null, reponse: c.envoiReponse ?? null },
+      maintenant
+    )
+  );
+}
+
 // --- Statut d'affichage (liste des chantiers) ---------------------------
 // Utilisé pour l'écran réel connecté à la base : dérive le même statut visuel
 // (StatusIcon, libellés) que celui utilisé jusqu'ici, mais à partir des jalons

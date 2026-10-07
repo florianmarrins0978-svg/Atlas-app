@@ -11,6 +11,19 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 
 ---
 
+## POSER UN CLIENT À SA PLACE : 7 octobre 2026, PAS SUR `main`
+
+Branche `claude/add-quote-client-to-schedule-ve9xn7`, migration 0122. Avant de
+toucher un envoi de devis ou la pose au planning :
+
+- **`dates_fixees_par_artisan`** : le lien montre les jours où le chantier est
+  POSÉ (lus au planning à chaque ouverture) et n'écrit que l'accord. Sans place
+  au planning, il redevient le lien d'avant (`joursFixesDeLEnvoi`).
+- **`accord_sur_papier`** : une acceptation saisie par le patron, jamais un
+  clic du client. Ne pas la présenter comme une signature en ligne.
+- **`planifierDansLaTransaction`** est la pose elle-même ; `planifierChantier`
+  ne fait que l'envelopper. Ne pas la recopier.
+
 ## LA FACTURE ET LE DEVIS EN RÈGLE : 3 au 5 octobre 2026, SUR `main` LE 6
 
 Branche `claude/tva-invoices-business-municipalities-lk2sjy`, migrations 0117

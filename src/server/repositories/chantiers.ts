@@ -792,144 +792,164 @@ export async function planifierChantier(
   datePlanifiee: string,
   choix?: ChoixDePose
 ) {
-  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
-    const autres = await tx
-      .select({
-        id: chantiers.id,
-        jour: chantiers.datePlanifiee,
-        moment: chantiers.creneauDebut,
-        duree: chantiers.dureeDemiJournees,
-      })
-      .from(chantiers)
-      .where(
-        and(
-          eq(chantiers.entrepriseId, ctx.entrepriseId),
-          isNull(chantiers.deletedAt),
-          isNotNull(chantiers.datePlanifiee)
-        )
-      );
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, (tx) =>
+    planifierDansLaTransaction(tx, ctx, chantierId, datePlanifiee, choix)
+  );
+}
 
-    const [entreprise] = await tx
-      .select({ nombreEquipes: entreprises.nombreEquipes })
-      .from(entreprises)
-      .where(eq(entreprises.id, ctx.entrepriseId))
-      .limit(1);
-
-    const [courant] = await tx
-      .select({ duree: chantiers.dureeDemiJournees, dureePrevue: chantiers.dureePrevue })
-      .from(chantiers)
-      .where(eq(chantiers.id, chantierId))
-      .limit(1);
-    const duree = dureeDuChantier({
-      dureeDemiJournees: courant?.duree ?? null,
-      dureePrevue: courant?.dureePrevue ?? null,
-    });
-
-    const nombreEquipes = entreprise?.nombreEquipes ?? 1;
-
-    // **Les équipes absentes comptent ici aussi.** C'est le chemin par lequel
-    // le patron POSE une date lui-même, sans passer par le client. L'oublier
-    // aurait laissé poser un chantier le jour où l'équipe est en déplacement,
-    // pendant que l'écran d'envoi refusait ce même jour : deux vérités sur la
-    // place disponible (`CLAUDE.md` §3).
-    //
-    // Non borné à une fenêtre : cette requête-ci ne l'est pas non plus pour les
-    // chantiers, et une absence lointaine ne coûte qu'une ligne.
-    const absences = await tx
-      .select({
-        equipeId: absencesEquipe.equipeId,
-        premierJour: absencesEquipe.premierJour,
-        dernierJour: absencesEquipe.dernierJour,
-        // Sans ces deux-là, une absence d'un matin bloquerait la journée
-        // entière dans la capacité — le défaut du 8 septembre 2026, corrigé
-        // partout ou nulle part : ces trois chemins doivent compter pareil.
-        premierDemi: absencesEquipe.premierDemi,
-        dernierDemi: absencesEquipe.dernierDemi,
-      })
-      .from(absencesEquipe)
-      .where(
-        and(
-          eq(absencesEquipe.entrepriseId, ctx.entrepriseId),
-          isNull(absencesEquipe.deletedAt)
-        )
-      );
-
-    // La quatrième lecture de la même règle, et la dernière : elle choisit le
-    // créneau quand le patron pose une date lui-même. Sans les équipes, elle
-    // rangerait un chantier sur un matin que les trois autres tiennent pour
-    // plein (`CLAUDE.md` §3).
-    const equipesPosees = await equipesParChantier(tx, ctx.entrepriseId);
-    // **Où chacun est POSÉ** — un chantier morcelé n'occupe plus son bloc.
-    const creneauxPoses = await creneauxParChantier(tx, ctx.entrepriseId);
-    const occupation = fusionnerAbsences(
-      compterOccupation(
-        autres
-          .filter((a) => a.id !== chantierId && a.jour !== null)
-          .map((a) => ({
-            jour: a.jour as string,
-            moment: a.moment === "matin" || a.moment === "apres_midi" ? a.moment : null,
-            dureeDemiJournees: a.duree,
-            ...(equipesPosees.get(a.id) ?? {}),
-            creneaux: creneauxPoses.get(a.id) ?? null,
-          })),
-        nombreEquipes
-      ),
-      absences,
-      nombreEquipes
-    );
-    const automatique = departPossible(datePlanifiee, duree, occupation, nombreEquipes) ?? "matin";
-
-    // **Le moment choisi ne décide QUE du départ.** Il décidait aussi de la
-    // durée réservée, et c'est ce qui la faisait fondre : « Matin » sur un
-    // chantier d'une journée réservait une demi-journée, sans un mot. La durée
-    // vient du devis et ne se choisit plus (§308, et sa décision du
-    // 10 septembre 2026).
-
-    // ═══════════════════════════════════════════════════════════════════
-    // **LE CHOIX DU PATRON N'EST PLUS REFUSÉ.** Il le posait, ce créneau était
-    // revalidé, et une demi-journée déjà pleine faisait échouer le geste.
-    //
-    // Sa décision du 21 août 2026 : *« il ne doit pas y avoir de limite d'ajout
-    // de chantier par jour, ni même de gars du coup [...] nous, on prévient
-    // juste »*. Le dépassement se VOIT — la barre du calendrier passe au
-    // bordeaux, la fiche du jour écrit « 150 % de vos équipes » — et il ne
-    // s'interdit pas : c'est lui qui sait qu'une taille de haie prend une heure.
-    //
-    // **Ce que cela ne relâche PAS** : le chemin par lequel le CLIENT choisit
-    // sa date garde ses limites (`jourRetenable`, `premiersJoursLibres`). Un
-    // client n'a pas à forcer une journée, ni même à savoir qu'on le peut.
-    // ═══════════════════════════════════════════════════════════════════
-    const creneauDebut: Moment = choix ? choix.demi : automatique;
-
-    // **Poser écrit désormais OÙ l'on pose** (migration 0085). Un chantier posé
-    // depuis ce lot porte donc ses demi-journées ; les anciens n'en ont pas, et
-    // valent leur bloc calculé — c'est le repli de `creneauxPoses`, et il est
-    // ce qui empêche de libérer d'un coup tout ce qui est déjà pris.
-    //
-    // **AVANT d'écrire la date sur le chantier** : c'est en lisant ses colonnes
-    // que `ecrireLesCreneaux` sait où il ÉTAIT, pour que ses équipes datées
-    // suivent (0093). Écrire la date d'abord lui ferait croire qu'il n'a pas
-    // bougé.
-    await ecrireLesCreneaux(
-      tx,
-      ctx,
-      chantierId,
-      creneauxDuChantier({ jour: datePlanifiee, moment: creneauDebut }, duree)
+/**
+ * La pose elle-même, dans une transaction qu'ouvre l'appelant.
+ *
+ * **Pourquoi elle se sépare de `planifierChantier`, le 7 octobre 2026.** Poser
+ * un client à sa place (`pose-a-sa-place.ts`) écrit DEUX choses qui ne doivent
+ * jamais exister l'une sans l'autre : la place au planning, et ce que dit son
+ * lien. Posé sans que le lien le sache, le client choisirait encore d'autres
+ * dates, et sa réponse déplacerait le chantier. Une seule transaction, donc, et
+ * une seule écriture de la pose : la règle ne se recopie pas.
+ */
+export async function planifierDansLaTransaction(
+  tx: Parameters<Parameters<typeof withEntreprise>[2]>[0],
+  ctx: Ctx,
+  chantierId: string,
+  datePlanifiee: string,
+  choix?: ChoixDePose
+) {
+  const autres = await tx
+    .select({
+      id: chantiers.id,
+      jour: chantiers.datePlanifiee,
+      moment: chantiers.creneauDebut,
+      duree: chantiers.dureeDemiJournees,
+    })
+    .from(chantiers)
+    .where(
+      and(
+        eq(chantiers.entrepriseId, ctx.entrepriseId),
+        isNull(chantiers.deletedAt),
+        isNotNull(chantiers.datePlanifiee)
+      )
     );
 
-    const [row] = await tx
-      .update(chantiers)
-      .set({
-        datePlanifiee,
-        creneauDebut,
-        dureeDemiJournees: duree,
-        updatedBy: ctx.utilisateurId,
-        updatedAt: new Date(),
-      })
-      .where(eq(chantiers.id, chantierId))
-      .returning();
-    return row;
+  const [entreprise] = await tx
+    .select({ nombreEquipes: entreprises.nombreEquipes })
+    .from(entreprises)
+    .where(eq(entreprises.id, ctx.entrepriseId))
+    .limit(1);
+
+  const [courant] = await tx
+    .select({ duree: chantiers.dureeDemiJournees, dureePrevue: chantiers.dureePrevue })
+    .from(chantiers)
+    .where(eq(chantiers.id, chantierId))
+    .limit(1);
+  const duree = dureeDuChantier({
+    dureeDemiJournees: courant?.duree ?? null,
+    dureePrevue: courant?.dureePrevue ?? null,
   });
+
+  const nombreEquipes = entreprise?.nombreEquipes ?? 1;
+
+  // **Les équipes absentes comptent ici aussi.** C'est le chemin par lequel
+  // le patron POSE une date lui-même, sans passer par le client. L'oublier
+  // aurait laissé poser un chantier le jour où l'équipe est en déplacement,
+  // pendant que l'écran d'envoi refusait ce même jour : deux vérités sur la
+  // place disponible (`CLAUDE.md` §3).
+  //
+  // Non borné à une fenêtre : cette requête-ci ne l'est pas non plus pour les
+  // chantiers, et une absence lointaine ne coûte qu'une ligne.
+  const absences = await tx
+    .select({
+      equipeId: absencesEquipe.equipeId,
+      premierJour: absencesEquipe.premierJour,
+      dernierJour: absencesEquipe.dernierJour,
+      // Sans ces deux-là, une absence d'un matin bloquerait la journée
+      // entière dans la capacité — le défaut du 8 septembre 2026, corrigé
+      // partout ou nulle part : ces trois chemins doivent compter pareil.
+      premierDemi: absencesEquipe.premierDemi,
+      dernierDemi: absencesEquipe.dernierDemi,
+    })
+    .from(absencesEquipe)
+    .where(
+      and(
+        eq(absencesEquipe.entrepriseId, ctx.entrepriseId),
+        isNull(absencesEquipe.deletedAt)
+      )
+    );
+
+  // La quatrième lecture de la même règle, et la dernière : elle choisit le
+  // créneau quand le patron pose une date lui-même. Sans les équipes, elle
+  // rangerait un chantier sur un matin que les trois autres tiennent pour
+  // plein (`CLAUDE.md` §3).
+  const equipesPosees = await equipesParChantier(tx, ctx.entrepriseId);
+  // **Où chacun est POSÉ** — un chantier morcelé n'occupe plus son bloc.
+  const creneauxPoses = await creneauxParChantier(tx, ctx.entrepriseId);
+  const occupation = fusionnerAbsences(
+    compterOccupation(
+      autres
+        .filter((a) => a.id !== chantierId && a.jour !== null)
+        .map((a) => ({
+          jour: a.jour as string,
+          moment: a.moment === "matin" || a.moment === "apres_midi" ? a.moment : null,
+          dureeDemiJournees: a.duree,
+          ...(equipesPosees.get(a.id) ?? {}),
+          creneaux: creneauxPoses.get(a.id) ?? null,
+        })),
+      nombreEquipes
+    ),
+    absences,
+    nombreEquipes
+  );
+  const automatique = departPossible(datePlanifiee, duree, occupation, nombreEquipes) ?? "matin";
+
+  // **Le moment choisi ne décide QUE du départ.** Il décidait aussi de la
+  // durée réservée, et c'est ce qui la faisait fondre : « Matin » sur un
+  // chantier d'une journée réservait une demi-journée, sans un mot. La durée
+  // vient du devis et ne se choisit plus (§308, et sa décision du
+  // 10 septembre 2026).
+
+  // ═══════════════════════════════════════════════════════════════════
+  // **LE CHOIX DU PATRON N'EST PLUS REFUSÉ.** Il le posait, ce créneau était
+  // revalidé, et une demi-journée déjà pleine faisait échouer le geste.
+  //
+  // Sa décision du 21 août 2026 : *« il ne doit pas y avoir de limite d'ajout
+  // de chantier par jour, ni même de gars du coup [...] nous, on prévient
+  // juste »*. Le dépassement se VOIT — la barre du calendrier passe au
+  // bordeaux, la fiche du jour écrit « 150 % de vos équipes » — et il ne
+  // s'interdit pas : c'est lui qui sait qu'une taille de haie prend une heure.
+  //
+  // **Ce que cela ne relâche PAS** : le chemin par lequel le CLIENT choisit
+  // sa date garde ses limites (`jourRetenable`, `premiersJoursLibres`). Un
+  // client n'a pas à forcer une journée, ni même à savoir qu'on le peut.
+  // ═══════════════════════════════════════════════════════════════════
+  const creneauDebut: Moment = choix ? choix.demi : automatique;
+
+  // **Poser écrit désormais OÙ l'on pose** (migration 0085). Un chantier posé
+  // depuis ce lot porte donc ses demi-journées ; les anciens n'en ont pas, et
+  // valent leur bloc calculé — c'est le repli de `creneauxPoses`, et il est
+  // ce qui empêche de libérer d'un coup tout ce qui est déjà pris.
+  //
+  // **AVANT d'écrire la date sur le chantier** : c'est en lisant ses colonnes
+  // que `ecrireLesCreneaux` sait où il ÉTAIT, pour que ses équipes datées
+  // suivent (0093). Écrire la date d'abord lui ferait croire qu'il n'a pas
+  // bougé.
+  await ecrireLesCreneaux(
+    tx,
+    ctx,
+    chantierId,
+    creneauxDuChantier({ jour: datePlanifiee, moment: creneauDebut }, duree)
+  );
+
+  const [row] = await tx
+    .update(chantiers)
+    .set({
+      datePlanifiee,
+      creneauDebut,
+      dureeDemiJournees: duree,
+      updatedBy: ctx.utilisateurId,
+      updatedAt: new Date(),
+    })
+    .where(eq(chantiers.id, chantierId))
+    .returning();
+  return row;
 }
 
 /**

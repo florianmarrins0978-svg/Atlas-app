@@ -11,9 +11,9 @@ import {
 } from "react";
 import { useAncrageDuGeste } from "@/components/atlas/useAncrageDuGeste";
 import Link from "next/link";
-import { getPlanificationEtat, trierParDatePlanifiee } from "@/lib/chantier-etat";
+import { getPlanificationEtat, poseSansAccord, trierParDatePlanifiee } from "@/lib/chantier-etat";
 import { estAuCalendrier } from "@/lib/onglet-chantier";
-import { jourIso } from "@/lib/jour";
+import { dansDelaiRetractation, jourIso } from "@/lib/jour";
 import { retourDuJourAttendu } from "@/lib/retour-intervention";
 import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 import { cheminAutorise, peutModifierLePlanning, type Role } from "@/lib/acces-roles";
@@ -116,6 +116,7 @@ import {
   ecrireNoteChantierAction,
   deplanifierChantierAction,
   planifierChantierAction,
+  poserALaPlaceAction,
   supprimerChantierAction,
   tachesDuChantierAction,
 } from "./actions";
@@ -296,6 +297,9 @@ export type OuvertDansLaCarte =
   | { quoi: "ajout-voies"; cle: string }
   | { quoi: "ajout-qui"; cle: string }
   | { quoi: "ajout-client"; cle: string }
+  // **Le client qui n'arrive pas à choisir ses dates** — son choix B du
+  // 7 octobre 2026 : on le pose, puis l'on dit comment il signe.
+  | { quoi: "ajout-signature"; cle: string; chantierId: string }
   // **La banque, une livraison, une formation** — sa réponse du 10 septembre
   // 2026 à la question que sa propre correction avait ouverte.
   | { quoi: "ajout-temps"; cle: string };
@@ -315,6 +319,22 @@ export type OuvertDansLaCarte =
  * Tant qu'aucune date n'est posée, il n'occupe rien : c'est alors sa durée
  * qu'on annonce, faute d'autre chose à dire.
  */
+/**
+ * « PAS ENCORE SIGNÉ », sous la durée — son choix B du 7 octobre 2026.
+ *
+ * Il l'a posé lui-même, le client n'a pas encore accepté sur son lien. Un
+ * chantier posé ne doit jamais se lire comme un chantier vendu. La règle vit
+ * dans `poseSansAccord`, l'écran ne fait que la montrer.
+ */
+function PasEncoreSigne({ chantier }: { chantier: ChantierPlanning }) {
+  if (!poseSansAccord(chantier)) return null;
+  return (
+    <span data-atlas="pas-encore-signe" className="block text-[12.5px]" style={{ color: colors.muted }}>
+      Pas encore signé
+    </span>
+  );
+}
+
 function ditCeQuIlOccupe(c: ChantierPlanning): string {
   const poses = creneauxDe(c).length;
   return ditLaDuree(poses > 0 ? poses : dureeDuChantier(c));
@@ -1391,6 +1411,40 @@ export default function PlanningClient({
     });
   }
 
+  /**
+   * POSER UN CLIENT QUI ATTEND SON LIEN — son choix B du 7 octobre 2026.
+   *
+   * Rend le refus en mots, ou `null` : le geste s'écrit dans la fiche du jour,
+   * qui reste ouverte tant qu'il n'est pas parti. Sans réponse lisible, un
+   * appui sans effet se lirait comme une panne (`AGENTS.md`).
+   */
+  async function poserALaPlace(
+    chantierId: string,
+    jour: JourIso,
+    signature: { maniere: "lien" } | { maniere: "papier"; demarrageAnticipe: boolean }
+  ): Promise<string | null> {
+    try {
+      const r = await poserALaPlaceAction(chantierId, jour, signature);
+      if (!r.succes) {
+        console.error("Pose à sa place refusée", { chantierId, jour, erreur: r.erreur });
+        return r.erreur;
+      }
+      setChantiers((liste) =>
+        liste.map((c) =>
+          c.id === chantierId
+            ? { ...c, ...r.etat, envoiReponse: r.envoiReponse ?? c.envoiReponse }
+            : c
+        )
+      );
+      setOuvert(null);
+      setDebutFenetre(jour);
+      return null;
+    } catch (e) {
+      console.error("Pose à sa place partie dans le vide", e);
+      return "Rien n'est parti. Rechargez la page.";
+    }
+  }
+
   /** Ce que le tiroir peut encore défaire : le dernier posé, s'il est toujours là. */
   const poseADefaire = (() => {
     if (!dernierPose) return null;
@@ -1489,6 +1543,8 @@ export default function PlanningClient({
     retirerDuJour,
     poser,
     poserUnClient,
+    attenteClient,
+    poserALaPlace,
     morceaux,
     onPrendreMorceau: (id: string) => setMorceauEnMain((tenu) => (tenu === id ? null : id)),
     refus,
@@ -1868,6 +1924,7 @@ export default function PlanningClient({
                         >
                           {ditCeQuIlOccupe(c)}
                         </span>
+                        <PasEncoreSigne chantier={c} />
                         {/* **Le lieu, sous la durée.** C'est la deuxième
                             question après « qui » — et sur quatre clients qui
                             s'appellent Martins, c'est la seule qui distingue. */}
@@ -1952,6 +2009,8 @@ export default function PlanningClient({
                 sansDate={sansDate}
                 poser={poser}
                 poserUnClient={poserUnClient}
+                attenteClient={attenteClient}
+                poserALaPlace={poserALaPlace}
                 morceaux={morceaux}
                 morceauEnMain={morceauEnMain}
                 onPrendreMorceau={(id) =>
@@ -2459,6 +2518,17 @@ type GestesCarte = {
    * de « Poser », qui déplace un chantier déjà là.
    */
   poserUnClient: (chantier: ChantierPlanning) => void;
+  /**
+   * Ceux dont le devis attend la réponse du client — son choix B du
+   * 7 octobre 2026 : on peut les poser à sa place, quand il n'arrive pas à
+   * choisir ses dates.
+   */
+  attenteClient: ChantierPlanning[];
+  poserALaPlace: (
+    chantierId: string,
+    jour: JourIso,
+    signature: { maniere: "lien" } | { maniere: "papier"; demarrageAnticipe: boolean }
+  ) => Promise<string | null>;
   /** Les demi-journées rendues qui attendent une place — voir le tiroir du bas. */
   morceaux: { chantier: ChantierPlanning; combien: number }[];
   /** Le chantier dont une demi-journée attend une place, s'il en tient une. */
@@ -2853,6 +2923,8 @@ function AjoutAuJour({
   sansDate,
   poser,
   poserUnClient,
+  attenteClient,
+  poserALaPlace,
   morceaux,
   morceauEnMain,
   onPrendreMorceau,
@@ -2866,6 +2938,8 @@ function AjoutAuJour({
   | "sansDate"
   | "poser"
   | "poserUnClient"
+  | "attenteClient"
+  | "poserALaPlace"
   | "morceaux"
   | "morceauEnMain"
   | "onPrendreMorceau"
@@ -2884,7 +2958,9 @@ function AjoutAuJour({
    * le tiroir du bas les compte déjà ensemble depuis la veille. C'est ici que
    * la règle manquait.
    */
-  const aEnAttente = sansDate.length > 0 || morceaux.length > 0;
+  // **Et ceux qui attendent leur lien** — son choix B du 7 octobre 2026 : un
+  // client qui n'arrive pas à choisir ses dates se pose d'ici, comme les autres.
+  const aEnAttente = sansDate.length > 0 || morceaux.length > 0 || attenteClient.length > 0;
 
   // ─── LE GESTE NE DISPARAÎT PLUS, PARCE QU'IL MÈNE QUELQUE PART ───────────
   //
@@ -2971,6 +3047,18 @@ function AjoutAuJour({
                 {m.chantier.nom}, ½
               </Petit>
             ))}
+            {/* **Son devis est parti, il n'a pas choisi** : le nom ne pose pas
+                encore, il demande comment il signera. Poser ne vaut jamais
+                accord (`pose-a-sa-place.ts`). */}
+            {attenteClient.map((c) => (
+              <Petit
+                key={`lien-${c.id}`}
+                data-qui-lien={c.id}
+                onClick={() => setOuvert({ quoi: "ajout-signature", cle, chantierId: c.id })}
+              >
+                {c.nom}, devis envoyé
+              </Petit>
+            ))}
           </Choisir>
           {/* **« Annuler » ramène aux deux voies**, sa demande du 10 septembre :
               sans lui, changer d'avis oblige à refermer le geste entier. */}
@@ -2980,6 +3068,13 @@ function AjoutAuJour({
             </Petit>
           </div>
         </div>
+      ) : ici === "ajout-signature" && ouvert?.quoi === "ajout-signature" ? (
+        <CommentIlSigne
+          jour={jour}
+          chantier={attenteClient.find((c) => c.id === ouvert.chantierId) ?? null}
+          onAnnuler={() => setOuvert({ quoi: "ajout-qui", cle })}
+          poserALaPlace={poserALaPlace}
+        />
       ) : ici === "ajout-client" ? (
         <AjoutDunClient
           jour={jour}
@@ -3067,6 +3162,127 @@ function VoieDAjout({
     <MotEnOr onClick={onClick} {...reste}>
       {children}
     </MotEnOr>
+  );
+}
+
+/**
+ * COMMENT IL SIGNERA — son choix B du 7 octobre 2026.
+ *
+ * *« Le client est âgé, il n'arrive pas à choisir ses dates via mon lien. »*
+ * Le patron le pose, et dit comment l'accord viendra :
+ *
+ * - **« Signe sur son lien »** : son lien ne montre plus que ces jours et
+ *   « J'accepte ce devis ». Le planning écrit « Pas encore signé ».
+ * - **« Signé sur papier »** : il a le devis papier signé, l'accord s'enregistre
+ *   à ce titre et son lien se ferme.
+ *
+ * **Poser ne vaut jamais accord** — il l'a proposé, c'est refusé, et il l'a
+ * accepté le même jour (`pose-a-sa-place.ts`).
+ *
+ * **La case des 14 jours n'apparaît que sur le papier, et que dans le délai** :
+ * sur le lien, c'est le client qui la coche lui-même. Sa présence suit la même
+ * règle que la page du client (`dansDelaiRetractation`), et le serveur la
+ * revérifie.
+ */
+function CommentIlSigne({
+  jour,
+  chantier,
+  onAnnuler,
+  poserALaPlace,
+}: {
+  jour: JourIso;
+  chantier: ChantierPlanning | null;
+  onAnnuler: () => void;
+  poserALaPlace: GestesCarte["poserALaPlace"];
+}) {
+  const [papier, setPapier] = useState(false);
+  const [demandeEcrite, setDemandeEcrite] = useState(false);
+  const [enCours, setEnCours] = useState(false);
+  const [refus, setRefus] = useState<string | null>(null);
+  const dansLeDelai = dansDelaiRetractation(jour, jourIso(new Date()));
+
+  // Le client a répondu entre-temps : il n'est plus dans la liste.
+  if (!chantier) {
+    return (
+      <div className="mt-3.5 pt-3">
+        <p data-atlas="refus-du-geste" className="text-[13px]" style={{ color: colors.bordeaux }}>
+          Ce client a déjà répondu.
+        </p>
+        <div className="mt-2 flex justify-end">
+          <Petit data-atlas="annuler-ajout" onClick={onAnnuler}>
+            Annuler
+          </Petit>
+        </div>
+      </div>
+    );
+  }
+
+  function envoyer(signature: Parameters<GestesCarte["poserALaPlace"]>[2]) {
+    if (enCours || !chantier) return;
+    setEnCours(true);
+    setRefus(null);
+    poserALaPlace(chantier.id, jour, signature).then((erreur) => {
+      setEnCours(false);
+      if (erreur) setRefus(erreur);
+    });
+  }
+
+  return (
+    <div className="mt-3.5 pt-3">
+      <p className="text-[14px]" style={{ color: colors.inkSoft }}>
+        {chantier.nom} n&apos;a pas encore signé son devis.
+      </p>
+      <Choisir>
+        <Petit data-atlas="signe-sur-son-lien" onClick={() => envoyer({ maniere: "lien" })}>
+          Signe sur son lien
+        </Petit>
+        <Petit
+          data-atlas="signe-sur-papier"
+          retenue={papier}
+          onClick={() => {
+            if (!dansLeDelai) envoyer({ maniere: "papier", demarrageAnticipe: false });
+            else setPapier(true);
+          }}
+        >
+          Signé sur papier
+        </Petit>
+      </Choisir>
+      {papier && dansLeDelai && (
+        <>
+          <label className="mt-2.5 flex items-start gap-2.5 text-[13px]" style={{ color: colors.inkSoft }}>
+            <input
+              type="checkbox"
+              data-atlas="demande-ecrite"
+              checked={demandeEcrite}
+              onChange={(e) => setDemandeEcrite(e.target.checked)}
+              className="mt-0.5 h-5 w-5 flex-none"
+            />
+            <span>Il a demandé par écrit de commencer avant la fin de ses 14 jours de rétractation.</span>
+          </label>
+          <div className="mt-2 flex justify-end">
+            <Petit
+              data-atlas="poser-sur-papier"
+              retenue={demandeEcrite}
+              onClick={() => {
+                if (demandeEcrite) envoyer({ maniere: "papier", demarrageAnticipe: true });
+              }}
+            >
+              {enCours ? "…" : "Poser"}
+            </Petit>
+          </div>
+        </>
+      )}
+      {refus && (
+        <p data-atlas="refus-du-geste" className="mt-2 text-[13px]" style={{ color: colors.bordeaux }}>
+          {refus}
+        </p>
+      )}
+      <div className="mt-2 flex justify-end">
+        <Petit data-atlas="annuler-ajout" onClick={onAnnuler}>
+          Annuler
+        </Petit>
+      </div>
+    </div>
   );
 }
 
@@ -3769,6 +3985,8 @@ function CarteDuJour({
   retirerDuJour,
   poser,
   poserUnClient,
+  attenteClient,
+  poserALaPlace,
   morceaux,
   onPrendreMorceau,
   refus,
@@ -4110,6 +4328,7 @@ function CarteDuJour({
                   >
                     {ditCeQuIlOccupe(c)}
                   </span>
+                  <PasEncoreSigne chantier={c} />
                   <LieuDuChantier chantier={c} />
                   {retourAEnvoyer(c.id, jour) && <RetourAEnvoyer />}
                   </span>
@@ -4378,6 +4597,8 @@ function CarteDuJour({
             sansDate={sansDate}
             poser={poser}
             poserUnClient={poserUnClient}
+            attenteClient={attenteClient}
+            poserALaPlace={poserALaPlace}
             morceaux={morceaux}
             morceauEnMain={morceauEnMain}
             onPrendreMorceau={onPrendreMorceau}

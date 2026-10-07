@@ -146,7 +146,13 @@ export default function FormulaireReponse({
   const plusieursJours = nombreDeJours > 1;
   const phraseDuree = phraseDureeDesTravaux(nombreDeJours);
 
-  const joursEffectifs = choixDate === "autre" ? joursAutres : choixDate ? joursDe(choixDate) : [];
+  const joursEffectifs = envoi.joursFixes
+    ? envoi.joursFixes
+    : choixDate === "autre"
+      ? joursAutres
+      : choixDate
+        ? joursDe(choixDate)
+        : [];
   const premierJour = joursEffectifs[0] ?? "";
 
   /**
@@ -231,205 +237,224 @@ export default function FormulaireReponse({
             entre les deux si deux lui sont offertes. Sa règle du même jour pour
             les mois : `joursEnToutesLettres`. La valeur du bouton reste le
             PREMIER jour — c'est par lui que le serveur retrouve la liste. */}
-        <h2 className="text-[16px]" style={{ fontFamily: font.display, color: colors.ink }}>
-          {plusieursJours ? <>Quels jours vous arrangent&nbsp;?</> : <>Quelle date vous arrange&nbsp;?</>}
-        </h2>
+        {envoi.joursFixes ? (
+          /* **SES JOURS SONT DÉJÀ POSÉS — son choix B du 7 octobre 2026.** Le
+             client n'arrivait pas à choisir : son artisan l'a posé au
+             planning. Plus rien à choisir ici, seulement à accepter. Le champ
+             caché n'est qu'une forme : le serveur prend les jours du
+             planning, quoi qu'on lui poste (`enregistrerReponse`). */
+          <>
+            <h2 className="text-[16px]" style={{ fontFamily: font.display, color: colors.ink }}>
+              Votre intervention
+            </h2>
+            <p data-atlas="jours-fixes" className="mt-0.5 text-[15px] first-letter:uppercase" style={{ color: colors.ink }}>
+              {joursEnToutesLettres(envoi.joursFixes)}
+            </p>
+            <input type="hidden" name="choixDate" value={envoi.joursFixes[0]} />
+          </>
+        ) : (
+          <>
+            <h2 className="text-[16px]" style={{ fontFamily: font.display, color: colors.ink }}>
+              {plusieursJours ? <>Quels jours vous arrangent&nbsp;?</> : <>Quelle date vous arrange&nbsp;?</>}
+            </h2>
 
-        {/* **LE NOMBRE DE JOURS SE LIT ICI, SUR LA PAGE — sa quatrième demande
-            du 20 septembre 2026, qu'il a dû redire :** *« en dessous de "quels
-            jours vous arrangent ?" et au-dessus de la touche pour valider,
-            écris le nombre de jours »*.
+            {/* **LE NOMBRE DE JOURS SE LIT ICI, SUR LA PAGE — sa quatrième demande
+                du 20 septembre 2026, qu'il a dû redire :** *« en dessous de "quels
+                jours vous arrangent ?" et au-dessus de la touche pour valider,
+                écris le nombre de jours »*.
 
-            Posée d'abord dans la feuille du calendrier, elle ne se lisait que
-            si le client l'ouvrait — c'est-à-dire seulement quand les dates
-            proposées ne lui convenaient pas. Il lisait quatre dates sans jamais
-            savoir que le chantier en prend quatre, au moment précis où il
-            choisit. */}
-        {phraseDuree && (
-          <p className="mt-0.5 text-[13px]" style={{ color: colors.inkSoft }}>
-            {phraseDuree}
-          </p>
-        )}
+                Posée d'abord dans la feuille du calendrier, elle ne se lisait que
+                si le client l'ouvrait — c'est-à-dire seulement quand les dates
+                proposées ne lui convenaient pas. Il lisait quatre dates sans jamais
+                savoir que le chantier en prend quatre, au moment précis où il
+                choisit. */}
+            {phraseDuree && (
+              <p className="mt-0.5 text-[13px]" style={{ color: colors.inkSoft }}>
+                {phraseDuree}
+              </p>
+            )}
 
-        <div className="mt-1.5 flex flex-col gap-0.5">
-          {/* Repliée, la liste ne rend plus qu'une ligne : les jours retenus, et
-              de quoi revenir. Voir `listeRepliee` pour le pourquoi. */}
-          {listeRepliee && (
-            <div className="flex items-baseline justify-between gap-3">
-              <span className="text-[15px]" style={{ color: colors.ink }}>
-                {joursEnToutesLettres(joursAutres)}
-              </span>
-              <button
-                type="button"
-                onClick={() => setListeDepliee(true)}
-                className="shrink-0 text-[13px] underline underline-offset-4"
-                style={{ color: colors.inkSoft }}
-              >
-                changer
-              </button>
-            </div>
-          )}
-          {/* Repliés, les boutons radio quittent le document — et avec eux le
-              choix que le formulaire envoie. Ce champ prend leur place. */}
-          {listeRepliee && <input type="hidden" name="choixDate" value="autre" />}
-
-          {!listeRepliee && envoi.datesProposees.map((d) => (
-            <label key={d} className="flex items-center gap-3 text-[15px]" style={{ color: colors.ink }}>
-              <input
-                type="radio"
-                name="choixDate"
-                value={d}
-                checked={choixDate === d}
-                onChange={(e) => setChoixDate(e.target.value)}
-                onClick={() => devalider(d)}
-                className="h-5 w-5"
-              />
-              <span>{libelleProposition(d)}</span>
-            </label>
-          ))}
-
-          {/* **« Je propose » n'apparaît que si l'artisan l'a permis**
-              (17 août 2026, sa demande : *« il faut que l'utilisateur puisse
-              choisir avant d'envoyer s'il autorise ou non le client à choisir
-              une date »*). Le choix est FIGÉ dans l'envoi : cet écran dira
-              demain ce qu'il dit aujourd'hui.
-
-              **Cacher ne suffit pas** : cette page est publique et son
-              formulaire se rejoue. Le serveur refuse la contre-proposition de
-              son côté (`enregistrerReponse`, motif `autre_date_refusee`) — une
-              règle tenue à un seul endroit, jamais deux. */}
-          {envoi.autreDateAutorisee && !listeRepliee && (
-            <label className="flex items-center gap-3 text-[15px]" style={{ color: colors.ink }}>
-              <input
-                type="radio"
-                name="choixDate"
-                value="autre"
-                checked={choixDate === "autre"}
-                onClick={() => devalider("autre")}
-                // La feuille s'ouvre sur la SÉLECTION, jamais sur l'appui :
-                // `onChange` ne part pas quand la case est déjà cochée, donc
-                // le geste qui la décoche ne la rouvre pas dans la foulée.
-                onChange={(e) => {
-                  setChoixDate(e.target.value);
-                  setFeuilleOuverte(true);
-                }}
-                className="h-5 w-5"
-              />
-              <span>{libelleAutreDate(nombreDeJours)}</span>
-            </label>
-          )}
-
-          {/* **Le champ caché vit DEHORS.** Il est ce qui part au serveur : le
-              poser dans la feuille le ferait disparaître du formulaire dès
-              qu'elle se referme, et les jours choisis ne seraient jamais
-              envoyés. Des jours séparés par des virgules : le serveur les
-              revérifie un à un de toute façon. */}
-          {envoi.autreDateAutorisee && (
-            <input type="hidden" name="joursAutres" value={joursAutres.join(",")} />
-          )}
-
-          {envoi.autreDateAutorisee && !listeRepliee && choixDate === "autre" && joursAutres.length > 0 && (
-            <button
-              type="button"
-              onClick={() => setFeuilleOuverte(true)}
-              className="mt-0.5 self-start text-[13px] underline underline-offset-4"
-              style={{ color: colors.inkSoft }}
-            >
-              {joursEnToutesLettres(joursAutres)}, changer
-            </button>
-          )}
-
-          <BottomSheet
-            open={envoi.autreDateAutorisee && feuilleOuverte}
-            /* **Refermer sans avoir choisi DÉFAIT le choix.** Sinon le client
-               reste sur « je propose » sans jour, et son acceptation est
-               refusée par le serveur — un refus qu'il ne comprendrait pas,
-               puisque rien à l'écran ne dit qu'il manque quelque chose. */
-            onBackdropClick={() => {
-              setFeuilleOuverte(false);
-              setRefus(null);
-              if (joursAutres.length === 0) setChoixDate("");
-            }}
-          >
-            <div className="flex flex-col gap-0.5">
-              {/* **Un calendrier, et non plus le sélecteur du téléphone.**
-                  Sa demande du 8 août 2026 : « qu'il ait accès au calendrier
-                  pour pouvoir proposer une date, avec un système pour qu'il
-                  n'ait pas accès aux dates déjà prises par un autre client. »
-
-                  `<input type="date">` accepte bien une fenêtre, mais il ne sait
-                  pas griser des jours au milieu : le client choisissait un jour
-                  déjà pris et ne l'apprenait qu'après coup, par un refus. Ici
-                  les jours pris sont barrés et ne répondent pas.
-
-                  Le champ caché reste : c'est lui qui part au serveur, et le
-                  serveur revérifie de toute façon — l'affichage n'est qu'un
-                  instantané, deux clients peuvent viser le même jour. */}
-              {/* `dureeDemiJournees={null}` : le client n'apprend rien du
-                  découpage du planning de son artisan — ni créneau, ni durée.
-                  Consigne du patron, tenue par `test-creneaux-planning.ts`. Sa
-                  phrase sous le calendrier reste vraie sans rien chiffrer.
-
-                  **Les jours barrés lui arrivent DÉJÀ prêts** : `joursOccupes`
-                  est la liste des jours où CE chantier, de SA durée, ne peut
-                  pas commencer (`lireParJeton`). Rien à recalculer ici, et
-                  rien de plus à lui apprendre. */}
-              <Calendrier
-                debut={envoi.fenetre.debut}
-                fin={envoi.fenetre.fin}
-                occupes={envoi.joursOccupes}
-                retenus={joursAutres}
-                aujourdHui={aujourdHui}
-                dureeDemiJournees={null}
-                onBasculer={(jour) =>
-                  setJoursAutres((actuels) => toucherUnJourDuClient(actuels, jour, nombreDeJours))
-                }
-              />
-              {/* **Le compte se relit ICI aussi**, au moment où les jours
-                  s'allument : la feuille recouvre la carte, et la phrase de la
-                  page est alors hors de vue. Les deux ne se lisent jamais en
-                  même temps. */}
-              {phraseDuree && (
-                <p className="mt-2 text-center text-[13px]" style={{ color: colors.inkSoft }}>
-                  {phraseDuree}
-                </p>
+            <div className="mt-1.5 flex flex-col gap-0.5">
+              {/* Repliée, la liste ne rend plus qu'une ligne : les jours retenus, et
+                  de quoi revenir. Voir `listeRepliee` pour le pourquoi. */}
+              {listeRepliee && (
+                <div className="flex items-baseline justify-between gap-3">
+                  <span className="text-[15px]" style={{ color: colors.ink }}>
+                    {joursEnToutesLettres(joursAutres)}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setListeDepliee(true)}
+                    className="shrink-0 text-[13px] underline underline-offset-4"
+                    style={{ color: colors.inkSoft }}
+                  >
+                    changer
+                  </button>
+                </div>
               )}
-              {/* Le bouton ne s'éteint pas faute de jours : il répond, et c'est
-                  sa réponse qui dit ce qui manque — la même règle que les trois
-                  issues plus bas, et que l'écran d'envoi du patron. */}
-              {/* **La phrase se lit DANS la feuille.** Celle du formulaire vit
-                  plus bas, donc derrière elle : un refus posé là serait caché
-                  par ce qui vient de le provoquer. */}
-              {refus && (
-                <p role="alert" className="mt-2 text-[14px]" style={{ color: colors.alert }}>
-                  {refus}
-                </p>
+              {/* Repliés, les boutons radio quittent le document — et avec eux le
+                  choix que le formulaire envoie. Ce champ prend leur place. */}
+              {listeRepliee && <input type="hidden" name="choixDate" value="autre" />}
+
+              {!listeRepliee && envoi.datesProposees.map((d) => (
+                <label key={d} className="flex items-center gap-3 text-[15px]" style={{ color: colors.ink }}>
+                  <input
+                    type="radio"
+                    name="choixDate"
+                    value={d}
+                    checked={choixDate === d}
+                    onChange={(e) => setChoixDate(e.target.value)}
+                    onClick={() => devalider(d)}
+                    className="h-5 w-5"
+                  />
+                  <span>{libelleProposition(d)}</span>
+                </label>
+              ))}
+
+              {/* **« Je propose » n'apparaît que si l'artisan l'a permis**
+                  (17 août 2026, sa demande : *« il faut que l'utilisateur puisse
+                  choisir avant d'envoyer s'il autorise ou non le client à choisir
+                  une date »*). Le choix est FIGÉ dans l'envoi : cet écran dira
+                  demain ce qu'il dit aujourd'hui.
+
+                  **Cacher ne suffit pas** : cette page est publique et son
+                  formulaire se rejoue. Le serveur refuse la contre-proposition de
+                  son côté (`enregistrerReponse`, motif `autre_date_refusee`) — une
+                  règle tenue à un seul endroit, jamais deux. */}
+              {envoi.autreDateAutorisee && !listeRepliee && (
+                <label className="flex items-center gap-3 text-[15px]" style={{ color: colors.ink }}>
+                  <input
+                    type="radio"
+                    name="choixDate"
+                    value="autre"
+                    checked={choixDate === "autre"}
+                    onClick={() => devalider("autre")}
+                    // La feuille s'ouvre sur la SÉLECTION, jamais sur l'appui :
+                    // `onChange` ne part pas quand la case est déjà cochée, donc
+                    // le geste qui la décoche ne la rouvre pas dans la foulée.
+                    onChange={(e) => {
+                      setChoixDate(e.target.value);
+                      setFeuilleOuverte(true);
+                    }}
+                    className="h-5 w-5"
+                  />
+                  <span>{libelleAutreDate(nombreDeJours)}</span>
+                </label>
               )}
-              <button
-                type="button"
-                onClick={() => {
-                  /* **Elle ne retient pas moins de jours que le chantier n'en
-                     prend.** Trois jours pour un chantier de quatre partaient
-                     sans un mot, et l'artisan n'aurait pas eu de quoi faire le
-                     travail. */
-                  const manque = refusDesJoursRetenus(joursAutres.length, nombreDeJours);
-                  if (manque) return setRefus(manque);
-                  setRefus(null);
+
+              {/* **Le champ caché vit DEHORS.** Il est ce qui part au serveur : le
+                  poser dans la feuille le ferait disparaître du formulaire dès
+                  qu'elle se referme, et les jours choisis ne seraient jamais
+                  envoyés. Des jours séparés par des virgules : le serveur les
+                  revérifie un à un de toute façon. */}
+              {envoi.autreDateAutorisee && (
+                <input type="hidden" name="joursAutres" value={joursAutres.join(",")} />
+              )}
+
+              {envoi.autreDateAutorisee && !listeRepliee && choixDate === "autre" && joursAutres.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setFeuilleOuverte(true)}
+                  className="mt-0.5 self-start text-[13px] underline underline-offset-4"
+                  style={{ color: colors.inkSoft }}
+                >
+                  {joursEnToutesLettres(joursAutres)}, changer
+                </button>
+              )}
+
+              <BottomSheet
+                open={envoi.autreDateAutorisee && feuilleOuverte}
+                /* **Refermer sans avoir choisi DÉFAIT le choix.** Sinon le client
+                   reste sur « je propose » sans jour, et son acceptation est
+                   refusée par le serveur — un refus qu'il ne comprendrait pas,
+                   puisque rien à l'écran ne dit qu'il manque quelque chose. */
+                onBackdropClick={() => {
                   setFeuilleOuverte(false);
-                  // Ce qu'elle vient de retenir devient la ligne ; le reste se replie.
-                  setListeDepliee(false);
+                  setRefus(null);
+                  if (joursAutres.length === 0) setChoixDate("");
                 }}
-                // Le vert des BOUTONS (`colors.plein`), tranché le 3 septembre
-                // 2026 sur `appli/boutons-verts.html` — et non le vert pin, qui
-                // est celui des textes et des liserés.
-                className="atlas-plein mt-3 rounded-full py-3 text-[16px] font-medium"
-                style={{ backgroundColor: colors.plein, color: colors.card }}
               >
-                {libelleRetenir(nombreDeJours)}
-              </button>
+                <div className="flex flex-col gap-0.5">
+                  {/* **Un calendrier, et non plus le sélecteur du téléphone.**
+                      Sa demande du 8 août 2026 : « qu'il ait accès au calendrier
+                      pour pouvoir proposer une date, avec un système pour qu'il
+                      n'ait pas accès aux dates déjà prises par un autre client. »
+
+                      `<input type="date">` accepte bien une fenêtre, mais il ne sait
+                      pas griser des jours au milieu : le client choisissait un jour
+                      déjà pris et ne l'apprenait qu'après coup, par un refus. Ici
+                      les jours pris sont barrés et ne répondent pas.
+
+                      Le champ caché reste : c'est lui qui part au serveur, et le
+                      serveur revérifie de toute façon — l'affichage n'est qu'un
+                      instantané, deux clients peuvent viser le même jour. */}
+                  {/* `dureeDemiJournees={null}` : le client n'apprend rien du
+                      découpage du planning de son artisan — ni créneau, ni durée.
+                      Consigne du patron, tenue par `test-creneaux-planning.ts`. Sa
+                      phrase sous le calendrier reste vraie sans rien chiffrer.
+
+                      **Les jours barrés lui arrivent DÉJÀ prêts** : `joursOccupes`
+                      est la liste des jours où CE chantier, de SA durée, ne peut
+                      pas commencer (`lireParJeton`). Rien à recalculer ici, et
+                      rien de plus à lui apprendre. */}
+                  <Calendrier
+                    debut={envoi.fenetre.debut}
+                    fin={envoi.fenetre.fin}
+                    occupes={envoi.joursOccupes}
+                    retenus={joursAutres}
+                    aujourdHui={aujourdHui}
+                    dureeDemiJournees={null}
+                    onBasculer={(jour) =>
+                      setJoursAutres((actuels) => toucherUnJourDuClient(actuels, jour, nombreDeJours))
+                    }
+                  />
+                  {/* **Le compte se relit ICI aussi**, au moment où les jours
+                      s'allument : la feuille recouvre la carte, et la phrase de la
+                      page est alors hors de vue. Les deux ne se lisent jamais en
+                      même temps. */}
+                  {phraseDuree && (
+                    <p className="mt-2 text-center text-[13px]" style={{ color: colors.inkSoft }}>
+                      {phraseDuree}
+                    </p>
+                  )}
+                  {/* Le bouton ne s'éteint pas faute de jours : il répond, et c'est
+                      sa réponse qui dit ce qui manque — la même règle que les trois
+                      issues plus bas, et que l'écran d'envoi du patron. */}
+                  {/* **La phrase se lit DANS la feuille.** Celle du formulaire vit
+                      plus bas, donc derrière elle : un refus posé là serait caché
+                      par ce qui vient de le provoquer. */}
+                  {refus && (
+                    <p role="alert" className="mt-2 text-[14px]" style={{ color: colors.alert }}>
+                      {refus}
+                    </p>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      /* **Elle ne retient pas moins de jours que le chantier n'en
+                         prend.** Trois jours pour un chantier de quatre partaient
+                         sans un mot, et l'artisan n'aurait pas eu de quoi faire le
+                         travail. */
+                      const manque = refusDesJoursRetenus(joursAutres.length, nombreDeJours);
+                      if (manque) return setRefus(manque);
+                      setRefus(null);
+                      setFeuilleOuverte(false);
+                      // Ce qu'elle vient de retenir devient la ligne ; le reste se replie.
+                      setListeDepliee(false);
+                    }}
+                    // Le vert des BOUTONS (`colors.plein`), tranché le 3 septembre
+                    // 2026 sur `appli/boutons-verts.html` — et non le vert pin, qui
+                    // est celui des textes et des liserés.
+                    className="atlas-plein mt-3 rounded-full py-3 text-[16px] font-medium"
+                    style={{ backgroundColor: colors.plein, color: colors.card }}
+                  >
+                    {libelleRetenir(nombreDeJours)}
+                  </button>
+                </div>
+              </BottomSheet>
             </div>
-          </BottomSheet>
-        </div>
+          </>
+        )}
 
         {/* **Le message vit dans la MÊME carte que la date**, depuis le 31 août
             2026. Il avait la sienne : trente-deux pixels de marges et huit de

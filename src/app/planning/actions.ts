@@ -27,6 +27,7 @@ import { dernierEnvoiDuChantier, nombreDeRetoursDuChantier } from "@/server/repo
 import { listerClients, trouverOuCreerClient } from "@/server/repositories/clients";
 import { filtrerClientsParNom } from "@/lib/recherche-client";
 import { nomDuChantier } from "@/lib/nom-chantier";
+import { poserALaPlaceDuClient } from "@/server/repositories/pose-a-sa-place";
 
 /**
  * LES ACTIONS DU PLANNING.
@@ -137,6 +138,52 @@ export async function planifierChantierAction(
       dureeDemiJournees: row?.dureeDemiJournees ?? null,
       creneaux: await creneauxApres(ctx, chantierId),
     },
+  };
+}
+
+/**
+ * POSER UN CLIENT DONT LE DEVIS ATTEND SA RÉPONSE — son choix B du 7 octobre
+ * 2026 : le client n'arrive pas à choisir ses dates sur son lien.
+ *
+ * `lien` : il signe toujours sur son lien, qui ne montre plus que ces jours.
+ * `papier` : il a signé le devis papier, le lien se ferme. Poser ne vaut
+ * jamais accord à lui seul (`pose-a-sa-place.ts`).
+ *
+ * Rend aussi la réponse de l'envoi : l'écran en tire « Pas encore signé »
+ * sans attendre un rechargement.
+ */
+export async function poserALaPlaceAction(
+  chantierId: string,
+  jour: string,
+  signature: { maniere: "lien" } | { maniere: "papier"; demarrageAnticipe: boolean }
+): Promise<
+  | { succes: true; etat: EtatPose; envoiReponse: "acceptee" | null }
+  | { succes: false; erreur: string }
+> {
+  const ctx = await getCurrentCtx();
+  await exigerEcritureSurLePlanning(ctx, "poser ce chantier au planning");
+  await exigerChantierDansSaPortee(ctx, chantierId, "poser ce chantier au planning");
+  if (!estUnJourValide(jour)) return { succes: false, erreur: "Ce jour n'existe pas." };
+  // Ce qui arrive du navigateur se relit : seules deux formes existent.
+  const lue =
+    signature?.maniere === "papier"
+      ? { maniere: "papier" as const, demarrageAnticipe: signature.demarrageAnticipe === true }
+      : { maniere: "lien" as const };
+  const r = await poserALaPlaceDuClient(ctx, chantierId, jour, lue);
+  if (!r.succes) {
+    return {
+      succes: false,
+      erreur:
+        r.motif === "demarrage_non_demande"
+          ? "Ce jour tombe dans ses 14 jours de rétractation : cochez sa demande écrite de commencer plus tôt."
+          : "Ce client a déjà répondu. Rechargez la page.",
+    };
+  }
+  await porterChantierDansAgenda(ctx, chantierId);
+  return {
+    succes: true,
+    etat: { ...r.pose, creneaux: await creneauxApres(ctx, chantierId) },
+    envoiReponse: lue.maniere === "papier" ? "acceptee" : null,
   };
 }
 

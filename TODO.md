@@ -1,6 +1,6 @@
 # Prochaines tâches
 
-## ⏳ UNE PLANCHE À REGARDER : POSER À SA PLACE (7 octobre 2026)
+## ✅ POSER À SA PLACE : SA RÉPONSE « B », CODÉE LE 7 OCTOBRE 2026 (7 octobre 2026)
 
 **Sa question :** un client âgé reçoit le devis et n'arrive pas à choisir ses
 dates sur le lien ; depuis le planning, « Ajouter » peut-il reprendre ce client
@@ -13,8 +13,11 @@ Planche `appli/poser-a-sa-place.html` : A (il signe toujours sur son lien, qui
 n'affiche plus que la date posée) ou B (A plus « Signé sur papier », qui ferme
 le lien). Recommandé : B. Refusé : « accord au téléphone » (aucune preuve pour
 un particulier). Ouvert : la case des 14 jours de rétractation sur le papier.
-**Rien n'est codé.** Le lot touchera `envois-devis` et l'acceptation : niveau 3
-(gravité argent).
+**CODÉ LE 7 OCTOBRE 2026, sa réponse « B »** (`ARCHITECTURE.md` §450),
+migration 0122. Ouvert : un refus sur le lien laisse le chantier posé (la carte
+« Devis refusé » le dit) ; un lien expiré puis renvoyé repart avec des dates
+proposées. Reste à faire : batterie complète, puis fusion sur `main` avec son
+accord.
 
 ## ⏳ LA FENTE AU FÛT : SES PRIX DE FENTE À REVOIR (30 septembre 2026)
 

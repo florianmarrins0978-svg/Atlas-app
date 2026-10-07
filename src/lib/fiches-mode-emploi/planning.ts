@@ -494,6 +494,24 @@ export const FICHES_PLANNING: FicheModeEmploi[] = [
     preuves: ['data-atlas="ajouter"', "Client en attente"],
   },
   {
+    id: "planning-poser-a-sa-place",
+    ecran: "Planning",
+    ou: "« Planning », dans la barre du bas, puis le jour",
+    intitule: "Poser un client qui n'arrive pas à choisir ses dates sur son lien",
+    motsCles: ["choisir", "dates", "age", "agee", "arrive", "place", "papier", "signe", "moi"],
+    // **Son choix B du 7 octobre 2026.** Poser ne vaut jamais accord : il dit
+    // à chaque fois comment le client signera (`pose-a-sa-place.ts`).
+    geste:
+      "Touchez le jour, puis « Ajouter » et « Client en attente », et touchez son nom marqué « devis envoyé ». " +
+      "Choisissez « Signe sur son lien » ou « Signé sur papier ».",
+    reserve:
+      "Sur son lien, il ne choisit plus rien : il lit le jour posé et appuie sur « J'accepte ce devis ». " +
+      "Tant qu'il ne l'a pas fait, le planning écrit « Pas encore signé ». « Signé sur papier » ferme son lien : gardez le papier signé.",
+    source: "src/app/planning/PlanningClient.tsx",
+    preuves: ["Client en attente", "devis envoyé", "Signe sur son lien", "Signé sur papier", "Pas encore signé"],
+    ailleurs: [{ source: "src/app/devis/[jeton]/formulaire.tsx", preuves: ["Votre intervention", 'data-atlas="jours-fixes"'] }],
+  },
+  {
     id: "planning-note",
     ecran: "Planning",
     ou: "« Planning » dans la barre du bas, puis le nom du chantier",

@@ -5,6 +5,15 @@
 `drizzle/0116_modele_de_fiche_d_office.sql`
 
 ---
+## SUR SA BRANCHE : POSER UN CLIENT À SA PLACE (7 octobre 2026)
+
+Branche `claude/add-quote-client-to-schedule-ve9xn7`, migration 0122. Son
+choix B : « Client en attente » propose le client dont le devis attend sa
+réponse ; « Signe sur son lien » ou « Signé sur papier ». Poser ne vaut jamais
+accord (`ARCHITECTURE.md` §450). Niveau 3 (argent) : la batterie complète
+décide de la livraison, puis la fusion se demande.
+
+---
 ## SUR `main` : LA FENTE SE CHIFFRE AU FÛT (6 octobre 2026)
 
 La fente demande « Quelle hauteur de fût ? » et sa grille se lit en hauteur de

@@ -2068,6 +2068,24 @@ export const envoisDevis = pgTable(
      * défaut — c'est le comportement qu'ont connu les envois déjà partis.
      */
     autreDateAutorisee: boolean("autre_date_autorisee").notNull().default(true),
+    /**
+     * LE PATRON A POSÉ LUI-MÊME LE CHANTIER — son choix B du 7 octobre 2026,
+     * pour le client qui n'arrive pas à choisir ses dates (migration 0122).
+     *
+     * Vrai : le lien n'offre plus de dates, il montre celles où le chantier
+     * est POSÉ et ne demande que l'accord. Les jours se lisent au planning à
+     * chaque ouverture, jamais recopiés ici : un chantier déplacé ensuite
+     * montre sa nouvelle place, et non celle d'hier.
+     */
+    datesFixeesParArtisan: boolean("dates_fixees_par_artisan").notNull().default(false),
+    /**
+     * L'accord vient d'un devis PAPIER signé, saisi par le patron, jamais d'un
+     * clic du client. C'est ce qui le distingue d'une signature en ligne, et
+     * ce qu'il faut pouvoir dire le jour d'un litige (migration 0122).
+     */
+    accordSurPapier: boolean("accord_sur_papier").notNull().default(false),
+    /** Le compte qui a saisi l'accord papier. Une trace, sans clé étrangère. */
+    accordPapierPar: uuid("accord_papier_par"),
 
 
     empreinteDevis: char("empreinte_devis", { length: 64 }).notNull(),

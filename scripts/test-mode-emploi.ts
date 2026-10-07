@@ -196,6 +196,8 @@ async function main() {
     ["comment envoyer le devis au client", "devis-envoyer"],
     ["comment on fait une facture", "facture-creer"],
     ["comment je déplace un chantier sur le planning", "planning-deplacer"],
+    // Sa question du 7 octobre 2026, mot pour mot ou presque.
+    ["ma cliente âgée n'arrive pas à choisir ses dates, je peux la poser moi-même", "planning-poser-a-sa-place"],
     ["où je vois ma tva", "tva"],
     ["comment ajouter une photo", "photos-ajouter"],
     ["comment faire une remise à mon client", "devis-remise"],

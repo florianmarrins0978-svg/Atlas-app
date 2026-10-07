@@ -18,7 +18,7 @@ import {
   RELANCE_APRES_JOURS,
   VALIDITE_LIEN_JOURS,
 } from "../src/lib/etat-envoi";
-import { getStatutAffiche, getPlanificationEtat, chantierEnCours } from "../src/lib/chantier-etat";
+import { getStatutAffiche, getPlanificationEtat, chantierEnCours, poseSansAccord } from "../src/lib/chantier-etat";
 import { versJourIso, ajouterJours } from "../src/lib/disponibilites";
 import { nettoyerBase } from "./_test-db";
 
@@ -241,6 +241,20 @@ async function main() {
       MAINTENANT
     );
     assert.strictEqual(retourne, "a_planifier");
+  });
+
+  // **Posé par le patron, pas encore signé** — son choix B du 7 octobre 2026 :
+  // un chantier posé ne doit jamais se lire comme un chantier vendu.
+  await test("posé alors que le client n'a pas signé : « Pas encore signé », et seulement là", async () => {
+    const envoi = { devisEnvoyeAt: ilYA(1), envoiEnvoyeAt: ilYA(1), envoiExpireAt: dans(40) };
+    assert.strictEqual(poseSansAccord({ ...envoi, datePlanifiee: "2026-09-01", envoiReponse: null }, MAINTENANT), true);
+    assert.strictEqual(poseSansAccord({ ...envoi, datePlanifiee: "2026-09-01", envoiReponse: "acceptee" }, MAINTENANT), false);
+    assert.strictEqual(poseSansAccord({ ...envoi, datePlanifiee: null, envoiReponse: null }, MAINTENANT), false);
+    // Sans envoi, rien à signer : un chantier posé sans devis n'attend personne.
+    assert.strictEqual(
+      poseSansAccord({ devisEnvoyeAt: null, datePlanifiee: "2026-09-01", envoiEnvoyeAt: null }, MAINTENANT),
+      false
+    );
   });
 
   // ---- Le dernier envoi, en base

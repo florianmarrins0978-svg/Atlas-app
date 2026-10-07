@@ -34311,3 +34311,60 @@ case.
   hauteur de l'arbre (`hauteurM`) : les relire comme un fût rangerait le prix
   dans la case d'à côté. La question du fût se repose donc sur ces chantiers.
 
+---
+## §450 : Poser un client à sa place ne vaut jamais accord
+
+**Sa question du 7 octobre 2026 :** *« si j'envoie un devis à un client, que
+c'est une personne âgée et qu'elle n'arrive pas à choisir ses dates via mon
+lien, est-ce que du planning je peux reprendre le client avec le devis pour
+l'ajouter moi-même ? »* Vérifié dans le code : non. `getPlanificationEtat` le
+rangeait `attente_client`, la voie « Client en attente » ne listait que
+`a_planifier`, le tiroir le montrait sans geste, et « Un client » en aurait
+créé un second, sans devis.
+
+**Son choix B** (`appli/poser-a-sa-place.html`) : « Client en attente » le
+propose (« devis envoyé »), et le patron dit comment il signera.
+
+| | le devis | son lien | le planning |
+|---|---|---|---|
+| « Signe sur son lien » | toujours à signer | les jours posés, et « J'accepte ce devis » | « Pas encore signé » |
+| « Signé sur papier » | accepté, `accord_sur_papier`, `accord_papier_par` | fermé | rien |
+
+**Ce qui a été refusé, et il l'a accepté :** que poser vaille accord. Pour un
+particulier, un accord que rien ne prouve ne vaut rien le jour d'un litige ; et
+hors établissement, des travaux commencés dans ses 14 jours sans demande écrite
+ne lui sont pas dus (L221-25). Seuls sa signature en ligne ou un papier signé
+valent accord. L'accord papier porte sa marque pour ne jamais se confondre avec
+une signature en ligne (date, heure, appareil).
+
+**Une seule transaction** (`pose-a-sa-place.ts`). La place et ce que dit le
+lien n'existent jamais l'une sans l'autre : posé sans que le lien le sache, le
+client choisirait encore d'autres dates, et sa réponse déplacerait le chantier.
+D'où `planifierDansLaTransaction`, sortie de `planifierChantier` : la pose ne se
+recopie pas. Le dernier envoi est lu `FOR UPDATE`, sa réponse peut arriver
+pendant le geste.
+
+**Les jours du lien se lisent au planning, jamais recopiés dans l'envoi**
+(`dates_fixees_par_artisan` n'est qu'un drapeau). Un chantier déplacé ensuite
+montre sa nouvelle place ; retiré du planning, il n'a plus de jours et le lien
+redevient celui d'avant, avec ses dates proposées revérifiées comme toujours.
+
+**Sur ces jours, sa réponse n'écrit que l'accord** (`enregistrerReponse`) : ni
+revérification de place (elle se jugerait contre lui-même), ni réécriture des
+créneaux (elle défairait le matin ou l'après-midi qu'il a choisi). Un jour posté
+d'ailleurs est ignoré : la page est publique et se rejoue. Une correction ou un
+refus n'y portent aucun souhait de date.
+
+**Les 14 jours tiennent des deux côtés.** Sur le lien, la case du client comme
+avant. Sur le papier, une case du patron, « Il a demandé par écrit de commencer
+avant la fin de ses 14 jours de rétractation », exigée au serveur quand le
+premier jour tombe dans le délai, sauf en sous-traitance (0119).
+
+**Ce qui reste ouvert** : un client qui REFUSE sur son lien laisse le chantier
+posé ; la carte « Devis refusé » le dit, et c'est au patron de le retirer. Un
+lien expiré puis renvoyé repart avec des dates proposées, sans drapeau.
+
+Tenu par `test-pose-a-sa-place-db.ts` (neuf cas, sous la RLS, vu rougir sur
+deux règles cassées), `test-etat-envoi.ts` (`poseSansAccord`) et
+`test-poser-a-sa-place-e2e.ts` (son geste, puis la page de la cliente).
+

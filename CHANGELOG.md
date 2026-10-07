@@ -6,6 +6,20 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-10-07
+
+### Poser au planning un client qui n'arrive pas à choisir ses dates
+
+Un client qui reçoit le lien du devis sans réussir à choisir ses dates ne
+pouvait être posé par personne : le planning le rangeait « en attente du
+client » sans geste. « Ajouter », « Client en attente » le propose désormais
+(« devis envoyé »), et le patron choisit « Signe sur son lien » (le lien ne
+montre plus que les jours posés et « J'accepte ce devis » ; le planning écrit
+« Pas encore signé ») ou « Signé sur papier » (accord enregistré comme papier,
+lien fermé). Poser ne vaut jamais accord. Migration 0122, `ARCHITECTURE.md`
+§450.
+
+---
 ## 2026-10-06
 
 ### La suite de la fiche d'entretien ne défait plus la remise d'avant
