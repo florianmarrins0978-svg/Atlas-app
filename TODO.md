@@ -16,10 +16,11 @@ avec le dernier client sans date est corrigé (`ARCHITECTURE.md` §451). Reste :
   7 OCTOBRE 2026** (« Le client s'est trompé », la barre des six secondes,
   `ARCHITECTURE.md` §452, migration 0123). Reste : la batterie (niveau 3),
   puis `main` avec son accord ;
-- la barre qui diminue n'est branchée que sur le planning et la page Devis :
-  les six autres écrans qui retirent (photos, notes, prix…) ne l'ont pas. À
-  lui de dire s'il la veut partout ;
-- une absence d'équipe s'efface d'un seul appui, sans annulation.
+- la barre qui diminue reste sur le planning et la page Devis SEULEMENT :
+  **son « non » du 7 octobre 2026** pour les autres écrans qui retirent. Ne
+  pas l'étendre ;
+- une absence d'équipe s'efface d'un seul appui, sans question : **son « non »
+  du 7 octobre 2026**, elle reste ainsi. Ne pas y ajouter de question.
 
 ## ⏳ LES TRAVAUX D'UN CLIENT POSÉ SANS DEVIS : UNE PLANCHE À REGARDER (7 octobre 2026)
 

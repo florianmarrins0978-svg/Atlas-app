@@ -34452,7 +34452,7 @@ minuteur lui-même (`compteARebours` de `useRetraits`) : elle repart quand un
 second retrait le réarme, et ne peut pas finir avant ou après l'écriture. Elle
 corrige aussi un écart du lot §451 : la planche B la dessinait, le code ne
 l'avait pas. **Elle n'est branchée que sur le planning et la page Devis** ; les
-autres écrans qui retirent ne l'ont pas, c'est à lui (`TODO.md`).
+autres écrans qui retirent ne l'ont pas, et c'est **son « non » du 7 octobre 2026** : ne pas l'étendre.
 
 **Le sujet de la question se lit dans la civilité** : « Il » pour Mr, « Elle »
 pour Mme, « Le client » sinon. Jamais deviné sur le nom.
