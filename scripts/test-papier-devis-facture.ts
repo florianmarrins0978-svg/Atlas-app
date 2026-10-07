@@ -271,10 +271,20 @@ async function main() {
     const tout = textes.join(" ");
     assert.ok(tout.includes("Montants versés : chèque n° 1806028 du 02/09/2026, 522,23"), "« Montants versés » manque");
     assert.ok(tout.includes("Mode de règlement : 30 % à la signature, 50 % à mi-parcours, solde à réception"), "le mode de règlement manque");
-    assert.ok(tout.includes("Pour information, montant de la main d’œuvre TTC"), "la main d'œuvre TTC pour information manque");
+    // Deux taux (20 et 10) : rien ne dit lequel porte la main d'œuvre, le TTC
+    // se tait plutôt que de s'inventer au taux du document (7 octobre 2026).
+    assert.ok(!tout.includes("main d’œuvre TTC"), "un TTC de main d'œuvre calculé à un taux supposé");
     assert.ok(!textes.some((t) => t.startsWith("Montant à régler")), "la facture répète les lignes du devis");
     assert.ok(!textes.some((t) => t.includes("Bon pour accord")), "une facture ne se signe pas");
     assert.ok(!textes.some((t) => t.startsWith("ACQUITTÉE")), "un net à payer positif ne se tamponne pas");
+  });
+
+  await cas("un seul taux : la main d'œuvre TTC se calcule à CE taux, remise comprise", async () => {
+    const aDix = FACTURE.lignes.map((l) => ({ ...l, tauxTva: "10.00" }));
+    const { trace } = await composerFacturePdf({ ...FACTURE, lignes: aDix, reductionPourcent: null, reductionMontant: null });
+    const tout = trace.textes.map((t) => t.contenu).join(" ");
+    // 450 € HT à 10 % : 495,00 €, et non 540,00 € au taux du document.
+    assert.ok(tout.includes("main d’œuvre TTC : 495,00"), `la main d'œuvre TTC n'est pas au taux de ses lignes : ${tout.slice(-400)}`);
   });
 
   await cas("acquittée : le tampon, et le net à zéro", async () => {

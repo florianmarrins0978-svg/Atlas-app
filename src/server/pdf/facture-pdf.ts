@@ -22,6 +22,7 @@ import {
 } from "@/lib/acomptes-facture";
 import { lireConditions, lignesConditionsFacture, type ConditionsLues } from "@/lib/conditions-documents";
 import { enEuros } from "@/lib/euros";
+import { totauxAvecReduction } from "@/lib/reduction-devis";
 import Decimal from "decimal.js";
 
 // LA FACTURE — le même papier que le devis, sa planche du 14 septembre 2026
@@ -129,14 +130,23 @@ function notesEnGras(data: FacturePdfData): string[] {
 
 /**
  * « Pour information, montant de la main d'œuvre TTC : 513,00 €. » — la main
- * d'œuvre nette de remise, au taux du document. Une information, pas un total.
+ * d'œuvre nette de remise, au taux de SES lignes. Une information, pas un total.
+ *
+ * **Le taux se lit sur la facture, et seulement quand il n'y en a qu'un**
+ * (check-up du 7 octobre 2026). Calculée au taux du document, une main
+ * d'œuvre à 10 % sur une facture à 20 % s'annonçait 9 % trop chère, et c'est
+ * ce chiffre que le client reprend pour son crédit d'impôt. Avec plusieurs
+ * taux, rien ne dit lequel porte la main d'œuvre : la ligne se tait plutôt
+ * que d'inventer (`docs/AGENT.md` §3).
  */
 function informations(data: FacturePdfData): string[] {
   if (!data.mainDoeuvreHt) return [];
+  const { parTaux } = totauxAvecReduction(data.lignes, data.tauxTva, data.reductionPourcent ?? null);
+  if (parTaux.length !== 1) return [];
   const remise = data.reductionPourcent ? new Decimal(data.reductionPourcent) : new Decimal(0);
   const ttc = new Decimal(data.mainDoeuvreHt)
     .times(new Decimal(1).minus(remise.dividedBy(100)))
-    .times(new Decimal(1).plus(new Decimal(data.tauxTva).dividedBy(100)))
+    .times(new Decimal(1).plus(new Decimal(parTaux[0].taux).dividedBy(100)))
     .toDecimalPlaces(2);
   return [`Pour information, montant de la main d’œuvre TTC : ${enEuros(ttc.toFixed(2))}.`];
 }
