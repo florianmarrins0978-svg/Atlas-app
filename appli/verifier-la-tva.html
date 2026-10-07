@@ -18,6 +18,10 @@
   TVA. Seul le registre européen (VIES) le sait.
 
   A : l'alerte seule. B : l'alerte, et le bon numéro à toucher pour le poser.
+  La ligne rouge NE BLOQUE RIEN : la fiche s'enregistre, le devis part.
+  Une clé en lettres (entités sans SIREN) ne suit pas la formule : rien
+  n'est vérifié.
+
   B ne remplit JAMAIS la case tout seul : un numéro calculé pour une entreprise
   en franchise serait faux, et ferait partir une facture en autoliquidation.
 
@@ -78,6 +82,7 @@ input.faux{border-color:var(--alerte)}
     <button data-tva="FR54938483838" aria-pressed="false">Deux chiffres inversés</button>
     <button data-tva="FR25812345678" aria-pressed="false">Le numéro d’un autre client</button>
     <button data-tva="FR" aria-pressed="false">Pas de numéro</button>
+    <button data-tva="FRK7938483838" aria-pressed="false">Clé en lettres</button>
     <button data-tva="BE0403170701" aria-pressed="false">Entreprise belge</button>
   </div>
 
@@ -107,9 +112,10 @@ input.faux{border-color:var(--alerte)}
   <div class="note">
     <b>Ce que ça attrape</b> : une faute de frappe, ou le numéro d’un autre client recopié par erreur.<br>
     <b>Ce que ça n’attrape pas</b> : une entreprise qui n’est pas inscrite à la TVA. Le numéro peut être bien formé sans exister.<br>
-    <b>Un numéro étranger</b> n’est pas vérifié.<br>
+    <b>La ligne rouge ne bloque rien</b> : la fiche s’enregistre, le devis et la facture partent.<br>
+    <b>Un numéro étranger, ou une clé en lettres</b>, n’est pas vérifié.<br>
     <b>En B</b>, rien ne se remplit tout seul : vous touchez le numéro proposé pour le poser.<br>
-    <b>Rien n’est codé.</b>
+    <b>La vérification n’est pas codée.</b> Le FR d’office est codé, pas encore livré.
   </div>
 </div>
 
@@ -125,7 +131,9 @@ function verdict(siretSaisi, tvaSaisi){
   const juste = siren ? "FR" + cle(siren) + siren : null;
   if (/^([A-Z]{2})?$/.test(tva)) return { message:"", juste:null };
   if (!tva.startsWith("FR")) return { message:"", juste:null };
-  if (!/^FR\d{11}$/.test(tva)) return { message:"Le n° TVA : FR suivi de 11 chiffres.", juste };
+  if (!/^FR[0-9A-Z]{2}\d{9}$/.test(tva)) return { message:"Le n° TVA français : FR, puis 11 caractères.", juste };
+  // Une clé en lettres ne suit pas la formule : on ne vérifie rien.
+  if (!/^\d{2}$/.test(tva.slice(2,4))) return { message:"", juste:null };
   if (tva.slice(2,4) !== cle(tva.slice(4))) return { message:"Ce n° TVA contient une faute de frappe.", juste };
   if (siren && tva.slice(4) !== siren) return { message:"Ce n° TVA n’est pas celui de ce SIRET.", juste };
   return { message:"", juste:null };
