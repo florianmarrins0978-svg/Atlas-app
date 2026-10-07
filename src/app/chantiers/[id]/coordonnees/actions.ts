@@ -7,6 +7,7 @@ import { trouverOuCreerClient, mettreAJourClient, type CanalClient } from "@/ser
 import { nomDuChantier } from "@/lib/nom-chantier";
 import type { CiviliteClient } from "@/lib/civilite";
 import { jourIso } from "@/lib/jour";
+import { telephoneLu } from "@/lib/numero-telephone";
 import { revalidatePath } from "next/cache";
 
 /**
@@ -59,7 +60,10 @@ export async function reprendreChantierAction(
     }
 
     const nomClient = data.nomClient?.trim();
-    const telephone = data.telephone?.trim() || undefined;
+    // Un numéro qui ne joint personne se refuse (sa capture du 7 octobre 2026).
+    const lu = telephoneLu(data.telephone);
+    if (lu === null) return { ok: false, raison: "Le téléphone a 10 chiffres." };
+    const telephone = lu || undefined;
     const email = data.email?.trim() || undefined;
 
     // Un canal sans la coordonnée correspondante est un cul-de-sac : l'envoi

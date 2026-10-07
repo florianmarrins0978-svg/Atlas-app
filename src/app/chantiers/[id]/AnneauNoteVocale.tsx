@@ -151,6 +151,7 @@ export default function AnneauNoteVocale({
   onDicte,
   onDictee,
   preparationEnCours = false,
+  refusAvantDeDicter = null,
 }: {
   /**
    * Le chantier, s'il existe déjà. **`null` sur la fiche client** : il n'est
@@ -195,6 +196,13 @@ export default function AnneauNoteVocale({
    * devis… (96 s) » — l'écran l'invitait à recommencer ce qu'il faisait déjà.
    */
   preparationEnCours?: boolean;
+  /**
+   * Une saisie fausse au-dessus — un téléphone incomplet, un n° TVA trop court
+   * (sa capture du 7 octobre 2026). **Refusée AVANT de dicter, jamais après** :
+   * l'arrêt de la dictée enregistre impérativement (sa demande du 21 août), et
+   * une note refusée à l'arrivée serait une note perdue.
+   */
+  refusAvantDeDicter?: string | null;
 }) {
 
   // **Rien à écouter : l'anneau devient un micro.** Le même objet, jamais un
@@ -246,6 +254,10 @@ export default function AnneauNoteVocale({
   async function commencerLaDictee() {
     if (envoi) return;
     if (magnetophone.enregistre) return;
+    if (refusAvantDeDicter) {
+      magnetophone.setErreur(refusAvantDeDicter);
+      return;
+    }
     const parti = await magnetophone.demarrer();
     // **On ne prévient QUE si le micro a répondu.** Refusé — autorisation non
     // accordée —, le bouton disparaîtrait pour une dictée qui n'a pas

@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { espacerNumero, numeroEnregistre } from "../src/lib/numero-telephone";
+import { espacerNumero, numeroEnregistre, telephoneLu } from "../src/lib/numero-telephone";
 
 // **« Les dix chiffres à la suite, avec les bons espaces »** — sa demande du
 // 21 août 2026. Devant le client, on ne s'arrête pas toutes les deux touches.
@@ -102,6 +102,38 @@ cas("une case vide reste vide, elle ne devient pas une chaîne de rien", () => {
 
 cas("un numéro international garde ses espaces à lui", () => {
   assert.equal(numeroEnregistre("+32 475 12 34 56"), "+32 475 12 34 56");
+});
+
+// **« 85 45 » passait** — sa capture du 7 octobre 2026 : un devis commençait
+// avec quatre chiffres pour téléphone, qui ne joignent personne et partent
+// pourtant en SMS.
+console.log("\n=== Un numéro incomplet se refuse ===\n");
+
+cas("quatre chiffres ne sont pas un numéro", () => {
+  assert.equal(telephoneLu("85 45"), null);
+});
+
+cas("neuf chiffres non plus, ni onze", () => {
+  assert.equal(telephoneLu("06 79 98 45 1"), null);
+  assert.equal(telephoneLu("067998451400"), null);
+});
+
+cas("dix chiffres qui ne commencent pas par 0 ne sont pas un numéro français", () => {
+  assert.equal(telephoneLu("1679984514"), null);
+});
+
+cas("dix chiffres commençant par 0 se lisent, sans leurs espaces", () => {
+  assert.equal(telephoneLu("06 79 98 45 14"), "0679984514");
+});
+
+cas("une case vide n'est pas une faute", () => {
+  assert.equal(telephoneLu(""), "");
+  assert.equal(telephoneLu("   "), "");
+});
+
+cas("l'international se lit s'il porte de 8 à 15 chiffres, intact", () => {
+  assert.equal(telephoneLu("+32 475 12 34 56"), "+32 475 12 34 56");
+  assert.equal(telephoneLu("+33 85"), null);
 });
 
 console.log(`\n${echecs === 0 ? "✅" : "❌"} ${echecs} échec(s).`);

@@ -6,6 +6,7 @@ import { getCurrentCtx } from "@/server/session-ctx";
 import { getClient, mettreAJourClient } from "@/server/repositories/clients";
 import { siretLu } from "@/lib/siren";
 import { numeroTvaLu } from "@/lib/autoliquidation";
+import { telephoneLu } from "@/lib/numero-telephone";
 import type { CiviliteClient } from "@/lib/civilite";
 
 /**
@@ -65,6 +66,8 @@ export async function enregistrerSesCoordonneesAction(
 
   // **Un numéro mal tapé se refuse ici, avec ses mots** : il partirait tel
   // quel sous le nom du client, sur le devis et la facture.
+  const telephone = telephoneLu(data.telephone);
+  if (telephone === null) return { ok: false, raison: "Le téléphone a 10 chiffres." };
   const siret = siretLu(data.siret);
   if (siret === null) return { ok: false, raison: "Le SIRET a 14 chiffres." };
   const numeroTva = data.numeroTva.trim() === "" ? "" : numeroTvaLu(data.numeroTva);
@@ -80,7 +83,7 @@ export async function enregistrerSesCoordonneesAction(
   const modifie = await mettreAJourClient(ctx, clientId, {
     nom,
     civilite: data.civilite ?? null,
-    telephone: data.telephone.trim() || null,
+    telephone: telephone || null,
     email: data.email.trim() || null,
     adresse: data.adresse.trim() || null,
     siret: siret || null,

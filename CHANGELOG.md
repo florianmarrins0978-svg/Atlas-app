@@ -8,6 +8,17 @@ Format : le plus récent en tête.
 ---
 ## 2026-10-07
 
+### Un téléphone incomplet ou un n° TVA trop court ne commence plus un devis
+
+Sa capture : « 85 45 » et « Fr33 » sur la fiche client, et le devis partait.
+Le téléphone n'était lu nulle part, et `numeroTvaLu` acceptait toute forme
+européenne de quatre signes, alors que chaque écran annonçait « FR suivi de
+11 chiffres ». Désormais `telephoneLu` (10 chiffres commençant par 0, ou
+« + » et 8 à 15 chiffres) et un `numeroTvaLu` qui exige FR, deux signes de clé
+et neuf chiffres. La fiche refuse les deux boutons, la flèche et le micro (avant
+de dicter, jamais après) ; les trois actions qui écrivent un téléphone le
+relisent. La clé TVA n'est toujours pas vérifiée.
+
 ### Poser au planning un client qui n'arrive pas à choisir ses dates
 
 Un client qui reçoit le lien du devis sans réussir à choisir ses dates ne

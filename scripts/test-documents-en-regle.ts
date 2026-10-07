@@ -161,6 +161,23 @@ cas("un numéro de TVA se lit sans espaces ni points, et se refuse s'il n'en est
   assert.equal(numeroTvaLu(""), null);
 });
 
+// **« Fr33 » passait** — sa capture du 7 octobre 2026 : un devis commençait avec
+// un numéro de quatre signes. Un numéro français, c'est FR, deux signes de clé,
+// puis les neuf chiffres du SIREN ; ce que l'écran annonce déjà en toutes lettres.
+cas("un numéro français incomplet se refuse : « Fr33 » n'est pas un numéro de TVA", () => {
+  assert.equal(numeroTvaLu("Fr33"), null);
+  assert.equal(numeroTvaLu("FR123"), null);
+  assert.equal(numeroTvaLu("FR1234567890"), null);
+  assert.equal(numeroTvaLu("FR123456789012"), null);
+  assert.equal(numeroTvaLu("FR12ABCDEFGHI"), null);
+  assert.equal(numeroTvaLu("FR00812345678"), "FR00812345678");
+});
+
+cas("un numéro d'un autre pays garde la forme européenne", () => {
+  assert.equal(numeroTvaLu("BE0123456789"), "BE0123456789");
+  assert.equal(numeroTvaLu("DE123456789"), "DE123456789");
+});
+
 console.log("— La date des travaux, d'après le planning —");
 
 cas("le dernier jour posé, quand il est passé", () => {
