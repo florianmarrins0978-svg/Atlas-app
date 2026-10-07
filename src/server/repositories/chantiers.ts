@@ -980,29 +980,46 @@ export class DeplanificationImpossibleError extends Error {
 // geste — le planning, l'assistant, et la fiche — et une condition recopiée
 // trois fois aurait divergé au premier ajout (`CLAUDE.md` §3).
 export async function deplanifierChantier(ctx: Ctx, chantierId: string) {
-  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
-    const [facture] = await tx
-      .select({ id: factures.id })
-      .from(factures)
-      .where(eq(factures.chantierId, chantierId))
-      .limit(1);
-    if (facture) throw new DeplanificationImpossibleError("facture_preparee");
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, (tx) =>
+    deplanifierDansLaTransaction(tx, ctx, chantierId)
+  );
+}
 
-    // **Un chantier rendu à « Sans date » n'occupe plus rien.** Laisser ses
-    // créneaux derrière lui, c'est garder des demi-journées prises par un
-    // chantier qui n'est plus posé — et un jour qui ne partirait jamais chez
-    // le client.
-    // Et ses équipes datées se replient en lignes sans jour : personne n'est
-    // perdu quand il sera reposé (`reporterEquipes`).
-    await reporterLesEquipes(tx, ctx.entrepriseId, chantierId, [], []);
-    await tx.delete(creneauxChantier).where(eq(creneauxChantier.chantierId, chantierId));
-    const [row] = await tx
-      .update(chantiers)
-      .set({ datePlanifiee: null, updatedBy: ctx.utilisateurId, updatedAt: new Date() })
-      .where(eq(chantiers.id, chantierId))
-      .returning();
-    return row;
-  });
+/**
+ * Le retrait du planning lui-même, dans la transaction de qui l'appelle.
+ *
+ * **Sorti de `deplanifierChantier` le 7 octobre 2026**, pour la même raison
+ * que `planifierDansLaTransaction` : défaire une acceptation de devis retire le
+ * chantier du planning ET efface la réponse de l'envoi, et les deux ne doivent
+ * jamais exister l'un sans l'autre (`acceptation-defaite.ts`). Le retrait ne se
+ * recopie pas ; il s'appelle.
+ */
+export async function deplanifierDansLaTransaction(
+  tx: Parameters<Parameters<typeof withEntreprise>[2]>[0],
+  ctx: Ctx,
+  chantierId: string
+) {
+  const [facture] = await tx
+    .select({ id: factures.id })
+    .from(factures)
+    .where(eq(factures.chantierId, chantierId))
+    .limit(1);
+  if (facture) throw new DeplanificationImpossibleError("facture_preparee");
+
+  // **Un chantier rendu à « Sans date » n'occupe plus rien.** Laisser ses
+  // créneaux derrière lui, c'est garder des demi-journées prises par un
+  // chantier qui n'est plus posé — et un jour qui ne partirait jamais chez
+  // le client.
+  // Et ses équipes datées se replient en lignes sans jour : personne n'est
+  // perdu quand il sera reposé (`reporterEquipes`).
+  await reporterLesEquipes(tx, ctx.entrepriseId, chantierId, [], []);
+  await tx.delete(creneauxChantier).where(eq(creneauxChantier.chantierId, chantierId));
+  const [row] = await tx
+    .update(chantiers)
+    .set({ datePlanifiee: null, updatedBy: ctx.utilisateurId, updatedAt: new Date() })
+    .where(eq(chantiers.id, chantierId))
+    .returning();
+  return row;
 }
 
 /**

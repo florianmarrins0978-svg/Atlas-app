@@ -202,6 +202,7 @@ export const QUESTIONS_PAR_ZONE: Record<string, [string, string][]> = {
     ["je me suis trompé de jour en posant, comment annuler la pose", "planning-annuler-pose"],
     ["comment supprimer définitivement un chantier sans date", "planning-supprimer-sans-date"],
     ["un client a accepté le devis par erreur, comment le supprimer du planning", "planning-supprimer-du-jour"],
+    ["le client s'est trompé en acceptant le devis, comment l'annuler", "devis-client-s-est-trompe"],
     ["comment reposer la demi journée qui attend", "planning-reposer-demi-journee"],
     ["où sont les clients qui choisissent leur date", "planning-attente-client"],
     ["comment je choisis quels salariés vont sur le chantier", "planning-equipe-cocher"],

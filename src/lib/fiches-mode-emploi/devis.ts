@@ -76,6 +76,22 @@ export const FICHES_DEVIS: FicheModeEmploi[] = [
     preuves: ["Modifier mon devis", "Modifier quand même", "Ce devis est chez votre client"],
   },
   {
+    id: "devis-client-s-est-trompe",
+    ecran: "Devis",
+    ou: "un chantier dont le devis est accepté, écran Devis, sous le montant",
+    intitule: "Défaire un devis que le client a accepté par erreur",
+    motsCles: ["erreur", "trompe", "annuler", "defaire", "revenir", "refuse", "attente", "valide"],
+    geste:
+      "Appuyez sur « Le client s’est trompé » sous le montant, puis choisissez : une autre date (le devis repart en attente, " +
+      "le client répond avec le même lien) ou plus de devis (noté refusé). « Annuler » reste six secondes.",
+    reserve: "Dans les deux cas, le chantier quitte le planning. Un chantier facturé ne se défait pas.",
+    source: PARTI,
+    preuves: ['data-atlas="le-client-s-est-trompe"', "Le client s’est trompé", "defaireLAcceptationAction"],
+    ailleurs: [
+      { source: "src/app/chantiers/[id]/export/ErreurDuClient.tsx", preuves: ["veut une autre date", "ne veut plus du devis"] },
+    ],
+  },
+  {
     id: "devis-telecharger",
     ecran: "Devis",
     ou: "un chantier dont le devis est parti, écran Devis, en bas",
@@ -420,7 +436,7 @@ export const FICHES_DEVIS: FicheModeEmploi[] = [
       "par exemple « En attente de réponse », « Devis accepté » ou « Correction demandée ».",
     source: "src/lib/etat-envoi.ts",
     preuves: ['en_attente: "En attente de réponse"', 'accepte: "Devis accepté"', 'a_corriger: "Correction demandée"', 'retourne: "Devis retourné"', 'caduc: "Devis caduc"'],
-    ailleurs: [{ source: PARTI, preuves: ["etatEnvoiLabel[etatEnvoi]"] }],
+    ailleurs: [{ source: PARTI, preuves: ["etatEnvoiLabel[etatAffiche]"] }],
     lieu: true,
   },
   {

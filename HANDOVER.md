@@ -21,6 +21,14 @@ planning :
   secondes d'annulation en dépendent.
 - **`aRetire` tient le tiroir du bas** tant qu'un retrait attend : sans lui,
   « Annuler » part avec le dernier client sans date.
+- **`acceptations_defaites` ne se réécrit pas** : `atlas_app` n'y a ni
+  UPDATE ni DELETE (migration 0123). Une suite qui doit la nettoyer le fait
+  sous `postgres`.
+- **Défaire une acceptation passe par `deplanifierDansLaTransaction`** :
+  ne pas recopier le retrait du planning.
+- **Un serveur de développement sans `ATLAS_URL_PUBLIQUE` bloque l'envoi des
+  devis** (adresse locale) : les suites du devis rougissent alors sans défaut.
+  `run-e2e-tests.ts` la pose ; à la main, la poser aussi.
 
 ## POSER UN CLIENT À SA PLACE : 7 octobre 2026, SUR `main` LE 7
 

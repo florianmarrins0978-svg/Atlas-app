@@ -8,6 +8,16 @@ Format : le plus récent en tête.
 ---
 ## 2026-10-07
 
+### Défaire un devis que le client a accepté par erreur
+
+Sur la page Devis, « Le client s'est trompé » sous le montant : une autre date
+(le devis repart en attente, le client répond avec le même lien) ou plus de
+devis (noté refusé). Six secondes pour annuler, avec une barre qui diminue ;
+la même barre arrive sur le planning. **Ce que ça évite** : un accord cliqué
+par erreur restait accepté pour toujours, et occupait le planning.
+L'acceptation effacée est gardée en trace, que l'application ne peut ni
+réécrire ni effacer (`ARCHITECTURE.md` §452, migration 0123).
+
 ### Supprimer du planning un client qui a accepté par erreur
 
 « Supprimer » s'ajoute sur la fiche du jour, à côté de « Déplacer » et

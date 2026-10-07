@@ -10,7 +10,9 @@
 Branche `claude/supprimer-du-planning`. Son choix B : « Supprimer » sur la
 fiche du jour, une question, puis six secondes pour annuler ; la même question
 dans « Sans date ». Corrige aussi « Annuler » qui disparaissait avec le dernier
-client sans date (`ARCHITECTURE.md` §451). Niveau 2. Aucune migration.
+client sans date (`ARCHITECTURE.md` §451). Et « Le client s'est trompé » sur la
+page Devis, son choix 3, avec la barre des six secondes (§452, migration
+0123). Niveau 3 (migration) : la batterie n'est pas jouée, il l'a demandé.
 
 ---
 ## SUR `main` : POSER UN CLIENT À SA PLACE (7 octobre 2026)

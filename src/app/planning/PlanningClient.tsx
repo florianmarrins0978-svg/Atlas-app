@@ -5743,6 +5743,7 @@ function TiroirDuBas({
             dernier={retraits.dernier}
             nombre={retraits.nombre}
             onAnnuler={retraits.annuler}
+            compteARebours={retraits.compteARebours}
             className="mt-6"
           />
         )}

@@ -34412,3 +34412,51 @@ une absence d'équipe s'efface toujours d'un seul appui. `TODO.md`.
 `scripts/test-supprimer-du-planning-e2e.ts` : rouge sur la version d'avant
 (six cas), vert après.
 
+---
+
+## §452 : « Le client s'est trompé » défait une acceptation, et la garde
+
+**Sa demande du 7 octobre 2026** (le « 2 oui » de la suite de §451) : un devis
+accepté par erreur doit pouvoir se défaire. **Son choix 3**
+(`appli/devis-accepte-par-erreur.html`, recopiée de la page Devis servie dans
+ses trois états) : un seul mot rouge sous « Modifier mon devis », une question
+qui propose les deux suites, puis **la barre qui diminue en six secondes avec
+« Annuler »**.
+
+| | l'envoi | son lien | le planning |
+|---|---|---|---|
+| « veut une autre date » | sans réponse | de nouveau répondable | retiré |
+| « ne veut plus du devis » | refusé, vu par le patron | fermé, « Devis retourné » | retiré |
+
+**Une seule transaction** (`acceptation-defaite.ts`) : la trace, l'envoi, le
+planning. Le retrait du planning est `deplanifierDansLaTransaction`, sorti de
+`deplanifierChantier` pour la même raison que `planifierDansLaTransaction`
+(§450) : il ne se recopie pas. Une facture préparée refuse tout, par lui.
+
+**L'acceptation effacée se garde** : `acceptations_defaites` (migration 0123,
+expand seul) recopie la date, les jours, l'adresse et l'appareil du clic avant
+de les effacer. C'est la seule preuve qu'un accord a existé ; `atlas_app` n'y
+a ni UPDATE ni DELETE (`REVOKE`, `ALTER DEFAULT PRIVILEGES` les donnant
+d'office), et `test-acceptation-defaite-db` rougit si on les lui rend.
+
+**`reponse` et `repondu_at` vides ENSEMBLE** : la contrainte
+`envois_devis_reponse_datee` l'exige, et c'est ce que lit `deja_repondu`.
+
+**Les six secondes passent par `useRetraits`**, comme « Supprimer » au
+planning : la feuille n'écrit rien, la page montre l'état d'arrivée pendant le
+délai (`etatAffiche`, mêmes libellés que `etat-envoi.ts`), « Annuler » rend
+l'état d'avant sans rien avoir écrit.
+
+**La barre qui diminue** (`BarreQuiDiminue`, `TiroirDesRetires`) lit le
+minuteur lui-même (`compteARebours` de `useRetraits`) : elle repart quand un
+second retrait le réarme, et ne peut pas finir avant ou après l'écriture. Elle
+corrige aussi un écart du lot §451 : la planche B la dessinait, le code ne
+l'avait pas. **Elle n'est branchée que sur le planning et la page Devis** ; les
+autres écrans qui retirent ne l'ont pas, c'est à lui (`TODO.md`).
+
+**Le sujet de la question se lit dans la civilité** : « Il » pour Mr, « Elle »
+pour Mme, « Le client » sinon. Jamais deviné sur le nom.
+
+`scripts/test-acceptation-defaite-db.ts` (sept cas, sous `atlas_app`) et
+`scripts/test-le-client-s-est-trompe-e2e.ts` (son chemin, puis la base).
+

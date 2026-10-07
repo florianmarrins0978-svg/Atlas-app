@@ -12,13 +12,13 @@ avec le dernier client sans date est corrigé (`ARCHITECTURE.md` §451). Reste :
 
 **Ouvert, à lui de trancher :**
 
-- le devis reste « accepté » pour toujours (`envois_devis.reponse`) : aucun
-  geste pour le remettre en attente ou le noter refusé. **Son « oui » du
-  7 octobre**, planche `appli/devis-accepte-par-erreur.html` (1 en attente,
-  2 refusé, 3 les deux au choix), sur la vraie page Devis : À CHOISIR. Pour
-  coder : la contrainte `envois_devis_reponse_datee` exige `reponse` et
-  `repondu_at` nuls ENSEMBLE, et le garde `deja_repondu` de
-  `enregistrerReponse` lit la réponse ;
+- ~~le devis reste « accepté » pour toujours~~ : **son choix 3, CODÉ LE
+  7 OCTOBRE 2026** (« Le client s'est trompé », la barre des six secondes,
+  `ARCHITECTURE.md` §452, migration 0123). Reste : la batterie (niveau 3),
+  puis `main` avec son accord ;
+- la barre qui diminue n'est branchée que sur le planning et la page Devis :
+  les six autres écrans qui retirent (photos, notes, prix…) ne l'ont pas. À
+  lui de dire s'il la veut partout ;
 - une absence d'équipe s'efface d'un seul appui, sans annulation.
 
 ## ⏳ LES TRAVAUX D'UN CLIENT POSÉ SANS DEVIS : UNE PLANCHE À REGARDER (7 octobre 2026)
