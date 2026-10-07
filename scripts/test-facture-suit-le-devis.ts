@@ -1,7 +1,13 @@
 import assert from "node:assert/strict";
 import { pool } from "../src/server/db/client";
 import { nettoyerBase } from "./_test-db";
-import { getOuCreerDevisBrouillon, envoyerDevis, getPromesseDuDevis } from "../src/server/repositories/devis";
+import {
+  getOuCreerDevisBrouillon,
+  envoyerDevis,
+  getPromesseDuDevis,
+  genererPdfPourApercu,
+} from "../src/server/repositories/devis";
+import { texteDuPdf } from "./_lecteur-pdf-protege";
 import { montantAcompteDuDevis } from "../src/lib/acomptes-facture";
 import {
   reprendreLeDevisSurLaFacture,
@@ -161,6 +167,16 @@ async function main() {
     assert.ok((await reprendreLeDevisSurLaFacture(ctx, facture.id)).ok);
     const texte = await papierDeLaFacture(ctx, await terminerChantier(ctx, chantierId));
     assert.ok(texte.includes(`${v2.numeroCommercial} v2`), `la facture ne dit pas quelle version elle facture : ${texte.slice(0, 300)}`);
+  });
+
+  // Point 9 : le même IBAN s'écrivait brut sur le devis, groupé sur la facture.
+  await test("l'IBAN du devis s'écrit groupé par quatre, comme sur la facture", async () => {
+    const { ctx, chantierId } = await creerEntreprise("Hamon", "30");
+    const r = await pool.query(`UPDATE entreprises SET iban = 'FR7630001007941234567890185' WHERE id = $1`, [ctx.entrepriseId]);
+    assert.equal(r.rowCount, 1);
+    const v1 = await getOuCreerDevisBrouillon(ctx, chantierId);
+    const texte = texteDuPdf(await genererPdfPourApercu(ctx, v1.id)).replace(/\s+/g, " ");
+    assert.ok(texte.includes("FR76 3000 1007 9412 3456 7890 185"), `l'IBAN du devis n'est pas groupé : ${texte.slice(-500)}`);
   });
 
   console.log(`\n${failed} échec(s), ${passed} réussi(s).`);

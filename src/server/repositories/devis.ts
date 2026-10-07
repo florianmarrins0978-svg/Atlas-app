@@ -8,6 +8,7 @@ import { allureDesDocuments, attestationLue, formatNumeroDe } from "./entreprise
 import { conditionsDepuisEntreprise } from "@/lib/conditions-documents";
 import { totauxAvecReduction, pourcentValide, tauxTvaValide } from "@/lib/reduction-devis";
 import { montantMainDoeuvreValide } from "@/lib/main-doeuvre-devis";
+import { ibanEnGroupes } from "@/lib/modalites-paiement";
 import type { DbOrTx } from "../db/client";
 import { devis, lignesDevis, lignesPrix, chantiers, clients, entreprises, acomptesDevis } from "../db/schema";
 import { dureeDuChantier, dureeEnDemiJournees, libelleDuree } from "@/lib/disponibilites";
@@ -640,7 +641,10 @@ function donneesPdfDuDevis(
     entrepriseEmail: d.entrepriseEmail,
     // Le modèle d'Arborea imprime les modalités de virement : sans l'IBAN, le
     // client reçoit un devis qu'il ne peut pas payer. (`sansChiffrage` l'ignore.)
-    entrepriseIban: d.entrepriseIban,
+    //
+    // Groupé par quatre, comme sur la facture (check-up du 7 octobre 2026) :
+    // le même IBAN s'écrivait de deux façons sur les deux pièces du client.
+    entrepriseIban: d.entrepriseIban ? ibanEnGroupes(d.entrepriseIban) : null,
     entrepriseFormeJuridique: d.entrepriseFormeJuridique,
     entrepriseCapitalSocial: d.entrepriseCapitalSocial,
     entrepriseVilleRcs: d.entrepriseVilleRcs,
