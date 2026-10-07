@@ -16,8 +16,8 @@ un particulier). Ouvert : la case des 14 jours de rétractation sur le papier.
 **CODÉ LE 7 OCTOBRE 2026, sa réponse « B »** (`ARCHITECTURE.md` §450),
 migration 0122. Ouvert : un refus sur le lien laisse le chantier posé (la carte
 « Devis refusé » le dit) ; un lien expiré puis renvoyé repart avec des dates
-proposées. Reste à faire : batterie complète, puis fusion sur `main` avec son
-accord.
+proposées. Batterie complète au vert le 7 octobre (453/453 base, 178/178 navigateur), sur
+`main` le même jour avec son accord.
 
 ## ⏳ LA FENTE AU FÛT : SES PRIX DE FENTE À REVOIR (30 septembre 2026)
 

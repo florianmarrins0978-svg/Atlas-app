@@ -11,7 +11,7 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 
 ---
 
-## POSER UN CLIENT À SA PLACE : 7 octobre 2026, PAS SUR `main`
+## POSER UN CLIENT À SA PLACE : 7 octobre 2026, SUR `main` LE 7
 
 Branche `claude/add-quote-client-to-schedule-ve9xn7`, migration 0122. Avant de
 toucher un envoi de devis ou la pose au planning :

@@ -5,7 +5,7 @@
 `drizzle/0116_modele_de_fiche_d_office.sql`
 
 ---
-## SUR SA BRANCHE : POSER UN CLIENT À SA PLACE (7 octobre 2026)
+## SUR `main` : POSER UN CLIENT À SA PLACE (7 octobre 2026)
 
 Branche `claude/add-quote-client-to-schedule-ve9xn7`, migration 0122. Son
 choix B : « Client en attente » propose le client dont le devis attend sa
