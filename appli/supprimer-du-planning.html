@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Supprimer du planning</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  /* Une planche à trois rangées : chaque proposition sur son téléphone, côte à côte. */
+  :root{
+    --etabli:#e6e3dc; --etabli-carte:#faf9f5; --etabli-trait:rgba(28,28,26,.12);
+    --etabli-encre:#1c1c1a; --etabli-doux:#4a4a44; --etabli-gris:#77726a; --etabli-or:#8b6835;
+    --fond:#f5f3ee; --plage:#faf9f5; --encre:#1c1c1a; --doux:#4a4a44; --gris:#8a8578;
+    --tuile:#ece9e1; --or:#B98B47; --orTexte:#8b6835; --plein:#7d9a6d; --surplein:#faf9f5;
+    --alerte:#a3412f; --surAlerte:#faf9f5; --voile:rgba(20,18,14,.38);
+    --trait:rgba(28,28,26,.12);
+    --serif:"Playfair Display",ui-serif,Georgia,serif;
+    --sans:"Inter",ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --etabli:#0a0b0a; --etabli-carte:#1a1d19; --etabli-trait:rgba(233,232,222,.14);
+      --etabli-encre:#e9e8de; --etabli-doux:#c1c2b6; --etabli-gris:#84887b; --etabli-or:#b98b47;
+      --fond:#101210; --plage:#1a1d19; --encre:#e9e8de; --doux:#c1c2b6; --gris:#84887b;
+      --tuile:#1f211e; --orTexte:#b98b47; --plein:#e9e8de; --surplein:#1a1d19;
+      --alerte:#e08a72; --surAlerte:#1a1d19; --voile:rgba(0,0,0,.55);
+      --trait:rgba(233,232,222,.12); color-scheme:dark;
+    }
+  }
+  :root[data-theme="dark"]{
+    --etabli:#0a0b0a; --etabli-carte:#1a1d19; --etabli-trait:rgba(233,232,222,.14);
+    --etabli-encre:#e9e8de; --etabli-doux:#c1c2b6; --etabli-gris:#84887b; --etabli-or:#b98b47;
+    --fond:#101210; --plage:#1a1d19; --encre:#e9e8de; --doux:#c1c2b6; --gris:#84887b;
+    --tuile:#1f211e; --orTexte:#b98b47; --plein:#e9e8de; --surplein:#1a1d19;
+    --alerte:#e08a72; --surAlerte:#1a1d19; --voile:rgba(0,0,0,.55);
+    --trait:rgba(233,232,222,.12); color-scheme:dark;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--etabli);color:var(--etabli-encre);font-family:var(--sans);-webkit-font-smoothing:antialiased}
+  .page{max-width:1240px;margin:0 auto;padding-block:30px 90px;padding-inline:16px}
+  .surtitre{font:600 11.5px/1 var(--sans);letter-spacing:.18em;text-transform:uppercase;color:var(--etabli-or);margin:0 0 10px}
+  h1{font:600 30px/1.15 var(--serif);margin:0 0 10px;text-wrap:balance}
+  .chapeau{max-width:640px;color:var(--etabli-doux);font-size:15.5px;line-height:1.6;margin:0}
+  h2{font:600 22px/1.25 var(--serif);margin:46px 0 4px;text-wrap:balance}
+  .dit{color:var(--etabli-gris);font-size:13.5px;line-height:1.6;margin:0 0 18px;max-width:640px}
+  .rangee{display:flex;gap:22px;flex-wrap:wrap;align-items:flex-start}
+  .prop{flex:0 1 360px;min-width:0;max-width:100%}
+  .nom{font:600 15.5px/1.3 var(--sans);margin:0 0 3px;display:flex;align-items:center;gap:9px}
+  .lettre{font:700 11px/1 var(--sans);background:var(--etabli-encre);color:var(--etabli-carte);
+          width:22px;height:22px;border-radius:999px;display:grid;place-items:center}
+  .idee{color:var(--etabli-gris);font-size:13px;line-height:1.55;margin:0 0 12px;min-height:40px}
+
+  .tel{width:100%;border-radius:26px;overflow:hidden;background:var(--fond);
+       box-shadow:0 1px 2px rgba(20,18,14,.16),0 14px 34px rgba(20,18,14,.14)}
+  .ecran{position:relative;height:560px;display:flex;flex-direction:column;background:var(--fond);color:var(--encre);overflow:hidden}
+  .haut{padding:18px 20px 6px}
+  .haut h3{font:600 24px/1.15 var(--serif);margin:0}
+  .mois{margin-top:12px;display:grid;grid-template-columns:repeat(7,1fr);gap:4px;font-size:11.5px;text-align:center;color:var(--gris)}
+  .mois span{padding:7px 0;border-radius:8px}
+  .mois .occupe{background:var(--tuile);color:var(--encre)}
+  .mois .touche{background:var(--encre);color:var(--fond)}
+  .jourTitre{margin:16px 20px 0;font:500 18px/1.2 var(--serif)}
+  .carte{margin:10px 20px 0;background:var(--plage);border-radius:13px;padding:13px 14px;box-shadow:inset 0 0 0 1px var(--trait)}
+  .client{font:600 15px/1.3 var(--sans)}
+  .sous{margin-top:3px;font-size:12.5px;line-height:1.45;color:var(--gris)}
+  .gestes{margin-top:12px;display:flex;gap:8px;flex-wrap:wrap}
+  .geste{appearance:none;border:0;cursor:pointer;font:500 13px/1 var(--sans);padding:10px 13px;border-radius:999px;
+         background:transparent;color:var(--doux);box-shadow:inset 0 0 0 1px var(--trait)}
+  .geste.supprimer{color:var(--alerte);box-shadow:inset 0 0 0 1px var(--alerte)}
+  .geste:focus-visible,.btn:focus-visible,.annuler:focus-visible,.croix:focus-visible{outline:2px solid var(--or);outline-offset:2px}
+  .vide{margin:14px 20px 0;font-size:13px;color:var(--gris)}
+  .etat{display:inline-block;margin-top:8px;font:600 11px/1 var(--sans);letter-spacing:.06em;text-transform:uppercase;
+        padding:5px 8px;border-radius:999px;background:var(--tuile);color:var(--orTexte)}
+  .etat.refuse{color:var(--alerte)}
+
+  .absence{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .croix{appearance:none;border:0;background:transparent;color:var(--encre);font-size:17px;cursor:pointer;width:34px;height:34px;border-radius:999px}
+
+  /* La feuille de confirmation : un voile, et deux boutons pleine largeur. */
+  .voile{position:absolute;inset:0;background:var(--voile);display:flex;align-items:flex-end}
+  .feuille{width:100%;background:var(--plage);border-radius:20px 20px 0 0;padding:20px 20px 22px}
+  .feuille h4{font:600 19px/1.25 var(--serif);margin:0 0 6px;text-wrap:balance}
+  .feuille p{margin:0 0 16px;font-size:13.5px;line-height:1.5;color:var(--doux)}
+  .btn{appearance:none;border:0;cursor:pointer;width:100%;height:46px;border-radius:999px;font:600 14.5px/1 var(--sans);margin-top:8px}
+  .btn.danger{background:var(--alerte);color:var(--surAlerte)}
+  .btn.garder{background:transparent;color:var(--encre);box-shadow:inset 0 0 0 1px var(--trait)}
+
+  /* Le tiroir des retirés, comme aujourd'hui, avec sa barre de 6 secondes. */
+  .tiroir{position:absolute;left:14px;right:14px;bottom:14px;background:var(--encre);color:var(--fond);
+          border-radius:14px;padding:13px 14px 15px;font-size:13.5px;overflow:hidden}
+  .tiroir .ligne{display:flex;justify-content:space-between;align-items:center;gap:10px}
+  .annuler{appearance:none;border:0;background:transparent;color:var(--or);font:600 13.5px/1 var(--sans);cursor:pointer;padding:6px 2px}
+  .barre{position:absolute;left:0;bottom:0;height:3px;background:var(--or);width:100%}
+  .fait{position:absolute;left:14px;right:14px;bottom:14px;background:var(--plage);box-shadow:inset 0 0 0 1px var(--trait);
+        border-radius:14px;padding:13px 14px;font-size:13.5px;color:var(--doux)}
+  .rejouer{margin-top:10px;appearance:none;border:0;background:transparent;color:var(--etabli-or);font:600 12.5px/1 var(--sans);cursor:pointer;padding:6px 0}
+  @media (prefers-reduced-motion: reduce){ .barre{transition:none!important} }
+</style>
+</head>
+<body>
+
+<div class="page">
+  <p class="surtitre">Planche du 7 octobre 2026</p>
+  <h1>Supprimer ce qui est au planning</h1>
+  <p class="chapeau">Un client accepte un devis par erreur et vous appelle. Chaque téléphone se touche : essayez Supprimer.</p>
+
+  <h2>Un chantier posé sur un jour</h2>
+  <p class="dit">Aujourd’hui il faut deux gestes : Retirer du jour, puis le faire glisser dans Sans date. Ici, Supprimer est sur le jour même.</p>
+  <div class="rangee">
+    <div class="prop">
+      <div class="nom"><span class="lettre">A</span>Confirmer avant</div>
+      <p class="idee">Une question, puis c’est supprimé. Plus de 6 secondes pour annuler.</p>
+      <div class="tel"><div class="ecran" data-maquette="jour" data-variante="A"></div></div>
+      <button class="rejouer" type="button" data-rejouer>Recommencer</button>
+    </div>
+    <div class="prop">
+      <div class="nom"><span class="lettre">B</span>Confirmer avant, annuler après</div>
+      <p class="idee">La même question, et le tiroir garde ses 6 secondes pour revenir en arrière.</p>
+      <div class="tel"><div class="ecran" data-maquette="jour" data-variante="B"></div></div>
+      <button class="rejouer" type="button" data-rejouer>Recommencer</button>
+    </div>
+  </div>
+
+  <h2>Le devis accepté par erreur</h2>
+  <p class="dit">Aujourd’hui le devis reste accepté pour toujours. Deux façons de le défaire, sur la fiche du chantier.</p>
+  <div class="rangee">
+    <div class="prop">
+      <div class="nom"><span class="lettre">1</span>Remettre en attente</div>
+      <p class="idee">Le client peut répondre à nouveau avec le même lien.</p>
+      <div class="tel"><div class="ecran" data-maquette="devis" data-variante="attente"></div></div>
+      <button class="rejouer" type="button" data-rejouer>Recommencer</button>
+    </div>
+    <div class="prop">
+      <div class="nom"><span class="lettre">2</span>Noter refusé</div>
+      <p class="idee">Le devis est fermé. Pour reprendre, on en renvoie un nouveau.</p>
+      <div class="tel"><div class="ecran" data-maquette="devis" data-variante="refuse"></div></div>
+      <button class="rejouer" type="button" data-rejouer>Recommencer</button>
+    </div>
+  </div>
+
+  <h2>Le reste du planning</h2>
+  <p class="dit">Une absence s’efface aujourd’hui d’un seul appui sur la croix. Elle aurait la même question que le chantier.</p>
+  <div class="rangee">
+    <div class="prop">
+      <div class="nom">Une absence</div>
+      <p class="idee">Même feuille, même choix A ou B.</p>
+      <div class="tel"><div class="ecran" data-maquette="absence"></div></div>
+      <button class="rejouer" type="button" data-rejouer>Recommencer</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var MOIS = '<div class="mois"><span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span><span>D</span>'
+    + '<span>6</span><span>7</span><span class="occupe">8</span><span class="touche">9</span><span class="occupe">10</span><span>11</span><span>12</span></div>';
+
+  function feuille(ecran, titre, texte, libelle, siOui){
+    var v = document.createElement('div');
+    v.className = 'voile';
+    v.innerHTML = '<div class="feuille" role="dialog" aria-modal="true"><h4></h4><p></p>'
+      + '<button class="btn danger" type="button"></button><button class="btn garder" type="button">Garder</button></div>';
+    v.querySelector('h4').textContent = titre;
+    v.querySelector('p').textContent = texte;
+    var oui = v.querySelector('.danger');
+    oui.textContent = libelle;
+    oui.onclick = function(){ v.remove(); siOui(); };
+    v.querySelector('.garder').onclick = function(){ v.remove(); };
+    v.onclick = function(e){ if (e.target === v) v.remove(); };
+    ecran.appendChild(v);
+    oui.focus();
+  }
+
+  function message(ecran, texte){
+    var m = document.createElement('div');
+    m.className = 'fait';
+    m.textContent = texte;
+    ecran.appendChild(m);
+  }
+
+  function tiroir(ecran, texte, siAnnule){
+    var t = document.createElement('div');
+    t.className = 'tiroir';
+    t.innerHTML = '<div class="ligne"><span></span><button class="annuler" type="button">Annuler</button></div><div class="barre"></div>';
+    t.querySelector('span').textContent = texte;
+    ecran.appendChild(t);
+    var barre = t.querySelector('.barre');
+    requestAnimationFrame(function(){ barre.style.transition = 'width 6s linear'; barre.style.width = '0%'; });
+    var fin = setTimeout(function(){ t.remove(); }, 6000);
+    t.querySelector('.annuler').onclick = function(){ clearTimeout(fin); t.remove(); siAnnule(); };
+  }
+
+  function jour(ecran, variante){
+    ecran.innerHTML = '<div class="haut"><h3>Planning</h3>' + MOIS + '</div>'
+      + '<div class="jourTitre">Jeudi 9 octobre</div>'
+      + '<div class="carte" data-carte><div class="client">Mr. Linotte</div>'
+      + '<div class="sous">Taille de haie, 2 demi-journées</div>'
+      + '<div class="sous">Devis accepté le 7 octobre</div>'
+      + '<div class="gestes"><button class="geste" type="button">Déplacer</button>'
+      + '<button class="geste" type="button">Retirer du jour</button>'
+      + '<button class="geste supprimer" type="button">Supprimer</button></div></div>';
+    var carte = ecran.querySelector('[data-carte]');
+    ecran.querySelector('.supprimer').onclick = function(){
+      feuille(ecran, 'Supprimer Mr. Linotte ?',
+        'Le chantier quitte le planning. Le client reste dans vos clients.',
+        'Supprimer', function(){
+          carte.hidden = true;
+          var vide = document.createElement('p');
+          vide.className = 'vide'; vide.textContent = 'Rien ce jour.';
+          carte.after(vide);
+          if (variante === 'A') message(ecran, 'Mr. Linotte est supprimé.');
+          else tiroir(ecran, 'Mr. Linotte est supprimé.', function(){ vide.remove(); carte.hidden = false; });
+        });
+    };
+  }
+
+  function devis(ecran, variante){
+    ecran.innerHTML = '<div class="haut"><h3>Mr. Linotte</h3></div>'
+      + '<div class="jourTitre">Devis</div>'
+      + '<div class="carte"><div class="client">Taille de haie</div>'
+      + '<div class="sous">1 240,00 € TTC</div>'
+      + '<span class="etat" data-etat>Accepté le 7 octobre</span>'
+      + '<div class="sous" data-jour>Au planning le jeudi 9 octobre</div>'
+      + '<div class="gestes"><button class="geste supprimer" type="button"></button></div></div>';
+    var bouton = ecran.querySelector('.supprimer');
+    var etat = ecran.querySelector('[data-etat]');
+    var leJour = ecran.querySelector('[data-jour]');
+    var attente = variante === 'attente';
+    bouton.textContent = attente ? 'Remettre en attente' : 'Noter refusé';
+    bouton.onclick = function(){
+      feuille(ecran,
+        attente ? 'Remettre le devis en attente ?' : 'Noter le devis refusé ?',
+        attente ? 'Il quitte le planning. Le client pourra répondre à nouveau avec le même lien.'
+                : 'Il quitte le planning. Le client ne pourra plus l’accepter.',
+        attente ? 'Remettre en attente' : 'Noter refusé',
+        function(){
+          etat.textContent = attente ? 'En attente du client' : 'Refusé le 7 octobre';
+          if (!attente) etat.classList.add('refuse');
+          leJour.textContent = 'Plus au planning';
+          bouton.hidden = true;
+        });
+    };
+  }
+
+  function absence(ecran){
+    ecran.innerHTML = '<div class="haut"><h3>Planning</h3>' + MOIS + '</div>'
+      + '<div class="jourTitre">Jeudi 9 octobre</div>'
+      + '<div class="carte absence" data-carte><div><div class="client">Julien absent</div><div class="sous">Toute la journée</div></div>'
+      + '<button class="croix" type="button" aria-label="Supprimer l’absence de Julien">✕</button></div>';
+    var carte = ecran.querySelector('[data-carte]');
+    ecran.querySelector('.croix').onclick = function(){
+      feuille(ecran, 'Supprimer l’absence de Julien ?', 'Julien redevient disponible ce jour.', 'Supprimer',
+        function(){ carte.hidden = true; message(ecran, 'L’absence de Julien est supprimée.'); });
+    };
+  }
+
+  function monter(ecran){
+    var m = ecran.dataset.maquette;
+    if (m === 'jour') jour(ecran, ecran.dataset.variante);
+    else if (m === 'devis') devis(ecran, ecran.dataset.variante);
+    else absence(ecran);
+  }
+
+  document.querySelectorAll('.ecran').forEach(monter);
+  document.querySelectorAll('[data-rejouer]').forEach(function(b){
+    b.onclick = function(){ monter(b.parentNode.querySelector('.ecran')); };
+  });
+})();
+</script>
+</body>
+</html>
