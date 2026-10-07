@@ -277,6 +277,7 @@ export async function getOuCreerDevisBrouillon(ctx: Ctx, chantierId: string) {
       entrepriseNom: entreprise.nom,
       entrepriseAdresse: entreprise.adresse,
       entrepriseSiret: entreprise.siret,
+      entrepriseNumeroTva: entreprise.numeroTva,
       entrepriseEmail: entreprise.email,
       entrepriseTelephone: entreprise.telephone,
       entrepriseIban: entreprise.iban,
@@ -637,6 +638,7 @@ function donneesPdfDuDevis(
     entrepriseNom: d.entrepriseNom,
     entrepriseAdresse: d.entrepriseAdresse,
     entrepriseSiret: d.entrepriseSiret,
+    entrepriseNumeroTva: d.entrepriseNumeroTva,
     entrepriseTelephone: d.entrepriseTelephone,
     entrepriseEmail: d.entrepriseEmail,
     // Le modèle d'Arborea imprime les modalités de virement : sans l'IBAN, le

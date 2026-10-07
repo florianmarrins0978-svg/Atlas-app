@@ -179,6 +179,16 @@ async function main() {
     assert.ok(texte.includes("FR76 3000 1007 9412 3456 7890 185"), `l'IBAN du devis n'est pas groupé : ${texte.slice(-500)}`);
   });
 
+  // Point 7 : la facture imprime le numéro de TVA de l'artisan, le devis non.
+  await test("le devis imprime le numéro de TVA de l'artisan, comme la facture", async () => {
+    const { ctx, chantierId } = await creerEntreprise("Imbert", "30");
+    const r = await pool.query(`UPDATE entreprises SET numero_tva = 'FR32123456789' WHERE id = $1`, [ctx.entrepriseId]);
+    assert.equal(r.rowCount, 1);
+    const v1 = await getOuCreerDevisBrouillon(ctx, chantierId);
+    const texte = texteDuPdf(await genererPdfPourApercu(ctx, v1.id)).replace(/\s+/g, " ");
+    assert.ok(texte.includes("TVA intracommunautaire FR32123456789"), `le devis tait le numéro de TVA : ${texte.slice(0, 500)}`);
+  });
+
   console.log(`\n${failed} échec(s), ${passed} réussi(s).`);
   await pool.end();
   process.exit(failed > 0 ? 1 : 0);

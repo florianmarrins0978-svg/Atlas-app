@@ -1,0 +1,15 @@
+-- LE NUMÉRO DE TVA DE L'ARTISAN SUR SON DEVIS — le check-up du 7 octobre 2026.
+--
+-- La facture l'imprime depuis la migration 0117 ; le devis n'en avait pas la
+-- colonne, et le même client professionnel lisait un numéro sur la facture et
+-- aucun sur le devis qu'il avait signé. Sa règle : « si on fait une
+-- modification sur un devis il faut que ça suive sur les factures ».
+--
+-- Figé sur le devis comme le SIRET (0094) : une pièce garde ce qu'elle portait
+-- le jour où elle est partie.
+--
+-- Expand seul, aucune donnée réécrite : un devis déjà parti n'avait pas de
+-- numéro et n'en gagne pas (trigger d'immuabilité), un brouillon le prend à sa
+-- prochaine régénération. Aucune contrainte : l'ancien code ignore la colonne
+-- (.claude/rules/deployment-safety.md).
+ALTER TABLE "devis" ADD COLUMN IF NOT EXISTS "entreprise_numero_tva" text;

@@ -1355,6 +1355,8 @@ export const devis = pgTable(
     entrepriseNom: text("entreprise_nom").notNull(),
     entrepriseAdresse: text("entreprise_adresse"),
     entrepriseSiret: text("entreprise_siret"),
+    /** Le numéro de TVA de l'artisan, figé comme sur la facture (migration 0123). */
+    entrepriseNumeroTva: text("entreprise_numero_tva"),
     entrepriseEmail: text("entreprise_email"),
     entrepriseTelephone: text("entreprise_telephone"),
     entrepriseIban: text("entreprise_iban"),
