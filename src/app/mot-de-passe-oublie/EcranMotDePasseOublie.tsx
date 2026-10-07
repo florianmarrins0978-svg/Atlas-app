@@ -137,9 +137,9 @@ function NouveauMotDePasse({
   const [refus, setRefus] = useState<{ message: string; recommencer: boolean } | null>(null);
   const [enCours, demarrer] = useTransition();
 
-  const court = etatNouveau(nouveau);
+  const court = etatNouveau(nouveau, [adresse]);
   const accord = etatConfirmation(nouveau, confirmation);
-  const bloquant = verifierNouveauMotDePasse(nouveau, confirmation);
+  const bloquant = verifierNouveauMotDePasse(nouveau, confirmation, [adresse]);
 
   function enregistrer() {
     if (bloquant) return;

@@ -118,7 +118,11 @@ async function ecrireLeCompte(saisie: SaisieCompte): Promise<ResultatCreation> {
 
   // **La MÊME fonction que l'écran**, et c'est ce qui empêche l'écart
   // habituel : un bouton qui s'allume sur une saisie que le serveur refuse.
-  const refusMdp = verifierNouveauMotDePasse(saisie.motDePasse, saisie.motDePasse);
+  const refusMdp = verifierNouveauMotDePasse(saisie.motDePasse, saisie.motDePasse, [
+    saisie.prenom,
+    saisie.nom,
+    saisie.email,
+  ]);
   if (refusMdp) return { ok: false, refus: messageRefus(refusMdp) };
 
   // Même liste que la porte (`MOYENS_ACCEPTES`) : depuis le 18 septembre 2026

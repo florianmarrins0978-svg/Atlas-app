@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { colors, font, libelleCaps, texteSituation } from "@/lib/design-tokens";
-import { etatConfirmation, etatNouveau, verifierNouveauMotDePasse } from "@/lib/mot-de-passe";
+import { etatConfirmation, etatNouveau, verifierNouveauMotDePasse, type Personnel } from "@/lib/mot-de-passe";
 import { changerMotDePasseAction, deconnecterPartoutAction } from "./actions";
 import SectionFaceId from "./SectionFaceId";
 import type { CleAppareil } from "@/lib/cle-appareil";
@@ -25,7 +25,7 @@ import type { CleAppareil } from "@/lib/cle-appareil";
  * mauvais sens : un bouton allumé sur une saisie que le serveur refuse
  * (`CLAUDE.md` §3).
  */
-export default function ConnexionClient({ cles }: { cles: CleAppareil[] }) {
+export default function ConnexionClient({ cles, personnel }: { cles: CleAppareil[]; personnel: Personnel }) {
   const [actuel, setActuel] = useState("");
   const [nouveau, setNouveau] = useState("");
   const [confirmation, setConfirmation] = useState("");
@@ -34,10 +34,10 @@ export default function ConnexionClient({ cles }: { cles: CleAppareil[] }) {
   const [enCours, demarrer] = useTransition();
   const [partoutDemande, setPartoutDemande] = useState(false);
 
-  const bloquant = verifierNouveauMotDePasse(nouveau, confirmation);
+  const bloquant = verifierNouveauMotDePasse(nouveau, confirmation, personnel);
   const pret = actuel !== "" && bloquant === null && !enCours;
   const etat = etatConfirmation(nouveau, confirmation);
-  const court = etatNouveau(nouveau);
+  const court = etatNouveau(nouveau, personnel);
 
   function changer() {
     demarrer(async () => {

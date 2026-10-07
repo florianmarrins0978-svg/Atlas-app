@@ -380,7 +380,13 @@ export function refusDe(question: Question, reponses: Record<string, string>): s
     // dans `mot-de-passe.ts` depuis l'audit du 23 août 2026. Une seconde règle
     // à la porte aurait donné au PATRON le mot de passe le plus faible du
     // produit — plus faible que celui qu'il impose à ses salariés.
-    const refus = verifierNouveauMotDePasse(reponses.mdp ?? "", reponses.confirm ?? "");
+    // Le prénom, le nom et l'adresse sont demandés AVANT le mot de passe : ils
+    // sont donc là, et le serveur reçoit les mêmes (`creerSonCompte`).
+    const refus = verifierNouveauMotDePasse(reponses.mdp ?? "", reponses.confirm ?? "", [
+      reponses.prenom,
+      reponses.nom,
+      reponses.email,
+    ]);
     return refus ? messageRefus(refus) : null;
   }
 

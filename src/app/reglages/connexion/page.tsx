@@ -3,6 +3,7 @@ import { colors, font } from "@/lib/design-tokens";
 import { getCurrentCtx } from "@/server/session-ctx";
 import ConnexionClient from "./ConnexionClient";
 import { listerCles } from "@/server/repositories/cles-appareil";
+import { lireCompte } from "@/server/repositories/compte";
 
 export const dynamic = "force-dynamic";
 
@@ -35,6 +36,9 @@ export default async function ConnexionPage() {
   // verrait une liste vide pendant une seconde et croirait n'avoir rien à
   // retirer.
   const cles = await listerCles(ctx.utilisateurId);
+  // Les mêmes mots que ceux que `changerMotDePasse` relit en base : sans quoi
+  // le bouton s'allumerait sur un mot de passe que le serveur refuse.
+  const compte = await lireCompte(ctx);
 
   return (
     /**
@@ -72,7 +76,7 @@ export default async function ConnexionPage() {
         retour={{ href: "/reglages", libelle: "Retour aux réglages" }}
       />
       <div className="atlas-colonne-defile" style={{ overscrollBehavior: "contain" }}>
-        <ConnexionClient cles={cles} />
+        <ConnexionClient cles={cles} personnel={[compte?.prenom, compte?.nom, compte?.email]} />
       </div>
     </div>
   );

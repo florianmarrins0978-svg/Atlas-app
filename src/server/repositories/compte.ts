@@ -117,7 +117,15 @@ export async function changerMotDePasse(
   // à l'écran : l'écran n'a jamais l'ancien mot de passe en clair — il a ce qui
   // est tapé dans le premier champ, ce qui n'est pas la même chose tant qu'on
   // ne l'a pas confronté au condensat.
-  const refus = verifierNouveauMotDePasse(nouveau, confirmation, actuel);
+  // Relu en base plutôt que reçu de l'écran : ce que l'écran envoie se
+  // falsifie, et la règle deviendrait facultative pour qui l'écrit à la main.
+  const compte = await lireCompte(ctx);
+  const refus = verifierNouveauMotDePasse(
+    nouveau,
+    confirmation,
+    [compte?.prenom, compte?.nom, compte?.email],
+    actuel
+  );
   if (refus) return { ok: false, refus };
 
   /**
