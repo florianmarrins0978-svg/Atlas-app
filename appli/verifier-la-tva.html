@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vérifier le n° TVA : Atlas</title>
+<style>
+/*
+  VÉRIFIER LE N° TVA D'UNE ENTREPRISE CLIENTE, 7 octobre 2026.
+
+  Sa question : « la TVA commence toujours par FR ? ». Un numéro français est
+  FR, deux chiffres de clé, puis le SIREN (les 9 premiers chiffres du SIRET).
+  La clé se calcule : (12 + 3 × (SIREN mod 97)) mod 97. On peut donc dire, sans
+  rien demander à personne, qu'un numéro est mal tapé, ou qu'il n'est pas celui
+  du SIRET de la même fiche.
+
+  Ce que ce calcul NE dit PAS : que l'entreprise est réellement inscrite à la
+  TVA. Seul le registre européen (VIES) le sait.
+
+  A : l'alerte seule. B : l'alerte, et le bon numéro à toucher pour le poser.
+  B ne remplit JAMAIS la case tout seul : un numéro calculé pour une entreprise
+  en franchise serait faux, et ferait partir une facture en autoliquidation.
+
+  RIEN N'EST CODÉ. Le « FR » d'office est codé à part, pas encore livré.
+*/
+:root{
+  --fond:#f5f3ee; --plage:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
+  --gris:#8a8578; --or:#B98B47; --trait:rgba(28,28,26,.12); --scene:#e6e3dc;
+  --case:#ece9e1; --alerte:#b3261e;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--scene)}
+body{font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--encre);padding:0 0 60px}
+.page{max-width:900px;margin:0 auto;padding:22px 16px 0}
+h1{font:600 26px/1.15 Georgia,"Times New Roman",serif;margin:0 0 8px}
+.dit{color:var(--encre-douce);font-size:15px;line-height:1.55;margin:0 0 14px;max-width:640px}
+.dit b{color:var(--encre)}
+.pupitre{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 10px}
+.pupitre button{appearance:none;border:0;cursor:pointer;font:600 13px/1 -apple-system,sans-serif;padding:11px 15px;border-radius:999px;background:var(--plage);color:var(--encre-douce);box-shadow:inset 0 0 0 1px var(--trait)}
+.pupitre button[aria-pressed="true"]{background:var(--or);color:var(--plage);box-shadow:none}
+.legende{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--gris);margin:14px 0 6px}
+
+.tel{width:390px;max-width:100%;background:var(--fond);border-radius:26px;padding:22px 18px 28px;box-shadow:0 2px 16px rgba(20,18,14,.13)}
+.entete{display:flex;align-items:center;justify-content:center;position:relative;margin-bottom:14px}
+.entete span{position:absolute;left:0;font-size:22px;color:var(--encre-douce)}
+.entete h2{font:500 28px/1.2 Georgia,serif;margin:0}
+.civ{display:flex;gap:8px;margin-bottom:10px}
+.civ div{flex:1;text-align:center;padding:10px 0;border-radius:999px;border:1px solid var(--trait);background:var(--plage);font-size:15px}
+.civ .on{border-color:var(--or);background:var(--case);flex:1.6}
+.lib{font-size:10.5px;letter-spacing:.3em;text-transform:uppercase;color:var(--gris);margin:8px 0 4px}
+.rangee{display:flex;gap:10px}
+.rangee > div{flex:1;min-width:0}
+input{width:100%;font:16px/1.2 inherit;font-family:inherit;padding:14px 12px;border-radius:12px;border:1.5px solid transparent;background:var(--case);color:var(--encre);outline:none}
+input:focus{border-color:var(--or)}
+input.faux{border-color:var(--alerte)}
+.alerte{color:var(--alerte);font-size:12.5px;margin:6px 0 0;min-height:18px}
+.proposer{display:none;margin-top:8px;appearance:none;border:1px solid var(--or);background:var(--plage);color:var(--encre);border-radius:999px;padding:9px 14px;font:600 14px/1 inherit;font-family:inherit;cursor:pointer}
+.reste{margin-top:14px;opacity:.45}
+.reste .faux-champ{height:46px;border-radius:12px;background:var(--case);margin-bottom:6px}
+.note{margin-top:22px;padding:14px 16px;background:var(--plage);border-radius:13px;font-size:13.5px;line-height:1.6;color:var(--encre-douce);max-width:640px}
+.note b{color:var(--encre)}
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>Vérifier le n° TVA</h1>
+  <p class="dit">Votre fiche client, avec un numéro juste. <b>Touchez un cas</b>, ou changez vous-même un chiffre : la ligne rouge apparaît sous la case.</p>
+
+  <p class="legende">Ce que l’appli fait</p>
+  <div class="pupitre" id="variantes">
+    <button data-v="A" aria-pressed="true">A : l’alerte seule</button>
+    <button data-v="B" aria-pressed="false">B : l’alerte et le bon numéro</button>
+  </div>
+
+  <p class="legende">Un cas à essayer</p>
+  <div class="pupitre" id="cas">
+    <button data-tva="FR45938483838" aria-pressed="true">Numéro juste</button>
+    <button data-tva="FR54938483838" aria-pressed="false">Deux chiffres inversés</button>
+    <button data-tva="FR25812345678" aria-pressed="false">Le numéro d’un autre client</button>
+    <button data-tva="FR" aria-pressed="false">Pas de numéro</button>
+    <button data-tva="BE0403170701" aria-pressed="false">Entreprise belge</button>
+  </div>
+
+  <div class="tel">
+    <div class="entete"><span>‹</span><h2>Fiche client</h2></div>
+    <div class="civ"><div>Mr</div><div>Mme</div><div class="on">Entreprise</div></div>
+    <div class="lib">Nom du client</div>
+    <input value="Lafonte" aria-label="Nom du client">
+    <div class="rangee">
+      <div>
+        <div class="lib">Siret</div>
+        <input id="siret" value="93848383883833" inputmode="numeric" aria-label="SIRET">
+      </div>
+      <div>
+        <div class="lib">N° TVA</div>
+        <input id="tva" value="FR45938483838" aria-label="N° TVA">
+      </div>
+    </div>
+    <p class="alerte" id="alerte" role="alert"></p>
+    <button class="proposer" id="proposer" type="button"></button>
+    <div class="reste">
+      <div class="lib">E-mail</div><div class="faux-champ"></div>
+      <div class="lib">Chantier</div><div class="faux-champ"></div>
+    </div>
+  </div>
+
+  <div class="note">
+    <b>Ce que ça attrape</b> : une faute de frappe, ou le numéro d’un autre client recopié par erreur.<br>
+    <b>Ce que ça n’attrape pas</b> : une entreprise qui n’est pas inscrite à la TVA. Le numéro peut être bien formé sans exister.<br>
+    <b>Un numéro étranger</b> n’est pas vérifié.<br>
+    <b>En B</b>, rien ne se remplit tout seul : vous touchez le numéro proposé pour le poser.<br>
+    <b>Rien n’est codé.</b>
+  </div>
+</div>
+
+<script>
+// La même règle que celle qui serait codée (src/lib/autoliquidation.ts).
+function brut(s){ return String(s||"").replace(/[\s.\-]/g,"").toUpperCase(); }
+function cle(siren){ return String((12 + 3 * (Number(siren) % 97)) % 97).padStart(2,"0"); }
+
+function verdict(siretSaisi, tvaSaisi){
+  const tva = brut(tvaSaisi);
+  const siretChiffres = String(siretSaisi||"").replace(/\D/g,"");
+  const siren = siretChiffres.length === 14 ? siretChiffres.slice(0,9) : null;
+  const juste = siren ? "FR" + cle(siren) + siren : null;
+  if (/^([A-Z]{2})?$/.test(tva)) return { message:"", juste:null };
+  if (!tva.startsWith("FR")) return { message:"", juste:null };
+  if (!/^FR\d{11}$/.test(tva)) return { message:"Le n° TVA : FR suivi de 11 chiffres.", juste };
+  if (tva.slice(2,4) !== cle(tva.slice(4))) return { message:"Ce n° TVA contient une faute de frappe.", juste };
+  if (siren && tva.slice(4) !== siren) return { message:"Ce n° TVA n’est pas celui de ce SIRET.", juste };
+  return { message:"", juste:null };
+}
+
+const champSiret = document.getElementById("siret");
+const champTva = document.getElementById("tva");
+const alerte = document.getElementById("alerte");
+const proposer = document.getElementById("proposer");
+let variante = "A";
+
+function rendre(){
+  const v = verdict(champSiret.value, champTva.value);
+  alerte.textContent = v.message;
+  champTva.classList.toggle("faux", v.message !== "");
+  const montrer = variante === "B" && v.message !== "" && v.juste;
+  proposer.style.display = montrer ? "inline-block" : "none";
+  if (montrer) proposer.textContent = "Mettre " + v.juste;
+}
+
+function choisir(groupe, bouton){
+  groupe.querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", String(b === bouton)));
+}
+
+document.getElementById("variantes").addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b) return;
+  variante = b.dataset.v; choisir(e.currentTarget, b); rendre();
+});
+document.getElementById("cas").addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b) return;
+  champTva.value = b.dataset.tva; choisir(e.currentTarget, b); rendre();
+});
+proposer.addEventListener("click", () => { champTva.value = verdict(champSiret.value, champTva.value).juste; rendre(); });
+champSiret.addEventListener("input", rendre);
+champTva.addEventListener("input", rendre);
+rendre();
+</script>
+</body>
+</html>
