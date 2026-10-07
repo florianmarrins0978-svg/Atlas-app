@@ -7,6 +7,9 @@ import type { Ctx } from "./repositories/context";
 import { coupureDesJetons } from "./repositories/compte";
 import { instantDAuthentification, sessionCoupee } from "../lib/identite-session";
 import { enrichirContexteRequete } from "./request-context";
+import { doubleVerificationObligatoire } from "../lib/double-verification";
+import { etatDoubleVerification } from "./repositories/double-verification";
+import { horsProductionReelle } from "./source-visiteur";
 
 export class NonAuthentifieError extends Error {
   constructor() {
@@ -34,6 +37,20 @@ export class AucuneEntrepriseError extends Error {
 // l'instant (première adhésion trouvée) — le changement d'entreprise pour un
 // utilisateur multi-sociétés n'est pas encore un besoin du produit.
 export async function getCurrentCtx(): Promise<Ctx> {
+  return resoudreCtx(true);
+}
+
+/**
+ * **Le même contexte, sans exiger que la double vérification soit active.**
+ * Réservé à l'écran qui l'active (`/double-verification`) et à ses actions :
+ * c'est le seul endroit où un patron qui ne l'a pas encore doit pouvoir aller,
+ * sans quoi `getCurrentCtx` l'y renverrait en boucle.
+ */
+export async function getCurrentCtxPourActiver(): Promise<Ctx> {
+  return resoudreCtx(false);
+}
+
+async function resoudreCtx(exigerDoubleVerification: boolean): Promise<Ctx> {
   // Dérogation strictement réservée aux tests automatisés : impossible à
   // activer en production (double garde — NODE_ENV et présence explicite de
   // la variable), utilisée uniquement pour exercer les Server Actions depuis
@@ -44,7 +61,7 @@ export async function getCurrentCtx(): Promise<Ctx> {
   if (process.env.NODE_ENV !== "production" && process.env.AUTH_TEST_UTILISATEUR_ID) {
     return {
       utilisateurId: process.env.AUTH_TEST_UTILISATEUR_ID,
-      entrepriseId: await resoudreEntrepriseId(process.env.AUTH_TEST_UTILISATEUR_ID),
+      entrepriseId: (await resoudreAdhesion(process.env.AUTH_TEST_UTILISATEUR_ID)).entrepriseId,
       /**
        * **De quoi éprouver la ré-authentification récente, et rien de plus.**
        *
@@ -109,8 +126,29 @@ export async function getCurrentCtx(): Promise<Ctx> {
     redirect("/api/session-perimee");
   }
 
+  const { entrepriseId, role } = await resoudreAdhesion(utilisateurId);
+
+  /**
+   * **LA DOUBLE VÉRIFICATION OBLIGATOIRE se tient ICI** — sa réponse « A » du
+   * 30 septembre 2026 : le patron et la facturation ne vont nulle part sans
+   * l'avoir activée. Ici et pas dans le gabarit des pages : les actions serveur
+   * et les routes passent toutes par cette fonction, et une garde d'affichage
+   * se contournerait en les appelant directement.
+   *
+   * En production réelle seulement (`doubleVerificationObligatoire`) : la
+   * batterie entre en patron dans plus de cent suites, et le banc d'essai garde
+   * ses comptes tels qu'ils sont.
+   */
+  if (
+    exigerDoubleVerification &&
+    doubleVerificationObligatoire(role, !horsProductionReelle()) &&
+    !(await etatDoubleVerification(utilisateurId)).active
+  ) {
+    redirect("/double-verification");
+  }
+
   return {
-    entrepriseId: await resoudreEntrepriseId(utilisateurId),
+    entrepriseId,
     utilisateurId,
     // Recopié du jeton signé : c'est ce à quoi une preuve de ré-authentification
     // s'accroche, pour qu'une autre session du même utilisateur n'en profite pas.
@@ -118,7 +156,7 @@ export async function getCurrentCtx(): Promise<Ctx> {
   };
 }
 
-async function resoudreEntrepriseId(utilisateurId: string): Promise<string> {
+async function resoudreAdhesion(utilisateurId: string): Promise<{ entrepriseId: string; role: string }> {
   return db.transaction(async (tx) => {
     // Fixe app.utilisateur_id (jamais app.entreprise_id, encore inconnu à ce
     // stade) — condition d'application de la politique RLS dédiée au
@@ -126,7 +164,7 @@ async function resoudreEntrepriseId(utilisateurId: string): Promise<string> {
     await tx.execute(sql`SELECT set_config('app.utilisateur_id', ${utilisateurId}, true)`);
 
     const [membre] = await tx
-      .select({ entrepriseId: membresEntreprise.entrepriseId })
+      .select({ entrepriseId: membresEntreprise.entrepriseId, role: membresEntreprise.role })
       .from(membresEntreprise)
       .where(eq(membresEntreprise.utilisateurId, utilisateurId))
       .orderBy(membresEntreprise.createdAt)
@@ -158,6 +196,6 @@ async function resoudreEntrepriseId(utilisateurId: string): Promise<string> {
       throw new AucuneEntrepriseError(utilisateurId);
     }
     enrichirContexteRequete({ utilisateurId, entrepriseId: membre.entrepriseId });
-    return membre.entrepriseId;
+    return { entrepriseId: membre.entrepriseId, role: membre.role };
   });
 }

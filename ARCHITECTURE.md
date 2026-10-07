@@ -34475,3 +34475,75 @@ le résultat y est le même qu'avant.
 Éprouvé : `test-travaux-a-la-main-db.ts` (sous `atlas_app`, vu rouge en cassant
 la règle du devis envoyé), `test-travaux-a-la-main-e2e.ts` (le geste au
 planning), et `test-travaux-a-faire-e2e.ts` toujours vert.
+
+## §451 : La double vérification s'exige dans `authorize`, et aucune session n'existe avant le code
+
+**Sa décision du 30 septembre 2026** (`appli/double-verification.html`) :
+l'appli d'authentification, obligatoire pour le patron et la facturation (la
+A), et « ne plus demander sur cet appareil » trente jours (« oui »). Jusque-là
+un mot de passe volé suffisait : Face ID était facultatif, la porte du mot de
+passe restait ouverte à côté.
+
+**Où le code s'exige.** Dans `authorize` du fournisseur `credentials`
+(`src/auth.ts`), jamais dans l'action de connexion : toute connexion par mot de
+passe y passe, l'écran comme le mot de passe oublié, et une règle posée dans une
+action s'oublierait dans la suivante.
+
+**Les routes d'Auth.js : une liste qui OUVRE.** Elles étaient murées depuis le
+29 août par une liste de fournisseurs à fermer ; `second-facteur` y manquait, et
+sa route acceptait des codes sans l'écran, donc sans compteur d'échecs. Trouvé
+par la suite navigateur, **après** qu'un premier essai l'eut déclarée verte à
+tort : le cas « route directe » passait même sans protection, parce que la
+route rendait 404 pour tout le monde. Un témoin le précède désormais. La route
+n'ouvre plus que les retours de Google et d'Apple ; un fournisseur ajouté
+demain est muré tant que personne ne l'ouvre.
+
+**Pas de session « à moitié entrée ».** Le mot de passe juste ouvre une ligne
+`connexions_en_attente` (cinq minutes, cinq essais) et un cookie `httpOnly` ;
+`authorize` lève `CodeRequis` (un `CredentialsSignin` à motif, qu'Auth.js
+transmet tel quel en mode `raw`). Le code passe par un second fournisseur,
+`second-facteur`, seul à ouvrir la session. Une session marquée « code
+manquant » aurait demandé une garde sur chaque écran, action et route ; un oubli
+et elle entrait.
+
+| Chemin | Code exigé |
+|---|---|
+| mot de passe | oui, sauf appareil retenu |
+| Google, Apple | oui (rappel `signIn` → `/login/code`), sauf appareil retenu |
+| mot de passe oublié | oui : l'e-mail seul ne doit pas suffire |
+| Face ID | non : il vaut déjà deux preuves |
+
+**Les échecs de code comptent comme des mots de passe faux** (même compteur,
+même temporisation) : sans cela, qui connaît le mot de passe enchaînerait cinq
+codes par connexion en attente sans jamais ralentir.
+
+**L'obligation se tient dans `getCurrentCtx`**, pas dans le gabarit : actions
+et routes y passent toutes. Redirection vers `/double-verification`, qui passe
+par `getCurrentCtxPourActiver`. **En production réelle seulement**
+(`horsProductionReelle`) : la batterie entre en patron dans plus de cent suites,
+et le banc garde ses comptes. Elle n'a donc d'effet nulle part aujourd'hui ;
+elle mordra le jour de la mise en ligne.
+
+**Ce qui a été écarté.**
+- Une bibliothèque TOTP : vingt lignes (RFC 6238), confrontées aux vecteurs de
+  la norme (`scripts/test-double-verification.ts`). Une dépendance de plus au
+  cœur de la connexion pour vingt lignes vérifiables, non. Le code carré, lui,
+  vient de `qrcode-generator` (MIT, sans dépendance) : un encodeur QR ne
+  s'écrit pas en vingt lignes.
+- Exiger un code par e-mail pour activer : sur un banc sans envoi réel, le
+  patron serait enfermé. L'activation est celle de toute l'industrie : être
+  connecté, et prouver que son appli donne le bon code.
+
+**Sa propre rubrique, et non une section de « Mot de passe ».** La planche la
+posait sous le mot de passe. Sur l'écran réel, à côté de Face ID et de « me
+déconnecter partout », elle poussait ce dernier sous la barre du bas, contre sa
+règle du 31 août (l'écran tient sans défiler) : `test-face-id-e2e.ts` l'a vu.
+Elle vit donc à `/reglages/connexion/double-verification`, une rubrique « Moi »
+à part, qui hérite des droits du mot de passe à chaque rôle.
+
+**Ce qui reste vrai.** Le secret est chiffré au repos (domaine
+`double-verification`, `src/server/agenda/secret-au-repos.ts`, l'agenda garde
+sa clé à l'octet près). Un secret illisible (`AUTH_SECRET` changé) ferme le
+code du téléphone, pas les codes de secours (HMAC) : c'est par eux qu'on
+désactive puis réactive. « Me déconnecter partout » oublie les appareils
+retenus.

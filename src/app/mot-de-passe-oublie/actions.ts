@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { CredentialsSignin } from "next-auth";
 import { signIn } from "@/auth";
 import { accueilPourEmail } from "@/server/accueil-apres-connexion";
 import { logger } from "@/server/logger";
@@ -61,6 +62,10 @@ export async function choisirLeMotDePasseAction(
   try {
     await signIn("credentials", { email, password: nouveau, redirect: false });
   } catch (erreur) {
+    // Double vérification active : le mot de passe est changé, le code reste à
+    // donner. Ce n'est pas une panne, c'est la porte qui fait son travail ; un
+    // e-mail ne suffit pas à entrer, sinon la boîte mail volée ouvrirait tout.
+    if (erreur instanceof CredentialsSignin && erreur.code === "code-requis") redirect("/login/code");
     // Le mot de passe EST changé : le dire, et le renvoyer à la porte plutôt
     // que de lui laisser croire que rien ne s'est passé.
     logger.error("Mot de passe changé, mais la connexion qui suit a échoué", {

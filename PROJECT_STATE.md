@@ -44,6 +44,14 @@ navigateur neuve, `test-travaux-a-faire-e2e` et les suites voisines, au vert.
 **Batterie non jouée, à sa demande** : niveau 3 (migration), donc pas de `main`
 avant elle.
 
+## SUR SA BRANCHE : LA DOUBLE VÉRIFICATION (7 octobre 2026)
+
+Branche `claude/double-verification`, migration 0123. Appli d'authentification
+après le mot de passe, Google ou Apple ; dix codes de secours ; appareil retenu
+trente jours ; Face ID sans code. Obligatoire pour le patron et la facturation
+en production réelle (`ARCHITECTURE.md` §451). Suites pures, base et navigateur
+de ce lot jouées seules ; **batterie non jouée, à sa demande**.
+
 ---
 ## SUR `main` : POSER UN CLIENT À SA PLACE (7 octobre 2026)
 

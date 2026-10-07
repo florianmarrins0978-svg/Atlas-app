@@ -72,6 +72,20 @@ une croix pour enlever) et partent dans le retour du jour. Quand le devis
 part, ses lignes les remplacent (son choix 1). Migration 0123,
 `ARCHITECTURE.md` §451.
 
+### La double vérification : le mot de passe seul ne suffit plus
+
+Sa décision du 30 septembre (planche `appli/double-verification.html`, la A et
+« oui »). Une fois activée dans sa rubrique de Réglages, la connexion par mot de
+passe, Google ou Apple demande le code de l'appli d'authentification, ou un des
+dix codes de secours ; Face ID entre sans code. « Ne plus demander sur cet
+appareil » le retient trente jours. Obligatoire pour le patron et la
+facturation, **en production réelle seulement** : sur le banc et dans la
+batterie, facultative. Le code s'exige dans `authorize` (`ARCHITECTURE.md`
+§451). **Trouvé en route** : la route d'Auth.js du nouveau fournisseur
+`second-facteur` n'était pas murée, et acceptait des codes sans compteur
+d'échecs ; la route n'ouvre plus que les retours de Google et d'Apple. Migration 0123,
+quatre tables neuves sous FORCE RLS. **Batterie non jouée, à sa demande.**
+
 ### Poser au planning un client qui n'arrive pas à choisir ses dates
 
 Un client qui reçoit le lien du devis sans réussir à choisir ses dates ne

@@ -14,6 +14,7 @@ import { emailProuve, fournisseursDisponibles, ouAllerSansCompte } from "./lib/f
 import { clesFournisseurs } from "./server/cles-fournisseurs";
 import { identifiantPourEmailProuve } from "./server/identite-externe";
 import type { AuthenticationResponseJSON } from "@simplewebauthn/types";
+import { CodeRequis, attenteSiCodeExige, verifierLeCodeEnAttente } from "./server/double-verification-connexion";
 
 // Provider Credentials : aucun accès réseau externe requis (contrairement à
 // un provider OAuth), donc utilisable tel quel dans n'importe quel
@@ -75,6 +76,40 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           .limit(1);
         if (!utilisateur) return null;
 
+        /**
+         * **La double vérification se joue ICI** (7 octobre 2026) : c'est le
+         * seul point par où passe toute connexion par mot de passe, l'écran de
+         * connexion comme le mot de passe oublié, et celles qu'on ajoutera.
+         * Posée dans une action, elle s'oublierait dans la suivante. Le mot de
+         * passe est juste : aucune session ne s'ouvre, une connexion en attente
+         * du code naît à la place (`double-verification-connexion.ts`).
+         */
+        if (await attenteSiCodeExige(utilisateur.id)) throw new CodeRequis();
+
+        return { id: utilisateur.id, email: utilisateur.email, name: utilisateur.nom ?? undefined };
+      },
+    }),
+
+    /**
+     * LE CODE DE L'APPLI D'AUTHENTIFICATION, après le mot de passe, Google ou
+     * Apple. Seul ce fournisseur ouvre la session d'un compte qui a activé la
+     * double vérification ; il n'accepte qu'une connexion en attente, que seul
+     * un premier facteur juste a pu ouvrir. Le code d'un autre, ou le code
+     * seul, ne mène nulle part.
+     */
+    Credentials({
+      id: "second-facteur",
+      name: "Code",
+      credentials: { code: { label: "Code", type: "text" } },
+      async authorize(credentials) {
+        const code = typeof credentials?.code === "string" ? credentials.code : "";
+        const utilisateurId = await verifierLeCodeEnAttente(code);
+        const [utilisateur] = await db
+          .select({ id: users.id, email: users.email, nom: users.nom })
+          .from(users)
+          .where(eq(users.id, utilisateurId))
+          .limit(1);
+        if (!utilisateur) return null;
         return { id: utilisateur.id, email: utilisateur.email, name: utilisateur.nom ?? undefined };
       },
     }),
@@ -207,6 +242,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
       const utilisateurId = await identifiantPourEmailProuve(email);
       if (!utilisateurId) return ouAllerSansCompte(email);
+
+      // Google ou Apple ne dispensent pas du code : leur compte se vole comme
+      // un mot de passe. Face ID, lui, n'arrive jamais ici.
+      if (await attenteSiCodeExige(utilisateurId)) return "/login/code";
 
       user.id = utilisateurId;
       user.email = email;

@@ -98,6 +98,7 @@ const OUVERT_AU_SALARIE = [
   "/reglages/compte",
   "/reglages/notifications",
   "/reglages/connexion",
+  "/reglages/connexion/double-verification",
   "/reglages/apparence",
   // L'organigramme, visible par tous depuis le 27 septembre 2026 (sa règle).
   "/reglages/organigramme",
@@ -302,6 +303,7 @@ essai("un salarié ne reçoit que « Moi » et l'organigramme dans les réglages
     "/reglages/apparence",
     "/reglages/compte",
     "/reglages/connexion",
+    "/reglages/connexion/double-verification",
     "/reglages/notifications",
     "/reglages/organigramme",
   ]);

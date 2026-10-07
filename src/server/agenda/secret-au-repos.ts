@@ -43,9 +43,19 @@ const PREFIXE = "v1";
  * évite seulement que la même valeur d'`AUTH_SECRET` produise la même clé dans
  * un autre logiciel qui la dériverait de la même façon.
  */
-function cle(): Buffer {
+/**
+ * **Une clé par usage**, depuis la double vérification (7 octobre 2026) : le
+ * secret de l'appli d'authentification se chiffre ici aussi, mais sous sa
+ * propre clé. Un défaut qui ferait relire un secret d'agenda comme un secret
+ * de connexion échoue alors au déchiffrement, au lieu de réussir en silence.
+ * `agenda` reste le défaut et garde sa dérivation à l'octet près : les jetons
+ * déjà en base se relisent tels quels.
+ */
+export type DomaineSecret = "agenda" | "double-verification";
+
+function cle(domaine: DomaineSecret): Buffer {
   const secret = getEnv().authSecret;
-  return createHash("sha256").update(`atlas:agenda:${secret}`).digest();
+  return createHash("sha256").update(`atlas:${domaine}:${secret}`).digest();
 }
 
 /**
@@ -53,9 +63,9 @@ function cle(): Buffer {
  * ordinaire, et **jamais deux fois le même** pour une même entrée — le vecteur
  * d'initialisation est tiré au hasard à chaque appel.
  */
-export function chiffrer(clair: string): string {
+export function chiffrer(clair: string, domaine: DomaineSecret = "agenda"): string {
   const iv = randomBytes(12);
-  const chiffreur = createCipheriv(ALGORITHME, cle(), iv);
+  const chiffreur = createCipheriv(ALGORITHME, cle(domaine), iv);
   const chiffre = Buffer.concat([chiffreur.update(clair, "utf8"), chiffreur.final()]);
   const marque = chiffreur.getAuthTag();
   return [PREFIXE, iv.toString("base64"), marque.toString("base64"), chiffre.toString("base64")].join(".");
@@ -75,11 +85,11 @@ export function chiffrer(clair: string): string {
  * — et c'est le comportement d'avant, avec son risque de doublon. L'écran doit
  * donc le dire, pas le taire.
  */
-export function dechiffrer(chiffre: string): string | null {
+export function dechiffrer(chiffre: string, domaine: DomaineSecret = "agenda"): string | null {
   try {
     const [prefixe, ivB64, marqueB64, corpsB64] = chiffre.split(".");
     if (prefixe !== PREFIXE || !ivB64 || !marqueB64 || !corpsB64) return null;
-    const dechiffreur = createDecipheriv(ALGORITHME, cle(), Buffer.from(ivB64, "base64"));
+    const dechiffreur = createDecipheriv(ALGORITHME, cle(domaine), Buffer.from(ivB64, "base64"));
     dechiffreur.setAuthTag(Buffer.from(marqueB64, "base64"));
     return Buffer.concat([
       dechiffreur.update(Buffer.from(corpsB64, "base64")),

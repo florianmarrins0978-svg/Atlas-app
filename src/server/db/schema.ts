@@ -2004,6 +2004,52 @@ export const codesMotDePasse = pgTable("codes_mot_de_passe", {
   jetonExpireLe: timestamp("jeton_expire_le", { withTimezone: true }),
 });
 
+// --- La double vérification (migration 0123, `src/lib/double-verification.ts`) ---
+// Quatre tables liées à une PERSONNE : le contexte est `app.utilisateur_id`.
+export const doubleVerification = pgTable("double_verification", {
+  utilisateurId: uuid("utilisateur_id")
+    .primaryKey()
+    .references(() => users.id, { onDelete: "cascade" }),
+  // Chiffré au repos, jamais en clair : `src/server/secret-au-repos.ts`.
+  secretChiffre: text("secret_chiffre").notNull(),
+  // Vide tant que l'artisan n'a pas tapé un premier code juste : la porte n'est
+  // fermée qu'une fois son appli prouvée.
+  activeLe: timestamp("active_le", { withTimezone: true }),
+  dernierPas: bigint("dernier_pas", { mode: "number" }),
+  creeLe: timestamp("cree_le", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const codesSecours = pgTable("codes_secours", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  utilisateurId: uuid("utilisateur_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  empreinte: text("empreinte").notNull(),
+  utiliseLe: timestamp("utilise_le", { withTimezone: true }),
+  creeLe: timestamp("cree_le", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const appareilsRetenus = pgTable("appareils_retenus", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  utilisateurId: uuid("utilisateur_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  empreinte: text("empreinte").notNull().unique(),
+  expireLe: timestamp("expire_le", { withTimezone: true }).notNull(),
+  creeLe: timestamp("cree_le", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const connexionsEnAttente = pgTable("connexions_en_attente", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  utilisateurId: uuid("utilisateur_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  empreinte: text("empreinte").notNull().unique(),
+  expireLe: timestamp("expire_le", { withTimezone: true }).notNull(),
+  essais: integer("essais").notNull().default(0),
+  creeLe: timestamp("cree_le", { withTimezone: true }).notNull().defaultNow(),
+});
+
 // --- Envoi du devis au client et réponse (voir docs/AGENT.md §2.1 à §2.3) ---
 
 // Une ligne par ENVOI, jamais par devis : un devis refusé puis corrigé et
