@@ -78,6 +78,11 @@
     <b>« Votre grille a changé »</b> et <b>« Augmenter les prix »</b>. Ils servent ici aussi, rien n'est réinventé.
   </div>
   <div class="note">
+    <h2>Comment le lien part</h2>
+    Comme vos devis aujourd'hui : Atlas ouvre <b>vos messages ou votre e-mail</b>, texte écrit, lien et numéro remplis.
+    C'est vous qui appuyez sur Envoyer. Atlas n'envoie rien tout seul.
+  </div>
+  <div class="note">
     <h2>Pourquoi pas sans signature</h2>
     Un accord donné au téléphone six mois après ne prouve rien en cas de litige.
     Il signe sur son lien neuf, valable 45 jours, ou sur papier.
@@ -91,7 +96,7 @@ const LIGNES = [
   { quoi: "Évacuation des déchets", ancien: 60, grille: 65, q: 1 },
 ];
 let s;
-function depart() { s = { etape: null, relu: false, maj: null, taux: 0, signe: null }; }
+function depart() { s = { etape: null, relu: false, maj: null, taux: 0, signe: null, parti: null }; }
 depart();
 
 const euros = (n) => n.toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €";
@@ -102,7 +107,7 @@ function prix(l) {
 
 function rendre() {
   let h = `<h1>Planning</h1><p class="sous">Mardi 14 octobre</p><div class="jour"><h2>Mardi 14 octobre</h2>`;
-  if (s.signe) {
+  if (s.signe && s.etape !== "envoi") {
     h += `<div class="pose"><span class="nom">Mme Ferrand</span><span class="marque">${s.signe === "lien" ? "Pas encore signé" : "Signé sur papier"}</span></div>`;
   } else if (s.etape === null || s.etape === "voies" || s.etape === "qui") {
     h += `<p class="vide">Rien de posé ce jour.</p>`;
@@ -144,6 +149,11 @@ function rendre() {
     for (const l of LIGNES) { const t = prix(l) * l.q; total += t; h += `<div class="l"><span>${l.q} × ${l.quoi}</span><span>${euros(t)}</span></div>`; }
     h += `<div class="l total"><span>Total HT</span><span>${euros(total)}</span></div></div>
       <div class="centre"><button type="button" class="or plein" data-aller="comment">Continuer</button></div>`;
+  } else if (s.etape === "envoi") {
+    h += `<p class="question">Le lien neuf de <b>Mme Ferrand</b> est prêt. Il ne montre que le mardi 14 octobre.</p>
+      <div class="choix">
+        <button type="button" data-parti="sms"><span>Ouvrir le SMS tout prêt</span><span class="quoi">06 12 34 56 78</span></button>
+        <button type="button" data-parti="email"><span>Plutôt par e-mail</span></button></div>`;
   } else if (s.etape === "comment") {
     h += `<p class="question">Mme Ferrand n'a pas encore signé ce devis.</p>
       <div class="choix">
@@ -152,7 +162,7 @@ function rendre() {
       <div class="centre"><button type="button" class="or" data-aller="relire">Annuler</button></div>`;
   }
   h += `</div>`;
-  if (s.signe === "lien") h += `<p class="fait">Un lien neuf part chez Mme Ferrand, valable 45 jours. Il ne montre que le mardi 14 octobre.</p>`;
+  if (s.signe === "lien" && s.parti) h += `<p class="fait">${s.parti === "sms" ? "Vos messages" : "Votre messagerie"} s'ouvre avec le texte écrit, le lien et ${s.parti === "sms" ? "son numéro" : "son adresse"} déjà remplis. Vous appuyez sur Envoyer. Le lien est valable 45 jours.</p>`;
   if (s.signe === "papier") h += `<p class="fait">Le devis passe accepté. Son lien est fermé.</p>`;
   document.getElementById("tel").innerHTML = h;
 }
@@ -162,7 +172,8 @@ document.getElementById("tel").addEventListener("click", (e) => {
   if (b.dataset.aller) s.etape = b.dataset.aller === "null" ? null : b.dataset.aller;
   if (b.dataset.maj) s.maj = b.dataset.maj === "oui";
   if (b.dataset.taux) { const t = Number(b.dataset.taux); s.taux = s.taux === t ? 0 : t; }
-  if (b.dataset.signe) { s.signe = b.dataset.signe; s.etape = null; }
+  if (b.dataset.signe) { s.signe = b.dataset.signe; s.etape = s.signe === "lien" ? "envoi" : null; }
+  if (b.dataset.parti) { s.parti = b.dataset.parti; s.etape = null; }
   rendre();
 });
 document.getElementById("remettre").addEventListener("click", () => { depart(); rendre(); });
