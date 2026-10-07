@@ -194,6 +194,32 @@ export function phrasesAcomptes(echeancier: EcheancierDevis): string[] {
 }
 
 /**
+ * Ce que l'échéancier d'UN devis dit sous ses notes.
+ *
+ * **Retirer l'acompte le retire aussi des notes — sa décision du 7 octobre
+ * 2026**, qui remplace celle du 12 septembre (*« reste visible dans les notes
+ * et conditions quoi qu'il arrive »*). Devant un devis dont il avait retiré la
+ * ligne, le papier demandait encore 30 % à la commande : le client aurait signé
+ * l'acompte que l'écran disait parti. Il a demandé d'abord si la loi l'impose ;
+ * elle ne l'impose pas (les modalités de paiement, oui, et le délai et les
+ * moyens les portent), donc *« si je décide de pas en mettre ça doit
+ * disparaître »*.
+ *
+ * **Un devis PARTI sans acompte posé garde la phrase du réglage** (`undefined`
+ * laisse `lignesConditionsDevis` l'écrire) : c'est ce que le client a reçu, et
+ * un devis envoyé ne change plus. Les devis d'avant la migration 0088 sont
+ * tous dans ce cas, sans ligne d'acompte et la phrase imprimée.
+ */
+export function phrasesAcomptesDuDevis(
+  statut: "brouillon" | "envoye",
+  acomptes: readonly AcompteDevis[],
+  totalTtc: string | number
+): string[] | undefined {
+  if (statut === "envoye" && acomptes.length === 0) return undefined;
+  return phrasesAcomptes(echeancierDevis(acomptes, totalTtc));
+}
+
+/**
  * Le rang et le taux que « + Ajouter un acompte » pose.
  *
  * Le rang suivant, et sa valeur d'office — jamais sous le cumul d'avant : un

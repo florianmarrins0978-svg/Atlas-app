@@ -29,7 +29,7 @@ import {
 import {
   echeancierDevis,
   libelleLigneAcompte,
-  phrasesAcomptes,
+  phrasesAcomptesDuDevis,
   type AcompteDevis,
 } from "@/lib/acomptes-devis";
 
@@ -193,8 +193,7 @@ function blocNotes(data: DevisPdfData, sansPrix: boolean): { sien: string | null
   const reglees = lignesConditionsDevis(
     lireConditions(data.conditionsReglees),
     Number(data.totalTtc),
-    // Les acomptes posés remplacent la phrase du réglage ; sans eux, elle reste.
-    phrasesAcomptes(echeancierDevis(data.acomptes ?? [], data.totalTtc)),
+    phrasesAcomptesDuDevis(data.statut, data.acomptes ?? [], data.totalTtc),
     estUneEntreprise(data.clientNom, data.clientCivilite)
   );
   return { sien, reglees };

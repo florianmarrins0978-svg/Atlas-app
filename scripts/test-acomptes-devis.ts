@@ -23,6 +23,7 @@ import {
   echeancierDevis,
   libelleLigneAcompte,
   phrasesAcomptes,
+  phrasesAcomptesDuDevis,
   tauxCumuleValide,
   tauxCumulesBornes,
 } from "../src/lib/acomptes-devis";
@@ -188,12 +189,28 @@ cas("les acomptes posés remplacent la phrase du réglage dans les notes", () =>
   assert.ok(lignes[0].includes("40 %"), "c'est l'acompte POSÉ qui s'imprime, pas le réglage");
 });
 
-cas("ligne retirée : la phrase du réglage reste — « quoi qu'il arrive »", () => {
+cas("ligne retirée : la phrase du réglage part aussi — sa décision du 7 octobre 2026", () => {
+  // *« si je décide de pas en mettre ça doit disparaître des notes et
+  // conditions »* : aucun acompte n'est une mention obligatoire. Garder la
+  // phrase faisait signer au client un acompte que l'écran disait retiré.
   const c = lireConditions({ acomptePourcent: "30" });
   const lignes = lignesConditionsDevis(c, 2844, []);
+  assert.ok(!lignes.some((l) => /Mode de règlement|à la commande|Solde restant/.test(l)), `un acompte retiré s'imprime encore : ${lignes.join(" | ")}`);
+});
+
+cas("sans échéancier (aperçu des Réglages, devis parti d'avant), la phrase du réglage reste", () => {
+  const c = lireConditions({ acomptePourcent: "30" });
+  const lignes = lignesConditionsDevis(c, 2844);
   assert.equal(lignes[0], "Mode de règlement : 30 % à la commande, solde à réception de la facture.");
   assert.equal(lignes[1], `Montant à régler à la commande : ${enEuros("853.20")}`);
   assert.equal(lignes[2], `Solde restant à régler : ${enEuros("1990.80")}`);
+});
+
+cas("un devis parti sans acompte posé garde ce que le client a reçu", () => {
+  assert.equal(phrasesAcomptesDuDevis("envoye", [], "2844.00"), undefined);
+  assert.deepEqual(phrasesAcomptesDuDevis("brouillon", [], "2844.00"), []);
+  assert.equal(phrasesAcomptesDuDevis("envoye", [{ rang: 1, tauxCumule: "40" }], "2844.00")?.[0],
+    "Mode de règlement : 40 % à la signature, solde à réception de la facture.");
 });
 
 console.log("");

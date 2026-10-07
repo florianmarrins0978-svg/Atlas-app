@@ -8,6 +8,26 @@ Format : le plus récent en tête.
 ---
 ## 2026-10-07
 
+### Un acompte retiré du devis ne se réclame plus dans les notes
+
+Il avait retiré l'acompte de 30 % d'un devis ; les notes et conditions
+demandaient encore « 30 % à la commande, 77,40 € ». Le client aurait signé un
+acompte que l'écran disait parti. C'était la règle du 12 septembre (« reste
+visible quoi qu'il arrive ») ; il l'a révisée après avoir demandé si la loi
+impose un acompte. Elle ne l'impose pas : les modalités de paiement sont
+dues (C. conso L111-1, L441-9 C. com. pour la facture), et le délai et les
+moyens de paiement les portent. Un acompte est un choix.
+
+`phrasesAcomptesDuDevis` (`src/lib/acomptes-devis.ts`) : un brouillon sans
+acompte posé n'imprime aucune phrase d'acompte. **Un devis parti** sans
+acompte posé garde la phrase du réglage : c'est ce que le client a reçu, et les
+devis d'avant la migration 0088 sont tous dans ce cas. L'écran et le PDF
+lisent la même fonction.
+
+**Pas touché, et à trancher :** la facture d'un devis sans acompte imprime
+encore la phrase du réglage (`notesEnGras`, `facture-pdf.ts`). La corriger
+changerait le texte de factures déjà émises ; c'est inscrit dans `TODO.md`.
+
 ### Poser au planning un client qui n'arrive pas à choisir ses dates
 
 Un client qui reçoit le lien du devis sans réussir à choisir ses dates ne

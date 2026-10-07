@@ -101,11 +101,18 @@ async function main() {
     assert.equal((lu.match(/Mode de règlement/g) ?? []).length, 1, "le réglage s'imprime en plus des acomptes posés");
   });
 
-  await essai("ligne retirée : rien sous le total, mais la phrase du réglage reste — « quoi qu'il arrive »", async () => {
+  await essai("brouillon, acompte retiré : ni sous le total, ni dans les notes (7 octobre 2026)", async () => {
+    const lu = await papier({ ...BASE, statut: "brouillon", acomptes: [] });
+    assert.ok(!lu.includes("Reste à régler"), "un reste à régler sans acompte");
+    assert.ok(!lu.includes("Mode de règlement"), "la phrase des Réglages réclame un acompte retiré");
+    assert.ok(!lu.includes("853,20"), "le montant d'un acompte retiré est sur le papier");
+  });
+
+  await essai("devis parti sans acompte posé : la phrase qu'il a reçue reste", async () => {
     const lu = await papier({ ...BASE, acomptes: [] });
     assert.ok(!lu.includes("Reste à régler"), "un reste à régler sans acompte");
-    assert.ok(lu.includes("Mode de règlement : 30 % à la commande"), "la phrase des Réglages a disparu des notes");
-    assert.ok(lu.includes("Montant à régler à la commande : 853,20"), "le montant du réglage a disparu des notes");
+    assert.ok(lu.includes("Mode de règlement : 30 % à la commande"), "un devis envoyé a perdu sa phrase");
+    assert.ok(lu.includes("Montant à régler à la commande : 853,20"), "un devis envoyé a perdu son montant");
   });
 
   await essai("un devis d'avant (sans la colonne) sort identique à lui-même", async () => {
