@@ -1596,6 +1596,21 @@ export async function manquesDeLaFactureAEmettre(ctx: Ctx, factureId: string): P
   });
 }
 
+/**
+ * La facture a été bâtie sur une version du devis que le client n'a plus :
+ * elle ne part pas avant d'avoir repris la dernière (check-up du 7 octobre
+ * 2026). Le bandeau « Reprendre ce devis » le disait, rien ne l'arrêtait, et
+ * une facture émise ne se corrige plus que par un avoir.
+ */
+export class FactureEnRetardSurLeDevisError extends Error {
+  constructor(numeroCommercial: string, numeroVersion: number) {
+    super(
+      `Le devis ${numeroCommercial} a été corrigé (v${numeroVersion}) : reprenez-le sur la facture avant de l'envoyer.`
+    );
+    this.name = "FactureEnRetardSurLeDevisError";
+  }
+}
+
 export class FactureDejaEmiseError extends Error {
   constructor() {
     super("Cette facture a déjà été émise.");
@@ -1970,6 +1985,15 @@ export async function emettreFacture(ctx: Ctx, factureId: string, maintenant: Da
     const [avant] = await tx.select().from(factures).where(eq(factures.id, factureId)).limit(1);
     if (!avant) throw new Error("Facture introuvable");
     if (avant.statut === "emise") throw new FactureDejaEmiseError();
+
+    // La même règle que le bandeau de l'écran (`repriseDuDevis`), appelée ici
+    // pour qu'aucun chemin ne fasse partir une facture sur un devis dépassé.
+    const [foi] = await lireDevisQuiFaitFoi(tx, avant.chantierId);
+    const reprise = repriseDuDevis(
+      { devisId: avant.devisId, statut: "brouillon" },
+      foi ? { id: foi.id, numeroCommercial: foi.numeroCommercial, numeroVersion: foi.numeroVersion } : null
+    );
+    if (!reprise.aJour) throw new FactureEnRetardSurLeDevisError(reprise.numeroCommercial, reprise.numeroVersion);
 
     const toutes = await tx
       .select()

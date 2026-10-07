@@ -18,6 +18,7 @@ import {
   majTvaClientFacture,
   manquesDeLaFactureAEmettre,
   FactureDejaEmiseError,
+  FactureEnRetardSurLeDevisError,
   FinChantierImpossibleError,
 } from "@/server/repositories/factures";
 import {
@@ -92,7 +93,7 @@ export async function emettreFactureAction(factureId: string): Promise<ResultatE
     const facture = await emettreFacture(ctx, factureId);
     return { succes: true, numero: facture.numeroCommercial };
   } catch (err) {
-    if (err instanceof FactureDejaEmiseError) {
+    if (err instanceof FactureDejaEmiseError || err instanceof FactureEnRetardSurLeDevisError) {
       return { succes: false, erreur: err.message };
     }
     throw err;
