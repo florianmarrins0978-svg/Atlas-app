@@ -41,6 +41,7 @@
   .feuille[data-ouverte="non"] .liste{display:none}
   .pastille{display:inline-block;margin:18px 0 6px;padding:9px 18px;border-radius:999px;background:var(--pastille);
             font:700 12px/1 var(--sans);letter-spacing:.2em;text-transform:uppercase;color:var(--encre)}
+  .pourquoi{margin:4px 0 2px;font-size:14px;line-height:1.45;color:var(--gris)}
   .ligne{display:flex;align-items:center;gap:10px;min-height:64px;border-bottom:1px solid var(--trait)}
   .ligne:last-child{border-bottom:0}
   .ligne .nom{flex:1;min-width:0;font:400 23px/1.2 var(--serif);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -190,6 +191,10 @@ function dessiner() {
   // Plus aucun devis expiré : la catégorie disparaît, elle ne reste pas vide.
   if (!expires.length) return;
   l.appendChild(pastille("Devis expirés"));
+  // Sa demande du 7 octobre : sans cette phrase, rien ne dit pourquoi le devis a changé de liste.
+  const pourquoi = document.createElement("p"); pourquoi.className = "pourquoi";
+  pourquoi.textContent = "Le lien envoyé au client n'est valable que 45 jours. Pour ceux-ci, il a expiré sans réponse.";
+  l.appendChild(pourquoi);
   for (const c of expires) {
     const d = ligne(c, c.quand);
     const b = document.createElement("button");
