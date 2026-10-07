@@ -1,5 +1,19 @@
 # Prochaines tâches
 
+## ⏳ LES TRAVAUX D'UN CLIENT POSÉ SANS DEVIS : UNE PLANCHE À REGARDER (7 octobre 2026)
+
+**Sa demande :** *« on peut ajouter un client au planning alors qu'on n'a pas
+envoyé le devis ; il faut que l'on puisse ajouter les travaux à faire dans la
+fiche du client »*. **Constat dans le code :** `tachesDuChantier`
+(`src/server/repositories/devis.ts`) rend une liste vide sans devis, et
+`TravauxAFaire.tsx` n'offre aucun geste pour en ajouter. Planche
+`appli/travaux-sans-devis.html` : un champ « Ajouter un travail » dans le
+bandeau de la fiche d'intervention, chaque travail coché part dans le retour du
+jour ; avec un devis, rien ne change. **Attend sa réponse** : oui ou non, et
+quand le devis part, ses lignes remplacent les travaux écrits à la main (1,
+recommandé) ou s'y ajoutent (2). Rien n'est codé. Il faudra une table (ou une
+colonne) pour ces travaux : migration, donc niveau 3.
+
 ## ✅ POSER À SA PLACE : SA RÉPONSE « B », CODÉE LE 7 OCTOBRE 2026 (7 octobre 2026)
 
 **Sa question :** un client âgé reçoit le devis et n'arrive pas à choisir ses
