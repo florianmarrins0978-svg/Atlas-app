@@ -56,6 +56,7 @@ const RACINE = join(__dirname, "..", "src", "app", "reglages");
 const PERSONNELLES: Record<string, string> = {
   "compte/page.tsx": "son nom et son adresse électronique à lui",
   "connexion/page.tsx": "son mot de passe, ses clés d'appareil, sa déconnexion",
+  "connexion/double-verification/page.tsx": "le code de SON téléphone, ses codes de secours",
   "apparence/page.tsx": "les couleurs de SON application",
 };
 

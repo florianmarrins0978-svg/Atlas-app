@@ -2,7 +2,7 @@
 
 import { signIn, signOut } from "@/auth";
 import { accueilPourCleAppareil, accueilPourEmail } from "@/server/accueil-apres-connexion";
-import { AuthError } from "next-auth";
+import { AuthError, type CredentialsSignin } from "next-auth";
 import { redirect } from "next/navigation";
 import { verifierLimite, rendreLimite, LIMITES } from "@/server/rate-limit";
 import { logger } from "@/server/logger";
@@ -170,6 +170,10 @@ export async function connexionAction(
       // c'est accuser le patron de se tromper de mot de passe pendant qu'un
       // service est couché, et il n'a alors aucun moyen de le comprendre.
       if (err.type === "CredentialsSignin") {
+        // **Le mot de passe est juste, il manque le code** (double vérification,
+        // 7 octobre 2026). Ce n'est pas un échec : rien ne se compte, et les
+        // compteurs ne se remettent pas non plus à zéro avant le code.
+        if ((err as CredentialsSignin).code === "code-requis") redirect("/login/code");
         // **Un échec, et un seul type d'échec, fait avancer le compteur.** Une
         // base couchée ou un secret manquant ne sont pas des essais ratés :
         // les compter temporiserait l'artisan pour une panne qui n'est pas la

@@ -72,6 +72,18 @@ const MOI: Rubrique[] = [
     href: "/reglages/connexion",
   },
   {
+    // **Sa propre rubrique, et non une section de « Mot de passe »** (7 octobre
+    // 2026). La planche la posait sous le mot de passe ; l'écran réel porte
+    // déjà Face ID et « me déconnecter partout », et sa règle du 31 août veut
+    // qu'il tienne sans défiler. Ajoutée, la section poussait « me déconnecter
+    // partout » sous la barre (`test-face-id-e2e.ts` l'a vu). Ses trois étapes
+    // ont besoin de place : elles l'ont ici. Sous `/reglages/connexion/` pour
+    // hériter des mêmes droits, à chaque rôle, que le mot de passe.
+    nom: "Double vérification",
+    icone: "telephone",
+    href: "/reglages/connexion/double-verification",
+  },
+  {
     // **« Apparence » était abstrait — « Couleurs » est ce qu'on y choisit.**
     // Huit chartes de couleurs, rien d'autre : ni police, ni densité, ni taille
     // de texte. Un nom plus large que l'écran fait ouvrir la rubrique pour

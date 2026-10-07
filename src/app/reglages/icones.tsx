@@ -44,9 +44,17 @@ export type NomIcone =
   /** Le message au client — entrée le 7 septembre 2026 avec ses trois messages. */
   | "bulle"
   /** L'organigramme, 27 septembre 2026 : un en haut, deux en dessous. */
-  | "organigramme";
+  | "organigramme"
+  /** La double vérification, 7 octobre 2026 : le téléphone qui donne le code. */
+  | "telephone";
 
 const TRACES: Record<NomIcone, React.ReactNode> = {
+  telephone: (
+    <>
+      <rect x="7" y="3" width="10" height="18" rx="2" />
+      <path d="M10 8h4M10 11.5h4M10 15h2" />
+    </>
+  ),
   organigramme: (
     <>
       <rect x="9" y="3" width="6" height="5" rx="1" />

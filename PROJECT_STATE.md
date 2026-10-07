@@ -5,6 +5,15 @@
 `drizzle/0116_modele_de_fiche_d_office.sql`
 
 ---
+## SUR SA BRANCHE : LA DOUBLE VÉRIFICATION (7 octobre 2026)
+
+Branche `claude/double-verification`, migration 0123. Appli d'authentification
+après le mot de passe, Google ou Apple ; dix codes de secours ; appareil retenu
+trente jours ; Face ID sans code. Obligatoire pour le patron et la facturation
+en production réelle (`ARCHITECTURE.md` §451). Suites pures, base et navigateur
+de ce lot jouées seules ; **batterie non jouée, à sa demande**.
+
+---
 ## SUR `main` : POSER UN CLIENT À SA PLACE (7 octobre 2026)
 
 Branche `claude/add-quote-client-to-schedule-ve9xn7`, migration 0122. Son

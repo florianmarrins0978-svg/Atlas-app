@@ -1,5 +1,26 @@
 # Prochaines tâches
 
+## ⏳ LA DOUBLE VÉRIFICATION : CODÉE, SUR SA BRANCHE, BATTERIE À JOUER (7 octobre 2026)
+
+**Sa réponse du 30 septembre** sur `appli/double-verification.html` : la A
+(obligatoire pour le patron et la facturation) et « oui » (appareil retenu
+trente jours). **Codé le 7 octobre** sur `claude/double-verification`
+(`ARCHITECTURE.md` §451, migration 0123). Il a demandé de ne pas jouer de
+batterie : une seule, à la fin, avec `claude/mots-de-passe-courants`.
+
+Ce qui reste, par ordre d'importance :
+- **la batterie**, puis la fusion sur `main` (à lui de dire quand) ;
+- **l'obligation n'est éprouvée que par sa règle pure** : la redirection de
+  `getCurrentCtx` ne se joue qu'en production réelle, donc dans aucune suite
+  navigateur. À regarder le jour de la mise en ligne, sur un compte patron ;
+- **tout perdu** (téléphone ET codes de secours) : aucun chemin n'existe, il
+  faudra passer par le support. À décider avec lui ;
+- régénérer les codes de secours sans désactiver, et un e-mail d'avis quand la
+  double vérification est activée ou désactivée ;
+- `docs/QUESTIONS.md` §25 dit que Face ID « répond » à la double
+  authentification : c'était faux (le mot de passe restait seul). À corriger,
+  **avec son accord** (document tenu pour lui).
+
 ## ⏳ LES TRAVAUX D'UN CLIENT POSÉ SANS DEVIS : UNE PLANCHE À REGARDER (7 octobre 2026)
 
 **Sa demande :** *« on peut ajouter un client au planning alors qu'on n'a pas

@@ -11,6 +11,24 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 
 ---
 
+## LA DOUBLE VÉRIFICATION : 7 octobre 2026, SUR SA BRANCHE
+
+Branche `claude/double-verification`, migration 0123. Avant de toucher la
+connexion :
+
+- **le code s'exige dans `authorize`** (`src/auth.ts`), jamais dans une action :
+  toute connexion par mot de passe y passe, mot de passe oublié compris ;
+- **les routes `POST /api/auth/callback/*` sont murées sauf Google et Apple**
+  (une liste qui OUVRE) : un nouveau fournisseur `Credentials` reste fermé ;
+- **aucune session avant le code** : `connexions_en_attente` + cookie
+  `atlas-connexion-en-attente`, puis le fournisseur `second-facteur`. Ne pas
+  inventer de session « à moitié entrée » ;
+- **Face ID n'y passe jamais** ; Google et Apple, si ;
+- **l'obligation** (patron, facturation) vit dans `getCurrentCtx` et ne mord
+  qu'en production réelle. `/double-verification` passe par
+  `getCurrentCtxPourActiver`, sinon il se renverrait à lui-même.
+
+
 ## POSER UN CLIENT À SA PLACE : 7 octobre 2026, SUR `main` LE 7
 
 Branche `claude/add-quote-client-to-schedule-ve9xn7`, migration 0122. Avant de

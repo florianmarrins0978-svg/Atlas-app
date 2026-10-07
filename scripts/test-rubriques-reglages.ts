@@ -185,13 +185,20 @@ essai("un rôle inconnu est traité comme un membre, jamais comme le patron", ()
   assert.deepEqual(rubriquesReglages(null), [moiDuMembre]);
 });
 
-essai("un membre reçoit ses quatre réglages personnels, et le même ensemble", () => {
+essai("un membre reçoit ses cinq réglages personnels, et le même ensemble", () => {
   const ensembles = rubriquesReglages("salarie");
   assert.deepEqual(ensembles.map((e) => e.titre), ["L'entreprise", "Moi"]);
   assert.deepEqual(ensembles[0].rubriques.map((r) => r.href), ["/reglages/organigramme"]);
   assert.deepEqual(
     ensembles[1].rubriques.map((r) => r.href),
-    ["/reglages/compte", "/reglages/notifications", "/reglages/connexion", "/reglages/apparence"]
+    [
+      "/reglages/compte",
+      "/reglages/notifications",
+      "/reglages/connexion",
+      // La double vérification, 7 octobre 2026 : elle appartient à la personne.
+      "/reglages/connexion/double-verification",
+      "/reglages/apparence",
+    ]
   );
 });
 

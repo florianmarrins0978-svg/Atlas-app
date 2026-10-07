@@ -3,6 +3,7 @@ import { hash } from "bcryptjs";
 import { db } from "../db/client";
 import { users } from "../db/schema";
 import { verifierNouveauMotDePasse, type RefusMotDePasse } from "../../lib/mot-de-passe";
+import { oublierAppareils } from "./double-verification";
 import type { Ctx } from "./context";
 import { motDePasseEstCeluiDe, poserNouveauCondensat } from "../secret-authentification";
 import { effacerPreuves } from "../preuve-recente";
@@ -193,6 +194,9 @@ export async function fermerToutesLesSessions(utilisateurId: string, coupure: Da
   // l'autre sens, on aurait annoncé « tout est fermé » avec une porte encore
   // ouverte, ce qui est exactement le défaut qu'on répare.
   await retirerToutesLesCles(utilisateurId);
+  // Même raisonnement pour « ne plus demander sur cet appareil » : un
+  // téléphone perdu ne doit plus entrer sans code.
+  await oublierAppareils(utilisateurId);
   await db
     .update(users)
     .set({ jetonsValidesDepuis: coupure, updatedAt: new Date() })
