@@ -88,6 +88,11 @@ import {
 /** Délai de paiement porté sur la facture, à défaut d'accord particulier. */
 const DELAI_PAIEMENT_JOURS = 30;
 
+/** Son délai quand il en a posé un (0 = comptant), 30 jours à défaut. */
+function echeanceDuDelai(depuis: Date, delaiPaiementJours: number | null): Date {
+  return echeanceFacture(depuis, delaiPaiementJours ?? DELAI_PAIEMENT_JOURS);
+}
+
 /**
  * Le taux du document quand il n'a jamais ouvert ses paramètres de chiffrage.
  *
@@ -497,9 +502,10 @@ export async function terminerChantier(ctx: Ctx, chantierId: string, maintenant:
 
     const facture = await poserLaFactureBrouillon(tx, ctx, {
       chantierId,
-      // Du devis : le client et les prix — ce qu'il a accepté.
+      // Du devis : le client, les prix et le délai — ce qu'il a accepté.
       instantane: instantaneDuDevis(devisSource),
       maintenant,
+      delaiDuDevis: devisSource,
     });
 
     if (lignes.length > 0) {
@@ -606,11 +612,18 @@ async function poserLaFactureBrouillon(
     chantierId,
     instantane,
     maintenant,
+    delaiDuDevis,
   }: {
     chantierId: string;
     /** Le client et les prix — du devis, ou de la fiche client. */
     instantane: OrigineDeLaFacture;
     maintenant: Date;
+    /**
+     * Le délai de paiement du devis d'origine, celui que le client a accepté.
+     * Absent quand la facture naît sans devis : le délai des Réglages le
+     * remplace, faute d'autre engagement.
+     */
+    delaiDuDevis?: { delaiPaiementJours: number | null };
   }
 ) {
   // **TOUTE l'identité de l'émetteur se lit MAINTENANT**, pour être figée dans
@@ -619,9 +632,10 @@ async function poserLaFactureBrouillon(
   // le nom, l'adresse, le SIRET et surtout l'IBAN venaient encore du devis, et
   // pouvaient dater de plusieurs mois (migration 0076, `identiteDeLEmetteur`).
   //
-  // Le délai de paiement se lit du même coup : c'est lui qui PROPOSE
-  // l'échéance par défaut, plutôt qu'un « 30 » écrit en dur qui contredisait
-  // la mention « Paiement à X jours » qu'il avait réglée.
+  // Le délai de paiement se lit du même coup, pour la facture née SANS devis :
+  // une facture issue d'un devis prend le délai de ce devis (check-up du
+  // 7 octobre 2026), sans quoi un devis accepté « comptant » donnait une
+  // facture à 30 jours parce que les Réglages avaient changé entre-temps.
   const [entrepriseCourante] = await tx
     .select({ ...COLONNES_EMETTEUR, delaiPaiementJours: entreprises.delaiPaiementJours })
     .from(entreprises)
@@ -653,10 +667,9 @@ async function poserLaFactureBrouillon(
     jourIso(maintenant)
   );
 
-  // Son délai réglé quand il en a posé un (0 = comptant), 30 jours à défaut.
-  const echeance = echeanceFacture(
+  const echeance = echeanceDuDelai(
     maintenant,
-    entrepriseCourante?.delaiPaiementJours ?? DELAI_PAIEMENT_JOURS
+    delaiDuDevis ? delaiDuDevis.delaiPaiementJours : (entrepriseCourante?.delaiPaiementJours ?? null)
   );
 
   const [facture] = await tx
@@ -893,8 +906,10 @@ export async function getFacturePourChantier(ctx: Ctx, chantierId: string) {
  * **Le refus se rend en valeur, jamais en exception** (`AGENTS.md`) : le message
  * d'une exception d'action serveur n'arrive pas jusqu'à lui.
  *
- * **Le numéro, la date et l'échéance ne bougent pas.** Un numéro de facture est
- * consommé, et sa date est celle de la facture — pas celle du devis.
+ * **Le numéro et la date ne bougent pas** : un numéro de facture est consommé,
+ * et sa date est celle de la facture. **L'échéance suit le délai du devis
+ * repris** (7 octobre 2026), comptée depuis cette date : c'est ce délai que le
+ * client a accepté.
  */
 export async function reprendreLeDevisSurLaFacture(
   ctx: Ctx,
@@ -962,6 +977,8 @@ export async function reprendreLeDevisSurLaFacture(
         ...instantaneDuDevis(d),
         ...identiteDeLEmetteur(entrepriseCourante),
         tauxAvantAutoliquidation: null,
+        // Le délai du devis repris, compté depuis la date de la facture.
+        dateEcheance: jourIso(echeanceDuDelai(new Date(`${f.dateEmission}T00:00:00Z`), d.delaiPaiementJours)),
       })
       .where(eq(factures.id, f.id));
 

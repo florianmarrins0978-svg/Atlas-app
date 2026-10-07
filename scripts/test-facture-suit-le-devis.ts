@@ -3,11 +3,21 @@ import { pool } from "../src/server/db/client";
 import { nettoyerBase } from "./_test-db";
 import { getOuCreerDevisBrouillon, envoyerDevis } from "../src/server/repositories/devis";
 import {
+  reprendreLeDevisSurLaFacture,
   terminerChantier,
   emettreFacture,
   FactureEnRetardSurLeDevisError,
 } from "../src/server/repositories/factures";
-import { creerEntreprise } from "./_devis-et-facture";
+import { creerEntreprise, regler } from "./_devis-et-facture";
+
+/** Les Réglages de l'entreprise, changés après coup : ce que le devis a figé ne doit pas bouger. */
+async function reglerLEntreprise(entrepriseId: string, delaiPaiementJours: number) {
+  const r = await pool.query(`UPDATE entreprises SET delai_paiement_jours = $2 WHERE id = $1`, [
+    entrepriseId,
+    delaiPaiementJours,
+  ]);
+  assert.equal(r.rowCount, 1, "les Réglages n'ont pas changé : la suite ne mesurerait rien");
+}
 
 /**
  * ─── LA FACTURE SUIT LE DEVIS — le check-up du 7 octobre 2026 ──────────────
@@ -64,6 +74,33 @@ async function main() {
     const facture = await terminerChantier(ctx, chantierId);
     const emise = await emettreFacture(ctx, facture.id);
     assert.equal(emise.statut, "emise");
+  });
+
+  // Point 2. L'échéance venait des Réglages du jour de la facture, jamais du
+  // délai que le client avait accepté sur le devis.
+  await test("l'échéance suit le délai du devis, pas les Réglages d'aujourd'hui", async () => {
+    const { ctx, chantierId } = await creerEntreprise("Carrel", "30");
+    const v1 = await getOuCreerDevisBrouillon(ctx, chantierId);
+    await regler(ctx.entrepriseId, v1.id, { delai_paiement_jours: "0" });
+    await envoyerDevis(ctx, v1.id);
+    await reglerLEntreprise(ctx.entrepriseId, 45);
+    const facture = await terminerChantier(ctx, chantierId);
+    assert.equal(facture.dateEcheance, facture.dateEmission, "un devis payable comptant donne une facture à 45 jours");
+  });
+
+  await test("reprendre le devis corrigé reprend aussi son délai", async () => {
+    const { ctx, chantierId } = await creerEntreprise("Duclos", "30");
+    const v1 = await getOuCreerDevisBrouillon(ctx, chantierId);
+    await envoyerDevis(ctx, v1.id);
+    const facture = await terminerChantier(ctx, chantierId);
+    const v2 = await getOuCreerDevisBrouillon(ctx, chantierId);
+    await regler(ctx.entrepriseId, v2.id, { delai_paiement_jours: "0" });
+    await envoyerDevis(ctx, v2.id);
+    const r = await reprendreLeDevisSurLaFacture(ctx, facture.id);
+    assert.ok(r.ok, "la reprise a été refusée");
+    const reprise = await terminerChantier(ctx, chantierId);
+    assert.equal(reprise.id, facture.id);
+    assert.equal(reprise.dateEcheance, reprise.dateEmission, "la facture reprise garde l'échéance de la version d'avant");
   });
 
   console.log(`\n${failed} échec(s), ${passed} réussi(s).`);
