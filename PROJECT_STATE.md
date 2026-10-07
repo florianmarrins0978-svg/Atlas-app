@@ -5,6 +5,16 @@
 `drizzle/0116_modele_de_fiche_d_office.sql`
 
 ---
+## SUR `main` : LA BATTERIE COMMUNE DU 7 OCTOBRE 2026, SIX LOTS
+
+Décennale en rappel, n° TVA « FR » d'office et téléphone juste, Supprimer du
+planning et « Le client s'est trompé », travaux sans devis, double
+vérification, mots de passe courants. Migrations 0123 à 0126. Batterie au
+vert : 458/458 suites base, 182/182 navigateur, connexion derrière un proxy
+(`docs/lot-decennale-rappel.md`). Les blocs « pas encore sur `main` » de ces
+lots, plus bas, sont dépassés.
+
+---
 ## SUR `main` : LA DÉCENNALE ET LE MÉDIATEUR RAPPELLENT (7 octobre 2026)
 
 Ils ne bloquent plus ni le devis ni la facture : la feuille d'envoi du devis

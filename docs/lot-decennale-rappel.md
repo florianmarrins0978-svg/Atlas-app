@@ -45,11 +45,29 @@ client sur une facture. Il n'a visé que la décennale et le médiateur.
 | `test-documents-en-regle-db.ts` (sous la RLS) | 24 vertes |
 | tirets, pansements, couches, code mort, flèches, chartes | au vert |
 | écrans regardés | Réglages et la feuille d'envoi, dans un vrai navigateur |
-| **batterie complète** | **non jouée, à sa demande**. Le lot est de niveau 3 : le garde-fou de `main` la réclamera |
+| **batterie complète, commune à six lots** | **au vert le 7 octobre 2026** : 458/458 suites base, 182/182 suites navigateur, connexion derrière un proxy réussie |
 
 ## Ce qui reste ouvert
 
 | | Qui |
 |---|---|
-| jouer la batterie, puis fusionner sur `main` | lui, quand il le dit |
 | déposer une vraie attestation, puis une photo, sur son espace : la lecture réelle n'a pas pu être jouée ici (aucune clé) | lui, sur son espace |
+
+## La batterie commune du 7 octobre
+
+À sa demande, une seule batterie pour six lots finis : ce lot, le n° TVA « FR »
+d'office (avec le téléphone et le n° TVA justes), Supprimer du planning et
+« Le client s'est trompé », les travaux d'un client posé sans devis, la double
+vérification, et les mots de passe courants. Quatre migrations portaient le
+numéro 0123 : elles sont devenues 0123 (acceptation défaite), 0124 (attestation
+lue), 0125 (double vérification), 0126 (travaux à la main), toutes rejouables.
+
+**La première batterie a rougi sur 5 suites base sur 458, aucune de ce lot** :
+l'export des données oubliait les acceptations défaites, un contrôle prenait
+« Enlever » pour un retour, et la double vérification manquait de trois
+déclarations (son interrupteur, ses actions, sa fiche du mode d'emploi, qui
+disait encore qu'Atlas n'avait pas de code en deux étapes). Corrigés à la
+racine, puis la seconde batterie : tout au vert.
+
+Laissés de côté, leurs sessions tournant encore : `acompte-retire-des-notes`,
+`sous-traitance-phrase`, `devis-expires-planche`.
