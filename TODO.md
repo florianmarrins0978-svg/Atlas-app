@@ -1,5 +1,21 @@
 # Prochaines tâches
 
+## ⏳ UNE PLANCHE À REGARDER : POSER À SA PLACE (7 octobre 2026)
+
+**Sa question :** un client âgé reçoit le devis et n'arrive pas à choisir ses
+dates sur le lien ; depuis le planning, « Ajouter » peut-il reprendre ce client
+et ce devis ? **Vérifié dans le code : non.** `getPlanificationEtat` le classe
+`attente_client`, la voie « Client en attente » ne liste que `a_planifier`, le
+tiroir le montre sans geste, et « Un client » créerait un second chantier sans
+devis.
+
+Planche `appli/poser-a-sa-place.html` : A (il signe toujours sur son lien, qui
+n'affiche plus que la date posée) ou B (A plus « Signé sur papier », qui ferme
+le lien). Recommandé : B. Refusé : « accord au téléphone » (aucune preuve pour
+un particulier). Ouvert : la case des 14 jours de rétractation sur le papier.
+**Rien n'est codé.** Le lot touchera `envois-devis` et l'acceptation : niveau 3
+(gravité argent).
+
 ## ⏳ LA FENTE AU FÛT : SES PRIX DE FENTE À REVOIR (30 septembre 2026)
 
 Sur `main` depuis le 6 octobre 2026 (`ARCHITECTURE.md` §449). **Ce que le code ne
