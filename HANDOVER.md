@@ -10,6 +10,15 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## SUR `main` : LA DÉCENNALE ET LE MÉDIATEUR RAPPELLENT (7 octobre 2026)
+
+Ils ne bloquent plus ni le devis ni la facture : la feuille d'envoi du devis
+les rappelle (`rappelsDuDevis`, `ARCHITECTURE.md` §451). Ne pas les remettre
+dans `manquesDuDevis` : c'est sa règle. Migration 0123 : l'attestation déposée
+est lue par l'IA (`attestation-lue.ts`, `lire-attestation.ts`), et ce qu'elle
+trouve se rappelle. Lecture réelle non éprouvée ici (aucune clé).
+
+---
 
 ## POSER UN CLIENT À SA PLACE : 7 octobre 2026, SUR `main` LE 7
 

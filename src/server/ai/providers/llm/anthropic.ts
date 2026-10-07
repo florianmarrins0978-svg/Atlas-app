@@ -135,8 +135,10 @@ export const fournisseurLLMAnthropic: FournisseurLLM = {
             {
               role: "user",
               content: [
+                // Un PDF se lit comme un DOCUMENT, pas comme une image : le
+                // fournisseur refuse un `image` qui porte « application/pdf ».
                 ...images.map((image) => ({
-                  type: "image",
+                  type: image.mimeType === "application/pdf" ? "document" : "image",
                   source: { type: "base64", media_type: image.mimeType, data: image.base64 },
                 })),
                 { type: "text", text: consigne },

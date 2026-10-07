@@ -61,10 +61,13 @@ export default function IdentiteClient({
   aPrevenir,
   declarations,
   attestationDeposee,
+  remarquesAttestation,
 }: {
   initial: Identite;
   /** Une attestation décennale est-elle déposée (migration 0121) ? */
   attestationDeposee: boolean;
+  /** Ce que l'IA a lu sur le fichier déposé, rappelé sans bloquer (7 octobre 2026). */
+  remarquesAttestation: string[];
   /**
    * **Les factures parties avec l'ancien IBAN** — sa demande du 8 septembre
    * 2026. C'est ICI que l'alerte vit, tant qu'il n'a pas prévenu : sa question
@@ -398,7 +401,8 @@ export default function IdentiteClient({
         {/* **Son choix A du 5 octobre 2026** (`appli/assurance-et-sous-traitance.html`) :
             la loi veut les coordonnées de l'assureur sur chaque devis et chaque
             facture (loi 96-603, art. 22-2), et l'attestation jointe (L243-2).
-            Un assureur nommé les exige ; sans lui, rien n'est réclamé. */}
+            Un assureur nommé les rappelle ; sans lui, rien n'est réclamé. Elles
+            ne bloquent plus l'envoi (sa règle du 7 octobre 2026). */}
         <Champ
           etiquette="Adresse de l’assureur"
           valeur={valeurs.adresseAssureurDecennale}
@@ -406,7 +410,7 @@ export default function IdentiteClient({
           onChange={(v) => ecrire("adresseAssureurDecennale", v)}
           onFini={(duChamp) => enregistrer({ adresseAssureurDecennale: duChamp })}
           manquant={assureurEnregistre !== "" && valeurs.adresseAssureurDecennale.trim() === ""}
-          empeche="Sans elle, vos devis et vos factures ne partent pas."
+          empeche="Obligatoire sur vos devis et vos factures."
         />
         <Champ
           etiquette="N° de contrat"
@@ -424,6 +428,7 @@ export default function IdentiteClient({
         />
         <Attestation
           initiale={attestationDeposee}
+          remarquesInitiales={remarquesAttestation}
           exigee={assureurEnregistre !== ""}
         />
       </Bloc>
@@ -556,8 +561,17 @@ function Bloc({ titre, children }: { titre?: string; children: React.ReactNode }
  * serveur : la laisser partir pour se la voir refuser après le téléversement
  * le ferait attendre pour rien, sur un forfait de chantier.
  */
-function Attestation({ initiale, exigee }: { initiale: boolean; exigee: boolean }) {
+function Attestation({
+  initiale,
+  remarquesInitiales,
+  exigee,
+}: {
+  initiale: boolean;
+  remarquesInitiales: string[];
+  exigee: boolean;
+}) {
   const [deposee, setDeposee] = useState(initiale);
+  const [remarques, setRemarques] = useState(remarquesInitiales);
   const [refus, setRefus] = useState<string | null>(null);
   const [enCours, demarrer] = useTransition();
   const manquant = exigee && !deposee;
@@ -590,8 +604,10 @@ function Attestation({ initiale, exigee }: { initiale: boolean; exigee: boolean 
           formulaire.append("fichier", f);
           demarrer(async () => {
             const resultat = await deposerAttestationAction(formulaire);
-            if (resultat.ok) setDeposee(true);
-            else setRefus(resultat.raison);
+            if (resultat.ok) {
+              setDeposee(true);
+              setRemarques(resultat.remarques);
+            } else setRefus(resultat.raison);
           });
         }}
       />
@@ -605,8 +621,10 @@ function Attestation({ initiale, exigee }: { initiale: boolean; exigee: boolean 
             onClick={() =>
               demarrer(async () => {
                 const resultat = await retirerAttestationAction();
-                if (resultat.ok) setDeposee(false);
-                else setRefus(resultat.raison);
+                if (resultat.ok) {
+                  setDeposee(false);
+                  setRemarques([]);
+                } else setRefus(resultat.raison);
               })
             }
             className={libelleCaps}
@@ -625,9 +643,16 @@ function Attestation({ initiale, exigee }: { initiale: boolean; exigee: boolean 
           {enCours ? "Envoi…" : "+ Ajouter le PDF"}
         </label>
       )}
+      {/* **Un rappel, jamais un refus** (sa règle du 7 octobre 2026) : ce que
+          la lecture a trouvé sur le fichier, sous « Déposée ». */}
+      {deposee && !refus && remarques.length > 0 && (
+        <span data-atlas="attestation-remarques" className={`mt-1.5 block ${texteSituation}`} style={{ color: colors.alert }}>
+          {remarques.map((r) => `${r}.`).join(" ")}
+        </span>
+      )}
       {manquant && !refus && (
         <span className={`mt-1.5 block ${texteSituation}`} style={{ color: colors.alert }}>
-          Sans elle, vos devis et vos factures ne partent pas.
+          Obligatoire sur vos devis et vos factures.
         </span>
       )}
       {refus && (

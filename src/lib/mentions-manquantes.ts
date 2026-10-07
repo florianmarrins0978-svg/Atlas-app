@@ -26,14 +26,24 @@
  * | adresse du client (à défaut celle du chantier) | non | oui | 242 nonies A, I-2° |
  * | numéro de TVA du donneur d'ordre, en autoliquidation | non | oui | 242 nonies A, I-4° |
  *
- * **La décennale ne bloque que si SES conditions générales la citent encore
- * entre crochets** une fois remplies (le texte d'origine ne la cite plus quand
+ * **LA DÉCENNALE ET LE MÉDIATEUR RAPPELLENT, ILS NE BLOQUENT PAS** — sa règle
+ * du 7 octobre 2026 : *« il ne faut pas que ces éléments bloquent les devis, il
+ * faut que ça rappelle à l'utilisateur qu'il faut qu'il y souscrive ; s'il veut
+ * être hors la loi, c'est son problème »*. Ils vivent donc dans `rappelsDuDevis`
+ * et `rappelsDeLaFacture`, que l'écran montre et que le serveur n'oppose
+ * jamais. Le blocage n'en vérifiait d'ailleurs rien : une photo quelconque
+ * déposée comme attestation le levait (son essai du même jour). Le reste du
+ * tableau ci-dessous bloque toujours.
+ *
+ * **La décennale ne se rappelle que si SES conditions générales la citent encore
+ * entre crochets** une fois remplies, ou si un assureur est nommé (le texte d'origine ne la cite plus quand
  * rien n'est enregistré, 5 octobre 2026). Atlas ne sait pas si ses travaux y sont soumis (un
  * entretien de jardin ne l'est pas, une terrasse l'est) ; un crochet resté
  * vide, lui, partirait tel quel chez le client.
  */
 import { formeADuCapital } from "./formes-juridiques";
 import { CROCHET_DECENNALE, conditionsGeneralesRemplies } from "./conditions-generales";
+import { remarquesSurLAttestation, type AttestationLue } from "./attestation-lue";
 
 /**
  * Où il complète : l'écran de son entreprise, la fiche du client, ou la pièce
@@ -59,6 +69,8 @@ export type EmetteurAVerifier = {
   adresseAssureurDecennale: string | null | undefined;
   /** Une attestation déposée ; ce qui compte ici, c'est qu'elle existe. */
   attestationDecennale: boolean;
+  /** Ce que l'IA y a lu au dépôt (`attestation-lue.ts`) ; absent : rien de lu. */
+  attestationLue?: AttestationLue | null;
 };
 
 export type ClientAVerifier = {
@@ -76,7 +88,7 @@ const vide = (v: string | number | null | undefined) => String(v ?? "").trim() =
  * (C. ass. L243-2), sous-traitance comprise : ni l'une ni l'autre n'est du droit
  * de la consommation (`docs/check-up-legal-documents.md`, points 1 et 2).
  */
-function manquesDeLAssurance(e: EmetteurAVerifier): Manque[] {
+function manquesDeLAssurance(e: EmetteurAVerifier, jour: string): Manque[] {
   if (vide(e.assureurDecennale)) return [];
   const m: Manque[] = [];
   if (vide(e.adresseAssureurDecennale)) {
@@ -84,6 +96,12 @@ function manquesDeLAssurance(e: EmetteurAVerifier): Manque[] {
   }
   if (!e.attestationDecennale) {
     m.push({ cle: "decennale-attestation", libelle: "Votre attestation d'assurance décennale", ou: "entreprise" });
+  } else {
+    // Ce que la lecture a trouvé sur le fichier déposé (7 octobre 2026) : une
+    // photo quelconque, une attestation expirée, un autre assureur.
+    for (const r of remarquesSurLAttestation(e.attestationLue, e.assureurDecennale, jour)) {
+      m.push({ ...r, ou: "entreprise" });
+    }
   }
   return m;
 }
@@ -99,7 +117,7 @@ function manquesDeLEmetteur(e: EmetteurAVerifier): Manque[] {
     if (vide(e.capitalSocial)) m.push({ cle: "capital", libelle: "Le capital de votre société", ou: "entreprise" });
     if (vide(e.villeRcs)) m.push({ cle: "rcs", libelle: "La ville de votre RCS", ou: "entreprise" });
   }
-  return [...m, ...manquesDeLAssurance(e)];
+  return m;
 }
 
 function manquesDuClient(c: ClientAVerifier, avecAdresse: boolean): Manque[] {
@@ -124,11 +142,6 @@ export function manquesDuDevis(
   sousTraitance = false
 ): Manque[] {
   const m = manquesDeLEmetteur(e);
-  // **Le médiateur ne protège qu'un consommateur** (L616-1) : un devis en
-  // sous-traitance va à une entreprise, il n'en a pas besoin.
-  if (!sousTraitance && vide(e.mediateurNom)) {
-    m.push({ cle: "mediateur", libelle: "Votre médiateur de la consommation", ou: "entreprise" });
-  }
   // **Le particulier doit pouvoir le joindre avant de signer** (R111-1, 1° :
   // « son numéro de téléphone et son adresse électronique »). Le papier les
   // imprimait quand ils étaient remplis, mais rien ne les réclamait
@@ -140,6 +153,25 @@ export function manquesDuDevis(
   if (!sousTraitance && vide(e.email)) {
     m.push({ cle: "email", libelle: "Votre adresse e-mail", ou: "entreprise" });
   }
+  return [...m, ...manquesDuClient(client, false)];
+}
+
+/**
+ * Ce qu'on lui RAPPELLE avant d'envoyer un devis, sans l'empêcher de partir
+ * (sa règle du 7 octobre 2026, en tête de ce fichier).
+ */
+export function rappelsDuDevis(
+  e: EmetteurAVerifier,
+  conditionsGenerales: string | null | undefined,
+  jour: string,
+  sousTraitance = false
+): Manque[] {
+  const m = manquesDeLAssurance(e, jour);
+  // **Le médiateur ne protège qu'un consommateur** (L616-1) : un devis en
+  // sous-traitance va à une entreprise, il n'en a pas besoin.
+  if (!sousTraitance && vide(e.mediateurNom)) {
+    m.push({ cle: "mediateur", libelle: "Votre médiateur de la consommation", ou: "entreprise" });
+  }
   // **Ce qui compte, c'est ce qui s'IMPRIMERAIT** : sans décennale
   // enregistrée, le texte d'origine perd sa moitié décennale, et rien ne manque
   // (sa règle du 5 octobre 2026). Seul un crochet resté dans SES phrases
@@ -148,7 +180,12 @@ export function manquesDuDevis(
   if (vide(e.assureurDecennale) && imprimees.includes(CROCHET_DECENNALE)) {
     m.push({ cle: "decennale", libelle: "Votre assurance décennale", ou: "entreprise" });
   }
-  return [...m, ...manquesDuClient(client, false)];
+  return m;
+}
+
+/** Ce qu'on lui rappelle avant d'émettre une facture, sans l'en empêcher. */
+export function rappelsDeLaFacture(e: EmetteurAVerifier, jour: string): Manque[] {
+  return manquesDeLAssurance(e, jour);
 }
 
 /** Ce qui manque à une facture pour partir. Vide : elle part. */

@@ -1089,6 +1089,23 @@ function Contenu({
         </>
       )}
 
+      {/* **Un rappel, pas un refus** : sa règle du 7 octobre 2026 pour la
+          décennale et le médiateur (`rappelsDuDevis`). Le bouton d'envoi n'en
+          dépend pas. Il se lit juste au-dessus de ce bouton, au moment
+          d'envoyer, sans couper une question de ses réponses. */}
+      {preparation && preparation.rappels.length > 0 && (
+        <div data-atlas="rappels-mentions">
+          <p className={`mb-1 mt-4 ${texteSituation}`} style={{ color: colors.alert }}>
+            Obligatoire, mais le devis part quand même.
+          </p>
+          <ListeDesManques
+            manques={preparation.rappels}
+            lienEntreprise="/reglages/identite"
+            lienClient={`/chantiers/${chantierId}/coordonnees`}
+          />
+        </div>
+      )}
+
       {/* **UN REFUS N'EST PAS UNE ACTION — 4 septembre 2026.**
 
           Cette phrase était écrite en `colors.rust`, l'accent de ce qu'on FAIT.

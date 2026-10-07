@@ -1,4 +1,5 @@
-import { manquesDuDevis, type Manque } from "@/lib/mentions-manquantes";
+import { manquesDuDevis, rappelsDuDevis, type Manque } from "@/lib/mentions-manquantes";
+import { jourIso } from "@/lib/jour";
 import { conditionsDepuisEntreprise } from "@/lib/conditions-documents";
 import { and, desc, eq, gte, isNull, lte, sql } from "drizzle-orm";
 import { withEntreprise } from "../db/with-entreprise";
@@ -97,6 +98,11 @@ export type PreparationEnvoi = {
    * (son choix 1A du 3 octobre 2026, `manquesDuDevis`). Vide : rien ne manque.
    */
   manques: Manque[];
+  /**
+   * La décennale et le médiateur, rappelés sans bloquer l'envoi (sa règle du
+   * 7 octobre 2026, `rappelsDuDevis`). Vide : rien à lui rappeler.
+   */
+  rappels: Manque[];
   /** Motif rendant l'envoi impossible, à afficher tel quel au patron. */
   blocage:
     | "canal_absent"
@@ -258,6 +264,7 @@ export async function preparerEnvoi(
         email: entreprises.email,
         adresseAssureurDecennale: entreprises.adresseAssureurDecennale,
         attestationDecennaleCle: entreprises.attestationDecennaleCle,
+        attestationDecennaleLue: entreprises.attestationDecennaleLue,
         // Ses conditions générales, pour savoir si elles citent la décennale.
         conditionsGenerales: entreprises.conditionsGenerales,
       })
@@ -340,6 +347,18 @@ export async function preparerEnvoi(
           chantier?.autoliquidation ?? false
         )
       : [];
+    const rappels = entreprise
+      ? rappelsDuDevis(
+          {
+            ...entreprise,
+            attestationDecennale: !!entreprise.attestationDecennaleCle,
+            attestationLue: entreprise.attestationDecennaleLue,
+          },
+          conditionsDepuisEntreprise(entreprise).conditionsGenerales,
+          jourIso(maintenant),
+          chantier?.autoliquidation ?? false
+        )
+      : [];
     const blocage: PreparationEnvoi["blocage"] = !devisRow
       ? "devis_absent"
       : devisEnvoyable({ nombreLignes: compte?.n ?? 0 })
@@ -383,6 +402,7 @@ export async function preparerEnvoi(
       joursDuClient,
       dureeDeduiteDeLaDictee: dureeImposee === undefined && chantier?.dureeDemiJournees == null && deduite !== null,
       manques,
+      rappels,
       blocage,
     };
   });

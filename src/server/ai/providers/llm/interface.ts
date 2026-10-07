@@ -112,7 +112,10 @@ export interface FournisseurLLM extends FournisseurVision {
 export type ImagePourLecture = {
   /** Les octets de l'image, en base64 — sans le préfixe `data:`. */
   base64: string;
-  /** « image/jpeg », « image/png », « image/webp ». */
+  /**
+   * « image/jpeg », « image/png », « image/webp », ou « application/pdf » :
+   * une attestation d'assureur arrive presque toujours en PDF (7 octobre 2026).
+   */
   mimeType: string;
 };
 

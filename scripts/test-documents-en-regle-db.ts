@@ -370,12 +370,34 @@ async function main() {
     assert.equal(pages(apercu), pages(await genererPdfFacturePourApercu(sans, nue.id)) + 1, "une page de plus, pas davantage");
   });
 
-  await test("un assureur nommé sans attestation ni adresse : la pièce ne part pas", async () => {
+  // Sa règle du 7 octobre 2026 : la décennale incomplète se rappelle, elle ne
+  // bloque plus (`rappelsDeLaFacture`).
+  await test("un assureur nommé sans attestation ni adresse : la pièce part quand même", async () => {
     const sans = await contexte("assure-incomplet");
     await entreprisesRepo.mettreAJourEntreprise(sans, { attestationDecennale: null, adresseAssureurDecennale: "" });
     const { facture } = await factureDuChantier(sans, "Lebrun incomplet");
-    const cles = (await manquesDeLaFactureAEmettre(sans, facture.id)).map((m) => m.cle);
-    assert.deepEqual(cles, ["decennale-adresse", "decennale-attestation"]);
+    assert.deepEqual(await manquesDeLaFactureAEmettre(sans, facture.id), []);
+  });
+
+  // Sa règle du 7 octobre 2026 : la porte du serveur ne les oppose plus.
+  await test("sans médiateur, sans adresse d'assureur ni attestation, le devis d'un particulier part", async () => {
+    const libre = await contexte("devis-sans-decennale");
+    await entreprisesRepo.mettreAJourEntreprise(libre, { attestationDecennale: null, adresseAssureurDecennale: "", mediateurNom: "" });
+    const client = await clientsRepo.creerClient(libre, { nom: "Mme Particulière", adresse: "3 rue des Lilas, Nantes" });
+    const chantier = await chantiersRepo.creerChantier(libre, { nom: "Chez Mme Particulière", clientId: client.id });
+    await prixRepo.ajouterLignePrix(libre, chantier.id, "Taille", "200.00");
+    const brouillon = await devisRepo.getOuCreerDevisBrouillon(libre, chantier.id);
+    assert.deepEqual(await devisRepo.manquesDuDevisAEnvoyer(libre, brouillon.id), []);
+  });
+
+  // Sa demande du 7 octobre 2026 : la lecture suit SON fichier, sous la RLS.
+  await test("la lecture de l'attestation se range avec elle, et part avec elle", async () => {
+    const lu = await contexte("attestation-lue");
+    const lue = { estAttestationDecennale: false, assureur: null, finValidite: null };
+    await entreprisesRepo.mettreAJourEntreprise(lu, { attestationDecennale: { cle: "x/attestation.png", mime: "image/png", lue } });
+    assert.deepEqual((await entreprisesRepo.getEntreprise(lu))?.attestationDecennaleLue, lue);
+    await entreprisesRepo.mettreAJourEntreprise(lu, { attestationDecennale: null });
+    assert.equal((await entreprisesRepo.getEntreprise(lu))?.attestationDecennaleLue, null, "la lecture a survécu au retrait");
   });
 
   await test("une attestation illisible arrête la pièce au lieu de la laisser partir sans elle", async () => {

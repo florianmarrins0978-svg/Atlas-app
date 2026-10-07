@@ -34368,3 +34368,39 @@ Tenu par `test-pose-a-sa-place-db.ts` (neuf cas, sous la RLS, vu rougir sur
 deux règles cassées), `test-etat-envoi.ts` (`poseSansAccord`) et
 `test-poser-a-sa-place-e2e.ts` (son geste, puis la page de la cliente).
 
+## §451 : La décennale et le médiateur se rappellent, ils ne bloquent pas
+
+**Le 7 octobre 2026**, sa règle : *« il ne faut pas que ces éléments bloquent
+les devis, il faut que ça rappelle à l'utilisateur qu'il faut qu'il y souscrive,
+mais pas que ça le bloque ; s'il veut être hors la loi, c'est son problème »*.
+
+| Décision | Pourquoi |
+|---|---|
+| `rappelsDuDevis` et `rappelsDeLaFacture` portent l'adresse de l'assureur, l'attestation, le médiateur et le crochet de décennale ; `manquesDuDevis` et `manquesDeLaFacture` ne les portent plus | le refus du serveur ne lit que les manques : un rappel ne peut pas bloquer par accident, et une seule règle sert l'écran et le serveur (`CLAUDE.md` §3) |
+| la feuille d'envoi du devis montre les rappels avec leur porte, bouton actif | il les voit au moment où il envoie, là où le blocage les montrait |
+| la facture n'affiche pas de rappel | son écran ne liste ce qui manque qu'après un refus d'émission ; Réglages le dit en rouge, et la feuille du devis l'a déjà dit |
+| le reste du §443 ne bouge pas | il n'a visé que la décennale et le médiateur |
+
+**Ce que le blocage ne prouvait pas** : il vérifiait qu'un fichier existe, pas
+qu'il soit une attestation. Il l'a levé avec une photo quelconque.
+
+**D'où la lecture de l'attestation, le même soir** (son accord : *« pas besoin
+de maquette, jamais de blocage »*) :
+
+| Décision | Pourquoi |
+|---|---|
+| l'IA lit le fichier AU DÉPÔT, et la lecture se range avec lui (`attestation_decennale_lue`, 0123, dans le même objet que la clé) | un dépôt neuf ou un retrait efface la lecture d'avant : elle ne peut pas parler d'un autre fichier |
+| `remarquesSurLAttestation` (pure) fait les phrases, lues par Réglages ET par `rappelsDuDevis` | une seule règle pour les deux écrans |
+| une lecture absente ou illisible ne dit RIEN | accuser un vrai papier sur une réponse incomprise lui ferait douter de lui ; seul un `false` écrit par le modèle dit « pas une attestation » |
+| la date d'expiration se compare au jour de Paris (`jourIso`) ; valide jusqu'au soir de sa date | le même jour que le reste de l'application |
+| l'assureur se compare sans casse ni accents, dans les deux sens | « AXA France IARD » contient « Axa » |
+| un PDF part au fournisseur comme `document` (Anthropic) ou `file` (OpenAI) | `image` refuse un PDF, et une attestation arrive presque toujours en PDF |
+| la lecture ne fait jamais échouer le dépôt | sa règle : jamais de blocage |
+
+**Pas éprouvé ici** : l'appel réel au fournisseur (aucune clé sur ce poste), et
+le format `file` d'OpenAI. À jouer sur son espace en déposant une vraie
+attestation, puis une photo quelconque.
+
+Tenu par `test-documents-en-regle.ts` (vu rougir contre l'ancienne règle),
+`test-attestation-lue.ts` (vu rougir) et `test-documents-en-regle-db.ts`.
+
