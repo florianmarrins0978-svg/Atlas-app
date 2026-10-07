@@ -2577,11 +2577,11 @@ function rendrePlanning() {
   let h = M.entete;
   if (pose) {
     let b = M.bloc;
-    if (pose === "papier") b = b.replace(/<span data-atlas="pas-encore-signe"[^>]*>Pas encore signé<\/span>/, "");
+    // Sa décision du 7 octobre : posé sans renvoi, rien ne dit qu'il n'a pas signé.
+    if (pose === "papier" || pose === "sans") b = b.replace(/<span data-atlas="pas-encore-signe"[^>]*>Pas encore signé<\/span>/, "");
     h += b;
     if (pose === "sms") h += fait("Vos messages s'ouvrent avec le texte, le lien neuf et son numéro remplis. Vous appuyez sur Envoyer.");
     if (pose === "email") h += fait("Votre e-mail s'ouvre avec le texte, le lien neuf et son adresse remplis. Vous appuyez sur Envoyer.");
-    if (pose === "sans") h += fait("Posé sans lien neuf. Le devis reste expiré tant qu'il n'a pas signé.");
     h += M.ajouter.replace('data-atlas="ajouter"', 'data-atlas="ajouter" data-aller="voies"');
   } else {
     h += M.demis;
