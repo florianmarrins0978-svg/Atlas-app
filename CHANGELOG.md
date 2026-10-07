@@ -19,14 +19,13 @@ dues (C. conso L111-1, L441-9 C. com. pour la facture), et le délai et les
 moyens de paiement les portent. Un acompte est un choix.
 
 `phrasesAcomptesDuDevis` (`src/lib/acomptes-devis.ts`) : un brouillon sans
-acompte posé n'imprime aucune phrase d'acompte. **Un devis parti** sans
-acompte posé garde la phrase du réglage : c'est ce que le client a reçu, et les
-devis d'avant la migration 0088 sont tous dans ce cas. L'écran et le PDF
-lisent la même fonction.
-
-**Pas touché, et à trancher :** la facture d'un devis sans acompte imprime
-encore la phrase du réglage (`notesEnGras`, `facture-pdf.ts`). La corriger
-changerait le texte de factures déjà émises ; c'est inscrit dans `TODO.md`.
+acompte posé n'imprime aucune phrase d'acompte. **À l'envoi**, `envoyerDevis`
+efface la condition recopiée des Réglages (`devis.acompte_pourcent`) quand
+aucun acompte n'est posé : c'est elle que la facture lit
+(`complementsDeLaFacture`), donc **la facture suit le devis** sans règle à
+elle. Un devis parti avant ce correctif garde ce qu'il portait, et sa facture
+aussi. Éprouvé sur le vrai chemin, de la croix au papier de la facture
+(`test-acomptes-nouvelle-version.ts`).
 
 ### Poser au planning un client qui n'arrive pas à choisir ses dates
 

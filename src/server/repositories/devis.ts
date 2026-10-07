@@ -575,8 +575,8 @@ export async function changerTauxAcompte(
 
 /**
  * Le « − » d'un acompte : la ligne quitte les totaux, les suivantes remontent
- * d'un rang. **La condition des Réglages, elle, reste imprimée** dans les notes
- * (`devis.acomptePourcent`) — *« quoi qu'il arrive »*.
+ * d'un rang. Le dernier retiré, plus rien ne se réclame dans les notes : ni à
+ * l'écran (`phrasesAcomptesDuDevis`), ni à l'envoi (`envoyerDevis`).
  */
 export async function retirerAcompte(ctx: Ctx, devisId: string, rang: number): Promise<AcompteDevis[] | null> {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
@@ -804,12 +804,20 @@ export async function envoyerDevis(ctx: Ctx, devisId: string) {
           "Posez leur montant sur l'écran du devis, puis revenez ici."
       );
     }
+    // **Sans acompte posé, le devis part sans condition d'acompte** (sa
+    // décision du 7 octobre 2026). `acomptePourcent` est le réglage recopié à
+    // la création : laissé tel quel, il ferait réapparaître « 30 % à la
+    // commande » dès l'envoi, sur le devis comme sur la facture qui en naîtra
+    // (`complementsDeLaFacture` lit cette colonne). C'est à l'envoi que le
+    // devis se fige, donc c'est ici que son échéancier devient sa condition.
+    const acomptes = await lireAcomptes(tx, devisId);
+    const fige = acomptes.length === 0 ? { ...avant, acomptePourcent: null } : avant;
     const habillage = await habillageDuDevis(tx, ctx.entrepriseId, avant);
     const pdfBytes = await genererPdfDevis(
       donneesPdfDuDevis(
-        avant,
+        fige,
         lignes,
-        await lireAcomptes(tx, devisId),
+        acomptes,
         "envoye",
         await dureeEstimeeDuChantier(tx, avant.chantierId)
       ),
@@ -826,6 +834,7 @@ export async function envoyerDevis(ctx: Ctx, devisId: string) {
       .update(devis)
       .set({
         statut: "envoye",
+        acomptePourcent: fige.acomptePourcent,
         envoyeLe: new Date(),
         pdfStorageKey: objet.storageKey,
         pdfChecksum: objet.checksum,

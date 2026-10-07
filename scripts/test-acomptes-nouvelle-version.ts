@@ -6,7 +6,13 @@ import {
   getAcomptesDevis,
   poserAcompteSuivant,
   retirerAcompte,
+  envoyerDevis,
 } from "../src/server/repositories/devis";
+import { terminerChantier, complementsDeLaFacture, donneesFacture } from "../src/server/repositories/factures";
+import { withEntreprise } from "../src/server/db/with-entreprise";
+import { lignesFacture } from "../src/server/db/schema";
+import { composerFacturePdf } from "../src/server/pdf/facture-pdf";
+import { eq } from "drizzle-orm";
 import type { Ctx } from "../src/server/repositories/context";
 
 /**
@@ -151,6 +157,45 @@ async function main() {
       [],
       "l'acompte des Réglages revient sur une version où il l'avait retiré"
     );
+  });
+
+  // *« Si on fait une modification sur un devis il faut que ça suive sur les
+  // factures »* (7 octobre 2026). Il avait retiré l'acompte : le devis envoyé,
+  // puis sa facture, réclamaient encore « 30 % à la commande », parce que la
+  // condition recopiée des Réglages survivait au retrait. Le VRAI chemin :
+  // retirer, envoyer, terminer le chantier, lire le papier de la facture.
+  await test("acompte retiré : ni le devis parti ni sa facture ne le réclament", async () => {
+    const { ctx, chantierId } = await creerEntreprise("Lafonte", "30");
+    const v1 = await getOuCreerDevisBrouillon(ctx, chantierId);
+    await retirerAcompte(ctx, v1.id, 1);
+    const parti = await envoyerDevis(ctx, v1.id);
+    assert.equal(parti.acomptePourcent, null, "le devis part avec la condition d'acompte qu'il a retirée");
+
+    const facture = await terminerChantier(ctx, chantierId);
+    const texte = await withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+      const lignes = await tx.select().from(lignesFacture).where(eq(lignesFacture.factureId, facture.id));
+      assert.ok(lignes.length > 0, "la facture n'a aucune ligne : la suite ne lirait rien");
+      const data = donneesFacture(facture, lignes, await complementsDeLaFacture(tx, ctx.entrepriseId, facture));
+      const { trace } = await composerFacturePdf(data);
+      return trace.textes.map((t) => t.contenu).join(" ");
+    });
+    assert.ok(texte.includes("Terrasse bois"), "le papier de la facture n'a pas été lu");
+    assert.ok(!texte.includes("Mode de règlement"), "la facture réclame l'acompte retiré du devis");
+    assert.ok(!texte.includes("à la commande"), "la facture réclame l'acompte retiré du devis");
+  });
+
+  await test("acompte gardé : le devis parti et sa facture le disent", async () => {
+    const { ctx, chantierId } = await creerEntreprise("Morvan", "30");
+    const v1 = await getOuCreerDevisBrouillon(ctx, chantierId);
+    const parti = await envoyerDevis(ctx, v1.id);
+    assert.equal(parti.acomptePourcent, "30.00");
+    const facture = await terminerChantier(ctx, chantierId);
+    const texte = await withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+      const lignes = await tx.select().from(lignesFacture).where(eq(lignesFacture.factureId, facture.id));
+      const data = donneesFacture(facture, lignes, await complementsDeLaFacture(tx, ctx.entrepriseId, facture));
+      return (await composerFacturePdf(data)).trace.textes.map((t) => t.contenu).join(" ");
+    });
+    assert.ok(texte.includes("Mode de règlement : 30 % à la signature"), "la facture a perdu l'acompte du devis");
   });
 
   await test("un refus DIT pourquoi — il ne rend plus un silence", async () => {

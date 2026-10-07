@@ -205,10 +205,11 @@ export function phrasesAcomptes(echeancier: EcheancierDevis): string[] {
  * moyens les portent), donc *« si je décide de pas en mettre ça doit
  * disparaître »*.
  *
- * **Un devis PARTI sans acompte posé garde la phrase du réglage** (`undefined`
- * laisse `lignesConditionsDevis` l'écrire) : c'est ce que le client a reçu, et
- * un devis envoyé ne change plus. Les devis d'avant la migration 0088 sont
- * tous dans ce cas, sans ligne d'acompte et la phrase imprimée.
+ * **Un devis PARTI lit sa propre condition** (`undefined` laisse
+ * `lignesConditionsDevis` lire `acomptePourcent`) : c'est ce que le client a
+ * reçu, et un devis envoyé ne change plus. L'envoi efface cette condition
+ * quand aucun acompte n'est posé (`envoyerDevis`) ; les devis partis avant la
+ * migration 0088, sans ligne d'acompte et la phrase imprimée, la gardent.
  */
 export function phrasesAcomptesDuDevis(
   statut: "brouillon" | "envoye",

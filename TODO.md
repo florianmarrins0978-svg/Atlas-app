@@ -1,13 +1,5 @@
 # Prochaines tâches
 
-## LA FACTURE D'UN DEVIS SANS ACOMPTE IMPRIME ENCORE LA PHRASE DU RÉGLAGE (7 octobre 2026)
-
-Le devis ne réclame plus un acompte retiré (`phrasesAcomptesDuDevis`). La
-facture, si : `notesEnGras` (`src/server/pdf/facture-pdf.ts`) retombe sur
-« 30 % à la commande » quand le devis n'a aucun acompte posé. Une facture
-émise ne doit pas changer de texte : la correction doit viser les seules
-factures non émises, ou lire ce qui a été figé à l'émission. À lui proposer.
-
 ## ⏳ LES TRAVAUX D'UN CLIENT POSÉ SANS DEVIS : UNE PLANCHE À REGARDER (7 octobre 2026)
 
 **Sa demande :** *« on peut ajouter un client au planning alors qu'on n'a pas
