@@ -747,7 +747,7 @@ export default function FactureClient({
             <span>
               Sous-traitance, sans TVA
               <small className="block text-[12.5px]" style={{ color: colors.muted }}>
-                Seulement si votre client a lui-même le chantier d’un autre.
+                Seulement si vous êtes sous-traitant d’une autre entreprise.
               </small>
             </span>
             <button
