@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Devis expirés au planning</title>
+<style>
+  /* Le bas de l'écran Planning, en vrai : la feuille qui se tire, ses deux listes, la barre d'onglets. Une seule charte, celle de l'application. */
+  :root{
+    --fond:#f5f3ee; --plage:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
+    --gris:#8a8578; --pastille:#ebe8e1; --or:#B98B47; --trait:rgba(28,28,26,.12);
+    --alerte:#8c2f22; --nuit:#1c1c1a; --sur-nuit:#f5f3ee; --sur-alerte:#ffffff;
+    --serif:ui-serif,Georgia,"Times New Roman",serif;
+    --sans:ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+    color-scheme:light;
+  }
+  *{box-sizing:border-box}
+  html,body{background:#e6e3dc}
+  body{font:16px/1.5 var(--sans);color:var(--encre);padding:0 16px 48px;-webkit-text-size-adjust:100%}
+  .bandeau{max-width:430px;margin:16px auto 0;background:var(--nuit);color:var(--sur-nuit);
+           padding:14px 18px;border-radius:14px;font-size:14px;line-height:1.55}
+  .bandeau b{color:#fff}
+
+  .tel{position:relative;max-width:430px;margin:16px auto 0;height:760px;background:var(--fond);
+       border-radius:22px;overflow:hidden;box-shadow:0 10px 28px rgba(20,18,14,.16);display:flex;flex-direction:column}
+  .cal{flex:none;padding:20px 22px 0;color:var(--gris);font-size:13px}
+  .cal h1{margin:0;font:400 34px/1.1 var(--serif);color:var(--encre)}
+  .cal .mois{margin:18px 0 0;text-align:center;font-weight:600;color:var(--encre)}
+  .jours{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:12px;text-align:center;
+         font:400 18px/1 var(--serif);color:var(--encre)}
+  .jours span{padding:10px 0}
+
+  .feuille{flex:1;min-height:0;display:flex;flex-direction:column;background:var(--plage);
+           border-top:1.5px solid var(--or);border-radius:18px 18px 0 0;margin-top:14px}
+  .tete{flex:none;display:flex;justify-content:space-between;align-items:center;width:100%;
+        padding:18px 22px;border:0;background:none;font:600 16px/1.3 var(--sans);color:var(--encre);
+        text-align:left;cursor:pointer}
+  .tete svg{flex:none;transition:transform .3s}
+  .feuille[data-ouverte="non"] .tete svg{transform:rotate(180deg)}
+  .liste{flex:1;min-height:0;overflow-y:auto;padding:0 22px 12px}
+  .feuille[data-ouverte="non"] .liste{display:none}
+  .pastille{display:inline-block;margin:18px 0 6px;padding:9px 18px;border-radius:999px;background:var(--pastille);
+            font:700 12px/1 var(--sans);letter-spacing:.2em;text-transform:uppercase;color:var(--encre)}
+  .ligne{display:flex;align-items:center;gap:10px;min-height:64px;border-bottom:1px solid var(--trait)}
+  .ligne:last-child{border-bottom:0}
+  .ligne .nom{flex:1;min-width:0;font:400 23px/1.2 var(--serif);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .ligne .quoi{flex:none;font-size:14px;color:var(--gris)}
+  .ligne .chev{flex:none;color:var(--gris);font-size:20px;padding:0 2px}
+  .croix{flex:none;width:44px;height:44px;margin-right:-10px;border:0;background:none;cursor:pointer;
+         display:grid;place-items:center;color:var(--encre)}
+  .croix:focus-visible,.tete:focus-visible,.tiroir button:focus-visible,.choix button:focus-visible{outline:2px solid var(--or);outline-offset:2px}
+
+  .tiroir{flex:none;position:relative;display:flex;justify-content:space-between;align-items:center;
+          max-height:0;overflow:hidden;opacity:0;padding:0 26px;background:var(--plage);
+          transition:max-height .42s cubic-bezier(.22,.61,.36,1),opacity .3s,padding .42s}
+  .tiroir[data-ouvert="oui"]{max-height:64px;opacity:1;padding:16px 26px 8px}
+  .tiroir span{font-size:14px;color:var(--gris)}
+  .tiroir button{border:0;background:none;padding:8px;margin-right:-8px;cursor:pointer;
+                 font:700 12px/1 var(--sans);letter-spacing:.24em;text-transform:uppercase;color:var(--or)}
+  .jauge{position:absolute;left:0;right:0;top:0;height:3px;background:var(--or);transform-origin:left center;transform:scaleX(1)}
+  .jauge.court{transform:scaleX(0);transition:transform 6s linear}
+
+  .onglets{flex:none;display:flex;justify-content:space-around;padding:16px 8px 22px;border-top:1px solid var(--trait);
+           background:var(--fond);font:500 11px/1 var(--sans);letter-spacing:.16em;color:var(--gris)}
+  .onglets b{color:var(--encre);font-weight:600;padding-bottom:10px;border-bottom:1.5px solid var(--or)}
+
+  .voile{position:absolute;inset:0;z-index:5;background:rgba(20,18,14,.42)}
+  .question{position:absolute;left:0;right:0;bottom:0;z-index:6;background:var(--fond);border-radius:18px 18px 0 0;
+            padding:22px 22px 28px;box-shadow:0 -12px 34px rgba(20,18,14,.28)}
+  .question h3{margin:0 0 6px;font:400 23px/1.25 var(--serif)}
+  .question p{margin:0 0 16px;font-size:14.5px;color:var(--encre-douce)}
+  .choix{display:flex;flex-direction:column;gap:8px}
+  .choix button{min-height:50px;border:0;border-radius:999px;font:600 15px/1 var(--sans);cursor:pointer}
+  .choix .oui{background:var(--alerte);color:var(--sur-alerte)}
+  .choix .non{background:transparent;box-shadow:inset 0 0 0 1px var(--trait);color:var(--encre)}
+
+  .notes{max-width:430px;margin:20px auto 0;display:flex;flex-direction:column;gap:12px}
+  .note{background:var(--plage);border-radius:14px;padding:14px 18px;font-size:14.5px;line-height:1.55;color:var(--encre-douce)}
+  .note h2{margin:0 0 6px;font:700 10px/1 var(--sans);letter-spacing:.2em;text-transform:uppercase;color:var(--or)}
+  .note b{color:var(--encre)}
+  .remettre{display:block;width:100%;max-width:430px;margin:14px auto 0;min-height:46px;border:0;border-radius:999px;
+            background:transparent;box-shadow:inset 0 0 0 1px var(--trait);font:700 11px/1 var(--sans);
+            letter-spacing:.16em;text-transform:uppercase;color:var(--gris);cursor:pointer}
+  @media (prefers-reduced-motion:reduce){.tiroir,.jauge.court,.tete svg{transition:none}}
+</style>
+
+<div class="bandeau">
+  <b>Planche à essayer, rien n'est codé.</b> Touchez la croix d'un devis expiré.
+  Un devis passe ici <b>45 jours</b> après son envoi, s'il n'a pas eu de réponse.
+</div>
+
+<div class="tel" id="tel">
+  <div class="cal">
+    <h1>Planning</h1>
+    <p class="mois">octobre 2026</p>
+    <div class="jours"><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span style="color:var(--gris)">24</span><span style="color:var(--gris)">25</span></div>
+  </div>
+
+  <div class="feuille" id="feuille" data-ouverte="oui">
+    <button type="button" class="tete" id="tete" aria-expanded="true">
+      <span id="titre"></span>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+    </button>
+    <div class="liste" id="liste"></div>
+  </div>
+
+  <div class="tiroir" id="tiroir" data-ouvert="non" aria-live="polite">
+    <div class="jauge" id="jauge"></div>
+    <span id="tiroir-texte">Supprimé à l'instant</span>
+    <button type="button" id="annuler" tabindex="-1">Annuler</button>
+  </div>
+
+  <div class="onglets"><span>CHANTIERS</span><b>PLANNING</b><span>TERMINÉS</span><span>PAYSAGE</span><span>RÉGLAGES</span></div>
+
+  <div class="voile" id="voile" hidden></div>
+  <div class="question" id="question" hidden role="dialog" aria-labelledby="q-titre">
+    <h3 id="q-titre"></h3>
+    <p>Le chantier et son devis expiré quittent le planning.</p>
+    <div class="choix">
+      <button type="button" class="oui" id="oui">Supprimer</button>
+      <button type="button" class="non" id="non">Garder</button>
+    </div>
+  </div>
+</div>
+
+<button type="button" class="remettre" id="remettre">Tout remettre</button>
+
+<div class="notes">
+  <div class="note">
+    <h2>Ce que fait la suppression</h2>
+    Elle reprend celle qui existe déjà au planning : le chantier part de vos listes,
+    <b>le client reste dans vos clients</b>. Un chantier facturé ne peut pas partir,
+    mais un devis expiré n'a jamais été accepté, donc il ne l'est jamais.
+  </div>
+  <div class="note">
+    <h2>Toucher le nom</h2>
+    Ouvre le chantier, comme pour « En attente du client ». C'est là que le devis se renvoie,
+    et il revient alors en attente du client pour 45 jours.
+  </div>
+  <div class="note">
+    <h2>À trancher</h2>
+    Le 10 août, pour supprimer, vous aviez gardé <b>la barre seule</b>, sans question avant.
+    Ici il y a les deux, comme vous le demandez. <b>Les deux, ou la barre seule ?</b>
+  </div>
+</div>
+
+<script>
+const DEPART = {
+  attente: [{ id: "lolo", nom: "Mr. Lolo" }, { id: "lala", nom: "Mr. Lala" }],
+  expires: [
+    { id: "ferrand", nom: "Mme Ferrand", quand: "Expiré le 21 sept." },
+    { id: "bastide", nom: "M. Bastide", quand: "Expiré le 2 oct." },
+  ],
+};
+let expires = DEPART.expires.slice();
+let retire = null;      // { client, rang } pendant les 6 secondes
+let minuteur = null;
+let vise = null;
+
+const $ = (id) => document.getElementById(id);
+
+function titre() {
+  const a = DEPART.attente.length, e = expires.length;
+  let t = a + " en attente du client";
+  if (e) t += ", " + e + (e > 1 ? " devis expirés" : " devis expiré");
+  return t;
+}
+
+function ligne(c, droite) {
+  const d = document.createElement("div");
+  d.className = "ligne";
+  const n = document.createElement("span"); n.className = "nom"; n.textContent = c.nom; d.appendChild(n);
+  const q = document.createElement("span"); q.className = "quoi"; q.textContent = droite; d.appendChild(q);
+  return d;
+}
+
+function pastille(texte) {
+  const p = document.createElement("div"); p.className = "pastille"; p.textContent = texte; return p;
+}
+
+function dessiner() {
+  $("titre").textContent = titre();
+  const l = $("liste"); l.innerHTML = "";
+  l.appendChild(pastille("En attente du client"));
+  for (const c of DEPART.attente) {
+    const d = ligne(c, "Il choisit sa date");
+    const ch = document.createElement("span"); ch.className = "chev"; ch.textContent = "›"; d.appendChild(ch);
+    l.appendChild(d);
+  }
+  // Plus aucun devis expiré : la catégorie disparaît, elle ne reste pas vide.
+  if (!expires.length) return;
+  l.appendChild(pastille("Devis expirés"));
+  for (const c of expires) {
+    const d = ligne(c, c.quand);
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "croix"; b.setAttribute("aria-label", "Supprimer " + c.nom);
+    b.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+    b.addEventListener("click", () => demander(c));
+    d.appendChild(b);
+    l.appendChild(d);
+  }
+}
+
+function demander(c) {
+  vise = c;
+  $("q-titre").textContent = "Supprimer " + c.nom + " ?";
+  $("voile").hidden = false; $("question").hidden = false;
+  $("oui").focus();
+}
+function fermer() { $("voile").hidden = true; $("question").hidden = true; vise = null; }
+
+function rendreDefinitif() {
+  clearTimeout(minuteur); minuteur = null; retire = null;
+  $("tiroir").dataset.ouvert = "non"; $("annuler").tabIndex = -1;
+}
+
+function supprimer() {
+  const c = vise; fermer();
+  if (!c) return;
+  if (retire) rendreDefinitif();  // un second retrait ferme le premier
+  const rang = expires.indexOf(c);
+  expires.splice(rang, 1);
+  retire = { client: c, rang };
+  dessiner();
+  const j = $("jauge");
+  j.classList.remove("court"); void j.offsetWidth; j.classList.add("court");
+  $("tiroir").dataset.ouvert = "oui"; $("annuler").tabIndex = 0;
+  minuteur = setTimeout(rendreDefinitif, 6000);
+}
+
+$("annuler").addEventListener("click", () => {
+  if (!retire) return;
+  expires.splice(retire.rang, 0, retire.client);
+  rendreDefinitif(); dessiner();
+});
+$("oui").addEventListener("click", supprimer);
+$("non").addEventListener("click", fermer);
+$("voile").addEventListener("click", fermer);
+$("tete").addEventListener("click", () => {
+  const f = $("feuille"); const ouverte = f.dataset.ouverte === "oui";
+  f.dataset.ouverte = ouverte ? "non" : "oui"; $("tete").setAttribute("aria-expanded", String(!ouverte));
+});
+$("remettre").addEventListener("click", () => { rendreDefinitif(); expires = DEPART.expires.slice(); dessiner(); });
+
+dessiner();
+</script>
+
+</html>
