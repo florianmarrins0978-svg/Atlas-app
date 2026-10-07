@@ -19,7 +19,7 @@ import ReglementsRecus from "./ReglementsRecus";
 import { majTitreFactureAction } from "./actions";
 import LigneMainDoeuvre from "../devis-complet/LigneMainDoeuvre";
 import { sansZerosInutiles } from "../devis-complet/ChampsDuDevis";
-import type { AcompteDevis } from "@/lib/acomptes-devis";
+import type { PromesseDuDevis } from "@/lib/acomptes-facture";
 import type { ReglementEnregistre } from "@/server/repositories/paiements-facture";
 import {
   terminerChantierAction,
@@ -91,8 +91,8 @@ export type FacturePourEcran = {
   /** Le même papier que le devis (migration 0092) : la main d'œuvre nommée, le titre. */
   mainDoeuvreHt: string | null;
   titre: string | null;
-  /** Les acomptes du devis, qui nomment le rang de chaque règlement reçu. */
-  acomptesDuDevis: AcompteDevis[];
+  /** Ce que le devis a promis : ses acomptes nomment et chiffrent chaque règlement reçu. */
+  promesseDuDevis: PromesseDuDevis;
   reglements: ReglementEnregistre[];
   /**
    * **Les totaux ne sont PLUS transmis, et c'est délibéré.**
@@ -916,7 +916,7 @@ export default function FactureClient({
         factureId={initialFacture.id}
         avoirs={avoirs}
         totalTtc={totaux.totalTtc}
-        acomptesDuDevis={initialFacture.acomptesDuDevis}
+        promesseDuDevis={initialFacture.promesseDuDevis}
         initiaux={initialFacture.reglements}
         fige
         acquittement={!emise}

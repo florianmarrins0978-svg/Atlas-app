@@ -1,11 +1,14 @@
 import assert from "node:assert/strict";
 import { pool } from "../src/server/db/client";
 import { nettoyerBase } from "./_test-db";
-import { getOuCreerDevisBrouillon, envoyerDevis } from "../src/server/repositories/devis";
+import { getOuCreerDevisBrouillon, envoyerDevis, getPromesseDuDevis } from "../src/server/repositories/devis";
+import { montantAcompteDuDevis } from "../src/lib/acomptes-facture";
 import {
   reprendreLeDevisSurLaFacture,
   terminerChantier,
   emettreFacture,
+  ajouterLigneDeFacture,
+  majLigneDeFacture,
   FactureEnRetardSurLeDevisError,
 } from "../src/server/repositories/factures";
 import { creerEntreprise, regler } from "./_devis-et-facture";
@@ -101,6 +104,27 @@ async function main() {
     const reprise = await terminerChantier(ctx, chantierId);
     assert.equal(reprise.id, facture.id);
     assert.equal(reprise.dateEcheance, reprise.dateEmission, "la facture reprise garde l'échéance de la version d'avant");
+  });
+
+  // Point 3. L'acompte proposé d'office se comptait sur le total de la
+  // facture : 1 000 € de travaux en plus faisaient proposer 30 % de 11 000 €
+  // pour un acompte versé sur 10 000 €.
+  await test("l'acompte proposé se compte sur le total du devis, travaux en plus ou non", async () => {
+    const { ctx, chantierId } = await creerEntreprise("Esnault", "30");
+    const v1 = await getOuCreerDevisBrouillon(ctx, chantierId);
+    const parti = await envoyerDevis(ctx, v1.id);
+    const facture = await terminerChantier(ctx, chantierId);
+    const ajout = await ajouterLigneDeFacture(ctx, facture.id);
+    assert.ok(ajout.ok, "la ligne en plus n'a pas été posée");
+    await majLigneDeFacture(ctx, facture.id, ajout.ligne.id, {
+      libelle: "Bordure en plus",
+      quantite: "1",
+      prixUnitaire: "1000.00",
+    });
+    const promesse = await getPromesseDuDevis(ctx, facture.devisId);
+    assert.equal(promesse.totalTtc, parti.totalTtc, "la promesse porte le total de la facture");
+    const attendu = (Math.round(Number(parti.totalTtc) * 30) / 100).toFixed(2);
+    assert.equal(montantAcompteDuDevis(0, promesse), attendu);
   });
 
   console.log(`\n${failed} échec(s), ${passed} réussi(s).`);

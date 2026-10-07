@@ -2,7 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { getChantier } from "@/server/repositories/chantiers";
 import { getFacturePourChantier } from "@/server/repositories/factures";
-import { getAcomptesDevis } from "@/server/repositories/devis";
+import { getPromesseDuDevis } from "@/server/repositories/devis";
 import { reglementsRecus } from "@/server/repositories/paiements-facture";
 import TravauxSupplementairesClient from "./TravauxSupplementairesClient";
 
@@ -48,8 +48,8 @@ export default async function TravauxSupplementairesPage({
   // Ce que la feuille doit porter depuis le 21 septembre 2026 : les acomptes du
   // devis nomment chaque règlement, et les règlements déjà reçus se relisent.
   // Les deux lectures partent ensemble — elles ne dépendent pas l'une de l'autre.
-  const [acomptesDuDevis, reglements] = await Promise.all([
-    existante.facture.devisId ? getAcomptesDevis(ctx, existante.facture.devisId) : Promise.resolve([]),
+  const [promesseDuDevis, reglements] = await Promise.all([
+    getPromesseDuDevis(ctx, existante.facture.devisId),
     reglementsRecus(ctx, existante.facture.id),
   ]);
 
@@ -74,7 +74,7 @@ export default async function TravauxSupplementairesPage({
       tauxTvaFacture={existante.facture.tauxTva}
       reductionPourcent={existante.facture.reductionPourcent}
       mainDoeuvreHt={existante.facture.mainDoeuvreHt}
-      acomptesDuDevis={acomptesDuDevis}
+      promesseDuDevis={promesseDuDevis}
       reglements={reglements}
       lignes={existante.lignes.map((l) => ({
         id: l.id,

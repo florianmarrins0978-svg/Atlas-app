@@ -51,7 +51,7 @@ import { ligneSeCorrige } from "@/lib/lignes-corrigeables";
 import LigneMainDoeuvre from "../../devis-complet/LigneMainDoeuvre";
 import ReglementsRecus from "../ReglementsRecus";
 import { majMainDoeuvreFactureAction } from "../actions";
-import type { AcompteDevis } from "@/lib/acomptes-devis";
+import type { PromesseDuDevis } from "@/lib/acomptes-facture";
 import type { ReglementEnregistre } from "@/server/repositories/paiements-facture";
 
 /**
@@ -122,7 +122,7 @@ export default function TravauxSupplementairesClient({
   tauxTvaFacture,
   reductionPourcent,
   mainDoeuvreHt,
-  acomptesDuDevis,
+  promesseDuDevis,
   reglements,
   lignes: lignesInitiales,
 }: {
@@ -158,7 +158,7 @@ export default function TravauxSupplementairesClient({
    * le devis porte sa main d'œuvre et ses acomptes.
    */
   mainDoeuvreHt: string | null;
-  acomptesDuDevis: AcompteDevis[];
+  promesseDuDevis: PromesseDuDevis;
   reglements: ReglementEnregistre[];
   lignes: LigneEcran[];
 }) {
@@ -862,7 +862,7 @@ export default function TravauxSupplementairesClient({
             avoirs={[]}
             factureId={factureId}
             totalTtc={totaux.totalTtc}
-            acomptesDuDevis={acomptesDuDevis}
+            promesseDuDevis={promesseDuDevis}
             initiaux={reglements}
             fige={false}
             carte={false}

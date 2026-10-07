@@ -19,6 +19,7 @@ import {
   tauxCumulesBornes,
   type AcompteDevis,
 } from "@/lib/acomptes-devis";
+import { AUCUNE_PROMESSE, type PromesseDuDevis } from "@/lib/acomptes-facture";
 import type { Ctx } from "./context";
 import { genererPdfDevis, type DevisPdfData } from "../pdf/devis-pdf";
 import { enregistrerObjet } from "../storage";
@@ -512,6 +513,19 @@ async function ecrireAcomptes(
 
 export async function getAcomptesDevis(ctx: Ctx, devisId: string): Promise<AcompteDevis[]> {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, (tx) => lireAcomptes(tx, devisId));
+}
+
+/**
+ * Ce que le devis d'une facture a promis : ses acomptes et SON total. C'est
+ * sur lui que les acomptes se comptent, jamais sur celui de la facture.
+ */
+export async function getPromesseDuDevis(ctx: Ctx, devisId: string | null): Promise<PromesseDuDevis> {
+  if (!devisId) return AUCUNE_PROMESSE;
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const [d] = await tx.select({ totalTtc: devis.totalTtc }).from(devis).where(eq(devis.id, devisId)).limit(1);
+    if (!d) return AUCUNE_PROMESSE;
+    return { acomptes: await lireAcomptes(tx, devisId), totalTtc: d.totalTtc };
+  });
 }
 
 /**

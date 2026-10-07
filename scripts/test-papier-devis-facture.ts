@@ -133,9 +133,10 @@ async function main() {
   });
 
   await cas("le deuxième acompte se propose d'office : ce que le devis prévoyait à ce rang", () => {
-    assert.equal(montantAcompteDuDevis(0, DEVIS_ACOMPTES, "1740.78"), "522.23");
-    assert.equal(montantAcompteDuDevis(1, DEVIS_ACOMPTES, "1740.78"), "348.16");
-    assert.equal(montantAcompteDuDevis(2, DEVIS_ACOMPTES, "1740.78"), null);
+    const promesse = { acomptes: DEVIS_ACOMPTES, totalTtc: "1740.78" };
+    assert.equal(montantAcompteDuDevis(0, promesse), "522.23");
+    assert.equal(montantAcompteDuDevis(1, promesse), "348.16");
+    assert.equal(montantAcompteDuDevis(2, promesse), null);
   });
 
   await cas("« Montants versés » : le moyen, le numéro du chèque, la date, le montant — sans le mot acompte", () => {
