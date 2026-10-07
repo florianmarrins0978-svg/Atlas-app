@@ -13,7 +13,12 @@ avec le dernier client sans date est corrigé (`ARCHITECTURE.md` §451). Reste :
 **Ouvert, à lui de trancher :**
 
 - le devis reste « accepté » pour toujours (`envois_devis.reponse`) : aucun
-  geste pour le remettre en attente ou le noter refusé ;
+  geste pour le remettre en attente ou le noter refusé. **Son « oui » du
+  7 octobre**, planche `appli/devis-accepte-par-erreur.html` (1 en attente,
+  2 refusé, 3 les deux au choix), sur la vraie page Devis : À CHOISIR. Pour
+  coder : la contrainte `envois_devis_reponse_datee` exige `reponse` et
+  `repondu_at` nuls ENSEMBLE, et le garde `deja_repondu` de
+  `enregistrerReponse` lit la réponse ;
 - une absence d'équipe s'efface d'un seul appui, sans annulation.
 
 ## ⏳ LES TRAVAUX D'UN CLIENT POSÉ SANS DEVIS : UNE PLANCHE À REGARDER (7 octobre 2026)
