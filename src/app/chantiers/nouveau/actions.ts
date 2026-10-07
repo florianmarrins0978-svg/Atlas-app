@@ -26,6 +26,7 @@ import { jourIso } from "@/lib/jour";
 import { verifierLimite, LIMITES } from "@/server/rate-limit";
 import { preparerAudioEntrant } from "@/server/audio-entrant";
 import { siretLu } from "@/lib/siren";
+import { telephoneLu } from "@/lib/numero-telephone";
 import { numeroTvaLu } from "@/lib/autoliquidation";
 import { lireCoordonneesDictees } from "@/server/ai/services/coordonnees-service";
 
@@ -79,7 +80,9 @@ export async function creerChantierAction(data: CreerChantierInput): Promise<{ i
   // qu'on peut changer en chemin, et la RLS rend indiscernables « effacé » et
   // « d'une autre entreprise », ce qui est exactement ce qu'on veut.
   const clientConnu = data.clientId ? await getClient(ctx, data.clientId) : null;
-  const telephone = data.telephone?.trim() || undefined;
+  // Un numéro qui ne joint personne ne s'écrit pas, comme le SIRET plus bas :
+  // l'écran l'a déjà refusé sous sa case, par la même lecture (`telephoneLu`).
+  const telephone = telephoneLu(data.telephone) || undefined;
   const email = data.email?.trim() || undefined;
 
   // Un canal sans la coordonnée correspondante est un cul-de-sac : l'envoi

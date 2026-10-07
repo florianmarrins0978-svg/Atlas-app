@@ -11,6 +11,13 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 
 ---
 
+## LE TÉLÉPHONE ET LE N° TVA JUSTES : 7 octobre 2026, PAS ENCORE SUR `main`
+
+Un téléphone se lit par `telephoneLu`, et par lui seul : l'écran comme les trois
+actions (`chantiers/nouveau`, `chantiers/[id]/coordonnees`,
+`clients/[id]/coordonnees`). Le micro de la fiche refuse AVANT de dicter
+(`refusAvantDeDicter`) : refuser une note à l'arrivée la perdrait.
+
 ## POSER UN CLIENT À SA PLACE : 7 octobre 2026, SUR `main` LE 7
 
 Branche `claude/add-quote-client-to-schedule-ve9xn7`, migration 0122. Avant de

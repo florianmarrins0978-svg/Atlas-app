@@ -34,7 +34,7 @@ import Pellicule, { type VignettePhoto } from "../[id]/Pellicule";
 import AnneauNoteVocale from "../[id]/AnneauNoteVocale";
 import DevisDepuisDictee from "../[id]/DevisDepuisDictee";
 import type { CiviliteClient } from "@/lib/civilite";
-import { espacerNumero, numeroEnregistre } from "@/lib/numero-telephone";
+import { espacerNumero, numeroEnregistre, telephoneLu } from "@/lib/numero-telephone";
 import { siretLu } from "@/lib/siren";
 import { DEBUT_NUMERO_TVA, numeroTvaLu, numeroTvaVide } from "@/lib/autoliquidation";
 import { saisieAEnregistrer } from "@/lib/saisie-fiche-client";
@@ -321,9 +321,24 @@ export default function FormulaireNouveauChantier({
   const enCours = enCoursVers !== null;
   const [erreur, setErreur] = useState<string | null>(null);
 
+  // **Ce qui est tapé doit être juste — sa capture du 7 octobre 2026 :** « 85 45 »
+  // et « Fr33 » commençaient un devis. Rien n'est obligatoire, mais un numéro
+  // donné doit joindre quelqu'un. La phrase se lit sous la case, et chaque
+  // sortie (les deux boutons, la flèche, le micro) refuse la même : une seule
+  // lecture, celle du serveur (`telephoneLu`, `siretLu`, `numeroTvaLu`).
+  const avecSesNumeros = civilite === "entreprise" && !reprise;
+  const saisieFausse =
+    telephoneLu(telephone) === null
+      ? "Le téléphone a 10 chiffres."
+      : avecSesNumeros && siretLu(siret) === null
+        ? "Le SIRET a 14 chiffres."
+        : avecSesNumeros && !numeroTvaVide(numeroTva) && numeroTvaLu(numeroTva) === null
+          ? "Le n° TVA : FR suivi de 11 chiffres."
+          : null;
+
   // Plus rien n'est obligatoire : le chantier prend le nom de ce qui a été
   // donné, et la date s'il n'y a rien (`src/lib/nom-chantier.ts`).
-  const peutCreer = !enCours;
+  const peutCreer = !enCours && saisieFausse === null;
 
   // Le canal se devine dans la plupart des cas : une seule coordonnée renseignée
   // ne laisse pas d'ambiguïté. Le choix explicite du patron prime toujours —
@@ -614,6 +629,7 @@ export default function FormulaireNouveauChantier({
    * celui du serveur arrive tel quel, en toutes lettres.
    */
   async function enregistrerLaSaisie(): Promise<{ ok: true; id: string } | { ok: false; raison: string }> {
+    if (saisieFausse) return { ok: false, raison: saisieFausse };
     try {
       const existant = reprise?.id ?? (chantierDeCetEcran.current ? await chantierDeCetEcran.current : null);
       if (existant) {
@@ -1141,7 +1157,7 @@ export default function FormulaireNouveauChantier({
               qui ne l'écrit pas. **À la création seulement** : en reprise, cet
               écran enregistre par une autre porte, qui ne les connaît pas ;
               ils se corrigent alors sur sa fiche (« Ses coordonnées »). */}
-          {civilite === "entreprise" && !reprise && (
+          {avecSesNumeros && (
             <div>
               <div className="flex gap-3">
                 <div className="min-w-0 flex-1">
@@ -1163,13 +1179,13 @@ export default function FormulaireNouveauChantier({
                   />
                 </div>
               </div>
-              {(siretLu(siret) === null || (!numeroTvaVide(numeroTva) && numeroTvaLu(numeroTva) === null)) && (
-                <p role="alert" className="mt-1 text-[12px]" style={{ color: colors.alert }}>
-                  {siretLu(siret) === null ? "Le SIRET a 14 chiffres." : "Le n° TVA : FR suivi de 11 chiffres."}
-                </p>
-              )}
               <AvisNumeroTva siret={siret} numeroTva={numeroTva} onMettre={setNumeroTva} />
             </div>
+          )}
+          {saisieFausse && (
+            <p role="alert" className="-mt-1 text-[12px]" style={{ color: colors.alert }}>
+              {saisieFausse}
+            </p>
           )}
 
           {/* ═══════════════════════════════════════════════════════════════
@@ -1510,6 +1526,7 @@ export default function FormulaireNouveauChantier({
             <AnneauNoteVocale
               chantierId={reprise?.id ?? chantierCree}
               assurerChantier={assurerChantier}
+              refusAvantDeDicter={saisieFausse}
               onDicte={() => setDicteeFaite(true)}
               onDictee={setDicteeEnCours}
               // **L'invite se tait devant une dictée déjà faite.** Dès que la

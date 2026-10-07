@@ -5,6 +5,13 @@
 `drizzle/0116_modele_de_fiche_d_office.sql`
 
 ---
+## CODÉ : LE TÉLÉPHONE ET LE N° TVA DOIVENT ÊTRE JUSTES (7 octobre 2026)
+
+Branche `claude/telephone-tva-justes`. `telephoneLu` (`src/lib/numero-telephone.ts`)
+et `numeroTvaLu` resserré pour la France (`src/lib/autoliquidation.ts`). La fiche
+client grise ses sorties tant qu'un numéro est faux. Pas encore sur `main`.
+
+---
 ## SUR `main` : POSER UN CLIENT À SA PLACE (7 octobre 2026)
 
 Branche `claude/add-quote-client-to-schedule-ve9xn7`, migration 0122. Son

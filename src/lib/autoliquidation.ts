@@ -75,11 +75,18 @@ export function tauxRendus(
  * Le numéro de TVA tel qu'il s'imprime, ou `null` s'il n'en est pas un.
  *
  * Espaces et points retirés, lettres en capitales : « fr 12 345678901 » se lit
- * « FR12345678901 ». La forme est celle de tous les numéros européens, deux
- * lettres puis deux à treize signes ; Atlas ne prétend pas vérifier la clé.
+ * « FR12345678901 ». Hors de France, la forme est celle de tous les numéros
+ * européens, deux lettres puis deux à treize signes ; Atlas ne prétend pas
+ * vérifier la clé.
+ *
+ * **Un numéro français a sa forme à lui** : FR, deux signes de clé, puis les
+ * neuf chiffres du SIREN. La forme européenne seule laissait passer « Fr33 »
+ * (sa capture du 7 octobre 2026), et un devis partait avec, alors que chaque
+ * écran annonçait déjà « FR suivi de 11 chiffres ».
  */
 export function numeroTvaLu(saisi: string | null | undefined): string | null {
   const brut = numeroTvaBrut(saisi);
+  if (brut.startsWith("FR")) return /^FR[0-9A-Z]{2}[0-9]{9}$/.test(brut) ? brut : null;
   return /^[A-Z]{2}[0-9A-Z]{2,13}$/.test(brut) ? brut : null;
 }
 
