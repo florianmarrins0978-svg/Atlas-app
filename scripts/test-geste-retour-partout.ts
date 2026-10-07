@@ -37,6 +37,10 @@ function libelleDeRetour(attribut: ts.JsxAttribute): boolean {
   const visiter = (n: ts.Node) => {
     if ((ts.isStringLiteral(n) || ts.isNoSubstitutionTemplateLiteral(n)) && /^Retour/.test(n.text)) trouve = true;
     if (ts.isTemplateExpression(n) && /^Retour/.test(n.head.text)) trouve = true;
+    // **Un libellé qui commence par un autre mot n'est pas un retour**, quoi que
+    // porte la suite : « Enlever ${t.libelle} » (7 octobre 2026) se prenait
+    // pour un retour à cause du seul nom de sa variable.
+    if (ts.isTemplateExpression(n) && n.head.text !== "" && !/^Retour/.test(n.head.text)) return;
     // Un libellé calculé par une fonction de retour (`libelleRetourDesCoordonnees`).
     if (ts.isIdentifier(n) && /^libelleRetour|^libelle$/.test(n.text) && ts.isPropertyAccessExpression(n.parent)) trouve = true;
     ts.forEachChild(n, visiter);

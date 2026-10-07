@@ -16,6 +16,7 @@ import {
   entrepriseCompteurs,
   entreprises,
   envoisDevis,
+  acceptationsDefaites,
   envoisFactures,
   correctionsDictee,
   grillePrix,
@@ -157,6 +158,7 @@ export async function exporterEntreprise(
       lesPropositions,
       lesPrecisions,
       lesEnvois,
+      lesAcceptationsDefaites,
       lesAudiosAPurger,
       lesFactures,
       lesLignesFacture,
@@ -234,6 +236,7 @@ export async function exporterEntreprise(
       tx.select().from(propositionsIa).where(eq(propositionsIa.entrepriseId, e)),
       tx.select().from(precisionsChantier).where(eq(precisionsChantier.entrepriseId, e)),
       tx.select().from(envoisDevis).where(eq(envoisDevis.entrepriseId, e)),
+      tx.select().from(acceptationsDefaites).where(eq(acceptationsDefaites.entrepriseId, e)),
       tx.select().from(audiosAPurger).where(eq(audiosAPurger.entrepriseId, e)),
       tx.select().from(factures).where(eq(factures.entrepriseId, e)),
       tx.select().from(lignesFacture).where(eq(lignesFacture.entrepriseId, e)),
@@ -431,6 +434,9 @@ export async function exporterEntreprise(
       // sur quelle technique ni quel diamètre ils ont été établis.
       precisions_chantier: lesPrecisions,
       envois_devis: lesEnvois,
+      // Une acceptation défaite (migration 0123) : la seule trace qu'un client
+      // avait accepté. Une sauvegarde qui l'oublierait effacerait la preuve.
+      acceptations_defaites: lesAcceptationsDefaites,
       audios_a_purger: lesAudiosAPurger,
       factures: lesFactures,
       lignes_facture: lesLignesFacture,

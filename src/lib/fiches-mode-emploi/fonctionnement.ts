@@ -345,17 +345,16 @@ export const FICHES_FONCTIONNEMENT: FicheModeEmploi[] = [
   },
   {
     id: "atlas-double-authentification",
-    ecran: "Mot de passe",
-    ou: "« Réglages » dans la barre du bas, puis Mot de passe",
+    ecran: "Double vérification",
+    ou: "« Réglages » dans la barre du bas, puis Double vérification",
     intitule: "La double authentification, un code en plus du mot de passe",
     motsCles: ["double", "authentification", "deux", "etapes", "facteurs", "2fa", "verification"],
     geste:
-      "Atlas n'a pas encore de code en deux étapes. Ce qui protège en plus du mot de passe : Face ID sur vos " +
-      "appareils, et « Me déconnecter partout » si un téléphone est perdu.",
-    source: "src/app/reglages/connexion/ConnexionClient.tsx",
-    preuves: ["Me déconnecter partout"],
-    // Un code à usage unique passerait par TOTP.
-    absences: ["totp", "TOTP", "otplib"],
+      "Allumez Double vérification, ajoutez Atlas à votre appli d'authentification (Google Authenticator, par " +
+      "exemple), tapez le premier code qu'elle affiche, puis gardez vos codes de secours. Ensuite, chaque " +
+      "connexion par mot de passe demande le code de l'appli. Face ID entre sans code.",
+    source: "src/app/reglages/connexion/SectionDoubleVerification.tsx",
+    preuves: ['aria-label="Double vérification"', "Ajouter à mon appli d&apos;authentification", "codes de secours"],
   },
   {
     id: "donnees-usage",

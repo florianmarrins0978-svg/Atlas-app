@@ -120,6 +120,11 @@ essai("aucun bouton plein n'est resté au vert pin", () => {
  */
 const APLATS_DECLARES: { fichier: string; motif: RegExp; pourquoi: string }[] = [
   {
+    fichier: "src/app/reglages/connexion/SectionDoubleVerification.tsx",
+    motif: /allume \? colors\.rust/,
+    pourquoi: "l'interrupteur de la double vérification (7 octobre 2026) : allumé ou éteint est un état, comme celui de l'autre date à l'envoi",
+  },
+  {
     fichier: "src/app/planning/fiche-de-securite/[chantierId]/FormulaireFicheDeSecurite.tsx",
     motif: /i \+ 1 === etape \? colors\.rust/,
     pourquoi: "la barre d'avancement de la fiche de sécurité (22 septembre 2026) : le trait de l'écran en cours est un état, on ne le presse pas",

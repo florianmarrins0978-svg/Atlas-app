@@ -204,6 +204,8 @@ function aidesDe(chemin: string): Map<string, string> {
  */
 const EXEMPTIONS: Record<string, string> = {
   // ─── Avant la connexion : aucun rôle n'existe encore ────────────────────
+  "src/app/login/code/actions.ts#codeAction":
+    "Le code de l'appli d'authentification se demande AVANT que la session existe : c'est lui qui la crée. Il ne connaît que la connexion en attente, et compte ses échecs comme un mot de passe faux.",
   "src/app/login/actions.ts#connexionAction":
     "C'est l'action qui CRÉE la session. Exiger un rôle avant elle enfermerait tout le monde dehors.",
   "src/app/login/actions.ts#defiConnexionAction":
@@ -273,6 +275,12 @@ const EXEMPTIONS: Record<string, string> = {
     "Retire SA propre photo et son fichier. Le refuser à un rôle lui interdirait d'effacer sa propre tête.",
   "src/app/reglages/apparence/actions.ts#choisirCharteAction":
     "La charte de couleurs de la personne connectée. Aucune donnée d'entreprise, aucun autre compte touché.",
+  "src/app/reglages/connexion/double-verification-actions.ts#commencerActivationAction":
+    "Activer la double vérification n'écrit que sur la personne connectée, quel que soit son rôle ; c'est l'écran où le patron est envoyé tant qu'elle n'est pas activée.",
+  "src/app/reglages/connexion/double-verification-actions.ts#confirmerActivationAction":
+    "Confirmer l'activation n'écrit que sur la personne connectée, avec le code de SON appli : tout rôle doit pouvoir protéger son propre compte.",
+  "src/app/reglages/connexion/double-verification-actions.ts#desactiverAction":
+    "Désactiver n'écrit que sur la personne connectée, exige son code, et refuse déjà au serveur le rôle pour qui elle est obligatoire.",
   "src/app/reglages/connexion/actions.ts#changerMotDePasseAction":
     "Son propre mot de passe, et il exige l'ancien. Le fermer par rôle interdirait à un salarié de changer le sien.",
   "src/app/reglages/connexion/actions.ts#deconnecterPartoutAction":
