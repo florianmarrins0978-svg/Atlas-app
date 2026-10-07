@@ -107,6 +107,37 @@ p.dessous{max-width:740px;margin:14px auto 0;padding:0 20px;text-align:center;
 .notes b{color:var(--encre)}
 .notes ol{padding-left:20px;color:var(--encre-douce);font-size:14px;line-height:1.7}
 .notes li{margin-bottom:6px}
+/* Sa page de devis, recopiée des vrais textes de src/app/devis/[jeton]. */
+.sapage{max-width:1240px;margin:0 auto;padding:6px 16px 10px}
+.sapage h2{font-family:ui-serif,Georgia,serif;font-size:22px;text-align:center;margin:18px 0 4px}
+.sapage .sous{text-align:center;font-size:14px;color:var(--encre-douce);margin:0 0 6px}
+.trois{display:flex;flex-wrap:wrap;gap:18px;justify-content:center}
+.ecran{width:340px;max-width:100%}
+.ecran .etiq{font-size:12px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--encre-douce);text-align:center;margin:12px 0 8px}
+.dev{background:#f5f3ee;color:#1c1c1a;border-radius:14px;padding:16px;border:1px solid var(--trait);font-size:14px}
+.dev .carte2{background:#faf9f5;border:1px solid rgba(28,28,26,.1);border-radius:14px;padding:14px;margin-bottom:10px}
+.dev .ent{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.dev .ent b{font-family:ui-serif,Georgia,serif;font-weight:400;font-size:19px}
+.dev .ent span{font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:#6b6b63}
+.dev .pour{margin:2px 0 0;color:#4a4a44}
+.dev .adr{margin:0;font-size:13px;color:#6b6b63}
+.dev dl{margin:8px 0 0;border-top:1px solid rgba(28,28,26,.12);padding-top:4px}
+.dev dl div{display:flex;justify-content:space-between;color:#6b6b63;font-variant-numeric:tabular-nums}
+.dev dl div.ttc{color:#1c1c1a;font-family:ui-serif,Georgia,serif;font-size:16px}
+.dev dd{margin:0}
+.dev .tel2{display:block;width:100%;margin-top:8px;border:0;border-radius:999px;padding:10px;background:#6f8a5f;color:#fff;font:inherit;font-size:14.5px}
+.dev .q{font-family:ui-serif,Georgia,serif;font-size:16px;margin:0}
+.dev .date{font-size:16px;margin:4px 0 0}
+.dev .choix2{display:block;width:100%;text-align:left;margin-top:6px;padding:10px 12px;border-radius:10px;border:0;box-shadow:inset 0 0 0 1px rgba(28,28,26,.15);background:#fff;font:inherit;font-size:14px;color:#1c1c1a}
+.dev .retract{display:flex;gap:8px;font-size:12.5px;color:#4a4a44;margin-top:10px;line-height:1.45}
+.dev .retract input{width:20px;height:20px;flex:none;margin-top:1px}
+.dev .ok{display:block;width:100%;margin-top:10px;min-height:48px;border:0;border-radius:999px;background:#2f3b2f;color:#fff;font:inherit;font-size:16px;cursor:pointer}
+.dev .bof{display:block;width:100%;margin-top:8px;min-height:44px;border:0;border-radius:999px;background:none;box-shadow:inset 0 0 0 1px rgba(28,28,26,.15);color:#6b6b63;font:inherit;font-size:14px}
+.dev .pied{text-align:center;font-size:11px;color:#6b6b63;margin:10px 0 0}
+.dev .fin{text-align:center}
+.dev .fin b{display:block;font-family:ui-serif,Georgia,serif;font-weight:400;font-size:21px}
+.dev .fin p{color:#6b6b63;margin:8px 0 0;line-height:1.5}
+.dev .gris{opacity:.55}
 </style>
 </head>
 <body>
@@ -129,6 +160,52 @@ p.dessous{max-width:740px;margin:14px auto 0;padding:0 20px;text-align:center;
   puis Mme Roux. Changez d'allure en haut.</p>
 </div>
 
+<div class="sapage">
+  <h2>Ce qu'elle voit avec B</h2>
+  <p class="sous">Les mots sont ceux de sa vraie page de devis. Seul le cadre de la date change.</p>
+  <div class="trois">
+    <div class="ecran"><p class="etiq">1. Aujourd'hui</p>
+      <div class="dev"><div class="carte2">
+  <div class="ent"><b>Devis n° D-2026-041</b><span>Votre entreprise</span></div>
+  <p class="pour">Pour Mme Roux</p>
+  <p class="adr">12 rue des Lilas, Mantes-la-Jolie</p>
+  <dl><div><dt>Total HT</dt><dd>1 250,00 €</dd></div>
+  <div><dt>TVA (10 %)</dt><dd>125,00 €</dd></div>
+  <div class="ttc"><dt>Total TTC</dt><dd>1 375,00 €</dd></div></dl>
+  <button type="button" class="tel2">Télécharger mon devis</button>
+</div>
+        <div class="carte2"><p class="q">Quelle date vous arrange ?</p>
+          <button type="button" class="choix2">Le mardi 14 octobre</button>
+          <button type="button" class="choix2">Le jeudi 16 octobre</button>
+          <button type="button" class="choix2" style="color:#6b6b63">Une autre date</button></div>
+        <button type="button" class="ok">J'accepte ce devis</button><button type="button" class="bof">Une correction avant d'accepter</button>
+<button type="button" class="bof">Je ne donne pas suite</button>
+<p class="pied">Votre accord est horodaté et conservé avec le devis.</p>
+      </div></div>
+    <div class="ecran"><p class="etiq">2. Vous l'avez posée</p>
+      <div class="dev" id="devB"><div class="carte2">
+  <div class="ent"><b>Devis n° D-2026-041</b><span>Votre entreprise</span></div>
+  <p class="pour">Pour Mme Roux</p>
+  <p class="adr">12 rue des Lilas, Mantes-la-Jolie</p>
+  <dl><div><dt>Total HT</dt><dd>1 250,00 €</dd></div>
+  <div><dt>TVA (10 %)</dt><dd>125,00 €</dd></div>
+  <div class="ttc"><dt>Total TTC</dt><dd>1 375,00 €</dd></div></dl>
+  <button type="button" class="tel2">Télécharger mon devis</button>
+</div>
+        <div class="carte2"><p class="q">Votre intervention</p>
+          <p class="date">Le mardi 14 octobre</p>
+          <label class="retract"><input type="checkbox" id="caseB"><span>Cette date se situe dans mon délai de rétractation de 14 jours. <strong>Je demande expressément que les travaux commencent avant sa fin.</strong></span></label></div>
+        <p class="retract" id="refusB" style="color:#9b2c2c" hidden></p><button type="button" class="ok" id="okB">J'accepte ce devis</button><button type="button" class="bof">Une correction avant d'accepter</button>
+<button type="button" class="bof">Je ne donne pas suite</button>
+<p class="pied">Votre accord est horodaté et conservé avec le devis.</p>
+      </div></div>
+    <div class="ecran"><p class="etiq">3. Après son accord, ou signé sur papier</p>
+      <div class="dev"><div class="carte2 fin"><b>Devis accepté</b>
+        <p>Intervention prévue le mardi 14 octobre. Votre artisan vous recontactera si besoin.</p>
+        <button type="button" class="tel2">Télécharger mon devis</button></div></div>
+    </div>
+  </div>
+</div>
 <div class="scene">
   <div>
     <p class="legende">Votre planning</p>
@@ -296,8 +373,8 @@ function pageClient() {
     return `<h4>Votre devis</h4>
       <p>Votre artisan a retenu :</p>
       <p class="date">Mardi 14 octobre, la journée</p>
-      <button type="button" class="grand" data-accepte="1">J'accepte le devis</button>
-      <button type="button" class="petit" data-rien="1">Demander une autre date</button>`;
+      <button type="button" class="grand" data-accepte="1">J'accepte ce devis</button>
+      <button type="button" class="petit" data-rien="1">Une correction avant d'accepter</button>`;
   }
   return roux.papier
     ? `<h4>Votre devis</h4><p>Votre devis est accepté.</p><p class="date">Mardi 14 octobre, la journée</p>`
@@ -337,6 +414,16 @@ document.querySelector(".scene").addEventListener("click", (e) => {
   dessiner();
 });
 
+const caseB = document.getElementById("caseB"), okB = document.getElementById("okB");
+okB.addEventListener("click", () => {
+  if (!caseB.checked) {
+    const r = document.getElementById("refusB");
+    r.textContent = "Cette date tombe dans vos 14 jours de rétractation : cochez la case pour demander que les travaux commencent plus tôt, ou choisissez une date plus lointaine.";
+    r.hidden = false;
+    return;
+  }
+  document.getElementById("devB").innerHTML = '<div class="carte2 fin"><b>Devis accepté</b><p>Intervention prévue le mardi 14 octobre. Votre artisan vous recontactera si besoin.</p></div>';
+});
 depart();
 dessiner();
 </script>
