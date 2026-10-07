@@ -5,6 +5,7 @@ import {
   MENTION_AUTOLIQUIDATION,
   numeroTvaLu,
   numeroTvaVide,
+  avisSurLeNumeroTva,
   tauxRendus,
   tauxSousAutoliquidation,
 } from "../src/lib/autoliquidation";
@@ -168,6 +169,39 @@ cas("la case porte « FR » d'office : laissée telle quelle, elle est vide, pas
   assert.equal(numeroTvaVide(""), true);
   assert.equal(numeroTvaVide("FR12345678901"), false);
   assert.equal(numeroTvaVide("F"), false);
+});
+
+cas("un n° TVA français se recalcule depuis son SIREN : la clé de vrais numéros tombe juste", () => {
+  // Orange et TotalEnergies : des numéros publiés, pas calculés ici.
+  assert.equal(avisSurLeNumeroTva("38012986600000", "FR89380129866"), null);
+  assert.equal(avisSurLeNumeroTva("", "FR59 542 051 180"), null);
+});
+
+cas("deux chiffres inversés : la faute se dit, et le bon numéro se propose depuis le SIRET", () => {
+  assert.deepEqual(avisSurLeNumeroTva("93848383883833", "FR54938483838"), {
+    message: "Ce n° TVA contient une faute de frappe.",
+    juste: "FR45938483838",
+  });
+});
+
+cas("le numéro d'un autre client : il ne colle pas au SIRET de la fiche", () => {
+  assert.deepEqual(avisSurLeNumeroTva("93848383883833", "FR89380129866"), {
+    message: "Ce n° TVA n’est pas celui de ce SIRET.",
+    juste: "FR45938483838",
+  });
+});
+
+cas("sans SIRET, la faute se dit mais aucun numéro ne se propose : on ne sait pas lequel est juste", () => {
+  assert.deepEqual(avisSurLeNumeroTva("", "FR54938483838"), {
+    message: "Ce n° TVA contient une faute de frappe.",
+    juste: null,
+  });
+});
+
+cas("ce que la formule ne couvre pas ne se vérifie pas : vide, FR seul, clé en lettres, étranger, forme fausse", () => {
+  for (const tva of ["", "FR", "FRK7938483838", "BE0403170701", "FR123"]) {
+    assert.equal(avisSurLeNumeroTva("93848383883833", tva), null, tva);
+  }
 });
 
 console.log("— La date des travaux, d'après le planning —");

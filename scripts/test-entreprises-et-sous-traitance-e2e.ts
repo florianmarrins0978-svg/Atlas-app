@@ -103,6 +103,25 @@ async function principal() {
     await page.locator('[data-atlas="siret-client"]').waitFor({ state: "detached", timeout: DELAI_PAR_DEFAUT_MS });
   });
 
+  // Sa condition du 7 octobre 2026, planche B : « faut pas que ça bloque ».
+  // Un numéro signalé faux s'enregistre quand même, tel qu'il l'a tapé.
+  await cas("un n° TVA signalé faux propose le bon, et s'enregistre quand même", async () => {
+    await page.goto(`${BASE}/clients/${entreprise.id}/coordonnees`, { waitUntil: "domcontentloaded" });
+    await page.locator('[data-atlas="siret-client"]').waitFor({ timeout: DELAI_PAR_DEFAUT_MS });
+    await page.locator('[data-atlas="siret-client"]').fill("93848383883833");
+    await page.locator('[data-atlas="tva-client-fiche"]').fill("FR54938483838");
+    await page.locator('[data-atlas="avis-tva"]').waitFor({ timeout: DELAI_PAR_DEFAUT_MS });
+    assert.equal(await page.locator('[data-atlas="mettre-la-tva"]').innerText(), "Mettre FR45938483838");
+    await page.click('[data-atlas="enregistrer-coordonnees"]');
+    let enregistre: string | null = null;
+    for (let i = 0; i < 40 && enregistre !== "FR54938483838"; i++) {
+      await page.waitForTimeout(250);
+      const r = await pool.query<{ numero_tva: string | null }>("SELECT numero_tva FROM clients WHERE id = $1", [entreprise.id]);
+      enregistre = r.rows[0]?.numero_tva ?? null;
+    }
+    assert.equal(enregistre, "FR54938483838", "la ligne rouge a retenu l'enregistrement");
+  });
+
   await cas("à la création, Entreprise fait apparaître le SIRET et le n° TVA", async () => {
     await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "domcontentloaded" });
     const pastille = page.locator('[data-atlas="civilite-entreprise"]');

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 import ChoixCivilite from "@/components/atlas/ChoixCivilite";
 import ChampAdresse from "@/components/atlas/ChampAdresse";
+import AvisNumeroTva from "@/components/atlas/AvisNumeroTva";
 import PrimaryButton from "@/components/atlas/PrimaryButton";
 import { colors, smallCaps } from "@/lib/design-tokens";
 import type { CiviliteClient } from "@/lib/civilite";
@@ -108,6 +109,7 @@ export default function SesCoordonnees({
               placeholder="FR suivi de 11 chiffres"
               repere="tva-client-fiche"
             />
+            <AvisNumeroTva siret={siret} numeroTva={numeroTva} onMettre={setNumeroTva} />
           </>
         )}
         <Case

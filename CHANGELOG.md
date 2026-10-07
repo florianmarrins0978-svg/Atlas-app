@@ -8,6 +8,7 @@ Format : le plus récent en tête.
 ---
 ## 2026-10-07
 
+- **Un n° TVA français mal tapé se signale, et le bon se propose** (sa planche du 7 octobre 2026, `appli/verifier-la-tva.html`, B). La clé se recalcule sur le SIREN ; un numéro qui ne colle pas au SIRET de la fiche se dit aussi. **Rien ne bloque**, c'était sa condition : la ligne rouge ne se relit pas au serveur, et le bon numéro ne se pose que s'il le touche (`avisSurLeNumeroTva`, `AvisNumeroTva.tsx`). Clé en lettres et numéro étranger ne se vérifient pas.
 - **Le n° TVA d'une entreprise cliente porte « FR » d'office**, à la création et sur sa fiche (sa demande du 7 octobre 2026). Il s'efface pour une entreprise étrangère. « FR » laissé seul se lit comme une case vide (`numeroTvaVide`, `src/lib/autoliquidation.ts`) : sans cela, l'alerte « FR suivi de 11 chiffres » s'allumait et la fiche refusait de s'enregistrer.
 
 ### Poser au planning un client qui n'arrive pas à choisir ses dates

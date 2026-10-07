@@ -38,6 +38,7 @@ import { espacerNumero, numeroEnregistre } from "@/lib/numero-telephone";
 import { siretLu } from "@/lib/siren";
 import { DEBUT_NUMERO_TVA, numeroTvaLu, numeroTvaVide } from "@/lib/autoliquidation";
 import { saisieAEnregistrer } from "@/lib/saisie-fiche-client";
+import AvisNumeroTva from "@/components/atlas/AvisNumeroTva";
 
 // Intégration réelle : la création passe désormais par une Server Action
 // (creerChantierAction), qui persiste le chantier (et le client s'il est
@@ -1167,6 +1168,7 @@ export default function FormulaireNouveauChantier({
                   {siretLu(siret) === null ? "Le SIRET a 14 chiffres." : "Le n° TVA : FR suivi de 11 chiffres."}
                 </p>
               )}
+              <AvisNumeroTva siret={siret} numeroTva={numeroTva} onMettre={setNumeroTva} />
             </div>
           )}
 
