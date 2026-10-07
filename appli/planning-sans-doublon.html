@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Un chantier inscrit deux fois</title>
+<!--
+  ════════════════════════════════════════════════════════════════════════════
+  SA QUESTION DU 7 OCTOBRE 2026, capture du planning à l'appui (jeudi 29,
+  Lafonte) : *« Pourquoi il est inscrit deux fois ? »*
+
+  Aujourd'hui (`PlanningClient.tsx`, `toucherLeJour`) : toucher un jour ouvre
+  sa fiche SOUS LA CASE (le volet de `MoisCharge`), ET fait sauter la liste du
+  bas sur ce même jour (`setDebutFenetre(jour)`). Le chantier se lit donc deux
+  fois : dans la fiche, puis dans la liste. Une seule inscription en base.
+
+  La liste suivait le doigt depuis l'époque où la fiche s'ouvrait sous le
+  calendrier entier. Depuis qu'elle s'ouvre sous la case, rien n'a coupé la
+  liste.
+
+  ─── LES DEUX PROPOSITIONS ──────────────────────────────────────────────
+  A : la liste du bas reste sur aujourd'hui, quel que soit le jour touché.
+      Limite, et elle se joue sur la planche : toucher AUJOURD'HUI, ou passer
+      aux sept jours, remet le doublon.
+  B : tant qu'une fiche de jour est ouverte, la liste du bas se retire.
+      Refermer le jour la ramène, sur aujourd'hui.
+
+  Ma première réponse recommandait A ; je ne l'avais pas éprouvée sur le jour
+  même ni sur les sept jours. B est le seul qui supprime le doublon partout.
+
+  RIEN N'EST CODÉ.
+  ════════════════════════════════════════════════════════════════════════════
+-->
+<style>
+  :root{
+    --scene:#e6e3dc; --fond:#f5f3ee; --carte:#faf9f5; --teinte:#ece9e1; --encre:#1c1c1a;
+    --encre-douce:#4a4a44; --gris:#8a8578; --or:#B98B47; --chevron:#c9c4b8;
+    --vert-pale:#b9c6b4; --bordeaux:#6b2a35; --trait:rgba(28,28,26,.12); --trait-doux:rgba(28,28,26,.07);
+    --ombre:rgba(28,28,26,.07); --ombre-forte:rgba(20,18,14,.18); --rouge-voile:rgba(107,42,53,.10);
+  }
+  body.nuit{
+    --scene:#070908; --fond:#101210; --carte:#1a1d19; --teinte:#151814; --encre:#e9e8de;
+    --encre-douce:#c1c2b6; --gris:#84887b; --or:#C9A05E; --chevron:#4a4d45;
+    --vert-pale:#4f5f4c; --bordeaux:#c58a93; --trait:rgba(233,232,222,.14); --trait-doux:rgba(233,232,222,.08);
+    --ombre:rgba(0,0,0,.35); --ombre-forte:rgba(0,0,0,.6); --rouge-voile:rgba(197,138,147,.14);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;background:var(--scene)}
+  body{font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--encre);
+       -webkit-text-size-adjust:100%;padding:0 0 48px;font-variant-numeric:tabular-nums}
+  button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;text-align:left}
+  button:focus-visible{outline:2px solid var(--or);outline-offset:3px;border-radius:4px}
+
+  .commandes{display:flex;justify-content:center;gap:8px;padding:16px 16px 0;flex-wrap:wrap}
+  .commandes button{min-height:44px;min-width:44px;padding:0 14px;border-radius:999px;font-size:14px;
+                    color:var(--encre-douce);background:var(--carte);box-shadow:inset 0 0 0 1px var(--trait)}
+  .commandes button[aria-pressed="true"]{color:var(--carte);background:var(--encre);box-shadow:none;font-weight:600}
+  .petites{display:flex;justify-content:center;gap:22px;padding:6px 16px 0;font-size:13px}
+  .petites button{min-height:40px;color:var(--gris)}
+  .petites button[aria-pressed="true"]{color:var(--encre);text-decoration:underline;text-decoration-color:var(--or);text-underline-offset:6px}
+  .dit{max-width:390px;margin:8px auto 0;padding:0 20px;text-align:center;font-size:13.5px;color:var(--encre-douce);min-height:42px}
+
+  .tel{width:calc(100% - 32px);max-width:390px;height:780px;margin:10px auto 0;background:var(--fond);
+       border-radius:30px;overflow:hidden;box-shadow:0 18px 46px var(--ombre-forte);display:flex;flex-direction:column}
+  .ecran{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;padding:16px 10px 24px}
+
+  /* ─── le mois ─── */
+  .mois{margin:0 0 8px;text-align:center;font:400 20px/1.2 ui-serif,Georgia,serif}
+  .jours{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;text-align:center}
+  .nomj{font-size:10px;letter-spacing:.14em;color:var(--gris);padding-bottom:4px}
+  .jour{display:flex;flex-direction:column;align-items:center;gap:4px;min-height:50px;padding:6px 0 5px;border-radius:11px;
+        font:400 17px/1 ui-serif,Georgia,serif;box-shadow:inset 0 0 0 2px transparent;width:100%;text-align:center}
+  .jour.choisi{box-shadow:inset 0 0 0 2px var(--encre)}
+  .jour.auj{color:var(--or);font-weight:700}
+  .jour.repos{background:var(--teinte);color:var(--gris)}
+  .jour.vide{visibility:hidden}
+  .traits{display:flex;flex-direction:column;gap:3px;width:62%}
+  .traits i{display:block;height:4px;border-radius:2px;background:var(--carte);box-shadow:inset 0 0 0 1px var(--trait)}
+  .traits i.v{background:var(--vert-pale);box-shadow:none}
+
+  /* ─── la fiche du jour, sous sa case ─── */
+  .volet{grid-column:1/-1;text-align:left;margin:6px 0 8px;background:var(--carte);border-radius:16px;border:1px solid var(--trait-doux);
+         box-shadow:0 6px 20px var(--ombre);padding:14px 14px 8px}
+  .volet .titre{margin:0;text-align:center;font:700 12px/1 inherit;letter-spacing:.2em;text-transform:uppercase}
+  .filet{margin:12px 0 2px;border:0;border-top:1px solid var(--trait)}
+  .absent{display:block;margin:4px auto 6px;min-height:44px;color:var(--or);font-size:15px}
+  .bloc + .bloc{margin-top:8px;border-top:1px solid var(--trait-doux);padding-top:10px}
+  .nom{display:block;font:400 21px/1.2 ui-serif,Georgia,serif}
+  .duree{display:block;margin-top:2px;font-size:13px;color:var(--or)}
+  .signe{display:block;font-size:13px;color:var(--gris)}
+  .demi{display:flex;min-height:42px;align-items:center;gap:14px;font:600 11px/1 inherit;letter-spacing:.16em;text-transform:uppercase}
+  .demi .a{display:flex;align-items:center;gap:10px;min-width:118px}
+  .demi .b{font:400 15px/1 inherit;letter-spacing:0;text-transform:none;color:var(--or)}
+  .pastille{width:14px;height:14px;border-radius:4px;flex:none;background:var(--vert-pale)}
+  .actions{display:flex;justify-content:flex-end;gap:14px;min-height:40px;align-items:center;font:700 15px/1 inherit}
+  .rien{margin:6px 0 10px;text-align:center;font-size:14px;color:var(--gris)}
+
+  /* ─── la liste du bas ─── */
+  .points{display:flex;justify-content:center;gap:9px;margin-top:18px}
+  .points button{display:grid;place-items:center;width:34px;height:34px}
+  .points i{display:block;width:6px;height:6px;border-radius:50%;background:var(--chevron);transition:transform .3s,background .3s}
+  .points button[aria-pressed="true"] i{background:var(--or);transform:scale(1.5)}
+  .entete{display:block;width:max-content;margin:16px auto 6px;padding:7px 16px;border-radius:999px;background:var(--teinte);
+          font:700 12px/1 inherit;letter-spacing:.2em;text-transform:uppercase}
+  .ligne{display:flex;align-items:center;gap:10px;padding:8px 6px;border-radius:12px}
+  .ligne .texte{flex:1;min-width:0}
+  .ligne .plus{color:var(--or);font-size:15px}
+  .ligne .chev{color:var(--gris);font-size:18px}
+  .ligne.double{background:var(--rouge-voile);box-shadow:inset 0 0 0 1.5px var(--bordeaux)}
+  .marque{display:block;margin-top:4px;font-size:12px;font-weight:700;color:var(--bordeaux)}
+  .vide-liste{margin:6px 0;text-align:center;font-size:14px;color:var(--gris)}
+
+  .barre{flex:none;display:grid;grid-template-columns:repeat(5,1fr);height:64px;background:var(--carte);
+         border-top:1px solid var(--trait);padding-bottom:6px}
+  .barre span{display:flex;align-items:end;justify-content:center;padding-bottom:12px;font-size:10px;letter-spacing:.1em;color:var(--gris)}
+  .barre span.actif{color:var(--encre);font-weight:600}
+
+  .note{max-width:430px;margin:26px auto 0;padding:0 22px;font-size:13.5px;line-height:1.6;color:var(--encre-douce)}
+  .note h2{font:400 20px/1.2 ui-serif,Georgia,serif;color:var(--encre);margin:20px 0 8px}
+  .note p{margin:0 0 10px}
+  .note b{color:var(--encre)}
+  .note table{border-collapse:collapse;width:100%;margin:0 0 12px}
+  .note td{padding:6px 8px 6px 0;vertical-align:top;border-top:1px solid var(--trait-doux)}
+  .note td:first-child{color:var(--encre);font-weight:600;width:22%}
+  @media (max-width:420px){.tel{border-radius:22px}}
+</style>
+</head>
+<body>
+
+<div class="commandes" role="group" aria-label="La proposition">
+  <button type="button" data-v="0">Aujourd’hui</button>
+  <button type="button" data-v="A">A</button>
+  <button type="button" data-v="B" aria-pressed="true">B</button>
+</div>
+<p class="dit" id="dit"></p>
+<div class="petites">
+  <button type="button" id="nuit" aria-pressed="false">Voir sur Nuit</button>
+  <button type="button" id="rejouer">Recommencer</button>
+</div>
+
+<div class="tel"><div class="ecran" id="ecran"></div>
+  <div class="barre" aria-hidden="true"><span>Chantiers</span><span class="actif">Planning</span><span>Terminés</span><span>Paysage</span><span>Réglages</span></div>
+</div>
+
+<div class="note">
+  <h2>Ce qu’il faut essayer</h2>
+  <p>Pour chaque lettre : touchez le <b>29</b>, puis le <b>7</b> (aujourd’hui), puis les deux points sous le calendrier pour passer aux sept jours. Un chantier vu deux fois est cerclé de rouge.</p>
+  <table>
+    <tr><td>Aujourd’hui</td><td>la liste du bas saute sur le jour touché : le chantier est dans la fiche et dans la liste.</td></tr>
+    <tr><td>A</td><td>la liste reste sur aujourd’hui. Plus de doublon sur le 29, mais il revient quand on touche le 7, et sur les sept jours.</td></tr>
+    <tr><td>B</td><td>tant qu’un jour est ouvert, la liste se retire. Refermer le jour la ramène, sur aujourd’hui. Plus aucun doublon.</td></tr>
+  </table>
+  <p>Je vous avais conseillé A. En l’essayant sur aujourd’hui et sur les sept jours, il laisse encore le doublon : <b>je vous conseille B</b>.</p>
+  <p><b>Rien n’est codé.</b> Dites la lettre, ou ce qui ne va pas.</p>
+</div>
+
+<script>
+const DIT = {
+  "0": "Comme dans l’application : la liste suit le jour touché.",
+  A: "La liste reste sur aujourd’hui.",
+  B: "Un jour ouvert : la liste se retire.",
+};
+const AUJ = 7;
+const NOMS = ["Dimanche","Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi"];
+// octobre 2026 : le 1er tombe un jeudi
+const jourSemaine = (n) => (3 + n) % 7 === 0 ? 0 : (3 + n) % 7;
+const CHANTIERS = {
+  7: [{ nom: "Pagnol", duree: "une demi-journée", signe: "Signé" }],
+  15: [{ nom: "Mr. Lala", duree: "une journée", signe: "Signé" }, { nom: "Mme Durand", duree: "une demi-journée", signe: "Signé" }],
+  29: [{ nom: "Lafonte", duree: "une journée", signe: "Pas encore signé" }],
+};
+
+let variante = "B", touche = null, portee = "jour";
+
+function titreDu(n) { return `${NOMS[jourSemaine(n)]} ${n} octobre`; }
+function repos(n) { const s = jourSemaine(n); return s === 0 || s === 6; }
+
+function volet(n) {
+  const cs = CHANTIERS[n] || [];
+  let h = `<div class="volet"><p class="titre">${titreDu(n)}</p><hr class="filet">
+    <button type="button" class="absent">+ Salarié absent ?</button>`;
+  if (!cs.length) h += `<p class="rien">Rien de posé ce jour-là.</p>`;
+  cs.forEach((c) => {
+    h += `<div class="bloc"><span class="nom">${c.nom}</span><span class="duree">${c.duree}</span><span class="signe">${c.signe}</span>
+      <div class="demi"><span class="a"><span class="pastille"></span>Matin</span><span class="b">+ Salarié</span></div>
+      <div class="demi"><span class="a"><span class="pastille"></span>Après-midi</span><span class="b">+ Salarié</span></div>
+      <div class="actions"><span>Déplacer</span><span>Retirer</span></div></div>`;
+  });
+  return h + `</div>`;
+}
+
+function liste() {
+  // d'où part la liste, selon la proposition
+  if (variante === "B" && touche !== null) return "";
+  const debut = variante === "0" && touche !== null ? touche : AUJ;
+  const jours = portee === "jour" ? [debut] : Array.from({ length: 7 }, (_, i) => debut + i).filter((n) => n <= 31);
+  let h = "", rien = true;
+  jours.forEach((n) => {
+    const cs = CHANTIERS[n];
+    if (!cs) return;
+    rien = false;
+    h += `<span class="entete">${titreDu(n)}</span>`;
+    cs.forEach((c) => {
+      const double = touche === n;
+      h += `<div class="ligne${double ? " double" : ""}"><span class="texte"><span class="nom">${c.nom}</span><span class="duree">${c.duree}</span><span class="signe">${c.signe}</span>${double ? `<span class="marque">Déjà dans la fiche au-dessus</span>` : ""}</span><span class="plus">+ Salarié</span><span class="chev" aria-hidden="true">›</span></div>`;
+    });
+  });
+  if (rien) h += `<p class="vide-liste">${portee === "jour" ? "Rien de posé ce jour-là." : "Aucun chantier posé sur ces sept jours."}</p>`;
+  return h;
+}
+
+function dessiner() {
+  document.querySelectorAll(".commandes button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.v === variante)));
+  document.getElementById("dit").textContent = DIT[variante];
+
+  let h = `<p class="mois">Octobre 2026</p><div class="jours">${["LUN","MAR","MER","JEU","VEN","SAM","DIM"].map((x) => `<span class="nomj">${x}</span>`).join("")}`;
+  const cases = [null, null, null, ...Array.from({ length: 31 }, (_, i) => i + 1)];
+  while (cases.length % 7) cases.push(null);
+  for (let r = 0; r < cases.length; r += 7) {
+    const rang = cases.slice(r, r + 7);
+    rang.forEach((n) => {
+      if (n === null) { h += `<span class="jour vide"></span>`; return; }
+      const nb = (CHANTIERS[n] || []).length;
+      const traits = repos(n) ? "" : `<span class="traits"><i class="${nb ? "v" : ""}"></i><i class="${nb ? "v" : ""}"></i></span>`;
+      const cls = "jour" + (repos(n) ? " repos" : "") + (n === AUJ ? " auj" : "") + (touche === n ? " choisi" : "");
+      h += repos(n) ? `<span class="${cls}">${n}${traits}</span>` : `<button type="button" class="${cls}" data-jour="${n}">${n}${traits}</button>`;
+    });
+    if (touche !== null && rang.includes(touche)) h += volet(touche);
+  }
+  h += `</div><div class="points" role="group" aria-label="La journée ou les sept jours">
+    <button type="button" data-portee="jour" aria-pressed="${portee === "jour"}" aria-label="La journée"><i></i></button>
+    <button type="button" data-portee="semaine" aria-pressed="${portee === "semaine"}" aria-label="Les sept jours"><i></i></button>
+  </div>${liste()}`;
+
+  const e = document.getElementById("ecran");
+  e.innerHTML = h;
+  e.querySelectorAll("[data-jour]").forEach((b) => (b.onclick = () => {
+    const n = +b.dataset.jour; touche = touche === n ? null : n; dessiner();
+  }));
+  e.querySelectorAll("[data-portee]").forEach((b) => (b.onclick = () => { portee = b.dataset.portee; dessiner(); }));
+}
+
+document.querySelectorAll(".commandes button").forEach((b) => (b.onclick = () => { variante = b.dataset.v; dessiner(); }));
+document.getElementById("rejouer").onclick = () => { touche = null; portee = "jour"; dessiner(); };
+document.getElementById("nuit").onclick = () => {
+  const on = document.body.classList.toggle("nuit");
+  document.getElementById("nuit").setAttribute("aria-pressed", String(on));
+};
+dessiner();
+</script>
+</body>
+</html>
