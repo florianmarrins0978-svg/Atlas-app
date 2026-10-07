@@ -5,7 +5,7 @@ import { exigerEcran } from "@/server/garde-action";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { getClient, mettreAJourClient } from "@/server/repositories/clients";
 import { siretLu } from "@/lib/siren";
-import { numeroTvaLu } from "@/lib/autoliquidation";
+import { numeroTvaLu, numeroTvaVide } from "@/lib/autoliquidation";
 import type { CiviliteClient } from "@/lib/civilite";
 
 /**
@@ -67,7 +67,7 @@ export async function enregistrerSesCoordonneesAction(
   // quel sous le nom du client, sur le devis et la facture.
   const siret = siretLu(data.siret);
   if (siret === null) return { ok: false, raison: "Le SIRET a 14 chiffres." };
-  const numeroTva = data.numeroTva.trim() === "" ? "" : numeroTvaLu(data.numeroTva);
+  const numeroTva = numeroTvaVide(data.numeroTva) ? "" : numeroTvaLu(data.numeroTva);
   if (numeroTva === null) {
     return { ok: false, raison: "Ce numéro de TVA n'a pas la bonne forme : FR suivi de 11 chiffres en France." };
   }

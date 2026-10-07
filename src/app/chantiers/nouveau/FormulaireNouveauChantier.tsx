@@ -36,7 +36,7 @@ import DevisDepuisDictee from "../[id]/DevisDepuisDictee";
 import type { CiviliteClient } from "@/lib/civilite";
 import { espacerNumero, numeroEnregistre } from "@/lib/numero-telephone";
 import { siretLu } from "@/lib/siren";
-import { numeroTvaLu } from "@/lib/autoliquidation";
+import { DEBUT_NUMERO_TVA, numeroTvaLu, numeroTvaVide } from "@/lib/autoliquidation";
 import { saisieAEnregistrer } from "@/lib/saisie-fiche-client";
 
 // Intégration réelle : la création passe désormais par une Server Action
@@ -229,7 +229,7 @@ export default function FormulaireNouveauChantier({
   // Une entreprise cliente : son SIRET et son n° TVA, comme sur sa fiche
   // (sa demande du 4 octobre 2026, « faut ajouter le siret aussi »).
   const [siret, setSiret] = useState("");
-  const [numeroTva, setNumeroTva] = useState("");
+  const [numeroTva, setNumeroTva] = useState(DEBUT_NUMERO_TVA);
   const [canalChoisi, setCanalChoisi] = useState<"sms" | "email" | null>(depart?.canal ?? null);
   const [adresseChantier, setAdresseChantier] = useState(reprise?.adresseChantier ?? "");
   // **L'adresse du CLIENT sert d'adresse de chantier par défaut quand on vient
@@ -1162,7 +1162,7 @@ export default function FormulaireNouveauChantier({
                   />
                 </div>
               </div>
-              {(siretLu(siret) === null || (numeroTva.trim() !== "" && numeroTvaLu(numeroTva) === null)) && (
+              {(siretLu(siret) === null || (!numeroTvaVide(numeroTva) && numeroTvaLu(numeroTva) === null)) && (
                 <p role="alert" className="mt-1 text-[12px]" style={{ color: colors.alert }}>
                   {siretLu(siret) === null ? "Le SIRET a 14 chiffres." : "Le n° TVA : FR suivi de 11 chiffres."}
                 </p>

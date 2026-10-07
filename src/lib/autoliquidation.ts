@@ -79,6 +79,27 @@ export function tauxRendus(
  * lettres puis deux à treize signes ; Atlas ne prétend pas vérifier la clé.
  */
 export function numeroTvaLu(saisi: string | null | undefined): string | null {
-  const brut = String(saisi ?? "").replace(/[\s.\-]/g, "").toUpperCase();
+  const brut = numeroTvaBrut(saisi);
   return /^[A-Z]{2}[0-9A-Z]{2,13}$/.test(brut) ? brut : null;
+}
+
+/**
+ * Ce que la case du n° TVA porte d'office : sa demande du 7 octobre 2026,
+ * *« met le FR d'office déjà écrit »*. Neuf clients sur dix sont français ;
+ * pour un autre pays, on efface les deux lettres.
+ */
+export const DEBUT_NUMERO_TVA = "FR";
+
+/**
+ * La case n'a pas été remplie : rien, ou les deux lettres du pays seules.
+ *
+ * Sans cette lecture, le « FR » posé d'office se refuserait comme un numéro
+ * mal tapé, et une fiche sans numéro ne s'enregistrerait plus.
+ */
+export function numeroTvaVide(saisi: string | null | undefined): boolean {
+  return /^([A-Z]{2})?$/.test(numeroTvaBrut(saisi));
+}
+
+function numeroTvaBrut(saisi: string | null | undefined): string {
+  return String(saisi ?? "").replace(/[\s.\-]/g, "").toUpperCase();
 }

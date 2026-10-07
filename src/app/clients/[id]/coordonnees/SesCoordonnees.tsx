@@ -8,6 +8,7 @@ import ChampAdresse from "@/components/atlas/ChampAdresse";
 import PrimaryButton from "@/components/atlas/PrimaryButton";
 import { colors, smallCaps } from "@/lib/design-tokens";
 import type { CiviliteClient } from "@/lib/civilite";
+import { DEBUT_NUMERO_TVA } from "@/lib/autoliquidation";
 import { enregistrerSesCoordonneesAction } from "./actions";
 
 /**
@@ -51,7 +52,7 @@ export default function SesCoordonnees({
   const [email, setEmail] = useState(depart.email);
   const [adresse, setAdresse] = useState(depart.adresse);
   const [siret, setSiret] = useState(depart.siret);
-  const [numeroTva, setNumeroTva] = useState(depart.numeroTva);
+  const [numeroTva, setNumeroTva] = useState(depart.numeroTva || DEBUT_NUMERO_TVA);
   const [refus, setRefus] = useState<string | null>(null);
   const [enCours, demarrer] = useTransition();
 

@@ -98,6 +98,7 @@ async function principal() {
     assert.equal(await pastille.getAttribute("aria-pressed"), "true");
     await page.locator('[data-atlas="siret-client"]').waitFor({ timeout: DELAI_PAR_DEFAUT_MS });
     assert.equal(await page.locator('[data-atlas="tva-client-fiche"]').count(), 1);
+    assert.equal(await page.locator('[data-atlas="tva-client-fiche"]').inputValue(), "FR", "la fiche sans numéro ne porte pas FR");
     await page.click('[data-atlas="civilite-mr"]');
     await page.locator('[data-atlas="siret-client"]').waitFor({ state: "detached", timeout: DELAI_PAR_DEFAUT_MS });
   });
@@ -109,7 +110,15 @@ async function principal() {
     assert.equal(await page.locator('input[aria-label="SIRET"]').count(), 0, "le SIRET s'affiche pour un particulier");
     await pastille.click();
     await page.locator('input[aria-label="SIRET"]').waitFor({ timeout: DELAI_PAR_DEFAUT_MS });
-    assert.equal(await page.locator('input[aria-label="N° TVA intracommunautaire"]').count(), 1);
+    const tva = page.locator('input[aria-label="N° TVA intracommunautaire"]');
+    assert.equal(await tva.count(), 1);
+    // Sa demande du 7 octobre 2026 : « FR » d'office, et il s'efface pour une
+    // entreprise étrangère sans qu'aucune alerte ne le retienne.
+    assert.equal(await tva.inputValue(), "FR", "le FR n'est pas posé d'office");
+    await page.locator('input[aria-label="SIRET"]').fill("81234567800021");
+    assert.equal(await page.locator('text=Le n° TVA : FR suivi de 11 chiffres.').count(), 0, "FR seul est pris pour un numéro faux");
+    await tva.fill("");
+    assert.equal(await tva.inputValue(), "", "le FR ne s'efface pas");
   });
 
   await cas("le devis d'une entreprise : la sous-traitance est là, décochée ; allumée, plus de TVA", async () => {

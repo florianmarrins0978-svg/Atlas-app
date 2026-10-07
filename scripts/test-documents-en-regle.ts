@@ -4,6 +4,7 @@ import { CROCHET_DECENNALE } from "../src/lib/conditions-generales";
 import {
   MENTION_AUTOLIQUIDATION,
   numeroTvaLu,
+  numeroTvaVide,
   tauxRendus,
   tauxSousAutoliquidation,
 } from "../src/lib/autoliquidation";
@@ -159,6 +160,14 @@ cas("un numéro de TVA se lit sans espaces ni points, et se refuse s'il n'en est
   assert.equal(numeroTvaLu(" fr 12 345.678.901 "), "FR12345678901");
   assert.equal(numeroTvaLu("12345678901"), null);
   assert.equal(numeroTvaLu(""), null);
+});
+
+cas("la case porte « FR » d'office : laissée telle quelle, elle est vide, pas fausse", () => {
+  assert.equal(numeroTvaVide("FR"), true);
+  assert.equal(numeroTvaVide(" fr "), true);
+  assert.equal(numeroTvaVide(""), true);
+  assert.equal(numeroTvaVide("FR12345678901"), false);
+  assert.equal(numeroTvaVide("F"), false);
 });
 
 console.log("— La date des travaux, d'après le planning —");
