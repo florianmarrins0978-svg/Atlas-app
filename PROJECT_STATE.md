@@ -13,6 +13,18 @@ dans `manquesDuDevis` : c'est sa règle. Migration 0123 : l'attestation déposé
 est lue par l'IA (`attestation-lue.ts`, `lire-attestation.ts`), et ce qu'elle
 trouve se rappelle. Lecture réelle non éprouvée ici (aucune clé).
 
+## CODÉ : LE TÉLÉPHONE ET LE N° TVA DOIVENT ÊTRE JUSTES (7 octobre 2026)
+
+Branche `claude/telephone-tva-justes`. `telephoneLu` (`src/lib/numero-telephone.ts`)
+et `numeroTvaLu` resserré pour la France (`src/lib/autoliquidation.ts`). La fiche
+client grise ses sorties tant qu'un numéro est faux. Pas encore sur `main`.
+
+Réuni dans `claude/tva-fr-d-office` : la case n° TVA porte « FR » d'office
+(création, fiche, facture), « FR » seul vaut une case vide, et la clé se
+recalcule sur le SIREN pour une alerte qui ne bloque rien
+(`avisSurLeNumeroTva`, `AvisNumeroTva.tsx`). Batterie non jouée : à lancer
+sur son accord, une seule pour les deux lots.
+
 ---
 ## SUR `main` : POSER UN CLIENT À SA PLACE (7 octobre 2026)
 
@@ -326,7 +338,6 @@ planche ». `ARCHITECTURE.md` §398.
 
 **Ce qui reste ouvert :** `test-travaux-a-faire-e2e` rougit selon l'ordre des suites (`TODO.md`) ; l'envoi du devis par Atlas attend son adresse pro.
 
-
 · dernière migration `drizzle/0097_jours_retenus_par_le_client.sql`
 
 ---
@@ -427,7 +438,6 @@ Une session repartait pour quarante-cinq minutes parce que `main` avait apporté
 du code d'argent — déjà éprouvé par celui qui l'a écrit. La rencontre se partage
 désormais entre ce que le lot apporte (gravité pleine) et ce que `main` apporte
 (seul son plancher refait la batterie). `ARCHITECTURE.md` §382.
-
 
 ## FAIT : CORRIGER UN ROUGE NE COÛTE PLUS LA BATTERIE ENTIÈRE (17 septembre 2026)
 
@@ -632,7 +642,6 @@ sont désormais éprouvées (`test-porte-aucune-saisie-ne-tombe-db.ts`). L'état
 sa base, lui, est publié par le lot voisin du même soir (§356). Détail :
 `ARCHITECTURE.md` §357.
 
-
 ---
 
 ## FAIT : LA BASE SE RATTRAPE À CHAQUE ALLUMAGE — 13 septembre 2026
@@ -774,7 +783,6 @@ l'écran** : le silence qui faisait passer le bouton pour cassé est mort.
 **Ce qui reste, et que lui seul peut trancher :** la feuille de partage ne
 s'éprouve pas ici (aucun WebKit dans l'environnement de l'agent).
 
-
 ---
 
 ## FAIT : LE DIAGNOSTIC VÉGÉTAL — LE REFUS EST L'ÉCRAN PRINCIPAL — 12 septembre 2026
@@ -790,7 +798,6 @@ coude après la relance (sa décision du 11). Document de retour :
 
 **Ce qui reste, et qui le tranche :** la licence INRAE (§24 de QUESTIONS), le
 premier vrai appel de vision sur son banc, la durée de conservation des photos.
-
 
 ---
 
@@ -816,7 +823,6 @@ migration.**
 Détail : `ARCHITECTURE.md` §336.
 
 ---
-
 
 ## FAIT : LE PLAN D'ARROSAGE REPRIS, ET SES RÈGLES SOUS VERROU — 11 septembre 2026
 
@@ -896,7 +902,6 @@ désormais commune, et la liste en dur du devis a disparu. **Aucune migration.**
 Détail : `ARCHITECTURE.md` §331.
 
 ---
-
 
 ## FAIT (sous réserve de SA réponse) : LA POLICE DU DOCUMENT ANNONCE SA LONGUEUR — 11 septembre 2026
 
@@ -1193,8 +1198,6 @@ Aucune migration. `ARCHITECTURE.md` §305.
 
 ---
 
-
-
 ## FAIT : LE BOUTON RETOUR EST UN VRAI BOUTON RETOUR — 9 septembre 2026
 
 Sa demande : *« le bouton retour doit marcher comme un vrai bouton marche
@@ -1284,7 +1287,6 @@ d'avant, séparément.
 **Reste ouvert :** `planning → devis → fiche client` retombe sur la liste — une
 adresse ne porte qu'un cran de mémoire.
 
-
 · dernière migration `drizzle/0077_civilite_et_prenom_du_compte.sql`
 (la mienne : `0076_identite_vivante_sur_la_facture.sql`)
 
@@ -1292,12 +1294,10 @@ adresse ne porte qu'un cran de mémoire.
 d'un visiteur sans compte, et `/creer-un-compte` pose seize questions une à une
 — patron et entreprise créés d'un coup, session ouverte. `ARCHITECTURE.md` §297.
 
-
 *(Deux en-têtes de mise à jour cohabitaient ici depuis une fusion du 29 août,
 avec deux dates et deux migrations différentes — dont une périmée. Réunis : une
 ligne fausse coûte plus cher qu'une ligne absente, et celle-ci l'était à
 moitié.)*
-
 
 *(Le numéro du dernier commit ne figure plus ici : il était faux dès le commit
 suivant, et une ligne fausse coûte plus cher qu'une ligne absente. `git log
@@ -1402,7 +1402,6 @@ Chaque session mesure chez elle. `ARCHITECTURE.md` §287 et §288,
 | **Corrigé** | `main` ne compilait plus à neuf : MON `git add scripts/` avait emporté 527 lignes du travail en cours d'une session voisine. Rendu par `9c34d4f0`, sans rien changer sur le disque |
 | **Ouvert** | cinq batteries simultanées ne tiennent pas sur la machine : deux suffisent à faire tomber un serveur de développement |
 
-
 ## FAIT : deux mots du planning qu'il ne comprenait pas (7 septembre 2026)
 
 Ses deux remarques, à quelques minutes : « que veut dire 1 chez le client ? » et
@@ -1481,7 +1480,6 @@ client (sa règle du 31 août). Décisions : `ARCHITECTURE.md` §273.
 
 ---
 
-
 ## FAIT : « Mon entreprise », et la barre écrite trois fois (6 septembre 2026)
 
 **Quatrième des six lots de la reprise des Réglages.**
@@ -1495,7 +1493,6 @@ client (sa règle du 31 août). Décisions : `ARCHITECTURE.md` §273.
 | **Signalé, non corrigé** | `CompteClient` et `IdentiteClient` gardent deux façons de dire « ce qui reste à enregistrer » |
 
 ---
-
 
 ## FAIT (à moitié, et c'est voulu) : lire au soleil (6 septembre 2026)
 
@@ -1512,7 +1509,6 @@ Proposé et accepté le même jour, planche en main
 | **NON touché** | sa palette, le texte principal, et les trois choses du lot 3 |
 
 ---
-
 
 ## FAIT : « Devis & factures » (6 septembre 2026)
 
@@ -1543,7 +1539,6 @@ l'application.
 | **Vu et NON corrigé** | « Mon agenda » demande un identifiant OAuth sur `console.cloud.google.com` — lot 5, et c'est le patron qui tranche |
 
 ---
-
 
 ## FAIT : le sommaire des réglages (6 septembre 2026)
 
@@ -1583,7 +1578,6 @@ sur l'écran **Note vocale**, plus sur la fiche client.
 
 **Tenu par** `scripts/test-fiche-client-un-seul-visage-e2e.ts`, vu rouge sur la
 version d'avant.
-
 
 ---
 
@@ -1627,7 +1621,6 @@ une autre de ses sessions écrivait dans le même dossier.
 
 Détail : `ARCHITECTURE.md` §259 · retour au patron : `docs/lot-audit-de-sante.md`.
 Ce qui reste dû est dans `TODO.md`, en tête.
-
 
 ## FAIT (à moitié) : l'écran des prix (5 septembre 2026)
 
@@ -2161,7 +2154,6 @@ La pièce qui fait foi reste celle qu'Atlas archive à l'envoi.
 demande de correction — à trancher par le patron.
 
 Raisons et pièges : `ARCHITECTURE.md` §223.
-
 
 ## Un prix posé débloque l'envoi, et il peut proposer demain (31 août 2026)
 
@@ -2820,7 +2812,6 @@ pas besoin de cliquer sur proposer »*.
 
 Le détail et les partis pris : `ARCHITECTURE.md` §170.
 
-
 ---
 
 ## Le client touché ne remonte plus (23 août 2026)
@@ -2900,7 +2891,6 @@ Un audit hostile complet a été mené sur le dépôt. Le détail des décisions
 pareil : sans `AUTH_TRUST_HOST` (ou `AUTH_URL`), **plus personne ne se
 connecte** ; sans `ATLAS_PROXY_SAUTS`, le seuil par visiteur redevient commun à
 tout le monde. La temporisation par compte, elle, ne dépend d'aucune des deux.
-
 
 ## Le plan d'arrosage dessiné (23 août 2026)
 

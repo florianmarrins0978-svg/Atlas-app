@@ -11,6 +11,8 @@ import { CROCHET_DECENNALE } from "../src/lib/conditions-generales";
 import {
   MENTION_AUTOLIQUIDATION,
   numeroTvaLu,
+  numeroTvaVide,
+  avisSurLeNumeroTva,
   tauxRendus,
   tauxSousAutoliquidation,
 } from "../src/lib/autoliquidation";
@@ -171,6 +173,64 @@ cas("un numéro de TVA se lit sans espaces ni points, et se refuse s'il n'en est
   assert.equal(numeroTvaLu(" fr 12 345.678.901 "), "FR12345678901");
   assert.equal(numeroTvaLu("12345678901"), null);
   assert.equal(numeroTvaLu(""), null);
+});
+
+cas("la case porte « FR » d'office : laissée telle quelle, elle est vide, pas fausse", () => {
+  assert.equal(numeroTvaVide("FR"), true);
+  assert.equal(numeroTvaVide(" fr "), true);
+  assert.equal(numeroTvaVide(""), true);
+  assert.equal(numeroTvaVide("FR12345678901"), false);
+  assert.equal(numeroTvaVide("F"), false);
+});
+
+cas("un n° TVA français se recalcule depuis son SIREN : la clé de vrais numéros tombe juste", () => {
+  // Orange et TotalEnergies : des numéros publiés, pas calculés ici.
+  assert.equal(avisSurLeNumeroTva("38012986600000", "FR89380129866"), null);
+  assert.equal(avisSurLeNumeroTva("", "FR59 542 051 180"), null);
+});
+
+cas("deux chiffres inversés : la faute se dit, et le bon numéro se propose depuis le SIRET", () => {
+  assert.deepEqual(avisSurLeNumeroTva("93848383883833", "FR54938483838"), {
+    message: "Ce n° TVA contient une faute de frappe.",
+    juste: "FR45938483838",
+  });
+});
+
+cas("le numéro d'un autre client : il ne colle pas au SIRET de la fiche", () => {
+  assert.deepEqual(avisSurLeNumeroTva("93848383883833", "FR89380129866"), {
+    message: "Ce n° TVA n’est pas celui de ce SIRET.",
+    juste: "FR45938483838",
+  });
+});
+
+cas("sans SIRET, la faute se dit mais aucun numéro ne se propose : on ne sait pas lequel est juste", () => {
+  assert.deepEqual(avisSurLeNumeroTva("", "FR54938483838"), {
+    message: "Ce n° TVA contient une faute de frappe.",
+    juste: null,
+  });
+});
+
+cas("ce que la formule ne couvre pas ne se vérifie pas : vide, FR seul, clé en lettres, étranger, forme fausse", () => {
+  for (const tva of ["", "FR", "FRK7938483838", "BE0403170701", "FR123"]) {
+    assert.equal(avisSurLeNumeroTva("93848383883833", tva), null, tva);
+  }
+});
+
+// **« Fr33 » passait** — sa capture du 7 octobre 2026 : un devis commençait avec
+// un numéro de quatre signes. Un numéro français, c'est FR, deux signes de clé,
+// puis les neuf chiffres du SIREN ; ce que l'écran annonce déjà en toutes lettres.
+cas("un numéro français incomplet se refuse : « Fr33 » n'est pas un numéro de TVA", () => {
+  assert.equal(numeroTvaLu("Fr33"), null);
+  assert.equal(numeroTvaLu("FR123"), null);
+  assert.equal(numeroTvaLu("FR1234567890"), null);
+  assert.equal(numeroTvaLu("FR123456789012"), null);
+  assert.equal(numeroTvaLu("FR12ABCDEFGHI"), null);
+  assert.equal(numeroTvaLu("FR00812345678"), "FR00812345678");
+});
+
+cas("un numéro d'un autre pays garde la forme européenne", () => {
+  assert.equal(numeroTvaLu("BE0123456789"), "BE0123456789");
+  assert.equal(numeroTvaLu("DE123456789"), "DE123456789");
 });
 
 console.log("— La date des travaux, d'après le planning —");

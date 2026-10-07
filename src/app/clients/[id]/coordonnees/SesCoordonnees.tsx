@@ -5,9 +5,11 @@ import { useRouter } from "next/navigation";
 import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 import ChoixCivilite from "@/components/atlas/ChoixCivilite";
 import ChampAdresse from "@/components/atlas/ChampAdresse";
+import AvisNumeroTva from "@/components/atlas/AvisNumeroTva";
 import PrimaryButton from "@/components/atlas/PrimaryButton";
 import { colors, smallCaps } from "@/lib/design-tokens";
 import type { CiviliteClient } from "@/lib/civilite";
+import { DEBUT_NUMERO_TVA } from "@/lib/autoliquidation";
 import { enregistrerSesCoordonneesAction } from "./actions";
 
 /**
@@ -51,7 +53,7 @@ export default function SesCoordonnees({
   const [email, setEmail] = useState(depart.email);
   const [adresse, setAdresse] = useState(depart.adresse);
   const [siret, setSiret] = useState(depart.siret);
-  const [numeroTva, setNumeroTva] = useState(depart.numeroTva);
+  const [numeroTva, setNumeroTva] = useState(depart.numeroTva || DEBUT_NUMERO_TVA);
   const [refus, setRefus] = useState<string | null>(null);
   const [enCours, demarrer] = useTransition();
 
@@ -107,6 +109,7 @@ export default function SesCoordonnees({
               placeholder="FR suivi de 11 chiffres"
               repere="tva-client-fiche"
             />
+            <AvisNumeroTva siret={siret} numeroTva={numeroTva} onMettre={setNumeroTva} />
           </>
         )}
         <Case

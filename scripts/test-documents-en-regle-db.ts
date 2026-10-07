@@ -307,6 +307,9 @@ async function main() {
     assert.equal(facture.autoliquidation, true);
     assert.equal(facture.tauxTva, "0.00");
     assert.equal(facture.clientSiret, "812 345 678 00021");
+    // Sa règle du 7 octobre 2026 : ce qu'on écrit sur la fiche ruisselle, par
+    // le devis, jusqu'à la facture, sans rien ressaisir.
+    assert.equal(facture.clientNumeroTva, "FR00812345678");
     const off = await majAutoliquidationFacture(ctx, facture.id, false);
     assert.equal(off.ok, false, "la facture remet la TVA sur un prix accepté sans");
     const emise = await emettreFacture(ctx, facture.id);

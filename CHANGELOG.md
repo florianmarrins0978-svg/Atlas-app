@@ -29,6 +29,20 @@ chaque devis sans que personne ne le remarque. Les PDF passent désormais au
 fournisseur de vision comme documents (Anthropic, OpenAI).
 `ARCHITECTURE.md` §451.
 
+### Un téléphone incomplet ou un n° TVA trop court ne commence plus un devis
+
+Sa capture : « 85 45 » et « Fr33 » sur la fiche client, et le devis partait.
+Le téléphone n'était lu nulle part, et `numeroTvaLu` acceptait toute forme
+européenne de quatre signes, alors que chaque écran annonçait « FR suivi de
+11 chiffres ». Désormais `telephoneLu` (10 chiffres commençant par 0, ou
+« + » et 8 à 15 chiffres) et un `numeroTvaLu` qui exige FR, deux signes de clé
+et neuf chiffres. La fiche refuse les deux boutons, la flèche et le micro (avant
+de dicter, jamais après) ; les trois actions qui écrivent un téléphone le
+relisent. La clé TVA se vérifie à part, et sans bloquer (ci-dessous).
+
+- **Un n° TVA français mal tapé se signale, et le bon se propose** (sa planche du 7 octobre 2026, `appli/verifier-la-tva.html`, B). La clé se recalcule sur le SIREN ; un numéro qui ne colle pas au SIRET de la fiche se dit aussi. **La clé ne bloque pas**, c'était sa condition : la ligne rouge ne se relit pas au serveur, et le bon numéro ne se pose que s'il le touche (`avisSurLeNumeroTva`, `AvisNumeroTva.tsx`). Clé en lettres et numéro étranger ne se vérifient pas.
+- **Le n° TVA d'une entreprise cliente porte « FR » d'office**, à la création, sur sa fiche et sur la facture en sous-traitance (avec la même alerte sur la clé) (sa demande du 7 octobre 2026). Il s'efface pour une entreprise étrangère. « FR » laissé seul se lit comme une case vide (`numeroTvaVide`, `src/lib/autoliquidation.ts`), à l'écran comme au serveur : sans cela, la forme FR exigée juste au-dessus aurait bloqué tout devis d'une entreprise sans numéro.
+
 ### Poser au planning un client qui n'arrive pas à choisir ses dates
 
 Un client qui reçoit le lien du devis sans réussir à choisir ses dates ne
@@ -75,7 +89,6 @@ demande expresse, et son accord était refusé quand même : bloqué jusqu'au
 matin. Le défaut venait du lot du 3 octobre (3A), qui a rendu ce refus
 bloquant. `aujourdHuiIso` rend désormais le jour de Paris ; contrôle vu rouge
 puis vert, et `test-devis-client-e2e` rejoué vert à 1 h 34.
-
 
 ### La certification de TVA réduite, posée puis RETIRÉE le même jour
 
@@ -993,7 +1006,6 @@ Sa remarque, capture à l'appui : *« un ; qui sert à rien »*. « Le mois est 
 défaut. Le trimestre s'obtient sous condition. » Deux phrases, même place.
 `test-periodicite-tva-e2e` lit le fait (« mois … défaut »), pas la ponctuation.
 
-
 ### Le rappel du retour d'intervention (migration 0104)
 
 Sa planche du 26 septembre 2026, ses réponses : A, chaque soir, la carte chez
@@ -1421,7 +1433,6 @@ sur le point médian, lit maintenant le mot « buse ».
 **Ce que le contrôle ne vise pas, et pourquoi** : `maquettes/`, que
 `pages.yml` ne publie pas — 398 lignes de planches sans adresse, qu'il ne peut
 pas ouvrir. Les viser ferait rougir le dépôt sans rien lui apporter.
-
 
 ### Aucun tiret ne passe vers « main », même dans une maquette seule
 
@@ -2027,7 +2038,6 @@ chantier d'élagage. Six réponses de lui, trois points vérifiés à la source
 fiche du jour : `appli/fiche-de-securite.html`. Rien n'est coché d'avance, ce qui
 reste vide se dit avant de signer. Rien dans `src/` : il choisit d'abord.
 
-
 ### Un chantier terminé ne perd plus sa date — et sans planning, c'est sa facture qui la donne
 
 Deux rangées « Mr. Julien » n'avaient pas de deuxième ligne sur son écran
@@ -2160,7 +2170,6 @@ rouges d'abord.
 `src/lib/ligne-ouverte-devis.ts`, `test-ligne-ouverte-devis(-e2e)`.
 `ARCHITECTURE.md` §394.
 
-
 ### Un refus par erreur n'a aucune issue — la planche, pas encore le code
 
 Sa capture du 20 septembre : *« j'ai sans faire exprès cliqué sur je ne donne
@@ -2199,7 +2208,6 @@ vides se remplissent, et le chantier va sur SA fiche — plus de fiche en double
 ne rien poser tant que ce n'est pas certain. Proposer n'est pas poser — l'une
 écrit à sa place, l'autre lui rend le choix. C'est ce qui permet à la liste de
 montrer ses quatre Martins là où la pose se tait. `ARCHITECTURE.md` §399.
-
 
 ### Une suite qui ne peut rien mesurer ici se tait, au lieu de rougir
 
@@ -2415,7 +2423,6 @@ l'échec accusait « Déplacer ».
 rien. Le montage demande désormais les jours au produit lui-même
 (`joursDuBloc`), et ne les compte plus à côté (`CLAUDE.md` §3).
 
-
 ### Deux jours qui ne se touchent pas : CODÉ — un appui pose le bloc, un appui efface, la cliente lit les jours
 
 Sa question du 17 septembre (« le 18 et le 22 — comment je fais ? »), sa
@@ -2563,7 +2570,6 @@ La rencontre se partage désormais : le lot garde sa gravité entière ; de `mai
 seul le PLANCHER (migration, gabarit racine, accès à la base, configuration)
 refait partir la batterie — sa gravité, elle, force les suites du fond, là où
 vivent les règles d'argent et l'isolation. Voir `ARCHITECTURE.md` §382.
-
 
 ### Corriger un rouge coûtait cinquante minutes — plus maintenant
 
@@ -2760,7 +2766,6 @@ mentions légales) passent à l'encre, en un seul endroit et pour les sept
 allures. Le trait clair reste dilué — c'est un filet, pas une écriture — et
 l'accent reste sa couleur. `ARCHITECTURE.md` §378.
 
-
 ### La comparaison d'un rouge se fait DES DEUX CÔTÉS, dans le même état
 
 Le mécanisme de la veille rejouait la suite rouge sur `main` seul : verte
@@ -2878,8 +2883,6 @@ geste ; à rouvrir s'il le signale ». Il le signale.
 La planche `appli/deux-jours-pas-colles.html` (119) compare trois états, et
 montre sous chacun **ce que le client lit** et **ce qui se pose au planning** —
 c'est là que les trois diffèrent, pas dans le calendrier.
-
-
 
 ### La même planche, refaite simple le soir même
 
@@ -3101,7 +3104,6 @@ la font remonter plutôt que de sortir quoi que ce soit de l'écran.
 chantier **et sans ruban d'essai** — l'écran qu'il a, lui — et dit le
 pourcentage à chaque passage. `ARCHITECTURE.md` §372.
 
-
 ### `main` a avancé sous un lot éprouvé : `verifier-ce-qui-a-bouge` rejoue la rencontre, pas la batterie
 
 **Sa règle :** *« Rejoue juste ce qui a bougé ! »* — devant une troisième
@@ -3210,7 +3212,6 @@ libre qui est pris, et un geste qui échoue sans qu'on puisse comprendre pourquo
 (`ARCHITECTURE.md` §371). Rouge d'abord, sur le message même de sa capture :
 `test-liberer-une-demi-journee-e2e.ts`, cas « rendu, RETIRÉ, puis reposé
 ailleurs ».
-
 
 ### Le garde-fou mesure le dossier que `git -C` vise — et une tâche = un lot isolé
 
@@ -3651,7 +3652,6 @@ seul mot du journal : elle reconnaît la forme de l'échec et n'en publie que de
 noms de contraintes (`scripts/_raison-migration.mjs`). Détail :
 `ARCHITECTURE.md` §358.
 
-
 ### Une colonne `date` est un jour, pas un instant — réglé au pilote
 
 Quatre suites navigateur rougissaient d'un jour sur un PC à l'heure de Paris
@@ -3774,7 +3774,6 @@ racine ».** Il a raison. Deux racines ont été cherchées ensuite :
   lire un même état finissant toujours par diverger.
 
 Détail : `ARCHITECTURE.md` §357.
-
 
 ### Terminés : deux portes, le mois centré, et l'œil à la place des onglets
 
@@ -3905,7 +3904,6 @@ sur la somme des lignes. Confronté à un arrondi posé trop tôt, il rougit.
 Rappel de ce qui n'était pas en cause : le devis à 5 400 € venait de la saisie,
 pas du calcul (`ARCHITECTURE.md` §351).
 
-
 ### Les deux « chiffres faux » du devis : l'addition était juste, la suite tapait mal
 
 *« Si c'est un problème de calculer les lignes qui ne s'additionnent pas ou mal,
@@ -3925,7 +3923,6 @@ retirée. Une correction qui ne corrige rien est une couche de plus.
 **Ce qui reste, et c'est à lui :** sur la case « Qté », poser le doigt et taper
 « 2 » sur une case qui affiche « 1 » donne bien **12**. C'est sa règle, et c'est
 aussi de quoi envoyer un devis à 5 400 € sur une faute de frappe (`TODO.md`).
-
 
 ### Jeter sa dictée depuis l'écran où il la fait — et 280 lignes de code mort en moins
 
@@ -3947,7 +3944,6 @@ de suivre une préparation dont la dictée vient d'être jetée.
 Deux pièges trouvés par la suite avant lui : le tiroir « Annuler » vivait dans
 la condition qu'il annule (donc disparaissait au moment du retrait), et la
 pellicule des photos porte un second tiroir sur le même écran.
-
 
 ### L'essai de quinze jours, et ce qui se ferme — sa planche du 10 septembre, codée
 
@@ -4009,7 +4005,6 @@ drapeau posé avant un appel et rendu nulle part. Sa première version accusait
 avant d'être livrée, parce qu'un contrôle qui parle à tort s'apprend à être
 ignoré.
 
-
 ### Tout le circuit PDF repris : deux portes, et la visionneuse qui ne peignait rien
 
 *« Va vérifier à tous les endroits où on peut télécharger ou regarder le pdf —
@@ -4031,7 +4026,6 @@ défauts réels trouvés (`ARCHITECTURE.md` §341) :
 `test-tous-les-pdf.ts` tient la règle pour la suite : aucun écran ne remet un
 PDF au navigateur, il n'y a que deux portes. Il a trouvé l'écart de la feuille
 au premier essai, et il sait rougir.
-
 
 ### La CI ne jouait plus rien : un module qui s'ouvrait une session en étant lu
 
@@ -4067,7 +4061,6 @@ espace », `db:seed`, `TRUNCATE`, `DROP`, `db:push`.
 
 Sa règle : `CLAUDE.md` §4 septies. Le détail : `ARCHITECTURE.md` §347.
 
-
 ### Reconstruire l'espace n'efface plus ses chantiers
 
 *« Ça va pas supprimer toutes mes données ? »*, devant la reconstruction
@@ -4083,7 +4076,6 @@ compte pas comme « vierge » — il vaudrait la base entière.
 
 Détail : `ARCHITECTURE.md` §346. Avant toute reconstruction :
 `npm run sauvegarder:banc`.
-
 
 ### Le veilleur croyait une commande au lieu de mesurer : le port mourait toute la nuit
 
@@ -4246,7 +4238,6 @@ de l'agent, donc la feuille de partage se juge sur son téléphone. Ce qui est
 prouvé dans un vrai navigateur (`test-telecharger-document-e2e`, qui sait
 rougir) : le fichier descend, non vide, sous le nom de la facture, et un refus
 s'affiche.
-
 
 ### Une planche : remise, main d’œuvre, conditions et CGV sur le devis
 
@@ -4676,7 +4667,6 @@ pas tant qu’il n’a pas choisi (`CLAUDE.md` §3 bis).
 Vu en la rendant : les chevrons posés en clair sur une photo claire ne se
 voyaient pas. Ils sont sur la PHOTO, pas sur le voile — leur contraste ne suit
 donc pas la charte, contrairement à la croix.
-
 
 ### Le diagnostic végétal refuse aussi le coude à coude après la relance
 
@@ -5381,7 +5371,6 @@ buggé »*.
 appui sur « Télécharger » range bien le fichier sur son iPhone plutôt que de
 l'afficher. Aucun moteur de Safari n'est disponible sur le poste de l'agent.
 
-
 ### Le travail supplémentaire se voit enfin — et le PDF cesse d'écrire trois totaux qui ne s'accordent pas
 
 **Il a essayé le lendemain de la livraison, photos à l'appui :** *« j'ai rajouté
@@ -5431,7 +5420,6 @@ s'abonnait à l'événement plutôt qu'au journal, qui ne change qu'après lui.
 Le défaut a été rendu bavard avant d'être corrigé : une sonde a rejoué son
 geste en imprimant le journal à chaque pas. Ce qu'elle savait faire vit
 maintenant dans la suite navigateur, qui refait le geste quatre fois.
-
 
 ### « Un client », et sa fiche se crée en passant — planche mise à jour
 
@@ -5775,7 +5763,6 @@ compte Stripe n’existe encore. La signature du crochet, la lecture des répons
 et les trois refus sont éprouvés contre un faux prestataire monté en local ; que
 Stripe accepte ces paramètres se vérifie avec une clé d’essai, sur son espace.
 
-
 ### L'onglet des retours existe toujours, et ses photos se voient enfin
 
 *« L'onglet retour d'intervention doit exister même s'il n'y a aucun retour ! »*
@@ -5811,7 +5798,6 @@ Sans elle, « Matin » se lit « une demi-journée ».
 réservée, NULL tant que rien n'est posé, donc « une journée » sur un chantier de
 deux jours — au moment précis où il choisit où le poser. Le dépôt, lui, lisait la
 dictée. Une seule fonction répond aux deux.
-
 
 ### Les retours non lus se voient d'un coup d'œil
 
@@ -5858,8 +5844,6 @@ arrivé. Elles nomment maintenant son geste — « quand vous appuierez sur
 coincée en attente pour toujours : le relevé n'en veut pas, et « Payée » ne
 pouvait pas la solder — un règlement de zéro est refusé, à juste titre. Elle
 occupait l'écran avec un bouton qui ne pouvait qu'échouer.
-
-
 
 ### Le bouton retour est enfin un bouton retour
 
@@ -6491,7 +6475,6 @@ sessions simultanées prenaient le même rang, le jeu de démonstration refusait
 base d'un atelier, et une base créée à la volée n'avait aucun privilège par
 défaut. `ARCHITECTURE.md` §287 et §288.
 
-
 ### La porte : le mot de passe se confirme, le déroulant passe à la charte, l'identité se sépare
 
 Cinq remarques du 8 septembre, sur la planche qu'il venait d'essayer.
@@ -6721,7 +6704,6 @@ que rétrécir.
 Les deux contrôles ont été vus rouges avant d'être crus : contre un orphelin
 posé exprès sous `src/lib/`, et contre une remontée `lib → server`.
 
-
 ### Les conditions d'utilisation et la politique de confidentialité, en brouillon
 
 `appli/conditions-utilisation.html` et `appli/confidentialite.html` — sa demande
@@ -6873,7 +6855,6 @@ et absent du code. Il relève donc les deux, et **c'est le contenu qui décide**
 la date n'est plus qu'un filtre. Coût mesuré, pas supposé : 1 406 fichiers en
 65 ms.
 
-
 **Sa demande, le soir même : « oui pose les deux garde-fous ».**
 
 Une batterie tournait ; sa correction est arrivée ; j'ai codé pendant qu'elle
@@ -6976,7 +6957,6 @@ compilées, et la feuille de style entière a cessé de compiler.
 
 Et l'œil qui montre le mot de passe sort de l'écran des salariés : deux dessins
 pour le même geste, c'est le libellé lu à voix haute qui aurait dérivé.
-
 
 ### Sa porte, c'est « en plein air » — l'autre planche est écartée
 
@@ -7197,8 +7177,6 @@ sessions simultanées prenaient le même rang, le jeu de démonstration refusait
 base d'un atelier, et une base créée à la volée n'avait aucun privilège par
 défaut. `ARCHITECTURE.md` §287 et §288.
 
-
-
 ### La porte : le mot de passe se confirme, le déroulant passe à la charte, l'identité se sépare
 
 Cinq remarques du 8 septembre, sur la planche qu'il venait d'essayer.
@@ -7427,7 +7405,6 @@ que rétrécir.
 
 Les deux contrôles ont été vus rouges avant d'être crus : contre un orphelin
 posé exprès sous `src/lib/`, et contre une remontée `lib → server`.
-
 
 ### Les conditions d'utilisation et la politique de confidentialité, en brouillon
 
@@ -7961,7 +7938,6 @@ lui-même « pas encore disponible » tant que ce n'est pas fait.
 
 Détail : `docs/lot-entete-unique-reglages.md`. Décisions : `ARCHITECTURE.md` §263.
 
-
 ### Le sommaire des réglages : douze phrases grises retirées, quatre titres qui mentaient corrigés
 
 Sa consigne du 5 septembre — *« la plupart des patrons qui vont utiliser l'app
@@ -8223,7 +8199,6 @@ elle.
 
 Éprouvé par `scripts/test-devis-complet-e2e.ts`, qui arrive sur le devis en
 appuyant sur le lien — comme lui — et qui rougissait sur cette assertion.
-
 
 ### L'audit de santé du code entre dans le dépôt, et il lit la mémoire avant de chercher
 
@@ -8550,7 +8525,6 @@ aucun écran n'ouvre `/clients/[id]` depuis un chantier** : la question est dans
 
 Détail, contreparties et les onze suites adaptées : `ARCHITECTURE.md` §254.
 
-
 ### Le chevron du planning fait monter les portes du chantier — son allure C, CODÉE
 
 **Sa réponse du 4 septembre, devant la planche refaite : « je préfère la C. »**
@@ -8618,7 +8592,6 @@ tort s'apprend à être ignoré (`CLAUDE.md` §1 bis).
 geste. Elle lui montre désormais autant de commandes à laisser passer qu'à
 refuser, joue le déclencheur avec son vrai contrat, et refuse de conclure sur un
 arbre propre.
-
 
 ### La planche de la facture au planning, refaite sur le planning d'aujourd'hui
 
@@ -8839,7 +8812,6 @@ au calendrier : celui-ci donne la colonne de la case, la liste donne celle du
 nom. Deux dessins de la même attache auraient divergé au premier ajustement
 (`CLAUDE.md` §3).
 
-
 ### La fiche client finit d’adopter la planche « A — Épurée »
 
 **Sa question :** *« et la page fiche client, la A épurée, tu l’as mise ? »* —
@@ -8864,7 +8836,6 @@ les planches de la note vocale.
 
 Trois suites visaient le libellé « Par SMS » ; elles visent désormais
 `data-atlas="canal-sms"`, qui survit au remaniement (`CLAUDE.md` §5 bis).
-
 
 ### Le calendrier du client monte du bas — sa réponse A
 
@@ -9103,7 +9074,6 @@ les retire vraiment, sans casser l'animation.
 
 Détail, et ce que ça coûte : `ARCHITECTURE.md` §243.
 
-
 ### « Ma TVA » devient une addition, et son chiffre passe au-dessus de la ligne de flottaison
 
 **Son verdict sur la planche :** *« je valide cette maquette pour la page Ma
@@ -9243,7 +9213,6 @@ lisant.
 Elles tombaient sous sa règle du 25 août — *« arrête de mettre des flèches,
 c'est moche »* —, que `scripts/test-aucune-fleche.ts` ne pouvait pas voir :
 il ne parcourt que `src/`. La ligne entière est déjà le lien.
-
 
 ### Les boutons verts passent au vert de sa note vocale, à plat
 
@@ -9766,7 +9735,6 @@ resserrement d'alors n'était éprouvé par aucune suite. `test-fiche-client-e2e
 la mesure désormais sur deux tailles d'écran, et sait rougir : rendu aux marges
 d'avant, il annonce « la fiche déborde de 266 px ».
 
-
 ### L'invite à dicter se tait pendant que le devis se prépare
 
 **Sa remarque, deux captures à l'appui :** *« lorsqu'on dicte notre devis et
@@ -9795,7 +9763,6 @@ rattrapage garde son rôle : les vraies coupures, où rien ne revient.
 
 Éprouvé par `test-dictee-invite-e2e.ts`, qui entre par le micro et sait rougir :
 sans le correctif, il retrouve la phrase après l'envoi.
-
 
 ### Déplacer une ligne d'une TVA à l'autre — appui long
 
@@ -10858,7 +10825,6 @@ Le relevé au pixel des documents a été refait sur preuve mesurée, pas à l'�
 le rendu PDF est impossible ici, la trace a donc été comparée des deux côtés —
 sur 917 lignes, deux diffèrent. Détail : `ARCHITECTURE.md` §220.
 
-
 ### La fiche n'accuse plus le port quand c'est le serveur qui manque
 
 **Sa capture de la nuit, 1 h 07 : « l'appli ne se lance plus ».** Safari lui
@@ -10899,7 +10865,6 @@ Vérifié dans l'autre sens : le code de `main` se construit ici sans une erreur
 (`npm ci` puis `npm run build`).
 
 Détail et ce qui reste non réparé : `ARCHITECTURE.md` §215.
-
 
 ### La question du diamètre nomme sa mesure : « la souche » ou « le tronc »
 
@@ -10949,7 +10914,6 @@ La valeur vient désormais du **champ**, plus d'un rendu — le DOM porte déjà
 qui a été tapé, c'est la seule source qui ne puisse pas être en retard. Une suite
 reproduit la condition **à coup sûr et sans charge**, là où l'ancienne ne la
 voyait qu'une fois sur deux sous cent-dix-neuf suites.
-
 
 ### La note vocale codée : poubelle ou avion, et la fiche tient dans un écran
 
@@ -11547,7 +11511,6 @@ reste que le motif ; les deux marches à suivre étaient déjà en boutons desso
 La phrase supprimée portait aussi « vos 1 prestation ».
 
 Détail : `ARCHITECTURE.md` §209.
-
 
 ### Plus aucune barre de défilement grise, y compris sur la page elle-même
 
@@ -12187,7 +12150,6 @@ désormais AUSSI un client sans aucun papier — l'ancienne version ne montrait
 qu'une fiche fournie, où ni le séparateur mal placé ni la phrase grise
 n'apparaissaient).
 
-
 ### Planche : supprimer un client — et un défaut trouvé en cherchant
 
 **Sa remarque :** *« je ne peux pas supprimer de client, rajoute ça »*. C'est
@@ -12571,7 +12533,6 @@ l'écran, lui, se dessine avant de toucher `src/` (`CLAUDE.md` §3 bis).
 
 ---
 
-
 ### Un rappel armé : la liste complète des travaux qu'il vend
 
 **Sa réponse, en toutes lettres :** *« Oui j'en vend mais attend on créera une
@@ -12603,7 +12564,6 @@ donc dans le vide. `verifier:memoire` en rougissait ; corrigés en
 `src/server/ai/tools/calculer-chiffrage.ts`.
 
 ---
-
 
 ### Rejouer la dictée ne duplique plus la prestation
 
@@ -12944,7 +12904,6 @@ version d'avant. Il tient surtout ce qui empêche la correction d'aller trop
 loin : **un appui sur une autre ligne choisit toujours** — défaire à chaque
 appui rendrait le formulaire inutilisable —, et la case de rétractation s'en va
 avec la date qui l'a fait naître. `ARCHITECTURE.md` §191.
-
 
 ### Le numéro de ses documents se choisit — et le millésime n'est plus écrit en dur
 
@@ -13322,7 +13281,6 @@ Deux cassaient à minuit, trois lisaient trop tôt, un exigeait un état fugace,
 guettait le réseau au lieu du résultat. Le fil commun tient en une phrase :
 *ils mesuraient un instant, ou une vitesse, plutôt qu'un état.*
 
-
 ### Ses journées se comptaient à Greenwich
 
 *« Ce soir à 00 h 00 il passe dans Terminés ? »* — non : à **2 h du matin**. Le
@@ -13588,7 +13546,6 @@ pour les deux contrôles concernés.
 **Ce défaut revient chaque mois.** Trois suites l'ont eu le même jour ; le
 prochain qui verra « pas assez de jours » saura où regarder.
 
-
 ### L'assistant répond enfin depuis n'importe quel écran
 
 *« Je veux pouvoir faire ça peu importe où je l'ouvre. »* Le panneau était déjà
@@ -13600,7 +13557,6 @@ Ils acceptent maintenant qu'on leur nomme un chantier, et le chantier ouvert
 reste le défaut : l'usage d'avant ne bouge pas. Quand il n'y en a vraiment
 aucun, le refus dit la suite à donner au lieu de renvoyer le patron ouvrir une
 fiche lui-même. Détail : `ARCHITECTURE.md` §185.
-
 
 ### L'assistant ouvre une fiche chantier quand on le lui demande
 
@@ -13618,7 +13574,6 @@ repris plutôt que dupliqué — il dit « bernard » là où sa fiche porte
 **Un doublon se refuse d'abord** : si ce client a déjà des chantiers, rien n'est
 créé et l'assistant demande. Deux fiches pour un même jardin, ça ne se défait
 plus. Détail : `ARCHITECTURE.md` §184.
-
 
 ### L'assistant retrouve un devis à partir d'un NOM, sans qu'on ouvre la fiche
 
@@ -13639,7 +13594,6 @@ sait rendre celle qu'on demande — « le premier » étant la version 1.
 Éprouvé contre le décor exact de sa capture, un confrère au même nom compris ;
 rejoué contre l'ancien outil, il rougit sur trois cas. Détail :
 `ARCHITECTURE.md` §183.
-
 
 ### Le message : les phrases par défaut, modifiables — les mots en doré verrouillés
 
@@ -13876,7 +13830,6 @@ Déplacées dans `appli/`, pas recopiées : deux exemplaires auraient divergé. 
 recueil des maquettes sait désormais chercher dans les deux dossiers — sans quoi
 il se serait plaint d'une planche « introuvable » alors qu'elle est publiée.
 
-
 ### Le message au client, simplifié : plus de pastilles à poser
 
 *« On comprend rien, trop compliqué pour modifier »*, puis, devant la maquette
@@ -13994,7 +13947,6 @@ promettait une garde centrale des réglages, et aucune page ne l'a jamais
 appelée. C'est ce qui explique le trou de F8. Elle n'est pas branchée pour
 autant — un `layout` déduit du sommaire fermerait deux écrans réels.
 
-
 ### « Me déconnecter partout » se contournait — reproduit, puis fermé
 
 **Un cookie volé, pourtant coupé, se redonnait un jeton neuf et rentrait.**
@@ -14027,7 +13979,6 @@ la ré-authentification récente de M11.
 `cles_appareil`, et `ouvrirAvecCle` ne lit **jamais** la coupure. Une clé
 enregistrée depuis une session volée ouvre donc encore, après que le patron a
 tout changé. Consigné dans `TODO.md` ; le correctif suit.
-
 
 ### Le condensat du mot de passe sort de portée du rôle applicatif (lot 3, M9)
 
@@ -14066,7 +14017,6 @@ une faiblesse de l'un des deux**. Rien de ce qui était accepté ne change.
 Elles lisaient le condensat pour dire « il n'a pas bougé ». La question qui
 compte n'a jamais été quelle chaîne est en base, mais **si ce mot de passe ouvre
 encore**. Aucune n'est affaiblie — celle du voisin gagne même une assertion.
-
 
 ### La mise à jour du banc n'était réservée à personne (lot 3, M12)
 
@@ -14109,7 +14059,6 @@ contrôles réparés est ci-dessous ; ils ont un point commun, et c'est le seul 
 mérite d'être retenu : **ils attendaient un délai plutôt qu'un signal**, ou ils
 guettaient une formulation plutôt qu'une règle. Aucun n'a été affaibli — les
 assertions défendent la même chose, elles regardent seulement au bon moment.
-
 
 ### Deux suites de dates rougissaient un jour sur trente, sur un écran juste
 
@@ -14337,7 +14286,6 @@ qui n'a pas su écrire. Trois batteries ont été payées à cette confusion.
 **Attendre « le réseau » n'est pas attendre « le résultat ».** C'est la même
 faute que le délai fixe, dans une robe plus convaincante.
 
-
 ### Le banc RÉPARE une dépendance manquante, au lieu de retenter la même construction
 
 **Sa plainte : « l'application est en mode lent, et elle crash ».** Sa fiche
@@ -14482,7 +14430,6 @@ amputé se lirait comme un fichier valide mais incomplet.
 Une suite compte les octets qui sortent réellement du flux borné quand on lui
 donne un corps dix fois trop gros.
 
-
 ### Un lien envoyé à un client ne peut plus être une adresse de sa machine
 
 **« Connexion au serveur impossible. »** C'est ce que lisait son client en
@@ -14513,7 +14460,6 @@ la foulée : le message s'ouvrait tout prêt, avec l'adresse d'une machine dedan
 et rien n'invitait à se méfier avant d'appuyer sur « Envoyer ». Rien n'est
 défait pour autant — un devis envoyé reste envoyé, une facture arrêtée reste
 arrêtée : c'est le message mort qu'on barre, pas son travail.
-
 
 ### La fiche en cours se supprime, et l'endroit où elle se compose se retrouve
 
@@ -14552,7 +14498,6 @@ la croix d'une famille était le jumeau exact de celle d'une ligne (elle s'écri
 maintenant « Retirer la famille ») ; la porte du modèle butait sur la barre
 d'onglets — mesuré à 60 px, contre 116 px après. Détail : `ARCHITECTURE.md`
 §168.
-
 
 ### Audit de sécurité, lot 2 : ce qu'on dépose dans Atlas
 
@@ -14593,7 +14538,6 @@ facture.
 
 `ARCHITECTURE.md` §165. Rien de M6 n'a été touché : le plafond d'octets existait
 déjà, et le réécrire aurait été du risque contre rien.
-
 
 ### Face ID est codé — sa réponse B, et le mot de passe intact
 
@@ -14901,7 +14845,6 @@ montrait pas la seule chose qu'on venait d'ajouter. Il lit la liste maintenant.
 
 Une énumération recopiée ne suit jamais la source qu'elle prétend montrer —
 c'est la même faute que celle du gabarit, dans l'outillage.
-
 
 ### L'aperçu du devis reste sous les yeux pendant qu'on le change — sa proposition B
 
@@ -15238,7 +15181,6 @@ part sont enfin la même chose.
 lignes du document périmé et refusait un envoi à 660 €. C'est ce refus qui a
 révélé la vraie cause. Détail dans `ARCHITECTURE.md` §159.
 
-
 ### Un devis vide ne part plus chez le client
 
 *« Le devis part à zéro euro chez la cliente, alors qu'il y a un arbre à tailler
@@ -15267,7 +15209,6 @@ document vide ?
 à l'écran, phrase que l'éditeur de devis porte déjà. Il restait vert le garde-fou
 retiré. Il vise maintenant une phrase qui n'appartient qu'au refus, et il a été
 vu rouge. `ARCHITECTURE.md` §158.
-
 
 ### « La cliente ne peut pas proposer de jour » — le contrôle qui manquait sur son chemin
 
@@ -15525,7 +15466,6 @@ un binaire pas reconstruit, elle paraissait absente. Le contrôle interroge donc
 le serveur pour de bon, et il a été vu rouge contre une route dont l'en-tête
 avait été retiré. `ARCHITECTURE.md` §155.
 
-
 ### La TVA se lit en tête, et les gestes touchent le chiffre qu'ils font monter
 
 *« Je trouve que l'outil Ma TVA à déclarer, il est caché, on ne le voit pas
@@ -15581,7 +15521,6 @@ Et `test-envoyer-la-facture-e2e` visait mot pour mot « Une date, ou deux au cho
 du client ? » — une phrase qu'il a fait changer le 23 août même. La suite mourait
 sur du code juste, pour une demande exaucée : c'est `CLAUDE.md` §5 bis, et le
 repère posé par l'autre session existait exactement pour ça.
-
 
 ### Le plan d'arrosage se DESSINE, à la forme du jardin lu
 
@@ -15773,7 +15712,6 @@ n'engage à rien.
 ceux qui réclamaient le refus vérifient désormais l'avertissement et la
 possibilité de passer outre.
 
-
 ### « Terminés » : cinq chiffres en moins, et de l'air
 
 **Ses six corrections du 23 août au soir**, capture de l'écran à l'appui :
@@ -15855,7 +15793,6 @@ listes disent déjà « 1 h » et « 45 ».
 Trois contrôles neufs, **tous vus rougir** contre l'état dégradé qu'ils
 prétendent attraper — une lecture publique qui ignore le masquage, un masquage
 qui efface la durée, une empreinte qui scelle le temps caché.
-
 
 ### La durée passe sous le nom, et le filet du « + » disparaît
 
@@ -15954,7 +15891,6 @@ qu'il prétend attraper : une ligne cachée par une simple opacité — donc enc
 lue et encore à sa place —, la phrase « reste enregistré » supprimée, et un
 interrupteur qui survivait à l'envoi.
 
-
 ### Le mode nuit se lit — huit couleurs claires écrites en dur, et trois signaux tenus pour immuables
 
 **Sa capture du planning, en « Nuit », et six mots :** *« Le mode nuit est
@@ -16002,7 +15938,6 @@ suite qui les ferait rougir accuserait le dessin qu'il a validé (`CLAUDE.md`
 et le clair se mesure au lieu de s'écrire.
 
 Le détail : `ARCHITECTURE.md` §172.
-
 
 ### « Choisir la date » ouvre le calendrier du planning, et dit qui est déjà là
 
@@ -16399,7 +16334,6 @@ concluait le contraire. La suite exige maintenant une longueur **plausible**
 croquis lu, ce qui demande une clé d'IA que cet environnement n'a pas. La ligne
 a été vérifiée sur la page publiée (`appli/arrosage.html`), au navigateur, dans
 ses deux cas — Ø25 suffisant, et débit qui l'interdit.
-
 
 ### La place se compte en ÉQUIPES, plus en chantiers
 
@@ -17503,7 +17437,6 @@ contrôle sur « Mr. Leroy » rougirait au premier changement de client d'exempl
 et ne défendrait plus rien. Les trois ont été confrontés à la version d'avant :
 ils rougissent dessus.
 
-
 ### « Il y a une clé IA » — écrit dans le dépôt, plus dans une session
 
 **Sa consigne, et il a fallu qu'il la répète :** *« il y a une clé IA, il y a
@@ -17522,7 +17455,6 @@ conversation : **chez lui les clés sont posées et l'IA tourne** ; **ici, sur l
 poste de l'agent, il n'y en a aucune**. Les cinq phrases ambiguës sont
 corrigées, et la formule juste n'est plus « impossible » mais *« pas vérifiable
 ici, à jouer sur ton espace »*, avec la commande.
-
 
 ### La fiche client, refaite — premier lot, celui qui se voit
 
@@ -17584,7 +17516,6 @@ dossiers connus étaient écartés nommément — pas celui-là.
 restent, elles portent chacune leur histoire ; ce motif couvre les dossiers
 qu'on ne connaît pas encore, et c'est le seul moyen qu'il n'y ait pas de
 cinquième fois.
-
 
 ### La photo se PREND ou se CHOISIT — partout, plus seulement sur la fiche client
 
@@ -17837,7 +17768,6 @@ c'est une ligne de petites capitales de moins. Le contrôle tient désormais les
 deux moitiés : l'intitulé absent **et** les deux boutons présents — retirer le
 choix était une amputation, remettre le mot annulerait le gain de place.
 
-
 ### La fiche client qui dicte le devis — dessinée, pas codée
 
 **Sa demande, capture de l'écran à l'appui :** *« J'ai envie que les
@@ -17950,7 +17880,6 @@ corrigée. `TODO.md` la garde ouverte.
 
 ---
 
-
 ### Les documents d'un client s'enregistrent, au lieu de seulement s'ouvrir
 
 **Sa demande :** *« je veux pouvoir l'enregistrer, mais avant que tu codes quoi
@@ -18052,7 +17981,6 @@ l'information, jamais en assouplissant le contrôle.
 Un troisième défaut est sorti d'une capture, pas d'un test : la phrase du
 laboratoire s'affichait deux fois de suite à l'écran. L'import la refuse
 maintenant.
-
 
 ### Anthracnose du chêne et du hêtre — et la relance photo, enfin sur du réel
 
@@ -18221,7 +18149,6 @@ tiers) : photo rendue en 338×338, servie en 200, crédit affiché, placée avan
 conduite, et rien de caché derrière la barre du bas. Une image de zéro pixel
 aurait été refusée par le contrôle — c'est le défaut du 15 août.
 
-
 ### Deuxième fiche réelle — et un avertissement qui parlait à tort
 
 **L'anthracnose du platane**, écrite à partir de la page Ephytia (INRAE, auteur
@@ -18252,7 +18179,6 @@ mention ; photo floue → refus.
 **Et la fiche dit ce que sa source NE dit pas.** Aucun traitement — la page n'en
 donne aucun, le champ reste vide. Aucune confusion — la page n'en nomme aucune.
 Les trois figures ne sont pas reprises : une image sans licence ne s'affiche pas.
-
 
 ### Le plan d'arrosage entre DANS l'application, et le croquis se lit
 
@@ -18338,7 +18264,6 @@ affirmait « la base est vue comme vide » sans la garde des fixtures. C'était 
 par ACCIDENT — il n'y avait alors aucune fiche réelle. Il affirme désormais ce
 qu'il devait affirmer : *aucune fixture ne sort*. Ce que la base contient par
 ailleurs ne le regarde pas (`CLAUDE.md` §5 bis).
-
 
 ### Les sources phytosanitaires sont hors d'atteinte d'ici — la récolte part ailleurs
 
@@ -18556,7 +18481,6 @@ volontairement malveillant.
 **Ce qui n'est PAS vérifié, et doit s'écrire :** l'appel réel au fournisseur de
 vision. Aucune clé d'IA dans cet environnement — comme pour la lecture des
 tickets. Il devra l'être sur le banc, avec de vraies photos.
-
 
 ### L'arrosage en deux gestes — dessiné, pas codé
 
@@ -18886,7 +18810,6 @@ rouge avant d'être livré. `ARCHITECTURE.md` §173.
 
 ---
 
-
 ### Le bouton de l'accueil dit « Créer un devis »
 
 **Sa demande :** *« change nouveau chantier par crée un devis »*, sur l'écran
@@ -18963,7 +18886,6 @@ Le contrôle **refuse de conclure sur une boîte de zéro pixel** plutôt que de
 rendre un vert : c'est la leçon du 15 août 2026, où `0 − 0 = 0` avait certifié
 « rien n'est coupé » sur un écran où trois noms l'étaient.
 
-
 ### « Il peut proposer une autre date » : un interrupteur avant l'envoi
 
 **Sa demande :** *« pour le lien du planning qui part au client, il faut que
@@ -18996,7 +18918,6 @@ l'interrupteur, l'envoi, puis **la page telle que le client la reçoit**, ouvert
 sans compte. `ARCHITECTURE.md` §132.
 
 ---
-
 
 ### La fiche de chantier se remplit, et le rapport part chez le client
 
@@ -19213,7 +19134,6 @@ Chacun des six contrôles a été vu ROUGE avant d'être gardé, en réintroduis
 défaut qu'il prétend attraper.
 
 ---
-
 
 ### « J'ai encore la version lente » — la construction échouée se retente enfin
 
@@ -19968,7 +19888,6 @@ deux centres tombent sur le même pixel. `ARCHITECTURE.md` §124.
 
 ---
 
-
 ### « Quelle est la différence entre planning et équipe ? » — aucune, et c'est réparé
 
 *Sa question, capture des réglages à l'appui.* Les deux rubriques rendaient **le
@@ -20065,7 +19984,6 @@ la couleur d'avant.
 rechargeait la page entre chaque écran. Le nouveau rejoue **sa séquence à lui**,
 et distingue « pas enregistré » de « enregistré mais pas peint ». Détail :
 `ARCHITECTURE.md` §119.
-
 
 ### La fiche d'entretien commence à exister : le modèle, en base
 
@@ -20510,7 +20428,6 @@ rappelée quand elle avait été enfreinte.
 Aucune règle de réservation n'a changé, seulement ce qui est dit. Détail :
 `ARCHITECTURE.md` §115.
 
-
 ### CODÉ : la TVA quand le client paie, et l'endroit où les factures attendent
 
 Sa question du 14 août : *« si un client décide de ne pas me payer, la facture
@@ -20710,7 +20627,6 @@ est donc écrit en dernier, et une règle de frère suffit.
 fiche d'un client disait *« Ce qu'on sait de lui »* — devant « Mme
 Bracquemont ». Elle est neutre désormais : rien dans la base ne dit le genre
 d'un client, et un sur deux est une cliente.
-
 
 ### « Je retourne dans l'application et pas dans la catégorie tarif »
 
@@ -21601,7 +21517,6 @@ contrôle :**
   chiffres sont retirés des dictées avant rapprochement — un nombre n'apprend
   aucun vocabulaire.
 
-
 ### Sa première page de catalogue entre dans la base — et le registre de SES prix
 
 **Sa photo :** catalogue Aqua Plus 2026, page 8, buses série VAN à secteur
@@ -22232,7 +22147,6 @@ par `textContent`, qui rend aussi le texte ÉTEINT — « 14 août · journéema
 maintenant le texte des seuls nœuds visibles. Un contrôle qui mesure autre chose
 que l'écran ne prouve rien, et coûte le temps de comprendre qu'il a tort.
 
-
 ### Deux lignes qui commencent par le même mot, l'une sur l'autre
 
 **Il a tranché le 16 août — « la B et 4 » — puis a vu ce qu'aucun contrôle
@@ -22321,7 +22235,6 @@ apporté deux planches de plus tombées dans le même trou, qu'il a nommées.
 
 ---
 
-
 ## 2026-08-14
 
 ### Sept chartes de couleurs, dont deux sombres — au choix de chacun
@@ -22408,8 +22321,6 @@ toujours. `ARCHITECTURE.md` §109, `docs/QUESTIONS.md` §19.
 
 ---
 
-
-
 ### « Surtout la page équipe » : l'écran qui n'était jamais préparé d'avance
 
 **Son signalement :** *« La connexion est au ralenti sur l'appli. Les nouvelles
@@ -22447,7 +22358,6 @@ le disque, pas le processeur. **Non livré** — annoncer une réparation suppos
 coûte l'essai puis l'aller-retour.
 
 ---
-
 
 ### CODÉ : ajouter et retirer des cases dans « Mes prix »
 
@@ -22810,7 +22720,6 @@ Détail et raisons : `ARCHITECTURE.md` §95.
 
 ---
 
-
 ### « L'appli ne marche plus » : elle marchait, c'est l'espace qui dormait
 
 **Sa capture, tard le 14 août :** il ouvre son favori Atlas et son iPhone lui
@@ -22859,7 +22768,6 @@ règle de GitHub, pas d'Atlas. Elle disparaîtra le jour où Atlas tournera sur 
 vrai hébergement. Un espace qui dort n'est pas une panne.
 
 ---
-
 
 ### Les équipes deviennent des cases au moment de poser — son geste C
 
@@ -23044,7 +22952,6 @@ retirant le lien partout.
 
 `ARCHITECTURE.md` §104.
 
-
 ### Deux maquettes perdues en silence dans la page unique
 
 **Trouvé en ajoutant la planche du devis modifiable.** `fusionner-maquettes.mjs`
@@ -23076,7 +22983,6 @@ Sa demande — rendre le mot « Devis » cliquable — est dessinée telle quell
 avec la marque qui la rend trouvable, à côté de quatre autres façons
 (`docs/maquettes/45-modifier-son-devis.html`). **Rien n'est codé** : il choisit
 d'abord (`CLAUDE.md` §3 bis).
-
 
 ### CODÉ : l'identité de l'entreprise, et le régime de TVA qui cesse d'être deviné
 
@@ -23493,7 +23399,6 @@ parcours entier et rougit sur quatre cas quand on retire la réparation.
 
 ---
 
-
 ### L'équipe qu'on ne peut pas changer, et le « matin » qui ne change jamais
 
 **Ses deux remarques du 13 août**, sur la même capture du planning :
@@ -23581,7 +23486,6 @@ débordement horizontal, l'entrée et « ↺ Recommencer » répondent.
 
 ---
 
-
 ### L'assistant cesse de flotter, et se range dans l'en-tête
 
 **Sa demande :** *« l'onglet de l'assistant est hyper mal placé, propose des
@@ -23656,7 +23560,6 @@ soit** : le même soir, trois migrations manquantes ont rendu **160 rouges** d'u
 coup, qui n'accusaient que la base locale.
 
 ---
-
 
 ### Le numéro du devis redevenait un lien d'appel — l'en-tête ne suffisait pas
 
@@ -24027,7 +23930,6 @@ autres suites étaient tombées sur exactement ce piège la veille.
 
 ---
 
-
 ### Six branches réunies dans `main`, et ce que la réunion a coûté
 
 **Sa demande, le 13 août :** *« Fusionne. »* Six branches vivaient à côté de
@@ -24124,7 +24026,6 @@ pas sur un 390. `ARCHITECTURE.md` §78.
 
 ---
 
-
 ### La page du client ne parle plus la langue du patron
 
 **Le patron, capture à l'appui :** *« lorsque j'envoie la facture au client,
@@ -24192,7 +24093,6 @@ travaille ; ils partent avec le reste de ses données.
 
 ---
 
-
 ### Le message du devis figé est devenu la porte
 
 **Le patron, capture à l'appui :** *« le message dit de consulter la case devis
@@ -24225,7 +24125,6 @@ aussi que les mots signalés ont disparu, que la porte s'ouvre pour de bon, et
 qu'un devis pas encore parti ne s'annonce jamais figé.
 
 ---
-
 
 ### Rouvrir un chantier, c'est REPRENDRE — la liste mène là où il s'est arrêté
 
@@ -24587,7 +24486,6 @@ trimestre », au pied de Terminés, additionnait TOUS les mois du fil. Le chiffr
 `ARCHITECTURE.md` §83.
 
 ---
-
 
 ### Le chevron doré du planning : l'adresse jusqu'au GPS en un doigt
 
@@ -25014,7 +24912,6 @@ laissait pas voir. Le bouton « montrer le refus » est une case à cocher nativ
 `TODO.md` §0 nonies · `docs/QUESTIONS.md` question 13.
 
 ---
-
 
 ### Tous les boutons arrondis, et un contrôle pour que ça le reste
 
@@ -26232,7 +26129,6 @@ Celui-là ne s'ignore pas, il s'efface : `scripts/banc.mjs` le supprime avant de
 bâtir. Confronté dans les deux sens — avec le reste, la construction échoue ;
 après le nettoyage, elle passe.
 
-
 ### Le fil se bloquait à chaque chantier, et montrait sa barre grise
 
 **Le patron, capture de son ordinateur et de son téléphone à l'appui :** *« je
@@ -26348,7 +26244,6 @@ champ, et l'écran Photos lui-même (voir l'entrée « Ajouter une photo ne fait
 changer de page » ci-dessus). Ce qui en a été **gardé** : son contrôle de
 persistance après rechargement, repris dans `scripts/test-photos-e2e.ts`.
 
-
 ### La perle plongeait avant le départ, sur une liste qui défile à peine
 
 **Le patron, le soir, après la fusion :** *« la perle reste accolée en bas au
@@ -26373,7 +26268,6 @@ ne rougit pas. Quand une règle porte sur un rapport, il faut l'éprouver des de
 côtés — le contrôle mesure maintenant deux hauteurs d'écran, et la suite a gagné
 la liste courte. Confronté : l'ancienne règle rétablie fait rougir le contrôle
 en nommant le défaut du soir.
-
 
 ### La perle du fil était tout en bas de l'écran, à demeure
 
@@ -28443,7 +28337,6 @@ Le sceau et la branche sont dessinés au trait — aucune image, aucune dépenda
 la page glissait latéralement. Trouvé en demandant au navigateur la BOÎTE de la
 barre. Le script de capture l'imprime désormais à chaque passage.
 
-
 ### Une base restée en arrière, et rien pour le dire
 
 Le patron met à jour son banc, lit « Mise à jour récupérée », ouvre le
@@ -28471,7 +28364,6 @@ Et un contrôle existant est passé au rouge en chemin, sans qu'aucune régressi
 n'ait eu lieu : il repérait la migration par une chaîne que le correctif
 supprime. C'est le bon comportement — un repère qui disparaît doit faire du
 bruit.
-
 
 ### L'agenda dit AUSSI ce qu'il y a, et les identifiants se collent dans l'appli
 
@@ -28502,7 +28394,6 @@ des réglages. Il disparaît quand tout va bien : un bandeau permanent sur
 l'écran le plus consulté devient du décor, et le jour où il annonce une panne,
 personne ne le lit.
 
-
 ### La note vocale comprend un numéro sans qu'on l'annonce
 
 *« Lorsque je remplis avec la note vocale, si je ne dis pas "numéro de téléphone
@@ -28529,7 +28420,6 @@ souligné dictés sont désormais reconnus, sous leurs différents noms.
 
 Un champ vide se voit et se corrige. Un champ faux et vraisemblable part avec le
 devis.
-
 
 ### Relier son agenda Google, ou non — au choix de chaque artisan
 
@@ -28573,7 +28463,6 @@ lignes au-dessus de « Atlas n'arrive plus à lire votre agenda » — le cas de
 panne était traité après le cas nominal. Le titre est désormais une fonction
 pure, et l'ordre des cas est tenu par un contrôle.
 
-
 ### Un vrai devis dément une définition écrite la veille — et le budget se mesure
 
 Deux documents de plus du même confrère, une facture de débroussaillage et un
@@ -28605,7 +28494,6 @@ Le contrôle qui affirmait que le budget était tenu était vert, **et pour une
 mauvaise raison** : son scénario à deux cents termes épuisait tout dès le
 premier bloc, si bien que les en-têtes suivants n'existaient pas. Un scénario
 extrême cachait le cas ordinaire.
-
 
 ### Les grumes se facturent à la tonne
 
@@ -29977,7 +29865,6 @@ ni `mailto:` ne portent de pièce jointe, et l'API de partage qui le peut n'a pa
 de destinataire. Surtout, ce serait nuisible — chez Atlas le devis est **la
 page**, pas le PDF : un client qui répond sur la pièce jointe ne choisit pas sa
 date et ne laisse aucune trace d'acceptation. Voir `ARCHITECTURE.md` §13.
-
 
 ---
 

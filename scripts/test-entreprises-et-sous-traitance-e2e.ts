@@ -98,8 +98,28 @@ async function principal() {
     assert.equal(await pastille.getAttribute("aria-pressed"), "true");
     await page.locator('[data-atlas="siret-client"]').waitFor({ timeout: DELAI_PAR_DEFAUT_MS });
     assert.equal(await page.locator('[data-atlas="tva-client-fiche"]').count(), 1);
+    assert.equal(await page.locator('[data-atlas="tva-client-fiche"]').inputValue(), "FR", "la fiche sans numéro ne porte pas FR");
     await page.click('[data-atlas="civilite-mr"]');
     await page.locator('[data-atlas="siret-client"]').waitFor({ state: "detached", timeout: DELAI_PAR_DEFAUT_MS });
+  });
+
+  // Sa condition du 7 octobre 2026, planche B : « faut pas que ça bloque ».
+  // Un numéro signalé faux s'enregistre quand même, tel qu'il l'a tapé.
+  await cas("un n° TVA signalé faux propose le bon, et s'enregistre quand même", async () => {
+    await page.goto(`${BASE}/clients/${entreprise.id}/coordonnees`, { waitUntil: "domcontentloaded" });
+    await page.locator('[data-atlas="siret-client"]').waitFor({ timeout: DELAI_PAR_DEFAUT_MS });
+    await page.locator('[data-atlas="siret-client"]').fill("93848383883833");
+    await page.locator('[data-atlas="tva-client-fiche"]').fill("FR54938483838");
+    await page.locator('[data-atlas="avis-tva"]').waitFor({ timeout: DELAI_PAR_DEFAUT_MS });
+    assert.equal(await page.locator('[data-atlas="mettre-la-tva"]').innerText(), "Mettre FR45938483838");
+    await page.click('[data-atlas="enregistrer-coordonnees"]');
+    let enregistre: string | null = null;
+    for (let i = 0; i < 40 && enregistre !== "FR54938483838"; i++) {
+      await page.waitForTimeout(250);
+      const r = await pool.query<{ numero_tva: string | null }>("SELECT numero_tva FROM clients WHERE id = $1", [entreprise.id]);
+      enregistre = r.rows[0]?.numero_tva ?? null;
+    }
+    assert.equal(enregistre, "FR54938483838", "la ligne rouge a retenu l'enregistrement");
   });
 
   await cas("à la création, Entreprise fait apparaître le SIRET et le n° TVA", async () => {
@@ -109,7 +129,15 @@ async function principal() {
     assert.equal(await page.locator('input[aria-label="SIRET"]').count(), 0, "le SIRET s'affiche pour un particulier");
     await pastille.click();
     await page.locator('input[aria-label="SIRET"]').waitFor({ timeout: DELAI_PAR_DEFAUT_MS });
-    assert.equal(await page.locator('input[aria-label="N° TVA intracommunautaire"]').count(), 1);
+    const tva = page.locator('input[aria-label="N° TVA intracommunautaire"]');
+    assert.equal(await tva.count(), 1);
+    // Sa demande du 7 octobre 2026 : « FR » d'office, et il s'efface pour une
+    // entreprise étrangère sans qu'aucune alerte ne le retienne.
+    assert.equal(await tva.inputValue(), "FR", "le FR n'est pas posé d'office");
+    await page.locator('input[aria-label="SIRET"]').fill("81234567800021");
+    assert.equal(await page.locator('text=Le n° TVA : FR suivi de 11 chiffres.').count(), 0, "FR seul est pris pour un numéro faux");
+    await tva.fill("");
+    assert.equal(await tva.inputValue(), "", "le FR ne s'efface pas");
   });
 
   await cas("le devis d'une entreprise : la sous-traitance est là, décochée ; allumée, plus de TVA", async () => {

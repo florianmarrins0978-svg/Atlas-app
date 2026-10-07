@@ -75,10 +75,73 @@ export function tauxRendus(
  * Le numéro de TVA tel qu'il s'imprime, ou `null` s'il n'en est pas un.
  *
  * Espaces et points retirés, lettres en capitales : « fr 12 345678901 » se lit
- * « FR12345678901 ». La forme est celle de tous les numéros européens, deux
- * lettres puis deux à treize signes ; Atlas ne prétend pas vérifier la clé.
+ * « FR12345678901 ». Hors de France, la forme est celle de tous les numéros
+ * européens, deux lettres puis deux à treize signes ; Atlas ne prétend pas
+ * vérifier la clé.
+ *
+ * **Un numéro français a sa forme à lui** : FR, deux signes de clé, puis les
+ * neuf chiffres du SIREN. La forme européenne seule laissait passer « Fr33 »
+ * (sa capture du 7 octobre 2026), et un devis partait avec, alors que chaque
+ * écran annonçait déjà « FR suivi de 11 chiffres ».
  */
 export function numeroTvaLu(saisi: string | null | undefined): string | null {
-  const brut = String(saisi ?? "").replace(/[\s.\-]/g, "").toUpperCase();
+  const brut = numeroTvaBrut(saisi);
+  if (brut.startsWith("FR")) return /^FR[0-9A-Z]{2}[0-9]{9}$/.test(brut) ? brut : null;
   return /^[A-Z]{2}[0-9A-Z]{2,13}$/.test(brut) ? brut : null;
+}
+
+/**
+ * Ce que la case du n° TVA porte d'office : sa demande du 7 octobre 2026,
+ * *« met le FR d'office déjà écrit »*. Neuf clients sur dix sont français ;
+ * pour un autre pays, on efface les deux lettres.
+ */
+export const DEBUT_NUMERO_TVA = "FR";
+
+/**
+ * La case n'a pas été remplie : rien, ou les deux lettres du pays seules.
+ *
+ * Sans cette lecture, le « FR » posé d'office se refuserait comme un numéro
+ * mal tapé, et une fiche sans numéro ne s'enregistrerait plus.
+ */
+export function numeroTvaVide(saisi: string | null | undefined): boolean {
+  return /^([A-Z]{2})?$/.test(numeroTvaBrut(saisi));
+}
+
+/**
+ * Ce que l'écran dit d'un n° TVA français, ou `null` s'il n'a rien à en dire.
+ *
+ * Sa décision du 7 octobre 2026 (planche `appli/verifier-la-tva.html`, B) :
+ * une faute se signale, et le bon numéro se propose, **sans jamais bloquer**.
+ * Rien ne relit cet avis au serveur : la fiche s'enregistre et le devis part
+ * quoi qu'il dise. Une erreur de cette règle coûterait une ligne rouge à tort,
+ * jamais un devis retenu.
+ *
+ * La clé d'un numéro français se calcule sur son SIREN :
+ * `(12 + 3 × (SIREN mod 97)) mod 97`. Une clé en lettres (entité sans SIREN)
+ * ne suit pas cette formule : elle ne se vérifie pas. Un numéro étranger non
+ * plus. Le bon numéro ne se propose que depuis le SIRET de la fiche : sans
+ * lui, on sait qu'il y a une faute, pas où elle est.
+ */
+export function avisSurLeNumeroTva(
+  siret: string | null | undefined,
+  saisi: string | null | undefined
+): { message: string; juste: string | null } | null {
+  const tva = numeroTvaBrut(saisi);
+  if (!/^FR\d{11}$/.test(tva)) return null;
+  const chiffresSiret = String(siret ?? "").replace(/\D/g, "");
+  const sirenFiche = chiffresSiret.length === 14 ? chiffresSiret.slice(0, 9) : null;
+  const juste = sirenFiche ? numeroTvaFrancais(sirenFiche) : null;
+  if (tva !== numeroTvaFrancais(tva.slice(4))) {
+    return { message: "Ce n° TVA contient une faute de frappe.", juste };
+  }
+  if (juste && tva !== juste) return { message: "Ce n° TVA n’est pas celui de ce SIRET.", juste };
+  return null;
+}
+
+function numeroTvaFrancais(siren: string): string {
+  return `FR${String((12 + 3 * (Number(siren) % 97)) % 97).padStart(2, "0")}${siren}`;
+}
+
+function numeroTvaBrut(saisi: string | null | undefined): string {
+  return String(saisi ?? "").replace(/[\s.\-]/g, "").toUpperCase();
 }
