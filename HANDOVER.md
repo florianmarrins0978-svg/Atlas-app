@@ -14,7 +14,7 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 
 Ils ne bloquent plus ni le devis ni la facture : la feuille d'envoi du devis
 les rappelle (`rappelsDuDevis`, `ARCHITECTURE.md` §451). Ne pas les remettre
-dans `manquesDuDevis` : c'est sa règle. Migration 0123 : l'attestation déposée
+dans `manquesDuDevis` : c'est sa règle. Migration 0124 : l'attestation déposée
 est lue par l'IA (`attestation-lue.ts`, `lire-attestation.ts`), et ce qu'elle
 trouve se rappelle. Lecture réelle non éprouvée ici (aucune clé).
 
@@ -63,7 +63,7 @@ planning :
 
 ## LES TRAVAUX D'UN CLIENT POSÉ SANS DEVIS : 7 octobre 2026, SUR LA BRANCHE
 
-Branche `claude/travaux-sans-devis`, migration 0123. Avant de toucher
+Branche `claude/travaux-sans-devis`, migration 0126. Avant de toucher
 « Travaux à faire » :
 
 - **`travauxAffiches`** décide seule d'où vient la liste (devis envoyé, sinon
@@ -77,7 +77,7 @@ Branche `claude/travaux-sans-devis`, migration 0123. Avant de toucher
 
 ## LA DOUBLE VÉRIFICATION : 7 octobre 2026, SUR SA BRANCHE
 
-Branche `claude/double-verification`, migration 0123. Avant de toucher la
+Branche `claude/double-verification`, migration 0125. Avant de toucher la
 connexion :
 
 - **le code s'exige dans `authorize`** (`src/auth.ts`), jamais dans une action :

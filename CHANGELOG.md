@@ -41,7 +41,7 @@ un artisan sur une mention que le blocage ne vérifiait d'ailleurs pas (une
 photo quelconque déposée comme attestation le levait). SIRET, forme, TVA,
 téléphone, courriel et adresse du client bloquent toujours.
 
-**Et l'attestation déposée se lit** (migration 0123) : au dépôt, l'IA dit si le
+**Et l'attestation déposée se lit** (migration 0124) : au dépôt, l'IA dit si le
 fichier est une attestation décennale, quel assureur, quelle fin de validité.
 « Ne ressemble pas à une attestation », « a expiré le … », « est au nom de X,
 et vous avez saisi Y » se rappellent dans Réglages et sur la feuille d'envoi,
@@ -72,7 +72,7 @@ devis (noté refusé). Six secondes pour annuler, avec une barre qui diminue ;
 la même barre arrive sur le planning. **Ce que ça évite** : un accord cliqué
 par erreur restait accepté pour toujours, et occupait le planning.
 L'acceptation effacée est gardée en trace, que l'application ne peut ni
-réécrire ni effacer (`ARCHITECTURE.md` §452, migration 0123).
+réécrire ni effacer (`ARCHITECTURE.md` §453, migration 0123).
 
 ### Supprimer du planning un client qui a accepté par erreur
 
@@ -82,7 +82,7 @@ question devant « Retirer » dans « Sans date ». **Ce que ça évite** : un c
 qui accepte par erreur se pose seul, et l'en sortir prenait deux gestes sans
 question. **Et un défaut corrigé** : retirer le seul client sans date faisait
 disparaître « Annuler », la suppression partait sans retour possible
-(`ARCHITECTURE.md` §451).
+(`ARCHITECTURE.md` §452).
 
 ### Écrire les travaux d'un client posé sans devis
 
@@ -90,8 +90,8 @@ Un client se posait au planning sans devis, mais la fiche d'intervention
 n'avait alors rien à faire cocher : « Travaux à faire » ne lisait que le
 devis. Les travaux s'écrivent désormais sur la fiche (« Ajouter un travail »,
 une croix pour enlever) et partent dans le retour du jour. Quand le devis
-part, ses lignes les remplacent (son choix 1). Migration 0123,
-`ARCHITECTURE.md` §451.
+part, ses lignes les remplacent (son choix 1). Migration 0126,
+`ARCHITECTURE.md` §454.
 
 ### La double vérification : le mot de passe seul ne suffit plus
 
@@ -102,9 +102,9 @@ dix codes de secours ; Face ID entre sans code. « Ne plus demander sur cet
 appareil » le retient trente jours. Obligatoire pour le patron et la
 facturation, **en production réelle seulement** : sur le banc et dans la
 batterie, facultative. Le code s'exige dans `authorize` (`ARCHITECTURE.md`
-§451). **Trouvé en route** : la route d'Auth.js du nouveau fournisseur
+§455). **Trouvé en route** : la route d'Auth.js du nouveau fournisseur
 `second-facteur` n'était pas murée, et acceptait des codes sans compteur
-d'échecs ; la route n'ouvre plus que les retours de Google et d'Apple. Migration 0123,
+d'échecs ; la route n'ouvre plus que les retours de Google et d'Apple. Migration 0125,
 quatre tables neuves sous FORCE RLS. **Batterie non jouée, à sa demande.**
 
 ### Poser au planning un client qui n'arrive pas à choisir ses dates

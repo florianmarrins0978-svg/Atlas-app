@@ -372,7 +372,7 @@ export async function mettreAJourEntreprise(
       valeurs.attestationDecennaleCle = data.attestationDecennale?.cle ?? null;
       valeurs.attestationDecennaleMime = data.attestationDecennale?.mime ?? null;
       // La lecture suit SON fichier : un dépôt neuf ou un retrait efface celle
-      // du fichier d'avant, qui ne dirait rien du nouveau (migration 0123).
+      // du fichier d'avant, qui ne dirait rien du nouveau (migration 0124).
       valeurs.attestationDecennaleLue = data.attestationDecennale?.lue ?? null;
     }
 

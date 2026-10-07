@@ -14,14 +14,14 @@ puisse supprimer, avec une protection »*. Planche
 `appli/supprimer-du-planning.html` ; **son choix : « La B »**. Codée :
 « Supprimer » sur la fiche du jour, une question, puis les six secondes ; la
 même question dans « Sans date ». Le défaut d'« Annuler » qui disparaissait
-avec le dernier client sans date est corrigé (`ARCHITECTURE.md` §451). Reste :
+avec le dernier client sans date est corrigé (`ARCHITECTURE.md` §452). Reste :
 `main`, avec son accord.
 
 **Ouvert, à lui de trancher :**
 
 - ~~le devis reste « accepté » pour toujours~~ : **son choix 3, CODÉ LE
   7 OCTOBRE 2026** (« Le client s'est trompé », la barre des six secondes,
-  `ARCHITECTURE.md` §452, migration 0123). Reste : la batterie (niveau 3),
+  `ARCHITECTURE.md` §453, migration 0123). Reste : la batterie (niveau 3),
   puis `main` avec son accord ;
 - la barre qui diminue reste sur le planning et la page Devis SEULEMENT :
   **son « non » du 7 octobre 2026** pour les autres écrans qui retirent. Ne
@@ -34,7 +34,7 @@ avec le dernier client sans date est corrigé (`ARCHITECTURE.md` §451). Reste :
 **Sa réponse du 30 septembre** sur `appli/double-verification.html` : la A
 (obligatoire pour le patron et la facturation) et « oui » (appareil retenu
 trente jours). **Codé le 7 octobre** sur `claude/double-verification`
-(`ARCHITECTURE.md` §451, migration 0123). Il a demandé de ne pas jouer de
+(`ARCHITECTURE.md` §455, migration 0125). Il a demandé de ne pas jouer de
 batterie : une seule, à la fin, avec `claude/mots-de-passe-courants`.
 
 Ce qui reste, par ordre d'importance :
@@ -50,7 +50,6 @@ Ce qui reste, par ordre d'importance :
   authentification : c'était faux (le mot de passe restait seul). À corriger,
   **avec son accord** (document tenu pour lui).
 
-## ⏳ LES TRAVAUX D'UN CLIENT POSÉ SANS DEVIS : UNE PLANCHE À REGARDER (7 octobre 2026)
 
 ## ✅ LES TRAVAUX D'UN CLIENT POSÉ SANS DEVIS : SA RÉPONSE « OUI, ET 1 », CODÉE LE 7 OCTOBRE 2026 (7 octobre 2026)
 
@@ -64,7 +63,7 @@ bandeau de la fiche d'intervention, chaque travail coché part dans le retour du
 jour ; avec un devis, rien ne change. **Attend sa réponse** : oui ou non, et
 quand le devis part, ses lignes remplacent les travaux écrits à la main (1,
 recommandé) ou s'y ajoutent (2). **CODÉ LE 7 OCTOBRE 2026, sa réponse « oui,
-et 1 »** (`ARCHITECTURE.md` §451), migration 0123, branche
+et 1 »** (`ARCHITECTURE.md` §454), migration 0126, branche
 `claude/travaux-sans-devis`. **Reste : la batterie entière (niveau 3), qu'il a
 demandé de ne pas lancer ce soir, puis `main` avec son accord.**
 

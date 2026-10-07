@@ -9,7 +9,7 @@
 
 Ils ne bloquent plus ni le devis ni la facture : la feuille d'envoi du devis
 les rappelle (`rappelsDuDevis`, `ARCHITECTURE.md` §451). Ne pas les remettre
-dans `manquesDuDevis` : c'est sa règle. Migration 0123 : l'attestation déposée
+dans `manquesDuDevis` : c'est sa règle. Migration 0124 : l'attestation déposée
 est lue par l'IA (`attestation-lue.ts`, `lire-attestation.ts`), et ce qu'elle
 trouve se rappelle. Lecture réelle non éprouvée ici (aucune clé).
 
@@ -30,26 +30,26 @@ sur son accord, une seule pour les deux lots.
 Branche `claude/supprimer-du-planning`. Son choix B : « Supprimer » sur la
 fiche du jour, une question, puis six secondes pour annuler ; la même question
 dans « Sans date ». Corrige aussi « Annuler » qui disparaissait avec le dernier
-client sans date (`ARCHITECTURE.md` §451). Et « Le client s'est trompé » sur la
-page Devis, son choix 3, avec la barre des six secondes (§452, migration
+client sans date (`ARCHITECTURE.md` §452). Et « Le client s'est trompé » sur la
+page Devis, son choix 3, avec la barre des six secondes (§453, migration
 0123). Niveau 3 (migration) : la batterie n'est pas jouée, il l'a demandé.
 
 ## SUR LA BRANCHE : LES TRAVAUX D'UN CLIENT POSÉ SANS DEVIS (7 octobre 2026)
 
-Branche `claude/travaux-sans-devis`, migration 0123. Sa réponse « oui, et 1 » à
+Branche `claude/travaux-sans-devis`, migration 0126. Sa réponse « oui, et 1 » à
 `appli/travaux-sans-devis.html` : « Ajouter un travail » sur la fiche
 d'intervention tant qu'aucun devis n'est parti ; le devis envoyé remplace la
-liste (`ARCHITECTURE.md` §451). Suites jouées : la suite base neuve, la suite
+liste (`ARCHITECTURE.md` §454). Suites jouées : la suite base neuve, la suite
 navigateur neuve, `test-travaux-a-faire-e2e` et les suites voisines, au vert.
 **Batterie non jouée, à sa demande** : niveau 3 (migration), donc pas de `main`
 avant elle.
 
 ## SUR SA BRANCHE : LA DOUBLE VÉRIFICATION (7 octobre 2026)
 
-Branche `claude/double-verification`, migration 0123. Appli d'authentification
+Branche `claude/double-verification`, migration 0125. Appli d'authentification
 après le mot de passe, Google ou Apple ; dix codes de secours ; appareil retenu
 trente jours ; Face ID sans code. Obligatoire pour le patron et la facturation
-en production réelle (`ARCHITECTURE.md` §451). Suites pures, base et navigateur
+en production réelle (`ARCHITECTURE.md` §455). Suites pures, base et navigateur
 de ce lot jouées seules ; **batterie non jouée, à sa demande**.
 
 ---

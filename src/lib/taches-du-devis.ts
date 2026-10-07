@@ -80,7 +80,7 @@ export function travauxAffiches(source: {
   return { taches: [...source.aLaMain], aLaMain: true };
 }
 
-/** Un travail tient sur une ligne de fiche ; la colonne en porte cent au plus (migration 0123). */
+/** Un travail tient sur une ligne de fiche ; la colonne en porte cent au plus (migration 0126). */
 export const TRAVAIL_MAX = 200;
 export const TRAVAUX_MAX = 100;
 

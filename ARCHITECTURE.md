@@ -34333,7 +34333,7 @@ de maquette, jamais de blocage »*) :
 
 | Décision | Pourquoi |
 |---|---|
-| l'IA lit le fichier AU DÉPÔT, et la lecture se range avec lui (`attestation_decennale_lue`, 0123, dans le même objet que la clé) | un dépôt neuf ou un retrait efface la lecture d'avant : elle ne peut pas parler d'un autre fichier |
+| l'IA lit le fichier AU DÉPÔT, et la lecture se range avec lui (`attestation_decennale_lue`, 0124, dans le même objet que la clé) | un dépôt neuf ou un retrait efface la lecture d'avant : elle ne peut pas parler d'un autre fichier |
 | `remarquesSurLAttestation` (pure) fait les phrases, lues par Réglages ET par `rappelsDuDevis` | une seule règle pour les deux écrans |
 | une lecture absente ou illisible ne dit RIEN | accuser un vrai papier sur une réponse incomprise lui ferait douter de lui ; seul un `false` écrit par le modèle dit « pas une attestation » |
 | la date d'expiration se compare au jour de Paris (`jourIso`) ; valide jusqu'au soir de sa date | le même jour que le reste de l'application |
@@ -34350,7 +34350,7 @@ Tenu par `test-documents-en-regle.ts` (vu rougir contre l'ancienne règle),
 
 ---
 
-## §451 : Supprimer du planning demande une question, puis garde ses six secondes
+## §452 : Supprimer du planning demande une question, puis garde ses six secondes
 
 **Sa demande du 7 octobre 2026 :** *« si un client valide un devis sans faire
 exprès [...] qu'on puisse les supprimer. Avec une protection, ce n'est pas un
@@ -34394,9 +34394,9 @@ une absence d'équipe s'efface toujours d'un seul appui. `TODO.md`.
 
 ---
 
-## §452 : « Le client s'est trompé » défait une acceptation, et la garde
+## §453 : « Le client s'est trompé » défait une acceptation, et la garde
 
-**Sa demande du 7 octobre 2026** (le « 2 oui » de la suite de §451) : un devis
+**Sa demande du 7 octobre 2026** (le « 2 oui » de la suite de §452) : un devis
 accepté par erreur doit pouvoir se défaire. **Son choix 3**
 (`appli/devis-accepte-par-erreur.html`, recopiée de la page Devis servie dans
 ses trois états) : un seul mot rouge sous « Modifier mon devis », une question
@@ -34430,7 +34430,7 @@ l'état d'avant sans rien avoir écrit.
 **La barre qui diminue** (`BarreQuiDiminue`, `TiroirDesRetires`) lit le
 minuteur lui-même (`compteARebours` de `useRetraits`) : elle repart quand un
 second retrait le réarme, et ne peut pas finir avant ou après l'écriture. Elle
-corrige aussi un écart du lot §451 : la planche B la dessinait, le code ne
+corrige aussi un écart du lot §452 : la planche B la dessinait, le code ne
 l'avait pas. **Elle n'est branchée que sur le planning et la page Devis** ; les
 autres écrans qui retirent ne l'ont pas, et c'est **son « non » du 7 octobre 2026** : ne pas l'étendre.
 
@@ -34440,7 +34440,7 @@ pour Mme, « Le client » sinon. Jamais deviné sur le nom.
 `scripts/test-acceptation-defaite-db.ts` (sept cas, sous `atlas_app`) et
 `scripts/test-le-client-s-est-trompe-e2e.ts` (son chemin, puis la base).
 
-## §451 : Les travaux d'un client posé sans devis s'écrivent sur la fiche, et le devis parti les remplace
+## §454 : Les travaux d'un client posé sans devis s'écrivent sur la fiche, et le devis parti les remplace
 
 **Sa demande du 7 octobre 2026 :** *« on peut ajouter un client au planning
 alors qu'on n'a pas envoyé le devis ; il faut que l'on puisse ajouter les
@@ -34448,7 +34448,7 @@ travaux à faire dans la fiche du client »*. Vérifié dans le code : non,
 « Travaux à faire » ne lisait que les lignes du devis. Planche
 `appli/travaux-sans-devis.html`, sa réponse : *« oui, et 1 »*.
 
-**Où ils vivent :** `chantiers.travaux_a_la_main` (`text[]`, migration 0123,
+**Où ils vivent :** `chantiers.travaux_a_la_main` (`text[]`, migration 0126,
 expand seul). **Qui décide de la liste affichée :** `travauxAffiches`
 (`src/lib/taches-du-devis.ts`), une seule fois, pour la fiche, le retour du
 jour et la page des retours, qui lisent tous `tachesDuChantier`.
@@ -34476,7 +34476,7 @@ le résultat y est le même qu'avant.
 la règle du devis envoyé), `test-travaux-a-la-main-e2e.ts` (le geste au
 planning), et `test-travaux-a-faire-e2e.ts` toujours vert.
 
-## §451 : La double vérification s'exige dans `authorize`, et aucune session n'existe avant le code
+## §455 : La double vérification s'exige dans `authorize`, et aucune session n'existe avant le code
 
 **Sa décision du 30 septembre 2026** (`appli/double-verification.html`) :
 l'appli d'authentification, obligatoire pour le patron et la facturation (la

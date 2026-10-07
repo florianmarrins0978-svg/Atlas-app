@@ -26,7 +26,7 @@ import {
  * dans `src/lib/double-verification.ts` et ne sont pas redites ici.
  *
  * **Le contexte est `app.utilisateur_id`**, posé à chaque transaction : ces
- * lignes appartiennent à une PERSONNE (migration 0123). Sans lui, la politique
+ * lignes appartiennent à une PERSONNE (migration 0125). Sans lui, la politique
  * ne rend rien, en silence.
  *
  * **Les deux jetons du navigateur portent l'identifiant de leur propriétaire**

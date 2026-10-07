@@ -141,7 +141,7 @@ export const entreprises = pgTable("entreprises", {
   adresseAssureurDecennale: text("adresse_assureur_decennale"),
   attestationDecennaleCle: text("attestation_decennale_cle"),
   attestationDecennaleMime: text("attestation_decennale_mime"),
-  // Migration 0123 : ce que l'IA a lu sur ce fichier, au dépôt. `null` : rien
+  // Migration 0124 : ce que l'IA a lu sur ce fichier, au dépôt. `null` : rien
   // n'a été lu (pas de clé, fichier déposé avant). Ne bloque jamais rien.
   attestationDecennaleLue: jsonb("attestation_decennale_lue").$type<AttestationLue>(),
   contratDecennale: text("contrat_decennale"),
@@ -975,7 +975,7 @@ export const chantiers = pgTable(
      * Les travaux écrits à la main, pour un client posé au planning sans
      * devis — sa réponse du 7 octobre 2026 (`appli/travaux-sans-devis.html`).
      * Lus seulement tant qu'aucun devis n'est parti : ensuite, les lignes du
-     * devis prennent leur place (`travauxAffiches`). Migration 0123.
+     * devis prennent leur place (`travauxAffiches`). Migration 0126.
      */
     travauxALaMain: text("travaux_a_la_main").array().notNull().default(sql`'{}'::text[]`),
     // **Qui tient ce chantier vit dans `equipesDuChantier`, plus ici.** La
@@ -2004,7 +2004,7 @@ export const codesMotDePasse = pgTable("codes_mot_de_passe", {
   jetonExpireLe: timestamp("jeton_expire_le", { withTimezone: true }),
 });
 
-// --- La double vérification (migration 0123, `src/lib/double-verification.ts`) ---
+// --- La double vérification (migration 0125, `src/lib/double-verification.ts`) ---
 // Quatre tables liées à une PERSONNE : le contexte est `app.utilisateur_id`.
 export const doubleVerification = pgTable("double_verification", {
   utilisateurId: uuid("utilisateur_id")
