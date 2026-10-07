@@ -1,23 +1,21 @@
 # Prochaines tâches
 
-## ⏳ SUPPRIMER DU PLANNING UN DEVIS ACCEPTÉ PAR ERREUR : UNE PLANCHE À REGARDER (7 octobre 2026)
+## ✅ SUPPRIMER DU PLANNING UN DEVIS ACCEPTÉ PAR ERREUR : LA B, CODÉE LE 7 OCTOBRE 2026
 
 **Sa demande :** *« si un client valide un devis sans faire exprès [...] qu'on
-puisse supprimer, avec une protection, ce n'est pas un clic qu'on supprime »*.
-Planche `appli/supprimer-du-planning.html`, recopiée de l'écran servi
-(aujourd'hui, A : Supprimer à côté de Déplacer et Retirer avec une question,
-B : la question puis les 6 secondes). **Il revient sur le choix du 10 août**
-(la réversibilité après, `useRetraits.ts`) : à confirmer par sa réponse.
+puisse supprimer, avec une protection »*. Planche
+`appli/supprimer-du-planning.html` ; **son choix : « La B »**. Codée :
+« Supprimer » sur la fiche du jour, une question, puis les six secondes ; la
+même question dans « Sans date ». Le défaut d'« Annuler » qui disparaissait
+avec le dernier client sans date est corrigé (`ARCHITECTURE.md` §451). Reste :
+`main`, avec son accord.
 
-**Défaut mesuré, non corrigé :** retirer le SEUL client de « Sans date » fait
-disparaître le tiroir du bas, et le « Retiré à l'instant, Annuler » avec lui
-(`TiroirDesRetires` vit dedans ; `montre`, `PlanningClient.tsx`, ne compte pas
-`retraits.nombre`). L'écriture part quand même au bout de 6 secondes : le
-patron n'a aucun moyen d'annuler. Vu au navigateur le 7 octobre 2026.
+**Ouvert, à lui de trancher :**
 
-**Ouvert aussi :** le devis reste « accepté » pour toujours
-(`envois_devis.reponse`, aucun geste pour le remettre en attente ou le noter
-refusé) ; une absence s'efface d'un seul appui, sans annulation.
+- le devis reste « accepté » pour toujours (`envois_devis.reponse`) : aucun
+  geste pour le remettre en attente ou le noter refusé ;
+- une absence d'équipe s'efface d'un seul appui, sans annulation.
+
 ## ⏳ LES TRAVAUX D'UN CLIENT POSÉ SANS DEVIS : UNE PLANCHE À REGARDER (7 octobre 2026)
 
 **Sa demande :** *« on peut ajouter un client au planning alors qu'on n'a pas

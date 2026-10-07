@@ -163,14 +163,31 @@ export const FICHES_PLANNING: FicheModeEmploi[] = [
     intitule: "Supprimer un chantier qui attend une date",
     motsCles: ["supprimer", "effacer", "virer", "chantier", "date", "attente", "definitivement", "tiroir"],
     geste:
-      "Ouvrez la barre du bas, glissez la ligne du chantier de droite à gauche, puis appuyez sur « Retirer ». " +
-      "« Annuler » reste six secondes.",
+      "Ouvrez la barre du bas, glissez la ligne du chantier de droite à gauche, appuyez sur « Retirer », " +
+      "puis sur « Supprimer » pour confirmer. « Annuler » reste six secondes.",
     reserve: "Un chantier facturé ne se supprime pas : sa facture figure au relevé de TVA.",
     source: PC,
-    preuves: ["LigneRetirable", 'data-atlas="sans-date"', "TiroirDesRetires", "supprimerChantierAction"],
+    preuves: ["LigneRetirable", 'data-atlas="sans-date"', "TiroirDesRetires", "supprimerChantierAction", "QuestionDeSuppression"],
     ailleurs: [
       { source: "src/components/atlas/LigneRetirable.tsx", preuves: ["Retirer"] },
       { source: "src/app/planning/actions.ts", preuves: ["Ce chantier est facturé"] },
+      { source: "src/app/planning/QuestionDeSuppression.tsx", preuves: ['data-atlas="confirmer-suppression"', "Supprimer"] },
+    ],
+  },
+  {
+    id: "planning-supprimer-du-jour",
+    ecran: "Planning",
+    ou: "« Planning » dans la barre du bas, en touchant le jour du chantier",
+    intitule: "Supprimer un chantier posé sur un jour, par exemple un devis accepté par erreur",
+    motsCles: ["supprimer", "effacer", "erreur", "accepte", "trompe", "client", "chantier", "jour", "planning", "valide"],
+    geste:
+      "Ouvrez le jour, appuyez sur « Supprimer » sous le chantier, puis sur « Supprimer » pour confirmer. " +
+      "« Annuler » reste six secondes dans la barre du bas.",
+    reserve: "Le client reste dans vos clients. Un chantier facturé ne se supprime pas.",
+    source: PC,
+    preuves: ['data-atlas="supprimer"', "demanderSuppression", "TiroirDesRetires"],
+    ailleurs: [
+      { source: "src/app/planning/QuestionDeSuppression.tsx", preuves: ['data-atlas="confirmer-suppression"', "Il reste dans vos clients."] },
     ],
   },
   {

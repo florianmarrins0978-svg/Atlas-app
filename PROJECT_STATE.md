@@ -5,6 +5,14 @@
 `drizzle/0116_modele_de_fiche_d_office.sql`
 
 ---
+## EN ATTENTE DE `main` : SUPPRIMER DU PLANNING (7 octobre 2026)
+
+Branche `claude/supprimer-du-planning`. Son choix B : « Supprimer » sur la
+fiche du jour, une question, puis six secondes pour annuler ; la même question
+dans « Sans date ». Corrige aussi « Annuler » qui disparaissait avec le dernier
+client sans date (`ARCHITECTURE.md` §451). Niveau 2. Aucune migration.
+
+---
 ## SUR `main` : POSER UN CLIENT À SA PLACE (7 octobre 2026)
 
 Branche `claude/add-quote-client-to-schedule-ve9xn7`, migration 0122. Son

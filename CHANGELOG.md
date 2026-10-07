@@ -8,6 +8,16 @@ Format : le plus récent en tête.
 ---
 ## 2026-10-07
 
+### Supprimer du planning un client qui a accepté par erreur
+
+« Supprimer » s'ajoute sur la fiche du jour, à côté de « Déplacer » et
+« Retirer ». Une question d'abord, puis six secondes pour annuler ; la même
+question devant « Retirer » dans « Sans date ». **Ce que ça évite** : un client
+qui accepte par erreur se pose seul, et l'en sortir prenait deux gestes sans
+question. **Et un défaut corrigé** : retirer le seul client sans date faisait
+disparaître « Annuler », la suppression partait sans retour possible
+(`ARCHITECTURE.md` §451).
+
 ### Poser au planning un client qui n'arrive pas à choisir ses dates
 
 Un client qui reçoit le lien du devis sans réussir à choisir ses dates ne

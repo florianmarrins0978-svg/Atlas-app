@@ -94,6 +94,9 @@ async function retirerAuPlanning(page: import("playwright").Page, nom: string) {
   await ligne.evaluate((el) => el.scrollTo({ left: el.scrollWidth, behavior: "instant" as ScrollBehavior }));
   await page.waitForTimeout(400);
   await bouton.click();
+  // **La question avant de supprimer** (7 octobre 2026, la B de sa planche) :
+  // le retrait ne part qu'une fois confirmé.
+  await page.locator('[data-atlas="confirmer-suppression"]').click();
   await page.waitForTimeout(250);
 }
 

@@ -11,6 +11,17 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 
 ---
 
+## SUPPRIMER DU PLANNING : 7 octobre 2026
+
+Branche `claude/supprimer-du-planning`. Avant de toucher une suppression au
+planning :
+
+- **`QuestionDeSuppression` n'écrit rien** : elle rend la main à
+  `retraits.retirer`. Ne pas y brancher `supprimerChantierAction`, les six
+  secondes d'annulation en dépendent.
+- **`aRetire` tient le tiroir du bas** tant qu'un retrait attend : sans lui,
+  « Annuler » part avec le dernier client sans date.
+
 ## POSER UN CLIENT À SA PLACE : 7 octobre 2026, SUR `main` LE 7
 
 Branche `claude/add-quote-client-to-schedule-ve9xn7`, migration 0122. Avant de

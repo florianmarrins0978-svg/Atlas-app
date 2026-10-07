@@ -34368,3 +34368,47 @@ Tenu par `test-pose-a-sa-place-db.ts` (neuf cas, sous la RLS, vu rougir sur
 deux règles cassées), `test-etat-envoi.ts` (`poseSansAccord`) et
 `test-poser-a-sa-place-e2e.ts` (son geste, puis la page de la cliente).
 
+---
+
+## §451 : Supprimer du planning demande une question, puis garde ses six secondes
+
+**Sa demande du 7 octobre 2026 :** *« si un client valide un devis sans faire
+exprès [...] qu'on puisse les supprimer. Avec une protection, ce n'est pas un
+clic qu'on supprime »*. Mesuré avant de coder, au navigateur et sur un devis
+réellement accepté par la page du client : le chantier se pose seul sur sa
+date, et l'en sortir demandait deux gestes sans question (« Retirer », puis le
+glisser dans « Sans date »).
+
+**Son choix B** (`appli/supprimer-du-planning.html`, recopiée de l'écran servi) :
+
+| | |
+|---|---|
+| la fiche du jour | « Supprimer » à côté de « Déplacer » et « Retirer », en rouge |
+| « Retirer » de « Sans date » | la même question |
+| la question | `QuestionDeSuppression.tsx` : le nom du chantier, celui du client, « Supprimer » ou « Annuler » |
+| après | `useRetraits`, inchangé : six secondes, « Retiré à l'instant, Annuler » |
+
+**Il revient sur le 10 août sans l'annuler.** La réversibilité après reste
+entière ; la question s'ajoute devant. La feuille n'écrit rien elle-même :
+elle rend la main à `retraits.retirer`, le seul chemin d'écriture.
+
+**Le défaut trouvé en chemin, et corrigé à la racine.** `TiroirDuBas` rendait
+`null` quand plus rien n'attendait : retirer le SEUL client de « Sans date »
+démontait le tiroir, et `TiroirDesRetires` avec lui. L'écriture partait quand
+même six secondes plus tard, sans aucun « Annuler ». La pose avait déjà sa
+règle (`aDefaire`, « un tiroir qui disparaît à l'instant du geste emporterait
+Annuler ») ; le retrait ne l'avait pas. `aRetire` la complète, et un retrait
+OUVRE le tiroir comme une date posée le fait, sinon « Annuler » vivrait dans
+un tiroir fermé, à hauteur zéro.
+
+**Un refus sur un chantier posé se dit sous le calendrier** (`setRefus`) : dans
+« Sans date », la ligne revient avec son motif ; sur la fiche du jour, le
+chantier serait revenu sans un mot (une facture émise l'interdit).
+
+**Ce qui reste ouvert, et c'est à lui** : le devis reste « accepté » dans
+`envois_devis` (aucun geste pour le remettre en attente ou le noter refusé) ;
+une absence d'équipe s'efface toujours d'un seul appui. `TODO.md`.
+
+`scripts/test-supprimer-du-planning-e2e.ts` : rouge sur la version d'avant
+(six cas), vert après.
+
