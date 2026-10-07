@@ -7,6 +7,8 @@ import { colors, font, smallCaps, couleursDocument, voile } from "@/lib/design-t
 import PrimaryButton from "@/components/atlas/PrimaryButton";
 import NumeroDeDocument from "@/components/atlas/NumeroDeDocument";
 import BoutonTelechargerDocument from "@/components/atlas/BoutonTelechargerDocument";
+import AvisNumeroTva from "@/components/atlas/AvisNumeroTva";
+import { DEBUT_NUMERO_TVA, numeroTvaVide } from "@/lib/autoliquidation";
 import { jourLisible } from "@/lib/jour";
 import { visionneuseDeLaFacture } from "@/lib/visionneuse-pdf";
 import { composerMessageFacture, lienTransmission, type CanalClient } from "@/lib/message-client";
@@ -72,6 +74,8 @@ export type FacturePourEcran = {
   /** Sous-traitance du bâtiment, sans TVA (`src/lib/autoliquidation.ts`). */
   autoliquidation: boolean;
   clientNumeroTva: string | null;
+  /** Recopié du devis : l'avis sur la clé du n° TVA le compare au SIREN. */
+  clientSiret: string | null;
   /** Le devis dont ces lignes viennent — le PDF le nomme, l'écran doit le nommer aussi. */
   numeroDevis: string | null;
   versionDevis: number | null;
@@ -243,7 +247,7 @@ export default function FactureClient({
   // Sous-traitance, sans TVA (son bouton du 3 octobre 2026). Les taux changent
   // EN BASE : l'écran se relit, et les totaux suivent par le même calcul.
   const [sousTraitance, setSousTraitance] = useState(initialFacture?.autoliquidation ?? false);
-  const [tvaClient, setTvaClient] = useState(initialFacture?.clientNumeroTva ?? "");
+  const [tvaClient, setTvaClient] = useState(initialFacture?.clientNumeroTva || DEBUT_NUMERO_TVA);
   const [refusSousTraitance, setRefusSousTraitance] = useState<string | null>(null);
   const [sousTraitanceEnCours, setSousTraitanceEnCours] = useState(false);
   const [manques, setManques] = useState<Manque[]>([]);
@@ -267,7 +271,8 @@ export default function FactureClient({
   }
 
   async function enregistrerTvaClient(valeur: string) {
-    if (!initialFacture || valeur.trim() === (initialFacture.clientNumeroTva ?? "")) return;
+    // « FR » laissé seul n'est pas une saisie : le refuser ferait croire à une faute.
+    if (!initialFacture || numeroTvaVide(valeur) || valeur.trim() === (initialFacture.clientNumeroTva ?? "")) return;
     setRefusSousTraitance(null);
     const r = await majTvaClientFactureAction(initialFacture.id, valeur);
     if (r.succes) setTvaClient(r.clientNumeroTva);
@@ -781,6 +786,14 @@ export default function FactureClient({
                 onChange={(e) => setTvaClient(e.target.value)}
                 onBlur={(e) => void enregistrerTvaClient(e.currentTarget.value)}
                 style={{ color: colors.ink }}
+              />
+              <AvisNumeroTva
+                siret={initialFacture?.clientSiret ?? ""}
+                numeroTva={tvaClient}
+                onMettre={(juste) => {
+                  setTvaClient(juste);
+                  void enregistrerTvaClient(juste);
+                }}
               />
             </label>
           )}

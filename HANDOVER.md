@@ -18,6 +18,21 @@ actions (`chantiers/nouveau`, `chantiers/[id]/coordonnees`,
 `clients/[id]/coordonnees`). Le micro de la fiche refuse AVANT de dicter
 (`refusAvantDeDicter`) : refuser une note à l'arrivée la perdrait.
 
+Réuni dans la branche `claude/tva-fr-d-office`, avec deux décisions du patron
+du 7 octobre (planche `appli/verifier-la-tva.html`, la B) :
+
+| | |
+|---|---|
+| la case n° TVA porte « FR » d'office | fiche à la création, « Ses coordonnées », facture en sous-traitance (`DEBUT_NUMERO_TVA`) |
+| « FR » seul | une case VIDE (`numeroTvaVide`) : il ne bloque jamais, ni l'écran ni le serveur |
+| la forme | bloque (lot téléphone et TVA) |
+| la clé, recalculée sur le SIREN | une ligne rouge et « Mettre FR… », **sans bloquer** : `avisSurLeNumeroTva`, monté par `AvisNumeroTva.tsx` et relu par aucune action |
+
+**Ne pas faire relire l'avis par le serveur** : sa condition, « faut pas que ça
+bloque ». Une erreur de la formule doit coûter une ligne rouge, jamais un devis.
+Le n° TVA ruisselle déjà de la fiche au devis (`devis.ts`) puis à la facture
+(`instantaneDuDevis`) ; `test-documents-en-regle-db.ts` le tient.
+
 ## POSER UN CLIENT À SA PLACE : 7 octobre 2026, SUR `main` LE 7
 
 Branche `claude/add-quote-client-to-schedule-ve9xn7`, migration 0122. Avant de

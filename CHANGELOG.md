@@ -20,7 +20,7 @@ de dicter, jamais après) ; les trois actions qui écrivent un téléphone le
 relisent. La clé TVA se vérifie à part, et sans bloquer (ci-dessous).
 
 - **Un n° TVA français mal tapé se signale, et le bon se propose** (sa planche du 7 octobre 2026, `appli/verifier-la-tva.html`, B). La clé se recalcule sur le SIREN ; un numéro qui ne colle pas au SIRET de la fiche se dit aussi. **La clé ne bloque pas**, c'était sa condition : la ligne rouge ne se relit pas au serveur, et le bon numéro ne se pose que s'il le touche (`avisSurLeNumeroTva`, `AvisNumeroTva.tsx`). Clé en lettres et numéro étranger ne se vérifient pas.
-- **Le n° TVA d'une entreprise cliente porte « FR » d'office**, à la création et sur sa fiche (sa demande du 7 octobre 2026). Il s'efface pour une entreprise étrangère. « FR » laissé seul se lit comme une case vide (`numeroTvaVide`, `src/lib/autoliquidation.ts`), à l'écran comme au serveur : sans cela, la forme FR exigée juste au-dessus aurait bloqué tout devis d'une entreprise sans numéro.
+- **Le n° TVA d'une entreprise cliente porte « FR » d'office**, à la création, sur sa fiche et sur la facture en sous-traitance (avec la même alerte sur la clé) (sa demande du 7 octobre 2026). Il s'efface pour une entreprise étrangère. « FR » laissé seul se lit comme une case vide (`numeroTvaVide`, `src/lib/autoliquidation.ts`), à l'écran comme au serveur : sans cela, la forme FR exigée juste au-dessus aurait bloqué tout devis d'une entreprise sans numéro.
 
 ### Poser au planning un client qui n'arrive pas à choisir ses dates
 

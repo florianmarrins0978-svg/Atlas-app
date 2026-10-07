@@ -11,6 +11,12 @@ Branche `claude/telephone-tva-justes`. `telephoneLu` (`src/lib/numero-telephone.
 et `numeroTvaLu` resserré pour la France (`src/lib/autoliquidation.ts`). La fiche
 client grise ses sorties tant qu'un numéro est faux. Pas encore sur `main`.
 
+Réuni dans `claude/tva-fr-d-office` : la case n° TVA porte « FR » d'office
+(création, fiche, facture), « FR » seul vaut une case vide, et la clé se
+recalcule sur le SIREN pour une alerte qui ne bloque rien
+(`avisSurLeNumeroTva`, `AvisNumeroTva.tsx`). Batterie non jouée : à lancer
+sur son accord, une seule pour les deux lots.
+
 ---
 ## SUR `main` : POSER UN CLIENT À SA PLACE (7 octobre 2026)
 
