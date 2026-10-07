@@ -47,8 +47,8 @@ Code de la consommation, à faire confirmer si un litige arrive.
 | `test-pose-a-sa-place-db.ts`, neuf cas en base | 9 sur 9, et vu rougir sur deux règles cassées exprès |
 | `test-etat-envoi.ts` (« Pas encore signé ») | 24 sur 24 |
 | `test-mode-emploi.ts` (l'aide) | 32 sur 32 |
-| `test-poser-a-sa-place-e2e.ts`, ton geste puis la page de la cliente | voir la batterie |
-| Batterie complète | à jouer avant la fusion (lot de niveau 3 : il touche le devis) |
+| `test-poser-a-sa-place-e2e.ts`, ton geste puis la page de la cliente | 5 sur 5 |
+| Batterie complète, le 7 octobre 2026 | au vert : 453 sur 453 suites base, 178 sur 178 suites navigateur, connexion derrière un proxy réussie |
 
 ## Ce qui reste ouvert
 
@@ -56,4 +56,4 @@ Code de la consommation, à faire confirmer si un litige arrive.
 |---|---|
 | Si le client **refuse** sur son lien, le chantier reste posé. La carte « Devis refusé » te le dit, et c'est toi qui le retires. | toi, si tu veux qu'il parte tout seul |
 | Un lien **expiré puis renvoyé** repart avec des dates à choisir. | toi |
-| La mise sur `main` | toi : elle se demande |
+| La mise sur `main` | accordée par toi le 7 octobre 2026 |

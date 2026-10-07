@@ -10,8 +10,9 @@
 Branche `claude/add-quote-client-to-schedule-ve9xn7`, migration 0122. Son
 choix B : « Client en attente » propose le client dont le devis attend sa
 réponse ; « Signe sur son lien » ou « Signé sur papier ». Poser ne vaut jamais
-accord (`ARCHITECTURE.md` §450). Niveau 3 (argent) : la batterie complète
-décide de la livraison, puis la fusion se demande.
+accord (`ARCHITECTURE.md` §450). Batterie complète jouée le 7 octobre : au
+vert, 453/453 suites base, 178/178 suites navigateur, connexion derrière un
+proxy réussie. Fusion sur `main` demandée et accordée le même jour.
 
 ---
 ## SUR `main` : LA FENTE SE CHIFFRE AU FÛT (6 octobre 2026)
