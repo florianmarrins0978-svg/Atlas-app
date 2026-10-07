@@ -1,5 +1,5 @@
 import Decimal from "decimal.js";
-import { tauxDeLaLigne, totauxAvecReduction } from "@/lib/reduction-devis";
+import { tauxDeLaLigne, totauxAvecReduction, type LigneRemisable } from "@/lib/reduction-devis";
 
 /**
  * La TVA d'un relevé, découpée par taux, pour qu'elle se vérifie à la calculette.
@@ -35,7 +35,7 @@ export type PartDuTaux = { taux: string | null; tva: string; ttc: string };
  * écrite sur la facture (`CLAUDE.md` §3).
  */
 export function categoriesDeLaFacture(
-  lignes: readonly { montant: string; tauxTva?: string | null }[],
+  lignes: readonly LigneRemisable[],
   tauxDuDocument: string,
   reductionPourcent: string | null
 ): CategoriePiece[] {

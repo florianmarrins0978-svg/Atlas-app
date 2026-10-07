@@ -5,6 +5,7 @@ import {
   pourcentValide,
   totauxAvecReduction,
 } from "../src/lib/reduction-devis";
+import { lignesDuPapier } from "../src/lib/lignes-du-papier";
 
 // Le prix accordé au client : que les totaux tombent juste, à l'euro près.
 //
@@ -177,6 +178,50 @@ cas("un pourcentage rond ne traîne pas ses décimales", () => {
 cas("sans réduction, il n'y a pas de phrase — donc rien à imprimer", () => {
   assert.equal(libelleReduction(null), null);
   assert.equal(libelleReduction(totauxAvecReduction(LIGNES, "20").reductionPourcent), null);
+});
+
+// ── La remise du devis ne touche que les lignes du devis — sa « A » ───────
+//
+// Le 7 octobre 2026, devant son devis à −10 % et 1 000 € de travaux en plus :
+// la remise s'étendait aux travaux en plus, et il offrait 100 € qu'il n'avait
+// jamais promis. *« Oui je suis d'accord pour la A. »*
+
+cas("les travaux en plus ne prennent pas la remise accordée sur le devis", () => {
+  const t = totauxAvecReduction(
+    [{ montant: "10000.00" }, { montant: "1000.00", supplement: true }],
+    "20",
+    "10"
+  );
+  assert.equal(t.reductionMontant, "1000.00", "la remise se compte aussi sur les travaux en plus");
+  assert.equal(t.totalHt, "10000.00");
+  assert.equal(t.totalTva, "2000.00");
+  assert.equal(t.totalTtc, "12000.00");
+});
+
+cas("deux taux : la remise ne se répartit que sur les lignes du devis", () => {
+  const t = totauxAvecReduction(
+    [
+      { montant: "1000.00", tauxTva: "20" },
+      { montant: "500.00", tauxTva: "10", supplement: true },
+    ],
+    "20",
+    "10"
+  );
+  const c20 = t.parTaux.find((c) => c.taux === "20.00")!;
+  const c10 = t.parTaux.find((c) => c.taux === "10.00")!;
+  assert.equal(c20.reductionMontant, "100.00");
+  assert.equal(c10.reductionMontant, null, "la catégorie des seuls travaux en plus prend une part de remise");
+  assert.equal(c10.baseHt, "500.00");
+  assert.equal(t.totalHt, "1400.00");
+});
+
+cas("sur le papier, un travail en plus garde son prix, les lignes du devis portent la remise", () => {
+  const p = lignesDuPapier(
+    [{ montant: "600.00" }, { montant: "400.00" }, { montant: "1000.00", supplement: true }],
+    "20",
+    "10"
+  );
+  assert.deepEqual(p.lignes.map((l) => l.net), ["540.00", "360.00", "1000.00"]);
 });
 
 console.log(`\n${echecs === 0 ? "✅" : "❌"} ${echecs} échec(s).`);

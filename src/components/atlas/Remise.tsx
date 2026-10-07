@@ -110,7 +110,8 @@ export function LigneRemise({
           // **Ce que le champ porte À CET INSTANT**, et non ce que l'appelant
           // croit qu'il porte : voir `onFini` ci-dessus. Passé nu, `onBlur`
           // donnerait son ÉVÉNEMENT comme pourcentage — d'où l'enveloppe.
-          onBlur={(e) => onFini(e.currentTarget.value)}
+          // Figé, le champ ne s'écrit pas : le quitter n'enregistre rien.
+          onBlur={fige ? undefined : (e) => onFini(e.currentTarget.value)}
           className="w-9 border-0 bg-transparent p-0 text-right outline-none focus:bg-[var(--voile-champ)]"
           style={{ color: colors.or, fontSize: "16px" }}
         />

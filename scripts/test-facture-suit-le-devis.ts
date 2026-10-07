@@ -9,6 +9,7 @@ import {
   emettreFacture,
   ajouterLigneDeFacture,
   majLigneDeFacture,
+  majReductionDeFacture,
   FactureEnRetardSurLeDevisError,
 } from "../src/server/repositories/factures";
 import { creerEntreprise, regler } from "./_devis-et-facture";
@@ -125,6 +126,28 @@ async function main() {
     assert.equal(promesse.totalTtc, parti.totalTtc, "la promesse porte le total de la facture");
     const attendu = (Math.round(Number(parti.totalTtc) * 30) / 100).toFixed(2);
     assert.equal(montantAcompteDuDevis(0, promesse), attendu);
+  });
+
+  // Point 5, sa « A » du 7 octobre 2026 : la remise du devis reste sur les
+  // lignes du devis. Elle ne s'étend pas aux travaux en plus, et ne se change
+  // pas sur la facture (la passer à 0 refacturait le devis plein tarif).
+  await test("la remise du devis ne touche pas les travaux en plus, et ne se change pas sur la facture", async () => {
+    const { ctx, chantierId } = await creerEntreprise("Fabre", "30");
+    const v1 = await getOuCreerDevisBrouillon(ctx, chantierId);
+    await regler(ctx.entrepriseId, v1.id, { reduction_pourcent: "10.00", reduction_montant: "237.00" });
+    await envoyerDevis(ctx, v1.id);
+    const facture = await terminerChantier(ctx, chantierId);
+    const ajout = await ajouterLigneDeFacture(ctx, facture.id);
+    assert.ok(ajout.ok);
+    await majLigneDeFacture(ctx, facture.id, ajout.ligne.id, { libelle: "Bordure en plus", quantite: "1", prixUnitaire: "1000.00" });
+
+    const refus = await majReductionDeFacture(ctx, facture.id, null);
+    assert.equal(refus.ok, false, "la remise accordée sur le devis s'est retirée depuis la facture");
+
+    const emise = await emettreFacture(ctx, facture.id);
+    // 2 370 € du devis moins 10 %, plus 1 000 € de travaux en plus sans remise.
+    assert.equal(emise.totalHt, "3133.00", "la remise du devis s'est étendue aux travaux en plus");
+    assert.equal(emise.reductionPourcent, "10.00");
   });
 
   console.log(`\n${failed} échec(s), ${passed} réussi(s).`);

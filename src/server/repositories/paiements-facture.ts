@@ -466,7 +466,7 @@ async function factureEnBrouillon(tx: DbOrTx, factureId: string) {
     return { ok: false as const, raison: "La facture est déjà arrêtée : ses règlements se notent depuis Terminés." };
   }
   const lignes = await tx
-    .select({ montant: lignesFacture.montant, tauxTva: lignesFacture.tauxTva })
+    .select({ montant: lignesFacture.montant, tauxTva: lignesFacture.tauxTva, supplement: lignesFacture.supplement })
     .from(lignesFacture)
     .where(eq(lignesFacture.factureId, factureId));
   const totaux = totauxAvecReduction(lignes, f.tauxTva, f.reductionPourcent);

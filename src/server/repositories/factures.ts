@@ -34,7 +34,7 @@ import { datesDeLaFactureQuiPart, validerEcheance } from "../../lib/echeance-fac
 import { ALLURE_PAR_DEFAUT } from "../../lib/allure-documents";
 import { repriseDuDevis } from "../../lib/facture-face-au-devis";
 import { factureNeeSansDevis } from "../../lib/lignes-corrigeables";
-import { pourcentValide, totauxAvecReduction } from "../../lib/reduction-devis";
+import { pourcentValide, totauxAvecReduction, type LigneRemisable } from "../../lib/reduction-devis";
 import { montantDeLaLigne } from "../../lib/montant-de-ligne";
 import { chiffreCanonique } from "../../lib/chiffre-saisi";
 import { montantMainDoeuvreValide } from "../../lib/main-doeuvre-devis";
@@ -1340,6 +1340,13 @@ export async function majReductionDeFacture(
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const garde = await factureEncoreEnBrouillon(tx, factureId);
     if (!garde.ok) return garde;
+    // **La remise d'un devis appartient au devis** (sa « A » du 7 octobre
+    // 2026) : le client l'a acceptée, la facture la reprend telle quelle. La
+    // retirer ici refacturait le devis plein tarif. Elle ne se pose que sur
+    // une facture née sans devis.
+    if (garde.devisId !== null) {
+      return { ok: false, raison: "La remise vient du devis accepté : elle se change sur le devis." };
+    }
 
     const pourcent = pourcentValide(pourcentBrut);
 
@@ -1349,7 +1356,7 @@ export async function majReductionDeFacture(
       .where(eq(factures.id, factureId))
       .limit(1);
     const lignes = await tx
-      .select({ montant: lignesFacture.montant, tauxTva: lignesFacture.tauxTva })
+      .select({ montant: lignesFacture.montant, tauxTva: lignesFacture.tauxTva, supplement: lignesFacture.supplement })
       .from(lignesFacture)
       .where(eq(lignesFacture.factureId, factureId));
     const totaux = totauxAvecReduction(lignes, f?.tauxTva ?? TAUX_TVA_PAR_DEFAUT, pourcent);
@@ -2360,7 +2367,12 @@ export async function releveTvaCollecteeParTaux(
         .from(factures)
         .where(inArray(factures.id, ids)),
       tx
-        .select({ factureId: lignesFacture.factureId, montant: lignesFacture.montant, tauxTva: lignesFacture.tauxTva })
+        .select({
+          factureId: lignesFacture.factureId,
+          montant: lignesFacture.montant,
+          tauxTva: lignesFacture.tauxTva,
+          supplement: lignesFacture.supplement,
+        })
         .from(lignesFacture)
         .where(inArray(lignesFacture.factureId, ids)),
       tx
@@ -2368,7 +2380,7 @@ export async function releveTvaCollecteeParTaux(
         .from(avoirs)
         .where(inArray(avoirs.factureId, ids)),
     ]);
-    const lignesPar = new Map<string, { montant: string; tauxTva: string | null }[]>();
+    const lignesPar = new Map<string, LigneRemisable[]>();
     for (const l of lignes) lignesPar.set(l.factureId, [...(lignesPar.get(l.factureId) ?? []), l]);
     return {
       pieces: new Map(

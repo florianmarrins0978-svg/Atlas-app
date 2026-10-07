@@ -810,12 +810,16 @@ export default function TravauxSupplementairesClient({
           )}
           {remiseOuverte && (
             <>
+              {/* La remise d'un devis se lit ici, elle se change sur le devis
+                  (sa « A » du 7 octobre 2026) : seule une facture sans devis
+                  en pose une. */}
               <LigneRemise
                 pourcent={reduction}
                 montantRetire={totaux.reductionMontant}
+                fige={!sansDevis}
                 onChange={setReduction}
                 onFini={(duChamp) => enregistrerLaRemise(duChamp)}
-                onRetirer={() => enregistrerLaRemise("")}
+                onRetirer={sansDevis ? () => enregistrerLaRemise("") : undefined}
               />
               <div className="flex items-center justify-between py-1.5">
                 <span className="text-[15px]">
@@ -847,7 +851,7 @@ export default function TravauxSupplementairesClient({
             </span>
           </div>
 
-          {!remiseOuverte && (
+          {!remiseOuverte && sansDevis && (
             <BoutonRemise
               onPoser={() => {
                 setRemiseOuverte(true);
