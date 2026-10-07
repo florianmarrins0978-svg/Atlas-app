@@ -34368,3 +34368,39 @@ Tenu par `test-pose-a-sa-place-db.ts` (neuf cas, sous la RLS, vu rougir sur
 deux règles cassées), `test-etat-envoi.ts` (`poseSansAccord`) et
 `test-poser-a-sa-place-e2e.ts` (son geste, puis la page de la cliente).
 
+
+## §451 : Les travaux d'un client posé sans devis s'écrivent sur la fiche, et le devis parti les remplace
+
+**Sa demande du 7 octobre 2026 :** *« on peut ajouter un client au planning
+alors qu'on n'a pas envoyé le devis ; il faut que l'on puisse ajouter les
+travaux à faire dans la fiche du client »*. Vérifié dans le code : non,
+« Travaux à faire » ne lisait que les lignes du devis. Planche
+`appli/travaux-sans-devis.html`, sa réponse : *« oui, et 1 »*.
+
+**Où ils vivent :** `chantiers.travaux_a_la_main` (`text[]`, migration 0123,
+expand seul). **Qui décide de la liste affichée :** `travauxAffiches`
+(`src/lib/taches-du-devis.ts`), une seule fois, pour la fiche, le retour du
+jour et la page des retours, qui lisent tous `tachesDuChantier`.
+
+| le chantier porte | la liste |
+|---|---|
+| un devis ENVOYÉ | ses lignes (son choix 1) ; la colonne n'est pas vidée, elle cesse d'être lue |
+| des travaux à la main | eux, même devant un brouillon |
+| un brouillon seul | ses lignes, comme avant |
+| rien | vide, et elle s'écrit sur la fiche |
+
+**Un brouillon ne remplace rien** : il n'est pas parti, et son choix porte sur
+le devis qui part. **Les gestes sont gardés par la même règle** : on n'écrit
+pas dans une liste que l'écran ne montre pas (`ajouterTravailALaMain`,
+`enleverTravailALaMain`, refus rendus en valeur). Enlever exige le rang ET le
+libellé, pour ne pas enlever le voisin quand un autre téléphone a écrit.
+
+**Les cases du jour suivent la liste du jour** (`casesDuJour`,
+`retour-intervention.ts`) : elles repartaient des cases du dernier retour, ce
+qui faisait disparaître un travail ajouté le matin. Une case cochée hier le
+reste à libellé égal. Sur un devis, la liste ne change pas entre deux retours :
+le résultat y est le même qu'avant.
+
+Éprouvé : `test-travaux-a-la-main-db.ts` (sous `atlas_app`, vu rouge en cassant
+la règle du devis envoyé), `test-travaux-a-la-main-e2e.ts` (le geste au
+planning), et `test-travaux-a-faire-e2e.ts` toujours vert.

@@ -142,6 +142,32 @@ export type TacheDuRetour = {
   faite: boolean;
 };
 
+/**
+ * Les cases du retour du jour : la liste d'AUJOURD'HUI, cochée comme le
+ * dernier retour l'avait laissée.
+ *
+ * **Pourquoi la liste du jour et non celle du dernier retour** — sa réponse du
+ * 7 octobre 2026 : les travaux d'un client posé sans devis s'écrivent à la
+ * main, au fil des jours. Repartir des cases du retour d'hier faisait
+ * disparaître le travail ajouté ce matin, et réapparaître celui qu'il venait
+ * d'enlever. Une case cochée hier le reste aujourd'hui, à libellé égal ; un
+ * libellé répété se consomme une fois par occurrence.
+ */
+export function casesDuJour(
+  aFaire: readonly string[],
+  dernier: readonly TacheDuRetour[] | null
+): TacheDuRetour[] {
+  const cochees = new Map<string, number>();
+  for (const t of dernier ?? []) {
+    if (t.faite) cochees.set(t.libelle, (cochees.get(t.libelle) ?? 0) + 1);
+  }
+  return aFaire.map((libelle) => {
+    const reste = cochees.get(libelle) ?? 0;
+    if (reste > 0) cochees.set(libelle, reste - 1);
+    return { libelle, faite: reste > 0 };
+  });
+}
+
 /** Ce que le patron a réglé pour toute son équipe (migration 0080). */
 export type ReglesDuRetour = {
   /** Le retour est-il exigé en fin de chantier ? */

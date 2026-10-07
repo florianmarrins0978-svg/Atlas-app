@@ -5,6 +5,17 @@
 `drizzle/0116_modele_de_fiche_d_office.sql`
 
 ---
+## SUR LA BRANCHE : LES TRAVAUX D'UN CLIENT POSÉ SANS DEVIS (7 octobre 2026)
+
+Branche `claude/travaux-sans-devis`, migration 0123. Sa réponse « oui, et 1 » à
+`appli/travaux-sans-devis.html` : « Ajouter un travail » sur la fiche
+d'intervention tant qu'aucun devis n'est parti ; le devis envoyé remplace la
+liste (`ARCHITECTURE.md` §451). Suites jouées : la suite base neuve, la suite
+navigateur neuve, `test-travaux-a-faire-e2e` et les suites voisines, au vert.
+**Batterie non jouée, à sa demande** : niveau 3 (migration), donc pas de `main`
+avant elle.
+
+---
 ## SUR `main` : POSER UN CLIENT À SA PLACE (7 octobre 2026)
 
 Branche `claude/add-quote-client-to-schedule-ve9xn7`, migration 0122. Son

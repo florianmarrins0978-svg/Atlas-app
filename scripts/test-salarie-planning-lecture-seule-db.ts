@@ -65,6 +65,8 @@ const ECRITURES = [
   ["poserDuTempsAction", "bloquer du temps qui n'est pas un client"],
   ["reposerDemiJourneeAction", "reposer une demi-journée qui attendait"],
   ["ecrireNoteChantierAction", "écrire le pense-bête"],
+  ["ajouterTravailAction", "ajouter un travail écrit à la main"],
+  ["enleverTravailAction", "enlever un travail écrit à la main"],
   ["deplanifierChantierAction", "retirer un chantier du planning"],
   ["supprimerChantierAction", "supprimer un chantier"],
 ] as const;

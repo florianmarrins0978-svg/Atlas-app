@@ -967,6 +967,13 @@ export const chantiers = pgTable(
      * chaque lecture.
      */
     note: text("note"),
+    /**
+     * Les travaux écrits à la main, pour un client posé au planning sans
+     * devis — sa réponse du 7 octobre 2026 (`appli/travaux-sans-devis.html`).
+     * Lus seulement tant qu'aucun devis n'est parti : ensuite, les lignes du
+     * devis prennent leur place (`travauxAffiches`). Migration 0123.
+     */
+    travauxALaMain: text("travaux_a_la_main").array().notNull().default(sql`'{}'::text[]`),
     // **Qui tient ce chantier vit dans `equipesDuChantier`, plus ici.** La
     // colonne `equipe_id` portait UNE équipe, pour le chantier entier ; il en
     // veut plusieurs, et différentes le matin et l'après-midi (migration 0058).

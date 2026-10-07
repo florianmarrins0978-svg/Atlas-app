@@ -1,7 +1,7 @@
 import { manquesDuDevis, type Manque } from "@/lib/mentions-manquantes";
 import { TAUX_SANS_TVA, tauxRendus, tauxSousAutoliquidation } from "@/lib/autoliquidation";
 import { estUneEntreprise } from "@/lib/civilite";
-import { and, asc, desc, eq, sql } from "drizzle-orm";
+import { and, asc, desc, eq, isNull, sql } from "drizzle-orm";
 import { jourIso } from "@/lib/jour";
 import { withEntreprise } from "../db/with-entreprise";
 import { allureDesDocuments, attestationLue, formatNumeroDe } from "./entreprises";
@@ -24,7 +24,7 @@ import { genererPdfDevis, type DevisPdfData } from "../pdf/devis-pdf";
 import { enregistrerObjet } from "../storage";
 import { ecrireNumero, repartChaqueAnnee } from "@/lib/numero-documents";
 import { lignesDuDocument, lignesEnAttenteDePrix } from "@/lib/preparation-devis";
-import { tachesDuDevis } from "@/lib/taches-du-devis";
+import { refusDuTravail, tachesDuDevis, travauxAffiches } from "@/lib/taches-du-devis";
 
 const TAUX_TVA_DEFAUT = "20.00";
 
@@ -1003,26 +1003,117 @@ export type FeuilleDuChantier = {
    * **L'écran s'en sert pour ne pas offrir un bouton qui mène à rien.** Sans
    * devis, le PDF sans les prix n'a rien à imprimer et la route répond 404 : un
    * bouton qui ouvre une erreur est pire qu'un bouton absent — il fait douter de
-   * l'application entière. Le cas ne devrait pas se présenter (le planning ne
-   * liste que des chantiers dont le devis est PARTI), mais « ne devrait pas »
-   * n'est pas « ne peut pas ».
+   * l'application entière. Le cas est courant depuis le 10 septembre 2026 : un
+   * client se pose au planning sans devis.
    */
   avecDevis: boolean;
+  /**
+   * La liste vient-elle de la main du patron ? C'est alors elle, et elle seule,
+   * qui se complète sur la fiche (`travauxAffiches`, sa réponse du 7 octobre
+   * 2026). Une liste lue sur un devis ne s'y modifie pas : elle se modifie sur
+   * le devis.
+   */
+  aLaMain: boolean;
 };
 
 export async function tachesDuChantier(
   ctx: Ctx,
   chantierId: string
 ): Promise<FeuilleDuChantier> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, (tx) =>
+    lireLesTravaux(tx, ctx, chantierId)
+  );
+}
+
+async function lireLesTravaux(tx: DbOrTx, ctx: Ctx, chantierId: string): Promise<FeuilleDuChantier> {
+  const d = await devisÀImprimer(tx, chantierId);
+  const [chantier] = await tx
+    .select({ travauxALaMain: chantiers.travauxALaMain })
+    .from(chantiers)
+    .where(and(eq(chantiers.id, chantierId), eq(chantiers.entrepriseId, ctx.entrepriseId)))
+    .limit(1);
+  const lignes = d
+    ? tachesDuDevis(
+        await tx
+          .select({ libelle: lignesDevis.libelle, quantite: lignesDevis.quantite, unite: lignesDevis.unite })
+          .from(lignesDevis)
+          .where(eq(lignesDevis.devisId, d.id))
+          .orderBy(lignesDevis.ordre)
+      )
+    : null;
+  const affiches = travauxAffiches({
+    envoye: d?.statut === "envoye" ? lignes : null,
+    brouillon: d?.statut === "brouillon" ? lignes : null,
+    aLaMain: chantier?.travauxALaMain ?? [],
+  });
+  return { ...affiches, avecDevis: d !== null };
+}
+
+/**
+ * Les deux gestes sur les travaux écrits à la main — sa réponse du 7 octobre
+ * 2026. **Ils rendent un refus, ils ne lèvent pas** : le message d'une
+ * exception d'action serveur n'arrive pas jusqu'à lui (`AGENTS.md`).
+ *
+ * **La règle d'affichage les garde aussi** : on n'écrit pas dans une liste que
+ * l'écran ne montre pas. Une fois le devis parti, ajouter ici ferait un
+ * travail que personne ne verra jamais.
+ */
+export type ResultatTravaux = { ok: true; taches: string[] } | { ok: false; raison: string };
+
+const REFUS_LISTE_DU_DEVIS = "Ces travaux viennent du devis : ils se changent sur le devis.";
+
+export async function ajouterTravailALaMain(
+  ctx: Ctx,
+  chantierId: string,
+  libelle: string
+): Promise<ResultatTravaux> {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
-    const d = await devisÀImprimer(tx, chantierId);
-    if (!d) return { taches: [], avecDevis: false };
-    const lignes = await tx
-      .select({ libelle: lignesDevis.libelle, quantite: lignesDevis.quantite, unite: lignesDevis.unite })
-      .from(lignesDevis)
-      .where(eq(lignesDevis.devisId, d.id))
-      .orderBy(lignesDevis.ordre);
-    return { avecDevis: true, taches: tachesDuDevis(lignes) };
+    const avant = await lireLesTravaux(tx, ctx, chantierId);
+    if (!avant.aLaMain) return { ok: false, raison: REFUS_LISTE_DU_DEVIS };
+    const refus = refusDuTravail(libelle, avant.taches.length);
+    if (refus) return { ok: false, raison: refus };
+    // **Ajouté en base, pas recopié depuis l'écran** : deux téléphones qui
+    // ajoutent en même temps gardent chacun le sien.
+    const [row] = await tx
+      .update(chantiers)
+      .set({
+        travauxALaMain: sql`array_append(${chantiers.travauxALaMain}, ${libelle.trim()}::text)`,
+        updatedBy: ctx.utilisateurId,
+        updatedAt: new Date(),
+      })
+      .where(
+        and(eq(chantiers.id, chantierId), eq(chantiers.entrepriseId, ctx.entrepriseId), isNull(chantiers.deletedAt))
+      )
+      .returning({ travauxALaMain: chantiers.travauxALaMain });
+    if (!row) return { ok: false, raison: "Ce chantier n'existe plus." };
+    return { ok: true, taches: row.travauxALaMain };
+  });
+}
+
+export async function enleverTravailALaMain(
+  ctx: Ctx,
+  chantierId: string,
+  rang: number,
+  libelle: string
+): Promise<ResultatTravaux> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const avant = await lireLesTravaux(tx, ctx, chantierId);
+    if (!avant.aLaMain) return { ok: false, raison: REFUS_LISTE_DU_DEVIS };
+    // **Le rang ET le libellé** : un rang seul enlèverait le mauvais travail si
+    // un autre téléphone en a enlevé un plus haut entre-temps.
+    if (avant.taches[rang] !== libelle) {
+      return { ok: false, raison: "La liste a changé entre-temps : rouvrez la fiche." };
+    }
+    const apres = avant.taches.filter((_, i) => i !== rang);
+    const [row] = await tx
+      .update(chantiers)
+      .set({ travauxALaMain: apres, updatedBy: ctx.utilisateurId, updatedAt: new Date() })
+      .where(
+        and(eq(chantiers.id, chantierId), eq(chantiers.entrepriseId, ctx.entrepriseId), isNull(chantiers.deletedAt))
+      )
+      .returning({ travauxALaMain: chantiers.travauxALaMain });
+    if (!row) return { ok: false, raison: "Ce chantier n'existe plus." };
+    return { ok: true, taches: row.travauxALaMain };
   });
 }
 
