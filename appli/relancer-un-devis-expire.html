@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Relancer un devis expiré</title>
+<style>
+  /* Le planning d'un jour, puis le devis : une seule carte qui change à chaque geste, comme l'écran. */
+  :root{
+    --fond:#f5f3ee; --plage:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
+    --gris:#8a8578; --pastille:#ebe8e1; --or:#B98B47; --trait:rgba(28,28,26,.12);
+    --alerte:#8c2f22; --nuit:#1c1c1a; --sur-nuit:#f5f3ee; --sur-or:#ffffff;
+    --serif:ui-serif,Georgia,"Times New Roman",serif;
+    --sans:ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+    color-scheme:light;
+  }
+  *{box-sizing:border-box}
+  html,body{background:#e6e3dc}
+  body{font:16px/1.5 var(--sans);color:var(--encre);padding:0 16px 48px;-webkit-text-size-adjust:100%}
+  .bandeau{max-width:430px;margin:16px auto 0;background:var(--nuit);color:var(--sur-nuit);
+           padding:14px 18px;border-radius:14px;font-size:14px;line-height:1.55}
+  .bandeau b{color:#fff}
+  .tel{max-width:430px;margin:16px auto 0;min-height:640px;background:var(--fond);border-radius:22px;
+       padding:22px;box-shadow:0 10px 28px rgba(20,18,14,.16)}
+  h1{margin:0;font:400 30px/1.15 var(--serif)}
+  .sous{margin:4px 0 0;font:700 11px/1 var(--sans);letter-spacing:.2em;text-transform:uppercase;color:var(--or)}
+  .jour{margin-top:20px;background:var(--plage);border-radius:16px;padding:18px}
+  .jour h2{margin:0 0 12px;font:400 22px/1.2 var(--serif)}
+  .vide{margin:0;color:var(--gris);font-size:14px}
+  .pose{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:10px 0;border-top:1px solid var(--trait)}
+  .pose .nom{font:400 20px/1.2 var(--serif)}
+  .marque{font-size:13px;color:var(--or)}
+  .centre{display:flex;justify-content:center;margin-top:16px}
+  .voies,.choix{display:flex;flex-direction:column;gap:8px;margin-top:14px}
+  button{font:inherit;cursor:pointer}
+  button:focus-visible{outline:2px solid var(--or);outline-offset:2px}
+  .or{border:0;background:transparent;box-shadow:inset 0 0 0 1px var(--or);color:var(--or);border-radius:999px;
+      min-height:46px;padding:0 22px;font:700 12px/1 var(--sans);letter-spacing:.2em;text-transform:uppercase}
+  .plein{background:var(--or);color:var(--sur-or);box-shadow:none}
+  .choix button{display:flex;justify-content:space-between;align-items:center;gap:10px;min-height:56px;padding:12px 18px;
+                border:0;border-radius:16px;background:transparent;box-shadow:inset 0 0 0 1px var(--trait);
+                text-align:left;color:var(--encre);font-size:16px}
+  .choix .quoi{font-size:13px;color:var(--gris)}
+  .question{margin:14px 0 0;font-size:15px;color:var(--encre-douce)}
+  .question b{color:var(--encre)}
+  .cadre{margin-top:16px;padding:14px 16px;border-radius:14px;background:var(--plage);box-shadow:inset 0 0 0 1px var(--or)}
+  .cadre .titre{margin:0 0 8px;font:700 11px/1 var(--sans);letter-spacing:.2em;text-transform:uppercase;color:var(--or)}
+  .cadre p{margin:4px 0;font-size:14.5px}
+  .rangee{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+  .rangee button{min-height:42px;padding:0 16px;border:0;border-radius:999px;background:transparent;
+                 box-shadow:inset 0 0 0 1px var(--trait);color:var(--encre);font-size:14px;font-weight:600}
+  .rangee button[aria-pressed="true"]{box-shadow:inset 0 0 0 1.5px var(--or);color:var(--or)}
+  .lignes{margin-top:16px}
+  .lignes .l{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid var(--trait);font-size:15px;font-variant-numeric:tabular-nums}
+  .lignes .total{font-weight:700;border-bottom:0}
+  .fait{margin-top:14px;font-size:14px;color:var(--encre-douce)}
+  .remettre{display:block;width:100%;max-width:430px;margin:14px auto 0;min-height:46px;border:0;border-radius:999px;
+            background:transparent;box-shadow:inset 0 0 0 1px var(--trait);font:700 11px/1 var(--sans);
+            letter-spacing:.16em;text-transform:uppercase;color:var(--gris)}
+  .notes{max-width:430px;margin:20px auto 0;display:flex;flex-direction:column;gap:12px}
+  .note{background:var(--plage);border-radius:14px;padding:14px 18px;font-size:14.5px;line-height:1.55;color:var(--encre-douce)}
+  .note h2{margin:0 0 6px;font:700 10px/1 var(--sans);letter-spacing:.2em;text-transform:uppercase;color:var(--or)}
+  .note b{color:var(--encre)}
+</style>
+
+<div class="bandeau">
+  <b>Planche à essayer, rien n'est codé.</b> Mme Ferrand rappelle six mois après pour dire oui.
+  Touchez « Ajouter », puis « Devis expiré ».
+</div>
+
+<div class="tel" id="tel" aria-live="polite"></div>
+<button type="button" class="remettre" id="remettre">Repartir de zéro</button>
+
+<div class="notes">
+  <div class="note">
+    <h2>Relire le devis</h2>
+    Les deux cadres en or sont ceux que vous avez validés le 26 septembre pour un devis repris :
+    <b>« Votre grille a changé »</b> et <b>« Augmenter les prix »</b>. Ils servent ici aussi, rien n'est réinventé.
+  </div>
+  <div class="note">
+    <h2>Pourquoi pas sans signature</h2>
+    Un accord donné au téléphone six mois après ne prouve rien en cas de litige.
+    Il signe sur son lien neuf, valable 45 jours, ou sur papier.
+  </div>
+</div>
+
+<script>
+// Exemples de lignes et de prix, pour la planche seulement.
+const LIGNES = [
+  { quoi: "Taille de haie", ancien: 45, grille: 48, q: 6 },
+  { quoi: "Évacuation des déchets", ancien: 60, grille: 65, q: 1 },
+];
+let s;
+function depart() { s = { etape: null, relu: false, maj: null, taux: 0, signe: null }; }
+depart();
+
+const euros = (n) => n.toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €";
+function prix(l) {
+  const base = s.maj === true ? l.grille : l.ancien;
+  return Math.round(base * (1 + s.taux / 100) * 100) / 100;
+}
+
+function rendre() {
+  let h = `<h1>Planning</h1><p class="sous">Mardi 14 octobre</p><div class="jour"><h2>Mardi 14 octobre</h2>`;
+  if (s.signe) {
+    h += `<div class="pose"><span class="nom">Mme Ferrand</span><span class="marque">${s.signe === "lien" ? "Pas encore signé" : "Signé sur papier"}</span></div>`;
+  } else if (s.etape === null || s.etape === "voies" || s.etape === "qui") {
+    h += `<p class="vide">Rien de posé ce jour.</p>`;
+  }
+
+  if (s.etape === null && !s.signe) {
+    h += `<div class="centre"><button type="button" class="or" data-aller="voies">Ajouter</button></div>`;
+  } else if (s.etape === "voies") {
+    h += `<div class="voies">
+      <button type="button" class="or" data-rien="1">Client en attente</button>
+      <button type="button" class="or" data-aller="qui">Devis expiré</button>
+      <button type="button" class="or" data-rien="1">Un client</button>
+      <button type="button" class="or" data-rien="1">Autre chose</button></div>
+      <div class="centre"><button type="button" class="or" data-aller="null">Fermer</button></div>`;
+  } else if (s.etape === "qui") {
+    h += `<div class="choix">
+      <button type="button" data-aller="relire"><span>Mme Ferrand</span><span class="quoi">Expiré le 21 sept.</span></button>
+      <button type="button" data-rien="1"><span>M. Bastide</span><span class="quoi">Expiré le 2 oct.</span></button></div>
+      <div class="centre"><button type="button" class="or" data-aller="voies">Annuler</button></div>`;
+  } else if (s.etape === "relire") {
+    h += `<p class="question">Le devis de <b>Mme Ferrand</b> date du 7 août. Son lien a expiré.</p>
+      <div class="choix">
+        <button type="button" data-aller="devis"><span>Relire le devis</span></button>
+        <button type="button" data-aller="comment"><span>Le renvoyer tel quel</span></button></div>
+      <div class="centre"><button type="button" class="or" data-aller="qui">Annuler</button></div>`;
+  } else if (s.etape === "devis") {
+    h += `<p class="question">Devis de Mme Ferrand, nouvelle version.</p>`;
+    if (s.maj === null) {
+      h += `<div class="cadre"><p class="titre">Votre grille a changé</p>`;
+      for (const l of LIGNES) h += `<p>${l.quoi} : ${euros(l.ancien)} sur ce devis, ${euros(l.grille)} dans votre grille.</p>`;
+      h += `<div class="rangee"><button type="button" data-maj="oui">Mettre à jour</button><button type="button" data-maj="non">Garder les anciens</button></div></div>`;
+    } else {
+      h += `<p class="fait">${s.maj ? "Prix de votre grille repris." : "Anciens prix gardés."}</p>`;
+    }
+    h += `<div class="cadre"><p class="titre">Augmenter les prix</p><div class="rangee">`;
+    for (const t of [5, 10, 30]) h += `<button type="button" data-taux="${t}" aria-pressed="${s.taux === t}">+&nbsp;${t}&nbsp;%</button>`;
+    h += `</div></div><div class="lignes">`;
+    let total = 0;
+    for (const l of LIGNES) { const t = prix(l) * l.q; total += t; h += `<div class="l"><span>${l.q} × ${l.quoi}</span><span>${euros(t)}</span></div>`; }
+    h += `<div class="l total"><span>Total HT</span><span>${euros(total)}</span></div></div>
+      <div class="centre"><button type="button" class="or plein" data-aller="comment">Continuer</button></div>`;
+  } else if (s.etape === "comment") {
+    h += `<p class="question">Mme Ferrand n'a pas encore signé ce devis.</p>
+      <div class="choix">
+        <button type="button" data-signe="lien"><span>Elle signe sur son lien</span></button>
+        <button type="button" data-signe="papier"><span>Signé sur papier</span></button></div>
+      <div class="centre"><button type="button" class="or" data-aller="relire">Annuler</button></div>`;
+  }
+  h += `</div>`;
+  if (s.signe === "lien") h += `<p class="fait">Un lien neuf part chez Mme Ferrand, valable 45 jours. Il ne montre que le mardi 14 octobre.</p>`;
+  if (s.signe === "papier") h += `<p class="fait">Le devis passe accepté. Son lien est fermé.</p>`;
+  document.getElementById("tel").innerHTML = h;
+}
+
+document.getElementById("tel").addEventListener("click", (e) => {
+  const b = e.target.closest("button"); if (!b) return;
+  if (b.dataset.aller) s.etape = b.dataset.aller === "null" ? null : b.dataset.aller;
+  if (b.dataset.maj) s.maj = b.dataset.maj === "oui";
+  if (b.dataset.taux) { const t = Number(b.dataset.taux); s.taux = s.taux === t ? 0 : t; }
+  if (b.dataset.signe) { s.signe = b.dataset.signe; s.etape = null; }
+  rendre();
+});
+document.getElementById("remettre").addEventListener("click", () => { depart(); rendre(); });
+rendre();
+</script>
+
+</html>
