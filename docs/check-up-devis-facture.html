@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — Check-up devis et facture (7 octobre 2026)</title>
+<style>
+  :root{
+    --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
+    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
+    --accent:#2f3b2f; --alert:#b5562a; --line:rgba(28,28,26,0.13);
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#161815; --surface:#1d201c; --raised:#252924;
+      --ink:#eae7df; --ink-soft:#c2bdb1; --muted:#948f83;
+      --accent:#9fbd82; --alert:#e0885a; --line:rgba(234,231,223,0.17);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.65;}
+  main{max-width:44rem;margin:0 auto;padding:2.5rem 1.2rem 5rem;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.2;
+    text-wrap:balance;margin:2rem 0 0.6rem;scroll-margin-top:1rem;}
+  h1{font-size:2rem;margin-top:0;}
+  h2{font-size:1.5rem;padding-top:1.2rem;border-top:1px solid var(--line);}
+  h3{font-size:1.12rem;}
+  h4{font-size:1rem;}
+  p{margin:0 0 0.9rem;}
+  a{color:var(--accent);text-underline-offset:3px;}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px;}
+  ul,ol{margin:0 0 1rem;padding-left:1.3rem;}
+  li{margin-bottom:0.4rem;}
+  li::marker{color:var(--muted);}
+  /* Le sommaire : des cibles larges, confortables au doigt sur téléphone. */
+  ol li a{display:inline-block;padding:0.15rem 0;}
+  blockquote{margin:1rem 0;padding:0.85rem 1.05rem;background:var(--raised);
+    border-left:3px solid var(--accent);border-radius:0 10px 10px 0;color:var(--ink-soft);}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.87em;
+    background:var(--raised);padding:0.1rem 0.35rem;border-radius:5px;}
+  hr{border:0;border-top:1px solid var(--line);margin:2rem 0;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;
+    background:var(--surface);margin:0 0 1.2rem;}
+  table{border-collapse:collapse;width:100%;font-size:0.92rem;min-width:22rem;}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--line);
+    vertical-align:top;}
+  th{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--muted);white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .retour{display:inline-block;font-size:0.76rem;color:var(--muted);
+    text-decoration:none;margin:-0.3rem 0 1rem;}
+  .retour:hover{color:var(--accent);text-decoration:underline;}
+</style>
+</head>
+<body>
+<main>
+<h1 id="check-up-devis-et-facture-7-octobre-2026">Check-up devis et facture (7 octobre 2026)</h1>
+<p>Sa demande : <em>« Si on fait une modification sur un devis il faut que ça suive sur les factures ! Fais un check-up complet. »</em> Lecture du code, aucune batterie jouée. Les écrans n'ont pas été ouverts : ce qui suit est vrai du code, <strong>pas vérifié à l'écran ICI</strong>.</p>
+<h2 id="corrigé-dans-ce-lot">Corrigé dans ce lot</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Ce qui se passait</th>
+<th>Ce qui se passe maintenant</th>
+</tr></thead><tbody>
+<tr>
+<td>Acompte retiré du devis</td>
+<td>Les notes du devis, puis celles de la facture, réclamaient encore « 30 % à la commande ».</td>
+<td>La phrase part du devis et de la facture. Un devis déjà envoyé garde ce qu'il portait.</td>
+</tr>
+</tbody></table></div>
+<p>Fondé sur <code>envoyerDevis</code> (<code>src/server/repositories/devis.ts</code>) et <code>phrasesAcomptesDuDevis</code> (<code>src/lib/acomptes-devis.ts</code>). Éprouvé du geste au papier de la facture : <code>scripts/test-acomptes-nouvelle-version.ts</code>.</p>
+<p><strong>Ce qui a été dit et qui était faux.</strong> Mon premier correctif ne tenait que pour le brouillon : à l'envoi, la phrase revenait sur le devis comme sur la facture. Trouvé en préparant la correction de la facture, corrigé avant toute livraison.</p>
+<h2 id="les-écarts-trouvés-à-corriger">Les écarts trouvés, à corriger</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Chacun a été relu dans le code (pas seulement rapporté).</p>
+<div class="tablewrap"><table><thead><tr>
+<th>#</th>
+<th>L'écart</th>
+<th>Exemple</th>
+<th>Gravité</th>
+</tr></thead><tbody>
+<tr>
+<td>1</td>
+<td><strong>Une facture en retard sur le devis peut partir.</strong> Le bandeau « Reprendre ce devis » prévient, rien ne bloque l'envoi (<code>emettreFacture</code>).</td>
+<td>Facture née du devis v1 à 10 000 €, devis corrigé v2 à 8 000 €. « Envoyer la facture » : elle part à 10 000 €, et ne se corrige plus que par un avoir.</td>
+<td>argent, légal</td>
+</tr>
+<tr>
+<td>2</td>
+<td><strong>L'échéance de la facture vient des Réglages, pas du devis.</strong></td>
+<td>Devis accepté « paiement comptant », Réglages à 30 jours : la facture dit 30 jours.</td>
+<td>légal, argent</td>
+</tr>
+<tr>
+<td>3</td>
+<td><strong>Le règlement proposé d'office se calcule sur le total de la facture.</strong></td>
+<td>Devis 10 000 € avec 30 % payés (3 000 €), plus 1 000 € de travaux en plus : « + Règlement » propose 3 300 € nommé « Acompte 30 % ».</td>
+<td>argent</td>
+</tr>
+<tr>
+<td>4</td>
+<td><strong>« Corriger le devis » perd des choses dans la nouvelle version</strong> : la remise, le taux de TVA (retour à 20 %), le titre, la main d'œuvre, les notes. La facture reprise les perd aussi.</td>
+<td>Remise de 10 % sur la v1 : la v2 et sa facture sont à plein tarif.</td>
+<td>argent</td>
+</tr>
+<tr>
+<td>5</td>
+<td><strong>La remise de la facture s'applique aussi aux lignes du devis, et se modifie</strong> depuis l'écran des travaux supplémentaires.</td>
+<td>Passer la remise à 0 sur la facture refacture le devis plein tarif.</td>
+<td>argent, à trancher avec lui</td>
+</tr>
+<tr>
+<td>6</td>
+<td><strong>« Main d'œuvre TTC pour information » n'existe que sur la facture</strong>, calculée au taux du document.</td>
+<td>Main d'œuvre à 10 %, document à 20 % : le TTC annoncé est faux, et c'est lui que le client reprend pour son crédit d'impôt.</td>
+<td>argent</td>
+</tr>
+<tr>
+<td>7</td>
+<td><strong>Le n° de TVA de l'entreprise n'est pas imprimé sur le devis</strong>, il l'est sur la facture.</td>
+<td>Même client pro, un numéro d'un côté, rien de l'autre.</td>
+<td>à vérifier en droit</td>
+</tr>
+<tr>
+<td>8</td>
+<td><strong>La facture cite le devis sans sa version.</strong></td>
+<td>Factures de la v1 et de la v2 : même référence.</td>
+<td>traçabilité</td>
+</tr>
+<tr>
+<td>9</td>
+<td><strong>Les coordonnées de paiement ne s'écrivent pas pareil</strong> (IBAN brut sur le devis, groupé avec l'ordre du chèque sur la facture).</td>
+<td></td>
+<td>forme</td>
+</tr>
+</tbody></table></div>
+<h2 id="vérifié-cohérent">Vérifié cohérent</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Lignes, quantités, unités, prix, TVA par ligne et regroupement par taux ; la sous-traitance sans TVA et sa mention ; les pénalités et les 40 € réservés aux professionnels ; les moyens de paiement, le texte de pied et les notes ; le client et le lieu des travaux ; une facture envoyée qui ne bouge plus.</p>
+<h2 id="ce-qui-reste-ouvert-et-qui-peut-le-trancher">Ce qui reste ouvert, et qui peut le trancher</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Qui</th>
+</tr></thead><tbody>
+<tr>
+<td>Les points 1 à 4 et 6 : corrections du code, sans choix à faire</td>
+<td>l'assistant, avec son accord</td>
+</tr>
+<tr>
+<td>Le point 5 : la remise d'une facture peut-elle toucher les lignes du devis ?</td>
+<td>lui</td>
+</tr>
+<tr>
+<td>Le point 7 : obligation légale du n° de TVA sur un devis</td>
+<td>son comptable</td>
+</tr>
+<tr>
+<td>La batterie entière, avant que rien parte sur <code>main</code></td>
+<td>à lancer avec son accord</td>
+</tr>
+</tbody></table></div>
+</main>
+</body>
+</html>
