@@ -34368,3 +34368,44 @@ Tenu par `test-pose-a-sa-place-db.ts` (neuf cas, sous la RLS, vu rougir sur
 deux règles cassées), `test-etat-envoi.ts` (`poseSansAccord`) et
 `test-poser-a-sa-place-e2e.ts` (son geste, puis la page de la cliente).
 
+
+## §451 : La facture suit le devis que le client a accepté
+
+Le check-up du 7 octobre 2026, sur sa règle : *« Si on fait une modification
+sur un devis il faut que ça suive sur les factures ! »* Neuf écarts relevés
+entre ce que le devis disait et ce que la facture réclamait ; tous corrigés à
+l'endroit d'où ils partaient, pas là où ils se voyaient.
+
+| Ce que la facture lit | D'où, désormais | Où ça se décide |
+|---|---|---|
+| la phrase d'acompte des notes | la condition du devis, effacée à l'envoi quand aucun acompte n'est posé | `envoyerDevis`, `phrasesAcomptesDuDevis` |
+| l'échéance | le délai du devis (Réglages seulement sans devis), et celui du devis repris | `poserLaFactureBrouillon`, `reprendreLeDevisSurLaFacture` |
+| l'acompte proposé d'office | les acomptes du devis ET son total, ensemble | `PromesseDuDevis`, `getPromesseDuDevis` |
+| la remise | les seules lignes du devis ; non modifiable sur une facture née d'un devis | `recoitLaRemise`, `totauxAvecReduction`, `majReductionDeFacture` |
+| la référence du devis | son numéro ET sa version | `numeroDuDevisSurLePapier` |
+
+**Et dans l'autre sens, le devis :** une version corrigée reprend taux, remise,
+titre, main d'œuvre et notes (elle repartait à 20 % sans remise) ; l'IBAN
+s'écrit groupé comme sur la facture ; le numéro de TVA de l'artisan s'y
+imprime (migration 0123, expand seul).
+
+**Une facture en retard sur le devis ne part pas** : `emettreFacture` appelle
+la règle du bandeau (`repriseDuDevis`). Le bandeau prévenait, rien n'arrêtait.
+
+**La main d'œuvre TTC « pour information »** se calcule au taux des lignes
+quand il n'y en a qu'un, et se tait sinon : avec plusieurs taux, rien ne dit
+lequel la porte.
+
+**La remise est sa « A » du 7 octobre 2026.** Les travaux ajoutés sur la facture
+ne prennent pas la remise du devis ; s'il veut leur faire un prix, il le pose
+sur leur ligne. Ne pas rouvrir sans lui : l'autre choix (une remise unique pour
+toute la facture) lui faisait offrir ce qu'il n'avait pas promis, ou refacturer
+le devis plein tarif.
+
+**Ce qui reste à trancher avec lui** : le rappel d'impayé compte encore depuis
+le délai des Réglages et le jour de l'envoi (sa règle « A plus B » du 16 août),
+pas depuis l'échéance imprimée sur la facture. Inscrit dans `TODO.md`.
+
+Contrôles : `test-facture-suit-le-devis` (base, le chemin de l'écran),
+`test-acomptes-nouvelle-version`, `test-reduction-devis`,
+`test-papier-devis-facture`.

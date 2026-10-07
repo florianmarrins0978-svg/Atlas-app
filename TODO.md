@@ -1,5 +1,15 @@
 # Prochaines tâches
 
+## LE RAPPEL D'IMPAYÉ NE COMPTE PAS DEPUIS L'ÉCHÉANCE IMPRIMÉE (7 octobre 2026)
+
+Relevé pendant le check-up devis et facture. `rappelsEnCours`
+(`src/server/repositories/rappels.ts`) compte depuis le jour de l'envoi plus le
+délai des Réglages, selon sa règle « A plus B » du 16 août. Or la facture
+imprime sa propre échéance, qui suit désormais le délai du devis et peut avoir
+été changée à la main : le rappel peut tomber avant ou après la date que le
+client lit. Changer la règle touche sa décision du 16 août : à lui proposer
+avant de coder.
+
 ## ⏳ LES TRAVAUX D'UN CLIENT POSÉ SANS DEVIS : UNE PLANCHE À REGARDER (7 octobre 2026)
 
 **Sa demande :** *« on peut ajouter un client au planning alors qu'on n'a pas

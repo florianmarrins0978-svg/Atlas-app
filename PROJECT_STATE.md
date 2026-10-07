@@ -5,6 +5,15 @@
 `drizzle/0116_modele_de_fiche_d_office.sql`
 
 ---
+## CODÉ, PAS SUR `main` : LA FACTURE SUIT LE DEVIS (7 octobre 2026)
+
+Branche `claude/acompte-retire-des-notes`, migration 0123. L'acompte retiré
+du devis ne se réclame plus, ni sur le devis ni sur la facture ; puis les neuf
+écarts du check-up (`docs/check-up-devis-facture.md`, `ARCHITECTURE.md` §451).
+Suites base et contrôles ciblés au vert ; **la batterie entière n'a pas été
+jouée** (il l'a demandé ainsi), elle reste due avant `main`.
+
+---
 ## SUR `main` : POSER UN CLIENT À SA PLACE (7 octobre 2026)
 
 Branche `claude/add-quote-client-to-schedule-ve9xn7`, migration 0122. Son

@@ -8,6 +8,24 @@ Format : le plus récent en tête.
 ---
 ## 2026-10-07
 
+### La facture suit le devis : neuf écarts corrigés
+
+Sa règle : « si on fait une modification sur un devis il faut que ça suive sur
+les factures ». Le check-up (`docs/check-up-devis-facture.md`) a relevé neuf
+écarts ; tous corrigés, `ARCHITECTURE.md` §451.
+
+| Ce qui se passait | Ce que ça coûtait |
+|---|---|
+| une facture partait sur une version du devis que le client n'avait plus | une facture fausse, corrigeable par avoir seulement |
+| l'échéance venait des Réglages, pas du délai du devis | un devis « comptant » donnait une facture à 30 jours |
+| l'acompte proposé se comptait sur le total de la facture | 300 € de moins réclamés sur 1 000 € de travaux en plus |
+| « Corriger le devis » perdait remise, taux, titre, main d'œuvre, notes | une facture plein tarif d'un devis accordé à −10 % |
+| la remise s'étendait aux travaux en plus et se changeait sur la facture | 10 % offerts sans promesse, ou le devis refacturé plein tarif |
+| main d'œuvre TTC calculée au taux du document | un chiffre faux repris pour un crédit d'impôt |
+| facture sans la version du devis, devis sans n° de TVA, IBAN écrit de deux façons | deux pièces qui ne se ressemblent pas |
+
+Migration 0123 (expand seul) : `devis.entreprise_numero_tva`.
+
 ### Un acompte retiré du devis ne se réclame plus dans les notes
 
 Il avait retiré l'acompte de 30 % d'un devis ; les notes et conditions
