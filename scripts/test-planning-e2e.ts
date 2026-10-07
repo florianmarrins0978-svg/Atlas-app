@@ -271,6 +271,26 @@ async function main() {
     });
   };
 
+  /**
+   * Amener la liste du bas jusqu'au chantier, par les flèches des sept jours.
+   *
+   * **Toucher un jour ne l'y amène plus** : sa réponse du 7 octobre 2026, « la
+   * B » (`appli/planning-sans-doublon.html`), retire la liste tant qu'un jour
+   * est ouvert. Les flèches sont le seul chemin qui reste vers une semaine
+   * lointaine, et c'est celui-là que ces contrôles empruntent.
+   */
+  const amenerLaListeSur = async (nomCherche: string) => {
+    await allerAuPlanning();
+    await page.click('[data-atlas="point-semaine"]');
+    const ligne = page.locator(`[data-atlas="ligne-planifiee"]:has-text("${nomCherche}")`);
+    for (let i = 0; i < 20 && !(await ligne.count()); i++) {
+      await page.click('button[aria-label="Sept jours après"]');
+      await page.waitForTimeout(200);
+    }
+    assert.ok(await ligne.count(), `les flèches n'amènent pas la liste jusqu'à « ${nomCherche} »`);
+    return ligne.first();
+  };
+
   // ─── LE MOIS ────────────────────────────────────────────────────────────
 
   await allerAuPlanning();
@@ -988,21 +1008,30 @@ async function main() {
 
   // ─── LA SEMAINE — elle ne gouverne QUE les planifiés ────────────────────
 
-  await essai("toucher un jour du mois amène la liste sur SA semaine", async () => {
+  // **SA QUESTION DU 7 OCTOBRE 2026**, capture à l'appui : *« Pourquoi il est
+  // inscrit deux fois ? »*. Toucher un jour ouvrait sa fiche sous la case ET
+  // amenait la liste du bas sur ce jour : Lafonte se lisait dans les deux. Il a
+  // choisi « la B » : un jour ouvert retire la liste.
+  await essai("un jour ouvert : son chantier ne se lit qu'une fois", async () => {
     await allerAuPlanning();
     await toucherLeJour(JOUR);
-    // **La liste s'ouvre sur la JOURNÉE depuis le 9 septembre 2026** : les sept
-    // jours, et donc leur titre, ne se montrent qu'une fois élargis. Ce
-    // contrôle vise ce qu'il visait — que la liste soit amenée sur le jour
-    // touché — mais il doit désormais ouvrir la fenêtre pour le lire.
-    await page.click('[data-atlas="point-semaine"]');
-    await page.waitForTimeout(300);
-    const titre = await page.locator('[data-atlas="semaine-titre"]').innerText();
-    const jour = new Date(`${JOUR}T12:00:00Z`).getUTCDate();
+    // D'abord, la fiche le porte : sans cela, « absent de la liste » serait
+    // vrai d'un écran vide.
+    const carte = page.locator(`[data-atlas="carte-jour"][data-jour="${JOUR}"]`);
     assert.ok(
-      titre.startsWith(`${jour} `) || titre.startsWith(`${jour} –`),
-      `la semaine du ${JOUR} devrait s'ouvrir sur le ${jour} — lu : « ${titre} »`
+      (await carte.innerText()).includes(nom),
+      "la fiche du jour ne porte pas le chantier : rien à compter"
     );
+    assert.equal(
+      await page.locator('[data-atlas="liste-planifies"]').count(),
+      0,
+      "la liste du bas est encore là sous la fiche : le chantier se lit deux fois"
+    );
+  });
+
+  await essai("refermer le jour rend la liste", async () => {
+    await page.click(`[data-atlas="grille-mois"] [data-jour="${JOUR}"]`);
+    await page.locator('[data-atlas="liste-planifies"]').waitFor({ state: "visible", timeout: 10_000 });
   });
 
   // **La ligne dit la DURÉE, plus le moment** — sa demande du 22 août 2026,
@@ -1010,8 +1039,7 @@ async function main() {
   // a marqué le matin et l'après-midi »*. La demi-journée se lit toujours, mais
   // sur la ligne MATIN du volet, une fois déplié.
   await essai("le chantier posé figure dans les planifiés, avec sa DURÉE", async () => {
-    const ligne = page.locator(`[data-atlas="ligne-planifiee"]:has-text("${nom}")`).first();
-    await ligne.waitFor({ state: "visible", timeout: 15_000 });
+    const ligne = await amenerLaListeSur(nom);
     const duree = (
       await ligne.locator('[data-atlas="duree-planifiee"]').innerText()
     ).toLowerCase();
@@ -1041,10 +1069,7 @@ async function main() {
       `UPDATE chantiers SET creneau_debut = 'matin', duree_demi_journees = 1 WHERE id = $1`,
       [chantierId]
     );
-    await allerAuPlanning();
-    await toucherLeJour(JOUR);
-    const ligne = page.locator(`[data-atlas="ligne-planifiee"]:has-text("${nom}")`).first();
-    await ligne.waitFor({ state: "visible", timeout: 15_000 });
+    const ligne = await amenerLaListeSur(nom);
     await ligne.locator('[data-atlas="nom-planifie"]').click();
     await ligne.locator('[data-atlas="feuille"]').waitFor({ state: "visible", timeout: 15_000 });
 
@@ -1181,8 +1206,9 @@ async function main() {
   });
 
   await essai("la flèche de la semaine ne change PAS le mois", async () => {
-    // Les chevrons ne se montrent que sur les sept jours : sur la journée, il
-    // n'y a rien à feuilleter.
+    // Les chevrons ne se montrent que sur les sept jours, et jamais sous un
+    // jour ouvert : la page repart donc d'un calendrier sans jour touché.
+    await allerAuPlanning();
     await page.click('[data-atlas="point-semaine"]');
     await page.waitForTimeout(300);
     const moisAvant = await page.locator('[data-atlas="mois-titre"]').innerText();
@@ -1202,11 +1228,7 @@ async function main() {
   // clique sur un chiffre du planning du mois [...] il faut que les deux
   // s'affichent »* — la journée ET la feuille.
   await essai("un nom des planifiés ouvre SA journée et SA feuille", async () => {
-    await page
-      .locator(`[data-atlas="ligne-planifiee"]:has-text("${nom}")`)
-      .first()
-      .locator('[data-atlas="nom-planifie"]')
-      .click();
+    await (await amenerLaListeSur(nom)).locator('[data-atlas="nom-planifie"]').click();
     await page.waitForSelector('[data-atlas="feuille"]', { timeout: 15_000 });
     const cartes = page.locator(`[data-atlas="carte-jour"][data-jour="${JOUR}"]`);
     assert.ok((await cartes.count()) >= 1, "la journée ne s'est pas ouverte sous la ligne");
@@ -1337,17 +1359,12 @@ async function main() {
     ]);
     assert.equal(r.rowCount, 1, "le décor n'a pas pu poser la date du samedi");
 
-    await allerAuPlanning();
-    await toucherLeJour(samedi);
     // Visé par le NOM plutôt que par un lien : le chevron de la ligne pivote
     // désormais au lieu de mener au chantier (planche 86), et un contrôle qui
     // s'accroche à un `href` se casse au premier remaniement d'apparence.
-    const ligne = page.locator(`[data-atlas="ligne-planifiee"]:has-text("${nom}")`);
-    await ligne.first().waitFor({ state: "visible", timeout: 15_000 });
-    assert.ok(
-      (await ligne.count()) >= 1,
-      "un chantier posé un samedi n'apparaît plus dans les planifiés : il est perdu"
-    );
+    // `amenerLaListeSur` refuse déjà de conclure si la ligne n'y est pas.
+    await amenerLaListeSur(nom);
+    await toucherLeJour(samedi);
 
     // **Et la fiche du jour l'OUVRE, au lieu de le refuser.** Sa règle du
     // 23 août 2026 : *« le samedi et le dimanche, l'utilisateur doit pouvoir le

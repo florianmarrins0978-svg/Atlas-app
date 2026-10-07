@@ -1152,7 +1152,12 @@ export default function PlanningClient({
     if (d.getUTCFullYear() !== curseur.annee || d.getUTCMonth() !== curseur.mois) {
       setCurseur({ annee: d.getUTCFullYear(), mois: d.getUTCMonth() });
     }
-    setDebutFenetre(jour);
+    // **La liste du bas ne suit plus le jour touché** — sa réponse du
+    // 7 octobre 2026, « la B » (`appli/planning-sans-doublon.html`). Elle
+    // sautait sur ce jour depuis l'époque où la fiche s'ouvrait sous le
+    // calendrier entier ; depuis qu'elle s'ouvre sous la case, le chantier se
+    // lisait deux fois. Un jour ouvert retire la liste, et la refermer la rend
+    // telle qu'elle était.
     setJourTouche((cur) => (cur === jour ? null : jour));
     rendreLesPixelsDesBandes();
   }
@@ -1618,10 +1623,10 @@ export default function PlanningClient({
             onToucherJour={toucherLeJour}
             occupationDe={occupationDe}
             // **La semaine que lit la liste du bas, teintée dans le mois.** Les
-            // deux navigations cessent de s'ignorer : toucher un jour amenait
-            // déjà la liste sur sa semaine, mais changer de semaine ne disait
-            // rien au mois, et rien ne montrait d'où venait la liste.
-            semaineLue={lundiDe(debutFenetre)}
+            // deux navigations cessent de s'ignorer : changer de semaine ne
+            // disait rien au mois, et rien ne montrait d'où venait la liste.
+            // Sans liste à l'écran (un jour est ouvert), aucune semaine n'est lue.
+            semaineLue={jourTouche === null ? lundiDe(debutFenetre) : null}
             // **Le patron seul** : c'est un réglage de l'entreprise, sa réponse
             // du 29 septembre 2026. Ses salariés voient ses couleurs.
             sousLaLegende={
@@ -1714,6 +1719,11 @@ export default function PlanningClient({
 
         {/* Les flèches ne servent qu'en grand : sur la journée, il n'y a rien à
             feuilleter, et deux cibles inertes se touchent quand même. */}
+        {/* **Un jour ouvert retire la liste, ses flèches avec elle** : sa fiche
+            montre déjà ces chantiers, et les relire en dessous était le doublon
+            qu'il a vu le 7 octobre 2026 (« la B »). */}
+        {jourTouche === null && (
+        <>
         {portee === "semaine" && (
         <div className="mx-[18px] mt-[14px] flex items-center justify-between gap-2.5">
           <Fleche
@@ -2022,6 +2032,8 @@ export default function PlanningClient({
           ))
         )}
         </div>
+        </>
+        )}
 
         {/* ─── CE QUI N'A PAS ENCORE DE JOUR — dans le tiroir du bas ────── */}
         <TiroirDuBas

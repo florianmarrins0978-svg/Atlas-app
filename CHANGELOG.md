@@ -8,6 +8,23 @@ Format : le plus récent en tête.
 ---
 ## 2026-10-07
 
+### Un jour ouvert au planning retire la liste du bas
+
+Le patron a lu Lafonte deux fois le 29 octobre : toucher un jour ouvrait sa
+fiche sous la case ET faisait sauter la liste du bas sur ce jour
+(`toucherLeJour`, `setDebutFenetre(jour)`), un reste de l'époque où la fiche
+s'ouvrait sous le calendrier entier. Sa réponse sur
+`appli/planning-sans-doublon.html` : « la B ». Un jour ouvert retire la liste
+et ses flèches ; le refermer la rend telle qu'elle était. La liste ne suit
+plus le jour touché, et la semaine teintée dans le mois n'existe que quand la
+liste est là. A (la liste reste sur aujourd'hui) laissait le doublon sur le
+jour même et sur les sept jours.
+
+Contrôle rouge d'abord (`test-planning-e2e`, « un jour ouvert : son chantier ne
+se lit qu'une fois »), vu rouge sur l'ancien code. Trois suites qui touchaient
+un jour pour amener la liste dessus passent désormais par les flèches des sept
+jours, le seul chemin qui reste vers une semaine lointaine.
+
 ### Poser au planning un client qui n'arrive pas à choisir ses dates
 
 Un client qui reçoit le lien du devis sans réussir à choisir ses dates ne
