@@ -1,3 +1,4 @@
+import { numeroDuDevisSurLePapier } from "@/lib/numero-documents";
 import { MENTION_FRANCHISE, sousFranchise } from "@/lib/franchise-tva";
 import { MENTION_AUTOLIQUIDATION } from "@/lib/autoliquidation";
 import { estUneEntreprise } from "@/lib/civilite";
@@ -327,7 +328,7 @@ export async function composerDevisPdf(
         ? "DEVIS (BROUILLON)"
         : "DEVIS",
     // Le numéro à droite du titre, plus dans les références (sa planche).
-    numero: data.numeroCommercial + (data.numeroVersion > 1 ? ` v${data.numeroVersion}` : ""),
+    numero: numeroDuDevisSurLePapier(data.numeroCommercial, data.numeroVersion),
     titreLibre: sansPrix ? null : data.titre,
     references: [
       // Jour/mois/année : personne, en France, ne lit « 2026-08-04 » sur un

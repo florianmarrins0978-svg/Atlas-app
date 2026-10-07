@@ -156,3 +156,13 @@ export function ecrireNumero(
 export function repartChaqueAnnee(clef: string | null | undefined): boolean {
   return formatDe(clef).annee !== "aucune";
 }
+
+/**
+ * Le numéro d'un devis tel que le papier l'écrit : « 2026-000014 », puis
+ * « 2026-000014 v2 » dès qu'il a été corrigé. **La facture le cite de la même
+ * façon** (check-up du 7 octobre 2026) : elle écrivait le numéro sans sa
+ * version, et une facture née de la v1 se lisait comme née de la v2.
+ */
+export function numeroDuDevisSurLePapier(numeroCommercial: string, numeroVersion: number): string {
+  return numeroCommercial + (numeroVersion > 1 ? ` v${numeroVersion}` : "");
+}

@@ -12,7 +12,7 @@ import {
   majReductionDeFacture,
   FactureEnRetardSurLeDevisError,
 } from "../src/server/repositories/factures";
-import { creerEntreprise, regler } from "./_devis-et-facture";
+import { creerEntreprise, regler, papierDeLaFacture } from "./_devis-et-facture";
 
 /** Les Réglages de l'entreprise, changés après coup : ce que le devis a figé ne doit pas bouger. */
 async function reglerLEntreprise(entrepriseId: string, delaiPaiementJours: number) {
@@ -148,6 +148,19 @@ async function main() {
     // 2 370 € du devis moins 10 %, plus 1 000 € de travaux en plus sans remise.
     assert.equal(emise.totalHt, "3133.00", "la remise du devis s'est étendue aux travaux en plus");
     assert.equal(emise.reductionPourcent, "10.00");
+  });
+
+  // Point 8 : la facture citait le devis sans sa version.
+  await test("la facture d'un devis corrigé cite sa version, comme le devis l'imprime", async () => {
+    const { ctx, chantierId } = await creerEntreprise("Garnier", "30");
+    const v1 = await getOuCreerDevisBrouillon(ctx, chantierId);
+    await envoyerDevis(ctx, v1.id);
+    const facture = await terminerChantier(ctx, chantierId);
+    const v2 = await getOuCreerDevisBrouillon(ctx, chantierId);
+    await envoyerDevis(ctx, v2.id);
+    assert.ok((await reprendreLeDevisSurLaFacture(ctx, facture.id)).ok);
+    const texte = await papierDeLaFacture(ctx, await terminerChantier(ctx, chantierId));
+    assert.ok(texte.includes(`${v2.numeroCommercial} v2`), `la facture ne dit pas quelle version elle facture : ${texte.slice(0, 300)}`);
   });
 
   console.log(`\n${failed} échec(s), ${passed} réussi(s).`);

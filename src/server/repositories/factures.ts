@@ -2,7 +2,7 @@ import { and, asc, desc, eq, inArray, isNotNull, isNull, or, sql } from "drizzle
 import Decimal from "decimal.js";
 import { withEntreprise } from "../db/with-entreprise";
 import { allureDesDocuments, attestationLue, formatNumeroDe } from "./entreprises";
-import { ecrireNumero, repartChaqueAnnee } from "@/lib/numero-documents";
+import { ecrireNumero, numeroDuDevisSurLePapier, repartChaqueAnnee } from "@/lib/numero-documents";
 import { lignesDuDocument } from "@/lib/preparation-devis";
 import type { DbOrTx } from "../db/client";
 import {
@@ -1754,7 +1754,7 @@ export async function complementsDeLaFacture(
     .where(eq(paiementsFacture.factureId, f.id))
     .orderBy(asc(paiementsFacture.datePaiement), asc(paiementsFacture.createdAt));
   return {
-    numeroDevis: d?.numeroCommercial ?? null,
+    numeroDevis: d ? numeroDuDevisSurLePapier(d.numeroCommercial, d.numeroVersion) : null,
     acomptesDuDevis: acomptes,
     conditionsReglees,
     reglements: paiements.map((p) => ({
