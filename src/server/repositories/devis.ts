@@ -322,16 +322,17 @@ export async function getOuCreerDevisBrouillon(ctx: Ctx, chantierId: string) {
     // **En sous-traitance, le document est à zéro** (migration 0119), y compris
     // pour une nouvelle version après un envoi : sans cela, elle repartait à
     // 20 % sur des lignes qui suivent le taux du devis.
-    const taux = chantier.autoliquidation
-      ? TAUX_SANS_TVA
-      : dernier && dernier.statut === "brouillon"
-        ? dernier.tauxTva
-        : TAUX_TVA_DEFAUT;
-    // **La réduction survit à la régénération**, exactement comme le taux de
-    // TVA juste au-dessus. Elle a été accordée au client ; ajouter une ligne au
-    // devis ne la révoque pas, et la perdre en silence lui ferait renvoyer un
+    //
+    // **Une version corrigée garde ce que la précédente portait** (check-up du
+    // 7 octobre 2026) : le taux, la remise, et plus bas le titre, la main
+    // d'œuvre et les notes. Elle repartait à 20 % sans remise, et la facture
+    // reprise de cette version facturait le plein tarif d'un devis accordé à
+    // −10 %. Corriger une ligne ne renégocie pas le reste, comme l'échéancier.
+    const taux = chantier.autoliquidation ? TAUX_SANS_TVA : dernier ? dernier.tauxTva : TAUX_TVA_DEFAUT;
+    // **La réduction survit à la régénération et à la nouvelle version.** Elle a
+    // été accordée au client ; la perdre en silence lui ferait renvoyer un
     // document plus cher que celui qu'il avait promis.
-    const reduction = dernier && dernier.statut === "brouillon" ? dernier.reductionPourcent : null;
+    const reduction = dernier ? dernier.reductionPourcent : null;
     const totaux = calculerTotaux(lignesPrixActuelles, taux, reduction);
 
     if (dernier && dernier.statut === "brouillon") {
@@ -409,6 +410,13 @@ export async function getOuCreerDevisBrouillon(ctx: Ctx, chantierId: string) {
         dateEmission: jourIso(new Date()),
         tauxTva: taux,
         ...totaux,
+        titre: dernier?.titre ?? null,
+        conditionsPaiement: dernier?.conditionsPaiement ?? null,
+        // Toujours « dont » : bornée au nouveau brut, comme à la régénération.
+        mainDoeuvreHt: montantMainDoeuvreValide(
+          dernier?.mainDoeuvreHt ?? null,
+          totauxAvecReduction(lignesPrixActuelles, taux, null).brutHt
+        ),
         createdBy: ctx.utilisateurId,
       })
       .returning();

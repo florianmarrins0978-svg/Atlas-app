@@ -121,6 +121,27 @@ async function marquerEnvoye(entrepriseId: string, devisId: string) {
   }
 }
 
+/** Pose sur un brouillon ce qu'il aurait réglé à l'écran, contexte posé (FORCE RLS). */
+async function regler(entrepriseId: string, devisId: string, colonnes: Record<string, string>) {
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+    await client.query(`SELECT set_config('app.entreprise_id', $1, true)`, [entrepriseId]);
+    const noms = Object.keys(colonnes);
+    const r = await client.query(
+      `UPDATE devis SET ${noms.map((n, i) => `${n} = $${i + 2}`).join(", ")} WHERE id = $1`,
+      [devisId, ...noms.map((n) => colonnes[n])]
+    );
+    assert.equal(r.rowCount, 1, "le réglage n'a touché aucun devis : la suite ne mesurerait rien");
+    await client.query("COMMIT");
+  } catch (e) {
+    await client.query("ROLLBACK");
+    throw e;
+  } finally {
+    client.release();
+  }
+}
+
 async function main() {
   await nettoyerBase();
   console.log("\n=== Une nouvelle version garde l'échéancier posé ===\n");
@@ -196,6 +217,33 @@ async function main() {
       return (await composerFacturePdf(data)).trace.textes.map((t) => t.contenu).join(" ");
     });
     assert.ok(texte.includes("Mode de règlement : 30 % à la signature"), "la facture a perdu l'acompte du devis");
+  });
+
+  // Le check-up du 7 octobre 2026, point 4 : « Corriger le devis » ouvre une
+  // version qui repartait à 20 %, sans remise, sans titre, sans main d'œuvre
+  // ni notes. La facture reprise perdait tout cela avec elle : une remise de
+  // 10 % disparaissait, et le client recevait le plein tarif.
+  await test("la version corrigée garde la remise, le taux, le titre, la main d'œuvre et les notes", async () => {
+    const { ctx, chantierId } = await creerEntreprise("Ferrand", "30");
+    const v1 = await getOuCreerDevisBrouillon(ctx, chantierId);
+    await regler(ctx.entrepriseId, v1.id, {
+      taux_tva: "10.00",
+      reduction_pourcent: "10.00",
+      reduction_montant: "237.00",
+      titre: "Aménagement du jardin",
+      main_doeuvre_ht: "800.00",
+      conditions_paiement: "Accès par le portail de gauche.",
+    });
+    await marquerEnvoye(ctx.entrepriseId, v1.id);
+    const v2 = await getOuCreerDevisBrouillon(ctx, chantierId);
+    assert.notEqual(v2.id, v1.id, "aucune nouvelle version : le cas n'est pas éprouvé");
+    assert.equal(v2.tauxTva, "10.00", "la version corrigée repart à 20 %");
+    assert.equal(v2.reductionPourcent, "10.00", "la remise accordée a disparu de la version corrigée");
+    assert.equal(v2.titre, "Aménagement du jardin");
+    assert.equal(v2.mainDoeuvreHt, "800.00");
+    assert.equal(v2.conditionsPaiement, "Accès par le portail de gauche.");
+    // 2 370 € HT moins 10 %, au taux de 10 % : le total suit la remise reprise.
+    assert.equal(v2.totalHt, "2133.00", "le total de la version corrigée ignore la remise reprise");
   });
 
   await test("un refus DIT pourquoi — il ne rend plus un silence", async () => {
