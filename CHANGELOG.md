@@ -42,6 +42,13 @@ planning, équipe, facture, TVA). Rien n'est codé dans l'application.
   ouverte défile jusqu'à la fiche d'intervention (Maps, Waze, Appeler le
   client, salariés). Le planning garde les couleurs de l'appli : vert foncé
   plein, vert clair à moitié, rouge quand il y a trop.
+- La fiche de sécurité est retirée (sa demande) : à sa place, « Travaux à
+  faire » s'ouvre dans la fiche du jour, les quatre tâches sont cochées, la
+  remarque écrite, et « Envoyer le retour du jour » part, le tout par les
+  boutons du planning. Le retour d'intervention n'est donc plus écrit en base.
+  « Terminés » est retiré aussi : un chantier du jour n'y entre que le
+  lendemain ; la facture vient de « Le chantier est réalisé ? Créer la
+  facture », le chemin réel du jour même.
 - L'envoi se voit (sa demande) : au bas du devis arrive « Choisir la date »,
   on l'appuie, le calendrier monte, le jeudi 8 est proposé, « Envoyer le
   devis », et le devis s'envole vers la page que reçoit le client. La capture
@@ -55,10 +62,9 @@ planning, équipe, facture, TVA). Rien n'est codé dans l'application.
   payé, TVA 143,70 €. Le numéro est dans la tranche 06 39 98 que l'Arcep
   réserve aux œuvres de fiction ; Valmorin est une commune inventée (la Base
   adresse nationale n'est pas joignable ici pour vérifier une rue). Tout est
-  passé par les boutons de l'application, sur une base d'essai réamorcée,
-  sauf ce qui demande un compte salarié : le retour d'intervention et la fin
-  du chantier ont été écrits dans la base. Les autres chantiers du planning
-  sont ceux du jeu d'essai, posés en base pour donner des couleurs.
+  passé par les boutons de l'application, sur une base d'essai réamorcée.
+  Les autres chantiers du planning sont ceux du jeu d'essai, posés en base
+  pour donner des couleurs.
 - Une tentative de jouer chaque étape à sa date en avançant l'horloge de la
   machine d'essai a été refusée par le garde de la session ; l'horloge a été
   remise à l'heure réelle, et tout le parcours a été rejoué le 8 octobre.

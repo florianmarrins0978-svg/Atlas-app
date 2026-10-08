@@ -26,9 +26,9 @@
   que l'Arcep réserve aux œuvres de fiction ; Valmorin est une commune inventée,
   pour qu'aucune adresse ne tombe chez quelqu'un. Tout est passé par les boutons
   de l'application (fiche remplie, devis rédigé, envoi, accord du client sur sa
-  page, salariés posés, facture, encaissement), sauf ce qui demande un compte
-  salarié : le retour d'intervention et la fin du chantier ont été écrits dans la
-  base d'essai. Les autres chantiers du planning sont ceux du jeu d'essai.
+  page, salariés posés, travaux cochés et retour du jour envoyé, facture,
+  encaissement). Les autres chantiers du planning sont ceux du jeu d'essai,
+  posés en base pour donner ses couleurs au mois.
   Les anneaux qui battent autour d'un bouton sont les seuls traits dessinés
   par-dessus une capture : ils montrent où l'on appuie.
 
@@ -226,13 +226,13 @@ h1,h2{font-family:var(--display);font-weight:400;line-height:1.02;letter-spacing
   var IMG = {
     chantiers:"images/accueil.jpg", vide:"images/feuille-vide.jpg", client:"images/feuille-remplie.jpg",
     devis:"images/devis-entier.jpg", devisfin:"images/devis-fin.jpg", dateouverte:"images/date-ouverte.jpg", datechoisie:"images/date-choisie.jpg", accepte:"images/accord.jpg", merci:"images/accord-merci.jpg",
-    planning:"images/planning-mois.jpg", jour:"images/planning-jour.jpg", securite:"images/securite.jpg",
-    retour:"images/retour.jpg", termines:"images/termines-a-facturer.jpg",
+    planning:"images/planning-mois.jpg", jour:"images/planning-jour.jpg", travaux:"images/planning-travaux.jpg", envoye:"images/retour-envoye.jpg",
+    retour:"images/retour.jpg", factureavant:"images/facture-avant.jpg",
     facture:"images/facture.jpg", tva:"images/tva-octobre.jpg"
   };
   // Hauteur sur largeur de chaque capture. Le devis est pris en entier, du haut à la signature.
   // Le devis entier finit sur l'écran réel de son bas, bouton « Choisir la date » compris.
-  var RAPPORT = {devis: 8418 / 1170, jour: 4450 / 1170};
+  var RAPPORT = {devis: 8418 / 1170, jour: 5058 / 1170, travaux: 6357 / 1170};
   function rapport(img){ return RAPPORT[img] || 1992 / 1170; }
 
   // Ce qu'on lit sous la page, et le moment de la journée.
@@ -245,9 +245,9 @@ h1,h2{font-family:var(--display);font-weight:400;line-height:1.02;letter-spacing
     {u:13.4, mot:"Accord",   txt:"Le client accepte depuis son téléphone.",  jour:"Devis envoyé", img:"accepte"},
     {u:15.6, mot:"Planning", txt:"Le chantier se pose au planning.",          jour:"Devis envoyé", img:"planning"},
     {u:17.0, mot:"Le jour J", txt:"Appeler le client, ouvrir Maps, poser l'équipe.", jour:"Devis envoyé", img:"jour"},
-    {u:19.8, mot:"Sécurité", txt:"La fiche de sécurité, déjà remplie d'après le chantier.", jour:"Devis envoyé", img:"securite"},
+    {u:19.0, mot:"Travaux", txt:"Les travaux du jour, cochés par l'équipe.", jour:"Devis envoyé", img:"travaux"},
     {u:21.7, mot:"Retour",   txt:"Ce que l'équipe a fait, et ce qu'elle signale.", jour:"Devis envoyé", img:"retour"},
-    {u:23.9, mot:"Facture",  txt:"Le chantier fini, la facture reprend le devis.", jour:"Devis envoyé", img:"termines"},
+    {u:23.7, mot:"Facture",  txt:"Le chantier réalisé, la facture reprend le devis.", jour:"Devis envoyé", img:"factureavant"},
     {u:28.2, mot:"TVA",      txt:"Votre TVA du mois, sans calculatrice.",     jour:"Devis envoyé", img:"tva"}
   ];
 
@@ -443,7 +443,9 @@ h1,h2{font-family:var(--display);font-weight:400;line-height:1.02;letter-spacing
   var POULS_CREER = {x:22, y:23.3, l:56, h:7};
   var POULS_MICRO = {x:39.65, y:82, l:20.7, h:12.1, rond:true};
   var POULS_ACCORD = {x:4, y:81.8, l:92, h:7.5};
-  var POULS_FACTURER = {x:61, y:68.5, l:33, h:6.7};
+  var POULS_FACTURER = {x:26, y:46.5, l:48, h:7};
+  var POULS_TRAVAUX = {x:4, y:85.5, l:92, h:7};
+  var POULS_RETOUR = {x:23, y:88.5, l:54, h:6.5};
   var POULS_JOUR = {x:43.5, y:50.5, l:13, h:8};
   var U = 30.3;
 
@@ -510,16 +512,21 @@ h1,h2{font-family:var(--display);font-weight:400;line-height:1.02;letter-spacing
     else if (u < 14.1) a = journal("merci", "planning", (u - 12.5) / 1.6);
     else if (u < 14.6) a = {img:"planning", pouls:Object.assign({v:entre(u, 14.15, 14.3) * (1 - entre(u, 14.45, 14.6)), rond:true}, POULS_JOUR)};
     else if (u < 15.0){ var tj = lisse((u - 14.6) / 0.4); a = {img:"planning", o:1 - tj}; b = {img:"jour"}; }
-    // La journée ouverte se lit en entier : la page descend jusqu'à la fiche d'intervention.
-    else if (u < 16.4) a = {img:"jour", defile:0.8 * lisse((u - 15.0) / 1.4)};
-    else if (u < 17.0) a = {img:"jour", defile:0.8};
-    else if (u < 18.0){ var ts = u - 17.0; b = {img:"securite", s:0.96 + 0.04 * ts}; a = Object.assign({img:"jour", defile:0.8}, tourner(ts)); }
-    else if (u < 18.6) a = {img:"securite"};
-    else if (u < 20.2) a = journal("securite", "retour", (u - 18.6) / 1.6);
-    else if (u < 20.8) a = {img:"retour"};
-    else if (u < 22.4) a = journal("retour", "termines", (u - 20.8) / 1.6);
-    else if (u < 23.3) a = {img:"termines", pouls:Object.assign({v:entre(u, 22.5, 22.7) * (1 - entre(u, 23.05, 23.25))}, POULS_FACTURER)};
-    else if (u < 24.3){ var tf = u - 23.3; b = {img:"facture", s:0.96 + 0.04 * tf}; a = Object.assign({img:"termines"}, tourner(tf)); }
+    // La journée ouverte se lit jusqu'à sa fiche ; « Travaux à faire » s'ouvre
+    // (la capture ouverte est identique au pixel jusqu'à cette ligne), les tâches
+    // sont cochées, et le retour du jour part. Sa demande du 8 octobre.
+    else if (u < 16.2) a = {img:"jour", defile:0.571 * lisse((u - 15.0) / 1.2)};
+    else if (u < 16.7) a = {img:"jour", defile:0.571, pouls:Object.assign({v:entre(u, 16.25, 16.4) * (1 - entre(u, 16.55, 16.7))}, POULS_TRAVAUX)};
+    else if (u < 16.95){ var to = lisse((u - 16.7) / 0.25); a = {img:"jour", defile:0.571, o:1 - to}; b = {img:"travaux", defile:0.401}; }
+    else if (u < 18.2) a = {img:"travaux", defile:0.401 + 0.265 * lisse((u - 16.95) / 1.25)};
+    else if (u < 18.7) a = {img:"travaux", defile:0.666, pouls:Object.assign({v:entre(u, 18.25, 18.4) * (1 - entre(u, 18.55, 18.7))}, POULS_RETOUR)};
+    else if (u < 19.0){ var tv = lisse((u - 18.7) / 0.3); a = {img:"travaux", defile:0.666, o:1 - tv}; b = {img:"envoye"}; }
+    else if (u < 19.4) a = {img:"envoye"};
+    else if (u < 20.8) a = journal("envoye", "retour", (u - 19.4) / 1.4);
+    else if (u < 21.4) a = {img:"retour"};
+    else if (u < 22.4){ var tf0 = u - 21.4; b = {img:"factureavant", s:0.96 + 0.04 * tf0}; a = Object.assign({img:"retour"}, tourner(tf0)); }
+    else if (u < 23.3) a = {img:"factureavant", pouls:Object.assign({v:entre(u, 22.5, 22.7) * (1 - entre(u, 23.05, 23.25))}, POULS_FACTURER)};
+    else if (u < 24.3){ var tf = u - 23.3; b = {img:"facture", s:0.96 + 0.04 * tf}; a = Object.assign({img:"factureavant"}, tourner(tf)); }
     else if (u < 25.1) a = {img:"facture"};
     else if (u < 26.7) a = journal("facture", "tva", (u - 25.1) / 1.6);
     else { var fin = entre(u, 27.2, 28); a = {img:"tva", s:1 - 0.06 * fin, y:-H * 0.05 * fin, o:1 - fin * 0.5}; }
