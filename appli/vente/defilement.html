@@ -19,10 +19,11 @@
   Pas la page Outils.
 
   Toutes les images sont des captures d'Atlas (dossier images/, partagé avec
-  index.html). Quatre sont nouvelles, prises le 8 octobre sur un jeu d'essai :
-  fiche-client-vide.jpg puis fiche-client.jpg (l'écran « Fiche client » d'un chantier, celui qu'il a
-  désigné, avec « Devis à la voix »), dictee-en-cours.jpg (le même écran pendant
-  l'enregistrement, micro appuyé pour de vrai), salaries.jpg, facture.jpg.
+  index.html). Le début est capturé le 8 octobre sur l'application ACTUELLE,
+  geste par geste : accueil.jpg (Vos chantiers), feuille-vide.jpg (appui sur
+  « Créer un devis », la feuille Fiche client monte), feuille-remplie.jpg (nom,
+  téléphone, adresse tapés dans la feuille), feuille-dictee.jpg (micro de la
+  feuille appuyé, enregistrement en cours). Plus salaries.jpg et facture.jpg.
   Les anneaux qui battent autour d'un bouton sont les seuls traits dessinés
   par-dessus une capture : ils montrent où l'on appuie.
 
@@ -68,7 +69,7 @@ h1,h2{font-family:var(--display);font-weight:400;line-height:1.02;letter-spacing
 .barre{position:fixed;inset:0 0 auto 0;z-index:30;height:60px;display:flex;align-items:center;justify-content:space-between;padding:0 max(16px,env(safe-area-inset-left));background:color-mix(in srgb,var(--fond) 82%,transparent);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
 .marque{font:400 28px/1 var(--display);text-decoration:none}
 .horloge{text-align:right;line-height:1}
-.horloge b{display:block;font:400 26px/1 var(--display);font-variant-numeric:tabular-nums;transition:opacity .25s}
+.horloge b{display:block;font:400 26px/1 var(--display);font-variant-numeric:tabular-nums}
 .horloge small{display:block;margin-top:4px;font:500 10.5px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--or)}
 .fil{position:absolute;left:0;bottom:0;height:2px;width:100%;background:var(--trait)}
 .fil i{display:block;height:100%;width:0;background:var(--or)}
@@ -160,24 +161,24 @@ h1,h2{font-family:var(--display);font-weight:400;line-height:1.02;letter-spacing
 <script>
 (function(){
   var IMG = {
-    chantiers:"images/chantiers.jpg", vide:"images/fiche-client-vide.jpg", client:"images/fiche-client.jpg",
-    dictee:"images/dictee-en-cours.jpg",
+    chantiers:"images/accueil.jpg", vide:"images/feuille-vide.jpg", client:"images/feuille-remplie.jpg",
+    dictee:"images/feuille-dictee.jpg",
     lignes:"images/devis-lignes.jpg", total:"images/devis-total.jpg", accepte:"images/client-devis.jpg",
     planning:"images/planning.jpg", salaries:"images/salaries.jpg", termines:"images/termines.jpg",
     facture:"images/facture.jpg", tva:"images/tva.jpg"
   };
 
-  // Ce qu'on lit sous la page, et l'heure de la journée racontée.
+  // Ce qu'on lit sous la page, et le moment de la journée.
   var ETAPES = [
-    {u:0,    mot:"Chantier", txt:"Vos chantiers du jour, au même endroit.", heure:"7 h 30", jour:"Mardi matin", img:"chantiers"},
-    {u:2.6,  mot:"Client",   txt:"Le client, l'adresse du chantier, les photos.",     heure:"7 h 31", jour:"Mardi matin", img:"client"},
-    {u:4.6,  mot:"Dictée",   txt:"Vous dites ce qu'il y a à faire.",         heure:"7 h 32", jour:"Mardi matin", img:"dictee"},
-    {u:7.8,  mot:"Devis",    txt:"Le devis est déjà écrit.",                 heure:"7 h 34", jour:"Mardi matin", img:"lignes"},
-    {u:11.1, mot:"Accord",   txt:"Le client accepte depuis son téléphone.",  heure:"9 h 12", jour:"Mardi matin", img:"accepte"},
-    {u:13.3, mot:"Planning", txt:"Le chantier se pose au planning.",          heure:"9 h 13", jour:"Mardi matin", img:"planning"},
-    {u:15.4, mot:"Équipe",   txt:"Chacun sait où il travaille.",              heure:"9 h 14", jour:"Mardi matin", img:"salaries"},
-    {u:17.5, mot:"Facture",  txt:"Le chantier fini, la facture reprend le devis.", heure:"17 h 40", jour:"Le jour du chantier", img:"termines"},
-    {u:21.8, mot:"TVA",      txt:"Votre TVA du mois, sans calculatrice.",     heure:"18 h 00", jour:"Fin du mois", img:"tva"}
+    {u:0,    mot:"Chantier", txt:"Vos chantiers du jour, au même endroit.", jour:"Mardi matin", img:"chantiers"},
+    {u:2.3,  mot:"Client",   txt:"Créer un devis : la fiche client s'ouvre.",     jour:"Mardi matin", img:"client"},
+    {u:4.6,  mot:"Dictée",   txt:"Vous dites ce qu'il y a à faire.",         jour:"Mardi matin", img:"dictee"},
+    {u:7.8,  mot:"Devis",    txt:"Le devis est déjà écrit.",                 jour:"Mardi matin", img:"lignes"},
+    {u:11.1, mot:"Accord",   txt:"Le client accepte depuis son téléphone.",  jour:"Mardi matin", img:"accepte"},
+    {u:13.3, mot:"Planning", txt:"Le chantier se pose au planning.",          jour:"Mardi matin", img:"planning"},
+    {u:15.4, mot:"Équipe",   txt:"Chacun sait où il travaille.",              jour:"Mardi matin", img:"salaries"},
+    {u:17.5, mot:"Facture",  txt:"Le chantier fini, la facture reprend le devis.", jour:"Le jour du chantier", img:"termines"},
+    {u:21.8, mot:"TVA",      txt:"Votre TVA du mois, sans calculatrice.",     jour:"Fin du mois", img:"tva"}
   ];
 
   var calme = document.getElementById("calme");
@@ -236,6 +237,8 @@ h1,h2{font-family:var(--display);font-weight:400;line-height:1.02;letter-spacing
     f.el.style.transformOrigin = s.gauche ? "0 50%" : "50% 50%";
     f.el.style.transform = "translate3d(" + (s.x || 0) + "px," + (s.y || 0) + "px,0) rotateZ(" + (s.rz || 0) + "deg) scale(" + (s.s == null ? 1 : s.s) + ") rotateX(" + (s.rx || 0) + "deg) rotateY(" + (s.ry || 0) + "deg)";
     f.el.style.opacity = s.o == null ? 1 : s.o;
+    // Ce qui dépasse sous l'écran ne se voit pas, comme la feuille de l'application.
+    f.el.style.clipPath = s.coupe ? "inset(0 0 " + s.coupe + "px 0)" : "";
     var p = s.pouls;
     if (p){
       f.pouls.style.left = p.x + "%"; f.pouls.style.top = p.y + "%";
@@ -263,7 +266,8 @@ h1,h2{font-family:var(--display);font-weight:400;line-height:1.02;letter-spacing
     return {f:1, s:0.45 - 0.3 * v, rz:8 + 22 * v, x:W * 1.2 * v, y:-H * 0.9 * v, o:1 - v};
   }
 
-  var POULS_MICRO = {x:39.75, y:73.5, l:20.5, h:12, rond:true};
+  var POULS_CREER = {x:22, y:23.3, l:56, h:7};
+  var POULS_MICRO = {x:39.65, y:82, l:20.7, h:12.1, rond:true};
   var POULS_ACCORD = {x:4, y:65.5, l:92, h:8};
   var POULS_FACTURER = {x:62, y:61.5, l:32, h:7.5};
   var U = 24;
@@ -274,14 +278,22 @@ h1,h2{font-family:var(--display);font-weight:400;line-height:1.02;letter-spacing
       var k = lisse(u);
       a = {img:"chantiers", y:H * 0.35 * (1 - k), rx:22 * (1 - k), s:0.9 + 0.1 * k, o:k};
     }
-    else if (u < 1.8) a = {img:"chantiers"};
-    else if (u < 3.4) a = journal("chantiers", "vide", (u - 1.8) / 1.6);
+    else if (u < 1.5) a = {img:"chantiers"};
+    else if (u < 2.1) a = {img:"chantiers", pouls:Object.assign({v:entre(u, 1.55, 1.7) * (1 - entre(u, 1.95, 2.1))}, POULS_CREER)};
+    else if (u < 2.9){
+      // Comme dans l'application : la feuille monte par-dessus les chantiers.
+      var tm = lisse((u - 2.1) / 0.8);
+      var monte = H * 0.75 * (1 - tm);
+      a = {img:"vide", y:monte, o:Math.min(1, tm * 3), coupe:monte};
+      b = {img:"chantiers", s:1 - 0.03 * tm, o:1 - 0.5 * tm};
+    }
+    else if (u < 3.4) a = {img:"vide"};
     else if (u < 3.9){
       // La fiche se remplit sur place : la vide s'efface, la remplie reste dessous.
       var tr = lisse((u - 3.4) / 0.5); a = {img:"vide", o:1 - tr}; b = {img:"client"};
     }
     else if (u < 4.4) a = {img:"client", pouls:Object.assign({v:entre(u, 3.95, 4.1) * (1 - entre(u, 4.28, 4.4))}, POULS_MICRO)};
-    else if (u < 4.8){ var tm = lisse((u - 4.4) / 0.4); a = {img:"client", o:1 - tm}; b = {img:"dictee"}; }
+    else if (u < 4.8){ var td = lisse((u - 4.4) / 0.4); a = {img:"client", o:1 - td}; b = {img:"dictee"}; }
     else if (u < 7.2){ a = {img:"dictee"}; }
     else if (u < 8.4){
       if (u < 7.7){ var c = lisse((u - 7.2) / 0.5); a = {img:"dictee", f:c, s:1 - 0.45 * c, o:1 - c * 0.6}; }
@@ -290,7 +302,7 @@ h1,h2{font-family:var(--display);font-weight:400;line-height:1.02;letter-spacing
     else if (u < 9.0) a = {img:"lignes"};
     else if (u < 9.8){
       // Le bas du devis remonte quand le haut est parti : jamais les deux pages l'une sur l'autre.
-      var t1 = lisse((u - 9.0) / 0.4), t2 = lisse((u - 9.4) / 0.4);
+      var t1 = lisse((u - 9.0) / 0.45), t2 = lisse((u - 9.35) / 0.45);
       a = {img:"lignes", o:1 - t1, y:-H * 0.08 * t1};
       b = {img:"total", o:t2, y:H * 0.08 * (1 - t2)};
     }
@@ -323,6 +335,19 @@ h1,h2{font-family:var(--display);font-weight:400;line-height:1.02;letter-spacing
   var heure = document.getElementById("heure"), jour = document.getElementById("jour"), fil = document.getElementById("fil");
   var etapeCourante = -1, pw = 0;
 
+  // Les minutes avancent avec le défilement, entre ces repères (u, minutes du jour).
+  var HEURES = [[0,450],[4.4,453],[7.2,455],[10.3,456],[11.5,552],[14.1,553],[16.7,554],[19.2,1060],[22.6,1080],[24,1080]];
+  function heureA(u){
+    for (var k = 1; k < HEURES.length; k++){
+      if (u <= HEURES[k][0]){
+        var a = HEURES[k - 1], b = HEURES[k];
+        return Math.floor(a[1] + (b[1] - a[1]) * (u - a[0]) / (b[0] - a[0]));
+      }
+    }
+    return HEURES[HEURES.length - 1][1];
+  }
+  function ecrireHeure(m){ var mm = m % 60; return Math.floor(m / 60) + " h " + (mm < 10 ? "0" : "") + mm; }
+
   function dessiner(){
     var r = recit.getBoundingClientRect();
     var course = r.height - window.innerHeight;
@@ -345,8 +370,9 @@ h1,h2{font-family:var(--display);font-weight:400;line-height:1.02;letter-spacing
       legende.querySelector("span").textContent = ETAPES[i].mot;
       legende.querySelector("p").textContent = ETAPES[i].txt;
       legende.classList.remove("change"); void legende.offsetWidth; legende.classList.add("change");
-      heure.textContent = ETAPES[i].heure; jour.textContent = ETAPES[i].jour;
+      jour.textContent = ETAPES[i].jour;
     }
+    heure.textContent = ecrireHeure(heureA(u));
     fil.style.width = (p * 100) + "%";
   }
 

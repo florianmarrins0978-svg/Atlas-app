@@ -16,17 +16,20 @@ planning, équipe, facture, TVA). Rien n'est codé dans l'application.
 
 - Le « journal froissé » est un pli en accordéon de huit bandes, en CSS : un
   vrai papier froissé demanderait une vidéo générée par IA, payante.
-- La phrase qui passe devant est celle de la capture de la dictée (la haie de
-  thuyas sur douze mètres) : le devis qui suit en reprend la ligne.
-- L'heure affichée raconte une journée et ne mesure rien : aucun temps gagné
-  n'a été relevé, donc aucun chiffre n'est écrit.
-- Quatre captures nouvelles, prises sur un jeu d'essai : `fiche-client.jpg`
-  (l'écran « Fiche client » d'un chantier, avec « Devis à la voix », celui
-  qu'il a désigné), `dictee-en-cours.jpg` (le même écran pendant
-  l'enregistrement, micro appuyé pour de vrai), `salaries.jpg`, `facture.jpg`.
-  Le micro dessiné de la première version est retiré : seuls restent les
-  anneaux qui montrent où l'on appuie. La capture de la TVA montre encore 0,00 € :
-  à refaire avec des montants avant tout site public.
+- La phrase qui passe devant reprend la ligne du devis qui suit (la haie de
+  thuyas sur douze mètres).
+- L'heure défile minute par minute avec la page. Elle raconte une journée et
+  ne mesure rien : aucun temps gagné n'a été relevé, donc aucun chiffre.
+- Le début est capturé sur l'application ACTUELLE, geste par geste : l'écran
+  des chantiers, l'appui sur « Créer un devis », la feuille Fiche client qui
+  monte (vide, puis remplie au clavier), et son micro appuyé pour de vrai.
+  Les captures du 27 septembre montraient un ancien bouton « Créer un devis »
+  et un écran de transcription qu'il ne reconnaît pas : retirés de la planche.
+  Seuls les anneaux qui montrent où l'on appuie sont dessinés par-dessus.
+- La suite (devis, accord, planning, terminés, TVA) porte encore les captures
+  du 27 septembre, à refaire sur l'application actuelle ; la TVA y montre
+  0,00 €. Le site de vente principal (`vente/index.html`) porte les mêmes
+  captures anciennes.
 
 ### Un devis expiré n'est plus un chantier vendu : il se range à part, et revient par sa porte
 
