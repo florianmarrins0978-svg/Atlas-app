@@ -231,17 +231,29 @@ async function main() {
   });
 
   await essai("la liste « Planifiés » montre la semaine passée, sans son « + »", async () => {
-    // Toucher un jour amène la liste sur SA semaine (`toucherLeJour`) : la
-    // section des planifiés porte donc déjà la semaine passée. C'est un SECOND
-    // endroit où le « + » est posé, et il a fallu l'éteindre là aussi — une
-    // seule des deux portes fermée aurait laissé le geste accessible.
+    // La liste est un SECOND endroit où le « + » est posé, et il a fallu
+    // l'éteindre là aussi : une seule des deux portes fermée aurait laissé le
+    // geste accessible. **On y descend par les flèches des sept jours** :
+    // depuis sa réponse du 7 octobre 2026 (« la B »), un jour ouvert retire la
+    // liste, et toucher le jour ne l'y amène plus.
+    await page.goto(`${BASE}/planning`, { waitUntil: "domcontentloaded" });
+    await page.waitForSelector('[data-atlas="grille-mois"]', { timeout: 30_000 });
+    await page.click('[data-atlas="point-semaine"]');
     const jourListe = page.locator(`[data-atlas="jour-planifie"]`).filter({ hasText: nomRecent });
+    for (let i = 0; i < 20 && !(await jourListe.count()); i++) {
+      await page.click('button[aria-label="Sept jours avant"]');
+      await page.waitForTimeout(200);
+    }
     assert.ok(await jourListe.count(), "le chantier passé n'est pas listé dans « Planifiés »");
     assert.equal(
       await jourListe.first().locator('[data-atlas="ajouter"]').count(),
       0,
       "la liste propose encore d'ajouter un chantier à une journée passée"
     );
+    // Le contrôle suivant relit la fiche du jour passé : on la rouvre.
+    assert.ok(await reculerJusquA(JOUR_RECENT));
+    await page.click(`[data-atlas="grille-mois"] [data-jour="${JOUR_RECENT}"]`);
+    await page.waitForSelector(`[data-atlas="carte-jour"][data-jour="${JOUR_RECENT}"]`, { timeout: 10_000 });
   });
 
   await essai("le salarié qui y était s'affiche quand même — « Paul », en lecture", async () => {

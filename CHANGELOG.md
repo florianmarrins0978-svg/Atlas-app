@@ -47,6 +47,23 @@ ils posent désormais l'acompte et vieillissent la facture émise. Le lot
 
 ## 2026-10-07
 
+### Un jour ouvert au planning retire la liste du bas
+
+Le patron a lu Lafonte deux fois le 29 octobre : toucher un jour ouvrait sa
+fiche sous la case ET faisait sauter la liste du bas sur ce jour
+(`toucherLeJour`, `setDebutFenetre(jour)`), un reste de l'époque où la fiche
+s'ouvrait sous le calendrier entier. Sa réponse sur
+`appli/planning-sans-doublon.html` : « la B ». Un jour ouvert retire la liste
+et ses flèches ; le refermer la rend telle qu'elle était. La liste ne suit
+plus le jour touché, et la semaine teintée dans le mois n'existe que quand la
+liste est là. A (la liste reste sur aujourd'hui) laissait le doublon sur le
+jour même et sur les sept jours.
+
+Contrôle rouge d'abord (`test-planning-e2e`, « un jour ouvert : son chantier ne
+se lit qu'une fois »), vu rouge sur l'ancien code. Trois suites qui touchaient
+un jour pour amener la liste dessus passent désormais par les flèches des sept
+jours, le seul chemin qui reste vers une semaine lointaine.
+
 ### Les mots de passe que tout le monde essaie sont refusés
 
 Sa question : exiger une majuscule et un caractère spécial. Refusé, parce que
