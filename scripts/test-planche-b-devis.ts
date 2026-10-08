@@ -149,8 +149,14 @@ async function main() {
 
   console.log("\n=== Les conditions réglées, en gras sous ses notes ===\n");
 
+  // **L'acompte est POSÉ** : sa décision du 7 octobre 2026, un brouillon sans
+  // acompte posé n'en réclame plus aucun sur le papier. Ce qui se défend ici
+  // (le gras, l'ordre), un acompte posé le porte exactement comme le réglage.
+  const ACOMPTE_POSE = [{ rang: 1, tauxCumule: "30" }];
+
   await cas("ses notes en maigre, les conditions réglées en gras — dans cet ordre", async () => {
     const trace = await composer({
+      acomptes: ACOMPTE_POSE,
       conditionsPaiement: "Accès par le portail de gauche.",
       conditionsReglees: { acomptePourcent: "30", moyensPaiement: "virement, chèque", rappelerPenalites: true, conditionsGenerales: "" },
     });
@@ -165,7 +171,7 @@ async function main() {
   });
 
   await cas("le bloc s'ouvre même sans une note de sa main, dès qu'une condition est réglée", async () => {
-    const trace = await composer({ conditionsReglees: { acomptePourcent: "30", conditionsGenerales: "" } });
+    const trace = await composer({ acomptes: ACOMPTE_POSE, conditionsReglees: { acomptePourcent: "30", conditionsGenerales: "" } });
     assert.ok(trace.textes.some((t) => t.contenu === "NOTES / CONDITIONS"));
     assert.ok(trace.textes.some((t) => t.contenu.startsWith("Mode de règlement : 30 %") && t.gras));
   });

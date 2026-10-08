@@ -46,6 +46,29 @@ async function cas(nom: string, verifier: () => Promise<void>) {
 
 /** Une écriture de montage. Elle DOIT toucher sa ligne, sinon la suite accuserait
  *  l'écran d'un défaut qui serait le sien (`CLAUDE.md` §5). */
+/**
+ * Trente jours qui passent sur une facture ÉMISE, comme ils passeraient chez
+ * lui. Une facture émise est immuable (trigger) et l'émission la date du jour
+ * où elle part : aucun geste de l'écran ne peut la mettre en retard. Le verrou
+ * ne se lève que dans CETTE transaction de montage (`session_replication_role`,
+ * réservé au rôle de test), jamais dans le produit.
+ */
+async function vieillirLaFacture(chantierId: string) {
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+    await client.query("SET LOCAL session_replication_role = replica");
+    const r = await client.query(
+      "UPDATE factures SET date_emission = CURRENT_DATE - 60, date_echeance = CURRENT_DATE - 30 WHERE chantier_id = $1 AND statut = 'emise'",
+      [chantierId]
+    );
+    await client.query("COMMIT");
+    if (r.rowCount !== 1) throw new Error(`Montage : ${r.rowCount} facture(s) émise(s) vieillie(s) au lieu d'une.`);
+  } finally {
+    client.release();
+  }
+}
+
 async function monter(sql: string, params: unknown[], attendu = 1) {
   const r = await pool.query(sql, params);
   if (r.rowCount !== attendu) {
@@ -139,16 +162,17 @@ async function main() {
 
   const chantierId = await chantierFacturable(page);
 
-  // **Le cas « A » de sa réponse, et il est monté explicitement.** Un délai de
-  // trente jours, une facture partie il y a soixante : l'échéance est dépassée
-  // de trente jours. Compter depuis l'ENVOI donnerait le même verdict ici, mais
-  // le montage dit lequel des deux est éprouvé — une autre suite peut avoir
-  // laissé l'entreprise de démonstration sans délai.
-  await monter("UPDATE entreprises SET delai_paiement_jours = 30 WHERE id = (SELECT entreprise_id FROM chantiers WHERE id = $1)", [chantierId]);
+  // **L'échéance ÉCRITE SUR LA FACTURE, dépassée de trente jours** — sa
+  // décision du 7 octobre 2026, qui remplace « A plus B » : le rappel compte
+  // depuis la date que le client lit, plus depuis le délai des Réglages. Une
+  // facture partie il y a soixante jours, à trente jours d'échéance. Reculer
+  // le seul envoi ne prouvait plus rien : l'émission date la pièce du jour où
+  // elle part, et son échéance restait dans le futur.
   await monter(
     "UPDATE chantiers SET facture_envoyee_at = now() - interval '60 days' WHERE id = $1",
     [chantierId]
   );
+  await vieillirLaFacture(chantierId);
 
   const carte = page.locator(`[data-atlas="carte-reponse"][data-chantier="${chantierId}"]`);
 
