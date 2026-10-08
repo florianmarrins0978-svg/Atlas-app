@@ -94,7 +94,7 @@ h1,h2{font-family:var(--display);font-weight:400;line-height:1.02;letter-spacing
 /* Le récit : une scène collée, et une longue piste de défilement dessous. */
 .recit{position:relative;height:1450vh}
 .scene{position:sticky;top:0;height:100svh;overflow:hidden;display:flex;flex-direction:column;align-items:center;padding-top:72px}
-.appareil{position:relative;flex:none;border-radius:38px;transition:padding .3s,background .3s,box-shadow .3s}
+.appareil{position:relative;flex:none;border-radius:38px;transition:background .3s,box-shadow .3s}
 .plateau{--h:min(60svh,calc((100vw - 64px) / .5873));position:relative;width:calc(var(--h) * .5873);height:var(--h);perspective:1500px;border-radius:22px}
 /* A, et A et C : un vrai téléphone autour, et l'écran ne déborde pas du verre. */
 body[data-passage="a"] .appareil,body[data-passage="ac"] .appareil{padding:9px;background:#151a16;box-shadow:0 30px 60px -22px rgba(var(--ombre),.55),inset 0 0 0 1.5px #2c332d}
