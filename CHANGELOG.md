@@ -8,6 +8,18 @@ Format : le plus récent en tête.
 ---
 ## 2026-10-08
 
+### Planche : le site de vente en chapitres, à la manière d'une page produit
+
+`appli/vente/chapitres.html`, sa question du jour après quatre essais de
+transitions refusés : « qu'est-ce que les équipes design chez Apple auraient
+proposé ? ». La réponse est dans la construction : quatre chapitres (Dictez,
+Envoyez, Planifiez, Encaissez) au lieu de douze écrans, un mot géant chacun,
+le détail des vrais écrans en grand (recadrages `images/chap-*.jpg` des
+captures du chantier Lemaire), un seul mouvement qui révèle ce qui entre dans
+l'écran. Le « 17 minutes » proposé dans la conversation n'est pas écrit :
+aucun temps n'a été mesuré ; la page dit à la place que le devis part depuis
+le jardin. Elle vit à côté de `defilement.html` pour qu'il compare.
+
 ### Planche : le site de vente raconté au défilement
 
 `appli/vente/defilement.html`, sa demande du jour : en descendant, les pages

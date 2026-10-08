@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Atlas en chapitres</title>
+<meta name="description" content="Planche : le site de vente d'Atlas écrit comme une page produit, en quatre chapitres.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Hanken+Grotesk:wght@400;500;600&display=swap">
+<!--
+  PLANCHE, rien n'est codé dans l'application.
+
+  Sa question du 8 octobre 2026, après quatre essais de transitions refusés :
+  « qu'est-ce que les équipes design chez Apple auraient proposé ? ». La
+  réponse tient dans la construction, pas dans un effet : quatre ou cinq
+  moments au lieu de douze écrans, un mot géant par chapitre, le détail en
+  grand plutôt que l'écran entier en petit, et un mouvement qui ne sert qu'à
+  révéler. Elle vit à côté de defilement.html pour qu'il compare les deux.
+
+  Toutes les images sont les captures du chantier Lemaire (defilement.html dit
+  comment elles ont été prises), et les gros plans en sont des recadrages
+  (images/chap-*.jpg) : rien n'est redessiné.
+
+  Le « 17 minutes » proposé dans la conversation n'est PAS écrit : aucun temps
+  n'a été mesuré chez un utilisateur. La phrase qui le remplace dit ce que
+  l'application permet vraiment : envoyer le devis depuis le jardin.
+-->
+<style>
+:root{
+  --fond:#f3f1ea;--papier:#fbfaf6;--encre:#1c211b;--encre-2:#5c6258;
+  --pin:#2f3b2f;--sauge:#7e9c6c;--or:#b0823f;--trait:#ddd7c8;--bouton-texte:#faf8f3;
+  --nuit:#1b241d;--sur-nuit:#ece8dc;--sur-nuit-2:#a9b3a2;
+  --ombre:28,33,27;
+  --display:"Instrument Serif","Iowan Old Style",Georgia,serif;
+  --texte:"Hanken Grotesk",system-ui,-apple-system,"Segoe UI",sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --fond:#141b16;--papier:#1a231d;--encre:#ece8dc;--encre-2:#a9b3a2;
+    --pin:#cfd8c4;--sauge:#8fae7c;--or:#cf9f58;--trait:#2e3b31;--bouton-texte:#141b16;
+    --nuit:#0e1410;--ombre:0,0,0;color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --fond:#141b16;--papier:#1a231d;--encre:#ece8dc;--encre-2:#a9b3a2;
+  --pin:#cfd8c4;--sauge:#8fae7c;--or:#cf9f58;--trait:#2e3b31;--bouton-texte:#141b16;
+  --nuit:#0e1410;--ombre:0,0,0;color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{overflow-x:clip}
+body{margin:0;background:var(--fond);color:var(--encre);font:400 18px/1.55 var(--texte);-webkit-font-smoothing:antialiased}
+img{display:block;max-width:100%}
+a{color:inherit}
+h1,h2,h3{font-family:var(--display);font-weight:400;margin:0;letter-spacing:-.015em;line-height:.95;text-wrap:balance}
+p{margin:0}
+
+.barre{position:fixed;inset:0 0 auto 0;z-index:20;height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 max(16px,env(safe-area-inset-left));background:color-mix(in srgb,var(--fond) 80%,transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+.marque{font:400 26px/1 var(--display);text-decoration:none}
+.lien-demo{font:500 14px/1 var(--texte);text-decoration:none;padding:10px 16px;border-radius:999px;background:var(--pin);color:var(--bouton-texte)}
+
+.colonne{width:min(100% - 32px,640px);margin-inline:auto}
+section{padding:clamp(88px,16vw,160px) 0}
+
+/* L'ouverture : une phrase, le téléphone dessous. */
+.ouverture{padding-top:120px;text-align:center;overflow:hidden}
+.ouverture h1{font-size:clamp(58px,16vw,128px)}
+.ouverture p{margin-top:20px;font-size:20px;color:var(--encre-2)}
+.ouverture .appareil{margin:56px auto 0}
+
+.appareil{width:min(78vw,330px);padding:10px;border-radius:44px;background:#151a16;box-shadow:0 50px 90px -40px rgba(var(--ombre),.6),inset 0 0 0 1.5px #2c332d}
+.appareil img{border-radius:34px;width:100%;aspect-ratio:1170/1992;object-fit:cover;object-position:top}
+
+/* Un chapitre : le mot géant, une phrase, puis ce qu'on voit. */
+.mot{font-size:clamp(84px,26vw,220px);line-height:.85}
+.chapo{margin-top:22px;font-size:clamp(20px,4.8vw,26px);line-height:1.35;color:var(--encre-2);max-width:26em}
+.chapitre .appareil{margin:64px auto 0}
+
+/* Le gros plan : un morceau de l'écran, à la taille où il se lit. */
+.gros{margin-top:56px;border-radius:26px;overflow:hidden;background:var(--papier);box-shadow:0 30px 70px -36px rgba(var(--ombre),.45),0 0 0 1px rgba(var(--ombre),.06)}
+.gros img{width:100%;transform:scale(1.05);transition:transform 1.4s cubic-bezier(.16,1,.3,1)}
+.gros.vu img{transform:none}
+.sous{margin-top:16px;font-size:16px;color:var(--encre-2);text-align:center}
+
+/* La phrase dictée, qui s'écrit mot à mot. */
+.dite{margin-top:72px;font:400 clamp(34px,9vw,64px)/1.08 var(--display);text-wrap:balance}
+.dite span{opacity:.12;transition:opacity .5s ease}
+.dite.vu span{opacity:1}
+
+.papier{background:var(--papier)}
+.nuit{background:var(--nuit);color:var(--sur-nuit)}
+.nuit .chapo,.nuit .sous{color:var(--sur-nuit-2)}
+.nuit .gros{box-shadow:0 30px 70px -30px rgba(0,0,0,.7)}
+
+.chiffre{margin-top:88px;text-align:center}
+.chiffre b{display:block;font:400 clamp(88px,27vw,210px)/.9 var(--display);font-variant-numeric:tabular-nums}
+.chiffre span{display:block;margin-top:14px;font-size:18px;color:var(--sur-nuit-2)}
+
+.affirmation{text-align:center}
+.affirmation h2{font-size:clamp(48px,13vw,104px);line-height:1}
+
+.grille{display:grid;gap:16px;margin-top:56px}
+.case{border-radius:26px;overflow:hidden;background:var(--papier);box-shadow:0 0 0 1px rgba(var(--ombre),.07)}
+.case h3{font-size:34px;padding:26px 24px 8px}
+.case p{padding:0 24px 24px;color:var(--encre-2);font-size:16.5px}
+.case img{width:100%}
+@media (min-width:760px){.grille{grid-template-columns:1fr 1fr}.case.large{grid-column:1/-1}}
+
+.fin{text-align:center}
+.fin h2{font-size:clamp(46px,12vw,92px);line-height:1}
+.bouton{display:inline-flex;align-items:center;min-height:56px;margin-top:36px;padding:0 30px;border-radius:999px;background:var(--pin);color:var(--bouton-texte);font:500 17px/1 var(--texte);text-decoration:none}
+
+/* Le seul mouvement : ce qui entre dans l'écran se dévoile, une fois. */
+.revele{opacity:0;transform:translateY(28px);transition:opacity .9s ease,transform 1.1s cubic-bezier(.16,1,.3,1)}
+.revele.vu{opacity:1;transform:none}
+@media (prefers-reduced-motion: reduce){
+  .revele,.gros img,.dite span{opacity:1;transform:none;transition:none}
+}
+</style>
+</head>
+<body>
+
+<header class="barre">
+  <a class="marque" href="index.html">Atlas</a>
+  <a class="lien-demo" href="index.html#contact">Démonstration</a>
+</header>
+
+<section class="ouverture">
+  <div class="colonne">
+    <h1 class="revele">Du chantier à la facture.</h1>
+    <p class="revele">L'application des paysagistes, dans la poche.</p>
+  </div>
+  <div class="appareil revele"><img src="images/accueil.jpg" alt="Écran Vos chantiers d'Atlas"></div>
+</section>
+
+<section class="chapitre">
+  <div class="colonne">
+    <h2 class="mot revele">Dictez.</h2>
+    <p class="chapo revele">Vous décrivez le chantier sur place, à voix haute. Atlas écrit le devis.</p>
+    <div class="appareil revele"><img src="images/feuille-remplie.jpg" alt="Fiche client d'Atlas, remplie, avec le bouton Devis à la voix"></div>
+    <p class="dite" id="dite">« On arrache l'ancienne haie de thuyas sur douze mètres. »</p>
+    <figure class="gros revele" style="margin-inline:0"><img src="images/chap-devis-lignes.jpg" alt="Lignes du devis : arrachage de la haie de thuyas, 12 ml à 18 euros, décompactage du sol, 15 m² à 8,50 euros"></figure>
+    <p class="sous revele">Les lignes, les quantités, les prix.</p>
+    <figure class="gros revele" style="margin-inline:0"><img src="images/chap-devis-total.jpg" alt="Total du devis : 718,50 euros HT, 862,20 euros TTC"></figure>
+  </div>
+</section>
+
+<section class="chapitre papier">
+  <div class="colonne">
+    <h2 class="mot revele">Envoyez.</h2>
+    <p class="chapo revele">Le client choisit sa date et accepte depuis son téléphone.</p>
+    <figure class="gros revele" style="margin-inline:0"><img src="images/chap-accord.jpg" alt="Page du client : case de rétractation cochée et bouton J'accepte ce devis"></figure>
+    <p class="sous revele">Son accord est horodaté et conservé avec le devis.</p>
+  </div>
+</section>
+
+<section class="chapitre">
+  <div class="colonne">
+    <h2 class="mot revele">Planifiez.</h2>
+    <p class="chapo revele">Le mois d'un coup d'œil : plein, à moitié, trop chargé.</p>
+    <figure class="gros revele" style="margin-inline:0"><img src="images/chap-planning.jpg" alt="Planning d'octobre : demi-journées en vert foncé, vert clair et rouge"></figure>
+    <figure class="gros revele" style="margin-inline:0"><img src="images/chap-equipe.jpg" alt="Le chantier Lemaire du jeudi 8 octobre, Lucas et Julien le matin"></figure>
+    <p class="sous revele">L'équipe se pose à la demi-journée.</p>
+    <figure class="gros revele" style="margin-inline:0"><img src="images/chap-gestes.jpg" alt="Fiche d'intervention : Maps, Waze, Copier l'adresse, Appeler le client"></figure>
+    <p class="sous revele">Le jour J, tout tient sur la fiche.</p>
+  </div>
+</section>
+
+<section class="chapitre nuit">
+  <div class="colonne">
+    <h2 class="mot revele">Encaissez.</h2>
+    <p class="chapo revele">La facture reprend le devis, ligne pour ligne.</p>
+    <figure class="gros revele" style="margin-inline:0"><img src="images/chap-facture.jpg" alt="Facture F2026-000001 pour Mr. Lemaire, Création d'un massif, avec les quatre lignes du devis"></figure>
+    <div class="chiffre revele"><b>143,70 €</b><span>La TVA du mois, déjà calculée.</span></div>
+  </div>
+</section>
+
+<section class="affirmation nuit" style="padding-top:0">
+  <div class="colonne">
+    <h2 class="revele">Le devis part avant que vous quittiez le jardin.</h2>
+  </div>
+</section>
+
+<section>
+  <div class="colonne">
+    <h2 class="mot revele" style="font-size:clamp(64px,18vw,150px)">Et aussi.</h2>
+    <div class="grille">
+      <article class="case revele">
+        <h3>Le retour du soir</h3>
+        <p>Ce que l'équipe a fait, et ce qu'elle signale.</p>
+        <img src="images/chap-retour.jpg" alt="Retour d'intervention du chantier Lemaire, quatre tâches cochées">
+      </article>
+      <article class="case revele">
+        <h3>Les travaux cochés</h3>
+        <p>Sur place, tâche par tâche.</p>
+        <img src="images/chap-travaux.jpg" alt="Travaux à faire, tout est fait, et la remarque sur le portail">
+      </article>
+      <article class="case large revele">
+        <h3>L'arrosage calculé</h3>
+        <p>Le plan, les réseaux et la liste des pièces, à partir d'un croquis.</p>
+        <img src="images/arrosage.jpg" alt="Plan d'arrosage calculé : jardin en L, quatre réseaux, turbines et tuyères">
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="fin papier">
+  <div class="colonne">
+    <h2 class="revele">Essayez Atlas sur un vrai chantier.</h2>
+    <a class="bouton revele" href="index.html#contact">Demander une démonstration</a>
+  </div>
+</section>
+
+<script>
+(function(){
+  // La phrase dictée se découpe en mots, qui s'allument l'un après l'autre.
+  var dite = document.getElementById("dite");
+  dite.innerHTML = dite.textContent.split(" ").map(function(m, i){
+    return '<span style="transition-delay:' + (i * 0.09).toFixed(2) + 's">' + m + '</span>';
+  }).join(" ");
+
+  var cibles = document.querySelectorAll(".revele, .gros, #dite");
+  if (!("IntersectionObserver" in window)){ cibles.forEach(function(c){ c.classList.add("vu"); }); return; }
+  var guetteur = new IntersectionObserver(function(entrees){
+    entrees.forEach(function(e){ if (e.isIntersecting){ e.target.classList.add("vu"); guetteur.unobserve(e.target); } });
+  }, {rootMargin:"0px 0px -12% 0px", threshold:0.15});
+  cibles.forEach(function(c){ guetteur.observe(c); });
+})();
+</script>
+</body>
+</html>
