@@ -5,6 +5,14 @@
 `drizzle/0116_modele_de_fiche_d_office.sql`
 
 ---
+## UN JOUR OUVERT RETIRE LA LISTE DU BAS : SUR `main` LE 8 OCTOBRE 2026
+
+Sa réponse « la B » (`appli/planning-sans-doublon.html`) : toucher un jour ne
+fait plus sauter la liste du bas sur ce jour, elle se retire tant que le jour
+est ouvert. Trois contrôles qui l'amenaient en touchant un jour passent par les
+sept jours ou par la carte du jour. Batterie au vert : 459/459 suites base,
+183/183 navigateur, connexion derrière un proxy.
+
 ## LES DEVIS EXPIRÉS : 8 octobre 2026, SUR `main` LE 8
 
 Sur `main` le 8 octobre (batterie commune, ci-dessous). Un devis dont le lien a expiré n'est plus « à planifier » : il se range
