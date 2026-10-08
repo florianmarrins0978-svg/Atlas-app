@@ -30,7 +30,12 @@ planning, équipe, facture, TVA). Rien n'est codé dans l'application.
   une pièce d'or et s'entasse dans une brouette (son idée du jour, la brouette
   retenue parmi quatre). Le tas plafonne à 29 pièces, et rien ne s'affiche
   avec une réduction des animations.
-- La suite (devis, accord, planning, terminés, TVA) porte encore les captures
+- Le devis se montre en entier, et la page défile jusqu'à la signature pendant
+  qu'on descend. Il a été rédigé à la main dans l'application actuelle (quatre
+  lignes de paysage, M. Lemaire, 862,20 € TTC). Le bouton « Choisir la date »,
+  collé en bas de l'écran, est retiré de la capture longue, où il tombait au
+  milieu.
+- La suite (accord, planning, terminés, TVA) porte encore les captures
   du 27 septembre, à refaire sur l'application actuelle ; la TVA y montre
   0,00 €. Le site de vente principal (`vente/index.html`) porte les mêmes
   captures anciennes.

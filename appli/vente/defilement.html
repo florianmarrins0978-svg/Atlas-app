@@ -87,7 +87,7 @@ h1,h2{font-family:var(--display);font-weight:400;line-height:1.02;letter-spacing
 .scene{position:sticky;top:0;height:100svh;overflow:hidden;display:flex;flex-direction:column;align-items:center;padding-top:72px}
 .plateau{--h:min(60svh,calc((100vw - 48px) / .5873));position:relative;width:calc(var(--h) * .5873);height:var(--h);perspective:1500px;flex:none}
 .feuille{position:absolute;inset:0;transform-style:preserve-3d;will-change:transform,opacity}
-.feuille .bande{position:absolute;left:0;width:100%;background-repeat:no-repeat;background-size:100% 800%;backface-visibility:hidden;will-change:transform}
+.feuille .bande{position:absolute;left:0;width:100%;background-repeat:no-repeat;backface-visibility:hidden;will-change:transform}
 .feuille .bande::after{content:"";position:absolute;inset:0;background:linear-gradient(rgba(var(--ombre),.0),rgba(var(--ombre),.9));opacity:var(--o,0)}
 .feuille .bande:first-child{border-radius:20px 20px 0 0}
 .feuille .bande:last-child{border-radius:0 0 20px 20px}
@@ -185,17 +185,20 @@ h1,h2{font-family:var(--display);font-weight:400;line-height:1.02;letter-spacing
   var IMG = {
     chantiers:"images/accueil.jpg", vide:"images/feuille-vide.jpg", client:"images/feuille-remplie.jpg",
     dictee:"images/feuille-dictee.jpg",
-    lignes:"images/devis-lignes.jpg", total:"images/devis-total.jpg", accepte:"images/client-devis.jpg",
+    devis:"images/devis-entier.jpg", accepte:"images/client-devis.jpg",
     planning:"images/planning.jpg", salaries:"images/salaries.jpg", termines:"images/termines.jpg",
     facture:"images/facture.jpg", tva:"images/tva.jpg"
   };
+  // Hauteur sur largeur de chaque capture. Le devis est pris en entier, du haut à la signature.
+  var RAPPORT = {devis: 8247 / 1170};
+  function rapport(img){ return RAPPORT[img] || 1992 / 1170; }
 
   // Ce qu'on lit sous la page, et le moment de la journée.
   var ETAPES = [
     {u:0,    mot:"Chantier", txt:"Vos chantiers du jour, au même endroit.", jour:"Mardi matin", img:"chantiers"},
     {u:2.3,  mot:"Client",   txt:"Créer un devis : la fiche client s'ouvre.",     jour:"Mardi matin", img:"client"},
     {u:4.6,  mot:"Dictée",   txt:"Vous dites ce qu'il y a à faire.",         jour:"Mardi matin", img:"dictee"},
-    {u:7.8,  mot:"Devis",    txt:"Le devis est déjà écrit.",                 jour:"Mardi matin", img:"lignes"},
+    {u:7.8,  mot:"Devis",    txt:"Le devis est déjà écrit.",                 jour:"Mardi matin", img:"devis"},
     {u:11.1, mot:"Accord",   txt:"Le client accepte depuis son téléphone.",  jour:"Mardi matin", img:"accepte"},
     {u:13.3, mot:"Planning", txt:"Le chantier se pose au planning.",          jour:"Mardi matin", img:"planning"},
     {u:15.4, mot:"Équipe",   txt:"Chacun sait où il travaille.",              jour:"Mardi matin", img:"salaries"},
@@ -221,7 +224,6 @@ h1,h2{font-family:var(--display);font-weight:400;line-height:1.02;letter-spacing
     for (var i = 0; i < N; i++){
       var b = document.createElement("div");
       b.className = "bande";
-      b.style.backgroundPosition = "0 " + (i / (N - 1) * 100) + "%";
       el.appendChild(b); bandes.push(b);
     }
     var porte = document.createElement("div"); porte.className = "porte"; el.appendChild(porte);
@@ -248,6 +250,11 @@ h1,h2{font-family:var(--display);font-weight:400;line-height:1.02;letter-spacing
       var url = 'url("' + IMG[s.img] + '")';
       f.bandes.forEach(function(b){ b.style.backgroundImage = url; });
     }
+    var hImg = W * rapport(s.img), decale = (s.defile || 0) * Math.max(0, hImg - H);
+    f.bandes.forEach(function(b, i){
+      b.style.backgroundSize = W + "px " + hImg + "px";
+      b.style.backgroundPosition = "0 " + (-(decale + i * H / N)) + "px";
+    });
     var pli = s.f || 0, th = pli * 80 * Math.PI / 180, c = Math.cos(th), h = H / N;
     f.bandes.forEach(function(b, i){
       var cible = (H - H * c) / 2 + (i + 0.5) * h * c, dy = cible - (i + 0.5) * h;
@@ -319,19 +326,15 @@ h1,h2{font-family:var(--display);font-weight:400;line-height:1.02;letter-spacing
     else if (u < 7.2){ a = {img:"dictee"}; }
     else if (u < 8.4){
       if (u < 7.7){ var c = lisse((u - 7.2) / 0.5); a = {img:"dictee", f:c, s:1 - 0.45 * c, o:1 - c * 0.6}; }
-      else { var g = lisse((u - 7.7) / 0.7); a = {img:"lignes", f:1 - g, s:0.6 + 0.4 * g}; }
+      else { var g = lisse((u - 7.7) / 0.7); a = {img:"devis", f:1 - g, s:0.6 + 0.4 * g}; }
     }
-    else if (u < 9.0) a = {img:"lignes"};
-    else if (u < 9.8){
-      // Le bas du devis remonte quand le haut est parti : jamais les deux pages l'une sur l'autre.
-      var t1 = lisse((u - 9.0) / 0.45), t2 = lisse((u - 9.35) / 0.45);
-      a = {img:"lignes", o:1 - t1, y:-H * 0.08 * t1};
-      b = {img:"total", o:t2, y:H * 0.08 * (1 - t2)};
-    }
-    else if (u < 10.3) a = {img:"total"};
+    // Le devis se lit en entier : la page défile du haut jusqu'à la signature.
+    else if (u < 8.6) a = {img:"devis"};
+    else if (u < 10.0) a = {img:"devis", defile:lisse((u - 8.6) / 1.4)};
+    else if (u < 10.3) a = {img:"devis", defile:1};
     else if (u < 11.5){
       var te = (u - 10.3) / 1.2;
-      a = Object.assign({img:"total"}, envol(te));
+      a = Object.assign({img:"devis", defile:1}, envol(te));
       var r = lisse((te - 0.6) / 0.4);
       b = {img:"accepte", o:r, s:0.9 + 0.1 * r, y:H * 0.06 * (1 - r)};
     }
