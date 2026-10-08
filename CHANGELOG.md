@@ -34,8 +34,16 @@ Rien n'est réécrit : l'envoi est `envoyerAuClientAction`, la pose
 `poserALaPlaceDuClient`. Un client sans canal convenu reprend celui de son
 envoi expiré. Suites : `test-etat-envoi` (rouge d'abord), `test-reprise-du-devis-db`,
 `test-retour-au-planning`, et `test-devis-expire-e2e` (5 cas, rouges sur
-l'ancien code). **Batterie non jouée, à sa demande** : niveau 3, elle est due
-avant `main`.
+l'ancien code).
+
+### Une batterie commune pour trois lots, sur `main`
+
+Les devis expirés, la facture qui suit le devis (migration renumérotée en
+0127, son §451 devenu §457) et la phrase de sous-traitance : 459/459 suites
+base, 183/183 navigateur, connexion derrière un proxy. Deux contrôles
+réclamaient l'ancienne règle (acompte non posé, rappel compté depuis l'envoi) :
+ils posent désormais l'acompte et vieillissent la facture émise. Le lot
+« Inscription en double » n'y est pas : il n'était pas poussé.
 
 ## 2026-10-07
 

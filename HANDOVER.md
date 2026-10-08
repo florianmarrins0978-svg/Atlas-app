@@ -10,12 +10,12 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
-## LES DEVIS EXPIRÉS : 8 octobre 2026, PAS ENCORE SUR `main`
+## LES DEVIS EXPIRÉS : 8 octobre 2026, SUR `main`
 
 `devis_expire` dans `getPlanificationEtat`. Ne pas le remettre dans « Sans
 date » : il s'y posait sans signature. Les trois gestes réutilisent l'envoi de
 l'écran Devis et la pose de « Poser à sa place » (§456) ; ne pas leur écrire un
-chemin à eux. Branche `claude/devis-expires`, batterie à jouer.
+chemin à eux. Sur `main` le 8 octobre (batterie commune).
 
 ## SUR `main` : LA DÉCENNALE ET LE MÉDIATEUR RAPPELLENT (7 octobre 2026)
 
@@ -100,7 +100,7 @@ connexion :
   `getCurrentCtxPourActiver`, sinon il se renverrait à lui-même.
 
 
-## LA FACTURE SUIT LE DEVIS : 7 octobre 2026, PAS SUR `main`
+## LA FACTURE SUIT LE DEVIS : 7 octobre 2026, SUR `main` LE 8
 
 Branche `claude/acompte-retire-des-notes`, migration 0127. Avant de toucher la
 facture, le devis ou leurs totaux (`ARCHITECTURE.md` §457) :

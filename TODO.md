@@ -1,12 +1,13 @@
 # Prochaines tâches
 
-## ⏳ LES DEVIS EXPIRÉS : CODÉS, SUR LEUR BRANCHE, BATTERIE À JOUER (8 octobre 2026)
+## ✅ LES DEVIS EXPIRÉS : SUR `main` LE 8 OCTOBRE 2026 (8 octobre 2026)
 
 Branche `claude/devis-expires`. Ses planches du 7 octobre, codées : « Devis
 expirés » dans le tiroir du planning (question puis barre d'or), porte « Devis
 expiré » dans « Ajouter », relire / renvoyer / poser sans renvoyer
-(`ARCHITECTURE.md` §456). Niveau 3 : **la batterie entière avant `main`**, non
-lancée à sa demande. Suites du lot jouées au vert, dont `test-devis-expire-e2e`.
+(`ARCHITECTURE.md` §456). Sur `main` le 8 octobre, dans une batterie commune
+avec « la facture suit le devis » et la phrase de sous-traitance : 459/459
+suites base, 183/183 navigateur, connexion derrière un proxy.
 
 Reste ouvert, hors de ce lot : l'écran du devis parti dit « Le client choisit
 sa date » même quand le lien ne montre qu'un jour posé par lui (déjà vrai pour

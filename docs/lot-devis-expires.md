@@ -44,13 +44,12 @@ signature**. Vu en ouvrant le vrai planning, pas déduit du code.
 - Suites navigateur voisines rejouées au vert : planning (43 cas), poser à sa
   place, supprimer du planning, devis à la main, reprise du chantier.
 
-**La batterie entière n'a pas été lancée, à sa demande.** Le lot est de
-niveau 3 (il touche au devis, et la règle est lue par 106 écrans). Elle est
-due avant `main`.
+**Sur `main` le 8 octobre**, dans une batterie commune avec « la facture
+suit le devis » et la phrase de sous-traitance : 459/459 suites base,
+183/183 navigateur, connexion derrière un proxy.
 
 ## Ce qui reste ouvert
 
 | Point | Qui |
 |---|---|
-| La batterie entière, puis la poussée sur `main` | à lancer sur son accord |
 | L'écran du devis parti dit « Le client choisit sa date » même quand le lien ne montre que son jour à lui (déjà vrai pour « Poser à sa place ») | à trancher par lui, hors de ce lot |
