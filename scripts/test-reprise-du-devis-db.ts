@@ -8,6 +8,7 @@ import {
   ajouterLignePrix,
   listerLignesPrix,
   modifierLignePrix,
+  proposerLaGrilleDuJour,
   reprendreLesLignesPrix,
 } from "../src/server/repositories/lignes-prix";
 import { appliquerLaReprise } from "../src/server/repositories/reprise-du-devis";
@@ -127,6 +128,29 @@ async function main() {
     const chantierVuParA = await chantiersRepo.getChantier(A, neuf.id);
     assert.equal(chantierVuParA?.repriseGrille, "non");
     assert.equal(chantierVuParA?.hausseReprise, null);
+  });
+
+  // **Un devis expiré relu à ses prix du jour** — sa demande du 7 octobre 2026 :
+  // ses PROPRES lignes deviennent des reprises, la même règle que « Dernier
+  // devis », et rien ne change de prix sans son oui.
+  await test("relire un devis expiré propose la grille du jour sur ses propres lignes", async () => {
+    await proposerLaGrilleDuJour(A, ancien.id);
+    const lignesDuChantier = await listerLignesPrix(A, ancien.id);
+    const haie = lignesDuChantier.find((l) => l.libelle === "Taille de haie")!;
+    assert.equal(Number(haie.prixUnitaire), 17.5, "le prix ne bouge pas avant sa réponse");
+    assert.equal(Number(haie.prixAncien), 17.5);
+    assert.equal(Number(haie.prixGrille), 18.2);
+    const mousse = lignesDuChantier.find((l) => l.libelle === "Traitement anti-mousse")!;
+    assert.equal(mousse.prixAncien, null);
+    await appliquerLaReprise(A, ancien.id, { reponse: "oui" });
+    const apres = (await listerLignesPrix(A, ancien.id)).find((l) => l.libelle === "Taille de haie")!;
+    assert.equal(Number(apres.prixUnitaire), 18.2);
+  });
+
+  await test("relire un devis expiré ne touche jamais les lignes d'une autre entreprise", async () => {
+    await proposerLaGrilleDuJour(B, ancien.id);
+    const haie = (await listerLignesPrix(A, ancien.id)).find((l) => l.libelle === "Taille de haie")!;
+    assert.equal(Number(haie.prixAncien), 17.5, "rien n'a été réécrit depuis l'autre entreprise");
   });
 
   await test("la base refuse une hausse hors borne", async () => {

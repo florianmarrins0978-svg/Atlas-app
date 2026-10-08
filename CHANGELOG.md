@@ -6,6 +6,37 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-10-08
+
+### Un devis expiré n'est plus un chantier vendu : il se range à part, et revient par sa porte
+
+Sa question : un client qui n'accepte jamais le devis disparaît-il un jour de
+« En attente du client » ? Oui, au bout des 45 jours de son lien, mais il
+tombait dans « Sans date », d'où son nom se posait sans aucune signature :
+vu en ouvrant le vrai planning, et le planning l'aurait montré comme signé.
+`getPlanificationEtat` rend désormais `devis_expire` (`src/lib/chantier-etat.ts`).
+
+Ses planches du 7 octobre, retenues (`appli/devis-expires.html`,
+`appli/relancer-un-devis-expire.html`) :
+
+- **« Devis expirés »** dans la feuille du bas, avec sa phrase (« Le lien
+  envoyé au client n'est valable que 45 jours… ») ; la croix pose la même
+  question que « Sans date », puis la barre d'or de six secondes ;
+- **« Devis expiré »**, une porte à part dans « Ajouter » d'un jour (jamais
+  par « Client en attente »), puis trois gestes : **Relire le devis** (nouvelle
+  version, ses lignes aux prix du jour proposés par les cadres du 26 septembre,
+  `proposerLaGrilleDuJour` ; « Continuer » ramène à ce jour), **Le renvoyer
+  tel quel** (lien neuf sur ce seul jour, puis il signe sur son lien ou sur
+  papier), **Le poser sans le renvoyer** (sa décision : aucune mention « Pas
+  encore signé »).
+
+Rien n'est réécrit : l'envoi est `envoyerAuClientAction`, la pose
+`poserALaPlaceDuClient`. Un client sans canal convenu reprend celui de son
+envoi expiré. Suites : `test-etat-envoi` (rouge d'abord), `test-reprise-du-devis-db`,
+`test-retour-au-planning`, et `test-devis-expire-e2e` (5 cas, rouges sur
+l'ancien code). **Batterie non jouée, à sa demande** : niveau 3, elle est due
+avant `main`.
+
 ## 2026-10-07
 
 ### Les mots de passe que tout le monde essaie sont refusés

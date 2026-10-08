@@ -243,6 +243,18 @@ async function main() {
     assert.strictEqual(retourne, "a_planifier");
   });
 
+  // **Un lien expiré sans réponse n'est PAS un chantier vendu** — sa demande
+  // du 7 octobre 2026. Il tombait dans « Sans date », d'où un nom se pose sans
+  // aucune signature : le planning l'aurait montré comme un chantier signé.
+  await test("un devis expiré sans réponse se range à part, jamais « à planifier »", async () => {
+    const expire = { devisEnvoyeAt: ilYA(50), envoiEnvoyeAt: ilYA(50), envoiExpireAt: ilYA(5), envoiReponse: null };
+    assert.strictEqual(getPlanificationEtat({ ...expire, datePlanifiee: null }, MAINTENANT), "devis_expire");
+    // Posé quand même par le patron (« Le poser sans le renvoyer ») : il est
+    // planifié, et rien ne dit « Pas encore signé », sa décision du même soir.
+    assert.strictEqual(getPlanificationEtat({ ...expire, datePlanifiee: "2026-09-01" }, MAINTENANT), "planifie");
+    assert.strictEqual(poseSansAccord({ ...expire, datePlanifiee: "2026-09-01" }, MAINTENANT), false);
+  });
+
   // **Posé par le patron, pas encore signé** — son choix B du 7 octobre 2026 :
   // un chantier posé ne doit jamais se lire comme un chantier vendu.
   await test("posé alors que le client n'a pas signé : « Pas encore signé », et seulement là", async () => {

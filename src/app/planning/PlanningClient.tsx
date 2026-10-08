@@ -12,6 +12,9 @@ import {
 import { useAncrageDuGeste } from "@/components/atlas/useAncrageDuGeste";
 import Link from "next/link";
 import { getPlanificationEtat, poseSansAccord, trierParDatePlanifiee } from "@/lib/chantier-etat";
+import { useRouter } from "next/navigation";
+import { VALIDITE_LIEN_JOURS } from "@/lib/etat-envoi";
+import { lienDeRelecture } from "@/lib/retour-au-planning";
 import { estAuCalendrier } from "@/lib/onglet-chantier";
 import { dansDelaiRetractation, jourIso } from "@/lib/jour";
 import { retourDuJourAttendu } from "@/lib/retour-intervention";
@@ -118,6 +121,8 @@ import {
   deplanifierChantierAction,
   planifierChantierAction,
   poserALaPlaceAction,
+  relancerLeDevisExpireAction,
+  relireLeDevisExpireAction,
   supprimerChantierAction,
   tachesDuChantierAction,
 } from "./actions";
@@ -301,6 +306,10 @@ export type OuvertDansLaCarte =
   // **Le client qui n'arrive pas à choisir ses dates** — son choix B du
   // 7 octobre 2026 : on le pose, puis l'on dit comment il signe.
   | { quoi: "ajout-signature"; cle: string; chantierId: string }
+  // **Un devis expiré qui revient** — sa demande du 7 octobre 2026 : sa porte
+  // à part, puis le choix (relire, renvoyer, poser), puis comment il signe.
+  | { quoi: "ajout-expire"; cle: string }
+  | { quoi: "ajout-relance"; cle: string; chantierId: string; etape: "choix" | "signe" }
   // **La banque, une livraison, une formation** — sa réponse du 10 septembre
   // 2026 à la question que sa propre correction avait ouverte.
   | { quoi: "ajout-temps"; cle: string };
@@ -350,6 +359,7 @@ export default function PlanningClient({
   absences = [],
   role = null,
   chantierDemande = null,
+  relanceDemandee = null,
   retourDuJour = { demande: false, envoyes: [] },
   datesDuMois = null,
   couleurs = AUCUNE_COULEUR_CHOISIE,
@@ -413,6 +423,11 @@ export default function PlanningClient({
    * planning du jour, ce qui n'est pas une panne.
    */
   chantierDemande?: string | null;
+  /**
+   * Le retour de la relecture d'un devis expiré (`lienRetourDeRelecture`) : ce
+   * jour s'ouvre, à la question de la signature de ce chantier.
+   */
+  relanceDemandee?: { chantierId: string; jour: string } | null;
   /**
    * « Retour à envoyer » sous le chantier du jour, sa planche du 26 septembre
    * 2026 (réponse A). `demande` est déjà tranché au serveur : le réglage
@@ -492,13 +507,13 @@ export default function PlanningClient({
     ? (initialChantiers.find((c) => c.id === chantierDemande) ?? null)
     : null;
   /** Le jour sur lequel le calendrier s'ouvre : le sien, sinon aujourd'hui. */
-  const jourDArrivee = viseDemande?.datePlanifiee ?? aujourdHui;
+  const jourDArrivee = viseDemande?.datePlanifiee ?? (relanceDemandee?.jour as JourIso | undefined) ?? aujourdHui;
 
   const [curseur, setCurseur] = useState(() => {
     const d = enDate(jourDArrivee as JourIso);
     return { annee: d.getUTCFullYear(), mois: d.getUTCMonth() };
   });
-  const [jourTouche, setJourTouche] = useState<JourIso | null>(null);
+  const [jourTouche, setJourTouche] = useState<JourIso | null>((relanceDemandee?.jour as JourIso | undefined) ?? null);
   /**
    * ─── LA LISTE PART DU JOUR, ET NON DU LUNDI — sa demande du 9 septembre 2026
    *
@@ -661,6 +676,16 @@ export default function PlanningClient({
   /** Ni posables ni oubliables : leur date se décide chez le client. */
   const attenteClient = useMemo(
     () => visibles.filter((c) => getPlanificationEtat(c) === "attente_client"),
+    [visibles]
+  );
+
+  /**
+   * LES DEVIS EXPIRÉS — sa demande du 7 octobre 2026 : 45 jours sans réponse,
+   * le lien est mort et rien n'est vendu. Ni « Sans date » (ils s'y posaient
+   * sans signature), ni « En attente du client » (il n'a plus rien où signer).
+   */
+  const devisExpires = useMemo(
+    () => visibles.filter((c) => getPlanificationEtat(c) === "devis_expire"),
     [visibles]
   );
 
@@ -925,7 +950,17 @@ export default function PlanningClient({
   // forme finissent par diverger — c'est le §3, et un état qui manque d'un côté
   // ne se voit qu'à l'exécution.
   type Ouvert = OuvertDansLaCarte;
-  const [ouvert, setOuvert] = useState<Ouvert | null>(null);
+  const [ouvert, setOuvert] = useState<Ouvert | null>(() =>
+    relanceDemandee
+      ? { quoi: "ajout-relance", cle: "jour", chantierId: relanceDemandee.chantierId, etape: "signe" }
+      : null
+  );
+  const router = useRouter();
+  // **L'adresse de retour ne sert qu'une fois** : un rechargement plus tard ne
+  // doit pas rouvrir une question à laquelle il a déjà répondu.
+  useEffect(() => {
+    if (relanceDemandee) window.history.replaceState(null, "", "/planning");
+  }, [relanceDemandee]);
   /**
    * LE MORCEAU QU'IL TIENT AU DOIGT — une demi-journée qui attend sa place.
    *
@@ -1453,6 +1488,65 @@ export default function PlanningClient({
     }
   }
 
+  /**
+   * UN DEVIS EXPIRÉ QUI REVIENT — sa demande du 7 octobre 2026.
+   *
+   * Renvoyé (relu ou tel quel) avec un lien neuf qui ne montre que ce jour,
+   * puis posé. **Par son lien** : l'écran du devis parti s'ouvre, celui d'où
+   * part tout devis, avec « Ouvrir le SMS tout prêt » ; Atlas n'envoie rien
+   * tout seul. **Sur papier** : posé et accepté, on reste ici.
+   */
+  async function relancerLeDevisExpire(
+    chantierId: string,
+    jour: JourIso,
+    signature: { maniere: "lien" } | { maniere: "papier"; demarrageAnticipe: boolean }
+  ): Promise<string | null> {
+    try {
+      const r = await relancerLeDevisExpireAction(chantierId, jour, signature);
+      if (!r.succes) {
+        console.error("Relance du devis expiré refusée", { chantierId, jour, erreur: r.erreur });
+        return r.erreur;
+      }
+      if (signature.maniere === "lien") {
+        router.push(`/chantiers/${chantierId}/export`);
+        return null;
+      }
+      setChantiers((liste) =>
+        liste.map((c) =>
+          c.id === chantierId
+            ? {
+                ...c,
+                ...r.etat,
+                envoiReponse: r.envoiReponse ?? c.envoiReponse,
+                // Le lien neuf vient d'être créé et accepté : le chantier n'est
+                // plus un devis expiré.
+                envoiExpireAt: null,
+              }
+            : c
+        )
+      );
+      setOuvert(null);
+      setDebutFenetre(jour);
+      return null;
+    } catch (e) {
+      console.error("Relance du devis expiré partie dans le vide", e);
+      return "Rien n'est parti. Rechargez la page.";
+    }
+  }
+
+  /** Rouvre son devis aux prix du jour, puis la page du devis ; « Continuer » ramène ici. */
+  async function relireLeDevisExpire(chantierId: string, jour: JourIso): Promise<string | null> {
+    try {
+      const r = await relireLeDevisExpireAction(chantierId);
+      if (!r.succes) return r.erreur;
+      router.push(lienDeRelecture(chantierId, jour));
+      return null;
+    } catch (e) {
+      console.error("Relecture du devis expiré partie dans le vide", e);
+      return "Rien ne s'est ouvert. Rechargez la page.";
+    }
+  }
+
   /** Ce que le tiroir peut encore défaire : le dernier posé, s'il est toujours là. */
   const poseADefaire = (() => {
     if (!dernierPose) return null;
@@ -1554,6 +1648,9 @@ export default function PlanningClient({
     poserUnClient,
     attenteClient,
     poserALaPlace,
+    devisExpires,
+    relancerLeDevisExpire,
+    relireLeDevisExpire,
     morceaux,
     onPrendreMorceau: (id: string) => setMorceauEnMain((tenu) => (tenu === id ? null : id)),
     refus,
@@ -2025,6 +2122,9 @@ export default function PlanningClient({
                 poserUnClient={poserUnClient}
                 attenteClient={attenteClient}
                 poserALaPlace={poserALaPlace}
+                devisExpires={devisExpires}
+                relancerLeDevisExpire={relancerLeDevisExpire}
+                relireLeDevisExpire={relireLeDevisExpire}
                 morceaux={morceaux}
                 morceauEnMain={morceauEnMain}
                 onPrendreMorceau={(id) =>
@@ -2057,6 +2157,7 @@ export default function PlanningClient({
           morceauEnMain={morceauEnMain}
           onPrendreMorceau={(id) => setMorceauEnMain((tenu) => (tenu === id ? null : id))}
           attenteClient={attenteClient}
+          devisExpires={devisExpires}
           jourTouche={jourTouche}
           poser={poser}
           poseADefaire={poseADefaire}
@@ -2556,6 +2657,14 @@ type GestesCarte = {
     jour: JourIso,
     signature: { maniere: "lien" } | { maniere: "papier"; demarrageAnticipe: boolean }
   ) => Promise<string | null>;
+  /** Les devis expirés sans réponse — leur porte « Devis expiré » (7 octobre 2026). */
+  devisExpires: ChantierPlanning[];
+  relancerLeDevisExpire: (
+    chantierId: string,
+    jour: JourIso,
+    signature: { maniere: "lien" } | { maniere: "papier"; demarrageAnticipe: boolean }
+  ) => Promise<string | null>;
+  relireLeDevisExpire: (chantierId: string, jour: JourIso) => Promise<string | null>;
   /** Les demi-journées rendues qui attendent une place — voir le tiroir du bas. */
   morceaux: { chantier: ChantierPlanning; combien: number }[];
   /** Le chantier dont une demi-journée attend une place, s'il en tient une. */
@@ -2957,6 +3066,9 @@ function AjoutAuJour({
   poserUnClient,
   attenteClient,
   poserALaPlace,
+  devisExpires,
+  relancerLeDevisExpire,
+  relireLeDevisExpire,
   morceaux,
   morceauEnMain,
   onPrendreMorceau,
@@ -2972,6 +3084,9 @@ function AjoutAuJour({
   | "poserUnClient"
   | "attenteClient"
   | "poserALaPlace"
+  | "devisExpires"
+  | "relancerLeDevisExpire"
+  | "relireLeDevisExpire"
   | "morceaux"
   | "morceauEnMain"
   | "onPrendreMorceau"
@@ -3027,6 +3142,17 @@ function AjoutAuJour({
                 onClick={() => setOuvert({ quoi: "ajout-qui", cle })}
               >
                 Client en attente
+              </VoieDAjout>
+            )}
+            {/* **Sa porte à part** — sa demande du 7 octobre 2026 : un devis
+                expiré ne passe jamais par « Client en attente », le client n'a
+                plus rien où signer. */}
+            {devisExpires.length > 0 && (
+              <VoieDAjout
+                data-atlas="voie-expire"
+                onClick={() => setOuvert({ quoi: "ajout-expire", cle })}
+              >
+                Devis expiré
               </VoieDAjout>
             )}
             <VoieDAjout
@@ -3107,6 +3233,45 @@ function AjoutAuJour({
           onAnnuler={() => setOuvert({ quoi: "ajout-qui", cle })}
           poserALaPlace={poserALaPlace}
         />
+      ) : ici === "ajout-expire" ? (
+        <div className="mt-3.5 pt-3">
+          <Choisir>
+            {devisExpires.map((c) => (
+              <Petit
+                key={`expire-${c.id}`}
+                data-qui-expire={c.id}
+                onClick={() => setOuvert({ quoi: "ajout-relance", cle, chantierId: c.id, etape: "choix" })}
+              >
+                {c.nom}
+              </Petit>
+            ))}
+          </Choisir>
+          <div className="mt-2 flex justify-end">
+            <Petit data-atlas="annuler-ajout" onClick={() => setOuvert({ quoi: "ajout-voies", cle })}>
+              Annuler
+            </Petit>
+          </div>
+        </div>
+      ) : ici === "ajout-relance" && ouvert?.quoi === "ajout-relance" ? (
+        ouvert.etape === "signe" ? (
+          /* **La même question que « Poser à sa place »**, et le même
+             composant : seul change ce qui l'écrit, un lien NEUF d'abord. */
+          <CommentIlSigne
+            jour={jour}
+            chantier={devisExpires.find((c) => c.id === ouvert.chantierId) ?? null}
+            onAnnuler={() => setOuvert({ ...ouvert, etape: "choix" })}
+            poserALaPlace={relancerLeDevisExpire}
+          />
+        ) : (
+          <RelanceDuDevisExpire
+            jour={jour}
+            chantier={devisExpires.find((c) => c.id === ouvert.chantierId) ?? null}
+            onRenvoyer={() => setOuvert({ ...ouvert, etape: "signe" })}
+            onPoser={(id) => poser(id, jour)}
+            relire={relireLeDevisExpire}
+            onAnnuler={() => setOuvert({ quoi: "ajout-expire", cle })}
+          />
+        )
       ) : ici === "ajout-client" ? (
         <AjoutDunClient
           jour={jour}
@@ -3216,6 +3381,93 @@ function VoieDAjout({
  * règle que la page du client (`dansDelaiRetractation`), et le serveur la
  * revérifie.
  */
+/**
+ * UN DEVIS EXPIRÉ QUI REVIENT — sa planche du 7 octobre 2026
+ * (`appli/relancer-un-devis-expire.html`), retenue telle quelle.
+ *
+ * Trois gestes. **Relire** : ses lignes aux prix du jour, sur la page du devis.
+ * **Renvoyer tel quel** : un lien neuf, puis comment il signe. **Poser sans le
+ * renvoyer** : sa décision, et rien n'écrit ensuite « Pas encore signé » ; c'est
+ * lui qui a l'accord du client en main.
+ */
+function RelanceDuDevisExpire({
+  jour,
+  chantier,
+  onRenvoyer,
+  onPoser,
+  relire,
+  onAnnuler,
+}: {
+  jour: JourIso;
+  chantier: ChantierPlanning | null;
+  onRenvoyer: () => void;
+  onPoser: (chantierId: string) => void;
+  relire: GestesCarte["relireLeDevisExpire"];
+  onAnnuler: () => void;
+}) {
+  const [enCours, setEnCours] = useState(false);
+  const [refus, setRefus] = useState<string | null>(null);
+  if (!chantier) {
+    return (
+      <div className="mt-3.5 pt-3">
+        <p data-atlas="refus-du-geste" className="text-[13px]" style={{ color: colors.bordeaux }}>
+          Ce devis n&apos;est plus expiré.
+        </p>
+        <div className="mt-2 flex justify-end">
+          <Petit data-atlas="annuler-ajout" onClick={onAnnuler}>
+            Annuler
+          </Petit>
+        </div>
+      </div>
+    );
+  }
+  const c = chantier;
+  return (
+    <div className="mt-3.5 pt-3" data-atlas="relance-du-devis">
+      <p className="text-[14px]" style={{ color: colors.inkSoft }}>
+        Le lien de son devis a expiré{c.envoiExpireAt ? ` le ${jourEnLettres(c.envoiExpireAt)}` : ""}.
+      </p>
+      <Choisir>
+        <Petit
+          data-atlas="relire-le-devis"
+          onClick={() => {
+            if (enCours) return;
+            setEnCours(true);
+            setRefus(null);
+            relire(c.id, jour).then((erreur) => {
+              setEnCours(false);
+              if (erreur) setRefus(erreur);
+            });
+          }}
+        >
+          {enCours ? "…" : "Relire le devis"}
+        </Petit>
+        <Petit data-atlas="renvoyer-tel-quel" onClick={onRenvoyer}>
+          Le renvoyer tel quel
+        </Petit>
+        <Petit data-atlas="poser-sans-renvoyer" onClick={() => onPoser(c.id)}>
+          Le poser sans le renvoyer
+        </Petit>
+      </Choisir>
+      {refus && (
+        <p data-atlas="refus-du-geste" className="mt-2 text-[13px]" style={{ color: colors.bordeaux }}>
+          {refus}
+        </p>
+      )}
+      <div className="mt-2 flex justify-end">
+        <Petit data-atlas="annuler-ajout" onClick={onAnnuler}>
+          Annuler
+        </Petit>
+      </div>
+    </div>
+  );
+}
+
+/** « 21 septembre » : le jour où le lien est mort, comme il le dirait. */
+function jourEnLettres(d: Date | string): string {
+  return new Date(d).toLocaleDateString("fr-FR", { day: "numeric", month: "long", timeZone: "Europe/Paris" });
+}
+
 function CommentIlSigne({
   jour,
   chantier,
@@ -4020,6 +4272,9 @@ function CarteDuJour({
   poserUnClient,
   attenteClient,
   poserALaPlace,
+  devisExpires,
+  relancerLeDevisExpire,
+  relireLeDevisExpire,
   morceaux,
   onPrendreMorceau,
   refus,
@@ -4642,6 +4897,9 @@ function CarteDuJour({
             poserUnClient={poserUnClient}
             attenteClient={attenteClient}
             poserALaPlace={poserALaPlace}
+            devisExpires={devisExpires}
+            relancerLeDevisExpire={relancerLeDevisExpire}
+            relireLeDevisExpire={relireLeDevisExpire}
             morceaux={morceaux}
             morceauEnMain={morceauEnMain}
             onPrendreMorceau={onPrendreMorceau}
@@ -5159,6 +5417,7 @@ function TiroirDuBas({
   morceauEnMain,
   onPrendreMorceau,
   attenteClient,
+  devisExpires,
   jourTouche,
   poser,
   poseADefaire,
@@ -5181,6 +5440,7 @@ function TiroirDuBas({
   morceauEnMain: string | null;
   onPrendreMorceau: (chantierId: string) => void;
   attenteClient: ChantierPlanning[];
+  devisExpires: ChantierPlanning[];
   jourTouche: JourIso | null;
   poser: (chantierId: string, jour: JourIso) => void;
   /** Le dernier client posé d'ici, tant qu'il est encore sur ce jour — voir `dernierPose`. */
@@ -5274,6 +5534,7 @@ function TiroirDuBas({
    */
   const cadre = useRef<HTMLDivElement>(null);
   const montre = (ecriture && sansDate.length > 0) || attenteClient.length > 0 ||
+    (ecriture && devisExpires.length > 0) ||
     (ecriture && morceaux.length > 0) || aEnvoyer.length > 0 || datesEnAttente.length > 0 ||
     (ecriture && retraits.nombre > 0);
   useEffect(() => {
@@ -5307,6 +5568,9 @@ function TiroirDuBas({
   // salarié, et une liste accompagnée de boutons morts se lit comme une panne.
   const aSansDate = ecriture && sansDate.length > 0;
   const aAttente = attenteClient.length > 0;
+  // **Ses deux gestes ne sont qu'à qui pose le planning** : supprimer, et la
+  // porte « Devis expiré » de la carte du jour.
+  const aExpires = ecriture && devisExpires.length > 0;
   /**
    * **LES DEMI-JOURNÉES RENDUES COMPTENT DANS CETTE PORTE — 10 sept. 2026.**
    *
@@ -5337,7 +5601,7 @@ function TiroirDuBas({
    */
   const aRetire = ecriture && retraits.nombre > 0;
   const aDates = aEnvoyer.length > 0 || datesEnAttente.length > 0;
-  if (!aSansDate && !aAttente && !aMorceaux && !aDefaire && !aRetire && !aDates) return null;
+  if (!aSansDate && !aAttente && !aExpires && !aMorceaux && !aDefaire && !aRetire && !aDates) return null;
   /** Ceux qui attendent le client : un devis parti, ou les dates d'un mois. */
   const combienAttendent = attenteClient.length + datesEnAttente.length;
 
@@ -5374,6 +5638,7 @@ function TiroirDuBas({
         // « Prêt à envoyer à Mme Costa » : le mot de sa planche 130.
         aEnvoyer.length > 0 ? pretAEnvoyer(aEnvoyer, datesDuMois?.donnees ?? null) : null,
         combienAttendent > 0 ? `${combienAttendent} ${EN_ATTENTE_DU_CLIENT.toLowerCase()}` : null,
+        aExpires ? `${devisExpires.length} devis expiré${devisExpires.length > 1 ? "s" : ""}` : null,
       ]
         .filter(Boolean)
         .join(" · ") ||
@@ -5800,6 +6065,56 @@ function TiroirDuBas({
                     derniere={i === datesEnAttente.length - 1}
                   />
                 ))}
+            </div>
+          </>
+        )}
+
+        {/* ─── LES DEVIS EXPIRÉS — sa planche du 7 octobre 2026 ──────────────
+            (`appli/devis-expires.html`). 45 jours sans réponse : le lien est
+            mort. La phrase dit pourquoi ils sont là, sa demande du même soir ;
+            la croix ouvre la même question que « Sans date », puis la barre
+            d'or de six secondes. Les poser se fait par la porte « Devis
+            expiré » de la carte du jour. */}
+        {aExpires && (
+          <>
+            <TitreSection encadre aGauche data-atlas="titre-devis-expires">
+              Devis expirés
+            </TitreSection>
+            <p className="mx-[18px] mt-2 text-[12.5px] leading-[1.45]" style={{ color: colors.muted }}>
+              Le lien envoyé au client n&apos;est valable que {VALIDITE_LIEN_JOURS} jours. Pour ceux-ci, il a
+              expiré sans réponse.
+            </p>
+            <div className="mx-[18px] mt-2">
+              {devisExpires.map((c, i) => (
+                <LigneRetirable
+                  key={c.id}
+                  libelle={`le chantier ${c.nom}`}
+                  retiree={retraits.estRetire(c.id)}
+                  onRetirer={() => demanderSuppression(c)}
+                  hauteurMax={64}
+                  className="flex"
+                >
+                  <div
+                    data-atlas="devis-expire"
+                    className="flex min-h-[50px] w-full items-center justify-between gap-2.5 py-[11px]"
+                    style={{
+                      borderBottom: i === devisExpires.length - 1 ? "none" : `1px solid ${colors.line}`,
+                    }}
+                  >
+                    <span
+                      className="min-w-0 flex-1 truncate"
+                      style={{ fontFamily: font.display, fontSize: 19, lineHeight: 1.2 }}
+                    >
+                      {c.nom}
+                    </span>
+                    {c.envoiExpireAt && (
+                      <span className="flex-none text-[12.5px]" style={{ color: colors.muted }}>
+                        Expiré le {jourEnLettres(c.envoiExpireAt)}
+                      </span>
+                    )}
+                  </div>
+                </LigneRetirable>
+              ))}
             </div>
           </>
         )}

@@ -34547,3 +34547,37 @@ sa clé à l'octet près). Un secret illisible (`AUTH_SECRET` changé) ferme le
 code du téléphone, pas les codes de secours (HMAC) : c'est par eux qu'on
 désactive puis réactive. « Me déconnecter partout » oublie les appareils
 retenus.
+
+## §456 : Un devis expiré se range à part, et ne se pose que par sa porte
+
+**Sa demande du 7 octobre 2026**, planches `appli/devis-expires.html` et
+`appli/relancer-un-devis-expire.html`. 45 jours sans réponse (`VALIDITE_LIEN_JOURS`),
+l'envoi est `caduc`. `getPlanificationEtat` le rangeait « à planifier » : dans
+« Sans date », il se posait sans signature et se lisait comme vendu.
+
+| état de planification | où il vit au planning |
+|---|---|
+| `attente_client` | « En attente du client », « Poser à sa place » |
+| `devis_expire` (neuf) | « Devis expirés » du tiroir, porte « Devis expiré » de « Ajouter » |
+| `a_planifier` | « Sans date » |
+
+**Trois gestes, aucun chemin neuf** (`src/app/planning/actions.ts`) :
+
+- *relire* : `getOuCreerDevisBrouillon` (nouvelle version) puis
+  `proposerLaGrilleDuJour` (`lignes-prix.ts`), la règle de « Dernier devis »
+  (`reprendreLaLigne`) appliquée à ses propres lignes ; le prix ne change qu'à
+  sa réponse (`appliquerLaReprise`). Le jour voyage dans l'adresse
+  (`lienDeRelecture`, `lienRetourDeRelecture`, `src/lib/retour-au-planning.ts`) ;
+  sur la page du devis, « Choisir la date » devient « Continuer » ;
+- *renvoyer* (relu ou tel quel) : `envoyerAuClientAction` avec `[jour]` et
+  `autreDateAutorisee: false`, puis `poserALaPlaceAction` (lien ou papier).
+  Par son lien, l'écran du devis parti s'ouvre pour l'envoyer : Atlas n'envoie
+  rien tout seul ;
+- *poser sans renvoyer* : `planifierChantierAction`, la pose de « Sans date ».
+  `poseSansAccord` reste faux (le lien est caduc, pas en attente) : aucune
+  mention « Pas encore signé », sa décision.
+
+**Un client sans canal convenu** prend celui de son envoi expiré : son premier
+lien lui est parvenu par là. Sans cela l'envoi refusait (« Indiquez d'abord
+comment joindre ce client ») sur un écran qui n'offre pas de le choisir.
+

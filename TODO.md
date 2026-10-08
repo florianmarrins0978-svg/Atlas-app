@@ -1,5 +1,17 @@
 # Prochaines tâches
 
+## ⏳ LES DEVIS EXPIRÉS : CODÉS, SUR LEUR BRANCHE, BATTERIE À JOUER (8 octobre 2026)
+
+Branche `claude/devis-expires`. Ses planches du 7 octobre, codées : « Devis
+expirés » dans le tiroir du planning (question puis barre d'or), porte « Devis
+expiré » dans « Ajouter », relire / renvoyer / poser sans renvoyer
+(`ARCHITECTURE.md` §456). Niveau 3 : **la batterie entière avant `main`**, non
+lancée à sa demande. Suites du lot jouées au vert, dont `test-devis-expire-e2e`.
+
+Reste ouvert, hors de ce lot : l'écran du devis parti dit « Le client choisit
+sa date » même quand le lien ne montre qu'un jour posé par lui (déjà vrai pour
+« Poser à sa place »).
+
 ## Éprouver sur son espace la lecture de l'attestation décennale (7 octobre 2026)
 
 Pas vérifiable ici, faute de clé. Dans Réglages : déposer une vraie attestation

@@ -16,7 +16,7 @@ import { unLienExistePourLeDevis } from "@/server/repositories/envois-devis";
 import { leconsComparables } from "@/server/repositories/lecons-prix";
 import { rappelDePrix } from "@/lib/lecons-prix";
 import DevisCompletClient from "./DevisCompletClient";
-import { PARAM_PROVENANCE } from "@/lib/retour-au-planning";
+import { PARAM_PROVENANCE, PARAM_RELANCE, jourDeRelecture, lienRetourDeRelecture } from "@/lib/retour-au-planning";
 import { retourDuDevis } from "@/lib/retour-du-devis";
 import { estUneEntreprise } from "@/lib/civilite";
 import PreparationDictee from "./PreparationDictee";
@@ -55,7 +55,11 @@ export default async function DevisCompletPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { id } = await params;
-  const de = (await searchParams)[PARAM_PROVENANCE];
+  const lus = await searchParams;
+  const de = lus[PARAM_PROVENANCE];
+  // **Relu depuis la carte d'un jour** (un devis expiré qui revient, 7 octobre
+  // 2026) : le bouton du bas ramène à ce jour, à la question de la signature.
+  const jourDeRelance = jourDeRelecture(lus[PARAM_RELANCE]);
 
   const ctx = await getCurrentCtx();
   const chantier = await getChantier(ctx, id);
@@ -166,6 +170,7 @@ export default async function DevisCompletPage({
         }}
         clientId={chantier.clientId ?? null}
         retour={retour}
+        continuerVers={jourDeRelance ? lienRetourDeRelecture(id, jourDeRelance) : null}
         client={{
           nom: client?.nom ?? "",
           civilite: client?.civilite ?? null,

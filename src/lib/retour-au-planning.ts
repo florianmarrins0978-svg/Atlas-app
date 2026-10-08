@@ -85,3 +85,47 @@ export function retourDepuisLePlanning(
   const provenance = provenanceDuPlanning(chantierId, de);
   return provenance ? { href: provenance, libelle: LIBELLE_RETOUR_PLANNING } : repli;
 }
+
+/**
+ * LA RELECTURE D'UN DEVIS EXPIRÉ, ALLER ET RETOUR — sa demande du 7 octobre 2026.
+ *
+ * Depuis la carte d'un jour, « Relire le devis » ouvre la page du devis ; son
+ * bouton du bas devient « Continuer » et ramène à CE jour, à la question
+ * « comment il signe ». Le jour voyage dans l'adresse : c'est lui qui a été
+ * choisi au téléphone, et le perdre en route ferait poser le chantier ailleurs.
+ */
+export const PARAM_RELANCE = "relance";
+export const PARAM_JOUR_RELANCE = "jour";
+
+const JOUR = /^\d{4}-\d{2}-\d{2}$/;
+
+function premier(v: string | string[] | undefined | null): string | null {
+  const lu = Array.isArray(v) ? v[0] : v;
+  return lu && lu.length > 0 ? lu : null;
+}
+
+/** La page du devis, ouverte pour relecture avant de le poser sur `jour`. */
+export function lienDeRelecture(chantierId: string, jour: string): string {
+  return `/chantiers/${encodeURIComponent(chantierId)}/devis-complet?${PARAM_RELANCE}=${encodeURIComponent(jour)}`;
+}
+
+/** Le jour de relance lu sur la page du devis, ou `null` s'il n'est pas un jour. */
+export function jourDeRelecture(v: string | string[] | undefined | null): string | null {
+  const jour = premier(v);
+  return jour && JOUR.test(jour) ? jour : null;
+}
+
+/** Le planning, rouvert sur ce jour, à la question de la signature. */
+export function lienRetourDeRelecture(chantierId: string, jour: string): string {
+  return `/planning?${PARAM_RELANCE}=${encodeURIComponent(chantierId)}&${PARAM_JOUR_RELANCE}=${encodeURIComponent(jour)}`;
+}
+
+/** Ce que le planning doit rouvrir, ou `null` : une adresse incomplète ne rouvre rien. */
+export function relanceDemandee(
+  chantier: string | string[] | undefined | null,
+  jour: string | string[] | undefined | null
+): { chantierId: string; jour: string } | null {
+  const id = premier(chantier);
+  const j = jourDeRelecture(jour);
+  return id && j ? { chantierId: id, jour: j } : null;
+}

@@ -177,6 +177,12 @@ type Props = {
    * est entré et qu'un écran ne décide de rien (`CLAUDE.md` §3).
    */
   retour: { href: string; libelle: string };
+  /**
+   * Relu depuis la carte d'un jour du planning — un devis expiré qui revient
+   * (7 octobre 2026). Présent, « Choisir la date » devient « Continuer » : le
+   * jour est déjà choisi, et c'est là-bas qu'il dit comment le client signe.
+   */
+  continuerVers?: string | null;
   client: { nom: string; civilite: CiviliteClient | null; adresse: string; telephone: string; email: string };
   /**
    * Par où l'on écrit au client, et depuis quelle adresse.
@@ -1912,9 +1918,15 @@ export default function DevisCompletClient(props: Props) {
             // Pleine largeur, comme sur la planche qu'il a choisie : une barre
             // qui reste sous le pouce et un bouton qui n'occupe que son milieu
             // se contredisent — la cible doit valoir la place qu'on lui garde.
-            <PrimaryButton pleineLargeur onClick={() => setFeuilleOuverte(true)}>
-              Choisir la date
-            </PrimaryButton>
+            props.continuerVers ? (
+              <PrimaryButton pleineLargeur onClick={() => props.continuerVers && router.push(props.continuerVers)}>
+                Continuer
+              </PrimaryButton>
+            ) : (
+              <PrimaryButton pleineLargeur onClick={() => setFeuilleOuverte(true)}>
+                Choisir la date
+              </PrimaryButton>
+            )
           )}
         </div>
       )}

@@ -5,6 +5,13 @@
 `drizzle/0116_modele_de_fiche_d_office.sql`
 
 ---
+## LES DEVIS EXPIRÉS : 8 octobre 2026, SUR LEUR BRANCHE
+
+Branche `claude/devis-expires`, pas encore sur `main` (batterie de niveau 3 à
+jouer). Un devis dont le lien a expiré n'est plus « à planifier » : il se range
+dans « Devis expirés » et revient par la porte « Devis expiré » de « Ajouter »
+(relire, renvoyer, poser sans renvoyer). `ARCHITECTURE.md` §456.
+
 ## SUR `main` : LA BATTERIE COMMUNE DU 7 OCTOBRE 2026, SIX LOTS
 
 Décennale en rappel, n° TVA « FR » d'office et téléphone juste, Supprimer du

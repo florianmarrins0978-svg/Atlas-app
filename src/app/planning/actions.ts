@@ -1,8 +1,9 @@
 "use server";
 
-import { exigerChantierDansSaPortee, exigerEcritureSurLePlanning } from "@/server/garde-action";
+import { exigerChantierDansSaPortee, exigerEcritureSurLePlanning, exigerGestionDevis } from "@/server/garde-action";
 import { getCurrentCtx } from "@/server/session-ctx";
 import {
+  getChantier,
   creerChantier,
   listerChantiersPourPlanning,
   planifierChantier,
@@ -30,10 +31,15 @@ import {
   type ResultatTravaux,
 } from "@/server/repositories/devis";
 import { dernierEnvoiDuChantier, nombreDeRetoursDuChantier } from "@/server/repositories/retours-intervention";
-import { listerClients, trouverOuCreerClient } from "@/server/repositories/clients";
+import { getClient, listerClients, mettreAJourClient, trouverOuCreerClient } from "@/server/repositories/clients";
 import { filtrerClientsParNom } from "@/lib/recherche-client";
 import { nomDuChantier } from "@/lib/nom-chantier";
 import { poserALaPlaceDuClient } from "@/server/repositories/pose-a-sa-place";
+import { dernierEnvoi } from "@/server/repositories/envois-devis";
+import { etatEnvoi } from "@/lib/etat-envoi";
+import { getOuCreerDevisBrouillon } from "@/server/repositories/devis";
+import { proposerLaGrilleDuJour } from "@/server/repositories/lignes-prix";
+import { envoyerAuClientAction } from "@/app/chantiers/[id]/export/actions";
 
 /**
  * LES ACTIONS DU PLANNING.
@@ -191,6 +197,84 @@ export async function poserALaPlaceAction(
     etat: { ...r.pose, creneaux: await creneauxApres(ctx, chantierId) },
     envoiReponse: lue.maniere === "papier" ? "acceptee" : null,
   };
+}
+
+/**
+ * UN DEVIS EXPIRÉ QUI REVIENT — sa demande du 7 octobre 2026.
+ *
+ * Six mois après, le client rappelle pour dire oui. Son lien a expiré : il n'a
+ * plus rien où signer. Deux gestes, depuis la carte du jour :
+ *
+ * - `relireLeDevisExpireAction` rouvre son devis en nouvelle version, ses
+ *   lignes aux prix d'alors et la grille du jour PROPOSÉE (les deux cadres du
+ *   26 septembre). Rien ne part encore.
+ * - `relancerLeDevisExpireAction` le renvoie (relu ou tel quel) avec un lien
+ *   neuf qui ne montre que ce jour, puis le pose : il signe sur ce lien, ou il
+ *   a signé sur papier.
+ *
+ * **Rien n'est réécrit ici** : l'envoi est celui de l'écran Devis
+ * (`envoyerAuClientAction` : nouvelle version, devis figé, lien de 45 jours),
+ * la pose celle de « Poser à sa place » (`poserALaPlaceDuClient`). Deux
+ * chemins pour envoyer un devis finiraient par diverger (`CLAUDE.md` §3).
+ *
+ * **Le poser sans le renvoyer** n'a pas d'action à lui : c'est la pose de
+ * « Sans date » (`planifierChantierAction`), sa décision du même soir.
+ */
+async function envoiExpire(ctx: Awaited<ReturnType<typeof getCurrentCtx>>, chantierId: string) {
+  const envoi = await dernierEnvoi(ctx, chantierId);
+  return envoi !== null && etatEnvoi(envoi) === "caduc" ? envoi : null;
+}
+
+const PLUS_EXPIRE = "Ce devis n'est plus expiré. Rechargez la page.";
+
+export async function relireLeDevisExpireAction(
+  chantierId: string
+): Promise<{ succes: true } | { succes: false; erreur: string }> {
+  const ctx = await getCurrentCtx();
+  await exigerEcritureSurLePlanning(ctx, "relire ce devis");
+  await exigerGestionDevis(ctx, "relire ce devis");
+  await exigerChantierDansSaPortee(ctx, chantierId, "relire ce devis");
+  if (!(await envoiExpire(ctx, chantierId))) return { succes: false, erreur: PLUS_EXPIRE };
+  await getOuCreerDevisBrouillon(ctx, chantierId);
+  await proposerLaGrilleDuJour(ctx, chantierId);
+  return { succes: true };
+}
+
+export async function relancerLeDevisExpireAction(
+  chantierId: string,
+  jour: string,
+  signature: { maniere: "lien" } | { maniere: "papier"; demarrageAnticipe: boolean }
+): Promise<
+  | { succes: true; etat: EtatPose; envoiReponse: "acceptee" | null }
+  | { succes: false; erreur: string }
+> {
+  const ctx = await getCurrentCtx();
+  await exigerEcritureSurLePlanning(ctx, "renvoyer ce devis");
+  await exigerChantierDansSaPortee(ctx, chantierId, "renvoyer ce devis");
+  if (!estUnJourValide(jour)) return { succes: false, erreur: "Ce jour n'existe pas." };
+  const expire = await envoiExpire(ctx, chantierId);
+  if (!expire) return { succes: false, erreur: PLUS_EXPIRE };
+
+  // **Par où il l'a joint la dernière fois.** Un client sans canal convenu
+  // bloquerait l'envoi (« Indiquez d'abord comment joindre ce client »), alors
+  // que son premier lien lui est bien parvenu par SMS ou par e-mail : c'est ce
+  // canal-là qui est vrai, et il se lit sur l'envoi expiré.
+  const chantier = await getChantier(ctx, chantierId);
+  if (chantier?.clientId) {
+    const client = await getClient(ctx, chantier.clientId);
+    if (client && !client.canalCommunication) {
+      await mettreAJourClient(ctx, chantier.clientId, { canalCommunication: expire.canal });
+    }
+  }
+
+  // **Le lien ne propose que ce jour, et pas d'autre date** : c'est lui qui l'a
+  // choisi au téléphone avec le client.
+  const envoi = await envoyerAuClientAction(chantierId, "", [jour], undefined, false);
+  if (!envoi.succes) return { succes: false, erreur: envoi.erreur };
+
+  // Le lien est neuf et attend sa réponse : la pose est celle de « Poser à sa
+  // place », qui le referme sur ce jour, ou l'accepte sur papier.
+  return poserALaPlaceAction(chantierId, jour, signature);
 }
 
 /**

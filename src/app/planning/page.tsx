@@ -5,6 +5,7 @@ import { bandeauAgendaDuPlanning } from "@/lib/agenda-externe";
 import { contextePlanning } from "@/server/contexte-planning";
 import { getRole } from "@/server/autorisation";
 import { chantierDemandeAuPlanning } from "@/lib/lien-planning";
+import { PARAM_JOUR_RELANCE, PARAM_RELANCE, relanceDemandee } from "@/lib/retour-au-planning";
 import { reglesDuRetour } from "@/server/regles-du-retour";
 import { chantiersAvecRetourDuJour } from "@/server/repositories/retours-intervention";
 import { peutPoserUnRetour } from "@/lib/acces-roles";
@@ -32,7 +33,10 @@ export default async function PlanningPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const ctx = await getCurrentCtx();
-  const chantierDemande = chantierDemandeAuPlanning((await searchParams).chantier);
+  const lus = await searchParams;
+  const chantierDemande = chantierDemandeAuPlanning(lus.chantier);
+  // Le retour de la relecture d'un devis expiré : ce jour, à sa signature.
+  const relance = relanceDemandee(lus[PARAM_RELANCE], lus[PARAM_JOUR_RELANCE]);
 
   const maintenant = new Date();
   // **Le même chargement que l'écran d'envoi**, depuis le 22 août 2026 : les
@@ -67,6 +71,7 @@ export default async function PlanningPage({
       role={role}
       // Le chantier dont on vient : sa journée s'ouvre, et ses portes montent.
       chantierDemande={chantierDemande}
+      relanceDemandee={relance}
       // « Retour à envoyer » : le réglage allumé, et une personne qui peut
       // poser un retour. Sans elle, le rappel lui demanderait un geste qu'elle
       // n'a pas.

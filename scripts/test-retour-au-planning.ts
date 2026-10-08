@@ -7,6 +7,7 @@ import {
   retourDepuisLePlanning,
 } from "../src/lib/retour-au-planning";
 import { lienVersLeChantierAuPlanning } from "../src/lib/lien-planning";
+import { lienDeRelecture, jourDeRelecture, lienRetourDeRelecture, relanceDemandee } from "../src/lib/retour-au-planning";
 import { portesDuPlanning } from "../src/lib/portes-du-planning";
 import {
   libelleRetourDesCoordonnees,
@@ -197,6 +198,27 @@ cas("venue du planning, la flèche de la fiche client y repart", () => {
   assert.equal(retourDesCoordonnees(ID, PLANNING), PLANNING);
   // Et la borne qui va avec : le devis, lui, ne se reçoit plus en retour.
   assert.equal(retourDesCoordonnees(ID, `/chantiers/${ID}/devis-complet`), "/");
+});
+
+// ── La relecture d'un devis expiré, aller et retour (7 octobre 2026) ───────
+
+cas("relire un devis expiré ramène au MÊME jour, à la question de la signature", () => {
+  const aller = lienDeRelecture(ID, "2026-10-14");
+  const jour = jourDeRelecture(new URL(aller, "http://x").searchParams.get("relance"));
+  assert.equal(jour, "2026-10-14");
+  const retour = new URL(lienRetourDeRelecture(ID, jour!), "http://x");
+  assert.equal(retour.pathname, "/planning");
+  assert.deepEqual(relanceDemandee(retour.searchParams.get("relance"), retour.searchParams.get("jour")), {
+    chantierId: ID,
+    jour: "2026-10-14",
+  });
+});
+
+cas("une adresse de relance incomplète ou fausse ne rouvre rien", () => {
+  assert.equal(relanceDemandee(ID, null), null);
+  assert.equal(relanceDemandee(null, "2026-10-14"), null);
+  assert.equal(relanceDemandee(ID, "demain"), null);
+  assert.equal(jourDeRelecture(undefined), null);
 });
 
 // ── Le contrôle sait-il rougir ? ────────────────────────────────────────────

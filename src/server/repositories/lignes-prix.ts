@@ -6,7 +6,7 @@ import { and, asc as _asc } from "drizzle-orm";
 import { chantiers, lignesPrix, lignesPrixPrestations, prestations } from "../db/schema";
 import type { Ctx } from "./context";
 import { membresDuLibelle } from "../../lib/lignes-vendables";
-import { reprendreLesLignes, type LigneReprise } from "../../lib/reprise-des-prix";
+import { reprendreLaLigne, reprendreLesLignes, type LigneReprise } from "../../lib/reprise-des-prix";
 import { listerTarifs } from "./tarifs";
 import { montantDeLaLigne } from "../../lib/montant-de-ligne";
 import { memeValeur } from "../../lib/hausse-du-devis";
@@ -531,4 +531,54 @@ export async function reprendreLesLignesPrix(
   }
 
   return reprises;
+}
+
+/**
+ * RELIRE UN DEVIS EXPIRÉ À SES PRIX DU JOUR — sa demande du 7 octobre 2026.
+ *
+ * Un client rappelle six mois après : ses lignes portent les prix d'alors.
+ * Elles deviennent des lignes « reprises » (`prixAncien`), et le tarif du jour
+ * est PROPOSÉ là où sa grille a changé (`prixGrille`), exactement comme pour
+ * « Dernier devis » : la page du devis lui pose alors ses deux cadres du
+ * 26 septembre, et rien ne change sans son oui.
+ *
+ * **La même règle que `reprendreLesLignesPrix`** (`reprendreLaLigne`), appliquée
+ * aux lignes du chantier lui-même au lieu de celles d'un autre. Le prix
+ * unitaire ne bouge pas ici : c'est `appliquerLaReprise` qui l'écrit, à sa
+ * réponse.
+ */
+export async function proposerLaGrilleDuJour(ctx: Ctx, chantierId: string): Promise<void> {
+  const [lignes, grille] = await Promise.all([listerLignesPrix(ctx, chantierId), listerTarifs(ctx)]);
+  const tarifs = grille.map((t) => ({ intitule: t.intitule, prix: t.prix, unite: t.unite }));
+  await withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    // **Une question neuve** : une réponse ou une hausse d'une reprise passée
+    // s'appliquerait sans qu'il l'ait redonnée.
+    await tx
+      .update(chantiers)
+      .set({ repriseGrille: null, hausseReprise: null, updatedAt: new Date() })
+      .where(eq(chantiers.id, chantierId));
+    for (const l of lignes) {
+      const r = reprendreLaLigne(
+        {
+          libelle: l.libelle,
+          quantite: l.quantite,
+          prixUnitaire: l.prixUnitaire,
+          unite: l.unite,
+          aChiffrer: l.aChiffrer,
+          tauxTva: l.tauxTva,
+          ordre: l.ordre,
+        },
+        tarifs
+      );
+      await tx
+        .update(lignesPrix)
+        .set({
+          // Une ligne qui attend son prix n'a pas d'ancien prix : zéro n'en est pas un.
+          prixAncien: r.sort === "attend-son-prix" ? null : l.prixUnitaire,
+          prixGrille: r.sort === "grille-proposee" ? r.prixGrille : null,
+          updatedAt: new Date(),
+        })
+        .where(eq(lignesPrix.id, l.id));
+    }
+  });
 }

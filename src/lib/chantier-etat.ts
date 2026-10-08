@@ -358,7 +358,7 @@ export function getNextActionHref(id: string, action: NextAction): string {
 // change demain (acceptation client, acompte reçu...), seule cette fonction
 // est à modifier — pas l'écran Planning.
 
-export type PlanificationEtat = "a_planifier" | "planifie" | "attente_client" | "non_concerne";
+export type PlanificationEtat = "a_planifier" | "planifie" | "attente_client" | "devis_expire" | "non_concerne";
 
 export type EtatPourPlanification = {
   devisEnvoyeAt: Date | string | null;
@@ -391,6 +391,13 @@ export function getPlanificationEtat(
     maintenant
   );
   if (attendLeClient(etat)) return "attente_client";
+
+  // **Son lien a expiré sans réponse : rien n'est vendu** — sa demande du
+  // 7 octobre 2026. Ce chantier tombait dans « à planifier », d'où son nom se
+  // posait sans aucune signature, et le planning le montrait comme signé. Il
+  // se range à part (« Devis expirés »), et ne se pose que par la porte qui
+  // demande comment il signe.
+  if (etat === "caduc" && c.devisEnvoyeAt) return "devis_expire";
 
   if (c.devisEnvoyeAt || c.contratEntretienId) return "a_planifier";
   return "non_concerne";
