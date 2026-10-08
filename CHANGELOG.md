@@ -33,11 +33,10 @@ planning, équipe, facture, TVA). Rien n'est codé dans l'application.
   et un écran de transcription qu'il ne reconnaît pas : retirés de la planche.
   Ne sont dessinés par-dessus que ce micro et les anneaux qui montrent où
   l'on appuie.
-- À chaque minute qui passe, le chiffre des unités commence à tomber, se
-  retourne, et c'est une pièce d'or (tranche striée, « A » en relief) qui finit
-  dans une brouette (son idée du jour, la brouette retenue parmi quatre).
-  Dix-sept pièces, une par minute ; rien ne s'affiche avec une réduction des
-  animations.
+- À chaque minute qui passe, le chiffre des unités tombe de l'horloge et
+  descend de quelques centimètres sous l'heure en s'effaçant. Des pièces d'or
+  dans une brouette ont été essayées le même soir, puis retirées à sa
+  demande ; rien ne tombe avec une réduction des animations.
 - Le devis se montre en entier et défile jusqu'à la signature ; la journée
   ouverte défile jusqu'à la fiche d'intervention (Maps, Waze, Appeler le
   client, salariés). Le planning garde les couleurs de l'appli : vert foncé
