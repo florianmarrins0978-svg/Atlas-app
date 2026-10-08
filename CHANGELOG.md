@@ -8,6 +8,56 @@ Format : le plus récent en tête.
 ---
 ## 2026-10-08
 
+### Planche : le site de vente raconté au défilement
+
+`appli/vente/defilement.html`, sa demande du jour : en descendant, les pages
+d'Atlas se succèdent (chantier, fiche client, dictée, devis, accord du client,
+planning, équipe, facture, TVA). Rien n'est codé dans l'application.
+
+- Le « journal froissé » est en 3D (Three.js r128, chargé depuis cdnjs) : la
+  capture devient une feuille maillée qui se froisse en boule, arêtes
+  éclairées, se retourne et se défroisse sur la page suivante. Sans WebGL ou
+  sans la bibliothèque, le pli en accordéon de huit bandes reprend. Le
+  raccord avec la capture à plat a été mesuré : 2 % d'écart de luminosité.
+- La phrase qui passe devant reprend la ligne du devis qui suit (la haie de
+  thuyas sur douze mètres).
+- L'heure défile minute par minute avec la page, de 7 h 30 à 7 h 47, l'envoi
+  du devis, puis s'arrête : sa demande, montrer qu'il faut un rien de temps.
+  Elle raconte une matinée et ne mesure rien d'un vrai utilisateur.
+- Le début est capturé sur l'application ACTUELLE, geste par geste : l'écran
+  des chantiers, l'appui sur « Créer un devis », la feuille Fiche client qui
+  monte (vide, puis remplie au clavier, sans photo). Pour la dictée, il a
+  préféré le micro dessiné, aux ondes vertes, posé sur celui de la feuille,
+  plutôt que la capture de l'enregistrement.
+  Les captures du 27 septembre montraient un ancien bouton « Créer un devis »
+  et un écran de transcription qu'il ne reconnaît pas : retirés de la planche.
+  Ne sont dessinés par-dessus que ce micro et les anneaux qui montrent où
+  l'on appuie.
+- À chaque minute qui passe, le chiffre des unités commence à tomber, se
+  retourne, et c'est une pièce d'or (tranche striée, « A » en relief) qui finit
+  dans une brouette (son idée du jour, la brouette retenue parmi quatre).
+  Dix-sept pièces, une par minute ; rien ne s'affiche avec une réduction des
+  animations.
+- Le devis se montre en entier et défile jusqu'à la signature ; la journée
+  ouverte défile jusqu'à la fiche d'intervention (Maps, Waze, Appeler le
+  client, salariés). Le planning garde les couleurs de l'appli : vert foncé
+  plein, vert clair à moitié, rouge quand il y a trop.
+- **Un seul chantier, du début à la fin** (sa demande) : Mr. Lemaire,
+  06 39 98 12 34, 12 allée des Charmilles, Valmorin, devis « Création d'un
+  massif » à 862,20 € TTC, accepté et réalisé le jeudi 8 octobre, facturé et
+  payé, TVA 143,70 €. Le numéro est dans la tranche 06 39 98 que l'Arcep
+  réserve aux œuvres de fiction ; Valmorin est une commune inventée (la Base
+  adresse nationale n'est pas joignable ici pour vérifier une rue). Tout est
+  passé par les boutons de l'application, sur une base d'essai réamorcée,
+  sauf ce qui demande un compte salarié : le retour d'intervention et la fin
+  du chantier ont été écrits dans la base. Les autres chantiers du planning
+  sont ceux du jeu d'essai, posés en base pour donner des couleurs.
+- Une tentative de jouer chaque étape à sa date en avançant l'horloge de la
+  machine d'essai a été refusée par le garde de la session ; l'horloge a été
+  remise à l'heure réelle, et tout le parcours a été rejoué le 8 octobre.
+- Le site de vente principal (`vente/index.html`) porte toujours les
+  captures du 27 septembre.
+
 ### Un devis expiré n'est plus un chantier vendu : il se range à part, et revient par sa porte
 
 Sa question : un client qui n'accepte jamais le devis disparaît-il un jour de

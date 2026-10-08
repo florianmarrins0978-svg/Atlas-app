@@ -1,0 +1,638 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Atlas au fil du défilement</title>
+<meta name="description" content="Planche : le parcours d'Atlas raconté au défilement, du chantier à la TVA.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Hanken+Grotesk:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<!--
+  PLANCHE, rien n'est codé dans l'application.
+
+  Sa demande du 8 octobre 2026 : un site où, en défilant, on voit les pages de
+  l'application se succéder. La page du chantier arrive, se froisse comme une
+  feuille de journal, se retourne et se rouvre sur la fiche client ; la dictée
+  s'allume, une phrase passe devant, le devis s'ouvre avec les lignes déjà
+  écrites ; puis l'envoi, le planning, la journée (salariés, sécurité, retour),
+  la facture et la TVA.
+  Pas la page Outils.
+
+  Toutes les images sont des captures d'Atlas, prises le 8 octobre 2026 sur
+  l'application actuelle, et elles suivent UN SEUL chantier (sa demande du même
+  jour) : Mr. Lemaire, 06 39 98 12 34, 12 allée des Charmilles, Valmorin, devis
+  « Création d'un massif » à 862,20 € TTC. Le numéro est dans la tranche 06 39 98
+  que l'Arcep réserve aux œuvres de fiction ; Valmorin est une commune inventée,
+  pour qu'aucune adresse ne tombe chez quelqu'un. Tout est passé par les boutons
+  de l'application (fiche remplie, devis rédigé, envoi, accord du client sur sa
+  page, salariés posés, facture, encaissement), sauf ce qui demande un compte
+  salarié : le retour d'intervention et la fin du chantier ont été écrits dans la
+  base d'essai. Les autres chantiers du planning sont ceux du jeu d'essai.
+  Les anneaux qui battent autour d'un bouton sont les seuls traits dessinés
+  par-dessus une capture : ils montrent où l'on appuie.
+
+  La phrase dictée est celle de la capture de la dictée (la haie de thuyas sur
+  douze mètres), pour que la ligne du devis qui suit soit bien celle qu'on a
+  entendue. Une phrase inventée aurait montré un devis qui ne la reprend pas.
+
+  L'heure en haut raconte une journée, elle ne mesure rien : aucun temps gagné
+  n'a été relevé chez un utilisateur, donc aucun chiffre n'est écrit.
+
+  Le froissé est fait de bandes pliées en accordéon, sans vidéo. Un vrai papier
+  froissé demanderait une vidéo générée par IA, payante.
+-->
+<style>
+:root{
+  --fond:#f3f1ea;--papier:#faf8f3;--encre:#1c211b;--encre-2:#5c6258;
+  --pin:#2f3b2f;--sauge:#7e9c6c;--or:#b0823f;--trait:#d9d3c4;--bouton-texte:#faf8f3;
+  --ombre:28,33,27;
+  --display:"Instrument Serif","Iowan Old Style",Georgia,serif;
+  --texte:"Hanken Grotesk",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,"SF Mono",Menlo,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --fond:#141b16;--papier:#1e2921;--encre:#ece8dc;--encre-2:#a9b3a2;
+    --pin:#cfd8c4;--sauge:#8fae7c;--or:#cf9f58;--trait:#2e3b31;--bouton-texte:#141b16;
+    --ombre:0,0,0;color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --fond:#141b16;--papier:#1e2921;--encre:#ece8dc;--encre-2:#a9b3a2;
+  --pin:#cfd8c4;--sauge:#8fae7c;--or:#cf9f58;--trait:#2e3b31;--bouton-texte:#141b16;
+  --ombre:0,0,0;color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{overflow-x:clip}
+body{margin:0;background:var(--fond);color:var(--encre);font:400 17px/1.55 var(--texte);-webkit-font-smoothing:antialiased}
+a{color:inherit}
+h1,h2{font-family:var(--display);font-weight:400;line-height:1.02;letter-spacing:-.01em;text-wrap:balance;margin:0}
+
+/* La barre : la marque, et l'heure qui avance avec le défilement. */
+.barre{position:fixed;inset:0 0 auto 0;z-index:30;height:60px;display:flex;align-items:center;justify-content:space-between;padding:0 max(16px,env(safe-area-inset-left));background:color-mix(in srgb,var(--fond) 82%,transparent);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.marque{font:400 28px/1 var(--display);text-decoration:none}
+.horloge{text-align:right;line-height:1}
+.horloge b{display:block;font:400 26px/1 var(--display);font-variant-numeric:tabular-nums}
+.horloge small{display:block;margin-top:4px;font:500 10.5px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--or)}
+.fil{position:absolute;left:0;bottom:0;height:2px;width:100%;background:var(--trait)}
+.fil i{display:block;height:100%;width:0;background:var(--or)}
+
+.ouverture{min-height:100svh;display:flex;flex-direction:column;justify-content:center;padding:90px 16px 40px;max-width:780px;margin:0 auto}
+.cote{font:500 12px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--or)}
+.ouverture h1{font-size:clamp(46px,11vw,96px);margin:18px 0 22px}
+.ouverture h1 em{color:var(--sauge)}
+.ouverture p{font-size:19px;color:var(--encre-2);margin:0;max-width:28em}
+.descendre{margin-top:48px;width:1px;height:64px;background:linear-gradient(var(--or),transparent);animation:descendre 2.2s ease-in-out infinite}
+@keyframes descendre{0%{transform:scaleY(0);transform-origin:top}50%{transform:scaleY(1);transform-origin:top}51%{transform-origin:bottom}100%{transform:scaleY(0);transform-origin:bottom}}
+
+/* Le récit : une scène collée, et une longue piste de défilement dessous. */
+.recit{position:relative;height:1340vh}
+.scene{position:sticky;top:0;height:100svh;overflow:hidden;display:flex;flex-direction:column;align-items:center;padding-top:72px}
+.plateau{--h:min(60svh,calc((100vw - 48px) / .5873));position:relative;width:calc(var(--h) * .5873);height:var(--h);perspective:1500px;flex:none}
+/* La feuille en 3D : elle déborde du plateau pour que la boule froissée garde de la place. */
+.toile3d{position:absolute;left:-20%;top:-15%;width:140%;height:130%;pointer-events:none;z-index:3;opacity:0}
+.feuille{position:absolute;inset:0;transform-style:preserve-3d;will-change:transform,opacity}
+.feuille .bande{position:absolute;left:0;width:100%;background-repeat:no-repeat;backface-visibility:hidden;will-change:transform}
+.feuille .bande::after{content:"";position:absolute;inset:0;background:linear-gradient(rgba(var(--ombre),.0),rgba(var(--ombre),.9));opacity:var(--o,0)}
+.feuille .bande:first-child{border-radius:20px 20px 0 0}
+.feuille .bande:last-child{border-radius:0 0 20px 20px}
+.feuille .porte{position:absolute;inset:0;border-radius:20px;box-shadow:0 30px 60px -20px rgba(var(--ombre),.45),0 0 0 1px rgba(var(--ombre),.08);pointer-events:none;opacity:var(--ombre-o,1)}
+
+/* Le geste qu'on montre du doigt : « J'accepte ce devis », « À facturer ». */
+.pouls{position:absolute;border-radius:999px;pointer-events:none;opacity:0;transform:translateZ(1px)}
+.pouls::before,.pouls::after{content:"";position:absolute;inset:-4px;border-radius:inherit;border:2px solid var(--or);animation:pouls 1.4s ease-out infinite}
+.pouls::after{animation-delay:.7s}
+.pouls.rond::before,.pouls.rond::after{animation-name:pouls-rond}
+@keyframes pouls-rond{from{transform:scale(1);opacity:.9}to{transform:scale(1.6);opacity:0}}
+@keyframes pouls{from{transform:scale(1);opacity:.9}to{transform:scale(1.35,1.9);opacity:0}}
+
+
+/* La dictée : le micro dessiné s'allume par-dessus celui de la fiche (son choix
+   du 8 octobre, contre la capture de l'enregistrement). */
+.micro{position:absolute;left:50%;top:88%;width:23%;aspect-ratio:1;margin:-11.5% 0 0 -11.5%;border-radius:50%;background:var(--sauge);color:#fff;display:grid;place-items:center;opacity:0;transform:scale(.6);z-index:4;box-shadow:0 10px 30px -8px rgba(var(--ombre),.5)}
+.micro svg{width:42%;height:42%}
+.micro::before,.micro::after{content:"";position:absolute;inset:0;border-radius:50%;background:var(--sauge);opacity:.35;animation:onde 1.6s ease-out infinite;z-index:-1}
+.micro::after{animation-delay:.8s}
+@keyframes onde{from{transform:scale(1);opacity:.45}to{transform:scale(2.3);opacity:0}}
+
+.phrase{position:absolute;top:44%;left:0;z-index:6;white-space:nowrap;font:italic 400 clamp(40px,10vw,92px)/1 var(--display);color:var(--encre);pointer-events:none;opacity:0;text-shadow:0 0 24px var(--fond),0 0 48px var(--fond),0 0 2px var(--fond);will-change:transform}
+
+.legende{margin-top:46px;padding:0 20px;text-align:center;min-height:96px;max-width:560px}
+.legende span{display:block;font:500 11.5px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--or);margin-bottom:10px}
+.legende p{margin:0;font:400 clamp(26px,6.6vw,40px)/1.08 var(--display);text-wrap:balance}
+.legende.change{animation:legende .45s ease both}
+@keyframes legende{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+/* Sa demande du 8 octobre : à chaque minute, le chiffre qui part tombe, devient
+   une pièce d'or, et s'entasse dans une brouette. Le temps gagné, c'est de l'or. */
+.brouette{position:fixed;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));width:92px;height:64px;z-index:25;opacity:0;transition:opacity .4s;pointer-events:none}
+.brouette.vue{opacity:1}
+.brouette svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.brouette .tas{position:absolute;left:14px;top:2px;width:54px;height:22px}
+/* Une pièce couchée dans la brouette : la même, vue de biais, avec sa tranche. */
+.piece{position:absolute;width:18px;height:18px;transform:scaleY(.6);filter:drop-shadow(0 2.4px 0 #7a5212) drop-shadow(0 3px 2px rgba(0,0,0,.25))}
+.piece svg,.chute svg{display:block;width:100%;height:100%}
+/* Le chiffre qui tombe : recto le chiffre, verso la pièce. En se retournant, il devient or. */
+.chute{position:fixed;left:0;top:0;z-index:40;pointer-events:none;width:30px;height:30px;perspective:300px}
+.chute .tour{position:absolute;inset:0;transform-style:preserve-3d}
+.chute .face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden}
+.chute b.face{display:grid;place-items:center;font:400 26px/1 var(--display);color:var(--encre)}
+.chute .dos{transform:rotateY(180deg);filter:drop-shadow(0 4px 6px rgba(0,0,0,.25))}
+.fin{min-height:90svh;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;padding:80px 16px;max-width:780px;margin:0 auto}
+.fin h2{font-size:clamp(42px,10vw,84px);margin:16px 0 30px}
+.bouton{display:inline-flex;align-items:center;min-height:54px;padding:0 28px;border-radius:999px;background:var(--pin);color:var(--bouton-texte);font:500 16px/1 var(--texte);text-decoration:none}
+
+/* Sans mouvement : les pages en colonne, sans rien qui bouge. */
+.calme{display:none;padding:20px 16px 40px;max-width:520px;margin:0 auto}
+.calme figure{margin:0 0 56px}
+.calme img{width:100%;border-radius:18px;box-shadow:0 20px 40px -18px rgba(var(--ombre),.4)}
+.calme figcaption{margin-top:16px;font:400 28px/1.1 var(--display)}
+@media (prefers-reduced-motion: reduce){
+  .recit{display:none}.brouette{display:none}.calme{display:block}.descendre{animation:none}
+}
+</style>
+</head>
+<body>
+
+<header class="barre">
+  <a class="marque" href="index.html">Atlas</a>
+  <div class="horloge" aria-hidden="true"><b id="heure"><span id="h-h">7</span> h <span id="h-d">3</span><span id="h-u">0</span></b><small id="jour">Jeudi matin</small></div>
+  <div class="fil"><i id="fil"></i></div>
+</header>
+
+<section class="ouverture">
+  <span class="cote">Pour les paysagistes</span>
+  <h1>Du chantier à la facture, <em>sans repasser par le bureau.</em></h1>
+  <p>Descendez, et suivez une matinée.</p>
+  <div class="descendre"></div>
+</section>
+
+<section class="recit" id="recit">
+  <div class="scene">
+    <div class="plateau" id="plateau">
+      <div class="feuille" id="dessous"></div>
+      <div class="feuille" id="dessus"></div>
+      <div class="micro" id="micro" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>
+      </div>
+    </div>
+    <div class="phrase" id="phrase" aria-hidden="true">« On arrache l'ancienne haie de thuyas sur douze mètres. »</div>
+    <div class="legende" id="legende" aria-live="polite"><span></span><p></p></div>
+  </div>
+</section>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <radialGradient id="or-face" cx="38%" cy="32%" r="72%"><stop offset="0" stop-color="#fff6cf"/><stop offset=".3" stop-color="#f6d06a"/><stop offset=".72" stop-color="#cf9733"/><stop offset="1" stop-color="#8f5f17"/></radialGradient>
+    <linearGradient id="or-bord" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffeaa8"/><stop offset=".45" stop-color="#c38a26"/><stop offset="1" stop-color="#6a440e"/></linearGradient>
+    <symbol id="piece-or" viewBox="0 0 64 64">
+      <circle cx="32" cy="32" r="31" fill="url(#or-bord)"/>
+      <circle cx="32" cy="32" r="28.6" fill="none" stroke="#6f4a10" stroke-width="2.6" stroke-dasharray="1.4 1.5" opacity=".55"/>
+      <circle cx="32" cy="32" r="25.5" fill="url(#or-face)"/>
+      <circle cx="32" cy="32" r="21.5" fill="none" stroke="#a46f1f" stroke-width="1.3" opacity=".75"/>
+      <circle cx="32" cy="32" r="20.6" fill="none" stroke="#fff1bd" stroke-width=".8" opacity=".6"/>
+      <text x="32" y="43" text-anchor="middle" font-family="Instrument Serif, Georgia, serif" font-size="31" fill="#fff3c2" opacity=".75">A</text>
+      <text x="32.8" y="44" text-anchor="middle" font-family="Instrument Serif, Georgia, serif" font-size="31" fill="#8a5a14">A</text>
+      <path d="M13 25 A21 21 0 0 1 27 11.5" stroke="#fff" stroke-width="3.2" stroke-linecap="round" fill="none" opacity=".55"/>
+    </symbol>
+  </defs>
+</svg>
+
+<div class="brouette" id="brouette" aria-hidden="true">
+  <div class="tas" id="tas"></div>
+  <svg viewBox="0 0 92 64" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M10 18 L72 18 L62 40 L22 40 Z" fill="var(--sauge)" stroke="var(--pin)" stroke-width="2.5"/>
+    <path d="M6 16 L76 16" stroke="var(--pin)" stroke-width="3"/>
+    <path d="M62 40 L88 30" stroke="var(--pin)" stroke-width="3"/>
+    <path d="M30 40 L26 56 M54 40 L56 52" stroke="var(--pin)" stroke-width="2.5"/>
+    <circle cx="22" cy="54" r="8" fill="var(--fond)" stroke="var(--pin)" stroke-width="3"/>
+    <circle cx="22" cy="54" r="2" fill="var(--pin)"/>
+  </svg>
+</div>
+
+<div class="calme" id="calme"></div>
+
+<section class="fin">
+  <span class="cote">Atlas</span>
+  <h2>Tout se fait au chantier, depuis le téléphone.</h2>
+  <a class="bouton" href="index.html#contact">Demander une démonstration</a>
+</section>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function(){
+  var IMG = {
+    chantiers:"images/accueil.jpg", vide:"images/feuille-vide.jpg", client:"images/feuille-remplie.jpg",
+    devis:"images/devis-entier.jpg", accepte:"images/accord.jpg", merci:"images/accord-merci.jpg",
+    planning:"images/planning-mois.jpg", jour:"images/planning-jour.jpg", securite:"images/securite.jpg",
+    retour:"images/retour.jpg", termines:"images/termines-a-facturer.jpg",
+    facture:"images/facture.jpg", tva:"images/tva-octobre.jpg"
+  };
+  // Hauteur sur largeur de chaque capture. Le devis est pris en entier, du haut à la signature.
+  var RAPPORT = {devis: 8058 / 1170, jour: 4450 / 1170};
+  function rapport(img){ return RAPPORT[img] || 1992 / 1170; }
+
+  // Ce qu'on lit sous la page, et le moment de la journée.
+  var ETAPES = [
+    {u:0,    mot:"Chantier", txt:"Vos chantiers du jour, au même endroit.", jour:"Jeudi matin", img:"chantiers"},
+    {u:2.3,  mot:"Client",   txt:"Créer un devis : la fiche client s'ouvre.",     jour:"Jeudi matin", img:"client"},
+    {u:4.6,  mot:"Dictée",   txt:"Vous dites ce qu'il y a à faire.",         jour:"Jeudi matin", img:"client"},
+    {u:7.8,  mot:"Devis",    txt:"Le devis est déjà écrit.",                 jour:"Jeudi matin", img:"devis"},
+    {u:11.1, mot:"Accord",   txt:"Le client accepte depuis son téléphone.",  jour:"Devis envoyé", img:"accepte"},
+    {u:13.3, mot:"Planning", txt:"Le chantier se pose au planning.",          jour:"Devis envoyé", img:"planning"},
+    {u:14.7, mot:"Le jour J", txt:"Appeler le client, ouvrir Maps, poser l'équipe.", jour:"Devis envoyé", img:"jour"},
+    {u:17.5, mot:"Sécurité", txt:"La fiche de sécurité, déjà remplie d'après le chantier.", jour:"Devis envoyé", img:"securite"},
+    {u:19.4, mot:"Retour",   txt:"Ce que l'équipe a fait, et ce qu'elle signale.", jour:"Devis envoyé", img:"retour"},
+    {u:21.6, mot:"Facture",  txt:"Le chantier fini, la facture reprend le devis.", jour:"Devis envoyé", img:"termines"},
+    {u:25.9, mot:"TVA",      txt:"Votre TVA du mois, sans calculatrice.",     jour:"Devis envoyé", img:"tva"}
+  ];
+
+  var calme = document.getElementById("calme");
+  ETAPES.forEach(function(e){
+    var f = document.createElement("figure");
+    f.innerHTML = '<img loading="lazy" alt="" src="'+IMG[e.img]+'"><figcaption></figcaption>';
+    f.querySelector("figcaption").textContent = e.txt;
+    calme.appendChild(f);
+  });
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+  Object.keys(IMG).forEach(function(k){ var i = new Image(); i.src = IMG[k]; });
+
+  var N = 8;
+  var GIGUE = [0.6,-1,0.3,0.9,-0.5,1,-0.8,0.4];
+  function feuille(el){
+    var bandes = [];
+    for (var i = 0; i < N; i++){
+      var b = document.createElement("div");
+      b.className = "bande";
+      el.appendChild(b); bandes.push(b);
+    }
+    var porte = document.createElement("div"); porte.className = "porte"; el.appendChild(porte);
+    var pouls = document.createElement("div"); pouls.className = "pouls"; el.appendChild(pouls);
+    return {el:el, bandes:bandes, pouls:pouls, img:null};
+  }
+  var A = feuille(document.getElementById("dessus"));
+  var B = feuille(document.getElementById("dessous"));
+  var plateau = document.getElementById("plateau");
+  var H = 0, W = 0;
+  function mesurer(){
+    var r = plateau.getBoundingClientRect(); H = r.height; W = r.width;
+    var h = H / N;
+    [A, B].forEach(function(f){ f.bandes.forEach(function(b, i){ b.style.top = (i * h) + "px"; b.style.height = (h + 0.6) + "px"; }); });
+  }
+
+  function lisse(t){ t = Math.min(1, Math.max(0, t)); return t * t * (3 - 2 * t); }
+  function entre(u, a, b){ return lisse((u - a) / (b - a)); }
+
+  function poser(f, s){
+    if (!s){ f.el.style.opacity = 0; return; }
+    if (f.img !== s.img){
+      f.img = s.img;
+      var url = 'url("' + IMG[s.img] + '")';
+      f.bandes.forEach(function(b){ b.style.backgroundImage = url; });
+    }
+    var hImg = W * rapport(s.img), decale = (s.defile || 0) * Math.max(0, hImg - H);
+    f.bandes.forEach(function(b, i){
+      b.style.backgroundSize = W + "px " + hImg + "px";
+      b.style.backgroundPosition = "0 " + (-(decale + i * H / N)) + "px";
+    });
+    var pli = s.f || 0, th = pli * 80 * Math.PI / 180, c = Math.cos(th), h = H / N;
+    f.bandes.forEach(function(b, i){
+      var cible = (H - H * c) / 2 + (i + 0.5) * h * c, dy = cible - (i + 0.5) * h;
+      var sens = i % 2 ? -1 : 1;
+      b.style.transform = "translate3d(" + (GIGUE[i] * pli * 7) + "px," + dy + "px,0) rotateX(" + (sens * pli * 80) + "deg) rotateZ(" + (GIGUE[i] * pli * 3) + "deg)";
+      b.style.setProperty("--o", (pli * (i % 2 ? 0.5 : 0.12)).toFixed(3));
+    });
+    f.el.style.setProperty("--ombre-o", (1 - pli).toFixed(3));
+    f.el.style.transformOrigin = s.gauche ? "0 50%" : "50% 50%";
+    f.el.style.transform = "translate3d(" + (s.x || 0) + "px," + (s.y || 0) + "px,0) rotateZ(" + (s.rz || 0) + "deg) scale(" + (s.s == null ? 1 : s.s) + ") rotateX(" + (s.rx || 0) + "deg) rotateY(" + (s.ry || 0) + "deg)";
+    f.el.style.opacity = s.o == null ? 1 : s.o;
+    // Ce qui dépasse sous l'écran ne se voit pas, comme la feuille de l'application.
+    f.el.style.clipPath = s.coupe ? "inset(0 0 " + s.coupe + "px 0)" : "";
+    var p = s.pouls;
+    if (p){
+      f.pouls.style.left = p.x + "%"; f.pouls.style.top = p.y + "%";
+      f.pouls.style.width = p.l + "%"; f.pouls.style.height = p.h + "%";
+      f.pouls.style.opacity = p.v;
+      f.pouls.classList.toggle("rond", !!p.rond);
+    } else f.pouls.style.opacity = 0;
+  }
+
+  // ── LE PAPIER EN 3D ──────────────────────────────────────────────────────
+  // Sa demande du 8 octobre : des transitions dignes de ce qu'il a vu en ligne.
+  // La capture devient une vraie feuille maillée, qui se froisse en boule avec
+  // ses arêtes éclairées, se retourne, et se défroisse sur la page suivante.
+  // Sans WebGL, ou si la bibliothèque n'arrive pas, le pli en bandes reprend.
+  var PAPIER = null;
+  function hacher(x, y){ var v = Math.sin(x * 127.1 + y * 311.7) * 43758.5453; return v - Math.floor(v); }
+  function bruit(x, y){
+    var xi = Math.floor(x), yi = Math.floor(y), xf = x - xi, yf = y - yi;
+    var u = xf * xf * (3 - 2 * xf), v = yf * yf * (3 - 2 * yf);
+    var a = hacher(xi, yi), b = hacher(xi + 1, yi), c = hacher(xi, yi + 1), d = hacher(xi + 1, yi + 1);
+    return (a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v) * 2 - 1;
+  }
+  function preparerPapier(){
+    if (!window.THREE) return null;
+    var toile = document.createElement("canvas");
+    toile.className = "toile3d";
+    plateau.appendChild(toile);
+    var rendu;
+    try { rendu = new THREE.WebGLRenderer({canvas:toile, antialias:true, alpha:true}); }
+    catch (e) { console.warn("Pas de WebGL : le pli en bandes reprend.", e); toile.remove(); return null; }
+    rendu.outputEncoding = THREE.sRGBEncoding;
+    var scene = new THREE.Scene();
+    var camera = new THREE.PerspectiveCamera(35, 1, 1, 10000);
+    // Une feuille à plat doit garder les couleurs de la capture : ambiante plus
+    // diffuse face à la caméra font 1, moins le reflet que la brillance ajoute.
+    var dir = new THREE.Vector3(-0.3, 0.5, 0.81).normalize();
+    var lumiere = new THREE.DirectionalLight(0xffffff, 0.6);
+    scene.add(lumiere);
+    scene.add(new THREE.AmbientLight(0xffffff, 0.98 - 0.6 * dir.z));
+    var chargeur = new THREE.TextureLoader(), textures = {};
+    Object.keys(IMG).forEach(function(k){
+      chargeur.load(IMG[k], function(t){ t.encoding = THREE.sRGBEncoding; t.anisotropy = 4; textures[k] = t; });
+    });
+    var matiere = new THREE.MeshPhongMaterial({flatShading:true, shininess:8, specular:0x161616, side:THREE.DoubleSide});
+    var maille = null, origine = null, l = 0, h = 0;
+    function dimensionner(){
+      l = W; h = H;
+      var dpr = Math.min(window.devicePixelRatio || 1, 2);
+      rendu.setPixelRatio(dpr);
+      rendu.setSize(l * 1.4, h * 1.3, false);
+      camera.aspect = (l * 1.4) / (h * 1.3);
+      camera.position.set(0, 0, (h * 1.3 / 2) / Math.tan(17.5 * Math.PI / 180));
+      camera.lookAt(0, 0, 0);
+      camera.updateProjectionMatrix();
+      lumiere.position.copy(dir).multiplyScalar(h * 2);
+      if (maille){ scene.remove(maille); maille.geometry.dispose(); }
+      var geo = new THREE.PlaneGeometry(l, h, 40, 68);
+      origine = Float32Array.from(geo.attributes.position.array);
+      maille = new THREE.Mesh(geo, matiere);
+      scene.add(maille);
+    }
+    function froisser(c){
+      var pos = maille.geometry.attributes.position, a = pos.array;
+      for (var i = 0; i < a.length; i += 3){
+        var x = origine[i], y = origine[i + 1], nx = x / l, ny = y / h;
+        var plis = 0.55 * (1 - Math.abs(bruit(nx * 4 + 1.3, ny * 4 - 2.1)))
+                 + 0.3 * (1 - Math.abs(bruit(nx * 9 - 4.2, ny * 9 + 0.7)))
+                 + 0.15 * (1 - Math.abs(bruit(nx * 17 + 8.1, ny * 17 + 3.3)));
+        var bombe = Math.sqrt(Math.max(0, 0.3 - nx * nx - ny * ny * 0.6));
+        var serre = 1 - 0.66 * c;
+        a[i] = x * serre + c * l * 0.07 * bruit(nx * 5 + 3, ny * 5);
+        a[i + 1] = y * serre + c * h * 0.05 * bruit(nx * 5, ny * 5 + 7);
+        a[i + 2] = c * (h * 0.16 * (plis - 0.5) * 2 + h * 0.35 * bombe);
+      }
+      // L'ombrage à facettes se calcule dans la carte graphique : pas de normales à refaire.
+      pos.needsUpdate = true;
+    }
+    return {
+      pret: function(img){ return !!textures[img]; },
+      cacher: function(){ toile.style.opacity = 0; },
+      dessiner: function(s){
+        if (!maille || l !== W || h !== H) dimensionner();
+        var t = textures[s.img];
+        if (matiere.map !== t){
+          var r = rapport(s.img) / (1992 / 1170);
+          t.repeat.set(1, 1 / r); t.offset.set(0, 1 - 1 / r);
+          matiere.map = t; matiere.needsUpdate = true;
+        }
+        froisser(s.c);
+        maille.rotation.set(-0.35 * s.c, s.ry || 0, -0.1 * s.c);
+        var e = 1 - 0.12 * s.c;
+        maille.scale.set(e, e, e);
+        maille.position.set(0, h * 0.03 * s.c, 0);
+        rendu.render(scene, camera);
+        toile.style.opacity = 1;
+      }
+    };
+  }
+
+  // Les quatre façons de passer d'une page à l'autre.
+  function journal(de, a, t){
+    if (PAPIER && PAPIER.pret(de) && PAPIER.pret(a)){
+      var p3;
+      if (t < 0.45) p3 = {img:de, c:lisse(t / 0.45)};
+      else if (t < 0.6){ var q = (t - 0.45) / 0.15; p3 = q < 0.5 ? {img:de, c:1, ry:q * Math.PI} : {img:a, c:1, ry:-Math.PI + q * Math.PI}; }
+      else p3 = {img:a, c:1 - lisse((t - 0.6) / 0.4)};
+      return {img:de, o:0, papier:p3};
+    }
+    if (t < 0.4){ var k = lisse(t / 0.4); return {img:de, f:k, s:1 - 0.38 * k, rz:-5 * k, y:-H * 0.04 * k}; }
+    if (t < 0.6){
+      var m = (t - 0.4) / 0.2;
+      return m < 0.5 ? {img:de, f:1, s:0.62, rz:-5, ry:m * 180, y:-H * 0.04}
+                     : {img:a,  f:1, s:0.62, rz:-5, ry:-90 + (m - 0.5) * 180, y:-H * 0.04};
+    }
+    var g = lisse((t - 0.6) / 0.4);
+    return {img:a, f:1 - g, s:0.62 + 0.38 * g, rz:-5 * (1 - g), y:-H * 0.04 * (1 - g)};
+  }
+  function tourner(t){ return {gauche:true, ry:-lisse(t) * 180}; }
+  function envol(t){
+    if (t < 0.45){ var k = lisse(t / 0.45); return {f:k, s:1 - 0.55 * k, rz:8 * k}; }
+    var v = lisse((t - 0.45) / 0.35);
+    return {f:1, s:0.45 - 0.3 * v, rz:8 + 22 * v, x:W * 1.2 * v, y:-H * 0.9 * v, o:1 - v};
+  }
+
+  var POULS_CREER = {x:22, y:23.3, l:56, h:7};
+  var POULS_MICRO = {x:39.65, y:82, l:20.7, h:12.1, rond:true};
+  var POULS_ACCORD = {x:4, y:81.8, l:92, h:7.5};
+  var POULS_FACTURER = {x:61, y:68.5, l:33, h:6.7};
+  var POULS_JOUR = {x:43.5, y:50.5, l:13, h:8};
+  var U = 28;
+
+  function etat(u){
+    var a = null, b = null, micro = 0, phrase = -1;
+    if (u < 1){
+      var k = lisse(u);
+      a = {img:"chantiers", y:H * 0.35 * (1 - k), rx:22 * (1 - k), s:0.9 + 0.1 * k, o:k};
+    }
+    else if (u < 1.5) a = {img:"chantiers"};
+    else if (u < 2.1) a = {img:"chantiers", pouls:Object.assign({v:entre(u, 1.55, 1.7) * (1 - entre(u, 1.95, 2.1))}, POULS_CREER)};
+    else if (u < 2.9){
+      // Comme dans l'application : la feuille monte par-dessus les chantiers.
+      var tm = lisse((u - 2.1) / 0.8);
+      var monte = H * 0.75 * (1 - tm);
+      a = {img:"vide", y:monte, o:Math.min(1, tm * 3), coupe:monte};
+      b = {img:"chantiers", s:1 - 0.03 * tm, o:1 - 0.5 * tm};
+    }
+    else if (u < 3.4) a = {img:"vide"};
+    else if (u < 3.9){
+      // La fiche se remplit sur place : la vide s'efface, la remplie reste dessous.
+      var tr = lisse((u - 3.4) / 0.5); a = {img:"vide", o:1 - tr}; b = {img:"client"};
+    }
+    else if (u < 4.4) a = {img:"client", pouls:Object.assign({v:entre(u, 3.95, 4.1) * (1 - entre(u, 4.28, 4.4))}, POULS_MICRO)};
+    else if (u < 7.2) a = {img:"client"};
+    else if (u < 8.4){
+      var en3d = PAPIER && PAPIER.pret("client") && PAPIER.pret("devis");
+      if (u < 7.7){ var c = lisse((u - 7.2) / 0.5); a = en3d ? {img:"client", o:0, papier:{img:"client", c:c}} : {img:"client", f:c, s:1 - 0.45 * c, o:1 - c * 0.6}; }
+      else { var g = lisse((u - 7.7) / 0.7); a = en3d ? {img:"devis", o:0, papier:{img:"devis", c:1 - g}} : {img:"devis", f:1 - g, s:0.6 + 0.4 * g}; }
+    }
+    // Le devis se lit en entier : la page défile du haut jusqu'à la signature.
+    else if (u < 8.6) a = {img:"devis"};
+    else if (u < 10.0) a = {img:"devis", defile:lisse((u - 8.6) / 1.4)};
+    else if (u < 10.3) a = {img:"devis", defile:1};
+    else if (u < 11.5){
+      var te = (u - 10.3) / 1.2;
+      a = Object.assign({img:"devis", defile:1}, envol(te));
+      var r = lisse((te - 0.6) / 0.4);
+      b = {img:"accepte", o:r, s:0.9 + 0.1 * r, y:H * 0.06 * (1 - r)};
+    }
+    else if (u < 12.1) a = {img:"accepte", pouls:Object.assign({v:entre(u, 11.55, 11.7) * (1 - entre(u, 11.95, 12.1))}, POULS_ACCORD)};
+    else if (u < 12.5){ var tc = lisse((u - 12.1) / 0.3); a = {img:"accepte", o:1 - tc}; b = {img:"merci"}; }
+    else if (u < 14.1) a = journal("merci", "planning", (u - 12.5) / 1.6);
+    else if (u < 14.6) a = {img:"planning", pouls:Object.assign({v:entre(u, 14.15, 14.3) * (1 - entre(u, 14.45, 14.6)), rond:true}, POULS_JOUR)};
+    else if (u < 15.0){ var tj = lisse((u - 14.6) / 0.4); a = {img:"planning", o:1 - tj}; b = {img:"jour"}; }
+    // La journée ouverte se lit en entier : la page descend jusqu'à la fiche d'intervention.
+    else if (u < 16.4) a = {img:"jour", defile:0.8 * lisse((u - 15.0) / 1.4)};
+    else if (u < 17.0) a = {img:"jour", defile:0.8};
+    else if (u < 18.0){ var ts = u - 17.0; b = {img:"securite", s:0.96 + 0.04 * ts}; a = Object.assign({img:"jour", defile:0.8}, tourner(ts)); }
+    else if (u < 18.6) a = {img:"securite"};
+    else if (u < 20.2) a = journal("securite", "retour", (u - 18.6) / 1.6);
+    else if (u < 20.8) a = {img:"retour"};
+    else if (u < 22.4) a = journal("retour", "termines", (u - 20.8) / 1.6);
+    else if (u < 23.3) a = {img:"termines", pouls:Object.assign({v:entre(u, 22.5, 22.7) * (1 - entre(u, 23.05, 23.25))}, POULS_FACTURER)};
+    else if (u < 24.3){ var tf = u - 23.3; b = {img:"facture", s:0.96 + 0.04 * tf}; a = Object.assign({img:"termines"}, tourner(tf)); }
+    else if (u < 25.1) a = {img:"facture"};
+    else if (u < 26.7) a = journal("facture", "tva", (u - 25.1) / 1.6);
+    else { var fin = entre(u, 27.2, 28); a = {img:"tva", s:1 - 0.06 * fin, y:-H * 0.05 * fin, o:1 - fin * 0.5}; }
+
+    if (u > 4.4 && u < 7.4) micro = entre(u, 4.4, 4.7) * (1 - entre(u, 7.0, 7.35));
+    if (u > 5.0 && u < 7.2) phrase = (u - 5.0) / 2.2;
+    return {a:a, b:b, micro:micro, phrase:phrase};
+  }
+
+  var recit = document.getElementById("recit");
+  var phrase = document.getElementById("phrase");
+  var micro = document.getElementById("micro");
+  var legende = document.getElementById("legende");
+  var jour = document.getElementById("jour"), fil = document.getElementById("fil");
+  var etapeCourante = -1, pw = 0;
+
+  // Les minutes avancent avec le défilement, et s'arrêtent quand le devis part :
+  // sa demande, montrer qu'il faut dix-sept minutes du chantier à l'envoi.
+  var HEURES = [[0,450],[2.1,451],[3.4,453],[4.4,455],[7.2,460],[8.6,462],[10.3,466],[11.0,467],[28,467]];
+  function heureA(u){
+    for (var k = 1; k < HEURES.length; k++){
+      if (u <= HEURES[k][0]){
+        var a = HEURES[k - 1], b = HEURES[k];
+        return Math.floor(a[1] + (b[1] - a[1]) * (u - a[0]) / (b[0] - a[0]));
+      }
+    }
+    return HEURES[HEURES.length - 1][1];
+  }
+  var hH = document.getElementById("h-h"), hD = document.getElementById("h-d"), hU = document.getElementById("h-u");
+  var brouette = document.getElementById("brouette"), tas = document.getElementById("tas");
+  var derniere = null, aDeposer = 0, enVol = 0, posees = 0;
+
+  function ecrireHeure(m){
+    // Le compte avance de jour en jour ; l'horloge n'en montre que l'heure.
+    if (derniere !== null && m > derniere) aDeposer = Math.min(aDeposer + (m - derniere), 40);
+    derniere = m;
+    var mm = m % 60;
+    hH.textContent = Math.floor(m / 60) % 24;
+    hD.textContent = Math.floor(mm / 10);
+    hU.textContent = mm % 10;
+  }
+
+  // Le chiffre qui s'en va part de sa place, commence à tomber, se retourne,
+  // et c'est une pièce d'or qui finit sa chute dans la brouette.
+  var PIECE = '<svg viewBox="0 0 64 64"><use href="#piece-or"/></svg>';
+  function lacher(chiffre){
+    var de = hU.getBoundingClientRect(), vers = brouette.getBoundingClientRect();
+    var c = document.createElement("div"); c.className = "chute";
+    c.innerHTML = '<div class="tour"><b class="face"></b><span class="face dos">' + PIECE + '</span></div>';
+    c.querySelector("b").textContent = chiffre;
+    document.body.appendChild(c);
+    var x0 = de.left + de.width / 2 - 15, y0 = de.top + de.height / 2 - 15;
+    var x1 = vers.left + 20 + Math.random() * 40, y1 = vers.top - 2;
+    var vrille = (Math.random() < 0.5 ? -1 : 1) * (240 + Math.random() * 200);
+    var duree = 1700 + Math.random() * 300;
+    enVol++;
+    c.animate([
+      {transform:"translate(" + x0 + "px," + y0 + "px) scale(1)", easing:"ease-in"},
+      {transform:"translate(" + x0 + "px," + (y0 + 12) + "px) scale(1)", offset:0.2, easing:"ease-in"},
+      {transform:"translate(" + (x0 + (x1 - x0) * 0.08) + "px," + (y0 + (y1 - y0) * 0.16) + "px) scale(1.05)", offset:0.42, easing:"cubic-bezier(.4,0,1,1)"},
+      {transform:"translate(" + x1 + "px," + y1 + "px) scale(.62)"}
+    ], {duration:duree, fill:"forwards"});
+    c.querySelector(".tour").animate([
+      {transform:"rotateY(0deg) rotateZ(0deg)"},
+      {transform:"rotateY(0deg) rotateZ(-6deg)", offset:0.18},
+      {transform:"rotateY(180deg) rotateZ(0deg)", offset:0.46, easing:"ease-out"},
+      {transform:"rotateY(205deg) rotateZ(" + vrille * 0.5 + "deg)", offset:0.72},
+      {transform:"rotateY(180deg) rotateZ(" + vrille + "deg)"}
+    ], {duration:duree, fill:"forwards"});
+    setTimeout(function(){
+      c.remove(); enVol--;
+      poser1();
+      brouette.animate([{transform:"rotate(0)"},{transform:"rotate(-3deg)"},{transform:"rotate(0)"}], {duration:260, easing:"ease-out"});
+    }, duree);
+  }
+
+  // Le tas monte en monticule : des rangées de moins en moins larges, centrées sur
+  // la caisse. Passé le sommet, il ne grossit plus mais la brouette tressaute encore.
+  var RANGEES = [5, 4, 4, 3, 2, 1];
+  var MAX_TAS = RANGEES.reduce(function(a, b){ return a + b; }, 0);
+  function poser1(){
+    if (posees >= MAX_TAS) return;
+    var reste = posees, rangee = 0;
+    while (reste >= RANGEES[rangee]){ reste -= RANGEES[rangee]; rangee++; }
+    var n = RANGEES[rangee];
+    var p = document.createElement("i"); p.className = "piece"; p.innerHTML = PIECE;
+    p.style.left = (27 - n * 5.5 + reste * 11 - 4 + (Math.random() * 2 - 1)) + "px";
+    p.style.top = (8 - rangee * 5) + "px";
+    tas.appendChild(p); posees++;
+  }
+
+  setInterval(function(){
+    if (aDeposer > 0 && enVol < 10){
+      var m = derniere - aDeposer + 1;
+      aDeposer--;
+      lacher(String((m - 1 + 600) % 10));
+    }
+  }, 110);
+
+  function dessiner(){
+    var r = recit.getBoundingClientRect();
+    var course = r.height - window.innerHeight;
+    var p = Math.min(1, Math.max(0, -r.top / course));
+    var u = p * U;
+    var e = etat(u);
+    poser(A, e.a); poser(B, e.b);
+    if (PAPIER){ if (e.a && e.a.papier) PAPIER.dessiner(e.a.papier); else PAPIER.cacher(); }
+    A.el.style.zIndex = 2; B.el.style.zIndex = 1;
+    micro.style.opacity = e.micro;
+    micro.style.transform = "scale(" + (0.6 + 0.4 * e.micro) + ")";
+    if (e.phrase >= 0 && e.phrase <= 1){
+      pw = pw || phrase.offsetWidth;
+      var x = window.innerWidth - (window.innerWidth + pw) * e.phrase;
+      phrase.style.opacity = Math.min(1, e.phrase * 8, (1 - e.phrase) * 8);
+      phrase.style.transform = "translate3d(" + x + "px,0,0)";
+    } else phrase.style.opacity = 0;
+
+    var i = 0;
+    while (i + 1 < ETAPES.length && u >= ETAPES[i + 1].u) i++;
+    if (i !== etapeCourante){
+      etapeCourante = i;
+      legende.querySelector("span").textContent = ETAPES[i].mot;
+      legende.querySelector("p").textContent = ETAPES[i].txt;
+      legende.classList.remove("change"); void legende.offsetWidth; legende.classList.add("change");
+      jour.textContent = ETAPES[i].jour;
+    }
+    ecrireHeure(heureA(u));
+    brouette.classList.toggle("vue", r.top < window.innerHeight * 0.5 && r.bottom > window.innerHeight * 0.6);
+    fil.style.width = (p * 100) + "%";
+  }
+
+  var attente = false;
+  function demander(){ if (!attente){ attente = true; requestAnimationFrame(function(){ attente = false; dessiner(); }); } }
+  window.addEventListener("scroll", demander, {passive:true});
+  window.addEventListener("resize", function(){ pw = 0; mesurer(); demander(); });
+  mesurer();
+  PAPIER = preparerPapier();
+  dessiner();
+})();
+</script>
+</body>
+</html>
