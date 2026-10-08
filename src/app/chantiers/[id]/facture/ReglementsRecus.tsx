@@ -15,8 +15,8 @@ import {
   nomAcompte,
   tamponAcquittee,
   type MoyenDePaiement,
+  type PromesseDuDevis,
 } from "@/lib/acomptes-facture";
-import type { AcompteDevis } from "@/lib/acomptes-devis";
 import type { ReglementEnregistre, SaisieReglement } from "@/server/repositories/paiements-facture";
 import {
   basculerAcquitteeAction,
@@ -53,7 +53,7 @@ const COLONNES = "22px 92px 1.3fr 1fr 74px";
 export default function ReglementsRecus({
   factureId,
   totalTtc,
-  acomptesDuDevis,
+  promesseDuDevis,
   initiaux,
   fige,
   carte = true,
@@ -69,7 +69,8 @@ export default function ReglementsRecus({
    * partie.
    */
   avoirs: readonly { id: string; numero: string; dateEmission: string; totalTtc: string }[];
-  acomptesDuDevis: readonly AcompteDevis[];
+  /** Les acomptes du devis et le total sur lequel ils se comptent. */
+  promesseDuDevis: PromesseDuDevis;
   initiaux: ReglementEnregistre[];
   fige: boolean;
   /**
@@ -118,7 +119,7 @@ export default function ReglementsRecus({
   function ajouter() {
     // Le rang suivant du devis, avec son montant d'office ; au-delà, rien
     // n'est proposé — le chiffre est à lui.
-    const dOffice = montantAcompteDuDevis(reglements.length, acomptesDuDevis, totalTtc);
+    const dOffice = montantAcompteDuDevis(reglements.length, promesseDuDevis);
     const reste = netAPayer(totalTtc, reglements);
     const montant = dOffice && Number(dOffice) <= Number(reste) ? dOffice : reste;
     void appliquer(
@@ -195,17 +196,17 @@ export default function ReglementsRecus({
                 acomptes : *« faut que je puisse écrire ce que c'est »*. Vidé,
                 le champ rend la proposition plutôt qu'un blanc. */}
             {fige ? (
-              <span data-atlas="nom-acompte">{nomAcompte(reglements, i, acomptesDuDevis)}</span>
+              <span data-atlas="nom-acompte">{nomAcompte(reglements, i, promesseDuDevis.acomptes)}</span>
             ) : (
               <input
                 key={g.libelle ?? ""}
-                defaultValue={nomAcompte(reglements, i, acomptesDuDevis)}
+                defaultValue={nomAcompte(reglements, i, promesseDuDevis.acomptes)}
                 aria-label="Ce que ce règlement est"
                 data-atlas="nom-acompte"
                 onFocus={(e) => e.currentTarget.select()}
                 onBlur={(e) => {
                   const ecrit = e.currentTarget.value.trim();
-                  const propose = nomAcompte(reglements, i, acomptesDuDevis);
+                  const propose = nomAcompte(reglements, i, promesseDuDevis.acomptes);
                   if (ecrit !== propose) corriger(g, { libelle: ecrit || null });
                 }}
                 className="w-full border-0 bg-transparent p-0 text-center text-[14px] outline-none focus:bg-[var(--voile-champ)]"

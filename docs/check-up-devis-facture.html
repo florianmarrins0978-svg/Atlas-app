@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — Check-up devis et facture (7 octobre 2026)</title>
+<style>
+  :root{
+    --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
+    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
+    --accent:#2f3b2f; --alert:#b5562a; --line:rgba(28,28,26,0.13);
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#161815; --surface:#1d201c; --raised:#252924;
+      --ink:#eae7df; --ink-soft:#c2bdb1; --muted:#948f83;
+      --accent:#9fbd82; --alert:#e0885a; --line:rgba(234,231,223,0.17);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.65;}
+  main{max-width:44rem;margin:0 auto;padding:2.5rem 1.2rem 5rem;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.2;
+    text-wrap:balance;margin:2rem 0 0.6rem;scroll-margin-top:1rem;}
+  h1{font-size:2rem;margin-top:0;}
+  h2{font-size:1.5rem;padding-top:1.2rem;border-top:1px solid var(--line);}
+  h3{font-size:1.12rem;}
+  h4{font-size:1rem;}
+  p{margin:0 0 0.9rem;}
+  a{color:var(--accent);text-underline-offset:3px;}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px;}
+  ul,ol{margin:0 0 1rem;padding-left:1.3rem;}
+  li{margin-bottom:0.4rem;}
+  li::marker{color:var(--muted);}
+  /* Le sommaire : des cibles larges, confortables au doigt sur téléphone. */
+  ol li a{display:inline-block;padding:0.15rem 0;}
+  blockquote{margin:1rem 0;padding:0.85rem 1.05rem;background:var(--raised);
+    border-left:3px solid var(--accent);border-radius:0 10px 10px 0;color:var(--ink-soft);}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.87em;
+    background:var(--raised);padding:0.1rem 0.35rem;border-radius:5px;}
+  hr{border:0;border-top:1px solid var(--line);margin:2rem 0;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;
+    background:var(--surface);margin:0 0 1.2rem;}
+  table{border-collapse:collapse;width:100%;font-size:0.92rem;min-width:22rem;}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--line);
+    vertical-align:top;}
+  th{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--muted);white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .retour{display:inline-block;font-size:0.76rem;color:var(--muted);
+    text-decoration:none;margin:-0.3rem 0 1rem;}
+  .retour:hover{color:var(--accent);text-decoration:underline;}
+</style>
+</head>
+<body>
+<main>
+<h1 id="check-up-devis-et-facture-7-octobre-2026">Check-up devis et facture (7 octobre 2026)</h1>
+<p>Sa règle : <em>« Si on fait une modification sur un devis il faut que ça suive sur les factures ! »</em> Neuf écarts trouvés, <strong>tous corrigés</strong>. Aucune batterie jouée, comme il l'a demandé. Les écrans n'ont pas été ouverts : ce qui suit est éprouvé par les suites, <strong>pas vérifié à l'écran ICI</strong>.</p>
+<h2 id="ce-qui-est-corrigé">Ce qui est corrigé</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>#</th>
+<th>L'écart</th>
+<th>Ce qui se passe maintenant</th>
+<th>Fondé sur</th>
+</tr></thead><tbody>
+<tr>
+<td>0</td>
+<td>Acompte retiré du devis, encore réclamé dans les notes du devis et de la facture</td>
+<td>La phrase part des deux. Un devis déjà envoyé garde ce qu'il portait.</td>
+<td><code>envoyerDevis</code>, <code>phrasesAcomptesDuDevis</code></td>
+</tr>
+<tr>
+<td>1</td>
+<td>Une facture partait sur une version du devis que le client n'avait plus</td>
+<td>L'envoi est refusé : « Le devis a été corrigé (v2) : reprenez-le sur la facture avant de l'envoyer. »</td>
+<td><code>emettreFacture</code></td>
+</tr>
+<tr>
+<td>2</td>
+<td>L'échéance venait des Réglages</td>
+<td>Elle vient du délai du devis, et suit le devis repris. Les Réglages ne servent qu'à une facture sans devis.</td>
+<td><code>poserLaFactureBrouillon</code></td>
+</tr>
+<tr>
+<td>3</td>
+<td>L'acompte proposé se comptait sur le total de la facture (3 300 € au lieu de 3 000 €)</td>
+<td>Il se compte sur le total du devis.</td>
+<td><code>PromesseDuDevis</code></td>
+</tr>
+<tr>
+<td>4</td>
+<td>« Corriger le devis » perdait la remise, le taux, le titre, la main d'œuvre, les notes</td>
+<td>La version corrigée garde tout ce que la précédente portait.</td>
+<td><code>getOuCreerDevisBrouillon</code></td>
+</tr>
+<tr>
+<td>5</td>
+<td>La remise s'étendait aux travaux en plus et se changeait sur la facture</td>
+<td><strong>Sa « A »</strong> : la remise reste sur les lignes du devis, se lit sur la facture et ne s'y change plus. Les travaux en plus gardent leur prix.</td>
+<td><code>recoitLaRemise</code></td>
+</tr>
+<tr>
+<td>6</td>
+<td>Main d'œuvre TTC calculée au taux du document</td>
+<td>Au taux de ses lignes quand il n'y en a qu'un ; sinon la ligne se tait.</td>
+<td><code>facture-pdf.ts</code></td>
+</tr>
+<tr>
+<td>7</td>
+<td>Le n° de TVA de l'artisan absent du devis</td>
+<td>Imprimé sur le devis, comme sur la facture. Migration 0127, sans réécrire aucun devis existant.</td>
+<td><code>snapshotEnTete</code></td>
+</tr>
+<tr>
+<td>8</td>
+<td>La facture citait le devis sans sa version</td>
+<td>« 2026-000014 v2 », comme le devis l'imprime.</td>
+<td><code>numeroDuDevisSurLePapier</code></td>
+</tr>
+<tr>
+<td>9</td>
+<td>L'IBAN écrit brut sur le devis, groupé sur la facture</td>
+<td>Groupé par quatre sur les deux.</td>
+<td><code>ibanEnGroupes</code></td>
+</tr>
+</tbody></table></div>
+<h2 id="ce-qui-a-été-dit-et-qui-était-faux">Ce qui a été dit et qui était faux</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<ul>
+<li><strong>Mon premier correctif de l'acompte ne tenait que sur le brouillon</strong> : à l'envoi, la phrase revenait sur le devis et sur la facture. Corrigé avant livraison.</li>
+<li><strong>Le contrôle du papier exigeait le chiffre faux du point 6</strong> : il imposait une main d'œuvre TTC sur une facture à deux taux. Le contrôle a été corrigé avec le calcul.</li>
+</ul>
+<h2 id="fait-autrement-que-proposé">Fait autrement que proposé</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<ul>
+<li><strong>Point 5</strong> : j'avais écrit « sauf si tu leur poses une remise à part ». Il n'y a pas de seconde remise : pour faire un prix sur des travaux en plus, on baisse le prix de leur ligne. Une seconde remise aurait demandé une colonne de plus en base pour un geste que la ligne fait déjà.</li>
+<li><strong>Point 9</strong> : seul l'IBAN est aligné. L'ordre du chèque n'est pas ajouté au devis : le devis ne garde pas le titulaire du compte, et l'écrire au nom de l'entreprise aurait pu être faux.</li>
+</ul>
+<h2 id="chiffres">Chiffres</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Suites jouées au vert dans ce lot : <code>test-facture-suit-le-devis</code> (9 cas, dont chacun a été vu rouge sur l'ancien code), <code>test-acomptes-nouvelle-version</code> (8), <code>test-reduction-devis</code>, <code>test-papier-devis-facture</code>, et les suites base de la facture, de la remise, des travaux en plus, de la TVA, des avoirs, des règlements et du devis, plus <code>test-rappels-db</code>. Neuf suites navigateur des écrans du devis et de la facture : <strong>9 sur 9</strong>. <strong>La batterie entière n'a pas été jouée.</strong></p>
+<h2 id="décidé-ensuite--le-rappel-dimpayé">Décidé ensuite : le rappel d'impayé</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Il comptait depuis le délai des Réglages. <strong>Il compte maintenant depuis l'échéance écrite sur la facture</strong>, et l'écran Réglages, Notifications le dit : « L'échéance écrite sur la facture est passée, et le règlement n'est pas arrivé ». Le nombre de jours réglé compte toujours après cette date. Regardé à l'écran, dans un vrai navigateur.</p>
+<h2 id="ce-qui-reste-ouvert">Ce qui reste ouvert</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Qui tranche</th>
+</tr></thead><tbody>
+<tr>
+<td>La batterie entière, avant que rien parte sur <code>main</code></td>
+<td>à lancer avec son accord</td>
+</tr>
+</tbody></table></div>
+</main>
+</body>
+</html>

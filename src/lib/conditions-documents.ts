@@ -206,11 +206,11 @@ export function lignesConditionsDevis(
   c: Conditions,
   totalTtc?: number,
   /**
-   * Les phrases des acomptes POSÉS sur le devis (`src/lib/acomptes-devis.ts`),
-   * quand il y en a : elles remplacent la phrase du réglage, sinon l'acompte
-   * s'imprimerait deux fois. Vide ou absente, la phrase du réglage reste —
-   * *« il reste visible dans les notes et conditions quoi qu'il arrive »*
-   * (12 septembre 2026), même quand la ligne des totaux a été retirée.
+   * Les phrases de l'échéancier du devis (`phrasesAcomptesDuDevis`) : elles
+   * remplacent la phrase du réglage, sinon l'acompte s'imprimerait deux fois.
+   * **Vide, rien** : il a retiré l'acompte, et le papier ne le réclame plus
+   * (sa décision du 7 octobre 2026). **Absente, la phrase du réglage** :
+   * l'aperçu des Réglages, ou un devis parti sans échéancier posé.
    */
   phrasesAcomptes?: readonly string[],
   /**
@@ -224,7 +224,7 @@ export function lignesConditionsDevis(
 ): string[] {
   const lignes: string[] = [];
 
-  if (phrasesAcomptes && phrasesAcomptes.length > 0) {
+  if (phrasesAcomptes) {
     lignes.push(...phrasesAcomptes);
   } else if (c.acomptePourcent !== null) {
     // **La B de sa planche, choisie le 14 septembre 2026** — la même rédaction

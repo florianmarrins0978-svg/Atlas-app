@@ -137,6 +137,46 @@ batterie, facultative. Le code s'exige dans `authorize` (`ARCHITECTURE.md`
 `second-facteur` n'était pas murée, et acceptait des codes sans compteur
 d'échecs ; la route n'ouvre plus que les retours de Google et d'Apple. Migration 0125,
 quatre tables neuves sous FORCE RLS. **Batterie non jouée, à sa demande.**
+### La facture suit le devis : neuf écarts corrigés
+
+Sa règle : « si on fait une modification sur un devis il faut que ça suive sur
+les factures ». Le check-up (`docs/check-up-devis-facture.md`) a relevé neuf
+écarts ; tous corrigés, `ARCHITECTURE.md` §457.
+
+| Ce qui se passait | Ce que ça coûtait |
+|---|---|
+| une facture partait sur une version du devis que le client n'avait plus | une facture fausse, corrigeable par avoir seulement |
+| l'échéance venait des Réglages, pas du délai du devis | un devis « comptant » donnait une facture à 30 jours |
+| l'acompte proposé se comptait sur le total de la facture | 300 € de moins réclamés sur 1 000 € de travaux en plus |
+| « Corriger le devis » perdait remise, taux, titre, main d'œuvre, notes | une facture plein tarif d'un devis accordé à −10 % |
+| la remise s'étendait aux travaux en plus et se changeait sur la facture | 10 % offerts sans promesse, ou le devis refacturé plein tarif |
+| main d'œuvre TTC calculée au taux du document | un chiffre faux repris pour un crédit d'impôt |
+| facture sans la version du devis, devis sans n° de TVA, IBAN écrit de deux façons | deux pièces qui ne se ressemblent pas |
+
+Migration 0127 (expand seul) : `devis.entreprise_numero_tva`.
+
+**Le rappel d'impayé compte depuis l'échéance écrite sur la facture**, et non
+plus depuis le délai des Réglages (sa décision, qui remplace « A plus B » du
+16 août). L'écran Notifications le dit.
+
+### Un acompte retiré du devis ne se réclame plus dans les notes
+
+Il avait retiré l'acompte de 30 % d'un devis ; les notes et conditions
+demandaient encore « 30 % à la commande, 77,40 € ». Le client aurait signé un
+acompte que l'écran disait parti. C'était la règle du 12 septembre (« reste
+visible quoi qu'il arrive ») ; il l'a révisée après avoir demandé si la loi
+impose un acompte. Elle ne l'impose pas : les modalités de paiement sont
+dues (C. conso L111-1, L441-9 C. com. pour la facture), et le délai et les
+moyens de paiement les portent. Un acompte est un choix.
+
+`phrasesAcomptesDuDevis` (`src/lib/acomptes-devis.ts`) : un brouillon sans
+acompte posé n'imprime aucune phrase d'acompte. **À l'envoi**, `envoyerDevis`
+efface la condition recopiée des Réglages (`devis.acompte_pourcent`) quand
+aucun acompte n'est posé : c'est elle que la facture lit
+(`complementsDeLaFacture`), donc **la facture suit le devis** sans règle à
+elle. Un devis parti avant ce correctif garde ce qu'il portait, et sa facture
+aussi. Éprouvé sur le vrai chemin, de la croix au papier de la facture
+(`test-acomptes-nouvelle-version.ts`).
 
 ### Poser au planning un client qui n'arrive pas à choisir ses dates
 

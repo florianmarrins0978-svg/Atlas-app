@@ -115,6 +115,17 @@ export function tauxTvaValide(valeur: unknown): string | null {
   return n.toDecimalPlaces(2).toFixed(2);
 }
 
+/**
+ * Une ligne telle que les totaux la lisent. `supplement` : un travail ajouté
+ * sur la facture, hors du devis, que la remise du devis ne touche pas.
+ */
+export type LigneRemisable = { montant: string; tauxTva?: string | null; supplement?: boolean | null };
+
+/** Une ligne du devis reçoit la remise accordée ; un travail ajouté, non. */
+export function recoitLaRemise(ligne: { supplement?: boolean | null }): boolean {
+  return !ligne.supplement;
+}
+
 /** Le taux d'une ligne, ou celui du document quand elle n'en porte pas. */
 export function tauxDeLaLigne(
   ligne: { tauxTva?: string | null },
@@ -161,19 +172,27 @@ export function pourcentValide(valeur: unknown): string | null {
  * Le prix plein reste lisible dans `brutHt`, pour le document.
  */
 export function totauxAvecReduction(
-  lignes: readonly { montant: string; tauxTva?: string | null }[],
+  lignes: readonly LigneRemisable[],
   tauxTva: string,
   reductionPourcent?: string | number | null,
 ): TotauxDevis {
   const brut = lignes.reduce((acc, l) => acc.plus(new Decimal(l.montant)), new Decimal(0));
   const pourcent = pourcentValide(reductionPourcent);
 
+  // **La remise se compte sur ce qui l'a reçue** : les lignes du devis. Les
+  // travaux ajoutés sur la facture n'ont jamais été remisés (sa « A » du
+  // 7 octobre 2026) ; les y inclure lui faisait offrir 10 % de ce qu'il
+  // n'avait pas promis.
+  const remisable = lignes
+    .filter(recoitLaRemise)
+    .reduce((acc, l) => acc.plus(new Decimal(l.montant)), new Decimal(0));
+
   // **Arrondi ici, une fois pour toutes.** Un montant retiré qu'on garderait à
   // pleine précision donnerait un net dont les deux décimales ne correspondent
   // plus à la soustraction écrite sur le papier — et le client refait le calcul.
   const montant = pourcent === null
     ? null
-    : brut.times(new Decimal(pourcent)).dividedBy(100).toDecimalPlaces(2);
+    : remisable.times(new Decimal(pourcent)).dividedBy(100).toDecimalPlaces(2);
 
   const net = montant === null ? brut : brut.minus(montant);
 
@@ -184,11 +203,15 @@ export function totauxAvecReduction(
   // ferait relire un document réordonné à chaque ajout de ligne.
   const ordre: string[] = [];
   const brutParTaux = new Map<string, Decimal>();
+  const remisableParTaux = new Map<string, Decimal>();
   for (const ligne of lignes) {
     const taux = tauxDeLaLigne(ligne, tauxTva);
     const dejaVu = brutParTaux.get(taux);
     if (dejaVu === undefined) ordre.push(taux);
     brutParTaux.set(taux, (dejaVu ?? new Decimal(0)).plus(new Decimal(ligne.montant)));
+    if (recoitLaRemise(ligne)) {
+      remisableParTaux.set(taux, (remisableParTaux.get(taux) ?? new Decimal(0)).plus(new Decimal(ligne.montant)));
+    }
   }
   // Un devis vide garde sa catégorie : l'écran doit pouvoir montrer « TVA 20 % »
   // avant qu'une seule ligne soit écrite, sinon le bloc des totaux clignote.
@@ -211,15 +234,17 @@ export function totauxAvecReduction(
   // 33,33 = 99,99 : il manque un centime, et le total ne retomberait pas sur la
   // soustraction imprimée juste au-dessus. On le pose là où il pèse le moins.
   const partReduction = new Map<string, Decimal>();
-  if (montant !== null && brut.greaterThan(0)) {
+  if (montant !== null && remisable.greaterThan(0)) {
+    // Seules les catégories qui portent des lignes remisées prennent une part.
+    const remisees = ordre.filter((taux) => remisableParTaux.get(taux)?.greaterThan(0));
     let reste = montant;
-    let plusGrosse = ordre[0]!;
-    for (const taux of ordre) {
-      if (brutParTaux.get(taux)!.greaterThan(brutParTaux.get(plusGrosse)!)) plusGrosse = taux;
+    let plusGrosse = remisees[0]!;
+    for (const taux of remisees) {
+      if (remisableParTaux.get(taux)!.greaterThan(remisableParTaux.get(plusGrosse)!)) plusGrosse = taux;
     }
-    for (const taux of ordre) {
+    for (const taux of remisees) {
       if (taux === plusGrosse) continue;
-      const part = montant.times(brutParTaux.get(taux)!).dividedBy(brut).toDecimalPlaces(2);
+      const part = montant.times(remisableParTaux.get(taux)!).dividedBy(remisable).toDecimalPlaces(2);
       partReduction.set(taux, part);
       reste = reste.minus(part);
     }

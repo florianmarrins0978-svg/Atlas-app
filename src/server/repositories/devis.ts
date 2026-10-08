@@ -8,6 +8,7 @@ import { allureDesDocuments, attestationLue, formatNumeroDe } from "./entreprise
 import { conditionsDepuisEntreprise } from "@/lib/conditions-documents";
 import { totauxAvecReduction, pourcentValide, tauxTvaValide } from "@/lib/reduction-devis";
 import { montantMainDoeuvreValide } from "@/lib/main-doeuvre-devis";
+import { ibanEnGroupes } from "@/lib/modalites-paiement";
 import type { DbOrTx } from "../db/client";
 import { devis, lignesDevis, lignesPrix, chantiers, clients, entreprises, acomptesDevis } from "../db/schema";
 import { dureeDuChantier, dureeEnDemiJournees, libelleDuree } from "@/lib/disponibilites";
@@ -19,6 +20,7 @@ import {
   tauxCumulesBornes,
   type AcompteDevis,
 } from "@/lib/acomptes-devis";
+import { AUCUNE_PROMESSE, type PromesseDuDevis } from "@/lib/acomptes-facture";
 import type { Ctx } from "./context";
 import { genererPdfDevis, type DevisPdfData } from "../pdf/devis-pdf";
 import { enregistrerObjet } from "../storage";
@@ -275,6 +277,7 @@ export async function getOuCreerDevisBrouillon(ctx: Ctx, chantierId: string) {
       entrepriseNom: entreprise.nom,
       entrepriseAdresse: entreprise.adresse,
       entrepriseSiret: entreprise.siret,
+      entrepriseNumeroTva: entreprise.numeroTva,
       entrepriseEmail: entreprise.email,
       entrepriseTelephone: entreprise.telephone,
       entrepriseIban: entreprise.iban,
@@ -322,16 +325,17 @@ export async function getOuCreerDevisBrouillon(ctx: Ctx, chantierId: string) {
     // **En sous-traitance, le document est à zéro** (migration 0119), y compris
     // pour une nouvelle version après un envoi : sans cela, elle repartait à
     // 20 % sur des lignes qui suivent le taux du devis.
-    const taux = chantier.autoliquidation
-      ? TAUX_SANS_TVA
-      : dernier && dernier.statut === "brouillon"
-        ? dernier.tauxTva
-        : TAUX_TVA_DEFAUT;
-    // **La réduction survit à la régénération**, exactement comme le taux de
-    // TVA juste au-dessus. Elle a été accordée au client ; ajouter une ligne au
-    // devis ne la révoque pas, et la perdre en silence lui ferait renvoyer un
+    //
+    // **Une version corrigée garde ce que la précédente portait** (check-up du
+    // 7 octobre 2026) : le taux, la remise, et plus bas le titre, la main
+    // d'œuvre et les notes. Elle repartait à 20 % sans remise, et la facture
+    // reprise de cette version facturait le plein tarif d'un devis accordé à
+    // −10 %. Corriger une ligne ne renégocie pas le reste, comme l'échéancier.
+    const taux = chantier.autoliquidation ? TAUX_SANS_TVA : dernier ? dernier.tauxTva : TAUX_TVA_DEFAUT;
+    // **La réduction survit à la régénération et à la nouvelle version.** Elle a
+    // été accordée au client ; la perdre en silence lui ferait renvoyer un
     // document plus cher que celui qu'il avait promis.
-    const reduction = dernier && dernier.statut === "brouillon" ? dernier.reductionPourcent : null;
+    const reduction = dernier ? dernier.reductionPourcent : null;
     const totaux = calculerTotaux(lignesPrixActuelles, taux, reduction);
 
     if (dernier && dernier.statut === "brouillon") {
@@ -409,6 +413,13 @@ export async function getOuCreerDevisBrouillon(ctx: Ctx, chantierId: string) {
         dateEmission: jourIso(new Date()),
         tauxTva: taux,
         ...totaux,
+        titre: dernier?.titre ?? null,
+        conditionsPaiement: dernier?.conditionsPaiement ?? null,
+        // Toujours « dont » : bornée au nouveau brut, comme à la régénération.
+        mainDoeuvreHt: montantMainDoeuvreValide(
+          dernier?.mainDoeuvreHt ?? null,
+          totauxAvecReduction(lignesPrixActuelles, taux, null).brutHt
+        ),
         createdBy: ctx.utilisateurId,
       })
       .returning();
@@ -507,6 +518,19 @@ export async function getAcomptesDevis(ctx: Ctx, devisId: string): Promise<Acomp
 }
 
 /**
+ * Ce que le devis d'une facture a promis : ses acomptes et SON total. C'est
+ * sur lui que les acomptes se comptent, jamais sur celui de la facture.
+ */
+export async function getPromesseDuDevis(ctx: Ctx, devisId: string | null): Promise<PromesseDuDevis> {
+  if (!devisId) return AUCUNE_PROMESSE;
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const [d] = await tx.select({ totalTtc: devis.totalTtc }).from(devis).where(eq(devis.id, devisId)).limit(1);
+    if (!d) return AUCUNE_PROMESSE;
+    return { acomptes: await lireAcomptes(tx, devisId), totalTtc: d.totalTtc };
+  });
+}
+
+/**
  * « + Ajouter un acompte » : le rang suivant, à sa valeur d'office (les
  * Réglages, puis 50, puis 75 — cumulés).
  *
@@ -575,8 +599,8 @@ export async function changerTauxAcompte(
 
 /**
  * Le « − » d'un acompte : la ligne quitte les totaux, les suivantes remontent
- * d'un rang. **La condition des Réglages, elle, reste imprimée** dans les notes
- * (`devis.acomptePourcent`) — *« quoi qu'il arrive »*.
+ * d'un rang. Le dernier retiré, plus rien ne se réclame dans les notes : ni à
+ * l'écran (`phrasesAcomptesDuDevis`), ni à l'envoi (`envoyerDevis`).
  */
 export async function retirerAcompte(ctx: Ctx, devisId: string, rang: number): Promise<AcompteDevis[] | null> {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
@@ -614,11 +638,15 @@ function donneesPdfDuDevis(
     entrepriseNom: d.entrepriseNom,
     entrepriseAdresse: d.entrepriseAdresse,
     entrepriseSiret: d.entrepriseSiret,
+    entrepriseNumeroTva: d.entrepriseNumeroTva,
     entrepriseTelephone: d.entrepriseTelephone,
     entrepriseEmail: d.entrepriseEmail,
     // Le modèle d'Arborea imprime les modalités de virement : sans l'IBAN, le
     // client reçoit un devis qu'il ne peut pas payer. (`sansChiffrage` l'ignore.)
-    entrepriseIban: d.entrepriseIban,
+    //
+    // Groupé par quatre, comme sur la facture (check-up du 7 octobre 2026) :
+    // le même IBAN s'écrivait de deux façons sur les deux pièces du client.
+    entrepriseIban: d.entrepriseIban ? ibanEnGroupes(d.entrepriseIban) : null,
     entrepriseFormeJuridique: d.entrepriseFormeJuridique,
     entrepriseCapitalSocial: d.entrepriseCapitalSocial,
     entrepriseVilleRcs: d.entrepriseVilleRcs,
@@ -804,12 +832,20 @@ export async function envoyerDevis(ctx: Ctx, devisId: string) {
           "Posez leur montant sur l'écran du devis, puis revenez ici."
       );
     }
+    // **Sans acompte posé, le devis part sans condition d'acompte** (sa
+    // décision du 7 octobre 2026). `acomptePourcent` est le réglage recopié à
+    // la création : laissé tel quel, il ferait réapparaître « 30 % à la
+    // commande » dès l'envoi, sur le devis comme sur la facture qui en naîtra
+    // (`complementsDeLaFacture` lit cette colonne). C'est à l'envoi que le
+    // devis se fige, donc c'est ici que son échéancier devient sa condition.
+    const acomptes = await lireAcomptes(tx, devisId);
+    const fige = acomptes.length === 0 ? { ...avant, acomptePourcent: null } : avant;
     const habillage = await habillageDuDevis(tx, ctx.entrepriseId, avant);
     const pdfBytes = await genererPdfDevis(
       donneesPdfDuDevis(
-        avant,
+        fige,
         lignes,
-        await lireAcomptes(tx, devisId),
+        acomptes,
         "envoye",
         await dureeEstimeeDuChantier(tx, avant.chantierId)
       ),
@@ -826,6 +862,7 @@ export async function envoyerDevis(ctx: Ctx, devisId: string) {
       .update(devis)
       .set({
         statut: "envoye",
+        acomptePourcent: fige.acomptePourcent,
         envoyeLe: new Date(),
         pdfStorageKey: objet.storageKey,
         pdfChecksum: objet.checksum,

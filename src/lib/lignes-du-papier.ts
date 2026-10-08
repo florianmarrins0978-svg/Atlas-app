@@ -1,5 +1,5 @@
 import Decimal from "decimal.js";
-import { tauxDeLaLigne, totauxAvecReduction, type CategorieTva } from "./reduction-devis";
+import { recoitLaRemise, tauxDeLaLigne, totauxAvecReduction, type CategorieTva, type LigneRemisable } from "./reduction-devis";
 
 /**
  * ─── LES LIGNES DU PAPIER — sa planche du 14 septembre 2026 ─────────────────
@@ -30,30 +30,43 @@ export type LigneDuPapier<T> = {
   ttc: string;
 };
 
-export function lignesDuPapier<T extends { montant: string; tauxTva?: string | null }>(
+export function lignesDuPapier<T extends LigneRemisable>(
   lignes: readonly T[],
   tauxDuDocument: string,
   reductionPourcent?: string | number | null
 ): { lignes: LigneDuPapier<T>[]; parTaux: CategorieTva[] } {
   const totaux = totauxAvecReduction(lignes, tauxDuDocument, reductionPourcent);
+  // Ce que les lignes remisées de chaque taux portent : la part de remise du
+  // taux se répartit sur elles seules (un travail ajouté sur la facture n'en
+  // prend pas, `recoitLaRemise`).
+  const remisableParTaux = new Map<string, Decimal>();
+  for (const l of lignes) {
+    if (!recoitLaRemise(l)) continue;
+    const taux = tauxDeLaLigne(l, tauxDuDocument);
+    remisableParTaux.set(taux, (remisableParTaux.get(taux) ?? new Decimal(0)).plus(new Decimal(l.montant)));
+  }
   const nets = lignes.map((l) => {
     const taux = tauxDeLaLigne(l, tauxDuDocument);
     const categorie = totaux.parTaux.find((c) => c.taux === taux)!;
-    const brutCat = new Decimal(categorie.brutHt);
-    // La part de la ligne dans son taux, puis dans la base nette de ce taux.
-    const net = brutCat.isZero()
-      ? new Decimal(l.montant)
-      : new Decimal(l.montant).times(new Decimal(categorie.baseHt)).dividedBy(brutCat).toDecimalPlaces(2);
+    const remisable = remisableParTaux.get(taux) ?? new Decimal(0);
+    const part = categorie.reductionMontant === null ? new Decimal(0) : new Decimal(categorie.reductionMontant);
+    // La part de la ligne dans la remise de son taux, au prorata des lignes remisées.
+    const net =
+      !recoitLaRemise(l) || remisable.isZero() || part.isZero()
+        ? new Decimal(l.montant)
+        : new Decimal(l.montant).minus(new Decimal(l.montant).times(part).dividedBy(remisable)).toDecimalPlaces(2);
     const ttc = net.times(new Decimal(taux).dividedBy(100).plus(1)).toDecimalPlaces(2);
     return { ligne: l, taux, net, ttc };
   });
 
-  // Le centime résiduel de chaque taux va sur SA dernière ligne : la colonne
-  // fait alors exactement la base, et le client qui additionne retombe juste.
+  // Le centime résiduel de chaque taux va sur SA dernière ligne remisée (à
+  // défaut, sa dernière ligne) : la colonne fait alors exactement la base, et
+  // le client qui additionne retombe juste.
   for (const categorie of totaux.parTaux) {
     const siennes = nets.filter((n) => n.taux === categorie.taux);
     if (!siennes.length) continue;
-    const derniere = siennes[siennes.length - 1];
+    const remisees = siennes.filter((n) => recoitLaRemise(n.ligne));
+    const derniere = (remisees.length ? remisees : siennes)[(remisees.length ? remisees : siennes).length - 1];
     const sommeNet = siennes.reduce((acc, n) => acc.plus(n.net), new Decimal(0));
     derniere.net = derniere.net.plus(new Decimal(categorie.baseHt).minus(sommeNet));
     const sommeTtc = siennes.reduce((acc, n) => acc.plus(n.ttc), new Decimal(0));

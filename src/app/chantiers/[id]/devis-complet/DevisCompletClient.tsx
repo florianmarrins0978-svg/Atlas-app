@@ -57,7 +57,7 @@ import { memeValeur } from "@/lib/hausse-du-devis";
 import LigneAcompte from "./LigneAcompte";
 import LigneMainDoeuvre from "./LigneMainDoeuvre";
 import ChampUnite from "./ChampUnite";
-import { acompteSuivantPropose, echeancierDevis, phrasesAcomptes, type AcompteDevis } from "@/lib/acomptes-devis";
+import { acompteSuivantPropose, echeancierDevis, phrasesAcomptesDuDevis, type AcompteDevis } from "@/lib/acomptes-devis";
 import { lignesConditionsDevis, lireConditions, type ConditionsLues } from "@/lib/conditions-documents";
 import BoutonAssistant from "@/components/atlas/BoutonAssistant";
 import FlecheRetour from "@/components/atlas/FlecheRetour";
@@ -601,13 +601,12 @@ export default function DevisCompletClient(props: Props) {
   const totalHt = Number(totaux.totalHt);
   const totalTva = Number(totaux.totalTva);
   const echeancier = echeancierDevis(acomptes, (totalHt + totalTva).toFixed(2));
-  // Ce que le PDF écrira sous ses notes — la MÊME fonction que le papier. C'est
-  // ainsi que l'acompte « reste visible dans les notes et conditions quoi qu'il
-  // arrive » : ligne retirée, la phrase du réglage est encore là.
+  // Ce que le PDF écrira sous ses notes : la MÊME fonction que le papier. Ligne
+  // retirée, la phrase part aussi (sa décision du 7 octobre 2026).
   const conditionsImprimees = lignesConditionsDevis(
     lireConditions(props.conditionsReglees),
     totalHt + totalTva,
-    phrasesAcomptes(echeancier),
+    phrasesAcomptesDuDevis(props.statut, acomptes, (totalHt + totalTva).toFixed(2)),
     estUneEntreprise(props.client.nom, props.client.civilite)
   );
 

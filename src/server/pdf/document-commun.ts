@@ -19,6 +19,7 @@ import { logger } from "@/server/logger";
 import { avecCivilite, type CiviliteClient } from "@/lib/civilite";
 import {
   libelleReduction,
+  recoitLaRemise,
   lignesParBloc,
   tauxLisible,
   totauxAvecReduction,
@@ -1124,7 +1125,8 @@ export async function composerDocument(
           ecrireADroite(ctx, "à chiffrer", xNet, y, { taille: 9, police: ctx.sansGras });
         } else {
           ecrireADroite(ctx, formatMontant(ligne.prixUnitaire, data.devise), xPrix, y, { taille: 9 });
-          if (remiseCourte) ecrireCentre(remiseCourte, xRem, y, { taille: 9 });
+          // Un travail ajouté sur la facture n'a pas reçu la remise du devis.
+          if (remiseCourte && recoitLaRemise(ligne)) ecrireCentre(remiseCourte, xRem, y, { taille: 9 });
           ecrireADroite(ctx, formatMontant(p.net, data.devise), xNet, y, { taille: 9 });
           ecrireCentre(tauxCourt(p.taux), xTaux, y, { taille: 9 });
           ecrireADroite(ctx, formatMontant(p.ttc, data.devise), xTtc, y, { taille: 9, police: ctx.sansGras });

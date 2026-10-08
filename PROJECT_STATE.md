@@ -68,6 +68,13 @@ après le mot de passe, Google ou Apple ; dix codes de secours ; appareil retenu
 trente jours ; Face ID sans code. Obligatoire pour le patron et la facturation
 en production réelle (`ARCHITECTURE.md` §455). Suites pures, base et navigateur
 de ce lot jouées seules ; **batterie non jouée, à sa demande**.
+## CODÉ, PAS SUR `main` : LA FACTURE SUIT LE DEVIS (7 octobre 2026)
+
+Branche `claude/acompte-retire-des-notes`, migration 0127. L'acompte retiré
+du devis ne se réclame plus, ni sur le devis ni sur la facture ; puis les neuf
+écarts du check-up (`docs/check-up-devis-facture.md`, `ARCHITECTURE.md` §457).
+Suites base et contrôles ciblés au vert ; **la batterie entière n'a pas été
+jouée** (il l'a demandé ainsi), elle reste due avant `main`.
 
 ---
 ## SUR `main` : POSER UN CLIENT À SA PLACE (7 octobre 2026)

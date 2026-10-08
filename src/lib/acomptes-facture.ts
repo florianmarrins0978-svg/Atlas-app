@@ -88,16 +88,25 @@ export function nomAcompte(
 }
 
 /**
- * Ce que le devis prévoyait pour ce rang, en euros : ce qui tombe ce jour-là,
- * c'est-à-dire la différence des cumuls (§343). `null` au-delà des acomptes du
- * devis — rien ne se propose d'office, le chiffre est à lui.
+ * Ce que le devis a promis : ses acomptes, et le total sur lequel ils se
+ * comptent. **Les deux voyagent ensemble** (check-up du 7 octobre 2026) : le
+ * total de la FACTURE, travaux supplémentaires compris, faisait proposer
+ * 3 300 € nommés « Acompte 30 % » pour un acompte de 3 000 € versé sur un
+ * devis de 10 000 €, et le net à payer perdait 300 €.
  */
-export function montantAcompteDuDevis(
-  index: number,
-  acomptesDuDevis: readonly AcompteDevis[],
-  totalTtc: string | number
-): string | null {
-  const echeancier = echeancierDevis(acomptesDuDevis, totalTtc);
+export type PromesseDuDevis = { acomptes: readonly AcompteDevis[]; totalTtc: string };
+
+/** Une facture née sans devis : rien n'a été promis d'avance. */
+export const AUCUNE_PROMESSE: PromesseDuDevis = { acomptes: [], totalTtc: "0.00" };
+
+/**
+ * Ce que le devis prévoyait pour ce rang, en euros : ce qui tombe ce jour-là,
+ * c'est-à-dire la différence des cumuls (§343), sur le total DU DEVIS. `null`
+ * au-delà des acomptes du devis — rien ne se propose d'office, le chiffre est
+ * à lui.
+ */
+export function montantAcompteDuDevis(index: number, promesse: PromesseDuDevis): string | null {
+  const echeancier = echeancierDevis(promesse.acomptes, promesse.totalTtc);
   return echeancier.lignes[index]?.montant ?? null;
 }
 

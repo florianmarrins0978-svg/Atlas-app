@@ -180,16 +180,13 @@ export function normaliserRappels(saisie: Partial<ReglagesRappels>): ReglagesRap
 }
 
 /**
- * L'échéance d'une facture — « A plus B », sa réponse du 16 août 2026.
+ * L'échéance d'une facture : son délai de paiement compté depuis sa date.
+ * `null` : aucun délai, l'échéance est la date même.
  *
- * **A :** le délai de paiement réglé dans « Devis & factures » court à partir de
- * l'envoi. C'est la date promise au client, celle qui définit le retard.
- * **B :** aucun délai réglé — il n'y a donc pas d'échéance, et on retombe sur le
- * jour de l'envoi. Le rappel paraîtra alors `factureImpayeeJours` après
- * l'envoi, comme les trois autres rappels comptent depuis leur événement.
- *
- * Rendre `null` aurait été le troisième choix, et il est écarté : un rappel qui
- * se tait faute de réglage est un rappel qu'on croit allumé.
+ * Elle s'IMPRIME sur la facture (`poserLaFactureBrouillon`), et c'est cette
+ * date imprimée que le rappel d'impayé relit depuis le 7 octobre 2026 : sa
+ * règle « A plus B » du 16 août recalculait ici l'échéance depuis le délai des
+ * Réglages, qui n'est pas celui de chaque facture.
  */
 export function echeanceFacture(envoyeeLe: Date, delaiPaiementJours: number | null): Date {
   if (delaiPaiementJours === null) return envoyeeLe;

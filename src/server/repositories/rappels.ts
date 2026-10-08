@@ -6,7 +6,6 @@ import {
   normaliserRappels,
   reglagesPourLeRole,
   seuilAncienneté,
-  echeanceFacture,
   rappelFactureDu,
   rappelEncoreTu,
   silenceApresVuJours,
@@ -229,17 +228,13 @@ export async function rappelsEnCours(ctx: Ctx, maintenant: Date): Promise<Rappel
 
     // ── Le quatrième : une facture dont le règlement n'est pas arrivé ─────
     //
-    // **« A plus B », sa réponse du 16 août 2026** : l'échéance quand elle
-    // existe — le délai de paiement réglé dans « Devis & factures » — et le
-    // jour de l'envoi sinon (`echeanceFacture`).
+    // **Depuis l'échéance INSCRITE SUR LA FACTURE — sa décision du 7 octobre
+    // 2026**, qui remplace « A plus B » (16 août). Le délai des Réglages n'est
+    // pas celui de chaque facture : un devis « comptant » ou une échéance
+    // changée à la main faisaient prévenir un mois trop tard, ou relancer un
+    // client qui n'était pas en retard. Ce que le client lit est la date qui
+    // compte ; le jour de l'envoi ne sert qu'à une facture sans échéance.
     if (reglages.factureImpayeeJours !== null) {
-      const [reglage] = await tx
-        .select({ delai: entreprises.delaiPaiementJours })
-        .from(entreprises)
-        .where(eq(entreprises.id, ctx.entrepriseId))
-        .limit(1);
-      const delai = reglage?.delai ?? null;
-
       const lignes = await tx
         .select({
           id: factures.id,
@@ -247,6 +242,7 @@ export async function rappelsEnCours(ctx: Ctx, maintenant: Date): Promise<Rappel
           chantierId: factures.chantierId,
           chantierNom: chantiers.nom,
           dateEmission: factures.dateEmission,
+          dateEcheance: factures.dateEcheance,
           totalHt: factures.totalHt,
           totalTva: factures.totalTva,
           totalTtc: factures.totalTtc,
@@ -286,7 +282,8 @@ export async function rappelsEnCours(ctx: Ctx, maintenant: Date): Promise<Rappel
         // Soldée : elle sort du rappel le jour même, sans geste.
         if (resteDuCts <= 0) continue;
 
-        const echeance = echeanceFacture(l.envoyeeLe!, delai);
+        // Une date civile en base : on la lit comme un jour, pas un instant.
+        const echeance = l.dateEcheance ? new Date(`${l.dateEcheance}T00:00:00Z`) : l.envoyeeLe!;
         const du = rappelFactureDu({
           maintenant,
           echeance,

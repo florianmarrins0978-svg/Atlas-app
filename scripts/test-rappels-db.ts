@@ -346,9 +346,12 @@ async function main() {
 
   // ── Le quatrième rappel : la facture impayée ──────────────────────────────
   //
-  // **« A plus B », sa réponse du 16 août 2026.** L'échéance quand un délai de
-  // paiement est réglé, le jour de l'envoi sinon.
-  await essai("A : avec un délai de 30 jours, rien n'est rappelé au dixième", async () => {
+  // **Depuis l'échéance INSCRITE SUR LA FACTURE — sa décision du 7 octobre
+  // 2026**, qui remplace « A plus B » (16 août). Le rappel comptait depuis le
+  // délai des Réglages ; or la facture imprime sa propre échéance (celle du
+  // devis, ou celle qu'il a changée à la main), et le rappel tombait alors un
+  // mois trop tard ou relançait un client qui n'était pas en retard.
+  await essai("avec un délai de 30 jours, rien n'est rappelé au dixième", async () => {
     const { ctxA } = await monter();
     await mettreAJourEntreprise(ctxA, { conditions: { delaiPaiementJours: 30 } });
     await factureEnvoyeeIlYA(ctxA, "Toiture", 10);
@@ -356,7 +359,7 @@ async function main() {
     assert.deepEqual(rappels, []);
   });
 
-  await essai("A : passée l'échéance, elle est rappelée avec son montant", async () => {
+  await essai("passée l'échéance, elle est rappelée avec son montant", async () => {
     const { ctxA } = await monter();
     await mettreAJourEntreprise(ctxA, { conditions: { delaiPaiementJours: 30 } });
     await factureEnvoyeeIlYA(ctxA, "Toiture", 40);
@@ -366,13 +369,35 @@ async function main() {
     assert.equal(rappels[0].facture?.totalCts, 120000);
   });
 
-  // **B : sans délai réglé, on compte depuis l'envoi.** Rendre `null` aurait
-  // laissé un rappel muet qu'on croit allumé.
-  await essai("B : sans délai réglé, le compte part de l'envoi", async () => {
+  // Son exemple 1 : un devis « comptant » donne une facture à échéance du jour
+  // même. Les Réglages à 30 jours faisaient attendre un mois de trop.
+  await essai("une facture payable comptant est rappelée le lendemain, malgré 30 jours aux Réglages", async () => {
+    const { ctxA } = await monter();
+    await mettreAJourEntreprise(ctxA, { conditions: { delaiPaiementJours: 0 } });
+    const { chantier } = await factureEnvoyeeIlYA(ctxA, "Toiture", 3);
+    await mettreAJourEntreprise(ctxA, { conditions: { delaiPaiementJours: 30 } });
+    const rappels = (await rappelsEnCours(ctxA, MAINTENANT)).filter((r) => r.genre === "facture-impayee");
+    assert.deepEqual(rappels.map((r) => r.chantierId), [chantier.id], "la facture comptant attend le délai des Réglages");
+  });
+
+  // Son exemple 2 : 60 jours accordés au client, Réglages à 30. Le client
+  // n'est pas en retard au quarantième jour.
+  await essai("une facture à 60 jours n'est pas rappelée au quarantième, malgré 30 jours aux Réglages", async () => {
+    const { ctxA } = await monter();
+    await mettreAJourEntreprise(ctxA, { conditions: { delaiPaiementJours: 60 } });
+    await factureEnvoyeeIlYA(ctxA, "Toiture", 40);
+    await mettreAJourEntreprise(ctxA, { conditions: { delaiPaiementJours: 30 } });
+    const rappels = (await rappelsEnCours(ctxA, MAINTENANT)).filter((r) => r.genre === "facture-impayee");
+    assert.deepEqual(rappels, [], "un client à 60 jours est relancé au délai des Réglages");
+  });
+
+  // Sans délai réglé, la facture imprime l'échéance légale de 30 jours : le
+  // rappel compte depuis elle, comme le client la lit.
+  await essai("sans délai réglé, le rappel compte depuis l'échéance imprimée (30 jours)", async () => {
     const { ctxA } = await monter();
     await factureEnvoyeeIlYA(ctxA, "Toiture", 3);
     const rappels = (await rappelsEnCours(ctxA, MAINTENANT)).filter((r) => r.genre === "facture-impayee");
-    assert.equal(rappels.length, 1, "aucun rappel alors qu'aucun délai n'est réglé");
+    assert.deepEqual(rappels, [], "relancé au troisième jour alors que la facture laisse 30 jours");
   });
 
   // **LE PREMIER PIÈGE DE SA PLANCHE.** C'est la somme des règlements qui

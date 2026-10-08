@@ -6,8 +6,10 @@ import {
   getAcomptesDevis,
   poserAcompteSuivant,
   retirerAcompte,
+  envoyerDevis,
 } from "../src/server/repositories/devis";
-import type { Ctx } from "../src/server/repositories/context";
+import { terminerChantier } from "../src/server/repositories/factures";
+import { creerEntreprise, marquerEnvoye, regler, papierDeLaFacture } from "./_devis-et-facture";
 
 /**
  * ─── UNE NOUVELLE VERSION GARDE L'ÉCHÉANCIER QU'IL A POSÉ ───────────────────
@@ -43,77 +45,7 @@ async function test(nom: string, fn: () => Promise<void>) {
   }
 }
 
-async function creerEntreprise(nom: string, acomptePourcent: string | null) {
-  const { rows: e } = await pool.query(
-    `INSERT INTO entreprises (nom, acompte_pourcent) VALUES ($1, $2) RETURNING id`,
-    [nom, acomptePourcent]
-  );
-  const entrepriseId = e[0].id as string;
-  const { rows: u } = await pool.query(`INSERT INTO users (email, nom) VALUES ($1,$2) RETURNING id`, [
-    `${nom.toLowerCase().replace(/\s/g, "-")}@test.local`,
-    nom,
-  ]);
-  const utilisateurId = u[0].id as string;
-  const client = await pool.connect();
-  try {
-    await client.query("BEGIN");
-    await client.query(`SELECT set_config('app.entreprise_id', $1, true)`, [entrepriseId]);
-    await client.query(
-      `INSERT INTO membres_entreprise (entreprise_id, utilisateur_id, role) VALUES ($1,$2,'proprietaire')`,
-      [entrepriseId, utilisateurId]
-    );
-    const { rows: ch } = await client.query(
-      `INSERT INTO chantiers (entreprise_id, nom) VALUES ($1,$2) RETURNING id`,
-      [entrepriseId, `Chantier ${nom}`]
-    );
-    const chantierId = ch[0].id as string;
-    // Le compteur de numéros : sans lui, `attribuerNumeroDevis` ne rend rien et
-    // l'erreur accuse le devis au lieu du montage de la suite.
-    await client.query(
-      `INSERT INTO entreprise_compteurs (entreprise_id, prochain_numero_devis) VALUES ($1, 1)`,
-      [entrepriseId]
-    );
-    await client.query(
-      `INSERT INTO lignes_prix (entreprise_id, chantier_id, libelle, quantite, prix_unitaire, montant, ordre)
-       VALUES ($1,$2,'Terrasse bois','1','2370.00','2370.00',0)`,
-      [entrepriseId, chantierId]
-    );
-    await client.query("COMMIT");
-    return { ctx: { entrepriseId, utilisateurId } as Ctx, chantierId };
-  } catch (e) {
-    await client.query("ROLLBACK");
-    throw e;
-  } finally {
-    client.release();
-  }
-}
-
 const taux = (acomptes: { tauxCumule: string }[]) => acomptes.map((a) => a.tauxCumule);
-
-/**
- * Le devis part chez le client : la version suivante sera une NOUVELLE version.
- *
- * **Le contexte d'entreprise est POSÉ** : `devis` est sous FORCE RLS, et un
- * `UPDATE` sans contexte touche zéro ligne **sans lever d'erreur**
- * (`CLAUDE.md` invariant 7). La première version de cette suite s'est fait
- * prendre : elle mesurait un devis resté brouillon et concluait « aucune
- * nouvelle version », ce qui accusait le produit à tort.
- */
-async function marquerEnvoye(entrepriseId: string, devisId: string) {
-  const client = await pool.connect();
-  try {
-    await client.query("BEGIN");
-    await client.query(`SELECT set_config('app.entreprise_id', $1, true)`, [entrepriseId]);
-    const r = await client.query(`UPDATE devis SET statut = 'envoye' WHERE id = $1`, [devisId]);
-    assert.equal(r.rowCount, 1, "le devis n'a pas été marqué envoyé : la suite ne mesurerait rien");
-    await client.query("COMMIT");
-  } catch (e) {
-    await client.query("ROLLBACK");
-    throw e;
-  } finally {
-    client.release();
-  }
-}
 
 async function main() {
   await nettoyerBase();
@@ -151,6 +83,62 @@ async function main() {
       [],
       "l'acompte des Réglages revient sur une version où il l'avait retiré"
     );
+  });
+
+  // *« Si on fait une modification sur un devis il faut que ça suive sur les
+  // factures »* (7 octobre 2026). Il avait retiré l'acompte : le devis envoyé,
+  // puis sa facture, réclamaient encore « 30 % à la commande », parce que la
+  // condition recopiée des Réglages survivait au retrait. Le VRAI chemin :
+  // retirer, envoyer, terminer le chantier, lire le papier de la facture.
+  await test("acompte retiré : ni le devis parti ni sa facture ne le réclament", async () => {
+    const { ctx, chantierId } = await creerEntreprise("Lafonte", "30");
+    const v1 = await getOuCreerDevisBrouillon(ctx, chantierId);
+    await retirerAcompte(ctx, v1.id, 1);
+    const parti = await envoyerDevis(ctx, v1.id);
+    assert.equal(parti.acomptePourcent, null, "le devis part avec la condition d'acompte qu'il a retirée");
+
+    const facture = await terminerChantier(ctx, chantierId);
+    const texte = await papierDeLaFacture(ctx, facture);
+    assert.ok(texte.includes("Terrasse bois"), "le papier de la facture n'a pas été lu");
+    assert.ok(!texte.includes("Mode de règlement"), "la facture réclame l'acompte retiré du devis");
+    assert.ok(!texte.includes("à la commande"), "la facture réclame l'acompte retiré du devis");
+  });
+
+  await test("acompte gardé : le devis parti et sa facture le disent", async () => {
+    const { ctx, chantierId } = await creerEntreprise("Morvan", "30");
+    const v1 = await getOuCreerDevisBrouillon(ctx, chantierId);
+    const parti = await envoyerDevis(ctx, v1.id);
+    assert.equal(parti.acomptePourcent, "30.00");
+    const facture = await terminerChantier(ctx, chantierId);
+    const texte = await papierDeLaFacture(ctx, facture);
+    assert.ok(texte.includes("Mode de règlement : 30 % à la signature"), "la facture a perdu l'acompte du devis");
+  });
+
+  // Le check-up du 7 octobre 2026, point 4 : « Corriger le devis » ouvre une
+  // version qui repartait à 20 %, sans remise, sans titre, sans main d'œuvre
+  // ni notes. La facture reprise perdait tout cela avec elle : une remise de
+  // 10 % disparaissait, et le client recevait le plein tarif.
+  await test("la version corrigée garde la remise, le taux, le titre, la main d'œuvre et les notes", async () => {
+    const { ctx, chantierId } = await creerEntreprise("Ferrand", "30");
+    const v1 = await getOuCreerDevisBrouillon(ctx, chantierId);
+    await regler(ctx.entrepriseId, v1.id, {
+      taux_tva: "10.00",
+      reduction_pourcent: "10.00",
+      reduction_montant: "237.00",
+      titre: "Aménagement du jardin",
+      main_doeuvre_ht: "800.00",
+      conditions_paiement: "Accès par le portail de gauche.",
+    });
+    await marquerEnvoye(ctx.entrepriseId, v1.id);
+    const v2 = await getOuCreerDevisBrouillon(ctx, chantierId);
+    assert.notEqual(v2.id, v1.id, "aucune nouvelle version : le cas n'est pas éprouvé");
+    assert.equal(v2.tauxTva, "10.00", "la version corrigée repart à 20 %");
+    assert.equal(v2.reductionPourcent, "10.00", "la remise accordée a disparu de la version corrigée");
+    assert.equal(v2.titre, "Aménagement du jardin");
+    assert.equal(v2.mainDoeuvreHt, "800.00");
+    assert.equal(v2.conditionsPaiement, "Accès par le portail de gauche.");
+    // 2 370 € HT moins 10 %, au taux de 10 % : le total suit la remise reprise.
+    assert.equal(v2.totalHt, "2133.00", "le total de la version corrigée ignore la remise reprise");
   });
 
   await test("un refus DIT pourquoi — il ne rend plus un silence", async () => {

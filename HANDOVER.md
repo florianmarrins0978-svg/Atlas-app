@@ -100,6 +100,23 @@ connexion :
   `getCurrentCtxPourActiver`, sinon il se renverrait à lui-même.
 
 
+## LA FACTURE SUIT LE DEVIS : 7 octobre 2026, PAS SUR `main`
+
+Branche `claude/acompte-retire-des-notes`, migration 0127. Avant de toucher la
+facture, le devis ou leurs totaux (`ARCHITECTURE.md` §457) :
+
+- **la remise ne porte que sur les lignes du devis** : `recoitLaRemise` dans
+  `totauxAvecReduction`. Toute ligne de facture passée à cette règle doit
+  porter son `supplement`, sinon un travail ajouté se remise à tort ;
+- **les acomptes du devis voyagent avec son total** (`PromesseDuDevis`) : ne
+  jamais les recompter sur le total de la facture ;
+- **l'échéance vient du délai du devis** ; les Réglages ne servent qu'à une
+  facture sans devis ;
+- **`emettreFacture` refuse une facture en retard sur le devis** : ce n'est
+  pas un bug de suite si un test qui corrige un devis puis émet rougit.
+
+Batterie entière pas jouée : elle est due avant `main`.
+
 ## POSER UN CLIENT À SA PLACE : 7 octobre 2026, SUR `main` LE 7
 
 Branche `claude/add-quote-client-to-schedule-ve9xn7`, migration 0122. Avant de

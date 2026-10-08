@@ -14,8 +14,8 @@ import { ADRESSE } from "./_adresse";
  *     d'office »* — quand ses Réglages en portent un ;
  *   · « + Ajouter un acompte » pose 50 puis 75, cumulés, et l'écran montre ce
  *     qui tombe à chaque fois ;
- *   · le « − » retire la ligne des totaux et la base la perd — mais la phrase
- *     du réglage reste dans les notes, *« quoi qu'il arrive »* ;
+ *   · le « − » retire la ligne des totaux et la base la perd, et la phrase
+ *     du réglage part des notes avec elle (sa décision du 7 octobre 2026) ;
  *   · la colonne Unité, après Qté, s'enregistre.
  *
  * Le chiffre de la planche partout : 2 370 € HT, TVA 20 %, 2 844,00 € TTC.
@@ -171,7 +171,7 @@ async function main() {
     assert.deepEqual(await quandLaBasePorte(["30.00", "50.00", "50.00"]), ["30.00", "50.00", "50.00"]);
   });
 
-  await cas("le − retire la ligne ; la phrase des Réglages reste dans les notes", async () => {
+  await cas("le − retire la ligne, et la phrase des Réglages part des notes", async () => {
     // Trois « − » ; on retire tout, du dernier au premier.
     for (let i = 0; i < 3; i++) {
       await page.locator('button[data-atlas="retirer-acompte"]').last().click();
@@ -182,10 +182,11 @@ async function main() {
     const texte = lisible(await totaux().innerText());
     assert.ok(!texte.includes("Reste à régler"), `la ligne survit à son retrait :\n${texte}`);
     assert.deepEqual(await quandLaBasePorte([]), [], "la base garde un acompte que l'écran dit retiré");
-    // La condition, elle, reste écrite sous les notes — comme le PDF l'écrira.
-    const notes = lisible(await page.locator('[data-atlas="conditions-imprimees"]').innerText());
-    assert.ok(notes.includes("Mode de règlement : 30 % à la commande"), `la phrase du réglage a disparu des notes :
-${notes}`);
+    // *« si je décide de pas en mettre ça doit disparaître des notes et
+    // conditions »* : le papier ne réclame plus ce que l'écran a retiré.
+    const notes = lisible((await page.locator('[data-atlas="conditions-imprimees"]').allInnerTexts()).join("\n"));
+    assert.ok(!notes.includes("Mode de règlement"), `un acompte retiré reste dans les notes :\n${notes}`);
+    assert.ok(!notes.includes("à la commande"), `un acompte retiré reste dans les notes :\n${notes}`);
   });
 
   // Le réglage revient à ce qu'il était : cette suite ne laisse rien derrière elle.
