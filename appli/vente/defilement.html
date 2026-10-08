@@ -15,14 +15,18 @@
   l'application se succéder. La page du chantier arrive, se froisse comme une
   feuille de journal, se retourne et se rouvre sur la fiche client ; la dictée
   s'allume, une phrase passe devant, le devis s'ouvre avec les lignes déjà
-  écrites ; puis l'envoi, le planning, les salariés, la facture et la TVA.
+  écrites ; puis l'envoi, le planning, la journée (salariés, sécurité, retour),
+  la facture et la TVA.
   Pas la page Outils.
 
   Toutes les images sont des captures d'Atlas (dossier images/, partagé avec
   index.html). Le début est capturé le 8 octobre sur l'application ACTUELLE,
   geste par geste : accueil.jpg (Vos chantiers), feuille-vide.jpg (appui sur
   « Créer un devis », la feuille Fiche client monte), feuille-remplie.jpg (nom,
-  téléphone, adresse tapés dans la feuille), et le micro dessiné qui s'allume par-dessus celui de la feuille. Plus salaries.jpg et facture.jpg.
+  téléphone, adresse tapés dans la feuille), et le micro dessiné qui s'allume par-dessus celui de la feuille. Puis le
+  planning en couleurs, la journée ouverte (planning-jour.jpg, en entier), la
+  fiche de sécurité, un retour d'intervention, Terminés, la facture et la TVA
+  d'octobre, toutes capturées le 8 octobre sur l'application actuelle.
   Les anneaux qui battent autour d'un bouton sont les seuls traits dessinés
   par-dessus une capture : ils montrent où l'on appuie.
 
@@ -82,7 +86,7 @@ h1,h2{font-family:var(--display);font-weight:400;line-height:1.02;letter-spacing
 @keyframes descendre{0%{transform:scaleY(0);transform-origin:top}50%{transform:scaleY(1);transform-origin:top}51%{transform-origin:bottom}100%{transform:scaleY(0);transform-origin:bottom}}
 
 /* Le récit : une scène collée, et une longue piste de défilement dessous. */
-.recit{position:relative;height:1150vh}
+.recit{position:relative;height:1340vh}
 .scene{position:sticky;top:0;height:100svh;overflow:hidden;display:flex;flex-direction:column;align-items:center;padding-top:72px}
 .plateau{--h:min(60svh,calc((100vw - 48px) / .5873));position:relative;width:calc(var(--h) * .5873);height:var(--h);perspective:1500px;flex:none}
 .feuille{position:absolute;inset:0;transform-style:preserve-3d;will-change:transform,opacity}
@@ -195,11 +199,12 @@ h1,h2{font-family:var(--display);font-weight:400;line-height:1.02;letter-spacing
   var IMG = {
     chantiers:"images/accueil.jpg", vide:"images/feuille-vide.jpg", client:"images/feuille-remplie.jpg",
     devis:"images/devis-entier.jpg", accepte:"images/client-devis.jpg",
-    planning:"images/planning.jpg", salaries:"images/salaries.jpg", termines:"images/termines.jpg",
-    facture:"images/facture.jpg", tva:"images/tva.jpg"
+    planning:"images/planning-mois.jpg", jour:"images/planning-jour.jpg", securite:"images/securite.jpg",
+    retour:"images/retour.jpg", termines:"images/termines-a-facturer.jpg",
+    facture:"images/facture.jpg", tva:"images/tva-octobre.jpg"
   };
   // Hauteur sur largeur de chaque capture. Le devis est pris en entier, du haut à la signature.
-  var RAPPORT = {devis: 8247 / 1170};
+  var RAPPORT = {devis: 8247 / 1170, jour: 4400 / 1170};
   function rapport(img){ return RAPPORT[img] || 1992 / 1170; }
 
   // Ce qu'on lit sous la page, et le moment de la journée.
@@ -210,9 +215,11 @@ h1,h2{font-family:var(--display);font-weight:400;line-height:1.02;letter-spacing
     {u:7.8,  mot:"Devis",    txt:"Le devis est déjà écrit.",                 jour:"Mardi matin", img:"devis"},
     {u:11.1, mot:"Accord",   txt:"Le client accepte depuis son téléphone.",  jour:"Mardi matin", img:"accepte"},
     {u:13.3, mot:"Planning", txt:"Le chantier se pose au planning.",          jour:"Mardi matin", img:"planning"},
-    {u:15.4, mot:"Équipe",   txt:"Chacun sait où il travaille.",              jour:"Mardi matin", img:"salaries"},
-    {u:17.5, mot:"Facture",  txt:"Le chantier fini, la facture reprend le devis.", jour:"Le jour du chantier", img:"termines"},
-    {u:21.8, mot:"TVA",      txt:"Votre TVA du mois, sans calculatrice.",     jour:"Fin du mois", img:"tva"}
+    {u:14.7, mot:"Le jour J", txt:"Appeler le client, ouvrir Maps, poser l'équipe.", jour:"Mardi matin", img:"jour"},
+    {u:17.5, mot:"Sécurité", txt:"La fiche de sécurité, déjà remplie d'après le chantier.", jour:"Lundi, au chantier", img:"securite"},
+    {u:19.4, mot:"Retour",   txt:"Ce que l'équipe a fait, et ce qu'elle signale.", jour:"Lundi soir", img:"retour"},
+    {u:21.6, mot:"Facture",  txt:"Le chantier fini, la facture reprend le devis.", jour:"Lundi soir", img:"termines"},
+    {u:25.9, mot:"TVA",      txt:"Votre TVA du mois, sans calculatrice.",     jour:"Fin du mois", img:"tva"}
   ];
 
   var calme = document.getElementById("calme");
@@ -307,8 +314,9 @@ h1,h2{font-family:var(--display);font-weight:400;line-height:1.02;letter-spacing
   var POULS_CREER = {x:22, y:23.3, l:56, h:7};
   var POULS_MICRO = {x:39.65, y:82, l:20.7, h:12.1, rond:true};
   var POULS_ACCORD = {x:4, y:65.5, l:92, h:8};
-  var POULS_FACTURER = {x:62, y:61.5, l:32, h:7.5};
-  var U = 24;
+  var POULS_FACTURER = {x:61, y:68.5, l:33, h:6.7};
+  var POULS_JOUR = {x:2.7, y:58, l:13, h:8};
+  var U = 28;
 
   function etat(u){
     var a = null, b = null, micro = 0, phrase = -1;
@@ -348,15 +356,21 @@ h1,h2{font-family:var(--display);font-weight:400;line-height:1.02;letter-spacing
     }
     else if (u < 12.5) a = {img:"accepte", pouls:Object.assign({v:entre(u, 11.6, 11.8) * (1 - entre(u, 12.2, 12.45))}, POULS_ACCORD)};
     else if (u < 14.1) a = journal("accepte", "planning", (u - 12.5) / 1.6);
-    else if (u < 14.9) a = {img:"planning"};
-    else if (u < 15.9){ var tp = u - 14.9; b = {img:"salaries", s:0.96 + 0.04 * tp}; a = Object.assign({img:"planning"}, tourner(tp)); }
-    else if (u < 16.7) a = {img:"salaries"};
-    else if (u < 18.3) a = journal("salaries", "termines", (u - 16.7) / 1.6);
-    else if (u < 19.2) a = {img:"termines", pouls:Object.assign({v:entre(u, 18.4, 18.6) * (1 - entre(u, 18.95, 19.15))}, POULS_FACTURER)};
-    else if (u < 20.2){ var tf = u - 19.2; b = {img:"facture", s:0.96 + 0.04 * tf}; a = Object.assign({img:"termines"}, tourner(tf)); }
-    else if (u < 21.0) a = {img:"facture"};
-    else if (u < 22.6) a = journal("facture", "tva", (u - 21.0) / 1.6);
-    else { var fin = entre(u, 23.2, 24); a = {img:"tva", s:1 - 0.06 * fin, y:-H * 0.05 * fin, o:1 - fin * 0.5}; }
+    else if (u < 14.6) a = {img:"planning", pouls:Object.assign({v:entre(u, 14.15, 14.3) * (1 - entre(u, 14.45, 14.6)), rond:true}, POULS_JOUR)};
+    else if (u < 15.0){ var tj = lisse((u - 14.6) / 0.4); a = {img:"planning", o:1 - tj}; b = {img:"jour"}; }
+    // La journée ouverte se lit en entier : la page descend jusqu'à la fiche d'intervention.
+    else if (u < 16.4) a = {img:"jour", defile:0.8 * lisse((u - 15.0) / 1.4)};
+    else if (u < 17.0) a = {img:"jour", defile:0.8};
+    else if (u < 18.0){ var ts = u - 17.0; b = {img:"securite", s:0.96 + 0.04 * ts}; a = Object.assign({img:"jour", defile:0.8}, tourner(ts)); }
+    else if (u < 18.6) a = {img:"securite"};
+    else if (u < 20.2) a = journal("securite", "retour", (u - 18.6) / 1.6);
+    else if (u < 20.8) a = {img:"retour"};
+    else if (u < 22.4) a = journal("retour", "termines", (u - 20.8) / 1.6);
+    else if (u < 23.3) a = {img:"termines", pouls:Object.assign({v:entre(u, 22.5, 22.7) * (1 - entre(u, 23.05, 23.25))}, POULS_FACTURER)};
+    else if (u < 24.3){ var tf = u - 23.3; b = {img:"facture", s:0.96 + 0.04 * tf}; a = Object.assign({img:"termines"}, tourner(tf)); }
+    else if (u < 25.1) a = {img:"facture"};
+    else if (u < 26.7) a = journal("facture", "tva", (u - 25.1) / 1.6);
+    else { var fin = entre(u, 27.2, 28); a = {img:"tva", s:1 - 0.06 * fin, y:-H * 0.05 * fin, o:1 - fin * 0.5}; }
 
     if (u > 4.4 && u < 7.4) micro = entre(u, 4.4, 4.7) * (1 - entre(u, 7.0, 7.35));
     if (u > 5.0 && u < 7.2) phrase = (u - 5.0) / 2.2;
@@ -371,7 +385,7 @@ h1,h2{font-family:var(--display);font-weight:400;line-height:1.02;letter-spacing
   var etapeCourante = -1, pw = 0;
 
   // Les minutes avancent avec le défilement, entre ces repères (u, minutes du jour).
-  var HEURES = [[0,450],[4.4,453],[7.2,455],[10.3,456],[11.5,552],[14.1,553],[16.7,554],[19.2,1060],[22.6,1080],[24,1080]];
+  var HEURES = [[0,450],[4.4,453],[7.2,455],[10.3,456],[11.5,552],[14.1,553],[16.4,555],[17.5,6225],[20.2,6810],[24.3,6820],[26.7,6840],[28,6840]];
   function heureA(u){
     for (var k = 1; k < HEURES.length; k++){
       if (u <= HEURES[k][0]){
@@ -386,10 +400,11 @@ h1,h2{font-family:var(--display);font-weight:400;line-height:1.02;letter-spacing
   var derniere = null, aDeposer = 0, enVol = 0, posees = 0;
 
   function ecrireHeure(m){
+    // Le compte avance de jour en jour ; l'horloge n'en montre que l'heure.
     if (derniere !== null && m > derniere) aDeposer = Math.min(aDeposer + (m - derniere), 40);
     derniere = m;
     var mm = m % 60;
-    hH.textContent = Math.floor(m / 60);
+    hH.textContent = Math.floor(m / 60) % 24;
     hD.textContent = Math.floor(mm / 10);
     hU.textContent = mm % 10;
   }

@@ -38,9 +38,19 @@ planning, équipe, facture, TVA). Rien n'est codé dans l'application.
   lignes de paysage, M. Lemaire, 862,20 € TTC). Le bouton « Choisir la date »,
   collé en bas de l'écran, est retiré de la capture longue, où il tombait au
   milieu.
-- La suite (accord, planning, terminés, TVA) porte encore les captures
-  du 27 septembre, à refaire sur l'application actuelle ; la TVA y montre
-  0,00 €. Le site de vente principal (`vente/index.html`) porte les mêmes
+- La journée est ajoutée, à sa demande : le planning d'octobre en couleurs
+  (le doré « incomplet » et le bleu nuit « complet », deux raccourcis de
+  l'appli, avec deux chantiers par jour), l'appui sur le 12, puis la journée
+  ouverte qui défile jusqu'à la fiche d'intervention (Maps, Waze, Appeler le
+  client, Lucas et Julien posés au clic). Suivent la fiche de sécurité, un
+  retour d'intervention, Terminés, la facture et la TVA d'octobre (331,80 €,
+  après un encaissement saisi dans l'appli). Les créneaux, les couleurs et le
+  retour d'intervention ont été posés directement dans la base d'essai ; tout
+  le reste l'a été par les boutons de l'application. L'organigramme est
+  retiré : la journée montre déjà les salariés.
+- Seule l'acceptation du client porte encore une capture du 27 septembre :
+  la page publique du devis ne s'ouvre pas ici, l'envoi refusant une adresse
+  locale. Le site de vente principal (`vente/index.html`) porte toujours les
   captures anciennes.
 
 ### Un devis expiré n'est plus un chantier vendu : il se range à part, et revient par sa porte
