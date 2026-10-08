@@ -20,8 +20,12 @@ planning, équipe, facture, TVA). Rien n'est codé dans l'application.
   thuyas sur douze mètres) : le devis qui suit en reprend la ligne.
 - L'heure affichée raconte une journée et ne mesure rien : aucun temps gagné
   n'a été relevé, donc aucun chiffre n'est écrit.
-- Trois captures nouvelles, prises sur un jeu d'essai : `fiche-client.jpg`,
-  `salaries.jpg`, `facture.jpg`. La capture de la TVA montre encore 0,00 € :
+- Quatre captures nouvelles, prises sur un jeu d'essai : `fiche-client.jpg`
+  (l'écran « Fiche client » d'un chantier, avec « Devis à la voix », celui
+  qu'il a désigné), `dictee-en-cours.jpg` (le même écran pendant
+  l'enregistrement, micro appuyé pour de vrai), `salaries.jpg`, `facture.jpg`.
+  Le micro dessiné de la première version est retiré : seuls restent les
+  anneaux qui montrent où l'on appuie. La capture de la TVA montre encore 0,00 € :
   à refaire avec des montants avant tout site public.
 
 ### Un devis expiré n'est plus un chantier vendu : il se range à part, et revient par sa porte

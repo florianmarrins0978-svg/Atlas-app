@@ -19,8 +19,12 @@
   Pas la page Outils.
 
   Toutes les images sont des captures d'Atlas (dossier images/, partagé avec
-  index.html). Trois sont nouvelles, prises le 8 octobre sur un jeu d'essai :
-  fiche-client.jpg, salaries.jpg, facture.jpg.
+  index.html). Quatre sont nouvelles, prises le 8 octobre sur un jeu d'essai :
+  fiche-client.jpg (l'écran « Fiche client » d'un chantier, celui qu'il a
+  désigné, avec « Devis à la voix »), dictee-en-cours.jpg (le même écran pendant
+  l'enregistrement, micro appuyé pour de vrai), salaries.jpg, facture.jpg.
+  Les anneaux qui battent autour d'un bouton sont les seuls traits dessinés
+  par-dessus une capture : ils montrent où l'on appuie.
 
   La phrase dictée est celle de la capture de la dictée (la haie de thuyas sur
   douze mètres), pour que la ligne du devis qui suit soit bien celle qu'on a
@@ -92,14 +96,10 @@ h1,h2{font-family:var(--display);font-weight:400;line-height:1.02;letter-spacing
 .pouls{position:absolute;border-radius:999px;pointer-events:none;opacity:0;transform:translateZ(1px)}
 .pouls::before,.pouls::after{content:"";position:absolute;inset:-4px;border-radius:inherit;border:2px solid var(--or);animation:pouls 1.4s ease-out infinite}
 .pouls::after{animation-delay:.7s}
+.pouls.rond::before,.pouls.rond::after{animation-name:pouls-rond}
+@keyframes pouls-rond{from{transform:scale(1);opacity:.9}to{transform:scale(1.6);opacity:0}}
 @keyframes pouls{from{transform:scale(1);opacity:.9}to{transform:scale(1.35,1.9);opacity:0}}
 
-/* La dictée : le micro s'allume sous la page. */
-.micro{position:absolute;left:50%;bottom:-34px;width:68px;height:68px;margin-left:-34px;border-radius:50%;background:var(--sauge);color:#fff;display:grid;place-items:center;opacity:0;transform:scale(.6);z-index:4;box-shadow:0 10px 30px -8px rgba(var(--ombre),.5)}
-.micro svg{width:28px;height:28px}
-.micro::before,.micro::after{content:"";position:absolute;inset:0;border-radius:50%;background:var(--sauge);opacity:.35;animation:onde 1.6s ease-out infinite;z-index:-1}
-.micro::after{animation-delay:.8s}
-@keyframes onde{from{transform:scale(1);opacity:.45}to{transform:scale(2.3);opacity:0}}
 
 .phrase{position:absolute;top:44%;left:0;z-index:6;white-space:nowrap;font:italic 400 clamp(40px,10vw,92px)/1 var(--display);color:var(--encre);pointer-events:none;opacity:0;text-shadow:0 0 24px var(--fond),0 0 48px var(--fond),0 0 2px var(--fond);will-change:transform}
 
@@ -143,9 +143,6 @@ h1,h2{font-family:var(--display);font-weight:400;line-height:1.02;letter-spacing
     <div class="plateau" id="plateau">
       <div class="feuille" id="dessous"></div>
       <div class="feuille" id="dessus"></div>
-      <div class="micro" id="micro" aria-hidden="true">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>
-      </div>
     </div>
     <div class="phrase" id="phrase" aria-hidden="true">« On arrache l'ancienne haie de thuyas sur douze mètres. »</div>
     <div class="legende" id="legende" aria-live="polite"><span></span><p></p></div>
@@ -163,7 +160,8 @@ h1,h2{font-family:var(--display);font-weight:400;line-height:1.02;letter-spacing
 <script>
 (function(){
   var IMG = {
-    chantiers:"images/chantiers.jpg", client:"images/fiche-client.jpg", dictee:"images/dictee.jpg",
+    chantiers:"images/chantiers.jpg", client:"images/fiche-client.jpg",
+    dictee:"images/dictee-en-cours.jpg",
     lignes:"images/devis-lignes.jpg", total:"images/devis-total.jpg", accepte:"images/client-devis.jpg",
     planning:"images/planning.jpg", salaries:"images/salaries.jpg", termines:"images/termines.jpg",
     facture:"images/facture.jpg", tva:"images/tva.jpg"
@@ -172,8 +170,8 @@ h1,h2{font-family:var(--display);font-weight:400;line-height:1.02;letter-spacing
   // Ce qu'on lit sous la page, et l'heure de la journée racontée.
   var ETAPES = [
     {u:0,    mot:"Chantier", txt:"Vos chantiers du jour, au même endroit.", heure:"7 h 30", jour:"Mardi matin", img:"chantiers"},
-    {u:2.6,  mot:"Client",   txt:"Le client et ses devis, en un geste.",     heure:"7 h 31", jour:"Mardi matin", img:"client"},
-    {u:4.7,  mot:"Dictée",   txt:"Vous dites ce qu'il y a à faire.",         heure:"7 h 32", jour:"Mardi matin", img:"dictee"},
+    {u:2.6,  mot:"Client",   txt:"Le client, l'adresse du chantier, les photos.",     heure:"7 h 31", jour:"Mardi matin", img:"client"},
+    {u:4.6,  mot:"Dictée",   txt:"Vous dites ce qu'il y a à faire.",         heure:"7 h 32", jour:"Mardi matin", img:"dictee"},
     {u:7.8,  mot:"Devis",    txt:"Le devis est déjà écrit.",                 heure:"7 h 34", jour:"Mardi matin", img:"lignes"},
     {u:11.1, mot:"Accord",   txt:"Le client accepte depuis son téléphone.",  heure:"9 h 12", jour:"Mardi matin", img:"accepte"},
     {u:13.3, mot:"Planning", txt:"Le chantier se pose au planning.",          heure:"9 h 13", jour:"Mardi matin", img:"planning"},
@@ -243,6 +241,7 @@ h1,h2{font-family:var(--display);font-weight:400;line-height:1.02;letter-spacing
       f.pouls.style.left = p.x + "%"; f.pouls.style.top = p.y + "%";
       f.pouls.style.width = p.l + "%"; f.pouls.style.height = p.h + "%";
       f.pouls.style.opacity = p.v;
+      f.pouls.classList.toggle("rond", !!p.rond);
     } else f.pouls.style.opacity = 0;
   }
 
@@ -264,20 +263,21 @@ h1,h2{font-family:var(--display);font-weight:400;line-height:1.02;letter-spacing
     return {f:1, s:0.45 - 0.3 * v, rz:8 + 22 * v, x:W * 1.2 * v, y:-H * 0.9 * v, o:1 - v};
   }
 
+  var POULS_MICRO = {x:39.75, y:73.5, l:20.5, h:12, rond:true};
   var POULS_ACCORD = {x:4, y:65.5, l:92, h:8};
   var POULS_FACTURER = {x:62, y:61.5, l:32, h:7.5};
   var U = 24;
 
   function etat(u){
-    var a = null, b = null, micro = 0, phrase = -1;
+    var a = null, b = null, phrase = -1;
     if (u < 1){
       var k = lisse(u);
       a = {img:"chantiers", y:H * 0.35 * (1 - k), rx:22 * (1 - k), s:0.9 + 0.1 * k, o:k};
     }
     else if (u < 1.8) a = {img:"chantiers"};
     else if (u < 3.4) a = journal("chantiers", "client", (u - 1.8) / 1.6);
-    else if (u < 4.2) a = {img:"client"};
-    else if (u < 5.2){ var t = (u - 4.2); b = {img:"dictee", s:0.96 + 0.04 * t}; a = Object.assign({img:"client"}, tourner(t)); }
+    else if (u < 4.4) a = {img:"client", pouls:Object.assign({v:entre(u, 3.7, 3.9) * (1 - entre(u, 4.25, 4.4))}, POULS_MICRO)};
+    else if (u < 4.8){ var tm = lisse((u - 4.4) / 0.4); a = {img:"client", o:1 - tm}; b = {img:"dictee"}; }
     else if (u < 7.2){ a = {img:"dictee"}; }
     else if (u < 8.4){
       if (u < 7.7){ var c = lisse((u - 7.2) / 0.5); a = {img:"dictee", f:c, s:1 - 0.45 * c, o:1 - c * 0.6}; }
@@ -309,13 +309,11 @@ h1,h2{font-family:var(--display);font-weight:400;line-height:1.02;letter-spacing
     else if (u < 22.6) a = journal("facture", "tva", (u - 21.0) / 1.6);
     else { var fin = entre(u, 23.2, 24); a = {img:"tva", s:1 - 0.06 * fin, y:-H * 0.05 * fin, o:1 - fin * 0.5}; }
 
-    if (u > 5.0 && u < 7.6) micro = entre(u, 5.0, 5.5) * (1 - entre(u, 7.1, 7.6));
-    if (u > 5.6 && u < 7.6) phrase = (u - 5.6) / 2.0;
-    return {a:a, b:b, micro:micro, phrase:phrase};
+    if (u > 5.0 && u < 7.2) phrase = (u - 5.0) / 2.2;
+    return {a:a, b:b, phrase:phrase};
   }
 
   var recit = document.getElementById("recit");
-  var micro = document.getElementById("micro");
   var phrase = document.getElementById("phrase");
   var legende = document.getElementById("legende");
   var heure = document.getElementById("heure"), jour = document.getElementById("jour"), fil = document.getElementById("fil");
@@ -329,8 +327,6 @@ h1,h2{font-family:var(--display);font-weight:400;line-height:1.02;letter-spacing
     var e = etat(u);
     poser(A, e.a); poser(B, e.b);
     A.el.style.zIndex = 2; B.el.style.zIndex = 1;
-    micro.style.opacity = e.micro;
-    micro.style.transform = "scale(" + (0.6 + 0.4 * e.micro) + ")";
     if (e.phrase >= 0 && e.phrase <= 1){
       pw = pw || phrase.offsetWidth;
       var x = window.innerWidth - (window.innerWidth + pw) * e.phrase;
