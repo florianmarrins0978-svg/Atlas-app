@@ -14,8 +14,11 @@ Format : le plus récent en tête.
 d'Atlas se succèdent (chantier, fiche client, dictée, devis, accord du client,
 planning, équipe, facture, TVA). Rien n'est codé dans l'application.
 
-- Le « journal froissé » est un pli en accordéon de huit bandes, en CSS : un
-  vrai papier froissé demanderait une vidéo générée par IA, payante.
+- Le « journal froissé » est en 3D (Three.js r128, chargé depuis cdnjs) : la
+  capture devient une feuille maillée qui se froisse en boule, arêtes
+  éclairées, se retourne et se défroisse sur la page suivante. Sans WebGL ou
+  sans la bibliothèque, le pli en accordéon de huit bandes reprend. Le
+  raccord avec la capture à plat a été mesuré : 2 % d'écart de luminosité.
 - La phrase qui passe devant reprend la ligne du devis qui suit (la haie de
   thuyas sur douze mètres).
 - L'heure défile minute par minute avec la page, de 7 h 30 à 7 h 47, l'envoi

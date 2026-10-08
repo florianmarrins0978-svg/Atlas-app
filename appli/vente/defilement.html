@@ -91,6 +91,8 @@ h1,h2{font-family:var(--display);font-weight:400;line-height:1.02;letter-spacing
 .recit{position:relative;height:1340vh}
 .scene{position:sticky;top:0;height:100svh;overflow:hidden;display:flex;flex-direction:column;align-items:center;padding-top:72px}
 .plateau{--h:min(60svh,calc((100vw - 48px) / .5873));position:relative;width:calc(var(--h) * .5873);height:var(--h);perspective:1500px;flex:none}
+/* La feuille en 3D : elle déborde du plateau pour que la boule froissée garde de la place. */
+.toile3d{position:absolute;left:-20%;top:-15%;width:140%;height:130%;pointer-events:none;z-index:3;opacity:0}
 .feuille{position:absolute;inset:0;transform-style:preserve-3d;will-change:transform,opacity}
 .feuille .bande{position:absolute;left:0;width:100%;background-repeat:no-repeat;backface-visibility:hidden;will-change:transform}
 .feuille .bande::after{content:"";position:absolute;inset:0;background:linear-gradient(rgba(var(--ombre),.0),rgba(var(--ombre),.9));opacity:var(--o,0)}
@@ -218,6 +220,7 @@ h1,h2{font-family:var(--display);font-weight:400;line-height:1.02;letter-spacing
   <a class="bouton" href="index.html#contact">Demander une démonstration</a>
 </section>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
 (function(){
   var IMG = {
@@ -317,8 +320,105 @@ h1,h2{font-family:var(--display);font-weight:400;line-height:1.02;letter-spacing
     } else f.pouls.style.opacity = 0;
   }
 
+  // ── LE PAPIER EN 3D ──────────────────────────────────────────────────────
+  // Sa demande du 8 octobre : des transitions dignes de ce qu'il a vu en ligne.
+  // La capture devient une vraie feuille maillée, qui se froisse en boule avec
+  // ses arêtes éclairées, se retourne, et se défroisse sur la page suivante.
+  // Sans WebGL, ou si la bibliothèque n'arrive pas, le pli en bandes reprend.
+  var PAPIER = null;
+  function hacher(x, y){ var v = Math.sin(x * 127.1 + y * 311.7) * 43758.5453; return v - Math.floor(v); }
+  function bruit(x, y){
+    var xi = Math.floor(x), yi = Math.floor(y), xf = x - xi, yf = y - yi;
+    var u = xf * xf * (3 - 2 * xf), v = yf * yf * (3 - 2 * yf);
+    var a = hacher(xi, yi), b = hacher(xi + 1, yi), c = hacher(xi, yi + 1), d = hacher(xi + 1, yi + 1);
+    return (a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v) * 2 - 1;
+  }
+  function preparerPapier(){
+    if (!window.THREE) return null;
+    var toile = document.createElement("canvas");
+    toile.className = "toile3d";
+    plateau.appendChild(toile);
+    var rendu;
+    try { rendu = new THREE.WebGLRenderer({canvas:toile, antialias:true, alpha:true}); }
+    catch (e) { console.warn("Pas de WebGL : le pli en bandes reprend.", e); toile.remove(); return null; }
+    rendu.outputEncoding = THREE.sRGBEncoding;
+    var scene = new THREE.Scene();
+    var camera = new THREE.PerspectiveCamera(35, 1, 1, 10000);
+    // Une feuille à plat doit garder les couleurs de la capture : ambiante plus
+    // diffuse face à la caméra font 1, moins le reflet que la brillance ajoute.
+    var dir = new THREE.Vector3(-0.3, 0.5, 0.81).normalize();
+    var lumiere = new THREE.DirectionalLight(0xffffff, 0.6);
+    scene.add(lumiere);
+    scene.add(new THREE.AmbientLight(0xffffff, 0.98 - 0.6 * dir.z));
+    var chargeur = new THREE.TextureLoader(), textures = {};
+    Object.keys(IMG).forEach(function(k){
+      chargeur.load(IMG[k], function(t){ t.encoding = THREE.sRGBEncoding; t.anisotropy = 4; textures[k] = t; });
+    });
+    var matiere = new THREE.MeshPhongMaterial({flatShading:true, shininess:8, specular:0x161616, side:THREE.DoubleSide});
+    var maille = null, origine = null, l = 0, h = 0;
+    function dimensionner(){
+      l = W; h = H;
+      var dpr = Math.min(window.devicePixelRatio || 1, 2);
+      rendu.setPixelRatio(dpr);
+      rendu.setSize(l * 1.4, h * 1.3, false);
+      camera.aspect = (l * 1.4) / (h * 1.3);
+      camera.position.set(0, 0, (h * 1.3 / 2) / Math.tan(17.5 * Math.PI / 180));
+      camera.lookAt(0, 0, 0);
+      camera.updateProjectionMatrix();
+      lumiere.position.copy(dir).multiplyScalar(h * 2);
+      if (maille){ scene.remove(maille); maille.geometry.dispose(); }
+      var geo = new THREE.PlaneGeometry(l, h, 40, 68);
+      origine = Float32Array.from(geo.attributes.position.array);
+      maille = new THREE.Mesh(geo, matiere);
+      scene.add(maille);
+    }
+    function froisser(c){
+      var pos = maille.geometry.attributes.position, a = pos.array;
+      for (var i = 0; i < a.length; i += 3){
+        var x = origine[i], y = origine[i + 1], nx = x / l, ny = y / h;
+        var plis = 0.55 * (1 - Math.abs(bruit(nx * 4 + 1.3, ny * 4 - 2.1)))
+                 + 0.3 * (1 - Math.abs(bruit(nx * 9 - 4.2, ny * 9 + 0.7)))
+                 + 0.15 * (1 - Math.abs(bruit(nx * 17 + 8.1, ny * 17 + 3.3)));
+        var bombe = Math.sqrt(Math.max(0, 0.3 - nx * nx - ny * ny * 0.6));
+        var serre = 1 - 0.66 * c;
+        a[i] = x * serre + c * l * 0.07 * bruit(nx * 5 + 3, ny * 5);
+        a[i + 1] = y * serre + c * h * 0.05 * bruit(nx * 5, ny * 5 + 7);
+        a[i + 2] = c * (h * 0.16 * (plis - 0.5) * 2 + h * 0.35 * bombe);
+      }
+      // L'ombrage à facettes se calcule dans la carte graphique : pas de normales à refaire.
+      pos.needsUpdate = true;
+    }
+    return {
+      pret: function(img){ return !!textures[img]; },
+      cacher: function(){ toile.style.opacity = 0; },
+      dessiner: function(s){
+        if (!maille || l !== W || h !== H) dimensionner();
+        var t = textures[s.img];
+        if (matiere.map !== t){
+          var r = rapport(s.img) / (1992 / 1170);
+          t.repeat.set(1, 1 / r); t.offset.set(0, 1 - 1 / r);
+          matiere.map = t; matiere.needsUpdate = true;
+        }
+        froisser(s.c);
+        maille.rotation.set(-0.35 * s.c, s.ry || 0, -0.1 * s.c);
+        var e = 1 - 0.12 * s.c;
+        maille.scale.set(e, e, e);
+        maille.position.set(0, h * 0.03 * s.c, 0);
+        rendu.render(scene, camera);
+        toile.style.opacity = 1;
+      }
+    };
+  }
+
   // Les quatre façons de passer d'une page à l'autre.
   function journal(de, a, t){
+    if (PAPIER && PAPIER.pret(de) && PAPIER.pret(a)){
+      var p3;
+      if (t < 0.45) p3 = {img:de, c:lisse(t / 0.45)};
+      else if (t < 0.6){ var q = (t - 0.45) / 0.15; p3 = q < 0.5 ? {img:de, c:1, ry:q * Math.PI} : {img:a, c:1, ry:-Math.PI + q * Math.PI}; }
+      else p3 = {img:a, c:1 - lisse((t - 0.6) / 0.4)};
+      return {img:de, o:0, papier:p3};
+    }
     if (t < 0.4){ var k = lisse(t / 0.4); return {img:de, f:k, s:1 - 0.38 * k, rz:-5 * k, y:-H * 0.04 * k}; }
     if (t < 0.6){
       var m = (t - 0.4) / 0.2;
@@ -365,8 +465,9 @@ h1,h2{font-family:var(--display);font-weight:400;line-height:1.02;letter-spacing
     else if (u < 4.4) a = {img:"client", pouls:Object.assign({v:entre(u, 3.95, 4.1) * (1 - entre(u, 4.28, 4.4))}, POULS_MICRO)};
     else if (u < 7.2) a = {img:"client"};
     else if (u < 8.4){
-      if (u < 7.7){ var c = lisse((u - 7.2) / 0.5); a = {img:"client", f:c, s:1 - 0.45 * c, o:1 - c * 0.6}; }
-      else { var g = lisse((u - 7.7) / 0.7); a = {img:"devis", f:1 - g, s:0.6 + 0.4 * g}; }
+      var en3d = PAPIER && PAPIER.pret("client") && PAPIER.pret("devis");
+      if (u < 7.7){ var c = lisse((u - 7.2) / 0.5); a = en3d ? {img:"client", o:0, papier:{img:"client", c:c}} : {img:"client", f:c, s:1 - 0.45 * c, o:1 - c * 0.6}; }
+      else { var g = lisse((u - 7.7) / 0.7); a = en3d ? {img:"devis", o:0, papier:{img:"devis", c:1 - g}} : {img:"devis", f:1 - g, s:0.6 + 0.4 * g}; }
     }
     // Le devis se lit en entier : la page défile du haut jusqu'à la signature.
     else if (u < 8.6) a = {img:"devis"};
@@ -499,6 +600,7 @@ h1,h2{font-family:var(--display);font-weight:400;line-height:1.02;letter-spacing
     var u = p * U;
     var e = etat(u);
     poser(A, e.a); poser(B, e.b);
+    if (PAPIER){ if (e.a && e.a.papier) PAPIER.dessiner(e.a.papier); else PAPIER.cacher(); }
     A.el.style.zIndex = 2; B.el.style.zIndex = 1;
     micro.style.opacity = e.micro;
     micro.style.transform = "scale(" + (0.6 + 0.4 * e.micro) + ")";
@@ -527,7 +629,9 @@ h1,h2{font-family:var(--display);font-weight:400;line-height:1.02;letter-spacing
   function demander(){ if (!attente){ attente = true; requestAnimationFrame(function(){ attente = false; dessiner(); }); } }
   window.addEventListener("scroll", demander, {passive:true});
   window.addEventListener("resize", function(){ pw = 0; mesurer(); demander(); });
-  mesurer(); dessiner();
+  mesurer();
+  PAPIER = preparerPapier();
+  dessiner();
 })();
 </script>
 </body>
