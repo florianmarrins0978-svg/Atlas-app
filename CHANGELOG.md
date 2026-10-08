@@ -22,10 +22,13 @@ planning, équipe, facture, TVA). Rien n'est codé dans l'application.
   ne mesure rien : aucun temps gagné n'a été relevé, donc aucun chiffre.
 - Le début est capturé sur l'application ACTUELLE, geste par geste : l'écran
   des chantiers, l'appui sur « Créer un devis », la feuille Fiche client qui
-  monte (vide, puis remplie au clavier), et son micro appuyé pour de vrai.
+  monte (vide, puis remplie au clavier, sans photo). Pour la dictée, il a
+  préféré le micro dessiné, aux ondes vertes, posé sur celui de la feuille,
+  plutôt que la capture de l'enregistrement.
   Les captures du 27 septembre montraient un ancien bouton « Créer un devis »
   et un écran de transcription qu'il ne reconnaît pas : retirés de la planche.
-  Seuls les anneaux qui montrent où l'on appuie sont dessinés par-dessus.
+  Ne sont dessinés par-dessus que ce micro et les anneaux qui montrent où
+  l'on appuie.
 - À chaque minute qui passe, le chiffre des unités tombe de l'horloge, devient
   une pièce d'or et s'entasse dans une brouette (son idée du jour, la brouette
   retenue parmi quatre). Le tas plafonne à 29 pièces, et rien ne s'affiche

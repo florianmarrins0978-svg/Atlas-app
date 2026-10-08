@@ -22,8 +22,7 @@
   index.html). Le début est capturé le 8 octobre sur l'application ACTUELLE,
   geste par geste : accueil.jpg (Vos chantiers), feuille-vide.jpg (appui sur
   « Créer un devis », la feuille Fiche client monte), feuille-remplie.jpg (nom,
-  téléphone, adresse tapés dans la feuille), feuille-dictee.jpg (micro de la
-  feuille appuyé, enregistrement en cours). Plus salaries.jpg et facture.jpg.
+  téléphone, adresse tapés dans la feuille), et le micro dessiné qui s'allume par-dessus celui de la feuille. Plus salaries.jpg et facture.jpg.
   Les anneaux qui battent autour d'un bouton sont les seuls traits dessinés
   par-dessus une capture : ils montrent où l'on appuie.
 
@@ -102,6 +101,14 @@ h1,h2{font-family:var(--display);font-weight:400;line-height:1.02;letter-spacing
 @keyframes pouls{from{transform:scale(1);opacity:.9}to{transform:scale(1.35,1.9);opacity:0}}
 
 
+/* La dictée : le micro dessiné s'allume par-dessus celui de la fiche (son choix
+   du 8 octobre, contre la capture de l'enregistrement). */
+.micro{position:absolute;left:50%;top:88%;width:23%;aspect-ratio:1;margin:-11.5% 0 0 -11.5%;border-radius:50%;background:var(--sauge);color:#fff;display:grid;place-items:center;opacity:0;transform:scale(.6);z-index:4;box-shadow:0 10px 30px -8px rgba(var(--ombre),.5)}
+.micro svg{width:42%;height:42%}
+.micro::before,.micro::after{content:"";position:absolute;inset:0;border-radius:50%;background:var(--sauge);opacity:.35;animation:onde 1.6s ease-out infinite;z-index:-1}
+.micro::after{animation-delay:.8s}
+@keyframes onde{from{transform:scale(1);opacity:.45}to{transform:scale(2.3);opacity:0}}
+
 .phrase{position:absolute;top:44%;left:0;z-index:6;white-space:nowrap;font:italic 400 clamp(40px,10vw,92px)/1 var(--display);color:var(--encre);pointer-events:none;opacity:0;text-shadow:0 0 24px var(--fond),0 0 48px var(--fond),0 0 2px var(--fond);will-change:transform}
 
 .legende{margin-top:46px;padding:0 20px;text-align:center;min-height:96px;max-width:560px}
@@ -154,6 +161,9 @@ h1,h2{font-family:var(--display);font-weight:400;line-height:1.02;letter-spacing
     <div class="plateau" id="plateau">
       <div class="feuille" id="dessous"></div>
       <div class="feuille" id="dessus"></div>
+      <div class="micro" id="micro" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>
+      </div>
     </div>
     <div class="phrase" id="phrase" aria-hidden="true">« On arrache l'ancienne haie de thuyas sur douze mètres. »</div>
     <div class="legende" id="legende" aria-live="polite"><span></span><p></p></div>
@@ -184,7 +194,6 @@ h1,h2{font-family:var(--display);font-weight:400;line-height:1.02;letter-spacing
 (function(){
   var IMG = {
     chantiers:"images/accueil.jpg", vide:"images/feuille-vide.jpg", client:"images/feuille-remplie.jpg",
-    dictee:"images/feuille-dictee.jpg",
     devis:"images/devis-entier.jpg", accepte:"images/client-devis.jpg",
     planning:"images/planning.jpg", salaries:"images/salaries.jpg", termines:"images/termines.jpg",
     facture:"images/facture.jpg", tva:"images/tva.jpg"
@@ -197,7 +206,7 @@ h1,h2{font-family:var(--display);font-weight:400;line-height:1.02;letter-spacing
   var ETAPES = [
     {u:0,    mot:"Chantier", txt:"Vos chantiers du jour, au même endroit.", jour:"Mardi matin", img:"chantiers"},
     {u:2.3,  mot:"Client",   txt:"Créer un devis : la fiche client s'ouvre.",     jour:"Mardi matin", img:"client"},
-    {u:4.6,  mot:"Dictée",   txt:"Vous dites ce qu'il y a à faire.",         jour:"Mardi matin", img:"dictee"},
+    {u:4.6,  mot:"Dictée",   txt:"Vous dites ce qu'il y a à faire.",         jour:"Mardi matin", img:"client"},
     {u:7.8,  mot:"Devis",    txt:"Le devis est déjà écrit.",                 jour:"Mardi matin", img:"devis"},
     {u:11.1, mot:"Accord",   txt:"Le client accepte depuis son téléphone.",  jour:"Mardi matin", img:"accepte"},
     {u:13.3, mot:"Planning", txt:"Le chantier se pose au planning.",          jour:"Mardi matin", img:"planning"},
@@ -302,7 +311,7 @@ h1,h2{font-family:var(--display);font-weight:400;line-height:1.02;letter-spacing
   var U = 24;
 
   function etat(u){
-    var a = null, b = null, phrase = -1;
+    var a = null, b = null, micro = 0, phrase = -1;
     if (u < 1){
       var k = lisse(u);
       a = {img:"chantiers", y:H * 0.35 * (1 - k), rx:22 * (1 - k), s:0.9 + 0.1 * k, o:k};
@@ -322,10 +331,9 @@ h1,h2{font-family:var(--display);font-weight:400;line-height:1.02;letter-spacing
       var tr = lisse((u - 3.4) / 0.5); a = {img:"vide", o:1 - tr}; b = {img:"client"};
     }
     else if (u < 4.4) a = {img:"client", pouls:Object.assign({v:entre(u, 3.95, 4.1) * (1 - entre(u, 4.28, 4.4))}, POULS_MICRO)};
-    else if (u < 4.8){ var td = lisse((u - 4.4) / 0.4); a = {img:"client", o:1 - td}; b = {img:"dictee"}; }
-    else if (u < 7.2){ a = {img:"dictee"}; }
+    else if (u < 7.2) a = {img:"client"};
     else if (u < 8.4){
-      if (u < 7.7){ var c = lisse((u - 7.2) / 0.5); a = {img:"dictee", f:c, s:1 - 0.45 * c, o:1 - c * 0.6}; }
+      if (u < 7.7){ var c = lisse((u - 7.2) / 0.5); a = {img:"client", f:c, s:1 - 0.45 * c, o:1 - c * 0.6}; }
       else { var g = lisse((u - 7.7) / 0.7); a = {img:"devis", f:1 - g, s:0.6 + 0.4 * g}; }
     }
     // Le devis se lit en entier : la page défile du haut jusqu'à la signature.
@@ -350,12 +358,14 @@ h1,h2{font-family:var(--display);font-weight:400;line-height:1.02;letter-spacing
     else if (u < 22.6) a = journal("facture", "tva", (u - 21.0) / 1.6);
     else { var fin = entre(u, 23.2, 24); a = {img:"tva", s:1 - 0.06 * fin, y:-H * 0.05 * fin, o:1 - fin * 0.5}; }
 
+    if (u > 4.4 && u < 7.4) micro = entre(u, 4.4, 4.7) * (1 - entre(u, 7.0, 7.35));
     if (u > 5.0 && u < 7.2) phrase = (u - 5.0) / 2.2;
-    return {a:a, b:b, phrase:phrase};
+    return {a:a, b:b, micro:micro, phrase:phrase};
   }
 
   var recit = document.getElementById("recit");
   var phrase = document.getElementById("phrase");
+  var micro = document.getElementById("micro");
   var legende = document.getElementById("legende");
   var jour = document.getElementById("jour"), fil = document.getElementById("fil");
   var etapeCourante = -1, pw = 0;
@@ -441,6 +451,8 @@ h1,h2{font-family:var(--display);font-weight:400;line-height:1.02;letter-spacing
     var e = etat(u);
     poser(A, e.a); poser(B, e.b);
     A.el.style.zIndex = 2; B.el.style.zIndex = 1;
+    micro.style.opacity = e.micro;
+    micro.style.transform = "scale(" + (0.6 + 0.4 * e.micro) + ")";
     if (e.phrase >= 0 && e.phrase <= 1){
       pw = pw || phrase.offsetWidth;
       var x = window.innerWidth - (window.innerWidth + pw) * e.phrase;
