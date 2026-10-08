@@ -35,25 +35,25 @@ planning, équipe, facture, TVA). Rien n'est codé dans l'application.
   dans une brouette (son idée du jour, la brouette retenue parmi quatre).
   Dix-sept pièces, une par minute ; rien ne s'affiche avec une réduction des
   animations.
-- Le devis se montre en entier, et la page défile jusqu'à la signature pendant
-  qu'on descend. Il a été rédigé à la main dans l'application actuelle (quatre
-  lignes de paysage, M. Lemaire, 862,20 € TTC). Le bouton « Choisir la date »,
-  collé en bas de l'écran, est retiré de la capture longue, où il tombait au
-  milieu.
-- La journée est ajoutée, à sa demande : le planning d'octobre dans les
-  couleurs de l'appli (vert foncé plein, vert clair à moitié, rouge quand il
-  y a trop, avec deux chantiers par jour), l'appui sur le 12, puis la journée
-  ouverte qui défile jusqu'à la fiche d'intervention (Maps, Waze, Appeler le
-  client, Lucas et Julien posés au clic). Suivent la fiche de sécurité, un
-  retour d'intervention, Terminés, la facture et la TVA d'octobre (331,80 €,
-  après un encaissement saisi dans l'appli). Les créneaux, les couleurs et le
-  retour d'intervention ont été posés directement dans la base d'essai ; tout
-  le reste l'a été par les boutons de l'application. L'organigramme est
-  retiré : la journée montre déjà les salariés.
-- Seule l'acceptation du client porte encore une capture du 27 septembre :
-  la page publique du devis ne s'ouvre pas ici, l'envoi refusant une adresse
-  locale. Le site de vente principal (`vente/index.html`) porte toujours les
-  captures anciennes.
+- Le devis se montre en entier et défile jusqu'à la signature ; la journée
+  ouverte défile jusqu'à la fiche d'intervention (Maps, Waze, Appeler le
+  client, salariés). Le planning garde les couleurs de l'appli : vert foncé
+  plein, vert clair à moitié, rouge quand il y a trop.
+- **Un seul chantier, du début à la fin** (sa demande) : Mr. Lemaire,
+  06 39 98 12 34, 12 allée des Charmilles, Valmorin, devis « Création d'un
+  massif » à 862,20 € TTC, accepté et réalisé le jeudi 8 octobre, facturé et
+  payé, TVA 143,70 €. Le numéro est dans la tranche 06 39 98 que l'Arcep
+  réserve aux œuvres de fiction ; Valmorin est une commune inventée (la Base
+  adresse nationale n'est pas joignable ici pour vérifier une rue). Tout est
+  passé par les boutons de l'application, sur une base d'essai réamorcée,
+  sauf ce qui demande un compte salarié : le retour d'intervention et la fin
+  du chantier ont été écrits dans la base. Les autres chantiers du planning
+  sont ceux du jeu d'essai, posés en base pour donner des couleurs.
+- Une tentative de jouer chaque étape à sa date en avançant l'horloge de la
+  machine d'essai a été refusée par le garde de la session ; l'horloge a été
+  remise à l'heure réelle, et tout le parcours a été rejoué le 8 octobre.
+- Le site de vente principal (`vente/index.html`) porte toujours les
+  captures du 27 septembre.
 
 ### Un devis expiré n'est plus un chantier vendu : il se range à part, et revient par sa porte
 

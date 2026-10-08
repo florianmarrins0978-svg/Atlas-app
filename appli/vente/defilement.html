@@ -19,14 +19,16 @@
   la facture et la TVA.
   Pas la page Outils.
 
-  Toutes les images sont des captures d'Atlas (dossier images/, partagé avec
-  index.html). Le début est capturé le 8 octobre sur l'application ACTUELLE,
-  geste par geste : accueil.jpg (Vos chantiers), feuille-vide.jpg (appui sur
-  « Créer un devis », la feuille Fiche client monte), feuille-remplie.jpg (nom,
-  téléphone, adresse tapés dans la feuille), et le micro dessiné qui s'allume par-dessus celui de la feuille. Puis le
-  planning en couleurs, la journée ouverte (planning-jour.jpg, en entier), la
-  fiche de sécurité, un retour d'intervention, Terminés, la facture et la TVA
-  d'octobre, toutes capturées le 8 octobre sur l'application actuelle.
+  Toutes les images sont des captures d'Atlas, prises le 8 octobre 2026 sur
+  l'application actuelle, et elles suivent UN SEUL chantier (sa demande du même
+  jour) : Mr. Lemaire, 06 39 98 12 34, 12 allée des Charmilles, Valmorin, devis
+  « Création d'un massif » à 862,20 € TTC. Le numéro est dans la tranche 06 39 98
+  que l'Arcep réserve aux œuvres de fiction ; Valmorin est une commune inventée,
+  pour qu'aucune adresse ne tombe chez quelqu'un. Tout est passé par les boutons
+  de l'application (fiche remplie, devis rédigé, envoi, accord du client sur sa
+  page, salariés posés, facture, encaissement), sauf ce qui demande un compte
+  salarié : le retour d'intervention et la fin du chantier ont été écrits dans la
+  base d'essai. Les autres chantiers du planning sont ceux du jeu d'essai.
   Les anneaux qui battent autour d'un bouton sont les seuls traits dessinés
   par-dessus une capture : ils montrent où l'on appuie.
 
@@ -154,7 +156,7 @@ h1,h2{font-family:var(--display);font-weight:400;line-height:1.02;letter-spacing
 
 <header class="barre">
   <a class="marque" href="index.html">Atlas</a>
-  <div class="horloge" aria-hidden="true"><b id="heure"><span id="h-h">7</span> h <span id="h-d">3</span><span id="h-u">0</span></b><small id="jour">Mardi matin</small></div>
+  <div class="horloge" aria-hidden="true"><b id="heure"><span id="h-h">7</span> h <span id="h-d">3</span><span id="h-u">0</span></b><small id="jour">Jeudi matin</small></div>
   <div class="fil"><i id="fil"></i></div>
 </header>
 
@@ -220,21 +222,21 @@ h1,h2{font-family:var(--display);font-weight:400;line-height:1.02;letter-spacing
 (function(){
   var IMG = {
     chantiers:"images/accueil.jpg", vide:"images/feuille-vide.jpg", client:"images/feuille-remplie.jpg",
-    devis:"images/devis-entier.jpg", accepte:"images/client-devis.jpg",
+    devis:"images/devis-entier.jpg", accepte:"images/accord.jpg", merci:"images/accord-merci.jpg",
     planning:"images/planning-mois.jpg", jour:"images/planning-jour.jpg", securite:"images/securite.jpg",
     retour:"images/retour.jpg", termines:"images/termines-a-facturer.jpg",
     facture:"images/facture.jpg", tva:"images/tva-octobre.jpg"
   };
   // Hauteur sur largeur de chaque capture. Le devis est pris en entier, du haut à la signature.
-  var RAPPORT = {devis: 8247 / 1170, jour: 4400 / 1170};
+  var RAPPORT = {devis: 8058 / 1170, jour: 4450 / 1170};
   function rapport(img){ return RAPPORT[img] || 1992 / 1170; }
 
   // Ce qu'on lit sous la page, et le moment de la journée.
   var ETAPES = [
-    {u:0,    mot:"Chantier", txt:"Vos chantiers du jour, au même endroit.", jour:"Mardi matin", img:"chantiers"},
-    {u:2.3,  mot:"Client",   txt:"Créer un devis : la fiche client s'ouvre.",     jour:"Mardi matin", img:"client"},
-    {u:4.6,  mot:"Dictée",   txt:"Vous dites ce qu'il y a à faire.",         jour:"Mardi matin", img:"client"},
-    {u:7.8,  mot:"Devis",    txt:"Le devis est déjà écrit.",                 jour:"Mardi matin", img:"devis"},
+    {u:0,    mot:"Chantier", txt:"Vos chantiers du jour, au même endroit.", jour:"Jeudi matin", img:"chantiers"},
+    {u:2.3,  mot:"Client",   txt:"Créer un devis : la fiche client s'ouvre.",     jour:"Jeudi matin", img:"client"},
+    {u:4.6,  mot:"Dictée",   txt:"Vous dites ce qu'il y a à faire.",         jour:"Jeudi matin", img:"client"},
+    {u:7.8,  mot:"Devis",    txt:"Le devis est déjà écrit.",                 jour:"Jeudi matin", img:"devis"},
     {u:11.1, mot:"Accord",   txt:"Le client accepte depuis son téléphone.",  jour:"Devis envoyé", img:"accepte"},
     {u:13.3, mot:"Planning", txt:"Le chantier se pose au planning.",          jour:"Devis envoyé", img:"planning"},
     {u:14.7, mot:"Le jour J", txt:"Appeler le client, ouvrir Maps, poser l'équipe.", jour:"Devis envoyé", img:"jour"},
@@ -335,9 +337,9 @@ h1,h2{font-family:var(--display);font-weight:400;line-height:1.02;letter-spacing
 
   var POULS_CREER = {x:22, y:23.3, l:56, h:7};
   var POULS_MICRO = {x:39.65, y:82, l:20.7, h:12.1, rond:true};
-  var POULS_ACCORD = {x:4, y:65.5, l:92, h:8};
+  var POULS_ACCORD = {x:4, y:81.8, l:92, h:7.5};
   var POULS_FACTURER = {x:61, y:68.5, l:33, h:6.7};
-  var POULS_JOUR = {x:2.7, y:58, l:13, h:8};
+  var POULS_JOUR = {x:43.5, y:50.5, l:13, h:8};
   var U = 28;
 
   function etat(u){
@@ -376,8 +378,9 @@ h1,h2{font-family:var(--display);font-weight:400;line-height:1.02;letter-spacing
       var r = lisse((te - 0.6) / 0.4);
       b = {img:"accepte", o:r, s:0.9 + 0.1 * r, y:H * 0.06 * (1 - r)};
     }
-    else if (u < 12.5) a = {img:"accepte", pouls:Object.assign({v:entre(u, 11.6, 11.8) * (1 - entre(u, 12.2, 12.45))}, POULS_ACCORD)};
-    else if (u < 14.1) a = journal("accepte", "planning", (u - 12.5) / 1.6);
+    else if (u < 12.1) a = {img:"accepte", pouls:Object.assign({v:entre(u, 11.55, 11.7) * (1 - entre(u, 11.95, 12.1))}, POULS_ACCORD)};
+    else if (u < 12.5){ var tc = lisse((u - 12.1) / 0.3); a = {img:"accepte", o:1 - tc}; b = {img:"merci"}; }
+    else if (u < 14.1) a = journal("merci", "planning", (u - 12.5) / 1.6);
     else if (u < 14.6) a = {img:"planning", pouls:Object.assign({v:entre(u, 14.15, 14.3) * (1 - entre(u, 14.45, 14.6)), rond:true}, POULS_JOUR)};
     else if (u < 15.0){ var tj = lisse((u - 14.6) / 0.4); a = {img:"planning", o:1 - tj}; b = {img:"jour"}; }
     // La journée ouverte se lit en entier : la page descend jusqu'à la fiche d'intervention.
