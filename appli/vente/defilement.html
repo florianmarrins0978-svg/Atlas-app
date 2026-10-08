@@ -127,10 +127,15 @@ h1,h2{font-family:var(--display);font-weight:400;line-height:1.02;letter-spacing
 .brouette.vue{opacity:1}
 .brouette svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
 .brouette .tas{position:absolute;left:14px;top:2px;width:54px;height:22px}
-.piece{position:absolute;width:15px;height:15px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fbe7a6,#e2b558 45%,#a8772f 100%);box-shadow:inset 0 0 0 1.5px rgba(122,84,26,.55),0 1px 2px rgba(0,0,0,.25)}
-.chute{position:fixed;left:0;top:0;z-index:40;pointer-events:none;width:15px;height:22px}
-.chute b{position:absolute;inset:0;display:grid;place-items:center;font:400 26px/1 var(--display);color:var(--encre)}
-.chute .piece{left:0;top:4px;opacity:0}
+/* Une pièce couchée dans la brouette : la même, vue de biais, avec sa tranche. */
+.piece{position:absolute;width:18px;height:18px;transform:scaleY(.6);filter:drop-shadow(0 2.4px 0 #7a5212) drop-shadow(0 3px 2px rgba(0,0,0,.25))}
+.piece svg,.chute svg{display:block;width:100%;height:100%}
+/* Le chiffre qui tombe : recto le chiffre, verso la pièce. En se retournant, il devient or. */
+.chute{position:fixed;left:0;top:0;z-index:40;pointer-events:none;width:30px;height:30px;perspective:300px}
+.chute .tour{position:absolute;inset:0;transform-style:preserve-3d}
+.chute .face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden}
+.chute b.face{display:grid;place-items:center;font:400 26px/1 var(--display);color:var(--encre)}
+.chute .dos{transform:rotateY(180deg);filter:drop-shadow(0 4px 6px rgba(0,0,0,.25))}
 .fin{min-height:90svh;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;padding:80px 16px;max-width:780px;margin:0 auto}
 .fin h2{font-size:clamp(42px,10vw,84px);margin:16px 0 30px}
 .bouton{display:inline-flex;align-items:center;min-height:54px;padding:0 28px;border-radius:999px;background:var(--pin);color:var(--bouton-texte);font:500 16px/1 var(--texte);text-decoration:none}
@@ -174,6 +179,23 @@ h1,h2{font-family:var(--display);font-weight:400;line-height:1.02;letter-spacing
   </div>
 </section>
 
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <radialGradient id="or-face" cx="38%" cy="32%" r="72%"><stop offset="0" stop-color="#fff6cf"/><stop offset=".3" stop-color="#f6d06a"/><stop offset=".72" stop-color="#cf9733"/><stop offset="1" stop-color="#8f5f17"/></radialGradient>
+    <linearGradient id="or-bord" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffeaa8"/><stop offset=".45" stop-color="#c38a26"/><stop offset="1" stop-color="#6a440e"/></linearGradient>
+    <symbol id="piece-or" viewBox="0 0 64 64">
+      <circle cx="32" cy="32" r="31" fill="url(#or-bord)"/>
+      <circle cx="32" cy="32" r="28.6" fill="none" stroke="#6f4a10" stroke-width="2.6" stroke-dasharray="1.4 1.5" opacity=".55"/>
+      <circle cx="32" cy="32" r="25.5" fill="url(#or-face)"/>
+      <circle cx="32" cy="32" r="21.5" fill="none" stroke="#a46f1f" stroke-width="1.3" opacity=".75"/>
+      <circle cx="32" cy="32" r="20.6" fill="none" stroke="#fff1bd" stroke-width=".8" opacity=".6"/>
+      <text x="32" y="43" text-anchor="middle" font-family="Instrument Serif, Georgia, serif" font-size="31" fill="#fff3c2" opacity=".75">A</text>
+      <text x="32.8" y="44" text-anchor="middle" font-family="Instrument Serif, Georgia, serif" font-size="31" fill="#8a5a14">A</text>
+      <path d="M13 25 A21 21 0 0 1 27 11.5" stroke="#fff" stroke-width="3.2" stroke-linecap="round" fill="none" opacity=".55"/>
+    </symbol>
+  </defs>
+</svg>
+
 <div class="brouette" id="brouette" aria-hidden="true">
   <div class="tas" id="tas"></div>
   <svg viewBox="0 0 92 64" fill="none" stroke-linecap="round" stroke-linejoin="round">
@@ -213,13 +235,13 @@ h1,h2{font-family:var(--display);font-weight:400;line-height:1.02;letter-spacing
     {u:2.3,  mot:"Client",   txt:"Créer un devis : la fiche client s'ouvre.",     jour:"Mardi matin", img:"client"},
     {u:4.6,  mot:"Dictée",   txt:"Vous dites ce qu'il y a à faire.",         jour:"Mardi matin", img:"client"},
     {u:7.8,  mot:"Devis",    txt:"Le devis est déjà écrit.",                 jour:"Mardi matin", img:"devis"},
-    {u:11.1, mot:"Accord",   txt:"Le client accepte depuis son téléphone.",  jour:"Mardi matin", img:"accepte"},
-    {u:13.3, mot:"Planning", txt:"Le chantier se pose au planning.",          jour:"Mardi matin", img:"planning"},
-    {u:14.7, mot:"Le jour J", txt:"Appeler le client, ouvrir Maps, poser l'équipe.", jour:"Mardi matin", img:"jour"},
-    {u:17.5, mot:"Sécurité", txt:"La fiche de sécurité, déjà remplie d'après le chantier.", jour:"Lundi, au chantier", img:"securite"},
-    {u:19.4, mot:"Retour",   txt:"Ce que l'équipe a fait, et ce qu'elle signale.", jour:"Lundi soir", img:"retour"},
-    {u:21.6, mot:"Facture",  txt:"Le chantier fini, la facture reprend le devis.", jour:"Lundi soir", img:"termines"},
-    {u:25.9, mot:"TVA",      txt:"Votre TVA du mois, sans calculatrice.",     jour:"Fin du mois", img:"tva"}
+    {u:11.1, mot:"Accord",   txt:"Le client accepte depuis son téléphone.",  jour:"Devis envoyé", img:"accepte"},
+    {u:13.3, mot:"Planning", txt:"Le chantier se pose au planning.",          jour:"Devis envoyé", img:"planning"},
+    {u:14.7, mot:"Le jour J", txt:"Appeler le client, ouvrir Maps, poser l'équipe.", jour:"Devis envoyé", img:"jour"},
+    {u:17.5, mot:"Sécurité", txt:"La fiche de sécurité, déjà remplie d'après le chantier.", jour:"Devis envoyé", img:"securite"},
+    {u:19.4, mot:"Retour",   txt:"Ce que l'équipe a fait, et ce qu'elle signale.", jour:"Devis envoyé", img:"retour"},
+    {u:21.6, mot:"Facture",  txt:"Le chantier fini, la facture reprend le devis.", jour:"Devis envoyé", img:"termines"},
+    {u:25.9, mot:"TVA",      txt:"Votre TVA du mois, sans calculatrice.",     jour:"Devis envoyé", img:"tva"}
   ];
 
   var calme = document.getElementById("calme");
@@ -384,8 +406,9 @@ h1,h2{font-family:var(--display);font-weight:400;line-height:1.02;letter-spacing
   var jour = document.getElementById("jour"), fil = document.getElementById("fil");
   var etapeCourante = -1, pw = 0;
 
-  // Les minutes avancent avec le défilement, entre ces repères (u, minutes du jour).
-  var HEURES = [[0,450],[4.4,453],[7.2,455],[10.3,456],[11.5,552],[14.1,553],[16.4,555],[17.5,6225],[20.2,6810],[24.3,6820],[26.7,6840],[28,6840]];
+  // Les minutes avancent avec le défilement, et s'arrêtent quand le devis part :
+  // sa demande, montrer qu'il faut dix-sept minutes du chantier à l'envoi.
+  var HEURES = [[0,450],[2.1,451],[3.4,453],[4.4,455],[7.2,460],[8.6,462],[10.3,466],[11.0,467],[28,467]];
   function heureA(u){
     for (var k = 1; k < HEURES.length; k++){
       if (u <= HEURES[k][0]){
@@ -409,25 +432,33 @@ h1,h2{font-family:var(--display);font-weight:400;line-height:1.02;letter-spacing
     hU.textContent = mm % 10;
   }
 
-  // Le chiffre qui s'en va part de sa place, tombe, et devient pièce en chemin.
+  // Le chiffre qui s'en va part de sa place, commence à tomber, se retourne,
+  // et c'est une pièce d'or qui finit sa chute dans la brouette.
+  var PIECE = '<svg viewBox="0 0 64 64"><use href="#piece-or"/></svg>';
   function lacher(chiffre){
     var de = hU.getBoundingClientRect(), vers = brouette.getBoundingClientRect();
     var c = document.createElement("div"); c.className = "chute";
-    c.innerHTML = '<b></b><i class="piece"></i>';
+    c.innerHTML = '<div class="tour"><b class="face"></b><span class="face dos">' + PIECE + '</span></div>';
     c.querySelector("b").textContent = chiffre;
     document.body.appendChild(c);
-    var x0 = de.left, y0 = de.top + 2;
-    var x1 = vers.left + 18 + Math.random() * 46, y1 = vers.top + 6;
-    var tourne = (Math.random() < 0.5 ? -1 : 1) * (200 + Math.random() * 160);
-    var duree = 900 + Math.random() * 250;
+    var x0 = de.left + de.width / 2 - 15, y0 = de.top + de.height / 2 - 15;
+    var x1 = vers.left + 20 + Math.random() * 40, y1 = vers.top - 2;
+    var vrille = (Math.random() < 0.5 ? -1 : 1) * (240 + Math.random() * 200);
+    var duree = 1700 + Math.random() * 300;
     enVol++;
     c.animate([
-      {transform:"translate(" + x0 + "px," + y0 + "px) rotate(0deg)"},
-      {transform:"translate(" + (x0 + (x1 - x0) * 0.15) + "px," + (y0 + (y1 - y0) * 0.12) + "px) rotate(" + tourne * 0.2 + "deg)", offset:0.25},
-      {transform:"translate(" + x1 + "px," + y1 + "px) rotate(" + tourne + "deg)"}
-    ], {duration:duree, easing:"cubic-bezier(.45,0,.9,.6)", fill:"forwards"});
-    c.querySelector("b").animate([{opacity:1},{opacity:1, offset:0.18},{opacity:0, offset:0.32},{opacity:0}], {duration:duree, fill:"forwards"});
-    c.querySelector(".piece").animate([{opacity:0},{opacity:0, offset:0.18},{opacity:1, offset:0.32},{opacity:1}], {duration:duree, fill:"forwards"});
+      {transform:"translate(" + x0 + "px," + y0 + "px) scale(1)", easing:"ease-in"},
+      {transform:"translate(" + x0 + "px," + (y0 + 12) + "px) scale(1)", offset:0.2, easing:"ease-in"},
+      {transform:"translate(" + (x0 + (x1 - x0) * 0.08) + "px," + (y0 + (y1 - y0) * 0.16) + "px) scale(1.05)", offset:0.42, easing:"cubic-bezier(.4,0,1,1)"},
+      {transform:"translate(" + x1 + "px," + y1 + "px) scale(.62)"}
+    ], {duration:duree, fill:"forwards"});
+    c.querySelector(".tour").animate([
+      {transform:"rotateY(0deg) rotateZ(0deg)"},
+      {transform:"rotateY(0deg) rotateZ(-6deg)", offset:0.18},
+      {transform:"rotateY(180deg) rotateZ(0deg)", offset:0.46, easing:"ease-out"},
+      {transform:"rotateY(205deg) rotateZ(" + vrille * 0.5 + "deg)", offset:0.72},
+      {transform:"rotateY(180deg) rotateZ(" + vrille + "deg)"}
+    ], {duration:duree, fill:"forwards"});
     setTimeout(function(){
       c.remove(); enVol--;
       poser1();
@@ -437,16 +468,16 @@ h1,h2{font-family:var(--display);font-weight:400;line-height:1.02;letter-spacing
 
   // Le tas monte en monticule : des rangées de moins en moins larges, centrées sur
   // la caisse. Passé le sommet, il ne grossit plus mais la brouette tressaute encore.
-  var RANGEES = [6, 5, 5, 4, 3, 3, 2, 1];
+  var RANGEES = [5, 4, 4, 3, 2, 1];
   var MAX_TAS = RANGEES.reduce(function(a, b){ return a + b; }, 0);
   function poser1(){
     if (posees >= MAX_TAS) return;
     var reste = posees, rangee = 0;
     while (reste >= RANGEES[rangee]){ reste -= RANGEES[rangee]; rangee++; }
     var n = RANGEES[rangee];
-    var p = document.createElement("i"); p.className = "piece";
-    p.style.left = (27 - n * 4.5 + reste * 9 - 3 + (Math.random() * 2 - 1)) + "px";
-    p.style.top = (12 - rangee * 4.5) + "px";
+    var p = document.createElement("i"); p.className = "piece"; p.innerHTML = PIECE;
+    p.style.left = (27 - n * 5.5 + reste * 11 - 4 + (Math.random() * 2 - 1)) + "px";
+    p.style.top = (8 - rangee * 5) + "px";
     tas.appendChild(p); posees++;
   }
 

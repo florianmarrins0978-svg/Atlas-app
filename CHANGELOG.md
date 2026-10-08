@@ -18,8 +18,9 @@ planning, équipe, facture, TVA). Rien n'est codé dans l'application.
   vrai papier froissé demanderait une vidéo générée par IA, payante.
 - La phrase qui passe devant reprend la ligne du devis qui suit (la haie de
   thuyas sur douze mètres).
-- L'heure défile minute par minute avec la page. Elle raconte une journée et
-  ne mesure rien : aucun temps gagné n'a été relevé, donc aucun chiffre.
+- L'heure défile minute par minute avec la page, de 7 h 30 à 7 h 47, l'envoi
+  du devis, puis s'arrête : sa demande, montrer qu'il faut un rien de temps.
+  Elle raconte une matinée et ne mesure rien d'un vrai utilisateur.
 - Le début est capturé sur l'application ACTUELLE, geste par geste : l'écran
   des chantiers, l'appui sur « Créer un devis », la feuille Fiche client qui
   monte (vide, puis remplie au clavier, sans photo). Pour la dictée, il a
@@ -29,18 +30,19 @@ planning, équipe, facture, TVA). Rien n'est codé dans l'application.
   et un écran de transcription qu'il ne reconnaît pas : retirés de la planche.
   Ne sont dessinés par-dessus que ce micro et les anneaux qui montrent où
   l'on appuie.
-- À chaque minute qui passe, le chiffre des unités tombe de l'horloge, devient
-  une pièce d'or et s'entasse dans une brouette (son idée du jour, la brouette
-  retenue parmi quatre). Le tas plafonne à 29 pièces, et rien ne s'affiche
-  avec une réduction des animations.
+- À chaque minute qui passe, le chiffre des unités commence à tomber, se
+  retourne, et c'est une pièce d'or (tranche striée, « A » en relief) qui finit
+  dans une brouette (son idée du jour, la brouette retenue parmi quatre).
+  Dix-sept pièces, une par minute ; rien ne s'affiche avec une réduction des
+  animations.
 - Le devis se montre en entier, et la page défile jusqu'à la signature pendant
   qu'on descend. Il a été rédigé à la main dans l'application actuelle (quatre
   lignes de paysage, M. Lemaire, 862,20 € TTC). Le bouton « Choisir la date »,
   collé en bas de l'écran, est retiré de la capture longue, où il tombait au
   milieu.
-- La journée est ajoutée, à sa demande : le planning d'octobre en couleurs
-  (le doré « incomplet » et le bleu nuit « complet », deux raccourcis de
-  l'appli, avec deux chantiers par jour), l'appui sur le 12, puis la journée
+- La journée est ajoutée, à sa demande : le planning d'octobre dans les
+  couleurs de l'appli (vert foncé plein, vert clair à moitié, rouge quand il
+  y a trop, avec deux chantiers par jour), l'appui sur le 12, puis la journée
   ouverte qui défile jusqu'à la fiche d'intervention (Maps, Waze, Appeler le
   client, Lucas et Julien posés au clic). Suivent la fiche de sécurité, un
   retour d'intervention, Terminés, la facture et la TVA d'octobre (331,80 €,
