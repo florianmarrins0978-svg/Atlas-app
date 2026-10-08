@@ -26,6 +26,10 @@ planning, équipe, facture, TVA). Rien n'est codé dans l'application.
   Les captures du 27 septembre montraient un ancien bouton « Créer un devis »
   et un écran de transcription qu'il ne reconnaît pas : retirés de la planche.
   Seuls les anneaux qui montrent où l'on appuie sont dessinés par-dessus.
+- À chaque minute qui passe, le chiffre des unités tombe de l'horloge, devient
+  une pièce d'or et s'entasse dans une brouette (son idée du jour, la brouette
+  retenue parmi quatre). Le tas plafonne à 29 pièces, et rien ne s'affiche
+  avec une réduction des animations.
 - La suite (devis, accord, planning, terminés, TVA) porte encore les captures
   du 27 septembre, à refaire sur l'application actuelle ; la TVA y montre
   0,00 €. Le site de vente principal (`vente/index.html`) porte les mêmes
