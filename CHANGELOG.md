@@ -8,6 +8,22 @@ Format : le plus récent en tête.
 ---
 ## 2026-10-08
 
+### Planche : le site de vente raconté au défilement
+
+`appli/vente/defilement.html`, sa demande du jour : en descendant, les pages
+d'Atlas se succèdent (chantier, fiche client, dictée, devis, accord du client,
+planning, équipe, facture, TVA). Rien n'est codé dans l'application.
+
+- Le « journal froissé » est un pli en accordéon de huit bandes, en CSS : un
+  vrai papier froissé demanderait une vidéo générée par IA, payante.
+- La phrase qui passe devant est celle de la capture de la dictée (la haie de
+  thuyas sur douze mètres) : le devis qui suit en reprend la ligne.
+- L'heure affichée raconte une journée et ne mesure rien : aucun temps gagné
+  n'a été relevé, donc aucun chiffre n'est écrit.
+- Trois captures nouvelles, prises sur un jeu d'essai : `fiche-client.jpg`,
+  `salaries.jpg`, `facture.jpg`. La capture de la TVA montre encore 0,00 € :
+  à refaire avec des montants avant tout site public.
+
 ### Un devis expiré n'est plus un chantier vendu : il se range à part, et revient par sa porte
 
 Sa question : un client qui n'accepte jamais le devis disparaît-il un jour de
