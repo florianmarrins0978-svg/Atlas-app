@@ -1,5 +1,25 @@
 # Prochaines tâches
 
+## ⏳ LE CRÉDIT D'IMPÔT DE SES CLIENTS : PLANCHE POSÉE, UNE QUESTION OUVERTE (8 octobre 2026)
+
+Sa question : « faire une facture à une cliente pour qu'elle soit exonérée
+d'impôts ». C'est le crédit d'impôt de 50 % des services à la personne
+(article 199 sexdecies du CGI), qui dépend d'abord de la déclaration de son
+entreprise (NOVA, numéro SAP). Planche `appli/credit-d-impot.html` : le numéro
+dans Mon entreprise, la case sur la facture, l'attestation fiscale annuelle
+dans Terminés. **Rien n'est codé.** Question à lui poser : les heures par
+intervenant, obligatoires sur l'attestation (A : saisies en janvier ; B :
+demandées à chaque retour d'intervention). Mention exacte et condition
+d'activité exclusive à faire confirmer par son comptable.
+
+## 🔜 UN TIRET À L'ÉCRAN DE LA FACTURE (8 octobre 2026)
+
+`src/app/chantiers/[id]/facture/FactureClient.tsx:527` écrit « F2026-000001 —
+Mr. Lambert » : un tiret contraire à sa règle du 22 septembre, que
+`test-aucun-tiret` ne voit pas (le « — » est séparé du texte par une
+expression JSX). Trouvé en figeant la vraie page pour une planche. À corriger,
+et à faire voir au contrôle.
+
 ## ✅ LES DEVIS EXPIRÉS : SUR `main` LE 8 OCTOBRE 2026 (8 octobre 2026)
 
 Branche `claude/devis-expires`. Ses planches du 7 octobre, codées : « Devis
