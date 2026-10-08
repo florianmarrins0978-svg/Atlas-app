@@ -42,6 +42,13 @@ planning, équipe, facture, TVA). Rien n'est codé dans l'application.
   ouverte défile jusqu'à la fiche d'intervention (Maps, Waze, Appeler le
   client, salariés). Le planning garde les couleurs de l'appli : vert foncé
   plein, vert clair à moitié, rouge quand il y a trop.
+- L'envoi se voit (sa demande) : au bas du devis arrive « Choisir la date »,
+  on l'appuie, le calendrier monte, le jeudi 8 est proposé, « Envoyer le
+  devis », et le devis s'envole vers la page que reçoit le client. La capture
+  longue du devis finit sur l'écran réel de son bas, bouton compris, calé au
+  pixel près. L'écran qui suit l'envoi n'est pas montré : sur ce poste, il
+  avertit que l'adresse locale n'atteindrait pas le client, ce que son espace
+  ne dit pas.
 - **Un seul chantier, du début à la fin** (sa demande) : Mr. Lemaire,
   06 39 98 12 34, 12 allée des Charmilles, Valmorin, devis « Création d'un
   massif » à 862,20 € TTC, accepté et réalisé le jeudi 8 octobre, facturé et

@@ -88,7 +88,7 @@ h1,h2{font-family:var(--display);font-weight:400;line-height:1.02;letter-spacing
 @keyframes descendre{0%{transform:scaleY(0);transform-origin:top}50%{transform:scaleY(1);transform-origin:top}51%{transform-origin:bottom}100%{transform:scaleY(0);transform-origin:bottom}}
 
 /* Le récit : une scène collée, et une longue piste de défilement dessous. */
-.recit{position:relative;height:1340vh}
+.recit{position:relative;height:1450vh}
 .scene{position:sticky;top:0;height:100svh;overflow:hidden;display:flex;flex-direction:column;align-items:center;padding-top:72px}
 .plateau{--h:min(60svh,calc((100vw - 48px) / .5873));position:relative;width:calc(var(--h) * .5873);height:var(--h);perspective:1500px;flex:none}
 /* La feuille en 3D : elle déborde du plateau pour que la boule froissée garde de la place. */
@@ -225,13 +225,14 @@ h1,h2{font-family:var(--display);font-weight:400;line-height:1.02;letter-spacing
 (function(){
   var IMG = {
     chantiers:"images/accueil.jpg", vide:"images/feuille-vide.jpg", client:"images/feuille-remplie.jpg",
-    devis:"images/devis-entier.jpg", accepte:"images/accord.jpg", merci:"images/accord-merci.jpg",
+    devis:"images/devis-entier.jpg", devisfin:"images/devis-fin.jpg", dateouverte:"images/date-ouverte.jpg", datechoisie:"images/date-choisie.jpg", accepte:"images/accord.jpg", merci:"images/accord-merci.jpg",
     planning:"images/planning-mois.jpg", jour:"images/planning-jour.jpg", securite:"images/securite.jpg",
     retour:"images/retour.jpg", termines:"images/termines-a-facturer.jpg",
     facture:"images/facture.jpg", tva:"images/tva-octobre.jpg"
   };
   // Hauteur sur largeur de chaque capture. Le devis est pris en entier, du haut à la signature.
-  var RAPPORT = {devis: 8058 / 1170, jour: 4450 / 1170};
+  // Le devis entier finit sur l'écran réel de son bas, bouton « Choisir la date » compris.
+  var RAPPORT = {devis: 8418 / 1170, jour: 4450 / 1170};
   function rapport(img){ return RAPPORT[img] || 1992 / 1170; }
 
   // Ce qu'on lit sous la page, et le moment de la journée.
@@ -240,13 +241,14 @@ h1,h2{font-family:var(--display);font-weight:400;line-height:1.02;letter-spacing
     {u:2.3,  mot:"Client",   txt:"Créer un devis : la fiche client s'ouvre.",     jour:"Jeudi matin", img:"client"},
     {u:4.6,  mot:"Dictée",   txt:"Vous dites ce qu'il y a à faire.",         jour:"Jeudi matin", img:"client"},
     {u:7.8,  mot:"Devis",    txt:"Le devis est déjà écrit.",                 jour:"Jeudi matin", img:"devis"},
-    {u:11.1, mot:"Accord",   txt:"Le client accepte depuis son téléphone.",  jour:"Devis envoyé", img:"accepte"},
-    {u:13.3, mot:"Planning", txt:"Le chantier se pose au planning.",          jour:"Devis envoyé", img:"planning"},
-    {u:14.7, mot:"Le jour J", txt:"Appeler le client, ouvrir Maps, poser l'équipe.", jour:"Devis envoyé", img:"jour"},
-    {u:17.5, mot:"Sécurité", txt:"La fiche de sécurité, déjà remplie d'après le chantier.", jour:"Devis envoyé", img:"securite"},
-    {u:19.4, mot:"Retour",   txt:"Ce que l'équipe a fait, et ce qu'elle signale.", jour:"Devis envoyé", img:"retour"},
-    {u:21.6, mot:"Facture",  txt:"Le chantier fini, la facture reprend le devis.", jour:"Devis envoyé", img:"termines"},
-    {u:25.9, mot:"TVA",      txt:"Votre TVA du mois, sans calculatrice.",     jour:"Devis envoyé", img:"tva"}
+    {u:10.4, mot:"Envoi", txt:"Une date à proposer, et le devis part.", jour:"Jeudi matin", img:"devisfin"},
+    {u:13.4, mot:"Accord",   txt:"Le client accepte depuis son téléphone.",  jour:"Devis envoyé", img:"accepte"},
+    {u:15.6, mot:"Planning", txt:"Le chantier se pose au planning.",          jour:"Devis envoyé", img:"planning"},
+    {u:17.0, mot:"Le jour J", txt:"Appeler le client, ouvrir Maps, poser l'équipe.", jour:"Devis envoyé", img:"jour"},
+    {u:19.8, mot:"Sécurité", txt:"La fiche de sécurité, déjà remplie d'après le chantier.", jour:"Devis envoyé", img:"securite"},
+    {u:21.7, mot:"Retour",   txt:"Ce que l'équipe a fait, et ce qu'elle signale.", jour:"Devis envoyé", img:"retour"},
+    {u:23.9, mot:"Facture",  txt:"Le chantier fini, la facture reprend le devis.", jour:"Devis envoyé", img:"termines"},
+    {u:28.2, mot:"TVA",      txt:"Votre TVA du mois, sans calculatrice.",     jour:"Devis envoyé", img:"tva"}
   ];
 
   var calme = document.getElementById("calme");
@@ -435,14 +437,38 @@ h1,h2{font-family:var(--display);font-weight:400;line-height:1.02;letter-spacing
     return {f:1, s:0.45 - 0.3 * v, rz:8 + 22 * v, x:W * 1.2 * v, y:-H * 0.9 * v, o:1 - v};
   }
 
+  var POULS_DATE = {x:3, y:83.5, l:94, h:8};
+  var POULS_HUIT = {x:43.5, y:55.6, l:13, h:7.5};
+  var POULS_ENVOYER = {x:26, y:77.8, l:48, h:7.5};
   var POULS_CREER = {x:22, y:23.3, l:56, h:7};
   var POULS_MICRO = {x:39.65, y:82, l:20.7, h:12.1, rond:true};
   var POULS_ACCORD = {x:4, y:81.8, l:92, h:7.5};
   var POULS_FACTURER = {x:61, y:68.5, l:33, h:6.7};
   var POULS_JOUR = {x:43.5, y:50.5, l:13, h:8};
-  var U = 28;
+  var U = 30.3;
 
-  function etat(u){
+  // L'envoi, sa demande du 8 octobre : le bouton au bas du devis, la date qu'on
+  // propose au client, puis « Envoyer le devis ». Tout ce qui suit est décalé
+  // d'autant (DECALAGE_ENVOI).
+  var DECALAGE_ENVOI = 2.3;
+  function etatEnvoi(u){
+    var a, b = null;
+    if (u < 10.3) a = {img:"devis", defile:1};
+    else if (u < 10.8) a = {img:"devisfin", pouls:Object.assign({v:entre(u, 10.35, 10.5) * (1 - entre(u, 10.65, 10.8))}, POULS_DATE)};
+    else if (u < 11.4){
+      var tm = lisse((u - 10.8) / 0.6), monte = H * 0.6 * (1 - tm);
+      a = {img:"dateouverte", y:monte, o:Math.min(1, tm * 3), coupe:monte};
+      b = {img:"devisfin"};
+    }
+    else if (u < 11.9) a = {img:"dateouverte", pouls:Object.assign({v:entre(u, 11.45, 11.6) * (1 - entre(u, 11.75, 11.9)), rond:true}, POULS_HUIT)};
+    else if (u < 12.2){ var tc = lisse((u - 11.9) / 0.3); a = {img:"dateouverte", o:1 - tc}; b = {img:"datechoisie"}; }
+    else a = {img:"datechoisie", pouls:Object.assign({v:entre(u, 12.25, 12.35) * (1 - entre(u, 12.5, 12.6))}, POULS_ENVOYER)};
+    return {a:a, b:b, micro:0, phrase:-1};
+  }
+
+  function etat(uVrai){
+    if (uVrai >= 10.0 && uVrai < 10.0 + DECALAGE_ENVOI + 0.3) return etatEnvoi(uVrai);
+    var u = uVrai >= 12.6 ? uVrai - DECALAGE_ENVOI : uVrai;
     var a = null, b = null, micro = 0, phrase = -1;
     if (u < 1){
       var k = lisse(u);
@@ -475,7 +501,7 @@ h1,h2{font-family:var(--display);font-weight:400;line-height:1.02;letter-spacing
     else if (u < 10.3) a = {img:"devis", defile:1};
     else if (u < 11.5){
       var te = (u - 10.3) / 1.2;
-      a = Object.assign({img:"devis", defile:1}, envol(te));
+      a = Object.assign({img:"datechoisie"}, envol(te));
       var r = lisse((te - 0.6) / 0.4);
       b = {img:"accepte", o:r, s:0.9 + 0.1 * r, y:H * 0.06 * (1 - r)};
     }
@@ -512,7 +538,7 @@ h1,h2{font-family:var(--display);font-weight:400;line-height:1.02;letter-spacing
 
   // Les minutes avancent avec le défilement, et s'arrêtent quand le devis part :
   // sa demande, montrer qu'il faut dix-sept minutes du chantier à l'envoi.
-  var HEURES = [[0,450],[2.1,451],[3.4,453],[4.4,455],[7.2,460],[8.6,462],[10.3,466],[11.0,467],[28,467]];
+  var HEURES = [[0,450],[2.1,451],[3.4,453],[4.4,455],[7.2,460],[8.6,462],[10.0,464],[11.9,466],[12.6,467],[30.3,467]];
   function heureA(u){
     for (var k = 1; k < HEURES.length; k++){
       if (u <= HEURES[k][0]){
