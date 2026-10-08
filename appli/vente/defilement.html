@@ -20,7 +20,7 @@
 
   Toutes les images sont des captures d'Atlas (dossier images/, partagé avec
   index.html). Quatre sont nouvelles, prises le 8 octobre sur un jeu d'essai :
-  fiche-client.jpg (l'écran « Fiche client » d'un chantier, celui qu'il a
+  fiche-client-vide.jpg puis fiche-client.jpg (l'écran « Fiche client » d'un chantier, celui qu'il a
   désigné, avec « Devis à la voix »), dictee-en-cours.jpg (le même écran pendant
   l'enregistrement, micro appuyé pour de vrai), salaries.jpg, facture.jpg.
   Les anneaux qui battent autour d'un bouton sont les seuls traits dessinés
@@ -160,7 +160,7 @@ h1,h2{font-family:var(--display);font-weight:400;line-height:1.02;letter-spacing
 <script>
 (function(){
   var IMG = {
-    chantiers:"images/chantiers.jpg", client:"images/fiche-client.jpg",
+    chantiers:"images/chantiers.jpg", vide:"images/fiche-client-vide.jpg", client:"images/fiche-client.jpg",
     dictee:"images/dictee-en-cours.jpg",
     lignes:"images/devis-lignes.jpg", total:"images/devis-total.jpg", accepte:"images/client-devis.jpg",
     planning:"images/planning.jpg", salaries:"images/salaries.jpg", termines:"images/termines.jpg",
@@ -275,8 +275,12 @@ h1,h2{font-family:var(--display);font-weight:400;line-height:1.02;letter-spacing
       a = {img:"chantiers", y:H * 0.35 * (1 - k), rx:22 * (1 - k), s:0.9 + 0.1 * k, o:k};
     }
     else if (u < 1.8) a = {img:"chantiers"};
-    else if (u < 3.4) a = journal("chantiers", "client", (u - 1.8) / 1.6);
-    else if (u < 4.4) a = {img:"client", pouls:Object.assign({v:entre(u, 3.7, 3.9) * (1 - entre(u, 4.25, 4.4))}, POULS_MICRO)};
+    else if (u < 3.4) a = journal("chantiers", "vide", (u - 1.8) / 1.6);
+    else if (u < 3.9){
+      // La fiche se remplit sur place : la vide s'efface, la remplie reste dessous.
+      var tr = lisse((u - 3.4) / 0.5); a = {img:"vide", o:1 - tr}; b = {img:"client"};
+    }
+    else if (u < 4.4) a = {img:"client", pouls:Object.assign({v:entre(u, 3.95, 4.1) * (1 - entre(u, 4.28, 4.4))}, POULS_MICRO)};
     else if (u < 4.8){ var tm = lisse((u - 4.4) / 0.4); a = {img:"client", o:1 - tm}; b = {img:"dictee"}; }
     else if (u < 7.2){ a = {img:"dictee"}; }
     else if (u < 8.4){
