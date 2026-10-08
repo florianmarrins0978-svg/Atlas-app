@@ -14,13 +14,10 @@ Format : le plus récent en tête.
 d'Atlas se succèdent (chantier, fiche client, dictée, devis, accord du client,
 planning, équipe, facture, TVA). Rien n'est codé dans l'application.
 
-- Le papier froissé (3D puis accordéon) est retiré : « c'est nul », et un
-  artisan ne froisse jamais une page, il touche un bouton. Trois passages sont
-  à essayer, au choix en bas de l'écran : A, le téléphone fixe où l'écran
-  glisse ; B, la pile où chaque écran se pose sur le précédent ; C, le zoom qui
-  part du bouton touché. « A et C », la recommandation, garde A pour le fil et
-  zoome seulement quand un bouton mène à l'écran suivant. Three.js n'est plus
-  chargé.
+- Le papier froissé (3D puis accordéon) est retiré : « c'est nul ». Les trois
+  passages essayés ensuite (glisser, empiler, zoomer) aussi : « ça ne fait pas
+  professionnel ». Reste le plus sobre, celui des pages produit : un téléphone
+  fixe, et un fondu court entre deux écrans. Three.js n'est plus chargé.
 - La phrase qui passe devant reprend la ligne du devis qui suit (la haie de
   thuyas sur douze mètres).
 - L'heure défile minute par minute avec la page, de 7 h 30 à 7 h 47, l'envoi

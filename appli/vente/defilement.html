@@ -39,12 +39,11 @@
   L'heure en haut raconte une journée, elle ne mesure rien : aucun temps gagné
   n'a été relevé chez un utilisateur, donc aucun chiffre n'est écrit.
 
-  Le papier froissé a été retiré (« c'est nul ») : un artisan ne froisse jamais
-  une page, il touche un bouton et l'écran suivant arrive. Trois passages sont
-  à essayer, au choix en bas de l'écran : A, le téléphone fixe où l'écran glisse
-  comme dans l'appli ; B, la pile où chaque écran se pose sur le précédent ;
-  C, le zoom qui part du bouton touché. « A et C » garde A pour le fil et zoome
-  seulement quand un bouton est touché : c'est la recommandation.
+  Le papier froissé a été retiré (« c'est nul »), puis les trois passages
+  essayés ensuite (glisser, empiler, zoomer) : « ça ne fait pas
+  professionnel ». Reste le plus sobre, celui des pages produit : un téléphone
+  fixe, et un fondu court entre deux écrans. Le mouvement est celui de
+  l'application elle-même (la feuille qui monte, le devis qui défile).
 -->
 <style>
 :root{
@@ -94,21 +93,14 @@ h1,h2{font-family:var(--display);font-weight:400;line-height:1.02;letter-spacing
 /* Le récit : une scène collée, et une longue piste de défilement dessous. */
 .recit{position:relative;height:1450vh}
 .scene{position:sticky;top:0;height:100svh;overflow:hidden;display:flex;flex-direction:column;align-items:center;padding-top:72px}
-.appareil{position:relative;flex:none;border-radius:38px;transition:background .3s,box-shadow .3s}
-.plateau{--h:min(60svh,calc((100vw - 64px) / .5873));position:relative;width:calc(var(--h) * .5873);height:var(--h);perspective:1500px;border-radius:22px}
-/* A, et A et C : un vrai téléphone autour, et l'écran ne déborde pas du verre. */
-body[data-passage="a"] .appareil,body[data-passage="ac"] .appareil{padding:9px;background:#151a16;box-shadow:0 30px 60px -22px rgba(var(--ombre),.55),inset 0 0 0 1.5px #2c332d}
-body[data-passage="a"] .plateau,body[data-passage="ac"] .plateau,body[data-passage="c"] .plateau{overflow:hidden;clip-path:inset(0 round 22px)}
+/* Un vrai téléphone autour, et l'écran ne déborde pas du verre. */
+.appareil{position:relative;flex:none;border-radius:38px;padding:9px;background:#151a16;box-shadow:0 30px 60px -22px rgba(var(--ombre),.55),inset 0 0 0 1.5px #2c332d}
+.plateau{--h:min(60svh,calc((100vw - 64px) / .5873));position:relative;width:calc(var(--h) * .5873);height:var(--h);border-radius:22px;overflow:hidden;clip-path:inset(0 round 22px);background:#f3f1ea}
 .feuille{position:absolute;inset:0;will-change:transform,opacity;border-radius:22px}
 .feuille .ecran{position:absolute;inset:0;border-radius:22px;background-repeat:no-repeat}
-.feuille .voile{position:absolute;inset:0;border-radius:22px;background:rgb(var(--ombre));opacity:0;pointer-events:none}
 .feuille .porte{position:absolute;inset:0;border-radius:22px;box-shadow:0 30px 60px -20px rgba(var(--ombre),.45),0 0 0 1px rgba(var(--ombre),.08);pointer-events:none}
-body[data-passage="a"] .feuille .porte,body[data-passage="ac"] .feuille .porte{box-shadow:-18px 0 40px -18px rgba(0,0,0,.35)}
 
-/* Le choix du passage, posé en bas pour l'essayer au pouce. */
-.passages{position:fixed;left:50%;bottom:calc(10px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:35;display:flex;gap:4px;padding:4px;border-radius:999px;background:color-mix(in srgb,var(--papier) 90%,transparent);box-shadow:0 8px 24px -10px rgba(var(--ombre),.45),0 0 0 1px var(--trait);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
-.passages button{border:0;background:transparent;color:var(--encre-2);font:500 13px/1 var(--texte);padding:10px 13px;border-radius:999px;min-height:40px;cursor:pointer;white-space:nowrap}
-.passages button[aria-pressed="true"]{background:var(--pin);color:var(--bouton-texte)}
+
 
 /* Le geste qu'on montre du doigt : « J'accepte ce devis », « À facturer ». */
 .pouls{position:absolute;border-radius:999px;pointer-events:none;opacity:0;transform:translateZ(1px)}
@@ -149,7 +141,7 @@ body[data-passage="a"] .feuille .porte,body[data-passage="ac"] .feuille .porte{b
 .calme img{width:100%;border-radius:18px;box-shadow:0 20px 40px -18px rgba(var(--ombre),.4)}
 .calme figcaption{margin-top:16px;font:400 28px/1.1 var(--display)}
 @media (prefers-reduced-motion: reduce){
-  .recit{display:none}.calme{display:block}.passages{display:none}.descendre{animation:none}
+  .recit{display:none}.calme{display:block}.descendre{animation:none}
 }
 </style>
 </head>
@@ -183,13 +175,6 @@ body[data-passage="a"] .feuille .porte,body[data-passage="ac"] .feuille .porte{b
     <div class="legende" id="legende" aria-live="polite"><span></span><p></p></div>
   </div>
 </section>
-
-<nav class="passages" id="passages" aria-label="Passage entre les écrans">
-  <button type="button" data-passage="a">A Téléphone</button>
-  <button type="button" data-passage="b">B Pile</button>
-  <button type="button" data-passage="c">C Zoom</button>
-  <button type="button" data-passage="ac">A et C</button>
-</nav>
 
 <div class="calme" id="calme"></div>
 
@@ -242,10 +227,9 @@ body[data-passage="a"] .feuille .porte,body[data-passage="ac"] .feuille .porte{b
 
   function feuille(el){
     var ecran = document.createElement("div"); ecran.className = "ecran"; el.appendChild(ecran);
-    var voile = document.createElement("div"); voile.className = "voile"; el.appendChild(voile);
     var porte = document.createElement("div"); porte.className = "porte"; el.appendChild(porte);
     var pouls = document.createElement("div"); pouls.className = "pouls"; el.appendChild(pouls);
-    return {el:el, ecran:ecran, voile:voile, pouls:pouls, img:null};
+    return {el:el, ecran:ecran, pouls:pouls, img:null};
   }
   var A = feuille(document.getElementById("dessus"));
   var B = feuille(document.getElementById("dessous"));
@@ -262,9 +246,7 @@ body[data-passage="a"] .feuille .porte,body[data-passage="ac"] .feuille .porte{b
     var hImg = W * rapport(s.img), decale = (s.defile || 0) * Math.max(0, hImg - H);
     f.ecran.style.backgroundSize = W + "px " + hImg + "px";
     f.ecran.style.backgroundPosition = "0 " + (-decale) + "px";
-    f.voile.style.opacity = s.sombre || 0;
-    f.el.style.transformOrigin = s.origine ? s.origine.x + "% " + s.origine.y + "%" : (s.gauche ? "0 50%" : "50% 50%");
-    f.el.style.transform = "translate3d(" + (s.x || 0) + "px," + (s.y || 0) + "px,0) rotateZ(" + (s.rz || 0) + "deg) scale(" + (s.s == null ? 1 : s.s) + ") rotateX(" + (s.rx || 0) + "deg) rotateY(" + (s.ry || 0) + "deg)";
+    f.el.style.transform = "translate3d(0," + (s.y || 0) + "px,0) scale(" + (s.s == null ? 1 : s.s) + ")";
     f.el.style.opacity = s.o == null ? 1 : s.o;
     // Ce qui dépasse sous l'écran ne se voit pas, comme la feuille de l'application.
     f.el.style.clipPath = s.coupe ? "inset(0 0 " + s.coupe + "px 0)" : "";
@@ -277,31 +259,11 @@ body[data-passage="a"] .feuille .porte,body[data-passage="ac"] .feuille .porte{b
     } else f.pouls.style.opacity = 0;
   }
 
-  // ── LE PASSAGE D'UN ÉCRAN À L'AUTRE ──────────────────────────────────────
-  // Trois façons à essayer (sa demande du 8 octobre, le froissé retiré), plus
-  // la combinaison recommandée. Chacune rend la feuille du dessus (la nouvelle)
-  // et celle du dessous (l'ancienne). « bouton » est le geste qui a mené là :
-  // le zoom part de lui ; sans bouton, il part du centre.
-  var passage = "ac";
-  function centre(p){ return p ? {x:p.x + p.l / 2, y:p.y + p.h / 2} : {x:50, y:50}; }
-  function glisser(de, a, t){
-    var e = lisse(t);
-    return {a:{img:a, x:W * (1 - e)}, b:{img:de, x:-W * 0.3 * e, sombre:0.35 * e}};
-  }
-  function empiler(de, a, t){
-    var e = lisse(t), monte = H * 1.05 * (1 - e);
-    return {a:{img:a, y:monte, rz:3 * (1 - e), coupe:Math.max(0, monte - H * 0.02)},
-            b:{img:de, s:1 - 0.09 * e, y:-H * 0.045 * e, sombre:0.45 * e}};
-  }
-  function zoomer(de, a, t, bouton){
-    var o = centre(bouton), k = lisse(t / 0.55), g = lisse((t - 0.35) / 0.65);
-    return {a:{img:a, s:0.12 + 0.88 * g, origine:o, o:g},
-            b:{img:de, s:1 + 1.8 * k, origine:o, o:1 - lisse((t - 0.3) / 0.4)}};
-  }
-  function passer(de, a, t, bouton){
-    if (passage === "b") return empiler(de, a, t);
-    if (passage === "c" || (passage === "ac" && bouton)) return zoomer(de, a, t, bouton);
-    return glisser(de, a, t);
+  // Le passage d'un écran à l'autre : un fondu court au milieu du geste, rien
+  // d'autre. Glisser, empiler et zoomer ont été essayés et refusés le 8 octobre.
+  function passer(de, a, t){
+    var e = lisse((t - 0.3) / 0.4);
+    return {a:{img:a, o:e, s:0.985 + 0.015 * e}, b:{img:de}};
   }
 
   var POULS_DATE = {x:3, y:83.5, l:94, h:8};
@@ -341,7 +303,7 @@ body[data-passage="a"] .feuille .porte,body[data-passage="ac"] .feuille .porte{b
     var a = null, b = null, micro = 0, phrase = -1;
     if (u < 1){
       var k = lisse(u);
-      a = {img:"chantiers", y:H * 0.35 * (1 - k), rx:22 * (1 - k), s:0.9 + 0.1 * k, o:k};
+      a = {img:"chantiers", s:0.97 + 0.03 * k, o:k};
     }
     else if (u < 1.5) a = {img:"chantiers"};
     else if (u < 2.1) a = {img:"chantiers", pouls:Object.assign({v:entre(u, 1.55, 1.7) * (1 - entre(u, 1.95, 2.1))}, POULS_CREER)};
@@ -359,15 +321,15 @@ body[data-passage="a"] .feuille .porte,body[data-passage="ac"] .feuille .porte{b
     }
     else if (u < 4.4) a = {img:"client", pouls:Object.assign({v:entre(u, 3.95, 4.1) * (1 - entre(u, 4.28, 4.4))}, POULS_MICRO)};
     else if (u < 7.2) a = {img:"client"};
-    else if (u < 8.4){ var pd = passer("client", "devis", (u - 7.2) / 1.2, null); a = pd.a; b = pd.b; }
+    else if (u < 8.4){ var pd = passer("client", "devis", (u - 7.2) / 1.2); a = pd.a; b = pd.b; }
     // Le devis se lit en entier : la page défile du haut jusqu'à la signature.
     else if (u < 8.6) a = {img:"devis"};
     else if (u < 10.0) a = {img:"devis", defile:lisse((u - 8.6) / 1.4)};
     else if (u < 10.3) a = {img:"devis", defile:1};
-    else if (u < 11.5){ var pe = passer("datechoisie", "accepte", (u - 10.3) / 1.2, POULS_ENVOYER); a = pe.a; b = pe.b; }
+    else if (u < 11.5){ var pe = passer("datechoisie", "accepte", (u - 10.3) / 1.2); a = pe.a; b = pe.b; }
     else if (u < 12.1) a = {img:"accepte", pouls:Object.assign({v:entre(u, 11.55, 11.7) * (1 - entre(u, 11.95, 12.1))}, POULS_ACCORD)};
     else if (u < 12.5){ var tc = lisse((u - 12.1) / 0.3); a = {img:"accepte", o:1 - tc}; b = {img:"merci"}; }
-    else if (u < 14.1){ var pp = passer("merci", "planning", (u - 12.5) / 1.6, null); a = pp.a; b = pp.b; }
+    else if (u < 14.1){ var pp = passer("merci", "planning", (u - 12.5) / 1.6); a = pp.a; b = pp.b; }
     else if (u < 14.6) a = {img:"planning", pouls:Object.assign({v:entre(u, 14.15, 14.3) * (1 - entre(u, 14.45, 14.6)), rond:true}, POULS_JOUR)};
     else if (u < 15.0){ var tj = lisse((u - 14.6) / 0.4); a = {img:"planning", o:1 - tj}; b = {img:"jour"}; }
     // La journée ouverte se lit jusqu'à sa fiche ; « Travaux à faire » s'ouvre
@@ -380,13 +342,13 @@ body[data-passage="a"] .feuille .porte,body[data-passage="ac"] .feuille .porte{b
     else if (u < 18.7) a = {img:"travaux", defile:0.666, pouls:Object.assign({v:entre(u, 18.25, 18.4) * (1 - entre(u, 18.55, 18.7))}, POULS_RETOUR)};
     else if (u < 19.0){ var tv = lisse((u - 18.7) / 0.3); a = {img:"travaux", defile:0.666, o:1 - tv}; b = {img:"envoye"}; }
     else if (u < 19.4) a = {img:"envoye"};
-    else if (u < 20.8){ var pr = passer("envoye", "retour", (u - 19.4) / 1.4, null); a = pr.a; b = pr.b; }
+    else if (u < 20.8){ var pr = passer("envoye", "retour", (u - 19.4) / 1.4); a = pr.a; b = pr.b; }
     else if (u < 21.4) a = {img:"retour"};
-    else if (u < 22.4){ var pf = passer("retour", "factureavant", u - 21.4, null); a = pf.a; b = pf.b; }
+    else if (u < 22.4){ var pf = passer("retour", "factureavant", u - 21.4); a = pf.a; b = pf.b; }
     else if (u < 23.3) a = {img:"factureavant", pouls:Object.assign({v:entre(u, 22.5, 22.7) * (1 - entre(u, 23.05, 23.25))}, POULS_FACTURER)};
-    else if (u < 24.3){ var pa = passer("factureavant", "facture", u - 23.3, POULS_FACTURER); a = pa.a; b = pa.b; }
+    else if (u < 24.3){ var pa = passer("factureavant", "facture", u - 23.3); a = pa.a; b = pa.b; }
     else if (u < 25.1) a = {img:"facture"};
-    else if (u < 26.7){ var pt = passer("facture", "tva", (u - 25.1) / 1.6, null); a = pt.a; b = pt.b; }
+    else if (u < 26.7){ var pt = passer("facture", "tva", (u - 25.1) / 1.6); a = pt.a; b = pt.b; }
     else { var fin = entre(u, 27.2, 28); a = {img:"tva", s:1 - 0.06 * fin, y:-H * 0.05 * fin, o:1 - fin * 0.5}; }
 
     if (u > 4.4 && u < 7.4) micro = entre(u, 4.4, 4.7) * (1 - entre(u, 7.0, 7.35));
@@ -489,19 +451,8 @@ body[data-passage="a"] .feuille .porte,body[data-passage="ac"] .feuille .porte{b
   function demander(){ if (!attente){ attente = true; requestAnimationFrame(function(){ attente = false; dessiner(); }); } }
   window.addEventListener("scroll", demander, {passive:true});
   window.addEventListener("resize", function(){ pw = 0; mesurer(); demander(); });
-  // Le passage choisi se garde d'une visite à l'autre, quand le navigateur le permet.
-  var boutons = document.querySelectorAll("#passages button");
-  function choisir(v){
-    passage = v; document.body.setAttribute("data-passage", v);
-    boutons.forEach(function(b){ b.setAttribute("aria-pressed", String(b.getAttribute("data-passage") === v)); });
-    try { localStorage.setItem("atlas-passage", v); } catch (e) { /* stockage refusé : le choix vaut pour la visite */ }
-    requestAnimationFrame(function(){ mesurer(); dessiner(); });
-  }
-  boutons.forEach(function(b){ b.addEventListener("click", function(){ choisir(b.getAttribute("data-passage")); }); });
-  var garde = null;
-  try { garde = localStorage.getItem("atlas-passage"); } catch (e) { /* stockage refusé : on part de la recommandation */ }
   mesurer();
-  choisir(/^(a|b|c|ac)$/.test(garde || "") ? garde : "ac");
+  dessiner();
 })();
 </script>
 </body>
