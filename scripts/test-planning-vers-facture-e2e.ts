@@ -221,7 +221,7 @@ async function main() {
     const jour = (
       await inspecter(`SELECT date_planifiee::text AS j FROM chantiers WHERE id = $1`, [chantierId], 1)
     ).rows[0].j as string;
-    const sens = jour < new Date().toISOString().slice(0, 10) ? "avant" : "après";
+    const sens = jour < jourDuPatron() ? "avant" : "après";
     await page.click('[data-atlas="point-semaine"]');
     const visee = page.locator(`[data-atlas="ligne-planifiee"]:has-text("${nom}")`);
     for (let i = 0; i < 12 && !(await visee.count()); i++) {

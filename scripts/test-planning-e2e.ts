@@ -1465,7 +1465,16 @@ async function main() {
     // sur ce que le décor offre, et l'on refuse de conclure s'il n'offre rien
     // — un vert sur zéro pastille ne prouverait rien (`CLAUDE.md` §5).
     await allerAuPlanning();
-    await toucherLeJour(JOUR);
+    // **Une journée ordinaire de la liste, sans toucher de jour** : depuis sa
+    // réponse « la B » du 7 octobre 2026, un jour ouvert retire la liste du bas,
+    // et la pastille avec elle. Les sept jours, puis les flèches, jusqu'à une
+    // journée posée qui n'est pas aujourd'hui.
+    await page.click('[data-atlas="point-semaine"]');
+    const ordinaire = page.locator('[data-atlas="date-planifiee"]:not([data-aujourdhui])');
+    for (let i = 0; i < 8 && !(await ordinaire.count()); i++) {
+      await page.click('button[aria-label="Sept jours après"]');
+      await page.waitForTimeout(200);
+    }
     const ouvert = await ouvrirLeTiroirDuPlanning(page);
     if (!ouvert) return; // pas de tiroir : rien à mesurer
     if ((await page.locator('[data-atlas="titre-attente-client"]').count()) === 0) return; // aucune attente en cours

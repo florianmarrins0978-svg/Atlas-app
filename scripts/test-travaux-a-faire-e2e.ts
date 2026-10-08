@@ -408,9 +408,14 @@ async function main() {
     await pool.query(`UPDATE chantiers SET date_planifiee = $2 WHERE id = $1`, [chantierId, autre]);
     await page.goto(`${BASE}/planning`, { waitUntil: "networkidle" });
     await page.locator(`[data-jour='${autre}']`).first().click();
-    const ligne = page.locator(`${LIGNE}:has-text("${chantierNom}")`).first();
-    await ligne.waitFor({ state: "visible", timeout: 20_000 });
-    await ligne.click();
+    // **Dans la carte du jour, plus dans la liste du bas** : depuis sa réponse
+    // « la B » du 7 octobre 2026, un jour ouvert retire la liste. La feuille
+    // s'ouvre seule sous son chantier ; sinon, son nom l'ouvre.
+    const carte = page.locator(`[data-atlas="carte-jour"]`).first();
+    await carte.waitFor({ state: "visible", timeout: 20_000 });
+    const nom = carte.locator(`[data-atlas="bloc-chantier"][data-chantier="${chantierId}"] [data-atlas="nom-du-jour"]`);
+    await nom.waitFor({ state: "visible", timeout: 20_000 });
+    if ((await nom.getAttribute("aria-expanded")) !== "true") await nom.click();
     await page.locator(ENVOYE).waitFor({ state: "visible", timeout: 20_000 });
     assert.equal(
       await page.locator(ENVOYE).getAttribute("data-modifiable"),
