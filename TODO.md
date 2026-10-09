@@ -87,8 +87,17 @@ ligne du solde porte désormais un déroulant (Chèque, Virement, Espèces,
 Carte, Cesu, Avance immédiate), Virement par défaut, rien d'obligatoire ;
 non déclarée, rien ne change. Le libellé passe sur deux lignes. La planche
 part des deux états RÉELS de l'écran (éteint, allumé), capturés dans
-l'appli : il a demandé de ne rien inventer, et la version d'avant montrait
-deux règlements partagés que l'écran ne sait pas saisir.
+l'appli : il a demandé de ne rien inventer.
+
+**Corrigé le même soir : un paiement en deux moyens EXISTE déjà.** J'avais
+écrit que l'écran ne savait pas le saisir ; c'était faux pour la page où la
+facture se compose (« Ajouter des travaux supplémentaires »,
+`TravauxSupplementairesClient`, `ReglementsRecus` non figé) : « + Règlement
+reçu » ajoute une ligne, chacune avec son moyen et son montant. Vérifié dans
+l'appli (252 € en virement, 252 € en espèces, net à payer 0). Seule la page
+de la facture elle-même fige ses lignes. Le choix B ajoute donc Cesu et
+Avance immédiate à ce déroulant existant, en plus du solde de « Facture
+acquittée ».
 
 Le n° d'identification de l'intervenant (obligatoire sur l'attestation) :
 dessiné le 9 octobre 2026 dans Équipe, à sa demande. Le patron porte le n° 0,
