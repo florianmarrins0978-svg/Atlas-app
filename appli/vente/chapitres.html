@@ -164,6 +164,18 @@ section{padding:clamp(88px,16vw,160px) 0}
 .formule li.manque{color:var(--encre-2);text-decoration:line-through;opacity:.6}
 .formule li.manque::before{border:0;width:10px;height:2px;top:20px;background:var(--encre-2);transform:none}
 .formule .bouton{margin-top:0;justify-content:center}
+/* Illimité : la formule du haut se lit comme telle, en nuit et en or. Son
+   bandeau dit un fait (l'essai EST cette formule, FORMULE_DE_LESSAI), pas
+   une popularité qu'aucun chiffre ne fonde. */
+.formule.reine{position:relative;color:#ece8dc;background:radial-gradient(120% 70% at 85% 0%,rgba(217,176,109,.22),transparent 60%),#16201a;box-shadow:0 0 0 1.5px #c99a52,0 40px 80px -36px rgba(var(--ombre),.75)}
+.formule.reine h3{color:#e6c07f}
+.formule.reine .accroche,.formule.reine .prix small{color:#b9c1b1}
+.formule.reine .offert{color:#e6c07f}
+.formule.reine li{border-top-color:rgba(236,232,220,.13)}
+.formule.reine li::before{border-color:#e6c07f}
+.formule.reine li.fort{font-weight:600;color:#f1d6a4}
+.formule.reine .bandeau{position:absolute;top:-13px;left:24px;padding:7px 14px;border-radius:999px;background:linear-gradient(135deg,#f0d29a,#c08a45);color:#1b241d;font:600 12.5px/1 var(--texte);letter-spacing:.06em;text-transform:uppercase}
+.formule.reine .bouton{background:linear-gradient(135deg,#f0d29a,#c08a45);color:#1b241d;box-shadow:none;font-weight:600}
 .essai-note{margin-top:22px;text-align:center;color:var(--encre-2);font-size:16px}
 
 .questions details{border-top:1px solid var(--trait);padding:20px 0}
@@ -330,7 +342,8 @@ section{padding:clamp(88px,16vw,160px) 0}
         </ul>
         <a class="bouton" href="#essayer">Essayer 15 jours gratuits</a>
       </article>
-      <article class="formule revele" data-mois="159" data-an="1590">
+      <article class="formule reine revele" data-mois="159" data-an="1590">
+        <span class="bandeau">Celle de votre essai</span>
         <h3>Illimité</h3>
         <p class="accroche">Toute votre équipe sur Atlas.</p>
         <p class="prix"><span class="montant">159 €</span> <small class="rythme">HT par mois</small></p>
@@ -343,9 +356,9 @@ section{padding:clamp(88px,16vw,160px) 0}
           <li>Vos salariés ont accès au planning</li>
           <li>Les absences de vos équipes</li>
           <li>Les retours d'intervention de vos salariés</li>
-          <li>Autant de personnes que vous voulez aux devis et aux factures</li>
+          <li class="fort">Autant de personnes que vous voulez aux devis et aux factures</li>
         </ul>
-        <a class="bouton clair" href="#essayer">Essayer 15 jours gratuits</a>
+        <a class="bouton" href="#essayer">Essayer 15 jours gratuits</a>
       </article>
     </div>
     <p class="essai-note revele">L'essai ouvre tout, sans carte bancaire. Vous choisissez votre formule après.</p>
