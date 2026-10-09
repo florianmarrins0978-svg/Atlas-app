@@ -59,8 +59,10 @@ jour (« Combien d'heures ? », heures et minutes en déroulants, sa demande du
 même soir). **Seuls les salariés cochés sur la demi-journée y figurent, pas
 le patron** : *« le patron n'est pas sur le chantier »*. Le patron n'y entre
 que s'il n'a aucun salarié, puisqu'il est alors le seul intervenant, et deux
-moyens de règlement sur la facture, « Cesu » et « Urssaf » (avance
-immédiate) : le Cesu se retire de ce qui ouvre droit, l'avance immédiate
+moyens de règlement sur la facture, « Cesu » et « Avance immédiate »
+(renommé le 9 octobre 2026, avec une phrase qui l'explique dès qu'il est
+choisi ; le libellé passe sur deux lignes, le select natif de
+`ReglementsRecus` le couperait à 390 px) : le Cesu se retire de ce qui ouvre droit, l'avance immédiate
 annonce un crédit déjà reçu. Mécanisme de l'avance immédiate vérifié le
 9 octobre 2026 (fiche Urssaf, moneyvox, legifiscal) : l'artisan s'habilite
 auprès de l'Urssaf et y inscrit son client ; après l'intervention, le client
