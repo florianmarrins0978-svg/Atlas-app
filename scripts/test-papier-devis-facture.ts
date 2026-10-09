@@ -129,6 +129,16 @@ async function main() {
     // **Le solde posé par l'interrupteur s'écrit « Solde »** — sa correction du
     // 9 octobre 2026 : *« corrige l'acompte alors que c'est le solde »*.
     assert.equal(nomAcompte([cheque, { ...virement, solde: true }], 1, DEVIS_ACOMPTES), "Solde");
+    // **Et les acomptes déjà versés GARDENT leur nom** — sa précision du même
+    // soir : *« lorsque le client paye les acomptes ça doit rester affiché
+    // acompte ; quand on clique sur acquitté et qu'il a déjà versé deux
+    // acomptes, le dernier versement c'est un solde, mais faut pouvoir
+    // différencier »*.
+    const deuxAcomptesPuisSolde = [cheque, virement, { ...virement, solde: true }];
+    assert.deepEqual(
+      deuxAcomptesPuisSolde.map((_, i) => nomAcompte(deuxAcomptesPuisSolde, i, DEVIS_ACOMPTES)),
+      ["Acompte 30 %", "Acompte 50 %", "Solde"]
+    );
     // Sans acompte sur le devis : « Acompte » tout court.
     assert.equal(nomAcompte([cheque], 0, []), "Acompte");
   });
