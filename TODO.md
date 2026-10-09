@@ -14,6 +14,26 @@ L'INTERVENTION**, au retour d'intervention, et l'attestation les additionne
 par intervenant et par mois. Pas en janvier : un chiffre tapé le jour même est
 juste, un chiffre retrouvé huit mois plus tard ne l'est pas.
 
+**Ce que dit la page officielle (servicesalapersonne.gouv.fr, « Les
+obligations réglementaires », mise à jour du 8 octobre 2026, collée par lui
+le 9 octobre) :**
+- l'attestation donne la **date et la durée de chaque intervention** ; le
+  regroupement par mois n'est permis que si les prestations sont quotidiennes
+  ou périodiques. La planche montrait un regroupement mensuel : corrigé ;
+- le montant est celui **effectivement acquitté**, après déduction de l'avance
+  immédiate du crédit d'impôt, de l'APA ou de la PCH et des Cesu préfinancés ;
+- le numéro du compte débité, « le cas échéant » ;
+- **condition d'activité exclusive** : depuis le 1er janvier 2025, une
+  entreprise de moins de 11 salariés ou une micro-entreprise peut avoir une
+  activité accessoire hors services à la personne, à condition que ces
+  services restent son activité **principale**, avec une comptabilité
+  séparée (décret n° 2024-851). La part maximale de l'activité accessoire
+  n'est pas vérifiée ici (un amendement de 2023 parlait de 30 % au plus).
+  **Pour un paysagiste dont la création de jardins pèse plus que l'entretien
+  chez des particuliers, la déclaration n'est probablement pas possible.**
+  Question posée au patron ;
+- obligation de saisir son activité dans NOVA chaque trimestre et chaque année.
+
 Encore ouvert : le n° d'identification de l'intervenant (obligatoire sur
 l'attestation). C'est un numéro interne donné par l'entreprise, jamais le
 numéro de sécurité sociale ; proposé : attribué tout seul (1, 2, 3…) à l'ajout
