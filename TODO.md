@@ -61,8 +61,11 @@ le patron** : *« le patron n'est pas sur le chantier »*. Le patron n'y entre
 que s'il n'a aucun salarié, puisqu'il est alors le seul intervenant, et deux
 moyens de règlement sur la facture, « Cesu » et « Urssaf » (avance
 immédiate) : le Cesu se retire de ce qui ouvre droit, l'avance immédiate
-annonce un crédit déjà reçu. Le mécanisme exact de l'avance immédiate
-(l'Urssaf paie-t-elle tout à l'artisan ?) est à vérifier avant de coder ; le
+annonce un crédit déjà reçu. Mécanisme de l'avance immédiate vérifié le
+9 octobre 2026 (fiche Urssaf, moneyvox, legifiscal) : l'artisan s'habilite
+auprès de l'Urssaf et y inscrit son client ; après l'intervention, le client
+valide sous 48 h, l'Urssaf lui prélève sa moitié et **verse la facture
+entière à l'artisan**. Gratuit, facultatif ; le
 raccordement à l'Urssaf n'est pas couvert. Base locale : le chantier de
 démonstration a été rebaptisé « Entretien du jardin » pour la capture.
 
