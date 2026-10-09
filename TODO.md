@@ -87,10 +87,13 @@ dernier versement n'est pas nommé « Solde » (`soldera` passe par
 moyen de règlement**. Pour le crédit d'impôt, le moyen compte (Cesu, avance
 immédiate) : à ajouter là aussi. Proposé au patron, pas encore décidé.
 
-**Tranché le 9 octobre 2026 : les acomptes gardent leur taux CUMULÉ.** Sur
-un devis à 30 % puis 80 % à mi-parcours, la facture écrit « Acompte 30 % »
-puis « Acompte 80 % » (et non « 2e acompte, 50 % »), comme la phrase du
-devis. Sa réponse : « laisse ». Ne pas rouvrir.
+**Tranché le 9 octobre 2026 : les acomptes gardent leur taux CUMULÉ.** C'est
+sa propre façon de compter : *« 1er acompte 30 %, 2e 50 %, 3e 75 % »*, soit
+ce que le client a payé en tout à chaque étape. L'appli fait déjà ainsi
+(`acomptes_devis.taux_cumule`, saisi tel quel sur le devis). Le « 80 % » que
+je lui ai montré venait de MES données d'essai (30 puis 80, posées en base
+pour la démonstration), pas d'une addition de l'appli : corrigé devant lui.
+Ne pas rouvrir.
 
 **Tranché le 9 octobre 2026 : le moyen de règlement se choisit en soldant
 (« B »).** Aujourd'hui « Facture acquittée » pose le solde en VIREMENT, sans
