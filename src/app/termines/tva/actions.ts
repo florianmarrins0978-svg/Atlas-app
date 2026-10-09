@@ -9,6 +9,7 @@ import { achatComplet, montantSaisi, type SaisieAchat } from "@/lib/achat-tva";
 import { causeDeLaPanne, codeSqlDe, messageSansLesValeurs, phraseDeLaPanne } from "@/lib/panne-de-base";
 import { estBancDEssai } from "@/profil-banc";
 import { logger } from "@/server/logger";
+import type { MoyenDePaiement } from "@/lib/acomptes-facture";
 import { lireTicket, type TicketLu } from "@/server/ai/services/lire-ticket";
 import { revalidatePath } from "next/cache";
 import {
@@ -246,10 +247,14 @@ const ECHEC_NOTE = "Ce règlement n’a pas pu être enregistré";
 const ECHEC_RETRAIT = "Ce règlement n’a pas pu être retiré";
 const ECHEC_REMISE = "Ce règlement n’a pas pu être remis";
 
-export async function soldeFactureAction(factureId: string, aujourdHui: string): Promise<ResultatPaiement> {
+export async function soldeFactureAction(
+  factureId: string,
+  aujourdHui: string,
+  moyen: MoyenDePaiement
+): Promise<ResultatPaiement> {
   const ctx = await getCurrentCtx();
   await exigerFacturation(ctx, "solder une facture");
-  const r = await sansPanneMuette("Facture soldée", ECHEC_NOTE, () => soldera(ctx, factureId, aujourdHui));
+  const r = await sansPanneMuette("Facture soldée", ECHEC_NOTE, () => soldera(ctx, factureId, aujourdHui, moyen));
   // **Seulement quand l'argent est entré, et HORS de l'enveloppe ci-dessus.**
   // Rafraîchir après un refus ne sert à rien ; et une panne de `revalidatePath`
   // annoncerait « non enregistré » sur un règlement qui, lui, est bien en base.
@@ -260,12 +265,13 @@ export async function soldeFactureAction(factureId: string, aujourdHui: string):
 export async function noterPaiementAction(
   factureId: string,
   date: string,
-  montant: string
+  montant: string,
+  moyen: MoyenDePaiement
 ): Promise<ResultatPaiement> {
   const ctx = await getCurrentCtx();
   await exigerFacturation(ctx, "noter un paiement");
   const r = await sansPanneMuette("Règlement noté", ECHEC_NOTE, () =>
-    noterPaiement(ctx, factureId, { date, montant })
+    noterPaiement(ctx, factureId, { date, montant, moyen })
   );
   if (r.ok) revalidatePath("/termines/tva");
   return r;

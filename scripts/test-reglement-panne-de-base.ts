@@ -119,7 +119,7 @@ async function main() {
     // enveloppe qui rendrait « la base a refusé » à tout propos serait verte
     // partout ailleurs. « Il ne reste que 495,00 € » doit lui parvenir mot pour
     // mot — c'est ce que l'en-tête de `actions.ts` exige déjà.
-    const r = await noterPaiementAction(facture.id, "2026-09-17", "600");
+    const r = await noterPaiementAction(facture.id, "2026-09-17", "600", "virement");
     assert.equal(r.ok, false, "un montant plus grand que le reste dû a été accepté");
     assert.match(r.ok ? "" : r.raison, /Il ne reste que 495\.00 € à recevoir/);
   });
@@ -143,14 +143,14 @@ async function main() {
     await cas("LA PANNE REVIENT EN VALEUR — elle ne traverse plus l'action", async () => {
       // Levée, elle devient un identifiant opaque chez lui et l'écran n'a plus
       // que sa phrase de dernier recours à opposer (`AGENTS.md`).
-      const r = await noterPaiementAction(facture.id, "2026-09-17", "10").catch((e) => {
+      const r = await noterPaiementAction(facture.id, "2026-09-17", "10", "virement").catch((e) => {
         throw new Error(`l'exception est sortie de l'action : ${e instanceof Error ? e.message : String(e)}`);
       });
       assert.equal(r.ok, false, "la base refuse et l'action rend pourtant un succès");
     });
 
     await cas("ELLE NOMME LA BASE, et donne le geste SÛR — jamais reconstruire ni supprimer", async () => {
-      const r = await noterPaiementAction(facture.id, "2026-09-17", "10");
+      const r = await noterPaiementAction(facture.id, "2026-09-17", "10", "virement");
       assert.equal(r.ok, false);
       const raison = r.ok ? "" : r.raison;
       assert.ok(
@@ -166,12 +166,12 @@ async function main() {
     await cas("ET ELLE PARLE DU RÈGLEMENT, pas de la création d'un compte", async () => {
       // La phrase est née pour l'écran « Créer mon compte » : branchée sans
       // précaution, elle lui annoncerait ici que son COMPTE n'a pas pu être créé.
-      const r = await noterPaiementAction(facture.id, "2026-09-17", "10");
+      const r = await noterPaiementAction(facture.id, "2026-09-17", "10", "virement");
       assert.ok(!/compte/i.test(r.ok ? "" : r.raison), `la phrase parle d'un compte : « ${r.ok ? "" : r.raison} »`);
     });
 
     await cas("« J'ai reçu le paiement » suit la même règle", async () => {
-      const r = await soldeFactureAction(facture.id, "2026-09-17").catch((e) => {
+      const r = await soldeFactureAction(facture.id, "2026-09-17", "virement").catch((e) => {
         throw new Error(`l'exception est sortie de l'action : ${e instanceof Error ? e.message : String(e)}`);
       });
       assert.equal(r.ok, false, "la base refuse et l'action rend pourtant un succès");
@@ -205,7 +205,7 @@ async function main() {
   await cas("base remise d'aplomb, plus personne n'accuse la base", async () => {
     // Le droit rendu, le même geste ne doit plus parler de mise à jour : un
     // avertissement qui parle à tort s'apprend à être ignoré (`CLAUDE.md` §4 ter).
-    const r = await noterPaiementAction(facture.id, "2026-09-17", "600");
+    const r = await noterPaiementAction(facture.id, "2026-09-17", "600", "virement");
     assert.equal(r.ok, false);
     assert.doesNotMatch(r.ok ? "" : r.raison, /pas à jour avec sa base|en cours de mise à jour/);
   });
