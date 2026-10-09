@@ -46,6 +46,17 @@
   chiffre d'usage : il n'en existe pas encore. Les boutons « Essayer »
   mènent au bas de la page tant que l'adresse de l'application n'est pas
   donnée.
+  L'ENTREPRISE DES CAPTURES EST FICTIVE, et choisie pour ne gêner personne
+  (sa demande du 9 octobre : « ne mets pas Atelier Démo », « des adresses et
+  des numéros fictifs ») : « Les Jardins de Valmorin », ville inventée,
+  téléphones dans les tranches que l'ARCEP réserve à la fiction (02 61 91,
+  06 39 98), SIREN qui échoue à la clé de Luhn et TVA à clé fausse, donc
+  impossibles à attribuer. Devis, page client, facture et accueil ont été
+  refaits par de vrais gestes dans l'application, sur une base locale.
+
+  LE CONTACT ET LES MENTIONS LÉGALES sont structurés, pas remplis : les
+  coordonnées de l'éditeur sont « à compléter » dans les conditions générales
+  elles-mêmes, et les inventer est puni (LCEN, article 1-2).
 -->
 <style>
 :root{
@@ -176,6 +187,39 @@ section{padding:clamp(88px,16vw,160px) 0}
 .formule.reine li.fort{font-weight:600;color:#f1d6a4}
 .formule.reine .bandeau{position:absolute;top:-13px;left:24px;padding:7px 14px;border-radius:999px;background:linear-gradient(135deg,#f0d29a,#c08a45);color:#1b241d;font:600 12.5px/1 var(--texte);letter-spacing:.06em;text-transform:uppercase}
 .formule.reine .bouton{background:linear-gradient(135deg,#f0d29a,#c08a45);color:#1b241d;box-shadow:none;font-weight:600}
+/* Le menu : un site se parcourt par rubriques, pas seulement de haut en bas. */
+.barre .droite{display:flex;align-items:center;gap:8px}
+.ouvre-menu{border:0;background:transparent;color:var(--encre);font:500 14px/1 var(--texte);padding:10px 12px;min-height:44px;cursor:pointer}
+.menu{position:fixed;inset:0;z-index:30;background:var(--fond);padding:88px 24px 32px;display:none;flex-direction:column}
+.menu.ouvert{display:flex}
+.menu a{font:400 clamp(40px,11vw,64px)/1.15 var(--display);text-decoration:none;padding:6px 0;border-bottom:1px solid var(--trait)}
+.menu .ferme{position:absolute;top:6px;right:max(16px,env(safe-area-inset-right));border:0;background:transparent;color:var(--encre);font:500 14px/1 var(--texte);padding:12px;min-height:44px;cursor:pointer}
+.menu .bouton{margin-top:32px;justify-content:center;font:500 17px/1 var(--texte);border:0}
+
+/* Le contact : un formulaire, et les coordonnées de l'éditeur. */
+.contact form{display:grid;gap:14px;margin-top:40px}
+.contact label{display:grid;gap:6px;font-size:14px;color:var(--encre-2)}
+.contact input,.contact select,.contact textarea{font:400 17px/1.4 var(--texte);color:var(--encre);background:var(--fond);border:1px solid var(--trait);border-radius:14px;padding:14px 16px;min-height:52px;width:100%;box-sizing:border-box}
+.contact textarea{min-height:130px;resize:vertical}
+.contact .bouton{border:0;cursor:pointer;justify-content:center;margin-top:8px}
+.contact .reponse-maquette{margin-top:6px;font-size:15px;color:var(--encre-2);min-height:22px}
+.coordonnees{margin-top:48px;display:grid;gap:0}
+.coordonnees div{display:flex;justify-content:space-between;gap:16px;padding:14px 0;border-top:1px solid var(--trait);font-size:16px}
+.coordonnees div:last-child{border-bottom:1px solid var(--trait)}
+.coordonnees dt{color:var(--encre-2)}
+.coordonnees dd{margin:0;text-align:right}
+.a-completer{display:inline-block;padding:3px 10px;border:1px dashed var(--or);border-radius:999px;color:var(--or);font-size:14px}
+
+/* Le pied de page : les rubriques, l'aide, le légal. */
+.pied{background:var(--nuit);color:var(--sur-nuit);padding:64px 0 40px;border-top:1px solid rgba(236,232,220,.08)}
+.pied .marque{font-size:34px;color:var(--sur-nuit)}
+.pied .devise{margin-top:10px;color:var(--sur-nuit-2);font-size:16px}
+.pied nav{display:grid;grid-template-columns:1fr 1fr;gap:32px 24px;margin-top:44px}
+@media (min-width:900px){.pied nav{grid-template-columns:repeat(3,1fr)}}
+.pied h3{font:600 12.5px/1 var(--texte);letter-spacing:.12em;text-transform:uppercase;color:#d9b06d}
+.pied ul{list-style:none;padding:0;margin:14px 0 0}
+.pied li a{display:block;padding:7px 0;color:var(--sur-nuit);text-decoration:none;font-size:16px}
+.pied .bas{margin-top:48px;padding-top:20px;border-top:1px solid rgba(236,232,220,.12);color:var(--sur-nuit-2);font-size:14px}
 .essai-note{margin-top:22px;text-align:center;color:var(--encre-2);font-size:16px}
 
 .questions details{border-top:1px solid var(--trait);padding:20px 0}
@@ -196,8 +240,20 @@ section{padding:clamp(88px,16vw,160px) 0}
 
 <header class="barre">
   <a class="marque" href="index.html">Atlas</a>
-  <a class="lien-demo" href="#essayer">Essai gratuit</a>
+  <div class="droite">
+    <button type="button" class="ouvre-menu" aria-expanded="false" aria-controls="menu">Menu</button>
+    <a class="lien-demo" href="#essayer">Essai gratuit</a>
+  </div>
 </header>
+
+<nav class="menu" id="menu" aria-label="Rubriques">
+  <button type="button" class="ferme">Fermer</button>
+  <a href="#fonctionnement">Comment ça marche</a>
+  <a href="#prix">Les prix</a>
+  <a href="#questions">Vos questions</a>
+  <a href="#contact">Contact</a>
+  <a class="bouton" href="#essayer">Essayer 15 jours gratuits</a>
+</nav>
 
 <section class="ouverture">
   <div class="colonne">
@@ -224,7 +280,7 @@ section{padding:clamp(88px,16vw,160px) 0}
   </div>
 </section>
 
-<section class="chapitre">
+<section class="chapitre" id="fonctionnement">
   <div class="colonne">
     <h2 class="mot revele">Dictez.</h2>
     <p class="chapo revele">Vous décrivez le chantier sur place, à voix haute. Atlas écrit le devis.</p>
@@ -365,7 +421,7 @@ section{padding:clamp(88px,16vw,160px) 0}
   </div>
 </section>
 
-<section class="questions">
+<section class="questions" id="questions">
   <div class="colonne">
     <h2 class="mot revele" style="font-size:clamp(56px,15vw,120px)">Vos questions.</h2>
     <div style="margin-top:40px">
@@ -389,8 +445,67 @@ section{padding:clamp(88px,16vw,160px) 0}
   </div>
 </section>
 
+<section class="contact papier" id="contact">
+  <div class="colonne">
+    <h2 class="mot revele" style="font-size:clamp(64px,18vw,140px)">Contact.</h2>
+    <p class="chapo revele">Une question avant d'essayer ? On vous répond.</p>
+    <form class="revele" id="formulaire-contact">
+      <label>Votre nom<input name="nom" autocomplete="name" required></label>
+      <label>Téléphone<input name="telephone" type="tel" autocomplete="tel"></label>
+      <label>E-mail<input name="email" type="email" autocomplete="email" required></label>
+      <label>Votre métier<select name="metier"><option>Paysagiste</option><option>Élagueur</option><option>Autre artisan</option></select></label>
+      <label>Votre message<textarea name="message" required></textarea></label>
+      <button class="bouton" type="submit">Envoyer</button>
+      <p class="reponse-maquette" aria-live="polite"></p>
+    </form>
+    <dl class="coordonnees revele">
+      <div><dt>E-mail</dt><dd><span class="a-completer">à compléter</span></dd></div>
+      <div><dt>Téléphone</dt><dd><span class="a-completer">à compléter</span></dd></div>
+      <div><dt>Adresse</dt><dd><span class="a-completer">à compléter</span></dd></div>
+    </dl>
+  </div>
+</section>
+
+<footer class="pied">
+  <div class="colonne">
+    <a class="marque" href="#">Atlas</a>
+    <p class="devise">Le logiciel des paysagistes et des élagueurs.</p>
+    <nav aria-label="Pied de page">
+      <div><h3>Atlas</h3><ul>
+        <li><a href="#fonctionnement">Comment ça marche</a></li>
+        <li><a href="#prix">Les prix</a></li>
+        <li><a href="#essayer">Essai gratuit</a></li>
+      </ul></div>
+      <div><h3>Aide</h3><ul>
+        <li><a href="#questions">Vos questions</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul></div>
+      <div><h3>Légal</h3><ul>
+        <li><a href="mentions-legales.html#mentions">Mentions légales</a></li>
+        <li><a href="mentions-legales.html#conditions">Conditions générales</a></li>
+        <li><a href="mentions-legales.html#donnees">Données personnelles</a></li>
+        <li><a href="mentions-legales.html#cookies">Cookies</a></li>
+      </ul></div>
+    </nav>
+    <p class="bas">© 2026 Atlas. Prix hors taxes.</p>
+  </div>
+</footer>
+
 <script>
 (function(){
+  // Le menu s'ouvre en plein écran et se referme dès qu'une rubrique est choisie.
+  var menu = document.getElementById("menu"), ouvre = document.querySelector(".ouvre-menu");
+  function basculer(ouvert){ menu.classList.toggle("ouvert", ouvert); ouvre.setAttribute("aria-expanded", String(ouvert)); document.documentElement.style.overflow = ouvert ? "hidden" : ""; }
+  ouvre.addEventListener("click", function(){ basculer(true); });
+  menu.querySelector(".ferme").addEventListener("click", function(){ basculer(false); });
+  menu.querySelectorAll("a").forEach(function(a){ a.addEventListener("click", function(){ basculer(false); }); });
+
+  // La maquette n'a pas de serveur : le formulaire le dit au lieu de faire semblant d'envoyer.
+  document.getElementById("formulaire-contact").addEventListener("submit", function(e){
+    e.preventDefault();
+    this.querySelector(".reponse-maquette").textContent = "Maquette : ce formulaire n'envoie encore rien.";
+  });
+
   // Le mois ou l'année : le prix de chaque carte vient de ses attributs, recopiés
   // de src/lib/abonnements.ts (l'année vaut dix mois, deux sont offerts).
   var boutonsPeriode = document.querySelectorAll(".bascule button");

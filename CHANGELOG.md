@@ -6,6 +6,16 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-10-09
+
+- **Site de vente : une entreprise fictive, un menu, un contact et des mentions
+  légales.** « Atelier Démo » disparaît des captures au profit des « Jardins
+  de Valmorin », dont chaque numéro est impossible à attribuer (tranches de
+  fiction de l'ARCEP, SIREN invalide). Le site n'est plus un tunnel : menu de
+  rubriques, section Contact avec formulaire, pied de page, et une page
+  `appli/vente/mentions-legales.html` dont les cases de l'éditeur restent « à
+  compléter » tant que le patron ne les a pas données.
+
 ## 2026-10-08
 
 ### Planche : le site de vente devient complet, écrit pour vendre
