@@ -53,10 +53,13 @@ de 30 %. Une entreprise sans activité à côté n'a pas de compteur. Cas encore
 le règlement en Cesu préfinancé (déduit du montant de l'attestation),
 l'avance immédiate du crédit d'impôt (même déduction).
 
-Encore ouvert : le n° d'identification de l'intervenant (obligatoire sur
-l'attestation). C'est un numéro interne donné par l'entreprise, jamais le
-numéro de sécurité sociale ; proposé : attribué tout seul (1, 2, 3…) à l'ajout
-de l'intervenant, modifiable. Pas encore validé par lui. Mention exacte de la
+Le n° d'identification de l'intervenant (obligatoire sur l'attestation) :
+dessiné le 9 octobre 2026 dans Équipe, à sa demande. Le patron porte le n° 0,
+chaque salarié le sien dans l'ordre d'arrivée, affiché seulement quand
+l'entreprise est déclarée. **Un numéro ne se redonne jamais** : sinon deux
+personnes le partagent sur deux années d'attestations. Il ne peut donc pas
+être le rang de la ligne (`VosSalaries`, qui se renumérote quand on retire un
+salarié) : il faudra une colonne à lui. Jamais le numéro de sécurité sociale. Mention exacte de la
 facture et condition d'activité exclusive : à confirmer (page officielle
 servicesalapersonne.gouv.fr ou DDETS, bloquées d'ici).
 
