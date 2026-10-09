@@ -12,8 +12,6 @@ A, sa ligne sous le SIRET ; B, sur la ligne du SIRET après une virgule.
 **Il a choisi B ; codé le 9 octobre** (migration 0128, `ARCHITECTURE.md` §458).
 Reste : la batterie (niveau 3), puis la fusion sur `main` à lui demander.
 
-## ⏳ « SOLDE » AU LIEU D'« ACOMPTE » : CODÉ, EN ATTENTE DE LA BATTERIE (9 octobre 2026)
-
 ## ⏳ « SOLDE » ET « PAYÉ PAR » DANS LES RÈGLEMENTS : CODÉS, EN ATTENTE DE LA BATTERIE (9 octobre 2026)
 
 Branche `claude/solde-pas-acompte`, partie de `main`. La ligne posée par

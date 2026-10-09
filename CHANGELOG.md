@@ -36,15 +36,11 @@ Corrigé à la seule source, `nomAcompte` (`src/lib/acomptes-facture.ts`), que
 l'écran et le papier appellent tous deux. Ce qu'il a écrit lui-même sur une
 ligne passe toujours devant.
 
-
-
 **Et dans Terminés aussi.** Vu dans l'appli le même soir : « J'ai reçu une
 partie » puis « J'ai reçu le paiement » donnaient deux « Acompte ». Le
 versement qui ne laisse plus rien à payer est désormais marqué solde à la
 source (`noterPaiement`), qu'il vienne du bouton ou d'un reste tapé à la
 main ; les acomptes d'avant gardent leur nom.
-
-
 
 ### Terminés demande le moyen de règlement : « Payé par »
 
@@ -56,7 +52,6 @@ relit « Acompte payé le … par chèque ». Le moyen se vérifie à la source
 (`noterPaiement`, `estUnMoyenDePaiement`) : un moyen inconnu revient en
 refus, jamais en exception. Cesu et Avance immédiate viendront avec le
 crédit d'impôt, qui n'est pas codé.
-
 
 ## 2026-10-08
 
