@@ -68,7 +68,15 @@ annonce un crédit déjà reçu. Mécanisme de l'avance immédiate vérifié le
 auprès de l'Urssaf et y inscrit son client ; après l'intervention, le client
 valide sous 48 h, l'Urssaf lui prélève sa moitié et **verse la facture
 entière à l'artisan**. Gratuit, facultatif ; le
-raccordement à l'Urssaf n'est pas couvert. Base locale : le chantier de
+raccordement à l'Urssaf n'est pas couvert. **À vérifier, et c'est une
+décision de produit** : les sources trouvées le 9 octobre 2026 (Abby,
+Appvizer, transformation.gouv.fr) disent que le prestataire s'habilite,
+crée le compte de chaque client sur particulier.urssaf.fr, puis déclare ses
+factures par un LOGICIEL relié à l'API « tiers de prestation » de l'Urssaf.
+Aucune source officielle trouvée sur une voie manuelle. Si c'est exact, un
+artisan ne peut proposer l'avance immédiate qu'avec un logiciel raccordé :
+Atlas devrait l'être, sinon le moyen « Avance immédiate » ne sert qu'à noter
+un paiement fait ailleurs. Base locale : le chantier de
 démonstration a été rebaptisé « Entretien du jardin » pour la capture.
 
 Le n° d'identification de l'intervenant (obligatoire sur l'attestation) :
