@@ -79,6 +79,17 @@ Atlas devrait l'être, sinon le moyen « Avance immédiate » ne sert qu'à note
 un paiement fait ailleurs. Base locale : le chantier de
 démonstration a été rebaptisé « Entretien du jardin » pour la capture.
 
+**Tranché le 9 octobre 2026 : le moyen de règlement se choisit en soldant
+(« B »).** Aujourd'hui « Facture acquittée » pose le solde en VIREMENT, sans
+choix, et la ligne est figée sur la facture (`ReglementsRecus`, `fige`) ; les
+règlements se notent ensuite dans Terminés. Pour une entreprise déclarée, la
+ligne du solde porte désormais un déroulant (Chèque, Virement, Espèces,
+Carte, Cesu, Avance immédiate), Virement par défaut, rien d'obligatoire ;
+non déclarée, rien ne change. Le libellé passe sur deux lignes. La planche
+part des deux états RÉELS de l'écran (éteint, allumé), capturés dans
+l'appli : il a demandé de ne rien inventer, et la version d'avant montrait
+deux règlements partagés que l'écran ne sait pas saisir.
+
 Le n° d'identification de l'intervenant (obligatoire sur l'attestation) :
 dessiné le 9 octobre 2026 dans Équipe, à sa demande. Le patron porte le n° 0,
 chaque salarié le sien dans l'ordre d'arrivée, affiché seulement quand
