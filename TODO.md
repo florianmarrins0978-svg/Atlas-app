@@ -7,10 +7,19 @@ d'impôts ». C'est le crédit d'impôt de 50 % des services à la personne
 (article 199 sexdecies du CGI), qui dépend d'abord de la déclaration de son
 entreprise (NOVA, numéro SAP). Planche `appli/credit-d-impot.html` : le numéro
 dans Mon entreprise, la case sur la facture, l'attestation fiscale annuelle
-dans Terminés. **Rien n'est codé.** Question à lui poser : les heures par
-intervenant, obligatoires sur l'attestation (A : saisies en janvier ; B :
-demandées à chaque retour d'intervention). Mention exacte et condition
-d'activité exclusive à faire confirmer par son comptable.
+dans Terminés. **Rien n'est codé.**
+
+**Tranché le 9 octobre 2026 : les heures se tapent LE JOUR DE
+L'INTERVENTION**, au retour d'intervention, et l'attestation les additionne
+par intervenant et par mois. Pas en janvier : un chiffre tapé le jour même est
+juste, un chiffre retrouvé huit mois plus tard ne l'est pas.
+
+Encore ouvert : le n° d'identification de l'intervenant (obligatoire sur
+l'attestation). C'est un numéro interne donné par l'entreprise, jamais le
+numéro de sécurité sociale ; proposé : attribué tout seul (1, 2, 3…) à l'ajout
+de l'intervenant, modifiable. Pas encore validé par lui. Mention exacte de la
+facture et condition d'activité exclusive : à confirmer (page officielle
+servicesalapersonne.gouv.fr ou DREETS, bloquées d'ici).
 
 ## 🔜 UN TIRET À L'ÉCRAN DE LA FACTURE (8 octobre 2026)
 
