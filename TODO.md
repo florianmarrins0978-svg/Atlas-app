@@ -79,6 +79,14 @@ Atlas devrait l'être, sinon le moyen « Avance immédiate » ne sert qu'à note
 un paiement fait ailleurs. Base locale : le chantier de
 démonstration a été rebaptisé « Entretien du jardin » pour la capture.
 
+**Vu dans l'appli le 9 octobre 2026, sur une facture envoyée** : dans
+Terminés, « J'ai reçu une partie » (500 €) puis « J'ai reçu le paiement »
+(1 490,80 €) donnent deux lignes « Acompte », moyen « règlement » : le
+dernier versement n'est pas nommé « Solde » (`soldera` passe par
+`noterPaiement` sans le drapeau `solde`), et **Terminés ne demande aucun
+moyen de règlement**. Pour le crédit d'impôt, le moyen compte (Cesu, avance
+immédiate) : à ajouter là aussi. Proposé au patron, pas encore décidé.
+
 **Tranché le 9 octobre 2026 : le moyen de règlement se choisit en soldant
 (« B »).** Aujourd'hui « Facture acquittée » pose le solde en VIREMENT, sans
 choix, et la ligne est figée sur la facture (`ReglementsRecus`, `fige`) ; les
