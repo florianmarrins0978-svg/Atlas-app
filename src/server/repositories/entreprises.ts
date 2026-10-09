@@ -157,6 +157,7 @@ export async function mettreAJourEntreprise(
     periodiciteTva?: "mensuelle" | "trimestrielle";
     adresse?: string | null;
     siret?: string | null;
+    numeroRm?: string | null;
     telephone?: string | null;
     email?: string | null;
     iban?: string | null;
@@ -259,7 +260,7 @@ export async function mettreAJourEntreprise(
     const valeurs: Record<string, unknown> & { updatedAt: Date } = { updatedAt: new Date() };
     if (data.nom !== undefined) valeurs.nom = data.nom;
     for (const champ of [
-      "adresse", "siret", "telephone", "email", "iban",
+      "adresse", "siret", "numeroRm", "telephone", "email", "iban",
       "formeJuridique", "numeroTva", "titulaireCompte", "villeRcs",
       "assureurDecennale", "adresseAssureurDecennale", "contratDecennale", "couvertureDecennale",
       "mediateurNom", "mediateurCoordonnees",

@@ -287,6 +287,7 @@ export type EntreprisePourFacture = Pick<
   | "telephone"
   | "iban"
   | "titulaireCompte"
+  | "numeroRm"
   | "formeJuridique"
   | "capitalSocial"
   | "villeRcs"
@@ -307,6 +308,7 @@ export const COLONNES_EMETTEUR = {
   nom: entreprises.nom,
   adresse: entreprises.adresse,
   siret: entreprises.siret,
+  numeroRm: entreprises.numeroRm,
   email: entreprises.email,
   telephone: entreprises.telephone,
   iban: entreprises.iban,
@@ -337,6 +339,7 @@ export function identiteDeLEmetteur(e: EntreprisePourFacture | undefined) {
     entrepriseNom: e?.nom ?? "",
     entrepriseAdresse: e?.adresse ?? null,
     entrepriseSiret: e?.siret ?? null,
+    entrepriseNumeroRm: e?.numeroRm ?? null,
     entrepriseEmail: e?.email ?? null,
     entrepriseTelephone: e?.telephone ?? null,
     entrepriseIban: e?.iban ?? null,
@@ -1781,7 +1784,7 @@ export async function complementsDeLaFacture(
 export type FactureAImprimer = Pick<
   typeof factures.$inferSelect,
   | "numeroCommercial" | "statut" | "dateEmission" | "dateEcheance" | "mainDoeuvreHt" | "titre"
-  | "entrepriseNom" | "entrepriseRegimeTva" | "entrepriseAdresse" | "entrepriseSiret"
+  | "entrepriseNom" | "entrepriseRegimeTva" | "entrepriseAdresse" | "entrepriseSiret" | "entrepriseNumeroRm"
   | "entrepriseTelephone" | "entrepriseEmail" | "entrepriseIban" | "entrepriseTitulaireCompte"
   | "entrepriseFormeJuridique" | "entrepriseCapitalSocial" | "entrepriseVilleRcs"
   | "entrepriseAssureurDecennale" | "entrepriseAdresseAssureurDecennale" | "entrepriseContratDecennale" | "entrepriseCouvertureDecennale"
@@ -1821,6 +1824,7 @@ export function donneesFacture(
     regimeTva: f.entrepriseRegimeTva,
     entrepriseAdresse: f.entrepriseAdresse,
     entrepriseSiret: f.entrepriseSiret,
+    entrepriseNumeroRm: f.entrepriseNumeroRm,
     entrepriseNumeroTva: f.entrepriseNumeroTva,
     entrepriseTelephone: f.entrepriseTelephone,
     entrepriseEmail: f.entrepriseEmail,

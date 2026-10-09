@@ -41,6 +41,8 @@ export async function majIdentiteAction(data: {
   formeJuridique?: string;
   adresse?: string;
   siret?: string;
+  /** Migration 0128 : la mention du répertoire des métiers, libre. */
+  numeroRm?: string;
   telephone?: string;
   email?: string;
   iban?: string;

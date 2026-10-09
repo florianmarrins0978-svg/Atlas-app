@@ -71,6 +71,7 @@ export default async function IdentitePage() {
           formeJuridique: e?.formeJuridique ?? "",
           adresse: e?.adresse ?? "",
           siret: e?.siret ?? "",
+          numeroRm: e?.numeroRm ?? "",
           telephone: e?.telephone ?? "",
           email: e?.email ?? "",
           iban: e?.iban ?? "",

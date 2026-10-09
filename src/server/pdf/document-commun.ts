@@ -472,6 +472,11 @@ export type DonneesDocument = {
   entrepriseAdresse?: string | null;
   entrepriseSiret?: string | null;
   /**
+   * La mention du répertoire des métiers, telle qu'il l'a écrite (migration
+   * 0128) : « RM 33 ». Vide : rien ne s'imprime.
+   */
+  entrepriseNumeroRm?: string | null;
+  /**
    * Le numéro de TVA intracommunautaire, figé sur la facture (migration 0117).
    * Obligatoire sur la facture d'un assujetti (CGI, ann. II, art. 242 nonies A,
    * I-4°) ; absent du devis, que la loi n'y oblige pas. Vide : rien ne
@@ -814,6 +819,19 @@ export type OptionsDocument = {
 };
 
 
+/**
+ * « SIRET 123 456 789 00012, RM 33 » — son choix B du 9 octobre 2026
+ * (`appli/numero-rm.html`) : la mention du répertoire des métiers sur la ligne
+ * du SIRET, après une virgule. Elle s'imprime telle qu'il l'a écrite, parce
+ * qu'aucun texte trouvé ne dit laquelle un artisan doit porter depuis le RNE.
+ * Sans SIRET, elle garde sa ligne plutôt que de disparaître avec lui.
+ */
+function ligneSiret(siret: string | null | undefined, numeroRm: string | null | undefined): string | null {
+  const rm = numeroRm?.trim();
+  if (!siret) return rm || null;
+  return rm ? `SIRET ${siret}, ${rm}` : `SIRET ${siret}`;
+}
+
 export async function composerDocument(
   donnees: DonneesDocument,
   options: OptionsDocument
@@ -900,7 +918,7 @@ export async function composerDocument(
     data.entrepriseAdresse,
     data.entrepriseTelephone,
     data.entrepriseEmail,
-    data.entrepriseSiret ? `SIRET ${data.entrepriseSiret}` : null,
+    ligneSiret(data.entrepriseSiret, data.entrepriseNumeroRm),
     data.entrepriseNumeroTva ? `TVA intracommunautaire ${data.entrepriseNumeroTva}` : null,
   ].filter((l): l is string => !!l);
 

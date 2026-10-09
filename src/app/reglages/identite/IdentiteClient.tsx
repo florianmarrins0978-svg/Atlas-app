@@ -36,6 +36,8 @@ type Identite = {
   formeJuridique: string;
   adresse: string;
   siret: string;
+  /** Migration 0128 : facultative, imprimée après le SIRET (`appli/numero-rm.html`). */
+  numeroRm: string;
   telephone: string;
   email: string;
   iban: string;
@@ -259,6 +261,16 @@ export default function IdentiteClient({
           empeche="Vos factures ne sont pas conformes sans lui."
           /* Le SIREN se MONTRE, il ne se demande pas. */
           sous={siren ? `SIREN ${siren}, les neuf premiers chiffres. Il ne se saisit pas séparément.` : null}
+        />
+        {/* **Facultative, jamais réclamée** (son choix B du 9 octobre 2026) :
+            aucun texte trouvé ne dit quelle mention un artisan porte depuis le
+            RNE. Vide, rien ne s'imprime ; remplie, elle suit le SIRET. */}
+        <Champ
+          etiquette="Répertoire des métiers"
+          valeur={valeurs.numeroRm}
+          placeholder="RM 33"
+          onChange={(v) => ecrire("numeroRm", v)}
+          onFini={(duChamp) => enregistrer({ numeroRm: duChamp })}
         />
       </Bloc>
 

@@ -111,6 +111,13 @@ export const entreprises = pgTable("entreprises", {
   id: uuid("id").primaryKey().defaultRandom(),
   nom: text("nom").notNull(),
   siret: text("siret"),
+  /**
+   * La mention du répertoire des métiers, libre et facultative (migration
+   * 0128) : « RM 33 », ou ce que sa chambre des métiers demandera. Aucun texte
+   * trouvé ne dit ce qu'un artisan écrit à côté du SIREN depuis le RNE (2023) :
+   * elle s'imprime telle qu'écrite après le SIRET, et rien si elle est vide.
+   */
+  numeroRm: text("numero_rm"),
   adresse: text("adresse"),
   telephone: text("telephone"),
   email: text("email"),
@@ -1366,6 +1373,8 @@ export const devis = pgTable(
     entrepriseNom: text("entreprise_nom").notNull(),
     entrepriseAdresse: text("entreprise_adresse"),
     entrepriseSiret: text("entreprise_siret"),
+    /** La mention du répertoire des métiers, figée comme le SIRET (migration 0128). */
+    entrepriseNumeroRm: text("entreprise_numero_rm"),
     /** Le numéro de TVA de l'artisan, figé comme sur la facture (migration 0127). */
     entrepriseNumeroTva: text("entreprise_numero_tva"),
     entrepriseEmail: text("entreprise_email"),
@@ -2282,6 +2291,8 @@ export const factures = pgTable(
     entrepriseNom: text("entreprise_nom").notNull(),
     entrepriseAdresse: text("entreprise_adresse"),
     entrepriseSiret: text("entreprise_siret"),
+    /** La mention du répertoire des métiers, figée comme le SIRET (migration 0128). */
+    entrepriseNumeroRm: text("entreprise_numero_rm"),
     /**
      * Le régime de TVA **au jour de l'émission** (migration 0039).
      *
