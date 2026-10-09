@@ -227,7 +227,7 @@ async function main() {
       // Le nom est un CHAMP ici depuis le 21 septembre : on lit sa valeur, pas
       // son texte — un `innerText` sur un `<input>` rend une chaîne vide, et
       // le contrôle accuserait alors le produit d'un mot manquant.
-      assert.equal(await page.locator('[data-atlas="nom-acompte"]').nth(1).inputValue(), "Acompte");
+      assert.equal(await page.locator('[data-atlas="nom-acompte"]').nth(1).inputValue(), "Solde");
       await page.click('[data-atlas="facture-acquittee"]');
       await page.waitForTimeout(800);
       assert.ok(lisible(await page.locator('[data-atlas="net-a-payer"]').innerText()).includes("1 337,28"));
