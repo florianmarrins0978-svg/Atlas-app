@@ -45,6 +45,14 @@ le 9 octobre) :**
   à la personne de l'année, contre le plafond de 30 %. Proposé, pas demandé.
 - obligation de saisir son activité dans NOVA chaque trimestre et chaque année.
 
+**Tous les cas, pas le sien (9 octobre 2026).** La planche porte désormais
+dans Mon entreprise : le logo des services à la personne à déposer, et un
+réglage « Une activité à côté » qui suit la part de l'année contre le plafond
+de 30 %. Une entreprise sans activité à côté n'a pas de compteur. Cas encore
+à couvrir en codant : l'artisan seul (il est son propre intervenant, n° 1),
+le règlement en Cesu préfinancé (déduit du montant de l'attestation),
+l'avance immédiate du crédit d'impôt (même déduction).
+
 Encore ouvert : le n° d'identification de l'intervenant (obligatoire sur
 l'attestation). C'est un numéro interne donné par l'entreprise, jamais le
 numéro de sécurité sociale ; proposé : attribué tout seul (1, 2, 3…) à l'ajout
