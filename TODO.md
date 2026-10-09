@@ -25,6 +25,147 @@ puis verts, `test-papier-facture-db` vert. Niveau 3 (argent, rayon de 42
 points d'entrée) : la batterie complète est due avant `main`. **Il a dit
 « pas de batterie » le 9 octobre** : le lot attend son feu vert.
 
+## ⏳ LE CRÉDIT D'IMPÔT DE SES CLIENTS : PLANCHE POSÉE, UNE QUESTION OUVERTE (8 octobre 2026)
+
+Sa question : « faire une facture à une cliente pour qu'elle soit exonérée
+d'impôts ». C'est le crédit d'impôt de 50 % des services à la personne
+(article 199 sexdecies du CGI), qui dépend d'abord de la déclaration de son
+entreprise (NOVA, numéro SAP). Planche `appli/credit-d-impot.html` : le numéro
+dans Mon entreprise, la case sur la facture, l'attestation fiscale annuelle
+dans Terminés. **Rien n'est codé.**
+
+**Tranché le 9 octobre 2026 : les heures se tapent LE JOUR DE
+L'INTERVENTION**, au retour d'intervention, et l'attestation les additionne
+par intervenant et par mois. Pas en janvier : un chiffre tapé le jour même est
+juste, un chiffre retrouvé huit mois plus tard ne l'est pas.
+
+**Ce que dit la page officielle (servicesalapersonne.gouv.fr, « Les
+obligations réglementaires », mise à jour du 8 octobre 2026, collée par lui
+le 9 octobre) :**
+- l'attestation donne la **date et la durée de chaque intervention** ; le
+  regroupement par mois n'est permis que si les prestations sont quotidiennes
+  ou périodiques. La planche montrait un regroupement mensuel : corrigé ;
+- le montant est celui **effectivement acquitté**, après déduction de l'avance
+  immédiate du crédit d'impôt, de l'APA ou de la PCH et des Cesu préfinancés ;
+- le numéro du compte débité, « le cas échéant » ;
+- **condition d'activité exclusive : CONFIRMÉE par les deux PDF officiels**
+  qu'il a fournis le 9 octobre 2026 (FAQ « aménagement de la dispense de CAE »
+  et fascicule 2026, servicesalapersonne.gouv.fr). Décret n° 2024-851 :
+  - activité hors services à la personne : **30 % au plus du chiffre
+    d'affaires HT total**, sur l'année civile, avec facturation et
+    comptabilité séparées ; dépassé, la déclaration est retirée pour au moins
+    un an, et ses clients perdent le crédit d'impôt (et peuvent devoir le
+    rembourser) ;
+  - **une entreprise qui existait avant et faisait surtout autre chose n'a
+    PAS droit à la dispense** : soit une nouvelle société dédiée aux services
+    à la personne (la voie que la FAQ conseille), soit une année civile
+    entière sans aucune activité hors services à la personne ;
+  - **le logo des services à la personne est obligatoire sur tous les
+    supports commerciaux** de l'activité (R7232-19), donc sur devis et
+    facture : à prévoir dans l'appli (téléchargé depuis NOVA) ;
+  - états mensuels d'activité (EMA) et tableau statistique annuel (TSA) à
+    jour dans NOVA. La déclaration est délivrée par la **DDETS** (pas la
+    DREETS, comme dit à tort le 9 octobre).
+  Ce que l'appli pourrait tenir : la part du chiffre d'affaires hors services
+  à la personne de l'année, contre le plafond de 30 %. Proposé, pas demandé.
+- obligation de saisir son activité dans NOVA chaque trimestre et chaque année.
+
+**Tous les cas, pas le sien (9 octobre 2026).** La planche porte désormais
+dans Mon entreprise : le logo des services à la personne à déposer, et un
+réglage « Une activité à côté » qui suit la part de l'année contre le plafond
+de 30 %. Une entreprise sans activité à côté n'a pas de compteur. Le compteur se calcule
+sur les factures de l'année civile : le HT des factures SANS la case crédit
+d'impôt, divisé par le HT de toutes les factures. Il s'écrit avec ses deux
+montants pour se recomposer à la main. À trancher en codant : facturé ou
+encaissé (une micro-entreprise compte ses encaissements) ; les 18 % de la
+planche sont un exemple, pas un calcul. Dessiné le 9 octobre 2026 à sa demande (« dessine tout ») : l'onglet Équipe
+(n° d'intervenant, le patron n° 0, couvre l'artisan seul), l'onglet Retour du
+jour (« Combien d'heures ? », heures et minutes en déroulants, sa demande du
+même soir). **Seuls les salariés cochés sur la demi-journée y figurent, pas
+le patron** : *« le patron n'est pas sur le chantier »*. Le patron n'y entre
+que s'il n'a aucun salarié, puisqu'il est alors le seul intervenant, et deux
+moyens de règlement sur la facture, « Cesu » et « Avance immédiate »
+(renommé le 9 octobre 2026, avec une phrase qui l'explique dès qu'il est
+choisi ; le libellé passe sur deux lignes, le select natif de
+`ReglementsRecus` le couperait à 390 px) : le Cesu se retire de ce qui ouvre droit, l'avance immédiate
+annonce un crédit déjà reçu. Mécanisme de l'avance immédiate vérifié le
+9 octobre 2026 (fiche Urssaf, moneyvox, legifiscal) : l'artisan s'habilite
+auprès de l'Urssaf et y inscrit son client ; après l'intervention, le client
+valide sous 48 h, l'Urssaf lui prélève sa moitié et **verse la facture
+entière à l'artisan**. Gratuit, facultatif ; le
+raccordement à l'Urssaf n'est pas couvert. **À vérifier, et c'est une
+décision de produit** : les sources trouvées le 9 octobre 2026 (Abby,
+Appvizer, transformation.gouv.fr) disent que le prestataire s'habilite,
+crée le compte de chaque client sur particulier.urssaf.fr, puis déclare ses
+factures par un LOGICIEL relié à l'API « tiers de prestation » de l'Urssaf.
+Aucune source officielle trouvée sur une voie manuelle. Si c'est exact, un
+artisan ne peut proposer l'avance immédiate qu'avec un logiciel raccordé :
+Atlas devrait l'être, sinon le moyen « Avance immédiate » ne sert qu'à noter
+un paiement fait ailleurs. Base locale : le chantier de
+démonstration a été rebaptisé « Entretien du jardin » pour la capture.
+
+**Vu dans l'appli le 9 octobre 2026, sur une facture envoyée** : dans
+Terminés, « J'ai reçu une partie » (500 €) puis « J'ai reçu le paiement »
+(1 490,80 €) donnent deux lignes « Acompte », moyen « règlement » : le
+dernier versement n'est pas nommé « Solde » (`soldera` passe par
+`noterPaiement` sans le drapeau `solde`), et **Terminés ne demande aucun
+moyen de règlement**. Pour le crédit d'impôt, le moyen compte (Cesu, avance
+immédiate) : à ajouter là aussi. Proposé au patron, pas encore décidé.
+
+**Tranché le 9 octobre 2026 : Atlas n'est PAS relié à l'Urssaf pour
+l'instant.** La voie normale suffit : facture payée à 100 %, attestation
+fiscale avant le 31 mars, crédit récupéré par le client sur sa déclaration.
+« Avance immédiate » reste un moyen de règlement, pour l'artisan qui la
+pratique déjà avec un autre logiciel : l'attestation retire ce que le client
+a déjà touché. La liaison (habilitation d'Atlas comme logiciel partenaire,
+API « tiers de prestation ») se rouvrira si des artisans la demandent.
+
+**Tranché le 9 octobre 2026 : les acomptes gardent leur taux CUMULÉ.** C'est
+sa propre façon de compter : *« 1er acompte 30 %, 2e 50 %, 3e 75 % »*, soit
+ce que le client a payé en tout à chaque étape. L'appli fait déjà ainsi
+(`acomptes_devis.taux_cumule`, saisi tel quel sur le devis). Le « 80 % » que
+je lui ai montré venait de MES données d'essai (30 puis 80, posées en base
+pour la démonstration), pas d'une addition de l'appli : corrigé devant lui.
+Ne pas rouvrir.
+
+**Tranché le 9 octobre 2026 : le moyen de règlement se choisit en soldant
+(« B »).** Aujourd'hui « Facture acquittée » pose le solde en VIREMENT, sans
+choix, et la ligne est figée sur la facture (`ReglementsRecus`, `fige`) ; les
+règlements se notent ensuite dans Terminés. Pour une entreprise déclarée, la
+ligne du solde porte désormais un déroulant (Chèque, Virement, Espèces,
+Carte, Cesu, Avance immédiate), Virement par défaut, rien d'obligatoire ;
+non déclarée, rien ne change. Le libellé passe sur deux lignes. La planche
+part des deux états RÉELS de l'écran (éteint, allumé), capturés dans
+l'appli : il a demandé de ne rien inventer.
+
+**Corrigé le même soir : un paiement en deux moyens EXISTE déjà.** J'avais
+écrit que l'écran ne savait pas le saisir ; c'était faux pour la page où la
+facture se compose (« Ajouter des travaux supplémentaires »,
+`TravauxSupplementairesClient`, `ReglementsRecus` non figé) : « + Règlement
+reçu » ajoute une ligne, chacune avec son moyen et son montant. Vérifié dans
+l'appli (252 € en virement, 252 € en espèces, net à payer 0). Seule la page
+de la facture elle-même fige ses lignes. Le choix B ajoute donc Cesu et
+Avance immédiate à ce déroulant existant, en plus du solde de « Facture
+acquittée ».
+
+Le n° d'identification de l'intervenant (obligatoire sur l'attestation) :
+dessiné le 9 octobre 2026 dans Équipe, à sa demande. Le patron porte le n° 0,
+chaque salarié le sien dans l'ordre d'arrivée, affiché seulement quand
+l'entreprise est déclarée. **Un numéro ne se redonne jamais** : sinon deux
+personnes le partagent sur deux années d'attestations. Il ne peut donc pas
+être le rang de la ligne (`VosSalaries`, qui se renumérote quand on retire un
+salarié) : il faudra une colonne à lui. Jamais le numéro de sécurité sociale. Mention exacte de la
+facture et condition d'activité exclusive : à confirmer (page officielle
+servicesalapersonne.gouv.fr ou DDETS, bloquées d'ici).
+
+## 🔜 UN TIRET À L'ÉCRAN DE LA FACTURE (8 octobre 2026)
+
+`src/app/chantiers/[id]/facture/FactureClient.tsx:527` écrit « F2026-000001 —
+Mr. Lambert » : un tiret contraire à sa règle du 22 septembre, que
+`test-aucun-tiret` ne voit pas (le « — » est séparé du texte par une
+expression JSX). Trouvé en figeant la vraie page pour une planche. À corriger,
+et à faire voir au contrôle.
+
 ## ✅ LES DEVIS EXPIRÉS : SUR `main` LE 8 OCTOBRE 2026 (8 octobre 2026)
 
 Branche `claude/devis-expires`. Ses planches du 7 octobre, codées : « Devis

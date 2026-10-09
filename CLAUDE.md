@@ -448,6 +448,15 @@ retransmet — un document périmé le ferait travailler sur une version disparu
   `withEntreprise(utilisateurId, entrepriseId, fn)` — c'est ce qui pose le
   contexte d'isolation. Une requête hors de ce cadre ne renvoie rien,
   *silencieusement*.
+- **L'appli sert TOUS les artisans, pas seulement lui.** Sa correction du
+  9 octobre 2026 : *« ce qu'on est en train de réaliser, c'est une appli pour
+  les artisans ; certains oui, d'autres non, il faut pallier toutes les
+  éventualités »*. Devant une règle qui dépend de la situation de
+  l'entreprise (déclarée ou non, activité à côté ou non, salariés ou seul,
+  TVA ou franchise), on ne lui demande pas SA situation pour trancher le
+  produit : chaque cas devient un réglage, et l'écran suit celui que
+  l'artisan a choisi. Sa propre situation ne sert qu'à éprouver un cas parmi
+  d'autres.
 - **À l'écran, le moins de mots possible.** Sa consigne du 25 août 2026 :
   *« pense toujours à mettre le moins de mots possible sinon on se perd dans
   toutes ces lignes ; retire les phrases inutiles qui expliquent »*. Un écran
