@@ -53,10 +53,15 @@ sur les factures de l'année civile : le HT des factures SANS la case crédit
 d'impôt, divisé par le HT de toutes les factures. Il s'écrit avec ses deux
 montants pour se recomposer à la main. À trancher en codant : facturé ou
 encaissé (une micro-entreprise compte ses encaissements) ; les 18 % de la
-planche sont un exemple, pas un calcul. Cas encore
-à couvrir en codant : l'artisan seul (il est son propre intervenant, n° 1),
-le règlement en Cesu préfinancé (déduit du montant de l'attestation),
-l'avance immédiate du crédit d'impôt (même déduction).
+planche sont un exemple, pas un calcul. Dessiné le 9 octobre 2026 à sa demande (« dessine tout ») : l'onglet Équipe
+(n° d'intervenant, le patron n° 0, couvre l'artisan seul), l'onglet Retour du
+jour (« Combien d'heures ? », par personne présente, à la demi-heure), et deux
+moyens de règlement sur la facture, « Cesu » et « Urssaf » (avance
+immédiate) : le Cesu se retire de ce qui ouvre droit, l'avance immédiate
+annonce un crédit déjà reçu. Le mécanisme exact de l'avance immédiate
+(l'Urssaf paie-t-elle tout à l'artisan ?) est à vérifier avant de coder ; le
+raccordement à l'Urssaf n'est pas couvert. Base locale : le chantier de
+démonstration a été rebaptisé « Entretien du jardin » pour la capture.
 
 Le n° d'identification de l'intervenant (obligatoire sur l'attestation) :
 dessiné le 9 octobre 2026 dans Équipe, à sa demande. Le patron porte le n° 0,
