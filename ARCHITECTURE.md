@@ -34625,3 +34625,33 @@ la facture est passée ». `rappelsEnCours`, `test-rappels-db`.
 Contrôles : `test-facture-suit-le-devis` (base, le chemin de l'écran),
 `test-acomptes-nouvelle-version`, `test-reduction-devis`,
 `test-papier-devis-facture`.
+
+## §458 : La mention du répertoire des métiers est libre, et suit le SIRET
+
+**Sa question du 9 octobre 2026**, en préparant la vente de l'application :
+comment ses utilisateurs porteront-ils une mention qu'aucun texte trouvé ne
+définit depuis que le RNE a remplacé le répertoire des métiers (2023) ? Le
+check-up du 4 octobre la laissait « à confirmer » (`docs/check-up-legal-documents.md`).
+
+**Décision, son choix B (`appli/numero-rm.html`)** : un champ libre et
+facultatif, `entreprises.numero_rm`, saisi dans Mon entreprise sous le SIRET.
+Rempli, il s'imprime **tel qu'écrit** après le SIRET, sur la même ligne :
+« SIRET 123 456 789 00012, RM 33 ». Vide, rien ne s'imprime, rien ne bloque,
+aucun rappel.
+
+**Pourquoi libre et pas calculé** : imprimer « RM » suivi du département
+reviendrait à affirmer une règle qu'on n'a pas pu vérifier, sur une pièce
+comptable de chaque utilisateur. Le texte libre laisse chacun écrire ce que sa
+chambre des métiers demande, et reste juste si la règle change.
+
+**Pourquoi facultatif** : une micro-entreprise de services, un commerçant ou une
+société n'en ont pas. Le réclamer bloquerait leurs devis pour rien.
+
+**Où** : `ligneSiret` (`document-commun.ts`) compose la ligne, une seule
+fonction pour le devis, la facture et l'avoir. Figée sur la pièce comme le
+SIRET (`devis.entreprise_numero_rm`, `factures.entreprise_numero_rm`) : une
+pièce partie garde ce qu'elle portait. Sans SIRET, la mention garde sa ligne
+plutôt que de disparaître avec lui.
+
+Contrôle : `test-numero-rm-sur-les-pieces-db` (base, le chemin de Mon
+entreprise jusqu'au papier), rouge avant `ligneSiret`, vert après.

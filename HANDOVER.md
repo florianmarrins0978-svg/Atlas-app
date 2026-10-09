@@ -10,6 +10,21 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## LA MENTION DU RÉPERTOIRE DES MÉTIERS : 9 octobre 2026, PAS ENCORE SUR `main`
+
+Branche `claude/domain-name-availability-check-9rqv57`, migration 0128. Avant
+de toucher l'en-tête des pièces (`ARCHITECTURE.md` §458) :
+
+- **la mention est libre et facultative** : aucun texte trouvé ne dit laquelle
+  un artisan porte depuis le RNE. Ne pas la rendre obligatoire, ne pas en
+  imprimer une d'office ;
+- **une seule fonction compose la ligne**, `ligneSiret` dans
+  `document-commun.ts` : « SIRET …, RM 33 », le SIRET seul, ou la mention
+  seule quand le SIRET manque ;
+- **figée comme le SIRET** sur le devis et la facture (`entreprise_numero_rm`) ;
+  l'avoir la lit par la facture. La fiche de chantier et la mise en demeure ne
+  l'impriment pas : elles n'ont pas été demandées.
+
 ## LES DEVIS EXPIRÉS : 8 octobre 2026, SUR `main`
 
 `devis_expire` dans `getPlanificationEtat`. Ne pas le remettre dans « Sans

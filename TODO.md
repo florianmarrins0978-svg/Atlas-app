@@ -1,6 +1,6 @@
 # Prochaines tâches
 
-## ⏳ LE NUMÉRO RM : UNE PLANCHE À REGARDER (9 octobre 2026)
+## ✅ LE NUMÉRO RM : SON CHOIX B, CODÉ LE 9 OCTOBRE 2026, PAS ENCORE SUR `main`
 
 Sa question en préparant la vente de l'application : la mention à écrire à
 côté du SIREN d'un artisan depuis la fin du répertoire des métiers (2023)
@@ -9,7 +9,8 @@ n'est confirmée par aucun texte trouvé (`docs/check-up-legal-documents.md`,
 sous le SIRET dans Mon entreprise, imprimé tel qu'écrit sur le devis et la
 facture, rien s'il est vide, rien ne bloque. Planche `appli/numero-rm.html` :
 A, sa ligne sous le SIRET ; B, sur la ligne du SIRET après une virgule.
-**Rien n'est codé.** Il appelle sa chambre des métiers pour le libellé exact.
+**Il a choisi B ; codé le 9 octobre** (migration 0128, `ARCHITECTURE.md` §458).
+Reste : la batterie (niveau 3), puis la fusion sur `main` à lui demander.
 
 ## ✅ LES DEVIS EXPIRÉS : SUR `main` LE 8 OCTOBRE 2026 (8 octobre 2026)
 

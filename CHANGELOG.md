@@ -16,6 +16,17 @@ Format : le plus récent en tête.
   `appli/vente/mentions-legales.html` dont les cases de l'éditeur restent « à
   compléter » tant que le patron ne les a pas données.
 
+### La mention du répertoire des métiers, après le SIRET
+
+Son choix B de la planche `appli/numero-rm.html`. Un champ facultatif
+« Répertoire des métiers » dans Mon entreprise, sous le SIRET ; rempli, il
+s'imprime tel qu'écrit sur la même ligne (« SIRET …, RM 33 ») sur le devis, la
+facture et l'avoir ; vide, rien ne change. **Ce que ça évite** : un artisan à
+qui sa chambre des métiers réclame la mention n'avait aucun endroit où la
+mettre, et l'application ne pouvait pas en imprimer une juste, aucun texte ne
+disant laquelle depuis le RNE. Migration 0128 (expand seul, trois colonnes
+nullables). `test-numero-rm-sur-les-pieces-db`.
+
 ## 2026-10-08
 
 ### Planche : le site de vente devient complet, écrit pour vendre

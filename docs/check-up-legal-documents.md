@@ -91,7 +91,7 @@ de l'imprimer, et le papier est alors juste. Même chose pour l'envoi
 |---|---|---|
 | Quels travaux paysagers relèvent de la décennale (arrosage enterré, murets, terrasses, plantations) ? | aucune source officielle trouvée. C'est ce qui décide si les points 1 et 2 s'appliquent à chaque chantier | son assureur |
 | L'autoliquidation sur l'**entretien** d'espaces verts | exclue selon INTIA et la FNTP (contrat séparé) ; incluse si elle suit des travaux dans le même contrat (rescrit BOI-RES-TVA-000269 du 9 septembre 2026) | son comptable |
-| La mention exacte pour un artisan au RNE à côté du SIREN | le libellé remplaçant « RM » depuis 2023 n'a pas été confirmé par un texte | son comptable ou sa CMA |
+| La mention exacte pour un artisan au RNE à côté du SIREN | le libellé remplaçant « RM » depuis 2023 n'a pas été confirmé par un texte. Depuis le 9 octobre, un champ libre « Répertoire des métiers » dans Mon entreprise l'imprime après le SIRET, tel que l'artisan l'écrit (§458) | son comptable ou sa CMA |
 | Est-il déclaré « services à la personne » ? | si oui, son numéro SAP doit figurer sur devis et factures (C. trav. D7233-1, à confirmer) | **lui** |
 | Facture-t-il à 10 % ? | décide du point 9 | **lui** |
 | « Devis gratuit » | exigé par l'arrêté du 24 janvier 2017, qui vise les métiers du bâtiment ; le paysage n'y figure pas, sauf peut-être la maçonnerie. Coûte une ligne à ajouter | à décider |
