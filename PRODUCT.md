@@ -38,6 +38,10 @@ publique par jeton — le devis et le choix de la date au même endroit, puis la
 facture, puis la fiche d'entretien.
 
 **Cible commerciale, confirmée le 2 septembre 2026 : les paysagistes d'abord.**
+**Élargie le 9 octobre 2026 aux élagueurs** (sa réponse, devant le site de
+vente) : la fiche de sécurité d'élagage et le vocabulaire du jardin les
+servent déjà. « Les artisans » en général ont été écartés pour l'instant : un
+maçon ou un plombier trouverait un outil qui ne parle pas son métier.
 L'arrosage, le diagnostic végétal et les fiches d'entretien font partie du cœur,
 pas d'un module optionnel. Un élargissement à d'autres métiers reste possible
 plus tard ; il n'est pas engagé.
