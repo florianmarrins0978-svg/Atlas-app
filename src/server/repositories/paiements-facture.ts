@@ -239,6 +239,13 @@ export async function noterPaiement(
     const refus = refusDuPaiement(pourTva, dejaRegles, { date: demande.date, montant });
     if (refus) return { ok: false as const, raison: refus };
 
+    // **Le versement qui ne laisse plus rien à payer EST le solde** — sa demande
+    // du 9 octobre 2026. Le décider ICI, d'après le reste dû, couvre les deux
+    // portes de Terminés (« J'ai reçu le paiement » passe par cette fonction),
+    // et le reste tapé à la main dans « J'ai reçu une partie ».
+    const tous = [...dejaRegles, { date: demande.date, montant }];
+    const etat = etatPaiement(pourTva, tous);
+
     await tx.insert(paiementsFacture).values({
       entrepriseId: ctx.entrepriseId,
       factureId,
@@ -250,13 +257,13 @@ export async function noterPaiement(
       numero: demande.moyen === "cheque" ? demande.numero?.trim() || null : null,
       note: demande.note?.trim() || null,
       origine: "saisi",
+      solde: etat === "soldee",
     });
 
-    const tous = [...dejaRegles, { date: demande.date, montant }];
     return {
       ok: true as const,
       reste: resteDu(pourTva, tous),
-      etat: etatPaiement(pourTva, tous),
+      etat,
     };
   });
 }

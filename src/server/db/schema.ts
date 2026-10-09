@@ -2579,9 +2579,10 @@ export const paiementsFacture = pgTable(
      */
     libelle: text("libelle"),
     /**
-     * Posé par l'interrupteur « Facture acquittée » (migration 0092) : le
-     * solde, compté reçu. Il se retire quand on éteint, et s'écrit « Acompte »
-     * tout court — jamais avec un taux du devis.
+     * Le versement qui termine le paiement : posé par l'interrupteur « Facture
+     * acquittée » (migration 0092), ou par un règlement de Terminés qui ne
+     * laisse plus rien à payer. Il s'écrit « Solde » (`nomAcompte`). Celui de
+     * l'interrupteur se retire quand on éteint.
      */
     solde: boolean("solde").notNull().default(false),
     origine: text("origine", { enum: ["saisi", "reprise", "banque"] }).notNull().default("saisi"),
