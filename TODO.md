@@ -14,11 +14,15 @@ Reste : la batterie (niveau 3), puis la fusion sur `main` à lui demander.
 
 ## ⏳ « SOLDE » AU LIEU D'« ACOMPTE » : CODÉ, EN ATTENTE DE LA BATTERIE (9 octobre 2026)
 
+## ⏳ « SOLDE » ET « PAYÉ PAR » DANS LES RÈGLEMENTS : CODÉS, EN ATTENTE DE LA BATTERIE (9 octobre 2026)
+
 Branche `claude/solde-pas-acompte`, partie de `main`. La ligne posée par
 « Facture acquittée » s'écrit « Solde » ; les acomptes versés gardent
 « Acompte 30 % », « Acompte 50 % » (`nomAcompte`). Dans Terminés, le versement qui termine le
 paiement est marqué solde à la source (`noterPaiement`, `test-paiements-facture-db`
-rouge puis vert). Contrôles du papier rouges
+rouge puis vert). Et « Payé par » dans Terminés (sa planche du 9 octobre,
+retenue) : `test-paiements-facture-db` rouge puis vert, `test-tva-au-paiement-e2e`
+et les deux suites voisines vertes, écran regardé. Contrôles du papier rouges
 puis verts, `test-papier-facture-db` vert. Niveau 3 (argent, rayon de 42
 points d'entrée) : la batterie complète est due avant `main`. **Il a dit
 « pas de batterie » le 9 octobre** : le lot attend son feu vert.

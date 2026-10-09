@@ -224,6 +224,27 @@ async function main() {
     assert.deepStrictEqual(await nomsDe(aLaMain.id), ["Acompte", "Solde"]);
   });
 
+  await test("LE MOYEN CHOISI DANS TERMINÉS EST ENREGISTRÉ, sur les deux portes", async () => {
+    // Sa planche du 9 octobre 2026 (`appli/moyen-de-reglement-termines.html`),
+    // retenue : « Payé par » au-dessus des deux boutons, que les deux emploient.
+    const ctx = await contexte("paye-par");
+    const facture = await factureEmise(ctx, "1200.00");
+    assert.ok((await noterPaiement(ctx, facture.id, { date: "2026-08-20", montant: "500.00", moyen: "cheque" })).ok);
+    assert.ok((await soldera(ctx, facture.id, "2026-09-15", "especes")).ok);
+    const moyens = (await reglementsRecus(ctx, facture.id)).map((g) => g.moyen);
+    assert.deepStrictEqual(moyens, ["cheque", "especes"]);
+
+    // Un moyen venu d'ailleurs que la liste se refuse en VALEUR, et rien n'est écrit.
+    const autre = await factureEmise(ctx, "1200.00");
+    const r = await noterPaiement(ctx, autre.id, {
+      date: "2026-08-20",
+      montant: "500.00",
+      moyen: "bitcoin" as unknown as "cheque",
+    });
+    assert.strictEqual(r.ok, false);
+    assert.strictEqual((await reglementsRecus(ctx, autre.id)).length, 0);
+  });
+
   await test("UN MONTANT PLUS GRAND QUE LE RESTE DÛ EST REFUSÉ, et rien n'est écrit", async () => {
     const ctx = await contexte("trop");
     const facture = await factureEmise(ctx, "1200.00");

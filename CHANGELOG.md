@@ -45,6 +45,19 @@ source (`noterPaiement`), qu'il vienne du bouton ou d'un reste tapé à la
 main ; les acomptes d'avant gardent leur nom.
 
 
+
+### Terminés demande le moyen de règlement : « Payé par »
+
+Sa planche du 9 octobre (`appli/moyen-de-reglement-termines.html`),
+retenue. Terminés notait un règlement sans dire comment il avait été payé :
+la ligne disait « règlement ». Un champ « Payé par » (Virement d'office)
+se tient au-dessus des deux boutons, que les deux emploient ; la ligne se
+relit « Acompte payé le … par chèque ». Le moyen se vérifie à la source
+(`noterPaiement`, `estUnMoyenDePaiement`) : un moyen inconnu revient en
+refus, jamais en exception. Cesu et Avance immédiate viendront avec le
+crédit d'impôt, qui n'est pas codé.
+
+
 ## 2026-10-08
 
 ### Planche : le site de vente devient complet, écrit pour vendre

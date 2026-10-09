@@ -12,7 +12,7 @@ import {
   type AvoirPourTva,
   type Paiement,
 } from "../../lib/exigibilite-tva";
-import { netAPayer, refusDuReglementRecu, type MoyenDePaiement, type ReglementRecu } from "../../lib/acomptes-facture";
+import { estUnMoyenDePaiement, netAPayer, refusDuReglementRecu, type MoyenDePaiement, type ReglementRecu } from "../../lib/acomptes-facture";
 import { totauxAvecReduction } from "../../lib/reduction-devis";
 import type { DbOrTx } from "../db/client";
 import { avoirsDesFactures } from "./avoirs";
@@ -238,6 +238,9 @@ export async function noterPaiement(
     };
     const refus = refusDuPaiement(pourTva, dejaRegles, { date: demande.date, montant });
     if (refus) return { ok: false as const, raison: refus };
+    if (demande.moyen != null && !estUnMoyenDePaiement(demande.moyen)) {
+      return { ok: false as const, raison: "Ce moyen de paiement n'existe pas." };
+    }
 
     // **Le versement qui ne laisse plus rien à payer EST le solde** — sa demande
     // du 9 octobre 2026. Le décider ICI, d'après le reste dû, couvre les deux
@@ -276,7 +279,12 @@ export async function noterPaiement(
  * un acompte demande une date et un montant — mais elle couvre le cas courant
  * en un appui, et c'est celui-là qui se fait cinquante fois par an.
  */
-export async function soldera(ctx: Ctx, factureId: string, aujourdHui: string): Promise<ResultatPaiement> {
+export async function soldera(
+  ctx: Ctx,
+  factureId: string,
+  aujourdHui: string,
+  moyen?: MoyenDePaiement
+): Promise<ResultatPaiement> {
   const facture = (await facturesAvecPaiements(ctx)).find((f) => f.id === factureId);
   if (!facture) return { ok: false, raison: "Cette facture est introuvable." };
   if (facture.etat === "soldee") return { ok: false, raison: "Cette facture est déjà réglée." };
@@ -286,7 +294,7 @@ export async function soldera(ctx: Ctx, factureId: string, aujourdHui: string): 
   // peut pas avoir été encaissée hier : le règlement serait refusé, et le refus
   // parlerait d'une date qu'il n'a jamais saisie.
   const date = aujourdHui < facture.dateEmission ? facture.dateEmission : aujourdHui;
-  return noterPaiement(ctx, factureId, { date, montant: facture.reste });
+  return noterPaiement(ctx, factureId, { date, montant: facture.reste, moyen });
 }
 
 /**

@@ -251,6 +251,7 @@ export default async function ReleveTvaPage({
               id: p.id,
               date: p.date,
               montant: p.montant,
+              moyen: p.moyen,
               origine: p.origine,
             })),
             retires: f.retires.map((r) => ({

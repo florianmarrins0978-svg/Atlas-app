@@ -6,6 +6,7 @@ import { useState } from "react";
 import { colors, font } from "@/lib/design-tokens";
 import { jourCourt, jourEtMois, jourNumerique } from "@/lib/jour";
 import { enEuros } from "@/lib/euros";
+import { LIBELLES_MOYEN, MOYENS_PROPOSES, type MoyenDePaiement } from "@/lib/acomptes-facture";
 import { visionneuseDeLaFacture } from "@/lib/visionneuse-pdf";
 import { noterPaiementAction, remettrePaiementAction, retirerPaiementAction, soldeFactureAction } from "./actions";
 import { MarqueAncienIban } from "@/components/atlas/AlerteAncienIban";
@@ -21,7 +22,13 @@ export type FactureAttendue = {
   totalTtc: string;
   reste: string;
   etat: "en_attente" | "partielle" | "soldee";
-  paiements: { id: string; date: string; montant: string; origine: "saisi" | "reprise" | "banque" }[];
+  paiements: {
+    id: string;
+    date: string;
+    montant: string;
+    moyen: MoyenDePaiement | null;
+    origine: "saisi" | "reprise" | "banque";
+  }[];
   /** Les règlements retirés, gardés pour leur trace (migration 0103). */
   retires: { id: string; date: string; montant: string; retireLe: string }[];
 };
@@ -93,6 +100,12 @@ export default function EnAttenteDePaiement({
   const [rentrees, setRentrees] = useState<{ id: string; nom: string; montant: string }[]>([]);
   const [ouverte, setOuverte] = useState<string | null>(null);
   const [enCours, setEnCours] = useState<string | null>(null);
+  // **« Payé par », un par facture — sa planche du 9 octobre 2026**
+  // (`appli/moyen-de-reglement-termines.html`). Les deux boutons l'emploient :
+  // le solde d'un seul appui garde ainsi lui aussi son moyen. Virement d'office,
+  // le cas le plus courant ; rien n'est à remplir pour solder.
+  const [moyens, setMoyens] = useState<Record<string, MoyenDePaiement>>({});
+  const moyenDe = (id: string): MoyenDePaiement => moyens[id] ?? "virement";
   // **Quelques factures d'abord, toutes sur demande** — sa planche du
   // 12 septembre 2026 : *« ne pas afficher énormément de factures directement
   // sur la page ; montrer seulement quelques factures récentes, puis un
@@ -109,7 +122,7 @@ export default function EnAttenteDePaiement({
     setEnCours(id);
     setErreur(null);
     try {
-      const r = await soldeFactureAction(id, aujourdHui);
+      const r = await soldeFactureAction(id, aujourdHui, moyenDe(id));
       if (!r.ok) setErreur(r.raison);
       else {
         const f = factures.find((x) => x.id === id);
@@ -251,6 +264,8 @@ export default function EnAttenteDePaiement({
                   la facture, pas sur son règlement. */}
               <CeQueLeClientEnAFait reception={receptions[f.id]} facture={visionneuseDeLaFacture(f)} />
 
+              <PayePar moyen={moyenDe(f.id)} choisir={(m) => setMoyens((t) => ({ ...t, [f.id]: m }))} />
+
               <div className="mt-2.5 flex flex-wrap items-center gap-2">
                 {/* Les suites visent les repères, jamais les mots : c'est le
                     libellé qui vient de changer, et il changera encore. */}
@@ -279,6 +294,7 @@ export default function EnAttenteDePaiement({
               {ouverte === f.id && (
                 <SaisieDuReglement
                   facture={f}
+                  moyen={moyenDe(f.id)}
                   aujourdHui={aujourdHui}
                   onErreur={setErreur}
                   onFini={() => {
@@ -322,6 +338,7 @@ export default function EnAttenteDePaiement({
                       <span className="flex-1 tabular-nums">
                         {p.origine === "reprise" ? "Supposé réglé le " : "Acompte payé le "}
                         {jourNumerique(p.date)}
+                        {p.moyen && p.moyen !== "autre" ? ` par ${LIBELLES_MOYEN[p.moyen]}` : ""}
                       </span>
                       <span className="flex-none tabular-nums" style={{ color: colors.inkSoft }}>
                         {euros(p.montant)}
@@ -420,11 +437,13 @@ export default function EnAttenteDePaiement({
  */
 function SaisieDuReglement({
   facture,
+  moyen,
   aujourdHui,
   onErreur,
   onFini,
 }: {
   facture: FactureAttendue;
+  moyen: MoyenDePaiement;
   aujourdHui: string;
   onErreur: (m: string | null) => void;
   onFini: () => void;
@@ -516,7 +535,7 @@ function SaisieDuReglement({
           setEnCours(true);
           onErreur(null);
           try {
-            const r = await noterPaiementAction(facture.id, date, montant);
+            const r = await noterPaiementAction(facture.id, date, montant, moyen);
             if (!r.ok) onErreur(r.raison);
             else onFini();
           } catch {
@@ -584,4 +603,46 @@ function enClair(iso: string): string {
 /** Le format de tout le dépôt, espace des milliers comprise (`euros.ts`). */
 function euros(montant: string): string {
   return enEuros(Number(montant || "0"));
+}
+
+/**
+ * « Payé par » : le libellé est à nous, le déroulant natif est posé dessus,
+ * transparent — comme « Payé le » juste en dessous, et pour la même raison :
+ * lui seul ouvre la roue du téléphone.
+ */
+function PayePar({ moyen, choisir }: { moyen: MoyenDePaiement; choisir: (m: MoyenDePaiement) => void }) {
+  const libelle = (m: MoyenDePaiement) => LIBELLES_MOYEN[m].charAt(0).toUpperCase() + LIBELLES_MOYEN[m].slice(1);
+  return (
+    <label className="mt-2.5 flex flex-col gap-1.5" data-atlas="paye-par">
+      <span className="text-[10px] font-medium uppercase tracking-[0.14em]" style={{ color: colors.muted }}>
+        Payé par
+      </span>
+      <span className="relative block rounded-[4px]" style={{ backgroundColor: colors.cream }}>
+        <span
+          aria-hidden
+          className="flex items-center justify-between gap-2 px-3 py-2.5"
+          style={{ color: colors.ink, fontSize: "16px" }}
+        >
+          <span>{libelle(moyen)}</span>
+          <svg width="12" height="12" viewBox="0 0 20 20" fill="none">
+            <path d="M5 8l5 5 5-5" stroke={colors.muted} strokeWidth="1.8" strokeLinecap="round" />
+          </svg>
+        </span>
+        <select
+          value={moyen}
+          onChange={(e) => choisir(e.target.value as MoyenDePaiement)}
+          aria-label="Moyen de paiement"
+          data-atlas="moyen-du-reglement"
+          className="absolute inset-0 h-full w-full opacity-0"
+          style={{ fontSize: "16px" }}
+        >
+          {MOYENS_PROPOSES.map((m) => (
+            <option key={m} value={m}>
+              {libelle(m)}
+            </option>
+          ))}
+        </select>
+      </span>
+    </label>
+  );
 }

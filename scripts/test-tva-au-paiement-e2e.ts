@@ -301,7 +301,9 @@ async function main() {
     // 11 septembre : le champ natif se formate selon la langue du TÉLÉPHONE. Ce
     // navigateur-ci n'est pas en français, et c'est exactement le cas qu'on
     // veut éprouver — le jour doit se lire pareil partout.
-    const jour = await ligne.locator("span[aria-hidden]").first().innerText();
+    // Le jour se lit dans SA case : « Payé par », au-dessus depuis le 9 octobre
+    // 2026, porte lui aussi un libellé posé sous un champ transparent.
+    const jour = await ligne.locator('label:has-text("Payé le") span[aria-hidden]').first().innerText();
     assert.match(
       jour.trim(),
       /^\d{2}\/\d{2}\/\d{4}$/,
@@ -315,6 +317,9 @@ async function main() {
     const bouton = ligne.getByRole("button", { name: "Enregistrer ce règlement" });
     assert.ok(!(await bouton.isEnabled()), "on peut enregistrer un règlement sans montant");
 
+    // **« Payé par » — sa planche du 9 octobre 2026.** Choisi avant d'appuyer,
+    // il part avec le règlement et se relit sur sa ligne.
+    await ligne.locator('[data-atlas="moyen-du-reglement"]').selectOption("cheque");
     await caseMontant.fill("600");
     await bouton.click();
 
@@ -353,8 +358,8 @@ async function main() {
     // posés seuls ne disaient pas de quoi ils parlaient.
     assert.match(
       parts[0] ?? "",
-      /^Acompte payé le \d{2}\/\d{2}\/\d{4}$/,
-      `la ligne dit « ${parts[0]} » au lieu de « Acompte payé le jj/mm/aaaa »`
+      /^Acompte payé le \d{2}\/\d{2}\/\d{4} par chèque$/,
+      `la ligne dit « ${parts[0]} » au lieu de « Acompte payé le jj/mm/aaaa par chèque »`
     );
     assert.match(parts[1] ?? "", /600,00\s*€/, `le montant ne suit pas la date : « ${parts[1]} »`);
   });

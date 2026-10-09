@@ -32,6 +32,14 @@ export const LIBELLES_MOYEN: Record<MoyenDePaiement, string> = {
   autre: "règlement",
 };
 
+/**
+ * Un moyen venu du navigateur est-il l'un des nôtres ? La base le refuserait
+ * aussi, mais en LEVANT : le refus doit revenir en valeur (`AGENTS.md`).
+ */
+export function estUnMoyenDePaiement(m: unknown): m is MoyenDePaiement {
+  return typeof m === "string" && Object.hasOwn(LIBELLES_MOYEN, m);
+}
+
 export type ReglementRecu = {
   /** Date civile `AAAA-MM-JJ`. */
   date: string;
