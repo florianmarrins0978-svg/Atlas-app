@@ -23,15 +23,26 @@ le 9 octobre) :**
 - le montant est celui **effectivement acquitté**, après déduction de l'avance
   immédiate du crédit d'impôt, de l'APA ou de la PCH et des Cesu préfinancés ;
 - le numéro du compte débité, « le cas échéant » ;
-- **condition d'activité exclusive** : depuis le 1er janvier 2025, une
-  entreprise de moins de 11 salariés ou une micro-entreprise peut avoir une
-  activité accessoire hors services à la personne, à condition que ces
-  services restent son activité **principale**, avec une comptabilité
-  séparée (décret n° 2024-851). La part maximale de l'activité accessoire
-  n'est pas vérifiée ici (un amendement de 2023 parlait de 30 % au plus).
-  **Pour un paysagiste dont la création de jardins pèse plus que l'entretien
-  chez des particuliers, la déclaration n'est probablement pas possible.**
-  Question posée au patron ;
+- **condition d'activité exclusive : CONFIRMÉE par les deux PDF officiels**
+  qu'il a fournis le 9 octobre 2026 (FAQ « aménagement de la dispense de CAE »
+  et fascicule 2026, servicesalapersonne.gouv.fr). Décret n° 2024-851 :
+  - activité hors services à la personne : **30 % au plus du chiffre
+    d'affaires HT total**, sur l'année civile, avec facturation et
+    comptabilité séparées ; dépassé, la déclaration est retirée pour au moins
+    un an, et ses clients perdent le crédit d'impôt (et peuvent devoir le
+    rembourser) ;
+  - **une entreprise qui existait avant et faisait surtout autre chose n'a
+    PAS droit à la dispense** : soit une nouvelle société dédiée aux services
+    à la personne (la voie que la FAQ conseille), soit une année civile
+    entière sans aucune activité hors services à la personne ;
+  - **le logo des services à la personne est obligatoire sur tous les
+    supports commerciaux** de l'activité (R7232-19), donc sur devis et
+    facture : à prévoir dans l'appli (téléchargé depuis NOVA) ;
+  - états mensuels d'activité (EMA) et tableau statistique annuel (TSA) à
+    jour dans NOVA. La déclaration est délivrée par la **DDETS** (pas la
+    DREETS, comme dit à tort le 9 octobre).
+  Ce que l'appli pourrait tenir : la part du chiffre d'affaires hors services
+  à la personne de l'année, contre le plafond de 30 %. Proposé, pas demandé.
 - obligation de saisir son activité dans NOVA chaque trimestre et chaque année.
 
 Encore ouvert : le n° d'identification de l'intervenant (obligatoire sur
@@ -39,7 +50,7 @@ l'attestation). C'est un numéro interne donné par l'entreprise, jamais le
 numéro de sécurité sociale ; proposé : attribué tout seul (1, 2, 3…) à l'ajout
 de l'intervenant, modifiable. Pas encore validé par lui. Mention exacte de la
 facture et condition d'activité exclusive : à confirmer (page officielle
-servicesalapersonne.gouv.fr ou DREETS, bloquées d'ici).
+servicesalapersonne.gouv.fr ou DDETS, bloquées d'ici).
 
 ## 🔜 UN TIRET À L'ÉCRAN DE LA FACTURE (8 octobre 2026)
 
