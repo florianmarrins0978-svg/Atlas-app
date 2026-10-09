@@ -17,8 +17,10 @@ import {
   reglementsRetiresDeLaPeriode,
   remettrePaiement,
   retirerPaiement,
+  reglementsRecus,
   soldera,
 } from "../src/server/repositories/paiements-facture";
+import { nomAcompte } from "../src/lib/acomptes-facture";
 import { trimestre } from "../src/server/trimestre";
 import { fermerLimiteur } from "../src/server/rate-limit";
 import { nettoyerBase } from "./_test-db";
@@ -200,6 +202,26 @@ async function main() {
     const total = (Number(t3.totalTva) + Number(t4.totalTva)).toFixed(2);
     assert.strictEqual(total, "240.00", `les deux trimestres totalisent ${total} € au lieu de 240,00`);
     assert.strictEqual((await facturesEnAttente(ctx)).length, 0);
+  });
+
+  await test("LE VERSEMENT QUI TERMINE LE PAIEMENT S'APPELLE « SOLDE », celui d'avant reste un acompte", async () => {
+    // Sa demande du 9 octobre 2026, vue dans l'appli : « J'ai reçu une
+    // partie » puis « J'ai reçu le paiement » donnaient deux « Acompte ».
+    const nomsDe = async (id: string) => {
+      const r = await reglementsRecus(ctx, id);
+      return r.map((_, i) => nomAcompte(r, i, []));
+    };
+    const ctx = await contexte("solde-nomme");
+    const parBouton = await factureEmise(ctx, "1200.00");
+    assert.ok((await noterPaiement(ctx, parBouton.id, { date: "2026-08-20", montant: "500.00" })).ok);
+    assert.ok((await soldera(ctx, parBouton.id, "2026-09-15")).ok);
+    assert.deepStrictEqual(await nomsDe(parBouton.id), ["Acompte", "Solde"]);
+
+    // Le reste tapé à la main dans « J'ai reçu une partie » est un solde aussi.
+    const aLaMain = await factureEmise(ctx, "1200.00");
+    assert.ok((await noterPaiement(ctx, aLaMain.id, { date: "2026-08-20", montant: "500.00" })).ok);
+    assert.ok((await noterPaiement(ctx, aLaMain.id, { date: "2026-09-15", montant: "940.00" })).ok);
+    assert.deepStrictEqual(await nomsDe(aLaMain.id), ["Acompte", "Solde"]);
   });
 
   await test("UN MONTANT PLUS GRAND QUE LE RESTE DÛ EST REFUSÉ, et rien n'est écrit", async () => {

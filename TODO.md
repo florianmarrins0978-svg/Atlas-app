@@ -16,7 +16,9 @@ Reste : la batterie (niveau 3), puis la fusion sur `main` à lui demander.
 
 Branche `claude/solde-pas-acompte`, partie de `main`. La ligne posée par
 « Facture acquittée » s'écrit « Solde » ; les acomptes versés gardent
-« Acompte 30 % », « Acompte 50 % » (`nomAcompte`). Contrôles du papier rouges
+« Acompte 30 % », « Acompte 50 % » (`nomAcompte`). Dans Terminés, le versement qui termine le
+paiement est marqué solde à la source (`noterPaiement`, `test-paiements-facture-db`
+rouge puis vert). Contrôles du papier rouges
 puis verts, `test-papier-facture-db` vert. Niveau 3 (argent, rayon de 42
 points d'entrée) : la batterie complète est due avant `main`. **Il a dit
 « pas de batterie » le 9 octobre** : le lot attend son feu vert.
