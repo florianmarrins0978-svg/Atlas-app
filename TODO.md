@@ -48,7 +48,12 @@ le 9 octobre) :**
 **Tous les cas, pas le sien (9 octobre 2026).** La planche porte désormais
 dans Mon entreprise : le logo des services à la personne à déposer, et un
 réglage « Une activité à côté » qui suit la part de l'année contre le plafond
-de 30 %. Une entreprise sans activité à côté n'a pas de compteur. Cas encore
+de 30 %. Une entreprise sans activité à côté n'a pas de compteur. Le compteur se calcule
+sur les factures de l'année civile : le HT des factures SANS la case crédit
+d'impôt, divisé par le HT de toutes les factures. Il s'écrit avec ses deux
+montants pour se recomposer à la main. À trancher en codant : facturé ou
+encaissé (une micro-entreprise compte ses encaissements) ; les 18 % de la
+planche sont un exemple, pas un calcul. Cas encore
 à couvrir en codant : l'artisan seul (il est son propre intervenant, n° 1),
 le règlement en Cesu préfinancé (déduit du montant de l'attestation),
 l'avance immédiate du crédit d'impôt (même déduction).
