@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Atlas en chapitres</title>
+<title>Atlas pour les paysagistes</title>
 <meta name="description" content="Planche : le site de vente d'Atlas écrit comme une page produit, en quatre chapitres.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -28,6 +28,17 @@
 
   Les outils (arrosage, diagnostic) ne figurent pas : sa demande, le site
   reste sur le devis, le planning, la facture et la TVA.
+
+  LE SITE COMPLET, ses réponses du 9 octobre : les prix s'affichent ; l'essai
+  de 15 jours est dans les formules ; pas d'adresse de contact encore ; pas de
+  parcours personnel, « il faut vendre l'appli » ; la facture électronique
+  n'est pas disponible, chaque utilisateur pourra relier son compte.
+  Tout ce qui est écrit sur les formules vient de src/lib/abonnements.ts
+  (prix, lignes, essai Illimité sans carte), et ce qui est dit de la
+  résiliation vient des conditions générales (article 12). Aucun avis, aucun
+  chiffre d'usage : il n'en existe pas encore. Les boutons « Essayer »
+  mènent au bas de la page tant que l'adresse de l'application n'est pas
+  donnée.
 -->
 <style>
 :root{
@@ -100,8 +111,6 @@ section{padding:clamp(88px,16vw,160px) 0}
 .chiffre b{display:block;font:400 clamp(88px,27vw,210px)/.9 var(--display);font-variant-numeric:tabular-nums}
 .chiffre span{display:block;margin-top:14px;font-size:18px;color:var(--sur-nuit-2)}
 
-.affirmation{text-align:center}
-.affirmation h2{font-size:clamp(48px,13vw,104px);line-height:1}
 
 .grille{display:grid;gap:16px;margin-top:56px}
 .case{border-radius:26px;overflow:hidden;background:var(--papier);box-shadow:0 0 0 1px rgba(var(--ombre),.07)}
@@ -113,6 +122,48 @@ section{padding:clamp(88px,16vw,160px) 0}
 .fin{text-align:center}
 .fin h2{font-size:clamp(46px,12vw,92px);line-height:1}
 .bouton{display:inline-flex;align-items:center;min-height:56px;margin-top:36px;padding:0 30px;border-radius:999px;background:var(--pin);color:var(--bouton-texte);font:500 17px/1 var(--texte);text-decoration:none}
+
+/* Le problème, en trois lignes barrées par la suite. */
+.douleur li{list-style:none;font:400 clamp(30px,8vw,52px)/1.1 var(--display);padding:14px 0;border-bottom:1px solid rgba(236,232,220,.14)}
+.douleur ul{padding:0;margin:48px 0 0}
+.douleur .reponse{margin-top:48px;font:400 clamp(30px,8vw,52px)/1.05 var(--display);color:#d9b06d}
+
+.actions{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-top:32px}
+.bouton.clair{background:transparent;color:var(--encre);box-shadow:inset 0 0 0 1.5px var(--trait)}
+.rassure{margin-top:16px;font-size:15px;color:var(--encre-2)}
+
+.deux{display:grid;gap:16px;margin-top:56px}
+.deux article{background:var(--papier);border-radius:26px;padding:30px 26px;box-shadow:0 0 0 1px rgba(var(--ombre),.07)}
+.deux h3{font-size:38px;line-height:1}
+.deux p{margin-top:14px;color:var(--encre-2)}
+@media (min-width:760px){.deux{grid-template-columns:1fr 1fr}}
+
+/* Les prix : trois cartes, le mois ou l'année. */
+.bascule{display:inline-flex;margin-top:36px;padding:4px;border-radius:999px;background:var(--papier);box-shadow:0 0 0 1px var(--trait)}
+.bascule button{border:0;background:transparent;color:var(--encre-2);font:500 15px/1 var(--texte);padding:12px 18px;border-radius:999px;min-height:44px;cursor:pointer}
+.bascule button[aria-pressed="true"]{background:var(--pin);color:var(--bouton-texte)}
+.formules{display:grid;gap:16px;margin-top:28px}
+@media (min-width:900px){.formules{grid-template-columns:repeat(3,1fr)}}
+.formule{background:var(--papier);border-radius:26px;padding:30px 24px;box-shadow:0 0 0 1px rgba(var(--ombre),.08);display:flex;flex-direction:column}
+.formule.mise{box-shadow:0 0 0 2px var(--or),0 30px 60px -34px rgba(var(--ombre),.5)}
+.formule h3{font-size:40px}
+.formule .accroche{margin-top:8px;color:var(--encre-2);font-size:16px}
+.formule .prix{margin-top:22px;font:400 64px/1 var(--display);font-variant-numeric:tabular-nums}
+.formule .prix small{font:400 16px/1 var(--texte);color:var(--encre-2)}
+.formule .offert{margin-top:6px;font-size:14px;color:var(--or);min-height:20px}
+.formule ul{list-style:none;padding:0;margin:22px 0 26px;flex:1}
+.formule li{padding:9px 0 9px 28px;position:relative;font-size:16px;border-top:1px solid var(--trait)}
+.formule li::before{content:"";position:absolute;left:2px;top:15px;width:12px;height:7px;border-left:2px solid var(--sauge);border-bottom:2px solid var(--sauge);transform:rotate(-45deg)}
+.formule li.manque{color:var(--encre-2);text-decoration:line-through;opacity:.6}
+.formule li.manque::before{border:0;width:10px;height:2px;top:20px;background:var(--encre-2);transform:none}
+.formule .bouton{margin-top:0;justify-content:center}
+.essai-note{margin-top:22px;text-align:center;color:var(--encre-2);font-size:16px}
+
+.questions details{border-top:1px solid var(--trait);padding:20px 0}
+.questions details:last-child{border-bottom:1px solid var(--trait)}
+.questions summary{cursor:pointer;font:400 26px/1.15 var(--display);list-style:none}
+.questions summary::-webkit-details-marker{display:none}
+.questions details p{margin-top:12px;color:var(--encre-2)}
 
 /* Le seul mouvement : ce qui entre dans l'écran se dévoile, une fois. */
 .revele{opacity:0;transform:translateY(28px);transition:opacity .9s ease,transform 1.1s cubic-bezier(.16,1,.3,1)}
@@ -126,15 +177,32 @@ section{padding:clamp(88px,16vw,160px) 0}
 
 <header class="barre">
   <a class="marque" href="index.html">Atlas</a>
-  <a class="lien-demo" href="index.html#contact">Démonstration</a>
+  <a class="lien-demo" href="#essayer">Essai gratuit</a>
 </header>
 
 <section class="ouverture">
   <div class="colonne">
-    <h1 class="revele">Du chantier à la facture.</h1>
-    <p class="revele">L'application des paysagistes, dans la poche.</p>
+    <h1 class="revele">Le devis part avant que vous quittiez le jardin.</h1>
+    <p class="revele">Vous dictez le chantier. Atlas écrit le devis. Votre client accepte sur son téléphone.</p>
+    <div class="actions revele">
+      <a class="bouton" href="#essayer">Essayer 15 jours gratuits</a>
+      <a class="bouton clair" href="#prix">Voir les prix</a>
+    </div>
+    <p class="rassure revele">Sans carte bancaire. Tout est ouvert pendant l'essai.</p>
   </div>
   <div class="appareil revele"><img src="images/accueil.jpg" alt="Écran Vos chantiers d'Atlas"></div>
+</section>
+
+<section class="douleur nuit">
+  <div class="colonne">
+    <h2 class="mot revele" style="font-size:clamp(56px,15vw,120px)">Vous êtes paysagiste. Pas secrétaire.</h2>
+    <ul>
+      <li class="revele">Les devis retapés le soir.</li>
+      <li class="revele">Les clients qui ne répondent pas.</li>
+      <li class="revele">La TVA calculée à la fin du mois.</li>
+    </ul>
+    <p class="reponse revele">Atlas s'en occupe. Vous, vous restez au jardin.</p>
+  </div>
 </section>
 
 <section class="chapitre">
@@ -179,12 +247,6 @@ section{padding:clamp(88px,16vw,160px) 0}
   </div>
 </section>
 
-<section class="affirmation nuit" style="padding-top:0">
-  <div class="colonne">
-    <h2 class="revele">Le devis part avant que vous quittiez le jardin.</h2>
-  </div>
-</section>
-
 <section>
   <div class="colonne">
     <h2 class="mot revele" style="font-size:clamp(64px,18vw,150px)">Et aussi.</h2>
@@ -203,15 +265,125 @@ section{padding:clamp(88px,16vw,160px) 0}
   </div>
 </section>
 
-<section class="fin papier">
+<section>
   <div class="colonne">
-    <h2 class="revele">Essayez Atlas sur un vrai chantier.</h2>
-    <a class="bouton revele" href="index.html#contact">Demander une démonstration</a>
+    <h2 class="mot revele" style="font-size:clamp(60px,17vw,140px)">Vous gardez la main.</h2>
+    <div class="deux">
+      <article class="revele">
+        <h3>L'IA prépare. Vous décidez.</h3>
+        <p>Rien ne part chez le client sans votre accord. Chaque ligne se corrige à la main, et quand une information manque, Atlas la laisse vide et vous la demande plutôt que de l'inventer.</p>
+      </article>
+      <article class="revele">
+        <h3>Pensé pour les paysagistes.</h3>
+        <p>Les mots du métier, l'équipe posée à la demi-journée, les retours d'intervention, les fiches de sécurité, les entretiens. Pas un logiciel de devis générique.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="papier" id="prix">
+  <div class="colonne" style="width:min(100% - 32px,1080px);text-align:center">
+    <h2 class="mot revele" style="font-size:clamp(72px,20vw,160px)">Les prix.</h2>
+    <p class="chapo revele" style="margin-inline:auto">Sans engagement. Vous arrêtez quand vous voulez, à la fin de la période en cours.</p>
+    <div class="bascule revele" role="group" aria-label="Paiement">
+      <button type="button" data-periode="mois" aria-pressed="true">Au mois</button>
+      <button type="button" data-periode="an" aria-pressed="false">À l'année, 2 mois offerts</button>
+    </div>
+    <div class="formules" style="text-align:left">
+      <article class="formule revele" data-mois="39" data-an="390">
+        <h3>Artisan</h3>
+        <p class="accroche">Du devis dicté à la facture, sans rien retaper.</p>
+        <p class="prix"><span class="montant">39 €</span> <small class="rythme">HT par mois</small></p>
+        <p class="offert"></p>
+        <ul>
+          <li>Devis et factures illimités</li>
+          <li>Vos dictées transcrites et chiffrées</li>
+          <li>Le planning de vos chantiers</li>
+          <li>Votre relevé de TVA, tenu tout seul</li>
+          <li>Vos salariés ont accès au planning</li>
+          <li class="manque">Les absences de vos équipes</li>
+          <li class="manque">Les retours d'intervention de vos salariés</li>
+          <li class="manque">Jusqu'à 5 personnes aux devis et aux factures</li>
+        </ul>
+        <a class="bouton clair" href="#essayer">Essayer 15 jours gratuits</a>
+      </article>
+      <article class="formule mise revele" data-mois="59" data-an="590">
+        <h3>Entreprise</h3>
+        <p class="accroche">Tout Atlas, jusqu'à cinq personnes qui facturent.</p>
+        <p class="prix"><span class="montant">59 €</span> <small class="rythme">HT par mois</small></p>
+        <p class="offert"></p>
+        <ul>
+          <li>Devis et factures illimités</li>
+          <li>Vos dictées transcrites et chiffrées</li>
+          <li>Le planning de vos chantiers</li>
+          <li>Votre relevé de TVA, tenu tout seul</li>
+          <li>Vos salariés ont accès au planning</li>
+          <li>Les absences de vos équipes</li>
+          <li>Les retours d'intervention de vos salariés</li>
+          <li>Jusqu'à 5 personnes aux devis et aux factures</li>
+        </ul>
+        <a class="bouton" href="#essayer">Essayer 15 jours gratuits</a>
+      </article>
+      <article class="formule revele" data-mois="159" data-an="1590">
+        <h3>Illimité</h3>
+        <p class="accroche">Toute votre équipe sur Atlas.</p>
+        <p class="prix"><span class="montant">159 €</span> <small class="rythme">HT par mois</small></p>
+        <p class="offert"></p>
+        <ul>
+          <li>Devis et factures illimités</li>
+          <li>Vos dictées transcrites et chiffrées</li>
+          <li>Le planning de vos chantiers</li>
+          <li>Votre relevé de TVA, tenu tout seul</li>
+          <li>Vos salariés ont accès au planning</li>
+          <li>Les absences de vos équipes</li>
+          <li>Les retours d'intervention de vos salariés</li>
+          <li>Autant de personnes que vous voulez aux devis et aux factures</li>
+        </ul>
+        <a class="bouton clair" href="#essayer">Essayer 15 jours gratuits</a>
+      </article>
+    </div>
+    <p class="essai-note revele">L'essai ouvre tout, sans carte bancaire. Vous choisissez votre formule après.</p>
+  </div>
+</section>
+
+<section class="questions">
+  <div class="colonne">
+    <h2 class="mot revele" style="font-size:clamp(56px,15vw,120px)">Vos questions.</h2>
+    <div style="margin-top:40px">
+      <details class="revele"><summary>Faut-il être à l'aise avec un téléphone ?</summary><p>Non. Les boutons sont grands, les mots sont ceux du métier. Atlas est fait pour être utilisé debout, d'une main, en plein soleil.</p></details>
+      <details class="revele"><summary>Sur quoi Atlas fonctionne-t-il ?</summary><p>Sur votre téléphone et sur votre ordinateur, dans le navigateur. Il s'ajoute à l'écran d'accueil comme une application.</p></details>
+      <details class="revele"><summary>Et si l'IA se trompe ?</summary><p>Vous le voyez avant le client. Rien n'est envoyé, validé ou facturé sans votre geste, et chaque ligne se corrige à la main.</p></details>
+      <details class="revele"><summary>Mes clients doivent-ils installer quelque chose ?</summary><p>Non. Ils reçoivent un lien par SMS ou par e-mail, choisissent leur date et acceptent depuis leur téléphone.</p></details>
+      <details class="revele"><summary>Mes données sont-elles à l'abri ?</summary><p>Chaque entreprise est isolée des autres au niveau de la base de données elle-même. Vos clients, vos prix et vos chantiers ne sont visibles que par votre équipe.</p></details>
+      <details class="revele"><summary>Que se passe-t-il après les 15 jours ?</summary><p>Rien n'est prélevé tout seul. Vous choisissez une formule, ou Atlas passe en lecture seule : vos devis et vos factures restent consultables.</p></details>
+      <details class="revele"><summary>Et la facture électronique ?</summary><p>Elle arrive. Vous pourrez relier votre compte de facture électronique à Atlas, et vos factures partiront par lui.</p></details>
+    </div>
+  </div>
+</section>
+
+<section class="fin nuit" id="essayer">
+  <div class="colonne">
+    <h2 class="revele">Quinze jours pour retrouver vos soirées.</h2>
+    <a class="bouton revele" href="#essayer" style="background:var(--sur-nuit);color:var(--nuit)">Essayer 15 jours gratuits</a>
+    <p class="rassure revele" style="color:var(--sur-nuit-2)">Sans carte bancaire. Sans engagement.</p>
   </div>
 </section>
 
 <script>
 (function(){
+  // Le mois ou l'année : le prix de chaque carte vient de ses attributs, recopiés
+  // de src/lib/abonnements.ts (l'année vaut dix mois, deux sont offerts).
+  var boutonsPeriode = document.querySelectorAll(".bascule button");
+  function periode(p){
+    boutonsPeriode.forEach(function(b){ b.setAttribute("aria-pressed", String(b.getAttribute("data-periode") === p)); });
+    document.querySelectorAll(".formule").forEach(function(f){
+      f.querySelector(".montant").textContent = Number(f.getAttribute(p === "an" ? "data-an" : "data-mois")).toLocaleString("fr-FR") + " €";
+      f.querySelector(".rythme").textContent = p === "an" ? "HT par an" : "HT par mois";
+      f.querySelector(".offert").textContent = p === "an" ? "Deux mois offerts" : "";
+    });
+  }
+  boutonsPeriode.forEach(function(b){ b.addEventListener("click", function(){ periode(b.getAttribute("data-periode")); }); });
+
   // La phrase dictée se découpe en mots, qui s'allument l'un après l'autre.
   var dite = document.getElementById("dite");
   dite.innerHTML = dite.textContent.split(" ").map(function(m, i){

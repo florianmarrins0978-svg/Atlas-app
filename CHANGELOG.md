@@ -8,6 +8,20 @@ Format : le plus récent en tête.
 ---
 ## 2026-10-08
 
+### Planche : le site de vente devient complet, écrit pour vendre
+
+`appli/vente/chapitres.html`, ses réponses du 9 octobre : les prix
+s'affichent, l'essai de 15 jours en fait partie, pas de parcours personnel
+(« il faut vendre l'appli »), la facture électronique arrive (chaque
+utilisateur reliera son compte). La page ajoute le problème du métier, deux
+arguments (« L'IA prépare. Vous décidez. », « Pensé pour les paysagistes »),
+les trois formules au mois ou à l'année recopiées de `src/lib/abonnements.ts`,
+sept questions, et un appel à l'essai. Ce qui est dit de la résiliation vient
+de l'article 12 des conditions générales. Restent à donner : l'adresse de
+contact et celle de l'application, où mèneront les boutons « Essayer ».
+L'article 14.2 des conditions publiées porte toujours « [À COMPLÉTER — 14 ou
+30 jours] » (TODO, point 3) : à régler avant de vendre l'essai en public.
+
 ### Planche : le site de vente en chapitres, à la manière d'une page produit
 
 `appli/vente/chapitres.html`, sa question du jour après quatre essais de
