@@ -12,8 +12,9 @@ choix B (`appli/numero-rm.html`) : un champ facultatif « Répertoire des
 métiers » sous le SIRET dans Mon entreprise, imprimé tel qu'écrit après le
 SIRET (« SIRET …, RM 33 ») sur le devis, la facture et l'avoir ; rien s'il est
 vide (`ARCHITECTURE.md` §458). Suite base `test-numero-rm-sur-les-pieces-db`
-rouge puis verte ; écran et devis regardés. **Batterie à jouer** (niveau 3,
-migration), puis fusion sur `main` à demander.
+rouge puis verte ; écran et devis regardés. **Batterie non jouée, à sa
+demande du 9 octobre** : sans elle (niveau 3, migration), le garde-fou refuse
+la fusion sur `main`. Le lot reste sur sa branche.
 
 ---
 ## UN JOUR OUVERT RETIRE LA LISTE DU BAS : SUR `main` LE 8 OCTOBRE 2026
