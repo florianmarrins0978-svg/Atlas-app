@@ -87,6 +87,14 @@ dernier versement n'est pas nommé « Solde » (`soldera` passe par
 moyen de règlement**. Pour le crédit d'impôt, le moyen compte (Cesu, avance
 immédiate) : à ajouter là aussi. Proposé au patron, pas encore décidé.
 
+**Tranché le 9 octobre 2026 : Atlas n'est PAS relié à l'Urssaf pour
+l'instant.** La voie normale suffit : facture payée à 100 %, attestation
+fiscale avant le 31 mars, crédit récupéré par le client sur sa déclaration.
+« Avance immédiate » reste un moyen de règlement, pour l'artisan qui la
+pratique déjà avec un autre logiciel : l'attestation retire ce que le client
+a déjà touché. La liaison (habilitation d'Atlas comme logiciel partenaire,
+API « tiers de prestation ») se rouvrira si des artisans la demandent.
+
 **Tranché le 9 octobre 2026 : les acomptes gardent leur taux CUMULÉ.** C'est
 sa propre façon de compter : *« 1er acompte 30 %, 2e 50 %, 3e 75 % »*, soit
 ce que le client a payé en tout à chaque étape. L'appli fait déjà ainsi
