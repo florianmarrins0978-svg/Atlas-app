@@ -55,7 +55,10 @@ montants pour se recomposer à la main. À trancher en codant : facturé ou
 encaissé (une micro-entreprise compte ses encaissements) ; les 18 % de la
 planche sont un exemple, pas un calcul. Dessiné le 9 octobre 2026 à sa demande (« dessine tout ») : l'onglet Équipe
 (n° d'intervenant, le patron n° 0, couvre l'artisan seul), l'onglet Retour du
-jour (« Combien d'heures ? », par personne présente, à la demi-heure), et deux
+jour (« Combien d'heures ? », heures et minutes en déroulants, sa demande du
+même soir). **Seuls les salariés cochés sur la demi-journée y figurent, pas
+le patron** : *« le patron n'est pas sur le chantier »*. Le patron n'y entre
+que s'il n'a aucun salarié, puisqu'il est alors le seul intervenant, et deux
 moyens de règlement sur la facture, « Cesu » et « Urssaf » (avance
 immédiate) : le Cesu se retire de ce qui ouvre droit, l'avance immédiate
 annonce un crédit déjà reçu. Le mécanisme exact de l'avance immédiate
