@@ -12,6 +12,15 @@ A, sa ligne sous le SIRET ; B, sur la ligne du SIRET après une virgule.
 **Il a choisi B ; codé le 9 octobre** (migration 0128, `ARCHITECTURE.md` §458).
 Reste : la batterie (niveau 3), puis la fusion sur `main` à lui demander.
 
+## ⏳ « SOLDE » AU LIEU D'« ACOMPTE » : CODÉ, EN ATTENTE DE LA BATTERIE (9 octobre 2026)
+
+Branche `claude/solde-pas-acompte`, partie de `main`. La ligne posée par
+« Facture acquittée » s'écrit « Solde » ; les acomptes versés gardent
+« Acompte 30 % », « Acompte 50 % » (`nomAcompte`). Contrôles du papier rouges
+puis verts, `test-papier-facture-db` vert. Niveau 3 (argent, rayon de 42
+points d'entrée) : la batterie complète est due avant `main`. **Il a dit
+« pas de batterie » le 9 octobre** : le lot attend son feu vert.
+
 ## ✅ LES DEVIS EXPIRÉS : SUR `main` LE 8 OCTOBRE 2026 (8 octobre 2026)
 
 Branche `claude/devis-expires`. Ses planches du 7 octobre, codées : « Devis
