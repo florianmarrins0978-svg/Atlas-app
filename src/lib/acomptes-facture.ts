@@ -56,12 +56,16 @@ export function libelleReglement(g: Pick<ReglementRecu, "moyen" | "numero">): st
 }
 
 /**
- * CE QU'IL A ÉCRIT, sinon « Acompte 30 % », « Acompte 50 % », « Acompte ».
+ * CE QU'IL A ÉCRIT, sinon « Acompte 30 % », « Acompte 50 % », « Acompte »,
+ * ou « Solde ».
  *
  * Le rang de l'acompte dit son taux — celui que le devis prévoyait à ce rang.
- * Au-delà des acomptes du devis, ou pour le solde posé par l'interrupteur,
- * « Acompte » tout court : ni taux inventé, ni « solde », qui n'est pas un
- * mot qu'il emploie.
+ * Au-delà des acomptes du devis, « Acompte » tout court : pas de taux inventé.
+ *
+ * **Le solde posé par « Facture acquittée » s'écrit « Solde »** — sa
+ * correction du 9 octobre 2026 : *« corrige l'acompte alors que c'est le
+ * solde »*. Le nom d'avant (« Acompte ») venait d'une supposition, « solde
+ * n'est pas un mot qu'il emploie », qu'il a démentie lui-même.
  *
  * **Mais tout cela n'est qu'une PROPOSITION depuis le 21 septembre 2026**
  * (migration 0098) : *« si c'est pas ça faut que je puisse écrire ce que
@@ -81,7 +85,7 @@ export function nomAcompte(
   // cette fonction : le mot ne peut donc pas différer de l'un à l'autre.
   const ecrit = g.libelle?.trim();
   if (ecrit) return ecrit;
-  if (g.solde) return "Acompte";
+  if (g.solde) return "Solde";
   const tries = [...acomptesDuDevis].sort((a, b) => a.rang - b.rang);
   const taux = tries[index]?.tauxCumule;
   return taux ? `Acompte ${new Decimal(taux).toDecimalPlaces(2).toString().replace(".", ",")} %` : "Acompte";

@@ -126,8 +126,9 @@ async function main() {
     assert.equal(nomAcompte(trois, 0, DEVIS_ACOMPTES), "Acompte 30 %");
     assert.equal(nomAcompte(trois, 1, DEVIS_ACOMPTES), "Acompte 50 %");
     assert.equal(nomAcompte(trois, 2, DEVIS_ACOMPTES), "Acompte");
-    // Le solde posé par l'interrupteur s'écrit « Acompte », même au rang 2.
-    assert.equal(nomAcompte([cheque, { ...virement, solde: true }], 1, DEVIS_ACOMPTES), "Acompte");
+    // **Le solde posé par l'interrupteur s'écrit « Solde »** — sa correction du
+    // 9 octobre 2026 : *« corrige l'acompte alors que c'est le solde »*.
+    assert.equal(nomAcompte([cheque, { ...virement, solde: true }], 1, DEVIS_ACOMPTES), "Solde");
     // Sans acompte sur le devis : « Acompte » tout court.
     assert.equal(nomAcompte([cheque], 0, []), "Acompte");
   });
@@ -292,7 +293,7 @@ async function main() {
     const { trace } = await composerFacturePdf({ ...FACTURE, reglements: [cheque, virement, solde] });
     const textes = trace.textes.map((t) => t.contenu);
     assert.ok(textes.includes("ACQUITTÉE LE 21/09/2026"), `le tampon manque : ${textes.filter((t) => t.includes("ACQUITT")).join("|")}`);
-    assert.equal(textes.filter((t) => t === "Acompte").length, 1, "le solde ne s'écrit pas « Acompte » tout court");
+    assert.equal(textes.filter((t) => t === "Solde").length, 1, "le solde ne s'écrit pas « Solde » sur le papier");
     const net = trace.textes.findIndex((t) => t.contenu === "Net à payer");
     assert.equal(trace.textes[net + 1]?.contenu, "0,00 €");
   });

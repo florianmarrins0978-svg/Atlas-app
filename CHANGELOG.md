@@ -27,6 +27,16 @@ mettre, et l'application ne pouvait pas en imprimer une juste, aucun texte ne
 disant laquelle depuis le RNE. Migration 0128 (expand seul, trois colonnes
 nullables). `test-numero-rm-sur-les-pieces-db`.
 
+### Le solde posé par « Facture acquittée » s'appelle « Solde »
+
+Sa correction : *« corrige l'acompte alors que c'est le solde »*. La ligne
+que pose l'interrupteur s'écrivait « Acompte », sur l'écran comme sur le
+PDF, sur la foi d'une supposition (« solde n'est pas un mot qu'il emploie »).
+Corrigé à la seule source, `nomAcompte` (`src/lib/acomptes-facture.ts`), que
+l'écran et le papier appellent tous deux. Ce qu'il a écrit lui-même sur une
+ligne passe toujours devant.
+
+
 ## 2026-10-08
 
 ### Planche : le site de vente devient complet, écrit pour vendre
