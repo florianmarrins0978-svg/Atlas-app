@@ -1,6 +1,6 @@
 # Prochaines tâches
 
-## ✅ LE NUMÉRO RM : SON CHOIX B, CODÉ LE 9 OCTOBRE 2026, PAS ENCORE SUR `main`
+## ✅ LE NUMÉRO RM : SON CHOIX B, SUR `main` LE 9 OCTOBRE 2026
 
 Sa question en préparant la vente de l'application : la mention à écrire à
 côté du SIREN d'un artisan depuis la fin du répertoire des métiers (2023)
@@ -10,9 +10,9 @@ sous le SIRET dans Mon entreprise, imprimé tel qu'écrit sur le devis et la
 facture, rien s'il est vide, rien ne bloque. Planche `appli/numero-rm.html` :
 A, sa ligne sous le SIRET ; B, sur la ligne du SIRET après une virgule.
 **Il a choisi B ; codé le 9 octobre** (migration 0128, `ARCHITECTURE.md` §458).
-Reste : la batterie (niveau 3), puis la fusion sur `main` à lui demander.
+**Sur `main` le 9 octobre**, dans la batterie commune avec « Solde » et « Payé par ».
 
-## ⏳ « SOLDE » ET « PAYÉ PAR » DANS LES RÈGLEMENTS : CODÉS, EN ATTENTE DE LA BATTERIE (9 octobre 2026)
+## ✅ « SOLDE » ET « PAYÉ PAR » DANS LES RÈGLEMENTS : SUR `main` LE 9 OCTOBRE 2026
 
 Branche `claude/solde-pas-acompte`, partie de `main`. La ligne posée par
 « Facture acquittée » s'écrit « Solde » ; les acomptes versés gardent
@@ -22,8 +22,12 @@ rouge puis vert). Et « Payé par » dans Terminés (sa planche du 9 octobre,
 retenue) : `test-paiements-facture-db` rouge puis vert, `test-tva-au-paiement-e2e`
 et les deux suites voisines vertes, écran regardé. Contrôles du papier rouges
 puis verts, `test-papier-facture-db` vert. Niveau 3 (argent, rayon de 42
-points d'entrée) : la batterie complète est due avant `main`. **Il a dit
-« pas de batterie » le 9 octobre** : le lot attend son feu vert.
+points d'entrée). **Sur `main` le 9 octobre**, batterie commune avec le
+numéro RM : 460/460 suites base, 181/183 navigateur, connexion derrière un
+proxy. Les deux rouges (`test-connexion-service-en-panne-e2e`,
+`test-le-client-s-est-trompe-e2e`) ont le même sort sur la base de `main`
+(`verifier-rouge-prealable`), et repassent verts dans le complément d'après
+fusion (`verifier-ce-qui-a-bouge`).
 
 ## ⏳ LE CRÉDIT D'IMPÔT DE SES CLIENTS : PLANCHE POSÉE, UNE QUESTION OUVERTE (8 octobre 2026)
 

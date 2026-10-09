@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — Le solde et le moyen de règlement</title>
+<style>
+  :root{
+    --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
+    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
+    --accent:#2f3b2f; --alert:#b5562a; --line:rgba(28,28,26,0.13);
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#161815; --surface:#1d201c; --raised:#252924;
+      --ink:#eae7df; --ink-soft:#c2bdb1; --muted:#948f83;
+      --accent:#9fbd82; --alert:#e0885a; --line:rgba(234,231,223,0.17);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.65;}
+  main{max-width:44rem;margin:0 auto;padding:2.5rem 1.2rem 5rem;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.2;
+    text-wrap:balance;margin:2rem 0 0.6rem;scroll-margin-top:1rem;}
+  h1{font-size:2rem;margin-top:0;}
+  h2{font-size:1.5rem;padding-top:1.2rem;border-top:1px solid var(--line);}
+  h3{font-size:1.12rem;}
+  h4{font-size:1rem;}
+  p{margin:0 0 0.9rem;}
+  a{color:var(--accent);text-underline-offset:3px;}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px;}
+  ul,ol{margin:0 0 1rem;padding-left:1.3rem;}
+  li{margin-bottom:0.4rem;}
+  li::marker{color:var(--muted);}
+  /* Le sommaire : des cibles larges, confortables au doigt sur téléphone. */
+  ol li a{display:inline-block;padding:0.15rem 0;}
+  blockquote{margin:1rem 0;padding:0.85rem 1.05rem;background:var(--raised);
+    border-left:3px solid var(--accent);border-radius:0 10px 10px 0;color:var(--ink-soft);}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.87em;
+    background:var(--raised);padding:0.1rem 0.35rem;border-radius:5px;}
+  hr{border:0;border-top:1px solid var(--line);margin:2rem 0;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;
+    background:var(--surface);margin:0 0 1.2rem;}
+  table{border-collapse:collapse;width:100%;font-size:0.92rem;min-width:22rem;}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--line);
+    vertical-align:top;}
+  th{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--muted);white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .retour{display:inline-block;font-size:0.76rem;color:var(--muted);
+    text-decoration:none;margin:-0.3rem 0 1rem;}
+  .retour:hover{color:var(--accent);text-decoration:underline;}
+</style>
+</head>
+<body>
+<main>
+<h1 id="le-solde-et-le-moyen-de-règlement">Le solde et le moyen de règlement</h1>
+<p>9 octobre 2026. Sur <code>main</code> le soir même, dans une batterie commune avec le numéro RM d'une autre session.</p>
+<h2 id="ce-qui-est-fait">Ce qui est fait</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Point</th>
+<th>Verdict</th>
+<th>Où</th>
+</tr></thead><tbody>
+<tr>
+<td>La ligne posée par « Facture acquittée » s'appelle « Solde »</td>
+<td>fait, à la seule source du nom</td>
+<td><code>nomAcompte</code>, <code>src/lib/acomptes-facture.ts</code></td>
+</tr>
+<tr>
+<td>Les acomptes versés gardent leur nom (« Acompte 30 % », « Acompte 50 % »)</td>
+<td>inchangé, et maintenant épinglé par un contrôle</td>
+<td><code>test-papier-devis-facture</code></td>
+</tr>
+<tr>
+<td>Dans Terminés, le versement qui termine le paiement s'appelle « Solde »</td>
+<td>fait, que ce soit par « J'ai reçu le paiement » ou en tapant le reste</td>
+<td><code>noterPaiement</code></td>
+</tr>
+<tr>
+<td>« Payé par » dans Terminés, au-dessus des deux boutons</td>
+<td>fait, Virement d'office, rien d'obligatoire</td>
+<td><code>EnAttenteDePaiement.tsx</code></td>
+</tr>
+<tr>
+<td>La ligne enregistrée dit le moyen (« Acompte payé le … par chèque »)</td>
+<td>fait</td>
+<td>même écran</td>
+</tr>
+<tr>
+<td>Un moyen inconnu envoyé au serveur</td>
+<td>refusé en valeur, rien n'est écrit</td>
+<td><code>estUnMoyenDePaiement</code></td>
+</tr>
+</tbody></table></div>
+<h2 id="ce-qui-a-été-dit-et-qui-était-faux">Ce qui a été dit et qui était faux</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<ul>
+<li>J'ai écrit que l'écran de la facture ne savait pas saisir un paiement en deux moyens. Il le sait, sur la page où la facture se compose (« + Règlement reçu »). Seule la page de la facture elle-même fige ses lignes.</li>
+<li>Le « Acompte 80 % » montré sur une capture venait de mes données d'essai, pas d'une addition de l'appli. L'appli écrit le taux cumulé saisi sur le devis : 30 %, 50 %, 75 %.</li>
+</ul>
+<h2 id="ce-qui-nest-pas-fait">Ce qui n'est pas fait</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Point</th>
+<th>Pourquoi</th>
+<th>Qui</th>
+</tr></thead><tbody>
+<tr>
+<td>Cesu et Avance immédiate dans « Payé par »</td>
+<td>viendront avec le crédit d'impôt, qui n'est pas codé</td>
+<td>à coder après la planche du crédit d'impôt</td>
+</tr>
+<tr>
+<td>Relier Atlas à l'Urssaf</td>
+<td>sa décision : pas pour l'instant</td>
+<td>lui, si des artisans le demandent</td>
+</tr>
+</tbody></table></div>
+<h2 id="la-batterie">La batterie</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>460/460 suites base, 181/183 suites navigateur, connexion derrière un proxy verte. Les deux rouges ont le même sort sur la base de <code>main</code> (l'un rouge des deux côtés, l'autre vert des deux côtés en le rejouant) : aucun ne vient de ce lot. Après la reprise de <code>main</code>, le complément a rejoué ces deux suites : 2/2 vertes.</p>
+</main>
+</body>
+</html>
