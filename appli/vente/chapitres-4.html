@@ -4,14 +4,21 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Atlas pour les paysagistes</title>
-<meta name="description" content="Planche : le site de vente d'Atlas pour les paysagistes et les élagueurs, avec le film d'une journée.">
+<meta name="description" content="Planche : le site de vente d'Atlas pour les paysagistes et les élagueurs. Le film d'une journée en est retiré tant qu'il montre un nom d'entreprise réel.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Hanken+Grotesk:wght@400;500;600&display=swap">
 <!--
   PLANCHE, rien n'est codé dans l'application. Quatrième version, posée à
-  côté de chapitres-3.html, qui reste telle quelle. Elle n'ajoute qu'une
-  chose : le film d'une journée, juste après « Pas secrétaire ».
+  côté de chapitres-3.html, qui reste telle quelle.
+
+  LE FILM EN A ÉTÉ RETIRÉ LE 10 OCTOBRE 2026, avec son accord : il montre
+  « Les Jardins de Loire » à Nantes, et une vraie entreprise de paysage,
+  « Les Jardins de la Loire », exerce à Saint-Jean-de-Boiseau, à côté. Il
+  reviendra quand ses captures auront été refaites sur Les Jardins de
+  Valmorin. Ce qui suit dit comment il était posé, pour le reposer.
+
+  Elle ajoutait une chose : le film d'une journée, juste après « Pas secrétaire ».
 
   LE FILM n'est pas fait ici. C'est le « film récit » de la session du
   5 octobre 2026 (branche claude/new-session-3ab8dh,
@@ -226,24 +233,6 @@ section{padding:clamp(88px,14vw,150px) 0}
 .geste p{color:var(--encre-2);font-size:16.5px}
 @media (min-width:860px){.gestes{grid-template-columns:repeat(3,1fr)}}
 
-/* Le film d'une journée : vertical, comme le téléphone qui le regarde. */
-.film-grille{display:grid;gap:44px;justify-items:center;text-align:center}
-.film-grille h2{font-size:clamp(52px,12vw,100px);line-height:.95}
-.film-grille .chapo{margin:20px auto 0;font-size:clamp(19px,2vw,22px);color:var(--sur-nuit-2);max-width:24em}
-.film-grille .duree{margin-top:14px;font-size:15px;color:var(--sur-nuit-2)}
-.ecran-film{position:relative;width:min(100%,360px);aspect-ratio:9/16;border-radius:30px;overflow:hidden;background:#0c0f0c;box-shadow:0 50px 100px -40px rgba(0,0,0,.85),0 0 0 1px rgba(236,232,220,.1)}
-.ecran-film video{display:block;width:100%;height:100%;object-fit:cover}
-.lecture{position:absolute;inset:0;display:grid;place-items:center;border:0;padding:0;background:linear-gradient(180deg,transparent 55%,rgba(0,0,0,.45));cursor:pointer;color:#1b241d}
-.lecture span{display:grid;place-items:center;width:84px;height:84px;border-radius:50%;background:#e2bb7a;box-shadow:0 18px 40px -12px rgba(0,0,0,.7);transition:transform .3s cubic-bezier(.16,1,.3,1)}
-.lecture:hover span{transform:scale(1.06)}
-.lecture svg{margin-left:5px}
-.lecture[hidden]{display:none}
-@media (min-width:960px){
-  .film-grille{grid-template-columns:1fr 1fr;align-items:center;text-align:left;justify-items:start;gap:80px}
-  .film-grille .chapo{margin-inline:0}
-  .ecran-film{justify-self:center;width:380px}
-}
-
 /* Le bouton d'essai, sous le pouce, sur téléphone seulement. */
 .pouce{position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));z-index:15;display:flex;justify-content:center;transform:translateY(140%);transition:transform .45s cubic-bezier(.16,1,.3,1);pointer-events:none}
 .pouce.vu{transform:none;pointer-events:auto}
@@ -451,20 +440,6 @@ section{padding:clamp(88px,14vw,150px) 0}
         <li class="revele">La TVA calculée à la fin du mois.</li>
       </ul>
       <p class="reponse revele">Atlas s'en occupe. Vous restez sur le chantier.</p>
-    </div>
-  </div>
-</section>
-
-<section class="nuit" id="film" style="padding-top:0">
-  <div class="large film-grille">
-    <div>
-      <h2 class="revele">Une journée avec Atlas.</h2>
-      <p class="chapo revele">De 8 h 05 à 18 h 21 : le devis dicté, la date choisie par la cliente, l'équipe au planning, la facture, la TVA.</p>
-      <p class="duree revele">1 min 08, avec le son.</p>
-    </div>
-    <div class="ecran-film revele">
-      <video id="video-journee" src="video/journee.mp4" poster="video/journee.jpg" preload="none" playsinline width="720" height="1280"></video>
-      <button type="button" class="lecture" id="lecture" aria-label="Lire le film d'une journée avec Atlas"><span><svg width="28" height="32" viewBox="0 0 28 32" aria-hidden="true"><path d="M2 2.5v27a1.5 1.5 0 0 0 2.3 1.3l21.4-13.5a1.5 1.5 0 0 0 0-2.6L4.3 1.2A1.5 1.5 0 0 0 2 2.5z" fill="currentColor"/></svg></span></button>
     </div>
   </div>
 </section>
@@ -785,18 +760,8 @@ section{padding:clamp(88px,14vw,150px) 0}
   }
   boutonsPeriode.forEach(function(b){ b.addEventListener("click", function(){ periode(b.getAttribute("data-periode")); }); });
 
-  // Le film ne se charge qu'au premier appui, avec le son, puis rend la main
-  // aux commandes du navigateur.
-  var video = document.getElementById("video-journee"), lecture = document.getElementById("lecture");
-  lecture.addEventListener("click", function(){
-    lecture.hidden = true;
-    video.controls = true;
-    video.play();
-  });
-
   // Le bouton du pouce : visible une fois l'ouverture passée, effacé dès qu'un
-  // autre bouton d'essai est à l'écran (les prix, la fin), pour ne jamais doubler,
-  // et pendant le film, dont il cacherait le bas et les commandes.
+  // autre bouton d'essai est à l'écran (les prix, la fin), pour ne jamais doubler.
   var pouce = document.getElementById("pouce");
   if ("IntersectionObserver" in window){
     var visibles = new Set();
@@ -804,7 +769,7 @@ section{padding:clamp(88px,14vw,150px) 0}
       entrees.forEach(function(e){ e.isIntersecting ? visibles.add(e.target) : visibles.delete(e.target); });
       pouce.classList.toggle("vu", visibles.size === 0);
     });
-    document.querySelectorAll(".ouverture, #film, #prix, #essayer, #contact, .pied").forEach(function(c){ veille.observe(c); });
+    document.querySelectorAll(".ouverture, #prix, #essayer, #contact, .pied").forEach(function(c){ veille.observe(c); });
   }
 
   // La phrase dictée se découpe en mots, qui s'allument l'un après l'autre.
